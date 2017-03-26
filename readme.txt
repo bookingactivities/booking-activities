@@ -4,7 +4,7 @@ Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_i
 Tags: booking, reservations, calendar, planning, booking system, booking form, activities, activity, sport, events, rental, appointments, woocommerce
 Requires at least: 4.0
 Tested up to: 4.7.3
-Stable tag: 1.0.0
+Stable tag: 1.0.1
 License: GPLv3 or later
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
 
@@ -129,7 +129,7 @@ More information at [booking-activities.fr](http://booking-activities.fr/en).
 
 1. Go to Booking Activities / Calendar Editor page
 2. Select the desired calendar and show / hide activities you want
-3. Copy the shortcode at the bottom of the page (it looks like `[bookacti_form calendars='' activities='']`)
+3. Copy the shortcode at the bottom of the page (it looks like `[bookingactivities_form calendars='' activities='']`)
 4. Past this shortcode in any post or page you like
 5. Go on this post / page frontend, the booking system appears! 
 *The user must be logged in to book an event.*
@@ -140,7 +140,7 @@ More information at [booking-activities.fr](http://booking-activities.fr/en).
 
 1. Go to Booking Activities / Calendar Editor page
 2. Select the desired calendar and show / hide activities you want
-3. Copy the shortcode at the bottom of the page (it looks like `[bookacti_cal calendars='' activities='']`)
+3. Copy the shortcode at the bottom of the page (it looks like `[bookingactivities_calendar calendars='' activities='']`)
 4. Past this shortcode in any post or page you like
 5. Go on this post / page frontend, the calendar appears!
 
@@ -148,7 +148,7 @@ More information at [booking-activities.fr](http://booking-activities.fr/en).
 = Display user's bookings list = 
 *Make sure the user has bookings and he is logged in, otherwise it will not show anything* 
 
-1. Past this shortcode in any post or page you like: `[bookacti_list]`
+1. Past this shortcode in any post or page you like: `[bookingactivities_list]`
 2. Go on this post / page frontend, the bookings list appears!
 *Depending on BA settings and bookings dates, actions like cancel or reschedule may appear. Try them!* 
 
@@ -250,6 +250,9 @@ If you don't find the answer you need, please [contact us](http://booking-activi
 
 
 == Changelog ==
+
+= 1.0.1 - 2017/03/25 =
+* Fix - Updated shortcodes in readme.txt
 
 = 1.0.0 - 2017/03/25 =
 * Booking Activities at your service!
