@@ -1,0 +1,15 @@
+/***** BACKEND WOOCOMMERCE *****/
+#woocommerce-product-data ul.product_data_tabs li.activity_tab a::before { font-family: dashicons; content:'\f508'; }
+.bookacti-woo-title	{ padding: 1em 0 0.5em 0; }
+.bookacti-hide-fields { display: none; }
+.bookacti-show-fields { display: block; }
+
+/***** FRONTEND WOOCOMMERCE *****/
+/* Single product page */
+.woocommerce div.product form.cart table td.fc-axis {
+	padding-left: 4px;
+}
+
+
+/* My Account */
+.woocommerce a.button.bookacti-booking-action { margin: 5px; }

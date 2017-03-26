@@ -1,0 +1,115 @@
+/***** GLOBAL *****/
+
+/** GLOBAL **/
+
+/* Booking System */
+#bookacti-reschedule-booking-dialog .bookacti-date-picked-activity					{ display: none; }
+.bookacti-booking-system-form .bookacti-booking-system-labels,
+.bookacti-booking-system-form .bookacti-booking-system-field						{ display: inline-block; vertical-align: middle; width: 150px; margin: 0; }
+.bookacti-booking-system-form .bookacti-booking-system-field-container				{ margin-bottom: 20px; }
+.bookacti-booking-system-form .bookacti-booking-system-field-submit-container		{ text-align: center; }
+.bookacti-booking-system-form .bookacti-booking-system-field-submit-container input	{ cursor: pointer; }
+.bookacti-booking-system-form .bookacti-booking-system-field-container *			{ display: inline-block; margin-right: 15px; }
+.bookacti-booking-system-form .bookacti-booking-system-field-container *:last-child	{ margin-right: 0; }
+
+.bookacti-notices						{ display: none; }
+.bookacti-notices ul					{ margin: 30px 0; padding: 10px 30px; border-left: 4px solid dodgerblue; box-shadow: 0 1px 1px 0 rgba(0,0,0,.1); background-color: rgba(255,255,255,.5); border-radius: 0 5px 5px 0; }
+.bookacti-notices ul.bookacti-error-list	{ border-left-color: red; }
+.bookacti-notices ul.bookacti-success-list	{ border-left-color: green; }
+
+
+/** CALENDAR **/
+
+.fc-unthemed td.fc-today { background: rgba( 220, 193, 6, 0.1 ); }
+.bookacti-calendar table { margin: 0; }
+
+/* Header */
+.fc-toolbar { margin-bottom: 0; }
+.fc-toolbar .fc-center, .fc-toolbar .fc-right, .fc-toolbar .fc-left { margin-bottom: 1em; }
+.bookacti-date-picked-title	{ font-weight: bolder; }
+
+/* Events */
+.event-unavailable  { opacity: 0.5; cursor: default; pointer-events: none; }
+.bookacti-selected-event {
+    -webkit-box-shadow: 0 5px 10px rgba(0,0,0,0.5);
+       -moz-box-shadow: 0 5px 10px rgba(0,0,0,0.5);
+            box-shadow: 0 5px 10px rgba(0,0,0,0.5);
+	transition: box-shadow 0.3s ease-in-out;
+	-webkit-transform: scale(1.02, 1.02);
+	transform: scale(1.02, 1.02);
+	border: 2px solid rgba(68, 68, 68, 0.4) !important;
+	z-index: 3 !important;
+}
+
+.bookacti-disabled-day    { background-color: #e5e5e5 !important; }
+
+.fc-event			{ cursor: pointer; overflow: hidden; }
+
+.fc-basic-view .fc-content > * { display: block; }
+	
+	/* Small events */
+	.fc-agenda-view .bookacti-small-event .fc-title,
+	.fc-agenda-view .bookacti-small-event .fc-time							{ display: inline-block; }
+	.fc-agenda-view .bookacti-small-event:not(.bookacti-wide-event) .fc-time span	{ display: none; }
+	.fc-agenda-view .bookacti-small-event:not(.bookacti-wide-event) .fc-time:before { content: attr(data-start); }
+	.fc-agenda-view .bookacti-small-event:not(.bookacti-wide-event) .fc-time:after	{ content: "\000A0-\000A0"; }
+	.fc-agenda-view .bookacti-small-event .fc-content							{ white-space: nowrap; }
+	.fc-agenda-view .bookacti-small-event .fc-title							{ font-size: .85em; padding: 0; }
+	.fc-agenda-view .bookacti-small-event.bookacti-wide-event .fc-title				{ padding-left: 5px; }
+	
+	/* Tiny events */
+	.fc-agenda-view .bookacti-tiny-event:not(.bookacti-wide-event) .bookacti-available-places-unit-name,
+	.fc-agenda-view .bookacti-tiny-event:not(.bookacti-wide-event) .bookacti-available-places-avail-particle { display: none; }
+	.fc-agenda-view .bookacti-tiny-event .bookacti-availability-container								{ height: 100%; }
+	.fc-agenda-view .bookacti-tiny-event .bookacti-available-places										{ height: 100%; display: block; border-radius: 0; }
+	
+	/* Narrow events */
+	.bookacti-narrow-event .bookacti-available-places-unit-name,
+	.bookacti-narrow-event .bookacti-available-places-avail-particle { display: none; }
+	
+	
+	/* Availability */
+	.bookacti-availability-container  { 
+		white-space: nowrap;
+		display: block;
+		position: absolute;
+		bottom: 0;
+		right: -1px;
+		z-index: 2;
+		overflow: hidden;
+	}
+	.bookacti-availability-container .bookacti-available-places { 
+		padding: 2px 3px;
+		background-color: #000;
+		color: #fff;
+		text-align: right;
+		font-size: 0.85em;
+	}
+	.bookacti-availability-container span							{ -webkit-border-radius: 3px 0; border-radius: 3px 0; }
+	.bookacti-availability-container .bookacti-bookings					{ padding: 1px 0 1px 1px; }
+	.bookacti-availability-container .bookacti-total-availability		{ padding: 1px 1px 1px 0; }
+	.bookacti-availability-container .bookacti-available-places-number	{ font-weight: bold; font-size: larger; }
+
+	.bookacti-available-places.bookacti-booked, 
+	.bookacti-available-places.bookacti-not-booked		{ background-color: rgba(0, 0, 0, 0.4); }
+	.bookacti-available-places.bookacti-full, 
+	.bookacti-available-places.bookacti-no-availability	{ background-color: rgba(255, 0, 0, 0.4); }
+
+	/* Loading */
+	.bookacti-loading-overlay	{ position: absolute; width: 100%; height: 100%; top: 0; left: 0; background: rgba( 0, 0, 0, 0.6 ); z-index: 10; overflow: hidden; }
+	.bookacti-loading-content { position: relative; top: 50%; left: 50%; margin: -60px 0 0 -60px; z-index: 10; }
+	.bookacti-loading-box		{ -webkit-border-radius: 6px; border-radius: 6px; width: 120px; height: 120px; background: rgba( 0, 0, 0, 0.6 ); text-align: center; }
+	.bookacti-loading-image	{ box-sizing: border-box; padding: 25px 0 20px 0; width: 100%; }
+	.bookacti-loader			{ width: 32px; height: 32px; vertical-align: middle; }
+	.bookacti-loading-text	{ color: #fff; font-size: 0.8em; }
+	.bookacti-loading-alt-text{ margin-left: 10px; vertical-align: middle; font-size: 0.9em; }
+
+	
+	
+/** RESPONSIVE DESIGN **/
+
+/* Smartphone only */
+@media screen and ( max-width: 480px ){
+	/* Calendar */
+	.fc-today-button { display: none; }
+}

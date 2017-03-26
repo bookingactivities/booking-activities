@@ -1,0 +1,22 @@
+{ "vendor": { "plugins/booking-activities": "1.0" },
+	"admin-config":{
+		"bookacti_calendars":{
+			"pages":{ "admin.php":"page=bookacti_calendars" },
+			"anchors":{ "bookacti-activity-dialog-lang-switcher": { "where": "first" }, "bookacti-event-dialog-lang-switcher": { "where": "first" } },
+			"forms":{
+				"bookacti-activity-data-form":{
+					"fields":{
+						"bookacti-activity-title":{},
+						"bookacti-activity-unit-name-singular":{},
+						"bookacti-activity-unit-name-plural":{}
+					}
+				},
+				"bookacti-event-data-form":{
+					"fields":{
+						"bookacti-event-title":{}
+					}
+				}
+			}
+		}
+	}
+}

@@ -1,0 +1,128 @@
+/***** GENERAL *****/
+
+
+/***** ALL PAGES *****/
+.bookacti-nav-tab-wrapper { margin-bottom: 16px !important; }
+.bookacti-tip  {
+	position: relative;
+	vertical-align: middle;
+	padding: 0 10px;
+}
+#tiptip_content {
+    color: #fff;
+    font-size: .9em;
+    max-width: 200px;
+    background: #333;
+    text-align: center;
+    border-radius: 3px;
+    padding: 0.5em 1em;
+    box-shadow: 0 1px 3px rgba( 0, 0, 0, 0.2 );
+}
+
+
+/***** CALENDAR *****/
+/** EVENTS **/
+.bookacti-updated-event	{ border: 2px solid #2b2 !important; }
+.event-exception    { background-color: red !important; }
+.bookacti-hidden-event    { display: none; }
+
+.bookacti-available-places.bookacti-booked, 
+.bookacti-available-places.bookacti-not-booked,
+.bookacti-available-places.bookacti-full, 
+.bookacti-available-places.bookacti-no-availability,
+#bookacti-template-calendar .bookacti-available-places.bookacti-booked { color: #fff; }
+
+#bookacti-template-calendar .bookacti-available-places.bookacti-booked, 
+#bookacti-template-calendar .bookacti-available-places.bookacti-not-booked		{ background-color: #4ead3b; }
+#bookacti-template-calendar .bookacti-available-places.bookacti-full, 
+#bookacti-template-calendar .bookacti-available-places.bookacti-no-availability	{ background-color: #ab3b3b; }
+#bookacti-template-calendar .bookacti-available-places.bookacti-booked			{ background-color: #e39102; }
+
+
+/***** SETTINGS *****/
+.bookacti_refund_action,
+#bookacti_refund_actions	{ display: inline-block; }
+.bookacti_refund_action	{ margin: 5px 0; }
+
+
+/** DIALOGS **/
+.input-warning  { border-color: #d80 !important; }
+.input-error    { border-color: #f00 !important; }
+.form-error		{ color: #f00; font-style: italic; }
+.error-exception{ color: orange; }
+
+.bookacti-backend-dialogs { display: none; }
+
+.bookacti-backend-dialogs fieldset          { border: 1px solid #bbb; -webkit-border-radius: 6px; border-radius: 6px; padding: 10px; }
+.bookacti-backend-dialogs fieldset legend   { margin: auto; }
+
+.bookacti-backend-dialogs input[type='text']		{ width: 150px; }
+.bookacti-backend-dialogs input[type='date']		{ width: 150px; }
+.bookacti-backend-dialogs input[type='number']	{ width: 80px; }
+
+.bookacti-lang-switcher { margin-bottom: 10px; }
+
+
+
+/* Tabs */
+.bookacti-tabs .bookacti-tab-content label:not(.bookacti-onoffswitch-label) { display: inline-block; width: 150px; font-weight: bold; }
+.bookacti-tabs .bookacti-tab-content label.bookacti-fullwidth-label			{ width: 100%; }
+.bookacti-tabs .bookacti-tab-content input[type='checkbox'] + label:not(.bookacti-onoffswitch-label) { display: inline; width: auto; }
+.bookacti-tabs .bookacti-tab-content .bookacti-checkbox-group div { display: inline-block; margin-right: 20px; }
+.bookacti-tabs .bookacti-tab-content div { margin-bottom: 10px; }
+.bookacti-tabs .bookacti-tab-content div.bookacti-display-inline-block { display: inline-block; }
+.bookacti-tabs .bookacti-tab-content div:last-child { margin-bottom: 0; }
+
+
+
+/* On/off switch */
+.bookacti-onoffswitch {
+    display: inline-block;
+	position: relative; top: 5px; width: 40px;
+    -webkit-user-select:none; -moz-user-select:none; -ms-user-select: none;
+}
+.bookacti-onoffswitch-checkbox {
+    display: none !important;
+}
+.bookacti-onoffswitch-label {
+    display: block; overflow: hidden; cursor: pointer;
+    border: 2px solid #4D4D4D; border-radius: 50px;
+}
+.bookacti-onoffswitch-inner {
+    display: block; width: 200%; margin-left: -100%;
+    transition: margin 0.3s ease-in 0s;
+}
+.bookacti-onoffswitch-inner:before, .bookacti-onoffswitch-inner:after {
+    display: block; float: left; width: 50%; height: 10px; padding: 0; line-height: 10px;
+    font-size: 14px; color: white; font-family: Trebuchet, Arial, sans-serif; font-weight: bold;
+    box-sizing: border-box;
+}
+.bookacti-onoffswitch-inner:before {
+    content: "";
+    padding-left: 10px;
+    background-color: #EEEEEE; color: #FFFFFF;
+}
+.bookacti-onoffswitch-inner:after {
+    content: "";
+    padding-right: 10px;
+    background-color: #EEEEEE; color: #999999;
+    text-align: right;
+}
+.bookacti-onoffswitch-switch {
+    display: block; width: 20px; margin: -5px;
+    background: #4D4D4D;
+    position: absolute; top: 0; bottom: 0;
+    right: 26px;
+    border: 2px solid #EEE; border-radius: 50px;
+    transition: all 0.3s ease-in 0s; 
+}
+.bookacti-onoffswitch-checkbox:checked + .bookacti-onoffswitch-label .bookacti-onoffswitch-inner {
+    margin-left: 0;
+}
+.bookacti-onoffswitch-checkbox:checked + .bookacti-onoffswitch-label .bookacti-onoffswitch-switch {
+    right: 0px; 
+    background-color: #27A1CA; 
+}
+.bookacti-onoffswitch.bookacti-disabled .bookacti-onoffswitch-label	{ border: 2px solid #bbb; }
+.bookacti-onoffswitch.bookacti-disabled .bookacti-onoffswitch-switch	{ background: #bbb; }
+.bookacti-onoffswitch.bookacti-disabled .bookacti-onoffswitch-checkbox:checked + .bookacti-onoffswitch-label .bookacti-onoffswitch-switch { background-color: #a8cbd6; }
