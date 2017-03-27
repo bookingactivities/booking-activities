@@ -205,30 +205,29 @@ function bookacti_first20_notice() {
 
 
 // ASK TO RATE THE PLUGIN 5 STARS
-if( empty( get_option( 'bookacti-5stars-rating-notice-dismissed' ) ) ) {
-	if( current_user_can( 'bookacti_manage_booking_activities' ) ) {
-		$install_date = get_option( 'bookacti-install-date' );
-		if( ! empty( $install_date ) ) {
-			$install_datetime	= DateTime::createFromFormat( 'Y-m-d H:i:s', $install_date );
-			$current_datetime	= new DateTime();
-			$nb_days			= floor( $install_datetime->diff( $current_datetime )->days );
-			if( $nb_days >= 7 ) {
-				add_action( 'admin_notices', 'bookacti_5stars_rating_notice' );
+add_action( 'admin_notices', 'bookacti_5stars_rating_notice' );
+function bookacti_5stars_rating_notice() {
+	if( empty( get_option( 'bookacti-5stars-rating-notice-dismissed' ) ) ) {
+		if( current_user_can( 'bookacti_manage_booking_activities' ) ) {
+			$install_date = get_option( 'bookacti-install-date' );
+			if( ! empty( $install_date ) ) {
+				$install_datetime	= DateTime::createFromFormat( 'Y-m-d H:i:s', $install_date );
+				$current_datetime	= new DateTime();
+				$nb_days			= floor( $install_datetime->diff( $current_datetime )->days );
+				if( $nb_days >= 7 ) {
+					?>
+					<div class='notice notice-info bookacti-5stars-rating-notice is-dismissible' >
+						<p><?php esc_html_e( 'You have been using Booking Activities for one week now. We are glad you like it! Please let people know by rating us five stars on wordpress.org, this is really important for us as we provide Booking Activities for free, and it will only take you five minutes.', BOOKACTI_PLUGIN_NAME ); ?></p>
+						<p>
+							<a class='button' href='<?php echo esc_url( 'https://wordpress.org/support/plugin/booking-activities/reviews/' ); ?>' target='_blank' ><?php esc_html_e( "Ok, I'll rate you five stars!", BOOKACTI_PLUGIN_NAME ); ?></a>
+							<span class='button' id='bookacti-dismiss-5stars-rating' ><?php esc_html_e( "I already rated you, hide this message", BOOKACTI_PLUGIN_NAME ); ?></span>
+						</p>
+					</div>
+					<?php
+				}
 			}
 		}
 	}
-}
-
-function bookacti_5stars_rating_notice() {
-	?>
-	<div class='notice notice-info bookacti-5stars-rating-notice is-dismissible' >
-		<p><?php esc_html_e( 'You have been using Booking Activities for one week now. We are glad you like it! Please let people know by rating us five stars on wordpress.org, this is really important for us as we provide Booking Activities for free, and it will only take you five minutes.', BOOKACTI_PLUGIN_NAME ); ?></p>
-		<p>
-			<a class='button' href='<?php echo esc_url( 'https://wordpress.org/support/plugin/booking-activities/reviews/' ); ?>' target='_blank' ><?php esc_html_e( "Ok, I'll rate you five stars!", BOOKACTI_PLUGIN_NAME ); ?></a>
-			<span class='button' id='bookacti-dismiss-5stars-rating' ><?php esc_html_e( "I already rated you, hide this message", BOOKACTI_PLUGIN_NAME ); ?></span>
-		</p>
-	</div>
-	<?php
 }
 
 
