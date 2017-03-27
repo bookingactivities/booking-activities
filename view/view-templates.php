@@ -158,8 +158,8 @@ echo "<h2>" . esc_html__( 'Calendars', BOOKACTI_PLUGIN_NAME ) . "</h2>";
 	</p>
 	<p>
 		<code>
-			[bookingactivities_cal	calendars='<span class='bookacti-shortcode-calendar-ids'><?php echo esc_html( $template_id ); ?></span>' 
-									activities='<span class='bookacti-shortcode-activity-ids'><?php echo esc_html( $activity_ids ); ?></span>']
+			[bookingactivities_calendar	calendars='<span class='bookacti-shortcode-calendar-ids'><?php echo esc_html( $template_id ); ?></span>' 
+										activities='<span class='bookacti-shortcode-activity-ids'><?php echo esc_html( $activity_ids ); ?></span>']
 		</code>
 		<?php 
 			$tip = __( 'This shortcode will display this calendar alone. Users will only be able to browse the calendar, they can\'t make booking with it.', BOOKACTI_PLUGIN_NAME );
