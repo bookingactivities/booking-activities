@@ -134,12 +134,7 @@ function bookacti_reset_cart_settings() {
 // Delete cart settings
 add_action( 'bookacti_delete_settings', 'bookacti_delete_cart_settings' );
 function bookacti_delete_cart_settings() {
-	// Bookings
-	$default_bookings_settings = get_option( 'bookacti_bookings_settings' );
-	if( isset( $default_bookings_settings['show_temporary_bookings'] ) )	{ unset( $default_bookings_settings['show_temporary_bookings'] ); }
-	update_option( 'bookacti_bookings_settings', $default_bookings_settings );
-	
-	// Cart
+	// Delete Cart Settings
 	delete_option( 'bookacti_cart_settings' );
 }
 
