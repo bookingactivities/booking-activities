@@ -41,7 +41,7 @@
 
 /***** SETTINGS *****/
 .bookacti_refund_action,
-#bookacti_refund_actions	{ display: inline-block; }
+#bookacti_refund_actions{ display: inline-block; }
 .bookacti_refund_action	{ margin: 5px 0; }
 
 
@@ -56,8 +56,8 @@
 .bookacti-backend-dialogs fieldset          { border: 1px solid #bbb; -webkit-border-radius: 6px; border-radius: 6px; padding: 10px; }
 .bookacti-backend-dialogs fieldset legend   { margin: auto; }
 
-.bookacti-backend-dialogs input[type='text']		{ width: 150px; }
-.bookacti-backend-dialogs input[type='date']		{ width: 150px; }
+.bookacti-backend-dialogs input[type='text']	{ width: 150px; }
+.bookacti-backend-dialogs input[type='date']	{ width: 150px; }
 .bookacti-backend-dialogs input[type='number']	{ width: 80px; }
 
 .bookacti-lang-switcher { margin-bottom: 10px; }

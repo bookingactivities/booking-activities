@@ -436,6 +436,9 @@ function bookacti_update_calendar_settings( calendar, settings ) {
         };
 	}
 	
+	if( settings.minTime )	{ settings_to_update.minTime	= settings.minTime; }
+	if( settings.maxTime )	{ settings_to_update.maxTime	= settings.maxTime === '00:00' ? '24:00' : settings.maxTime; }	
+	
 	calendar.trigger( 'bookacti_before_update_calendar_settings', [ settings_to_update, settings ] );
 	
 	if( ! $j.isEmptyObject( settings_to_update ) ) {

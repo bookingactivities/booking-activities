@@ -59,7 +59,9 @@ function bookacti_validate_template_form() {
     var min_start   = $j( '#bookacti-template-opening' ).attr( 'max' ) ? moment( $j( '#bookacti-template-opening' ).attr( 'max' ) ).format( 'YYYY-MM-DD' ) : false;
     var min_end     = $j( '#bookacti-template-closing' ).attr( 'min' ) ? moment( $j( '#bookacti-template-closing' ).attr( 'min' ) ).format( 'YYYY-MM-DD' ) : false;
     var duplicate_id= $j( '#bookacti-template-duplicated-template-id' ).val();
-    
+    var day_start	= moment( '1970-01-01T' + $j( '#bookacti-template-data-minTime' ).val() + ':00' );
+	var day_end		= $j( '#bookacti-template-data-maxTime' ).val().substr( 0, 2 ) === '00' ? moment( '1970-01-02T' + $j( '#bookacti-template-data-maxTime' ).val() + ':00' ) : moment( '1970-01-01T' + $j( '#bookacti-template-data-maxTime' ).val() + ':00' );
+	
     // Init boolean test variables
 	var valid_form = {
 		'isNew'					: false,
@@ -67,6 +69,7 @@ function bookacti_validate_template_form() {
 		'isStart'				: false,
 		'isEnd'					: false,
 		'isStartBeforeEnd'		: false,
+		'isDayStartBeforeEnd'	: false,
 		'isBookedEventOut'		: false,
 		'isDuplicateIdPositive'	: false,
 		'send'					: false
@@ -83,18 +86,22 @@ function bookacti_validate_template_form() {
 		if( start.format( 'YYYY-MM-DD' ) > min_start || end.format( 'YYYY-MM-DD' ) < min_end )	{ valid_form.isBookedEventOut = true; }
 	}
 	if( duplicate_id !== '' && $j.isNumeric( duplicate_id ) && parseInt( duplicate_id ) >= 0 )	{ valid_form.isDuplicateIdPositive = true; }
+	if( day_start.isBefore( day_end ) )															{ valid_form.isDayStartBeforeEnd = true; }
 	
 	if( valid_form.isTitle 
 	&&  valid_form.isDuplicateIdPositive 
 	&&  valid_form.isStartBeforeEnd 
+	&&  valid_form.isDayStartBeforeEnd 
 	&& !valid_form.isBookedEventOut )	{ valid_form.send = true; }
     
     // Clean the feedbacks before displaying new feedbacks
     $j( '#bookacti-template-data-dialog .form-error' ).remove();
     $j( '#bookacti-template-data-dialog input, #bookacti-template-data-dialog select' ).removeClass( 'input-error' );
-    
+
+	
 	// Allow third-party to change the results
 	$j( '#bookacti-template-data-dialog' ).trigger( 'bookacti_validate_template_form', [ valid_form ] );
+	
 	
     // Check the results and show feedbacks
     if( ! valid_form.isTitle ){ 
@@ -128,6 +135,11 @@ function bookacti_validate_template_form() {
         $j( '#bookacti-template-duplicated-template-id' ).addClass( 'input-error' );
         $j( '#bookacti-template-duplicated-template-id' ).parent().append( "<div class='form-error'>" + bookacti_localized.error_invalid_value + "</div>" );
     }
+	if( ! valid_form.isDayStartBeforeEnd ){ 
+		$j( '#bookacti-template-data-minTime' ).addClass( 'input-error' );
+		$j( '#bookacti-template-data-maxTime' ).addClass( 'input-error' );
+		$j( '#bookacti-template-data-maxTime' ).parent().append( "<div class='form-error'>" + bookacti_localized.error_day_end_before_begin + "</div>" );
+	}
 	
     return valid_form.send;
 }

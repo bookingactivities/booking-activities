@@ -2,53 +2,53 @@
 #bookacti-landing-container * { box-sizing: border-box; }
 
 /** ADD-ONS **/
-#bookacti-add-ons				{ max-width: 1600px; }
+#bookacti-add-ons			{ max-width: 1600px; }
 #bookacti-add-ons-container	{ display: table-cell; vertical-align: top; width: 100%; }
 .bookacti-add-on-container	{ width: 32.95%; padding: 10px; display: inline-block; vertical-align: top; }
 .bookacti-add-on-inner		{ width: 100%; border-radius: 4px; background-color: #fff; position:relative; z-index: 1; }
 
 .bookacti-add-on-promo		{ position: absolute; z-index: 20; color: #fff; background-color: #e35959; right: 0; border-radius: 0 4px 0 4px; padding: 20px 10px 25px 15px; font-size: 2.5em; font-weight: bold; }
 
-.bookacti-add-on-description		{ padding: 20px; }
+.bookacti-add-on-description	{ padding: 20px; }
 .bookacti-add-on-description h4	{ margin: 0 0 15px 0; text-transform: uppercase; font-size: 1.5em; }
 
-.bookacti-add-on-price		{ font-weight: bold; }
-.bookacti-add-on-price-value	{ font-size: 1.3em; color: #52B7E9; }
+.bookacti-add-on-price							{ font-weight: bold; }
+.bookacti-add-on-price-value					{ font-size: 1.3em; color: #52B7E9; }
 .bookacti-add-on-price .bookacti-line-through	{ text-decoration: line-through; font-weight: normal; }
-.bookacti-add-on-promo-price-value		{ margin-left: 3px; }
+.bookacti-add-on-promo-price-value				{ margin-left: 3px; }
 
 .bookacti-add-on-button			{ box-sizing: border-box; background-color: #52B7E9; padding: 10px; border: none; border-radius: 4px; max-width: 200px; text-align: center; margin: auto; }
-.bookacti-add-on-button a			{ font-size: 1.1rem; color: #fff; text-decoration: none;   }
-.bookacti-add-on-button:hover		{ background-color: #3d3d3d; color: #fff; transition: background-color 0.2s; text-decoration: none; }
+.bookacti-add-on-button a		{ font-size: 1.1rem; color: #fff; text-decoration: none;   }
+.bookacti-add-on-button:hover	{ background-color: #3d3d3d; color: #fff; transition: background-color 0.2s; text-decoration: none; }
 .bookacti-add-on-button a:hover	{ color: #fff; text-decoration: none; }
 
 
-.bookacti-add-on-image:before			{ opacity: 1; content: ' ';	position: absolute;	top: 0;	width: 100%; height: 100%; z-index: 0; transition: opacity 0.5s; border-radius: 4px 4px 0 0; }
+.bookacti-add-on-image:before		{ opacity: 1; content: ' ';	position: absolute;	top: 0;	width: 100%; height: 100%; z-index: 0; transition: opacity 0.5s; border-radius: 4px 4px 0 0; }
 .bookacti-add-on-image:hover:before	{ opacity: 0; transition: opacity 0.5s; }
 .bookacti-add-on-image				{ position: relative; border-radius: 4px 4px 0 0; }
-.bookacti-add-on-image a				{ position: relative; z-index: 10; }
+.bookacti-add-on-image a			{ position: relative; z-index: 10; }
 .bookacti-add-on-image img			{ width: 100%; border-radius: 4px 4px 0 0; }
 
 #bookacti-add-ons-guarantees			{ display: table-cell; vertical-align: top; min-width: 280px; padding: 0 20px; }
-#bookacti-add-ons-guarantees-container{ text-align: center; }
-.bookacti-add-ons-guarantee			{ padding: 20px; text-align: center; }
+#bookacti-add-ons-guarantees-container	{ text-align: center; }
+.bookacti-add-ons-guarantee				{ padding: 20px; text-align: center; }
 .bookacti-add-ons-guarantee-picto		{ margin: auto; border-radius: 50%; width: 96px; height: 96px; background-color: #52B7E9; color: #fff; text-align: center; }
-.bookacti-add-ons-guarantee-picto span{ font-size: 40px; height: 40px; width: 40px; margin-top: 28px; }
-.bookacti-add-ons-guarantee h4		{ text-transform: uppercase; font-size: 1.5em; }
-.bookacti-add-ons-guarantee-description{ font-style: italic; }
+.bookacti-add-ons-guarantee-picto span	{ font-size: 40px; height: 40px; width: 40px; margin-top: 28px; }
+.bookacti-add-ons-guarantee h4			{ text-transform: uppercase; font-size: 1.5em; }
+.bookacti-add-ons-guarantee-description	{ font-style: italic; }
 
 
 /* Responsive design */
 @media screen and ( max-width: 1280px ){
 	/* Add-ons */
-	#bookacti-add-ons				{ padding-right: 0; }
+	#bookacti-add-ons			{ padding-right: 0; }
 	.bookacti-add-on-container	{ width: 49%; }
-	#bookacti-add-ons-guarantees	{ min-width: 240px; padding-right: 0; }
+	#bookacti-add-ons-guarantees{ min-width: 240px; padding-right: 0; }
 }
 @media screen and ( max-width: 880px ){
 	/* Add-Ons */
 	#bookacti-add-ons-container, 
-	#bookacti-add-ons-guarantees	{ display: block; padding: 0; margin: 0 auto 40px auto;  min-width: fit-content; }
+	#bookacti-add-ons-guarantees{ display: block; padding: 0; margin: 0 auto 40px auto;  min-width: fit-content; }
 	
 	.bookacti-add-ons-guarantee	{ display: inline-block; vertical-align: top; max-width: 220px; }
 }

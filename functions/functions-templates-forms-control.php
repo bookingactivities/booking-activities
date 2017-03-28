@@ -93,14 +93,27 @@ function bookacti_format_template_settings( $template_settings ) {
 	}
 	
 	// Default settings
-	$default_settings = apply_filters( 'bookacti_template_default_settings', array() );
+	$default_settings = apply_filters( 'bookacti_template_default_settings', array(
+		'minTime'				=> '08:00',
+		'maxTime'				=> '20:00',
+	) );
 	
 	$settings = array();
-	
-	// Check if all templates settings 
+		
+	// Check if all templates settings are filled
 	foreach( $default_settings as $setting_key => $setting_default_value ){
 		if( is_string( $template_settings[ $setting_key ] ) ){ $template_settings[ $setting_key ] = stripslashes( $template_settings[ $setting_key ] ); }
-		$settings[ $setting_key ] = ( $template_settings[ $setting_key ] !== null ) ?  $template_settings[ $setting_key ] : $setting_default_value;
+		$settings[ $setting_key ] = ! empty( $template_settings[ $setting_key ] ) ? $template_settings[ $setting_key ] : $setting_default_value;
+	}
+
+	// Make sure minTime is before maxTime
+	// If maxTime is 00:xx change it to 24:xx
+	if( $settings[ 'maxTime' ] === '00:00' ) { $settings[ 'maxTime' ] = '24:00'; }
+	// If minTime >= maxTime, permute values
+	if( intval( substr( $settings[ 'minTime' ], 0, 2 ) ) >= substr( $settings[ 'maxTime' ], 0, 2 ) ) { 
+		$temp_max = $settings[ 'maxTime' ];
+		$settings[ 'maxTime' ] = $settings[ 'minTime' ]; 
+		$settings[ 'minTime' ] = $temp_max;
 	}
 	
 	return apply_filters( 'bookacti_template_settings', $settings );

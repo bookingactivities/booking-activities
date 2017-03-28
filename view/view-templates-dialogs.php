@@ -159,6 +159,9 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 						'callback'		=> 'bookacti_fill_template_tab_general',
 						'parameters'	=> array( 'template_options' => $templates_options ),
 						'order'			=> 10 ),
+				array(	'label'			=> __( 'Agenda', BOOKACTI_PLUGIN_NAME ),
+						'callback'		=> 'bookacti_fill_template_tab_agenda',
+						'order'			=> 40 ),
 				array(	'label'			=> __( 'Permissions', BOOKACTI_PLUGIN_NAME ),
 						'callback'		=> 'bookacti_fill_template_tab_permissions',
 						'parameters'	=> array( 'users_options_for_templates' => $users_options_for_templates ),
@@ -195,7 +198,56 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			<?php 
 					do_action( 'bookacti_template_tab_general_after', $params );
 			} 
-
+			
+			
+			function bookacti_fill_template_tab_agenda() {
+				do_action( 'bookacti_template_tab_agenda_before' );
+			?>
+				<div>
+					<label for='bookacti-template-data-minTime' >
+						<?php 
+						/* translators: Refers to the first hour displayed on calendar. More information: http://fullcalendar.io/docs/agenda/minTime/ */
+						_e( 'Day begin', BOOKACTI_PLUGIN_NAME );
+						?>
+					</label>
+					<input type="time" name="templateOptions[minTime]" id='bookacti-template-data-minTime' value='08:00'>
+					<?php
+					$tip = __( "Set when you want the days to begin on the calendar. Ex: '06:00' Days will begin at 06:00am.", BOOKACTI_PLUGIN_NAME );
+					$tip .= ' ' . __( "See more at", BOOKACTI_PLUGIN_NAME );
+					$tip .= ' <a href="http://fullcalendar.io/docs/agenda/minTime/" target="_blank" >minTime</a>.';
+					bookacti_help_tip( $tip );
+					?>
+				</div>
+				<div>
+					<label for='bookacti-template-data-maxTime' >
+						<?php 
+						/* translators: Refers to the last hour displayed on calendar. More information: http://fullcalendar.io/docs/agenda/maxTime/ */
+						_e( 'Day end', BOOKACTI_PLUGIN_NAME );  
+						?>
+					</label>
+					<input type="time" name="templateOptions[maxTime]" id='bookacti-template-data-maxTime' value='20:00' >
+					<?php
+					$tip = __( "Set when you want the days to end on the calendar. Ex: '18:00' Days will end at 06:00pm.", BOOKACTI_PLUGIN_NAME );
+					$tip .= ' ' . __( "See more at", BOOKACTI_PLUGIN_NAME );
+					$tip .= ' <a href="http://fullcalendar.io/docs/agenda/maxTime/" target="_blank" >maxTime</a>.';
+					bookacti_help_tip( $tip );
+					?>
+				</div>
+			<?php
+				do_action( 'bookacti_template_tab_agenda_after' );
+				
+				$license_status = get_option( 'badp_license_status' );
+				if( empty( $license_status ) || $license_status !== 'valid' ) {
+					?>
+					<div class='bookacti-addon-promo' >
+						<?php esc_html_e( 'Get other essential customization options with Display Pack add-on!', BOOKACTI_PLUGIN_NAME ); ?>
+						<div><a href='<?php echo esc_url( __( 'http://booking-activities.fr/en/downloads/display-pack/', BOOKACTI_PLUGIN_NAME ) ); ?>' class='button' target='_blank' ><?php esc_html_e( 'Learn more', BOOKACTI_PLUGIN_NAME ); ?></a></div>
+					</div>
+					<?php
+				}
+			}
+			
+			
 			//Tab content for permission general tab
 			function bookacti_fill_template_tab_permissions( $params ) {
 				$users_options_for_templates = $params[ 'users_options_for_templates' ];

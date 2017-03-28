@@ -81,12 +81,30 @@ function bookacti_get_template_activities_list( $template_id ) {
 function bookacti_get_mixed_template_settings( $template_ids ) {
 	
 	$templates_settings = bookacti_get_templates_settings( $template_ids );
+	$mixed_settings		= array();
 	
 	if( count( $templates_settings ) > 1 ) {
-		$return_array = reset( $templates_settings );
+		foreach( $templates_settings as $settings ){
+			if( isset( $settings[ 'minTime' ] ) ) {
+				//Keep the lower value
+				if(  ! isset( $mixed_settings[ 'minTime' ] ) 
+					|| isset( $mixed_settings[ 'minTime' ] ) && strtotime( $settings[ 'minTime' ] ) < strtotime( $mixed_settings[ 'minTime' ] ) ) {
+
+					$mixed_settings[ 'minTime' ] = $settings[ 'minTime' ];
+				} 
+			}
+			if( isset( $settings[ 'maxTime' ] ) ) {
+				//Keep the higher value
+				if(  ! isset( $mixed_settings[ 'maxTime' ] ) 
+					|| isset( $mixed_settings[ 'maxTime' ] ) && strtotime( $settings[ 'maxTime' ] ) > strtotime( $mixed_settings[ 'maxTime' ] ) ) {
+
+					$mixed_settings[ 'maxTime' ] = $settings[ 'maxTime' ];
+				} 
+			}
+		}
 	} else {
-		$return_array = $templates_settings;
+		$mixed_settings = $templates_settings;
 	}
 	
-	return apply_filters( 'bookacti_mixed_template_settings', $return_array, $templates_settings, $template_ids );
+	return apply_filters( 'bookacti_mixed_template_settings', $mixed_settings, $templates_settings, $template_ids );
 }

@@ -1,13 +1,13 @@
 /***** FRONT END *****/
 .bookacti-booking-system > div,
 .bookacti-notices,
-.bookacti-date-picked	{ margin-bottom: 20px; } 
+.bookacti-date-picked { margin-bottom: 20px; } 
 
 .bookacti-display-table-row	{ display: table-row; }
 .bookacti-display-none		{ display: none; }
 
-.bookacti-date-picked	{ display: none; text-align: center; }
-.to_date		{ display: inline-block; }
+.bookacti-date-picked { display: none; text-align: center; }
+.to_date { display: inline-block; }
 
 .bookacti-booking-system-alone .bookacti-booking-system-title,
-.bookacti-booking-system-alone .bookacti-date-picked	{ display: none !important; }
+.bookacti-booking-system-alone .bookacti-date-picked { display: none !important; }
