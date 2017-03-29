@@ -4,7 +4,7 @@ Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_i
 Tags: booking, reservations, calendar, planning, booking system, booking form, activities, activity, sport, events, rental, appointments, woocommerce
 Requires at least: 4.0
 Tested up to: 4.7.3
-Stable tag: 1.0.2
+Stable tag: 1.0.3
 License: GPLv3 or later
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
 
@@ -250,6 +250,13 @@ If you don't find the answer you need, please [contact us](http://booking-activi
 
 
 == Changelog ==
+
+= 1.0.3 - 2017/03/29 =
+* Feature - Added possibility to change calendar day start / end hours
+* Fix - Corrected the [bookingactivities_calendar] shortcode name in calendar editor
+* Fix - Fixed possible error while uninstalling plugin
+* Localization - Updated fr_FR
+
 
 = 1.0.2 - 2017/03/27 =
 * Fix - Fixed error 500 on plugin activation (undefined function wp_get_current_user())
