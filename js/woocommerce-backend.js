@@ -13,7 +13,7 @@ $j( document ).ready( function() {
 	});
 	
 	//Show or hide activity fields on variation page in the backend
-	$j( document ).on( 'woocommerce_variations_loaded', function( event ) {
+	$j( '#woocommerce-product-data' ).on( 'woocommerce_variations_loaded', function() {
 		bookacti_show_hide_activity_variation_fields();
 		$j( '#woocommerce-product-data .bookacti_variable_template' ).each( function() {
 			bookacti_show_hide_variation_activities_options( this );
@@ -94,7 +94,7 @@ function bookacti_show_hide_activities_options() {
 
 //Show or hide activities depending on the selected template on variation
 function bookacti_show_hide_variation_activities_options( template ) {
-
+	
 	//Init variables
 	var template_id		= $j( template ).val();
 	if( template_id === 'parent' ) { template_id = $j( '#_bookacti_template' ).val() || $j( template ).data( 'parent' ); }

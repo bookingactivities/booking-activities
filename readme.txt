@@ -1,53 +1,48 @@
 === Booking Activities ===
 Contributors: bookingactivities
 Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=7EKU434L7NEVC
-Tags: booking, reservations, calendar, planning, booking system, booking form, activities, activity, sport, events, rental, appointments, woocommerce
+Tags: booking activities, booking form, manage reservations, activity planning, events calendar, booking system, booking, reservations, appointments, woocommerce
 Requires at least: 4.0
 Tested up to: 4.7.3
-Stable tag: 1.0.3
+Stable tag: 1.0.4
 License: GPLv3 or later
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
 
-Create your activity calendars with drag and drop and book scheduled events with one click. Enable online payments of reservations with WooCommerce.
+Create your activity calendars by drag and drop and book scheduled events with one click. Enable reservation online payments with WooCommerce.
 
 
 
 == Description ==
 
-Booking Activities is a complete booking system designed for any kind of activity providers (nautical, aerial, land, mountain, foot or wheels, outdoor or indoor, sportive or cultural like courses, museums, cinemas... And probably yours!). It features a **unique WYSIWYG planning editor**: simply **drag and drop your events** to build your calendars. Then your customers will just have to **pick their desired event** onto this calendar to book it.
+Booking Activities is a complete booking system designed for any kind of activity providers *(See the [demo website](http://demo.booking-activities.fr/en/))*. 
+Drag and drop your events to build your activity planning. Copy / Paste a shortcode to display booking forms. Pick an event onto this calendar and click on 'Book' button to reserve it.
 
-Booking Activities has been **designed and developed in collaboration with activity providers**, and it will always be so. Then feel free to tell us if you miss a feature, if you find a bug or anything to make your booking system better!
-
-**Report a bug / Request a feature:** [GitHub](https://github.com/bookingactivities/booking-activities/issues/)
-
-**Contact Us:** [Contact form](http://booking-activities.fr/en/#contact) (French and English)
 
 = Features you and your customers will love: =
 
-* WYSIWYG drag'n drop calendar editor
-* Manage repeated events and exceptions
-* Shortcodes to display booking forms, customer's bookings list, and read-only calendars
-* One-click booking: just pick your event on the calendar
+* WYSIWYG drag and drop events calendar editor
+* Shortcodes to display booking forms, customer's bookings list, or simple calendars
+* One-click booking: just pick the desired event on the calendar and click on "Book"!
 * Allow payments with WooCommerce
-	* Booking Systems automatically integrated to product pages
+	* Reservation Systems automatically integrated to product pages
 	* **Cart expiration system** included
 	* Auto-validation when payment is completed
 	* Allow automatic refunds by coupon
-* Manage your bookings visually: 
+* Manage reservations visually: 
 	* Click on the desired event to show its bookings list
 	* Booking actions: validate, cancel, reschedule, refund...
 * Your customers can **cancel** or **reschedule** their bookings and **ask a refund** by themselves
 	* Swith on / off these features, and set a minimum delay before event to allow them
 * Multilingual support with QTranslateX
-	* You can also [help us](http://booking-activities.fr/en/#contact) translating Booking Activities in your language
+	* You can also help us [translating Booking Activities](https://translate.wordpress.org/projects/wp-plugins/booking-activities) in your language
 
 More information at [booking-activities.fr](http://booking-activities.fr/en).
 
+
 = Extend these features with add-ons: =
-*See the whole [add-ons list here](http://booking-activities.fr/en/add-ons/)*
 
 **[Display Pack](http://booking-activities.fr/en/downloads/display-pack/)**
-*Customize your calendars or set alternative display*
+*Customize your activity plannings or set alternative display*
 
 * Calendar advanced customize options
 	* Set calendars start / end and its height
@@ -61,7 +56,7 @@ More information at [booking-activities.fr](http://booking-activities.fr/en).
 
 *Set prices and discounts on your events to draw your customers attention where you want to*
 
-* Set a price or a discount on whole activity or single events
+* Set a price or a discount on whole activity or a single event
 * Perfectly integrated to WooCommerce:
 	* WC price is overriden
 	* Discounts are based on WC product price if no activity price is set
@@ -80,23 +75,32 @@ More information at [booking-activities.fr](http://booking-activities.fr/en).
 		* He is redirected to his order's checkout on you website where he can pay
 
 
-**[Points of Sale](http://booking-activities.fr/en/downloads/points-of-sale/)** *Require WooCommerce*
-
-*You have multiple points of sale but you want to sell and manage your activities from one single website*
-
-* Your POS managers can manage their own point of sale and products in total autonomy, in their own separated space
-	* No risk of interfering with another POS product
-* They can manage their own calendars, activities, events and bookings
-* They can set different price, description, calendar, availabilities for each of their product
+*See the whole [add-ons list here](http://booking-activities.fr/en/add-ons/)*
 
 
+= We are listening =
 
-== Installation ==
+Booking Activities has been **designed and developed in collaboration with activity providers** *(nautical, aerial, land, mountain, foot or wheels, outdoor or indoor, sportive or cultural like courses, museums, cinemas... And probably yours!)*, and it will always be so. Then feel free to tell us if you miss a feature, if you find a bug or anything to make your booking system better!
 
-= Install Booking Activities = 
-1. Upload the plugin files to the `/wp-content/plugins/` directory, or install the plugin through the WordPress plugins screen directly.
-2. Activate the plugin through the 'Plugins' screen in WordPress
+**Report a bug / Request a feature:** [GitHub](https://github.com/bookingactivities/booking-activities/issues/)
 
+**Contact Us:** [Contact form](http://booking-activities.fr/en/#contact) (French and English)
+
+___
+
+For any question about how to use Booking Activities, take a look at the [documentation](http://booking-activities.fr/en/documentation/user-documentation/).
+
+If you don't find the answer you need, please [contact us](http://booking-activities.fr/en/#contact) (French and English).
+
+
+
+== Frequently Asked Questions ==
+
+= I am not an activity provider, can this plugin still meet my needs? =
+Yes of course. It is basically a reservation system based on event scheduling. You can find another purposes to it, make sure to [tell us](http://booking-activities.fr/en/#contact) if you do :).
+To know if it actually meets your needs, simply try it, it's free. 
+If you are on a hurry, you can just check the [demo website](http://demo.booking-activities.fr/en/).
+Or read the full [features description](http://booking-activities.fr/en/documentation/features/) if you are looking for something in particular.
 
 = Create your first calendar = 
 *Make sure Booking Activities is activated* 
@@ -124,7 +128,7 @@ More information at [booking-activities.fr](http://booking-activities.fr/en).
 3. Drag and drop the event to move it, click on it to edit its properties
 
 
-= Display a booking form = 
+= Display a reservation form = 
 *Make to have at least one calendar, one activity and one event at a future date* 
 
 1. Go to Booking Activities / Calendar Editor page
@@ -163,25 +167,9 @@ More information at [booking-activities.fr](http://booking-activities.fr/en).
 4. Go on this product page on the frontend, a booking form appears!
 *For Variable Products, you need to check the 'Activity' checkbox and set a calendar and an activity for each variation.* 
 
-___
 
-For any question about how to use Booking Activities, take a look at the [documentation](http://booking-activities.fr/en/documentation/user-documentation/).
-
-If you don't find the answer you need, please [contact us](http://booking-activities.fr/en/#contact) (French and English).
-
-
-
-== Frequently Asked Questions ==
-
-= I am not an activity provider, can this plugin still meet my needs? =
-Yes of course. It is basically a booking system based on event scheduling. You can find another purposes to it, make sure to [tell us](http://booking-activities.fr/en/#contact) if you do :).
-To know if it actually meets your needs, simply try it, it's free. 
-If you are on a hurry, you can just check the [demo website](http://demo.booking-activities.fr/en/).
-Or read the full [features description](http://booking-activities.fr/en/documentation/features/) if you are looking for something in particular.
-
-
-= Does this plugin accept payments for bookings? =
-Yes, through WooCommerce. Booking Activities is perfectly integrated to WooCommerce:
+= Does this plugin accept reservation online payments? =
+Yes, you can accept payments for bookings through WooCommerce. Booking Activities is perfectly integrated to WooCommerce:
 
 * Booking forms will appears automatically on product pages 
 * A cart expiration system is implemented to make sure that in cart bookings won't stay in cart forever, taking the place of someone else
@@ -209,7 +197,7 @@ We still recommend to accept online payments since it's a great way to automate 
 
 
 = Events are not "Booked" after booking form submission, they are "Pending", why? =
-Don't worry, the booking is well registered. Now, it is up to you to turn it to "Booked" right away or when your customer comes, or when he gives you the money...
+Don't worry, the reservation is well registered. Now, it is up to you to turn it to "Booked" right away or when your customer comes, or when he gives you the money...
 Note that if you use WooCommerce and online payments, booking states turn automatically to "Booked" if the payment is complete, or "Cancelled" if not.
 
 
@@ -225,7 +213,7 @@ Just click on the settings wheel above the bookings list, and check 'Display tem
 Now you can see all kind of active bookings (booked, pending, in cart).
 
 
-= Cancelled booking disapeared from the list, I need to see them! =
+= Cancelled bookings disapeared from the list, I need to see them! =
 Just click on the settings wheel above the bookings list, and check 'Display inactive bookings'.
 Now you can see inactive bookings (cancelled, expired, removed, refunded, refund requested).
 
@@ -240,16 +228,35 @@ If you don't find the answer you need, please [contact us](http://booking-activi
 
 == Screenshots ==
 
-1. WYSIWYG calendar editor. Simply drag and drop events. Click on them for additionnal settings such as availability, name or repetition.
+1. WYSIWYG events calendar editor. Simply drag and drop events. Click on events for additionnal settings (availability, name or repetition).
 2. One click booking: just pick the event you want and submit.
 3. Manage your bookings: just click on the desired event and its bookings list appears. Then choose a booking action: change state (cancel, validate), reschedule, refund...
-4. A booking form appears on desired WooCommerce product pages.
+4. A reservation form appears on desired WooCommerce product pages.
 5. WooCommerce cart expiration system: when time is up, bookings are cancelled and cart emptied.
 6. Customers also have their bookings list, and they can cancel, reschedule or ask a refund by their own (if you allow them).
 
 
 
 == Changelog ==
+
+= 1.0.4 - 2017/04/09 =
+* Fix - WooCommerce 3.0 supported and backward compatibility to WooCommerce 2.6
+* Fix - Fixed issue causing separator between to dates or two hours not to show
+* Fix - Fixed issue causing unique event in calendar or events closed to calendar limits not to show
+* Fix - Fixed 'parent' booking method for variations
+* Fix - Fixed refund via coupon AJAX call feedback
+* Fix - Fixed dates not displayed when they had a special character such as "é"
+* Fix - Fixed permission to create and read coupons when a user try to generate a refund coupon
+* Fix - Fixed blank page when you 'Order Again' an order containing bookings. This fonctionnality is not supported yet, but now it leads to a proper error message.
+* Fix - Hid reschedule timepicker when no date has been selected in datepicker (w/ Display Pack add-on)
+* Fix - Replaced 'eventRender' JS action triggered on FullCalendar eventRender in calendar editor by 'bookacti_event_render'
+* Fix - Fixed activity list not filtered by calendar on load in admin product page
+* Tweak - Merged WC and BA confirmation notices when you add a product to cart to display only one
+* Tweak - Hid in-cart, expired and removed bookings from users' bookings list (can be filtered with 'bookacti_bookings_list_hidden_states' filter)
+* Add - Added 'bookacti_validate_selected_event' JS action
+* Add - Added 'bookacti_temporary_book_message' filter to allow you to change the confirmation text when an activity has been added to cart through WooCommerce
+* Add - Added 'bookacti_refund_coupon_code_template' filter to change the template of WC generated coupon code (with refund by coupon method)
+* Add - Added 'bookacti_get_booking_product_id' function to retreive product id by booking id, if the reservation was made with WC
 
 = 1.0.3 - 2017/03/29 =
 * Feature - Added possibility to change calendar day start / end hours
@@ -265,9 +272,16 @@ If you don't find the answer you need, please [contact us](http://booking-activi
 * Fix - Updated shortcodes in readme.txt
 
 = 1.0.0 - 2017/03/25 =
-* Booking Activities at your service!
+* Feature - Drag and drop planning editor
+* Feature - Shortcodes to display reservation form, the calendar alone, or customers' list of reservations
+* Feature - One click reservation system
+* Feature - Woocommerce support for reservation online payments
+* Feature - Woocommerce cart expiration system
+* Feature - Backend reservation manager and frontend user's bookings list so that both can manage reservation
+
 
 
 == Upgrade Notice ==
 
-
+= 1.0.4 =
+* If you are using Booking Activities with WooCommerce, make sure you are using 2.6.0 or later, and try to update to 3.0.x as soon as possible since BW compatibility functions are now deprecated

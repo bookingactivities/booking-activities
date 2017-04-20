@@ -19,7 +19,7 @@ function bookacti_fill_picked_event_summary( booking_system, start, end, activit
 		to_val		= event_end.locale( bookacti_localized.current_lang_code ).format( 'LLLL' );
 		date_picked.find( '.bookacti-date-picked-to' ).addClass( 'to_date' );
 	}
-	
+
 	// Give third party plugins opportunity to change some values, especially quantity
 	var event_summary_data = {
 		'start':		start,
@@ -37,7 +37,7 @@ function bookacti_fill_picked_event_summary( booking_system, start, end, activit
 	
 	//Fill a intelligible field to feedback the user about his choice
 	date_picked.find(  '.bookacti-date-picked-from' ).html( event_summary_data.from );
-	date_picked.find(  '.bookacti-date-picked-separator' ).html( event_summary_data.sep );
+	date_picked.find(  '.bookacti-date-picked-separator' ).html( event_summary_data.separator );
 	date_picked.find(  '.bookacti-date-picked-to' ).html( event_summary_data.to );
 	
 	booking_system.siblings( '.bookacti-date-picked' ).show();
@@ -177,9 +177,9 @@ function bookacti_update_settings_from_database( booking_system, template_ids ) 
 				alert( message_error );
             }
         },
-        error: function(e){
+        error: function( e ){
             console.log( 'AJAX ' + bookacti_localized.error_retrieve_template_data );        
-            console.log( e.responseText );
+            console.log( e );
         },
         complete: function() { 
 			if( booking_system.attr( 'id' ) === 'bookacti-template-calendar' ) {

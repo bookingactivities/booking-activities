@@ -84,20 +84,17 @@ function bookacti_turn_order_bookings_to( $order_id, $state = 'booked', $alert_i
 
 		//Retrieve bought items and user id
 		$items		= $order->get_items();
-		$user_id	= $order->user_id;
+		$user_id	= $order->get_user_id();
 
 		//Create an array with order booking ids
 		$booking_id_array = array();
 		foreach( $items as $key => $item ) {
 			if( isset( $item[ 'bookacti_booking_id' ] ) ) {
+				$current_meta_state = wc_get_order_item_meta( $key, 'bookacti_state', true );
+				
+				// Add the booking id to the bookings array to change state
 				$booking_id = $item[ 'bookacti_booking_id' ];
 				array_push( $booking_id_array, $booking_id );
-
-				// Turn meta state to new state
-				$current_meta_state = wc_get_order_item_meta( $key, 'bookacti_state', true );
-				if( in_array( $current_meta_state, array( 'in_cart', 'pending' ) ) ) {
-					wc_update_order_item_meta( $key, 'bookacti_state', $state );
-				}
 			}
 		}
 
@@ -157,10 +154,18 @@ function bookacti_product_is_activity( $product ) {
 		}
 		
 	} else {
-		$variations = $product->get_children( true );
+		// WOOCOMMERCE 3.0.0 BW compability
+		if( version_compare( WC_VERSION, '3.0.0', '>=' ) ) {
+			if( method_exists( $product, 'get_visible_children' ) ) {
+				$variation_ids = $product->get_visible_children();
+			}
+		} else {
+			$variation_ids = $product->get_children( true );
+		}
+		
 		$has_variation_activity = false;
-		if( ! empty( $variations ) ) {
-			foreach( $variations as $variation_id ) {
+		if( ! empty( $variation_ids ) ) {
+			foreach( $variation_ids as $variation_id ) {
 				if( get_post_meta( $variation_id, 'bookacti_variable_is_activity', true ) === 'yes' ) {
 					$has_variation_activity = true;
 					break;
@@ -168,7 +173,7 @@ function bookacti_product_is_activity( $product ) {
 			}
 		}
 
-		$is_activity = get_post_meta( $product->id, '_bookacti_is_activity', true ) === 'yes';
+		$is_activity = get_post_meta( $product->get_id(), '_bookacti_is_activity', true ) === 'yes';
 
 		if(( $product->is_type( 'simple' ) && $is_activity ) 
 		|| ( $product->is_type( 'variable' ) && $has_variation_activity )) {
@@ -344,6 +349,39 @@ function bookacti_get_order_item_by_booking_id( $booking_id ) {
 }
 
 
+/**
+ * Get the product id bound to a booking
+ * 
+ * @since 1.0.4
+ * @param type $booking_id
+ * @return int
+ */
+function bookacti_get_booking_product_id( $booking_id ) {
+	
+	$item = bookacti_get_order_item_by_booking_id( $booking_id );
+	
+	if( empty( $item ) ) { return false; }
+	
+	// WOOCOMMERCE 3.0.0 backward compatibility
+	if( version_compare( WC_VERSION, '3.0.0', '>=' ) ) {
+		$product_id = $item->get_product_id();
+	} else {
+		$order_id = bookacti_get_booking_order_id( $booking_id );
+		
+		if( ! $order_id ) { return false; }
+		
+		$order = new WC_Order( $order_id );
+		$_product  = $order->get_product_from_item( $item );
+		
+		if( empty( $_product ) ) { return false; }
+		
+		$product_id = absint( $_product->id );
+	}
+	
+	return $product_id;
+}
+
+
 // CHECK IF AN ORDER SUPPORT AUTO REFUND
 function bookacti_does_order_support_auto_refund( $order_id ) {
 	
@@ -353,11 +391,18 @@ function bookacti_does_order_support_auto_refund( $order_id ) {
 	
 	$order = new WC_Order( intval( $order_id ) );
 	
+	// WOOCOMMERCE 3.0.0 BW compability
+	if( version_compare( WC_VERSION, '3.0.0', '>=' ) ) {
+		$payment_method = $order->get_payment_method();
+	} else {
+		$payment_method = $order->payment_method;
+	}
+	
 	$allow_auto_refund = false;
 	if ( WC()->payment_gateways() ) {
 		$payment_gateways = WC()->payment_gateways->payment_gateways();
 	}
-	if ( isset( $payment_gateways[ $order->payment_method ] ) && $payment_gateways[ $order->payment_method ]->supports( 'refunds' ) ) {
+	if ( isset( $payment_gateways[ $payment_method ] ) && $payment_gateways[ $payment_method ]->supports( 'refunds' ) ) {
 		$allow_auto_refund = true;
 	}
 	
@@ -375,10 +420,10 @@ function bookacti_refund_booking_with_coupon( $booking_id, $refund_message ) {
 	}
 	
 	// Get variables
-	$user_id	= bookacti_get_booking_owner( $booking_id );
-	$user		= new WP_User( $user_id );
-	$user_data	= get_userdata( $user_id );
-	$item		= bookacti_get_order_item_by_booking_id( $booking_id );
+	$current_user	= wp_get_current_user();
+	$user_id		= bookacti_get_booking_owner( $booking_id );
+	$user_data		= get_userdata( $user_id );
+	$item			= bookacti_get_order_item_by_booking_id( $booking_id );
 	
 	$amount				= (float) $item[ 'line_total' ] + (float) $item[ 'line_tax' ];
 	$user_billing_email = get_user_meta( $user_id, 'billing_email', true );
@@ -389,8 +434,8 @@ function bookacti_refund_booking_with_coupon( $booking_id, $refund_message ) {
 	$refund_desc	.= PHP_EOL . __( 'Order:', BOOKACTI_PLUGIN_NAME )	. ' ' . $item[ 'order_id' ];
 	$refund_desc	.= PHP_EOL . __( 'Booking:', BOOKACTI_PLUGIN_NAME )	. ' ' . $booking_id;
 	$refund_desc	.= PHP_EOL . '     ' . $item[ 'name' ];
-	$refund_desc	.= PHP_EOL . '     ' . strftime( __( '%A, %B %d, %Y %I:%M %p', BOOKACTI_PLUGIN_NAME ), strtotime( $item[ 'bookacti_event_start' ] ) );
-	$refund_desc	.= PHP_EOL . '     ' . strftime( __( '%A, %B %d, %Y %I:%M %p', BOOKACTI_PLUGIN_NAME ), strtotime( $item[ 'bookacti_event_end' ] ) );
+	$refund_desc	.= PHP_EOL . '     ' . utf8_encode( strftime( __( '%A, %B %d, %Y %I:%M %p', BOOKACTI_PLUGIN_NAME ), strtotime( $item[ 'bookacti_event_start' ] ) ) );
+	$refund_desc	.= PHP_EOL . '     ' . utf8_encode( strftime( __( '%A, %B %d, %Y %I:%M %p', BOOKACTI_PLUGIN_NAME ), strtotime( $item[ 'bookacti_event_end' ] ) ) );
 	if( $refund_message !== '' ) {
 		$refund_desc .= PHP_EOL . PHP_EOL . __( 'User message:', BOOKACTI_PLUGIN_NAME ) . PHP_EOL . $refund_message;
 	}
@@ -420,9 +465,9 @@ function bookacti_refund_booking_with_coupon( $booking_id, $refund_message ) {
 	
 	
 	// If coupon already exists, return it
-	$existing_coupon_id = wc_get_order_item_meta( $item[ 'id' ], 'bookacti_refund_coupon', true );
-	if( $existing_coupon_id ) {
-		$existing_coupon = WC()->api->WC_API_Coupons->get_coupon( $existing_coupon_id );
+	$existing_coupon_code = wc_get_order_item_meta( $item[ 'id' ], 'bookacti_refund_coupon', true );
+	if( $existing_coupon_code ) {
+		$existing_coupon = WC()->api->WC_API_Coupons->get_coupon_by_code( $existing_coupon_code );
 		
 		$return_data = array( 'status' => 'success', 'coupon_amount' => wc_price( $existing_coupon['coupon']['amount'] ), 'coupon_code' => $existing_coupon['coupon']['code'], 'new_state' => 'refunded' );
 		return $return_data;
@@ -430,39 +475,44 @@ function bookacti_refund_booking_with_coupon( $booking_id, $refund_message ) {
 	
 	
 	// Grant user cap to create coupon
-	$user_basically_can = user_can( $user_id, 'publish_shop_coupons' );
+	$user_basically_can = current_user_can( 'publish_shop_coupons' );
 	if( ! $user_basically_can ) {
-		$user->add_cap( 'publish_shop_coupons' );
+		$current_user->add_cap( 'publish_shop_coupons' );
+		$current_user->add_cap( 'read_private_shop_coupons' );
 	}
 	
 	// Generate coupon code and create the coupon
 	$i = 1;
 	$coupon = array();
+	$code_template = apply_filters( 'bookacti_refund_coupon_code_template', 'R{user_id}N{refund_number}' );
+	$code_template = str_replace( '{user_id}', '%1$d', $code_template );
+	$code_template = str_replace( '{refund_number}', '%2$d', $code_template );
 	do {
-		$code = 'R' . $user_id . 'N' . $i;
-		$data['coupon']['code'] = apply_filters( 'bookacti_refund_coupon_code', $code, $data, $user_data, $item );
+		$data['coupon']['code'] = sprintf( $code_template, $user_id, $i );
 		$coupon = WC()->api->WC_API_Coupons->create_coupon( $data );
 		$i++;
 	}
 	while( is_wp_error( $coupon ) && $coupon->get_error_code() === 'woocommerce_api_coupon_code_already_exists' );
 	
-	// Remove user cap to create coupon
-	if( ! $user_basically_can ) {
-		$user->remove_cap( 'publish_shop_coupons' );
-	}
-	
 	if( ! empty( $coupon ) && ! is_wp_error( $coupon ) ) {
 		
 		// Bind coupon to order item
-		wc_update_order_item_meta( $item[ 'id' ], 'bookacti_refund_coupon', $coupon[ 'coupon' ][ 'id' ] );
+		$code = apply_filters( 'bookacti_refund_coupon_code', $coupon[ 'coupon' ][ 'code' ], $data, $user_data, $item );
+		wc_update_order_item_meta( $item[ 'id' ], 'bookacti_refund_coupon', $code );
 		
-		$return_data = array( 'status' => 'success', 'coupon_amount' => wc_price( $data['coupon']['amount'] ), 'coupon_code' => $data['coupon']['code'], 'new_state' => 'refunded' );
-		return $return_data;
+		$return_data = array( 'status' => 'success', 'coupon_amount' => wc_price( $data['coupon']['amount'] ), 'coupon_code' => $code, 'new_state' => 'refunded' );
+		
 	} else if( is_wp_error( $coupon ) ) {
-		return array( 'status' => 'failed', 'message' => $coupon->get_error_message() );
+		$return_data = array( 'status' => 'failed', 'error' => $coupon, 'message' => $coupon->get_error_message() );
 	}
 	
-	return false;
+	// Remove user cap to create coupon
+	if( ! $user_basically_can ) {
+		$current_user->remove_cap( 'publish_shop_coupons' );
+		$current_user->remove_cap( 'read_private_shop_coupons' );
+	}
+	
+	return $return_data;
 }
 
 

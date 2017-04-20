@@ -4,7 +4,6 @@
 .bookacti-date-picked { margin-bottom: 20px; } 
 
 .bookacti-display-table-row	{ display: table-row; }
-.bookacti-display-none		{ display: none; }
 
 .bookacti-date-picked { display: none; text-align: center; }
 .to_date { display: inline-block; }

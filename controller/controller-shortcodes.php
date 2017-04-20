@@ -11,11 +11,11 @@ function bookacti_shortcodes_init() {
 
 
 // Show the calendar of activities / templates
-// EX: [bookacti_form calendars='2'			// Actual comma separated calendars ids list
-//				activities='1,2,10'		// Actual comma separated activities ids list
-//				id='my-cal'				// Any id you want
-//				classes='full-width'		// Any class you want
-//				method='waterfall' ]		// Display method
+// EX: [bookacti_form	calendars='2'			// Actual comma separated calendars ids list
+//						activities='1,2,10'		// Actual comma separated activities ids list
+//						id='my-cal'				// Any id you want
+//						classes='full-width'		// Any class you want
+//						method='waterfall' ]		// Display method
 function bookacti_shortcode_calendar( $atts = [], $content = null, $tag = '' ) {
 	
 	// normalize attribute keys, lowercase
@@ -49,12 +49,12 @@ function bookacti_shortcode_calendar( $atts = [], $content = null, $tag = '' ) {
 
 
 // Show a booking form
-// EX: [bookacti_form calendars='2'			// Actual comma separated calendars ids list
-//				activities='1,2,10'		// Actual comma separated activities ids list
-//				id='my-cal'				// Any id you want
-//				classes='full-width'		// Any class you want
-//				method='waterfall'		// Display method
-//				url='http://page-to-go-after-successful-booking-submission'] // URL to be redirected after submission
+// EX: [bookacti_form	calendars='2'			// Actual comma separated calendars ids list
+//						activities='1,2,10'		// Actual comma separated activities ids list
+//						id='my-cal'				// Any id you want
+//						classes='full-width'		// Any class you want
+//						method='waterfall'		// Display method
+//						url='http://page-to-go-after-successful-booking-submission'] // URL to be redirected after submission
 function bookacti_shortcode_booking_form( $atts = [], $content = null, $tag = '' ) {
 	
 	// normalize attribute keys, lowercase
@@ -158,42 +158,48 @@ function bookacti_shortcode_bookings_list( $atts = [], $content = null, $tag = '
 			$body_columns = '';
 			if( ! empty( $bookings ) ) {
 				foreach( $bookings as $booking ) {
-					$event = bookacti_get_event_by_id( $booking->event_id );
+					
+					$hidden_states = apply_filters( 'bookacti_bookings_list_hidden_states', array( 'in_cart', 'expired', 'removed' ) );
+					
+					if( ! in_array( $booking->state, $hidden_states ) ) {
 
-					$columns_value = apply_filters( 'bookacti_user_bookings_list_columns_value', array(
-						'id'		=> $booking->id,
-						'activity'	=> apply_filters( 'bookacti_translate_text', stripslashes( $event->title ) ),
-						'dates'		=> bookacti_get_booking_dates_html( $booking ),
-						'quantity'	=> $booking->quantity,
-						'state'		=> bookacti_format_booking_state( $booking->state ),
-						'actions'	=> bookacti_get_booking_actions_html( $booking->id, 'front' )
-					), $booking, $user_id );
-				
-					$body_columns .= "<tr>";
-					foreach( $columns as $column ) {
-						
-						// Format output values
-						switch ( $column[ 'id' ] ) {
-							case 'id':
-								$value = isset( $columns_value[ 'id' ] ) ? intval( $columns_value[ 'id' ] ) : '';
-								break;
-							case 'activity':
-								$value = isset( $columns_value[ 'activity' ] ) ? esc_html( $columns_value[ 'activity' ] ) : '';
-								break;
-							case 'quantity':
-								$value = isset( $columns_value[ 'quantity' ] ) ? intval( $columns_value[ 'quantity' ] ) : '';
-								break;
-							case 'dates':
-							case 'state':
-							case 'actions':
-							default:
-								$value = isset( $columns_value[ $column[ 'id' ] ] ) ? $columns_value[ $column[ 'id' ] ] : '';
-						}
-						
-						$class_empty = empty( $value ) ? 'bookacti-empty-column' : '';
-						$body_columns .=  "<td data-title='" . esc_attr( $column[ 'title' ] ) . "' class='" . $class_empty . "' ><div class='bookacti-booking-" . $column[ 'id' ] . "' >"  . $value . "</div></td>";
-					} 
-					$body_columns .= "</tr>";
+						$event = bookacti_get_event_by_id( $booking->event_id );
+
+						$columns_value = apply_filters( 'bookacti_user_bookings_list_columns_value', array(
+							'id'		=> $booking->id,
+							'activity'	=> apply_filters( 'bookacti_translate_text', stripslashes( $event->title ) ),
+							'dates'		=> bookacti_get_booking_dates_html( $booking ),
+							'quantity'	=> $booking->quantity,
+							'state'		=> bookacti_format_booking_state( $booking->state ),
+							'actions'	=> bookacti_get_booking_actions_html( $booking->id, 'front' )
+						), $booking, $user_id );
+
+						$body_columns .= "<tr>";
+						foreach( $columns as $column ) {
+
+							// Format output values
+							switch ( $column[ 'id' ] ) {
+								case 'id':
+									$value = isset( $columns_value[ 'id' ] ) ? intval( $columns_value[ 'id' ] ) : '';
+									break;
+								case 'activity':
+									$value = isset( $columns_value[ 'activity' ] ) ? esc_html( $columns_value[ 'activity' ] ) : '';
+									break;
+								case 'quantity':
+									$value = isset( $columns_value[ 'quantity' ] ) ? intval( $columns_value[ 'quantity' ] ) : '';
+									break;
+								case 'dates':
+								case 'state':
+								case 'actions':
+								default:
+									$value = isset( $columns_value[ $column[ 'id' ] ] ) ? $columns_value[ $column[ 'id' ] ] : '';
+							}
+
+							$class_empty = empty( $value ) ? 'bookacti-empty-column' : '';
+							$body_columns .=  "<td data-title='" . esc_attr( $column[ 'title' ] ) . "' class='" . $class_empty . "' ><div class='bookacti-booking-" . $column[ 'id' ] . "' >"  . $value . "</div></td>";
+						} 
+						$body_columns .= "</tr>";
+					}
 				}
 			} else {
 				$body_columns.= "<tr>"
@@ -257,11 +263,11 @@ function bookacti_controller_validate_booking_form() {
 		if( $response[ 'status' ] === 'success' ) {
 			
 			$booking = bookacti_insert_booking(	$booking_form_values[ 'user_id' ], 
-											$booking_form_values[ 'event_id' ], 
-											$booking_form_values[ 'event_start' ],
-											$booking_form_values[ 'event_end' ], 
-											$booking_form_values[ 'quantity' ], 
-											$booking_form_values[ 'default_state' ] );
+												$booking_form_values[ 'event_id' ], 
+												$booking_form_values[ 'event_start' ],
+												$booking_form_values[ 'event_end' ], 
+												$booking_form_values[ 'quantity' ], 
+												$booking_form_values[ 'default_state' ] );
 			
 			if( ! is_null( $booking[ 'id' ] ) ) {
 

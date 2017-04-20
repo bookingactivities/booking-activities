@@ -194,9 +194,9 @@ function bookacti_dialog_add_new_template() {
 								console.log( response );
                             }
                         },
-                        error: function(e){
+                        error: function( e ){
                             alert( 'AJAX ' + bookacti_localized.error_create_template );        
-                            console.log( e.responseText );
+                            console.log( e );
                         },
                         complete: function() { 
 							
@@ -287,9 +287,9 @@ function bookacti_dialog_update_template( template_id ) {
 					console.log( response );
 				}
 			},
-			error: function(e){
+			error: function(  e){
 				alert( 'AJAX ' + bookacti_localized.error_retrieve_template_data );        
-				console.log( e.responseText );
+				console.log( e );
 			},
 			complete: function() { 
 				bookacti_stop_template_loading(); 
@@ -383,9 +383,9 @@ function bookacti_dialog_update_template( template_id ) {
 									}
 								}
 							},
-							error: function(e){
+							error: function( e ){
 								alert( 'AJAX ' + bookacti_localized.error_update_template );        
-								console.log( e.responseText );
+								console.log( e );
 							},
 							complete: function() { 
 								bookacti_stop_template_loading(); 
@@ -466,7 +466,7 @@ function bookacti_dialog_deactivate_template( template_id ) {
 						},
 						error: function( e ){
 							alert( 'AJAX ' + bookacti_localized.error_delete_template );
-							console.log( e.responseText );
+							console.log( e );
 						}
 						,
 						complete: function() { 
@@ -629,11 +629,11 @@ function bookacti_dialog_update_event( event ) {
 										
 										alert( bookacti_localized.error_update_event_param ); 
 										var error_message = '';
-										error_message += 'Status : ' + response.status + '\n';
-										error_message += 'Update event : ' + response.updated_event + '\n';
-										error_message += 'Update event meta : ' + response.updated_event_meta + '\n';
-										error_message += 'Insert excep : ' + response.inserted_excep + '\n';
-										error_message += 'Delete excep : ' + response.deleted_excep;
+										error_message += 'Status : '			+ response.status + '\n';
+										error_message += 'Update event : '		+ response.updated_event + '\n';
+										error_message += 'Update event meta : '	+ response.updated_event_meta + '\n';
+										error_message += 'Insert excep : '		+ response.inserted_excep + '\n';
+										error_message += 'Delete excep : '		+ response.deleted_excep;
 										console.log( error_message );
 										console.log( response );
 
@@ -661,9 +661,9 @@ function bookacti_dialog_update_event( event ) {
 										
 									}
 								},
-								error: function(e){
+								error: function( e ){
 									alert( 'AJAX ' + bookacti_localized.error_update_event_param );        
-									console.log( e.responseText );
+									console.log( e );
 								},
 								complete: function() { 
 									bookacti_stop_template_loading();
@@ -716,9 +716,9 @@ function bookacti_dialog_update_event( event ) {
 				alert( message_error );
             }
         },
-        error: function(e){
+        error: function( e ){
             alert( 'AJAX ' + bookacti_localized.error_retrieve_event_data );
-            console.log( e.responseText );
+            console.log( e );
         },
         complete: function() { 
 			bookacti_stop_template_loading();
@@ -781,7 +781,7 @@ function bookacti_dialog_delete_event( event )
                     },
                     error: function( e ){
                         alert( 'AJAX ' + bookacti_localized.error_delete_event );
-                        console.log( e.responseText );
+                        console.log( e );
                     },
                     complete: function() { 
 						bookacti_stop_template_loading(); 
@@ -1012,7 +1012,7 @@ function bookacti_dialog_import_activity() {
 							},
 							error: function( e ){
 								alert( 'AJAX ' + bookacti_localized.error_import_activity );
-								console.log( e.responseText );
+								console.log( e );
 							},
 							complete: function() { 
 								bookacti_stop_template_loading(); 
@@ -1157,9 +1157,9 @@ function bookacti_dialog_create_activity() {
 									console.log( response );
 								}
 							},
-							error: function(e){
+							error: function( e ){
 								alert( 'AJAX ' + bookacti_localized.error_create_activity );        
-								console.log( e.responseText );
+								console.log( e );
 							},
 							complete: function() { 
 								bookacti_stop_template_loading();
@@ -1260,9 +1260,9 @@ function bookacti_dialog_update_activity( activity_id ) {
 					console.log( response );
 				}
 			},
-			error: function(e){
+			error: function( e ){
 				alert( 'AJAX ' + bookacti_localized.error_retrieve_activity_data );        
-				console.log( e.responseText );
+				console.log( e );
 			},
 			complete: function() { 
 				bookacti_stop_template_loading(); 
@@ -1363,7 +1363,7 @@ function bookacti_dialog_update_activity( activity_id ) {
 							},
 							error: function( e ){
 								alert( 'AJAX ' + bookacti_localized.error_update_activity );        
-								console.log( e.responseText );
+								console.log( e );
 							},
 							complete: function() { 
 								bookacti_stop_template_loading(); 
@@ -1439,7 +1439,7 @@ function bookacti_dialog_delete_activity( activity_id ) {
 						},
 						error: function( e ){
 							alert( 'AJAX ' + bookacti_localized.error_delete_activity );
-							console.log( e.responseText );
+							console.log( e );
 						},
 						complete: function() { 
 							bookacti_stop_template_loading(); 

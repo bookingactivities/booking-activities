@@ -250,6 +250,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
     function bookacti_controller_refund_booking() {
 		
 		$booking_id			= intval( $_POST[ 'booking_id' ] );
+		$is_admin			= intval( $_POST[ 'is_admin' ] );
 		$sanitized_action	= sanitize_title_with_dashes( $_POST[ 'refund_action' ] );
 		$refund_action		= array_key_exists( $sanitized_action, bookacti_get_refund_actions_by_booking_id( $booking_id ) ) ? $sanitized_action : 'email';
 		
@@ -281,7 +282,8 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 				}
 
 				// Get new booking actions
-				$actions_html = bookacti_get_booking_actions_html( $booking_id, 'admin' );
+				$admin_or_front = $is_admin ? 'both' : 'front';
+				$actions_html	= bookacti_get_booking_actions_html( $booking_id, $admin_or_front );
 				$refunded[ 'new_actions_html' ] = $actions_html;
 			}
 
@@ -399,9 +401,11 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 				if( $rescheduled ) {
 
 					do_action( 'bookacti_booking_rescheduled', $booking_id, $event_start, $event_end );
-
-					$event_start_formatted	= strftime( __( '%A, %B %d, %Y %I:%M %p', BOOKACTI_PLUGIN_NAME ), strtotime( $event_start ) );
-					$event_end_formatted	= strftime( __( '%A, %B %d, %Y %I:%M %p', BOOKACTI_PLUGIN_NAME ), strtotime( $event_end ) );
+					
+					/* translators: Datetime format. Must be adapted to each country. Use strftime documentation to find the appropriated combinaison http://php.net/manual/en/function.strftime.php */
+					$event_start_formatted	= utf8_encode( strftime( __( '%A, %B %d, %Y %I:%M %p', BOOKACTI_PLUGIN_NAME ), strtotime( $event_start ) ) );
+					/* translators: Datetime format. Must be adapted to each country. Use strftime documentation to find the appropriated combinaison http://php.net/manual/en/function.strftime.php */
+					$event_end_formatted	= utf8_encode( strftime( __( '%A, %B %d, %Y %I:%M %p', BOOKACTI_PLUGIN_NAME ), strtotime( $event_end ) ) );
 					
 					$is_bookings_page	= intval( $_POST[ 'is_bookings_page' ] );
 					$admin_or_front		= $is_bookings_page ? 'both' : 'front';

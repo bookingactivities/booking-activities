@@ -37,7 +37,7 @@ function bookacti_load_calendar( booking_system, load_events ) {
         },
         error: function( e ){
             console.log( 'AJAX ' + bookacti_localized.error_retrieve_booking_system );
-            console.log( e.responseText );
+            console.log( e );
         },
         complete: function() { 
 			bookacti_stop_loading_booking_system( booking_system );
@@ -135,10 +135,11 @@ function bookacti_set_calendar_up( calendar_id, load_events ) {
 			if( calendarPeriod[ activities_array[calendar_id] + '' ] !== undefined ) {
 				if( calendarPeriod[ activities_array[calendar_id] + '' ][ templates_array[calendar_id] + '' ] !== undefined ) {
 					
-					var start_template	= calendarPeriod[ activities_array[calendar_id] + '' ][ templates_array[calendar_id] + '' ][ 'start' ].substr( 0, 10 );
-					var end_template	= calendarPeriod[ activities_array[calendar_id] + '' ][ templates_array[calendar_id] + '' ][ 'end' ].substr( 0, 10 );
+					var event_start		= new Date( event.start.format('YYYY-MM-DD HH:mm:ss') );
+					var template_start	= new Date( calendarPeriod[ activities_array[calendar_id] + '' ][ templates_array[calendar_id] + '' ][ 'start' ].substr( 0, 10 ) + ' 00:00:00' );
+					var template_end	= new Date( calendarPeriod[ activities_array[calendar_id] + '' ][ templates_array[calendar_id] + '' ][ 'end' ].substr( 0, 10 ) + ' 23:59:59' );
 
-					if( event.start.isBefore( start_template + ' 00:00:00' ) || event.start.isAfter( end_template + ' 23:59:59' ) ) {
+					if( event_start < template_start || event_start > template_end ) {
 						event.render = 0;
 					}
 				}
@@ -238,6 +239,7 @@ function bookacti_fetch_calendar_events( calendar, callback, fetch_past_events )
 			},
         dataType: 'json',
         success: function( response ){
+			
 			if( response.status === 'success' ) {
 				
 				json_events = response.events;
@@ -265,7 +267,7 @@ function bookacti_fetch_calendar_events( calendar, callback, fetch_past_events )
         },
         error: function( e ){
             console.log( 'AJAX ' + bookacti_localized.error_display_event );
-            console.log( e.responseText );
+            console.log( e );
         },
         complete: function() { 
 			bookacti_stop_loading_booking_system( booking_system );

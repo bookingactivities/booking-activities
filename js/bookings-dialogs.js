@@ -88,7 +88,7 @@ function bookacti_dialog_bookings_filters_param( booking_system )
 					},
 					error: function( e ){
 						console.log( 'AJAX ' + bookacti_localized.error_update_settings );
-						console.log( e.responseText );
+						console.log( e );
 					},
 					complete: function() { 
 						bookacti_stop_loading_booking_system( booking_system );
@@ -150,7 +150,7 @@ function bookacti_dialog_booking_list_param( booking_system )
 					},
 					error: function( e ){
 						console.log( 'AJAX ' + bookacti_localized.error_update_settings );
-						console.log( e.responseText );
+						console.log( e );
 					},
 					complete: function() { 
 						bookacti_stop_loading_booking_system( booking_system );
@@ -226,12 +226,13 @@ function bookacti_dialog_cancel_booking( booking_id ) {
 								message_error += '\n' + bookacti_localized.error_not_allowed;
 							}
 							alert( message_error );
+							console.log( response );
 						}
 						
 					},
 					error: function( e ){
 						console.log( 'AJAX ' + bookacti_localized.error_cancel_booking );
-						console.log( e.responseText );
+						console.log( e );
 					},
 					complete: function() {
 						bookacti_booking_row_exit_loading_state( row );
@@ -324,6 +325,7 @@ function bookacti_dialog_refund_booking( booking_id ) {
 										'booking_id': booking_id,
 										'refund_action': refund_action,
 										'refund_message': refund_message,
+										'is_admin': bookacti_localized.is_admin,
 										'nonce': nonce
 									},
 								dataType: 'json',
@@ -331,28 +333,20 @@ function bookacti_dialog_refund_booking( booking_id ) {
 									
 									if( response.status === 'success' ) {
 										
-										var message = '';
-										var new_status = bookacti_localized.refunded;
-										if( refund_action === 'auto' ) {
-											message += bookacti_localized.advice_booking_refunded;
-										} else if( refund_action === 'coupon' ) {
-											message += bookacti_localized.advice_booking_refunded;
-											message += '<br/>' + bookacti_localized.advice_coupon_created.replace( '%1$s', '<strong>' + response.coupon_amount + '</strong>' );
-											message += '<br/>' + bookacti_localized.advice_coupon_code.replace( '%1$s', '<strong>' + response.coupon_code + '</strong>' );
-										} else if( refund_action === 'email' ) {
-											message += bookacti_localized.advice_refund_request_email_sent;
-											new_status = bookacti_localized.refund_requested;
+										var refund_data = { 'message': '', 'new_status': bookacti_localized.refunded };
+										if( refund_action === 'email' ) {
+											refund_data.message += bookacti_localized.advice_refund_request_email_sent;
+											refund_data.new_status = bookacti_localized.refund_requested;
 										}
 										
+										$j( 'body' ).trigger( 'bookacti_booking_refunded', [ booking_id, refund_action, refund_message, refund_data, response ] );
 										
 										// Change the booking data and possible actions on the booking line
 										actions_container.html( response.new_actions_html );
-										row.find( '.bookacti-booking-state' ).removeClass( 'bookacti-booking-state-good bookacti-booking-state-warning bookacti-booking-state-bad' ).addClass( 'bookacti-booking-state-bad' ).html( new_status );
-																				
-										$j( 'body' ).trigger( 'bookacti_booking_refunded', [ booking_id, refund_action, message, response ] );
+										row.find( '.bookacti-booking-state' ).removeClass( 'bookacti-booking-state-good bookacti-booking-state-warning bookacti-booking-state-bad' ).addClass( 'bookacti-booking-state-bad' ).html( refund_data.new_status );
 										
 										// Notify user that his booking has been refunded
-										bookacti_dialog_refund_confirmation( message );
+										bookacti_dialog_refund_confirmation( refund_data.message );
 											
 									} else if( response.status === 'failed' ) {
 										
@@ -365,12 +359,13 @@ function bookacti_dialog_refund_booking( booking_id ) {
 											message_error += '\n' + response.message;
 										}
 										alert( message_error );
+										console.log( response );
 									}
 
 								},
 								error: function( e ){
 									console.log( 'AJAX ' + bookacti_localized.error_refund_booking );
-									console.log( e.responseText );
+									console.log( e );
 								},
 								complete: function() {
 									row.find( '.bookacti-loading-alt' ).remove();
@@ -396,12 +391,13 @@ function bookacti_dialog_refund_booking( booking_id ) {
 					message_error += '\n' + bookacti_localized.error_not_allowed;
 				}
 				alert( message_error );
+				console.log( response );
 			}
 
 		},
 		error: function( e ){
 			console.log( 'AJAX ' + bookacti_localized.error_refund_booking );
-			console.log( e.responseText );
+			console.log( e );
 		},
 		complete: function() {
 		}
@@ -524,7 +520,7 @@ function bookacti_dialog_change_booking_state( booking_id ) {
 						},
 						error: function( e ){
 							console.log( 'AJAX ' + bookacti_localized.error_change_booking_state );
-							console.log( e.responseText );
+							console.log( e );
 						},
 						complete: function() {
 							bookacti_booking_row_exit_loading_state( row );
@@ -608,7 +604,7 @@ function bookacti_dialog_reschedule_booking( booking_id ) {
 		},
 		error: function( e ){
 			console.log( 'AJAX ' + bookacti_localized.error_retrieve_booking_system );
-			console.log( e.responseText );
+			console.log( e );
 		},
 		complete: function() {
 			bookacti_booking_row_exit_loading_state( row );
@@ -687,7 +683,7 @@ function bookacti_dialog_reschedule_booking( booking_id ) {
 						},
 						error: function( e ){
 							console.log( 'AJAX ' + bookacti_localized.error_reschedule_booking );
-							console.log( e.responseText );
+							console.log( e );
 						},
 						complete: function() {
 							bookacti_booking_row_exit_loading_state( row );

@@ -18,7 +18,10 @@ function bookacti_display_booking_system( $templates, $activities, $booking_meth
 	// Check if desired booking method is registered
 	$available_booking_methods = bookacti_get_available_booking_methods();
 	if( ! in_array( $booking_method, array_keys ( $available_booking_methods ) ) ) {
-		$booking_method = 'calendar';
+		$booking_method = bookacti_get_setting_value( 'bookacti_general_settings', 'booking_method' );
+		if( ! in_array( $booking_method, array_keys ( $available_booking_methods ) ) ) {
+			$booking_method = 'calendar';
+		}
 	}
 	
 	if( ! $echo ) {
@@ -46,14 +49,14 @@ function bookacti_display_booking_system( $templates, $activities, $booking_meth
 		
 		<div class='bookacti-booking-system <?php echo esc_attr( $classes ); ?>' 
 			 id='bookacti-booking-system-<?php echo esc_attr( $id ); ?>'
-			 data-booking-method='<?php echo esc_attr( $booking_method ); ?>'
-			 data-booking-system-id='<?php echo esc_attr( $id ); ?>'
-			 data-templates='<?php echo esc_attr( implode( ',', $templates ) ); ?>'  
-			 data-activities='<?php echo esc_attr( implode( ',', $activities ) ); ?>' 
-			 data-init-booking-method='<?php echo esc_attr( $booking_method ); ?>'
-			 data-init-templates='<?php echo esc_attr( implode( ',', $templates ) ); ?>'
-			 data-init-activities='<?php echo esc_attr( implode( ',', $activities ) ); ?>' 
-			 data-auto-load='<?php echo apply_filters( 'bookacti_booking_system_auto_load', esc_attr( 1 ), $templates, $activities, $booking_method, $id, $classes ); ?>'
+			 data-booking-method=		'<?php echo esc_attr( $booking_method ); ?>'
+			 data-booking-system-id=	'<?php echo esc_attr( $id ); ?>'
+			 data-templates=			'<?php echo esc_attr( implode( ',', $templates ) ); ?>'  
+			 data-activities=			'<?php echo esc_attr( implode( ',', $activities ) ); ?>' 
+			 data-init-booking-method=	'<?php echo esc_attr( $booking_method ); ?>'
+			 data-init-templates=		'<?php echo esc_attr( implode( ',', $templates ) ); ?>'
+			 data-init-activities=		'<?php echo esc_attr( implode( ',', $activities ) ); ?>' 
+			 data-auto-load=			'<?php echo apply_filters( 'bookacti_booking_system_auto_load', esc_attr( 1 ), $templates, $activities, $booking_method, $id, $classes ); ?>'
 			 <?php do_action( 'bookacti_booking_system_attributes', $templates, $activities, $booking_method, $id, $classes ); ?> >
 
 		</div>

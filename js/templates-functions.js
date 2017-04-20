@@ -66,11 +66,12 @@ function bookacti_switch_template( selected_template_id ) {
 							message_error += '\n' + bookacti_localized.error_not_allowed;
 						}
 						alert( message_error );
+						console.log( response );
 					}
 				},
 				error: function( e ) {
 					console.log( 'AJAX ' + bookacti_localized.error_switch_template );
-					console.log( e.responseText );
+					console.log( e );
 				},
 				complete: function() { 
 					bookacti_stop_template_loading(); 
@@ -232,7 +233,7 @@ function bookacti_fetch_events_on_template( template_id, event_id ) {
         },
         error: function( e ){
             alert ( 'AJAX ' + bookacti_localized.error_display_event );
-            console.log( e.responseText );
+            console.log( e );
         },
         complete: function() { 
 			bookacti_stop_template_loading();
@@ -484,7 +485,7 @@ function bookacti_update_exceptions( excep_template_id, event, forced_update ) {
         },
         error: function( e ){
             alert( 'AJAX ' + bookacti_localized.error_retrieve_exceptions );
-            console.log( e.responseText );
+            console.log( e );
         },
         complete: function() { 
             bookacti_stop_template_loading();
@@ -543,7 +544,7 @@ function bookacti_unbind_occurrences( event, occurences ) {
         },
         error: function( e ){
             alert( 'AJAX ' + bookacti_localized.error_unbind_occurences );
-            console.log( e.responseText );
+            console.log( e );
         },
         complete: function() { 
             bookacti_stop_template_loading();
@@ -750,7 +751,7 @@ function bookacti_load_activities_bound_to_template( selected_template_id ) {
 			},
 			error: function( e ){
 				alert( 'AJAX ' + bookacti_localized.error_retrieve_activity_bound );
-				console.log( e.responseText );
+				console.log( e );
 			},
 			complete: function() { 
 				bookacti_stop_template_loading(); 

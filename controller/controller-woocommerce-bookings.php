@@ -77,6 +77,18 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	}
 	
 	
+	//Cancel the temporary booking if it failed
+	add_action( 'woocommerce_order_status_cancelled', 'bookacti_cancelled_order', 10, 1 );
+	function bookacti_cancelled_order( $order_id ) {
+		
+		//Change state of all bookings of the order to 'cancelled' and free the bookings
+		bookacti_turn_order_bookings_to( $order_id, 'cancelled', false );
+		
+		// It is possible that 'pending' bookings remain if the user has changed his cart before payment, we must cancel them
+		bookacti_cancel_order_pending_bookings( $order_id );
+	}
+	
+	
 	//Turn paid order status to complete if the order has only activities
 	add_filter( 'woocommerce_payment_complete_order_status', 'bookacti_set_order_status_to_completed_after_payment', 10, 2 );
 	function bookacti_set_order_status_to_completed_after_payment( $order_status, $order_id ) {
@@ -121,19 +133,6 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		
 		return $order_status;
 	}
-	
-	
-	//Cancel the temporary booking if it failed
-	add_action( 'woocommerce_order_status_cancelled', 'bookacti_cancelled_order', 10, 1 );
-	function bookacti_cancelled_order( $order_id ) {
-		
-		//Change state of all bookings of the order to 'cancelled' and free the bookings
-		bookacti_turn_order_bookings_to( $order_id, 'cancelled', false );
-		
-		// It is possible that 'pending' bookings remain if the user has changed his cart before payment, we must cancel them
-		bookacti_cancel_order_pending_bookings( $order_id );
-	}
-	
 	
 	
 // MY ACCOUNT
@@ -245,10 +244,10 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			$order		= new WC_Order( $order_id );
 
 			// Check cancel / reschedule
-			if( ! current_user_can( 'bookacti_edit_bookings' ) && $order->post_status === 'wc-pending' )	{ 
+			if( ! current_user_can( 'bookacti_edit_bookings' ) && $order->get_status() === 'pending' )	{ 
 				unset( $booking_actions['cancel'] ); 
 				unset( $booking_actions['reschedule'] );
-			 }
+			}
 
 			// Add woocommerce specifique actions
 			$booking_actions[ 'view-order' ] = array( 
@@ -429,7 +428,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 				$item		= bookacti_get_order_item_by_booking_id( $booking_id );
 				$is_paid	= get_post_meta( $order_id, '_paid_date', true );
 				
-				if( $order->post_status === 'wc-pending' 
+				if( $order->get_status() === 'pending' 
 				||  $item[ 'line_total' ] <= 0
 				||  ! $is_paid ) { $true = false; }
 			}
@@ -449,9 +448,9 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			
 			if( ! $order_id ) { return $true; }
 			
-			$order		= new WC_Order( $order_id );
+			$order = new WC_Order( $order_id );
 			
-			if( ! in_array( $order->post_status, array( 'wc-pending', 'wc-processing', 'wc-on-hold' ) ) ) { $true = false; }
+			if( ! in_array( $order->get_status(), array( 'pending', 'processing', 'on-hold' ) ) ) { $true = false; }
 		}
 		
 		return $true;

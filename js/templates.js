@@ -188,7 +188,7 @@ function bookacti_load_template_calendar() {
 				});
 			}
 
-			calendar.trigger( 'eventRender', [ event, element ] );
+			calendar.trigger( 'bookacti_event_render', [ event, element ] );
 
 			if( ! event.render ) { return false; }
 		},
@@ -307,7 +307,7 @@ function bookacti_load_template_calendar() {
 				},
 				error: function( e ) {
 					alert( 'AJAX ' + bookacti_localized.error_insert_event );
-					console.log( e.responseText );
+					console.log( e );
 				},
 				complete: function() { 
 					bookacti_stop_template_loading();
@@ -359,10 +359,10 @@ function bookacti_load_template_calendar() {
 							}
 						}
 					},
-					error: function(e){
+					error: function( e ){
 						revertFunc();
 						alert( 'AJAX ' + bookacti_localized.error_resize_event );
-						console.log(e.responseText);
+						console.log( e );
 					},
 					complete: function() { 
 						bookacti_stop_template_loading();
@@ -444,7 +444,7 @@ function bookacti_load_template_calendar() {
 					error: function( e ) {
 						revertFunc();
 						alert( 'AJAX ' + bookacti_localized.error_move_event );
-						console.log( e.responseText );
+						console.log( e );
 					},
 					complete: function() { 
 						bookacti_stop_template_loading();

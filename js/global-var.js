@@ -30,3 +30,5 @@ var size = {
 	'narrowWidth' : parseInt( bookacti_localized.event_narrow_width ),
 	'wideWidth' : parseInt( bookacti_localized.event_wide_width )
 };
+
+var valid_form				= [];

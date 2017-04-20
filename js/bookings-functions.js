@@ -133,11 +133,12 @@ function bookacti_filter_bookings_by_templates( booking_system, refresh_calendar
 						message_error += '\n' + bookacti_localized.error_not_allowed;
 					}
 					alert( message_error );
+					console.log( response );
 				}
 			},
 			error: function( e ) {
 				console.log( 'AJAX ' + bookacti_localized.error_switch_template );
-				console.log( e.responseText );
+				console.log( e );
 			},
 			complete: function() { 
 				bookacti_stop_loading_booking_system( booking_system );
@@ -239,7 +240,7 @@ function bookacti_fill_booking_list( booking_system, event_id, event_start, even
 		},
 		error: function( e ){
 			console.log( 'AJAX ' + bookacti_localized.error_retrieve_bookings );
-			console.log( e.responseText );
+			console.log( e );
 		},
 		complete: function() { 
 			bookacti_stop_loading_booking_system( booking_system );
@@ -305,16 +306,18 @@ function bookacti_validate_selected_booking_event( booking_system, quantity ) {
 	var total_avail = 0;
 	
 	//Init boolean test variables
-	var is_event			= false;
-	var is_event_in_selected= false;
-	var is_corrupted		= false;
-	var is_qty_sup_to_avail	= false;
-	var is_qty_sup_to_0		= false;
-	var is_valid			= false;
+	var valid_form = {
+		is_event			: false,
+		is_event_in_selected: false,
+		is_corrupted		: false,
+		is_qty_sup_to_avail	: false,
+		is_qty_sup_to_0		: false,
+		send				: false
+	};
 	
 	//Make the tests and change the booleans
-	if( event_id !== '' && event_start !== '' && event_end !== '' ) { is_event = true; }
-	if( parseInt( quantity ) > 0 ) { is_qty_sup_to_0 = true; }
+	if( event_id !== '' && event_start !== '' && event_end !== '' ) { valid_form.is_event = true; }
+	if( parseInt( quantity ) > 0 ) { valid_form.is_qty_sup_to_0 = true; }
 	
 	if( selectedEvents[ booking_system_id ] !== undefined ) {
 		$j.each( selectedEvents[ booking_system_id ], function( i, selected_event ) {
@@ -322,34 +325,44 @@ function bookacti_validate_selected_booking_event( booking_system, quantity ) {
 			&&  selected_event['event-start']	=== event_start 
 			&&  selected_event['event-end']		=== event_end ) {
 				
-				is_event_in_selected = true;
+				valid_form.is_event_in_selected = true;
 
 				total_avail = selected_event['event-availability'];
 				
 				if( ( parseInt( quantity ) > parseInt( total_avail ) ) && total_avail !== 0 ) {
-					is_qty_sup_to_avail = true;
+					valid_form.is_qty_sup_to_avail = true;
 				}
 			}
 		});
 	}
-	if( is_event && ! is_event_in_selected ) { is_corrupted = true; }
-	if( is_event && is_qty_sup_to_0 && ! is_qty_sup_to_avail && ! is_corrupted ) { is_valid = true; }
-
+	if( valid_form.is_event 
+	&&  ! valid_form.is_event_in_selected )	{ valid_form.is_corrupted = true; }
+	if( valid_form.is_event 
+	&&  valid_form.is_qty_sup_to_0 
+	&&  ! valid_form.is_qty_sup_to_avail 
+	&&  ! valid_form.is_corrupted )			{ valid_form.send = true; }
+	
+	
 	// Clear feedbacks
 	booking_system.siblings( '.bookacti-notices' ).empty();
 	
+	
+	// Allow third-party to change the results
+	booking_system.trigger( 'bookacti_validate_selected_event', [ valid_form ] );
+	
+	
 	//Check the results and build error list
 	var error_list = '';
-	if( ! is_event ){ 
+	if( ( ! valid_form.is_event || ! valid_form.is_event_in_selected ) && ! valid_form.is_corrupted ){ 
 		error_list += '<li>' + bookacti_localized.error_select_schedule + '</li>' ; 
 	}
-	if( is_qty_sup_to_avail ){ 
+	if( valid_form.is_qty_sup_to_avail ){ 
 		error_list += '<li>' + bookacti_localized.error_less_avail_than_quantity.replace( '%1$s', quantity ).replace( '%2$s', total_avail ) + '</li>'; 
 	}
-	if( ! is_qty_sup_to_0 ){ 
+	if( ! valid_form.is_qty_sup_to_0 ){ 
 		error_list += '<li>' + bookacti_localized.error_quantity_inf_to_0 + '</li>'; 
 	}
-	if( is_corrupted ){ 
+	if( valid_form.is_corrupted ){ 
 		error_list += '<li>' + bookacti_localized.error_corrupted_schedule + '</li>'; 
 	}
 	
@@ -358,5 +371,6 @@ function bookacti_validate_selected_booking_event( booking_system, quantity ) {
 		booking_system.siblings( '.bookacti-notices' ).append( "<ul class='bookacti-error-list'>" + error_list + "</ul>" ).show();
 	}
 	
-	return is_valid;
+	
+	return valid_form.send;
 }

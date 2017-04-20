@@ -80,6 +80,7 @@ function bookacti_dismiss_5stars_rating_notice() {
 			}
 		},
 		error: function( e ){
+			console.log( e );
 		},
 		complete: function() { 
 		}

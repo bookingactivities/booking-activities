@@ -14,12 +14,17 @@ $j( document ).ready( function() {
 		||  bookacti_localized.current_user_id == 0 ) {
 			
 			booking_system.siblings( '.bookacti-notices' ).empty().append( "<ul class='bookacti-error-list'><li>" + bookacti_localized.error_user_not_logged_in + "</li></ul>" ).show();
-			return;			
+			
+			// End script
+			return false;			
 		}
 		
-		var is_valid = bookacti_validate_selected_booking_event( booking_system, form.find( '.bookacti-quantity' ).val() );
+		var is_valid_event = bookacti_validate_selected_booking_event( booking_system, form.find( '.bookacti-quantity' ).val() );
 		
-		if( is_valid ) {
+		if( ! is_valid_event ) {
+			// End script
+			return false;
+		} else {
 			
 			var data	= form.serialize();
 			var settings= form.serializeObject();
@@ -38,7 +43,7 @@ $j( document ).ready( function() {
 						
 						if( form.attr( 'action' ) !== '' ) {
 							// Go to URL
-							form.unbind( 'submit' ).submit();
+							window.location.replace( form.attr( 'action' ) );
 						} else {
 							// Reload events
 							var booking_system_id	= booking_system.data( 'booking-system-id' );
@@ -61,7 +66,7 @@ $j( document ).ready( function() {
 					var message = "<ul class='bookacti-error-list'><li>AJAX " + bookacti_localized.error_book + "</li></ul>";
 					booking_system.siblings( '.bookacti-notices' ).empty().append( message ).show();
 					console.log( 'AJAX ' + bookacti_localized.error_book );
-					console.log( e.responseText );
+					console.log( e );
 				},
 				complete: function() { 
 					bookacti_stop_loading_booking_system( booking_system );

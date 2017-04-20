@@ -2,6 +2,8 @@
 
 /** GLOBAL **/
 
+.bookacti-display-none { display: none; }
+
 /* Booking System */
 #bookacti-reschedule-booking-dialog .bookacti-date-picked-activity					{ display: none; }
 .bookacti-booking-system-form .bookacti-booking-system-labels,

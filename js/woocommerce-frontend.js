@@ -9,7 +9,7 @@ $j( document ).ready( function() {
 	
 			if( form.hasClass( 'variations_form' ) ) {
 				var variation_id = form.find( '.variation_id' ).val();
-				if( variation_id !== '' && variation_id !== undefined ) {
+				if( variation_id !== '' && typeof variation_id !== 'undefined' ) {
 					proceed_to_validation = is_activity[ variation_id ];
 				}
 			} else if( form.find( '.bookacti-booking-system-container' ).length ) {
@@ -17,12 +17,12 @@ $j( document ).ready( function() {
 			}
 			
 			if( proceed_to_validation ) {
-				// Prevent submission
-				e.preventDefault(); 
 				if( form.find( '.bookacti-booking-system-container' ).length ) {
 					// Submit form if all is OK
-					if( bookacti_validate_selected_booking_event( form.find( '.bookacti-booking-system' ), form.find( '.quantity input.qty' ).val() ) ) {
-						form.unbind( 'submit' ).submit();
+					var is_valid_event = bookacti_validate_selected_booking_event( form.find( '.bookacti-booking-system' ), form.find( '.quantity input.qty' ).val() );
+					if( ! is_valid_event ) {
+						// Prevent submission
+						return false;
 					}
 				}
 			}
@@ -47,12 +47,18 @@ $j( document ).ready( function() {
 		}
 	});
 	
-	
+		
 	// Update booking row after frontend rechedule
 	$j( 'body' ).on( 'bookacti_booking_rescheduled', function( e, booking_id, event_start, event_end, response ){
 		var row	= $j( '.bookacti-booking-action[data-booking-id="' + booking_id + '"]' ).parents( 'tr' );
-		var is_woo_frontend_booking_list = $j( 'dd.variation-bookacti_event_start p' ).length;
-		if( is_woo_frontend_booking_list ) {
+		// Update start and end dates, and updates available actions
+		if( $j( '.wc-item-meta-bookacti_event_start.wc-item-meta-value' ).length ) {
+			row.find( '.wc-item-meta-bookacti_event_start.wc-item-meta-value' ).html( response.event_start_formatted );
+			row.find( '.wc-item-meta-bookacti_event_end.wc-item-meta-value' ).html( response.event_end_formatted );
+			row.find( '.bookacti-booking-actions' ).html( response.actions_html );
+		}
+		// WOOCOMMERCE 3.0.0 backward compatibility
+		if( $j( 'dd.variation-bookacti_event_start p' ).length ) {
 			row.find( 'dd.variation-bookacti_event_start p' ).html( response.event_start_formatted );
 			row.find( 'dd.variation-bookacti_event_end p' ).html( response.event_end_formatted );
 			row.find( '.bookacti-booking-actions' ).html( response.actions_html );
@@ -61,22 +67,55 @@ $j( document ).ready( function() {
 	
 	
 	// Update booking row after frontend coupon refund
-	$j( 'body' ).on( 'bookacti_booking_refunded', function( e, booking_id, refund_action, message, response ){
-		var row = $j( '.bookacti-refund-booking[data-booking-id="' + booking_id + '"]' ).parents( 'tr' );
-		// Add coupon code on order details
-		if( response.coupon_code && row.find( '.variation' ).length ){
-			if( $j( 'dd.variation-bookacti_refund_coupon' ).length ) {
-				$j( 'dd.variation-bookacti_refund_coupon p' ).html( coupon_code_value );
-			} else {
-				var coupon_code_label = $j( '<dt />', {
-					class: 'variation-bookacti_refund_coupon',
-					text: bookacti_localized.coupon_code + ':'
-				});
-				var coupon_code_value = $j( '<dd />', {
-					class: 'variation-bookacti_refund_coupon'
-				}).append( $j( '<p />', { text: response.coupon_code } ) );
-				row.find( '.variation' ).append( coupon_code_label );
-				row.find( '.variation' ).append( coupon_code_value );
+	$j( 'body' ).on( 'bookacti_booking_refunded', function( e, booking_id, refund_action, refund_message, refund_data, response ){
+		
+		if( refund_action === 'auto' ) {
+			// Set a message to feedback refunds
+			refund_data.message += bookacti_localized.advice_booking_refunded;
+		
+		} else if( refund_action === 'coupon' ) {
+			
+			// Set a message to feedback refunds
+			refund_data.message += bookacti_localized.advice_booking_refunded;
+			refund_data.message += '<br/>' + bookacti_localized.advice_coupon_created.replace( '%1$s', '<strong>' + response.coupon_amount + '</strong>' );
+			refund_data.message += '<br/>' + bookacti_localized.advice_coupon_code.replace( '%1$s', '<strong>' + response.coupon_code + '</strong>' );
+		
+		
+			var row = $j( '.bookacti-booking-actions[data-booking-id="' + booking_id + '"]' ).parents( 'tr' );
+
+			// Add coupon code on order details
+			if( row.length && response.coupon_code ) {
+
+				var meta_list = row.find( 'ul.wc-item-meta' );
+				if( meta_list.length ) {
+					if( meta_list.find( '.wc-item-meta-value.wc-item-meta-bookacti_refund_coupon' ).length ) {
+						meta_list.find( '.wc-item-meta-value.wc-item-meta-bookacti_refund_coupon' ).html( response.coupon_code );
+					} else {
+						var coupon_code_meta = 
+							'<li>'
+						+		'<strong class="wc-item-meta-label wc-item-meta-bookacti_refund_coupon">' + bookacti_localized.coupon_code + ':</strong>'
+						+		'<span class="wc-item-meta-value wc-item-meta-bookacti_refund_coupon" >' + response.coupon_code + '</span>'
+						+	'</li>';
+						meta_list.append( coupon_code_meta );
+					}
+				}
+
+				// WOOCOMMERCE 3.0.0 backward compatibility
+				if( row.find( '.variation' ).length ) {
+					if( $j( 'dd.variation-bookacti_refund_coupon' ).length ) {
+						$j( 'dd.variation-bookacti_refund_coupon p' ).html( response.coupon_code );
+					} else {
+						var coupon_code_label = $j( '<dt />', {
+							class: 'variation-bookacti_refund_coupon',
+							text: bookacti_localized.coupon_code + ':'
+						});
+						var coupon_code_value = $j( '<dd />', {
+							class: 'variation-bookacti_refund_coupon'
+						}).append( $j( '<p />', { text: response.coupon_code } ) );
+						row.find( '.variation' ).append( coupon_code_label );
+						row.find( '.variation' ).append( coupon_code_value );
+					}
+				}
 			}
 		}
 	});
@@ -90,7 +129,7 @@ $j( document ).ready( function() {
 			var booking_system_id	= booking_system.data( 'booking-system-id' );
 
 			// Handle variations
-			if( booking_system.hasClass( 'woo-product-booking-system' ) ) {
+			if( booking_system.hasClass( 'bookacti-woocommerce-product-booking-system' ) ) {
 				//Deactivate the booking system if no variation are selected
 				booking_system.parents( '.variations_form' ).on( 'reset_data', function() { 
 					bookacti_deactivate_booking_system( booking_system, booking_system_id );
@@ -311,7 +350,7 @@ function bookacti_refresh_cart_after_expiration( countdown ) {
 		},
 		error: function( e ){
 			console.log( 'AJAX ' + bookacti_localized.error_remove_expired_cart_item );
-			console.log( e.responseText );
+			console.log( e );
 		},
 		complete: function() { 
 

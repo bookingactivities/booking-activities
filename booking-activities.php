@@ -3,7 +3,7 @@
  * Plugin Name: Booking Activities
  * Plugin URI: http://booking-activities.fr/en
  * Description: Create your activity calendars with drag and drop and book scheduled events with one click. Enable online payments of reservations with WooCommerce.
- * Version: 1.0.3
+ * Version: 1.0.4
  * Author: Booking Activities Team
  * Author URI: http://booking-activities.fr/en
  * Text Domain: booking-activities

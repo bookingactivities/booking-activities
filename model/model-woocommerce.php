@@ -249,12 +249,12 @@ function bookacti_change_order_bookings_state( $user_id = NULL, $order_id = NULL
 		$query_prep = $wpdb->prepare( $query, $array_of_variables );
 		$updated	= $wpdb->query( $query_prep );
 
-		if( is_int( $updated ) ) {
+		if( is_numeric( $updated ) ){
 
 			if( $updated > 0 ) {
 				foreach( $booking_id_array as $booking_id ) {
 					if( is_numeric( $booking_id ) ){
-						do_action( 'bookacti_booking_state_changed', $booking_id, $state );
+						do_action( 'bookacti_booking_state_changed', $booking_id, $state, array() );
 					}
 				}
 			}
@@ -307,29 +307,26 @@ function bookacti_cancel_order_pending_bookings( $order_id ) {
 	return $updated;
 }
 
-
-// Update all bookings of a customer_id with a new user_id
+/** 
+ * Update all bookings of a customer_id with a new user_id
+ * 
+ * When not logged-in people add a booking ot cart or go to checkout, their booking and order are associated with their customer id
+ * This changes customer id by user id for all bookings made whithin the 31 past days as they log in which correspond to WC cart cookie
+ * We can't go further because customer ids are generated randomly, regardless of existing ones in database
+ * Limiting to 31 days make it very improbable that two customers with the same id create an account or log in
+ * 
+ * @since 1.0.0
+ */
 function bookacti_update_bookings_user_id( $user_id, $customer_id ) {
 
 	global $wpdb;
-
+	
 	$query		= 'UPDATE ' . BOOKACTI_TABLE_BOOKINGS 
 				. ' SET user_id = %d '
 				. ' WHERE user_id = %s '
 				. ' AND expiration_date >= DATE_SUB( UTC_TIMESTAMP(), INTERVAL 31 DAY ) ';
 	$query_prep	= $wpdb->prepare( $query, $user_id, $customer_id );
 	$updated	= $wpdb->query( $query_prep );
-
-	if( $updated ) {
-
-		$query_updated_ids	= 'SELECT id FROM ' . BOOKACTI_TABLE_BOOKINGS . ' WHERE state = "cancelled" AND order_id = %d';
-		$prep_updated_ids	= $wpdb->prepare( $query_updated_ids, $order_id );
-		$bookings_updated	= $wpdb->get_results( $prep_updated_ids, OBJECT );
-
-		foreach( $bookings_updated as $booking ) {
-			do_action( 'bookacti_booking_cancelled', $booking->id );
-		}
-	}
 
 	return $updated;
 }
