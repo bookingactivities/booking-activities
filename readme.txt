@@ -239,7 +239,7 @@ If you don't find the answer you need, please [contact us](http://booking-activi
 
 == Changelog ==
 
-= 1.0.4 - 2017/04/09 =
+= 1.0.4 - 2017/04/20 =
 * Fix - WooCommerce 3.0 supported and backward compatibility to WooCommerce 2.6
 * Fix - Fixed issue causing separator between to dates or two hours not to show
 * Fix - Fixed issue causing unique event in calendar or events closed to calendar limits not to show
