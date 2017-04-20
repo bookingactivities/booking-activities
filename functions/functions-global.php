@@ -194,7 +194,8 @@ function bookacti_format_datetime( $datetime ) {
 	if( preg_match( '/\d{4}-[01]\d-[0-3]\dT[0-2]\d:[0-5]\d:[0-5]\d/', $datetime ) 
 	||  preg_match( '/\d{4}-[01]\d-[0-3]\d [0-2]\d:[0-5]\d:[0-5]\d/', $datetime ) ) {
 		/* translators: Datetime format. Must be adapted to each country. Use strftime documentation to find the appropriated combinaison http://php.net/manual/en/function.strftime.php */
-		$datetime = utf8_encode( strftime( __( '%A, %B %d, %Y %I:%M %p', BOOKACTI_PLUGIN_NAME ), strtotime( $datetime ) ) );
+		$datetime = strftime( __( '%A, %B %d, %Y %I:%M %p', BOOKACTI_PLUGIN_NAME ), strtotime( $datetime ) );
+		$datetime = ! mb_check_encoding( $datetime, 'UTF-8' ) ? utf8_encode( $datetime ) : $datetime;
 	}
 	return $datetime;
 }

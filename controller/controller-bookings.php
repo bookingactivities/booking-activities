@@ -402,10 +402,8 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 					do_action( 'bookacti_booking_rescheduled', $booking_id, $event_start, $event_end );
 					
-					/* translators: Datetime format. Must be adapted to each country. Use strftime documentation to find the appropriated combinaison http://php.net/manual/en/function.strftime.php */
-					$event_start_formatted	= utf8_encode( strftime( __( '%A, %B %d, %Y %I:%M %p', BOOKACTI_PLUGIN_NAME ), strtotime( $event_start ) ) );
-					/* translators: Datetime format. Must be adapted to each country. Use strftime documentation to find the appropriated combinaison http://php.net/manual/en/function.strftime.php */
-					$event_end_formatted	= utf8_encode( strftime( __( '%A, %B %d, %Y %I:%M %p', BOOKACTI_PLUGIN_NAME ), strtotime( $event_end ) ) );
+					$event_start_formatted	= bookacti_format_datetime( $event_start );
+					$event_end_formatted	= bookacti_format_datetime( $event_end );
 					
 					$is_bookings_page	= intval( $_POST[ 'is_bookings_page' ] );
 					$admin_or_front		= $is_bookings_page ? 'both' : 'front';

@@ -434,8 +434,8 @@ function bookacti_refund_booking_with_coupon( $booking_id, $refund_message ) {
 	$refund_desc	.= PHP_EOL . __( 'Order:', BOOKACTI_PLUGIN_NAME )	. ' ' . $item[ 'order_id' ];
 	$refund_desc	.= PHP_EOL . __( 'Booking:', BOOKACTI_PLUGIN_NAME )	. ' ' . $booking_id;
 	$refund_desc	.= PHP_EOL . '     ' . $item[ 'name' ];
-	$refund_desc	.= PHP_EOL . '     ' . utf8_encode( strftime( __( '%A, %B %d, %Y %I:%M %p', BOOKACTI_PLUGIN_NAME ), strtotime( $item[ 'bookacti_event_start' ] ) ) );
-	$refund_desc	.= PHP_EOL . '     ' . utf8_encode( strftime( __( '%A, %B %d, %Y %I:%M %p', BOOKACTI_PLUGIN_NAME ), strtotime( $item[ 'bookacti_event_end' ] ) ) );
+	$refund_desc	.= PHP_EOL . '     ' . bookacti_format_datetime( $item[ 'bookacti_event_start' ] );
+	$refund_desc	.= PHP_EOL . '     ' . bookacti_format_datetime( $item[ 'bookacti_event_end' ] );
 	if( $refund_message !== '' ) {
 		$refund_desc .= PHP_EOL . PHP_EOL . __( 'User message:', BOOKACTI_PLUGIN_NAME ) . PHP_EOL . $refund_message;
 	}

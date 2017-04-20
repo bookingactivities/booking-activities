@@ -422,10 +422,8 @@ function bookacti_send_email_refund_request( $booking_id, $user_message = false 
 	$data['booking']					= array();
 	$data['booking']['template_name']	= stripslashes( $template->title ) . ' (' . _x( 'id', 'An id is a unique identification number' ) . ': ' . $template->id . ')';
 	$data['booking']['activity_name']	= apply_filters( 'bookacti_translate_text', stripslashes( $activity->title ) ) . ' (' . _x( 'id', 'An id is a unique identification number' ) . ': ' . $activity->id . ')';
-	/* translators: Datetime format. Must be adapted to each country. Use strftime documentation to find the appropriated combinaison http://php.net/manual/en/function.strftime.php */
-	$data['booking']['event_start']		= utf8_encode( strftime( __( '%A, %B %d, %Y %I:%M %p', BOOKACTI_PLUGIN_NAME ), strtotime( $booking->event_start ) ) );
-	/* translators: Datetime format. Must be adapted to each country. Use strftime documentation to find the appropriated combinaison http://php.net/manual/en/function.strftime.php */
-	$data['booking']['event_end']		= utf8_encode( strftime( __( '%A, %B %d, %Y %I:%M %p', BOOKACTI_PLUGIN_NAME ), strtotime( $booking->event_end ) ) );
+	$data['booking']['event_start']		= bookacti_format_datetime( $booking->event_start );
+	$data['booking']['event_end']		= bookacti_format_datetime( $booking->event_end );
 	$data['booking']['quantity']		= $booking->quantity;
 	$data['booking']['status']			= $booking->state;
 	
@@ -503,7 +501,8 @@ function bookacti_format_booking_dates( $start, $end ) {
 	if( substr( $start, 0, 10 ) === substr( $end, 0, 10 ) ) { 
 		$sep_val= ' ' . _x( 'to', 'between two hours', BOOKACTI_PLUGIN_NAME ) . ' ';
 		/* translators: Datetime format. Must be adapted to each country. Use strftime documentation to find the appropriated combinaison http://php.net/manual/en/function.strftime.php */
-		$to_val = utf8_encode( strftime( __( '%I:%M %p', BOOKACTI_PLUGIN_NAME ), strtotime( $end ) ) );
+		$to_val = strftime( __( '%I:%M %p', BOOKACTI_PLUGIN_NAME ), strtotime( $end ) );
+		$to_val = ! mb_check_encoding( $to_val, 'UTF-8' ) ? utf8_encode( $to_val ) : $to_val;
 		$to_hour_or_date = 'to_hour';
 	} else {
 		$sep_val= ' ' . _x( 'to', 'between two dates', BOOKACTI_PLUGIN_NAME ) . ' ';
