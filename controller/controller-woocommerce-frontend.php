@@ -840,6 +840,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	 * Must be used since WC 3.0.0
 	 * 
 	 * @since 1.0.4
+	 * @version 1.0.5
 	 */
 	add_filter( 'woocommerce_display_item_meta', 'bookacti_format_order_item_meta', 10, 3 );
 	function bookacti_format_order_item_meta( $html, $item, $args ) {
@@ -848,6 +849,11 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		$html    = '';
 		
 		foreach ( $item->get_formatted_meta_data() as $meta_id => $meta ) {
+			// Format booking id
+			if( $meta->key === 'bookacti_booking_id' ) {
+				$meta->display_value = intval( $meta->value );
+			}
+			
 			// Format booking state
 			if( $meta->key === 'bookacti_state' ) {
 				$meta->display_value = bookacti_format_booking_state( $meta->value );

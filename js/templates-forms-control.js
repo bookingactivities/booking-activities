@@ -316,8 +316,8 @@ function bookacti_validate_event_general_data() {
 	&& valid_form.isAvailSupToBookings ) { valid_form.send = true; }
 	
     // Clean the feedbacks before displaying new feedbacks
-    $j( '#event-general-tab-content .form-error' ).remove();
-    $j( '#event-general-tab-content *' ).removeClass( 'input-error input-warning' );
+    $j( '#bookacti-tab-content-general .form-error' ).remove();
+    $j( '#bookacti-tab-content-general *' ).removeClass( 'input-error input-warning' );
 	
 	// Allow third party to change results
 	$j( '#bookacti-event-data-dialog' ).trigger( 'bookacti_validate_event_general_data', [ valid_form ] );
@@ -453,8 +453,8 @@ function bookacti_validate_event_repetition_data( event_start, event_end ) {
     }
     
     // Clean the feedbacks before displaying new feedbacks
-    $j( '#event-repetition-tab-content .form-error' ).remove();
-    $j( '#event-repetition-tab-content *' ).removeClass( 'input-error input-warning' );
+    $j( '#bookacti-tab-content-repetition .form-error' ).remove();
+    $j( '#bookacti-tab-content-repetition *' ).removeClass( 'input-error input-warning' );
 	
 	// Allow third party to change results
 	$j( '#bookacti-event-data-dialog' ).trigger( 'bookacti_validate_event_repetition_data', [ valid_form ] );

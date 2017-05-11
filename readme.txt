@@ -1,10 +1,10 @@
 === Booking Activities ===
 Contributors: bookingactivities
 Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=7EKU434L7NEVC
-Tags: booking activities, booking form, manage reservations, activity planning, events calendar, booking system, booking, reservations, appointments, woocommerce
+Tags: booking activities, booking form, manage reservations, activity planning, events calendar, booking sport, booking system, booking, reservations, appointments, woocommerce
 Requires at least: 4.0
 Tested up to: 4.7.3
-Stable tag: 1.0.4
+Stable tag: 1.0.5
 License: GPLv3 or later
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
 
@@ -15,7 +15,7 @@ Create your activity calendars by drag and drop and book scheduled events with o
 == Description ==
 
 Booking Activities is a complete booking system designed for any kind of activity providers *(See the [demo website](http://demo.booking-activities.fr/en/))*. 
-Drag and drop your events to build your activity planning. Copy / Paste a shortcode to display booking forms. Pick an event onto this calendar and click on 'Book' button to reserve it.
+Drag and drop your events to build your activity planning. Copy / Paste a shortcode to display booking forms. Pick an event onto this calendar and book it. Calendars are automatically integrated to WooCommerce product pages.
 
 
 = Features you and your customers will love: =
@@ -239,6 +239,10 @@ If you don't find the answer you need, please [contact us](http://booking-activi
 
 == Changelog ==
 
+= 1.0.5 - 2017/05/11 =
+* Fix - Fixed error messages not disappearing in event dialog on calendars editor
+* Fix - Correct formating of booking id in WooCommerce emails
+
 = 1.0.4 - 2017/04/20 =
 * Fix - WooCommerce 3.0 supported and backward compatibility to WooCommerce 2.6
 * Fix - Fixed issue causing separator between to dates or two hours not to show
@@ -263,7 +267,6 @@ If you don't find the answer you need, please [contact us](http://booking-activi
 * Fix - Corrected the [bookingactivities_calendar] shortcode name in calendar editor
 * Fix - Fixed possible error while uninstalling plugin
 * Localization - Updated fr_FR
-
 
 = 1.0.2 - 2017/03/27 =
 * Fix - Fixed error 500 on plugin activation (undefined function wp_get_current_user())
