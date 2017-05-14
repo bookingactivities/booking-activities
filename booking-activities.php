@@ -3,12 +3,12 @@
  * Plugin Name: Booking Activities
  * Plugin URI: http://booking-activities.fr/en
  * Description: Create your activity calendars with drag and drop and book scheduled events with one click. Enable online payments of reservations with WooCommerce.
- * Version: 1.0.5
+ * Version: 1.0.6
  * Author: Booking Activities Team
  * Author URI: http://booking-activities.fr/en
  * Text Domain: booking-activities
  * Domain Path: /languages/
- * License:     GPL3
+ * License: GPL3
  * License URI: https://www.gnu.org/licenses/gpl-3.0.html
  * 
  * This file is part of Booking Activities.
@@ -38,8 +38,13 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 
 // GLOBALS AND CONSTANTS
-if( ! defined( 'BOOKACTI_PLUGIN_NAME' ) || ! defined( 'BOOKACTI_PLUGIN_BASENAME' ) ) {
+if( ! defined( 'BOOKACTI_VERSION' ) ) {
+	define( 'BOOKACTI_VERSION', '1.0.6' );
+}
+if( ! defined( 'BOOKACTI_PLUGIN_NAME' ) ) {
 	define( 'BOOKACTI_PLUGIN_NAME', 'booking-activities' );
+}
+if( ! defined( 'BOOKACTI_PLUGIN_BASENAME' ) ) {
 	define( 'BOOKACTI_PLUGIN_BASENAME', plugin_basename( __FILE__ ) );
 }
 
@@ -206,7 +211,12 @@ function bookacti_enqueue_frontend_scripts() {
 // ACTIVATE
 register_activation_hook( __FILE__, 'bookacti_activate' );
 function bookacti_activate() {
-    // Allow users to manage Bookings
+	
+	// Update current version
+	delete_option( 'bookacti_version' );
+	add_option( 'bookacti_version', BOOKACTI_VERSION );
+	
+	// Allow users to manage Bookings
 	bookacti_set_role_and_cap();
 
 	// Create tables in database
@@ -255,6 +265,16 @@ function bookacti_uninstall() {
 	
 	// Clear any cached data that has been removed
 	wp_cache_flush();
+}
+
+
+// UPDATE
+add_action( 'init', 'bookacti_check_version', 5 );
+function bookacti_check_version() {
+	if( get_option( 'bookacti_version' ) !== BOOKACTI_VERSION ) {
+		bookacti_activate();
+		do_action( 'bookacti_updated' );
+	}
 }
 
 
