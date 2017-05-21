@@ -5,17 +5,17 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 //DEFINE DEFAULT SETTINGS VALUES
 add_action( 'plugins_loaded', 'bookacti_define_default_settings_constants' );
 function bookacti_define_default_settings_constants() {
-	define( 'DEFAULT_TEMPLATE_PER_USER', '0' );
-	define( 'SHOW_PAST_EVENTS', '1' );
-	define( 'ALLOW_TEMPLATES_FILTER', '1' );
-	define( 'ALLOW_ACTIVITIES_FILTER', '1' );
-	define( 'SHOW_INACTIVE_BOOKINGS', '0' );
-	define( 'STARTED_EVENTS_BOOKABLE', '0' );
-	define( 'BOOKING_METHOD', 'calendar' );
-	define( 'ALLOW_CUSTOMERS_TO_CANCEL', '1' );
-	define( 'ALLOW_CUSTOMERS_TO_RESCHEDULE', '1' );
-	define( 'CANCELLATION_MIN_DELAY_BEFORE_EVENT', '7' );
-	define( 'REFUND_ACTIONS_AFTER_CANCELLATION', 'email' );
+	if( ! defined( 'DEFAULT_TEMPLATE_PER_USER' ) )				{ define( 'DEFAULT_TEMPLATE_PER_USER', '0' ); }
+	if( ! defined( 'SHOW_PAST_EVENTS' ) )						{ define( 'SHOW_PAST_EVENTS', '1' ); }
+	if( ! defined( 'ALLOW_TEMPLATES_FILTER' ) )					{ define( 'ALLOW_TEMPLATES_FILTER', '1' ); }
+	if( ! defined( 'ALLOW_ACTIVITIES_FILTER' ) )				{ define( 'ALLOW_ACTIVITIES_FILTER', '1' ); }
+	if( ! defined( 'SHOW_INACTIVE_BOOKINGS' ) )					{ define( 'SHOW_INACTIVE_BOOKINGS', '0' ); }
+	if( ! defined( 'STARTED_EVENTS_BOOKABLE' ) )				{ define( 'STARTED_EVENTS_BOOKABLE', '0' ); }
+	if( ! defined( 'BOOKING_METHOD' ) )							{ define( 'BOOKING_METHOD', 'calendar' ); }
+	if( ! defined( 'ALLOW_CUSTOMERS_TO_CANCEL' ) )				{ define( 'ALLOW_CUSTOMERS_TO_CANCEL', '1' ); }
+	if( ! defined( 'ALLOW_CUSTOMERS_TO_RESCHEDULE' ) )			{ define( 'ALLOW_CUSTOMERS_TO_RESCHEDULE', '1' ); }
+	if( ! defined( 'CANCELLATION_MIN_DELAY_BEFORE_EVENT' ) )	{ define( 'CANCELLATION_MIN_DELAY_BEFORE_EVENT', '7' ); }
+	if( ! defined( 'REFUND_ACTIONS_AFTER_CANCELLATION' ) )		{ define( 'REFUND_ACTIONS_AFTER_CANCELLATION', 'email' ); }
 	
 	do_action( 'bookacti_define_settings_constants' );
 }

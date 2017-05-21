@@ -6,14 +6,14 @@ global $wpdb;
 $db_prefix = $wpdb->prefix;
 
 // TABLES NAMES
-define( 'BOOKACTI_TABLE_TEMPLATES',	$db_prefix . 'bookacti_templates' );
-define( 'BOOKACTI_TABLE_ACTIVITIES',	$db_prefix . 'bookacti_activities' );
-define( 'BOOKACTI_TABLE_EVENTS',		$db_prefix . 'bookacti_events' );
-define( 'BOOKACTI_TABLE_META',		$db_prefix . 'bookacti_meta' );
-define( 'BOOKACTI_TABLE_PERMISSIONS',	$db_prefix . 'bookacti_permissions' );
-define( 'BOOKACTI_TABLE_TEMP_ACTI',	$db_prefix . 'bookacti_templates_activities' );
-define( 'BOOKACTI_TABLE_EXCEPTIONS',	$db_prefix . 'bookacti_exceptions' );
-define( 'BOOKACTI_TABLE_BOOKINGS',	$db_prefix . 'bookacti_bookings' );
+if( ! defined( 'BOOKACTI_TABLE_TEMPLATES' ) )	{ define( 'BOOKACTI_TABLE_TEMPLATES',	$db_prefix . 'bookacti_templates' ); }
+if( ! defined( 'BOOKACTI_TABLE_ACTIVITIES' ) )	{ define( 'BOOKACTI_TABLE_ACTIVITIES',	$db_prefix . 'bookacti_activities' ); }
+if( ! defined( 'BOOKACTI_TABLE_EVENTS' ) )		{ define( 'BOOKACTI_TABLE_EVENTS',		$db_prefix . 'bookacti_events' ); }
+if( ! defined( 'BOOKACTI_TABLE_META' ) )		{ define( 'BOOKACTI_TABLE_META',		$db_prefix . 'bookacti_meta' ); }
+if( ! defined( 'BOOKACTI_TABLE_PERMISSIONS' ) )	{ define( 'BOOKACTI_TABLE_PERMISSIONS',	$db_prefix . 'bookacti_permissions' ); }
+if( ! defined( 'BOOKACTI_TABLE_TEMP_ACTI' ) )	{ define( 'BOOKACTI_TABLE_TEMP_ACTI',	$db_prefix . 'bookacti_templates_activities' ); }
+if( ! defined( 'BOOKACTI_TABLE_EXCEPTIONS' ) )	{ define( 'BOOKACTI_TABLE_EXCEPTIONS',	$db_prefix . 'bookacti_exceptions' ); }
+if( ! defined( 'BOOKACTI_TABLE_BOOKINGS' ) )	{ define( 'BOOKACTI_TABLE_BOOKINGS',	$db_prefix . 'bookacti_bookings' ); }
 
 
 // Check if user id exists

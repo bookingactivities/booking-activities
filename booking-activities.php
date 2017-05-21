@@ -38,15 +38,9 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 
 // GLOBALS AND CONSTANTS
-if( ! defined( 'BOOKACTI_VERSION' ) ) {
-	define( 'BOOKACTI_VERSION', '1.0.6' );
-}
-if( ! defined( 'BOOKACTI_PLUGIN_NAME' ) ) {
-	define( 'BOOKACTI_PLUGIN_NAME', 'booking-activities' );
-}
-if( ! defined( 'BOOKACTI_PLUGIN_BASENAME' ) ) {
-	define( 'BOOKACTI_PLUGIN_BASENAME', plugin_basename( __FILE__ ) );
-}
+if( ! defined( 'BOOKACTI_VERSION' ) )			{ define( 'BOOKACTI_VERSION', '1.0.6' ); }
+if( ! defined( 'BOOKACTI_PLUGIN_NAME' ) )		{ define( 'BOOKACTI_PLUGIN_NAME', 'booking-activities' ); }
+if( ! defined( 'BOOKACTI_PLUGIN_BASENAME' ) )	{ define( 'BOOKACTI_PLUGIN_BASENAME', plugin_basename( __FILE__ ) ); }
 
 
 // HEADER STRINGS (For translation)
@@ -256,6 +250,7 @@ function bookacti_uninstall() {
 	bookacti_reset_notices();
 	
 	// Drop tables and every Booking Activities Data
+	delete_option( 'bookacti_version' );
 	bookacti_drop_tables();
 	
 	// Unset roles and capabilities

@@ -85,13 +85,13 @@ function bookacti_add_woocommerce_cart_settings_section() {
 add_action( 'bookacti_define_settings_constants', 'bookacti_define_cart_settings_constants' );
 function bookacti_define_cart_settings_constants() {
 	// Bookings
-	define( 'SHOW_TEMPORARY_BOOKINGS', '1' );
+	if( ! defined( 'SHOW_TEMPORARY_BOOKINGS' ) )		{ define( 'SHOW_TEMPORARY_BOOKINGS', '1' ); }
 	
 	// Cart
-	define( 'IS_CART_EXPIRATION_ACTIVE', '1' );
-	define( 'IS_CART_EXPIRATION_PER_PRODUCT', '0' );
-	define( 'CART_TIMEOUT', '30' );
-	define( 'RESET_CART_TIMEOUT_ON_CHANGE', '0' );
+	if( ! defined( 'IS_CART_EXPIRATION_ACTIVE' ) )		{ define( 'IS_CART_EXPIRATION_ACTIVE', '1' ); }
+	if( ! defined( 'IS_CART_EXPIRATION_PER_PRODUCT' ) ) { define( 'IS_CART_EXPIRATION_PER_PRODUCT', '0' ); }
+	if( ! defined( 'CART_TIMEOUT' ) )					{ define( 'CART_TIMEOUT', '30' ); }
+	if( ! defined( 'RESET_CART_TIMEOUT_ON_CHANGE' ) )	{ define( 'RESET_CART_TIMEOUT_ON_CHANGE', '0' ); }
 }
 
 

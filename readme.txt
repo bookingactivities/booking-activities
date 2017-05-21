@@ -241,6 +241,7 @@ If you don't find the answer you need, please [contact us](http://booking-activi
 
 = 1.0.6	=
 * Add - Added bookacti_updated action hook and stored plugin version in database
+* Fix - Added defined() check before constant definitions to avoid collisions
 
 = 1.0.5 - 2017/05/11 =
 * Fix - Fixed error messages not disappearing in event dialog on calendars editor
