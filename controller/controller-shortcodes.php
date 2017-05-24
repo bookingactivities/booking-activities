@@ -11,11 +11,11 @@ function bookacti_shortcodes_init() {
 
 
 // Show the calendar of activities / templates
-// EX: [bookacti_form	calendars='2'			// Actual comma separated calendars ids list
-//						activities='1,2,10'		// Actual comma separated activities ids list
-//						id='my-cal'				// Any id you want
-//						classes='full-width'		// Any class you want
-//						method='waterfall' ]		// Display method
+// EX: [bookingactivities_calendar	calendars='2'			// Actual comma separated calendars ids list
+//									activities='1,2,10'		// Actual comma separated activities ids list
+//									id='my-cal'				// Any id you want
+//									classes='full-width'		// Any class you want
+//									method='waterfall' ]		// Display method
 function bookacti_shortcode_calendar( $atts = [], $content = null, $tag = '' ) {
 	
 	// normalize attribute keys, lowercase
@@ -49,12 +49,12 @@ function bookacti_shortcode_calendar( $atts = [], $content = null, $tag = '' ) {
 
 
 // Show a booking form
-// EX: [bookacti_form	calendars='2'			// Actual comma separated calendars ids list
-//						activities='1,2,10'		// Actual comma separated activities ids list
-//						id='my-cal'				// Any id you want
-//						classes='full-width'		// Any class you want
-//						method='waterfall'		// Display method
-//						url='http://page-to-go-after-successful-booking-submission'] // URL to be redirected after submission
+// EX: [bookingactivities_form	calendars='2'			// Actual comma separated calendars ids list
+//								activities='1,2,10'		// Actual comma separated activities ids list
+//								id='my-cal'				// Any id you want
+//								classes='full-width'		// Any class you want
+//								method='waterfall'		// Display method
+//								url='http://page-to-go-after-successful-booking-submission'] // URL to be redirected after submission
 function bookacti_shortcode_booking_form( $atts = [], $content = null, $tag = '' ) {
 	
 	// normalize attribute keys, lowercase
@@ -118,7 +118,7 @@ function bookacti_shortcode_booking_form( $atts = [], $content = null, $tag = ''
 
 
 // Show a bookings list
-// EX: [bookacti_list]
+// EX: [bookingactivities_list]
 function bookacti_shortcode_bookings_list( $atts = [], $content = null, $tag = '' ) {
 	
 	// normalize attribute keys, lowercase

@@ -211,10 +211,10 @@ function bookacti_switch_booking_system_according_to_variation( booking_system, 
 		templates_array[booking_system_id]	= template_id.toString().split(',');
 		activities_array[booking_system_id]	= activity_id.toString().split(',');
 		
-		if( booking_method === 'calendar' || ! ( booking_method in bookacti_localized.available_booking_methods ) ) {
+		if( booking_method === 'calendar' || ! $j.inArray( booking_method, bookacti_localized.available_booking_methods ) ) {
 			bookacti_load_calendar( booking_system, true );
 		} else {
-			booking_system.trigger( 'bookacti_load_booking_system', [ booking_method ] );
+			booking_system.trigger( 'bookacti_load_booking_system', [ booking_method, false ] );
 		}
 		
 	//Deactivate the booking system if the variation is not an activity
@@ -386,7 +386,7 @@ function bookacti_activate_booking_system( booking_system, variation_id ) {
 	booking_system.parent().show();
 	booking_system.siblings( '.bookacti-booking-system-inputs input' ).prop( 'disabled', false );
 	
-	if( booking_method === 'calendar' || ! ( booking_method in bookacti_localized.available_booking_methods ) ) {
+	if( booking_method === 'calendar' || ! $j.inArray( booking_method, bookacti_localized.available_booking_methods ) ) {
 		bookacti_refresh_calendar_view( booking_system );
 		booking_system.fullCalendar( 'rerenderEvents' );
 	} else {

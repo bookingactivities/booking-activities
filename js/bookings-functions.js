@@ -146,19 +146,22 @@ function bookacti_filter_bookings_by_templates( booking_system, refresh_calendar
 		});
 		
 		
-		var fetch_past_events = true;
+		var fetch_past_events = 1;
+		var context = 'booking_page';
 		
-		if( booking_method === 'calendar' || ! ( booking_method in bookacti_localized.available_booking_methods ) ) {
+		if( booking_method === 'calendar' || ! $j.inArray( booking_method, bookacti_localized.available_booking_methods ) ) {
 			
 			var calendar = $j( '#bookacti-calendar-' + booking_system_id );
 			calendar.fullCalendar( 'removeEvents' );
-			bookacti_fetch_calendar_events( calendar, undefined, fetch_past_events );
+			
 			if( refresh_calendar_settings ) {
 				bookacti_update_settings_from_database( booking_system, selected_templates, true );
 			}
 			
+			bookacti_fetch_calendar_events( calendar, fetch_past_events, 'booking_page' );
+			
 		} else {
-			booking_system.trigger( 'bookacti_fetch_events', [ booking_method, fetch_past_events ] );
+			booking_system.trigger( 'bookacti_fetch_events', [ booking_method, fetch_past_events, context ] );
 		}
 		
 	}
@@ -186,7 +189,7 @@ function bookacti_filter_bookings_by_activities( booking_system ) {
 		hiddenActivities.splice( idx, 1 );
 	});
 	
-	if( booking_method === 'calendar' || ! ( booking_method in bookacti_localized.available_booking_methods ) ) {
+	if( booking_method === 'calendar' || ! $j.inArray( booking_method, bookacti_localized.available_booking_methods ) ) {
 		booking_system.find( '.bookacti-calendar' ).fullCalendar( 'rerenderEvents' );
 	} else {
 		booking_system.trigger( 'bookacti_rerender_events', [ booking_method ] );

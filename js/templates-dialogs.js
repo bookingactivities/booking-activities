@@ -251,15 +251,6 @@ function bookacti_dialog_update_template( template_id ) {
 					$j( '#bookacti-template-title' ).val( title );
 					$j( '#bookacti-template-opening' ).val( start );
 					$j( '#bookacti-template-closing' ).val( end );
-					if( response.period ) {
-						if( response.period.is_bookings ) {
-							$j( '#bookacti-template-opening' ).attr( 'max', response.period.first_booking );
-							$j( '#bookacti-template-closing' ).attr( 'min', response.period.last_booking );
-						} else {
-							$j( '#bookacti-template-opening' ).attr( 'max', '' );
-							$j( '#bookacti-template-closing' ).attr( 'min', '' );
-						}
-					}
 
 					// Permission tab
 					if( response.admin ) {
@@ -356,8 +347,8 @@ function bookacti_dialog_update_template( template_id ) {
 									bookacti_update_calendar_settings( $j( '#bookacti-template-calendar' ), settings );
 
 									//Change the view to match start and end date of the template
-									var start_template = moment( $j( '#bookacti-template-picker :selected' ).data( 'template-start' ) + 'T23:59:59' );
-									var end_template = moment( $j( '#bookacti-template-picker :selected' ).data( 'template-end' ) + 'T23:59:59' );
+									var start_template = moment( $j( '#bookacti-template-picker :selected' ).data( 'template-start' ) );
+									var end_template = moment( $j( '#bookacti-template-picker :selected' ).data( 'template-end' ) );
 									bookacti_refresh_view( $j( '#bookacti-template-calendar' ), start_template, end_template );
 
 								//If no changes
@@ -373,8 +364,6 @@ function bookacti_dialog_update_template( template_id ) {
 
 												if( response.error === 'not_allowed' ) {
 													error_message += '\n' + bookacti_localized.error_not_allowed + '\n';
-												} else if( error === 'error_bookings_out_of_template' ) {
-													error_message += '\n' + bookacti_localized.advice_switch_to_maintenance + '\n';
 												}
 											});
 										}

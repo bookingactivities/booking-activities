@@ -4,8 +4,18 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 
 // EVENTS
-    // Fetch events in order to display them on front-end page
-    function bookacti_fetch_calendar_events( $activities = array(), $templates = array(), $user_datetime_object = null, $fetch_past_events = false ) {
+	/**
+	 * Fetch events by templates and / or activities
+	 *
+	 * @since	1.0.0
+	 * @version 1.0.6
+	 * @param	array		$activities				Array of activity ids
+	 * @param	array		$templates				Array of templates ids
+	 * @param	DateTime	$user_datetime_object	User current DateTime
+	 * @param	bool			$fetch_past_events		Whether to fetch events occuring before user datetime
+	 * @return	array		$events_array			Array of events matching the parameters
+	 */
+    function bookacti_fetch_calendar_events( $activities = array(), $templates = array(), $user_datetime_object = null, $fetch_past_events = false, $context = 'frontend' ) {
         
         global $wpdb;
         
@@ -14,10 +24,14 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
         if( is_null( $user_datetime_object ) )	{ $user_datetime_object = new DateTime(); $user_datetime_object->setTimezone( new DateTimeZone( 'UTC' ) ); }
 		$user_timestamp	= $user_datetime_object->format( 'U' );
 		
-        //Prepare the query
-        $query  = 'SELECT E.id as event_id, E.template_id, E.title, E.start, E.end, E.repeat_freq, E.repeat_from, E.repeat_to, E.availability, A.color, A.id as activity_id '
-                . ' FROM ' . BOOKACTI_TABLE_EVENTS . ' as E, ' . BOOKACTI_TABLE_ACTIVITIES . ' as A '
-                . ' WHERE E.activity_id = A.id ';
+        // Prepare the query
+        $query  = 'SELECT DISTINCT E.id as event_id, E.template_id, E.title, E.start, E.end, E.repeat_freq, E.repeat_from, E.repeat_to, E.availability, A.color, A.id as activity_id, IFNULL( B.bookings, 0 ) as bookings '
+                . ' FROM ' . BOOKACTI_TABLE_ACTIVITIES . ' as A, ' . BOOKACTI_TABLE_TEMPLATES . ' as T, ' . BOOKACTI_TABLE_EVENTS . ' as E '
+				. ' LEFT JOIN (
+						SELECT SUM(quantity) as bookings, event_id FROM wp_bookacti_bookings WHERE active = 1 GROUP BY event_id
+					) as B ON B.event_id = E.id'
+                . ' WHERE E.activity_id = A.id '
+                . ' AND E.template_id = T.id ';
 		
 		$array_user_timestamp = array();
 		
@@ -36,15 +50,46 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			}
 		}
         
+		// Do not fetch events out of their respective template limits...
+		$query  .= ' AND (	';
+		// ...unless we are on booking page, then, we need to keep booked events
+		if( $context === 'booking_page' ) {
+			$query  .= '	(
+								bookings > 0
+							)
+							OR ';
+		}
+		$query  .= '		( 	E.repeat_freq IS NULL 
+								AND (	UNIX_TIMESTAMP( CONVERT_TZ( E.start, "+00:00", @@global.time_zone ) ) >= 
+										UNIX_TIMESTAMP( CONVERT_TZ( T.start_date, "+00:00", @@global.time_zone ) ) 
+									AND
+										UNIX_TIMESTAMP( CONVERT_TZ( ( E.end + INTERVAL -24 HOUR ), "+00:00", @@global.time_zone ) ) <= 
+										UNIX_TIMESTAMP( CONVERT_TZ( T.end_date, "+00:00", @@global.time_zone ) ) 
+									) 
+							) 
+							OR
+							( 	E.repeat_freq IS NOT NULL
+								AND NOT (	UNIX_TIMESTAMP( CONVERT_TZ( E.repeat_from, "+00:00", @@global.time_zone ) ) < 
+											UNIX_TIMESTAMP( CONVERT_TZ( T.start_date, "+00:00", @@global.time_zone ) ) 
+										AND 
+											UNIX_TIMESTAMP( CONVERT_TZ( ( E.repeat_to + INTERVAL -24 HOUR ), "+00:00", @@global.time_zone ) ) < 
+											UNIX_TIMESTAMP( CONVERT_TZ( T.start_date, "+00:00", @@global.time_zone ) ) 
+										)
+								AND NOT (	UNIX_TIMESTAMP( CONVERT_TZ( E.repeat_from, "+00:00", @@global.time_zone ) ) > 
+											UNIX_TIMESTAMP( CONVERT_TZ( T.end_date, "+00:00", @@global.time_zone ) ) 
+										AND 
+											UNIX_TIMESTAMP( CONVERT_TZ( ( E.repeat_to + INTERVAL -24 HOUR ), "+00:00", @@global.time_zone ) ) > 
+											UNIX_TIMESTAMP( CONVERT_TZ( T.end_date, "+00:00", @@global.time_zone ) ) 
+										)
+						) )';
+				
 		//Query activities
 		if( ! empty( $activities ) ) {
 			
-			$query  .= ' AND ( ';
-			
-			$query  .= ' A.id = %d ';
+			$query  .= ' AND A.id IN ( %d';
             if( count( $activities ) >= 2 )  {
                 for( $i = 0; $i < count( $activities ) - 1; $i++ ) {
-                    $query  .= ' OR A.id = %d ';
+                    $query  .= ', %d';
                 }
             }
             $query  .= ' ) ';
@@ -53,10 +98,10 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
         
         //If there are templates id, only get activities from those templates 
         if( ! empty( $templates ) ) {
-            $query  .= ' AND ( E.template_id = %d ';
+            $query  .= ' AND E.template_id IN ( %d';
             if( count( $templates ) >= 2 )  {
                 for( $i = 0; $i < count( $templates ) - 1; $i++ ) {
-                    $query  .= ' OR E.template_id = %d ';
+                    $query  .= ', %d';
                 }
             }
             $query  .= ' ) ';
@@ -97,11 +142,11 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
                 $event_array['occurence_id']	= 0;
                 $event_array['start']			= $event->start;
                 $event_array['end']				= $event->end;
-                $event_array['bookings']		= bookacti_get_number_of_bookings( $event->event_id, $event->start, $event->end );
+                $event_array['bookings']		= $event->bookings;
                 
                 array_push( $events_array, $event_array );
             } else {
-				$repeated_events_array = bookacti_create_repeated_events( $event, $event_array, $user_datetime_object, $fetch_past_events );
+				$repeated_events_array = bookacti_create_repeated_events( $event, $event_array, $user_datetime_object, $fetch_past_events, $context );
                 $events_array = array_merge( $events_array, $repeated_events_array );
             }
         }
@@ -231,7 +276,99 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	}
 	
 	
+	/**
+	 * Determine if an event or one of its occurrence is included in calendar range
+	 *
+	 * @since  1.0.6
+	 * @param  int		$event_id		ID of the event to check
+	 * @param  string	$event_start	Start datetime of the event to check (format 2017-12-31T23:59:59)
+	 * @param  string	$event_end		End datetime of the event to check (format 2017-12-31T23:59:59)
+	 * @return bool
+	 */
+	function bookacti_is_event_in_its_template_range( $event_id, $event_start, $event_end ) {
+		// Sanitize params
+		$event_id		= intval( $event_id );
+		$event_start	= bookacti_sanitize_datetime( $event_start );
+		$event_end		= bookacti_sanitize_datetime( $event_end );
 
+		if( empty( $event_id ) || empty( $event_start ) || empty( $event_end ) ) {
+			return false;
+		}
+		
+		global $wpdb;
+		
+		// Get template range in order to be compared with the event dates
+		$range_query	= 'SELECT T.start_date as start, T.end_date as end FROM ' . BOOKACTI_TABLE_TEMPLATES . ' as T, ' . BOOKACTI_TABLE_EVENTS . ' as E '
+						. ' WHERE E.template_id = T.id '
+						. ' AND E.id = %d ';
+		$range_prepare	= $wpdb->prepare( $range_query, $event_id );
+		$range			= $wpdb->get_row( $range_prepare, OBJECT );
+		
+		if( empty( $range ) ){
+			return false;
+		}
+		
+		// Make sure datetimes have this format 'Y-m-d H:i:s'
+		$event_start	= str_replace( 'T', ' ', $event_start );
+		$event_end		= str_replace( 'T', ' ', $event_end );
+		
+		$event_start_datetime		= DateTime::createFromFormat('Y-m-d H:i:s', $event_start );
+		$event_end_datetime			= DateTime::createFromFormat('Y-m-d H:i:s', $event_end );
+		$template_start_datetime	= DateTime::createFromFormat('Y-m-d H:i:s', $range->start . ' 00:00:00' );
+		$template_end_datetime		= DateTime::createFromFormat('Y-m-d H:i:s', $range->end . ' 00:00:00' );
+		$template_end_datetime->add( new DateInterval( 'P1D' ) );
+		
+		if( $event_start_datetime >= $template_start_datetime 
+		&&  $event_end_datetime   <= $template_end_datetime ) {
+			return true;
+		}
+		
+		return false;
+	}
+	
+	
+// TEMPLATES
+	/**
+	 * Get the mixed range (start and end dates) of a group of template
+	 *
+	 * @since  1.0.6
+	 * @param  array $template_ids Array of template ids
+	 * @return array (start, end)
+	 */
+	function bookacti_get_mixed_template_range( $template_ids = array() ) {
+		
+		if( is_numeric( $template_ids ) ) {
+			$template_ids = array( $template_ids );
+		}
+		
+		if( ! is_array( $template_ids ) ) {
+			return false;
+		}
+		
+		global $wpdb;
+		
+		$range_query	= 'SELECT MIN( start_date ) as start, MAX( end_date ) as end FROM ' . BOOKACTI_TABLE_TEMPLATES;
+		
+		// If templates ids were given, search only in those templates
+		if( ! empty( $template_ids ) ) {
+			$range_query	.= ' WHERE id IN ( %d';
+
+			if( count( $template_ids ) >= 2 )  {
+				for( $i = 0; $i < count( $template_ids ) - 1; $i++ ) {
+					$range_query  .= ', %d';
+				}
+			}
+
+			$range_query	.= ')';
+		}
+		
+		$range_prepare	= $wpdb->prepare( $range_query, $template_ids );
+		$range			= $wpdb->get_row( $range_prepare, ARRAY_A );
+		
+		return $range;
+	}
+	
+	
 	
 // PERMISSIONS
 	// GET MANAGERS

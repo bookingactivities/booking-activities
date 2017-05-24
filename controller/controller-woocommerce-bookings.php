@@ -46,20 +46,28 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	}
 	
 	
-	// Deactivate expired bookings hourly
-	add_action( 'bookacti_hourly_event', 'bookacti_deactivate_expired_bookings_hourly' );
-	function bookacti_deactivate_expired_bookings_hourly() {
+	/**
+	 * Deactivate expired bookings
+	 *
+	 * @since	1.0.6
+	 */
+	function bookacti_controller_deactivate_expired_bookings() {
 
-		$deactivated = bookacti_deactivate_expired_bookings();
+		$deactivated_ids = bookacti_deactivate_expired_bookings();
 
-		if ( $deactivated === false ) { 
+		if ( $deactivated_ids === false ) { 
 			/* translators: 'cron' is a robot that execute scripts every X hours. Don't try to translate it. */
 			$log = esc_html__( 'The expired bookings were not correctly deactivated by cron.', BOOKACTI_PLUGIN_NAME );
 			bookacti_log( $log, 'error' );
+		} else {
+			// Yell the booking state change 
+			// (important for consistancy between WooCommerce order items and Booking Activities bookings)
+			foreach( $deactivated_ids as $booking_id ) {
+				do_action( 'bookacti_booking_state_changed', $booking_id, 'expired', array( 'is_admin' => true ) );
+			}
 		}
-
-		return $deactivated;
 	}
+	add_action( 'bookacti_hourly_event', 'bookacti_controller_deactivate_expired_bookings' );
 	
 	
 // ORDER AND BOOKING STATUS

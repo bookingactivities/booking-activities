@@ -35,11 +35,11 @@ function bookacti_switch_template( selected_template_id ) {
 						bookacti_update_settings_from_database( $j( '#bookacti-template-calendar' ), template_id );
 						
 						//Prevent user from dropping / resizing activity out of template period
-						var new_constraint = {
-							start: moment( $j( '#bookacti-template-picker :selected' ).data( 'template-start' ) + 'T00:00:00' ),
-							end: moment( $j( '#bookacti-template-picker :selected' ).data( 'template-end' ) + 'T00:00:00' ).add( 1, 'days' )
+						var new_range = {
+							start: moment( $j( '#bookacti-template-picker :selected' ).data( 'template-start' ) ),
+							end: moment( $j( '#bookacti-template-picker :selected' ).data( 'template-end' ) ).add( 1, 'days' )
 						};
-						$j( '#bookacti-template-calendar' ).fullCalendar( 'option', 'eventConstraint', new_constraint );
+						$j( '#bookacti-template-calendar' ).fullCalendar( 'option', 'validRange', new_range );
 						
 						// Update shortcode generator calendars list
 						$j( '.bookacti-shortcode-calendar-ids' ).each( function(){
@@ -414,20 +414,6 @@ function bookacti_fill_settings_fields( settings, prefix ) {
 			}
 		}
 	});
-}
-
-
-//Refresh current template view
-function bookacti_refresh_current_template_view()
-{
-    //get current template period
-    var date_start  = $j( '#bookacti-template-picker :selected' ).data( 'template-start' );
-    var date_end    = $j( '#bookacti-template-picker :selected' ).data( 'template-end' );
-    var start_template = moment( date_start + 'T23:59:59' );
-    var end_template = moment( date_end + 'T23:59:59' );
-
-    //Refresh
-    bookacti_refresh_view( $j( '#bookacti-template-calendar' ), start_template, end_template );
 }
 
 

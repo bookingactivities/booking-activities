@@ -209,12 +209,23 @@ function bookacti_format_booking_system_attributes( $atts ) {
 }
 
 
-// Validate booking form (verify the info of the selected schedule before booking it)
+/**
+ * Validate booking form (verify the info of the selected schedule before booking it)
+ *
+ * @since	1.0.0
+ * @version	1.0.6
+ * @param	int		$event_id		ID of the event to check
+ * @param	string	$event_start	Start datetime of the event to check (format 2017-12-31T23:59:59)
+ * @param	string	$event_end		End datetime of the event to check (format 2017-12-31T23:59:59)
+ * @param	int		$quantity		Desired number of bookings
+ * @return	array
+ */
 function bookacti_validate_booking_form( $event_id, $event_start, $event_end, $quantity ) {
 	
-	$availability = bookacti_get_event_availability( $event_id, $event_start, $event_end );
-	$event_exists = bookacti_is_existing_event( $event_id, $event_start, $event_end );
-
+	$availability		= bookacti_get_event_availability( $event_id, $event_start, $event_end );
+	$event_exists		= bookacti_is_existing_event( $event_id, $event_start, $event_end );
+	$is_in_range		= bookacti_is_event_in_its_template_range( $event_id, $event_start, $event_end );
+	
 	//Init boolean test variables
 	$is_event				= false;
 	$is_corrupted			= false;
@@ -223,10 +234,10 @@ function bookacti_validate_booking_form( $event_id, $event_start, $event_end, $q
 	$can_book				= false;
 
 	//Make the tests and change the booleans
-	if( $event_id !== '' && $event_start !== '' && $event_end !== '' ) { $is_event = true; }
-	if( intval( $quantity ) > 0 )				{ $is_qty_sup_to_0 = true; }
+	if( $event_id !== '' && $event_start !== '' && $event_end !== '' )				{ $is_event = true; }
+	if( intval( $quantity ) > 0 )													{ $is_qty_sup_to_0 = true; }
 	if( $is_qty_sup_to_0 && ( intval( $availability ) - intval( $quantity ) < 0 ) ) { $is_qty_sup_to_avail = true; }
-	if( $is_event && ! $event_exists )			{ $is_corrupted = true; }
+	if( ( $is_event && ! $event_exists ) || ! $is_in_range )						{ $is_corrupted = true; }
 
 	if( $is_event && $is_qty_sup_to_0 && ! $is_qty_sup_to_avail && ! $is_corrupted ) { $can_book = true; }
 
@@ -287,11 +298,22 @@ function bookacti_get_booking_dates_html( $booking ) {
 
 
 /***** EVENTS *****/
-// Create the repeated events
-function bookacti_create_repeated_events( $event, $common_settings = array(), $user_datetime_object = null, $fetch_past_events = false, $isEditable = false ) {
+/**
+ * Create repeated events
+ *
+ * @since	1.0.0
+ * @version	1.0.6
+ * @param	object		$event					Event data
+ * @param	array		$shared_data				Event data shared by every occurences of the event
+ * @param	DateTime	$user_datetime_object	End datetime of the event to check (format 2017-12-31T23:59:59)
+ * @param	bool			$fetch_past_events		Whether to create occurences before user datetime
+ * @param	string		$context				(frontend, editor, booking_page) Determine which occurence will be generated according to the context.
+ * @return	array
+ */
+function bookacti_create_repeated_events( $event, $shared_data = array(), $user_datetime_object = null, $fetch_past_events = false, $context = 'frontend' ) {
 	if( is_null( $user_datetime_object ) ) { $user_datetime_object = new DateTime(); }
-    if( empty( $common_settings ) ) { 
-		$common_settings = array(
+    if( empty( $shared_data ) ) { 
+		$shared_data = array(
 			'id'				=> $event->event_id,
 			'template_id'		=> $event->template_id,
 			'title'				=> apply_filters( 'bookacti_translate_text', stripslashes( $event->title ) ),
@@ -302,9 +324,9 @@ function bookacti_create_repeated_events( $event, $common_settings = array(), $u
 			'availability'		=> $event->availability
 		);
 		if( isset( $event->is_resizable ) && isset( $event->event_settings ) && isset( $event->activity_settings ) ) {
-			$common_settings['durationEditable']	= $event->is_resizable;
-			$common_settings['event_settings']		= maybe_unserialize( $event->event_settings );
-			$common_settings['activity_settings']	= maybe_unserialize( $event->activity_settings );
+			$shared_data['durationEditable']	= $event->is_resizable;
+			$shared_data['event_settings']		= maybe_unserialize( $event->event_settings );
+			$shared_data['activity_settings']	= maybe_unserialize( $event->activity_settings );
 		}
 	}
 	
@@ -350,10 +372,13 @@ function bookacti_create_repeated_events( $event, $common_settings = array(), $u
         $is_exception	= bookacti_is_repeat_exception( $event->event_id, date( 'Y-m-d', $event_start->format( 'U' ) ) );
         $has_started	= $event_start < $user_datetime_object;
         $has_ended		= $event_end < $user_datetime_object;
+		$is_in_range	= bookacti_is_event_in_its_template_range( $event->event_id, $event_start->format('Y-m-d H:i:s'), $event_end->format('Y-m-d H:i:s') );
+		$is_booked		= bookacti_get_number_of_bookings( $event->event_id, $event_start->format('Y-m-d H:i:s'), $event_end->format('Y-m-d H:i:s') ) > 0;
 		
-        if( $isEditable /* Show all events on templates */ 
-			|| $fetch_past_events && $is_exception == 0 /* If we also ftech past events, show all events but those wich are on an exception */ 
-			|| ( ! $isEditable && $is_exception == 0 /* Don't show exception on frontend */
+        if( $context === 'editor' /* Show all events on templates */ 
+			|| $context === 'booking_page' && $is_exception == 0 && ( $is_in_range || $is_booked ) /* If we also fetch past events, show all events but those wich are on an exception */ 
+			|| $fetch_past_events && $is_exception == 0 && $is_in_range /* If we also fetch past events, show all events but those wich are on an exception */ 
+			|| ( $context !== 'editor' && $is_exception == 0 && $is_in_range /* Don't show exception on frontend */
 				&& ( ! $has_started /* Don't show started events on frontend */
 					|| ( $started_events_bookable && $has_started && ! $has_ended ) ) /* Show in progress events on frontend if user decides so */
 				) 
@@ -365,9 +390,9 @@ function bookacti_create_repeated_events( $event, $common_settings = array(), $u
 				'end'			=> $event_end->format('Y-m-d H:i:s'),
 				'bookings'		=> bookacti_get_number_of_bookings( $event->event_id, $event_start->format('Y-m-d H:i:s'), $event_end->format('Y-m-d H:i:s') )
 			);
-			$event_array = array_merge( $common_settings, $event_array );
+			$event_array = array_merge( $shared_data, $event_array );
 			
-            array_push( $repeated_events_array, $event_array );
+            $repeated_events_array[] = $event_array;
         }
         
         $event_start->add( $interval_to_add );

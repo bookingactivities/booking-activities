@@ -81,6 +81,7 @@ function bookacti_load_template_calendar() {
 		allDayDefault:          false,
 
 		fixedWeekCount:         false,
+		showNonCurrentDates:	false,
 
 		editable:               true,
 		droppable:              true,
@@ -97,11 +98,11 @@ function bookacti_load_template_calendar() {
 			right: 'month,agendaWeek,agendaDay'
 		},
 
-
-		//Prevent user from dropping / resizing activity out of template period
-		eventConstraint :{
-			start: moment( $j( '#bookacti-template-picker :selected' ).data( 'template-start' ) + 'T00:00:00' ),
-			end: moment( $j( '#bookacti-template-picker :selected' ).data( 'template-end' ) + 'T00:00:00' ).add( 1, 'days' )
+		
+		// Prevent user from navigating, dropping or resizing events, out of template period
+		validRange: {
+			start: moment( $j( '#bookacti-template-picker :selected' ).data( 'template-start' ) ),
+			end: moment( $j( '#bookacti-template-picker :selected' ).data( 'template-end' ) ).add( 1, 'days' )
 		},
 
 
@@ -200,9 +201,6 @@ function bookacti_load_template_calendar() {
 
 
 		eventAfterAllRender: function( view ) {
-
-			//Limit the calendar to the template period and hide events out of the template period
-			bookacti_refresh_current_template_view();
 
 			//Block the event if no other operation on it is allowed until the running ones are finished
 			if( blockEvents === true ) { 

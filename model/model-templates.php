@@ -56,7 +56,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 				
                 array_push( $events_array, $event_array );
             } else {
-				$repeated_events_array = bookacti_create_repeated_events( $event, $event_array, null, true, true );
+				$repeated_events_array = bookacti_create_repeated_events( $event, $event_array, null, true, 'editor' );
                 $events_array = array_merge( $events_array, $repeated_events_array );
             }
         }
@@ -404,7 +404,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
     }
     
 	
-    //GET MIN PERIOD
+    //GET THE PERIOD OF TIME BETWEEN THE FIRST AND THE LAST BOOKING OF AN EVENT / A TEMPLATE
     function bookacti_get_min_period( $template_id = NULL, $event_id = NULL ) {
         global $wpdb;
         
@@ -421,7 +421,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
                             . ' WHERE B.active = 1 '
                             . ' AND B.event_id = E.id '
                             . ' AND E.template_id = %d ' 
-                            . ' ORDER BY event_start ';
+                            . ' ORDER BY B.event_start ';
             $min_from_query = $period_query . ' ASC LIMIT 1';
             $min_to_query   = $period_query . ' DESC LIMIT 1';
             $var            = $template_id;
@@ -645,39 +645,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
     }
 	
 	
-	// GET TEMPLATE MANAGERS
-	function bookacti_get_template_managers( $template_id ) {
-		return bookacti_get_managers( 'template', $template_id );
-	}
-	
-	
-	// GET TEMPLATES SETTINGS
-	function bookacti_get_templates_settings( $template_ids ) {
-		
-		$return_array = array();
-		
-		if( is_numeric( $template_ids ) || ( is_array( $template_ids ) && count( $template_ids ) === 1 ) ) {
-			$template_id = is_numeric( $template_ids ) ? $template_ids : $template_ids[0];
-			$return_array = bookacti_get_metadata( 'template', $template_id );
-		} else {
-			// If empty, take them all
-			if( empty( $template_ids ) ) { 
-				$templates = bookacti_fetch_templates( true );
-				foreach( $templates as $template ) {
-					$template_ids[] = $template->id;
-				}
-			}
-			foreach( $template_ids as $template_id ) {
-				$return_array[ $template_id ] = bookacti_get_metadata( 'template', $template_id );
-			}
-		}
-		
-		return $return_array;
-	}
-	
-	
     //CREATE NEW TEMPLATE
-	
     function bookacti_insert_template( $template_title, $template_start, $template_end, $template_managers, $template_meta, $duplicated_template_id = 0 ) { 
        global $wpdb;
         
@@ -830,55 +798,8 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		
         return $updated;
     }
-	
-	
-	// GET USER DEFAULT TEMPLATE
-	function bookacti_get_user_default_template( $user_id = false ) {
-		
-		$user_id = $user_id ? $user_id : get_current_user_id();
-        
-		$template_settings = get_option( 'bookacti_template_settings' );
-		
-		if( empty( $template_settings ) ){
-			$template_settings = array();
-		}
-		if( empty( $template_settings['default_template_per_user'] ) ) {
-			$template_settings['default_template_per_user'] = array();
-		} 
-		if( empty( $template_settings['default_template_per_user'][ $user_id ] ) ) {
-			$template_settings['default_template_per_user'][ $user_id ] = 0;
-		} 
-		
-		return intval( $template_settings['default_template_per_user'][ $user_id ] );
-	}
-	
-	
-	// UPDATE USER DEFAULT TEMPLATE
-	function bookacti_update_user_default_template( $template_id, $user_id = false ) {
-		
-		$user_id = $user_id ? $user_id : get_current_user_id();
-        
-		$template_settings = get_option( 'bookacti_template_settings' );
-		if( ! is_array( $template_settings['default_template_per_user'] ) ) {
-			$template_settings['default_template_per_user'] = array();
-		}
-		
-		// If no change, return 0
-		if( isset( $template_settings['default_template_per_user'][ $user_id ] )
-		&&  $template_settings['default_template_per_user'][ $user_id ] === $template_id ) {
-			return 0;
-		}
-		
-		$template_settings['default_template_per_user'][ $user_id ] = $template_id;
-		
-		$is_updated = update_option( 'bookacti_template_settings', $template_settings );
-		
-		return $is_updated;
-	}
 
 	
-	
-    
 // ACTIVITIES
     // FETCH ACTIVITIES
     function bookacti_fetch_activities( $return_type = OBJECT ) {
@@ -911,12 +832,6 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		
         return $activities_array;
     }
-    
-	
-	// GET ACTIVITY MANAGERS
-	function bookacti_get_activity_managers( $activity_id ) {	
-		return bookacti_get_managers( 'activity', $activity_id );
-	}
 	
 	
     // GET ACTIVITY PARAMETERS
@@ -1039,8 +954,6 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
     }
     
 
-	
-	
 // TEMPLATES X ACTIVITIES ASSOCIATION
 	// INSERT A TEMPLATE X ACTIVITY ASSOCIATION
 	function bookacti_insert_templates_x_activities( $template_ids, $activity_ids ) {
@@ -1200,58 +1113,3 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		
         return $templates_array;
     }
-	
-	
-	// UPDATE THE LIST OF TEMPLATES ASSOCIATED TO AN ACTIVITY ID
-	function bookacti_update_templates_list_by_activity_id( $new_templates, $activity_id ) {
-		$old_templates = bookacti_get_templates_by_activity_ids( $activity_id );
-		
-		// Unset templates already added
-		foreach( $new_templates as $i => $new_template ) {
-			foreach( $old_templates as $j => $old_template ) {
-				if( $new_template === $old_template ) {
-					unset( $new_templates[ $i ] );
-					unset( $old_templates[ $j ] );
-				}
-			}
-		}
-		
-		// Insert new templates
-		$inserted = 0;
-		if( count( $new_templates ) > 0 ) {
-			$inserted = bookacti_insert_templates_x_activities( $new_templates, array( $activity_id ) );
-		}
-		
-		// Delete old templates
-		$deleted = 0;
-		if( count( $old_templates ) > 0 ) {
-			$deleted = bookacti_delete_templates_x_activities( $old_templates, array( $activity_id ) );
-		}
-		
-		return $inserted + $deleted;
-	}
-
-	
-	// UPDATE THE LIST OF ACTIVITIES ASSOCIATED TO A TEMPLATE ID
-	function bookacti_bind_activities_to_template( $new_activities, $template_id ) {
-		$old_activities = bookacti_get_activities_by_template_ids( $template_id, true );
-		
-		// Unset templates already added
-		foreach( $new_activities as $i => $new_activity ) {
-			foreach( $old_activities as $j => $old_activity ) {
-				if( $new_activity === $old_activity ) {
-					unset( $new_activities[ $i ] );
-				}
-			}
-		}
-		
-		// Insert new activity bounds
-		$inserted = 0;
-		if( count( $new_activities ) > 0 ) {
-			$inserted = bookacti_insert_templates_x_activities( array( $template_id ), $new_activities );
-		}
-		
-		return $inserted;
-	}
-
-

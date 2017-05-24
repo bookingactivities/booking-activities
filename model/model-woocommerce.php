@@ -332,14 +332,37 @@ function bookacti_update_bookings_user_id( $user_id, $customer_id ) {
 }
 
 
-// DEACTIVATE EXPIRED BOOKINGS
+/**
+ * Deactivate expired bookings
+ *
+ * @since	1.0.0
+ * @version	1.0.6
+ */
 function bookacti_deactivate_expired_bookings() {
 	global $wpdb;
-
-	$query_deactivate_expired = 'UPDATE ' . BOOKACTI_TABLE_BOOKINGS . ' SET active = 0, state = "expired" WHERE expiration_date <= UTC_TIMESTAMP() AND state = "in_cart" AND active = 1';
+	
+	$query_expired_ids	= 'SELECT id '
+						. ' FROM ' . BOOKACTI_TABLE_BOOKINGS . ' '
+						. ' WHERE expiration_date <= UTC_TIMESTAMP() '
+						. ' AND state = "in_cart" '
+						. ' AND active = 1';
+	$deactivated_ids = $wpdb->get_results( $query_expired_ids, OBJECT );
+	
+	$query_deactivate_expired	= 'UPDATE ' . BOOKACTI_TABLE_BOOKINGS . ' '
+								. ' SET active = 0, state = "expired" '
+								. ' WHERE expiration_date <= UTC_TIMESTAMP() '
+								. ' AND state = "in_cart" '
+								. ' AND active = 1';
 	$deactivated = $wpdb->query( $query_deactivate_expired );
-
-	return $deactivated;
+	
+	$return = false;
+	if( $deactivated ){
+		foreach( $deactivated_ids as $deactivated_id ) {
+			$return[] = $deactivated_id->id;
+		}
+	}
+	
+	return $return;
 }
 
 

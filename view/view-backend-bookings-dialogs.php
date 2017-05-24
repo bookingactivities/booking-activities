@@ -110,6 +110,9 @@ $user_id = get_current_user_id();
 <div id='bookacti-bookings-list-param-dialog' class='bookacti-backend-dialogs bookacti-bookings-dialogs' >
 	<form id='bookacti-bookings-list-param-form'>
 		<?php
+		// Create a nonce field
+		wp_nonce_field( 'bookacti_update_booking_list_settings', 'nonce_update_booking_list_settings' );
+		
 		//Fill the array of tabs with their label, callback for content and display order
 		$bookings_list_tabs = apply_filters( 'bookacti_bookings_list_dialog_tabs', array (
 			array(	'label'			=> _x( 'Filter', 'The action to filter', BOOKACTI_PLUGIN_NAME ),

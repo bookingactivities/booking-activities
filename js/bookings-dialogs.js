@@ -120,7 +120,7 @@ function bookacti_dialog_booking_list_param( booking_system )
 				// Retrieve params values
 				var show_inactive_bookings	= $j( '#bookacti-bookings-list-param-dialog #bookacti-bookings-show-inactive-bookings' ).is( ':checked' ) ? 1 : 0;
 				var show_temporary_bookings	= $j( '#bookacti-bookings-list-param-dialog #bookacti-bookings-show-temporary-bookings' ).is( ':checked' ) ? 1 : 0;
-				var nonce					= $j( '#bookacti-bookings-list-param-dialog #bookacti_update_booking_list_settings' ).val();
+				var nonce					= $j( '#bookacti-bookings-list-param-dialog #nonce_update_booking_list_settings' ).val();
 				
 				bookacti_start_loading_booking_system( booking_system );
 
@@ -493,12 +493,14 @@ function bookacti_dialog_change_booking_state( booking_id ) {
 								
 								// Reload calendar if is bookings page and if active changed
 								if( is_bookings_page && response.active_changed ) {
-									var booking_method	= $j( '#bookacti-booking-system-bookings-page' ).data( 'booking-method' );
-									if( booking_method === 'calendar' || ! ( booking_method in bookacti_localized.available_booking_methods ) ) {
+									var booking_method		= $j( '#bookacti-booking-system-bookings-page' ).data( 'booking-method' );
+									var fetch_past_events	= true;
+									var context				= 'booking_page';
+									if( booking_method === 'calendar' || ! $j.inArray( booking_method, bookacti_localized.available_booking_methods ) ) {
 										$j( '#bookacti-booking-system-bookings-page .bookacti-calendar' ).fullCalendar( 'removeEvents' );
-										bookacti_fetch_calendar_events( $j( '#bookacti-booking-system-bookings-page .bookacti-calendar' ) );
+										bookacti_fetch_calendar_events( $j( '#bookacti-booking-system-bookings-page .bookacti-calendar' ), fetch_past_events, context );
 									} else {
-										$j( '#bookacti-booking-system-bookings-page' ).trigger( 'bookacti_refetch_events', [ booking_method, false ] );
+										$j( '#bookacti-booking-system-bookings-page' ).trigger( 'bookacti_refetch_events', [ booking_method, fetch_past_events, context ] );
 									}
 									
 								}
@@ -583,7 +585,7 @@ function bookacti_dialog_reschedule_booking( booking_id ) {
 				booking_system.trigger( 'bookacti_before_booking_system_loads', [ response.event_settings ] );
 				
 				// Load booking system with new data
-				if ( booking_method === 'calendar' || ! ( booking_method in bookacti_localized.available_booking_methods ) ) {
+				if ( booking_method === 'calendar' || ! $j.inArray( booking_method, bookacti_localized.available_booking_methods ) ) {
 					bookacti_load_calendar( booking_system, true );
 				} else {
 					booking_system.trigger( 'bookacti_load_booking_system', [ booking_method, false ] );
@@ -666,7 +668,8 @@ function bookacti_dialog_reschedule_booking( booking_id ) {
 								if( is_bookings_page ) {
 									row.remove();
 									$j( '#bookacti-calendar-bookings-page' ).fullCalendar( 'removeEvents' );
-									bookacti_fetch_calendar_events( $j( '#bookacti-calendar-bookings-page' ) );
+									var context = is_bookings_page ? 'booking_page' : 'frontend';
+									bookacti_fetch_calendar_events( $j( '#bookacti-calendar-bookings-page' ), true, context );
 								}
 								
 								$j( 'body' ).trigger( 'bookacti_booking_rescheduled', [ booking_id, event_start, event_end, response ] );

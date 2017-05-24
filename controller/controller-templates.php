@@ -336,10 +336,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 		if( $is_nonce_valid && $is_allowed ) {
 
-			$period		= bookacti_get_min_period( $template_id );
 			$template	= bookacti_get_template( $template_id, ARRAY_A );
-
-			$template[ 'period' ] = $period;
 
 			if( is_array( $template ) && ! empty( $template ) ){
 				$template[ 'status' ] = 'success';
@@ -354,8 +351,12 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	}
 	
 	
-	// Create a new template
-	add_action( 'wp_ajax_bookactiInsertTemplate', 'bookacti_controller_insert_template' );
+	/**
+	 * AJAX Controller - Create a new template
+	 *
+	 * @since	1.0.0
+	 * @version	1.0.6
+	 */
 	function bookacti_controller_insert_template() {
 		
 		// Check nonce and capabilities
@@ -363,28 +364,41 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		$is_allowed		= current_user_can( 'bookacti_create_templates' );
 		
 		if( $is_nonce_valid && $is_allowed ) {
-			$template_title			= sanitize_text_field( $_POST['template-title'] );
-			$template_start			= bookacti_sanitize_date( $_POST['template-opening'] );
-			$template_end			= bookacti_sanitize_date( $_POST['template-closing'] );
-			$duplicated_template_id	= intval( $_POST['duplicated-template-id'] );
-			$template_managers		= bookacti_format_template_managers( $_POST['template-managers'] );
-			$template_settings		= bookacti_format_template_settings( $_POST['templateOptions'] );
 			
-			$lastid = bookacti_insert_template( $template_title, $template_start, $template_end, $template_managers, $template_settings, $duplicated_template_id );
+			$template_title	= sanitize_text_field( $_POST['template-title'] );
+			$template_start	= bookacti_sanitize_date( $_POST['template-opening'] );
+			$template_end	= bookacti_sanitize_date( $_POST['template-closing'] );
+			
+			$is_template_valid = bookacti_validate_template_data( $template_title, $template_start, $template_end );
 
-			if( $lastid ) {
-				wp_send_json( array( 'status' => 'success', 'template_id' => $lastid ) );
-			} else {
-				wp_send_json( array( 'status' => 'failed' ) );
+			// Create template only if its data are consistent
+			if( $is_template_valid['status'] === 'valid' ) {
+			
+				$duplicated_template_id	= intval( $_POST['duplicated-template-id'] );
+				$template_managers		= bookacti_format_template_managers( $_POST['template-managers'] );
+				$template_settings		= bookacti_format_template_settings( $_POST['templateOptions'] );
+
+				$lastid = bookacti_insert_template( $template_title, $template_start, $template_end, $template_managers, $template_settings, $duplicated_template_id );
+
+				if( $lastid ) {
+					wp_send_json( array( 'status' => 'success', 'template_id' => $lastid ) );
+				} else {
+					wp_send_json( array( 'status' => 'failed' ) );
+				}
 			}
 		} else {
 			wp_send_json( array( 'status' => 'failed', 'error' => 'not_allowed' ) );
 		}
 	}
+	add_action( 'wp_ajax_bookactiInsertTemplate', 'bookacti_controller_insert_template' );
 	
 	
-	// Update template
-	add_action( 'wp_ajax_bookactiUpdateTemplate', 'bookacti_controller_update_template' );
+	/**
+	 * AJAX Controller - Update template
+	 *
+	 * @since	1.0.0
+	 * @version	1.0.6
+	 */
 	function bookacti_controller_update_template() {
 		
 		$template_id	= intval( $_POST['template-id'] );
@@ -394,17 +408,16 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		$is_allowed		= current_user_can( 'bookacti_edit_templates' ) && bookacti_user_can_manage_template( $template_id );
 		
 		if( $is_nonce_valid && $is_allowed ) {
-
+			
+			$template_title	= sanitize_text_field( $_POST['template-title'] );
 			$template_start	= bookacti_sanitize_date( $_POST['template-opening'] );
 			$template_end	= bookacti_sanitize_date( $_POST['template-closing'] );
 
-			$is_template_valid = bookacti_validate_template( $template_id, $template_start, $template_end );
+			$is_template_valid = bookacti_validate_template_data( $template_title, $template_start, $template_end );
 
-			//We can update the template if the new period include all reservations already made
-			//or if none were made
+			// Update template only if its data are consistent
 			if( $is_template_valid['status'] === 'valid' ) {
 
-				$template_title		= sanitize_text_field( $_POST['template-title'] );
 				$template_settings	= bookacti_format_template_settings( $_POST['templateOptions'] );
 				$template_managers	= bookacti_format_template_managers( $_POST['template-managers'] );
 				
@@ -425,6 +438,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			wp_send_json( array( 'status' => 'failed', 'errors' => array( 'not_allowed' ) ) );
 		}
 	}
+	add_action( 'wp_ajax_bookactiUpdateTemplate', 'bookacti_controller_update_template' );
 	
 	
 	// Deactivate a template

@@ -2,9 +2,13 @@
 // Exit if accessed directly
 if ( ! defined( 'ABSPATH' ) ) { exit; }
 
-//Fetch events in order to display them
-add_action( 'wp_ajax_bookactiFetchEvents', 'bookacti_controller_fetch_events' );
-add_action( 'wp_ajax_nopriv_bookactiFetchEvents', 'bookacti_controller_fetch_events' );
+
+/**
+ * AJAX Controller - Fetch events in order to display them
+ *
+ * @since	1.0.0
+ * @version	1.0.6
+ */
 function bookacti_controller_fetch_events() {
 	
 	$is_admin	= intval( $_POST[ 'is_admin' ] );
@@ -33,18 +37,21 @@ function bookacti_controller_fetch_events() {
 		$activities			= bookacti_ids_to_array( $_POST[ 'activities' ] );
 		$user_datetime		= bookacti_sanitize_datetime( $_POST[ 'user_datetime' ] );
 		$fetch_past_events	= intval( $_POST[ 'fetch_past_events' ] );
+		$context			= in_array( $_POST[ 'context' ], array( 'frontend', 'editor', 'booking_page' ) ) ? $_POST[ 'context' ] : 'frontend';
 		
 		$user_datetime_object = DateTime::createFromFormat( 'Y-m-d H:i:s', $user_datetime );
 		$user_datetime_object->setTimezone( new DateTimeZone( 'UTC' ) );
 		
-		$events = bookacti_fetch_calendar_events( $activities, $templates, $user_datetime_object, boolval( $fetch_past_events ) );
-		$activities_array = bookacti_get_activities_by_template_ids( $templates, false );
+		$events				= bookacti_fetch_calendar_events( $activities, $templates, $user_datetime_object, $fetch_past_events, $context );
+		$activities_array	= bookacti_get_activities_by_template_ids( $templates, false );
 
 		wp_send_json( array( 'status' => 'success', 'events' => $events, 'activities' => $activities_array ) );
 	} else {
 		wp_send_json( array( 'status' => 'failed', 'error' => 'not_allowed' ) );
 	}
 }
+add_action( 'wp_ajax_bookactiFetchEvents', 'bookacti_controller_fetch_events' );
+add_action( 'wp_ajax_nopriv_bookactiFetchEvents', 'bookacti_controller_fetch_events' );
 	
 
 // Retrieve HTML elements of the calendar booking system

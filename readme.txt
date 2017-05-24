@@ -239,9 +239,17 @@ If you don't find the answer you need, please [contact us](http://booking-activi
 
 == Changelog ==
 
-= 1.0.6	=
-* Add - Added bookacti_updated action hook and stored plugin version in database
+= 1.0.6 - 2017/05/24 =
+* Lib - Updated FullCalendar to 3.4 and Moment.js to 2.18.1
+* Tweak - Calendars range is not restricted by booked events anymore
+* Fix - Events out of their calendar range are not displayed and are impossible to book
+* Fix - Fixed update booking list parameters always resulting in a permission error
 * Fix - Added defined() check before constant definitions to avoid collisions
+* Add - Added bookacti_updated action hook and stored plugin version in database
+* Add - Added bookacti_validate_template_data action hook on template insert / update
+* Tweak - Moved some functions from model-template.php to functions-template.php
+* Delete - Deleted bookacti_validate_template function, replaced by bookacti_validate_template_data
+* Delete - Deleted bookacti_deactivate_expired_bookings_hourly function, replaced by bookacti_controller_deactivate_expired_bookings
 
 = 1.0.5 - 2017/05/11 =
 * Fix - Fixed error messages not disappearing in event dialog on calendars editor

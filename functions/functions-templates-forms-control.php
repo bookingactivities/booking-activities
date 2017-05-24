@@ -2,59 +2,37 @@
 // Exit if accessed directly
 if ( ! defined( 'ABSPATH' ) ) { exit; }
 
-//Make sure the template period include all booked events
-function bookacti_validate_template( $template_id, $template_start, $template_end ) {
-    //Get min period possible
-    $dates = bookacti_get_min_period( $template_id );
+
+/**
+ * Validate template basic data
+ *
+ * @since	1.0.6
+ * @param	int		$template_id
+ * @param	string	$template_start Format 'YYYY-MM-DD'
+ * @param	string	$template_end	Format 'YYYY-MM-DD'
+ * @return	array
+ */
+function bookacti_validate_template_data( $template_title, $template_start, $template_end ) {
 
     //Init var to check with worst case
-	$is_admin						= current_user_can( 'bookacti_edit_templates' ) && bookacti_user_can_manage_template( $template_id );
-    $is_min                         = true;
-    $is_max                         = true;
-    $is_template_start_inf_to_min   = false;
-    $is_start_before_end			= false;
-    $is_template_end_sup_to_max     = false;
-    $is_period_ok		            = false;
-
+    $is_template_start_before_end	= false;
+	
     //Prepare var that will be used to check the conditions
     $start_date = strtotime( $template_start );
     $end_date   = strtotime( $template_end );
-    $min_date   = strtotime( $dates['from'] );
-    $max_date   = strtotime( $dates['to'] );
-	
 	
     //Make the tests to validate the var
-    if( $dates['from'] === null )   { $is_min = false; }
-    if( $dates['to']   === null )   { $is_max = false; }
-
-    if( $is_min && ( $start_date <= $min_date ) )   { $is_template_start_inf_to_min = true; }
-    if( $is_max && ( $end_date   >= $max_date ) )   { $is_template_end_sup_to_max   = true; }
-    if( $start_date <= $end_date )					{ $is_start_before_end   = true; }
-	
-	if( $is_start_before_end ) {
-		if( ! $is_min && $is_template_end_sup_to_max )                      { $is_period_ok = true; }
-		if( ! $is_max && $is_template_start_inf_to_min )                    { $is_period_ok = true; }
-		if( ! $is_max && ! $is_min )                                        { $is_period_ok = true; }
-		if( $is_template_start_inf_to_min && $is_template_end_sup_to_max )  { $is_period_ok = true; }
-	}
+    if( $start_date <= $end_date ) { $is_template_start_before_end = true; }
 	
     $return_array = array();
     $return_array['status'] = 'valid';
     $return_array['errors'] = array();
-    if( ! $is_period_ok ) {
+    if( ! $is_template_start_before_end ) {
         $return_array['status'] = 'not_valid';
-		if( $is_start_before_end ) {
-			$return_array['errors'][] = 'error_bookings_out_of_template';
-		} else {
-			$return_array['errors'][] = 'error_template_end_before_begin';
-		}
+		$return_array['errors'][] = 'error_template_end_before_begin';
     }
-	if( ! $is_admin ) {
-		$return_array['status'] = 'not_valid';
-        $return_array['errors'][] = 'error_not_allowed';
-	}
     
-    return $return_array;
+    return apply_filters( 'bookacti_validate_template_data', $return_array, $template_title, $template_start, $template_end );
 }
 
 
