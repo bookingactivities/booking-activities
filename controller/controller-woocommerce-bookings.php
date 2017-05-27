@@ -50,6 +50,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	 * Deactivate expired bookings
 	 *
 	 * @since	1.0.6
+	 * @version	1.1.0
 	 */
 	function bookacti_controller_deactivate_expired_bookings() {
 
@@ -59,7 +60,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			/* translators: 'cron' is a robot that execute scripts every X hours. Don't try to translate it. */
 			$log = esc_html__( 'The expired bookings were not correctly deactivated by cron.', BOOKACTI_PLUGIN_NAME );
 			bookacti_log( $log, 'error' );
-		} else {
+		} else if ( is_array( $deactivated_ids ) ) {
 			// Yell the booking state change 
 			// (important for consistancy between WooCommerce order items and Booking Activities bookings)
 			foreach( $deactivated_ids as $booking_id ) {
@@ -326,17 +327,23 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	}
 	
 
-	// Turn meta state to new status
-	add_action( 'bookacti_booking_state_changed', 'bookacti_woocommerce_turn_booking_meta_state_to_new_state', 10 , 3 );
+	/**
+	 * Turn meta state to new status
+	 *
+	 * @since	1.0.0
+	 * @version	1.1.0
+	 */
 	function bookacti_woocommerce_turn_booking_meta_state_to_new_state( $booking_id, $new_state, $args = array() ) {
 		$item = bookacti_get_order_item_by_booking_id( $booking_id );
 		
-		// Turn meta state to new state
-		$old_booking_state = wc_get_order_item_meta( $item[ 'id' ], 'bookacti_state', true );
-		wc_update_order_item_meta( $item[ 'id' ], 'bookacti_state', $new_state );
-		if( in_array( $new_state, array( 'refunded', 'refund_requested' ) ) ) {
-			$refund_action = $args[ 'refund_action' ] ? $args[ 'refund_action' ] : 'manual';
-			wc_update_order_item_meta( $item[ 'id' ], '_bookacti_refund_method', $refund_action );
+		if( $item ) {
+			// Turn meta state to new state
+			$old_booking_state = wc_get_order_item_meta( $item[ 'id' ], 'bookacti_state', true );
+			wc_update_order_item_meta( $item[ 'id' ], 'bookacti_state', $new_state );
+			if( in_array( $new_state, array( 'refunded', 'refund_requested' ) ) ) {
+				$refund_action = $args[ 'refund_action' ] ? $args[ 'refund_action' ] : 'manual';
+				wc_update_order_item_meta( $item[ 'id' ], '_bookacti_refund_method', $refund_action );
+			}
 		}
 		
 		
@@ -403,6 +410,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			}
 		}
 	}
+	add_action( 'bookacti_booking_state_changed', 'bookacti_woocommerce_turn_booking_meta_state_to_new_state', 10 , 3 );
 	
 	
 	// Add refund action process

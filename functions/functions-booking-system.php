@@ -385,7 +385,6 @@ function bookacti_create_repeated_events( $event, $shared_data = array(), $user_
 		) {
 			
 			$event_array = array(
-				'occurence_id'	=> $i,
 				'start'			=> $event_start->format('Y-m-d H:i:s'),
 				'end'			=> $event_end->format('Y-m-d H:i:s'),
 				'bookings'		=> bookacti_get_number_of_bookings( $event->event_id, $event_start->format('Y-m-d H:i:s'), $event_end->format('Y-m-d H:i:s') )

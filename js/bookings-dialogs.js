@@ -136,8 +136,8 @@ function bookacti_dialog_booking_list_param( booking_system )
 					success: function( response ){
 						if( response.status === 'success' ) {
 							// Reload the booking list
-							if( $j( '.bookacti-selected-event' ).length ) {
-								$j( '.bookacti-selected-event' ).trigger( 'click' );
+							if( $j( '.bookacti-picked-event' ).length ) {
+								$j( '.bookacti-picked-event' ).trigger( 'click' );
 							}
 						} else if( response.status === 'failed' ) {
 							var message_error = bookacti_localized.error_update_settings;

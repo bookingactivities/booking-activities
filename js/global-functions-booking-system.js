@@ -53,10 +53,10 @@ function bookacti_fill_picked_activity_summary( booking_system, activity_id, qty
 	var booking_system_id	= booking_system.data( 'booking-system-id' );
 	
 	if( ! activity_id ) {
-		if( selectedEvents[ booking_system_id ] !== undefined ) {
-			if( selectedEvents[ booking_system_id ][ 0 ] !== undefined ) {
-				if( selectedEvents[ booking_system_id ][ 0 ][ 'activity-id' ] !== undefined ) {
-					activity_id = selectedEvents[ booking_system_id ][ 0 ][ 'activity-id' ];
+		if( pickedEvents[ booking_system_id ] !== undefined ) {
+			if( pickedEvents[ booking_system_id ][ 0 ] !== undefined ) {
+				if( pickedEvents[ booking_system_id ][ 0 ][ 'activity-id' ] !== undefined ) {
+					activity_id = pickedEvents[ booking_system_id ][ 0 ][ 'activity_id' ];
 				}
 			}
 		}
@@ -119,8 +119,8 @@ function bookacti_clear_booking_system_displayed_info( booking_system ) {
 	booking_system.siblings( '.bookacti-date-picked' ).find( '.bookacti-date-picked-from' ).empty();
 	booking_system.siblings( '.bookacti-date-picked' ).find( '.bookacti-date-picked-separator' ).empty();
 	booking_system.siblings( '.bookacti-date-picked' ).find( '.bookacti-date-picked-to' ).empty();
-	booking_system.find( '.fc-event' ).removeClass( 'bookacti-selected-event' );
-	selectedEvents[ booking_system_id ] = [];
+	booking_system.find( '.fc-event' ).removeClass( 'bookacti-picked-event' );
+	pickedEvents[ booking_system_id ] = [];
 	
 	// Clear errors
 	booking_system.siblings( '.bookacti-notices' ).hide();

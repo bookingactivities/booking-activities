@@ -18,46 +18,55 @@
 
 #bookacti-template-container + hr { margin: 30px auto; }
 
+/* Events */
+#bookacti-template-container .fc-event.fc-draggable { cursor: move; }
+.bookacti-event-over::after			{ content: ' '; position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 3; background: -moz-linear-gradient(top, rgba(0,0,0,0.2) 0%, rgba(0,0,0,0) 50%); background: -webkit-linear-gradient(top, rgba(0,0,0,0.2) 0%,rgba(0,0,0,0) 50%); background: linear-gradient(to bottom, rgba(0,0,0,0.2) 0%,rgba(0,0,0,0) 50%); filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#000000', endColorstr='#00000000',GradientType=0 ); }
+
+/* Event actions */
+.fc-event				{ transition: all 0.2s; }
+.bookacti-event-actions	{ display: none; position: absolute; right: 3px; top: 2px; z-index: 5; transition: all 0.2s; }
+.bookacti-event-action	{ display: inline-block; vertical-align: middle; margin-left: 10px; }
+.bookacti-event-over .bookacti-event-actions { display: block; }
+
+.bookacti-event-action-select-checkbox								{ margin-right: 0 !important; border-radius: 50%; min-width: 16px !important; min-height: 16px !important; max-width: 16px !important; max-height: 16px !important; width: 16px !important; height: 16px !important; }
+.bookacti-event-action-select-checkbox:not(:checked):hover::before	{ content: "\f147"; margin: -3px 0 0 -4px; color: #aaa; float: left; display: inline-block; vertical-align: middle; width: 16px !important; font: 400 21px/1 dashicons; speak: none; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
+.bookacti-event-action-select-checkbox:checked::before				{ margin: -3px 0 0 -4px !important; font: 400 21px/1 dashicons !important; }
+.bookacti-selected-event											{ border-width: 3px; }
+.bookacti-selected-event .fc-bg										{ opacity: 0.5; transition: opacity 0.2s; }
+.bookacti-selected-event:not(.bookacti-picked-event) .bookacti-event-actions { right: 1px; top: 0; }
+
+.bookacti-event-action-edit-button			{ font-size: 16px; transition: color 0.2s;  }
+.bookacti-event-action-edit-button:hover	{ color: #aaa; cursor: pointer; }
+
+
 /* Sidebar */
 #bookacti-template-sidebar		{ width: 180px; padding-right: 10px; }
 .bookacti-disabled-img			{ cursor: auto; pointer-events: none; opacity: 0.5; }
 
-.bookacti-templates-box			{ -webkit-border-radius: 6px; border-radius: 6px; padding: 20px 10px; margin-bottom: 12px; border: 1px solid #bbb; }
-.bookacti-template-box-title	{ width: 100%; font-size: 1.2em; margin-bottom: 20px; font-weight: bold; }
+.bookacti-templates-box			{ -webkit-border-radius: 6px; border-radius: 6px; padding: 10px; margin-bottom: 12px; border: 1px solid #bbb; }
+.bookacti-template-box-title	{ width: 100%; font-size: 1.2em; margin-bottom: 10px; font-weight: bold; }
 
-#bookacti-template-picker-container { padding: 0; }
-#bookacti-template-picker{ 
-    height: auto;
-    width: 100%; 
-    margin: -4px 0 20px -2px; 
-    padding: 0;
-    background: none; 
-    border: none; 
-    -webkit-box-shadow: none; 
-    box-shadow: none; 
-    font-size: 1.2em; 
-    font-weight: bold; 
-    text-align: left;
-}
-#bookacti-template-actions			{ display: table; width: 100%; }
-#bookacti-template-actions div		{ display: table-cell; width: 33.33%; vertical-align: middle; text-align: center; }
-#bookacti-template-actions div img	{ cursor: pointer; max-width: 40px; max-height: 40px; }
+.bookacti-template-box-title h4	{ display: table-cell; width: 100%; vertical-align: middle; }
+.bookacti-insert-button			{ display: table-cell; padding-left: 4px; vertical-align: middle;  }
+.bookacti-insert-button img		{ display: inline; cursor: pointer; max-width: 32px; max-height: 32px; margin-right: -6px; }
 
-#bookacti-template-trash-container		{ text-align: center; }
-#bookacti-template-trash-open			{ display: none; }
-#bookacti-template-trash-container img	{ max-width: 48px; }
-
-#bookacti-template-box-activities-title		{ display: table-cell; width: 100%; vertical-align: middle; }
-#bookacti-template-add-activity-button		{ display: table-cell; padding-left: 10px; vertical-align: middle;  }
-#bookacti-template-add-activity-button img	{ display: inline; cursor: pointer; max-width: 40px; max-height: 40px; }
+#bookacti-template-picker-container	{ display: table-cell; width: 100%; vertical-align: middle; }
+#bookacti-template-picker			{ width: 100%; }
+#bookacti-update-template			{ display: table-cell; vertical-align: middle; padding-left: 10px; }
+#bookacti-update-template img		{ display: inline; vertical-align: middle; cursor: pointer; max-width: 20px; max-height: 20px; }
 
 .activity-row			{ width: 100%; height: 24px; }
 .activity-container		{ display: table-cell; width: 100%; vertical-align: middle; overflow: hidden; }
-#bookacti-template-activities-container .fc-event { cursor: move; max-height: 16px; padding-left: 5px; }
 .activity-show-hide		{ display: table-cell; vertical-align: middle; padding-right: 10px; }
 .activity-show-hide img	{ display: inline; vertical-align: middle; cursor: pointer; max-width: 20px; max-height: 20px; }
 .activity-gear			{ display: table-cell; vertical-align: middle; padding-left: 10px; }
 .activity-gear img		{ display: inline; vertical-align: middle; cursor: pointer; max-width: 20px; max-height: 20px; }
+#bookacti-template-activities-container .fc-event { cursor: move; max-height: 16px; padding-left: 5px; }
+
+#bookacti-group-sets div			{ display: table-cell; vertical-align: middle; padding-right: 10px; }
+#bookacti-group-sets div:last-child	{ padding-right: 0; }
+#bookacti-group-sets img			{ display: inline; vertical-align: middle; cursor: pointer; max-width: 20px; max-height: 20px; }
+.bookacti-group-set-title			{ width: 100%; }
 
 
 /* First Template Area */
@@ -78,6 +87,10 @@
 #bookacti-activity-import-dialog label			{ display: inline-block; width: 150px; font-weight: bold; }
 #bookacti-activity-import-dialog div			{ margin-bottom: 10px; }
 #bookacti-activity-import-dialog div:last-child	{ margin-bottom: 0; }
+
+#bookacti-activity-duration-days,
+#bookacti-activity-duration-hours,
+#bookacti-activity-duration-minutes	{ width: 50px; }
 
 
 /* Unbind dialog */

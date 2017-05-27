@@ -124,16 +124,8 @@ function bookacti_init_activities() {
 				$j( this ).parent().css( 'overflow', 'visible' ); 
 			},
             stop: function( event, ui ) { 
-            isDragging = false;
-			$j( this ).parent().css( 'overflow', '' );
-            
-                if( bookacti_is_mouse_over_elem( $j( '#bookacti-template-trash-container' ) ) && loadingNumber['template'] === 0 ) {
-                    bookacti_dialog_delete_activity( $j( this ).data( 'activity-id' ) );
-
-                    // Force the bin to close
-                    $j( '#bookacti-template-trash-open' ).hide();
-                    $j( '#bookacti-template-trash-closed' ).show();
-                }
+				isDragging = false;
+				$j( this ).parent().css( 'overflow', '' );
             }
         });
     });
@@ -175,6 +167,27 @@ function bookacti_init_show_hide_activities_switch() {
 		var is_visible = $j( this ).data( 'activity-visible' );
 		bookacti_update_shortcode_generator_activity_ids( activity_id, is_visible, false );
     });
+}
+
+
+// Init event actions
+function bookacti_refresh_selected_events_display() {
+	$j( '.fc-event' ).removeClass( 'bookacti-selected-event' );
+	$j( '.fc-event .bookacti-event-action-select-checkbox' ).prop( 'checked', false );
+
+	$j.each( selectedEvents[ 'template' ], function( i, selected_event ) {
+		var element = $j( '.fc-event[data-event-id="' + selected_event['event_id'] + '"][data-event-date="' + selected_event['event_start'].format( 'YYYY-MM-DD' ) + '"]' );
+		// Format selected events
+		element.addClass( 'bookacti-selected-event' );
+
+		// Check the box
+		element.find( '.bookacti-event-action-select-checkbox' ).prop( 'checked', true );
+
+		// Show select actions
+		element.find( '.bookacti-event-actions' ).show();
+		element.find( '.bookacti-event-action[data-hide-on-mouseout="1"]' ).hide();
+		element.find( '.bookacti-event-action-select' ).show();
+	});
 }
 
 
@@ -265,45 +278,13 @@ function bookacti_refetch_events_on_template( event ) {
 }
 
 
-//Visual feedback of the trash opening or closing whether the user drag something onto it or not
-function bookacti_open_or_close_trash() {
-    if( bookacti_is_mouse_over_elem( $j( '#bookacti-template-trash-container' ) ) && isDragging ) 
-    {
-        $j( '#bookacti-template-trash-open' ).show();
-        $j( '#bookacti-template-trash-closed' ).hide();
-    } else {
-        $j( '#bookacti-template-trash-open' ).hide();
-        $j( '#bookacti-template-trash-closed' ).show();
-    }
-}
-
-
-//Visual feedback when hovering icons
-function bookacti_hover_template_icons() {
-    var srcPath = bookacti_localized.plugin_path + '/img/';
-    $j( '#bookacti-insert-template img' ).hover(
-        function() { $j( this ).attr( 'src', srcPath + 'add-hover.png' ); }, 
-        function() { $j( this ).attr( 'src', srcPath + 'add.png' ); } );
-    $j( '#bookacti-update-template img' ).hover( 
-        function() { $j( this ).attr( 'src', srcPath + 'edit-hover.png' ); },
-        function() { $j( this ).attr( 'src', srcPath + 'edit.png' ); } );
-    $j( '#bookacti-delete-template img' ).hover( 
-        function() { $j( this ).attr( 'src', srcPath + 'delete-hover.png' ); },
-        function() { $j( this ).attr( 'src', srcPath + 'delete.png' ); } );
-}
-
-
-
 //Launch dialogs
 function bookacti_bind_template_dialogs() {
 	if( template_id ) {
 		$j( '#bookacti-update-template' ).off().on( 'click', 'img', function() { 
 			bookacti_dialog_update_template( template_id ); 
 		}); 
-		$j( '#bookacti-delete-template' ).off().on( 'click', 'img', function() {
-			bookacti_dialog_deactivate_template( template_id ); 
-		});
-		$j( '#bookacti-template-activities-container' ).off().on( 'click', '#bookacti-template-add-activity-button img, #bookacti-template-add-first-activity-button img', function() {
+		$j( '#bookacti-template-activities-container' ).off().on( 'click', '#bookacti-insert-activity img, #bookacti-template-add-first-activity-button img', function() {
 			if( $j( '#bookacti-template-picker option' ).length > 1 ) {
 				bookacti_dialog_choose_activity_creation_type();
 			} else {
@@ -311,10 +292,10 @@ function bookacti_bind_template_dialogs() {
 			}
 		});
 	} else {
-		$j( '#bookacti-update-template, #bookacti-delete-template' ).off().on( 'click', 'img', function() {
+		$j( '#bookacti-update-template' ).off().on( 'click', 'img', function() {
 			alert( bookacti_localized.error_no_template_selected );
 		});
-		$j( '#bookacti-template-activities-container' ).off().on( 'click', '#bookacti-template-add-activity-button img, #bookacti-template-add-first-activity-button img', function() {
+		$j( '#bookacti-template-activities-container' ).off().on( 'click', '#bookacti-insert-activity img, #bookacti-template-add-first-activity-button img', function() {
 			alert( bookacti_localized.error_no_template_selected );
 		});
 	}
@@ -372,6 +353,7 @@ function bookacti_init_add_and_remove_items() {
 //Empty all dialog forms
 function bookacti_empty_all_dialog_forms() {
     $j( '.bookacti-backend-dialogs .form-error' ).remove();
+	$j( '.bookacti-backend-dialogs input[type="hidden"]' ).val( '' );
 	$j( '.bookacti-backend-dialogs input[type="text"]' ).val( '' );
     $j( '.bookacti-backend-dialogs input[type="number"]' ).val( '' );
     $j( '.bookacti-backend-dialogs input[type="color"]' ).val( '#3a87ad' );

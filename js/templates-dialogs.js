@@ -11,7 +11,7 @@ function bookacti_init_template_dialogs() {
 		show:       true,
 		hide:       true,
 		closeText:  '&#10006;',
-		close: function() { bookacti_empty_all_dialog_forms(); }
+		beforeClose: function() { bookacti_empty_all_dialog_forms(); }
     });
 	
 	$j
@@ -751,7 +751,7 @@ function bookacti_dialog_delete_event( event )
                             $j( '#bookacti-template-calendar' ).fullCalendar( 'refetchEvents' );
                             
                         } else {
-							if( response.error === 'has_bookings' && event.occurence_id !== undefined ) {
+							if( response.error === 'has_bookings' ) {
 								bookacti_refetch_events_on_template( event );
 								bookacti_dialog_unbind_occurences( event, [ 'delete' ] );
 							} else {
@@ -870,6 +870,9 @@ function bookacti_dialog_choose_activity_creation_type() {
 		var create_activity_button = {
 			text: bookacti_localized.dialog_button_create_activity,
 			click: function() {
+				//Close the modal dialog
+				$j( this ).dialog( 'close' );
+				
 				// Open create activity dialog
 				bookacti_dialog_create_activity();
 			}
@@ -877,6 +880,9 @@ function bookacti_dialog_choose_activity_creation_type() {
 		var import_activity_button = {
 			text: bookacti_localized.dialog_button_import_activity,
 			click: function() {
+				//Close the modal dialog
+				$j( this ).dialog( 'close' );
+				
 				// Open import activity dialog
 				bookacti_dialog_import_activity();
 			}
@@ -1042,10 +1048,13 @@ function bookacti_dialog_create_activity() {
 		$j( '#bookacti-activity-old-title' ).val( '' );
 		
 		// Add current template in activity bound template select box if it isn't yet
-		if( $j.inArray( template_id, $j( '#bookacti-activity-templates-select-box' ).val() ) < 0 
-		&&  $j( '#bookacti-add-new-activity-templates-select-box' ).find( 'option[value="' + template_id + '"]' ).length ) {
-			$j( '#bookacti-add-new-activity-templates-select-box' ).val( template_id );
-			$j( '#bookacti-activity-templates-container .bookacti-add-items' ).trigger( 'click' );
+		if( ( ! $j( '#bookacti-activity-templates-select-box' ).val()
+			  || $j.inArray( template_id, $j( '#bookacti-activity-templates-select-box' ).val() ) < 0 )
+			&&  $j( '#bookacti-add-new-activity-templates-select-box option[value="' + template_id + '"]' ).length ) {
+			
+				$j( '#bookacti-add-new-activity-templates-select-box' ).val( template_id );
+				$j( '#bookacti-activity-templates-container .bookacti-add-items' ).trigger( 'click' );
+		
 		}
 
 		//Open the modal dialog
@@ -1058,10 +1067,14 @@ function bookacti_dialog_create_activity() {
 
 				//On click on the OK Button, new values are send to a script that update the database
 				click: function() {
-
+					
+					if( ! $j( '#bookacti-activity-templates-select-box' ).val() ) {
+						
+					}
+					
 					// Prepare fields
 					$j( '#bookacti-activity-data-form select[multiple] option' ).attr( 'selected', true );
-
+					
 					//Get the data to save
 					var title           = $j( '#bookacti-activity-title' ).val();
 					var color           = $j( '#bookacti-activity-color' ).val();

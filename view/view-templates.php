@@ -14,54 +14,56 @@ echo "<h2>" . esc_html__( 'Calendars', BOOKACTI_PLUGIN_NAME ) . "</h2>";
     <div id='bookacti-template-sidebar' class='<?php if( empty( $templates ) ) { echo 'bookacti-no-template'; } ?>'>
         
         <div class='bookacti-templates-box' >
-            <div id='bookacti-template-picker-container' >
-                <select name='template-picker' id='bookacti-template-picker' >
-                <?php
-					if( ! empty( $templates ) ) {
-						$default_template = bookacti_get_user_default_template();
-						
-						$default_template_found = false;
-						foreach ( $templates as $template ) {
-							
-							$selected = selected( $default_template, $template->id, false );
-							
-							if( $selected !== '' ) { $default_template_found = true; }
-							
-							echo "<option value='"			. esc_attr( $template->id )
-								. "' data-template-start='" . esc_attr( $template->start_date )
-								. "' data-template-end='"   . esc_attr( $template->end_date )
-								. "' " . $selected . " >"
-								. esc_html( stripslashes( $template->title ) )
-								. "</option>";
+				<div class='bookacti-template-box-title' >
+					<h4><?php echo esc_html__( 'Calendars', BOOKACTI_PLUGIN_NAME ); ?></h4>
+					<?php if( current_user_can( 'bookacti_create_templates' ) ) { ?>
+					<div class='bookacti-insert-button' id='bookacti-insert-template' ><img src='<?php echo esc_url( plugins_url() . '/' . BOOKACTI_PLUGIN_NAME . '/img/add.png' ); ?>' /></div>
+					<?php } ?>
+				</div>
+				<div id='bookacti-template-picker-container' >
+					<select name='template-picker' id='bookacti-template-picker' >
+					<?php
+						if( ! empty( $templates ) ) {
+							$default_template = bookacti_get_user_default_template();
+
+							$default_template_found = false;
+							foreach ( $templates as $template ) {
+
+								$selected = selected( $default_template, $template->id, false );
+
+								if( $selected !== '' ) { $default_template_found = true; }
+
+								echo "<option value='"			. esc_attr( $template->id )
+									. "' data-template-start='" . esc_attr( $template->start_date )
+									. "' data-template-end='"   . esc_attr( $template->end_date )
+									. "' " . $selected . " >"
+									. esc_html( stripslashes( $template->title ) )
+									. "</option>";
+							}
+
+							if ( ! $default_template_found ) { 
+								reset( $templates );
+								$current_template = current( $templates );
+								$default_template = $current_template->id; 
+								bookacti_update_user_default_template( $default_template );
+							}
 						}
-						
-						if ( ! $default_template_found ) { 
-							reset( $templates );
-							$current_template = current( $templates );
-							$default_template = $current_template->id; 
-							bookacti_update_user_default_template( $default_template );
-						}
-					}
-                ?>
-                </select>
-            </div>
-            <div id='bookacti-template-actions'>
-				<?php   if( current_user_can( 'bookacti_create_templates' ) ) { ?>
-				<div id='bookacti-insert-template' ><img src='<?php echo esc_url( plugins_url() . '/' . BOOKACTI_PLUGIN_NAME . '/img/add.png' ); ?>' /></div>
-				<?php } if( current_user_can( 'bookacti_edit_templates' ) ) { ?>
-                <div id='bookacti-update-template' ><img src='<?php echo esc_url( plugins_url() . '/' . BOOKACTI_PLUGIN_NAME . '/img/edit.png' ); ?>' /></div>
-                <?php } if( current_user_can( 'bookacti_delete_templates' ) ) { ?>
-				<div id='bookacti-delete-template' ><img src='<?php echo esc_url( plugins_url() . '/' . BOOKACTI_PLUGIN_NAME . '/img/delete.png' ); ?>' /></div>
+					?>
+					</select>
+				</div>
+				<?php if( current_user_can( 'bookacti_edit_templates' ) ) { ?>
+					<div id='bookacti-update-template' >
+						<img src='<?php echo esc_url( plugins_url() . '/' . BOOKACTI_PLUGIN_NAME . '/img/gear.png' ); ?>' />
+					</div>
 				<?php } ?>
-			</div>
         </div>
 
 
         <div id='bookacti-template-activities-container' class='bookacti-templates-box' >
             <div class='bookacti-template-box-title' >
-                <div id='bookacti-template-box-activities-title' ><?php echo esc_html__( 'Activities', BOOKACTI_PLUGIN_NAME ); ?></div>
+                <h4><?php echo esc_html__( 'Activities', BOOKACTI_PLUGIN_NAME ); ?></h4>
 				<?php if( current_user_can( 'bookacti_create_activities' ) ) { ?>
-                <div id='bookacti-template-add-activity-button' ><img src='<?php echo esc_url( plugins_url() . '/' . BOOKACTI_PLUGIN_NAME . '/img/add.png' ); ?>' /></div>
+                <div class='bookacti-insert-button' id='bookacti-insert-activity' ><img src='<?php echo esc_url( plugins_url() . '/' . BOOKACTI_PLUGIN_NAME . '/img/add.png' ); ?>' /></div>
 				<?php } ?>
             </div>
             
@@ -99,11 +101,33 @@ echo "<h2>" . esc_html__( 'Calendars', BOOKACTI_PLUGIN_NAME ) . "</h2>";
 			<?php } ?>
         </div>
         
-        <div id='bookacti-template-trash-container' class='bookacti-templates-box' >
-            <img id='bookacti-template-trash-closed' src='<?php echo esc_url( plugins_url() . '/' . BOOKACTI_PLUGIN_NAME . '/img/trash-closed.png' ); ?>' />
-            <img id='bookacti-template-trash-open'  src='<?php echo esc_url( plugins_url() . '/' . BOOKACTI_PLUGIN_NAME . '/img/trash-open.png' );  ?>' />
+		
+		<div class='bookacti-templates-box' >
+				<div class='bookacti-template-box-title' >
+					<h4><?php echo esc_html__( 'Event groups', BOOKACTI_PLUGIN_NAME ); ?></h4>
+					<?php if( current_user_can( 'bookacti_edit_templates' ) ) { ?>
+					<div class='bookacti-insert-button' id='bookacti-insert-group-set' ><img src='<?php echo esc_url( plugins_url() . '/' . BOOKACTI_PLUGIN_NAME . '/img/add.png' ); ?>' /></div>
+					<?php } ?>
+				</div>
+				<div id='bookacti-group-sets' >
+					<div class='bookacti-group-set-show-hide' >
+						<img src='<?php echo esc_url( plugins_url() . '/' . BOOKACTI_PLUGIN_NAME . '/img/show.png' ); ?>' />
+					</div>
+					<div class='bookacti-group-set-title' >
+						Set #1
+					</div>
+					<?php if( current_user_can( 'bookacti_edit_templates' ) ) { ?>
+						<div id='bookacti-update-group-set' >
+							<img src='<?php echo esc_url( plugins_url() . '/' . BOOKACTI_PLUGIN_NAME . '/img/gear.png' ); ?>' />
+						</div>
+					<?php } ?>
+					<?php if( current_user_can( 'bookacti_edit_templates' ) ) { ?>
+						<div id='bookacti-add-group' >
+							<img src='<?php echo esc_url( plugins_url() . '/' . BOOKACTI_PLUGIN_NAME . '/img/add.png' ); ?>' />
+						</div>
+					<?php } ?>
+				</div>
         </div>
-        
     </div>
 	
 	<div id='bookacti-template-content' >

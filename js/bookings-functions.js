@@ -322,15 +322,15 @@ function bookacti_validate_selected_booking_event( booking_system, quantity ) {
 	if( event_id !== '' && event_start !== '' && event_end !== '' ) { valid_form.is_event = true; }
 	if( parseInt( quantity ) > 0 ) { valid_form.is_qty_sup_to_0 = true; }
 	
-	if( selectedEvents[ booking_system_id ] !== undefined ) {
-		$j.each( selectedEvents[ booking_system_id ], function( i, selected_event ) {
-			if( selected_event['event-id']		=== event_id 
-			&&  selected_event['event-start']	=== event_start 
-			&&  selected_event['event-end']		=== event_end ) {
+	if( pickedEvents[ booking_system_id ] !== undefined ) {
+		$j.each( pickedEvents[ booking_system_id ], function( i, picked_event ) {
+			if( picked_event['event_id']		=== event_id 
+			&&  picked_event['event_start']	=== event_start 
+			&&  picked_event['event_end']		=== event_end ) {
 				
 				valid_form.is_event_in_selected = true;
 
-				total_avail = selected_event['event-availability'];
+				total_avail = picked_event['event_availability'];
 				
 				if( ( parseInt( quantity ) > parseInt( total_avail ) ) && total_avail !== 0 ) {
 					valid_form.is_qty_sup_to_avail = true;
@@ -351,7 +351,7 @@ function bookacti_validate_selected_booking_event( booking_system, quantity ) {
 	
 	
 	// Allow third-party to change the results
-	booking_system.trigger( 'bookacti_validate_selected_event', [ valid_form ] );
+	booking_system.trigger( 'bookacti_validate_picked_event', [ valid_form ] );
 	
 	
 	//Check the results and build error list

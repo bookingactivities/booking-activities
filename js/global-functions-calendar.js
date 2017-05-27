@@ -100,8 +100,6 @@ function bookacti_set_calendar_up( calendar_id, load_events ) {
 			//Add some info to the event
 			element.data( 'event-id',			event.id );
 			element.attr( 'data-event-id',		event.id );
-			element.data( 'occurence-id',		event.occurence_id );
-			element.attr( 'data-occurence-id',	event.occurence_id );
 			element.data( 'event-date',			event.start.format( 'YYYY-MM-DD' ) );
 			element.attr( 'data-event-date',	event.start.format( 'YYYY-MM-DD' ) );
 			element.data( 'event-start',		event.start.format( 'HH:mm' ) );
@@ -142,10 +140,8 @@ function bookacti_set_calendar_up( calendar_id, load_events ) {
 
 		eventAfterAllRender: function( view ) {
 			//Display element as selected if they actually are
-			$j.each( selectedEvents[ booking_system_id ], function( i, selected_event ) {
-				var selected_event_id = selected_event['event-id'];
-				var selected_occurence_id = selected_event['occurence-id'];
-				$j( '.fc-event[data-event-id="' + selected_event_id + '"][data-occurence-id="' + selected_occurence_id + '"]' ).addClass( 'bookacti-selected-event' );
+			$j.each( pickedEvents[ booking_system_id ], function( i, picked_event ) {
+				$j( '.fc-event[data-event-id="' + picked_event['event_id'] + '"][data-event-date="' + picked_event['event_start'].format( 'YYYY-MM-DD' ) + '"]' ).addClass( 'bookacti-picked-event' );
 			});
 		},
 
@@ -160,20 +156,16 @@ function bookacti_set_calendar_up( calendar_id, load_events ) {
 			bookacti_fill_picked_event_summary( calendar.parent(), event.start, event.end, event.activity_id );
 
 			//Format the selected event
-			var selected_event_id		= $j( this ).data( 'event-id' );
-			var selected_occurence_id	= $j( this ).data( 'occurence-id' );
-
-			$j( '.fc-event' ).removeClass( 'bookacti-selected-event' );
-			$j( '.fc-event[data-event-id="' + selected_event_id + '"][data-occurence-id="' + selected_occurence_id + '"]' ).addClass( 'bookacti-selected-event' );
+			$j( '.fc-event' ).removeClass( 'bookacti-picked-event' );
+			$j( this ).addClass( 'bookacti-picked-event' );
 			
-			selectedEvents[ booking_system_id ] = [];
-			selectedEvents[ booking_system_id ].push( 
-			{ 'event-id'			: selected_event_id, 
-			'occurence-id'			: selected_occurence_id, 
-			'activity-id'			: event.activity_id, 
-			'event-availability'	: bookacti_get_event_availability( event ), 
-			'event-start'			: event.start.format('YYYY-MM-DD[T]HH:mm:ss'), 
-			'event-end'				: event.end.format('YYYY-MM-DD[T]HH:mm:ss') } );
+			pickedEvents[ booking_system_id ] = [];
+			pickedEvents[ booking_system_id ].push( 
+			{ 'event_id'			: event.id,
+			'activity_id'			: event.activity_id, 
+			'event_availability'	: bookacti_get_event_availability( event ), 
+			'event_start'			: event.start, 
+			'event_end'				: event.end } );
 		
 			booking_system.trigger( 'bookacti_event_click', [ event ] );
 		}

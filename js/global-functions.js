@@ -20,19 +20,21 @@ function bookacti_pad( str, max ) {
 
 
 //Return true if mouse over the div
-function bookacti_is_mouse_over_elem( elem ) {
-    var ofs = elem.offset();
-    var x1 = ofs.left;
-    var x2 = ofs.left + elem.outerWidth();
-    var y1 = ofs.top;
-    var y2 = ofs.top + elem.outerHeight();
-
-    if (currentMousePos.x >= x1 && currentMousePos.x <= x2 && currentMousePos.y >= y1 && currentMousePos.y <= y2) 
-    {
-        return true;
-    }    
-
-    return false; 
+function bookacti_is_mouse_over_elem( elements ) {
+	var is_over = false;
+	elements.each( function(){
+		var ofs = $j( this ).offset();
+		var x1 = ofs.left;
+		var x2 = ofs.left + $j( this ).outerWidth();
+		var y1 = ofs.top;
+		var y2 = ofs.top + $j( this ).outerHeight();
+		
+		if (currentMousePos.x >= x1 && currentMousePos.x <= x2 && currentMousePos.y >= y1 && currentMousePos.y <= y2) {
+			is_over = true;
+		}
+	});
+	
+    return is_over; 
 }
 
 

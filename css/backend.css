@@ -22,7 +22,6 @@
 
 /***** CALENDAR *****/
 /** EVENTS **/
-.bookacti-updated-event	{ border: 2px solid #2b2 !important; }
 .event-exception    { background-color: red !important; }
 .bookacti-hidden-event    { display: none; }
 

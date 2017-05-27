@@ -260,6 +260,9 @@ function bookacti_uninstall() {
 	
 	// Clear any cached data that has been removed
 	wp_cache_flush();
+	
+	// Flush rules after install
+	flush_rewrite_rules();
 }
 
 

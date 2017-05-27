@@ -1,5 +1,5 @@
 $j( document ).ready( function() {
-
+	
 	//Check if booking systems exist before anything
 	if( $j( '.bookacti-booking-system' ).length ) { 
 		
@@ -15,6 +15,7 @@ $j( document ).ready( function() {
 			
 			is_activity[booking_system_id]		= true;
 			loadingNumber[booking_system_id]	= 0;
+			pickedEvents[booking_system_id]		= [];
 			
 			if( templates_array[booking_system_id] === undefined )	{ templates_array[booking_system_id] = []; }
 			if( activities_array[booking_system_id] === undefined )	{ activities_array[booking_system_id] = []; }

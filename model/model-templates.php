@@ -49,7 +49,6 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			
             if( $event->repeat_freq === 'none' ) {
                 
-                $event_array['occurence_id']	= 0;
                 $event_array['start']			= $event->start;
                 $event_array['end']				= $event->end;
                 $event_array['bookings']		= bookacti_get_number_of_bookings( $event->event_id, $event->start, $event->end );

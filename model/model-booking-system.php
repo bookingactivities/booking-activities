@@ -139,7 +139,6 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			
 			if( $event->repeat_freq === 'none' ) {
                 
-                $event_array['occurence_id']	= 0;
                 $event_array['start']			= $event->start;
                 $event_array['end']				= $event->end;
                 $event_array['bookings']		= $event->bookings;
