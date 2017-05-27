@@ -4,7 +4,7 @@ Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_i
 Tags: booking activities, booking form, manage reservations, activity planning, events calendar, booking sport, booking system, booking, reservations, appointments, woocommerce
 Requires at least: 4.0
 Tested up to: 4.7
-Stable tag: 1.0.6
+Stable tag: 1.0.7
 License: GPLv3 or later
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
 
@@ -238,6 +238,9 @@ If you don't find the answer you need, please [contact us](http://booking-activi
 
 
 == Changelog ==
+
+= 1.0.7 - 2017/05/27 =
+* Fix - Fixed non-repeting events not fetched
 
 = 1.0.6 - 2017/05/24 =
 * Lib - Updated FullCalendar to 3.4 and Moment.js to 2.18.1

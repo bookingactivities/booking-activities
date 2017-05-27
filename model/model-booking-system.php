@@ -8,7 +8,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	 * Fetch events by templates and / or activities
 	 *
 	 * @since	1.0.0
-	 * @version 1.0.6
+	 * @version 1.0.7
 	 * @param	array		$activities				Array of activity ids
 	 * @param	array		$templates				Array of templates ids
 	 * @param	DateTime	$user_datetime_object	User current DateTime
@@ -59,7 +59,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 							)
 							OR ';
 		}
-		$query  .= '		( 	E.repeat_freq IS NULL 
+		$query  .= '		( 	NULLIF( E.repeat_freq, "none" ) IS NULL 
 								AND (	UNIX_TIMESTAMP( CONVERT_TZ( E.start, "+00:00", @@global.time_zone ) ) >= 
 										UNIX_TIMESTAMP( CONVERT_TZ( T.start_date, "+00:00", @@global.time_zone ) ) 
 									AND
