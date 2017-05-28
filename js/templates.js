@@ -6,6 +6,7 @@ $j( document ).ready( function() {
 		pickedEvents[ 'template' ] = [];
 		selectedEvents[ 'template' ] = [];
 		
+		// Refresh the display of selected events when you click on the View More link
 		$j( '#bookacti-template-calendar' ).on( 'click', '.fc-more', function(){
 			bookacti_refresh_selected_events_display();
 		});
@@ -445,7 +446,22 @@ function bookacti_load_template_calendar() {
 
 				var is_alt_key_pressed = 0;
 				if( e.altKey ) { is_alt_key_pressed = 1; }
-
+				
+				if( is_alt_key_pressed ) {
+					revertFunc();
+				} else {
+					// Unselect the event or occurences of the event
+					event.checked = 'false';
+					$j.each( selectedEvents[ 'template' ], function( i, selected_event ){
+						if( typeof selected_event !== 'undefined' ) {
+							if( selected_event.event_id == event.id ) {
+								selectedEvents[ 'template' ].splice( i, 1 );
+							}
+						}
+					});
+					bookacti_refresh_selected_events_display();
+				}
+				
 				// Update the event changes in database
 				var id      = event.id;
 				var start   = event.start.format( 'YYYY-MM-DD[T]HH:mm:ss' );
@@ -469,14 +485,9 @@ function bookacti_load_template_calendar() {
 					success: function( response ){
 
 						if( is_alt_key_pressed ) {
-							revertFunc();
 							if( response.status === 'success' ) { 
 								var new_event = { 'id': response.event_id };
 								bookacti_update_exceptions( template_id, new_event );
-							}
-						} else {
-							if( response.status === 'nochanges' ) { 
-
 							}
 						}
 
@@ -534,6 +545,10 @@ function bookacti_load_template_calendar() {
 		// eventClick : When an event is clicked
 		eventClick: function( event, jsEvent, view ) {
 			var element = $j( this );
+			// Because of popover and long events (spreading on multiple days), 
+			// the same event can appears twice, so we need to apply changes on each
+			var elements = $j( '.fc-event[data-event-id="' + event.id + '"][data-event-date="' + event.start.format( 'YYYY-MM-DD' ) + '"]' );
+					
 			
 			// If the user click on an event action, execute it
 			if( $j( jsEvent.target ).parents( '.bookacti-event-actions' ).length ) {
@@ -549,9 +564,6 @@ function bookacti_load_template_calendar() {
 				// SELECT ACTION
 				} else if( $j( jsEvent.target ).is( '.bookacti-event-action-select' )
 						|| $j( jsEvent.target ).parents( '.bookacti-event-action-select' ).length ) {
-					
-					// Because of popover, the same event can appears twice, so we need to apply changes on each
-					var elements = $j( '.fc-event[data-event-id="' + event.id + '"][data-event-date="' + event.start.format( 'YYYY-MM-DD' ) + '"]' );
 					
 					// Format selected events and keep them / remove them from memory
 					if( element.find( '.bookacti-event-action-select-checkbox' ).is( ':checked' ) ) {
@@ -593,9 +605,9 @@ function bookacti_load_template_calendar() {
 				
 			} else {
 				
-				// Format the selected event
+				// Format the selected events
 				$j( '.fc-event' ).removeClass( 'bookacti-picked-event' );
-				element.addClass( 'bookacti-picked-event' );
+				elements.addClass( 'bookacti-picked-event' );
 				
 				// Keep picked events in memory 
 				pickedEvents[ 'template' ] = [];
