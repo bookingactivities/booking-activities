@@ -50,7 +50,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	 * Deactivate expired bookings
 	 *
 	 * @since	1.0.6
-	 * @version	1.1.0
+	 * @version	1.0.8
 	 */
 	function bookacti_controller_deactivate_expired_bookings() {
 
@@ -331,9 +331,14 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	 * Turn meta state to new status
 	 *
 	 * @since	1.0.0
-	 * @version	1.1.0
+	 * @version	1.0.8
 	 */
 	function bookacti_woocommerce_turn_booking_meta_state_to_new_state( $booking_id, $new_state, $args = array() ) {
+		
+		if( empty( $booking_id ) ) {
+			return;
+		}
+		
 		$item = bookacti_get_order_item_by_booking_id( $booking_id );
 		
 		if( $item ) {

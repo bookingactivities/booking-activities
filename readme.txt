@@ -241,10 +241,15 @@ If you don't find the answer you need, please [contact us](http://booking-activi
 
 = 1.1.0 =
 * Delete - Removed trashes from editor, go through the editing dialog to delete calendars, activities and events
-* Fix - Flush rewrite rules on activate to avoid error 500
-* Fix - "Create or import activity" dialog is closed before opening a new one. This prevent undesirable display and behavior.
 * Tweak - Changed 'bookacti_validate_selected_event' JS action to 'bookacti_validate_picked_event'
 * Delete - Deleted events 'occurrence id' since it is not a relevant identifier. All events can be identified by id + start date.
+
+= 1.0.8 - 2017/05/31 =
+* Fix - Fixed events not fetched if your database prefix was not exactly "wp_"
+* Fix - "Create or import activity" dialog is closed before opening a new one. This prevent undesirable display and behavior.
+* Fix - Flush rewrite rules on activate to avoid error 500
+* Fix - Cron error in log/error.log appeared even if bookings were correctly deactivated hourly
+* Fix - Check booking id before sync booking state in woocommerce meta to avoid errors
 
 = 1.0.7 - 2017/05/27 =
 * Fix - Fixed non-repeting events not fetched

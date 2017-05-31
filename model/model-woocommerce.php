@@ -336,7 +336,7 @@ function bookacti_update_bookings_user_id( $user_id, $customer_id ) {
  * Deactivate expired bookings
  *
  * @since	1.0.0
- * @version	1.1.0
+ * @version	1.0.8
  */
 function bookacti_deactivate_expired_bookings() {
 	global $wpdb;
