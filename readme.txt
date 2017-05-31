@@ -4,7 +4,7 @@ Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_i
 Tags: booking activities, booking form, manage reservations, activity planning, events calendar, booking sport, booking system, booking, reservations, appointments, woocommerce
 Requires at least: 4.0
 Tested up to: 4.7
-Stable tag: 1.0.7
+Stable tag: 1.0.8
 License: GPLv3 or later
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
 
@@ -238,6 +238,13 @@ If you don't find the answer you need, please [contact us](http://booking-activi
 
 
 == Changelog ==
+
+= 1.0.8 - 2017/05/31 =
+* Fix - Fixed events not fetched if your database prefix was not exactly "wp_"
+* Fix - Flush rewrite rules on activate to avoid error 500
+* Fix - "Create or import activity" dialog is closed before opening a new one. This prevent undesirable display and behavior.
+* Fix - Cron error in log/error.log appeared even if bookings were correctly deactivated hourly
+* Fix - Check booking id before sync booking state in woocommerce meta to avoid errors
 
 = 1.0.7 - 2017/05/27 =
 * Fix - Fixed non-repeting events not fetched

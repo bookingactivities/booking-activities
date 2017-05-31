@@ -11,7 +11,7 @@ function bookacti_init_template_dialogs() {
 		show:       true,
 		hide:       true,
 		closeText:  '&#10006;',
-		close: function() { bookacti_empty_all_dialog_forms(); }
+		beforeClose: function() { bookacti_empty_all_dialog_forms(); }
     });
 	
 	$j
@@ -870,6 +870,9 @@ function bookacti_dialog_choose_activity_creation_type() {
 		var create_activity_button = {
 			text: bookacti_localized.dialog_button_create_activity,
 			click: function() {
+				//Close the modal dialog
+                $j( this ).dialog( 'close' );
+				
 				// Open create activity dialog
 				bookacti_dialog_create_activity();
 			}
@@ -877,6 +880,9 @@ function bookacti_dialog_choose_activity_creation_type() {
 		var import_activity_button = {
 			text: bookacti_localized.dialog_button_import_activity,
 			click: function() {
+				//Close the modal dialog
+                $j( this ).dialog( 'close' );
+
 				// Open import activity dialog
 				bookacti_dialog_import_activity();
 			}
@@ -1042,8 +1048,9 @@ function bookacti_dialog_create_activity() {
 		$j( '#bookacti-activity-old-title' ).val( '' );
 		
 		// Add current template in activity bound template select box if it isn't yet
-		if( $j.inArray( template_id, $j( '#bookacti-activity-templates-select-box' ).val() ) < 0 
-		&&  $j( '#bookacti-add-new-activity-templates-select-box' ).find( 'option[value="' + template_id + '"]' ).length ) {
+		if( ( ! $j( '#bookacti-activity-templates-select-box' ).val()
+			  || $j.inArray( template_id, $j( '#bookacti-activity-templates-select-box' ).val() ) < 0 )
+			&&  $j( '#bookacti-add-new-activity-templates-select-box option[value="' + template_id + '"]' ).length ) {
 			$j( '#bookacti-add-new-activity-templates-select-box' ).val( template_id );
 			$j( '#bookacti-activity-templates-container .bookacti-add-items' ).trigger( 'click' );
 		}

@@ -28,7 +28,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
         $query  = 'SELECT DISTINCT E.id as event_id, E.template_id, E.title, E.start, E.end, E.repeat_freq, E.repeat_from, E.repeat_to, E.availability, A.color, A.id as activity_id, IFNULL( B.bookings, 0 ) as bookings '
                 . ' FROM ' . BOOKACTI_TABLE_ACTIVITIES . ' as A, ' . BOOKACTI_TABLE_TEMPLATES . ' as T, ' . BOOKACTI_TABLE_EVENTS . ' as E '
 				. ' LEFT JOIN (
-						SELECT SUM(quantity) as bookings, event_id FROM wp_bookacti_bookings WHERE active = 1 GROUP BY event_id
+						SELECT SUM(quantity) as bookings, event_id FROM ' . BOOKACTI_TABLE_BOOKINGS . ' WHERE active = 1 GROUP BY event_id
 					) as B ON B.event_id = E.id'
                 . ' WHERE E.activity_id = A.id '
                 . ' AND E.template_id = T.id ';
