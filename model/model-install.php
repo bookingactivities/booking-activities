@@ -36,6 +36,12 @@ function bookacti_create_tables() {
         repeat_from DATE, 
         repeat_to DATE,
 		active TINYINT(1) NOT NULL DEFAULT 1 ) ' . $wpdb->get_charset_collate() . ';';
+
+	$table_event_groups_query = 'CREATE TABLE ' . BOOKACTI_TABLE_EVENT_GROUPS . ' ( 
+        id MEDIUMINT(9) UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY, 
+        group_id MEDIUMINT(9) UNSIGNED NOT NULL, 
+        event_id MEDIUMINT(9) UNSIGNED NOT NULL, 
+        event_start DATETIME ) ' . $wpdb->get_charset_collate() . ';';
 	
     $table_meta_query = 'CREATE TABLE ' . BOOKACTI_TABLE_META . ' ( 
         id MEDIUMINT(9) UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY, 
@@ -82,6 +88,7 @@ function bookacti_create_tables() {
 	dbDelta( $table_templates_query 
 			. $table_activities_query 
 			. $table_events_query 
+			. $table_event_groups_query 
 			. $table_permissions_query
 			. $table_meta_query
 			. $table_templates_activities_query 
@@ -99,6 +106,7 @@ function bookacti_drop_tables() {
     $wpdb->query( 'DROP TABLE IF EXISTS ' . BOOKACTI_TABLE_TEMPLATES . '; ' );
 	$wpdb->query( 'DROP TABLE IF EXISTS ' . BOOKACTI_TABLE_ACTIVITIES . '; ' );
 	$wpdb->query( 'DROP TABLE IF EXISTS ' . BOOKACTI_TABLE_EVENTS . '; ' );
+	$wpdb->query( 'DROP TABLE IF EXISTS ' . BOOKACTI_TABLE_EVENT_GROUPS . '; ' );
 	$wpdb->query( 'DROP TABLE IF EXISTS ' . BOOKACTI_TABLE_META . '; ' );
 	$wpdb->query( 'DROP TABLE IF EXISTS ' . BOOKACTI_TABLE_PERMISSIONS . '; ' );
 	$wpdb->query( 'DROP TABLE IF EXISTS ' . BOOKACTI_TABLE_TEMP_ACTI . '; ' );

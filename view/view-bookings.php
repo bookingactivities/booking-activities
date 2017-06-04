@@ -3,7 +3,7 @@
 if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 echo "<div class='wrap'>";
-echo "<h2>" . esc_html__( 'Bookings', BOOKACTI_PLUGIN_NAME ) . "</h2>";
+echo "<h1>" . esc_html__( 'Bookings', BOOKACTI_PLUGIN_NAME ) . "</h1>";
 
 if( empty( bookacti_fetch_templates() ) ) {
 	$editor_path = 'admin.php?page=bookacti_calendars';

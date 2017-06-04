@@ -170,7 +170,7 @@ function bookacti_init_show_hide_activities_switch() {
 }
 
 
-// Init event actions
+// Make sure selected events appears as selected and vice-versa
 function bookacti_refresh_selected_events_display() {
 	$j( '.fc-event' ).removeClass( 'bookacti-selected-event' );
 	$j( '.fc-event .bookacti-event-action-select-checkbox' ).prop( 'checked', false );
@@ -188,6 +188,105 @@ function bookacti_refresh_selected_events_display() {
 		element.find( '.bookacti-event-action[data-hide-on-mouseout="1"]' ).hide();
 		element.find( '.bookacti-event-action-select' ).show();
 	});
+	
+	$j( '#bookacti-template-calendar' ).trigger( 'bookacti_refresh_selected_events' );
+}
+
+
+// Select an event
+function bookacti_select_event( event, start ) {
+	
+	// Return false if we don't have both event id and event start
+	if( ( typeof event !== 'object' && ! $j.isNumeric( event ) )
+	||  ( typeof event === 'object' && ( typeof event.id === 'undefined' || typeof event.start === 'undefined' ) )
+	||  ( $j.isNumeric( event ) && typeof start === 'undefined' ) ) {
+		return false;
+	}
+	
+	if( typeof event !== 'object' ) {
+		// Format start values to object
+		var event_id = event;
+		start	= start.isMoment() ? start : moment( start );
+		event	= {
+			'id': event_id,
+			'start': start
+		};
+	}
+	
+	// Because of popover and long events (spreading on multiple days), 
+	// the same event can appears twice, so we need to apply changes on each
+	var elements = $j( '.fc-event[data-event-id="' + event.id + '"][data-event-date="' + event.start.format( 'YYYY-MM-DD' ) + '"]' );
+	
+	// Format the selected event (because of popover, the same event can appears twice)
+	elements.addClass( 'bookacti-selected-event' );
+	elements.find( '.bookacti-event-action-select-checkbox' ).prop( 'checked', true );
+	elements.find( '.bookacti-event-actions' ).show();
+	elements.find( '.bookacti-event-action-select' ).show();
+
+	// Keep picked events in memory 
+	selectedEvents[ 'template' ].push( 
+	{ 'event_id'			: event.id,
+	'activity_id'			: event.activity_id,
+	'event_start'			: event.start, 
+	'event_end'				: event.end } );
+
+	$j( '#bookacti-template-calendar' ).trigger( 'bookacti_select_event', [ event ] );
+}
+
+
+// Unselect an event
+function bookacti_unselect_event( event, start, all ) {
+	
+	all = all ? true : false;
+	
+	// Return false if we don't have both event id and event start
+	if( ( typeof event !== 'object' && ! $j.isNumeric( event ) )
+	||  ( typeof event === 'object' && ( typeof event.id === 'undefined' || typeof event.start === 'undefined' ) )
+	||  ( $j.isNumeric( event ) && ! all && typeof start === 'undefined' ) ) {
+		return false;
+	}
+	
+	if( typeof event !== 'object' ) {
+		// Format start values to object
+		var event_id = event;
+		start	= start.isMoment() ? start : moment( start );
+		event	= {
+			'id': event_id,
+			'start': start
+		};
+	}
+	
+	// Because of popover and long events (spreading on multiple days), 
+	// the same event can appears twice, so we need to apply changes on each
+	var elements = $j( '.fc-event[data-event-id="' + event.id + '"]' );
+	if( ! all ) {
+		elements = $j( '.fc-event[data-event-id="' + event.id + '"][data-event-date="' + event.start.format( 'YYYY-MM-DD' ) + '"]' );
+	}
+	
+	// Format the selected event(s)
+	elements.removeClass( 'bookacti-selected-event' );
+	elements.find( '.bookacti-event-action-select-checkbox' ).prop( 'checked', false );
+	elements.find( '.bookacti-event-action-select' ).hide();
+	
+	// Remove selected event(s) from memory 
+	$j.each( selectedEvents[ 'template' ], function( i, selected_event ){
+		if( typeof selected_event !== 'undefined' ) {
+			if( selected_event.event_id == event.id 
+			&&  (  all 
+				|| selected_event.event_start.format( 'YYYY-MM-DD' ) == event.start.format( 'YYYY-MM-DD' ) ) ) {
+				
+				// Remove the event from the selected events array
+				selectedEvents[ 'template' ].splice( i, 1 );
+				
+				// If only one event should be unselected, break the loop
+				if( ! all ) {
+					return false;
+				}
+			}
+		}
+	});
+	
+	$j( '#bookacti-template-calendar' ).trigger( 'bookacti_unselect_event', [ event, all ] );
 }
 
 
@@ -661,6 +760,21 @@ function bookacti_display_activity_tuto_if_no_activity_available() {
 			$j( '#bookacti-template-first-activity-container' ).show();
 		} else {
 			$j( '#bookacti-template-first-activity-container' ).hide();
+		}
+	}
+}
+
+
+// Display tuto if there is there is at least two events selected and no group categories yet
+function bookacti_maybe_display_add_group_category_button() {
+	if( $j( '#bookacti-template-add-group-of-events-container' ).length ) {
+		
+		// If there are at least 2 selected events and...
+		if( selectedEvents[ 'template' ].length >= 2 && ! $j( '.bookacti-group-category' ).length ) {
+			$j( '#bookacti-template-add-group-of-events-container' ).show();
+		// Else, hide the add group category button
+		} else {
+			$j( '#bookacti-template-add-group-of-events-container' ).hide();
 		}
 	}
 }

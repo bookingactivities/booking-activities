@@ -11,6 +11,11 @@ $j( document ).ready( function() {
 			bookacti_refresh_selected_events_display();
 		});
 		
+		// Refresh the display of selected events when you click on the View More link
+		$j( '#bookacti-template-calendar' ).on( 'bookacti_select_event bookacti_unselect_event', function(){
+			bookacti_maybe_display_add_group_category_button();
+		});
+		
 		// Capture mouse x and y coordinates to global variables
 		$j( document ).off().on( 'mousemove', function ( event ) {
 			//Get current mouse position
@@ -24,10 +29,6 @@ $j( document ).ready( function() {
 		// Show and Hide activities
 		bookacti_init_show_hide_activities_switch();
 		
-		// Init event actions
-		//bookacti_init_event_actions();
-		
-
 		// DIALOGS
 		// Init the Dialogs
 		bookacti_init_template_dialogs();
@@ -193,6 +194,17 @@ function bookacti_load_template_calendar() {
 			
 			// SELECT ACTION
 			if( ! event_actions_div.find( '.bookacti-event-action-select' ).length ) {
+				
+				// Check if the event is selected
+				var is_selected = false
+				$j.each( selectedEvents[ 'template' ], function( i, selected_event ){
+					if( selected_event.event_id == event.id 
+					&&  selected_event.event_start.format( 'YYYY-MM-DD' ) == event.start.format( 'YYYY-MM-DD' ) ) {
+						is_selected = true;
+						return false; // break the loop
+					}
+				});
+				
 				var select_div		=	$j( '<div />', {
 											class: 'bookacti-event-action bookacti-event-action-select',
 											'data-hide-on-mouseout': '0'
@@ -201,7 +213,7 @@ function bookacti_load_template_calendar() {
 											type: 'checkbox',
 											class: 'bookacti-event-action-select-checkbox',
 											value: '0',
-											checked: event.checked
+											checked: is_selected
 										} );
 				event_actions.push( select_div.append( select_checkbox ) );
 			}
@@ -451,15 +463,7 @@ function bookacti_load_template_calendar() {
 					revertFunc();
 				} else {
 					// Unselect the event or occurences of the event
-					event.checked = 'false';
-					$j.each( selectedEvents[ 'template' ], function( i, selected_event ){
-						if( typeof selected_event !== 'undefined' ) {
-							if( selected_event.event_id == event.id ) {
-								selectedEvents[ 'template' ].splice( i, 1 );
-							}
-						}
-					});
-					bookacti_refresh_selected_events_display();
+					bookacti_unselect_event( event, undefined, true );
 				}
 				
 				// Update the event changes in database
@@ -567,45 +571,17 @@ function bookacti_load_template_calendar() {
 					
 					// Format selected events and keep them / remove them from memory
 					if( element.find( '.bookacti-event-action-select-checkbox' ).is( ':checked' ) ) {
-						// Tag the event as checked
-						event.checked = 'true';
-						
-						// Format the selected event (because of popover, the same event can appears twice)
-						elements.addClass( 'bookacti-selected-event' );
-						elements.find( '.bookacti-event-action-select-checkbox' ).prop( 'checked', true );
-						elements.find( '.bookacti-event-actions' ).show();
-						elements.find( '.bookacti-event-action-select' ).show();
-						
-						// Keep picked events in memory 
-						selectedEvents[ 'template' ].push( 
-						{ 'event_id'			: event.id,
-						'activity_id'			: event.activity_id,
-						'event_start'			: event.start, 
-						'event_end'				: event.end } );
+						bookacti_select_event( event );
 					
 					} else {
-						// Tag the event as checked
-						event.checked = 'false';
-						
-						// Format the selected event
-						elements.removeClass( 'bookacti-selected-event' );
-						elements.find( '.bookacti-event-action-select-checkbox' ).prop( 'checked', false );
-						elements.find( '.bookacti-event-action-select' ).hide();
+						bookacti_unselect_event( event );
 						element.find( '.bookacti-event-action-select' ).show();
-						
-						// Remove picked event from memory 
-						$j.each( selectedEvents[ 'template' ], function( i, selected_event ){
-							if( selected_event.event_id == event.id && selected_event.event_start.format( 'YYYY-MM-DD' ) == event.start.format( 'YYYY-MM-DD' ) ) {
-								selectedEvents[ 'template' ].splice( i, 1 );
-								return false; // Break the loop
-							}
-						});
 					}
 				}
 				
 			} else {
 				
-				// Format the selected events
+				// Format the picked events
 				$j( '.fc-event' ).removeClass( 'bookacti-picked-event' );
 				elements.addClass( 'bookacti-picked-event' );
 				
@@ -636,7 +612,18 @@ function bookacti_load_template_calendar() {
 			
 			element.find( '.bookacti-event-action[data-hide-on-mouseout="1"]' ).hide();
 			
-			if( event.checked == 'true' ) {
+			// Check if the event is selected
+			var is_selected = false
+			$j.each( selectedEvents[ 'template' ], function( i, selected_event ){
+				if( selected_event.event_id == event.id 
+				&&  selected_event.event_start.format( 'YYYY-MM-DD' ) == event.start.format( 'YYYY-MM-DD' ) ) {
+					is_selected = true;
+					return false; // break the loop
+				}
+			});
+			
+			// If the event is selected, do not hide the 'selected' checkbox
+			if( is_selected ) {
 				element.find( '.bookacti-event-actions' ).show();
 				element.find( '.bookacti-event-action-select' ).show();
 			} else {

@@ -3,8 +3,8 @@ Contributors: bookingactivities
 Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=7EKU434L7NEVC
 Tags: booking activities, booking form, manage reservations, activity planning, events calendar, booking sport, booking system, booking, reservations, appointments, woocommerce
 Requires at least: 4.0
-Tested up to: 4.7
-Stable tag: 1.0.7
+Tested up to: 4.8
+Stable tag: 1.1.0
 License: GPLv3 or later
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
 
@@ -243,6 +243,16 @@ If you don't find the answer you need, please [contact us](http://booking-activi
 * Delete - Removed trashes from editor, go through the editing dialog to delete calendars, activities and events
 * Tweak - Changed 'bookacti_validate_selected_event' JS action to 'bookacti_validate_picked_event'
 * Delete - Deleted events 'occurrence id' since it is not a relevant identifier. All events can be identified by id + start date.
+* Actions / Filters / Hooks
+  * JS hooks
+    * Add - bookacti_refresh_selected_events
+    * Add - bookacti_select_event
+    * Add - bookacti_unselect_event
+  * PHP actions
+    * Add - bookacti_group_of_events_tab_general_before
+    * Add - bookacti_group_of_events_tab_general_after
+    * Add - bookacti_group_category_tab_general_before
+    * Add - bookacti_group_category_tab_general_after
 
 = 1.0.8 - 2017/05/31 =
 * Fix - Fixed events not fetched if your database prefix was not exactly "wp_"

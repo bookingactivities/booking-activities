@@ -9,6 +9,7 @@ $db_prefix = $wpdb->prefix;
 if( ! defined( 'BOOKACTI_TABLE_TEMPLATES' ) )	{ define( 'BOOKACTI_TABLE_TEMPLATES',	$db_prefix . 'bookacti_templates' ); }
 if( ! defined( 'BOOKACTI_TABLE_ACTIVITIES' ) )	{ define( 'BOOKACTI_TABLE_ACTIVITIES',	$db_prefix . 'bookacti_activities' ); }
 if( ! defined( 'BOOKACTI_TABLE_EVENTS' ) )		{ define( 'BOOKACTI_TABLE_EVENTS',		$db_prefix . 'bookacti_events' ); }
+if( ! defined( 'BOOKACTI_TABLE_EVENT_GROUPS' ) ){ define( 'BOOKACTI_TABLE_EVENT_GROUPS',$db_prefix . 'bookacti_event_groups' ); }
 if( ! defined( 'BOOKACTI_TABLE_META' ) )		{ define( 'BOOKACTI_TABLE_META',		$db_prefix . 'bookacti_meta' ); }
 if( ! defined( 'BOOKACTI_TABLE_PERMISSIONS' ) )	{ define( 'BOOKACTI_TABLE_PERMISSIONS',	$db_prefix . 'bookacti_permissions' ); }
 if( ! defined( 'BOOKACTI_TABLE_TEMP_ACTI' ) )	{ define( 'BOOKACTI_TABLE_TEMP_ACTI',	$db_prefix . 'bookacti_templates_activities' ); }

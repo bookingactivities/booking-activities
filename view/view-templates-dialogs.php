@@ -530,3 +530,114 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		</div>
     </div>
 </div>
+
+
+<!-- Group of events -->
+<div id='bookacti-group-of-events-dialog' class='bookacti-backend-dialogs bookacti-template-dialogs' >
+	<form id='bookacti-group-of-events-form' >
+		<?php wp_nonce_field( 'bookacti_insert_or_update_group_of_events', 'nonce_insert_or_update_group_of_events' ); ?>
+		<input type='hidden' name='action' id='bookacti-group-of-events-action' />
+		
+		<div id='bookacti-group-of-events-dialog-lang-switcher' class='bookacti-lang-switcher' ></div>
+			
+		<?php
+			//Fill the array of tabs with their label, callback for content and display order
+			$group_of_events_tabs = apply_filters( 'bookacti_group_of_events_dialog_tabs', array (
+				array(	'label'			=> __( 'General', BOOKACTI_PLUGIN_NAME ),
+						'callback'		=> 'bookacti_fill_group_of_events_tab_general',
+						'parameters'	=> array(),
+						'order'			=> 10 )
+			) );
+
+			// Display tabs
+			bookacti_display_tabs( $group_of_events_tabs, 'group-of-events' );
+			
+			
+			// GENERAL tab
+			function bookacti_fill_group_of_events_tab_general( $params ) {
+				do_action( 'bookacti_group_of_events_tab_general_before', $params );
+		?>
+				<div>
+					<label for='bookacti-group-of-events-title-field' ><?php esc_html_e( 'Group title', BOOKACTI_PLUGIN_NAME ); ?></label>
+					<input type='text' name='group-of-events-title' id='bookacti-group-of-events-title-field' />
+					<?php
+						$tip = __( "Name this group of events. Your cutomers may see this name if they have several booking choices (if the event is in two groups, or if you also allow to book the event alone). Choose a short and relevant name.", BOOKACTI_PLUGIN_NAME );
+						bookacti_help_tip( $tip );
+					?>
+				</div>
+				<div>
+					<label for='bookacti-group-of-events-category-selectbox' ><?php esc_html_e( 'Group category', BOOKACTI_PLUGIN_NAME ); ?></label>
+					<select name='group-of-events-category' id='bookacti-group-of-events-category-selectbox' >
+						<option value='new' >New Category</option>
+						<option value='14' >Category 1</option>
+						<option value='18' >Category 2</option>
+					</select>
+					<?php
+						$tip = __( "Pick a category for your group of events.", BOOKACTI_PLUGIN_NAME );
+						$tip .= __( "Thanks to categories, you will be able to choose what groups of events are available on what calendars.", BOOKACTI_PLUGIN_NAME );
+						bookacti_help_tip( $tip );
+					?>
+				</div>
+				<div id='bookacti-group-of-events-new-category-title' >
+					<label for='bookacti-group-of-events-category-title-field' ><?php esc_html_e( 'New category title', BOOKACTI_PLUGIN_NAME ); ?></label>
+					<input type='text' name='group-of-events-category-title' id='bookacti-group-of-events-category-title-field' />
+					<?php
+						$tip = __( "Name the group of events category.", BOOKACTI_PLUGIN_NAME );
+						$tip .= __( "Thanks to categories, you will be able to choose what groups of events are available on what calendars.", BOOKACTI_PLUGIN_NAME );
+						bookacti_help_tip( $tip );
+					?>
+				</div>
+				<div>
+					<!-- This field is only used for feedback, it is not used to pass any AJAX data, events list is passed through an array made with JS -->
+					<label for='bookacti-group-of-events-summary' ><?php esc_html_e( 'Events list', BOOKACTI_PLUGIN_NAME ); ?></label>
+					<select multiple id='bookacti-group-of-events-summary' disabled >
+						<option>Activité 1: 2017-12-31 14:35:00 - 2017-12-31 15:35:00</option>
+						<option>Activité 2: 2017-12-05 09:10:00 - 2017-12-06 10:40:00</option>
+					</select>
+				</div>
+		<?php
+				do_action( 'bookacti_group_of_events_tab_general_after', $params );
+			}
+		?>
+	</form>
+</div>
+
+
+<!-- Group category -->
+<div id='bookacti-group-category-dialog' class='bookacti-backend-dialogs bookacti-template-dialogs' >
+	<form id='bookacti-group-category-form' >
+		<input type='hidden' name='action' id='bookacti-group-category-action' />
+		
+		<div id='bookacti-group-category-dialog-lang-switcher' class='bookacti-lang-switcher' ></div>
+		
+		<?php
+			//Fill the array of tabs with their label, callback for content and display order
+			$group_category_tabs = apply_filters( 'bookacti_group_category_dialog_tabs', array (
+				array(	'label'			=> __( 'General', BOOKACTI_PLUGIN_NAME ),
+						'callback'		=> 'bookacti_fill_group_category_tab_general',
+						'parameters'	=> array(),
+						'order'			=> 10 )
+			) );
+			
+			// Display tabs
+			bookacti_display_tabs( $group_category_tabs, 'group-category' );
+			
+			// GENERAL tab
+			function bookacti_fill_group_category_tab_general( $params ) {
+				do_action( 'bookacti_group_category_tab_general_before', $params );
+		?>
+				<div>
+					<label for='bookacti-group-category-title-field' ><?php esc_html_e( 'Category title', BOOKACTI_PLUGIN_NAME ); ?></label>
+					<input type='text' name='group-category-title' id='bookacti-group-category-title-field' />
+					<?php
+						$tip = __( "Name the group of events category.", BOOKACTI_PLUGIN_NAME );
+						$tip .= __( "Thanks to categories, you will be able to choose what groups of events are available on what calendars.", BOOKACTI_PLUGIN_NAME );
+						bookacti_help_tip( $tip );
+					?>
+				</div>
+		<?php
+				do_action( 'bookacti_group_category_tab_general_after', $params );
+			}
+		?>
+	</form>
+</div>

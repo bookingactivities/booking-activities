@@ -4,7 +4,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 echo "<div class='wrap'>";
 	
-	echo "<h2>" . esc_html__( 'Settings', BOOKACTI_PLUGIN_NAME ) . "</h2>";
+	echo "<h1>" . esc_html__( 'Settings', BOOKACTI_PLUGIN_NAME ) . "</h1>";
 
 	settings_errors();
 
