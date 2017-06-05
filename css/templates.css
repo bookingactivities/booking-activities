@@ -1,9 +1,9 @@
 /** TEMPLATE PAGE **/
 
-/* Global */
+/***** Global *****/
 #bookacti-template-container *, #bookacti-template-container *:after, #bookacti-template-container *:before { -webkit-box-sizing: border-box; -moz-box-sizing: border-box; box-sizing: border-box; }
 
-#bookacti-template-container  { display: table; max-width: 1000px; margin: auto; }
+#bookacti-template-container  { display: table; margin: 20px auto; }
 #bookacti-template-container::after { clear: both; }
 #bookacti-template-container .fc-unthemed .fc-content, 
 #bookacti-template-container .fc-unthemed .fc-divider,
@@ -18,15 +18,17 @@
 
 #bookacti-template-container + hr { margin: 30px auto; }
 
-/* Events */
+
+
+/***** Events *****/
 #bookacti-template-container .fc-event.fc-draggable { cursor: move; }
 .bookacti-event-over .fc-bg::after					{ content: ' '; position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 3; background: -moz-linear-gradient(top, rgba(0,0,0,0.5) 0%, rgba(0,0,0,0) 75%); background: -webkit-linear-gradient(top, rgba(0,0,0,0.5) 0%,rgba(0,0,0,0) 75%); background: linear-gradient(to bottom, rgba(0,0,0,0.5) 0%,rgba(0,0,0,0) 75%); filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#000000', endColorstr='#00000000',GradientType=0 ); }
 
 /* Event actions */
-.fc-event				{ transition: all 0.2s; }
-.bookacti-event-actions	{ display: none; position: absolute; right: 3px; top: 2px; z-index: 5; transition: all 0.2s; }
-.bookacti-event-action	{ display: inline-block; vertical-align: middle; margin-left: 10px; }
-.bookacti-event-over .bookacti-event-actions { display: block; }
+.bookacti-event-actions							{ display: none; position: absolute; right: 3px; top: 2px; z-index: 5; transition: all 0.2s; }
+.bookacti-event-action							{ display: inline-block; min-width: 16px; max-width: 16px; text-align: center; vertical-align: middle; margin-left: 8px; }
+.bookacti-event-action:first-child				{ margin-left: 0; }
+.bookacti-event-over .bookacti-event-actions	{ display: block; }
 
 .bookacti-event-action-select-checkbox								{ margin-right: 0 !important; border-radius: 50%; min-width: 16px !important; min-height: 16px !important; max-width: 16px !important; max-height: 16px !important; width: 16px !important; height: 16px !important; }
 .bookacti-event-action-select-checkbox:not(:checked):hover::before	{ content: "\f147"; margin: -3px 0 0 -4px; color: #aaa; float: left; display: inline-block; vertical-align: middle; width: 16px !important; font: 400 21px/1 dashicons; speak: none; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
@@ -39,8 +41,9 @@
 .bookacti-event-action-edit-button:hover	{ color: #aaa; cursor: pointer; }
 
 
-/* Sidebar */
-#bookacti-template-sidebar		{ width: 180px; padding-right: 10px; }
+
+/***** Sidebar *****/
+#bookacti-template-sidebar		{ display: table-cell; width: 240px; padding: 0 20px 20px 0; border-right: 1px dashed #aaa; }
 .bookacti-disabled-img			{ cursor: auto; pointer-events: none; opacity: 0.5; }
 
 .bookacti-templates-box			{ -webkit-border-radius: 6px; border-radius: 6px; padding: 10px; margin-bottom: 12px; border: 1px solid #bbb; }
@@ -63,27 +66,54 @@
 .activity-gear img		{ display: inline; vertical-align: middle; cursor: pointer; max-width: 20px; max-height: 20px; }
 #bookacti-template-activities-container .fc-event { cursor: move; max-height: 16px; padding-left: 5px; }
 
-#bookacti-group-category div					{ display: table-cell; vertical-align: middle; padding-right: 10px; }
-#bookacti-group-category div:last-child			{ padding-right: 0; }
-#bookacti-group-category img					{ display: inline; vertical-align: middle; cursor: pointer; max-width: 20px; max-height: 20px; }
-.bookacti-group-category-title					{ width: 100%; }
-#bookacti-template-add-group-of-events-container { display: none; }
+.bookacti-group-category-show-hide,
+.bookacti-group-category-title,
+.bookacti-update-group-category,
+.bookacti-add-group-to-category,
+.bookacti-group-of-events-title,
+.bookacti-update-group-of-events,
+.bookacti-group-category-title span		{ display: table-cell; vertical-align: middle; }
+.bookacti-group-category-show-hide		{ padding-right: 10px; }
+.bookacti-update-group-category,	
+.bookacti-add-group-to-category,
+.bookacti-update-group-of-events		{ padding-left: 10px; }
+.bookacti-groups-of-events-list			{ margin-left: 38px; padding-left: 7px; margin-top: 8px; border-left: 1px dotted rgba(0,0,0,0.3); }
+.bookacti-group-category img			{ display: inline; vertical-align: middle; cursor: pointer; max-width: 20px; max-height: 20px; }
+.bookacti-group-category-title			{ width: 100%; cursor: pointer; }
+.bookacti-group-category-title span		{ font-weight: 600; }
+.bookacti-group-of-events-title			{ width: 100%; }
+.bookacti-group-category .bookacti-group-category-title::before							{ display: table-cell; vertical-align: middle; font-size: 0.8em; position: relative; min-width: 16px; text-align: left; }
+.bookacti-group-category[data-show-groups='0'] .bookacti-group-category-title::before	{ content: '\25B7 '; }
+.bookacti-group-category[data-show-groups='1'] .bookacti-group-category-title::before	{ content: '\25E2 '; }
+#bookacti-insert-group-of-events		{ visibility: hidden; }
+.bookacti-add-group-to-category,
+.bookacti-groups-of-events-list,
+#bookacti-template-add-first-group-of-events-container { display: none; }
+
+
+
+/***** template content *****/
+/* Template calendar */
+#bookacti-template-content { display: table-cell; padding-left: 20px; }
 
 /* First Template Area */
 #bookacti-shortcode-generator-container.bookacti-no-template,
 #bookacti-template-sidebar.bookacti-no-template		{ display: none; }
 #bookacti-first-template-container					{ height: 300px; }
 #bookacti-first-template-container,
-#bookacti-template-add-group-of-events-container,
+#bookacti-template-add-first-group-of-events-container,
 #bookacti-template-first-activity-container			{ vertical-align: middle; text-align: center; width: 100%; }
 #bookacti-add-first-template-button img				{ cursor: pointer; max-width: 100px; max-height: 100px; }
-#bookacti-template-add-group-of-events-button img,
+#bookacti-template-add-first-group-of-events-button img,
 #bookacti-template-add-first-activity-button img	{ cursor: pointer; max-width: 60px; max-height: 60px; }
 
 
-/* Template dialog */
+
+/***** Template dialogs *****/
+/* General */
 .bookacti-addon-promo			{ border: 2px solid #52b7e9; border-radius: 3px; padding: 10px; text-align: center; }
 .bookacti-addon-promo .button	{ margin-top: 10px; }
+
 
 /* Activity dialog */
 #bookacti-activity-import-dialog label			{ display: inline-block; width: 150px; font-weight: bold; }
@@ -101,3 +131,33 @@
 
 /* Group of events dialog */
 #bookacti-group-of-events-new-category-title { display: none; }
+
+
+
+/***** RESPONSIVE DESIGN *****/
+/* Small computer */
+@media screen and ( max-width: 1280px ) {
+}
+
+/* Smartphone and tablet */
+@media screen and ( max-width: 960px ) {
+	#bookacti-template-sidebar	{ width: 180px; padding: 0; margin: 0; border: none; }
+	#bookacti-template-content	{ padding-left: 12px; }
+	
+	.bookacti-event-action		{ margin-left: 2px; }
+}
+
+/* Smartphone and small tablets */
+@media screen and ( max-width: 564px ) {
+	/* Put template sidebar under calendar */
+	#bookacti-template-container {
+		display: -webkit-box; display: -moz-box; display: -ms-flexbox; display: -webkit-flex; display: flex;
+		-webkit-box-orient: vertical; -moz-box-orient: vertical; -webkit-flex-direction: column; -ms-flex-direction: column; flex-direction: column;
+		/* optional */
+		-webkit-box-align: start; -moz-box-align: start; -ms-flex-align: start; -webkit-align-items: flex-start; align-items: flex-start;
+	}
+	#bookacti-template-sidebar, 
+	#bookacti-template-content	{ display: block; padding: 0; margin: 0; border: none; width: 100%; }
+	#bookacti-template-sidebar	{ margin-top: 20px; -webkit-box-ordinal-group: 2; -moz-box-ordinal-group: 2; -ms-flex-order: 2; -webkit-order: 2; order: 2; }
+	#bookacti-template-content	{ -webkit-box-ordinal-group: 1; -moz-box-ordinal-group: 1; -ms-flex-order: 1; -webkit-order: 1; order: 1; }
+}

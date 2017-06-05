@@ -323,6 +323,22 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	
 	
 	
+// GROUPS OF EVENTS
+	/**
+	 * Create a group of events with AJAX
+	 * 
+	 * @since 1.1.0
+	 */
+	function bookacti_controller_insert_group_of_events() {
+		
+		bookacti_log( $_POST );
+		
+		wp_send_json( array( 'status' => 'success', 'group_id' => 'group_id', 'group_title' => 'Group Title', 'category_id' => 'cat_id', 'category_title' => 'Category title' ) );
+	}
+	add_action( 'wp_ajax_bookactiInsertGroupOfEvents', 'bookacti_controller_insert_group_of_events' );
+
+
+
 // TEMPLATES
 	// Get template data
 	add_action( 'wp_ajax_bookactiGetTemplateData', 'bookacti_controller_get_template_data' );

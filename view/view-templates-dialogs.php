@@ -569,7 +569,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 					<label for='bookacti-group-of-events-category-selectbox' ><?php esc_html_e( 'Group category', BOOKACTI_PLUGIN_NAME ); ?></label>
 					<select name='group-of-events-category' id='bookacti-group-of-events-category-selectbox' >
 						<option value='new' >New Category</option>
-						<option value='14' >Category 1</option>
+						<option value='5' >Ma catégorie</option>
 						<option value='18' >Category 2</option>
 					</select>
 					<?php
@@ -590,10 +590,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 				<div>
 					<!-- This field is only used for feedback, it is not used to pass any AJAX data, events list is passed through an array made with JS -->
 					<label for='bookacti-group-of-events-summary' ><?php esc_html_e( 'Events list', BOOKACTI_PLUGIN_NAME ); ?></label>
-					<select multiple id='bookacti-group-of-events-summary' disabled >
-						<option>Activité 1: 2017-12-31 14:35:00 - 2017-12-31 15:35:00</option>
-						<option>Activité 2: 2017-12-05 09:10:00 - 2017-12-06 10:40:00</option>
-					</select>
+					<select multiple id='bookacti-group-of-events-summary' ></select>
 				</div>
 		<?php
 				do_action( 'bookacti_group_of_events_tab_general_after', $params );

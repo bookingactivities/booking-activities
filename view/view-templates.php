@@ -114,40 +114,75 @@ echo "<h1>" . esc_html__( 'Calendars', BOOKACTI_PLUGIN_NAME ) . "</h1>";
 				<?php } ?>
 			</div>
 			
+			<div id='bookacti-group-categories' >
+				<?php 
+					//$groups_of_events_by_categories = array();
+					$groups_categories	= array( 
+											array(	'id'				=> 5,
+													'title'				=> '[:fr]Ma catégorie[:en]My category[:]',
+													'groups_of_events'	=> array(
+																				array( 'id' => 17, 'title' => '[:fr]Premier Groupe[:en]First Group[:]' )
+																			)
+											)
+										);
+					foreach( $groups_categories as $group_category ) {
+				?>
+						<div class='bookacti-group-category' data-group-category-id='<?php echo $group_category[ 'id' ]; ?>' data-show-groups='0' >
+							<div class='bookacti-group-category-show-hide' >
+								<img src='<?php echo esc_url( plugins_url() . '/' . BOOKACTI_PLUGIN_NAME . '/img/show.png' ); ?>' />
+							</div>
+							<div class='bookacti-group-category-title' >
+								<span><?php echo apply_filters( 'bookacti_translate_text', esc_html( $group_category[ 'title' ] ) ); ?></span>
+							</div>
+						<?php if( $current_user_can_edit_template ) { ?>
+							<div class='bookacti-update-group-category' >
+								<img src='<?php echo esc_url( plugins_url() . '/' . BOOKACTI_PLUGIN_NAME . '/img/gear.png' ); ?>' />
+							</div>
+							<div class='bookacti-add-group-to-category' >
+								<img src='<?php echo esc_url( plugins_url() . '/' . BOOKACTI_PLUGIN_NAME . '/img/add.png' ); ?>' />
+							</div>
+						<?php } ?>
+							<div class='bookacti-groups-of-events-list' >
+								<?php 
+									foreach( $group_category[ 'groups_of_events' ] as $group_of_events ) {
+								?>
+										<div class='bookacti-group-of-events' data-group-id='<?php echo $group_of_events[ 'id' ]; ?>' >
+											<div class='bookacti-group-of-events-title' >
+												<?php echo apply_filters( 'bookacti_translate_text', esc_html( $group_of_events[ 'title' ] ) ); ?>
+											</div>
+											<div class='bookacti-update-group-of-events' >
+												<img src='<?php echo esc_url( plugins_url() . '/' . BOOKACTI_PLUGIN_NAME . '/img/gear.png' ); ?>' />
+											</div>
+										</div>
+								<?php
+									}
+								?>
+							</div>
+						</div>
+				<?php
+					}
+				?>
+			</div>
+			
 			<?php
-			// If no goup set exists, display a tuto to create a group of events
+			// If no goup categories exists, display a tuto to create a group of events
 			if( $current_user_can_edit_template ) {
 				?>
-				<div id='bookacti-template-add-group-of-events-container' >
+				<p id='bookacti-template-add-group-of-events-tuto-select-events' style='<?php if( count( $groups_categories ) ) { echo 'display:none;'; } ?>' >
+					<?php _e( 'Select at least 2 events to create a group of events', BOOKACTI_PLUGIN_NAME ); ?>
+				</p>
+				
+				<div id='bookacti-template-add-first-group-of-events-container' >
 					<h2>
 						<?php _e( 'Create your first group of events', BOOKACTI_PLUGIN_NAME ); ?>
 					</h2>
-					<div id='bookacti-template-add-group-of-events-button' >
+					<div id='bookacti-template-add-first-group-of-events-button' >
 						<img src='<?php echo esc_url( plugins_url() . '/' . BOOKACTI_PLUGIN_NAME . '/img/add.png' ); ?>' />
 					</div>
 				</div>
 				<?php
 			}
 			?>
-			
-			<div id='bookacti-group-categories' >
-<!--			<div class='bookacti-group-category' data-group-category-id='0' >
-					<div class='bookacti-group-category-show-hide' >
-						<img src='<?php echo esc_url( plugins_url() . '/' . BOOKACTI_PLUGIN_NAME . '/img/show.png' ); ?>' />
-					</div>
-					<div class='bookacti-group-category-title' >
-						Set #1
-					</div>
-				<?php if( $current_user_can_edit_template ) { ?>
-					<div class='bookacti-update-group-category' >
-						<img src='<?php echo esc_url( plugins_url() . '/' . BOOKACTI_PLUGIN_NAME . '/img/gear.png' ); ?>' />
-					</div>
-					<div class='bookacti-add-group-to-category' >
-						<img src='<?php echo esc_url( plugins_url() . '/' . BOOKACTI_PLUGIN_NAME . '/img/add.png' ); ?>' />
-					</div>
-				<?php } ?>
-				</div>-->
-			</div>
         </div>
     </div>
 	

@@ -13,7 +13,13 @@ $j( document ).ready( function() {
 		
 		// Refresh the display of selected events when you click on the View More link
 		$j( '#bookacti-template-calendar' ).on( 'bookacti_select_event bookacti_unselect_event', function(){
-			bookacti_maybe_display_add_group_category_button();
+			bookacti_maybe_display_add_group_of_events_button();
+		});
+		
+		// Expand groups of events
+		$j( '#bookacti-group-categories' ).on( 'click', '.bookacti-group-category-title', function(){
+			var category_id = $j( this ).parent().data( 'group-category-id' );
+			bookacti_expand_collapse_groups_of_events( category_id );
 		});
 		
 		// Capture mouse x and y coordinates to global variables
@@ -137,7 +143,7 @@ function bookacti_load_template_calendar() {
 			element.data( 'event-date',			event.start.format( 'YYYY-MM-DD' ) );
 			element.attr( 'data-event-date',	event.start.format( 'YYYY-MM-DD' ) );
 			event.render = 1;
-
+			
 			if( event.activity_id != null ) {
 				element.data( 'activity-id', event.activity_id );
 				element.attr( 'data-activity-id', event.activity_id );

@@ -18,7 +18,7 @@
 .bookacti-bookings-filter:after				{ content: ''; position: absolute; z-index: -1; top: 0; right: 0; left: 0; bottom: 0; background-color: rgba( 255, 255, 255, 0.25 ); }
 .bookacti-bookings-filter:not([selected])	{ opacity: 0.4 }
 
-#bookacti-bookings-filters-container h4 { margin-top: 0;  }
+#bookacti-bookings-filters-container h4 { margin-top: 0; }
 #bookacti-bookings-filters-container	{ display: table-cell; width: 276px; padding: 0 20px 20px 0; border-right: 1px dashed #aaa; }
 
 /* Activities filter */

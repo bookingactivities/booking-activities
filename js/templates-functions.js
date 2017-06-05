@@ -227,6 +227,7 @@ function bookacti_select_event( event, start ) {
 	selectedEvents[ 'template' ].push( 
 	{ 'event_id'			: event.id,
 	'activity_id'			: event.activity_id,
+	'event_title'			: event.title, 
 	'event_start'			: event.start, 
 	'event_end'				: event.end } );
 
@@ -766,19 +767,47 @@ function bookacti_display_activity_tuto_if_no_activity_available() {
 
 
 // Display tuto if there is there is at least two events selected and no group categories yet
-function bookacti_maybe_display_add_group_category_button() {
-	if( $j( '#bookacti-template-add-group-of-events-container' ).length ) {
+function bookacti_maybe_display_add_group_of_events_button() {
+	if( $j( '#bookacti-template-add-first-group-of-events-container' ).length ) {
 		
-		// If there are at least 2 selected events and...
-		if( selectedEvents[ 'template' ].length >= 2 && ! $j( '.bookacti-group-category' ).length ) {
-			$j( '#bookacti-template-add-group-of-events-container' ).show();
+		// If there are at least 2 selected events...
+		if( selectedEvents[ 'template' ].length >= 2 ) {
+			$j( '#bookacti-insert-group-of-events' ).css( 'visibility', 'visible' );
+			$j( '.bookacti-add-group-to-category' ).css( 'display', 'table-cell' );
+			// And there are no groups of events yet
+			if( ! $j( '.bookacti-group-category' ).length ) {
+				$j( '#bookacti-template-add-group-of-events-tuto-select-events' ).hide();
+				$j( '#bookacti-template-add-first-group-of-events-container' ).show();
+			}
+			
 		// Else, hide the add group category button
 		} else {
-			$j( '#bookacti-template-add-group-of-events-container' ).hide();
+			$j( '#bookacti-template-add-first-group-of-events-container' ).hide();
+			$j( '#bookacti-insert-group-of-events' ).css( 'visibility', 'hidden' );
+			$j( '.bookacti-add-group-to-category' ).css( 'display', 'none' );
+			if( ! $j( '.bookacti-group-category' ).length ) {
+				$j( '#bookacti-template-add-group-of-events-tuto-select-events' ).show();
+			}
 		}
 	}
 }
 
+
+// Expand or Collapse groups of events
+function bookacti_expand_collapse_groups_of_events( category_id, force_to ) {
+	force_to = $j.inArray( force_to, [ 'expand', 'collapse' ] ) ? force_to : false;
+	
+	var is_shown = $j( '.bookacti-group-category[data-group-category-id="' + category_id + '"]' ).data( 'show-groups' );
+	if( ( is_shown || force_to === 'collapse' ) && force_to !== 'expand' ) {
+		$j( '.bookacti-group-category[data-group-category-id="' + category_id + '"]' ).attr( 'data-show-groups', 0 );
+		$j( '.bookacti-group-category[data-group-category-id="' + category_id + '"]' ).data( 'show-groups', 0 );
+		$j( '.bookacti-group-category[data-group-category-id="' + category_id + '"] .bookacti-groups-of-events-list' ).hide( 200 );
+	} else if( ( ! is_shown || force_to === 'expand' ) && force_to !== 'collapse' ) {
+		$j( '.bookacti-group-category[data-group-category-id="' + category_id + '"]' ).attr( 'data-show-groups', 1 );
+		$j( '.bookacti-group-category[data-group-category-id="' + category_id + '"]' ).data( 'show-groups', 1 );
+		$j( '.bookacti-group-category[data-group-category-id="' + category_id + '"] .bookacti-groups-of-events-list' ).show( 200 );
+	}
+}
 
 // Load activities bound to selected template
 function bookacti_load_activities_bound_to_template( selected_template_id ) {

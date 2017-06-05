@@ -29,7 +29,7 @@ if( empty( bookacti_fetch_templates() ) ) {
 
 	<div id='bookacti-bookings-filters-container' >
 		<div id='bookacti-bookings-filters-title' class='bookacti-bookings-title' >
-			<h3><?php echo esc_html_x( 'Filters', 'The plural noun', BOOKACTI_PLUGIN_NAME ); ?></h3>
+			<h2><?php echo esc_html_x( 'Filters', 'The plural noun', BOOKACTI_PLUGIN_NAME ); ?></h2>
 		</div>
 <!--		
 		<div id='bookacti-bookings-filters-param-gear' class='bookacti-bookings-title-gear' >
@@ -88,7 +88,7 @@ if( empty( bookacti_fetch_templates() ) ) {
 	add_filter( 'bookacti_booking_system_title', 'bookacti_bookings_booking_system_title', 10, 6 );
 	function bookacti_bookings_booking_system_title( $title, $templates, $activities, $booking_method, $id, $classes ) {
 		if( $id === 'bookings-page' ) {
-			$title = '<h3>' . esc_html__( 'Pick an event to show its bookings', BOOKACTI_PLUGIN_NAME ) . '</h3>';
+			$title = '<h2>' . esc_html__( 'Pick an event to show its bookings', BOOKACTI_PLUGIN_NAME ) . '</h2>';
 		}
 		return $title;
 	}
@@ -99,7 +99,7 @@ if( empty( bookacti_fetch_templates() ) ) {
 	
 	<div id='bookacti-bookings-list-container'>
 		<div id='bookacti-bookings-list-title' class='bookacti-bookings-title' >
-			<h3><?php echo esc_html__( 'Booking list', BOOKACTI_PLUGIN_NAME ); ?></h3>
+			<h2><?php echo esc_html__( 'Booking list', BOOKACTI_PLUGIN_NAME ); ?></h2>
 		</div>
 		<div id='bookacti-bookings-list-param-gear' class='bookacti-bookings-title-gear' >
 			<img src='<?php echo esc_url( plugins_url() . '/' . BOOKACTI_PLUGIN_NAME . '/img/gear.png' ); ?>' />
