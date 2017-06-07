@@ -149,7 +149,7 @@ function bookacti_filter_bookings_by_templates( booking_system, refresh_calendar
 		var fetch_past_events = 1;
 		var context = 'booking_page';
 		
-		if( booking_method === 'calendar' || ! $j.inArray( booking_method, bookacti_localized.available_booking_methods ) ) {
+		if( booking_method === 'calendar' || $j.inArray( booking_method, bookacti_localized.available_booking_methods ) === -1 ) {
 			
 			var calendar = $j( '#bookacti-calendar-' + booking_system_id );
 			calendar.fullCalendar( 'removeEvents' );
@@ -189,7 +189,7 @@ function bookacti_filter_bookings_by_activities( booking_system ) {
 		hiddenActivities.splice( idx, 1 );
 	});
 	
-	if( booking_method === 'calendar' || ! $j.inArray( booking_method, bookacti_localized.available_booking_methods ) ) {
+	if( booking_method === 'calendar' || $j.inArray( booking_method, bookacti_localized.available_booking_methods ) === -1 ) {
 		booking_system.find( '.bookacti-calendar' ).fullCalendar( 'rerenderEvents' );
 	} else {
 		booking_system.trigger( 'bookacti_rerender_events', [ booking_method ] );

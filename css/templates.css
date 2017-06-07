@@ -43,7 +43,7 @@
 
 
 /***** Sidebar *****/
-#bookacti-template-sidebar		{ display: table-cell; width: 240px; padding: 0 20px 20px 0; border-right: 1px dashed #aaa; }
+#bookacti-template-sidebar		{ display: table-cell; width: 240px; padding-right: 20px; border-right: 1px dashed #aaa; }
 .bookacti-disabled-img			{ cursor: auto; pointer-events: none; opacity: 0.5; }
 
 .bookacti-templates-box			{ -webkit-border-radius: 6px; border-radius: 6px; padding: 10px; margin-bottom: 12px; border: 1px solid #bbb; }
@@ -69,27 +69,26 @@
 .bookacti-group-category-show-hide,
 .bookacti-group-category-title,
 .bookacti-update-group-category,
-.bookacti-add-group-to-category,
 .bookacti-group-of-events-title,
 .bookacti-update-group-of-events,
 .bookacti-group-category-title span		{ display: table-cell; vertical-align: middle; }
 .bookacti-group-category-show-hide		{ padding-right: 10px; }
-.bookacti-update-group-category,	
-.bookacti-add-group-to-category,
-.bookacti-update-group-of-events		{ padding-left: 10px; }
+.bookacti-update-group-category			{ padding-left: 10px; }
+.bookacti-update-group-of-events		{ padding-right: 10px; }
 .bookacti-groups-of-events-list			{ margin-left: 38px; padding-left: 7px; margin-top: 8px; border-left: 1px dotted rgba(0,0,0,0.3); }
 .bookacti-group-category img			{ display: inline; vertical-align: middle; cursor: pointer; max-width: 20px; max-height: 20px; }
 .bookacti-group-category-title			{ width: 100%; cursor: pointer; }
 .bookacti-group-category-title span		{ font-weight: 600; }
-.bookacti-group-of-events-title			{ width: 100%; }
+.bookacti-group-category-title,
+.bookacti-group-of-events-title			{ width: 100%; max-width: 120px; white-space: nowrap; overflow: hidden; transition: all 0.2s; }
+.bookacti-group-of-events-title:hover	{ cursor: pointer; padding-left: 10px; }
 .bookacti-group-category .bookacti-group-category-title::before							{ display: table-cell; vertical-align: middle; font-size: 0.8em; position: relative; min-width: 16px; text-align: left; }
 .bookacti-group-category[data-show-groups='0'] .bookacti-group-category-title::before	{ content: '\25B7 '; }
 .bookacti-group-category[data-show-groups='1'] .bookacti-group-category-title::before	{ content: '\25E2 '; }
 #bookacti-insert-group-of-events		{ visibility: hidden; }
-.bookacti-add-group-to-category,
 .bookacti-groups-of-events-list,
 #bookacti-template-add-first-group-of-events-container { display: none; }
-
+.bookacti-group-category:not(:last-child) .bookacti-groups-of-events-list { margin-bottom: 10px; }
 
 
 /***** template content *****/
@@ -141,10 +140,13 @@
 
 /* Smartphone and tablet */
 @media screen and ( max-width: 960px ) {
-	#bookacti-template-sidebar	{ width: 180px; padding: 0; margin: 0; border: none; }
-	#bookacti-template-content	{ padding-left: 12px; }
+	#bookacti-template-sidebar		{ width: 180px; padding: 0; margin: 0; border: none; }
+	#bookacti-template-content		{ padding-left: 12px; }
 	
-	.bookacti-event-action		{ margin-left: 2px; }
+	.bookacti-event-action			{ margin-left: 2px; }
+	
+	.bookacti-group-category-title,
+	.bookacti-group-of-events-title	{ max-width: 82px; }
 }
 
 /* Smartphone and small tablets */

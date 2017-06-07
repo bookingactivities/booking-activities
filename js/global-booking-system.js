@@ -25,7 +25,7 @@ $j( document ).ready( function() {
 			
 			// Load the booking system
 			if( auto_load && booking_system_id !== 'reschedule' ) {
-				if( booking_method === 'calendar' || ! $j.inArray( booking_method, bookacti_localized.available_booking_methods ) ) {
+				if( booking_method === 'calendar' || $j.inArray( booking_method, bookacti_localized.available_booking_methods ) === -1 ) {
 					bookacti_load_calendar( booking_system, true );
 				} else {
 					booking_system.trigger( 'bookacti_load_booking_system', [ booking_method, false ] );

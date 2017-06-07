@@ -170,13 +170,41 @@ function bookacti_init_show_hide_activities_switch() {
 }
 
 
+// Show / Hide switch for groups
+function bookacti_init_show_hide_groups_switch() {
+    
+    var srcPath = bookacti_localized.plugin_path + '/img/';
+    
+    $j( '#bookacti-group-categories' ).on( 'click', '.bookacti-group-category-show-hide img', function() { 
+        
+        var category_element	= $j( this ).parents( '.bookacti-group-category' );
+        var category_id			= category_element.data( 'group-category-id' );
+        
+		if( category_element.data( 'visible' ) === 1 ) {
+			$j( this ).attr( 'src', srcPath + 'hide.png' );
+			category_element.data( 'visible', 0 );
+			category_element.attr( 'data-visible', 0 );
+
+		} else {
+			$j( this ).attr( 'src', srcPath + 'show.png' );
+			category_element.data( 'visible', 1 );
+			category_element.attr( 'data-visible', 1 );
+		}
+		
+		//Update shortcode generator groups list
+		var is_visible = category_element.data( 'visible' );
+		bookacti_update_shortcode_generator_group_ids( category_id, is_visible, false );
+    });
+}
+
+
 // Make sure selected events appears as selected and vice-versa
 function bookacti_refresh_selected_events_display() {
 	$j( '.fc-event' ).removeClass( 'bookacti-selected-event' );
 	$j( '.fc-event .bookacti-event-action-select-checkbox' ).prop( 'checked', false );
 
 	$j.each( selectedEvents[ 'template' ], function( i, selected_event ) {
-		var element = $j( '.fc-event[data-event-id="' + selected_event['event_id'] + '"][data-event-date="' + selected_event['event_start'].format( 'YYYY-MM-DD' ) + '"]' );
+		var element = $j( '.fc-event[data-event-id="' + selected_event.event_id + '"][data-event-date="' + selected_event.event_start.substr( 0, 10 ) + '"]' );
 		// Format selected events
 		element.addClass( 'bookacti-selected-event' );
 
@@ -228,8 +256,8 @@ function bookacti_select_event( event, start ) {
 	{ 'event_id'			: event.id,
 	'activity_id'			: event.activity_id,
 	'event_title'			: event.title, 
-	'event_start'			: event.start, 
-	'event_end'				: event.end } );
+	'event_start'			: event.start.format( 'YYYY-MM-DD HH:mm:ss' ), 
+	'event_end'				: event.end.format( 'YYYY-MM-DD HH:mm:ss' ) } );
 
 	$j( '#bookacti-template-calendar' ).trigger( 'bookacti_select_event', [ event ] );
 }
@@ -274,7 +302,7 @@ function bookacti_unselect_event( event, start, all ) {
 		if( typeof selected_event !== 'undefined' ) {
 			if( selected_event.event_id == event.id 
 			&&  (  all 
-				|| selected_event.event_start.format( 'YYYY-MM-DD' ) == event.start.format( 'YYYY-MM-DD' ) ) ) {
+				|| selected_event.event_start.substr( 0, 10 ) === event.start.format( 'YYYY-MM-DD' ) ) ) {
 				
 				// Remove the event from the selected events array
 				selectedEvents[ 'template' ].splice( i, 1 );
@@ -318,6 +346,37 @@ function bookacti_update_shortcode_generator_activity_ids( activity_ids, is_visi
 
 		// Display new activities list
 		$j( this ).text( shortcode_activity_ids.join() );
+	});
+}
+
+
+//Update shortcode generator groups list
+function bookacti_update_shortcode_generator_group_ids( category_ids, is_visible, remove_others ) {
+	
+	// Init and format parameters
+	category_ids	= $j.isNumeric( category_ids ) ? [ category_ids ] : category_ids;
+	is_visible		= is_visible ? true : false;
+	remove_others	= remove_others ? true : false;
+	
+	$j( '.bookacti-shortcode-group-ids' ).each( function(){
+		// Retrieve activities displayed in shortcode
+		var shortcode_category_ids = [];
+		if(  remove_others !== true && ! $j( this ).is( ':empty' ) ) {
+			shortcode_category_ids = $j( this ).text().split(',');
+		}
+		
+		// Add or remove activity ids
+		$j.each( category_ids, function( i, category_id ){
+			var idx = $j.inArray( category_id.toString(), shortcode_category_ids );
+			if( is_visible === true && idx === -1 ) {
+				shortcode_category_ids.push( category_id );
+			} else if( idx !== -1 ) {
+				shortcode_category_ids.splice( idx, 1 );
+			}
+		});
+
+		// Display new activities list
+		$j( this ).text( shortcode_category_ids.join() );
 	});
 }
 
@@ -453,7 +512,7 @@ function bookacti_init_add_and_remove_items() {
 //Empty all dialog forms
 function bookacti_empty_all_dialog_forms() {
     $j( '.bookacti-backend-dialogs .form-error' ).remove();
-	$j( '.bookacti-backend-dialogs input[type="hidden"]' ).val( '' );
+	$j( '.bookacti-backend-dialogs input[type="hidden"]:not([name^="nonce"]):not([name="_wp_http_referer"])' ).val( '' );
 	$j( '.bookacti-backend-dialogs input[type="text"]' ).val( '' );
     $j( '.bookacti-backend-dialogs input[type="number"]' ).val( '' );
     $j( '.bookacti-backend-dialogs input[type="color"]' ).val( '#3a87ad' );
@@ -773,7 +832,6 @@ function bookacti_maybe_display_add_group_of_events_button() {
 		// If there are at least 2 selected events...
 		if( selectedEvents[ 'template' ].length >= 2 ) {
 			$j( '#bookacti-insert-group-of-events' ).css( 'visibility', 'visible' );
-			$j( '.bookacti-add-group-to-category' ).css( 'display', 'table-cell' );
 			// And there are no groups of events yet
 			if( ! $j( '.bookacti-group-category' ).length ) {
 				$j( '#bookacti-template-add-group-of-events-tuto-select-events' ).hide();
@@ -784,7 +842,6 @@ function bookacti_maybe_display_add_group_of_events_button() {
 		} else {
 			$j( '#bookacti-template-add-first-group-of-events-container' ).hide();
 			$j( '#bookacti-insert-group-of-events' ).css( 'visibility', 'hidden' );
-			$j( '.bookacti-add-group-to-category' ).css( 'display', 'none' );
 			if( ! $j( '.bookacti-group-category' ).length ) {
 				$j( '#bookacti-template-add-group-of-events-tuto-select-events' ).show();
 			}
@@ -795,8 +852,7 @@ function bookacti_maybe_display_add_group_of_events_button() {
 
 // Expand or Collapse groups of events
 function bookacti_expand_collapse_groups_of_events( category_id, force_to ) {
-	force_to = $j.inArray( force_to, [ 'expand', 'collapse' ] ) ? force_to : false;
-	
+	force_to = $j.inArray( force_to, [ 'expand', 'collapse' ] ) !== -1 ? force_to : false;
 	var is_shown = $j( '.bookacti-group-category[data-group-category-id="' + category_id + '"]' ).data( 'show-groups' );
 	if( ( is_shown || force_to === 'collapse' ) && force_to !== 'expand' ) {
 		$j( '.bookacti-group-category[data-group-category-id="' + category_id + '"]' ).attr( 'data-show-groups', 0 );

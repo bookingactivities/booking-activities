@@ -200,7 +200,7 @@ function bookacti_fetch_calendar_events( calendar, fetch_past_events, context, c
     fetch_past_events	= fetch_past_events || 0;
     fetch_past_events	= fetch_past_events ? 1 : 0;
 	context				= context || 'frontend';
-	context				= $j.inArray( context, [ 'frontend', 'editor', 'booking_page' ] ) ? context : 'frontend';
+	context				= $j.inArray( context, [ 'frontend', 'editor', 'booking_page' ] ) !== -1 ? context : 'frontend';
 	
 	var booking_system	= calendar.parent();
 	var calendar_id		= booking_system.data( 'booking-system-id' );

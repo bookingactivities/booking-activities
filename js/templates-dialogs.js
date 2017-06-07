@@ -65,18 +65,14 @@ function bookacti_init_template_dialogs() {
     });
 	
 	// Init create group of events dialog
-	$j( '#bookacti-template-groups-of-events-container' ).on( 'click', '#bookacti-template-add-first-group-of-events-button img, #bookacti-insert-group-of-events img, .bookacti-add-group-to-category img', function() {
-		var category_id = 'new';
-		if( $j( this ).parents( '.bookacti-group-category' ).length ) {
-			category_id = $j( this ).parents( '.bookacti-group-category' ).data( 'group-category-id' );
-		}
-		bookacti_dialog_create_group_of_events( category_id ); 
+	$j( '#bookacti-template-groups-of-events-container' ).on( 'click', '#bookacti-template-add-first-group-of-events-button img, #bookacti-insert-group-of-events img', function() {
+		bookacti_dialog_create_group_of_events();
     });
 	
 	// Init update group category dialog
 	$j( '#bookacti-group-categories' ).on( 'click', '.bookacti-update-group-category img', function() {
-        var group_category_id = $j( this ).data( 'group-category-id' );
-        bookacti_dialog_update_group_category( group_category_id ); 
+        var category_id = $j( this ).parents( '.bookacti-group-category' ).data( 'group-category-id' );
+        bookacti_dialog_update_group_category( category_id ); 
     });
 	
 	// Prevent sending form
@@ -1069,7 +1065,7 @@ function bookacti_dialog_create_activity() {
 		
 		// Add current template in activity bound template select box if it isn't yet
 		if( ( ! $j( '#bookacti-activity-templates-select-box' ).val()
-			  || $j.inArray( template_id, $j( '#bookacti-activity-templates-select-box' ).val() ) < 0 )
+			  || $j.inArray( template_id, $j( '#bookacti-activity-templates-select-box' ).val() ) === -1 )
 			&&  $j( '#bookacti-add-new-activity-templates-select-box option[value="' + template_id + '"]' ).length ) {
 			
 				$j( '#bookacti-add-new-activity-templates-select-box' ).val( template_id );
@@ -1493,14 +1489,13 @@ function bookacti_dialog_delete_activity( activity_id ) {
 // Create a group of events
 function bookacti_dialog_create_group_of_events( category_id ) {
 	
+	category_id = category_id ? category_id : selectedCategory;
+	
 	// Change the action to create
-	$j( '#bookacti-group-of-events-action' ).val( 'bookactiInsertGroupOfEvents' );
+	
 	
 	// Disable the "New category title" field if a category as been chosen
 	if( $j( '#bookacti-group-of-events-category-selectbox option' ).length > 1 ) {
-		$j( '#bookacti-group-of-events-new-category-title' ).show();
-		$j( '#bookacti-group-of-events-category-title-field' ).attr( 'disabled', false );
-
 		// Display of hide New category title field
 		$j( '#bookacti-group-of-events-category-selectbox' ).off().on( 'change blur', function() {
 			if( $j( this ).val() === 'new' ){
@@ -1515,16 +1510,15 @@ function bookacti_dialog_create_group_of_events( category_id ) {
 		$j( '#bookacti-group-of-events-category-selectbox' ).val( category_id ).trigger( 'change' );
 		
 	} else {
-		$j( '#bookacti-group-of-events-new-category-title' ).hide();
-		$j( '#bookacti-group-of-events-category-title-field' ).attr( 'disabled', true );
+		$j( '#bookacti-group-of-events-new-category-title' ).show();
 	}
 	
 	// Fill the events list as a feedback for user
 	$j( '#bookacti-group-of-events-summary' ).empty();
 	$j.each( selectedEvents[ 'template' ], function( i, event ){
-		var event_duration = event.event_start.format( 'YYYY-MM-DD HH:mm' ) + ' &rarr; ' + event.event_end.format( 'YYYY-MM-DD HH:mm' );
-		if( event.event_start.format( 'YYYY-MM-DD' ) === event.event_end.format( 'YYYY-MM-DD' ) ) {
-			event_duration = event.event_start.format( 'YYYY-MM-DD HH:mm' ) + ' &rarr; ' + event.event_end.format( 'HH:mm' );
+		var event_duration = event.event_start.substr( 0, 16 ) + ' &rarr; ' + event.event_end.substr( 0, 16 );
+		if( event.event_start.substr( 0, 10 ) === event.event_end.substr( 0, 10 ) ) {
+			event_duration = event.event_start.substr( 0, 16 ) + ' &rarr; ' + event.event_end.substr( 11, 5 );
 		}
 		var option = $j( '<option />', {
 						html: event.event_title + ' - ' + event_duration
@@ -1543,21 +1537,23 @@ function bookacti_dialog_create_group_of_events( category_id ) {
 			//On click on the OK Button, new values are send to a script that update the database
 			click: function() {
 				
+				// Prepare fields
+				$j( '#bookacti-group-of-events-action' ).val( 'bookactiInsertGroupOfEvents' );
+				$j( '#bookacti-group-of-events-form select[multiple] option' ).attr( 'selected', true );
+				
 				//Get the data to save
-				var group_title	= $j( '#bookacti-group-of-events-title-field' ).val();
-				var category_id = $j( '#group-of-events-category' ).val();
-				if( category_id === 'new' ) {
-					var category_title = $j( '#bookacti-group-of-events-category-title-field' ).val();
-				}
+				var selected_category_id	= $j( '#bookacti-group-of-events-category-selectbox' ).val();
+				selectedCategory			= selected_category_id;
 				
+				var data = $j( '#bookacti-group-of-events-form' ).serializeArray();
+				data.push( { name: 'template_id', value: template_id } );
+				data.push( { name: 'events', value: JSON.stringify( selectedEvents[ 'template' ] ) } );
 				
-				var data = $j( '#bookacti-group-of-events-form' ).serialize();
-
-				//var is_form_valid = bookacti_validate_group_of_events_form();
-
-				if( true ) {
+				var is_form_valid = bookacti_validate_group_of_events_form();
+				
+				if( is_form_valid ) {
 					bookacti_start_template_loading();
-
+					
 					//Save the new group of events in database
 					$j.ajax({
 						url: ajaxurl, 
@@ -1572,33 +1568,41 @@ function bookacti_dialog_create_group_of_events( category_id ) {
 							// If success
 							if( response.status === 'success' ) {
 								
-								// If the user has created a group category, add the category row
-								if( category_id === 'new' ) {
+								// If the user has created a group category
+								if( selected_category_id === 'new' ) {
+									// Add the category row
+									var category_short_title = response.category_title.length > 16 ? response.category_title.substr( 0, 16 ) + '&#8230;' : response.category_title;
 									$j( '#bookacti-group-categories' ).append(
-										"<div class='bookacti-group-category'  data-group-category-id='" + response.category_id + "' data-show-groups='0' >"
+										"<div class='bookacti-group-category'  data-group-category-id='" + response.category_id + "' data-show-groups='0' data-visible='1' >"
 									+       "<div class='bookacti-group-category-show-hide' >"
 									+           "<img src='" + plugin_path + "/img/show.png' />"
 									+       "</div>"
-									+       "<div class='bookacti-group-category-title' >"
-									+			"<span>" + response.category_title + "</span>"
+									+       "<div class='bookacti-group-category-title' title='" + response.category_title + "' >"
+									+			"<span>" + category_short_title + "</span>"
 									+		"</div>"
 									+		"<div class='bookacti-update-group-category' >"
 									+			"<img src='" + plugin_path + "/img/gear.png' />"
-									+		"</div>"
-									+		"<div class='bookacti-add-group-to-category' >"
-									+			"<img src='" + plugin_path + "/img/add.png' />"
 									+		"</div>"
 									+		"<div class='bookacti-groups-of-events-list'>"
 									+		"</div>"
 									+   "</div>"
 									);
+									
+									// Add the category to the selectbox
+									$j( '#bookacti-group-of-events-category-selectbox' ).append( 
+										"<option value='"+ response.category_id + "' >" + response.category_title + "</option>"
+									);
+									
+									// Define this category as default
+									selectedCategory = response.category_id;
 								}
 								
 								// Add the group row to the category
+								var group_short_title = response.group_title.length > 16 ? response.group_title.substr( 0, 16 ) + '&#8230;' : response.group_title;
 								$j( '.bookacti-group-category[data-group-category-id="' + response.category_id + '"] .bookacti-groups-of-events-list' ).append(
 									"<div class='bookacti-group-of-events' data-group-id='" + response.group_id + "' >"
-								+		"<div class='bookacti-group-of-events-title' >"
-								+			response.group_title
+								+		"<div class='bookacti-group-of-events-title' title='" + response.group_title + "'>"
+								+			group_short_title
 								+		"</div>"
 								+		"<div class='bookacti-update-group-of-events' >"
 								+			"<img src='" + plugin_path + "/img/gear.png' />"
@@ -1607,11 +1611,17 @@ function bookacti_dialog_create_group_of_events( category_id ) {
 								);
 								
 								// Expand the group category
-								bookacti_expand_collapse_groups_of_events( category_id, 'expand' );
+								bookacti_expand_collapse_groups_of_events( response.category_id, 'expand' );
+								
+								// Empty the selected events and refresh them
+								selectedEvents[ 'template' ] = [];
+								$j( '#bookacti-template-calendar' ).fullCalendar( 'rerenderEvents' );
+								$j( '#bookacti-insert-group-of-events' ).css( 'visibility', 'hidden' );
+								
 								
 							//If error
 							} else if( response.status === 'failed' ) {
-								var error_message = bookacti_localized.error_create_group_category;
+								var error_message = bookacti_localized.error_create_group_of_events;
 								if( response.error === 'not_allowed' ) {
 									error_message += '\n' + bookacti_localized.error_not_allowed;
 								}
@@ -1620,7 +1630,7 @@ function bookacti_dialog_create_group_of_events( category_id ) {
 							}
 						},
 						error: function( e ){
-							alert( 'AJAX ' + bookacti_localized.error_create_group_category );        
+							alert( 'AJAX ' + bookacti_localized.error_create_group_of_events );        
 							console.log( e );
 						},
 						complete: function() { 
@@ -1637,19 +1647,65 @@ function bookacti_dialog_create_group_of_events( category_id ) {
 }
 
 
-// Create a group category
+// Update a group category
 function bookacti_dialog_update_group_category( category_id ) {
 	// Set the dialog title
 	$j( '#bookacti-group-category-dialog' ).dialog({ 
 		title: bookacti_localized.dialog_create_group_of_events_title
 	});
 	
-	// Change the action to create
-	$j( '#bookacti-group-category-action' ).val( 'bookactiInsertGroupCategory' );
-	
-	//Open the modal dialog
-	$j( '#bookacti-group-category-dialog' ).dialog( 'open' );
+	// Retrieve category data and fill fields
+	bookacti_start_template_loading();
+	$j.ajax({
+		url: ajaxurl, 
+		data: { 'action': 'bookactiGetGroupCategoryData', 
+				'category_id': category_id,
+				'nonce': bookacti_localized.nonce_get_group_category_data
+			},
+		type: 'POST',
+		dataType: 'json',
+		success: function( response ){
+			// If success
+			if( response.status === 'success' ) {
+				
+				// General tab
+				$j( '#bookacti-group-category-title-field' ).val( response.title ); 
+				
+				// Other settings
+				if( response.settings.length ) {
+					bookacti_fill_settings_fields( response.settings, 'groupCategoryOptions' );
+				}
+				
+				//Refresh qtranslate fields to make a correct display of multilingual fields
+				if( bookacti_localized.is_qtranslate ) {
+					$j( '#bookacti-group-category-dialog .qtranxs-translatable' ).each( function() { 
+						bookacti_refresh_qtx_field( this ); 
+					});
+				}
 
+			// If error
+			} else {
+				var error_message = bookacti_localized.error_retrieve_group_category_data;
+				if( response.error === 'not_allowed' ) {
+					error_message += '\n' + bookacti_localized.error_not_allowed;
+				}
+				alert( error_message );
+				console.log( response );
+			}
+		},
+		error: function(  e){
+			alert( 'AJAX ' + bookacti_localized.error_retrieve_group_category_data );        
+			console.log( e );
+		},
+		complete: function() { 
+			bookacti_stop_template_loading(); 
+
+			//Open the modal dialog
+			$j( '#bookacti-group-category-dialog' ).dialog( 'open' );
+		}
+	});
+	
+	
 	//Add the 'OK' button
 	$j( '#bookacti-group-category-dialog' ).dialog( 'option', 'buttons',
 		[{
@@ -1659,16 +1715,16 @@ function bookacti_dialog_update_group_category( category_id ) {
 			click: function() {
 
 				// Prepare fields
+				$j( '#bookacti-group-category-action' ).val( 'bookactiUpdateGroupCategory' );
 				$j( '#bookacti-group-category-form select[multiple] option' ).attr( 'selected', true );
 
 				//Get the data to save
-				var group_category_title = $j( '#bookacti-group-category-title-field' ).val();
-				
-				var data = $j( '#bookacti-group-category-form' ).serialize();
+				var data = $j( '#bookacti-group-category-form' ).serializeArray();
+				data.push( { name: 'category_id', value: category_id } );
 
 				var is_form_valid = bookacti_validate_group_category_form();
 
-				if( true ) {
+				if( is_form_valid ) {
 					bookacti_start_template_loading();
 
 					//Save the new activity in database
@@ -1679,33 +1735,20 @@ function bookacti_dialog_update_group_category( category_id ) {
 						dataType: 'json',
 						success: function( response ){
 							
-							//Retrieve plugin path to display the gear
-							var plugin_path = bookacti_localized.plugin_path;
-							
 							// If success
 							if( response.status === 'success' ) {
 								
-								// Display group category row
-								$j( '#bookacti-group-categories' ).append(
-									"<div class='bookacti-group-category'  data-group-category-id='" + response.group_category_id + "' >"
-								+       "<div class='bookacti-group-category-show-hide' >"
-								+           "<img src='" + plugin_path + "/img/show.png' data-activity-id='" + response.activity_id + "' data-activity-visible='1' />"
-								+       "</div>"
-								+       "<div class='bookacti-group-category-title' >"
-								+			group_category_title
-								+		"</div>"
-								+		"<div class='bookacti-update-group-category' >"
-								+			"<img src='" + plugin_path + "/img/gear.png' />"
-								+		"</div>"
-								+		"<div class='bookacti-add-group-to-category' >"
-								+			"<img src='" + plugin_path + "/img/add.png' />"
-								+		"</div>"
-								+   "</div>"
-								);
+								// Update category title in groups list
+								var category_short_title = response.title.length > 16 ? response.title.substr( 0, 16 ) + '&#8230;' : response.title;
+								$j( '.bookacti-group-category[data-group-category-id="' + category_id + '"] .bookacti-group-category-title' ).attr( 'title', response.title );
+								$j( '.bookacti-group-category[data-group-category-id="' + category_id + '"] .bookacti-group-category-title span' ).html( category_short_title );
+								
+								// Update category title in selectbox
+								$j( '#bookacti-group-of-events-category-selectbox option[value="' + category_id + '"]' ).html( response.title );
 								
 							//If error
 							} else if( response.status === 'failed' ) {
-								var error_message = bookacti_localized.error_create_group_category;
+								var error_message = bookacti_localized.error_update_group_category;
 								if( response.error === 'not_allowed' ) {
 									error_message += '\n' + bookacti_localized.error_not_allowed;
 								}
@@ -1714,7 +1757,7 @@ function bookacti_dialog_update_group_category( category_id ) {
 							}
 						},
 						error: function( e ){
-							alert( 'AJAX ' + bookacti_localized.error_create_group_category );        
+							alert( 'AJAX ' + bookacti_localized.error_update_group_category );        
 							console.log( e );
 						},
 						complete: function() { 

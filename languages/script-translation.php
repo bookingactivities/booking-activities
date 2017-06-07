@@ -91,6 +91,10 @@ $bookacti_translation_array = apply_filters( 'bookacti_translation_array', array
 	'error_resize_locked_event'         => esc_html__( 'Resize this occurence because it will affect the complete event.', BOOKACTI_PLUGIN_NAME ),
 	/* translators: In the context, it is one of the message following 'There are bookings on at least one of the occurence of this event. You can't: ' */
 	'error_delete_locked_event'         => esc_html__( 'Delete this occurence because it will affect the complete event.', BOOKACTI_PLUGIN_NAME ),
+	'error_retrieve_group_category_data'=> esc_html__( 'Error occurs when trying to retrieve the group category settings.', BOOKACTI_PLUGIN_NAME ),
+	'error_create_group_of_events'		=> esc_html__( 'Error occurs when trying to create the group of events.', BOOKACTI_PLUGIN_NAME ),
+	'error_update_group_of_events'		=> esc_html__( 'Error occurs when trying to update the group of events.', BOOKACTI_PLUGIN_NAME ),
+	'error_delete_group_of_events'		=> esc_html__( 'Error occurs when trying to delete the group of events.', BOOKACTI_PLUGIN_NAME ),
 	'error_create_group_category'		=> esc_html__( 'Error occurs when trying to create the group category.', BOOKACTI_PLUGIN_NAME ),
 	'error_update_group_category'		=> esc_html__( 'Error occurs when trying to update the group category.', BOOKACTI_PLUGIN_NAME ),
 	'error_delete_group_category'		=> esc_html__( 'Error occurs when trying to delete the group category.', BOOKACTI_PLUGIN_NAME ),
@@ -143,7 +147,8 @@ $bookacti_translation_array = apply_filters( 'bookacti_translation_array', array
 	'error_quantity_inf_to_0'			=> esc_html__( 'The amount of desired bookings is less than or equal to 0. Please increase the quantity.', BOOKACTI_PLUGIN_NAME ),
 	'error_no_templates_for_activity'	=> esc_html__( 'The activity must be bound to at least one calendar.', BOOKACTI_PLUGIN_NAME ),
 	'error_no_activity_selected'		=> esc_html__( 'Select at least one activity.', BOOKACTI_PLUGIN_NAME ),
-
+	'error_select_at_least_two_events'	=> esc_html__( 'You must select at least two events.', BOOKACTI_PLUGIN_NAME ),
+	'error_missing_title'				=> esc_html__( 'You must type a title.', BOOKACTI_PLUGIN_NAME ),
 
 	//ADVICE
 	'advice_switch_to_maintenance'      => esc_html__( 'Please consider switching your website to maintenance mode when working on a published calendar.', BOOKACTI_PLUGIN_NAME ),
@@ -227,6 +232,8 @@ $bookacti_translation_array = apply_filters( 'bookacti_translation_array', array
 	'nonce_move_or_resize_event'		=> wp_create_nonce( 'bookacti_move_or_resize_event' ),
 	'nonce_delete_event'				=> wp_create_nonce( 'bookacti_delete_event' ),
 	'nonce_unbind_occurences'			=> wp_create_nonce( 'bookacti_unbind_occurences' ),
+	
+	'nonce_get_group_category_data'		=> wp_create_nonce( 'bookacti_get_group_category_data' ),
 
 	'nonce_get_template_data'			=> wp_create_nonce( 'bookacti_get_template_data' ),
 	'nonce_switch_template'				=> wp_create_nonce( 'bookacti_switch_template' ),

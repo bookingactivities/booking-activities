@@ -49,7 +49,7 @@ $j( document ).ready( function() {
 							var booking_system_id	= booking_system.data( 'booking-system-id' );
 							var calendar			= $j( '#bookacti-calendar-' + booking_system_id );
 							var booking_method		= booking_system.data( 'booking-method' );
-							if( booking_method === 'calendar' || ! $j.inArray( booking_method, bookacti_localized.available_booking_methods ) ) {
+							if( booking_method === 'calendar' || $j.inArray( booking_method, bookacti_localized.available_booking_methods ) === -1 ) {
 								calendar.fullCalendar( 'removeEvents' );
 								bookacti_fetch_calendar_events( calendar );
 							} else {

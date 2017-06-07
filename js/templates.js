@@ -32,8 +32,9 @@ $j( document ).ready( function() {
 		// initialize the activities
 		bookacti_init_activities();
 
-		// Show and Hide activities
+		// Show and Hide activities / groups
 		bookacti_init_show_hide_activities_switch();
+		bookacti_init_show_hide_groups_switch();
 		
 		// DIALOGS
 		// Init the Dialogs
@@ -205,7 +206,7 @@ function bookacti_load_template_calendar() {
 				var is_selected = false
 				$j.each( selectedEvents[ 'template' ], function( i, selected_event ){
 					if( selected_event.event_id == event.id 
-					&&  selected_event.event_start.format( 'YYYY-MM-DD' ) == event.start.format( 'YYYY-MM-DD' ) ) {
+					&&  selected_event.event_start.substr( 0, 10 ) === event.start.format( 'YYYY-MM-DD' ) ) {
 						is_selected = true;
 						return false; // break the loop
 					}
@@ -622,7 +623,7 @@ function bookacti_load_template_calendar() {
 			var is_selected = false
 			$j.each( selectedEvents[ 'template' ], function( i, selected_event ){
 				if( selected_event.event_id == event.id 
-				&&  selected_event.event_start.format( 'YYYY-MM-DD' ) == event.start.format( 'YYYY-MM-DD' ) ) {
+				&&  selected_event.event_start.substr( 0, 10 ) === event.start.format( 'YYYY-MM-DD' ) ) {
 					is_selected = true;
 					return false; // break the loop
 				}

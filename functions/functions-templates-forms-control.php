@@ -7,7 +7,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
  * Validate template basic data
  *
  * @since	1.0.6
- * @param	int		$template_id
+ * @param	string		$template_title
  * @param	string	$template_start Format 'YYYY-MM-DD'
  * @param	string	$template_end	Format 'YYYY-MM-DD'
  * @return	array
@@ -262,4 +262,103 @@ function bookacti_validate_event( $event_id, $event_availability, $repeat_freq, 
     }
     
     return $return_array;
+}
+
+
+
+// GROUPS OF EVENTS
+
+
+function bookacti_validate_group_of_events_data( $group_title, $category_id, $category_title, $events ) {
+	
+	//Init var to check with worst case
+	$is_title			= false;
+	$is_category		= false;
+	$is_category_title	= false;
+	$is_events			= false;
+	
+	//Make the tests to validate the var
+	if( is_string( $group_title ) && $group_title !== '' )		{ $is_title = true; }
+	if( is_numeric( $category_id ) )							{ $is_category = true; }
+	if( is_string( $category_title ) && $category_title !== '' ){ $is_category_title = true; }
+	if( is_array( $events ) && count( $events ) >= 2 )			{ $is_events = true; }
+	
+	$return_array = array();
+	$return_array['status'] = 'valid';
+	$return_array['errors'] = array();
+	if( ! $is_title ) {
+		$return_array['status'] = 'not_valid';
+		$return_array['errors'][] = 'error_missing_title';
+	}
+	if( ! $is_category && ! $is_category_title ) {
+		$return_array['status'] = 'not_valid';
+		$return_array['errors'][] = 'error_missing_title';
+	}
+	if( ! $is_events ) {
+		$return_array['status'] = 'not_valid';
+		$return_array['errors'][] = 'error_select_at_least_two_events';
+	}
+	
+	return apply_filters( 'bookacti_validate_group_of_events_data', $return_array, $group_title, $category_id, $category_title, $events );
+}
+
+
+
+
+// GROUP CATEGORIES
+
+/**
+ * Validate group activity data input
+ * 
+ * @since 1.1.0
+ * 
+ * @param string $title
+ * @return array
+ */
+function bookacti_validate_group_category_data( $title ) {
+	
+	//Init var to check with worst case
+	$is_title	= false;
+	
+	//Make the tests to validate the var
+	if( ! empty( $title ) )	{ $is_title = true; }
+
+	$return_array = array();
+	$return_array['status'] = 'valid';
+	$return_array['errors'] = array();
+	if( ! $is_title ) {
+		$return_array['status'] = 'not_valid';
+		$return_array['errors'][] = 'error_missing_title';
+	}
+	
+	return apply_filters( 'bookacti_validate_group_activity_data', $return_array, $title );
+}
+
+
+/**
+ * Format group category data or apply default value
+ * 
+ * @since 1.1.0
+ * 
+ * @param type $category_settings
+ * @return type
+ */
+function bookacti_format_group_category_settings( $category_settings ) {
+	
+	if( empty( $category_settings ) ) {
+		$category_settings = array();
+	}
+	
+	// Default settings
+	$default_settings = apply_filters( 'bookacti_group_category_default_settings', array() );
+	
+	$settings = array();
+		
+	// Check if all templates settings are filled
+	foreach( $default_settings as $setting_key => $setting_default_value ){
+		if( is_string( $category_settings[ $setting_key ] ) ){ $category_settings[ $setting_key ] = stripslashes( $category_settings[ $setting_key ] ); }
+		$settings[ $setting_key ] = ! empty( $category_settings[ $setting_key ] ) ? $category_settings[ $setting_key ] : $setting_default_value;
+	}
+	
+	return apply_filters( 'bookacti_group_category_settings', $settings );
 }

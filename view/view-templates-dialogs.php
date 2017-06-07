@@ -535,8 +535,8 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 <!-- Group of events -->
 <div id='bookacti-group-of-events-dialog' class='bookacti-backend-dialogs bookacti-template-dialogs' >
 	<form id='bookacti-group-of-events-form' >
-		<?php wp_nonce_field( 'bookacti_insert_or_update_group_of_events', 'nonce_insert_or_update_group_of_events' ); ?>
 		<input type='hidden' name='action' id='bookacti-group-of-events-action' />
+		<?php wp_nonce_field( 'bookacti_insert_or_update_group_of_events', 'nonce_insert_or_update_group_of_events' ); ?>
 		
 		<div id='bookacti-group-of-events-dialog-lang-switcher' class='bookacti-lang-switcher' ></div>
 			
@@ -569,8 +569,15 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 					<label for='bookacti-group-of-events-category-selectbox' ><?php esc_html_e( 'Group category', BOOKACTI_PLUGIN_NAME ); ?></label>
 					<select name='group-of-events-category' id='bookacti-group-of-events-category-selectbox' >
 						<option value='new' >New Category</option>
-						<option value='5' >Ma catégorie</option>
-						<option value='18' >Category 2</option>
+						<?php
+							$template_id	= bookacti_get_user_default_template();
+							if( ! empty( $template_id ) ) {
+								$categories	= bookacti_fetch_group_categories( $template_id );
+								foreach( $categories as $category ) {
+									echo "<option value='" . $category->id . "' >" . apply_filters( 'bookacti_translate_text', $category->title ) . "</option>";
+								}
+							}
+						?>
 					</select>
 					<?php
 						$tip = __( "Pick a category for your group of events.", BOOKACTI_PLUGIN_NAME );
@@ -604,6 +611,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 <div id='bookacti-group-category-dialog' class='bookacti-backend-dialogs bookacti-template-dialogs' >
 	<form id='bookacti-group-category-form' >
 		<input type='hidden' name='action' id='bookacti-group-category-action' />
+		<?php wp_nonce_field( 'bookacti_insert_or_update_group_category', 'nonce_insert_or_update_group_category' ); ?>
 		
 		<div id='bookacti-group-category-dialog-lang-switcher' class='bookacti-lang-switcher' ></div>
 		
@@ -628,7 +636,6 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 					<input type='text' name='group-category-title' id='bookacti-group-category-title-field' />
 					<?php
 						$tip = __( "Name the group of events category.", BOOKACTI_PLUGIN_NAME );
-						$tip .= __( "Thanks to categories, you will be able to choose what groups of events are available on what calendars.", BOOKACTI_PLUGIN_NAME );
 						bookacti_help_tip( $tip );
 					?>
 				</div>

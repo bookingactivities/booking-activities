@@ -324,6 +324,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	
 	
 // GROUPS OF EVENTS
+	
 	/**
 	 * Create a group of events with AJAX
 	 * 
@@ -331,14 +332,135 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	 */
 	function bookacti_controller_insert_group_of_events() {
 		
-		bookacti_log( $_POST );
+		$template_id	= intval( $_POST[ 'template_id' ] );
 		
-		wp_send_json( array( 'status' => 'success', 'group_id' => 'group_id', 'group_title' => 'Group Title', 'category_id' => 'cat_id', 'category_title' => 'Category title' ) );
+		// Check nonce and capabilities
+		$is_nonce_valid	= check_ajax_referer( 'bookacti_insert_or_update_group_of_events', 'nonce_insert_or_update_group_of_events', false );
+		$is_allowed		= current_user_can( 'bookacti_edit_templates' ) && bookacti_user_can_manage_template( $template_id );
+		
+		if( ! $is_nonce_valid || ! $is_allowed ) {
+			wp_send_json( array( 'status' => 'failed', 'error' => 'not_allowed' ) );
+		}
+		
+		$category_id	= intval( $_POST[ 'group-of-events-category' ] );
+		$category_title	= sanitize_text_field( $_POST[ 'group-of-events-category-title' ] );
+		$group_title	= sanitize_text_field( $_POST[ 'group-of-events-title' ] );
+		$events			= json_decode( stripslashes( $_POST['events'] ) );
+		
+		// Validate input data
+		$is_group_of_events_valid = bookacti_validate_group_of_events_data( $group_title, $category_id, $category_title, $events );
+		if( $is_group_of_events_valid[ 'status' ] === 'valid' ) {
+			wp_send_json( array( 'status' => 'not_valid', 'errors' => $is_group_of_events_valid[ 'errors' ] ) );
+		}
+		
+		// Create category if it doesn't exists
+		$is_category = bookacti_group_category_exists( $category_id, $template_id );
+		
+		if( ! $is_category ) {
+			$category_settings	= bookacti_format_group_category_settings( $_POST['groupCategoryOptions'] );
+			$category_id		= bookacti_insert_group_category( $category_title, $template_id, $category_settings );
+		}
+		
+		if( empty( $category_id ) ) {
+			wp_send_json( array( 'status' => 'failed', 'error' => 'invalid_category', 'category_id' => $category_id ) );
+		}
+		
+		// Insert the new group of event
+		$group_id = bookacti_create_group_of_events( $events, $category_id, $group_title );
+		
+		if( empty( $group_id ) ) {
+			wp_send_json( array( 'status' => 'failed', 'error' => 'invalid_events', 'events' => $events, 'group_id' => $group_id ) );
+		}
+		
+		wp_send_json( array('status' => 'success', 
+							'group_id' => $group_id, 
+							'group_title' => apply_filters( 'bookacti_translate_text', $group_title ), 
+							'category_id' => $category_id, 
+							'category_title' => apply_filters( 'bookacti_translate_text', $category_title ) ) );
 	}
 	add_action( 'wp_ajax_bookactiInsertGroupOfEvents', 'bookacti_controller_insert_group_of_events' );
 
 
 
+// GROUP CATEGORIES
+	
+	/**
+	 * Get group category data with AJAX
+	 * 
+	 * @since 1.1.0
+	 */
+	function bookacti_controller_get_group_category_data() {
+
+		$category_id = intval( $_POST[ 'category_id' ] );
+		$template_id = bookacti_get_group_category_template_id( $category_id );
+		
+		// Check nonce and capabilities
+		$is_nonce_valid	= check_ajax_referer( 'bookacti_get_group_category_data', 'nonce', false );
+		$is_allowed		= current_user_can( 'bookacti_read_templates' ) && bookacti_user_can_manage_template( $template_id );
+
+		if( $is_nonce_valid && $is_allowed ) {
+
+			$category	= bookacti_get_group_category( $category_id, ARRAY_A );
+			
+			if( is_array( $category ) && ! empty( $category ) ){
+				$category[ 'status' ] = 'success';
+				wp_send_json( $category );
+			} else {
+				wp_send_json( array( 'status' => 'failed', 'error' => 'unknown' ) );
+			}
+			
+		} else {
+			wp_send_json( array( 'status' => 'failed', 'error' => 'not_allowed' ) );
+		}
+	}
+	add_action( 'wp_ajax_bookactiGetGroupCategoryData', 'bookacti_controller_get_group_category_data' );
+
+	
+	/**
+	 * Update group category data with AJAX
+	 * 
+	 * @since 1.1.0
+	 */
+	function bookacti_controller_update_group_category() {
+
+		$category_id = intval( $_POST[ 'category_id' ] );
+		$template_id = bookacti_get_group_category_template_id( $category_id );
+		
+		// Check nonce and capabilities
+		$is_nonce_valid	= check_ajax_referer( 'bookacti_insert_or_update_group_category', 'nonce_insert_or_update_group_category', false );
+		$is_allowed		= current_user_can( 'bookacti_edit_templates' ) && bookacti_user_can_manage_template( $template_id );
+
+		if( $is_nonce_valid && $is_allowed ) {
+			
+			$category_title = $_POST[ 'group-category-title' ];
+			$is_group_category_valid = bookacti_validate_group_category_data( $category_title );
+			
+			// Update template only if its data are consistent
+			if( $is_group_category_valid[ 'status' ] === 'valid' ) {
+				
+				$category_settings = bookacti_format_group_category_settings( $_POST['groupCategoryOptions'] );
+				
+				$updated = bookacti_update_group_category( $category_id, $category_title, $category_settings );
+				
+				if( $updated ) {
+					wp_send_json( array( 'status' => 'success', 'title' => apply_filters( 'bookacti_translate_text', $category_title ) ) );
+				} else if ( $updated === 0 ) { 
+					wp_send_json( array( 'status' => 'nochanges', 'title' => apply_filters( 'bookacti_translate_text', $category_title ) ) );
+				} else if ( $updated === false ) { 
+					wp_send_json( array( 'status' => 'failed' ) );
+				}
+			} else {
+				wp_send_json( array( 'status' => 'not_valid', 'errors' => $is_group_category_valid[ 'errors' ] ) );
+			}
+			
+		} else {
+			wp_send_json( array( 'status' => 'failed', 'error' => 'not_allowed' ) );
+		}
+	}
+	add_action( 'wp_ajax_bookactiUpdateGroupCategory', 'bookacti_controller_update_group_category' );
+
+	
+	
 // TEMPLATES
 	// Get template data
 	add_action( 'wp_ajax_bookactiGetTemplateData', 'bookacti_controller_get_template_data' );

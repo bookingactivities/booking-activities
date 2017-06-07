@@ -12,6 +12,7 @@ var exceptions              = [];
 var bookings                = [];
 var json_activities			= [];
 var hiddenActivities        = [];
+var selectedCategory		= 'new';
 var selectedEvents			= [];
 var pickedEvents			= [];
 var lockedEvents            = [];

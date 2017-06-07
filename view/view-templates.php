@@ -35,7 +35,7 @@ echo "<h1>" . esc_html__( 'Calendars', BOOKACTI_PLUGIN_NAME ) . "</h1>";
 
 								$selected = selected( $default_template, $template->id, false );
 
-								if( $selected !== '' ) { $default_template_found = true; }
+								if( ! empty( $selected ) ) { $default_template_found = true; }
 
 								echo "<option value='"			. esc_attr( $template->id )
 									. "' data-template-start='" . esc_attr( $template->start_date )
@@ -80,7 +80,7 @@ echo "<h1>" . esc_html__( 'Calendars', BOOKACTI_PLUGIN_NAME ) . "</h1>";
 			?>
 			<div id='bookacti-template-activity-list' >
 				<?php
-				if( $activity_list !== '' ) {
+				if( ! empty( $activity_list ) ) {
 					echo $activity_list;
 				} else if( ! $current_user_can_create_activities ) {
 					?>
@@ -94,7 +94,7 @@ echo "<h1>" . esc_html__( 'Calendars', BOOKACTI_PLUGIN_NAME ) . "</h1>";
 				?>
 			</div>
 			<?php if( $current_user_can_create_activities ) { ?>
-				<div id='bookacti-template-first-activity-container' style='display:<?php echo $activity_list !== '' ? 'none' : 'block'; ?>;' >
+				<div id='bookacti-template-first-activity-container' style='display:<?php echo empty( $activity_list ) ? 'block' : 'none'; ?>;' >
 					<h2>
 						<?php _e( 'Create your first activity', BOOKACTI_PLUGIN_NAME ); ?>
 					</h2>
@@ -116,51 +116,9 @@ echo "<h1>" . esc_html__( 'Calendars', BOOKACTI_PLUGIN_NAME ) . "</h1>";
 			
 			<div id='bookacti-group-categories' >
 				<?php 
-					//$groups_of_events_by_categories = array();
-					$groups_categories	= array( 
-											array(	'id'				=> 5,
-													'title'				=> '[:fr]Ma catégorie[:en]My category[:]',
-													'groups_of_events'	=> array(
-																				array( 'id' => 17, 'title' => '[:fr]Premier Groupe[:en]First Group[:]' )
-																			)
-											)
-										);
-					foreach( $groups_categories as $group_category ) {
-				?>
-						<div class='bookacti-group-category' data-group-category-id='<?php echo $group_category[ 'id' ]; ?>' data-show-groups='0' >
-							<div class='bookacti-group-category-show-hide' >
-								<img src='<?php echo esc_url( plugins_url() . '/' . BOOKACTI_PLUGIN_NAME . '/img/show.png' ); ?>' />
-							</div>
-							<div class='bookacti-group-category-title' >
-								<span><?php echo apply_filters( 'bookacti_translate_text', esc_html( $group_category[ 'title' ] ) ); ?></span>
-							</div>
-						<?php if( $current_user_can_edit_template ) { ?>
-							<div class='bookacti-update-group-category' >
-								<img src='<?php echo esc_url( plugins_url() . '/' . BOOKACTI_PLUGIN_NAME . '/img/gear.png' ); ?>' />
-							</div>
-							<div class='bookacti-add-group-to-category' >
-								<img src='<?php echo esc_url( plugins_url() . '/' . BOOKACTI_PLUGIN_NAME . '/img/add.png' ); ?>' />
-							</div>
-						<?php } ?>
-							<div class='bookacti-groups-of-events-list' >
-								<?php 
-									foreach( $group_category[ 'groups_of_events' ] as $group_of_events ) {
-								?>
-										<div class='bookacti-group-of-events' data-group-id='<?php echo $group_of_events[ 'id' ]; ?>' >
-											<div class='bookacti-group-of-events-title' >
-												<?php echo apply_filters( 'bookacti_translate_text', esc_html( $group_of_events[ 'title' ] ) ); ?>
-											</div>
-											<div class='bookacti-update-group-of-events' >
-												<img src='<?php echo esc_url( plugins_url() . '/' . BOOKACTI_PLUGIN_NAME . '/img/gear.png' ); ?>' />
-											</div>
-										</div>
-								<?php
-									}
-								?>
-							</div>
-						</div>
-				<?php
-					}
+					// Display the template's groups of events list
+					$groups_list = bookacti_get_template_groups_of_events_list( $default_template );
+					if( ! empty( $groups_list ) ) { echo $groups_list; }
 				?>
 			</div>
 			
@@ -168,7 +126,7 @@ echo "<h1>" . esc_html__( 'Calendars', BOOKACTI_PLUGIN_NAME ) . "</h1>";
 			// If no goup categories exists, display a tuto to create a group of events
 			if( $current_user_can_edit_template ) {
 				?>
-				<p id='bookacti-template-add-group-of-events-tuto-select-events' style='<?php if( count( $groups_categories ) ) { echo 'display:none;'; } ?>' >
+				<p id='bookacti-template-add-group-of-events-tuto-select-events' style='<?php if( ! empty( $groups_list ) ) { echo 'display:none;'; } ?>' >
 					<?php _e( 'Select at least 2 events to create a group of events', BOOKACTI_PLUGIN_NAME ); ?>
 				</p>
 				
@@ -218,10 +176,21 @@ echo "<h1>" . esc_html__( 'Calendars', BOOKACTI_PLUGIN_NAME ) . "</h1>";
 <hr/>
 <div id='bookacti-shortcode-generator-container' class='<?php if( empty( $templates ) ) { echo 'bookacti-no-template'; } ?>' >
 	<?php 
-		$template_id = $activity_ids = '';
+		$template_id = $activity_ids = $category_ids = '';
+		$categories = array();
 		if( ! empty( $default_template ) ) {
 			$template_id = $default_template;
 			$activity_ids = implode( ',', bookacti_get_activities_by_template_ids( array( $template_id ), true ) );
+			$categories = bookacti_get_group_categories_by_template( $template_id );
+			
+			$i=1;
+			foreach( $categories as $category ) {
+				$category_ids .= $category->id;
+				if( $i < count( $categories ) ) { 
+					$category_ids .= ',';
+				}
+				$i++;
+			}
 		}
 	?>
 	<h3><?php esc_html_e( 'Shortcodes', BOOKACTI_PLUGIN_NAME ); ?></h3>
@@ -229,7 +198,8 @@ echo "<h1>" . esc_html__( 'Calendars', BOOKACTI_PLUGIN_NAME ) . "</h1>";
 	<p>
 		<code>
 			[bookingactivities_form	calendars='<span class='bookacti-shortcode-calendar-ids'><?php echo esc_html( $template_id ); ?></span>' 
-									activities='<span class='bookacti-shortcode-activity-ids'><?php echo esc_html( $activity_ids ); ?></span>']
+									activities='<span class='bookacti-shortcode-activity-ids'><?php echo esc_html( $activity_ids ); ?></span>' 
+									groups='<span class='bookacti-shortcode-group-ids'><?php echo esc_html( $category_ids ); ?></span>']
 		</code>
 		<?php 
 			$tip = __( 'This shortcode will display a booking form with this calendar. Users will be able to book an event via this form.', BOOKACTI_PLUGIN_NAME );
@@ -239,7 +209,8 @@ echo "<h1>" . esc_html__( 'Calendars', BOOKACTI_PLUGIN_NAME ) . "</h1>";
 	<p>
 		<code>
 			[bookingactivities_calendar	calendars='<span class='bookacti-shortcode-calendar-ids'><?php echo esc_html( $template_id ); ?></span>' 
-										activities='<span class='bookacti-shortcode-activity-ids'><?php echo esc_html( $activity_ids ); ?></span>']
+										activities='<span class='bookacti-shortcode-activity-ids'><?php echo esc_html( $activity_ids ); ?></span>' 
+										groups='<span class='bookacti-shortcode-group-ids'><?php echo esc_html( $category_ids ); ?></span>']
 		</code>
 		<?php 
 			$tip = __( 'This shortcode will display this calendar alone. Users will only be able to browse the calendar, they can\'t make booking with it.', BOOKACTI_PLUGIN_NAME );
