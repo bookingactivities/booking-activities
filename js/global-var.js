@@ -14,6 +14,7 @@ var json_activities			= [];
 var hiddenActivities        = [];
 var selectedCategory		= 'new';
 var selectedEvents			= [];
+var eventGroups				= [];
 var pickedEvents			= [];
 var lockedEvents            = [];
 var blockEvents             = false;

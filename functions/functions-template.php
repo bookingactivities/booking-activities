@@ -330,28 +330,138 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	 * @param array $events
 	 * @param int $category_id
 	 * @param string $group_title
+	 * @param array $group_meta
 	 * @return boolean|int
 	 */
-	function bookacti_create_group_of_events( $events, $category_id, $group_title = null ) {
+	function bookacti_create_group_of_events( $events, $category_id, $group_title = '', $group_meta = array() ) {
 		if( ! is_array( $events ) || empty( $events ) || empty( $category_id ) ) {
 			return false;
 		}
 		
 		// First insert the group
-		$group_id = bookacti_insert_group_of_events( $category_id, $group_title );
+		$group_id = bookacti_insert_group_of_events( $category_id, $group_title, $group_meta );
 		
 		if( empty( $group_id ) ) {
 			return false;
 		}
 		
 		// Then, insert the events in the group
-		$inserted = bookacti_insert_events_into_group( $events, $group_id );
+		$inserted = bookacti_insert_events_into_group( $group_id, $events );
 		
 		if( empty( $inserted ) && $inserted !== 0 ) {
 			return false;
 		}
 		
 		return $group_id;
+	}
+	
+	
+	/**
+	 * Edit a group of events
+	 * 
+	 * @since 1.1.0
+	 * 
+	 * @param int $group_id
+	 * @param int $category_id
+	 * @param string $group_title
+	 * @param array $events
+	 * @param array $group_meta
+	 * @return boolean|int
+	 */
+	function bookacti_edit_group_of_events( $group_id, $category_id, $group_title = '', $events = array(), $group_meta = array() ) {
+		if( empty( $group_id ) || ! is_array( $events ) || empty( $events ) || empty( $category_id ) ) {
+			return false;
+		}
+		
+		$updated1 = $updated2 = $updated3 = 0;
+		
+		// First update the group
+		$updated1 = bookacti_update_group_of_events( $group_id, $category_id, $group_title );
+		
+		if( $updated1 === false ) {
+			return 'error_update_group_of_events_data';
+		}
+		
+		// Then update group of events metadata
+		if( ! empty( $group_meta ) ) {
+			$updated2 = bookacti_update_metadata( 'group_of_events', $group_id, $group_meta );
+		}
+		
+		if( $updated2 === false ) {
+			return 'error_update_group_metadata';
+		}
+		
+		// Fially, update events of the group
+        $updated3 = bookacti_update_events_of_group( $events, $group_id );
+		
+		if( $updated2 === false ) {
+			return 'error_update_events_of_group';
+		}
+		
+		// Return the number of row affected
+		$updated = intval( $updated1 ) + intval( $updated2 ) + intval( $updated3 );
+		
+		return $updated;
+	}
+	
+	
+	/**
+	 * Update events of a group
+	 * 
+	 * @since 1.1.0
+	 * 
+	 * @global wpdb $wpdb
+	 * @param int $group_id
+	 * @param array $events
+	 * @return int|boolean
+	 */
+	function bookacti_update_events_of_group( $new_events, $group_id ) {
+		
+		$group_id = intval( $group_id );
+		if( ! is_array( $new_events ) || empty( $new_events ) || empty( $group_id ) ) {
+			return false;
+		}
+		
+		// Get events currently in the group
+		$current_events = bookacti_get_events_of_group( $group_id );
+		
+		// Determine what events are to be added or removed
+		$to_insert = $new_events;
+		$to_delete = $current_events;
+		foreach( $new_events as $i => $new_event ) {
+			foreach( $current_events as $j => $current_event ) {
+				if( $current_event->id		== $new_event->id 
+				&&  $current_event->start	== $new_event->start 
+				&&  $current_event->end		== $new_event->end ) {
+					// If the event already exists, remove it from both arrays
+					unset( $to_insert[ $i ] );
+					unset( $to_delete[ $j ] );
+					break;
+				}
+			}
+		}
+		
+		// Now $new_events contains only events to add
+		// and $current_events contains events to remove
+		$deleted = $inserted = 0;
+		
+		// Delete old events
+		if( ! empty( $current_event ) ) {
+			$deleted = bookacti_delete_events_from_group( $to_delete, $group_id );
+		}
+		
+		// Insert new events
+		if( ! empty( $current_event ) ) {
+			$inserted = bookacti_insert_events_into_group( $to_insert, $group_id );
+		}
+		
+		if( $deleted === false || $inserted = false ) {
+			return false;
+		}
+		
+		$updated = is_int( $deleted ) + is_int( $inserted );
+		
+		return $inserted;
 	}
 	
 	
@@ -421,4 +531,4 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		}
 		
 		return $list;
-	}
+	}	

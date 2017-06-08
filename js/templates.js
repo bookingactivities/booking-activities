@@ -6,22 +6,6 @@ $j( document ).ready( function() {
 		pickedEvents[ 'template' ] = [];
 		selectedEvents[ 'template' ] = [];
 		
-		// Refresh the display of selected events when you click on the View More link
-		$j( '#bookacti-template-calendar' ).on( 'click', '.fc-more', function(){
-			bookacti_refresh_selected_events_display();
-		});
-		
-		// Refresh the display of selected events when you click on the View More link
-		$j( '#bookacti-template-calendar' ).on( 'bookacti_select_event bookacti_unselect_event', function(){
-			bookacti_maybe_display_add_group_of_events_button();
-		});
-		
-		// Expand groups of events
-		$j( '#bookacti-group-categories' ).on( 'click', '.bookacti-group-category-title', function(){
-			var category_id = $j( this ).parent().data( 'group-category-id' );
-			bookacti_expand_collapse_groups_of_events( category_id );
-		});
-		
 		// Capture mouse x and y coordinates to global variables
 		$j( document ).off().on( 'mousemove', function ( event ) {
 			//Get current mouse position
@@ -29,8 +13,9 @@ $j( document ).ready( function() {
 			currentMousePos.y = event.pageY;
 		});
 		
-		// initialize the activities
+		// initialize activities and groups
 		bookacti_init_activities();
+		bookacti_init_groups_of_events();
 
 		// Show and Hide activities / groups
 		bookacti_init_show_hide_activities_switch();
@@ -53,23 +38,16 @@ $j( document ).ready( function() {
 			bookacti_load_template_calendar();
 		}
 
-		// Change the default settings
+		// Load the template
 		if( template_id ) {
-			bookacti_update_settings_from_database( $j( '#bookacti-template-calendar' ), template_id );
-
-			// Init the events exceptions for the current template
-			bookacti_update_exceptions( template_id, null, false );
-
-			// Init the bookings for the current template
-			bookacti_update_bookings( template_id );
-			
-			// Load the events on the calendar
-			bookacti_fetch_events_on_template( template_id, null );
+			bookacti_switch_template( template_id );
 		}
 
 	}
 });
 
+
+// Initialize and display the template calendar
 function bookacti_load_template_calendar() {
 	var calendar = $j( '#bookacti-template-calendar' );
 	calendar.fullCalendar( {
@@ -120,8 +98,7 @@ function bookacti_load_template_calendar() {
 
 		//Load an empty array to allow the callback 'loading' to work
 		events: function( start, end, timezone, callback ) {
-			var empty_array = [];
-			callback(empty_array);
+			callback( [] );
 		},
 
 
@@ -141,8 +118,10 @@ function bookacti_load_template_calendar() {
 			//Add some info to the event
 			element.data( 'event-id',			event.id );
 			element.attr( 'data-event-id',		event.id );
-			element.data( 'event-date',			event.start.format( 'YYYY-MM-DD' ) );
-			element.attr( 'data-event-date',	event.start.format( 'YYYY-MM-DD' ) );
+			element.data( 'event-start',		event.start.format( 'YYYY-MM-DD HH:mm:ss' ) );
+			element.attr( 'data-event-start',	event.start.format( 'YYYY-MM-DD HH:mm:ss' ) );
+			element.data( 'event-end',			event.end.format( 'YYYY-MM-DD HH:mm:ss' ) );
+			element.attr( 'data-event-end',		event.end.format( 'YYYY-MM-DD HH:mm:ss' ) );
 			event.render = 1;
 			
 			if( event.activity_id != null ) {
@@ -205,8 +184,8 @@ function bookacti_load_template_calendar() {
 				// Check if the event is selected
 				var is_selected = false
 				$j.each( selectedEvents[ 'template' ], function( i, selected_event ){
-					if( selected_event.event_id == event.id 
-					&&  selected_event.event_start.substr( 0, 10 ) === event.start.format( 'YYYY-MM-DD' ) ) {
+					if( selected_event.id == event.id 
+					&&  selected_event.start.substr( 0, 10 ) === event.start.format( 'YYYY-MM-DD' ) ) {
 						is_selected = true;
 						return false; // break the loop
 					}
@@ -296,7 +275,7 @@ function bookacti_load_template_calendar() {
 			
 			//Display element as picked or selected if they actually are
 			$j.each( pickedEvents[ 'template' ], function( i, picked_event ) {
-				$j( '.fc-event[data-event-id="' + picked_event['event_id'] + '"][data-event-date="' + picked_event['event_start'].format( 'YYYY-MM-DD' ) + '"]' ).addClass( 'bookacti-picked-event' );
+				$j( '.fc-event[data-event-id="' + picked_event['event_id'] + '"][data-event-start="' + picked_event['event_start'].format( 'YYYY-MM-DD HH:mm:ss' ) + '"]' ).addClass( 'bookacti-picked-event' );
 			});
 			
 			bookacti_refresh_selected_events_display();
@@ -558,7 +537,7 @@ function bookacti_load_template_calendar() {
 			var element = $j( this );
 			// Because of popover and long events (spreading on multiple days), 
 			// the same event can appears twice, so we need to apply changes on each
-			var elements = $j( '.fc-event[data-event-id="' + event.id + '"][data-event-date="' + event.start.format( 'YYYY-MM-DD' ) + '"]' );
+			var elements = $j( '.fc-event[data-event-id="' + event.id + '"][data-event-start="' + event.start.format( 'YYYY-MM-DD HH:mm:ss' ) + '"]' );
 					
 			
 			// If the user click on an event action, execute it
@@ -622,8 +601,8 @@ function bookacti_load_template_calendar() {
 			// Check if the event is selected
 			var is_selected = false
 			$j.each( selectedEvents[ 'template' ], function( i, selected_event ){
-				if( selected_event.event_id == event.id 
-				&&  selected_event.event_start.substr( 0, 10 ) === event.start.format( 'YYYY-MM-DD' ) ) {
+				if( selected_event.id == event.id 
+				&&  selected_event.start.substr( 0, 10 ) === event.start.format( 'YYYY-MM-DD' ) ) {
 					is_selected = true;
 					return false; // break the loop
 				}

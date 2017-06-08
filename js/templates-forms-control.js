@@ -518,17 +518,12 @@ function bookacti_validate_add_exception_form() {
     });
     
     //Prevent from adding an exception on a day when the occurrence is booked
-    if( bookings[ template_id ] !== undefined ) {
-		if( bookings[ template_id ][ event_id ] !== undefined ) {
-			if( bookings[ template_id ][ event_id ].length > 0 ) {
-				$j.each( bookings[ template_id ][ event_id ], function( i, booking ) {
-					if( moment( booking.event_start ).format( 'YYYY-MM-DD' ) === exception_date.format( 'YYYY-MM-DD' ) ) {
-						isNewExcepBooked = true;
-					}
-				});
-			}
+	var exception_element = $j( '.fc-event[data-event-id="' + event_id + '"][data-event-start^="' + exception_date.format( 'YYYY-MM-DD' ) + '"]' );
+	if( exception_element.length ) {
+		if( parseInt( exception_element.find( '.bookacti-bookings' ).text() ) > 0 ) {
+			isNewExcepBooked = true;
 		}
-    }
+	}
     
     
     if( isNewExcepBetweenFromAndTo && isNewExcepDifferent && ! isNewExcepBooked ) { sendForm = true; }

@@ -240,11 +240,12 @@ If you don't find the answer you need, please [contact us](http://booking-activi
 == Changelog ==
 
 = 1.1.0 =
-* Delete - Removed trashes from editor, go through the editing dialog to delete calendars, activities and events
+* Delete - Removed trashes from editor, to delete calendars, activities and events please use their respective settings dialogs
 * Tweak - Changed 'bookacti_validate_selected_event' JS action to 'bookacti_validate_picked_event'
 * Delete - Deleted events 'occurrence id' since it is not a relevant identifier. All events can be identified by id + start date.
 * Fix - Fixed booking method checks in JS files (misuse of inArray)
 * Fix - Fixed permission error after closing a dialog in template editor
+* Fix - Apostrophe character's in activity name are no more displayed with a backslash in calendar editor
 * Actions / Filters / Hooks
   * JS hooks
     * Add - bookacti_refresh_selected_events
@@ -262,6 +263,8 @@ If you don't find the answer you need, please [contact us](http://booking-activi
     * Add - bookacti_group_category_default_settings
     * Add - bookacti_group_category_settings
     * Add - bookacti_validate_group_of_events_data
+    * Add - bookacti_group_of_events_default_settings
+    * Add - bookacti_group_of_events_settings
 
 = 1.0.8 - 2017/05/31 =
 * Fix - Fixed events not fetched if your database prefix was not exactly "wp_"

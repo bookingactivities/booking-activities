@@ -91,7 +91,8 @@ $bookacti_translation_array = apply_filters( 'bookacti_translation_array', array
 	'error_resize_locked_event'         => esc_html__( 'Resize this occurence because it will affect the complete event.', BOOKACTI_PLUGIN_NAME ),
 	/* translators: In the context, it is one of the message following 'There are bookings on at least one of the occurence of this event. You can't: ' */
 	'error_delete_locked_event'         => esc_html__( 'Delete this occurence because it will affect the complete event.', BOOKACTI_PLUGIN_NAME ),
-	'error_retrieve_group_category_data'=> esc_html__( 'Error occurs when trying to retrieve the group category settings.', BOOKACTI_PLUGIN_NAME ),
+	'error_retrieve_group_category_data'	=> esc_html__( 'Error occurs when trying to retrieve the group category settings.', BOOKACTI_PLUGIN_NAME ),
+	'error_retrieve_group_of_events_data'	=> esc_html__( 'Error occurs when trying to retrieve the group of events settings.', BOOKACTI_PLUGIN_NAME ),
 	'error_create_group_of_events'		=> esc_html__( 'Error occurs when trying to create the group of events.', BOOKACTI_PLUGIN_NAME ),
 	'error_update_group_of_events'		=> esc_html__( 'Error occurs when trying to update the group of events.', BOOKACTI_PLUGIN_NAME ),
 	'error_delete_group_of_events'		=> esc_html__( 'Error occurs when trying to delete the group of events.', BOOKACTI_PLUGIN_NAME ),
@@ -234,6 +235,7 @@ $bookacti_translation_array = apply_filters( 'bookacti_translation_array', array
 	'nonce_unbind_occurences'			=> wp_create_nonce( 'bookacti_unbind_occurences' ),
 	
 	'nonce_get_group_category_data'		=> wp_create_nonce( 'bookacti_get_group_category_data' ),
+	'nonce_get_group_of_events_data'	=> wp_create_nonce( 'bookacti_get_group_of_events_data' ),
 
 	'nonce_get_template_data'			=> wp_create_nonce( 'bookacti_get_template_data' ),
 	'nonce_switch_template'				=> wp_create_nonce( 'bookacti_switch_template' ),

@@ -100,12 +100,10 @@ function bookacti_set_calendar_up( calendar_id, load_events ) {
 			//Add some info to the event
 			element.data( 'event-id',			event.id );
 			element.attr( 'data-event-id',		event.id );
-			element.data( 'event-date',			event.start.format( 'YYYY-MM-DD' ) );
-			element.attr( 'data-event-date',	event.start.format( 'YYYY-MM-DD' ) );
-			element.data( 'event-start',		event.start.format( 'HH:mm' ) );
-			element.attr( 'data-event-start',	event.start.format( 'HH:mm' ) );
-			element.data( 'event-end',			event.end.format( 'HH:mm' ) );
-			element.attr( 'data-event-end',		event.end.format( 'HH:mm' ) );
+			element.data( 'event-start',		event.start.format( 'YYYY-MM-DD HH:mm:ss' ) );
+			element.attr( 'data-event-start',	event.start.format( 'YYYY-MM-DD HH:mm:ss' ) );
+			element.data( 'event-end',			event.end.format( 'YYYY-MM-DD HH:mm:ss' ) );
+			element.attr( 'data-event-end',		event.end.format( 'YYYY-MM-DD HH:mm:ss' ) );
 			element.data( 'activity-id',		event.activity_id );
 			element.attr( 'data-activity-id',	event.activity_id );
 			event.render = 1;

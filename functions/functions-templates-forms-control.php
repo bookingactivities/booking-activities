@@ -303,6 +303,35 @@ function bookacti_validate_group_of_events_data( $group_title, $category_id, $ca
 }
 
 
+/**
+ * Format group of events data or apply default value
+ * 
+ * @since 1.1.0
+ * 
+ * @param type $category_settings
+ * @return type
+ */
+function bookacti_format_group_of_events_settings( $group_settings ) {
+	
+	if( empty( $group_settings ) ) {
+		$group_settings = array();
+	}
+	
+	// Default settings
+	$default_settings = apply_filters( 'bookacti_group_of_events_default_settings', array() );
+	
+	$settings = array();
+		
+	// Check if all templates settings are filled
+	foreach( $default_settings as $setting_key => $setting_default_value ){
+		if( is_string( $group_settings[ $setting_key ] ) ){ $group_settings[ $setting_key ] = stripslashes( $group_settings[ $setting_key ] ); }
+		$settings[ $setting_key ] = ! empty( $group_settings[ $setting_key ] ) ? $group_settings[ $setting_key ] : $setting_default_value;
+	}
+	
+	return apply_filters( 'bookacti_group_of_events_settings', $settings );
+}
+
+
 
 
 // GROUP CATEGORIES
