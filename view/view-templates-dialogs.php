@@ -57,6 +57,16 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
     </div>
 </div>
 
+<!-- Delete group of events -->
+<div id='bookacti-delete-group-of-events-dialog' class='bookacti-backend-dialogs bookacti-template-dialogs' >
+    <div><?php esc_html_e( 'Are you sure to delete this group of events permanently?', BOOKACTI_PLUGIN_NAME ); ?></div>
+</div>
+
+<!-- Delete group category -->
+<div id='bookacti-delete-group-category-dialog' class='bookacti-backend-dialogs bookacti-template-dialogs' >
+    <div><?php esc_html_e( 'Are you sure to delete this category and all its groups of events permanently?', BOOKACTI_PLUGIN_NAME ); ?></div>
+</div>
+
 <!-- Edit event dialog -->
 <div id='bookacti-event-data-dialog' class='bookacti-backend-dialogs bookacti-template-dialogs' data-event-id='0'  >
 	<form id='bookacti-event-data-form' >
@@ -570,9 +580,9 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 					<select name='group-of-events-category' id='bookacti-group-of-events-category-selectbox' >
 						<option value='new' >New Category</option>
 						<?php
-							$template_id	= bookacti_get_user_default_template();
+							$template_id = bookacti_get_user_default_template();
 							if( ! empty( $template_id ) ) {
-								$categories	= bookacti_fetch_group_categories( $template_id );
+								$categories	= bookacti_get_group_categories_by_template( $template_id );
 								foreach( $categories as $category ) {
 									echo "<option value='" . $category->id . "' >" . apply_filters( 'bookacti_translate_text', $category->title ) . "</option>";
 								}

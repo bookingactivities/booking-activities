@@ -41,8 +41,14 @@ function bookacti_init_template_dialogs() {
 	$j( '#bookacti-group-of-events-dialog' ).dialog({ 
 		title: bookacti_localized.dialog_create_group_of_events_title
 	});
+	$j( '#bookacti-delete-group-of-events-dialog' ).dialog({ 
+		title: bookacti_localized.dialog_delete_group_of_events_title
+	});
 	$j( '#bookacti-group-category-dialog' ).dialog({ 
 		title: bookacti_localized.dialog_update_group_category_title
+	});
+	$j( '#bookacti-delete-group-category-dialog' ).dialog({ 
+		title: bookacti_localized.dialog_delete_group_category_title
 	});
 	
 	// Add and remove items in managers and templates select boxes
@@ -753,8 +759,7 @@ function bookacti_dialog_update_event( event ) {
 
 
 // Dialog Delete Event
-function bookacti_dialog_delete_event( event )
-{
+function bookacti_dialog_delete_event( event ) {
     //Open the modal dialog
     $j( '#bookacti-delete-event-dialog' ).dialog( 'open' );
     
@@ -1510,7 +1515,7 @@ function bookacti_dialog_create_group_of_events( category_id ) {
 	
 	// Change dialog title
 	$j( '#bookacti-group-of-events-dialog' ).dialog({ 
-		title: bookacti_localized.dialog_update_group_of_events_title
+		title: bookacti_localized.dialog_create_group_of_events_title
 	});
 	
 	// Disable the "New category title" field if a category as been chosen
@@ -1584,7 +1589,7 @@ function bookacti_dialog_create_group_of_events( category_id ) {
 								}
 								
 								// Add the group row to the category
-								bookacti_add_group_of_events( response.group_id, response.group_title, category_id );
+								bookacti_add_group_of_events( response.group_id, response.group_title, response.category_id );
 								
 								// Store the events of the groups
 								eventGroups[ response.group_id ] = [];
@@ -1657,8 +1662,10 @@ function bookacti_dialog_select_events_of_group( group_id ) {
 	$j( '#bookacti-insert-group-of-events' ).css( 'visibility', 'hidden' );
 	
 	// Change view to the 1st event selected to make sure that at least 1 event is in the view
-	$j( '#bookacti-template-calendar' ).fullCalendar( 'gotoDate', eventGroups[ group_id ][0]['start'] );
-	
+	if( typeof eventGroups[ group_id ] !== 'undefined' ) {
+		$j( '#bookacti-template-calendar' ).fullCalendar( 'gotoDate', eventGroups[ group_id ][0]['start'] );
+	}
+
 	// Select the events of the group
 	$j.each( eventGroups[ group_id ], function( i, event ){
 		bookacti_select_event( event );
@@ -1823,11 +1830,13 @@ function bookacti_dialog_update_group_of_events( group_id ) {
 								
 							//If error
 							} else {
-								var error_message = bookacti_localized.error_update_group_of_events;
-								if( response.error === 'not_allowed' ) {
-									error_message += '\n' + bookacti_localized.error_not_allowed;
+								if( response.status === 'failed' ) {
+									var error_message = bookacti_localized.error_update_group_of_events;
+									if( response.error === 'not_allowed' ) {
+										error_message += '\n' + bookacti_localized.error_not_allowed;
+									}
+									alert( error_message );
 								}
-								alert( error_message );
 								console.log( response );
 							}
 						},
@@ -1844,18 +1853,96 @@ function bookacti_dialog_update_group_of_events( group_id ) {
 					$j( '#bookacti-group-of-events-dialog' ).dialog( 'close' );
 				}
 			}
+		},
+		// Add the 'delete' button
+		{
+			text: bookacti_localized.dialog_button_delete,
+			class: 'bookacti-dialog-delete-button bookacti-dialog-left-button',
+			
+			//On click on the OK Button, new values are send to a script that update the database
+			click: function() {
+				bookacti_dialog_delete_group_of_events( group_id );
+			}
 		}]
 	);
 }
 
 
+// Delete a group of events
+function bookacti_dialog_delete_group_of_events( group_id ) {
+	//Open the modal dialog
+	$j( '#bookacti-delete-group-of-events-dialog' ).dialog( 'open' );
+
+	//Add the 'OK' button
+	$j( '#bookacti-delete-group-of-events-dialog' ).dialog( 'option', 'buttons',
+		[{
+			text: bookacti_localized.dialog_button_delete,
+			class: 'bookacti-dialog-delete-button',
+
+			//On click on the OK Button, new values are send to a script that update the database
+			click: function() {
+
+				bookacti_start_template_loading();
+
+				$j.ajax({
+					url: ajaxurl, 
+					data: { 'action': 'bookactiDeleteGroupOfEvents', 
+							'group_id': group_id,
+							'nonce': bookacti_localized.nonce_delete_group_of_events
+						},
+					type: 'POST',
+					dataType: 'json',
+					success: function( response ) {
+						if( response.status === 'success' ) {
+							
+							// Remove the group of events from its category
+							$j( '.bookacti-group-of-events[data-group-id="' + group_id + '"]' ).remove();
+							
+							// Empty the selected events and refresh them
+							selectedEvents[ 'template' ] = [];
+							$j( '#bookacti-template-calendar' ).fullCalendar( 'rerenderEvents' );
+							$j( '#bookacti-insert-group-of-events' ).css( 'visibility', 'hidden' );
+							
+						} else {
+							var error_message = bookacti_localized.error_delete_group_of_events;
+							if( response.error === 'not_allowed' ) {
+								error_message += '\n' + bookacti_localized.error_not_allowed;
+							}
+							alert( error_message );
+							console.log( response );
+						}
+					},
+					error: function( e ){
+						alert( 'AJAX ' + bookacti_localized.error_delete_group_of_events );
+						console.log( e );
+					},
+					complete: function() { 
+						bookacti_stop_template_loading(); 
+					}
+				});
+
+				//Close the modal dialog
+				$j( this ).dialog( 'close' );
+				$j( '#bookacti-group-of-events-dialog' ).dialog( 'close' );
+			}
+		},
+		{
+			text: bookacti_localized.dialog_button_cancel,
+
+			click: function() {
+				//Close the modal dialog
+				$j( this ).dialog( 'close' );
+			}
+		}]
+	);
+}
+
+
+
+// GROUP CATEGORIES
+
 // Update a group category
 function bookacti_dialog_update_group_category( category_id ) {
-	
-	// Set the dialog title
-	$j( '#bookacti-group-category-dialog' ).dialog({ 
-		title: bookacti_localized.dialog_create_group_of_events_title
-	});
 	
 	// Retrieve category data and fill fields
 	bookacti_start_template_loading();
@@ -1971,6 +2058,91 @@ function bookacti_dialog_update_group_category( category_id ) {
 					//Close the modal dialogs
 					$j( '#bookacti-group-category-dialog' ).dialog( 'close' );
 				}
+			}
+		},
+		// Add the 'delete' button
+		{
+			text: bookacti_localized.dialog_button_delete,
+			class: 'bookacti-dialog-delete-button bookacti-dialog-left-button',
+			
+			//On click on the OK Button, new values are send to a script that update the database
+			click: function() {
+				bookacti_dialog_delete_group_category( category_id );
+			}
+		}]
+	);
+}
+
+
+// Delete a group category
+function bookacti_dialog_delete_group_category( category_id ) {
+	//Open the modal dialog
+	$j( '#bookacti-delete-group-category-dialog' ).dialog( 'open' );
+
+	//Add the 'OK' button
+	$j( '#bookacti-delete-group-category-dialog' ).dialog( 'option', 'buttons',
+		[{
+			text: bookacti_localized.dialog_button_delete,
+			class: 'bookacti-dialog-delete-button',
+
+			//On click on the OK Button, new values are send to a script that update the database
+			click: function() {
+
+				bookacti_start_template_loading();
+
+				$j.ajax({
+					url: ajaxurl, 
+					data: { 'action': 'bookactiDeleteGroupCategory', 
+							'category_id': category_id,
+							'nonce': bookacti_localized.nonce_delete_group_category
+						},
+					type: 'POST',
+					dataType: 'json',
+					success: function( response ) {
+						if( response.status === 'success' ) {
+							
+							// Remove the group category and all its groups
+							$j( '.bookacti-group-category[data-group-category-id="' + category_id + '"]' ).remove();
+							
+							// Empty the selected events and refresh them
+							selectedEvents[ 'template' ] = [];
+							$j( '#bookacti-template-calendar' ).fullCalendar( 'rerenderEvents' );
+							$j( '#bookacti-insert-group-of-events' ).css( 'visibility', 'hidden' );
+							
+							// If it was the last category, display the tuto
+							if( ! $j( '.bookacti-group-category' ).length ) {
+								$j( '#bookacti-template-add-group-of-events-tuto-select-events' ).show();
+							}
+							
+						} else {
+							var error_message = bookacti_localized.error_delete_group_category;
+							if( response.error === 'not_allowed' ) {
+								error_message += '\n' + bookacti_localized.error_not_allowed;
+							}
+							alert( error_message );
+							console.log( response );
+						}
+					},
+					error: function( e ){
+						alert( 'AJAX ' + bookacti_localized.error_delete_group_category );
+						console.log( e );
+					},
+					complete: function() { 
+						bookacti_stop_template_loading(); 
+					}
+				});
+
+				//Close the modal dialog
+				$j( this ).dialog( 'close' );
+				$j( '#bookacti-group-category-dialog' ).dialog( 'close' );
+			}
+		},
+		{
+			text: bookacti_localized.dialog_button_cancel,
+
+			click: function() {
+				//Close the modal dialog
+				$j( this ).dialog( 'close' );
 			}
 		}]
 	);

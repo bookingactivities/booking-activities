@@ -311,7 +311,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			return false;
 		}
 		
-		$categories = bookacti_fetch_group_categories( $template_id );
+		$categories = bookacti_get_group_categories_by_template( $template_id );
 		foreach( $categories as $category ) {
 			if( intval( $category_id ) === intval( $category->id ) ) {
 				return true;
@@ -346,7 +346,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		}
 		
 		// Then, insert the events in the group
-		$inserted = bookacti_insert_events_into_group( $group_id, $events );
+		$inserted = bookacti_insert_events_into_group( $events, $group_id );
 		
 		if( empty( $inserted ) && $inserted !== 0 ) {
 			return false;
@@ -394,7 +394,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		// Fially, update events of the group
         $updated3 = bookacti_update_events_of_group( $events, $group_id );
 		
-		if( $updated2 === false ) {
+		if( $updated3 === false ) {
 			return 'error_update_events_of_group';
 		}
 		
@@ -411,8 +411,8 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	 * @since 1.1.0
 	 * 
 	 * @global wpdb $wpdb
+	 * @param array $new_events
 	 * @param int $group_id
-	 * @param array $events
 	 * @return int|boolean
 	 */
 	function bookacti_update_events_of_group( $new_events, $group_id ) {
@@ -446,20 +446,20 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		$deleted = $inserted = 0;
 		
 		// Delete old events
-		if( ! empty( $current_event ) ) {
+		if( ! empty( $to_delete ) ) {
 			$deleted = bookacti_delete_events_from_group( $to_delete, $group_id );
 		}
 		
 		// Insert new events
-		if( ! empty( $current_event ) ) {
+		if( ! empty( $to_insert ) ) {
 			$inserted = bookacti_insert_events_into_group( $to_insert, $group_id );
 		}
 		
-		if( $deleted === false || $inserted = false ) {
+		if( $deleted === false && $inserted = false ) {
 			return false;
 		}
 		
-		$updated = is_int( $deleted ) + is_int( $inserted );
+		$updated = intval( $deleted ) + intval( $inserted );
 		
 		return $inserted;
 	}
@@ -471,7 +471,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	 * @since 1.1.0
 	 * 
 	 * @param int $template_id
-	 * @return boolean|string
+	 * @return string|boolean
 	 */
 	function bookacti_get_template_groups_of_events_list( $template_id ) {
 		
@@ -484,13 +484,14 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		$list =	"";
 		
 		// Retrieve groups by categories
-		$groups_categories	= bookacti_fetch_groups_of_events_by_category( $template_id );
-		foreach( $groups_categories as $category_id => $group_category ) {
+		$categories	= bookacti_get_group_categories_by_template( $template_id );
+		$groups				= bookacti_get_groups_of_events_by_template_id( $template_id );
+		foreach( $categories as $category ) {
 			
-			$category_title			= apply_filters( 'bookacti_translate_text', esc_html( $group_category[ 'title' ] ) );
+			$category_title			= apply_filters( 'bookacti_translate_text', esc_html( $category->title ) );
 			$category_short_title	= strlen( $category_title ) > 16 ? substr( $category_title, 0, 16 ) . '&#8230;' : $category_title;
 			
-			$list	.= "<div class='bookacti-group-category' data-group-category-id='" . $category_id . "' data-show-groups='0' data-visible='1' >
+			$list	.= "<div class='bookacti-group-category' data-group-category-id='" . $category->id . "' data-show-groups='0' data-visible='1' >
 							<div class='bookacti-group-category-show-hide' >
 								<img src='" . esc_url( plugins_url() . '/' . BOOKACTI_PLUGIN_NAME . '/img/show.png' ) . "' />
 							</div>
@@ -509,21 +510,22 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			
 			$list	.= 	   "<div class='bookacti-groups-of-events-list' >";
 			
-			foreach( $group_category[ 'groups_of_events' ] as $group_id => $group_of_events ) {
-				
-				$group_title		= apply_filters( 'bookacti_translate_text', esc_html( $group_of_events[ 'title' ] ) );
-				$group_short_title	= strlen( $group_title ) > 16 ? substr( $group_title, 0, 16 ) . '&#8230;' : $group_title;
-				
-				$list	.=	   "<div class='bookacti-group-of-events' data-group-id='" . $group_id . "' >
-									<div class='bookacti-group-of-events-title' title='" . $group_title . "' >
-										" . $group_short_title . " 
-									</div>";
-				if( $current_user_can_edit_template ) {
-					$list	.=	   "<div class='bookacti-update-group-of-events' >
-										<img src='" . esc_url( plugins_url() . '/' . BOOKACTI_PLUGIN_NAME . '/img/gear.png' ) . "' />
-									</div>";
+			foreach( $groups as $group ) {
+				if( $group->category_id === $category->id ) {
+					$group_title		= apply_filters( 'bookacti_translate_text', esc_html( $group->title ) );
+					$group_short_title	= strlen( $group_title ) > 16 ? substr( $group_title, 0, 16 ) . '&#8230;' : $group_title;
+					
+					$list	.=	   "<div class='bookacti-group-of-events' data-group-id='" . $group->id . "' >
+										<div class='bookacti-group-of-events-title' title='" . $group_title . "' >
+											" . $group_short_title . " 
+										</div>";
+					if( $current_user_can_edit_template ) {
+						$list	.=	   "<div class='bookacti-update-group-of-events' >
+											<img src='" . esc_url( plugins_url() . '/' . BOOKACTI_PLUGIN_NAME . '/img/gear.png' ) . "' />
+										</div>";
+					}
+					$list	.=	   "</div>";
 				}
-				$list	.=	   "</div>";
 			}
 			
 			$list	.=	   "</div>

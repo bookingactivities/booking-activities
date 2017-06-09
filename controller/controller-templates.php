@@ -476,7 +476,37 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	add_action( 'wp_ajax_bookactiUpdateGroupOfEvents', 'bookacti_controller_update_group_of_events' );
 	
 	
+	/**
+	 * Delete a group of events with AJAX
+	 * 
+	 * @since 1.1.0
+	 */
+	function bookacti_controller_delete_group_of_events() {
+		
+		$group_id		= intval( $_POST['group_id'] );
+		$template_id	= bookacti_get_group_of_events_template_id( $group_id );
+		
+		// Check nonce and capabilities
+		$is_nonce_valid	= check_ajax_referer( 'bookacti_delete_group_of_events', 'nonce', false );
+		$is_allowed		= current_user_can( 'bookacti_edit_templates' ) && bookacti_user_can_manage_template( $template_id );
+		
+		if( $is_nonce_valid && $is_allowed ) {
+			
+			$deleted = bookacti_delete_group_of_events( $group_id );
+			
+			if( $deleted ) {
+				wp_send_json( array( 'status' => 'success' ) );
+			} else {
+				wp_send_json( array( 'status' => 'failed' ) );
+			}
+		} else {
+			wp_send_json( array( 'status' => 'failed', 'error' => 'not_allowed' ) );
+		}
+	}
+	add_action( 'wp_ajax_bookactiDeleteGroupOfEvents', 'bookacti_controller_delete_group_of_events' );
+	
 
+	
 // GROUP CATEGORIES
 	
 	/**
@@ -553,7 +583,37 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		}
 	}
 	add_action( 'wp_ajax_bookactiUpdateGroupCategory', 'bookacti_controller_update_group_category' );
-
+	
+	
+	/**
+	 * Delete a group category with AJAX
+	 * 
+	 * @since 1.1.0
+	 */
+	function bookacti_controller_delete_group_category() {
+		
+		$category_id	= intval( $_POST['category_id'] );
+		$template_id	= bookacti_get_group_category_template_id( $category_id );
+		
+		// Check nonce and capabilities
+		$is_nonce_valid	= check_ajax_referer( 'bookacti_delete_group_category', 'nonce', false );
+		$is_allowed		= current_user_can( 'bookacti_edit_templates' ) && bookacti_user_can_manage_template( $template_id );
+		
+		if( $is_nonce_valid && $is_allowed ) {
+			
+			$deleted = bookacti_delete_group_category( $category_id );
+			
+			if( $deleted ) {
+				wp_send_json( array( 'status' => 'success' ) );
+			} else {
+				wp_send_json( array( 'status' => 'failed' ) );
+			}
+		} else {
+			wp_send_json( array( 'status' => 'failed', 'error' => 'not_allowed' ) );
+		}
+	}
+	add_action( 'wp_ajax_bookactiDeleteGroupCategory', 'bookacti_controller_delete_group_category' );
+	
 	
 	
 // TEMPLATES

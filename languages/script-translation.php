@@ -21,9 +21,9 @@ $bookacti_translation_array = apply_filters( 'bookacti_translation_array', array
 	'dialog_create_group_of_events_title'	=> esc_html__( 'Create a group of events', BOOKACTI_PLUGIN_NAME ),
 	'dialog_update_group_of_events_title'	=> esc_html__( 'Update a group of events', BOOKACTI_PLUGIN_NAME ),
 	'dialog_delete_group_of_events_title'	=> esc_html__( 'Delete a group of events', BOOKACTI_PLUGIN_NAME ),
-	'dialog_create_group_category_title'	=> esc_html__( 'Create a group of events category', BOOKACTI_PLUGIN_NAME ),
-	'dialog_update_group_category_title'	=> esc_html__( 'Update a group of events category', BOOKACTI_PLUGIN_NAME ),
-	'dialog_delete_group_category_title'	=> esc_html__( 'Delete a group of events category', BOOKACTI_PLUGIN_NAME ),
+	'dialog_create_group_category_title'	=> esc_html__( 'Create a group category', BOOKACTI_PLUGIN_NAME ),
+	'dialog_update_group_category_title'	=> esc_html__( 'Update a group category', BOOKACTI_PLUGIN_NAME ),
+	'dialog_delete_group_category_title'	=> esc_html__( 'Delete a group category', BOOKACTI_PLUGIN_NAME ),
 	'dialog_locked_event'					=> esc_html__( 'Locked event', BOOKACTI_PLUGIN_NAME ),
 	'booking_filters_parameters'			=> esc_html__( 'Booking filters parameters', BOOKACTI_PLUGIN_NAME ),
 	'booking_list_parameters'				=> esc_html__( 'Booking list parameters', BOOKACTI_PLUGIN_NAME ),
@@ -234,9 +234,12 @@ $bookacti_translation_array = apply_filters( 'bookacti_translation_array', array
 	'nonce_delete_event'				=> wp_create_nonce( 'bookacti_delete_event' ),
 	'nonce_unbind_occurences'			=> wp_create_nonce( 'bookacti_unbind_occurences' ),
 	
-	'nonce_get_group_category_data'		=> wp_create_nonce( 'bookacti_get_group_category_data' ),
 	'nonce_get_group_of_events_data'	=> wp_create_nonce( 'bookacti_get_group_of_events_data' ),
+	'nonce_delete_group_of_events'		=> wp_create_nonce( 'bookacti_delete_group_of_events' ),
 
+	'nonce_get_group_category_data'		=> wp_create_nonce( 'bookacti_get_group_category_data' ),
+	'nonce_delete_group_category'		=> wp_create_nonce( 'bookacti_delete_group_category' ),
+	
 	'nonce_get_template_data'			=> wp_create_nonce( 'bookacti_get_template_data' ),
 	'nonce_switch_template'				=> wp_create_nonce( 'bookacti_switch_template' ),
 	'nonce_deactivate_template'			=> wp_create_nonce( 'bookacti_deactivate_template' ),
