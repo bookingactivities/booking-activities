@@ -22,7 +22,13 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 <div id='bookacti-reschedule-booking-dialog' class='bookacti-frontend-dialogs bookacti-backend-dialogs bookacti-bookings-dialogs' >
 <?php 
 	$reschedule_booking_method = apply_filters( 'bookacti_reschedule_booking_method', 'calendar' );
-	bookacti_display_booking_system( array(), array(), $reschedule_booking_method, 'reschedule' );
+	$atts = array( 
+				'calendars'	=> array(),
+				'activities'=> array(),
+				'method'	=> $reschedule_booking_method,
+				'id'		=> 'reschedule'
+			);
+	bookacti_get_booking_system( $atts, true );
 ?>
 </div>
 

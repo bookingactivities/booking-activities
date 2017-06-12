@@ -311,7 +311,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			return false;
 		}
 		
-		$categories = bookacti_get_group_categories_by_template( $template_id );
+		$categories = bookacti_get_group_categories_by_template_ids( $template_id );
 		foreach( $categories as $category ) {
 			if( intval( $category_id ) === intval( $category->id ) ) {
 				return true;
@@ -484,8 +484,8 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		$list =	"";
 		
 		// Retrieve groups by categories
-		$categories	= bookacti_get_group_categories_by_template( $template_id );
-		$groups				= bookacti_get_groups_of_events_by_template_id( $template_id );
+		$categories	= bookacti_get_group_categories_by_template_ids( $template_id );
+		$groups		= bookacti_get_groups_of_events_by_template_ids( $template_id );
 		foreach( $categories as $category ) {
 			
 			$category_title			= apply_filters( 'bookacti_translate_text', esc_html( $category->title ) );

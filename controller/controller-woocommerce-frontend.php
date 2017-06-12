@@ -96,8 +96,8 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 //ADD TO CART (SINGLE PRODUCT PAGE)
 	
 	// Prevent auto-loading on variable product pages
-	add_filter( 'bookacti_booking_system_auto_load', 'bookacti_prevent_auto_load_on_variable_product_page', 10, 6 );
-	function bookacti_prevent_auto_load_on_variable_product_page( $auto_load, $templates, $activities, $booking_method, $id, $classes ) {
+	add_filter( 'bookacti_booking_system_auto_load', 'bookacti_prevent_auto_load_on_variable_product_page' );
+	function bookacti_prevent_auto_load_on_variable_product_page( $auto_load ) {
 		global $product;
 		if( ! empty( $product ) ) {
 			if( $product->is_type( 'variable' ) ) {
@@ -138,7 +138,14 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 				}
 			}
 			
-			bookacti_display_booking_system( array( $template_id ), array( $activity_id ), $booking_method, $product->get_id(), 'bookacti-frontend-booking-system bookacti-woocommerce-product-booking-system' );
+			$atts = array( 
+						'calendars'	=> array( $template_id ),
+						'activities'=> array( $activity_id ),
+						'method'	=> $booking_method,
+						'id'		=> $product->get_id(),
+						'classes'	=> 'bookacti-frontend-booking-system bookacti-woocommerce-product-booking-system'
+					);
+			bookacti_get_booking_system( $atts, true );
 		}
 	}
 	

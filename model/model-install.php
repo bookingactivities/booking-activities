@@ -37,7 +37,7 @@ function bookacti_create_tables() {
 		repeat_to DATE,
 		active TINYINT(1) NOT NULL DEFAULT 1 ) ' . $wpdb->get_charset_collate() . ';';
 
-	$table_groups_query = 'CREATE TABLE ' . BOOKACTI_TABLE_GROUPS . ' ( 
+	$table_event_groups_query = 'CREATE TABLE ' . BOOKACTI_TABLE_EVENT_GROUPS . ' ( 
 		id MEDIUMINT(9) UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY, 
 		category_id MEDIUMINT(9) UNSIGNED NOT NULL, 
 		title VARCHAR(128), 
@@ -95,6 +95,14 @@ function bookacti_create_tables() {
 		quantity MEDIUMINT(9) UNSIGNED NOT NULL DEFAULT 1, 
 		active TINYINT(1) UNSIGNED NOT NULL DEFAULT 1 ) ' . $wpdb->get_charset_collate() . ';';
 
+	$table_booking_groups_query = 'CREATE TABLE ' . BOOKACTI_TABLE_BOOKING_GROUPS . ' ( 
+		id MEDIUMINT(9) UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY, 
+		event_group_id MEDIUMINT(9) UNSIGNED, 
+		user_id VARCHAR(32), 
+		order_id MEDIUMINT(9) UNSIGNED, 
+		state VARCHAR(32) NOT NULL DEFAULT "booked", 
+		active TINYINT(1) UNSIGNED NOT NULL DEFAULT 1 ) ' . $wpdb->get_charset_collate() . ';';
+
 	// Execute the queries
 	if( ! function_exists( 'dbDelta' ) ) {
 		require_once( ABSPATH . 'wp-admin/includes/upgrade.php' );
@@ -103,14 +111,15 @@ function bookacti_create_tables() {
 	dbDelta( $table_templates_query 
 			. $table_activities_query 
 			. $table_events_query 
-			. $table_groups_query 
+			. $table_event_groups_query 
 			. $table_groups_events_query 
 			. $table_group_categories_query 
 			. $table_permissions_query
 			. $table_meta_query
 			. $table_templates_activities_query 
 			. $table_exceptions_query 
-			. $table_bookings_query );
+			. $table_bookings_query
+			. $table_booking_groups_query );
 }
 
 
@@ -123,7 +132,7 @@ function bookacti_drop_tables() {
 	$wpdb->query( 'DROP TABLE IF EXISTS ' . BOOKACTI_TABLE_TEMPLATES . '; ' );
 	$wpdb->query( 'DROP TABLE IF EXISTS ' . BOOKACTI_TABLE_ACTIVITIES . '; ' );
 	$wpdb->query( 'DROP TABLE IF EXISTS ' . BOOKACTI_TABLE_EVENTS . '; ' );
-	$wpdb->query( 'DROP TABLE IF EXISTS ' . BOOKACTI_TABLE_GROUPS . '; ' );
+	$wpdb->query( 'DROP TABLE IF EXISTS ' . BOOKACTI_TABLE_EVENT_GROUPS . '; ' );
 	$wpdb->query( 'DROP TABLE IF EXISTS ' . BOOKACTI_TABLE_GROUPS_EVENTS . '; ' );
 	$wpdb->query( 'DROP TABLE IF EXISTS ' . BOOKACTI_TABLE_GROUP_CATEGORIES . '; ' );
 	$wpdb->query( 'DROP TABLE IF EXISTS ' . BOOKACTI_TABLE_META . '; ' );
@@ -131,4 +140,5 @@ function bookacti_drop_tables() {
 	$wpdb->query( 'DROP TABLE IF EXISTS ' . BOOKACTI_TABLE_TEMP_ACTI . '; ' );
 	$wpdb->query( 'DROP TABLE IF EXISTS ' . BOOKACTI_TABLE_EXCEPTIONS . '; ' );
 	$wpdb->query( 'DROP TABLE IF EXISTS ' . BOOKACTI_TABLE_BOOKINGS . '; ' );
+	$wpdb->query( 'DROP TABLE IF EXISTS ' . BOOKACTI_TABLE_BOOKING_GROUPS . '; ' );
 }

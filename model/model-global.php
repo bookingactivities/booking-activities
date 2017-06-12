@@ -9,7 +9,7 @@ $db_prefix = $wpdb->prefix;
 if( ! defined( 'BOOKACTI_TABLE_TEMPLATES' ) )		{ define( 'BOOKACTI_TABLE_TEMPLATES',		$db_prefix . 'bookacti_templates' ); }
 if( ! defined( 'BOOKACTI_TABLE_ACTIVITIES' ) )		{ define( 'BOOKACTI_TABLE_ACTIVITIES',		$db_prefix . 'bookacti_activities' ); }
 if( ! defined( 'BOOKACTI_TABLE_EVENTS' ) )			{ define( 'BOOKACTI_TABLE_EVENTS',			$db_prefix . 'bookacti_events' ); }
-if( ! defined( 'BOOKACTI_TABLE_GROUPS' ) )			{ define( 'BOOKACTI_TABLE_GROUPS',			$db_prefix . 'bookacti_groups' ); }
+if( ! defined( 'BOOKACTI_TABLE_EVENT_GROUPS' ) )	{ define( 'BOOKACTI_TABLE_EVENT_GROUPS',	$db_prefix . 'bookacti_event_groups' ); }
 if( ! defined( 'BOOKACTI_TABLE_GROUPS_EVENTS' ) )	{ define( 'BOOKACTI_TABLE_GROUPS_EVENTS',	$db_prefix . 'bookacti_groups_events' ); }
 if( ! defined( 'BOOKACTI_TABLE_GROUP_CATEGORIES' ) ){ define( 'BOOKACTI_TABLE_GROUP_CATEGORIES',$db_prefix . 'bookacti_group_categories' ); }
 if( ! defined( 'BOOKACTI_TABLE_META' ) )			{ define( 'BOOKACTI_TABLE_META',			$db_prefix . 'bookacti_meta' ); }
@@ -17,6 +17,7 @@ if( ! defined( 'BOOKACTI_TABLE_PERMISSIONS' ) )		{ define( 'BOOKACTI_TABLE_PERMI
 if( ! defined( 'BOOKACTI_TABLE_TEMP_ACTI' ) )		{ define( 'BOOKACTI_TABLE_TEMP_ACTI',		$db_prefix . 'bookacti_templates_activities' ); }
 if( ! defined( 'BOOKACTI_TABLE_EXCEPTIONS' ) )		{ define( 'BOOKACTI_TABLE_EXCEPTIONS',		$db_prefix . 'bookacti_exceptions' ); }
 if( ! defined( 'BOOKACTI_TABLE_BOOKINGS' ) )		{ define( 'BOOKACTI_TABLE_BOOKINGS',		$db_prefix . 'bookacti_bookings' ); }
+if( ! defined( 'BOOKACTI_TABLE_BOOKING_GROUPS' ) )	{ define( 'BOOKACTI_TABLE_BOOKING_GROUPS',	$db_prefix . 'bookacti_booking_groups' ); }
 
 
 // Check if user id exists

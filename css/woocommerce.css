@@ -3,6 +3,13 @@
 .bookacti-woo-title		{ padding: 1em 0 0.5em 0; }
 .bookacti-hide-fields	{ display: none; }
 .bookacti-show-fields	{ display: block; }
+p.form-field._bookacti_groups_field { margin-bottom: 0; }
+#bookacti-groups-options		{ margin-top: 0; }
+#bookacti-groups-options label	{ float: none; margin: 0 0 0 7px; font-size: 12px; }
+#bookacti-groups-options > span	{ display: block; clear: both; }
+
+
+
 
 /***** FRONTEND WOOCOMMERCE *****/
 /* Single product page */

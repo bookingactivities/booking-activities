@@ -613,7 +613,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 		// Insert the new group of events
 		$wpdb->insert( 
-			BOOKACTI_TABLE_GROUPS, 
+			BOOKACTI_TABLE_EVENT_GROUPS, 
 			array( 
 				'category_id'	=> $category_id,
 				'title'			=> $group_title,
@@ -656,7 +656,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 		// Update the group of events
 		$updated = $wpdb->update( 
-            BOOKACTI_TABLE_GROUPS, 
+            BOOKACTI_TABLE_EVENT_GROUPS, 
             array( 
                 'category_id' => $category_id,
                 'title' => $group_title
@@ -671,24 +671,87 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	
 	
 	/**
+	 * Delete a group of events
+	 * 
+	 * @global wpdb $wpdb
+	 * @param type $group_id
+	 * @return boolean
+	 */
+	function bookacti_delete_group_of_events( $group_id ) {
+		if( empty( $group_id ) || ! is_numeric( $group_id ) ) {
+			return false;
+		}
+		
+		global $wpdb;
+		
+		// Delete events of the group
+		$query_events	= 'DELETE FROM ' . BOOKACTI_TABLE_GROUPS_EVENTS 
+						. ' WHERE group_id = %d ';
+		$prep_events	= $wpdb->prepare( $query_events, $group_id );
+        $deleted1		= $wpdb->query( $prep_events );
+		
+		// Delete the group itself
+		$query_group	= 'DELETE FROM ' . BOOKACTI_TABLE_EVENT_GROUPS 
+						. ' WHERE id = %d ';
+		$prep_group		= $wpdb->prepare( $query_group, $group_id );
+        $deleted2		= $wpdb->query( $prep_group );
+		
+		if( $deleted1 === false && $deleted2 === false ) {
+			return false;
+		}
+		
+		$deleted = intval( $deleted1 ) + intval( $deleted2 );
+		
+		return $deleted;
+	}
+	
+	
+	/**
 	 * Get groups of events data by template id
 	 * 
 	 * @since 1.1.0
 	 * 
 	 * @global wpdb $wpdb
-	 * @param int $group_id
+	 * @param array|int $template_id
+	 * @param boolean $fetch_inactive_groups
 	 * @param OBJECT|ARRAY_A $return_type
 	 * @return object|array
 	 */
-	function bookacti_get_groups_of_events_by_template_id( $template_id, $fetch_inactive_groups = false, $return_type = OBJECT ) {
+	function bookacti_get_groups_of_events_by_template_ids( $template_ids = array(), $fetch_inactive_groups = false, $return_type = OBJECT ) {
 		$return_type = $return_type === OBJECT ? OBJECT : ARRAY_A;
+		
+		// If empty, take them all
+		if( empty( $template_ids ) ) { 
+			$templates = bookacti_fetch_templates( true );
+			foreach( $templates as $template ) {
+				$template_ids[] = $template->id;
+			}
+		}
+		
+		// Convert numeric to array
+		if( ! is_array( $template_ids ) ){
+			$template_id = intval( $template_ids );
+			$template_ids = array();
+			if( $template_id ) {
+				$template_ids[] = $template_id;
+			}
+		}
 		
 		global $wpdb;
 		
         $query	= 'SELECT G.* '
-				. ' FROM ' . BOOKACTI_TABLE_GROUPS . ' as G, ' . BOOKACTI_TABLE_GROUP_CATEGORIES . ' as C '
+				. ' FROM ' . BOOKACTI_TABLE_EVENT_GROUPS . ' as G, ' . BOOKACTI_TABLE_GROUP_CATEGORIES . ' as C '
 				. ' WHERE C.id = G.category_id '
-				. ' AND template_id = %d ';
+				. ' AND template_id IN ( ';
+		
+		$i = 1;
+		foreach( $template_ids as $template_id ){
+			$query .= ' %d';
+			if( $i < count( $template_ids ) ) { $query .= ','; }
+			$i++;
+		}
+		
+		$query .= ' )';
 		
 		if( ! $fetch_inactive_groups ) {
 			$query .= ' AND G.active = 1 ';
@@ -696,7 +759,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		
 		$query .= ' ORDER BY category_id';
 		
-        $prep	= $wpdb->prepare( $query, $template_id );
+        $prep	= $wpdb->prepare( $query, $template_ids );
         $group	= $wpdb->get_results( $prep, $return_type );
 		
         return $group;
@@ -718,7 +781,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		
 		global $wpdb;
 		
-        $query	= 'SELECT * FROM ' . BOOKACTI_TABLE_GROUPS . ' WHERE id = %d ';
+        $query	= 'SELECT * FROM ' . BOOKACTI_TABLE_EVENT_GROUPS . ' WHERE id = %d ';
         $prep	= $wpdb->prepare( $query, $group_id );
         $group	= $wpdb->get_row( $prep, $return_type );
 				
@@ -750,7 +813,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		global $wpdb;
 		
 		$query			= 'SELECT C.template_id '
-						. ' FROM ' . BOOKACTI_TABLE_GROUP_CATEGORIES  . ' as C, ' . BOOKACTI_TABLE_GROUPS  . ' as G '
+						. ' FROM ' . BOOKACTI_TABLE_GROUP_CATEGORIES  . ' as C, ' . BOOKACTI_TABLE_EVENT_GROUPS  . ' as G '
 						. ' WHERE C.id = G.category_id '
 						. ' AND G.id = %d ';
 		$query_prep		= $wpdb->prepare( $query, $group_id );
@@ -759,40 +822,6 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		return $template_id;
 	}
 	
-	/**
-	 * Delete a group of events
-	 * 
-	 * @global wpdb $wpdb
-	 * @param type $group_id
-	 * @return boolean
-	 */
-	function bookacti_delete_group_of_events( $group_id ) {
-		if( empty( $group_id ) || ! is_numeric( $group_id ) ) {
-			return false;
-		}
-		
-		global $wpdb;
-		
-		// Delete events of the group
-		$query_events	= 'DELETE FROM ' . BOOKACTI_TABLE_GROUPS_EVENTS 
-						. ' WHERE group_id = %d ';
-		$prep_events	= $wpdb->prepare( $query_events, $group_id );
-        $deleted1		= $wpdb->query( $prep_events );
-		
-		// Delete the group itself
-		$query_group	= 'DELETE FROM ' . BOOKACTI_TABLE_GROUPS 
-						. ' WHERE id = %d ';
-		$prep_group		= $wpdb->prepare( $query_group, $group_id );
-        $deleted2		= $wpdb->query( $prep_group );
-		
-		if( $deleted1 === false && $deleted2 === false ) {
-			return false;
-		}
-		
-		$deleted = intval( $deleted1 ) + intval( $deleted2 );
-		
-		return $deleted;
-	}
 	
 	
 	
@@ -811,7 +840,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		global $wpdb;
         
         $query  = 'SELECT GE.group_id, GE.event_id as id, GE.event_start as start, GE.event_end as end, GE.active, E.activity_id, E.title '
-				. ' FROM ' . BOOKACTI_TABLE_GROUP_CATEGORIES . ' as C, ' . BOOKACTI_TABLE_GROUPS . ' as G, ' . BOOKACTI_TABLE_GROUPS_EVENTS . ' as GE, ' . BOOKACTI_TABLE_EVENTS . ' as E '
+				. ' FROM ' . BOOKACTI_TABLE_GROUP_CATEGORIES . ' as C, ' . BOOKACTI_TABLE_EVENT_GROUPS . ' as G, ' . BOOKACTI_TABLE_GROUPS_EVENTS . ' as GE, ' . BOOKACTI_TABLE_EVENTS . ' as E '
 				. ' WHERE G.category_id = C.id '
 				. ' AND G.id = GE.group_id '
 				. ' AND GE.event_id = E.id ';
@@ -1056,6 +1085,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
         return $updated;
 	}
 	
+	
 	/**
 	 * Delete a group category
 	 * 
@@ -1073,14 +1103,14 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		// Delete the category's groups events
 		$query_events	= 'DELETE GE.* '
 						. ' FROM ' . BOOKACTI_TABLE_GROUPS_EVENTS . ' as GE '
-						. ' LEFT JOIN ' . BOOKACTI_TABLE_GROUPS . ' as G '
+						. ' LEFT JOIN ' . BOOKACTI_TABLE_EVENT_GROUPS . ' as G '
 						. ' ON GE.group_id = G.id '
 						. ' WHERE G.category_id = %d ';
 		$prep_events	= $wpdb->prepare( $query_events, $category_id );
         $deleted1		= $wpdb->query( $prep_events );
 		
 		// Delete the category's groups
-		$query_group	= 'DELETE FROM ' . BOOKACTI_TABLE_GROUPS 
+		$query_group	= 'DELETE FROM ' . BOOKACTI_TABLE_EVENT_GROUPS 
 						. ' WHERE category_id = %d ';
 		$prep_group		= $wpdb->prepare( $query_group, $category_id );
         $deleted2		= $wpdb->query( $prep_group );
@@ -1137,28 +1167,51 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	 * @since 1.1.0
 	 * 
 	 * @global wpdb $wpdb
-	 * @param int $template_id
+	 * @param array|int $template_ids
 	 * @param boolean $fetch_inactive
 	 * @param OBJECT|ARRAY_A $return_type
 	 * @return object|array|boolean
 	 */
-	function bookacti_get_group_categories_by_template( $template_id, $fetch_inactive = false, $return_type = OBJECT ) {
-		
-		if( empty( $template_id ) || !is_numeric( $template_id ) ) {
-			return false;
-		}
+	function bookacti_get_group_categories_by_template_ids( $template_ids = array(), $fetch_inactive = false, $return_type = OBJECT ) {
 		
 		$return_type = $return_type === OBJECT ? OBJECT : ARRAY_A;
 		
+		// If empty, take them all
+		if( empty( $template_ids ) ) { 
+			$templates = bookacti_fetch_templates( true );
+			foreach( $templates as $template ) {
+				$template_ids[] = $template->id;
+			}
+		}
+		
+		// Convert numeric to array
+		if( ! is_array( $template_ids ) ){
+			$template_id = intval( $template_ids );
+			$template_ids = array();
+			if( $template_id ) {
+				$template_ids[] = $template_id;
+			}
+		}
+		
 		global $wpdb;
 		
-        $query		= 'SELECT * FROM ' . BOOKACTI_TABLE_GROUP_CATEGORIES . ' WHERE template_id = %d ';
+        $query	= 'SELECT * FROM ' . BOOKACTI_TABLE_GROUP_CATEGORIES 
+				. ' WHERE template_id IN ( ';
+		
+		$i = 1;
+		foreach( $template_ids as $template_id ){
+			$query .= ' %d';
+			if( $i < count( $template_ids ) ) { $query .= ','; }
+			$i++;
+		}
+		
+		$query .= ' )';
 		
 		if( ! $fetch_inactive ) {
 			$query .= ' AND active = 1 ';
 		}
 		
-        $prep		= $wpdb->prepare( $query, $template_id );
+        $prep		= $wpdb->prepare( $query, $template_ids );
         $categories	= $wpdb->get_results( $prep, $return_type );
 		
         return $categories;
@@ -1402,6 +1455,8 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
     }
 
 	
+	
+	
 // ACTIVITIES
     // FETCH ACTIVITIES
     function bookacti_fetch_activities( $return_type = OBJECT ) {
@@ -1411,28 +1466,6 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
         $activities = $wpdb->get_results( $query, $return_type );
 
         return $activities;
-    }
-	
-	
-    // FETCH ACTIVITIES
-    function bookacti_fetch_activities_with_templates_association( $return_type = OBJECT ) {
-        global $wpdb;
-		
-        $query  = 'SELECT A.*, TA.template_id FROM ' . BOOKACTI_TABLE_ACTIVITIES . ' as A, ' . BOOKACTI_TABLE_TEMP_ACTI . ' as TA ' 
-				. ' WHERE active=1 '
-				. ' AND A.id = TA.activity_id';
-        $activities = $wpdb->get_results( $query, $return_type );
-		
-		$activities_array = array();
-		foreach( $activities as $activity ) {
-			if( ! isset( $activities_array[ $activity->id ] ) ) {
-				$activities_array[ $activity->id ] = $activity;
-			}
-			$activities_array[ $activity->id ]->template_ids[] = $activity->template_id;
-			unset( $activities_array[ $activity->id ]->template_id );
-		}
-		
-        return $activities_array;
     }
 	
 	
@@ -1555,6 +1588,8 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
         return $deactivated;
     }
     
+	
+	
 
 // TEMPLATES X ACTIVITIES ASSOCIATION
 	// INSERT A TEMPLATE X ACTIVITY ASSOCIATION
@@ -1625,7 +1660,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 	
 	// GET ACTIVITIES BY TEMPLATE
-    function bookacti_get_activities_by_template_ids( $template_ids = false, $id_only = true ) {
+    function bookacti_get_activities_by_template_ids( $template_ids = array(), $id_only = true ) {
         global $wpdb;
 				
 		// If empty, take them all
@@ -1638,7 +1673,11 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		
 		// Convert numeric to array
 		if( ! is_array( $template_ids ) ){
-			$template_ids = array( intval( $template_ids ) );
+			$template_id = intval( $template_ids );
+			$template_ids = array();
+			if( $template_id ) {
+				$template_ids[] = $template_id;
+			}
 		}
 		
         $query	= 'SELECT DISTINCT A.* FROM ' . BOOKACTI_TABLE_TEMP_ACTI . ' as TA, ' . BOOKACTI_TABLE_ACTIVITIES . ' as A '
@@ -1715,3 +1754,33 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		
         return $templates_array;
     }
+	
+	
+	/**
+	 * Fetch activities with the list of associated templated
+	 * 
+	 * @since 1.0.0
+	 * @version 1.1.0
+	 * 
+	 * @global wpdb $wpdb
+	 * @return array [ activity_id ][id, title, color, duration, availability, is_resizable, active, template_ids] where template_ids = [id, id, id, ...]
+	 */
+	function bookacti_fetch_activities_with_templates_association() {
+		global $wpdb;
+		
+		$query  = 'SELECT A.*, TA.template_id FROM ' . BOOKACTI_TABLE_ACTIVITIES . ' as A, ' . BOOKACTI_TABLE_TEMP_ACTI . ' as TA ' 
+				. ' WHERE active=1 '
+				. ' AND A.id = TA.activity_id';
+		$activities = $wpdb->get_results( $query, ARRAY_A );
+		
+		$activities_array = array();
+		foreach( $activities as $activity ) {
+			if( ! isset( $activities_array[ $activity[ 'id' ] ] ) ) {
+				$activities_array[ $activity[ 'id' ] ] = $activity;
+			}
+			$activities_array[ $activity[ 'id' ] ][ 'template_ids' ][] = $activity[ 'template_id' ];
+			unset( $activities_array[ $activity[ 'id' ] ][ 'template_id' ] );
+		}
+		
+		return $activities_array;
+	}

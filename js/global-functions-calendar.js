@@ -214,6 +214,7 @@ function bookacti_fetch_calendar_events( calendar, fetch_past_events, context, c
         data: { 'action': 'bookactiFetchEvents', 
                 'templates': templates_array[calendar_id], 
 				'activities': activities_array[calendar_id],
+				'groups': groups_array[calendar_id],
 				'user_datetime': user_datetime,
 				'fetch_past_events': fetch_past_events,
 				'is_admin': bookacti_localized.is_admin,

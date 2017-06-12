@@ -181,7 +181,7 @@ echo "<h1>" . esc_html__( 'Calendars', BOOKACTI_PLUGIN_NAME ) . "</h1>";
 		if( ! empty( $default_template ) ) {
 			$template_id = $default_template;
 			$activity_ids = implode( ',', bookacti_get_activities_by_template_ids( array( $template_id ), true ) );
-			$categories = bookacti_get_group_categories_by_template( $template_id );
+			$categories = bookacti_get_group_categories_by_template_ids( $template_id );
 			
 			$i=1;
 			foreach( $categories as $category ) {

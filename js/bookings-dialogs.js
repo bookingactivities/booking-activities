@@ -567,11 +567,13 @@ function bookacti_dialog_reschedule_booking( booking_id ) {
 				// init var
 				var template_id		= response.template_id;
 				var activity_id		= response.activity_id;
+				var group_id		= response.group_category_id;
 				booking_quantity	= response.quantity;
 				
 				// Empty global data
 				templates_array[ 'reschedule' ]		= [];
 				activities_array[ 'reschedule' ]	= [];
+				groups_array[ 'reschedule' ]		= [];
 				
 				// Fill global data
 				booking_system.data( 'templates', template_id );
@@ -581,6 +583,10 @@ function bookacti_dialog_reschedule_booking( booking_id ) {
 				booking_system.data( 'activities', activity_id );
 				booking_system.attr( 'data-activities', activity_id );
 				activities_array[ 'reschedule' ] = activity_id.toString().split(',');
+				
+				booking_system.data( 'groups', activity_id );
+				booking_system.attr( 'data-groups', activity_id );
+				groups_array[ 'reschedule' ] = group_id.toString().split(',');
 				
 				booking_system.trigger( 'bookacti_before_booking_system_loads', [ response.event_settings ] );
 				

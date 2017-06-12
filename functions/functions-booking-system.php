@@ -4,90 +4,87 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 
 /***** BOOKING SYSTEM *****/
-// Display calendar (or other booking method)
-function bookacti_display_booking_system( $templates, $activities, $booking_method = 'calendar', $id = null, $classes = '', $echo = true ) {
+/**
+ * Get a booking system based on given parameters
+ * 
+ * @since 1.0.0
+ * @version 1.1.0
+ * 
+ * @param array $atts [id, classes, calendars, activities, groups, method]
+ * @param boolean $echo Wether to return or directly echo the booking system
+ * @return string
+ */
+function bookacti_get_booking_system( $atts, $echo = false ) {
 	
-	if( is_null ( $id ) || empty( $id ) ) { 
-		$id = rand();
-	}
-	
-	if( $booking_method === 'site' ) {
-		$booking_method = bookacti_get_setting_value( 'bookacti_general_settings', 'booking_method' );
-	}
-	
-	// Check if desired booking method is registered
-	$available_booking_methods = bookacti_get_available_booking_methods();
-	if( ! in_array( $booking_method, array_keys ( $available_booking_methods ) ) ) {
-		$booking_method = bookacti_get_setting_value( 'bookacti_general_settings', 'booking_method' );
-		if( ! in_array( $booking_method, array_keys ( $available_booking_methods ) ) ) {
-			$booking_method = 'calendar';
-		}
-	}
+	$atts = bookacti_format_booking_system_attributes( $atts );
 	
 	if( ! $echo ) {
 		ob_start();
 	}
 	
-	do_action( 'bookacti_before_booking_form', $templates, $activities, $booking_method, $id, $classes );
+	do_action( 'bookacti_before_booking_form', $atts );
 	
 ?>
-	<div class='bookacti-booking-system-container' id='bookacti-booking-system-container-<?php echo esc_attr( $id ); ?>' data-booking-system-form-id='<?php echo esc_attr( $id ); ?>' >
+	<div class='bookacti-booking-system-container' id='bookacti-booking-system-container-<?php echo esc_attr( $atts[ 'id' ]  ); ?>' data-booking-system-form-id='<?php echo esc_attr( $atts[ 'id' ]  ); ?>' >
 		<div class='bookacti-booking-system-inputs'>
+			<input type='hidden' name='bookacti_group_id'		value='' />
 			<input type='hidden' name='bookacti_event_id'		value='' />
 			<input type='hidden' name='bookacti_event_start'	value='' />
 			<input type='hidden' name='bookacti_event_end'		value='' />
-			<?php do_action( 'bookacti_booking_system_inputs', $templates, $activities, $booking_method, $id, $classes ); ?>
+			<?php do_action( 'bookacti_booking_system_inputs', $atts ); ?>
 		</div>
 		
-		<?php do_action( 'bookacti_before_booking_system_title', $templates, $activities, $booking_method, $id, $classes ); ?>
+		<?php do_action( 'bookacti_before_booking_system_title', $atts ); ?>
 		
 		<div class='bookacti-booking-system-global-title' >
-			<?php echo apply_filters( 'bookacti_booking_system_title', '', $templates, $activities, $booking_method, $id, $classes ); ?>
+			<?php echo apply_filters( 'bookacti_booking_system_title', '', $atts ); ?>
 		</div>
 		
-		<?php do_action( 'bookacti_before_booking_system', $templates, $activities, $booking_method, $id, $classes ); ?>
+		<?php do_action( 'bookacti_before_booking_system', $atts ); ?>
 		
-		<div class='bookacti-booking-system <?php echo esc_attr( $classes ); ?>' 
-			 id='bookacti-booking-system-<?php echo esc_attr( $id ); ?>'
-			 data-booking-method=		'<?php echo esc_attr( $booking_method ); ?>'
-			 data-booking-system-id=	'<?php echo esc_attr( $id ); ?>'
-			 data-templates=			'<?php echo esc_attr( implode( ',', $templates ) ); ?>'  
-			 data-activities=			'<?php echo esc_attr( implode( ',', $activities ) ); ?>' 
-			 data-init-booking-method=	'<?php echo esc_attr( $booking_method ); ?>'
-			 data-init-templates=		'<?php echo esc_attr( implode( ',', $templates ) ); ?>'
-			 data-init-activities=		'<?php echo esc_attr( implode( ',', $activities ) ); ?>' 
-			 data-auto-load=			'<?php echo apply_filters( 'bookacti_booking_system_auto_load', esc_attr( 1 ), $templates, $activities, $booking_method, $id, $classes ); ?>'
-			 <?php do_action( 'bookacti_booking_system_attributes', $templates, $activities, $booking_method, $id, $classes ); ?> >
+		<div class='bookacti-booking-system <?php echo esc_attr( $atts[ 'classes' ] ); ?>' 
+			 id='bookacti-booking-system-<?php echo esc_attr( $atts[ 'id' ]  ); ?>'
+			 data-booking-method=		'<?php echo esc_attr( $atts[ 'method' ]  ); ?>'
+			 data-booking-system-id=	'<?php echo esc_attr( $atts[ 'id' ]  ); ?>'
+			 data-templates=			'<?php echo esc_attr( implode( ',', $atts[ 'calendars' ] ) ); ?>'  
+			 data-activities=			'<?php echo esc_attr( implode( ',', $atts[ 'activities' ] ) ); ?>' 
+			 data-groups=				'<?php echo esc_attr( implode( ',', $atts[ 'groups' ] ) ); ?>' 
+			 data-init-booking-method=	'<?php echo esc_attr( $atts[ 'method' ]  ); ?>'
+			 data-init-templates=		'<?php echo esc_attr( implode( ',', $atts[ 'calendars' ] ) ); ?>'
+			 data-init-activities=		'<?php echo esc_attr( implode( ',', $atts[ 'activities' ] ) ); ?>' 
+			 data-init-groups=			'<?php echo esc_attr( implode( ',', $atts[ 'groups' ] ) ); ?>' 
+			 data-auto-load=			'<?php echo apply_filters( 'bookacti_booking_system_auto_load', 1, $atts ); ?>'
+			 <?php do_action( 'bookacti_booking_system_attributes', $atts ); ?> >
 
 		</div>
 		
-		<?php do_action( 'bookacti_after_booking_system', $templates, $activities, $booking_method, $id, $classes ); ?>
+		<?php do_action( 'bookacti_after_booking_system', $atts ); ?>
 		
 		<div class='bookacti-date-picked' >
 			<div class='bookacti-date-picked-title' >
-				<?php echo apply_filters( 'bookacti_date_picked_title', esc_html__( 'Selected schedule:', BOOKACTI_PLUGIN_NAME ), $templates, $activities, $booking_method, $id, $classes ); ?>
+				<?php echo apply_filters( 'bookacti_date_picked_title', esc_html__( 'Selected schedule:', BOOKACTI_PLUGIN_NAME ), $atts ); ?>
 			</div>
 			<div class='bookacti-date-picked-summary' >
-				<?php do_action( 'bookacti_before_date_picked_summary', $templates, $activities, $booking_method, $id, $classes ); ?>
+				<?php do_action( 'bookacti_before_date_picked_summary', $atts ); ?>
 				<span class='bookacti-date-picked-activity' ></span>
 				<span class='bookacti-date-picked-from' ></span>
 				<span class='bookacti-date-picked-separator' ></span>
 				<span class='bookacti-date-picked-to' ></span>
-				<?php do_action( 'bookacti_after_date_picked_summary', $templates, $activities, $booking_method, $id, $classes ); ?>
+				<?php do_action( 'bookacti_after_date_picked_summary', $atts ); ?>
 			</div>
 		</div>
 		
-		<?php do_action( 'bookacti_after_date_picked', $templates, $activities, $booking_method, $id, $classes ); ?>
+		<?php do_action( 'bookacti_after_date_picked', $atts ); ?>
 		
 		<div class='bookacti-notices' >
-			<?php do_action( 'bookacti_booking_system_errors', $templates, $activities, $booking_method, $id, $classes ); ?>
+			<?php do_action( 'bookacti_booking_system_errors', $atts ); ?>
 		</div>
 		
-		<?php do_action( 'bookacti_after_booking_system_errors', $templates, $activities, $booking_method, $id, $classes ); ?>
+		<?php do_action( 'bookacti_after_booking_system_errors', $atts ); ?>
 	</div>
 <?php
 
-	do_action( 'bookacti_after_booking_form', $templates, $activities, $booking_method, $id, $classes );
+	do_action( 'bookacti_after_booking_form', $atts );
 	
 	if( ! $echo ) {
 		return ob_get_clean();
@@ -122,26 +119,65 @@ function bookacti_retrieve_calendar_elements( $calendar_id ) {
 
 
 // Check booking system attributes and format them to be correct
-function bookacti_format_booking_system_attributes( $atts ) {
+/**
+ * Check booking system attributes and format them to be correct
+ * 
+ * @since 1.0.0
+ * @version 1.1.0
+ * 
+ * @param array $atts [id, classes, calendars, activities, groups, method, url, button]
+ * @param string $shortcode
+ * @return type
+ */
+function bookacti_format_booking_system_attributes( $atts = array(), $shortcode = '' ) {
 	
-	// format templates and activities into a comma separated int list
-	$atts[ 'calendars' ]	= preg_replace( array(
-		'/[^\d,]/',    // Matches anything that's not a comma or number.
-		'/(?<=,),+/',  // Matches consecutive commas.
-		'/^,+/',       // Matches leading commas.
-		'/,+$/'        // Matches trailing commas.
-	), '', 	$atts[ 'calendars' ]  );
-	$atts[ 'activities' ]	= preg_replace( array(
-		'/[^\d,]/',    // Matches anything that's not a comma or number.
-		'/(?<=,),+/',  // Matches consecutive commas.
-		'/^,+/',       // Matches leading commas.
-		'/,+$/'        // Matches trailing commas.
-	), '', 	$atts[ 'activities' ]  );
+	// Set default value
+	$defaults = apply_filters( 'bookacti_booking_system_default_attributes', array(
+        'id'					=> '',
+        'classes'				=> '',
+        'calendars'				=> array(),
+        'activities'			=> array(),
+        'groups'				=> array(),
+        'groups_only'			=> 1,
+        'groups_single_events'	=> 0,
+        'method'				=> 'calendar',
+		'url'					=> '',
+		'button'				=> __( 'Book', BOOKACTI_PLUGIN_NAME )
+    ) );
+	
+	// Replace empty mandatory values by default
+	$atts = shortcode_atts( $defaults, $atts, $shortcode );
 	
 	// format templates and activities comma separated list into array
-	// and remove duplicate values
-	$atts[ 'calendars' ]	= array_unique( explode( ',', $atts[ 'calendars' ] ) );
-	$atts[ 'activities' ]	= array_unique( explode( ',', $atts[ 'activities' ] ) );
+	if( is_string( $atts[ 'calendars' ] ) ) {
+		$atts[ 'calendars' ]	= explode( ',', preg_replace( array(
+			'/[^\d,]/',    // Matches anything that's not a comma or number.
+			'/(?<=,),+/',  // Matches consecutive commas.
+			'/^,+/',       // Matches leading commas.
+			'/,+$/'        // Matches trailing commas.
+		), '', 	$atts[ 'calendars' ] ) );
+	}
+	if( is_string( $atts[ 'activities' ] ) ) {
+		$atts[ 'activities' ]	= explode( ',', preg_replace( array(
+			'/[^\d,]/',    // Matches anything that's not a comma or number.
+			'/(?<=,),+/',  // Matches consecutive commas.
+			'/^,+/',       // Matches leading commas.
+			'/,+$/'        // Matches trailing commas.
+		), '', 	$atts[ 'activities' ] ) );
+	}
+	if( is_string( $atts[ 'groups' ] ) ) {
+		$atts[ 'groups' ]	= explode( ',', preg_replace( array(
+			'/[^\d,]/',    // Matches anything that's not a comma or number.
+			'/(?<=,),+/',  // Matches consecutive commas.
+			'/^,+/',       // Matches leading commas.
+			'/,+$/'        // Matches trailing commas.
+		), '', 	$atts[ 'groups' ] ) );
+	}
+	
+	// Remove duplicated values
+	$atts[ 'calendars' ]	= array_unique( $atts[ 'calendars' ] );
+	$atts[ 'activities' ]	= array_unique( $atts[ 'activities' ] );
+	$atts[ 'groups' ]		= array_unique( $atts[ 'groups' ] );
 	
 	// Check if desired templates exist
 	$available_templates = bookacti_fetch_templates( true );
@@ -180,9 +216,27 @@ function bookacti_format_booking_system_attributes( $atts ) {
 		}
 	}
 	
+	// Check if desired groups exist
+	$available_groups = bookacti_get_groups_of_events_by_template_ids( $atts[ 'calendars' ] );
+	foreach( $atts[ 'groups' ] as $i => $group_id ) {
+		foreach( $available_groups as $available_group ) {
+		if( $available_group->id == intval( $group_id ) ) {
+			$is_existing = true;
+			}
+		}
+		if( ! $is_existing ) {
+			unset( $atts[ 'groups' ][ $i ] );
+		}
+	}
+	
+	// If booking method is set to 'site', get the site default
+	$atts[ 'method' ] = esc_attr( $atts[ 'method' ] );
+	if( $atts[ 'method' ] === 'site' ) {
+		$atts[ 'method' ] = bookacti_get_setting_value( 'bookacti_general_settings', 'booking_method' );
+	}
+	
 	// Check if desired booking method is registered
 	$available_booking_methods = bookacti_get_available_booking_methods();
-	$atts[ 'method' ] = esc_attr( $atts[ 'method' ] );
 	if( ! in_array( $atts[ 'method' ], array_keys ( $available_booking_methods ) ) ) {
 		$atts[ 'method' ] = 'calendar';
 	}
@@ -204,8 +258,18 @@ function bookacti_format_booking_system_attributes( $atts ) {
 		$atts[ 'button' ] = esc_html( sanitize_text_field( $atts[ 'button' ] ) );
 	}
 	
+	// Sanitize groups only switch
+	if( isset( $atts[ 'groups_only' ] ) ) {
+		$atts[ 'groups_only' ] = boolval( $atts[ 'groups_only' ] ) ? 1 : 0;
+	}
 	
-	return apply_filters( 'bookacti_formatted_booking_system_attributes', $atts );
+	// Sanitize groups single events switch
+	if( isset( $atts[ 'groups_single_events' ] ) ) {
+		$atts[ 'groups_single_events' ] = boolval( $atts[ 'groups_single_events' ] ) ? 1 : 0;
+	}
+	
+	
+	return apply_filters( 'bookacti_formatted_booking_system_attributes', $atts, $shortcode );
 }
 
 

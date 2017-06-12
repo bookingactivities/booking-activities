@@ -8,5 +8,5 @@
 .bookacti-date-picked { display: none; text-align: center; }
 .to_date { display: inline-block; }
 
-.bookacti-booking-system-alone .bookacti-booking-system-title,
-.bookacti-booking-system-alone .bookacti-date-picked { display: none !important; }
+.bookacti-booking-system-calendar-only .bookacti-booking-system-title,
+.bookacti-booking-system-calendar-only .bookacti-date-picked { display: none !important; }

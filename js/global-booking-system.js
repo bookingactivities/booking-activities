@@ -9,8 +9,9 @@ $j( document ).ready( function() {
 			var booking_system		= $j( this );
 			var booking_system_id	= booking_system.data( 'booking-system-id' );
 			var booking_method		= booking_system.data( 'booking-method' );
-			var activities			= booking_system.data( 'activities' ).toString();
 			var templates			= booking_system.data( 'templates' ).toString();
+			var activities			= booking_system.data( 'activities' ).toString();
+			var groups				= booking_system.data( 'groups' ).toString();
 			var auto_load			= parseInt( booking_system.data( 'auto-load' ) );
 			
 			is_activity[booking_system_id]		= true;
@@ -19,9 +20,11 @@ $j( document ).ready( function() {
 			
 			if( templates_array[booking_system_id] === undefined )	{ templates_array[booking_system_id] = []; }
 			if( activities_array[booking_system_id] === undefined )	{ activities_array[booking_system_id] = []; }
+			if( groups_array[booking_system_id] === undefined )		{ groups_array[booking_system_id] = []; }
 			
 			if( templates.length )	{ templates_array[booking_system_id]	= templates.split(','); }
 			if( activities.length )	{ activities_array[booking_system_id]	= activities.split(','); }
+			if( groups.length )		{ groups_array[booking_system_id]		= groups.split(','); }
 			
 			// Load the booking system
 			if( auto_load && booking_system_id !== 'reschedule' ) {

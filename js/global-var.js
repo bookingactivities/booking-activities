@@ -21,8 +21,9 @@ var blockEvents             = false;
 var loadingNumber			= [];
 loadingNumber['template']	= 0;
 
-var activities_array		= [];
 var templates_array			= [];
+var activities_array		= [];
+var groups_array			= [];
 
 var calendarPeriod			= [];
 var is_activity				= [];

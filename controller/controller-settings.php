@@ -219,7 +219,7 @@ function bookacti_5stars_rating_notice() {
 					<div class='notice notice-info bookacti-5stars-rating-notice is-dismissible' >
 						<p><?php esc_html_e( 'You have been using Booking Activities for one week now. We are glad you like it! Please let people know by rating us five stars on wordpress.org, this is really important for us as we provide Booking Activities for free, and it will only take you five minutes.', BOOKACTI_PLUGIN_NAME ); ?></p>
 						<p>
-							<a class='button' href='<?php echo esc_url( 'https://wordpress.org/support/plugin/booking-activities/reviews/' ); ?>' target='_blank' ><?php esc_html_e( "Ok, I'll rate you five stars!", BOOKACTI_PLUGIN_NAME ); ?></a>
+							<a class='button' href='<?php echo esc_url( 'https://wordpress.org/support/plugin/booking-activities/reviews?rate=5#new-post' ); ?>' target='_blank' ><?php esc_html_e( "Ok, I'll rate you five stars!", BOOKACTI_PLUGIN_NAME ); ?></a>
 							<span class='button' id='bookacti-dismiss-5stars-rating' ><?php esc_html_e( "I already rated you, hide this message", BOOKACTI_PLUGIN_NAME ); ?></span>
 						</p>
 					</div>

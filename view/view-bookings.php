@@ -85,8 +85,8 @@ if( empty( bookacti_fetch_templates() ) ) {
 	
 	<?php
 	// Display booking system title
-	add_filter( 'bookacti_booking_system_title', 'bookacti_bookings_booking_system_title', 10, 6 );
-	function bookacti_bookings_booking_system_title( $title, $templates, $activities, $booking_method, $id, $classes ) {
+	add_filter( 'bookacti_booking_system_title', 'bookacti_bookings_booking_system_title', 10, 7 );
+	function bookacti_bookings_booking_system_title( $title, $templates, $activities, $groups, $booking_method, $id, $classes ) {
 		if( $id === 'bookings-page' ) {
 			$title = '<h2>' . esc_html__( 'Pick an event to show its bookings', BOOKACTI_PLUGIN_NAME ) . '</h2>';
 		}
@@ -94,7 +94,14 @@ if( empty( bookacti_fetch_templates() ) ) {
 	}
 	
 	// Display the booking system
-    bookacti_display_booking_system( array( $default_template ), array(), 'calendar', 'bookings-page', 'admin-booking-system' );
+	$atts = array( 
+				'calendars'	=> array( $default_template ),
+				'activities'=> array(),
+				'method'	=> 'calendar',
+				'id'		=> 'bookings-page',
+				'classes'	=> 'admin-booking-system'
+			);
+    bookacti_get_booking_system( $atts, true );
 	?>
 	
 	<div id='bookacti-bookings-list-container'>
