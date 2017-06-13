@@ -46,9 +46,9 @@ $j( document ).ready( function() {
 							window.location.replace( form.attr( 'action' ) );
 						} else {
 							// Reload events
-							var booking_system_id	= booking_system.data( 'booking-system-id' );
-							var calendar			= $j( '#bookacti-calendar-' + booking_system_id );
-							var booking_method		= booking_system.data( 'booking-method' );
+							var booking_system_id	= booking_system.attr( 'id' );
+							var calendar			= $j( '#' + booking_system_id + ' .bookacti-calendar' );
+							var booking_method		= booking_system.data( 'attributes' ).method;
 							if( booking_method === 'calendar' || $j.inArray( booking_method, bookacti_localized.available_booking_methods ) === -1 ) {
 								calendar.fullCalendar( 'removeEvents' );
 								bookacti_fetch_calendar_events( calendar );

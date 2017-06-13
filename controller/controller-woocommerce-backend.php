@@ -286,7 +286,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		$templates = bookacti_fetch_templates();
 		$templates_array = array();
 		foreach( $templates as $template ) {
-			$templates_array[ $template->id ] = stripslashes( $template->title );
+			$templates_array[ $template->id ] = $template->title;
 		}
 		
 		//Build booking method array
@@ -620,12 +620,12 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 					<?php
 					$options = '';
 					foreach( $activities as $activity ) {
-						$activity_title = apply_filters( 'bookacti_translate_text', stripslashes( $activity[ 'title' ] ) );
+						$activity_title = apply_filters( 'bookacti_translate_text', $activity[ 'title' ] );
 						$options .= '<option '
 									.  'value="' . esc_attr( $activity[ 'id' ] ) . '" '
 									.  'data-bookacti-show-if-templates="' . esc_attr( implode( ',', $activity[ 'template_ids' ] ) ) . '" '
 									. selected( true, intval( $activity[ 'id' ] ) === intval( $current_activity ), true ) . ' >'
-										. esc_html( stripslashes( $activity_title ) )
+										. esc_html( $activity_title )
 								.  '</option>';
 					}
 					echo $options;
@@ -766,9 +766,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 					$variable_activity = is_numeric( $_POST[ 'bookacti_variable_activity' ][ $key ] ) ? intval( $_POST[ 'bookacti_variable_activity' ][ $key ] ) : 'parent';
 					update_post_meta( $variation_id, 'bookacti_variable_activity', stripslashes( $variable_activity ) );
 				}
-				bookacti_log( $key );
-				bookacti_log( isset( $_POST[ 'bookacti_variable_groups' ][ $key ] ) );
-				bookacti_log( $_POST[ 'bookacti_variable_groups' ][ $key ] );
+				
 				// Save group category
 				if ( isset( $_POST[ 'bookacti_variable_groups' ][ $key ] ) ) {
 					$variable_groups = 'parent';
@@ -777,18 +775,16 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 					} else if( $_POST[ 'bookacti_variable_groups' ][ $key ] === 'none' ) {
 						$variable_groups = 'none';
 					}
-					bookacti_log( stripslashes( $variable_groups ) );
 					$updated = update_post_meta( $variation_id, 'bookacti_variable_groups', stripslashes( $variable_groups ) );
-					bookacti_log( $updated );
 				}
 				
 				// Save 'groups_only' checkbox
 				$variable_groups_only = isset( $_POST[ 'bookacti_variable_groups_only' ][ $key ] ) && $_POST[ 'bookacti_variable_groups_only' ][ $key ] === 'yes' ? 'yes' : 'no';
-				update_post_meta( $variation_id, 'bookacti_variable_groups_only', $variable_groups_only );
+				update_post_meta( $variation_id, 'bookacti_variable_groups_only', stripslashes( $variable_groups_only ) );
 				
 				// Save 'groups_single_events' checkbox
 				$variable_groups_single_events = isset( $_POST[ 'bookacti_variable_groups_single_events' ][ $key ] ) && $_POST[ 'bookacti_variable_groups_single_events' ][ $key ] === 'yes' ? 'yes' : 'no';
-				update_post_meta( $variation_id, 'bookacti_variable_groups_single_events', $variable_groups_single_events );
+				update_post_meta( $variation_id, 'bookacti_variable_groups_single_events', stripslashes( $variable_groups_single_events ) );
 				
 			}
 		}

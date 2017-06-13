@@ -50,7 +50,7 @@ function bookacti_fill_picked_event_summary( booking_system, start, end, activit
 // Fill activity summary
 function bookacti_fill_picked_activity_summary( booking_system, activity_id, qty ) {
 	
-	var booking_system_id	= booking_system.data( 'booking-system-id' );
+	var booking_system_id = booking_system.attr( 'id' );
 	
 	if( ! activity_id ) {
 		if( pickedEvents[ booking_system_id ] !== undefined ) {
@@ -108,10 +108,30 @@ function bookacti_fill_picked_activity_summary( booking_system, activity_id, qty
 }
 
 
+// Switch booking system to another method
+function bookacti_switch_booking_method( booking_system, booking_method, events ) {
+	if ( booking_method === 'calendar' || $j.inArray( booking_method, bookacti_localized.available_booking_methods ) === -1 ) {
+		bookacti_load_calendar( booking_system, events );
+	} else {
+		booking_system.trigger( 'bookacti_switch_booking_method', [ booking_method, events ] );
+	}
+}
+
+
+// Load the booking system according to booking method
+function bookacti_set_up_booking_method( booking_system, booking_method, events ) {
+	if ( booking_method === 'calendar' || $j.inArray( booking_method, bookacti_localized.available_booking_methods ) === -1 ) {
+		bookacti_set_calendar_up( booking_system, events );
+	} else {
+		booking_system.trigger( 'bookacti_set_up_booking_method_up', [ booking_method, events ] );
+	}
+}
+
+
 // Clear booking system displayed info
 function bookacti_clear_booking_system_displayed_info( booking_system ) {
 	
-	var booking_system_id	= booking_system.data( 'booking-system-id' );
+	var booking_system_id = booking_system.attr( 'id' );
 	
 	//Empty the selected events info
 	booking_system.siblings( '.bookacti-booking-system-inputs' ).find( 'input' ).val('');
@@ -155,7 +175,7 @@ function bookacti_update_settings_from_database( booking_system, template_ids ) 
             // If success
             if( response.status === 'success' && response.settings ) {
 				
-				var booking_method	= booking_system.data( 'booking-method' );
+				var booking_method	= booking_system.data( 'attributes' ).method;
 				
 				if( ( booking_method === 'calendar' 
 					  || ! $j.inArray( booking_method, bookacti_localized.available_booking_methods ) ) 
@@ -164,7 +184,7 @@ function bookacti_update_settings_from_database( booking_system, template_ids ) 
 				} else if( booking_system.attr( 'id' ) === 'bookacti-template-calendar' ) {
 					bookacti_update_calendar_settings( booking_system, response.settings );
 				} else {
-					booking_system.trigger( 'bookacti_update_settings', [ booking_system.data( 'booking-method' ), response.settings ] );
+					booking_system.trigger( 'bookacti_update_settings', [ booking_system.data( 'attributes' ).method, response.settings ] );
 				}
 				
             // If error
@@ -195,8 +215,8 @@ function bookacti_update_settings_from_database( booking_system, template_ids ) 
 //Start a loading (or keep on loading if already loading)
 function bookacti_start_loading_booking_system( booking_system ) {
 	
-	var booking_system_id		= booking_system.data( 'booking-system-id' );
-	var booking_method			= booking_system.data( 'booking-method' );
+	var booking_system_id	= booking_system.attr( 'id' );
+	var booking_method		= booking_system.data( 'attributes' ).method;
 	
 	var loading_div =	'<div class="bookacti-loading-alt">' 
 							+ '<img class="bookacti-loader" src="' + bookacti_localized.plugin_path + '/img/ajax-loader.gif" title="' + bookacti_localized.loading + '" />'
@@ -235,8 +255,8 @@ function bookacti_stop_loading_booking_system( booking_system, force_exit ) {
 	
 	force_exit = force_exit || false;
 	
-	var booking_system_id	= booking_system.data( 'booking-system-id' );
-	var booking_method		= booking_system.data( 'booking-method' );
+	var booking_system_id	= booking_system.attr( 'id' );
+	var booking_method		= booking_system.data( 'attributes' ).method;
 	
 	loadingNumber[ booking_system_id ]--;
 	loadingNumber[ booking_system_id ] = Math.max( loadingNumber[ booking_system_id ], 0 );

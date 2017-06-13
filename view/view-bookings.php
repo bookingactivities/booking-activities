@@ -60,7 +60,7 @@ if( empty( bookacti_fetch_templates() ) ) {
 						.	"data-template-id='"    . esc_attr( $template->id ) . "' "
 						.	selected( $template->id, $default_template, false )
 						. " >"
-						.	esc_html( stripslashes( $template->title ) )
+						.	esc_html( $template->title )
 						. "</div>";
 					
 					$i++;
@@ -98,7 +98,7 @@ if( empty( bookacti_fetch_templates() ) ) {
 				'calendars'	=> array( $default_template ),
 				'activities'=> array(),
 				'method'	=> 'calendar',
-				'id'		=> 'bookings-page',
+				'id'		=> 'booking-system-bookings-page',
 				'classes'	=> 'admin-booking-system'
 			);
     bookacti_get_booking_system( $atts, true );

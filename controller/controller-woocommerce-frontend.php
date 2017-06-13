@@ -142,7 +142,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 						'calendars'	=> array( $template_id ),
 						'activities'=> array( $activity_id ),
 						'method'	=> $booking_method,
-						'id'		=> $product->get_id(),
+						'id'		=> 'booking-system-product-' . $product->get_id(),
 						'classes'	=> 'bookacti-frontend-booking-system bookacti-woocommerce-product-booking-system'
 					);
 			bookacti_get_booking_system( $atts, true );

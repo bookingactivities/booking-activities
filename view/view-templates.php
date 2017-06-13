@@ -41,7 +41,7 @@ echo "<h1>" . esc_html__( 'Calendars', BOOKACTI_PLUGIN_NAME ) . "</h1>";
 									. "' data-template-start='" . esc_attr( $template->start_date )
 									. "' data-template-end='"   . esc_attr( $template->end_date )
 									. "' " . $selected . " >"
-									. esc_html( stripslashes( $template->title ) )
+									. esc_html( $template->title )
 									. "</option>";
 							}
 
@@ -180,7 +180,7 @@ echo "<h1>" . esc_html__( 'Calendars', BOOKACTI_PLUGIN_NAME ) . "</h1>";
 		$categories = array();
 		if( ! empty( $default_template ) ) {
 			$template_id = $default_template;
-			$activity_ids = implode( ',', bookacti_get_activities_by_template_ids( array( $template_id ), true ) );
+			$activity_ids = implode( ',', bookacti_get_activity_ids_by_template_ids( array( $template_id ) ) );
 			$categories = bookacti_get_group_categories_by_template_ids( $template_id );
 			
 			$i=1;
@@ -196,10 +196,13 @@ echo "<h1>" . esc_html__( 'Calendars', BOOKACTI_PLUGIN_NAME ) . "</h1>";
 	<h3><?php esc_html_e( 'Shortcodes', BOOKACTI_PLUGIN_NAME ); ?></h3>
 	<h4><?php esc_html_e( 'Copy and paste them in any post you want:', BOOKACTI_PLUGIN_NAME ); ?></h4>
 	<p>
-		<code>
+		<span id='bookacti-shortcode-form-constructor' class='bookacti-shortcode-constructor' >
 			[bookingactivities_form	calendars='<span class='bookacti-shortcode-calendar-ids'><?php echo esc_html( $template_id ); ?></span>' 
 									activities='<span class='bookacti-shortcode-activity-ids'><?php echo esc_html( $activity_ids ); ?></span>' 
 									groups='<span class='bookacti-shortcode-group-ids'><?php echo esc_html( $category_ids ); ?></span>']
+		</span>
+		<code id='bookacti-shortcode-form' class='bookacti-shortcode' >
+			[bookingactivities_form]
 		</code>
 		<?php 
 			$tip = __( 'This shortcode will display a booking form with this calendar. Users will be able to book an event via this form.', BOOKACTI_PLUGIN_NAME );
@@ -207,10 +210,13 @@ echo "<h1>" . esc_html__( 'Calendars', BOOKACTI_PLUGIN_NAME ) . "</h1>";
 		?>
 	</p>
 	<p>
-		<code>
+		<span id='bookacti-shortcode-calendar-constructor' class='bookacti-shortcode-constructor' >
 			[bookingactivities_calendar	calendars='<span class='bookacti-shortcode-calendar-ids'><?php echo esc_html( $template_id ); ?></span>' 
 										activities='<span class='bookacti-shortcode-activity-ids'><?php echo esc_html( $activity_ids ); ?></span>' 
 										groups='<span class='bookacti-shortcode-group-ids'><?php echo esc_html( $category_ids ); ?></span>']
+		</span>
+		<code id='bookacti-shortcode-calendar' class='bookacti-shortcode' >
+			[bookingactivities_calendar]
 		</code>
 		<?php 
 			$tip = __( 'This shortcode will display this calendar alone. Users will only be able to browse the calendar, they can\'t make booking with it.', BOOKACTI_PLUGIN_NAME );

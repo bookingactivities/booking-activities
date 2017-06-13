@@ -107,6 +107,9 @@
 #bookacti-template-add-first-activity-button img	{ cursor: pointer; max-width: 60px; max-height: 60px; }
 
 
+/***** Shortcode generator *****/
+.bookacti-shortcode-constructor { display: none; }
+
 
 /***** Template dialogs *****/
 /* General */

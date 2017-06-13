@@ -67,11 +67,8 @@ function bookacti_switch_template( selected_template_id ) {
 
 					// SHORTCODE GENERATOR
 						// Update shortcode generator calendars list
-						$j( '.bookacti-shortcode-calendar-ids' ).each( function(){
-							// Display new activities list
-							$j( this ).text( template_id );
-						});
-
+						bookacti_update_shortcode_generator_template_id( template_id );
+						
 						// Update shortcode generator activities list
 						var activity_ids = [];
 						$j( '#bookacti-template-activity-list .activity-row .activity-show-hide img' ).each( function(){
@@ -453,6 +450,17 @@ function bookacti_unselect_event( event, start, all ) {
 }
 
 
+//Update shortcode generator template_id
+function bookacti_update_shortcode_generator_template_id( new_template_id ) {
+	$j( '.bookacti-shortcode-calendar-ids' ).each( function(){
+		// Display new activities list
+		$j( this ).text( new_template_id );
+	});
+	
+	bookacti_refresh_shortcode();
+}
+
+
 //Update shortcode generator activities list
 function bookacti_update_shortcode_generator_activity_ids( activity_ids, is_visible, remove_others ) {
 	
@@ -481,6 +489,8 @@ function bookacti_update_shortcode_generator_activity_ids( activity_ids, is_visi
 		// Display new activities list
 		$j( this ).text( shortcode_activity_ids.join() );
 	});
+	
+	bookacti_refresh_shortcode();
 }
 
 
@@ -512,6 +522,21 @@ function bookacti_update_shortcode_generator_group_ids( category_ids, is_visible
 		// Display new activities list
 		$j( this ).text( shortcode_category_ids.join() );
 	});
+	
+	bookacti_refresh_shortcode();
+}
+
+
+// Refresh shortcodes display
+function bookacti_refresh_shortcode() {
+	$j( '.bookacti-shortcode' ).each( function(){
+		var id			= $j( this ).attr( 'id' );
+		var constructor	= $j( '#' + id + '-constructor' );
+		
+		if( constructor.length ) {
+			$j( this ).html( constructor.text() );
+		}
+	});
 }
 
 
@@ -530,8 +555,8 @@ function bookacti_fetch_events_on_template( template_id, event_id ) {
         dataType: 'json',
         success: function( response ){
 			if( response.status === 'success' ) {
-				json_events = response.events;
-				$j( '#bookacti-template-calendar' ).fullCalendar( 'addEventSource', json_events );
+				json_events['template'] = response.events;
+				$j( '#bookacti-template-calendar' ).fullCalendar( 'addEventSource', json_events['template'] );
 			} else if( response.error === 'not_allowed' ) {
 				alert( bookacti_localized.error_display_event + '\n' + bookacti_localized.error_not_allowed );
 				console.log( response );

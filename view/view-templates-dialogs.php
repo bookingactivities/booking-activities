@@ -7,7 +7,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	$templates = bookacti_fetch_templates();
 	$templates_options = '';
 	foreach( $templates as $template ) {
-		$templates_options .= '<option value="' . esc_attr( $template->id ) . '" >' . esc_html( stripslashes( $template->title ) ) . '</option>';
+		$templates_options .= '<option value="' . esc_attr( $template->id ) . '" >' . esc_html( $template->title ) . '</option>';
 	}
 
 	// Users options list

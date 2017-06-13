@@ -67,11 +67,11 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		
 		$list = '';
 		$activities = bookacti_fetch_activities();
-		$template_activities = bookacti_get_activities_by_template_ids( $template_id );
+		$template_activities = bookacti_get_activity_ids_by_template_ids( $template_id );
 
 		foreach ( $activities as $activity ) {
 			if( in_array( $activity->id, $template_activities ) ) {
-				$title = apply_filters( 'bookacti_translate_text', stripslashes( $activity->title ) );
+				$title = apply_filters( 'bookacti_translate_text', $activity->title );
 
 				$list	.=	"<div class='activity-row'>"
 						.       "<div class='activity-show-hide' >"
@@ -80,7 +80,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 						.       "<div class='activity-container'>"
 						.           "<div "
 						.				"class='fc-event ui-draggable ui-draggable-handle' "
-						.				"data-title='"			. esc_attr( stripslashes( $activity->title ) ) . "' "
+						.				"data-title='"			. esc_attr( $activity->title ) . "' "
 						.				"data-activity-id='"	. esc_attr( $activity->id )				. "' "
 						.				"data-color='"			. esc_attr( $activity->color )			. "' "
 						.				"data-availability='"	. esc_attr( $activity->availability	)	. "' "
@@ -162,7 +162,11 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	function bookacti_get_mixed_template_settings( $template_ids ) {
 		
 		$templates_settings = bookacti_get_templates_settings( $template_ids );
-		$mixed_settings		= array();
+		if( is_numeric( $template_ids ) || ( is_array( $template_ids ) && count( $template_ids ) === 1 ) ) {
+			$template_id = is_numeric( $template_ids ) ? $template_ids : reset( $template_ids );
+			$templates_settings = array( $template_id => $templates_settings );
+		}
+		$mixed_settings	= array();
 		
 		if( count( $templates_settings ) > 1 ) {
 			foreach( $templates_settings as $settings ){
@@ -187,9 +191,9 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			$templates_mixed_range	= bookacti_get_mixed_template_range( $template_ids );
 			$mixed_settings			= array_merge( $mixed_settings, $templates_mixed_range );
 		} else {
-			$mixed_settings = $templates_settings;
+			$mixed_settings = $templates_settings[ $template_id ];
 		}
-
+		
 		return apply_filters( 'bookacti_mixed_template_settings', $mixed_settings, $templates_settings, $template_ids );
 	}
 
@@ -275,7 +279,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	
 	// UPDATE THE LIST OF ACTIVITIES ASSOCIATED TO A TEMPLATE ID
 	function bookacti_bind_activities_to_template( $new_activities, $template_id ) {
-		$old_activities = bookacti_get_activities_by_template_ids( $template_id, true );
+		$old_activities = bookacti_get_activity_ids_by_template_ids( $template_id );
 		
 		// Unset templates already added
 		foreach( $new_activities as $i => $new_activity ) {

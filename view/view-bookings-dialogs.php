@@ -26,7 +26,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 				'calendars'	=> array(),
 				'activities'=> array(),
 				'method'	=> $reschedule_booking_method,
-				'id'		=> 'reschedule'
+				'id'		=> 'booking-system-reschedule'
 			);
 	bookacti_get_booking_system( $atts, true );
 ?>

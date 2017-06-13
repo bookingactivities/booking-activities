@@ -126,7 +126,7 @@ $j( document ).ready( function() {
 		// Foreach booking system
 		$j( '.bookacti-booking-system' ).each( function() {	
 			var booking_system		= $j( this );
-			var booking_system_id	= booking_system.data( 'booking-system-id' );
+			var booking_system_id	= booking_system.attr( 'id' );
 
 			// Handle variations
 			if( booking_system.hasClass( 'bookacti-woocommerce-product-booking-system' ) ) {
@@ -181,10 +181,11 @@ $j( document ).ready( function() {
 //Switch booking system according to variation
 function bookacti_switch_booking_system_according_to_variation( booking_system, variation ) {
 	
-	var parent_template_ids		= booking_system.data( 'init-templates' );
-	var parent_activity_ids		= booking_system.data( 'init-activities' );
-	var parent_booking_method	= booking_system.data( 'init-booking-method' );
-	var booking_system_id		= booking_system.data( 'booking-system-id' );
+	var attributes				= booking_system.data( 'attributes' );
+	var parent_template_ids		= attributes.templates;
+	var parent_activity_ids		= attributes.activities;
+	var parent_booking_method	= attributes.method;
+	var booking_system_id		= attributes.id;
 	
 	booking_system.empty();
 	bookacti_clear_booking_system_displayed_info( booking_system );
@@ -211,13 +212,9 @@ function bookacti_switch_booking_system_according_to_variation( booking_system, 
 		templates_array[booking_system_id]	= template_id.toString().split(',');
 		activities_array[booking_system_id]	= activity_id.toString().split(',');
 		
-		if( booking_method === 'calendar' || $j.inArray( booking_method, bookacti_localized.available_booking_methods ) === -1 ) {
-			bookacti_load_calendar( booking_system, true );
-		} else {
-			booking_system.trigger( 'bookacti_load_booking_system', [ booking_method, false ] );
-		}
+		bookacti_switch_booking_method( booking_system, attributes.method );
 		
-	//Deactivate the booking system if the variation is not an activity
+	// Deactivate the booking system if the variation is not an activity
 	} else {
 		bookacti_deactivate_booking_system( booking_system, variation[ 'variation_id' ] );
 	}
@@ -377,7 +374,7 @@ function bookacti_deactivate_booking_system( booking_system, variation_id ) {
 function bookacti_activate_booking_system( booking_system, variation_id ) {
 	
 	variation_id		= variation_id || undefined;
-	var booking_method	= booking_system.data( 'booking-method' );
+	var booking_method	= booking_system.data( 'attributes' ).method;
 	
 	if( typeof variation_id !== 'undefined' ) {
 		is_activity[ variation_id ] = true;

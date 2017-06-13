@@ -3,6 +3,8 @@ $j=jQuery.noConflict();
 var supportsTouch			= 'ontouchstart' in window || navigator.msMaxTouchPoints;
 
 var json_events             = [];
+var json_activities			= [];
+var json_groups				= [];
 var template_id				= parseInt( $j( '#bookacti-template-picker' ).val() ) || 0;
 var currentMousePos         = { x: -1, y: -1 };
 var isDragging              = false;
@@ -10,7 +12,6 @@ var startOftemplateReached  = false;
 var endOftemplateReached    = false;
 var exceptions              = [];
 var bookings                = [];
-var json_activities			= [];
 var hiddenActivities        = [];
 var selectedCategory		= 'new';
 var selectedEvents			= [];
@@ -25,6 +26,7 @@ var templates_array			= [];
 var activities_array		= [];
 var groups_array			= [];
 
+var calendar_settings		= [];
 var calendarPeriod			= [];
 var is_activity				= [];
 

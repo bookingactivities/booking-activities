@@ -16,16 +16,33 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
  */
 function bookacti_get_booking_system( $atts, $echo = false ) {
 	
+	// Format booking system attributes
 	$atts = bookacti_format_booking_system_attributes( $atts );
+	
+	$user_datetime_object = new DateTime();
+	$user_datetime_object->setTimezone( new DateTimeZone( 'UTC' ) );
+	$fetch_past_events = 0;
+	$context = 'frontend';
+	
+	// Generate bookings system events
+	$events		= bookacti_fetch_events( $atts[ 'calendars' ], $atts[ 'activities' ], $atts[ 'groups' ], $user_datetime_object, $fetch_past_events, $context );
+	$activities	= bookacti_get_activities_by_template_ids( $atts[ 'calendars' ] );
+	$groups		= bookacti_get_groups_events( $atts[ 'calendars' ] );
+	$settings	= bookacti_get_mixed_template_settings( $atts[ 'calendars' ] );
 	
 	if( ! $echo ) {
 		ob_start();
 	}
 	
 	do_action( 'bookacti_before_booking_form', $atts );
-	
 ?>
-	<div class='bookacti-booking-system-container' id='bookacti-booking-system-container-<?php echo esc_attr( $atts[ 'id' ]  ); ?>' data-booking-system-form-id='<?php echo esc_attr( $atts[ 'id' ]  ); ?>' >
+	<div class='bookacti-booking-system-container' id='<?php echo esc_attr( $atts[ 'id' ] . '-container' ); ?>' >
+		<script>
+			json_events[ '<?php echo $atts[ 'id' ]; ?>' ]		= <?php echo json_encode( $events ); ?>;
+			json_activities										= <?php echo json_encode( $activities ); ?>;
+			json_groups[ '<?php echo $atts[ 'id' ]; ?>' ]		= <?php echo json_encode( $groups ); ?>;
+			calendar_settings[ '<?php echo $atts[ 'id' ]; ?>' ] = <?php echo json_encode( $settings ); ?>;
+		</script>
 		<div class='bookacti-booking-system-inputs'>
 			<input type='hidden' name='bookacti_group_id'		value='' />
 			<input type='hidden' name='bookacti_event_id'		value='' />
@@ -42,20 +59,21 @@ function bookacti_get_booking_system( $atts, $echo = false ) {
 		
 		<?php do_action( 'bookacti_before_booking_system', $atts ); ?>
 		
-		<div class='bookacti-booking-system <?php echo esc_attr( $atts[ 'classes' ] ); ?>' 
-			 id='bookacti-booking-system-<?php echo esc_attr( $atts[ 'id' ]  ); ?>'
-			 data-booking-method=		'<?php echo esc_attr( $atts[ 'method' ]  ); ?>'
-			 data-booking-system-id=	'<?php echo esc_attr( $atts[ 'id' ]  ); ?>'
-			 data-templates=			'<?php echo esc_attr( implode( ',', $atts[ 'calendars' ] ) ); ?>'  
-			 data-activities=			'<?php echo esc_attr( implode( ',', $atts[ 'activities' ] ) ); ?>' 
-			 data-groups=				'<?php echo esc_attr( implode( ',', $atts[ 'groups' ] ) ); ?>' 
-			 data-init-booking-method=	'<?php echo esc_attr( $atts[ 'method' ]  ); ?>'
-			 data-init-templates=		'<?php echo esc_attr( implode( ',', $atts[ 'calendars' ] ) ); ?>'
+		<div class=						'bookacti-booking-system <?php echo esc_attr( $atts[ 'classes' ] ); ?>' 
+			 id=						'<?php echo esc_attr( $atts[ 'id' ] ); ?>' 
+			 data-attributes=			'<?php echo esc_attr( json_encode( $atts ) ); ?>'
+			 data-init-booking-method=	'<?php echo esc_attr( $atts[ 'method' ]  ); ?>' 
+			 data-init-templates=		'<?php echo esc_attr( implode( ',', $atts[ 'calendars' ] ) ); ?>' 
 			 data-init-activities=		'<?php echo esc_attr( implode( ',', $atts[ 'activities' ] ) ); ?>' 
 			 data-init-groups=			'<?php echo esc_attr( implode( ',', $atts[ 'groups' ] ) ); ?>' 
-			 data-auto-load=			'<?php echo apply_filters( 'bookacti_booking_system_auto_load', 1, $atts ); ?>'
-			 <?php do_action( 'bookacti_booking_system_attributes', $atts ); ?> >
-
+		>
+			<?php
+				if( $atts[ 'method' ] !== 'calendar' ) {
+					do_action( 'bookacti_display_booking_method_elements', $atts );
+				} else {
+					echo bookacti_retrieve_calendar_elements( $atts[ 'id' ] );
+				}
+			?>
 		</div>
 		
 		<?php do_action( 'bookacti_after_booking_system', $atts ); ?>
@@ -112,7 +130,7 @@ function bookacti_retrieve_calendar_elements( $calendar_id ) {
 	
 	. $before_calendar
 	
-	. "<div class='bookacti-calendar' id='bookacti-calendar-" . esc_attr( $calendar_id ) . "' ></div>"
+	. "<div class='bookacti-calendar' ></div>"
 			
 	. $after_calendar;
 }
@@ -142,36 +160,37 @@ function bookacti_format_booking_system_attributes( $atts = array(), $shortcode 
         'groups_single_events'	=> 0,
         'method'				=> 'calendar',
 		'url'					=> '',
-		'button'				=> __( 'Book', BOOKACTI_PLUGIN_NAME )
+		'button'				=> __( 'Book', BOOKACTI_PLUGIN_NAME ),
+		'auto_load'				=> 1
     ) );
 	
 	// Replace empty mandatory values by default
 	$atts = shortcode_atts( $defaults, $atts, $shortcode );
 	
-	// format templates and activities comma separated list into array
+	// Format comma separated lists into arrays of integers
 	if( is_string( $atts[ 'calendars' ] ) ) {
-		$atts[ 'calendars' ]	= explode( ',', preg_replace( array(
+		$atts[ 'calendars' ]	= array_map( 'intval', explode( ',', preg_replace( array(
 			'/[^\d,]/',    // Matches anything that's not a comma or number.
 			'/(?<=,),+/',  // Matches consecutive commas.
 			'/^,+/',       // Matches leading commas.
 			'/,+$/'        // Matches trailing commas.
-		), '', 	$atts[ 'calendars' ] ) );
+		), '', 	$atts[ 'calendars' ] ) ) );
 	}
 	if( is_string( $atts[ 'activities' ] ) ) {
-		$atts[ 'activities' ]	= explode( ',', preg_replace( array(
+		$atts[ 'activities' ]	= array_map( 'intval', explode( ',', preg_replace( array(
 			'/[^\d,]/',    // Matches anything that's not a comma or number.
 			'/(?<=,),+/',  // Matches consecutive commas.
 			'/^,+/',       // Matches leading commas.
 			'/,+$/'        // Matches trailing commas.
-		), '', 	$atts[ 'activities' ] ) );
+		), '', 	$atts[ 'activities' ] ) ) );
 	}
 	if( is_string( $atts[ 'groups' ] ) ) {
-		$atts[ 'groups' ]	= explode( ',', preg_replace( array(
+		$atts[ 'groups' ]		= array_map( 'intval', explode( ',', preg_replace( array(
 			'/[^\d,]/',    // Matches anything that's not a comma or number.
 			'/(?<=,),+/',  // Matches consecutive commas.
 			'/^,+/',       // Matches leading commas.
 			'/,+$/'        // Matches trailing commas.
-		), '', 	$atts[ 'groups' ] ) );
+		), '', 	$atts[ 'groups' ] ) ) );
 	}
 	
 	// Remove duplicated values
@@ -195,7 +214,7 @@ function bookacti_format_booking_system_attributes( $atts = array(), $shortcode 
 	
 	// Check if desired activities exist
 	if( ! empty( $atts[ 'calendars' ] ) ) {
-		$available_activities = bookacti_get_activities_by_template_ids( $atts[ 'calendars' ] );
+		$available_activities = bookacti_get_activity_ids_by_template_ids( $atts[ 'calendars' ] );
 		foreach( $atts[ 'activities' ] as $i => $activity_id ) {
 			if( ! in_array( intval( $activity_id ), $available_activities ) ) {
 				unset( $atts[ 'activities' ][ $i ] );
@@ -229,6 +248,16 @@ function bookacti_format_booking_system_attributes( $atts = array(), $shortcode 
 		}
 	}
 	
+	// Sanitize groups only switch
+	if( isset( $atts[ 'groups_only' ] ) ) {
+		$atts[ 'groups_only' ] = boolval( $atts[ 'groups_only' ] ) ? 1 : 0;
+	}
+	
+	// Sanitize groups single events switch
+	if( isset( $atts[ 'groups_single_events' ] ) ) {
+		$atts[ 'groups_single_events' ] = boolval( $atts[ 'groups_single_events' ] ) ? 1 : 0;
+	}
+	
 	// If booking method is set to 'site', get the site default
 	$atts[ 'method' ] = esc_attr( $atts[ 'method' ] );
 	if( $atts[ 'method' ] === 'site' ) {
@@ -241,9 +270,14 @@ function bookacti_format_booking_system_attributes( $atts = array(), $shortcode 
 		$atts[ 'method' ] = 'calendar';
 	}
 	
-	
 	// Give a random id if not supplied
-	$atts[ 'id' ]		= empty( $atts[ 'id' ] )		? esc_attr( rand() ) : esc_attr( $atts[ 'id' ] );
+	if( empty( $atts[ 'id' ] ) ) { 
+		$atts[ 'id' ] = rand(); 
+	}
+	if( substr( strval( $atts[ 'id' ] ), 0, 9 ) !== 'bookacti-' ) {
+		$atts[ 'id' ]	= 'bookacti-' . $atts[ 'id' ];
+	}
+	$atts[ 'id' ]	= esc_attr( $atts[ 'id' ] );
 	
 	// Format classes
 	$atts[ 'classes' ]	= empty( $atts[ 'classes' ] )	? esc_attr( $atts[ 'classes' ] ) : '';
@@ -258,16 +292,10 @@ function bookacti_format_booking_system_attributes( $atts = array(), $shortcode 
 		$atts[ 'button' ] = esc_html( sanitize_text_field( $atts[ 'button' ] ) );
 	}
 	
-	// Sanitize groups only switch
-	if( isset( $atts[ 'groups_only' ] ) ) {
-		$atts[ 'groups_only' ] = boolval( $atts[ 'groups_only' ] ) ? 1 : 0;
+	// Make sure auto load is 0 or 1
+	if( isset( $atts[ 'auto_load' ] ) ) {
+		$atts[ 'auto_load' ] = boolval( $atts[ 'auto_load' ] ) ? 1 : 0;
 	}
-	
-	// Sanitize groups single events switch
-	if( isset( $atts[ 'groups_single_events' ] ) ) {
-		$atts[ 'groups_single_events' ] = boolval( $atts[ 'groups_single_events' ] ) ? 1 : 0;
-	}
-	
 	
 	return apply_filters( 'bookacti_formatted_booking_system_attributes', $atts, $shortcode );
 }
@@ -380,8 +408,8 @@ function bookacti_create_repeated_events( $event, $shared_data = array(), $user_
 		$shared_data = array(
 			'id'				=> $event->event_id,
 			'template_id'		=> $event->template_id,
-			'title'				=> apply_filters( 'bookacti_translate_text', stripslashes( $event->title ) ),
-			'multilingual_title'=> stripslashes( $event->title ),
+			'title'				=> apply_filters( 'bookacti_translate_text', $event->title ),
+			'multilingual_title'=> $event->title,
 			'allDay'			=> false,
 			'color'				=> $event->color,
 			'activity_id'		=> $event->activity_id,

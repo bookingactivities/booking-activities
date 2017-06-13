@@ -244,7 +244,8 @@ If you don't find the answer you need, please [contact us](http://booking-activi
 * Delete - Deleted events 'occurrence id' since it is not a relevant identifier. All events can be identified by id + start date.
 * Fix - Fixed booking method checks in JS files (misuse of inArray)
 * Fix - Fixed permission error after closing a dialog in template editor
-* Fix - Apostrophe character's in activity name are no more displayed with a backslash in calendar editor
+* Fix - Apostrophe characters in activity name are no more displayed with a backslash in calendar editor
+* Fix - Copy a shortcode in calendar editor now copy only plain text, no more html
 * Delete - bookacti_display_booking_system() function replaced by bookacti_get_booking_system()
 * Actions / Filters / Hooks
   * JS hooks
@@ -259,6 +260,7 @@ If you don't find the answer you need, please [contact us](http://booking-activi
     * Add - bookacti_group_of_events_tab_general_after
     * Add - bookacti_group_category_tab_general_before
     * Add - bookacti_group_category_tab_general_after
+    * Add - bookacti_display_booking_method_elements
 	* Tweak - Merged all booking system parameters into one array in bookacti_before_booking_form, bookacti_booking_system_inputs, bookacti_before_booking_system_title, bookacti_before_booking_system, bookacti_booking_system_attributes, bookacti_after_booking_system, bookacti_before_date_picked_summary, bookacti_after_date_picked_summary, bookacti_after_date_picked, bookacti_booking_system_errors, bookacti_after_booking_system_errors, bookacti_after_booking_form
   * PHP filters
     * Add - bookacti_validate_group_activity_data
@@ -270,10 +272,10 @@ If you don't find the answer you need, please [contact us](http://booking-activi
 	* Tweak - Merged all booking system parameters into one array in bookacti_booking_system_title, bookacti_booking_system_auto_load, bookacti_date_picked_title
 	* Tweak - Added $shortcode parameter to bookacti_formatted_booking_system_attributes
     * Delete - bookacti_shortcode_{$shortcode}_default_parameters replaced by core shortcode_atts_{$shortcode} (not exactly the same use, be careful)
-    * Delete - bookacti_shortcode_atts_{$shortcode} replaced by bookacti_formatted_booking_system_attributes (with new parameter shortcode)
     * Delete - bookacti_shortcode_{$shortcode}_return replaced by bookacti_shortcode_{$shortcode}_output
     * Delete - bookacti_shortcode_{$shortcode}_prevent_execution. Please use remove_shortcode($tag) function instead.
-
+    * Delete - bookacti_shortcode_atts_{$shortcode}, bookacti_booking_system_auto_load and bookacti_booking_system_attributes. Please use bookacti_formatted_booking_system_attributes instead.
+    
 = 1.0.8 - 2017/05/31 =
 * Fix - Fixed events not fetched if your database prefix was not exactly "wp_"
 * Fix - "Create or import activity" dialog is closed before opening a new one. This prevent undesirable display and behavior.

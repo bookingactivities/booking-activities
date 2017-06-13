@@ -83,8 +83,9 @@ function bookacti_filter_bookings_by_templates( booking_system, refresh_calendar
 	
 	refresh_calendar_settings = refresh_calendar_settings || false;
 	
-	var booking_method		= booking_system.data( 'booking-method' );
-	var booking_system_id	= booking_system.data( 'booking-system-id' );
+	var attributes			= booking_system.data( 'attributes' );
+	var booking_method		= attributes.method;
+	var booking_system_id	= attributes.id;
 	
 	// Retrieve the selected templates
 	var selected_templates	= [];
@@ -151,7 +152,7 @@ function bookacti_filter_bookings_by_templates( booking_system, refresh_calendar
 		
 		if( booking_method === 'calendar' || $j.inArray( booking_method, bookacti_localized.available_booking_methods ) === -1 ) {
 			
-			var calendar = $j( '#bookacti-calendar-' + booking_system_id );
+			var calendar = $j( '#' + booking_system_id + ' .bookacti-calendar' );
 			calendar.fullCalendar( 'removeEvents' );
 			
 			if( refresh_calendar_settings ) {
@@ -170,8 +171,7 @@ function bookacti_filter_bookings_by_templates( booking_system, refresh_calendar
 
 // Filter bookings by activity
 function bookacti_filter_bookings_by_activities( booking_system ) {
-	
-	var booking_method = booking_system.data( 'booking-method' );
+	var booking_method = booking_system.data( 'attributes' ).method;
 	
 	hiddenActivities = [];
 	$j( '.bookacti-bookings-filter-activity' ).each( function(){
@@ -302,7 +302,7 @@ function bookacti_validate_selected_booking_event( booking_system, quantity ) {
 	//Get event params
 	booking_system	= booking_system || $j( '.bookacti-booking-system' );
 	quantity		= quantity || 0;
-	var booking_system_id = booking_system.data( 'booking-system-id' );
+	var booking_system_id = booking_system.attr( 'id' );
 	var event_id    = booking_system.parent().find( 'input[name="bookacti_event_id"]' ).val();
 	var event_start = booking_system.parent().find( 'input[name="bookacti_event_start"]' ).val();
 	var event_end   = booking_system.parent().find( 'input[name="bookacti_event_end"]' ).val();

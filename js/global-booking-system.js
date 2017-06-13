@@ -6,34 +6,21 @@ $j( document ).ready( function() {
 		$j( '.bookacti-booking-system' ).each( function() { 
 			
 			// Retrieve the info required to show the desired events
-			var booking_system		= $j( this );
-			var booking_system_id	= booking_system.data( 'booking-system-id' );
-			var booking_method		= booking_system.data( 'booking-method' );
-			var templates			= booking_system.data( 'templates' ).toString();
-			var activities			= booking_system.data( 'activities' ).toString();
-			var groups				= booking_system.data( 'groups' ).toString();
-			var auto_load			= parseInt( booking_system.data( 'auto-load' ) );
+			var booking_system	= $j( this );
+			var attributes		= booking_system.data( 'attributes' );
 			
-			is_activity[booking_system_id]		= true;
-			loadingNumber[booking_system_id]	= 0;
-			pickedEvents[booking_system_id]		= [];
+			is_activity[attributes.id]		= true;
+			loadingNumber[attributes.id]	= 0;
+			pickedEvents[attributes.id]		= [];
 			
-			if( templates_array[booking_system_id] === undefined )	{ templates_array[booking_system_id] = []; }
-			if( activities_array[booking_system_id] === undefined )	{ activities_array[booking_system_id] = []; }
-			if( groups_array[booking_system_id] === undefined )		{ groups_array[booking_system_id] = []; }
-			
-			if( templates.length )	{ templates_array[booking_system_id]	= templates.split(','); }
-			if( activities.length )	{ activities_array[booking_system_id]	= activities.split(','); }
-			if( groups.length )		{ groups_array[booking_system_id]		= groups.split(','); }
+			templates_array[attributes.id]	= attributes.templates;
+			activities_array[attributes.id]	= attributes.activities;
+			groups_array[attributes.id]		= attributes.groups;
 			
 			// Load the booking system
-			if( auto_load && booking_system_id !== 'reschedule' ) {
-				if( booking_method === 'calendar' || $j.inArray( booking_method, bookacti_localized.available_booking_methods ) === -1 ) {
-					bookacti_load_calendar( booking_system, true );
-				} else {
-					booking_system.trigger( 'bookacti_load_booking_system', [ booking_method, false ] );
-				}
-			}			
+			if( attributes.auto_load && attributes.id !== 'bookacti-booking-system-reschedule' ) {
+				bookacti_set_up_booking_method( booking_system, attributes.method, json_events[ attributes.id ] );
+			}
 		});		
 	}
 

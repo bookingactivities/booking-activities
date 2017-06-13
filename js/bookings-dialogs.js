@@ -543,7 +543,7 @@ function bookacti_dialog_reschedule_booking( booking_id ) {
 	
 	var row				= $j( '.bookacti-booking-action[data-booking-id="' + booking_id + '"]' ).parents( 'tr' );
 	var booking_system	= $j( '#bookacti-booking-system-reschedule.bookacti-booking-system' );
-	var booking_method	= booking_system.data( 'booking-method' );
+	var booking_method	= booking_system.data( 'attributes' ).method;
 	var booking_quantity= 0;
 	
 	// Display a loader
@@ -591,11 +591,7 @@ function bookacti_dialog_reschedule_booking( booking_id ) {
 				booking_system.trigger( 'bookacti_before_booking_system_loads', [ response.event_settings ] );
 				
 				// Load booking system with new data
-				if ( booking_method === 'calendar' || $j.inArray( booking_method, bookacti_localized.available_booking_methods ) === -1 ) {
-					bookacti_load_calendar( booking_system, true );
-				} else {
-					booking_system.trigger( 'bookacti_load_booking_system', [ booking_method, false ] );
-				}
+				bookacti_switch_booking_method( booking_system, booking_method );
 				
 				//Open the modal dialog
 				$j( '#bookacti-reschedule-booking-dialog' ).dialog( 'open' );
@@ -673,9 +669,9 @@ function bookacti_dialog_reschedule_booking( booking_id ) {
 
 								if( is_bookings_page ) {
 									row.remove();
-									$j( '#bookacti-calendar-bookings-page' ).fullCalendar( 'removeEvents' );
+									$j( '#bookacti-booking-system-bookings-page .bookacti-calendar' ).fullCalendar( 'removeEvents' );
 									var context = is_bookings_page ? 'booking_page' : 'frontend';
-									bookacti_fetch_calendar_events( $j( '#bookacti-calendar-bookings-page' ), true, context );
+									bookacti_fetch_calendar_events( $j( '#bookacti-booking-system-bookings-page .bookacti-calendar' ), true, context );
 								}
 								
 								$j( 'body' ).trigger( 'bookacti_booking_rescheduled', [ booking_id, event_start, event_end, response ] );

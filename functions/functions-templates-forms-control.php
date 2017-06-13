@@ -187,7 +187,7 @@ function bookacti_format_event_settings( $event_settings ) {
 	$settings = array();
 	foreach( $default_settings as $setting_key => $setting_default_value ){
 		if( is_string( $event_settings[ $setting_key ] ) ){ $event_settings[ $setting_key ] = stripslashes( $event_settings[ $setting_key ] ); }
-		$settings[ $setting_key ] = ( $event_settings[ $setting_key ] !== null ) ? stripslashes( $event_settings[ $setting_key ] ) : $setting_default_value;
+		$settings[ $setting_key ] = ( $event_settings[ $setting_key ] !== null ) ? $event_settings[ $setting_key ] : $setting_default_value;
 	}
 	
 	return apply_filters( 'bookacti_event_settings', $settings );

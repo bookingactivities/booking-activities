@@ -16,7 +16,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		if( $is_nonce_valid && $is_allowed && $template_id ) {
 			
 			$event_id	= intval( $_POST['event_id'] );
-			$events		= bookacti_fetch_events( $template_id, $event_id );
+			$events		= bookacti_fetch_events_for_calendar_editor( $template_id, $event_id );
 			wp_send_json( array( 'status' => 'success', 'events' => $events ) );
 			
 		} else {
@@ -777,7 +777,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			$groups_events	= bookacti_get_groups_events( $template_id );
 			$settings		= bookacti_get_templates_settings( $template_id );
 			$exceptions		= bookacti_get_exceptions( $template_id );
-			$events			= bookacti_fetch_events( $template_id );
+			$events			= bookacti_fetch_events_for_calendar_editor( $template_id );
 			
 			wp_send_json( array(
 					'status'			=> 'success', 
@@ -1003,8 +1003,8 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 			if( $selected_template_id !== $current_template_id ) {
 
-				$new_activities		= bookacti_get_activities_by_template_ids( $selected_template_id, false );
-				$current_activities	= bookacti_get_activities_by_template_ids( $current_template_id, true );
+				$new_activities		= bookacti_get_activities_by_template_ids( $selected_template_id );
+				$current_activities	= bookacti_get_activity_ids_by_template_ids( $current_template_id );
 				
 				// Check activity permissions, and remove not allowed activity ids
 				foreach( $new_activities as $new_activity_id => $new_activity ) {

@@ -6,14 +6,14 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 // Return the HTML code to display activities by templates in the bookings page
 function bookacti_get_activities_html_for_booking_page( $template_ids, $activity_ids = array() ) {
 
-	$activities = bookacti_get_activities_by_template_ids( $template_ids, false );
+	$activities = bookacti_get_activities_by_template_ids( $template_ids );
 	$j = 0;
 	$html = '';
 	foreach ( $activities as $activity ) {	
 		if( ( empty( $activity_ids )  && $j === 0 ) || in_array( $activity->id, $activity_ids ) ) { $selected = 'selected'; } else { $selected = ''; }
 
 		// Retrieve activity title
-		$title = apply_filters( 'bookacti_translate_text', stripslashes( $activity->title ) );
+		$title = apply_filters( 'bookacti_translate_text', $activity->title );
 
 		// Display activity
 		$html.=	"<div class='bookacti-bookings-filter-activity bookacti-bookings-filter' "
@@ -420,8 +420,8 @@ function bookacti_send_email_refund_request( $booking_id, $user_message = false 
 	$data['user']['email']	= '<a href="mailto:' . esc_attr( $user->user_email ) . '">' . esc_html( $user->user_email ) . '</a>';
 	
 	$data['booking']					= array();
-	$data['booking']['template_name']	= stripslashes( $template->title ) . ' (' . _x( 'id', 'An id is a unique identification number' ) . ': ' . $template->id . ')';
-	$data['booking']['activity_name']	= apply_filters( 'bookacti_translate_text', stripslashes( $activity->title ) ) . ' (' . _x( 'id', 'An id is a unique identification number' ) . ': ' . $activity->id . ')';
+	$data['booking']['template_name']	= $template->title . ' (' . _x( 'id', 'An id is a unique identification number' ) . ': ' . $template->id . ')';
+	$data['booking']['activity_name']	= apply_filters( 'bookacti_translate_text', $activity->title ) . ' (' . _x( 'id', 'An id is a unique identification number' ) . ': ' . $activity->id . ')';
 	$data['booking']['event_start']		= bookacti_format_datetime( $booking->event_start );
 	$data['booking']['event_end']		= bookacti_format_datetime( $booking->event_end );
 	$data['booking']['quantity']		= $booking->quantity;

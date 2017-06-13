@@ -42,10 +42,11 @@ function bookacti_controller_fetch_events() {
 		$user_datetime_object = DateTime::createFromFormat( 'Y-m-d H:i:s', $user_datetime );
 		$user_datetime_object->setTimezone( new DateTimeZone( 'UTC' ) );
 		
-		$events				= bookacti_fetch_calendar_events( $activities, $templates, $user_datetime_object, $fetch_past_events, $context );
-		$activities_array	= bookacti_get_activities_by_template_ids( $templates, false );
+		$events				= bookacti_fetch_events( $templates, $activities, $user_datetime_object, $fetch_past_events, $context );
+		$activities_array	= bookacti_get_activities_by_template_ids( $templates );
+		$groups_array		= bookacti_get_groups_of_events_by_template_ids( $templates );
 
-		wp_send_json( array( 'status' => 'success', 'events' => $events, 'activities' => $activities_array ) );
+		wp_send_json( array( 'status' => 'success', 'events' => $events, 'activities' => $activities_array, 'groups' => $groups_array ) );
 	} else {
 		wp_send_json( array( 'status' => 'failed', 'error' => 'not_allowed' ) );
 	}
