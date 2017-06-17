@@ -6,20 +6,20 @@ $j( document ).ready( function() {
 		$j( '.bookacti-booking-system' ).each( function() { 
 			
 			// Retrieve the info required to show the desired events
-			var booking_system	= $j( this );
-			var attributes		= booking_system.data( 'attributes' );
+			var booking_system		= $j( this );
+			var booking_system_id	= booking_system.attr( 'id' );
+			var attributes			= calendars_data[ booking_system_id ];
 			
-			is_activity[attributes.id]		= true;
-			loadingNumber[attributes.id]	= 0;
-			pickedEvents[attributes.id]		= [];
-			
-			templates_array[attributes.id]	= attributes.templates;
-			activities_array[attributes.id]	= attributes.activities;
-			groups_array[attributes.id]		= attributes.groups;
+			loadingNumber[ booking_system_id ]	= 0;
+			pickedEvents[ booking_system_id ]	= [];
 			
 			// Load the booking system
-			if( attributes.auto_load && attributes.id !== 'bookacti-booking-system-reschedule' ) {
-				bookacti_set_up_booking_method( booking_system, attributes.method, json_events[ attributes.id ] );
+			if( attributes.auto_load && booking_system_id !== 'bookacti-booking-system-reschedule' ) {
+				if( bookacti_localized.when_events_load === 'on_page_load' ) {
+					bookacti_booking_method_set_up( booking_system, attributes.method, false );
+				} else {
+					bookacti_reload_booking_system( booking_system );
+				}
 			}
 		});		
 	}

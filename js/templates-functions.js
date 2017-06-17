@@ -813,8 +813,8 @@ function bookacti_unbind_occurrences( event, occurences ) {
         data: { 'action': 'bookactiUnbindOccurences', 
                 'unbind': occurences,
                 'event_id': event.id,
-                'event_start': event.start.format( 'YYYY-MM-DD[T]HH:mm:ss' ),
-                'event_end': event.end.format( 'YYYY-MM-DD[T]HH:mm:ss' ),
+                'event_start': event.start.format( 'YYYY-MM-DD HH:mm:ss' ),
+                'event_end': event.end.format( 'YYYY-MM-DD HH:mm:ss' ),
 				'nonce': bookacti_localized.nonce_unbind_occurences
             },
         type: 'POST',

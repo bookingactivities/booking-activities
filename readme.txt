@@ -240,27 +240,32 @@ If you don't find the answer you need, please [contact us](http://booking-activi
 == Changelog ==
 
 = 1.1.0 =
+* Optimization - Calendars are now loaded faster and on page load (possibility to load after page load in BA settings)
+* Feature - Calendars events are now related to your business timezone, and no longer to users' timezone. Customers around the world cannot see / book a past event because of time offset. Set this parameter in BA settings page.
 * Delete - Removed trashes from editor, to delete calendars, activities and events please use their respective settings dialogs
-* Delete - Deleted events 'occurrence id' since it is not a relevant identifier. All events can be identified by id + start date.
+* Delete - Deleted events 'occurrence id' since it is not a relevant identifier. All events can be identified by id + start + end datetimes.
 * Fix - Fixed booking method checks in JS files (misuse of inArray)
 * Fix - Fixed permission error after closing a dialog in template editor
-* Fix - Apostrophe characters in activity name are no more displayed with a backslash in calendar editor
-* Fix - Copy a shortcode in calendar editor now copy only plain text, no more html
-* Delete - bookacti_display_booking_system() function replaced by bookacti_get_booking_system()
-* Actions / Filters / Hooks
+* Fix - Apostrophe characters in template / activity / events names are now correctly displayed
+* Fix - Copy a shortcode in calendar editor now copy only plain text, no more undesired html
+* Delete - bookacti_display_booking_system() function replaced by bookacti_get_booking_system() which MUST be used to display a booking system
+* Hooks changes:
   * JS hooks
-    * Add - bookacti_refresh_selected_events
+    * Add - bookacti_booking_method_set_up
+    * Add - bookacti_booking_method_fill_with_events
+    * Add - bookacti_after_calendar_set_up
     * Add - bookacti_select_event
     * Add - bookacti_unselect_event
+    * Add - bookacti_refresh_selected_events
     * Add - bookacti_validate_group_of_events_form
     * Add - bookacti_validate_group_category_form
     * Deleted - bookacti_validate_selected_event replaced by bookacti_validate_picked_event
+    * Deleted - bookacti_activate_booking_system replaced by bookacti_rerender_events
   * PHP actions
     * Add - bookacti_group_of_events_tab_general_before
     * Add - bookacti_group_of_events_tab_general_after
     * Add - bookacti_group_category_tab_general_before
     * Add - bookacti_group_category_tab_general_after
-    * Add - bookacti_display_booking_method_elements
 	* Tweak - Merged all booking system parameters into one array in bookacti_before_booking_form, bookacti_booking_system_inputs, bookacti_before_booking_system_title, bookacti_before_booking_system, bookacti_booking_system_attributes, bookacti_after_booking_system, bookacti_before_date_picked_summary, bookacti_after_date_picked_summary, bookacti_after_date_picked, bookacti_booking_system_errors, bookacti_after_booking_system_errors, bookacti_after_booking_form
   * PHP filters
     * Add - bookacti_validate_group_activity_data
@@ -269,6 +274,7 @@ If you don't find the answer you need, please [contact us](http://booking-activi
     * Add - bookacti_validate_group_of_events_data
     * Add - bookacti_group_of_events_default_settings
     * Add - bookacti_group_of_events_settings
+    * Add - bookacti_get_booking_method_html
 	* Tweak - Merged all booking system parameters into one array in bookacti_booking_system_title, bookacti_booking_system_auto_load, bookacti_date_picked_title
 	* Tweak - Added $shortcode parameter to bookacti_formatted_booking_system_attributes
     * Delete - bookacti_shortcode_{$shortcode}_default_parameters replaced by core shortcode_atts_{$shortcode} (not exactly the same use, be careful)

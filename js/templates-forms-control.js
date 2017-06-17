@@ -41,7 +41,7 @@ $j( document ).ready( function() {
 
 	// Enable or disable repetition and exception parts of the form
 	$j( '#bookacti-event-repeat-freq, #bookacti-event-repeat-from, #bookacti-event-repeat-to' ).off().on( 'change', function() { 
-		bookacti_validate_event_repetition_data( event.start, event.end );
+		bookacti_validate_event_repetition_data();
 	});
 	
 });
@@ -360,8 +360,8 @@ function bookacti_validate_event_repetition_data( event_start, event_end ) {
     if( ! isNaN( repeat_to )    && repeat_to    !== ''  && repeat_to !== null )     { valid_form.isRepeatTo = true; }
     if( valid_form.isRepeatFrom && valid_form.isRepeatTo && ( repeat_from < repeat_to ) )					{ valid_form.isFromBeforeTo = true; }
     if( valid_form.isRepeated ) {
-		if(( event_start.format( 'YYYY-MM-DD' ) >= repeat_from.format( 'YYYY-MM-DD' ) ) 
-		&& ( event_end.format( 'YYYY-MM-DD' )	<= repeat_to.format( 'YYYY-MM-DD' ) ) ){ 
+		if(( event_start.substr( 0, 10 ) >= repeat_from.format( 'YYYY-MM-DD' ) ) 
+		&& ( event_end.substr( 0, 10 )	<= repeat_to.format( 'YYYY-MM-DD' ) ) ){ 
         valid_form.isEventBetweenFromAndTo = true; 
 		}
     }

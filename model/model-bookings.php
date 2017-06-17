@@ -256,12 +256,10 @@ function bookacti_get_booking_by_id( $booking_id ) {
 function bookacti_get_booking_data( $booking_id ) {
 	global $wpdb;
 	
-	$query	= 'SELECT B.quantity, E.id as event_id, E.template_id, E.activity_id, EG.category_id '
-			. ' FROM ' . BOOKACTI_TABLE_ACTIVITIES . ' as A, ' . BOOKACTI_TABLE_EVENTS . ' as E, ' . BOOKACTI_TABLE_BOOKINGS . ' as B, ' . BOOKACTI_TABLE_BOOKING_GROUPS . ' as BG, ' . BOOKACTI_TABLE_EVENT_GROUPS . ' as EG '
+	$query	= 'SELECT B.quantity, E.id as event_id, E.template_id, E.activity_id, B.group_id as booking_group '
+			. ' FROM ' . BOOKACTI_TABLE_ACTIVITIES . ' as A, ' . BOOKACTI_TABLE_EVENTS . ' as E, ' . BOOKACTI_TABLE_BOOKINGS . ' as B '
 			. ' WHERE E.activity_id = A.id '
 			. ' AND B.event_id = E.id '
-			. ' AND B.group_id = BG.id '
-			. ' AND BG.event_group_id = EG.id '
 			. ' AND B.id = %d ';
 	$prep	= $wpdb->prepare( $query, $booking_id );
 	$booking_system_info = $wpdb->get_row( $prep, ARRAY_A );

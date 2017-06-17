@@ -114,6 +114,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	function bookacti_add_booking_system_in_single_product_page() {
 
 		global $product;
+		
 		$is_activity = bookacti_product_is_activity( $product );
 		
 		if( $is_activity ) {
@@ -121,14 +122,15 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			$booking_method	= get_post_meta( $product->get_id(), '_bookacti_booking_method', true );
 			$template_id	= get_post_meta( $product->get_id(), '_bookacti_template', true );
 			$activity_id	= get_post_meta( $product->get_id(), '_bookacti_activity', true );
+			$groups_id		= get_post_meta( $product->get_id(), '_bookacti_groups', true );
 			
 			// Convert 'site' booking methods to actual booking method
 			// And make sure the resulting booking method exists
 			$available_booking_methods = bookacti_get_available_booking_methods();
-			if( ! in_array( $booking_method, array_keys ( $available_booking_methods ) ) ) {
+			if( ! in_array( $booking_method, array_keys( $available_booking_methods ) ) ) {
 				if( $booking_method === 'site' ) {
 					$site_booking_method = bookacti_get_setting_value( 'bookacti_general_settings', 'booking_method' );
-					if( in_array( $site_booking_method, array_keys ( $available_booking_methods ) ) ) {
+					if( in_array( $site_booking_method, array_keys( $available_booking_methods ) ) ) {
 						$booking_method = $site_booking_method;
 					} else {
 						$booking_method = 'calendar';
@@ -141,7 +143,9 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			$atts = array( 
 						'calendars'	=> array( $template_id ),
 						'activities'=> array( $activity_id ),
+						'groups'	=> array( $groups_id ),
 						'method'	=> $booking_method,
+						'auto_load'	=> $product->is_type( 'variable' ) ? 0 : 1,
 						'id'		=> 'booking-system-product-' . $product->get_id(),
 						'classes'	=> 'bookacti-frontend-booking-system bookacti-woocommerce-product-booking-system'
 					);
@@ -526,7 +530,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 				if( ! empty( $cart_contents ) ) {
 
-					$cart_keys = array_keys ( $cart_contents );
+					$cart_keys = array_keys( $cart_contents );
 					
 					foreach ( $cart_keys as $key ) {
 						if( isset( $cart_contents[$key]['_bookacti_options'] ) && isset( $cart_contents[$key]['_bookacti_options']['bookacti_booking_id'] ) ) {
@@ -610,7 +614,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 				if( ! empty( $cart_contents ) ) {
 
-					$cart_keys = array_keys ( $cart_contents );
+					$cart_keys = array_keys( $cart_contents );
 
 					//Check if each cart item has expired, and if so, reduce its quantity to 0 (delete it)
 					$nb_deleted_cart_item = 0;

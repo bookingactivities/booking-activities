@@ -74,7 +74,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			// Remove templates current user is not allowed to manage
 			foreach( $template_ids as $i => $template_id ){
 				if( ! bookacti_user_can_manage_template( $template_id ) ){
-					unset( $template_ids[$i] );
+					unset( $template_ids[ $i ] );
 				}
 			}
 			// If none remains, disallow the action
@@ -83,17 +83,35 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		
 		if( $is_nonce_valid && $is_allowed ) {
 			
-			// Get selected activities and format them
-			$activity_ids = bookacti_ids_to_array( $_POST[ 'activity_ids' ] );
-			
 			// Change default template to the first selected
 			bookacti_update_user_default_template( $template_ids[ 0 ] );
 			
 			// Actvity filters change depending on the templates selection, 
 			// this retrieve the HTML for activity filters corresponding to templates selection
-			$activities_html = bookacti_get_activities_html_for_booking_page( $template_ids, $activity_ids );
+			$activities_html = bookacti_get_activities_html_for_booking_page( $template_ids );
 			
-			wp_send_json( array( 'status' => 'success', 'activities_html' => $activities_html ) );
+			// Get calendar settings
+			$settings	= bookacti_get_mixed_template_settings( $template_ids );
+
+			// Gets calendar content: events, activities and groups
+			$events		= bookacti_fetch_events( $template_ids, array(), array(), 1, 'booking_page' );
+			$activities	= bookacti_get_activities_by_template_ids( $template_ids );
+			$groups		= bookacti_get_groups_events( $template_ids );
+			
+			$activity_ids	= bookacti_get_activity_ids_by_template_ids( $template_ids );
+			$groups_ids		= bookacti_get_group_category_ids_by_template_ids( $template_ids );
+			
+			wp_send_json( array( 
+				'status'		=> 'success', 
+				'activities_html' => $activities_html, 
+				'events'		=> $events, 
+				'activities'	=> $activities, 
+				'groups'		=> $groups,
+				'calendar_ids'	=> $template_ids,
+				'activity_ids'	=> $activity_ids,
+				'groups_ids'	=> $groups_ids,
+				'settings'		=> $settings
+			) );
 		} else {
 			wp_send_json( array( 'status' => 'failed', 'error' => 'not_allowed' ) );
 		}
@@ -267,6 +285,8 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 				$refunded = bookacti_send_email_refund_request( $booking_id, $refund_message );
 				if( $refunded ) {
 					$refunded = array( 'status' => 'success', 'new_state' => 'refund_requested' );
+				} else {
+					$refunded = array( 'status' => 'failed', 'error' => 'cannot_send_email' );
 				}
 			} else {
 				$refunded = apply_filters( 'bookacti_refund_booking', array( 'status' => 'failed' ), $booking_id, $refund_action, $refund_message );
@@ -280,11 +300,14 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 				if( $updated ) {
 					do_action( 'bookacti_booking_state_changed', $booking_id, $new_state, array( 'refund_action' => $refund_action ) );
 				}
-
+				
 				// Get new booking actions
 				$admin_or_front = $is_admin ? 'both' : 'front';
 				$actions_html	= bookacti_get_booking_actions_html( $booking_id, $admin_or_front );
 				$refunded[ 'new_actions_html' ] = $actions_html;
+				
+				// Get new booking state formatted
+				$refunded[ 'formatted_state' ] = bookacti_format_booking_state( $new_state );
 			}
 
 			wp_send_json( $refunded );

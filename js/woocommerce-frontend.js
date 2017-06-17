@@ -66,75 +66,25 @@ $j( document ).ready( function() {
 	});
 	
 	
-	// Update booking row after frontend coupon refund
-	$j( 'body' ).on( 'bookacti_booking_refunded', function( e, booking_id, refund_action, refund_message, refund_data, response ){
-		
-		if( refund_action === 'auto' ) {
-			// Set a message to feedback refunds
-			refund_data.message += bookacti_localized.advice_booking_refunded;
-		
-		} else if( refund_action === 'coupon' ) {
-			
-			// Set a message to feedback refunds
-			refund_data.message += bookacti_localized.advice_booking_refunded;
-			refund_data.message += '<br/>' + bookacti_localized.advice_coupon_created.replace( '%1$s', '<strong>' + response.coupon_amount + '</strong>' );
-			refund_data.message += '<br/>' + bookacti_localized.advice_coupon_code.replace( '%1$s', '<strong>' + response.coupon_code + '</strong>' );
-		
-		
-			var row = $j( '.bookacti-booking-actions[data-booking-id="' + booking_id + '"]' ).parents( 'tr' );
-
-			// Add coupon code on order details
-			if( row.length && response.coupon_code ) {
-
-				var meta_list = row.find( 'ul.wc-item-meta' );
-				if( meta_list.length ) {
-					if( meta_list.find( '.wc-item-meta-value.wc-item-meta-bookacti_refund_coupon' ).length ) {
-						meta_list.find( '.wc-item-meta-value.wc-item-meta-bookacti_refund_coupon' ).html( response.coupon_code );
-					} else {
-						var coupon_code_meta = 
-							'<li>'
-						+		'<strong class="wc-item-meta-label wc-item-meta-bookacti_refund_coupon">' + bookacti_localized.coupon_code + ':</strong>'
-						+		'<span class="wc-item-meta-value wc-item-meta-bookacti_refund_coupon" >' + response.coupon_code + '</span>'
-						+	'</li>';
-						meta_list.append( coupon_code_meta );
-					}
-				}
-
-				// WOOCOMMERCE 3.0.0 backward compatibility
-				if( row.find( '.variation' ).length ) {
-					if( $j( 'dd.variation-bookacti_refund_coupon' ).length ) {
-						$j( 'dd.variation-bookacti_refund_coupon p' ).html( response.coupon_code );
-					} else {
-						var coupon_code_label = $j( '<dt />', {
-							class: 'variation-bookacti_refund_coupon',
-							text: bookacti_localized.coupon_code + ':'
-						});
-						var coupon_code_value = $j( '<dd />', {
-							class: 'variation-bookacti_refund_coupon'
-						}).append( $j( '<p />', { text: response.coupon_code } ) );
-						row.find( '.variation' ).append( coupon_code_label );
-						row.find( '.variation' ).append( coupon_code_value );
-					}
-				}
-			}
-		}
-	});
-	
-	
 	//Check if booking systems exist before anything
 	if ( $j( 'body.woocommerce form.cart .bookacti-booking-system' ).length ) { 
-		// Foreach booking system
+		
+		// Handle variations
 		$j( '.bookacti-booking-system' ).each( function() {	
 			var booking_system		= $j( this );
 			var booking_system_id	= booking_system.attr( 'id' );
-
-			// Handle variations
-			if( booking_system.hasClass( 'bookacti-woocommerce-product-booking-system' ) ) {
-				//Deactivate the booking system if no variation are selected
+			
+			
+			var is_variable = booking_system.parents( '.variations_form' ).length;
+			if( booking_system.hasClass( 'bookacti-woocommerce-product-booking-system' ) && is_variable ) {
+				// Deactivate the booking system if no variation are selected
 				booking_system.parents( '.variations_form' ).on( 'reset_data', function() { 
-					bookacti_deactivate_booking_system( booking_system, booking_system_id );
+					bookacti_deactivate_booking_system( booking_system );
 				});
-
+				
+				// Save the parent data
+				parent_calendar_data[ booking_system_id ] = calendars_data[ booking_system_id ];
+				
 				//Change the booking system if a variation is selected
 				booking_system.parents( '.variations_form' ).find( '.single_variation_wrap' ).on( 'show_variation', function( event, variation ) { 
 					bookacti_switch_booking_system_according_to_variation( booking_system, variation );
@@ -142,7 +92,8 @@ $j( document ).ready( function() {
 			}
 		});
 	}
-		
+	
+	
 	//Limit the max quantity depending on the selected event
 	$j( 'body.woocommerce form.cart' ).on( 'bookacti_event_click', '.bookacti-booking-system', function( e, event ) {
 		if( $j( this ).parents( 'form' ).find( '.quantity .qty' ).length ) {
@@ -181,11 +132,7 @@ $j( document ).ready( function() {
 //Switch booking system according to variation
 function bookacti_switch_booking_system_according_to_variation( booking_system, variation ) {
 	
-	var attributes				= booking_system.data( 'attributes' );
-	var parent_template_ids		= attributes.templates;
-	var parent_activity_ids		= attributes.activities;
-	var parent_booking_method	= attributes.method;
-	var booking_system_id		= attributes.id;
+	var booking_system_id		= booking_system.attr( 'id' );
 	
 	booking_system.empty();
 	bookacti_clear_booking_system_displayed_info( booking_system );
@@ -196,27 +143,31 @@ function bookacti_switch_booking_system_according_to_variation( booking_system, 
 	&&  variation[ 'variation_is_active' ] 
 	&&  variation[ 'variation_is_visible' ] ) {
 		
+		is_activity[ variation[ 'variation_id' ] ] = true;
 		bookacti_activate_booking_system( booking_system, variation[ 'variation_id' ] );
 
-		var template_id		= variation[ 'bookacti_template_id' ];
-		var activity_id		= variation[ 'bookacti_activity_id' ];
+		var template_id		= [ variation[ 'bookacti_template_id' ] ];
+		var activity_id		= [ variation[ 'bookacti_activity_id' ] ];
+		var groups_id		= [ variation[ 'bookacti_groups_id' ] ];
 		var booking_method	= variation[ 'bookacti_booking_method' ];
-		if( template_id		=== 'parent' || ! $j.isNumeric( template_id ) ) { template_id = parent_template_ids; }
-		if( activity_id		=== 'parent' || ! $j.isNumeric( activity_id ) ) { activity_id = parent_activity_ids; }
-		if( booking_method	=== 'parent' ) { booking_method	= parent_booking_method; }
-		else if( booking_method	=== 'site' || ! booking_method ) { booking_method = bookacti_localized.site_booking_method; }
 		
-		booking_system.data( 'booking-method', booking_method );
-		booking_system.data( 'templates', template_id );
-		booking_system.data( 'activities', activity_id );
-		templates_array[booking_system_id]	= template_id.toString().split(',');
-		activities_array[booking_system_id]	= activity_id.toString().split(',');
+		if( template_id[0]	=== 'parent' )	{ template_id		= parent_calendar_data[ booking_system_id ].calendars; }
+		if( activity_id[0]	=== 'parent' )	{ activity_id		= parent_calendar_data[ booking_system_id ].activities; }
+		if( groups_id[0]	=== 'parent' )	{ groups_id			= parent_calendar_data[ booking_system_id ].groups; }
+		if( booking_method	=== 'parent' )	{ booking_method	= parent_calendar_data[ booking_system_id ].method; }
+		else if( booking_method	=== 'site' ){ booking_method	= bookacti_localized.site_booking_method; }
 		
-		bookacti_switch_booking_method( booking_system, attributes.method );
+		calendars_data[ booking_system_id ][ 'method' ]		= booking_method;
+		calendars_data[ booking_system_id ][ 'calendars' ]	= template_id;
+		calendars_data[ booking_system_id ][ 'activities' ]	= activity_id;
+		calendars_data[ booking_system_id ][ 'groups' ]		= groups_id;
+		
+		bookacti_reload_booking_system( booking_system );
 		
 	// Deactivate the booking system if the variation is not an activity
 	} else {
-		bookacti_deactivate_booking_system( booking_system, variation[ 'variation_id' ] );
+		is_activity[ variation[ 'variation_id' ] ] = false;
+		bookacti_deactivate_booking_system( booking_system );
 	}
 }
 
@@ -341,7 +292,7 @@ function bookacti_refresh_cart_after_expiration( countdown ) {
 				}
 
 			} else {
-
+				// Tell woocommerce to update checkout
 				$j( 'body' ).trigger( 'update_checkout' );
 			}
 		},
@@ -357,38 +308,21 @@ function bookacti_refresh_cart_after_expiration( countdown ) {
 
 
 //Deactivate booking system
-function bookacti_deactivate_booking_system( booking_system, variation_id ) {
-	
-	variation_id = variation_id || undefined;
-	
-	if( typeof variation_id !== 'undefined' ) {
-		is_activity[ variation_id ] = false;
-	}
-	
+function bookacti_deactivate_booking_system( booking_system ) {
 	booking_system.parent().hide();
 	booking_system.siblings( '.bookacti-booking-system-inputs input' ).prop( 'disabled', true );
 }
 
 
 //Activate booking system
-function bookacti_activate_booking_system( booking_system, variation_id ) {
+function bookacti_activate_booking_system( booking_system ) {
 	
-	variation_id		= variation_id || undefined;
-	var booking_method	= booking_system.data( 'attributes' ).method;
-	
-	if( typeof variation_id !== 'undefined' ) {
-		is_activity[ variation_id ] = true;
-	}
+	var booking_method = calendars_data[ booking_system.attr( 'id' ) ][ 'method' ];
 	
 	booking_system.parent().show();
 	booking_system.siblings( '.bookacti-booking-system-inputs input' ).prop( 'disabled', false );
 	
-	if( booking_method === 'calendar' || $j.inArray( booking_method, bookacti_localized.available_booking_methods ) === -1 ) {
-		bookacti_refresh_calendar_view( booking_system );
-		booking_system.fullCalendar( 'rerenderEvents' );
-	} else {
-		booking_system.trigger( 'bookacti_activate_booking_system', [ booking_method, variation_id ] );
-	}
+	bookacti_booking_method_rerender_events( booking_system, booking_method );
 }
 
 

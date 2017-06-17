@@ -796,7 +796,6 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	 * Load custom variation settings in order to use it in frontend
 	 * 
 	 * @since 1.1.0 (called load_variation_settings_fields before)
-	 * @version 1.1.0
 	 * 
 	 * @param array $variations
 	 * @return array
@@ -814,16 +813,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		return $variations;
 	}
 	add_filter( 'woocommerce_available_variation', 'bookacti_load_variation_settings_fields' );
-	
-	
-// SETTINGS	
-	// Add a mention to booking method tip
-	add_filter( 'bookacti_booking_methods_tip', 'bookacti_add_wc_mention_to_booking_method_tip', 1, 10 );
-	function bookacti_add_wc_mention_to_booking_method_tip( $tip ) {
-		$tip .= '<br/>';
-		$tip .= esc_html__( 'This parameter can be overriden by products settings in woocommerce.', BOOKACTI_PLUGIN_NAME );
-		return $tip;
-	}
+
 	
 
 // ROLES AND CAPABILITIES

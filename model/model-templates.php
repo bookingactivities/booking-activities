@@ -9,7 +9,6 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	 * Fetch all events of a template or an event
 	 * 
 	 * @since 1.1.0 (replace bookacti_fetch_events from 1.0.0)
-	 * @version 1.1.0
 	 * 
 	 * @global wpdb $wpdb
 	 * @param int $template_id
@@ -1228,7 +1227,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	
 	
 	/**
-	 * Retrieve group categories by template id
+	 * Retrieve group categories data by template ids
 	 * 
 	 * @since 1.1.0
 	 * 
@@ -1280,6 +1279,60 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
         $prep		= $wpdb->prepare( $query, $template_ids );
         $categories	= $wpdb->get_results( $prep, $return_type );
 		
+        return $categories;
+	}
+	
+	
+	/**
+	 * Retrieve group category ids by template ids
+	 * 
+	 * @since 1.1.0
+	 * 
+	 * @global wpdb $wpdb
+	 * @param array|int $template_ids
+	 * @param boolean $fetch_inactive
+	 * @return array|boolean
+	 */
+	function bookacti_get_group_category_ids_by_template_ids( $template_ids = array(), $fetch_inactive = false ) {
+		
+		// If empty, take them all
+		if( empty( $template_ids ) ) { 
+			$templates = bookacti_fetch_templates( true );
+			foreach( $templates as $template ) {
+				$template_ids[] = $template->id;
+			}
+		}
+		
+		// Convert numeric to array
+		if( ! is_array( $template_ids ) ){
+			$template_id = intval( $template_ids );
+			$template_ids = array();
+			if( $template_id ) {
+				$template_ids[] = $template_id;
+			}
+		}
+		
+		global $wpdb;
+		
+        $query	= 'SELECT id FROM ' . BOOKACTI_TABLE_GROUP_CATEGORIES 
+				. ' WHERE template_id IN ( ';
+		
+		$i = 1;
+		foreach( $template_ids as $template_id ){
+			$query .= ' %d';
+			if( $i < count( $template_ids ) ) { $query .= ','; }
+			$i++;
+		}
+		
+		$query .= ' )';
+		
+		if( ! $fetch_inactive ) {
+			$query .= ' AND active = 1 ';
+		}
+		
+        $prep		= $wpdb->prepare( $query, $template_ids );
+        $categories	= $wpdb->get_results( $prep, ARRAY_N );
+				
         return $categories;
 	}
 		
@@ -1789,7 +1842,6 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	 * Get an array of all activity ids bound to designated templates
 	 * 
 	 * @since 1.1.0
-	 * @version 1.1.0
 	 * 
 	 * @global wpdb $wpdb
 	 * @param array $template_ids

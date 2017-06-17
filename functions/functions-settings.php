@@ -11,7 +11,9 @@ function bookacti_define_default_settings_constants() {
 	if( ! defined( 'ALLOW_ACTIVITIES_FILTER' ) )				{ define( 'ALLOW_ACTIVITIES_FILTER', '1' ); }
 	if( ! defined( 'SHOW_INACTIVE_BOOKINGS' ) )					{ define( 'SHOW_INACTIVE_BOOKINGS', '0' ); }
 	if( ! defined( 'STARTED_EVENTS_BOOKABLE' ) )				{ define( 'STARTED_EVENTS_BOOKABLE', '0' ); }
+	if( ! defined( 'BOOKACTI_TIMEZONE' ) )						{ $date = new DateTime(); $tz = $date->getTimezone()->getName(); define( 'BOOKACTI_TIMEZONE', $tz ); }
 	if( ! defined( 'BOOKING_METHOD' ) )							{ define( 'BOOKING_METHOD', 'calendar' ); }
+	if( ! defined( 'WHEN_EVENTS_LOAD' ) )						{ define( 'WHEN_EVENTS_LOAD', 'on_page_load' ); }
 	if( ! defined( 'ALLOW_CUSTOMERS_TO_CANCEL' ) )				{ define( 'ALLOW_CUSTOMERS_TO_CANCEL', '1' ); }
 	if( ! defined( 'ALLOW_CUSTOMERS_TO_RESCHEDULE' ) )			{ define( 'ALLOW_CUSTOMERS_TO_RESCHEDULE', '1' ); }
 	if( ! defined( 'CANCELLATION_MIN_DELAY_BEFORE_EVENT' ) )	{ define( 'CANCELLATION_MIN_DELAY_BEFORE_EVENT', '7' ); }
@@ -44,7 +46,9 @@ function bookacti_init_settings_values() {
 	
 	$default_general_settings = get_option( 'bookacti_general_settings' );
 	if( ! isset( $default_general_settings['booking_method'] ) )			{ $default_general_settings['booking_method']				= BOOKING_METHOD; }
+	if( ! isset( $default_general_settings['when_events_load'] ) )			{ $default_general_settings['when_events_load']				= WHEN_EVENTS_LOAD; }
 	if( ! isset( $default_general_settings['started_events_bookable'] ) )	{ $default_general_settings['started_events_bookable']		= STARTED_EVENTS_BOOKABLE; }
+	if( ! isset( $default_general_settings['bookacti_timezone'] ) )			{ $default_general_settings['bookacti_timezone']			= BOOKACTI_TIMEZONE; }
 	update_option( 'bookacti_general_settings', $default_general_settings );
 	
 	do_action( 'bookacti_init_settings_value' );
@@ -76,8 +80,10 @@ function bookacti_reset_settings() {
 	update_option( 'bookacti_cancellation_settings', $default_cancellation_settings );
 	
 	$default_general_settings = array();
-	$default_general_settings['booking_method']					= BOOKING_METHOD;
-	$default_general_settings['started_events_bookable']		= STARTED_EVENTS_BOOKABLE;
+	$default_general_settings['booking_method']				= BOOKING_METHOD;
+	$default_general_settings['when_events_load']			= WHEN_EVENTS_LOAD;
+	$default_general_settings['started_events_bookable']	= STARTED_EVENTS_BOOKABLE;
+	$default_general_settings['bookacti_timezone']			= BOOKACTI_TIMEZONE;
 	
 	update_option( 'bookacti_general_settings', $default_general_settings );
 	
@@ -181,6 +187,30 @@ function bookacti_settings_section_bookings_callback() { }
 	}
 
 	
+	/**
+	 * Display "When to load the events?" setting
+	 * 
+	 * @since 1.1.0
+	 */
+	function bookacti_settings_field_when_events_load_callback() {
+		$when_events_load = bookacti_get_setting_value( 'bookacti_general_settings', 'when_events_load' );
+		
+		//Display the field
+		?>
+		<select name='bookacti_general_settings[when_events_load]' >
+			<option value='on_page_load' <?php selected( $when_events_load, 'on_page_load' ); ?> ><?php _e( 'On page load', BOOKACTI_PLUGIN_NAME ); ?></option>
+			<option value='after_page_load' <?php selected( $when_events_load, 'after_page_load' ); ?> ><?php _e( 'After page load', BOOKACTI_PLUGIN_NAME ); ?></option>
+		</select>
+		<?php
+		
+		//Display the tip 
+		$tip  = apply_filters( 'bookacti_when_events_load_tip',
+				__( 'Choose whether you want to load events when the page is loaded or after. In the first case, you page loading will be a bit longer but no loadings will occurs later.', BOOKACTI_PLUGIN_NAME ) );
+		
+		bookacti_help_tip( $tip );
+	}
+	
+	
 	//Can the user book an event that began?
 	function bookacti_settings_field_started_events_bookable_callback() {
 		
@@ -196,6 +226,56 @@ function bookacti_settings_section_bookings_callback() { }
 		bookacti_help_tip( $tip );
 	}
 	
+	
+	/**
+	 * Display Timezone setting
+	 * 
+	 * @since 1.1.0
+	 */
+	function bookacti_settings_field_timezone_callback() {
+		$regions = array(
+			'Africa' => DateTimeZone::AFRICA,
+			'America' => DateTimeZone::AMERICA,
+			'Antarctica' => DateTimeZone::ANTARCTICA,
+			'Aisa' => DateTimeZone::ASIA,
+			'Atlantic' => DateTimeZone::ATLANTIC,
+			'Europe' => DateTimeZone::EUROPE,
+			'Indian' => DateTimeZone::INDIAN,
+			'Pacific' => DateTimeZone::PACIFIC
+		);
+		
+		$timezones = array();
+		
+		foreach ( $regions as $name => $mask ) {
+			$zones = DateTimeZone::listIdentifiers( $mask );
+			foreach( $zones as $timezone ) {
+				// Lets sample the time there right now
+				$time = new DateTime( NULL, new DateTimeZone( $timezone ) );
+				// Us dumb Americans can't handle millitary time
+				$ampm = $time->format( 'H' ) > 12 ? ' (' . $time->format( 'g:i a' ) . ')' : '';
+				// Remove region name and add a sample time
+				$timezones[ $name ][ $timezone ] = substr( $timezone, strlen( $name ) + 1 ) . ' - ' . $time->format( 'H:i' ) . $ampm;
+			}
+		}
+		
+		$selected_timezone = bookacti_get_setting_value( 'bookacti_general_settings', 'bookacti_timezone' );
+		
+		// Display selectbox
+		echo '<select name="bookacti_general_settings[bookacti_timezone]" >';
+		foreach( $timezones as $region => $list ) {
+			echo '<optgroup label="' . $region . '" >';
+			foreach( $list as $timezone => $name )
+			{
+				echo '<option value="' . $timezone . '" ' . selected( $selected_timezone, $timezone ) . '>' . $name . '</option>';
+			}
+			echo '<optgroup>';
+		}
+		echo '</select>';
+		
+		//Display the tip 
+		$tip  = __( 'Pick the timezone corresponding to where your business takes place.', BOOKACTI_PLUGIN_NAME );
+		bookacti_help_tip( $tip );
+	}
 
 	
 //CANCELLATION SETTINGS 

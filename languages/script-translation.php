@@ -110,6 +110,8 @@ $bookacti_translation_array = apply_filters( 'bookacti_translation_array', array
 	/* translators: It is the message displayed to users if no bookings were found for a given event. */
 	'error_no_bookings'					=> esc_html__( 'No bookings.', BOOKACTI_PLUGIN_NAME ),
 	'error_retrieve_booking_system'		=> esc_html__( 'Error occurs while trying to retrieve booking system.', BOOKACTI_PLUGIN_NAME ),
+	'error_switch_booking_method'		=> esc_html__( 'Error occurs while trying to switch booking method.', BOOKACTI_PLUGIN_NAME ),
+	'error_reload_booking_system'		=> esc_html__( 'Error occurs while trying to reload booking system.', BOOKACTI_PLUGIN_NAME ),
 	'error_update_settings'				=> esc_html__( 'Error occurs while trying to update settings.', BOOKACTI_PLUGIN_NAME ),
 	'error_not_allowed'					=> esc_html__( 'You are not allowed to do this.', BOOKACTI_PLUGIN_NAME ),
 	'error_cancel_booking'				=> esc_html__( 'Error occurs while trying to cancel booking.', BOOKACTI_PLUGIN_NAME ),
@@ -194,7 +196,7 @@ $bookacti_translation_array = apply_filters( 'bookacti_translation_array', array
 	//VARIABLES
 	'is_qtranslate'						=> bookacti_get_translation_plugin() === 'qtranslate',
 	'current_lang_code'					=> bookacti_get_current_lang_code(),
-	'available_booking_methods'			=> bookacti_get_available_booking_methods(),
+	'available_booking_methods'			=> array_keys( bookacti_get_available_booking_methods() ),
 	'ajaxurl'							=> admin_url( 'admin-ajax.php' ),
 
 	'event_tiny_height'					=> apply_filters( 'bookacti_event_tiny_height', 30 ),
@@ -203,6 +205,7 @@ $bookacti_translation_array = apply_filters( 'bookacti_translation_array', array
 	'event_wide_width'					=> apply_filters( 'bookacti_event_wide_width', 250 ),
 
 	'started_events_bookable'			=> bookacti_get_setting_value( 'bookacti_general_settings',	'started_events_bookable' ),
+	'when_events_load'					=> bookacti_get_setting_value( 'bookacti_general_settings',	'when_events_load' ),
 	'show_past_events_on_bookings_page'	=> bookacti_get_setting_value_by_user( 'bookacti_bookings_settings', 'show_past_events' ),
 
 	'plugin_path'						=> plugins_url() . '/' . BOOKACTI_PLUGIN_NAME,
@@ -213,7 +216,8 @@ $bookacti_translation_array = apply_filters( 'bookacti_translation_array', array
 
 	// NONCES
 	'nonce_get_booking_system_data'		=> wp_create_nonce( 'bookacti_get_booking_system_data' ),
-	'nonce_retrieve_calendar_elements'	=> wp_create_nonce( 'bookacti_retrieve_calendar_elements' ),
+	'nonce_switch_booking_method'		=> wp_create_nonce( 'bookacti_switch_booking_method' ),
+	'nonce_reload_booking_system'		=> wp_create_nonce( 'bookacti_reload_booking_system' ),
 
 	'nonce_selected_template_filter'	=> wp_create_nonce( 'bookacti_selected_template_filter' ),
 	'nonce_fetch_events'				=> wp_create_nonce( 'bookacti_fetch_events' ),

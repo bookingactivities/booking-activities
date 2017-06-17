@@ -1,9 +1,8 @@
 /***** FRONT END *****/
 .bookacti-booking-system > div,
 .bookacti-notices,
-.bookacti-date-picked { margin-bottom: 20px; } 
-
-.bookacti-display-table-row	{ display: table-row; }
+.bookacti-date-picked		{ margin-bottom: 20px; }
+.bookacti-booking-system	{ margin-bottom: 30px; }
 
 .bookacti-date-picked { display: none; text-align: center; }
 .to_date { display: inline-block; }

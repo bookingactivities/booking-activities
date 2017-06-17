@@ -19,17 +19,6 @@ function bookacti_get_booking_system( $atts, $echo = false ) {
 	// Format booking system attributes
 	$atts = bookacti_format_booking_system_attributes( $atts );
 	
-	$user_datetime_object = new DateTime();
-	$user_datetime_object->setTimezone( new DateTimeZone( 'UTC' ) );
-	$fetch_past_events = 0;
-	$context = 'frontend';
-	
-	// Generate bookings system events
-	$events		= bookacti_fetch_events( $atts[ 'calendars' ], $atts[ 'activities' ], $atts[ 'groups' ], $user_datetime_object, $fetch_past_events, $context );
-	$activities	= bookacti_get_activities_by_template_ids( $atts[ 'calendars' ] );
-	$groups		= bookacti_get_groups_events( $atts[ 'calendars' ] );
-	$settings	= bookacti_get_mixed_template_settings( $atts[ 'calendars' ] );
-	
 	if( ! $echo ) {
 		ob_start();
 	}
@@ -37,12 +26,21 @@ function bookacti_get_booking_system( $atts, $echo = false ) {
 	do_action( 'bookacti_before_booking_form', $atts );
 ?>
 	<div class='bookacti-booking-system-container' id='<?php echo esc_attr( $atts[ 'id' ] . '-container' ); ?>' >
+	
 		<script>
-			json_events[ '<?php echo $atts[ 'id' ]; ?>' ]		= <?php echo json_encode( $events ); ?>;
-			json_activities										= <?php echo json_encode( $activities ); ?>;
-			json_groups[ '<?php echo $atts[ 'id' ]; ?>' ]		= <?php echo json_encode( $groups ); ?>;
-			calendar_settings[ '<?php echo $atts[ 'id' ]; ?>' ] = <?php echo json_encode( $settings ); ?>;
+			calendars_data[ '<?php echo $atts[ 'id' ]; ?>' ] = <?php echo json_encode( $atts ); ?>;
+		
+			<?php 
+			// Events related data
+			$when_events_load = bookacti_get_setting_value( 'bookacti_general_settings', 'when_events_load' ); 
+			if( $when_events_load === 'on_page_load' && $atts[ 'auto_load' ] ) { ?>
+				json_events[ '<?php echo $atts[ 'id' ]; ?>' ]	= <?php echo json_encode( bookacti_fetch_events( $atts[ 'calendars' ], $atts[ 'activities' ], $atts[ 'groups' ], $atts[ 'past_events' ], $atts[ 'context' ] ) ); ?>;
+				json_activities									= <?php echo json_encode( bookacti_get_activities_by_template_ids( $atts[ 'calendars' ] ) ); ?>;
+				json_groups[ '<?php echo $atts[ 'id' ]; ?>' ]	= <?php echo json_encode( bookacti_get_groups_events( $atts[ 'calendars' ] ) ); ?>;	
+				calendars_data[ '<?php echo $atts[ 'id' ]; ?>' ][ 'settings' ]	= <?php echo json_encode( bookacti_get_mixed_template_settings( $atts[ 'calendars' ] ) ); ?>;	
+			<?php } ?>
 		</script>
+				
 		<div class='bookacti-booking-system-inputs'>
 			<input type='hidden' name='bookacti_group_id'		value='' />
 			<input type='hidden' name='bookacti_event_id'		value='' />
@@ -59,21 +57,8 @@ function bookacti_get_booking_system( $atts, $echo = false ) {
 		
 		<?php do_action( 'bookacti_before_booking_system', $atts ); ?>
 		
-		<div class=						'bookacti-booking-system <?php echo esc_attr( $atts[ 'classes' ] ); ?>' 
-			 id=						'<?php echo esc_attr( $atts[ 'id' ] ); ?>' 
-			 data-attributes=			'<?php echo esc_attr( json_encode( $atts ) ); ?>'
-			 data-init-booking-method=	'<?php echo esc_attr( $atts[ 'method' ]  ); ?>' 
-			 data-init-templates=		'<?php echo esc_attr( implode( ',', $atts[ 'calendars' ] ) ); ?>' 
-			 data-init-activities=		'<?php echo esc_attr( implode( ',', $atts[ 'activities' ] ) ); ?>' 
-			 data-init-groups=			'<?php echo esc_attr( implode( ',', $atts[ 'groups' ] ) ); ?>' 
-		>
-			<?php
-				if( $atts[ 'method' ] !== 'calendar' ) {
-					do_action( 'bookacti_display_booking_method_elements', $atts );
-				} else {
-					echo bookacti_retrieve_calendar_elements( $atts[ 'id' ] );
-				}
-			?>
+		<div id='<?php echo esc_attr( $atts[ 'id' ] ); ?>' class='bookacti-booking-system <?php echo esc_attr( $atts[ 'classes' ] ); ?>' >
+			<?php echo bookacti_get_booking_method_html( $atts[ 'method' ], $atts ); ?>
 		</div>
 		
 		<?php do_action( 'bookacti_after_booking_system', $atts ); ?>
@@ -111,14 +96,14 @@ function bookacti_get_booking_system( $atts, $echo = false ) {
 
 
 // Retrieve Calendar booking system HTML to include in the booking system
-function bookacti_retrieve_calendar_elements( $calendar_id ) {
+function bookacti_retrieve_calendar_elements( $booking_system_atts ) {
 	
 	$default_calendar_title	= esc_html__( 'Pick a schedule on the calendar:', BOOKACTI_PLUGIN_NAME );
-	$calendar_title			= apply_filters( 'bookacti_calendar_title', $default_calendar_title, $calendar_id );
+	$calendar_title			= apply_filters( 'bookacti_calendar_title', $default_calendar_title, $booking_system_atts );
 	
-	$before_calendar_title	= apply_filters( 'bookacti_before_calendar_title', '', $calendar_id );
-	$before_calendar		= apply_filters( 'bookacti_before_calendar', '', $calendar_id );
-	$after_calendar			= apply_filters( 'bookacti_after_calendar', '', $calendar_id );
+	$before_calendar_title	= apply_filters( 'bookacti_before_calendar_title', '', $booking_system_atts );
+	$before_calendar		= apply_filters( 'bookacti_before_calendar', '', $booking_system_atts );
+	$after_calendar			= apply_filters( 'bookacti_after_calendar', '', $booking_system_atts );
 	
 	return
 	
@@ -161,7 +146,9 @@ function bookacti_format_booking_system_attributes( $atts = array(), $shortcode 
         'method'				=> 'calendar',
 		'url'					=> '',
 		'button'				=> __( 'Book', BOOKACTI_PLUGIN_NAME ),
-		'auto_load'				=> 1
+		'auto_load'				=> 1,
+		'past_events'			=> 0,
+		'context'				=> 'frontend'
     ) );
 	
 	// Replace empty mandatory values by default
@@ -249,14 +236,10 @@ function bookacti_format_booking_system_attributes( $atts = array(), $shortcode 
 	}
 	
 	// Sanitize groups only switch
-	if( isset( $atts[ 'groups_only' ] ) ) {
-		$atts[ 'groups_only' ] = boolval( $atts[ 'groups_only' ] ) ? 1 : 0;
-	}
+	$atts[ 'groups_only' ] = boolval( $atts[ 'groups_only' ] ) ? 1 : 0;
 	
 	// Sanitize groups single events switch
-	if( isset( $atts[ 'groups_single_events' ] ) ) {
-		$atts[ 'groups_single_events' ] = boolval( $atts[ 'groups_single_events' ] ) ? 1 : 0;
-	}
+	$atts[ 'groups_single_events' ] = boolval( $atts[ 'groups_single_events' ] ) ? 1 : 0;
 	
 	// If booking method is set to 'site', get the site default
 	$atts[ 'method' ] = esc_attr( $atts[ 'method' ] );
@@ -266,7 +249,7 @@ function bookacti_format_booking_system_attributes( $atts = array(), $shortcode 
 	
 	// Check if desired booking method is registered
 	$available_booking_methods = bookacti_get_available_booking_methods();
-	if( ! in_array( $atts[ 'method' ], array_keys ( $available_booking_methods ) ) ) {
+	if( ! in_array( $atts[ 'method' ], array_keys( $available_booking_methods ) ) ) {
 		$atts[ 'method' ] = 'calendar';
 	}
 	
@@ -280,22 +263,23 @@ function bookacti_format_booking_system_attributes( $atts = array(), $shortcode 
 	$atts[ 'id' ]	= esc_attr( $atts[ 'id' ] );
 	
 	// Format classes
-	$atts[ 'classes' ]	= empty( $atts[ 'classes' ] )	? esc_attr( $atts[ 'classes' ] ) : '';
+	$atts[ 'classes' ]	= ! empty( $atts[ 'classes' ] )	? esc_attr( $atts[ 'classes' ] ) : '';
 	
 	// Sanitize redirect URL
-	if( isset( $atts[ 'url' ] ) ) {
-		$atts[ 'url' ] = esc_url( $atts[ 'url' ] );
-	}
+	$atts[ 'url' ] = esc_url( $atts[ 'url' ] );
 	
 	// Sanitize submit button label
-	if( isset( $atts[ 'button' ] ) ) {
-		$atts[ 'button' ] = esc_html( sanitize_text_field( $atts[ 'button' ] ) );
-	}
+	$atts[ 'button' ] = esc_html( sanitize_text_field( $atts[ 'button' ] ) );
 	
 	// Make sure auto load is 0 or 1
-	if( isset( $atts[ 'auto_load' ] ) ) {
-		$atts[ 'auto_load' ] = boolval( $atts[ 'auto_load' ] ) ? 1 : 0;
-	}
+	$atts[ 'auto_load' ] = boolval( $atts[ 'auto_load' ] ) ? 1 : 0;
+	
+	// Make sure past events is 0 or 1
+	$atts[ 'past_events' ] = boolval( $atts[ 'past_events' ] ) ? 1 : 0;
+	
+	// Make sure context is valid
+	$atts[ 'context' ] = in_array( $atts[ 'context' ], array( 'frontend', 'editor', 'booking_page' ) ) ? $atts[ 'context' ] : 'frontend';
+	
 	
 	return apply_filters( 'bookacti_formatted_booking_system_attributes', $atts, $shortcode );
 }
@@ -397,13 +381,16 @@ function bookacti_get_booking_dates_html( $booking ) {
  * @version	1.0.6
  * @param	object		$event					Event data
  * @param	array		$shared_data				Event data shared by every occurences of the event
- * @param	DateTime	$user_datetime_object	End datetime of the event to check (format 2017-12-31T23:59:59)
  * @param	bool			$fetch_past_events		Whether to create occurences before user datetime
  * @param	string		$context				(frontend, editor, booking_page) Determine which occurence will be generated according to the context.
  * @return	array
  */
-function bookacti_create_repeated_events( $event, $shared_data = array(), $user_datetime_object = null, $fetch_past_events = false, $context = 'frontend' ) {
-	if( is_null( $user_datetime_object ) ) { $user_datetime_object = new DateTime(); }
+function bookacti_create_repeated_events( $event, $shared_data = array(), $fetch_past_events = false, $context = 'frontend' ) {
+	
+	// Set current datetime
+	$timezone = bookacti_get_setting_value( 'bookacti_general_settings', 'bookacti_timezone' );
+	$current_datetime_object = new DateTime( 'now', new DateTimeZone( $timezone ) );
+	
     if( empty( $shared_data ) ) { 
 		$shared_data = array(
 			'id'				=> $event->event_id,
@@ -462,8 +449,8 @@ function bookacti_create_repeated_events( $event, $shared_data = array(), $user_
 		
         //FILTER EXCEPTIONS HERE ONLY FOR READ ONLY PLANNINGS, FOR TEMPLATES DO IT ON EVENT RENDER
         $is_exception	= bookacti_is_repeat_exception( $event->event_id, date( 'Y-m-d', $event_start->format( 'U' ) ) );
-        $has_started	= $event_start < $user_datetime_object;
-        $has_ended		= $event_end < $user_datetime_object;
+        $has_started	= $event_start < $current_datetime_object;
+        $has_ended		= $event_end < $current_datetime_object;
 		$is_in_range	= bookacti_is_event_in_its_template_range( $event->event_id, $event_start->format('Y-m-d H:i:s'), $event_end->format('Y-m-d H:i:s') );
 		$is_booked		= bookacti_get_number_of_bookings( $event->event_id, $event_start->format('Y-m-d H:i:s'), $event_end->format('Y-m-d H:i:s') ) > 0;
 		
@@ -539,4 +526,27 @@ function bookacti_units_to_add_to_repeat_event( $event ) {
     }
     
     return $to_add;
+}
+
+
+
+/**
+ * Get booking method HTML elemnts
+ * 
+ * @since 1.1.0
+ * 
+ * @param string $method
+ * @param array $booking_system_attributes
+ * @return string $html_elements
+ */
+function bookacti_get_booking_method_html( $method, $booking_system_attributes ) {
+	
+	$available_booking_methods = bookacti_get_available_booking_methods();
+	if( $method === 'calendar' || ! in_array( $method, array_keys( $available_booking_methods ) ) ) {
+		$html_elements = bookacti_retrieve_calendar_elements( $booking_system_attributes );
+	} else {
+		$html_elements = apply_filters( 'bookacti_get_booking_method_html', '', $method, $booking_system_attributes );
+	}
+	
+	return $html_elements;
 }

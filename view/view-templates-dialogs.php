@@ -59,12 +59,14 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 <!-- Delete group of events -->
 <div id='bookacti-delete-group-of-events-dialog' class='bookacti-backend-dialogs bookacti-template-dialogs' >
-    <div><?php esc_html_e( 'Are you sure to delete this group of events permanently?', BOOKACTI_PLUGIN_NAME ); ?></div>
+    <div><p><?php esc_html_e( 'Are you sure to delete this group of events permanently?', BOOKACTI_PLUGIN_NAME ); ?></p></div>
+    <div><p><em><?php esc_html_e( 'Events will NOT be deleted.', BOOKACTI_PLUGIN_NAME ); ?></em></p></div>
 </div>
 
 <!-- Delete group category -->
 <div id='bookacti-delete-group-category-dialog' class='bookacti-backend-dialogs bookacti-template-dialogs' >
     <div><?php esc_html_e( 'Are you sure to delete this category and all its groups of events permanently?', BOOKACTI_PLUGIN_NAME ); ?></div>
+	<div><p><em><?php esc_html_e( 'Events will NOT be deleted.', BOOKACTI_PLUGIN_NAME ); ?></em></p></div>
 </div>
 
 <!-- Edit event dialog -->

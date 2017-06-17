@@ -3,15 +3,11 @@ $j( document ).ready( function() {
 	// Check if the calendar exist before anything
 	if ( $j( '#bookacti-template-calendar' ).length || $j( '#bookacti-first-template-container' ).length ) { 
 		
-		pickedEvents[ 'template' ] = [];
-		selectedEvents[ 'template' ] = [];
-		
-		// Capture mouse x and y coordinates to global variables
-		$j( document ).off().on( 'mousemove', function ( event ) {
-			//Get current mouse position
-			currentMousePos.x = event.pageX;
-			currentMousePos.y = event.pageY;
-		});
+		// Init globals
+		template_id						= parseInt( $j( '#bookacti-template-picker' ).val() ) || 0;
+		pickedEvents[ 'template' ]		= [];
+		selectedEvents[ 'template' ]	= [];
+		loadingNumber['template']		= 0;
 		
 		// initialize activities and groups
 		bookacti_init_activities();
@@ -37,7 +33,7 @@ $j( document ).ready( function() {
 		if ( $j( '#bookacti-template-calendar' ).length ) {
 			bookacti_load_template_calendar();
 		}
-
+		
 		// Load the template
 		if( template_id ) {
 			bookacti_switch_template( template_id );
@@ -275,7 +271,7 @@ function bookacti_load_template_calendar() {
 			
 			//Display element as picked or selected if they actually are
 			$j.each( pickedEvents[ 'template' ], function( i, picked_event ) {
-				$j( '.fc-event[data-event-id="' + picked_event['event_id'] + '"][data-event-start="' + picked_event['event_start'].format( 'YYYY-MM-DD HH:mm:ss' ) + '"]' ).addClass( 'bookacti-picked-event' );
+				calendar.find( '.fc-event[data-event-id="' + picked_event['event_id'] + '"][data-event-start="' + picked_event['event_start'] + '"]' ).addClass( 'bookacti-picked-event' );
 			});
 			
 			bookacti_refresh_selected_events_display();
@@ -315,8 +311,8 @@ function bookacti_load_template_calendar() {
 				if( parseInt( resizable ) === 1 ) { event.durationEditable = true; }
 
 				// Gether event variables to save in db
-				var start       = event.start.format( 'YYYY-MM-DD[T]HH:mm:ss' );
-				var end         = event.end.format( 'YYYY-MM-DD[T]HH:mm:ss' );
+				var start       = event.start.format( 'YYYY-MM-DD HH:mm:ss' );
+				var end         = event.end.format( 'YYYY-MM-DD HH:mm:ss' );
 
 
 			//Temporarily save the event on calendar, so that it survives to the loading state refresh
@@ -375,149 +371,125 @@ function bookacti_load_template_calendar() {
 
 		// eventResize : When an event is resized
 		eventResize: function( event, delta, revertFunc ) {
-			var is_locked = bookacti_is_locked_event( event.id );
-			if( ! is_locked ) {
+			// Get event var to save in db
+			var id     = event.id;
+			var start  = event.start.format('YYYY-MM-DD HH:mm:ss');
+			var end    = event.end.format('YYYY-MM-DD HH:mm:ss');
 
-				// Get event var to save in db
-				var id     = event.id;
-				var start  = event.start.format('YYYY-MM-DD[T]HH:mm:ss');
-				var end    = event.end.format('YYYY-MM-DD[T]HH:mm:ss');
+			bookacti_start_template_loading();
 
-				bookacti_start_template_loading();
-
-				$j.ajax({
-					url: ajaxurl,
-					data: { 'action': 'bookactiResizeEvent', 
-							'event_id': id, 
-							'event_start': start, 
-							'event_end': end,
-							'nonce': bookacti_localized.nonce_move_or_resize_event
-						}, 
-					type: 'POST',
-					dataType: 'json',
-					success: function( response ){
-						if( response.status === 'failed' ) 
-						{ 
-							revertFunc();
-							if( response.error === 'has_bookings' ) {
-								bookacti_refetch_events_on_template( event );
-								bookacti_dialog_unbind_occurences( event, [ 'resize' ] );
-							} else {
-								var error_message = bookacti_localized.error_resize_event;
-								if( response.error === 'not_allowed' ) {
-									error_message += '\n' + bookacti_localized.error_not_allowed;
-								} else if( response.error === 'has_bookings' ) {
-									bookacti_refetch_events_on_template( event );
-									error_message += '\n' + bookacti_localized.error_edit_locked_event;
-									error_message += '\n' + bookacti_localized.advice_switch_to_maintenance + '\n';
-								}
-								alert( error_message );
-								console.log( response );
-							}
-						}
-					},
-					error: function( e ){
+			$j.ajax({
+				url: ajaxurl,
+				data: { 'action': 'bookactiResizeEvent', 
+						'event_id': id, 
+						'event_start': start, 
+						'event_end': end,
+						'nonce': bookacti_localized.nonce_move_or_resize_event
+					}, 
+				type: 'POST',
+				dataType: 'json',
+				success: function( response ){
+					if( response.status === 'failed' ) 
+					{ 
 						revertFunc();
-						alert( 'AJAX ' + bookacti_localized.error_resize_event );
-						console.log( e );
-					},
-					complete: function() { 
-						bookacti_stop_template_loading();
+						if( response.error === 'has_bookings' ) {
+							bookacti_refetch_events_on_template( event );
+							bookacti_dialog_unbind_occurences( event, [ 'resize' ] );
+						} else {
+							var error_message = bookacti_localized.error_resize_event;
+							if( response.error === 'not_allowed' ) {
+								error_message += '\n' + bookacti_localized.error_not_allowed;
+							} else if( response.error === 'has_bookings' ) {
+								bookacti_refetch_events_on_template( event );
+								error_message += '\n' + bookacti_localized.error_edit_locked_event;
+								error_message += '\n' + bookacti_localized.advice_switch_to_maintenance + '\n';
+							}
+							alert( error_message );
+							console.log( response );
+						}
 					}
-				});
-
-			} else {
-				revertFunc();
-				if( event.bookings > 0 ) {
-					alert( bookacti_localized.error_edit_locked_event );
-				} else {
-					bookacti_dialog_unbind_occurences( event, [ 'resize' ] );
+				},
+				error: function( e ){
+					revertFunc();
+					alert( 'AJAX ' + bookacti_localized.error_resize_event );
+					console.log( e );
+				},
+				complete: function() { 
+					bookacti_stop_template_loading();
 				}
-			}
+			});
 		},
 
 
 		// eventDrop : When an event is moved to an other day / hour
 		eventDrop: function( event, delta, revertFunc, e ) {
-			var is_locked = bookacti_is_locked_event( event.id );
-			if( ! is_locked ) {
+			var is_alt_key_pressed = 0;
+			if( e.altKey ) { is_alt_key_pressed = 1; }
 
-				var is_alt_key_pressed = 0;
-				if( e.altKey ) { is_alt_key_pressed = 1; }
-				
-				if( is_alt_key_pressed ) {
-					revertFunc();
-				} else {
-					// Unselect the event or occurences of the event
-					bookacti_unselect_event( event, undefined, true );
-				}
-				
-				// Update the event changes in database
-				var id      = event.id;
-				var start   = event.start.format( 'YYYY-MM-DD[T]HH:mm:ss' );
-				var end     = ( event.end === null ) ? start : event.end.format( 'YYYY-MM-DD[T]HH:mm:ss' );
-				var delta_days = delta._days;
-
-				bookacti_start_template_loading();
-
-				$j.ajax({
-					url: ajaxurl, 
-					data: { 'action': 'bookactiMoveEvent', 
-							'delta_days': delta_days, 
-							'event_id': id, 
-							'event_start': start, 
-							'event_end': end,
-							'is_duplicated': is_alt_key_pressed,
-							'nonce': bookacti_localized.nonce_move_or_resize_event
-						}, 
-					type: 'POST',
-					dataType: 'json',
-					success: function( response ){
-
-						if( is_alt_key_pressed ) {
-							if( response.status === 'success' ) { 
-								var new_event = { 'id': response.event_id };
-								bookacti_update_exceptions( template_id, new_event );
-							}
-						}
-
-						if( response.status === 'failed' ) { 
-							revertFunc();
-							if( response.error === 'has_bookings' ) {
-								bookacti_refetch_events_on_template( event );
-								bookacti_dialog_unbind_occurences( event, [ 'move' ] );
-							} else {
-								var error_message = bookacti_localized.error_move_event;
-								if( response.error === 'not_allowed' ) {
-									error_message += '\n' + bookacti_localized.error_not_allowed;
-								} else if( response.error === 'has_bookings' ) {
-									bookacti_refetch_events_on_template( event );
-									error_message += '\n' + bookacti_localized.error_edit_locked_event;
-									error_message += '\n' + bookacti_localized.advice_switch_to_maintenance + '\n';
-								}
-								alert( error_message );
-								console.log( response );
-							}
-						}
-					},
-					error: function( e ) {
-						revertFunc();
-						alert( 'AJAX ' + bookacti_localized.error_move_event );
-						console.log( e );
-					},
-					complete: function() { 
-						bookacti_stop_template_loading();
-					}
-				});
-
-			} else {
+			if( is_alt_key_pressed ) {
 				revertFunc();
-				if( event.bookings > 0 ) {
-					alert( bookacti_localized.error_edit_locked_event );
-				} else {
-					bookacti_dialog_unbind_occurences( event, [ 'move' ] );
-				}
+			} else {
+				// Unselect the event or occurences of the event
+				bookacti_unselect_event( event, undefined, true );
 			}
+
+			// Update the event changes in database
+			var id      = event.id;
+			var start   = event.start.format( 'YYYY-MM-DD HH:mm:ss' );
+			var end     = ( event.end === null ) ? start : event.end.format( 'YYYY-MM-DD HH:mm:ss' );
+			var delta_days = delta._days;
+
+			bookacti_start_template_loading();
+
+			$j.ajax({
+				url: ajaxurl, 
+				data: { 'action': 'bookactiMoveEvent', 
+						'delta_days': delta_days, 
+						'event_id': id, 
+						'event_start': start, 
+						'event_end': end,
+						'is_duplicated': is_alt_key_pressed,
+						'nonce': bookacti_localized.nonce_move_or_resize_event
+					}, 
+				type: 'POST',
+				dataType: 'json',
+				success: function( response ){
+
+					if( is_alt_key_pressed ) {
+						if( response.status === 'success' ) { 
+							var new_event = { 'id': response.event_id };
+							bookacti_update_exceptions( template_id, new_event );
+						}
+					}
+
+					if( response.status === 'failed' ) { 
+						revertFunc();
+						if( response.error === 'has_bookings' ) {
+							bookacti_refetch_events_on_template( event );
+							bookacti_dialog_unbind_occurences( event, [ 'move' ] );
+						} else {
+							var error_message = bookacti_localized.error_move_event;
+							if( response.error === 'not_allowed' ) {
+								error_message += '\n' + bookacti_localized.error_not_allowed;
+							} else if( response.error === 'has_bookings' ) {
+								bookacti_refetch_events_on_template( event );
+								error_message += '\n' + bookacti_localized.error_edit_locked_event;
+								error_message += '\n' + bookacti_localized.advice_switch_to_maintenance + '\n';
+							}
+							alert( error_message );
+							console.log( response );
+						}
+					}
+				},
+				error: function( e ) {
+					revertFunc();
+					alert( 'AJAX ' + bookacti_localized.error_move_event );
+					console.log( e );
+				},
+				complete: function() { 
+					bookacti_stop_template_loading();
+				}
+			});
 		},
 
 		//When the user drag an event
@@ -576,8 +548,8 @@ function bookacti_load_template_calendar() {
 				pickedEvents[ 'template' ].push( 
 				{ 'event_id'			: event.id,
 				'activity_id'			: event.activity_id,
-				'event_start'			: event.start, 
-				'event_end'				: event.end } );
+				'event_start'			: event.start.format( 'YYYY-MM-DD HH:mm:ss' ), 
+				'event_end'				: event.end.format( 'YYYY-MM-DD HH:mm:ss' ) } );
 			}
 		},
 		

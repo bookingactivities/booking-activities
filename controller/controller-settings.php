@@ -21,11 +21,27 @@ function bookacti_init_settings() {
 		'bookacti_general_settings', 
 		'bookacti_settings_section_general'
 	);
+	
+	add_settings_field(  
+		'when_events_load', 
+		__( 'When to load the events?', BOOKACTI_PLUGIN_NAME ), 
+		'bookacti_settings_field_when_events_load_callback', 
+		'bookacti_general_settings', 
+		'bookacti_settings_section_general'
+	);
 
 	add_settings_field(  
 		'started_events_bookable', 
 		__( 'Are started events bookable?', BOOKACTI_PLUGIN_NAME ), 
 		'bookacti_settings_field_started_events_bookable_callback', 
+		'bookacti_general_settings', 
+		'bookacti_settings_section_general' 
+	);
+
+	add_settings_field(  
+		'bookacti_timezone', 
+		__( 'Calendars timezone', BOOKACTI_PLUGIN_NAME ), 
+		'bookacti_settings_field_timezone_callback', 
 		'bookacti_general_settings', 
 		'bookacti_settings_section_general' 
 	);

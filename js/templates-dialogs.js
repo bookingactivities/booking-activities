@@ -586,9 +586,6 @@ function bookacti_dialog_update_event( event ) {
                     });
                 }
                 
-                //Enable or disable repetition parts of the form
-                bookacti_validate_event_repetition_data( event.start, event.end );
-                
 				//Refresh qtranslate fields to make a correct display of multilingual fields
 				if( bookacti_localized.is_qtranslate ) {
 					$j( '.qtranxs-translatable' ).each( function() { 
@@ -605,7 +602,7 @@ function bookacti_dialog_update_event( event ) {
 				bookacti_validate_event_general_data();
 				
 				//Enable or disable repetition and exception parts of the form
-				bookacti_validate_event_repetition_data( event.start, event.end );
+				bookacti_validate_event_repetition_data( event.start.format( 'YYYY-MM-DD HH:mm:ss' ), event.end.format( 'YYYY-MM-DD HH:mm:ss' ) );
 				
 				
 				// Prepare buttons
@@ -619,14 +616,14 @@ function bookacti_dialog_update_event( event ) {
 						
 						// Prepare fields
 						$j( '#bookacti-event-data-form-event-id' ).val( event.id );
-						$j( '#bookacti-event-data-form-event-start' ).val( event.start.format( 'YYYY-MM-DD[T]HH:mm:ss' ) );
-						$j( '#bookacti-event-data-form-event-end' ).val( event.end.format( 'YYYY-MM-DD[T]HH:mm:ss' ) );
+						$j( '#bookacti-event-data-form-event-start' ).val( event.start.format( 'YYYY-MM-DD HH:mm:ss' ) );
+						$j( '#bookacti-event-data-form-event-end' ).val( event.end.format( 'YYYY-MM-DD HH:mm:ss' ) );
 						$j( '#bookacti-event-data-form-action' ).val( 'bookactiUpdateEventData' );
 						$j( '#bookacti-event-data-form select[multiple] option' ).attr( 'selected', true );
 						
 						var data = $j( '#bookacti-event-data-form' ).serialize();
 						
-						var isFormValid = bookacti_validate_event_form( event.start, event.end );
+						var isFormValid = bookacti_validate_event_form( event.start.format( 'YYYY-MM-DD HH:mm:ss' ), event.end.format( 'YYYY-MM-DD HH:mm:ss' ) );
 						if( isFormValid ) { 
 							
 							bookacti_start_template_loading();
@@ -2103,6 +2100,9 @@ function bookacti_dialog_delete_group_category( category_id ) {
 							
 							// Remove the group category and all its groups
 							$j( '.bookacti-group-category[data-group-category-id="' + category_id + '"]' ).remove();
+							
+							// Remove the category from the selectbox
+							$j( '#bookacti-group-of-events-category-selectbox option[value="' + category_id + '"]' ).remove();
 							
 							// Empty the selected events and refresh them
 							selectedEvents[ 'template' ] = [];

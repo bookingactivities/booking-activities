@@ -1,4 +1,180 @@
-//Fill a intelligible field to feedback the user about his choice
+// Retrieve the events to show and fill the the booking system
+function bookacti_fetch_events( booking_system ) {
+	
+	var booking_system_id	= booking_system.attr( 'id' );
+	var attributes			= calendars_data[ booking_system_id ];
+	
+	bookacti_start_loading_booking_system( booking_system );
+	
+    $j.ajax({
+        url: bookacti_localized.ajaxurl,
+        type: 'POST',
+        data: { 
+			'action': 'bookactiFetchEvents', 
+			'attributes': JSON.stringify( attributes ),
+			'is_admin': bookacti_localized.is_admin, 
+			'nonce': bookacti_localized.nonce_fetch_events 
+		},
+        dataType: 'json',
+        success: function( response ){
+			
+			if( response.status === 'success' ) {
+				
+				// Update calendar content data
+				json_events[booking_system_id]	= response.events;
+				json_activities					= response.activities;
+				json_groups[booking_system_id]	= response.groups;
+				
+				if( response.events.length ) {
+					// Fill events according to booking method
+					bookacti_booking_method_fill_with_events( booking_system, attributes.method );
+				} else {
+					// If no events are bookable, display an error
+					bookacti_add_error_message( booking_system, bookacti_localized.error_no_events_bookable );
+				}
+				
+			} else {
+				var error_message = bookacti_localized.error_display_event;
+				if( response.error === 'not_allowed' ) {
+					error_message += '\n' + bookacti_localized.error_not_allowed;
+				}
+				alert( error_message );
+				console.log( response );
+			}
+        },
+        error: function( e ){
+            console.log( 'AJAX ' + bookacti_localized.error_display_event );
+            console.log( e );
+        },
+        complete: function() { 
+			bookacti_stop_loading_booking_system( booking_system );
+		}
+    });
+}
+
+
+// Reload a booking system
+function bookacti_reload_booking_system( booking_system ) {
+	
+	var booking_system_id	= booking_system.attr( 'id' );
+	var attributes			= calendars_data[ booking_system_id ];
+	
+	bookacti_start_loading_booking_system( booking_system );
+	
+	$j.ajax({
+        url: bookacti_localized.ajaxurl,
+        type: 'POST',
+        data: {	
+			'action': 'bookactiReloadBookingSystem', 
+			'attributes': JSON.stringify( attributes ),
+			'is_admin': bookacti_localized.is_admin,
+			'nonce': bookacti_localized.nonce_reload_booking_system
+		},
+        dataType: 'json',
+        success: function( response ){
+			
+			if( response.status === 'success' ) {
+				
+				// Clear booking system
+				booking_system.empty();
+				bookacti_clear_booking_system_displayed_info( booking_system );
+				
+				// Update events and settings
+				json_events[ booking_system_id ]					= response.events;
+				json_activities										= response.activities;
+				json_groups[ booking_system_id ]					= response.groups;
+				calendars_data[ booking_system_id ][ 'settings' ]	= response.settings;
+				
+				// Fill the booking method elements
+				booking_system.append( response.html_elements );
+				
+				// Load the booking method
+				bookacti_booking_method_set_up( booking_system, calendars_data[ booking_system_id ][ 'method' ] );
+				
+				
+			} else {
+				var error_message = bookacti_localized.error_reload_booking_system;
+				if( response.error === 'not_allowed' ) {
+					error_message += '\n' + bookacti_localized.error_not_allowed;
+				}
+				alert( error_message );
+				console.log( response );
+			}
+        },
+        error: function( e ){
+            console.log( 'AJAX ' + bookacti_localized.error_reload_booking_system );
+            console.log( e );
+        },
+        complete: function() { 
+			bookacti_stop_loading_booking_system( booking_system );
+		}
+    });	
+}
+
+
+// Switch a booking method
+function bookacti_switch_booking_method( booking_system, method ) {
+	
+	// Sanitize parameters
+	method = $j.inArray( method, bookacti_localized.available_booking_methods ) === -1 ? 'calendar' : method;
+	
+	// If no changes are made, do not perform the function
+	if( method === calendars_data[ booking_system_id ][ 'method' ] ) {
+		return false;
+	}
+	
+	var booking_system_id	= booking_system.attr( 'id' );
+	var attributes			= calendars_data[ booking_system_id ];
+	
+	bookacti_start_loading_booking_system( booking_system );
+	
+	$j.ajax({
+        url: bookacti_localized.ajaxurl,
+        type: 'POST',
+        data: {	
+			'action': 'bookactiSwitchBookingMethod', 
+			'booking_system_id': booking_system_id,
+			'attributes': JSON.stringify( attributes ),
+			'method': method,
+			'nonce': bookacti_localized.nonce_switch_booking_method
+		},
+        dataType: 'json',
+        success: function( response ){
+			
+			if( response.status === 'success' ) {
+				
+				// Change the booking system attribute
+				calendars_data[ booking_system_id ][ 'method' ] = method;
+				
+				// Fill the booking method elements
+				booking_system.empty();
+				booking_system.append( response.html_elements );
+				
+				// Load the booking method
+				bookacti_booking_method_set_up( booking_system, method );
+				
+				
+			} else {
+				var error_message = bookacti_localized.error_switch_booking_method;
+				if( response.error === 'not_allowed' ) {
+					error_message += '\n' + bookacti_localized.error_not_allowed;
+				}
+				alert( error_message );
+				console.log( response );
+			}
+        },
+        error: function( e ){
+            console.log( 'AJAX ' + bookacti_localized.error_switch_booking_method );
+            console.log( e );
+        },
+        complete: function() { 
+			bookacti_stop_loading_booking_system( booking_system );
+		}
+    });	
+}
+
+
+// Fill a intelligible field to feedback the user about his choice
 function bookacti_fill_picked_event_summary( booking_system, start, end, activity_id ) {
 	
 	var date_picked = booking_system.siblings( '.bookacti-date-picked' );
@@ -108,26 +284,6 @@ function bookacti_fill_picked_activity_summary( booking_system, activity_id, qty
 }
 
 
-// Switch booking system to another method
-function bookacti_switch_booking_method( booking_system, booking_method, events ) {
-	if ( booking_method === 'calendar' || $j.inArray( booking_method, bookacti_localized.available_booking_methods ) === -1 ) {
-		bookacti_load_calendar( booking_system, events );
-	} else {
-		booking_system.trigger( 'bookacti_switch_booking_method', [ booking_method, events ] );
-	}
-}
-
-
-// Load the booking system according to booking method
-function bookacti_set_up_booking_method( booking_system, booking_method, events ) {
-	if ( booking_method === 'calendar' || $j.inArray( booking_method, bookacti_localized.available_booking_methods ) === -1 ) {
-		bookacti_set_calendar_up( booking_system, events );
-	} else {
-		booking_system.trigger( 'bookacti_set_up_booking_method_up', [ booking_method, events ] );
-	}
-}
-
-
 // Clear booking system displayed info
 function bookacti_clear_booking_system_displayed_info( booking_system ) {
 	
@@ -154,13 +310,15 @@ function bookacti_clear_booking_system_displayed_info( booking_system ) {
 // Update booking system settings
 function bookacti_update_settings_from_database( booking_system, template_ids ) {
 	
-	if( booking_system.attr( 'id' ) === 'bookacti-template-calendar' ) {
+	var booking_system_id = booking_system.attr( 'id' );
+	
+	if( booking_system_id === 'bookacti-template-calendar' ) {
 		bookacti_start_template_loading();
 	} else {
 		bookacti_start_loading_booking_system( booking_system );
 	}
 	
-    // Retrieve template info and fill fields
+    // Retrieve template data
     $j.ajax({
         url: bookacti_localized.ajaxurl, 
         data: { 'action': 'bookactiGetBookingSystemData', 
@@ -175,17 +333,14 @@ function bookacti_update_settings_from_database( booking_system, template_ids ) 
             // If success
             if( response.status === 'success' && response.settings ) {
 				
-				var booking_method	= booking_system.data( 'attributes' ).method;
-				
-				if( ( booking_method === 'calendar' 
-					  || ! $j.inArray( booking_method, bookacti_localized.available_booking_methods ) ) 
-					&& booking_system.find( '.bookacti-calendar' ).length ) {
-					bookacti_update_calendar_settings( booking_system.find( '.bookacti-calendar' ), response.settings );
-				} else if( booking_system.attr( 'id' ) === 'bookacti-template-calendar' ) {
+				// Update calendar settings
+				if( booking_system.attr( 'id' ) === 'bookacti-template-calendar' ) {
 					bookacti_update_calendar_settings( booking_system, response.settings );
 				} else {
-					booking_system.trigger( 'bookacti_update_settings', [ booking_system.data( 'attributes' ).method, response.settings ] );
+					var method = calendars_data[ booking_system_id ][ 'method' ];
+					bookacti_booking_method_update_settings( booking_system, method );
 				}
+				
 				
             // If error
             } else {
@@ -202,80 +357,13 @@ function bookacti_update_settings_from_database( booking_system, template_ids ) 
             console.log( e );
         },
         complete: function() { 
-			if( booking_system.attr( 'id' ) === 'bookacti-template-calendar' ) {
+			if( booking_system_id === 'bookacti-template-calendar' ) {
 				bookacti_stop_template_loading();
 			} else {
 				bookacti_stop_loading_booking_system( booking_system );
 			}
 		}
     });
-}
-
-
-//Start a loading (or keep on loading if already loading)
-function bookacti_start_loading_booking_system( booking_system ) {
-	
-	var booking_system_id	= booking_system.attr( 'id' );
-	var booking_method		= booking_system.data( 'attributes' ).method;
-	
-	var loading_div =	'<div class="bookacti-loading-alt">' 
-							+ '<img class="bookacti-loader" src="' + bookacti_localized.plugin_path + '/img/ajax-loader.gif" title="' + bookacti_localized.loading + '" />'
-							+ '<span class="bookacti-loading-alt-text" >' + bookacti_localized.loading + '</span>'
-						+ '</div>';
-	
-	if( ! $j.isNumeric( loadingNumber[ booking_system_id ] ) ) {
-		loadingNumber[ booking_system_id ] = 0;
-	}
-	
-	if( booking_method === 'calendar' || $j.inArray( booking_method, bookacti_localized.available_booking_methods ) === -1 ) {
-		
-		if( booking_system.find( '.bookacti-calendar' ).length ) {
-			if( loadingNumber[ booking_system_id ] === 0 || ! booking_system.find( '.bookacti-loading-overlay' ).length ) {
-				booking_system.find( '.bookacti-loading-alt' ).remove();
-				bookacti_enter_calendar_loading_state( booking_system.find( '.bookacti-calendar' ) );
-			}
-		} else if( ! booking_system.find( '.bookacti-loading-alt' ).length ) {
-			booking_system.prepend( loading_div );
-		}
-		
-	} else {
-		booking_system.trigger( 'bookacti_start_loading', [ booking_method, loading_div ] );
-	}
-	
-	if( loadingNumber[ booking_system_id ] === 0 ) {
-		booking_system.trigger( 'bookacti_enter_loading_state' );
-	}
-	
-	loadingNumber[ booking_system_id ]++;
-}
-
-
-//Stop a loading (but keep on loading if there are other loadings )
-function bookacti_stop_loading_booking_system( booking_system, force_exit ) {
-	
-	force_exit = force_exit || false;
-	
-	var booking_system_id	= booking_system.attr( 'id' );
-	var booking_method		= booking_system.data( 'attributes' ).method;
-	
-	loadingNumber[ booking_system_id ]--;
-	loadingNumber[ booking_system_id ] = Math.max( loadingNumber[ booking_system_id ], 0 );
-	
-	if( force_exit ) { loadingNumber[ booking_system_id ] = 0; }
-	
-	// Action to do after everything has loaded
-	if( loadingNumber[ booking_system_id ] === 0 ) {
-		
-		if( booking_method === 'calendar' || $j.inArray( booking_method, bookacti_localized.available_booking_methods ) === -1 ) {		
-			bookacti_exit_calendar_loading_state( booking_system.find( '.bookacti-calendar' ) );
-		} else {
-			booking_system.trigger( 'bookacti_stop_loading', [ booking_method ] );
-		}
-		
-		booking_system.find( '.bookacti-loading-alt' ).remove();
-		booking_system.trigger( 'bookacti_exit_loading_state' );
-		
-	}
 }
 
 
@@ -359,4 +447,126 @@ function bookacti_sort_events_array_by_dates( array, desc ) {
 	});
 	
 	return array;
+}
+
+
+// Booking system actions based on booking method
+
+// Load the booking system according to booking method
+function bookacti_booking_method_set_up( booking_system, booking_method, reload_events ) {
+	reload_events = reload_events ? 1 : 0;
+	
+	if( booking_method === 'calendar' || $j.inArray( booking_method, bookacti_localized.available_booking_methods ) === -1 ) {
+		bookacti_set_calendar_up( booking_system, reload_events );
+	} else {
+		booking_system.trigger( 'bookacti_booking_method_set_up', [ booking_method, reload_events ] );
+	}
+}
+
+
+// Fill the events in the booking method
+function bookacti_booking_method_fill_with_events( booking_system, booking_method ) {
+	if( booking_method === 'calendar' || $j.inArray( booking_method, bookacti_localized.available_booking_methods ) === -1 ) {
+		bookacti_fill_calendar_with_events( booking_system );
+	} else {
+		booking_system.trigger( 'bookacti_booking_method_fill_with_events', [ booking_method ] );
+	}
+}
+
+
+// Update the calendar settings according to booking method
+function bookacti_booking_method_update_settings( booking_system, booking_method ) {
+	if( booking_method === 'calendar' || $j.inArray( booking_method, bookacti_localized.available_booking_methods ) === -1 ) {
+		bookacti_update_calendar_settings( booking_system, calendars_data[ booking_system.attr( 'id' ) ][ 'settings' ] );
+	} else {
+		booking_system.trigger( 'bookacti_update_settings', [ booking_method ] );
+	}
+}
+
+
+// Refetch events according to booking method
+function bookacti_booking_method_refetch_events( booking_system, booking_method ) {
+	if( booking_method === 'calendar' || $j.inArray( booking_method, bookacti_localized.available_booking_methods ) === -1 ) {
+		booking_system.find( '.bookacti-calendar' ).fullCalendar( 'removeEvents' );
+		bookacti_fetch_events( booking_system );
+	} else {
+		booking_system.trigger( 'bookacti_refetch_events', [ booking_method ] );
+	}
+}
+
+
+// Rerender events according to booking method
+function bookacti_booking_method_rerender_events( booking_system, booking_method ) {
+	if( booking_method === 'calendar' || $j.inArray( booking_method, bookacti_localized.available_booking_methods ) === -1 ) {
+		bookacti_refresh_calendar_view( booking_system );
+		booking_system.fullCalendar( 'rerenderEvents' );
+	} else {
+		booking_system.trigger( 'bookacti_rerender_events', [ booking_method ] );
+	}
+}
+
+
+//Start a loading (or keep on loading if already loading)
+function bookacti_start_loading_booking_system( booking_system ) {
+	
+	var booking_system_id	= booking_system.attr( 'id' );
+	var booking_method		= calendars_data[ booking_system_id ][ 'method' ];
+	
+	var loading_div =	'<div class="bookacti-loading-alt">' 
+							+ '<img class="bookacti-loader" src="' + bookacti_localized.plugin_path + '/img/ajax-loader.gif" title="' + bookacti_localized.loading + '" />'
+							+ '<span class="bookacti-loading-alt-text" >' + bookacti_localized.loading + '</span>'
+						+ '</div>';
+	
+	if( ! $j.isNumeric( loadingNumber[ booking_system_id ] ) ) {
+		loadingNumber[ booking_system_id ] = 0;
+	}
+	
+	if( booking_method === 'calendar' || $j.inArray( booking_method, bookacti_localized.available_booking_methods ) === -1 ) {
+		if( booking_system.find( '.bookacti-calendar' ).length ) {
+			if( loadingNumber[ booking_system_id ] === 0 || ! booking_system.find( '.bookacti-loading-overlay' ).length ) {
+				booking_system.find( '.bookacti-loading-alt' ).remove();
+				bookacti_enter_calendar_loading_state( booking_system.find( '.bookacti-calendar' ) );
+			}
+		} else if( ! booking_system.find( '.bookacti-loading-alt' ).length ) {
+			booking_system.prepend( loading_div );
+		}
+		
+	} else {
+		booking_system.trigger( 'bookacti_start_loading', [ booking_method, loading_div ] );
+	}
+	
+	if( loadingNumber[ booking_system_id ] === 0 ) {
+		booking_system.trigger( 'bookacti_enter_loading_state' );
+	}
+	
+	loadingNumber[ booking_system_id ]++;
+}
+
+
+//Stop a loading (but keep on loading if there are other loadings )
+function bookacti_stop_loading_booking_system( booking_system, force_exit ) {
+	
+	force_exit = force_exit || false;
+	
+	var booking_system_id	= booking_system.attr( 'id' );
+	var booking_method		= calendars_data[ booking_system_id ][ 'method' ];
+	
+	loadingNumber[ booking_system_id ]--;
+	loadingNumber[ booking_system_id ] = Math.max( loadingNumber[ booking_system_id ], 0 );
+	
+	if( force_exit ) { loadingNumber[ booking_system_id ] = 0; }
+	
+	// Action to do after everything has loaded
+	if( loadingNumber[ booking_system_id ] === 0 ) {
+		
+		if( booking_method === 'calendar' || $j.inArray( booking_method, bookacti_localized.available_booking_methods ) === -1 ) {		
+			bookacti_exit_calendar_loading_state( booking_system.find( '.bookacti-calendar' ) );
+		} else {
+			booking_system.trigger( 'bookacti_stop_loading', [ booking_method ] );
+		}
+		
+		booking_system.find( '.bookacti-loading-alt' ).remove();
+		booking_system.trigger( 'bookacti_exit_loading_state' );
+		
+	}
 }

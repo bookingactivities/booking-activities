@@ -13,19 +13,21 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	 * @param	array		$templates				Array of templates ids
 	 * @param	array		$activities				Array of activity ids
 	 * @param	array		$group_categories		Array of group categories ids
-	 * @param	DateTime	$user_datetime_object	User current DateTime
 	 * @param	bool			$fetch_past_events		Whether to fetch events occuring before user datetime
 	 * @return	array		$events_array			Array of events matching the parameters
 	 */
-    function bookacti_fetch_events( $templates = array(), $activities = array(), $group_categories = array(), $user_datetime_object = null, $fetch_past_events = false, $context = 'frontend' ) {
+    function bookacti_fetch_events( $templates = array(), $activities = array(), $group_categories = array(), $fetch_past_events = false, $context = 'frontend' ) {
 
 		global $wpdb;
 
 		if( is_null( $templates ) )				{ $templates = array(); }
 		if( is_null( $activities ) )			{ $activities = array(); }
 		if( is_null( $group_categories ) )		{ $group_categories = array(); }
-		if( is_null( $user_datetime_object ) )	{ $user_datetime_object = new DateTime(); $user_datetime_object->setTimezone( new DateTimeZone( 'UTC' ) ); }
-		$user_timestamp	= $user_datetime_object->format( 'U' );
+		
+		// Set current datetime
+		$timezone = bookacti_get_setting_value( 'bookacti_general_settings', 'bookacti_timezone' );
+		$current_datetime_object = new DateTime( 'now', new DateTimeZone( $timezone ) );
+		$user_timestamp	= $current_datetime_object->format( 'U' );
 
 		// Prepare the query
 		$query  = 'SELECT DISTINCT E.id as event_id, E.template_id, E.title, E.start, E.end, E.repeat_freq, E.repeat_from, E.repeat_to, E.availability, A.color, A.id as activity_id, IFNULL( B.bookings, 0 ) as bookings '
@@ -148,7 +150,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 				array_push( $events_array, $event_array );
 			} else {
-				$repeated_events_array = bookacti_create_repeated_events( $event, $event_array, $user_datetime_object, $fetch_past_events, $context );
+				$repeated_events_array = bookacti_create_repeated_events( $event, $event_array, $fetch_past_events, $context );
 				$events_array = array_merge( $events_array, $repeated_events_array );
 			}
 		}

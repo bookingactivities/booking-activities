@@ -163,3 +163,25 @@ function bookacti_add_booking_list_in_cart_filter( $params ) {
 	</div>
 <?php
 }
+
+
+// Add a mention to booking method tip
+add_filter( 'bookacti_booking_methods_tip', 'bookacti_add_wc_mention_to_booking_method_tip', 1, 10 );
+function bookacti_add_wc_mention_to_booking_method_tip( $tip ) {
+	$tip .= '<br/>';
+	$tip .= esc_html__( 'This parameter can be overriden by products settings in woocommerce.', BOOKACTI_PLUGIN_NAME );
+	return $tip;
+}
+
+
+/**
+ * Add a mention to when events load setting tip
+ * 
+ * @since 1.1.0
+ */
+add_filter( 'bookacti_when_events_load_tip', 'bookacti_add_wc_mention_to_when_events_load_tip', 1, 10 );
+function bookacti_add_wc_mention_to_when_events_load_tip( $tip ) {
+	$tip .= '<br/>';
+	$tip .= esc_html__( 'WC Variable products calendars will always load after page load.', BOOKACTI_PLUGIN_NAME );
+	return $tip;
+}

@@ -195,7 +195,7 @@ function bookacti_reset_cart_expiration_dates( $expiration_date ) {
 		
 		bookacti_set_cart_timeout( $expiration_date );
 		
-		$cart_keys = array_keys ( $cart_contents );
+		$cart_keys = array_keys( $cart_contents );
 
 		$booking_id_array = array();
 		foreach ( $cart_keys as $key ) {

@@ -47,16 +47,9 @@ $j( document ).ready( function() {
 						} else {
 							// Reload events
 							var booking_system_id	= booking_system.attr( 'id' );
-							var calendar			= $j( '#' + booking_system_id + ' .bookacti-calendar' );
-							var booking_method		= booking_system.data( 'attributes' ).method;
-							if( booking_method === 'calendar' || $j.inArray( booking_method, bookacti_localized.available_booking_methods ) === -1 ) {
-								calendar.fullCalendar( 'removeEvents' );
-								bookacti_fetch_calendar_events( calendar );
-							} else {
-								var fetch_past_events = false;
-								var context = 'frontend';
-								booking_system.trigger( 'bookacti_refetch_events', [ booking_method, fetch_past_events, context ] );
-							}
+							var booking_method		= calendars_data[ booking_system_id ][ 'method' ];
+							
+							bookacti_booking_method_refetch_events( booking_system, booking_method );
 						}
 						
 					} else {
