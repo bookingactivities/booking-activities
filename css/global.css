@@ -30,6 +30,7 @@
 .bookacti-date-picked-title	{ font-weight: bolder; }
 
 /* Events */
+.fc-event { cursor: pointer; overflow: hidden; }
 .event-unavailable  { opacity: 0.5; cursor: default; pointer-events: none; }
 .bookacti-picked-event {
     -webkit-box-shadow: 0 5px 10px rgba(0,0,0,0.5);
@@ -42,10 +43,6 @@
 	z-index: 3 !important;
 	transition: all 0.2s;
 }
-
-.bookacti-disabled-day	{ background-color: #e5e5e5 !important; }
-
-.fc-event				{ cursor: pointer; overflow: hidden; }
 
 .fc-basic-view .fc-content > * { display: block; }
 	

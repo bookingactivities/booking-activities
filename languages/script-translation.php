@@ -18,6 +18,7 @@ $bookacti_translation_array = apply_filters( 'bookacti_translation_array', array
 	'dialog_import_activity_title'			=> esc_html__( 'Import existing activity', BOOKACTI_PLUGIN_NAME ),
 	'dialog_create_activity_title'			=> esc_html__( 'Create new activity', BOOKACTI_PLUGIN_NAME ),
 	'dialog_update_activity_title'		    => esc_html__( 'Update activity parameters', BOOKACTI_PLUGIN_NAME ),
+	'dialog_choose_group_of_events_title'	=> esc_html__( 'Choose a group of events', BOOKACTI_PLUGIN_NAME ),
 	'dialog_create_group_of_events_title'	=> esc_html__( 'Create a group of events', BOOKACTI_PLUGIN_NAME ),
 	'dialog_update_group_of_events_title'	=> esc_html__( 'Update a group of events', BOOKACTI_PLUGIN_NAME ),
 	'dialog_delete_group_of_events_title'	=> esc_html__( 'Delete a group of events', BOOKACTI_PLUGIN_NAME ),

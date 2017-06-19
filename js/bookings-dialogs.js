@@ -1,41 +1,41 @@
 // INITIALIZATION
 // Initialize bookings dialogs
 function bookacti_init_bookings_dialogs() {
-    //Common param
-    $j( '.bookacti-bookings-dialogs' ).dialog({ 
-        modal:      true,
-        autoOpen:   false,
-        minHeight:  300,
-        minWidth:   440,
+	//Common param
+	$j( '.bookacti-bookings-dialog' ).dialog({ 
+		modal:      true,
+		autoOpen:   false,
+		minHeight:  300,
+		minWidth:   440,
 		resize:		'auto',
-        show:       true,
-        hide:       true,
-        closeText:  '&#10006;',
-        close: function() {}
-    });
-    
-    //Individual param
-    $j( '#bookacti-bookings-filters-param-dialog' ).dialog({ 
-        title: bookacti_localized.booking_filters_parameters
-    });
-    $j( '#bookacti-bookings-list-param-dialog' ).dialog({ 
-        title: bookacti_localized.booking_list_parameters
-    });
-    $j( '#bookacti-cancel-booking-dialog' ).dialog({ 
-        title: bookacti_localized.booking_action_cancel
-    });
-    $j( '#bookacti-reschedule-booking-dialog' ).dialog({ 
-        title: bookacti_localized.booking_action_reschedule
-    });
-    $j( '#bookacti-refund-booking-dialog' ).dialog({ 
-        title: bookacti_localized.booking_action_refund
-    });
-    $j( '#bookacti-refund-booking-confirm-dialog' ).dialog({ 
-        title: bookacti_localized.booking_confirm_refund
-    });
-    $j( '#bookacti-change-booking-state-dialog' ).dialog({ 
-        title: bookacti_localized.booking_change_state
-    });
+		show:       true,
+		hide:       true,
+		closeText:  '&#10006;',
+		close: function() {}
+	});
+
+	//Individual param
+	$j( '#bookacti-bookings-filters-param-dialog' ).dialog({ 
+		title: bookacti_localized.booking_filters_parameters
+	});
+	$j( '#bookacti-bookings-list-param-dialog' ).dialog({ 
+		title: bookacti_localized.booking_list_parameters
+	});
+	$j( '#bookacti-cancel-booking-dialog' ).dialog({ 
+		title: bookacti_localized.booking_action_cancel
+	});
+	$j( '#bookacti-reschedule-booking-dialog' ).dialog({ 
+		title: bookacti_localized.booking_action_reschedule
+	});
+	$j( '#bookacti-refund-booking-dialog' ).dialog({ 
+		title: bookacti_localized.booking_action_refund
+	});
+	$j( '#bookacti-refund-booking-confirm-dialog' ).dialog({ 
+		title: bookacti_localized.booking_confirm_refund
+	});
+	$j( '#bookacti-change-booking-state-dialog' ).dialog({ 
+		title: bookacti_localized.booking_change_state
+	});
 }
 
 

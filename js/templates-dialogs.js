@@ -88,7 +88,7 @@ function bookacti_init_template_dialogs() {
     });
 	
 	// Prevent sending form
-	$j( '.bookacti-backend-dialogs form' ).on( 'submit', function( e ){
+	$j( '.bookacti-backend-dialog form' ).on( 'submit', function( e ){
 		e.preventDefault();
 	});
 	
@@ -1589,13 +1589,13 @@ function bookacti_dialog_create_group_of_events( category_id ) {
 								bookacti_add_group_of_events( response.group_id, response.group_title, response.category_id );
 								
 								// Store the events of the groups
-								eventGroups[ response.group_id ] = [];
+								json_groups[ 'template' ][ response.group_id ] = [];
 								$j.each( selectedEvents[ 'template' ], function( i, event ){
 									// Add event data
 									event.group_id	= response.group_id;
 									event.active	= 1;
-									// Store event in eventGroups global var
-									eventGroups[ response.group_id ].push( event );
+									// Store event in json_groups[ 'template' ] global var
+									json_groups[ 'template' ][ response.group_id ].push( event );
 								});
 								
 								// Empty the selected events and refresh them
@@ -1638,38 +1638,8 @@ function bookacti_update_group_of_events( group_id ) {
 	if( open_dialog ) {
 		bookacti_dialog_update_group_of_events( group_id );
 	} else {
-		bookacti_dialog_select_events_of_group( group_id );
+		bookacti_select_events_of_group( group_id );
 	}
-}
-
-
-// Select all events of a group onto the calendar
-function bookacti_dialog_select_events_of_group( group_id ) {
-	
-	if( ! group_id ) {
-		return false;
-	}
-	
-	// Exit others groups editing mode
-	$j( '.bookacti-update-group-of-events img.validate-group' ).attr( 'src', bookacti_localized.plugin_path + '/img/gear.png' ).removeClass( 'validate-group' );
-	
-	// Empty the selected events and refresh them
-	selectedEvents[ 'template' ] = [];
-	$j( '#bookacti-template-calendar' ).fullCalendar( 'rerenderEvents' );
-	$j( '#bookacti-insert-group-of-events' ).css( 'visibility', 'hidden' );
-	
-	// Change view to the 1st event selected to make sure that at least 1 event is in the view
-	if( typeof eventGroups[ group_id ] !== 'undefined' ) {
-		$j( '#bookacti-template-calendar' ).fullCalendar( 'gotoDate', eventGroups[ group_id ][0]['start'] );
-	}
-
-	// Select the events of the group
-	$j.each( eventGroups[ group_id ], function( i, event ){
-		bookacti_select_event( event );
-	});
-	
-	// Change group settings icon and wait for the user to validate the selected events
-	$j( '.bookacti-group-of-events[data-group-id="' + group_id + '"]' ).find( '.bookacti-update-group-of-events img' ).attr( 'src', bookacti_localized.plugin_path + '/img/tick.png' ).addClass( 'validate-group' );
 }
 
 
@@ -1807,13 +1777,13 @@ function bookacti_dialog_update_group_of_events( group_id ) {
 								}
 								
 								// Update the events of the groups
-								eventGroups[ group_id ] = [];
+								json_groups[ 'template' ][ group_id ] = [];
 								$j.each( selectedEvents[ 'template' ], function( i, event ){
 									// Add event data
 									event.group_id	= group_id;
 									event.active	= 1;
-									// Store event in eventGroups global var
-									eventGroups[ group_id ].push( event );
+									// Store event in json_groups[ 'template' ] global var
+									json_groups[ 'template' ][ group_id ].push( event );
 								});
 								
 								// Empty the selected events and refresh them

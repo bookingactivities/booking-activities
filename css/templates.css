@@ -33,9 +33,9 @@
 .bookacti-event-action-select-checkbox								{ margin-right: 0 !important; border-radius: 50%; min-width: 16px !important; min-height: 16px !important; max-width: 16px !important; max-height: 16px !important; width: 16px !important; height: 16px !important; }
 .bookacti-event-action-select-checkbox:not(:checked):hover::before	{ content: "\f147"; margin: -3px 0 0 -4px; color: #aaa; float: left; display: inline-block; vertical-align: middle; width: 16px !important; font: 400 21px/1 dashicons; speak: none; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
 .bookacti-event-action-select-checkbox:checked::before				{ margin: -3px 0 0 -4px !important; font: 400 21px/1 dashicons !important; }
-.bookacti-selected-event											{ border-width: 2px; }
-.bookacti-selected-event .fc-bg										{ opacity: 0.5; transition: opacity 0.2s; }
-.bookacti-selected-event:not(.bookacti-picked-event) .bookacti-event-actions { right: 1px; top: 0; }
+.bookacti-selected-event														{ border-width: 2px; }
+.bookacti-selected-event .fc-bg													{ opacity: 0.5; transition: opacity 0.2s; }
+.bookacti-selected-event:not(.bookacti-picked-event) .bookacti-event-actions	{ right: 1px; top: 0; }
 
 .bookacti-event-action-edit-button			{ font-size: 16px; transition: color 0.2s;  }
 .bookacti-event-action-edit-button:hover	{ color: #aaa; cursor: pointer; }

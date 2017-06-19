@@ -3,6 +3,9 @@ $j( document ).ready( function() {
 	//Check if booking systems exist before anything
 	if( $j( '.bookacti-booking-system' ).length ) { 
 		
+		// Init the Dialogs
+		bookacti_init_booking_system_dialogs();
+		
 		$j( '.bookacti-booking-system' ).each( function() { 
 			
 			// Retrieve the info required to show the desired events

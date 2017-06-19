@@ -48,7 +48,7 @@ function bookacti_set_calendar_up( booking_system, reload_events ) {
 		// When an event is rendered
 		eventRender: function( event, element, view ) { 
 
-			//Add some info to the event
+			// Add some info to the event
 			element.data( 'event-id',			event.id );
 			element.attr( 'data-event-id',		event.id );
 			element.data( 'event-start',		event.start.format( 'YYYY-MM-DD HH:mm:ss' ) );
@@ -63,7 +63,7 @@ function bookacti_set_calendar_up( booking_system, reload_events ) {
 				element.find( 'span.fc-time' ).text( event.start.format( 'HH:mm' ) + ' - ' + event.end.format( 'HH:mm' ) );
 			}			
 			
-			//Add availability div
+			// Add availability div
 			if( event.bookings !== undefined && event.availability !== undefined ) {
 
 				var is_bookings		= 0; if( parseInt( event.bookings ) > 0 ) { is_bookings = 1; }
@@ -75,6 +75,14 @@ function bookacti_set_calendar_up( booking_system, reload_events ) {
 				}
 
 				element.append( avail_div );
+			}
+			
+			// Add background to basic views
+			if( view.name === 'month' || view.name === 'basicWeek' || view.name === 'basicDay' ) {
+				var bg_div = $j( '<div />', {
+					class: 'fc-bg'
+				});
+				element.append( bg_div );
 			}
 			
 			booking_system.trigger( 'bookacti_event_render', [ event, element ] );
@@ -90,8 +98,10 @@ function bookacti_set_calendar_up( booking_system, reload_events ) {
 		eventAfterAllRender: function( view ) {
 			//Display element as picked or selected if they actually are
 			$j.each( pickedEvents[ booking_system_id ], function( i, picked_event ) {
-				calendar.find( '.fc-event[data-event-id="' + picked_event['event_id'] + '"][data-event-start="' + picked_event['event_start'] + '"]' ).addClass( 'bookacti-picked-event' );
+				calendar.find( '.fc-event[data-event-id="' + picked_event[ 'id' ] + '"][data-event-start="' + picked_event[ 'start' ] + '"]' ).addClass( 'bookacti-picked-event' );
 			});
+			
+			bookacti_refresh_picked_events_display( booking_system );
 		},
 
 		// eventClick : When an event is clicked
@@ -103,19 +113,50 @@ function bookacti_set_calendar_up( booking_system, reload_events ) {
 
 			//Fill an intelligible field to feedback the user about his choice
 			bookacti_fill_picked_event_summary( calendar.parent(), event.start, event.end, event.activity_id );
-
+			
+			// Because of popover and long events (spreading on multiple days), 
+			// the same event can appears twice, so we need to apply changes on each
+			var elements = $j( '.fc-event[data-event-id="' + event.id + '"][data-event-start="' + event.start.format( 'YYYY-MM-DD HH:mm:ss' ) + '"]' );
+			
 			//Format the selected event
 			$j( '.fc-event' ).removeClass( 'bookacti-picked-event' );
-			$j( this ).addClass( 'bookacti-picked-event' );
+			elements.addClass( 'bookacti-picked-event' );
 			
 			pickedEvents[ booking_system_id ] = [];
-			pickedEvents[ booking_system_id ].push( 
-			{ 'event_id'			: event.id,
-			'activity_id'			: event.activity_id, 
-			'event_availability'	: bookacti_get_event_availability( event ), 
-			'event_start'			: event.start.format( 'YYYY-MM-DD HH:mm:ss' ), 
-			'event_end'				: event.end.format( 'YYYY-MM-DD HH:mm:ss' ) } );
-		
+			
+			// Check if the event is part of a group
+			var groups = [];
+			$j.each( json_groups[ booking_system_id ], function( group_id, group_events ){
+				$j.each( group_events, function( i, group_event ){
+					if( group_event[ 'id' ] === event.id
+					&&  group_event[ 'start' ] === event.start.format( 'YYYY-MM-DD HH:mm:ss' )
+					&&  group_event[ 'end' ] === event.end.format( 'YYYY-MM-DD HH:mm:ss' ) ) {
+						groups.push( group_event[ 'group_id' ] );
+					}
+				});
+			});
+			
+			// If the event is part of (a) group(s)
+			if( groups.length > 0 ) {
+				// If there is only one choice (one group and pick group only)
+				if( groups.length === 1 && calendars_data[ booking_system_id ][ 'groups_only' ] ) {
+					// Select all the events of the group
+					bookacti_pick_events_of_group( booking_system, groups[ 0 ] );
+				
+				// If the event is in several groups
+				} else {
+					
+					// Ask what group to pick
+					bookacti_dialog_choose_group_of_events( booking_system, groups );
+					
+				}
+				
+			// If event is single
+			} else {
+				// Pick single event
+				bookacti_pick_event( booking_system, event );
+			}
+			
 			booking_system.trigger( 'bookacti_event_click', [ event ] );
 		}
 
@@ -133,6 +174,11 @@ function bookacti_set_calendar_up( booking_system, reload_events ) {
 		// Fetch events from database
 		bookacti_fetch_events( booking_system );
 	}
+	
+	// Refresh the display of selected events when you click on the View More link
+	calendar.off().on( 'click', '.fc-more', function(){
+		bookacti_refresh_picked_events_display( booking_system );
+	});
 	
 	booking_system.trigger( 'bookacti_after_calendar_set_up' );
 }
@@ -152,6 +198,142 @@ function bookacti_fill_calendar_with_events( booking_system ) {
 	
 	// Set calendar period
 	bookacti_set_calendar_period( booking_system );
+}
+
+
+// Pick all events of a group onto the calendar
+function bookacti_pick_events_of_group( booking_system, group_id ) {
+	
+	if( ! group_id ) {
+		return false;
+	}
+	
+	var booking_system_id = booking_system.attr( 'id' );
+	var calendar = booking_system.find( '.bookacti-calendar:first' );
+	
+	// Empty the picked events and refresh them
+	pickedEvents[ booking_system_id ] = [];
+	
+	// Pick the events of the group
+	$j.each( json_groups[ booking_system_id ][ group_id ], function( i, event ){
+		bookacti_pick_event( booking_system, event );
+	});
+}
+
+
+// Pick an event
+function bookacti_pick_event( booking_system, event ) {
+	
+	var booking_system_id = booking_system.attr( 'id' );
+	
+	// Return false if we don't have both event id and event start
+	if( ( typeof event !== 'object' )
+	||  ( typeof event === 'object' && ( typeof event.id === 'undefined' || typeof event.start === 'undefined' ) ) ) {
+		return false;
+	}
+	
+	// Format event object
+	event = {
+		'id': event.id,
+		'activity_id': event.activity_id,
+		'title': event.title,
+		'start': moment( event.start ),
+		'end': moment( event.end )
+	};
+	
+	// Because of popover and long events (spreading on multiple days), 
+	// the same event can appears twice, so we need to apply changes on each
+	var elements = $j( '.fc-event[data-event-id="' + event.id + '"][data-event-start="' + event.start.format( 'YYYY-MM-DD HH:mm:ss' ) + '"]' );
+	
+	// Format the pciked event (because of popover, the same event can appears twice)
+	elements.addClass( 'bookacti-picked-event' );
+	
+	// Keep picked events in memory 
+	pickedEvents[ booking_system_id ].push({ 
+		'id'			: event.id, 
+		'activity_id'	: event.activity_id, 
+		'title'			: event.title, 
+		'start'			: event.start.format( 'YYYY-MM-DD HH:mm:ss' ), 
+		'end'			: event.end.format( 'YYYY-MM-DD HH:mm:ss' ) 
+		// availability TO DO
+	});
+
+	booking_system.trigger( 'bookacti_pick_event', [ event ] );
+}
+
+
+// Unpick an event
+function bookacti_unpick_event( booking_system, event, start, all ) {
+	
+	var booking_system_id = booking_system.attr( 'id' );
+	
+	// Determine if all event should be unpicked
+	all = all ? true : false;
+	start = typeof start !== 'undefined' ? start : false;
+	
+	// Return false if we don't have both event id and event start
+	if( ( typeof event !== 'object' && ! $j.isNumeric( event ) )
+	||  ( typeof event === 'object' && ( typeof event.id === 'undefined' || typeof event.start === 'undefined' ) )
+	||  ( $j.isNumeric( event ) && ! all && typeof start === 'undefined' ) ) {
+		return false;
+	}
+	
+	if( typeof event !== 'object' ) {
+		// Format start values to object
+		var event_id = event;
+		start	= start.isMoment() ? start : moment( start ).isValid() ? moment( start ) : false;
+		event	= {
+			'id': event_id,
+			'start': start 
+		};
+	}
+	
+	// Because of popover and long events (spreading on multiple days), 
+	// the same event can appears twice, so we need to apply changes on each
+	var elements = $j( '.fc-event[data-event-id="' + event.id + '"]' );
+	if( ! all && event.start ) {
+		elements = $j( '.fc-event[data-event-id="' + event.id + '"][data-event-start="' + event.start.format( 'YYYY-MM-DD HH:mm:ss' ) + '"]' );
+	}
+	
+	// Format the picked event(s)
+	elements.removeClass( 'bookacti-picked-event' );
+
+	// Remove picked event(s) from memory 
+	$j.each( pickedEvents[ booking_system_id ], function( i, picked_event ){
+		if( typeof picked_event !== 'undefined' ) {
+			if( picked_event.id == event.id 
+			&&  (  all 
+				|| picked_event.start.substr( 0, 10 ) === event.start.format( 'YYYY-MM-DD' ) ) ) {
+				
+				// Remove the event from the pickedEvents array
+				pickedEvents[ booking_system_id ].splice( i, 1 );
+				
+				// If only one event should be unpicked, break the loop
+				if( ! all ) {
+					return false;
+				}
+			}
+		}
+	});
+	
+	booking_system.trigger( 'bookacti_unpick_event', [ event, all ] );
+}
+
+
+// Make sure picked events appears as picked and vice-versa
+function bookacti_refresh_picked_events_display( booking_system ) {
+	
+	var booking_system_id = booking_system.attr( 'id' );
+	
+	$j( '.fc-event' ).removeClass( 'bookacti-picked-event' );
+
+	$j.each( pickedEvents[ booking_system_id ], function( i, picked_event ) {
+		var element = $j( '.fc-event[data-event-id="' + picked_event.id + '"][data-event-start="' + picked_event.start + '"]' );
+		// Format picked events
+		element.addClass( 'bookacti-picked-event' );
+	});
+	
+	booking_system.trigger( 'bookacti_refresh_picked_events' );
 }
 
 

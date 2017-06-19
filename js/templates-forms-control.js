@@ -323,8 +323,8 @@ function bookacti_validate_event_general_data() {
 
 function bookacti_validate_event_repetition_data( event_start, event_end ) {
 	
-    event_start = event_start	|| pickedEvents[ 'template' ][ 0 ][ 'event_start' ];
-    event_end	= event_end		|| pickedEvents[ 'template' ][ 0 ][ 'event_end' ];
+    event_start = event_start	|| pickedEvents[ 'template' ][ 0 ][ 'start' ];
+    event_end	= event_end		|| pickedEvents[ 'template' ][ 0 ][ 'end' ];
 	
 	// Get params
     var min_bookings    = parseInt( $j( '#bookacti-event-data-dialog #bookacti-event-availability' ).attr( 'min' ) );

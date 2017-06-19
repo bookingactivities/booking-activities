@@ -19,7 +19,6 @@ var template_id			= 0;
 var isDragging			= false;
 var exceptions			= [];
 var selectedCategory	= 'new';
-var eventGroups			= [];
 var selectedEvents		= [];
 var blockEvents			= false;
 

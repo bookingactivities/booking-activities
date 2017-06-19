@@ -307,9 +307,9 @@ function bookacti_validate_selected_booking_event( booking_system, quantity ) {
 	
 	if( pickedEvents[ booking_system_id ] !== undefined ) {
 		$j.each( pickedEvents[ booking_system_id ], function( i, picked_event ) {
-			if( picked_event['event_id']	=== event_id 
-			&&  picked_event['event_start']	=== event_start 
-			&&  picked_event['event_end']	=== event_end ) {
+			if( picked_event['id']		=== event_id 
+			&&  picked_event['start']	=== event_start 
+			&&  picked_event['end']		=== event_end ) {
 				
 				valid_form.is_event_in_selected = true;
 

@@ -213,7 +213,7 @@ function bookacti_load_template_calendar() {
 			
 			
 			// Add background to basic views
-			if( view.name === 'month' || view.name === 'basicWeek' ||view.name === 'basicDeek' ) {
+			if( view.name === 'month' || view.name === 'basicWeek' || view.name === 'basicDay' ) {
 				var bg_div = $j( '<div />', {
 					class: 'fc-bg'
 				});
@@ -271,10 +271,10 @@ function bookacti_load_template_calendar() {
 			
 			//Display element as picked or selected if they actually are
 			$j.each( pickedEvents[ 'template' ], function( i, picked_event ) {
-				calendar.find( '.fc-event[data-event-id="' + picked_event['event_id'] + '"][data-event-start="' + picked_event['event_start'] + '"]' ).addClass( 'bookacti-picked-event' );
+				calendar.find( '.fc-event[data-event-id="' + picked_event[ 'id' ] + '"][data-event-start="' + picked_event[ 'start' ] + '"]' ).addClass( 'bookacti-picked-event' );
 			});
 			
-			bookacti_refresh_selected_events_display();
+			bookacti_refresh_selected_events_display( calendar );
 		},
 
 
@@ -430,7 +430,7 @@ function bookacti_load_template_calendar() {
 				revertFunc();
 			} else {
 				// Unselect the event or occurences of the event
-				bookacti_unselect_event( event, undefined, true );
+				bookacti_unselect_event( calendar, event, undefined, true );
 			}
 
 			// Update the event changes in database
@@ -529,10 +529,10 @@ function bookacti_load_template_calendar() {
 					
 					// Format selected events and keep them / remove them from memory
 					if( element.find( '.bookacti-event-action-select-checkbox' ).is( ':checked' ) ) {
-						bookacti_select_event( event );
+						bookacti_select_event( calendar, event );
 					
 					} else {
-						bookacti_unselect_event( event );
+						bookacti_unselect_event( calendar, event );
 						element.find( '.bookacti-event-action-select' ).show();
 					}
 				}
@@ -545,11 +545,12 @@ function bookacti_load_template_calendar() {
 				
 				// Keep picked events in memory 
 				pickedEvents[ 'template' ] = [];
-				pickedEvents[ 'template' ].push( 
-				{ 'event_id'			: event.id,
-				'activity_id'			: event.activity_id,
-				'event_start'			: event.start.format( 'YYYY-MM-DD HH:mm:ss' ), 
-				'event_end'				: event.end.format( 'YYYY-MM-DD HH:mm:ss' ) } );
+				pickedEvents[ 'template' ].push({ 
+					'id'			: event.id,
+					'activity_id'	: event.activity_id,
+					'start'			: event.start.format( 'YYYY-MM-DD HH:mm:ss' ), 
+					'end'			: event.end.format( 'YYYY-MM-DD HH:mm:ss' ) 
+				});
 			}
 		},
 		

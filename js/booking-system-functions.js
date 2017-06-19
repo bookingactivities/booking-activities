@@ -231,7 +231,7 @@ function bookacti_fill_picked_activity_summary( booking_system, activity_id, qty
 	if( ! activity_id ) {
 		if( pickedEvents[ booking_system_id ] !== undefined ) {
 			if( pickedEvents[ booking_system_id ][ 0 ] !== undefined ) {
-				if( pickedEvents[ booking_system_id ][ 0 ][ 'activity-id' ] !== undefined ) {
+				if( pickedEvents[ booking_system_id ][ 0 ][ 'activity_id' ] !== undefined ) {
 					activity_id = pickedEvents[ booking_system_id ][ 0 ][ 'activity_id' ];
 				}
 			}

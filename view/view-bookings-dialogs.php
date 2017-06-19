@@ -4,7 +4,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 ?>
 
 <!-- Frontend and backend - Cancel booking -->
-<div id='bookacti-cancel-booking-dialog' class='bookacti-frontend-dialogs bookacti-backend-dialogs bookacti-bookings-dialogs' >
+<div id='bookacti-cancel-booking-dialog' class='bookacti-backend-dialog bookacti-bookings-dialog' >
 <?php
 	echo '<p>'
 			. esc_html__( 'Do you really want to cancel this booking?', BOOKACTI_PLUGIN_NAME )
@@ -15,11 +15,11 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 </div>
 
 <!-- Frontend and backend - Refund a cancel booking -->
-<div id='bookacti-refund-booking-dialog' class='bookacti-frontend-dialogs bookacti-backend-dialogs bookacti-bookings-dialogs' ></div>
-<div id='bookacti-refund-booking-confirm-dialog' class='bookacti-frontend-dialogs bookacti-backend-dialogs bookacti-bookings-dialogs' ></div>
+<div id='bookacti-refund-booking-dialog' class='bookacti-backend-dialog bookacti-bookings-dialog' ></div>
+<div id='bookacti-refund-booking-confirm-dialog' class='bookacti-backend-dialog bookacti-bookings-dialog' ></div>
 
 <!-- Frontend and backend - Reschedule booking -->
-<div id='bookacti-reschedule-booking-dialog' class='bookacti-frontend-dialogs bookacti-backend-dialogs bookacti-bookings-dialogs' >
+<div id='bookacti-reschedule-booking-dialog' class='bookacti-backend-dialog bookacti-bookings-dialog' >
 <?php 
 	$reschedule_booking_method = apply_filters( 'bookacti_reschedule_booking_method', 'calendar' );
 	$atts = array( 

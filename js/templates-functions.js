@@ -1,3 +1,5 @@
+// TEMPLATE
+
 //Change default template on change in the select box
 function bookacti_switch_template( selected_template_id ) {
 	
@@ -62,7 +64,7 @@ function bookacti_switch_template( selected_template_id ) {
 						});
 
 						// Update group of events list
-						eventGroups = response.groups_events;
+						json_groups[ 'template' ] = response.groups_events;
 
 
 					// SHORTCODE GENERATOR
@@ -148,6 +150,10 @@ function bookacti_switch_template( selected_template_id ) {
 }
 
 
+
+
+// ACTIVITIES
+
 function bookacti_init_activities() {
     $j( '#bookacti-template-activities-container .fc-event' ).each( function() {
         var resizable = false;
@@ -190,10 +196,45 @@ function bookacti_init_activities() {
 }
 
 
+function bookacti_init_show_hide_activities_switch() {
+    
+    var srcPath = bookacti_localized.plugin_path + '/img/';
+    
+    $j( '#bookacti-template-activity-list' ).on( 'click', '.activity-show-hide img', function() { 
+        
+        var activity_id = $j( this ).data( 'activity-id' );
+        var idx = $j.inArray( activity_id, hiddenActivities );
+        
+        if( $j( this ).data( 'activity-visible' ) === 1 ) {
+            $j( this ).attr( 'src', srcPath + 'hide.png' );
+            $j( this ).data( 'activity-visible', 0 );
+            $j( this ).attr( 'data-activity-visible', 0 );
+            if ( idx === -1 ) { hiddenActivities.push( activity_id ); }
+            
+        } else {
+            $j( this ).attr( 'src', srcPath + 'show.png' );
+            $j( this ).data( 'activity-visible', 1 );
+            $j( this ).attr( 'data-activity-visible', 1 );
+            if ( idx !== -1 ) {  hiddenActivities.splice( idx, 1 ); }
+        }
+        
+        $j( '#bookacti-template-calendar' ).fullCalendar( 'rerenderEvents' );
+		
+		//Update shortcode generator activities list
+		var is_visible = $j( this ).data( 'activity-visible' );
+		bookacti_update_shortcode_generator_activity_ids( activity_id, is_visible, false );
+    });
+}
+
+
+
+
+// GROUPS OF EVENTS
+
 function bookacti_init_groups_of_events() {
 	// Refresh the display of selected events when you click on the View More link
 	$j( '#bookacti-template-calendar' ).on( 'click', '.fc-more', function(){
-		bookacti_refresh_selected_events_display();
+		bookacti_refresh_selected_events_display( $j( '#bookacti-template-calendar' ) );
 	});
 
 	// Display tuto if there is there is at least two events selected and no group categories yet
@@ -271,37 +312,6 @@ function bookacti_add_group_of_events( id, title, category_id ) {
 }
 
 
-function bookacti_init_show_hide_activities_switch() {
-    
-    var srcPath = bookacti_localized.plugin_path + '/img/';
-    
-    $j( '#bookacti-template-activity-list' ).on( 'click', '.activity-show-hide img', function() { 
-        
-        var activity_id = $j( this ).data( 'activity-id' );
-        var idx = $j.inArray( activity_id, hiddenActivities );
-        
-        if( $j( this ).data( 'activity-visible' ) === 1 ) {
-            $j( this ).attr( 'src', srcPath + 'hide.png' );
-            $j( this ).data( 'activity-visible', 0 );
-            $j( this ).attr( 'data-activity-visible', 0 );
-            if ( idx === -1 ) { hiddenActivities.push( activity_id ); }
-            
-        } else {
-            $j( this ).attr( 'src', srcPath + 'show.png' );
-            $j( this ).data( 'activity-visible', 1 );
-            $j( this ).attr( 'data-activity-visible', 1 );
-            if ( idx !== -1 ) {  hiddenActivities.splice( idx, 1 ); }
-        }
-        
-        $j( '#bookacti-template-calendar' ).fullCalendar( 'rerenderEvents' );
-		
-		//Update shortcode generator activities list
-		var is_visible = $j( this ).data( 'activity-visible' );
-		bookacti_update_shortcode_generator_activity_ids( activity_id, is_visible, false );
-    });
-}
-
-
 // Show / Hide switch for groups
 function bookacti_init_show_hide_groups_switch() {
     
@@ -330,31 +340,40 @@ function bookacti_init_show_hide_groups_switch() {
 }
 
 
-// Make sure selected events appears as selected and vice-versa
-function bookacti_refresh_selected_events_display() {
-	$j( '.fc-event' ).removeClass( 'bookacti-selected-event' );
-	$j( '.fc-event .bookacti-event-action-select-checkbox' ).prop( 'checked', false );
+// Select all events of a group onto the calendar
+function bookacti_select_events_of_group( group_id ) {
+	
+	if( ! group_id ) {
+		return false;
+	}
+	
+	// Exit others groups editing mode
+	$j( '.bookacti-update-group-of-events img.validate-group' ).attr( 'src', bookacti_localized.plugin_path + '/img/gear.png' ).removeClass( 'validate-group' );
+	
+	// Empty the selected events and refresh them
+	selectedEvents[ 'template' ] = [];
+	$j( '#bookacti-template-calendar' ).fullCalendar( 'rerenderEvents' );
+	$j( '#bookacti-insert-group-of-events' ).css( 'visibility', 'hidden' );
+	
+	// Change view to the 1st event selected to make sure that at least 1 event is in the view
+	if( typeof json_groups[ 'template' ][ group_id ] !== 'undefined' ) {
+		$j( '#bookacti-template-calendar' ).fullCalendar( 'gotoDate', json_groups[ 'template' ][ group_id ][0]['start'] );
+	}
 
-	$j.each( selectedEvents[ 'template' ], function( i, event ) {
-		var element = $j( '.fc-event[data-event-id="' + event.id + '"][data-event-start="' + event.start + '"]' );
-		// Format selected events
-		element.addClass( 'bookacti-selected-event' );
-
-		// Check the box
-		element.find( '.bookacti-event-action-select-checkbox' ).prop( 'checked', true );
-
-		// Show select actions
-		element.find( '.bookacti-event-actions' ).show();
-		element.find( '.bookacti-event-action[data-hide-on-mouseout="1"]' ).hide();
-		element.find( '.bookacti-event-action-select' ).show();
+	// Select the events of the group
+	$j.each( json_groups[ 'template' ][ group_id ], function( i, event ){
+		bookacti_select_event( $j( '#bookacti-template-calendar' ), event );
 	});
 	
-	$j( '#bookacti-template-calendar' ).trigger( 'bookacti_refresh_selected_events' );
+	// Change group settings icon and wait for the user to validate the selected events
+	$j( '.bookacti-group-of-events[data-group-id="' + group_id + '"]' ).find( '.bookacti-update-group-of-events img' ).attr( 'src', bookacti_localized.plugin_path + '/img/tick.png' ).addClass( 'validate-group' );
 }
 
 
 // Select an event
-function bookacti_select_event( event ) {
+function bookacti_select_event( booking_system, event ) {
+	
+	var booking_system_id = booking_system.attr( 'id' );
 	
 	// Return false if we don't have both event id and event start
 	if( ( typeof event !== 'object' )
@@ -377,12 +396,17 @@ function bookacti_select_event( event ) {
 	
 	// Format the selected event (because of popover, the same event can appears twice)
 	elements.addClass( 'bookacti-selected-event' );
-	elements.find( '.bookacti-event-action-select-checkbox' ).prop( 'checked', true );
-	elements.find( '.bookacti-event-actions' ).show();
-	elements.find( '.bookacti-event-action-select' ).show();
+	
+	// Specific treatment for calendar editor
+	if( booking_system_id === 'bookacti-template-calendar' ) {
+		booking_system_id = 'template';
+		elements.find( '.bookacti-event-action-select-checkbox' ).prop( 'checked', true );
+		elements.find( '.bookacti-event-actions' ).show();
+		elements.find( '.bookacti-event-action-select' ).show();
+	}
 
 	// Keep picked events in memory 
-	selectedEvents[ 'template' ].push({ 
+	selectedEvents[ booking_system_id ].push({ 
 		'id'			: event.id, 
 		'activity_id'	: event.activity_id, 
 		'title'			: event.title, 
@@ -390,13 +414,16 @@ function bookacti_select_event( event ) {
 		'end'			: event.end.format( 'YYYY-MM-DD HH:mm:ss' ) 
 	});
 
-	$j( '#bookacti-template-calendar' ).trigger( 'bookacti_select_event', [ event ] );
+	booking_system.trigger( 'bookacti_select_event', [ event ] );
 }
 
 
 // Unselect an event
-function bookacti_unselect_event( event, start, all ) {
+function bookacti_unselect_event( booking_system, event, start, all ) {
 	
+	var booking_system_id = booking_system.attr( 'id' );
+	
+	// Determine if all event should be unselected
 	all = all ? true : false;
 	
 	// Return false if we don't have both event id and event start
@@ -409,7 +436,7 @@ function bookacti_unselect_event( event, start, all ) {
 	if( typeof event !== 'object' ) {
 		// Format start values to object
 		var event_id = event;
-		start	= start.isMoment() ? start : moment( start );
+		start	= start.isMoment() ? start : moment( start ).isValid() ? moment( start ) : false;
 		event	= {
 			'id': event_id,
 			'start': start
@@ -419,24 +446,29 @@ function bookacti_unselect_event( event, start, all ) {
 	// Because of popover and long events (spreading on multiple days), 
 	// the same event can appears twice, so we need to apply changes on each
 	var elements = $j( '.fc-event[data-event-id="' + event.id + '"]' );
-	if( ! all ) {
+	if( ! all && event.start ) {
 		elements = $j( '.fc-event[data-event-id="' + event.id + '"][data-event-start="' + event.start.format( 'YYYY-MM-DD HH:mm:ss' ) + '"]' );
 	}
 	
 	// Format the selected event(s)
 	elements.removeClass( 'bookacti-selected-event' );
-	elements.find( '.bookacti-event-action-select-checkbox' ).prop( 'checked', false );
-	elements.find( '.bookacti-event-action-select' ).hide();
+	
+	// Specific treatment for calendar editor
+	if( booking_system_id === 'bookacti-template-calendar' ) {
+		booking_system_id = 'template';
+		elements.find( '.bookacti-event-action-select-checkbox' ).prop( 'checked', false );
+		elements.find( '.bookacti-event-action-select' ).hide();
+	}
 	
 	// Remove selected event(s) from memory 
-	$j.each( selectedEvents[ 'template' ], function( i, selected_event ){
+	$j.each( selectedEvents[ booking_system_id ], function( i, selected_event ){
 		if( typeof selected_event !== 'undefined' ) {
 			if( selected_event.id == event.id 
 			&&  (  all 
 				|| selected_event.start.substr( 0, 10 ) === event.start.format( 'YYYY-MM-DD' ) ) ) {
 				
 				// Remove the event from the selected events array
-				selectedEvents[ 'template' ].splice( i, 1 );
+				selectedEvents[ booking_system_id ].splice( i, 1 );
 				
 				// If only one event should be unselected, break the loop
 				if( ! all ) {
@@ -446,7 +478,41 @@ function bookacti_unselect_event( event, start, all ) {
 		}
 	});
 	
-	$j( '#bookacti-template-calendar' ).trigger( 'bookacti_unselect_event', [ event, all ] );
+	booking_system.trigger( 'bookacti_unselect_event', [ event, all ] );
+}
+
+
+// Make sure selected events appears as selected and vice-versa
+function bookacti_refresh_selected_events_display( booking_system ) {
+	
+	var booking_system_id = booking_system.attr( 'id' );
+	
+	$j( '.fc-event' ).removeClass( 'bookacti-selected-event' );
+	
+	// Specific treatment for calendar editor
+	if( booking_system_id === 'bookacti-template-calendar' ) {
+		booking_system_id = 'template';
+		$j( '.fc-event .bookacti-event-action-select-checkbox' ).prop( 'checked', false );
+	}
+	
+	$j.each( selectedEvents[ booking_system_id ], function( i, event ) {
+		var element = $j( '.fc-event[data-event-id="' + event.id + '"][data-event-start="' + event.start + '"]' );
+		// Format selected events
+		element.addClass( 'bookacti-selected-event' );
+		
+		// Specific treatment for calendar editor
+		if( booking_system_id === 'template' ) {
+			// Check the box
+			element.find( '.bookacti-event-action-select-checkbox' ).prop( 'checked', true );
+
+			// Show select actions
+			element.find( '.bookacti-event-actions' ).show();
+			element.find( '.bookacti-event-action[data-hide-on-mouseout="1"]' ).hide();
+			element.find( '.bookacti-event-action-select' ).show();
+		}
+	});
+	
+	booking_system.trigger( 'bookacti_refresh_selected_events' );
 }
 
 
@@ -680,16 +746,16 @@ function bookacti_init_add_and_remove_items() {
 
 //Empty all dialog forms
 function bookacti_empty_all_dialog_forms() {
-    $j( '.bookacti-backend-dialogs .form-error' ).remove();
-	$j( '.bookacti-backend-dialogs input[type="hidden"]:not([name^="nonce"]):not([name="_wp_http_referer"])' ).val( '' );
-	$j( '.bookacti-backend-dialogs input[type="text"]' ).val( '' );
-    $j( '.bookacti-backend-dialogs input[type="number"]' ).val( '' );
-    $j( '.bookacti-backend-dialogs input[type="color"]' ).val( '#3a87ad' );
-    $j( '.bookacti-backend-dialogs input[type="checkbox"]' ).attr( 'checked', false );
-    $j( '.bookacti-backend-dialogs option' ).prop( 'selected', false );
-    $j( '.bookacti-backend-dialogs .exception' ).remove();
-    $j( '.bookacti-backend-dialogs select.bookacti-add-new-items-select-box option' ).show().attr( 'disabled', false );
-    $j( '.bookacti-backend-dialogs select.bookacti-items-select-box option' ).remove();
+    $j( '.bookacti-backend-dialog .form-error' ).remove();
+	$j( '.bookacti-backend-dialog input[type="hidden"]:not([name^="nonce"]):not([name="_wp_http_referer"])' ).val( '' );
+	$j( '.bookacti-backend-dialog input[type="text"]' ).val( '' );
+    $j( '.bookacti-backend-dialog input[type="number"]' ).val( '' );
+    $j( '.bookacti-backend-dialog input[type="color"]' ).val( '#3a87ad' );
+    $j( '.bookacti-backend-dialog input[type="checkbox"]' ).attr( 'checked', false );
+    $j( '.bookacti-backend-dialog option' ).prop( 'selected', false );
+    $j( '.bookacti-backend-dialog .exception' ).remove();
+    $j( '.bookacti-backend-dialog select.bookacti-add-new-items-select-box option' ).show().attr( 'disabled', false );
+    $j( '.bookacti-backend-dialog select.bookacti-items-select-box option' ).remove();
 }
 
 

@@ -329,6 +329,306 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		
 		return false;
 	}
+
+
+// EXCEPTIONS
+	// Check if date is exception
+    function bookacti_is_repeat_exception( $event_id, $date ) {
+        global $wpdb;
+        
+        //Check if the date exists in exceptions database for this event
+        $is_excep_query = 'SELECT COUNT(*) FROM ' . BOOKACTI_TABLE_EXCEPTIONS
+						. ' WHERE exception_value = %s'
+						. ' AND event_id = %d';
+        $is_excep_prep = $wpdb->prepare( $is_excep_query, $date, $event_id );
+        $is_excep = $wpdb->get_var( $is_excep_prep );
+
+        return $is_excep;
+    }
+
+
+// GROUPS OF EVENTS
+	/**
+	 * Get groups of events data by template id
+	 * 
+	 * @since 1.1.0
+	 * 
+	 * @global wpdb $wpdb
+	 * @param array|int $template_id
+	 * @param boolean $fetch_inactive_groups
+	 * @param OBJECT|ARRAY_A $return_type
+	 * @return object|array
+	 */
+	function bookacti_get_groups_of_events_by_template_ids( $template_ids = array(), $fetch_inactive_groups = false, $return_type = OBJECT ) {
+		$return_type = $return_type === OBJECT ? OBJECT : ARRAY_A;
+		
+		// If empty, take them all
+		if( empty( $template_ids ) ) { 
+			$templates = bookacti_fetch_templates( true );
+			foreach( $templates as $template ) {
+				$template_ids[] = $template->id;
+			}
+		}
+		
+		// Convert numeric to array
+		if( ! is_array( $template_ids ) ){
+			$template_id = intval( $template_ids );
+			$template_ids = array();
+			if( $template_id ) {
+				$template_ids[] = $template_id;
+			}
+		}
+		
+		global $wpdb;
+		
+        $query	= 'SELECT G.* '
+				. ' FROM ' . BOOKACTI_TABLE_EVENT_GROUPS . ' as G, ' . BOOKACTI_TABLE_GROUP_CATEGORIES . ' as C '
+				. ' WHERE C.id = G.category_id '
+				. ' AND template_id IN ( ';
+		
+		$i = 1;
+		foreach( $template_ids as $template_id ){
+			$query .= ' %d';
+			if( $i < count( $template_ids ) ) { $query .= ','; }
+			$i++;
+		}
+		
+		$query .= ' )';
+		
+		if( ! $fetch_inactive_groups ) {
+			$query .= ' AND G.active = 1 ';
+		}
+		
+		$query .= ' ORDER BY category_id';
+		
+        $prep	= $wpdb->prepare( $query, $template_ids );
+        $group	= $wpdb->get_results( $prep, $return_type );
+		
+        return $group;
+	}
+	
+
+// GROUPS X EVENTS
+	/**
+	 * Get the groups events belonging to a template, a category or / and a group, ordered by group
+	 * 
+	 * @since 1.1.0
+	 * 
+	 * @global wpdb $wpdb
+	 * @param array $template_ids
+	 * @param array $category_ids
+	 * @param array $group_ids
+	 * @param boolean $fetch_inactive_events
+	 * @return array
+	 */
+	function bookacti_get_groups_events( $template_ids = array(), $category_ids = array(), $group_ids = array(), $fetch_inactive_events = false ) {
+		global $wpdb;
+        
+		// Convert numeric to array
+		if( ! is_array( $template_ids ) ){
+			$template_id = intval( $template_ids );
+			$template_ids = array();
+			if( $template_id ) {
+				$template_ids[] = $template_id;
+			}
+		}
+		if( ! is_array( $category_ids ) ){
+			$category_id = intval( $category_ids );
+			$category_ids = array();
+			if( $category_id ) {
+				$category_ids[] = $category_id;
+			}
+		}
+		if( ! is_array( $group_ids ) ){
+			$group_id = intval( $group_ids );
+			$group_ids = array();
+			if( $group_id ) {
+				$group_ids[] = $group_id;
+			}
+		}
+		
+        $query  = 'SELECT GE.group_id, GE.event_id as id, GE.event_start as start, GE.event_end as end, GE.active, E.activity_id, E.title, G.title as group_title, G.category_id, C.template_id '
+				. ' FROM ' . BOOKACTI_TABLE_GROUP_CATEGORIES . ' as C, ' . BOOKACTI_TABLE_EVENT_GROUPS . ' as G, ' . BOOKACTI_TABLE_GROUPS_EVENTS . ' as GE, ' . BOOKACTI_TABLE_EVENTS . ' as E '
+				. ' WHERE G.category_id = C.id '
+				. ' AND G.id = GE.group_id '
+				. ' AND GE.event_id = E.id ';
+		
+		$variables = array();
+		
+		// Filter by template ids
+		if( ! empty( $template_ids ) ) {
+			$query .= ' AND C.template_id IN (';
+			$i = 1;
+			foreach( $template_ids as $template_id ){
+				$query .= ' %d';
+				$variables[] = $template_id;
+				if( $i < count( $template_ids ) ) { $query .= ','; }
+				$i++;
+			}
+			$query .= ' ) ';
+		}
+		
+		// Filter by category ids
+		if( ! empty( $category_ids ) ) {
+			$query .= ' AND C.id IN (';
+			$i = 1;
+			foreach( $category_ids as $category_id ){
+				$query .= ' %d';
+				$variables[] = $category_id;
+				if( $i < count( $category_ids ) ) { $query .= ','; }
+				$i++;
+			}
+			$query .= ' ) ';
+		}
+		
+		// Filter by group ids
+		if( ! empty( $group_ids ) ) {
+			$query .= ' AND G.id IN (';
+			$i = 1;
+			foreach( $group_ids as $group_id ){
+				$query .= ' %d';
+				$variables[] = $group_id;
+				if( $i < count( $group_ids ) ) { $query .= ','; }
+				$i++;
+			}
+			$query .= ' ) ';
+		}
+		
+		// Filter inactive events
+		if( ! $fetch_inactive_events ) {
+			$query .= ' AND GE.active = 1 ';
+			$query .= ' AND E.active = 1 ';
+		}
+		
+		$query .= ' ORDER BY GE.group_id, GE.event_start ';
+		
+		$query	= $wpdb->prepare( $query, $variables );
+        $events = $wpdb->get_results( $query, ARRAY_A );
+		
+		$groups_events = array();
+		foreach( $events as $event ) {
+			if( ! isset( $groups_events[ $event[ 'group_id' ] ] ) ) {
+				$groups_events[ $event[ 'group_id' ] ] = array();
+			}
+			$event[ 'title' ] = apply_filters( 'bookacti_translate_text', $event[ 'title' ] );
+			$event[ 'group_title' ] = apply_filters( 'bookacti_translate_text', $event[ 'group_title' ] );
+			$groups_events[ $event[ 'group_id' ] ][] = $event;
+		}
+		
+		return $groups_events;
+	}
+	
+	
+// GROUP CATEGORIES
+	/**
+	 * Retrieve group categories data by template ids
+	 * 
+	 * @since 1.1.0
+	 * 
+	 * @global wpdb $wpdb
+	 * @param array|int $template_ids
+	 * @param boolean $fetch_inactive
+	 * @param OBJECT|ARRAY_A $return_type
+	 * @return object|array|boolean
+	 */
+	function bookacti_get_group_categories_by_template_ids( $template_ids = array(), $fetch_inactive = false, $return_type = OBJECT ) {
+		
+		$return_type = $return_type === OBJECT ? OBJECT : ARRAY_A;
+		
+		// If empty, take them all
+		if( empty( $template_ids ) ) { 
+			$templates = bookacti_fetch_templates( true );
+			foreach( $templates as $template ) {
+				$template_ids[] = $template->id;
+			}
+		}
+		
+		// Convert numeric to array
+		if( ! is_array( $template_ids ) ){
+			$template_id = intval( $template_ids );
+			$template_ids = array();
+			if( $template_id ) {
+				$template_ids[] = $template_id;
+			}
+		}
+		
+		global $wpdb;
+		
+        $query	= 'SELECT * FROM ' . BOOKACTI_TABLE_GROUP_CATEGORIES 
+				. ' WHERE template_id IN ( ';
+		
+		$i = 1;
+		foreach( $template_ids as $template_id ){
+			$query .= ' %d';
+			if( $i < count( $template_ids ) ) { $query .= ','; }
+			$i++;
+		}
+		
+		$query .= ' )';
+		
+		if( ! $fetch_inactive ) {
+			$query .= ' AND active = 1 ';
+		}
+		
+        $prep		= $wpdb->prepare( $query, $template_ids );
+        $categories	= $wpdb->get_results( $prep, $return_type );
+		
+        return $categories;
+	}
+	
+	
+	/**
+	 * Retrieve group category ids by template ids
+	 * 
+	 * @since 1.1.0
+	 * 
+	 * @global wpdb $wpdb
+	 * @param array|int $template_ids
+	 * @param boolean $fetch_inactive
+	 * @return array|boolean
+	 */
+	function bookacti_get_group_category_ids_by_template_ids( $template_ids = array(), $fetch_inactive = false ) {
+		
+		// If empty, take them all
+		if( empty( $template_ids ) ) { 
+			$templates = bookacti_fetch_templates( true );
+			foreach( $templates as $template ) {
+				$template_ids[] = $template->id;
+			}
+		}
+		
+		// Convert numeric to array
+		if( ! is_array( $template_ids ) ){
+			$template_id = intval( $template_ids );
+			$template_ids = array();
+			if( $template_id ) {
+				$template_ids[] = $template_id;
+			}
+		}
+		
+		global $wpdb;
+		
+        $query	= 'SELECT id FROM ' . BOOKACTI_TABLE_GROUP_CATEGORIES 
+				. ' WHERE template_id IN ( ';
+		
+		$i = 1;
+		foreach( $template_ids as $template_id ){
+			$query .= ' %d';
+			if( $i < count( $template_ids ) ) { $query .= ','; }
+			$i++;
+		}
+		
+		$query .= ' )';
+		
+		if( ! $fetch_inactive ) {
+			$query .= ' AND active = 1 ';
+		}
+		
+        $prep		= $wpdb->prepare( $query, $template_ids );
+        $categories	= $wpdb->get_results( $prep, ARRAY_N );
+				
+        return $categories;
+	}
 	
 	
 // TEMPLATES

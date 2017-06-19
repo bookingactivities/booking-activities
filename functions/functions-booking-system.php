@@ -36,7 +36,7 @@ function bookacti_get_booking_system( $atts, $echo = false ) {
 			if( $when_events_load === 'on_page_load' && $atts[ 'auto_load' ] ) { ?>
 				json_events[ '<?php echo $atts[ 'id' ]; ?>' ]	= <?php echo json_encode( bookacti_fetch_events( $atts[ 'calendars' ], $atts[ 'activities' ], $atts[ 'groups' ], $atts[ 'past_events' ], $atts[ 'context' ] ) ); ?>;
 				json_activities									= <?php echo json_encode( bookacti_get_activities_by_template_ids( $atts[ 'calendars' ] ) ); ?>;
-				json_groups[ '<?php echo $atts[ 'id' ]; ?>' ]	= <?php echo json_encode( bookacti_get_groups_events( $atts[ 'calendars' ] ) ); ?>;	
+				json_groups[ '<?php echo $atts[ 'id' ]; ?>' ]	= <?php echo json_encode( bookacti_get_groups_events( $atts[ 'calendars' ], $atts[ 'groups' ] ) ); ?>;	
 				calendars_data[ '<?php echo $atts[ 'id' ]; ?>' ][ 'settings' ]	= <?php echo json_encode( bookacti_get_mixed_template_settings( $atts[ 'calendars' ] ) ); ?>;	
 			<?php } ?>
 		</script>
@@ -88,6 +88,9 @@ function bookacti_get_booking_system( $atts, $echo = false ) {
 <?php
 
 	do_action( 'bookacti_after_booking_form', $atts );
+	
+	// Include frontend dialogs if they are not already
+	include_once( WP_PLUGIN_DIR . '/' . BOOKACTI_PLUGIN_NAME . '/view/view-booking-system-dialogs.php' );
 	
 	if( ! $echo ) {
 		return ob_get_clean();
