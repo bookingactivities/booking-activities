@@ -18,7 +18,7 @@ $bookacti_translation_array = apply_filters( 'bookacti_translation_array', array
 	'dialog_import_activity_title'			=> esc_html__( 'Import existing activity', BOOKACTI_PLUGIN_NAME ),
 	'dialog_create_activity_title'			=> esc_html__( 'Create new activity', BOOKACTI_PLUGIN_NAME ),
 	'dialog_update_activity_title'		    => esc_html__( 'Update activity parameters', BOOKACTI_PLUGIN_NAME ),
-	'dialog_choose_group_of_events_title'	=> esc_html__( 'Choose a group of events', BOOKACTI_PLUGIN_NAME ),
+	'dialog_choose_group_of_events_title'	=> esc_html__( 'This event is available in several bundles', BOOKACTI_PLUGIN_NAME ),
 	'dialog_create_group_of_events_title'	=> esc_html__( 'Create a group of events', BOOKACTI_PLUGIN_NAME ),
 	'dialog_update_group_of_events_title'	=> esc_html__( 'Update a group of events', BOOKACTI_PLUGIN_NAME ),
 	'dialog_delete_group_of_events_title'	=> esc_html__( 'Delete a group of events', BOOKACTI_PLUGIN_NAME ),
@@ -192,6 +192,8 @@ $bookacti_translation_array = apply_filters( 'bookacti_translation_array', array
 	'product_price'						=> esc_html__( 'Product price', BOOKACTI_PLUGIN_NAME ),
 	'create_first_calendar'				=> esc_html__( 'Create your first calendar', BOOKACTI_PLUGIN_NAME ),
 	'create_first_activity'				=> esc_html__( 'Create your first activity', BOOKACTI_PLUGIN_NAME ),
+	/* translators: When the user is asked whether to pick the single event or the whole group it is part of */
+	'single_event'						=> esc_html__( 'Single event', BOOKACTI_PLUGIN_NAME ),
 
 
 	//VARIABLES

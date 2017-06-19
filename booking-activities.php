@@ -119,7 +119,7 @@ function bookacti_enqueue_global_scripts() {
 	// INCLUDE JAVASCRIPT FILES
 	wp_enqueue_script( 'bookacti-js-global-var',				plugins_url( 'js/global-var.js', __FILE__ ),				array(), '1.0', false ); // Load in header
 	wp_register_script( 'bookacti-js-booking-system',			plugins_url( 'js/booking-system.js', __FILE__ ),			array( 'jquery', 'bookacti-js-global-var', 'bookacti-js-fullcalendar', 'bookacti-js-global-functions' ), '1.0', true );
-	wp_register_script( 'bookacti-js-booking-system-dialogs',	plugins_url( 'js/booking-system-dialogs.js', __FILE__ ),	array( 'jquery', 'bookacti-js-global-var', 'jquery-ui-dialog' ), '1.0', true );
+	wp_register_script( 'bookacti-js-booking-system-dialogs',	plugins_url( 'js/booking-system-dialogs.js', __FILE__ ),	array( 'jquery', 'bookacti-js-global-var', 'bookacti-js-moment', 'jquery-ui-dialog' ), '1.0', true );
 	wp_register_script( 'bookacti-js-global-functions',			plugins_url( 'js/global-functions.js', __FILE__ ),			array( 'jquery', 'bookacti-js-global-var' ), '1.0', true );
 	wp_register_script( 'bookacti-js-booking-system-functions',	plugins_url( 'js/booking-system-functions.js', __FILE__ ),	array( 'jquery', 'bookacti-js-global-var', 'bookacti-js-fullcalendar', 'jquery-effects-highlight' ), '1.0', true );
 	wp_register_script( 'bookacti-js-booking-method-calendar',	plugins_url( 'js/booking-method-calendar.js', __FILE__ ),	array( 'jquery', 'bookacti-js-global-var', 'bookacti-js-fullcalendar', 'bookacti-js-global-functions' ), '1.0', true );

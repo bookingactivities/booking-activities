@@ -24,6 +24,10 @@
 #bookacti-template-container .fc-event.fc-draggable { cursor: move; }
 .bookacti-event-over .fc-bg::after					{ content: ' '; position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 3; background: -moz-linear-gradient(top, rgba(0,0,0,0.5) 0%, rgba(0,0,0,0) 75%); background: -webkit-linear-gradient(top, rgba(0,0,0,0.5) 0%,rgba(0,0,0,0) 75%); background: linear-gradient(to bottom, rgba(0,0,0,0.5) 0%,rgba(0,0,0,0) 75%); filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#000000', endColorstr='#00000000',GradientType=0 ); }
 
+#bookacti-template-calendar .bookacti-picked-event						{ border-width: 1px; }
+#bookacti-template-calendar .bookacti-picked-event .fc-bg				{ opacity: 0.25; }
+#bookacti-template-calendar .bookacti-picked-event .fc-content::before	{ content: '\f0a9'; font-family: 'FontAwesome'; float: left; margin: 0 5px 0 2px; }
+
 /* Event actions */
 .bookacti-event-actions							{ display: none; position: absolute; right: 3px; top: 2px; z-index: 5; transition: all 0.2s; }
 .bookacti-event-action							{ display: inline-block; min-width: 16px; max-width: 16px; text-align: center; vertical-align: middle; margin-left: 8px; }

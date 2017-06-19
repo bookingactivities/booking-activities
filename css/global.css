@@ -17,6 +17,13 @@
 .bookacti-notices ul.bookacti-error-list	{ border-left-color: red; }
 .bookacti-notices ul.bookacti-success-list	{ border-left-color: green; }
 
+/* Choose group dialog */
+.bookacti-group-of-events-list			{ display: none; }
+.bookacti-group-of-events-option		{ margin-top: 15px; }
+.bookacti-group-of-events-option label	{ margin-left: 10px; vertical-align: middle; }
+.bookacti-group-of-events-option input	{ vertical-align: middle; }
+.bookacti-group-of-events-list			{ list-style-type: none; border-left: 1px solid rgba(0,0,0,0.2); padding-left: 10px; margin: 5px 0 10px 25px; }
+
 
 /** CALENDAR **/
 
@@ -30,19 +37,10 @@
 .bookacti-date-picked-title	{ font-weight: bolder; }
 
 /* Events */
-.fc-event { cursor: pointer; overflow: hidden; }
-.event-unavailable  { opacity: 0.5; cursor: default; pointer-events: none; }
-.bookacti-picked-event {
-    -webkit-box-shadow: 0 5px 10px rgba(0,0,0,0.5);
-       -moz-box-shadow: 0 5px 10px rgba(0,0,0,0.5);
-            box-shadow: 0 5px 10px rgba(0,0,0,0.5);
-	transition: box-shadow 0.3s ease-in-out;
-	-webkit-transform: scale(1.02, 1.02);
-	transform: scale(1.02, 1.02);
-	border: 2px solid rgba(68, 68, 68, 0.4) !important;
-	z-index: 3 !important;
-	transition: all 0.2s;
-}
+.fc-event						{ cursor: pointer; overflow: hidden; }
+.event-unavailable				{ opacity: 0.5; cursor: default; pointer-events: none; }
+.bookacti-picked-event .fc-bg	{ opacity: 0.5; transition: opacity 0.2s; }
+.bookacti-picked-event			{ border-width: 2px; z-index: 3 !important; transition: border 0.2s; }
 
 .fc-basic-view .fc-content > * { display: block; }
 	

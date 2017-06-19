@@ -122,7 +122,9 @@ function bookacti_set_calendar_up( booking_system, reload_events ) {
 			$j( '.fc-event' ).removeClass( 'bookacti-picked-event' );
 			elements.addClass( 'bookacti-picked-event' );
 			
+			// Empty the pickedEvent array
 			pickedEvents[ booking_system_id ] = [];
+			booking_system.find( '.bookacti-picked-event' ).removeClass( 'bookacti-picked-event' );
 			
 			// Check if the event is part of a group
 			var groups = [];
@@ -139,18 +141,16 @@ function bookacti_set_calendar_up( booking_system, reload_events ) {
 			// If the event is part of (a) group(s)
 			if( groups.length > 0 ) {
 				// If there is only one choice (one group and pick group only)
-				if( groups.length === 1 && calendars_data[ booking_system_id ][ 'groups_only' ] ) {
+				if( groups.length === 1 && ! calendars_data[ booking_system_id ][ 'groups_single_events' ] ) {
 					// Select all the events of the group
 					bookacti_pick_events_of_group( booking_system, groups[ 0 ] );
 				
 				// If the event is in several groups
 				} else {
-					
 					// Ask what group to pick
-					bookacti_dialog_choose_group_of_events( booking_system, groups );
-					
+					bookacti_dialog_choose_group_of_events( booking_system, groups, event );
 				}
-				
+
 			// If event is single
 			} else {
 				// Pick single event

@@ -510,7 +510,19 @@ function bookacti_load_template_calendar() {
 			// Because of popover and long events (spreading on multiple days), 
 			// the same event can appears twice, so we need to apply changes on each
 			var elements = $j( '.fc-event[data-event-id="' + event.id + '"][data-event-start="' + event.start.format( 'YYYY-MM-DD HH:mm:ss' ) + '"]' );
-					
+			
+			// Format the picked events
+			$j( '.fc-event' ).removeClass( 'bookacti-picked-event' );
+			elements.addClass( 'bookacti-picked-event' );
+
+			// Keep picked events in memory 
+			pickedEvents[ 'template' ] = [];
+			pickedEvents[ 'template' ].push({ 
+				'id'			: event.id,
+				'activity_id'	: event.activity_id,
+				'start'			: event.start.format( 'YYYY-MM-DD HH:mm:ss' ), 
+				'end'			: event.end.format( 'YYYY-MM-DD HH:mm:ss' ) 
+			});
 			
 			// If the user click on an event action, execute it
 			if( $j( jsEvent.target ).parents( '.bookacti-event-actions' ).length ) {
@@ -536,21 +548,6 @@ function bookacti_load_template_calendar() {
 						element.find( '.bookacti-event-action-select' ).show();
 					}
 				}
-				
-			} else {
-				
-				// Format the picked events
-				$j( '.fc-event' ).removeClass( 'bookacti-picked-event' );
-				elements.addClass( 'bookacti-picked-event' );
-				
-				// Keep picked events in memory 
-				pickedEvents[ 'template' ] = [];
-				pickedEvents[ 'template' ].push({ 
-					'id'			: event.id,
-					'activity_id'	: event.activity_id,
-					'start'			: event.start.format( 'YYYY-MM-DD HH:mm:ss' ), 
-					'end'			: event.end.format( 'YYYY-MM-DD HH:mm:ss' ) 
-				});
 			}
 		},
 		
