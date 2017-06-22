@@ -280,21 +280,24 @@ function bookacti_booking_row_exit_loading_state( row ) {
 
 
 // Check if sent data correspond to displayed data
-function bookacti_validate_selected_booking_event( booking_system, quantity ) {
+function bookacti_validate_picked_events( booking_system, quantity ) {
 	
 	//Get event params
-	booking_system	= booking_system || $j( '.bookacti-booking-system' );
+	booking_system	= booking_system || $j( '.bookacti-booking-system:first' );
 	quantity		= quantity || 0;
-	var booking_system_id = booking_system.attr( 'id' );
-	var event_id    = booking_system.parent().find( 'input[name="bookacti_event_id"]' ).val();
-	var event_start = booking_system.parent().find( 'input[name="bookacti_event_start"]' ).val();
-	var event_end   = booking_system.parent().find( 'input[name="bookacti_event_end"]' ).val();
-	var total_avail = 0;
+	var booking_system_id	= booking_system.attr( 'id' );
+	var group_id	= booking_system.parent().find( 'input[name="bookacti_group_id"]' ).val();
+	var event_id	= booking_system.parent().find( 'input[name="bookacti_event_id"]' ).val();
+	var event_start	= booking_system.parent().find( 'input[name="bookacti_event_start"]' ).val();
+	var event_end	= booking_system.parent().find( 'input[name="bookacti_event_end"]' ).val();
+	var total_avail	= 0;
 	
 	//Init boolean test variables
 	var valid_form = {
+		is_group			: false,
 		is_event			: false,
 		is_event_in_selected: false,
+		are_picked_events_same_as_group: false,
 		is_corrupted		: false,
 		is_qty_sup_to_avail	: false,
 		is_qty_sup_to_0		: false,
@@ -303,60 +306,101 @@ function bookacti_validate_selected_booking_event( booking_system, quantity ) {
 	
 	//Make the tests and change the booleans
 	if( event_id !== '' && event_start !== '' && event_end !== '' ) { valid_form.is_event = true; }
+	
+	// Group is validated if it is 'single' and there is an event, 
+	// or if it is a number and the corresponding json_groups exist
+	if( group_id !== '' && (	
+			( $j.isNumeric( group_id ) && typeof json_groups[ booking_system_id ][ group_id ] !== 'undefined' ) 
+		||	(  group_id === 'single' && valid_form.is_event ) ) ) { valid_form.is_group = true; }
+	
 	if( parseInt( quantity ) > 0 ) { valid_form.is_qty_sup_to_0 = true; }
 	
-	if( pickedEvents[ booking_system_id ] !== undefined ) {
-		$j.each( pickedEvents[ booking_system_id ], function( i, picked_event ) {
-			if( picked_event['id']		=== event_id 
-			&&  picked_event['start']	=== event_start 
-			&&  picked_event['end']		=== event_end ) {
-				
-				valid_form.is_event_in_selected = true;
+	if( valid_form.is_group && typeof pickedEvents[ booking_system_id ] !== 'undefined' ) {
+		// Validate single event
+		if( group_id === 'single' && pickedEvents[ booking_system_id ].length === 1 ) {
+				if( pickedEvents[ booking_system_id ][0]['id']		=== event_id 
+				&&  pickedEvents[ booking_system_id ][0]['start']	=== event_start 
+				&&  pickedEvents[ booking_system_id ][0]['end']		=== event_end ) {
 
-				total_avail = picked_event['event_availability'];
-				
-				if( ( parseInt( quantity ) > parseInt( total_avail ) ) && total_avail !== 0 ) {
-					valid_form.is_qty_sup_to_avail = true;
+					valid_form.is_event_in_selected = true;
+
+					total_avail = bookacti_get_event_availability( pickedEvents[ booking_system_id ][0] );
 				}
+			
+		// Validate group of events
+		} else {
+			
+			// If both arrays do not have the same number of elements, then the selection is corrupted
+			if( pickedEvents[ booking_system_id ].length === json_groups[ booking_system_id ][ group_id ].length ) {
+				
+				// Make sure pickedEvents are all in the related json_groups
+				var are_in_group = true;
+				$j.each( pickedEvents[ booking_system_id ], function( i, picked_event ) {
+					var is_in_group = false;
+					$j.each( json_groups[ booking_system_id ][ group_id ], function( i, event_of_group ) {
+						if( picked_event['id']		=== event_of_group['id'] 
+						&&  picked_event['start']	=== event_of_group['start'] 
+						&&  picked_event['end']		=== event_of_group['end'] ) {
+							is_in_group = true;
+							return false; // The event as been found! Break the loop and check the next one
+						}
+					});
+					if( ! is_in_group ) { 
+						are_in_group = false;
+						return false; // An event hasn't been found, no need to check the others, break the loop
+					}
+				});
+				valid_form.are_picked_events_same_as_group = are_in_group;
+				
+				total_avail = bookacti_get_group_availability( json_groups[ booking_system_id ][ group_id ] );
 			}
-		});
+		}
 	}
+	
+	if( ( parseInt( quantity ) > parseInt( total_avail ) ) && total_avail !== 0 ) {
+		valid_form.is_qty_sup_to_avail = true;
+	}
+	
+	// The submitted value is considered as corrupted if 
+	// - A single event is submitted but hidden fields data are not consistent with pickedEvent array
+	// - A group is submitted but pickedEvent array is not consistent with json_groups array
+	if( ( group_id === 'single'		&& valid_form.is_event && ! valid_form.is_event_in_selected )
+	||  ( $j.isNumeric( group_id )	&& ( ! valid_form.is_group || ! valid_form.are_picked_events_same_as_group ) ) ) { valid_form.is_corrupted = true; }
+	
 	if( valid_form.is_event 
-	&&  ! valid_form.is_event_in_selected )	{ valid_form.is_corrupted = true; }
-	if( valid_form.is_event 
+	&&  valid_form.is_group 
 	&&  valid_form.is_qty_sup_to_0 
 	&&  ! valid_form.is_qty_sup_to_avail 
-	&&  ! valid_form.is_corrupted )			{ valid_form.send = true; }
+	&&  ! valid_form.is_corrupted )	{ valid_form.send = true; }
 	
 	
 	// Clear feedbacks
 	booking_system.siblings( '.bookacti-notices' ).empty();
 	
-	
 	// Allow third-party to change the results
-	booking_system.trigger( 'bookacti_validate_picked_event', [ valid_form ] );
-	
+	booking_system.trigger( 'bookacti_validate_picked_events', [ valid_form ] );
 	
 	//Check the results and build error list
-	var error_list = '';
-	if( ( ! valid_form.is_event || ! valid_form.is_event_in_selected ) && ! valid_form.is_corrupted ){ 
-		error_list += '<li>' + bookacti_localized.error_select_schedule + '</li>' ; 
+	if( ! valid_form.send ) {
+		var error_list = '';
+		if( ( ! valid_form.is_event || ! valid_form.is_event_in_selected ) && ! valid_form.is_corrupted ){ 
+			error_list += '<li>' + bookacti_localized.error_select_schedule + '</li>' ; 
+		}
+		if( valid_form.is_qty_sup_to_avail ){ 
+			error_list += '<li>' + bookacti_localized.error_less_avail_than_quantity.replace( '%1$s', quantity ).replace( '%2$s', total_avail ) + '</li>'; 
+		}
+		if( ! valid_form.is_qty_sup_to_0 ){ 
+			error_list += '<li>' + bookacti_localized.error_quantity_inf_to_0 + '</li>'; 
+		}
+		if( valid_form.is_corrupted ){ 
+			error_list += '<li>' + bookacti_localized.error_corrupted_schedule + '</li>'; 
+		}
+
+		// Display error list
+		if( error_list !== '' ) {
+			booking_system.siblings( '.bookacti-notices' ).append( "<ul class='bookacti-error-list'>" + error_list + "</ul>" ).show();
+		}
 	}
-	if( valid_form.is_qty_sup_to_avail ){ 
-		error_list += '<li>' + bookacti_localized.error_less_avail_than_quantity.replace( '%1$s', quantity ).replace( '%2$s', total_avail ) + '</li>'; 
-	}
-	if( ! valid_form.is_qty_sup_to_0 ){ 
-		error_list += '<li>' + bookacti_localized.error_quantity_inf_to_0 + '</li>'; 
-	}
-	if( valid_form.is_corrupted ){ 
-		error_list += '<li>' + bookacti_localized.error_corrupted_schedule + '</li>'; 
-	}
-	
-	// Display error list
-	if( error_list !== '' ) {
-		booking_system.siblings( '.bookacti-notices' ).append( "<ul class='bookacti-error-list'>" + error_list + "</ul>" ).show();
-	}
-	
 	
 	return valid_form.send;
 }

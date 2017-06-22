@@ -37,9 +37,9 @@
 .bookacti-event-action-select-checkbox								{ margin-right: 0 !important; border-radius: 50%; min-width: 16px !important; min-height: 16px !important; max-width: 16px !important; max-height: 16px !important; width: 16px !important; height: 16px !important; }
 .bookacti-event-action-select-checkbox:not(:checked):hover::before	{ content: "\f147"; margin: -3px 0 0 -4px; color: #aaa; float: left; display: inline-block; vertical-align: middle; width: 16px !important; font: 400 21px/1 dashicons; speak: none; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
 .bookacti-event-action-select-checkbox:checked::before				{ margin: -3px 0 0 -4px !important; font: 400 21px/1 dashicons !important; }
-.bookacti-selected-event														{ border-width: 2px; }
-.bookacti-selected-event .fc-bg													{ opacity: 0.5; transition: opacity 0.2s; }
-.bookacti-selected-event:not(.bookacti-picked-event) .bookacti-event-actions	{ right: 1px; top: 0; }
+#bookacti-template-calendar .bookacti-selected-event														{ border-width: 2px; }
+#bookacti-template-calendar .bookacti-selected-event .fc-bg													{ opacity: 0.5; transition: opacity 0.2s; }
+#bookacti-template-calendar .bookacti-selected-event:not(.bookacti-picked-event) .bookacti-event-actions	{ right: 1px; top: 0; }
 
 .bookacti-event-action-edit-button			{ font-size: 16px; transition: color 0.2s;  }
 .bookacti-event-action-edit-button:hover	{ color: #aaa; cursor: pointer; }
@@ -120,6 +120,9 @@
 .bookacti-addon-promo			{ border: 2px solid #52b7e9; border-radius: 3px; padding: 10px; text-align: center; }
 .bookacti-addon-promo .button	{ margin-top: 10px; }
 
+.bookacti-promo-events-examples	a.fc-event { display: inline-block; width: 120px; text-align: left; cursor: auto; }
+.bookacti-tabs .bookacti-tab-content .bookacti-promo-events-examples div { margin-bottom: 0; }
+.bookacti-tabs .bookacti-tab-content .bookacti-promo-events-examples { margin: 10px 0 0 0; }
 
 /* Activity dialog */
 #bookacti-activity-import-dialog label			{ display: inline-block; width: 150px; font-weight: bold; }

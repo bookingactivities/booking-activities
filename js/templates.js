@@ -256,11 +256,11 @@ function bookacti_load_template_calendar() {
 
 			//Block the event if no other operation on it is allowed until the running ones are finished
 			if( blockEvents === true ) { 
-				$j( '.fc-event' ).addClass( 'event-unavailable' );
+				$j( '.fc-event' ).addClass( 'bookacti-event-unavailable' );
 			} else if ( $j.isNumeric( blockEvents ) ) {
-				$j( '.fc-event[data-event-id="' + blockEvents + '"]' ).addClass( 'event-unavailable' );
+				$j( '.fc-event[data-event-id="' + blockEvents + '"]' ).addClass( 'bookacti-event-unavailable' );
 			} else {
-				$j( '.fc-event' ).removeClass( 'event-unavailable' );
+				$j( '.fc-event' ).removeClass( 'bookacti-event-unavailable' );
 			}
 
 			//remove exceptions

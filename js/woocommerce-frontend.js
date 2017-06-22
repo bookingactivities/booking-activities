@@ -2,7 +2,7 @@ $j( document ).ready( function() {
 	
     //Add to cart dynamic check
     if( $j( 'body.woocommerce form.cart .single_add_to_cart_button' ).length ) {		
-		$j( 'body.woocommerce div.product form.cart' ).on( 'submit', function( e ) { 
+		$j( 'body.woocommerce form.cart' ).on( 'submit', function( e ) { 
 			var form = $j( this );
 			
 			var proceed_to_validation = false;
@@ -19,10 +19,13 @@ $j( document ).ready( function() {
 			if( proceed_to_validation ) {
 				if( form.find( '.bookacti-booking-system-container' ).length ) {
 					// Submit form if all is OK
-					var is_valid_event = bookacti_validate_selected_booking_event( form.find( '.bookacti-booking-system' ), form.find( '.quantity input.qty' ).val() );
-					if( ! is_valid_event ) {
-						// Prevent submission
-						return false;
+					var is_valid = bookacti_validate_picked_events( form.find( '.bookacti-booking-system' ), form.find( '.quantity input.qty' ).val() );
+					if( is_valid ) {
+						// Trigger action before sending form
+						form.find( '.bookacti-booking-system-container' ).trigger( 'bookacti_submit_booking_form' );
+						return true;
+					} else {
+						return false; // Prevent submission
 					}
 				}
 			}
@@ -31,19 +34,36 @@ $j( document ).ready( function() {
 	
 	
 	// Change activity summary on qty change
-	$j( 'body.woocommerce form.cart' ).on( 'change', 'input.qty', function() {
+	$j( 'body.woocommerce form.cart' ).on( 'keyup mouseup', 'input.qty', function() {
 		var booking_system = $j( this ).parents( 'form.cart' ).find( '.bookacti-booking-system' );
 		if( booking_system.length ) {
-			bookacti_fill_picked_activity_summary( booking_system, false, $j( this ).val() );
+			bookacti_fill_picked_events_list( booking_system );
 		}
 	});
 	
 	
 	// Set quantity on eventClick
-	$j( 'body.woocommerce form.cart' ).on( 'bookacti_fill_picked_event_summary', '.bookacti-booking-system', function( e, event_summary_data ) {
-		var qty = $j( this ).parents( 'form.cart' ).find( 'input.qty' ).val();
-		if( $j.isNumeric( qty ) ) {
-			event_summary_data.quantity = qty;
+	$j( 'body.woocommerce form.cart' ).on( 'bookacti_picked_events_list_data', '.bookacti-booking-system', function( e, event_summary_data ) {
+		if( $j( this ).parents( 'form' ).find( '.quantity .qty' ).length ) {
+			
+			var booking_system_id	= $j( this ).attr( 'id' );
+			var quantity			= parseInt( $j( this ).parents( 'form' ).find( '.quantity .qty' ).val() );
+			var available_places	= 0; 
+			
+			//Limit the max quantity
+			if( pickedEvents[ booking_system_id ].length > 1 ) {
+				available_places = bookacti_get_group_availability( pickedEvents[ booking_system_id ] );
+			} else {
+				available_places = bookacti_get_event_availability( pickedEvents[ booking_system_id ][ 0 ] );
+			}
+			
+			$j( this ).parents( 'form' ).find( '.quantity .qty' ).attr( 'max', available_places );
+			if( quantity > available_places ) {
+				$j( this ).parents( 'form' ).find( '.quantity .qty' ).val( available_places );
+				quantity = available_places;
+			}
+			
+			event_summary_data.quantity = quantity;
 		}
 	});
 	
@@ -94,18 +114,6 @@ $j( document ).ready( function() {
 	}
 	
 	
-	//Limit the max quantity depending on the selected event
-	$j( 'body.woocommerce form.cart' ).on( 'bookacti_event_click', '.bookacti-booking-system', function( e, event ) {
-		if( $j( this ).parents( 'form' ).find( '.quantity .qty' ).length ) {
-			var available_places = bookacti_get_event_availability( event );
-			$j( this ).parents( 'form' ).find( '.quantity .qty' ).attr( 'max', available_places );
-			if( $j( this ).parents( 'form' ).find( '.quantity .qty' ).val() > available_places ) {
-				$j( this ).parents( 'form' ).find( '.quantity .qty' ).val( available_places ).trigger( 'change' );
-			}
-		}
-	});
-
-
 	//Enable add-to-cart button
 	$j( 'body.woocommerce form.cart' ).on( 'bookacti_view_refreshed bookacti_displayed_info_cleared', '.bookacti-booking-system', function( e ) {
 		$j( this ).parents( 'form' ).find( 'input[name="quantity"]' ).attr( 'disabled', false );
@@ -146,21 +154,25 @@ function bookacti_switch_booking_system_according_to_variation( booking_system, 
 		is_activity[ variation[ 'variation_id' ] ] = true;
 		bookacti_activate_booking_system( booking_system, variation[ 'variation_id' ] );
 
-		var template_id		= [ variation[ 'bookacti_template_id' ] ];
-		var activity_id		= [ variation[ 'bookacti_activity_id' ] ];
-		var groups_id		= [ variation[ 'bookacti_groups_id' ] ];
-		var booking_method	= variation[ 'bookacti_booking_method' ];
+		var template_id				= [ variation[ 'bookacti_template_id' ] ];
+		var activity_id				= [ variation[ 'bookacti_activity_id' ] ];
+		var groups_id				= [ variation[ 'bookacti_groups_id' ] ];
+		var groups_only				= [ variation[ 'bookacti_groups_only' ] ];
+		var groups_single_events	= [ variation[ 'bookacti_groups_single_events' ] ];
+		var booking_method			= variation[ 'bookacti_booking_method' ];
 		
-		if( template_id[0]	=== 'parent' )	{ template_id		= parent_calendar_data[ booking_system_id ].calendars; }
-		if( activity_id[0]	=== 'parent' )	{ activity_id		= parent_calendar_data[ booking_system_id ].activities; }
-		if( groups_id[0]	=== 'parent' )	{ groups_id			= parent_calendar_data[ booking_system_id ].groups; }
-		if( booking_method	=== 'parent' )	{ booking_method	= parent_calendar_data[ booking_system_id ].method; }
-		else if( booking_method	=== 'site' ){ booking_method	= bookacti_localized.site_booking_method; }
+		if( template_id[0]	=== 'parent' )			{ template_id			= parent_calendar_data[ booking_system_id ].calendars; }
+		if( activity_id[0]	=== 'parent' )			{ activity_id			= parent_calendar_data[ booking_system_id ].activities; }
+		if( groups_id[0]	=== 'parent' )			{ groups_id				= parent_calendar_data[ booking_system_id ].groups; }
+		if( booking_method	=== 'parent' )			{ booking_method		= parent_calendar_data[ booking_system_id ].method; }
+		else if( booking_method	=== 'site' )		{ booking_method		= bookacti_localized.site_booking_method; }
 		
-		calendars_data[ booking_system_id ][ 'method' ]		= booking_method;
-		calendars_data[ booking_system_id ][ 'calendars' ]	= template_id;
-		calendars_data[ booking_system_id ][ 'activities' ]	= activity_id;
-		calendars_data[ booking_system_id ][ 'groups' ]		= groups_id;
+		calendars_data[ booking_system_id ][ 'method' ]					= booking_method;
+		calendars_data[ booking_system_id ][ 'calendars' ]				= template_id;
+		calendars_data[ booking_system_id ][ 'activities' ]				= activity_id;
+		calendars_data[ booking_system_id ][ 'groups' ]					= groups_id;
+		calendars_data[ booking_system_id ][ 'groups_only' ]			= groups_only;
+		calendars_data[ booking_system_id ][ 'groups_single_events' ]	= groups_single_events;
 		
 		bookacti_reload_booking_system( booking_system );
 		

@@ -257,16 +257,27 @@ If you don't find the answer you need, please [contact us](http://booking-activi
     * Add - bookacti_select_event
     * Add - bookacti_unselect_event
     * Add - bookacti_refresh_selected_events
+    * Add - bookacti_pick_event
+    * Add - bookacti_unpick_event
+    * Add - bookacti_refresh_picked_events
+    * Add - bookacti_unpick_all_events
+    * Add - bookacti_picked_events_list_filled
     * Add - bookacti_validate_group_of_events_form
     * Add - bookacti_validate_group_category_form
-    * Deleted - bookacti_validate_selected_event replaced by bookacti_validate_picked_event
+    * Add - bookacti_submit_booking_form
+    * Add - bookacti_booking_form_submitted
+    * Deleted - bookacti_validate_selected_event replaced by bookacti_validate_picked_events
     * Deleted - bookacti_activate_booking_system replaced by bookacti_rerender_events
+    * Deleted - bookacti_picked_activity_summary_filled replaced by bookacti_picked_events_list_data (not the same use, be careful)
   * PHP actions
     * Add - bookacti_group_of_events_tab_general_before
     * Add - bookacti_group_of_events_tab_general_after
     * Add - bookacti_group_category_tab_general_before
     * Add - bookacti_group_category_tab_general_after
-	* Tweak - Merged all booking system parameters into one array in bookacti_before_booking_form, bookacti_booking_system_inputs, bookacti_before_booking_system_title, bookacti_before_booking_system, bookacti_booking_system_attributes, bookacti_after_booking_system, bookacti_before_date_picked_summary, bookacti_after_date_picked_summary, bookacti_after_date_picked, bookacti_booking_system_errors, bookacti_after_booking_system_errors, bookacti_after_booking_form
+    * Delete - bookacti_date_picked_title replaced by bookacti_translation_array (not the same use, be careful)
+    * Delete - bookacti_before_date_picked_summary, bookacti_after_date_picked_summary replaced by bookacti_picked_events_list
+    * Delete - bookacti_after_date_picked replaced by bookacti_after_picked_events_list
+	* Tweak - Merged all booking system parameters into one array in bookacti_before_booking_form, bookacti_booking_system_inputs, bookacti_before_booking_system_title, bookacti_before_booking_system, bookacti_booking_system_attributes, bookacti_after_booking_system, bookacti_picked_events_list, bookacti_after_picked_events_list, bookacti_booking_system_errors, bookacti_after_booking_system_errors, bookacti_after_booking_form
   * PHP filters
     * Add - bookacti_validate_group_activity_data
     * Add - bookacti_group_category_default_settings
@@ -275,7 +286,7 @@ If you don't find the answer you need, please [contact us](http://booking-activi
     * Add - bookacti_group_of_events_default_settings
     * Add - bookacti_group_of_events_settings
     * Add - bookacti_get_booking_method_html
-	* Tweak - Merged all booking system parameters into one array in bookacti_booking_system_title, bookacti_booking_system_auto_load, bookacti_date_picked_title
+	* Tweak - Merged all booking system parameters into one array in bookacti_booking_system_title, bookacti_booking_system_auto_load, bookacti_picked_events_list_title
 	* Tweak - Added $shortcode parameter to bookacti_formatted_booking_system_attributes
     * Delete - bookacti_shortcode_{$shortcode}_default_parameters replaced by core shortcode_atts_{$shortcode} (not exactly the same use, be careful)
     * Delete - bookacti_shortcode_{$shortcode}_return replaced by bookacti_shortcode_{$shortcode}_output

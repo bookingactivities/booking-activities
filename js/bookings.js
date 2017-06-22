@@ -30,8 +30,8 @@ $j( document ).ready(function() {
 
 				if( typeof element !== 'undefined' ) {
 					// Make all event available
-					if( element.hasClass( 'event-unavailable' ) ) {
-						element.removeClass( 'event-unavailable' );
+					if( element.hasClass( 'bookacti-event-unavailable' ) ) {
+						element.removeClass( 'bookacti-event-unavailable' );
 					}
 
 					// Replace the availability div with something more comfortable to see at a glance if there is a reservation

@@ -113,6 +113,62 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 					   onkeypress='return event.charCode >= 48 && event.charCode <= 57' name='event-availability' />
 			</div>
 		<?php
+			$license_status = get_option( 'bapap_license_status' );
+			if( empty( $license_status ) || $license_status !== 'valid' ) {
+				?>
+				<div class='bookacti-addon-promo' >
+					<?php 
+					$addon_link = '<a href="' . esc_url( __( 'http://booking-activities.fr/en/downloads/prices-and-promotions/' ), BOOKACTI_PLUGIN_NAME ) . '" target="_blank" >';
+					$addon_link .= esc_html( __( 'Prices and Promotions', BOOKACTI_PLUGIN_NAME ) );
+					$addon_link .= '</a>';
+					/* transmators: %1$s is the placeholder for Price and Promotion add-on link */
+					echo sprintf( esc_html( __( 'Set a price or a promotion on your events with %1$s add-on !', BOOKACTI_PLUGIN_NAME ) ), $addon_link ); 
+					?>
+					<div class='bookacti-promo-events-examples'>
+						<a class="fc-time-grid-event fc-v-event fc-event fc-start fc-end bookacti-event-has-price bookacti-narrow-event" >
+							<div class="fc-content">
+								<div class="fc-time" data-start="7:00" data-full="7:00 AM - 8:30 AM">
+									<span>7:00 - 8:30</span>
+								</div>
+								<div class="fc-title"><?php _e( 'My event', BOOKACTI_PLUGIN_NAME ); ?></div>
+							</div>
+							<div class="fc-bg"></div>
+							<div class="bookacti-availability-container">
+								<span class="bookacti-available-places bookacti-not-booked ">
+									<span class="bookacti-available-places-number">50</span>
+									<span class="bookacti-available-places-unit-name"> </span>
+									<span class="bookacti-available-places-avail-particle"> <?php _ex( 'avail.', 'Short for availabilities [plural noun]', BOOKACTI_PLUGIN_NAME ); ?></span>
+								</span>
+							</div>
+							<div class="bookacti-price-container">
+								<span class="bookacti-price bookacti-promo" style="display: block; width: fit-content; white-space: nowrap; margin: 4px auto; padding: 5px; font-weight: bolder; font-size: 1.2em; border: 1px solid #fff; -webkit-border-radius: 3px;  border-radius: 3px;  background-color: rgba(0,0,0,0.3); color: #fff;">$30</span>
+							</div>
+						</a>
+						<a class="fc-time-grid-event fc-v-event fc-event fc-start fc-end bookacti-event-has-price bookacti-narrow-event" >
+							<div class="fc-content">
+								<div class="fc-time" data-start="7:00" data-full="7:00 AM - 8:30 AM">
+									<span>7:00 - 8:30</span>
+								</div>
+								<div class="fc-title"><?php _e( 'My event', BOOKACTI_PLUGIN_NAME ); ?></div>
+							</div>
+							<div class="fc-bg"></div>
+							<div class="bookacti-availability-container">
+								<span class="bookacti-available-places bookacti-not-booked ">
+									<span class="bookacti-available-places-number">50</span>
+									<span class="bookacti-available-places-unit-name"> </span>
+									<span class="bookacti-available-places-avail-particle"> <?php _ex( 'avail.', 'Short for availabilities [plural noun]', BOOKACTI_PLUGIN_NAME ); ?></span>
+								</span>
+							</div>
+							<div class="bookacti-price-container">
+								<span class="bookacti-price bookacti-promo" style="display: block; width: fit-content; white-space: nowrap; margin: 4px auto; padding: 5px; font-weight: bolder; font-size: 1.2em; border: 1px solid #fff; -webkit-border-radius: 3px;  border-radius: 3px;  background-color: rgba(0,0,0,0.3); color: #fff;">- 20%</span>
+							</div>
+						</a>
+					</div>
+					<div><a href='<?php echo esc_url( __( 'http://booking-activities.fr/en/downloads/prices-and-promotions/', BOOKACTI_PLUGIN_NAME ) ); ?>' class='button' target='_blank' ><?php esc_html_e( 'Learn more', BOOKACTI_PLUGIN_NAME ); ?></a></div>
+				</div>
+				<?php
+			}
+		
 			do_action( 'bookacti_event_tab_general_after', $params );
 		}
 
@@ -252,7 +308,13 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 				if( empty( $license_status ) || $license_status !== 'valid' ) {
 					?>
 					<div class='bookacti-addon-promo' >
-						<?php esc_html_e( 'Get other essential customization options with Display Pack add-on!', BOOKACTI_PLUGIN_NAME ); ?>
+						<?php 
+						$addon_link = '<a href="' . esc_url( __( 'http://booking-activities.fr/en/downloads/display-pack/' ), BOOKACTI_PLUGIN_NAME ) . '" target="_blank" >';
+						$addon_link .= esc_html( __( 'Display Pack', BOOKACTI_PLUGIN_NAME ) );
+						$addon_link .= '</a>';
+						/* transmators: %1$s is the placeholder for Display Pack add-on link */
+						echo sprintf( esc_html( __( 'Get other essential customization options with %1$s add-on!', BOOKACTI_PLUGIN_NAME ) ), $addon_link ); 
+						?>
 						<div><a href='<?php echo esc_url( __( 'http://booking-activities.fr/en/downloads/display-pack/', BOOKACTI_PLUGIN_NAME ) ); ?>' class='button' target='_blank' ><?php esc_html_e( 'Learn more', BOOKACTI_PLUGIN_NAME ); ?></a></div>
 					</div>
 					<?php

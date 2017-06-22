@@ -3,7 +3,6 @@
 /** GLOBAL **/
 
 /* Booking System */
-#bookacti-reschedule-booking-dialog .bookacti-date-picked-activity					{ display: none; }
 .bookacti-booking-system-form .bookacti-booking-system-labels,
 .bookacti-booking-system-form .bookacti-booking-system-field						{ display: inline-block; vertical-align: middle; width: 150px; margin: 0; }
 .bookacti-booking-system-form .bookacti-booking-system-field-container				{ margin-bottom: 20px; }
@@ -21,9 +20,10 @@
 .bookacti-group-of-events-list			{ display: none; }
 .bookacti-group-of-events-option		{ margin-top: 15px; }
 .bookacti-group-of-events-option label	{ margin-left: 10px; vertical-align: middle; }
+.bookacti-group-availability			{ font-size: 0.8em; font-style: italic; }
 .bookacti-group-of-events-option input	{ vertical-align: middle; }
 .bookacti-group-of-events-list			{ list-style-type: none; border-left: 1px solid rgba(0,0,0,0.2); padding-left: 10px; margin: 5px 0 10px 25px; }
-
+.bookacti-group-of-events-option input[name="group_of_events"][disabled] + label { opacity: 0.5; }
 
 /** CALENDAR **/
 
@@ -34,11 +34,11 @@
 /* Header */
 .fc-toolbar { margin-bottom: 0; }
 .fc-toolbar .fc-center, .fc-toolbar .fc-right, .fc-toolbar .fc-left { margin-bottom: 1em; }
-.bookacti-date-picked-title	{ font-weight: bolder; }
+.bookacti-picked-events-list-title	{ font-weight: bolder; }
 
 /* Events */
 .fc-event						{ cursor: pointer; overflow: hidden; }
-.event-unavailable				{ opacity: 0.5; cursor: default; pointer-events: none; }
+.bookacti-event-unavailable				{ opacity: 0.5; cursor: default; pointer-events: none; z-index: -1 !important; }
 .bookacti-picked-event .fc-bg	{ opacity: 0.5; transition: opacity 0.2s; }
 .bookacti-picked-event			{ border-width: 2px; z-index: 3 !important; transition: border 0.2s; }
 

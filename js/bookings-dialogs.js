@@ -620,7 +620,7 @@ function bookacti_dialog_reschedule_booking( booking_id ) {
 				var event_start	= booking_system.parent().find( 'input[name="bookacti_event_start"]' ).val();
 				var event_end	= booking_system.parent().find( 'input[name="bookacti_event_end"]' ).val();
 				
-				var validated = bookacti_validate_selected_booking_event( booking_system, booking_quantity );
+				var validated = bookacti_validate_picked_events( booking_system, booking_quantity );
 				
 				if( validated ) {
 					

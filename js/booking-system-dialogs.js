@@ -33,18 +33,10 @@ function bookacti_init_booking_system_dialogs() {
 		$j( '.bookacti-group-of-events-option[data-group-id="' + group_id + '"]' ).data( 'show-events', 1 ).attr( 'data-show-events', 1 );
 		$j( '.bookacti-group-of-events-list[data-group-id="' + group_id + '"]' ).show( 200 );
 		
-		// Empty picked events
-		pickedEvents[ booking_system_id ] = [];
-		booking_system.find( '.bookacti-picked-event' ).removeClass( 'bookacti-picked-event' );
-		
-		// Pick events of the group
-		if( typeof group_id !== 'undefined' ) {
-			if( group_id === 'single' ) {
-				bookacti_pick_event( booking_system, event );
-			} else {
-				bookacti_pick_events_of_group( booking_system, group_id );
-			}
-		}
+		// Pick events and fill group id input
+		bookacti_unpick_all_events( booking_system );
+		bookacti_pick_events_of_group( booking_system, group_id, event );
+		booking_system.siblings( '.bookacti-booking-system-inputs' ).find( 'input[name="bookacti_group_id"]' ).val( group_id );
 	});
 }
 
@@ -62,7 +54,10 @@ function bookacti_dialog_choose_group_of_events( booking_system, groups, event )
 	
 	// Add single event option if allowed
 	if( calendars_data[ booking_system_id ][ 'groups_single_events' ] ) {
-		var group_id = 'single';
+		var group_id		= 'single';
+		var availability	= bookacti_get_event_availability( event );
+		var avail			= availability > 1 ? bookacti_localized.avails : bookacti_localized.avail;
+		
 		var container = $j( '<div />', {});
 		var option_container = $j( '<div />', {
 			class: 'bookacti-group-of-events-option',
@@ -76,7 +71,7 @@ function bookacti_dialog_choose_group_of_events( booking_system, groups, event )
 			value: group_id
 		});
 		var label = $j( '<label />', {
-			text: bookacti_localized.single_event,
+			html: bookacti_localized.single_event + ' <span class="bookacti-group-availability" >(' + availability + ' ' + avail + ')</span>',
 			for: 'bookacti-group-of-events-' + group_id
 		});
 
@@ -90,10 +85,10 @@ function bookacti_dialog_choose_group_of_events( booking_system, groups, event )
 		var event_start = event.start.locale( bookacti_localized.current_lang_code );
 		var event_end = event.end.locale( bookacti_localized.current_lang_code );
 
-		var event_duration = event_start.format( 'MMM DD - LT' ) + ' &rarr; ' + event_end.format( 'MMM DD - LT' );
+		var event_duration = event_start.format( bookacti_localized.date_format ) + ' &rarr; ' + event_end.format( bookacti_localized.date_format );
 		if( start_and_end_same_day ) {
 
-			event_duration = event_start.format( 'MMM DD - LT' ) + ' &rarr; ' + event_end.format( 'LT' );
+			event_duration = event_start.format( bookacti_localized.date_format ) + ' &rarr; ' + event_end.format( 'LT' );
 		}
 
 		var list_element = $j( '<li />', {
@@ -117,6 +112,9 @@ function bookacti_dialog_choose_group_of_events( booking_system, groups, event )
 		group_id = parseInt( group_id );
 		if( typeof json_groups[ booking_system_id ][ group_id ] !== 'undefined' ) {
 			
+			var availability	= bookacti_get_group_availability( json_groups[ booking_system_id ][ group_id ] );
+			var avail			= availability > 1 ? bookacti_localized.avails : bookacti_localized.avail;
+			
 			var container = $j( '<div />', {});
 			var option_container = $j( '<div />', {
 				class: 'bookacti-group-of-events-option',
@@ -127,10 +125,11 @@ function bookacti_dialog_choose_group_of_events( booking_system, groups, event )
 				id: 'bookacti-group-of-events-' + group_id,
 				type: 'radio',
 				name: 'group_of_events',
+				'disabled': availability <= 0,
 				value: group_id
 			});
 			var label = $j( '<label />', {
-				text: json_groups[ booking_system_id ][ group_id ][0][ 'group_title' ],
+				html: json_groups[ booking_system_id ][ group_id ][0][ 'group_title' ]  + ' <span class="bookacti-group-availability" >(' + availability + ' ' + avail + ')</span>',
 				for: 'bookacti-group-of-events-' + group_id
 			});
 			
@@ -148,10 +147,10 @@ function bookacti_dialog_choose_group_of_events( booking_system, groups, event )
 				var event_start = moment( event.start ).locale( bookacti_localized.current_lang_code );
 				var event_end = moment( event.end ).locale( bookacti_localized.current_lang_code );
 				
-				var event_duration = event_start.format( 'MMM DD - LT' ) + ' &rarr; ' + event_end.format( 'MMM DD - LT' );
+				var event_duration = event_start.format( bookacti_localized.date_format ) + ' &rarr; ' + event_end.format( bookacti_localized.date_format );
 				if( start_and_end_same_day ) {
 					
-					event_duration = event_start.format( 'MMM DD - LT' ) + ' &rarr; ' + event_end.format( 'LT' );
+					event_duration = event_start.format( bookacti_localized.date_format ) + ' &rarr; ' + event_end.format( 'LT' );
 				}
 				
 				var list_element = $j( '<li />', {
@@ -176,7 +175,7 @@ function bookacti_dialog_choose_group_of_events( booking_system, groups, event )
 	});
 	
 	// Pick the first group by default and yell it
-	$j( '#bookacti-groups-of-events-list input[name="group_of_events"]:first' ).prop( 'checked', true ).trigger( 'change' );
+	$j( '#bookacti-groups-of-events-list input[name="group_of_events"]:not([disabled]):first' ).prop( 'checked', true ).trigger( 'change' );
 	
 	
 	// Open the modal dialog
@@ -188,8 +187,7 @@ function bookacti_dialog_choose_group_of_events( booking_system, groups, event )
 			var selected_group = $j('#bookacti-groups-of-events-list input[type="radio"]:checked').val();
 			// Empty the picked events if no group was choosen
 			if( typeof selected_group === 'undefined' ) {
-				pickedEvents[ booking_system_id ] = [];
-				booking_system.find( '.bookacti-picked-event' ).removeClass( 'bookacti-picked-event' );
+				bookacti_unpick_all_events( booking_system );
 			}
 		}
 	});
@@ -201,17 +199,16 @@ function bookacti_dialog_choose_group_of_events( booking_system, groups, event )
             
             click: function() {
 				
-				pickedEvents[ booking_system_id ] = [];
-				booking_system.find( '.bookacti-picked-event' ).removeClass( 'bookacti-picked-event' );
+				var group_id = $j( '#bookacti-groups-of-events-list input[type="radio"]:checked' ).val();
 				
-				var selected_group = $j( '#bookacti-groups-of-events-list input[type="radio"]:checked' ).val();
-				if( typeof selected_group !== 'undefined' ) {
-					if( selected_group === 'single' ) {
-						bookacti_pick_event( booking_system, event );
-					} else {
-						bookacti_pick_events_of_group( booking_system, selected_group );
-					}
-				}
+				// Empty picked events
+				bookacti_unpick_all_events( booking_system );
+
+				// Pick events of the group
+				bookacti_pick_events_of_group( booking_system, group_id, event );
+
+				// Fill group id input
+				booking_system.siblings( '.bookacti-booking-system-inputs' ).find( 'input[name="bookacti_group_id"]' ).val( group_id );
 				
 				//Close the modal dialog
 				$j( this ).dialog( 'close' );

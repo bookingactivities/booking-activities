@@ -119,10 +119,12 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		
 		if( $is_activity ) {
 
-			$booking_method	= get_post_meta( $product->get_id(), '_bookacti_booking_method', true );
-			$template_id	= get_post_meta( $product->get_id(), '_bookacti_template', true );
-			$activity_id	= get_post_meta( $product->get_id(), '_bookacti_activity', true );
-			$groups_id		= get_post_meta( $product->get_id(), '_bookacti_groups', true );
+			$booking_method			= get_post_meta( $product->get_id(), '_bookacti_booking_method', true );
+			$template_id			= get_post_meta( $product->get_id(), '_bookacti_template', true );
+			$activity_id			= get_post_meta( $product->get_id(), '_bookacti_activity', true );
+			$groups_id				= get_post_meta( $product->get_id(), '_bookacti_groups', true );
+			$groups_only			= get_post_meta( $product->get_id(), '_bookacti_groups_only', true );
+			$groups_single_events	= get_post_meta( $product->get_id(), '_bookacti_groups_single_events', true );
 			
 			// Convert 'site' booking methods to actual booking method
 			// And make sure the resulting booking method exists
@@ -141,13 +143,15 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			}
 			
 			$atts = array( 
-						'calendars'	=> array( $template_id ),
-						'activities'=> array( $activity_id ),
-						'groups'	=> array( $groups_id ),
-						'method'	=> $booking_method,
-						'auto_load'	=> $product->is_type( 'variable' ) ? 0 : 1,
-						'id'		=> 'booking-system-product-' . $product->get_id(),
-						'classes'	=> 'bookacti-frontend-booking-system bookacti-woocommerce-product-booking-system'
+						'calendars'				=> array( $template_id ),
+						'activities'			=> array( $activity_id ),
+						'groups'				=> array( $groups_id ),
+						'groups_only'			=> $groups_only === 'yes' ? 1 : 0,
+						'groups_single_events'	=> $groups_single_events === 'yes' ? 1 : 0,
+						'method'				=> $booking_method,
+						'auto_load'				=> $product->is_type( 'variable' ) ? 0 : 1,
+						'id'					=> 'booking-system-product-' . $product->get_id(),
+						'classes'				=> 'bookacti-frontend-booking-system bookacti-woocommerce-product-booking-system'
 					);
 			bookacti_get_booking_system( $atts, true );
 		}
@@ -159,7 +163,6 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	function bookacti_add_item_data( $cart_item_data, $product_id, $variation_id ) {
 		
 		if( isset( $_POST[ 'bookacti_booking_id' ] ) ) {
-
 			$new_value = array();
 			$new_value[ '_bookacti_options' ][ 'bookacti_event_id' ]	= intval( $_POST[ 'bookacti_event_id' ] );
 			$new_value[ '_bookacti_options' ][ 'bookacti_booking_id' ]	= intval( $_POST[ 'bookacti_booking_id' ] );

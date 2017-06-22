@@ -19,12 +19,15 @@ $j( document ).ready( function() {
 			return false;			
 		}
 		
-		var is_valid_event = bookacti_validate_selected_booking_event( booking_system, form.find( '.bookacti-quantity' ).val() );
+		var is_valid_event = bookacti_validate_picked_events( booking_system, form.find( '.bookacti-quantity' ).val() );
 		
 		if( ! is_valid_event ) {
 			// End script
 			return false;
 		} else {
+			
+			// Trigger action before sending form
+			form.find( '.bookacti-booking-system-container' ).trigger( 'bookacti_submit_booking_form' );
 			
 			var data	= form.serialize();
 			var settings= form.serializeObject();
@@ -37,10 +40,14 @@ $j( document ).ready( function() {
 				data: data,
 				dataType: 'json',
 				success: function( response ){
+					
+					// Trigger action after sending form
+					form.find( '.bookacti-booking-system-container' ).trigger( 'bookacti_booking_form_submitted', [ response ] );
+					
 					var message = '';
 					if( response.status === 'success' ) {
 						message = "<ul class='bookacti-success-list bookacti-persistent-notice'><li>" + response.message + "</li></ul>";
-						
+												
 						if( form.attr( 'action' ) !== '' ) {
 							// Go to URL
 							window.location.replace( form.attr( 'action' ) );
@@ -55,6 +62,7 @@ $j( document ).ready( function() {
 					} else {
 						message = "<ul class='bookacti-error-list'><li>" + response.message + "</li></ul>";
 					}
+					
 					booking_system.siblings( '.bookacti-notices' ).empty().append( message ).show();
 				},
 				error: function( e ){
@@ -72,32 +80,36 @@ $j( document ).ready( function() {
 	
 	
 	// Change activity summary on qty change
-	$j( '.bookacti-booking-system-form' ).on( 'change', 'input.bookacti-quantity', function() {
+	$j( '.bookacti-booking-system-form' ).on( 'keyup mouseup', 'input.bookacti-quantity', function() {
 		var booking_system = $j( this ).parents( 'form' ).find( '.bookacti-booking-system' );
 		if( booking_system.length ) {
-			bookacti_fill_picked_activity_summary( booking_system, false, $j( this ).val() );
+			bookacti_fill_picked_events_list( booking_system );
 		}
 	});
 	
 	
 	// Set quantity on eventClick
-	$j( '.bookacti-booking-system-form' ).on( 'bookacti_fill_picked_event_summary', function( e, event_summary_data ) {
-		var qty = $j( this ).parents( 'form' ).find( 'input.bookacti-quantity' ).val();
-		if( $j.isNumeric( qty ) ) {
-			event_summary_data.quantity = qty;
-		}
-	});
-	
-	
-	// Limit quantity field on click on an event
-	$j( '.bookacti-booking-system-form' ).on( 'bookacti_event_click', '.bookacti-booking-system', function( e, event ) {
+	$j( '.bookacti-booking-system-form' ).on( 'bookacti_picked_events_list_data', '.bookacti-booking-system', function( e, event_summary_data ) {
 		if( $j( this ).parents( 'form' ).find( 'input.bookacti-quantity' ).length ) {
+			
+			var booking_system_id	= $j( this ).attr( 'id' );
+			var quantity			= parseInt( $j( this ).parents( 'form' ).find( 'input.bookacti-quantity' ).val() );
+			var available_places	= 0; 
+			
 			//Limit the max quantity
-			var available_places = bookacti_get_event_availability( event );
-			$j( this ).parents( 'form' ).find( 'input.bookacti-quantity' ).attr( 'max', available_places );
-			if( $j( this ).parents( 'form' ).find( 'input.bookacti-quantity' ).val() > available_places ) {
-				$j( this ).parents( 'form' ).find( 'input.bookacti-quantity' ).val( available_places ).trigger( 'change' );
+			if( pickedEvents[ booking_system_id ].length > 1 ) {
+				available_places = bookacti_get_group_availability( pickedEvents[ booking_system_id ] );
+			} else {
+				available_places = bookacti_get_event_availability( pickedEvents[ booking_system_id ][ 0 ] );
 			}
+			
+			$j( this ).parents( 'form' ).find( 'input.bookacti-quantity' ).attr( 'max', available_places );
+			if( quantity > available_places ) {
+				$j( this ).parents( 'form' ).find( 'input.bookacti-quantity' ).val( available_places );
+				quantity = available_places;
+			}
+			
+			event_summary_data.quantity = quantity;
 		}
 	});
 	

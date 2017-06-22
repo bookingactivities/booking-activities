@@ -28,7 +28,7 @@
 /** BOOKING SYSTEM **/
 #bookacti-booking-system-bookings-page .bookacti-booking-system-title		{ display: none; }
 #bookacti-booking-system-bookings-page-container							{ display: table-cell; padding-left: 20px; }
-#bookacti-bookings-container .bookacti-date-picked							{ display: none; text-align: left; }
+#bookacti-bookings-container .bookacti-picked-events						{ display: none; text-align: left; }
 #bookacti-booking-system-bookings-page .bookacti-calendar .bookacti-availability-container 
 span:not(.bookacti-not-booked) .bookacti-active-bookings-number				{ font-weight: bold; font-size: larger; }
 #bookacti-booking-system-bookings-page .bookacti-calendar .bookacti-available-places.bookacti-booked	{ background-color: rgba(255, 255, 0, 0.4); }

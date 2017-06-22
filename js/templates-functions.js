@@ -188,7 +188,7 @@ function bookacti_init_activities() {
     });
 	if( blockEvents === true ) {
 		$j( '#bookacti-template-activities-container img' ).addClass( 'bookacti-disabled-img' );
-		$j( '#bookacti-template-activities-container .fc-event' ).addClass( 'event-unavailable' );
+		$j( '#bookacti-template-activities-container .fc-event' ).addClass( 'bookacti-event-unavailable' );
 	}
 	
 	// Display tuto if there is no more activities available

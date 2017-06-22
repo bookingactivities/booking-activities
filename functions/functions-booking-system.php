@@ -63,21 +63,14 @@ function bookacti_get_booking_system( $atts, $echo = false ) {
 		
 		<?php do_action( 'bookacti_after_booking_system', $atts ); ?>
 		
-		<div class='bookacti-date-picked' >
-			<div class='bookacti-date-picked-title' >
-				<?php echo apply_filters( 'bookacti_date_picked_title', esc_html__( 'Selected schedule:', BOOKACTI_PLUGIN_NAME ), $atts ); ?>
-			</div>
-			<div class='bookacti-date-picked-summary' >
-				<?php do_action( 'bookacti_before_date_picked_summary', $atts ); ?>
-				<span class='bookacti-date-picked-activity' ></span>
-				<span class='bookacti-date-picked-from' ></span>
-				<span class='bookacti-date-picked-separator' ></span>
-				<span class='bookacti-date-picked-to' ></span>
-				<?php do_action( 'bookacti_after_date_picked_summary', $atts ); ?>
-			</div>
+		<div class='bookacti-picked-events' >
+			<div class='bookacti-picked-events-list-title' ></div>
+			<ul class='bookacti-picked-events-list' >
+				<?php do_action( 'bookacti_picked_events_list', $atts ); ?>
+			</ul>
 		</div>
 		
-		<?php do_action( 'bookacti_after_date_picked', $atts ); ?>
+		<?php do_action( 'bookacti_after_picked_events_list', $atts ); ?>
 		
 		<div class='bookacti-notices' >
 			<?php do_action( 'bookacti_booking_system_errors', $atts ); ?>
@@ -391,7 +384,7 @@ function bookacti_get_booking_dates_html( $booking ) {
 function bookacti_create_repeated_events( $event, $shared_data = array(), $fetch_past_events = false, $context = 'frontend' ) {
 	
 	// Set current datetime
-	$timezone = bookacti_get_setting_value( 'bookacti_general_settings', 'bookacti_timezone' );
+	$timezone = bookacti_get_setting_value( 'bookacti_general_settings', 'timezone' );
 	$current_datetime_object = new DateTime( 'now', new DateTimeZone( $timezone ) );
 	
     if( empty( $shared_data ) ) { 

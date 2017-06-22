@@ -194,6 +194,8 @@ $bookacti_translation_array = apply_filters( 'bookacti_translation_array', array
 	'create_first_activity'				=> esc_html__( 'Create your first activity', BOOKACTI_PLUGIN_NAME ),
 	/* translators: When the user is asked whether to pick the single event or the whole group it is part of */
 	'single_event'						=> esc_html__( 'Single event', BOOKACTI_PLUGIN_NAME ),
+	'selected_event'					=> esc_html__( 'Selected event', BOOKACTI_PLUGIN_NAME ),
+	'selected_events'					=> esc_html__( 'Selected events', BOOKACTI_PLUGIN_NAME ),
 
 
 	//VARIABLES
@@ -209,6 +211,8 @@ $bookacti_translation_array = apply_filters( 'bookacti_translation_array', array
 
 	'started_events_bookable'			=> bookacti_get_setting_value( 'bookacti_general_settings',	'started_events_bookable' ),
 	'when_events_load'					=> bookacti_get_setting_value( 'bookacti_general_settings',	'when_events_load' ),
+	/* translators: Date format, please display only day month hours and minutes. This can be displayed as a period like Sep, 05th at 4:30 PM → 5:30 PM. "→ 5:30PM" will be displayed as is at the end of your date format. Use JS moment documentation to choose your tags https://momentjs.com/docs/#/displaying/format/ */
+	'date_format'						=> __( 'MMM, Do - LT', BOOKACTI_PLUGIN_NAME ),
 	'show_past_events_on_bookings_page'	=> bookacti_get_setting_value_by_user( 'bookacti_bookings_settings', 'show_past_events' ),
 
 	'plugin_path'						=> plugins_url() . '/' . BOOKACTI_PLUGIN_NAME,
