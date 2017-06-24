@@ -223,9 +223,12 @@ function bookacti_shortcode_bookings_list( $atts = [], $content = null, $tag = '
 }
 
 
-// Check if booking form is correct and then book the event, or send the error message
-add_action( 'wp_ajax_bookactiSubmitBookingForm', 'bookacti_controller_validate_booking_form' );
-add_action( 'wp_ajax_nopriv_bookactiSubmitBookingForm', 'bookacti_controller_validate_booking_form' );
+/**
+ * Check if booking form is correct and then book the event, or send the error message
+ * 
+ * @since 1.0.0
+ * @version 1.1.0
+ */
 function bookacti_controller_validate_booking_form() {
 	
 	// Check nonce and capabilities
@@ -254,19 +257,19 @@ function bookacti_controller_validate_booking_form() {
 		
 		if( $response[ 'status' ] === 'success' ) {
 			
-			$booking = bookacti_insert_booking(	$booking_form_values[ 'user_id' ], 
+			$booking_id = bookacti_insert_booking(	$booking_form_values[ 'user_id' ], 
 												$booking_form_values[ 'event_id' ], 
 												$booking_form_values[ 'event_start' ],
 												$booking_form_values[ 'event_end' ], 
 												$booking_form_values[ 'quantity' ], 
 												$booking_form_values[ 'default_state' ] );
 			
-			if( ! is_null( $booking[ 'id' ] ) ) {
+			if( ! is_null( $booking_id ) ) {
 
-				do_action( 'bookacti_booking_form_validated', $booking[ 'id' ], $booking_form_values );
+				do_action( 'bookacti_booking_form_validated', $booking_id, $booking_form_values );
 
 				$message = __( 'Your event has been booked successfully!', BOOKACTI_PLUGIN_NAME );
-				wp_send_json( array( 'status' => 'success', 'message' => esc_html( $message ), 'booking_id' => $booking[ 'id' ] ) );
+				wp_send_json( array( 'status' => 'success', 'message' => esc_html( $message ), 'booking_id' => $booking_id ) );
 			
 			} else {
 				$message = __( 'An error occurred, please try again.', BOOKACTI_PLUGIN_NAME );
@@ -289,3 +292,5 @@ function bookacti_controller_validate_booking_form() {
 	
 	wp_send_json( array( 'status' =>  $return_array[ 'status' ], 'message' => esc_html( $return_array[ 'message' ] ) ) );
 }
+add_action( 'wp_ajax_bookactiSubmitBookingForm', 'bookacti_controller_validate_booking_form' );
+add_action( 'wp_ajax_nopriv_bookactiSubmitBookingForm', 'bookacti_controller_validate_booking_form' );

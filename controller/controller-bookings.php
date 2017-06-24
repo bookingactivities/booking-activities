@@ -361,7 +361,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 					wp_send_json( array( 'status' => 'failed' ) );
 				}
 			} else {
-				wp_send_json( array( 'status' => 'failed', 'error' => $validated['status'], 'message' => esc_html( $validated['message'] ) ) );
+				wp_send_json( array( 'status' => 'failed', 'error' => $validated['error'], 'message' => esc_html( $validated['message'] ) ) );
 			}
 			
 		} else {
@@ -443,7 +443,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 				
 			} else {
 				
-				wp_send_json( array( 'status' => 'failed', 'error' => $validated['status'], 'message' => esc_html( $validated[ 'message' ] ) ) );
+				wp_send_json( array( 'status' => 'failed', 'error' => $validated['error'], 'message' => esc_html( $validated[ 'message' ] ) ) );
 			}
 			
 		} else {

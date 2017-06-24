@@ -12,7 +12,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			if( $booking_id ) {
 				$response = bookacti_update_booking_quantity( $booking_id, $meta_value );
 				if( ! in_array( $response['status'], array( 'success', 'no_change' ) ) ) {
-					if( in_array( $response['status'], array( 'qty_sup_to_avail', 'no_availability' ) ) ) {
+					if( in_array( $response['error'], array( 'qty_sup_to_avail', 'no_availability' ) ) ) {
 						$message =
 						sprintf( __( 'You want to add %1$s bookings to your cart but only %2$s are available on this schedule. '
 								. 'Please choose another schedule or decrease the quantity. '
@@ -159,7 +159,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 							$order->update_product( $item_id, $product, array( 'qty' => $booking->quantity ) );
 
 							// Prepare message
-							if( in_array( $response['status'], array( 'qty_sup_to_avail', 'no_availability' ) ) ) {
+							if( in_array( $response['error'], array( 'qty_sup_to_avail', 'no_availability' ) ) ) {
 								$message =
 								sprintf( __( 'You want to add %1$s bookings to your cart but only %2$s are available on this schedule. '
 										. 'Please choose another schedule or decrease the quantity. '

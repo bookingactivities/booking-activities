@@ -118,7 +118,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		$is_activity = bookacti_product_is_activity( $product );
 		
 		if( $is_activity ) {
-
+			
 			$booking_method			= get_post_meta( $product->get_id(), '_bookacti_booking_method', true );
 			$template_id			= get_post_meta( $product->get_id(), '_bookacti_template', true );
 			$activity_id			= get_post_meta( $product->get_id(), '_bookacti_activity', true );
@@ -163,6 +163,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	function bookacti_add_item_data( $cart_item_data, $product_id, $variation_id ) {
 		
 		if( isset( $_POST[ 'bookacti_booking_id' ] ) ) {
+			
 			$new_value = array();
 			$new_value[ '_bookacti_options' ][ 'bookacti_event_id' ]	= intval( $_POST[ 'bookacti_event_id' ] );
 			$new_value[ '_bookacti_options' ][ 'bookacti_booking_id' ]	= intval( $_POST[ 'bookacti_booking_id' ] );
@@ -210,8 +211,18 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	}
 	
 
-	// Validate add to cart form and temporarily book the event
-	add_filter( 'woocommerce_add_to_cart_validation', 'bookacti_validate_add_to_cart_and_book_temporarily', 10, 3 );
+	/**
+	 * Validate add to cart form and temporarily book the event
+	 * 
+	 * @since 1.0.0
+	 * @version 1.1.0
+	 * 
+	 * @global woocommerce $woocommerce
+	 * @param boolean $true
+	 * @param int $product_id
+	 * @param int $quantity
+	 * @return boolean
+	 */
 	function bookacti_validate_add_to_cart_and_book_temporarily( $true, $product_id, $quantity ) {
 		
 		if( $true ) {
@@ -223,10 +234,12 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			
 			if( $is_activity ) {
 				
-				
-				if( empty( $_POST[ 'bookacti_event_id' ] )
-				||  empty( $_POST[ 'bookacti_event_start' ] ) 
-				||  empty( $_POST[ 'bookacti_event_end' ] ) ) {
+				// Check if a group id or a event id + start + end are set
+				if( ( ! is_numeric( $_POST[ 'bookacti_group_id' ] ) && $_POST[ 'bookacti_group_id' ] !== 'single' )
+					|| ( $_POST[ 'bookacti_group_id' ] === 'single'
+						&& (empty( $_POST[ 'bookacti_event_id' ] )
+						||	empty( $_POST[ 'bookacti_event_start' ] ) 
+						||	empty( $_POST[ 'bookacti_event_end' ] ) ) ) ) {
 					return false;
 				}
 				
@@ -235,28 +248,45 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 				
 				if( is_user_logged_in() ) { $user_id = get_current_user_id(); }
 				
-				//Gether the variables
+				// Sanitize the variables
+				$group_id		= is_numeric( $_POST[ 'bookacti_group_id' ] ) ? intval( $_POST[ 'bookacti_group_id' ] ) : 'single';
 				$event_id		= intval( $_POST[ 'bookacti_event_id' ] );
 				$event_start	= bookacti_sanitize_datetime( $_POST[ 'bookacti_event_start' ] );
 				$event_end		= bookacti_sanitize_datetime( $_POST[ 'bookacti_event_end' ] );
-
-				//Check if the form is ok and if so Book temporarily the event
-				$response = bookacti_controller_book_temporarily( $user_id, $event_id, $event_start, $event_end, $quantity );
+				
+				// Check if data are correct befor booking
+				$response = bookacti_validate_booking_form( $group_id, $event_id, $event_start, $event_end, $quantity );
 				
 				if( $response[ 'status' ] === 'success' ) {
 
-					global $woocommerce;
-
-					//If the event is booked, add the booking ID to the corresponding hidden field
-					$_POST[ 'bookacti_booking_id' ] = intval( $response[ 'id' ] );
-
-					return true;
-
-				} else {
-
-					// Display error messgae
-					wc_add_notice( $response[ 'message' ], 'error' );
+					// Book a single event temporarily
+					if( $group_id === 'single' ) {
+						
+						// Book temporarily the event
+						$response = bookacti_add_booking_to_cart( $user_id, $event_id, $event_start, $event_end, $quantity );
+					
+						// If the event is booked, add the booking ID to the corresponding hidden field
+						if( $response[ 'status' ] === 'success' ) {
+							$_POST[ 'bookacti_booking_id' ] = intval( $response[ 'id' ] );
+							return true;
+						}
+					
+					// Book a groups of events temporarily
+					} else if( is_numeric( $group_id ) ) {
+						
+						// Book temporarily the group of event
+						$response = bookacti_add_booking_group_to_cart( $user_id, $group_id, $quantity );
+						
+						// If the events are booked, add the booking group ID to the corresponding hidden field
+						if( $response[ 'status' ] === 'success' ) {
+							$_POST[ 'bookacti_booking_group_id' ] = intval( $response[ 'id' ] );
+							return true;
+						}
+					}
 				}
+				
+				// Display error message
+				wc_add_notice( $response[ 'message' ], 'error' );
 
 				return false;
 			}
@@ -264,6 +294,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		
 		return $true;
 	}
+	add_filter( 'woocommerce_add_to_cart_validation', 'bookacti_validate_add_to_cart_and_book_temporarily', 10, 3 );
 
 	
 	//Set the timeout for a product added to cart
@@ -307,7 +338,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 						
 						//If there are others items in cart, we need to change their expiration dates
 						if( $reset_timeout_on_change ) {
-							$updated = bookacti_reset_cart_expiration_dates( $expiration_date );
+							bookacti_reset_cart_expiration_dates( $expiration_date );
 						}
 					}
 				}
@@ -709,7 +740,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			$is_in_cart = bookacti_get_booking_state( $booking_id ) === 'in_cart';
 
 			if( ! is_null( $booking_id ) && $is_in_cart ) {
-				$response = bookacti_controller_update_booking_quantity( $booking_id, 0 );
+				bookacti_controller_update_booking_quantity( $booking_id, 0 );
 			}
 		}
 	}

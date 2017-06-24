@@ -700,36 +700,6 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		return $deleted;
 	}
 	
-	
-	/**
-	 * Get group of events data
-	 * 
-	 * @since 1.1.0
-	 * 
-	 * @global wpdb $wpdb
-	 * @param int $group_id
-	 * @param OBJECT|ARRAY_A $return_type
-	 * @return object|array
-	 */
-	function bookacti_get_group_of_events( $group_id, $return_type = OBJECT ) {
-		$return_type = $return_type === OBJECT ? OBJECT : ARRAY_A;
-		
-		global $wpdb;
-		
-        $query	= 'SELECT * FROM ' . BOOKACTI_TABLE_EVENT_GROUPS . ' WHERE id = %d ';
-        $prep	= $wpdb->prepare( $query, $group_id );
-        $group	= $wpdb->get_row( $prep, $return_type );
-				
-		// Get template settings and managers
-		if( $return_type === ARRAY_A ) {
-			$group[ 'settings' ]	= bookacti_get_metadata( 'group_of_events', $group_id );
-		} else {
-			$group->settings		= bookacti_get_metadata( 'group_of_events', $group_id );
-		}
-		
-        return $group;
-	}
-	
 		
 	/**
 	 * Get the template id of a group of events

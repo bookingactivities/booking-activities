@@ -2,9 +2,24 @@
 // Exit if accessed directly
 if ( ! defined( 'ABSPATH' ) ) { exit; }
 
-
-// BOOK AN EVENT
-function bookacti_insert_booking( $user_id, $event_id, $event_start, $event_end, $quantity, $state, $expiration_date = NULL ) {
+/**
+ * Book an event
+ * 
+ * @since 1.0.0
+ * @version 1.1.0
+ * 
+ * @global wpdb $wpdb
+ * @param int $user_id
+ * @param int $event_id
+ * @param string $event_start
+ * @param string $event_end
+ * @param int $quantity
+ * @param string $state
+ * @param string $expiration_date
+ * @param int $booking_group_id
+ * @return int|null
+ */
+function bookacti_insert_booking( $user_id, $event_id, $event_start, $event_end, $quantity, $state, $expiration_date = NULL, $booking_group_id = NULL ) {
 	global $wpdb;
 	$return_booking = array();
 
@@ -13,6 +28,7 @@ function bookacti_insert_booking( $user_id, $event_id, $event_start, $event_end,
 	$wpdb->insert( 
 		BOOKACTI_TABLE_BOOKINGS, 
 		array( 
+			'group_id'			=> $booking_group_id,
 			'event_id'			=> $event_id,
 			'user_id'			=> $user_id,
 			'event_start'		=> $event_start,
@@ -22,23 +38,59 @@ function bookacti_insert_booking( $user_id, $event_id, $event_start, $event_end,
 			'expiration_date'	=> $expiration_date,
 			'active'			=> $active
 		),
-		array( '%d', '%s', '%s', '%s', '%d', '%s', '%s', '%d' )
+		array( '%d', '%d', '%s', '%s', '%s', '%d', '%s', '%s', '%d' )
 	);
-
-	if( $wpdb->insert_id !== false ) {
-		$return_booking['action'] = 'inserted';
-		$return_booking['id'] = $wpdb->insert_id;
-		do_action( 'bookacti_booking_inserted', $wpdb->insert_id );
-	}
-
-	return $return_booking;
-}
 	
+	$booking_id = $wpdb->insert_id;
+	
+	if( $booking_id !== false ) {
+		do_action( 'bookacti_booking_inserted', $booking_id );
+	}
+	
+	return $booking_id;
+}
 
-//UPDATE BOOKING QUNATITY IF POSSIBLE
+
+/**
+ * Check if a booking exists and return its id
+ * 
+ * @global wpdb $wpdb
+ * @param int $user_id
+ * @param int $event_id
+ * @param string $event_start
+ * @param string $event_end
+ * @param string $state
+ * @param int $booking_group_id
+ * @return int
+ */
+function bookacti_booking_exists( $user_id, $event_id, $event_start, $event_end, $state, $booking_group_id = NULL ) {
+	global $wpdb;
+	
+	$query ='SELECT id FROM ' . BOOKACTI_TABLE_BOOKINGS 
+			. ' WHERE user_id = %d '
+			. ' AND group_id = %d '
+			. ' AND event_id = %d '
+			. ' AND event_start = %s '
+			. ' AND event_end = %s '
+			. ' AND state = %s '
+			. ' AND expiration_date > UTC_TIMESTAMP() '
+			. ' AND active = 1 '
+			. ' LIMIT 1 ';
+	$query = $wpdb->prepare( $query, $user_id, $booking_group_id, $event_id, $event_start, $event_end, $state );
+	$booking_id = $wpdb->get_var( $query, OBJECT );
+	
+	if( ! is_null( $booking_id ) ) {
+		return $booking_id;
+	}
+	
+	return 0;
+}
+
+
+// UPDATE BOOKING QUNATITY IF POSSIBLE
 function bookacti_update_booking_quantity( $booking_id, $new_quantity, $expiration_date = NULL ) {
 	global $wpdb;
-
+	
 	$query_booking	= 'SELECT event_id, event_start, event_end, quantity, active FROM ' . BOOKACTI_TABLE_BOOKINGS . ' WHERE id = %d ';
 	$prep_booking	= $wpdb->prepare( $query_booking, $booking_id );
 	$results		= $wpdb->get_row( $prep_booking, OBJECT );
@@ -93,11 +145,13 @@ function bookacti_update_booking_quantity( $booking_id, $new_quantity, $expirati
 		}
 
 	} else {
-
+		
+		$return_array['status'] = 'failed';
+		
 		if( $return_array['availability'] > 0 ) {
-			$return_array['status'] = 'qty_sup_to_avail';
+			$return_array['error'] = 'qty_sup_to_avail';
 		} else {
-			$return_array['status'] = 'no_availability';
+			$return_array['error'] = 'no_availability';
 		}
 	}
 
@@ -105,7 +159,7 @@ function bookacti_update_booking_quantity( $booking_id, $new_quantity, $expirati
 }
 	
 
-//GET ALL BOOKINGS OF A TEMPLATE OR AN EVENT
+// GET ALL BOOKINGS OF A TEMPLATE OR AN EVENT
 function bookacti_get_bookings( $template_id = NULL, $event_id = NULL, $event_start = NULL, $event_end = NULL, $active_only = true, $state_not_in = array() ) {
 	global $wpdb;
 
@@ -172,7 +226,7 @@ function bookacti_get_bookings( $template_id = NULL, $event_id = NULL, $event_st
 }
 
 
-//GET NUMBER OF BOOKINGS
+// GET NUMBER OF BOOKINGS
 function bookacti_get_number_of_bookings( $event_id, $event_start = NULL, $event_end = NULL ) {
 	global $wpdb;
 
@@ -366,3 +420,117 @@ function bookacti_reschedule_booking( $booking_id, $event_id, $event_start, $eve
 }
 
 
+
+
+// BOOKING GROUPS
+
+	/**
+	 * Get a booking group by its id
+	 * 
+	 * @since 1.1.0
+	 * 
+	 * @global wpdb $wpdb
+	 * @param int $booking_group_id
+	 * @return object
+	 */
+	function bookacti_get_booking_group_by_id( $booking_group_id ) {
+		global $wpdb;
+
+		$query	= 'SELECT * FROM ' . BOOKACTI_TABLE_BOOKING_GROUPS 
+				. ' WHERE id = %d';
+		$prep	= $wpdb->prepare( $query, $booking_group_id );
+		$group	= $wpdb->get_row( $prep, OBJECT );
+
+		return $group;
+	}
+
+
+	/**
+	 * Insert a booking group
+	 * 
+	 * @since 1.1.0
+	 * 
+	 * @global wpdb $wpdb
+	 * @param int $user_id
+	 * @param int $event_group_id
+	 * @param string $state
+	 * @return int
+	 */
+	function bookacti_insert_booking_group( $user_id, $event_group_id, $state ) {
+		global $wpdb;
+
+		$active = in_array( $state, bookacti_get_active_booking_states() ) ? 1 : 0;
+
+		$wpdb->insert( 
+			BOOKACTI_TABLE_BOOKING_GROUPS, 
+			array( 
+				'event_group_id'	=> $event_group_id,
+				'user_id'			=> $user_id,
+				'state'				=> $state,
+				'active'			=> $active
+			),
+			array( '%d', '%d', '%s', '%d' )
+		);
+
+		$booking_group_id = $wpdb->insert_id;
+
+		if( $booking_group_id !== false ) {
+			do_action( 'bookacti_booking_group_inserted', $booking_group_id );
+		}
+
+		return $booking_group_id;
+	}
+
+
+	/**
+	 * Check if a booking group exists and return its id
+	 * 
+	 * @global wpdb $wpdb
+	 * @param int $user_id
+	 * @param int $event_group_id
+	 * @param string $state
+	 * @return int
+	 */
+	function bookacti_booking_group_exists( $user_id, $event_group_id, $state = NULL ) {
+		global $wpdb;
+
+		$query		= 'SELECT id FROM ' . BOOKACTI_TABLE_BOOKING_GROUPS 
+					. ' WHERE user_id = %d'
+					. ' AND event_group_id = %d';
+
+		$parameters	= array( $user_id, $event_group_id );
+
+		if( ! empty( $state ) ) {
+			$query .=  ' AND state = %s';
+			$parameters[] = $state;
+		}
+
+		$prep		= $wpdb->prepare( $query, $parameters );
+		$group_id	= $wpdb->get_var( $prep, OBJECT );
+
+		if( ! is_null( $group_id ) ) {
+			return $group_id;
+		}
+
+		return 0;
+	}
+
+
+	/**
+	 * Get bookings by booking group id
+	 * 
+	 * @global wpdb $wpdb
+	 * @param int $booking_group_id
+	 * @return array
+	 */
+	function bookacti_get_bookings_by_booking_group_id( $booking_group_id ) {
+		global $wpdb;
+
+		$query		= 'SELECT * FROM ' . BOOKACTI_TABLE_BOOKINGS
+					. ' WHERE group_id = %d '
+					. ' ORDER BY id DESC';
+		$prep		= $wpdb->prepare( $query, $booking_group_id );
+		$bookings	= $wpdb->get_results( $prep, OBJECT );
+
+		return $bookings;
+	}

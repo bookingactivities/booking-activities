@@ -2,34 +2,132 @@
 // Exit if accessed directly
 if ( ! defined( 'ABSPATH' ) ) { exit; }
 
-//Check if the form is ok and if so Book temporarily the event before adding to cart 
-function bookacti_controller_book_temporarily( $user_id, $event_id, $event_start, $event_end, $quantity ) {
-	$validated = bookacti_validate_booking_form( $event_id, $event_start, $event_end, $quantity );
+/**
+ * Insert or update a booking in cart
+ * 
+ * @since 1.1.0 (replace bookacti_insert_booking_in_cart)
+ * 
+ * @param int $user_id
+ * @param int $event_id
+ * @param string $event_start
+ * @param string $event_end
+ * @param int $quantity
+ * @param int $booking_group_id
+ * @return array
+ */
+function bookacti_add_booking_to_cart( $user_id, $event_id, $event_start, $event_end, $quantity, $booking_group_id = NULL ) {
 
-	$return_array = array();
-	if( $validated['status'] === 'success' ) {
+	$return_array = array( 'status' => 'failed' );
+	
+	//Check if the booking already exists 
+	$booking_id = bookacti_booking_exists( $user_id, $event_id, $event_start, $event_end, 'in_cart', $booking_group_id );
+	
+	// if booking already exist in cart, just update its quantity and expiration date
+	if( $booking_id ) {
+		
+		// Get booking and add new quantity to old one
+		$booking		= bookacti_get_booking_by_id( $booking_id );
+		$new_quantity	= intval( $booking->quantity ) + intval( $quantity );
+		
+		// Update quantity
+		$updated = bookacti_controller_update_booking_quantity( $booking_id, $new_quantity );
 
-		$expiration_date = bookacti_get_expiration_time();
-
-		$booking = bookacti_insert_booking_in_cart( $user_id, $event_id, $event_start, $event_end, $quantity, 'in_cart', $expiration_date );
-
-		if( empty( $booking ) ) {
-			$return_array['status'] = 'failed';
-			$return_array['message'] = __( 'Error occurs when trying to temporarily book your event. Please try later.', BOOKACTI_PLUGIN_NAME );
-		} else {
-			$return_array['status'] = 'success';
-			$return_array = array_merge( $return_array, $booking );
+		if( $updated[ 'status' ] === 'success' ) {
+			$return_array[ 'status' ] = 'success';
+			$return_array[ 'action' ] = 'updated';
+			$return_array[ 'id' ] = $booking->id;
 		}
-
+		
 	} else {
-		$return_array = $validated;
+		
+		$expiration_date = bookacti_get_expiration_time();
+		
+		// Insert a new booking
+		$booking_id = bookacti_insert_booking( $user_id, $event_id, $event_start, $event_end, $quantity, 'in_cart', $expiration_date );
+	
+		if( ! is_null( $booking_id ) ) {
+			$return_array[ 'status' ] = 'success';
+			$return_array[ 'action' ] = 'inserted';
+			$return_array[ 'id' ] = $booking_id;
+		}
 	}
-
+	
+	// If failed, write a message
+	if( $return_array[ 'status' ] === 'failed' ) {
+		$return_array[ 'message' ] = __( 'Error occurs when trying to temporarily book your event. Please try later.', BOOKACTI_PLUGIN_NAME );
+	}
+	
 	return $return_array;
 }
 
 
-//Update quantity, control the results ans display feedback accordingly
+/**
+ * Insert a booking group in cart
+ * 
+ * @since 1.1.0
+ * 
+ * @param int $user_id
+ * @param int $event_group_id
+ * @param int $quantity
+ * @return array
+ */
+function bookacti_add_booking_group_to_cart( $user_id, $event_group_id, $quantity ) {
+	
+	$return_array = array( 'status' => 'failed' );
+	
+	//Check if the booking already exists 
+	$booking_group_id	= bookacti_booking_group_exists( $user_id, $event_group_id, 'in_cart' );
+	
+	// if booking group already exist in cart, just update its bookings quantity and expiration date
+	if( $booking_group_id ) {
+		
+		// Update quantity of each bookings
+		$group_updated = bookacti_controller_update_booking_group_quantity( $booking_group_id, $quantity, true );
+		
+		// If each event has been updated return $booking_group_id
+		if( $group_updated ) {
+			$return_array[ 'status' ] = 'success';
+			$return_array[ 'action' ] = 'updated';
+			$return_array[ 'id' ] = $booking_group_id;
+		} else {
+			$return_array[ 'status' ]	= 'failed';
+			$return_array[ 'message' ]	= __( 'An error occurs while trying to change a product quantity. Please try again later.', BOOKACTI_PLUGIN_NAME );
+		}
+		
+	} else {
+		
+		$expiration_date = bookacti_get_expiration_time();
+		
+		// Book all events of the group
+		$booking_group_id = bookacti_book_group_of_events( $user_id, $event_group_id, $quantity, 'in_cart', $expiration_date );
+		
+		if( ! is_null( $booking_id ) ) {
+			$return_array['status'] = 'success';
+			$return_array['action'] = 'inserted';
+			$return_array['id']		= $booking_group_id;
+		}
+	}
+	
+	// If failed, write a message
+	if( $return_array['status'] === 'failed' ) {
+		$return_array['message'] = __( 'Error occurs when trying to temporarily book the group of events. Please try later.', BOOKACTI_PLUGIN_NAME );
+	}
+	
+	return $return_array;
+}
+
+
+/**
+ * Update quantity, control the results ans display feedback accordingly
+ * 
+ * @since 1.0.0
+ * @version 1.1.0
+ * 
+ * @global woocommerce $woocommerce
+ * @param int $booking_id
+ * @param int $new_quantity
+ * @return array
+ */
 function bookacti_controller_update_booking_quantity( $booking_id, $new_quantity ) {
 	global $woocommerce;
 	
@@ -38,39 +136,73 @@ function bookacti_controller_update_booking_quantity( $booking_id, $new_quantity
 	$is_cart_empty_and_expired		= ( $woocommerce->cart->get_cart_contents_count() === $new_quantity && strtotime( $current_cart_expiration_date ) <= time() );
 	$is_per_product_expiration		= bookacti_get_setting_value( 'bookacti_cart_settings', 'is_cart_expiration_per_product' );
 	$reset_timeout_on_change		= bookacti_get_setting_value( 'bookacti_cart_settings', 'reset_cart_timeout_on_change' );
-	$timeout						= bookacti_get_setting_value( 'bookacti_cart_settings', 'cart_timeout' );
 	$is_expiration_active			= bookacti_get_setting_value( 'bookacti_cart_settings', 'is_cart_expiration_active' );
 
 	$new_expiration_date = NULL;
-	if( $reset_timeout_on_change || $is_cart_empty_and_expired ) {
-		$new_expiration_date = date( 'c', strtotime( '+' . $timeout . ' minutes' ) );
+	if( $is_cart_empty_and_expired ) {
+		$new_expiration_date = bookacti_get_expiration_time();
 	}
 	
 	$response = bookacti_update_booking_quantity( $booking_id, $new_quantity, $new_expiration_date );
 	
-	if( $response[ 'status' ] === 'qty_sup_to_avail' ) {
-		wc_add_notice( 
-					/* translators: %1$s is a variable number of bookings. This sentence is followed by two others : 'but only %1$s is available on this schedule.' and 'Please choose another schedule or decrease the quantity.' */
-					sprintf( _n( 'You want to add %1$s booking to your cart', 'You want to add %1$s bookings to your cart', $new_quantity, BOOKACTI_PLUGIN_NAME ), $new_quantity )
-					/* translators: %1$s is a variable number of bookings. This sentence is preceded by : 'You want to add %1$s booking to your cart' and followed by 'Please choose another schedule or decrease the quantity.' */
-			. ' ' . sprintf( _n( 'but only %1$s is available on this schedule.', 'but only %1$s are available on this schedule. ', $response[ 'availability' ], BOOKACTI_PLUGIN_NAME ), $response[ 'availability' ] )
-					/* translators: This sentence is preceded by two others : 'You want to add %1$s booking to your cart' and 'but only %1$s is available on this schedule.' */
-			. ' ' . __( 'Please choose another schedule or decrease the quantity.', BOOKACTI_PLUGIN_NAME )
-		, 'error' );
+	if( $response[ 'status' ] === 'success' 
+				&& $is_expiration_active 
+				&& ( $reset_timeout_on_change || $is_cart_empty_and_expired ) 
+				&& ! $is_per_product_expiration ) {
 
+				bookacti_reset_cart_expiration_dates( $new_expiration_date );
+	
+				
 	} else if( $response[ 'status' ] === 'failed' ) {
-
-		wc_add_notice( __( 'An error occurs while trying to change a product quantity. Please try again later.', BOOKACTI_PLUGIN_NAME ), 'error' );
-
-	} else if( $response[ 'status' ] === 'success' 
-			&& $is_expiration_active 
-			&& ( $reset_timeout_on_change || $is_cart_empty_and_expired ) 
-			&& ! $is_per_product_expiration ) {
 		
-			$updated = bookacti_reset_cart_expiration_dates( $new_expiration_date );
-	}
+		if( $response[ 'error' ] === 'qty_sup_to_avail' ) {
+			wc_add_notice( 
+						/* translators: %1$s is a variable number of bookings. This sentence is followed by two others : 'but only %1$s is available on this schedule.' and 'Please choose another schedule or decrease the quantity.' */
+						sprintf( _n( 'You want to add %1$s booking to your cart', 'You want to add %1$s bookings to your cart', $new_quantity, BOOKACTI_PLUGIN_NAME ), $new_quantity )
+						/* translators: %1$s is a variable number of bookings. This sentence is preceded by : 'You want to add %1$s booking to your cart' and followed by 'Please choose another schedule or decrease the quantity.' */
+				. ' ' . sprintf( _n( 'but only %1$s is available on this schedule.', 'but only %1$s are available on this schedule. ', $response[ 'availability' ], BOOKACTI_PLUGIN_NAME ), $response[ 'availability' ] )
+						/* translators: This sentence is preceded by two others : 'You want to add %1$s booking to your cart' and 'but only %1$s is available on this schedule.' */
+				. ' ' . __( 'Please choose another schedule or decrease the quantity.', BOOKACTI_PLUGIN_NAME )
+			, 'error' );
+
+		} else if( $response[ 'error' ] === 'failed' ) {
+
+			wc_add_notice( __( 'An error occurs while trying to change a product quantity. Please try again later.', BOOKACTI_PLUGIN_NAME ), 'error' );
+
+		}
+	} 
 	
 	return $response;
+}
+
+
+function bookacti_controller_update_booking_group_quantity( $booking_group_id, $quantity, $add_quantity = false ) {
+	
+	// Get bookings of the group
+	$bookings			= bookacti_get_bookings_by_booking_group_id( $booking_group_id );
+	
+	// Get group availability
+	$group				= bookacti_get_booking_group_by_id( $booking_group_id );
+	$group_max_quantity	= bookacti_get_group_of_events_availability( $group->event_group_id );
+	
+	$group_updated	= true; 
+	foreach( $bookings as $booking ) {
+
+		// Make sure new quantity isn't over group availability
+		$new_quantity = $add_quantity ? intval( $booking->quantity ) + intval( $quantity ) : intval( $quantity );
+		if( $new_quantity > $group_max_quantity ) {
+			$new_quantity = $group_max_quantity;
+		}
+		
+		// Update quantity
+		$updated = bookacti_controller_update_booking_quantity( $booking->id, $new_quantity );
+
+		if( $updated[ 'status' ] !== 'success' ) {
+			$group_updated = false; 
+		}
+	}
+
+	return $group_updated;
 }
 
 
@@ -141,7 +273,7 @@ function bookacti_turn_order_bookings_to( $order_id, $state = 'booked', $alert_i
 }
 
 
-//Tell if the product is activity or has variations that are activities
+// Tell if the product is activity or has variations that are activities
 function bookacti_product_is_activity( $product ) {
 	if( ! is_object( $product ) ) {
 		$product_id = intval( $product );

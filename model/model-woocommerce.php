@@ -60,59 +60,6 @@ function bookacti_get_booking_expiration_date( $booking_id ) {
 }
 
 
-// INSERT BOOKING IN CART
-function bookacti_insert_booking_in_cart( $user_id, $event_id, $event_start, $event_end, $quantity, $state, $expiration_date = NULL ) {
-	global $wpdb;
-	$return_booking = array();
-	
-	//Check if the booking already exists (in that case, we will just update quantity and expiration)
-	if( $state === 'in_cart' ) {
-		$query_exists =	'SELECT id, quantity FROM ' . BOOKACTI_TABLE_BOOKINGS 
-						. ' WHERE user_id = %d '
-						. ' AND event_id = %d '
-						. ' AND event_start = %s '
-						. ' AND event_end = %s '
-						. ' AND state = %s '
-						. ' AND expiration_date > UTC_TIMESTAMP() '
-						. ' AND active = 1 '
-						. ' LIMIT 1 ';
-		$prep_exists = $wpdb->prepare( $query_exists, $user_id, $event_id, $event_start, $event_end, $state );
-		$booking = $wpdb->get_row( $prep_exists, OBJECT );
-	}
-
-	if( ! is_null( $booking ) ) {
-
-		$new_qtt = intval( $booking->quantity ) + intval( $quantity );
-		$active  = $new_qtt <= 0 ? 0 : -1;
-		$reset_date = bookacti_get_setting_value( 'bookacti_cart_settings', 'reset_cart_timeout_on_change' );
-
-		if( $reset_date ) {
-			$query_update	= 'UPDATE ' . BOOKACTI_TABLE_BOOKINGS 
-							. ' SET quantity = %d, expiration_date = %s, active = IFNULL( NULLIF( %d, -1 ), active ) '
-							. ' WHERE id = %d ';
-			$prep_update	= $wpdb->prepare( $query_update, $new_qtt, $expiration_date, $active, $booking->id );
-		} else {
-			$query_update	= 'UPDATE ' . BOOKACTI_TABLE_BOOKINGS 
-							. ' SET quantity = %d, active = IFNULL( NULLIF( %d, -1 ), active ) '
-							. ' WHERE id = %d ';
-			$prep_update	= $wpdb->prepare( $query_update, $new_qtt, $active, $booking->id );
-		}
-
-		$has_updated = $wpdb->query( $prep_update );
-
-		if( $has_updated ) {
-			$return_booking['action'] = 'updated';
-			$return_booking['id'] = $booking->id;
-			do_action( 'bookacti_booking_quantity_updated', $booking->id );
-		}
-	} else {
-		$return_booking = bookacti_insert_booking( $user_id, $event_id, $event_start, $event_end, $quantity, $state, $expiration_date );
-	}
-	
-	return $return_booking;
-}
-
-
 // Check if the booking has expired
 function bookacti_is_expired_booking( $booking_id ) {
 	global $wpdb;

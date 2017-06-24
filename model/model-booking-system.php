@@ -168,8 +168,11 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 						. ' WHERE E.activity_id = A.id '
 						. ' AND E.id = %d';
 		$prep_query_event = $wpdb->prepare( $query_event, $event_id );
-		$event = new stdClass();
 		$event = $wpdb->get_row( $prep_query_event, OBJECT );
+		
+		if( empty( $event ) ) {
+			return false;
+		}
 		
 		$event->event_settings		= bookacti_get_metadata( 'event', $event_id );
 		$event->activity_settings	= bookacti_get_metadata( 'activity', $event->activity_id );
@@ -178,34 +181,41 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	}
 	
 	
-	// Check if the event exists
-	function bookacti_is_existing_event( $event_id, $event_start = NULL, $event_end = NULL ) {
+	/**
+	 * Check if a single event exists. For reapeating events, please use bookacti_is_existing_event.
+	 * 
+	 * @global wpdb $wpdb
+	 * @param int $event_id
+	 * @param string $event_start
+	 * @param string $event_end
+	 * @return boolean
+	 */
+	function bookacti_is_existing_single_event( $event_id, $event_start = NULL, $event_end = NULL ) {
 		global $wpdb;
 		
-		$event = bookacti_get_event_by_id( $event_id );
+		$query	= 'SELECT id FROM ' . BOOKACTI_TABLE_EVENTS
+				. ' WHERE id = %d';
 		
-		$is_existing_event = false;
-		if( ! is_null( $event ) ) {
-			if( $event->repeat_freq !== 'none' ) {
-				
-				$is_existing_event = bookacti_is_existing_occurence( $event, $event_start, $event_end );
-				
-			} else {
-				
-				$query_exist_event = 'SELECT id FROM ' . BOOKACTI_TABLE_EVENTS
-									. ' WHERE id = %d'
-									. ' AND start = %s'
-									. ' AND end = %s';
-				$prep_exist_event = $wpdb->prepare( $query_exist_event, $event_id, $event_start, $event_end );
-				$exist_event = $wpdb->get_var( $prep_exist_event );
-
-				if( ! is_null( $exist_event ) ) {
-					$is_existing_event = true;
-				}
-			}
+		$parameters = array( $event_id );
+		
+		if( ! empty( $event_start ) ) {
+			$query	.= ' AND start = %s';
+			$parameters[] = $event_start;
+		}
+		if( ! empty( $event_end ) ) {
+			$query	.= ' AND end = %s';
+			$parameters[] = $event_end;
 		}
 		
-        return $is_existing_event;
+		$prep			= $wpdb->prepare( $query, $parameters );
+		$event_exists	= $wpdb->get_var( $prep );
+		
+		$is_event = false;
+		if( ! empty( $event_exists ) ) {
+			$is_event = true;
+		}
+		
+		return $is_event;
 	}
 	
 	
@@ -247,6 +257,22 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		}
 		
 		return $is_existing_occurence;
+	}
+	
+	
+	/**
+	 * Check if the group of event exists
+	 * 
+	 * @since 1.1.0
+	 * 
+	 * @param int $group_id
+	 * @return boolean
+	 */
+	function bookacti_is_existing_group_of_events( $group_id ) {
+		
+		// Try to retrieve the group and check the result
+		$group = bookacti_get_group_of_events( $group_id );
+        return ! empty( $group );
 	}
 	
 	
@@ -331,6 +357,8 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	}
 
 
+	
+	
 // EXCEPTIONS
 	// Check if date is exception
     function bookacti_is_repeat_exception( $event_id, $date ) {
@@ -346,8 +374,43 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
         return $is_excep;
     }
 
-
+	
+	
+	
 // GROUPS OF EVENTS
+	/**
+	 * Get group of events data
+	 * 
+	 * @since 1.1.0
+	 * 
+	 * @global wpdb $wpdb
+	 * @param int $group_id
+	 * @param OBJECT|ARRAY_A $return_type
+	 * @return object|array|boolean
+	 */
+	function bookacti_get_group_of_events( $group_id, $return_type = OBJECT ) {
+		$return_type = $return_type === OBJECT ? OBJECT : ARRAY_A;
+		
+		global $wpdb;
+		
+        $query	= 'SELECT * FROM ' . BOOKACTI_TABLE_EVENT_GROUPS . ' WHERE id = %d ';
+        $prep	= $wpdb->prepare( $query, $group_id );
+        $group	= $wpdb->get_row( $prep, $return_type );
+		
+		if( empty( $group ) ) {
+			return false;
+		}
+		
+		// Get template settings and managers
+		if( $return_type === ARRAY_A ) {
+			$group[ 'settings' ]	= bookacti_get_metadata( 'group_of_events', $group_id );
+		} else {
+			$group->settings		= bookacti_get_metadata( 'group_of_events', $group_id );
+		}
+		
+        return $group;
+	}
+	
 	/**
 	 * Get groups of events data by template id
 	 * 
@@ -520,6 +583,62 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		
 		return $groups_events;
 	}
+	
+	
+	/**
+	 * Determine if a group of events is totally included in calendar range
+	 *
+	 * @since 1.1.0
+	 * 
+	 * @param int $group_id
+	 * @return bool
+	 */
+	function bookacti_is_group_of_events_in_its_template_range( $group_id ) {
+		
+		// Sanitize params
+		$group_id = intval( $group_id );
+
+		if( empty( $group_id ) ) {
+			return false;
+		}
+		
+		global $wpdb;
+		
+		// Get template range in order to be compared with the event dates
+		$range_query	= 'SELECT T.start_date as start, T.end_date as end '
+						. ' FROM ' . BOOKACTI_TABLE_TEMPLATES . ' as T, ' . BOOKACTI_TABLE_EVENT_GROUPS . ' as G, ' . BOOKACTI_TABLE_GROUP_CATEGORIES . ' as C '
+						. ' WHERE C.template_id = T.id '
+						. ' AND G.category_id = C.id '
+						. ' AND G.id = %d ';
+		$range_prepare	= $wpdb->prepare( $range_query, $group_id );
+		$template_range	= $wpdb->get_row( $range_prepare, OBJECT );
+		
+		if( empty( $template_range ) ){
+			return false;
+		}
+		
+		// Get the first and the last event of the group and keep respectively their start and end datetime
+		$events_range_query		= 'SELECT MIN( event_start ) as start, MAX( event_end ) as end '
+								. ' FROM ' . BOOKACTI_TABLE_GROUPS_EVENTS
+								. ' WHERE group_id = %d ';
+		$events_range_prepare	= $wpdb->prepare( $events_range_query, $group_id );
+		$events_range			= $wpdb->get_row( $events_range_prepare, OBJECT );
+		
+		$event_start_datetime		= DateTime::createFromFormat( 'Y-m-d H:i:s', $events_range->start );
+		$event_end_datetime			= DateTime::createFromFormat( 'Y-m-d H:i:s', $events_range->end );
+		$template_start_datetime	= DateTime::createFromFormat( 'Y-m-d H:i:s', $template_range->start . ' 00:00:00' );
+		$template_end_datetime		= DateTime::createFromFormat( 'Y-m-d H:i:s', $template_range->end . ' 00:00:00' );
+		$template_end_datetime->add( new DateInterval( 'P1D' ) );
+		
+		if( $event_start_datetime >= $template_start_datetime 
+		&&  $event_end_datetime   <= $template_end_datetime ) {
+			return true;
+		}
+		
+		return false;
+	}
+	
+	
 	
 	
 // GROUP CATEGORIES
