@@ -85,7 +85,7 @@ function bookacti_add_booking_group_to_cart( $user_id, $event_group_id, $quantit
 		$group_updated = bookacti_controller_update_booking_group_quantity( $booking_group_id, $quantity, true );
 		
 		// If each event has been updated return $booking_group_id
-		if( $group_updated ) {
+		if( $group_updated[ 'status' ] === 'success' ) {
 			$return_array[ 'status' ] = 'success';
 			$return_array[ 'action' ] = 'updated';
 			$return_array[ 'id' ] = $booking_group_id;
@@ -101,7 +101,7 @@ function bookacti_add_booking_group_to_cart( $user_id, $event_group_id, $quantit
 		// Book all events of the group
 		$booking_group_id = bookacti_book_group_of_events( $user_id, $event_group_id, $quantity, 'in_cart', $expiration_date );
 		
-		if( ! is_null( $booking_id ) ) {
+		if( ! is_null( $booking_group_id ) ) {
 			$return_array['status'] = 'success';
 			$return_array['action'] = 'inserted';
 			$return_array['id']		= $booking_group_id;
@@ -176,37 +176,146 @@ function bookacti_controller_update_booking_quantity( $booking_id, $new_quantity
 }
 
 
+/**
+ * Update quantity, control the results ans display feedback accordingly
+ * 
+ * @since 1.1.0
+ * 
+ * @param int $booking_group_id
+ * @param int $quantity
+ * @param boolean $add_quantity
+ * @return boolean
+ */
 function bookacti_controller_update_booking_group_quantity( $booking_group_id, $quantity, $add_quantity = false ) {
+	
+	$response = array( 'status' => 'success' );
 	
 	// Get bookings of the group
 	$bookings			= bookacti_get_bookings_by_booking_group_id( $booking_group_id );
 	
 	// Get group availability
 	$group				= bookacti_get_booking_group_by_id( $booking_group_id );
-	$group_max_quantity	= bookacti_get_group_of_events_availability( $group->event_group_id );
+	$group_availability	= bookacti_get_group_of_events_availability( $group->event_group_id );
 	
-	$group_updated	= true; 
+	// Make sure all events have enough places available
+	$booking_max_new_quantity = intval( $quantity );
+	
+	// Look for the most booked event of the booking group
+	$max_booked = 0;
 	foreach( $bookings as $booking ) {
-
-		// Make sure new quantity isn't over group availability
-		$new_quantity = $add_quantity ? intval( $booking->quantity ) + intval( $quantity ) : intval( $quantity );
-		if( $new_quantity > $group_max_quantity ) {
-			$new_quantity = $group_max_quantity;
-		}
-		
-		// Update quantity
-		$updated = bookacti_controller_update_booking_quantity( $booking->id, $new_quantity );
-
-		if( $updated[ 'status' ] !== 'success' ) {
-			$group_updated = false; 
+		if( $booking->quantity > $max_booked ) {
+			$max_booked = $booking->quantity;
 		}
 	}
-
-	return $group_updated;
+	
+	if( $add_quantity ) {
+		$booking_max_new_quantity += intval( $max_booked );
+	}
+	
+	// If quantity is superior to availablity, return the error
+	if( $booking_max_new_quantity > ( $group_availability + $max_booked ) ) {
+		$response[ 'status' ]		= 'failed';
+		$response[ 'error' ]		= 'qty_sup_to_avail';
+		$response[ 'availability' ]	= $add_quantity ? $group_availability : $group_availability + $max_booked;
+		
+		return $response;
+	}
+	
+	
+	foreach( $bookings as $booking ) {
+		
+		bookacti_log( '$quantity = ' . $quantity );
+		
+		// Make sure new quantity isn't over group availability
+		$new_quantity = $add_quantity ? intval( $booking->quantity ) + intval( $quantity ) : intval( $quantity );
+		if( $new_quantity > $group_availability ) {
+			$new_quantity = $group_availability;
+		}
+		
+		// If the quantity is same as before but the event was removed, just turn its state to in_cart
+		if( $new_quantity == $booking->quantity && $booking->state === 'removed' ) {
+			$updated1 = bookacti_update_booking_state( $booking->id, 'in_cart' );
+			// If no changes, consider the job as done
+			if( $updated1 === 0 ) { 
+				$updated1 = true;
+			}
+			
+		// Update quantity
+		} else {
+			bookacti_log( 'bookacti_controller_update_booking_quantity( '. $booking->id .', '. $new_quantity .' )' );
+			$updated1 = bookacti_controller_update_booking_quantity( $booking->id, $new_quantity );
+			$updated1 = $updated1[ 'status' ] !== 'failed';
+		}
+		
+		if( ! $updated1 ) {
+			$response[ 'status' ]	= 'failed';
+			$response[ 'error' ]	= $new_quantity == $booking->quantity ? 'cannot_update_state' : 'cannot_update_quantity';
+		}
+	}
+	
+	// Change booking group state
+	if( $response[ 'status' ] === 'success' ) {
+		
+		// Change booking group state to remove if quantity = 0
+		if( ! $add_quantity && $quantity === 0 ) {
+			$updated2 = bookacti_update_booking_group_state( $booking_group_id, 'removed' );
+		}
+		
+		// If the group used to be removed (quantity = 0), turn its state to in_cart
+		if( $group->state === 'removed' && $quantity > 0 ) {
+			$updated2 = bookacti_update_booking_group_state( $booking_group_id, 'in_cart' );
+		}
+		
+		if( isset( $updated2 ) && ! $updated2 ) {
+			$response[ 'status' ]	= 'failed';
+			$response[ 'error' ]	= 'update_booking_group_state';
+		}
+	}
+	
+	
+	return $response;
 }
 
 
-//Turn all bookings of an order to the desired status. Also make sure that bookings are bound to the order and the associated user.
+/**
+ * Check if the booking group has expired
+ * 
+ * @since 1.1.0
+ * 
+ * @param type $booking_group_id
+ * @return boolean
+ */
+function bookacti_is_expired_booking_group( $booking_group_id ) {
+	
+	$booking_ids = bookacti_get_booking_group_bookings_ids( $booking_group_id );
+	
+	$is_expired = false;
+	foreach( $booking_ids as $booking_id ) {
+		$is_booking_expired = bookacti_is_expired_booking( $booking_id );
+		
+		// If one booking of the group is expired, consider the whole group has expired
+		if( $is_booking_expired ) {
+			$is_expired = true;
+			break;
+		}
+	}
+	
+	return $is_expired;
+}
+
+
+/**
+ * Turn all bookings of an order to the desired status. 
+ * Also make sure that bookings are bound to the order and the associated user.
+ * 
+ * @since 1.0.0
+ * @version 1.1.0
+ * 
+ * @param int $order_id
+ * @param string $state
+ * @param boolean $alert_if_fails
+ * @return int|false|null
+ */
 function bookacti_turn_order_bookings_to( $order_id, $state = 'booked', $alert_if_fails = false ) {
 
 	//Retrieve order data
@@ -221,12 +330,18 @@ function bookacti_turn_order_bookings_to( $order_id, $state = 'booked', $alert_i
 		//Create an array with order booking ids
 		$booking_id_array = array();
 		foreach( $items as $key => $item ) {
-			if( isset( $item[ 'bookacti_booking_id' ] ) ) {
-				$current_meta_state = wc_get_order_item_meta( $key, 'bookacti_state', true );
-				
+			// Single event
+			if( isset( $item[ 'bookacti_booking_id' ] ) && ! empty( $item[ 'bookacti_booking_id' ] ) ) {				
 				// Add the booking id to the bookings array to change state
 				$booking_id = $item[ 'bookacti_booking_id' ];
 				array_push( $booking_id_array, $booking_id );
+			
+			// Group of events
+			} else if( isset( $item[ 'bookacti_booking_group_id' ] ) && ! empty( $item[ 'bookacti_booking_group_id' ] ) ) {
+				// Add the group booking ids to the bookings array to change state
+				$booking_group_id	= $item[ 'bookacti_booking_group_id' ];
+				$booking_ids		= bookacti_get_booking_group_bookings_ids( $booking_group_id );
+				$booking_id_array	= array_merge( $booking_id_array, $booking_ids );
 			}
 		}
 
@@ -317,7 +432,16 @@ function bookacti_product_is_activity( $product ) {
 }
 
 
-//Reset expiration dates of all cart items
+/**
+ * Reset expiration dates of all cart items
+ * 
+ * @since 1.0.0
+ * @version 1.1.0
+ * 
+ * @global woocommerce $woocommerce
+ * @param string $expiration_date
+ * @return int|false
+ */
 function bookacti_reset_cart_expiration_dates( $expiration_date ) {
 	global $woocommerce;
 	
@@ -331,7 +455,17 @@ function bookacti_reset_cart_expiration_dates( $expiration_date ) {
 
 		$booking_id_array = array();
 		foreach ( $cart_keys as $key ) {
-			array_push( $booking_id_array, $cart_contents[$key]['_bookacti_options']['bookacti_booking_id'] );
+			// Single event
+			if( isset( $cart_contents[$key]['_bookacti_options']['bookacti_booking_id'] ) && ! empty( $cart_contents[$key]['_bookacti_options']['bookacti_booking_id'] ) ) {
+				array_push( $booking_id_array, $cart_contents[$key]['_bookacti_options']['bookacti_booking_id'] );
+			
+			// Group of events
+			} else if( isset( $cart_contents[$key]['_bookacti_options']['bookacti_booking_group_id'] ) && ! empty( $cart_contents[$key]['_bookacti_options']['bookacti_booking_group_id'] ) ) {
+				// Add the group booking ids to the bookings array to change state
+				$booking_group_id	= $cart_contents[$key]['_bookacti_options']['bookacti_booking_group_id'];
+				$booking_ids		= bookacti_get_booking_group_bookings_ids( $booking_group_id );
+				$booking_id_array	= array_merge( $booking_id_array, $booking_ids );
+			}
 		}
 
 		$user_id = $woocommerce->session->get_customer_id();
@@ -386,37 +520,56 @@ function bookacti_get_expiration_time( $date_format = 'c' ) {
 }
 
 
-//Get timeout for a cart item
-function bookacti_get_cart_item_timeout( $cart_item_key, $booking_id = NULL ) {
+/**
+ * Get timeout for a cart item
+ * 
+ * @since 1.0.0
+ * @version 1.1.0
+ * 
+ * @global woocommerce $woocommerce
+ * @param type $cart_item_key
+ * @return string
+ */
+function bookacti_get_cart_item_timeout( $cart_item_key ) {
 	
 	global $woocommerce;
 	
-	if( is_null( $booking_id ) ) {
-		$item		= $woocommerce->cart->get_cart_item( $cart_item_key );
-		$booking_id = $item['_bookacti_options']['bookacti_booking_id'];
+	$item = $woocommerce->cart->get_cart_item( $cart_item_key );
+	
+	// Single event
+	if( isset( $item[ '_bookacti_options' ][ 'bookacti_booking_id' ] ) ) {
+	
+		$booking_id			= $item[ '_bookacti_options' ][ 'bookacti_booking_id' ];
+		$expiration_date	= bookacti_get_booking_expiration_date( $booking_id );
+		$state				= bookacti_get_booking_state( $booking_id );
+		
+	// group of events
+	} else if( isset( $item[ '_bookacti_options' ][ 'bookacti_booking_group_id' ] ) ) {
+		
+		$booking_group_id	= $item[ '_bookacti_options' ][ 'bookacti_booking_group_id' ];
+		$expiration_date	= bookacti_get_booking_group_expiration_date( $booking_group_id );
+		$state				= bookacti_get_booking_group_state( $booking_group_id );
+		
 	}
 	
-	$expiration_date = bookacti_get_booking_expiration_date( $booking_id );
+	if( ! isset( $expiration_date ) || empty( $expiration_date ) || in_array( $state, array( 'in_cart', 'pending' ) ) ) {
+		return '';
+	}
+	
+	$is_per_product_expiration	= bookacti_get_setting_value( 'bookacti_cart_settings', 'is_cart_expiration_per_product' );
 
-	$timeout = '';
-	if( ! is_null( $expiration_date ) ) {
+	$timeout = '<div class="bookacti-cart-item-expires-with-cart"></div>';
 
-		$timeout = '<div class="bookacti-cart-item-expires-with-cart"></div>';
+	if( $is_per_product_expiration && $state === 'in_cart' ) {
 
-		$is_per_product_expiration	= bookacti_get_setting_value( 'bookacti_cart_settings', 'is_cart_expiration_per_product' );
-		$state						= bookacti_get_booking_state( $booking_id );
-		
-		if( $is_per_product_expiration && $state === 'in_cart' ) {
-			
-			$timeout = '<div class="bookacti-countdown-container">'
-						. '<div class="bookacti-countdown" data-expiration-date="' . esc_attr( $expiration_date ) . '" ></div>'
-					. '</div>';
-				
-		} else if( $state === 'pending' ) {
-			
-			$state_text = __( 'Pending payment', BOOKACTI_PLUGIN_NAME );
-			$timeout = '<div class="bookacti-cart-item-state bookacti-cart-item-state-pending">' . esc_html( $state_text ) . '</div>';
-		}
+		$timeout = '<div class="bookacti-countdown-container">'
+					. '<div class="bookacti-countdown" data-expiration-date="' . esc_attr( $expiration_date ) . '" ></div>'
+				. '</div>';
+
+	} else if( $state === 'pending' ) {
+
+		$state_text = __( 'Pending payment', BOOKACTI_PLUGIN_NAME );
+		$timeout = '<div class="bookacti-cart-item-state bookacti-cart-item-state-pending">' . esc_html( $state_text ) . '</div>';
 	}
 	
 	return $timeout;
@@ -453,7 +606,15 @@ function bookacti_set_cart_timeout( $expiration_date, $user_id = NULL ) {
 }
 
 
-// GET WOOCOMMERCE ORDER ITEM ID BY BOOKING ID
+/**
+ * Get woocommerce order item id by booking id
+ * 
+ * @since 1.0.0
+ * @version 1.1.0
+ * 
+ * @param int $booking_id
+ * @return array
+ */
 function bookacti_get_order_item_by_booking_id( $booking_id ) {
 	
 	if( ! $booking_id ) { return false; }
@@ -470,7 +631,23 @@ function bookacti_get_order_item_by_booking_id( $booking_id ) {
 
 	$item = array();
 	foreach( $order_items as $order_item_id => $order_item ) {
-		if( isset( $order_item['bookacti_booking_id'] ) && $order_item['bookacti_booking_id'] == $booking_id ) {
+		
+		$is_in_item = false;
+		// Check if the item is bound to a the desired booking
+		if( isset( $order_item[ 'bookacti_booking_id' ] ) && $order_item[ 'bookacti_booking_id' ] == $booking_id ) {
+			$is_in_item = true;
+			
+		// Check if the item is bound to a group of bookings
+		} else if( isset( $order_item[ 'bookacti_booking_group_id' ] ) ) {
+			$booking_group_id = $order_item[ 'bookacti_booking_group_id' ];
+			$booking_ids = bookacti_get_booking_group_bookings_ids( $booking_group_id );
+			// Check if the desired booking is in the group
+			if( in_array( $booking_id, $booking_ids ) ) {
+				$is_in_item = true;
+			}
+		}
+		
+		if( $is_in_item ) {
 			$item				= $order_items[ $order_item_id ];
 			$item[ 'id' ]		= $order_item_id;
 			$item[ 'order_id' ]	= $order_id;

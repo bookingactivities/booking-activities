@@ -277,6 +277,7 @@ If you don't find the answer you need, please [contact us](http://booking-activi
     * Delete - bookacti_date_picked_title replaced by bookacti_translation_array (not the same use, be careful)
     * Delete - bookacti_before_date_picked_summary, bookacti_after_date_picked_summary replaced by bookacti_picked_events_list
     * Delete - bookacti_after_date_picked replaced by bookacti_after_picked_events_list
+    * Delete - bookacti_booking_expired replaced by bookacti_booking_state_changed (not the same use, be careful)
 	* Tweak - Merged all booking system parameters into one array in bookacti_before_booking_form, bookacti_booking_system_inputs, bookacti_before_booking_system_title, bookacti_before_booking_system, bookacti_booking_system_attributes, bookacti_after_booking_system, bookacti_picked_events_list, bookacti_after_picked_events_list, bookacti_booking_system_errors, bookacti_after_booking_system_errors, bookacti_after_booking_form
   * PHP filters
     * Add - bookacti_validate_group_activity_data

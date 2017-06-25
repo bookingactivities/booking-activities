@@ -71,13 +71,9 @@ function bookacti_is_expired_booking( $booking_id ) {
 	$booking		= $wpdb->get_row( $prep_expired, OBJECT );
 
 	$expired = false;
-	if( $booking->state === 'in_cart' && ( strtotime( $booking->expiration_date ) <= time() )  )
-	{ 
+	if( $booking->state === 'in_cart' && ( strtotime( $booking->expiration_date ) <= time() ) ) { 
 		$expired = true;
-		$deleted = bookacti_deactivate_expired_bookings();
-		if( $deleted ) { 
-			do_action( 'bookacti_booking_expired', $booking_id );
-		}
+		bookacti_deactivate_expired_bookings();
 	}
 	if( is_null( $booking ) || intval( $booking->active ) === 0 ) {
 		$expired = true;
@@ -228,24 +224,35 @@ function bookacti_change_order_bookings_state( $user_id = NULL, $order_id = NULL
 }
 
 
-// Turn 'pending' bookings of an order to 'cancelled'
+/**
+ * Turn 'pending' bookings of an order to 'cancelled'
+ * 
+ * @since 1.0.0
+ * @version 1.1.0
+ * 
+ * @global type $wpdb
+ * @param type $order_id
+ * @return type
+ */
 function bookacti_cancel_order_pending_bookings( $order_id ) {
 
 	global $wpdb;
-
+	
+	// Get affected booking ids
+	$query_updated_ids	= 'SELECT id FROM ' . BOOKACTI_TABLE_BOOKINGS . ' WHERE order_id = %d AND state = "pending"';
+	$prep_updated_ids	= $wpdb->prepare( $query_updated_ids, $order_id );
+	$bookings_updated	= $wpdb->get_results( $prep_updated_ids, OBJECT );
+	
+	// Turn state to cancel
 	$query		= 'UPDATE ' . BOOKACTI_TABLE_BOOKINGS 
 				. ' SET state = "cancelled", active = 0 '
 				. ' WHERE order_id = %d '
 				. ' AND state = "pending" ';
 	$query_prep	= $wpdb->prepare( $query, $order_id );
 	$updated	= $wpdb->query( $query_prep );
-
+	
+	
 	if( $updated ) {
-
-		$query_updated_ids	= 'SELECT id FROM ' . BOOKACTI_TABLE_BOOKINGS . ' WHERE state = "cancelled" AND order_id = %d';
-		$prep_updated_ids	= $wpdb->prepare( $query_updated_ids, $order_id );
-		$bookings_updated	= $wpdb->get_results( $prep_updated_ids, OBJECT );
-
 		foreach( $bookings_updated as $booking ) {
 			do_action( 'bookacti_booking_cancelled', $booking->id );
 		}
@@ -253,6 +260,7 @@ function bookacti_cancel_order_pending_bookings( $order_id ) {
 
 	return $updated;
 }
+
 
 /** 
  * Update all bookings of a customer_id with a new user_id
@@ -283,7 +291,7 @@ function bookacti_update_bookings_user_id( $user_id, $customer_id ) {
  * Deactivate expired bookings
  *
  * @since	1.0.0
- * @version	1.0.8
+ * @version	1.1.0
  */
 function bookacti_deactivate_expired_bookings() {
 	global $wpdb;
@@ -302,10 +310,11 @@ function bookacti_deactivate_expired_bookings() {
 								. ' AND active = 1';
 	$deactivated = $wpdb->query( $query_deactivate_expired );
 	
-	$return = $deactivated;
+	$return = array();
 	if( $deactivated ){
 		foreach( $deactivated_ids as $deactivated_id ) {
 			$return[] = $deactivated_id->id;
+			do_action( 'bookacti_booking_state_changed', $deactivated_id, 'expired', array() );
 		}
 	}
 	
@@ -322,4 +331,25 @@ function bookacti_cancel_in_cart_bookings() {
 	$cancelled = $wpdb->query( $query_cancel_in_cart );
 
 	return $cancelled;
+}
+
+
+/**
+ * Get booking group expiration date
+ * 
+ * @since 1.1.0
+ * 
+ * @param int $booking_group_id
+ * @return string|null
+ */
+function bookacti_get_booking_group_expiration_date( $booking_group_id ) {
+	global $wpdb;
+	
+	$query				= 'SELECT MIN( expiration_date ) as expiration_date'
+						. ' FROM ' . BOOKACTI_TABLE_BOOKINGS
+						. ' WHERE group_id = %d ';
+	$query_prep			= $wpdb->prepare( $query, $booking_group_id );
+	$expiration_date	= $wpdb->get_var( $query_prep );
+	
+	return $expiration_date;
 }
