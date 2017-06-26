@@ -319,7 +319,8 @@ function bookacti_settings_section_bookings_callback() { }
 		bookacti_onoffswitch( $name, $is_active, $id );
 		
 		//Display the tip
-		$tip = __( "Allow or disallow customers to cancel a booking after they order it.", BOOKACTI_PLUGIN_NAME );
+		$tip  = __( "Allow or disallow customers to cancel a booking after they order it.", BOOKACTI_PLUGIN_NAME );
+		$tip .= '<br/>' . __( "This won't apply to group of bookings.", BOOKACTI_PLUGIN_NAME );
 		bookacti_help_tip( $tip );
 	}
 	
@@ -334,7 +335,8 @@ function bookacti_settings_section_bookings_callback() { }
 		bookacti_onoffswitch( $name, $is_active, $id );
 		
 		//Display the tip
-		$tip = __( "Allow or disallow customers to reschedule a booking after they order it.", BOOKACTI_PLUGIN_NAME );
+		$tip  = __( "Allow or disallow customers to reschedule a booking after they order it.", BOOKACTI_PLUGIN_NAME );
+		$tip .= '<br/>' . __( "This won't apply to group of bookings.", BOOKACTI_PLUGIN_NAME );
 		bookacti_help_tip( $tip );
 	}
 	

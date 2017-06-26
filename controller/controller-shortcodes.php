@@ -121,7 +121,9 @@ function bookacti_shortcode_bookings_list( $atts = [], $content = null, $tag = '
     $atts = array_change_key_case( (array) $atts, CASE_LOWER );
 	
 	// override default attributes with user attributes
-	$atts[ 'user' ] = intval( $atts[ 'user' ] );
+	if( isset( $atts[ 'user' ] ) ) {
+		$atts[ 'user' ] = intval( $atts[ 'user' ] );
+	}
     $atts = shortcode_atts( array( 'user' => get_current_user_id() ), $atts, $tag );
 	
 	// If no user, return an empty string

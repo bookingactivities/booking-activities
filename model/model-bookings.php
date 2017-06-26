@@ -71,15 +71,23 @@ function bookacti_booking_exists( $user_id, $event_id, $event_start, $event_end,
 	
 	$query ='SELECT id FROM ' . BOOKACTI_TABLE_BOOKINGS 
 			. ' WHERE user_id = %d '
-			. ' AND group_id = %d '
 			. ' AND event_id = %d '
 			. ' AND event_start = %s '
 			. ' AND event_end = %s '
 			. ' AND state = %s '
 			. ' AND expiration_date > UTC_TIMESTAMP() '
-			. ' AND active = 1 '
-			. ' LIMIT 1 ';
-	$query = $wpdb->prepare( $query, $user_id, $booking_group_id, $event_id, $event_start, $event_end, $state );
+			. ' AND active = 1 ';
+	
+	$variables = array( $user_id, $event_id, $event_start, $event_end, $state );
+	
+	if( ! empty( $booking_group_id ) ) {
+		$query .= ' AND group_id = NULLIF( %d, 0 ) ';
+		$variables[] = $booking_group_id;
+	}
+	
+	$query .= ' LIMIT 1 ';
+	
+	$query = $wpdb->prepare( $query, $variables );
 	$booking_id = $wpdb->get_var( $query );
 	
 	if( ! is_null( $booking_id ) ) {
@@ -91,35 +99,46 @@ function bookacti_booking_exists( $user_id, $event_id, $event_start, $event_end,
 
 
 // UPDATE BOOKING QUNATITY IF POSSIBLE
-function bookacti_update_booking_quantity( $booking_id, $new_quantity, $expiration_date = NULL ) {
+/**
+ * Update booking qunatity if possible
+ * 
+ * @global wpdb $wpdb
+ * @param int $booking_id
+ * @param int $new_quantity
+ * @param string $expiration_date
+ * @return array
+ */
+function bookacti_update_booking_quantity( $booking_id, $new_quantity, $expiration_date = '' ) {
 	global $wpdb;
 	
-	$query_booking	= 'SELECT event_id, event_start, event_end, quantity, active FROM ' . BOOKACTI_TABLE_BOOKINGS . ' WHERE id = %d ';
-	$prep_booking	= $wpdb->prepare( $query_booking, $booking_id );
-	$results		= $wpdb->get_row( $prep_booking, OBJECT );
-
-	$old_quantity = $results->quantity;
-	$availability = bookacti_get_event_availability( $results->event_id, $results->event_start, $results->event_end );
+	$booking = bookacti_get_booking_by_id( $booking_id );
+	
+	$new_quantity = intval( $new_quantity );
+	$old_quantity = intval( $booking->quantity );
+	$availability = intval( bookacti_get_event_availability( $booking->event_id, $booking->event_start, $booking->event_end ) );
 
 	$return_array = array();
 	$return_array['status'] = '';
 
 	// If the updated booking is active, you must count the quantity already booked by this user in the total quantity available for him
-	if( $results->active ) {
-		$new_availability = intval( $availability ) + intval( $old_quantity ) - intval( $new_quantity );
-		$return_array['availability'] = intval( $availability ) + intval( $old_quantity );
+	if( $booking->active ) {
+		$new_availability = $availability + $old_quantity - $new_quantity;
+		$return_array['availability'] = $availability + $old_quantity;
 	} else {
-		$new_availability = intval( $availability ) - intval( $new_quantity );
-		$return_array['availability'] = intval( $availability );
+		$new_availability = $availability - $new_quantity;
+		$return_array['availability'] = $availability;
 	}
 
 	if( intval( $new_availability ) >= 0 ) {
-
-		$state = NULL; 
-		$active = -1; 
-		$update_quantity = $new_quantity;
-		if( intval( $new_quantity ) <= 0 ) { $state = 'removed'; $update_quantity = $old_quantity; $active = 0; } 
-
+		
+		// Prepare variables
+		$data = apply_filters( 'bookacti_update_booking_quantity_data', array( 
+			'quantity' => $new_quantity,
+			'state' => NULL,
+			'active' => -1,
+			'expiration_date' => $expiration_date
+		), $booking );
+		
 		$query	= 'UPDATE ' . BOOKACTI_TABLE_BOOKINGS 
 				. ' SET quantity = %d, '
 				. ' state = IFNULL( NULLIF( %s, "" ), state ), '
@@ -127,14 +146,14 @@ function bookacti_update_booking_quantity( $booking_id, $new_quantity, $expirati
 				. ' expiration_date = IFNULL( NULLIF( %s, "" ), expiration_date ) '
 				. ' WHERE id = %d ';
 
-		$prep_query	= $wpdb->prepare( $query, $update_quantity, $state, $active, $expiration_date, $booking_id );
+		$prep_query	= $wpdb->prepare( $query, $data[ 'quantity' ], $data[ 'state' ], $data[ 'active' ], $data[ 'expiration_date' ], $booking_id );
 		$updated	= $wpdb->query( $prep_query );
 
 		if( $updated > 0 ){
 
-			if( intval( $new_quantity ) > 0 && intval( $new_quantity ) === intval( $old_quantity ) ) {
+			if( $new_quantity > 0 && $new_quantity === $old_quantity ) {
 				do_action( 'bookacti_booking_restored', $booking_id );
-			} else if( intval( $new_quantity ) > 0 && intval( $update_quantity ) !== intval( $old_quantity ) ) {
+			} else if( $new_quantity > 0 && intval( $data[ 'quantity' ] ) !== $old_quantity ) {
 				do_action( 'bookacti_booking_quantity_updated', $booking_id );
 			} else {
 				do_action( 'bookacti_booking_state_changed', $booking_id, 'removed', array() );
@@ -301,7 +320,11 @@ function bookacti_get_template_by_booking_id( $booking_id ) {
 function bookacti_get_booking_by_id( $booking_id ) {
 	global $wpdb;
 
-	$query		= 'SELECT * FROM ' . BOOKACTI_TABLE_BOOKINGS . ' WHERE id = %d';
+	$query		= 'SELECT B.*, E.title, E.activity_id, E.template_id FROM ' . BOOKACTI_TABLE_BOOKINGS . ' as B '
+					. ' LEFT JOIN (
+							SELECT id, title, activity_id, template_id FROM ' . BOOKACTI_TABLE_EVENTS . '
+						) as E ON B.event_id = E.id'
+				. ' WHERE B.id = %d';
 	$prep		= $wpdb->prepare( $query, $booking_id );
 	$booking	= $wpdb->get_row( $prep, OBJECT );
 
@@ -583,9 +606,12 @@ function bookacti_reschedule_booking( $booking_id, $event_id, $event_start, $eve
 	function bookacti_get_bookings_by_booking_group_id( $booking_group_id ) {
 		global $wpdb;
 
-		$query		= 'SELECT * FROM ' . BOOKACTI_TABLE_BOOKINGS
-					. ' WHERE group_id = %d '
-					. ' ORDER BY id DESC';
+		$query		= 'SELECT B.*, E.title, E.activity_id, E.template_id FROM ' . BOOKACTI_TABLE_BOOKINGS . ' as B '
+					. ' LEFT JOIN (
+							SELECT id, title, activity_id, template_id FROM ' . BOOKACTI_TABLE_EVENTS . '
+						) as E ON B.event_id = E.id'
+					. ' WHERE B.group_id = %d '
+					. ' ORDER BY B.event_start, B.event_id, E.activity_id DESC';
 		$prep		= $wpdb->prepare( $query, $booking_group_id );
 		$bookings	= $wpdb->get_results( $prep, OBJECT );
 

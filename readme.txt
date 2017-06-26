@@ -248,6 +248,7 @@ If you don't find the answer you need, please [contact us](http://booking-activi
 * Fix - Fixed permission error after closing a dialog in template editor
 * Fix - Apostrophe characters in template / activity / events names are now correctly displayed
 * Fix - Copy a shortcode in calendar editor now copy only plain text, no more undesired html
+* Fix - Cart expiration is now checked on each page load. This means that you cart counter will now always be up to date.
 * Delete - bookacti_display_booking_system() function replaced by bookacti_get_booking_system() which MUST be used to display a booking system
 * Hooks changes:
   * JS hooks
@@ -287,6 +288,7 @@ If you don't find the answer you need, please [contact us](http://booking-activi
     * Add - bookacti_group_of_events_default_settings
     * Add - bookacti_group_of_events_settings
     * Add - bookacti_get_booking_method_html
+    * Add - bookacti_update_booking_quantity_data
 	* Tweak - Merged all booking system parameters into one array in bookacti_booking_system_title, bookacti_booking_system_auto_load, bookacti_picked_events_list_title
 	* Tweak - Added $shortcode parameter to bookacti_formatted_booking_system_attributes
     * Delete - bookacti_shortcode_{$shortcode}_default_parameters replaced by core shortcode_atts_{$shortcode} (not exactly the same use, be careful)

@@ -56,7 +56,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 		$deactivated_ids = bookacti_deactivate_expired_bookings();
 
-		if( empty( $deactivated_ids ) ) { 
+		if( $deactivated_ids === false ) { 
 			/* translators: 'cron' is a robot that execute scripts every X hours. Don't try to translate it. */
 			$log = esc_html__( 'The expired bookings were not correctly deactivated by cron.', BOOKACTI_PLUGIN_NAME );
 			bookacti_log( $log, 'error' );
@@ -65,6 +65,37 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	add_action( 'bookacti_hourly_event', 'bookacti_controller_deactivate_expired_bookings' );
 	
 	
+	/**
+	 * Change booking state to 'removed' or 'in_cart' depending on its quantity
+	 * 
+	 * @since 1.1.0
+	 * 
+	 * @param array $data
+	 * @param object $booking
+	 * @return array
+	 */
+	function bookacti_change_booking_state_to_removed_or_in_cart_depending_on_its_quantity( $data, $booking ) {
+		
+		// If quantity is null, change booking state to 'removed' and keep the booking quantity
+		if( $data[ 'quantity' ] <= 0 ) { 
+			
+			$data[ 'state' ]	= 'removed'; 
+			$data[ 'quantity' ]	= intval( $booking->quantity ); 
+			$data[ 'active' ]	= 0; 
+		
+		// If the booking was removed and its quantity is raised higher than 0, turn its state back to 'in_cart'
+		} else if( $booking->state === 'removed' ) {
+			
+			$data[ 'state' ]	= 'in_cart'; 
+			$data[ 'active' ]	= 1; 
+		}
+		
+		return $data;
+	}
+	add_filter( 'bookacti_update_booking_quantity_data', 'bookacti_change_booking_state_to_removed_or_in_cart_depending_on_its_quantity', 10, 2 );
+	
+	
+
 // ORDER AND BOOKING STATUS
 	//Turn a temporary booking to permanent if order gets complete
 	add_action( 'woocommerce_order_status_completed', 'bookacti_turn_temporary_booking_to_permanent', 10, 1 );
@@ -525,11 +556,44 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	// Update dates after reschedule
 	add_action( 'bookacti_booking_rescheduled', 'bookacti_woocommerce_update_booking_dates', 10, 3 );
 	function bookacti_woocommerce_update_booking_dates( $booking_id, $event_start, $event_end ) {
-		
+				
 		$item = bookacti_get_order_item_by_booking_id( $booking_id );
 		
 		if( ! empty( $item ) ) {
-			wc_update_order_item_meta( $item[ 'id' ], 'bookacti_event_start', $event_start );
-			wc_update_order_item_meta( $item[ 'id' ], 'bookacti_event_end',   $event_end );
+			return;
+		}
+		
+		$bookings = wc_get_order_item_meta( $item[ 'id' ], 'bookacti_booked_events' );
+		if( ! empty( $bookings ) ) {
+			
+			$bookings = json_decode( $bookings );
+			
+			// Single booking
+			$key = 0;
+			
+			// Group of bookings
+			if( count( $bookings ) > 1 ) {
+				foreach( $bookings as $i => $booking ) {
+					if( $booking->id === $booking_id ) {
+						$key = $i;
+						break;
+					}
+				}
+			}
+			
+			// Update only start and end of the desired booking
+			$bookings[ $key ][ 'event_start' ]	= $event_start;
+			$bookings[ $key ][ 'event_end' ]	= $event_end;
+			wc_update_order_item_meta( $item[ 'id' ], 'bookacti_booked_events', json_encode( $bookings ) );
+			
+		// For bookings made before Booking Activities 1.1.0
+		} else {
+			// Delete old data
+			wc_delete_order_item_meta( $item[ 'id' ], 'bookacti_event_start' );
+			wc_delete_order_item_meta( $item[ 'id' ], 'bookacti_event_end' );
+			
+			// Insert new booking data
+			$booking = bookacti_get_booking_by_id( $booking_id );
+			wc_add_order_item_meta( $item[ 'id' ], 'bookacti_booked_events', json_encode( array( $booking ) ), true );
 		}
 	}

@@ -91,7 +91,37 @@ function bookacti_get_booking_system( $atts, $echo = false ) {
 }
 
 
-// Retrieve Calendar booking system HTML to include in the booking system
+/**
+ * Get booking method HTML elemnts
+ * 
+ * @since 1.1.0
+ * 
+ * @param string $method
+ * @param array $booking_system_attributes
+ * @return string $html_elements
+ */
+function bookacti_get_booking_method_html( $method, $booking_system_attributes ) {
+	
+	$available_booking_methods = bookacti_get_available_booking_methods();
+	if( $method === 'calendar' || ! in_array( $method, array_keys( $available_booking_methods ) ) ) {
+		$html_elements = bookacti_retrieve_calendar_elements( $booking_system_attributes );
+	} else {
+		$html_elements = apply_filters( 'bookacti_get_booking_method_html', '', $method, $booking_system_attributes );
+	}
+	
+	return $html_elements;
+}
+
+
+/**
+ * Retrieve Calendar booking system HTML to include in the booking system
+ * 
+ * @since 1.0.0
+ * @version 1.1.0
+ * 
+ * @param array $booking_system_atts
+ * @return string
+ */
 function bookacti_retrieve_calendar_elements( $booking_system_atts ) {
 	
 	$default_calendar_title	= esc_html__( 'Pick a schedule on the calendar:', BOOKACTI_PLUGIN_NAME );
@@ -566,26 +596,80 @@ function bookacti_units_to_add_to_repeat_event( $event ) {
 
 
 /**
- * Get booking method HTML elemnts
+ * Build a user-friendly events list
  * 
- * @since 1.1.0
- * 
- * @param string $method
- * @param array $booking_system_attributes
- * @return string $html_elements
+ * @param array $events
+ * @param int|null $quantity
  */
-function bookacti_get_booking_method_html( $method, $booking_system_attributes ) {
+function bookacti_get_formatted_events_list( $events, $quantity = 'hide' ) {
 	
-	$available_booking_methods = bookacti_get_available_booking_methods();
-	if( $method === 'calendar' || ! in_array( $method, array_keys( $available_booking_methods ) ) ) {
-		$html_elements = bookacti_retrieve_calendar_elements( $booking_system_attributes );
-	} else {
-		$html_elements = apply_filters( 'bookacti_get_booking_method_html', '', $method, $booking_system_attributes );
+	if( empty( $events ) ) {
+		return false;
 	}
 	
-	return $html_elements;
+	// Format $events
+	$formatted_events = array();
+	foreach( $events as $event ) {
+		$formatted_events[] = array( 
+			'title'		=> isset( $event->title )	? $event->title : '',
+			'start'		=> isset( $event->start )	? bookacti_sanitize_datetime( $event->start )	: isset( $event->event_start )	? bookacti_sanitize_datetime( $event->event_start )	: '',
+			'end'		=> isset( $event->end )		? bookacti_sanitize_datetime( $event->end )		: isset( $event->event_end )	? bookacti_sanitize_datetime( $event->event_end )	: '',
+			'quantity'	=> isset( $event->quantity )? $event->quantity : ! empty( $quantity ) && is_int( $quantity ) ? $quantity : '',
+		);
+	}
+	
+	$events_list = '';
+	foreach( $formatted_events as $event ) {
+		
+		// Format the event duration
+		$event_duration = '';
+		if( ! empty( $event[ 'start' ] ) && ! empty( $event[ 'end' ] ) ) {
+			
+			$event_start = bookacti_format_datetime( $event[ 'start' ] );
+			
+			// Format differently if the event start and end on the same day
+			$start_and_end_same_day	= substr( $event[ 'start' ], 0, 10 ) === substr( $event[ 'end' ], 0, 10 );
+			if( $start_and_end_same_day ) {
+				/* translators: Datetime format. Must be adapted to each country. Use strftime documentation to find the appropriated combinaison http://php.net/manual/en/function.strftime.php */
+				$event_end = strftime( __( '%I:%M %p', BOOKACTI_PLUGIN_NAME ), strtotime( $event[ 'end' ] ) );
+			} else {
+				$event_end = bookacti_format_datetime( $event[ 'end' ] );
+			}
+			
+			// Place an arrow between start and end
+			$event_duration = $event_start . ' &rarr; ' . $event_end;
+		}
+		
+		// Add an element to event list if there is at least a title or a duration
+		if( ! empty( $event[ 'title' ] ) || ! empty( $event_duration ) ) {
+			$events_list .= '<li>';
+			
+			if( ! empty( $event[ 'title' ] ) ) {
+				$events_list .= apply_filters( 'bookacti_translate_text', $event[ 'title' ] );
+				if( ! empty( $event_duration ) ) {
+					$events_list .= ' - ';
+				}
+			}
+			if( ! empty( $event_duration ) ) {
+				$events_list .= $event_duration;
+			}
+			
+			if( ! empty( $quantity ) && $quantity !== 'hide' ) {
+				$events_list .= ' x' . $quantity;
+			}
+			
+			$events_list .= '</li>';
+		}
+		
+	}
+	
+	// Wrap the list only if it is not empty
+	if( ! empty( $events_list ) ) {
+		$events_list = '<ul class="bookacti-events-list" >' . $events_list . '</ul>';
+	}
+	
+	return $events_list;
 }
-
 
 
 

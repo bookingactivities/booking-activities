@@ -259,3 +259,20 @@ function bookacti_sanitize_exceptions( $exceptions ) {
 	}
 	return array();
 }
+
+
+/**
+ * Check if a string is valid JSON
+ * 
+ * @param string $string
+ * @return boolean
+ */
+function bookacti_is_json( $string ) {
+	
+	if( ! is_string( $string ) ) {
+		return false;
+	}
+	
+	json_decode( $string );
+	return (json_last_error() == JSON_ERROR_NONE);
+}

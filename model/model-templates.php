@@ -754,7 +754,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			$query .= ' AND active = 1 ';
 		}
 		
-		$query			.= ' ORDER BY group_id, event_id, event_start ';
+		$query			.= ' ORDER BY group_id, event_start ';
 		
 		$query			= $wpdb->prepare( $query, $group_id );
         $events_assoc	= $wpdb->get_results( $query, OBJECT );

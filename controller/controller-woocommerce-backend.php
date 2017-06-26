@@ -3,8 +3,20 @@
 if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 // ORDERS
-	// Change booking qty when admin change order item qty
-	add_filter( 'update_order_item_metadata', 'bookacti_update_booking_qty_with_order_item_qty', 20, 5 );
+	
+	/**
+	 * Change booking quantity when admin change order item quantity
+	 * 
+	 * @since 1.0.0
+	 * @version 1.1.0
+	 * 
+	 * @param boolean $check
+	 * @param int $item_id
+	 * @param string $meta_key
+	 * @param string $meta_value
+	 * @param string $prev_value
+	 * @return boolean
+	 */
 	function bookacti_update_booking_qty_with_order_item_qty( $check, $item_id, $meta_key, $meta_value, $prev_value ) {
 		
 		if( $meta_key === '_qty' ) {
@@ -12,12 +24,15 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			if( $booking_id ) {
 				$response = bookacti_update_booking_quantity( $booking_id, $meta_value );
 				if( ! in_array( $response['status'], array( 'success', 'no_change' ) ) ) {
-					if( in_array( $response['error'], array( 'qty_sup_to_avail', 'no_availability' ) ) ) {
+					if( $response['error'] === 'qty_sup_to_avail' ) {
 						$message =
 						sprintf( __( 'You want to add %1$s bookings to your cart but only %2$s are available on this schedule. '
 								. 'Please choose another schedule or decrease the quantity. '
 								, BOOKACTI_PLUGIN_NAME ), 
 								$meta_value, $response[ 'availability' ] );
+					} else if( $response['error'] === 'no_availability' ) {
+						$message = __( 'This schedule is no longer available. Please choose another schedule.', BOOKACTI_PLUGIN_NAME );
+						
 					} else {
 						$message = __( 'Error occurs while trying to update booking quantity.', BOOKACTI_PLUGIN_NAME );
 					}
@@ -30,11 +45,18 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		
 		return $check;
 	}
+	add_filter( 'update_order_item_metadata', 'bookacti_update_booking_qty_with_order_item_qty', 20, 5 );
 	
 	
-	// Change booking quantity when a partial refund in done, 
-	// Change booking state when a total refund is done
-	add_action( 'woocommerce_refund_created', 'bookacti_update_booking_when_order_item_is_refunded', 10, 2 );
+	/**
+	 * Change booking quantity when a partial refund in done, 
+	 * Change booking state when a total refund is done
+	 * 
+	 * @since 1.0.0
+	 * 
+	 * @param int $refund_id
+	 * @param array $args
+	 */
 	function bookacti_update_booking_when_order_item_is_refunded( $refund_id, $args ) {
 		
 		$refunded_items	= $args[ 'line_items' ];
@@ -117,19 +139,34 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			}
 		}
 	}
+	add_action( 'woocommerce_refund_created', 'bookacti_update_booking_when_order_item_is_refunded', 10, 2 );
 	
 	
-	// If refund is processed automatically set booking order item refund method to 'auto'
-	add_action( 'woocommerce_refund_processed', 'bookacti_set_order_item_refund_method_to_auto', 10, 2 );
+	/**
+	 * If refund is processed automatically set booking order item refund method to 'auto'
+	 * 
+	 * @since 1.0.0
+	 * 
+	 * @param array $refund
+	 * @param boolean $result
+	 */
 	function bookacti_set_order_item_refund_method_to_auto( $refund, $result ) {
 		if( $result ) {
 			wc_update_order_item_meta( $refund[ 'refunded_item_id' ], '_bookacti_refund_method', 'auto' );
 		}
 	}
+	add_action( 'woocommerce_refund_processed', 'bookacti_set_order_item_refund_method_to_auto', 10, 2 );
 	
 	
-	// Change booking quantity and status when a refund is deleted 
-	add_action( 'woocommerce_refund_deleted', 'bookacti_update_booking_when_refund_is_deleted', 10, 2 );
+	/**
+	 * Change booking quantity and status when a refund is deleted
+	 * 
+	 * @since 1.0.0
+	 * @version 1.1.0
+	 * 
+	 * @param int $refund_id
+	 * @param int $order_id
+	 */
 	function bookacti_update_booking_when_refund_is_deleted( $refund_id, $order_id ) {
 		
 		$order = new WC_Order( $order_id );
@@ -159,12 +196,16 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 							$order->update_product( $item_id, $product, array( 'qty' => $booking->quantity ) );
 
 							// Prepare message
-							if( in_array( $response['error'], array( 'qty_sup_to_avail', 'no_availability' ) ) ) {
+							if( $response['error'] === 'qty_sup_to_avail' ) {
 								$message =
 								sprintf( __( 'You want to add %1$s bookings to your cart but only %2$s are available on this schedule. '
 										. 'Please choose another schedule or decrease the quantity. '
 										, BOOKACTI_PLUGIN_NAME ), 
 										$new_qty, $response[ 'availability' ] );
+								
+							} else if( $response['error'] === 'no_availability' ) {
+								$message = __( 'This schedule is no longer available. Please choose another schedule.', BOOKACTI_PLUGIN_NAME );
+								
 							} else {
 								$message = __( 'Error occurs while trying to update booking quantity.', BOOKACTI_PLUGIN_NAME );
 							}
@@ -203,21 +244,74 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			}
 		}
 	}
+	add_action( 'woocommerce_refund_deleted', 'bookacti_update_booking_when_refund_is_deleted', 10, 2 );
+	
+	
+	/**
+	 * Format order item mata values in order pages in admin panel
+	 * 
+	 * Must be used since WC 3.0.0
+	 * 
+	 * @since 1.0.4
+	 */
+	function bookacti_format_order_item_meta_values( $meta_value ) {
+		
+		if( version_compare( WC_VERSION, '3.0.0', '>=' ) ) {
+			// Format booking state
+			$available_states = bookacti_get_booking_state_labels();
+			if( array_key_exists( $meta_value, $available_states ) ) {
+				return bookacti_format_booking_state( $meta_value );
+			}
+			
+			// Format booked events
+			else if( bookacti_is_json( $meta_value ) ) {
+				$events = json_decode( $meta_value );
+				if( is_array( $events ) && count( $events ) > 0 && is_object( $events[ 0 ] ) && isset( $events[ 0 ]->event_id ) ) {
+					return bookacti_get_formatted_events_list( $events );
+				}
+			}
+			
+			// Format datetime
+			else if( preg_match( '/\d{4}-[01]\d-[0-3]\dT[0-2]\d:[0-5]\d:[0-5]\d/', $meta_value ) 
+			||  preg_match( '/\d{4}-[01]\d-[0-3]\d [0-2]\d:[0-5]\d:[0-5]\d/', $meta_value ) ) {
+				return bookacti_format_datetime( $meta_value );
+			}
+		}
+		
+		return $meta_value;
+	}
+	add_filter( 'woocommerce_order_item_display_meta_value', 'bookacti_format_order_item_meta_values', 10, 1 );
+	
+	
 	
 	
 // TEMPLATES
-	// Add shop managers to templates managers exceptions
-	add_filter( 'bookacti_managers_roles_exceptions', 'bookacti_add_shop_manager_to_template_managers_exceptions', 10, 1 );
+
+	/**
+	 * Add shop managers to templates managers exceptions
+	 * 
+	 * @param array $exceptions
+	 * @return string
+	 */
 	function bookacti_add_shop_manager_to_template_managers_exceptions( $exceptions ) {
 		$exceptions[] = 'shop_manager';
 		return $exceptions;
 	}
+	add_filter( 'bookacti_managers_roles_exceptions', 'bookacti_add_shop_manager_to_template_managers_exceptions', 10, 1 );
 	
-	// Bypass template manager check for shop managers
-	add_filter( 'bookacti_bypass_template_managers_check', 'bookacti_bypass_checks_for_shop_managers', 10, 1 );
+	
+	/**
+	 * Bypass template manager check for shop managers
+	 * 
+	 * @param boolean $allowed
+	 * @return boolean
+	 */
 	function bookacti_bypass_checks_for_shop_managers( $allowed ) {
 		return bookacti_is_shop_manager() ? true : $allowed;
 	}
+	add_filter( 'bookacti_bypass_template_managers_check', 'bookacti_bypass_checks_for_shop_managers', 10, 1 );
+	
+	
 	
 	
 // CUSTOM PRODUCTS OPTIONS
@@ -479,13 +573,13 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	
 
 
+	
 //CUSTOM VARIATION FIELDS
 
 	/**
 	 * Add custom variation product type option
 	 * 
 	 * @since 1.0.0
-	 * @version 1.0.0
 	 * 
 	 * @param int $loop
 	 * @param array $variation_data
@@ -815,11 +909,15 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	add_filter( 'woocommerce_available_variation', 'bookacti_load_variation_settings_fields' );
 
 	
+	
 
 // ROLES AND CAPABILITIES
-	// Set woocommerce role and cap
-	add_action( 'bookacti_set_capabilities', 'bookacti_set_role_and_cap_for_woocommerce' );
-	add_action( 'woocommerce_installed', 'bookacti_set_role_and_cap_for_woocommerce' );
+
+	/**
+	 * Set Booking Activities roles and capabilities related to WooCommerce
+	 * 
+	 * @since 1.0.0
+	 */
 	function bookacti_set_role_and_cap_for_woocommerce() {
 		$shop_manager = get_role( 'shop_manager' );
 		$shop_manager->add_cap( 'bookacti_manage_booking_activities' );
@@ -836,17 +934,28 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		$shop_manager->add_cap( 'bookacti_create_bookings' );
 		$shop_manager->add_cap( 'bookacti_edit_bookings' );
 	}
+	add_action( 'bookacti_set_capabilities', 'bookacti_set_role_and_cap_for_woocommerce' );
+	add_action( 'woocommerce_installed', 'bookacti_set_role_and_cap_for_woocommerce' );
 	
 	
-	// Unset woocommerce role and cap
-	add_action( 'wp_roles_init', 'bookacti_unset_role_and_cap_for_woocommerce_on_woocommerce_uninstall' );
+	/**
+	 * Unset Booking Activities roles and capabilities related to WooCommerce (to be used on wp_roles_init)
+	 * 
+	 * @since 1.0.0
+	 */
 	function bookacti_unset_role_and_cap_for_woocommerce_on_woocommerce_uninstall() {
 		if( defined( 'WP_UNINSTALL_PLUGIN' ) && WP_UNINSTALL_PLUGIN === 'woocommerce/woocommerce.php' ) {
 			bookacti_unset_role_and_cap_for_woocommerce();
 		}
 	}
+	add_action( 'wp_roles_init', 'bookacti_unset_role_and_cap_for_woocommerce_on_woocommerce_uninstall' );
 	
-	add_action( 'bookacti_unset_capabilities', 'bookacti_unset_role_and_cap_for_woocommerce' );
+	
+	/**
+	 * Unset Booking Activities roles and capabilities related to WooCommerce
+	 * 
+	 * @since 1.0.0
+	 */
 	function bookacti_unset_role_and_cap_for_woocommerce() {
 		$shop_manager = get_role( 'shop_manager' );
 		$shop_manager->remove_cap( 'bookacti_manage_booking_activities' );
@@ -863,3 +972,4 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		$shop_manager->remove_cap( 'bookacti_create_bookings' );
 		$shop_manager->remove_cap( 'bookacti_edit_bookings' );
 	}
+	add_action( 'bookacti_unset_capabilities', 'bookacti_unset_role_and_cap_for_woocommerce' );
