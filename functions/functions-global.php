@@ -264,6 +264,8 @@ function bookacti_sanitize_exceptions( $exceptions ) {
 /**
  * Check if a string is valid JSON
  * 
+ * @since 1.1.0
+ * 
  * @param string $string
  * @return boolean
  */
@@ -274,5 +276,5 @@ function bookacti_is_json( $string ) {
 	}
 	
 	json_decode( $string );
-	return (json_last_error() == JSON_ERROR_NONE);
+	return ( json_last_error() == JSON_ERROR_NONE );
 }

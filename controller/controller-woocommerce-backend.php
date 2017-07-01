@@ -169,7 +169,12 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	 */
 	function bookacti_update_booking_when_refund_is_deleted( $refund_id, $order_id ) {
 		
-		$order = new WC_Order( $order_id );
+		$order = wc_get_order( $order_id );
+		
+		if( empty( $order ) ) {
+			return false;
+		}
+		
 		$items = $order->get_items();
 		
 		foreach( $items as $item_id => $item ) {
@@ -267,7 +272,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			else if( bookacti_is_json( $meta_value ) ) {
 				$events = json_decode( $meta_value );
 				if( is_array( $events ) && count( $events ) > 0 && is_object( $events[ 0 ] ) && isset( $events[ 0 ]->event_id ) ) {
-					return bookacti_get_formatted_events_list( $events );
+					return bookacti_get_formatted_booking_events_list( $events );
 				}
 			}
 			

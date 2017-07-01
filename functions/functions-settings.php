@@ -320,7 +320,6 @@ function bookacti_settings_section_bookings_callback() { }
 		
 		//Display the tip
 		$tip  = __( "Allow or disallow customers to cancel a booking after they order it.", BOOKACTI_PLUGIN_NAME );
-		$tip .= '<br/>' . __( "This won't apply to group of bookings.", BOOKACTI_PLUGIN_NAME );
 		bookacti_help_tip( $tip );
 	}
 	

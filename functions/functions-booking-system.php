@@ -337,14 +337,13 @@ function bookacti_validate_booking_form( $group_id, $event_id, $event_start, $ev
 		$is_in_range	= bookacti_is_group_of_events_in_its_template_range( $group_id );
 	}
 	
-	
-	//Init boolean test variables
+	// Init boolean test variables
 	$is_event				= false;
 	$is_qty_sup_to_avail	= false;
 	$is_qty_sup_to_0		= false;
 	$can_book				= false;
 
-	//Make the tests and change the booleans
+	// Make the tests and change the booleans
 	if( $group_id !== '' && $event_id !== '' && $event_start !== '' && $event_end !== '' )	{ $is_event = true; }
 	if( intval( $quantity ) > 0 )															{ $is_qty_sup_to_0 = true; }
 	if( intval( $availability ) - intval( $quantity ) < 0 )									{ $is_qty_sup_to_avail = true; }
@@ -598,23 +597,23 @@ function bookacti_units_to_add_to_repeat_event( $event ) {
 /**
  * Build a user-friendly events list
  * 
- * @param array $events
- * @param int|null $quantity
+ * @param array $booking_events
+ * @param int|string $quantity
  */
-function bookacti_get_formatted_events_list( $events, $quantity = 'hide' ) {
+function bookacti_get_formatted_booking_events_list( $booking_events, $quantity = 'hide' ) {
 	
-	if( empty( $events ) ) {
+	if( empty( $booking_events ) ) {
 		return false;
 	}
 	
 	// Format $events
 	$formatted_events = array();
-	foreach( $events as $event ) {
+	foreach( $booking_events as $booking_event ) {
 		$formatted_events[] = array( 
-			'title'		=> isset( $event->title )	? $event->title : '',
-			'start'		=> isset( $event->start )	? bookacti_sanitize_datetime( $event->start )	: isset( $event->event_start )	? bookacti_sanitize_datetime( $event->event_start )	: '',
-			'end'		=> isset( $event->end )		? bookacti_sanitize_datetime( $event->end )		: isset( $event->event_end )	? bookacti_sanitize_datetime( $event->event_end )	: '',
-			'quantity'	=> isset( $event->quantity )? $event->quantity : ! empty( $quantity ) && is_int( $quantity ) ? $quantity : '',
+			'title'		=> isset( $booking_event->title )	? $booking_event->title : '',
+			'start'		=> isset( $booking_event->start )	? bookacti_sanitize_datetime( $booking_event->start )	: isset( $booking_event->event_start )	? bookacti_sanitize_datetime( $booking_event->event_start )	: '',
+			'end'		=> isset( $booking_event->end )		? bookacti_sanitize_datetime( $booking_event->end )		: isset( $booking_event->event_end )	? bookacti_sanitize_datetime( $booking_event->event_end )	: '',
+			'quantity'	=> isset( $booking_event->quantity )? $booking_event->quantity : ! empty( $quantity ) && is_int( $quantity ) ? $quantity : '',
 		);
 	}
 	
@@ -636,8 +635,11 @@ function bookacti_get_formatted_events_list( $events, $quantity = 'hide' ) {
 				$event_end = bookacti_format_datetime( $event[ 'end' ] );
 			}
 			
+			$class = $start_and_end_same_day ? 'bookacti-booking-event-end-same-day' : '';
 			// Place an arrow between start and end
-			$event_duration = $event_start . ' &rarr; ' . $event_end;
+			$event_duration = '<span class="bookacti-booking-event-start" >' . $event_start . '</span>'
+							. '<span class="bookacti-booking-event-date-separator ' . $class . '" >' . ' &rarr; ' . '</span>'
+							. '<span class="bookacti-booking-event-end ' . $class . '" >' . $event_end . '</span>';
 		}
 		
 		// Add an element to event list if there is at least a title or a duration
@@ -645,9 +647,9 @@ function bookacti_get_formatted_events_list( $events, $quantity = 'hide' ) {
 			$events_list .= '<li>';
 			
 			if( ! empty( $event[ 'title' ] ) ) {
-				$events_list .= apply_filters( 'bookacti_translate_text', $event[ 'title' ] );
+				$events_list .= '<span class="bookacti-booking-event-title" >' . apply_filters( 'bookacti_translate_text', $event[ 'title' ] ) . '</span>';
 				if( ! empty( $event_duration ) ) {
-					$events_list .= ' - ';
+					$events_list .= '<span class="bookacti-booking-event-title-separator" >' . ' - ' . '</span>';
 				}
 			}
 			if( ! empty( $event_duration ) ) {
@@ -655,7 +657,8 @@ function bookacti_get_formatted_events_list( $events, $quantity = 'hide' ) {
 			}
 			
 			if( ! empty( $quantity ) && $quantity !== 'hide' ) {
-				$events_list .= ' x' . $quantity;
+				$events_list .= '<span class="bookacti-booking-event-quantity-separator" >' . ' x' . '</span>';
+				$events_list .= '<span class="bookacti-booking-event-quantity" >' . $quantity . '</span>';
 			}
 			
 			$events_list .= '</li>';
@@ -665,7 +668,7 @@ function bookacti_get_formatted_events_list( $events, $quantity = 'hide' ) {
 	
 	// Wrap the list only if it is not empty
 	if( ! empty( $events_list ) ) {
-		$events_list = '<ul class="bookacti-events-list" >' . $events_list . '</ul>';
+		$events_list = '<ul class="bookacti-booking-events-list" >' . $events_list . '</ul>';
 	}
 	
 	return $events_list;

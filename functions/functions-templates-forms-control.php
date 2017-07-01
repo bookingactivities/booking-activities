@@ -194,13 +194,24 @@ function bookacti_format_event_settings( $event_settings ) {
 }
 
 
-//Make sure the availability is higher than the bookings already made
+/**
+ * Make sure the availability is higher than the bookings already made
+ * 
+ * @version 1.1.0
+ * 
+ * @param int $event_id
+ * @param int $event_availability
+ * @param string $repeat_freq
+ * @param string $repeat_from
+ * @param string $repeat_to
+ * @param array $exceptions
+ * @return array
+ */
 function bookacti_validate_event( $event_id, $event_availability, $repeat_freq, $repeat_from, $repeat_to, $exceptions ) {
     //Get info required
     $min_avail          = bookacti_get_min_availability( $event_id );
     $min_period         = bookacti_get_min_period( NULL, $event_id );
-    $bookings           = bookacti_get_bookings( NULL, $event_id );
-    $bookings_array     = $bookings[$event_id];
+    $bookings           = bookacti_get_bookings( NULL, NULL, $event_id );
     $repeat_from_time   = strtotime( $repeat_from );
     $repeat_to_time     = strtotime( $repeat_to );
     $max_from           = strtotime( $min_period['from'] );
@@ -225,7 +236,7 @@ function bookacti_validate_event( $event_id, $event_availability, $repeat_freq, 
         }
     }
     if( count ( $bookings ) > 0 && count( $exceptions ) > 0 ) {
-        foreach( $bookings_array as $booking ) {
+        foreach( $bookings as $booking ) {
             foreach( $exceptions as $exception ){
                 $booked_time    = strtotime( substr( $booking->event_start, 0, 10 ) );
                 $exception_time = strtotime( $exception );

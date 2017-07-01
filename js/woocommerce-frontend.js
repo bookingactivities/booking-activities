@@ -1,143 +1,149 @@
 $j( document ).ready( function() {
 	
-    //Add to cart dynamic check
-    if( $j( 'body.woocommerce form.cart .single_add_to_cart_button' ).length ) {		
-		$j( 'body.woocommerce form.cart' ).on( 'submit', function( e ) { 
-			var form = $j( this );
-			
-			var proceed_to_validation = false;
-	
-			if( form.hasClass( 'variations_form' ) ) {
-				var variation_id = form.find( '.variation_id' ).val();
-				if( variation_id !== '' && typeof variation_id !== 'undefined' ) {
-					proceed_to_validation = is_activity[ variation_id ];
-				}
-			} else if( form.find( '.bookacti-booking-system-container' ).length ) {
-				proceed_to_validation = true;
+	// BOOKING LIST
+
+		// Update booking row after frontend rechedule
+		$j( 'body' ).on( 'bookacti_booking_rescheduled', function( e, booking_id, event_start, event_end, response ){
+			var row	= $j( '.bookacti-booking-action[data-booking-id="' + booking_id + '"]' ).parents( 'tr' );
+			// Update start and end dates, and updates available actions
+			if( $j( '.wc-item-meta-bookacti_event_start.wc-item-meta-value' ).length ) {
+				row.find( '.wc-item-meta-bookacti_event_start.wc-item-meta-value' ).html( response.event_start_formatted );
+				row.find( '.wc-item-meta-bookacti_event_end.wc-item-meta-value' ).html( response.event_end_formatted );
+				row.find( '.bookacti-booking-actions' ).html( response.actions_html );
 			}
-			
-			if( proceed_to_validation ) {
-				if( form.find( '.bookacti-booking-system-container' ).length ) {
-					// Submit form if all is OK
-					var is_valid = bookacti_validate_picked_events( form.find( '.bookacti-booking-system' ), form.find( '.quantity input.qty' ).val() );
-					if( is_valid ) {
-						// Trigger action before sending form
-						form.find( '.bookacti-booking-system-container' ).trigger( 'bookacti_submit_booking_form' );
-						return true;
-					} else {
-						return false; // Prevent submission
+			// WOOCOMMERCE 3.0.0 backward compatibility
+			if( $j( 'dd.variation-bookacti_event_start p' ).length ) {
+				row.find( 'dd.variation-bookacti_event_start p' ).html( response.event_start_formatted );
+				row.find( 'dd.variation-bookacti_event_end p' ).html( response.event_end_formatted );
+				row.find( '.bookacti-booking-actions' ).html( response.actions_html );
+			}
+		});
+	
+	
+	
+	
+	// SINGLE PRODUCT
+	
+		// Handle variations
+		if( $j( 'body.woocommerce form.cart .bookacti-booking-system' ).length ) { 
+			$j( '.bookacti-booking-system' ).each( function() {	
+				var booking_system		= $j( this );
+				var booking_system_id	= booking_system.attr( 'id' );
+
+				var is_variable = booking_system.parents( '.variations_form' ).length;
+				if( booking_system.hasClass( 'bookacti-woocommerce-product-booking-system' ) && is_variable ) {
+					// Deactivate the booking system if no variation are selected
+					booking_system.parents( '.variations_form' ).on( 'reset_data', function() { 
+						bookacti_deactivate_booking_system( booking_system );
+					});
+					
+					// Save the parent data
+					parent_calendar_data[ booking_system_id ] = calendars_data[ booking_system_id ];
+
+					// Change the booking system if a variation is selected
+					booking_system.parents( '.variations_form' ).find( '.single_variation_wrap' ).on( 'show_variation', function( event, variation ) { 
+						bookacti_switch_booking_system_according_to_variation( booking_system, variation );
+					});
+				}
+			});
+		}
+
+
+		// Enable add-to-cart button
+		$j( 'body.woocommerce form.cart' ).on( 'bookacti_view_refreshed bookacti_displayed_info_cleared', '.bookacti-booking-system', function( e ) {
+			$j( this ).parents( 'form' ).find( 'input[name="quantity"]' ).attr( 'disabled', false );
+			$j( this ).parents( 'form' ).find( 'button[type="submit"]' ).attr( 'disabled', false );
+		});
+
+
+		// Disable add-to-cart button
+		$j( 'body.woocommerce form.cart' ).on( 'bookacti_error_displayed', '.bookacti-booking-system', function( e ) {
+			$j( this ).parents( 'form' ).find( 'input[name="quantity"], input[name^="bookacti_quantity"]' ).attr( 'disabled', true );
+			$j( this ).parents( 'form' ).find( 'button[type="submit"]' ).attr( 'disabled', true );
+		});
+
+
+		// Add to cart dynamic check
+		if( $j( 'body.woocommerce form.cart .single_add_to_cart_button' ).length ) {		
+			$j( 'body.woocommerce form.cart' ).on( 'submit', function( e ) { 
+				var form = $j( this );
+
+				var proceed_to_validation = false;
+
+				if( form.hasClass( 'variations_form' ) ) {
+					var variation_id = form.find( '.variation_id' ).val();
+					if( variation_id !== '' && typeof variation_id !== 'undefined' ) {
+						proceed_to_validation = is_activity[ variation_id ];
+					}
+				} else if( form.find( '.bookacti-booking-system-container' ).length ) {
+					proceed_to_validation = true;
+				}
+
+				if( proceed_to_validation ) {
+					if( form.find( '.bookacti-booking-system-container' ).length ) {
+						// Submit form if all is OK
+						var is_valid = bookacti_validate_picked_events( form.find( '.bookacti-booking-system' ), form.find( '.quantity input.qty' ).val() );
+						if( is_valid ) {
+							// Trigger action before sending form
+							form.find( '.bookacti-booking-system-container' ).trigger( 'bookacti_submit_booking_form' );
+							return true;
+						} else {
+							return false; // Prevent submission
+						}
 					}
 				}
-			}
-		});
-    }
-	
-	
-	// Change activity summary on qty change
-	$j( 'body.woocommerce form.cart' ).on( 'keyup mouseup', 'input.qty', function() {
-		var booking_system = $j( this ).parents( 'form.cart' ).find( '.bookacti-booking-system' );
-		if( booking_system.length ) {
-			bookacti_fill_picked_events_list( booking_system );
+			});
 		}
-	});
-	
-	
-	// Set quantity on eventClick
-	$j( 'body.woocommerce form.cart' ).on( 'bookacti_picked_events_list_data', '.bookacti-booking-system', function( e, event_summary_data ) {
-		if( $j( this ).parents( 'form' ).find( '.quantity .qty' ).length ) {
-			
-			var booking_system_id	= $j( this ).attr( 'id' );
-			var quantity			= parseInt( $j( this ).parents( 'form' ).find( '.quantity .qty' ).val() );
-			var available_places	= 0; 
-			
-			//Limit the max quantity
-			if( pickedEvents[ booking_system_id ].length > 1 ) {
-				available_places = bookacti_get_group_availability( pickedEvents[ booking_system_id ] );
-			} else {
-				available_places = bookacti_get_event_availability( pickedEvents[ booking_system_id ][ 0 ] );
-			}
-			
-			$j( this ).parents( 'form' ).find( '.quantity .qty' ).attr( 'max', available_places );
-			if( quantity > available_places ) {
-				$j( this ).parents( 'form' ).find( '.quantity .qty' ).val( available_places );
-				quantity = available_places;
-			}
-			
-			event_summary_data.quantity = quantity;
-		}
-	});
-	
-		
-	// Update booking row after frontend rechedule
-	$j( 'body' ).on( 'bookacti_booking_rescheduled', function( e, booking_id, event_start, event_end, response ){
-		var row	= $j( '.bookacti-booking-action[data-booking-id="' + booking_id + '"]' ).parents( 'tr' );
-		// Update start and end dates, and updates available actions
-		if( $j( '.wc-item-meta-bookacti_event_start.wc-item-meta-value' ).length ) {
-			row.find( '.wc-item-meta-bookacti_event_start.wc-item-meta-value' ).html( response.event_start_formatted );
-			row.find( '.wc-item-meta-bookacti_event_end.wc-item-meta-value' ).html( response.event_end_formatted );
-			row.find( '.bookacti-booking-actions' ).html( response.actions_html );
-		}
-		// WOOCOMMERCE 3.0.0 backward compatibility
-		if( $j( 'dd.variation-bookacti_event_start p' ).length ) {
-			row.find( 'dd.variation-bookacti_event_start p' ).html( response.event_start_formatted );
-			row.find( 'dd.variation-bookacti_event_end p' ).html( response.event_end_formatted );
-			row.find( '.bookacti-booking-actions' ).html( response.actions_html );
-		}
-	});
-	
-	
-	//Check if booking systems exist before anything
-	if ( $j( 'body.woocommerce form.cart .bookacti-booking-system' ).length ) { 
-		
-		// Handle variations
-		$j( '.bookacti-booking-system' ).each( function() {	
-			var booking_system		= $j( this );
-			var booking_system_id	= booking_system.attr( 'id' );
-			
-			
-			var is_variable = booking_system.parents( '.variations_form' ).length;
-			if( booking_system.hasClass( 'bookacti-woocommerce-product-booking-system' ) && is_variable ) {
-				// Deactivate the booking system if no variation are selected
-				booking_system.parents( '.variations_form' ).on( 'reset_data', function() { 
-					bookacti_deactivate_booking_system( booking_system );
-				});
-				
-				// Save the parent data
-				parent_calendar_data[ booking_system_id ] = calendars_data[ booking_system_id ];
-				
-				//Change the booking system if a variation is selected
-				booking_system.parents( '.variations_form' ).find( '.single_variation_wrap' ).on( 'show_variation', function( event, variation ) { 
-					bookacti_switch_booking_system_according_to_variation( booking_system, variation );
-				});
-			}
-		});
-	}
-	
-	
-	//Enable add-to-cart button
-	$j( 'body.woocommerce form.cart' ).on( 'bookacti_view_refreshed bookacti_displayed_info_cleared', '.bookacti-booking-system', function( e ) {
-		$j( this ).parents( 'form' ).find( 'input[name="quantity"]' ).attr( 'disabled', false );
-		$j( this ).parents( 'form' ).find( 'button[type="submit"]' ).attr( 'disabled', false );
-	});
 
 
-	//Disable add-to-cart button
-	$j( 'body.woocommerce form.cart' ).on( 'bookacti_error_displayed', '.bookacti-booking-system', function( e ) {
-		//Disable add-to-cart button
-		$j( this ).parents( 'form' ).find( 'input[name="quantity"], input[name^="bookacti_quantity"]' ).attr( 'disabled', true );
-		$j( this ).parents( 'form' ).find( 'button[type="submit"]' ).attr( 'disabled', true );
-	});
-		
+		// Change activity summary on qty change
+		$j( 'body.woocommerce form.cart' ).on( 'keyup mouseup', 'input.qty', function() {
+			var booking_system = $j( this ).parents( 'form.cart' ).find( '.bookacti-booking-system' );
+			if( booking_system.length ) {
+				bookacti_fill_picked_events_list( booking_system );
+			}
+		});
+
+
+		// Set quantity on eventClick
+		$j( 'body.woocommerce form.cart' ).on( 'bookacti_picked_events_list_data', '.bookacti-booking-system', function( e, event_summary_data ) {
+			if( $j( this ).parents( 'form' ).find( '.quantity .qty' ).length ) {
+
+				var booking_system_id	= $j( this ).attr( 'id' );
+				var quantity			= parseInt( $j( this ).parents( 'form' ).find( '.quantity .qty' ).val() );
+				var available_places	= 0; 
+
+				//Limit the max quantity
+				if( pickedEvents[ booking_system_id ].length > 1 ) {
+					available_places = bookacti_get_group_availability( pickedEvents[ booking_system_id ] );
+				} else {
+					available_places = bookacti_get_event_availability( pickedEvents[ booking_system_id ][ 0 ] );
+				}
+
+				$j( this ).parents( 'form' ).find( '.quantity .qty' ).attr( 'max', available_places );
+				if( quantity > available_places ) {
+					$j( this ).parents( 'form' ).find( '.quantity .qty' ).val( available_places );
+					quantity = available_places;
+				}
+
+				event_summary_data.quantity = quantity;
+			}
+		});
 	
-	//Create a countdown on cart
-	if( $j( '.bookacti-countdown' ).length ) {
-		setInterval( bookacti_countdown, 1000 );
-	}
+	
+	
+	
+	// CART
+	
+		// Create a countdown on cart
+		if( $j( '.bookacti-countdown' ).length ) {
+			setInterval( bookacti_countdown, 1000 );
+		}
 	
 }); // end of document ready
 
 
-//Switch booking system according to variation
+// Switch booking system according to variation
 function bookacti_switch_booking_system_according_to_variation( booking_system, variation ) {
 	
 	var booking_system_id		= booking_system.attr( 'id' );
@@ -184,7 +190,7 @@ function bookacti_switch_booking_system_according_to_variation( booking_system, 
 }
 
 
-//Create a countdown on cart items
+// Create a countdown on cart items
 function bookacti_countdown() {
 	
 	$j( '.bookacti-countdown' ).each( function() {
@@ -247,7 +253,7 @@ function bookacti_countdown() {
 }
 
 
-//Refresh cart after expiration
+// Refresh cart after expiration
 function bookacti_refresh_cart_after_expiration( countdown ) {
 	var is_checkout	= $j( countdown ).parents( '.checkout' ).length;
 	var woodiv		= $j( countdown ).parents( '.woocommerce' );
@@ -319,14 +325,14 @@ function bookacti_refresh_cart_after_expiration( countdown ) {
 }
 
 
-//Deactivate booking system
+// Deactivate booking system
 function bookacti_deactivate_booking_system( booking_system ) {
 	booking_system.parent().hide();
 	booking_system.siblings( '.bookacti-booking-system-inputs input' ).prop( 'disabled', true );
 }
 
 
-//Activate booking system
+// Activate booking system
 function bookacti_activate_booking_system( booking_system ) {
 	
 	var booking_method = calendars_data[ booking_system.attr( 'id' ) ][ 'method' ];

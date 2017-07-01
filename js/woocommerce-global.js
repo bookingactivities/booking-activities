@@ -1,6 +1,6 @@
 $j( document ).ready( function() {
 	// Update booking row after coupon refund
-	$j( 'body' ).on( 'bookacti_booking_refunded', function( e, booking_id, refund_action, refund_message, refund_data, response ){
+	$j( 'body' ).on( 'bookacti_booking_refunded', function( e, booking_id, booking_type, refund_action, refund_message, refund_data, response ){
 		if( refund_action === 'auto' ) {
 			// Set a message to feedback refunds
 			refund_data.message += bookacti_localized.advice_booking_refunded;
@@ -14,8 +14,13 @@ $j( document ).ready( function() {
 			
 			// Update booking row on frontend only
 			if( ! bookacti_localized.is_admin ) {
-				var row = $j( '.bookacti-booking-actions[data-booking-id="' + booking_id + '"]' ).parents( 'tr' );
-
+				
+				if( booking_type === 'single' ) {
+					var row = $j( '.bookacti-booking-actions[data-booking-id="' + booking_id + '"]' ).parents( 'tr' );
+				} else {
+					var row = $j( '.bookacti-booking-group-actions[data-booking-group-id="' + booking_id + '"]' ).parents( 'tr' );
+				}
+				
 				// Add coupon code on order details
 				if( row.length && response.coupon_code ) {
 

@@ -31,16 +31,13 @@ if( empty( bookacti_fetch_templates() ) ) {
 		<div id='bookacti-bookings-filters-title' class='bookacti-bookings-title' >
 			<h2><?php echo esc_html_x( 'Filters', 'The plural noun', BOOKACTI_PLUGIN_NAME ); ?></h2>
 		</div>
+		
 <!--		
 		<div id='bookacti-bookings-filters-param-gear' class='bookacti-bookings-title-gear' >
 			<img src='<?php echo esc_url( plugins_url() . '/' . BOOKACTI_PLUGIN_NAME . '/img/gear.png' ); ?>' />
 		</div>
 -->
-		<div id='bookacti-bookings-filters-global-actions' class='bookacti-booking-actions' >
-		<?php
-			do_action( 'bookacti_booking_filters_global_actions' );
-		?>
-		</div>
+		
 		<?php
 			do_action( 'bookacti_before_booking_filters' );
 		?>
@@ -114,11 +111,6 @@ if( empty( bookacti_fetch_templates() ) ) {
 		</div>
 		<div id='bookacti-bookings-list-param-gear' class='bookacti-bookings-title-gear' >
 			<img src='<?php echo esc_url( plugins_url() . '/' . BOOKACTI_PLUGIN_NAME . '/img/gear.png' ); ?>' />
-		</div>
-		<div id='bookacti-bookings-list-global-actions' class='bookacti-booking-actions' >
-		<?php
-			echo bookacti_get_booking_global_actions_html( array(), 'admin' );
-		?>
 		</div>
 		<?php
 			do_action( 'bookacti_before_booking_list' );

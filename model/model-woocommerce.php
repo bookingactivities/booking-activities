@@ -36,7 +36,7 @@ function bookacti_fetch_woo_products() {
 
 // BOOKINGS
 
-// GET BOOKING ORDER ID
+// Get booking order id
 function bookacti_get_booking_order_id( $booking_id ) {
 	global $wpdb;
 
@@ -48,7 +48,7 @@ function bookacti_get_booking_order_id( $booking_id ) {
 }
 
 
-// GET BOOKING EXPIRATION DATE
+// Get booking expiration date
 function bookacti_get_booking_expiration_date( $booking_id ) {
 	global $wpdb;
 
@@ -129,7 +129,7 @@ function bookacti_get_cart_expiration_date_per_user( $user_id ) {
 }
 
 
-//Validate bookings (from temporary to booked)
+// Validate bookings ( from temporary to booked )
 function bookacti_change_order_bookings_state( $user_id = NULL, $order_id = NULL, $booking_id_array = array(), $state = 'booked', $in_cart_or_pending_only = true ) {
 
 	global $wpdb;
@@ -230,35 +230,46 @@ function bookacti_change_order_bookings_state( $user_id = NULL, $order_id = NULL
  * @since 1.0.0
  * @version 1.1.0
  * 
- * @global type $wpdb
- * @param type $order_id
- * @return type
+ * @global wpdb $wpdb
+ * @param int $order_id
+ * @return array|0|false|null
  */
 function bookacti_cancel_order_pending_bookings( $order_id ) {
-
+	
 	global $wpdb;
 	
 	// Get affected booking ids
 	$query_updated_ids	= 'SELECT id FROM ' . BOOKACTI_TABLE_BOOKINGS . ' WHERE order_id = %d AND state = "pending"';
 	$prep_updated_ids	= $wpdb->prepare( $query_updated_ids, $order_id );
-	$bookings_updated	= $wpdb->get_results( $prep_updated_ids, OBJECT );
+	$cancelled_bookings	= $wpdb->get_results( $prep_updated_ids, OBJECT );
 	
-	// Turn state to cancel
+	// Turn bookings state to 'cancelled'
 	$query		= 'UPDATE ' . BOOKACTI_TABLE_BOOKINGS 
 				. ' SET state = "cancelled", active = 0 '
 				. ' WHERE order_id = %d '
 				. ' AND state = "pending" ';
 	$query_prep	= $wpdb->prepare( $query, $order_id );
-	$updated	= $wpdb->query( $query_prep );
+	$cancelled	= $wpdb->query( $query_prep );
 	
+	// Turn booking groups state to 'cancelled'
+	$query_cancel_groups	= 'UPDATE ' . BOOKACTI_TABLE_BOOKING_GROUPS . ' '
+							. ' SET state = "cancelled", active = 0 '
+							. ' WHERE order_id = %d '
+							. ' AND state = "pending" ';
 	
-	if( $updated ) {
-		foreach( $bookings_updated as $booking ) {
-			do_action( 'bookacti_booking_cancelled', $booking->id );
+	$prep_cancel_groups	= $wpdb->prepare( $query_cancel_groups, $order_id );
+	$wpdb->query( $prep_cancel_groups );
+	
+	$return = $cancelled;
+	if( $cancelled ){
+		$return = array();
+		foreach( $cancelled_bookings as $cancelled_booking ) {
+			$return[] = $cancelled_booking->id;
+			do_action( 'bookacti_booking_state_changed', $cancelled_booking->id, 'cancelled', array() );
 		}
 	}
-
-	return $updated;
+	
+	return $return;
 }
 
 
@@ -352,6 +363,9 @@ function bookacti_deactivate_expired_bookings() {
 			$return[] = $deactivated_booking->id;
 			do_action( 'bookacti_booking_state_changed', $deactivated_booking->id, 'expired', array() );
 		}
+		foreach( $expired_group_ids as $expired_group_id ) {
+			do_action( 'bookacti_booking_group_state_changed', $expired_group_id, 'expired', array() );
+		}
 	}
 	
 	return $return;
@@ -367,6 +381,24 @@ function bookacti_cancel_in_cart_bookings() {
 	$cancelled = $wpdb->query( $query_cancel_in_cart );
 
 	return $cancelled;
+}
+
+
+/**
+ * Get booking group order id
+ * 
+ * @global wpdb $wpdb
+ * @param int $booking_group_id
+ * @return int|null
+ */
+function bookacti_get_booking_group_order_id( $booking_group_id ) {
+	global $wpdb;
+
+	$query		= 'SELECT order_id FROM ' . BOOKACTI_TABLE_BOOKING_GROUPS . ' WHERE id = %d';
+	$prep		= $wpdb->prepare( $query, $booking_group_id );
+	$order_id	= $wpdb->get_var( $prep );
+
+	return $order_id;
 }
 
 

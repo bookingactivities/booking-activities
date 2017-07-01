@@ -178,7 +178,7 @@ function bookacti_set_calendar_up( booking_system, reload_events ) {
 			booking_system.siblings( '.bookacti-booking-system-inputs' ).find( 'input[name="bookacti_event_start"]' ).val( event.start.format('YYYY-MM-DD HH:mm:ss')  );
 			booking_system.siblings( '.bookacti-booking-system-inputs' ).find( 'input[name="bookacti_event_end"]' ).val( event.end.format('YYYY-MM-DD HH:mm:ss') );
 			
-			
+			event.group_id = group_id;
 			booking_system.trigger( 'bookacti_event_click', [ event ] );
 		}
 

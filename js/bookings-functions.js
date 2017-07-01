@@ -11,27 +11,49 @@ function bookacti_bind_bookings_dialogs( booking_system ) {
 
 // Init booking actions
 function bookacti_init_booking_actions() {
-	$j( '.bookacti-booking-actions, #bookacti-bookings-list' ).on( 'click', '.bookacti-booking-action', function ( e ) {
+	$j( '.bookacti-booking-actions, .bookacti-booking-group-actions, #bookacti-bookings-list' ).on( 'click', '.bookacti-booking-action, .bookacti-booking-group-action', function ( e ) {
 		
 		e.preventDefault();
 		
-		var booking_id = $j( this ).data( 'booking-id' );
-		if( $j( this ).hasClass( 'bookacti-cancel-booking' ) ){
-			bookacti_dialog_cancel_booking( booking_id );
-		} else if( $j( this ).hasClass( 'bookacti-reschedule-booking' ) ){
-			bookacti_dialog_reschedule_booking( booking_id );
-		} else if( $j( this ).hasClass( 'bookacti-refund-booking' ) ){
-			bookacti_dialog_refund_booking( booking_id );
-		} else if( $j( this ).hasClass( 'bookacti-change-booking-state' ) ){
-			bookacti_dialog_change_booking_state( booking_id );
-		} else if( $j( this ).attr( 'href' ) && $j( this ).attr( 'href' ) !== '' && ! $j( this ).hasClass( 'prevent-default' ) ) {
+		// Single Bookings
+		if( $j( this ).hasClass( 'bookacti-booking-action' ) ) {
+
+			var booking_id = $j( this ).data( 'booking-id' );
+			if( $j( this ).hasClass( 'bookacti-cancel-booking' ) ){
+				bookacti_dialog_cancel_booking( booking_id, 'single' );
+			} else if( $j( this ).hasClass( 'bookacti-reschedule-booking' ) ){
+				bookacti_dialog_reschedule_booking( booking_id );
+			} else if( $j( this ).hasClass( 'bookacti-refund-booking' ) ){
+				bookacti_dialog_refund_booking( booking_id, 'single' );
+			} else if( $j( this ).hasClass( 'bookacti-change-booking-state' ) ){
+				bookacti_dialog_change_booking_state( booking_id, 'single' );
+			}
+		
+		// Booking Groups
+		} else {
+			
+			var booking_group_id = $j( this ).data( 'booking-group-id' );
+			if( $j( this ).hasClass( 'bookacti-cancel-booking-group' ) ){
+				bookacti_dialog_cancel_booking( booking_group_id, 'group' );
+			} else if( $j( this ).hasClass( 'bookacti-refund-booking-group' ) ){
+				bookacti_dialog_refund_booking( booking_group_id, 'group' );
+			} else if( $j( this ).hasClass( 'bookacti-change-booking-group-state' ) ){
+				bookacti_dialog_change_booking_state( booking_group_id, 'group' );
+			} else if( $j( this ).hasClass( 'bookacti-show-booking-group-bookings' ) ){
+				bookacti_fill_booking_list( $j( '#bookacti-booking-system-bookings-page' ), null, booking_group_id );
+			}
+			
+		}
+		
+		// Common action
+		// If it is a link which do not have 'prevent-default' class, just follow the link
+		if( $j( this ).attr( 'href' ) && $j( this ).attr( 'href' ) !== '' && ! $j( this ).hasClass( 'prevent-default' ) ) {
 			if( $j( this ).hasClass( '_blank' ) ) {
 				window.open( $j( this ).attr( 'href' ) );
 			} else {
 				location.href = $j( this ).attr( 'href' );
 			}
 		}
-		
 	});
 }
 
@@ -181,38 +203,47 @@ function bookacti_filter_bookings_by_activities( booking_system ) {
 
 
 // Fill the booking list of an event
-function bookacti_fill_booking_list( booking_system, event_id, event_start, event_end ) {
+function bookacti_fill_booking_list( booking_system, event, booking_group_id ) {
+	
+	event				= event || false;
+	booking_group_id	= booking_group_id || false;
+	
+	var data = { 
+		'action': 'bookactiGetBookingRows',
+		'nonce': bookacti_localized.nonce_get_booking_rows
+	};
+	
+	if( typeof booking_group_id !== 'undefined' && $j.isNumeric( booking_group_id ) ) {
+		data.booking_group_id = booking_group_id;
+	
+	} else if( typeof event.group_id !== 'undefined' && $j.isNumeric( event.group_id ) ) {
+		data.event_group_id	= event.group_id;
+	
+	} else {
+		data.event_id		= event.id;
+		data.event_start	= event.start.format( 'YYYY-MM-DD HH:mm:ss' );
+		data.event_end		= event.end.format( 'YYYY-MM-DD HH:mm:ss' );
+	}
 	
 	bookacti_start_loading_booking_system( booking_system );
-
+	
 	$j.ajax({
 		url: bookacti_localized.ajaxurl,
 		type: 'POST',
-		data: { 'action': 'bookactiGetBookingRows',
-				'event_id': event_id,
-				'event_start': event_start,
-				'event_end': event_end,
-				'nonce': bookacti_localized.nonce_get_booking_rows
-			},
+		data: data,
 		dataType: 'json',
 		success: function( response ){
-
+			
 			if( response.status === 'success' ) {
 				
 				// Update the booking list
 				$j( '#bookacti-bookings-list-container #the-list' ).html( response.rows );
 				
-				// Update the global actions
-				$j( '#bookacti-bookings-list-container #bookacti-bookings-list-global-actions' ).html( response.global_actions_html );
-				
 				
 				/**
 				 * Trigger after the booking list has been filled.
-				 * 
-				 * @since 1.0.0
-				 * 
 				 */
-				$j( '#bookacti-bookings-list' ).trigger( 'bookacti_bookings_list_filled' );
+				$j( '#bookacti-bookings-list' ).trigger( 'bookacti_booking_list_filled' );
 
 			} else if( response.status === 'failed' ) {
 				var message_error = bookacti_localized.error_retrieve_bookings;
@@ -232,7 +263,7 @@ function bookacti_fill_booking_list( booking_system, event_id, event_start, even
 			bookacti_stop_loading_booking_system( booking_system );
 		}
 	});
-}	
+}
 
 
 // Deactivate booking filters & booking list action buttons & dialogs
@@ -243,7 +274,6 @@ function bookacti_bookings_enter_loading_state( booking_system ) {
 	$j( '.bookacti-bookings-title-gear' ).attr( 'disabled', true );
 	$j( '.bookacti-bookings-filter-content' ).attr( 'disabled', true );
 	$j( '#bookacti-bookings-list .bookacti-booking-action' ).attr( 'disabled', true );
-	$j( '#bookacti-bookings-list-global-actions .bookacti-booking-action' ).attr( 'disabled', true );
 }
 
 // Deactivate booking list action buttons
@@ -254,7 +284,6 @@ function bookacti_bookings_exit_loading_state( booking_system ) {
 	$j( '.bookacti-bookings-title-gear' ).attr( 'disabled', false );
 	$j( '.bookacti-bookings-filter-content' ).attr( 'disabled', false );
 	$j( '#bookacti-bookings-list .bookacti-booking-action' ).attr( 'disabled', false );
-	$j( '#bookacti-bookings-list-global-actions .bookacti-booking-action' ).attr( 'disabled', false );
 }
 
 

@@ -106,7 +106,6 @@ function bookacti_dialog_choose_group_of_events( booking_system, groups, event )
 	}
 	
 	
-	
 	// Add each available group of events as a radio option
 	$j.each( groups, function( i, group_id ) {
 		group_id = parseInt( group_id );
@@ -209,6 +208,9 @@ function bookacti_dialog_choose_group_of_events( booking_system, groups, event )
 
 				// Fill group id input
 				booking_system.siblings( '.bookacti-booking-system-inputs' ).find( 'input[name="bookacti_group_id"]' ).val( group_id );
+				
+				event.group_id = group_id;
+				booking_system.trigger( 'bookacti_group_of_events_choosed', [ group_id, event ] );
 				
 				//Close the modal dialog
 				$j( this ).dialog( 'close' );

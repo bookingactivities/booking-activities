@@ -360,7 +360,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 					if( $group_id === 'single' ) {
 						
 						// Book temporarily the event
-						$response = bookacti_add_booking_to_cart( $user_id, $event_id, $event_start, $event_end, $quantity );
+						$response = bookacti_add_booking_to_cart( $user_id, $event_id, $event_start, $event_end, $quantity, 0 );
 					
 						// If the event is booked, add the booking ID to the corresponding hidden field
 						if( $response[ 'status' ] === 'success' ) {
@@ -966,7 +966,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 	
 	/**
-	 * Remove the temporary bookings when cart items are removed from cart
+	 * Remove in_cart bookings when cart items are removed from cart
 	 * 
 	 * @since 1.0.0
 	 * @version 1.1.0
@@ -1095,7 +1095,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			||  ( isset( $cart_item_data[ '_bookacti_options' ][ 'bookacti_booking_group_id' ] ) && ! empty( $cart_item_data[ '_bookacti_options' ][ 'bookacti_booking_group_id' ] ) ) ) {
 				$events	= json_decode( $cart_item_data[ '_bookacti_options' ][ 'bookacti_booked_events' ] );
 				
-				$events_list = bookacti_get_formatted_events_list( $events );
+				$events_list = bookacti_get_formatted_booking_events_list( $events );
 				
 				$item_data[] = array( 
 					'key' => _n( 'Booked event', 'Booked events', count( $events ), BOOKACTI_PLUGIN_NAME ), 
@@ -1120,10 +1120,10 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	 */
 	function bookacti_define_label_of_item_data( $label, $name ) {
 		
-		if( $label === '_bookacti_booking_id' )			{ $label = __( 'Booking number', BOOKACTI_PLUGIN_NAME ); }
-		if( $label === 'bookacti_booking_id' )			{ $label = __( 'Booking number', BOOKACTI_PLUGIN_NAME ); }
-		if( $label === '_bookacti_booking_group_id' )	{ $label = __( 'Booking group number', BOOKACTI_PLUGIN_NAME ); }
-		if( $label === 'bookacti_booking_group_id' )	{ $label = __( 'Booking group number', BOOKACTI_PLUGIN_NAME ); }
+		if( $label === '_bookacti_booking_id' 
+		||  $label === 'bookacti_booking_id' )			{ $label = __( 'Booking number', BOOKACTI_PLUGIN_NAME ); }
+		if( $label === '_bookacti_booking_group_id' 
+		||  $label === 'bookacti_booking_group_id' )	{ $label = __( 'Booking group number', BOOKACTI_PLUGIN_NAME ); }
 		if( $label === 'bookacti_booked_events' )		{ $label = __( 'Booked events', BOOKACTI_PLUGIN_NAME ); }
 		if( $label === 'bookacti_state' )				{ $label = __( 'Status', BOOKACTI_PLUGIN_NAME ); }
 		if( $label === '_bookacti_refund_method' )		{ $label = __( 'Refund method', BOOKACTI_PLUGIN_NAME ); }
@@ -1164,7 +1164,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			else if( $meta[ 'key' ] === 'bookacti_booked_events' ) {
 				
 				$events	= json_decode( $value );
-				$formatted_meta[ $key ][ 'value' ] = bookacti_get_formatted_events_list( $events );
+				$formatted_meta[ $key ][ 'value' ] = bookacti_get_formatted_booking_events_list( $events );
 			} 
 			
 			// Deprecated data
@@ -1213,7 +1213,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			else if( $meta->key === 'bookacti_booked_events' ) {
 				$events	= json_decode( $meta->value );
 				$meta->display_key = _n( 'Booked event', 'Booked events', count( $events ), BOOKACTI_PLUGIN_NAME );
-				$meta->display_value = bookacti_get_formatted_events_list( $events );
+				$meta->display_value = bookacti_get_formatted_booking_events_list( $events );
 			}
 			
 			// Deprecated data
@@ -1250,12 +1250,12 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		
 		if( isset( $cart_item['_bookacti_options'] ) ) {
 			// Single booking
-			if ( isset( $cart_item['_bookacti_options']['bookacti_booking_id'] )	&& ! empty( $cart_item['_bookacti_options']['bookacti_booking_id'] ) ) {
+			if ( isset( $cart_item['_bookacti_options']['bookacti_booking_id'] ) && ! empty( $cart_item['_bookacti_options']['bookacti_booking_id'] ) ) {
 				
 				$classes .= ' bookacti-cart-item-activity bookacti-single-booking';
 				
 			// Group of bookings
-			} else if( isset( $cart_item['_bookacti_options']['bookacti_booking_group_id'] )	&& ! empty( $cart_item['_bookacti_options']['bookacti_booking_group_id'] ) ) {
+			} else if( isset( $cart_item['_bookacti_options']['bookacti_booking_group_id'] ) && ! empty( $cart_item['_bookacti_options']['bookacti_booking_group_id'] ) ) {
 				
 				$classes .= ' bookacti-cart-item-activity bookacti-booking-group';
 			}
@@ -1270,8 +1270,8 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	 * Add class to activity order item to identify them on order received page
 	 * 
 	 * @param string $classes
-	 * @param array $cart_item
-	 * @param string $cart_item_key
+	 * @param WC_Order_Item $item
+	 * @param WC_Order $order
 	 * @return string
 	 */
 	function bookacti_add_class_to_activity_order_item( $classes, $item, $order ) {
@@ -1344,6 +1344,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		bookacti_turn_order_bookings_to( $order_id, $state, $alert_admin );
 	}
 	add_action( 'woocommerce_checkout_order_processed', 'bookacti_delay_expiration_date_for_payment', 10, 3 );
+	
 	
 	
 	

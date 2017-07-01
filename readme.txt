@@ -244,6 +244,7 @@ If you don't find the answer you need, please [contact us](http://booking-activi
 * Feature - Calendars events are now related to your business timezone, and no longer to users' timezone. Customers around the world cannot see / book a past event because of time offset. Set this parameter in BA settings page.
 * Delete - Removed trashes from editor, to delete calendars, activities and events please use their respective settings dialogs
 * Delete - Deleted events 'occurrence id' since it is not a relevant identifier. All events can be identified by id + start + end datetimes.
+* Delete - Deleted unused bookings global actions
 * Fix - Fixed booking method checks in JS files (misuse of inArray)
 * Fix - Fixed permission error after closing a dialog in template editor
 * Fix - Apostrophe characters in template / activity / events names are now correctly displayed
@@ -262,12 +263,16 @@ If you don't find the answer you need, please [contact us](http://booking-activi
     * Add - bookacti_unpick_event
     * Add - bookacti_refresh_picked_events
     * Add - bookacti_unpick_all_events
+    * Add - bookacti_events_picked
+    * Add - bookacti_group_of_events_choosed
     * Add - bookacti_picked_events_list_filled
     * Add - bookacti_validate_group_of_events_form
     * Add - bookacti_validate_group_category_form
     * Add - bookacti_submit_booking_form
     * Add - bookacti_booking_form_submitted
+    * Tweak - bookacti_booking_refunded, bookacti_booking_state_changed, bookacti_refund_booking have now an additional argument to differenciate single booking to booking group
     * Deleted - bookacti_validate_selected_event replaced by bookacti_validate_picked_events
+    * Deleted - bookacti_bookings_list_filled replaced by bookacti_booking_list_filled
     * Deleted - bookacti_activate_booking_system replaced by bookacti_rerender_events
     * Deleted - bookacti_picked_activity_summary_filled replaced by bookacti_picked_events_list_data (not the same use, be careful)
   * PHP actions
@@ -275,11 +280,14 @@ If you don't find the answer you need, please [contact us](http://booking-activi
     * Add - bookacti_group_of_events_tab_general_after
     * Add - bookacti_group_category_tab_general_before
     * Add - bookacti_group_category_tab_general_after
+    * Tweak - Merged all booking system parameters into one array in bookacti_before_booking_form, bookacti_booking_system_inputs, bookacti_before_booking_system_title, bookacti_before_booking_system, bookacti_booking_system_attributes, bookacti_after_booking_system, bookacti_picked_events_list, bookacti_after_picked_events_list, bookacti_booking_system_errors, bookacti_after_booking_system_errors, bookacti_after_booking_form
     * Delete - bookacti_date_picked_title replaced by bookacti_translation_array (not the same use, be careful)
     * Delete - bookacti_before_date_picked_summary, bookacti_after_date_picked_summary replaced by bookacti_picked_events_list
     * Delete - bookacti_after_date_picked replaced by bookacti_after_picked_events_list
     * Delete - bookacti_booking_expired replaced by bookacti_booking_state_changed (not the same use, be careful)
-	* Tweak - Merged all booking system parameters into one array in bookacti_before_booking_form, bookacti_booking_system_inputs, bookacti_before_booking_system_title, bookacti_before_booking_system, bookacti_booking_system_attributes, bookacti_after_booking_system, bookacti_picked_events_list, bookacti_after_picked_events_list, bookacti_booking_system_errors, bookacti_after_booking_system_errors, bookacti_after_booking_form
+    * Delete - bookacti_booking_cancelled replaced by bookacti_booking_state_changed (not the same use, be careful)
+    * Delete - bookacti_woocommerce_order_status_updated_after_booking_state_update by bookacti_woocommerce_order_status_automatically_updated (not the same use, be careful)
+    * Delete - bookacti_booking_filters_global_actions
   * PHP filters
     * Add - bookacti_validate_group_activity_data
     * Add - bookacti_group_category_default_settings
@@ -289,12 +297,31 @@ If you don't find the answer you need, please [contact us](http://booking-activi
     * Add - bookacti_group_of_events_settings
     * Add - bookacti_get_booking_method_html
     * Add - bookacti_update_booking_quantity_data
+    * Add - bookacti_user_can_manage_booking_group
+    * Add - bookacti_booking_group_can_be_cancelled
+    * Add - bookacti_booking_group_can_be_refunded
+    * Add - bookacti_booking_group_state_can_be_changed
+    * Add - bookacti_booking_group_actions
+    * Add - bookacti_before_booking_group_actions
+    * Add - bookacti_after_booking_group_actions
+    * Add - bookacti_booking_group_actions_html
+    * Add - bookacti_refund_actions_by_booking_group
+    * Add - bookacti_compute_booking_group_state
+    * Add - bookacti_booking_actions_html_array
+    * Add - bookacti_booking_group_actions_html_array
+	* Tweak - bookacti_booking_can_be_rescheduled has now only 2 arguments, use bookacti_booking_can_be_rescheduled_to to have the same behavior as before
+	* Tweak - bookacti_before_booking_actions and bookacti_after_booking_actions have now 3 arguments
+	* Tweak - bookacti_before_refund_actions, bookacti_refund_request_email_to, bookacti_refund_request_email_data, bookacti_refund_request_email_message have now an additional argument to differenciate single booking to booking group
 	* Tweak - Merged all booking system parameters into one array in bookacti_booking_system_title, bookacti_booking_system_auto_load, bookacti_picked_events_list_title
 	* Tweak - Added $shortcode parameter to bookacti_formatted_booking_system_attributes
     * Delete - bookacti_shortcode_{$shortcode}_default_parameters replaced by core shortcode_atts_{$shortcode} (not exactly the same use, be careful)
     * Delete - bookacti_shortcode_{$shortcode}_return replaced by bookacti_shortcode_{$shortcode}_output
     * Delete - bookacti_shortcode_{$shortcode}_prevent_execution. Please use remove_shortcode($tag) function instead.
     * Delete - bookacti_shortcode_atts_{$shortcode}, bookacti_booking_system_auto_load and bookacti_booking_system_attributes. Please use bookacti_formatted_booking_system_attributes instead.
+    * Delete - bookacti_booking_can_be_cancelled_or_rescheduled. Please use bookacti_booking_can_be_cancelled or bookacti_booking_can_be_rescheduled instead.
+    * Delete - bookacti_users_data. Please use bookacti_user_data instead.
+    * Delete - bookacti_booking_data.
+    * Delete - bookacti_get_bookings.
     
 = 1.0.8 - 2017/05/31 =
 * Fix - Fixed events not fetched if your database prefix was not exactly "wp_"

@@ -133,9 +133,8 @@ function bookacti_shortcode_bookings_list( $atts = [], $content = null, $tag = '
 	
 	// Set up booking list columns
 	$columns = apply_filters( 'bookacti_user_bookings_list_columns_titles', array(
-		10	=> array( 'id' => 'id',			'title' => esc_html__( 'ID', BOOKACTI_PLUGIN_NAME ) ),
+		10	=> array( 'id' => 'id',			'title' => esc_html_x( 'id', 'An id is a unique identification number' ), BOOKACTI_PLUGIN_NAME ),
 		20	=> array( 'id' => 'activity',	'title' => esc_html__( 'Activity', BOOKACTI_PLUGIN_NAME ) ),
-		30	=> array( 'id' => 'dates',		'title' => esc_html__( 'Dates', BOOKACTI_PLUGIN_NAME ) ),
 		40	=> array( 'id' => 'quantity',	'title' => esc_html__( 'Quantity', BOOKACTI_PLUGIN_NAME ) ),
 		50	=> array( 'id' => 'state',		'title' => esc_html_x( 'State', 'State of a booking', BOOKACTI_PLUGIN_NAME ) ),
 		100 => array( 'id' => 'actions',	'title' => esc_html__( 'Actions', BOOKACTI_PLUGIN_NAME ) )
@@ -143,67 +142,104 @@ function bookacti_shortcode_bookings_list( $atts = [], $content = null, $tag = '
 	
 	// Order columns
 	ksort( $columns );
-
+	
+	
 	// TABLE HEADER
 	$head_columns = '';
 	foreach( $columns as $column ) {
-		$head_columns .= "<th><div class='bookacti-booking-" . $column[ 'id' ] . "-title' >" . $column[ 'title' ] . "</div></th>";
+		$head_columns .= "<th class='bookacti-column-" . sanitize_title_with_dashes( $column[ 'id' ] ) . "' ><div class='bookacti-booking-" . $column[ 'id' ] . "-title' >" . $column[ 'title' ] . "</div></th>";
 	} 
-
+	
+	
 	// TABLE CONTENT
-	$bookings = bookacti_get_bookings_by_user_id( $atts[ 'user' ] ); 
-	$body_columns = '';
-	if( ! empty( $bookings ) ) {
-		foreach( $bookings as $booking ) {
+	$bookings				= bookacti_get_bookings_by_user_id( $atts[ 'user' ] ); 
+	$list_items				= array();
+	$groups_already_added	= array();
+	$hidden_states			= apply_filters( 'bookacti_bookings_list_hidden_states', array( 'in_cart', 'expired', 'removed' ) );
+	
+	
+	// Build an array of bookings rows
+	foreach( $bookings as $booking ) {
 
-			$hidden_states = apply_filters( 'bookacti_bookings_list_hidden_states', array( 'in_cart', 'expired', 'removed' ) );
+		// Single Bookings
+		if( empty( $booking->group_id ) ) {
 
 			if( ! in_array( $booking->state, $hidden_states ) ) {
 
-				$event = bookacti_get_event_by_id( $booking->event_id );
-
-				$columns_value = apply_filters( 'bookacti_user_bookings_list_columns_value', array(
+				$list_items[] = apply_filters( 'bookacti_user_bookings_list_columns_value', array(
 					'id'		=> $booking->id,
-					'activity'	=> apply_filters( 'bookacti_translate_text', stripslashes( $event->title ) ),
-					'dates'		=> bookacti_get_booking_dates_html( $booking ),
+					'activity'	=> bookacti_get_formatted_booking_events_list( array( $booking ) ),
 					'quantity'	=> $booking->quantity,
 					'state'		=> bookacti_format_booking_state( $booking->state ),
-					'actions'	=> bookacti_get_booking_actions_html( $booking->id, 'front' )
+					'actions'	=> bookacti_get_booking_actions_html( $booking->id, 'front' ),
+					'type'		=> 'single'
+				), $booking, $atts[ 'user' ] );
+			}
+
+		// Booking groups
+		} else if( ! in_array( $booking->group_id, $groups_already_added ) ) {
+
+			$state = bookacti_get_booking_group_state( $booking->group_id ); 
+
+			if( ! in_array( $state, $hidden_states ) ) {
+
+				$quantity		= bookacti_get_booking_group_quantity( $booking->group_id ); 
+				$group_bookings = bookacti_get_bookings_by_booking_group_id( $booking->group_id ); 
+
+				$list_items[] = apply_filters( 'bookacti_user_bookings_list_columns_value', array(
+					'id'		=> $booking->group_id,
+					'activity'	=> bookacti_get_formatted_booking_events_list( $group_bookings ),
+					'quantity'	=> $quantity,
+					'state'		=> bookacti_format_booking_state( $state ),
+					'actions'	=> bookacti_get_booking_group_actions_html( $booking->group_id, 'front' ),
+					'type'		=> 'group'
 				), $booking, $atts[ 'user' ] );
 
-				$body_columns .= "<tr>";
-				foreach( $columns as $column ) {
-
-					// Format output values
-					switch ( $column[ 'id' ] ) {
-						case 'id':
-							$value = isset( $columns_value[ 'id' ] ) ? intval( $columns_value[ 'id' ] ) : '';
-							break;
-						case 'activity':
-							$value = isset( $columns_value[ 'activity' ] ) ? esc_html( $columns_value[ 'activity' ] ) : '';
-							break;
-						case 'quantity':
-							$value = isset( $columns_value[ 'quantity' ] ) ? intval( $columns_value[ 'quantity' ] ) : '';
-							break;
-						case 'dates':
-						case 'state':
-						case 'actions':
-						default:
-							$value = isset( $columns_value[ $column[ 'id' ] ] ) ? $columns_value[ $column[ 'id' ] ] : '';
-					}
-
-					$class_empty = empty( $value ) ? 'bookacti-empty-column' : '';
-					$body_columns .=  "<td data-title='" . esc_attr( $column[ 'title' ] ) . "' class='" . $class_empty . "' ><div class='bookacti-booking-" . $column[ 'id' ] . "' >"  . $value . "</div></td>";
-				} 
-				$body_columns .= "</tr>";
+				// Flag the group as 'already added' to make it appears only once in the list
+				$groups_already_added[] = $booking->group_id;
 			}
 		}
-	} else {
-		$body_columns.= "<tr>"
-					.	"<td colspan='" . esc_attr( count( $columns ) ) . "'>" . esc_html__( 'You don\'t have any bookings.', BOOKACTI_PLUGIN_NAME ) . "</td>"
-					. "</tr>";
+
 	}
 
+	
+	// Build the HTML booking rows
+	$body_columns = '';
+	foreach( $list_items as $list_item ) {
+		$body_columns .= "<tr>";
+		foreach( $columns as $column ) {
+
+			// Format output values
+			switch ( $column[ 'id' ] ) {
+				case 'id':
+					$value = isset( $list_item[ 'id' ] ) ? intval( $list_item[ 'id' ] ) : '';
+					break;
+				case 'activity':
+					$value = isset( $list_item[ 'activity' ] ) ? $list_item[ 'activity' ] : '';
+					break;
+				case 'quantity':
+					$value = isset( $list_item[ 'quantity' ] ) ? intval( $list_item[ 'quantity' ] ) : '';
+					break;
+				case 'state':
+				case 'actions':
+				default:
+					$value = isset( $list_item[ $column[ 'id' ] ] ) ? $list_item[ $column[ 'id' ] ] : '';
+			}
+
+			$class_empty = empty( $value ) ? 'bookacti-empty-column' : '';
+			$body_columns .=  "<td data-title='" . esc_attr( $column[ 'title' ] ) . "' class='bookacti-column-" . sanitize_title_with_dashes( $column[ 'id' ] ) . ' ' . $class_empty . "' ><div class='bookacti-booking-" . $column[ 'id' ] . "' >"  . $value . "</div></td>";
+		} 
+		$body_columns .= "</tr>";
+	}
+	
+	// If there are no booking rows
+	if( empty( $list_items ) ) {
+		$body_columns	.= "<tr>"
+						.	"<td colspan='" . esc_attr( count( $columns ) ) . "'>" . esc_html__( 'You don\'t have any bookings.', BOOKACTI_PLUGIN_NAME ) . "</td>"
+						. "</tr>";
+	}
+	
+	
 	// TABLE OUTPUT
 	$output = "<div id='bookacti-user-bookings-list-" . $atts[ 'user' ] . "' class='bookacti-user-bookings-list'>
 					<table>
@@ -243,6 +279,7 @@ function bookacti_controller_validate_booking_form() {
 		$booking_form_values = apply_filters( 'bookacti_booking_form_values', array(
 		'user_id'			=> intval( get_current_user_id() ),
 		'booking_system_id'	=> sanitize_title_with_dashes( $_POST[ 'bookacti_booking_system_id' ] ),
+		'group_id'			=> intval( $_POST[ 'bookacti_group_id' ] ),
 		'event_id'			=> intval( $_POST[ 'bookacti_event_id' ] ),
 		'event_start'		=> bookacti_sanitize_datetime( $_POST[ 'bookacti_event_start' ] ),
 		'event_end'			=> bookacti_sanitize_datetime( $_POST[ 'bookacti_event_end' ] ),
@@ -250,7 +287,7 @@ function bookacti_controller_validate_booking_form() {
 		'default_state'		=> 'pending' ) );
 
 		//Check if the form is ok and if so Book temporarily the event
-		$response = bookacti_validate_booking_form( $booking_form_values[ 'event_id' ], $booking_form_values[ 'event_start' ], $booking_form_values[ 'event_end' ], $booking_form_values[ 'quantity' ] );
+		$response = bookacti_validate_booking_form( $booking_form_values[ 'group_id' ], $booking_form_values[ 'event_id' ], $booking_form_values[ 'event_start' ], $booking_form_values[ 'event_end' ], $booking_form_values[ 'quantity' ] );
 		
 		if( $booking_form_values[ 'user_id' ] != get_current_user_id() && ! current_user_can( 'bookacti_edit_bookings' ) ) {
 			$response[ 'status' ] = 'failed';
@@ -260,11 +297,12 @@ function bookacti_controller_validate_booking_form() {
 		if( $response[ 'status' ] === 'success' ) {
 			
 			$booking_id = bookacti_insert_booking(	$booking_form_values[ 'user_id' ], 
-												$booking_form_values[ 'event_id' ], 
-												$booking_form_values[ 'event_start' ],
-												$booking_form_values[ 'event_end' ], 
-												$booking_form_values[ 'quantity' ], 
-												$booking_form_values[ 'default_state' ] );
+													$booking_form_values[ 'event_id' ], 
+													$booking_form_values[ 'event_start' ],
+													$booking_form_values[ 'event_end' ], 
+													$booking_form_values[ 'quantity' ], 
+													$booking_form_values[ 'default_state' ],
+													$booking_form_values[ 'group_id' ] );
 			
 			if( ! is_null( $booking_id ) ) {
 

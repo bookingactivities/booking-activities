@@ -8,7 +8,7 @@ p.form-field._bookacti_groups_field { margin-bottom: 0; }
 #bookacti-groups-options label	{ float: none; margin: 0 0 0 7px; font-size: 12px; }
 #bookacti-groups-options > span	{ display: block; clear: both; }
 
-table.woocommerce_order_items ul.bookacti-events-list { margin: 0; }
+table.woocommerce_order_items ul.bookacti-booking-events-list { margin: 0; }
 
 
 /***** FRONTEND WOOCOMMERCE *****/
@@ -23,4 +23,5 @@ table.woocommerce_order_items ul.bookacti-events-list { margin: 0; }
 
 
 /* My Account */
+.woocommerce a.button.bookacti-booking-group-action,
 .woocommerce a.button.bookacti-booking-action { margin: 5px; }
