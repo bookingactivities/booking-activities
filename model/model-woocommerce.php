@@ -36,6 +36,30 @@ function bookacti_fetch_woo_products() {
 
 // BOOKINGS
 
+/**
+ * Get booking event data to store in order item meta
+ * 
+ * @since 1.1.0
+ * 
+ * @global wpdb $wpdb
+ * @param int $booking_id
+ * @return object
+ */
+function bookacti_get_booking_event_data( $booking_id ){
+	global $wpdb;
+
+	$query		= 'SELECT B.id, B.event_id, B.event_start, B.event_end, E.title, E.activity_id, E.template_id FROM ' . BOOKACTI_TABLE_BOOKINGS . ' as B '
+					. ' LEFT JOIN (
+							SELECT id, title, activity_id, template_id FROM ' . BOOKACTI_TABLE_EVENTS . '
+						) as E ON B.event_id = E.id'
+				. ' WHERE B.id = %d';
+	$prep		= $wpdb->prepare( $query, $booking_id );
+	$booking	= $wpdb->get_row( $prep, OBJECT );
+
+	return $booking;
+}
+
+
 // Get booking order id
 function bookacti_get_booking_order_id( $booking_id ) {
 	global $wpdb;
@@ -129,96 +153,119 @@ function bookacti_get_cart_expiration_date_per_user( $user_id ) {
 }
 
 
-// Validate bookings ( from temporary to booked )
-function bookacti_change_order_bookings_state( $user_id = NULL, $order_id = NULL, $booking_id_array = array(), $state = 'booked', $in_cart_or_pending_only = true ) {
+/**
+ * Change bookings state and fill user and order id
+ * 
+ * @version 1.1.0
+ * 
+ * @global wpdb $wpdb
+ * @param int $user_id
+ * @param int $order_id
+ * @param array $booking_id_array
+ * @param string $state
+ * @param array $states_in
+ * @return string
+ */
+function bookacti_change_order_bookings_state( $user_id = NULL, $order_id = NULL, $booking_id_array = array(), $state = 'booked', $states_in = 'active' ) {
 
 	global $wpdb;
 
 	$response				= array(); 
+	
+	if( empty( $booking_id_array ) || ! is_array( $booking_id_array ) ) {
+		$response[ 'status' ]	= 'failed';
+		$response[ 'errors' ]	= array( 'no_booking_ids' );
+		
+		return $response;
+	}
+
+	//Init variables
 	$response[ 'status' ]	= 'success';
 	$response[ 'errors' ]	= array();
+	
+	if( $states_in === 'active' )	{ $states_in = bookacti_get_active_booking_states(); }
+	if( ! is_int( $user_id ) )		{ $user_id = NULL; }
+	if( ! is_int( $order_id ) )		{ $order_id = NULL; }
+	$active = in_array( $state, bookacti_get_active_booking_states() ) ? 1 : 0;
 
-	if( ! is_int( $user_id ) )	{ $user_id = NULL; }
-	if( ! is_int( $order_id ) )	{ $order_id = NULL; }
-	if( is_array( $booking_id_array ) && ! empty( $booking_id_array ) ) {
+	$query = 'UPDATE ' . BOOKACTI_TABLE_BOOKINGS . ' SET state = %s, active = %d, ';
 
-		//Init variables
-		$active = in_array( $state, bookacti_get_active_booking_states() ) ? 1 : 0;
+	$array_of_variables = array( 'state' => $state, 'active' => $active );
 
-		$query = 'UPDATE ' . BOOKACTI_TABLE_BOOKINGS . ' SET state = %s, active = %d, ';
+	//check user id
+	if( ! is_null( $user_id ) ){
 
-		$array_of_variables = array( 'state' => $state, 'active' => $active );
-
-		//check user id
-		if( ! is_null( $user_id ) ){
-
-			if( ! is_null( $order_id ) ) { $query .= ' user_id = %d, '; } 
-									else { $query .= ' user_id = %d '; }
-			$array_of_variables = array_merge( $array_of_variables, array( $user_id ) );
-
-		} else {
-
-			$response[ 'status' ] = $state . '_with_errors';
-			array_push( $response[ 'errors' ], 'invalid_user_id' );
-		}
-
-		//Check order id
-		if( ! is_null( $order_id ) ){
-
-			$query .= ' order_id = %d ';
-			$array_of_variables = array_merge( $array_of_variables, array( $order_id ) );
-
-		} else {
-
-			$response[ 'status' ] = $state . '_with_errors';
-			array_push( $response[ 'errors' ], 'invalid_order_id' );
-		}
-
-		//Complete the query with all the booking ids
-		$query  .= ' WHERE id IN ( %d ';
-		if( count( $booking_id_array ) >= 2 )  {
-			for( $i = 0; $i < count( $booking_id_array ) - 1; $i++ ) {
-				$query  .= ', %d ';
-			}
-		}
-		$query  .= ') ';
-
-		if( $in_cart_or_pending_only ) {
-			$query  .= ' AND state IN ( "in_cart", "pending" ) ';
-		}
-		
-		//Prepare and execute the query
-		$array_of_variables = array_merge( $array_of_variables, $booking_id_array );
-		$query_prep = $wpdb->prepare( $query, $array_of_variables );
-		$updated	= $wpdb->query( $query_prep );
-
-		if( is_numeric( $updated ) ){
-
-			if( $updated > 0 ) {
-				foreach( $booking_id_array as $booking_id ) {
-					if( is_numeric( $booking_id ) ){
-						do_action( 'bookacti_booking_state_changed', $booking_id, $state, array() );
-					}
-				}
-			}
-
-			if( $updated > 0 && $updated < count( $booking_id_array ) ) {
-				$response[ 'status' ] = $state . '_with_errors';
-				array_push( $response[ 'errors' ], 'invalid_booking_ids' );
-			}
-
-		} else if( $updated === false ) {
-			$response[ 'status' ] = 'failed';
-			array_push( $response[ 'errors' ], 'update_failed' );
-		}
-
-		$response[ 'updated' ] = $updated;
+		if( ! is_null( $order_id ) ) { $query .= ' user_id = %d, '; } 
+								else { $query .= ' user_id = %d '; }
+		$array_of_variables[] = $user_id;
 
 	} else {
 
-		$response[ 'status' ]	= 'failed';
-		$response[ 'errors' ]	= array( 'no_booking_ids' );
+		$response[ 'status' ] = $state . '_with_errors';
+		array_push( $response[ 'errors' ], 'invalid_user_id' );
 	}
+
+	//Check order id
+	if( ! is_null( $order_id ) ){
+
+		$query .= ' order_id = %d ';
+		$array_of_variables[] = $order_id;
+
+	} else {
+
+		$response[ 'status' ] = $state . '_with_errors';
+		array_push( $response[ 'errors' ], 'invalid_order_id' );
+	}
+
+	//Complete the query with all the booking ids
+	$query  .= ' WHERE id IN ( %d ';
+	if( count( $booking_id_array ) >= 2 )  {
+		for( $i = 0; $i < count( $booking_id_array ) - 1; $i++ ) {
+			$query  .= ', %d ';
+		}
+	}
+	$query  .= ') ';
+
+	$array_of_variables = array_merge( $array_of_variables, $booking_id_array );
+
+	if( ! empty( $states_in ) && is_array( $states_in ) ) {
+		$query  .= ' AND state IN ( ';
+		$i = 0;
+		foreach( $states_in as $state_in ) {
+			++$i;
+			$query  .= '%s';
+			if( $i < count( $states_in ) ) { $query  .= ', '; }
+		}
+		$query  .= ' ) ';
+		$array_of_variables = array_merge( $array_of_variables, $states_in );
+	}
+
+	//Prepare and execute the query
+
+	$query_prep = $wpdb->prepare( $query, $array_of_variables );
+	$updated	= $wpdb->query( $query_prep );
+
+	if( is_numeric( $updated ) ){
+
+		if( $updated > 0 ) {
+			foreach( $booking_id_array as $booking_id ) {
+				if( is_numeric( $booking_id ) ){
+					do_action( 'bookacti_booking_state_changed', $booking_id, $state, array() );
+				}
+			}
+		}
+
+		if( $updated > 0 && $updated < count( $booking_id_array ) ) {
+			$response[ 'status' ] = $state . '_with_errors';
+			array_push( $response[ 'errors' ], 'invalid_booking_ids' );
+		}
+
+	} else if( $updated === false ) {
+		$response[ 'status' ] = 'failed';
+		array_push( $response[ 'errors' ], 'update_failed' );
+	}
+
+	$response[ 'updated' ] = $updated;
 
 	return $response;
 }
@@ -381,6 +428,31 @@ function bookacti_cancel_in_cart_bookings() {
 	$cancelled = $wpdb->query( $query_cancel_in_cart );
 
 	return $cancelled;
+}
+
+
+/**
+ * Get booking group events data to store in order item meta
+ * 
+ * @since 1.1.0
+ * 
+ * @global wpdb $wpdb
+ * @param int $booking_group_id
+ * @return array of object
+ */
+function bookacti_get_booking_group_events_data( $booking_group_id ) {
+	global $wpdb;
+
+	$query		= 'SELECT B.id, B.event_id, B.event_start, B.event_end, E.title, E.activity_id, E.template_id FROM ' . BOOKACTI_TABLE_BOOKINGS . ' as B '
+				. ' LEFT JOIN (
+						SELECT id, title, activity_id, template_id FROM ' . BOOKACTI_TABLE_EVENTS . '
+					) as E ON B.event_id = E.id'
+				. ' WHERE B.group_id = %d '
+				. ' ORDER BY B.event_start, B.event_id, E.activity_id DESC';
+	$prep		= $wpdb->prepare( $query, $booking_group_id );
+	$bookings	= $wpdb->get_results( $prep, OBJECT );
+
+	return $bookings;
 }
 
 

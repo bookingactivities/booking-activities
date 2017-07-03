@@ -99,13 +99,13 @@ if( ! class_exists( 'Bookings_List_Table' ) ) {
 		
 		public function column_customer( $item ) {
 			
-			if( $item[ 'booking_type' ] === 'group_of_events' ) {
+			if( $item[ 'booking_type' ] === 'group' ) {
 				$actions = bookacti_get_booking_group_actions_html( $item[ 'id' ], 'admin', true );
 			} else {
 				$actions = bookacti_get_booking_actions_html( $item[ 'id' ], 'admin', true );
 			}
 			
-			return sprintf( '%1$s %2$s', $item[ 'customer' ], $this->row_actions( $actions ) );
+			return sprintf( '%1$s %2$s', $item[ 'customer' ], $this->row_actions( $actions, false, $item[ 'booking_type' ] ) );
 		}
 		
 		
@@ -126,7 +126,7 @@ if( ! class_exists( 'Bookings_List_Table' ) ) {
 				return array();
 			}
 			
-			$booking_type = $is_group_of_events ? 'group_of_events' : 'single';
+			$booking_type = $is_group_of_events ? 'group' : 'single';
 			
 			// Retrieve booking groups in priority
 			if( $is_booking_group ) {
@@ -316,32 +316,33 @@ if( ! class_exists( 'Bookings_List_Table' ) ) {
 		/**
 		* Generate row actions div
 		*
-		* @since 3.1.0
+		* @version 1.1.0
 		* @access protected
 		*
 		* @param array $actions The list of actions
 		* @param bool $always_visible Whether the actions should be always visible
+		* @param bool $booking_type 'group' or 'single'
 		* @return string
 		*/
-		protected function row_actions( $actions, $always_visible = false ) {
+		protected function row_actions( $actions, $always_visible = false, $booking_type = 'single' ) {
 			$action_count = count( $actions );
 			$i = 0;
 
 			if ( !$action_count )
 				return '';
 			
-			$class_visible = '';
-			if( $always_visible ) { $class_visible =  'visible'; }
-			$out = '<div class="bookacti-booking-actions row-actions ' . esc_attr( $class_visible ) . '">';
+			$class_visible		= $always_visible ? 'visible' : '';
+			$class_booking_type = $booking_type === 'group' ? 'bookacti-booking-group-actions' : 'bookacti-booking-actions';
+			$out = '<div class="row-actions ' . esc_attr( $class_booking_type ) . ' ' . esc_attr( $class_visible ) . '">';
 			foreach ( $actions as $action => $link ) {
 				++$i;
-				( $i == $action_count ) ? $sep = '' : $sep = ' | ';
+				$sep = $i == $action_count ? '' : ' | ';
 				$out .= $link . $sep;
 			}
 			$out .= '</div>';
 			
 			/* translators: Don't translate */
-			$out .= '<button type="button" class="toggle-row"><span class="screen-reader-text">' . esc_html__( 'Show more details' ) . '</span></button>';
+			//$out .= '<button type="button" class="toggle-row"><span class="screen-reader-text">' . esc_html__( 'Show more details' ) . '</span></button>';
 
 			return $out;
 	   }

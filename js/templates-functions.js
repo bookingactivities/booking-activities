@@ -240,6 +240,11 @@ function bookacti_init_groups_of_events() {
 	// Display tuto if there is there is at least two events selected and no group categories yet
 	$j( '#bookacti-template-calendar' ).on( 'bookacti_select_event bookacti_unselect_event', function(){
 		bookacti_maybe_display_add_group_of_events_button();
+		
+		// Exit group editing mode
+		if( ! selectedEvents[ 'template' ].length ) {
+			bookacti_exit_group_edition();
+		}
 	});
 
 	// Expand groups of events
@@ -348,7 +353,7 @@ function bookacti_select_events_of_group( group_id ) {
 	}
 	
 	// Exit others groups editing mode
-	$j( '.bookacti-update-group-of-events img.validate-group' ).attr( 'src', bookacti_localized.plugin_path + '/img/gear.png' ).removeClass( 'validate-group' );
+	bookacti_exit_group_edition();
 	
 	// Empty the selected events and refresh them
 	selectedEvents[ 'template' ] = [];
@@ -1020,6 +1025,12 @@ function bookacti_maybe_display_add_group_of_events_button() {
 			}
 		}
 	}
+}
+
+
+// Exit group editing mode
+function bookacti_exit_group_edition() {
+	$j( '.bookacti-update-group-of-events img.validate-group' ).attr( 'src', bookacti_localized.plugin_path + '/img/gear.png' ).removeClass( 'validate-group' );
 }
 
 

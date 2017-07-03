@@ -7,7 +7,6 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	/**
 	 * Change booking quantity when admin change order item quantity
 	 * 
-	 * @since 1.0.0
 	 * @version 1.1.0
 	 * 
 	 * @param boolean $check
@@ -20,26 +19,41 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	function bookacti_update_booking_qty_with_order_item_qty( $check, $item_id, $meta_key, $meta_value, $prev_value ) {
 		
 		if( $meta_key === '_qty' ) {
-			$booking_id = wc_get_order_item_meta( $item_id, 'bookacti_booking_id', true );
-			if( $booking_id ) {
-				$response = bookacti_update_booking_quantity( $booking_id, $meta_value );
-				if( ! in_array( $response['status'], array( 'success', 'no_change' ) ) ) {
-					if( $response['error'] === 'qty_sup_to_avail' ) {
-						$message =
-						sprintf( __( 'You want to add %1$s bookings to your cart but only %2$s are available on this schedule. '
-								. 'Please choose another schedule or decrease the quantity. '
-								, BOOKACTI_PLUGIN_NAME ), 
-								$meta_value, $response[ 'availability' ] );
-					} else if( $response['error'] === 'no_availability' ) {
-						$message = __( 'This schedule is no longer available. Please choose another schedule.', BOOKACTI_PLUGIN_NAME );
-						
-					} else {
-						$message = __( 'Error occurs while trying to update booking quantity.', BOOKACTI_PLUGIN_NAME );
-					}
-					
-					// Stop the script execution
-					wp_die( esc_html( $message ) );
+			
+			$old_qty = wc_get_order_item_meta( $item_id, '_qty', true );
+			
+			// If the quantity hasn't changed, return
+			if( $old_qty == $meta_value ) {
+				return $check;
+			}
+			
+			$booking_id			= wc_get_order_item_meta( $item_id, 'bookacti_booking_id', true );
+			$booking_group_id	= wc_get_order_item_meta( $item_id, 'bookacti_booking_group_id', true );
+			
+			if( ! empty( $booking_id ) ) {
+				$response = bookacti_controller_update_booking_quantity( $booking_id, $meta_value, 'admin' );
+			} else if( ! empty( $booking_group_id ) ) {
+				$response = bookacti_controller_update_booking_group_quantity( $booking_group_id, $meta_value, false, 'admin' );
+			} else {
+				return $check;
+			}
+			
+			if( ! in_array( $response[ 'status' ], array( 'success', 'no_change' ) ) ) {
+				if( $response[ 'error' ] === 'qty_sup_to_avail' ) {
+					$message =
+					sprintf( __( 'You want to add %1$s bookings to your cart but only %2$s are available on this schedule. '
+							. 'Please choose another schedule or decrease the quantity. '
+							, BOOKACTI_PLUGIN_NAME ), 
+							$meta_value, $response[ 'availability' ] );
+				} else if( $response[ 'error' ] === 'no_availability' ) {
+					$message = __( 'This schedule is no longer available. Please choose another schedule.', BOOKACTI_PLUGIN_NAME );
+
+				} else {
+					$message = __( 'Error occurs while trying to update booking quantity.', BOOKACTI_PLUGIN_NAME );
 				}
+
+				// Stop the script execution
+				wp_die( esc_html( $message ) );
 			}
 		}
 		
@@ -49,10 +63,81 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	
 	
 	/**
+	 * Cancel bookings when admin change the associated order item quantity to 0
+	 * 
+	 * @since 1.1.0
+	 * 
+	 * @param int $order_id
+	 * @param array $items
+	 * @return void
+	 */
+	function bookacti_cancel_bookings_if_order_item_qty_is_null( $order_id, $items ) {
+		if( isset( $items['order_item_id'] ) ) {
+			
+			foreach( $items['order_item_id'] as $item_id ) {
+				
+				// Get booking (group) id and booking type
+				$booking_id		= 0;
+				$booking_type	= '';
+				foreach( $items[ 'meta_key' ][ $item_id ] as $meta_id => $meta_value ) {
+					if( $meta_value === 'bookacti_booking_id' || $meta_value === 'bookacti_booking_group_id' ) {
+						$booking_id		= intval( $items[ 'meta_value' ][ $item_id ][ $meta_id ] ) ;
+						$booking_type	= $meta_value === 'bookacti_booking_group_id' ? 'group' : 'single';
+						break;
+					}
+				}
+				
+				// If the product is not an activity, return
+				if( empty( $booking_id ) ) {
+					return;
+				}
+				
+				// Get quantity
+				$quantity = isset( $items[ 'order_item_qty' ][ $item_id ] ) ? wc_clean( wp_unslash( $items[ 'order_item_qty' ][ $item_id ] ) ) : null;
+				
+				// The item will be removed, so cancel the associated bookings
+				if( '0' === $quantity ) {
+					if( $booking_type === 'group' ) {
+						bookacti_cancel_booking_group_and_its_bookings( $booking_id );
+					} else {
+						bookacti_cancel_booking( $booking_id );
+					}
+				}
+			}
+		}
+	}
+	add_action( 'woocommerce_before_save_order_items', 'bookacti_cancel_bookings_if_order_item_qty_is_null', 10, 2 );
+	
+	
+	/**
+	 * Cancel bookings when admin remove the associated order item
+	 * 
+	 * @since 1.1.0
+	 * 
+	 * @param int $item_id
+	 * @return void
+	 */
+	function bookacti_cancel_bookings_when_order_item_is_deleted( $item_id ) {
+		
+		$booking_id			= wc_get_order_item_meta( $item_id, 'bookacti_booking_id', true );
+		$booking_group_id	= wc_get_order_item_meta( $item_id, 'bookacti_booking_group_id', true );
+					
+		if( ! empty( $booking_id ) ) {
+			bookacti_cancel_booking( $booking_id );
+		} else if( ! empty( $booking_group_id ) ) {
+			bookacti_cancel_booking_group_and_its_bookings( $booking_group_id );
+		} else {
+			return;
+		}
+	}
+	add_action( 'woocommerce_before_delete_order_item', 'bookacti_cancel_bookings_when_order_item_is_deleted', 10, 1 );
+	
+	
+	/**
 	 * Change booking quantity when a partial refund in done, 
 	 * Change booking state when a total refund is done
 	 * 
-	 * @since 1.0.0
+	 * @version 1.1.0
 	 * 
 	 * @param int $refund_id
 	 * @param array $args
@@ -60,53 +145,112 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	function bookacti_update_booking_when_order_item_is_refunded( $refund_id, $args ) {
 		
 		$refunded_items	= $args[ 'line_items' ];
+		
 		// If a refund has been perform on one or several items
 		if( ! empty( $refunded_items ) ) {
 			
 			// Add refunds of the same bookings to calculate the new quantity
 			$init_qty = array();
 			$new_qty = array();
+			$booking_groups = array();
 			foreach( $refunded_items as $item_id => $refunded_item ) {
-				$booking_id = wc_get_order_item_meta( $item_id, 'bookacti_booking_id', true );
-
-				if( $booking_id ) {
+				
+				$refunded_qty		= intval( $refunded_item[ 'qty' ] );
+				
+				if( $refunded_qty <= 0 ) {
+					continue;
+				}
+				
+				$booking_id			= wc_get_order_item_meta( $item_id, 'bookacti_booking_id', true );
+				$booking_group_id	= wc_get_order_item_meta( $item_id, 'bookacti_booking_group_id', true );
+				
+				// Single booking
+				if( ! empty( $booking_id ) ) {
+					
 					$booking = bookacti_get_booking_by_id( $booking_id );
 					$init_qty[ $booking_id ]= $booking->quantity;
-					$refunded_qty			= intval( $refunded_item[ 'qty' ] );
-					if( $refunded_qty > 0 ) {
-						$new_qty[ $booking_id ][ 'new_qty' ] = $init_qty[ $booking_id ] - $refunded_qty;
+					$new_qty[ $booking_id ][ 'new_qty' ]		= $init_qty[ $booking_id ] - $refunded_qty;
+					$new_qty[ $booking->id ][ 'booking_type' ]	= 'single';
+				
+				// Booking group
+				} else if( ! empty( $booking_group_id ) ) {
+					
+					$bookings = bookacti_get_bookings_by_booking_group_id( $booking_group_id );
+					
+					foreach( $bookings as $booking ) {
+						$init_qty[ $booking->id ]= $booking->quantity;
+						$new_qty[ $booking->id ][ 'new_qty' ]		= $init_qty[ $booking->id ] - $refunded_qty;
+						$new_qty[ $booking->id ][ 'booking_type' ]	= 'group';
 					}
+					
+					$booking_groups[] = $booking_group_id;
 				}
 			}
+			
 			
 			// Set the new quantity or mark the booking as refunded
 			foreach( $new_qty as $booking_id => $refund ) {
 				if( $refund[ 'new_qty' ] > 0 ) {
-					$response = bookacti_update_booking_quantity( $booking_id, $refund[ 'new_qty' ] );
-					if( ! in_array( $response['status'], array( 'success', 'no_change' ) ) ) {
+					
+					// Update quantity by substracting the refunded quantity
+					$response = bookacti_controller_update_booking_quantity( $booking_id, $refund[ 'new_qty' ], 'admin' );
+					
+					// If something went wrong, delete the refund and die
+					if( ! in_array( $response[ 'status' ], array( 'success', 'no_change' ) ) ) {
 						bookacti_delete_refund_and_die( $refund_id );
 					}
+					
 				} else {
+					
+					// Update state to refunded
 					$updated1 = bookacti_update_booking_state( $booking_id, 'refunded' );
-
 					if( $updated1 ) {
 						do_action( 'bookacti_booking_state_changed', $booking_id, 'refunded', array( 'is_admin' => true, 'refund_action' => 'manual' ) );
 					}
 					
+					// Set the quantity back to the old value
 					$updated2 = bookacti_force_update_booking_quantity( $booking_id, $init_qty[ $booking_id ] );
+					
+					// If something went wrong, delete the refund and die
 					if( $updated1 === false || $updated2 === false ) {
 						bookacti_delete_refund_and_die( $refund_id );
 					} 
 				}
 				
-				// Update refunds ids array bound to the booking
-				$refunds = bookacti_get_metadata( 'booking', $booking_id, 'refunds', true );
-				$refunds = is_array( $refunds ) ? $refunds : array();
-				$refunds[] = $refund_id;
-				bookacti_update_metadata( 'booking', $booking_id, array( 'refunds' => $refunds ) );
+				if( $refund[ 'booking_type' ] === 'single' ) {
+					// Update refunds ids array bound to the booking
+					$refunds = bookacti_get_metadata( 'booking', $booking_id, 'refunds', true );
+					$refunds = is_array( $refunds ) ? $refunds : array();
+					$refunds[] = $refund_id;
+					bookacti_update_metadata( 'booking', $booking_id, array( 'refunds' => $refunds ) );
+				}
 			}
 			
 			
+			// Update booking group state
+			foreach( $booking_groups as $booking_group_id ) {
+				
+				$booking_group_old_qty = bookacti_get_booking_group_quantity( $booking_group_id );
+				$booking_group_new_qty = $booking_group_old_qty - $refunded_qty;
+
+				// If the group will be totally refunded
+				if( $booking_group_new_qty <= 0 ) {
+					
+					$updated_group = bookacti_update_booking_group_state( $booking_group_id, 'refunded' );
+
+					if( $updated_group ) {
+						do_action( 'bookacti_booking_group_state_changed', $booking_group_id, 'refunded', array( 'is_admin' => true, 'refund_action' => 'manual' ) );
+					}
+				}
+				
+				// Update refunds ids array bound to the booking group
+				$group_refunds = bookacti_get_metadata( 'booking_group', $booking_group_id, 'refunds', true );
+				$group_refunds = is_array( $group_refunds ) ? $group_refunds : array();
+				$group_refunds[] = $refund_id;
+				bookacti_update_metadata( 'booking_group', $booking_group_id, array( 'refunds' => $group_refunds ) );
+			}
+		
+		
 		// If the order state has changed to 'Refunded'
 		} else {
 			
@@ -118,10 +262,13 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			if( $is_total_refund ) {				
 				$items = $order->get_items();
 				foreach( $items as $item_id => $item ) {
-					$booking_id = wc_get_order_item_meta( $item_id, 'bookacti_booking_id', true );
+					$booking_id			= wc_get_order_item_meta( $item_id, 'bookacti_booking_id', true );
+					$booking_group_id	= wc_get_order_item_meta( $item_id, 'bookacti_booking_group_id', true );
 					
-					if( $booking_id ) {
-						// Update bookings states to 'refunded'
+					// Single booking
+					if( ! empty ( $booking_id ) ) {
+						
+						// Update booking state to 'refunded'
 						bookacti_update_booking_state( $booking_id, 'refunded' );
 						
 						// Update refunds ids array bound to the booking
@@ -134,6 +281,24 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 						wc_update_order_item_meta( $item_id, '_bookacti_refund_method', 'manual' );
 						
 						do_action( 'bookacti_booking_state_changed', $booking_id, 'refunded', array( 'is_admin' => true, 'refund_action' => 'manual' ) );
+					
+					// Booking group
+					} else if( ! empty ( $booking_group_id ) ) {
+						
+						// Update bookings states to 'refunded'
+						bookacti_update_booking_group_state( $booking_group_id, 'refunded', 'auto', true );
+						
+						// Update refunds ids array bound to the booking
+						$refunds = bookacti_get_metadata( 'booking_group', $booking_group_id, 'refunds', true );
+						$refunds = is_array( $refunds ) ? $refunds : array();
+						$refunds[] = $refund_id;
+						bookacti_update_metadata( 'booking_group', $booking_group_id, array( 'refunds' => $refunds ) );
+						
+						// Add the refund method and yell the booking state change
+						wc_update_order_item_meta( $item_id, '_bookacti_refund_method', 'manual' );
+						
+						do_action( 'bookacti_booking_group_state_changed', $booking_group_id, 'refunded', array( 'is_admin' => true, 'refund_action' => 'manual' ) );
+					
 					}
 				}
 			}
@@ -178,73 +343,155 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		$items = $order->get_items();
 		
 		foreach( $items as $item_id => $item ) {
-			$booking_id = wc_get_order_item_meta( $item_id, 'bookacti_booking_id', true );
 			
-			if( $booking_id ) {
+			$booking_id			= wc_get_order_item_meta( $item_id, 'bookacti_booking_id', true );
+			$booking_group_id	= wc_get_order_item_meta( $item_id, 'bookacti_booking_group_id', true );
+			
+			// Check if the order item is bound to a booking (group)
+			if( empty( $booking_id ) && empty( $booking_group_id ) ) {
+				continue;
+			}
+			
+			$booking_type = empty( $booking_group_id ) ? 'single' : 'group';
 				
-				$refunds		= bookacti_get_metadata( 'booking', $booking_id, 'refunds', true );
-				$refund_id_index= array_search( $refund_id, $refunds );
+			// Check if the deleted refund is bound to this booking (group)
+			if( $booking_type === 'group' ) {
+				$refunds = bookacti_get_metadata( 'booking_group', $booking_group_id, 'refunds', true );
+			} else {
+				$refunds = bookacti_get_metadata( 'booking', $booking_id, 'refunds', true );
+			}
+			
+			$refund_id_index = array_search( $refund_id, $refunds );
+			
+			if( empty( $refunds ) || $refund_id_index === false ) {
+				continue;
+			}
+			
+			// Compute new quantity 
+			// (we still need to substract $refunded_qty because it is possible to have multiple refunds, 
+			// so even if you delete one, you still need to substract the quantity of the others)
+			$init_qty		= $item[ 'qty' ];
+			$refunded_qty	= $order->get_qty_refunded_for_item( $item_id ) ? abs( $order->get_qty_refunded_for_item( $item_id ) ) : 0;
+			$new_qty		= $init_qty - $refunded_qty;
+			
+			// Gether the booking (group) data
+			if( $booking_type === 'group' ) {
 				
-				if( ! empty( $refunds ) && $refund_id_index !== false ) {
+				$booking_group	= bookacti_get_booking_group_by_id( $booking_group_id );
+				$state			= $booking_group->state;
+				$active			= $booking_group->active;
+				$old_qty		= bookacti_get_booking_group_quantity( $booking_group_id );
 				
-					$init_qty		= $item[ 'qty' ];
-					$refunded_qty	= $order->get_qty_refunded_for_item( $item_id ) ? abs( $order->get_qty_refunded_for_item( $item_id ) ) : 0;
-					$new_qty		= $init_qty - $refunded_qty;
-					
-					$booking = bookacti_get_booking_by_id( $booking_id );
-					if( $booking->active && $booking->quantity !== $new_qty ) {
-						$response = bookacti_update_booking_quantity( $booking_id, $new_qty );
-						if( $response['status'] !== 'success' ) {
+			} else {
+				
+				$booking	= bookacti_get_booking_by_id( $booking_id );
+				$state		= $booking->state;
+				$active		= $booking->active;
+				$old_qty	= $booking->quantity;
+			}
+			
+			
+			// If the booking (group) is still active, 
+			// we need to check the booking (group) availability before updating
+			if( $active && $old_qty !== $new_qty ) {
+				
+				// Try to update booking (group) quantity
+				if( $booking_type === 'group' ) {
+					$response = bookacti_controller_update_booking_group_quantity( $booking_group_id, $new_qty, false, 'admin' );
+				} else {
+					$response = bookacti_controller_update_booking_quantity( $booking_id, $new_qty, 'admin' );
+				}
+				
+				// If there is not enough availability...
+				if( $response[ 'status' ] !== 'success' ) {
 
-							// Reduce item quantity to fit booking
-							$product = $order->get_product_from_item( $item );
-							$order->update_product( $item_id, $product, array( 'qty' => $booking->quantity ) );
+					// Reduce item quantity to fit the booking (group)
+					$product = $order->get_product_from_item( $item );
+					$order->update_product( $item_id, $product, array( 'qty' => $old_qty ) );
 
-							// Prepare message
-							if( $response['error'] === 'qty_sup_to_avail' ) {
-								$message =
-								sprintf( __( 'You want to add %1$s bookings to your cart but only %2$s are available on this schedule. '
-										. 'Please choose another schedule or decrease the quantity. '
-										, BOOKACTI_PLUGIN_NAME ), 
-										$new_qty, $response[ 'availability' ] );
-								
-							} else if( $response['error'] === 'no_availability' ) {
-								$message = __( 'This schedule is no longer available. Please choose another schedule.', BOOKACTI_PLUGIN_NAME );
-								
-							} else {
-								$message = __( 'Error occurs while trying to update booking quantity.', BOOKACTI_PLUGIN_NAME );
-							}
+					// Prepare message
+					if( $response['error'] === 'qty_sup_to_avail' ) {
+						$message =
+						sprintf( __( 'You want to add %1$s bookings to your cart but only %2$s are available on this schedule. '
+								. 'Please choose another schedule or decrease the quantity. '
+								, BOOKACTI_PLUGIN_NAME ), 
+								$new_qty, $response[ 'availability' ] );
 
-							// Stop the script execution
-							wp_die( esc_html( $message ) );
-						}
-					} else if( ! $booking->active && $new_qty > 0 ) {
-						$updated1 = $updated2 = true;
-						if( $booking->quantity !== $new_qty ) {
-							$updated1 = bookacti_force_update_booking_quantity( $booking_id, $new_qty );
-						}
-						
-						if( $booking->state === 'refunded' ) {
-							$updated2 = bookacti_update_booking_state( $booking_id, 'cancelled' );
-							if( $updated2 ) {
-								wc_delete_order_item_meta( $item_id, '_bookacti_refund_method' );
-								do_action( 'bookacti_booking_state_changed', $booking_id, 'cancelled', array( 'is_admin' => true ) );
-							}
-						}
+					} else if( $response['error'] === 'no_availability' ) {
+						$message = __( 'This schedule is no longer available. Please choose another schedule.', BOOKACTI_PLUGIN_NAME );
 
-						if( $updated1 === false || $updated2 === false ) {
-							$message = __( 'Error occurs while trying to update booking quantity.', BOOKACTI_PLUGIN_NAME );
-							wp_die( esc_html( $message ) );
-						}
-					}
-					
-					// Delete booking refund metadata
-					unset( $refunds[ $refund_id_index ] );
-					if( ! empty( $refunds ) ) {
-						bookacti_update_metadata( 'booking', $booking_id, array( 'refunds' => $refunds ) );
 					} else {
-						bookacti_delete_metadata( 'booking', $booking_id, array( 'refunds' ) );
+						$message = __( 'Error occurs while trying to update booking quantity.', BOOKACTI_PLUGIN_NAME );
 					}
+
+					// Stop the script execution and feedback user
+					wp_die( esc_html( $message ) );
+				}
+			
+				
+			// If the booking (group) is not active,
+			// we can force the booking quantity to update to the new value
+			} else if( ! $active && $new_qty > 0 ) {
+				
+				$updated1 = $updated2 = true;
+				
+				// Update booking (group) quantity
+				if( $booking_type === 'group' ) {
+				
+					$updated1 = bookacti_force_update_booking_group_bookings_quantity( $booking_group_id, $new_qty );
+					
+					// If the booking group was 'refunded', 
+					// now that the refunds has been deleted, we need to change its state to cancelled
+					if( $state === 'refunded' ) {
+						$updated2 = bookacti_update_booking_group_state( $booking_group_id, 'cancelled' );
+						if( $updated2 ) {
+							wc_delete_order_item_meta( $item_id, '_bookacti_refund_method' );
+							do_action( 'bookacti_booking_group_state_changed', $booking_group_id, 'cancelled', array( 'is_admin' => true ) );
+						}
+					}
+					
+					// Also update bookings of the group if some were 'refunded'
+					// (it is possible that some bookings are 'refunded' but not the whole group)
+					if( $updated1 ) {
+						bookacti_update_booking_group_bookings_state( $booking_group_id, 'cancelled', 0, 'refunded' );
+					}
+				
+				
+				// For single bookings, first check if the quantity need to be updated
+				} else if( $old_qty !== $new_qty ) {
+					
+					$updated1 = bookacti_force_update_booking_quantity( $booking_id, $new_qty );
+					
+					// If the booking was 'refunded', 
+					// now that the refunds has been deleted, we need to change its state to cancelled
+					if( $state === 'refunded' ) {
+						$updated2 = bookacti_update_booking_state( $booking_id, 'cancelled' );
+						if( $updated2 ) {
+							wc_delete_order_item_meta( $item_id, '_bookacti_refund_method' );
+							do_action( 'bookacti_booking_state_changed', $booking_id, 'cancelled', array( 'is_admin' => true ) );
+						}
+					}
+				}
+
+				if( $updated1 === false || $updated2 === false ) {
+					$message = __( 'Error occurs while trying to update booking quantity.', BOOKACTI_PLUGIN_NAME );
+					wp_die( esc_html( $message ) );
+				}
+			}
+			
+			// Delete booking refund metadata
+			unset( $refunds[ $refund_id_index ] );
+			if( ! empty( $refunds ) ) {
+				if( $booking_type === 'group' ) {
+					bookacti_update_metadata( 'booking_group', $booking_group_id, array( 'refunds' => $refunds ) );
+				} else {
+					bookacti_update_metadata( 'booking', $booking_id, array( 'refunds' => $refunds ) );
+				}
+			} else {
+				if( $booking_type === 'group' ) {
+					bookacti_delete_metadata( 'booking_group', $booking_group_id, array( 'refunds' ) );
+				} else {
+					bookacti_delete_metadata( 'booking', $booking_id, array( 'refunds' ) );
 				}
 			}
 		}
@@ -276,6 +523,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 				}
 			}
 			
+			// Deprecated data
 			// Format datetime
 			else if( preg_match( '/\d{4}-[01]\d-[0-3]\dT[0-2]\d:[0-5]\d:[0-5]\d/', $meta_value ) 
 			||  preg_match( '/\d{4}-[01]\d-[0-3]\d [0-2]\d:[0-5]\d:[0-5]\d/', $meta_value ) ) {

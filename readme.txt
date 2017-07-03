@@ -288,6 +288,7 @@ If you don't find the answer you need, please [contact us](http://booking-activi
     * Delete - bookacti_booking_cancelled replaced by bookacti_booking_state_changed (not the same use, be careful)
     * Delete - bookacti_woocommerce_order_status_updated_after_booking_state_update by bookacti_woocommerce_order_status_automatically_updated (not the same use, be careful)
     * Delete - bookacti_booking_filters_global_actions
+    * Delete - bookacti_booking_restored
   * PHP filters
     * Add - bookacti_validate_group_activity_data
     * Add - bookacti_group_category_default_settings

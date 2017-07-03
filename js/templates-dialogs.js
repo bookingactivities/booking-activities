@@ -1608,6 +1608,8 @@ function bookacti_dialog_create_group_of_events( category_id ) {
 								$j( '#bookacti-template-calendar' ).fullCalendar( 'rerenderEvents' );
 								$j( '#bookacti-insert-group-of-events' ).css( 'visibility', 'hidden' );
 								
+								// Exit group editing mode
+								bookacti_exit_group_edition();
 								
 							//If error
 							} else {
@@ -1801,7 +1803,7 @@ function bookacti_dialog_update_group_of_events( group_id ) {
 								$j( '#bookacti-insert-group-of-events' ).css( 'visibility', 'hidden' );
 								
 								// Exit group editing mode
-								$j( '.bookacti-update-group-of-events img.validate-group' ).attr( 'src', bookacti_localized.plugin_path + '/img/gear.png' ).removeClass( 'validate-group' );
+								bookacti_exit_group_edition();
 								
 								
 							//If error

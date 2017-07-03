@@ -228,14 +228,14 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			// Single event
 			if( isset( $_POST[ 'bookacti_booking_id' ] ) ) {
 				$booking_id	= intval( $_POST[ 'bookacti_booking_id' ] );
-				$event = bookacti_get_booking_by_id( $booking_id );
+				$event = bookacti_get_booking_event_data( $booking_id );
 				$new_value[ '_bookacti_options' ][ 'bookacti_booking_id' ]		= $booking_id;
 				$new_value[ '_bookacti_options' ][ 'bookacti_booked_events' ]	= json_encode( array( $event ) );
 				
 			// Group of events
 			} else {
 				$booking_group_id = intval( $_POST[ 'bookacti_booking_group_id' ] );
-				$events = bookacti_get_bookings_by_booking_group_id( $booking_group_id );
+				$events = bookacti_get_booking_group_events_data( $booking_group_id );
 				$new_value[ '_bookacti_options' ][ 'bookacti_booking_group_id' ]= $booking_group_id;
 				$new_value[ '_bookacti_options' ][ 'bookacti_booked_events' ]	= json_encode( $events );
 			}

@@ -98,14 +98,14 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		// If quantity is null, change booking state to 'removed' and keep the booking quantity
 		if( $data[ 'quantity' ] <= 0 ) { 
 			
-			$data[ 'state' ]	= 'removed'; 
+			$data[ 'state' ]	= $data[ 'context' ] === 'frontend' ? 'removed' : 'cancelled'; 
 			$data[ 'quantity' ]	= intval( $booking->quantity ); 
 			$data[ 'active' ]	= 0; 
 		
 		// If the booking was removed and its quantity is raised higher than 0, turn its state back to 'in_cart'
 		} else if( $booking->state === 'removed' ) {
 			
-			$data[ 'state' ]	= 'in_cart'; 
+			$data[ 'state' ]	= $data[ 'context' ] === 'frontend' ? 'in_cart' : 'pending'; 
 			$data[ 'active' ]	= 1; 
 		}
 		
@@ -190,7 +190,8 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 					}
 				}
 				
-				// If there are only activities, mark the order as 'completed' and the previous hook will mark the activities as 'booked'
+				// If there are only activities, mark the order as 'completed' and 
+				// a function hooked to woocommerce_order_status_completed will mark the activities as 'booked'
 				if( $are_activities ) {
 					return 'completed';
 					
@@ -547,7 +548,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		}
 		
 		// Get old state
-		$old_state = bookacti_get_booking_group_state( $booking_group_id );
+		$old_state =  wc_get_order_item_meta( $item[ 'id' ], 'bookacti_state', true );
 		
 		// Turn meta state to new state
 		wc_update_order_item_meta( $item[ 'id' ], 'bookacti_state', $new_state );
@@ -558,7 +559,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			wc_update_order_item_meta( $item[ 'id' ], '_bookacti_refund_method', $refund_action );
 		}
 
-		// Log booking state change
+		// Log booking group state change
 		if( $old_state !== $new_state ) {
 			$status_labels = bookacti_get_booking_state_labels();
 			$is_customer_action = get_current_user_id() == bookacti_get_booking_group_owner( $booking_group_id );		

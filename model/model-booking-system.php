@@ -513,8 +513,8 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
         $query  = 'SELECT GE.group_id, GE.event_id as id, GE.event_start as start, GE.event_end as end, GE.active, E.activity_id, E.title, G.title as group_title, G.category_id, C.template_id, E.availability, IFNULL( B.bookings, 0 ) as bookings '
 				. ' FROM ' . BOOKACTI_TABLE_GROUP_CATEGORIES . ' as C, ' . BOOKACTI_TABLE_EVENT_GROUPS . ' as G, ' . BOOKACTI_TABLE_GROUPS_EVENTS . ' as GE, ' . BOOKACTI_TABLE_EVENTS . ' as E '
 				. ' LEFT JOIN (
-						SELECT SUM( quantity ) as bookings, event_id FROM ' . BOOKACTI_TABLE_BOOKINGS . ' WHERE active = 1 GROUP BY event_id
-					) as B ON B.event_id = E.id'
+						SELECT SUM( quantity ) as bookings, event_id, event_start, event_end FROM ' . BOOKACTI_TABLE_BOOKINGS . ' WHERE active = 1 GROUP BY event_id
+					) as B ON B.event_id = E.id AND B.event_start = E.start AND B.event_end = E.end'
 				. ' WHERE G.category_id = C.id '
 				. ' AND G.id = GE.group_id '
 				. ' AND GE.event_id = E.id ';

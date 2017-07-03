@@ -566,7 +566,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 				} else {
 					$refunded = apply_filters( 'bookacti_refund_booking', array( 'status' => 'failed' ), $booking_group_id, 'group', $refund_action, $refund_message );
 				}
-
+				
 				if( $refunded[ 'status' ] === 'success' ) {
 					
 					$booking_ids= bookacti_get_booking_group_bookings_ids( $booking_group_id );
@@ -578,9 +578,8 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 						foreach( $booking_ids as $booking_id ) {
 							do_action( 'bookacti_booking_state_changed', $booking_id, $new_state, array( 'refund_action' => $refund_action, 'is_admin' => $is_admin ) );
 						}
+						do_action( 'bookacti_booking_group_state_changed', $booking_group_id, $new_state, array( 'refund_action' => $refund_action, 'is_admin' => $is_admin ) );
 					}
-					
-					do_action( 'bookacti_booking_group_state_changed', $booking_group_id, $new_state, array( 'refund_action' => $refund_action, 'is_admin' => $is_admin ) );
 					
 					// Get new booking actions
 					$admin_or_front = $is_admin ? 'both' : 'front';
