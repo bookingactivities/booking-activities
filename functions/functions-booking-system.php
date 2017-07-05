@@ -33,10 +33,13 @@ function bookacti_get_booking_system( $atts, $echo = false ) {
 			<?php 
 			// Events related data
 			$when_events_load = bookacti_get_setting_value( 'bookacti_general_settings', 'when_events_load' ); 
-			if( $when_events_load === 'on_page_load' && $atts[ 'auto_load' ] ) { ?>
-				json_events[ '<?php echo $atts[ 'id' ]; ?>' ]	= <?php echo json_encode( bookacti_fetch_events( $atts[ 'calendars' ], $atts[ 'activities' ], $atts[ 'groups' ], $atts[ 'past_events' ], $atts[ 'context' ] ) ); ?>;
+			if( $when_events_load === 'on_page_load' && $atts[ 'auto_load' ] ) { 
+				$groups = array();
+				if( $atts[ 'group_categories' ] !== false ) { $groups = bookacti_get_groups_events( $atts[ 'calendars' ], $atts[ 'group_categories' ] ); }
+			?>
+				json_events[ '<?php echo $atts[ 'id' ]; ?>' ]	= <?php echo json_encode( bookacti_fetch_events( $atts ) ); ?>;
 				json_activities									= <?php echo json_encode( bookacti_get_activities_by_template_ids( $atts[ 'calendars' ] ) ); ?>;
-				json_groups[ '<?php echo $atts[ 'id' ]; ?>' ]	= <?php echo json_encode( bookacti_get_groups_events( $atts[ 'calendars' ], $atts[ 'groups' ] ) ); ?>;	
+				json_groups[ '<?php echo $atts[ 'id' ]; ?>' ]	= <?php echo json_encode( $groups ); ?>;	
 				calendars_data[ '<?php echo $atts[ 'id' ]; ?>' ][ 'settings' ]	= <?php echo json_encode( bookacti_get_mixed_template_settings( $atts[ 'calendars' ] ) ); ?>;	
 			<?php } ?>
 		</script>
@@ -103,7 +106,7 @@ function bookacti_get_booking_system( $atts, $echo = false ) {
 function bookacti_get_booking_method_html( $method, $booking_system_attributes ) {
 	
 	$available_booking_methods = bookacti_get_available_booking_methods();
-	if( $method === 'calendar' || ! in_array( $method, array_keys( $available_booking_methods ) ) ) {
+	if( $method === 'calendar' || ! in_array( $method, array_keys( $available_booking_methods ), true ) ) {
 		$html_elements = bookacti_retrieve_calendar_elements( $booking_system_attributes );
 	} else {
 		$html_elements = apply_filters( 'bookacti_get_booking_method_html', '', $method, $booking_system_attributes );
@@ -147,11 +150,9 @@ function bookacti_retrieve_calendar_elements( $booking_system_atts ) {
 }
 
 
-// Check booking system attributes and format them to be correct
 /**
  * Check booking system attributes and format them to be correct
  * 
- * @since 1.0.0
  * @version 1.1.0
  * 
  * @param array $atts [id, classes, calendars, activities, groups, method, url, button]
@@ -166,8 +167,8 @@ function bookacti_format_booking_system_attributes( $atts = array(), $shortcode 
         'classes'				=> '',
         'calendars'				=> array(),
         'activities'			=> array(),
-        'groups'				=> array(),
-        'groups_only'			=> 1,
+        'group_categories'		=> false,
+        'groups_only'			=> 0,
         'groups_single_events'	=> 0,
         'method'				=> 'calendar',
 		'url'					=> '',
@@ -181,35 +182,43 @@ function bookacti_format_booking_system_attributes( $atts = array(), $shortcode 
 	$atts = shortcode_atts( $defaults, $atts, $shortcode );
 	
 	// Format comma separated lists into arrays of integers
-	if( is_string( $atts[ 'calendars' ] ) ) {
-		$atts[ 'calendars' ]	= array_map( 'intval', explode( ',', preg_replace( array(
+	if( is_string( $atts[ 'calendars' ] ) || is_numeric( $atts[ 'calendars' ] ) ) {
+		$atts[ 'calendars' ] = array_map( 'intval', explode( ',', preg_replace( array(
 			'/[^\d,]/',    // Matches anything that's not a comma or number.
 			'/(?<=,),+/',  // Matches consecutive commas.
 			'/^,+/',       // Matches leading commas.
 			'/,+$/'        // Matches trailing commas.
 		), '', 	$atts[ 'calendars' ] ) ) );
 	}
-	if( is_string( $atts[ 'activities' ] ) ) {
-		$atts[ 'activities' ]	= array_map( 'intval', explode( ',', preg_replace( array(
+	
+	if( is_string( $atts[ 'activities' ] ) || is_numeric( $atts[ 'activities' ] ) ) {
+		$atts[ 'activities' ] = array_map( 'intval', explode( ',', preg_replace( array(
 			'/[^\d,]/',    // Matches anything that's not a comma or number.
 			'/(?<=,),+/',  // Matches consecutive commas.
 			'/^,+/',       // Matches leading commas.
 			'/,+$/'        // Matches trailing commas.
 		), '', 	$atts[ 'activities' ] ) ) );
 	}
-	if( is_string( $atts[ 'groups' ] ) ) {
-		$atts[ 'groups' ]		= array_map( 'intval', explode( ',', preg_replace( array(
+	
+	if( in_array( $atts[ 'group_categories' ], array( false, 'none', 'false', 'no' ), true )
+	|| ( empty( $atts[ 'group_categories' ] ) && ! is_array( $atts[ 'group_categories' ] ) ) ) { 
+		$atts[ 'group_categories' ] = false;
+	
+	} else if( in_array( $atts[ 'group_categories' ], array( true, 'all', 'true', 'yes', 'ok' ), true ) ) {
+		$atts[ 'group_categories' ] = array();
+		
+	} else if( is_string( $atts[ 'group_categories' ] ) || is_numeric( $atts[ 'group_categories' ] ) ) {
+		$atts[ 'group_categories' ] = array_map( 'intval', explode( ',', preg_replace( array(
 			'/[^\d,]/',    // Matches anything that's not a comma or number.
 			'/(?<=,),+/',  // Matches consecutive commas.
 			'/^,+/',       // Matches leading commas.
 			'/,+$/'        // Matches trailing commas.
-		), '', 	$atts[ 'groups' ] ) ) );
+		), '', 	$atts[ 'group_categories' ] ) ) );
 	}
 	
 	// Remove duplicated values
 	$atts[ 'calendars' ]	= array_unique( $atts[ 'calendars' ] );
 	$atts[ 'activities' ]	= array_unique( $atts[ 'activities' ] );
-	$atts[ 'groups' ]		= array_unique( $atts[ 'groups' ] );
 	
 	// Check if desired templates exist
 	$available_templates = bookacti_fetch_templates( true );
@@ -218,6 +227,7 @@ function bookacti_format_booking_system_attributes( $atts = array(), $shortcode 
 		foreach( $available_templates as $available_template ) {
 			if( $available_template->id == intval( $template_id ) ) {
 				$is_existing = true;
+				break;
 			}
 		}
 		if( ! $is_existing ) {
@@ -240,6 +250,7 @@ function bookacti_format_booking_system_attributes( $atts = array(), $shortcode 
 			foreach( $available_activities as $available_activity ) {
 				if( $available_activity->id == intval( $activity_id ) ) {
 					$is_existing = true;
+					break;
 				}
 			}
 			if( ! $is_existing ) {
@@ -249,23 +260,29 @@ function bookacti_format_booking_system_attributes( $atts = array(), $shortcode 
 	}
 	
 	// Check if desired groups exist
-	$available_groups = bookacti_get_groups_of_events_by_template_ids( $atts[ 'calendars' ] );
-	foreach( $atts[ 'groups' ] as $i => $group_id ) {
-		foreach( $available_groups as $available_group ) {
-		if( $available_group->id == intval( $group_id ) ) {
-			$is_existing = true;
+	if( is_array( $atts[ 'group_categories' ] ) ) { 
+		// Remove duplicated values
+		$atts[ 'group_categories' ] = array_unique( $atts[ 'group_categories' ] ); 
+		
+		$available_categories = bookacti_get_group_categories_by_template_ids( $atts[ 'calendars' ] );
+		foreach( $atts[ 'group_categories' ] as $i => $category_id ) {
+			foreach( $available_categories as $available_category ) {
+				if( $available_category->id == intval( $category_id ) ) {
+					$is_existing = true;
+					break;
+				}
 			}
-		}
-		if( ! $is_existing ) {
-			unset( $atts[ 'groups' ][ $i ] );
+			if( ! $is_existing ) {
+				unset( $atts[ 'group_categories' ][ $i ] );
+			}
 		}
 	}
 	
-	// Sanitize groups only switch
-	$atts[ 'groups_only' ] = boolval( $atts[ 'groups_only' ] ) ? 1 : 0;
-	
-	// Sanitize groups single events switch
-	$atts[ 'groups_single_events' ] = boolval( $atts[ 'groups_single_events' ] ) ? 1 : 0;
+	// Sanitize booleans
+	$booleans_to_check = array( 'groups_only', 'groups_single_events', 'auto_load', 'past_events' );
+	foreach( $booleans_to_check as $key ) {
+		$atts[ $key ] = in_array( $atts[ $key ], array( 1, '1', true, 'true', 'yes', 'ok' ), true ) ? 1 : 0;
+	}
 	
 	// If booking method is set to 'site', get the site default
 	$atts[ 'method' ] = esc_attr( $atts[ 'method' ] );
@@ -275,7 +292,7 @@ function bookacti_format_booking_system_attributes( $atts = array(), $shortcode 
 	
 	// Check if desired booking method is registered
 	$available_booking_methods = bookacti_get_available_booking_methods();
-	if( ! in_array( $atts[ 'method' ], array_keys( $available_booking_methods ) ) ) {
+	if( ! in_array( $atts[ 'method' ], array_keys( $available_booking_methods ), true ) ) {
 		$atts[ 'method' ] = 'calendar';
 	}
 	
@@ -297,17 +314,58 @@ function bookacti_format_booking_system_attributes( $atts = array(), $shortcode 
 	// Sanitize submit button label
 	$atts[ 'button' ] = esc_html( sanitize_text_field( $atts[ 'button' ] ) );
 	
-	// Make sure auto load is 0 or 1
-	$atts[ 'auto_load' ] = boolval( $atts[ 'auto_load' ] ) ? 1 : 0;
-	
-	// Make sure past events is 0 or 1
-	$atts[ 'past_events' ] = boolval( $atts[ 'past_events' ] ) ? 1 : 0;
-	
 	// Make sure context is valid
-	$atts[ 'context' ] = in_array( $atts[ 'context' ], array( 'frontend', 'editor', 'booking_page' ) ) ? $atts[ 'context' ] : 'frontend';
+	$atts[ 'context' ] = in_array( $atts[ 'context' ], array( 'frontend', 'editor', 'booking_page' ), true ) ? $atts[ 'context' ] : 'frontend';
 	
 	
 	return apply_filters( 'bookacti_formatted_booking_system_attributes', $atts, $shortcode );
+}
+
+
+/**
+ * Sanitize arguments used to fetch events on the booking system
+ * 
+ * @param array $args
+ * @return array
+ */
+function bookacti_sanitize_arguments_to_fetch_events( $args ) {
+	// Sanitize arguments
+	$default_args = array(
+		'calendars'			=> array(),
+		'activities'		=> array(),
+		'group_categories'	=> array(),
+		'groups_only'		=> false,
+		'past_events'		=> false,
+		'context'			=> 'frontend'
+	);
+
+	$sanitized_args = array();
+	foreach( $default_args as $default_key => $default_value ) {
+		
+		if( ! isset( $args[ $default_key ] ) ) {
+			$sanitized_args[ $default_key ] = $default_value;
+			continue;
+		}
+		
+		switch ( $default_key ) {
+			case 'calendars':
+			case 'activities':
+			case 'group_categories':
+				$sanitized_args[ $default_key ] = ! empty( $args[ $default_key ] ) && is_array( $args[ $default_key ] ) ? $args[ $default_key ] : $default_value;
+				break;
+			case 'groups_only':
+			case 'past_events':
+				$sanitized_args[ $default_key ] = in_array( $args[ $default_key ], array( 0, 1, '0', '1', true, false, 'true', 'false' ), true ) ? boolval( $args[ $default_key ] ) : $default_value;
+				break;
+			case 'context':
+				$sanitized_args[ $default_key ] = in_array( $args[ $default_key ], array( 'frontend', 'booking_page', 'editor' ), true ) ? $args[ $default_key ] : $default_value;
+				break;
+			default:
+				$sanitized_args[ $default_key ] = $default_value;
+		}
+	}
+
+	return $sanitized_args;
 }
 
 
@@ -439,18 +497,20 @@ function bookacti_get_booking_dates_html( $booking ) {
 
 
 /***** EVENTS *****/
+
 /**
  * Create repeated events
- *
- * @since	1.0.0
- * @version	1.0.6
- * @param	object		$event					Event data
- * @param	array		$shared_data				Event data shared by every occurences of the event
- * @param	bool			$fetch_past_events		Whether to create occurences before user datetime
- * @param	string		$context				(frontend, editor, booking_page) Determine which occurence will be generated according to the context.
- * @return	array
+ * 
+ * @version 1.1.0
+ * @param object $event Event data
+ * @param array $shared_data	 Event data shared by every occurences of the event
+ * @param array $args Additional data
+ * @return array
  */
-function bookacti_create_repeated_events( $event, $shared_data = array(), $fetch_past_events = false, $context = 'frontend' ) {
+function bookacti_create_repeated_events( $event, $shared_data = array(), $args ) {
+	
+	// Sanitize arguments
+	$args = bookacti_sanitize_arguments_to_fetch_events( $args );
 	
 	// Set current datetime
 	$timezone = bookacti_get_setting_value( 'bookacti_general_settings', 'timezone' );
@@ -512,21 +572,27 @@ function bookacti_create_repeated_events( $event, $shared_data = array(), $fetch
 	
     for( $i=0; $i <= $iteration; $i++ ) {
 		
-        //FILTER EXCEPTIONS HERE ONLY FOR READ ONLY PLANNINGS, FOR TEMPLATES DO IT ON EVENT RENDER
         $is_exception	= bookacti_is_repeat_exception( $event->event_id, date( 'Y-m-d', $event_start->format( 'U' ) ) );
         $has_started	= $event_start < $current_datetime_object;
         $has_ended		= $event_end < $current_datetime_object;
 		$is_in_range	= bookacti_is_event_in_its_template_range( $event->event_id, $event_start->format('Y-m-d H:i:s'), $event_end->format('Y-m-d H:i:s') );
 		$is_booked		= bookacti_get_number_of_bookings( $event->event_id, $event_start->format('Y-m-d H:i:s'), $event_end->format('Y-m-d H:i:s') ) > 0;
+		$category_ids	= bookacti_get_event_group_category_ids( $event->event_id, $event_start->format('Y-m-d H:i:s'), $event_end->format('Y-m-d H:i:s') );
+		$is_in_category	= empty( $args[ 'group_categories' ] ) || empty( $category_ids ) ? true : ! empty( array_intersect( $category_ids, $args[ 'group_categories' ] ) );
 		
-        if( $context === 'editor' /* Show all events on templates */ 
-			|| $context === 'booking_page' && $is_exception == 0 && ( $is_in_range || $is_booked ) /* If we also fetch past events, show all events but those wich are on an exception */ 
-			|| $fetch_past_events && $is_exception == 0 && $is_in_range /* If we also fetch past events, show all events but those wich are on an exception */ 
-			|| ( $context !== 'editor' && $is_exception == 0 && $is_in_range /* Don't show exception on frontend */
-				&& ( ! $has_started /* Don't show started events on frontend */
-					|| ( $started_events_bookable && $has_started && ! $has_ended ) ) /* Show in progress events on frontend if user decides so */
+        if( (	$is_in_category																					// Filter by category
+			&&  ( ( $args[ 'groups_only' ] && ! empty( $category_ids ) )										// If only groups must be shown, do not show single events
+				|| ! $args[ 'groups_only' ] )																	// Else, just make sure the event is single or in an authorized category
+			) && (
+				$args[ 'context' ] === 'editor'																	// Show all events on templates 
+			||  $args[ 'context' ] === 'booking_page' && $is_exception == 0 && ( $is_in_range || $is_booked )	// If we are on booking page, show booked events even if they are out of range
+			||  $args[ 'past_events' ] && $is_exception == 0 && $is_in_range									// If we also fetch past events, show all events but those wich are on an exception
+			||  ( $args[ 'context' ] !== 'editor' && $is_exception == 0 && $is_in_range							// Don't show exception on frontend (on editor, it is done on event render)
+				&& ( ! $has_started																				// Don't show started events on frontend
+					|| ( $started_events_bookable && $has_started && ! $has_ended ) )							// Show in progress events on frontend if user decides so
 				) 
-		) {
+			)
+		  ) {
 			
 			$event_array = array(
 				'start'			=> $event_start->format('Y-m-d H:i:s'),
@@ -546,7 +612,7 @@ function bookacti_create_repeated_events( $event, $shared_data = array(), $fetch
 }
 
 
-//Determine the number of day or month to add according to the repetition frequence
+// Determine the number of day or month to add according to the repetition frequence
 function bookacti_units_to_add_to_repeat_event( $event ) {
     $to_add = ['number' => 0, 'unit' => 'days'];
     
@@ -733,4 +799,27 @@ function bookacti_get_formatted_booking_events_list( $booking_events, $quantity 
 		}
 		
 		return $booking_group_id;
+	}
+	
+	
+	/**
+	 * Get categories of groups where an event is included
+	 * 
+	 * @param int $id
+	 * @param string $start
+	 * @param string $end
+	 * @param boolean $active_only Whether to get the group of events even if the link between the desired event and this group is inactive
+	 */
+	function bookacti_get_event_group_category_ids( $id, $start, $end, $active_only = true ) {
+		
+		$groups = bookacti_get_event_groups( $id, $start, $end, $active_only );
+		
+		$categories = array();
+		if( ! empty( $groups ) ) {
+			foreach( $groups as $group ) {
+				$categories[] = $group->category_id;
+			}
+		}
+		
+		return $categories;
 	}

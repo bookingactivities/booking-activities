@@ -154,7 +154,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			
 			$event_availability	= intval( $_POST['event-availability'] );
 			$sanitized_freq		= sanitize_title_with_dashes( $_POST['event-repeat-freq'] );
-			$event_repeat_freq	= in_array( $sanitized_freq, array( 'none', 'daily', 'weekly', 'monthly' ) ) ? $sanitized_freq : 'none';
+			$event_repeat_freq	= in_array( $sanitized_freq, array( 'none', 'daily', 'weekly', 'monthly' ), true ) ? $sanitized_freq : 'none';
 			$event_repeat_from	= bookacti_sanitize_date( $_POST['event-repeat-from'] );
 			$event_repeat_to	= bookacti_sanitize_date( $_POST['event-repeat-to'] );
 			$dates_excep_array	= bookacti_sanitize_exceptions( $_POST['event-repeat-excep'] );
@@ -305,7 +305,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		if( $is_nonce_valid && $is_allowed ) {
 			
 			$sanitized_unbind	= sanitize_title_with_dashes( $_POST['unbind'] );
-			$unbind				= in_array( $sanitized_unbind, array( 'selected', 'booked' ) ) ? $sanitized_unbind : 'selected';
+			$unbind				= in_array( $sanitized_unbind, array( 'selected', 'booked' ), true ) ? $sanitized_unbind : 'selected';
 			
 			if( $unbind === 'selected' ) {
 				$event_start	= bookacti_sanitize_datetime( $_POST['event_start'] );

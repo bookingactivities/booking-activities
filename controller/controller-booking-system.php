@@ -34,7 +34,7 @@ function bookacti_controller_fetch_events() {
 	
 	if( $is_nonce_valid && $is_allowed ) {
 		
-			$events		= bookacti_fetch_events( $attributes[ 'calendars' ], $attributes[ 'activities' ], $attributes[ 'groups' ], $attributes[ 'past_events' ], $attributes[ 'context' ] );
+			$events		= bookacti_fetch_events( $attributes );
 			$activities	= bookacti_get_activities_by_template_ids( $attributes[ 'calendars' ] );
 			$groups		= bookacti_get_groups_events( $attributes[ 'calendars' ] );
 
@@ -87,14 +87,13 @@ function bookacti_controller_reload_booking_system() {
 		// Get HTML elements used by the booking method
 		$html_elements = bookacti_get_booking_method_html( $attributes[ 'method' ], $attributes );
 		
-		// Get calendar settings
-		$settings	= bookacti_get_mixed_template_settings( $attributes[ 'calendars' ] );
-		
 		// Gets calendar content: events, activities and groups
-		$events		= bookacti_fetch_events( $attributes[ 'calendars' ], $attributes[ 'activities' ], $attributes[ 'groups' ], $attributes[ 'past_events' ], $attributes[ 'context' ] );
+		$events		= bookacti_fetch_events( $attributes );
 		$activities	= bookacti_get_activities_by_template_ids( $attributes[ 'calendars' ] );
-		$groups		= bookacti_get_groups_events( $attributes[ 'calendars' ] );
-
+		$groups		= array();
+		if( $attributes[ 'group_categories' ] !== false ) { $groups = bookacti_get_groups_events( $attributes[ 'calendars' ], $attributes[ 'group_categories' ] ); }
+		$settings			= bookacti_get_mixed_template_settings( $attributes[ 'calendars' ] );
+		
 		wp_send_json( array( 
 			'status'		=> 'success', 
 			'html_elements'	=> $html_elements, 
@@ -129,7 +128,7 @@ function bookacti_controller_switch_booking_method() {
 		
 		// Get HTML elements used by the booking method
 		$available_booking_methods = bookacti_get_available_booking_methods();
-		if( $method === 'calendar' || ! in_array( $method, array_keys( $available_booking_methods ) ) ) {
+		if( $method === 'calendar' || ! in_array( $method, array_keys( $available_booking_methods ), true ) ) {
 			$html_elements = bookacti_retrieve_calendar_elements( $attributes );
 		} else {
 			$html_elements = apply_filters( 'bookacti_get_booking_method_html_elements', '', $method, $attributes );

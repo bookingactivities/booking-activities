@@ -155,7 +155,6 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	/**
 	 * Add fields to single product page (front-end)
 	 * 
-	 * @since 1.0.0
 	 * @version 1.1.0
 	 * 
 	 * @global WC_Product $product
@@ -171,17 +170,17 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			$booking_method			= get_post_meta( $product->get_id(), '_bookacti_booking_method', true );
 			$template_id			= get_post_meta( $product->get_id(), '_bookacti_template', true );
 			$activity_id			= get_post_meta( $product->get_id(), '_bookacti_activity', true );
-			$groups_id				= get_post_meta( $product->get_id(), '_bookacti_groups', true );
+			$group_categories		= get_post_meta( $product->get_id(), '_bookacti_group_categories', true );
 			$groups_only			= get_post_meta( $product->get_id(), '_bookacti_groups_only', true );
 			$groups_single_events	= get_post_meta( $product->get_id(), '_bookacti_groups_single_events', true );
 			
 			// Convert 'site' booking methods to actual booking method
 			// And make sure the resulting booking method exists
 			$available_booking_methods = bookacti_get_available_booking_methods();
-			if( ! in_array( $booking_method, array_keys( $available_booking_methods ) ) ) {
+			if( ! in_array( $booking_method, array_keys( $available_booking_methods ), true ) ) {
 				if( $booking_method === 'site' ) {
 					$site_booking_method = bookacti_get_setting_value( 'bookacti_general_settings', 'booking_method' );
-					if( in_array( $site_booking_method, array_keys( $available_booking_methods ) ) ) {
+					if( in_array( $site_booking_method, array_keys( $available_booking_methods ), true ) ) {
 						$booking_method = $site_booking_method;
 					} else {
 						$booking_method = 'calendar';
@@ -192,16 +191,16 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			}
 			
 			$atts = array( 
-						'calendars'				=> array( $template_id ),
-						'activities'			=> array( $activity_id ),
-						'groups'				=> array( $groups_id ),
-						'groups_only'			=> $groups_only === 'yes' ? 1 : 0,
-						'groups_single_events'	=> $groups_single_events === 'yes' ? 1 : 0,
-						'method'				=> $booking_method,
-						'auto_load'				=> $product->is_type( 'variable' ) ? 0 : 1,
-						'id'					=> 'booking-system-product-' . $product->get_id(),
-						'classes'				=> 'bookacti-frontend-booking-system bookacti-woocommerce-product-booking-system'
-					);
+				'calendars'				=> is_numeric( $template_id ) ? array( $template_id ) : $template_id,
+				'activities'			=> is_numeric( $activity_id ) ? array( $activity_id ) : $activity_id,
+				'group_categories'		=> is_numeric( $group_categories ) ? array( $group_categories ) : $group_categories,
+				'groups_only'			=> $groups_only === 'yes' ? 1 : 0,
+				'groups_single_events'	=> $groups_single_events === 'yes' ? 1 : 0,
+				'method'				=> $booking_method,
+				'auto_load'				=> $product->is_type( 'variable' ) ? 0 : 1,
+				'id'					=> 'booking-system-product-' . $product->get_id(),
+				'classes'				=> 'bookacti-frontend-booking-system bookacti-woocommerce-product-booking-system'
+			);
 			bookacti_get_booking_system( $atts, true );
 		}
 	}
@@ -1043,7 +1042,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 						$response = bookacti_controller_update_booking_quantity( $booking_id, $new_quantity );
 					}
 					
-					if( ! in_array( $response['status'], array( 'success', 'no_change' ) ) ) {
+					if( ! in_array( $response['status'], array( 'success', 'no_change' ), true ) ) {
 						$woocommerce->cart->set_quantity( $cart_item_key, 0, true );
 						$response = bookacti_controller_update_booking_quantity( $booking_id, 0 );
 					}
@@ -1065,7 +1064,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 						$response = bookacti_controller_update_booking_group_quantity( $booking_group_id, $new_quantity );
 					}
 					
-					if( ! in_array( $response[ 'status' ], array( 'success', 'no_change' ) ) ) {
+					if( ! in_array( $response[ 'status' ], array( 'success', 'no_change' ), true ) ) {
 						$woocommerce->cart->set_quantity( $cart_item_key, 0, true );
 						bookacti_controller_update_booking_group_quantity( $booking_group_id, 0 );
 					}

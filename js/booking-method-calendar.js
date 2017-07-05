@@ -75,11 +75,11 @@ function bookacti_set_calendar_up( booking_system, reload_events ) {
 					// If grouped events can only be book with their whole group
 					if( ! calendars_data[ booking_system_id ][ 'groups_single_events' ] ) {
 						// Check if the event is part of a group
-						var groups = bookacti_get_event_group_ids( booking_system, event );
-						if( groups.length > 0 ) {
+						var group_ids = bookacti_get_event_group_ids( booking_system, event );
+						if( group_ids.length > 0 ) {
 							// Check if the event is available in one group at least
 							var is_group_available = false;
-							$j.each( groups, function( i, group_id ) {
+							$j.each( group_ids, function( i, group_id ) {
 								var group_availability = bookacti_get_group_availability( json_groups[ booking_system_id ][ group_id ] );
 								if( group_availability > 0 ) {
 									is_group_available = true;
@@ -144,21 +144,21 @@ function bookacti_set_calendar_up( booking_system, reload_events ) {
 			bookacti_unpick_all_events( booking_system );
 			
 			// Check if the event is part of a group
-			var groups = bookacti_get_event_group_ids( booking_system, event );
+			var group_ids = bookacti_get_event_group_ids( booking_system, event );
 			
 			var group_id = false;
 			
 			// If the event is part of (a) group(s)
-			if( groups.length > 0 ) {
+			if( group_ids.length > 0 ) {
 				// If there is only one choice (one group and pick group only)
-				if( groups.length === 1 && ! calendars_data[ booking_system_id ][ 'groups_single_events' ] ) {
+				if( group_ids.length === 1 && ! calendars_data[ booking_system_id ][ 'groups_single_events' ] ) {
 					// Select all the events of the group
-					group_id = groups[ 0 ];
+					group_id = group_ids[ 0 ];
 					
 				// If the event is in several groups
 				} else {
 					// Ask what group to pick
-					bookacti_dialog_choose_group_of_events( booking_system, groups, event );
+					bookacti_dialog_choose_group_of_events( booking_system, group_ids, event );
 				}
 
 			// If event is single

@@ -65,15 +65,15 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		$new_state = 'cancelled';
 		
 		// Set the same state as its booking by priority
-		if( in_array( 'in_cart', $states ) ) {
+		if( in_array( 'in_cart', $states, true ) ) {
 			$new_state = 'in_cart';
-		} else if( in_array( 'pending', $states ) ) {
+		} else if( in_array( 'pending', $states, true ) ) {
 			$new_state = 'pending';
-		} else if( in_array( 'booked', $states ) ) {
+		} else if( in_array( 'booked', $states, true ) ) {
 			$new_state = 'booked';
-		}  else if( in_array( 'refund_requested', $states ) ) {
+		}  else if( in_array( 'refund_requested', $states, true ) ) {
 			$new_state = 'refund_requested';
-		} else if( in_array( 'refunded', $states ) ) {
+		} else if( in_array( 'refunded', $states, true ) ) {
 			$new_state = 'refunded';
 		}
 		

@@ -23,7 +23,7 @@ function bookacti_insert_booking( $user_id, $event_id, $event_start, $event_end,
 	global $wpdb;
 	$return_booking = array();
 
-	$active = in_array( $state, bookacti_get_active_booking_states() ) ? 1 : 0;
+	$active = in_array( $state, bookacti_get_active_booking_states(), true ) ? 1 : 0;
 
 	$wpdb->insert( 
 		BOOKACTI_TABLE_BOOKINGS, 
@@ -440,7 +440,7 @@ function bookacti_update_booking_state( $booking_id, $state, $active = 'auto' ) 
 	global $wpdb;
 	
 	if( $active === 'auto' ) {
-		$active = in_array( $state, bookacti_get_active_booking_states() ) ? 1 : 0;
+		$active = in_array( $state, bookacti_get_active_booking_states(), true ) ? 1 : 0;
 	}
 	
 	$query		= 'UPDATE ' . BOOKACTI_TABLE_BOOKINGS . ' '
@@ -496,7 +496,7 @@ function bookacti_reschedule_booking( $booking_id, $event_id, $event_start, $eve
 	function bookacti_insert_booking_group( $user_id, $event_group_id, $state ) {
 		global $wpdb;
 
-		$active = in_array( $state, bookacti_get_active_booking_states() ) ? 1 : 0;
+		$active = in_array( $state, bookacti_get_active_booking_states(), true ) ? 1 : 0;
 
 		$wpdb->insert( 
 			BOOKACTI_TABLE_BOOKING_GROUPS, 
@@ -537,7 +537,7 @@ function bookacti_reschedule_booking( $booking_id, $event_id, $event_start, $eve
 		global $wpdb;
 
 		if( $active === 'auto' ) {
-			$active = in_array( $state, bookacti_get_active_booking_states() ) ? 1 : 0;
+			$active = in_array( $state, bookacti_get_active_booking_states(), true ) ? 1 : 0;
 		}
 		
 		if( $same_state ) {
@@ -589,15 +589,14 @@ function bookacti_reschedule_booking( $booking_id, $event_id, $event_start, $eve
 		global $wpdb;
 
 		if( $active === 'auto' ) {
-			$active = in_array( $state, bookacti_get_active_booking_states() ) ? 1 : 0;
+			$active = in_array( $state, bookacti_get_active_booking_states(), true ) ? 1 : 0;
 		}
 		
 		// Get booking ids
 		$query_bookings	= 'SELECT id FROM ' . BOOKACTI_TABLE_BOOKINGS 
-						. ' WHERE group_id = %d '
-						. ' AND active = IFNULL( NULLIF( %d, -1 ), active ) ';
+						. ' WHERE group_id = %d ';
 		
-		$variables_bookings = array( $booking_group_id, $active );
+		$variables_bookings = array( $booking_group_id );
 		
 		if( ! empty( $where_state ) ) {
 			$query_bookings .= ' AND state = %s ';
@@ -707,7 +706,7 @@ function bookacti_reschedule_booking( $booking_id, $event_id, $event_start, $eve
 		}
 		
 		if( ! empty( $state ) && $active === 'auto' ) {
-			$active = in_array( $state, bookacti_get_active_booking_states() ) ? 1 : 0;
+			$active = in_array( $state, bookacti_get_active_booking_states(), true ) ? 1 : 0;
 		} else if( ( empty( $state ) && $active !== 0 && $active !== 1 ) ) {
 			$active = -1;
 		}

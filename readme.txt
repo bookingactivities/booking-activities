@@ -242,6 +242,7 @@ If you don't find the answer you need, please [contact us](http://booking-activi
 = 1.1.0 =
 * Optimization - Calendars are now loaded faster and on page load (possibility to load after page load in BA settings)
 * Feature - Calendars events are now related to your business timezone, and no longer to users' timezone. Customers around the world cannot see / book a past event because of time offset. Set this parameter in BA settings page.
+* Feature - You can now bind multiple calendars and activities to one product in WooCommerce!
 * Delete - Removed trashes from editor, to delete calendars, activities and events please use their respective settings dialogs
 * Delete - Deleted events 'occurrence id' since it is not a relevant identifier. All events can be identified by id + start + end datetimes.
 * Delete - Deleted unused bookings global actions

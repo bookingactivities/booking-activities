@@ -452,7 +452,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 		}
 
-		if( ! isset( $expiration_date ) || empty( $expiration_date ) || ! in_array( $state, array( 'in_cart', 'pending' ) ) ) {
+		if( ! isset( $expiration_date ) || empty( $expiration_date ) || ! in_array( $state, array( 'in_cart', 'pending' ), true ) ) {
 			return '';
 		}
 
@@ -583,7 +583,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 				// Change the booking group state accordingly
 				// Also change its user_id and order_id to make sure it is up to date
 				$booking_group_state	= $item[ 'bookacti_state' ];
-				$is_active				= in_array( $booking_group_state, bookacti_get_active_booking_states() ) ? 1 : 0;
+				$is_active				= in_array( $booking_group_state, bookacti_get_active_booking_states(), true ) ? 1 : 0;
 				$update_state			= $is_active ? $state : null;
 				$group_updated			= bookacti_update_booking_group( $booking_group_id, $update_state, $user_id, $order_id );
 				
@@ -650,7 +650,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			return;	
 		}
 		
-		if( ! in_array( $order->get_status(), array( 'processing', 'on-hold', 'completed' ) ) ) {
+		if( ! in_array( $order->get_status(), array( 'processing', 'on-hold', 'completed' ), true ) ) {
 			return;
 		}
 		
@@ -672,19 +672,19 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			$states[] = $item[ 'bookacti_state' ];
 		}
 		
-		if( ! $only_activities || empty( $states ) || in_array( 'in_cart', $states ) ) {
+		if( ! $only_activities || empty( $states ) || in_array( 'in_cart', $states, true ) ) {
 			return;	
 		}
 		
 		$new_order_status = 'cancelled';
 		
-		if( in_array( 'pending', $states ) ) {
+		if( in_array( 'pending', $states, true ) ) {
 			// Turn order status to pending payment
 			$new_order_status = 'processing';
-		} else if( in_array( 'booked', $states ) ) {
+		} else if( in_array( 'booked', $states, true ) ) {
 			// Turn order status to completed
 			$new_order_status = 'completed';
-		} else if( in_array( 'refunded', $states ) && ! in_array( 'refund_requested', $states ) ) {
+		} else if( in_array( 'refunded', $states, true ) && ! in_array( 'refund_requested', $states, true ) ) {
 			// Turn order status to refunded
 			$new_order_status = 'refunded';
 		}
@@ -1356,7 +1356,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		}
 
 		$user = get_userdata( $user_id );
-		if ( isset( $user->roles ) && in_array( 'shop_manager', $user->roles ) ) {
+		if ( isset( $user->roles ) && in_array( 'shop_manager', $user->roles, true ) ) {
 			return true;
 		}
 		return false;

@@ -488,7 +488,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		wc_update_order_item_meta( $item[ 'id' ], 'bookacti_state', $new_state );
 
 		// Add refund metadata
-		if( in_array( $new_state, array( 'refunded', 'refund_requested' ) ) ) {
+		if( in_array( $new_state, array( 'refunded', 'refund_requested' ), true ) ) {
 			$refund_action = $args[ 'refund_action' ] ? $args[ 'refund_action' ] : 'manual';
 			wc_update_order_item_meta( $item[ 'id' ], '_bookacti_refund_method', $refund_action );
 		}
@@ -554,7 +554,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		wc_update_order_item_meta( $item[ 'id' ], 'bookacti_state', $new_state );
 
 		// Add refund metadata
-		if( in_array( $new_state, array( 'refunded', 'refund_requested' ) ) ) {
+		if( in_array( $new_state, array( 'refunded', 'refund_requested' ), true ) ) {
 			$refund_action = $args[ 'refund_action' ] ? $args[ 'refund_action' ] : 'manual';
 			wc_update_order_item_meta( $item[ 'id' ], '_bookacti_refund_method', $refund_action );
 		}
@@ -600,7 +600,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			$possibles_actions = array_keys( bookacti_get_refund_actions_by_booking_group_id( $booking_id ) );
 		}
 		
-		if( in_array( $refund_action, $possibles_actions ) ) {
+		if( in_array( $refund_action, $possibles_actions, true ) ) {
 			if( $refund_action === 'coupon' ) {
 				$return_array = bookacti_refund_booking_with_coupon( $booking_id, $booking_type, $refund_message );
 			} else if( $refund_action === 'auto' && bookacti_does_order_support_auto_refund( $order_id ) ) {
@@ -691,7 +691,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			
 			if( empty( $order ) ) { return false; }
 			
-			if( ! in_array( $order->get_status(), array( 'pending', 'processing', 'on-hold' ) ) ) { $true = false; }
+			if( ! in_array( $order->get_status(), array( 'pending', 'processing', 'on-hold' ), true ) ) { $true = false; }
 		}
 		
 		return $true;
@@ -720,7 +720,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			
 			if( empty( $order ) ) { return false; }
 			
-			if( ! in_array( $order->get_status(), array( 'pending', 'processing', 'on-hold' ) ) ) { $true = false; }
+			if( ! in_array( $order->get_status(), array( 'pending', 'processing', 'on-hold' ), true ) ) { $true = false; }
 		}
 		
 		return $true;

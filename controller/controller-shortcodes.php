@@ -15,8 +15,8 @@ function bookacti_shortcodes_init() {
  *									classes='full-width'			// Any class you want
  *									calendars='2'				// Comma separated calendar ids
  *									activities='1,2,10'			// Comma separated activity ids
- *									groups='5,10'				// Comma separated group category ids
- *									groups_only='1'				// Only display groups
+ *									group_categories='5,10'		// Comma separated group category ids
+ *									groups_only='0'				// Only display groups
  *									groups_single_events='0'		// Allow to book grouped events as single events
  *									method='calendar' ]			// Display method
  * 
@@ -47,7 +47,7 @@ function bookacti_shortcode_calendar( $atts = [], $content = null, $tag = '' ) {
  *									classes='full-width'		// Any class you want
  *									calendars='2'			// Comma separated calendar ids
  *									activities='1,2,10'		// Comma separated activity ids
- *									groups='5,10'			// Comma separated group category ids
+ *									group_categories='5,10'	// Comma separated group category ids
  *									groups_only				// Only display groups
  *									groups_single_events	// Allow to book single events within groups
  *									method='waterfall' 
@@ -164,7 +164,7 @@ function bookacti_shortcode_bookings_list( $atts = [], $content = null, $tag = '
 		// Single Bookings
 		if( empty( $booking->group_id ) ) {
 
-			if( ! in_array( $booking->state, $hidden_states ) ) {
+			if( ! in_array( $booking->state, $hidden_states, true ) ) {
 
 				$list_items[] = apply_filters( 'bookacti_user_bookings_list_columns_value', array(
 					'id'		=> $booking->id,
@@ -177,11 +177,11 @@ function bookacti_shortcode_bookings_list( $atts = [], $content = null, $tag = '
 			}
 
 		// Booking groups
-		} else if( ! in_array( $booking->group_id, $groups_already_added ) ) {
+		} else if( ! in_array( $booking->group_id, $groups_already_added, true ) ) {
 
 			$state = bookacti_get_booking_group_state( $booking->group_id ); 
 
-			if( ! in_array( $state, $hidden_states ) ) {
+			if( ! in_array( $state, $hidden_states, true ) ) {
 
 				$quantity		= bookacti_get_booking_group_quantity( $booking->group_id ); 
 				$group_bookings = bookacti_get_bookings_by_booking_group_id( $booking->group_id ); 

@@ -13,7 +13,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		if( is_super_admin() || $bypass_template_managers_check ) { $user_can_manage_template = true; }
 		else {
 			$admins = bookacti_get_template_managers( $template_id );
-			if( in_array( $user_id, $admins ) ) { $user_can_manage_template = true; }
+			if( in_array( $user_id, $admins, true ) ) { $user_can_manage_template = true; }
 		}
 
 		return apply_filters( 'bookacti_user_can_manage_template', $user_can_manage_template, $template_id, $user_id );
@@ -29,7 +29,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		if( is_super_admin() || $bypass_activity_managers_check ) { $user_can_manage_activity = true; }
 		else {
 			$admins = bookacti_get_activity_managers( $activity_id );
-			if( in_array( $user_id, $admins ) ) { $user_can_manage_activity = true; }
+			if( in_array( $user_id, $admins, true ) ) { $user_can_manage_activity = true; }
 		}
 
 		return apply_filters( 'bookacti_user_can_manage_activity', $user_can_manage_activity, $activity_id, $user_id );

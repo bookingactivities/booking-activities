@@ -180,6 +180,10 @@ $bookacti_translation_array = apply_filters( 'bookacti_translation_array', array
 	'avail'								=> esc_html_x( 'avail.', 'Short for availability [singular noun]', BOOKACTI_PLUGIN_NAME ),
 	/* translators: This particle is used right after the quantity of available bookings. Put the plural here. Ex: 2 avail. . */
 	'avails'							=> esc_html_x( 'avail.', 'Short for availabilities [plural noun]', BOOKACTI_PLUGIN_NAME ),
+	/* translators: This particle is used right after the quantity of bookings. Put the singular here. Ex: 1 booking . */
+	'booking'							=> esc_html__( 'booking', BOOKACTI_PLUGIN_NAME ),
+	/* translators: This particle is used right after the quantity of bookings. Put the plural here. Ex: 2 bookings . . */
+	'bookings'							=> esc_html__( 'bookings', BOOKACTI_PLUGIN_NAME ),
 
 
 	//OTHERS

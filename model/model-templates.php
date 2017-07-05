@@ -65,7 +65,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 				
                 array_push( $events_array, $event_array );
             } else {
-				$repeated_events_array = bookacti_create_repeated_events( $event, $event_array, null, true, 'editor' );
+				$repeated_events_array = bookacti_create_repeated_events( $event, $event_array, array( 'past_events' => true, 'context' => 'editor' ) );
                 $events_array = array_merge( $events_array, $repeated_events_array );
             }
         }
@@ -1054,7 +1054,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			$bypass_template_managers_check = apply_filters( 'bookacti_bypass_template_managers_check', false );
 			if( ! is_super_admin() && ! $bypass_template_managers_check && ! $ignore_permissions ) {
 				$user_id = get_current_user_id();
-				if( ! $template->admin || ! in_array( $user_id, $template->admin ) ) {
+				if( ! $template->admin || ! in_array( $user_id, $template->admin, true ) ) {
 					unset( $templates[$i] );
 				}
 			}

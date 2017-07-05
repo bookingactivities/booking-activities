@@ -93,7 +93,7 @@ if( empty( bookacti_fetch_templates() ) ) {
 	// Display the booking system
 	$atts = array( 
 		'calendars'				=> array( $default_template ),
-		'activities'			=> array(),
+		'group_categories'		=> array(),
 		'groups_only'			=> 0,
 		'groups_single_events'	=> 1,
 		'method'				=> 'calendar',

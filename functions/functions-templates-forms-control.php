@@ -45,7 +45,7 @@ function bookacti_format_template_managers( $template_managers = array() ) {
 	$bypass_template_managers_check = apply_filters( 'bookacti_bypass_template_managers_check', false );
 	if( ! is_super_admin() && ! $bypass_template_managers_check ) {
 		$user_id = get_current_user_id();
-		if( ! in_array( $user_id, $template_managers ) ) {
+		if( ! in_array( $user_id, $template_managers, true ) ) {
 			$template_managers[] = $user_id;
 		}
 	}
@@ -107,7 +107,7 @@ function bookacti_format_activity_templates( $activity_templates = array(), $man
 	// Add mandatory templates if they are not already
 	if( ! empty( $mandatory_templates ) ) {
 		foreach( $mandatory_templates as $mandatory_template ) {
-			if( ! empty( $mandatory_template ) && ! in_array( $mandatory_template, $activity_templates ) ) {
+			if( ! empty( $mandatory_template ) && ! in_array( $mandatory_template, $activity_templates, true ) ) {
 				$activity_templates[] = $mandatory_template;
 			}
 		}
@@ -133,7 +133,7 @@ function bookacti_format_activity_managers( $activity_managers = array() ) {
 	$bypass_activity_managers_check = apply_filters( 'bypass_activity_managers_check', false );
 	if( ! is_super_admin() && ! $bypass_activity_managers_check ) {
 		$user_id = get_current_user_id();
-		if( ! in_array( $user_id, $activity_managers ) ) {
+		if( ! in_array( $user_id, $activity_managers, true ) ) {
 			$activity_managers[] = $user_id;
 		}
 	}

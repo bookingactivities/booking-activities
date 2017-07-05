@@ -5,7 +5,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 // ORDERS
 	
 	/**
-	 * Change booking quantity when admin change order item quantity
+	 * Change booking quantity when admin changes order item quantity
 	 * 
 	 * @version 1.1.0
 	 * 
@@ -38,7 +38,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 				return $check;
 			}
 			
-			if( ! in_array( $response[ 'status' ], array( 'success', 'no_change' ) ) ) {
+			if( ! in_array( $response[ 'status' ], array( 'success', 'no_change' ), true ) ) {
 				if( $response[ 'error' ] === 'qty_sup_to_avail' ) {
 					$message =
 					sprintf( __( 'You want to add %1$s bookings to your cart but only %2$s are available on this schedule. '
@@ -63,7 +63,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	
 	
 	/**
-	 * Cancel bookings when admin change the associated order item quantity to 0
+	 * Cancel bookings when admin changes the associated order item quantity to 0
 	 * 
 	 * @since 1.1.0
 	 * 
@@ -110,7 +110,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	
 	
 	/**
-	 * Cancel bookings when admin remove the associated order item
+	 * Cancel bookings when admin removes the associated order item
 	 * 
 	 * @since 1.1.0
 	 * 
@@ -196,7 +196,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 					$response = bookacti_controller_update_booking_quantity( $booking_id, $refund[ 'new_qty' ], 'admin' );
 					
 					// If something went wrong, delete the refund and die
-					if( ! in_array( $response[ 'status' ], array( 'success', 'no_change' ) ) ) {
+					if( ! in_array( $response[ 'status' ], array( 'success', 'no_change' ), true ) ) {
 						bookacti_delete_refund_and_die( $refund_id );
 					}
 					
@@ -620,7 +620,6 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	/**
 	 * Content of the activity tab
 	 * 
-	 * @since 1.0.0
 	 * @version 1.1.0
 	 * 
 	 * @global type $thepostid
@@ -628,21 +627,13 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	function bookacti_activity_tab_content() {
 
 		global $thepostid;
-		
-		//Retrieve templates
-		$templates = bookacti_fetch_templates();
-		$templates_array = array();
-		foreach( $templates as $template ) {
-			$templates_array[ $template->id ] = $template->title;
-		}
-		
-		//Build booking method array
-		$booking_methods_array = array_merge( array( 'site' => __( 'Site setting', BOOKACTI_PLUGIN_NAME ) ), bookacti_get_available_booking_methods() );
-		
 		?>
 		<div id='bookacti_activity_options' class='panel woocommerce_options_panel'>
+			
 			<div class='options_group'>
 			<?php
+				$booking_methods_array = array_merge( array( 'site' => __( 'Site setting', BOOKACTI_PLUGIN_NAME ) ), bookacti_get_available_booking_methods() );
+		
 				woocommerce_wp_select( 
 					array( 
 						'id'      => '_bookacti_booking_method', 
@@ -653,94 +644,170 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			?>
 			</div>
 			<div class='options_group'>
-			<?php
-				woocommerce_wp_select( 
-					array( 
-						'id'		=> '_bookacti_template', 
-						'label'		=> __( 'Calendar', BOOKACTI_PLUGIN_NAME ),
-						'options'	=> $templates_array
-					)
-				);
-			?>
+				<?php
+					$template_field_id	= '_bookacti_template'; 
+					$templates = bookacti_fetch_templates();
+					$current_templates	= get_post_meta( $thepostid, $template_field_id, true );
+					$current_templates	= is_numeric( $current_templates ) ? array( $current_templates ) : $current_templates;
+				?>
+				<p class="form-field <?php echo $template_field_id; ?>_field" >
+					<label for="<?php echo $template_field_id; ?>">
+					<?php
+						echo wp_kses_post( __( 'Calendar', BOOKACTI_PLUGIN_NAME ) );
+					?>
+					</label>
+					<select id="<?php echo $template_field_id; ?>" 
+							name="<?php echo $template_field_id; if( count( $current_templates ) > 1 ) { echo '[]'; } ?>" 
+							class="select short" 
+							<?php 
+							if( count( $templates ) > 1 ) { echo 'style="margin-right:10px;"'; } 
+							if( count( $current_templates ) > 1 ) { echo 'multiple'; } 
+							?> >
+					<?php 
+						$templates_options = '';
+						foreach( $templates as $template ) {
+							$template_title = apply_filters( 'bookacti_translate_text', $template->title );
+							$templates_options .= '<option '
+													.  'value="' . esc_attr( $template->id ) . '" '
+													. selected( in_array( $template->id, $current_templates ), true, true ) . ' >'
+														. esc_html( $template_title )
+												.  '</option>';
+						}
+						echo $templates_options;
+					?>
+					</select>
+					<?php if( count( $templates ) > 1 ) { ?>
+						<span class='bookacti-multiple-select-container' >
+							<input type='checkbox' 
+								   class='bookacti-multiple-select' 
+								   id='bookacti-multiple-select-<?php echo $template_field_id; ?>' 
+								   data-select-id='<?php echo $template_field_id; ?>' 
+									<?php checked( count( $current_templates ) > 1, true, true ); ?>/>
+							<label for='bookacti-multiple-select-<?php echo $template_field_id; ?>' ><?php _e( 'Multiple selection', BOOKACTI_PLUGIN_NAME ); ?></label>
+						</span>
+					<?php } ?>
+				</p>
 			</div>
+			
+			
 			<div class='options_group'>
-				<?php $activity_field_id = '_bookacti_activity'; ?>
+				<?php 
+					$activity_field_id	= '_bookacti_activity'; 
+					$activities			= bookacti_fetch_activities_with_templates_association();
+					$current_activities	= get_post_meta( $thepostid, $activity_field_id, true );
+					$current_activities	= is_numeric( $current_activities ) ? array( $current_activities ) : $current_activities;
+				?>
 				<p class="form-field <?php echo $activity_field_id; ?>_field" >
 					<label for="<?php echo $activity_field_id; ?>">
 					<?php
 						echo wp_kses_post( __( 'Activity', BOOKACTI_PLUGIN_NAME ) );
 					?>
 					</label>
-					<select id="<?php echo $activity_field_id; ?>" name="<?php echo $activity_field_id; ?>" class="select short" style="">
+					<select id="<?php echo $activity_field_id; ?>" 
+							name="<?php echo $activity_field_id; if( count( $current_activities ) > 1 ) { echo '[]'; } ?>" 
+							class="select short" 
+							<?php 
+							if( count( $activities ) > 1 ) { echo 'style="margin-right:10px;"'; } 
+							if( count( $current_activities ) > 1 ) { echo 'multiple'; } 
+							?> >
 					<?php 
-						//Get activities array
-						$activities = bookacti_fetch_activities_with_templates_association();
 						$activities_options = '';
 						foreach( $activities as $activity ) {
 							$activity_title = apply_filters( 'bookacti_translate_text', $activity[ 'title' ] );
 							$activities_options .= '<option '
 													.  'value="' . esc_attr( $activity[ 'id' ] ) . '" '
 													.  'data-bookacti-show-if-templates="' . esc_attr( implode( ',', $activity[ 'template_ids' ] ) ) . '" '
-													. selected( esc_attr( get_post_meta( $thepostid, $activity_field_id, true ) ), esc_attr( $activity[ 'id' ] ), true ) . ' >'
+													. selected( in_array( $activity[ 'id' ], $current_activities ), true, true ) . ' >'
 														. esc_html( $activity_title )
 												.  '</option>';
 						}
 						echo $activities_options;
 					?>
 					</select>
+					<?php if( count( $activities ) > 1 ) { ?>
+						<span class='bookacti-multiple-select-container' >
+							<input type='checkbox' 
+								   class='bookacti-multiple-select' 
+								   id='bookacti-multiple-select-<?php echo $activity_field_id; ?>' 
+								   data-select-id='<?php echo $activity_field_id; ?>' 
+									<?php checked( count( $current_activities ) > 1, true, true ); ?>/>
+							<label for='bookacti-multiple-select-<?php echo $activity_field_id; ?>' ><?php _e( 'Multiple selection', BOOKACTI_PLUGIN_NAME ); ?></label>
+						</span>
+					<?php } ?>
 				</p>
 			</div>
+			
+			
 			<div class='options_group'>
-				<?php $groups_field_id = '_bookacti_groups'; ?>
+				<?php 
+					$groups_field_id	= '_bookacti_group_categories'; 
+					$categories			= bookacti_get_group_categories_by_template_ids();
+					$current_categories	= get_post_meta( $thepostid, $groups_field_id, true );
+					$current_categories	= is_numeric( $current_categories ) ? array( $current_categories ) : $current_categories;
+				?>
 				<p class="form-field <?php echo $groups_field_id; ?>_field" >
 					<label for="<?php echo $groups_field_id; ?>">
 					<?php
-						echo wp_kses_post( __( 'Groups', BOOKACTI_PLUGIN_NAME ) );
+						echo wp_kses_post( __( 'Group category', BOOKACTI_PLUGIN_NAME ) );
 					?>
 					</label>
-					<select id="<?php echo $groups_field_id; ?>" name="<?php echo $groups_field_id; ?>" class="select short" style="">
+					<select id="<?php echo $groups_field_id; ?>" 
+							name="<?php echo $groups_field_id; if( count( $current_categories ) > 1 ) { echo '[]'; } ?>" 
+							class="select short" 
+							<?php 
+							if( count( $categories ) > 1 ) { echo 'style="margin-right:10px;"'; } 
+							if( is_array( $current_categories ) && count( $current_categories ) > 1 ) { echo 'multiple'; } 
+							?> >
 						<option value='none' ><?php _e( 'None', BOOKACTI_PLUGIN_NAME ); ?></option>
 					<?php 
-						//Get groups array
-						$categories	= bookacti_get_group_categories_by_template_ids();
 						$groups_options	= '';
 						foreach( $categories as $category ) {
 							$category_title = apply_filters( 'bookacti_translate_text', $category->title );
+							$selected		= is_array( $current_categories ) ? selected( in_array( $category->id, $current_categories ), true, false ) : '';
 							$groups_options .= '<option '
 												.  'value="' . esc_attr( $category->id ) . '" '
 												.  'data-bookacti-show-if-templates="' . $category->template_id . '" '
-												. selected( esc_attr( get_post_meta( $thepostid, $groups_field_id, true ) ), esc_attr( $category->id ), true ) . ' >'
+												. $selected . ' >'
 													. esc_html( $category_title )
 											.  '</option>';
 						}
 						echo $groups_options;
 					?>
 					</select>
+					<?php if( count( $categories ) > 1 ) { 
+						$checked = is_array( $current_categories ) ? checked( count( $current_categories ) > 1, true, false ) : '';
+					?>
+						<span class='bookacti-multiple-select-container' >
+							<input type='checkbox' 
+								   class='bookacti-multiple-select' 
+								   id='bookacti-multiple-select-<?php echo $groups_field_id; ?>' 
+								   data-select-id='<?php echo $groups_field_id; ?>' 
+									<?php echo $checked; ?> />
+							<label for='bookacti-multiple-select-<?php echo $groups_field_id; ?>' ><?php _e( 'Multiple selection', BOOKACTI_PLUGIN_NAME ); ?></label>
+						</span>
+					<?php } ?>
 				</p>
-				<p id='bookacti-groups-options' class='form-field' >
+				<p class='form-field bookacti-groups-options' >
 					<?php 
 					// Groups only checkbox
 					$groups_only_field_id = '_bookacti_groups_only';
 					?>
 					<span>
-						<label for='<?php echo $groups_only_field_id; ?>' class='description'>
-						<?php
-							echo wp_kses_post( __( 'Display only the groups', BOOKACTI_PLUGIN_NAME ) );
-						?>
-						</label>
-						<input 
+						<span>
+							<input 
 							type='checkbox' 
 							id='<?php echo $groups_only_field_id; ?>' 
 							class='checkbox' 
 							name='<?php echo $groups_only_field_id; ?>' 
 							value='yes'
-							<?php 
-								// Default to checked 
-								$current_value = esc_attr( get_post_meta( $thepostid, $groups_only_field_id, true ) ); 
-								$current_value = $current_value ? $current_value : 'yes'; 
-								checked( 'yes', $current_value, true ); 
-							?> 
-						/> 
+							<?php checked( 'yes', esc_attr( get_post_meta( $thepostid, $groups_only_field_id, true ) ), true ); ?> 
+							/>
+						</span>
+						<label for='<?php echo $groups_only_field_id; ?>' >
+						<?php
+							echo wp_kses_post( __( 'Display only the groups', BOOKACTI_PLUGIN_NAME ) );
+						?>
+						</label>
 						<?php
 							$tip = __( 'Display only groups of events if checked. Else, also display the other single events (if any).', BOOKACTI_PLUGIN_NAME );
 							echo wc_help_tip( $tip );
@@ -752,19 +819,21 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 					$groups_events_alone_field_id = '_bookacti_groups_single_events';
 					?>
 					<span>
-						<label for='<?php echo $groups_events_alone_field_id; ?>' class='description'>
+						<span>
+							<input 
+								type='checkbox' 
+								id='<?php echo $groups_events_alone_field_id; ?>' 
+								class='checkbox' 
+								name='<?php echo $groups_events_alone_field_id; ?>' 
+								value='yes'
+								<?php checked( 'yes', esc_attr( get_post_meta( $thepostid, $groups_events_alone_field_id, true ) ), true ); ?> 
+							/>
+						</span>
+						<label for='<?php echo $groups_events_alone_field_id; ?>' >
 						<?php
 							echo wp_kses_post( __( "Allow to book grouped events also as single events", BOOKACTI_PLUGIN_NAME ) );
 						?>
 						</label>
-						<input 
-							type='checkbox' 
-							id='<?php echo $groups_events_alone_field_id; ?>' 
-							class='checkbox' 
-							name='<?php echo $groups_events_alone_field_id; ?>' 
-							value='yes'
-							<?php checked( 'yes', esc_attr( get_post_meta( $thepostid, $groups_events_alone_field_id, true ) ), true ); ?> 
-						/> 
 						<?php
 							$tip = __( 'When a customer pick an event, let him choose between the group or the single event.', BOOKACTI_PLUGIN_NAME );
 							echo wc_help_tip( $tip );
@@ -803,13 +872,14 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			update_post_meta( $post_id, '_bookacti_booking_method', sanitize_text_field( $_POST['_bookacti_booking_method'] ) );
 		}
 		if ( isset( $_POST['_bookacti_template'] ) ) {
-			update_post_meta( $post_id, '_bookacti_template', sanitize_text_field( $_POST['_bookacti_template'] ) );
+			update_post_meta( $post_id, '_bookacti_template', bookacti_ids_to_array( $_POST['_bookacti_template'] ) );
 		}
 		if ( isset( $_POST['_bookacti_activity'] ) ) {
-			update_post_meta( $post_id, '_bookacti_activity', sanitize_text_field( $_POST['_bookacti_activity'] ) );
+			update_post_meta( $post_id, '_bookacti_activity', bookacti_ids_to_array( $_POST['_bookacti_activity'] ) );
 		}
-		if ( isset( $_POST['_bookacti_groups'] ) ) {
-			update_post_meta( $post_id, '_bookacti_groups', sanitize_text_field( $_POST['_bookacti_groups'] ) );
+		if ( isset( $_POST['_bookacti_group_categories'] ) ) {
+			$group_categories = $_POST['_bookacti_group_categories'] === 'none' ? 'none' : bookacti_ids_to_array( $_POST['_bookacti_group_categories'] );
+			update_post_meta( $post_id, '_bookacti_group_categories', $group_categories );
 		}
 		if( ! empty( $_POST['_bookacti_groups_only'] ) ) {
 			update_post_meta( $post_id, '_bookacti_groups_only', sanitize_text_field( 'yes' ) );
@@ -823,10 +893,10 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		}
 	}
 	add_action( 'woocommerce_process_product_meta', 'bookacti_save_custom_product_type_and_tab_content', 30, 1 ); 
-	
 
 
-	
+
+
 //CUSTOM VARIATION FIELDS
 
 	/**
@@ -887,24 +957,41 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		$is_active = 'bookacti-hide-fields';
 		if( $is_variation_activity === 'yes' ) { $is_active = 'bookacti-show-fields'; }
 
-		$current_template				= get_post_meta( $variation->ID, 'bookacti_variable_template', true );
-		$current_activity				= get_post_meta( $variation->ID, 'bookacti_variable_activity', true );
-		$current_groups					= get_post_meta( $variation->ID, 'bookacti_variable_groups', true );
+		$current_templates				= get_post_meta( $variation->ID, 'bookacti_variable_template', true );
+		$current_templates				= is_numeric( $current_templates ) ? array( $current_templates ) : $current_templates;
+		
+		$current_activities				= get_post_meta( $variation->ID, 'bookacti_variable_activity', true );
+		$current_activities				= is_numeric( $current_activities ) ? array( $current_activities ) : $current_activities;
+		
+		$current_group_categories		= get_post_meta( $variation->ID, 'bookacti_variable_group_categories', true );
+		$current_group_categories		= is_numeric( $current_group_categories ) ? array( $current_group_categories ) : $current_group_categories;
+		
+		$parent_template_id				= get_post_meta( $variation->post_parent, '_bookacti_template', true );
+		$parent_template_id				= is_numeric( $parent_template_id ) ? array( $parent_template_id ) : $parent_template_id;
+		
+		$parent_activity_id				= get_post_meta( $variation->post_parent, '_bookacti_activity', true );
+		$parent_activity_id				= is_numeric( $parent_activity_id ) ? array( $parent_activity_id ) : $parent_activity_id;
+		
+		$parent_group_categories		= get_post_meta( $variation->post_parent, '_bookacti_group_categories', true );
+		$parent_group_categories		= is_numeric( $parent_group_categories ) ? array( $parent_group_categories ) : $parent_group_categories;
+		
 		$current_groups_only			= get_post_meta( $variation->ID, 'bookacti_variable_groups_only', true );
 		$current_groups_single_events	= get_post_meta( $variation->ID, 'bookacti_variable_groups_single_events', true );
 		$current_booking_method			= get_post_meta( $variation->ID, 'bookacti_variable_booking_method', true );
-		$parent_template_id				= get_post_meta( $variation->post_parent, '_bookacti_template', true );
-		$parent_activity_id				= get_post_meta( $variation->post_parent, '_bookacti_activity', true );
-		$parent_groups_id				= get_post_meta( $variation->post_parent, '_bookacti_groups', true );
-		$is_default_template			= empty( $templates_array ) || $current_template === 'parent'		|| is_null( $current_template );
-		$is_default_activity			= empty( $activities )		|| $current_activity === 'parent'		|| is_null( $current_activity );
-		$is_default_groups				= empty( $categories )		|| $current_groups === 'parent'			|| is_null( $current_groups );
-		$is_default_booking_method		= empty( $templates_array ) || $current_booking_method === 'parent' || is_null( $current_booking_method );
+		
+		$is_default_template			= empty( $templates_array ) || $current_templates === 'parent'			|| is_null( $current_templates );
+		$is_default_activity			= empty( $activities )		|| $current_activities === 'parent'			|| is_null( $current_activities );
+		$is_default_group_categories	= empty( $categories )		|| $current_group_categories === 'parent'	|| is_null( $current_group_categories );
+		$is_default_booking_method		= empty( $templates_array ) || $current_booking_method === 'parent'		|| is_null( $current_booking_method );
 	?>
+		
 		<div class='show_if_variation_activity <?php echo $is_active; ?>'>
+			
 			<p class='form-row form-row-full bookacti-woo-title'>
 				<strong><?php _e( 'Activity', BOOKACTI_PLUGIN_NAME ) ?></strong>
 			</p>
+			
+			
 			<p class='form-row form-row-full'>
 				<label for='bookacti_variable_booking_method_<?php echo esc_attr( $loop ); ?>' ><?php esc_html_e( 'Booking method', BOOKACTI_PLUGIN_NAME ); ?></label>
 				<select name='bookacti_variable_booking_method[<?php echo esc_attr( $loop ); ?>]' id='bookacti_variable_booking_method_<?php echo esc_attr( $loop ); ?>' class='bookacti_variable_booking_method' data-loop='<?php echo esc_attr( $loop ); ?>' >
@@ -927,9 +1014,19 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 					?>
 				</select>
 			</p>
+			
+			
 			<p class='form-row form-row-full'>
 				<label for='bookacti_variable_template_<?php echo esc_attr( $loop ); ?>' ><?php esc_html_e( 'Calendar', BOOKACTI_PLUGIN_NAME ); ?></label>
-				<select name='bookacti_variable_template[<?php echo esc_attr( $loop ); ?>]' id='bookacti_variable_template_<?php echo esc_attr( $loop ); ?>' class='bookacti_variable_template' data-loop='<?php echo esc_attr( $loop ); ?>' data-parent='<?php echo esc_attr( $parent_template_id ); ?>' >
+				<select name='bookacti_variable_template[<?php echo esc_attr( $loop ); ?>]<?php if( count( $current_templates ) > 1 ) { echo '[]'; } ?>' 
+						id='bookacti_variable_template_<?php echo esc_attr( $loop ); ?>' 
+						class='bookacti_variable_template' 
+						data-loop='<?php echo esc_attr( $loop ); ?>' 
+						data-parent='<?php echo esc_attr( $parent_template_id ); ?>' 
+						<?php 
+							if( count( $templates_array ) > 1 ) { echo 'style="margin-right:10px;"'; } 
+							if( is_array( $current_templates ) && count( $current_templates ) > 1 ) { echo 'multiple'; } 
+						?> >
 					<?php 
 					if( bookacti_user_can_manage_template( $parent_template_id ) ) { ?>
 						<option value='parent' <?php selected( true, $is_default_template, true ); ?> >
@@ -940,24 +1037,48 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 						</option>
 					<?php
 					} else if( $is_default_template ) {
-						//Return first template id of $templates_array
-						$current_template = current( array_keys( $templates_array ) );
+						// Return first template id of $templates_array
+						$current_templates = array( current( array_keys( $templates_array ) ) );
 					}
 					
-					foreach ( $templates_array as $key => $value ) {
+					foreach( $templates_array as $key => $value ) {
+						$selected = is_array( $current_templates ) ? selected( in_array( $key, $current_templates ), true, false ) : '';
+					
 						echo  '<option '
 								. ' value="' . esc_attr( $key ) . '" '
-								. selected( true, intval( $key ) === intval( $current_template ), false ) 
+								. $selected
 							. '>'
 								. esc_html( $value )
 							. '</option>';
 					}
 					?>
 				</select>
+				<?php if( count( $templates ) > 1 ) { 
+					$checked = is_array( $current_templates ) ? checked( count( $current_templates ) > 1, true, false ) : '';
+				?>
+					<span class='bookacti-multiple-select-container' >
+						<input type='checkbox' 
+							   class='bookacti-multiple-select' 
+							   id='bookacti-multiple-select-bookacti_variable_template_<?php echo esc_attr( $loop ); ?>' 
+							   data-select-id='bookacti_variable_template_<?php echo esc_attr( $loop ); ?>' 
+								<?php echo $checked; ?> />
+						<label for='bookacti-multiple-select-bookacti_variable_template_<?php echo esc_attr( $loop ); ?>' ><?php _e( 'Multiple selection', BOOKACTI_PLUGIN_NAME ); ?></label>
+					</span>
+				<?php } ?>
 			</p>
+			
+			
 			<p class='form-row form-row-full'>
 				<label for='bookacti_variable_activity_<?php echo esc_attr( $loop ); ?>' ><?php esc_html_e( 'Activity', BOOKACTI_PLUGIN_NAME ); ?></label>
-				<select name='bookacti_variable_activity[<?php echo esc_attr( $loop ); ?>]' id='bookacti_variable_activity_<?php echo esc_attr( $loop ); ?>' class='bookacti_variable_activity' data-loop='<?php echo esc_attr( $loop ); ?>' data-parent='<?php echo esc_attr( $parent_activity_id ); ?>' >
+				<select name='bookacti_variable_activity[<?php echo esc_attr( $loop ); ?>]<?php if( count( $current_activities ) > 1 ) { echo '[]'; } ?>' 
+						id='bookacti_variable_activity_<?php echo esc_attr( $loop ); ?>' 
+						class='bookacti_variable_activity' 
+						data-loop='<?php echo esc_attr( $loop ); ?>' 
+						data-parent='<?php echo esc_attr( $parent_activity_id ); ?>' 
+						<?php 
+							if( count( $activities ) > 1 ) { echo 'style="margin-right:10px;"'; } 
+							if( is_array( $current_activities ) && count( $current_activities ) > 1 ) { echo 'multiple'; } 
+						?> >
 					<option value='parent' <?php selected( true, $is_default_activity, true ); ?> >
 						<?php 
 							/* translators: This is an option in a select box that means 'Use the setting of the parent' */
@@ -968,64 +1089,100 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 					$options = '';
 					foreach( $activities as $activity ) {
 						$activity_title = apply_filters( 'bookacti_translate_text', $activity[ 'title' ] );
+						$selected		= is_array( $current_activities ) ? selected( in_array( $activity[ 'id' ], $current_activities ), true, false ) : '';
 						$options .= '<option '
-									.  'value="' . esc_attr( $activity[ 'id' ] ) . '" '
-									.  'data-bookacti-show-if-templates="' . esc_attr( implode( ',', $activity[ 'template_ids' ] ) ) . '" '
-									. selected( true, intval( $activity[ 'id' ] ) === intval( $current_activity ), true ) . ' >'
+									. 'value="' . esc_attr( $activity[ 'id' ] ) . '" '
+									. 'data-bookacti-show-if-templates="' . esc_attr( implode( ',', $activity[ 'template_ids' ] ) ) . '" '
+									. $selected . ' >'
 										. esc_html( $activity_title )
 								.  '</option>';
 					}
 					echo $options;
 					?>
 				</select>
+				<?php if( count( $activities ) > 1 ) { 
+					$checked = is_array( $current_activities ) ? checked( count( $current_activities ) > 1, true, false ) : '';
+				?>
+					<span class='bookacti-multiple-select-container' >
+						<input type='checkbox' 
+							   class='bookacti-multiple-select' 
+							   id='bookacti-multiple-select-bookacti_variable_activity_<?php echo esc_attr( $loop ); ?>' 
+							   data-select-id='bookacti_variable_activity_<?php echo esc_attr( $loop ); ?>' 
+								<?php echo $checked; ?> />
+						<label for='bookacti-multiple-select-bookacti_variable_activity_<?php echo esc_attr( $loop ); ?>' ><?php _e( 'Multiple selection', BOOKACTI_PLUGIN_NAME ); ?></label>
+					</span>
+				<?php } ?>
 			</p>
+			
+			
 			<p class='form-row form-row-full'>
-				<label for='bookacti_variable_groups_<?php echo esc_attr( $loop ); ?>' ><?php esc_html_e( 'Groups', BOOKACTI_PLUGIN_NAME ); ?></label>
-				<select name='bookacti_variable_groups[<?php echo esc_attr( $loop ); ?>]' id='bookacti_variable_groups_<?php echo esc_attr( $loop ); ?>' class='bookacti_variable_groups' data-loop='<?php echo esc_attr( $loop ); ?>' data-parent='<?php echo $parent_groups_id ? esc_attr( $parent_groups_id ) : 'none'; ?>' >
-					<option value='parent' <?php selected( true, $is_default_groups, true ); ?> >
+				<label for='bookacti_variable_group_categories_<?php echo esc_attr( $loop ); ?>' ><?php esc_html_e( 'Group category', BOOKACTI_PLUGIN_NAME ); ?></label>
+				<select name='bookacti_variable_group_categories[<?php echo esc_attr( $loop ); ?>]<?php if( count( $current_group_categories ) > 1 ) { echo '[]'; } ?>' 
+						id='bookacti_variable_group_categories_<?php echo esc_attr( $loop ); ?>' 
+						class='bookacti_variable_group_categories' 
+						data-loop='<?php echo esc_attr( $loop ); ?>' 
+						data-parent='<?php echo is_array( $parent_group_categories ) ? esc_attr( implode( ',', $parent_group_categories ) ) : ! empty( $parent_group_categories ) ? esc_attr( $parent_group_categories ) : 'none'; ?>'
+						<?php 
+							if( count( $categories ) > 1 ) { echo 'style="margin-right:10px;"'; } 
+							if( is_array( $current_group_categories ) && count( $current_group_categories ) > 1 ) { echo 'multiple'; } 
+						?> >
+					<option value='parent' <?php selected( true, $is_default_group_categories, true ); ?> >
 						<?php 
 							/* translators: This is an option in a select box that means 'Use the setting of the parent' */
 							esc_html_e( 'Parent setting', BOOKACTI_PLUGIN_NAME ); 
 						?>
 					</option>
-					<option value='none' <?php selected( true, $current_groups === 'none', true ) ?> ><?php _e( 'None', BOOKACTI_PLUGIN_NAME ); ?></option>
+					<option value='none' <?php selected( true, $current_group_categories === 'none', true ) ?> ><?php _e( 'None', BOOKACTI_PLUGIN_NAME ); ?></option>
 					<?php
 					$groups_options	= '';
 					foreach( $categories as $category ) {
 						$category_title = apply_filters( 'bookacti_translate_text', $category->title );
+						$selected		= is_array( $current_group_categories ) ? selected( in_array( $category->id, $current_group_categories ), true, false ) : '';
 						$groups_options .= '<option '
-											.  'value="' . esc_attr( $category->id ) . '" '
-											.  'data-bookacti-show-if-templates="' . $category->template_id . '" '
-											. selected( true, intval( $category->id ) === intval( $current_groups ), true ) . ' >'
+											. 'value="' . esc_attr( $category->id ) . '" '
+											. 'data-bookacti-show-if-templates="' . $category->template_id . '" '
+											. $selected . ' >'
 												. esc_html( $category_title )
 										.  '</option>';
 					}
 					echo $groups_options;
 					?>
 				</select>
+				<?php if( count( $categories ) > 1 ) { 
+					$checked = is_array( $current_group_categories ) ? checked( count( $current_group_categories ) > 1, true, false ) : '';
+				?>
+					<span class='bookacti-multiple-select-container' >
+						<input type='checkbox' 
+							   class='bookacti-multiple-select' 
+							   id='bookacti-multiple-select-bookacti_variable_group_categories_<?php echo esc_attr( $loop ); ?>' 
+							   data-select-id='bookacti_variable_group_categories_<?php echo esc_attr( $loop ); ?>' 
+								<?php echo $checked; ?> />
+						<label for='bookacti-multiple-select-bookacti_variable_group_categories_<?php echo esc_attr( $loop ); ?>' ><?php _e( 'Multiple selection', BOOKACTI_PLUGIN_NAME ); ?></label>
+					</span>
+				<?php } ?>
 			</p>
-			<p id='bookacti-groups-options' class='form-row form-row-full' >
+			
+			
+			<p class='form-row form-row-full bookacti-groups-options' >
 				<?php 
 				// Groups only checkbox
 				?>
 				<span>
-					<label for='<?php echo 'bookacti_variable_groups_only_' . esc_attr( $loop ); ?>' class='description'>
+					<span>
+						<input 
+							type='checkbox' 
+							id='<?php echo 'bookacti_variable_groups_only_' . esc_attr( $loop ); ?>' 
+							class='checkbox' 
+							name='<?php echo 'bookacti_variable_groups_only[' . esc_attr( $loop ) . ']'; ?>' 
+							value='yes'
+							<?php checked( 'yes', $current_groups_only, true ); ?> 
+						/>
+					</span>
+					<label for='<?php echo 'bookacti_variable_groups_only_' . esc_attr( $loop ); ?>' >
 					<?php
 						echo wp_kses_post( __( 'Display only the groups', BOOKACTI_PLUGIN_NAME ) );
 					?>
 					</label>
-					<input 
-						type='checkbox' 
-						id='<?php echo 'bookacti_variable_groups_only_' . esc_attr( $loop ); ?>' 
-						class='checkbox' 
-						name='<?php echo 'bookacti_variable_groups_only[' . esc_attr( $loop ) . ']'; ?>' 
-						value='yes'
-						<?php 
-							// Default to checked 
-							$current_groups_only = $current_groups_only ? $current_groups_only : 'yes'; 
-							checked( 'yes', $current_groups_only, true ); 
-						?> 
-					/> 
 					<?php
 						$tip = __( 'Display only groups of events if checked. Else, also display the other single events (if any).', BOOKACTI_PLUGIN_NAME );
 						echo wc_help_tip( $tip );
@@ -1036,19 +1193,21 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 				// Groups events alone checkbox
 				?>
 				<span>
-					<label for='<?php echo 'bookacti_variable_groups_single_events_' . esc_attr( $loop ); ?>' class='description'>
+					<span>
+						<input 
+							type='checkbox' 
+							id='<?php echo 'bookacti_variable_groups_single_events_' . esc_attr( $loop ); ?>' 
+							class='checkbox' 
+							name='<?php echo 'bookacti_variable_groups_single_events[' . esc_attr( $loop ) . ']'; ?>' 
+							value='yes'
+							<?php checked( 'yes', $current_groups_single_events, true ); ?> 
+						/>
+					</span>
+					<label for='<?php echo 'bookacti_variable_groups_single_events_' . esc_attr( $loop ); ?>' >
 					<?php
 						echo wp_kses_post( __( "Allow to book grouped events also as single events", BOOKACTI_PLUGIN_NAME ) );
 					?>
 					</label>
-					<input 
-						type='checkbox' 
-						id='<?php echo 'bookacti_variable_groups_single_events_' . esc_attr( $loop ); ?>' 
-						class='checkbox' 
-						name='<?php echo 'bookacti_variable_groups_single_events[' . esc_attr( $loop ) . ']'; ?>' 
-						value='yes'
-						<?php checked( 'yes', $current_groups_single_events, true ); ?> 
-					/> 
 					<?php
 						$tip = __( 'When a customer pick an event, let him choose between the group or the single event.', BOOKACTI_PLUGIN_NAME );
 						echo wc_help_tip( $tip );
@@ -1085,7 +1244,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 					//Force the variation to be flagged as virtual if it is an activity
 					if( $variable_is_activity === 'yes' ) {
-						update_post_meta( $variation_id, '_virtual', wc_clean( 'yes' ) );
+						update_post_meta( $variation_id, '_virtual', 'yes' );
 					}
 				}
 				
@@ -1098,40 +1257,42 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 					// Check selected booking methods against available ones
 					$sanitized_booking_method	= sanitize_title_with_dashes( $_POST[ 'bookacti_variable_booking_method' ][ $key ] );
-					$variable_booking_method	= in_array( $sanitized_booking_method, $avail_booking_methods ) ? $sanitized_booking_method : 'parent';
-					update_post_meta( $variation_id, 'bookacti_variable_booking_method', stripslashes( $variable_booking_method ) );
+					$variable_booking_method	= in_array( $sanitized_booking_method, $avail_booking_methods, true ) ? $sanitized_booking_method : 'parent';
+					update_post_meta( $variation_id, 'bookacti_variable_booking_method', $variable_booking_method );
 				}
 				
 				// Save template
 				if ( isset( $_POST[ 'bookacti_variable_template' ][ $key ] ) ) {
-					$variable_template = is_numeric( $_POST[ 'bookacti_variable_template' ][ $key ] ) ? intval( $_POST[ 'bookacti_variable_template' ][ $key ] ) : 'parent';
-					update_post_meta( $variation_id, 'bookacti_variable_template', stripslashes( $variable_template ) );
+					$variable_template = is_numeric( $_POST[ 'bookacti_variable_template' ][ $key ] ) || is_array( $_POST[ 'bookacti_variable_template' ][ $key ] ) ? bookacti_ids_to_array( $_POST[ 'bookacti_variable_template' ][ $key ] ) : 'parent';
+					update_post_meta( $variation_id, 'bookacti_variable_template', $variable_template );
 				}
 
 				// Save activity
 				if ( isset( $_POST[ 'bookacti_variable_activity' ][ $key ] ) ) {
-					$variable_activity = is_numeric( $_POST[ 'bookacti_variable_activity' ][ $key ] ) ? intval( $_POST[ 'bookacti_variable_activity' ][ $key ] ) : 'parent';
-					update_post_meta( $variation_id, 'bookacti_variable_activity', stripslashes( $variable_activity ) );
+					$variable_activity = is_numeric( $_POST[ 'bookacti_variable_activity' ][ $key ] ) || is_array( $_POST[ 'bookacti_variable_activity' ][ $key ] ) ? bookacti_ids_to_array( $_POST[ 'bookacti_variable_activity' ][ $key ] ) : 'parent';
+					update_post_meta( $variation_id, 'bookacti_variable_activity', $variable_activity );
 				}
 				
 				// Save group category
-				if ( isset( $_POST[ 'bookacti_variable_groups' ][ $key ] ) ) {
-					$variable_groups = 'parent';
-					if( is_numeric( $_POST[ 'bookacti_variable_groups' ][ $key ] ) ) {
-						$variable_groups = intval( $_POST[ 'bookacti_variable_groups' ][ $key ] );
-					} else if( $_POST[ 'bookacti_variable_groups' ][ $key ] === 'none' ) {
-						$variable_groups = 'none';
+				if ( isset( $_POST[ 'bookacti_variable_group_categories' ][ $key ] ) ) {
+					$variable_group_categories = 'parent';
+					if( is_numeric( $_POST[ 'bookacti_variable_group_categories' ][ $key ] ) 
+					||  is_array( $_POST[ 'bookacti_variable_group_categories' ][ $key ] ) ) {
+						$variable_group_categories = bookacti_ids_to_array( $_POST[ 'bookacti_variable_group_categories' ][ $key ] );
+					} else if( $_POST[ 'bookacti_variable_group_categories' ][ $key ] === 'none' ) {
+						$variable_group_categories = 'none';
 					}
-					$updated = update_post_meta( $variation_id, 'bookacti_variable_groups', stripslashes( $variable_groups ) );
+					
+					$updated = update_post_meta( $variation_id, 'bookacti_variable_group_categories', $variable_group_categories );
 				}
 				
 				// Save 'groups_only' checkbox
 				$variable_groups_only = isset( $_POST[ 'bookacti_variable_groups_only' ][ $key ] ) && $_POST[ 'bookacti_variable_groups_only' ][ $key ] === 'yes' ? 'yes' : 'no';
-				update_post_meta( $variation_id, 'bookacti_variable_groups_only', stripslashes( $variable_groups_only ) );
+				update_post_meta( $variation_id, 'bookacti_variable_groups_only', $variable_groups_only );
 				
 				// Save 'groups_single_events' checkbox
 				$variable_groups_single_events = isset( $_POST[ 'bookacti_variable_groups_single_events' ][ $key ] ) && $_POST[ 'bookacti_variable_groups_single_events' ][ $key ] === 'yes' ? 'yes' : 'no';
-				update_post_meta( $variation_id, 'bookacti_variable_groups_single_events', stripslashes( $variable_groups_single_events ) );
+				update_post_meta( $variation_id, 'bookacti_variable_groups_single_events',$variable_groups_single_events );
 				
 			}
 		}
@@ -1153,7 +1314,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		$variations['bookacti_booking_method']			= get_post_meta( $variations[ 'variation_id' ], 'bookacti_variable_booking_method', true );
 		$variations['bookacti_template_id']				= get_post_meta( $variations[ 'variation_id' ], 'bookacti_variable_template', true );
 		$variations['bookacti_activity_id']				= get_post_meta( $variations[ 'variation_id' ], 'bookacti_variable_activity', true );
-		$variations['bookacti_groups_id']				= get_post_meta( $variations[ 'variation_id' ], 'bookacti_variable_groups', true );
+		$variations['bookacti_group_categories']		= get_post_meta( $variations[ 'variation_id' ], 'bookacti_variable_group_categories', true );
 		$variations['bookacti_groups_only']				= get_post_meta( $variations[ 'variation_id' ], 'bookacti_variable_groups_only', true );
 		$variations['bookacti_groups_single_events']	= get_post_meta( $variations[ 'variation_id' ], 'bookacti_variable_groups_single_events', true );
 		

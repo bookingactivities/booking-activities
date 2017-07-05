@@ -42,9 +42,10 @@ function bookacti_init_booking_system_dialogs() {
 
 
 // Choose a group of events dialog
-function bookacti_dialog_choose_group_of_events( booking_system, groups, event ) {
+function bookacti_dialog_choose_group_of_events( booking_system, group_ids, event ) {
 	
 	var booking_system_id = booking_system.attr( 'id' );
+	var context = booking_system_id === 'bookacti-booking-system-bookings-page' ? 'booking_page' : 'frontend';
 	
 	$j( '#bookacti-groups-of-events-list' ).data( 'booking-system-id', booking_system_id );
 	
@@ -54,9 +55,7 @@ function bookacti_dialog_choose_group_of_events( booking_system, groups, event )
 	
 	// Add single event option if allowed
 	if( calendars_data[ booking_system_id ][ 'groups_single_events' ] ) {
-		var group_id		= 'single';
-		var availability	= bookacti_get_event_availability( event );
-		var avail			= availability > 1 ? bookacti_localized.avails : bookacti_localized.avail;
+		var group_id = 'single';
 		
 		var container = $j( '<div />', {});
 		var option_container = $j( '<div />', {
@@ -70,8 +69,21 @@ function bookacti_dialog_choose_group_of_events( booking_system, groups, event )
 			name: 'group_of_events',
 			value: group_id
 		});
+		
+		// Show availability or bookings
+		var avail_html = '';
+		if( context === 'booking_page' ) {
+			var bookings = bookacti_get_bookings_number_for_a_single_grouped_event( event, group_ids, json_groups[ booking_system_id ] );
+			var booking_html = bookings > 1 ? bookacti_localized.bookings : bookacti_localized.booking;;
+			avail_html = bookings + ' ' + booking_html;
+		} else {
+			var availability	= bookacti_get_event_availability( event );
+			var avail			= availability > 1 ? bookacti_localized.avails : bookacti_localized.avail;
+			avail_html = availability + ' ' + avail;
+		}
+		
 		var label = $j( '<label />', {
-			html: bookacti_localized.single_event + ' <span class="bookacti-group-availability" >(' + availability + ' ' + avail + ')</span>',
+			html: bookacti_localized.single_event + ' <span class="bookacti-group-availability" >(' + avail_html + ')</span>',
 			for: 'bookacti-group-of-events-' + group_id
 		});
 
@@ -105,14 +117,12 @@ function bookacti_dialog_choose_group_of_events( booking_system, groups, event )
 		$j( '#bookacti-groups-of-events-list' ).append( container );
 	}
 	
-	
 	// Add each available group of events as a radio option
-	$j.each( groups, function( i, group_id ) {
+	$j.each( group_ids, function( i, group_id ) {
 		group_id = parseInt( group_id );
 		if( typeof json_groups[ booking_system_id ][ group_id ] !== 'undefined' ) {
 			
 			var availability	= bookacti_get_group_availability( json_groups[ booking_system_id ][ group_id ] );
-			var avail			= availability > 1 ? bookacti_localized.avails : bookacti_localized.avail;
 			
 			var container = $j( '<div />', {});
 			var option_container = $j( '<div />', {
@@ -124,11 +134,29 @@ function bookacti_dialog_choose_group_of_events( booking_system, groups, event )
 				id: 'bookacti-group-of-events-' + group_id,
 				type: 'radio',
 				name: 'group_of_events',
-				'disabled': availability <= 0,
+				'disabled': context !== 'booking_page' && availability <= 0,
 				value: group_id
 			});
+			
+			// Show availability or bookings
+			var avail_html = '';
+			if( context === 'booking_page' ) {
+				var bookings = 0;
+				$j.each( json_groups[ booking_system_id ][ group_id ], function( i, grouped_event ){
+					if( event.id === grouped_event.id
+					&&  event.start.format( 'YYYY-MM-DD HH:mm:ss' ) === grouped_event.start 
+					&&  event.end.format( 'YYYY-MM-DD HH:mm:ss' ) === grouped_event.end ) {
+						bookings = grouped_event.group_bookings;
+					}
+				});
+				var booking_html = bookings > 1 ? bookacti_localized.bookings : bookacti_localized.booking;;
+				avail_html = bookings + ' ' + booking_html;
+			} else {
+				var avail = availability > 1 ? bookacti_localized.avails : bookacti_localized.avail;
+				avail_html = availability + ' ' + avail;
+			}
 			var label = $j( '<label />', {
-				html: json_groups[ booking_system_id ][ group_id ][0][ 'group_title' ]  + ' <span class="bookacti-group-availability" >(' + availability + ' ' + avail + ')</span>',
+				html: json_groups[ booking_system_id ][ group_id ][0][ 'group_title' ]  + ' <span class="bookacti-group-availability" >(' + avail_html + ')</span>',
 				for: 'bookacti-group-of-events-' + group_id
 			});
 			

@@ -479,13 +479,13 @@ function bookacti_update_settings_from_database( booking_system, template_ids ) 
 }
 
 
-//Get event available places
+// Get event available places
 function bookacti_get_event_availability( event ) {
 	return parseInt( event.availability ) - parseInt( event.bookings );
 }
 
 
-//Get group available places
+// Get group available places
 function bookacti_get_group_availability( group_events ) {
 	
 	if( ! $j.isArray( group_events ) || group_events.length <= 0 ) {
@@ -499,6 +499,24 @@ function bookacti_get_group_availability( group_events ) {
 	});
 	
 	return min_availability;
+}
+
+
+// Get group available places
+function bookacti_get_bookings_number_for_a_single_grouped_event( event, event_groups, all_groups ) {
+	
+	var group_bookings = 0;
+	$j.each( event_groups, function( i, group_id ){
+		$j.each( all_groups[ group_id ], function( i, grouped_event ){
+			if( event.id === grouped_event.id
+			&&  event.start.format( 'YYYY-MM-DD HH:mm:ss' ) === grouped_event.start 
+			&&  event.end.format( 'YYYY-MM-DD HH:mm:ss' ) === grouped_event.end ) {
+				group_bookings += grouped_event.group_bookings;
+			}
+		});
+	});
+	
+	return event.bookings - group_bookings;
 }
 
 
@@ -518,18 +536,18 @@ function bookacti_get_event_group_ids( booking_system, event ) {
 	var event_start = event.start instanceof moment ? event.start.format( 'YYYY-MM-DD HH:mm:ss' ) : event.start;
 	var event_end	= event.end instanceof moment ? event.end.format( 'YYYY-MM-DD HH:mm:ss' ) : event.end;
 	
-	var groups = [];
+	var group_ids = [];
 	$j.each( json_groups[ booking_system_id ], function( group_id, group_events ){
 		$j.each( group_events, function( i, group_event ){
 			if( group_event[ 'id' ] === event_id
 			&&  group_event[ 'start' ] === event_start
 			&&  group_event[ 'end' ] === event_end ) {
-				groups.push( group_event[ 'group_id' ] );
+				group_ids.push( group_event[ 'group_id' ] );
 			}
 		});
 	});
 	
-	return groups;
+	return group_ids;
 }
 
 

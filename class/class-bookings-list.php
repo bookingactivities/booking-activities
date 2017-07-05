@@ -143,7 +143,7 @@ if( ! class_exists( 'Bookings_List_Table' ) ) {
 			// Retrieve information about users and stock them into an array sorted by user id
 			$user_ids = array();
 			foreach( $bookings as $booking ) {
-				if( ! in_array( $booking->user_id, $user_ids ) ){
+				if( ! in_array( $booking->user_id, $user_ids, true ) ){
 					$user_ids[] = $booking->user_id;
 				}
 			}
@@ -274,7 +274,7 @@ if( ! class_exists( 'Bookings_List_Table' ) ) {
 					$classes .= ' has-row-actions column-primary';
 				}
 
-				if ( in_array( $column_name, $hidden ) ) {
+				if ( in_array( $column_name, $hidden, true ) ) {
 					$classes .= ' hidden';
 				}
 

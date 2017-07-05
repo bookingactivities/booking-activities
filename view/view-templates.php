@@ -199,7 +199,7 @@ echo "<h1>" . esc_html__( 'Calendars', BOOKACTI_PLUGIN_NAME ) . "</h1>";
 		<span id='bookacti-shortcode-form-constructor' class='bookacti-shortcode-constructor' >
 			[bookingactivities_form	calendars='<span class='bookacti-shortcode-calendar-ids'><?php echo esc_html( $template_id ); ?></span>' 
 									activities='<span class='bookacti-shortcode-activity-ids'><?php echo esc_html( $activity_ids ); ?></span>' 
-									groups='<span class='bookacti-shortcode-group-ids'><?php echo esc_html( $category_ids ); ?></span>']
+									group_categories='<span class='bookacti-shortcode-group-ids'><?php echo esc_html( $category_ids ); ?></span>']
 		</span>
 		<code id='bookacti-shortcode-form' class='bookacti-shortcode' >
 			[bookingactivities_form]
@@ -213,7 +213,7 @@ echo "<h1>" . esc_html__( 'Calendars', BOOKACTI_PLUGIN_NAME ) . "</h1>";
 		<span id='bookacti-shortcode-calendar-constructor' class='bookacti-shortcode-constructor' >
 			[bookingactivities_calendar	calendars='<span class='bookacti-shortcode-calendar-ids'><?php echo esc_html( $template_id ); ?></span>' 
 										activities='<span class='bookacti-shortcode-activity-ids'><?php echo esc_html( $activity_ids ); ?></span>' 
-										groups='<span class='bookacti-shortcode-group-ids'><?php echo esc_html( $category_ids ); ?></span>']
+										group_categories='<span class='bookacti-shortcode-group-ids'><?php echo esc_html( $category_ids ); ?></span>']
 		</span>
 		<code id='bookacti-shortcode-calendar' class='bookacti-shortcode' >
 			[bookingactivities_calendar]

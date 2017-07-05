@@ -139,10 +139,10 @@ function bookacti_filter_bookings_by_templates( booking_system ) {
 					bookacti_filter_bookings_by_activities( booking_system );
 					
 					// Update calendar data
-					calendars_data[ booking_system_id ][ 'calendars' ]	= response.calendar_ids;
-					calendars_data[ booking_system_id ][ 'activities' ] = response.activity_ids;
-					calendars_data[ booking_system_id ][ 'groups' ]		= response.groups_ids;
-					calendars_data[ booking_system_id ][ 'settings' ]	= response.settings;
+					calendars_data[ booking_system_id ][ 'calendars' ]			= response.calendar_ids;
+					calendars_data[ booking_system_id ][ 'activities' ]			= response.activity_ids;
+					calendars_data[ booking_system_id ][ 'group_categories' ]	= response.group_categories;
+					calendars_data[ booking_system_id ][ 'settings' ]			= response.settings;
 					
 					// Update calendar content data
 					json_events[ booking_system_id ]		= response.events;

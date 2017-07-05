@@ -64,26 +64,34 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			$activities_html = bookacti_get_activities_html_for_booking_page( $template_ids );
 			
 			// Get calendar settings
-			$settings	= bookacti_get_mixed_template_settings( $template_ids );
-
-			// Gets calendar content: events, activities and groups
-			$events		= bookacti_fetch_events( $template_ids, array(), array(), 1, 'booking_page' );
-			$activities	= bookacti_get_activities_by_template_ids( $template_ids );
-			$groups		= bookacti_get_groups_events( $template_ids );
+			$settings			= bookacti_get_mixed_template_settings( $template_ids );
+			$activity_ids		= bookacti_get_activity_ids_by_template_ids( $template_ids );
+			$group_categories	= bookacti_get_group_category_ids_by_template_ids( $template_ids );
 			
-			$activity_ids	= bookacti_get_activity_ids_by_template_ids( $template_ids );
-			$groups_ids		= bookacti_get_group_category_ids_by_template_ids( $template_ids );
+			// Gets calendar content: events, activities and groups
+			$args = array(
+				'calendars' => $template_ids,
+				'activities' => array(),
+				'categories' => array(),
+				'groups_only' => false,
+				'past_events' => true,
+				'context' => 'booking_page'
+			);
+			
+			$events		= bookacti_fetch_events( $args );
+			$activities	= bookacti_get_activities_by_template_ids( $template_ids );
+			$groups		= bookacti_get_groups_events( $template_ids, $group_categories, array(), true );
 			
 			wp_send_json( array( 
-				'status'		=> 'success', 
-				'activities_html' => $activities_html, 
-				'events'		=> $events, 
-				'activities'	=> $activities, 
-				'groups'		=> $groups,
-				'calendar_ids'	=> $template_ids,
-				'activity_ids'	=> $activity_ids,
-				'groups_ids'	=> $groups_ids,
-				'settings'		=> $settings
+				'status'			=> 'success', 
+				'activities_html'	=> $activities_html, 
+				'events'			=> $events, 
+				'activities'		=> $activities, 
+				'groups'			=> $groups,
+				'calendar_ids'		=> $template_ids,
+				'activity_ids'		=> $activity_ids,
+				'group_categories'	=> $group_categories,
+				'settings'			=> $settings
 			) );
 		} else {
 			wp_send_json( array( 'status' => 'failed', 'error' => 'not_allowed' ) );
@@ -321,7 +329,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			if( $is_nonce_valid && $is_allowed && $state_can_be_changed && $new_state ) {
 
 				$was_active	= bookacti_is_booking_active( $booking_id ) ? 1 : 0;
-				$active		= in_array( $new_state, bookacti_get_active_booking_states() ) ? 1 : 0;
+				$active		= in_array( $new_state, bookacti_get_active_booking_states(), true ) ? 1 : 0;
 
 				if( ! $was_active && $active ) {
 					$booking	= bookacti_get_booking_by_id( $booking_id );
@@ -615,12 +623,12 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			$is_nonce_valid			= check_ajax_referer( 'bookacti_change_booking_state', 'nonce', false );
 			$is_allowed				= current_user_can( 'bookacti_edit_bookings' );		
 			$state_can_be_changed	= bookacti_booking_group_state_can_be_changed_to( $booking_group_id, $new_state );
-
+			
 			if( $is_nonce_valid && $is_allowed && $state_can_be_changed && $new_state ) {
 
 				$booking_group	= bookacti_get_booking_group_by_id( $booking_group_id );
 				$was_active		= $booking_group->active ? 1 : 0;
-				$active			= in_array( $new_state, bookacti_get_active_booking_states() ) ? 1 : 0;
+				$active			= in_array( $new_state, bookacti_get_active_booking_states(), true ) ? 1 : 0;
 				
 				// If the booking group was inactive and become active, we need to check availability
 				if( ! $was_active && $active ) {

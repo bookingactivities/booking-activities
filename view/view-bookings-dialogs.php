@@ -23,15 +23,13 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 <?php 
 	$reschedule_booking_method = apply_filters( 'bookacti_reschedule_booking_method', 'calendar' );
 	$atts = array( 
-				'calendars'		=> array(),
-				'activities'	=> array(),
-				'method'		=> $reschedule_booking_method,
-				'id'			=> 'booking-system-reschedule',
-				'classes'		=> is_admin() ? 'admin-booking-system' : '',
-				'past_events'	=> is_admin() ? 1 : 0,
-				'context'		=> is_admin() ? 'booking_page' : 'frontend',
-				'auto_load'		=> 0
-			);
+		'method'		=> $reschedule_booking_method,
+		'id'			=> 'booking-system-reschedule',
+		'classes'		=> is_admin() ? 'admin-booking-system' : '',
+		'past_events'	=> is_admin() ? 1 : 0,
+		'context'		=> is_admin() ? 'booking_page' : 'frontend',
+		'auto_load'		=> 0
+	);
 	bookacti_get_booking_system( $atts, true );
 ?>
 </div>

@@ -186,7 +186,7 @@ function bookacti_change_order_bookings_state( $user_id = NULL, $order_id = NULL
 	if( $states_in === 'active' )	{ $states_in = bookacti_get_active_booking_states(); }
 	if( ! is_int( $user_id ) )		{ $user_id = NULL; }
 	if( ! is_int( $order_id ) )		{ $order_id = NULL; }
-	$active = in_array( $state, bookacti_get_active_booking_states() ) ? 1 : 0;
+	$active = in_array( $state, bookacti_get_active_booking_states(), true ) ? 1 : 0;
 
 	$query = 'UPDATE ' . BOOKACTI_TABLE_BOOKINGS . ' SET state = %s, active = %d, ';
 
@@ -367,7 +367,7 @@ function bookacti_deactivate_expired_bookings() {
 	// Check if expired bookings belong to groups
 	$expired_group_ids = array();
 	foreach( $deactivated_bookings as $deactivated_booking ) {
-		if( ! in_array( $deactivated_booking->group_id, $expired_group_ids ) ) {
+		if( ! in_array( $deactivated_booking->group_id, $expired_group_ids, true ) ) {
 			$expired_group_ids[] = $deactivated_booking->group_id;
 		}
 	}
