@@ -32,10 +32,12 @@ echo "<div class='wrap'>";
 	
 
 	//Display the tabs content
-	echo "<form method='post' action='options.php'>";
+	echo "<form method='post' action='options.php' id='bookacti-settings'>";
 
 		if( $active_tab === 'general' ) {  
-
+			
+			echo '<div id="bookacti-settings-lang-switcher" ></div>';
+			
 			settings_fields( 'bookacti_general_settings' );
 			do_settings_sections( 'bookacti_general_settings' ); 
 

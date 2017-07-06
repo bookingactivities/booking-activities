@@ -96,7 +96,7 @@ $j( document ).ready( function() {
 			var quantity			= parseInt( $j( this ).parents( 'form' ).find( 'input.bookacti-quantity' ).val() );
 			var available_places	= 0; 
 			
-			//Limit the max quantity
+			// Limit the max quantity
 			if( pickedEvents[ booking_system_id ].length > 1 ) {
 				available_places = bookacti_get_group_availability( pickedEvents[ booking_system_id ] );
 			} else {
@@ -119,37 +119,53 @@ $j( document ).ready( function() {
 		if( $j( '.bookacti-user-bookings-list' ).length ) {
 			
 			var row	= $j( '.bookacti-booking-action[data-booking-id="' + booking_id + '"]' ).parents( 'tr' );
-			var date_container = row.find( '.bookacti-booking-dates' );
-			var event_start	= moment( start );
-			var event_end	= moment( end );
-
-			//Make 'from' and 'to' intelligible values
-			date_container.find( '.bookacti-date-picked-to' ).removeClass( 'to_hour to_date' );
-			var from_val = event_start.locale( bookacti_localized.current_lang_code ).format( 'LLLL' );
-			var sep_val	= '';
-			var to_val = '';
-			if( event_start.format( 'YYYY-MM-DD' ) === event_end.format( 'YYYY-MM-DD' ) ) { 
-				sep_val		= ' ' + bookacti_localized.to_hour + ' ';
-				to_val		= event_end.locale( bookacti_localized.current_lang_code ).format( 'LT' );
-				date_container.find( '.bookacti-date-picked-to' ).addClass( 'to_hour' );
-			} else {
-				sep_val		= ' ' + bookacti_localized.to_date + ' ';
-				to_val		= event_end.locale( bookacti_localized.current_lang_code ).format( 'LLLL' );
-				date_container.find( '.bookacti-date-picked-to' ).addClass( 'to_date' );
+			var event_list = row.find( 'ul.bookacti-booking-events-list' );
+			if( event_list.length ) {
+				
+				// Delete old duration
+				event_list.find( '.bookacti-booking-event-start, .bookacti-booking-event-date-separator, .bookacti-booking-event-end' ).remove();
+				
+				// Get new duration
+				var event_duration_formatted = bookacti_format_event_duration( start, end );
+				
+				// Display new duration
+				event_list.find( 'li' ).append( event_duration_formatted );
 			}
-
-			//Fill a intelligible field to feedback the user about his choice
-			date_container.find( '.bookacti-booking-start' ).html( from_val );
-			date_container.find( '.bookacti-booking-date-separator' ).html( sep_val );
-			date_container.find( '.bookacti-booking-end' ).html( to_val );
 			
-			// Change actions
-			row.find( '.bookacti-booking-actions' ).html( response.actions_html );
+			// Backward compatibility - For bookings made before Booking Activities 1.1.0
+			var date_container = row.find( '.bookacti-booking-dates' );
+			if( date_container.length ) {
+				var event_start	= moment( start );
+				var event_end	= moment( end );
+
+				//Make 'from' and 'to' intelligible values
+				date_container.find( '.bookacti-date-picked-to' ).removeClass( 'to_hour to_date' );
+				var from_val = event_start.locale( bookacti_localized.current_lang_code ).format( 'LLLL' );
+				var sep_val	= '';
+				var to_val = '';
+				if( event_start.format( 'YYYY-MM-DD' ) === event_end.format( 'YYYY-MM-DD' ) ) { 
+					sep_val		= ' ' + bookacti_localized.to_hour + ' ';
+					to_val		= event_end.locale( bookacti_localized.current_lang_code ).format( 'LT' );
+					date_container.find( '.bookacti-date-picked-to' ).addClass( 'to_hour' );
+				} else {
+					sep_val		= ' ' + bookacti_localized.to_date + ' ';
+					to_val		= event_end.locale( bookacti_localized.current_lang_code ).format( 'LLLL' );
+					date_container.find( '.bookacti-date-picked-to' ).addClass( 'to_date' );
+				}
+
+				//Fill a intelligible field to feedback the user about his choice
+				date_container.find( '.bookacti-booking-start' ).html( from_val );
+				date_container.find( '.bookacti-booking-date-separator' ).html( sep_val );
+				date_container.find( '.bookacti-booking-end' ).html( to_val );
+
+				// Change actions
+				row.find( '.bookacti-booking-actions' ).html( response.actions_html );
+			}
 		}
 	});
 	
 	
-	//Enable submit booking button
+	// Enable submit booking button
 	$j( 'form.bookacti-booking-system-form .bookacti-booking-system' ).on( 'bookacti_view_refreshed bookacti_displayed_info_cleared', function( e ) {
 		var booking_form = $j( this ).parents( 'form' );
 		booking_form.find( 'input[name="bookacti_quantity"]' ).attr( 'disabled', false );
@@ -157,7 +173,7 @@ $j( document ).ready( function() {
 	});
 
 
-	//Disable submit booking button
+	// Disable submit booking button
 	$j( 'form.bookacti-booking-system-form .bookacti-booking-system' ).on( 'bookacti_error_displayed', function( e ) {
 		var booking_form = $j( this ).parents( 'form' );
 		booking_form.find( 'input[name="bookacti_quantity"]' ).attr( 'disabled', true );

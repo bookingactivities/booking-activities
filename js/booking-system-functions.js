@@ -310,34 +310,26 @@ function bookacti_fill_picked_events_list( booking_system ) {
 
 			// Fill the picked events list
 			$j.each( pickedEvents[ booking_system_id ], function( i, event ) {
-
-				var start_and_end_same_day = event.start.substr( 0, 10 ) === event.end.substr( 0, 10 );
-
-				var event_start = moment( event.start ).locale( bookacti_localized.current_lang_code );
-				var event_end = moment( event.end ).locale( bookacti_localized.current_lang_code );
-
-				var event_duration = event_start.format( bookacti_localized.date_format ) + ' &rarr; ' + event_end.format( bookacti_localized.date_format );
-				if( start_and_end_same_day ) {
-
-					event_duration = event_start.format( bookacti_localized.date_format ) + ' &rarr; ' + event_end.format( 'LT' );
-				}
+				
+				var event_duration = bookacti_format_event_duration( event.start, event.end );
 				
 				var event_data = {
-					'title': event.title,
+					'title': '<span class="bookacti-booking-event-title" >'  + event.title + '</span>',
 					'duration': event_duration,
 					'quantity': 1
 				};
-				
+
 				booking_system.trigger( 'bookacti_picked_events_list_data', [ event_data ] );
-				
+
 				var unit = bookacti_get_activity_unit( event.activity_id, event_data.quantity );
-				
+
 				if( unit !== '' ) {
-					unit = ' - ' + unit;
+					unit = '<span class="bookacti-booking-event-quantity-separator" > - </span>' 
+						 + '<span class="bookacti-booking-event-quantity" >' + unit + '</span>';
 				}
-				
+
 				var list_element = $j( '<li />', {
-					html: event.title + ' - ' + event_duration + unit
+					html: event_data.title + '<span class="bookacti-booking-event-title-separator" > - </span>' + event_duration + unit
 				});
 
 				event_list.append( list_element );
@@ -348,6 +340,24 @@ function bookacti_fill_picked_events_list( booking_system ) {
 			booking_system.trigger( 'bookacti_picked_events_list_filled' );
 		}
 	}
+}
+
+
+// Format an event
+function bookacti_format_event_duration( start, end ) {
+	
+	var start_and_end_same_day	= start.substr( 0, 10 ) === end.substr( 0, 10 );
+	var class_same_day			= start_and_end_same_day ? 'bookacti-booking-event-end-same-day' : '';
+	var end_format				= start_and_end_same_day ? 'LT' : bookacti_localized.date_format;
+	
+	var event_start = moment( start ).locale( bookacti_localized.current_lang_code );
+	var event_end = moment( end ).locale( bookacti_localized.current_lang_code );
+	
+	var event_duration	= '<span class="bookacti-booking-event-start">' + event_start.format( bookacti_localized.date_format ) + '</span>' 
+						+ '<span class="bookacti-booking-event-date-separator ' + class_same_day + '"> &rarr; ' + '</span>' 
+						+ '<span class="bookacti-booking-event-end ' + class_same_day + '">' + event_end.format( end_format ) + '</span>';
+	
+	return event_duration;
 }
 
 
@@ -684,16 +694,16 @@ function bookacti_booking_method_rerender_events( booking_system, booking_method
 }
 
 
-//Start a loading (or keep on loading if already loading)
+// Start a loading (or keep on loading if already loading)
 function bookacti_start_loading_booking_system( booking_system ) {
 	
 	var booking_system_id	= booking_system.attr( 'id' );
 	var booking_method		= calendars_data[ booking_system_id ][ 'method' ];
 	
-	var loading_div =	'<div class="bookacti-loading-alt">' 
-							+ '<img class="bookacti-loader" src="' + bookacti_localized.plugin_path + '/img/ajax-loader.gif" title="' + bookacti_localized.loading + '" />'
-							+ '<span class="bookacti-loading-alt-text" >' + bookacti_localized.loading + '</span>'
-						+ '</div>';
+	var loading_div = '<div class="bookacti-loading-alt">' 
+					+	'<img class="bookacti-loader" src="' + bookacti_localized.plugin_path + '/img/ajax-loader.gif" title="' + bookacti_localized.loading + '" />'
+					+	'<span class="bookacti-loading-alt-text" >' + bookacti_localized.loading + '</span>'
+					+ '</div>';
 	
 	if( ! $j.isNumeric( loadingNumber[ booking_system_id ] ) ) {
 		loadingNumber[ booking_system_id ] = 0;
@@ -721,7 +731,7 @@ function bookacti_start_loading_booking_system( booking_system ) {
 }
 
 
-//Stop a loading (but keep on loading if there are other loadings )
+// Stop a loading (but keep on loading if there are other loadings )
 function bookacti_stop_loading_booking_system( booking_system, force_exit ) {
 	
 	force_exit = force_exit || false;

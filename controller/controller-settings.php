@@ -39,6 +39,14 @@ function bookacti_init_settings() {
 	);
 
 	add_settings_field(  
+		'default_booking_state', 
+		__( 'Default booking state', BOOKACTI_PLUGIN_NAME ), 
+		'bookacti_settings_field_default_booking_state_callback', 
+		'bookacti_general_settings', 
+		'bookacti_settings_section_general' 
+	);
+
+	add_settings_field(  
 		'timezone', 
 		__( 'Calendars timezone', BOOKACTI_PLUGIN_NAME ), 
 		'bookacti_settings_field_timezone_callback', 

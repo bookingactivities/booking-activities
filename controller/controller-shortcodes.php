@@ -275,16 +275,17 @@ function bookacti_controller_validate_booking_form() {
 	
 	if( $is_nonce_valid && $is_allowed ) { 
 
-		//Gether the form variables
+		// Gether the form variables
 		$booking_form_values = apply_filters( 'bookacti_booking_form_values', array(
-		'user_id'			=> intval( get_current_user_id() ),
-		'booking_system_id'	=> sanitize_title_with_dashes( $_POST[ 'bookacti_booking_system_id' ] ),
-		'group_id'			=> intval( $_POST[ 'bookacti_group_id' ] ),
-		'event_id'			=> intval( $_POST[ 'bookacti_event_id' ] ),
-		'event_start'		=> bookacti_sanitize_datetime( $_POST[ 'bookacti_event_start' ] ),
-		'event_end'			=> bookacti_sanitize_datetime( $_POST[ 'bookacti_event_end' ] ),
-		'quantity'			=> intval( $_POST[ 'bookacti_quantity' ] ),
-		'default_state'		=> 'pending' ) );
+			'user_id'			=> intval( get_current_user_id() ),
+			'booking_system_id'	=> sanitize_title_with_dashes( $_POST[ 'bookacti_booking_system_id' ] ),
+			'group_id'			=> intval( $_POST[ 'bookacti_group_id' ] ),
+			'event_id'			=> intval( $_POST[ 'bookacti_event_id' ] ),
+			'event_start'		=> bookacti_sanitize_datetime( $_POST[ 'bookacti_event_start' ] ),
+			'event_end'			=> bookacti_sanitize_datetime( $_POST[ 'bookacti_event_end' ] ),
+			'quantity'			=> intval( $_POST[ 'bookacti_quantity' ] ),
+			'default_state'		=> bookacti_get_setting_value( 'bookacti_general_settings', 'default_booking_state' ) 
+		) );
 
 		//Check if the form is ok and if so Book temporarily the event
 		$response = bookacti_validate_booking_form( $booking_form_values[ 'group_id' ], $booking_form_values[ 'event_id' ], $booking_form_values[ 'event_start' ], $booking_form_values[ 'event_end' ], $booking_form_values[ 'quantity' ] );
@@ -296,24 +297,45 @@ function bookacti_controller_validate_booking_form() {
 		
 		if( $response[ 'status' ] === 'success' ) {
 			
-			$booking_id = bookacti_insert_booking(	$booking_form_values[ 'user_id' ], 
-													$booking_form_values[ 'event_id' ], 
-													$booking_form_values[ 'event_start' ],
-													$booking_form_values[ 'event_end' ], 
-													$booking_form_values[ 'quantity' ], 
-													$booking_form_values[ 'default_state' ],
-													$booking_form_values[ 'group_id' ] );
+			// Single Booking
+			if( $booking_form_values[ 'group_id' ] === 'single' ) {
 			
-			if( ! is_null( $booking_id ) ) {
-
-				do_action( 'bookacti_booking_form_validated', $booking_id, $booking_form_values );
-
-				$message = __( 'Your event has been booked successfully!', BOOKACTI_PLUGIN_NAME );
-				wp_send_json( array( 'status' => 'success', 'message' => esc_html( $message ), 'booking_id' => $booking_id ) );
+				$booking_id = bookacti_insert_booking(	$booking_form_values[ 'user_id' ], 
+														$booking_form_values[ 'event_id' ], 
+														$booking_form_values[ 'event_start' ],
+														$booking_form_values[ 'event_end' ], 
+														$booking_form_values[ 'quantity' ], 
+														$booking_form_values[ 'default_state' ],
+														$booking_form_values[ 'group_id' ] );
 			
+				if( ! empty( $booking_id ) ) {
+
+					do_action( 'bookacti_booking_form_validated', $booking_id, $booking_form_values );
+					
+					$message = __( 'Your event has been booked successfully!', BOOKACTI_PLUGIN_NAME );
+					wp_send_json( array( 'status' => 'success', 'message' => esc_html( $message ), 'booking_id' => $booking_id ) );
+				}
+			
+			// Booking group
 			} else {
-				$message = __( 'An error occurred, please try again.', BOOKACTI_PLUGIN_NAME );
+				
+				// Book all events of the group
+				$booking_group_id = bookacti_book_group_of_events(	$booking_form_values[ 'user_id' ], 
+																	$booking_form_values[ 'group_id' ], 
+																	$booking_form_values[ 'quantity' ], 
+																	$booking_form_values[ 'default_state' ], 
+																	NULL );
+				
+				if( ! empty( $booking_group_id ) ) {
+
+					do_action( 'bookacti_booking_form_validated', $booking_group_id, $booking_form_values );
+					
+					$message = __( 'Your events have been booked successfully!', BOOKACTI_PLUGIN_NAME );
+					wp_send_json( array( 'status' => 'success', 'message' => esc_html( $message ), 'booking_group_id' => $booking_group_id ) );
+				}
 			}
+			
+			$message = __( 'An error occurred, please try again.', BOOKACTI_PLUGIN_NAME );
 			
 		} else {
 			$message = $response[ 'message' ];

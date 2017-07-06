@@ -424,15 +424,12 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 					if( $rescheduled ) {
 
 						do_action( 'bookacti_booking_rescheduled', $booking_id, $event_start, $event_end );
-
-						$event_start_formatted	= bookacti_format_datetime( $event_start );
-						$event_end_formatted	= bookacti_format_datetime( $event_end );
-
+						
 						$is_bookings_page	= intval( $_POST[ 'is_bookings_page' ] );
 						$admin_or_front		= $is_bookings_page ? 'both' : 'front';
 						$actions_html		= bookacti_get_booking_actions_html( $booking_id, $admin_or_front );
 
-						wp_send_json( array( 'status' => 'success', 'event_start_formatted' => $event_start_formatted, 'event_end_formatted' => $event_end_formatted, 'actions_html' => $actions_html ) );
+						wp_send_json( array( 'status' => 'success', 'actions_html' => $actions_html ) );
 					} else if( $rescheduled === 0 ) {
 						$message = __( 'You must select a different schedule than the current one.', BOOKACTI_PLUGIN_NAME );
 						wp_send_json( array( 'status' => 'no_changes', 'error' => 'no_changes', 'message' => $message ) );

@@ -3,19 +3,43 @@ $j( document ).ready( function() {
 	// BOOKING LIST
 
 		// Update booking row after frontend rechedule
-		$j( 'body' ).on( 'bookacti_booking_rescheduled', function( e, booking_id, event_start, event_end, response ){
+		$j( 'body' ).on( 'bookacti_booking_rescheduled', function( e, booking_id, start, end, response ){
 			var row	= $j( '.bookacti-booking-action[data-booking-id="' + booking_id + '"]' ).parents( 'tr' );
-			// Update start and end dates, and updates available actions
-			if( $j( '.wc-item-meta-bookacti_event_start.wc-item-meta-value' ).length ) {
-				row.find( '.wc-item-meta-bookacti_event_start.wc-item-meta-value' ).html( response.event_start_formatted );
-				row.find( '.wc-item-meta-bookacti_event_end.wc-item-meta-value' ).html( response.event_end_formatted );
-				row.find( '.bookacti-booking-actions' ).html( response.actions_html );
-			}
-			// WOOCOMMERCE 3.0.0 backward compatibility
-			if( $j( 'dd.variation-bookacti_event_start p' ).length ) {
-				row.find( 'dd.variation-bookacti_event_start p' ).html( response.event_start_formatted );
-				row.find( 'dd.variation-bookacti_event_end p' ).html( response.event_end_formatted );
-				row.find( '.bookacti-booking-actions' ).html( response.actions_html );
+			
+			// Update available actions
+			row.find( '.bookacti-booking-actions' ).html( response.actions_html );
+			
+			// Update duration
+			var event_list = row.find( 'ul.bookacti-booking-events-list' );
+			if( event_list.length ) {
+				
+				// Delete old duration
+				event_list.find( '.bookacti-booking-event-start, .bookacti-booking-event-date-separator, .bookacti-booking-event-end' ).remove();
+				
+				// Get new duration
+				var event_duration_formatted = bookacti_format_event_duration( start, end );
+				
+				// Display new duration
+				event_list.find( 'li' ).append( event_duration_formatted );
+			
+			
+			// Backward compatibility - For bookings made before Booking Activities 1.1.0
+			} else {
+				
+				var event_start = moment( start ).locale( bookacti_localized.current_lang_code );
+				var event_end = moment( end ).locale( bookacti_localized.current_lang_code );
+				
+				// Update start and end dates 
+				if( $j( '.wc-item-meta-bookacti_event_start.wc-item-meta-value' ).length ) {
+					row.find( '.wc-item-meta-bookacti_event_start.wc-item-meta-value' ).html( event_start.format( bookacti_localized.date_format ) );
+					row.find( '.wc-item-meta-bookacti_event_end.wc-item-meta-value' ).html( event_end.format( bookacti_localized.date_format ) );
+
+				}
+				// WOOCOMMERCE 3.0.0 backward compatibility
+				if( $j( 'dd.variation-bookacti_event_start p' ).length ) {
+					row.find( 'dd.variation-bookacti_event_start p' ).html( event_start.format( bookacti_localized.date_format ) );
+					row.find( 'dd.variation-bookacti_event_end p' ).html( event_end.format( bookacti_localized.date_format ) );
+				}
 			}
 		});
 	

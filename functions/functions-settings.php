@@ -10,10 +10,15 @@ function bookacti_define_default_settings_constants() {
 	if( ! defined( 'BOOKACTI_ALLOW_TEMPLATES_FILTER' ) )				{ define( 'BOOKACTI_ALLOW_TEMPLATES_FILTER', '1' ); }
 	if( ! defined( 'BOOKACTI_ALLOW_ACTIVITIES_FILTER' ) )				{ define( 'BOOKACTI_ALLOW_ACTIVITIES_FILTER', '1' ); }
 	if( ! defined( 'BOOKACTI_SHOW_INACTIVE_BOOKINGS' ) )				{ define( 'BOOKACTI_SHOW_INACTIVE_BOOKINGS', '0' ); }
-	if( ! defined( 'BOOKACTI_STARTED_EVENTS_BOOKABLE' ) )				{ define( 'BOOKACTI_STARTED_EVENTS_BOOKABLE', '0' ); }
-	if( ! defined( 'BOOKACTI_TIMEZONE' ) )								{ $date = new DateTime(); $tz = $date->getTimezone()->getName(); define( 'BOOKACTI_TIMEZONE', $tz ); }
+	
 	if( ! defined( 'BOOKACTI_BOOKING_METHOD' ) )						{ define( 'BOOKACTI_BOOKING_METHOD', 'calendar' ); }
 	if( ! defined( 'BOOKACTI_WHEN_EVENTS_LOAD' ) )						{ define( 'BOOKACTI_WHEN_EVENTS_LOAD', 'on_page_load' ); }
+	if( ! defined( 'BOOKACTI_STARTED_EVENTS_BOOKABLE' ) )				{ define( 'BOOKACTI_STARTED_EVENTS_BOOKABLE', '0' ); }
+	if( ! defined( 'BOOKACTI_DEFAULT_BOOKING_STATE' ) )					{ define( 'BOOKACTI_DEFAULT_BOOKING_STATE', 'pending' ); }
+	if( ! defined( 'BOOKACTI_TIMEZONE' ) )								{ $date = new DateTime(); $tz = $date->getTimezone()->getName(); define( 'BOOKACTI_TIMEZONE', $tz ); }
+	if( ! defined( 'BOOKACTI_DATE_FORMAT' ) )							{	/* translators: Date format, please display only day month hours and minutes. This can be displayed as a period like Sep, 05th at 4:30 PM → 5:30 PM. "→ 5:30PM" will be displayed as is at the end of your date format. Use JS moment documentation to choose your tags https://momentjs.com/docs/#/displaying/format/ */
+																			define( 'BOOKACTI_DATE_FORMAT', __( 'MMM, Do - LT', BOOKACTI_PLUGIN_NAME ) ); }
+	
 	if( ! defined( 'BOOKACTI_ALLOW_CUSTOMERS_TO_CANCEL' ) )				{ define( 'BOOKACTI_ALLOW_CUSTOMERS_TO_CANCEL', '1' ); }
 	if( ! defined( 'BOOKACTI_ALLOW_CUSTOMERS_TO_RESCHEDULE' ) )			{ define( 'BOOKACTI_ALLOW_CUSTOMERS_TO_RESCHEDULE', '1' ); }
 	if( ! defined( 'BOOKACTI_CANCELLATION_MIN_DELAY_BEFORE_EVENT' ) )	{ define( 'BOOKACTI_CANCELLATION_MIN_DELAY_BEFORE_EVENT', '7' ); }
@@ -48,6 +53,8 @@ function bookacti_init_settings_values() {
 	if( ! isset( $default_general_settings['booking_method'] ) )			{ $default_general_settings['booking_method']			= BOOKACTI_BOOKING_METHOD; }
 	if( ! isset( $default_general_settings['when_events_load'] ) )			{ $default_general_settings['when_events_load']			= BOOKACTI_WHEN_EVENTS_LOAD; }
 	if( ! isset( $default_general_settings['started_events_bookable'] ) )	{ $default_general_settings['started_events_bookable']	= BOOKACTI_STARTED_EVENTS_BOOKABLE; }
+	if( ! isset( $default_general_settings['default_booking_state'] ) )		{ $default_general_settings['default_booking_state']	= BOOKACTI_DEFAULT_BOOKING_STATE; }
+	if( ! isset( $default_general_settings['date_format'] ) )				{ $default_general_settings['date_format']				= BOOKACTI_DATE_FORMAT; }
 	if( ! isset( $default_general_settings['timezone'] ) )					{ $default_general_settings['timezone']					= BOOKACTI_TIMEZONE; }
 	update_option( 'bookacti_general_settings', $default_general_settings );
 	
@@ -83,6 +90,8 @@ function bookacti_reset_settings() {
 	$default_general_settings['booking_method']				= BOOKACTI_BOOKING_METHOD;
 	$default_general_settings['when_events_load']			= BOOKACTI_WHEN_EVENTS_LOAD;
 	$default_general_settings['started_events_bookable']	= BOOKACTI_STARTED_EVENTS_BOOKABLE;
+	$default_general_settings['default_booking_state']		= BOOKACTI_DEFAULT_BOOKING_STATE;
+	$default_general_settings['date_format']				= BOOKACTI_DATE_FORMAT;
 	$default_general_settings['timezone']					= BOOKACTI_TIMEZONE;
 	
 	update_option( 'bookacti_general_settings', $default_general_settings );
@@ -102,8 +111,16 @@ function bookacti_delete_settings() {
 }
 
 
-//GET SETTING VALUE
-function bookacti_get_setting_value( $setting_page, $setting_field ) {
+/**
+ * Get setting value
+ * 
+ * @version 1.1.0
+ * 
+ * @param string $setting_page
+ * @param string $setting_field
+ * @return mixed
+ */
+function bookacti_get_setting_value( $setting_page, $setting_field, $translate = true ) {
 	
 	$settings = get_option( $setting_page );
 	
@@ -116,11 +133,26 @@ function bookacti_get_setting_value( $setting_page, $setting_field ) {
 		}
 	}
 	
-	return $settings[ $setting_field ];
+	if( ! $translate ) {
+		return $settings[ $setting_field ];
+	}
+	
+	$translated_setting = apply_filters( 'bookacti_translate_text', $settings[ $setting_field ] );
+	
+	return ! empty( $translated_setting ) ? $translated_setting : constant( 'BOOKACTI_' . strtoupper( $setting_field ) );
 }
 
-// GET BOOKING PARAMS BY USER
-function bookacti_get_setting_value_by_user( $setting_page, $setting_field, $user_id = false ) {
+
+/**
+ * Get setting value by user
+ * 
+ * @version 1.1.0
+ * @param string $setting_page
+ * @param string $setting_field
+ * @param int $user_id
+ * @return mixed
+ */
+function bookacti_get_setting_value_by_user( $setting_page, $setting_field, $user_id = false, $translate = true ) {
 
 	$user_id = $user_id ? $user_id : get_current_user_id();
 	$settings = get_option( $setting_page );
@@ -142,8 +174,16 @@ function bookacti_get_setting_value_by_user( $setting_page, $setting_field, $use
 		}
 	}
 	
-	return $settings[ $setting_field ][ $user_id ];
+	if( ! $translate ) {
+		return $settings[ $setting_field ][ $user_id ];
+	}
+	
+	$translated_setting = apply_filters( 'bookacti_translate_text', $settings[ $setting_field ][ $user_id ] );
+	
+	return ! empty( $translated_setting ) ? $translated_setting : constant( 'BOOKACTI_' . strtoupper( $setting_field ) );
 }
+
+
 
 
 // SECTION CALLBACKS
@@ -153,8 +193,10 @@ function bookacti_settings_section_template_callback() { }
 function bookacti_settings_section_bookings_callback() { }
 
 
+
+
 //GENERAL SETTINGS 
-	//Booking method
+	// Booking method
 	function bookacti_settings_field_booking_method_callback() {
 		$selected_booking_method = bookacti_get_setting_value( 'bookacti_general_settings', 'booking_method' );
 		
@@ -211,7 +253,7 @@ function bookacti_settings_section_bookings_callback() { }
 	}
 	
 	
-	//Can the user book an event that began?
+	// Can the user book an event that began?
 	function bookacti_settings_field_started_events_bookable_callback() {
 		
 		$is_active = bookacti_get_setting_value( 'bookacti_general_settings', 'started_events_bookable' );
@@ -228,6 +270,35 @@ function bookacti_settings_section_bookings_callback() { }
 	
 	
 	/**
+	 * Display "default booking state" setting
+	 */
+	function bookacti_settings_field_default_booking_state_callback() {
+		$default_booking_state = bookacti_get_setting_value( 'bookacti_general_settings', 'default_booking_state' );
+		
+		$available_booking_states	= array( 'pending', 'booked' );
+		$booking_states_label		= bookacti_get_booking_state_labels();
+		
+		//Display the field
+		?>
+		<select name='bookacti_general_settings[default_booking_state]' >
+		<?php
+		foreach( $available_booking_states as $booking_state ) {
+			$selected = $default_booking_state === $booking_state ? 'selected' : '';
+			echo '<option value="' . esc_attr( $booking_state ) . '"' .  $selected . ' >'. esc_html( $booking_states_label[ $booking_state ][ 'label' ] ) . '</option>';
+		}
+		?>
+		</select>
+		<?php
+		
+		//Display the tip 
+		/* translators: The word 'Calendar' refers to a booking method you have to translate too. Make sure you use the same word for both translation. */
+		$tip  = __( 'Choose what status a booking should have when a custumer complete the booking form.', BOOKACTI_PLUGIN_NAME );
+		
+		bookacti_help_tip( $tip );
+	}
+	
+	
+	/**
 	 * Display Timezone setting
 	 * 
 	 * @since 1.1.0
@@ -237,7 +308,7 @@ function bookacti_settings_section_bookings_callback() { }
 			'Africa' => DateTimeZone::AFRICA,
 			'America' => DateTimeZone::AMERICA,
 			'Antarctica' => DateTimeZone::ANTARCTICA,
-			'Aisa' => DateTimeZone::ASIA,
+			'Asia' => DateTimeZone::ASIA,
 			'Atlantic' => DateTimeZone::ATLANTIC,
 			'Europe' => DateTimeZone::EUROPE,
 			'Indian' => DateTimeZone::INDIAN,
@@ -284,14 +355,14 @@ function bookacti_settings_section_bookings_callback() { }
 	 * @since 1.1.0
 	 */
 	function bookacti_settings_field_date_format_callback() {
-		$default_date_format	= __( 'MMM, Do - LT', BOOKACTI_PLUGIN_NAME );
-		$date_format			= bookacti_get_setting_value( 'bookacti_general_settings', 'date_format' );
-
-		//Display the field
+		
+		$date_format = bookacti_get_setting_value( 'bookacti_general_settings', 'date_format', false );
+		
+		// Display the field
 		?>
 		<input name='bookacti_general_settings[date_format]'
+			   id='bookacti-settings-date-format'
 			   type='text'
-			   placeholder='<?php echo $default_date_format; ?>'
 			   value='<?php echo $date_format; ?>' />
 		<?php
 
@@ -302,11 +373,13 @@ function bookacti_settings_section_bookings_callback() { }
 		$link .= '</a>';
 		
 		/* translators: %1$s is a link to JS moment documentation */
-		$tip = sprintf( __( 'Set the date format displayed on picked events lists. Leave empty to use the default locale-related format. Go to %1$s to know what tag you can use.', BAPAP_PLUGIN_NAME ), $link );
+		$tip = sprintf( __( 'Set the date format displayed on picked events lists. Leave empty to use the default locale-related format. Go to %1$s to know what tag you can use.', BOOKACTI_PLUGIN_NAME ), $link );
 		bookacti_help_tip( $tip );
 	}
-	
-	
+
+
+
+
 //CANCELLATION SETTINGS 
 	// Activate cancellation for customers
 	function bookacti_settings_field_activate_cancel_callback() {

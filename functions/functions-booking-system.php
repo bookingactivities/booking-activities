@@ -45,10 +45,10 @@ function bookacti_get_booking_system( $atts, $echo = false ) {
 		</script>
 				
 		<div class='bookacti-booking-system-inputs'>
-			<input type='hidden' name='bookacti_group_id'		value='' />
-			<input type='hidden' name='bookacti_event_id'		value='' />
-			<input type='hidden' name='bookacti_event_start'	value='' />
-			<input type='hidden' name='bookacti_event_end'		value='' />
+			<input type='hidden' name='bookacti_group_id' value='' />
+			<input type='hidden' name='bookacti_event_id' value='' />
+			<input type='hidden' name='bookacti_event_start' value='' />
+			<input type='hidden' name='bookacti_event_end' value='' />
 			<?php do_action( 'bookacti_booking_system_inputs', $atts ); ?>
 		</div>
 		
