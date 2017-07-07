@@ -7,5 +7,7 @@
 .bookacti-picked-events { display: none; }
 .to_date { display: inline-block; }
 
+.bookacti-booking-events-list { margin-left: 18px; }
+
 .bookacti-booking-system-calendar-only .bookacti-booking-system-title,
 .bookacti-booking-system-calendar-only .bookacti-picked-events { display: none !important; }

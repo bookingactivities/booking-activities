@@ -274,7 +274,7 @@ If you don't find the answer you need, please [contact us](http://booking-activi
     * Add - bookacti_validate_group_category_form
     * Add - bookacti_submit_booking_form
     * Add - bookacti_booking_form_submitted
-    * Tweak - bookacti_booking_refunded, bookacti_booking_state_changed, bookacti_refund_booking have now an additional argument to differenciate single booking to booking group
+    * Tweak - bookacti_booking_refunded, bookacti_booking_state_changed have now an additional argument to differenciate single booking to booking group
     * Deleted - bookacti_validate_selected_event replaced by bookacti_validate_picked_events
     * Deleted - bookacti_bookings_list_filled replaced by bookacti_booking_list_filled
     * Deleted - bookacti_activate_booking_system replaced by bookacti_rerender_events
@@ -316,7 +316,7 @@ If you don't find the answer you need, please [contact us](http://booking-activi
     * Add - bookacti_booking_group_actions_html_array
 	* Tweak - bookacti_booking_can_be_rescheduled has now only 2 arguments, use bookacti_booking_can_be_rescheduled_to to have the same behavior as before
 	* Tweak - bookacti_before_booking_actions and bookacti_after_booking_actions have now 3 arguments
-	* Tweak - bookacti_before_refund_actions, bookacti_refund_request_email_to, bookacti_refund_request_email_data, bookacti_refund_request_email_message have now an additional argument to differenciate single booking to booking group
+	* Tweak - bookacti_before_refund_actions, bookacti_refund_booking, bookacti_refund_request_email_to, bookacti_refund_request_email_data, bookacti_refund_request_email_message have now an additional argument to differenciate single booking to booking group
 	* Tweak - Merged all booking system parameters into one array in bookacti_booking_system_title, bookacti_booking_system_auto_load, bookacti_picked_events_list_title
 	* Tweak - Added $shortcode parameter to bookacti_formatted_booking_system_attributes
     * Delete - bookacti_shortcode_{$shortcode}_default_parameters replaced by core shortcode_atts_{$shortcode} (not exactly the same use, be careful)

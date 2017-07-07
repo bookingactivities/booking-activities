@@ -221,8 +221,8 @@ function bookacti_fill_booking_list( booking_system, event, booking_group_id ) {
 	
 	} else {
 		data.event_id		= event.id;
-		data.event_start	= event.start.format( 'YYYY-MM-DD HH:mm:ss' );
-		data.event_end		= event.end.format( 'YYYY-MM-DD HH:mm:ss' );
+		data.event_start	= event.start instanceof moment ? event.start.format( 'YYYY-MM-DD HH:mm:ss' ) : event.start;
+		data.event_end		= event.end instanceof moment ? event.end.format( 'YYYY-MM-DD HH:mm:ss' ) : event.end;
 	}
 	
 	bookacti_start_loading_booking_system( booking_system );

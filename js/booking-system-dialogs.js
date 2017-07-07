@@ -92,19 +92,14 @@ function bookacti_dialog_choose_group_of_events( booking_system, group_ids, even
 			'data-group-id': group_id
 		});
 		
-		var start_and_end_same_day = event.start.format( 'YYYY-MM-DD' ) === event.end.format( 'YYYY-MM-DD' );
-
-		var event_start = event.start.locale( bookacti_localized.current_lang_code );
-		var event_end = event.end.locale( bookacti_localized.current_lang_code );
-
-		var event_duration = event_start.format( bookacti_localized.date_format ) + ' &rarr; ' + event_end.format( bookacti_localized.date_format );
-		if( start_and_end_same_day ) {
-
-			event_duration = event_start.format( bookacti_localized.date_format ) + ' &rarr; ' + event_end.format( 'LT' );
-		}
+		var start			= event.start instanceof moment ? event.start.format( 'YYYY-MM-DD HH:mm:ss' ) : event.start;
+		var end				= event.end instanceof moment ?  event.end.format( 'YYYY-MM-DD HH:mm:ss' ) : event.end;
+		var event_duration	=  bookacti_format_event_duration( start, end );
 
 		var list_element = $j( '<li />', {
-			html: event.title + ' - ' + event_duration
+			html: '<span class="bookacti-booking-event-title" >'  + event.title + '</span>' 
+				+ '<span class="bookacti-booking-event-title-separator" > - </span>' 
+				+ event_duration
 		});
 		
 		option_container.append( radio );

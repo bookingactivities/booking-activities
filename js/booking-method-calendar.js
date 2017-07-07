@@ -66,38 +66,14 @@ function bookacti_set_calendar_up( booking_system, reload_events ) {
 			// Add availability div
 			if( event.bookings !== undefined && event.availability !== undefined ) {
 
-				var is_bookings		= 0; if( parseInt( event.bookings ) > 0 ) { is_bookings = 1; }
-				var availability	= bookacti_get_event_availability( event );
-				var avail_div		= bookacti_get_event_availability_div( availability, is_bookings, event.activity_id );
+				var is_available = bookacti_is_event_available( booking_system, event );
 				
-				if( availability > 0 )  {
-					
-					// If grouped events can only be book with their whole group
-					if( ! calendars_data[ booking_system_id ][ 'groups_single_events' ] ) {
-						// Check if the event is part of a group
-						var group_ids = bookacti_get_event_group_ids( booking_system, event );
-						if( group_ids.length > 0 ) {
-							// Check if the event is available in one group at least
-							var is_group_available = false;
-							$j.each( group_ids, function( i, group_id ) {
-								var group_availability = bookacti_get_group_availability( json_groups[ booking_system_id ][ group_id ] );
-								if( group_availability > 0 ) {
-									is_group_available = true;
-									return false; // Break the loop
-								}
-							});
-							
-							// If no group are available, disable the event
-							if( ! is_group_available ) {
-								element.addClass( 'bookacti-event-unavailable' );
-							}
-						}
-					}
-					
-				} else {
+				// If the event or its group is not available, disable the event
+				if( ! is_available ) {
 					element.addClass( 'bookacti-event-unavailable' );
 				}
 				
+				var avail_div = bookacti_get_event_availability_div( event );
 				element.append( avail_div );
 			}
 			
@@ -130,56 +106,7 @@ function bookacti_set_calendar_up( booking_system, reload_events ) {
 
 		// eventClick : When an event is clicked
 		eventClick: function( event, jsEvent, view ) {
-			
-			//Fill the form fields (activity info bound to the product)
-			booking_system.siblings( '.bookacti-booking-system-inputs' ).find( 'input[name="bookacti_event_id"]' ).val( event.id );
-			booking_system.siblings( '.bookacti-booking-system-inputs' ).find( 'input[name="bookacti_event_start"]' ).val( event.start.format('YYYY-MM-DD HH:mm:ss')  );
-			booking_system.siblings( '.bookacti-booking-system-inputs' ).find( 'input[name="bookacti_event_end"]' ).val( event.end.format('YYYY-MM-DD HH:mm:ss') );
-			
-			// Because of popover and long events (spreading on multiple days), 
-			// the same event can appears twice, so we need to apply changes on each
-			var elements = $j( '.fc-event[data-event-id="' + event.id + '"][data-event-start="' + event.start.format( 'YYYY-MM-DD HH:mm:ss' ) + '"]' );
-			
-			// Empty the pickedEvent array
-			bookacti_unpick_all_events( booking_system );
-			
-			// Check if the event is part of a group
-			var group_ids = bookacti_get_event_group_ids( booking_system, event );
-			
-			var group_id = false;
-			
-			// If the event is part of (a) group(s)
-			if( group_ids.length > 0 ) {
-				// If there is only one choice (one group and pick group only)
-				if( group_ids.length === 1 && ! calendars_data[ booking_system_id ][ 'groups_single_events' ] ) {
-					// Select all the events of the group
-					group_id = group_ids[ 0 ];
-					
-				// If the event is in several groups
-				} else {
-					// Ask what group to pick
-					bookacti_dialog_choose_group_of_events( booking_system, group_ids, event );
-				}
-
-			// If event is single
-			} else {
-				group_id = 'single';
-			}
-			
-			// Pick events (single or whole group)
-			if( group_id ) {
-				bookacti_pick_events_of_group( booking_system, group_id, event );
-				
-				booking_system.siblings( '.bookacti-booking-system-inputs' ).find( 'input[name="bookacti_group_id"]' ).val( group_id );
-			}
-			
-			// Fill the form fields (activity info bound to the product)
-			booking_system.siblings( '.bookacti-booking-system-inputs' ).find( 'input[name="bookacti_event_id"]' ).val( event.id );
-			booking_system.siblings( '.bookacti-booking-system-inputs' ).find( 'input[name="bookacti_event_start"]' ).val( event.start.format('YYYY-MM-DD HH:mm:ss')  );
-			booking_system.siblings( '.bookacti-booking-system-inputs' ).find( 'input[name="bookacti_event_end"]' ).val( event.end.format('YYYY-MM-DD HH:mm:ss') );
-			
-			event.group_id = group_id;
-			booking_system.trigger( 'bookacti_event_click', [ event ] );
+			bookacti_event_click( booking_system, event );
 		}
 
 	}); 

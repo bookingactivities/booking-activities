@@ -82,7 +82,7 @@ if( empty( bookacti_fetch_templates() ) ) {
 	
 	<?php
 	// Display booking system title
-	add_filter( 'bookacti_booking_system_title', 'bookacti_bookings_booking_system_title', 10, 7 );
+	add_filter( 'bookacti_booking_system_title', 'bookacti_bookings_booking_system_title', 10, 2 );
 	function bookacti_bookings_booking_system_title( $title, $atts ) {
 		if( $atts[ 'id' ] === 'bookacti-booking-system-bookings-page' ) {
 			$title = '<h2>' . esc_html__( 'Pick an event to show its bookings', BOOKACTI_PLUGIN_NAME ) . '</h2>';

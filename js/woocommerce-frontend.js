@@ -137,7 +137,7 @@ $j( document ).ready( function() {
 				var quantity			= parseInt( $j( this ).parents( 'form' ).find( '.quantity .qty' ).val() );
 				var available_places	= 0; 
 
-				//Limit the max quantity
+				// Limit the max quantity
 				if( pickedEvents[ booking_system_id ].length > 1 ) {
 					available_places = bookacti_get_group_availability( pickedEvents[ booking_system_id ] );
 				} else {
