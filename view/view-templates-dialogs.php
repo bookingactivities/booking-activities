@@ -646,9 +646,9 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 						<?php
 							$template_id = bookacti_get_user_default_template();
 							if( ! empty( $template_id ) ) {
-								$categories	= bookacti_get_group_categories_by_template_ids( $template_id );
+								$categories	= bookacti_get_group_categories_by_template( $template_id );
 								foreach( $categories as $category ) {
-									echo "<option value='" . $category->id . "' >" . apply_filters( 'bookacti_translate_text', $category->title ) . "</option>";
+									echo "<option value='" . $category[ 'id' ] . "' >" . $category[ 'title' ] . "</option>";
 								}
 							}
 						?>

@@ -28,19 +28,32 @@ function bookacti_get_booking_system( $atts, $echo = false ) {
 	<div class='bookacti-booking-system-container' id='<?php echo esc_attr( $atts[ 'id' ] . '-container' ); ?>' >
 	
 		<script>
-			calendars_data[ '<?php echo $atts[ 'id' ]; ?>' ] = <?php echo json_encode( $atts ); ?>;
+			
+			bookacti.booking_system[ '<?php echo $atts[ 'id' ]; ?>' ] = <?php echo json_encode( $atts ); ?>;
 		
 			<?php 
 			// Events related data
 			$when_events_load = bookacti_get_setting_value( 'bookacti_general_settings', 'when_events_load' ); 
 			if( $when_events_load === 'on_page_load' && $atts[ 'auto_load' ] ) { 
-				$groups = array();
-				if( $atts[ 'group_categories' ] !== false ) { $groups = bookacti_get_groups_events( $atts[ 'calendars' ], $atts[ 'group_categories' ] ); }
+				$groups_events = array();
+				if( $atts[ 'group_categories' ] !== false ) { 
+					$groups_events		= bookacti_get_groups_events( $atts[ 'calendars' ], $atts[ 'group_categories' ] );
+				} 
+				
+				if( empty( $atts[ 'group_categories' ] ) ) {
+					$groups_data		= bookacti_get_groups_of_events_by_template( $atts[ 'calendars' ] );
+					$categories_data	= bookacti_get_group_categories_by_template( $atts[ 'calendars' ] );
+				} else {
+					$groups_data		= bookacti_get_groups_of_events_by_category( $atts[ 'group_categories' ] );
+					$categories_data	= bookacti_get_group_categories( $atts[ 'group_categories' ] );
+				}
 			?>
-				json_events[ '<?php echo $atts[ 'id' ]; ?>' ]	= <?php echo json_encode( bookacti_fetch_events( $atts ) ); ?>;
-				json_activities									= <?php echo json_encode( bookacti_get_activities_by_template_ids( $atts[ 'calendars' ] ) ); ?>;
-				json_groups[ '<?php echo $atts[ 'id' ]; ?>' ]	= <?php echo json_encode( $groups ); ?>;	
-				calendars_data[ '<?php echo $atts[ 'id' ]; ?>' ][ 'settings' ]	= <?php echo json_encode( bookacti_get_mixed_template_settings( $atts[ 'calendars' ] ) ); ?>;	
+				bookacti.booking_system[ '<?php echo $atts[ 'id' ]; ?>' ][ 'events' ]					= <?php echo json_encode( bookacti_fetch_events( $atts ) ); ?>;
+				bookacti.booking_system[ '<?php echo $atts[ 'id' ]; ?>' ][ 'activities_data' ]			= <?php echo json_encode( bookacti_get_activities_by_template( $atts[ 'calendars' ] ) ); ?>;
+				bookacti.booking_system[ '<?php echo $atts[ 'id' ]; ?>' ][ 'groups_events' ]			= <?php echo json_encode( $groups_events ); ?>;	
+				bookacti.booking_system[ '<?php echo $atts[ 'id' ]; ?>' ][ 'groups_data' ]				= <?php echo json_encode( $groups_data ); ?>;	
+				bookacti.booking_system[ '<?php echo $atts[ 'id' ]; ?>' ][ 'group_categories_data' ]	= <?php echo json_encode( $categories_data ); ?>;	
+				bookacti.booking_system[ '<?php echo $atts[ 'id' ]; ?>' ][ 'settings' ]					= <?php echo json_encode( bookacti_get_mixed_template_settings( $atts[ 'calendars' ] ) ); ?>;	
 			<?php } ?>
 		</script>
 				
@@ -191,7 +204,10 @@ function bookacti_format_booking_system_attributes( $atts = array(), $shortcode 
 		), '', 	$atts[ 'calendars' ] ) ) );
 	}
 	
-	if( is_string( $atts[ 'activities' ] ) || is_numeric( $atts[ 'activities' ] ) ) {
+	if( in_array( $atts[ 'activities' ], array( true, 'all', 'true', 'yes', 'ok' ), true ) ) {
+		$atts[ 'activities' ] = array();
+		
+	} else if( is_string( $atts[ 'activities' ] ) || is_numeric( $atts[ 'activities' ] ) ) {
 		$atts[ 'activities' ] = array_map( 'intval', explode( ',', preg_replace( array(
 			'/[^\d,]/',    // Matches anything that's not a comma or number.
 			'/(?<=,),+/',  // Matches consecutive commas.
@@ -237,7 +253,7 @@ function bookacti_format_booking_system_attributes( $atts = array(), $shortcode 
 	
 	// Check if desired activities exist
 	if( ! empty( $atts[ 'calendars' ] ) ) {
-		$available_activities = bookacti_get_activity_ids_by_template_ids( $atts[ 'calendars' ] );
+		$available_activities = bookacti_get_activity_ids_by_template( $atts[ 'calendars' ] );
 		foreach( $atts[ 'activities' ] as $i => $activity_id ) {
 			if( ! in_array( intval( $activity_id ), $available_activities ) ) {
 				unset( $atts[ 'activities' ][ $i ] );
@@ -264,10 +280,10 @@ function bookacti_format_booking_system_attributes( $atts = array(), $shortcode 
 		// Remove duplicated values
 		$atts[ 'group_categories' ] = array_unique( $atts[ 'group_categories' ] ); 
 		
-		$available_categories = bookacti_get_group_categories_by_template_ids( $atts[ 'calendars' ] );
+		$available_category_ids = bookacti_get_group_category_ids_by_template( $atts[ 'calendars' ] );
 		foreach( $atts[ 'group_categories' ] as $i => $category_id ) {
-			foreach( $available_categories as $available_category ) {
-				if( $available_category->id == intval( $category_id ) ) {
+			foreach( $available_category_ids as $available_category_id ) {
+				if( $available_category_id == intval( $category_id ) ) {
 					$is_existing = true;
 					break;
 				}
@@ -752,11 +768,11 @@ function bookacti_get_formatted_booking_events_list( $booking_events, $quantity 
 	 */
 	function bookacti_get_group_of_events_availability( $event_group_id ) {
 
-		$events = bookacti_get_events_of_group( $event_group_id );
+		$events = bookacti_get_group_events( $event_group_id, true );
 
 		$max = 999999999; // Any big int
 		foreach( $events as $event ) {
-			$availability = bookacti_get_event_availability( $event->id, $event->start, $event->end );
+			$availability = bookacti_get_event_availability( $event[ 'id' ], $event[ 'start' ], $event[ 'end' ] );
 			if( $availability < $max ) {
 				$max = $availability;
 			}
@@ -777,15 +793,7 @@ function bookacti_get_formatted_booking_events_list( $booking_events, $quantity 
 	 * @return int|boolean
 	 */
 	function bookacti_book_group_of_events( $user_id, $event_group_id, $quantity, $state = 'booked', $expiration_date = NULL ) {
-		
-		$events = bookacti_get_events_of_group( $event_group_id );
-		
-		// Make sure quantity isn't over group availability
-		$max_quantity	= bookacti_get_group_of_events_availability( $event_group_id );
-		if( $quantity > $max_quantity ) {
-			$quantity = $max_quantity;
-		}
-		
+				
 		// Insert the booking group
 		$booking_group_id = bookacti_insert_booking_group( $user_id, $event_group_id, $state );
 		
@@ -793,9 +801,16 @@ function bookacti_get_formatted_booking_events_list( $booking_events, $quantity 
 			return false;
 		}
 		
+		// Make sure quantity isn't over group availability
+		$max_quantity	= bookacti_get_group_of_events_availability( $event_group_id );
+		if( $quantity > $max_quantity ) {
+			$quantity = $max_quantity;
+		}
+		
 		// Insert bookings
+		$events = bookacti_get_group_events( $event_group_id );
 		foreach( $events as $event ) {
-			bookacti_insert_booking( $user_id, $event->id, $event->start, $event->end, $quantity, $state, $expiration_date, $booking_group_id );
+			bookacti_insert_booking( $user_id, $event[ 'id' ], $event[ 'start' ], $event[ 'end' ], $quantity, $state, $expiration_date, $booking_group_id );
 		}
 		
 		return $booking_group_id;
@@ -822,4 +837,34 @@ function bookacti_get_formatted_booking_events_list( $booking_events, $quantity 
 		}
 		
 		return $categories;
+	}
+	
+	
+	/**
+	 * Get events of a group
+	 * 
+	 * @global wpdb $wpdb
+	 * @param int $group_id
+	 * @param boolean $fetch_inactive_events
+	 * @return array|false
+	 */
+	function bookacti_get_group_events( $group_id, $fetch_inactive_events = false ) {
+		
+		if( empty( $group_id ) ) {
+			return false;
+		}
+		
+		if( is_array( $group_id ) ) {
+			$group_id = $group_id[ 0 ];
+		}
+		
+		if( ! is_numeric( $group_id ) ) {
+			return false;
+		}
+		
+		$group_id = intval( $group_id );
+		
+		$groups_events = bookacti_get_groups_events( array(), array(), $group_id, $fetch_inactive_events );
+		
+		return $groups_events[ $group_id ];
 	}

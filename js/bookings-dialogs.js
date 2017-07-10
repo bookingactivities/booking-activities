@@ -539,7 +539,7 @@ function bookacti_dialog_change_booking_state( booking_id, booking_type ) {
 								
 								// Reload calendar if is bookings page and if active changed
 								if( is_bookings_page && response.active_changed ) {
-									var booking_method = calendars_data[ 'bookacti-booking-system-bookings-page' ][ 'method' ];
+									var booking_method = bookacti.booking_system[ 'bookacti-booking-system-bookings-page' ][ 'method' ];
 									bookacti_booking_method_refetch_events( $j( '#bookacti-booking-system-bookings-page' ), booking_method );
 								}
 								
@@ -608,8 +608,8 @@ function bookacti_dialog_reschedule_booking( booking_id ) {
 				booking_quantity		= response.quantity;
 				
 				// Replace global data
-				calendars_data[ booking_system_id ][ 'calendars' ]	= template_id ? [ template_id ] : [];
-				calendars_data[ booking_system_id ][ 'activities' ]	= activity_id ? [ activity_id ] : [];
+				bookacti.booking_system[ booking_system_id ][ 'calendars' ]	= template_id ? [ template_id ] : [];
+				bookacti.booking_system[ booking_system_id ][ 'activities' ]	= activity_id ? [ activity_id ] : [];
 				
 				booking_system.trigger( 'bookacti_before_booking_system_loads', [ response.event_settings ] );
 				

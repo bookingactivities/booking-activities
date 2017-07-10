@@ -741,7 +741,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			<div class='options_group'>
 				<?php 
 					$groups_field_id	= '_bookacti_group_categories'; 
-					$categories			= bookacti_get_group_categories_by_template_ids();
+					$categories			= bookacti_get_group_categories_by_template();
 					$current_categories	= get_post_meta( $thepostid, $groups_field_id, true );
 					$current_categories	= is_numeric( $current_categories ) ? array( $current_categories ) : $current_categories;
 				?>
@@ -762,11 +762,11 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 					<?php 
 						$groups_options	= '';
 						foreach( $categories as $category ) {
-							$category_title = apply_filters( 'bookacti_translate_text', $category->title );
-							$selected		= is_array( $current_categories ) ? selected( in_array( $category->id, $current_categories ), true, false ) : '';
+							$category_title = apply_filters( 'bookacti_translate_text', $category[ 'title' ] );
+							$selected		= is_array( $current_categories ) ? selected( in_array( $category[ 'id' ], $current_categories ), true, false ) : '';
 							$groups_options .= '<option '
-												.  'value="' . esc_attr( $category->id ) . '" '
-												.  'data-bookacti-show-if-templates="' . $category->template_id . '" '
+												.  'value="' . esc_attr( $category[ 'id' ] ) . '" '
+												.  'data-bookacti-show-if-templates="' . $category[ 'template_id' ] . '" '
 												. $selected . ' >'
 													. esc_html( $category_title )
 											.  '</option>';
@@ -950,7 +950,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			$templates_array[ $template->id ] = $template->title;
 		}
 		$activities = bookacti_fetch_activities_with_templates_association();
-		$categories	= bookacti_get_group_categories_by_template_ids();
+		$categories	= bookacti_get_group_categories_by_template();
 
 		//Check if variation is flagged as activity
 		$is_variation_activity = get_post_meta( $variation->ID, 'bookacti_variable_is_activity', true );
@@ -1136,11 +1136,11 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 					<?php
 					$groups_options	= '';
 					foreach( $categories as $category ) {
-						$category_title = apply_filters( 'bookacti_translate_text', $category->title );
-						$selected		= is_array( $current_group_categories ) ? selected( in_array( $category->id, $current_group_categories ), true, false ) : '';
+						$category_title = apply_filters( 'bookacti_translate_text', $category[ 'title' ] );
+						$selected		= is_array( $current_group_categories ) ? selected( in_array( $category[ 'id' ], $current_group_categories ), true, false ) : '';
 						$groups_options .= '<option '
-											. 'value="' . esc_attr( $category->id ) . '" '
-											. 'data-bookacti-show-if-templates="' . $category->template_id . '" '
+											. 'value="' . esc_attr( $category[ 'id' ] ) . '" '
+											. 'data-bookacti-show-if-templates="' . $category[ 'template_id' ] . '" '
 											. $selected . ' >'
 												. esc_html( $category_title )
 										.  '</option>';

@@ -54,7 +54,7 @@ $j( document ).ready( function() {
 						} else {
 							// Reload events
 							var booking_system_id	= booking_system.attr( 'id' );
-							var booking_method		= calendars_data[ booking_system_id ][ 'method' ];
+							var booking_method		= bookacti.booking_system[ booking_system_id ][ 'method' ];
 							
 							bookacti_booking_method_refetch_events( booking_system, booking_method );
 						}
@@ -97,10 +97,10 @@ $j( document ).ready( function() {
 			var available_places	= 0; 
 			
 			// Limit the max quantity
-			if( pickedEvents[ booking_system_id ].length > 1 ) {
-				available_places = bookacti_get_group_availability( pickedEvents[ booking_system_id ] );
+			if( bookacti.booking_system[ booking_system_id ][ 'picked_events' ].length > 1 ) {
+				available_places = bookacti_get_group_availability( bookacti.booking_system[ booking_system_id ][ 'picked_events' ] );
 			} else {
-				available_places = bookacti_get_event_availability( pickedEvents[ booking_system_id ][ 0 ] );
+				available_places = bookacti_get_event_availability( bookacti.booking_system[ booking_system_id ][ 'picked_events' ][ 0 ] );
 			}
 			
 			$j( this ).parents( 'form' ).find( 'input.bookacti-quantity' ).attr( 'max', available_places );

@@ -250,6 +250,7 @@ If you don't find the answer you need, please [contact us](http://booking-activi
 * Fix - Cart expiration is now checked on each page load. This means that you cart counter will now always be up to date.
 * Fix - Fixed booking method checks in JS files (misuse of inArray)
 * Fix - Fixed permission error after closing a dialog in template editor
+* Fix - All global JS variables are stored in bookacti object in order to avoid collisions
 * Delete - Removed trashes from editor, to delete calendars, activities and events please use their respective settings dialogs
 * Delete - Deleted events 'occurrence id' since it is not a relevant identifier. All events can be identified by id + start + end datetimes.
 * Delete - Deleted unused bookings global actions
@@ -315,7 +316,7 @@ If you don't find the answer you need, please [contact us](http://booking-activi
     * Add - bookacti_booking_actions_html_array
     * Add - bookacti_booking_group_actions_html_array
 	* Tweak - bookacti_booking_can_be_rescheduled has now only 2 arguments, use bookacti_booking_can_be_rescheduled_to to have the same behavior as before
-	* Tweak - bookacti_before_booking_actions and bookacti_after_booking_actions have now 3 arguments
+	* Tweak - bookacti_before_booking_actions and bookacti_after_booking_actions, bookacti_booking_form_validated have now 3 arguments
 	* Tweak - bookacti_before_refund_actions, bookacti_refund_booking, bookacti_refund_request_email_to, bookacti_refund_request_email_data, bookacti_refund_request_email_message have now an additional argument to differenciate single booking to booking group
 	* Tweak - Merged all booking system parameters into one array in bookacti_booking_system_title, bookacti_booking_system_auto_load, bookacti_picked_events_list_title
 	* Tweak - Added $shortcode parameter to bookacti_formatted_booking_system_attributes

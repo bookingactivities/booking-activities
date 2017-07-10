@@ -1,7 +1,7 @@
 { "vendor": { "plugins/booking-activities": "1.0" },
 	"admin-config":{
 		"bookacti_calendars":{
-			"pages":{ "admin.php":"page=bookacti_calendars", "admin.php":"page=bookacti_settings" },
+			"pages":{ "admin.php":"" },
 			"anchors":{ "bookacti-settings-lang-switcher": { "where": "first" },
 						"bookacti-activity-dialog-lang-switcher": { "where": "first" }, 
 						"bookacti-event-dialog-lang-switcher": { "where": "first" }, 

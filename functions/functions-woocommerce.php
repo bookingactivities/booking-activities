@@ -874,6 +874,43 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	
 	
 	/**
+	 * Get the product id bound to a booking group
+	 * 
+	 * @since 1.1.0
+	 * 
+	 * @param type $booking_group_id
+	 * @return int|false
+	 */
+	function bookacti_get_booking_group_product_id( $booking_group_id ) {
+
+		$item = bookacti_get_order_item_by_booking_group_id( $booking_group_id );
+		
+		if( empty( $item ) ) { return false; }
+
+		// WOOCOMMERCE 3.0.0 backward compatibility
+		if( version_compare( WC_VERSION, '3.0.0', '>=' ) ) {
+			$product_id = $item->get_product_id();
+		} else {
+			$order_id = bookacti_get_booking_group_order_id( $booking_group_id );
+			
+			if( ! $order_id ) { return false; }
+
+			$order = wc_get_order( $order_id );
+			
+			if( empty( $order ) ) { return false; }
+			
+			$_product  = $order->get_product_from_item( $item );
+
+			if( empty( $_product ) ) { return false; }
+
+			$product_id = absint( $_product->id );
+		}
+
+		return $product_id;
+	}
+	
+	
+	/**
 	 * Tell if the product is activity or has variations that are activities
 	 * 
 	 * @version 1.0.4

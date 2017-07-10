@@ -105,7 +105,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	 */
 	function bookacti_get_activities_html_for_booking_page( $template_ids, $activity_ids = array() ) {
 
-		$activities = bookacti_get_activities_by_template_ids( $template_ids );
+		$activities = bookacti_get_activities_by_template( $template_ids );
 		$j = 0;
 		$html = '';
 		foreach ( $activities as $activity ) {	

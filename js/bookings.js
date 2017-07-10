@@ -11,8 +11,8 @@ $j( document ).ready(function() {
 				element = element || undefined;
 
 				//Check if the event is hidden
-				if( hiddenActivities !== undefined && event.activity_id !== undefined ) {
-					$j.each( hiddenActivities, function ( i, activity_id_to_hide ) {
+				if( bookacti.hidden_activities !== undefined && event.activity_id !== undefined ) {
+					$j.each( bookacti.hidden_activities, function ( i, activity_id_to_hide ) {
 						if( parseInt( event.activity_id ) === activity_id_to_hide ) {
 							if( typeof element !== 'undefined' ) { element.addClass( 'event-exception' ); }
 							event.render = 0;
@@ -68,16 +68,16 @@ $j( document ).ready(function() {
 
 		// BOOKING LIST
 			// Show the booking list
-			booking_system.on( 'bookacti_event_click', function( e, event ) { 
-				if( event.group_id === 'single' ) {
+			booking_system.on( 'bookacti_event_click', function( e, event, group_id ) { 
+				if( group_id === 'single' ) {
 					bookacti_fill_booking_list( booking_system, event );
 				}
 			});
 			
 			// Show the booking group list
 			booking_system.on( 'bookacti_group_of_events_choosed', function( e, group_id, event ) { 
-				if( event.group_id === 'single' || $j.isNumeric ( event.group_id ) ) {
-					bookacti_fill_booking_list( booking_system, event );
+				if( group_id === 'single' || $j.isNumeric( group_id ) ) {
+					bookacti_fill_booking_list( booking_system, event,group_id );
 				}
 			});
 

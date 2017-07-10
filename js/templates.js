@@ -4,10 +4,25 @@ $j( document ).ready( function() {
 	if ( $j( '#bookacti-template-calendar' ).length || $j( '#bookacti-first-template-container' ).length ) { 
 		
 		// Init globals
-		template_id						= parseInt( $j( '#bookacti-template-picker' ).val() ) || 0;
-		pickedEvents[ 'template' ]		= [];
-		selectedEvents[ 'template' ]	= [];
-		loadingNumber['template']		= 0;
+		bookacti.booking_system[ 'bookacti-template-calendar' ]								= [];
+		bookacti.booking_system[ 'bookacti-template-calendar' ][ 'events' ]					= [];
+		bookacti.booking_system[ 'bookacti-template-calendar' ][ 'groups_events' ]			= [];
+		bookacti.booking_system[ 'bookacti-template-calendar' ][ 'groups_data' ]			= [];
+		bookacti.booking_system[ 'bookacti-template-calendar' ][ 'activities_data' ]		= [];
+		bookacti.booking_system[ 'bookacti-template-calendar' ][ 'group_categories_data' ]	= [];
+		bookacti.booking_system[ 'bookacti-template-calendar' ][ 'settings' ]				= [];
+		
+		bookacti.booking_system[ 'bookacti-template-calendar' ][ 'picked_events' ]			= [];
+		bookacti.booking_system[ 'bookacti-template-calendar' ][ 'loading_number' ]			= 0;
+		
+		// Calendar editor specific globals
+		bookacti.booking_system[ 'bookacti-template-calendar' ][ 'selected_events' ]		= [];
+		bookacti.selected_template	= parseInt( $j( '#bookacti-template-picker' ).val() ) || 0;
+		bookacti.selected_category	= 'new';
+		bookacti.is_dragging		= false;
+		bookacti.blocked_events		= false;
+		bookacti.exceptions			= [];
+		
 		
 		// initialize activities and groups
 		bookacti_init_activities();
@@ -35,8 +50,8 @@ $j( document ).ready( function() {
 		}
 		
 		// Load the template
-		if( template_id ) {
-			bookacti_switch_template( template_id );
+		if( bookacti.selected_template ) {
+			bookacti_switch_template( bookacti.selected_template );
 		}
 
 	}
@@ -111,7 +126,7 @@ function bookacti_load_template_calendar() {
 		// When an event is rendered
 		eventRender: function( event, element, view ) { 
 			
-			//Add some info to the event
+			// Add some info to the event
 			element.data( 'event-id',			event.id );
 			element.attr( 'data-event-id',		event.id );
 			element.data( 'event-start',		event.start.format( 'YYYY-MM-DD HH:mm:ss' ) );
@@ -129,7 +144,7 @@ function bookacti_load_template_calendar() {
 				element.find( 'span.fc-time' ).text( event.start.format( 'HH:mm' ) + ' - ' + event.end.format( 'HH:mm' ) );
 			}
 
-			//Add availability div
+			// Add availability div
 			if( event.bookings != null && event.availability != null ) {
 				var class_no_availability = '', class_booked = '', class_full = '';
 
@@ -179,7 +194,7 @@ function bookacti_load_template_calendar() {
 				
 				// Check if the event is selected
 				var is_selected = false
-				$j.each( selectedEvents[ 'template' ], function( i, selected_event ){
+				$j.each( bookacti.booking_system[ 'bookacti-template-calendar' ][ 'selected_events' ], function( i, selected_event ){
 					if( selected_event.id == event.id 
 					&&  selected_event.start.substr( 0, 10 ) === event.start.format( 'YYYY-MM-DD' ) ) {
 						is_selected = true;
@@ -221,9 +236,9 @@ function bookacti_load_template_calendar() {
 			}
 			
 			
-			//Check if the event is on an exception
-			if( exceptions[ template_id ] !== undefined && exceptions[ template_id ][ event.id ] !== undefined ) {
-				$j.each( exceptions[ template_id ][ event.id ], function ( i, excep ) {
+			// Check if the event is on an exception
+			if( bookacti.exceptions[ bookacti.selected_template ] !== undefined && bookacti.exceptions[ bookacti.selected_template ][ event.id ] !== undefined ) {
+				$j.each( bookacti.exceptions[ bookacti.selected_template ][ event.id ], function ( i, excep ) {
 					if( excep.type === 'date' && excep.value === event.start.format( 'YYYY-MM-DD' ) ) {
 						element.addClass( 'event-exception' );
 						event.render = 0;
@@ -231,9 +246,9 @@ function bookacti_load_template_calendar() {
 				});
 			}
 
-			//Check if the event is hidden
-			if( hiddenActivities != null && event.activity_id != null ) {
-				$j.each( hiddenActivities, function ( i, activity_id_to_hide ) {
+			// Check if the event is hidden
+			if( bookacti.hidden_activities != null && event.activity_id != null ) {
+				$j.each( bookacti.hidden_activities, function ( i, activity_id_to_hide ) {
 					if( parseInt( event.activity_id ) === activity_id_to_hide ) {
 						element.addClass( 'event-exception' );
 						event.render = 0;
@@ -254,27 +269,27 @@ function bookacti_load_template_calendar() {
 
 		eventAfterAllRender: function( view ) {
 
-			//Block the event if no other operation on it is allowed until the running ones are finished
-			if( blockEvents === true ) { 
+			// Block the event if no other operation on it is allowed until the running ones are finished
+			if( bookacti.blocked_events === true ) { 
 				$j( '.fc-event' ).addClass( 'bookacti-event-unavailable' );
-			} else if ( $j.isNumeric( blockEvents ) ) {
-				$j( '.fc-event[data-event-id="' + blockEvents + '"]' ).addClass( 'bookacti-event-unavailable' );
+			} else if ( $j.isNumeric( bookacti.blocked_events ) ) {
+				$j( '.fc-event[data-event-id="' + bookacti.blocked_events + '"]' ).addClass( 'bookacti-event-unavailable' );
 			} else {
 				$j( '.fc-event' ).removeClass( 'bookacti-event-unavailable' );
 			}
 
-			//remove exceptions
+			// Remove exceptions
 			$j( '.fc-event.event-exception' ).remove();
 			
 			// Hide event actions
 			$j( '.bookacti-event-action[data-hide-on-mouseout="1"]' ).hide();
 			
-			//Display element as picked or selected if they actually are
-			$j.each( pickedEvents[ 'template' ], function( i, picked_event ) {
+			// Display element as picked or selected if they actually are
+			$j.each( bookacti.booking_system[ 'bookacti-template-calendar' ][ 'picked_events' ], function( i, picked_event ) {
 				calendar.find( '.fc-event[data-event-id="' + picked_event[ 'id' ] + '"][data-event-start="' + picked_event[ 'start' ] + '"]' ).addClass( 'bookacti-picked-event' );
 			});
 			
-			bookacti_refresh_selected_events_display( calendar );
+			bookacti_refresh_selected_events_display();
 		},
 
 
@@ -325,7 +340,7 @@ function bookacti_load_template_calendar() {
 				url: ajaxurl,
 				data: { 'action': 'bookactiInsertEvent', 
 						'activity_id': activity_id, 
-						'template_id': template_id, 
+						'template_id': bookacti.selected_template, 
 						'event_title': title, 
 						'event_start': start, 
 						'event_end': end,
@@ -430,7 +445,7 @@ function bookacti_load_template_calendar() {
 				revertFunc();
 			} else {
 				// Unselect the event or occurences of the event
-				bookacti_unselect_event( calendar, event, undefined, true );
+				bookacti_unselect_event( event, undefined, true );
 			}
 
 			// Update the event changes in database
@@ -458,7 +473,7 @@ function bookacti_load_template_calendar() {
 					if( is_alt_key_pressed ) {
 						if( response.status === 'success' ) { 
 							var new_event = { 'id': response.event_id };
-							bookacti_update_exceptions( template_id, new_event );
+							bookacti_update_exceptions( bookacti.selected_template, new_event );
 						}
 					}
 
@@ -494,13 +509,13 @@ function bookacti_load_template_calendar() {
 
 		//When the user drag an event
 		eventDragStart: function ( event, jsEvent, ui, view ) {
-			isDragging = true;
+			bookacti.is_dragging = true;
 		},
 
 
 		//When the user drop an event, even if it is not on the calendar or if there is no change of date / hour
 		eventDragStop: function ( event, jsEvent, ui, view ) {
-			isDragging = false;
+			bookacti.is_dragging = false;
 		},
 
 
@@ -516,8 +531,8 @@ function bookacti_load_template_calendar() {
 			elements.addClass( 'bookacti-picked-event' );
 
 			// Keep picked events in memory 
-			pickedEvents[ 'template' ] = [];
-			pickedEvents[ 'template' ].push({ 
+			bookacti.booking_system[ 'bookacti-template-calendar' ][ 'picked_events' ] = [];
+			bookacti.booking_system[ 'bookacti-template-calendar' ][ 'picked_events' ].push({ 
 				'id'			: event.id,
 				'activity_id'	: event.activity_id,
 				'start'			: event.start.format( 'YYYY-MM-DD HH:mm:ss' ), 
@@ -541,10 +556,10 @@ function bookacti_load_template_calendar() {
 					
 					// Format selected events and keep them / remove them from memory
 					if( element.find( '.bookacti-event-action-select-checkbox' ).is( ':checked' ) ) {
-						bookacti_select_event( calendar, event );
+						bookacti_select_event( event );
 					
 					} else {
-						bookacti_unselect_event( calendar, event );
+						bookacti_unselect_event( event );
 						element.find( '.bookacti-event-action-select' ).show();
 					}
 				}
@@ -570,7 +585,7 @@ function bookacti_load_template_calendar() {
 			
 			// Check if the event is selected
 			var is_selected = false
-			$j.each( selectedEvents[ 'template' ], function( i, selected_event ){
+			$j.each( bookacti.booking_system[ 'bookacti-template-calendar' ][ 'selected_events' ], function( i, selected_event ){
 				if( selected_event.id == event.id 
 				&&  selected_event.start.substr( 0, 10 ) === event.start.format( 'YYYY-MM-DD' ) ) {
 					is_selected = true;

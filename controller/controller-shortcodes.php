@@ -279,7 +279,7 @@ function bookacti_controller_validate_booking_form() {
 		$booking_form_values = apply_filters( 'bookacti_booking_form_values', array(
 			'user_id'			=> intval( get_current_user_id() ),
 			'booking_system_id'	=> sanitize_title_with_dashes( $_POST[ 'bookacti_booking_system_id' ] ),
-			'group_id'			=> intval( $_POST[ 'bookacti_group_id' ] ),
+			'group_id'			=> is_numeric( $_POST[ 'bookacti_group_id' ] ) ? intval( $_POST[ 'bookacti_group_id' ] ) : 'single',
 			'event_id'			=> intval( $_POST[ 'bookacti_event_id' ] ),
 			'event_start'		=> bookacti_sanitize_datetime( $_POST[ 'bookacti_event_start' ] ),
 			'event_end'			=> bookacti_sanitize_datetime( $_POST[ 'bookacti_event_end' ] ),
@@ -296,7 +296,7 @@ function bookacti_controller_validate_booking_form() {
 		}
 		
 		if( $response[ 'status' ] === 'success' ) {
-			
+						
 			// Single Booking
 			if( $booking_form_values[ 'group_id' ] === 'single' ) {
 			
@@ -310,7 +310,7 @@ function bookacti_controller_validate_booking_form() {
 			
 				if( ! empty( $booking_id ) ) {
 
-					do_action( 'bookacti_booking_form_validated', $booking_id, $booking_form_values );
+					do_action( 'bookacti_booking_form_validated', $booking_id, $booking_form_values, 'single' );
 					
 					$message = __( 'Your event has been booked successfully!', BOOKACTI_PLUGIN_NAME );
 					wp_send_json( array( 'status' => 'success', 'message' => esc_html( $message ), 'booking_id' => $booking_id ) );
@@ -328,7 +328,7 @@ function bookacti_controller_validate_booking_form() {
 				
 				if( ! empty( $booking_group_id ) ) {
 
-					do_action( 'bookacti_booking_form_validated', $booking_group_id, $booking_form_values );
+					do_action( 'bookacti_booking_form_validated', $booking_group_id, $booking_form_values, 'group' );
 					
 					$message = __( 'Your events have been booked successfully!', BOOKACTI_PLUGIN_NAME );
 					wp_send_json( array( 'status' => 'success', 'message' => esc_html( $message ), 'booking_group_id' => $booking_group_id ) );

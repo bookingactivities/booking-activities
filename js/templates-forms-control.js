@@ -323,8 +323,8 @@ function bookacti_validate_event_general_data() {
 
 function bookacti_validate_event_repetition_data( event_start, event_end ) {
 	
-    event_start = event_start	|| pickedEvents[ 'template' ][ 0 ][ 'start' ];
-    event_end	= event_end		|| pickedEvents[ 'template' ][ 0 ][ 'end' ];
+    event_start = event_start	|| bookacti.booking_system[ 'bookacti-template-calendar' ][ 'picked_events' ][ 0 ][ 'start' ];
+    event_end	= event_end		|| bookacti.booking_system[ 'bookacti-template-calendar' ][ 'picked_events' ][ 0 ][ 'end' ];
 	
 	// Get params
     var min_bookings    = parseInt( $j( '#bookacti-event-data-dialog #bookacti-event-availability' ).attr( 'min' ) );
@@ -574,7 +574,7 @@ function bookacti_validate_group_of_events_form() {
 	if( typeof title		=== 'string' && title		!== '' )	{ valid_form.isTitle = true; }
 	if( typeof category		=== 'string' && category	!== 'new' )	{ valid_form.isCategory = true; }
 	if( typeof cat_title	=== 'string' && cat_title	!== '' )	{ valid_form.isCategoryTitle = true; }
-	if( selectedEvents[ 'template' ].length >= 2 )					{ valid_form.isSelectedEvents = true; }
+	if( bookacti.booking_system[ 'bookacti-template-calendar' ][ 'selected_events' ].length >= 2 )					{ valid_form.isSelectedEvents = true; }
 
 	if( valid_form.isTitle 
 	&&  ( valid_form.isCategory || valid_form.isCategoryTitle ) 

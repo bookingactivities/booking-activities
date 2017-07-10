@@ -1,31 +1,19 @@
 $j=jQuery.noConflict();
 
-// Global
-var json_events			= [];
-var json_activities		= [];
-var json_groups			= [];
-var pickedEvents		= [];
-var loadingNumber		= [];
-var calendars_data		= [];
-var event_sizes = {
-	'tinyHeight' : parseInt( bookacti_localized.event_tiny_height ),
-	'smallHeight' : parseInt( bookacti_localized.event_small_height ),
-	'narrowWidth' : parseInt( bookacti_localized.event_narrow_width ),
-	'wideWidth' : parseInt( bookacti_localized.event_wide_width )
+var bookacti = {
+	// Global
+	'booking_system': [],
+	'event_sizes': {
+			'tiny_height' : parseInt( bookacti_localized.event_tiny_height ),
+			'small_height' : parseInt( bookacti_localized.event_small_height ),
+			'narrow_width' : parseInt( bookacti_localized.event_narrow_width ),
+			'wide_width' : parseInt( bookacti_localized.event_wide_width )
+		},
+
+	// Bookings
+	'hidden_activities': [],
+
+	// Woocommerce
+	'parent_booking_system': [],
+	'is_variation_activity': []
 };
-
-// Template
-var template_id			= 0;
-var isDragging			= false;
-var exceptions			= [];
-var selectedCategory	= 'new';
-var selectedEvents		= [];
-var blockEvents			= false;
-
-// Bookings
-var supportsTouch		= 'ontouchstart' in window || navigator.msMaxTouchPoints;
-var hiddenActivities	= [];
-
-// Woocommerce
-var parent_calendar_data= [];
-var is_activity			= [];

@@ -179,18 +179,9 @@ echo "<h1>" . esc_html__( 'Calendars', BOOKACTI_PLUGIN_NAME ) . "</h1>";
 		$template_id = $activity_ids = $category_ids = '';
 		$categories = array();
 		if( ! empty( $default_template ) ) {
-			$template_id = $default_template;
-			$activity_ids = implode( ',', bookacti_get_activity_ids_by_template_ids( array( $template_id ) ) );
-			$categories = bookacti_get_group_categories_by_template_ids( $template_id );
-			
-			$i=1;
-			foreach( $categories as $category ) {
-				$category_ids .= $category->id;
-				if( $i < count( $categories ) ) { 
-					$category_ids .= ',';
-				}
-				$i++;
-			}
+			$template_id	= $default_template;
+			$activity_ids	= implode( ',', bookacti_get_activity_ids_by_template( array( $template_id ) ) );
+			$category_ids	= implode( ',', bookacti_get_group_category_ids_by_template( array( $template_id ) ) );
 		}
 	?>
 	<h3><?php esc_html_e( 'Shortcodes', BOOKACTI_PLUGIN_NAME ); ?></h3>

@@ -139,7 +139,7 @@ function bookacti_get_setting_value( $setting_page, $setting_field, $translate =
 	
 	$translated_setting = apply_filters( 'bookacti_translate_text', $settings[ $setting_field ] );
 	
-	return ! empty( $translated_setting ) ? $translated_setting : constant( 'BOOKACTI_' . strtoupper( $setting_field ) );
+	return ! empty( $translated_setting ) ? $translated_setting : defined( 'BOOKACTI_' . strtoupper( $setting_field ) ) ? constant( 'BOOKACTI_' . strtoupper( $setting_field ) ) : false;
 }
 
 
@@ -180,7 +180,7 @@ function bookacti_get_setting_value_by_user( $setting_page, $setting_field, $use
 	
 	$translated_setting = apply_filters( 'bookacti_translate_text', $settings[ $setting_field ][ $user_id ] );
 	
-	return ! empty( $translated_setting ) ? $translated_setting : constant( 'BOOKACTI_' . strtoupper( $setting_field ) );
+	return ! empty( $translated_setting ) ? $translated_setting : defined( 'BOOKACTI_' . strtoupper( $setting_field ) ) ? constant( 'BOOKACTI_' . strtoupper( $setting_field ) ) : false;
 }
 
 

@@ -67,7 +67,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		
 		$list = '';
 		$activities = bookacti_fetch_activities();
-		$template_activities = bookacti_get_activity_ids_by_template_ids( $template_id );
+		$template_activities = bookacti_get_activity_ids_by_template( $template_id );
 
 		foreach ( $activities as $activity ) {
 			if( in_array( $activity->id, $template_activities ) ) {
@@ -249,7 +249,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 // TEMPLATES X ACTIVITIES ASSOCIATION
 	// UPDATE THE LIST OF TEMPLATES ASSOCIATED TO AN ACTIVITY ID
 	function bookacti_update_templates_list_by_activity_id( $new_templates, $activity_id ) {
-		$old_templates = bookacti_get_templates_by_activity_ids( $activity_id );
+		$old_templates = bookacti_get_templates_by_activity( $activity_id );
 		
 		// Unset templates already added
 		foreach( $new_templates as $i => $new_template ) {
@@ -279,7 +279,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	
 	// UPDATE THE LIST OF ACTIVITIES ASSOCIATED TO A TEMPLATE ID
 	function bookacti_bind_activities_to_template( $new_activities, $template_id ) {
-		$old_activities = bookacti_get_activity_ids_by_template_ids( $template_id );
+		$old_activities = bookacti_get_activity_ids_by_template( $template_id );
 		
 		// Unset templates already added
 		foreach( $new_activities as $i => $new_activity ) {
@@ -315,9 +315,9 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			return false;
 		}
 		
-		$categories = bookacti_get_group_categories_by_template_ids( $template_id );
-		foreach( $categories as $category ) {
-			if( intval( $category_id ) === intval( $category->id ) ) {
+		$available_category_ids = bookacti_get_group_category_ids_by_template( $template_id );
+		foreach( $available_category_ids as $available_category_id ) {
+			if( intval( $category_id ) === intval( $available_category_id ) ) {
 				return true;
 			}
 		}
@@ -427,13 +427,14 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		}
 		
 		// Get events currently in the group
-		$current_events = bookacti_get_events_of_group( $group_id );
+		$current_events = bookacti_get_group_events( $group_id );
 		
 		// Determine what events are to be added or removed
 		$to_insert = $new_events;
 		$to_delete = $current_events;
 		foreach( $new_events as $i => $new_event ) {
 			foreach( $current_events as $j => $current_event ) {
+				$current_event = (object) $current_event;
 				if( $current_event->id		== $new_event->id 
 				&&  $current_event->start	== $new_event->start 
 				&&  $current_event->end		== $new_event->end ) {
@@ -465,7 +466,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		
 		$updated = intval( $deleted ) + intval( $inserted );
 		
-		return $inserted;
+		return $updated;
 	}
 	
 	
@@ -488,14 +489,14 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		$list =	"";
 		
 		// Retrieve groups by categories
-		$categories	= bookacti_get_group_categories_by_template_ids( $template_id );
-		$groups		= bookacti_get_groups_of_events_by_template_ids( $template_id );
+		$categories	= bookacti_get_group_categories_by_template( $template_id );
+		$groups		= bookacti_get_groups_of_events_by_template( $template_id );
 		foreach( $categories as $category ) {
 			
-			$category_title			= apply_filters( 'bookacti_translate_text', esc_html( $category->title ) );
+			$category_title			= $category[ 'title' ];
 			$category_short_title	= strlen( $category_title ) > 16 ? substr( $category_title, 0, 16 ) . '&#8230;' : $category_title;
 			
-			$list	.= "<div class='bookacti-group-category' data-group-category-id='" . $category->id . "' data-show-groups='0' data-visible='1' >
+			$list	.= "<div class='bookacti-group-category' data-group-category-id='" . $category[ 'id' ] . "' data-show-groups='0' data-visible='1' >
 							<div class='bookacti-group-category-show-hide' >
 								<img src='" . esc_url( plugins_url() . '/' . BOOKACTI_PLUGIN_NAME . '/img/show.png' ) . "' />
 							</div>
@@ -514,12 +515,12 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			
 			$list	.= 	   "<div class='bookacti-groups-of-events-list' >";
 			
-			foreach( $groups as $group ) {
-				if( $group->category_id === $category->id ) {
-					$group_title		= apply_filters( 'bookacti_translate_text', esc_html( $group->title ) );
+			foreach( $groups as $group_id => $group ) {
+				if( $group[ 'category_id' ] === $category[ 'id' ] ) {
+					$group_title		= $group[ 'title' ];
 					$group_short_title	= strlen( $group_title ) > 16 ? substr( $group_title, 0, 16 ) . '&#8230;' : $group_title;
 					
-					$list	.=	   "<div class='bookacti-group-of-events' data-group-id='" . $group->id . "' >
+					$list	.=	   "<div class='bookacti-group-of-events' data-group-id='" . $group_id . "' >
 										<div class='bookacti-group-of-events-title' title='" . $group_title . "' >
 											" . $group_short_title . " 
 										</div>";

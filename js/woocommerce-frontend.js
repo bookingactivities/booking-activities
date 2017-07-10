@@ -62,7 +62,7 @@ $j( document ).ready( function() {
 					});
 					
 					// Save the parent data
-					parent_calendar_data[ booking_system_id ] = calendars_data[ booking_system_id ];
+					bookacti.parent_booking_system[ booking_system_id ] = bookacti.booking_system[ booking_system_id ];
 
 					// Change the booking system if a variation is selected
 					booking_system.parents( '.variations_form' ).find( '.single_variation_wrap' ).on( 'show_variation', function( event, variation ) { 
@@ -97,7 +97,7 @@ $j( document ).ready( function() {
 				if( form.hasClass( 'variations_form' ) ) {
 					var variation_id = form.find( '.variation_id' ).val();
 					if( variation_id !== '' && typeof variation_id !== 'undefined' ) {
-						proceed_to_validation = is_activity[ variation_id ];
+						proceed_to_validation = bookacti.is_variation_activity[ variation_id ];
 					}
 				} else if( form.find( '.bookacti-booking-system-container' ).length ) {
 					proceed_to_validation = true;
@@ -138,10 +138,10 @@ $j( document ).ready( function() {
 				var available_places	= 0; 
 
 				// Limit the max quantity
-				if( pickedEvents[ booking_system_id ].length > 1 ) {
-					available_places = bookacti_get_group_availability( pickedEvents[ booking_system_id ] );
+				if( bookacti.booking_system[ booking_system_id ][ 'picked_events' ].length > 1 ) {
+					available_places = bookacti_get_group_availability( bookacti.booking_system[ booking_system_id ][ 'picked_events' ] );
 				} else {
-					available_places = bookacti_get_event_availability( pickedEvents[ booking_system_id ][ 0 ] );
+					available_places = bookacti_get_event_availability( bookacti.booking_system[ booking_system_id ][ 'picked_events' ][ 0 ] );
 				}
 
 				$j( this ).parents( 'form' ).find( '.quantity .qty' ).attr( 'max', available_places );
@@ -181,7 +181,7 @@ function bookacti_switch_booking_system_according_to_variation( booking_system, 
 	&&  variation[ 'variation_is_active' ] 
 	&&  variation[ 'variation_is_visible' ] ) {
 		
-		is_activity[ variation[ 'variation_id' ] ] = true;
+		bookacti.is_variation_activity[ variation[ 'variation_id' ] ] = true;
 		bookacti_activate_booking_system( booking_system, variation[ 'variation_id' ] );
 
 		var template_id				= $j.isArray( variation[ 'bookacti_template_id' ] ) ? variation[ 'bookacti_template_id' ] : [ variation[ 'bookacti_template_id' ] ];
@@ -191,25 +191,25 @@ function bookacti_switch_booking_system_according_to_variation( booking_system, 
 		var groups_single_events	= $j.inArray( variation[ 'bookacti_groups_single_events' ], [ 1, '1', true, 'true', 'yes', 'ok' ] ) >= 0 ? true : false;
 		var booking_method			= $j.inArray( variation[ 'bookacti_booking_method' ], bookacti_localized.available_booking_methods.push( 'parent', 'site' ) ) ? variation[ 'bookacti_booking_method' ] : 'calendar';
 		
-		if( template_id[0]	=== 'parent' )			{ template_id		= parent_calendar_data[ booking_system_id ].calendars; }
-		if( activity_id[0]	=== 'parent' )			{ activity_id		= parent_calendar_data[ booking_system_id ].activities; }
+		if( template_id[0]	=== 'parent' )			{ template_id		= bookacti.parent_booking_system[ booking_system_id ].calendars; }
+		if( activity_id[0]	=== 'parent' )			{ activity_id		= bookacti.parent_booking_system[ booking_system_id ].activities; }
 		if( group_categories[0]	=== 'none' )		{ group_categories	= false; }
-		else if( group_categories[0] === 'parent' )	{ group_categories	= parent_calendar_data[ booking_system_id ].group_categories; }
-		if( booking_method	=== 'parent' )			{ booking_method	= parent_calendar_data[ booking_system_id ].method; }
+		else if( group_categories[0] === 'parent' )	{ group_categories	= bookacti.parent_booking_system[ booking_system_id ].group_categories; }
+		if( booking_method	=== 'parent' )			{ booking_method	= bookacti.parent_booking_system[ booking_system_id ].method; }
 		else if( booking_method	=== 'site' )		{ booking_method	= bookacti_localized.site_booking_method; }
 		
-		calendars_data[ booking_system_id ][ 'method' ]					= booking_method;
-		calendars_data[ booking_system_id ][ 'calendars' ]				= template_id;
-		calendars_data[ booking_system_id ][ 'activities' ]				= activity_id;
-		calendars_data[ booking_system_id ][ 'group_categories' ]		= group_categories;
-		calendars_data[ booking_system_id ][ 'groups_only' ]			= groups_only;
-		calendars_data[ booking_system_id ][ 'groups_single_events' ]	= groups_single_events;
+		bookacti.booking_system[ booking_system_id ][ 'method' ]					= booking_method;
+		bookacti.booking_system[ booking_system_id ][ 'calendars' ]				= template_id;
+		bookacti.booking_system[ booking_system_id ][ 'activities' ]				= activity_id;
+		bookacti.booking_system[ booking_system_id ][ 'group_categories' ]		= group_categories;
+		bookacti.booking_system[ booking_system_id ][ 'groups_only' ]			= groups_only;
+		bookacti.booking_system[ booking_system_id ][ 'groups_single_events' ]	= groups_single_events;
 		
 		bookacti_reload_booking_system( booking_system );
 		
 	// Deactivate the booking system if the variation is not an activity
 	} else {
-		is_activity[ variation[ 'variation_id' ] ] = false;
+		bookacti.is_variation_activity[ variation[ 'variation_id' ] ] = false;
 		bookacti_deactivate_booking_system( booking_system );
 	}
 }
@@ -360,7 +360,7 @@ function bookacti_deactivate_booking_system( booking_system ) {
 // Activate booking system
 function bookacti_activate_booking_system( booking_system ) {
 	
-	var booking_method = calendars_data[ booking_system.attr( 'id' ) ][ 'method' ];
+	var booking_method = bookacti.booking_system[ booking_system.attr( 'id' ) ][ 'method' ];
 	
 	booking_system.parent().show();
 	booking_system.siblings( '.bookacti-booking-system-inputs input' ).prop( 'disabled', false );

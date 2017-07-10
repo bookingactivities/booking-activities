@@ -21,10 +21,10 @@ $j( document ).ready( function() {
 			// Retrieve the info required to show the desired events
 			var booking_system		= $j( this );
 			var booking_system_id	= booking_system.attr( 'id' );
-			var attributes			= calendars_data[ booking_system_id ];
+			var attributes			= bookacti.booking_system[ booking_system_id ];
 			
-			loadingNumber[ booking_system_id ]	= 0;
-			pickedEvents[ booking_system_id ]	= [];
+			bookacti.booking_system[ booking_system_id ][ 'loading_number' ]	= 0;
+			bookacti.booking_system[ booking_system_id ][ 'picked_events' ]		= [];
 			
 			// Load the booking system
 			if( attributes.auto_load && booking_system_id !== 'bookacti-booking-system-reschedule' ) {

@@ -2,7 +2,7 @@
 function bookacti_fetch_events( booking_system ) {
 	
 	var booking_system_id	= booking_system.attr( 'id' );
-	var attributes			= calendars_data[ booking_system_id ];
+	var attributes			= bookacti.booking_system[ booking_system_id ];
 	
 	bookacti_start_loading_booking_system( booking_system );
 	
@@ -21,9 +21,11 @@ function bookacti_fetch_events( booking_system ) {
 			if( response.status === 'success' ) {
 				
 				// Update calendar content data
-				json_events[booking_system_id]	= response.events;
-				json_activities					= response.activities;
-				json_groups[booking_system_id]	= response.groups;
+				bookacti.booking_system[ booking_system_id ][ 'events' ]				= response.events;
+				bookacti.booking_system[ booking_system_id ][ 'activities_data' ]		= response.activities_data;
+				bookacti.booking_system[ booking_system_id ][ 'groups_events' ]			= response.groups_events;
+				bookacti.booking_system[ booking_system_id ][ 'groups_data' ]			= response.groups_data;
+				bookacti.booking_system[ booking_system_id ][ 'group_categories_data' ]	= response.group_categories_data;
 				
 				if( response.events.length ) {
 					// Fill events according to booking method
@@ -57,7 +59,7 @@ function bookacti_fetch_events( booking_system ) {
 function bookacti_reload_booking_system( booking_system ) {
 	
 	var booking_system_id	= booking_system.attr( 'id' );
-	var attributes			= calendars_data[ booking_system_id ];
+	var attributes			= bookacti.booking_system[ booking_system_id ];
 	
 	bookacti_start_loading_booking_system( booking_system );
 	
@@ -80,16 +82,18 @@ function bookacti_reload_booking_system( booking_system ) {
 				bookacti_clear_booking_system_displayed_info( booking_system );
 				
 				// Update events and settings
-				json_events[ booking_system_id ]					= response.events;
-				json_activities										= response.activities;
-				json_groups[ booking_system_id ]					= response.groups;
-				calendars_data[ booking_system_id ][ 'settings' ]	= response.settings;
+				bookacti.booking_system[ booking_system_id ][ 'events' ]				= response.events;
+				bookacti.booking_system[ booking_system_id ][ 'activities_data' ]		= response.activities_data;
+				bookacti.booking_system[ booking_system_id ][ 'groups_events' ]			= response.groups_events;
+				bookacti.booking_system[ booking_system_id ][ 'groups_data' ]			= response.groups_data;
+				bookacti.booking_system[ booking_system_id ][ 'group_categories_data' ]	= response.group_categories_data;
+				bookacti.booking_system[ booking_system_id ][ 'settings' ]				= response.settings;
 				
 				// Fill the booking method elements
 				booking_system.append( response.html_elements );
 				
 				// Load the booking method
-				bookacti_booking_method_set_up( booking_system, calendars_data[ booking_system_id ][ 'method' ] );
+				bookacti_booking_method_set_up( booking_system, bookacti.booking_system[ booking_system_id ][ 'method' ] );
 				
 				
 			} else {
@@ -119,12 +123,12 @@ function bookacti_switch_booking_method( booking_system, method ) {
 	method = $j.inArray( method, bookacti_localized.available_booking_methods ) === -1 ? 'calendar' : method;
 	
 	// If no changes are made, do not perform the function
-	if( method === calendars_data[ booking_system_id ][ 'method' ] ) {
+	if( method === bookacti.booking_system[ booking_system_id ][ 'method' ] ) {
 		return false;
 	}
 	
 	var booking_system_id	= booking_system.attr( 'id' );
-	var attributes			= calendars_data[ booking_system_id ];
+	var attributes			= bookacti.booking_system[ booking_system_id ];
 	
 	bookacti_start_loading_booking_system( booking_system );
 	
@@ -144,7 +148,7 @@ function bookacti_switch_booking_method( booking_system, method ) {
 			if( response.status === 'success' ) {
 				
 				// Change the booking system attribute
-				calendars_data[ booking_system_id ][ 'method' ] = method;
+				bookacti.booking_system[ booking_system_id ][ 'method' ] = method;
 				
 				// Fill the booking method elements
 				booking_system.empty();
@@ -176,54 +180,73 @@ function bookacti_switch_booking_method( booking_system, method ) {
 
 // An event is clicked
 function bookacti_event_click( booking_system, event ) {
-	// Get the group id of an event or open a dialog to choose a group
-	var group_id = bookacti_get_event_group_id_or_open_choose_group_dialog( booking_system, event );
-
-	// Pick events (single or whole group) and fill the form fields
-	bookacti_pick_events_and_fill_form_fields( booking_system, event, group_id );
-
-	event.group_id = group_id;
-	booking_system.trigger( 'bookacti_event_click', [ event ] );
-}
-
-
-// Get the group id of an event or open a dialog to choose a group
-function bookacti_get_event_group_id_or_open_choose_group_dialog( booking_system, event, trigger_dialog ) {
-	
-	trigger_dialog = trigger_dialog === false ? false : true;
 	
 	var booking_system_id = booking_system.attr( 'id' );
 	
-	// Check if the event is part of a group
-	var group_ids	= bookacti_get_event_group_ids( booking_system, event );
-	var group_id	= false;
-
-	// If the event is part of (a) group(s)
-	if( group_ids.length > 0 ) {
-		// If there is only one choice (one group and pick group only)
-		if( group_ids.length === 1 && ! calendars_data[ booking_system_id ][ 'groups_single_events' ] ) {
-			// Select all the events of the group
-			group_id = group_ids[ 0 ];
-
-		// If the event is in several groups
-		} else if( trigger_dialog ) {
-			// Ask what group to pick
-			bookacti_dialog_choose_group_of_events( booking_system, group_ids, event );
-		}
-
-	// If event is single
+	// Get the group id of an event or open a dialog to choose a group
+	var group_ids = bookacti_get_event_group_ids( booking_system, event );
+	
+	// Open a dialog to choose the group of events 
+	// if there are several groups, or if users can choose between the single event and at least one group
+	if( ( $j.isArray( group_ids ) && group_ids.length > 1 )
+	||  ( $j.isArray( group_ids ) && group_ids.length === 1 && bookacti.booking_system[ booking_system_id ][ 'groups_single_events' ] ) ) {
+		bookacti_dialog_choose_group_of_events( booking_system, group_ids, event );
 	} else {
-		group_id = 'single';
+		// Pick events (single or whole group) and fill the form fields
+		bookacti_pick_events_and_fill_form_fields( booking_system, event, group_ids );
 	}
 	
-	return group_id;
+	// If there is only one event in the array, extract it
+	group_ids = $j.isArray( group_ids ) && group_ids.length === 1 ? group_ids[ 0 ] : group_ids;
+	
+	// Yell the event has been clicked
+	booking_system.trigger( 'bookacti_event_click', [ event, group_ids ] );
+}
+
+
+// Return groups ids of an event
+function bookacti_get_event_group_ids( booking_system, event ) {
+	// Check required data
+	if( typeof event !== 'object' ) {
+		return false;
+	} else if( typeof event.id === 'undefined' || typeof event.start === 'undefined' || typeof event.end === 'undefined' ) {
+		return false;
+	}
+	
+	var booking_system_id = booking_system.attr( 'id' );
+	
+	// Format data
+	var event_id	= event.id;
+	var event_start = event.start instanceof moment ? event.start.format( 'YYYY-MM-DD HH:mm:ss' ) : event.start;
+	var event_end	= event.end instanceof moment ? event.end.format( 'YYYY-MM-DD HH:mm:ss' ) : event.end;
+	
+	var group_ids = [];
+	console.log( bookacti.booking_system[ booking_system_id ][ 'groups_events' ] );
+	$j.each( bookacti.booking_system[ booking_system_id ][ 'groups_events' ], function( group_id, group_events ){
+		$j.each( group_events, function( i, group_event ){
+			if( group_event[ 'id' ] === event_id
+			&&  group_event[ 'start' ] === event_start
+			&&  group_event[ 'end' ] === event_end ) {
+				group_ids.push( group_id );
+				return false; // Break the loop
+			}
+		});
+	});
+	
+	// If event is single
+	if( ! group_ids.length ) {
+		group_ids = 'single';
+	}
+	
+	return group_ids;
 }
 
 
 // Fill form fields
 function bookacti_pick_events_and_fill_form_fields( booking_system, event, group_id ) {
 	
-	group_id = group_id || false;
+	group_id = $j.isArray( group_id ) && group_id.length === 1 ? group_id[ 0 ] : group_id;
+	group_id = $j.isNumeric( group_id ) || group_id === 'single' ? group_id : false;
 	
 	// Pick events (single or whole group)
 	if( group_id ) {
@@ -260,7 +283,7 @@ function bookacti_pick_events_of_group( booking_system, group_id, event ) {
 		bookacti_pick_event( booking_system, event );
 	} else {
 		// Pick the events of the group
-		$j.each( json_groups[ booking_system_id ][ group_id ], function( i, grouped_event ){
+		$j.each( bookacti.booking_system[ booking_system_id ][ 'groups_events' ][ group_id ], function( i, grouped_event ){
 			bookacti_pick_event( booking_system, grouped_event );
 		});
 	}
@@ -292,7 +315,7 @@ function bookacti_pick_event( booking_system, event ) {
 	};
 	
 	// Keep picked events in memory 
-	pickedEvents[ booking_system_id ].push( picked_event );
+	bookacti.booking_system[ booking_system_id ][ 'picked_events' ].push( picked_event );
 	
 	booking_system.trigger( 'bookacti_pick_event', [ event ] );
 }
@@ -326,14 +349,14 @@ function bookacti_unpick_event( booking_system, event, start, all ) {
 	};
 	
 	// Remove picked event(s) from memory 
-	$j.each( pickedEvents[ booking_system_id ], function( i, picked_event ){
+	$j.each( bookacti.booking_system[ booking_system_id ][ 'picked_events' ], function( i, picked_event ){
 		if( typeof picked_event !== 'undefined' ) {
 			if( picked_event.id == event_to_unpick.id 
 			&&  (  all 
 				|| picked_event.start.substr( 0, 10 ) === event_to_unpick.start.substr( 0, 10 ) ) ) {
 				
-				// Remove the event from the pickedEvents array
-				pickedEvents[ booking_system_id ].splice( i, 1 );
+				// Remove the event from the picked_events array
+				bookacti.booking_system[ booking_system_id ][ 'picked_events' ].splice( i, 1 );
 				
 				// If only one event should be unpicked, break the loop
 				if( ! all ) {
@@ -351,7 +374,7 @@ function bookacti_unpick_event( booking_system, event, start, all ) {
 function bookacti_unpick_all_events( booking_system ) {
 	var booking_system_id = booking_system.attr( 'id' );
 	
-	pickedEvents[ booking_system_id ] = [];
+	bookacti.booking_system[ booking_system_id ][ 'picked_events' ] = [];
 	
 	booking_system.trigger( 'bookacti_unpick_all_events' );
 }
@@ -366,18 +389,18 @@ function bookacti_fill_picked_events_list( booking_system ) {
 	
 	event_list.empty();
 	
-	if( typeof pickedEvents[ booking_system_id ] !== 'undefined' ) {
-		if( pickedEvents[ booking_system_id ].length > 0 ) {
+	if( typeof bookacti.booking_system[ booking_system_id ][ 'picked_events' ] !== 'undefined' ) {
+		if( bookacti.booking_system[ booking_system_id ][ 'picked_events' ].length > 0 ) {
 		
 			// Fill title with singular or plural
-			if( pickedEvents[ booking_system_id ].length > 1 ) {
+			if( bookacti.booking_system[ booking_system_id ][ 'picked_events' ].length > 1 ) {
 				event_list_title.html( bookacti_localized.selected_events );
 			} else {
 				event_list_title.html( bookacti_localized.selected_event );
 			}
 
 			// Fill the picked events list
-			$j.each( pickedEvents[ booking_system_id ], function( i, event ) {
+			$j.each( bookacti.booking_system[ booking_system_id ][ 'picked_events' ], function( i, event ) {
 				
 				var event_duration = bookacti_format_event_duration( event.start, event.end );
 				
@@ -389,7 +412,7 @@ function bookacti_fill_picked_events_list( booking_system ) {
 
 				booking_system.trigger( 'bookacti_picked_events_list_data', [ event_data ] );
 
-				var unit = bookacti_get_activity_unit( event.activity_id, event_data.quantity );
+				var unit = bookacti_get_activity_unit( booking_system, event.activity_id, event_data.quantity );
 
 				if( unit !== '' ) {
 					unit = '<span class="bookacti-booking-event-quantity-separator" > - </span>' 
@@ -430,44 +453,47 @@ function bookacti_format_event_duration( start, end ) {
 
 
 // Get activity unit value
-function bookacti_get_activity_unit( activity_id, qty ) {
+function bookacti_get_activity_unit( booking_system, activity_id, qty ) {
+	
+	var booking_system_id = booking_system.attr( 'id' );
+	var activity_data = bookacti.booking_system[ booking_system_id ][ 'activities_data' ][ activity_id ];
 	
 	qty	= $j.isNumeric( qty ) ? parseInt( qty ) : 1;
 	var activity_val = '';
 	
-	if( ! activity_id || typeof json_activities[ activity_id ] === 'undefined' || qty === 0 ) {
+	if( ! activity_id || typeof activity_data === 'undefined' || qty === 0 ) {
 		return '';
 	}
 	
-	if( typeof json_activities[ activity_id ] !== 'undefined' ) {
-		if( typeof json_activities[ activity_id ][ 'settings' ] !== 'undefined' ) {
-			if( typeof json_activities[ activity_id ][ 'settings' ][ 'unit_name_plural' ] !== 'undefined'
-			&&  typeof json_activities[ activity_id ][ 'settings' ][ 'unit_name_singular' ] !== 'undefined' 
-			&&  typeof json_activities[ activity_id ][ 'settings' ][ 'places_number' ] !== 'undefined' ) {
+	if( typeof activity_data !== 'undefined' ) {
+		if( typeof activity_data[ 'settings' ] !== 'undefined' ) {
+			if( typeof activity_data[ 'settings' ][ 'unit_name_plural' ] !== 'undefined'
+			&&  typeof activity_data[ 'settings' ][ 'unit_name_singular' ] !== 'undefined' 
+			&&  typeof activity_data[ 'settings' ][ 'places_number' ] !== 'undefined' ) {
 
-				if( json_activities[ activity_id ][ 'settings' ][ 'unit_name_plural' ] !== ''
-				&&  json_activities[ activity_id ][ 'settings' ][ 'unit_name_singular' ] !== '' ) { 
+				if( activity_data[ 'settings' ][ 'unit_name_plural' ] !== ''
+				&&  activity_data[ 'settings' ][ 'unit_name_singular' ] !== '' ) { 
 					activity_val += qty + ' ';
 					if( qty > 1 ) {
-						activity_val += json_activities[ activity_id ][ 'settings' ][ 'unit_name_plural' ];
+						activity_val += activity_data[ 'settings' ][ 'unit_name_plural' ];
 					} else {
-						activity_val += json_activities[ activity_id ][ 'settings' ][ 'unit_name_singular' ];
+						activity_val += activity_data[ 'settings' ][ 'unit_name_singular' ];
 					}
 				}
-				if( json_activities[ activity_id ][ 'settings' ][ 'places_number' ] !== '' 
-				&&  parseInt( json_activities[ activity_id ][ 'settings' ][ 'places_number' ] ) > 0 )
+				if( activity_data[ 'settings' ][ 'places_number' ] !== '' 
+				&&  parseInt( activity_data[ 'settings' ][ 'places_number' ] ) > 0 )
 				{
-					if( parseInt( json_activities[ activity_id ][ 'settings' ][ 'places_number' ] ) > 1 ) {
-						activity_val += ' ' + bookacti_localized.n_persons_per_booking.replace( '%1$s', json_activities[ activity_id ][ 'settings' ][ 'places_number' ] );
+					if( parseInt( activity_data[ 'settings' ][ 'places_number' ] ) > 1 ) {
+						activity_val += ' ' + bookacti_localized.n_persons_per_booking.replace( '%1$s', activity_data[ 'settings' ][ 'places_number' ] );
 					} else {
 						activity_val += ' ' + bookacti_localized.one_person_per_booking;
 					}
 				}
 
-				if((json_activities[ activity_id ][ 'settings' ][ 'unit_name_plural' ] !== ''
-				&&	json_activities[ activity_id ][ 'settings' ][ 'unit_name_singular' ] !== '' )
-				|| (json_activities[ activity_id ][ 'settings' ][ 'places_number' ] !== ''
-				&&	parseInt( json_activities[ activity_id ][ 'settings' ][ 'places_number' ] ) !== 0 ) ) {
+				if((activity_data[ 'settings' ][ 'unit_name_plural' ] !== ''
+				&&	activity_data[ 'settings' ][ 'unit_name_singular' ] !== '' )
+				|| (activity_data[ 'settings' ][ 'places_number' ] !== ''
+				&&	parseInt( activity_data[ 'settings' ][ 'places_number' ] ) !== 0 ) ) {
 					activity_val += '<br/>';
 				}
 			}
@@ -527,7 +553,7 @@ function bookacti_update_settings_from_database( booking_system, template_ids ) 
 				if( booking_system.attr( 'id' ) === 'bookacti-template-calendar' ) {
 					bookacti_update_calendar_settings( booking_system, response.settings );
 				} else {
-					var method = calendars_data[ booking_system_id ][ 'method' ];
+					var method = bookacti.booking_system[ booking_system_id ][ 'method' ];
 					bookacti_booking_method_update_settings( booking_system, method );
 				}
 				
@@ -590,14 +616,14 @@ function bookacti_is_event_available( booking_system, event ) {
 	if( availability > 0 )  {
 		is_available = true;
 		// If grouped events can only be book with their whole group
-		if( ! calendars_data[ booking_system_id ][ 'groups_single_events' ] ) {
+		if( ! bookacti.booking_system[ booking_system_id ][ 'groups_single_events' ] ) {
 			// Check if the event is part of a group
 			var group_ids = bookacti_get_event_group_ids( booking_system, event );
-			if( group_ids.length > 0 ) {
+			if( $j.isArray( group_ids ) && group_ids.length > 0 ) {
 				// Check if the event is available in one group at least
 				var is_available = false;
 				$j.each( group_ids, function( i, group_id ) {
-					var group_availability = bookacti_get_group_availability( json_groups[ booking_system_id ][ group_id ] );
+					var group_availability = bookacti_get_group_availability( bookacti.booking_system[ booking_system_id ][ 'groups_events' ][ group_id ] );
 					if( group_availability > 0 ) {
 						is_available = true;
 						return false; // Break the loop
@@ -632,54 +658,28 @@ function bookacti_get_bookings_number_for_a_single_grouped_event( event, event_g
 }
 
 
-// Return groups ids of an event
-function bookacti_get_event_group_ids( booking_system, event ) {
-	// Check required data
-	if( typeof event !== 'object' ) {
-		return false;
-	} else if( typeof event.id === 'undefined' || typeof event.start === 'undefined' || typeof event.end === 'undefined' ) {
-		return false;
-	}
+// Get a div with event available places
+function bookacti_get_event_availability_div( booking_system, event ) {
 	
 	var booking_system_id = booking_system.attr( 'id' );
-	
-	// Format data
-	var event_id	= event.id;
-	var event_start = event.start instanceof moment ? event.start.format( 'YYYY-MM-DD HH:mm:ss' ) : event.start;
-	var event_end	= event.end instanceof moment ? event.end.format( 'YYYY-MM-DD HH:mm:ss' ) : event.end;
-	
-	var group_ids = [];
-	$j.each( json_groups[ booking_system_id ], function( group_id, group_events ){
-		$j.each( group_events, function( i, group_event ){
-			if( group_event[ 'id' ] === event_id
-			&&  group_event[ 'start' ] === event_start
-			&&  group_event[ 'end' ] === event_end ) {
-				group_ids.push( group_event[ 'group_id' ] );
-			}
-		});
-	});
-	
-	return group_ids;
-}
-
-
-// Get a div with event available places
-function bookacti_get_event_availability_div( event ) {
 	
 	var available_places = bookacti_get_event_availability( event );
 	
 	var unit_name = '';
 	if( event.activity_id ) {
-		if( json_activities[ event.activity_id ] !== undefined ) {
-			if( json_activities[ event.activity_id ][ 'settings' ] !== undefined ) {
-				if( json_activities[ event.activity_id ][ 'settings' ][ 'unit_name_plural' ] !== undefined
-				&&  json_activities[ event.activity_id ][ 'settings' ][ 'unit_name_singular' ] !== undefined 
-				&&  json_activities[ event.activity_id ][ 'settings' ][ 'show_unit_in_availability' ] !== undefined ) {
-					if( parseInt( json_activities[ event.activity_id ][ 'settings' ][ 'show_unit_in_availability' ] ) ) {
+		
+		var activity_data = bookacti.booking_system[ booking_system_id ][ 'activities_data' ][ event.activity_id ];
+		
+		if( activity_data !== undefined ) {
+			if( activity_data[ 'settings' ] !== undefined ) {
+				if( activity_data[ 'settings' ][ 'unit_name_plural' ] !== undefined
+				&&  activity_data[ 'settings' ][ 'unit_name_singular' ] !== undefined 
+				&&  activity_data[ 'settings' ][ 'show_unit_in_availability' ] !== undefined ) {
+					if( parseInt( activity_data[ 'settings' ][ 'show_unit_in_availability' ] ) ) {
 						if( available_places > 1 ) {
-							unit_name = json_activities[ event.activity_id ][ 'settings' ][ 'unit_name_plural' ];
+							unit_name = activity_data[ 'settings' ][ 'unit_name_plural' ];
 						} else {
-							unit_name = json_activities[ event.activity_id ][ 'settings' ][ 'unit_name_singular' ];
+							unit_name = activity_data[ 'settings' ][ 'unit_name_singular' ];
 						}
 					}
 				}
@@ -769,7 +769,7 @@ function bookacti_booking_method_fill_with_events( booking_system, booking_metho
 // Update the calendar settings according to booking method
 function bookacti_booking_method_update_settings( booking_system, booking_method ) {
 	if( booking_method === 'calendar' || $j.inArray( booking_method, bookacti_localized.available_booking_methods ) === -1 ) {
-		bookacti_update_calendar_settings( booking_system, calendars_data[ booking_system.attr( 'id' ) ][ 'settings' ] );
+		bookacti_update_calendar_settings( booking_system, bookacti.booking_system[ booking_system.attr( 'id' ) ][ 'settings' ] );
 	} else {
 		booking_system.trigger( 'bookacti_update_settings', [ booking_method ] );
 	}
@@ -802,20 +802,20 @@ function bookacti_booking_method_rerender_events( booking_system, booking_method
 function bookacti_start_loading_booking_system( booking_system ) {
 	
 	var booking_system_id	= booking_system.attr( 'id' );
-	var booking_method		= calendars_data[ booking_system_id ][ 'method' ];
+	var booking_method		= bookacti.booking_system[ booking_system_id ][ 'method' ];
 	
 	var loading_div = '<div class="bookacti-loading-alt">' 
 					+	'<img class="bookacti-loader" src="' + bookacti_localized.plugin_path + '/img/ajax-loader.gif" title="' + bookacti_localized.loading + '" />'
 					+	'<span class="bookacti-loading-alt-text" >' + bookacti_localized.loading + '</span>'
 					+ '</div>';
 	
-	if( ! $j.isNumeric( loadingNumber[ booking_system_id ] ) ) {
-		loadingNumber[ booking_system_id ] = 0;
+	if( ! $j.isNumeric( bookacti.booking_system[ booking_system_id ][ 'loading_number' ] ) ) {
+		bookacti.booking_system[ booking_system_id ][ 'loading_number' ] = 0;
 	}
 	
 	if( booking_method === 'calendar' || $j.inArray( booking_method, bookacti_localized.available_booking_methods ) === -1 ) {
 		if( booking_system.find( '.bookacti-calendar' ).length ) {
-			if( loadingNumber[ booking_system_id ] === 0 || ! booking_system.find( '.bookacti-loading-overlay' ).length ) {
+			if( bookacti.booking_system[ booking_system_id ][ 'loading_number' ] === 0 || ! booking_system.find( '.bookacti-loading-overlay' ).length ) {
 				booking_system.find( '.bookacti-loading-alt' ).remove();
 				bookacti_enter_calendar_loading_state( booking_system.find( '.bookacti-calendar' ) );
 			}
@@ -827,11 +827,11 @@ function bookacti_start_loading_booking_system( booking_system ) {
 		booking_system.trigger( 'bookacti_start_loading', [ booking_method, loading_div ] );
 	}
 	
-	if( loadingNumber[ booking_system_id ] === 0 ) {
+	if( bookacti.booking_system[ booking_system_id ][ 'loading_number' ] === 0 ) {
 		booking_system.trigger( 'bookacti_enter_loading_state' );
 	}
 	
-	loadingNumber[ booking_system_id ]++;
+	bookacti.booking_system[ booking_system_id ][ 'loading_number' ]++;
 }
 
 
@@ -841,15 +841,15 @@ function bookacti_stop_loading_booking_system( booking_system, force_exit ) {
 	force_exit = force_exit || false;
 	
 	var booking_system_id	= booking_system.attr( 'id' );
-	var booking_method		= calendars_data[ booking_system_id ][ 'method' ];
+	var booking_method		= bookacti.booking_system[ booking_system_id ][ 'method' ];
 	
-	loadingNumber[ booking_system_id ]--;
-	loadingNumber[ booking_system_id ] = Math.max( loadingNumber[ booking_system_id ], 0 );
+	bookacti.booking_system[ booking_system_id ][ 'loading_number' ]--;
+	bookacti.booking_system[ booking_system_id ][ 'loading_number' ] = Math.max( bookacti.booking_system[ booking_system_id ][ 'loading_number' ], 0 );
 	
-	if( force_exit ) { loadingNumber[ booking_system_id ] = 0; }
+	if( force_exit ) { bookacti.booking_system[ booking_system_id ][ 'loading_number' ] = 0; }
 	
 	// Action to do after everything has loaded
-	if( loadingNumber[ booking_system_id ] === 0 ) {
+	if( bookacti.booking_system[ booking_system_id ][ 'loading_number' ] === 0 ) {
 		
 		if( booking_method === 'calendar' || $j.inArray( booking_method, bookacti_localized.available_booking_methods ) === -1 ) {		
 			bookacti_exit_calendar_loading_state( booking_system.find( '.bookacti-calendar' ) );

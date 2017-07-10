@@ -65,8 +65,8 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			
 			// Get calendar settings
 			$settings			= bookacti_get_mixed_template_settings( $template_ids );
-			$activity_ids		= bookacti_get_activity_ids_by_template_ids( $template_ids );
-			$group_categories	= bookacti_get_group_category_ids_by_template_ids( $template_ids );
+			$activity_ids		= bookacti_get_activity_ids_by_template( $template_ids );
+			$group_categories	= bookacti_get_group_category_ids_by_template( $template_ids );
 			
 			// Gets calendar content: events, activities and groups
 			$args = array(
@@ -79,7 +79,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			);
 			
 			$events		= bookacti_fetch_events( $args );
-			$activities	= bookacti_get_activities_by_template_ids( $template_ids );
+			$activities	= bookacti_get_activities_by_template( $template_ids );
 			$groups		= bookacti_get_groups_events( $template_ids, $group_categories, array(), true );
 			
 			wp_send_json( array( 
@@ -261,7 +261,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 			$booking_id			= intval( $_POST[ 'booking_id' ] );
 			$is_admin			= intval( $_POST[ 'is_admin' ] );
-			$sanitized_action	= sanitize_title_with_dashes( $_POST[ 'refund_action' ] );
+			$sanitized_action	= sanitize_title_with_dashes( stripslashes( $_POST[ 'refund_action' ] ) );
 			$refund_action		= array_key_exists( $sanitized_action, bookacti_get_refund_actions_by_booking_id( $booking_id ) ) ? $sanitized_action : 'email';
 
 			// Check nonce, capabilities and other params
@@ -271,7 +271,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 			if( $is_nonce_valid && $is_allowed && $can_be_refund ) {
 
-				$refund_message	= sanitize_text_field( $_POST[ 'refund_message' ] );
+				$refund_message	= sanitize_text_field( stripslashes( $_POST[ 'refund_message' ] ) );
 
 				if( $refund_action === 'email' ) {
 					$refunded = bookacti_send_email_refund_request( $booking_id, 'single', $refund_message );
@@ -549,7 +549,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 			$booking_group_id	= intval( $_POST[ 'booking_id' ] );
 			$is_admin			= intval( $_POST[ 'is_admin' ] );
-			$sanitized_action	= sanitize_title_with_dashes( $_POST[ 'refund_action' ] );
+			$sanitized_action	= sanitize_title_with_dashes( stripslashes( $_POST[ 'refund_action' ] ) );
 			$refund_action		= array_key_exists( $sanitized_action, bookacti_get_refund_actions_by_booking_group_id( $booking_group_id ) ) ? $sanitized_action : 'email';
 			
 			// Check nonce, capabilities and other params
@@ -559,7 +559,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 			if( $is_nonce_valid && $is_allowed && $can_be_refund ) {
 
-				$refund_message	= sanitize_text_field( $_POST[ 'refund_message' ] );
+				$refund_message	= sanitize_text_field( stripslashes( $_POST[ 'refund_message' ] ) );
 
 				if( $refund_action === 'email' ) {
 					$refunded = bookacti_send_email_refund_request( $booking_group_id, 'group', $refund_message );
