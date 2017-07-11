@@ -516,8 +516,8 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			}
 			
 			// Format booked events
-			else if( bookacti_is_json( $meta_value ) ) {
-				$events = json_decode( $meta_value );
+			else if( bookacti_is_json( stripslashes( $meta_value ) ) ) {
+				$events = json_decode( stripslashes( $meta_value ) );
 				if( is_array( $events ) && count( $events ) > 0 && is_object( $events[ 0 ] ) && isset( $events[ 0 ]->event_id ) ) {
 					return bookacti_get_formatted_booking_events_list( $events );
 				}

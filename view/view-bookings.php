@@ -5,7 +5,9 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 echo "<div class='wrap'>";
 echo "<h1>" . esc_html__( 'Bookings', BOOKACTI_PLUGIN_NAME ) . "</h1>";
 
-if( empty( bookacti_fetch_templates() ) ) {
+$templates = bookacti_fetch_templates();
+
+if( empty( $templates ) ) {
 	$editor_path = 'admin.php?page=bookacti_calendars';
 	$editor_url = admin_url( $editor_path );
 	?>
@@ -47,7 +49,6 @@ if( empty( bookacti_fetch_templates() ) ) {
 			</div>
 			<div id='bookacti-templates-filter-content' >
 			<?php
-				$templates = bookacti_fetch_templates();
 				$default_template = bookacti_get_user_default_template();
 				$i = 0;
 				foreach ( $templates as $template ) {

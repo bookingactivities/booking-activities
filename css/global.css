@@ -61,6 +61,8 @@
 	.fc-agenda-view .bookacti-tiny-event .bookacti-available-places												{ height: 100%; display: block; border-radius: 0; }
 	
 	/* Narrow events */
+	.fc-agenda-view .bookacti-narrow-event.bookacti-tiny-event .fc-time:before,
+	.fc-agenda-view .bookacti-narrow-event.bookacti-tiny-event .fc-time:after,
 	.bookacti-narrow-event .bookacti-available-places-unit-name,
 	.bookacti-narrow-event .bookacti-available-places-avail-particle { display: none; }
 	

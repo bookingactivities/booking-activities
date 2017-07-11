@@ -137,9 +137,11 @@ function bookacti_get_setting_value( $setting_page, $setting_field, $translate =
 		return $settings[ $setting_field ];
 	}
 	
-	$translated_setting = apply_filters( 'bookacti_translate_text', $settings[ $setting_field ] );
-	
-	return ! empty( $translated_setting ) ? $translated_setting : defined( 'BOOKACTI_' . strtoupper( $setting_field ) ) ? constant( 'BOOKACTI_' . strtoupper( $setting_field ) ) : false;
+	if( is_string( $settings[ $setting_field ] ) ) {
+		$settings[ $setting_field ] = apply_filters( 'bookacti_translate_text', $settings[ $setting_field ] );
+	}
+		
+	return $settings[ $setting_field ];
 }
 
 
@@ -178,9 +180,11 @@ function bookacti_get_setting_value_by_user( $setting_page, $setting_field, $use
 		return $settings[ $setting_field ][ $user_id ];
 	}
 	
-	$translated_setting = apply_filters( 'bookacti_translate_text', $settings[ $setting_field ][ $user_id ] );
-	
-	return ! empty( $translated_setting ) ? $translated_setting : defined( 'BOOKACTI_' . strtoupper( $setting_field ) ) ? constant( 'BOOKACTI_' . strtoupper( $setting_field ) ) : false;
+	if( is_string( $settings[ $setting_field ][ $user_id ] ) ) {
+		$settings[ $setting_field ][ $user_id ] = apply_filters( 'bookacti_translate_text', $settings[ $setting_field ][ $user_id ] );
+	}
+		
+	return $settings[ $setting_field ][ $user_id ];
 }
 
 
@@ -278,7 +282,7 @@ function bookacti_settings_section_bookings_callback() { }
 		$available_booking_states	= array( 'pending', 'booked' );
 		$booking_states_label		= bookacti_get_booking_state_labels();
 		
-		//Display the field
+		// Display the field
 		?>
 		<select name='bookacti_general_settings[default_booking_state]' >
 		<?php
@@ -290,7 +294,7 @@ function bookacti_settings_section_bookings_callback() { }
 		</select>
 		<?php
 		
-		//Display the tip 
+		// Display the tip 
 		/* translators: The word 'Calendar' refers to a booking method you have to translate too. Make sure you use the same word for both translation. */
 		$tip  = __( 'Choose what status a booking should have when a custumer complete the booking form.', BOOKACTI_PLUGIN_NAME );
 		

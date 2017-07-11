@@ -1176,7 +1176,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			$bypass_template_managers_check = apply_filters( 'bookacti_bypass_template_managers_check', false );
 			if( ! is_super_admin() && ! $bypass_template_managers_check && ! $ignore_permissions ) {
 				$user_id = get_current_user_id();
-				if( ! $template->admin || ! in_array( $user_id, $template->admin, true ) ) {
+				if( empty( $template->admin ) || ! in_array( $user_id, $template->admin, true ) ) {
 					unset( $templates[$i] );
 				}
 			}
@@ -1681,7 +1681,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 		$activities_ids = array();
 		foreach( $activities as $activity ) {
-			$activities_ids[] = $activity->id;
+			$activities_ids[] = intval( $activity->id );
 		}
 		
 		return $activities_ids;

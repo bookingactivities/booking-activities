@@ -149,6 +149,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		// Retrieve inactive and temporary bookings ?
 		$active_only	= true;
 		$show_inactive_bookings	= bookacti_get_setting_value_by_user( 'bookacti_bookings_settings', 'show_inactive_bookings' );
+		
 		if( intval( $show_inactive_bookings ) === 1 ) { $active_only = false; }
 
 		$booking_data = apply_filters( 'bookacti_get_bookings_data_for_bookings_list', array(
@@ -266,7 +267,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 					$is_active				= bookacti_is_booking_active( $booking_id );
 					$is_in_delay			= apply_filters( 'bookacti_bypass_delay', false, $booking_id ) ? true : bookacti_is_booking_in_delay( $booking );
 
-					if( ! $is_reschedule_allowed || ! $is_active || ! $is_in_delay || $is_grouped ) { $is_allowed = false; }
+					if( ! $is_reschedule_allowed || ! $is_active || ! $is_in_delay ) { $is_allowed = false; }
 				}
 			}
 			

@@ -245,6 +245,7 @@ If you don't find the answer you need, please [contact us](http://booking-activi
 * Feature - You can now bind multiple calendars and activities to one product in WooCommerce!
 * Feature - You can now choose the default booking status of bookings made after a customer complete the booking form or a WooCommerce order. Set this parameter in BA settings page.
 * Feature - Calendars events are now related to your business timezone, and no longer to users' timezone. Customers around the world cannot see / book a past event because of time offset. Set this parameter in BA settings page.
+* Tweak - You can change your calendars period regardless of the bookings already done
 * Fix - Apostrophe characters in template / activity / events names are now correctly displayed
 * Fix - Copy a shortcode in calendar editor now copy only plain text, no more undesired html
 * Fix - Cart expiration is now checked on each page load. This means that you cart counter will now always be up to date.
@@ -255,7 +256,7 @@ If you don't find the answer you need, please [contact us](http://booking-activi
 * Delete - Deleted events 'occurrence id' since it is not a relevant identifier. All events can be identified by id + start + end datetimes.
 * Delete - Deleted unused bookings global actions
 * Delete - bookacti_display_booking_system() function replaced by bookacti_get_booking_system() which MUST be used to display a booking system
-* Tweak - A lot of hooks has been changed, added or removed. Please go to the website for the complete changelog.
+* Dev - A lot of hooks has been changed, added or removed. Please go to the website for the complete changelog.
 * Hooks changes:
   * JS hooks
     * Add - bookacti_booking_method_set_up

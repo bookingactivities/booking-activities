@@ -1099,7 +1099,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		
 		$managers_array = array();
 		foreach( $managers as $manager ) {
-			$managers_array[] = $manager->user_id;
+			$managers_array[] = intval( $manager->user_id );
 		}
 		
 		return $managers_array;
@@ -1163,8 +1163,8 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 				$insert_managers_query .= ', ';
 			}
 			$insert_variables_array[] = $object_type;
-			$insert_variables_array[] = $object_id;
-			$insert_variables_array[] = $new_manager_id;
+			$insert_variables_array[] = intval( $object_id );
+			$insert_variables_array[] = intval( $new_manager_id );
 		}
 		$insert_query_prep = $wpdb->prepare( $insert_managers_query, $insert_variables_array );
 		$inserted = $wpdb->query( $insert_query_prep );

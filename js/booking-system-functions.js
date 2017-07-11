@@ -221,7 +221,7 @@ function bookacti_get_event_group_ids( booking_system, event ) {
 	var event_end	= event.end instanceof moment ? event.end.format( 'YYYY-MM-DD HH:mm:ss' ) : event.end;
 	
 	var group_ids = [];
-	console.log( bookacti.booking_system[ booking_system_id ][ 'groups_events' ] );
+	
 	$j.each( bookacti.booking_system[ booking_system_id ][ 'groups_events' ], function( group_id, group_events ){
 		$j.each( group_events, function( i, group_event ){
 			if( group_event[ 'id' ] === event_id

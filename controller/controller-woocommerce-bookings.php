@@ -822,35 +822,36 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	 * @return void
 	 */
 	function bookacti_woocommerce_update_booking_dates( $booking_id, $event_start, $event_end ) {
-				
-		$item = bookacti_get_order_item_by_booking_id( $booking_id );
 		
-		if( ! empty( $item ) ) {
+		$item = bookacti_get_order_item_by_booking_id( $booking_id );
+			
+		if( empty( $item ) ) {
 			return;
 		}
 		
-		$bookings = wc_get_order_item_meta( $item[ 'id' ], 'bookacti_booked_events' );
-		if( ! empty( $bookings ) ) {
+		$booked_events = wc_get_order_item_meta( $item[ 'id' ], 'bookacti_booked_events' );
+		
+		if( ! empty( $booked_events ) ) {
 			
-			$bookings = json_decode( $bookings );
+			$booked_events = (array) json_decode( stripslashes( $booked_events ) );
 			
-			// Single booking
-			$key = 0;
-			
-			// Group of bookings
-			if( count( $bookings ) > 1 ) {
-				foreach( $bookings as $i => $booking ) {
-					if( $booking->id === $booking_id ) {
-						$key = $i;
-						break;
-					}
+			foreach( $booked_events as $i => $booked_event ) {
+				if( intval( $booked_event->id ) === intval( $booking_id ) ) {
+					$key = $i;
+					break;
 				}
 			}
 			
+			if( ! isset( $key ) ) {
+				return;
+			}
+			
 			// Update only start and end of the desired booking
-			$bookings[ $key ][ 'event_start' ]	= $event_start;
-			$bookings[ $key ][ 'event_end' ]	= $event_end;
-			wc_update_order_item_meta( $item[ 'id' ], 'bookacti_booked_events', json_encode( $bookings ) );
+			
+			$booked_events[ $key ]->event_start	= $event_start;
+			$booked_events[ $key ]->event_end	= $event_end;
+			
+			wc_update_order_item_meta( $item[ 'id' ], 'bookacti_booked_events', stripslashes( json_encode( $booked_events ) ) );
 			
 		// For bookings made before Booking Activities 1.1.0
 		} else {
@@ -859,8 +860,8 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			wc_delete_order_item_meta( $item[ 'id' ], 'bookacti_event_end' );
 			
 			// Insert new booking data
-			$booking = bookacti_get_booking_by_id( $booking_id );
-			wc_add_order_item_meta( $item[ 'id' ], 'bookacti_booked_events', json_encode( array( $booking ) ), true );
+			$event = bookacti_get_booking_event_data( $booking_id );
+			wc_add_order_item_meta( $item[ 'id' ], 'bookacti_booked_events', stripslashes( json_encode( array( $event ) ) ) );
 		}
 	}
 	add_action( 'bookacti_booking_rescheduled', 'bookacti_woocommerce_update_booking_dates', 10, 3 );
