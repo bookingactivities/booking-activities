@@ -1,11 +1,11 @@
 <?php  
 /**
  * Plugin Name: Booking Activities
- * Plugin URI: http://booking-activities.fr/en
+ * Plugin URI: https://booking-activities.fr/en/?utm_source=plugin&utm_medium=plugin&utm_content=header
  * Description: Create your activity calendars with drag and drop and book scheduled events with one click. Enable online payments of reservations with WooCommerce.
  * Version: 1.1.0
  * Author: Booking Activities Team
- * Author URI: http://booking-activities.fr/en
+ * Author URI: https://booking-activities.fr/en/?utm_source=plugin&utm_medium=plugin&utm_content=header
  * Text Domain: booking-activities
  * Domain Path: /languages/
  * License: GPL3
@@ -46,8 +46,6 @@ if( ! defined( 'BOOKACTI_PLUGIN_BASENAME' ) )	{ define( 'BOOKACTI_PLUGIN_BASENAM
 // HEADER STRINGS (For translation)
 __( 'Booking Activities', BOOKACTI_PLUGIN_NAME );
 __( 'Create your activity calendars with drag and drop and book scheduled events with one click. Enable online payments of reservations with WooCommerce.', BOOKACTI_PLUGIN_NAME );
-/* translators: Add " /lang-code " after this url and check if the url exists, else do not translate. Ex: http://booking-activities.fr/fr works, but http://booking-activities.fr/nl doesn't exist yet. */
-__( 'http://booking-activities.fr/en', BOOKACTI_PLUGIN_NAME );
 
 
 // INCLUDE LANGUAGES FILES

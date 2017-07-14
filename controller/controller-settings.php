@@ -185,9 +185,9 @@ function bookacti_action_links_in_plugins_table( $links ) {
 add_filter( 'plugin_row_meta', 'bookacti_meta_links_in_plugins_table', 10, 2 );
 function bookacti_meta_links_in_plugins_table( $links, $file ) {
    if ( $file == BOOKACTI_PLUGIN_BASENAME ) {
-		$links[ 'docs' ]	= '<a href="' . esc_url( apply_filters( 'bookacti_user_docs_url',	__( 'http://booking-activities.fr/en/documentation/user-documentation/', BOOKACTI_PLUGIN_NAME ) ) ) . '" title="' . esc_attr( __( 'View Booking Activities Documentation', BOOKACTI_PLUGIN_NAME ) ) . '" target="_blank" >' . esc_html__( 'Docs', BOOKACTI_PLUGIN_NAME ) . '</a>';
-		$links[ 'report' ]	= '<a href="' . esc_url( apply_filters( 'bookacti_report_url',	'https://github.com/bookingactivities/booking-activities/issues/' ) ) . '" title="' . esc_attr( __( 'Report a bug or request a feature', BOOKACTI_PLUGIN_NAME ) ) . '" target="_blank" >' . esc_html__( 'Report & Request', BOOKACTI_PLUGIN_NAME ) . '</a>';
-		$links[ 'contact' ]	= '<a href="' . esc_url( apply_filters( 'bookacti_contact_url',	__( 'http://booking-activities.fr/en/#contact', BOOKACTI_PLUGIN_NAME ) ) ) . '" title="' . esc_attr( __( 'Contact us directly', BOOKACTI_PLUGIN_NAME ) ) . '" target="_blank" >' . esc_html__( 'Contact us', BOOKACTI_PLUGIN_NAME ) . '</a>';
+		$links[ 'docs' ]	= '<a href="' . esc_url( apply_filters( 'bookacti_user_docs_url',	'https://booking-activities.fr/en/documentation/user-documentation/?utm_source=plugin&utm_medium=plugin&utm_content=plugin-list' ) ) . '" title="' . esc_attr( __( 'View Booking Activities Documentation', BOOKACTI_PLUGIN_NAME ) ) . '" target="_blank" >' . esc_html__( 'Docs', BOOKACTI_PLUGIN_NAME ) . '</a>';
+		$links[ 'report' ]	= '<a href="' . esc_url( apply_filters( 'bookacti_report_url',		'https://github.com/bookingactivities/booking-activities/issues/' ) ) . '" title="' . esc_attr( __( 'Report a bug or request a feature', BOOKACTI_PLUGIN_NAME ) ) . '" target="_blank" >' . esc_html__( 'Report & Request', BOOKACTI_PLUGIN_NAME ) . '</a>';
+		$links[ 'contact' ]	= '<a href="' . esc_url( apply_filters( 'bookacti_contact_url',		'https://booking-activities.fr/en/#contact?utm_source=plugin&utm_medium=plugin&utm_content=plugin-list' ) ) . '" title="' . esc_attr( __( 'Contact us directly', BOOKACTI_PLUGIN_NAME ) ) . '" target="_blank" >' . esc_html__( 'Contact us', BOOKACTI_PLUGIN_NAME ) . '</a>';
 	}
 	return $links;
 }
@@ -249,7 +249,15 @@ function bookacti_5stars_rating_notice() {
 				if( $nb_days >= 7 ) {
 					?>
 					<div class='notice notice-info bookacti-5stars-rating-notice is-dismissible' >
-						<p><?php esc_html_e( 'You have been using Booking Activities for one week now. We are glad you like it! Please let people know by rating us five stars on wordpress.org, this is really important for us as we provide Booking Activities for free, and it will only take you five minutes.', BOOKACTI_PLUGIN_NAME ); ?></p>
+						<p>
+							<?php 
+							_e( '<strong>Booking Activities</strong> has been helping you for one week now.', BOOKACTI_PLUGIN_NAME );
+							/* translators: %s: five stars */
+							echo '<br/>' 
+								. sprintf( esc_html__( 'Would you help it back leaving us a %s rating? We need you now to make it last!', BOOKACTI_PLUGIN_NAME ), 
+								  '<a href="https://wordpress.org/support/plugin/booking-activities/reviews?rate=5#new-post" target="_blank" >&#9733;&#9733;&#9733;&#9733;&#9733;</a>' );
+							?>
+						</p>
 						<p>
 							<a class='button' href='<?php echo esc_url( 'https://wordpress.org/support/plugin/booking-activities/reviews?rate=5#new-post' ); ?>' target='_blank' ><?php esc_html_e( "Ok, I'll rate you five stars!", BOOKACTI_PLUGIN_NAME ); ?></a>
 							<span class='button' id='bookacti-dismiss-5stars-rating' ><?php esc_html_e( "I already rated you, hide this message", BOOKACTI_PLUGIN_NAME ); ?></span>
@@ -284,3 +292,31 @@ function bookacti_dismiss_5stars_rating_notice() {
 		wp_send_json( array( 'status' => 'failed', 'error' => 'not_allowed' ) );
 	}
 }
+
+
+/**
+ * Display a custom message in the footer
+ * 
+ * @param string $footer_text
+ * @return string
+ */
+function bookacti_admin_footer_text( $footer_text ) {
+	if ( ! current_user_can( 'bookacti_manage_booking_activities' ) || ! function_exists( 'bookacti_get_screen_ids' ) ) {
+		return $footer_text;
+	}
+	
+	$current_screen	= get_current_screen();
+	$bookacti_pages	= bookacti_get_screen_ids();
+	
+	// Check to make sure we're on a BA admin page.
+	if ( isset( $current_screen->id ) && in_array( $current_screen->id, $bookacti_pages ) ) {
+		// Change the footer text
+		if ( ! get_option( 'woocommerce_admin_footer_text_rated' ) ) {
+			/* translators: %s: five stars */
+			$footer_text = sprintf( __( 'If <strong>Booking Activities</strong> helps you, help it back leaving us a %s rating. We need you now to make it last!', BOOKACTI_PLUGIN_NAME ), '<a href="https://wordpress.org/support/plugin/booking-activities/reviews?rate=5#new-post" target="_blank" >&#9733;&#9733;&#9733;&#9733;&#9733;</a>' );
+		}
+	}
+
+	return $footer_text;
+}
+add_filter( 'admin_footer_text', 'bookacti_admin_footer_text', 10, 1 );

@@ -7,7 +7,8 @@ $j( document ).ready( function() {
 		bookacti_init_booking_system_dialogs();
 		
 		// Init on pick events actions
-		$j( '.bookacti-booking-system' ).on( 'bookacti_events_picked', function(){
+		$j( '.bookacti-booking-system' ).on( 'bookacti_events_picked', function( e, group_id, event ){
+			bookacti_fill_form_fields( $j( this ), event, group_id );
 			bookacti_fill_picked_events_list( $j( this ) );
 		});
 		

@@ -198,9 +198,9 @@ function bookacti_switch_booking_system_according_to_variation( booking_system, 
 		if( booking_method	=== 'parent' )			{ booking_method	= bookacti.parent_booking_system[ booking_system_id ].method; }
 		else if( booking_method	=== 'site' )		{ booking_method	= bookacti_localized.site_booking_method; }
 		
-		bookacti.booking_system[ booking_system_id ][ 'method' ]					= booking_method;
+		bookacti.booking_system[ booking_system_id ][ 'method' ]				= booking_method;
 		bookacti.booking_system[ booking_system_id ][ 'calendars' ]				= template_id;
-		bookacti.booking_system[ booking_system_id ][ 'activities' ]				= activity_id;
+		bookacti.booking_system[ booking_system_id ][ 'activities' ]			= activity_id;
 		bookacti.booking_system[ booking_system_id ][ 'group_categories' ]		= group_categories;
 		bookacti.booking_system[ booking_system_id ][ 'groups_only' ]			= groups_only;
 		bookacti.booking_system[ booking_system_id ][ 'groups_single_events' ]	= groups_single_events;

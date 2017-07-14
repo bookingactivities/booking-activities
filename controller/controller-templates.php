@@ -92,8 +92,8 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	add_action( 'wp_ajax_bookactiResizeEvent', 'bookacti_controller_update_event' );
 	add_action( 'wp_ajax_bookactiMoveEvent', 'bookacti_controller_update_event' );
 	function bookacti_controller_update_event() {
-
-		$event_id       = intval( $_POST['event_id'] );
+		
+		$event_id       = intval( $_POST[ 'event_id' ] );
 		$template_id	= bookacti_get_event_template_id( $event_id );
 		
 		// Check nonce and capabilities
@@ -110,12 +110,19 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 			} else {
 				
-				$event_start    = bookacti_sanitize_datetime( $_POST['event_start'] );
-				$event_end      = bookacti_sanitize_datetime( $_POST['event_end'] );
-				$delta_days     = intval( $_POST['delta_days'] );
-				$is_duplicated  = intval( $_POST['is_duplicated'] );
+				$action			= $_POST[ 'action' ] === 'bookactiResizeEvent' ? 'resize' : 'move';
+				$event_start    = bookacti_sanitize_datetime( $_POST[ 'event_start' ] );
+				$event_end      = bookacti_sanitize_datetime( $_POST[ 'event_end' ] );
+				$delta_days     = intval( $_POST[ 'delta_days' ] );
+				$is_duplicated  = intval( $_POST[ 'is_duplicated' ] );
 				
-				$updated = bookacti_update_event( $event_id, $event_start, $event_end, $delta_days, $is_duplicated );
+				// Maybe update grouped events if the event belong to a group
+				if( ! $is_duplicated ) {
+					bookacti_update_grouped_event_dates( $event_id, $event_start, $event_end, $action, $delta_days );
+				}
+				
+				// Update the event
+				$updated = bookacti_update_event( $event_id, $event_start, $event_end, $action, $delta_days, $is_duplicated );
 
 				if( $is_duplicated ) {
 					if( $updated ) { 
@@ -172,22 +179,24 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 				
 				// Update event data
 				$updated = bookacti_set_event_data( $event_id, $event_title, $event_availability, $event_start, $event_end, $event_repeat_freq, $event_repeat_from, $event_repeat_to, $dates_excep_array, $formatted_settings );
-
-				if(	  ( $updated['updated_event']		>= 0 && $updated['updated_event']		!== false && 
-						$updated['updated_event_meta']  >= 0 && $updated['updated_event_meta']  !== false && 
-						$updated['inserted_excep']		>= 0 && $updated['inserted_excep']		!== false && 
-						$updated['deleted_excep']		>= 0 && $updated['deleted_excep']		!== false ) 
-					&&
-						! ( $updated['updated_event']		=== 0 && 
-							( $updated['updated_event_meta']=== 0 && ! empty( $formatted_settings ) ) )
-					){
-
+				
+				// if one of the elements has been updated, consider as success
+				if(	( is_numeric( $updated['updated_event'] )		&& $updated['updated_event'] > 0 )
+				||  ( is_numeric( $updated['updated_event_meta'] )	&& $updated['updated_event_meta'] > 0 )
+				||  ( is_numeric( $updated['inserted_excep'] )		&& $updated['inserted_excep'] > 0 )
+				||  ( is_numeric( $updated['deleted_excep'] )		&& $updated['deleted_excep'] > 0 ) ){
+					
+					// Retrieve groups of events
+					$groups_events = $groups_events = bookacti_get_groups_events( $template_id );
+					
 					wp_send_json( array( 
 						'status' => 'success', 
-						'results' => array( $updated['updated_event'], 
-											$updated['updated_event_meta'], 
-											$updated['inserted_excep'], 
-											$updated['deleted_excep'] ) 
+						'groups_events' => $groups_events,
+						'results' => array( 
+							'updated_event'		=> $updated['updated_event'], 
+							'updated_event_meta'=> $updated['updated_event_meta'], 
+							'inserted_excep'	=> $updated['inserted_excep'], 
+							'deleted_excep'		=> $updated['deleted_excep'] ) 
 						) ); 
 
 				} else if( $updated['updated_event'] === 0 
@@ -276,9 +285,13 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 				wp_send_json( array( 'status' => 'failed', 'error' => 'has_bookings' ) );
 
 			} else {
-
+				
+				// Delete the event
 				$deleted = bookacti_delete_event( $event_id );
-
+				
+				// Delete the event from all groups
+				bookacti_delete_event_from_groups( $event_id );
+				
 				if( $deleted ) {
 					wp_send_json( array( 'status' => 'success' ) );
 				} else {
@@ -295,7 +308,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	add_action( 'wp_ajax_bookactiUnbindOccurences', 'bookacti_controller_unbind_occurrences' );
 	function bookacti_controller_unbind_occurrences() {
 
-		$event_id		= intval( $_POST['event_id'] );
+		$event_id		= intval( $_POST[ 'event_id' ] );
 		$template_id	= bookacti_get_event_template_id( $event_id );
 		
 		// Check nonce and capabilities
@@ -311,11 +324,16 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 				$event_start	= bookacti_sanitize_datetime( $_POST['event_start'] );
 				$event_end		= bookacti_sanitize_datetime( $_POST['event_end'] );
 				$events			= bookacti_unbind_selected_occurrence( $event_id, $event_start, $event_end );
+				
 			} else if( $unbind === 'booked' ) {
 				$events = bookacti_unbind_booked_occurrences( $event_id );
+				
 			}
-
-			wp_send_json( array( 'status' => 'success', 'events' => $events ) );
+			
+			// Retrieve groups of events
+			$groups_events = $groups_events = bookacti_get_groups_events( $events[ 0 ][ 'template_id' ] );
+			
+			wp_send_json( array( 'status' => 'success', 'events' => $events, 'groups_events' => $groups_events ) );
 		} else {
 			wp_send_json( array( 'status' => 'failed', 'error' => 'not_allowed' ) );
 		}
@@ -822,7 +840,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			$exceptions			= bookacti_get_exceptions( $template_id );
 			
 			$events				= bookacti_fetch_events_for_calendar_editor( $template_id );
-			$activities_data	= bookacti_get_activities_by_template( $template_id );
+			$activities_data	= bookacti_get_activities_by_template( $template_id, true );
 			$groups_events		= bookacti_get_groups_events( $template_id );
 			$groups_data		= bookacti_get_groups_of_events_by_template( $template_id );
 			$categories_data	= bookacti_get_group_categories_by_template( $template_id );
@@ -1002,7 +1020,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			
 			if( $inserted ) {
 				
-				$activities_data = bookacti_get_activities_by_template( $template_id );
+				$activities_data = bookacti_get_activities_by_template( $template_id, true );
 				
 				wp_send_json( array( 'status' => 'success', 'activity_ids' => $activity_ids, 'activities_data' => $activities_data ) );
 			} else if( $was_empty ) {
@@ -1065,8 +1083,8 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 			if( $selected_template_id !== $current_template_id ) {
 
-				$new_activities		= bookacti_get_activities_by_template( $selected_template_id );
-				$current_activities	= bookacti_get_activity_ids_by_template( $current_template_id );
+				$new_activities		= bookacti_get_activities_by_template( $selected_template_id, false );
+				$current_activities	= bookacti_get_activity_ids_by_template( $current_template_id, false );
 				
 				// Check activity permissions, and remove not allowed activity ids
 				foreach( $new_activities as $new_activity_id => $new_activity ) {

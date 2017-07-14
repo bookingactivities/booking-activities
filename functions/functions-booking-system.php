@@ -49,7 +49,7 @@ function bookacti_get_booking_system( $atts, $echo = false ) {
 				}
 			?>
 				bookacti.booking_system[ '<?php echo $atts[ 'id' ]; ?>' ][ 'events' ]					= <?php echo json_encode( bookacti_fetch_events( $atts ) ); ?>;
-				bookacti.booking_system[ '<?php echo $atts[ 'id' ]; ?>' ][ 'activities_data' ]			= <?php echo json_encode( bookacti_get_activities_by_template( $atts[ 'calendars' ] ) ); ?>;
+				bookacti.booking_system[ '<?php echo $atts[ 'id' ]; ?>' ][ 'activities_data' ]			= <?php echo json_encode( bookacti_get_activities_by_template( $atts[ 'calendars' ], true ) ); ?>;
 				bookacti.booking_system[ '<?php echo $atts[ 'id' ]; ?>' ][ 'groups_events' ]			= <?php echo json_encode( $groups_events ); ?>;	
 				bookacti.booking_system[ '<?php echo $atts[ 'id' ]; ?>' ][ 'groups_data' ]				= <?php echo json_encode( $groups_data ); ?>;	
 				bookacti.booking_system[ '<?php echo $atts[ 'id' ]; ?>' ][ 'group_categories_data' ]	= <?php echo json_encode( $categories_data ); ?>;	
@@ -216,12 +216,13 @@ function bookacti_format_booking_system_attributes( $atts = array(), $shortcode 
 		), '', 	$atts[ 'activities' ] ) ) );
 	}
 	
-	if( in_array( $atts[ 'group_categories' ], array( false, 'none', 'false', 'no' ), true )
+	if( in_array( $atts[ 'group_categories' ], array( true, 'all', 'true', 'yes', 'ok' ), true ) ) {
+		$atts[ 'group_categories' ] = array();
+	
+	} else if( in_array( $atts[ 'group_categories' ], array( false, 'none', 'false', 'no' ), true )
 	|| ( empty( $atts[ 'group_categories' ] ) && ! is_array( $atts[ 'group_categories' ] ) ) ) { 
 		$atts[ 'group_categories' ] = false;
 	
-	} else if( in_array( $atts[ 'group_categories' ], array( true, 'all', 'true', 'yes', 'ok' ), true ) ) {
-		$atts[ 'group_categories' ] = array();
 		
 	} else if( is_string( $atts[ 'group_categories' ] ) || is_numeric( $atts[ 'group_categories' ] ) ) {
 		$atts[ 'group_categories' ] = array_map( 'intval', explode( ',', preg_replace( array(
@@ -253,7 +254,7 @@ function bookacti_format_booking_system_attributes( $atts = array(), $shortcode 
 	
 	// Check if desired activities exist
 	if( ! empty( $atts[ 'calendars' ] ) ) {
-		$available_activities = bookacti_get_activity_ids_by_template( $atts[ 'calendars' ] );
+		$available_activities = bookacti_get_activity_ids_by_template( $atts[ 'calendars' ], false );
 		foreach( $atts[ 'activities' ] as $i => $activity_id ) {
 			if( ! in_array( intval( $activity_id ), $available_activities ) ) {
 				unset( $atts[ 'activities' ][ $i ] );
@@ -594,11 +595,10 @@ function bookacti_create_repeated_events( $event, $shared_data = array(), $args 
 		$is_in_range	= bookacti_is_event_in_its_template_range( $event->event_id, $event_start->format('Y-m-d H:i:s'), $event_end->format('Y-m-d H:i:s') );
 		$is_booked		= bookacti_get_number_of_bookings( $event->event_id, $event_start->format('Y-m-d H:i:s'), $event_end->format('Y-m-d H:i:s') ) > 0;
 		$category_ids	= bookacti_get_event_group_category_ids( $event->event_id, $event_start->format('Y-m-d H:i:s'), $event_end->format('Y-m-d H:i:s') );
-		$is_in_category	= empty( $args[ 'group_categories' ] ) || empty( $category_ids ) ? true : ! empty( array_intersect( $category_ids, $args[ 'group_categories' ] ) );
+		$is_in_category	= empty( $args[ 'group_categories' ] ) ? true : ! empty( array_intersect( $category_ids, $args[ 'group_categories' ] ) );
 		
-        if( (	$is_in_category																					// Filter by category
-			&&  ( ( $args[ 'groups_only' ] && ! empty( $category_ids ) )										// If only groups must be shown, do not show single events
-				|| ! $args[ 'groups_only' ] )																	// Else, just make sure the event is single or in an authorized category
+        if( ( ( ! $args[ 'groups_only' ]																		// If single events are displayed, do not care about categories
+			||    $args[ 'groups_only' ] && $is_in_category && ! empty( $category_ids ) )						// Else, filter events by category
 			) && (
 				$args[ 'context' ] === 'editor'																	// Show all events on templates 
 			||  $args[ 'context' ] === 'booking_page' && $is_exception == 0 && ( $is_in_range || $is_booked )	// If we are on booking page, show booked events even if they are out of range

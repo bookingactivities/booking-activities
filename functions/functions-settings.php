@@ -226,7 +226,7 @@ function bookacti_settings_section_bookings_callback() { }
 		if( empty( $license_status ) || $license_status !== 'valid' ) {
 			$tip .= '<br/>';
 			$tip .= sprintf( __( 'Get more display methods with %1$sDisplay Pack%2$s add-on!', BOOKACTI_PLUGIN_NAME ),
-							'<a href="' . __( 'http://booking-activities.fr/en/downloads/display-pack/', BOOKACTI_PLUGIN_NAME ) . '" target="_blank" >', '</a>');
+							'<a href="https://booking-activities.fr/en/downloads/display-pack/?utm_source=plugin&utm_medium=plugin&utm_campaign=display-pack&utm_content=landing" target="_blank" >', '</a>');
 		}
 		
 		bookacti_help_tip( $tip );
@@ -514,6 +514,21 @@ function bookacti_reset_notices() {
 	delete_option( 'bookacti-first20-notice-viewed' );
 	delete_option( 'bookacti-first20-notice-dismissed' );
 	delete_option( 'bookacti-5stars-rating-notice-dismissed' );
+}
+
+
+/**
+ * Get Booking Activities admin screen ids
+ */
+function bookacti_get_screen_ids() {
+	$screens = array(
+		'toplevel_page_booking-activities',
+		'booking-activities_page_bookacti_calendars',
+		'booking-activities_page_bookacti_bookings',
+		'booking-activities_page_bookacti_settings'
+	);
+	
+	return apply_filters( 'bookacti_screen_ids', $screens );
 }
 
 

@@ -105,71 +105,28 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			<div>
 				<label for='bookacti-event-title' ><?php esc_html_e( 'Title', BOOKACTI_PLUGIN_NAME ); ?></label>
 				<input type='text' name='event-title' id='bookacti-event-title' />
+				<?php
+					$tip = __( 'Give your event a specific title.', BOOKACTI_PLUGIN_NAME );
+					$tip .= ' ' . __( 'It will override the activity setting on this event only.', BOOKACTI_PLUGIN_NAME );
+					bookacti_help_tip( $tip );
+				?>
 			</div>
 			<div>
 				<label for='bookacti-event-availability' ><?php esc_html_e( 'Availability', BOOKACTI_PLUGIN_NAME ); ?></label>
 				<input type='number' min='0' value='0' id='bookacti-event-availability' 
 					   data-verified='false'
 					   onkeypress='return event.charCode >= 48 && event.charCode <= 57' name='event-availability' />
+				<?php
+					$tip = __( 'Set the amount of bookings that can be made on this event.', BOOKACTI_PLUGIN_NAME );
+					$tip .= ' ' . __( 'It will override the activity setting on this event only.', BOOKACTI_PLUGIN_NAME );
+					bookacti_help_tip( $tip );
+				?>
 			</div>
 		<?php
-			$license_status = get_option( 'bapap_license_status' );
-			if( empty( $license_status ) || $license_status !== 'valid' ) {
-				?>
-				<div class='bookacti-addon-promo' >
-					<?php 
-					$addon_link = '<a href="' . esc_url( __( 'http://booking-activities.fr/en/downloads/prices-and-promotions/' ), BOOKACTI_PLUGIN_NAME ) . '" target="_blank" >';
-					$addon_link .= esc_html( __( 'Prices and Promotions', BOOKACTI_PLUGIN_NAME ) );
-					$addon_link .= '</a>';
-					/* transmators: %1$s is the placeholder for Price and Promotion add-on link */
-					echo sprintf( esc_html( __( 'Set a price or a promotion on your events with %1$s add-on !', BOOKACTI_PLUGIN_NAME ) ), $addon_link ); 
-					?>
-					<div class='bookacti-promo-events-examples'>
-						<a class="fc-time-grid-event fc-v-event fc-event fc-start fc-end bookacti-event-has-price bookacti-narrow-event" >
-							<div class="fc-content">
-								<div class="fc-time" data-start="7:00" data-full="7:00 AM - 8:30 AM">
-									<span>7:00 - 8:30</span>
-								</div>
-								<div class="fc-title"><?php _e( 'My event', BOOKACTI_PLUGIN_NAME ); ?></div>
-							</div>
-							<div class="fc-bg"></div>
-							<div class="bookacti-availability-container">
-								<span class="bookacti-available-places bookacti-not-booked ">
-									<span class="bookacti-available-places-number">50</span>
-									<span class="bookacti-available-places-unit-name"> </span>
-									<span class="bookacti-available-places-avail-particle"> <?php _ex( 'avail.', 'Short for availabilities [plural noun]', BOOKACTI_PLUGIN_NAME ); ?></span>
-								</span>
-							</div>
-							<div class="bookacti-price-container">
-								<span class="bookacti-price bookacti-promo" style="display: block; width: fit-content; white-space: nowrap; margin: 4px auto; padding: 5px; font-weight: bolder; font-size: 1.2em; border: 1px solid #fff; -webkit-border-radius: 3px;  border-radius: 3px;  background-color: rgba(0,0,0,0.3); color: #fff;">$30</span>
-							</div>
-						</a>
-						<a class="fc-time-grid-event fc-v-event fc-event fc-start fc-end bookacti-event-has-price bookacti-narrow-event" >
-							<div class="fc-content">
-								<div class="fc-time" data-start="7:00" data-full="7:00 AM - 8:30 AM">
-									<span>7:00 - 8:30</span>
-								</div>
-								<div class="fc-title"><?php _e( 'My event', BOOKACTI_PLUGIN_NAME ); ?></div>
-							</div>
-							<div class="fc-bg"></div>
-							<div class="bookacti-availability-container">
-								<span class="bookacti-available-places bookacti-not-booked ">
-									<span class="bookacti-available-places-number">50</span>
-									<span class="bookacti-available-places-unit-name"> </span>
-									<span class="bookacti-available-places-avail-particle"> <?php _ex( 'avail.', 'Short for availabilities [plural noun]', BOOKACTI_PLUGIN_NAME ); ?></span>
-								</span>
-							</div>
-							<div class="bookacti-price-container">
-								<span class="bookacti-price bookacti-promo" style="display: block; width: fit-content; white-space: nowrap; margin: 4px auto; padding: 5px; font-weight: bolder; font-size: 1.2em; border: 1px solid #fff; -webkit-border-radius: 3px;  border-radius: 3px;  background-color: rgba(0,0,0,0.3); color: #fff;">- 20%</span>
-							</div>
-						</a>
-					</div>
-					<div><a href='<?php echo esc_url( __( 'http://booking-activities.fr/en/downloads/prices-and-promotions/', BOOKACTI_PLUGIN_NAME ) ); ?>' class='button' target='_blank' ><?php esc_html_e( 'Learn more', BOOKACTI_PLUGIN_NAME ); ?></a></div>
-				</div>
-				<?php
-			}
-		
+			
 			do_action( 'bookacti_event_tab_general_after', $params );
+			
+			bookacti_promo_for_bapap_addon( 'event' );
 		}
 
 		function bookacti_fill_event_tab_repetition( $params ) {
@@ -183,19 +140,37 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 					<option value='weekly'>                     <?php esc_html_e( 'Weekly', BOOKACTI_PLUGIN_NAME ); ?>         </option>
 					<option value='monthly'>                    <?php esc_html_e( 'Monthly', BOOKACTI_PLUGIN_NAME ); ?>        </option>
 				</select>
+				<?php
+					$tip = __( 'Set the repetition frequency. This will create an occurence of the event every day, week or month.', BOOKACTI_PLUGIN_NAME );
+					bookacti_help_tip( $tip );
+				?>
 			</div>
 			<div id='bookacti-event-repeat-period-container'>
 				<div>
 					<label for='bookacti-event-repeat-from' ><?php esc_html_e( 'Repeat from', BOOKACTI_PLUGIN_NAME ); ?></label>
 					<input type='date' name='event-repeat-from' id='bookacti-event-repeat-from' data-verified='false' />
+					<?php
+						$tip = __( 'Set the starting date of the repetition. The occurences of the event will be added from this date.', BOOKACTI_PLUGIN_NAME );
+						bookacti_help_tip( $tip );
+					?>
 				</div>
 				<div>
 					<label for='bookacti-event-repeat-to' ><?php esc_html_e( 'Repeat to', BOOKACTI_PLUGIN_NAME ); ?></label>
 					<input type='date' name='event-repeat-to' id='bookacti-event-repeat-to' data-verified='false' />
+					<?php
+						$tip = __( 'Set the ending date of the repetition. The occurences of the event will be added until this date.', BOOKACTI_PLUGIN_NAME );
+						bookacti_help_tip( $tip );
+					?>
 				</div>
 			</div>
 			<div id='bookacti-event-exceptions-container'>
-				<label class='bookacti-fullwidth-label'><?php esc_html_e( 'Exceptions', BOOKACTI_PLUGIN_NAME ); ?></label>
+				<label class='bookacti-fullwidth-label'>
+				<?php 
+					esc_html_e( 'Exceptions', BOOKACTI_PLUGIN_NAME );
+					$tip = __( 'You can add exception dates to the repetition. No event occurences will be displayed on the exception dates.', BOOKACTI_PLUGIN_NAME );
+					bookacti_help_tip( $tip );
+				?>
+				</label>
 				<div id='bookacti-event-add-exception-container' >
 					<input type='date' id='bookacti-event-exception-date-picker' >
 					<button type='button' id='bookacti-event-add-exception-button' ><?php esc_html_e( 'Add', BOOKACTI_PLUGIN_NAME ); ?></button>
@@ -247,6 +222,10 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 				<div>
 					<label for='bookacti-template-title' ><?php esc_html_e( 'Title', BOOKACTI_PLUGIN_NAME ); ?></label>
 					<input type='text' name='template-title' id='bookacti-template-title' />
+					<?php
+						$tip = __( 'Give your calendar a title to easily recognize it in this list.', BOOKACTI_PLUGIN_NAME );
+						bookacti_help_tip( $tip );
+					?>
 				</div>
 				<div id='bookacti-duplicate-template-fields'>
 					<label for='bookacti-template-duplicated-template-id' ><?php esc_html_e( 'Duplicate from', BOOKACTI_PLUGIN_NAME ); ?></label>
@@ -254,14 +233,26 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 						<option value='0' ><?php esc_html_e( 'Don\'t duplicate', BOOKACTI_PLUGIN_NAME ); ?></option>
 						<?php echo $templates_options; ?>
 					</select>
+					<?php
+						$tip = __( 'If you want to duplicate a calendar, select it in the list. It will copy its events, activities list, and its settings but not the bookings made on it.', BOOKACTI_PLUGIN_NAME );
+						bookacti_help_tip( $tip );
+					?>
 				</div>
 				<div>
 					<label for='bookacti-template-opening' ><?php esc_html_e( 'Opening', BOOKACTI_PLUGIN_NAME ); ?></label>
 					<input type='date' name='template-opening' id='bookacti-template-opening' >
+					<?php
+						$tip = __( 'The starting date of your calendar. Basically it should be the date of your first event.', BOOKACTI_PLUGIN_NAME );
+						bookacti_help_tip( $tip );
+					?>
 				</div>
 				<div>
 					<label for='bookacti-template-closing' ><?php esc_html_e( 'Closing', BOOKACTI_PLUGIN_NAME ); ?></label>
 					<input type='date' name='template-closing' id='bookacti-template-closing' >
+					<?php
+						$tip = __( 'The ending date of your calendar. Basically it should be the date of your last event.', BOOKACTI_PLUGIN_NAME );
+						bookacti_help_tip( $tip );
+					?>
 				</div>
 			<?php 
 					do_action( 'bookacti_template_tab_general_after', $params );
@@ -304,18 +295,47 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			<?php
 				do_action( 'bookacti_template_tab_agenda_after' );
 				
-				$license_status = get_option( 'badp_license_status' );
-				if( empty( $license_status ) || $license_status !== 'valid' ) {
+				$is_plugin_active	= bookacti_is_plugin_active( 'ba-display-pack/ba-display-pack.php' );
+				$license_status		= get_option( 'badp_license_status' );
+				
+				// If the plugin is activated but the license is not active yet
+				if( $is_plugin_active && ( empty( $license_status ) || $license_status !== 'valid' ) ) {
+					?>
+					<div class='bookacti-addon-promo' >
+						<p>
+						<?php 
+							/* translators: %s = add-on name */
+							echo sprintf( __( 'Thank you for purchasing %s add-on!', BOOKACTI_PLUGIN_NAME ), 
+										 '<strong>' . esc_html( __( 'Display Pack', BOOKACTI_PLUGIN_NAME ) ) . '</strong>' ); 
+						?>
+						</p><p>
+							<?php esc_html_e( 'It seems you didn\'t activate your license yet. Please follow these instructions to activate your license:', BOOKACTI_PLUGIN_NAME ); ?>
+						</p><p>
+							<strong>
+								<a href='https://booking-activities.fr/en/docs/user-documentation/get-started-with-display-pack-add-on/prerequisite-installation-license-activation-of-display-pack-add-on/?utm_source=plugin&utm_medium=plugin&utm_content=encart-promo-calendar' target='_blank' >
+									<?php 
+									/* translators: %s = add-on name */
+										echo sprintf( __( 'How to activate %s license?', BOOKACTI_PLUGIN_NAME ), 
+													  esc_html( __( 'Display Pack', BOOKACTI_PLUGIN_NAME ) ) ); 
+									?>
+								</a>
+							</strong>
+						</p>
+					</div>
+					<?php
+				}
+				
+				else if( empty( $license_status ) || $license_status !== 'valid' ) {
 					?>
 					<div class='bookacti-addon-promo' >
 						<?php 
-						$addon_link = '<a href="' . esc_url( __( 'http://booking-activities.fr/en/downloads/display-pack/' ), BOOKACTI_PLUGIN_NAME ) . '" target="_blank" >';
+						$addon_link = '<a href="https://booking-activities.fr/en/downloads/display-pack/?utm_source=plugin&utm_medium=plugin&utm_campaign=display-pack&utm_content=encart-promo-calendar" target="_blank" >';
 						$addon_link .= esc_html( __( 'Display Pack', BOOKACTI_PLUGIN_NAME ) );
 						$addon_link .= '</a>';
 						/* transmators: %1$s is the placeholder for Display Pack add-on link */
 						echo sprintf( esc_html( __( 'Get other essential customization options with %1$s add-on!', BOOKACTI_PLUGIN_NAME ) ), $addon_link ); 
 						?>
-						<div><a href='<?php echo esc_url( __( 'http://booking-activities.fr/en/downloads/display-pack/', BOOKACTI_PLUGIN_NAME ) ); ?>' class='button' target='_blank' ><?php esc_html_e( 'Learn more', BOOKACTI_PLUGIN_NAME ); ?></a></div>
+						<div><a href='https://booking-activities.fr/en/downloads/display-pack/?utm_source=plugin&utm_medium=plugin&utm_campaign=display-pack&utm_content=encart-promo-calendar' class='button' target='_blank' ><?php esc_html_e( 'Learn more', BOOKACTI_PLUGIN_NAME ); ?></a></div>
 					</div>
 					<?php
 				}
@@ -329,7 +349,20 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			?>	
 				<div id='bookacti-template-managers-container' class='bookacti-items-container' data-type='users' >
 					<label id='bookacti-template-managers-title' class='bookacti-fullwidth-label' for='bookacti-add-new-template-managers-select-box' >
-						<?php esc_html_e( 'Who can manage this calendar?', BOOKACTI_PLUGIN_NAME ); ?>
+					<?php 
+						esc_html_e( 'Who can manage this calendar?', BOOKACTI_PLUGIN_NAME );
+						$tip  = __( 'Choose who is allowed to access this calendar.' );
+						/* translators: %s = capabilities name */
+						$tip .= ' ' . sprintf( __( 'All administrators already have this privilege. If the selectbox is empty, it means that no users have capabilities such as %s.', BOOKACTI_PLUGIN_NAME ), '"bookacti_edit_templates" / "bookacti_read_templates"' );
+						/* translators: %1$s = Order for Customers add-on link. %2$s = Points of sale add-on link. %3$s = User role editor plugin name. */
+						$tip .= '<br/>' 
+							 .  sprintf( __( 'Operators from %1$s add-on and Point of sale managers from %2$s add-on have these capabilities. If you want to grant a user these capabilities, use a plugin such as %3$s.' ), 
+									'<a href="https://booking-activities.fr/en/downloads/order-for-customers/?utm_source=plugin&utm_medium=plugin&utm_campaign=order-for-customers&utm_content=infobulle-permission" target="_blank" >' . esc_html( __( 'Order for Customers', BOOKACTI_PLUGIN_NAME ) ) . '</a>',
+									'<a href="https://booking-activities.fr/en/downloads/points-of-sale/?utm_source=plugin&utm_medium=plugin&utm_campaign=points-of-sale&utm_content=infobulle-permission" target="_blank" >' . esc_html( __( 'Points of Sale', BOOKACTI_PLUGIN_NAME ) ) . '</a>',
+									'<a href="https://wordpress.org/plugins/user-role-editor/" target="_blank" >User Role Editor</a>'
+								);
+						bookacti_help_tip( $tip );
+					?>
 					</label>
 					<div id='bookacti-add-template-managers-container' class='bookacti-add-items-container' >
 						<select id='bookacti-add-new-template-managers-select-box' class='bookacti-add-new-items-select-box' >
@@ -360,7 +393,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		<div id='bookacti-activity-dialog-lang-switcher' class='bookacti-lang-switcher' ></div>
 			
 			<?php
-			//Fill the array of tabs with their label, callback for content and display order
+			// Fill the array of tabs with their label, callback for content and display order
 				$activity_tabs = apply_filters( 'bookacti_activity_dialog_tabs', array (
 					array(	'label'			=> __( 'General', BOOKACTI_PLUGIN_NAME ),
 							'callback'		=> 'bookacti_fill_activity_tab_general',
@@ -389,6 +422,10 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 					<label for='bookacti-activity-title' ><?php esc_html_e( 'Title', BOOKACTI_PLUGIN_NAME ); ?></label>
 					<input type='text'		name='activity-title'		id='bookacti-activity-title' class='bookacti-translate-input' />
 					<input type='hidden'	name='activity-old-title'	id='bookacti-activity-old-title' />
+					<?php
+						$tip = __( 'Choose a short and relevant title for your activity. It will be shown on each events.', BOOKACTI_PLUGIN_NAME );
+						bookacti_help_tip( $tip );
+					?>
 				</div>
 				<div>
 					<label for='bookacti-activity-availability' ><?php esc_html_e( 'Availability', BOOKACTI_PLUGIN_NAME ); ?></label>
@@ -397,6 +434,10 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 						   id='bookacti-activity-availability' 
 						   min='0' step='1' value='0' 
 						   onkeypress='return event.charCode >= 48 && event.charCode <= 57' />
+					<?php
+						$tip = __( 'The default amount of bookings that can be made on each event of this activity. This can be overriden on each event independantly.', BOOKACTI_PLUGIN_NAME );
+						bookacti_help_tip( $tip );
+					?>
 				</div>
 				<div>
 					<input type='hidden' name='activity-duration' id='bookacti-activity-duration' />
@@ -422,7 +463,11 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 							   min='0' max='59' step='5' value='00'
 							   onkeypress='return event.charCode >= 48 && event.charCode <= 57' />
 						<?php /* translators: 'm' stand for minutes */ 
-						echo esc_html( _x( 'm', 'm for minutes', BOOKACTI_PLUGIN_NAME ) ); ?>
+						echo esc_html( _x( 'm', 'm for minutes', BOOKACTI_PLUGIN_NAME ) );
+						
+						$tip = __( 'The default duration of an event when you drop this activity onto the calendar. Type an amount of days (d), hours (h) and minutes (m). For a better readability, try not to go over your working hours. Best practice for events of several days is to create one event per day and then group them.', BOOKACTI_PLUGIN_NAME );
+						bookacti_help_tip( $tip );
+						?>
 					</div>
 				</div>
 				<div>
@@ -441,6 +486,10 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 				<div>
 					<label for='bookacti-activity-color' ><?php esc_html_e( 'Color', BOOKACTI_PLUGIN_NAME ); ?></label>
 					<input type='color' name='activity-color' id='bookacti-activity-color' value='#3a87ad' />
+					<?php
+						$tip = __( 'Choose a color for the events of this activity.', BOOKACTI_PLUGIN_NAME );
+						bookacti_help_tip( $tip );
+					?>
 				</div>
 			<?php
 				do_action( 'bookacti_activity_tab_general_after', $params );
@@ -494,7 +543,20 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			?>
 				<div id='bookacti-activity-managers-container' class='bookacti-items-container' data-type='users' >
 					<label id='bookacti-activity-managers-title' class='bookacti-fullwidth-label' >
-						<?php esc_html_e( 'Who can manage this activity?', BOOKACTI_PLUGIN_NAME ); ?>
+						<?php 
+						esc_html_e( 'Who can manage this activity?', BOOKACTI_PLUGIN_NAME );
+						
+						$tip  = __( 'Choose who is allowed to change this activity parameters.' );
+						/* translators: %s = capabilities name */
+						$tip .= ' ' . sprintf( __( 'All administrators already have this privilege. If the selectbox is empty, it means that no users have capabilities such as %s.', BOOKACTI_PLUGIN_NAME ), '"bookacti_edit_activities"' );
+						$tip .= '<br/>' 
+							 .  sprintf( __( 'Operators from %1$s add-on and Point of sale managers from %2$s add-on have these capabilities. If you want to grant a user these capabilities, use a plugin such as %3$s.' ), 
+									'<a href="https://booking-activities.fr/en/downloads/order-for-customers/?utm_source=plugin&utm_medium=plugin&utm_campaign=order-for-customers&utm_content=infobulle-permission" target="_blank" >' . esc_html( __( 'Order for Customers', BOOKACTI_PLUGIN_NAME ) ) . '</a>',
+									'<a href="https://booking-activities.fr/en/downloads/points-of-sale/?utm_source=plugin&utm_medium=plugin&utm_campaign=points-of-sale&utm_content=infobulle-permission" target="_blank" >' . esc_html( __( 'Points of Sale', BOOKACTI_PLUGIN_NAME ) ) . '</a>',
+									'<a href="https://wordpress.org/plugins/user-role-editor/" target="_blank" >User Role Editor</a>'
+								);
+						bookacti_help_tip( $tip );
+					?>
 					</label>
 					<div id='bookacti-add-activity-managers-container' >
 						<select id='bookacti-add-new-activity-managers-select-box' class='bookacti-add-new-items-select-box' >
@@ -510,7 +572,11 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 				</div>
 				<div id='bookacti-activity-templates-container' class='bookacti-items-container' data-type='templates' >
 					<label id='bookacti-activity-templates-title' class='bookacti-fullwidth-label' >
-						<?php esc_html_e( 'Make this activity available on calendars:', BOOKACTI_PLUGIN_NAME ); ?>
+					<?php 
+						esc_html_e( 'Make this activity available on calendars:', BOOKACTI_PLUGIN_NAME ); 
+						$tip = __( 'An activity can be used on multiple calendars. You can add this activity to another calendar&apos;s list here. You will also be given the choice to import an existing activity when you will add an activity to the list of another calendar.', BOOKACTI_PLUGIN_NAME );
+						bookacti_help_tip( $tip );
+					?>
 					</label>
 					<div id='bookacti-add-activity-templates-container' >
 						<select id='bookacti-add-new-activity-templates-select-box' class='bookacti-add-new-items-select-box bookacti-template-select-box' >
@@ -674,7 +740,10 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 					<select multiple id='bookacti-group-of-events-summary' ></select>
 				</div>
 		<?php
+				
 				do_action( 'bookacti_group_of_events_tab_general_after', $params );
+				
+				bookacti_promo_for_bapap_addon( 'group-of-events' );
 			}
 		?>
 	</form>

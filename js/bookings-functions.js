@@ -134,6 +134,7 @@ function bookacti_filter_bookings_by_templates( booking_system ) {
 			type: 'POST',
 			dataType: 'json',
 			success: function( response ){
+				
 				if( response.status === 'success' ) {
 					
 					// Replace activities filters HTML
@@ -141,15 +142,17 @@ function bookacti_filter_bookings_by_templates( booking_system ) {
 					bookacti_filter_bookings_by_activities( booking_system );
 					
 					// Update calendar data
-					bookacti.booking_system[ booking_system_id ][ 'calendars' ]			= response.calendar_ids;
-					bookacti.booking_system[ booking_system_id ][ 'activities' ]		= response.activity_ids;
-					bookacti.booking_system[ booking_system_id ][ 'group_categories' ]	= response.group_categories;
-					bookacti.booking_system[ booking_system_id ][ 'settings' ]			= response.settings;
+					bookacti.booking_system[ booking_system_id ][ 'calendars' ]				= response.calendar_ids;
+					bookacti.booking_system[ booking_system_id ][ 'activities' ]			= response.activity_ids;
+					bookacti.booking_system[ booking_system_id ][ 'group_categories' ]		= response.group_categories;
+					bookacti.booking_system[ booking_system_id ][ 'settings' ]				= response.settings;
 					
 					// Update calendar content data
 					bookacti.booking_system[ booking_system_id ][ 'events' ]				= response[ 'events' ];
-					bookacti.booking_system[ booking_system_id ][ 'activities_data' ]	= response.activities;
-					bookacti.booking_system[ booking_system_id ][ 'groups_events' ]		= response.groups;
+					bookacti.booking_system[ booking_system_id ][ 'activities_data' ]		= response.activities_data;
+					bookacti.booking_system[ booking_system_id ][ 'groups_events' ]			= response.groups_events;
+					bookacti.booking_system[ booking_system_id ][ 'groups_data' ]			= response.groups_data;
+					bookacti.booking_system[ booking_system_id ][ 'group_categories_data' ]	= response.group_categories_data;
 					
 					// Update booking system settings
 					bookacti_booking_method_update_settings( booking_system, booking_method );
@@ -370,7 +373,7 @@ function bookacti_validate_picked_events( booking_system, quantity ) {
 				$j.each( bookacti.booking_system[ booking_system_id ][ 'picked_events' ], function( i, picked_event ) {
 					var is_in_group = false;
 					$j.each( bookacti.booking_system[ booking_system_id ][ 'groups_events' ][ group_id ], function( i, event_of_group ) {
-						if( picked_event['id']		=== event_of_group['id'] 
+						if( picked_event['id']		== event_of_group['id'] 
 						&&  picked_event['start']	=== event_of_group['start'] 
 						&&  picked_event['end']		=== event_of_group['end'] ) {
 							is_in_group = true;

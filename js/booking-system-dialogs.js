@@ -33,11 +33,9 @@ function bookacti_init_booking_system_dialogs() {
 		$j( '.bookacti-group-of-events-option[data-group-id="' + group_id + '"]' ).data( 'show-events', 1 ).attr( 'data-show-events', 1 );
 		$j( '.bookacti-group-of-events-list[data-group-id="' + group_id + '"]' ).show( 200 );
 		
-		// Pick events and fill group id input
+		// Pick events and fill form inputs
 		bookacti_unpick_all_events( booking_system );
-		
 		bookacti_pick_events_of_group( booking_system, group_id, event );
-		booking_system.siblings( '.bookacti-booking-system-inputs' ).find( 'input[name="bookacti_group_id"]' ).val( group_id );
 	});
 }
 
@@ -139,7 +137,7 @@ function bookacti_dialog_choose_group_of_events( booking_system, group_ids, even
 			if( context === 'booking_page' ) {
 				var bookings = 0;
 				$j.each( bookacti.booking_system[ booking_system_id ][ 'groups_events' ][ group_id ], function( i, grouped_event ){
-					if( event.id === grouped_event.id
+					if( event.id == grouped_event.id
 					&&  event.start.format( 'YYYY-MM-DD HH:mm:ss' ) === grouped_event.start 
 					&&  event.end.format( 'YYYY-MM-DD HH:mm:ss' ) === grouped_event.end ) {
 						bookings = grouped_event.group_bookings;
@@ -229,14 +227,9 @@ function bookacti_dialog_choose_group_of_events( booking_system, group_ids, even
 				
 				var group_id = $j( '#bookacti-groups-of-events-list input[type="radio"]:checked' ).val();
 				
-				// Empty picked events
+				// Pick events and fill form inputs
 				bookacti_unpick_all_events( booking_system );
-
-				// Pick events of the group
 				bookacti_pick_events_of_group( booking_system, group_id, event );
-
-				// Fill group id input
-				booking_system.siblings( '.bookacti-booking-system-inputs' ).find( 'input[name="bookacti_group_id"]' ).val( group_id );
 				
 				booking_system.trigger( 'bookacti_group_of_events_choosed', [ group_id, event ] );
 				

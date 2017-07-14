@@ -758,7 +758,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 							if( count( $categories ) > 1 ) { echo 'style="margin-right:10px;"'; } 
 							if( is_array( $current_categories ) && count( $current_categories ) > 1 ) { echo 'multiple'; } 
 							?> >
-						<option value='none' ><?php _e( 'None', BOOKACTI_PLUGIN_NAME ); ?></option>
+						<option value='none' ><?php _ex( 'None', 'About group category', BOOKACTI_PLUGIN_NAME ); ?></option>
 					<?php 
 						$groups_options	= '';
 						foreach( $categories as $category ) {
@@ -878,7 +878,18 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			update_post_meta( $post_id, '_bookacti_activity', bookacti_ids_to_array( $_POST['_bookacti_activity'] ) );
 		}
 		if ( isset( $_POST['_bookacti_group_categories'] ) ) {
-			$group_categories = $_POST['_bookacti_group_categories'] === 'none' ? 'none' : bookacti_ids_to_array( $_POST['_bookacti_group_categories'] );
+			
+			$group_categories = 'none';
+			
+			if( isset( $_POST['_bookacti_group_categories'][0] ) && $_POST['_bookacti_group_categories'][0] === 'none' ) {
+				$_POST['_bookacti_group_categories'] = 'none';
+				$group_categories = 'none';
+			}
+			
+			if( is_numeric( $_POST['_bookacti_group_categories'] ) || is_array( $_POST['_bookacti_group_categories'] ) ) {
+				$group_categories = bookacti_ids_to_array( $_POST['_bookacti_group_categories'] );
+			}
+			
 			update_post_meta( $post_id, '_bookacti_group_categories', $group_categories );
 		}
 		if( ! empty( $_POST['_bookacti_groups_only'] ) ) {
@@ -1132,7 +1143,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 							esc_html_e( 'Parent setting', BOOKACTI_PLUGIN_NAME ); 
 						?>
 					</option>
-					<option value='none' <?php selected( true, $current_group_categories === 'none', true ) ?> ><?php _e( 'None', BOOKACTI_PLUGIN_NAME ); ?></option>
+					<option value='none' <?php selected( true, $current_group_categories === 'none', true ) ?> ><?php _ex( 'None', 'About group category', BOOKACTI_PLUGIN_NAME ); ?></option>
 					<?php
 					$groups_options	= '';
 					foreach( $categories as $category ) {
@@ -1276,6 +1287,17 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 				// Save group category
 				if ( isset( $_POST[ 'bookacti_variable_group_categories' ][ $key ] ) ) {
 					$variable_group_categories = 'parent';
+					
+					if( isset( $_POST['_bookacti_group_categories'][ $key ][0] ) ) { 
+						if( $_POST['_bookacti_group_categories'][ $key ][0] === 'none' ) {
+							$_POST['_bookacti_group_categories'][ $key ] = 'none';
+							$variable_group_categories = 'none';
+						} else if( $_POST['_bookacti_group_categories'][ $key ][0] === 'parent' ) {
+							$_POST['_bookacti_group_categories'][ $key ] = 'parent';
+							$variable_group_categories = 'parent';
+						}
+					}
+					
 					if( is_numeric( $_POST[ 'bookacti_variable_group_categories' ][ $key ] ) 
 					||  is_array( $_POST[ 'bookacti_variable_group_categories' ][ $key ] ) ) {
 						$variable_group_categories = bookacti_ids_to_array( $_POST[ 'bookacti_variable_group_categories' ][ $key ] );

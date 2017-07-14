@@ -514,7 +514,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		
 		// If no activity has been added to cart, return the default message
 		if( ! isset( $_POST[ 'bookacti_booking_id' ] ) 
-		&&  ! isset( $_POST[ 'bookacti_booking_id' ] ) ) {
+		&&  ! isset( $_POST[ 'bookacti_booking_group_id' ] ) ) {
 			return $message;
 		}
 		
@@ -638,7 +638,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 				}
 
 				/* translators: '%1$s' is a variable standing for an amount of days, hours and minutes. Ex: '%1$s' can be '1 day, 6 hours, 30 minutes'. */
-				$temporary_book_message = sprintf( __( 'The schedule is temporarily booked for %1$s. Please proceed to checkout.', BOOKACTI_PLUGIN_NAME ), $timeout_formated );
+				$temporary_book_message = sprintf( __( 'Your activity is temporarily booked for %1$s. Please proceed to checkout.', BOOKACTI_PLUGIN_NAME ), $timeout_formated );
 				$temporary_book_message = apply_filters( 'bookacti_temporary_book_message', $temporary_book_message, $timeout_formated );
 				$message .= '<br/>' . $temporary_book_message;
 			}

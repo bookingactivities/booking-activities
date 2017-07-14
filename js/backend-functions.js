@@ -36,6 +36,8 @@ function bookacti_init_tooltip() {
 			});
 		}
 	});
+	
+	$j( '.bookacti-tip' ).tooltip( 'close' );
 }
 
 

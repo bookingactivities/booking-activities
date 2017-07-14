@@ -640,6 +640,12 @@ function bookacti_dialog_update_event( event ) {
 									
 									// If success
 									if( response.status === 'success' ) {
+										// Unselect the event or occurences of the event
+										bookacti_unselect_event( event, undefined, true );
+										
+										// Update groups events
+										bookacti.booking_system[ 'bookacti-template-calendar' ][ 'groups_events' ] = response.groups_events;
+										
 										// Update the exceptions list and refetch event
 										bookacti_update_exceptions( null, event );
 
@@ -686,6 +692,9 @@ function bookacti_dialog_update_event( event ) {
 										console.log( bookacti_localized.error_update_event_param + ' ' + bookacti_localized.error_not_allowed );
 										console.log( response );
 										
+									} else {
+										console.log( response );
+										alert( bookacti_localized.error_update_event_param );
 									}
 								},
 								error: function( e ){
@@ -783,6 +792,22 @@ function bookacti_dialog_delete_event( event ) {
                     dataType: 'json',
                     success: function( response ) {
                         if( response.status === 'success' ) {
+							
+							// Unselect the event if it was selected
+							bookacti_unselect_event( event );
+							
+							// Delete this event from all groups
+							$j.each( bookacti.booking_system[ 'bookacti-template-calendar' ][ 'groups_events' ], function( group_id, group_events ){
+								var remaining_group_events = $j.grep( group_events, function( group_event ){
+									if( group_event && group_event.id == event.id ) {
+										return false;
+									}
+									return true;
+								});
+								
+								bookacti.booking_system[ 'bookacti-template-calendar' ][ 'groups_events' ][ group_id ] = remaining_group_events;
+							});
+							
                             // We use event._id because it works with both existing and newly added event
                             $j( '#bookacti-template-calendar' ).fullCalendar( 'removeEvents', event._id );
                             $j( '#bookacti-template-calendar' ).fullCalendar( 'refetchEvents' );
@@ -838,9 +863,9 @@ function bookacti_dialog_unbind_occurences( event, errors ) {
 	if( errors.length > 0 ) {
 		$j( '#bookacti-unbind-booked-event-error-list-container ul' ).empty();
 		$j.each( errors, function( i, error ){ 
-			if( error === 'move' )          { $j( '#bookacti-unbind-booked-event-error-list-container ul' ).append( '<li>' + bookacti_localized.error_move_locked_event + '</li>' ); }
-			if( error === 'resize' )        { $j( '#bookacti-unbind-booked-event-error-list-container ul' ).append( '<li>' + bookacti_localized.error_resize_locked_event + '</li>' ); }
-			if( error === 'delete' )        { $j( '#bookacti-unbind-booked-event-error-list-container ul' ).append( '<li>' + bookacti_localized.error_delete_locked_event + '</li>' ); }
+			if( error === 'move' )		{ $j( '#bookacti-unbind-booked-event-error-list-container ul' ).append( '<li>' + bookacti_localized.error_move_locked_event + '</li>' ); }
+			if( error === 'resize' )	{ $j( '#bookacti-unbind-booked-event-error-list-container ul' ).append( '<li>' + bookacti_localized.error_resize_locked_event + '</li>' ); }
+			if( error === 'delete' )	{ $j( '#bookacti-unbind-booked-event-error-list-container ul' ).append( '<li>' + bookacti_localized.error_delete_locked_event + '</li>' ); }
 		});
 		$j( '#bookacti-unbind-booked-event-error-list-container' ).show();
 	} else {
@@ -1075,14 +1100,14 @@ function bookacti_dialog_import_activity() {
 }
 
 
-//Dialog Create Activity
+// Dialog Create Activity
 function bookacti_dialog_create_activity() {
 	
-	if( bookacti.selected_template ) {
+	if( ! bookacti.selected_template ) {
 		return false;
 	}
 	
-	//Set the dialog title
+	// Set the dialog title
 	$j( '#bookacti-activity-data-dialog' ).dialog({ 
 		title: bookacti_localized.dialog_create_activity_title
 	});
@@ -1100,13 +1125,9 @@ function bookacti_dialog_create_activity() {
 
 			$j( '#bookacti-add-new-activity-templates-select-box' ).val( bookacti.selected_template );
 			$j( '#bookacti-activity-templates-container .bookacti-add-items' ).trigger( 'click' );
-
 	}
-
-	//Open the modal dialog
-	$j( '#bookacti-activity-data-dialog' ).dialog( 'open' );
-
-	//Add the 'OK' button
+	
+	// Add the 'OK' button
 	$j( '#bookacti-activity-data-dialog' ).dialog( 'option', 'buttons',
 		[{
 			text: bookacti_localized.dialog_button_ok,
@@ -1149,9 +1170,8 @@ function bookacti_dialog_create_activity() {
 						type: 'POST',
 						dataType: 'json',
 						success: function( response ){
-							//If success
-
-							//Retrieve plugin path to display the gear
+							
+							// Retrieve plugin path to display the gear
 							var plugin_path = bookacti_localized.plugin_path;
 
 							if( response.status === 'success' ) {
@@ -1186,7 +1206,7 @@ function bookacti_dialog_create_activity() {
 									+   "</div>"
 									);
 									
-									//Reinitialize the activities to apply changes
+									// Reinitialize the activities to apply changes
 									bookacti_init_activities();
 
 									// Update shortcode generator
@@ -1197,7 +1217,7 @@ function bookacti_dialog_create_activity() {
 									console.log( response );
 								}
 
-							//If error
+							// If error
 							} else if( response.status === 'failed' ) {
 								var error_message = bookacti_localized.error_create_activity;
 								if( response.error === 'not_allowed' ) {
@@ -1218,17 +1238,20 @@ function bookacti_dialog_create_activity() {
 						}
 					});
 
-					//Close the modal dialogs
+					// Close the modal dialogs
 					$j( '#bookacti-activity-data-dialog' ).dialog( 'close' );
 					$j( '#bookacti-activity-create-method-dialog' ).dialog( 'close' );
 				}
 			}
 		}]
 	);
+	
+	// Open the modal dialog
+	$j( '#bookacti-activity-data-dialog' ).dialog( 'open' );
 }
 
 
-//Dialog Update Activity
+// Dialog Update Activity
 function bookacti_dialog_update_activity( activity_id ) {
 
 	if( ! bookacti.selected_template || ! activity_id ) {

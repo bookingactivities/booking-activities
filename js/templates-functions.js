@@ -19,24 +19,38 @@ function bookacti_switch_template( selected_template_id ) {
 			success: function( response ){
 				
 				if( response.status === 'success' ) {
-
-					// Change the template_id global var
+					
+					// Change the global var
 					var is_first_template = bookacti.selected_template ? false : true;
 					bookacti.selected_template = parseInt( selected_template_id );
-
+					
+					// Update data array
+					bookacti.booking_system[ 'bookacti-template-calendar' ][ 'events' ]					= response.events;
+					bookacti.booking_system[ 'bookacti-template-calendar' ][ 'activities_data' ]		= response.activities_data;
+					bookacti.booking_system[ 'bookacti-template-calendar' ][ 'groups_events' ]			= response.groups_events;
+					bookacti.booking_system[ 'bookacti-template-calendar' ][ 'groups_data' ]			= response.groups_data;
+					bookacti.booking_system[ 'bookacti-template-calendar' ][ 'group_categories_data' ]	= response.group_categories_data;
+					bookacti.booking_system[ 'bookacti-template-calendar' ][ 'settings' ]				= response.settings;
+					bookacti.exceptions[ bookacti.selected_template ]									= response.exceptions;
+					
 					// Unlock dialogs triggering after first template is created and selected
 					if( is_first_template ) { bookacti_bind_template_dialogs(); }
+					
+					
+					// EVENTS
+						// Empty the calendar
+						bookacti_clear_events_on_calendar( $j( '#bookacti-template-calendar' ) );
 
-
+						// Load events on calendar
+						$j( '#bookacti-template-calendar' ).fullCalendar( 'addEventSource', response.events );
+					
+					
 					// ACTIVITIES
 						// Replace current activities with activities bound to the selected template
 						$j( '#bookacti-template-activity-list .activity-row' ).remove();
 						$j( '#bookacti-template-activity-list' ).append( response.activities_list );
 
 						bookacti_init_activities();
-						
-						// Update activities data array
-						bookacti.booking_system[ 'bookacti-template-calendar' ][ 'activities_data' ] = response.activities_data;
 						
 
 					// GROUPS
@@ -66,11 +80,6 @@ function bookacti_switch_template( selected_template_id ) {
 							}
 						});
 
-						// Update group of events list and groups and categories data
-						bookacti.booking_system[ 'bookacti-template-calendar' ][ 'groups_events' ]			= response.groups_events;
-						bookacti.booking_system[ 'bookacti-template-calendar' ][ 'groups_data' ]			= response.groups_data;
-						bookacti.booking_system[ 'bookacti-template-calendar' ][ 'group_categories_data' ]	= response.group_categories_data;
-						
 
 					// SHORTCODE GENERATOR
 						// Update shortcode generator calendars list
@@ -86,7 +95,7 @@ function bookacti_switch_template( selected_template_id ) {
 						bookacti_update_shortcode_generator_activity_ids( activity_ids, true, true );
 
 						// Update shortcode generator groups list
-						bookacti_update_shortcode_generator_group_ids( category_ids, true, true );
+						bookacti_update_shortcode_generator_group_category_ids( category_ids, true, true );
 
 
 					// TEMPLATE SETTINGS
@@ -99,25 +108,8 @@ function bookacti_switch_template( selected_template_id ) {
 							end: moment( $j( '#bookacti-template-picker :selected' ).data( 'template-end' ) ).add( 1, 'days' )
 						};
 						$j( '#bookacti-template-calendar' ).fullCalendar( 'option', 'validRange', new_range );
-						
-						// Update settings array
-						bookacti.booking_system[ 'bookacti-template-calendar' ][ 'settings' ] = response.settings;
-						
-
-					// EVENTS
-						// Update exceptions
-						bookacti.exceptions[ bookacti.selected_template ] = response.exceptions;
-
-						// Empty the calendar
-						bookacti_clear_events_on_calendar( $j( '#bookacti-template-calendar' ) );
-						
-						// Update events array
-						bookacti.booking_system[ 'bookacti-template-calendar' ][ 'events' ] = response.events;
-						
-						// Load events on calendar
-						$j( '#bookacti-template-calendar' ).fullCalendar( 'addEventSource', response.events );
-
-
+					
+					
 				} else if( response.status === 'failed' ) {
 					var message_error = bookacti_localized.error_switch_template;
 					if( response.error === 'not_allowed' ) {
@@ -295,7 +287,7 @@ function bookacti_add_group_category( id, title ) {
 	);
 
 	// Add the category to the shortcode generator
-	bookacti_update_shortcode_generator_group_ids( id, true, false );
+	bookacti_update_shortcode_generator_group_category_ids( id, true, false );
 
 	// Define this category as default
 	bookacti.selected_category = id;
@@ -351,7 +343,7 @@ function bookacti_init_show_hide_groups_switch() {
 		
 		//Update shortcode generator groups list
 		var is_visible = category_element.data( 'visible' );
-		bookacti_update_shortcode_generator_group_ids( category_id, is_visible, false );
+		bookacti_update_shortcode_generator_group_category_ids( category_id, is_visible, false );
     });
 }
 
@@ -466,22 +458,20 @@ function bookacti_unselect_event( event, start, all ) {
 	elements.find( '.bookacti-event-action-select' ).hide();
 	
 	// Remove selected event(s) from memory 
-	$j.each( bookacti.booking_system[ 'bookacti-template-calendar' ][ 'selected_events' ], function( i, selected_event ){
-		if( typeof selected_event !== 'undefined' ) {
-			if( selected_event.id == event.id 
-			&&  (  all 
-				|| selected_event.start.substr( 0, 10 ) === event.start.format( 'YYYY-MM-DD' ) ) ) {
-				
-				// Remove the event from the selected events array
-				bookacti.booking_system[ 'bookacti-template-calendar' ][ 'selected_events' ].splice( i, 1 );
-				
-				// If only one event should be unselected, break the loop
-				if( ! all ) {
-					return false;
-				}
-			}
+	
+	var selected_events = $j.grep( bookacti.booking_system[ 'bookacti-template-calendar' ][ 'selected_events' ], function( selected_event ){
+		if( selected_event.id == event.id 
+		&&  (  all 
+			|| selected_event.start.substr( 0, 10 ) === event.start.format( 'YYYY-MM-DD' ) ) ) {
+			
+			// Unselect the event
+			return false;
 		}
+		// Keep the event selected
+		return true;
 	});
+	
+	bookacti.booking_system[ 'bookacti-template-calendar' ][ 'selected_events' ] = selected_events;
 	
 	$j( '#bookacti-template-calendar' ).trigger( 'bookacti_unselect_event', [ event, all ] );
 }
@@ -559,14 +549,14 @@ function bookacti_update_shortcode_generator_activity_ids( activity_ids, is_visi
 
 
 //Update shortcode generator groups list
-function bookacti_update_shortcode_generator_group_ids( category_ids, is_visible, remove_others ) {
+function bookacti_update_shortcode_generator_group_category_ids( category_ids, is_visible, remove_others ) {
 	
 	// Init and format parameters
 	category_ids	= $j.isNumeric( category_ids ) ? [ category_ids ] : category_ids;
 	is_visible		= is_visible ? true : false;
 	remove_others	= remove_others ? true : false;
 	
-	$j( '.bookacti-shortcode-group-ids' ).each( function(){
+	$j( '.bookacti-shortcode-group-category-ids' ).each( function(){
 		// Retrieve activities displayed in shortcode
 		var shortcode_category_ids = [];
 		if(  remove_others !== true && ! $j( this ).is( ':empty' ) ) {
@@ -664,6 +654,7 @@ function bookacti_clear_events_on_calendar( calendar, event ) {
 		event_id = event.id;
 	} else {
 		calendar.fullCalendar( 'removeEvents' );
+		calendar.fullCalendar( 'removeEventSources' );
 	}
 	
 	return event_id;
@@ -800,7 +791,7 @@ function bookacti_fill_settings_fields( settings, prefix ) {
 }
 
 
-//Update Exception
+// Update Exception
 function bookacti_update_exceptions( excep_template_id, event, forced_update ) {
     excep_template_id = excep_template_id || bookacti.selected_template;
 	event = event || null;
@@ -895,7 +886,12 @@ function bookacti_unbind_occurrences( event, occurences ) {
         success: function( response ){
 			
 			if( response.status === 'success' ){
-                
+                // Unselect the event or occurences of the event
+				bookacti_unselect_event( event, undefined, true );
+				
+				// Update groups events
+				bookacti.booking_system[ 'bookacti-template-calendar' ][ 'groups_events' ] = response.groups_events;
+				
 				$j( '#bookacti-template-calendar' ).fullCalendar( 'addEventSource', response.events );
                 bookacti_update_exceptions( null, event );
                 

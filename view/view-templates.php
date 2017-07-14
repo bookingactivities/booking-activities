@@ -180,7 +180,7 @@ echo "<h1>" . esc_html__( 'Calendars', BOOKACTI_PLUGIN_NAME ) . "</h1>";
 		$categories = array();
 		if( ! empty( $default_template ) ) {
 			$template_id	= $default_template;
-			$activity_ids	= implode( ',', bookacti_get_activity_ids_by_template( array( $template_id ) ) );
+			$activity_ids	= implode( ',', bookacti_get_activity_ids_by_template( array( $template_id ), false ) );
 			$category_ids	= implode( ',', bookacti_get_group_category_ids_by_template( array( $template_id ) ) );
 		}
 	?>
@@ -190,7 +190,7 @@ echo "<h1>" . esc_html__( 'Calendars', BOOKACTI_PLUGIN_NAME ) . "</h1>";
 		<span id='bookacti-shortcode-form-constructor' class='bookacti-shortcode-constructor' >
 			[bookingactivities_form	calendars='<span class='bookacti-shortcode-calendar-ids'><?php echo esc_html( $template_id ); ?></span>' 
 									activities='<span class='bookacti-shortcode-activity-ids'><?php echo esc_html( $activity_ids ); ?></span>' 
-									group_categories='<span class='bookacti-shortcode-group-ids'><?php echo esc_html( $category_ids ); ?></span>']
+									group_categories='<span class='bookacti-shortcode-group-category-ids'><?php echo esc_html( $category_ids ); ?></span>']
 		</span>
 		<code id='bookacti-shortcode-form' class='bookacti-shortcode' >
 			[bookingactivities_form]
@@ -204,7 +204,7 @@ echo "<h1>" . esc_html__( 'Calendars', BOOKACTI_PLUGIN_NAME ) . "</h1>";
 		<span id='bookacti-shortcode-calendar-constructor' class='bookacti-shortcode-constructor' >
 			[bookingactivities_calendar	calendars='<span class='bookacti-shortcode-calendar-ids'><?php echo esc_html( $template_id ); ?></span>' 
 										activities='<span class='bookacti-shortcode-activity-ids'><?php echo esc_html( $activity_ids ); ?></span>' 
-										group_categories='<span class='bookacti-shortcode-group-ids'><?php echo esc_html( $category_ids ); ?></span>']
+										group_categories='<span class='bookacti-shortcode-group-category-ids'><?php echo esc_html( $category_ids ); ?></span>']
 		</span>
 		<code id='bookacti-shortcode-calendar' class='bookacti-shortcode' >
 			[bookingactivities_calendar]

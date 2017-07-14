@@ -113,9 +113,9 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		}
 		
 		// If there are category ids, only get events which are in one of the groups of those category
-		if( ! empty( $args[ 'group_categories' ] ) ) {
+		if( $args[ 'groups_only' ] && ! empty( $args[ 'group_categories' ] ) ) {
 			// Get the event only if it belongs to a group of the allowed categories
-			$query  .= ' AND ( '
+			$query  .= ' AND '
 					. '( SELECT COUNT( GE.id ) '
 					. ' FROM ' . BOOKACTI_TABLE_GROUPS_EVENTS . ' as GE, ' . BOOKACTI_TABLE_EVENT_GROUPS . ' as G ' 
 					. ' WHERE GE.event_id = E.id '
@@ -129,15 +129,6 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			}
 			$query  .= ' ) '		// Close the IN()
 					.  ' ) > 0 ';	// Check if the event has been found in at least 1 group
-			
-			if( ! $args[ 'groups_only' ] ) {
-				// Allow events not bundled in a group at all
-				$query .= ' OR ( SELECT COUNT( GE.id ) '
-							. ' FROM ' . BOOKACTI_TABLE_GROUPS_EVENTS . ' as GE ' 
-							. ' WHERE GE.event_id = E.id ) = 0 '; // Check if the event belong to any group
-			}
-			
-			$query  .= ' ) ';		// Close the AND()
 			
 			$variables = array_merge( $variables, $args[ 'group_categories' ] );
 			

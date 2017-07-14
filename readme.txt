@@ -36,12 +36,12 @@ Drag and drop your events to build your activity planning. Copy / Paste a shortc
 * Multilingual support with QTranslateX
 	* You can also help us [translating Booking Activities](https://translate.wordpress.org/projects/wp-plugins/booking-activities) in your language
 
-More information at [booking-activities.fr](http://booking-activities.fr/en).
+More information at [booking-activities.fr](https://booking-activities.fr/en/?utm_source=wp-plugin-page&utm_medium=wordpress&utm_content=readme).
 
 
 = Extend these features with add-ons: =
 
-**[Display Pack](http://booking-activities.fr/en/downloads/display-pack/)**
+**[Display Pack](https://booking-activities.fr/en/downloads/display-pack/?utm_source=wp-plugin-page&utm_medium=wordpress&utm_campaign=display-pack&utm_content=readme)**
 *Customize your activity plannings or set alternative display*
 
 * Calendar advanced customize options
@@ -52,7 +52,7 @@ More information at [booking-activities.fr](http://booking-activities.fr/en).
 * Waterfall alternative booking method: Replace the calendar by tiny datepicker and timepicker
 
 
-**[Prices and Promotions](http://booking-activities.fr/en/downloads/prices-and-promotions/)**
+**[Prices and Promotions](https://booking-activities.fr/en/downloads/prices-and-promotions/?utm_source=wp-plugin-page&utm_medium=wordpress&utm_campaign=prices-and-promotions&utm_content=readme)**
 
 *Set prices and discounts on your events to draw your customers attention where you want to*
 
@@ -62,7 +62,7 @@ More information at [booking-activities.fr](http://booking-activities.fr/en).
 	* Discounts are based on WC product price if no activity price is set
 
 
-**[Order for Customers](http://booking-activities.fr/en/downloads/order-for-customers/)**
+**[Order for Customers](https://booking-activities.fr/en/downloads/order-for-customers/?utm_source=wp-plugin-page&utm_medium=wordpress&utm_campaign=order-for-customers&utm_content=readme)**
 
 *Your operators and salespersons can place order in the name of your customers*
 
@@ -75,7 +75,7 @@ More information at [booking-activities.fr](http://booking-activities.fr/en).
 		* He is redirected to his order's checkout on you website where he can pay
 
 
-*See the whole [add-ons list here](http://booking-activities.fr/en/add-ons/)*
+*See the whole [add-ons list here](https://booking-activities.fr/en/add-ons/?utm_source=wp-plugin-page&utm_medium=wordpress&utm_content=readme)*
 
 
 = We are listening =
@@ -84,23 +84,23 @@ Booking Activities has been **designed and developed in collaboration with activ
 
 **Report a bug / Request a feature:** [GitHub](https://github.com/bookingactivities/booking-activities/issues/)
 
-**Contact Us:** [Contact form](http://booking-activities.fr/en/#contact) (French and English)
+**Contact Us:** [Contact form](https://booking-activities.fr/en/#contact?utm_source=wp-plugin-page&utm_medium=wordpress&utm_content=readme) (French and English)
 
 ___
 
-For any question about how to use Booking Activities, take a look at the [documentation](http://booking-activities.fr/en/documentation/user-documentation/).
+For any question about how to use Booking Activities, take a look at the [documentation](https://booking-activities.fr/en/documentation/user-documentation/?utm_source=wp-plugin-page&utm_medium=wordpress&utm_content=readme).
 
-If you don't find the answer you need, please [contact us](http://booking-activities.fr/en/#contact) (French and English).
+If you don't find the answer you need, please [contact us](https://booking-activities.fr/en/#contact?utm_source=wp-plugin-page&utm_medium=wordpress&utm_content=readme) (French and English).
 
 
 
 == Frequently Asked Questions ==
 
 = I am not an activity provider, can this plugin still meet my needs? =
-Yes of course. It is basically a reservation system based on event scheduling. You can find another purposes to it, make sure to [tell us](http://booking-activities.fr/en/#contact) if you do :).
+Yes of course. It is basically a reservation system based on event scheduling. You can find another purposes to it, make sure to [tell us](https://booking-activities.fr/en/#contact?utm_source=wp-plugin-page&utm_medium=wordpress&utm_content=readme) if you do :).
 To know if it actually meets your needs, simply try it, it's free. 
-If you are on a hurry, you can just check the [demo website](http://demo.booking-activities.fr/en/).
-Or read the full [features description](http://booking-activities.fr/en/documentation/features/) if you are looking for something in particular.
+If you are on a hurry, you can just check the [demo website](http://demo.booking-activities.fr/en/?utm_source=wp-plugin-page&utm_medium=wordpress&utm_content=readme).
+Or read the full [features description](https://booking-activities.fr/en/documentation/features/?utm_source=wp-plugin-page&utm_medium=wordpress&utm_content=readme) if you are looking for something in particular.
 
 = Create your first calendar = 
 *Make sure Booking Activities is activated* 
@@ -220,9 +220,9 @@ Now you can see inactive bookings (cancelled, expired, removed, refunded, refund
 
 ___
 
-For any question about how to use Booking Activities, take a look at the [documentation](http://booking-activities.fr/en/documentation/user-documentation/).
+For any question about how to use Booking Activities, take a look at the [documentation](https://booking-activities.fr/en/documentation/user-documentation/?utm_source=wp-plugin-page&utm_medium=wordpress&utm_content=readme).
 
-If you don't find the answer you need, please [contact us](http://booking-activities.fr/en/#contact) (French and English).
+If you don't find the answer you need, please [contact us](https://booking-activities.fr/en/#contact?utm_source=wp-plugin-page&utm_medium=wordpress&utm_content=readme) (French and English).
 
 
 

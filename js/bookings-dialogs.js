@@ -146,7 +146,7 @@ function bookacti_dialog_booking_list_param( booking_system ) {
 						if( response.status === 'success' ) {
 							// Reload the booking list
 							if( $j( '.bookacti-picked-event' ).length ) {
-								$j( '.bookacti-picked-event' ).trigger( 'click' );
+								$j( '.bookacti-picked-event:first' ).trigger( 'click' );
 							}
 						} else if( response.status === 'failed' ) {
 							var message_error = bookacti_localized.error_update_settings;
@@ -608,7 +608,7 @@ function bookacti_dialog_reschedule_booking( booking_id ) {
 				booking_quantity		= response.quantity;
 				
 				// Replace global data
-				bookacti.booking_system[ booking_system_id ][ 'calendars' ]	= template_id ? [ template_id ] : [];
+				bookacti.booking_system[ booking_system_id ][ 'calendars' ]		= template_id ? [ template_id ] : [];
 				bookacti.booking_system[ booking_system_id ][ 'activities' ]	= activity_id ? [ activity_id ] : [];
 				
 				booking_system.trigger( 'bookacti_before_booking_system_loads', [ response.event_settings ] );

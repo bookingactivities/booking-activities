@@ -35,7 +35,7 @@ function bookacti_controller_fetch_events() {
 	if( $is_nonce_valid && $is_allowed ) {
 		
 			$events				= bookacti_fetch_events( $attributes );
-			$activities_data	= bookacti_get_activities_by_template( $attributes[ 'calendars' ] );
+			$activities_data	= bookacti_get_activities_by_template( $attributes[ 'calendars' ], true );
 			
 			$groups_events	= array();
 			if( $attributes[ 'group_categories' ] !== false ) { 
@@ -103,7 +103,7 @@ function bookacti_controller_reload_booking_system() {
 		
 		// Gets calendar content: events, activities and groups
 		$events				= bookacti_fetch_events( $attributes );
-		$activities_data	= bookacti_get_activities_by_template( $attributes[ 'calendars' ] );
+		$activities_data	= bookacti_get_activities_by_template( $attributes[ 'calendars' ], true );
 		$settings			= bookacti_get_mixed_template_settings( $attributes[ 'calendars' ] );
 		
 		$groups_events	= array();
