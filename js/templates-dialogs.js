@@ -1737,7 +1737,7 @@ function bookacti_dialog_update_group_of_events( group_id ) {
 			if( response.status === 'success' ) {
 				
 				// General tab
-				$j( '#bookacti-group-of-events-title-field' ).val( response.title ); 
+				$j( '#bookacti-group-of-events-title-field' ).val( response.multilingual_title ); 
 				
 				// Other settings
 				if( response.settings ) {
@@ -1978,7 +1978,7 @@ function bookacti_dialog_update_group_category( category_id ) {
 			if( response.status === 'success' ) {
 				
 				// General tab
-				$j( '#bookacti-group-category-title-field' ).val( response.title ); 
+				$j( '#bookacti-group-category-title-field' ).val( response.multilingual_title ); 
 				
 				// Other settings
 				if( response.settings ) {
