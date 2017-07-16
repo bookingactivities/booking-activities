@@ -26,7 +26,7 @@
 
 #bookacti-template-calendar .bookacti-picked-event						{ border-width: 1px; }
 #bookacti-template-calendar .bookacti-picked-event .fc-bg				{ opacity: 0.25; }
-#bookacti-template-calendar .bookacti-picked-event .fc-content::before	{ content: '\f0a9'; font-family: 'FontAwesome'; float: left; margin: 0 5px 0 2px; }
+#bookacti-template-calendar .bookacti-picked-event .fc-content::before	{ content: '\f344'; font-family: 'dashicons'; float: left; margin: 0 5px 0 2px; }
 
 /* Event actions */
 .bookacti-event-actions							{ display: none; position: absolute; right: 3px; top: 2px; z-index: 5; transition: all 0.2s; }

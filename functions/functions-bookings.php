@@ -231,12 +231,11 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			if( ! current_user_can( 'bookacti_edit_bookings' ) && $is_allowed ) {
 				// Init variable
 				$is_cancel_allowed	= bookacti_get_setting_value( 'bookacti_cancellation_settings', 'allow_customers_to_cancel' );
-				$is_active			= bookacti_is_booking_active( $booking_id );
 				$is_grouped			= $bypass_group_check ? false : ! empty( $booking->group_id );
 				$is_in_delay		= apply_filters( 'bookacti_bypass_delay', false, $booking_id ) ? true : bookacti_is_booking_in_delay( $booking );
 				
 				// Final check and return the actions array without invalid entries
-				if( ! $is_cancel_allowed || ! $is_active || ! $is_in_delay || $is_grouped ) { $is_allowed = false; }
+				if( ! $is_cancel_allowed || ! $booking->active || ! $is_in_delay || $is_grouped ) { $is_allowed = false; }
 			}
 			
 			return apply_filters( 'bookacti_booking_can_be_cancelled', $is_allowed, $booking_id );
@@ -264,10 +263,9 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 				if( $is_allowed ) {
 					// Init variable
 					$is_reschedule_allowed	= bookacti_get_setting_value( 'bookacti_cancellation_settings', 'allow_customers_to_reschedule' );
-					$is_active				= bookacti_is_booking_active( $booking_id );
 					$is_in_delay			= apply_filters( 'bookacti_bypass_delay', false, $booking_id ) ? true : bookacti_is_booking_in_delay( $booking );
 
-					if( ! $is_reschedule_allowed || ! $is_active || ! $is_in_delay ) { $is_allowed = false; }
+					if( ! $is_reschedule_allowed || ! $booking->active || ! $is_in_delay ) { $is_allowed = false; }
 				}
 			}
 			
@@ -1041,8 +1039,8 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		$to_hour_or_date= '';
 		if( substr( $start, 0, 10 ) === substr( $end, 0, 10 ) ) { 
 			$sep_val= ' ' . _x( 'to', 'between two hours', BOOKACTI_PLUGIN_NAME ) . ' ';
-			/* translators: Datetime format. Must be adapted to each country. Use strftime documentation to find the appropriated combinaison http://php.net/manual/en/function.strftime.php */
-			$to_val = strftime( __( '%I:%M %p', BOOKACTI_PLUGIN_NAME ), strtotime( $end ) );
+			/* translators: Datetime format. Must be adapted to each country. Use wp date_i18n documentation to find the appropriated combinaison https://codex.wordpress.org/Formatting_Date_and_Time */
+			$to_val = date_i18n( __( 'h:i a', BOOKACTI_PLUGIN_NAME ), strtotime( $end ) );
 			$to_val = ! mb_check_encoding( $to_val, 'UTF-8' ) ? utf8_encode( $to_val ) : $to_val;
 			$to_hour_or_date = 'to_hour';
 		} else {

@@ -60,7 +60,7 @@ function bookacti_init_booking_actions() {
 
 // Init booking filters
 function bookacti_init_booking_filters( booking_system ) {
-    $j( '.bookacti-bookings-filter-activity, .bookacti-bookings-filter-template' ).on( 'click', function( e ){
+    $j( '.bookacti-bookings-filter-activity, .bookacti-bookings-filter-template' ).off( 'click' ).on( 'click', function( e ){
 		bookacti_select_bookings_filter( e, booking_system, $j( this ) );
 		
 		if( $j( this ).hasClass( 'bookacti-bookings-filter-template' ) ) {
@@ -80,7 +80,7 @@ function bookacti_select_bookings_filter( e, booking_system, selected_filter ) {
 	
 	e = e || false;
 	
-	var supports_touch = 'ontouchstart' in window || navigator.msMaxTouchPoints;
+	var supports_touch = 'ontouchstart' in window || ( typeof navigator.msMaxTouchPoints !== 'undefined' && navigator.msMaxTouchPoints );
 	
 	// Select the filters (press CTRL to select multiple for non touch devices)
 	if( e && ! supports_touch ) {

@@ -1030,7 +1030,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		
 	
 	/**
-	 * Delete an event from all groups of events
+	 * Delete event occurences that are beyond repeat dates from all groups
 	 * 
 	 * @since 1.1.0
 	 * 

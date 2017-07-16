@@ -25,6 +25,13 @@
 .bookacti-group-of-events-list			{ list-style-type: none; border-left: 1px solid rgba(0,0,0,0.2); padding-left: 10px; margin: 5px 0 10px 25px; }
 .bookacti-group-of-events-option input[name="group_of_events"][disabled] + label { opacity: 0.5; }
 
+
+
+/** BOOKINGS **/
+.bookacti-bookings-dialog { display: none; }
+
+
+
 /** CALENDAR **/
 
 .fc-unthemed td.fc-today	{ background: rgba( 220, 193, 6, 0.1 ); }

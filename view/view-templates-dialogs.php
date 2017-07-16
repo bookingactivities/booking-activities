@@ -223,7 +223,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 					<label for='bookacti-template-title' ><?php esc_html_e( 'Title', BOOKACTI_PLUGIN_NAME ); ?></label>
 					<input type='text' name='template-title' id='bookacti-template-title' />
 					<?php
-						$tip = __( 'Give your calendar a title to easily recognize it in this list.', BOOKACTI_PLUGIN_NAME );
+						$tip = __( 'Give your calendar a title to easily recognize it in a list.', BOOKACTI_PLUGIN_NAME );
 						bookacti_help_tip( $tip );
 					?>
 				</div>
@@ -351,12 +351,12 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 					<label id='bookacti-template-managers-title' class='bookacti-fullwidth-label' for='bookacti-add-new-template-managers-select-box' >
 					<?php 
 						esc_html_e( 'Who can manage this calendar?', BOOKACTI_PLUGIN_NAME );
-						$tip  = __( 'Choose who is allowed to access this calendar.' );
+						$tip  = __( 'Choose who is allowed to access this calendar.', BOOKACTI_PLUGIN_NAME );
 						/* translators: %s = capabilities name */
 						$tip .= ' ' . sprintf( __( 'All administrators already have this privilege. If the selectbox is empty, it means that no users have capabilities such as %s.', BOOKACTI_PLUGIN_NAME ), '"bookacti_edit_templates" / "bookacti_read_templates"' );
 						/* translators: %1$s = Order for Customers add-on link. %2$s = Points of sale add-on link. %3$s = User role editor plugin name. */
 						$tip .= '<br/>' 
-							 .  sprintf( __( 'Operators from %1$s add-on and Point of sale managers from %2$s add-on have these capabilities. If you want to grant a user these capabilities, use a plugin such as %3$s.' ), 
+							 .  sprintf( __( 'Operators from %1$s add-on and Point of sale managers from %2$s add-on have these capabilities. If you want to grant a user these capabilities, use a plugin such as %3$s.', BOOKACTI_PLUGIN_NAME ), 
 									'<a href="https://booking-activities.fr/en/downloads/order-for-customers/?utm_source=plugin&utm_medium=plugin&utm_campaign=order-for-customers&utm_content=infobulle-permission" target="_blank" >' . esc_html( __( 'Order for Customers', BOOKACTI_PLUGIN_NAME ) ) . '</a>',
 									'<a href="https://booking-activities.fr/en/downloads/points-of-sale/?utm_source=plugin&utm_medium=plugin&utm_campaign=points-of-sale&utm_content=infobulle-permission" target="_blank" >' . esc_html( __( 'Points of Sale', BOOKACTI_PLUGIN_NAME ) ) . '</a>',
 									'<a href="https://wordpress.org/plugins/user-role-editor/" target="_blank" >User Role Editor</a>'
@@ -546,11 +546,11 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 						<?php 
 						esc_html_e( 'Who can manage this activity?', BOOKACTI_PLUGIN_NAME );
 						
-						$tip  = __( 'Choose who is allowed to change this activity parameters.' );
+						$tip  = __( 'Choose who is allowed to change this activity parameters.', BOOKACTI_PLUGIN_NAME );
 						/* translators: %s = capabilities name */
 						$tip .= ' ' . sprintf( __( 'All administrators already have this privilege. If the selectbox is empty, it means that no users have capabilities such as %s.', BOOKACTI_PLUGIN_NAME ), '"bookacti_edit_activities"' );
 						$tip .= '<br/>' 
-							 .  sprintf( __( 'Operators from %1$s add-on and Point of sale managers from %2$s add-on have these capabilities. If you want to grant a user these capabilities, use a plugin such as %3$s.' ), 
+							 .  sprintf( __( 'Operators from %1$s add-on and Point of sale managers from %2$s add-on have these capabilities. If you want to grant a user these capabilities, use a plugin such as %3$s.', BOOKACTI_PLUGIN_NAME ), 
 									'<a href="https://booking-activities.fr/en/downloads/order-for-customers/?utm_source=plugin&utm_medium=plugin&utm_campaign=order-for-customers&utm_content=infobulle-permission" target="_blank" >' . esc_html( __( 'Order for Customers', BOOKACTI_PLUGIN_NAME ) ) . '</a>',
 									'<a href="https://booking-activities.fr/en/downloads/points-of-sale/?utm_source=plugin&utm_medium=plugin&utm_campaign=points-of-sale&utm_content=infobulle-permission" target="_blank" >' . esc_html( __( 'Points of Sale', BOOKACTI_PLUGIN_NAME ) ) . '</a>',
 									'<a href="https://wordpress.org/plugins/user-role-editor/" target="_blank" >User Role Editor</a>'

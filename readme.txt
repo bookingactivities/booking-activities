@@ -1,15 +1,14 @@
 === Booking Activities ===
 Contributors: bookingactivities
 Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=7EKU434L7NEVC
-Tags: booking activities, booking form, manage reservations, activity planning, events calendar, booking sport, booking system, booking, reservations, appointments, woocommerce
+Tags: booking activities, booking form, booking activity, booking sport, booking events
 Requires at least: 4.0
 Tested up to: 4.8
 Stable tag: 1.1.0
 License: GPLv3 or later
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
 
-Create your activity calendars by drag and drop and book scheduled events with one click. Enable reservation online payments with WooCommerce.
-
+Booking system specialized in activities (sports, cultural, leisure, events, and yours!). Works great with WooCommerce.
 
 
 == Description ==
@@ -18,12 +17,13 @@ Booking Activities is a complete booking system designed for any kind of activit
 Drag and drop your events to build your activity planning. Copy / Paste a shortcode to display booking forms. Pick an event onto this calendar and book it. Calendars are automatically integrated to WooCommerce product pages.
 
 
-= Features you and your customers will love: =
+= Features you won't find anywhere else  =
 
-* WYSIWYG drag and drop events calendar editor
-* Shortcodes to display booking forms, customer's bookings list, or simple calendars
-* One-click booking: just pick the desired event on the calendar and click on "Book"!
-* Allow payments with WooCommerce
+* **WYSIWYG** **drag and drop** events calendar editor
+* Create **groups of events** to easily sell bundles, subscriptions, seminars, or events spreading on several days
+* **Shortcodes** to display booking forms, customer's bookings list, or simple calendars
+* **One-click booking**: just pick the desired event on the calendar and click on "Book"!
+* Allow **payments with WooCommerce**
 	* Reservation Systems automatically integrated to product pages
 	* **Cart expiration system** included
 	* Auto-validation when payment is completed
@@ -33,7 +33,7 @@ Drag and drop your events to build your activity planning. Copy / Paste a shortc
 	* Booking actions: validate, cancel, reschedule, refund...
 * Your customers can **cancel** or **reschedule** their bookings and **ask a refund** by themselves
 	* Swith on / off these features, and set a minimum delay before event to allow them
-* Multilingual support with QTranslateX
+* **Multilingual support** with QTranslateX
 	* You can also help us [translating Booking Activities](https://translate.wordpress.org/projects/wp-plugins/booking-activities) in your language
 
 More information at [booking-activities.fr](https://booking-activities.fr/en/?utm_source=wp-plugin-page&utm_medium=wordpress&utm_content=readme).
@@ -44,19 +44,19 @@ More information at [booking-activities.fr](https://booking-activities.fr/en/?ut
 **[Display Pack](https://booking-activities.fr/en/downloads/display-pack/?utm_source=wp-plugin-page&utm_medium=wordpress&utm_campaign=display-pack&utm_content=readme)**
 *Customize your activity plannings or set alternative display*
 
+* Waterfall alternative booking method: Replace the calendar by tiny datepicker and timepicker
 * Calendar advanced customize options
-	* Set calendars start / end and its height
-	* Hide days, set timeslot duration
+	* Set calendars height, timeslot duration
+	* Hide days, choose available views
 	* New views available. Basic: No timeslot, events are stacked (same as month view)
 	* And much more...
-* Waterfall alternative booking method: Replace the calendar by tiny datepicker and timepicker
 
 
 **[Prices and Promotions](https://booking-activities.fr/en/downloads/prices-and-promotions/?utm_source=wp-plugin-page&utm_medium=wordpress&utm_campaign=prices-and-promotions&utm_content=readme)**
 
 *Set prices and discounts on your events to draw your customers attention where you want to*
 
-* Set a price or a discount on whole activity or a single event
+* Set a price or a discount on whole activity, a single event or a group of events
 * Perfectly integrated to WooCommerce:
 	* WC price is overriden
 	* Discounts are based on WC product price if no activity price is set
@@ -69,10 +69,10 @@ More information at [booking-activities.fr](https://booking-activities.fr/en/?ut
 * Create a user and book an event for him from your admin account
 * Perfectly integrated to WooCommerce:
 	* Select the customer you want to book for on Checkout
-	* New 'Pay Later' gateway allow your customers to pay on your website later:
+	* New 'Pay Later' gateway for WooCommerce allow your customers to pay on your website later:
 		* Your operators place order for your customer
 		* He receives an email with a pay link
-		* He is redirected to his order's checkout on you website where he can pay
+		* He is redirected to his order's checkout on your website where he can pay
 
 
 *See the whole [add-ons list here](https://booking-activities.fr/en/add-ons/?utm_source=wp-plugin-page&utm_medium=wordpress&utm_content=readme)*
@@ -80,7 +80,7 @@ More information at [booking-activities.fr](https://booking-activities.fr/en/?ut
 
 = We are listening =
 
-Booking Activities has been **designed and developed in collaboration with activity providers** *(nautical, aerial, land, mountain, foot or wheels, outdoor or indoor, sportive or cultural like courses, museums, cinemas... And probably yours!)*, and it will always be so. Then feel free to tell us if you miss a feature, if you find a bug or anything to make your booking system better!
+Booking Activities has been **designed and developed in collaboration with activity providers** *(nautical, aerial, land, mountain, foot or wheels, outdoor or indoor, sportive or cultural like courses, museums, cinemas...)*, and it will always be so. Then feel free to tell us if you miss a feature, if you find a bug or anything to make your booking system better!
 
 **Report a bug / Request a feature:** [GitHub](https://github.com/bookingactivities/booking-activities/issues/)
 
@@ -121,7 +121,7 @@ Or read the full [features description](https://booking-activities.fr/en/documen
 
 
 = Create your first event = 
-*Make to have at least one calendar and one activity* 
+*Make sure to have at least one calendar and one activity* 
 
 1. Go to Booking Activities / Calendar Editor page
 2. Drag an activity from the list and drop it on the calendar
@@ -129,7 +129,7 @@ Or read the full [features description](https://booking-activities.fr/en/documen
 
 
 = Display a reservation form = 
-*Make to have at least one calendar, one activity and one event at a future date* 
+*Make sure to have at least one calendar, one activity and one event at a future date* 
 
 1. Go to Booking Activities / Calendar Editor page
 2. Select the desired calendar and show / hide activities you want
@@ -140,7 +140,7 @@ Or read the full [features description](https://booking-activities.fr/en/documen
 
 
 = Display the calendar only = 
-*Make to have at least one calendar, one activity and one event at a future date* 
+*Make sure to have at least one calendar, one activity and one event at a future date* 
 
 1. Go to Booking Activities / Calendar Editor page
 2. Select the desired calendar and show / hide activities you want
@@ -158,7 +158,7 @@ Or read the full [features description](https://booking-activities.fr/en/documen
 
 
 = Use it with WooCommerce = 
-*Make to have at least one calendar, one activity and one event at a future date for each activity* 
+*Make sure to have at least one calendar, one activity and one event at a future date for each activity* 
 *You also need to activate WooCommerce and create one product* 
 
 1. Go to Products / *Your Product*
@@ -198,6 +198,7 @@ We still recommend to accept online payments since it's a great way to automate 
 
 = Events are not "Booked" after booking form submission, they are "Pending", why? =
 Don't worry, the reservation is well registered. Now, it is up to you to turn it to "Booked" right away or when your customer comes, or when he gives you the money...
+But you can just turn the default booking status to "Booked" in Booking Activities settings.
 Note that if you use WooCommerce and online payments, booking states turn automatically to "Booked" if the payment is complete, or "Cancelled" if not.
 
 
@@ -239,14 +240,15 @@ If you don't find the answer you need, please [contact us](https://booking-activ
 
 == Changelog ==
 
-= 1.1.0 =
-* Optimization - Calendars are now loaded faster and on page load (possibility to load after page load in BA settings)
+= 1.1.0 - 2017/07/16 =
+* Optimization - Calendars are now loaded faster and on page load (possibility to load after page load in Booking Activities settings)
 * Feature - Manage groups of events! You can group events and make your customer book a bundle of events instead of a single one.
-* Feature - You can now bind multiple calendars and activities to one product in WooCommerce!
-* Feature - You can now choose the default booking status of bookings made after a customer complete the booking form or a WooCommerce order. Set this parameter in BA settings page.
-* Feature - Calendars events are now related to your business timezone, and no longer to users' timezone. Customers around the world cannot see / book a past event because of time offset. Set this parameter in BA settings page.
+* Feature - Bind multiple calendars and activities to one product in WooCommerce!
+* Feature - Choose the default booking status after a customer complete the booking form or a WooCommerce order.
+* Feature - Calendars events are now related to your business timezone, and no longer to users' timezone. Customers around the world cannot see / book a past event because of time offset.
 * Tweak - You can change your calendars period regardless of the bookings already done
 * Fix - Apostrophe characters in template / activity / events names are now correctly displayed
+* Fix - Dates are now translated everywhere
 * Fix - Copy a shortcode in calendar editor now copy only plain text, no more undesired html
 * Fix - Cart expiration is now checked on each page load. This means that you cart counter will now always be up to date.
 * Fix - Fixed booking method checks in JS files (misuse of inArray)
@@ -256,79 +258,7 @@ If you don't find the answer you need, please [contact us](https://booking-activ
 * Delete - Deleted events 'occurrence id' since it is not a relevant identifier. All events can be identified by id + start + end datetimes.
 * Delete - Deleted unused bookings global actions
 * Delete - bookacti_display_booking_system() function replaced by bookacti_get_booking_system() which MUST be used to display a booking system
-* Dev - A lot of hooks has been changed, added or removed. Please go to the website for the complete changelog.
-* Hooks changes:
-  * JS hooks
-    * Add - bookacti_booking_method_set_up
-    * Add - bookacti_booking_method_fill_with_events
-    * Add - bookacti_after_calendar_set_up
-    * Add - bookacti_select_event
-    * Add - bookacti_unselect_event
-    * Add - bookacti_refresh_selected_events
-    * Add - bookacti_pick_event
-    * Add - bookacti_unpick_event
-    * Add - bookacti_refresh_picked_events
-    * Add - bookacti_unpick_all_events
-    * Add - bookacti_events_picked
-    * Add - bookacti_group_of_events_choosed
-    * Add - bookacti_picked_events_list_filled
-    * Add - bookacti_validate_group_of_events_form
-    * Add - bookacti_validate_group_category_form
-    * Add - bookacti_submit_booking_form
-    * Add - bookacti_booking_form_submitted
-    * Tweak - bookacti_booking_refunded, bookacti_booking_state_changed have now an additional argument to differenciate single booking to booking group
-    * Deleted - bookacti_validate_selected_event replaced by bookacti_validate_picked_events
-    * Deleted - bookacti_bookings_list_filled replaced by bookacti_booking_list_filled
-    * Deleted - bookacti_activate_booking_system replaced by bookacti_rerender_events
-    * Deleted - bookacti_picked_activity_summary_filled replaced by bookacti_picked_events_list_data (not the same use, be careful)
-  * PHP actions
-    * Add - bookacti_group_of_events_tab_general_before
-    * Add - bookacti_group_of_events_tab_general_after
-    * Add - bookacti_group_category_tab_general_before
-    * Add - bookacti_group_category_tab_general_after
-    * Tweak - Merged all booking system parameters into one array in bookacti_before_booking_form, bookacti_booking_system_inputs, bookacti_before_booking_system_title, bookacti_before_booking_system, bookacti_booking_system_attributes, bookacti_after_booking_system, bookacti_picked_events_list, bookacti_after_picked_events_list, bookacti_booking_system_errors, bookacti_after_booking_system_errors, bookacti_after_booking_form
-    * Delete - bookacti_date_picked_title replaced by bookacti_translation_array (not the same use, be careful)
-    * Delete - bookacti_before_date_picked_summary, bookacti_after_date_picked_summary replaced by bookacti_picked_events_list
-    * Delete - bookacti_after_date_picked replaced by bookacti_after_picked_events_list
-    * Delete - bookacti_booking_expired replaced by bookacti_booking_state_changed (not the same use, be careful)
-    * Delete - bookacti_booking_cancelled replaced by bookacti_booking_state_changed (not the same use, be careful)
-    * Delete - bookacti_woocommerce_order_status_updated_after_booking_state_update by bookacti_woocommerce_order_status_automatically_updated (not the same use, be careful)
-    * Delete - bookacti_booking_filters_global_actions
-    * Delete - bookacti_booking_restored
-  * PHP filters
-    * Add - bookacti_validate_group_activity_data
-    * Add - bookacti_group_category_default_settings
-    * Add - bookacti_group_category_settings
-    * Add - bookacti_validate_group_of_events_data
-    * Add - bookacti_group_of_events_default_settings
-    * Add - bookacti_group_of_events_settings
-    * Add - bookacti_get_booking_method_html
-    * Add - bookacti_update_booking_quantity_data
-    * Add - bookacti_user_can_manage_booking_group
-    * Add - bookacti_booking_group_can_be_cancelled
-    * Add - bookacti_booking_group_can_be_refunded
-    * Add - bookacti_booking_group_state_can_be_changed
-    * Add - bookacti_booking_group_actions
-    * Add - bookacti_before_booking_group_actions
-    * Add - bookacti_after_booking_group_actions
-    * Add - bookacti_booking_group_actions_html
-    * Add - bookacti_refund_actions_by_booking_group
-    * Add - bookacti_compute_booking_group_state
-    * Add - bookacti_booking_actions_html_array
-    * Add - bookacti_booking_group_actions_html_array
-	* Tweak - bookacti_booking_can_be_rescheduled has now only 2 arguments, use bookacti_booking_can_be_rescheduled_to to have the same behavior as before
-	* Tweak - bookacti_before_booking_actions and bookacti_after_booking_actions, bookacti_booking_form_validated have now 3 arguments
-	* Tweak - bookacti_before_refund_actions, bookacti_refund_booking, bookacti_refund_request_email_to, bookacti_refund_request_email_data, bookacti_refund_request_email_message have now an additional argument to differenciate single booking to booking group
-	* Tweak - Merged all booking system parameters into one array in bookacti_booking_system_title, bookacti_booking_system_auto_load, bookacti_picked_events_list_title
-	* Tweak - Added $shortcode parameter to bookacti_formatted_booking_system_attributes
-    * Delete - bookacti_shortcode_{$shortcode}_default_parameters replaced by core shortcode_atts_{$shortcode} (not exactly the same use, be careful)
-    * Delete - bookacti_shortcode_{$shortcode}_return replaced by bookacti_shortcode_{$shortcode}_output
-    * Delete - bookacti_shortcode_{$shortcode}_prevent_execution. Please use remove_shortcode($tag) function instead.
-    * Delete - bookacti_shortcode_atts_{$shortcode}, bookacti_booking_system_auto_load and bookacti_booking_system_attributes. Please use bookacti_formatted_booking_system_attributes instead.
-    * Delete - bookacti_booking_can_be_cancelled_or_rescheduled. Please use bookacti_booking_can_be_cancelled or bookacti_booking_can_be_rescheduled instead.
-    * Delete - bookacti_users_data. Please use bookacti_user_data instead.
-    * Delete - bookacti_booking_data.
-    * Delete - bookacti_get_bookings.
+* Dev - A lot of hooks has been changed, added or removed. Please go to the website for the [complete changelog](https://booking-activities.fr/en/documentation/changelog/?utm_source=wp-plugin-page&utm_medium=wordpress&utm_content=readme).
     
 = 1.0.8 - 2017/05/31 =
 * Fix - Fixed events not fetched if your database prefix was not exactly "wp_"
@@ -399,5 +329,9 @@ If you don't find the answer you need, please [contact us](https://booking-activ
 
 == Upgrade Notice ==
 
+= 1.1.0 =
+Major update with breaking changes. To be safe, make a backup of your database. 
+You need to update your Booking Activities add-ons in the same time (if you have any) as they will not be compatible anymore.
+
 = 1.0.4 =
-* If you are using Booking Activities with WooCommerce, make sure you are using 2.6.0 or later, and try to update to 3.0.x as soon as possible since BW compatibility functions are now deprecated
+If you are using Booking Activities with WooCommerce, make sure you are using 2.6.0 or later, and try to update to WooCommerce 3.* as soon as possible since BW compatibility functions are now deprecated

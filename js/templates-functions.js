@@ -34,7 +34,10 @@ function bookacti_switch_template( selected_template_id ) {
 					bookacti.exceptions[ bookacti.selected_template ]									= response.exceptions;
 					
 					// Unlock dialogs triggering after first template is created and selected
-					if( is_first_template ) { bookacti_bind_template_dialogs(); }
+					if( is_first_template ) { 
+						bookacti_bind_template_dialogs();
+						bookacti_init_groups_of_events();
+					}
 					
 					
 					// EVENTS
@@ -235,21 +238,23 @@ function bookacti_init_show_hide_activities_switch() {
 // GROUPS OF EVENTS
 
 function bookacti_init_groups_of_events() {
-	// Refresh the display of selected events when you click on the View More link
-	$j( '#bookacti-template-calendar' ).on( 'click', '.fc-more', function(){
-		bookacti_refresh_selected_events_display();
-	});
+	if( $j( '#bookacti-template-calendar' ).length ) { 
+		// Refresh the display of selected events when you click on the View More link
+		$j( '#bookacti-template-calendar' ).on( 'click', '.fc-more', function(){
+			bookacti_refresh_selected_events_display();
+		});
 
-	// Display tuto if there is there is at least two events selected and no group categories yet
-	$j( '#bookacti-template-calendar' ).on( 'bookacti_select_event bookacti_unselect_event', function(){
-		bookacti_maybe_display_add_group_of_events_button();
-		
-		// Exit group editing mode
-		if( ! bookacti.booking_system[ 'bookacti-template-calendar' ][ 'selected_events' ].length ) {
-			bookacti_exit_group_edition();
-		}
-	});
+		// Display tuto if there is there is at least two events selected and no group categories yet
+		$j( '#bookacti-template-calendar' ).on( 'bookacti_select_event bookacti_unselect_event', function(){
+			bookacti_maybe_display_add_group_of_events_button();
 
+			// Exit group editing mode
+			if( bookacti.booking_system[ 'bookacti-template-calendar' ][ 'selected_events' ].length < 2 ) {
+				bookacti_exit_group_edition();
+			}
+		});
+	}
+	
 	// Expand groups of events
 	$j( '#bookacti-group-categories' ).on( 'click', '.bookacti-group-category-title', function(){
 		var category_id = $j( this ).parent().data( 'group-category-id' );
@@ -654,7 +659,6 @@ function bookacti_clear_events_on_calendar( calendar, event ) {
 		event_id = event.id;
 	} else {
 		calendar.fullCalendar( 'removeEvents' );
-		calendar.fullCalendar( 'removeEventSources' );
 	}
 	
 	return event_id;

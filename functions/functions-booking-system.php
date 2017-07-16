@@ -711,8 +711,8 @@ function bookacti_get_formatted_booking_events_list( $booking_events, $quantity 
 			// Format differently if the event start and end on the same day
 			$start_and_end_same_day	= substr( $event[ 'start' ], 0, 10 ) === substr( $event[ 'end' ], 0, 10 );
 			if( $start_and_end_same_day ) {
-				/* translators: Datetime format. Must be adapted to each country. Use strftime documentation to find the appropriated combinaison http://php.net/manual/en/function.strftime.php */
-				$event_end = strftime( __( '%I:%M %p', BOOKACTI_PLUGIN_NAME ), strtotime( $event[ 'end' ] ) );
+				/* translators: Datetime format. Must be adapted to each country. Use wp date_i18n documentation to find the appropriated combinaison https://codex.wordpress.org/Formatting_Date_and_Time */
+				$event_end = date_i18n( __( 'h:i a', BOOKACTI_PLUGIN_NAME ), strtotime( $event[ 'end' ] ) );
 			} else {
 				$event_end = bookacti_format_datetime( $event[ 'end' ] );
 			}

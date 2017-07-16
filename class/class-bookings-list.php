@@ -174,7 +174,7 @@ if( ! class_exists( 'Bookings_List_Table' ) ) {
 				} else {
 					$customer = esc_html( __( 'Unknown user', BOOKACTI_PLUGIN_NAME ) . ' (' . $booking->user_id . ')' );
 				}
-
+				
 				$state = bookacti_format_booking_state( $booking->state );
 				
 				$booking_item = apply_filters( 'bookacti_booking_list_booking_columns', array( 
@@ -190,7 +190,13 @@ if( ! class_exists( 'Bookings_List_Table' ) ) {
 						'x' . $quantity 
 					)
 				), $booking, $user );
-
+				
+				// If the booking is part of a group display its date to identify them
+				if( ! empty( $booking->group_id ) ) {
+					/* translators: Datetime format. Must be adapted to each country. Use wp date_i18n documentation to find the appropriated combinaison https://codex.wordpress.org/Formatting_Date_and_Time */
+					$booking_item[ 'customer' ] .= '(' . date_i18n( __( 'l, F d, Y h:i a', BOOKACTI_PLUGIN_NAME ), strtotime( $booking->event_start ) ) . ')';
+				}
+				
 				// Add info on the primary column to make them directly visible in responsive view
 				if( ! empty( $booking_item[ 'primary_data' ] ) ) {
 					$primary_column_name = $this->get_primary_column();

@@ -4,6 +4,7 @@
 .bookacti-picked-events		{ margin-bottom: 20px; }
 .bookacti-booking-system	{ margin-bottom: 30px; }
 
+.bookacti-frontend-dialog { display: none; }
 .bookacti-picked-events { display: none; }
 .to_date { display: inline-block; }
 

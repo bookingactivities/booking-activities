@@ -309,6 +309,7 @@ function bookacti_settings_section_bookings_callback() { }
 	 */
 	function bookacti_settings_field_timezone_callback() {
 		$regions = array(
+			'UTC' => DateTimeZone::UTC,
 			'Africa' => DateTimeZone::AFRICA,
 			'America' => DateTimeZone::AMERICA,
 			'Antarctica' => DateTimeZone::ANTARCTICA,
@@ -329,7 +330,8 @@ function bookacti_settings_section_bookings_callback() { }
 				// Us dumb Americans can't handle millitary time
 				$ampm = $time->format( 'H' ) > 12 ? ' (' . $time->format( 'g:i a' ) . ')' : '';
 				// Remove region name and add a sample time
-				$timezones[ $name ][ $timezone ] = substr( $timezone, strlen( $name ) + 1 ) . ' - ' . $time->format( 'H:i' ) . $ampm;
+				$label = $name === 'UTC' ? $name : substr( $timezone, strlen( $name ) + 1 );
+				$timezones[ $name ][ $timezone ] = $label . ' - ' . $time->format( 'H:i' ) . $ampm;
 			}
 		}
 		
@@ -343,7 +345,7 @@ function bookacti_settings_section_bookings_callback() { }
 			{
 				echo '<option value="' . $timezone . '" ' . selected( $selected_timezone, $timezone ) . '>' . $name . '</option>';
 			}
-			echo '<optgroup>';
+			echo '</optgroup>';
 		}
 		echo '</select>';
 		

@@ -5,15 +5,15 @@ msgstr ""
 "Project-Id-Version: Booking Activities 1.0.0\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/booking-"
 "activities\n"
-"POT-Creation-Date: 2017-07-14 14:03+0800\n"
-"PO-Revision-Date: 2017-07-14 14:05+0800\n"
+"POT-Creation-Date: 2017-07-15 22:30+0800\n"
+"PO-Revision-Date: 2017-07-15 23:00+0800\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: fr_FR\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Generator: Poedit 2.0.1\n"
+"X-Generator: Poedit 2.0.2\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
 
 #. Plugin Name of the plugin/theme
@@ -24,12 +24,12 @@ msgstr ""
 #. Description of the plugin/theme
 #: booking-activities.php:48
 msgid ""
-"Create your activity calendars with drag and drop and book scheduled events "
-"with one click. Enable online payments of reservations with WooCommerce."
+"Booking system specialized in activities (sports, cultural, leisure, events, "
+"and yours!). Works great with WooCommerce."
 msgstr ""
-"Créez vos plannings d'activités en glisser-déposer et réserver les "
-"événements planifiés en un clic. Autoriser le paiement en ligne des "
-"réservations avec WooCommerce."
+"Système de réservation spécialisé pour les activités (sportives, "
+"culturelles, loisirs, évènements, et la votre !). Parfaitement intégré à "
+"WooCommerce."
 
 #: booking-activities.php:302
 msgctxt "Name of the tab in the menu"
@@ -88,11 +88,11 @@ msgstr "Utilisateur inconnu"
 msgid "No items found."
 msgstr "Aucun élément trouvé."
 
-#: controller/controller-bookings.php:434
+#: controller/controller-bookings.php:438
 msgid "You must select a different schedule than the current one."
 msgstr "Vous devez choisir un créneau différent du créneau actuel."
 
-#: controller/controller-bookings.php:447
+#: controller/controller-bookings.php:451
 #: controller/controller-shortcodes.php:345
 #: languages/script-translation.php:117
 msgid "You are not allowed to do this."
@@ -104,7 +104,7 @@ msgstr "Paramètres généraux"
 
 #: controller/controller-settings.php:19
 #: controller/controller-woocommerce-backend.php:640
-#: controller/controller-woocommerce-backend.php:996
+#: controller/controller-woocommerce-backend.php:1007
 msgid "Booking method"
 msgstr "Méthode de réservation"
 
@@ -268,9 +268,9 @@ msgstr "Quantité"
 #: controller/controller-woocommerce-backend.php:587
 #: controller/controller-woocommerce-backend.php:609
 #: controller/controller-woocommerce-backend.php:703
-#: controller/controller-woocommerce-backend.php:923
-#: controller/controller-woocommerce-backend.php:991
-#: controller/controller-woocommerce-backend.php:1072
+#: controller/controller-woocommerce-backend.php:934
+#: controller/controller-woocommerce-backend.php:1002
+#: controller/controller-woocommerce-backend.php:1083
 msgid "Activity"
 msgstr "Activité"
 
@@ -289,7 +289,7 @@ msgstr ""
 
 #: controller/controller-shortcodes.php:315
 msgid "Your event has been booked successfully!"
-msgstr "Votre événement a été réservé avec succès !"
+msgstr "Votre évènement a été réservé avec succès !"
 
 #: controller/controller-shortcodes.php:333
 msgid "Your events have been booked successfully!"
@@ -332,12 +332,12 @@ msgstr ""
 #. translators: This is an option in a select box that means 'Use the setting
 #. of the whole website'
 #: controller/controller-woocommerce-backend.php:635
-#: controller/controller-woocommerce-backend.php:1004
+#: controller/controller-woocommerce-backend.php:1015
 msgid "Site setting"
 msgstr "Paramètre du site"
 
 #: controller/controller-woocommerce-backend.php:656
-#: controller/controller-woocommerce-backend.php:1020
+#: controller/controller-woocommerce-backend.php:1031
 #: functions/functions-global.php:185
 msgid "Calendar"
 msgstr "Calendrier"
@@ -345,31 +345,31 @@ msgstr "Calendrier"
 #: controller/controller-woocommerce-backend.php:686
 #: controller/controller-woocommerce-backend.php:734
 #: controller/controller-woocommerce-backend.php:786
-#: controller/controller-woocommerce-backend.php:1065
-#: controller/controller-woocommerce-backend.php:1112
-#: controller/controller-woocommerce-backend.php:1160
+#: controller/controller-woocommerce-backend.php:1076
+#: controller/controller-woocommerce-backend.php:1123
+#: controller/controller-woocommerce-backend.php:1171
 msgid "Multiple selection"
 msgstr "Sélection multiple"
 
 #: controller/controller-woocommerce-backend.php:751
-#: controller/controller-woocommerce-backend.php:1119
+#: controller/controller-woocommerce-backend.php:1130
 #: view/view-templates-dialogs.php:709
 msgid "Group category"
 msgstr "Catégorie de groupe"
 
 #: controller/controller-woocommerce-backend.php:761
-#: controller/controller-woocommerce-backend.php:1135
+#: controller/controller-woocommerce-backend.php:1146
 msgctxt "About group category"
 msgid "None"
 msgstr "Aucune"
 
 #: controller/controller-woocommerce-backend.php:808
-#: controller/controller-woocommerce-backend.php:1183
+#: controller/controller-woocommerce-backend.php:1194
 msgid "Display only the groups"
 msgstr "Afficher uniquement les groupes"
 
 #: controller/controller-woocommerce-backend.php:812
-#: controller/controller-woocommerce-backend.php:1187
+#: controller/controller-woocommerce-backend.php:1198
 msgid ""
 "Display only groups of events if checked. Else, also display the other "
 "single events (if any)."
@@ -378,14 +378,14 @@ msgstr ""
 "également les autres évènements seuls (s'il y en a)."
 
 #: controller/controller-woocommerce-backend.php:834
-#: controller/controller-woocommerce-backend.php:1208
+#: controller/controller-woocommerce-backend.php:1219
 msgid "Allow to book grouped events also as single events"
 msgstr ""
 "Autoriser la réservation des évènements groupés également en tant "
 "qu'évènement seul"
 
 #: controller/controller-woocommerce-backend.php:838
-#: controller/controller-woocommerce-backend.php:1212
+#: controller/controller-woocommerce-backend.php:1223
 msgid ""
 "When a customer pick an event, let him choose between the group or the "
 "single event."
@@ -395,17 +395,17 @@ msgstr ""
 
 #. translators: Help tip to explain why and when you should check the
 #. 'Activity' type of product in WooCommerce
-#: controller/controller-woocommerce-backend.php:926
+#: controller/controller-woocommerce-backend.php:937
 msgid "Enable this option if the product is a bookable activity"
 msgstr ""
 "Activez cette option si le produit est une activité qui peut être réservée"
 
 #. translators: This is an option in a select box that means 'Use the setting
 #. of the parent'
-#: controller/controller-woocommerce-backend.php:999
-#: controller/controller-woocommerce-backend.php:1035
-#: controller/controller-woocommerce-backend.php:1085
-#: controller/controller-woocommerce-backend.php:1132
+#: controller/controller-woocommerce-backend.php:1010
+#: controller/controller-woocommerce-backend.php:1046
+#: controller/controller-woocommerce-backend.php:1096
+#: controller/controller-woocommerce-backend.php:1143
 msgid "Parent setting"
 msgstr "Paramètre du parent"
 
@@ -583,53 +583,53 @@ msgstr ""
 "Vous ne pouvez pas modifier la quantité d'un produit en attente de paiement. "
 "Veuillez d'abord annuler la commande ou supprimer ce produit du panier."
 
-#: controller/controller-woocommerce-frontend.php:1137
-#: controller/controller-woocommerce-frontend.php:1251
+#: controller/controller-woocommerce-frontend.php:1136
+#: controller/controller-woocommerce-frontend.php:1250
 msgid "Booked event"
 msgid_plural "Booked events"
 msgstr[0] "Évènement réservé"
 msgstr[1] "Évènements réservés"
 
-#: controller/controller-woocommerce-frontend.php:1160
+#: controller/controller-woocommerce-frontend.php:1159
 #: functions/functions-woocommerce.php:1073
 msgid "Booking number"
 msgstr "N° de réservation"
 
-#: controller/controller-woocommerce-frontend.php:1162
+#: controller/controller-woocommerce-frontend.php:1161
 #: functions/functions-woocommerce.php:1075
 msgid "Booking group number"
 msgstr "Numéro du groupe de réservation"
 
-#: controller/controller-woocommerce-frontend.php:1163
+#: controller/controller-woocommerce-frontend.php:1162
 msgid "Booked events"
 msgstr "Évènements réservés"
 
-#: controller/controller-woocommerce-frontend.php:1164
+#: controller/controller-woocommerce-frontend.php:1163
 msgid "Status"
 msgstr "État"
 
-#: controller/controller-woocommerce-frontend.php:1165
+#: controller/controller-woocommerce-frontend.php:1164
 msgid "Refund method"
 msgstr "Méthode de remboursement"
 
-#: controller/controller-woocommerce-frontend.php:1166
+#: controller/controller-woocommerce-frontend.php:1165
 #: languages/script-translation.php:178
 msgid "Coupon code"
 msgstr "Code promo"
 
-#: controller/controller-woocommerce-frontend.php:1169
+#: controller/controller-woocommerce-frontend.php:1168
 msgid "Event ID"
 msgstr "ID de l'évènement"
 
-#: controller/controller-woocommerce-frontend.php:1170
+#: controller/controller-woocommerce-frontend.php:1169
 msgid "Start"
 msgstr "Début"
 
-#: controller/controller-woocommerce-frontend.php:1171
+#: controller/controller-woocommerce-frontend.php:1170
 msgid "End"
 msgstr "Fin"
 
-#: controller/controller-woocommerce-frontend.php:1396
+#: controller/controller-woocommerce-frontend.php:1395
 msgid "Price"
 msgstr "Prix"
 
@@ -736,13 +736,13 @@ msgstr ""
 "Vous voulez prendre %1$s réservations mais seulement %2$s sont disponibles. "
 "Veuillez choisir un autre évènement ou diminuer la quantité."
 
-#. translators: Datetime format. Must be adapted to each country. Use strftime
-#. documentation to find the appropriated combinaison
-#. http:php.net/manual/en/function.strftime.php
-#: functions/functions-booking-system.php:716
+#. translators: Datetime format. Must be adapted to each country. Use wp
+#. date_i18n documentation to find the appropriated combinaison
+#. https:codex.wordpress.org/Formatting_Date_and_Time
+#: functions/functions-booking-system.php:715
 #: functions/functions-bookings.php:1045
-msgid "%I:%M %p"
-msgstr "%H:%M"
+msgid "h:i a"
+msgstr "H:i"
 
 #: functions/functions-bookings.php:508 functions/functions-bookings.php:628
 #: languages/script-translation.php:35
@@ -884,12 +884,12 @@ msgctxt "between two dates"
 msgid "to"
 msgstr "à"
 
-#. translators: Datetime format. Must be adapted to each country. Use strftime
-#. documentation to find the appropriated combinaison
-#. http:php.net/manual/en/function.strftime.php
+#. translators: Datetime format. Must be adapted to each country. Use wp
+#. date_i18n documentation to find the appropriated combinaison
+#. https:codex.wordpress.org/Formatting_Date_and_Time
 #: functions/functions-global.php:197
-msgid "%A, %B %d, %Y %I:%M %p"
-msgstr "%A %d %B %Y %H:%M"
+msgid "l, F d, Y h:i a"
+msgstr "l d F Y H:i"
 
 #. translators: Date format, please display only day month hours and minutes.
 #. This can be displayed as a period like Sep, 05th at 4:30 PM → 5:30 PM.
@@ -946,7 +946,7 @@ msgstr ""
 "Choisissez quel statut une réservation doit avoir lorsqu'un client complète "
 "le formulaire de réservation."
 
-#: functions/functions-settings.php:351
+#: functions/functions-settings.php:353
 msgid "Pick the timezone corresponding to where your business takes place."
 msgstr ""
 "Choisissez le fuseau horaire correspondant au lieu d'exercice de votre "
@@ -954,12 +954,12 @@ msgstr ""
 
 #. translators: Label of a link to JS moment documentation (format chapter):
 #. https:momentjs.com/docs/#/displaying/format/
-#: functions/functions-settings.php:376
+#: functions/functions-settings.php:378
 msgid "JS moment documentation"
 msgstr "documentation de JS moment"
 
 #. translators: %1$s is a link to JS moment documentation
-#: functions/functions-settings.php:380
+#: functions/functions-settings.php:382
 msgid ""
 "Set the date format displayed on picked events lists. Leave empty to use the "
 "default locale-related format. Go to %1$s to know what tag you can use."
@@ -969,29 +969,29 @@ msgstr ""
 "langue par défaut. Allez sur la %1$s pour savoir quels tags vous pouvez "
 "utiliser."
 
-#: functions/functions-settings.php:399
+#: functions/functions-settings.php:401
 msgid "Allow or disallow customers to cancel a booking after they order it."
 msgstr ""
 "Autoriser ou non les clients à annuler une réservation suite à leur commande."
 
-#: functions/functions-settings.php:414
+#: functions/functions-settings.php:416
 msgid ""
 "Allow or disallow customers to reschedule a booking after they order it."
 msgstr ""
 "Autoriser ou non les clients à replanifier une réservation suite à leur "
 "commande."
 
-#: functions/functions-settings.php:415
+#: functions/functions-settings.php:417
 msgid "This won't apply to group of bookings."
 msgstr "Cela ne s'appliquera pas aux groupes de réservations."
 
 #. translators: The user set an amount of time before this sentence. Ex: '2'
 #. days before the event
-#: functions/functions-settings.php:434
+#: functions/functions-settings.php:436
 msgid "days before the event"
 msgstr "jours avant l'évènement"
 
-#: functions/functions-settings.php:437
+#: functions/functions-settings.php:439
 msgid ""
 "Define the delay before the event in wich the customer will not be able to "
 "cancel his booking no more. Ex: \"7\": Customers will be able to cancel "
@@ -1003,7 +1003,7 @@ msgstr ""
 "réservation au moins 7 jours avant le début de l'évènement. Après cela, ce "
 "sera trop tard."
 
-#: functions/functions-settings.php:493
+#: functions/functions-settings.php:495
 msgid ""
 "Define the actions a customer will be able to take to be refunded after he "
 "cancels a booking."
@@ -1604,14 +1604,14 @@ msgstr ""
 #: languages/script-translation.php:106
 msgid "Error occurs when trying to book your event. Please try again."
 msgstr ""
-"Une erreur est survenue lors de la réservation de votre événement. Veuillez "
+"Une erreur est survenue lors de la réservation de votre évènement. Veuillez "
 "réessayer."
 
 #. translators: It is the message displayed to users if no events bookable were
 #. found.
 #: languages/script-translation.php:108
 msgid "Sorry, no events are available."
-msgstr "Désolé, aucun événement n'est disponible."
+msgstr "Désolé, aucun évènement n'est disponible."
 
 #. translators: It is the message displayed to users if no events were found
 #. according to search criterias (filters).
@@ -2057,7 +2057,7 @@ msgid ""
 "Put a special price on your events, make promotions and strategically draw "
 "the attention of your customers."
 msgstr ""
-"Mettez un prix spécifique sur vos événements, faîtes des promotions et "
+"Mettez un prix spécifique sur vos évènements, faîtes des promotions et "
 "attirez stratégiquement l'attention de vos clients."
 
 #: view/view-landing.php:58 view/view-templates-dialogs.php:360
@@ -2263,7 +2263,7 @@ msgid ""
 "Set the starting date of the repetition. The occurences of the event will be "
 "added from this date."
 msgstr ""
-"Paramétrez la date de début de la répétition. Les occurrences de l'événement "
+"Paramétrez la date de début de la répétition. Les occurrences de l'évènement "
 "seront créés à partir de cette date."
 
 #: view/view-templates-dialogs.php:158
@@ -2275,7 +2275,7 @@ msgid ""
 "Set the ending date of the repetition. The occurences of the event will be "
 "added until this date."
 msgstr ""
-"Paramétrez la date de fin de la répétition. Les occurrences de l'événement "
+"Paramétrez la date de fin de la répétition. Les occurrences de l'évènement "
 "seront créés jusqu'à cette date."
 
 #: view/view-templates-dialogs.php:169
@@ -2307,9 +2307,9 @@ msgid "Permissions"
 msgstr "Privilèges"
 
 #: view/view-templates-dialogs.php:226
-msgid "Give your calendar a title to easily recognize it in this list."
+msgid "Give your calendar a title to easily recognize it in a list."
 msgstr ""
-"Donner à votre planning un titre pour le reconnaître facilement dans cette "
+"Donner à votre planning un titre pour le reconnaître facilement dans une "
 "liste."
 
 #: view/view-templates-dialogs.php:231
@@ -2746,7 +2746,7 @@ msgid ""
 "able to book an event via this form."
 msgstr ""
 "Ce shortcode affichera un formulaire de réservation avec ce planning. Les "
-"utilisateurs pourront réserver un événement via ce formulaire."
+"utilisateurs pourront réserver un évènement via ce formulaire."
 
 #: view/view-templates.php:213
 msgid ""
@@ -2766,6 +2766,21 @@ msgstr ""
 #. Author of the plugin/theme
 msgid "Booking Activities Team"
 msgstr ""
+
+#~ msgid "%I:%M %p"
+#~ msgstr "%H:%M"
+
+#~ msgid "%A, %B %d, %Y %I:%M %p"
+#~ msgstr "%A %d %B %Y %H:%M"
+
+#~ msgid ""
+#~ "Create your activity calendars with drag and drop and book scheduled "
+#~ "events with one click. Enable online payments of reservations with "
+#~ "WooCommerce."
+#~ msgstr ""
+#~ "Créez vos plannings d'activités en glisser-déposer et réserver les "
+#~ "événements planifiés en un clic. Autoriser le paiement en ligne des "
+#~ "réservations avec WooCommerce."
 
 #~ msgid "http://booking-activities.fr/en"
 #~ msgstr "http://booking-activities.fr/fr"

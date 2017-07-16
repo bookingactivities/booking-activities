@@ -123,7 +123,7 @@ function bookacti_set_calendar_up( booking_system, reload_events ) {
 		// Fetch events from database
 		bookacti_fetch_events( booking_system );
 		
-	} else if( bookacti.booking_system[ booking_system_id ][ 'events' ].length ) {
+	} else if( ! bookacti.booking_system[ booking_system_id ][ 'events' ].length ) {
 		// If no events are bookable, display an error
 		bookacti_add_error_message( booking_system, bookacti_localized.error_no_events_bookable );
 	}

@@ -257,7 +257,7 @@ function bookacti_dialog_add_new_template() {
 // Dialog Update Template
 function bookacti_dialog_update_template( template_id ) {
 	if( ! template_id ) {
-		
+		return false;
 	}
 	// Set the dialog title
 	$j( '#bookacti-template-data-dialog' ).dialog({ 
@@ -303,6 +303,7 @@ function bookacti_dialog_update_template( template_id ) {
 				}
 
 				// Settings tabs
+				$j( '#bookacti-template-data-dialog' ).trigger( 'bookacti_default_template_settings' );
 				if( response.settings ) {
 					bookacti_fill_settings_fields( response.settings, 'templateOptions' );
 				}

@@ -299,7 +299,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			}
 			
 			// Common data
-			wc_add_order_item_meta( $item_id, 'bookacti_booked_events', stripslashes( $values['_bookacti_options']['bookacti_booked_events'] ) );
+			wc_add_order_item_meta( $item_id, 'bookacti_booked_events', $values['_bookacti_options']['bookacti_booked_events'] );
 			wc_add_order_item_meta( $item_id, 'bookacti_state', sanitize_title_with_dashes( $state ) );
 		}
 	}
@@ -330,7 +330,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		}
 
 		// Common data
-		$item->add_meta_data( 'bookacti_booked_events', stripslashes( $values['_bookacti_options']['bookacti_booked_events'] ), true );
+		$item->add_meta_data( 'bookacti_booked_events', $values['_bookacti_options']['bookacti_booked_events'], true );
 		$item->add_meta_data( 'bookacti_state', sanitize_title_with_dashes( $state ), true );
 	}
 	
@@ -1129,8 +1129,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			// Single event
 			if( ( isset( $cart_item_data[ '_bookacti_options' ][ 'bookacti_booking_id' ] ) && ! empty( $cart_item_data[ '_bookacti_options' ][ 'bookacti_booking_id' ] ) )
 			||  ( isset( $cart_item_data[ '_bookacti_options' ][ 'bookacti_booking_group_id' ] ) && ! empty( $cart_item_data[ '_bookacti_options' ][ 'bookacti_booking_group_id' ] ) ) ) {
-				$events	= json_decode( stripslashes( $cart_item_data[ '_bookacti_options' ][ 'bookacti_booked_events' ] ) );
-				
+				$events	= json_decode( $cart_item_data[ '_bookacti_options' ][ 'bookacti_booked_events' ] );
 				$events_list = bookacti_get_formatted_booking_events_list( $events );
 				
 				$item_data[] = array( 
@@ -1199,7 +1198,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			// Booked events
 			else if( $meta[ 'key' ] === 'bookacti_booked_events' ) {
 				
-				$events	= json_decode( stripslashes( $value ) );
+				$events	= json_decode( $value );
 				$formatted_meta[ $key ][ 'value' ] = bookacti_get_formatted_booking_events_list( $events );
 			} 
 			
@@ -1247,7 +1246,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			
 			// Format event list
 			else if( $meta->key === 'bookacti_booked_events' ) {
-				$events	= json_decode( stripslashes( $meta->value ) );
+				$events	= json_decode( $meta->value );
 				$meta->display_key = _n( 'Booked event', 'Booked events', count( $events ), BOOKACTI_PLUGIN_NAME );
 				$meta->display_value = bookacti_get_formatted_booking_events_list( $events );
 			}

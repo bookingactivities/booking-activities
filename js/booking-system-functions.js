@@ -810,7 +810,7 @@ function bookacti_start_loading_booking_system( booking_system ) {
 	}
 	
 	if( booking_method === 'calendar' || $j.inArray( booking_method, bookacti_localized.available_booking_methods ) === -1 ) {
-		if( booking_system.find( '.bookacti-calendar' ).length ) {
+		if( booking_system.find( '.bookacti-calendar.fc' ).length ) {
 			if( bookacti.booking_system[ booking_system_id ][ 'loading_number' ] === 0 || ! booking_system.find( '.bookacti-loading-overlay' ).length ) {
 				booking_system.find( '.bookacti-loading-alt' ).remove();
 				bookacti_enter_calendar_loading_state( booking_system.find( '.bookacti-calendar' ) );

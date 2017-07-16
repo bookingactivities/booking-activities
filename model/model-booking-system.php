@@ -19,10 +19,11 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		$args = bookacti_sanitize_arguments_to_fetch_events( $args );
 		
 		// Set current datetime
-		$timezone = bookacti_get_setting_value( 'bookacti_general_settings', 'timezone' );
-		$current_datetime_object = new DateTime( 'now', new DateTimeZone( $timezone ) );
-		$user_timestamp	= $current_datetime_object->format( 'U' );
-
+		$timezone					= new DateTimeZone( bookacti_get_setting_value( 'bookacti_general_settings', 'timezone' ) );
+		$current_datetime_object	= new DateTime( 'now', $timezone );
+		$user_timestamp				= $current_datetime_object->format( 'U' );
+		$user_timestamp_offset		= $current_datetime_object->format( 'P' );
+		
 		// Prepare the query
 		$query  = 'SELECT DISTINCT E.id as event_id, E.template_id, E.title, E.start, E.end, E.repeat_freq, E.repeat_from, E.repeat_to, E.availability, A.color, A.id as activity_id, IFNULL( B.bookings, 0 ) as bookings '
 				. ' FROM ' . BOOKACTI_TABLE_ACTIVITIES . ' as A, ' . BOOKACTI_TABLE_TEMPLATES . ' as T, ' . BOOKACTI_TABLE_EVENTS . ' as E '
@@ -42,31 +43,34 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 							OR ';
 		}
 		$query  .= '		( 	NULLIF( E.repeat_freq, "none" ) IS NULL 
-								AND (	UNIX_TIMESTAMP( CONVERT_TZ( E.start, "+00:00", @@global.time_zone ) ) >= 
-										UNIX_TIMESTAMP( CONVERT_TZ( T.start_date, "+00:00", @@global.time_zone ) ) 
+								AND (	UNIX_TIMESTAMP( CONVERT_TZ( E.start, %s, @@global.time_zone ) ) >= 
+										UNIX_TIMESTAMP( CONVERT_TZ( T.start_date, %s, @@global.time_zone ) ) 
 									AND
-										UNIX_TIMESTAMP( CONVERT_TZ( ( E.end + INTERVAL -24 HOUR ), "+00:00", @@global.time_zone ) ) <= 
-										UNIX_TIMESTAMP( CONVERT_TZ( T.end_date, "+00:00", @@global.time_zone ) ) 
+										UNIX_TIMESTAMP( CONVERT_TZ( ( E.end + INTERVAL -24 HOUR ), %s, @@global.time_zone ) ) <= 
+										UNIX_TIMESTAMP( CONVERT_TZ( T.end_date, %s, @@global.time_zone ) ) 
 									) 
 							) 
 							OR
 							( 	E.repeat_freq IS NOT NULL
-								AND NOT (	UNIX_TIMESTAMP( CONVERT_TZ( E.repeat_from, "+00:00", @@global.time_zone ) ) < 
-											UNIX_TIMESTAMP( CONVERT_TZ( T.start_date, "+00:00", @@global.time_zone ) ) 
+								AND NOT (	UNIX_TIMESTAMP( CONVERT_TZ( E.repeat_from, %s, @@global.time_zone ) ) < 
+											UNIX_TIMESTAMP( CONVERT_TZ( T.start_date, %s, @@global.time_zone ) ) 
 										AND 
-											UNIX_TIMESTAMP( CONVERT_TZ( ( E.repeat_to + INTERVAL -24 HOUR ), "+00:00", @@global.time_zone ) ) < 
-											UNIX_TIMESTAMP( CONVERT_TZ( T.start_date, "+00:00", @@global.time_zone ) ) 
+											UNIX_TIMESTAMP( CONVERT_TZ( ( E.repeat_to + INTERVAL -24 HOUR ), %s, @@global.time_zone ) ) < 
+											UNIX_TIMESTAMP( CONVERT_TZ( T.start_date, %s, @@global.time_zone ) ) 
 										)
-								AND NOT (	UNIX_TIMESTAMP( CONVERT_TZ( E.repeat_from, "+00:00", @@global.time_zone ) ) > 
-											UNIX_TIMESTAMP( CONVERT_TZ( T.end_date, "+00:00", @@global.time_zone ) ) 
+								AND NOT (	UNIX_TIMESTAMP( CONVERT_TZ( E.repeat_from, %s, @@global.time_zone ) ) > 
+											UNIX_TIMESTAMP( CONVERT_TZ( T.end_date, %s, @@global.time_zone ) ) 
 										AND 
-											UNIX_TIMESTAMP( CONVERT_TZ( ( E.repeat_to + INTERVAL -24 HOUR ), "+00:00", @@global.time_zone ) ) > 
-											UNIX_TIMESTAMP( CONVERT_TZ( T.end_date, "+00:00", @@global.time_zone ) ) 
+											UNIX_TIMESTAMP( CONVERT_TZ( ( E.repeat_to + INTERVAL -24 HOUR ), %s, @@global.time_zone ) ) > 
+											UNIX_TIMESTAMP( CONVERT_TZ( T.end_date, %s, @@global.time_zone ) ) 
 										)
 						) )';
 		
 		
 		$variables = array();
+		for( $i = 0; $i < 12; $i++ ) {
+			$variables[] = $user_timestamp_offset;
+		}
 
 		// Whether to fetch past events
 		if( ! $args[ 'past_events' ] ) {
@@ -74,15 +78,21 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			$started_events_bookable = bookacti_get_setting_value( 'bookacti_general_settings', 'started_events_bookable' );
 			if( $started_events_bookable ) {
 				// Fetch events already started but not finished
-				$query .= ' AND ( ( UNIX_TIMESTAMP( CONVERT_TZ( E.start, "+00:00", @@global.time_zone ) ) <= %d AND UNIX_TIMESTAMP( CONVERT_TZ( E.end, "+00:00", @@global.time_zone ) ) >= %d ) OR UNIX_TIMESTAMP( CONVERT_TZ( E.start, "+00:00", @@global.time_zone ) ) >= %d OR UNIX_TIMESTAMP( CONVERT_TZ( ( E.repeat_to + INTERVAL -24 HOUR ), "+00:00", @@global.time_zone ) ) >= %d ) ';
+				$query .= ' AND ( ( UNIX_TIMESTAMP( CONVERT_TZ( E.start, %s, @@global.time_zone ) ) <= %d AND UNIX_TIMESTAMP( CONVERT_TZ( E.end, %s, @@global.time_zone ) ) >= %d ) OR UNIX_TIMESTAMP( CONVERT_TZ( E.start, %s, @@global.time_zone ) ) >= %d OR UNIX_TIMESTAMP( CONVERT_TZ( ( E.repeat_to + INTERVAL -24 HOUR ), %s, @@global.time_zone ) ) >= %d ) ';
+				$variables[] = $user_timestamp_offset;
 				$variables[] = $user_timestamp;
+				$variables[] = $user_timestamp_offset;
 				$variables[] = $user_timestamp;
+				$variables[] = $user_timestamp_offset;
 				$variables[] = $user_timestamp;
+				$variables[] = $user_timestamp_offset;
 				$variables[] = $user_timestamp;
 			} else {
 				// Fetch only future events
-				$query .= ' AND ( UNIX_TIMESTAMP( CONVERT_TZ( E.start, "+00:00", @@global.time_zone ) ) >= %d OR UNIX_TIMESTAMP( CONVERT_TZ( ( E.repeat_to + INTERVAL -24 HOUR ), "+00:00", @@global.time_zone ) ) >= %d ) ';
+				$query .= ' AND ( UNIX_TIMESTAMP( CONVERT_TZ( E.start, %s, @@global.time_zone ) ) >= %d OR UNIX_TIMESTAMP( CONVERT_TZ( ( E.repeat_to + INTERVAL -24 HOUR ), %s, @@global.time_zone ) ) >= %d ) ';
+				$variables[] = $user_timestamp_offset;
 				$variables[] = $user_timestamp;
+				$variables[] = $user_timestamp_offset;
 				$variables[] = $user_timestamp;
 			}
 		}

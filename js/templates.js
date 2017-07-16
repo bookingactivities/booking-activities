@@ -183,7 +183,7 @@ function bookacti_load_template_calendar() {
 									} );
 				var edit_button =	$j( '<span />', {
 										type: 'checkbox',
-										class: 'fa fa-cog bookacti-event-action-edit-button',
+										class: 'dashicons dashicons-admin-generic bookacti-event-action-edit-button',
 										'aria-hidden': 'true'
 									} );
 				event_actions.push( edit_div.prepend( edit_button ) );

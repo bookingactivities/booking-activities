@@ -516,8 +516,8 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			}
 			
 			// Format booked events
-			else if( bookacti_is_json( stripslashes( $meta_value ) ) ) {
-				$events = json_decode( stripslashes( $meta_value ) );
+			else if( bookacti_is_json( $meta_value ) ) {
+				$events = json_decode( $meta_value );
 				if( is_array( $events ) && count( $events ) > 0 && is_object( $events[ 0 ] ) && isset( $events[ 0 ]->event_id ) ) {
 					return bookacti_get_formatted_booking_events_list( $events );
 				}
@@ -881,7 +881,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			
 			$group_categories = 'none';
 			
-			if( isset( $_POST['_bookacti_group_categories'][0] ) && $_POST['_bookacti_group_categories'][0] === 'none' ) {
+			if( is_array( $_POST['_bookacti_group_categories'] ) && in_array( 'none', $_POST['_bookacti_group_categories'] ) ) {
 				$_POST['_bookacti_group_categories'] = 'none';
 				$group_categories = 'none';
 			}
@@ -1274,12 +1274,24 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 				
 				// Save template
 				if ( isset( $_POST[ 'bookacti_variable_template' ][ $key ] ) ) {
+					
+					if( is_array( $_POST['bookacti_variable_template'][ $key ] ) 
+					&&  in_array( 'parent', $_POST['bookacti_variable_template'][ $key ] ) ) { 
+						$_POST[ 'bookacti_variable_template' ][ $key ] = 'parent';
+					}
+					
 					$variable_template = is_numeric( $_POST[ 'bookacti_variable_template' ][ $key ] ) || is_array( $_POST[ 'bookacti_variable_template' ][ $key ] ) ? bookacti_ids_to_array( $_POST[ 'bookacti_variable_template' ][ $key ] ) : 'parent';
 					update_post_meta( $variation_id, 'bookacti_variable_template', $variable_template );
 				}
 
 				// Save activity
 				if ( isset( $_POST[ 'bookacti_variable_activity' ][ $key ] ) ) {
+					
+					if( is_array( $_POST['bookacti_variable_activity'][ $key ] ) 
+					&&  in_array( 'parent', $_POST['bookacti_variable_activity'][ $key ] ) ) { 
+						$_POST[ 'bookacti_variable_activity' ][ $key ] = 'parent';
+					}
+					
 					$variable_activity = is_numeric( $_POST[ 'bookacti_variable_activity' ][ $key ] ) || is_array( $_POST[ 'bookacti_variable_activity' ][ $key ] ) ? bookacti_ids_to_array( $_POST[ 'bookacti_variable_activity' ][ $key ] ) : 'parent';
 					update_post_meta( $variation_id, 'bookacti_variable_activity', $variable_activity );
 				}
@@ -1288,12 +1300,12 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 				if ( isset( $_POST[ 'bookacti_variable_group_categories' ][ $key ] ) ) {
 					$variable_group_categories = 'parent';
 					
-					if( isset( $_POST['_bookacti_group_categories'][ $key ][0] ) ) { 
-						if( $_POST['_bookacti_group_categories'][ $key ][0] === 'none' ) {
-							$_POST['_bookacti_group_categories'][ $key ] = 'none';
+					if( is_array( $_POST['bookacti_variable_group_categories'][ $key ] ) ) { 
+						if( in_array( 'none', $_POST['bookacti_variable_group_categories'][ $key ] ) ) {
+							$_POST['bookacti_variable_group_categories'][ $key ] = 'none';
 							$variable_group_categories = 'none';
-						} else if( $_POST['_bookacti_group_categories'][ $key ][0] === 'parent' ) {
-							$_POST['_bookacti_group_categories'][ $key ] = 'parent';
+						} else if( in_array( 'parent', $_POST['bookacti_variable_group_categories'][ $key ] ) ) {
+							$_POST['bookacti_variable_group_categories'][ $key ] = 'parent';
 							$variable_group_categories = 'parent';
 						}
 					}
