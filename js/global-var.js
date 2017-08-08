@@ -1,34 +1,19 @@
 $j=jQuery.noConflict();
 
-var supportsTouch			= 'ontouchstart' in window || navigator.msMaxTouchPoints;
+var bookacti = {
+	// Global
+	'booking_system': [],
+	'event_sizes': {
+			'tiny_height' : parseInt( bookacti_localized.event_tiny_height ),
+			'small_height' : parseInt( bookacti_localized.event_small_height ),
+			'narrow_width' : parseInt( bookacti_localized.event_narrow_width ),
+			'wide_width' : parseInt( bookacti_localized.event_wide_width )
+		},
 
-var json_events             = [];
-var template_id				= parseInt( $j( '#bookacti-template-picker' ).val() ) || 0;
-var currentMousePos         = { x: -1, y: -1 };
-var isDragging              = false;
-var startOftemplateReached  = false;
-var endOftemplateReached    = false;
-var exceptions              = [];
-var bookings                = [];
-var json_activities			= [];
-var hiddenActivities        = [];
-var selectedEvents          = [];
-var lockedEvents            = [];
-var blockEvents             = false;
-var loadingNumber			= [];
-loadingNumber['template']	= 0;
+	// Bookings
+	'hidden_activities': [],
 
-var activities_array		= [];
-var templates_array			= [];
-
-var calendarPeriod			= [];
-var is_activity				= [];
-
-var size = {
-	'tinyHeight' : parseInt( bookacti_localized.event_tiny_height ),
-	'smallHeight' : parseInt( bookacti_localized.event_small_height ),
-	'narrowWidth' : parseInt( bookacti_localized.event_narrow_width ),
-	'wideWidth' : parseInt( bookacti_localized.event_wide_width )
+	// Woocommerce
+	'parent_booking_system': [],
+	'is_variation_activity': []
 };
-
-var valid_form				= [];

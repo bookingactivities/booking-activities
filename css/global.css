@@ -2,10 +2,7 @@
 
 /** GLOBAL **/
 
-.bookacti-display-none { display: none; }
-
 /* Booking System */
-#bookacti-reschedule-booking-dialog .bookacti-date-picked-activity					{ display: none; }
 .bookacti-booking-system-form .bookacti-booking-system-labels,
 .bookacti-booking-system-form .bookacti-booking-system-field						{ display: inline-block; vertical-align: middle; width: 150px; margin: 0; }
 .bookacti-booking-system-form .bookacti-booking-system-field-container				{ margin-bottom: 20px; }
@@ -19,6 +16,21 @@
 .bookacti-notices ul.bookacti-error-list	{ border-left-color: red; }
 .bookacti-notices ul.bookacti-success-list	{ border-left-color: green; }
 
+/* Choose group dialog */
+.bookacti-group-of-events-list			{ display: none; }
+.bookacti-group-of-events-option		{ margin-top: 15px; }
+.bookacti-group-of-events-option label	{ margin-left: 10px; vertical-align: middle; }
+.bookacti-group-availability			{ font-size: 0.8em; font-style: italic; }
+.bookacti-group-of-events-option input	{ vertical-align: middle; }
+.bookacti-group-of-events-list			{ list-style-type: none; border-left: 1px solid rgba(0,0,0,0.2); padding-left: 10px; margin: 5px 0 10px 25px; }
+.bookacti-group-of-events-option input[name="group_of_events"][disabled] + label { opacity: 0.5; }
+
+
+
+/** BOOKINGS **/
+.bookacti-bookings-dialog { display: none; }
+
+
 
 /** CALENDAR **/
 
@@ -29,24 +41,13 @@
 /* Header */
 .fc-toolbar { margin-bottom: 0; }
 .fc-toolbar .fc-center, .fc-toolbar .fc-right, .fc-toolbar .fc-left { margin-bottom: 1em; }
-.bookacti-date-picked-title	{ font-weight: bolder; }
+.bookacti-picked-events-list-title	{ font-weight: bolder; }
 
 /* Events */
-.event-unavailable  { opacity: 0.5; cursor: default; pointer-events: none; }
-.bookacti-selected-event {
-    -webkit-box-shadow: 0 5px 10px rgba(0,0,0,0.5);
-       -moz-box-shadow: 0 5px 10px rgba(0,0,0,0.5);
-            box-shadow: 0 5px 10px rgba(0,0,0,0.5);
-	transition: box-shadow 0.3s ease-in-out;
-	-webkit-transform: scale(1.02, 1.02);
-	transform: scale(1.02, 1.02);
-	border: 2px solid rgba(68, 68, 68, 0.4) !important;
-	z-index: 3 !important;
-}
-
-.bookacti-disabled-day	{ background-color: #e5e5e5 !important; }
-
-.fc-event				{ cursor: pointer; overflow: hidden; }
+.fc-event						{ cursor: pointer; overflow: hidden; }
+.bookacti-event-unavailable				{ opacity: 0.5; cursor: default; pointer-events: none; z-index: -1 !important; }
+.bookacti-picked-event .fc-bg	{ opacity: 0.5; transition: opacity 0.2s; }
+.bookacti-picked-event			{ border-width: 2px; z-index: 3 !important; transition: border 0.2s; }
 
 .fc-basic-view .fc-content > * { display: block; }
 	
@@ -67,6 +68,8 @@
 	.fc-agenda-view .bookacti-tiny-event .bookacti-available-places												{ height: 100%; display: block; border-radius: 0; }
 	
 	/* Narrow events */
+	.fc-agenda-view .bookacti-narrow-event.bookacti-tiny-event .fc-time:before,
+	.fc-agenda-view .bookacti-narrow-event.bookacti-tiny-event .fc-time:after,
 	.bookacti-narrow-event .bookacti-available-places-unit-name,
 	.bookacti-narrow-event .bookacti-available-places-avail-particle { display: none; }
 	

@@ -9,6 +9,15 @@ $j( document ).ready( function() {
 	$j( '.bookacti-tabs' ).tabs();
 
 	// Tooltip
+	bookacti_init_tooltip();
+	
+	// Dismiss notices
+	$j( '#bookacti-dismiss-5stars-rating' ).on( 'click', function(){ bookacti_dismiss_5stars_rating_notice(); });
+	
+});
+
+// Init tooltip
+function bookacti_init_tooltip() {
 	$j( '.bookacti-tip' ).tooltip({
 		items:	'[data-tip]',
 		content: function () {
@@ -28,10 +37,8 @@ $j( document ).ready( function() {
 		}
 	});
 	
-	// Dismiss notices
-	$j( '#bookacti-dismiss-5stars-rating' ).on( 'click', function(){ bookacti_dismiss_5stars_rating_notice(); });
-	
-});
+	$j( '.bookacti-tip' ).tooltip( 'close' );
+}
 
 
 // Update multilangual fields with qtranslate X

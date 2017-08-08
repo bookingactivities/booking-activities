@@ -4,7 +4,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 ?>
 
 <div class='wrap'>
-<h2><?php esc_html_e( 'Booking Activities', BOOKACTI_PLUGIN_NAME ); ?></h2>
+<h1><?php esc_html_e( 'Booking Activities', BOOKACTI_PLUGIN_NAME ); ?></h1>
 
 <div id='bookacti-landing-container'>
 	
@@ -31,7 +31,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 					'prefix' => 'badp',
 					'title' => __( 'Display Pack', BOOKACTI_PLUGIN_NAME ),
 					'subtitle' => '',
-					'link' => __( 'http://booking-activities.fr/en/downloads/display-pack/', BOOKACTI_PLUGIN_NAME ),
+					'link' => 'https://booking-activities.fr/en/downloads/display-pack/?utm_source=plugin&utm_medium=plugin&utm_campaign=display-pack&utm_content=landing',
 					'screenshot' => true,
 					'light_color' => '#c291f2',
 					'dark_color' => '#332640',
@@ -44,7 +44,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 					'prefix' => 'bapap',
 					'title' => __( 'Prices and Promotions', BOOKACTI_PLUGIN_NAME ),
 					'subtitle' => '',
-					'link' => __( 'http://booking-activities.fr/en/downloads/prices-and-promotions/', BOOKACTI_PLUGIN_NAME ),
+					'link' => 'https://booking-activities.fr/en/downloads/prices-and-promotions/?utm_source=plugin&utm_medium=plugin&utm_campaign=prices-and-promotions&utm_content=landing',
 					'screenshot' => true,
 					'light_color' => '#91d2f2',
 					'dark_color' => '#263740',
@@ -57,7 +57,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 					'prefix' => 'baofc',
 					'title' => __( 'Order for Customers', BOOKACTI_PLUGIN_NAME ),
 					'subtitle' => '',
-					'link' => __( 'http://booking-activities.fr/en/downloads/order-for-customers/', BOOKACTI_PLUGIN_NAME ),
+					'link' => 'https://booking-activities.fr/en/downloads/order-for-customers/?utm_source=plugin&utm_medium=plugin&utm_campaign=order-for-customers&utm_content=landing',
 					'screenshot' => true,
 					'light_color' => '#f2ed91',
 					'dark_color' => '#403f26',
@@ -70,7 +70,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 					'prefix' => 'bapos',
 					'title' => __( 'Points of Sale', BOOKACTI_PLUGIN_NAME ),
 					'subtitle' => __( '(requires WooCommerce)', BOOKACTI_PLUGIN_NAME ),
-					'link' => __( 'http://booking-activities.fr/en/downloads/points-of-sale/', BOOKACTI_PLUGIN_NAME ),
+					'link' => 'https://booking-activities.fr/en/downloads/points-of-sale/?utm_source=plugin&utm_medium=plugin&utm_campaign=points-of-sale&utm_content=landing',
 					'screenshot' => true,
 					'light_color' => '#91f2a1',
 					'dark_color' => '#26402a',

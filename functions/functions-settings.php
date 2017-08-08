@@ -5,17 +5,24 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 //DEFINE DEFAULT SETTINGS VALUES
 add_action( 'plugins_loaded', 'bookacti_define_default_settings_constants' );
 function bookacti_define_default_settings_constants() {
-	if( ! defined( 'DEFAULT_TEMPLATE_PER_USER' ) )				{ define( 'DEFAULT_TEMPLATE_PER_USER', '0' ); }
-	if( ! defined( 'SHOW_PAST_EVENTS' ) )						{ define( 'SHOW_PAST_EVENTS', '1' ); }
-	if( ! defined( 'ALLOW_TEMPLATES_FILTER' ) )					{ define( 'ALLOW_TEMPLATES_FILTER', '1' ); }
-	if( ! defined( 'ALLOW_ACTIVITIES_FILTER' ) )				{ define( 'ALLOW_ACTIVITIES_FILTER', '1' ); }
-	if( ! defined( 'SHOW_INACTIVE_BOOKINGS' ) )					{ define( 'SHOW_INACTIVE_BOOKINGS', '0' ); }
-	if( ! defined( 'STARTED_EVENTS_BOOKABLE' ) )				{ define( 'STARTED_EVENTS_BOOKABLE', '0' ); }
-	if( ! defined( 'BOOKING_METHOD' ) )							{ define( 'BOOKING_METHOD', 'calendar' ); }
-	if( ! defined( 'ALLOW_CUSTOMERS_TO_CANCEL' ) )				{ define( 'ALLOW_CUSTOMERS_TO_CANCEL', '1' ); }
-	if( ! defined( 'ALLOW_CUSTOMERS_TO_RESCHEDULE' ) )			{ define( 'ALLOW_CUSTOMERS_TO_RESCHEDULE', '1' ); }
-	if( ! defined( 'CANCELLATION_MIN_DELAY_BEFORE_EVENT' ) )	{ define( 'CANCELLATION_MIN_DELAY_BEFORE_EVENT', '7' ); }
-	if( ! defined( 'REFUND_ACTIONS_AFTER_CANCELLATION' ) )		{ define( 'REFUND_ACTIONS_AFTER_CANCELLATION', 'email' ); }
+	if( ! defined( 'BOOKACTI_DEFAULT_TEMPLATE_PER_USER' ) )				{ define( 'BOOKACTI_DEFAULT_TEMPLATE_PER_USER', '0' ); }
+	if( ! defined( 'BOOKACTI_SHOW_PAST_EVENTS' ) )						{ define( 'BOOKACTI_SHOW_PAST_EVENTS', '1' ); }
+	if( ! defined( 'BOOKACTI_ALLOW_TEMPLATES_FILTER' ) )				{ define( 'BOOKACTI_ALLOW_TEMPLATES_FILTER', '1' ); }
+	if( ! defined( 'BOOKACTI_ALLOW_ACTIVITIES_FILTER' ) )				{ define( 'BOOKACTI_ALLOW_ACTIVITIES_FILTER', '1' ); }
+	if( ! defined( 'BOOKACTI_SHOW_INACTIVE_BOOKINGS' ) )				{ define( 'BOOKACTI_SHOW_INACTIVE_BOOKINGS', '0' ); }
+	
+	if( ! defined( 'BOOKACTI_BOOKING_METHOD' ) )						{ define( 'BOOKACTI_BOOKING_METHOD', 'calendar' ); }
+	if( ! defined( 'BOOKACTI_WHEN_EVENTS_LOAD' ) )						{ define( 'BOOKACTI_WHEN_EVENTS_LOAD', 'on_page_load' ); }
+	if( ! defined( 'BOOKACTI_STARTED_EVENTS_BOOKABLE' ) )				{ define( 'BOOKACTI_STARTED_EVENTS_BOOKABLE', '0' ); }
+	if( ! defined( 'BOOKACTI_DEFAULT_BOOKING_STATE' ) )					{ define( 'BOOKACTI_DEFAULT_BOOKING_STATE', 'pending' ); }
+	if( ! defined( 'BOOKACTI_TIMEZONE' ) )								{ $date = new DateTime(); $tz = $date->getTimezone()->getName(); define( 'BOOKACTI_TIMEZONE', $tz ); }
+	if( ! defined( 'BOOKACTI_DATE_FORMAT' ) )							{	/* translators: Date format, please display only day month hours and minutes. This can be displayed as a period like Sep, 05th at 4:30 PM → 5:30 PM. "→ 5:30PM" will be displayed as is at the end of your date format. Use JS moment documentation to choose your tags https://momentjs.com/docs/#/displaying/format/ */
+																			define( 'BOOKACTI_DATE_FORMAT', __( 'MMM, Do - LT', BOOKACTI_PLUGIN_NAME ) ); }
+	
+	if( ! defined( 'BOOKACTI_ALLOW_CUSTOMERS_TO_CANCEL' ) )				{ define( 'BOOKACTI_ALLOW_CUSTOMERS_TO_CANCEL', '1' ); }
+	if( ! defined( 'BOOKACTI_ALLOW_CUSTOMERS_TO_RESCHEDULE' ) )			{ define( 'BOOKACTI_ALLOW_CUSTOMERS_TO_RESCHEDULE', '1' ); }
+	if( ! defined( 'BOOKACTI_CANCELLATION_MIN_DELAY_BEFORE_EVENT' ) )	{ define( 'BOOKACTI_CANCELLATION_MIN_DELAY_BEFORE_EVENT', '7' ); }
+	if( ! defined( 'BOOKACTI_REFUND_ACTIONS_AFTER_CANCELLATION' ) )		{ define( 'BOOKACTI_REFUND_ACTIONS_AFTER_CANCELLATION', 'email' ); }
 	
 	do_action( 'bookacti_define_settings_constants' );
 }
@@ -25,26 +32,30 @@ function bookacti_define_default_settings_constants() {
 function bookacti_init_settings_values() {
 	
 	$default_template_settings = get_option( 'bookacti_template_settings' );
-	if( ! isset( $default_template_settings['default_template_per_user'] ) ){ $default_template_settings['default_template_per_user']	= DEFAULT_TEMPLATE_PER_USER; }
+	if( ! isset( $default_template_settings['default_template_per_user'] ) ){ $default_template_settings['default_template_per_user']	= BOOKACTI_DEFAULT_TEMPLATE_PER_USER; }
 	update_option( 'bookacti_template_settings', $default_template_settings );
 	
 	$default_bookings_settings = get_option( 'bookacti_bookings_settings' );
-	if( ! isset( $default_bookings_settings['show_past_events'] ) )			{ $default_bookings_settings['show_past_events']			= SHOW_PAST_EVENTS; }
-	if( ! isset( $default_bookings_settings['allow_templates_filter'] ) )	{ $default_bookings_settings['allow_templates_filter']		= ALLOW_TEMPLATES_FILTER; }
-	if( ! isset( $default_bookings_settings['allow_activities_filter'] ) )	{ $default_bookings_settings['allow_activities_filter']		= ALLOW_ACTIVITIES_FILTER; }
-	if( ! isset( $default_bookings_settings['show_inactive_bookings'] ) )	{ $default_bookings_settings['show_inactive_bookings']		= SHOW_INACTIVE_BOOKINGS; }
+	if( ! isset( $default_bookings_settings['show_past_events'] ) )			{ $default_bookings_settings['show_past_events']		= BOOKACTI_SHOW_PAST_EVENTS; }
+	if( ! isset( $default_bookings_settings['allow_templates_filter'] ) )	{ $default_bookings_settings['allow_templates_filter']	= BOOKACTI_ALLOW_TEMPLATES_FILTER; }
+	if( ! isset( $default_bookings_settings['allow_activities_filter'] ) )	{ $default_bookings_settings['allow_activities_filter']	= BOOKACTI_ALLOW_ACTIVITIES_FILTER; }
+	if( ! isset( $default_bookings_settings['show_inactive_bookings'] ) )	{ $default_bookings_settings['show_inactive_bookings']	= BOOKACTI_SHOW_INACTIVE_BOOKINGS; }
 	update_option( 'bookacti_bookings_settings', $default_bookings_settings );
 	
 	$default_cancellation_settings = get_option( 'bookacti_cancellation_settings' );
-	if( ! isset( $default_cancellation_settings['allow_customers_to_cancel'] ) )			{ $default_bookings_settings['allow_customers_to_cancel']					= ALLOW_CUSTOMERS_TO_CANCEL; }
-	if( ! isset( $default_cancellation_settings['allow_customers_to_reschedule'] ) )		{ $default_cancellation_settings['allow_customers_to_reschedule']			= ALLOW_CUSTOMERS_TO_RESCHEDULE; }
-	if( ! isset( $default_cancellation_settings['cancellation_min_delay_before_event'] ) )	{ $default_cancellation_settings['cancellation_min_delay_before_event']		= CANCELLATION_MIN_DELAY_BEFORE_EVENT; }
-	if( ! isset( $default_cancellation_settings['refund_actions_after_cancellation'] ) )	{ $default_cancellation_settings['refund_actions_after_cancellation']		= REFUND_ACTIONS_AFTER_CANCELLATION; }
+	if( ! isset( $default_cancellation_settings['allow_customers_to_cancel'] ) )			{ $default_bookings_settings['allow_customers_to_cancel']				= BOOKACTI_ALLOW_CUSTOMERS_TO_CANCEL; }
+	if( ! isset( $default_cancellation_settings['allow_customers_to_reschedule'] ) )		{ $default_cancellation_settings['allow_customers_to_reschedule']		= BOOKACTI_ALLOW_CUSTOMERS_TO_RESCHEDULE; }
+	if( ! isset( $default_cancellation_settings['cancellation_min_delay_before_event'] ) )	{ $default_cancellation_settings['cancellation_min_delay_before_event']	= BOOKACTI_CANCELLATION_MIN_DELAY_BEFORE_EVENT; }
+	if( ! isset( $default_cancellation_settings['refund_actions_after_cancellation'] ) )	{ $default_cancellation_settings['refund_actions_after_cancellation']	= BOOKACTI_REFUND_ACTIONS_AFTER_CANCELLATION; }
 	update_option( 'bookacti_cancellation_settings', $default_cancellation_settings );
 	
 	$default_general_settings = get_option( 'bookacti_general_settings' );
-	if( ! isset( $default_general_settings['booking_method'] ) )			{ $default_general_settings['booking_method']				= BOOKING_METHOD; }
-	if( ! isset( $default_general_settings['started_events_bookable'] ) )	{ $default_general_settings['started_events_bookable']		= STARTED_EVENTS_BOOKABLE; }
+	if( ! isset( $default_general_settings['booking_method'] ) )			{ $default_general_settings['booking_method']			= BOOKACTI_BOOKING_METHOD; }
+	if( ! isset( $default_general_settings['when_events_load'] ) )			{ $default_general_settings['when_events_load']			= BOOKACTI_WHEN_EVENTS_LOAD; }
+	if( ! isset( $default_general_settings['started_events_bookable'] ) )	{ $default_general_settings['started_events_bookable']	= BOOKACTI_STARTED_EVENTS_BOOKABLE; }
+	if( ! isset( $default_general_settings['default_booking_state'] ) )		{ $default_general_settings['default_booking_state']	= BOOKACTI_DEFAULT_BOOKING_STATE; }
+	if( ! isset( $default_general_settings['date_format'] ) )				{ $default_general_settings['date_format']				= BOOKACTI_DATE_FORMAT; }
+	if( ! isset( $default_general_settings['timezone'] ) )					{ $default_general_settings['timezone']					= BOOKACTI_TIMEZONE; }
 	update_option( 'bookacti_general_settings', $default_general_settings );
 	
 	do_action( 'bookacti_init_settings_value' );
@@ -55,29 +66,33 @@ function bookacti_init_settings_values() {
 function bookacti_reset_settings() {
 	
 	$default_template_settings = array();
-	$default_template_settings['default_template_per_user']		= DEFAULT_TEMPLATE_PER_USER;
+	$default_template_settings['default_template_per_user']	= BOOKACTI_DEFAULT_TEMPLATE_PER_USER;
 	
 	update_option( 'bookacti_template_settings', $default_template_settings );
 	
 	$default_bookings_settings = array();
-	$default_bookings_settings['show_past_events']			= SHOW_PAST_EVENTS;
-	$default_bookings_settings['allow_templates_filter']	= ALLOW_TEMPLATES_FILTER;
-	$default_bookings_settings['allow_activities_filter']	= ALLOW_ACTIVITIES_FILTER;
-	$default_bookings_settings['show_inactive_bookings']	= SHOW_INACTIVE_BOOKINGS;
+	$default_bookings_settings['show_past_events']			= BOOKACTI_SHOW_PAST_EVENTS;
+	$default_bookings_settings['allow_templates_filter']	= BOOKACTI_ALLOW_TEMPLATES_FILTER;
+	$default_bookings_settings['allow_activities_filter']	= BOOKACTI_ALLOW_ACTIVITIES_FILTER;
+	$default_bookings_settings['show_inactive_bookings']	= BOOKACTI_SHOW_INACTIVE_BOOKINGS;
 	
 	update_option( 'bookacti_bookings_settings', $default_bookings_settings );
 	
 	$default_cancellation_settings = array();
-	$default_cancellation_settings['allow_customers_to_cancel']				= ALLOW_CUSTOMERS_TO_CANCEL;
-	$default_cancellation_settings['allow_customers_to_reschedule']			= ALLOW_CUSTOMERS_TO_RESCHEDULE;
-	$default_cancellation_settings['cancellation_min_delay_before_event']	= CANCELLATION_MIN_DELAY_BEFORE_EVENT;
-	$default_cancellation_settings['refund_actions_after_cancellation']		= REFUND_ACTIONS_AFTER_CANCELLATION;
+	$default_cancellation_settings['allow_customers_to_cancel']				= BOOKACTI_ALLOW_CUSTOMERS_TO_CANCEL;
+	$default_cancellation_settings['allow_customers_to_reschedule']			= BOOKACTI_ALLOW_CUSTOMERS_TO_RESCHEDULE;
+	$default_cancellation_settings['cancellation_min_delay_before_event']	= BOOKACTI_CANCELLATION_MIN_DELAY_BEFORE_EVENT;
+	$default_cancellation_settings['refund_actions_after_cancellation']		= BOOKACTI_REFUND_ACTIONS_AFTER_CANCELLATION;
 	
 	update_option( 'bookacti_cancellation_settings', $default_cancellation_settings );
 	
 	$default_general_settings = array();
-	$default_general_settings['booking_method']					= BOOKING_METHOD;
-	$default_general_settings['started_events_bookable']		= STARTED_EVENTS_BOOKABLE;
+	$default_general_settings['booking_method']				= BOOKACTI_BOOKING_METHOD;
+	$default_general_settings['when_events_load']			= BOOKACTI_WHEN_EVENTS_LOAD;
+	$default_general_settings['started_events_bookable']	= BOOKACTI_STARTED_EVENTS_BOOKABLE;
+	$default_general_settings['default_booking_state']		= BOOKACTI_DEFAULT_BOOKING_STATE;
+	$default_general_settings['date_format']				= BOOKACTI_DATE_FORMAT;
+	$default_general_settings['timezone']					= BOOKACTI_TIMEZONE;
 	
 	update_option( 'bookacti_general_settings', $default_general_settings );
 	
@@ -96,25 +111,50 @@ function bookacti_delete_settings() {
 }
 
 
-//GET SETTING VALUE
-function bookacti_get_setting_value( $setting_page, $setting_field ) {
+/**
+ * Get setting value
+ * 
+ * @version 1.1.0
+ * 
+ * @param string $setting_page
+ * @param string $setting_field
+ * @return mixed
+ */
+function bookacti_get_setting_value( $setting_page, $setting_field, $translate = true ) {
 	
 	$settings = get_option( $setting_page );
 	
 	if( ! isset( $settings[ $setting_field ] ) || ( empty( $settings[ $setting_field ] ) &&  $settings[ $setting_field ] !== '0' ) ) {
-		if( defined( strtoupper( $setting_field ) ) ) {
-			$settings[ $setting_field ] = constant( strtoupper( $setting_field ) );
+		if( defined( 'BOOKACTI_' . strtoupper( $setting_field ) ) ) {
+			$settings[ $setting_field ] = constant( 'BOOKACTI_' . strtoupper( $setting_field ) );
 			update_option( $setting_page, $settings );
 		} else {
 			$settings[ $setting_field ] = false;
 		}
 	}
 	
+	if( ! $translate ) {
+		return $settings[ $setting_field ];
+	}
+	
+	if( is_string( $settings[ $setting_field ] ) ) {
+		$settings[ $setting_field ] = apply_filters( 'bookacti_translate_text', $settings[ $setting_field ] );
+	}
+		
 	return $settings[ $setting_field ];
 }
 
-// GET BOOKING PARAMS BY USER
-function bookacti_get_setting_value_by_user( $setting_page, $setting_field, $user_id = false ) {
+
+/**
+ * Get setting value by user
+ * 
+ * @version 1.1.0
+ * @param string $setting_page
+ * @param string $setting_field
+ * @param int $user_id
+ * @return mixed
+ */
+function bookacti_get_setting_value_by_user( $setting_page, $setting_field, $user_id = false, $translate = true ) {
 
 	$user_id = $user_id ? $user_id : get_current_user_id();
 	$settings = get_option( $setting_page );
@@ -128,16 +168,26 @@ function bookacti_get_setting_value_by_user( $setting_page, $setting_field, $use
 	}
 	
 	if( ! isset( $settings[ $setting_field ][ $user_id ] ) || empty( $settings[ $setting_field ] ) ) {
-		if( defined( strtoupper( $setting_field ) ) ) {
-			$settings[ $setting_field ][ $user_id ] = constant( strtoupper( $setting_field ) );
+		if( defined( 'BOOKACTI_' . strtoupper( $setting_field ) ) ) {
+			$settings[ $setting_field ][ $user_id ] = constant( 'BOOKACTI_' . strtoupper( $setting_field ) );
 			update_option( $setting_page, $settings );
 		} else {
 			$settings[ $setting_field ][ $user_id ] = false;
 		}
 	}
 	
+	if( ! $translate ) {
+		return $settings[ $setting_field ][ $user_id ];
+	}
+	
+	if( is_string( $settings[ $setting_field ][ $user_id ] ) ) {
+		$settings[ $setting_field ][ $user_id ] = apply_filters( 'bookacti_translate_text', $settings[ $setting_field ][ $user_id ] );
+	}
+		
 	return $settings[ $setting_field ][ $user_id ];
 }
+
+
 
 
 // SECTION CALLBACKS
@@ -147,8 +197,10 @@ function bookacti_settings_section_template_callback() { }
 function bookacti_settings_section_bookings_callback() { }
 
 
+
+
 //GENERAL SETTINGS 
-	//Booking method
+	// Booking method
 	function bookacti_settings_field_booking_method_callback() {
 		$selected_booking_method = bookacti_get_setting_value( 'bookacti_general_settings', 'booking_method' );
 		
@@ -174,14 +226,38 @@ function bookacti_settings_section_bookings_callback() { }
 		if( empty( $license_status ) || $license_status !== 'valid' ) {
 			$tip .= '<br/>';
 			$tip .= sprintf( __( 'Get more display methods with %1$sDisplay Pack%2$s add-on!', BOOKACTI_PLUGIN_NAME ),
-							'<a href="' . __( 'http://booking-activities.fr/en/downloads/display-pack/', BOOKACTI_PLUGIN_NAME ) . '" target="_blank" >', '</a>');
+							'<a href="https://booking-activities.fr/en/downloads/display-pack/?utm_source=plugin&utm_medium=plugin&utm_campaign=display-pack&utm_content=landing" target="_blank" >', '</a>');
 		}
 		
 		bookacti_help_tip( $tip );
 	}
 
 	
-	//Can the user book an event that began?
+	/**
+	 * Display "When to load the events?" setting
+	 * 
+	 * @since 1.1.0
+	 */
+	function bookacti_settings_field_when_events_load_callback() {
+		$when_events_load = bookacti_get_setting_value( 'bookacti_general_settings', 'when_events_load' );
+		
+		//Display the field
+		?>
+		<select name='bookacti_general_settings[when_events_load]' >
+			<option value='on_page_load' <?php selected( $when_events_load, 'on_page_load' ); ?> ><?php _e( 'On page load', BOOKACTI_PLUGIN_NAME ); ?></option>
+			<option value='after_page_load' <?php selected( $when_events_load, 'after_page_load' ); ?> ><?php _e( 'After page load', BOOKACTI_PLUGIN_NAME ); ?></option>
+		</select>
+		<?php
+		
+		//Display the tip 
+		$tip  = apply_filters( 'bookacti_when_events_load_tip',
+				__( 'Choose whether you want to load events when the page is loaded (faster) or after.', BOOKACTI_PLUGIN_NAME ) );
+		
+		bookacti_help_tip( $tip );
+	}
+	
+	
+	// Can the user book an event that began?
 	function bookacti_settings_field_started_events_bookable_callback() {
 		
 		$is_active = bookacti_get_setting_value( 'bookacti_general_settings', 'started_events_bookable' );
@@ -196,8 +272,120 @@ function bookacti_settings_section_bookings_callback() { }
 		bookacti_help_tip( $tip );
 	}
 	
-
 	
+	/**
+	 * Display "default booking state" setting
+	 */
+	function bookacti_settings_field_default_booking_state_callback() {
+		$default_booking_state = bookacti_get_setting_value( 'bookacti_general_settings', 'default_booking_state' );
+		
+		$available_booking_states	= array( 'pending', 'booked' );
+		$booking_states_label		= bookacti_get_booking_state_labels();
+		
+		// Display the field
+		?>
+		<select name='bookacti_general_settings[default_booking_state]' >
+		<?php
+		foreach( $available_booking_states as $booking_state ) {
+			$selected = $default_booking_state === $booking_state ? 'selected' : '';
+			echo '<option value="' . esc_attr( $booking_state ) . '"' .  $selected . ' >'. esc_html( $booking_states_label[ $booking_state ][ 'label' ] ) . '</option>';
+		}
+		?>
+		</select>
+		<?php
+		
+		// Display the tip 
+		/* translators: The word 'Calendar' refers to a booking method you have to translate too. Make sure you use the same word for both translation. */
+		$tip  = __( 'Choose what status a booking should have when a custumer complete the booking form.', BOOKACTI_PLUGIN_NAME );
+		
+		bookacti_help_tip( $tip );
+	}
+	
+	
+	/**
+	 * Display Timezone setting
+	 * 
+	 * @since 1.1.0
+	 */
+	function bookacti_settings_field_timezone_callback() {
+		$regions = array(
+			'UTC' => DateTimeZone::UTC,
+			'Africa' => DateTimeZone::AFRICA,
+			'America' => DateTimeZone::AMERICA,
+			'Antarctica' => DateTimeZone::ANTARCTICA,
+			'Asia' => DateTimeZone::ASIA,
+			'Atlantic' => DateTimeZone::ATLANTIC,
+			'Europe' => DateTimeZone::EUROPE,
+			'Indian' => DateTimeZone::INDIAN,
+			'Pacific' => DateTimeZone::PACIFIC
+		);
+		
+		$timezones = array();
+		
+		foreach ( $regions as $name => $mask ) {
+			$zones = DateTimeZone::listIdentifiers( $mask );
+			foreach( $zones as $timezone ) {
+				// Lets sample the time there right now
+				$time = new DateTime( NULL, new DateTimeZone( $timezone ) );
+				// Us dumb Americans can't handle millitary time
+				$ampm = $time->format( 'H' ) > 12 ? ' (' . $time->format( 'g:i a' ) . ')' : '';
+				// Remove region name and add a sample time
+				$label = $name === 'UTC' ? $name : substr( $timezone, strlen( $name ) + 1 );
+				$timezones[ $name ][ $timezone ] = $label . ' - ' . $time->format( 'H:i' ) . $ampm;
+			}
+		}
+		
+		$selected_timezone = bookacti_get_setting_value( 'bookacti_general_settings', 'timezone' );
+		
+		// Display selectbox
+		echo '<select name="bookacti_general_settings[timezone]" >';
+		foreach( $timezones as $region => $list ) {
+			echo '<optgroup label="' . $region . '" >';
+			foreach( $list as $timezone => $name )
+			{
+				echo '<option value="' . $timezone . '" ' . selected( $selected_timezone, $timezone ) . '>' . $name . '</option>';
+			}
+			echo '</optgroup>';
+		}
+		echo '</select>';
+		
+		//Display the tip 
+		$tip  = __( 'Pick the timezone corresponding to where your business takes place.', BOOKACTI_PLUGIN_NAME );
+		bookacti_help_tip( $tip );
+	}
+	
+	
+	/**
+	 * Display date format setting
+	 * 
+	 * @since 1.1.0
+	 */
+	function bookacti_settings_field_date_format_callback() {
+		
+		$date_format = bookacti_get_setting_value( 'bookacti_general_settings', 'date_format', false );
+		
+		// Display the field
+		?>
+		<input name='bookacti_general_settings[date_format]'
+			   id='bookacti-settings-date-format'
+			   type='text'
+			   value='<?php echo $date_format; ?>' />
+		<?php
+
+		//Display the tip
+		$link = '<a href="https://momentjs.com/docs/#/displaying/format/" target="_blank" >';
+		/* translators: Label of a link to JS moment documentation (format chapter): https://momentjs.com/docs/#/displaying/format/ */
+		$link .= __( 'JS moment documentation', BOOKACTI_PLUGIN_NAME );
+		$link .= '</a>';
+		
+		/* translators: %1$s is a link to JS moment documentation */
+		$tip = sprintf( __( 'Set the date format displayed on picked events lists. Leave empty to use the default locale-related format. Go to %1$s to know what tag you can use.', BOOKACTI_PLUGIN_NAME ), $link );
+		bookacti_help_tip( $tip );
+	}
+
+
+
+
 //CANCELLATION SETTINGS 
 	// Activate cancellation for customers
 	function bookacti_settings_field_activate_cancel_callback() {
@@ -210,7 +398,7 @@ function bookacti_settings_section_bookings_callback() { }
 		bookacti_onoffswitch( $name, $is_active, $id );
 		
 		//Display the tip
-		$tip = __( "Allow or disallow customers to cancel a booking after they order it.", BOOKACTI_PLUGIN_NAME );
+		$tip  = __( "Allow or disallow customers to cancel a booking after they order it.", BOOKACTI_PLUGIN_NAME );
 		bookacti_help_tip( $tip );
 	}
 	
@@ -225,7 +413,8 @@ function bookacti_settings_section_bookings_callback() { }
 		bookacti_onoffswitch( $name, $is_active, $id );
 		
 		//Display the tip
-		$tip = __( "Allow or disallow customers to reschedule a booking after they order it.", BOOKACTI_PLUGIN_NAME );
+		$tip  = __( "Allow or disallow customers to reschedule a booking after they order it.", BOOKACTI_PLUGIN_NAME );
+		$tip .= '<br/>' . __( "This won't apply to group of bookings.", BOOKACTI_PLUGIN_NAME );
 		bookacti_help_tip( $tip );
 	}
 	
@@ -327,6 +516,21 @@ function bookacti_reset_notices() {
 	delete_option( 'bookacti-first20-notice-viewed' );
 	delete_option( 'bookacti-first20-notice-dismissed' );
 	delete_option( 'bookacti-5stars-rating-notice-dismissed' );
+}
+
+
+/**
+ * Get Booking Activities admin screen ids
+ */
+function bookacti_get_screen_ids() {
+	$screens = array(
+		'toplevel_page_booking-activities',
+		'booking-activities_page_bookacti_calendars',
+		'booking-activities_page_bookacti_bookings',
+		'booking-activities_page_bookacti_settings'
+	);
+	
+	return apply_filters( 'bookacti_screen_ids', $screens );
 }
 
 

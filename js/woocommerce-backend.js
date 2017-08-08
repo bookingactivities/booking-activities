@@ -7,23 +7,32 @@ $j( document ).ready( function() {
 	});
 	
 	//Show or hide activities depending on the selected template
-	bookacti_show_hide_activities_options();
+	// On load
+	bookacti_show_hide_template_related_options( '#_bookacti_template' );
+	// On change
 	$j( '#_bookacti_template, bookacti_variable_template' ).on( 'change', function(){ 
-		bookacti_show_hide_activities_options();
+		bookacti_show_hide_template_related_options( this );
+	});
+	
+	// Switch selectbox to multiple
+	$j( '#woocommerce-product-data' ).on( 'change', '.bookacti-multiple-select', function(){
+		bookacti_switch_select_to_multiple( this );
 	});
 	
 	//Show or hide activity fields on variation page in the backend
+	// On load
 	$j( '#woocommerce-product-data' ).on( 'woocommerce_variations_loaded', function() {
 		bookacti_show_hide_activity_variation_fields();
 		$j( '#woocommerce-product-data .bookacti_variable_template' ).each( function() {
-			bookacti_show_hide_variation_activities_options( this );
+			bookacti_show_hide_template_related_options( this, true );
 		});
 	});
+	// On change
 	$j( '#woocommerce-product-data' ).on( 'change', '.bookacti_variable_is_activity', function(){ 
 		bookacti_show_hide_activity_variation_fields( this );
 	});
 	$j( '#woocommerce-product-data' ).on( 'change', '.bookacti_variable_template', function(){ 
-		bookacti_show_hide_variation_activities_options( this );
+		bookacti_show_hide_template_related_options( this, true );
 	});
 	
 	//Force virtual on activities variations
@@ -62,75 +71,87 @@ function bookacti_show_hide_activity_tab() {
 	}
 }
 
-//Show or hide activities depending on the selected template
-function bookacti_show_hide_activities_options() {
-	//Init variables
-	var template_id = $j( '#_bookacti_template' ).val();
-	var change_selected = false;
+
+// Switch a selectbox to multiple
+function bookacti_switch_select_to_multiple( checkbox ) {
 	
-	//Show all activities
-	$j( '#_bookacti_activity option' ).removeClass( 'bookacti-hide-fields' );
+	var select_id	= $j( checkbox ).data( 'select-id' );
+	var select_name	= $j( 'select#' + select_id ).attr( 'name' );;
+	var is_checked	= $j( checkbox ).is( ':checked' );
 	
-	//Hide not allowed activities
-	$j( '#_bookacti_activity option' ).each( function() {
-		var allowed_templates = $j( this ).data( 'bookacti-show-if-templates' ).toString();
-		if( allowed_templates.indexOf( ',' ) >= 0 ) {
-			allowed_templates = allowed_templates.split( ',' );
-		} else {
-			allowed_templates = [ allowed_templates ];
-		}
-		if( $j.inArray( template_id.toString(), allowed_templates ) === -1 ) {
-			if( $j( this ).is( ':selected' ) ) { change_selected = true; }
-			$j( this ).addClass( 'bookacti-hide-fields' );
-		}
-	});
+	$j( 'select#' + select_id ).prop( 'multiple', is_checked );
 	
-	//Change selected activity automatically if it gets hidden
-	if( change_selected === true ) {
-		$j( '#_bookacti_activity option' ).removeAttr( 'selected' );
-		$j( '#_bookacti_activity option:not(.bookacti-hide-fields):first' ).attr( 'selected', 'selected' );
+	// Forbidden values if multiple selection is allowed
+	$j( 'select#' + select_id + ' option[value="none"]' ).prop( 'disabled', is_checked );
+	$j( 'select#' + select_id + ' option[value="parent"]' ).prop( 'disabled', is_checked );
+	$j( 'select#' + select_id + ' option[value="site"]' ).prop( 'disabled', is_checked );
+	$j( 'select#' + select_id + ' option:disabled:selected' ).prop( 'selected', false );
+	$j( 'select#' + select_id + ' option:not(:visible):selected' ).prop( 'selected', false );
+	
+	// Add the [] at the end of the select name
+	if( is_checked && select_name.indexOf( '[]' ) < 0 ) { 
+		$j( 'select#' + select_id ).attr( 'name', select_name + '[]' ); 
+	} else { 
+		$j( 'select#' + select_id ).attr( 'name', select_name.replace( '[]', '' ) ); 
 	}
 }
 
-//Show or hide activities depending on the selected template on variation
-function bookacti_show_hide_variation_activities_options( template ) {
+
+// Show or hide activities depending on the selected template
+function bookacti_show_hide_template_related_options( template, is_variation ) {
 	
-	//Init variables
-	var template_id		= $j( template ).val();
-	if( template_id === 'parent' ) { template_id = $j( '#_bookacti_template' ).val() || $j( template ).data( 'parent' ); }
-	var loop			= $j( template ).data( 'loop' );
-	var activity_field	= $j( '#bookacti_variable_activity_' + loop );
-	var change_selected = false;
-
-	//Show all activities
-	activity_field.find( 'option' ).removeClass( 'bookacti-hide-fields' );
-
-	//Hide not allowed activities
-	activity_field.find( 'option' ).each( function() {
-		if( $j( this ).data( 'bookacti-show-if-templates' ) != null ) {
-			var allowed_templates	= $j( this ).data( 'bookacti-show-if-templates' ).toString();
-		} else if( $j( this ).val() === 'parent' ) {
-			var parent_activity_id	= $j( '#_bookacti_activity' ).val() || activity_field.data( 'parent' );
-			var allowed_templates	= activity_field.find( 'option[value="' + parent_activity_id + '"]' ).data( 'bookacti-show-if-templates' ).toString();
-		}
-
+	is_variation = is_variation ? 1 : 0;
+	
+	// Init variables
+	var template_ids	= $j( template ).val();
+	var options			= $j( '[data-bookacti-show-if-templates]' );
+	var change_selected = [];
+	if( is_variation ) {
+		if( template_ids === 'parent' ) { template_ids = $j( '#_bookacti_template' ).val() || $j( template ).data( 'parent' ); }
+		options = $j( '[name$="[' + $j( template ).data( 'loop' ) + ']"] [data-bookacti-show-if-templates], [name$="[' + $j( template ).data( 'loop' ) + '][]"] [data-bookacti-show-if-templates]' );
+	}
+	
+	if( $j.isNumeric( template_ids ) ) {
+		template_ids = [ template_ids ];
+	}
+	
+	// Show all
+	options.removeClass( 'bookacti-hide-fields' );
+	
+	// Hide not allowed
+	options.each( function() {
+		
+		var option = $j( this );
+		
+		// Retrieve allowed templates array
+		var allowed_templates = option.data( 'bookacti-show-if-templates' ).toString();
 		if( allowed_templates.indexOf( ',' ) >= 0 ) {
 			allowed_templates = allowed_templates.split( ',' );
 		} else {
 			allowed_templates = [ allowed_templates ];
 		}
 		
-		if( $j.inArray( template_id.toString(), allowed_templates ) === -1 ) {
-			if( $j( this ).is( ':selected' ) ) { change_selected = true; }
-			$j( this ).addClass( 'bookacti-hide-fields' );
+		// Hide not allowed data and flag if one of them was selected
+		var hide = true;
+		$j.each( template_ids, function( i, template_id ) {
+			if( $j.inArray( template_id.toString(), allowed_templates ) >= 0 ) {
+				hide = false;
+			}
+		});
+		
+		if( hide ) {
+			if( option.is( ':selected' ) ) { 
+				change_selected.push( option ); 
+			}
+			option.addClass( 'bookacti-hide-fields' );
 		}
 	});
 
-	//Change selected activity automatically if it gets hidden
-	if( change_selected === true ) {
-		activity_field.find( 'option' ).removeAttr( 'selected' );
-		activity_field.find( 'option:not(.bookacti-hide-fields):first' ).attr( 'selected', 'selected' );
-	}
+	// Change selected activity automatically if it gets hidden
+	$j.each( change_selected, function( i, old_selected_option ) {
+		old_selected_option.removeAttr( 'selected' );
+		old_selected_option.siblings( 'option:not(.bookacti-hide-fields):not(:disabled):first' ).attr( 'selected', 'selected' );
+	});
 }
 
 

@@ -1,12 +1,14 @@
 /***** FRONT END *****/
 .bookacti-booking-system > div,
 .bookacti-notices,
-.bookacti-date-picked { margin-bottom: 20px; } 
+.bookacti-picked-events		{ margin-bottom: 20px; }
+.bookacti-booking-system	{ margin-bottom: 30px; }
 
-.bookacti-display-table-row	{ display: table-row; }
-
-.bookacti-date-picked { display: none; text-align: center; }
+.bookacti-frontend-dialog { display: none; }
+.bookacti-picked-events { display: none; }
 .to_date { display: inline-block; }
 
-.bookacti-booking-system-alone .bookacti-booking-system-title,
-.bookacti-booking-system-alone .bookacti-date-picked { display: none !important; }
+.bookacti-booking-events-list { margin-left: 18px; }
+
+.bookacti-booking-system-calendar-only .bookacti-booking-system-title,
+.bookacti-booking-system-calendar-only .bookacti-picked-events { display: none !important; }

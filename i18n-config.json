@@ -1,9 +1,18 @@
 { "vendor": { "plugins/booking-activities": "1.0" },
 	"admin-config":{
 		"bookacti_calendars":{
-			"pages":{ "admin.php":"page=bookacti_calendars" },
-			"anchors":{ "bookacti-activity-dialog-lang-switcher": { "where": "first" }, "bookacti-event-dialog-lang-switcher": { "where": "first" } },
+			"pages":{ "admin.php":"" },
+			"anchors":{ "bookacti-settings-lang-switcher": { "where": "first" },
+						"bookacti-activity-dialog-lang-switcher": { "where": "first" }, 
+						"bookacti-event-dialog-lang-switcher": { "where": "first" }, 
+						"bookacti-group-of-events-dialog-lang-switcher": { "where": "first" },
+						"bookacti-group-category-dialog-lang-switcher": { "where": "first" } },
 			"forms":{
+				"bookacti-settings":{
+					"fields":{
+						"bookacti-settings-date-format":{}
+					}
+				},
 				"bookacti-activity-data-form":{
 					"fields":{
 						"bookacti-activity-title":{},
@@ -14,6 +23,17 @@
 				"bookacti-event-data-form":{
 					"fields":{
 						"bookacti-event-title":{}
+					}
+				},
+				"bookacti-group-of-events-form":{
+					"fields":{
+						"bookacti-group-of-events-title-field":{},
+						"bookacti-group-of-events-category-title-field":{}
+					}
+				},
+				"bookacti-group-category-form":{
+					"fields":{
+						"bookacti-group-category-title-field":{}
 					}
 				}
 			}

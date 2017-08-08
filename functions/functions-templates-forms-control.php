@@ -7,7 +7,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
  * Validate template basic data
  *
  * @since	1.0.6
- * @param	int		$template_id
+ * @param	string		$template_title
  * @param	string	$template_start Format 'YYYY-MM-DD'
  * @param	string	$template_end	Format 'YYYY-MM-DD'
  * @return	array
@@ -45,7 +45,7 @@ function bookacti_format_template_managers( $template_managers = array() ) {
 	$bypass_template_managers_check = apply_filters( 'bookacti_bypass_template_managers_check', false );
 	if( ! is_super_admin() && ! $bypass_template_managers_check ) {
 		$user_id = get_current_user_id();
-		if( ! in_array( $user_id, $template_managers ) ) {
+		if( ! in_array( $user_id, $template_managers, true ) ) {
 			$template_managers[] = $user_id;
 		}
 	}
@@ -107,7 +107,7 @@ function bookacti_format_activity_templates( $activity_templates = array(), $man
 	// Add mandatory templates if they are not already
 	if( ! empty( $mandatory_templates ) ) {
 		foreach( $mandatory_templates as $mandatory_template ) {
-			if( ! empty( $mandatory_template ) && ! in_array( $mandatory_template, $activity_templates ) ) {
+			if( ! empty( $mandatory_template ) && ! in_array( $mandatory_template, $activity_templates, true ) ) {
 				$activity_templates[] = $mandatory_template;
 			}
 		}
@@ -133,7 +133,7 @@ function bookacti_format_activity_managers( $activity_managers = array() ) {
 	$bypass_activity_managers_check = apply_filters( 'bypass_activity_managers_check', false );
 	if( ! is_super_admin() && ! $bypass_activity_managers_check ) {
 		$user_id = get_current_user_id();
-		if( ! in_array( $user_id, $activity_managers ) ) {
+		if( ! in_array( $user_id, $activity_managers, true ) ) {
 			$activity_managers[] = $user_id;
 		}
 	}
@@ -187,20 +187,31 @@ function bookacti_format_event_settings( $event_settings ) {
 	$settings = array();
 	foreach( $default_settings as $setting_key => $setting_default_value ){
 		if( is_string( $event_settings[ $setting_key ] ) ){ $event_settings[ $setting_key ] = stripslashes( $event_settings[ $setting_key ] ); }
-		$settings[ $setting_key ] = ( $event_settings[ $setting_key ] !== null ) ? stripslashes( $event_settings[ $setting_key ] ) : $setting_default_value;
+		$settings[ $setting_key ] = ( $event_settings[ $setting_key ] !== null ) ? $event_settings[ $setting_key ] : $setting_default_value;
 	}
 	
 	return apply_filters( 'bookacti_event_settings', $settings );
 }
 
 
-//Make sure the availability is higher than the bookings already made
+/**
+ * Make sure the availability is higher than the bookings already made
+ * 
+ * @version 1.1.0
+ * 
+ * @param int $event_id
+ * @param int $event_availability
+ * @param string $repeat_freq
+ * @param string $repeat_from
+ * @param string $repeat_to
+ * @param array $exceptions
+ * @return array
+ */
 function bookacti_validate_event( $event_id, $event_availability, $repeat_freq, $repeat_from, $repeat_to, $exceptions ) {
     //Get info required
     $min_avail          = bookacti_get_min_availability( $event_id );
     $min_period         = bookacti_get_min_period( NULL, $event_id );
-    $bookings           = bookacti_get_bookings( NULL, $event_id );
-    $bookings_array     = $bookings[$event_id];
+    $bookings           = bookacti_get_bookings( NULL, NULL, $event_id );
     $repeat_from_time   = strtotime( $repeat_from );
     $repeat_to_time     = strtotime( $repeat_to );
     $max_from           = strtotime( $min_period['from'] );
@@ -225,7 +236,7 @@ function bookacti_validate_event( $event_id, $event_availability, $repeat_freq, 
         }
     }
     if( count ( $bookings ) > 0 && count( $exceptions ) > 0 ) {
-        foreach( $bookings_array as $booking ) {
+        foreach( $bookings as $booking ) {
             foreach( $exceptions as $exception ){
                 $booked_time    = strtotime( substr( $booking->event_start, 0, 10 ) );
                 $exception_time = strtotime( $exception );
@@ -262,4 +273,132 @@ function bookacti_validate_event( $event_id, $event_availability, $repeat_freq, 
     }
     
     return $return_array;
+}
+
+
+
+// GROUPS OF EVENTS
+
+
+function bookacti_validate_group_of_events_data( $group_title, $category_id, $category_title, $events ) {
+	
+	//Init var to check with worst case
+	$is_title			= false;
+	$is_category		= false;
+	$is_category_title	= false;
+	$is_events			= false;
+	
+	//Make the tests to validate the var
+	if( is_string( $group_title ) && $group_title !== '' )		{ $is_title = true; }
+	if( is_numeric( $category_id ) )							{ $is_category = true; }
+	if( is_string( $category_title ) && $category_title !== '' ){ $is_category_title = true; }
+	if( is_array( $events ) && count( $events ) >= 2 )			{ $is_events = true; }
+	
+	$return_array = array();
+	$return_array['status'] = 'valid';
+	$return_array['errors'] = array();
+	if( ! $is_title ) {
+		$return_array['status'] = 'not_valid';
+		$return_array['errors'][] = 'error_missing_title';
+	}
+	if( ! $is_category && ! $is_category_title ) {
+		$return_array['status'] = 'not_valid';
+		$return_array['errors'][] = 'error_missing_title';
+	}
+	if( ! $is_events ) {
+		$return_array['status'] = 'not_valid';
+		$return_array['errors'][] = 'error_select_at_least_two_events';
+	}
+	
+	return apply_filters( 'bookacti_validate_group_of_events_data', $return_array, $group_title, $category_id, $category_title, $events );
+}
+
+
+/**
+ * Format group of events data or apply default value
+ * 
+ * @since 1.1.0
+ * 
+ * @param type $category_settings
+ * @return type
+ */
+function bookacti_format_group_of_events_settings( $group_settings ) {
+	
+	if( empty( $group_settings ) ) {
+		$group_settings = array();
+	}
+	
+	// Default settings
+	$default_settings = apply_filters( 'bookacti_group_of_events_default_settings', array() );
+	
+	$settings = array();
+		
+	// Check if all templates settings are filled
+	foreach( $default_settings as $setting_key => $setting_default_value ){
+		if( is_string( $group_settings[ $setting_key ] ) ){ $group_settings[ $setting_key ] = stripslashes( $group_settings[ $setting_key ] ); }
+		$settings[ $setting_key ] = ! empty( $group_settings[ $setting_key ] ) ? $group_settings[ $setting_key ] : $setting_default_value;
+	}
+	
+	return apply_filters( 'bookacti_group_of_events_settings', $settings );
+}
+
+
+
+
+// GROUP CATEGORIES
+
+/**
+ * Validate group activity data input
+ * 
+ * @since 1.1.0
+ * 
+ * @param string $title
+ * @return array
+ */
+function bookacti_validate_group_category_data( $title ) {
+	
+	//Init var to check with worst case
+	$is_title	= false;
+	
+	//Make the tests to validate the var
+	if( ! empty( $title ) )	{ $is_title = true; }
+
+	$return_array = array();
+	$return_array['status'] = 'valid';
+	$return_array['errors'] = array();
+	if( ! $is_title ) {
+		$return_array['status'] = 'not_valid';
+		$return_array['errors'][] = 'error_missing_title';
+	}
+	
+	return apply_filters( 'bookacti_validate_group_activity_data', $return_array, $title );
+}
+
+
+/**
+ * Format group category data or apply default value
+ * 
+ * @since 1.1.0
+ * 
+ * @param type $category_settings
+ * @return type
+ */
+function bookacti_format_group_category_settings( $category_settings ) {
+	
+	if( empty( $category_settings ) ) {
+		$category_settings = array();
+	}
+	
+	// Default settings
+	$default_settings = apply_filters( 'bookacti_group_category_default_settings', array() );
+	
+	$settings = array();
+		
+	// Check if all templates settings are filled
+	foreach( $default_settings as $setting_key => $setting_default_value ){
+		if( is_string( $category_settings[ $setting_key ] ) ){ $category_settings[ $setting_key ] = stripslashes( $category_settings[ $setting_key ] ); }
+		$settings[ $setting_key ] = ! empty( $category_settings[ $setting_key ] ) ? $category_settings[ $setting_key ] : $setting_default_value;
+	}
+	
+	return apply_filters( 'bookacti_group_category_settings', $settings );
 }

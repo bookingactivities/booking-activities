@@ -7,7 +7,7 @@ $user_id = get_current_user_id();
 ?>
 
 <!-- Bookings page - Filters params dialog -->
-<div id='bookacti-bookings-filters-param-dialog' class='bookacti-backend-dialogs bookacti-bookings-dialogs' >
+<div id='bookacti-bookings-filters-param-dialog' class='bookacti-backend-dialog bookacti-bookings-dialog' style='display:none;' >
 	<form id='bookacti-bookings-filters-param-form'>
 		<?php
 		// Create a nonce field
@@ -107,7 +107,7 @@ $user_id = get_current_user_id();
 
 
 <!-- Bookings page - List params dialog -->
-<div id='bookacti-bookings-list-param-dialog' class='bookacti-backend-dialogs bookacti-bookings-dialogs' >
+<div id='bookacti-bookings-list-param-dialog' class='bookacti-backend-dialog bookacti-bookings-dialog' style='display:none;' >
 	<form id='bookacti-bookings-list-param-form'>
 		<?php
 		// Create a nonce field
@@ -153,7 +153,7 @@ $user_id = get_current_user_id();
 	</form>
 </div>
 
-<div id='bookacti-change-booking-state-dialog' class='bookacti-backend-dialogs bookacti-bookings-dialogs' >
+<div id='bookacti-change-booking-state-dialog' class='bookacti-backend-dialog bookacti-bookings-dialog' style='display:none;' >
 	<form id='bookacti-change-booking-state-form'>
 		<?php
 		// Display nonce field

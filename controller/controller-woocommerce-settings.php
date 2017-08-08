@@ -85,13 +85,13 @@ function bookacti_add_woocommerce_cart_settings_section() {
 add_action( 'bookacti_define_settings_constants', 'bookacti_define_cart_settings_constants' );
 function bookacti_define_cart_settings_constants() {
 	// Bookings
-	if( ! defined( 'SHOW_TEMPORARY_BOOKINGS' ) )		{ define( 'SHOW_TEMPORARY_BOOKINGS', '1' ); }
+	if( ! defined( 'BOOKACTI_SHOW_TEMPORARY_BOOKINGS' ) )		{ define( 'BOOKACTI_SHOW_TEMPORARY_BOOKINGS', '1' ); }
 	
 	// Cart
-	if( ! defined( 'IS_CART_EXPIRATION_ACTIVE' ) )		{ define( 'IS_CART_EXPIRATION_ACTIVE', '1' ); }
-	if( ! defined( 'IS_CART_EXPIRATION_PER_PRODUCT' ) ) { define( 'IS_CART_EXPIRATION_PER_PRODUCT', '0' ); }
-	if( ! defined( 'CART_TIMEOUT' ) )					{ define( 'CART_TIMEOUT', '30' ); }
-	if( ! defined( 'RESET_CART_TIMEOUT_ON_CHANGE' ) )	{ define( 'RESET_CART_TIMEOUT_ON_CHANGE', '0' ); }
+	if( ! defined( 'BOOKACTI_IS_CART_EXPIRATION_ACTIVE' ) )		{ define( 'BOOKACTI_IS_CART_EXPIRATION_ACTIVE', '1' ); }
+	if( ! defined( 'BOOKACTI_IS_CART_EXPIRATION_PER_PRODUCT' ) ){ define( 'BOOKACTI_IS_CART_EXPIRATION_PER_PRODUCT', '0' ); }
+	if( ! defined( 'BOOKACTI_CART_TIMEOUT' ) )					{ define( 'BOOKACTI_CART_TIMEOUT', '30' ); }
+	if( ! defined( 'BOOKACTI_RESET_CART_TIMEOUT_ON_CHANGE' ) )	{ define( 'BOOKACTI_RESET_CART_TIMEOUT_ON_CHANGE', '0' ); }
 }
 
 
@@ -100,15 +100,15 @@ add_action( 'bookacti_init_settings_value', 'bookacti_init_cart_settings_value' 
 function bookacti_init_cart_settings_value() {
 	// Bookings
 	$default_bookings_settings = get_option( 'bookacti_bookings_settings' );
-	if( ! isset( $default_bookings_settings['show_temporary_bookings'] ) )	{ $default_bookings_settings['show_temporary_bookings']		= SHOW_TEMPORARY_BOOKINGS; }
+	if( ! isset( $default_bookings_settings['show_temporary_bookings'] ) )	{ $default_bookings_settings['show_temporary_bookings']		= BOOKACTI_SHOW_TEMPORARY_BOOKINGS; }
 	update_option( 'bookacti_bookings_settings', $default_bookings_settings );
 	
 	// Cart
 	$default_cart_settings = get_option( 'bookacti_cart_settings' );
-	if( ! isset( $default_cart_settings['is_cart_expiration_active'] ) )	{ $default_cart_settings['is_cart_expiration_active']		= IS_CART_EXPIRATION_ACTIVE; }
-	if( ! isset( $default_cart_settings['is_cart_expiration_per_product'] )){ $default_cart_settings['is_cart_expiration_per_product']	= IS_CART_EXPIRATION_PER_PRODUCT; }
-	if( ! isset( $default_cart_settings['cart_timeout'] ) )					{ $default_cart_settings['cart_timeout']					= CART_TIMEOUT; }
-	if( ! isset( $default_cart_settings['reset_cart_timeout_on_change'] ) )	{ $default_cart_settings['reset_cart_timeout_on_change']	= RESET_CART_TIMEOUT_ON_CHANGE; }
+	if( ! isset( $default_cart_settings['is_cart_expiration_active'] ) )	{ $default_cart_settings['is_cart_expiration_active']		= BOOKACTI_IS_CART_EXPIRATION_ACTIVE; }
+	if( ! isset( $default_cart_settings['is_cart_expiration_per_product'] )){ $default_cart_settings['is_cart_expiration_per_product']	= BOOKACTI_IS_CART_EXPIRATION_PER_PRODUCT; }
+	if( ! isset( $default_cart_settings['cart_timeout'] ) )					{ $default_cart_settings['cart_timeout']					= BOOKACTI_CART_TIMEOUT; }
+	if( ! isset( $default_cart_settings['reset_cart_timeout_on_change'] ) )	{ $default_cart_settings['reset_cart_timeout_on_change']	= BOOKACTI_RESET_CART_TIMEOUT_ON_CHANGE; }
 	update_option( 'bookacti_cart_settings', $default_cart_settings );
 }
 
@@ -118,15 +118,15 @@ add_action( 'bookacti_reset_settings', 'bookacti_reset_cart_settings' );
 function bookacti_reset_cart_settings() {
 	// Bookings
 	$default_bookings_settings = array();
-	$default_bookings_settings['show_temporary_bookings']		= SHOW_TEMPORARY_BOOKINGS;
-	update_option( 'bookacti_bookings_settings', $default_cart_settings );
+	$default_bookings_settings['show_temporary_bookings']		= BOOKACTI_SHOW_TEMPORARY_BOOKINGS;
+	update_option( 'bookacti_bookings_settings', $default_bookings_settings );
 	
 	// Cart
 	$default_cart_settings = array();
-	$default_cart_settings['is_cart_expiration_active']			= IS_CART_EXPIRATION_ACTIVE;
-	$default_cart_settings['is_cart_expiration_per_product']	= IS_CART_EXPIRATION_PER_PRODUCT;
-	$default_cart_settings['cart_timeout']						= CART_TIMEOUT;
-	$default_cart_settings['reset_cart_timeout_on_change']		= RESET_CART_TIMEOUT_ON_CHANGE;
+	$default_cart_settings['is_cart_expiration_active']			= BOOKACTI_IS_CART_EXPIRATION_ACTIVE;
+	$default_cart_settings['is_cart_expiration_per_product']	= BOOKACTI_IS_CART_EXPIRATION_PER_PRODUCT;
+	$default_cart_settings['cart_timeout']						= BOOKACTI_CART_TIMEOUT;
+	$default_cart_settings['reset_cart_timeout_on_change']		= BOOKACTI_RESET_CART_TIMEOUT_ON_CHANGE;
 	update_option( 'bookacti_cart_settings', $default_cart_settings );
 }
 
@@ -162,4 +162,26 @@ function bookacti_add_booking_list_in_cart_filter( $params ) {
 		?>
 	</div>
 <?php
+}
+
+
+// Add a mention to booking method tip
+add_filter( 'bookacti_booking_methods_tip', 'bookacti_add_wc_mention_to_booking_method_tip', 1, 10 );
+function bookacti_add_wc_mention_to_booking_method_tip( $tip ) {
+	$tip .= '<br/>';
+	$tip .= esc_html__( 'This parameter can be overriden by products settings in woocommerce.', BOOKACTI_PLUGIN_NAME );
+	return $tip;
+}
+
+
+/**
+ * Add a mention to when events load setting tip
+ * 
+ * @since 1.1.0
+ */
+add_filter( 'bookacti_when_events_load_tip', 'bookacti_add_wc_mention_to_when_events_load_tip', 1, 10 );
+function bookacti_add_wc_mention_to_when_events_load_tip( $tip ) {
+	$tip .= '<br/>';
+	$tip .= esc_html__( 'WC Variable products calendars will always load after page load.', BOOKACTI_PLUGIN_NAME );
+	return $tip;
 }

@@ -19,23 +19,6 @@ function bookacti_pad( str, max ) {
 }
 
 
-//Return true if mouse over the div
-function bookacti_is_mouse_over_elem( elem ) {
-    var ofs = elem.offset();
-    var x1 = ofs.left;
-    var x2 = ofs.left + elem.outerWidth();
-    var y1 = ofs.top;
-    var y2 = ofs.top + elem.outerHeight();
-
-    if (currentMousePos.x >= x1 && currentMousePos.x <= x2 && currentMousePos.y >= y1 && currentMousePos.y <= y2) 
-    {
-        return true;
-    }    
-
-    return false; 
-}
-
-
 // Compare two arrays and tell if they are the same
 function bookacti_compare_arrays( array1, array2 ) {
 	

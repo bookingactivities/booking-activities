@@ -4,39 +4,57 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 
 // GENERAL
-	//Register an hourly reccuring event to hook to clean expired bookings
-	add_action( 'woocommerce_installed', 'bookacti_register_houly_clean_expired_bookings' );
-	add_action( 'bookacti_activate', 'bookacti_register_houly_clean_expired_bookings' );
+	
+	/**
+	 * Register an hourly reccuring event (used to clean expired bookings)
+	 */
 	function bookacti_register_houly_clean_expired_bookings() {
 		wp_schedule_event( time(), 'hourly', 'bookacti_hourly_event' );
 	}
+	add_action( 'woocommerce_installed', 'bookacti_register_houly_clean_expired_bookings' );
+	add_action( 'bookacti_activate', 'bookacti_register_houly_clean_expired_bookings' );
 
-
-	//Deregister the hourly reccuring event
-	add_action( 'wp_roles_init', 'bookacti_clear_houly_clean_expired_bookings_on_woocommerce_uninstall' );
+	
+	/**
+	 * Deregister the hourly reccuring event (to be called on wp_roles_init)
+	 */
 	function bookacti_clear_houly_clean_expired_bookings_on_woocommerce_uninstall() {
 		if( defined( 'WP_UNINSTALL_PLUGIN' ) && WP_UNINSTALL_PLUGIN === 'woocommerce/woocommerce.php' ) {
 			bookacti_cancel_in_cart_bookings();
 			bookacti_clear_houly_clean_expired_bookings();
 		}
 	}
-
-	add_action( 'bookacti_deactivate', 'bookacti_clear_houly_clean_expired_bookings' );
+	add_action( 'wp_roles_init', 'bookacti_clear_houly_clean_expired_bookings_on_woocommerce_uninstall' );
+	
+	
+	/**
+	 * Deregister the hourly reccuring event
+	 */
 	function bookacti_clear_houly_clean_expired_bookings() {
 		wp_clear_scheduled_hook( 'bookacti_hourly_event' );
 	}
-
+	add_action( 'bookacti_deactivate', 'bookacti_clear_houly_clean_expired_bookings' );
 	
-	// Add 'in_cart' state to active states
-	add_filter( 'bookacti_active_booking_states', 'bookacti_add_woocommerce_active_booking_states' );
+	
+	/**
+	 * Add 'in_cart' state to active states
+	 * 
+	 * @param array $active_states
+	 * @return array
+	 */
 	function bookacti_add_woocommerce_active_booking_states( $active_states ) {
 		$active_states[] = 'in_cart';
 		return $active_states;
 	}
+	add_filter( 'bookacti_active_booking_states', 'bookacti_add_woocommerce_active_booking_states' );
 	
 	
-	// Add 'in_cart' booking state label
-	add_filter( 'bookacti_booking_states_labels_array', 'bookacti_add_in_cart_state_label', 10, 1 );
+	/**
+	 * Add booking states labels related to cart
+	 * 
+	 * @param array $labels
+	 * @return array
+	 */
 	function bookacti_add_in_cart_state_label( $labels ) {
 		$labels[ 'in_cart' ] =  array( 'display_state' => 'warning',	'label' => __( 'In cart', BOOKACTI_PLUGIN_NAME ) );
 		$labels[ 'expired' ] =  array( 'display_state' => 'bad',		'label' => __( 'Expired', BOOKACTI_PLUGIN_NAME ) );
@@ -44,36 +62,67 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		
 		return $labels;
 	}
+	add_filter( 'bookacti_booking_states_labels_array', 'bookacti_add_in_cart_state_label', 10, 1 );
 	
 	
 	/**
-	 * Deactivate expired bookings
+	 * Deactivate expired bookings with cron (to be called with wp_schedule_event())
 	 *
 	 * @since	1.0.6
-	 * @version	1.0.8
+	 * @version	1.1.0
 	 */
 	function bookacti_controller_deactivate_expired_bookings() {
 
 		$deactivated_ids = bookacti_deactivate_expired_bookings();
 
-		if ( $deactivated_ids === false ) { 
+		if( $deactivated_ids === false ) { 
 			/* translators: 'cron' is a robot that execute scripts every X hours. Don't try to translate it. */
 			$log = esc_html__( 'The expired bookings were not correctly deactivated by cron.', BOOKACTI_PLUGIN_NAME );
 			bookacti_log( $log, 'error' );
-		} else if ( is_array( $deactivated_ids ) ) {
-			// Yell the booking state change 
-			// (important for consistancy between WooCommerce order items and Booking Activities bookings)
-			foreach( $deactivated_ids as $booking_id ) {
-				do_action( 'bookacti_booking_state_changed', $booking_id, 'expired', array( 'is_admin' => true ) );
-			}
 		}
 	}
 	add_action( 'bookacti_hourly_event', 'bookacti_controller_deactivate_expired_bookings' );
 	
 	
+	/**
+	 * Change booking state to 'removed' or 'in_cart' depending on its quantity
+	 * 
+	 * @since 1.1.0
+	 * 
+	 * @param array $data
+	 * @param object $booking
+	 * @return array
+	 */
+	function bookacti_change_booking_state_to_removed_or_in_cart_depending_on_its_quantity( $data, $booking ) {
+		
+		// If quantity is null, change booking state to 'removed' and keep the booking quantity
+		if( $data[ 'quantity' ] <= 0 ) { 
+			
+			$data[ 'state' ]	= $data[ 'context' ] === 'frontend' ? 'removed' : 'cancelled'; 
+			$data[ 'quantity' ]	= intval( $booking->quantity ); 
+			$data[ 'active' ]	= 0; 
+		
+		// If the booking was removed and its quantity is raised higher than 0, turn its state back to 'in_cart'
+		} else if( $booking->state === 'removed' ) {
+			
+			$data[ 'state' ]	= $data[ 'context' ] === 'frontend' ? 'in_cart' : 'pending'; 
+			$data[ 'active' ]	= 1; 
+		}
+		
+		return $data;
+	}
+	add_filter( 'bookacti_update_booking_quantity_data', 'bookacti_change_booking_state_to_removed_or_in_cart_depending_on_its_quantity', 10, 2 );
+	
+	
+	
+
 // ORDER AND BOOKING STATUS
-	//Turn a temporary booking to permanent if order gets complete
-	add_action( 'woocommerce_order_status_completed', 'bookacti_turn_temporary_booking_to_permanent', 10, 1 );
+	
+	/**
+	 * Turn a temporary booking to permanent if order gets complete
+	 * 
+	 * @param int $order_id
+	 */
 	function bookacti_turn_temporary_booking_to_permanent( $order_id ) {
 		
 		//Change state of all bookings of the order from 'pending' to 'booked'
@@ -84,10 +133,14 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		//Then we just turn 'pending' booking bound to this order to 'cancelled'
 		bookacti_cancel_order_pending_bookings( $order_id );
 	}
+	add_action( 'woocommerce_order_status_completed', 'bookacti_turn_temporary_booking_to_permanent', 10, 1 );
 	
 	
-	//Cancel the temporary booking if it failed
-	add_action( 'woocommerce_order_status_cancelled', 'bookacti_cancelled_order', 10, 1 );
+	/**
+	 * Cancel the temporary booking if it failed
+	 * 
+	 * @param int $order_id
+	 */
 	function bookacti_cancelled_order( $order_id ) {
 		
 		//Change state of all bookings of the order to 'cancelled' and free the bookings
@@ -96,39 +149,49 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		// It is possible that 'pending' bookings remain if the user has changed his cart before payment, we must cancel them
 		bookacti_cancel_order_pending_bookings( $order_id );
 	}
+	add_action( 'woocommerce_order_status_cancelled', 'bookacti_cancelled_order', 10, 1 );
 	
 	
-	//Turn paid order status to complete if the order has only activities
-	add_filter( 'woocommerce_payment_complete_order_status', 'bookacti_set_order_status_to_completed_after_payment', 10, 2 );
+	/**
+	 * Turn paid order status to complete if the order has only activities
+	 * 
+	 * @since 1.0.0
+	 * @version 1.1.0
+	 * 
+	 * @param string $order_status
+	 * @param int $order_id
+	 * @return string
+	 */
 	function bookacti_set_order_status_to_completed_after_payment( $order_status, $order_id ) {
 		
 		if( $order_status === 'processing' || $order_status === 'pending' ) {
 		
-			$order = new WC_Order( $order_id );
-			if( ! is_null( $order ) ) {
+			$order = wc_get_order( $order_id );
+			if( ! empty( $order ) ) {
 
-				//Retrieve bought items
+				// Retrieve bought items
 				$items = $order->get_items();
 
-				//Determine if the order has at least 1 activity
+				// Determine if the order has at least 1 activity
 				$has_activities = false;
 				foreach( $items as $item ) {
-					if( isset( $item[ 'bookacti_booking_id' ] ) ) {
+					if( isset( $item[ 'bookacti_booking_id' ] ) || isset( $item[ 'bookacti_booking_group_id' ] ) ) {
 						$has_activities = true;
 						break;
 					}
 				}
 				
-				//Determine if the order is only composed of activities
+				// Determine if the order is only composed of activities
 				$are_activities = true;
 				foreach( $items as $item ) {
-					if( ! isset( $item[ 'bookacti_booking_id' ] ) ) {
+					if( ! isset( $item[ 'bookacti_booking_id' ] ) && ! isset( $item[ 'bookacti_booking_group_id' ] )  ) {
 						$are_activities = false;
 						break;
 					}
 				}
 				
-				// If there are only activities, mark the order as 'completed' and the previous hook will mark the activities as 'booked'
+				// If there are only activities, mark the order as 'completed' and 
+				// a function hooked to woocommerce_order_status_completed will mark the activities as 'booked'
 				if( $are_activities ) {
 					return 'completed';
 					
@@ -142,82 +205,57 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		
 		return $order_status;
 	}
+	add_filter( 'woocommerce_payment_complete_order_status', 'bookacti_set_order_status_to_completed_after_payment', 10, 2 );
+	
+	
 	
 	
 // MY ACCOUNT
-	// Add booking dialogs
-	add_action( 'woocommerce_view_order', 'bookacti_add_booking_dialogs', 100, 1 );
-	add_action( 'woocommerce_thankyou', 'bookacti_add_booking_dialogs', 100, 1 );
+	
+	/**
+	 * Include dialogs related to bookings
+	 * 
+	 * @param int $order_id
+	 */
 	function bookacti_add_booking_dialogs( $order_id ){
 		include_once( WP_PLUGIN_DIR . '/' . BOOKACTI_PLUGIN_NAME . '/view/view-bookings-dialogs.php' );
 	}
+	add_action( 'woocommerce_view_order', 'bookacti_add_booking_dialogs', 100, 1 );
+	add_action( 'woocommerce_thankyou', 'bookacti_add_booking_dialogs', 100, 1 );
 	
 	
-	// Add actions to bookings
-	add_action( 'woocommerce_order_item_meta_end', 'bookacti_add_actions_to_bookings', 10, 4 );
+	/**
+	 * Add actions html elements to booking rows
+	 * 
+	 * @param int $item_id
+	 * @param WC_Order_item $item
+	 * @param WC_Order $order
+	 * @param boolean $plain_text
+	 */
 	function bookacti_add_actions_to_bookings( $item_id, $item, $order, $plain_text = true ) {
-		if( isset( $item['bookacti_booking_id'] ) && $plain_text ) {
-			echo bookacti_get_booking_actions_html( $item['bookacti_booking_id'], 'front', true );
-		}
-	}
-	
-
-	
-// BOOKING LIST
-	// Change Customer name in bookings list
-	add_filter( 'bookacti_booking_list_booking_columns', 'bookacti_change_customer_name_in_bookings_list', 10, 3 );
-	function bookacti_change_customer_name_in_bookings_list( $booking_item, $booking, $user ) {
-		
-		if( is_numeric( $booking->user_id ) ) {
-			$users	= bookacti_get_users_data_by_bookings( $booking->id );
-			$user	= $users[ $booking->user_id ];
-			if( isset( $user->first_name ) && $user->last_name ) {
-				$customer = '<a  href="' . esc_url( get_admin_url() . 'user-edit.php?user_id=' . $booking->user_id ) . '" '
-							.  ' target="_blank" >'
-								. esc_html( $user->first_name . ' ' . $user->last_name )
-						.   '</a>';
-				$booking_item[ 'customer' ] = $customer;
+		if( $plain_text ) {
+			if( isset( $item['bookacti_booking_id'] ) ) {
+				echo bookacti_get_booking_actions_html( $item['bookacti_booking_id'], 'front', false, true );
+			} else if( isset( $item['bookacti_booking_group_id'] ) ) {
+				echo bookacti_get_booking_group_actions_html( $item['bookacti_booking_group_id'], 'front', false, true );
 			}
 		}
-		
-		return $booking_item;
 	}
+	add_action( 'woocommerce_order_item_meta_end', 'bookacti_add_actions_to_bookings', 10, 4 );
 	
 	
-	// Add columns to bookings list
-	add_filter( 'bookacti_booking_list_columns', 'bookacti_woocommerce_add_booking_list_custom_columns', 10, 1 );
-	function bookacti_woocommerce_add_booking_list_custom_columns( $columns ) {
-		
-		$columns[ 'email' ] = __( 'Email', BOOKACTI_PLUGIN_NAME );
-		$columns[ 'phone' ] = __( 'Phone', BOOKACTI_PLUGIN_NAME );
-		
-		return $columns;
-	}
 	
 	
-	// Reorder columns from booking list
-	add_filter( 'bookacti_booking_list_columns_order', 'bookacti_woocommerce_order_booking_list_custom_columns', 10, 1 );
-	function bookacti_woocommerce_order_booking_list_custom_columns( $columns_order ) {
-		
-		$columns_order[ 24 ] = 'email';
-		$columns_order[ 27 ] = 'phone';
-		
-		return $columns_order;
-	}
-	
-	
-	// Filter booking list before retrieving bookings
-	add_filter( 'bookacti_get_bookings_data_for_bookings_list', 'bookacti_filter_bookings_list_before_retrieving_bookings', 10, 1 );
-	function bookacti_filter_bookings_list_before_retrieving_bookings( $bookings_data ) {
-		$show_temporary_bookings = bookacti_get_setting_value_by_user( 'bookacti_bookings_settings', 'show_temporary_bookings' );
-		if( intval( $show_temporary_bookings ) === 0 ) { $bookings_data[ 'state_not_in' ][] = 'in_cart'; }
-		
-		return $bookings_data;
-	}
-	
-	
-	// Fill booking list columns
-	add_filter( 'bookacti_booking_list_booking_columns', 'bookacti_woocommerce_fill_booking_list_custom_columns', 10, 3 );
+// BOOKING LIST
+
+	/**
+	 * Fill booking list columns
+	 * 
+	 * @param array $booking_item
+	 * @param object $booking
+	 * @param WP_User $user
+	 * @return array
+	 */
 	function bookacti_woocommerce_fill_booking_list_custom_columns( $booking_item, $booking, $user ) {
 		
 		if( $user ) {
@@ -237,43 +275,159 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		
 		return $booking_item;
 	}
+	add_filter( 'bookacti_booking_list_booking_columns', 'bookacti_woocommerce_fill_booking_list_custom_columns', 20, 3 );
 	
 	
+	/**
+	 * Add columns to bookings list
+	 * 
+	 * @param array $columns
+	 * @return array
+	 */
+	function bookacti_woocommerce_add_booking_list_custom_columns( $columns ) {
+		
+		$columns[ 'email' ] = __( 'Email', BOOKACTI_PLUGIN_NAME );
+		$columns[ 'phone' ] = __( 'Phone', BOOKACTI_PLUGIN_NAME );
+		
+		return $columns;
+	}
+	add_filter( 'bookacti_booking_list_columns', 'bookacti_woocommerce_add_booking_list_custom_columns', 10, 1 );
 	
+	
+	/**
+	 * Reorder columns from booking list
+	 * 
+	 * @param array $columns_order
+	 * @return array
+	 */
+	function bookacti_woocommerce_order_booking_list_custom_columns( $columns_order ) {
+		
+		$columns_order[ 24 ] = 'email';
+		$columns_order[ 27 ] = 'phone';
+		
+		return $columns_order;
+	}
+	add_filter( 'bookacti_booking_list_columns_order', 'bookacti_woocommerce_order_booking_list_custom_columns', 10, 1 );
+	
+	
+	/**
+	 * Filter booking list before retrieving bookings
+	 * 
+	 * @param array $bookings_data
+	 * @return array
+	 */
+	function bookacti_filter_bookings_list_before_retrieving_bookings( $bookings_data ) {
+		$show_temporary_bookings = bookacti_get_setting_value_by_user( 'bookacti_bookings_settings', 'show_temporary_bookings' );
+		if( intval( $show_temporary_bookings ) === 0 ) { $bookings_data[ 'state_not_in' ][] = 'in_cart'; }
+		
+		return $bookings_data;
+	}
+	add_filter( 'bookacti_get_bookings_data_for_bookings_list', 'bookacti_filter_bookings_list_before_retrieving_bookings', 10 );
+	add_filter( 'bookacti_get_booking_groups_data_for_bookings_list', 'bookacti_filter_bookings_list_before_retrieving_bookings', 10 );
+
+
+
+
 // BOOKING ACTIONS: CANCEL / REFUND / RESCHEDULE
-	// Whether to give the possibility to a user to cancel or reschedule a booking
-	// Also add woocommerce specifique actions
-	add_filter( 'bookacti_booking_actions', 'bookacti_display_actions_buttons_on_items', 10, 2 );
-	function bookacti_display_actions_buttons_on_items( $booking_actions, $booking_id ){
+	
+	
+	/**
+	 * Whether to give the possibility to a user to cancel or reschedule a booking
+	 * Also add woocommerce specifique actions
+	 * 
+	 * @since 1.1.0
+	 * 
+	 * @param array $booking_actions
+	 * @param int $booking_id
+	 * @return array
+	 */
+	function bookacti_display_actions_buttons_on_booking_items( $booking_actions, $booking_id ){
+		$order_id = bookacti_get_booking_order_id( $booking_id );
+		return bookacti_display_actions_buttons_on_items( $booking_actions, $order_id );
+	}
+	add_filter( 'bookacti_booking_actions', 'bookacti_display_actions_buttons_on_booking_items', 10, 2 );
+	
+	
+	/**
+	 * Whether to give the possibility to a user to cancel or reschedule a booking group
+	 * Also add woocommerce specifique actions
+	 * 
+	 * @since 1.1.0
+	 * 
+	 * @param array $booking_actions
+	 * @param int $booking_group_id
+	 * @return array
+	 */
+	function bookacti_display_actions_buttons_on_booking_group_items( $booking_actions, $booking_group_id ){
+		$order_id = bookacti_get_booking_group_order_id( $booking_group_id );
+		return bookacti_display_actions_buttons_on_items( $booking_actions, $order_id );
+	}
+	add_filter( 'bookacti_booking_group_actions', 'bookacti_display_actions_buttons_on_booking_group_items', 10, 2 );
+	
+	
+	/**
+	 * Filter refund actions by booking
+	 * 
+	 * @version 1.1.0
+	 * 
+	 * @param array $possible_actions
+	 * @param int $booking_id
+	 * @return array
+	 */
+	function bookacti_filter_refund_actions_by_booking( $possible_actions, $booking_id ) {
+		$order_id = bookacti_get_booking_order_id( $booking_id );
+		return bookacti_filter_refund_actions_by_order( $possible_actions, $order_id );
+	}
+	add_filter( 'bookacti_refund_actions_by_booking', 'bookacti_filter_refund_actions_by_booking', 10, 2 );
+	
+	
+	/**
+	 * Filter refund actions by booking group
+	 * 
+	 * @since 1.1.0
+	 * 
+	 * @param array $possible_actions
+	 * @param int $booking_group_id
+	 * @return array
+	 */
+	function bookacti_filter_refund_actions_by_booking_group( $possible_actions, $booking_group_id ) {
+		$order_id = bookacti_get_booking_group_order_id( $booking_group_id );
+		return bookacti_filter_refund_actions_by_order( $possible_actions, $order_id );
+	}
+	add_filter( 'bookacti_refund_actions_by_booking_group', 'bookacti_filter_refund_actions_by_booking_group', 10, 2 );
+	
+	
+	/**
+	 * Add price to be refunded in refund dialog
+	 * 
+	 * @param string $text
+	 * @param int $booking_id
+	 * @param string $booking_type
+	 * @return string
+	 */
+	function bookacti_display_price_to_be_refunded( $text, $booking_id, $booking_type ) {
 		
-		// Init var
-		$order_id	= bookacti_get_booking_order_id( $booking_id );
-		
-		if( $order_id && is_numeric( $order_id ) ) {
-			$order		= new WC_Order( $order_id );
-
-			// Check cancel / reschedule
-			if( ! current_user_can( 'bookacti_edit_bookings' ) && $order->get_status() === 'pending' )	{ 
-				unset( $booking_actions['cancel'] ); 
-				unset( $booking_actions['reschedule'] );
-			}
-
-			// Add woocommerce specifique actions
-			$booking_actions[ 'view-order' ] = array( 
-				'class'			=> 'bookacti-view-booking-order _blank',
-				'label'			=> __( 'View order', BOOKACTI_PLUGIN_NAME ),
-				'description'	=> __( 'View the booking order.', BOOKACTI_PLUGIN_NAME ),
-				'link'			=> get_admin_url() . 'post.php?post=' . $order_id . '&action=edit',
-				'admin_or_front'=> 'admin' 
-			);
+		if( $booking_type === 'single' ) {
+			$item = bookacti_get_order_item_by_booking_id( $booking_id );
+		} else if( $booking_type === 'group' ) {
+			$item = bookacti_get_order_item_by_booking_group_id( $booking_id );
 		}
 		
-		return $booking_actions;
+		if( $item ) {
+			$refund_amount = wc_price( (float) $item[ 'line_total' ] + (float) $item[ 'line_tax' ] );
+			$text .= '<div id="bookacti-refund-amount">' . esc_html__( 'Refund amount:', BOOKACTI_PLUGIN_NAME ) . ' <strong>' . $refund_amount . '</strong></div>';
+		}
+		return $text;
 	}
+	add_filter( 'bookacti_before_refund_actions', 'bookacti_display_price_to_be_refunded', 10, 3 );
 	
 	
-	// Add refund actions
-	add_filter( 'bookacti_refund_actions', 'bookacti_add_woocommerce_refund_actions', 10, 1 );
+	/**
+	 * Add WooCommerce related refund actions
+	 * 
+	 * @param array $possible_actions_array
+	 * @return array
+	 */
 	function bookacti_add_woocommerce_refund_actions( $possible_actions_array ) {
 
 		$possible_actions_array[ 'coupon' ] = array(
@@ -289,49 +443,19 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 		return $possible_actions_array;
 	}
-	
-	
-	// Filter refund actions by bookings
-	add_filter( 'bookacti_refund_actions_by_booking', 'bookacti_filter_refund_actions_by_booking', 10, 2 );
-	function bookacti_filter_refund_actions_by_booking( $possible_actions, $booking_id ) {
-		
-		$order_id = bookacti_get_booking_order_id( $booking_id );
-		if( $order_id ) {
-			foreach( $possible_actions as $key => $possible_action ){
-				// Allow auto-refund only if gateway allows it
-				if( $possible_action['id'] === 'auto' && ! bookacti_does_order_support_auto_refund( $order_id ) ){
-					unset( $possible_actions[ $key ] );
-				}
-			}
-		} else {
-			// If the booking has not been taken with WooCommerce, remove WooCommerce refund methods
-			$woocommerce_actions = bookacti_add_woocommerce_refund_actions( array() );
-			foreach( $woocommerce_actions as $woocommerce_action ) {
-				unset( $possible_actions[ $woocommerce_action[ 'id' ] ] );
-			}
-		}
-		
-		return $possible_actions;
-	}
-	
-
-	// Add price to be refund in refund dialog
-	add_filter( 'bookacti_before_refund_actions', 'bookacti_display_price_to_be_refund', 10, 2 );
-	function bookacti_display_price_to_be_refund( $text, $booking_id ) {
-		$item = bookacti_get_order_item_by_booking_id( $booking_id );
-		if( $item ) {
-			$refund_amount = wc_price( (float) $item[ 'line_total' ] + (float) $item[ 'line_tax' ] );
-			$text .= '<div id="bookacti-refund-amount">' . esc_html__( 'Refund amount:', BOOKACTI_PLUGIN_NAME ) . ' <strong>' . $refund_amount . '</strong></div>';
-		}
-		return $text;
-	}
+	add_filter( 'bookacti_refund_actions', 'bookacti_add_woocommerce_refund_actions', 10, 1 );
 	
 
 	/**
-	 * Turn meta state to new status
+	 * Turn meta state to new status (to be called with bookacti_booking_state_changed)
 	 *
 	 * @since	1.0.0
-	 * @version	1.0.8
+	 * @version	1.1.0
+	 * 
+	 * @param int $booking_id
+	 * @param string $new_state
+	 * @param array $args
+	 * @return void
 	 */
 	function bookacti_woocommerce_turn_booking_meta_state_to_new_state( $booking_id, $new_state, $args = array() ) {
 		
@@ -339,106 +463,163 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			return;
 		}
 		
-		$item = bookacti_get_order_item_by_booking_id( $booking_id );
-		
-		if( $item ) {
-			// Turn meta state to new state
-			$old_booking_state = wc_get_order_item_meta( $item[ 'id' ], 'bookacti_state', true );
-			wc_update_order_item_meta( $item[ 'id' ], 'bookacti_state', $new_state );
-			if( in_array( $new_state, array( 'refunded', 'refund_requested' ) ) ) {
-				$refund_action = $args[ 'refund_action' ] ? $args[ 'refund_action' ] : 'manual';
-				wc_update_order_item_meta( $item[ 'id' ], '_bookacti_refund_method', $refund_action );
-			}
-		}
-		
-		
 		$order_id = bookacti_get_booking_order_id( $booking_id );
 		
-		if( $order_id ) {
-			$order = new WC_Order( $order_id );
-
-
-			// Log booking state change
-			if( $old_booking_state ) {
-				if( $old_booking_state !== $new_state ) {
-					$status_labels = bookacti_get_booking_state_labels();
-					$is_customer_action = get_current_user_id() == bookacti_get_booking_owner( $booking_id );		
-					/* translators: %1$s is booking id, %2$s is old state, %3$s is new state */
-					$order->add_order_note( 
-						sprintf( __( 'Booking #%1$s state has been updated from %2$s to %3$s.', BOOKACTI_PLUGIN_NAME ), 
-								$booking_id, 
-								$status_labels[ $old_booking_state ][ 'label' ], 
-								$status_labels[ $new_state ][ 'label' ] ), 
-						0, 
-						$is_customer_action );
-				}
-			}
-
-
-			// Turn the order state if it is composed of inactive / pending / booked bookings only
-			if( in_array( $order->get_status(), array( 'processing', 'on-hold', 'completed' ) ) ) {
-
-				$items = $order->get_items();
-
-				// Get items booking states and
-				// Determine if the order is only composed of activities
-				$states = array();
-				$only_activities = true;
-				foreach( $items as $item ) {
-					if( ! isset( $item[ 'bookacti_booking_id' ] ) ) { $only_activities = false; }
-					$states[] = $item[ 'bookacti_state' ];
-				}
-
-				if( $only_activities ) {
-					if( ! in_array( 'in_cart', $states ) ) {
-
-						$new_order_status = 'cancelled';
-
-						if( in_array( 'pending', $states ) ) {
-							// Turn order status to pending payment
-							$new_order_status = 'processing';
-						} else if( in_array( 'booked', $states ) ) {
-							// Turn order status to completed
-							$new_order_status = 'completed';
-						} else if( in_array( 'refunded', $states ) && ! in_array( 'refund_requested', $states ) ) {
-							// Turn order status to completed
-							$new_order_status = 'refunded';
-						}
-
-						$new_order_status = apply_filters( 'bookacti_woocommerce_order_status_updated_after_booking_state_update', $new_order_status, $order, $booking_id );
-
-						if( $new_order_status !== $order->get_status() ) {
-							$order->update_status( $new_order_status );
-						}
-					}
-				}
-			}
+		if( empty( $order_id ) ) {
+			return;	
 		}
+		
+		$order = wc_get_order( $order_id );
+		
+		if( empty( $order ) ) {
+			return;	
+		}
+		
+		$item = bookacti_get_order_item_by_booking_id( $booking_id );
+		
+		if( empty( $item ) || ! isset( $item[ 'bookacti_booking_id' ] ) ) {
+			return;
+		}
+		
+		// Get old state
+		$old_state = wc_get_order_item_meta( $item[ 'id' ], 'bookacti_state', true );
+
+		// Turn meta state to new state
+		wc_update_order_item_meta( $item[ 'id' ], 'bookacti_state', $new_state );
+
+		// Add refund metadata
+		if( in_array( $new_state, array( 'refunded', 'refund_requested' ), true ) ) {
+			$refund_action = $args[ 'refund_action' ] ? $args[ 'refund_action' ] : 'manual';
+			wc_update_order_item_meta( $item[ 'id' ], '_bookacti_refund_method', $refund_action );
+		}
+
+		// Log booking state change
+		if( $old_state !== $new_state ) {
+			$status_labels = bookacti_get_booking_state_labels();
+			$is_customer_action = get_current_user_id() == bookacti_get_booking_owner( $booking_id );		
+			/* translators: %1$s is booking id, %2$s is old state, %3$s is new state */
+			$order->add_order_note( 
+				sprintf( __( 'Booking #%1$s state has been updated from %2$s to %3$s.', BOOKACTI_PLUGIN_NAME ), 
+						$booking_id, 
+						$status_labels[ $old_state ][ 'label' ], 
+						$status_labels[ $new_state ][ 'label' ] ), 
+				0, 
+				$is_customer_action );
+		}
+		
+		// Turn the order state if it is composed of inactive / pending / booked bookings only
+		bookacti_change_order_state_based_on_its_bookings_state( $order_id );
 	}
 	add_action( 'bookacti_booking_state_changed', 'bookacti_woocommerce_turn_booking_meta_state_to_new_state', 10 , 3 );
 	
 	
-	// Add refund action process
-	add_filter( 'bookacti_refund_booking', 'bookacti_woocommerce_refund_booking', 10 , 4 );
-	function bookacti_woocommerce_refund_booking( $return_array, $booking_id, $refund_action, $refund_message ) {
+	/**
+	 * Turn meta state to new status (to be called with bookacti_booking_group_state_changed)
+	 *
+	 * @since	1.1.0
+	 * 
+	 * @param int $booking_group_id
+	 * @param string $new_state
+	 * @param array $args
+	 * @return void
+	 */
+	function bookacti_woocommerce_turn_booking_group_meta_state_to_new_state( $booking_group_id, $new_state, $args = array() ) {
 		
-		$order_id = bookacti_get_booking_order_id( $booking_id );
-		$possibles_actions = array_keys( bookacti_get_refund_actions_by_booking_id( $booking_id ) );
+		if( empty( $booking_group_id ) ) {
+			return;
+		}
 		
-		if( in_array( $refund_action, $possibles_actions ) ) {
+		$order_id = bookacti_get_booking_group_order_id( $booking_group_id );
+		
+		if( empty( $order_id ) ) {
+			return;	
+		}
+		
+		$order = wc_get_order( $order_id );
+		
+		if( empty( $order ) ) {
+			return;	
+		}
+		
+		$item = bookacti_get_order_item_by_booking_group_id( $booking_group_id );
+		
+		if( empty( $item ) || ! isset( $item[ 'bookacti_booking_group_id' ] ) ) {
+			return;
+		}
+		
+		// Get old state
+		$old_state =  wc_get_order_item_meta( $item[ 'id' ], 'bookacti_state', true );
+		
+		// Turn meta state to new state
+		wc_update_order_item_meta( $item[ 'id' ], 'bookacti_state', $new_state );
+
+		// Add refund metadata
+		if( in_array( $new_state, array( 'refunded', 'refund_requested' ), true ) ) {
+			$refund_action = $args[ 'refund_action' ] ? $args[ 'refund_action' ] : 'manual';
+			wc_update_order_item_meta( $item[ 'id' ], '_bookacti_refund_method', $refund_action );
+		}
+
+		// Log booking group state change
+		if( $old_state !== $new_state ) {
+			$status_labels = bookacti_get_booking_state_labels();
+			$is_customer_action = get_current_user_id() == bookacti_get_booking_group_owner( $booking_group_id );		
+			/* translators: %1$s is booking group id, %2$s is old state, %3$s is new state */
+			$order->add_order_note( 
+				sprintf( __( 'Booking group #%1$s state has been updated from %2$s to %3$s.', BOOKACTI_PLUGIN_NAME ), 
+						$booking_group_id, 
+						$status_labels[ $old_state ][ 'label' ], 
+						$status_labels[ $new_state ][ 'label' ] ), 
+				0, 
+				$is_customer_action );
+		}
+		
+		// Turn the order state if it is composed of inactive / pending / booked bookings only
+		bookacti_change_order_state_based_on_its_bookings_state( $order_id );
+	}
+	add_action( 'bookacti_booking_group_state_changed', 'bookacti_woocommerce_turn_booking_group_meta_state_to_new_state', 10 , 3 );
+	
+	
+	/**
+	 * Trigger WooCommerce refund process according to the refund action
+	 * 
+	 * @version 1.1.0
+	 * 
+	 * @param array $return_array
+	 * @param int $booking_id
+	 * @param string $refund_action
+	 * @param string $refund_message
+	 * @return array
+	 */
+	function bookacti_woocommerce_refund_booking( $return_array, $booking_id, $booking_type, $refund_action, $refund_message ) {
+		
+		if( $booking_type === 'single' ) {
+			$order_id = bookacti_get_booking_order_id( $booking_id );
+			$possibles_actions = array_keys( bookacti_get_refund_actions_by_booking_id( $booking_id ) );
+		} else if( $booking_type === 'group' ) {
+			$order_id = bookacti_get_booking_group_order_id( $booking_id );
+			$possibles_actions = array_keys( bookacti_get_refund_actions_by_booking_group_id( $booking_id ) );
+		}
+		
+		if( in_array( $refund_action, $possibles_actions, true ) ) {
 			if( $refund_action === 'coupon' ) {
-				$return_array = bookacti_refund_booking_with_coupon( $booking_id, $refund_message );
+				$return_array = bookacti_refund_booking_with_coupon( $booking_id, $booking_type, $refund_message );
 			} else if( $refund_action === 'auto' && bookacti_does_order_support_auto_refund( $order_id ) ) {
-				$return_array = bookacti_auto_refund_booking( $booking_id, $refund_message );
+				$return_array = bookacti_auto_refund_booking( $booking_id, $booking_type, $refund_message );
 			}
 		}
 		
 		return $return_array;
 	}
+	add_filter( 'bookacti_refund_booking', 'bookacti_woocommerce_refund_booking', 10 , 5 );
 	
 	
-	// Check if a booking can be refunded
-	add_filter( 'bookacti_booking_can_be_refunded', 'bookacti_woocommerce_booking_can_be_refunded', 10, 2 );
+	/**
+	 * Check if a booking can be refunded
+	 * 
+	 * @param boolean $true
+	 * @param int $booking_id
+	 * @return boolean
+	 */
 	function bookacti_woocommerce_booking_can_be_refunded( $true, $booking_id ) {
 		
 		if( $true && ! current_user_can( 'bookacti_edit_bookings' ) ) {
@@ -457,42 +638,130 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		
 		return $true;
 	}
+	add_filter( 'bookacti_booking_can_be_refunded', 'bookacti_woocommerce_booking_can_be_refunded', 10, 2 );
 	
 	
-	// Check if a booking can be completed
-	add_filter( 'bookacti_booking_state_can_be_changed_to_booked', 'bookacti_booking_state_can_be_changed_to_booked', 10, 2 );
-	function bookacti_booking_state_can_be_changed_to_booked( $true, $booking_id ) {
+	/**
+	 * Check if a booking group can be refunded
+	 * 
+	 * @param boolean $true
+	 * @param int $booking_group_id
+	 * @return boolean
+	 */
+	function bookacti_woocommerce_booking_group_can_be_refunded( $true, $booking_group_id ) {
 		
 		if( $true && ! current_user_can( 'bookacti_edit_bookings' ) ) {
 			
-			$order_id	= bookacti_get_booking_order_id( $booking_id );
+			$order_id	= bookacti_get_booking_group_order_id( $booking_group_id );
+			$order		= wc_get_order( $order_id );
 			
-			if( ! $order_id ) { return $true; }
-			
-			$order = new WC_Order( $order_id );
-			
-			if( ! in_array( $order->get_status(), array( 'pending', 'processing', 'on-hold' ) ) ) { $true = false; }
+			if( $order ) {
+				$item		= bookacti_get_order_item_by_booking_group_id( $booking_group_id );
+				$is_paid	= get_post_meta( $order_id, '_paid_date', true );
+				
+				if( $order->get_status() === 'pending' 
+				||  $item[ 'line_total' ] <= 0
+				||  ! $is_paid ) { $true = false; }
+			}
 		}
 		
 		return $true;
 	}
+	add_filter( 'bookacti_booking_group_can_be_refunded', 'bookacti_woocommerce_booking_group_can_be_refunded', 10, 2 );
 	
 	
-	// Refund request email to
-	add_filter( 'bookacti_refund_request_email_to', 'bookacti_woocommerce_add_refund_request_email_recipients', 10, 2 );
-	function bookacti_woocommerce_add_refund_request_email_recipients( $recipients, $booking_id ) {
+	/**
+	 * Check if a booking can be completed
+	 * 
+	 * @version 1.1.0
+	 * 
+	 * @param boolean $true
+	 * @param int $booking_id
+	 * @return boolean
+	 */
+	function bookacti_booking_state_can_be_changed_to_booked( $true, $booking_id, $new_state ) {
+		
+		if( $true && $new_state === 'booked' && ! current_user_can( 'bookacti_edit_bookings' ) ) {
+			
+			$order_id	= bookacti_get_booking_order_id( $booking_id );
+			
+			if( ! $order_id || ! bookacti_is_wc_order( $order_id ) ) { return $true; }
+			
+			$order = wc_get_order( $order_id );
+			
+			if( empty( $order ) ) { return false; }
+			
+			if( ! in_array( $order->get_status(), array( 'pending', 'processing', 'on-hold' ), true ) ) { $true = false; }
+		}
+		
+		return $true;
+	}
+	add_filter( 'bookacti_booking_state_can_be_changed', 'bookacti_booking_state_can_be_changed_to_booked', 10, 3 );
+	
+	
+	/**
+	 * Check if a booking group can be completed
+	 * 
+	 * @since 1.1.0
+	 * 
+	 * @param boolean $true
+	 * @param int $booking_id
+	 * @return boolean
+	 */
+	function bookacti_booking_group_state_can_be_changed_to_booked( $true, $booking_group_id, $new_state ) {
+		
+		if( $true && $new_state === 'booked' && ! current_user_can( 'bookacti_edit_bookings' ) ) {
+			
+			$order_id = bookacti_get_booking_group_order_id( $booking_group_id );
+			
+			if( ! $order_id || ! bookacti_is_wc_order( $order_id ) ) { return $true; }
+			
+			$order = wc_get_order( $order_id );
+			
+			if( empty( $order ) ) { return false; }
+			
+			if( ! in_array( $order->get_status(), array( 'pending', 'processing', 'on-hold' ), true ) ) { $true = false; }
+		}
+		
+		return $true;
+	}
+	add_filter( 'bookacti_booking_group_state_can_be_changed', 'bookacti_booking_group_state_can_be_changed_to_booked', 10, 3 );
+	
+	
+	/**
+	 * Refund request email to
+	 * 
+	 * @version 1.1.0
+	 * 
+	 * @param array $recipients
+	 * @return array
+	 */
+	function bookacti_woocommerce_add_refund_request_email_recipients( $recipients ) {
 		
 		$recipients[] = get_option( 'woocommerce_stock_email_recipient' );
 		
 		return $recipients;
 	}
+	add_filter( 'bookacti_refund_request_email_to', 'bookacti_woocommerce_add_refund_request_email_recipients', 10 );
 	
 	
-	// Refund request email data
-	add_filter( 'bookacti_refund_request_email_data', 'bookacti_woocommerce_add_refund_request_email_data', 10, 2 );
-	function bookacti_woocommerce_add_refund_request_email_data( $data, $booking_id ) {
+	/**
+	 * Refund request email data
+	 * 
+	 * @version 1.1.0
+	 * 
+	 * @param array $data
+	 * @param int $booking_id
+	 * @param string $booking_type
+	 * @return array
+	 */
+	function bookacti_woocommerce_add_refund_request_email_data( $data, $booking_id, $booking_type ) {
 		
-		$item = bookacti_get_order_item_by_booking_id( $booking_id );
+		if( $booking_type === 'single' ) {
+			$item = bookacti_get_order_item_by_booking_id( $booking_id );
+		} else if( $booking_type === 'group' ) {
+			$item = bookacti_get_order_item_by_booking_group_id( $booking_id );
+		}
 		
 		if( empty( $item ) ) { return $data; }
 		
@@ -507,13 +776,28 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		
 		return $data;
 	}
+	add_filter( 'bookacti_refund_request_email_data', 'bookacti_woocommerce_add_refund_request_email_data', 10, 3 );
 	
 	
-	// Refund request email message
-	add_filter( 'bookacti_refund_request_email_message', 'bookacti_woocommerce_add_refund_request_email_message', 10, 4 );
-	function bookacti_woocommerce_add_refund_request_email_message( $message, $booking_id, $data, $user_message ) {
+	/**
+	 * Refund request email message
+	 * 
+	 * @version 1.1.0
+	 * 
+	 * @param string $message
+	 * @param int $booking_id
+	 * @param string $booking_type
+	 * @param array $data
+	 * @param string $user_message
+	 * @return string
+	 */
+	function bookacti_woocommerce_add_refund_request_email_message( $message, $booking_id, $booking_type, $data, $user_message ) {
 		
-		$order_id = bookacti_get_booking_order_id( $booking_id );
+		if( $booking_type === 'single' ) {
+			$order_id = bookacti_get_booking_order_id( $booking_id );
+		} else if( $booking_type === 'group' ) {
+			$order_id = bookacti_get_booking_group_order_id( $booking_id );
+		}
 		
 		if( ! $order_id ) { return $message; } 
 		
@@ -526,16 +810,58 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		
 		return $go_to_order . $message;
 	}
+	add_filter( 'bookacti_refund_request_email_message', 'bookacti_woocommerce_add_refund_request_email_message', 10, 5 );
 	
 	
-	// Update dates after reschedule
-	add_action( 'bookacti_booking_rescheduled', 'bookacti_woocommerce_update_booking_dates', 10, 3 );
+	/**
+	 * Update dates after reschedule
+	 * 
+	 * @param int $booking_id
+	 * @param string $event_start
+	 * @param string $event_end
+	 * @return void
+	 */
 	function bookacti_woocommerce_update_booking_dates( $booking_id, $event_start, $event_end ) {
 		
 		$item = bookacti_get_order_item_by_booking_id( $booking_id );
+			
+		if( empty( $item ) ) {
+			return;
+		}
 		
-		if( ! empty( $item ) ) {
-			wc_update_order_item_meta( $item[ 'id' ], 'bookacti_event_start', $event_start );
-			wc_update_order_item_meta( $item[ 'id' ], 'bookacti_event_end',   $event_end );
+		$booked_events = wc_get_order_item_meta( $item[ 'id' ], 'bookacti_booked_events' );
+		
+		if( ! empty( $booked_events ) ) {
+			
+			$booked_events = (array) json_decode( $booked_events );
+			
+			foreach( $booked_events as $i => $booked_event ) {
+				if( intval( $booked_event->id ) === intval( $booking_id ) ) {
+					$key = $i;
+					break;
+				}
+			}
+			
+			if( ! isset( $key ) ) {
+				return;
+			}
+			
+			// Update only start and end of the desired booking
+			
+			$booked_events[ $key ]->event_start	= $event_start;
+			$booked_events[ $key ]->event_end	= $event_end;
+			
+			wc_update_order_item_meta( $item[ 'id' ], 'bookacti_booked_events', json_encode( $booked_events ) );
+			
+		// For bookings made before Booking Activities 1.1.0
+		} else {
+			// Delete old data
+			wc_delete_order_item_meta( $item[ 'id' ], 'bookacti_event_start' );
+			wc_delete_order_item_meta( $item[ 'id' ], 'bookacti_event_end' );
+			
+			// Insert new booking data
+			$event = bookacti_get_booking_event_data( $booking_id );
+			wc_add_order_item_meta( $item[ 'id' ], 'bookacti_booked_events', json_encode( array( $event ) ) );
 		}
 	}
+	add_action( 'bookacti_booking_rescheduled', 'bookacti_woocommerce_update_booking_dates', 10, 3 );

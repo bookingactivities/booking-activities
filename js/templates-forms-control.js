@@ -41,7 +41,7 @@ $j( document ).ready( function() {
 
 	// Enable or disable repetition and exception parts of the form
 	$j( '#bookacti-event-repeat-freq, #bookacti-event-repeat-from, #bookacti-event-repeat-to' ).off().on( 'change', function() { 
-		bookacti_validate_event_repetition_data( event.start, event.end );
+		bookacti_validate_event_repetition_data();
 	});
 	
 });
@@ -323,8 +323,8 @@ function bookacti_validate_event_general_data() {
 
 function bookacti_validate_event_repetition_data( event_start, event_end ) {
 	
-    event_start = event_start	|| selectedEvents[ 'template' ][ 0 ][ 'event-start' ];
-    event_end	= event_end		|| selectedEvents[ 'template' ][ 0 ][ 'event-end' ];
+    event_start = event_start	|| bookacti.booking_system[ 'bookacti-template-calendar' ][ 'picked_events' ][ 0 ][ 'start' ];
+    event_end	= event_end		|| bookacti.booking_system[ 'bookacti-template-calendar' ][ 'picked_events' ][ 0 ][ 'end' ];
 	
 	// Get params
     var min_bookings    = parseInt( $j( '#bookacti-event-data-dialog #bookacti-event-availability' ).attr( 'min' ) );
@@ -360,8 +360,8 @@ function bookacti_validate_event_repetition_data( event_start, event_end ) {
     if( ! isNaN( repeat_to )    && repeat_to    !== ''  && repeat_to !== null )     { valid_form.isRepeatTo = true; }
     if( valid_form.isRepeatFrom && valid_form.isRepeatTo && ( repeat_from < repeat_to ) )					{ valid_form.isFromBeforeTo = true; }
     if( valid_form.isRepeated ) {
-		if(( event_start.format( 'YYYY-MM-DD' ) >= repeat_from.format( 'YYYY-MM-DD' ) ) 
-		&& ( event_end.format( 'YYYY-MM-DD' )	<= repeat_to.format( 'YYYY-MM-DD' ) ) ){ 
+		if(( event_start.substr( 0, 10 ) >= repeat_from.format( 'YYYY-MM-DD' ) ) 
+		&& ( event_end.substr( 0, 10 )	<= repeat_to.format( 'YYYY-MM-DD' ) ) ){ 
         valid_form.isEventBetweenFromAndTo = true; 
 		}
     }
@@ -518,17 +518,12 @@ function bookacti_validate_add_exception_form() {
     });
     
     //Prevent from adding an exception on a day when the occurrence is booked
-    if( bookings[ template_id ] !== undefined ) {
-		if( bookings[ template_id ][ event_id ] !== undefined ) {
-			if( bookings[ template_id ][ event_id ].length > 0 ) {
-				$j.each( bookings[ template_id ][ event_id ], function( i, booking ) {
-					if( moment( booking.event_start ).format( 'YYYY-MM-DD' ) === exception_date.format( 'YYYY-MM-DD' ) ) {
-						isNewExcepBooked = true;
-					}
-				});
-			}
+	var exception_element = $j( '.fc-event[data-event-id="' + event_id + '"][data-event-start^="' + exception_date.format( 'YYYY-MM-DD' ) + '"]' );
+	if( exception_element.length ) {
+		if( parseInt( exception_element.find( '.bookacti-bookings' ).text() ) > 0 ) {
+			isNewExcepBooked = true;
 		}
-    }
+	}
     
     
     if( isNewExcepBetweenFromAndTo && isNewExcepDifferent && ! isNewExcepBooked ) { sendForm = true; }
@@ -553,4 +548,95 @@ function bookacti_validate_add_exception_form() {
     }
     
     return sendForm;
+}
+
+
+
+// GROUP OF EVENTS
+
+function bookacti_validate_group_of_events_form() {
+	// Get group params
+	var title		= $j( '#bookacti-group-of-events-title-field' ).val();
+	var category	= $j( '#bookacti-group-of-events-category-selectbox' ).val();
+	var cat_title	= $j( '#bookacti-group-of-events-category-title-field' ).val();
+	
+	// Init boolean test variables
+	var valid_form = {
+		'isTitle'			: false,
+		'isCategory'		: false,
+		'isCategoryTitle'	: false,
+		'isSelectedEvents'	: false,
+		'send'				: false
+	};
+
+
+	// Make the tests and change the booleans
+	if( typeof title		=== 'string' && title		!== '' )	{ valid_form.isTitle = true; }
+	if( typeof category		=== 'string' && category	!== 'new' )	{ valid_form.isCategory = true; }
+	if( typeof cat_title	=== 'string' && cat_title	!== '' )	{ valid_form.isCategoryTitle = true; }
+	if( bookacti.booking_system[ 'bookacti-template-calendar' ][ 'selected_events' ].length >= 2 )					{ valid_form.isSelectedEvents = true; }
+
+	if( valid_form.isTitle 
+	&&  ( valid_form.isCategory || valid_form.isCategoryTitle ) 
+	&&  valid_form.isSelectedEvents ) { valid_form.send = true; }
+
+	// Clean the feedbacks before displaying new feedbacks
+	$j( '#bookacti-group-of-events-dialog .form-error' ).remove();
+	$j( '#bookacti-group-of-events-dialog input, #bookacti-group-of-events-dialog select' ).removeClass( 'input-error' );
+
+
+	// Allow third-party to change the results
+	$j( '#bookacti-group-of-events-dialog' ).trigger( 'bookacti_validate_group_of_events_form', [ valid_form ] );
+
+
+	// Check the results and show feedbacks
+	if( ! valid_form.isTitle ){ 
+		$j( '#bookacti-group-of-events-title-field' ).addClass( 'input-error' ); 
+		$j( '#bookacti-group-of-events-title-field' ).parent().append( "<div class='form-error'>" + bookacti_localized.error_fill_field + "</div>" ); 
+	}
+	if( ! valid_form.isCategory && ! valid_form.isCategoryTitle ){ 
+		$j( '#bookacti-group-of-events-category-title-field' ).addClass( 'input-error' ); 
+		$j( '#bookacti-group-of-events-category-title-field' ).parent().append( "<div class='form-error'>" + bookacti_localized.error_fill_field + "</div>" ); 
+	}
+	if( ! valid_form.isSelectedEvents ){ 
+		$j( '#bookacti-group-of-events-summary' ).addClass( 'input-error' ); 
+		$j( '#bookacti-group-of-events-summary' ).parent().append( "<div class='form-error'>" + bookacti_localized.error_select_at_least_two_events + "</div>" ); 
+	}
+	
+	return valid_form.send;
+}
+
+
+function bookacti_validate_group_category_form() {
+	// Get group params
+	var title		= $j( '#bookacti-group-category-title-field' ).val();
+	
+	// Init boolean test variables
+	var valid_form = {
+		'isTitle'			: false,
+		'send'				: false
+	};
+
+
+	// Make the tests and change the booleans
+	if( typeof title		=== 'string' && title		!== '')		{ valid_form.isTitle = true; }
+
+	if( valid_form.isTitle ) { valid_form.send = true; }
+
+	// Clean the feedbacks before displaying new feedbacks
+	$j( '#bookacti-group-category-dialog .form-error' ).remove();
+	$j( '#bookacti-group-category-dialog input, #bookacti-template-data-dialog select' ).removeClass( 'input-error' );
+
+
+	// Allow third-party to change the results
+	$j( '#bookacti-group-category-dialog' ).trigger( 'bookacti_validate_group_category_form', [ valid_form ] );
+
+
+	// Check the results and show feedbacks
+	if( ! valid_form.isTitle ){ 
+		$j( '#bookacti-group-category-title-field' ).addClass( 'input-error' ); 
+		$j( '#bookacti-group-category-title-field' ).parent().append( "<div class='form-error'>" + bookacti_localized.error_fill_field + "</div>" ); 
+	}
+	
+	return valid_form.send;
 }
