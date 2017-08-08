@@ -6,7 +6,7 @@ msgstr ""
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/booking-"
 "activities\n"
 "POT-Creation-Date: 2017-07-15 22:30+0800\n"
-"PO-Revision-Date: 2017-07-15 23:00+0800\n"
+"PO-Revision-Date: 2017-08-02 13:53+1000\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: fr_FR\n"
@@ -238,7 +238,7 @@ msgid ""
 "last!"
 msgstr ""
 "Accepteriez-vous de l'aider en retour en nous laissant une note de %s&nbsp;? "
-"Nous avons besoin de vous maintenant ça dure&nbsp;!"
+"Nous avons besoin de vous maintenant pour que ça dure&nbsp;!"
 
 #: controller/controller-settings.php:262
 msgid "Ok, I'll rate you five stars!"
@@ -598,7 +598,7 @@ msgstr "N° de réservation"
 #: controller/controller-woocommerce-frontend.php:1161
 #: functions/functions-woocommerce.php:1075
 msgid "Booking group number"
-msgstr "Numéro du groupe de réservation"
+msgstr "Numéro du groupe de réservations"
 
 #: controller/controller-woocommerce-frontend.php:1162
 msgid "Booked events"
@@ -799,7 +799,7 @@ msgstr "Modifier chaque réservation du groupe séparément."
 
 #: functions/functions-bookings.php:645
 msgid "Cancel the booking group."
-msgstr "Annuler le groupe de réservation."
+msgstr "Annuler le groupe de réservations."
 
 #: functions/functions-bookings.php:654
 msgid "Refund the booking group with one of the available refund method."

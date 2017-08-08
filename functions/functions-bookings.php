@@ -226,9 +226,9 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		function bookacti_booking_can_be_cancelled( $booking_id, $bypass_group_check = false ) {
 			
 			$booking	= bookacti_get_booking_by_id( $booking_id );
-			$is_allowed	= $booking->active;
+			$is_allowed	= true;
 			
-			if( ! current_user_can( 'bookacti_edit_bookings' ) && $is_allowed ) {
+			if( ! current_user_can( 'bookacti_edit_bookings' ) ) {
 				// Init variable
 				$is_cancel_allowed	= bookacti_get_setting_value( 'bookacti_cancellation_settings', 'allow_customers_to_cancel' );
 				$is_grouped			= $bypass_group_check ? false : ! empty( $booking->group_id );
@@ -924,7 +924,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			
 			$booking	= bookacti_get_booking_by_id( $booking_id );
 			$data['booking']					= array();
-			$data['booking']['template_id']		= $booking->template_id;
+			$data['booking']['calendar_id']		= $booking->template_id;
 			$data['booking']['activity_name']	= apply_filters( 'bookacti_translate_text', $booking->title ) . ' (' . _x( 'id', 'An id is a unique identification number' ) . ': ' . $booking->activity_id . ')';
 			$data['booking']['event_start']		= bookacti_format_datetime( $booking->event_start );
 			$data['booking']['event_end']		= bookacti_format_datetime( $booking->event_end );
@@ -937,7 +937,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			$booking_group	= bookacti_get_booking_group_by_id( $booking_id );
 			$bookings		= bookacti_get_bookings_by_booking_group_id( $booking_id );
 			$data['booking_group']					= array();
-			$data['booking_group']['template_id']	= $bookings[0]->template_id;
+			$data['booking_group']['calendar_id']	= $bookings[0]->template_id;
 			$data['booking_group']['events']		= bookacti_get_formatted_booking_events_list( $bookings, 'show' );
 			$data['booking_group']['status']		= $booking_group->state;
 			
@@ -947,12 +947,12 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		$data = apply_filters( 'bookacti_refund_request_email_data', $data, $booking_id, $booking_type );
 
 		/* translators: %1$s is a user name and %2$s is the booking ID. */
-		$message = '<h3>' . esc_html( sprintf( __( '%1$s wants to be refund for booking %2$s', BOOKACTI_PLUGIN_NAME ), $data['user']['name'], $booking_id ) ) . '</h3>';
+		$message = '<h3>' . sprintf( esc_html__( '%1$s wants to be refund for booking %2$s', BOOKACTI_PLUGIN_NAME ), $data['user']['name'], $booking_id ) . '</h3>';
 		foreach( $data as $category_name => $category_data ) {
 			$message .= '<h4>' . esc_html( ucfirst ( str_replace( '_', ' ', $category_name ) ) ) . '</h4>';
 			$message .= '<table style="border: none;" >';
 			foreach( $category_data as $name => $value ) {
-				$message .= '<tr><td style="border: none; width: 135px; padding-right: 15px;">' . esc_html( ucfirst ( str_replace( '_', ' ', $name ) ) ) . '</td><td>' . esc_html( $value ) . '</td>';
+				$message .= '<tr><td style="border: none; width: 135px; padding-right: 15px;">' . esc_html( ucfirst ( str_replace( '_', ' ', $name ) ) ) . '</td><td>' . $value . '</td>';
 			}
 			$message .= '</table>';
 		}

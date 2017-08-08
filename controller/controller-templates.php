@@ -884,7 +884,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			
 			$template_id			= intval( $_POST['template-id'] );
 			$activity_title			= sanitize_text_field( stripslashes( $_POST['activity-title'] ) );
-			$activity_color			= sanitize_hex_color( $_POST['activity-color'] );
+			$activity_color			= function_exists( 'sanitize_hex_color' ) ? sanitize_hex_color( $_POST['activity-color'] ) : stripslashes( $_POST['activity-color'] );
 			$activity_availability	= intval( $_POST['activity-availability'] );
 			$activity_duration		= bookacti_sanitize_duration( $_POST['activity-duration'] );
 			$activity_resizable		= intval( $_POST['activity-resizable'] );
@@ -957,7 +957,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			$template_id			= intval( $_POST['template-id'] );
 			$activity_title			= sanitize_text_field( stripslashes( $_POST['activity-title'] ) );
 			$activity_old_title		= sanitize_text_field( stripslashes( $_POST['activity-old-title'] ) );
-			$activity_color			= sanitize_hex_color( $_POST['activity-color'] );
+			$activity_color			= function_exists( 'sanitize_hex_color' ) ? sanitize_hex_color( $_POST['activity-color'] ) : stripslashes( $_POST['activity-color'] );
 			$activity_availability	= intval( $_POST['activity-availability'] );
 			$activity_duration		= bookacti_sanitize_duration( $_POST['activity-duration'] );
 			$activity_resizable		= intval( $_POST['activity-resizable'] );
