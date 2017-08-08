@@ -766,7 +766,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		if( empty( $item ) ) { return $data; }
 		
 		$data['product']			= array();
-		$data['product']['name']	= $item['name'];
+		$data['product']['name']	= apply_filters( 'bookacti_translate_text', $item['name'] );
 		if( $item['variation_id'] ){
 			$variation	= new WC_Product_Variation( $item['variation_id'] );
 			$attributes	= $variation->get_variation_attributes();
@@ -801,12 +801,12 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		
 		if( ! $order_id ) { return $message; } 
 		
-		$go_to_order =   '<div style="background-color: #f5faff; padding: 10px; border: 1px solid #abc; margin-bottom: 30px;" >' 
-						. esc_html__( 'Click here to go to the order page and process the refund:', BOOKACTI_PLUGIN_NAME ) 
-						. ' <a target="_blank" href="' . esc_url( get_edit_post_link( $order_id ) ) . '">' 
-							. esc_html__( 'Go to refund page', BOOKACTI_PLUGIN_NAME ) 
-						. '</a>'
-					. '</div>';
+		$go_to_order =	'<div style="background-color: #f5faff; padding: 10px; border: 1px solid #abc; margin-bottom: 30px;" >' 
+							. esc_html__( 'Click here to go to the order page and process the refund:', BOOKACTI_PLUGIN_NAME ) 
+							. ' <a href="' . admin_url( 'post.php?post=' . absint( $order_id ) . '&action=edit' ) . '" target="_blank" >' 
+								. esc_html__( 'Go to refund page', BOOKACTI_PLUGIN_NAME ) 
+							. '</a>'
+						. '</div>';
 		
 		return $go_to_order . $message;
 	}

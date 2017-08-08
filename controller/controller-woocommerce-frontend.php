@@ -846,25 +846,26 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	 */
 	function bookacti_remove_expired_product_from_cart() {
 		
-		// If not frontend
-		if( is_admin() ) { 
-			return;
-		}
+		// Return if not frontend
+		if( is_admin() ) { return; }
 		
 		$is_expiration_active = bookacti_get_setting_value( 'bookacti_cart_settings', 'is_cart_expiration_active' );
 		
-		// If expiration is not active
-		if( ! $is_expiration_active ) {
-			return;
-		}
+		// Return if expiration is not active
+		if( ! $is_expiration_active ) { return; }
 
 		global $woocommerce;
+		
+		// Return if woocommerce is not instanciated
+		if( empty( $woocommerce ) ) { return; }
+		
+		// Return if cart is null
+		if( empty( $woocommerce->cart ) ) { return; }
+		
 		$cart_contents = $woocommerce->cart->get_cart();
 		
-		// If cart is already empty
-		if( empty( $cart_contents ) ) {
-			return;
-		}
+		// Return if cart is already empty
+		if( empty( $cart_contents ) ) { return; }
 
 
 		// Check if each cart item has expired, and if so, reduce its quantity to 0 (delete it)
