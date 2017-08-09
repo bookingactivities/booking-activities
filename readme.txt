@@ -24,6 +24,7 @@ Try it live on the [demo website](http://demo.booking-activities.fr/en/)!
 ★ = Unique feature only Booking Activities has.
 
 **Editor**
+
 * ★ **WYSIWYG**: Visually build your plannings
 * ★ **Drag and drop** events directly on the calendar
 * ★ **Group your events** to easily sell bundles, subscriptions, seminars, or events spreading on several days
@@ -31,12 +32,14 @@ Try it live on the [demo website](http://demo.booking-activities.fr/en/)!
 * Unlimited calendars, activities, events and bookings.
 
 **Display**
+
 * **Shortcodes** to display booking forms, customer's bookings list, or simple calendars
 * ★ Display events from multiple calendars and activities at once
 * ★ **One-click booking**: just pick the desired event on the calendar and click on "Book"! 
 * *If you do not use WooCommerce, customers must be logged in to book*
 
 **Online payments with WooCommerce**
+
 * Calendars are automatically integrated to product pages
 * ★ Attach multiple calendars and activities to one product
 * ★ **Cart expiration system**: bookings in the shopping cart are temporary
@@ -45,11 +48,13 @@ Try it live on the [demo website](http://demo.booking-activities.fr/en/)!
 * ★ Automatic refunds by coupon or via the gateway (if allowed)
 
 **Manage reservations**
+
 * Click on the desired event to show its bookings list
 * Booking actions: validate, cancel, reschedule, ★ refund...
 * ★ Your customers can **cancel** or **reschedule** their bookings and **ask a refund** by themselves
 
 **Translation ready**
+
 * **Multilingual support** with ★ QTranslateX (free plugin)
 * ★ Auto-detect and switch languages, date/time format, first day of the week...
 * Fully translated in English and French. You can also help us [translating Booking Activities](https://translate.wordpress.org/projects/wp-plugins/booking-activities) in your language.
@@ -72,12 +77,14 @@ See the whole [add-ons list here](https://booking-activities.fr/en/add-ons/?utm_
 = This plugin is great for... You? =
 
 To know if Booking Activities is made for you, you just need to understand **how it works**:
+
 1. **You place** events on a calendar
 2. **Customers pick** them and book it
 
 If this fits your business then give it a try!
 
 This booking system has been specially designed to fulfill the needs of **most activity providers**:
+
 * For **tourism, sport and leisure** (nautical, aerial, land, mountain, foot or wheels, outdoor or indoor...)
 * For **courses, trainings, exhibitions** (education, music, drawing, seminar...)
 * For **cultural activities** (museum, theatre / cinema...)
@@ -118,18 +125,21 @@ Or read the full [features description](https://booking-activities.fr/en/documen
 
 = Create and fill your first calendar = 
 **Create your first calendar**
+
 1. Go to Booking Activities / Calendar Editor page
 2. Click on the big '+' button
 3. Set a title, an opening date and a closing date
 4. In the "Agenda" tab, you can also set your working hours
-4. Click on the dialog OK button, the calendar is loading!
+5. Click on the dialog OK button, the calendar is loading!
 
 **Create your first activity**
+
 1. Click on the '+' button in the 'Activities' area
 2. Set a title, an availability amount, a color and a duration
 3. Click on the dialog OK button, the activity is added to the list!
 
 **Create your first event**
+
 1. Drag an activity from the list and drop it on the calendar
 2. Drag and drop the event to move it
 3. Mouseover the event and click on its settings wheel to edit its properties
