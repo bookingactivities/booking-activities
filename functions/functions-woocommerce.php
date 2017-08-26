@@ -204,8 +204,8 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 		// Sanitize
 		$quantity		= intval( $quantity );
-		$add_quantity	= boolval( $add_quantity );
-
+		$add_quantity	= $add_quantity ? true : false;
+		
 		$response = array( 'status' => 'success' );
 
 		// Get bookings of the group

@@ -239,7 +239,8 @@ function bookacti_activate() {
 	bookacti_init_settings_values();
 	
 	// Keep in memory the first installed date
-	if( empty( get_option( 'bookacti-install-date' ) ) ) {
+	$install_date = get_option( 'bookacti-install-date' );
+	if( ! $install_date ) {
 		update_option( 'bookacti-install-date', date( 'Y-m-d H:i:s' ) );
 	}
 	

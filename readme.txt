@@ -13,8 +13,12 @@ Booking system specialized in activities: sports, leisure, courses, events, tour
 
 == Description ==
 
-Booking Activities is a complete booking system designed for any kind of activity providers. 
-Drag and drop your events to build your activity planning. Copy / Paste a shortcode to display booking forms. Pick an event onto this calendar and book it. Calendars are automatically integrated to WooCommerce product pages.
+Booking Activities is a complete booking system designed for activities.
+It is very easy to use:
+
+1. **Drag and drop** your activities onto your planning.
+2. Copy / Paste a **shortcode** to display a booking form. Or **integrate it with WooCommerce** products.
+3. **Pick** an event onto this calendar and book it. 
 
 Try it live on the [demo website](http://demo.booking-activities.fr/en/)!
 
@@ -37,6 +41,7 @@ Try it live on the [demo website](http://demo.booking-activities.fr/en/)!
 * ★ Display events from multiple calendars and activities at once
 * ★ **One-click booking**: just pick the desired event on the calendar and click on "Book"! 
 * *If you do not use WooCommerce, customers must be logged in to book*
+* 100% responsive: looks great on mobiles, tablets and computers.
 
 **Online payments with WooCommerce**
 
@@ -59,7 +64,9 @@ Try it live on the [demo website](http://demo.booking-activities.fr/en/)!
 * ★ Auto-detect and switch languages, date/time format, first day of the week...
 * Fully translated in English and French. You can also help us [translating Booking Activities](https://translate.wordpress.org/projects/wp-plugins/booking-activities) in your language.
 
-**100% responsive**
+**The best inside**
+* **API for developpers** (PHP actions and filters, JS actions). *Documentation coming soon.*
+* Use the lattest version of the beautiful and handy **[FullCalendar](https://fullcalendar.io/)**
 
 See the whole [features list here](https://booking-activities.fr/en/documentation/features/?utm_source=wp-plugin-page&utm_medium=wordpress&utm_content=readme).
 
@@ -108,9 +115,9 @@ Then feel free to tell us if you miss a feature, if you find a bug or anything t
 
 = Requirements =
 
-* **WordPress**: 3.6.0 or later
-* **PHP**: 5.5.0 or later
-* **WooCommerce**: 2.6.0 or later (deprecated, update to 3.x asap) 
+* **WordPress**: 3.6 or later
+* **PHP**: 5.3 or later
+* **WooCommerce**: 2.6 or later (deprecated, update to 3.x asap) 
 * *Booking Activities can be used without WooCommerce*
 
 
@@ -269,6 +276,10 @@ If you don't find the answer you need, please [contact us](https://booking-activ
 
 
 == Changelog ==
+
+= 1.1.2 =
+* Fix - Incorrect (or negative) group bookings number in "Bookings" page
+* Fix - Support PHP 5.3 or later (instead of 5.5)
 
 = 1.1.1 - 2017/08/08 =
 * Fix - Fix AJAX error when trying to create / update an activity with WordPress < 4.6

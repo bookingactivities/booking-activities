@@ -198,27 +198,28 @@ function bookacti_meta_links_in_plugins_table( $links, $file ) {
 // FIRST20 DISCOUNT NOTICE
 add_action( 'admin_notices', 'bookacti_first20_notice' );
 function bookacti_first20_notice() {
-	if( ! empty( get_option( 'bookacti-first20-notice-dismissed' ) ) || ! current_user_can( 'bookacti_manage_booking_activities' ) ) {
+	$dismissed = get_option( 'bookacti-first20-notice-dismissed' );
+	if( $dismissed || ! current_user_can( 'bookacti_manage_booking_activities' ) ) {
 		return;
 	}
 	
 	$switch_message = false;
+	$viewed = get_option( 'bookacti-first20-notice-viewed' );
 	if( ! empty( $_GET ) && isset( $_GET[ 'page' ] ) ) {
 		if( sanitize_title_with_dashes( $_GET[ 'page' ] ) === 'booking-activities' ) {
 			$switch_message = true;
-			if( empty( get_option( 'bookacti-first20-notice-viewed' ) ) ) {
+			if( ! $viewed ) {
 				update_option( 'bookacti-first20-notice-viewed', 1 );
+				$viewed = 1;
 			}
 			if( isset( $_GET[ 'dismiss_first20_notice' ] ) && wp_verify_nonce( $_GET[ 'nonce' ], 'bookacti_dismiss_first20_notice' ) && current_user_can( 'bookacti_manage_booking_activities' ) ) {
 				update_option( 'bookacti-first20-notice-dismissed', 1 );
 				return;
 			}
-		} else {
-			if( ! empty( get_option( 'bookacti-first20-notice-viewed' ) ) ) {
-				return;
-			}
+		} else if( $viewed ) {
+			return;
 		}
-	} else if( ! empty( get_option( 'bookacti-first20-notice-viewed' ) ) ) {
+	} else if( $viewed ) {
 		return;
 	}
 	?>
@@ -239,7 +240,8 @@ function bookacti_first20_notice() {
 // ASK TO RATE THE PLUGIN 5 STARS
 add_action( 'admin_notices', 'bookacti_5stars_rating_notice' );
 function bookacti_5stars_rating_notice() {
-	if( empty( get_option( 'bookacti-5stars-rating-notice-dismissed' ) ) ) {
+	$dismissed = get_option( 'bookacti-5stars-rating-notice-dismissed' );
+	if( ! $dismissed ) {
 		if( current_user_can( 'bookacti_manage_booking_activities' ) ) {
 			$install_date = get_option( 'bookacti-install-date' );
 			if( ! empty( $install_date ) ) {
