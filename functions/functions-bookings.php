@@ -522,7 +522,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 				$possible_actions_array[ 'reschedule' ] = array( 
 					'class'			=> 'bookacti-reschedule-booking',
 					'label'			=> __( 'Reschedule', BOOKACTI_PLUGIN_NAME ),
-					'description'	=> __( 'Change the booking dates to any other available schedule for this event.', BOOKACTI_PLUGIN_NAME ),
+					'description'	=> __( 'Change the booking dates to any other available time slot for this event.', BOOKACTI_PLUGIN_NAME ),
 					'link'			=> '',
 					'admin_or_front'=> 'both' );
 			}

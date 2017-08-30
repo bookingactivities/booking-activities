@@ -1,26 +1,29 @@
 === Booking Activities ===
 Contributors: bookingactivities
 Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=7EKU434L7NEVC
-Tags: booking activities, booking form, booking activity, booking sport, booking events
+Tags: booking activities, booking sport, booking form, event reservation, reservation schedule
 Requires at least: 3.6
 Tested up to: 4.8
-Stable tag: 1.1.1
+Requires PHP: 5.3
+Stable tag: 1.1.2
 License: GPLv3 or later
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
 
-Booking system specialized in activities: sports, leisure, courses, events, tourism, cultural, and yours! Works great with WooCommerce.
+Reservation system specialized in activities: sports, leisure, courses, events, tourism, cultural, and yours! Works great with WooCommerce.
 
 
 == Description ==
 
-Booking Activities is a complete booking system designed for activities.
+Booking Activities is a complete booking tool designed for activities.
 It is very easy to use:
 
-1. **Drag and drop** your activities onto your planning.
+1. **Drag and drop** your activities onto your schedule.
 2. Copy / Paste a **shortcode** to display a booking form. Or **integrate it with WooCommerce** products.
 3. **Pick** an event onto this calendar and book it. 
 
-Try it live on the [demo website](http://demo.booking-activities.fr/en/)!
+Try this reservation tool live on the [demo website](http://demo.booking-activities.fr/en/)!
+
+[youtube https://www.youtube.com/watch?v=Q7gbK5i4DPU]
 
 
 = Main features =
@@ -37,10 +40,10 @@ Try it live on the [demo website](http://demo.booking-activities.fr/en/)!
 
 **Display**
 
-* **Shortcodes** to display booking forms, customer's bookings list, or simple calendars
-* ★ Display events from multiple calendars and activities at once
+* **Shortcodes** to display reservation forms, customer's bookings list, or simple calendars
+* ★ Display events from multiple schedules and activities at once
 * ★ **One-click booking**: just pick the desired event on the calendar and click on "Book"! 
-* *If you do not use WooCommerce, customers must be logged in to book*
+* *If you do not use WooCommerce, customers must be logged in to make a reservation*
 * 100% responsive: looks great on mobiles, tablets and computers.
 
 **Online payments with WooCommerce**
@@ -54,7 +57,7 @@ Try it live on the [demo website](http://demo.booking-activities.fr/en/)!
 
 **Manage reservations**
 
-* Click on the desired event to show its bookings list
+* Click on the desired event on the booking calendar to show the event reservation list
 * Booking actions: validate, cancel, reschedule, ★ refund...
 * ★ Your customers can **cancel** or **reschedule** their bookings and **ask a refund** by themselves
 
@@ -86,7 +89,7 @@ See the whole [add-ons list here](https://booking-activities.fr/en/add-ons/?utm_
 To know if Booking Activities is made for you, you just need to understand **how it works**:
 
 1. **You place** events on a calendar
-2. **Customers pick** them and book it
+2. **Customers pick** them and book them
 
 If this fits your business then give it a try!
 
@@ -94,7 +97,7 @@ This booking system has been specially designed to fulfill the needs of **most a
 
 * For **tourism, sport and leisure** (nautical, aerial, land, mountain, foot or wheels, outdoor or indoor...)
 * For **courses, trainings, exhibitions** (education, music, drawing, seminar...)
-* For **cultural activities** (museum, theatre / cinema...)
+* For **cultural activities** (museum, theatre / cinema, booking events...)
 * *For you too, but you are not in this list? Please, [tell us](https://booking-activities.fr/en/?utm_source=wp-plugin-page&utm_medium=wordpress&utm_content=readme#contact)* :)
 
 
@@ -125,7 +128,7 @@ Then feel free to tell us if you miss a feature, if you find a bug or anything t
 == Frequently Asked Questions ==
 
 = I am not an activity provider, can this plugin still meet my needs? =
-Yes of course. It is basically a reservation system based on event scheduling. In other words, you place events on a calendar that can be booked. You can find another purposes to it.
+Yes of course. It is basically a reservation system based on event scheduling. In other words, you build your event calendar and allow them to be booked. You can find another purposes to it.
 To know if it actually meets your needs, simply try it, it's free. 
 If you are on a hurry, you can just check the [demo website](http://demo.booking-activities.fr/en/?utm_source=wp-plugin-page&utm_medium=wordpress&utm_content=readme).
 Or read the full [features description](https://booking-activities.fr/en/documentation/features/?utm_source=wp-plugin-page&utm_medium=wordpress&utm_content=readme) if you are looking for something in particular.
@@ -151,6 +154,8 @@ Or read the full [features description](https://booking-activities.fr/en/documen
 2. Drag and drop the event to move it
 3. Mouseover the event and click on its settings wheel to edit its properties
 
+**Congrats! You have created your first event schedule**
+
 
 = Display a reservation form = 
 *Make sure to have at least one calendar, one activity and one event at a future date* 
@@ -163,7 +168,7 @@ Or read the full [features description](https://booking-activities.fr/en/documen
 
 *The user must be logged in to book an event.*
 
-/!\ Booking form displayed via shortcode are not bound to WooCommerce at all. If you want to bind a WC product to a calendar, check "Use it with WooCommerce" in this FAQ.
+/!\ Booking forms displayed via shortcode are not bound to WooCommerce at all. If you want to bind a WC product to a calendar, check "Use it with WooCommerce" in this FAQ.
 
 
 = Display the calendar only = 
@@ -239,20 +244,15 @@ Else, they will be cancelled later, with the others in that case.
 
 = My events appears to be booked, but no bookings appear in the list =
 Temporary bookings (such as In cart events) take active slots but may not appear in the bookings list.
-Just click on the settings wheel above the bookings list, and check 'Display temporary bookings'.
+Click on the desired event on the reservation calendar, in "Bookings" page.
+Then, just click on the settings wheel above the bookings list, and check 'Display temporary bookings'.
 Now you can see all kind of active bookings (booked, pending, in cart).
 
 
 = Cancelled bookings disapeared from the list, I need to see them! =
+Click on the desired event on the booking schedule, in "Bookings" page.
 Just click on the settings wheel above the bookings list, and check 'Display inactive bookings'.
 Now you can see inactive bookings (cancelled, expired, removed, refunded, refund requested).
-
-
-___
-
-For any question about how to use Booking Activities, take a look at the [documentation](https://booking-activities.fr/en/documentation/user-documentation/?utm_source=wp-plugin-page&utm_medium=wordpress&utm_content=readme).
-
-If you don't find the answer you need, please [contact us](https://booking-activities.fr/en/#contact?utm_source=wp-plugin-page&utm_medium=wordpress&utm_content=readme) (French and English).
 
 
 
@@ -263,12 +263,12 @@ If you don't find the answer you need, please [contact us](https://booking-activ
 3. Create daily, weekly or monthly repeated events. You can add exception dates to the repetition.
 4. Grouping your events is simple: just select multiple events and click on 'Add a group'. Or select an existing group and start editing it right away.
 5. Use shortcodes to display a calendar alone or with booking form. You can display events from multiple calendars and activities at once.
-6. When a customer picks a grouped event, the whole group is selected. If the events is part of several groups, the customer has to choose one from a dialog.
+6. When a customer clicks on a grouped event, the whole group is selected. If the event is part of several groups, the customer has to choose one from a dialog.
 7. Easily bind a planning to a WooCommerce product. You can choose to display events from multiple activities, and multiple calendars.
-8. Booking Activities calendars can be integrated to both simple and variable products.
+8. Booking Activities event calendars can be integrated to both simple and variable products.
 9. A reservation form appears automatically on desired WooCommerce product pages.
 10. WooCommerce cart expiration system: when time is up, bookings are cancelled and cart emptied.
-11. Manage your bookings: just click on the desired event and its bookings list appears. Then choose a booking action: change state (cancel, validate), reschedule, refund...
+11. Manage your bookings: just click on the desired event on the reservation schedule and its bookings list appears. Then choose a booking action: change state (cancel, validate), reschedule, refund...
 12. Customers also have their bookings list thanks to a shortcode. They can cancel, reschedule or ask a refund by their own (if you allow them).
 13. Your customers can manage their bookings from their WooCommerce orders as well.
 14. Orders status are bound to their bookings status. If bookings are cancelled / booked / refunded, so do the order (and vice-versa).
@@ -280,6 +280,9 @@ If you don't find the answer you need, please [contact us](https://booking-activ
 = 1.1.2 =
 * Fix - Incorrect (or negative) group bookings number in "Bookings" page
 * Fix - Support PHP 5.3 or later (instead of 5.5)
+* Localization - Language files are no longer included in the plugin package. Now they will be updated through wordpress, just like your themes and plugins. You can contribute here: https://translate.wordpress.org/projects/wp-plugins/booking-activities
+* Localization - Replaced the word "schedule" by the more appropriated word "time slot" or "event" depending on the context
+* Tweak - Add a video introduction in the readme file
 
 = 1.1.1 - 2017/08/08 =
 * Fix - Fix AJAX error when trying to create / update an activity with WordPress < 4.6

@@ -41,12 +41,12 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			if( ! in_array( $response[ 'status' ], array( 'success', 'no_change' ), true ) ) {
 				if( $response[ 'error' ] === 'qty_sup_to_avail' ) {
 					$message =
-					sprintf( __( 'You want to add %1$s bookings to your cart but only %2$s are available on this schedule. '
-							. 'Please choose another schedule or decrease the quantity. '
+					sprintf( __( 'You want to add %1$s bookings to your cart but only %2$s are available on this time slot. '
+							. 'Please choose another event or decrease the quantity. '
 							, BOOKACTI_PLUGIN_NAME ), 
 							$meta_value, $response[ 'availability' ] );
 				} else if( $response[ 'error' ] === 'no_availability' ) {
-					$message = __( 'This schedule is no longer available. Please choose another schedule.', BOOKACTI_PLUGIN_NAME );
+					$message = __( 'This event is no longer available. Please choose another event.', BOOKACTI_PLUGIN_NAME );
 
 				} else {
 					$message = __( 'Error occurs while trying to update booking quantity.', BOOKACTI_PLUGIN_NAME );
@@ -412,13 +412,13 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 					// Prepare message
 					if( $response['error'] === 'qty_sup_to_avail' ) {
 						$message =
-						sprintf( __( 'You want to add %1$s bookings to your cart but only %2$s are available on this schedule. '
-								. 'Please choose another schedule or decrease the quantity. '
+						sprintf( __( 'You want to add %1$s bookings to your cart but only %2$s are available on this time slot. '
+								. 'Please choose another event or decrease the quantity. '
 								, BOOKACTI_PLUGIN_NAME ), 
 								$new_qty, $response[ 'availability' ] );
 
 					} else if( $response['error'] === 'no_availability' ) {
-						$message = __( 'This schedule is no longer available. Please choose another schedule.', BOOKACTI_PLUGIN_NAME );
+						$message = __( 'This event is no longer available. Please choose another event.', BOOKACTI_PLUGIN_NAME );
 
 					} else {
 						$message = __( 'Error occurs while trying to update booking quantity.', BOOKACTI_PLUGIN_NAME );

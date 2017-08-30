@@ -140,7 +140,7 @@ function bookacti_get_booking_method_html( $method, $booking_system_attributes )
  */
 function bookacti_retrieve_calendar_elements( $booking_system_atts ) {
 	
-	$default_calendar_title	= esc_html__( 'Pick a schedule on the calendar:', BOOKACTI_PLUGIN_NAME );
+	$default_calendar_title	= esc_html__( 'Pick an event on the calendar:', BOOKACTI_PLUGIN_NAME );
 	$calendar_title			= apply_filters( 'bookacti_calendar_title', $default_calendar_title, $booking_system_atts );
 	
 	$before_calendar_title	= apply_filters( 'bookacti_before_calendar_title', '', $booking_system_atts );
@@ -395,7 +395,7 @@ function bookacti_sanitize_arguments_to_fetch_events( $args ) {
 
 
 /**
- * Validate booking form (verify the info of the selected schedule before booking it)
+ * Validate booking form (verify the info of the selected event before booking it)
  *
  * @since 1.0.0
  * @version 1.1.0

@@ -144,10 +144,10 @@ $bookacti_translation_array = apply_filters( 'bookacti_translation_array', array
 	'error_excep_not_btw_from_and_to'   => esc_html__( 'Exception dates should be included in the repetition period.', BOOKACTI_PLUGIN_NAME ),
 	'error_excep_duplicated'            => esc_html__( 'Exceptions should all have a different date.', BOOKACTI_PLUGIN_NAME ),
 	'error_set_excep_on_booked_occur'   => esc_html__( 'You can\'t set an exception on a day when the occurence has already been booked.', BOOKACTI_PLUGIN_NAME ),
-	'error_select_schedule'				=> esc_html__( 'You haven\'t selected any schedule. Please select a schedule.', BOOKACTI_PLUGIN_NAME ),
-	'error_corrupted_schedule'			=> esc_html__( 'The schedule you selected is corrupted, please reselect a schedule and try again.', BOOKACTI_PLUGIN_NAME ),
+	'error_select_schedule'				=> esc_html__( 'You haven\'t selected any event. Please select an event.', BOOKACTI_PLUGIN_NAME ),
+	'error_corrupted_schedule'			=> esc_html__( 'The event you selected is corrupted, please reselect an event and try again.', BOOKACTI_PLUGIN_NAME ),
 	/* translators: %1$s is the quantity the user want. %2$s is the available quantity. */
-	'error_less_avail_than_quantity'	=> esc_html__( 'You want to make %1$s bookings but only %2$s are available on this schedule. Please choose another schedule.', BOOKACTI_PLUGIN_NAME ),
+	'error_less_avail_than_quantity'	=> esc_html__( 'You want to make %1$s bookings but only %2$s are available on this time slot. Please choose another event or decrease the quantity.', BOOKACTI_PLUGIN_NAME ),
 	'error_quantity_inf_to_0'			=> esc_html__( 'The amount of desired bookings is less than or equal to 0. Please increase the quantity.', BOOKACTI_PLUGIN_NAME ),
 	'error_no_templates_for_activity'	=> esc_html__( 'The activity must be bound to at least one calendar.', BOOKACTI_PLUGIN_NAME ),
 	'error_no_activity_selected'		=> esc_html__( 'Select at least one activity.', BOOKACTI_PLUGIN_NAME ),
@@ -187,8 +187,6 @@ $bookacti_translation_array = apply_filters( 'bookacti_translation_array', array
 
 
 	//OTHERS
-	'pick_date'							=> esc_html__( 'Pick a date', BOOKACTI_PLUGIN_NAME ),
-	'pick_schedule'						=> esc_html__( 'Pick a schedule', BOOKACTI_PLUGIN_NAME ),
 	'ask_for_reasons'					=> esc_html__( 'Tell us why? (Details, reasons, comments...)', BOOKACTI_PLUGIN_NAME ),
 	'one_person_per_booking'			=> esc_html__( 'for one person', BOOKACTI_PLUGIN_NAME ),
 	/* translators: %1$s is the number of persons who can enjoy the activity with one booking */

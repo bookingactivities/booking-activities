@@ -435,7 +435,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 						wp_send_json( array( 'status' => 'success', 'actions_html' => $actions_html ) );
 					} else if( $rescheduled === 0 ) {
-						$message = __( 'You must select a different schedule than the current one.', BOOKACTI_PLUGIN_NAME );
+						$message = __( 'You must select a different time slot than the current one.', BOOKACTI_PLUGIN_NAME );
 						wp_send_json( array( 'status' => 'no_changes', 'error' => 'no_changes', 'message' => $message ) );
 
 					} else {

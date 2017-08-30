@@ -220,7 +220,7 @@ function bookacti_settings_section_bookings_callback() { }
 		//Display the tip 
 		/* translators: The word 'Calendar' refers to a booking method you have to translate too. Make sure you use the same word for both translation. */
 		$tip  = apply_filters( 'bookacti_booking_methods_tip',
-				__( "'Calendar': The user will have to pick the schedule directly on a calendar.", BOOKACTI_PLUGIN_NAME ) );
+				__( "'Calendar': The user will have to pick the event directly on a calendar.", BOOKACTI_PLUGIN_NAME ) );
 		
 		$license_status = get_option( 'badp_license_status' );
 		if( empty( $license_status ) || $license_status !== 'valid' ) {
