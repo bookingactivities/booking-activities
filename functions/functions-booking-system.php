@@ -140,7 +140,7 @@ function bookacti_get_booking_method_html( $method, $booking_system_attributes )
  */
 function bookacti_retrieve_calendar_elements( $booking_system_atts ) {
 	
-	$default_calendar_title	= esc_html__( 'Pick a schedule on the calendar:', BOOKACTI_PLUGIN_NAME );
+	$default_calendar_title	= esc_html__( 'Pick an event on the calendar:', BOOKACTI_PLUGIN_NAME );
 	$calendar_title			= apply_filters( 'bookacti_calendar_title', $default_calendar_title, $booking_system_atts );
 	
 	$before_calendar_title	= apply_filters( 'bookacti_before_calendar_title', '', $booking_system_atts );
@@ -372,7 +372,15 @@ function bookacti_sanitize_arguments_to_fetch_events( $args ) {
 				break;
 			case 'groups_only':
 			case 'past_events':
-				$sanitized_args[ $default_key ] = in_array( $args[ $default_key ], array( 0, 1, '0', '1', true, false, 'true', 'false' ), true ) ? boolval( $args[ $default_key ] ) : $default_value;
+				if( in_array( $args[ $default_key ], array( 0, '0', false, 'false' ), true ) ) {
+					$sanitized_args[ $default_key ] = false;
+				}
+				else if( in_array( $args[ $default_key ], array( 1, '1', true, 'true' ), true ) ) {
+					$sanitized_args[ $default_key ] = true;
+				}
+				else {
+					$sanitized_args[ $default_key ] = $default_value;
+				}
 				break;
 			case 'context':
 				$sanitized_args[ $default_key ] = in_array( $args[ $default_key ], array( 'frontend', 'booking_page', 'editor' ), true ) ? $args[ $default_key ] : $default_value;
@@ -387,7 +395,7 @@ function bookacti_sanitize_arguments_to_fetch_events( $args ) {
 
 
 /**
- * Validate booking form (verify the info of the selected schedule before booking it)
+ * Validate booking form (verify the info of the selected event before booking it)
  *
  * @since 1.0.0
  * @version 1.1.0
@@ -595,7 +603,7 @@ function bookacti_create_repeated_events( $event, $shared_data = array(), $args 
 		$is_in_range	= bookacti_is_event_in_its_template_range( $event->event_id, $event_start->format('Y-m-d H:i:s'), $event_end->format('Y-m-d H:i:s') );
 		$is_booked		= bookacti_get_number_of_bookings( $event->event_id, $event_start->format('Y-m-d H:i:s'), $event_end->format('Y-m-d H:i:s') ) > 0;
 		$category_ids	= bookacti_get_event_group_category_ids( $event->event_id, $event_start->format('Y-m-d H:i:s'), $event_end->format('Y-m-d H:i:s') );
-		$is_in_category	= empty( $args[ 'group_categories' ] ) ? true : ! empty( array_intersect( $category_ids, $args[ 'group_categories' ] ) );
+		$is_in_category	= empty( $args[ 'group_categories' ] ) ? true : array_intersect( $category_ids, $args[ 'group_categories' ] );
 		
         if( ( ( ! $args[ 'groups_only' ]																		// If single events are displayed, do not care about categories
 			||    $args[ 'groups_only' ] && $is_in_category && ! empty( $category_ids ) )						// Else, filter events by category
@@ -630,7 +638,7 @@ function bookacti_create_repeated_events( $event, $shared_data = array(), $args 
 
 // Determine the number of day or month to add according to the repetition frequence
 function bookacti_units_to_add_to_repeat_event( $event ) {
-    $to_add = ['number' => 0, 'unit' => 'days'];
+    $to_add = array( 'number' => 0, 'unit' => 'days' );
     
     if( $event->repeat_freq === 'daily' )   { $to_add['number'] = 1; $to_add['unit'] = 'days'; }
     

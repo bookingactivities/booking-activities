@@ -165,17 +165,17 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 				if( $response[ 'error' ] === 'qty_sup_to_avail' ) {
 					wc_add_notice( 
-								/* translators: %1$s is a variable number of bookings. This sentence is followed by two others : 'but only %1$s is available on this schedule.' and 'Please choose another schedule or decrease the quantity.' */
+								/* translators: %1$s is a variable number of bookings. This sentence is followed by two others : 'but only %1$s is available on this time slot.' and 'Please choose another event or decrease the quantity.' */
 								sprintf( _n( 'You want to add %1$s booking to your cart', 'You want to add %1$s bookings to your cart', $new_quantity, BOOKACTI_PLUGIN_NAME ), $new_quantity )
-								/* translators: %1$s is a variable number of bookings. This sentence is preceded by : 'You want to add %1$s booking to your cart' and followed by 'Please choose another schedule or decrease the quantity.' */
-						. ' ' . sprintf( _n( 'but only %1$s is available on this schedule.', 'but only %1$s are available on this schedule. ', $response[ 'availability' ], BOOKACTI_PLUGIN_NAME ), $response[ 'availability' ] )
-								/* translators: This sentence is preceded by two others : 'You want to add %1$s booking to your cart' and 'but only %1$s is available on this schedule.' */
-						. ' ' . __( 'Please choose another schedule or decrease the quantity.', BOOKACTI_PLUGIN_NAME )
+								/* translators: %1$s is a variable number of bookings. This sentence is preceded by : 'You want to add %1$s booking to your cart' and followed by 'Please choose another event or decrease the quantity.' */
+						. ' ' . sprintf( _n( 'but only %1$s is available on this time slot.', 'but only %1$s are available on this time slot. ', $response[ 'availability' ], BOOKACTI_PLUGIN_NAME ), $response[ 'availability' ] )
+								/* translators: This sentence is preceded by two others : 'You want to add %1$s booking to your cart' and 'but only %1$s is available on this time slot.' */
+						. ' ' . __( 'Please choose another event or decrease the quantity.', BOOKACTI_PLUGIN_NAME )
 					, 'error' );
 
 				} else if( $response[ 'error' ] === 'no_availability' ) {
 					// If the event is no longer available, notify the user
-					wc_add_notice( __( 'This schedule is no longer available. Please choose another schedule.', BOOKACTI_PLUGIN_NAME ), 'error' );
+					wc_add_notice( __( 'This event is no longer available. Please choose another event.', BOOKACTI_PLUGIN_NAME ), 'error' );
 
 				} else if( $response[ 'error' ] === 'failed' ) {
 
@@ -204,8 +204,8 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 		// Sanitize
 		$quantity		= intval( $quantity );
-		$add_quantity	= boolval( $add_quantity );
-
+		$add_quantity	= $add_quantity ? true : false;
+		
 		$response = array( 'status' => 'success' );
 
 		// Get bookings of the group
@@ -236,15 +236,15 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			if( $context === 'frontend' ) {
 				if( $response[ 'availability' ] > 0 ) {
 					wc_add_notice( 
-								/* translators: %1$s is a variable number of bookings. This sentence is followed by two others : 'but only %1$s is available on this schedule.' and 'Please choose another schedule or decrease the quantity.' */
+								/* translators: %1$s is a variable number of bookings. This sentence is followed by two others : 'but only %1$s is available on this time slot.' and 'Please choose another event or decrease the quantity.' */
 								sprintf( _n( 'You want to add %1$s booking to your cart', 'You want to add %1$s bookings to your cart', $quantity, BOOKACTI_PLUGIN_NAME ), $quantity )
-								/* translators: %1$s is a variable number of bookings. This sentence is preceded by : 'You want to add %1$s booking to your cart' and followed by 'Please choose another schedule or decrease the quantity.' */
-						. ' ' . sprintf( _n( 'but only %1$s is available on this schedule.', 'but only %1$s are available on this schedule. ', $response[ 'availability' ], BOOKACTI_PLUGIN_NAME ), $response[ 'availability' ] )
-								/* translators: This sentence is preceded by two others : 'You want to add %1$s booking to your cart' and 'but only %1$s is available on this schedule.' */
-						. ' ' . __( 'Please choose another schedule or decrease the quantity.', BOOKACTI_PLUGIN_NAME )
+								/* translators: %1$s is a variable number of bookings. This sentence is preceded by : 'You want to add %1$s booking to your cart' and followed by 'Please choose another event or decrease the quantity.' */
+						. ' ' . sprintf( _n( 'but only %1$s is available on this time slot.', 'but only %1$s are available on this time slot. ', $response[ 'availability' ], BOOKACTI_PLUGIN_NAME ), $response[ 'availability' ] )
+								/* translators: This sentence is preceded by two others : 'You want to add %1$s booking to your cart' and 'but only %1$s is available on this time slot.' */
+						. ' ' . __( 'Please choose another event or decrease the quantity.', BOOKACTI_PLUGIN_NAME )
 					, 'error' );
 				} else {
-					wc_add_notice( __( 'This schedule is no longer available. Please choose another schedule.', BOOKACTI_PLUGIN_NAME ), 'error' );
+					wc_add_notice( __( 'This event is no longer available. Please choose another event.', BOOKACTI_PLUGIN_NAME ), 'error' );
 				}
 			}
 

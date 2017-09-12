@@ -645,12 +645,12 @@ function bookacti_get_bookings_number_for_a_single_grouped_event( event, event_g
 			if( event.id === grouped_event.id
 			&&  start === grouped_event.start 
 			&&  end === grouped_event.end ) {
-				group_bookings += grouped_event.group_bookings;
+				group_bookings += parseInt( grouped_event.group_bookings );
 			}
 		});
 	});
 	
-	return event.bookings - group_bookings;
+	return parseInt( event.bookings ) - group_bookings;
 }
 
 

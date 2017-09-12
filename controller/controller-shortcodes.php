@@ -28,7 +28,7 @@ function bookacti_shortcodes_init() {
  * @param string $tag Should be "bookingactivities_calendar"
  * @return string The calendar corresponding to given parameters
  */
-function bookacti_shortcode_calendar( $atts = [], $content = null, $tag = '' ) {
+function bookacti_shortcode_calendar( $atts = array(), $content = null, $tag = '' ) {
 	
 	// normalize attribute keys, lowercase
     $atts = array_change_key_case( (array) $atts, CASE_LOWER );
@@ -62,7 +62,7 @@ function bookacti_shortcode_calendar( $atts = [], $content = null, $tag = '' ) {
  * @param string $tag Should be "bookingactivities_form"
  * @return string The booking form corresponding to given parameters
  */
-function bookacti_shortcode_booking_form( $atts = [], $content = null, $tag = '' ) {
+function bookacti_shortcode_booking_form( $atts = array(), $content = null, $tag = '' ) {
 	
 	// Format attributes
     $atts = array_change_key_case( (array) $atts, CASE_LOWER );
@@ -115,7 +115,7 @@ function bookacti_shortcode_booking_form( $atts = [], $content = null, $tag = ''
  * @param string $tag Should be "bookingactivities_list"
  * @return string The booking list corresponding to given parameters
  */
-function bookacti_shortcode_bookings_list( $atts = [], $content = null, $tag = '' ) {
+function bookacti_shortcode_bookings_list( $atts = array(), $content = null, $tag = '' ) {
 	
 	// normalize attribute keys, lowercase
     $atts = array_change_key_case( (array) $atts, CASE_LOWER );
