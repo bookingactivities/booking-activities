@@ -73,10 +73,14 @@ function bookacti_load_template_calendar() {
 		snapDuration:           '00:30',
 		scrollTime:				'08:00',
 		nowIndicator:           0,
+		weekNumbers:	        0,
+		weekNumbersWithinDays:	1,
+		navLinks:		        0,
 
 		slotEventOverlap:		0,
 		eventLimit:				2,
 		eventLimitClick:		'popover',
+		showNonCurrentDates:	0,
 
 		allDaySlot:             false,
 		allDayDefault:          false,
@@ -89,8 +93,15 @@ function bookacti_load_template_calendar() {
 		dropAccept:             '.fc-event',
 		eventDurationEditable:  false,
 		dragRevertDuration:     0,
-
-		views: { week: { eventLimit: false }, day: { eventLimit: false } },
+		
+		views: { 
+			week:		{ eventLimit: false }, 
+			day:		{ eventLimit: false }, 
+			listDay:	{ buttonText: bookacti_localized.calendar_button_list_day },
+			listWeek:	{ buttonText: bookacti_localized.calendar_button_list_week },
+			listMonth:	{ buttonText: bookacti_localized.calendar_button_list_month },
+			listYear:	{ buttonText: bookacti_localized.calendar_button_list_year } 
+		},
 
 		// Header : Functionnality to Display above the calendar
 		header: {
@@ -159,14 +170,15 @@ function bookacti_load_template_calendar() {
 						class_full = 'bookacti-full'; 
 					} 
 				}
-
-				element.find( 'div.fc-content' ).after( 
-					'<div class="bookacti-availability-container" >' 
-					+	'<span class="bookacti-available-places ' + class_no_availability + ' ' + class_booked + ' ' + class_full + '" >' 
-					+		'<span class="bookacti-bookings" >' + event.bookings + '</span>' 
-					+		'<span class="bookacti-total-availability" >/' + event.availability + '</span>'
-					+	'</span>'
-					+ '</div>');
+				
+				var avail_div	= '<div class="bookacti-availability-container" >' 
+										+	'<span class="bookacti-available-places ' + class_no_availability + ' ' + class_booked + ' ' + class_full + '" >' 
+										+		'<span class="bookacti-bookings" >' + event.bookings + '</span>' 
+										+		'<span class="bookacti-total-availability" >/' + event.availability + '</span>'
+										+	'</span>'
+										+ '</div>';
+				
+				element.append( avail_div );
 			}
 			
 			
@@ -256,7 +268,7 @@ function bookacti_load_template_calendar() {
 				});
 			}
 
-			calendar.trigger( 'bookacti_event_render', [ event, element ] );
+			calendar.trigger( 'bookacti_event_render', [ event, element, view ] );
 
 			if( ! event.render ) { return false; }
 		},
@@ -615,6 +627,8 @@ function bookacti_load_template_calendar() {
 					}
 				}
 			}
+			
+			calendar.trigger( 'bookacti_pick_event', [ event, jsEvent, view ] );
 		},
 		
 		// eventMouseover : When your mouse get over an event

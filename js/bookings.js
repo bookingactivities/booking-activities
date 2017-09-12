@@ -6,7 +6,7 @@ $j( document ).ready(function() {
 
 		// FILTERS
 			// Hide filtered events
-			booking_system.on( 'bookacti_event_render', function( e, event, element ) { 
+			booking_system.on( 'bookacti_event_render', function( e, event, element, view ) { 
 
 				element = element || undefined;
 
@@ -40,14 +40,14 @@ $j( document ).ready(function() {
 					var class_full				= available_places <= 0 ? 'bookacti-full' : '';
 					
 					// Build a div with availability
-					var div = '<div class="bookacti-availability-container" >' 
-								+ '<span class="bookacti-available-places ' + class_no_availability + ' ' + class_booked + ' ' + class_full + '" >'
-									+ '<span class="bookacti-active-bookings-number">' + active_bookings + '</span> / ' 
-									+ '<span class="bookacti-total-places-number">' + availability + '</span>' 
-								+ '</span>'
-							+ '</div>';
+					var avail_div	= '<div class="bookacti-availability-container" >' 
+										+ '<span class="bookacti-available-places ' + class_no_availability + ' ' + class_booked + ' ' + class_full + '" >'
+											+ '<span class="bookacti-active-bookings-number">' + active_bookings + '</span> / ' 
+											+ '<span class="bookacti-total-places-number">' + availability + '</span>' 
+										+ '</span>'
+									+ '</div>';
 					
-					element.append( div );
+					element.append( avail_div );
 				}
 			});
 			

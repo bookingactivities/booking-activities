@@ -35,7 +35,6 @@
 /** CALENDAR **/
 
 .fc-unthemed td.fc-today	{ background: rgba( 220, 193, 6, 0.1 ); }
-.fc-scroller				{ overflow-y: hidden !important; }
 .bookacti-calendar table	{ margin: 0; }
 
 /* Header */
@@ -80,7 +79,7 @@
 		display: block;
 		position: absolute;
 		bottom: 0;
-		right: -1px;
+		right: -2px;
 		z-index: 2;
 		overflow: hidden;
 	}
@@ -91,7 +90,7 @@
 		text-align: right;
 		font-size: 0.85em;
 	}
-	.bookacti-availability-container span								{ -webkit-border-radius: 3px 0; border-radius: 3px 0; }
+	.bookacti-availability-container span								{ -webkit-border-radius: 3px 0 0 3px; border-radius: 3px 0 0 3px; }
 	.bookacti-availability-container .bookacti-bookings					{ padding: 1px 0 1px 1px; }
 	.bookacti-availability-container .bookacti-total-availability		{ padding: 1px 1px 1px 0; }
 	.bookacti-availability-container .bookacti-available-places-number	{ font-weight: bold; font-size: larger; }
