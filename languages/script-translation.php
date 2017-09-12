@@ -54,7 +54,10 @@ $bookacti_translation_array = apply_filters( 'bookacti_translation_array', array
 	'dialog_button_cancel_booking'		=> esc_html_x( 'Cancel booking', 'Button label to trigger the cancel action', BOOKACTI_PLUGIN_NAME ),
 	'dialog_button_reschedule'			=> esc_html_x( 'Reschedule', 'Button label to trigger the refund action', BOOKACTI_PLUGIN_NAME ),
 	'dialog_button_refund'				=> esc_html_x( 'Request a refund', 'Button label to trigger the refund action', BOOKACTI_PLUGIN_NAME ),
-
+	'calendar_button_list_year'			=> esc_html__( 'list year', BOOKACTI_PLUGIN_NAME ),
+	'calendar_button_list_month'		=> esc_html__( 'list month', BOOKACTI_PLUGIN_NAME ),
+	'calendar_button_list_week'			=> esc_html__( 'list week', BOOKACTI_PLUGIN_NAME ),
+	'calendar_button_list_day'			=> esc_html__( 'list day', BOOKACTI_PLUGIN_NAME ),
 
 	//ERRORS
 	'error_retrieve_event_data'			=> esc_html__( 'Error occurs when trying to retrieve event parameters.', BOOKACTI_PLUGIN_NAME ),

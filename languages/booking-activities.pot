@@ -2,10 +2,10 @@
 # This file is distributed under the same license as the Booking Activities package.
 msgid ""
 msgstr ""
-"Project-Id-Version: Booking Activities 1.1.1\n"
+"Project-Id-Version: Booking Activities 1.1.3\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/booking-"
 "activities\n"
-"POT-Creation-Date: 2017-08-28 05:33:19+00:00\n"
+"POT-Creation-Date: 2017-09-11 14:34:58+00:00\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -13,14 +13,14 @@ msgstr ""
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 
-#. #-#-#-#-#  booking-activities.pot (Booking Activities 1.1.1)  #-#-#-#-#
+#. #-#-#-#-#  booking-activities.pot (Booking Activities 1.1.3)  #-#-#-#-#
 #. Plugin Name of the plugin/theme
 #: booking-activities.php:47 booking-activities.php:303
 #: view/view-landing.php:7
 msgid "Booking Activities"
 msgstr ""
 
-#. #-#-#-#-#  booking-activities.pot (Booking Activities 1.1.1)  #-#-#-#-#
+#. #-#-#-#-#  booking-activities.pot (Booking Activities 1.1.3)  #-#-#-#-#
 #. Description of the plugin/theme
 #: booking-activities.php:48
 msgid ""
@@ -98,7 +98,7 @@ msgstr ""
 
 #: controller/controller-bookings.php:451
 #: controller/controller-shortcodes.php:345
-#: languages/script-translation.php:117
+#: languages/script-translation.php:120
 msgid "You are not allowed to do this."
 msgstr ""
 
@@ -294,7 +294,7 @@ msgid "An error occurred, please try again."
 msgstr ""
 
 #: controller/controller-shortcodes.php:347
-#: languages/script-translation.php:123
+#: languages/script-translation.php:126
 msgid "You are not logged in. Please create an account and log in first."
 msgstr ""
 
@@ -402,7 +402,7 @@ msgid "Expired"
 msgstr ""
 
 #: controller/controller-woocommerce-bookings.php:61
-#: languages/script-translation.php:169
+#: languages/script-translation.php:172
 msgid "Removed"
 msgstr ""
 
@@ -579,7 +579,7 @@ msgid "Refund method"
 msgstr ""
 
 #: controller/controller-woocommerce-frontend.php:1166
-#: languages/script-translation.php:178
+#: languages/script-translation.php:181
 msgid "Coupon code"
 msgstr ""
 
@@ -672,7 +672,7 @@ msgid "You haven't picked any event. Please pick an event first."
 msgstr ""
 
 #: functions/functions-booking-system.php:451
-#: languages/script-translation.php:151
+#: languages/script-translation.php:154
 msgid ""
 "The amount of desired bookings is less than or equal to 0. Please increase "
 "the quantity."
@@ -784,17 +784,17 @@ msgstr ""
 msgid "User message"
 msgstr ""
 
-#: functions/functions-bookings.php:986 languages/script-translation.php:170
+#: functions/functions-bookings.php:986 languages/script-translation.php:173
 #: view/view-backend-bookings-dialogs.php:170
 msgid "Cancelled"
 msgstr ""
 
-#: functions/functions-bookings.php:987 languages/script-translation.php:176
+#: functions/functions-bookings.php:987 languages/script-translation.php:179
 #: view/view-backend-bookings-dialogs.php:172
 msgid "Refunded"
 msgstr ""
 
-#: functions/functions-bookings.php:988 languages/script-translation.php:177
+#: functions/functions-bookings.php:988 languages/script-translation.php:180
 #: view/view-backend-bookings-dialogs.php:171
 msgid "Refund requested"
 msgstr ""
@@ -804,20 +804,20 @@ msgstr ""
 msgid "Pending"
 msgstr ""
 
-#: functions/functions-bookings.php:990 languages/script-translation.php:171
+#: functions/functions-bookings.php:990 languages/script-translation.php:174
 #: view/view-backend-bookings-dialogs.php:168
 msgid "Booked"
 msgstr ""
 
 #. translators: In the context, 'Wednesday, March 2, 2016 9:30 AM to 1:30 PM'
-#: functions/functions-bookings.php:1041 languages/script-translation.php:168
+#: functions/functions-bookings.php:1041 languages/script-translation.php:171
 msgctxt "between two hours"
 msgid "to"
 msgstr ""
 
 #. translators: In the context, 'Wednesday, March 2, 2016 9:30 AM to Thursday,
 #. March 3, 2016 1:30 PM'
-#: functions/functions-bookings.php:1047 languages/script-translation.php:166
+#: functions/functions-bookings.php:1047 languages/script-translation.php:169
 msgctxt "between two dates"
 msgid "to"
 msgstr ""
@@ -958,7 +958,7 @@ msgstr ""
 #. translators: This particle is used right after the quantity of available
 #. bookings. Put the plural here. Ex: 2 avail. .
 #: functions/functions-template.php:369 functions/functions-template.php:388
-#: languages/script-translation.php:182
+#: languages/script-translation.php:185
 msgctxt "Short for availabilities [plural noun]"
 msgid "avail."
 msgstr ""
@@ -967,7 +967,7 @@ msgstr ""
 msgid "Learn more"
 msgstr ""
 
-#: functions/functions-woocommerce.php:59 languages/script-translation.php:105
+#: functions/functions-woocommerce.php:59 languages/script-translation.php:108
 msgid ""
 "Error occurs when trying to temporarily book your event. Please try later."
 msgstr ""
@@ -1013,7 +1013,7 @@ msgid "Please choose another event or decrease the quantity."
 msgstr ""
 
 #: functions/functions-woocommerce.php:471
-#: languages/script-translation.php:172
+#: languages/script-translation.php:175
 msgid "Pending payment"
 msgstr ""
 
@@ -1280,452 +1280,468 @@ msgctxt "Button label to trigger the refund action"
 msgid "Request a refund"
 msgstr ""
 
+#: languages/script-translation.php:57
+msgid "list year"
+msgstr ""
+
+#: languages/script-translation.php:58
+msgid "list month"
+msgstr ""
+
+#: languages/script-translation.php:59
+msgid "list week"
+msgstr ""
+
 #: languages/script-translation.php:60
-msgid "Error occurs when trying to retrieve event parameters."
-msgstr ""
-
-#: languages/script-translation.php:61
-msgid "Error occurs when trying to save event parameters."
-msgstr ""
-
-#: languages/script-translation.php:62
-msgid "Error occurs when trying to add repetition exceptions."
+msgid "list day"
 msgstr ""
 
 #: languages/script-translation.php:63
-msgid "Error occurs when trying to delete repetition exceptions."
+msgid "Error occurs when trying to retrieve event parameters."
 msgstr ""
 
 #: languages/script-translation.php:64
-msgid "Error occurs when trying to display events."
+msgid "Error occurs when trying to save event parameters."
 msgstr ""
 
 #: languages/script-translation.php:65
-msgid "Error occurs when trying to add an activity on the calendar."
+msgid "Error occurs when trying to add repetition exceptions."
 msgstr ""
 
 #: languages/script-translation.php:66
-msgid "Error occurs when trying to resize the event on the calendar."
+msgid "Error occurs when trying to delete repetition exceptions."
 msgstr ""
 
 #: languages/script-translation.php:67
-msgid "Error occurs when trying to move the event on the calendar."
+msgid "Error occurs when trying to display events."
 msgstr ""
 
 #: languages/script-translation.php:68
-msgid "Error occurs when trying to render the event on the calendar."
+msgid "Error occurs when trying to add an activity on the calendar."
 msgstr ""
 
 #: languages/script-translation.php:69
-msgid "Error occurs when trying to retrieve the event exceptions."
+msgid "Error occurs when trying to resize the event on the calendar."
 msgstr ""
 
 #: languages/script-translation.php:70
-msgid "Error occurs when trying to retrieve the bookings."
+msgid "Error occurs when trying to move the event on the calendar."
 msgstr ""
 
 #: languages/script-translation.php:71
-msgid "Error: The event has been placed out of the calendar period."
+msgid "Error occurs when trying to render the event on the calendar."
 msgstr ""
 
 #: languages/script-translation.php:72
-msgid "Error occurs when trying to delete the event."
+msgid "Error occurs when trying to retrieve the event exceptions."
 msgstr ""
 
 #: languages/script-translation.php:73
-msgid "You must select a calendar first."
+msgid "Error occurs when trying to retrieve the bookings."
 msgstr ""
 
 #: languages/script-translation.php:74
-msgid "Error occurs when trying to create the calendar."
+msgid "Error: The event has been placed out of the calendar period."
 msgstr ""
 
 #: languages/script-translation.php:75
-msgid "Error occurs when trying to update the calendar."
+msgid "Error occurs when trying to delete the event."
 msgstr ""
 
 #: languages/script-translation.php:76
-msgid "Error occurs when trying to delete the calendar."
+msgid "You must select a calendar first."
 msgstr ""
 
 #: languages/script-translation.php:77
-msgid "Error occurs when trying to change the default calendar."
+msgid "Error occurs when trying to create the calendar."
 msgstr ""
 
 #: languages/script-translation.php:78
-msgid "Error occurs when trying to retrieve calendar settings."
+msgid "Error occurs when trying to update the calendar."
 msgstr ""
 
 #: languages/script-translation.php:79
-msgid "Error occurs when trying to create the activity."
+msgid "Error occurs when trying to delete the calendar."
 msgstr ""
 
 #: languages/script-translation.php:80
-msgid "Error occurs when trying to update the activity."
+msgid "Error occurs when trying to change the default calendar."
 msgstr ""
 
 #: languages/script-translation.php:81
-msgid "Error occurs when trying to delete the activity."
+msgid "Error occurs when trying to retrieve calendar settings."
 msgstr ""
 
 #: languages/script-translation.php:82
-msgid "Error occurs when trying to import the activity."
+msgid "Error occurs when trying to create the activity."
 msgstr ""
 
 #: languages/script-translation.php:83
-msgid "Error occurs when trying to retrieve activity settings."
+msgid "Error occurs when trying to update the activity."
 msgstr ""
 
 #: languages/script-translation.php:84
-msgid "Error occurs when trying to retrieve activities bound to calendars."
+msgid "Error occurs when trying to delete the activity."
 msgstr ""
 
 #: languages/script-translation.php:85
-msgid "No available activities found for this calendar."
+msgid "Error occurs when trying to import the activity."
 msgstr ""
 
 #: languages/script-translation.php:86
+msgid "Error occurs when trying to retrieve activity settings."
+msgstr ""
+
+#: languages/script-translation.php:87
+msgid "Error occurs when trying to retrieve activities bound to calendars."
+msgstr ""
+
+#: languages/script-translation.php:88
+msgid "No available activities found for this calendar."
+msgstr ""
+
+#: languages/script-translation.php:89
 msgid ""
 "Error occurs when trying to update events bound to the updated activity."
 msgstr ""
 
-#: languages/script-translation.php:87
+#: languages/script-translation.php:90
 msgid ""
 "This event is booked, you cannot move it, change its duration, nor delete it."
 msgstr ""
 
-#: languages/script-translation.php:88
+#: languages/script-translation.php:91
 msgid "Error occurs when trying to unbind occurrences of the event."
 msgstr ""
 
 #. translators: In the context, it is one of the message following 'There are
 #. bookings on at least one of the occurence of this event. You can't: '
-#: languages/script-translation.php:90
+#: languages/script-translation.php:93
 msgid "Move this occurence because it will affect the complete event."
 msgstr ""
 
 #. translators: In the context, it is one of the message following 'There are
 #. bookings on at least one of the occurence of this event. You can't: '
-#: languages/script-translation.php:92
+#: languages/script-translation.php:95
 msgid "Resize this occurence because it will affect the complete event."
 msgstr ""
 
 #. translators: In the context, it is one of the message following 'There are
 #. bookings on at least one of the occurence of this event. You can't: '
-#: languages/script-translation.php:94
+#: languages/script-translation.php:97
 msgid "Delete this occurence because it will affect the complete event."
 msgstr ""
 
-#: languages/script-translation.php:95
+#: languages/script-translation.php:98
 msgid "Error occurs when trying to retrieve the group category settings."
 msgstr ""
 
-#: languages/script-translation.php:96
+#: languages/script-translation.php:99
 msgid "Error occurs when trying to retrieve the group of events settings."
 msgstr ""
 
-#: languages/script-translation.php:97
+#: languages/script-translation.php:100
 msgid "Error occurs when trying to create the group of events."
 msgstr ""
 
-#: languages/script-translation.php:98
+#: languages/script-translation.php:101
 msgid "Error occurs when trying to update the group of events."
 msgstr ""
 
-#: languages/script-translation.php:99
+#: languages/script-translation.php:102
 msgid "Error occurs when trying to delete the group of events."
 msgstr ""
 
-#: languages/script-translation.php:100
+#: languages/script-translation.php:103
 msgid "Error occurs when trying to create the group category."
 msgstr ""
 
-#: languages/script-translation.php:101
+#: languages/script-translation.php:104
 msgid "Error occurs when trying to update the group category."
 msgstr ""
 
-#: languages/script-translation.php:102
+#: languages/script-translation.php:105
 msgid "Error occurs when trying to delete the group category."
 msgstr ""
 
-#: languages/script-translation.php:104
+#: languages/script-translation.php:107
 msgid "Error occurs when trying to display product events. Please try later."
 msgstr ""
 
-#: languages/script-translation.php:106
+#: languages/script-translation.php:109
 msgid "Error occurs when trying to book your event. Please try again."
 msgstr ""
 
 #. translators: It is the message displayed to users if no events bookable were
 #. found.
-#: languages/script-translation.php:108
+#: languages/script-translation.php:111
 msgid "Sorry, no events are available."
 msgstr ""
 
 #. translators: It is the message displayed to users if no events were found
 #. according to search criterias (filters).
-#: languages/script-translation.php:110
+#: languages/script-translation.php:113
 msgid "No results."
 msgstr ""
 
 #. translators: It is the message displayed to users if no bookings were found
 #. for a given event.
-#: languages/script-translation.php:112
+#: languages/script-translation.php:115
 msgid "No bookings."
 msgstr ""
 
-#: languages/script-translation.php:113
+#: languages/script-translation.php:116
 msgid "Error occurs while trying to retrieve booking system."
 msgstr ""
 
-#: languages/script-translation.php:114
+#: languages/script-translation.php:117
 msgid "Error occurs while trying to switch booking method."
 msgstr ""
 
-#: languages/script-translation.php:115
+#: languages/script-translation.php:118
 msgid "Error occurs while trying to reload booking system."
 msgstr ""
 
-#: languages/script-translation.php:116
+#: languages/script-translation.php:119
 msgid "Error occurs while trying to update settings."
 msgstr ""
 
-#: languages/script-translation.php:118
+#: languages/script-translation.php:121
 msgid "Error occurs while trying to cancel booking."
 msgstr ""
 
-#: languages/script-translation.php:119
+#: languages/script-translation.php:122
 msgid "Error occurs while trying to reschedule booking."
 msgstr ""
 
-#: languages/script-translation.php:120
+#: languages/script-translation.php:123
 msgid "Error occurs while trying to change booking state."
 msgstr ""
 
-#: languages/script-translation.php:121
+#: languages/script-translation.php:124
 msgid ""
 "Error occurs while trying to request available refund actions.  Please "
 "contact the administrator."
 msgstr ""
 
-#: languages/script-translation.php:122
+#: languages/script-translation.php:125
 msgid ""
 "Error occurs while trying to request a refund. Please contact the "
 "administrator."
 msgstr ""
 
-#: languages/script-translation.php:127
+#: languages/script-translation.php:130
 msgid "Please fill this field."
 msgstr ""
 
-#: languages/script-translation.php:128
+#: languages/script-translation.php:131
 msgid "Please select a valid value."
 msgstr ""
 
-#: languages/script-translation.php:129
+#: languages/script-translation.php:132
 msgid "The calendar period can not end before it started."
 msgstr ""
 
-#: languages/script-translation.php:130
+#: languages/script-translation.php:133
 msgid "Day end time must be after day start time."
 msgstr ""
 
-#: languages/script-translation.php:131
+#: languages/script-translation.php:134
 msgid "The repetition period is not set."
 msgstr ""
 
-#: languages/script-translation.php:132
+#: languages/script-translation.php:135
 msgid "The repetition period can not end before it started."
 msgstr ""
 
-#: languages/script-translation.php:133
+#: languages/script-translation.php:136
 msgid ""
 "The repetition period should not start before the beginning date of the "
 "calendar."
 msgstr ""
 
-#: languages/script-translation.php:134
+#: languages/script-translation.php:137
 msgid ""
 "The repetition period should not end after the end date of the calendar."
 msgstr ""
 
-#: languages/script-translation.php:135
+#: languages/script-translation.php:138
 msgid "The number of days should be between 0 and 365."
 msgstr ""
 
-#: languages/script-translation.php:136
+#: languages/script-translation.php:139
 msgid "The number of hours should be between 0 and 23."
 msgstr ""
 
-#: languages/script-translation.php:137
+#: languages/script-translation.php:140
 msgid "The number of minutes should be between 0 and 59."
 msgstr ""
 
-#: languages/script-translation.php:138
+#: languages/script-translation.php:141
 msgid "The activity duration should not be null."
 msgstr ""
 
-#: languages/script-translation.php:139
+#: languages/script-translation.php:142
 msgid "The number of available bookings should be higher than or equal to 0."
 msgstr ""
 
-#: languages/script-translation.php:140
+#: languages/script-translation.php:143
 msgid ""
 "You can't set less available bookings than it has already on one of the "
 "occurrence of this event."
 msgstr ""
 
-#: languages/script-translation.php:141
+#: languages/script-translation.php:144
 msgid "The repetition period must include all booked occurences."
 msgstr ""
 
-#: languages/script-translation.php:142
+#: languages/script-translation.php:145
 msgid ""
 "The selected event should be included in the period in wich it will be "
 "repeated."
 msgstr ""
 
-#: languages/script-translation.php:143
+#: languages/script-translation.php:146
 msgid "Error: The repetition frequency is not a valid value."
 msgstr ""
 
-#: languages/script-translation.php:144
+#: languages/script-translation.php:147
 msgid "Exception dates should be included in the repetition period."
 msgstr ""
 
-#: languages/script-translation.php:145
+#: languages/script-translation.php:148
 msgid "Exceptions should all have a different date."
 msgstr ""
 
-#: languages/script-translation.php:146
+#: languages/script-translation.php:149
 msgid ""
 "You can't set an exception on a day when the occurence has already been "
 "booked."
 msgstr ""
 
-#: languages/script-translation.php:147
+#: languages/script-translation.php:150
 msgid "You haven't selected any event. Please select an event."
 msgstr ""
 
-#: languages/script-translation.php:148
+#: languages/script-translation.php:151
 msgid ""
 "The event you selected is corrupted, please reselect an event and try again."
 msgstr ""
 
 #. translators: %1$s is the quantity the user want. %2$s is the available
 #. quantity.
-#: languages/script-translation.php:150
+#: languages/script-translation.php:153
 msgid ""
 "You want to make %1$s bookings but only %2$s are available on this time "
 "slot. Please choose another event or decrease the quantity."
 msgstr ""
 
-#: languages/script-translation.php:152
+#: languages/script-translation.php:155
 msgid "The activity must be bound to at least one calendar."
 msgstr ""
 
-#: languages/script-translation.php:153
+#: languages/script-translation.php:156
 msgid "Select at least one activity."
 msgstr ""
 
-#: languages/script-translation.php:154
+#: languages/script-translation.php:157
 msgid "You must select at least two events."
 msgstr ""
 
-#: languages/script-translation.php:155
+#: languages/script-translation.php:158
 msgid "You must type a title."
 msgstr ""
 
-#: languages/script-translation.php:158
+#: languages/script-translation.php:161
 msgid ""
 "Please consider switching your website to maintenance mode when working on a "
 "published calendar."
 msgstr ""
 
-#: languages/script-translation.php:159
+#: languages/script-translation.php:162
 msgid ""
 "The activity has been successfully created but it is not available for this "
 "calendar."
 msgstr ""
 
-#: languages/script-translation.php:160
+#: languages/script-translation.php:163
 msgid "Your booking has been successfully refunded."
 msgstr ""
 
-#: languages/script-translation.php:161
+#: languages/script-translation.php:164
 msgid "Your refund request has been sent. We will contact you soon."
 msgstr ""
 
-#: languages/script-translation.php:173
+#: languages/script-translation.php:176
 msgid "Loading"
 msgstr ""
 
-#: languages/script-translation.php:174
+#: languages/script-translation.php:177
 msgctxt "action to cancel a booking"
 msgid "Cancel"
 msgstr ""
 
-#: languages/script-translation.php:175
+#: languages/script-translation.php:178
 msgctxt "action to refund a booking"
 msgid "Refund"
 msgstr ""
 
 #. translators: This particle is used right after the quantity of available
 #. bookings. Put the singular here. Ex: 1 avail. .
-#: languages/script-translation.php:180
+#: languages/script-translation.php:183
 msgctxt "Short for availability [singular noun]"
 msgid "avail."
 msgstr ""
 
 #. translators: This particle is used right after the quantity of bookings. Put
 #. the singular here. Ex: 1 booking .
-#: languages/script-translation.php:184
+#: languages/script-translation.php:187
 msgid "booking"
 msgstr ""
 
 #. translators: This particle is used right after the quantity of bookings. Put
 #. the plural here. Ex: 2 bookings . .
-#: languages/script-translation.php:186
+#: languages/script-translation.php:189
 msgid "bookings"
 msgstr ""
 
-#: languages/script-translation.php:190
+#: languages/script-translation.php:193
 msgid "Tell us why? (Details, reasons, comments...)"
 msgstr ""
 
-#: languages/script-translation.php:191
+#: languages/script-translation.php:194
 msgid "for one person"
 msgstr ""
 
 #. translators: %1$s is the number of persons who can enjoy the activity with
 #. one booking
-#: languages/script-translation.php:193
+#: languages/script-translation.php:196
 msgid "for %1$s persons"
 msgstr ""
 
-#: languages/script-translation.php:194
+#: languages/script-translation.php:197
 msgid "Product price"
 msgstr ""
 
-#: languages/script-translation.php:195
+#: languages/script-translation.php:198
 msgid "Create your first calendar"
 msgstr ""
 
-#: languages/script-translation.php:196 view/view-templates.php:99
+#: languages/script-translation.php:199 view/view-templates.php:99
 msgid "Create your first activity"
 msgstr ""
 
 #. translators: When the user is asked whether to pick the single event or the
 #. whole group it is part of
-#: languages/script-translation.php:198
+#: languages/script-translation.php:201
 msgid "Single event"
 msgstr ""
 
-#: languages/script-translation.php:199
+#: languages/script-translation.php:202
 msgid "Selected event"
 msgstr ""
 
-#: languages/script-translation.php:200
+#: languages/script-translation.php:203
 msgid "Selected events"
 msgstr ""
 
@@ -2450,9 +2466,9 @@ msgid ""
 "browse the calendar, they can't make booking with it."
 msgstr ""
 
-#. #-#-#-#-#  booking-activities.pot (Booking Activities 1.1.1)  #-#-#-#-#
+#. #-#-#-#-#  booking-activities.pot (Booking Activities 1.1.3)  #-#-#-#-#
 #. Plugin URI of the plugin/theme
-#. #-#-#-#-#  booking-activities.pot (Booking Activities 1.1.1)  #-#-#-#-#
+#. #-#-#-#-#  booking-activities.pot (Booking Activities 1.1.3)  #-#-#-#-#
 #. Author URI of the plugin/theme
 msgid ""
 "https://booking-activities.fr/en/?"

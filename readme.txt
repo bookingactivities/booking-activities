@@ -5,7 +5,7 @@ Tags: booking activities, booking sport, booking form, event reservation, reserv
 Requires at least: 3.6
 Tested up to: 4.8
 Requires PHP: 5.3
-Stable tag: 1.1.2
+Stable tag: 1.1.3
 License: GPLv3 or later
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
 
@@ -277,6 +277,9 @@ Now you can see inactive bookings (cancelled, expired, removed, refunded, refund
 
 
 == Changelog ==
+
+= 1.1.3 - 2017/09/12 =
+* Lib - Updated FullCalendar to 3.5.1 (events are rendered 25% faster)
 
 = 1.1.2 - 2017/08/30 =
 * Fix - Incorrect (or negative) group bookings number in "Bookings" page

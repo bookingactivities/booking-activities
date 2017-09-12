@@ -19,6 +19,7 @@ function bookacti_set_calendar_up( booking_system, reload_events ) {
 		locale:					bookacti_localized.current_lang_code,
 		
 		defaultView:            'agendaWeek',
+		weekNumbersWithinDays:	1,
 		allDaySlot:             false,
 		allDayDefault:          false,
 		fixedWeekCount:         false,
@@ -34,7 +35,14 @@ function bookacti_set_calendar_up( booking_system, reload_events ) {
 		minTime:                '08:00',
 		maxTime:                '20:00',
 		
-		views: { week: { eventLimit: false }, day: { eventLimit: false } },
+		views: { 
+			week:		{ eventLimit: false }, 
+			day:		{ eventLimit: false },
+			listDay:	{ buttonText: bookacti_localized.calendar_button_list_day },
+			listWeek:	{ buttonText: bookacti_localized.calendar_button_list_week },
+			listMonth:	{ buttonText: bookacti_localized.calendar_button_list_month },
+			listYear:	{ buttonText: bookacti_localized.calendar_button_list_year } 
+		},
 
 		//Load an empty array to allow the callback 'loading' to work
 		events: function( start, end, timezone, callback ) {
@@ -85,7 +93,7 @@ function bookacti_set_calendar_up( booking_system, reload_events ) {
 				element.append( bg_div );
 			}
 			
-			booking_system.trigger( 'bookacti_event_render', [ event, element ] );
+			booking_system.trigger( 'bookacti_event_render', [ event, element, view ] );
 			
 			if( ! event.render ) { return false; }
 		},
