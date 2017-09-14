@@ -31,7 +31,8 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 						SELECT SUM( quantity ) as bookings, event_id FROM ' . BOOKACTI_TABLE_BOOKINGS . ' WHERE active = 1 GROUP BY event_id
 					) as B ON B.event_id = E.id'
 				. ' WHERE E.activity_id = A.id '
-				. ' AND E.template_id = T.id ';
+				. ' AND E.template_id = T.id '
+				. ' AND E.active = 1 ';
 
 		// Do not fetch events out of their respective template limits...
 		$query  .= ' AND (	';

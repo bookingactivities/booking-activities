@@ -167,7 +167,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			$dates_excep_array	= bookacti_sanitize_exceptions( $_POST['event-repeat-excep'] );
 			
 			// Check if input data are complete and consistent 
-			$event_validation	= bookacti_validate_event( $event_id, $event_availability, $event_repeat_freq, $event_repeat_from, $event_repeat_to, $dates_excep_array );
+			$event_validation	= bookacti_validate_event( $event_id, $event_availability, $event_repeat_freq, $event_repeat_from, $event_repeat_to );
 
 			if( $event_validation['status'] === 'valid' ) {
 				
@@ -265,8 +265,11 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	}
 	
 	
-	// Delete an event
-	add_action( 'wp_ajax_bookactiDeleteEvent', 'bookacti_controller_delete_event' );
+	/**
+	 * AJAX Controller - Delete an event if it doesn't have bookings
+	 * 
+	 * @version 1.1.4
+	 */
 	function bookacti_controller_delete_event() {
 
 		$event_id		= intval( $_POST['event_id'] );
@@ -286,13 +289,13 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 			} else {
 				
-				// Delete the event
-				$deleted = bookacti_delete_event( $event_id );
+				// Deactivate the event
+				$deactivated = bookacti_deactivate_event( $event_id );
 				
 				// Delete the event from all groups
 				bookacti_delete_event_from_groups( $event_id );
 				
-				if( $deleted ) {
+				if( $deactivated ) {
 					wp_send_json( array( 'status' => 'success' ) );
 				} else {
 					wp_send_json( array( 'status' => 'failed', 'error' => 'not_deleted' ) );
@@ -302,10 +305,50 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			wp_send_json( array( 'status' => 'failed', 'error' => 'not_allowed' ) );
 		}
 	}
+	add_action( 'wp_ajax_bookactiDeleteEvent', 'bookacti_controller_delete_event' );
 	
 	
-	// Unbind occurences of an event
-	add_action( 'wp_ajax_bookactiUnbindOccurences', 'bookacti_controller_unbind_occurrences' );
+	/**
+	 * AJAX Controller - Delete an event without booking check
+	 * 
+	 * @version 1.1.4
+	 * @since 1.1.4
+	 */
+	function bookacti_controller_delete_event_forced() {
+
+		$event_id		= intval( $_POST['event_id'] );
+		$template_id	= bookacti_get_event_template_id( $event_id );
+		
+		// Check nonce and capabilities
+		$is_nonce_valid	= check_ajax_referer( 'bookacti_delete_event_forced', 'nonce', false );
+		$is_allowed		= current_user_can( 'bookacti_edit_templates' ) && bookacti_user_can_manage_template( $template_id );
+
+		if( $is_nonce_valid && $is_allowed ) {
+
+			// Deactivate the event
+			$deactivated = bookacti_deactivate_event( $event_id );
+			
+			// Delete the event from all groups
+			bookacti_delete_event_from_groups( $event_id );
+
+			if( $deactivated ) {
+				wp_send_json( array( 'status' => 'success' ) );
+			} else {
+				wp_send_json( array( 'status' => 'failed', 'error' => 'not_deleted' ) );
+			}
+			
+		} else {
+			wp_send_json( array( 'status' => 'failed', 'error' => 'not_allowed' ) );
+		}
+	}
+	add_action( 'wp_ajax_bookactiDeleteEventForced', 'bookacti_controller_delete_event_forced' );
+	
+	
+	/**
+	 * AJAX Controller - Unbind occurences of an event
+	 * 
+	 * @version 1.1.4
+	 */
 	function bookacti_controller_unbind_occurrences() {
 
 		$event_id		= intval( $_POST[ 'event_id' ] );
@@ -317,12 +360,12 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 		if( $is_nonce_valid && $is_allowed ) {
 			
-			$sanitized_unbind	= sanitize_title_with_dashes( $_POST['unbind'] );
+			$sanitized_unbind	= sanitize_title_with_dashes( $_POST[ 'unbind' ] );
 			$unbind				= in_array( $sanitized_unbind, array( 'selected', 'booked' ), true ) ? $sanitized_unbind : 'selected';
 			
 			if( $unbind === 'selected' ) {
-				$event_start	= bookacti_sanitize_datetime( $_POST['event_start'] );
-				$event_end		= bookacti_sanitize_datetime( $_POST['event_end'] );
+				$event_start	= bookacti_sanitize_datetime( $_POST[ 'event_start' ] );
+				$event_end		= bookacti_sanitize_datetime( $_POST[ 'event_end' ] );
 				$events			= bookacti_unbind_selected_occurrence( $event_id, $event_start, $event_end );
 				
 			} else if( $unbind === 'booked' ) {
@@ -331,13 +374,14 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			}
 			
 			// Retrieve groups of events
-			$groups_events = $groups_events = bookacti_get_groups_events( $events[ 0 ][ 'template_id' ] );
+			$groups_events = bookacti_get_groups_events( $events[ 0 ][ 'template_id' ] );
 			
 			wp_send_json( array( 'status' => 'success', 'events' => $events, 'groups_events' => $groups_events ) );
 		} else {
 			wp_send_json( array( 'status' => 'failed', 'error' => 'not_allowed' ) );
 		}
 	}
+	add_action( 'wp_ajax_bookactiUnbindOccurences', 'bookacti_controller_unbind_occurrences' );
 	
 	
 	
@@ -1041,8 +1085,8 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
     add_action( 'wp_ajax_bookactiDeactivateActivity', 'bookacti_controller_deactivate_activity' );
     function bookacti_controller_deactivate_activity() {
         
-        $activity_id = intval( $_POST['activity_id'] );
-        $template_id = intval( $_POST['template_id'] );
+        $activity_id = intval( $_POST[ 'activity_id' ] );
+        $template_id = intval( $_POST[ 'template_id' ] );
         
 		// Check nonce and capabilities
 		$is_nonce_valid	= check_ajax_referer( 'bookacti_deactivate_activity', 'nonce', false );
@@ -1050,17 +1094,29 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		
 		if( $is_nonce_valid && $is_allowed ) {
 			
-			$deleted	= bookacti_delete_templates_x_activities( array( $template_id ), array( $activity_id ) );
-			$templates	= bookacti_get_templates_by_activity( $activity_id );
+			$deleted		= bookacti_delete_templates_x_activities( array( $template_id ), array( $activity_id ) );
+			$templates		= bookacti_get_templates_by_activity( $activity_id );
 			
 			if( empty( $templates ) ) {
 				$deactivated = bookacti_deactivate_activity( $activity_id );
 			}
 			
+			$delete_events	= intval( $_POST[ 'delete_events' ] );
+			if( $delete_events ) {
+				// Delete the events
+				$deactivated1 = bookacti_deactivate_activity_events( $activity_id, $template_id );
+				// Delete the events from all groups
+				$deactivated2 = bookacti_deactivate_activity_events_from_groups( $activity_id, $template_id );
+				
+				if( ! is_numeric( $deactivated1 ) || ! is_numeric( $deactivated2 ) ) {
+					wp_send_json( array( 'status' => 'failed', 'error' => 'cannot_delete_events_or_groups' ) );
+				}
+			}
+			
 			if( $deleted ) {
 				wp_send_json( array( 'status' => 'success' ) );
 			} else {
-				wp_send_json( array( 'status' => 'failed' ) );
+				wp_send_json( array( 'status' => 'failed', 'error' => 'cannot_delete_template_association' ) );
 			}
         } else {
 			wp_send_json( array( 'status' => 'failed', 'error' => 'not_allowed' ) );

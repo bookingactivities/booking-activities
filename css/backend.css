@@ -48,6 +48,7 @@
 .input-warning  { border-color: #d80 !important; }
 .input-error    { border-color: #f00 !important; }
 .form-error		{ color: #f00; font-style: italic; }
+.form-warning	{ color: orange; font-style: italic; }
 .error-exception{ color: orange; }
 
 .bookacti-backend-dialog { display: none; }

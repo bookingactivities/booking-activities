@@ -13,6 +13,7 @@ $bookacti_translation_array = apply_filters( 'bookacti_translation_array', array
 	'dialog_update_template_title'			=> esc_html__( 'Update calendar parameters', BOOKACTI_PLUGIN_NAME ),
 	'dialog_delete_template_title'			=> esc_html__( 'Delete calendar', BOOKACTI_PLUGIN_NAME ),
 	'dialog_delete_event_title'			    => esc_html__( 'Delete event', BOOKACTI_PLUGIN_NAME ),
+	'dialog_delete_booked_event_title'		=> esc_html__( 'Delete booked event', BOOKACTI_PLUGIN_NAME ),
 	'dialog_delete_activity_title'			=> esc_html__( 'Delete activity', BOOKACTI_PLUGIN_NAME ),
 	'dialog_choice_activity_title'		    => esc_html__( 'Create a new activity or use an existing activity ?', BOOKACTI_PLUGIN_NAME ),
 	'dialog_import_activity_title'			=> esc_html__( 'Import existing activity', BOOKACTI_PLUGIN_NAME ),
@@ -146,7 +147,7 @@ $bookacti_translation_array = apply_filters( 'bookacti_translation_array', array
 	'error_freq_not_allowed'            => esc_html__( 'Error: The repetition frequency is not a valid value.', BOOKACTI_PLUGIN_NAME ),
 	'error_excep_not_btw_from_and_to'   => esc_html__( 'Exception dates should be included in the repetition period.', BOOKACTI_PLUGIN_NAME ),
 	'error_excep_duplicated'            => esc_html__( 'Exceptions should all have a different date.', BOOKACTI_PLUGIN_NAME ),
-	'error_set_excep_on_booked_occur'   => esc_html__( 'You can\'t set an exception on a day when the occurence has already been booked.', BOOKACTI_PLUGIN_NAME ),
+	'error_set_excep_on_booked_occur'   => esc_html__( 'Warning: this occurence is booked.', BOOKACTI_PLUGIN_NAME ),
 	'error_select_schedule'				=> esc_html__( 'You haven\'t selected any event. Please select an event.', BOOKACTI_PLUGIN_NAME ),
 	'error_corrupted_schedule'			=> esc_html__( 'The event you selected is corrupted, please reselect an event and try again.', BOOKACTI_PLUGIN_NAME ),
 	/* translators: %1$s is the quantity the user want. %2$s is the available quantity. */
@@ -247,6 +248,7 @@ $bookacti_translation_array = apply_filters( 'bookacti_translation_array', array
 	'nonce_insert_event'				=> wp_create_nonce( 'bookacti_insert_event' ),
 	'nonce_move_or_resize_event'		=> wp_create_nonce( 'bookacti_move_or_resize_event' ),
 	'nonce_delete_event'				=> wp_create_nonce( 'bookacti_delete_event' ),
+	'nonce_delete_event_forced'			=> wp_create_nonce( 'bookacti_delete_event_forced' ),
 	'nonce_unbind_occurences'			=> wp_create_nonce( 'bookacti_unbind_occurences' ),
 	
 	'nonce_get_group_of_events_data'	=> wp_create_nonce( 'bookacti_get_group_of_events_data' ),

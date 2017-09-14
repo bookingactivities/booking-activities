@@ -197,21 +197,19 @@ function bookacti_format_event_settings( $event_settings ) {
 /**
  * Make sure the availability is higher than the bookings already made
  * 
- * @version 1.1.0
+ * @version 1.1.4
  * 
  * @param int $event_id
  * @param int $event_availability
  * @param string $repeat_freq
  * @param string $repeat_from
  * @param string $repeat_to
- * @param array $exceptions
  * @return array
  */
-function bookacti_validate_event( $event_id, $event_availability, $repeat_freq, $repeat_from, $repeat_to, $exceptions ) {
+function bookacti_validate_event( $event_id, $event_availability, $repeat_freq, $repeat_from, $repeat_to ) {
     //Get info required
     $min_avail          = bookacti_get_min_availability( $event_id );
     $min_period         = bookacti_get_min_period( NULL, $event_id );
-    $bookings           = bookacti_get_bookings( NULL, NULL, $event_id );
     $repeat_from_time   = strtotime( $repeat_from );
     $repeat_to_time     = strtotime( $repeat_to );
     $max_from           = strtotime( $min_period['from'] );
@@ -221,7 +219,6 @@ function bookacti_validate_event( $event_id, $event_availability, $repeat_freq, 
     $isAvailSupToBookings           = false;
     $isRepeatFromBeforeFirstBooked  = false;
     $isRepeatToAfterLastBooked      = false;
-    $bookedExcep                    = array();
     	
     //Make the tests
     if( $min_avail !== null ) {
@@ -233,18 +230,6 @@ function bookacti_validate_event( $event_id, $event_availability, $repeat_freq, 
         if( $min_period['is_bookings'] > 0 ) {
             if( $repeat_from_time <= $max_from ){ $isRepeatFromBeforeFirstBooked = true; }
             if( $repeat_to_time   >= $min_to )  { $isRepeatToAfterLastBooked = true; }
-        }
-    }
-    if( count ( $bookings ) > 0 && count( $exceptions ) > 0 ) {
-        foreach( $bookings as $booking ) {
-            foreach( $exceptions as $exception ){
-                $booked_time    = strtotime( substr( $booking->event_start, 0, 10 ) );
-                $exception_time = strtotime( $exception );
-                if( $booked_time === $exception_time ){
-                    $date = date('Y-m-d', $booked_time );
-                    array_push( $bookedExcep, $date );
-                }
-            }
         }
     }
     
@@ -261,11 +246,6 @@ function bookacti_validate_event( $event_id, $event_availability, $repeat_freq, 
         $return_array['from'] = date( 'Y-m-d', $max_from );
         $return_array['to'] = date( 'Y-m-d', $min_to );
         array_push ( $return_array['errors'], 'error_booked_events_out_of_period' );
-    }
-    if( ( $repeat_freq !== 'none' ) && ( count( $bookedExcep ) > 0 ) ){
-        $return_array['status'] = 'not_valid';
-        $return_array['booked_exceptions'] = $bookedExcep;
-        array_push ( $return_array['errors'], 'error_set_excep_on_booked_occur' );
     }
     if( ( $repeat_freq !== 'none' ) && ( ! $repeat_from || ! $repeat_to ) ){
         $return_array['status'] = 'not_valid';
