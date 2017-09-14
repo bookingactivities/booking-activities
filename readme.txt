@@ -5,7 +5,7 @@ Tags: booking activities, booking sport, booking form, event reservation, reserv
 Requires at least: 3.6
 Tested up to: 4.8
 Requires PHP: 5.3
-Stable tag: 1.1.3
+Stable tag: 1.1.4
 License: GPLv3 or later
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
 
@@ -277,6 +277,15 @@ Now you can see inactive bookings (cancelled, expired, removed, refunded, refund
 
 
 == Changelog ==
+
+= 1.1.4 - 2017/09/14 =
+* Tweak - You can force event deletion even if it is booked
+* Tweak - You can place a repetition exception on booked occurences (a warning will be displayed)
+* Tweak - You can unbind booked occurences in order to edit them independently
+* Tweak - When you delete an activity, you can now also delete all its events
+* Fix - Cannot edit / move event after being added on calendar (needed page refresh) (bug introduced with 1.1.3)
+* Fix - Fixed possibility to unbind single event, causing unexpected behavior
+* Fix - Single events were not displayed on their exception dates (if they used to be repeated and then back to single)
 
 = 1.1.3 - 2017/09/12 =
 * Lib - Updated FullCalendar to 3.5.1 (events are rendered 25% faster)

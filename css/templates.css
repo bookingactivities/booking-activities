@@ -131,7 +131,9 @@
 
 #bookacti-activity-duration-days,
 #bookacti-activity-duration-hours,
-#bookacti-activity-duration-minutes	{ width: 50px; }
+#bookacti-activity-duration-minutes				{ width: 50px; }
+
+#bookacti-delete-activity-options				{ margin-top: 20px; }
 
 
 /* Unbind dialog */

@@ -44,6 +44,11 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
     <div><?php esc_html_e( 'Are you sure to delete this event permanently?', BOOKACTI_PLUGIN_NAME ); ?></div>
 </div>
 
+<!-- Delete booked event -->
+<div id='bookacti-delete-booked-event-dialog' class='bookacti-backend-dialog bookacti-template-dialogs' style='display:none;' >
+    <div><?php esc_html_e( 'This event is booked. Do you still want to delete it?', BOOKACTI_PLUGIN_NAME ); ?></div>
+</div>
+
 <!-- Delete template -->
 <div id='bookacti-delete-template-dialog' class='bookacti-backend-dialog bookacti-template-dialogs' style='display:none;' >
     <div><?php esc_html_e( 'Are you sure to delete this calendar?', BOOKACTI_PLUGIN_NAME ); ?></div>
@@ -51,10 +56,14 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 <!-- Delete activity -->
 <div id='bookacti-delete-activity-dialog' class='bookacti-backend-dialog bookacti-template-dialogs' style='display:none;' >
-    <div>
-        <?php esc_html_e( 'Are you sure to delete this activity permanently?', BOOKACTI_PLUGIN_NAME ); ?><br/>
-        <em><?php esc_html_e( 'This will not delete the related events on the calendars but you will never be able to place new events from this activity anymore.', BOOKACTI_PLUGIN_NAME ); ?></em>
-    </div>
+	<div>
+		<?php esc_html_e( 'Are you sure to delete this activity permanently?', BOOKACTI_PLUGIN_NAME ); ?><br/>
+		<em><?php esc_html_e( 'You will never be able to place new events from this activity anymore.', BOOKACTI_PLUGIN_NAME ); ?></em>
+	</div>
+	<div id='bookacti-delete-activity-options'>
+		<input type='checkbox' id='bookacti-delete-activity-events' name='bookacti_delete_activity_events' />
+		<label for='bookacti-delete-activity-events' ><?php _e( 'Also delete permanently all events from this activity.', BOOKACTI_PLUGIN_NAME ); ?></label>
+	</div>
 </div>
 
 <!-- Delete group of events -->

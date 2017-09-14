@@ -665,6 +665,34 @@ function bookacti_clear_events_on_calendar( calendar, event ) {
 }
 
 
+// Delete event on the calendar
+function bookacti_delete_event( event ) {
+	// Unselect the event if it was selected
+	bookacti_unselect_event( event );
+
+	// Delete this event from all groups
+	$j.each( bookacti.booking_system[ 'bookacti-template-calendar' ][ 'groups_events' ], function( group_id, group_events ){
+		var remaining_group_events = $j.grep( group_events, function( group_event ){
+			if( group_event && group_event.id == event.id ) {
+				return false;
+			}
+			return true;
+		});
+
+		bookacti.booking_system[ 'bookacti-template-calendar' ][ 'groups_events' ][ group_id ] = remaining_group_events;
+	});
+
+	// We use both event._id and event.id to make sure both existing and newly added event are deleted
+	if( event._id !== undefined ) {
+		if( event._id.indexOf('_') >= 0 ) {
+			$j( '#bookacti-template-calendar' ).fullCalendar( 'removeEvents', event._id );
+		}
+	}
+	$j( '#bookacti-template-calendar' ).fullCalendar( 'removeEvents', event.id );
+	$j( '#bookacti-template-calendar' ).fullCalendar( 'refetchEvents' );
+}
+							
+
 //Launch dialogs
 function bookacti_bind_template_dialogs() {
 	if( bookacti.selected_template ) {
