@@ -278,6 +278,16 @@ Now you can see inactive bookings (cancelled, expired, removed, refunded, refund
 
 == Changelog ==
 
+= 1.2.0 =
+* Feature - Send email notification to admin and customer when booking status changes
+* Feature - Configure email notifications
+* Tweak - Added a date field in bookings database, so you can know when a booking was made
+* Fix - Wrong locale was loaded on multilingual site (depending on site and users settings)
+* Dev - Hooks changes:
+  * PHP filters
+    * Add - bookacti_update_booking_group_quantity
+
+
 = 1.1.4 - 2017/09/14 =
 * Tweak - You can force event deletion even if it is booked
 * Tweak - You can place a repetition exception on booked occurences (a warning will be displayed)

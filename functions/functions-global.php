@@ -23,6 +23,99 @@ function bookacti_get_current_lang_code() {
 }
 
 
+/* 
+ * Get user locale, and default to site or current locale
+ * 
+ * @since 1.2.0
+ * @param int|WP_User $user_id
+ * @param string $default 'current' or 'site'
+ * @param boolean $country_code Whether to return also country code
+ * @return string
+ */
+function bookacti_get_user_locale( $user_id, $default = 'current', $country_code = true ) {
+	
+	if ( 0 === $user_id && function_exists( 'wp_get_current_user' ) ) {
+		$user = wp_get_current_user();
+	} elseif ( $user_id instanceof WP_User ) {
+		$user = $user_id;
+	} elseif ( $user_id && is_numeric( $user_id ) ) {
+		$user = get_user_by( 'id', $user_id );
+	}
+	
+	if( ! $user ) { $locale = get_locale(); }
+	else {
+		if( $default === 'site' ) {
+			// Get user locale
+			$locale = strval( $user->locale );
+			// If not set, get site default locale
+			if( ! $locale ) {
+				$alloptions	= wp_load_alloptions();
+				$locale		= $alloptions[ 'WPLANG' ] ? strval( $alloptions[ 'WPLANG' ] ) : get_locale();
+			}
+		} else {
+			// Get user locale, if not set get current locale
+			$locale = $user->locale ? strval( $user->locale ) : get_locale();
+		}
+	}
+	
+	// Remove country code from locale string
+	if( ! $country_code ) {
+		$_pos = strpos( $locale, '_' );
+		if( $_pos !== false ) {
+			$locale = substr( $locale, 0, $_pos );
+		}
+	}
+	
+	return $locale;
+}
+
+
+/* 
+ * Get site locale, and default to site or current locale
+ * 
+ * @since 1.2.0
+ * @param int|WP_User $user_id
+ * @param string $default 'current' or 'site'
+ * @param boolean $country_code Whether to return also country code
+ * @return string
+ */
+function bookacti_get_site_locale( $default = 'site', $country_code = true ) {
+
+	if( $default === 'site' ) {
+		$alloptions	= wp_load_alloptions();
+		$locale		= $alloptions[ 'WPLANG' ] ? strval( $alloptions[ 'WPLANG' ] ) : get_locale();
+	} else {
+		// Get user locale, if not set get current locale
+		$locale = get_locale();
+	}
+	
+	// Remove country code from locale string
+	if( ! $country_code ) {
+		$_pos = strpos( $locale, '_' );
+		if( $_pos !== false ) {
+			$locale = substr( $locale, 0, $_pos );
+		}
+	}
+	
+	return $locale;
+}
+
+
+/**
+ * Switch Booking Activities to specific locale
+ *
+ * @param string $locale
+ * @since 1.2.0
+ */
+function bookacti_switch_locale( $locale ) {
+	if( ! $locale ) { return; }
+	if ( function_exists( 'switch_to_locale' ) ) {
+		switch_to_locale( $locale );
+		bookacti_load_textdomain( $locale );
+	}
+}
+
+
 // Detect current language with WPML or Qtranslate X
 function bookacti_get_translation_plugin() {
    
@@ -43,10 +136,16 @@ function bookacti_get_translation_plugin() {
 // Translate text with QTranslate
 $is_qtranslate	= bookacti_is_plugin_active( 'qtranslate-x/qtranslate.php' );
 if( $is_qtranslate ) {
-	add_filter( 'bookacti_translate_text', 'bookacti_translate_text_with_qtranslate' );
-	function bookacti_translate_text_with_qtranslate( $text ) {
-		return apply_filters( 'translate_text', $text );
+	/**
+	 * Translate a string into the desired language (default to current site language)
+	 * 
+	 * @param string $text
+	 * @return string
+	 */
+	function bookacti_translate_text_with_qtranslate( $text, $lang = null ) {
+		return apply_filters( 'translate_text', $text, $lang );
 	}
+	add_filter( 'bookacti_translate_text', 'bookacti_translate_text_with_qtranslate', 10, 2 );
 }
 
 
@@ -78,7 +177,172 @@ function bookacti_log( $message, $filename = 'debug' ) {
 }
 
 
-//Create help tip
+/**
+ * Display various fields
+ * 
+ * @since 1.2.0
+ * @param array $args ['type', 'name', 'label', 'id', 'class', 'placeholder', 'options', 'value', 'tip']
+ */
+function bookacti_display_field( $args ) {
+
+	$args = bookacti_format_field_args( $args );
+
+	if( ! $args ) { return; }
+
+	// Display field according to type
+	
+	// TEXT & NUMBER
+	if( in_array( $args[ 'type' ], array( 'text', 'number' ) ) ) {
+	?>
+		<input	type=		'<?php echo esc_attr( $args[ 'type' ] ); ?>' 
+				name=		'<?php echo esc_attr( $args[ 'name' ] ); ?>' 
+				id=			'<?php echo esc_attr( $args[ 'id' ] ); ?>' 
+				class=		'bookacti-input <?php echo esc_attr( $args[ 'class' ] ); ?>' 
+				placeholder='<?php echo esc_attr( $args[ 'placeholder' ] ); ?>' 
+				value=		'<?php echo esc_attr( $args[ 'value' ] ); ?>' 
+			<?php if( $args[ 'type' ] === 'number' ) { ?>
+				min=		'<?php echo esc_attr( $args[ 'options' ][ 'min' ] ); ?>' 
+				max=		'<?php echo esc_attr( $args[ 'options' ][ 'max' ] ); ?>'
+			<?php } ?>
+		/>
+		<label	for='<?php echo esc_attr( $args[ 'id' ] ); ?>' >
+			<?php echo $args[ 'label' ]; ?>
+		</label>
+	<?php
+	}
+	
+	// SINGLE CHECKBOX (boolean)
+	else if( $args[ 'type' ] === 'checkbox' ) {
+		bookacti_onoffswitch( esc_attr( $args[ 'name' ] ), esc_attr( $args[ 'value' ] ), esc_attr( $args[ 'id' ] ) );
+	}
+	
+	// MULTIPLE CHECKBOX
+	else if( $args[ 'type' ] === 'checkboxes' ) {
+		foreach( $args[ 'options' ] as $option ) {
+		?>
+			<div class='bookacti_checkbox'>
+				<input	name='<?php echo esc_attr( $args[ 'name' ] ) . '[' . esc_attr( $option[ 'id' ] ) . ']'; ?>' 
+						id='<?php echo esc_attr( $args[ 'id' ] ) . '_' . esc_attr( $option[ 'id' ] ); ?>' 
+						class='bookacti-input <?php echo esc_attr( $args[ 'class' ] ); ?>' 
+						type='checkbox' 
+						value='1'
+						<?php if( isset( $args[ 'value' ][ $option[ 'id' ] ] ) ) { checked( $args[ 'value' ][ $option[ 'id' ] ], 1, true ); } ?>
+				/>
+				<label for='<?php echo esc_attr( $args[ 'id' ] ) . '_' . esc_attr( $option[ 'id' ] ); ?>' >
+					<?php echo apply_filters( 'bookacti_translate_text', esc_html( $option[ 'label' ] ) ); ?>
+				</label>
+			<?php
+				//Display the tip
+				if( $option[ 'description' ] ) {
+					$tip = apply_filters( 'bookacti_translate_text', $option[ 'description' ] );
+					bookacti_help_tip( $tip );
+				}
+			?>
+			</div>
+		<?php
+		}
+	}
+	
+	// SELECT
+	else if( $args[ 'type' ] === 'select' ) {
+		?>
+		<select	name=	'<?php echo esc_attr( $args[ 'name' ] ); ?>' 
+				id=		'<?php echo esc_attr( $args[ 'id' ] ); ?>' 
+				class=	'bookacti-select <?php echo esc_attr( $args[ 'class' ] ); ?>' 
+		>
+		<?php foreach( $args[ 'options' ] as $option_id => $option_value ) { ?>
+			<option value='<?php echo esc_attr( $option_id ); ?>'
+					id='<?php echo esc_attr( $args[ 'id' ] ) . '_' . esc_attr( $option_id ); ?>'
+					<?php selected( $args[ 'value' ], $option_id ); ?>
+			>
+					<?php echo esc_html( $option_value ); ?>
+			</option>
+		<?php } ?>
+		</select>
+		<?php
+	}
+	
+	// TINYMCE editor
+	else if( $args[ 'type' ] === 'editor' ) {
+		wp_editor( $args[ 'value' ], $args[ 'id' ], $args[ 'options' ] );
+	}
+	
+	
+	// Display the tip
+	if( $args[ 'tip' ] ) {
+		bookacti_help_tip( $args[ 'tip' ] );
+	}
+}
+
+
+/**
+ * Format arguments to diplay a proper field
+ * 
+ * @since 1.2.0
+ * @param array $args ['type', 'name', 'label', 'id', 'class', 'placeholder', 'options', 'value', 'tip']
+ * @return array|false
+ */
+function bookacti_format_field_args( $args ) {
+
+	// If $args is not an array, return
+	if( ! is_array( $args ) ) { return false; }
+
+	// If fields type or name are not set, return
+	if( ! isset( $args[ 'type' ] ) || ! isset( $args[ 'name' ] ) ) { return false; }
+
+	// If field type is not supported, return
+	if( ! in_array( $args[ 'type' ], array( 'text', 'number', 'checkbox', 'checkboxes', 'select', 'radio', 'editor' ) ) ) { 
+		return false; 
+	}
+
+	$default_args = array(
+		'type'			=> '',
+		'name'			=> '',
+		'label'			=> '',
+		'id'			=> '',
+		'class'			=> '',
+		'placeholder'	=> '',
+		'options'		=> array(),
+		'value'			=> '',
+		'tip'			=> ''
+	);
+
+	// Replace empty value by default
+	foreach( $default_args as $key => $default_value ) {
+		$args[ $key ] = isset( $args[ $key ] ) ? $args[ $key ] : $default_value;
+	}
+
+	// If no id, use name instead
+	$args[ 'id' ] = $args[ 'id' ] ? $args[ 'id' ] : sanitize_title_with_dashes( $args[ 'name' ] );
+
+	// Make sure fields with multiple options have 'options' set
+	if( in_array( $args[ 'type' ], array( 'checkboxes', 'radio', 'select' ) ) ){
+		if( ! $args[ 'options' ] ) { return false; }
+	}
+
+	// Make sure checkboxes have their value as an array
+	if( $args[ 'type' ] === 'checkboxes' ){
+		if( ! is_array( $args[ 'value' ] ) ) { return false; }
+	}
+
+	// Make sure 'number' has min and max
+	else if( $args[ 'type' ] === 'number' ) {
+		$args[ 'options' ][ 'min' ] = isset( $args[ 'options' ][ 'min' ] ) ? $args[ 'options' ][ 'min' ] : '';
+		$args[ 'options' ][ 'max' ] = isset( $args[ 'options' ][ 'max' ] ) ? $args[ 'options' ][ 'max' ] : '';
+	}
+
+	// Make sure that if 'editor' has options, options is an array
+	else if( $args[ 'type' ] === 'editor' ) {
+		if( ! is_array( $args[ 'options' ] ) ) { $args[ 'options' ] = array(); }
+		$args[ 'options' ][ 'textarea_name' ]	= $args[ 'name' ];
+		$args[ 'options' ][ 'editor_class' ]	= $args[ 'class' ];
+	}
+
+	return $args;
+}
+
+
+// Create help tip
 function bookacti_help_tip( $tip ){
 
 	$tip = esc_attr( $tip );

@@ -170,7 +170,7 @@ function bookacti_change_order_bookings_state( $user_id = NULL, $order_id = NULL
 
 	global $wpdb;
 
-	$response				= array(); 
+	$response = array(); 
 	
 	if( empty( $booking_id_array ) || ! is_array( $booking_id_array ) ) {
 		$response[ 'status' ]	= 'failed';

@@ -687,8 +687,11 @@ function bookacti_units_to_add_to_repeat_event( $event ) {
 /**
  * Build a user-friendly events list
  * 
+ * @since 1.1.0
+ * 
  * @param array $booking_events
  * @param int|string $quantity
+ * @return string
  */
 function bookacti_get_formatted_booking_events_list( $booking_events, $quantity = 'hide' ) {
 	

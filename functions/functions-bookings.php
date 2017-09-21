@@ -947,7 +947,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		$data = apply_filters( 'bookacti_refund_request_email_data', $data, $booking_id, $booking_type );
 
 		/* translators: %1$s is a user name and %2$s is the booking ID. */
-		$message = '<h3>' . sprintf( esc_html__( '%1$s wants to be refund for booking %2$s', BOOKACTI_PLUGIN_NAME ), $data['user']['name'], $booking_id ) . '</h3>';
+		$message = '<h3>' . sprintf( esc_html__( '%1$s wants to be refunded for booking %2$s', BOOKACTI_PLUGIN_NAME ), $data['user']['name'], $booking_id ) . '</h3>';
 		foreach( $data as $category_name => $category_data ) {
 			$message .= '<h4>' . esc_html( ucfirst ( str_replace( '_', ' ', $category_name ) ) ) . '</h4>';
 			$message .= '<table style="border: none;" >';

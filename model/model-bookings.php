@@ -21,10 +21,11 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
  */
 function bookacti_insert_booking( $user_id, $event_id, $event_start, $event_end, $quantity, $state, $expiration_date = NULL, $booking_group_id = NULL ) {
 	global $wpdb;
-	$return_booking = array();
-
+	
 	$active = in_array( $state, bookacti_get_active_booking_states(), true ) ? 1 : 0;
-
+	
+	$creation_date = date( 'c' );
+	
 	$wpdb->insert( 
 		BOOKACTI_TABLE_BOOKINGS, 
 		array( 
@@ -35,10 +36,11 @@ function bookacti_insert_booking( $user_id, $event_id, $event_start, $event_end,
 			'event_end'			=> $event_end,
 			'quantity'			=> $quantity,
 			'state'				=> $state,
+			'creation_date'		=> $creation_date,
 			'expiration_date'	=> $expiration_date,
 			'active'			=> $active
 		),
-		array( '%d', '%d', '%s', '%s', '%s', '%d', '%s', '%s', '%d' )
+		array( '%d', '%d', '%s', '%s', '%s', '%d', '%s', '%s', '%s', '%d' )
 	);
 	
 	$booking_id = $wpdb->insert_id;

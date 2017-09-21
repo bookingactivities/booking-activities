@@ -139,39 +139,50 @@ function bookacti_delete_cart_settings() {
 }
 
 
-// Add bookings list settings
-add_action( 'bookacti_booking_list_tab_filter_after', 'bookacti_add_booking_list_in_cart_filter', 10, 1 );
+/**
+ * Add bookings list settings
+ * 
+ * @version 1.2.0
+ * @param array $params
+ */
 function bookacti_add_booking_list_in_cart_filter( $params ) {
 	$user_id = $params[ 'user_id' ];
+	$show_temporary_bookings_array	= bookacti_get_setting_value( 'bookacti_bookings_settings', 'show_temporary_bookings' );
+	$show_temporary_bookings		= 0;
+	if( is_array( $show_temporary_bookings_array ) && isset( $show_temporary_bookings_array[ $user_id ] ) && ! is_null( $show_temporary_bookings_array[ $user_id ] ) ) {
+		$show_temporary_bookings	= $show_temporary_bookings_array[ $user_id ];
+	}
+		
+	$args = array(
+		'type'	=> 'checkbox',
+		'name'	=> 'bookings-show-temporary-bookings',
+		'id'	=> 'bookacti-bookings-show-temporary-bookings',
+		'value'	=> $show_temporary_bookings,
+		'tip'	=> __( 'Show temporary bookings in the booking list (in cart bookings).', BOOKACTI_PLUGIN_NAME )
+	);
+	
 	?>
 	<div>
 		<label for='bookacti-bookings-show-temporary-bookings' ><?php esc_html_e( 'Show temporary bookings', BOOKACTI_PLUGIN_NAME ); ?></label>
-		<?php
-		$show_temporary_bookings_array	= bookacti_get_setting_value( 'bookacti_bookings_settings', 'show_temporary_bookings' );
-		$show_temporary_bookings		= 0;
-		if( is_array( $show_temporary_bookings_array ) && isset( $show_temporary_bookings_array[ $user_id ] ) && ! is_null( $show_temporary_bookings_array[ $user_id ] ) ) {
-			$show_temporary_bookings	= $show_temporary_bookings_array[ $user_id ];
-		}
-
-		$name	= 'bookings-show-temporary-bookings';
-		$id		= 'bookacti-bookings-show-temporary-bookings';
-		bookacti_onoffswitch( $name, $show_temporary_bookings, $id );
-
-		$tip = __( "Show temporary bookings in the booking list (in cart bookings).", BOOKACTI_PLUGIN_NAME );
-		bookacti_help_tip( $tip );
-		?>
+		<?php bookacti_display_field( $args ); ?>
 	</div>
 <?php
 }
+add_action( 'bookacti_booking_list_tab_filter_after', 'bookacti_add_booking_list_in_cart_filter', 10, 1 );
 
 
-// Add a mention to booking method tip
-add_filter( 'bookacti_booking_methods_tip', 'bookacti_add_wc_mention_to_booking_method_tip', 1, 10 );
+/**
+ * Add a mention to booking method tip
+ * 
+ * @param string $tip
+ * @return string
+ */
 function bookacti_add_wc_mention_to_booking_method_tip( $tip ) {
 	$tip .= '<br/>';
 	$tip .= esc_html__( 'This parameter can be overriden by products settings in woocommerce.', BOOKACTI_PLUGIN_NAME );
 	return $tip;
 }
+add_filter( 'bookacti_booking_methods_tip', 'bookacti_add_wc_mention_to_booking_method_tip', 1, 10 );
 
 
 /**
@@ -179,9 +190,29 @@ function bookacti_add_wc_mention_to_booking_method_tip( $tip ) {
  * 
  * @since 1.1.0
  */
-add_filter( 'bookacti_when_events_load_tip', 'bookacti_add_wc_mention_to_when_events_load_tip', 1, 10 );
 function bookacti_add_wc_mention_to_when_events_load_tip( $tip ) {
 	$tip .= '<br/>';
 	$tip .= esc_html__( 'WC Variable products calendars will always load after page load.', BOOKACTI_PLUGIN_NAME );
 	return $tip;
 }
+add_filter( 'bookacti_when_events_load_tip', 'bookacti_add_wc_mention_to_when_events_load_tip', 1, 10 );
+
+
+/**
+ * Add a mention to notifications
+ * 
+ * @since 1.2.0
+ */
+function bookacti_add_wc_mention_to_notifications( $emails ) {
+	
+	if( isset( $emails[ 'customer_pending_booking' ] ) ) {
+		$emails[ 'customer_pending_booking' ][ 'description' ] .= '<br/>' . __( 'Remember that with WooCommerce, a successfull payment automatically turns bookings status to "Booked".', BOOKACTI_PLUGIN_NAME );
+	}
+	
+	if( isset( $emails[ 'customer_booked_booking' ] ) ) {
+		$emails[ 'customer_booked_booking' ][ 'description' ] .= '<br/>' . __( 'Remember that with WooCommerce, a successfull payment automatically turns bookings status to "Booked".', BOOKACTI_PLUGIN_NAME );
+	}
+	
+	return $emails;
+}
+add_filter( 'bookacti_emails_default_settings', 'bookacti_add_wc_mention_to_notifications', 1, 10 );

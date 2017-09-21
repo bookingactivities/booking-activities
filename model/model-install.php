@@ -91,6 +91,7 @@ function bookacti_create_tables() {
 		event_start DATETIME, 
 		event_end DATETIME, 
 		state VARCHAR(32) NOT NULL DEFAULT "booked", 
+		creation_date DATETIME, 
 		expiration_date DATETIME, 
 		quantity MEDIUMINT(9) UNSIGNED NOT NULL DEFAULT 1, 
 		active TINYINT(1) UNSIGNED NOT NULL DEFAULT 1 ) ' . $wpdb->get_charset_collate() . ';';

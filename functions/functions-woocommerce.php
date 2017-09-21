@@ -193,6 +193,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	 * Update quantity, control the results ans display feedback accordingly
 	 * 
 	 * @since 1.1.0
+	 * @version 1.2.0
 	 * 
 	 * @param int $booking_group_id
 	 * @param int $quantity
@@ -201,7 +202,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	 * @return boolean
 	 */
 	function bookacti_controller_update_booking_group_quantity( $booking_group_id, $quantity, $add_quantity = false, $context = 'frontend' ) {
-
+		
 		// Sanitize
 		$quantity		= intval( $quantity );
 		$add_quantity	= $add_quantity ? true : false;
@@ -247,55 +248,66 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 					wc_add_notice( __( 'This event is no longer available. Please choose another event.', BOOKACTI_PLUGIN_NAME ), 'error' );
 				}
 			}
-
-			return $response;
 		}
-
-		// Update each booking quantity
-		foreach( $bookings as $booking ) {
-
-			$booking_qty	= $booking->active ? intval( $booking->quantity ) : 0;
-
-			// Make sure new quantity isn't over group availability
-			$new_quantity = $add_quantity ? $quantity + $booking_qty : $quantity;
-			if( $new_quantity > ( $group_availability + $booking_qty ) ){
-				$new_quantity = $add_quantity ? $group_availability : $group_availability + $booking_qty;
-			}
-
-			// Update quantity
-			$updated1 = bookacti_controller_update_booking_quantity( $booking->id, $new_quantity, $context );
-			
-			if( ! isset( $updated1[ 'status' ] ) || $updated1[ 'status' ] === 'failed' ) {
-				$response[ 'status' ]	= 'failed';
-				$response[ 'error' ]	= $updated1[ 'error' ];
-			}
-		}
-
-		// Change booking group state
+		
 		if( $response[ 'status' ] === 'success' ) {
+			// Update each booking quantity
+			$no_changes = 0;
+			foreach( $bookings as $booking ) {
 
-			// Change booking group state to remove if quantity = 0
-			if( ! $add_quantity && $quantity === 0 ) {
-				$new_state = $context === 'frontend' ? 'removed' : 'cancelled';
-				$updated2 = bookacti_update_booking_group_state( $booking_group_id, $new_state );
-				do_action( 'bookacti_booking_group_state_changed', $booking_group_id, $new_state, array() );
+				$booking_qty	= $booking->active ? intval( $booking->quantity ) : 0;
+
+				// Make sure new quantity isn't over group availability
+				$new_quantity = $add_quantity ? $quantity + $booking_qty : $quantity;
+				if( $new_quantity > ( $group_availability + $booking_qty ) ){
+					$new_quantity = $add_quantity ? $group_availability : $group_availability + $booking_qty;
+				}
+
+				// Update quantity
+				$updated1 = bookacti_controller_update_booking_quantity( $booking->id, $new_quantity, $context );
+				
+				// If one fails, set the whole group update status to failed
+				if( ! isset( $updated1[ 'status' ] ) || $updated1[ 'status' ] === 'failed' ) {
+					$response[ 'status' ]	= 'failed';
+					$response[ 'error' ]	= $updated1[ 'error' ];
+				} 
+				
+				// Count how many booking doesn't change
+				else if( $updated1[ 'status' ] === 'no_change' ) {
+					$no_changes++;
+				}
 			}
-
-			// If the group used to be removed (quantity = 0), turn its state to in_cart
-			if( $group->state === 'removed' && $quantity > 0 ) {
-				$new_state = $context === 'frontend' ? 'in_cart' : 'pending';
-				$updated2 = bookacti_update_booking_group_state( $booking_group_id, $new_state );
-				do_action( 'bookacti_booking_group_state_changed', $booking_group_id, $new_state, array() );
+			
+			// If no bookings were updated
+			if( $no_changes >= count( $bookings ) ) {
+				$response[ 'status' ]	= 'no_change';
 			}
+			
+			// Change booking group state
+			if( $response[ 'status' ] === 'success' ) {
 
-			if( isset( $updated2 ) && ! $updated2 ) {
-				$response[ 'status' ]	= 'failed';
-				$response[ 'error' ]	= 'update_booking_group_state';
+				// Change booking group state to remove if quantity = 0
+				if( ! $add_quantity && $quantity === 0 ) {
+					$new_state = $context === 'frontend' ? 'removed' : 'cancelled';
+					$updated2 = bookacti_update_booking_group_state( $booking_group_id, $new_state );
+					do_action( 'bookacti_booking_group_state_changed', $booking_group_id, $new_state, array() );
+				}
+
+				// If the group used to be removed (quantity = 0), turn its state to in_cart
+				if( $group->state === 'removed' && $quantity > 0 ) {
+					$new_state = $context === 'frontend' ? 'in_cart' : 'pending';
+					$updated2 = bookacti_update_booking_group_state( $booking_group_id, $new_state );
+					do_action( 'bookacti_booking_group_state_changed', $booking_group_id, $new_state, array() );
+				}
+
+				if( isset( $updated2 ) && ! $updated2 ) {
+					$response[ 'status' ]	= 'failed';
+					$response[ 'error' ]	= 'update_booking_group_state';
+				}
 			}
 		}
-
-
-		return $response;
+		
+		return apply_filters( 'bookacti_update_booking_group_quantity', $response, $booking_group_id, $quantity, $add_quantity, $context );
 	}
 
 

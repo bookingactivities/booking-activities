@@ -11,6 +11,16 @@ echo "<h1>" . esc_html__( 'Calendars', BOOKACTI_PLUGIN_NAME ) . "</h1>";
 
 ?>
 
+
+<div id='bookacti-fatal-error' style='display:none;'>
+	<p><strong><?php esc_html_e( 'A fatal error occurred. Please try to refresh the page. If the error persists, contact the support.', BOOKACTI_PLUGIN_NAME ); ?></strong></p>
+	<p>
+		<em><?php esc_html_e( 'Advanced users, you can stop loading and free the fields to try to solve your problem:', BOOKACTI_PLUGIN_NAME ); ?></em>
+		<input type='button' id='bookacti-exit-loading' value='<?php esc_attr_e( 'Stop loading and free fields', BOOKACTI_PLUGIN_NAME ) ?>' />
+	</p>
+</div>
+
+
 <div id='bookacti-template-container'>
     <?php
 	$templates = bookacti_fetch_templates();
