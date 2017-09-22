@@ -49,11 +49,10 @@ __( 'Booking system specialized in activities (sports, cultural, leisure, events
 
 
 // INCLUDE LANGUAGES FILES
-function bookacti_load_textdomain( $locale = '' ) { 
+function bookacti_load_textdomain() { 
 	
-	if( ! $locale ) {
-		$locale = is_admin() && function_exists( 'get_user_locale' ) ? get_user_locale() : get_locale();
-	}
+	$locale = is_admin() && function_exists( 'get_user_locale' ) ? get_user_locale() : get_locale();
+	$locale = apply_filters( 'plugin_locale', $locale, BOOKACTI_PLUGIN_NAME );
 	
 	unload_textdomain( BOOKACTI_PLUGIN_NAME );
 	load_textdomain( BOOKACTI_PLUGIN_NAME, WP_LANG_DIR . '/' . BOOKACTI_PLUGIN_NAME . '/' . BOOKACTI_PLUGIN_NAME . '-' . $locale . '.mo' );

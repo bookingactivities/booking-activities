@@ -39,7 +39,7 @@
 
 
 /***** SETTINGS *****/
-#bookacti-settings input:not([type='submit']):not([type='checkbox']):not([type='radio']), 
+#bookacti-settings input:not([type='submit']):not([type='checkbox']):not([type='radio']):not(.button), 
 #bookacti-settings select { min-width: 300px; }
 
 #bookacti_refund_actions,
@@ -53,6 +53,8 @@
 .bookacti-settings-table tbody tr:nth-child( 2n+1 )	{ background-color: #f9f9f9; }
 .bookacti-settings-table a		{ text-decoration: none; font-weight: bold; }
 .bookacti-settings-table img	{ max-height: 24px; max-width: 24px; }
+
+.bookacti-notifications-tags-list .bookacti-notifications-tag { margin-bottom: 8px; }
 
 
 /** DIALOGS **/

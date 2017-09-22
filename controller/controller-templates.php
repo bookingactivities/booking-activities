@@ -164,7 +164,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			$event_repeat_freq	= in_array( $sanitized_freq, array( 'none', 'daily', 'weekly', 'monthly' ), true ) ? $sanitized_freq : 'none';
 			$event_repeat_from	= bookacti_sanitize_date( $_POST['event-repeat-from'] );
 			$event_repeat_to	= bookacti_sanitize_date( $_POST['event-repeat-to'] );
-			$dates_excep_array	= bookacti_sanitize_exceptions( $_POST['event-repeat-excep'] );
+			$dates_excep_array	= bookacti_sanitize_date_array( $_POST['event-repeat-excep'] );
 			
 			// Check if input data are complete and consistent 
 			$event_validation	= bookacti_validate_event( $event_id, $event_availability, $event_repeat_freq, $event_repeat_from, $event_repeat_to );

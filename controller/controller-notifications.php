@@ -17,15 +17,12 @@ function bookacti_send_email_admin_new_booking( $booking_id, $booking_form_value
 	if( ! $email ) { return false; }
 	
 	// Temporarilly switch locale to site default's
-	$origin_locale	= get_locale();
-	$site_locale	= bookacti_get_site_locale();
-	if( $origin_locale !== $site_locale ) { bookacti_switch_locale( $site_locale ); }
+	bookacti_switch_to_site_locale();
 	
-	$message	= $email[ 'message' ];
+	$tags = bookacti_get_notifications_tags_values( $booking_id, $booking_type );
 	
-	// TO DO replace tags in message
-	$tags = bookacti_get_notifications_tags( $booking_id, $booking_type );
-	
+	// Replace tags in message and replace linebreaks with html tags
+	$message	= wpautop( str_replace( array_keys( $tags ), array_values( $tags ), $email[ 'message' ] ) );
 	
 	$subject	= $email[ 'subject' ];
 	$to			= $email[ 'to' ];
@@ -36,6 +33,6 @@ function bookacti_send_email_admin_new_booking( $booking_id, $booking_form_value
 	wp_mail( $to, $subject, $message, $headers );
 	
 	// Switch locale back to normal
-	if( $origin_locale !== $site_locale ) { bookacti_switch_locale( $origin_locale ); }
+	bookacti_restore_locale();
 }
 add_action( 'bookacti_booking_form_validated', 'bookacti_send_email_admin_new_booking', 10, 3 );

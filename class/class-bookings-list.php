@@ -192,9 +192,9 @@ if( ! class_exists( 'Bookings_List_Table' ) ) {
 				), $booking, $user );
 				
 				// If the booking is part of a group display its date to identify them
-				if( ! empty( $booking->group_id ) ) {
-					/* translators: Datetime format. Must be adapted to each country. Use wp date_i18n documentation to find the appropriated combinaison https://codex.wordpress.org/Formatting_Date_and_Time */
-					$booking_item[ 'customer' ] .= '(' . date_i18n( __( 'l, F d, Y h:i a', BOOKACTI_PLUGIN_NAME ), strtotime( $booking->event_start ) ) . ')';
+				if( $booking->group_id ) {
+					$booking_start = bookacti_format_datetime( $booking->event_start );
+					$booking_item[ 'customer' ] .= '(' . $booking_start . ')';
 				}
 				
 				// Add info on the primary column to make them directly visible in responsive view

@@ -280,7 +280,29 @@ function bookacti_fill_notifications_settings_section( $section ) {
 						</td>
 					</tr>
 					<tr>
-						<th scope='row' ><?php _ex( 'Email content', 'email message', BOOKACTI_PLUGIN_NAME ); ?></th>
+						<th scope='row' >
+						<?php 
+							_ex( 'Email content', 'email message', BOOKACTI_PLUGIN_NAME ); 
+							$tags = bookacti_get_notifications_tags();
+							if( $tags ) {
+						?>
+							<div class='bookacti-notifications-tags-list' >
+								<p><?php _e( 'Use these tags:' ); ?></p>
+						<?php
+								foreach( $tags as $tag => $tip ) {
+						?>
+									<div class='bookacti-notifications-tag' >
+										<code><?php echo $tag; ?></code>
+										<?php bookacti_help_tip( $tip ); ?>
+									</div>
+						<?php
+								}
+						?>
+							</div>
+						<?php
+							}
+						?>
+						</th>
 						<td>
 							<?php 
 							$args = array(

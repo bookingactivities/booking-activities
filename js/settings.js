@@ -6,15 +6,9 @@ $j( document ).ready( function() {
 		// Prevent submission
 		e.preventDefault();
 		
-		// Update tinemce editor content 
-		if( typeof tinyMCE !== 'undefined' ) {
-			if( typeof tinyMCE.activeEditor !== 'undefined' ) {
-				if( typeof tinyMCE.activeEditor.id !== 'undefined' ) {
-					if( $j( 'textarea#' + tinyMCE.activeEditor.id ).length ) {
-						$j( 'textarea#' + tinyMCE.activeEditor.id ).val( tinyMCE.activeEditor.getContent() );
-					}
-				}
-			}
+		// Save tineMCE editor content 
+		if( tinyMCE ) {
+			tinyMCE.triggerSave();
 		}
 		
 		var form	= $j( this );
@@ -27,20 +21,16 @@ $j( document ).ready( function() {
 			dataType: 'json',
 			success: function( response ){
 				
-				if( response.status === 'success' ) {
-					
-					if( form.attr( 'action' ) ) {
-						window.location.replace( form.attr( 'action' ) );
-					} else {
-						window.location.reload( true ); 
-					}
-					
-				} else {
+				if( response.status !== 'success' ) {
 					console.log( 'AJAX ' + bookacti_localized.error_update_settings );
 					console.log( response );
-					alert( 'AJAX ' + bookacti_localized.error_update_settings );
 				}
 				
+				if( form.attr( 'action' ) ) {
+					window.location.replace( form.attr( 'action' ) );
+				} else {
+					window.location.reload( true ); 
+				}
 			},
 			error: function( e ){
 				console.log( 'AJAX ' + bookacti_localized.error_update_settings );
