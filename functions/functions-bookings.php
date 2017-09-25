@@ -42,12 +42,13 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	 * Compute the booking group state based on its bookings state
 	 * 
 	 * @since 1.1.0
+	 * @version 1.2.0
 	 * 
 	 * @param int $booking_group_id
 	 * @param boolean $update
 	 * @return string|false
 	 */
-	function bookacti_compute_booking_group_state( $booking_group_id, $update = false ) {
+	function bookacti_compute_booking_group_state( $booking_group_id ) {
 		
 		$bookings = bookacti_get_bookings_by_booking_group_id( $booking_group_id );
 		
@@ -77,19 +78,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			$new_state = 'refunded';
 		}
 		
-		$new_state = apply_filters( 'bookacti_compute_booking_group_state', $new_state, $booking_group_id );
-
-		if( $update ) {
-			$old_state = bookacti_get_booking_group_state( $booking_group_id );
-			if( $old_state !== $new_state ) {
-				$group_updated = bookacti_update_booking_group_state( $booking_group_id, $new_state );
-				if( $group_updated ) {
-					do_action( 'bookacti_booking_group_state_changed', $booking_group_id, $new_state, array() );
-				}
-			}
-		}
-		
-		return $new_state;
+		return apply_filters( 'bookacti_compute_booking_group_state', $new_state, $booking_group_id );
 	}
 
 

@@ -15,8 +15,12 @@ function bookacti_get_emails_default_settings() {
 				'active'		=> 1,
 				'title'			=> __( 'Customer has made a booking', BOOKACTI_PLUGIN_NAME ),
 				'to'			=> array( get_bloginfo( 'admin_email' ) ),
-				'subject'		=> __( 'New booking', BOOKACTI_PLUGIN_NAME ),
-				'message'		=> __( 'A customer has made a new booking', BOOKACTI_PLUGIN_NAME ),
+				'subject'		=> __( 'New booking!', BOOKACTI_PLUGIN_NAME ),
+				/* translators: Keep tags as is (this is a tag: {tag}), they will be replaced in code. This is the default email an administrator receive when a booking is made */
+				'message'		=> __( '<p>You have {booking_total_qty} new booking(s) from {user_firstname} {user_lastname} ({user_email})!</p>
+										<p>{booking_list}</p>
+										<p>Booking status: <strong>{booking_status}</strong>.</p>
+										<p><a href="{booking_admin_url}">Click here</a> to edit this booking (ID: {booking_id}).</p>', BOOKACTI_PLUGIN_NAME ),
 				'description'	=> __( 'This email is sent to administrator when a new booking is registered.', BOOKACTI_PLUGIN_NAME ) 
 			),
 		'admin_cancel_booking' => 
@@ -25,7 +29,11 @@ function bookacti_get_emails_default_settings() {
 				'title'			=> __( 'Customer has cancelled a booking', BOOKACTI_PLUGIN_NAME ),
 				'to'			=> array( get_bloginfo( 'admin_email' ) ),
 				'subject'		=> __( 'Booking cancelled', BOOKACTI_PLUGIN_NAME ),
-				'message'		=> __( 'A customer has cancelled a booking', BOOKACTI_PLUGIN_NAME ),
+				/* translators: Keep tags as is (this is a tag: {tag}), they will be replaced in code. This is the default email an administrator receive when a booking is cancelled */
+				'message'		=> __( '<p>A customer has cancelled a booking.</p>
+										<p>{booking_list}</p>
+										<p>Contact him: {user_firstname} {user_lastname} ({user_email})</p>
+										<p><a href="{booking_admin_url}">Click here</a> to edit this booking (ID: {booking_id}).</p>', BOOKACTI_PLUGIN_NAME ),
 				'description'	=> __( 'This email is sent to administrator when a customer cancel a booking.', BOOKACTI_PLUGIN_NAME ) 
 			),
 		'admin_reschedule_booking' => 
@@ -34,48 +42,84 @@ function bookacti_get_emails_default_settings() {
 				'title'			=> __( 'Customer has rescheduled a booking', BOOKACTI_PLUGIN_NAME ),
 				'to'			=> array( get_bloginfo( 'admin_email' ) ),
 				'subject'		=> __( 'Booking rescheduled', BOOKACTI_PLUGIN_NAME ),
-				'message'		=> __( 'A customer has rescheduled a booking', BOOKACTI_PLUGIN_NAME ),
+				/* translators: Keep tags as is (this is a tag: {tag}), they will be replaced in code. This is the default email an administrator receive when a booking is rescheduled */
+				'message'		=> __( '<p>A customer has rescheduled a booking.</p>
+										<p>Old booking: {booking_old_start} - {booking_old_end}</p>
+										<p>New booking: {booking_list}</p>
+										<p>Contact him: {user_firstname} {user_lastname} ({user_email})</p>
+										<p><a href="{booking_admin_url}">Click here</a> to edit this booking (ID: {booking_id}).</p>', BOOKACTI_PLUGIN_NAME ),
 				'description'	=> __( 'This email is sent to administrator when a customer reschedule a booking.', BOOKACTI_PLUGIN_NAME )  
 			),
 		'admin_refund_booking' => 
 			array(
 				'active'		=> 1,
-				'title'			=> __( 'Customer has refunded a booking', BOOKACTI_PLUGIN_NAME ),
+				'title'			=> __( 'Customer is refunded', BOOKACTI_PLUGIN_NAME ),
 				'to'			=> array( get_bloginfo( 'admin_email' ) ),
 				'subject'		=> __( 'Booking refunded', BOOKACTI_PLUGIN_NAME ),
-				'message'		=> __( 'A customer has refunded a booking', BOOKACTI_PLUGIN_NAME ),
-				'description'	=> __( 'This email is sent to administrator when a customer sucessfully refund a booking.', BOOKACTI_PLUGIN_NAME ) 
+				/* translators: Keep tags as is (this is a tag: {tag}), they will be replaced in code. This is the default email an administrator receive when a booking is refunded */
+				'message'		=> __( '<p>A customer has been reimbursed for this booking:</p>
+										<p>{booking_list}</p>
+										<p>Contact him: {user_firstname} {user_lastname} ({user_email})</p>
+										<p><a href="{booking_admin_url}">Click here</a> to edit this booking (ID: {booking_id}).</p>', BOOKACTI_PLUGIN_NAME ),
+				'description'	=> __( 'This email is sent to administrator when a customer is successfully reimbursed for a booking.', BOOKACTI_PLUGIN_NAME ) 
 			),
 		'customer_pending_booking' => 
 			array(
 				'active'		=> 1,
-				'title'			=> __( 'Booking status turned to "Pending"', BOOKACTI_PLUGIN_NAME ),
-				'subject'		=> __( 'Booking pending', BOOKACTI_PLUGIN_NAME ),
-				'message'		=> __( 'Your booking is now pending', BOOKACTI_PLUGIN_NAME ),
+				'title'			=> __( 'Booking status turns to "Pending"', BOOKACTI_PLUGIN_NAME ),
+				'subject'		=> __( 'Your booking is pending', BOOKACTI_PLUGIN_NAME ) . ' - ' . apply_filters( 'bookacti_translate_text', get_bloginfo( 'name' ) ),
+				/* translators: Keep tags as is (this is a tag: {tag}), they will be replaced in code. This is the default email an customer receive when a booking is made, but is still Pending */
+				'message'		=> __( '<p>Thank you for your booking request {user_firstname}!</p>
+										<p>{booking_list}</p>
+										<p>Your reservation is <strong>pending</strong>.</p>
+										<p>We will process your request and contact you as soon as possible.</p>', BOOKACTI_PLUGIN_NAME ),
 				'description'	=> __( 'This email is sent to the customer when one of his bookings becomes "Pending". If you set the "Default booking state" option to "Pending", this email will be sent right after the booking is made.', BOOKACTI_PLUGIN_NAME ) 
 			),
 		'customer_booked_booking' => 
 			array(
 				'active'		=> 1,
-				'title'			=> __( 'Booking status turned to "Booked"', BOOKACTI_PLUGIN_NAME ),
-				'subject'		=> __( 'Booking complete', BOOKACTI_PLUGIN_NAME ),
-				'message'		=> __( 'Your booking is now complete', BOOKACTI_PLUGIN_NAME ),
+				'title'			=> __( 'Booking status turns to "Booked"', BOOKACTI_PLUGIN_NAME ),
+				'subject'		=> __( 'Your booking is complete! Thank you', BOOKACTI_PLUGIN_NAME ) . ' - ' . apply_filters( 'bookacti_translate_text', get_bloginfo( 'name' ) ),
+				/* translators: Keep tags as is (this is a tag: {tag}), they will be replaced in code. This is the default email an customer receive when a booking is made and Complete */
+				'message'		=> __( '<p>Thank you for your booking {user_firstname}!</p>
+										<p>{booking_list}</p>
+										<p>We confirm that your reservation is now <strong>complete</strong>.</p>', BOOKACTI_PLUGIN_NAME ),
 				'description'	=> __( 'This email is sent to the customer when one of his bookings becomes "Booked". If you set the "Default booking state" option to "Booked", this email will be sent right after the booking is made.', BOOKACTI_PLUGIN_NAME ) 
 			),
 		'customer_cancelled_booking' => 
 			array(
 				'active'		=> 1,
-				'title'			=> __( 'Booking status turned to "Cancelled"', BOOKACTI_PLUGIN_NAME ),
-				'subject'		=> __( 'Booking cancelled', BOOKACTI_PLUGIN_NAME ),
-				'message'		=> __( 'Your booking is now cancelled', BOOKACTI_PLUGIN_NAME ),
+				'title'			=> __( 'Booking status turns to "Cancelled"', BOOKACTI_PLUGIN_NAME ),
+				'subject'		=> __( 'Your booking has been cancelled', BOOKACTI_PLUGIN_NAME ) . ' - ' . apply_filters( 'bookacti_translate_text', get_bloginfo( 'name' ) ),
+				/* translators: Keep tags as is (this is a tag: {tag}), they will be replaced in code. This is the default email an customer receive when a booking is cancelled */
+				'message'		=> __( '<p>Hello {user_firstname},
+										<p>Your booking has been <strong>cancelled</strong>.</p>
+										<p>{booking_list}</p>
+										<p>If you didn\'t cancelled this reservation or if you think this is an error, please contact us.</p>', BOOKACTI_PLUGIN_NAME ),
 				'description'	=> __( 'This email is sent to the customer when one of his bookings becomes "Cancelled".', BOOKACTI_PLUGIN_NAME )  
+			),
+		'customer_rescheduled_booking' => 
+			array(
+				'active'		=> 1,
+				'title'			=> __( 'Booking is rescheduled', BOOKACTI_PLUGIN_NAME ),
+				'subject'		=> __( 'Your booking has been rescheduled', BOOKACTI_PLUGIN_NAME ) . ' - ' . apply_filters( 'bookacti_translate_text', get_bloginfo( 'name' ) ),
+				/* translators: Keep tags as is (this is a tag: {tag}), they will be replaced in code. This is the default email an customer receive when a booking is rescheduled */
+				'message'		=> __( '<p>Hello {user_firstname},
+										<p>Your booking has been <strong>rescheduled</strong> from {booking_old_start} to:</p>
+										<p>{booking_list}</p>
+										<p>If you didn\'t rescheduled this reservation or if you think this is an error, please contact us.</p>', BOOKACTI_PLUGIN_NAME ),
+				'description'	=> __( 'This email is sent to the customer when one of his bookings is rescheduled.', BOOKACTI_PLUGIN_NAME )  
 			),
 		'customer_refunded_booking' => 
 			array(
 				'active'		=> 1,
-				'title'			=> __( 'Booking status turned to "Refunded"', BOOKACTI_PLUGIN_NAME ),
-				'subject'		=> __( 'Booking refunded', BOOKACTI_PLUGIN_NAME ),
-				'message'		=> __( 'Your booking is now refunded', BOOKACTI_PLUGIN_NAME ),
+				'title'			=> __( 'Booking status turns to "Refunded"', BOOKACTI_PLUGIN_NAME ),
+				'subject'		=> __( 'Your booking has been refunded', BOOKACTI_PLUGIN_NAME ) . ' - ' . apply_filters( 'bookacti_translate_text', get_bloginfo( 'name' ) ),
+				/* translators: Keep tags as is (this is a tag: {tag}), they will be replaced in code. This is the default email an customer receive when he is reimbursed for a booking */
+				'message'		=> __( '<p>Hello {user_firstname},
+										<p>Your booking has been <strong>refunded</strong>.</p>
+										<p>{booking_list}</p>
+										<p>We are sorry for the inconvenience and hope to see you soon.</p>', BOOKACTI_PLUGIN_NAME ),
 				'description'	=> __( 'This email is sent to the customer when one of his bookings becomes "Refunded".', BOOKACTI_PLUGIN_NAME ) 
 			),
 	);
@@ -209,8 +253,10 @@ function bookacti_sanitize_email_settings( $args, $email_id = '' ) {
 
 /**
  * Get notifications tags
+ * 
+ * @param string $notification_id Optional.
  */
-function bookacti_get_notifications_tags() {
+function bookacti_get_notifications_tags( $notification_id = '' ) {
 	
 	$tags = array( 
 		'{booking_id}'			=> __( 'Booking unique ID (integer). Bookings and booking groups have different set of IDs.', BOOKACTI_PLUGIN_NAME ),
@@ -227,7 +273,12 @@ function bookacti_get_notifications_tags() {
 		'{user_email}'			=> __( 'The user email address', BOOKACTI_PLUGIN_NAME )
 	);
 	
-	return apply_filters( 'bookacti_notifications_tags', $tags );
+	if( $notification_id === 'admin_reschedule_booking' || $notification_id === 'customer_rescheduled_booking' ) {
+		$tags[ '{booking_old_start}' ]	= __( 'Booking start date and time before reschedule. Displayed in a user-friendly format.', BOOKACTI_PLUGIN_NAME );
+		$tags[ '{booking_old_end}' ]	= __( 'Booking end date and time before reschedule. Displayed in a user-friendly format.', BOOKACTI_PLUGIN_NAME );
+	}
+	
+	return apply_filters( 'bookacti_notifications_tags', $tags, $notification_id );
 }
 
 
@@ -237,9 +288,10 @@ function bookacti_get_notifications_tags() {
  * @since 1.2.0
  * @param int $booking_id
  * @param string $booking_type 'group' or 'single'
+ * @param string $notification_id Optional.
  * @return array
  */
-function bookacti_get_notifications_tags_values( $booking_id, $booking_type ) {
+function bookacti_get_notifications_tags_values( $booking_id, $booking_type, $notification_id ) {
 	
 	$booking_data = array();
 	
@@ -281,7 +333,7 @@ function bookacti_get_notifications_tags_values( $booking_id, $booking_type ) {
 		}
 	}
 	
-	$default_tags = array_keys( bookacti_get_notifications_tags() );
+	$default_tags = array_keys( bookacti_get_notifications_tags( $notification_id ) );
 	
 	// Make sure the array contains all tags 
 	$tags = array();
@@ -289,6 +341,6 @@ function bookacti_get_notifications_tags_values( $booking_id, $booking_type ) {
 		$tags[ $default_tag ] = isset( $booking_data[ $default_tag ] ) ? $booking_data[ $default_tag ] : '';
 	}
 	
-	return apply_filters( 'bookacti_notifications_tags_values', $tags, $booking_id, $booking_type );
+	return apply_filters( 'bookacti_notifications_tags_values', $tags, $booking_id, $booking_type, $notification_id );
 }
 

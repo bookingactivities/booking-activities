@@ -205,6 +205,10 @@ add_filter( 'bookacti_when_events_load_tip', 'bookacti_add_wc_mention_to_when_ev
  */
 function bookacti_add_wc_mention_to_notifications( $emails ) {
 	
+	if( isset( $emails[ 'admin_new_booking' ] ) ) {
+		$emails[ 'admin_new_booking' ][ 'description' ] .= '<br/>' . __( 'This will only work with bookings made with a booking form generated from a shortode. For bookings made with WooCommerce, use WooCommerce notifications.', BOOKACTI_PLUGIN_NAME );
+	}
+	
 	if( isset( $emails[ 'customer_pending_booking' ] ) ) {
 		$emails[ 'customer_pending_booking' ][ 'description' ] .= '<br/>' . __( 'Remember that with WooCommerce, a successfull payment automatically turns bookings status to "Booked".', BOOKACTI_PLUGIN_NAME );
 	}

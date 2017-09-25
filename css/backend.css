@@ -55,7 +55,7 @@
 .bookacti-settings-table img	{ max-height: 24px; max-width: 24px; }
 
 .bookacti-notifications-tags-list .bookacti-notifications-tag { margin-bottom: 8px; }
-
+.bookacti-notifications-tag code { font-weight: normal; font-size: 0.8em; }
 
 /** DIALOGS **/
 .input-warning  { border-color: #d80 !important; }

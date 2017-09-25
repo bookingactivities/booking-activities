@@ -447,136 +447,90 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	
 
 	/**
-	 * Turn meta state to new status (to be called with bookacti_booking_state_changed)
+	 * Turn order item booking status meta to new status according to given booking id
 	 *
-	 * @since	1.0.0
-	 * @version	1.1.0
+	 * @since 1.2.0 (was bookacti_woocommerce_turn_booking_meta_state_to_new_state before)
 	 * 
 	 * @param int $booking_id
 	 * @param string $new_state
 	 * @param array $args
-	 * @return void
 	 */
-	function bookacti_woocommerce_turn_booking_meta_state_to_new_state( $booking_id, $new_state, $args = array() ) {
+	function bookacti_update_order_item_booking_status_by_booking_id( $booking_id, $new_state, $args = array() ) {
 		
-		if( empty( $booking_id ) ) {
-			return;
-		}
+		if( ! $booking_id ) { return; }
 		
 		$order_id = bookacti_get_booking_order_id( $booking_id );
 		
-		if( empty( $order_id ) ) {
-			return;	
-		}
+		if( ! $order_id ) { return; }
 		
 		$order = wc_get_order( $order_id );
 		
-		if( empty( $order ) ) {
-			return;	
-		}
+		if( ! $order ) { return; }
 		
 		$item = bookacti_get_order_item_by_booking_id( $booking_id );
 		
-		if( empty( $item ) || ! isset( $item[ 'bookacti_booking_id' ] ) ) {
-			return;
-		}
-		
-		// Get old state
-		$old_state = wc_get_order_item_meta( $item[ 'id' ], 'bookacti_state', true );
-
-		// Turn meta state to new state
-		wc_update_order_item_meta( $item[ 'id' ], 'bookacti_state', $new_state );
-
-		// Add refund metadata
-		if( in_array( $new_state, array( 'refunded', 'refund_requested' ), true ) ) {
-			$refund_action = $args[ 'refund_action' ] ? $args[ 'refund_action' ] : 'manual';
-			wc_update_order_item_meta( $item[ 'id' ], '_bookacti_refund_method', $refund_action );
-		}
-
-		// Log booking state change
-		if( $old_state !== $new_state ) {
-			$status_labels = bookacti_get_booking_state_labels();
-			$is_customer_action = get_current_user_id() == bookacti_get_booking_owner( $booking_id );		
-			/* translators: %1$s is booking id, %2$s is old state, %3$s is new state */
-			$order->add_order_note( 
-				sprintf( __( 'Booking #%1$s state has been updated from %2$s to %3$s.', BOOKACTI_PLUGIN_NAME ), 
-						$booking_id, 
-						$status_labels[ $old_state ][ 'label' ], 
-						$status_labels[ $new_state ][ 'label' ] ), 
-				0, 
-				$is_customer_action );
-		}
-		
-		// Turn the order state if it is composed of inactive / pending / booked bookings only
-		bookacti_change_order_state_based_on_its_bookings_state( $order_id );
+		bookacti_update_order_item_booking_status( $item, $new_state, $args );
 	}
-	add_action( 'bookacti_booking_state_changed', 'bookacti_woocommerce_turn_booking_meta_state_to_new_state', 10 , 3 );
+	add_action( 'bookacti_booking_state_changed', 'bookacti_update_order_item_booking_status_by_booking_id', 10 , 3 );
 	
 	
 	/**
-	 * Turn meta state to new status (to be called with bookacti_booking_group_state_changed)
+	 * Turn order item booking status meta to new status according to given booking group id
 	 *
-	 * @since	1.1.0
+	 * @since 1.2.0 (was named bookacti_woocommerce_turn_booking_group_meta_state_to_new_state before)
 	 * 
 	 * @param int $booking_group_id
 	 * @param string $new_state
 	 * @param array $args
 	 * @return void
 	 */
-	function bookacti_woocommerce_turn_booking_group_meta_state_to_new_state( $booking_group_id, $new_state, $args = array() ) {
+	function bookacti_update_order_item_booking_group_status_by_booking_group_id( $booking_group_id, $new_state, $args = array() ) {
 		
-		if( empty( $booking_group_id ) ) {
-			return;
-		}
+		if( ! $booking_group_id ) { return; }
 		
 		$order_id = bookacti_get_booking_group_order_id( $booking_group_id );
 		
-		if( empty( $order_id ) ) {
-			return;	
-		}
+		if( ! $order_id ) {	return;	}
 		
 		$order = wc_get_order( $order_id );
 		
-		if( empty( $order ) ) {
-			return;	
-		}
+		if( ! $order ) { return; }
 		
 		$item = bookacti_get_order_item_by_booking_group_id( $booking_group_id );
 		
-		if( empty( $item ) || ! isset( $item[ 'bookacti_booking_group_id' ] ) ) {
-			return;
-		}
+		if( ! $item || ! isset( $item[ 'bookacti_booking_group_id' ] ) ) { return; }
 		
-		// Get old state
-		$old_state =  wc_get_order_item_meta( $item[ 'id' ], 'bookacti_state', true );
-		
-		// Turn meta state to new state
-		wc_update_order_item_meta( $item[ 'id' ], 'bookacti_state', $new_state );
-
-		// Add refund metadata
-		if( in_array( $new_state, array( 'refunded', 'refund_requested' ), true ) ) {
-			$refund_action = $args[ 'refund_action' ] ? $args[ 'refund_action' ] : 'manual';
-			wc_update_order_item_meta( $item[ 'id' ], '_bookacti_refund_method', $refund_action );
-		}
-
-		// Log booking group state change
-		if( $old_state !== $new_state ) {
-			$status_labels = bookacti_get_booking_state_labels();
-			$is_customer_action = get_current_user_id() == bookacti_get_booking_group_owner( $booking_group_id );		
-			/* translators: %1$s is booking group id, %2$s is old state, %3$s is new state */
-			$order->add_order_note( 
-				sprintf( __( 'Booking group #%1$s state has been updated from %2$s to %3$s.', BOOKACTI_PLUGIN_NAME ), 
-						$booking_group_id, 
-						$status_labels[ $old_state ][ 'label' ], 
-						$status_labels[ $new_state ][ 'label' ] ), 
-				0, 
-				$is_customer_action );
-		}
-		
-		// Turn the order state if it is composed of inactive / pending / booked bookings only
-		bookacti_change_order_state_based_on_its_bookings_state( $order_id );
+		bookacti_update_order_item_booking_status( $item, $new_state, $args );
 	}
-	add_action( 'bookacti_booking_group_state_changed', 'bookacti_woocommerce_turn_booking_group_meta_state_to_new_state', 10 , 3 );
+	add_action( 'bookacti_booking_group_state_changed', 'bookacti_update_order_item_booking_group_status_by_booking_group_id', 10 , 3 );
+	
+	
+	/**
+	 * Turn order items booking status meta to new status
+	 *
+	 * @since 1.2.0
+	 * 
+	 * @param int $order_id
+	 * @param string $new_state
+	 * @param array $args
+	 */
+	function bookacti_update_order_items_booking_status_by_order_id( $order_id, $new_state, $args ) {
+		
+		if( ! $order_id ) { return; }
+		
+		$order = wc_get_order( $order_id );
+		
+		if( ! $order ) { return; }
+		
+		$items = $order->get_items();
+		
+		if( ! $items ) { return; }
+		
+		foreach( $items as $key => $item ) {
+			bookacti_update_order_item_booking_status( $item, $new_state, $args );
+		}
+	}
+	add_action( 'bookacti_order_bookings_state_changed', 'bookacti_update_order_item_booking_status_by_order_id', 10, 2 );
 	
 	
 	/**
@@ -821,7 +775,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	 * @param string $event_end
 	 * @return void
 	 */
-	function bookacti_woocommerce_update_booking_dates( $booking_id, $event_start, $event_end ) {
+	function bookacti_woocommerce_update_booking_dates( $booking_id, $event_start, $event_end, $old_booking ) {
 		
 		$item = bookacti_get_order_item_by_booking_id( $booking_id );
 			
@@ -864,4 +818,4 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			wc_add_order_item_meta( $item[ 'id' ], 'bookacti_booked_events', json_encode( array( $event ) ) );
 		}
 	}
-	add_action( 'bookacti_booking_rescheduled', 'bookacti_woocommerce_update_booking_dates', 10, 3 );
+	add_action( 'bookacti_booking_rescheduled', 'bookacti_woocommerce_update_booking_dates', 10, 4 );

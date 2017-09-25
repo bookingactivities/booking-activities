@@ -259,7 +259,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		/**
 		 * AJAX Controller - Refund a booking
 		 * 
-		 * @version 1.1.0
+		 * @version 1.2.0
 		 */
 		function bookacti_controller_refund_booking() {
 
@@ -294,7 +294,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 					// Hook status changes
 					if( $updated ) {
-						do_action( 'bookacti_booking_state_changed', $booking_id, $new_state, array( 'refund_action' => $refund_action ) );
+						do_action( 'bookacti_booking_state_changed', $booking_id, $new_state, array( 'is_admin' => $is_admin, 'refund_action' => $refund_action ) );
 					}
 
 					// Get new booking actions
@@ -427,7 +427,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 					if( $rescheduled ) {
 
-						do_action( 'bookacti_booking_rescheduled', $booking_id, $event_start, $event_end );
+						do_action( 'bookacti_booking_rescheduled', $booking_id, $event_start, $event_end, $booking );
 						
 						$is_bookings_page	= intval( $_POST[ 'is_bookings_page' ] );
 						$admin_or_front		= $is_bookings_page ? 'both' : 'front';
@@ -459,9 +459,28 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	// BOOKING GROUPS
 		
 		/**
+		 * Trigger bookacti_booking_state_changed for each bookings of the group when bookacti_booking_group_state_changed is called
+		 * 
+		 * @since 1.2.0
+		 * @param int $booking_group_id
+		 * @param string $status
+		 * @param array $args
+		 */
+		function bookacti_trigger_booking_state_change_for_each_booking_of_a_group( $booking_group_id, $status , $args ) {
+			$bookings = bookacti_get_bookings_by_booking_group_id( $booking_group_id );
+			$args[ 'booking_group_state_changed' ] = true;
+			foreach( $bookings as $booking ) {
+				do_action( 'bookacti_booking_state_changed', $booking->id, $status, $args );
+			}
+		}
+		add_action( 'bookacti_booking_group_state_changed', 'bookacti_trigger_booking_state_change_for_each_booking_of_a_group', 10, 3 );
+		
+		
+		/**
 		 * AJAX Controller - Cancel a booking group
 		 * 
 		 * @since 1.1.0
+		 * @version 1.2.0
 		 */
 		function bookacti_controller_cancel_booking_group() {
 
@@ -483,10 +502,6 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 					$is_bookings_page	= false;
 					if( isset( $_POST[ 'is_bookings_page' ] ) ) { 
 						$is_bookings_page = intval( $_POST[ 'is_bookings_page' ] ) === 1 ? true : false; 
-					}
-					
-					foreach( $booking_ids as $booking_id ) {
-						do_action( 'bookacti_booking_state_changed', $booking_id, 'cancelled', array( 'is_admin' => $is_bookings_page ) );
 					}
 					
 					do_action( 'bookacti_booking_group_state_changed', $booking_group_id, 'cancelled', array( 'is_admin' => $is_bookings_page ) );
@@ -548,6 +563,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		 * AJAX Controller - Refund a booking group
 		 * 
 		 * @since 1.1.0
+		 * @version 1.2.0
 		 */
 		function bookacti_controller_refund_booking_group() {
 
@@ -584,10 +600,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 					// Hook status changes
 					if( $updated ) {
-						foreach( $booking_ids as $booking_id ) {
-							do_action( 'bookacti_booking_state_changed', $booking_id, $new_state, array( 'refund_action' => $refund_action, 'is_admin' => $is_admin ) );
-						}
-						do_action( 'bookacti_booking_group_state_changed', $booking_group_id, $new_state, array( 'refund_action' => $refund_action, 'is_admin' => $is_admin ) );
+						do_action( 'bookacti_booking_group_state_changed', $booking_group_id, $new_state, array( 'is_admin' => $is_admin, 'refund_action' => $refund_action ) );
 					}
 					
 					// Get new booking actions
@@ -613,6 +626,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		 * AJAX Controller - Change booking group state
 		 * 
 		 * @since 1.1.0
+		 * @version 1.2.0
 		 */
 		function bookacti_controller_change_booking_group_state() {
 
@@ -647,10 +661,6 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 					if( $updated ) {
 
 						$is_bookings_page = intval( $_POST[ 'is_bookings_page' ] ) === 1 ? true : false;
-						
-						foreach( $booking_ids as $booking_id ) {
-							do_action( 'bookacti_booking_state_changed', $booking_id, $new_state, array( 'is_admin' => $is_bookings_page, 'active' => $active ) );
-						}
 						
 						do_action( 'bookacti_booking_group_state_changed', $booking_group_id, $new_state, array( 'is_admin' => $is_bookings_page, 'active' => $active ) );
 						

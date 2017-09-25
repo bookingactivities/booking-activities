@@ -283,7 +283,7 @@ function bookacti_fill_notifications_settings_section( $section ) {
 						<th scope='row' >
 						<?php 
 							_ex( 'Email content', 'email message', BOOKACTI_PLUGIN_NAME ); 
-							$tags = bookacti_get_notifications_tags();
+							$tags = bookacti_get_notifications_tags( $email_id );
 							if( $tags ) {
 						?>
 							<div class='bookacti-notifications-tags-list' >

@@ -17,6 +17,8 @@
 						"bookacti_notifications_settings_email_customer_booked_booking_message":{},
 						"bookacti_notifications_settings_email_customer_cancelled_booking_subject":{},
 						"bookacti_notifications_settings_email_customer_cancelled_booking_message":{},
+						"bookacti_notifications_settings_email_customer_rescheduled_booking_subject":{},
+						"bookacti_notifications_settings_email_customer_rescheduled_booking_message":{},
 						"bookacti_notifications_settings_email_customer_refunded_booking_subject":{},
 						"bookacti_notifications_settings_email_customer_refunded_booking_message":{}
 					}

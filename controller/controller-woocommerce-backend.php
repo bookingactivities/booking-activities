@@ -137,174 +137,26 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	 * Change booking quantity when a partial refund in done, 
 	 * Change booking state when a total refund is done
 	 * 
-	 * @version 1.1.0
+	 * @since 1.2.0 (was named bookacti_update_booking_when_order_item_is_refunded before)
 	 * 
 	 * @param int $refund_id
 	 * @param array $args
 	 */
-	function bookacti_update_booking_when_order_item_is_refunded( $refund_id, $args ) {
+	function bookacti_update_order_bookings_on_refund( $refund_id, $args ) {
 		
 		$refunded_items	= $args[ 'line_items' ];
 		
 		// If a refund has been perform on one or several items
-		if( ! empty( $refunded_items ) ) {
-			
-			// Add refunds of the same bookings to calculate the new quantity
-			$init_qty = array();
-			$new_qty = array();
-			$booking_groups = array();
-			foreach( $refunded_items as $item_id => $refunded_item ) {
-				
-				$refunded_qty		= intval( $refunded_item[ 'qty' ] );
-				
-				if( $refunded_qty <= 0 ) {
-					continue;
-				}
-				
-				$booking_id			= wc_get_order_item_meta( $item_id, 'bookacti_booking_id', true );
-				$booking_group_id	= wc_get_order_item_meta( $item_id, 'bookacti_booking_group_id', true );
-				
-				// Single booking
-				if( ! empty( $booking_id ) ) {
-					
-					$booking = bookacti_get_booking_by_id( $booking_id );
-					$init_qty[ $booking_id ]= $booking->quantity;
-					$new_qty[ $booking_id ][ 'new_qty' ]		= $init_qty[ $booking_id ] - $refunded_qty;
-					$new_qty[ $booking->id ][ 'booking_type' ]	= 'single';
-				
-				// Booking group
-				} else if( ! empty( $booking_group_id ) ) {
-					
-					$bookings = bookacti_get_bookings_by_booking_group_id( $booking_group_id );
-					
-					foreach( $bookings as $booking ) {
-						$init_qty[ $booking->id ]= $booking->quantity;
-						$new_qty[ $booking->id ][ 'new_qty' ]		= $init_qty[ $booking->id ] - $refunded_qty;
-						$new_qty[ $booking->id ][ 'booking_type' ]	= 'group';
-					}
-					
-					$booking_groups[] = $booking_group_id;
-				}
-			}
-			
-			
-			// Set the new quantity or mark the booking as refunded
-			foreach( $new_qty as $booking_id => $refund ) {
-				if( $refund[ 'new_qty' ] > 0 ) {
-					
-					// Update quantity by substracting the refunded quantity
-					$response = bookacti_controller_update_booking_quantity( $booking_id, $refund[ 'new_qty' ], 'admin' );
-					
-					// If something went wrong, delete the refund and die
-					if( ! in_array( $response[ 'status' ], array( 'success', 'no_change' ), true ) ) {
-						bookacti_delete_refund_and_die( $refund_id );
-					}
-					
-				} else {
-					
-					// Update state to refunded
-					$updated1 = bookacti_update_booking_state( $booking_id, 'refunded' );
-					if( $updated1 ) {
-						do_action( 'bookacti_booking_state_changed', $booking_id, 'refunded', array( 'is_admin' => true, 'refund_action' => 'manual' ) );
-					}
-					
-					// Set the quantity back to the old value
-					$updated2 = bookacti_force_update_booking_quantity( $booking_id, $init_qty[ $booking_id ] );
-					
-					// If something went wrong, delete the refund and die
-					if( $updated1 === false || $updated2 === false ) {
-						bookacti_delete_refund_and_die( $refund_id );
-					} 
-				}
-				
-				if( $refund[ 'booking_type' ] === 'single' ) {
-					// Update refunds ids array bound to the booking
-					$refunds = bookacti_get_metadata( 'booking', $booking_id, 'refunds', true );
-					$refunds = is_array( $refunds ) ? $refunds : array();
-					$refunds[] = $refund_id;
-					bookacti_update_metadata( 'booking', $booking_id, array( 'refunds' => $refunds ) );
-				}
-			}
-			
-			
-			// Update booking group state
-			foreach( $booking_groups as $booking_group_id ) {
-				
-				$booking_group_old_qty = bookacti_get_booking_group_quantity( $booking_group_id );
-				$booking_group_new_qty = $booking_group_old_qty - $refunded_qty;
-
-				// If the group will be totally refunded
-				if( $booking_group_new_qty <= 0 ) {
-					
-					$updated_group = bookacti_update_booking_group_state( $booking_group_id, 'refunded' );
-
-					if( $updated_group ) {
-						do_action( 'bookacti_booking_group_state_changed', $booking_group_id, 'refunded', array( 'is_admin' => true, 'refund_action' => 'manual' ) );
-					}
-				}
-				
-				// Update refunds ids array bound to the booking group
-				$group_refunds = bookacti_get_metadata( 'booking_group', $booking_group_id, 'refunds', true );
-				$group_refunds = is_array( $group_refunds ) ? $group_refunds : array();
-				$group_refunds[] = $refund_id;
-				bookacti_update_metadata( 'booking_group', $booking_group_id, array( 'refunds' => $group_refunds ) );
-			}
-		
+		if( $refunded_items ) {
+			bookacti_update_order_bookings_on_items_refund( $refunded_items, $refund_id );
 		
 		// If the order state has changed to 'Refunded'
 		} else {
-			
-			// Double check that the refund is total
-			$order_id			= intval( $args[ 'order_id' ] );
-			$order				= wc_get_order( $order_id );
-			$is_total_refund	= floatval( $order->get_total() ) == floatval( $order->get_total_refunded() );
-			
-			if( $is_total_refund ) {				
-				$items = $order->get_items();
-				foreach( $items as $item_id => $item ) {
-					$booking_id			= wc_get_order_item_meta( $item_id, 'bookacti_booking_id', true );
-					$booking_group_id	= wc_get_order_item_meta( $item_id, 'bookacti_booking_group_id', true );
-					
-					// Single booking
-					if( ! empty ( $booking_id ) ) {
-						
-						// Update booking state to 'refunded'
-						bookacti_update_booking_state( $booking_id, 'refunded' );
-						
-						// Update refunds ids array bound to the booking
-						$refunds = bookacti_get_metadata( 'booking', $booking_id, 'refunds', true );
-						$refunds = is_array( $refunds ) ? $refunds : array();
-						$refunds[] = $refund_id;
-						bookacti_update_metadata( 'booking', $booking_id, array( 'refunds' => $refunds ) );
-						
-						// Add the refund method and yell the booking state change
-						wc_update_order_item_meta( $item_id, '_bookacti_refund_method', 'manual' );
-						
-						do_action( 'bookacti_booking_state_changed', $booking_id, 'refunded', array( 'is_admin' => true, 'refund_action' => 'manual' ) );
-					
-					// Booking group
-					} else if( ! empty ( $booking_group_id ) ) {
-						
-						// Update bookings states to 'refunded'
-						bookacti_update_booking_group_state( $booking_group_id, 'refunded', 'auto', true );
-						
-						// Update refunds ids array bound to the booking
-						$refunds = bookacti_get_metadata( 'booking_group', $booking_group_id, 'refunds', true );
-						$refunds = is_array( $refunds ) ? $refunds : array();
-						$refunds[] = $refund_id;
-						bookacti_update_metadata( 'booking_group', $booking_group_id, array( 'refunds' => $refunds ) );
-						
-						// Add the refund method and yell the booking state change
-						wc_update_order_item_meta( $item_id, '_bookacti_refund_method', 'manual' );
-						
-						do_action( 'bookacti_booking_group_state_changed', $booking_group_id, 'refunded', array( 'is_admin' => true, 'refund_action' => 'manual' ) );
-					
-					}
-				}
-			}
+			$order_id = intval( $args[ 'order_id' ] );
+			bookacti_update_order_bookings_on_order_refund( $order_id, $refund_id );
 		}
 	}
-	add_action( 'woocommerce_refund_created', 'bookacti_update_booking_when_order_item_is_refunded', 10, 2 );
+	add_action( 'woocommerce_refund_created', 'bookacti_update_order_bookings_on_refund', 10, 2 );
 	
 	
 	/**

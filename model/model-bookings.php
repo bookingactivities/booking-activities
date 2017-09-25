@@ -72,7 +72,7 @@ function bookacti_booking_exists( $user_id, $event_id, $event_start, $event_end,
 	global $wpdb;
 	
 	$query ='SELECT id FROM ' . BOOKACTI_TABLE_BOOKINGS 
-			. ' WHERE user_id = %d '
+			. ' WHERE user_id = %s '
 			. ' AND event_id = %d '
 			. ' AND event_start = %s '
 			. ' AND event_end = %s '
@@ -106,7 +106,9 @@ function bookacti_booking_exists( $user_id, $event_id, $event_start, $event_end,
 
 // UPDATE BOOKING QUNATITY IF POSSIBLE
 /**
- * Update booking qunatity if possible
+ * Update booking quantity if possible
+ * 
+ * @version 1.2.0
  * 
  * @global wpdb $wpdb
  * @param int $booking_id
@@ -162,8 +164,9 @@ function bookacti_update_booking_quantity( $booking_id, $new_quantity, $expirati
 		if( $updated > 0 ){
 			
 			// If state has changed
-			if( ! empty( $data[ 'state' ] ) && is_string( $data[ 'state' ] ) && $old_state !== $data[ 'state' ] ) {
-				do_action( 'bookacti_booking_state_changed', $booking_id, $data[ 'state' ], array() );
+			if( ! $booking->group_id && $data[ 'state' ] && is_string( $data[ 'state' ] ) && $old_state !== $data[ 'state' ] ) {
+				$is_admin = $context === 'admin' ? true : false;
+				do_action( 'bookacti_booking_state_changed', $booking_id, $data[ 'state' ], array( 'is_admin' => $is_admin ) );
 			}
 			
 			// If quantity has changed
@@ -392,7 +395,7 @@ function bookacti_get_bookings_by_user_id( $user_id = null ) {
 				. ' LEFT JOIN (
 						SELECT id, title, activity_id, template_id FROM ' . BOOKACTI_TABLE_EVENTS . '
 					) as E ON B.event_id = E.id'
-				. ' WHERE B.user_id = %d ORDER BY id DESC';
+				. ' WHERE B.user_id = %s ORDER BY id DESC';
 	$prep		= $wpdb->prepare( $query, $user_id );
 	$booking	= $wpdb->get_results( $prep, OBJECT );
 
@@ -578,6 +581,7 @@ function bookacti_reschedule_booking( $booking_id, $event_id, $event_start, $eve
 	 * Update booking group bookings state
 	 * 
 	 * @since 1.1.0
+	 * @version 1.2.0
 	 * 
 	 * @global wpdb $wpdb
 	 * @param int $booking_group_id
@@ -627,12 +631,6 @@ function bookacti_reschedule_booking( $booking_id, $event_id, $event_start, $eve
 		$prep		= $wpdb->prepare( $query, $variables_array );
 		$updated	= $wpdb->query( $prep );
 		
-		if( $updated ) {
-			foreach( $bookings as $booking ) {
-				do_action( 'bookacti_booking_state_changed', $booking->id, $state, array() );
-			}
-		}
-
 		return $updated;
 	}
 	
@@ -693,7 +691,7 @@ function bookacti_reschedule_booking( $booking_id, $event_id, $event_start, $eve
 		}
 		
 		if( ! empty( $user_id ) ) {
-			$query .= 'user_id = %d, ';
+			$query .= 'user_id = %s, ';
 			$variables_array[] = $user_id;
 		}
 		
@@ -889,7 +887,7 @@ function bookacti_reschedule_booking( $booking_id, $event_id, $event_start, $eve
 		global $wpdb;
 
 		$query		= 'SELECT id FROM ' . BOOKACTI_TABLE_BOOKING_GROUPS 
-					. ' WHERE user_id = %d'
+					. ' WHERE user_id = %s'
 					. ' AND event_group_id = %d';
 
 		$parameters	= array( $user_id, $event_group_id );
