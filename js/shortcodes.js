@@ -48,7 +48,7 @@ $j( document ).ready( function() {
 					if( response.status === 'success' ) {
 						
 						// Hide fields and submit button to avoid duplicated bookings
-						//form.find( '.bookacti-booking-system-field-container, .bookacti-booking-system-field-submit-container' ).hide();
+						form.find( '.bookacti-booking-system-field-container, .bookacti-booking-system-field-submit-container' ).hide();
 							
 						message = "<ul class='bookacti-success-list bookacti-persistent-notice'><li>" + response.message + "</li></ul>";
 						

@@ -8,6 +8,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	 * Check if a booking is whithin the athorized delay as of now
 	 * 
 	 * @since 1.1.0
+	 * @version 1.2.0
 	 * 
 	 * @param object|int $booking
 	 * @return boolean
@@ -34,7 +35,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 		if( $current_datetime < $delay_datetime ) { $is_in_delay = true; }
 
-		return $is_in_delay;
+		return apply_filters( 'bookacti_is_booking_in_delay', $is_in_delay, $booking );
 	}
 	
 	

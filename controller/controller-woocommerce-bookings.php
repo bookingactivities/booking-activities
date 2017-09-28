@@ -770,18 +770,17 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	/**
 	 * Update dates after reschedule
 	 * 
+	 * @version 1.2.0
 	 * @param int $booking_id
-	 * @param string $event_start
-	 * @param string $event_end
+	 * @param object $old_booking
+	 * @param array $args
 	 * @return void
 	 */
-	function bookacti_woocommerce_update_booking_dates( $booking_id, $event_start, $event_end, $old_booking ) {
+	function bookacti_woocommerce_update_booking_dates( $booking_id, $old_booking, $args ) {
 		
 		$item = bookacti_get_order_item_by_booking_id( $booking_id );
 			
-		if( empty( $item ) ) {
-			return;
-		}
+		if( ! $item ) { return; }
 		
 		$booked_events = wc_get_order_item_meta( $item[ 'id' ], 'bookacti_booked_events' );
 		
@@ -796,14 +795,12 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 				}
 			}
 			
-			if( ! isset( $key ) ) {
-				return;
-			}
+			if( ! isset( $key ) ) { return;	}
 			
 			// Update only start and end of the desired booking
-			
-			$booked_events[ $key ]->event_start	= $event_start;
-			$booked_events[ $key ]->event_end	= $event_end;
+			$booking = bookacti_get_booking_by_id( $booking_id );
+			$booked_events[ $key ]->event_start	= $booking->event_start;
+			$booked_events[ $key ]->event_end	= $booking->event_end;
 			
 			wc_update_order_item_meta( $item[ 'id' ], 'bookacti_booked_events', json_encode( $booked_events ) );
 			
@@ -818,4 +815,4 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			wc_add_order_item_meta( $item[ 'id' ], 'bookacti_booked_events', json_encode( array( $event ) ) );
 		}
 	}
-	add_action( 'bookacti_booking_rescheduled', 'bookacti_woocommerce_update_booking_dates', 10, 4 );
+	add_action( 'bookacti_booking_rescheduled', 'bookacti_woocommerce_update_booking_dates', 10, 3 );

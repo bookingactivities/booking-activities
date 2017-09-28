@@ -256,6 +256,14 @@ Just click on the settings wheel above the bookings list, and check 'Display ina
 Now you can see inactive bookings (cancelled, expired, removed, refunded, refund requested).
 
 
+= Ask for support = 
+**We answer within 48h**. You can contact us in many ways:
+- By email at [contact@booking-activities.fr](mailto:contact@booking-activities.fr)
+- On [WordPress support forum](https://wordpress.org/support/plugin/booking-activities)
+- On [GitHub issue tracker](https://github.com/bookingactivities/booking-activities/issues/)
+
+If you don't receive a reply within 48h by email, a technical problem has probably occurred, please try again, or try on an other medium.
+
 
 == Screenshots ==
 
@@ -279,13 +287,11 @@ Now you can see inactive bookings (cancelled, expired, removed, refunded, refund
 == Changelog ==
 
 = 1.2.0 =
-* Feature - Send email notification to admin and customer when booking status changes
-* Feature - Configure email notifications
+* Feature - Send email notifications to administrator and customer when a booking is made, when its status changes and when it is rescheduled
+* Feature - Configure and customize email notifications
 * Tweak - Added a date field in bookings database, so you can know when a booking was made
 * Fix - Wrong locale was loaded on multilingual site (depending on site and users settings)
-* Dev - Hooks changes:
-  * PHP filters
-    * Add - bookacti_update_booking_group_quantity
+* Fix - Dialogs looked glitchy on Chrome
 
 
 = 1.1.4 - 2017/09/14 =

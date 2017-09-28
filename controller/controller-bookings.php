@@ -318,11 +318,14 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 		/**
 		 * AJAX Controller - Change booking state
+		 * 
+		 * @version 1.2.0
 		 */
 		function bookacti_controller_change_booking_state() {
 
 			$booking_id			= intval( $_POST[ 'booking_id' ] );
 			$sanitized_state	= sanitize_title_with_dashes( $_POST[ 'new_state' ] );
+			$send_notifications	= $_POST[ 'send_notifications' ] ? 1 : 0;
 			$new_state			= array_key_exists( $sanitized_state, bookacti_get_booking_state_labels() ) ? $sanitized_state : false;
 
 			// Check nonce, capabilities and other params
@@ -346,10 +349,10 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 					$updated= bookacti_update_booking_state( $booking_id, $new_state );
 
 					if( $updated ) {
-
+						
 						$is_bookings_page	= intval( $_POST[ 'is_bookings_page' ] ) === 1 ? true : false;
-						do_action( 'bookacti_booking_state_changed', $booking_id, $new_state, array( 'is_admin' => $is_bookings_page, 'active' => $active ) );
-
+						do_action( 'bookacti_booking_state_changed', $booking_id, $new_state, array( 'is_admin' => $is_bookings_page, 'active' => $active, 'send_notifications' => $send_notifications ) );
+						
 						$actions_html	= bookacti_get_booking_actions_html( $booking_id, 'admin' );
 						$formatted_state= bookacti_format_booking_state( $new_state );
 
@@ -401,7 +404,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		/**
 		 * AJAX Controller - Reschedule a booking
 		 * 
-		 * @version 1.1.0
+		 * @version 1.2.0
 		 */
 		function bookacti_controller_reschedule_booking() {
 
@@ -421,15 +424,17 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 				$booking	= bookacti_get_booking_by_id( $booking_id );
 				$validated	= bookacti_validate_booking_form( 'single', $event_id, $event_start, $event_end, $booking->quantity );
 
-				if( $validated['status'] === 'success' ) {
+				if( $validated[ 'status' ] === 'success' ) {
 
 					$rescheduled = bookacti_reschedule_booking( $booking_id, $event_id, $event_start, $event_end );
 
 					if( $rescheduled ) {
-
-						do_action( 'bookacti_booking_rescheduled', $booking_id, $event_start, $event_end, $booking );
 						
 						$is_bookings_page	= intval( $_POST[ 'is_bookings_page' ] );
+						$send_notifications	= $is_bookings_page ? intval( $_POST[ 'send_notifications' ] ) : 1;
+						
+						do_action( 'bookacti_booking_rescheduled', $booking_id, $booking, array( 'is_admin' => $is_bookings_page, 'send_notifications' => $send_notifications ) );
+						
 						$admin_or_front		= $is_bookings_page ? 'both' : 'front';
 						$actions_html		= bookacti_get_booking_actions_html( $booking_id, $admin_or_front );
 
@@ -632,6 +637,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 			$booking_group_id	= intval( $_POST[ 'booking_id' ] );
 			$sanitized_state	= sanitize_title_with_dashes( $_POST[ 'new_state' ] );
+			$send_notifications	= $_POST[ 'send_notifications' ] ? 1 : 0;
 			$new_state			= array_key_exists( $sanitized_state, bookacti_get_booking_state_labels() ) ? $sanitized_state : false;
 
 			// Check nonce, capabilities and other params
@@ -662,7 +668,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 						$is_bookings_page = intval( $_POST[ 'is_bookings_page' ] ) === 1 ? true : false;
 						
-						do_action( 'bookacti_booking_group_state_changed', $booking_group_id, $new_state, array( 'is_admin' => $is_bookings_page, 'active' => $active ) );
+						do_action( 'bookacti_booking_group_state_changed', $booking_group_id, $new_state, array( 'is_admin' => $is_bookings_page, 'active' => $active, 'send_notifications' => $send_notifications ) );
 						
 						$actions_html	= bookacti_get_booking_group_actions_html( $booking_group_id, 'admin' );
 						$formatted_state= bookacti_format_booking_state( $new_state );

@@ -23,7 +23,7 @@ function bookacti_get_emails_default_settings() {
 										<p><a href="{booking_admin_url}">Click here</a> to edit this booking (ID: {booking_id}).</p>', BOOKACTI_PLUGIN_NAME ),
 				'description'	=> __( 'This email is sent to administrator when a new booking is registered.', BOOKACTI_PLUGIN_NAME ) 
 			),
-		'admin_cancel_booking' => 
+		'admin_cancelled_booking' => 
 			array(
 				'active'		=> 1,
 				'title'			=> __( 'Customer has cancelled a booking', BOOKACTI_PLUGIN_NAME ),
@@ -36,7 +36,7 @@ function bookacti_get_emails_default_settings() {
 										<p><a href="{booking_admin_url}">Click here</a> to edit this booking (ID: {booking_id}).</p>', BOOKACTI_PLUGIN_NAME ),
 				'description'	=> __( 'This email is sent to administrator when a customer cancel a booking.', BOOKACTI_PLUGIN_NAME ) 
 			),
-		'admin_reschedule_booking' => 
+		'admin_rescheduled_booking' => 
 			array(
 				'active'		=> 1,
 				'title'			=> __( 'Customer has rescheduled a booking', BOOKACTI_PLUGIN_NAME ),
@@ -50,7 +50,7 @@ function bookacti_get_emails_default_settings() {
 										<p><a href="{booking_admin_url}">Click here</a> to edit this booking (ID: {booking_id}).</p>', BOOKACTI_PLUGIN_NAME ),
 				'description'	=> __( 'This email is sent to administrator when a customer reschedule a booking.', BOOKACTI_PLUGIN_NAME )  
 			),
-		'admin_refund_booking' => 
+		'admin_refunded_booking' => 
 			array(
 				'active'		=> 1,
 				'title'			=> __( 'Customer is refunded', BOOKACTI_PLUGIN_NAME ),
@@ -154,7 +154,7 @@ function bookacti_get_email_default_settings( $email_id ) {
  * @param string $email_id
  * @return false|array
  */
-function bookacti_get_email_settings( $email_id, $raw = false ) {
+function bookacti_get_email_settings( $email_id, $raw = true ) {
 
 	if( ! $email_id ) { return false; }
 
@@ -185,7 +185,7 @@ function bookacti_get_email_settings( $email_id, $raw = false ) {
 		}
 	}
 
-	return $email_settings;
+	return apply_filters( 'bookacti_email_settings', $email_settings, $email_id, $raw );
 }
 
 
@@ -248,12 +248,14 @@ function bookacti_sanitize_email_settings( $args, $email_id = '' ) {
 	}
 
 
-	return $email;
+	return apply_filters( 'bookacti_email_sanitized_settings', $email, $email_id );
 }
+
 
 /**
  * Get notifications tags
  * 
+ * @since 1.2.0
  * @param string $notification_id Optional.
  */
 function bookacti_get_notifications_tags( $notification_id = '' ) {
@@ -273,7 +275,7 @@ function bookacti_get_notifications_tags( $notification_id = '' ) {
 		'{user_email}'			=> __( 'The user email address', BOOKACTI_PLUGIN_NAME )
 	);
 	
-	if( $notification_id === 'admin_reschedule_booking' || $notification_id === 'customer_rescheduled_booking' ) {
+	if( $notification_id === 'admin_rescheduled_booking' || $notification_id === 'customer_rescheduled_booking' ) {
 		$tags[ '{booking_old_start}' ]	= __( 'Booking start date and time before reschedule. Displayed in a user-friendly format.', BOOKACTI_PLUGIN_NAME );
 		$tags[ '{booking_old_end}' ]	= __( 'Booking end date and time before reschedule. Displayed in a user-friendly format.', BOOKACTI_PLUGIN_NAME );
 	}
@@ -303,9 +305,9 @@ function bookacti_get_notifications_tags_values( $booking_id, $booking_type, $no
 		
 		$booking_data[ '{booking_quantity}' ]	= bookacti_get_booking_group_quantity( $booking_id );
 		$booking_data[ '{booking_total_qty}' ]	= 0;
-		foreach( $bookings as $booking ) { $booking_data[ '{booking_total_qty}' ] += intval( $booking->quantity ); }
+		foreach( $bookings as $grouped_booking ) { $booking_data[ '{booking_total_qty}' ] += intval( $grouped_booking->quantity ); }
 		$booking_data[ '{booking_title}' ]		= $group_of_events ? $group_of_events->title : '';
-		$booking_data[ '{booking_admin_url}' ]	= esc_url( admin_url( 'admin.php?page=bookacti_bookings' ) . '&booking_group_id=' . $booking_id );
+		$booking_data[ '{booking_admin_url}' ]	= esc_url( admin_url( 'admin.php?page=bookacti_bookings' ) . '&event_group_id=' . $group_of_events->id );
 		
 	} else {
 		$bookings	= array( $booking );
@@ -344,3 +346,77 @@ function bookacti_get_notifications_tags_values( $booking_id, $booking_type, $no
 	return apply_filters( 'bookacti_notifications_tags_values', $tags, $booking_id, $booking_type, $notification_id );
 }
 
+
+/**
+ * Send an email according to notifications settings
+ * 
+ * @since 1.2.0
+ * @param string $notification_id Must exists in "bookacti_emails_default_settings"
+ * @param int $booking_id
+ * @param string $booking_type "single" or "group"
+ * @param boolean $async Whether to send the email asynchronously. 
+ * @return boolean
+ */
+function bookacti_send_email( $notification_id, $booking_id, $booking_type, $async = true ) {
+	
+	// Send emails asynchronously
+	$allow_async = apply_filters( 'bookacti_email_allow_async', bookacti_get_setting_value( 'bookacti_notifications_settings', 'notifications_async_email' ) );
+	if( $allow_async && $async ) {
+		wp_schedule_single_event( time(), 'bookacti_send_async_email', array( $notification_id, $booking_id, $booking_type, false ) );
+		return;
+	}
+	
+	$email = bookacti_get_email_settings( $notification_id );
+	
+	if( ! $email || ! $email[ 'active' ] ) { return false; }
+	
+	$to = $email[ 'to' ];
+	
+	// Change params according to recipients
+	if( substr( $notification_id, 0, 8 ) === 'customer' ) {
+		
+		$user_id	= $booking_type === 'group' ? bookacti_get_booking_group_owner( $booking_id ) : bookacti_get_booking_owner( $booking_id );
+		$user_data	= get_userdata( $user_id );
+		$to			= $user_data->user_email;
+		
+		if( ! $to ) { return false; }
+		
+		// Temporarilly switch locale to user's
+		$locale = bookacti_get_user_locale( $user_id );
+		
+	} else {
+		$locale = bookacti_get_site_locale();
+	}
+	
+	$locale = apply_filters( 'bookacti_email_locale', $locale, $notification_id, $booking_id, $booking_type );
+	
+	// Temporarilly switch locale to site or user default's
+	bookacti_switch_locale( $locale );
+	
+	$subject	= $email[ 'subject' ];
+	
+	// Replace tags in message and replace linebreaks with html tags
+	$tags		= bookacti_get_notifications_tags_values( $booking_id, $booking_type, $notification_id );
+	$message	= wpautop( str_replace( array_keys( $tags ), array_values( $tags ), $email[ 'message' ] ) );
+	
+	$from_name	= bookacti_get_setting_value( 'bookacti_notifications_settings', 'notifications_from_name' );
+	$from_email	= bookacti_get_setting_value( 'bookacti_notifications_settings', 'notifications_from_email' );
+	$headers	= array( 'Content-Type: text/html; charset=UTF-8;', 'From:' . $from_name . ' <' . $from_email . '>' );
+	
+	$email_data = apply_filters( 'bookacti_email_data', array(
+		'headers'	=> $headers,
+		'to'		=> $to,
+		'subject'	=> apply_filters( 'bookacti_translate_text', $subject, $locale ),
+		'message'	=> apply_filters( 'bookacti_translate_text', $message, $locale )
+	), $notification_id, $booking_id, $booking_type );
+	
+	$sent = wp_mail( $email_data[ 'to' ], $email_data[ 'subject' ], $email_data[ 'message' ], $email_data[ 'headers' ] );
+	
+	// Switch locale back to normal
+	bookacti_restore_locale();
+	
+	do_action( 'bookacti_email_sent', $sent, $email_data, $notification_id, $booking_id, $booking_type );
+}
+
+// Hook the asynchronous call and send the email
+add_action( 'bookacti_send_async_email', 'bookacti_send_email', 10, 4 );

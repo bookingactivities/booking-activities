@@ -29,6 +29,7 @@ function bookacti_define_default_settings_constants() {
 	
 	if( ! defined( 'BOOKACTI_NOTIFICATIONS_FROM_NAME' ) )				{ define( 'BOOKACTI_NOTIFICATIONS_FROM_NAME', get_bloginfo( 'name' ) ); }
 	if( ! defined( 'BOOKACTI_NOTIFICATIONS_FROM_EMAIL' ) )				{ define( 'BOOKACTI_NOTIFICATIONS_FROM_EMAIL', get_bloginfo( 'admin_email' ) ); }
+	if( ! defined( 'BOOKACTI_NOTIFICATIONS_ASYNC_EMAIL' ) )				{ define( 'BOOKACTI_NOTIFICATIONS_ASYNC_EMAIL', '1' ); }
 	
 	do_action( 'bookacti_define_settings_constants' );
 }
@@ -73,6 +74,7 @@ function bookacti_init_settings_values() {
 	$default_notifications_settings = get_option( 'bookacti_notifications_settings' );
 	if( ! isset( $default_notifications_settings['notifications_from_name'] ) )		{ $default_notifications_settings['notifications_from_name']	= BOOKACTI_NOTIFICATIONS_FROM_NAME; }
 	if( ! isset( $default_notifications_settings['notifications_from_email'] ) )	{ $default_notifications_settings['notifications_from_email']	= BOOKACTI_NOTIFICATIONS_FROM_EMAIL; }
+	if( ! isset( $default_notifications_settings['notifications_async_email'] ) )	{ $default_notifications_settings['notifications_async_email']	= BOOKACTI_NOTIFICATIONS_ASYNC_EMAIL; }
 	update_option( 'bookacti_notifications_settings', $default_notifications_settings );
 	
 	do_action( 'bookacti_init_settings_value' );
@@ -118,8 +120,9 @@ function bookacti_reset_settings() {
 	update_option( 'bookacti_general_settings', $default_general_settings );
 	
 	$default_notifications_settings = array();
-	$default_notifications_settings['notifications_from_name']	= BOOKACTI_NOTIFICATIONS_FROM_NAME;
-	$default_notifications_settings['notifications_from_email']	= BOOKACTI_NOTIFICATIONS_FROM_EMAIL;
+	$default_notifications_settings['notifications_from_name']		= BOOKACTI_NOTIFICATIONS_FROM_NAME;
+	$default_notifications_settings['notifications_from_email']		= BOOKACTI_NOTIFICATIONS_FROM_EMAIL;
+	$default_notifications_settings['notifications_async_email']	= BOOKACTI_NOTIFICATIONS_ASYNC_EMAIL;
 	
 	update_option( 'bookacti_notifications_settings', $default_notifications_settings );
 	
@@ -581,6 +584,23 @@ function bookacti_settings_section_bookings_callback() { }
 			'id'	=> 'notifications_from_email',
 			'value'	=> bookacti_get_setting_value( 'bookacti_notifications_settings', 'notifications_from_email' ),
 			'tip'	=> __( 'How the sender email address appears in outgoing emails.', BOOKACTI_PLUGIN_NAME )
+		);
+		bookacti_display_field( $args );
+	}
+	
+	
+	/**
+	 * Notification from email setting field
+	 * 
+	 * @version 1.2.0
+	 */
+	function bookacti_settings_field_notifications_async_email_callback() {
+		$args = array(
+			'type'	=> 'checkbox',
+			'name'	=> 'bookacti_notifications_settings[notifications_async_email]',
+			'id'	=> 'notifications_from_email',
+			'value'	=> bookacti_get_setting_value( 'bookacti_notifications_settings', 'notifications_async_email' ),
+			'tip'	=> __( 'Whether to send the email asynchronously. If enabled, you and your customers will no longer have to wait for the email to be sent.', BOOKACTI_PLUGIN_NAME )
 		);
 		bookacti_display_field( $args );
 	}

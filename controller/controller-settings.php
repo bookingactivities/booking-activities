@@ -191,6 +191,13 @@ function bookacti_init_settings() {
 		'bookacti_settings_section_notifications'
 	);
 	
+	add_settings_field( 
+		'notifications_async_email',
+		__( 'Asynchronous email', BOOKACTI_PLUGIN_NAME ),
+		'bookacti_settings_field_notifications_async_email_callback',
+		'bookacti_notifications_settings',
+		'bookacti_settings_section_notifications'
+	);
 	
 	
 	do_action( 'bookacti_add_settings' );

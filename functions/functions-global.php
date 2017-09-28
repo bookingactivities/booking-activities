@@ -109,10 +109,15 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		/**
 		 * Translate a string into the desired language (default to current site language)
 		 * 
+		 * @version 1.2.0
 		 * @param string $text
+		 * @param string $lang Optional. Two letter lang id (e.g. fr or en) or locale id (e.g. fr_FR or en_US).
 		 * @return string
 		 */
 		function bookacti_translate_text_with_qtranslate( $text, $lang = null ) {
+			if( $lang && is_string( $lang ) && strpos( $lang, '_' ) !== false ) { 
+				$lang = substr( $lang, 0, strpos( $lang, '_' ) );
+			}
 			return apply_filters( 'translate_text', $text, $lang );
 		}
 		add_filter( 'bookacti_translate_text', 'bookacti_translate_text_with_qtranslate', 10, 2 );
@@ -177,14 +182,14 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	 */
 	function bookacti_get_site_locale( $default = 'site', $country_code = true ) {
 
+		// Get raw site locale, or current locale by default
 		if( $default === 'site' ) {
 			$alloptions	= wp_load_alloptions();
 			$locale		= $alloptions[ 'WPLANG' ] ? strval( $alloptions[ 'WPLANG' ] ) : get_locale();
 		} else {
-			// Get user locale, if not set get current locale
 			$locale = get_locale();
 		}
-
+		
 		// Remove country code from locale string
 		if( ! $country_code ) {
 			$_pos = strpos( $locale, '_' );
@@ -196,40 +201,32 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		return $locale;
 	}
 
-	/* 
-	 * Get site locale
-	 * 
-	 * @since 1.2.0
-	 * @return string
-	 */
-	function bookacti_get_site_locale_raw() {
-		return bookacti_get_site_locale( 'site', true );
-	}
-
 
 	/**
-	 * Switch Booking Activities to site locale
-	 *
-	 * @param string $locale
+	 * Switch Booking Activities locale
+	 * 
 	 * @since 1.2.0
 	 */
-	function bookacti_switch_to_site_locale() {
+	function bookacti_switch_locale( $locale ) {
 		if ( function_exists( 'switch_to_locale' ) ) {
-			switch_to_locale( bookacti_get_site_locale_raw() );
-
+			
+			switch_to_locale( $locale );
+			
 			// Filter on plugin_locale so load_plugin_textdomain loads the correct locale.
-			add_filter( 'plugin_locale', 'bookacti_get_site_locale_raw' );
-
+			add_filter( 'plugin_locale', function() use ( &$locale ){
+				return $locale;
+			});
+			
 			bookacti_load_textdomain();
 		}
 	}
-
-
+	
+	
 	/**
 	 * Switch Booking Activities locale back to the original
-	 *
-	 * @param string $locale
+	 * 
 	 * @since 1.2.0
+	 * @param string $locale
 	 */
 	function bookacti_restore_locale() {
 		if ( function_exists( 'restore_previous_locale' ) ) {

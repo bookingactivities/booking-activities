@@ -20,6 +20,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 <!-- Frontend and backend - Reschedule booking -->
 <div id='bookacti-reschedule-booking-dialog' class='bookacti-backend-dialog bookacti-bookings-dialog' >
+	<div>
 <?php 
 	$reschedule_booking_method = apply_filters( 'bookacti_reschedule_booking_method', 'calendar' );
 	$atts = array( 
@@ -32,6 +33,24 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	);
 	bookacti_get_booking_system( $atts, true );
 ?>
+	</div>
+	<div>
+<?php
+	if( is_admin() ) {
+?>
+		<label for='bookacti-send-notifications-on-reschedule' ><?php esc_html_e( 'Send notifications', BOOKACTI_PLUGIN_NAME ); ?></label>
+<?php 
+		$args = array(
+			'type'	=> 'checkbox',
+			'name'	=> 'send-notifications-on-reschedule',
+			'id'	=> 'bookacti-send-notifications-on-reschedule',
+			'value'	=> 0,
+			'tip'	=> __( 'Whether to notify the customer of the booking reschedule.', BOOKACTI_PLUGIN_NAME )
+		);
+		bookacti_display_field( $args );
+	}
+?>
+	</div>
 </div>
 
 <?php do_action( 'bookacti_bookings_dialogs' );
