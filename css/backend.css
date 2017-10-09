@@ -57,6 +57,9 @@
 .bookacti-notifications-tags-list .bookacti-notifications-tag { margin-bottom: 8px; }
 .bookacti-notifications-tag code { font-weight: normal; font-size: 0.8em; }
 
+.bookacti-message-setting		{ margin-bottom: 20px; }
+.bookacti-message-setting input	{ margin-top: 6px; }
+
 /** DIALOGS **/
 .input-warning  { border-color: #d80 !important; }
 .input-error    { border-color: #f00 !important; }

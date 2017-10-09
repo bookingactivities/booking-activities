@@ -220,3 +220,23 @@ function bookacti_add_wc_mention_to_notifications( $emails ) {
 	return $emails;
 }
 add_filter( 'bookacti_emails_default_settings', 'bookacti_add_wc_mention_to_notifications', 1, 10 );
+
+
+/**
+ * Add customizable messages
+ * 
+ * @since 1.2.0
+ * @param array $messages
+ * @return array
+ */
+function bookacti_wc_default_messages( $messages ) {
+	
+	$messages[ 'temporary_booking_success' ] = array(
+		/* translators: '{time}' is a variable standing for an amount of days, hours and minutes. Ex: {time}' can be '1 day, 6 hours, 30 minutes'. */
+		'value'			=> __( 'Your activity is temporarily booked for {time}. Please proceed to checkout.', BOOKACTI_PLUGIN_NAME ),
+		'description'	=> __( 'When a temporary booking is added to cart. Use {time} tag to display the remaining time before expiration.', BOOKACTI_PLUGIN_NAME )
+	);
+	
+	return $messages;
+}
+add_filter( 'bookacti_default_messages', 'bookacti_wc_default_messages', 10, 1 );

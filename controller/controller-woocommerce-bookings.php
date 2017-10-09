@@ -522,15 +522,23 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		
 		if( ! $order ) { return; }
 		
-		$items = $order->get_items();
+		$order_items = $order->get_items();
 		
-		if( ! $items ) { return; }
+		if( ! $order_items ) { return; }
 		
-		foreach( $items as $key => $item ) {
+		foreach( $order_items as $order_item_id => $order_item ) {
+			$item				= $order_items[ $order_item_id ];
+			$item[ 'id' ]		= $order_item_id;
+			$item[ 'order_id' ]	= $order_id;
+			
+			// Do not allow to update order status based on new bookings status 
+			// because this function is actually triggered after order status changed
+			$args[ 'update_order_status' ] = 0;
+			
 			bookacti_update_order_item_booking_status( $item, $new_state, $args );
 		}
 	}
-	add_action( 'bookacti_order_bookings_state_changed', 'bookacti_update_order_item_booking_status_by_order_id', 10, 2 );
+	add_action( 'bookacti_order_bookings_state_changed', 'bookacti_update_order_items_booking_status_by_order_id', 10, 3 );
 	
 	
 	/**

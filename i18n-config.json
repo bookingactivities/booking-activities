@@ -1,4 +1,4 @@
-{ "vendor": { "plugins/booking-activities": "1.0" },
+{ "vendor": { "plugins/booking-activities": "1.2.0" },
 	"admin-config":{
 		"bookacti_calendars":{
 			"pages":{ "admin.php":"" },
@@ -20,7 +20,11 @@
 						"bookacti_notifications_settings_email_customer_rescheduled_booking_subject":{},
 						"bookacti_notifications_settings_email_customer_rescheduled_booking_message":{},
 						"bookacti_notifications_settings_email_customer_refunded_booking_subject":{},
-						"bookacti_notifications_settings_email_customer_refunded_booking_message":{}
+						"bookacti_notifications_settings_email_customer_refunded_booking_message":{},
+						"bookacti_messages_settings_calendar_title":{},
+						"bookacti_messages_settings_booking_success":{},
+						"bookacti_messages_settings_booking_form_submit_button":{},
+						"bookacti_messages_settings_temporary_booking_success":{}
 					}
 				},
 				"bookacti-activity-data-form":{

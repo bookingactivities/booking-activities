@@ -265,7 +265,7 @@ function bookacti_shortcode_bookings_list( $atts = array(), $content = null, $ta
  * Check if booking form is correct and then book the event, or send the error message
  * 
  * @since 1.0.0
- * @version 1.1.0
+ * @version 1.2.0
  */
 function bookacti_controller_validate_booking_form() {
 	
@@ -312,7 +312,7 @@ function bookacti_controller_validate_booking_form() {
 
 					do_action( 'bookacti_booking_form_validated', $booking_id, $booking_form_values, 'single' );
 					
-					$message = __( 'Your event has been booked successfully!', BOOKACTI_PLUGIN_NAME );
+					$message = bookacti_get_message( 'booking_success' );
 					wp_send_json( array( 'status' => 'success', 'message' => esc_html( $message ), 'booking_id' => $booking_id ) );
 				}
 			

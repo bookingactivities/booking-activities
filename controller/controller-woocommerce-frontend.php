@@ -131,22 +131,23 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	
 	
 	/**
-	 * Change 'Add to cart' text for activities by 'Book'
+	 * Change 'Add to cart' text for activities by user defined string
 	 * 
 	 * @since 1.0.0
+	 * @version 1.2.0
 	 * 
 	 * @param string $text
 	 * @param WC_Product $product
 	 * @return string
 	 */
 	function bookacti_change_add_to_cart_text_for_activities( $text, $product ){
-		
 		if( bookacti_product_is_activity( $product ) ){
-			$text = __( 'Book', BOOKACTI_PLUGIN_NAME );
+			$text = bookacti_get_message( 'booking_form_submit_button' );
 		}
 		return $text;
 	}
 	add_filter( 'woocommerce_product_add_to_cart_text', 'bookacti_change_add_to_cart_text_for_activities', 100, 2 );
+	add_filter( 'woocommerce_product_single_add_to_cart_text', 'bookacti_change_add_to_cart_text_for_activities', 100, 2 );
 
 	
 
@@ -508,7 +509,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	 * Notice the user that his activity has been reserved and will expire, along with the add to cart confirmation
 	 *
 	 * @since 1.0.4
-	 * @version 1.1.0
+	 * @version 1.2.0
 	 */
 	function bookacti_add_to_cart_message_html( $message, $products ) {
 		
@@ -520,129 +521,82 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		
 		$is_expiration_active = bookacti_get_setting_value( 'bookacti_cart_settings', 'is_cart_expiration_active' );
 
-		if( $is_expiration_active ) {
+		if( ! $is_expiration_active ) { return $message; }
+		
+		// Check if there is at least one activity 
+		$total_added_qty	= 0;
+		$is_activity		= false;		
+		foreach ( $products as $product_id => $qty ) {
+
+			// Totalize added qty 
+			$total_added_qty += $qty;
+
+			if( $is_activity ) { continue; }
 			
-			$total_added_qty	= 0;
-			$is_activity		= false;
-			// Check if there is at least one activity 
-			foreach ( $products as $product_id => $qty ) {
-				
-				// Totalize added qty 
-				$total_added_qty += $qty;
-				
-				if( ! $is_activity ) {
-					$product		= wc_get_product( $product_id );
-					
+			$product = wc_get_product( $product_id );
+
+			// WOOCOMMERCE 3.0.0 BW compability
+			if( version_compare( WC_VERSION, '3.0.0', '>=' ) ) {
+				if( method_exists( $product, 'get_type' ) ) {
+					$product_type = $product->get_type();
+				}
+			} else {
+				$product_type = $product->product_type;
+			}
+
+			// Check if product is activity
+			if( $product_type === 'variable' ) {
+				if( ! empty( $_POST[ 'variation_id' ] ) ) {
+
 					// WOOCOMMERCE 3.0.0 BW compability
 					if( version_compare( WC_VERSION, '3.0.0', '>=' ) ) {
-						if( method_exists( $product, 'get_type' ) ) {
-							$product_type = $product->get_type();
+						if( method_exists( $product, 'get_visible_children' ) ) {
+							$variation_ids = $product->get_visible_children();
 						}
 					} else {
-						$product_type = $product->product_type;
+						$variation_ids = $product->get_children( true );
 					}
 
-					// Check if product is activity
-					if( $product_type === 'variable' ) {
-						if( ! empty( $_POST[ 'variation_id' ] ) ) {
-							
-							// WOOCOMMERCE 3.0.0 BW compability
-							if( version_compare( WC_VERSION, '3.0.0', '>=' ) ) {
-								if( method_exists( $product, 'get_visible_children' ) ) {
-									$variation_ids = $product->get_visible_children();
-								}
-							} else {
-								$variation_ids = $product->get_children( true );
-							}
-							
-							foreach ( $variation_ids as $variation_id ) {
-								if( $_POST[ 'variation_id' ] == $variation_id ) {
-									$is_activity = true;
-									break;
-								}
-							}
-						}
-					} else {
-						if( bookacti_product_is_activity( $product_id ) ) {
+					foreach ( $variation_ids as $variation_id ) {
+						if( $_POST[ 'variation_id' ] == $variation_id ) {
 							$is_activity = true;
+							break;
 						}
 					}
 				}
-			}
-
-			if( $is_activity ) {
-				// Retrieve user params about expiration
-				global $woocommerce;
-				$is_per_product_expiration	= bookacti_get_setting_value( 'bookacti_cart_settings', 'is_cart_expiration_per_product' );
-				$reset_timeout_on_change	= bookacti_get_setting_value( 'bookacti_cart_settings', 'reset_cart_timeout_on_change' );
-				$timeout					= bookacti_get_setting_value( 'bookacti_cart_settings', 'cart_timeout' );
-
-				// Compute expiration datetime
-				$expiration_date	= date( 'c', strtotime( '+' . $timeout . ' minutes' ) );
-
-				// If all cart item expire at once, set cart expiration date
-				if( ! $is_per_product_expiration ) {
-
-					$cart_expiration_date = bookacti_get_cart_timeout();
-
-					if(	! $reset_timeout_on_change 
-					&&  ! empty( $cart_expiration_date ) 
-					&&  strtotime( $cart_expiration_date ) > time()
-					&&  $woocommerce->cart->get_cart_contents_count() !== $total_added_qty ) {
-
-						$expiration_date = $cart_expiration_date;
-					}
+			} else {
+				if( bookacti_product_is_activity( $product_id ) ) {
+					$is_activity = true;
 				}
-
-				// Change added to cart product expiration date
-				// if it doesn't have one, 
-				// if the old one is expired (that is to say the product is not in cart anymore), or 
-				// if admin set to reset expiration on cart change
-				
-				// Single event
-				if( isset( $_POST[ 'bookacti_booking_id' ] ) ) {
-					$booking_id					= intval( $_POST[ 'bookacti_booking_id' ] );
-					$is_expired					= bookacti_is_expired_booking( $booking_id );
-					$current_expiration_date	= bookacti_get_booking_expiration_date( $booking_id );
-				
-				// Group of events
-				} else if( isset( $_POST[ 'bookacti_booking_group_id' ] ) ) {
-					
-					$booking_group_id			= intval( $_POST[ 'bookacti_booking_group_id' ] );
-					$is_expired					= bookacti_is_expired_booking_group( $booking_group_id );
-					$current_expiration_date	= bookacti_get_booking_group_expiration_date( $booking_group_id );
-				}
-				
-
-				if( ! $reset_timeout_on_change && ! $is_expired && ! is_null( $current_expiration_date ) ) {
-					$expiration_date = $current_expiration_date;
-				}
-
-				$time = bookacti_seconds_to_explode_time( round( abs( strtotime( $expiration_date ) - time() ) ) );
-				$timeout_formated = ''; $days_formated = ''; $hours_formated = ''; $minutes_formated = '';
-
-				if( intval( $time['days'] ) > 0 ) { 
-					/* translators: %d is a variable number of days */
-					$days_formated = sprintf( _n( '%d day', '%d days', $time['days'], BOOKACTI_PLUGIN_NAME ), $time['days'] );
-					$timeout_formated .= $days_formated;
-				}
-				if( intval( $time['hours'] ) > 0 ) { 
-					/* translators: %d is a variable number of hours */
-					$hours_formated = sprintf( _n( '%d hour', '%d hours', $time['hours'], BOOKACTI_PLUGIN_NAME ), $time['hours'] );
-					$timeout_formated .= ' ' . $hours_formated;
-				}
-				if( intval( $time['minutes'] ) > 0 ) { 
-					/* translators: %d is a variable number of minutes */
-					$minutes_formated = sprintf( _n( '%d minute', '%d minutes', $time['minutes'], BOOKACTI_PLUGIN_NAME ), $time['minutes'] );
-					$timeout_formated .= ' ' . $minutes_formated;
-				}
-
-				/* translators: '%1$s' is a variable standing for an amount of days, hours and minutes. Ex: '%1$s' can be '1 day, 6 hours, 30 minutes'. */
-				$temporary_book_message = sprintf( __( 'Your activity is temporarily booked for %1$s. Please proceed to checkout.', BOOKACTI_PLUGIN_NAME ), $timeout_formated );
-				$temporary_book_message = apply_filters( 'bookacti_temporary_book_message', $temporary_book_message, $timeout_formated );
-				$message .= '<br/>' . $temporary_book_message;
 			}
 		}
+
+		if( ! $is_activity ) { return $message; }
+
+		$temporary_book_message = bookacti_get_message( 'temporary_booking_success' );
+
+		// If no message, return WC message only
+		if( ! $temporary_book_message ) { return $message; }
+
+		// If the message has no countdown, return the basic messages
+		if( strpos( $temporary_book_message, '{time}' ) === false ) {
+			return $message . '<br/>' . $temporary_book_message;
+		}
+		
+		// Single event
+		if( isset( $_POST[ 'bookacti_booking_id' ] ) ) {
+			$booking_id		= intval( $_POST[ 'bookacti_booking_id' ] );
+			$booking_type	= 'single';
+		// Group of events
+		} else if( isset( $_POST[ 'bookacti_booking_group_id' ] ) ) {
+			$booking_id		= intval( $_POST[ 'bookacti_booking_group_id' ] );
+			$booking_type	= 'group';
+		}
+		
+		$expiration_date	= bookacti_get_new_booking_expiration_date( $booking_id, $booking_type, $total_added_qty );
+		$remaining_time		= bookacti_get_formatted_time_before_expiration( $expiration_date );
+		
+		$message .= '<br/>' . str_replace( '{time}', $remaining_time, $temporary_book_message );
 		
 		return $message;
 	}
@@ -1329,7 +1283,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	
 	
 	
-//CHECKOUT
+// CHECKOUT
 	
 	/**
 	 * Add the timeout to each cart item in the checkout review

@@ -289,10 +289,11 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 = 1.2.0 =
 * Feature - Send email notifications to administrator and customer when a booking is made, when its status changes and when it is rescheduled
 * Feature - Configure and customize email notifications
+* Feature - You can configure some messages displayed on frontend in Booking Activities settings
 * Tweak - Added a date field in bookings database, so you can know when a booking was made
 * Fix - Wrong locale was loaded on multilingual site (depending on site and users settings)
 * Fix - Dialogs looked glitchy on Chrome
-
+* Dev - A lot of hooks has been changed, added or removed. Please go to the website for the [complete changelog](https://booking-activities.fr/en/documentation/changelog/?utm_source=wp-plugin-page&utm_medium=wordpress&utm_content=readme).
 
 = 1.1.4 - 2017/09/14 =
 * Tweak - You can force event deletion even if it is booked

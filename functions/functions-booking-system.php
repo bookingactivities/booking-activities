@@ -146,14 +146,14 @@ function bookacti_get_booking_method_html( $method, $booking_system_attributes )
  * Retrieve Calendar booking system HTML to include in the booking system
  * 
  * @since 1.0.0
- * @version 1.1.0
+ * @version 1.2.0
  * 
  * @param array $booking_system_atts
  * @return string
  */
 function bookacti_retrieve_calendar_elements( $booking_system_atts ) {
 	
-	$default_calendar_title	= esc_html__( 'Pick an event on the calendar:', BOOKACTI_PLUGIN_NAME );
+	$default_calendar_title	= esc_html( bookacti_get_message( 'calendar_title' ) );
 	$calendar_title			= apply_filters( 'bookacti_calendar_title', $default_calendar_title, $booking_system_atts );
 	
 	$before_calendar_title	= apply_filters( 'bookacti_before_calendar_title', '', $booking_system_atts );
@@ -179,7 +179,7 @@ function bookacti_retrieve_calendar_elements( $booking_system_atts ) {
 /**
  * Check booking system attributes and format them to be correct
  * 
- * @version 1.1.0
+ * @version 1.2.0
  * 
  * @param array $atts [id, classes, calendars, activities, groups, method, url, button]
  * @param string $shortcode
@@ -198,7 +198,7 @@ function bookacti_format_booking_system_attributes( $atts = array(), $shortcode 
         'groups_single_events'	=> 0,
         'method'				=> 'calendar',
 		'url'					=> '',
-		'button'				=> __( 'Book', BOOKACTI_PLUGIN_NAME ),
+		'button'				=> bookacti_get_message( 'booking_form_submit_button' ),
 		'auto_load'				=> 1,
 		'past_events'			=> 0,
 		'context'				=> 'frontend'

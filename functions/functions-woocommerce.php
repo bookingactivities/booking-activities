@@ -341,6 +341,64 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	
 	
 	/**
+	 * Get new booking expiration date
+	 * 
+	 * @since 1.2.0
+	 * @param int $booking_id Booking (group) ID
+	 * @param string $booking_type 'single' or 'group'
+	 * @param int $quantity Quantity added to cart
+	 * @return string
+	 */
+	function bookacti_get_new_booking_expiration_date( $booking_id, $booking_type, $quantity ) {
+		// Retrieve user params about expiration
+		global $woocommerce;
+		$is_per_product_expiration	= bookacti_get_setting_value( 'bookacti_cart_settings', 'is_cart_expiration_per_product' );
+		$reset_timeout_on_change	= bookacti_get_setting_value( 'bookacti_cart_settings', 'reset_cart_timeout_on_change' );
+		$timeout					= bookacti_get_setting_value( 'bookacti_cart_settings', 'cart_timeout' );
+
+		// Compute expiration datetime
+		$expiration_date = date( 'c', strtotime( '+' . $timeout . ' minutes' ) );
+
+		// If all cart item expire at once, set cart expiration date
+		if( ! $is_per_product_expiration ) {
+
+			$cart_expiration_date = bookacti_get_cart_timeout();
+
+			if(	! $reset_timeout_on_change 
+			&&  ! empty( $cart_expiration_date ) 
+			&&  strtotime( $cart_expiration_date ) > time()
+			&&  $woocommerce->cart->get_cart_contents_count() !== $quantity ) {
+
+				$expiration_date = $cart_expiration_date;
+			}
+		}
+
+		// Change added to cart product expiration date
+		// if it doesn't have one, 
+		// if the old one is expired (that is to say the product is not in cart anymore), or 
+		// if admin set to reset expiration on cart change
+
+		// Single event
+		if( $booking_type === 'single' ) {
+			$is_expired					= bookacti_is_expired_booking( $booking_id );
+			$current_expiration_date	= bookacti_get_booking_expiration_date( $booking_id );
+
+		// Group of events
+		} else if( $booking_type === 'group' ) {
+			$is_expired					= bookacti_is_expired_booking_group( $booking_id );
+			$current_expiration_date	= bookacti_get_booking_group_expiration_date( $booking_id );
+		}
+
+
+		if( ! $reset_timeout_on_change && ! $is_expired && ! is_null( $current_expiration_date ) ) {
+			$expiration_date = $current_expiration_date;
+		}
+		
+		return $expiration_date;
+	}
+	
+	
+	/**
 	 * Reset expiration dates of all cart items
 	 * 
 	 * @since 1.0.0
@@ -530,8 +588,38 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			$woocommerce->session->set( 'bookacti_expiration_cart', $expiration_date );
 		}
 	}
+	
+	
+	/**
+	 * Get formatted remaining time before expiration
+	 * 
+	 * @since 1.2.0
+	 * @param string $expiration_date 
+	 * @return string
+	 */
+	function bookacti_get_formatted_time_before_expiration( $expiration_date ) {
+		$time = bookacti_seconds_to_explode_time( round( abs( strtotime( $expiration_date ) - time() ) ) );
+		$remaining_time = ''; $days_formated = ''; $hours_formated = ''; $minutes_formated = '';
 
-
+		if( intval( $time['days'] ) > 0 ) { 
+			/* translators: %d is a variable number of days */
+			$days_formated = sprintf( _n( '%d day', '%d days', $time['days'], BOOKACTI_PLUGIN_NAME ), $time['days'] );
+			$remaining_time .= $days_formated;
+		}
+		if( intval( $time['hours'] ) > 0 ) { 
+			/* translators: %d is a variable number of hours */
+			$hours_formated = sprintf( _n( '%d hour', '%d hours', $time['hours'], BOOKACTI_PLUGIN_NAME ), $time['hours'] );
+			$remaining_time .= ' ' . $hours_formated;
+		}
+		if( intval( $time['minutes'] ) > 0 ) { 
+			/* translators: %d is a variable number of minutes */
+			$minutes_formated = sprintf( _n( '%d minute', '%d minutes', $time['minutes'], BOOKACTI_PLUGIN_NAME ), $time['minutes'] );
+			$remaining_time .= ' ' . $minutes_formated;
+		}
+		
+		return apply_filters( 'bookacti_formatted_time_before_expiration', $remaining_time, $expiration_date );
+	}
+	
 
 
 // ORDERS
@@ -569,9 +657,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		// Retrieve order data
 		$order = wc_get_order( $order_id );
 
-		if( empty( $order ) ) {
-			return false;
-		}
+		if( ! $order ) { return false; }
 
 		// Retrieve bought items and user id
 		$items		= $order->get_items();
@@ -620,16 +706,11 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		$response[ 'updated' ]	= $updated;
 		
 		// Check if an error occured during booking state update
-		if( is_numeric( $updated ) ){
-			if( $updated > 0 && $updated < count( $booking_id_array ) ) {
-				$response[ 'status' ] = $state . '_with_errors';
-				array_push( $response[ 'errors' ], 'invalid_booking_ids' );
-			}
-		} else if( $updated === false ) {
+		if( $updated === false ) {
 			$response[ 'status' ] = 'failed';
 			array_push( $response[ 'errors' ], 'update_failed' );
 		}
-
+		
 		// If bookings have not updated correctly, send an e-mail to alert the administrator
 		if( $alert_if_fails && $response[ 'status' ] !== 'success' ) {
 
@@ -637,7 +718,6 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			foreach( $response[ 'errors' ] as $error ) {
 				if( $error === 'invalid_user_id' )		{ $errors_list .= '<li>' . esc_html__( 'Invalid user ID.', BOOKACTI_PLUGIN_NAME ) . '</li>'; }
 				if( $error === 'invalid_order_id' )		{ $errors_list .= '<li>' . esc_html__( 'Invalid order ID.', BOOKACTI_PLUGIN_NAME ) . '</li>'; }
-				if( $error === 'invalid_booking_ids' )	{ $errors_list .= '<li>' . esc_html__( 'The order contains invalid booking IDs.', BOOKACTI_PLUGIN_NAME ) . '</li>'; }
 				if( $error === 'update_failed' )		{ $errors_list .= '<li>' . esc_html__( 'Database failed to update.', BOOKACTI_PLUGIN_NAME ) . '</li>'; }
 				if( $error === 'no_booking_ids' )		{ $errors_list .= '<li>' . esc_html__( 'The order doesn\'t contains any booking IDs.', BOOKACTI_PLUGIN_NAME ) . '</li>'; }
 			}
@@ -661,10 +741,8 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			wp_mail( $to, $subject, $message, $headers );
 		}
 		
-		if( is_numeric( $response[ 'updated' ] ) ){
-			if( $response[ 'updated' ] > 0 ) {
-				do_action( 'bookacti_order_bookings_state_changed', $order_id, $state, array() );
-			}
+		if( is_numeric( $response[ 'updated' ] ) && intval( $response[ 'updated' ] ) > 0 ) {
+			do_action( 'bookacti_order_bookings_state_changed', $order_id, $state, array() );
 		}
 		
 		return $response;
@@ -683,7 +761,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	 */
 	function bookacti_update_order_item_booking_status( $item, $new_state, $args ) {
 		
-		if( ! $item || ! isset( $item[ 'bookacti_booking_id' ] ) ) { return; }
+		if( ! $item || ( ! isset( $item[ 'bookacti_booking_id' ] ) && ! isset( $item[ 'bookacti_booking_group_id' ] ) ) ) { return; }
 		
 		// Get old state
 		$old_state = wc_get_order_item_meta( $item[ 'id' ], 'bookacti_state', true );
@@ -734,7 +812,9 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		}
 		
 		// Turn the order state if it is composed of inactive / pending / booked bookings only
-		bookacti_change_order_state_based_on_its_bookings_state( $order_id );
+		if( ! isset( $args[ 'update_order_status' ] ) || $args[ 'update_order_status' ] ) {
+			bookacti_change_order_state_based_on_its_bookings_state( $order_id );
+		}
 	}
 	
 	

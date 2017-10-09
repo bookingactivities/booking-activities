@@ -3,7 +3,9 @@
 if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 /**
- *  Init Booking Activities settings
+ * Init Booking Activities settings
+ * 
+ * @version 1.2.0
  */
 function bookacti_init_settings() { 
 
@@ -200,12 +202,22 @@ function bookacti_init_settings() {
 	);
 	
 	
+	/* Messages settings Section */
+	add_settings_section( 
+		'bookacti_settings_section_messages',
+		__( 'Messages', BOOKACTI_PLUGIN_NAME ),
+		'bookacti_settings_section_messages_callback',
+		'bookacti_messages_settings'
+	);
+	
+	
 	do_action( 'bookacti_add_settings' );
 	
 	
 	register_setting('bookacti_general_settings', 'bookacti_general_settings' );
 	register_setting('bookacti_cancellation_settings', 'bookacti_cancellation_settings' );
 	register_setting('bookacti_notifications_settings', 'bookacti_notifications_settings' );
+	register_setting('bookacti_messages_settings', 'bookacti_messages_settings' );
 }
 add_action( 'admin_init', 'bookacti_init_settings' );
 
@@ -361,6 +373,28 @@ function bookacti_controller_update_notification() {
 	}
 }
 add_action( 'wp_ajax_bookactiUpdateNotification', 'bookacti_controller_update_notification' );
+
+
+
+// MESSAGES
+
+/**
+ * Display messages fields
+ * 
+ * @since 1.2.0
+ */
+function bookacti_display_messages_fields() {
+	$messages = bookacti_get_messages( true );
+	foreach( $messages as $message_id => $message ) {
+?>
+		<div class='bookacti-message-setting' >
+			<em><?php echo $message[ 'description' ] ?></em><br/>
+			<input type='text' id='bookacti_messages_settings_<?php echo $message_id; ?>' name='bookacti_messages_settings[<?php echo $message_id; ?>]' value='<?php echo $message[ 'value' ] ?>' /></em>
+		</div>
+<?php
+	}
+}
+add_action( 'bookacti_messages_settings', 'bookacti_display_messages_fields' );
 
 
 

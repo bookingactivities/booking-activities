@@ -18,7 +18,8 @@ echo "<div class='wrap'>";
 		/* translators: Used for a category of parameters */
 		'general'		=> __( 'General', BOOKACTI_PLUGIN_NAME ),
 		'cancellation'	=> __( 'Cancellation', BOOKACTI_PLUGIN_NAME ),
-		'notifications'	=> __( 'Notifications', BOOKACTI_PLUGIN_NAME )
+		'notifications'	=> __( 'Notifications', BOOKACTI_PLUGIN_NAME ),
+		'messages'		=> __( 'Messages', BOOKACTI_PLUGIN_NAME )
 	) );
 
 	//Display the tabs
@@ -68,6 +69,13 @@ echo "<div class='wrap'>";
 				do_settings_sections( 'bookacti_notifications_settings' ); 
 				
 			}
+
+		} else if( $active_tab === 'messages' ) {
+
+			settings_fields( 'bookacti_messages_settings' );
+			do_settings_sections( 'bookacti_messages_settings' ); 
+			
+			do_action( 'bookacti_messages_settings' );
 
 		}
 		

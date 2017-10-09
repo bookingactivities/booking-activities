@@ -590,7 +590,7 @@ function bookacti_settings_section_bookings_callback() { }
 	
 	
 	/**
-	 * Notification from email setting field
+	 * Notification async email setting field
 	 * 
 	 * @version 1.2.0
 	 */
@@ -598,15 +598,107 @@ function bookacti_settings_section_bookings_callback() { }
 		$args = array(
 			'type'	=> 'checkbox',
 			'name'	=> 'bookacti_notifications_settings[notifications_async_email]',
-			'id'	=> 'notifications_from_email',
+			'id'	=> 'notifications_async_email',
 			'value'	=> bookacti_get_setting_value( 'bookacti_notifications_settings', 'notifications_async_email' ),
-			'tip'	=> __( 'Whether to send the email asynchronously. If enabled, you and your customers will no longer have to wait for the email to be sent.', BOOKACTI_PLUGIN_NAME )
+			'tip'	=> __( 'Whether to send the email asynchronously. If enabled, you and your customers will no longer have to wait for the emails to be sent.', BOOKACTI_PLUGIN_NAME )
 		);
 		bookacti_display_field( $args );
 	}
+
+
+
+// MESSAGES SETTINGS
+	/**
+	 * Settings section callback - Messages (displayed before settings)
+	 * 
+	 * @since 1.2.0
+	 */
+	function bookacti_settings_section_messages_callback() {
+	?>
+		<p>
+			<?php _e( 'Edit messages used in the following situations.', BOOKACTI_PLUGIN_NAME ); ?>
+		</p>
+	<?php
+	}
 	
 	
+	/**
+	 * Get all default messages
+	 * 
+	 * @since 1.2.0
+	 */
+	function bookacti_get_default_messages() {
+		$messages = array(
+			'calendar_title' => array(
+				'value'			=> __( 'Pick an event on the calendar:', BOOKACTI_PLUGIN_NAME ),
+				'description'	=> __( 'Instructions displayed before the calendar.', BOOKACTI_PLUGIN_NAME )
+			),
+			'booking_success' => array(
+				'value'			=> __( 'Your event has been booked successfully!', BOOKACTI_PLUGIN_NAME ),
+				'description'	=> __( 'When a reservation has been successfully registered.', BOOKACTI_PLUGIN_NAME )
+			),
+			'booking_form_submit_button' => array(
+				'value'			=> __( 'Book', BOOKACTI_PLUGIN_NAME ),
+				'description'	=> __( 'Submit button label.', BOOKACTI_PLUGIN_NAME )
+			),
+		);
+		
+		return apply_filters( 'bookacti_default_messages', $messages );
+	}
 	
+	
+	/**
+	 * Get all custom messages
+	 * 
+	 * @since 1.2.0
+	 * @param boolean $raw Whether to retrieve the raw value from database or the option parsed through get_option
+	 * @return array
+	 */
+	function bookacti_get_messages( $raw = false ) {
+		
+		// Get raw value from database
+		if( $raw ) {
+			$alloptions = wp_load_alloptions(); // get_option() calls wp_load_alloptions() itself, so there is no overhead at runtime 
+			if( isset( $alloptions[ 'bookacti_messages_settings' ] ) ) {
+				$saved_messages	= maybe_unserialize( $alloptions[ 'bookacti_messages_settings' ] );
+			}
+		} 
+
+		// Else, get email settings through a normal get_option
+		else {
+			$saved_messages		= get_option( 'bookacti_messages_settings' );
+		}
+		
+		$default_messages = bookacti_get_default_messages();
+		$messages = $default_messages;
+		
+		if( $saved_messages ) {
+			foreach( $default_messages as $message_id => $message ) {
+				if( isset( $saved_messages[ $message_id ] ) ) {
+					$messages[ $message_id ][ 'value' ] = $saved_messages[ $message_id ];
+				}
+			}
+		}
+		
+		return apply_filters( 'bookacti_messages', $messages );
+	}
+	
+	
+	/**
+	 * Get a custom message by id
+	 * 
+	 * @since 1.2.0
+	 * @param string $message_id
+	 * @param boolean $raw Whether to retrieve the raw value from database or the option parsed through get_option
+	 * @return string
+	 */
+	function bookacti_get_message( $message_id, $raw = false ) {
+		$messages = bookacti_get_messages( $raw );
+		return $messages[ $message_id ] ? $messages[ $message_id ][ 'value' ] : '';
+	}
+	
+	
+
 // TEMPLATE SETTINGS
 	function bookacti_settings_field_default_template_callback() { }
 	
