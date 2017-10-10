@@ -1083,7 +1083,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 				// Update state to refunded
 				$updated1 = bookacti_update_booking_state( $booking_id, 'refunded' );
 				if( $updated1 && $refund[ 'booking_type' ] === 'single' ) {
-					do_action( 'bookacti_booking_state_changed', $booking_id, 'refunded', array( 'is_admin' => true, 'refund_action' => 'manual' ) );
+					do_action( 'bookacti_booking_state_changed', $booking_id, 'refunded', array( 'is_admin' => true, 'refund_action' => 'manual', 'send_notifications' => false ) );
 				}
 
 				// Set the quantity back to the old value
@@ -1117,7 +1117,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 				$updated_group = bookacti_update_booking_group_state( $booking_group_id, 'refunded' );
 
 				if( $updated_group ) {
-					do_action( 'bookacti_booking_group_state_changed', $booking_group_id, 'refunded', array( 'is_admin' => true, 'refund_action' => 'manual' ) );
+					do_action( 'bookacti_booking_group_state_changed', $booking_group_id, 'refunded', array( 'is_admin' => true, 'refund_action' => 'manual', 'send_notifications' => false ) );
 				}
 			}
 
@@ -1165,7 +1165,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 				// Add the refund method and yell the booking state change
 				wc_update_order_item_meta( $item_id, '_bookacti_refund_method', 'manual' );
 
-				do_action( 'bookacti_booking_state_changed', $booking_id, 'refunded', array( 'is_admin' => true, 'refund_action' => 'manual' ) );
+				do_action( 'bookacti_booking_state_changed', $booking_id, 'refunded', array( 'is_admin' => true, 'refund_action' => 'manual', 'send_notifications' => false ) );
 
 			// Booking group
 			} else if( $booking_group_id ) {
@@ -1182,7 +1182,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 				// Add the refund method and yell the booking state change
 				wc_update_order_item_meta( $item_id, '_bookacti_refund_method', 'manual' );
 
-				do_action( 'bookacti_booking_group_state_changed', $booking_group_id, 'refunded', array( 'is_admin' => true, 'refund_action' => 'manual' ) );
+				do_action( 'bookacti_booking_group_state_changed', $booking_group_id, 'refunded', array( 'is_admin' => true, 'refund_action' => 'manual', 'send_notifications' => false ) );
 			}
 		}
 	}

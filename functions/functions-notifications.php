@@ -21,7 +21,7 @@ function bookacti_get_emails_default_settings() {
 										<p>{booking_list}</p>
 										<p>Booking status: <strong>{booking_status}</strong>.</p>
 										<p><a href="{booking_admin_url}">Click here</a> to edit this booking (ID: {booking_id}).</p>', BOOKACTI_PLUGIN_NAME ),
-				'description'	=> __( 'This email is sent to administrator when a new booking is registered.', BOOKACTI_PLUGIN_NAME ) 
+				'description'	=> __( 'This email is sent to the administrator when a new booking is registered.', BOOKACTI_PLUGIN_NAME ) 
 			),
 		'admin_cancelled_booking' => 
 			array(
@@ -34,7 +34,7 @@ function bookacti_get_emails_default_settings() {
 										<p>{booking_list}</p>
 										<p>Contact him: {user_firstname} {user_lastname} ({user_email})</p>
 										<p><a href="{booking_admin_url}">Click here</a> to edit this booking (ID: {booking_id}).</p>', BOOKACTI_PLUGIN_NAME ),
-				'description'	=> __( 'This email is sent to administrator when a customer cancel a booking.', BOOKACTI_PLUGIN_NAME ) 
+				'description'	=> __( 'This email is sent to the administrator when a customer cancel a booking.', BOOKACTI_PLUGIN_NAME ) 
 			),
 		'admin_rescheduled_booking' => 
 			array(
@@ -48,21 +48,9 @@ function bookacti_get_emails_default_settings() {
 										<p>New booking: {booking_list}</p>
 										<p>Contact him: {user_firstname} {user_lastname} ({user_email})</p>
 										<p><a href="{booking_admin_url}">Click here</a> to edit this booking (ID: {booking_id}).</p>', BOOKACTI_PLUGIN_NAME ),
-				'description'	=> __( 'This email is sent to administrator when a customer reschedule a booking.', BOOKACTI_PLUGIN_NAME )  
+				'description'	=> __( 'This email is sent to the administrator when a customer reschedule a booking.', BOOKACTI_PLUGIN_NAME )  
 			),
-		'admin_refunded_booking' => 
-			array(
-				'active'		=> 1,
-				'title'			=> __( 'Customer is refunded', BOOKACTI_PLUGIN_NAME ),
-				'to'			=> array( get_bloginfo( 'admin_email' ) ),
-				'subject'		=> __( 'Booking refunded', BOOKACTI_PLUGIN_NAME ),
-				/* translators: Keep tags as is (this is a tag: {tag}), they will be replaced in code. This is the default email an administrator receive when a booking is refunded */
-				'message'		=> __( '<p>A customer has been reimbursed for this booking:</p>
-										<p>{booking_list}</p>
-										<p>Contact him: {user_firstname} {user_lastname} ({user_email})</p>
-										<p><a href="{booking_admin_url}">Click here</a> to edit this booking (ID: {booking_id}).</p>', BOOKACTI_PLUGIN_NAME ),
-				'description'	=> __( 'This email is sent to administrator when a customer is successfully reimbursed for a booking.', BOOKACTI_PLUGIN_NAME ) 
-			),
+		
 		'customer_pending_booking' => 
 			array(
 				'active'		=> 1,

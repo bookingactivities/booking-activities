@@ -900,7 +900,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		
 		/* translators: %1$s is the booking id */
 		$subject	= $booking_type === 'group' ? __( 'Refund request for booking group %1$s', BOOKACTI_PLUGIN_NAME ) : __( 'Refund request for booking %1$s', BOOKACTI_PLUGIN_NAME );
-		$subject	= apply_filters( 'bookacti_refund_request_email_subject', '/!\\ ' . sprintf( $subject, $booking_id ), $booking_id, $booking_type );
+		$subject	= apply_filters( 'bookacti_refund_request_email_subject', sprintf( $subject, $booking_id ), $booking_id, $booking_type );
 
 		$data = array();
 

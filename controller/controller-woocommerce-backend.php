@@ -179,7 +179,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	 * Change booking quantity and status when a refund is deleted
 	 * 
 	 * @since 1.0.0
-	 * @version 1.1.0
+	 * @version 1.2.0
 	 * 
 	 * @param int $refund_id
 	 * @param int $order_id
@@ -188,9 +188,12 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		
 		$order = wc_get_order( $order_id );
 		
-		if( empty( $order ) ) {
-			return false;
-		}
+		if( empty( $order ) ) { return false; }
+		
+		// Before anything, clear cache to make sure refunds are up to date 
+		// espacially in case of multiple consecutive refunds
+		$cache_key = WC_Cache_Helper::get_cache_prefix( 'orders' ) . 'refunds' . $order_id;
+		wp_cache_delete( $cache_key, 'orders' );
 		
 		$items = $order->get_items();
 		
@@ -298,7 +301,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 						$updated2 = bookacti_update_booking_group_state( $booking_group_id, 'cancelled' );
 						if( $updated2 ) {
 							wc_delete_order_item_meta( $item_id, '_bookacti_refund_method' );
-							do_action( 'bookacti_booking_group_state_changed', $booking_group_id, 'cancelled', array( 'is_admin' => true ) );
+							do_action( 'bookacti_booking_group_state_changed', $booking_group_id, 'cancelled', array( 'is_admin' => true, 'send_notifications' => false ) );
 						}
 					}
 					
@@ -320,11 +323,11 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 						$updated2 = bookacti_update_booking_state( $booking_id, 'cancelled' );
 						if( $updated2 ) {
 							wc_delete_order_item_meta( $item_id, '_bookacti_refund_method' );
-							do_action( 'bookacti_booking_state_changed', $booking_id, 'cancelled', array( 'is_admin' => true ) );
+							do_action( 'bookacti_booking_state_changed', $booking_id, 'cancelled', array( 'is_admin' => true, 'send_notifications' => false ) );
 						}
 					}
 				}
-
+				
 				if( $updated1 === false || $updated2 === false ) {
 					$message = __( 'Error occurs while trying to update booking quantity.', BOOKACTI_PLUGIN_NAME );
 					wp_die( esc_html( $message ) );

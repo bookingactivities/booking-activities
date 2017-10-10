@@ -205,16 +205,39 @@ add_filter( 'bookacti_when_events_load_tip', 'bookacti_add_wc_mention_to_when_ev
  */
 function bookacti_add_wc_mention_to_notifications( $emails ) {
 	
+	if( ! isset( $emails[ 'admin_refunded_booking' ] ) ) {
+		$emails[ 'admin_refunded_booking' ] = array(
+				'active'		=> 1,
+				'title'			=> __( 'Customer has been refunded', BOOKACTI_PLUGIN_NAME ),
+				'to'			=> array( get_bloginfo( 'admin_email' ) ),
+				'subject'		=> __( 'Booking refunded', BOOKACTI_PLUGIN_NAME ),
+				/* translators: Keep tags as is (this is a tag: {tag}), they will be replaced in code. This is the default email an administrator receive when a booking is refunded */
+				'message'		=> __( '<p>A customer has been reimbursed for this booking:</p>
+										<p>{booking_list}</p>
+										<p>Contact him: {user_firstname} {user_lastname} ({user_email})</p>
+										<p><a href="{booking_admin_url}">Click here</a> to edit this booking (ID: {booking_id}).</p>', BOOKACTI_PLUGIN_NAME ),
+				'description'	=> __( 'This email is sent to the administrator when a customer is successfully reimbursed for a booking.', BOOKACTI_PLUGIN_NAME ) 
+			);
+	}
+	
 	if( isset( $emails[ 'admin_new_booking' ] ) ) {
-		$emails[ 'admin_new_booking' ][ 'description' ] .= '<br/>' . __( 'This will only work with bookings made with a booking form generated from a shortode. For bookings made with WooCommerce, use WooCommerce notifications.', BOOKACTI_PLUGIN_NAME );
+		$emails[ 'admin_new_booking' ][ 'description' ]				.= '<br/>' . __( 'To avoid double notification, this will not be sent if WooCommerce triggered this change.', BOOKACTI_PLUGIN_NAME );
 	}
 	
 	if( isset( $emails[ 'customer_pending_booking' ] ) ) {
-		$emails[ 'customer_pending_booking' ][ 'description' ] .= '<br/>' . __( 'Remember that with WooCommerce, a successfull payment automatically turns bookings status to "Booked".', BOOKACTI_PLUGIN_NAME );
+		$emails[ 'customer_pending_booking' ][ 'description' ]		.= '<br/>' . __( 'To avoid double notification, this will not be sent if WooCommerce triggered this change.', BOOKACTI_PLUGIN_NAME );
 	}
 	
 	if( isset( $emails[ 'customer_booked_booking' ] ) ) {
-		$emails[ 'customer_booked_booking' ][ 'description' ] .= '<br/>' . __( 'Remember that with WooCommerce, a successfull payment automatically turns bookings status to "Booked".', BOOKACTI_PLUGIN_NAME );
+		$emails[ 'customer_booked_booking' ][ 'description' ]		.= '<br/>' . __( 'To avoid double notification, this  will not be sent if WooCommerce triggered this change.', BOOKACTI_PLUGIN_NAME );
+	}
+	
+	if( isset( $emails[ 'customer_cancelled_booking' ] ) ) {
+		$emails[ 'customer_cancelled_booking' ][ 'description' ]	.= '<br/>' . __( 'To avoid double notification, this  will not be sent if WooCommerce triggered this change.', BOOKACTI_PLUGIN_NAME );
+	}
+	
+	if( isset( $emails[ 'customer_refunded_booking' ] ) ) {
+		$emails[ 'customer_refunded_booking' ][ 'description' ]		.= '<br/>' . __( 'To avoid double notification, this  will not be sent if WooCommerce triggered this change.', BOOKACTI_PLUGIN_NAME );
 	}
 	
 	return $emails;

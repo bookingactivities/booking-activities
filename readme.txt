@@ -5,7 +5,7 @@ Tags: booking activities, booking sport, booking form, event reservation, reserv
 Requires at least: 3.6
 Tested up to: 4.8
 Requires PHP: 5.3
-Stable tag: 1.1.4
+Stable tag: 1.2.0
 License: GPLv3 or later
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
 
@@ -61,6 +61,13 @@ Try this reservation tool live on the [demo website](http://demo.booking-activit
 * Booking actions: validate, cancel, reschedule, ★ refund...
 * ★ Your customers can **cancel** or **reschedule** their bookings and **ask a refund** by themselves
 
+**Notifications**
+
+* **Automatic emails** are sent to both administrator and customer when a booking is made, when its state changes, and when it is rescheduled
+* **Fully customize** and configure all your email notifications
+* In multilangual sites, emails are sent to your customers **in their own language**
+* *Email reminders are coming soon in a dedicated add-on!*
+
 **Translation ready**
 
 * **Multilingual support** with ★ QTranslateX (free plugin)
@@ -69,7 +76,7 @@ Try this reservation tool live on the [demo website](http://demo.booking-activit
 
 **The best inside**
 
-* **API for developpers** (PHP actions and filters, JS actions). *Documentation coming soon.*
+* **API for developers** (PHP actions and filters, JS actions). *Documentation coming soon.*
 * Use the lattest version of the beautiful and handy **[FullCalendar](https://fullcalendar.io/)**
 
 See the whole [features list here](https://booking-activities.fr/en/documentation/features/?utm_source=wp-plugin-page&utm_medium=wordpress&utm_content=readme).
@@ -281,18 +288,20 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 12. Customers also have their bookings list thanks to a shortcode. They can cancel, reschedule or ask a refund by their own (if you allow them).
 13. Your customers can manage their bookings from their WooCommerce orders as well.
 14. Orders status are bound to their bookings status. If bookings are cancelled / booked / refunded, so do the order (and vice-versa).
-
+15. Email notifications are automatically sent to the customer or the administrator when they need to be informed of a change.
+16. Make your emails look just like you want thanks to the HTML editor and special tags. You can also choose to deactivate a notification.
 
 
 == Changelog ==
 
-= 1.2.0 =
-* Feature - Send email notifications to administrator and customer when a booking is made, when its status changes and when it is rescheduled
+= 1.2.0 - 2017/10/11 =
+* Feature - Send email notifications to the administrator and the customer when a booking is made, when its status changes and when it is rescheduled
 * Feature - Configure and customize email notifications
-* Feature - You can configure some messages displayed on frontend in Booking Activities settings
+* Feature - Configure some messages displayed on frontend directly through Booking Activities settings
 * Tweak - Added a date field in bookings database, so you can know when a booking was made
 * Fix - Wrong locale was loaded on multilingual site (depending on site and users settings)
 * Fix - Dialogs looked glitchy on Chrome
+* Fix - Booking quantity was incorrect if multiple partial refunds were deleted at once in a WooCommerce order
 * Dev - A lot of hooks has been changed, added or removed. Please go to the website for the [complete changelog](https://booking-activities.fr/en/documentation/changelog/?utm_source=wp-plugin-page&utm_medium=wordpress&utm_content=readme).
 
 = 1.1.4 - 2017/09/14 =
