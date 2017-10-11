@@ -233,12 +233,12 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	 * @param boolean $plain_text
 	 */
 	function bookacti_add_actions_to_bookings( $item_id, $item, $order, $plain_text = true ) {
-		if( $plain_text ) {
-			if( isset( $item['bookacti_booking_id'] ) ) {
-				echo bookacti_get_booking_actions_html( $item['bookacti_booking_id'], 'front', false, true );
-			} else if( isset( $item['bookacti_booking_group_id'] ) ) {
-				echo bookacti_get_booking_group_actions_html( $item['bookacti_booking_group_id'], 'front', false, true );
-			}
+		if( ! $plain_text || $_GET[ 'pay_for_order' ] ) { return; }
+		
+		if( isset( $item['bookacti_booking_id'] ) ) {
+			echo bookacti_get_booking_actions_html( $item['bookacti_booking_id'], 'front', false, true );
+		} else if( isset( $item['bookacti_booking_group_id'] ) ) {
+			echo bookacti_get_booking_group_actions_html( $item['bookacti_booking_group_id'], 'front', false, true );
 		}
 	}
 	add_action( 'woocommerce_order_item_meta_end', 'bookacti_add_actions_to_bookings', 10, 4 );

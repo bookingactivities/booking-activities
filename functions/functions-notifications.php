@@ -86,18 +86,6 @@ function bookacti_get_emails_default_settings() {
 										<p>If you didn\'t cancelled this reservation or if you think this is an error, please contact us.</p>', BOOKACTI_PLUGIN_NAME ),
 				'description'	=> __( 'This email is sent to the customer when one of his bookings becomes "Cancelled".', BOOKACTI_PLUGIN_NAME )  
 			),
-		'customer_rescheduled_booking' => 
-			array(
-				'active'		=> 1,
-				'title'			=> __( 'Booking is rescheduled', BOOKACTI_PLUGIN_NAME ),
-				'subject'		=> __( 'Your booking has been rescheduled', BOOKACTI_PLUGIN_NAME ) . ' - ' . apply_filters( 'bookacti_translate_text', get_bloginfo( 'name' ) ),
-				/* translators: Keep tags as is (this is a tag: {tag}), they will be replaced in code. This is the default email an customer receive when a booking is rescheduled */
-				'message'		=> __( '<p>Hello {user_firstname},
-										<p>Your booking has been <strong>rescheduled</strong> from {booking_old_start} to:</p>
-										<p>{booking_list}</p>
-										<p>If you didn\'t rescheduled this reservation or if you think this is an error, please contact us.</p>', BOOKACTI_PLUGIN_NAME ),
-				'description'	=> __( 'This email is sent to the customer when one of his bookings is rescheduled.', BOOKACTI_PLUGIN_NAME )  
-			),
 		'customer_refunded_booking' => 
 			array(
 				'active'		=> 1,
@@ -109,6 +97,18 @@ function bookacti_get_emails_default_settings() {
 										<p>{booking_list}</p>
 										<p>We are sorry for the inconvenience and hope to see you soon.</p>', BOOKACTI_PLUGIN_NAME ),
 				'description'	=> __( 'This email is sent to the customer when one of his bookings becomes "Refunded".', BOOKACTI_PLUGIN_NAME ) 
+			),
+		'customer_rescheduled_booking' => 
+			array(
+				'active'		=> 1,
+				'title'			=> __( 'Booking is rescheduled', BOOKACTI_PLUGIN_NAME ),
+				'subject'		=> __( 'Your booking has been rescheduled', BOOKACTI_PLUGIN_NAME ) . ' - ' . apply_filters( 'bookacti_translate_text', get_bloginfo( 'name' ) ),
+				/* translators: Keep tags as is (this is a tag: {tag}), they will be replaced in code. This is the default email an customer receive when a booking is rescheduled */
+				'message'		=> __( '<p>Hello {user_firstname},
+										<p>Your booking has been <strong>rescheduled</strong> from {booking_old_start} to:</p>
+										<p>{booking_list}</p>
+										<p>If you didn\'t rescheduled this reservation or if you think this is an error, please contact us.</p>', BOOKACTI_PLUGIN_NAME ),
+				'description'	=> __( 'This email is sent to the customer when one of his bookings is rescheduled.', BOOKACTI_PLUGIN_NAME )  
 			),
 	);
 
@@ -230,7 +230,7 @@ function bookacti_sanitize_email_settings( $args, $email_id = '' ) {
 
 		} else if( $key === 'message' ) {
 
-			$sanitized_textarea = wp_kses( stripslashes( $email[ $key ] ) );
+			$sanitized_textarea = wp_kses_post( stripslashes( $email[ $key ] ) );
 			$email[ $key ] = $sanitized_textarea ? $sanitized_textarea : $default_value;
 		} 
 	}
@@ -342,19 +342,26 @@ function bookacti_get_notifications_tags_values( $booking_id, $booking_type, $no
  * @param string $notification_id Must exists in "bookacti_emails_default_settings"
  * @param int $booking_id
  * @param string $booking_type "single" or "group"
+ * @param array $args Replace or add email settings and tags
  * @param boolean $async Whether to send the email asynchronously. 
  * @return boolean
  */
-function bookacti_send_email( $notification_id, $booking_id, $booking_type, $async = true ) {
+function bookacti_send_email( $notification_id, $booking_id, $booking_type, $args = array(), $async = true ) {
 	
 	// Send emails asynchronously
 	$allow_async = apply_filters( 'bookacti_email_allow_async', bookacti_get_setting_value( 'bookacti_notifications_settings', 'notifications_async_email' ) );
 	if( $allow_async && $async ) {
-		wp_schedule_single_event( time(), 'bookacti_send_async_email', array( $notification_id, $booking_id, $booking_type, false ) );
+		wp_schedule_single_event( time(), 'bookacti_send_async_email', array( $notification_id, $booking_id, $booking_type, $args, false ) );
 		return;
 	}
 	
+	// Get email settings
 	$email = bookacti_get_email_settings( $notification_id );
+	
+	// Replace or add email settings
+	if( $args && $args[ 'email' ] ) {
+		$email = array_merge( $email, $args[ 'email' ] );
+	}
 	
 	if( ! $email || ! $email[ 'active' ] ) { return false; }
 	
@@ -385,6 +392,12 @@ function bookacti_send_email( $notification_id, $booking_id, $booking_type, $asy
 	
 	// Replace tags in message and replace linebreaks with html tags
 	$tags		= bookacti_get_notifications_tags_values( $booking_id, $booking_type, $notification_id );
+	
+	// Replace or add tags values
+	if( $args && $args[ 'tags' ] ) {
+		$tags = array_merge( $tags, $args[ 'tags' ] );
+	}
+	
 	$message	= wpautop( str_replace( array_keys( $tags ), array_values( $tags ), $email[ 'message' ] ) );
 	
 	$from_name	= bookacti_get_setting_value( 'bookacti_notifications_settings', 'notifications_from_name' );
@@ -407,4 +420,4 @@ function bookacti_send_email( $notification_id, $booking_id, $booking_type, $asy
 }
 
 // Hook the asynchronous call and send the email
-add_action( 'bookacti_send_async_email', 'bookacti_send_email', 10, 4 );
+add_action( 'bookacti_send_async_email', 'bookacti_send_email', 10, 5 );

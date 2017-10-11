@@ -106,26 +106,41 @@ function bookacti_send_email_when_booking_is_rescheduled( $booking_id, $old_book
 	$send_to_both = false;
 	if( ! isset( $args[ 'is_admin' ] ) ) { $send_to_both = true; }
 	
-	// Add reschedule specific tags
-	add_filter( 'bookacti_notifications_tags_values', function( $tags, $bookingid, $booking_type, $notification_id ) use ( &$old_booking ) {
-		if( ( $notification_id === 'customer_rescheduled_booking' || $notification_id === 'admin_rescheduled_booking' ) 
-		&& $bookingid == $old_booking->id ) {
-			$tags[ '{booking_old_start}' ]	= bookacti_format_datetime( $old_booking->event_start );
-			$tags[ '{booking_old_end}' ]	= bookacti_format_datetime( $old_booking->event_end );
-		}
-		return $tags;
-	}, 10, 4 );
+	$email_args = array(); $email_args[ 'tags' ] = array();
 	
 	// If $args[ 'is_admin' ] is true, the customer need to be notified
 	if( $send_to_both || $args[ 'is_admin' ] ) {
 		
-		bookacti_send_email( 'customer_rescheduled_booking', $booking_id, 'single' );
+		// Temporarilly switch locale user default's
+		$user_id	= bookacti_get_booking_owner( $booking_id );
+		$locale		= bookacti_get_user_locale( $user_id );
+		bookacti_switch_locale( $locale );
+		
+		// Add reschedule specific tags
+		$email_args[ 'tags' ][ '{booking_old_start}' ]	= bookacti_format_datetime( $old_booking->event_start );
+		$email_args[ 'tags' ][ '{booking_old_end}' ]	= bookacti_format_datetime( $old_booking->event_end );
+		
+		// Switch locale back to normal
+		bookacti_restore_locale();
+		
+		bookacti_send_email( 'customer_rescheduled_booking', $booking_id, 'single', $email_args );
 	}
 	
 	// If $args[ 'is_admin' ] is false, the administrator need to be notified
 	if( $send_to_both || ! $args[ 'is_admin' ] ) {
 		
-		bookacti_send_email( 'admin_rescheduled_booking', $booking_id, 'single' );
+		// Temporarilly switch locale to site default's
+		$locale = bookacti_get_site_locale();
+		bookacti_switch_locale( $locale );
+		
+		// Add reschedule specific tags
+		$email_args[ 'tags' ][ '{booking_old_start}' ]	= bookacti_format_datetime( $old_booking->event_start );
+		$email_args[ 'tags' ][ '{booking_old_end}' ]	= bookacti_format_datetime( $old_booking->event_end );
+		
+		// Switch locale back to normal
+		bookacti_restore_locale();
+		
+		bookacti_send_email( 'admin_rescheduled_booking', $booking_id, 'single', $email_args );
 	}
 }
 add_action( 'bookacti_booking_rescheduled', 'bookacti_send_email_when_booking_is_rescheduled', 10, 3 );

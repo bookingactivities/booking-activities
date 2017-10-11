@@ -263,6 +263,12 @@ Just click on the settings wheel above the bookings list, and check 'Display ina
 Now you can see inactive bookings (cancelled, expired, removed, refunded, refund requested).
 
 
+= Email notifications are not sent =
+If you enabled "Asynchronous email" option in Booking Activities settings ("Notifications" tab), emails will be sent the next time someone (anyone) load any page of your website.
+Then, you only need to refresh or visit any page of your website and then check your inbox.
+If you disable "Asynchronous email" option, then the loading will last until the email is actually sent.
+
+
 = Ask for support = 
 **We answer within 48h**. You can contact us in many ways:
 - By email at [contact@booking-activities.fr](mailto:contact@booking-activities.fr)
@@ -302,6 +308,9 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 * Fix - Wrong locale was loaded on multilingual site (depending on site and users settings)
 * Fix - Dialogs looked glitchy on Chrome
 * Fix - Booking quantity was incorrect if multiple partial refunds were deleted at once in a WooCommerce order
+* Fix - Min delay before event is no longer limited to a minimum of 1 day. Minimum is now 0 (no delay)
+* Fix - Do not display booking actions on "Pay for orders" pages
+* Lib - Updated FullCalendar to 3.6.0 and Moment JS to 2.19.0
 * Dev - A lot of hooks has been changed, added or removed. Please go to the website for the [complete changelog](https://booking-activities.fr/en/documentation/changelog/?utm_source=wp-plugin-page&utm_medium=wordpress&utm_content=readme).
 
 = 1.1.4 - 2017/09/14 =

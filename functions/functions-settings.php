@@ -25,7 +25,7 @@ function bookacti_define_default_settings_constants() {
 	if( ! defined( 'BOOKACTI_ALLOW_CUSTOMERS_TO_CANCEL' ) )				{ define( 'BOOKACTI_ALLOW_CUSTOMERS_TO_CANCEL', '1' ); }
 	if( ! defined( 'BOOKACTI_ALLOW_CUSTOMERS_TO_RESCHEDULE' ) )			{ define( 'BOOKACTI_ALLOW_CUSTOMERS_TO_RESCHEDULE', '1' ); }
 	if( ! defined( 'BOOKACTI_CANCELLATION_MIN_DELAY_BEFORE_EVENT' ) )	{ define( 'BOOKACTI_CANCELLATION_MIN_DELAY_BEFORE_EVENT', '7' ); }
-	if( ! defined( 'BOOKACTI_REFUND_ACTIONS_AFTER_CANCELLATION' ) )		{ define( 'BOOKACTI_REFUND_ACTIONS_AFTER_CANCELLATION', 'email' ); }
+	if( ! defined( 'BOOKACTI_REFUND_ACTIONS_AFTER_CANCELLATION' ) )		{ define( 'BOOKACTI_REFUND_ACTIONS_AFTER_CANCELLATION', 'do_nothing' ); }
 	
 	if( ! defined( 'BOOKACTI_NOTIFICATIONS_FROM_NAME' ) )				{ define( 'BOOKACTI_NOTIFICATIONS_FROM_NAME', get_bloginfo( 'name' ) ); }
 	if( ! defined( 'BOOKACTI_NOTIFICATIONS_FROM_EMAIL' ) )				{ define( 'BOOKACTI_NOTIFICATIONS_FROM_EMAIL', get_bloginfo( 'admin_email' ) ); }
@@ -323,7 +323,7 @@ function bookacti_settings_section_bookings_callback() { }
 							),
 			'value'		=> bookacti_get_setting_value( 'bookacti_general_settings', 'default_booking_state' ),
 			/* translators: The word 'Calendar' refers to a booking method you have to translate too. Make sure you use the same word for both translation. */
-			'tip'		=> __( 'Choose what status a booking should have when a custumer complete the booking form.', BOOKACTI_PLUGIN_NAME )
+			'tip'		=> __( 'Choose what status a booking should have when a customer complete the booking form.', BOOKACTI_PLUGIN_NAME )
 		);
 		bookacti_display_field( $args );
 	}
@@ -462,7 +462,7 @@ function bookacti_settings_section_bookings_callback() { }
 			'options'	=> array( 'min' => 0 ),
 			'value'		=> bookacti_get_setting_value( 'bookacti_cancellation_settings', 'cancellation_min_delay_before_event' ),
 			'label'		=> ' ' . esc_html__( 'days before the event', BOOKACTI_PLUGIN_NAME ),
-			'tip'		=> __( 'Define the delay before the event in wich the customer will not be able to cancel his booking no more. Ex: "7": Customers will be able to cancel their booking at least 7 days before the event starts. After that, it will be to late.', BOOKACTI_PLUGIN_NAME )
+			'tip'		=> __( 'Define the delay before the event in which the customer will not be able to cancel his booking no more. Ex: "7": Customers will be able to cancel their booking at least 7 days before the event starts. After that, it will be to late.', BOOKACTI_PLUGIN_NAME )
 		);
 		bookacti_display_field( $args );
 	}
@@ -600,7 +600,7 @@ function bookacti_settings_section_bookings_callback() { }
 			'name'	=> 'bookacti_notifications_settings[notifications_async_email]',
 			'id'	=> 'notifications_async_email',
 			'value'	=> bookacti_get_setting_value( 'bookacti_notifications_settings', 'notifications_async_email' ),
-			'tip'	=> __( 'Whether to send the email asynchronously. If enabled, you and your customers will no longer have to wait for the emails to be sent.', BOOKACTI_PLUGIN_NAME )
+			'tip'	=> __( 'Whether to send the email asynchronously. If enabled, emails will be sent the next time any page of this website is loaded. No one will have to wait any longer. Else, the loadings will last until emails are sent.', BOOKACTI_PLUGIN_NAME )
 		);
 		bookacti_display_field( $args );
 	}

@@ -27,7 +27,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		$delay			= bookacti_get_setting_value( 'bookacti_cancellation_settings', 'cancellation_min_delay_before_event' );
 		$timezone		= bookacti_get_setting_value( 'bookacti_general_settings', 'timezone' );
 
-		if( ! is_numeric( $delay ) || $delay < 1 ) { $delay = 1; } 
+		if( ! is_numeric( $delay ) || $delay < 0 ) { $delay = 0; } 
 
 		$event_datetime		= DateTime::createFromFormat( 'Y-m-d H:i:s', $booking->event_start );
 		$delay_datetime		= $event_datetime->sub( new DateInterval( 'P' . $delay . 'D' ) );

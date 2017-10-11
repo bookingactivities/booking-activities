@@ -209,7 +209,6 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	 */
 	function bookacti_switch_locale( $locale ) {
 		if ( function_exists( 'switch_to_locale' ) ) {
-			
 			switch_to_locale( $locale );
 			
 			// Filter on plugin_locale so load_plugin_textdomain loads the correct locale.
