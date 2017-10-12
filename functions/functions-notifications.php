@@ -383,7 +383,7 @@ function bookacti_send_email( $notification_id, $booking_id, $booking_type, $arg
 		$locale = bookacti_get_site_locale();
 	}
 	
-	$locale = apply_filters( 'bookacti_email_locale', $locale, $notification_id, $booking_id, $booking_type );
+	$locale = apply_filters( 'bookacti_email_locale', $locale, $notification_id, $booking_id, $booking_type, $args );
 	
 	// Temporarilly switch locale to site or user default's
 	bookacti_switch_locale( $locale );
@@ -416,7 +416,7 @@ function bookacti_send_email( $notification_id, $booking_id, $booking_type, $arg
 	// Switch locale back to normal
 	bookacti_restore_locale();
 	
-	do_action( 'bookacti_email_sent', $sent, $email_data, $notification_id, $booking_id, $booking_type );
+	do_action( 'bookacti_email_sent', $sent, $email_data, $notification_id, $booking_id, $booking_type, $args );
 }
 
 // Hook the asynchronous call and send the email

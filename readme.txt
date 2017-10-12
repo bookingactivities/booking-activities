@@ -300,7 +300,7 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 
 == Changelog ==
 
-= 1.2.0 - 2017/10/11 =
+= 1.2.0 - 2017/10/12 =
 * Feature - Send email notifications to the administrator and the customer when a booking is made, when its status changes and when it is rescheduled
 * Feature - Configure and customize email notifications
 * Feature - Configure some messages displayed on frontend directly through Booking Activities settings
@@ -308,6 +308,7 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 * Fix - Wrong locale was loaded on multilingual site (depending on site and users settings)
 * Fix - Dialogs looked glitchy on Chrome
 * Fix - Booking quantity was incorrect if multiple partial refunds were deleted at once in a WooCommerce order
+* Fix - Booking quantity wasn't correctly displayed on bookings list
 * Fix - Min delay before event is no longer limited to a minimum of 1 day. Minimum is now 0 (no delay)
 * Fix - Do not display booking actions on "Pay for orders" pages
 * Lib - Updated FullCalendar to 3.6.0 and Moment JS to 2.19.0

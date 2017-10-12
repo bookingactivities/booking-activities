@@ -227,6 +227,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	/**
 	 * Add actions html elements to booking rows
 	 * 
+	 * @version 1.2.0
 	 * @param int $item_id
 	 * @param WC_Order_item $item
 	 * @param WC_Order $order

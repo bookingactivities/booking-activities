@@ -113,7 +113,7 @@ function bookacti_send_email_when_booking_is_rescheduled( $booking_id, $old_book
 		
 		// Temporarilly switch locale user default's
 		$user_id	= bookacti_get_booking_owner( $booking_id );
-		$locale		= bookacti_get_user_locale( $user_id );
+		$locale		= apply_filters( 'bookacti_email_locale', bookacti_get_user_locale( $user_id ), 'customer_rescheduled_booking', $booking_id, 'single', $email_args );
 		bookacti_switch_locale( $locale );
 		
 		// Add reschedule specific tags
@@ -130,7 +130,7 @@ function bookacti_send_email_when_booking_is_rescheduled( $booking_id, $old_book
 	if( $send_to_both || ! $args[ 'is_admin' ] ) {
 		
 		// Temporarilly switch locale to site default's
-		$locale = bookacti_get_site_locale();
+		$locale	= apply_filters( 'bookacti_email_locale', bookacti_get_site_locale(), 'admin_rescheduled_booking', $booking_id, 'single', $email_args );
 		bookacti_switch_locale( $locale );
 		
 		// Add reschedule specific tags
