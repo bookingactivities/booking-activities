@@ -512,6 +512,7 @@ function bookacti_dialog_change_booking_state( booking_id, booking_type ) {
 				
 				var is_bookings_page	= row.parents( '#bookacti-bookings-list' ).length ? 1 : 0;
 				var new_state			= $j( 'select#bookacti-select-booking-state' ).val(); 
+				var send_notifications	= $j( '#bookacti-send-notifications-on-state-change' ).prop( 'checked' ) ? 1 : 0; 
 				var nonce				= $j( '#bookacti-change-booking-state-dialog #nonce_change_booking_state' ).val(); 
 				
 				if( new_state && new_state !== state ) {
@@ -525,6 +526,7 @@ function bookacti_dialog_change_booking_state( booking_id, booking_type ) {
 						data: { 'action': action, 
 								'booking_id': booking_id,
 								'new_state': new_state,
+								'send_notifications': send_notifications,
 								'is_bookings_page': is_bookings_page,
 								'nonce': nonce
 							},
@@ -667,7 +669,11 @@ function bookacti_dialog_reschedule_booking( booking_id ) {
 				
 				if( validated ) {
 					
-					var is_bookings_page = row.parents( '#bookacti-bookings-list' ).length;
+					var is_bookings_page	= bookacti_localized.is_admin ? 1 : 0;
+					var send_notifications	= 1;
+					if( is_bookings_page && $j( '#bookacti-send-notifications-on-reschedule' ).length ) {
+						send_notifications	= $j( '#bookacti-send-notifications-on-reschedule' ).prop( 'checked' ) ? 1 : 0; 
+					}
 					
 					// Display a loader
 					bookacti_booking_row_enter_loading_state( row );
@@ -681,6 +687,7 @@ function bookacti_dialog_reschedule_booking( booking_id ) {
 								'event_start': event_start,
 								'event_end': event_end,
 								'is_bookings_page': is_bookings_page,
+								'send_notifications': send_notifications,
 								'nonce': bookacti_localized.nonce_reschedule_booking
 							},
 						dataType: 'json',

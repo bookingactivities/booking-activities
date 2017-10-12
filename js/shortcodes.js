@@ -46,12 +46,17 @@ $j( document ).ready( function() {
 					
 					var message = '';
 					if( response.status === 'success' ) {
+						
+						// Hide fields and submit button to avoid duplicated bookings
+						form.find( '.bookacti-booking-system-field-container, .bookacti-booking-system-field-submit-container' ).hide();
+							
 						message = "<ul class='bookacti-success-list bookacti-persistent-notice'><li>" + response.message + "</li></ul>";
-												
+						
 						if( form.attr( 'action' ) !== '' ) {
 							// Go to URL
 							window.location.replace( form.attr( 'action' ) );
 						} else {
+							
 							// Reload events
 							var booking_system_id	= booking_system.attr( 'id' );
 							var booking_method		= bookacti.booking_system[ booking_system_id ][ 'method' ];

@@ -17,7 +17,9 @@ echo "<div class='wrap'>";
 	$tabs = apply_filters( 'bookacti_settings_tabs', array ( 
 		/* translators: Used for a category of parameters */
 		'general'		=> __( 'General', BOOKACTI_PLUGIN_NAME ),
-		'cancellation'	=> __( 'Cancellation', BOOKACTI_PLUGIN_NAME )
+		'cancellation'	=> __( 'Cancellation', BOOKACTI_PLUGIN_NAME ),
+		'notifications'	=> __( 'Notifications', BOOKACTI_PLUGIN_NAME ),
+		'messages'		=> __( 'Messages', BOOKACTI_PLUGIN_NAME )
 	) );
 
 	//Display the tabs
@@ -30,10 +32,12 @@ echo "<div class='wrap'>";
 	}
 	echo '</h2>';
 	
-
-	//Display the tabs content
-	echo "<form method='post' action='options.php' id='bookacti-settings'>";
-
+	$save_with_ajax	= isset( $_GET[ 'section' ] ) ? 'bookacti_save_settings_with_ajax' : '';
+	$action			= $save_with_ajax ? '' : 'options.php';
+	
+	echo "<form method='post' action='" . $action . "' id='bookacti-settings' class='" . $save_with_ajax . "' >";
+	
+		// Display the tabs content
 		if( $active_tab === 'general' ) {  
 			
 			echo '<div id="bookacti-settings-lang-switcher" ></div>';
@@ -45,6 +49,33 @@ echo "<div class='wrap'>";
 
 			settings_fields( 'bookacti_cancellation_settings' );
 			do_settings_sections( 'bookacti_cancellation_settings' ); 
+
+		} else if( $active_tab === 'notifications' ) {
+			
+			if( isset( $_GET[ 'section' ] ) ) {
+				
+				$section = sanitize_title_with_dashes( $_GET[ 'section' ] );
+				
+				echo '<input type="hidden" name="option_page" value="' . esc_attr( 'bookacti_notifications_settings_' . $section ) . '" />';
+				echo '<input type="hidden" name="email_id" value="' . str_replace( 'email_', '', $section ) . '" />';
+				echo '<input type="hidden" name="action" value="bookactiUpdateNotification" />';
+				wp_nonce_field( 'bookacti_notifications_settings_' . $section );
+				
+				do_action( 'bookacti_notifications_settings_section', $section );
+				
+			} else {
+				
+				settings_fields( 'bookacti_notifications_settings' );
+				do_settings_sections( 'bookacti_notifications_settings' ); 
+				
+			}
+
+		} else if( $active_tab === 'messages' ) {
+
+			settings_fields( 'bookacti_messages_settings' );
+			do_settings_sections( 'bookacti_messages_settings' ); 
+			
+			do_action( 'bookacti_messages_settings' );
 
 		}
 		

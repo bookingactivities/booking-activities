@@ -53,7 +53,14 @@ $j( document ).ready( function() {
 		if( bookacti.selected_template ) {
 			bookacti_switch_template( bookacti.selected_template );
 		}
-
+		
+		// If an error occurs, stop loading and allow every interactions
+		window.onerror = function ( errorMsg, url, lineNumber, column, errorObj ) {
+			$j( '#bookacti-fatal-error' ).show();
+		};
+		$j( '#bookacti-exit-loading' ).on( 'click', function(){
+			bookacti_exit_template_loading_state( true );
+		});
 	}
 });
 

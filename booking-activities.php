@@ -3,7 +3,7 @@
  * Plugin Name: Booking Activities
  * Plugin URI: https://booking-activities.fr/en/?utm_source=plugin&utm_medium=plugin&utm_content=header
  * Description: Booking system specialized in activities (sports, cultural, leisure, events, and yours!). Works great with WooCommerce.
- * Version: 1.1.4
+ * Version: 1.2.0
  * Author: Booking Activities Team
  * Author URI: https://booking-activities.fr/en/?utm_source=plugin&utm_medium=plugin&utm_content=header
  * Text Domain: booking-activities
@@ -38,7 +38,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 
 // GLOBALS AND CONSTANTS
-if( ! defined( 'BOOKACTI_VERSION' ) )			{ define( 'BOOKACTI_VERSION', '1.1.4' ); }
+if( ! defined( 'BOOKACTI_VERSION' ) )			{ define( 'BOOKACTI_VERSION', '1.2.0' ); }
 if( ! defined( 'BOOKACTI_PLUGIN_NAME' ) )		{ define( 'BOOKACTI_PLUGIN_NAME', 'booking-activities' ); }
 if( ! defined( 'BOOKACTI_PLUGIN_BASENAME' ) )	{ define( 'BOOKACTI_PLUGIN_BASENAME', plugin_basename( __FILE__ ) ); }
 
@@ -49,8 +49,16 @@ __( 'Booking system specialized in activities (sports, cultural, leisure, events
 
 
 // INCLUDE LANGUAGES FILES
+function bookacti_load_textdomain() { 
+	
+	$locale = is_admin() && function_exists( 'get_user_locale' ) ? get_user_locale() : get_locale();
+	$locale = apply_filters( 'plugin_locale', $locale, BOOKACTI_PLUGIN_NAME );
+	
+	unload_textdomain( BOOKACTI_PLUGIN_NAME );
+	load_textdomain( BOOKACTI_PLUGIN_NAME, WP_LANG_DIR . '/' . BOOKACTI_PLUGIN_NAME . '/' . BOOKACTI_PLUGIN_NAME . '-' . $locale . '.mo' );
+	load_plugin_textdomain( BOOKACTI_PLUGIN_NAME, false, plugin_basename( dirname( __FILE__ ) ) . '/languages/' ); 
+}
 add_action( 'plugins_loaded', 'bookacti_load_textdomain' );
-function bookacti_load_textdomain() { load_plugin_textdomain( BOOKACTI_PLUGIN_NAME, FALSE, basename( dirname( __FILE__ ) ) . '/languages/' ); }
 
 
 // INCLUDE PHP FUNCTIONS
@@ -60,10 +68,12 @@ include_once( 'functions/functions-template.php' );
 include_once( 'functions/functions-templates-forms-control.php' );
 include_once( 'functions/functions-bookings.php' );
 include_once( 'functions/functions-settings.php' );
+include_once( 'functions/functions-notifications.php' );
 
 include_once( 'controller/controller-templates.php' );
 include_once( 'controller/controller-booking-system.php' );
 include_once( 'controller/controller-settings.php' );
+include_once( 'controller/controller-notifications.php' );
 include_once( 'controller/controller-bookings.php' );
 include_once( 'controller/controller-shortcodes.php' );
 
@@ -180,6 +190,7 @@ function bookacti_enqueue_backend_scripts() {
 	wp_register_script( 'bookacti-js-templates',				plugins_url( 'js/templates.js', __FILE__ ),					array( 'jquery', 'bookacti-js-global-var', 'bookacti-js-fullcalendar', 'bookacti-js-global-functions', 'bookacti-js-templates-functions', 'bookacti-js-templates-dialogs' ), '1.0', true );
 	wp_register_script( 'bookacti-js-bookings',					plugins_url( 'js/bookings.js', __FILE__ ),					array( 'jquery', 'bookacti-js-global-var', 'bookacti-js-fullcalendar', 'bookacti-js-global-functions' ), '1.0', true );
 	wp_register_script( 'bookacti-js-woocommerce-backend',		plugins_url( 'js/woocommerce-backend.js', __FILE__ ),		array( 'jquery', 'bookacti-js-global-var', 'bookacti-js-moment' ), '1.0', true );
+	wp_register_script( 'bookacti-js-settings',					plugins_url( 'js/settings.js', __FILE__ ),					array( 'jquery' ), '1.0', true );
 	
 	// LOCALIZE SCRIPTS
 	global $bookacti_translation_array;
@@ -188,6 +199,7 @@ function bookacti_enqueue_backend_scripts() {
 	wp_localize_script( 'bookacti-js-templates-dialogs',		'bookacti_localized', $bookacti_translation_array );
 	wp_localize_script( 'bookacti-js-templates',				'bookacti_localized', $bookacti_translation_array );
 	wp_localize_script( 'bookacti-js-bookings',					'bookacti_localized', $bookacti_translation_array );
+	wp_localize_script( 'bookacti-js-settings',					'bookacti_localized', $bookacti_translation_array );
 	
 	// ENQUEUE SCRIPTS
 	wp_enqueue_script ( 'bookacti-js-backend-functions' );
@@ -197,6 +209,7 @@ function bookacti_enqueue_backend_scripts() {
 	wp_enqueue_script ( 'bookacti-js-templates' );
 	wp_enqueue_script ( 'bookacti-js-bookings' );
 	wp_enqueue_script ( 'bookacti-js-woocommerce-backend' );
+	wp_enqueue_script ( 'bookacti-js-settings' );
 }
 
 

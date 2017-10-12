@@ -2,8 +2,11 @@
 // Exit if accessed directly
 if ( ! defined( 'ABSPATH' ) ) { exit; }
 
-//DEFINE DEFAULT SETTINGS VALUES
-add_action( 'plugins_loaded', 'bookacti_define_default_settings_constants' );
+/**
+ * Define default settings values
+ * 
+ * @version 1.2.0
+ */
 function bookacti_define_default_settings_constants() {
 	if( ! defined( 'BOOKACTI_DEFAULT_TEMPLATE_PER_USER' ) )				{ define( 'BOOKACTI_DEFAULT_TEMPLATE_PER_USER', '0' ); }
 	if( ! defined( 'BOOKACTI_SHOW_PAST_EVENTS' ) )						{ define( 'BOOKACTI_SHOW_PAST_EVENTS', '1' ); }
@@ -22,13 +25,22 @@ function bookacti_define_default_settings_constants() {
 	if( ! defined( 'BOOKACTI_ALLOW_CUSTOMERS_TO_CANCEL' ) )				{ define( 'BOOKACTI_ALLOW_CUSTOMERS_TO_CANCEL', '1' ); }
 	if( ! defined( 'BOOKACTI_ALLOW_CUSTOMERS_TO_RESCHEDULE' ) )			{ define( 'BOOKACTI_ALLOW_CUSTOMERS_TO_RESCHEDULE', '1' ); }
 	if( ! defined( 'BOOKACTI_CANCELLATION_MIN_DELAY_BEFORE_EVENT' ) )	{ define( 'BOOKACTI_CANCELLATION_MIN_DELAY_BEFORE_EVENT', '7' ); }
-	if( ! defined( 'BOOKACTI_REFUND_ACTIONS_AFTER_CANCELLATION' ) )		{ define( 'BOOKACTI_REFUND_ACTIONS_AFTER_CANCELLATION', 'email' ); }
+	if( ! defined( 'BOOKACTI_REFUND_ACTIONS_AFTER_CANCELLATION' ) )		{ define( 'BOOKACTI_REFUND_ACTIONS_AFTER_CANCELLATION', 'do_nothing' ); }
+	
+	if( ! defined( 'BOOKACTI_NOTIFICATIONS_FROM_NAME' ) )				{ define( 'BOOKACTI_NOTIFICATIONS_FROM_NAME', get_bloginfo( 'name' ) ); }
+	if( ! defined( 'BOOKACTI_NOTIFICATIONS_FROM_EMAIL' ) )				{ define( 'BOOKACTI_NOTIFICATIONS_FROM_EMAIL', get_bloginfo( 'admin_email' ) ); }
+	if( ! defined( 'BOOKACTI_NOTIFICATIONS_ASYNC_EMAIL' ) )				{ define( 'BOOKACTI_NOTIFICATIONS_ASYNC_EMAIL', '1' ); }
 	
 	do_action( 'bookacti_define_settings_constants' );
 }
+add_action( 'plugins_loaded', 'bookacti_define_default_settings_constants' );
 
 
-//SET SETTINGS VALUES TO THEIR DEFAULT VALUE IF NULL
+/**
+ * Set settings values to their default value if null
+ * 
+ * @version 1.2.0
+ */
 function bookacti_init_settings_values() {
 	
 	$default_template_settings = get_option( 'bookacti_template_settings' );
@@ -58,11 +70,22 @@ function bookacti_init_settings_values() {
 	if( ! isset( $default_general_settings['timezone'] ) )					{ $default_general_settings['timezone']					= BOOKACTI_TIMEZONE; }
 	update_option( 'bookacti_general_settings', $default_general_settings );
 	
+	
+	$default_notifications_settings = get_option( 'bookacti_notifications_settings' );
+	if( ! isset( $default_notifications_settings['notifications_from_name'] ) )		{ $default_notifications_settings['notifications_from_name']	= BOOKACTI_NOTIFICATIONS_FROM_NAME; }
+	if( ! isset( $default_notifications_settings['notifications_from_email'] ) )	{ $default_notifications_settings['notifications_from_email']	= BOOKACTI_NOTIFICATIONS_FROM_EMAIL; }
+	if( ! isset( $default_notifications_settings['notifications_async_email'] ) )	{ $default_notifications_settings['notifications_async_email']	= BOOKACTI_NOTIFICATIONS_ASYNC_EMAIL; }
+	update_option( 'bookacti_notifications_settings', $default_notifications_settings );
+	
 	do_action( 'bookacti_init_settings_value' );
 }
 
 
-//RESET SETTINGS TO DEFAULT VALUES
+/**
+ * Reset settings to default values
+ * 
+ * @version 1.2.0
+ */
 function bookacti_reset_settings() {
 	
 	$default_template_settings = array();
@@ -96,16 +119,28 @@ function bookacti_reset_settings() {
 	
 	update_option( 'bookacti_general_settings', $default_general_settings );
 	
+	$default_notifications_settings = array();
+	$default_notifications_settings['notifications_from_name']		= BOOKACTI_NOTIFICATIONS_FROM_NAME;
+	$default_notifications_settings['notifications_from_email']		= BOOKACTI_NOTIFICATIONS_FROM_EMAIL;
+	$default_notifications_settings['notifications_async_email']	= BOOKACTI_NOTIFICATIONS_ASYNC_EMAIL;
+	
+	update_option( 'bookacti_notifications_settings', $default_notifications_settings );
+	
 	do_action( 'bookacti_reset_settings' );
 }
 
 
-//RESET SETTINGS TO DEFAULT VALUES
+/**
+ * Delete settings
+ * 
+ * @version 1.2.0
+ */
 function bookacti_delete_settings() {
 	delete_option( 'bookacti_template_settings' );
 	delete_option( 'bookacti_bookings_settings' );
 	delete_option( 'bookacti_cancellation_settings' );
 	delete_option( 'bookacti_general_settings' );
+	delete_option( 'bookacti_notifications_settings' );
 	
 	do_action( 'bookacti_delete_settings' );
 }
@@ -124,7 +159,8 @@ function bookacti_get_setting_value( $setting_page, $setting_field, $translate =
 	
 	$settings = get_option( $setting_page );
 	
-	if( ! isset( $settings[ $setting_field ] ) || ( empty( $settings[ $setting_field ] ) &&  $settings[ $setting_field ] !== '0' ) ) {
+	if( ! isset( $settings[ $setting_field ] ) 
+	||  ( ! $settings[ $setting_field ] && $settings[ $setting_field ] !== '0' && $settings[ $setting_field ] !== 0 ) ) {
 		if( defined( 'BOOKACTI_' . strtoupper( $setting_field ) ) ) {
 			$settings[ $setting_field ] = constant( 'BOOKACTI_' . strtoupper( $setting_field ) );
 			update_option( $setting_page, $settings );
@@ -167,7 +203,8 @@ function bookacti_get_setting_value_by_user( $setting_page, $setting_field, $use
 		$settings[ $setting_field ] = array();
 	}
 	
-	if( ! isset( $settings[ $setting_field ][ $user_id ] ) || empty( $settings[ $setting_field ] ) ) {
+	if( ! isset( $settings[ $setting_field ][ $user_id ] ) 
+	||  ( ! $settings[ $setting_field ] && $settings[ $setting_field ] !== '0' && $settings[ $setting_field ] !== 0 ) ) {
 		if( defined( 'BOOKACTI_' . strtoupper( $setting_field ) ) ) {
 			$settings[ $setting_field ][ $user_id ] = constant( 'BOOKACTI_' . strtoupper( $setting_field ) );
 			update_option( $setting_page, $settings );
@@ -200,36 +237,34 @@ function bookacti_settings_section_bookings_callback() { }
 
 
 //GENERAL SETTINGS 
-	// Booking method
+
+	/**
+	 * Display "Booking method" setting
+	 * 
+	 * @version 1.2.0
+	 */
 	function bookacti_settings_field_booking_method_callback() {
-		$selected_booking_method = bookacti_get_setting_value( 'bookacti_general_settings', 'booking_method' );
 		
-		$available_booking_methods = bookacti_get_available_booking_methods();
-		//Display the field
-		?>
-		<select name='bookacti_general_settings[booking_method]' >
-		<?php
-		foreach( $available_booking_methods as $booking_method_id => $booking_method_label ) {
-			$selected = $selected_booking_method === $booking_method_id ? 'selected' : '';
-			echo '<option value="' . esc_attr( $booking_method_id ) . '"' .  $selected . ' >'. esc_html( $booking_method_label ) . '</option>';
-		}
-		?>
-		</select>
-		<?php
-		
-		//Display the tip 
 		/* translators: The word 'Calendar' refers to a booking method you have to translate too. Make sure you use the same word for both translation. */
 		$tip  = apply_filters( 'bookacti_booking_methods_tip',
 				__( "'Calendar': The user will have to pick the event directly on a calendar.", BOOKACTI_PLUGIN_NAME ) );
 		
 		$license_status = get_option( 'badp_license_status' );
-		if( empty( $license_status ) || $license_status !== 'valid' ) {
+		if( ! $license_status || $license_status !== 'valid' ) {
 			$tip .= '<br/>';
 			$tip .= sprintf( __( 'Get more display methods with %1$sDisplay Pack%2$s add-on!', BOOKACTI_PLUGIN_NAME ),
 							'<a href="https://booking-activities.fr/en/downloads/display-pack/?utm_source=plugin&utm_medium=plugin&utm_campaign=display-pack&utm_content=landing" target="_blank" >', '</a>');
 		}
 		
-		bookacti_help_tip( $tip );
+		$args = array(
+			'type'		=> 'select',
+			'name'		=> 'bookacti_general_settings[booking_method]',
+			'id'		=> 'booking_method',
+			'options'	=> bookacti_get_available_booking_methods(),
+			'value'		=> bookacti_get_setting_value( 'bookacti_general_settings', 'booking_method' ),
+			'tip'		=> $tip
+		);
+		bookacti_display_field( $args );
 	}
 
 	
@@ -237,68 +272,60 @@ function bookacti_settings_section_bookings_callback() { }
 	 * Display "When to load the events?" setting
 	 * 
 	 * @since 1.1.0
+	 * @version 1.2.0
 	 */
 	function bookacti_settings_field_when_events_load_callback() {
-		$when_events_load = bookacti_get_setting_value( 'bookacti_general_settings', 'when_events_load' );
-		
-		//Display the field
-		?>
-		<select name='bookacti_general_settings[when_events_load]' >
-			<option value='on_page_load' <?php selected( $when_events_load, 'on_page_load' ); ?> ><?php _e( 'On page load', BOOKACTI_PLUGIN_NAME ); ?></option>
-			<option value='after_page_load' <?php selected( $when_events_load, 'after_page_load' ); ?> ><?php _e( 'After page load', BOOKACTI_PLUGIN_NAME ); ?></option>
-		</select>
-		<?php
-		
-		//Display the tip 
-		$tip  = apply_filters( 'bookacti_when_events_load_tip',
-				__( 'Choose whether you want to load events when the page is loaded (faster) or after.', BOOKACTI_PLUGIN_NAME ) );
-		
-		bookacti_help_tip( $tip );
+		$args = array(
+			'type'		=> 'select',
+			'name'		=> 'bookacti_general_settings[when_events_load]',
+			'id'		=> 'when_events_load',
+			'options'	=> array( 
+								'on_page_load' => __( 'On page load', BOOKACTI_PLUGIN_NAME ),
+								'after_page_load' => __( 'After page load', BOOKACTI_PLUGIN_NAME )
+							),
+			'value'		=> bookacti_get_setting_value( 'bookacti_general_settings', 'when_events_load' ),
+			'tip'		=> apply_filters( 'bookacti_when_events_load_tip', __( 'Choose whether you want to load events when the page is loaded (faster) or after.', BOOKACTI_PLUGIN_NAME ) )
+		);
+		bookacti_display_field( $args );
 	}
 	
 	
-	// Can the user book an event that began?
+	/**
+	 * Display "Can the user book an event that began?" setting
+	 * 
+	 * @version 1.2.0
+	 */
 	function bookacti_settings_field_started_events_bookable_callback() {
-		
-		$is_active = bookacti_get_setting_value( 'bookacti_general_settings', 'started_events_bookable' );
-		
-		//Display the field
-		$name	= 'bookacti_general_settings[started_events_bookable]';
-		$id		= 'started_events_bookable';
-		bookacti_onoffswitch( $name, $is_active, $id );
-		
-		//Display the tip
-		$tip = __( "Allow or disallow users to book an event that already began.", BOOKACTI_PLUGIN_NAME );
-		bookacti_help_tip( $tip );
+		$args = array(
+			'type'	=> 'checkbox',
+			'name'	=> 'bookacti_general_settings[started_events_bookable]',
+			'id'	=> 'started_events_bookable',
+			'value'	=> bookacti_get_setting_value( 'bookacti_general_settings', 'started_events_bookable' ),
+			'tip'	=> __( 'Allow or disallow users to book an event that already began.', BOOKACTI_PLUGIN_NAME )
+		);
+		bookacti_display_field( $args );
 	}
 	
 	
 	/**
 	 * Display "default booking state" setting
+	 * 
+	 * @version 1.2.0
 	 */
 	function bookacti_settings_field_default_booking_state_callback() {
-		$default_booking_state = bookacti_get_setting_value( 'bookacti_general_settings', 'default_booking_state' );
-		
-		$available_booking_states	= array( 'pending', 'booked' );
-		$booking_states_label		= bookacti_get_booking_state_labels();
-		
-		// Display the field
-		?>
-		<select name='bookacti_general_settings[default_booking_state]' >
-		<?php
-		foreach( $available_booking_states as $booking_state ) {
-			$selected = $default_booking_state === $booking_state ? 'selected' : '';
-			echo '<option value="' . esc_attr( $booking_state ) . '"' .  $selected . ' >'. esc_html( $booking_states_label[ $booking_state ][ 'label' ] ) . '</option>';
-		}
-		?>
-		</select>
-		<?php
-		
-		// Display the tip 
-		/* translators: The word 'Calendar' refers to a booking method you have to translate too. Make sure you use the same word for both translation. */
-		$tip  = __( 'Choose what status a booking should have when a custumer complete the booking form.', BOOKACTI_PLUGIN_NAME );
-		
-		bookacti_help_tip( $tip );
+		$args = array(
+			'type'		=> 'select',
+			'name'		=> 'bookacti_general_settings[default_booking_state]',
+			'id'		=> 'default_booking_state',
+			'options'	=> array( 
+								'pending' => __( 'Pending', BOOKACTI_PLUGIN_NAME ),
+								'booked' => __( 'Booked', BOOKACTI_PLUGIN_NAME )
+							),
+			'value'		=> bookacti_get_setting_value( 'bookacti_general_settings', 'default_booking_state' ),
+			/* translators: The word 'Calendar' refers to a booking method you have to translate too. Make sure you use the same word for both translation. */
+			'tip'		=> __( 'Choose what status a booking should have when a customer complete the booking form.', BOOKACTI_PLUGIN_NAME )
+		);
+		bookacti_display_field( $args );
 	}
 	
 	
@@ -341,15 +368,14 @@ function bookacti_settings_section_bookings_callback() { }
 		echo '<select name="bookacti_general_settings[timezone]" >';
 		foreach( $timezones as $region => $list ) {
 			echo '<optgroup label="' . $region . '" >';
-			foreach( $list as $timezone => $name )
-			{
+			foreach( $list as $timezone => $name ) {
 				echo '<option value="' . $timezone . '" ' . selected( $selected_timezone, $timezone ) . '>' . $name . '</option>';
 			}
 			echo '</optgroup>';
 		}
 		echo '</select>';
 		
-		//Display the tip 
+		// Display the tip 
 		$tip  = __( 'Pick the timezone corresponding to where your business takes place.', BOOKACTI_PLUGIN_NAME );
 		bookacti_help_tip( $tip );
 	}
@@ -359,20 +385,9 @@ function bookacti_settings_section_bookings_callback() { }
 	 * Display date format setting
 	 * 
 	 * @since 1.1.0
+	 * @version 1.2.0
 	 */
 	function bookacti_settings_field_date_format_callback() {
-		
-		$date_format = bookacti_get_setting_value( 'bookacti_general_settings', 'date_format', false );
-		
-		// Display the field
-		?>
-		<input name='bookacti_general_settings[date_format]'
-			   id='bookacti-settings-date-format'
-			   type='text'
-			   value='<?php echo $date_format; ?>' />
-		<?php
-
-		//Display the tip
 		$link = '<a href="https://momentjs.com/docs/#/displaying/format/" target="_blank" >';
 		/* translators: Label of a link to JS moment documentation (format chapter): https://momentjs.com/docs/#/displaying/format/ */
 		$link .= __( 'JS moment documentation', BOOKACTI_PLUGIN_NAME );
@@ -380,124 +395,310 @@ function bookacti_settings_section_bookings_callback() { }
 		
 		/* translators: %1$s is a link to JS moment documentation */
 		$tip = sprintf( __( 'Set the date format displayed on picked events lists. Leave empty to use the default locale-related format. Go to %1$s to know what tag you can use.', BOOKACTI_PLUGIN_NAME ), $link );
-		bookacti_help_tip( $tip );
+
+		
+		$args = array(
+			'type'	=> 'text',
+			'name'	=> 'bookacti_general_settings[date_format]',
+			'id'	=> 'bookacti-settings-date-format',
+			'value'	=> bookacti_get_setting_value( 'bookacti_general_settings', 'date_format', false ),
+			'tip'	=> $tip
+		);
+		bookacti_display_field( $args );
 	}
 
 
 
 
-//CANCELLATION SETTINGS 
-	// Activate cancellation for customers
+// CANCELLATION SETTINGS 
+
+	/**
+	 * Activate cancellation for customers
+	 * 
+	 * @version 1.2.0
+	 */
 	function bookacti_settings_field_activate_cancel_callback() {
-		
-		$is_active = bookacti_get_setting_value( 'bookacti_cancellation_settings', 'allow_customers_to_cancel' );
-		
-		//Display the field
-		$name	= 'bookacti_cancellation_settings[allow_customers_to_cancel]';
-		$id		= 'allow_customers_to_cancel';
-		bookacti_onoffswitch( $name, $is_active, $id );
-		
-		//Display the tip
-		$tip  = __( "Allow or disallow customers to cancel a booking after they order it.", BOOKACTI_PLUGIN_NAME );
-		bookacti_help_tip( $tip );
+		$args = array(
+			'type'	=> 'checkbox',
+			'name'	=> 'bookacti_cancellation_settings[allow_customers_to_cancel]',
+			'id'	=> 'allow_customers_to_cancel',
+			'value'	=> bookacti_get_setting_value( 'bookacti_cancellation_settings', 'allow_customers_to_cancel' ),
+			'tip'	=> __( 'Allow or disallow customers to cancel a booking after they order it.', BOOKACTI_PLUGIN_NAME )
+		);
+		bookacti_display_field( $args );
 	}
 	
-	// Activate reschedule for customers
+	
+	/**
+	 * Activate reschedule for customers
+	 * 
+	 * @version 1.2.0
+	 */
 	function bookacti_settings_field_activate_reschedule_callback() {
+		$tip  = __( 'Allow or disallow customers to reschedule a booking after they order it.', BOOKACTI_PLUGIN_NAME );
+		$tip .= '<br/>' . __( 'This won\'t apply to group of bookings.', BOOKACTI_PLUGIN_NAME );
 		
-		$is_active = bookacti_get_setting_value( 'bookacti_cancellation_settings', 'allow_customers_to_reschedule' );
-		
-		//Display the field
-		$name	= 'bookacti_cancellation_settings[allow_customers_to_reschedule]';
-		$id		= 'allow_customers_to_reschedule';
-		bookacti_onoffswitch( $name, $is_active, $id );
-		
-		//Display the tip
-		$tip  = __( "Allow or disallow customers to reschedule a booking after they order it.", BOOKACTI_PLUGIN_NAME );
-		$tip .= '<br/>' . __( "This won't apply to group of bookings.", BOOKACTI_PLUGIN_NAME );
-		bookacti_help_tip( $tip );
+		$args = array(
+			'type'	=> 'checkbox',
+			'name'	=> 'bookacti_cancellation_settings[allow_customers_to_reschedule]',
+			'id'	=> 'allow_customers_to_reschedule',
+			'value'	=> bookacti_get_setting_value( 'bookacti_cancellation_settings', 'allow_customers_to_reschedule' ),
+			'tip'	=> $tip
+		);
+		bookacti_display_field( $args );
 	}
 	
 	
-	// Minimum delay before event a user can cancel or reschedule a booking
+	/**
+	 * Minimum delay before event a user can cancel or reschedule a booking
+	 * 
+	 * @version 1.2.0
+	 */
 	function bookacti_settings_field_cancellation_delay_callback() {
-		
-		$delay = bookacti_get_setting_value( 'bookacti_cancellation_settings', 'cancellation_min_delay_before_event' );
-		
-		//Display the field
-		?>
-		<input name='bookacti_cancellation_settings[cancellation_min_delay_before_event]' 
-			   id='cancellation_min_delay_before_event' 
-			   type='number' 
-			   min='1'
-			   value='<?php echo esc_attr( $delay ); ?>' />
-		<?php
-		/* translators: The user set an amount of time before this sentence. Ex: '2' days before the event */
-		echo ' ' . esc_html__( 'days before the event', BOOKACTI_PLUGIN_NAME );
-		
-		//Display the tip
-		$tip = __( 'Define the delay before the event in wich the customer will not be able to cancel his booking no more. Ex: "7": Customers will be able to cancel their booking at least 7 days before the event starts. After that, it will be to late.', BOOKACTI_PLUGIN_NAME );
-		bookacti_help_tip( $tip );
+		$args = array(
+			'type'		=> 'number',
+			'name'		=> 'bookacti_cancellation_settings[cancellation_min_delay_before_event]',
+			'id'		=> 'cancellation_min_delay_before_event',
+			'options'	=> array( 'min' => 0 ),
+			'value'		=> bookacti_get_setting_value( 'bookacti_cancellation_settings', 'cancellation_min_delay_before_event' ),
+			'label'		=> ' ' . esc_html__( 'days before the event', BOOKACTI_PLUGIN_NAME ),
+			'tip'		=> __( 'Define the delay before the event in which the customer will not be able to cancel his booking no more. Ex: "7": Customers will be able to cancel their booking at least 7 days before the event starts. After that, it will be to late.', BOOKACTI_PLUGIN_NAME )
+		);
+		bookacti_display_field( $args );
 	}
 	
-	// possible actions to take after cancellation needing refund
+	
+	/**
+	 * Possible actions to take after cancellation needing refund
+	 * 
+	 * @version 1.2.0
+	 */
 	function bookacti_settings_field_cancellation_refund_actions_callback() {
 		
 		$actions = bookacti_get_setting_value( 'bookacti_cancellation_settings', 'refund_actions_after_cancellation' );
+		
 		if( ! is_array( $actions ) ) {
-			if( ! empty( $actions ) ) {
-				$actions = array( $actions => 1 );
-			} else {
-				$actions = array();
-			}
+			$actions = $actions ? array( $actions => 1 ) : array();
 		}
 		
-		//Display the field
+		$args = array(
+			'type'		=> 'checkboxes',
+			'name'		=> 'bookacti_cancellation_settings[refund_actions_after_cancellation]',
+			'id'		=> 'refund_action_after_cancellation',
+			'options'	=> bookacti_get_refund_actions(),
+			'value'		=> $actions,
+			'tip'		=> __( 'Define the actions a customer will be able to take to be refunded after he cancels a booking.', BOOKACTI_PLUGIN_NAME )
+		);
 		
-		$possible_actions = bookacti_get_refund_actions();
 		?>
 		<div id='bookacti_refund_actions'>
 			<input name='bookacti_cancellation_settings[refund_actions_after_cancellation][do_nothing]' 
 				type='hidden' 
 				value='1'
 			/>
-			<?php
-			foreach( $possible_actions as $possible_action ) {
-			?>
-				<div class='bookacti_refund_action'>
-					<input name='bookacti_cancellation_settings[refund_actions_after_cancellation][<?php echo esc_attr( $possible_action['id'] ); ?>]' 
-					   id='refund_action_after_cancellation_<?php echo esc_attr( $possible_action['id'] ); ?>' 
-					   type='checkbox' 
-					   value='1'
-					   <?php 
-							if( isset( $actions[ $possible_action['id'] ] ) ) {
-								checked( esc_attr( $actions[ $possible_action['id'] ] ), 1, true ); 
-							}
-						?>
-					/>
-				<?php
-					echo ' ' . apply_filters( 'bookacti_translate_text', esc_html( $possible_action['label'] ) );
-					
-					if( $possible_action['description'] ) {
-						//Display the tip
-						$tip = apply_filters( 'bookacti_translate_text', $possible_action['description'] );
-						bookacti_help_tip( $tip );
-					}
-				?>
-				</div>
-			<?php
-			}
-			?>
+			<?php bookacti_display_field( $args ); ?>
 		</div>
 		<?php
-		
-		//Display the tip
-		$tip = __( 'Define the actions a customer will be able to take to be refunded after he cancels a booking.', BOOKACTI_PLUGIN_NAME );
-		bookacti_help_tip( $tip );
 	}
 	
 	
 	
+// NOTIFICATIONS SETTINGS 
+	
+	/**
+	* Settings section callback - Notifications (displayed before settings)
+	* 
+	* @since 1.2.0
+	*/
+   function bookacti_settings_section_notifications_callback() { 
+
+		// Display a table of configurable emails
+	   ?>
+
+		<table class='bookacti-settings-table' >
+			<thead>
+				<tr>
+					<th><?php _ex( 'Active', 'is the notification active', BOOKACTI_PLUGIN_NAME ); ?></th>
+					<th><?php _ex( 'Trigger', 'what triggers a notification', BOOKACTI_PLUGIN_NAME ); ?></th>
+					<th><?php _ex( 'Sent to', 'who is sent the notification to', BOOKACTI_PLUGIN_NAME ); ?></th>
+					<th><?php _e( 'Actions', BOOKACTI_PLUGIN_NAME ); ?></th>
+				</tr>
+			</thead>
+			<tbody>
+		<?php
+			$emails = bookacti_get_emails_default_settings();
+			foreach( $emails as $email_id => $email_settings ) {
+				// Use saved option if available, else use default
+				$description	= $email_settings[ 'description' ] ? $email_settings[ 'description' ] : '';
+				$email_settings = get_option( 'bookacti_notifications_settings_email_' . $email_id, $email_settings );
+				$active_icon	= $email_settings[ 'active' ] ? 'tick.png' : 'cross.png';
+			?>
+				<tr>
+					<td><img src='<?php echo plugins_url() . '/' . BOOKACTI_PLUGIN_NAME . '/img/' . $active_icon; ?>' /></td>
+					<td>
+						<a href='<?php echo esc_url( '?page=bookacti_settings&tab=notifications&section=email_' . sanitize_title_with_dashes( $email_id ) ); ?>'><?php echo $email_settings[ 'title' ]; ?></a>
+						<?php if( $description ) { bookacti_help_tip( $description ); } ?>
+					</td>
+					<td><?php echo substr( $email_id, 0, 8 ) === 'customer' ? __( 'Customer', BOOKACTI_PLUGIN_NAME ) : implode( ', ', $email_settings[ 'to' ] ); ?></td>
+					<td>
+						<a href='<?php echo esc_url( '?page=bookacti_settings&tab=notifications&section=email_' . sanitize_title_with_dashes( $email_id ) ); ?>' >
+							<img src='<?php echo plugins_url() . '/' . BOOKACTI_PLUGIN_NAME; ?>/img/gear.png' />
+						</a>
+					</td>
+				</tr>
+			<?php	
+			}
+		?>
+			</tbody>
+		</table>
+	   <?php
+   }
+	
+	
+	/**
+	 * Notification from name setting field
+	 * 
+	 * @version 1.2.0
+	 */
+	function bookacti_settings_field_notifications_from_name_callback() {
+		$args = array(
+			'type'	=> 'text',
+			'name'	=> 'bookacti_notifications_settings[notifications_from_name]',
+			'id'	=> 'notifications_from_name',
+			'value'	=> bookacti_get_setting_value( 'bookacti_notifications_settings', 'notifications_from_name' ),
+			'tip'	=> __( 'How the sender name appears in outgoing emails.', BOOKACTI_PLUGIN_NAME )
+		);
+		bookacti_display_field( $args );
+	}
+	
+	
+	/**
+	 * Notification from email setting field
+	 * 
+	 * @version 1.2.0
+	 */
+	function bookacti_settings_field_notifications_from_email_callback() {
+		$args = array(
+			'type'	=> 'text',
+			'name'	=> 'bookacti_notifications_settings[notifications_from_email]',
+			'id'	=> 'notifications_from_email',
+			'value'	=> bookacti_get_setting_value( 'bookacti_notifications_settings', 'notifications_from_email' ),
+			'tip'	=> __( 'How the sender email address appears in outgoing emails.', BOOKACTI_PLUGIN_NAME )
+		);
+		bookacti_display_field( $args );
+	}
+	
+	
+	/**
+	 * Notification async email setting field
+	 * 
+	 * @version 1.2.0
+	 */
+	function bookacti_settings_field_notifications_async_email_callback() {
+		$args = array(
+			'type'	=> 'checkbox',
+			'name'	=> 'bookacti_notifications_settings[notifications_async_email]',
+			'id'	=> 'notifications_async_email',
+			'value'	=> bookacti_get_setting_value( 'bookacti_notifications_settings', 'notifications_async_email' ),
+			'tip'	=> __( 'Whether to send the email asynchronously. If enabled, emails will be sent the next time any page of this website is loaded. No one will have to wait any longer. Else, the loadings will last until emails are sent.', BOOKACTI_PLUGIN_NAME )
+		);
+		bookacti_display_field( $args );
+	}
+
+
+
+// MESSAGES SETTINGS
+	/**
+	 * Settings section callback - Messages (displayed before settings)
+	 * 
+	 * @since 1.2.0
+	 */
+	function bookacti_settings_section_messages_callback() {
+	?>
+		<p>
+			<?php _e( 'Edit messages used in the following situations.', BOOKACTI_PLUGIN_NAME ); ?>
+		</p>
+	<?php
+	}
+	
+	
+	/**
+	 * Get all default messages
+	 * 
+	 * @since 1.2.0
+	 */
+	function bookacti_get_default_messages() {
+		$messages = array(
+			'calendar_title' => array(
+				'value'			=> __( 'Pick an event on the calendar:', BOOKACTI_PLUGIN_NAME ),
+				'description'	=> __( 'Instructions displayed before the calendar.', BOOKACTI_PLUGIN_NAME )
+			),
+			'booking_success' => array(
+				'value'			=> __( 'Your event has been booked successfully!', BOOKACTI_PLUGIN_NAME ),
+				'description'	=> __( 'When a reservation has been successfully registered.', BOOKACTI_PLUGIN_NAME )
+			),
+			'booking_form_submit_button' => array(
+				'value'			=> __( 'Book', BOOKACTI_PLUGIN_NAME ),
+				'description'	=> __( 'Submit button label.', BOOKACTI_PLUGIN_NAME )
+			),
+		);
+		
+		return apply_filters( 'bookacti_default_messages', $messages );
+	}
+	
+	
+	/**
+	 * Get all custom messages
+	 * 
+	 * @since 1.2.0
+	 * @param boolean $raw Whether to retrieve the raw value from database or the option parsed through get_option
+	 * @return array
+	 */
+	function bookacti_get_messages( $raw = false ) {
+		
+		// Get raw value from database
+		if( $raw ) {
+			$alloptions = wp_load_alloptions(); // get_option() calls wp_load_alloptions() itself, so there is no overhead at runtime 
+			if( isset( $alloptions[ 'bookacti_messages_settings' ] ) ) {
+				$saved_messages	= maybe_unserialize( $alloptions[ 'bookacti_messages_settings' ] );
+			}
+		} 
+
+		// Else, get email settings through a normal get_option
+		else {
+			$saved_messages		= get_option( 'bookacti_messages_settings' );
+		}
+		
+		$default_messages = bookacti_get_default_messages();
+		$messages = $default_messages;
+		
+		if( $saved_messages ) {
+			foreach( $default_messages as $message_id => $message ) {
+				if( isset( $saved_messages[ $message_id ] ) ) {
+					$messages[ $message_id ][ 'value' ] = $saved_messages[ $message_id ];
+				}
+			}
+		}
+		
+		return apply_filters( 'bookacti_messages', $messages );
+	}
+	
+	
+	/**
+	 * Get a custom message by id
+	 * 
+	 * @since 1.2.0
+	 * @param string $message_id
+	 * @param boolean $raw Whether to retrieve the raw value from database or the option parsed through get_option
+	 * @return string
+	 */
+	function bookacti_get_message( $message_id, $raw = false ) {
+		$messages = bookacti_get_messages( $raw );
+		return $messages[ $message_id ] ? $messages[ $message_id ][ 'value' ] : '';
+	}
+	
+	
+
 // TEMPLATE SETTINGS
 	function bookacti_settings_field_default_template_callback() { }
 	

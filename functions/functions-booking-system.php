@@ -108,6 +108,19 @@ function bookacti_get_booking_system( $atts, $echo = false ) {
 
 
 /**
+ * Get available booking methods
+ * 
+ * @return string
+ */
+function bookacti_get_available_booking_methods(){
+	$available_booking_methods = array(
+		'calendar'	=> __( 'Calendar', BOOKACTI_PLUGIN_NAME )
+	);
+	return apply_filters( 'bookacti_available_booking_methods', $available_booking_methods );
+}
+
+
+/**
  * Get booking method HTML elemnts
  * 
  * @since 1.1.0
@@ -133,14 +146,14 @@ function bookacti_get_booking_method_html( $method, $booking_system_attributes )
  * Retrieve Calendar booking system HTML to include in the booking system
  * 
  * @since 1.0.0
- * @version 1.1.0
+ * @version 1.2.0
  * 
  * @param array $booking_system_atts
  * @return string
  */
 function bookacti_retrieve_calendar_elements( $booking_system_atts ) {
 	
-	$default_calendar_title	= esc_html__( 'Pick an event on the calendar:', BOOKACTI_PLUGIN_NAME );
+	$default_calendar_title	= esc_html( bookacti_get_message( 'calendar_title' ) );
 	$calendar_title			= apply_filters( 'bookacti_calendar_title', $default_calendar_title, $booking_system_atts );
 	
 	$before_calendar_title	= apply_filters( 'bookacti_before_calendar_title', '', $booking_system_atts );
@@ -166,7 +179,7 @@ function bookacti_retrieve_calendar_elements( $booking_system_atts ) {
 /**
  * Check booking system attributes and format them to be correct
  * 
- * @version 1.1.0
+ * @version 1.2.0
  * 
  * @param array $atts [id, classes, calendars, activities, groups, method, url, button]
  * @param string $shortcode
@@ -185,7 +198,7 @@ function bookacti_format_booking_system_attributes( $atts = array(), $shortcode 
         'groups_single_events'	=> 0,
         'method'				=> 'calendar',
 		'url'					=> '',
-		'button'				=> __( 'Book', BOOKACTI_PLUGIN_NAME ),
+		'button'				=> bookacti_get_message( 'booking_form_submit_button' ),
 		'auto_load'				=> 1,
 		'past_events'			=> 0,
 		'context'				=> 'frontend'
@@ -687,23 +700,35 @@ function bookacti_units_to_add_to_repeat_event( $event ) {
 /**
  * Build a user-friendly events list
  * 
+ * @since 1.1.0
+ * @version 1.2.0
+ * 
  * @param array $booking_events
  * @param int|string $quantity
+ * @return string
  */
 function bookacti_get_formatted_booking_events_list( $booking_events, $quantity = 'hide' ) {
 	
-	if( empty( $booking_events ) ) {
+	if( ! $booking_events ) {
 		return false;
 	}
 	
 	// Format $events
 	$formatted_events = array();
 	foreach( $booking_events as $booking_event ) {
+		
+		$booking_quantity = '';
+		if( isset( $booking_event->quantity ) ) {
+			$booking_quantity = $booking_event->quantity;
+		} else if( $quantity && is_numeric( $quantity ) ) {
+			$booking_quantity = intval( $quantity );
+		}
+		
 		$formatted_events[] = array( 
 			'title'		=> isset( $booking_event->title )	? $booking_event->title : '',
 			'start'		=> isset( $booking_event->start )	? bookacti_sanitize_datetime( $booking_event->start )	: isset( $booking_event->event_start )	? bookacti_sanitize_datetime( $booking_event->event_start )	: '',
 			'end'		=> isset( $booking_event->end )		? bookacti_sanitize_datetime( $booking_event->end )		: isset( $booking_event->event_end )	? bookacti_sanitize_datetime( $booking_event->event_end )	: '',
-			'quantity'	=> isset( $booking_event->quantity )? $booking_event->quantity : ! empty( $quantity ) && is_int( $quantity ) ? $quantity : '',
+			'quantity'	=> $booking_quantity
 		);
 	}
 	
@@ -712,7 +737,7 @@ function bookacti_get_formatted_booking_events_list( $booking_events, $quantity 
 		
 		// Format the event duration
 		$event_duration = '';
-		if( ! empty( $event[ 'start' ] ) && ! empty( $event[ 'end' ] ) ) {
+		if( $event[ 'start' ] && $event[ 'end' ] ) {
 			
 			$event_start = bookacti_format_datetime( $event[ 'start' ] );
 			
@@ -721,6 +746,7 @@ function bookacti_get_formatted_booking_events_list( $booking_events, $quantity 
 			if( $start_and_end_same_day ) {
 				/* translators: Datetime format. Must be adapted to each country. Use wp date_i18n documentation to find the appropriated combinaison https://codex.wordpress.org/Formatting_Date_and_Time */
 				$event_end = date_i18n( __( 'h:i a', BOOKACTI_PLUGIN_NAME ), strtotime( $event[ 'end' ] ) );
+				$event_end = ! mb_check_encoding( $event_end, 'UTF-8' ) ? utf8_encode( $event_end ) : $event_end;
 			} else {
 				$event_end = bookacti_format_datetime( $event[ 'end' ] );
 			}
@@ -733,22 +759,22 @@ function bookacti_get_formatted_booking_events_list( $booking_events, $quantity 
 		}
 		
 		// Add an element to event list if there is at least a title or a duration
-		if( ! empty( $event[ 'title' ] ) || ! empty( $event_duration ) ) {
+		if( $event[ 'title' ] || $event_duration ) {
 			$events_list .= '<li>';
 			
-			if( ! empty( $event[ 'title' ] ) ) {
+			if( $event[ 'title' ] ) {
 				$events_list .= '<span class="bookacti-booking-event-title" >' . apply_filters( 'bookacti_translate_text', $event[ 'title' ] ) . '</span>';
-				if( ! empty( $event_duration ) ) {
+				if( $event_duration ) {
 					$events_list .= '<span class="bookacti-booking-event-title-separator" >' . ' - ' . '</span>';
 				}
 			}
-			if( ! empty( $event_duration ) ) {
+			if( $event_duration ) {
 				$events_list .= $event_duration;
 			}
 			
-			if( ! empty( $quantity ) && $quantity !== 'hide' ) {
+			if( $event[ 'quantity' ] && $quantity !== 'hide' ) {
 				$events_list .= '<span class="bookacti-booking-event-quantity-separator" >' . ' x' . '</span>';
-				$events_list .= '<span class="bookacti-booking-event-quantity" >' . $quantity . '</span>';
+				$events_list .= '<span class="bookacti-booking-event-quantity" >' . $event[ 'quantity' ] . '</span>';
 			}
 			
 			$events_list .= '</li>';

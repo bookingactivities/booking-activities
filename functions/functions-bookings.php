@@ -8,6 +8,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	 * Check if a booking is whithin the athorized delay as of now
 	 * 
 	 * @since 1.1.0
+	 * @version 1.2.0
 	 * 
 	 * @param object|int $booking
 	 * @return boolean
@@ -26,7 +27,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		$delay			= bookacti_get_setting_value( 'bookacti_cancellation_settings', 'cancellation_min_delay_before_event' );
 		$timezone		= bookacti_get_setting_value( 'bookacti_general_settings', 'timezone' );
 
-		if( ! is_numeric( $delay ) || $delay < 1 ) { $delay = 1; } 
+		if( ! is_numeric( $delay ) || $delay < 0 ) { $delay = 0; } 
 
 		$event_datetime		= DateTime::createFromFormat( 'Y-m-d H:i:s', $booking->event_start );
 		$delay_datetime		= $event_datetime->sub( new DateInterval( 'P' . $delay . 'D' ) );
@@ -34,7 +35,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 		if( $current_datetime < $delay_datetime ) { $is_in_delay = true; }
 
-		return $is_in_delay;
+		return apply_filters( 'bookacti_is_booking_in_delay', $is_in_delay, $booking );
 	}
 	
 	
@@ -42,12 +43,13 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	 * Compute the booking group state based on its bookings state
 	 * 
 	 * @since 1.1.0
+	 * @version 1.2.0
 	 * 
 	 * @param int $booking_group_id
 	 * @param boolean $update
 	 * @return string|false
 	 */
-	function bookacti_compute_booking_group_state( $booking_group_id, $update = false ) {
+	function bookacti_compute_booking_group_state( $booking_group_id ) {
 		
 		$bookings = bookacti_get_bookings_by_booking_group_id( $booking_group_id );
 		
@@ -77,19 +79,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			$new_state = 'refunded';
 		}
 		
-		$new_state = apply_filters( 'bookacti_compute_booking_group_state', $new_state, $booking_group_id );
-
-		if( $update ) {
-			$old_state = bookacti_get_booking_group_state( $booking_group_id );
-			if( $old_state !== $new_state ) {
-				$group_updated = bookacti_update_booking_group_state( $booking_group_id, $new_state );
-				if( $group_updated ) {
-					do_action( 'bookacti_booking_group_state_changed', $booking_group_id, $new_state, array() );
-				}
-			}
-		}
-		
-		return $new_state;
+		return apply_filters( 'bookacti_compute_booking_group_state', $new_state, $booking_group_id );
 	}
 
 
@@ -910,7 +900,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		
 		/* translators: %1$s is the booking id */
 		$subject	= $booking_type === 'group' ? __( 'Refund request for booking group %1$s', BOOKACTI_PLUGIN_NAME ) : __( 'Refund request for booking %1$s', BOOKACTI_PLUGIN_NAME );
-		$subject	= apply_filters( 'bookacti_refund_request_email_subject', '/!\\ ' . sprintf( $subject, $booking_id ), $booking_id, $booking_type );
+		$subject	= apply_filters( 'bookacti_refund_request_email_subject', sprintf( $subject, $booking_id ), $booking_id, $booking_type );
 
 		$data = array();
 
@@ -947,7 +937,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		$data = apply_filters( 'bookacti_refund_request_email_data', $data, $booking_id, $booking_type );
 
 		/* translators: %1$s is a user name and %2$s is the booking ID. */
-		$message = '<h3>' . sprintf( esc_html__( '%1$s wants to be refund for booking %2$s', BOOKACTI_PLUGIN_NAME ), $data['user']['name'], $booking_id ) . '</h3>';
+		$message = '<h3>' . sprintf( esc_html__( '%1$s wants to be refunded for booking %2$s', BOOKACTI_PLUGIN_NAME ), $data['user']['name'], $booking_id ) . '</h3>';
 		foreach( $data as $category_name => $category_data ) {
 			$message .= '<h4>' . esc_html( ucfirst ( str_replace( '_', ' ', $category_name ) ) ) . '</h4>';
 			$message .= '<table style="border: none;" >';

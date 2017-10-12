@@ -104,7 +104,7 @@ $bookacti_translation_array = apply_filters( 'bookacti_translation_array', array
 	'error_create_group_category'		=> esc_html__( 'Error occurs when trying to create the group category.', BOOKACTI_PLUGIN_NAME ),
 	'error_update_group_category'		=> esc_html__( 'Error occurs when trying to update the group category.', BOOKACTI_PLUGIN_NAME ),
 	'error_delete_group_category'		=> esc_html__( 'Error occurs when trying to delete the group category.', BOOKACTI_PLUGIN_NAME ),
-
+	
 	'error_display_product_events'		=> esc_html__( 'Error occurs when trying to display product events. Please try later.', BOOKACTI_PLUGIN_NAME ),
 	'error_book_temporary'				=> esc_html__( 'Error occurs when trying to temporarily book your event. Please try later.', BOOKACTI_PLUGIN_NAME ),
 	'error_book'						=> esc_html__( 'Error occurs when trying to book your event. Please try again.', BOOKACTI_PLUGIN_NAME ),
@@ -143,7 +143,7 @@ $bookacti_translation_array = apply_filters( 'bookacti_translation_array', array
 	'error_availability_inf_to_0'       => esc_html__( 'The number of available bookings should be higher than or equal to 0.', BOOKACTI_PLUGIN_NAME ),
 	'error_less_avail_than_bookings'    => esc_html__( 'You can\'t set less available bookings than it has already on one of the occurrence of this event.', BOOKACTI_PLUGIN_NAME ),
 	'error_booked_events_out_of_period' => esc_html__( 'The repetition period must include all booked occurences.', BOOKACTI_PLUGIN_NAME ),
-	'error_event_not_btw_from_and_to'   => esc_html__( 'The selected event should be included in the period in wich it will be repeated.', BOOKACTI_PLUGIN_NAME ),
+	'error_event_not_btw_from_and_to'   => esc_html__( 'The selected event should be included in the period in which it will be repeated.', BOOKACTI_PLUGIN_NAME ),
 	'error_freq_not_allowed'            => esc_html__( 'Error: The repetition frequency is not a valid value.', BOOKACTI_PLUGIN_NAME ),
 	'error_excep_not_btw_from_and_to'   => esc_html__( 'Exception dates should be included in the repetition period.', BOOKACTI_PLUGIN_NAME ),
 	'error_excep_duplicated'            => esc_html__( 'Exceptions should all have a different date.', BOOKACTI_PLUGIN_NAME ),

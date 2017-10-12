@@ -139,39 +139,50 @@ function bookacti_delete_cart_settings() {
 }
 
 
-// Add bookings list settings
-add_action( 'bookacti_booking_list_tab_filter_after', 'bookacti_add_booking_list_in_cart_filter', 10, 1 );
+/**
+ * Add bookings list settings
+ * 
+ * @version 1.2.0
+ * @param array $params
+ */
 function bookacti_add_booking_list_in_cart_filter( $params ) {
 	$user_id = $params[ 'user_id' ];
+	$show_temporary_bookings_array	= bookacti_get_setting_value( 'bookacti_bookings_settings', 'show_temporary_bookings' );
+	$show_temporary_bookings		= 0;
+	if( is_array( $show_temporary_bookings_array ) && isset( $show_temporary_bookings_array[ $user_id ] ) && ! is_null( $show_temporary_bookings_array[ $user_id ] ) ) {
+		$show_temporary_bookings	= $show_temporary_bookings_array[ $user_id ];
+	}
+		
+	$args = array(
+		'type'	=> 'checkbox',
+		'name'	=> 'bookings-show-temporary-bookings',
+		'id'	=> 'bookacti-bookings-show-temporary-bookings',
+		'value'	=> $show_temporary_bookings,
+		'tip'	=> __( 'Show temporary bookings in the booking list (in cart bookings).', BOOKACTI_PLUGIN_NAME )
+	);
+	
 	?>
 	<div>
 		<label for='bookacti-bookings-show-temporary-bookings' ><?php esc_html_e( 'Show temporary bookings', BOOKACTI_PLUGIN_NAME ); ?></label>
-		<?php
-		$show_temporary_bookings_array	= bookacti_get_setting_value( 'bookacti_bookings_settings', 'show_temporary_bookings' );
-		$show_temporary_bookings		= 0;
-		if( is_array( $show_temporary_bookings_array ) && isset( $show_temporary_bookings_array[ $user_id ] ) && ! is_null( $show_temporary_bookings_array[ $user_id ] ) ) {
-			$show_temporary_bookings	= $show_temporary_bookings_array[ $user_id ];
-		}
-
-		$name	= 'bookings-show-temporary-bookings';
-		$id		= 'bookacti-bookings-show-temporary-bookings';
-		bookacti_onoffswitch( $name, $show_temporary_bookings, $id );
-
-		$tip = __( "Show temporary bookings in the booking list (in cart bookings).", BOOKACTI_PLUGIN_NAME );
-		bookacti_help_tip( $tip );
-		?>
+		<?php bookacti_display_field( $args ); ?>
 	</div>
 <?php
 }
+add_action( 'bookacti_booking_list_tab_filter_after', 'bookacti_add_booking_list_in_cart_filter', 10, 1 );
 
 
-// Add a mention to booking method tip
-add_filter( 'bookacti_booking_methods_tip', 'bookacti_add_wc_mention_to_booking_method_tip', 1, 10 );
+/**
+ * Add a mention to booking method tip
+ * 
+ * @param string $tip
+ * @return string
+ */
 function bookacti_add_wc_mention_to_booking_method_tip( $tip ) {
 	$tip .= '<br/>';
 	$tip .= esc_html__( 'This parameter can be overriden by products settings in woocommerce.', BOOKACTI_PLUGIN_NAME );
 	return $tip;
 }
+add_filter( 'bookacti_booking_methods_tip', 'bookacti_add_wc_mention_to_booking_method_tip', 1, 10 );
 
 
 /**
@@ -179,9 +190,76 @@ function bookacti_add_wc_mention_to_booking_method_tip( $tip ) {
  * 
  * @since 1.1.0
  */
-add_filter( 'bookacti_when_events_load_tip', 'bookacti_add_wc_mention_to_when_events_load_tip', 1, 10 );
 function bookacti_add_wc_mention_to_when_events_load_tip( $tip ) {
 	$tip .= '<br/>';
 	$tip .= esc_html__( 'WC Variable products calendars will always load after page load.', BOOKACTI_PLUGIN_NAME );
 	return $tip;
 }
+add_filter( 'bookacti_when_events_load_tip', 'bookacti_add_wc_mention_to_when_events_load_tip', 1, 10 );
+
+
+/**
+ * Add a mention to notifications
+ * 
+ * @since 1.2.0
+ */
+function bookacti_add_wc_mention_to_notifications( $emails ) {
+	
+	if( ! isset( $emails[ 'admin_refunded_booking' ] ) ) {
+		$emails[ 'admin_refunded_booking' ] = array(
+				'active'		=> 1,
+				'title'			=> __( 'Customer has been refunded', BOOKACTI_PLUGIN_NAME ),
+				'to'			=> array( get_bloginfo( 'admin_email' ) ),
+				'subject'		=> __( 'Booking refunded', BOOKACTI_PLUGIN_NAME ),
+				/* translators: Keep tags as is (this is a tag: {tag}), they will be replaced in code. This is the default email an administrator receive when a booking is refunded */
+				'message'		=> __( '<p>A customer has been reimbursed for this booking:</p>
+										<p>{booking_list}</p>
+										<p>Contact him: {user_firstname} {user_lastname} ({user_email})</p>
+										<p><a href="{booking_admin_url}">Click here</a> to edit this booking (ID: {booking_id}).</p>', BOOKACTI_PLUGIN_NAME ),
+				'description'	=> __( 'This email is sent to the administrator when a customer is successfully reimbursed for a booking.', BOOKACTI_PLUGIN_NAME ) 
+			);
+	}
+	
+	if( isset( $emails[ 'admin_new_booking' ] ) ) {
+		$emails[ 'admin_new_booking' ][ 'description' ]				.= '<br/>' . __( 'To avoid double notification, this will not be sent if WooCommerce triggered this change.', BOOKACTI_PLUGIN_NAME );
+	}
+	
+	if( isset( $emails[ 'customer_pending_booking' ] ) ) {
+		$emails[ 'customer_pending_booking' ][ 'description' ]		.= '<br/>' . __( 'To avoid double notification, this will not be sent if WooCommerce triggered this change.', BOOKACTI_PLUGIN_NAME );
+	}
+	
+	if( isset( $emails[ 'customer_booked_booking' ] ) ) {
+		$emails[ 'customer_booked_booking' ][ 'description' ]		.= '<br/>' . __( 'To avoid double notification, this  will not be sent if WooCommerce triggered this change.', BOOKACTI_PLUGIN_NAME );
+	}
+	
+	if( isset( $emails[ 'customer_cancelled_booking' ] ) ) {
+		$emails[ 'customer_cancelled_booking' ][ 'description' ]	.= '<br/>' . __( 'To avoid double notification, this  will not be sent if WooCommerce triggered this change.', BOOKACTI_PLUGIN_NAME );
+	}
+	
+	if( isset( $emails[ 'customer_refunded_booking' ] ) ) {
+		$emails[ 'customer_refunded_booking' ][ 'description' ]		.= '<br/>' . __( 'To avoid double notification, this  will not be sent if WooCommerce triggered this change.', BOOKACTI_PLUGIN_NAME );
+	}
+	
+	return $emails;
+}
+add_filter( 'bookacti_emails_default_settings', 'bookacti_add_wc_mention_to_notifications', 1, 10 );
+
+
+/**
+ * Add customizable messages
+ * 
+ * @since 1.2.0
+ * @param array $messages
+ * @return array
+ */
+function bookacti_wc_default_messages( $messages ) {
+	
+	$messages[ 'temporary_booking_success' ] = array(
+		/* translators: '{time}' is a variable standing for an amount of days, hours and minutes. Ex: {time}' can be '1 day, 6 hours, 30 minutes'. */
+		'value'			=> __( 'Your activity is temporarily booked for {time}. Please proceed to checkout.', BOOKACTI_PLUGIN_NAME ),
+		'description'	=> __( 'When a temporary booking is added to cart. Use {time} tag to display the remaining time before expiration.', BOOKACTI_PLUGIN_NAME )
+	);
+	
+	return $messages;
+}
+add_filter( 'bookacti_default_messages', 'bookacti_wc_default_messages', 10, 1 );
