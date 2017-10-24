@@ -300,6 +300,11 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 
 == Changelog ==
 
+= 1.2.1 =
+* Lib - Updated FullCalendar to 3.6.2 and Moment JS to 2.19.1
+* Dev - bookacti_display_field now support radio and textarea and you can add these to editor setting dialogs
+* Dev - PHP filter Tweak - bookacti_messages have a new $raw parameter
+
 = 1.2.0 - 2017/10/12 =
 * Feature - Send email notifications to the administrator and the customer when a booking is made, when its status changes and when it is rescheduled
 * Feature - Configure and customize email notifications
@@ -341,11 +346,12 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 * Fix - Improved readme.txt to provide a better understanding and preview of the plugin
 
 = 1.1.0 - 2017/07/16 =
-* Optimization - Calendars are now loaded faster and on page load (possibility to load after page load in Booking Activities settings)
 * Feature - Manage groups of events! You can group events and make your customer book a bundle of events instead of a single one.
 * Feature - Bind multiple calendars and activities to one product in WooCommerce!
+* Optimization - Calendars are now loaded faster and on page load (possibility to load after page load in Booking Activities settings)
 * Feature - Choose the default booking status after a customer complete the booking form or a WooCommerce order.
 * Feature - Calendars events are now related to your business timezone, and no longer to users' timezone. Customers around the world cannot see / book a past event because of time offset.
+* Feature - You can change how dates are formatted (in grouped events and picked events list only)
 * Tweak - You can change your calendars period regardless of the bookings already done
 * Fix - Apostrophe characters in template / activity / events names are now correctly displayed
 * Fix - Dates are now translated everywhere

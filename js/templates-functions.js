@@ -771,8 +771,10 @@ function bookacti_empty_all_dialog_forms() {
 	$j( '.bookacti-backend-dialog input[type="hidden"]:not([name^="nonce"]):not([name="_wp_http_referer"])' ).val( '' );
 	$j( '.bookacti-backend-dialog input[type="text"]' ).val( '' );
     $j( '.bookacti-backend-dialog input[type="number"]' ).val( '' );
+    $j( '.bookacti-backend-dialog textarea' ).val( '' );
     $j( '.bookacti-backend-dialog input[type="color"]' ).val( '#3a87ad' );
     $j( '.bookacti-backend-dialog input[type="checkbox"]' ).attr( 'checked', false );
+    $j( '.bookacti-backend-dialog input[type="radio"]' ).attr( 'checked', false );
     $j( '.bookacti-backend-dialog option' ).prop( 'selected', false );
     $j( '.bookacti-backend-dialog .exception' ).remove();
     $j( '.bookacti-backend-dialog select.bookacti-add-new-items-select-box option' ).show().attr( 'disabled', false );

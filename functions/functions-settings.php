@@ -680,7 +680,7 @@ function bookacti_settings_section_bookings_callback() { }
 			}
 		}
 		
-		return apply_filters( 'bookacti_messages', $messages );
+		return apply_filters( 'bookacti_messages', $messages, $raw );
 	}
 	
 	

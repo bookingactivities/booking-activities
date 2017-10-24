@@ -1,4 +1,4 @@
-{ "vendor": { "plugins/booking-activities": "1.2.0" },
+{ "vendor": { "plugins/booking-activities": "1.2.1" },
 	"admin-config":{
 		"bookacti_calendars":{
 			"pages":{ "admin.php":"" },

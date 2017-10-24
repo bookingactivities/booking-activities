@@ -229,15 +229,15 @@ function bookacti_add_wc_mention_to_notifications( $emails ) {
 	}
 	
 	if( isset( $emails[ 'customer_booked_booking' ] ) ) {
-		$emails[ 'customer_booked_booking' ][ 'description' ]		.= '<br/>' . __( 'To avoid double notification, this  will not be sent if WooCommerce triggered this change.', BOOKACTI_PLUGIN_NAME );
+		$emails[ 'customer_booked_booking' ][ 'description' ]		.= '<br/>' . __( 'To avoid double notification, this will not be sent if WooCommerce triggered this change.', BOOKACTI_PLUGIN_NAME );
 	}
 	
 	if( isset( $emails[ 'customer_cancelled_booking' ] ) ) {
-		$emails[ 'customer_cancelled_booking' ][ 'description' ]	.= '<br/>' . __( 'To avoid double notification, this  will not be sent if WooCommerce triggered this change.', BOOKACTI_PLUGIN_NAME );
+		$emails[ 'customer_cancelled_booking' ][ 'description' ]	.= '<br/>' . __( 'To avoid double notification, this will not be sent if WooCommerce triggered this change.', BOOKACTI_PLUGIN_NAME );
 	}
 	
 	if( isset( $emails[ 'customer_refunded_booking' ] ) ) {
-		$emails[ 'customer_refunded_booking' ][ 'description' ]		.= '<br/>' . __( 'To avoid double notification, this  will not be sent if WooCommerce triggered this change.', BOOKACTI_PLUGIN_NAME );
+		$emails[ 'customer_refunded_booking' ][ 'description' ]		.= '<br/>' . __( 'To avoid double notification, this will not be sent if WooCommerce triggered this change.', BOOKACTI_PLUGIN_NAME );
 	}
 	
 	return $emails;

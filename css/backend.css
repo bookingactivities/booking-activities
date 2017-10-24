@@ -75,6 +75,7 @@
 .bookacti-backend-dialog input[type='text']	{ width: 150px; }
 .bookacti-backend-dialog input[type='date']	{ width: 150px; }
 .bookacti-backend-dialog input[type='number']	{ width: 80px; }
+.bookacti-backend-dialog textarea			{ width: 100%; height: 50px; text-align: left; }
 
 .bookacti-lang-switcher { margin-bottom: 10px; }
 

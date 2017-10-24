@@ -257,11 +257,14 @@ function bookacti_get_notifications_tags( $notification_id = '' ) {
 		'{booking_start}'		=> __( 'Booking start date and time displayed in a user-friendly format. Not available for booking groups.', BOOKACTI_PLUGIN_NAME ),
 		'{booking_end}'			=> __( 'Booking end date and time displayed in a user-friendly format. Not available for booking groups.', BOOKACTI_PLUGIN_NAME ),
 		'{booking_list}'		=> __( 'Booking summary displayed as a booking list. You should use this tag once in every notification to know what booking (group) it is about.', BOOKACTI_PLUGIN_NAME ),
-		'{booking_admin_url}'	=> __( 'URL to the booking admin panel. Use this tag only on notifications sent to administrators.', BOOKACTI_PLUGIN_NAME ),
 		'{user_firstname}'		=> __( 'The user first name', BOOKACTI_PLUGIN_NAME ),
 		'{user_lastname}'		=> __( 'The user last name', BOOKACTI_PLUGIN_NAME ),
 		'{user_email}'			=> __( 'The user email address', BOOKACTI_PLUGIN_NAME )
 	);
+	
+	if( substr( $notification_id, 0, 6 ) === 'admin_' ) {
+		$tags[ '{booking_admin_url}' ]	= __( 'URL to the booking admin panel. Use this tag only on notifications sent to administrators.', BOOKACTI_PLUGIN_NAME );
+	}
 	
 	if( $notification_id === 'admin_rescheduled_booking' || $notification_id === 'customer_rescheduled_booking' ) {
 		$tags[ '{booking_old_start}' ]	= __( 'Booking start date and time before reschedule. Displayed in a user-friendly format.', BOOKACTI_PLUGIN_NAME );
@@ -417,6 +420,8 @@ function bookacti_send_email( $notification_id, $booking_id, $booking_type, $arg
 	bookacti_restore_locale();
 	
 	do_action( 'bookacti_email_sent', $sent, $email_data, $notification_id, $booking_id, $booking_type, $args );
+	
+	return $sent;
 }
 
 // Hook the asynchronous call and send the email
