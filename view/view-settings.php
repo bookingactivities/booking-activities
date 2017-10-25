@@ -57,7 +57,7 @@ echo "<div class='wrap'>";
 				$section = sanitize_title_with_dashes( $_GET[ 'section' ] );
 				
 				echo '<input type="hidden" name="option_page" value="' . esc_attr( 'bookacti_notifications_settings_' . $section ) . '" />';
-				echo '<input type="hidden" name="email_id" value="' . str_replace( 'email_', '', $section ) . '" />';
+				echo '<input type="hidden" name="notification_id" value="' . $section . '" />';
 				echo '<input type="hidden" name="action" value="bookactiUpdateNotification" />';
 				wp_nonce_field( 'bookacti_notifications_settings_' . $section );
 				

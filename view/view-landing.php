@@ -17,14 +17,13 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		
 		<div id='bookacti-add-ons-container' >
 		<?php
-			$promo = $promo_price_29 = $promo_price_39 = $promo_price_59 = $promo_price_89 = '';
+			$promo = $promo_price_29 = $promo_price_39 = $promo_price_59 = '';
 			$dismissed = get_option( 'bookacti-first20-notice-dismissed' );
 			if( ! $dismissed ) {
 				$promo = '-20%';
 				$promo_price_29 = '23.20€';
 				$promo_price_39 = '31.20€';
 				$promo_price_59 = '47.20€';
-				$promo_price_89 = '71.20€';
 			}
 		
 			$add_ons = array(
@@ -76,9 +75,9 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 					'light_color' => '#91f2a1',
 					'dark_color' => '#26402a',
 					'excerpt' => __( 'You have several points of sale and one website for all. Thanks to this plugin, your points of sale managers will be able to manage independently their own activities, calendars and bookings from this single website.', BOOKACTI_PLUGIN_NAME ),
-					'price' => '89.00€',
+					'price' => '59.00€',
 					'promo' => $promo,
-					'promo_price' => $promo_price_89
+					'promo_price' => $promo_price_59
 				)
 			);
 

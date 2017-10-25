@@ -189,6 +189,8 @@ add_filter( 'bookacti_booking_methods_tip', 'bookacti_add_wc_mention_to_booking_
  * Add a mention to when events load setting tip
  * 
  * @since 1.1.0
+ * @param string $tip
+ * @return string
  */
 function bookacti_add_wc_mention_to_when_events_load_tip( $tip ) {
 	$tip .= '<br/>';
@@ -202,47 +204,53 @@ add_filter( 'bookacti_when_events_load_tip', 'bookacti_add_wc_mention_to_when_ev
  * Add a mention to notifications
  * 
  * @since 1.2.0
+ * @version 1.2.1
+ * @param array $notifications
+ * @return array
  */
-function bookacti_add_wc_mention_to_notifications( $emails ) {
+function bookacti_add_wc_mention_to_notifications( $notifications ) {
 	
-	if( ! isset( $emails[ 'admin_refunded_booking' ] ) ) {
-		$emails[ 'admin_refunded_booking' ] = array(
-				'active'		=> 1,
-				'title'			=> __( 'Customer has been refunded', BOOKACTI_PLUGIN_NAME ),
-				'to'			=> array( get_bloginfo( 'admin_email' ) ),
-				'subject'		=> __( 'Booking refunded', BOOKACTI_PLUGIN_NAME ),
+	if( ! isset( $notifications[ 'admin_refunded_booking' ] ) ) {
+		$notifications[ 'admin_refunded_booking' ] = array(
+			'id'			=> 'admin_refunded_booking',
+			'active'		=> 1,
+			'title'			=> __( 'Customer has been refunded', BOOKACTI_PLUGIN_NAME ),
+			'description'	=> __( 'This notification is sent to the administrator when a customer is successfully reimbursed for a booking.', BOOKACTI_PLUGIN_NAME ),
+			'email'			=> array(
+				'active'	=> 1,
+				'to'		=> array( get_bloginfo( 'admin_email' ) ),
+				'subject'	=> __( 'Booking refunded', BOOKACTI_PLUGIN_NAME ),
 				/* translators: Keep tags as is (this is a tag: {tag}), they will be replaced in code. This is the default email an administrator receive when a booking is refunded */
-				'message'		=> __( '<p>A customer has been reimbursed for this booking:</p>
-										<p>{booking_list}</p>
-										<p>Contact him: {user_firstname} {user_lastname} ({user_email})</p>
-										<p><a href="{booking_admin_url}">Click here</a> to edit this booking (ID: {booking_id}).</p>', BOOKACTI_PLUGIN_NAME ),
-				'description'	=> __( 'This email is sent to the administrator when a customer is successfully reimbursed for a booking.', BOOKACTI_PLUGIN_NAME ) 
-			);
+				'message'	=> __( '<p>A customer has been reimbursed for this booking:</p>
+									<p>{booking_list}</p>
+									<p>Contact him: {user_firstname} {user_lastname} ({user_email})</p>
+									<p><a href="{booking_admin_url}">Click here</a> to edit this booking (ID: {booking_id}).</p>', BOOKACTI_PLUGIN_NAME ) )
+		);
 	}
 	
-	if( isset( $emails[ 'admin_new_booking' ] ) ) {
-		$emails[ 'admin_new_booking' ][ 'description' ]				.= '<br/>' . __( 'To avoid double notification, this will not be sent if WooCommerce triggered this change.', BOOKACTI_PLUGIN_NAME );
+	if( isset( $notifications[ 'admin_new_booking' ] ) ) {
+		$notifications[ 'admin_new_booking' ][ 'description' ]			.= '<br/>' . __( 'To avoid double notification, this will not be sent if WooCommerce triggered this change.', BOOKACTI_PLUGIN_NAME );
 	}
 	
-	if( isset( $emails[ 'customer_pending_booking' ] ) ) {
-		$emails[ 'customer_pending_booking' ][ 'description' ]		.= '<br/>' . __( 'To avoid double notification, this will not be sent if WooCommerce triggered this change.', BOOKACTI_PLUGIN_NAME );
+	if( isset( $notifications[ 'customer_pending_booking' ] ) ) {
+		$notifications[ 'customer_pending_booking' ][ 'description' ]	.= '<br/>' . __( 'To avoid double notification, this will not be sent if WooCommerce triggered this change.', BOOKACTI_PLUGIN_NAME );
 	}
 	
-	if( isset( $emails[ 'customer_booked_booking' ] ) ) {
-		$emails[ 'customer_booked_booking' ][ 'description' ]		.= '<br/>' . __( 'To avoid double notification, this will not be sent if WooCommerce triggered this change.', BOOKACTI_PLUGIN_NAME );
+	if( isset( $notifications[ 'customer_booked_booking' ] ) ) {
+		$notifications[ 'customer_booked_booking' ][ 'description' ]	.= '<br/>' . __( 'To avoid double notification, this will not be sent if WooCommerce triggered this change.', BOOKACTI_PLUGIN_NAME );
 	}
 	
-	if( isset( $emails[ 'customer_cancelled_booking' ] ) ) {
-		$emails[ 'customer_cancelled_booking' ][ 'description' ]	.= '<br/>' . __( 'To avoid double notification, this will not be sent if WooCommerce triggered this change.', BOOKACTI_PLUGIN_NAME );
+	if( isset( $notifications[ 'customer_cancelled_booking' ] ) ) {
+		$notifications[ 'customer_cancelled_booking' ][ 'description' ]	.= '<br/>' . __( 'To avoid double notification, this will not be sent if WooCommerce triggered this change.', BOOKACTI_PLUGIN_NAME );
 	}
 	
-	if( isset( $emails[ 'customer_refunded_booking' ] ) ) {
-		$emails[ 'customer_refunded_booking' ][ 'description' ]		.= '<br/>' . __( 'To avoid double notification, this will not be sent if WooCommerce triggered this change.', BOOKACTI_PLUGIN_NAME );
+	if( isset( $notifications[ 'customer_refunded_booking' ] ) ) {
+		$notifications[ 'customer_refunded_booking' ][ 'description' ]	.= '<br/>' . __( 'To avoid double notification, this will not be sent if WooCommerce triggered this change.', BOOKACTI_PLUGIN_NAME );
 	}
 	
-	return $emails;
+	return $notifications;
 }
-add_filter( 'bookacti_emails_default_settings', 'bookacti_add_wc_mention_to_notifications', 1, 10 );
+add_filter( 'bookacti_notifications_default_settings', 'bookacti_add_wc_mention_to_notifications', 10, 1 );
 
 
 /**

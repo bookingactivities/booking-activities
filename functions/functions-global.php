@@ -247,6 +247,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	 * Display various fields
 	 * 
 	 * @since 1.2.0
+	 * @version 1.2.1
 	 * @param array $args ['type', 'name', 'label', 'id', 'class', 'placeholder', 'options', 'value', 'tip']
 	 */
 	function bookacti_display_field( $args ) {
@@ -466,13 +467,17 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	/**
 	 * Display help toolbox
 	 * 
-	 * @version 1.2.0
+	 * @version 1.2.1
 	 * @param string $tip
 	 */
-	function bookacti_help_tip( $tip ){
-		echo "<span class='bookacti-tip' data-tip='" . esc_attr( $tip ) . "'>"
+	function bookacti_help_tip( $tip, $echo = true ){
+		$tip = "<span class='bookacti-tip' data-tip='" . esc_attr( $tip ) . "'>"
 				. "<img src='" . esc_url( plugins_url() . '/' . BOOKACTI_PLUGIN_NAME . '/img/help.png' ) . "' />"
 			. "</span>";
+		
+		if( $echo ) { echo $tip; }
+		
+		return $tip;
 	}
 
 	
