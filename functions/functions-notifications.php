@@ -412,9 +412,9 @@ function bookacti_send_notification( $notification_id, $booking_id, $booking_typ
 		
 		$user_id	= $booking_type === 'group' ? bookacti_get_booking_group_owner( $booking_id ) : bookacti_get_booking_owner( $booking_id );
 		$user_data	= get_userdata( $user_id );
-		$notification[ 'email' ][ 'to' ] = $user_data->user_email;
 		
-		if( ! $notification[ 'email' ][ 'to' ] ) { return false; }
+		// Fill the recipients fields
+		$notification[ 'email' ][ 'to' ] = $user_data->user_email;
 		
 		// Temporarilly switch locale to user's
 		$locale = bookacti_get_user_locale( $user_id );
@@ -462,8 +462,8 @@ add_action( 'bookacti_send_async_notification', 'bookacti_send_notification', 10
  */
 function bookacti_send_email_notification( $notification, $tags = array(), $locale = 'en_US' ) {
 	
-	// Do not send email notification if it is deactivated
-	if( ! $notification[ 'active' ] || ! $notification[ 'email' ][ 'active' ] ) { return false; }
+	// Do not send email notification if it is deactivated or if there are no recipients
+	if( ! $notification[ 'active' ] || ! $notification[ 'email' ][ 'active' ] || ! $notification[ 'email' ][ 'to' ] ) { return false; }
 	
 	$to			= $notification[ 'email' ][ 'to' ];
 	$subject	= $notification[ 'email' ][ 'subject' ];

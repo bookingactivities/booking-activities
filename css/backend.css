@@ -40,7 +40,10 @@
 
 /***** SETTINGS *****/
 #bookacti-settings input:not([type='submit']):not([type='checkbox']):not([type='radio']):not(.button), 
+#bookacti-settings textarea, 
 #bookacti-settings select { min-width: 300px; }
+
+#bookacti-settings textarea { min-height: 100px; }
 
 #bookacti_refund_actions,
 #bookacti_refund_actions .bookacti_checkbox	{ display: inline-block; }

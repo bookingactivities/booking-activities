@@ -178,6 +178,14 @@ function bookacti_init_settings() {
 	);
 	
 	add_settings_field( 
+		'notifications_async',
+		__( 'Asynchronous notifications', BOOKACTI_PLUGIN_NAME ),
+		'bookacti_settings_field_notifications_async_callback',
+		'bookacti_notifications_settings',
+		'bookacti_settings_section_notifications'
+	);
+	
+	add_settings_field( 
 		'notifications_from_name',
 		__( 'From name', BOOKACTI_PLUGIN_NAME ),
 		'bookacti_settings_field_notifications_from_name_callback',
@@ -193,13 +201,6 @@ function bookacti_init_settings() {
 		'bookacti_settings_section_notifications'
 	);
 	
-	add_settings_field( 
-		'notifications_async',
-		__( 'Asynchronous notifications', BOOKACTI_PLUGIN_NAME ),
-		'bookacti_settings_field_notifications_async_callback',
-		'bookacti_notifications_settings',
-		'bookacti_settings_section_notifications'
-	);
 	
 	
 	/* Messages settings Section */
