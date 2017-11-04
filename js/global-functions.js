@@ -28,83 +28,67 @@ function bookacti_compare_arrays( array1, array2 ) {
 }
 
 
-// Serialize a form into a single object
+// Serialize a form into a single object (works with multidimentionnal inputs of any depth)
 $j.fn.serializeObject = function() {
+	var data = {};
 
-	//Internet Explorer indxOf fix
-	if(!Array.prototype.indexOf) {
-		Array.prototype.indexOf = function(obj, start) {
-			for (var i = (start || 0), j = this.length; i < j; i++) {
-				if (this[i] === obj) { 
-					return i; 
-				}
-			}
-			return -1;
-		};
-	}
-
-	var form_values = $j(this).serializeArray(),
-		form_final = {};
-
-	//fill object with results
-	$j.each(form_values, function(){
-		
-		if( $j.isNumeric( this.value ) ) {
-			this.value = parseFloat( this.value );
+	function buildInputObject(arr, val) {
+		if (arr.length < 1) {
+			return val;  
 		}
-		
-		//Store Associated Array Input Array
-		if(this.name.match(/\[(.+?)\]/g)){
-
-			var arrayName = this.name.match(/\w+[^\[]/g)[0],
-				propertyName = this.name.match(/\[(.+?)\]/g)[0];
-				propertyName = propertyName.replace(/(\[|\])/g, "");
-
-			if(!form_final.hasOwnProperty(arrayName)){
-			   form_final[arrayName] = new Object(); 
+		var objkey = arr[0];
+		if (objkey.slice(-1) == "]") {
+			objkey = objkey.slice(0,-1);
+		}  
+		var result = {};
+		if (arr.length == 1){
+			result[objkey] = val;
+		} else {
+			arr.shift();
+			var nestedVal = buildInputObject(arr,val);
+			result[objkey] = nestedVal;
+		}
+		return result;
+	}
+	
+	function gatherMultipleValues( that ) {
+		var final_array = [];
+		$j.each(that.serializeArray(), function( key, field ) {
+			// Copy normal fields to final array without changes
+			if( field.name.indexOf('[]') < 0 ){
+				final_array.push( field );
+				return true; // That's it, jump to next iteration
 			}
 			
-			if(this.name.indexOf('[' + propertyName +'][]') > 0){
-				if(form_final[arrayName].hasOwnProperty(propertyName)){
-				  form_final[arrayName][propertyName].push(this.value);
-				} else {
-				  form_final[arrayName][propertyName] = [ this.value ];
+			// Remove "[]" from the field name
+			var field_name = field.name.split('[]')[0];
+
+			// Add the field value in its array of values
+			var has_value = false;
+			$j.each( final_array, function( final_key, final_field ){
+				if( final_field.name === field_name ) {
+					has_value = true;
+					final_array[ final_key ][ 'value' ].push( field.value );
 				}
-			} else {
-				form_final[arrayName][propertyName] = this.value;
+			});
+			// If it doesn't exist yet, create the field's array of values
+			if( ! has_value ) {
+				final_array.push( { 'name': field_name, 'value': [ field.value ] } );
 			}
-
-		// Store Array Input Array
-		} else if(this.name.indexOf('[]') > 0){
-
-		  //Remove [] from input name
-		  this.name = this.name.split("[]")[0];
-
-		  if(form_final.hasOwnProperty(this.name)){
-			form_final[this.name].push(this.value);
-		  } else {
-			form_final[this.name] = [this.value];
-		  }
-
-		// Store multiple / checkboxes as Array
-		} else if(form_final.hasOwnProperty(this.name)) {
-
-		  if(typeof form_final[this.name] != 'object' ){  
-			firstItem = form_final[this.name];
-			form_final[this.name] = new Object();
-			form_final[this.name][firstItem] = true;
-		  }
-
-		  form_final[this.name][this.value] = true;
-
-		} else {
-
-		  form_final[this.name] = this.value;
-
-		}
-
+		});
+		return final_array;
+	}
+	
+	// Manage fields allowing multiple values first (they contain "[]" in their name)
+	var final_array = gatherMultipleValues( this );
+	
+	// Then, create the object
+	$j.each(final_array, function() {
+		var val = this.value;
+		var c = this.name.split('[');
+		var a = buildInputObject(c, val);
+		$j.extend(true, data, a);
 	});
 
-	//Output Object
-	return form_final;
+	return data;
 };

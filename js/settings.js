@@ -11,25 +11,25 @@ $j( document ).ready( function() {
 			tinyMCE.triggerSave();
 		}
 		
-		var form	= $j( this );
-		var data	= form.serialize();
+		var form		= $j( this );
+		var form_data	= form.serializeObject(); // Need to use the homemade serializeObject to support multidimentionnal array
 		
 		$j.ajax({
 			url: bookacti_localized.ajaxurl,
 			type: 'POST',
-			data: data,
+			data: form_data,
 			dataType: 'json',
 			success: function( response ){
 				
 				if( response.status !== 'success' ) {
-					console.log( 'AJAX ' + bookacti_localized.error_update_settings );
+					console.log( bookacti_localized.error_update_settings );
 					console.log( response );
-				}
-				
-				if( form.attr( 'action' ) ) {
-					window.location.replace( form.attr( 'action' ) );
 				} else {
-					window.location.reload( true ); 
+					if( form.attr( 'action' ) ) {
+						window.location.replace( form.attr( 'action' ) );
+					} else {
+						window.location.reload( true ); 
+					}
 				}
 			},
 			error: function( e ){

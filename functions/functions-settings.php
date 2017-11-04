@@ -506,12 +506,11 @@ function bookacti_settings_section_bookings_callback() { }
 // NOTIFICATIONS SETTINGS 
 	
 	/**
-	* Settings section callback - Notifications (displayed before settings)
+	* Settings section callback - Notifications - General settings (displayed before settings)
 	* 
-	* @since 1.2.0
-	* @version 1.2.1
+	* @since 1.2.1 (was bookacti_settings_section_notifications_callback in 1.2.0)
 	*/
-   function bookacti_settings_section_notifications_callback() { 
+   function bookacti_settings_section_notifications_general_callback() { 
 
 		// Display a table of configurable notifications
 		// Set up booking list columns
@@ -550,9 +549,9 @@ function bookacti_settings_section_bookings_callback() { }
 				
 				$columns_values = apply_filters( 'bookacti_notifications_list_columns_values', array(
 					'active'		=> '<img src=' . plugins_url() . '/' . BOOKACTI_PLUGIN_NAME . '/img/' . $active_icon . ' />',
-					'title'			=> '<a href="' . esc_url( '?page=bookacti_settings&tab=notifications&section=' . sanitize_title_with_dashes( $notification_id ) ) . '" >' . esc_html( $notification_settings[ 'title' ] ) . '</a>' . $description,
+					'title'			=> '<a href="' . esc_url( '?page=bookacti_settings&tab=notifications&notification_id=' . sanitize_title_with_dashes( $notification_id ) ) . '" >' . esc_html( $notification_settings[ 'title' ] ) . '</a>' . $description,
 					'recipients'	=> substr( $notification_id, 0, 8 ) === 'customer' ? esc_html__( 'Customer', BOOKACTI_PLUGIN_NAME ) : esc_html__( 'Administrator', BOOKACTI_PLUGIN_NAME ),
-					'actions'		=> '<a href="' . esc_url( '?page=bookacti_settings&tab=notifications&section=' . sanitize_title_with_dashes( $notification_id ) ) . '" >' 
+					'actions'		=> '<a href="' . esc_url( '?page=bookacti_settings&tab=notifications&notification_id=' . sanitize_title_with_dashes( $notification_id ) ) . '" >' 
 										. '<img src="' . plugins_url() . '/' . BOOKACTI_PLUGIN_NAME . '/img/gear.png" />' 
 									. '</a>'
 				), $notification_settings, $notification_id );
@@ -573,7 +572,15 @@ function bookacti_settings_section_bookings_callback() { }
 			</tbody>
 		</table>
 	   <?php
-   }
+	}
+	
+	
+	/**
+	 * Settings section callback - Notifications - Email settings (displayed before settings)
+	 * 
+	 * @since 1.2.1
+	 */
+	function bookacti_settings_section_notifications_email_callback() {}
 	
 	
 	/**

@@ -110,37 +110,28 @@ function bookacti_send_notification_when_booking_is_rescheduled( $booking_id, $o
 	
 	// If $args[ 'is_admin' ] is true, the customer need to be notified
 	if( $send_to_both || $args[ 'is_admin' ] ) {
-		
-		// Temporarilly switch locale user default's
-		$user_id	= bookacti_get_booking_owner( $booking_id );
-		$locale		= apply_filters( 'bookacti_notification_locale', bookacti_get_user_locale( $user_id ), 'customer_rescheduled_booking', $booking_id, 'single', $notification_args );
-		bookacti_switch_locale( $locale );
-		
-		// Add reschedule specific tags
-		$notification_args[ 'tags' ][ '{booking_old_start}' ]	= bookacti_format_datetime( $old_booking->event_start );
-		$notification_args[ 'tags' ][ '{booking_old_end}' ]		= bookacti_format_datetime( $old_booking->event_end );
-		
-		// Switch locale back to normal
-		bookacti_restore_locale();
-		
-		bookacti_send_notification( 'customer_rescheduled_booking', $booking_id, 'single', $notification_args );
+		$notification_id	= 'customer_rescheduled_booking';
+		$user_id			= bookacti_get_booking_owner( $booking_id );
+		$locale				= bookacti_get_user_locale( $user_id );
 	}
 	
 	// If $args[ 'is_admin' ] is false, the administrator need to be notified
 	if( $send_to_both || ! $args[ 'is_admin' ] ) {
-		
-		// Temporarilly switch locale to site default's
-		$locale	= apply_filters( 'bookacti_notification_locale', bookacti_get_site_locale(), 'admin_rescheduled_booking', $booking_id, 'single', $notification_args );
-		bookacti_switch_locale( $locale );
-		
-		// Add reschedule specific tags
-		$notification_args[ 'tags' ][ '{booking_old_start}' ]	= bookacti_format_datetime( $old_booking->event_start );
-		$notification_args[ 'tags' ][ '{booking_old_end}' ]	= bookacti_format_datetime( $old_booking->event_end );
-		
-		// Switch locale back to normal
-		bookacti_restore_locale();
-		
-		bookacti_send_notification( 'admin_rescheduled_booking', $booking_id, 'single', $notification_args );
+		$notification_id	= 'admin_rescheduled_booking';
+		$locale				= bookacti_get_site_locale();
 	}
+	
+	// Temporarilly switch locale user default's
+	$locale = apply_filters( 'bookacti_notification_locale', $locale, $notification_id, $booking_id, 'single', $notification_args );
+	bookacti_switch_locale( $locale );
+
+	// Add reschedule specific tags
+	$notification_args[ 'tags' ][ '{booking_old_start}' ]	= bookacti_format_datetime( $old_booking->event_start );
+	$notification_args[ 'tags' ][ '{booking_old_end}' ]		= bookacti_format_datetime( $old_booking->event_end );
+
+	// Switch locale back to normal
+	bookacti_restore_locale();
+
+	bookacti_send_notification( $notification_id, $booking_id, 'single', $notification_args );
 }
 add_action( 'bookacti_booking_rescheduled', 'bookacti_send_notification_when_booking_is_rescheduled', 10, 3 );

@@ -29,8 +29,7 @@ $j( document ).ready( function() {
 			// Trigger action before sending form
 			form.find( '.bookacti-booking-system-container' ).trigger( 'bookacti_submit_booking_form' );
 			
-			var data	= form.serialize();
-			var settings= form.serializeObject();
+			var data = form.serialize();
 			
 			bookacti_start_loading_booking_system( booking_system );
 
