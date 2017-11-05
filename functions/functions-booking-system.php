@@ -611,8 +611,8 @@ function bookacti_create_repeated_events( $event, $shared_data = array(), $args 
     for( $i=0; $i <= $iteration; $i++ ) {
 		
         $is_exception	= bookacti_is_repeat_exception( $event->event_id, date( 'Y-m-d', $event_start->format( 'U' ) ) );
-        $has_started	= $event_start < $current_datetime_object;
-        $has_ended		= $event_end < $current_datetime_object;
+        $has_started	= $event_start->getTimestamp() < ( $current_datetime_object->getTimestamp() + $current_datetime_object->getOffset() );
+        $has_ended		= $event_end->getTimestamp() < ( $current_datetime_object->getTimestamp() + $current_datetime_object->getOffset() );
 		$is_in_range	= bookacti_is_event_in_its_template_range( $event->event_id, $event_start->format('Y-m-d H:i:s'), $event_end->format('Y-m-d H:i:s') );
 		$is_booked		= bookacti_get_number_of_bookings( $event->event_id, $event_start->format('Y-m-d H:i:s'), $event_end->format('Y-m-d H:i:s') ) > 0;
 		$category_ids	= bookacti_get_event_group_category_ids( $event->event_id, $event_start->format('Y-m-d H:i:s'), $event_end->format('Y-m-d H:i:s') );
@@ -701,16 +701,20 @@ function bookacti_units_to_add_to_repeat_event( $event ) {
  * Build a user-friendly events list
  * 
  * @since 1.1.0
- * @version 1.2.0
+ * @version 1.2.1
  * 
  * @param array $booking_events
  * @param int|string $quantity
+ * @param string $locale Optional. Default to site locale.
  * @return string
  */
-function bookacti_get_formatted_booking_events_list( $booking_events, $quantity = 'hide' ) {
+function bookacti_get_formatted_booking_events_list( $booking_events, $quantity = 'hide', $locale = 'site' ) {
 	
-	if( ! $booking_events ) {
-		return false;
+	if( ! $booking_events ) { return false; }
+	
+	// Set default locale to site's locale
+	if( $locale === 'site' ) {
+		$locale = bookacti_get_site_locale();
 	}
 	
 	// Format $events
@@ -763,7 +767,7 @@ function bookacti_get_formatted_booking_events_list( $booking_events, $quantity 
 			$events_list .= '<li>';
 			
 			if( $event[ 'title' ] ) {
-				$events_list .= '<span class="bookacti-booking-event-title" >' . apply_filters( 'bookacti_translate_text', $event[ 'title' ] ) . '</span>';
+				$events_list .= '<span class="bookacti-booking-event-title" >' . apply_filters( 'bookacti_translate_text', $event[ 'title' ], $locale ) . '</span>';
 				if( $event_duration ) {
 					$events_list .= '<span class="bookacti-booking-event-title-separator" >' . ' - ' . '</span>';
 				}

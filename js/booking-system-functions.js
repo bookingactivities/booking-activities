@@ -503,11 +503,10 @@ function bookacti_get_activity_unit( booking_system, activity_id, qty ) {
 // Clear booking system displayed info
 function bookacti_clear_booking_system_displayed_info( booking_system ) {
 	
-	var booking_system_id = booking_system.attr( 'id' );
-	
-	//Empty the picked events info
+	// Empty the picked events info
 	booking_system.siblings( '.bookacti-booking-system-inputs' ).find( 'input' ).val('');
-	booking_system.siblings( '.bookacti-picked-events-list' ).empty().hide();
+	booking_system.siblings( '.bookacti-picked-events' ).find( '.bookacti-picked-events-list' ).empty();
+	booking_system.siblings( '.bookacti-picked-events' ).hide();
 	bookacti_unpick_all_events( booking_system );
 	
 	// Clear errors

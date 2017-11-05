@@ -318,12 +318,19 @@ function bookacti_get_notifications_tags( $notification_id = '' ) {
  * Get notifications tags and values corresponding to given booking
  * 
  * @since 1.2.0
+ * @version 1.2.1
  * @param int $booking_id
  * @param string $booking_type 'group' or 'single'
- * @param string $notification_id Optional.
+ * @param string $notification_id
+ * @param string $locale Optional
  * @return array
  */
-function bookacti_get_notifications_tags_values( $booking_id, $booking_type, $notification_id ) {
+function bookacti_get_notifications_tags_values( $booking_id, $booking_type, $notification_id, $locale = 'site' ) {
+	
+	// Set default locale to site's locale
+	if( $locale === 'site' ) {
+		$locale = bookacti_get_site_locale();
+	}
 	
 	$booking_data = array();
 	
@@ -352,9 +359,9 @@ function bookacti_get_notifications_tags_values( $booking_id, $booking_type, $no
 	}
 
 	$booking_data[ '{booking_id}' ]				= $booking_id;
-	$booking_data[ '{booking_title}' ]			= $booking_data[ 'booking_title' ] ? apply_filters( 'bookacti_translate_text', $booking_data[ 'title' ] ) : '';
+	$booking_data[ '{booking_title}' ]			= $booking_data[ '{booking_title}' ] ? apply_filters( 'bookacti_translate_text', $booking_data[ '{booking_title}' ], $locale ) : '';
 	$booking_data[ '{booking_status}' ]			= bookacti_format_booking_state( $booking->state );
-	$booking_data[ '{booking_list}' ]			= bookacti_get_formatted_booking_events_list( $bookings, 'show' );
+	$booking_data[ '{booking_list}' ]			= bookacti_get_formatted_booking_events_list( $bookings, 'show', $locale );
 	
 	if( $booking->user_id ) { 
 		$user = get_user_by( 'id', $booking->user_id );
@@ -414,7 +421,7 @@ function bookacti_send_notification( $notification_id, $booking_id, $booking_typ
 		$user_data	= get_userdata( $user_id );
 		
 		// Fill the recipients fields
-		$notification[ 'email' ][ 'to' ] = $user_data->user_email;
+		$notification[ 'email' ][ 'to' ] = array( $user_data->user_email );
 		
 		// Temporarilly switch locale to user's
 		$locale = bookacti_get_user_locale( $user_id );
@@ -429,7 +436,7 @@ function bookacti_send_notification( $notification_id, $booking_id, $booking_typ
 	bookacti_switch_locale( $locale );
 	
 	// Replace tags in message and replace linebreaks with html tags
-	$tags = bookacti_get_notifications_tags_values( $booking_id, $booking_type, $notification_id );
+	$tags = bookacti_get_notifications_tags_values( $booking_id, $booking_type, $notification_id, $locale );
 	
 	// Replace or add tags values
 	if( $args && $args[ 'tags' ] ) {
@@ -437,8 +444,12 @@ function bookacti_send_notification( $notification_id, $booking_id, $booking_typ
 	}
 	
 	// Send email notification
-	$sent = array();
-	$sent[ 'email' ] = bookacti_send_email_notification( $notification, $tags, $locale );
+	$sent = array( 'email' => 0 );
+	$sent_email = bookacti_send_email_notification( $notification, $tags, $locale );
+	
+	if( $sent_email ) {
+		$sent[ 'email' ] = count( $notification[ 'email' ][ 'to' ] );
+	}
 	
 	$sent = apply_filters( 'bookacti_send_notifications', $sent, $notification_id, $notification, $tags, $booking_id, $booking_type, $args, $locale );
 	
@@ -455,19 +466,26 @@ add_action( 'bookacti_send_async_notification', 'bookacti_send_notification', 10
 /**
  * Send an email notification
  * 
+ * @since 1.2.0
+ * @version 1.2.1
  * @param array $notification
  * @param array $tags
  * @param string $locale
  * @return boolean
  */
-function bookacti_send_email_notification( $notification, $tags = array(), $locale = 'en_US' ) {
+function bookacti_send_email_notification( $notification, $tags = array(), $locale = 'site' ) {
 	
 	// Do not send email notification if it is deactivated or if there are no recipients
 	if( ! $notification[ 'active' ] || ! $notification[ 'email' ][ 'active' ] || ! $notification[ 'email' ][ 'to' ] ) { return false; }
 	
+	// Set default locale to site's locale
+	if( $locale === 'site' ) {
+		$locale = bookacti_get_site_locale();
+	}
+	
 	$to			= $notification[ 'email' ][ 'to' ];
-	$subject	= $notification[ 'email' ][ 'subject' ];
-	$message	= wpautop( str_replace( array_keys( $tags ), array_values( $tags ), $notification[ 'email' ][ 'message' ] ) );
+	$subject	= apply_filters( 'bookacti_translate_text', $notification[ 'email' ][ 'subject' ], $locale );
+	$message	= wpautop( str_replace( array_keys( $tags ), array_values( $tags ), apply_filters( 'bookacti_translate_text', $notification[ 'email' ][ 'message' ], $locale ) ) );
 	
 	$from_name	= bookacti_get_setting_value( 'bookacti_notifications_settings', 'notifications_from_name' );
 	$from_email	= bookacti_get_setting_value( 'bookacti_notifications_settings', 'notifications_from_email' );
@@ -476,8 +494,8 @@ function bookacti_send_email_notification( $notification, $tags = array(), $loca
 	$email_data = apply_filters( 'bookacti_email_notification_data', array(
 		'headers'	=> $headers,
 		'to'		=> $to,
-		'subject'	=> apply_filters( 'bookacti_translate_text', $subject, $locale ),
-		'message'	=> apply_filters( 'bookacti_translate_text', $message, $locale )
+		'subject'	=> $subject,
+		'message'	=> $message
 	), $notification, $tags, $locale );
 	
 	$sent = wp_mail( $email_data[ 'to' ], $email_data[ 'subject' ], $email_data[ 'message' ], $email_data[ 'headers' ] );

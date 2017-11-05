@@ -8,12 +8,18 @@ $j( document ).ready( function() {
 		var form			= $j( this );
 		var booking_system	= form.find( '.bookacti-booking-system' );
 		
+		// Disable the submit button to avoid multiple booking
+		form.find( '.bookacti-booking-system-field-submit-container input[type="submit"]' ).prop( 'disabled', true );
+		
 		// If not logged in
 		if( typeof bookacti_localized.current_user_id === 'undefined'
 		||  bookacti_localized.current_user_id == null
 		||  bookacti_localized.current_user_id == 0 ) {
 			
 			booking_system.siblings( '.bookacti-notices' ).empty().append( "<ul class='bookacti-error-list'><li>" + bookacti_localized.error_user_not_logged_in + "</li></ul>" ).show();
+			
+			// Re-enable the submit button
+			form.find( '.bookacti-booking-system-field-submit-container input[type="submit"]' ).prop( 'disabled', false );
 			
 			// End script
 			return false;			
@@ -22,6 +28,9 @@ $j( document ).ready( function() {
 		var is_valid_event = bookacti_validate_picked_events( booking_system, form.find( '.bookacti-quantity' ).val() );
 		
 		if( ! is_valid_event ) {
+			// Re-enable the submit button
+			form.find( '.bookacti-booking-system-field-submit-container input[type="submit"]' ).prop( 'disabled', false );
+			
 			// End script
 			return false;
 		} else {
@@ -47,8 +56,11 @@ $j( document ).ready( function() {
 					if( response.status === 'success' ) {
 						
 						// Hide fields and submit button to avoid duplicated bookings
-						form.find( '.bookacti-booking-system-field-container, .bookacti-booking-system-field-submit-container' ).hide();
-							
+						form.find( '.bookacti-booking-system-field-container:not(.bookacti-booking-system-field-submit-container), .bookacti-booking-system-field-submit-container input[type="submit"]' ).hide();
+						
+						// Show a "Make a new booking" button to avoid refreshing the page to make a new booking
+						form.find( '.bookacti-booking-system-field-submit-container' ).append( '<input type="button" class="bookacti-new-booking-button" value="' + bookacti_localized.booking_form_new_booking_button + '" />' );
+						
 						message = "<ul class='bookacti-success-list bookacti-persistent-notice'><li>" + response.message + "</li></ul>";
 						
 						if( form.attr( 'action' ) !== '' ) {
@@ -67,6 +79,7 @@ $j( document ).ready( function() {
 						message = "<ul class='bookacti-error-list'><li>" + response.message + "</li></ul>";
 					}
 					
+					// Display feedback message
 					booking_system.siblings( '.bookacti-notices' ).empty().append( message ).show();
 				},
 				error: function( e ){
@@ -77,9 +90,26 @@ $j( document ).ready( function() {
 				},
 				complete: function() { 
 					bookacti_stop_loading_booking_system( booking_system );
+					
+					// Re-enable the submit button
+					form.find( '.bookacti-booking-system-field-submit-container input[type="submit"]' ).prop( 'disabled', false );
 				}
 			});	
 		}
+	});
+	
+	
+	// Display booking system fields and submit button if the user want to make a new booking
+	$j( '.bookacti-booking-system-form' ).on( 'click', '.bookacti-new-booking-button', function(){
+		var form = $j( this ).parents( 'form' );
+		var booking_system	= form.find( '.bookacti-booking-system' );
+		
+		// Clear booking system displayed info
+		bookacti_clear_booking_system_displayed_info( booking_system );
+		
+		// Display form fields and submit button, and then, delete the "Make a new booking" button
+		form.find( '.bookacti-booking-system-field-container:not(.bookacti-booking-system-field-submit-container), .bookacti-booking-system-field-submit-container input[type="submit"]' ).show();
+		$j( this ).remove();
 	});
 	
 	

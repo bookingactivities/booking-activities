@@ -817,6 +817,11 @@ function bookacti_fill_settings_fields( settings, prefix ) {
 				
 			// Input and Textarea
 			} else {
+				// If the time value is 24:00, reset it to 00:00
+				if( $j( 'input[name="' + prefix + '[' + key + ']"]' ).attr( 'type' ) === 'time' && value === '24:00' ) {
+					value = '00:00';
+				}
+				
 				$j( 'input[name="' + prefix + '[' + key + ']"]' ).val( value );
 				$j( 'textarea[name="' + prefix + '[' + key + ']"]' ).val( value );
 			}

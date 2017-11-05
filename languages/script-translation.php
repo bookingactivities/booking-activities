@@ -7,7 +7,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 // Fill the translation array to use it in js 
 $bookacti_translation_array = apply_filters( 'bookacti_translation_array', array(
 
-	//DIALOGS
+	// DIALOGS
 	'dialog_update_event_title'				=> esc_html__( 'Update event parameters', BOOKACTI_PLUGIN_NAME ),
 	'dialog_create_template_title'			=> esc_html__( 'Create new calendar', BOOKACTI_PLUGIN_NAME ),
 	'dialog_update_template_title'			=> esc_html__( 'Update calendar parameters', BOOKACTI_PLUGIN_NAME ),
@@ -36,7 +36,7 @@ $bookacti_translation_array = apply_filters( 'bookacti_translation_array', array
 	'booking_change_state'					=> esc_html__( 'Change booking state', BOOKACTI_PLUGIN_NAME ),
 
 
-	//BUTTONS
+	// BUTTONS
 	'dialog_button_ok'                  => esc_html__( 'OK', BOOKACTI_PLUGIN_NAME ),
 	'dialog_button_yes'                 => esc_html__( 'Yes', BOOKACTI_PLUGIN_NAME ),
 	'dialog_button_no'                  => esc_html__( 'No', BOOKACTI_PLUGIN_NAME ),
@@ -59,8 +59,9 @@ $bookacti_translation_array = apply_filters( 'bookacti_translation_array', array
 	'calendar_button_list_month'		=> esc_html__( 'list month', BOOKACTI_PLUGIN_NAME ),
 	'calendar_button_list_week'			=> esc_html__( 'list week', BOOKACTI_PLUGIN_NAME ),
 	'calendar_button_list_day'			=> esc_html__( 'list day', BOOKACTI_PLUGIN_NAME ),
+	'booking_form_new_booking_button'	=> bookacti_get_message( 'booking_form_new_booking_button' ),
 
-	//ERRORS
+	// ERRORS
 	'error_retrieve_event_data'			=> esc_html__( 'Error occurs when trying to retrieve event parameters.', BOOKACTI_PLUGIN_NAME ),
 	'error_update_event_param'          => esc_html__( 'Error occurs when trying to save event parameters.', BOOKACTI_PLUGIN_NAME ),
 	'error_add_exception'               => esc_html__( 'Error occurs when trying to add repetition exceptions.', BOOKACTI_PLUGIN_NAME ),
@@ -127,7 +128,7 @@ $bookacti_translation_array = apply_filters( 'bookacti_translation_array', array
 	'error_user_not_logged_in'			=> esc_html__( 'You are not logged in. Please create an account and log in first.', BOOKACTI_PLUGIN_NAME ),
 
 
-	//FORMS CHECK
+	// FORMS CHECK
 	'error_fill_field'                  => esc_html__( 'Please fill this field.', BOOKACTI_PLUGIN_NAME ),
 	'error_invalid_value'               => esc_html__( 'Please select a valid value.', BOOKACTI_PLUGIN_NAME ),
 	'error_template_end_before_begin'   => esc_html__( 'The calendar period can not end before it started.', BOOKACTI_PLUGIN_NAME ),
@@ -158,14 +159,14 @@ $bookacti_translation_array = apply_filters( 'bookacti_translation_array', array
 	'error_select_at_least_two_events'	=> esc_html__( 'You must select at least two events.', BOOKACTI_PLUGIN_NAME ),
 	'error_missing_title'				=> esc_html__( 'You must type a title.', BOOKACTI_PLUGIN_NAME ),
 
-	//ADVICE
+	// ADVICE
 	'advice_switch_to_maintenance'      => esc_html__( 'Please consider switching your website to maintenance mode when working on a published calendar.', BOOKACTI_PLUGIN_NAME ),
 	'advice_activity_created_elsewhere' => esc_html__( 'The activity has been successfully created but it is not available for this calendar.', BOOKACTI_PLUGIN_NAME ),
 	'advice_booking_refunded'			=> esc_html__( 'Your booking has been successfully refunded.', BOOKACTI_PLUGIN_NAME ),
 	'advice_refund_request_email_sent'	=> esc_html__( 'Your refund request has been sent. We will contact you soon.', BOOKACTI_PLUGIN_NAME ),
 
 
-	//PARTICLES
+	// PARTICLES
 	/* translators: In the context, 'Wednesday, March 2, 2016 9:30 AM to Thursday, March 3, 2016 1:30 PM' */
 	'to_date'							=> esc_html_x( 'to', 'between two dates', BOOKACTI_PLUGIN_NAME ),
 	/* translators: In the context, 'Wednesday, March 2, 2016 9:30 AM to 1:30 PM' */
@@ -190,7 +191,7 @@ $bookacti_translation_array = apply_filters( 'bookacti_translation_array', array
 	'bookings'							=> esc_html__( 'bookings', BOOKACTI_PLUGIN_NAME ),
 
 
-	//OTHERS
+	// OTHERS
 	'ask_for_reasons'					=> esc_html__( 'Tell us why? (Details, reasons, comments...)', BOOKACTI_PLUGIN_NAME ),
 	'one_person_per_booking'			=> esc_html__( 'for one person', BOOKACTI_PLUGIN_NAME ),
 	/* translators: %1$s is the number of persons who can enjoy the activity with one booking */
@@ -204,7 +205,7 @@ $bookacti_translation_array = apply_filters( 'bookacti_translation_array', array
 	'selected_events'					=> esc_html__( 'Selected events', BOOKACTI_PLUGIN_NAME ),
 
 
-	//VARIABLES
+	// VARIABLES
 	'is_qtranslate'						=> bookacti_get_translation_plugin() === 'qtranslate',
 	'current_lang_code'					=> bookacti_get_current_lang_code(),
 	'available_booking_methods'			=> array_keys( bookacti_get_available_booking_methods() ),

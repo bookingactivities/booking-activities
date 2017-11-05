@@ -669,6 +669,10 @@ function bookacti_settings_section_bookings_callback() { }
 				'value'			=> __( 'Book', BOOKACTI_PLUGIN_NAME ),
 				'description'	=> __( 'Submit button label.', BOOKACTI_PLUGIN_NAME )
 			),
+			'booking_form_new_booking_button' => array(
+				'value'			=> __( 'Make a new booking', BOOKACTI_PLUGIN_NAME ),
+				'description'	=> __( 'Button label to make a new booking after the booking form has been submitted.', BOOKACTI_PLUGIN_NAME )
+			),
 		);
 		
 		return apply_filters( 'bookacti_default_messages', $messages );

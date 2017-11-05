@@ -302,6 +302,11 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 
 = 1.2.1 =
 * Lib - Updated FullCalendar to 3.6.2 and Moment JS to 2.19.1
+* Tweak - A button allowing users to make a new booking now appears after a successful booking form submission
+* Fix - Fixed events that shouldn't appear / should appear on frontend calendars according to your timezone
+* Fix - Prevent users to book duplicated bookings by pressing multiple times on the "Book" button
+* Fix - Fixed notification tag "{booking_title}" 
+* Fix - Fixed multilingual event title in notification always showing in site's language
 * Fix - Fixed bookacti_hourly_event WP cron job triggered multiple times
 * Dev - Many refactoring in notifications in anticipation of Notification Pack add-on release. See below.
 * Dev - Functions and hooks related to notifications have undergone changes. Please check the source code if you use them.

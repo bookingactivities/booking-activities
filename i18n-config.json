@@ -26,6 +26,7 @@
 						"bookacti_messages_settings_calendar_title":{},
 						"bookacti_messages_settings_booking_success":{},
 						"bookacti_messages_settings_booking_form_submit_button":{},
+						"bookacti_messages_settings_booking_form_new_booking_button":{},
 						"bookacti_messages_settings_temporary_booking_success":{}
 					}
 				},
