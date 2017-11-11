@@ -517,7 +517,7 @@ function bookacti_settings_section_bookings_callback() { }
 		$columns_titles = apply_filters( 'bookacti_notifications_list_columns_titles', array(
 			10	=> array( 'id' => 'active',		'title' => esc_html_x( 'Active', 'is the notification active', BOOKACTI_PLUGIN_NAME ) ),
 			20	=> array( 'id' => 'title',		'title' => esc_html_x( 'Trigger', 'what triggers a notification', BOOKACTI_PLUGIN_NAME ) ),
-			30	=> array( 'id' => 'recipients',	'title' => esc_html_x( 'Sent to', 'who is sent the notification to', BOOKACTI_PLUGIN_NAME ) ),
+			30	=> array( 'id' => 'recipients',	'title' => esc_html_x( 'Send to', 'who the notification is sent to', BOOKACTI_PLUGIN_NAME ) ),
 			100 => array( 'id' => 'actions',	'title' => esc_html__( 'Actions', BOOKACTI_PLUGIN_NAME ) )
 		) );
 
@@ -525,11 +525,11 @@ function bookacti_settings_section_bookings_callback() { }
 		ksort( $columns_titles, SORT_NUMERIC );
 	   
 	   ?>
-		<table class='bookacti-settings-table' >
+		<table class='bookacti-settings-table' id='bookacti-notifications-list' >
 			<thead>
 				<tr>
 				<?php foreach( $columns_titles as $column ) { ?>
-					<th class='bookacti-notifications-list-column-<?php echo sanitize_title_with_dashes( $column[ 'id' ] ); ?>' >
+					<th id='bookacti-notifications-list-column-<?php echo sanitize_title_with_dashes( $column[ 'id' ] ); ?>' >
 						<?php echo esc_html( $column[ 'title' ] ); ?>
 					</th>
 				<?php } ?>
@@ -544,11 +544,11 @@ function bookacti_settings_section_bookings_callback() { }
 				
 				$notification_settings = bookacti_get_notification_settings( $notification_id, false );
 				
-				$active_icon	= $notification_settings[ 'active' ] ? 'tick.png' : 'cross.png';
+				$active_icon	= $notification_settings[ 'active' ] ? 'dashicons-yes' : 'dashicons-no';
 				$description	= $notification_settings[ 'description' ] ? bookacti_help_tip( $notification_settings[ 'description' ], false ) : '';
 				
 				$columns_values = apply_filters( 'bookacti_notifications_list_columns_values', array(
-					'active'		=> '<img src=' . plugins_url() . '/' . BOOKACTI_PLUGIN_NAME . '/img/' . $active_icon . ' />',
+					'active'		=> '<span class="dashicons ' . $active_icon . '"></span>',
 					'title'			=> '<a href="' . esc_url( '?page=bookacti_settings&tab=notifications&notification_id=' . sanitize_title_with_dashes( $notification_id ) ) . '" >' . esc_html( $notification_settings[ 'title' ] ) . '</a>' . $description,
 					'recipients'	=> substr( $notification_id, 0, 8 ) === 'customer' ? esc_html__( 'Customer', BOOKACTI_PLUGIN_NAME ) : esc_html__( 'Administrator', BOOKACTI_PLUGIN_NAME ),
 					'actions'		=> '<a href="' . esc_url( '?page=bookacti_settings&tab=notifications&notification_id=' . sanitize_title_with_dashes( $notification_id ) ) . '" >' 
@@ -559,7 +559,7 @@ function bookacti_settings_section_bookings_callback() { }
 				?>
 				<tr>
 				<?php foreach( $columns_titles as $column ) { ?>
-					<td>
+					<td class='bookacti-notifications-list-column-value-<?php echo sanitize_title_with_dashes( $column[ 'id' ] ); ?>' >
 					<?php
 						if( isset( $columns_values[ $column[ 'id' ] ] ) ) { 
 							echo $columns_values[ $column[ 'id' ] ];
@@ -568,10 +568,89 @@ function bookacti_settings_section_bookings_callback() { }
 					</td>
 				<?php } ?>
 				</tr>
-			<?php } ?>
+			<?php } 
+			$is_plugin_active = bookacti_is_plugin_active( 'ba-notification-pack/ba-notification-pack.php' );
+			if( ! $is_plugin_active ) {
+				$addon_link = '<a href="https://booking-activities.fr/en/downloads/notification-pack/?utm_source=plugin&utm_medium=plugin&utm_campaign=notification-pack&utm_content=settings-notification-list" target="_blank" >';
+				$addon_link .= esc_html__( 'Notification Pack', BOOKACTI_PLUGIN_NAME );
+				$addon_link .= '</a>';
+				$columns_values = array(
+					'active'		=> '<span class="dashicons dashicons-no"></span>',
+					'title'			=> '<strong>' . esc_html__( '1 day before a booked event (reminder)', BOOKACTI_PLUGIN_NAME ) . '</strong>' 
+										/* translators: %1$s is the placeholder for Notification Pack add-on link */
+										. bookacti_help_tip( sprintf( esc_html__( 'You can send automatic reminders with %1$s add-on some days before booked events (you set the amount of days). This add-on also allow you to send all notifications through SMS and Push.', BOOKACTI_PLUGIN_NAME ), $addon_link ), false ),
+					'recipients'	=> esc_html__( 'Customer', BOOKACTI_PLUGIN_NAME ),
+					'actions'		=> "<a href='https://booking-activities.fr/en/downloads/notification-pack/?utm_source=plugin&utm_medium=plugin&utm_campaign=notification-pack&utm_content=settings-notification-list' class='button' target='_blank' >" . esc_html__( 'Learn more', BOOKACTI_PLUGIN_NAME ) . "</a>"
+				);
+				
+				?>
+				<tr>
+				<?php foreach( $columns_titles as $column ) { ?>
+					<td class='bookacti-notifications-list-column-value-<?php echo sanitize_title_with_dashes( $column[ 'id' ] ); ?>' >
+					<?php
+						if( isset( $columns_values[ $column[ 'id' ] ] ) ) { 
+							echo $columns_values[ $column[ 'id' ] ];
+						}
+					?>
+					</td>
+				<?php }
+			}
+			?>
 			</tbody>
 		</table>
 	   <?php
+	   bookacti_display_banp_promo();
+	}
+	
+	
+	/**
+	 * Display a promotional area for Notification Pack add-on
+	 */
+	function bookacti_display_banp_promo() {
+		$is_plugin_active	= bookacti_is_plugin_active( 'ba-notification-pack/ba-notification-pack.php' );
+		$license_status		= get_option( 'banp_license_status' );
+
+		// If the plugin is activated but the license is not active yet
+		if( $is_plugin_active && ( ! $license_status || $license_status !== 'valid' ) ) {
+			?>
+			<div id='bookacti-banp-promo' class='bookacti-addon-promo' >
+				<p>
+				<?php 
+					/* translators: %s = add-on name */
+					echo sprintf( __( 'Thank you for purchasing %s add-on!', BOOKACTI_PLUGIN_NAME ), 
+								 '<strong>' . esc_html__( 'Notification Pack', BOOKACTI_PLUGIN_NAME ) . '</strong>' ); 
+				?>
+				</p><p>
+					<?php esc_html_e( 'It seems you didn\'t activate your license yet. Please follow these instructions to activate your license:', BOOKACTI_PLUGIN_NAME ); ?>
+				</p><p>
+					<strong>
+						<a href='https://booking-activities.fr/en/docs/user-documentation/get-started-with-notification-pack-add-on/prerequisite-installation-license-activation-of-notification-pack-add-on/?utm_source=plugin&utm_medium=plugin&utm_content=encart-promo-settings' target='_blank' >
+							<?php 
+							/* translators: %s = add-on name */
+								echo sprintf( __( 'How to activate %s license?', BOOKACTI_PLUGIN_NAME ), 
+											  esc_html__( 'Notification Pack', BOOKACTI_PLUGIN_NAME ) ); 
+							?>
+						</a>
+					</strong>
+				</p>
+			</div>
+			<?php
+		}
+
+		else if( ! $license_status || $license_status !== 'valid' ) {
+			?>
+			<div id='bookacti-banp-promo' class='bookacti-addon-promo' >
+				<?php 
+				$addon_link = '<strong><a href="https://booking-activities.fr/en/downloads/notification-pack/?utm_source=plugin&utm_medium=plugin&utm_campaign=notification-pack&utm_content=encart-promo-settings" target="_blank" >';
+				$addon_link .= esc_html__( 'Notification Pack', BOOKACTI_PLUGIN_NAME );
+				$addon_link .= '</a></strong>';
+				/* translators: %1$s is the placeholder for Notification Pack add-on link */
+				echo sprintf( esc_html__( 'You can send all these notifications and booking reminders via email, SMS and Push with %1$s add-on!', BOOKACTI_PLUGIN_NAME ), $addon_link ); 
+				?>
+				<div><a href='https://booking-activities.fr/en/downloads/notification-pack/?utm_source=plugin&utm_medium=plugin&utm_campaign=notification-pack&utm_content=encart-promo-settings' class='button' target='_blank' ><?php esc_html_e( 'Learn more', BOOKACTI_PLUGIN_NAME ); ?></a></div>
+			</div>
+			<?php
+		}
 	}
 	
 	

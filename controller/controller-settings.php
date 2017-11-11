@@ -338,6 +338,23 @@ function bookacti_fill_notification_settings_page( $notification_id ) {
 								</div>
 					<?php
 							}
+							
+							// Notification Pack promo
+							$is_plugin_active = bookacti_is_plugin_active( 'ba-notification-pack/ba-notification-pack.php' );
+							if( ! $is_plugin_active ) {
+								$addon_link  = '<a href="https://booking-activities.fr/en/downloads/notification-pack/?utm_source=plugin&utm_medium=plugin&utm_campaign=notification-pack&utm_content=settings-notification-list" target="_blank" >';
+								$addon_link .= esc_html__( 'Notification Pack', BOOKACTI_PLUGIN_NAME );
+								$addon_link .= '</a>';
+								/* translators: %1$s is the placeholder for Notification Pack add-on link */
+								$tip = sprintf( esc_html__( 'You can set a specific message on events, activities, groups of events and group categories and use it in your notifications thanks to %1$s add-on.', BOOKACTI_PLUGIN_NAME ), $addon_link );
+								?>
+								<div class='bookacti-notifications-tag' >
+									<code class='bookacti-notifications-tag-promo' >{specific_message}</code>
+									<?php bookacti_help_tip( $tip ); ?>
+								</div>
+								<?php
+							}
+							
 					?>
 						</div>
 					<?php

@@ -186,6 +186,14 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 						$mixed_settings[ 'maxTime' ] = $settings[ 'maxTime' ];
 					} 
 				}
+				if( isset( $settings[ 'snapDuration' ] ) ) {
+					//Keep the lower value
+					if(  ! isset( $mixed_settings[ 'snapDuration' ] ) 
+						|| isset( $mixed_settings[ 'snapDuration' ] ) && strtotime( $settings[ 'snapDuration' ] ) < strtotime( $mixed_settings[ 'snapDuration' ] ) ) {
+
+						$mixed_settings[ 'snapDuration' ] = $settings[ 'snapDuration' ];
+					} 
+				}
 			}
 			
 			$templates_mixed_range	= bookacti_get_mixed_template_range( $template_ids );
@@ -341,7 +349,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 				$addon_link = '<a href="https://booking-activities.fr/en/downloads/prices-and-promotions/?utm_source=plugin&utm_medium=plugin&utm_medium=plugin&utm_campaign=prices-and-promotions&utm_content=encart-promo-' . $type . '" target="_blank" >';
 				$addon_link .= esc_html( __( 'Prices and Promotions', BOOKACTI_PLUGIN_NAME ) );
 				$addon_link .= '</a>';
-				/* transmators: %s is the placeholder for Price and Promotion add-on link */
+				/* translators: %s is the placeholder for Price and Promotion add-on link */
 				$message = '';
 				$event_name = '';
 				if( $type === 'group-of-events' ) {

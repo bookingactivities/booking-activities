@@ -301,6 +301,21 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 					bookacti_help_tip( $tip );
 					?>
 				</div>
+				<div>
+					<label for='bookacti-template-data-snapDuration' >
+						<?php 
+						/* translators: Refers to the time interval at which a dragged event will snap to the agenda view time grid. Ex: 00:20', you will be able to drop an event every 20 minutes (at 6:00am, 6:20am, 6:40am...). More information: http://fullcalendar.io/docs/agenda/snapDuration/ */
+						_e( 'Snap frequency', BOOKACTI_PLUGIN_NAME );
+						?>
+					</label>
+					<input type="time" name="templateOptions[snapDuration]" id='bookacti-template-data-snapDuration' value='00:30' >
+					<?php
+					$tip = __( "The time interval at which a dragged event will snap to the agenda view time grid. Ex: '00:20', you will be able to drop an event every 20 minutes (at 6:00am, 6:20am, 6:40am...).", BOOKACTI_PLUGIN_NAME );
+					$tip .= ' ' . __( "See more at", BOOKACTI_PLUGIN_NAME );
+					$tip .= ' <a href="http://fullcalendar.io/docs/agenda/snapDuration/" target="_blank" >snapDuration</a>.';
+					bookacti_help_tip( $tip );
+					?>
+				</div>
 			<?php
 				do_action( 'bookacti_template_tab_agenda_after' );
 				

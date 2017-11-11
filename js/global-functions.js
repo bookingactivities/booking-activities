@@ -1,15 +1,10 @@
 // Detect if the device used is touch-sensitive
-function bookacti_is_touch_device() {
-    var ua = navigator.userAgent;
-    var is_touch_device = (
-        ua.match(/iPad/i) ||
-        ua.match(/iPhone/i) ||
-        ua.match(/iPod/i) ||
-        ua.match(/Android/i)
-    );
-
-    return is_touch_device;
-}
+window.addEventListener( 'touchstart', function bookacti_detect_touch_device() {
+    bookacti.is_touch_device = true;
+    // Remove event listener once fired, otherwise it'll kill scrolling
+    // performance
+    window.removeEventListener( 'touchstart', bookacti_detect_touch_device );
+}, false );
 
 
 // Add 0 before a number until it has *max* digits
