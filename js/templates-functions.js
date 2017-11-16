@@ -441,7 +441,7 @@ function bookacti_unselect_event( event, start, all ) {
 	if( typeof event !== 'object' ) {
 		// Format start values to object
 		var event_id = event;
-		start	= start.isMoment() ? start : moment( start ).isValid() ? moment( start ) : false;
+		start	= start instanceof moment ? start : moment( start ).isValid() ? moment( start ) : false;
 		event	= {
 			'id': event_id,
 			'start': start

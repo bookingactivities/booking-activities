@@ -457,7 +457,9 @@ function bookacti_format_old_notifications_settings() {
 			
 			// Transform old notification settings format into the new one
 			$notification_settings[ 'id' ] = $notification_id;
-
+			
+			if( isset( $notification_settings[ 'title' ] ) ) { unset( $notification_settings[ 'title' ] ); }
+			
 			$notification_settings[ 'email' ] = array();
 			$notification_settings[ 'email' ][ 'active' ] = 1;
 			if( isset( $notification_settings[ 'to' ] ) )		{ $notification_settings[ 'email' ][ 'to' ] = $notification_settings[ 'to' ]; unset( $notification_settings[ 'to' ] ); }

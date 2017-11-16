@@ -91,9 +91,7 @@ function bookacti_dialog_choose_group_of_events( booking_system, group_ids, even
 			'data-group-id': group_id
 		});
 		
-		var start			= event.start instanceof moment ? event.start.format( 'YYYY-MM-DD HH:mm:ss' ) : event.start;
-		var end				= event.end instanceof moment ?  event.end.format( 'YYYY-MM-DD HH:mm:ss' ) : event.end;
-		var event_duration	=  bookacti_format_event_duration( start, end );
+		var event_duration	=  bookacti_format_event_duration( event.start, event.end );
 
 		var list_element = $j( '<li />', {
 			html: '<span class="bookacti-booking-event-title" >'  + event.title + '</span>' 

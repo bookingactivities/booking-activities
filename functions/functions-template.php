@@ -326,7 +326,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 								 '<strong>' . esc_html( __( 'Prices and Promotions', BOOKACTI_PLUGIN_NAME ) ) . '</strong>' ); 
 				?>
 				</p><p>
-					<?php esc_html_e( 'It seems you didn\'t activate your license yet. Please follow these instructions to activate your license:', BOOKACTI_PLUGIN_NAME ); ?>
+					<?php esc_html_e( "It seems you didn't activate your license yet. Please follow these instructions to activate your license:", BOOKACTI_PLUGIN_NAME ); ?>
 				</p><p>
 					<strong>
 						<a href='https://booking-activities.fr/en/docs/user-documentation/get-started-with-prices-and-promotions-add-on/prerequisite-installation-license-activation-of-prices-and-promotions-add-on/?utm_source=plugin&utm_medium=plugin&utm_content=encart-promo-<?php echo $type; ?>' target='_blank' >

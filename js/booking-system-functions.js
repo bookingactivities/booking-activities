@@ -433,6 +433,9 @@ function bookacti_fill_picked_events_list( booking_system ) {
 // Format an event
 function bookacti_format_event_duration( start, end ) {
 	
+	start	= start instanceof moment ? start.format( 'YYYY-MM-DD HH:mm:ss' ) : start;
+	end		= end instanceof moment ? end.format( 'YYYY-MM-DD HH:mm:ss' ) : end;
+	
 	var start_and_end_same_day	= start.substr( 0, 10 ) === end.substr( 0, 10 );
 	var class_same_day			= start_and_end_same_day ? 'bookacti-booking-event-end-same-day' : '';
 	var end_format				= start_and_end_same_day ? 'LT' : bookacti_localized.date_format;

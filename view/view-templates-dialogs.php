@@ -239,7 +239,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 				<div id='bookacti-duplicate-template-fields'>
 					<label for='bookacti-template-duplicated-template-id' ><?php esc_html_e( 'Duplicate from', BOOKACTI_PLUGIN_NAME ); ?></label>
 					<select name='duplicated-template-id' id='bookacti-template-duplicated-template-id' class='bookacti-template-select-box' >
-						<option value='0' ><?php esc_html_e( 'Don\'t duplicate', BOOKACTI_PLUGIN_NAME ); ?></option>
+						<option value='0' ><?php esc_html_e( "Don't duplicate", BOOKACTI_PLUGIN_NAME ); ?></option>
 						<?php echo $templates_options; ?>
 					</select>
 					<?php
@@ -333,7 +333,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 										 '<strong>' . esc_html( __( 'Display Pack', BOOKACTI_PLUGIN_NAME ) ) . '</strong>' ); 
 						?>
 						</p><p>
-							<?php esc_html_e( 'It seems you didn\'t activate your license yet. Please follow these instructions to activate your license:', BOOKACTI_PLUGIN_NAME ); ?>
+							<?php esc_html_e( "It seems you didn't activate your license yet. Please follow these instructions to activate your license:", BOOKACTI_PLUGIN_NAME ); ?>
 						</p><p>
 							<strong>
 								<a href='https://booking-activities.fr/en/docs/user-documentation/get-started-with-display-pack-add-on/prerequisite-installation-license-activation-of-display-pack-add-on/?utm_source=plugin&utm_medium=plugin&utm_content=encart-promo-calendar' target='_blank' >
@@ -628,7 +628,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			/* translators: This is followed by "You can't:", and then a list of bans. */
 			esc_html_e( 'There are bookings on at least one of the occurence of this event.', BOOKACTI_PLUGIN_NAME ); 
 			/* translators: This is preceded by 'There are bookings on at least one of the occurence of this event.', and flollowed by a list of bans. */
-			echo '<br/><b>' . esc_html__( 'You can\'t:', BOOKACTI_PLUGIN_NAME ) . '</b>'; 
+			echo '<br/><b>' . esc_html__( "You can't:", BOOKACTI_PLUGIN_NAME ) . '</b>'; 
 		?>
         <ul></ul>
     </div>

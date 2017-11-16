@@ -99,10 +99,10 @@ function bookacti_get_notifications_default_settings() {
 					'active'	=> 1,
 					'subject'	=> __( 'Your booking has been cancelled', BOOKACTI_PLUGIN_NAME ) . ' - ' . apply_filters( 'bookacti_translate_text', get_bloginfo( 'name' ) ),
 					/* translators: Keep tags as is (this is a tag: {tag}), they will be replaced in code. This is the default email a customer receive when a booking is cancelled */
-					'message'	=> __( '<p>Hello {user_firstname},
+					'message'	=> __( "<p>Hello {user_firstname},
 										<p>Your booking has been <strong>cancelled</strong>.</p>
 										<p>{booking_list}</p>
-										<p>If you didn\'t cancelled this reservation or if you think this is an error, please contact us.</p>', BOOKACTI_PLUGIN_NAME ) )
+										<p>If you didn't cancelled this reservation or if you think this is an error, please contact us.</p>", BOOKACTI_PLUGIN_NAME ) )
 			),
 		'customer_refunded_booking' => 
 			array(
@@ -129,10 +129,10 @@ function bookacti_get_notifications_default_settings() {
 					'active'	=> 1,
 					'subject'	=> __( 'Your booking has been rescheduled', BOOKACTI_PLUGIN_NAME ) . ' - ' . apply_filters( 'bookacti_translate_text', get_bloginfo( 'name' ) ),
 					/* translators: Keep tags as is (this is a tag: {tag}), they will be replaced in code. This is the default email a customer receive when a booking is rescheduled */
-					'message'	=> __( '<p>Hello {user_firstname},
+					'message'	=> __( "<p>Hello {user_firstname},
 										<p>Your booking has been <strong>rescheduled</strong> from {booking_old_start} to:</p>
 										<p>{booking_list}</p>
-										<p>If you didn\'t rescheduled this reservation or if you think this is an error, please contact us.</p>', BOOKACTI_PLUGIN_NAME ) )
+										<p>If you didn't rescheduled this reservation or if you think this is an error, please contact us.</p>", BOOKACTI_PLUGIN_NAME ) )
 			),
 	);
 
@@ -228,7 +228,10 @@ function bookacti_sanitize_notification_settings( $args, $notification_id = '' )
 
 	$notification = array();
 	foreach( $defaults as $key => $default_value ) {
-
+		
+		// Do not save constant data
+		if( $key === 'id' || $key === 'title' ) { continue; }
+		
 		$notification[ $key ] = isset( $args[ $key ] ) ? $args[ $key ] : $default_value;
 
 		if( $key === 'active' ) {
@@ -272,8 +275,7 @@ function bookacti_sanitize_notification_settings( $args, $notification_id = '' )
 			}
 		}
 	}
-
-
+	
 	return apply_filters( 'bookacti_notification_sanitized_settings', $notification, $notification_id );
 }
 

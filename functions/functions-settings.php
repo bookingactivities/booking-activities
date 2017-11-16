@@ -436,7 +436,7 @@ function bookacti_settings_section_bookings_callback() { }
 	 */
 	function bookacti_settings_field_activate_reschedule_callback() {
 		$tip  = __( 'Allow or disallow customers to reschedule a booking after they order it.', BOOKACTI_PLUGIN_NAME );
-		$tip .= '<br/>' . __( 'This won\'t apply to group of bookings.', BOOKACTI_PLUGIN_NAME );
+		$tip .= '<br/>' . __( "This won't apply to group of bookings.", BOOKACTI_PLUGIN_NAME );
 		
 		$args = array(
 			'type'	=> 'checkbox',
@@ -621,10 +621,10 @@ function bookacti_settings_section_bookings_callback() { }
 								 '<strong>' . esc_html__( 'Notification Pack', BOOKACTI_PLUGIN_NAME ) . '</strong>' ); 
 				?>
 				</p><p>
-					<?php esc_html_e( 'It seems you didn\'t activate your license yet. Please follow these instructions to activate your license:', BOOKACTI_PLUGIN_NAME ); ?>
+					<?php esc_html_e( "It seems you didn't activate your license yet. Please follow these instructions to activate your license:", BOOKACTI_PLUGIN_NAME ); ?>
 				</p><p>
 					<strong>
-						<a href='https://booking-activities.fr/en/docs/user-documentation/get-started-with-notification-pack-add-on/prerequisite-installation-license-activation-of-notification-pack-add-on/?utm_source=plugin&utm_medium=plugin&utm_content=encart-promo-settings' target='_blank' >
+						<a href='https://booking-activities.fr/en/docs/user-documentation/notification-pack/prerequisite-installation-license-activation-notification-pack-add-on/?utm_source=plugin&utm_medium=plugin&utm_content=encart-promo-settings' target='_blank' >
 							<?php 
 							/* translators: %s = add-on name */
 								echo sprintf( __( 'How to activate %s license?', BOOKACTI_PLUGIN_NAME ), 

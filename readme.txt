@@ -66,7 +66,7 @@ Try this reservation tool live on the [demo website](http://demo.booking-activit
 * **Automatic emails** are sent to both administrator and customer when a booking is made, when its state changes, and when it is rescheduled
 * **Fully customize** and configure all your email notifications
 * In multilangual sites, emails are sent to your customers **in their own language**
-* *Email reminders are coming soon in a dedicated add-on!*
+* *Send notifications and **reminders** via email, **SMS and ★ Push**, and set **★ event-specific messages** thanks to [Notification Pack](https://booking-activities.fr/en/downloads/notification-pack/?utm_source=wp-plugin-page&utm_medium=wordpress&utm_campaign=notification-pack&utm_content=readme) add-on*
 
 **Translation ready**
 
@@ -85,6 +85,7 @@ See the whole [features list here](https://booking-activities.fr/en/documentatio
 = Extend these features with add-ons: =
 
 * **[Display Pack](https://booking-activities.fr/en/downloads/display-pack/?utm_source=wp-plugin-page&utm_medium=wordpress&utm_campaign=display-pack&utm_content=readme)**: Customize your calendars or set alternative display (datepicker)
+* **[Notification Pack](https://booking-activities.fr/en/downloads/notification-pack/?utm_source=wp-plugin-page&utm_medium=wordpress&utm_campaign=notification-pack&utm_content=readme)**: Send notifications and booking reminders by email, SMS and Push
 * **[Prices and Promotions](https://booking-activities.fr/en/downloads/prices-and-promotions/?utm_source=wp-plugin-page&utm_medium=wordpress&utm_campaign=prices-and-promotions&utm_content=readme)**: Set prices and discounts on specific events
 * **[Order for Customers](https://booking-activities.fr/en/downloads/order-for-customers/?utm_source=wp-plugin-page&utm_medium=wordpress&utm_campaign=order-for-customers&utm_content=readme)**: You can book / place an order in the name of your customers
 * **[Points of Sale](https://booking-activities.fr/en/downloads/points-of-sale/?utm_source=wp-plugin-page&utm_medium=wordpress&utm_campaign=points-of-sale&utm_content=readme)**: Each POS manager manage his own products, calendars and bookings
@@ -312,6 +313,7 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 * Fix - Fixed notification tag "{booking_title}" 
 * Fix - Fixed multilingual event title in notification always showing in site's language
 * Fix - Fixed bookacti_hourly_event WP cron job triggered multiple times
+* Fix - Fixed JS fatal error when trying to format duration for event list
 * Dev - Many refactoring in notifications in anticipation of Notification Pack add-on release. See below.
 * Dev - Functions and hooks related to notifications have undergone changes. Please check the source code if you use them.
 * Dev - bookacti_display_field now support radio and textarea and you can add these to editor setting dialogs

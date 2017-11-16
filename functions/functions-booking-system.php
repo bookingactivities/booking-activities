@@ -452,13 +452,13 @@ function bookacti_validate_booking_form( $group_id, $event_id, $event_start, $ev
 		$validated['status'] = 'failed';
 		if( ! $exists ) {
 			$validated['error'] = 'do_not_exist';
-			$validated['message'] = $group_id === 'single' ? __( 'The event doesn\'t exist, please pick an event and try again.', BOOKACTI_PLUGIN_NAME ) : __( 'The group of events doesn\'t exist, please pick an event and try again.', BOOKACTI_PLUGIN_NAME );
+			$validated['message'] = $group_id === 'single' ? __( "The event doesn't exist, please pick an event and try again.", BOOKACTI_PLUGIN_NAME ) : __( "The group of events doesn't exist, please pick an event and try again.", BOOKACTI_PLUGIN_NAME );
 		} else if( ! $is_in_range ) {
 			$validated['error'] = 'out_of_range';
 			$validated['message'] = $group_id === 'single' ? __( 'The event is out of calendar range, please pick an event and try again.', BOOKACTI_PLUGIN_NAME ) :  __( 'The group of events is out of calendar range, please pick an event and try again.', BOOKACTI_PLUGIN_NAME );
 		} else if( ! $is_event ) {
 			$validated['error'] = 'no_event_selected';
-			$validated['message'] = __( 'You haven\'t picked any event. Please pick an event first.', BOOKACTI_PLUGIN_NAME );
+			$validated['message'] = __( "You haven't picked any event. Please pick an event first.", BOOKACTI_PLUGIN_NAME );
 		} else if( ! $is_qty_sup_to_0 ) {
 			$validated['error'] = 'qty_inf_to_0';
 			$validated['message'] = __( 'The amount of desired bookings is less than or equal to 0. Please increase the quantity.', BOOKACTI_PLUGIN_NAME );
