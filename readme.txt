@@ -301,7 +301,7 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 
 == Changelog ==
 
-= 1.2.1 =
+= 1.2.1 - 2017/11/17 =
 * Feature - Added a snap frequency option in editor to place your events at precise timeslot
 * Lib - Updated FullCalendar to 3.6.2 and Moment JS to 2.19.1
 * Tweak - Wordpress 4.9 support

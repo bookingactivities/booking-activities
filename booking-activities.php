@@ -237,10 +237,6 @@ function bookacti_enqueue_frontend_scripts() {
 register_activation_hook( __FILE__, 'bookacti_activate' );
 function bookacti_activate() {
 	
-	// Update current version
-	delete_option( 'bookacti_version' );
-	add_option( 'bookacti_version', BOOKACTI_VERSION );
-	
 	// Allow users to manage Bookings
 	bookacti_set_role_and_cap();
 
@@ -257,6 +253,13 @@ function bookacti_activate() {
 		update_option( 'bookacti-install-date', date( 'Y-m-d H:i:s' ) );
 	}
 	
+	// Check if the plugin if being updated
+	bookacti_check_version( true );
+	
+	// Update current version
+	delete_option( 'bookacti_version' );
+	add_option( 'bookacti_version', BOOKACTI_VERSION );
+		
 	do_action( 'bookacti_activate' );
 	
 	// Flush rules after install
@@ -300,9 +303,9 @@ function bookacti_uninstall() {
 
 // UPDATE
 add_action( 'init', 'bookacti_check_version', 5 );
-function bookacti_check_version() {
+function bookacti_check_version( $from_activate = false ) {
 	if( get_option( 'bookacti_version' ) !== BOOKACTI_VERSION ) {
-		bookacti_activate();
+		if( ! $from_activate ) { bookacti_activate(); }
 		do_action( 'bookacti_updated' );
 	}
 }

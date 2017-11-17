@@ -439,7 +439,7 @@ function bookacti_format_old_notifications_settings() {
 				
 				// Add new notification settings and delete the old one
 				delete_option( 'bookacti_notifications_settings' );
-				add_option( 'bookacti_notifications_settings', $notification_settings );
+				add_option( 'bookacti_notifications_settings', $notifications_settings );
 			}
 		}
 		
@@ -450,24 +450,27 @@ function bookacti_format_old_notifications_settings() {
 			if( ! isset( $alloptions[ 'bookacti_notifications_settings_email_' . $notification_id ] ) ) { continue; }
 			
 			// Get notifications settings
-			$notification_settings = maybe_unserialize( $alloptions[ 'bookacti_notifications_settings_email_' . $notification_id ] );
-
+			$notification_settings	= maybe_unserialize( $alloptions[ 'bookacti_notifications_settings_email_' . $notification_id ] );
+			$new_settings			= $notification_settings;
+			
+			if( ! $notification_settings ) { continue; }
+			
 			// If the format is already the good one, stop processing
 			if( isset( $notification_settings[ 'email' ] ) ) { continue; }
 			
 			// Transform old notification settings format into the new one
-			$notification_settings[ 'id' ] = $notification_id;
+			$new_settings[ 'id' ] = $notification_id;
 			
-			if( isset( $notification_settings[ 'title' ] ) ) { unset( $notification_settings[ 'title' ] ); }
+			if( isset( $notification_settings[ 'title' ] ) ) { unset( $new_settings[ 'title' ] ); }
 			
-			$notification_settings[ 'email' ] = array();
-			$notification_settings[ 'email' ][ 'active' ] = 1;
-			if( isset( $notification_settings[ 'to' ] ) )		{ $notification_settings[ 'email' ][ 'to' ] = $notification_settings[ 'to' ]; unset( $notification_settings[ 'to' ] ); }
-			if( isset( $notification_settings[ 'subject' ] ) )	{ $notification_settings[ 'email' ][ 'subject' ] = $notification_settings[ 'subject' ]; unset( $notification_settings[ 'subject' ] ); }
-			if( isset( $notification_settings[ 'message' ] ) )	{ $notification_settings[ 'email' ][ 'message' ] = $notification_settings[ 'message' ]; unset( $notification_settings[ 'message' ] ); }
-
+			$new_settings[ 'email' ] = array();
+			$new_settings[ 'email' ][ 'active' ] = 1;
+			if( isset( $notification_settings[ 'to' ] ) )		{ $new_settings[ 'email' ][ 'to' ] = $notification_settings[ 'to' ]; unset( $new_settings[ 'to' ] ); }
+			if( isset( $notification_settings[ 'subject' ] ) )	{ $new_settings[ 'email' ][ 'subject' ] = $notification_settings[ 'subject' ]; unset( $new_settings[ 'subject' ] ); }
+			if( isset( $notification_settings[ 'message' ] ) )	{ $new_settings[ 'email' ][ 'message' ] = $notification_settings[ 'message' ]; unset( $new_settings[ 'message' ] ); }
+			
 			// Add new notification settings and delete the old one
-			add_option( 'bookacti_notifications_settings_' . $notification_id, $notification_settings );
+			add_option( 'bookacti_notifications_settings_' . $notification_id, $new_settings );
 			delete_option( 'bookacti_notifications_settings_email_' . $notification_id );		
 		}
 	}
