@@ -452,13 +452,13 @@ function bookacti_validate_booking_form( $group_id, $event_id, $event_start, $ev
 		$validated['status'] = 'failed';
 		if( ! $exists ) {
 			$validated['error'] = 'do_not_exist';
-			$validated['message'] = $group_id === 'single' ? __( 'The event doesn\'t exist, please pick an event and try again.', BOOKACTI_PLUGIN_NAME ) : __( 'The group of events doesn\'t exist, please pick an event and try again.', BOOKACTI_PLUGIN_NAME );
+			$validated['message'] = $group_id === 'single' ? __( "The event doesn't exist, please pick an event and try again.", BOOKACTI_PLUGIN_NAME ) : __( "The group of events doesn't exist, please pick an event and try again.", BOOKACTI_PLUGIN_NAME );
 		} else if( ! $is_in_range ) {
 			$validated['error'] = 'out_of_range';
 			$validated['message'] = $group_id === 'single' ? __( 'The event is out of calendar range, please pick an event and try again.', BOOKACTI_PLUGIN_NAME ) :  __( 'The group of events is out of calendar range, please pick an event and try again.', BOOKACTI_PLUGIN_NAME );
 		} else if( ! $is_event ) {
 			$validated['error'] = 'no_event_selected';
-			$validated['message'] = __( 'You haven\'t picked any event. Please pick an event first.', BOOKACTI_PLUGIN_NAME );
+			$validated['message'] = __( "You haven't picked any event. Please pick an event first.", BOOKACTI_PLUGIN_NAME );
 		} else if( ! $is_qty_sup_to_0 ) {
 			$validated['error'] = 'qty_inf_to_0';
 			$validated['message'] = __( 'The amount of desired bookings is less than or equal to 0. Please increase the quantity.', BOOKACTI_PLUGIN_NAME );
@@ -611,8 +611,8 @@ function bookacti_create_repeated_events( $event, $shared_data = array(), $args 
     for( $i=0; $i <= $iteration; $i++ ) {
 		
         $is_exception	= bookacti_is_repeat_exception( $event->event_id, date( 'Y-m-d', $event_start->format( 'U' ) ) );
-        $has_started	= $event_start < $current_datetime_object;
-        $has_ended		= $event_end < $current_datetime_object;
+        $has_started	= $event_start->getTimestamp() < ( $current_datetime_object->getTimestamp() + $current_datetime_object->getOffset() );
+        $has_ended		= $event_end->getTimestamp() < ( $current_datetime_object->getTimestamp() + $current_datetime_object->getOffset() );
 		$is_in_range	= bookacti_is_event_in_its_template_range( $event->event_id, $event_start->format('Y-m-d H:i:s'), $event_end->format('Y-m-d H:i:s') );
 		$is_booked		= bookacti_get_number_of_bookings( $event->event_id, $event_start->format('Y-m-d H:i:s'), $event_end->format('Y-m-d H:i:s') ) > 0;
 		$category_ids	= bookacti_get_event_group_category_ids( $event->event_id, $event_start->format('Y-m-d H:i:s'), $event_end->format('Y-m-d H:i:s') );
@@ -701,16 +701,20 @@ function bookacti_units_to_add_to_repeat_event( $event ) {
  * Build a user-friendly events list
  * 
  * @since 1.1.0
- * @version 1.2.0
+ * @version 1.2.1
  * 
  * @param array $booking_events
  * @param int|string $quantity
+ * @param string $locale Optional. Default to site locale.
  * @return string
  */
-function bookacti_get_formatted_booking_events_list( $booking_events, $quantity = 'hide' ) {
+function bookacti_get_formatted_booking_events_list( $booking_events, $quantity = 'hide', $locale = 'site' ) {
 	
-	if( ! $booking_events ) {
-		return false;
+	if( ! $booking_events ) { return false; }
+	
+	// Set default locale to site's locale
+	if( $locale === 'site' ) {
+		$locale = bookacti_get_site_locale();
 	}
 	
 	// Format $events
@@ -763,7 +767,7 @@ function bookacti_get_formatted_booking_events_list( $booking_events, $quantity 
 			$events_list .= '<li>';
 			
 			if( $event[ 'title' ] ) {
-				$events_list .= '<span class="bookacti-booking-event-title" >' . apply_filters( 'bookacti_translate_text', $event[ 'title' ] ) . '</span>';
+				$events_list .= '<span class="bookacti-booking-event-title" >' . apply_filters( 'bookacti_translate_text', $event[ 'title' ], $locale ) . '</span>';
 				if( $event_duration ) {
 					$events_list .= '<span class="bookacti-booking-event-title-separator" >' . ' - ' . '</span>';
 				}

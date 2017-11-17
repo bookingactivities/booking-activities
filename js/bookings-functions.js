@@ -80,10 +80,8 @@ function bookacti_select_bookings_filter( e, booking_system, selected_filter ) {
 	
 	e = e || false;
 	
-	var supports_touch = 'ontouchstart' in window || ( typeof navigator.msMaxTouchPoints !== 'undefined' && navigator.msMaxTouchPoints );
-	
 	// Select the filters (press CTRL to select multiple for non touch devices)
-	if( e && ! supports_touch ) {
+	if( e && ! bookacti.is_touch_device ) {
 		if( ! e.ctrlKey ) {
 			selected_filter.parent().find( '.bookacti-bookings-filter' ).attr( 'selected', false );
 		}

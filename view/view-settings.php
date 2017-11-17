@@ -32,7 +32,7 @@ echo "<div class='wrap'>";
 	}
 	echo '</h2>';
 	
-	$save_with_ajax	= isset( $_GET[ 'section' ] ) ? 'bookacti_save_settings_with_ajax' : '';
+	$save_with_ajax	= isset( $_GET[ 'notification_id' ] ) ? 'bookacti_save_settings_with_ajax' : '';
 	$action			= $save_with_ajax ? '' : 'options.php';
 	
 	echo "<form method='post' action='" . $action . "' id='bookacti-settings' class='" . $save_with_ajax . "' >";
@@ -52,21 +52,21 @@ echo "<div class='wrap'>";
 
 		} else if( $active_tab === 'notifications' ) {
 			
-			if( isset( $_GET[ 'section' ] ) ) {
+			if( isset( $_GET[ 'notification_id' ] ) ) {
 				
-				$section = sanitize_title_with_dashes( $_GET[ 'section' ] );
+				$notification_id = sanitize_title_with_dashes( $_GET[ 'notification_id' ] );
 				
-				echo '<input type="hidden" name="option_page" value="' . esc_attr( 'bookacti_notifications_settings_' . $section ) . '" />';
-				echo '<input type="hidden" name="email_id" value="' . str_replace( 'email_', '', $section ) . '" />';
+				echo '<input type="hidden" name="option_page" value="' . esc_attr( 'bookacti_notifications_settings_' . $notification_id ) . '" />';
+				echo '<input type="hidden" name="notification_id" value="' . $notification_id . '" />';
 				echo '<input type="hidden" name="action" value="bookactiUpdateNotification" />';
-				wp_nonce_field( 'bookacti_notifications_settings_' . $section );
+				wp_nonce_field( 'bookacti_notifications_settings_' . $notification_id );
 				
-				do_action( 'bookacti_notifications_settings_section', $section );
+				do_action( 'bookacti_notification_settings_page', $notification_id );
 				
 			} else {
 				
 				settings_fields( 'bookacti_notifications_settings' );
-				do_settings_sections( 'bookacti_notifications_settings' ); 
+				do_settings_sections( 'bookacti_notifications_settings' );
 				
 			}
 

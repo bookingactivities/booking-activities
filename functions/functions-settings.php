@@ -5,7 +5,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 /**
  * Define default settings values
  * 
- * @version 1.2.0
+ * @version 1.2.1
  */
 function bookacti_define_default_settings_constants() {
 	if( ! defined( 'BOOKACTI_DEFAULT_TEMPLATE_PER_USER' ) )				{ define( 'BOOKACTI_DEFAULT_TEMPLATE_PER_USER', '0' ); }
@@ -29,7 +29,7 @@ function bookacti_define_default_settings_constants() {
 	
 	if( ! defined( 'BOOKACTI_NOTIFICATIONS_FROM_NAME' ) )				{ define( 'BOOKACTI_NOTIFICATIONS_FROM_NAME', get_bloginfo( 'name' ) ); }
 	if( ! defined( 'BOOKACTI_NOTIFICATIONS_FROM_EMAIL' ) )				{ define( 'BOOKACTI_NOTIFICATIONS_FROM_EMAIL', get_bloginfo( 'admin_email' ) ); }
-	if( ! defined( 'BOOKACTI_NOTIFICATIONS_ASYNC_EMAIL' ) )				{ define( 'BOOKACTI_NOTIFICATIONS_ASYNC_EMAIL', '1' ); }
+	if( ! defined( 'BOOKACTI_NOTIFICATIONS_ASYNC' ) )					{ define( 'BOOKACTI_NOTIFICATIONS_ASYNC', '1' ); }
 	
 	do_action( 'bookacti_define_settings_constants' );
 }
@@ -39,7 +39,7 @@ add_action( 'plugins_loaded', 'bookacti_define_default_settings_constants' );
 /**
  * Set settings values to their default value if null
  * 
- * @version 1.2.0
+ * @version 1.2.1
  */
 function bookacti_init_settings_values() {
 	
@@ -74,7 +74,7 @@ function bookacti_init_settings_values() {
 	$default_notifications_settings = get_option( 'bookacti_notifications_settings' );
 	if( ! isset( $default_notifications_settings['notifications_from_name'] ) )		{ $default_notifications_settings['notifications_from_name']	= BOOKACTI_NOTIFICATIONS_FROM_NAME; }
 	if( ! isset( $default_notifications_settings['notifications_from_email'] ) )	{ $default_notifications_settings['notifications_from_email']	= BOOKACTI_NOTIFICATIONS_FROM_EMAIL; }
-	if( ! isset( $default_notifications_settings['notifications_async_email'] ) )	{ $default_notifications_settings['notifications_async_email']	= BOOKACTI_NOTIFICATIONS_ASYNC_EMAIL; }
+	if( ! isset( $default_notifications_settings['notifications_async'] ) )			{ $default_notifications_settings['notifications_async']		= BOOKACTI_NOTIFICATIONS_ASYNC; }
 	update_option( 'bookacti_notifications_settings', $default_notifications_settings );
 	
 	do_action( 'bookacti_init_settings_value' );
@@ -84,7 +84,7 @@ function bookacti_init_settings_values() {
 /**
  * Reset settings to default values
  * 
- * @version 1.2.0
+ * @version 1.2.1
  */
 function bookacti_reset_settings() {
 	
@@ -122,7 +122,7 @@ function bookacti_reset_settings() {
 	$default_notifications_settings = array();
 	$default_notifications_settings['notifications_from_name']		= BOOKACTI_NOTIFICATIONS_FROM_NAME;
 	$default_notifications_settings['notifications_from_email']		= BOOKACTI_NOTIFICATIONS_FROM_EMAIL;
-	$default_notifications_settings['notifications_async_email']	= BOOKACTI_NOTIFICATIONS_ASYNC_EMAIL;
+	$default_notifications_settings['notifications_async']			= BOOKACTI_NOTIFICATIONS_ASYNC;
 	
 	update_option( 'bookacti_notifications_settings', $default_notifications_settings );
 	
@@ -436,7 +436,7 @@ function bookacti_settings_section_bookings_callback() { }
 	 */
 	function bookacti_settings_field_activate_reschedule_callback() {
 		$tip  = __( 'Allow or disallow customers to reschedule a booking after they order it.', BOOKACTI_PLUGIN_NAME );
-		$tip .= '<br/>' . __( 'This won\'t apply to group of bookings.', BOOKACTI_PLUGIN_NAME );
+		$tip .= '<br/>' . __( "This won't apply to group of bookings.", BOOKACTI_PLUGIN_NAME );
 		
 		$args = array(
 			'type'	=> 'checkbox',
@@ -506,53 +506,160 @@ function bookacti_settings_section_bookings_callback() { }
 // NOTIFICATIONS SETTINGS 
 	
 	/**
-	* Settings section callback - Notifications (displayed before settings)
+	* Settings section callback - Notifications - General settings (displayed before settings)
 	* 
-	* @since 1.2.0
+	* @since 1.2.1 (was bookacti_settings_section_notifications_callback in 1.2.0)
 	*/
-   function bookacti_settings_section_notifications_callback() { 
+   function bookacti_settings_section_notifications_general_callback() { 
 
-		// Display a table of configurable emails
+		// Display a table of configurable notifications
+		// Set up booking list columns
+		$columns_titles = apply_filters( 'bookacti_notifications_list_columns_titles', array(
+			10	=> array( 'id' => 'active',		'title' => esc_html_x( 'Active', 'is the notification active', BOOKACTI_PLUGIN_NAME ) ),
+			20	=> array( 'id' => 'title',		'title' => esc_html_x( 'Trigger', 'what triggers a notification', BOOKACTI_PLUGIN_NAME ) ),
+			30	=> array( 'id' => 'recipients',	'title' => esc_html_x( 'Send to', 'who the notification is sent to', BOOKACTI_PLUGIN_NAME ) ),
+			100 => array( 'id' => 'actions',	'title' => esc_html__( 'Actions', BOOKACTI_PLUGIN_NAME ) )
+		) );
+
+		// Order columns
+		ksort( $columns_titles, SORT_NUMERIC );
+	   
 	   ?>
-
-		<table class='bookacti-settings-table' >
+		<table class='bookacti-settings-table' id='bookacti-notifications-list' >
 			<thead>
 				<tr>
-					<th><?php _ex( 'Active', 'is the notification active', BOOKACTI_PLUGIN_NAME ); ?></th>
-					<th><?php _ex( 'Trigger', 'what triggers a notification', BOOKACTI_PLUGIN_NAME ); ?></th>
-					<th><?php _ex( 'Sent to', 'who is sent the notification to', BOOKACTI_PLUGIN_NAME ); ?></th>
-					<th><?php _e( 'Actions', BOOKACTI_PLUGIN_NAME ); ?></th>
+				<?php foreach( $columns_titles as $column ) { ?>
+					<th id='bookacti-notifications-list-column-<?php echo sanitize_title_with_dashes( $column[ 'id' ] ); ?>' >
+						<?php echo esc_html( $column[ 'title' ] ); ?>
+					</th>
+				<?php } ?>
 				</tr>
 			</thead>
 			<tbody>
 		<?php
-			$emails = bookacti_get_emails_default_settings();
-			foreach( $emails as $email_id => $email_settings ) {
-				// Use saved option if available, else use default
-				$description	= $email_settings[ 'description' ] ? $email_settings[ 'description' ] : '';
-				$email_settings = get_option( 'bookacti_notifications_settings_email_' . $email_id, $email_settings );
-				$active_icon	= $email_settings[ 'active' ] ? 'tick.png' : 'cross.png';
-			?>
+			$notifications = array_keys( bookacti_get_notifications_default_settings() );
+			asort( $notifications, SORT_STRING );
+			
+			foreach( $notifications as $notification_id ) {
+				
+				$notification_settings = bookacti_get_notification_settings( $notification_id, false );
+				
+				$active_icon	= $notification_settings[ 'active' ] ? 'dashicons-yes' : 'dashicons-no';
+				$description	= $notification_settings[ 'description' ] ? bookacti_help_tip( $notification_settings[ 'description' ], false ) : '';
+				
+				$columns_values = apply_filters( 'bookacti_notifications_list_columns_values', array(
+					'active'		=> '<span class="dashicons ' . $active_icon . '"></span>',
+					'title'			=> '<a href="' . esc_url( '?page=bookacti_settings&tab=notifications&notification_id=' . sanitize_title_with_dashes( $notification_id ) ) . '" >' . esc_html( $notification_settings[ 'title' ] ) . '</a>' . $description,
+					'recipients'	=> substr( $notification_id, 0, 8 ) === 'customer' ? esc_html__( 'Customer', BOOKACTI_PLUGIN_NAME ) : esc_html__( 'Administrator', BOOKACTI_PLUGIN_NAME ),
+					'actions'		=> '<a href="' . esc_url( '?page=bookacti_settings&tab=notifications&notification_id=' . sanitize_title_with_dashes( $notification_id ) ) . '" >' 
+										. '<img src="' . plugins_url() . '/' . BOOKACTI_PLUGIN_NAME . '/img/gear.png" />' 
+									. '</a>'
+				), $notification_settings, $notification_id );
+				
+				?>
 				<tr>
-					<td><img src='<?php echo plugins_url() . '/' . BOOKACTI_PLUGIN_NAME . '/img/' . $active_icon; ?>' /></td>
-					<td>
-						<a href='<?php echo esc_url( '?page=bookacti_settings&tab=notifications&section=email_' . sanitize_title_with_dashes( $email_id ) ); ?>'><?php echo $email_settings[ 'title' ]; ?></a>
-						<?php if( $description ) { bookacti_help_tip( $description ); } ?>
+				<?php foreach( $columns_titles as $column ) { ?>
+					<td class='bookacti-notifications-list-column-value-<?php echo sanitize_title_with_dashes( $column[ 'id' ] ); ?>' >
+					<?php
+						if( isset( $columns_values[ $column[ 'id' ] ] ) ) { 
+							echo $columns_values[ $column[ 'id' ] ];
+						}
+					?>
 					</td>
-					<td><?php echo substr( $email_id, 0, 8 ) === 'customer' ? __( 'Customer', BOOKACTI_PLUGIN_NAME ) : implode( ', ', $email_settings[ 'to' ] ); ?></td>
-					<td>
-						<a href='<?php echo esc_url( '?page=bookacti_settings&tab=notifications&section=email_' . sanitize_title_with_dashes( $email_id ) ); ?>' >
-							<img src='<?php echo plugins_url() . '/' . BOOKACTI_PLUGIN_NAME; ?>/img/gear.png' />
-						</a>
-					</td>
+				<?php } ?>
 				</tr>
-			<?php	
+			<?php } 
+			$is_plugin_active = bookacti_is_plugin_active( 'ba-notification-pack/ba-notification-pack.php' );
+			if( ! $is_plugin_active ) {
+				$addon_link = '<a href="https://booking-activities.fr/en/downloads/notification-pack/?utm_source=plugin&utm_medium=plugin&utm_campaign=notification-pack&utm_content=settings-notification-list" target="_blank" >';
+				$addon_link .= esc_html__( 'Notification Pack', BOOKACTI_PLUGIN_NAME );
+				$addon_link .= '</a>';
+				$columns_values = array(
+					'active'		=> '<span class="dashicons dashicons-no"></span>',
+					'title'			=> '<strong>' . esc_html__( '1 day before a booked event (reminder)', BOOKACTI_PLUGIN_NAME ) . '</strong>' 
+										/* translators: %1$s is the placeholder for Notification Pack add-on link */
+										. bookacti_help_tip( sprintf( esc_html__( 'You can send automatic reminders with %1$s add-on some days before booked events (you set the amount of days). This add-on also allow you to send all notifications through SMS and Push.', BOOKACTI_PLUGIN_NAME ), $addon_link ), false ),
+					'recipients'	=> esc_html__( 'Customer', BOOKACTI_PLUGIN_NAME ),
+					'actions'		=> "<a href='https://booking-activities.fr/en/downloads/notification-pack/?utm_source=plugin&utm_medium=plugin&utm_campaign=notification-pack&utm_content=settings-notification-list' class='button' target='_blank' >" . esc_html__( 'Learn more', BOOKACTI_PLUGIN_NAME ) . "</a>"
+				);
+				
+				?>
+				<tr>
+				<?php foreach( $columns_titles as $column ) { ?>
+					<td class='bookacti-notifications-list-column-value-<?php echo sanitize_title_with_dashes( $column[ 'id' ] ); ?>' >
+					<?php
+						if( isset( $columns_values[ $column[ 'id' ] ] ) ) { 
+							echo $columns_values[ $column[ 'id' ] ];
+						}
+					?>
+					</td>
+				<?php }
 			}
-		?>
+			?>
 			</tbody>
 		</table>
 	   <?php
-   }
+	   bookacti_display_banp_promo();
+	}
+	
+	
+	/**
+	 * Display a promotional area for Notification Pack add-on
+	 */
+	function bookacti_display_banp_promo() {
+		$is_plugin_active	= bookacti_is_plugin_active( 'ba-notification-pack/ba-notification-pack.php' );
+		$license_status		= get_option( 'banp_license_status' );
+
+		// If the plugin is activated but the license is not active yet
+		if( $is_plugin_active && ( ! $license_status || $license_status !== 'valid' ) ) {
+			?>
+			<div id='bookacti-banp-promo' class='bookacti-addon-promo' >
+				<p>
+				<?php 
+					/* translators: %s = add-on name */
+					echo sprintf( __( 'Thank you for purchasing %s add-on!', BOOKACTI_PLUGIN_NAME ), 
+								 '<strong>' . esc_html__( 'Notification Pack', BOOKACTI_PLUGIN_NAME ) . '</strong>' ); 
+				?>
+				</p><p>
+					<?php esc_html_e( "It seems you didn't activate your license yet. Please follow these instructions to activate your license:", BOOKACTI_PLUGIN_NAME ); ?>
+				</p><p>
+					<strong>
+						<a href='https://booking-activities.fr/en/docs/user-documentation/notification-pack/prerequisite-installation-license-activation-notification-pack-add-on/?utm_source=plugin&utm_medium=plugin&utm_content=encart-promo-settings' target='_blank' >
+							<?php 
+							/* translators: %s = add-on name */
+								echo sprintf( __( 'How to activate %s license?', BOOKACTI_PLUGIN_NAME ), 
+											  esc_html__( 'Notification Pack', BOOKACTI_PLUGIN_NAME ) ); 
+							?>
+						</a>
+					</strong>
+				</p>
+			</div>
+			<?php
+		}
+
+		else if( ! $license_status || $license_status !== 'valid' ) {
+			?>
+			<div id='bookacti-banp-promo' class='bookacti-addon-promo' >
+				<?php 
+				$addon_link = '<strong><a href="https://booking-activities.fr/en/downloads/notification-pack/?utm_source=plugin&utm_medium=plugin&utm_campaign=notification-pack&utm_content=encart-promo-settings" target="_blank" >';
+				$addon_link .= esc_html__( 'Notification Pack', BOOKACTI_PLUGIN_NAME );
+				$addon_link .= '</a></strong>';
+				/* translators: %1$s is the placeholder for Notification Pack add-on link */
+				echo sprintf( esc_html__( 'You can send all these notifications and booking reminders via email, SMS and Push with %1$s add-on!', BOOKACTI_PLUGIN_NAME ), $addon_link ); 
+				?>
+				<div><a href='https://booking-activities.fr/en/downloads/notification-pack/?utm_source=plugin&utm_medium=plugin&utm_campaign=notification-pack&utm_content=encart-promo-settings' class='button' target='_blank' ><?php esc_html_e( 'Learn more', BOOKACTI_PLUGIN_NAME ); ?></a></div>
+			</div>
+			<?php
+		}
+	}
+	
+	
+	/**
+	 * Settings section callback - Notifications - Email settings (displayed before settings)
+	 * 
+	 * @since 1.2.1
+	 */
+	function bookacti_settings_section_notifications_email_callback() {}
 	
 	
 	/**
@@ -590,17 +697,17 @@ function bookacti_settings_section_bookings_callback() { }
 	
 	
 	/**
-	 * Notification async email setting field
+	 * Notification async setting field
 	 * 
-	 * @version 1.2.0
+	 * @version 1.2.1 (was bookacti_settings_field_notifications_async_email_callback in 1.2.0)
 	 */
-	function bookacti_settings_field_notifications_async_email_callback() {
+	function bookacti_settings_field_notifications_async_callback() {
 		$args = array(
 			'type'	=> 'checkbox',
-			'name'	=> 'bookacti_notifications_settings[notifications_async_email]',
-			'id'	=> 'notifications_async_email',
-			'value'	=> bookacti_get_setting_value( 'bookacti_notifications_settings', 'notifications_async_email' ),
-			'tip'	=> __( 'Whether to send the email asynchronously. If enabled, emails will be sent the next time any page of this website is loaded. No one will have to wait any longer. Else, the loadings will last until emails are sent.', BOOKACTI_PLUGIN_NAME )
+			'name'	=> 'bookacti_notifications_settings[notifications_async]',
+			'id'	=> 'notifications_async',
+			'value'	=> bookacti_get_setting_value( 'bookacti_notifications_settings', 'notifications_async' ),
+			'tip'	=> __( 'Whether to send notifications asynchronously. If enabled, notifications will be sent the next time any page of this website is loaded. No one will have to wait any longer. Else, the loadings will last until notifications are sent.', BOOKACTI_PLUGIN_NAME )
 		);
 		bookacti_display_field( $args );
 	}
@@ -641,6 +748,10 @@ function bookacti_settings_section_bookings_callback() { }
 				'value'			=> __( 'Book', BOOKACTI_PLUGIN_NAME ),
 				'description'	=> __( 'Submit button label.', BOOKACTI_PLUGIN_NAME )
 			),
+			'booking_form_new_booking_button' => array(
+				'value'			=> __( 'Make a new booking', BOOKACTI_PLUGIN_NAME ),
+				'description'	=> __( 'Button label to make a new booking after the booking form has been submitted.', BOOKACTI_PLUGIN_NAME )
+			),
 		);
 		
 		return apply_filters( 'bookacti_default_messages', $messages );
@@ -664,9 +775,9 @@ function bookacti_settings_section_bookings_callback() { }
 			}
 		} 
 
-		// Else, get email settings through a normal get_option
+		// Else, get message settings through a normal get_option
 		else {
-			$saved_messages		= get_option( 'bookacti_messages_settings' );
+			$saved_messages	= get_option( 'bookacti_messages_settings' );
 		}
 		
 		$default_messages = bookacti_get_default_messages();
@@ -680,7 +791,7 @@ function bookacti_settings_section_bookings_callback() { }
 			}
 		}
 		
-		return apply_filters( 'bookacti_messages', $messages );
+		return apply_filters( 'bookacti_messages', $messages, $raw );
 	}
 	
 	

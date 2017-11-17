@@ -948,7 +948,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		// If the product is not "in_cart", it means that the order in already in process (maybe waiting for payment)
 		if( isset( $is_in_cart ) && empty( $is_in_cart ) ) {
 			$new_quantity = $old_quantity;
-			wc_add_notice( __( 'You can\'t update quantity since this product is temporarily booked on an order pending payment. Please, first cancel the order or remove this product from cart.', BOOKACTI_PLUGIN_NAME ), 'error' );
+			wc_add_notice( __( "You can't update quantity since this product is temporarily booked on an order pending payment. Please, first cancel the order or remove this product from cart.", BOOKACTI_PLUGIN_NAME ), 'error' );
 		}
 		
 		return $new_quantity;

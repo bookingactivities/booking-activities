@@ -613,6 +613,16 @@ function bookacti_load_template_calendar() {
 			// the same event can appears twice, so we need to apply changes on each
 			var elements = $j( '.fc-event[data-event-id="' + event.id + '"][data-event-start="' + event.start.format( 'YYYY-MM-DD HH:mm:ss' ) + '"]' );
 			
+			// Display event action on touch devices because they cannot be displayed on hover
+			if( bookacti.is_touch_device ) {
+				if( ! element.find( '.bookacti-event-action' ).is( ':visible' ) ) {
+					$j( '.bookacti-event-over' ).removeClass( 'bookacti-event-over' );
+					bookacti_show_event_actions( element );
+				} else {
+					bookacti_hide_event_actions( element, event );
+				}
+			}
+			
 			// Format the picked events
 			$j( '.fc-event' ).removeClass( 'bookacti-picked-event' );
 			elements.addClass( 'bookacti-picked-event' );
@@ -659,44 +669,22 @@ function bookacti_load_template_calendar() {
 		eventMouseover: function( event, jsEvent, view ) { 
 			// Add the "over" class
 			var element = $j( this );
-			element.addClass( 'bookacti-event-over' );
-			
-			element.find( '.bookacti-event-action' ).show();
+			bookacti_show_event_actions( element );
 		},
 		
 		// eventMouseover : When your mouse move out an event
 		eventMouseout: function( event, jsEvent, view ) { 
 			// Remove the "over" class
 			var element = $j( this );
-			element.removeClass( 'bookacti-event-over' );
-			
-			element.find( '.bookacti-event-action[data-hide-on-mouseout="1"]' ).hide();
-			
-			// Check if the event is selected
-			var is_selected = false
-			$j.each( bookacti.booking_system[ 'bookacti-template-calendar' ][ 'selected_events' ], function( i, selected_event ){
-				if( selected_event.id == event.id 
-				&&  selected_event.start.substr( 0, 10 ) === event.start.format( 'YYYY-MM-DD' ) ) {
-					is_selected = true;
-					return false; // break the loop
-				}
-			});
-			
-			// If the event is selected, do not hide the 'selected' checkbox
-			if( is_selected ) {
-				element.find( '.bookacti-event-actions' ).show();
-				element.find( '.bookacti-event-action-select' ).show();
-			} else {
-				element.find( '.bookacti-event-action-select' ).hide();
-			}
+			bookacti_hide_event_actions( element, event );
 		},
 		
 		
 		loading: function( isLoading ) {
-			if( ! isLoading && bookacti_is_touch_device() ) {
+			if( ! isLoading && bookacti.is_touch_device ) {
 				// Since the draggable events are lazy(bind)loaded, we need to
 				// trigger them all so they're all ready for us to drag/drop
-				// on the iPad. w00t!
+				// on the iPad.
 				$j( '.fc-event' ).each( function(){
 					var e = $j.Event( "mouseover", { target: this.firstChild, _dummyCalledOnStartup: true } );
 					$j( this ).trigger( e );

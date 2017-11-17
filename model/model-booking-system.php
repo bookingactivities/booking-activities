@@ -32,7 +32,9 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 					) as B ON B.event_id = E.id'
 				. ' WHERE E.activity_id = A.id '
 				. ' AND E.template_id = T.id '
-				. ' AND E.active = 1 ';
+				. ' AND E.active = 1 '
+				. ' AND A.active = 1 '
+				. ' AND T.active = 1 ';
 
 		// Do not fetch events out of their respective template limits...
 		$query  .= ' AND (	';

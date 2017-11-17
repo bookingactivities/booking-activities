@@ -9,7 +9,9 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	 * Register an hourly reccuring event (used to clean expired bookings)
 	 */
 	function bookacti_register_houly_clean_expired_bookings() {
-		wp_schedule_event( time(), 'hourly', 'bookacti_hourly_event' );
+		if( ! wp_next_scheduled ( 'bookacti_hourly_event' ) ) {
+			wp_schedule_event( time(), 'hourly', 'bookacti_hourly_event' );
+		}
 	}
 	add_action( 'woocommerce_installed', 'bookacti_register_houly_clean_expired_bookings' );
 	add_action( 'bookacti_activate', 'bookacti_register_houly_clean_expired_bookings' );

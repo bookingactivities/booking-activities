@@ -9,6 +9,7 @@ var bookacti = {
 			'narrow_width' : parseInt( bookacti_localized.event_narrow_width ),
 			'wide_width' : parseInt( bookacti_localized.event_wide_width )
 		},
+	'is_touch_device': false,
 
 	// Bookings
 	'hidden_activities': [],

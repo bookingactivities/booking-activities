@@ -12,19 +12,18 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	<div id='bookacti-add-ons'>	
 		<div id='bookacti-add-ons-intro' >
 			<h3><?php esc_html_e( 'Make the most of Booking Activities', BOOKACTI_PLUGIN_NAME ); ?></h3>
-			<p><?php esc_html_e( 'You can extend Booking Activities functionnalities with the following great add-ons. They make your booking management easier and boost your turnover. Pick the one you are interested in and just give it a try, you have a 30-day money back guarantee, no conditions. ', BOOKACTI_PLUGIN_NAME ); ?></p>
+			<p><?php esc_html_e( 'You can extend Booking Activities functionnalities with the following great add-ons. They make your booking management easier and boost your turnover. Pick the one you are interested in and just give it a try, you have a 30-day money back guarantee. ', BOOKACTI_PLUGIN_NAME ); ?></p>
 		</div>
 		
 		<div id='bookacti-add-ons-container' >
 		<?php
-			$promo = $promo_price_29 = $promo_price_39 = $promo_price_59 = $promo_price_89 = '';
+			$promo = $promo_price_29 = $promo_price_39 = $promo_price_59 = '';
 			$dismissed = get_option( 'bookacti-first20-notice-dismissed' );
 			if( ! $dismissed ) {
 				$promo = '-20%';
 				$promo_price_29 = '23.20€';
 				$promo_price_39 = '31.20€';
 				$promo_price_59 = '47.20€';
-				$promo_price_89 = '71.20€';
 			}
 		
 			$add_ons = array(
@@ -37,6 +36,19 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 					'light_color' => '#c291f2',
 					'dark_color' => '#332640',
 					'excerpt' => __( 'Customize Booking Activities appearance with the alternate views and customization options of this pack.', BOOKACTI_PLUGIN_NAME ),
+					'price' => '39.00€',
+					'promo' => $promo,
+					'promo_price' => $promo_price_39
+				),
+				'notification-pack' => array( 
+					'prefix' => 'banp',
+					'title' => __( 'Notification Pack', BOOKACTI_PLUGIN_NAME ),
+					'subtitle' => '',
+					'link' => 'https://booking-activities.fr/en/downloads/notification-pack/?utm_source=plugin&utm_medium=plugin&utm_campaign=notification-pack&utm_content=landing',
+					'screenshot' => true,
+					'light_color' => '#91f2d2',
+					'dark_color' => '#264037',
+					'excerpt' => __( 'Send notifications and booking reminders via email, SMS and Push. Set specific messages for each event and use them in your notifications.', BOOKACTI_PLUGIN_NAME ),
 					'price' => '39.00€',
 					'promo' => $promo,
 					'promo_price' => $promo_price_39
@@ -76,9 +88,9 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 					'light_color' => '#91f2a1',
 					'dark_color' => '#26402a',
 					'excerpt' => __( 'You have several points of sale and one website for all. Thanks to this plugin, your points of sale managers will be able to manage independently their own activities, calendars and bookings from this single website.', BOOKACTI_PLUGIN_NAME ),
-					'price' => '89.00€',
+					'price' => '59.00€',
 					'promo' => $promo,
-					'promo_price' => $promo_price_89
+					'promo_price' => $promo_price_59
 				)
 			);
 
@@ -184,12 +196,12 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 				<div class='bookacti-add-ons-guarantee' >
 					<div class='bookacti-add-ons-guarantee-picto' ><span class="dashicons dashicons-money"></span></div>
 					<h4><?php esc_html_e( '30-Day money back guarantee', BOOKACTI_PLUGIN_NAME ); ?></h4>
-					<div class='bookacti-add-ons-guarantee-description' ><?php esc_html_e( 'If you are not satisfied you will be 100% refunded, no questions asked', BOOKACTI_PLUGIN_NAME ); ?></div>
+					<div class='bookacti-add-ons-guarantee-description' ><?php esc_html_e( 'If you are not satisfied you will be 100% refunded', BOOKACTI_PLUGIN_NAME ); ?></div>
 				</div>
 				<div class='bookacti-add-ons-guarantee' >
 					<div class='bookacti-add-ons-guarantee-picto' ><span class="dashicons dashicons-email-alt"></span></div>
 					<h4><?php esc_html_e( 'Ready to help', BOOKACTI_PLUGIN_NAME ); ?></h4>
-					<div class='bookacti-add-ons-guarantee-description' ><?php esc_html_e( 'Contact us at contact@booking-activities.fr at any time for any kind of help', BOOKACTI_PLUGIN_NAME ); ?></div>
+					<div class='bookacti-add-ons-guarantee-description' ><?php esc_html_e( 'Contact us at contact@booking‑activities.fr, we answer within 48h', BOOKACTI_PLUGIN_NAME ); ?></div>
 				</div>
 			</div>
 		</div>

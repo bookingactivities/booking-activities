@@ -5,7 +5,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 /**
  * Init Booking Activities settings
  * 
- * @version 1.2.0
+ * @version 1.2.1
  */
 function bookacti_init_settings() { 
 
@@ -169,20 +169,37 @@ function bookacti_init_settings() {
 	
 	
 	
-	/* Notifications settings Section */
+	/* Notifications settings Section - 1 - General settings */
 	add_settings_section( 
-		'bookacti_settings_section_notifications',
+		'bookacti_settings_section_notifications_general',
 		__( 'Notifications', BOOKACTI_PLUGIN_NAME ),
-		'bookacti_settings_section_notifications_callback',
+		'bookacti_settings_section_notifications_general_callback',
 		'bookacti_notifications_settings'
 	);
 	
+	add_settings_field( 
+		'notifications_async',
+		__( 'Asynchronous notifications', BOOKACTI_PLUGIN_NAME ),
+		'bookacti_settings_field_notifications_async_callback',
+		'bookacti_notifications_settings',
+		'bookacti_settings_section_notifications_general'
+	);
+	
+	
+	/* Notifications settings Section - 2 - Email settings */
+	add_settings_section( 
+		'bookacti_settings_section_notifications_email',
+		__( 'Email notifications settings', BOOKACTI_PLUGIN_NAME ),
+		'bookacti_settings_section_notifications_email_callback',
+		'bookacti_notifications_settings'
+	);
+		
 	add_settings_field( 
 		'notifications_from_name',
 		__( 'From name', BOOKACTI_PLUGIN_NAME ),
 		'bookacti_settings_field_notifications_from_name_callback',
 		'bookacti_notifications_settings',
-		'bookacti_settings_section_notifications'
+		'bookacti_settings_section_notifications_email'
 	);
 	
 	add_settings_field( 
@@ -190,16 +207,9 @@ function bookacti_init_settings() {
 		__( 'From email', BOOKACTI_PLUGIN_NAME ),
 		'bookacti_settings_field_notifications_from_email_callback',
 		'bookacti_notifications_settings',
-		'bookacti_settings_section_notifications'
+		'bookacti_settings_section_notifications_email'
 	);
 	
-	add_settings_field( 
-		'notifications_async_email',
-		__( 'Asynchronous email', BOOKACTI_PLUGIN_NAME ),
-		'bookacti_settings_field_notifications_async_email_callback',
-		'bookacti_notifications_settings',
-		'bookacti_settings_section_notifications'
-	);
 	
 	
 	/* Messages settings Section */
@@ -214,10 +224,10 @@ function bookacti_init_settings() {
 	do_action( 'bookacti_add_settings' );
 	
 	
-	register_setting('bookacti_general_settings', 'bookacti_general_settings' );
-	register_setting('bookacti_cancellation_settings', 'bookacti_cancellation_settings' );
-	register_setting('bookacti_notifications_settings', 'bookacti_notifications_settings' );
-	register_setting('bookacti_messages_settings', 'bookacti_messages_settings' );
+	register_setting( 'bookacti_general_settings',			'bookacti_general_settings' );
+	register_setting( 'bookacti_cancellation_settings',		'bookacti_cancellation_settings' );
+	register_setting( 'bookacti_notifications_settings',	'bookacti_notifications_settings' );
+	register_setting( 'bookacti_messages_settings',			'bookacti_messages_settings' );
 }
 add_action( 'admin_init', 'bookacti_init_settings' );
 
@@ -227,125 +237,156 @@ add_action( 'admin_init', 'bookacti_init_settings' );
 /**
  * Create a settings page for each notification
  * 
- * @since 1.2.0
- * @param string $section
+ * @since 1.2.1 (was bookacti_fill_notifications_settings_section in 1.2.1)
+ * @param string $notification_id
  */
-function bookacti_fill_notifications_settings_section( $section ) {
-	// Emails
-	if( substr( $section, 0, 6 ) === 'email_' ) {
-		$email_id = substr( $section, 6 );
-		$email_settings = bookacti_get_email_settings( $email_id );
-		?>
+function bookacti_fill_notification_settings_page( $notification_id ) {
+	
+	if( ! $notification_id ) { return; }
+	
+	$notification_settings = bookacti_get_notification_settings( $notification_id );
+	?>
 
-			<h2><?php echo __( 'Notification', BOOKACTI_PLUGIN_NAME ) . ' - ' . $email_settings[ 'title' ]; ?></h2>
-			
-			<p>
-				<a href='<?php echo esc_url( '?page=bookacti_settings&tab=notifications' ); ?>' >
-					<?php _e( 'Go back to notifications settings', BOOKACTI_PLUGIN_NAME ); ?>
-				</a>
-			</p>
-			
-			<p><?php echo $email_settings[ 'description' ]; ?></p>
-			
-			<div id='bookacti-notifications-lang-switcher' class='bookacti-lang-switcher' ></div>
-			
-			<table class='form-table' >
-				<tbody>
-					<tr>
-						<th scope='row' ><?php _e( 'Enable', BOOKACTI_PLUGIN_NAME ); ?></th>
-						<td>
-							<?php 
-							$args = array(
-								'type'	=> 'checkbox',
-								'name'	=> 'bookacti_notifications_settings_' . $section . '[active]',
-								'id'	=> 'bookacti_notifications_settings_' . $section . '_active',
-								'value'	=> $email_settings[ 'active' ] ? $email_settings[ 'active' ] : 0,
-								'tip'	=> __( 'Enable or disable this automatic email.', BOOKACTI_PLUGIN_NAME )
-							);
-							bookacti_display_field( $args );
-							?>
-						</td>
-					</tr>
-					<?php if( substr( $email_id, 0, 8 ) !== 'customer' ) { ?>
-					<tr>
-						<th scope='row' ><?php _e( 'Recipient(s)', BOOKACTI_PLUGIN_NAME ); ?></th>
-						<td>
-							<?php
-							$args = array(
-								'type'	=> 'text',
-								'name'	=> 'bookacti_notifications_settings_' . $section . '[to]',
-								'id'	=> 'bookacti_notifications_settings_' . $section . '_to',
-								'value'	=> is_array( $email_settings[ 'to' ] ) ? implode( ',', $email_settings[ 'to' ] ) : strval( $email_settings[ 'to' ] ),
-								'tip'	=> __( 'Recipient(s) email address(es) (comma separated).', BOOKACTI_PLUGIN_NAME )
-							);
-							bookacti_display_field( $args );
-							?>
-						</td>
-					</tr>
-					<?php } ?>
-					<tr>
-						<th scope='row' ><?php _ex( 'Subject', 'email subject', BOOKACTI_PLUGIN_NAME ); ?></th>
-						<td>
-							<?php 
-							$args = array(
-								'type'	=> 'text',
-								'name'	=> 'bookacti_notifications_settings_' . $section . '[subject]',
-								'id'	=> 'bookacti_notifications_settings_' . $section . '_subject',
-								'value'	=> $email_settings[ 'subject' ] ? $email_settings[ 'subject' ] : '',
-								'tip'	=> __( 'The email subject.', BOOKACTI_PLUGIN_NAME )
-							);
-							bookacti_display_field( $args );
-							?>
-						</td>
-					</tr>
-					<tr>
-						<th scope='row' >
+		<h2><?php echo __( 'Notification', BOOKACTI_PLUGIN_NAME ) . ' - ' . $notification_settings[ 'title' ]; ?></h2>
+
+		<p>
+			<a href='<?php echo esc_url( '?page=bookacti_settings&tab=notifications' ); ?>' >
+				<?php _e( 'Go back to notifications settings', BOOKACTI_PLUGIN_NAME ); ?>
+			</a>
+		</p>
+
+		<p><?php echo $notification_settings[ 'description' ]; ?></p>
+
+		<?php do_action( 'bookacti_notification_settings_page_before', $notification_settings, $notification_id ); ?>
+
+		<h3><?php _ex( 'Global notifications settings', BOOKACTI_PLUGIN_NAME ); ?></h3>
+		<table class='form-table' id='bookacti-notification-global-settings' >
+			<tbody>
+				<tr>
+					<th scope='row' ><?php _e( 'Enable', BOOKACTI_PLUGIN_NAME ); ?></th>
+					<td>
 						<?php 
-							_ex( 'Email content', 'email message', BOOKACTI_PLUGIN_NAME ); 
-							$tags = bookacti_get_notifications_tags( $email_id );
-							if( $tags ) {
+						$args = array(
+							'type'	=> 'checkbox',
+							'name'	=> 'bookacti_notification[active]',
+							'id'	=> 'bookacti_notification_' . $notification_id . 'active',
+							'value'	=> $notification_settings[ 'active' ] ? $notification_settings[ 'active' ] : 0,
+							'tip'	=> __( 'Enable or disable this automatic notification.', BOOKACTI_PLUGIN_NAME )
+						);
+						bookacti_display_field( $args );
 						?>
-							<div class='bookacti-notifications-tags-list' >
-								<p><?php _e( 'Use these tags:' ); ?></p>
+					</td>
+				</tr>
+				<?php do_action( 'bookacti_notification_settings_page_global', $notification_settings, $notification_id ); ?>
+			</tbody>
+		</table>
+
+		<h3><?php _e( 'Email notifications settings', BOOKACTI_PLUGIN_NAME ); ?></h3>
+		<table class='form-table' id='bookacti-notification-email-settings' >
+			<tbody>
+				<?php 
+
+				do_action( 'bookacti_notification_settings_page_email_before', $notification_settings, $notification_id );
+
+				if( substr( $notification_id, 0, 8 ) !== 'customer' ) { ?>
+				<tr>
+					<th scope='row' ><?php _e( 'Recipient(s)', BOOKACTI_PLUGIN_NAME ); ?></th>
+					<td>
 						<?php
-								foreach( $tags as $tag => $tip ) {
+						$args = array(
+							'type'	=> 'text',
+							'name'	=> 'bookacti_notification[email][to]',
+							'id'	=> 'bookacti_notification_' . $notification_id . '_email_to',
+							'value'	=> is_array( $notification_settings[ 'email' ][ 'to' ] ) ? implode( ',', $notification_settings[ 'email' ][ 'to' ] ) : strval( $notification_settings[ 'email' ][ 'to' ] ),
+							'tip'	=> __( 'Recipient(s) email address(es) (comma separated).', BOOKACTI_PLUGIN_NAME )
+						);
+						bookacti_display_field( $args );
 						?>
-									<div class='bookacti-notifications-tag' >
-										<code><?php echo $tag; ?></code>
-										<?php bookacti_help_tip( $tip ); ?>
-									</div>
-						<?php
-								}
+					</td>
+				</tr>
+				<?php } ?>
+				<tr>
+					<th scope='row' ><?php _ex( 'Subject', 'email subject', BOOKACTI_PLUGIN_NAME ); ?></th>
+					<td>
+						<?php 
+						$args = array(
+							'type'	=> 'text',
+							'name'	=> 'bookacti_notification[email][subject]',
+							'id'	=> 'bookacti_notification_' . $notification_id . '_email_subject',
+							'value'	=> $notification_settings[ 'email' ][ 'subject' ] ? $notification_settings[ 'email' ][ 'subject' ] : '',
+							'tip'	=> __( 'The email subject.', BOOKACTI_PLUGIN_NAME )
+						);
+						bookacti_display_field( $args );
 						?>
-							</div>
-						<?php
+					</td>
+				</tr>
+				<tr>
+					<th scope='row' >
+					<?php 
+						_ex( 'Email content', 'email message', BOOKACTI_PLUGIN_NAME ); 
+						$tags = bookacti_get_notifications_tags( $notification_id );
+						if( $tags ) {
+					?>
+						<div class='bookacti-notifications-tags-list' >
+							<p><?php _e( 'Use these tags:' ); ?></p>
+					<?php
+							foreach( $tags as $tag => $tip ) {
+					?>
+								<div class='bookacti-notifications-tag' >
+									<code><?php echo $tag; ?></code>
+									<?php bookacti_help_tip( $tip ); ?>
+								</div>
+					<?php
 							}
+							
+							// Notification Pack promo
+							$is_plugin_active = bookacti_is_plugin_active( 'ba-notification-pack/ba-notification-pack.php' );
+							if( ! $is_plugin_active ) {
+								$addon_link  = '<a href="https://booking-activities.fr/en/downloads/notification-pack/?utm_source=plugin&utm_medium=plugin&utm_campaign=notification-pack&utm_content=settings-notification-list" target="_blank" >';
+								$addon_link .= esc_html__( 'Notification Pack', BOOKACTI_PLUGIN_NAME );
+								$addon_link .= '</a>';
+								/* translators: %1$s is the placeholder for Notification Pack add-on link */
+								$tip = sprintf( esc_html__( 'You can set a specific message on events, activities, groups of events and group categories and use it in your notifications thanks to %1$s add-on.', BOOKACTI_PLUGIN_NAME ), $addon_link );
+								?>
+								<div class='bookacti-notifications-tag' >
+									<code class='bookacti-notifications-tag-promo' >{specific_message}</code>
+									<?php bookacti_help_tip( $tip ); ?>
+								</div>
+								<?php
+							}
+							
+					?>
+						</div>
+					<?php
+						}
+					?>
+					</th>
+					<td>
+						<?php 
+						$args = array(
+							'type'	=> 'editor',
+							'name'	=> 'bookacti_notification[email][message]',
+							'id'	=> 'bookacti_notification_' . $notification_id . '_email_message',
+							'value'	=> $notification_settings[ 'email' ][ 'message' ] ? $notification_settings[ 'email' ][ 'message' ] : ''
+						);
+						bookacti_display_field( $args );
 						?>
-						</th>
-						<td>
-							<?php 
-							$args = array(
-								'type'	=> 'editor',
-								'name'	=> 'bookacti_notifications_settings_' . $section . '[message]',
-								'id'	=> 'bookacti_notifications_settings_' . $section . '_message',
-								'value'	=> $email_settings[ 'message' ] ? $email_settings[ 'message' ] : ''
-							);
-							bookacti_display_field( $args );
-							?>
-						</td>
-					</tr>
-				</tbody>
-			</table>
-		<?php
-	}
+					</td>
+				</tr>
+				<?php do_action( 'bookacti_notification_settings_page_email_after', $notification_settings, $notification_id ); ?>
+			</tbody>
+		</table>
+	<?php
+	do_action( 'bookacti_notification_settings_page_after', $notification_settings, $notification_id );
 }
-add_action( 'bookacti_notifications_settings_section', 'bookacti_fill_notifications_settings_section', 10, 1 );
+add_action( 'bookacti_notification_settings_page', 'bookacti_fill_notification_settings_page', 10, 1 );
 
 
 /**
  * Update notifications data
  * 
  * @since 1.2.0
+ * @version 1.2.1
  */
 function bookacti_controller_update_notification() {
 	
@@ -357,10 +398,13 @@ function bookacti_controller_update_notification() {
 
 	if( $is_nonce_valid && $is_allowed ) {
 		
-		// Sanitize values
-		$email_settings = bookacti_sanitize_email_settings( $_POST[ $option_page ], $_POST[ 'email_id' ] );
+		if( ! $_POST[ 'bookacti_notification' ] || ! $_POST[ 'notification_id' ] ) {
+			wp_send_json( array( 'status' => 'failed', 'error' => 'missing_data' ) );
+		}
 		
-		$updated = update_option( $option_page, $email_settings );
+		// Sanitize values
+		$notification_settings = bookacti_sanitize_notification_settings( $_POST[ 'bookacti_notification' ], $_POST[ 'notification_id' ] );
+		$updated = update_option( $option_page, $notification_settings );
 		
 		if( $updated ) {
 			wp_send_json( array( 'status' => 'success' ) );
@@ -368,11 +412,70 @@ function bookacti_controller_update_notification() {
 			wp_send_json( array( 'status' => 'failed', 'error' => 'not_updated' ) );
 		}
 		
-	} else {
-		wp_send_json( array( 'status' => 'failed', 'error' => 'not_allowed' ) );
 	}
+	
+	wp_send_json( array( 'status' => 'failed', 'error' => 'not_allowed' ) );
 }
 add_action( 'wp_ajax_bookactiUpdateNotification', 'bookacti_controller_update_notification' );
+
+
+/**
+ * Ensure backward compatibility between 1.2.0 and 1.2.1+
+ * 
+ * @version 1.2.1
+ */
+function bookacti_format_old_notifications_settings() {
+	if( version_compare( BOOKACTI_VERSION, '1.2.1', '>=' ) ) {
+		// get all db options
+		$alloptions = wp_load_alloptions(); // get_option() calls wp_load_alloptions() itself, so there is no overhead at runtime 
+		
+		// Convert async setting format
+		if( isset( $alloptions[ 'bookacti_notifications_settings' ] ) ) {
+			$notifications_settings = maybe_unserialize( $alloptions[ 'bookacti_notifications_settings' ] );
+			if( isset( $notifications_settings[ 'notifications_async_email' ] ) ) {
+				// Put the old value in the new setting
+				$notifications_settings[ 'notifications_async' ] = $notifications_settings[ 'notifications_async_email' ];
+				unset( $notifications_settings[ 'notifications_async_email' ] );
+				
+				// Add new notification settings and delete the old one
+				delete_option( 'bookacti_notifications_settings' );
+				add_option( 'bookacti_notifications_settings', $notifications_settings );
+			}
+		}
+		
+		// Convert notification settings format
+		$notification_ids = array_keys( bookacti_get_notifications_default_settings() );
+		foreach( $notification_ids as $notification_id ) {
+			// If old notifications settings exists, convert it to the new format
+			if( ! isset( $alloptions[ 'bookacti_notifications_settings_email_' . $notification_id ] ) ) { continue; }
+			
+			// Get notifications settings
+			$notification_settings	= maybe_unserialize( $alloptions[ 'bookacti_notifications_settings_email_' . $notification_id ] );
+			$new_settings			= $notification_settings;
+			
+			if( ! $notification_settings ) { continue; }
+			
+			// If the format is already the good one, stop processing
+			if( isset( $notification_settings[ 'email' ] ) ) { continue; }
+			
+			// Transform old notification settings format into the new one
+			$new_settings[ 'id' ] = $notification_id;
+			
+			if( isset( $notification_settings[ 'title' ] ) ) { unset( $new_settings[ 'title' ] ); }
+			
+			$new_settings[ 'email' ] = array();
+			$new_settings[ 'email' ][ 'active' ] = 1;
+			if( isset( $notification_settings[ 'to' ] ) )		{ $new_settings[ 'email' ][ 'to' ] = $notification_settings[ 'to' ]; unset( $new_settings[ 'to' ] ); }
+			if( isset( $notification_settings[ 'subject' ] ) )	{ $new_settings[ 'email' ][ 'subject' ] = $notification_settings[ 'subject' ]; unset( $new_settings[ 'subject' ] ); }
+			if( isset( $notification_settings[ 'message' ] ) )	{ $new_settings[ 'email' ][ 'message' ] = $notification_settings[ 'message' ]; unset( $new_settings[ 'message' ] ); }
+			
+			// Add new notification settings and delete the old one
+			add_option( 'bookacti_notifications_settings_' . $notification_id, $new_settings );
+			delete_option( 'bookacti_notifications_settings_email_' . $notification_id );		
+		}
+	}
+}
+add_action( 'bookacti_updated', 'bookacti_format_old_notifications_settings' );
 
 
 

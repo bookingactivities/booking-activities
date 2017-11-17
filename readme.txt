@@ -3,9 +3,9 @@ Contributors: bookingactivities
 Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=7EKU434L7NEVC
 Tags: booking activities, booking sport, booking form, event reservation, reservation schedule
 Requires at least: 3.6
-Tested up to: 4.8
+Tested up to: 4.9
 Requires PHP: 5.3
-Stable tag: 1.2.0
+Stable tag: 1.2.1
 License: GPLv3 or later
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
 
@@ -66,7 +66,7 @@ Try this reservation tool live on the [demo website](http://demo.booking-activit
 * **Automatic emails** are sent to both administrator and customer when a booking is made, when its state changes, and when it is rescheduled
 * **Fully customize** and configure all your email notifications
 * In multilangual sites, emails are sent to your customers **in their own language**
-* *Email reminders are coming soon in a dedicated add-on!*
+* *Send notifications and **reminders** via email, **SMS and ★ Push**, and set **★ event-specific messages** thanks to [Notification Pack](https://booking-activities.fr/en/downloads/notification-pack/?utm_source=wp-plugin-page&utm_medium=wordpress&utm_campaign=notification-pack&utm_content=readme) add-on*
 
 **Translation ready**
 
@@ -77,7 +77,7 @@ Try this reservation tool live on the [demo website](http://demo.booking-activit
 **The best inside**
 
 * **API for developers** (PHP actions and filters, JS actions). *Documentation coming soon.*
-* Use the lattest version of the beautiful and handy **[FullCalendar](https://fullcalendar.io/)**
+* Use the latest version of the beautiful and handy **[FullCalendar](https://fullcalendar.io/)**
 
 See the whole [features list here](https://booking-activities.fr/en/documentation/features/?utm_source=wp-plugin-page&utm_medium=wordpress&utm_content=readme).
 
@@ -85,6 +85,7 @@ See the whole [features list here](https://booking-activities.fr/en/documentatio
 = Extend these features with add-ons: =
 
 * **[Display Pack](https://booking-activities.fr/en/downloads/display-pack/?utm_source=wp-plugin-page&utm_medium=wordpress&utm_campaign=display-pack&utm_content=readme)**: Customize your calendars or set alternative display (datepicker)
+* **[Notification Pack](https://booking-activities.fr/en/downloads/notification-pack/?utm_source=wp-plugin-page&utm_medium=wordpress&utm_campaign=notification-pack&utm_content=readme)**: Send notifications and booking reminders by email, SMS and Push
 * **[Prices and Promotions](https://booking-activities.fr/en/downloads/prices-and-promotions/?utm_source=wp-plugin-page&utm_medium=wordpress&utm_campaign=prices-and-promotions&utm_content=readme)**: Set prices and discounts on specific events
 * **[Order for Customers](https://booking-activities.fr/en/downloads/order-for-customers/?utm_source=wp-plugin-page&utm_medium=wordpress&utm_campaign=order-for-customers&utm_content=readme)**: You can book / place an order in the name of your customers
 * **[Points of Sale](https://booking-activities.fr/en/downloads/points-of-sale/?utm_source=wp-plugin-page&utm_medium=wordpress&utm_campaign=points-of-sale&utm_content=readme)**: Each POS manager manage his own products, calendars and bookings
@@ -300,6 +301,24 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 
 == Changelog ==
 
+= 1.2.1 - 2017/11/17 =
+* Feature - Added a snap frequency option in editor to place your events at precise timeslot
+* Lib - Updated FullCalendar to 3.6.2 and Moment JS to 2.19.1
+* Tweak - Wordpress 4.9 support
+* Tweak - A button allowing users to make a new booking now appears after a successful booking form submission
+* Fix - Now you can edit events on touch devices (click replaces mouseover)
+* Fix - Fixed events that shouldn't appear / should appear on frontend calendars according to your timezone
+* Fix - Fixed deactivated calendar / activities / events appearing on frontend if the shortcode didn't specified calendar and activities ids
+* Fix - Prevent users to book duplicated bookings by pressing multiple times on the "Book" button
+* Fix - Fixed notification tag "{booking_title}" 
+* Fix - Fixed multilingual event title in notification always showing in site's language
+* Fix - Fixed bookacti_hourly_event WP cron job triggered multiple times
+* Fix - Fixed JS fatal error when trying to format duration for event list
+* Dev - Many refactoring in notifications in anticipation of Notification Pack add-on release. See below.
+* Dev - Functions and hooks related to notifications have undergone changes. Please check the source code if you use them.
+* Dev - bookacti_display_field now support radio and textarea and you can add these to editor setting dialogs
+* Dev - PHP filter Tweak - bookacti_messages have a new $raw parameter
+
 = 1.2.0 - 2017/10/12 =
 * Feature - Send email notifications to the administrator and the customer when a booking is made, when its status changes and when it is rescheduled
 * Feature - Configure and customize email notifications
@@ -341,11 +360,12 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 * Fix - Improved readme.txt to provide a better understanding and preview of the plugin
 
 = 1.1.0 - 2017/07/16 =
-* Optimization - Calendars are now loaded faster and on page load (possibility to load after page load in Booking Activities settings)
 * Feature - Manage groups of events! You can group events and make your customer book a bundle of events instead of a single one.
 * Feature - Bind multiple calendars and activities to one product in WooCommerce!
+* Optimization - Calendars are now loaded faster and on page load (possibility to load after page load in Booking Activities settings)
 * Feature - Choose the default booking status after a customer complete the booking form or a WooCommerce order.
 * Feature - Calendars events are now related to your business timezone, and no longer to users' timezone. Customers around the world cannot see / book a past event because of time offset.
+* Feature - You can change how dates are formatted (in grouped events and picked events list only)
 * Tweak - You can change your calendars period regardless of the bookings already done
 * Fix - Apostrophe characters in template / activity / events names are now correctly displayed
 * Fix - Dates are now translated everywhere

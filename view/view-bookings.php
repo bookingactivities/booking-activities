@@ -16,7 +16,7 @@ if( empty( $templates ) ) {
 			<?php
 			/* translators: %1$s and %2$s delimit the link to Calendar Editor page. */
 			echo sprintf(	
-					esc_html__( 'Welcome! It seems you don\'t have any calendar yet. Go to %1$sCalendar Editor%2$s to create your first calendar.', BOOKACTI_PLUGIN_NAME ),
+					esc_html__( "Welcome! It seems you don't have any calendar yet. Go to %1$sCalendar Editor%2$s to create your first calendar.", BOOKACTI_PLUGIN_NAME ),
 					'<a href="' . esc_url( $editor_url ) . '" >', 
 					'</a>' );
 			?>

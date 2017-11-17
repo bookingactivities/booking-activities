@@ -74,6 +74,7 @@ function bookacti_format_template_settings( $template_settings ) {
 	$default_settings = apply_filters( 'bookacti_template_default_settings', array(
 		'minTime'				=> '08:00',
 		'maxTime'				=> '20:00',
+		'snapDuration'			=> '00:30'
 	) );
 	
 	$settings = array();
@@ -259,7 +260,17 @@ function bookacti_validate_event( $event_id, $event_availability, $repeat_freq, 
 
 // GROUPS OF EVENTS
 
-
+/**
+ * Validate group of events data input
+ * 
+ * @since 1.1.0
+ * 
+ * @param string $group_title
+ * @param int $category_id
+ * @param string $category_title
+ * @param array $events
+ * @return array
+ */
 function bookacti_validate_group_of_events_data( $group_title, $category_id, $category_title, $events ) {
 	
 	//Init var to check with worst case
@@ -299,8 +310,8 @@ function bookacti_validate_group_of_events_data( $group_title, $category_id, $ca
  * 
  * @since 1.1.0
  * 
- * @param type $category_settings
- * @return type
+ * @param array $group_settings
+ * @return array
  */
 function bookacti_format_group_of_events_settings( $group_settings ) {
 	

@@ -247,6 +247,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	 * Display various fields
 	 * 
 	 * @since 1.2.0
+	 * @version 1.2.1
 	 * @param array $args ['type', 'name', 'label', 'id', 'class', 'placeholder', 'options', 'value', 'tip']
 	 */
 	function bookacti_display_field( $args ) {
@@ -271,10 +272,29 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 					max=		'<?php echo esc_attr( $args[ 'options' ][ 'max' ] ); ?>'
 				<?php } ?>
 			/>
+		<?php if( $args[ 'label' ] ) { ?>
 			<label	for='<?php echo esc_attr( $args[ 'id' ] ); ?>' >
 				<?php echo $args[ 'label' ]; ?>
 			</label>
 		<?php
+			}
+		}
+
+		// TEXTAREA
+		else if( $args[ 'type' ] === 'textarea' ) {
+		?>
+			<textarea	
+				name=		'<?php echo esc_attr( $args[ 'name' ] ); ?>' 
+				id=			'<?php echo esc_attr( $args[ 'id' ] ); ?>' 
+				class=		'bookacti-textarea <?php echo esc_attr( $args[ 'class' ] ); ?>' 
+				placeholder='<?php echo esc_attr( $args[ 'placeholder' ] ); ?>'
+			><?php echo $args[ 'value' ]; ?></textarea>
+		<?php if( $args[ 'label' ] ) { ?>
+				<label	for='<?php echo esc_attr( $args[ 'id' ] ); ?>' >
+					<?php echo $args[ 'label' ]; ?>
+				</label>
+		<?php
+			}
 		}
 
 		// SINGLE CHECKBOX (boolean)
@@ -294,11 +314,42 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 							value='1'
 							<?php if( isset( $args[ 'value' ][ $option[ 'id' ] ] ) ) { checked( $args[ 'value' ][ $option[ 'id' ] ], 1, true ); } ?>
 					/>
+				<?php if( $option[ 'label' ] ) { ?>
 					<label for='<?php echo esc_attr( $args[ 'id' ] ) . '_' . esc_attr( $option[ 'id' ] ); ?>' >
-						<?php echo apply_filters( 'bookacti_translate_text', esc_html( $option[ 'label' ] ) ); ?>
+						<?php echo apply_filters( 'bookacti_translate_text', $option[ 'label' ] ); ?>
 					</label>
 				<?php
-					//Display the tip
+					}
+					// Display the tip
+					if( $option[ 'description' ] ) {
+						$tip = apply_filters( 'bookacti_translate_text', $option[ 'description' ] );
+						bookacti_help_tip( $tip );
+					}
+				?>
+				</div>
+			<?php
+			}
+		}
+
+		// RADIO
+		else if( $args[ 'type' ] === 'radio' ) {
+			foreach( $args[ 'options' ] as $option ) {
+			?>
+				<div class='bookacti_radio'>
+					<input	name='<?php echo esc_attr( $args[ 'name' ] ); ?>' 
+							id='<?php echo esc_attr( $args[ 'id' ] ) . '_' . esc_attr( $option[ 'id' ] ); ?>' 
+							class='bookacti-input <?php echo esc_attr( $args[ 'class' ] ); ?>' 
+							type='radio' 
+							value='<?php echo esc_attr( $option[ 'id' ] ); ?>'
+							<?php if( isset( $args[ 'value' ] ) ) { checked( $args[ 'value' ], $option[ 'id' ], true ); } ?>
+					/>
+				<?php if( $option[ 'label' ] ) { ?>
+					<label for='<?php echo esc_attr( $args[ 'id' ] ) . '_' . esc_attr( $option[ 'id' ] ); ?>' >
+						<?php echo apply_filters( 'bookacti_translate_text', $option[ 'label' ] ); ?>
+					</label>
+				<?php
+					}
+					// Display the tip
 					if( $option[ 'description' ] ) {
 						$tip = apply_filters( 'bookacti_translate_text', $option[ 'description' ] );
 						bookacti_help_tip( $tip );
@@ -325,7 +376,12 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 				</option>
 			<?php } ?>
 			</select>
-			<?php
+		<?php if( $args[ 'label' ] ) { ?>
+			<label for='<?php echo esc_attr( $args[ 'id' ] ); ?>' >
+				<?php echo apply_filters( 'bookacti_translate_text', $args[ 'label' ] ); ?>
+			</label>
+		<?php
+			}
 		}
 
 		// TINYMCE editor
@@ -357,7 +413,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		if( ! isset( $args[ 'type' ] ) || ! isset( $args[ 'name' ] ) ) { return false; }
 
 		// If field type is not supported, return
-		if( ! in_array( $args[ 'type' ], array( 'text', 'number', 'checkbox', 'checkboxes', 'select', 'radio', 'editor' ) ) ) { 
+		if( ! in_array( $args[ 'type' ], array( 'text', 'number', 'checkbox', 'checkboxes', 'select', 'radio', 'textarea', 'editor' ) ) ) { 
 			return false; 
 		}
 
@@ -411,13 +467,17 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	/**
 	 * Display help toolbox
 	 * 
-	 * @version 1.2.0
+	 * @version 1.2.1
 	 * @param string $tip
 	 */
-	function bookacti_help_tip( $tip ){
-		echo "<span class='bookacti-tip' data-tip='" . esc_attr( $tip ) . "'>"
+	function bookacti_help_tip( $tip, $echo = true ){
+		$tip = "<span class='bookacti-tip' data-tip='" . esc_attr( $tip ) . "'>"
 				. "<img src='" . esc_url( plugins_url() . '/' . BOOKACTI_PLUGIN_NAME . '/img/help.png' ) . "' />"
 			. "</span>";
+		
+		if( $echo ) { echo $tip; }
+		
+		return $tip;
 	}
 
 	

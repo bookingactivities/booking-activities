@@ -2,12 +2,16 @@
 // Exit if accessed directly
 if ( ! defined( 'ABSPATH' ) ) { exit; }
 
-add_action( 'init', 'bookacti_shortcodes_init');
+/**
+ * Initialize Booking Activities shortcodes
+ */
 function bookacti_shortcodes_init() {
 	add_shortcode( 'bookingactivities_calendar', 'bookacti_shortcode_calendar' );
 	add_shortcode( 'bookingactivities_form', 'bookacti_shortcode_booking_form' );
 	add_shortcode( 'bookingactivities_list', 'bookacti_shortcode_bookings_list' );
 }
+add_action( 'init', 'bookacti_shortcodes_init');
+
 
 /**
  * Display a calendar of activities / templates via shortcode
@@ -235,7 +239,7 @@ function bookacti_shortcode_bookings_list( $atts = array(), $content = null, $ta
 	// If there are no booking rows
 	if( empty( $list_items ) ) {
 		$body_columns	.= "<tr>"
-						.	"<td colspan='" . esc_attr( count( $columns ) ) . "'>" . esc_html__( 'You don\'t have any bookings.', BOOKACTI_PLUGIN_NAME ) . "</td>"
+						.	"<td colspan='" . esc_attr( count( $columns ) ) . "'>" . esc_html__( "You don't have any bookings.", BOOKACTI_PLUGIN_NAME ) . "</td>"
 						. "</tr>";
 	}
 	
@@ -292,7 +296,7 @@ function bookacti_controller_validate_booking_form() {
 		
 		if( $booking_form_values[ 'user_id' ] != get_current_user_id() && ! current_user_can( 'bookacti_edit_bookings' ) ) {
 			$response[ 'status' ] = 'failed';
-			$response[ 'message' ] = __( 'You can\'t make a booking for someone else.', BOOKACTI_PLUGIN_NAME );
+			$response[ 'message' ] = __( "You can't make a booking for someone else.", BOOKACTI_PLUGIN_NAME );
 		}
 		
 		if( $response[ 'status' ] === 'success' ) {

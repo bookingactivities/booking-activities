@@ -220,7 +220,7 @@ echo "<h1>" . esc_html__( 'Calendars', BOOKACTI_PLUGIN_NAME ) . "</h1>";
 			[bookingactivities_calendar]
 		</code>
 		<?php 
-			$tip = __( 'This shortcode will display this calendar alone. Users will only be able to browse the calendar, they can\'t make booking with it.', BOOKACTI_PLUGIN_NAME );
+			$tip = __( "This shortcode will display this calendar alone. Users will only be able to browse the calendar, they can't make booking with it.", BOOKACTI_PLUGIN_NAME );
 			bookacti_help_tip( $tip ); 
 		?>
 	</p>
