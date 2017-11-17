@@ -382,7 +382,7 @@ function bookacti_get_notifications_tags_values( $booking_id, $booking_type, $no
 		$tags[ $default_tag ] = isset( $booking_data[ $default_tag ] ) ? $booking_data[ $default_tag ] : '';
 	}
 	
-	return apply_filters( 'bookacti_notifications_tags_values', $tags, $booking_id, $booking_type, $notification_id );
+	return apply_filters( 'bookacti_notifications_tags_values', $tags, $booking_id, $booking_type, $notification_id, $locale );
 }
 
 
