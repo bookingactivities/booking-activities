@@ -35,7 +35,6 @@ $j( document ).ready( function() {
 			error: function( e ){
 				console.log( 'AJAX ' + bookacti_localized.error_update_settings );
 				console.log( e );
-				alert( 'AJAX ' + bookacti_localized.error_update_settings );
 			},
 			complete: function() {}
 		});	

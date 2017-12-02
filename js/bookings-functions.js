@@ -166,7 +166,7 @@ function bookacti_filter_bookings_by_templates( booking_system ) {
 					if( response.error === 'not_allowed' ) {
 						message_error += '\n' + bookacti_localized.error_not_allowed;
 					}
-					alert( message_error );
+					console.log( message_error );
 					console.log( response );
 				}
 			},

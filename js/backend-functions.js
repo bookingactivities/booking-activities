@@ -82,8 +82,8 @@ function bookacti_dismiss_5stars_rating_notice() {
 				if( response.error === 'not_allowed' ) {
 					message_error += '\n' + bookacti_localized.error_not_allowed;
 				}
+				console.log( message_error );
 				console.log( response );
-				alert( message_error );
 			}
 		},
 		error: function( e ){

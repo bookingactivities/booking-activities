@@ -40,7 +40,7 @@ function bookacti_fetch_events( booking_system ) {
 				if( response.error === 'not_allowed' ) {
 					error_message += '\n' + bookacti_localized.error_not_allowed;
 				}
-				alert( error_message );
+				console.log( error_message );
 				console.log( response );
 			}
         },
@@ -101,7 +101,7 @@ function bookacti_reload_booking_system( booking_system ) {
 				if( response.error === 'not_allowed' ) {
 					error_message += '\n' + bookacti_localized.error_not_allowed;
 				}
-				alert( error_message );
+				console.log( error_message );
 				console.log( response );
 			}
         },
@@ -113,6 +113,90 @@ function bookacti_reload_booking_system( booking_system ) {
 			bookacti_stop_loading_booking_system( booking_system );
 		}
     });	
+}
+
+
+// Create repeated events
+function bookacti_create_repeated_events( booking_system_id, repeated_events ) {
+	
+	// If booking system settings are not set or if there is no repeated event, return an empty array
+	if( ! bookacti.booking_system[ booking_system_id ] || ! repeated_events ) { return []; }
+	
+	var events_sources = [];
+	$j.each( repeated_events, function( i, repeated_event ) {
+		
+		// Event sources don't support custom properties. We must include them in each events
+		var shared_properties = {
+			'id'				: repeated_event.id,
+			'title'				: repeated_event.title,
+			'multilingual_title': repeated_event.multilingual_title,
+			'template_id'		: repeated_event.template_id,
+			'activity_id'		: repeated_event.activity_id,
+			'availability'		: repeated_event.availability,
+			'repeat_freq'		: repeated_event.repeat_freq,
+			'event_settings'	: repeated_event.event_settings ? repeated_event.event_settings : {},
+			'activity_settings'	: repeated_event.activity_settings ? activity_settings : {}
+		};
+		
+		// Common properties (same as shared_properties, but these are supported by FullCalendar)
+		var events_source = { 
+			'id'				: 'event_' + repeated_event.id,
+			'allDayDefault'		: false,
+			'color'				: repeated_event.color,
+			'durationEditable'	: repeated_event.is_resizable ? true : false
+		};
+		
+		// Init variables to compute occurences
+		var events = [];
+		
+		var event_start			= moment( repeated_event.start );
+		var event_end			= moment( repeated_event.end );
+		var event_duration		= Math.abs( event_end.diff( event_start, 'seconds' ) );
+		var event_start_time	= event_start.format( 'HH:mm:ss' );
+		
+		var repeat_from			= moment( repeated_event.repeat_from );
+		var repeat_to			= moment( repeated_event.repeat_to );
+		var repeat_freq			= {};
+		
+		switch( repeated_event.repeat_freq ) {
+			case 'daily':
+				repeat_freq	= { 'days': 1 };
+				break;
+			case 'weekly':
+				repeat_freq	= { 'days': 7 };
+				break;
+			case 'montly':
+				repeat_freq	= { 'months': 1 };
+				break;
+		}
+		
+		// Compute occurences
+		for( var loop = moment( repeat_from ); loop.unix() <= repeat_to.unix(); loop.add( repeat_freq ) ) {
+			
+			var occurence_start = moment( loop.format( 'YYYY-MM-DD' ) + ' ' + event_start_time );
+			var occurence_end = occurence_start.clone().add( event_duration, 'seconds' );
+			
+			// Compute start and end dates
+			var event_occurence = {
+				'start'	: occurence_start,
+				'end'	: occurence_end
+			};
+			
+			// Merge shared and specific properties
+			event_occurence = $j.extend( event_occurence, shared_properties );
+			
+			// Add this occurrence to events array
+			events.push( event_occurence );
+		}
+		
+		// Add the array of events to the event source
+		events_source.events = events;
+		
+		// Add the event source to the others (from other repeated events)
+		events_sources.push( events_source );
+	});
+	
+	return events_sources;
 }
 
 
@@ -163,7 +247,7 @@ function bookacti_switch_booking_method( booking_system, method ) {
 				if( response.error === 'not_allowed' ) {
 					error_message += '\n' + bookacti_localized.error_not_allowed;
 				}
-				alert( error_message );
+				console.log( error_message );
 				console.log( response );
 			}
         },
@@ -416,7 +500,7 @@ function bookacti_fill_picked_events_list( booking_system ) {
 				}
 
 				var list_element = $j( '<li />', {
-					html: event_data.title + '<span class="bookacti-booking-event-title-separator" > - </span>' + event_duration + unit
+					'html': event_data.title + '<span class="bookacti-booking-event-title-separator" > - </span>' + event_duration + unit
 				});
 
 				event_list.append( list_element );
@@ -562,8 +646,8 @@ function bookacti_update_settings_from_database( booking_system, template_ids ) 
 				if( response.error === 'not_allowed' ) {
 					message_error += '\n' + bookacti_localized.error_not_allowed;
 				}
+				console.log( error_message );
 				console.log( response );
-				alert( message_error );
             }
         },
         error: function( e ){
@@ -619,7 +703,7 @@ function bookacti_is_event_available( booking_system, event ) {
 			var group_ids = bookacti_get_event_group_ids( booking_system, event );
 			if( $j.isArray( group_ids ) && group_ids.length > 0 ) {
 				// Check if the event is available in one group at least
-				var is_available = false;
+				is_available = false;
 				$j.each( group_ids, function( i, group_id ) {
 					var group_availability = bookacti_get_group_availability( bookacti.booking_system[ booking_system_id ][ 'groups_events' ][ group_id ] );
 					if( group_availability > 0 ) {
@@ -818,7 +902,7 @@ function bookacti_start_loading_booking_system( booking_system ) {
 				bookacti_enter_calendar_loading_state( booking_system.find( '.bookacti-calendar' ) );
 			}
 		} else if( ! booking_system.find( '.bookacti-loading-alt' ).length ) {
-			booking_system.prepend( loading_div );
+			booking_system.append( loading_div );
 		}
 		
 	} else {

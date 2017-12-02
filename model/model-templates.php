@@ -24,13 +24,13 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
                     . ' WHERE E.activity_id = A.id '
                     . ' AND E.active = 1 ';
 		
-        //if we know the event id, we only get this event
+        // If we know the event id, we only get this event
         if( $event_id != '' && isset( $event_id ) && ! is_null( $event_id ) ) {
             
 			$query  .= ' AND E.id = %d';
             $prep_query = $wpdb->prepare( $query, $event_id );
         
-        //if we know the template id, we get all events of this template
+        // If we know the template id, we get all events of this template
         } else if ( $template_id != '' && isset( $template_id ) && ! is_null( $template_id ) ) {
             
             $query  .= ' AND E.template_id = %d';
@@ -39,9 +39,9 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		
         $events = $wpdb->get_results( $prep_query, OBJECT );
         
-        $events_array = array();
+        $events_array = array( 'single' => array(), 'repeated' => array() );
         foreach ( $events as $event ) {
-            //Have to convert 0 and 1 to true or false...
+            // Have to convert 0 and 1 to true or false...
 			$event->is_resizable = $event->is_resizable === '1' ? true : false;
             
 			$event_array = array(
@@ -50,24 +50,22 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 				'title'				=> apply_filters( 'bookacti_translate_text', $event->title ),
 				'multilingual_title'=> $event->title,
 				'allDay'			=> false,
+				'start'				=> $event->start,
+				'end'				=> $event->end,
 				'color'				=> $event->color,
 				'activity_id'		=> $event->activity_id,
 				'availability'		=> $event->availability,
 				'durationEditable'	=> $event->is_resizable,
 				'repeat_freq'		=> $event->repeat_freq,
+				'repeat_from'		=> $event->repeat_from,
+				'repeat_to'			=> $event->repeat_to,
 				'event_settings'	=> bookacti_get_metadata( 'event', $event->event_id )
 			);
 			
             if( $event->repeat_freq === 'none' ) {
-                
-                $event_array['start']			= $event->start;
-                $event_array['end']				= $event->end;
-                $event_array['bookings']		= bookacti_get_number_of_bookings( $event->event_id, $event->start, $event->end );
-				
-                array_push( $events_array, $event_array );
+                array_push( $events_array[ 'single' ], $event_array );
             } else {
-				$repeated_events_array = bookacti_create_repeated_events( $event, $event_array, array( 'past_events' => true, 'context' => 'editor' ) );
-                $events_array = array_merge( $events_array, $repeated_events_array );
+                array_push( $events_array[ 'repeated' ], $event_array );
             }
         }
         

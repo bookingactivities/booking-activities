@@ -88,7 +88,7 @@ function bookacti_set_calendar_up( booking_system, reload_events ) {
 			// Add background to basic views
 			if( view.name === 'month' || view.name === 'basicWeek' || view.name === 'basicDay' ) {
 				var bg_div = $j( '<div />', {
-					class: 'fc-bg'
+					'class': 'fc-bg'
 				});
 				element.append( bg_div );
 			}

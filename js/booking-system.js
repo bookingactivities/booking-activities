@@ -11,12 +11,7 @@ $j( document ).ready( function() {
 			bookacti_fill_form_fields( $j( this ), event, group_id );
 			bookacti_fill_picked_events_list( $j( this ) );
 		});
-		
-		// Init on submit event action
-		$j( '.bookacti-booking-system-container' ).on( 'bookacti_submit_booking_form', function() {
-		});
-		
-		
+				
 		$j( '.bookacti-booking-system' ).each( function() { 
 			
 			// Retrieve the info required to show the desired events

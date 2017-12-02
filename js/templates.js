@@ -6,6 +6,8 @@ $j( document ).ready( function() {
 		// Init globals
 		bookacti.booking_system[ 'bookacti-template-calendar' ]								= [];
 		bookacti.booking_system[ 'bookacti-template-calendar' ][ 'events' ]					= [];
+		bookacti.booking_system[ 'bookacti-template-calendar' ][ 'bookings' ]				= [];
+		bookacti.booking_system[ 'bookacti-template-calendar' ][ 'exceptions' ]				= [];
 		bookacti.booking_system[ 'bookacti-template-calendar' ][ 'groups_events' ]			= [];
 		bookacti.booking_system[ 'bookacti-template-calendar' ][ 'groups_data' ]			= [];
 		bookacti.booking_system[ 'bookacti-template-calendar' ][ 'activities_data' ]		= [];
@@ -21,7 +23,6 @@ $j( document ).ready( function() {
 		bookacti.selected_category	= 'new';
 		bookacti.is_dragging		= false;
 		bookacti.blocked_events		= false;
-		bookacti.exceptions			= [];
 		
 		
 		// initialize activities and groups
@@ -125,14 +126,14 @@ function bookacti_load_template_calendar() {
 		},
 
 
-		//Load an empty array to allow the callback 'loading' to work
+		// Load an empty array to allow the callback 'loading' to work
 		events: function( start, end, timezone, callback ) {
 			callback( [] );
 		},
 
 
 		viewRender: function( view ) {
-			//Change the height of the calendar to match the available hours in agenda views
+			// Change the height of the calendar to match the available hours in agenda views
 			if( view.name === 'agendaWeek' || view.name === 'agendaDay' ) {
 				calendar.fullCalendar( 'option', 'contentHeight', 'auto' );
 			} else { 
@@ -179,11 +180,11 @@ function bookacti_load_template_calendar() {
 				}
 				
 				var avail_div	= '<div class="bookacti-availability-container" >' 
-										+	'<span class="bookacti-available-places ' + class_no_availability + ' ' + class_booked + ' ' + class_full + '" >' 
-										+		'<span class="bookacti-bookings" >' + event.bookings + '</span>' 
-										+		'<span class="bookacti-total-availability" >/' + event.availability + '</span>'
-										+	'</span>'
-										+ '</div>';
+								+	'<span class="bookacti-available-places ' + class_no_availability + ' ' + class_booked + ' ' + class_full + '" >' 
+								+		'<span class="bookacti-bookings" >' + event.bookings + '</span>' 
+								+		'<span class="bookacti-total-availability" >/' + event.availability + '</span>'
+								+	'</span>'
+								+ '</div>';
 				
 				element.append( avail_div );
 			}
@@ -191,18 +192,18 @@ function bookacti_load_template_calendar() {
 			
 			// Add event actions div
 			// Init var
-			var event_actions_div	= element.find( '.bookacti-event-actions' ).length > 0 ? element.find( '.bookacti-event-actions' ) : $j( '<div />', { class: 'bookacti-event-actions' } );
+			var event_actions_div	= element.find( '.bookacti-event-actions' ).length > 0 ? element.find( '.bookacti-event-actions' ) : $j( '<div />', { 'class': 'bookacti-event-actions' } );
 			var event_actions		= [];
 			
 			// EDIT ACTION
 			if( ! event_actions_div.find( '.bookacti-event-action-edit' ).length ) {
 				var edit_div	=	$j( '<div />', {
-										class: 'bookacti-event-action bookacti-event-action-edit',
+										'class': 'bookacti-event-action bookacti-event-action-edit',
 										'data-hide-on-mouseout': '1'
 									} );
 				var edit_button =	$j( '<span />', {
-										type: 'checkbox',
-										class: 'dashicons dashicons-admin-generic bookacti-event-action-edit-button',
+										'type': 'checkbox',
+										'class': 'dashicons dashicons-admin-generic bookacti-event-action-edit-button',
 										'aria-hidden': 'true'
 									} );
 				event_actions.push( edit_div.prepend( edit_button ) );
@@ -222,14 +223,14 @@ function bookacti_load_template_calendar() {
 				});
 				
 				var select_div		=	$j( '<div />', {
-											class: 'bookacti-event-action bookacti-event-action-select',
+											'class': 'bookacti-event-action bookacti-event-action-select',
 											'data-hide-on-mouseout': '0'
 										} );
 				var select_checkbox =	$j( '<input />', {
-											type: 'checkbox',
-											class: 'bookacti-event-action-select-checkbox',
-											value: '0',
-											checked: is_selected
+											'type': 'checkbox',
+											'class': 'bookacti-event-action-select-checkbox',
+											'value': '0',
+											'checked': is_selected
 										} );
 				event_actions.push( select_div.append( select_checkbox ) );
 			}
@@ -249,7 +250,7 @@ function bookacti_load_template_calendar() {
 			// Add background to basic views
 			if( view.name === 'month' || view.name === 'basicWeek' || view.name === 'basicDay' ) {
 				var bg_div = $j( '<div />', {
-					class: 'fc-bg'
+					'class': 'fc-bg'
 				});
 				element.append( bg_div );
 			}
@@ -258,8 +259,9 @@ function bookacti_load_template_calendar() {
 			// Check if the event is on an exception
 			if( event.repeat_freq ) {
 				if( event.repeat_freq !== 'none' ) {
-					if( bookacti.exceptions[ bookacti.selected_template ] !== undefined && bookacti.exceptions[ bookacti.selected_template ][ event.id ] !== undefined ) {
-						$j.each( bookacti.exceptions[ bookacti.selected_template ][ event.id ], function ( i, excep ) {
+					if( bookacti.booking_system[ 'bookacti-template-calendar' ][ 'exceptions' ] !== undefined 
+					&&  bookacti.booking_system[ 'bookacti-template-calendar' ][ 'exceptions' ][ event.id ] !== undefined ) {
+						$j.each( bookacti.booking_system[ 'bookacti-template-calendar' ][ 'exceptions' ][ event.id ], function ( i, excep ) {
 							if( excep.type === 'date' && excep.value === event.start.format( 'YYYY-MM-DD' ) ) {
 								element.addClass( 'event-exception' );
 								event.render = 0;

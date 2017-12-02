@@ -884,6 +884,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			$exceptions			= bookacti_get_exceptions( $template_id );
 			
 			$events				= bookacti_fetch_events_for_calendar_editor( $template_id );
+			$bookings			= bookacti_get_number_of_bookings_by_events( $template_id );
 			$activities_data	= bookacti_get_activities_by_template( $template_id, true );
 			$groups_events		= bookacti_get_groups_events( $template_id );
 			$groups_data		= bookacti_get_groups_of_events_by_template( $template_id );
@@ -899,6 +900,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 				'exceptions'			=> $exceptions, 
 				
 				'events'				=> $events,
+				'bookings'				=> $bookings,
 				'activities_data'		=> $activities_data, 
 				'groups_events'			=> $groups_events, 
 				'groups_data'			=> $groups_data, 

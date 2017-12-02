@@ -432,7 +432,7 @@ function bookacti_dialog_update_template( template_id ) {
 		// Add the 'delete' button
 		{
 			text: bookacti_localized.dialog_button_delete,
-			class: 'bookacti-dialog-delete-button bookacti-dialog-left-button',
+			'class': 'bookacti-dialog-delete-button bookacti-dialog-left-button',
 
 			//On click on the OK Button, new values are send to a script that update the database
 			click: function() {
@@ -457,7 +457,7 @@ function bookacti_dialog_deactivate_template( template_id ) {
 	$j( '#bookacti-delete-template-dialog' ).dialog( 'option', 'buttons',
 		[{
 			text: bookacti_localized.dialog_button_delete,
-			class: 'bookacti-dialog-delete-button',
+			'class': 'bookacti-dialog-delete-button',
 
 			// On click on the OK Button, new values are send to a script that update the database
 			click: function() {
@@ -721,7 +721,7 @@ function bookacti_dialog_update_event( event ) {
 				// DELETE button
 				var delete_button = {
 					text: bookacti_localized.dialog_button_delete,
-					class: 'bookacti-dialog-delete-button bookacti-dialog-left-button',
+					'class': 'bookacti-dialog-delete-button bookacti-dialog-left-button',
 
 					//On click on the OK Button, new values are send to a script that update the database
 					click: function() {
@@ -735,7 +735,7 @@ function bookacti_dialog_update_event( event ) {
 				if( response.repeat_freq !== 'none' ) {
 					unbind_button =	{
 						text: bookacti_localized.dialog_button_unbind,
-						class: 'bookacti-dialog-unbind-button bookacti-dialog-left-button',
+						'class': 'bookacti-dialog-unbind-button bookacti-dialog-left-button',
 
 						//On click on the OK Button, new values are send to a script that update the database
 						click: function() {
@@ -780,7 +780,7 @@ function bookacti_dialog_delete_event( event ) {
     $j( '#bookacti-delete-event-dialog' ).dialog( 'option', 'buttons',
         [{
             text: bookacti_localized.dialog_button_delete,
-			class: 'bookacti-dialog-delete-button',
+			'class': 'bookacti-dialog-delete-button',
 			
             // On click on the OK Button, new values are send to a script that update the database
             click: function() {
@@ -862,7 +862,7 @@ function bookacti_dialog_delete_booked_event( event ) {
     $j( '#bookacti-delete-booked-event-dialog' ).dialog( 'option', 'buttons',
         [{
             text: bookacti_localized.dialog_button_delete,
-			class: 'bookacti-dialog-delete-button',
+			'class': 'bookacti-dialog-delete-button',
 			
             // On click on the OK Button, new values are send to a script that update the database
             click: function() {
@@ -940,7 +940,7 @@ function bookacti_dialog_unbind_occurences( event, errors ) {
     // Add buttons
 	var unbind_selected_button = {
 		text: bookacti_localized.dialog_button_unbind_selected,
-		class: 'bookacti-dialog-delete-button',
+		'class': 'bookacti-dialog-delete-button',
 		//On click on the OK Button, new values are send to a script that update the database
 		click: function() {
 			bookacti_unbind_occurrences( event, 'selected' );
@@ -949,7 +949,7 @@ function bookacti_dialog_unbind_occurences( event, errors ) {
 	};
 	var unbind_booked_button = {
 		text: bookacti_localized.dialog_button_unbind_all_booked,
-		class: 'bookacti-dialog-delete-button',
+		'class': 'bookacti-dialog-delete-button',
 		// On click on the OK Button, new values are send to a script that update the database
 		click: function() {
 			bookacti_unbind_occurrences( event, 'booked' );
@@ -1514,7 +1514,7 @@ function bookacti_dialog_update_activity( activity_id ) {
 		// Add the 'delete' button
 		{
 			text: bookacti_localized.dialog_button_delete,
-			class: 'bookacti-dialog-delete-button bookacti-dialog-left-button',
+			'class': 'bookacti-dialog-delete-button bookacti-dialog-left-button',
 
 			//On click on the OK Button, new values are send to a script that update the database
 			click: function() {
@@ -1539,7 +1539,7 @@ function bookacti_dialog_delete_activity( activity_id ) {
 		$j( '#bookacti-delete-activity-dialog' ).dialog( 'option', 'buttons',
 			[{
 				text: bookacti_localized.dialog_button_delete,
-				class: 'bookacti-dialog-delete-button',
+				'class': 'bookacti-dialog-delete-button',
 
 				//On click on the OK Button, new values are send to a script that update the database
 				click: function() {
@@ -1651,7 +1651,7 @@ function bookacti_dialog_create_group_of_events( category_id ) {
 			event_duration = event_start.format( bookacti_localized.date_format ) + ' &rarr; ' + event_end.format( 'LT' );
 		}
 		var option = $j( '<option />', {
-						html: event.title + ' - ' + event_duration
+						'html': event.title + ' - ' + event_duration
 					} );
 		option.appendTo( '#bookacti-group-of-events-summary' );
 	});
@@ -1782,7 +1782,7 @@ function bookacti_dialog_update_group_of_events( group_id ) {
 			event_duration = event_start.format( bookacti_localized.date_format ) + ' &rarr; ' + event_end.format( 'LT' );
 		}
 		var option = $j( '<option />', {
-						html: event.title + ' - ' + event_duration
+						'html': event.title + ' - ' + event_duration
 					} );
 		option.appendTo( '#bookacti-group-of-events-summary' );
 	});
@@ -1937,7 +1937,7 @@ function bookacti_dialog_update_group_of_events( group_id ) {
 		// Add the 'delete' button
 		{
 			text: bookacti_localized.dialog_button_delete,
-			class: 'bookacti-dialog-delete-button bookacti-dialog-left-button',
+			'class': 'bookacti-dialog-delete-button bookacti-dialog-left-button',
 			
 			//On click on the OK Button, new values are send to a script that update the database
 			click: function() {
@@ -1957,7 +1957,7 @@ function bookacti_dialog_delete_group_of_events( group_id ) {
 	$j( '#bookacti-delete-group-of-events-dialog' ).dialog( 'option', 'buttons',
 		[{
 			text: bookacti_localized.dialog_button_delete,
-			class: 'bookacti-dialog-delete-button',
+			'class': 'bookacti-dialog-delete-button',
 
 			//On click on the OK Button, new values are send to a script that update the database
 			click: function() {
@@ -2152,7 +2152,7 @@ function bookacti_dialog_update_group_category( category_id ) {
 		// Add the 'delete' button
 		{
 			text: bookacti_localized.dialog_button_delete,
-			class: 'bookacti-dialog-delete-button bookacti-dialog-left-button',
+			'class': 'bookacti-dialog-delete-button bookacti-dialog-left-button',
 			
 			//On click on the OK Button, new values are send to a script that update the database
 			click: function() {
@@ -2172,7 +2172,7 @@ function bookacti_dialog_delete_group_category( category_id ) {
 	$j( '#bookacti-delete-group-category-dialog' ).dialog( 'option', 'buttons',
 		[{
 			text: bookacti_localized.dialog_button_delete,
-			class: 'bookacti-dialog-delete-button',
+			'class': 'bookacti-dialog-delete-button',
 
 			// On click on the OK Button, new values are send to a script that update the database
 			click: function() {

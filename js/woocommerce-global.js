@@ -44,12 +44,12 @@ $j( document ).ready( function() {
 							$j( 'dd.variation-bookacti_refund_coupon p' ).html( response.coupon_code );
 						} else {
 							var coupon_code_label = $j( '<dt />', {
-								class: 'variation-bookacti_refund_coupon',
-								text: bookacti_localized.coupon_code + ':'
+								'class': 'variation-bookacti_refund_coupon',
+								'text': bookacti_localized.coupon_code + ':'
 							});
 							var coupon_code_value = $j( '<dd />', {
-								class: 'variation-bookacti_refund_coupon'
-							}).append( $j( '<p />', { text: response.coupon_code } ) );
+								'class': 'variation-bookacti_refund_coupon'
+							}).append( $j( '<p />', { 'text': response.coupon_code } ) );
 							row.find( '.variation' ).append( coupon_code_label );
 							row.find( '.variation' ).append( coupon_code_value );
 						}
