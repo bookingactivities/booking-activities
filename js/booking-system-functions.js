@@ -122,9 +122,11 @@ function bookacti_create_repeated_events( booking_system_id, repeated_events ) {
 	// If booking system settings are not set or if there is no repeated event, return an empty array
 	if( ! bookacti.booking_system[ booking_system_id ] || ! repeated_events ) { return []; }
 	
+	var calendar_start	= moment( bookacti.booking_system[ booking_system_id ][ 'settings' ][ 'start' ] );
+	var calendar_end	= moment( bookacti.booking_system[ booking_system_id ][ 'settings' ][ 'end' ] );
+	
 	var events_sources = [];
 	$j.each( repeated_events, function( i, repeated_event ) {
-		
 		// Event sources don't support custom properties. We must include them in each events
 		var shared_properties = {
 			'id'				: repeated_event.id,
@@ -158,12 +160,18 @@ function bookacti_create_repeated_events( booking_system_id, repeated_events ) {
 		var repeat_to			= moment( repeated_event.repeat_to );
 		var repeat_freq			= {};
 		
+		if( calendar_start.isAfter( repeat_from ) )	{ repeat_from = calendar_start; }
+		if( calendar_end.isBefore( repeat_to ) )	{ repeat_to = calendar_end; }
+		
 		switch( repeated_event.repeat_freq ) {
 			case 'daily':
 				repeat_freq	= { 'days': 1 };
 				break;
 			case 'weekly':
 				repeat_freq	= { 'days': 7 };
+				// We also need to make sure the repetition start from the week day of the event
+				var event_weekday = moment( repeated_event.start ).isoWeekday();
+				if( repeat_from.isoWeekday() !== event_weekday ) { repeat_from.isoWeekday( event_weekday ); }
 				break;
 			case 'montly':
 				repeat_freq	= { 'months': 1 };
@@ -171,10 +179,16 @@ function bookacti_create_repeated_events( booking_system_id, repeated_events ) {
 		}
 		
 		// Compute occurences
+		var i = 0;
 		for( var loop = moment( repeat_from ); loop.unix() <= repeat_to.unix(); loop.add( repeat_freq ) ) {
 			
 			var occurence_start = moment( loop.format( 'YYYY-MM-DD' ) + ' ' + event_start_time );
 			var occurence_end = occurence_start.clone().add( event_duration, 'seconds' );
+			
+			// Do not create the occurence if...
+//			if( 
+//				
+//			) { continue; }
 			
 			// Compute start and end dates
 			var event_occurence = {
@@ -187,6 +201,11 @@ function bookacti_create_repeated_events( booking_system_id, repeated_events ) {
 			
 			// Add this occurrence to events array
 			events.push( event_occurence );
+			
+			i++;
+			if( i === 6 ) {
+				break;
+			}
 		}
 		
 		// Add the array of events to the event source
@@ -662,6 +681,30 @@ function bookacti_update_settings_from_database( booking_system, template_ids ) 
 			}
 		}
     });
+}
+
+
+// Get event booking numbers
+function bookacti_get_event_number_of_bookings( event, booking_system_id ) {
+	
+	var bookings = bookacti.booking_system[ booking_system_id ][ 'bookings' ];
+	
+	if( ! bookings ) { return 0; }
+	
+	bookings = bookacti.booking_system[ booking_system_id ][ 'bookings' ][ event.id ];
+	
+	if( ! bookings ) { return 0; }
+	
+	var number_of_bookings = 0;
+	$j.each( bookings, function( i, booking ) {
+		if( event.start.format( 'YYYY-MM-DD HH:mm:ss' ) === booking.event_start
+		&&  event.end.format( 'YYYY-MM-DD HH:mm:ss' ) === booking.event_end ) {
+			number_of_bookings = parseInt( booking.quantity );
+			return false; // Break the loop
+		}
+	});
+
+	return number_of_bookings;
 }
 
 

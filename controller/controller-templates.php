@@ -236,8 +236,9 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	}
 	
 	
-	// Get all exceptions for a given template and / or event
-	add_action( 'wp_ajax_bookactiGetExceptions', 'bookacti_controller_get_exceptions' );
+	/**
+	 * AJAX Controller - Get all exceptions for a given template and / or event
+	 */
 	function bookacti_controller_get_exceptions() {
 		
 		$template_id	= intval( $_POST['template_id'] );
@@ -263,6 +264,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			wp_send_json( array( 'status' => 'failed', 'error' => 'not_allowed' ) );
 		}
 	}
+	add_action( 'wp_ajax_bookactiGetExceptions', 'bookacti_controller_get_exceptions' );
 	
 	
 	/**

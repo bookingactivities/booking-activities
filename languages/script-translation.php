@@ -63,6 +63,7 @@ $bookacti_translation_array = apply_filters( 'bookacti_translation_array', array
 
 	// ERRORS
 	'error_retrieve_event_data'			=> esc_html__( 'Error occurs when trying to retrieve event parameters.', BOOKACTI_PLUGIN_NAME ),
+	'error_retrieve_booking_numbers'	=> esc_html__( 'Error occurs when trying to retrieve booking numbers.', BOOKACTI_PLUGIN_NAME ),
 	'error_update_event_param'          => esc_html__( 'Error occurs when trying to save event parameters.', BOOKACTI_PLUGIN_NAME ),
 	'error_add_exception'               => esc_html__( 'Error occurs when trying to add repetition exceptions.', BOOKACTI_PLUGIN_NAME ),
 	'error_delete_exception'            => esc_html__( 'Error occurs when trying to delete repetition exceptions.', BOOKACTI_PLUGIN_NAME ),
@@ -245,6 +246,7 @@ $bookacti_translation_array = apply_filters( 'bookacti_translation_array', array
 	'nonce_fetch_template_events'		=> wp_create_nonce( 'bookacti_fetch_template_events' ),
 	'nonce_get_event_data'				=> wp_create_nonce( 'bookacti_get_event_data' ),
 	'nonce_get_exceptions'				=> wp_create_nonce( 'bookacti_get_exceptions' ),
+	'nonce_get_booking_numbers'			=> wp_create_nonce( 'bookacti_get_booking_numbers' ),
 
 	'nonce_insert_event'				=> wp_create_nonce( 'bookacti_insert_event' ),
 	'nonce_move_or_resize_event'		=> wp_create_nonce( 'bookacti_move_or_resize_event' ),

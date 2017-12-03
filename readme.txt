@@ -302,11 +302,13 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 == Changelog ==
 
 = 1.2.2 =
+* Feature - Booking Activities' notifications can now be sent along WooCommerce's notifications
 * Optimization - TO DO - Repeated events are loaded significantly faster
 * Optimization - JS and CSS files are now versioned to allow smart cache refresh
 * Optimization - JS and CSS files are now minified, your pages will load faster
 * Fix - Loading feedback was displayed before booking system title
 * Fix - Alert pop-up was sometimes displayed on frontend with a permission-related error message
+* Fix - Bookings could be still pending after an WC order failed
 * Lib - Updated FullCalendar to 3.7.0 and Moment JS to 2.19.2
 
 = 1.2.1 - 2017/11/17 =

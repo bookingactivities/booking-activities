@@ -83,6 +83,7 @@ if( bookacti_is_plugin_active( 'woocommerce/woocommerce.php' ) ) {
 	include_once( 'controller/controller-woocommerce-backend.php' );
 	include_once( 'controller/controller-woocommerce-frontend.php' );
 	include_once( 'controller/controller-woocommerce-settings.php' );
+	include_once( 'controller/controller-woocommerce-notifications.php' );
 	include_once( 'functions/functions-woocommerce.php' );
 }
 

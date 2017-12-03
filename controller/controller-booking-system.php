@@ -174,9 +174,9 @@ add_action( 'wp_ajax_bookactiSwitchBookingMethod', 'bookacti_controller_switch_b
 add_action( 'wp_ajax_nopriv_bookactiSwitchBookingMethod', 'bookacti_controller_switch_booking_method' );
 
 
-// Get booking system data
-add_action( 'wp_ajax_bookactiGetBookingSystemData', 'bookacti_controller_get_booking_system_data' );
-add_action( 'wp_ajax_nopriv_bookactiGetBookingSystemData', 'bookacti_controller_get_booking_system_data' );
+/**
+ * Get booking system data
+ */
 function bookacti_controller_get_booking_system_data() {
 
 	$is_admin		= intval( $_POST[ 'is_admin' ] );
@@ -216,3 +216,38 @@ function bookacti_controller_get_booking_system_data() {
 		wp_send_json( array( 'status' => 'failed', 'error' => 'not_allowed' ) );
 	}
 }
+add_action( 'wp_ajax_bookactiGetBookingSystemData', 'bookacti_controller_get_booking_system_data' );
+add_action( 'wp_ajax_nopriv_bookactiGetBookingSystemData', 'bookacti_controller_get_booking_system_data' );
+
+
+/**
+ * AJAX Controller - Get booking numbers for a given template and / or event
+ * 
+ * @version 1.2.2
+ */
+function bookacti_controller_get_booking_numbers() {
+
+	$template_id	= intval( $_POST['template_id'] );
+	$event_id		= intval( $_POST['event_id'] );
+
+	// Check nonce and capabilities
+	$is_nonce_valid	= check_ajax_referer( 'bookacti_get_booking_numbers', 'nonce', false );
+
+	if( $is_nonce_valid ) {
+
+		$booking_numbers = bookacti_get_number_of_bookings_by_events( $template_id, $event_id );
+
+		if( count( $booking_numbers ) > 0 ) {
+			wp_send_json( array( 'status' => 'success', 'bookings' => $booking_numbers ) );
+		} else if( count( $booking_numbers ) === 0 ) {
+			wp_send_json( array( 'status' => 'no_bookings' ) );
+		} else {
+			wp_send_json( array( 'status' => 'failed', 'error' => 'unknown' ) );
+		}
+
+	} else {
+		wp_send_json( array( 'status' => 'failed', 'error' => 'not_allowed' ) );
+	}
+}
+add_action( 'wp_ajax_bookactiGetBookingNumbers', 'bookacti_controller_get_booking_numbers' );
+add_action( 'wp_ajax_nopriv_bookactiGetBookingNumbers', 'bookacti_controller_get_booking_numbers' );

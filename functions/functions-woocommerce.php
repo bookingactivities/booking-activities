@@ -645,14 +645,15 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	 * Also make sure that bookings are bound to the order and the associated user.
 	 * 
 	 * @since 1.0.0
-	 * @version 1.2.0
+	 * @version 1.2.2
 	 * 
 	 * @param int $order_id
 	 * @param string $state
 	 * @param boolean $alert_if_fails
+	 * @param array $args
 	 * @return int|false
 	 */
-	function bookacti_turn_order_bookings_to( $order_id, $state = 'booked', $alert_if_fails = false ) {
+	function bookacti_turn_order_bookings_to( $order_id, $state = 'booked', $alert_if_fails = false, $args = array() ) {
 
 		// Retrieve order data
 		$order = wc_get_order( $order_id );
@@ -742,7 +743,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		}
 		
 		if( is_numeric( $response[ 'updated' ] ) && intval( $response[ 'updated' ] ) > 0 ) {
-			do_action( 'bookacti_order_bookings_state_changed', $order_id, $state, array() );
+			do_action( 'bookacti_order_bookings_state_changed', $order_id, $state, $args );
 		}
 		
 		return $response;

@@ -804,7 +804,7 @@ function bookacti_dialog_delete_event( event ) {
 							if( response.error === 'has_bookings' ) {
 								// If the event's booking number is not up to date, refresh it
 								if( ! event.bookings ) {
-									bookacti_refetch_events_on_template( event );
+									bookacti_refresh_booking_numbers( 'bookacti-template-calendar', event.id );
 								}
 								
 								// If the event is repeated, display unbind dialog

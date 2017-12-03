@@ -164,6 +164,7 @@ function bookacti_load_template_calendar() {
 			}
 			
 			// Add availability div
+			event.bookings = bookacti_get_event_number_of_bookings( event, 'bookacti-template-calendar' );
 			if( event.bookings != null && event.availability != null ) {
 				var class_no_availability = '', class_booked = '', class_full = '';
 				
@@ -462,7 +463,7 @@ function bookacti_load_template_calendar() {
 						if( response.error === 'has_bookings' ) {
 							// If the event's booking number is not up to date, refresh it
 							if( ! event.bookings ) {
-								bookacti_refetch_events_on_template( event );
+								bookacti_refresh_booking_numbers( bookacti.selected_template, event.id );
 							}
 							// If the event is repeated, display unbind dialog
 							if( event.repeat_freq !== 'none' ) {
@@ -473,7 +474,7 @@ function bookacti_load_template_calendar() {
 							if( response.error === 'not_allowed' ) {
 								error_message += '\n' + bookacti_localized.error_not_allowed;
 							} else if( response.error === 'has_bookings' ) {
-								bookacti_refetch_events_on_template( event );
+								bookacti_refresh_booking_numbers( bookacti.selected_template, event.id );
 								error_message += '\n' + bookacti_localized.error_edit_locked_event;
 								error_message += '\n' + bookacti_localized.advice_switch_to_maintenance + '\n';
 							}
@@ -565,7 +566,7 @@ function bookacti_load_template_calendar() {
 						if( response.error === 'has_bookings' ) {
 							// If the event's booking number is not up to date, refresh it
 							if( ! event.bookings ) {
-								bookacti_refetch_events_on_template( event );
+								bookacti_refresh_booking_numbers( bookacti.selected_template, event.id );
 							}
 							// If the event is repeated, display unbind dialog
 							if( event.repeat_freq !== 'none' ) {
@@ -576,7 +577,7 @@ function bookacti_load_template_calendar() {
 							if( response.error === 'not_allowed' ) {
 								error_message += '\n' + bookacti_localized.error_not_allowed;
 							} else if( response.error === 'has_bookings' ) {
-								bookacti_refetch_events_on_template( event );
+								bookacti_refresh_booking_numbers( bookacti.selected_template, event.id );
 								error_message += '\n' + bookacti_localized.error_edit_locked_event;
 								error_message += '\n' + bookacti_localized.advice_switch_to_maintenance + '\n';
 							}

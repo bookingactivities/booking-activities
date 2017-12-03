@@ -328,7 +328,7 @@ function bookacti_fill_notification_settings_page( $notification_id ) {
 						if( $tags ) {
 					?>
 						<div class='bookacti-notifications-tags-list' >
-							<p><?php _e( 'Use these tags:' ); ?></p>
+							<p><?php _e( 'Use these tags:', BOOKACTI_PLUGIN_NAME ); ?></p>
 					<?php
 							foreach( $tags as $tag => $tip ) {
 					?>

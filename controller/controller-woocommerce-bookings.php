@@ -152,6 +152,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		bookacti_cancel_order_pending_bookings( $order_id );
 	}
 	add_action( 'woocommerce_order_status_cancelled', 'bookacti_cancelled_order', 10, 1 );
+	add_action( 'woocommerce_order_status_failed', 'bookacti_cancelled_order', 10, 1 );
 	
 	
 	/**
@@ -195,7 +196,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 				// If there are only activities, mark the order as 'completed' and 
 				// a function hooked to woocommerce_order_status_completed will mark the activities as 'booked'
 				if( $are_activities ) {
-					return 'completed';
+					$order_status = 'completed';
 					
 				// If there are at least one activity in the middle of other products, 
 				// we won't mark the order as 'completed', but we still need to mark the activities as 'booked'
@@ -236,7 +237,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	 * @param boolean $plain_text
 	 */
 	function bookacti_add_actions_to_bookings( $item_id, $item, $order, $plain_text = true ) {
-		if( ! $plain_text || $_GET[ 'pay_for_order' ] ) { return; }
+		if( ! $plain_text || ( isset( $_GET[ 'pay_for_order' ] ) && $_GET[ 'pay_for_order' ] ) ) { return; }
 		
 		if( isset( $item['bookacti_booking_id'] ) ) {
 			echo bookacti_get_booking_actions_html( $item['bookacti_booking_id'], 'front', false, true );
@@ -541,7 +542,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			bookacti_update_order_item_booking_status( $item, $new_state, $args );
 		}
 	}
-	add_action( 'bookacti_order_bookings_state_changed', 'bookacti_update_order_items_booking_status_by_order_id', 10, 3 );
+	add_action( 'bookacti_order_bookings_state_changed', 'bookacti_update_order_items_booking_status_by_order_id', 20, 3 );
 	
 	
 	/**
