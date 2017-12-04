@@ -155,32 +155,48 @@ function bookacti_create_repeated_events( booking_system_id, repeated_events ) {
 		var event_end			= moment( repeated_event.end );
 		var event_duration		= Math.abs( event_end.diff( event_start, 'seconds' ) );
 		var event_start_time	= event_start.format( 'HH:mm:ss' );
+		var event_monthday		= event_start.date();
 		
 		var repeat_from			= moment( repeated_event.repeat_from );
 		var repeat_to			= moment( repeated_event.repeat_to );
-		var repeat_freq			= {};
+		var repeat_interval		= {};
 		
 		if( calendar_start.isAfter( repeat_from ) )	{ repeat_from = calendar_start; }
 		if( calendar_end.isBefore( repeat_to ) )	{ repeat_to = calendar_end; }
 		
 		switch( repeated_event.repeat_freq ) {
 			case 'daily':
-				repeat_freq	= { 'days': 1 };
+				repeat_interval	= { 'days': 1 };
 				break;
 			case 'weekly':
-				repeat_freq	= { 'days': 7 };
-				// We also need to make sure the repetition start from the week day of the event
-				var event_weekday = moment( repeated_event.start ).isoWeekday();
-				if( repeat_from.isoWeekday() !== event_weekday ) { repeat_from.isoWeekday( event_weekday ); }
+				repeat_interval	= { 'days': 7 };
+				// We need to make sure the repetition start from the week day of the event
+				var event_weekday = event_start.isoWeekday();
+				if( repeat_from.isoWeekday() <= event_weekday ) { repeat_from.isoWeekday( event_weekday ); }
+				else { repeat_from.add( 1, 'weeks' ).isoWeekday( event_weekday ); }
 				break;
-			case 'montly':
-				repeat_freq	= { 'months': 1 };
+			case 'monthly':
+				// We need to make sure the repetition starts on the event month day
+				if( repeat_from.date() <= event_monthday ) { repeat_from.date( event_monthday ); }
+				else { 
+					repeat_from.add( 1, 'months' ).date( event_monthday ); 
+					
+					// If the event_monthday is 31 or 29, 30, 31 in January, it could jump the next month
+					// Make sure it doesn't happen
+					if( repeat_from.date() !== event_monthday ) {
+						repeat_from.subtract( 1, 'months' );
+						if( event_monthday > repeat_from.daysInMonth() ) { repeat_from.endOf( 'month' ); }
+					}
+				}
+				
+				// The repeat_interval will be computed directly in the loop
 				break;
+			default:
+				repeat_interval	= { 'days': 1 }; // Default to daily to avoid unexpected behavior such as infinite loop
 		}
 		
 		// Compute occurences
-		var i = 0;
-		for( var loop = moment( repeat_from ); loop.unix() <= repeat_to.unix(); loop.add( repeat_freq ) ) {
+		for( var loop = repeat_from; loop.unix() <= repeat_to.unix(); loop.add( repeat_interval ) ) {
 			
 			var occurence_start = moment( loop.format( 'YYYY-MM-DD' ) + ' ' + event_start_time );
 			var occurence_end = occurence_start.clone().add( event_duration, 'seconds' );
@@ -202,9 +218,15 @@ function bookacti_create_repeated_events( booking_system_id, repeated_events ) {
 			// Add this occurrence to events array
 			events.push( event_occurence );
 			
-			i++;
-			if( i === 6 ) {
-				break;
+			// Alter repeat_interval to make sure it matches the last day of next month
+			if( repeated_event.repeat_freq === 'monthly' ) {
+				var next_month = loop.clone().add( 1, 'months' ).date( event_monthday );
+				if( next_month.date() !== event_monthday ) {
+					next_month.subtract( 1, 'months' );
+					if( event_monthday > next_month.daysInMonth() ) { next_month.endOf( 'month' ); }
+				}
+				var days_to_next_month	= Math.abs( next_month.diff( loop, 'days' ) );		
+				repeat_interval = { 'days': days_to_next_month };
 			}
 		}
 		

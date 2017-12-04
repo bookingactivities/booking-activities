@@ -3,7 +3,7 @@
 if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 /**
- * Send one notification per booking to admin and customer when an order contining bookings is made
+ * Send one notification per booking to admin and customer when an order contining bookings is made or when its status changes
  *
  * @since 1.2.2
  * @param int $order_id
