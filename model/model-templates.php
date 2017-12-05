@@ -9,6 +9,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	 * Fetch all events of a template or an event
 	 * 
 	 * @since 1.1.0 (replace bookacti_fetch_events from 1.0.0)
+	 * @version 1.2.2
 	 * 
 	 * @global wpdb $wpdb
 	 * @param int $template_id
@@ -97,7 +98,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	/**
 	 * Update an event
 	 * 
-	 * @version 1.1.0
+	 * @version 1.2.2
 	 * 
 	 * @global wpdb $wpdb
 	 * @param int $event_id
@@ -109,21 +110,21 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	 * @return int|false|null
 	 */
     function bookacti_update_event( $event_id, $event_start, $event_end, $action, $delta_days = NULL, $is_duplicated = false ) {
-        global $wpdb;
-        
+		global $wpdb;
+
 		$event_query = 'SELECT * FROM ' . BOOKACTI_TABLE_EVENTS . ' WHERE id = %d ';
 		$event_query_prep = $wpdb->prepare( $event_query, $event_id );
-        $event = $wpdb->get_row( $event_query_prep, OBJECT );
-        
-        $values         = array( 'start' => $event_start, 'end' => $event_end, 'repeat_from' => $event->repeat_from, 'repeat_to' => $event->repeat_to );
-        $values_format  = array( '%s', '%s', '%s', '%s' );
-        
-        if( $action === 'move' && $event->repeat_freq !== 'none' && $delta_days !== NULL && $delta_days !== 0 ) {
-            // Delay by the same amount of time the repetion period
-            $repeat_from_datetime   = DateTime::createFromFormat('Y-m-d', $event->repeat_from );
-            $repeat_to_datetime     = DateTime::createFromFormat('Y-m-d', $event->repeat_to );
+		$event = $wpdb->get_row( $event_query_prep, OBJECT );
+
+		$values         = array( 'start' => $event_start, 'end' => $event_end, 'repeat_from' => $event->repeat_from, 'repeat_to' => $event->repeat_to );
+		$values_format  = array( '%s', '%s', '%s', '%s' );
+
+		if( $action === 'move' && $event->repeat_freq !== 'none' && $delta_days !== NULL && $delta_days !== 0 ) {
+			// Delay by the same amount of time the repetion period
+			$repeat_from_datetime   = DateTime::createFromFormat('Y-m-d', $event->repeat_from );
+			$repeat_to_datetime     = DateTime::createFromFormat('Y-m-d', $event->repeat_to );
 			$delta_days_interval	= DateInterval::createFromDateString( abs( $delta_days ) . ' days' );
-            
+
 			if( $delta_days > 0 ) {
 				$repeat_from_datetime->add( $delta_days_interval );
 				$repeat_to_datetime->add( $delta_days_interval );
@@ -131,32 +132,32 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 				$repeat_from_datetime->sub( $delta_days_interval );
 				$repeat_to_datetime->sub( $delta_days_interval );
 			}
-			
-            //Format the new repeat from and repeat to value
-            $values['repeat_from']	= $repeat_from_datetime->format( 'Y-m-d' );
+
+			// Format the new repeat from and repeat to value
+			$values['repeat_from']	= $repeat_from_datetime->format( 'Y-m-d' );
 			$values['repeat_to']	= $repeat_to_datetime->format( 'Y-m-d' );
-        }
-        
+		}
+
 		if( $is_duplicated ) {
-			
+
 			$query			= ' INSERT INTO ' . BOOKACTI_TABLE_EVENTS . ' ( template_id, activity_id, title, start, end, availability, repeat_freq, repeat_from, repeat_to ) '
-							. ' SELECT template_id, activity_id, title, %s, %s, availability, repeat_freq, %s, %s '
+							. ' SELECT template_id, activity_id, title, %s, %s, availability, repeat_freq, NULLIF( %s, "" ), NULLIF( %s, "" ) '
 							. ' FROM ' . BOOKACTI_TABLE_EVENTS
 							. ' WHERE id = %d ';
 			$query_prep		= $wpdb->prepare( $query, $values['start'], $values['end'], $values['repeat_from'], $values['repeat_to'], $event_id );
 			$inserted		= $wpdb->query( $query_prep );
 			$new_event_id	= $wpdb->insert_id;
-			
+
 			// Duplicate exceptions
 			$exceptions = bookacti_duplicate_exceptions( $event_id, $new_event_id );
-			
+
 			// Duplicate event metadata
 			$duplicated = bookacti_duplicate_metadata( 'event', $event_id, $new_event_id );
-			
+
 			return $new_event_id;
-			
+
 		} else {
-			
+
 			// Update the event
 			$updated = $wpdb->update( 
 				BOOKACTI_TABLE_EVENTS, 
@@ -165,7 +166,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 				$values_format,
 				array( '%d' )
 			);
-			
+
 			return $updated;
 		}        
     }
@@ -305,13 +306,13 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	/**
 	 * Unbind selected occurence of an event
 	 * 
-	 * @version 1.1.4
+	 * @version 1.2.2
 	 * 
 	 * @global wpdb $wpdb
 	 * @param int $event_id
 	 * @param string $event_start
 	 * @param string $event_end
-	 * @return array
+	 * @return int
 	 */
     function bookacti_unbind_selected_occurrence( $event_id, $event_start, $event_end ) {
         global $wpdb;
@@ -353,93 +354,83 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			);
 		}
 		
-		// Get the new created events to render instead of the old ones (now treated as exceptions)
-        if( $insert_excep !== false && $insert_event !== false && $duplicated !== false ) {
-            $new_events = bookacti_fetch_events_for_calendar_editor( NULL, $unbound_event_id );
-        }
-        
-        return $new_events;
+        return $unbound_event_id;
     }
     
 	
 	/**
 	 * Unbind booked occurences of an event
 	 * 
-	 * @version 1.1.0
+	 * @version 1.2.2
 	 * 
 	 * @global wpdb $wpdb
 	 * @param int $event_id
-	 * @return array
+	 * @return int
 	 */
     function bookacti_unbind_booked_occurrences( $event_id ) {
-        global $wpdb;
-        
-        // Duplicate the original event and its exceptions
-        $duplicated_event_id = bookacti_duplicate_event( $event_id );
-        
-        // Get occurences to unbind
-        $booked_events_query = 'SELECT * FROM ' . BOOKACTI_TABLE_BOOKINGS . ' WHERE event_id = %d AND active = 1 ORDER BY event_start ASC ';
-        $booked_events_prep = $wpdb->prepare( $booked_events_query, $event_id );
-        $booked_events = $wpdb->get_results( $booked_events_prep, OBJECT );
-		
+		global $wpdb;
+
+		// Duplicate the original event and its exceptions
+		$duplicated_event_id = bookacti_duplicate_event( $event_id );
+
+		// Get occurences to unbind
+		$booked_events_query = 'SELECT * FROM ' . BOOKACTI_TABLE_BOOKINGS . ' WHERE event_id = %d AND active = 1 ORDER BY event_start ASC ';
+		$booked_events_prep = $wpdb->prepare( $booked_events_query, $event_id );
+		$booked_events = $wpdb->get_results( $booked_events_prep, OBJECT );
+
 		// Replace all occurrences' event id in groups (we will turn it back to the original id for booked events)
 		bookacti_update_grouped_event_id( $event_id, false, false, $duplicated_event_id );
-		
-		
-        //For each occurence to unbind...
-        $first_booking  = '';
-        $last_booking   = '';
-        foreach( $booked_events as $event_to_unbind ) {
+
+
+		// For each occurence to unbind...
+		$first_booking  = '';
+		$last_booking   = '';
+		foreach( $booked_events as $event_to_unbind ) {
 			// Give back its original event id to booked occurences
 			bookacti_update_grouped_event_id( $duplicated_event_id, $event_to_unbind->event_start, $event_to_unbind->event_end, $event_id );
-			
-            // Get the smallest repeat period possible
-            if( $first_booking === '' ) { $first_booking = substr( $event_to_unbind->event_start, 0, 10 ); }
-            $last_booking = substr( $event_to_unbind->event_start, 0, 10 );
-            
-            // Create an exception on the day of the occurence
-            $dates_excep_array = array ( substr( $event_to_unbind->event_start, 0, 10 ) );
-            $inserted_excep_on_new_event = bookacti_insert_exeptions( $duplicated_event_id, $dates_excep_array );
-        }
-        
-        //Set the smallest repeat period possible to the original event
-        $wpdb->update( 
-            BOOKACTI_TABLE_EVENTS, 
-            array( 
-                'repeat_from' => $first_booking,
-                'repeat_to' => $last_booking,
-            ),
-            array( 'id' => $event_id ),
-            array( '%s', '%s' ),
-            array( '%d' )
-        );
-        
-        //Add an exception on days that are not booked on the original event
-        $date_timestamp = strtotime( $first_booking );
-        $date = date('Y-m-d', $date_timestamp );
-        $dates_excep_array = array ();
-        while( $date != $last_booking ) {
-            $set_exception = true;
-            foreach( $booked_events as $booked_event ) {
-                $date_booked = substr( $booked_event->event_start, 0, 10 );
-                if( $date_booked == $date ) { $set_exception = false; }
-            }
-            
-            if( $set_exception ) {
-                array_push( $dates_excep_array, $date );
-            }
-            
-            $date_timestamp = strtotime( '+1 day', $date_timestamp );
-            $date = date('Y-m-d', $date_timestamp );
-        }
-        $inserted_excep_on_booked_event = bookacti_insert_exeptions( $event_id, $dates_excep_array );
-        
-        if( $duplicated_event_id ) {
-            //Get the new created events to render instead of the old ones (now treated as exceptions)
-            $new_events = bookacti_fetch_events_for_calendar_editor( NULL, $duplicated_event_id );
-        }
-        
-        return $new_events;
+
+			// Get the smallest repeat period possible
+			if( $first_booking === '' ) { $first_booking = substr( $event_to_unbind->event_start, 0, 10 ); }
+			$last_booking = substr( $event_to_unbind->event_start, 0, 10 );
+
+			// Create an exception on the day of the occurence
+			$dates_excep_array = array ( substr( $event_to_unbind->event_start, 0, 10 ) );
+			bookacti_insert_exeptions( $duplicated_event_id, $dates_excep_array );
+		}
+
+		// Set the smallest repeat period possible to the original event
+		$wpdb->update( 
+			BOOKACTI_TABLE_EVENTS, 
+			array( 
+				'repeat_from' => $first_booking,
+				'repeat_to' => $last_booking,
+			),
+			array( 'id' => $event_id ),
+			array( '%s', '%s' ),
+			array( '%d' )
+		);
+
+		// Add an exception on days that are not booked on the original event
+		$date_timestamp = strtotime( $first_booking );
+		$date = date( 'Y-m-d', $date_timestamp );
+		$dates_excep_array = array ();
+		while( $date != $last_booking ) {
+			$set_exception = true;
+			foreach( $booked_events as $booked_event ) {
+				$date_booked = substr( $booked_event->event_start, 0, 10 );
+				if( $date_booked == $date ) { $set_exception = false; }
+			}
+
+			if( $set_exception ) {
+				array_push( $dates_excep_array, $date );
+			}
+
+			$date_timestamp = strtotime( '+1 day', $date_timestamp );
+			$date = date( 'Y-m-d', $date_timestamp );
+		}
+		bookacti_insert_exeptions( $event_id, $dates_excep_array );
+
+		return $duplicated_event_id;
     }
     
 	

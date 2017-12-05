@@ -7,7 +7,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	/**
 	 * Fetch events by templates and / or activities
 	 *
-	 * @version 1.1.0
+	 * @version 1.2.2
 	 * 
 	 * @param array $args
 	 * @return array $events_array Array of events
@@ -67,7 +67,8 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 											UNIX_TIMESTAMP( CONVERT_TZ( ( E.repeat_to + INTERVAL -24 HOUR ), %s, @@global.time_zone ) ) > 
 											UNIX_TIMESTAMP( CONVERT_TZ( T.end_date, %s, @@global.time_zone ) ) 
 										)
-						) )';
+							) 
+						)';
 		
 		
 		$variables = array();
@@ -164,40 +165,46 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		$events = $wpdb->get_results( $prep_query, OBJECT );
 		
 		// Prepare the array of events to return
-		$events_array = array();
+		$events_array = array( 'single' => array(), 'repeated' => array() );
 		foreach ( $events as $event ) {
-			// Common settings (for both events and repeat events)
+			
 			$event_array = array(
 				'id'				=> $event->event_id,
 				'template_id'		=> $event->template_id,
 				'title'				=> apply_filters( 'bookacti_translate_text', $event->title ),
 				'multilingual_title'=> $event->title,
 				'allDay'			=> false,
+				'start'				=> $event->start,
+				'end'				=> $event->end,
 				'color'				=> $event->color,
 				'activity_id'		=> $event->activity_id,
 				'availability'		=> $event->availability,
 				'durationEditable'	=> false,
+				'repeat_freq'		=> $event->repeat_freq,
+				'repeat_from'		=> $event->repeat_from,
+				'repeat_to'			=> $event->repeat_to,
 				'event_settings'	=> bookacti_get_metadata( 'event', $event->event_id )
 			);
 
 			if( $event->repeat_freq === 'none' ) {
-
-				$event_array['start']			= $event->start;
-				$event_array['end']				= $event->end;
-				$event_array['bookings']		= $event->bookings;
-
-				array_push( $events_array, $event_array );
-			} else {
-				$repeated_events_array = bookacti_create_repeated_events( $event, $event_array, $args );
-				$events_array = array_merge( $events_array, $repeated_events_array );
-			}
+                array_push( $events_array[ 'single' ], $event_array );
+            } else {
+                array_push( $events_array[ 'repeated' ], $event_array );
+            }
 		}
 		
 		return $events_array;
     }
 	
 	
-	// Get event by id
+	/**
+	 * Get event by id
+	 * 
+	 * @version 1.2.2 
+	 * @global wpdb $wpdb
+	 * @param int $event_id
+	 * @return object
+	 */
 	function bookacti_get_event_by_id( $event_id ) {
 		global $wpdb;
 
@@ -207,13 +214,6 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 						. ' AND E.id = %d';
 		$prep_query_event = $wpdb->prepare( $query_event, $event_id );
 		$event = $wpdb->get_row( $prep_query_event, OBJECT );
-		
-		if( empty( $event ) ) {
-			return false;
-		}
-		
-		$event->event_settings		= bookacti_get_metadata( 'event', $event_id );
-		$event->activity_settings	= bookacti_get_metadata( 'activity', $event->activity_id );
 		
 		return $event;
 	}
@@ -256,72 +256,6 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		}
 		
 		return $is_event;
-	}
-	
-	
-	/**
-	 * Check if the occurence exists
-	 * 
-	 * @version 1.1.0
-	 * 
-	 * @param object|int $event
-	 * @param string $event_start
-	 * @param string $event_end
-	 * @return boolean
-	 */
-	function bookacti_is_existing_occurence( $event, $event_start = NULL, $event_end = NULL ) {
-		if( is_numeric( $event ) ) {
-			$event = bookacti_get_event_by_id( $event );
-		}
-		
-		$repeated_events_array = bookacti_create_repeated_events( $event, array( 'id' => $event->event_id ), array( 'past_events' => true ) );
-		
-		$is_existing_occurence = false;
-		foreach( $repeated_events_array as $event_occurence ) 
-		{
-			if( is_null( $event_end ) || is_null( $event_start ) )
-			{
-				if( is_null( $event_start ) && is_null( $event_end ) ) {
-					if( $event_occurence['id'] === $event->event_id ) {
-						$is_existing_occurence = true;
-					}
-				} else if( is_null( $event_start ) ) {
-					if( $event_occurence['id'] === $event->event_id 
-					&&  strtotime( $event_occurence['end'] ) === strtotime( $event_end ) ) {
-						$is_existing_occurence = true;
-					}
-				} else if( is_null( $event_end ) ) {
-					if( $event_occurence['id'] === $event->event_id 
-					&&  strtotime( $event_occurence['start'] ) === strtotime( $event_start ) ) {
-						$is_existing_occurence = true;
-					}
-				}
-			} else {
-				if( $event_occurence['id'] === $event->event_id 
-				&&  strtotime( $event_occurence['start'] )	=== strtotime( $event_start ) 
-				&&  strtotime( $event_occurence['end'] )	=== strtotime( $event_end ) ) {
-					$is_existing_occurence = true;
-				}
-			}
-		}
-		
-		return $is_existing_occurence;
-	}
-	
-	
-	/**
-	 * Check if the group of event exists
-	 * 
-	 * @since 1.1.0
-	 * 
-	 * @param int $group_id
-	 * @return boolean
-	 */
-	function bookacti_is_existing_group_of_events( $group_id ) {
-		
-		// Try to retrieve the group and check the result
-		$group = bookacti_get_group_of_events( $group_id );
-        return ! empty( $group );
 	}
 	
 	

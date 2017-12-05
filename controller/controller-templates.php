@@ -126,7 +126,9 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 				if( $is_duplicated ) {
 					if( $updated ) { 
-						wp_send_json( array( 'status' => 'success', 'event_id' => $updated ) ); 
+						$events		= bookacti_fetch_events_for_calendar_editor( null, $updated );
+						$exceptions	= bookacti_get_exceptions( null, $updated );
+						wp_send_json( array( 'status' => 'success', 'event_id' => $updated, 'events' => $events, 'exceptions' => $exceptions ) ); 
 					} else { 
 						wp_send_json( array( 'status' => 'failed' ) ); 
 					}
@@ -349,7 +351,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	/**
 	 * AJAX Controller - Unbind occurences of an event
 	 * 
-	 * @version 1.1.4
+	 * @version 1.2.2
 	 */
 	function bookacti_controller_unbind_occurrences() {
 
@@ -368,17 +370,18 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			if( $unbind === 'selected' ) {
 				$event_start	= bookacti_sanitize_datetime( $_POST[ 'event_start' ] );
 				$event_end		= bookacti_sanitize_datetime( $_POST[ 'event_end' ] );
-				$events			= bookacti_unbind_selected_occurrence( $event_id, $event_start, $event_end );
+				$new_event_id	= bookacti_unbind_selected_occurrence( $event_id, $event_start, $event_end );
 				
 			} else if( $unbind === 'booked' ) {
-				$events = bookacti_unbind_booked_occurrences( $event_id );
-				
+				$new_event_id	= bookacti_unbind_booked_occurrences( $event_id );
 			}
 			
-			// Retrieve groups of events
-			$groups_events = bookacti_get_groups_events( $events[ 0 ][ 'template_id' ] );
+			// Retrieve affected data
+			$events			= bookacti_fetch_events_for_calendar_editor( $template_id );
+			$exceptions		= bookacti_get_exceptions( $template_id );
+			$groups_events	= bookacti_get_groups_events( $template_id );
 			
-			wp_send_json( array( 'status' => 'success', 'events' => $events, 'groups_events' => $groups_events ) );
+			wp_send_json( array( 'status' => 'success', 'events' => $events, 'groups_events' => $groups_events, 'exceptions' => $exceptions ) );
 		} else {
 			wp_send_json( array( 'status' => 'failed', 'error' => 'not_allowed' ) );
 		}

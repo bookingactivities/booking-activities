@@ -409,8 +409,7 @@ function bookacti_sanitize_arguments_to_fetch_events( $args ) {
 
 /**
  * Validate booking form (verify the info of the selected event before booking it)
- *
- * @since 1.0.0
+ * 
  * @version 1.1.0
  * @param int $group_id
  * @param int $event_id
@@ -479,8 +478,7 @@ function bookacti_validate_booking_form( $group_id, $event_id, $event_start, $ev
 /**
  * Check if an event or an occurence exists
  * 
- * @since 1.0.0
- * @version 1.1.0
+ * @version 1.2.2
  * 
  * @param int $event_id
  * @param string $event_start
@@ -492,8 +490,8 @@ function bookacti_is_existing_event( $event_id, $event_start = NULL, $event_end 
 	$event = bookacti_get_event_by_id( $event_id );
 
 	$is_existing_event = false;
-	if( ! is_null( $event ) ) {
-		if( $event->repeat_freq !== 'none' ) {
+	if( $event ) {
+		if( $event->repeat_freq && $event->repeat_freq !== 'none' ) {
 			$is_existing_event = bookacti_is_existing_occurence( $event, $event_start, $event_end );
 		} else {
 			$is_existing_event = bookacti_is_existing_single_event( $event_id, $event_start, $event_end );
@@ -504,7 +502,78 @@ function bookacti_is_existing_event( $event_id, $event_start = NULL, $event_end 
 }
 
 
-//Convert minutes to days, hours and minutes
+/**
+ * Check if the occurence exists
+ * 
+ * @version 1.2.2
+ * 
+ * @param object|int $event
+ * @param string $event_start
+ * @param string $event_end
+ * @return boolean
+ */
+function bookacti_is_existing_occurence( $event, $event_start, $event_end = NULL ) {
+	// Get the event
+	if( is_numeric( $event ) ) {
+		$event = bookacti_get_event_by_id( $event );
+	}
+
+	// Check if the event is well repeated
+	if( ! $event 
+	||  ! $event_start
+	||  ! in_array( $event->repeat_freq, array( 'daily', 'weekly', 'monthly' ), true )
+	||  ! $event->repeat_from || $event->repeat_from === '0000-00-00' 
+	||  ! $event->repeat_to || $event->repeat_to === '0000-00-00' ) { return false; }
+
+	// Check if the times match
+	if( $event_start ) { if( substr( $event_start, -8 ) !== substr( $event->start, -8 ) ) { return false; } }
+	if( $event_end ) { if( substr( $event_end, -8 ) !== substr( $event->end, -8 ) ) { return false; } }
+	
+	// Check if the days match
+	$repeat_from	= DateTime::createFromFormat( 'Y-m-d', substr( $event->repeat_from, 0, 10 ) );
+	$repeat_to		= DateTime::createFromFormat( 'Y-m-d', substr( $event->repeat_to, 0, 10 ) );
+	$event_datetime	= DateTime::createFromFormat( 'Y-m-d', substr( $event->start, 0, 10 ) );
+	$occurence		= DateTime::createFromFormat( 'Y-m-d', substr( $event_start, 0, 10 ) );
+	$repeat_from_timestamp	= intval( $repeat_from->format( 'U' ) );
+	$repeat_to_timestamp	= intval( $repeat_to->format( 'U' ) );
+	$occurence_timestamp	= intval( $occurence->format( 'U' ) );
+	
+	// Check if occurence is between repeat_from and repeat_to
+	if( $occurence_timestamp < $repeat_from_timestamp || $occurence_timestamp > $repeat_to_timestamp ) { return false; }
+	
+	// Check if the weekdays match
+	if( $event->repeat_freq === 'weekly' ) {
+		if( $occurence->format( 'w' ) !== $event_datetime->format( 'w' ) ) { return false; }
+	}
+	
+	// Check if the monthdays match
+	if( $event->repeat_freq === 'monthly' ) {
+		$is_last_day_of_month = $event_datetime->format( 't' ) === $event_datetime->format( 'd' );
+		if( ! $is_last_day_of_month && $occurence->format( 'd' ) !== $event_datetime->format( 'd' ) ) { return false; }
+		else if ( $is_last_day_of_month && $occurence->format( 't' ) !== $occurence->format( 'd' ) ) { return false; }
+	}
+	
+	return true;
+}
+
+
+/**
+ * Check if the group of event exists
+ * 
+ * @since 1.1.0
+ * 
+ * @param int $group_id
+ * @return boolean
+ */
+function bookacti_is_existing_group_of_events( $group_id ) {
+
+	// Try to retrieve the group and check the result
+	$group = bookacti_get_group_of_events( $group_id );
+	return ! empty( $group );
+}
+
+
+// Convert minutes to days, hours and minutes
 function bookacti_seconds_to_explode_time( $seconds ) {
 	
     $dtF = new DateTime( "@0" );

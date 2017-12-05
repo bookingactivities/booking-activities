@@ -5,7 +5,6 @@ $j( document ).ready( function() {
 		
 		// Init globals
 		bookacti.booking_system[ 'bookacti-template-calendar' ]								= [];
-		bookacti.booking_system[ 'bookacti-template-calendar' ][ 'events' ]					= [];
 		bookacti.booking_system[ 'bookacti-template-calendar' ][ 'bookings' ]				= [];
 		bookacti.booking_system[ 'bookacti-template-calendar' ][ 'exceptions' ]				= [];
 		bookacti.booking_system[ 'bookacti-template-calendar' ][ 'groups_events' ]			= [];
@@ -531,6 +530,26 @@ function bookacti_load_template_calendar() {
 						var start_time	= event.start.format( 'HH:mm:ss' );
 						var end_time	= event.end.format( 'HH:mm:ss' );
 						
+						// Display duplicated event
+						if( is_alt_key_pressed ) {
+							var new_event_id = response.event_id;
+							
+							// Update exceptions
+							bookacti.booking_system[ 'bookacti-template-calendar' ][ 'exceptions' ][ new_event_id ] = response.exceptions[ new_event_id ];
+							
+							// Load the new event on calendar
+							if( event.repeat_freq && event.repeat_freq !== 'none' ) {
+								var events_sources = bookacti_create_repeated_events( 'bookacti-template-calendar', response.events.repeated );
+								$j.each( events_sources, function( i, events_source ) {
+									$j( '#bookacti-template-calendar' ).fullCalendar( 'addEventSource', events_source );
+								});
+							} else {
+								$j( '#bookacti-template-calendar' ).fullCalendar( 'addEventSource', response.events.single );
+							}
+							
+							return false; // Exit function
+						}
+						
 						// Update selected events
 						$j.each( bookacti.booking_system[ 'bookacti-template-calendar' ][ 'selected_events' ], function( i, selected_event ){
 							if( selected_event.id == event.id ) {
@@ -553,15 +572,9 @@ function bookacti_load_template_calendar() {
 								}
 							});
 						});
-						
-						// Update exception if the event is duplicated
-						if( is_alt_key_pressed ) {
-							var new_event = { 'id': response.event_id };
-							bookacti_update_exceptions( bookacti.selected_template, new_event );
-						}
 					}
 
-					if( response.status === 'failed' ) { 
+					else if( response.status === 'failed' ) { 
 						revertFunc();
 						if( response.error === 'has_bookings' ) {
 							// If the event's booking number is not up to date, refresh it

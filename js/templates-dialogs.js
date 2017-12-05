@@ -582,10 +582,8 @@ function bookacti_dialog_update_event( event ) {
                 }
 				
                 // Fill the exceptions field
-                if( response.exceptions.length > 0 )
-                {
-                    $j.each( response.exceptions, function( i, value )
-                    {
+                if( response.exceptions.length > 0 ) {
+                    $j.each( response.exceptions, function( i, value ) {
                         $j( '#bookacti-event-exceptions-selectbox' ).append( 
                             "<option class='exception' value='" + value.exception_value + "' >"
                                 + value.exception_value +  
@@ -608,7 +606,7 @@ function bookacti_dialog_update_event( event ) {
 				// Validate the title and availability fields
 				bookacti_validate_event_general_data();
 				
-				//Enable or disable repetition and exception parts of the form
+				// Enable or disable repetition and exception parts of the form
 				bookacti_validate_event_repetition_data( event );
 				
 				
@@ -629,6 +627,17 @@ function bookacti_dialog_update_event( event ) {
 						$j( '#bookacti-event-data-form select[multiple] option' ).attr( 'selected', true );
 						
 						var data = $j( '#bookacti-event-data-form' ).serialize();
+						
+						// Store new event data
+						var new_event = event;
+						new_event.title			= $j( '#bookacti-event-title' ).val();
+						new_event.availability	= $j( '#bookacti-event-availability' ).val();
+						new_event.repeat_freq	= $j( '#bookacti-event-repeat-freq' ).val();
+						new_event.repeat_from	= $j( '#bookacti-event-repeat-from' ).val();
+						new_event.repeat_to		= $j( '#bookacti-event-repeat-to' ).val();
+						
+						// Store new exceptions list
+						var new_exceptions = $j( '#bookacti-event-exceptions-selectbox' ).val() ? $j( '#bookacti-event-exceptions-selectbox' ).val() : [];
 						
 						var isFormValid = bookacti_validate_event_form( event );
 						if( isFormValid ) { 
@@ -651,8 +660,31 @@ function bookacti_dialog_update_event( event ) {
 										// Update groups events
 										bookacti.booking_system[ 'bookacti-template-calendar' ][ 'groups_events' ] = response.groups_events;
 										
-										// Update the exceptions list and refetch event
-										bookacti_update_exceptions( null, event );
+										// Update the exceptions list
+										bookacti.booking_system[ 'bookacti-template-calendar' ][ 'exceptions' ][ event.id ] = [];
+										$j.each( new_exceptions, function( i, new_exception ) {
+											bookacti.booking_system[ 'bookacti-template-calendar' ][ 'exceptions' ][ event.id ].push( { 'type': 'date', 'value': new_exception } );
+										});
+										
+										// Delete old event
+										if( response.repeat_freq && response.repeat_freq !== 'none' ) {
+											$j( '#bookacti-template-calendar' ).fullCalendar( 'removeEventSource', 'event_' + event.id );
+										} else {
+											bookacti_clear_events_on_calendar( $j( '#bookacti-template-calendar' ), event );
+										}
+										
+										// Add new event
+										if( new_event.repeat_freq !== 'none' ) {
+											var events_sources = bookacti_create_repeated_events( 'bookacti-template-calendar', [ new_event ] );
+											$j.each( events_sources, function( i, events_source ) {
+												$j( '#bookacti-template-calendar' ).fullCalendar( 'addEventSource', events_source );
+											});
+										} else {
+											$j( '#bookacti-template-calendar' ).fullCalendar( 'addEventSource', [ new_event ] );
+										}
+																				
+										// Refresh events to take new exceptions into account
+										$j( '#bookacti-template-calendar' ).fullCalendar( 'rerenderEvents' );
 
 									// If no changes
 									} else if ( response.status === 'nochanges' ) {
@@ -676,11 +708,6 @@ function bookacti_dialog_update_event( event ) {
 											var error_message = '';
 											$j.each( response.errors, function( i, error ) {
 												error_message += '\u00B7 ' + bookacti_localized[ error ] + '\n';
-												if( error === 'error_set_excep_on_booked_occur' ) {
-													$j.each( response.booked_exceptions, function( i, exception_date ) {
-														error_message += '     \u00B7 ' + exception_date + '\n';
-													});
-												}
 											});
 											error_message += '\n' + bookacti_localized.advice_switch_to_maintenance;
 

@@ -137,7 +137,7 @@ function bookacti_create_repeated_events( booking_system_id, repeated_events ) {
 			'availability'		: repeated_event.availability,
 			'repeat_freq'		: repeated_event.repeat_freq,
 			'event_settings'	: repeated_event.event_settings ? repeated_event.event_settings : {},
-			'activity_settings'	: repeated_event.activity_settings ? activity_settings : {}
+			'activity_settings'	: repeated_event.activity_settings ? repeated_event.activity_settings : {}
 		};
 		
 		// Common properties (same as shared_properties, but these are supported by FullCalendar)
@@ -229,6 +229,9 @@ function bookacti_create_repeated_events( booking_system_id, repeated_events ) {
 				repeat_interval = { 'days': days_to_next_month };
 			}
 		}
+		
+		// If no occurences has been computed, jump to next repeated event
+		if( events.length === 0 ) { return true; }
 		
 		// Add the array of events to the event source
 		events_source.events = events;

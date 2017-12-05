@@ -304,6 +304,8 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 = 1.2.2 =
 * Feature - Booking Activities' notifications can now be sent along WooCommerce's notifications
 * Optimization - TO DO - Repeated events are loaded significantly faster
+* Optimization - Lighten some processes in calendar editor to make it faster
+* Optimization - Booking forms (with or without WooCommerce) are verified faster
 * Optimization - JS and CSS files are now versioned to allow smart cache refresh
 * Optimization - JS and CSS files are now minified, your pages will load faster
 * Fix - Loading feedback was displayed before booking system title
