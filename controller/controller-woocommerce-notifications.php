@@ -33,9 +33,11 @@ function bookacti_send_notification_when_order_status_changes( $order_id, $new_s
 	$order = wc_get_order( $order_id );
 	if( ! $order ) { return; }
 
-	// Do not send notifications at all for specific order status 
+	// Do not send notifications at all for transitionnal order status, 
+	// because the booking is still considered as temporary
 	$order_status = $order->get_status();
-	if( in_array( $order_status, array( 'pending', 'on-hold', 'failed' ) ) ) { return; }
+	if( $order_status === 'pending' && $new_status === 'pending' 
+	||  $order_status === 'failed' && $new_status === 'cancelled' ) { return; }
 
 	$order_items = $order->get_items();
 	if( ! $order_items ) { return; }
@@ -74,16 +76,17 @@ add_action( 'bookacti_order_bookings_state_changed', 'bookacti_send_notification
 
 
 /**
- * Send notifications when a new order is made and becomes "Processing"
+ * Send notifications when a new order is made but stays in a pending state
  * 
  * @since 1.2.2
  * @param int $order_id
  * @param WC_Order $order
  */
-function bookacti_send_notification_when_new_order_is_processing( $order_id, $order ) {
+function bookacti_send_notification_when_new_order_is_pending( $order_id, $order ) {
 	bookacti_send_notification_when_order_status_changes( $order_id, 'pending', array( 'is_new_order' => true ) );
 }
-add_action( 'woocommerce_order_status_pending_to_processing', 'bookacti_send_notification_when_new_order_is_processing', 20, 2 );
+add_action( 'woocommerce_order_status_pending_to_processing', 'bookacti_send_notification_when_new_order_is_pending', 20, 2 );
+add_action( 'woocommerce_order_status_pending_to_on-hold', 'bookacti_send_notification_when_new_order_is_pending', 20, 2 );
 
 
 /**

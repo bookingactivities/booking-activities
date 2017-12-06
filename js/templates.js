@@ -15,6 +15,7 @@ $j( document ).ready( function() {
 		
 		bookacti.booking_system[ 'bookacti-template-calendar' ][ 'picked_events' ]			= [];
 		bookacti.booking_system[ 'bookacti-template-calendar' ][ 'loading_number' ]			= 0;
+		bookacti.booking_system[ 'bookacti-template-calendar' ][ 'past_events' ]			= true;
 		
 		// Calendar editor specific globals
 		bookacti.booking_system[ 'bookacti-template-calendar' ][ 'selected_events' ]		= [];
@@ -262,8 +263,7 @@ function bookacti_load_template_calendar() {
 					if( bookacti.booking_system[ 'bookacti-template-calendar' ][ 'exceptions' ] !== undefined 
 					&&  bookacti.booking_system[ 'bookacti-template-calendar' ][ 'exceptions' ][ event.id ] !== undefined ) {
 						$j.each( bookacti.booking_system[ 'bookacti-template-calendar' ][ 'exceptions' ][ event.id ], function ( i, excep ) {
-							if( excep.type === 'date' && excep.value === event.start.format( 'YYYY-MM-DD' ) ) {
-								element.addClass( 'event-exception' );
+							if( excep.exception_type === 'date' && excep.exception_value === event.start.format( 'YYYY-MM-DD' ) ) {
 								event.render = 0;
 							}
 						});

@@ -663,7 +663,7 @@ function bookacti_dialog_update_event( event ) {
 										// Update the exceptions list
 										bookacti.booking_system[ 'bookacti-template-calendar' ][ 'exceptions' ][ event.id ] = [];
 										$j.each( new_exceptions, function( i, new_exception ) {
-											bookacti.booking_system[ 'bookacti-template-calendar' ][ 'exceptions' ][ event.id ].push( { 'type': 'date', 'value': new_exception } );
+											bookacti.booking_system[ 'bookacti-template-calendar' ][ 'exceptions' ][ event.id ].push( { 'exception_type': 'date', 'exception_value': new_exception } );
 										});
 										
 										// Delete old event

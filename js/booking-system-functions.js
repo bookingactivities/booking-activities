@@ -22,12 +22,14 @@ function bookacti_fetch_events( booking_system ) {
 				
 				// Update calendar content data
 				bookacti.booking_system[ booking_system_id ][ 'events' ]				= response.events;
+				bookacti.booking_system[ booking_system_id ][ 'exceptions' ]			= response.exceptions;
+				bookacti.booking_system[ booking_system_id ][ 'bookings' ]				= response.bookings;
 				bookacti.booking_system[ booking_system_id ][ 'activities_data' ]		= response.activities_data;
 				bookacti.booking_system[ booking_system_id ][ 'groups_events' ]			= response.groups_events;
 				bookacti.booking_system[ booking_system_id ][ 'groups_data' ]			= response.groups_data;
 				bookacti.booking_system[ booking_system_id ][ 'group_categories_data' ]	= response.group_categories_data;
 				
-				if( response.events.length ) {
+				if( response.events.length && ( response.events.single.length || response.events.repeated.length ) ) {
 					// Fill events according to booking method
 					bookacti_booking_method_fill_with_events( booking_system, attributes.method );
 				} else {
@@ -83,6 +85,8 @@ function bookacti_reload_booking_system( booking_system ) {
 				
 				// Update events and settings
 				bookacti.booking_system[ booking_system_id ][ 'events' ]				= response.events;
+				bookacti.booking_system[ booking_system_id ][ 'exceptions' ]			= response.exceptions;
+				bookacti.booking_system[ booking_system_id ][ 'bookings' ]				= response.bookings;
 				bookacti.booking_system[ booking_system_id ][ 'activities_data' ]		= response.activities_data;
 				bookacti.booking_system[ booking_system_id ][ 'groups_events' ]			= response.groups_events;
 				bookacti.booking_system[ booking_system_id ][ 'groups_data' ]			= response.groups_data;
@@ -140,7 +144,7 @@ function bookacti_create_repeated_events( booking_system_id, repeated_events ) {
 			'activity_settings'	: repeated_event.activity_settings ? repeated_event.activity_settings : {}
 		};
 		
-		// Common properties (same as shared_properties, but these are supported by FullCalendar)
+		// Common properties (same as shared_properties, but these are supported by FullCalendar eventSource object)
 		var events_source = { 
 			'id'				: 'event_' + repeated_event.id,
 			'allDayDefault'		: false,
@@ -161,6 +165,27 @@ function bookacti_create_repeated_events( booking_system_id, repeated_events ) {
 		var repeat_to			= moment( repeated_event.repeat_to );
 		var repeat_interval		= {};
 		
+		var current_time		= moment( bookacti_localized.current_time );
+		
+		// Make sure repeated events don't start in the past if not explicitly allowed
+		if( ! bookacti.booking_system[ booking_system_id ][ 'past_events' ] ) {
+			if( current_time.isAfter( repeat_from ) )	{ 
+				// If started event are allowed
+				var current_date = moment( bookacti_localized.current_time.substr( 0, 10 ) );
+				var first_potential_event = moment( current_time.format( 'YYYY-MM-DD' ) + ' ' + event_start_time );
+				first_potential_event.add( event_duration, 'seconds' );
+				if( bookacti_localized.started_events_bookable && first_potential_event.isAfter( current_time ) ) {
+					repeat_from = current_date; 
+				} 
+				
+				// If started event are NOT allowed
+				else {
+					repeat_from = current_date.clone().add( 1, 'days' ); 
+				}
+			}
+		}
+		
+		// Make sure repeated events don't spread over templates dates
 		if( calendar_start.isAfter( repeat_from ) )	{ repeat_from = calendar_start; }
 		if( calendar_end.isBefore( repeat_to ) )	{ repeat_to = calendar_end; }
 		
@@ -181,7 +206,7 @@ function bookacti_create_repeated_events( booking_system_id, repeated_events ) {
 				else { 
 					repeat_from.add( 1, 'months' ).date( event_monthday ); 
 					
-					// If the event_monthday is 31 or 29, 30, 31 in January, it could jump the next month
+					// If the event_monthday is 31 (or 29, 30 or 31 in January), it could have jumped the next month
 					// Make sure it doesn't happen
 					if( repeat_from.date() !== event_monthday ) {
 						repeat_from.subtract( 1, 'months' );

@@ -259,7 +259,15 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	}
 	
 	
-	// Get the number of remaining places of an event (total places - booked places)
+	/**
+	 * Get the number of remaining places of an event (total places - booked places)
+	 * 
+	 * @global wpdb $wpdb
+	 * @param int $event_id
+	 * @param string $event_start Format "YYYY-MM-DD HH:mm:ss"
+	 * @param string $event_end Format "YYYY-MM-DD HH:mm:ss"
+	 * @return int
+	 */
 	function bookacti_get_event_availability( $event_id, $event_start, $event_end ) {
 		global $wpdb;
 
@@ -267,7 +275,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		$prep_total_avail	= $wpdb->prepare( $query_total_avail, $event_id );
         $total_avail		= $wpdb->get_var( $prep_total_avail );
         
-		if( is_null( $total_avail ) ) { $availability = 0; }
+		if( ! $total_avail ) { $availability = 0; }
 		
         $bookings = bookacti_get_number_of_bookings( $event_id, $event_start, $event_end );
         
@@ -343,11 +351,103 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	
 	
 // EXCEPTIONS
-	// Check if date is exception
+	/**
+	 * Get event repetition exceptions by templates or by events
+	 * 
+	 * @version 1.2.2
+	 * @global wpdb $wpdb
+	 * @param array $template_ids
+	 * @param array $event_ids
+	 * @return array
+	 */
+    function bookacti_get_exceptions( $template_ids = array(), $event_ids = array() ) {
+		global $wpdb;
+		
+		// Convert numeric to array
+		if( ! is_array( $template_ids ) ){
+			$template_id = intval( $template_ids );
+			$template_ids = array();
+			if( $template_id ) { $template_ids[] = $template_id; }
+		}
+		if( ! is_array( $event_ids ) ){
+			$event_id = intval( $event_ids );
+			$event_ids = array();
+			if( $event_id ) { $event_ids[] = $event_id; }
+		}
+		
+		// No no template id and event id are given, retrieve all exceptions
+		$variables = array();
+		if( ! $template_ids && ! $event_ids ) {
+			$excep_query = 'SELECT event_id, exception_type, exception_value FROM ' . BOOKACTI_TABLE_EXCEPTIONS . ' ORDER BY exception_value ASC ';
+		
+		// If event ids are given, retrieve exceptions for these events, regardless of template ids
+		} else if ( $event_ids ) {
+			$excep_query = 'SELECT event_id, exception_type, exception_value FROM ' . BOOKACTI_TABLE_EXCEPTIONS 
+						. ' WHERE event_id IN ( ';
+			
+			$i = 1;
+			foreach( $event_ids as $event_id ){
+				$excep_query .= ' %d';
+				if( $i < count( $event_ids ) ) { $excep_query .= ','; }
+				++$i;
+			}
+			
+			$excep_query .= ' ) ORDER BY exception_value ASC ';
+			
+			$variables = $event_ids;
+			
+		// If template ids are given, retrieve event exceptions from these templates
+		} else if ( $template_ids ) {
+			$excep_query = 'SELECT X.event_id, X.exception_type, X.exception_value '
+						. ' FROM '  . BOOKACTI_TABLE_EXCEPTIONS . ' as X, '
+									. BOOKACTI_TABLE_EVENTS . ' as E '
+						. ' WHERE X.event_id = E.id '
+						. ' AND E.template_id IN ( ';
+			
+			$i = 1;
+			foreach( $template_ids as $template_id ){
+				$excep_query .= ' %d';
+				if( $i < count( $template_ids ) ) { $excep_query .= ','; }
+				++$i;
+			}
+			
+			$excep_query .= ' ) ORDER BY exception_value ASC ';
+			
+			$variables = $template_ids;
+		}
+		
+		$excep_query = $wpdb->prepare( $excep_query, $variables );
+		$exceptions = $wpdb->get_results( $excep_query, ARRAY_A );
+		
+		// Order exceptions by event id
+		$exceptions_array = array();
+		if( $exceptions ) {
+			foreach( $exceptions as $exception ) {
+				$event_id = $exception[ 'event_id' ];
+				unset( $exception[ 'event_id' ] );
+				if( ! isset( $exceptions_array[ $event_id ] ) ) {
+					$exceptions_array[ $event_id ] = array();
+				}
+				$exceptions_array[ $event_id ][] = $exception;
+			}
+		}
+		
+		return $exceptions_array;
+    }
+
+
+	/**
+	 * Check if a date is a repeat exception of a given event
+	 * 
+	 * @global wpdb $wpdb
+	 * @param int $event_id
+	 * @param string $date Format "YYYY-MM-DD".
+	 * @return int
+	 */
     function bookacti_is_repeat_exception( $event_id, $date ) {
         global $wpdb;
         
-        //Check if the date exists in exceptions database for this event
+        // Check if the date exists in exceptions database for this event
         $is_excep_query = 'SELECT COUNT(*) FROM ' . BOOKACTI_TABLE_EXCEPTIONS
 						. ' WHERE exception_value = %s'
 						. ' AND event_id = %d';

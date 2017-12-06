@@ -7,7 +7,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
  * AJAX Controller - Fetch events in order to display them
  *
  * @since	1.0.0
- * @version	1.1.0
+ * @version	1.2.2
  */
 function bookacti_controller_fetch_events() {
 	// Check nonce
@@ -36,6 +36,8 @@ function bookacti_controller_fetch_events() {
 		
 			$events				= bookacti_fetch_events( $attributes );
 			$activities_data	= bookacti_get_activities_by_template( $attributes[ 'calendars' ], true );
+			$exceptions			= bookacti_get_exceptions( $attributes[ 'calendars' ] );
+			$bookings			= bookacti_get_number_of_bookings_by_events( $attributes[ 'calendars' ] );
 			
 			$groups_events	= array();
 			if( $attributes[ 'group_categories' ] !== false ) { 
@@ -53,6 +55,8 @@ function bookacti_controller_fetch_events() {
 			wp_send_json( array( 
 				'status'				=> 'success', 
 				'events'				=> $events, 
+				'exceptions'			=> $exceptions, 
+				'bookings'				=> $bookings, 
 				'activities_data'		=> $activities_data, 
 				'groups_events'			=> $groups_events,
 				'groups_data'			=> $groups_data,
@@ -71,6 +75,7 @@ add_action( 'wp_ajax_nopriv_bookactiFetchEvents', 'bookacti_controller_fetch_eve
  * Reload booking system with new attributes via AJAX
  * 
  * @since 1.1.0
+ * @version 1.2.2
  */
 function bookacti_controller_reload_booking_system() {
 	
@@ -104,6 +109,8 @@ function bookacti_controller_reload_booking_system() {
 		// Gets calendar content: events, activities and groups
 		$events				= bookacti_fetch_events( $attributes );
 		$activities_data	= bookacti_get_activities_by_template( $attributes[ 'calendars' ], true );
+		$exceptions			= bookacti_get_exceptions( $attributes[ 'calendars' ] );
+		$bookings			= bookacti_get_number_of_bookings_by_events( $attributes[ 'calendars' ] );
 		$settings			= bookacti_get_mixed_template_settings( $attributes[ 'calendars' ] );
 		
 		$groups_events	= array();
@@ -123,6 +130,8 @@ function bookacti_controller_reload_booking_system() {
 			'status'				=> 'success', 
 			'html_elements'			=> $html_elements, 
 			'events'				=> $events, 
+			'exceptions'			=> $exceptions, 
+			'bookings'				=> $bookings, 
 			'activities_data'		=> $activities_data, 
 			'groups_events'			=> $groups_events,
 			'groups_data'			=> $groups_data,

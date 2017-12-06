@@ -4,6 +4,8 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 // Don't localize strings here, please use .po file with poedit and submit the .mo generated file to the plugin author
 
+$current_datetime_object = new DateTime( 'now', new DateTimeZone( bookacti_get_setting_value( 'bookacti_general_settings', 'timezone' ) ) );
+
 // Fill the translation array to use it in js 
 $bookacti_translation_array = apply_filters( 'bookacti_translation_array', array(
 
@@ -207,17 +209,19 @@ $bookacti_translation_array = apply_filters( 'bookacti_translation_array', array
 
 
 	// VARIABLES
+	'ajaxurl'							=> admin_url( 'admin-ajax.php' ),
+	
 	'is_qtranslate'						=> bookacti_get_translation_plugin() === 'qtranslate',
 	'current_lang_code'					=> bookacti_get_current_lang_code(),
+	
 	'available_booking_methods'			=> array_keys( bookacti_get_available_booking_methods() ),
-	'ajaxurl'							=> admin_url( 'admin-ajax.php' ),
 
 	'event_tiny_height'					=> apply_filters( 'bookacti_event_tiny_height', 30 ),
 	'event_small_height'				=> apply_filters( 'bookacti_event_small_height', 75 ),
 	'event_narrow_width'				=> apply_filters( 'bookacti_event_narrow_width', 70 ),
 	'event_wide_width'					=> apply_filters( 'bookacti_event_wide_width', 250 ),
 
-	'started_events_bookable'			=> bookacti_get_setting_value( 'bookacti_general_settings',	'started_events_bookable' ),
+	'started_events_bookable'			=> bookacti_get_setting_value( 'bookacti_general_settings',	'started_events_bookable' ) ? true : false,
 	'when_events_load'					=> bookacti_get_setting_value( 'bookacti_general_settings',	'when_events_load' ),
 	'date_format'						=> bookacti_get_setting_value( 'bookacti_general_settings',	'date_format' ),
 	'show_past_events_on_bookings_page'	=> bookacti_get_setting_value_by_user( 'bookacti_bookings_settings', 'show_past_events' ),
@@ -227,6 +231,7 @@ $bookacti_translation_array = apply_filters( 'bookacti_translation_array', array
 	'admin_url'							=> get_admin_url(),
 	'current_user_id'					=> get_current_user_id(),
 	'is_admin'							=> is_admin(),
+	'current_time'						=> $current_datetime_object->format( 'Y-m-d H:i:s' ),
 
 	// NONCES
 	'nonce_get_booking_system_data'		=> wp_create_nonce( 'bookacti_get_booking_system_data' ),

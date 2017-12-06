@@ -629,54 +629,10 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
         
         return $deleted_except;
     }
-    
-	
-    //GET ALL EXCEPTION OF A TEMPLATE OR AN EVENT
-    function bookacti_get_exceptions( $template_id = NULL, $event_id = NULL ) {
-        global $wpdb;
-        
-        $is_event_id    = ! ( $event_id == ''     || ! isset( $event_id )     || is_null( $event_id ) );
-        $is_template_id = ! ( $template_id == ''  || ! isset( $template_id )  || is_null( $template_id ) );
-        
-        if( ! $is_event_id && ! $is_template_id ) {
-            $excep_query = 'SELECT event_id, exception_type, exception_value FROM ' . BOOKACTI_TABLE_EXCEPTIONS . ' ORDER BY exception_value ASC ';
-        } else if ( $is_event_id ) {
-            $excep_query = 'SELECT event_id, exception_type, exception_value FROM ' . BOOKACTI_TABLE_EXCEPTIONS . ' WHERE event_id = %d ORDER BY exception_value ASC ';
-            $excep_query = $wpdb->prepare( $excep_query, $event_id );
-        } else if ( ! $is_event_id && $is_template_id ) {
-            $excep_query = 'SELECT X.event_id, X.exception_type, X.exception_value '
-                        . ' FROM '  . BOOKACTI_TABLE_EXCEPTIONS . ' as X, '
-                                    . BOOKACTI_TABLE_EVENTS . ' as E '
-                        . ' WHERE X.event_id = E.id '
-                        . ' AND E.template_id = %d '
-                        . ' ORDER BY exception_value ASC ';
-            $excep_query = $wpdb->prepare( $excep_query, $template_id );
-        }
-        
-        //Check if the date exists in exceptions database for this event
-        $exceptions = $wpdb->get_results( $excep_query, OBJECT );
-        
-        $exceptions_array = array();
-        if( $exceptions ) {
-            foreach( $exceptions as $exception ) {
-                $exception_array = array();
-                $exception_array[ 'type' ]  = $exception->exception_type;
-                $exception_array[ 'value' ] = $exception->exception_value;
 
-                if( ! is_array( $exceptions_array[ $exception->event_id ] ) ) {
-                    $exceptions_array[ $exception->event_id ] = array();
-                }
-                array_push( $exceptions_array[ $exception->event_id ], $exception_array );
-            }
-        }
-        
-        //If not insert it
-        return $exceptions_array;
-    }
-	
-	
-	
-	
+
+
+
 // GROUP OF EVENTS
 	/**
 	 * Insert a group of events

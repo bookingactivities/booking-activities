@@ -215,13 +215,13 @@ function bookacti_display_wc_notification_global_settings( $notification_setting
 			'description'	=>  __( 'Wether to send this automatic notification when a new WooCommerce order is made, for each booking (group) of the order.', BOOKACTI_PLUGIN_NAME ) ), 
 		'customer_pending_booking'		=> array( 
 			'label'			=>  __( 'Send when an order is processing', BOOKACTI_PLUGIN_NAME ), 
-			'description'	=>  __( 'Wether to send this automatic notification when a WooCommerce order is "Processing", for each booking (group) affected in the order. It will not be sent for "On-hold" and "Pending" orders. It may be sent along the WooCommerce confirmation email.', BOOKACTI_PLUGIN_NAME ) ), 
+			'description'	=>  __( 'Wether to send this automatic notification when a WooCommerce order is "Processing", for each booking (group) affected in the order. It will not be sent for "Pending" orders (when an order is pending payment), because the booking is still considered as temporary. It may be sent along the WooCommerce confirmation email.', BOOKACTI_PLUGIN_NAME ) ), 
 		'customer_booked_booking'		=> array( 
 			'label'			=>  __( 'Send when an order is completed', BOOKACTI_PLUGIN_NAME ), 
 			'description'	=>  __( 'Wether to send this automatic notification when a WooCommerce order is "Completed", for each booking (group) affected in the order. It may be sent along the WooCommerce confirmation email.', BOOKACTI_PLUGIN_NAME ) ), 
 		'customer_cancelled_booking'	=> array( 
 			'label'			=>  __( 'Send when an order is cancelled', BOOKACTI_PLUGIN_NAME ), 
-			'description'	=>  __( 'Wether to send this automatic notification when a WooCommerce order is "Cancelled", for each booking (group) affected in the order. It will not be sent for "Failed" orders.', BOOKACTI_PLUGIN_NAME ) ),
+			'description'	=>  __( 'Wether to send this automatic notification when a WooCommerce order is "Cancelled", for each booking (group) affected in the order. It will not be sent for "Failed" orders (when a pending payment fails), because the booking is still considered as temporary.', BOOKACTI_PLUGIN_NAME ) ),
 		'customer_refunded_booking'		=> array( 
 			'label'			=>  __( 'Send when an order is refunded', BOOKACTI_PLUGIN_NAME ), 
 			'description'	=>  __( 'Wether to send this automatic notification when a WooCommerce order is "Refunded", for each booking (group) affected in the order. It may be sent along the WooCommerce refund email.', BOOKACTI_PLUGIN_NAME ) )
