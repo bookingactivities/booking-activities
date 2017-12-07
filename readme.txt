@@ -311,6 +311,7 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 * Fix - Loading feedback was displayed before booking system title
 * Fix - Alert pop-up was sometimes displayed on frontend with a permission-related error message
 * Fix - Bookings could be still pending after an WC order failed
+* Fix - Bookings status were not up to date in WooCommerce's notifications
 * Lib - Updated FullCalendar to 3.7.0 and Moment JS to 2.19.2
 
 = 1.2.1 - 2017/11/17 =

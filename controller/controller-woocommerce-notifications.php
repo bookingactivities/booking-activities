@@ -6,13 +6,17 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
  * Send one notification per booking to admin and customer when an order contining bookings is made or when its status changes
  *
  * @since 1.2.2
- * @param int $order_id
+ * @param WC_Order $order
  * @param string $new_status
  * @param array $args
  */
-function bookacti_send_notification_when_order_status_changes( $order_id, $new_status, $args = array() ) {
+function bookacti_send_notification_when_order_status_changes( $order, $new_status, $args = array() ) {
 
-	if( ! $order_id ) { return; }
+	if( is_numeric( $order ) ) {
+		$order = wc_get_order( $order );
+	}
+	
+	if( ! $order ) { return; }
 	
 	// Check if the administrator must be notified
 	// If the booking status is pending or booked, notify administrator, unless HE originated this change
@@ -30,9 +34,6 @@ function bookacti_send_notification_when_order_status_changes( $order_id, $new_s
 	// If nobody needs to be notified, return
 	if( ! $notify_admin && ! $notify_customer ) { return; }
 	
-	$order = wc_get_order( $order_id );
-	if( ! $order ) { return; }
-
 	// Do not send notifications at all for transitionnal order status, 
 	// because the booking is still considered as temporary
 	$order_status = $order->get_status();
@@ -165,3 +166,35 @@ function bookacti_sanitize_wc_notification_settings( $notification, $notificatio
 	return $notification;
 }
 add_filter( 'bookacti_notification_sanitized_settings', 'bookacti_sanitize_wc_notification_settings', 20, 2 );
+
+
+/**
+ * Make sure that WC order data are up to date when a WC notification is sent
+ * 
+ * @since 1.2.2
+ * @param array $args
+ * @return array
+ */
+function bookacti_wc_email_order_item_args( $args ) {
+	
+	// Check if the order contains bookings
+	$has_bookings = false;
+	foreach( $args[ 'items' ] as $item ) {
+		if( isset( $item[ 'bookacti_booking_id' ] ) || isset( $item[ 'bookacti_booking_group_id' ] ) ) {
+			$has_bookings = true;
+			break;
+		}
+	}
+	
+	// If the order has no bookings, change nothing
+	if( ! $has_bookings ) { return $args; }
+	
+	// If the order has bookings, refresh the order instance to make sure data are up to date
+	$fresh_order_instance = wc_get_order( $args[ 'order' ]->get_id() );
+	
+	$args[ 'order' ] = $fresh_order_instance;
+	$args[ 'items' ] = $fresh_order_instance->get_items();
+	
+	return $args;
+}
+add_filter( 'woocommerce_email_order_items_args', 'bookacti_wc_email_order_item_args', 10, 1 );

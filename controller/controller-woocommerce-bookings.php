@@ -123,36 +123,40 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	/**
 	 * Turn a temporary booking to permanent if order gets complete
 	 * 
+	 * @version 1.2.2
 	 * @param int $order_id
+	 * @param WC_Order $order
 	 */
-	function bookacti_turn_temporary_booking_to_permanent( $order_id ) {
+	function bookacti_turn_temporary_booking_to_permanent( $order_id, $order ) {
 		
 		//Change state of all bookings of the order from 'pending' to 'booked'
-		bookacti_turn_order_bookings_to( $order_id, 'booked', true );
+		bookacti_turn_order_bookings_to( $order, 'booked', true );
 		
 		//It is possible that pending bookings remain bound to the order if the user change his mind after he placed the order, but before he paid it.
 		//He then changed his cart, placed a new order, paid it, and only part of the old order is booked (or even nothing), the rest is still 'pending'
 		//Then we just turn 'pending' booking bound to this order to 'cancelled'
 		bookacti_cancel_order_pending_bookings( $order_id );
 	}
-	add_action( 'woocommerce_order_status_completed', 'bookacti_turn_temporary_booking_to_permanent', 10, 1 );
+	add_action( 'woocommerce_order_status_completed', 'bookacti_turn_temporary_booking_to_permanent', 5, 2 );
 	
 	
 	/**
 	 * Cancel the temporary booking if it failed
 	 * 
+	 * @version 1.2.2
 	 * @param int $order_id
+	 * @param WC_Order $order
 	 */
-	function bookacti_cancelled_order( $order_id ) {
+	function bookacti_cancelled_order( $order_id, $order ) {
 		
 		//Change state of all bookings of the order to 'cancelled' and free the bookings
-		bookacti_turn_order_bookings_to( $order_id, 'cancelled', false );
+		bookacti_turn_order_bookings_to( $order, 'cancelled', false );
 		
 		// It is possible that 'pending' bookings remain if the user has changed his cart before payment, we must cancel them
 		bookacti_cancel_order_pending_bookings( $order_id );
 	}
-	add_action( 'woocommerce_order_status_cancelled', 'bookacti_cancelled_order', 10, 1 );
-	add_action( 'woocommerce_order_status_failed', 'bookacti_cancelled_order', 10, 1 );
+	add_action( 'woocommerce_order_status_cancelled', 'bookacti_cancelled_order', 5, 2 );
+	add_action( 'woocommerce_order_status_failed', 'bookacti_cancelled_order', 5, 2 );
 	
 	
 	/**
@@ -473,7 +477,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		
 		$item = bookacti_get_order_item_by_booking_id( $booking_id );
 		
-		bookacti_update_order_item_booking_status( $item, $new_state, $args );
+		bookacti_update_order_item_booking_status( $item, $new_state, $order, $args );
 	}
 	add_action( 'bookacti_booking_state_changed', 'bookacti_update_order_item_booking_status_by_booking_id', 10 , 3 );
 	
@@ -504,7 +508,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		
 		if( ! $item || ! isset( $item[ 'bookacti_booking_group_id' ] ) ) { return; }
 		
-		bookacti_update_order_item_booking_status( $item, $new_state, $args );
+		bookacti_update_order_item_booking_status( $item, $new_state, $order, $args );
 	}
 	add_action( 'bookacti_booking_group_state_changed', 'bookacti_update_order_item_booking_group_status_by_booking_group_id', 10 , 3 );
 	
@@ -513,16 +517,17 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	 * Turn order items booking status meta to new status
 	 *
 	 * @since 1.2.0
+	 * @version 1.2.2
 	 * 
-	 * @param int $order_id
+	 * @param WC_Order $order
 	 * @param string $new_state
 	 * @param array $args
 	 */
-	function bookacti_update_order_items_booking_status_by_order_id( $order_id, $new_state, $args ) {
+	function bookacti_update_order_items_booking_status_by_order_id( $order, $new_state, $args ) {
 		
-		if( ! $order_id ) { return; }
-		
-		$order = wc_get_order( $order_id );
+		if( is_numeric( $order ) ) {
+			$order = wc_get_order( $order );
+		}
 		
 		if( ! $order ) { return; }
 		
@@ -531,15 +536,15 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		if( ! $order_items ) { return; }
 		
 		foreach( $order_items as $order_item_id => $order_item ) {
-			$item				= $order_items[ $order_item_id ];
+			$item				= $order_item;
 			$item[ 'id' ]		= $order_item_id;
-			$item[ 'order_id' ]	= $order_id;
+			$item[ 'order_id' ]	= $order->get_id();
 			
 			// Do not allow to update order status based on new bookings status 
 			// because this function is actually triggered after order status changed
 			$args[ 'update_order_status' ] = 0;
 			
-			bookacti_update_order_item_booking_status( $item, $new_state, $args );
+			bookacti_update_order_item_booking_status( $item, $new_state, $order, $args );
 		}
 	}
 	add_action( 'bookacti_order_bookings_state_changed', 'bookacti_update_order_items_booking_status_by_order_id', 20, 3 );

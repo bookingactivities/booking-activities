@@ -647,20 +647,23 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	 * @since 1.0.0
 	 * @version 1.2.2
 	 * 
-	 * @param int $order_id
+	 * @param WC_Order $order
 	 * @param string $state
 	 * @param boolean $alert_if_fails
 	 * @param array $args
 	 * @return int|false
 	 */
-	function bookacti_turn_order_bookings_to( $order_id, $state = 'booked', $alert_if_fails = false, $args = array() ) {
+	function bookacti_turn_order_bookings_to( $order, $state = 'booked', $alert_if_fails = false, $args = array() ) {
 
 		// Retrieve order data
-		$order = wc_get_order( $order_id );
-
+		if( is_numeric( $order ) ) {
+			$order = wc_get_order( $order );
+		}		
+		
 		if( ! $order ) { return false; }
 
 		// Retrieve bought items and user id
+		$order_id	= $order->get_id();
 		$items		= $order->get_items();
 		$user_id	= $order->get_user_id();
 		
@@ -743,7 +746,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		}
 		
 		if( is_numeric( $response[ 'updated' ] ) && intval( $response[ 'updated' ] ) > 0 ) {
-			do_action( 'bookacti_order_bookings_state_changed', $order_id, $state, $args );
+			do_action( 'bookacti_order_bookings_state_changed', $order, $state, $args );
 		}
 		
 		return $response;
@@ -754,13 +757,14 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	 * Update order item booking status meta to new status
 	 *
 	 * @since 1.2.0
+	 * @version 1.2.2
 	 * 
 	 * @param int $item
 	 * @param string $new_state
+	 * @param WC_Order $order
 	 * @param array $args
-	 * @return void
 	 */
-	function bookacti_update_order_item_booking_status( $item, $new_state, $args ) {
+	function bookacti_update_order_item_booking_status( $item, $new_state, $order, $args ) {
 		
 		if( ! $item || ( ! isset( $item[ 'bookacti_booking_id' ] ) && ! isset( $item[ 'bookacti_booking_group_id' ] ) ) ) { return; }
 		
@@ -776,9 +780,11 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			wc_update_order_item_meta( $item[ 'id' ], '_bookacti_refund_method', $refund_action );
 		}
 		
-		$order_id = wc_get_order_id_by_order_item_id( $item[ 'id' ] );
+		if( is_numeric( $order ) ) {
+			$order = wc_get_order( $order );
+		}
 		
-		if( ! $order_id ) { return; }
+		if( ! $order ) { return; }
 		
 		// Log booking state change
 		if( $old_state !== $new_state ) {
@@ -799,7 +805,6 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			
 			$status_labels		= bookacti_get_booking_state_labels();
 			$is_customer_action	= get_current_user_id() == $booking_owner;		
-			$order				= wc_get_order( $order_id );
 			
 			if( $order ) { 
 				$order->add_order_note( 
@@ -814,7 +819,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		
 		// Turn the order state if it is composed of inactive / pending / booked bookings only
 		if( ! isset( $args[ 'update_order_status' ] ) || $args[ 'update_order_status' ] ) {
-			bookacti_change_order_state_based_on_its_bookings_state( $order_id );
+			bookacti_change_order_state_based_on_its_bookings_state( $order->get_id() );
 		}
 	}
 	
@@ -823,27 +828,22 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	 * Turn the order state if it is composed of inactive / pending / booked bookings only
 	 * 
 	 * @since 1.1.0
+	 * @version 1.2.2
 	 * 
 	 * @param int $order_id
-	 * @return void
 	 */
 	function bookacti_change_order_state_based_on_its_bookings_state( $order_id ) {
 		
+		// Get a fresh instance of WC_Order because some of its items may have changed
 		$order = wc_get_order( $order_id );
 		
-		if( empty( $order ) ) {
-			return;	
-		}
+		if( ! $order ) { return; }
 		
-		if( ! in_array( $order->get_status(), array( 'processing', 'on-hold', 'completed' ), true ) ) {
-			return;
-		}
+		if( ! in_array( $order->get_status(), array( 'processing', 'on-hold', 'completed' ), true ) ) { return; }
 		
 		$items = $order->get_items();
 		
-		if( empty( $items ) ) {
-			return;
-		}
+		if( ! $items ) { return; }
 		
 		// Get items booking states and
 		// Determine if the order is only composed of activities

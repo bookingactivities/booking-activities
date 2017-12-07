@@ -1330,8 +1330,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		if( WC()->cart->needs_payment() ) { $state = 'pending'; $alert_admin = false; }
 		else { $state = bookacti_get_setting_value( 'bookacti_general_settings', 'default_booking_state' ); $alert_admin = true; }
 		
-		// Change state of all bookings of the order to 'pending' if a payment is required, or <user defined state> if not
-		bookacti_turn_order_bookings_to( $order_id, $state, $alert_admin, array( 'is_new_order' => true ) );
+		bookacti_turn_order_bookings_to( $order, $state, $alert_admin, array( 'is_new_order' => true ) );
 	}
 	add_action( 'woocommerce_checkout_order_processed', 'bookacti_change_booking_state_after_checkout', 10, 3 );
 	
