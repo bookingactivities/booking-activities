@@ -25,6 +25,7 @@ function bookacti_switch_template( selected_template_id ) {
 					bookacti.selected_template = parseInt( selected_template_id );
 					
 					// Update data array
+					bookacti.booking_system[ 'bookacti-template-calendar' ][ 'events' ]					= response.events;
 					bookacti.booking_system[ 'bookacti-template-calendar' ][ 'bookings' ]				= response.bookings;
 					bookacti.booking_system[ 'bookacti-template-calendar' ][ 'activities_data' ]		= response.activities_data;
 					bookacti.booking_system[ 'bookacti-template-calendar' ][ 'groups_events' ]			= response.groups_events;
@@ -45,12 +46,10 @@ function bookacti_switch_template( selected_template_id ) {
 						bookacti_clear_events_on_calendar( $j( '#bookacti-template-calendar' ) );
 
 						// Load events on calendar
-						$j( '#bookacti-template-calendar' ).fullCalendar( 'addEventSource', response.events.single );
-						var events_sources = bookacti_create_repeated_events( 'bookacti-template-calendar', response.events.repeated );
+						var events_sources = bookacti_get_events_sources( 'bookacti-template-calendar' );
 						$j.each( events_sources, function( i, events_source ) {
 							$j( '#bookacti-template-calendar' ).fullCalendar( 'addEventSource', events_source );
 						});
-						
 					
 					
 					// ACTIVITIES
@@ -627,9 +626,10 @@ function bookacti_fetch_events_on_template( template_id, event_id ) {
         success: function( response ){
 			if( response.status === 'success' ) {
 				
+				bookacti.booking_system[ 'bookacti-template-calendar' ][ 'events' ]	= response.events;
+				
 				// Load events on calendar
-				$j( '#bookacti-template-calendar' ).fullCalendar( 'addEventSource', response.events.single );
-				var events_sources = bookacti_create_repeated_events( 'bookacti-template-calendar', response.events.repeated );
+				var events_sources = bookacti_get_events_sources( 'bookacti-template-calendar' );
 				$j.each( events_sources, function( i, events_source ) {
 					$j( '#bookacti-template-calendar' ).fullCalendar( 'addEventSource', events_source );
 				});
@@ -989,6 +989,7 @@ function bookacti_unbind_occurrences( event, occurences ) {
 				bookacti_unselect_event( event, undefined, true );
 				
 				// Update affected calendar data
+				bookacti.booking_system[ 'bookacti-template-calendar' ][ 'events' ]			= response.events;
 				bookacti.booking_system[ 'bookacti-template-calendar' ][ 'exceptions' ]		= response.exceptions;
 				bookacti.booking_system[ 'bookacti-template-calendar' ][ 'groups_events' ]	= response.groups_events;
 				
@@ -996,8 +997,7 @@ function bookacti_unbind_occurrences( event, occurences ) {
 				bookacti_clear_events_on_calendar( $j( '#bookacti-template-calendar' ) );
 
 				// Load events on calendar
-				$j( '#bookacti-template-calendar' ).fullCalendar( 'addEventSource', response.events.single );
-				var events_sources = bookacti_create_repeated_events( 'bookacti-template-calendar', response.events.repeated );
+				var events_sources = bookacti_get_events_sources( 'bookacti-template-calendar' );
 				$j.each( events_sources, function( i, events_source ) {
 					$j( '#bookacti-template-calendar' ).fullCalendar( 'addEventSource', events_source );
 				});

@@ -533,19 +533,24 @@ function bookacti_load_template_calendar() {
 						// Display duplicated event
 						if( is_alt_key_pressed ) {
 							var new_event_id = response.event_id;
+							var events_sources = {};
 							
 							// Update exceptions
 							bookacti.booking_system[ 'bookacti-template-calendar' ][ 'exceptions' ][ new_event_id ] = response.exceptions[ new_event_id ];
 							
 							// Load the new event on calendar
 							if( event.repeat_freq && event.repeat_freq !== 'none' ) {
-								var events_sources = bookacti_create_repeated_events( 'bookacti-template-calendar', response.events.repeated );
-								$j.each( events_sources, function( i, events_source ) {
-									$j( '#bookacti-template-calendar' ).fullCalendar( 'addEventSource', events_source );
-								});
+								$j.extend( bookacti.booking_system[ 'bookacti-template-calendar' ][ 'events' ][ 'repeated' ], response.events.repeated );
+								events_sources = bookacti_get_repeated_events_sources( 'bookacti-template-calendar', response.events.repeated );
+								
 							} else {
-								$j( '#bookacti-template-calendar' ).fullCalendar( 'addEventSource', response.events.single );
+								$j.extend( bookacti.booking_system[ 'bookacti-template-calendar' ][ 'events' ][ 'single' ], response.events.single );
+								events_sources = bookacti_get_single_events_sources( 'bookacti-template-calendar', response.events.single );
 							}
+							
+							$j.each( events_sources, function( i, events_source ) {
+								$j( '#bookacti-template-calendar' ).fullCalendar( 'addEventSource', events_source );
+							});
 							
 							return false; // Exit function
 						}

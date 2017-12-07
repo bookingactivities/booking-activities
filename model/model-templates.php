@@ -64,9 +64,9 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			);
 			
             if( $event->repeat_freq === 'none' ) {
-                array_push( $events_array[ 'single' ], $event_array );
+                $events_array[ 'single' ][ $event->event_id ] = $event_array;
             } else {
-                array_push( $events_array[ 'repeated' ], $event_array );
+                $events_array[ 'repeated' ][ $event->event_id ] = $event_array;
             }
         }
         
