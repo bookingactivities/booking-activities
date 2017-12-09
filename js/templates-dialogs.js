@@ -391,7 +391,7 @@ function bookacti_dialog_update_template( template_id ) {
 								//Change the view to match start and end date of the template
 								var start_template = moment( $j( '#bookacti-template-picker :selected' ).data( 'template-start' ) );
 								var end_template = moment( $j( '#bookacti-template-picker :selected' ).data( 'template-end' ) );
-								bookacti_refresh_view( $j( '#bookacti-template-calendar' ), start_template, end_template );
+								bookacti_set_valid_range( $j( '#bookacti-template-calendar' ), start_template, end_template );
 
 							//If no changes
 							} else if ( response.status === 'nochanges' ) {
@@ -675,9 +675,9 @@ function bookacti_dialog_update_event( event ) {
 										
 										// Add new event
 										if( new_event.repeat_freq !== 'none' ) {
-											var events_sources = bookacti_get_repeated_events_sources( 'bookacti-template-calendar', [ new_event ] );
-											$j.each( events_sources, function( i, events_source ) {
-												$j( '#bookacti-template-calendar' ).fullCalendar( 'addEventSource', events_source );
+											var event_sources = bookacti_get_repeated_event_sources( 'bookacti-template-calendar', [ new_event ] );
+											$j.each( event_sources, function( i, event_source ) {
+												$j( '#bookacti-template-calendar' ).fullCalendar( 'addEventSource', event_source );
 											});
 										} else {
 											$j( '#bookacti-template-calendar' ).fullCalendar( 'addEventSource', [ new_event ] );
