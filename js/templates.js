@@ -15,6 +15,7 @@ $j( document ).ready( function() {
 		
 		bookacti.booking_system[ 'bookacti-template-calendar' ][ 'picked_events' ]			= [];
 		bookacti.booking_system[ 'bookacti-template-calendar' ][ 'loading_number' ]			= 0;
+		bookacti.booking_system[ 'bookacti-template-calendar' ][ 'method' ]					= 'calendar';
 		bookacti.booking_system[ 'bookacti-template-calendar' ][ 'past_events' ]			= true;
 		
 		// Calendar editor specific globals
@@ -541,11 +542,11 @@ function bookacti_load_template_calendar() {
 							// Load the new event on calendar
 							if( event.repeat_freq && event.repeat_freq !== 'none' ) {
 								$j.extend( bookacti.booking_system[ 'bookacti-template-calendar' ][ 'events' ][ 'repeated' ], response.events.repeated );
-								event_sources = bookacti_get_repeated_event_sources( 'bookacti-template-calendar', response.events.repeated );
+								bookacti_display_repeated_events( $j( '#bookacti-template-calendar' ), response.events.repeated );
 								
 							} else {
 								$j.extend( bookacti.booking_system[ 'bookacti-template-calendar' ][ 'events' ][ 'single' ], response.events.single );
-								event_sources = bookacti_get_single_event_sources( 'bookacti-template-calendar', response.events.single );
+								event_sources = bookacti_get_single_event_sources( $j( '#bookacti-template-calendar' ), response.events.single );
 							}
 							
 							$j.each( event_sources, function( i, event_source ) {

@@ -46,10 +46,7 @@ function bookacti_switch_template( selected_template_id ) {
 						bookacti_clear_events_on_calendar( $j( '#bookacti-template-calendar' ) );
 
 						// Load events on calendar
-						var event_sources = bookacti_get_event_sources( 'bookacti-template-calendar' );
-						$j.each( event_sources, function( i, event_source ) {
-							$j( '#bookacti-template-calendar' ).fullCalendar( 'addEventSource', event_source );
-						});
+						bookacti_display_events( $j( '#bookacti-template-calendar' ) );
 					
 					
 					// ACTIVITIES
@@ -629,10 +626,7 @@ function bookacti_fetch_events_on_template( template_id, event_id ) {
 				bookacti.booking_system[ 'bookacti-template-calendar' ][ 'events' ]	= response.events;
 				
 				// Load events on calendar
-				var event_sources = bookacti_get_event_sources( 'bookacti-template-calendar' );
-				$j.each( event_sources, function( i, event_source ) {
-					$j( '#bookacti-template-calendar' ).fullCalendar( 'addEventSource', event_source );
-				});
+				bookacti_display_events( $j( '#bookacti-template-calendar' ) );
 				
 			} else if( response.error === 'not_allowed' ) {
 				
@@ -997,10 +991,7 @@ function bookacti_unbind_occurrences( event, occurences ) {
 				bookacti_clear_events_on_calendar( $j( '#bookacti-template-calendar' ) );
 
 				// Load events on calendar
-				var event_sources = bookacti_get_event_sources( 'bookacti-template-calendar' );
-				$j.each( event_sources, function( i, event_source ) {
-					$j( '#bookacti-template-calendar' ).fullCalendar( 'addEventSource', event_source );
-				});
+				bookacti_display_events( $j( '#bookacti-template-calendar' ) );
 				
             } else {
 				var message_error = bookacti_localized.error_unbind_occurences;

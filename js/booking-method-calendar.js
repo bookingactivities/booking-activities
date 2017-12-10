@@ -186,16 +186,11 @@ function bookacti_fill_calendar_with_events( booking_system ) {
 	calendar.fullCalendar( 'removeEvents' );
 	
 	// Add events on calendar
-	var event_sources = [];
 	if( bookacti.booking_system[ booking_system_id ][ 'groups_only' ] ) {
-		event_sources = bookacti_get_group_event_sources( booking_system_id );
+		bookacti_display_group_events( booking_system );
 	} else {
-		event_sources = bookacti_get_event_sources( booking_system_id );
+		bookacti_display_events( booking_system );
 	}
-	
-	$j.each( event_sources, function( i, event_source ) {
-		calendar.fullCalendar( 'addEventSource', event_source );
-	});
 	
 	// Set calendar period
 	var period = bookacti_get_calendar_period( booking_system );
@@ -203,6 +198,13 @@ function bookacti_fill_calendar_with_events( booking_system ) {
 	
 	// Refresh the calendar
 	bookacti_refresh_calendar_view( booking_system );
+}
+
+
+// Display an event source on the calendar
+function bookacti_display_event_source_on_calendar( booking_system, event_source ) {
+	var calendar = booking_system.hasClass( 'fc' ) ? booking_system : booking_system.find( '.bookacti-calendar:first' );
+	calendar.fullCalendar( 'addEventSource', event_source );
 }
 
 

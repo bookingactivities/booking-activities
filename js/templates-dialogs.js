@@ -675,10 +675,7 @@ function bookacti_dialog_update_event( event ) {
 										
 										// Add new event
 										if( new_event.repeat_freq !== 'none' ) {
-											var event_sources = bookacti_get_repeated_event_sources( 'bookacti-template-calendar', [ new_event ] );
-											$j.each( event_sources, function( i, event_source ) {
-												$j( '#bookacti-template-calendar' ).fullCalendar( 'addEventSource', event_source );
-											});
+											bookacti_display_repeated_events( $j( '#bookacti-template-calendar' ), [ new_event ] );
 										} else {
 											$j( '#bookacti-template-calendar' ).fullCalendar( 'addEventSource', [ new_event ] );
 										}

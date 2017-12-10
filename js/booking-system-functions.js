@@ -97,7 +97,7 @@ function bookacti_reload_booking_system( booking_system ) {
 				booking_system.append( response.html_elements );
 				
 				// Load the booking method
-				bookacti_booking_method_set_up( booking_system, bookacti.booking_system[ booking_system_id ][ 'method' ] );
+				bookacti_booking_method_set_up( booking_system );
 				
 				
 			} else {
@@ -121,298 +121,454 @@ function bookacti_reload_booking_system( booking_system ) {
 
 
 // Get events sources of both single and repeated events
-function bookacti_get_event_sources( booking_system_id, single_events, repeated_events ) {
-	var single_event_sources	= bookacti_get_single_event_sources( booking_system_id, single_events );
-	var repeated_event_sources = bookacti_get_repeated_event_sources( booking_system_id, repeated_events );
+function bookacti_get_event_sources( booking_system, single_events, repeated_events ) {
+	var single_event_sources	= bookacti_get_single_event_sources( booking_system, single_events );
+	var repeated_event_sources = bookacti_get_repeated_event_sources( booking_system, repeated_events );
 	
 	return $j.merge( single_event_sources, repeated_event_sources );
 }
 
 
+// Display events sources of both single and repeated events
+function bookacti_display_events( booking_system, single_events, repeated_events ) {
+	bookacti_display_single_events( booking_system, single_events );
+	bookacti_display_repeated_events( booking_system, repeated_events );
+}
+
+
 // Get single events sources by activities
-function bookacti_get_single_event_sources( booking_system_id, single_events ) {
+function bookacti_display_single_events( booking_system, single_events ) {
 	
+	var booking_system_id = booking_system.attr( 'id' );
 	single_events = single_events || bookacti.booking_system[ booking_system_id ][ 'events' ][ 'single' ];
 	
 	// If booking system settings are not set or if there is no repeated event, return an empty array
 	if( ! bookacti.booking_system[ booking_system_id ] || ! single_events ) { return []; }
 	
+	// The maximum browser loading time to keep it reponsive
+	var maxTimePerChunk = 100;
+	
+	// Return current time
+    function now() { return new Date().getTime(); }
+	
 	var calendar_start	= moment( bookacti.booking_system[ booking_system_id ][ 'settings' ][ 'start' ] );
 	var calendar_end	= moment( bookacti.booking_system[ booking_system_id ][ 'settings' ][ 'end' ] ).add( 1, 'days' );
 	var current_time	= moment( bookacti_localized.current_time );
-	var event_sources	= [];
 	
-	$j.each( single_events, function( i, single_event ) {
-		
-		var event_start_date = single_event.start.substr( 0, 10 );
-		
-		// Make sure the event isn't past if not explicitly allowed
-		if( ! bookacti.booking_system[ booking_system_id ][ 'past_events' ] ) {
-			if( current_time.isAfter( single_event.start ) ) { 
-				// If started event are allowed
-				if( ! bookacti_localized.started_events_bookable || current_time.isAfter( single_event.end ) ) {
-					return true;
-				}
-			}
-		}
-		
-		// Make sure events are not out of templates, else skip to next event
-		if( calendar_start.isAfter( event_start_date ) || calendar_end.isBefore( event_start_date ) ) { return true; }
-		
-		// If the activity event source already exists, directly add the event to the source
-		var activity_event_source_exists = false;
-		$j.each( event_sources, function( j, event_source ) {
-			if( event_source.id === 'activity_' + single_event.activity_id ) {
-				activity_event_source_exists = true;
-				event_source.events.push( single_event );
-				return false;
-			}
-		});
-		
-		// Else, create the source with this first event
-		if( ! activity_event_source_exists ) {
-			event_sources.push( { 
-				'id'				: 'activity_' + single_event.activity_id,
-				'allDayDefault'		: false,
-				'color'				: single_event.color,
-				'durationEditable'	: single_event.is_resizable && bookacti_localized.is_admin ? true : false,
-				'events'			: [ single_event ]
-			});
-		}
-	});
+	var event_ids		= Object.keys( single_events );
+	var events_length	= event_ids.length;
 	
-	return event_sources;
-}
+	// Start loading
+	if( booking_system_id === 'bookacti-template-calendar' ) {
+		bookacti_start_template_loading();
+	} else {
+		bookacti_start_loading_booking_system( booking_system );
+	}
+	
+	// Process each event one after another and let browser refresh between each to prevent a total freeze
+	var index = 0;
+	function do_events() {
+	
+		var startTime = now();
+		
+		while( index < events_length && (now() - startTime) <= maxTimePerChunk ) {
 
-
-// Get repeated events sources by event
-function bookacti_get_repeated_event_sources( booking_system_id, repeated_events ) {
-	
-	repeated_events = repeated_events || bookacti.booking_system[ booking_system_id ][ 'events' ][ 'repeated' ];
-	
-	// If booking system settings are not set or if there is no repeated event, return an empty array
-	if( ! bookacti.booking_system[ booking_system_id ] || ! repeated_events ) { return []; }
-	
-	var calendar_start	= moment( bookacti.booking_system[ booking_system_id ][ 'settings' ][ 'start' ] );
-	var calendar_end	= moment( bookacti.booking_system[ booking_system_id ][ 'settings' ][ 'end' ] );
-	var current_time	= moment( bookacti_localized.current_time );
-	var event_sources	= [];
-	
-	$j.each( repeated_events, function( i, repeated_event ) {
-		// Event sources don't support custom properties. We must include them in each events
-		var shared_properties = {
-			'id'				: repeated_event.id,
-			'title'				: repeated_event.title,
-			'multilingual_title': repeated_event.multilingual_title,
-			'template_id'		: repeated_event.template_id,
-			'activity_id'		: repeated_event.activity_id,
-			'availability'		: repeated_event.availability,
-			'repeat_freq'		: repeated_event.repeat_freq,
-			'event_settings'	: repeated_event.event_settings ? repeated_event.event_settings : {},
-			'activity_settings'	: repeated_event.activity_settings ? repeated_event.activity_settings : {}
-		};
+			// Init variables
+			var event_id			= event_ids[ index ];
+			var single_event		= single_events[ event_id ];
+			var event_start_date	= single_event.start.substr( 0, 10 );
 		
-		// Common properties (same as shared_properties, but these are supported by FullCalendar eventSource object)
-		var event_source = { 
-			'id'				: 'event_' + repeated_event.id,
-			'allDayDefault'		: false,
-			'color'				: repeated_event.color,
-			'durationEditable'	: repeated_event.is_resizable && bookacti_localized.is_admin ? true : false,
-			'events'			: []
-		};
-		
-		// Init variables to compute occurences
-		var event_start			= moment( repeated_event.start );
-		var event_end			= moment( repeated_event.end );
-		var event_duration		= Math.abs( event_end.diff( event_start, 'seconds' ) );
-		var event_start_time	= event_start.format( 'HH:mm:ss' );
-		var event_monthday		= event_start.date();
-		
-		var repeat_from			= moment( repeated_event.repeat_from );
-		var repeat_to			= moment( repeated_event.repeat_to );
-		var repeat_interval		= {};
-		
-		// Make sure repeated events don't start in the past if not explicitly allowed
-		if( ! bookacti.booking_system[ booking_system_id ][ 'past_events' ] ) {
-			if( current_time.isAfter( repeat_from ) ) { 
-				// If started event are allowed
-				var current_date = bookacti_localized.current_time.substr( 0, 10 );
-				var first_potential_event = moment( current_date + ' ' + event_start_time );
-				first_potential_event.add( event_duration, 'seconds' );
-				if( bookacti_localized.started_events_bookable && first_potential_event.isAfter( current_time ) ) {
-					repeat_from = moment( current_date ); 
-				} 
-				
-				// If started event are NOT allowed
-				else {
-					repeat_from = moment( current_date ).add( 1, 'days' ); 
-				}
-			}
-		}
-		
-		// Make sure repeated events don't spread over templates dates
-		if( calendar_start.isAfter( repeat_from ) )	{ repeat_from = calendar_start; }
-		if( calendar_end.isBefore( repeat_to ) )	{ repeat_to = calendar_end; }
-		
-		switch( repeated_event.repeat_freq ) {
-			case 'daily':
-				repeat_interval	= { 'days': 1 };
-				break;
-			case 'weekly':
-				repeat_interval	= { 'days': 7 };
-				// We need to make sure the repetition start from the week day of the event
-				var event_weekday = event_start.isoWeekday();
-				if( repeat_from.isoWeekday() <= event_weekday ) { repeat_from.isoWeekday( event_weekday ); }
-				else { repeat_from.add( 1, 'weeks' ).isoWeekday( event_weekday ); }
-				break;
-			case 'monthly':
-				// We need to make sure the repetition starts on the event month day
-				if( repeat_from.date() <= event_monthday ) { repeat_from.date( event_monthday ); }
-				else { 
-					repeat_from.add( 1, 'months' ).date( event_monthday ); 
-					
-					// If the event_monthday is 31 (or 29, 30 or 31 in January), it could have jumped the next month
-					// Make sure it doesn't happen
-					if( repeat_from.date() !== event_monthday ) {
-						repeat_from.subtract( 1, 'months' );
-						if( event_monthday > repeat_from.daysInMonth() ) { repeat_from.endOf( 'month' ); }
-					}
-				}
-				
-				// The repeat_interval will be computed directly in the loop
-				break;
-			default:
-				repeat_interval	= { 'days': 1 }; // Default to daily to avoid unexpected behavior such as infinite loop
-		}
-		
-		// Compute occurences
-		for( var loop = repeat_from; loop.unix() <= repeat_to.unix(); loop.add( repeat_interval ) ) {
-			
-			var occurence_start = moment( loop.format( 'YYYY-MM-DD' ) + ' ' + event_start_time );
-			var occurence_end = occurence_start.clone().add( event_duration, 'seconds' );
-			
-			// Compute start and end dates
-			var event_occurence = {
-				'start'	: occurence_start,
-				'end'	: occurence_end
-			};
-			
-			// Merge shared and specific properties
-			event_occurence = $j.extend( event_occurence, shared_properties );
-			
-			// Add this occurrence to events array
-			event_source.events.push( event_occurence );
-			
-			// Alter repeat_interval to make sure it matches the last day of next month
-			if( repeated_event.repeat_freq === 'monthly' ) {
-				var next_month = loop.clone().add( 1, 'months' ).date( event_monthday );
-				if( next_month.date() !== event_monthday ) {
-					next_month.subtract( 1, 'months' );
-					if( event_monthday > next_month.daysInMonth() ) { next_month.endOf( 'month' ); }
-				}
-				var days_to_next_month	= Math.abs( next_month.diff( loop, 'days' ) );		
-				repeat_interval = { 'days': days_to_next_month };
-			}
-		}
-		
-		// If no occurences has been computed, jump to next repeated event
-		if( event_source.events.length === 0 ) { return true; }
-		
-		// Add the event source to the others (from other repeated events)
-		event_sources.push( event_source );
-	});
-	
-	return event_sources;
-}
-
-
-// Retrieve events sources by group of events
-function bookacti_get_group_event_sources( booking_system_id, groups ) {
-	
-	groups = groups || bookacti.booking_system[ booking_system_id ][ 'groups_events' ];
-	
-	var groups_events		= bookacti.booking_system[ booking_system_id ][ 'groups_events' ];
-	var group_categories	= bookacti.booking_system[ booking_system_id ][ 'group_categories' ];
-	
-	if( $j.isEmptyObject( groups_events ) || group_categories.length === 0 ) { return []; }
-	
-	var activities		= bookacti.booking_system[ booking_system_id ][ 'activities' ];
-	var calendar_start	= moment( bookacti.booking_system[ booking_system_id ][ 'settings' ][ 'start' ] );
-	var calendar_end	= moment( bookacti.booking_system[ booking_system_id ][ 'settings' ][ 'end' ] );
-	var current_time	= moment( bookacti_localized.current_time );
-	var event_sources	= [];
-	
-	$j.each( groups, function( group_id, group_events ) {
-		
-		var group_event_source = { 
-			'id'				: 'group_' + group_id,
-			'allDayDefault'		: false,
-			'durationEditable'	: false,
-			'events'			: []
-		};
-		
-		// Add the events of the group in the source
-		$j.each( group_events, function( i, group_event ) {
-
-			var event_start_date = group_event.start.substr( 0, 10 );
-			
-			// Check if the event is part of displayed activities
-			if( activities.length && $j.inArray( group_event.activity_id, activities ) ) {
-				return true;
-			}
-			
 			// Make sure the event isn't past if not explicitly allowed
 			if( ! bookacti.booking_system[ booking_system_id ][ 'past_events' ] ) {
-				if( current_time.isAfter( group_event.start ) ) { 
+				if( current_time.isAfter( single_event.start ) ) { 
 					// If started event are allowed
-					if( ! bookacti_localized.started_events_bookable || current_time.isAfter( group_event.end ) ) {
-						return true;
+					if( ! bookacti_localized.started_events_bookable || current_time.isAfter( single_event.end ) ) {
+						++index;
+						continue;
 					}
 				}
 			}
 
 			// Make sure events are not out of templates, else skip to next event
-			if( calendar_start.isAfter( event_start_date ) || calendar_end.isBefore( event_start_date ) ) { return true; }
-			
-			// Reconstitute a correct event
-			var event_settings, activity_settings = {};
-			var color = '';
-			if( group_event.repeat_freq && group_event.repeat_freq !== 'none' ) {
-				event_settings		= typeof bookacti.booking_system[ booking_system_id ][ 'events' ][ 'repeated' ][ group_event.id ][ 'event_settings' ] !== 'undefined' ? bookacti.booking_system[ booking_system_id ][ 'events' ][ 'repeated' ][ group_event.id ][ 'event_settings' ] : {};
-				activity_settings	= typeof bookacti.booking_system[ booking_system_id ][ 'events' ][ 'repeated' ][ group_event.id ][ 'activity_settings' ] !== 'undefined' ? bookacti.booking_system[ booking_system_id ][ 'events' ][ 'repeated' ][ group_event.id ][ 'activity_settings' ] : {};
-				color				= typeof bookacti.booking_system[ booking_system_id ][ 'events' ][ 'repeated' ][ group_event.id ][ 'color' ] !== 'undefined' ? bookacti.booking_system[ booking_system_id ][ 'events' ][ 'repeated' ][ group_event.id ][ 'color' ] : '';
-			} else {
-				event_settings		= typeof bookacti.booking_system[ booking_system_id ][ 'events' ][ 'single' ][ group_event.id ][ 'event_settings' ] !== 'undefined' ? bookacti.booking_system[ booking_system_id ][ 'events' ][ 'single' ][ group_event.id ][ 'event_settings' ] : {};
-				activity_settings	= typeof bookacti.booking_system[ booking_system_id ][ 'events' ][ 'single' ][ group_event.id ][ 'activity_settings' ] !== 'undefined' ? bookacti.booking_system[ booking_system_id ][ 'events' ][ 'single' ][ group_event.id ][ 'activity_settings' ] : {};
-				color				= typeof bookacti.booking_system[ booking_system_id ][ 'events' ][ 'single' ][ group_event.id ][ 'color' ] !== 'undefined' ? bookacti.booking_system[ booking_system_id ][ 'events' ][ 'single' ][ group_event.id ][ 'color' ] : '';
-			}
-			
-			var event = {
-				'id'				: group_event.id,
-				'title'				: group_event.title,
-				'start'				: group_event.start,
-				'end'				: group_event.end,
-				'template_id'		: group_event.template_id,
-				'activity_id'		: group_event.activity_id,
-				'availability'		: group_event.availability,
-				'repeat_freq'		: group_event.repeat_freq,
-				'color'				: color,
-				'event_settings'	: event_settings,
-				'activity_settings'	: activity_settings
+			if( calendar_start.isAfter( event_start_date ) || calendar_end.isBefore( event_start_date ) ) { ++index; continue; }
+
+			// Create a source for each event
+			var event_source = { 
+				'id'				: 'event_' + single_event.event_id,
+				'allDayDefault'		: false,
+				'color'				: single_event.color,
+				'durationEditable'	: single_event.is_resizable && bookacti_localized.is_admin ? true : false,
+				'events'			: [ single_event ]
 			};
 			
-			// Add the event to the source
-			group_event_source.events.push( event );
-		});
+			// Display this event source
+			if( event_source.events.length !== 0 ) {
+				bookacti_booking_method_display_event_source( booking_system, event_source );
+			}
 		
-		// If no occurences has been computed, jump to next repeated event
-		if( group_event_source.events.length === 0 ) { return true; }
+			++index;
+		}
 		
-		// Add this group of events source to the others
-		event_sources.push( group_event_source );
-	});
+		if( index < events_length ) {
+			// set Timeout for "async" iteration
+			setTimeout( do_events, 10 );
+		} else {
+			// End loading
+			if( booking_system_id === 'bookacti-template-calendar' ) {
+				bookacti_stop_template_loading();
+			} else {
+				bookacti_stop_loading_booking_system( booking_system );
+			}
+		}
+	}
+	do_events();
+}
+
+
+// Get repeated events sources by event
+function bookacti_display_repeated_events( booking_system, repeated_events ) {
+
+	var booking_system_id = booking_system.attr( 'id' );
+	repeated_events = repeated_events || bookacti.booking_system[ booking_system_id ][ 'events' ][ 'repeated' ];
 	
-	return event_sources;
+	// If booking system settings are not set or if there is no repeated event, return an empty array
+	if( ! bookacti.booking_system[ booking_system_id ] || ! repeated_events ) { return []; }
+	
+	// The maximum browser loading time to keep it reponsive
+	var maxTimePerChunk = 100;
+	
+	// Return current time
+    function now() { return new Date().getTime(); }
+
+	var calendar_start	= moment( bookacti.booking_system[ booking_system_id ][ 'settings' ][ 'start' ] );
+	var calendar_end	= moment( bookacti.booking_system[ booking_system_id ][ 'settings' ][ 'end' ] );
+	var current_time	= moment( bookacti_localized.current_time );
+	
+	var event_ids		= Object.keys( repeated_events );
+	var events_length	= event_ids.length;
+	
+	// Start loading
+	if( booking_system_id === 'bookacti-template-calendar' ) {
+		bookacti_start_template_loading();
+	} else {
+		bookacti_start_loading_booking_system( booking_system );
+	}
+	
+	// Process each event one after another and let browser refresh between each to prevent a total freeze
+	var index = 0;
+	function do_events() {
+		
+		var startTime = now();
+		
+		while( index < events_length && (now() - startTime) <= maxTimePerChunk ) {
+			
+			// Init variables to compute occurences
+			var event_id			= event_ids[ index ];
+			var event_start			= moment( repeated_events[ event_id ].start );
+			var event_end			= moment( repeated_events[ event_id ].end );
+			var event_duration		= Math.abs( event_end.diff( event_start, 'seconds' ) );
+			var event_start_time	= event_start.format( 'HH:mm:ss' );
+			var event_monthday		= event_start.date();
+
+			var repeat_from			= moment( repeated_events[ event_id ].repeat_from );
+			var repeat_to			= moment( repeated_events[ event_id ].repeat_to );
+			var repeat_interval		= {};
+
+			// Make sure repeated events don't start in the past if not explicitly allowed
+			if( ! bookacti.booking_system[ booking_system_id ][ 'past_events' ] ) {
+				if( current_time.isAfter( repeat_from ) ) { 
+					// If started event are allowed
+					var current_date = bookacti_localized.current_time.substr( 0, 10 );
+					var first_potential_event = moment( current_date + ' ' + event_start_time );
+					first_potential_event.add( event_duration, 'seconds' );
+					if( bookacti_localized.started_events_bookable && first_potential_event.isAfter( current_time ) ) {
+						repeat_from = moment( current_date ); 
+					} 
+
+					// If started event are NOT allowed
+					else {
+						repeat_from = moment( current_date ).add( 1, 'days' ); 
+					}
+				}
+			}
+
+			// Make sure repeated events don't spread over templates dates
+			if( calendar_start.isAfter( repeat_from ) )	{ repeat_from = calendar_start; }
+			if( calendar_end.isBefore( repeat_to ) )	{ repeat_to = calendar_end; }
+
+			switch( repeated_events[ event_id ].repeat_freq ) {
+				case 'daily':
+					repeat_interval	= { 'days': 1 };
+					break;
+				case 'weekly':
+					repeat_interval	= { 'days': 7 };
+					// We need to make sure the repetition start from the week day of the event
+					var event_weekday = event_start.isoWeekday();
+					if( repeat_from.isoWeekday() <= event_weekday ) { repeat_from.isoWeekday( event_weekday ); }
+					else { repeat_from.add( 1, 'weeks' ).isoWeekday( event_weekday ); }
+					break;
+				case 'monthly':
+					// We need to make sure the repetition starts on the event month day
+					if( repeat_from.date() <= event_monthday ) { repeat_from.date( event_monthday ); }
+					else { 
+						repeat_from.add( 1, 'months' ).date( event_monthday ); 
+
+						// If the event_monthday is 31 (or 29, 30 or 31 in January), it could have jumped the next month
+						// Make sure it doesn't happen
+						if( repeat_from.date() !== event_monthday ) {
+							repeat_from.subtract( 1, 'months' );
+							if( event_monthday > repeat_from.daysInMonth() ) { repeat_from.endOf( 'month' ); }
+						}
+					}
+
+					// The repeat_interval will be computed directly in the loop
+					break;
+				default:
+					repeat_interval	= { 'days': 1 }; // Default to daily to avoid unexpected behavior such as infinite loop
+			}
+			
+			// Start loading
+			if( booking_system_id === 'bookacti-template-calendar' ) {
+				bookacti_start_template_loading();
+			} else {
+				bookacti_start_loading_booking_system( booking_system );
+			}
+
+			// Compute occurences
+			var loop = repeat_from;
+			var chunk_nb = 0;
+			var end_loop = repeat_to.unix();
+			
+			function do_occurrences() {
+				
+				var startTime = now();
+
+				// Event sources don't support custom properties. We must include them in each events
+				var shared_properties = {
+					'id'				: repeated_events[ event_id ].id,
+					'title'				: repeated_events[ event_id ].title,
+					'multilingual_title': repeated_events[ event_id ].multilingual_title,
+					'template_id'		: repeated_events[ event_id ].template_id,
+					'activity_id'		: repeated_events[ event_id ].activity_id,
+					'availability'		: repeated_events[ event_id ].availability,
+					'repeat_freq'		: repeated_events[ event_id ].repeat_freq,
+					'event_settings'	: repeated_events[ event_id ].event_settings ? repeated_events[ event_id ].event_settings : {}
+				};
+
+				// Common properties (same as shared_properties, but these are supported by FullCalendar eventSource object)
+				var event_source = { 
+					'id'				: 'event_' + repeated_events[ event_id ].id + '_' + chunk_nb,
+					'allDayDefault'		: false,
+					'color'				: repeated_events[ event_id ].color,
+					'durationEditable'	: repeated_events[ event_id ].is_resizable && bookacti_localized.is_admin ? true : false,
+					'events'			: []
+				};
+
+				// Split the event rendering into chunks of a variable size
+				// Render as many event as possible in maxTimePerChunk milliseconds
+				while( loop.unix() < end_loop && ( now() - startTime ) <= maxTimePerChunk ) {
+
+					var occurence_start = moment( loop.format( 'YYYY-MM-DD' ) + ' ' + event_start_time );
+					var occurence_end = occurence_start.clone().add( event_duration, 'seconds' );
+
+					// Compute start and end dates
+					var event_occurence = {
+						'start'	: occurence_start.format( 'YYYY-MM-DD HH:mm:ss' ),
+						'end'	: occurence_end.format( 'YYYY-MM-DD HH:mm:ss' )
+					};
+
+					// Merge shared and specific properties
+					event_occurence = $j.extend( event_occurence, shared_properties );
+
+					// Add this occurrence to events array
+					event_source.events.push( event_occurence );
+
+					// Alter repeat_interval to make sure it matches the last day of next month
+					if( repeated_events[ event_id ].repeat_freq === 'monthly' ) {
+						var next_month = loop.clone().add( 1, 'months' ).date( event_monthday );
+						if( next_month.date() !== event_monthday ) {
+							next_month.subtract( 1, 'months' );
+							if( event_monthday > next_month.daysInMonth() ) { next_month.endOf( 'month' ); }
+						}
+						var days_to_next_month	= Math.abs( next_month.diff( loop, 'days' ) );		
+						repeat_interval = { 'days': days_to_next_month };
+					}
+
+					// Increase loop
+					loop.add( repeat_interval );
+				}
+
+				// Display this event source
+				if( event_source.events.length !== 0 ) {
+					bookacti_booking_method_display_event_source( booking_system, event_source );
+				}
+				
+				if( loop.unix() < end_loop ) {
+					// set Timeout for "async" iteration
+					++chunk_nb;
+					setTimeout( do_occurrences, 10 );
+				}  else {
+					// End loading
+					if( booking_system_id === 'bookacti-template-calendar' ) {
+						bookacti_stop_template_loading();
+					} else {
+						bookacti_stop_loading_booking_system( booking_system );
+					}
+				}
+			}    
+			do_occurrences();
+			
+			++index;
+		}
+		
+		if( index < events_length ) {
+			// set Timeout for "async" iteration
+			setTimeout( do_events, 20 );
+		} else {
+			// End loading
+			if( booking_system_id === 'bookacti-template-calendar' ) {
+				bookacti_stop_template_loading();
+			} else {
+				bookacti_stop_loading_booking_system( booking_system );
+			}
+		}
+	}    
+	do_events();
+}
+
+
+// Retrieve events sources by group of events
+function bookacti_display_group_events( booking_system, groups ) {
+	
+	var booking_system_id = booking_system.attr( 'id' );
+	groups = groups || bookacti.booking_system[ booking_system_id ][ 'groups_events' ];
+	
+	var group_categories	= bookacti.booking_system[ booking_system_id ][ 'group_categories' ];
+	
+	if( $j.isEmptyObject( groups ) || group_categories.length === 0 ) { return []; }
+	
+	var activities		= bookacti.booking_system[ booking_system_id ][ 'activities' ];
+	var calendar_start	= moment( bookacti.booking_system[ booking_system_id ][ 'settings' ][ 'start' ] );
+	var calendar_end	= moment( bookacti.booking_system[ booking_system_id ][ 'settings' ][ 'end' ] );
+	var current_time	= moment( bookacti_localized.current_time );
+	
+	// The maximum browser loading time to keep it reponsive
+	var maxTimePerChunk = 100;
+	
+	// Return current time
+    function now() { return new Date().getTime(); }
+	
+	var group_ids		= Object.keys( groups );
+	var groups_length	= group_ids.length;
+	
+	// Start loading
+	bookacti_start_loading_booking_system( booking_system );
+	
+	// Process each group of events event one after another and let browser refresh between each to prevent a total freeze
+	var group_index = 0;
+	function do_groups() {
+		
+		var startTime = now();
+		
+		while( group_index < groups_length && (now() - startTime) <= maxTimePerChunk ) {
+			
+			var group_id		= group_ids[ group_index ];
+			var events			= groups[ group_id ];
+			var events_length	= events.length;
+			
+			var event_index	= 0;
+			var chunk_nb	= 0;
+			function do_events() {
+				
+				var startTime = now();
+				
+				var event_source = { 
+					'id'				: 'group_' + group_id + '_' + chunk_nb,
+					'allDayDefault'		: false,
+					'durationEditable'	: false,
+					'events'			: []
+				};
+		
+				while( event_index < events_length && (now() - startTime) <= maxTimePerChunk ) {
+					
+					var group_event = events[ event_index ];
+					var event_start_date = group_event.start.substr( 0, 10 );
+
+					// Check if the event is part of displayed activities
+					if( activities.length && $j.inArray( group_event.activity_id, activities ) ) {
+						return true;
+					}
+
+					// Make sure the event isn't past if not explicitly allowed
+					if( ! bookacti.booking_system[ booking_system_id ][ 'past_events' ] ) {
+						if( current_time.isAfter( group_event.start ) ) { 
+							// If started event are allowed
+							if( ! bookacti_localized.started_events_bookable || current_time.isAfter( group_event.end ) ) {
+								return true;
+							}
+						}
+					}
+
+					// Make sure events are not out of templates, else skip to next event
+					if( calendar_start.isAfter( event_start_date ) || calendar_end.isBefore( event_start_date ) ) { return true; }
+
+					// Reconstitute a correct event
+					var event_settings = {};
+					var color = '';
+					if( group_event.repeat_freq && group_event.repeat_freq !== 'none' ) {
+						event_settings		= typeof bookacti.booking_system[ booking_system_id ][ 'events' ][ 'repeated' ][ group_event.id ][ 'event_settings' ] !== 'undefined' ? bookacti.booking_system[ booking_system_id ][ 'events' ][ 'repeated' ][ group_event.id ][ 'event_settings' ] : {};
+						color				= typeof bookacti.booking_system[ booking_system_id ][ 'events' ][ 'repeated' ][ group_event.id ][ 'color' ] !== 'undefined' ? bookacti.booking_system[ booking_system_id ][ 'events' ][ 'repeated' ][ group_event.id ][ 'color' ] : '';
+					} else {
+						event_settings		= typeof bookacti.booking_system[ booking_system_id ][ 'events' ][ 'single' ][ group_event.id ][ 'event_settings' ] !== 'undefined' ? bookacti.booking_system[ booking_system_id ][ 'events' ][ 'single' ][ group_event.id ][ 'event_settings' ] : {};
+						color				= typeof bookacti.booking_system[ booking_system_id ][ 'events' ][ 'single' ][ group_event.id ][ 'color' ] !== 'undefined' ? bookacti.booking_system[ booking_system_id ][ 'events' ][ 'single' ][ group_event.id ][ 'color' ] : '';
+					}
+
+					var event = {
+						'id'				: group_event.id,
+						'title'				: group_event.title,
+						'start'				: group_event.start,
+						'end'				: group_event.end,
+						'template_id'		: group_event.template_id,
+						'activity_id'		: group_event.activity_id,
+						'availability'		: group_event.availability,
+						'repeat_freq'		: group_event.repeat_freq,
+						'color'				: color,
+						'event_settings'	: event_settings
+					};
+					
+					event_source.events.push( event );
+					
+					++event_index;
+				}
+				
+				// Display this event source
+				if( event_source.events.length !== 0 ) {
+					bookacti_booking_method_display_event_source( booking_system, event_source );
+				}
+				
+				if( event_index < events_length ) {
+					// set Timeout for "async" iteration
+					++chunk_nb;
+					setTimeout( do_events, 10 );
+				} else {
+					// End loading
+					bookacti_stop_loading_booking_system( booking_system );
+				}
+			}
+			do_events();
+			
+			++group_index;
+		}
+		
+		if( group_index < groups_length ) {
+			// set Timeout for "async" iteration
+			setTimeout( do_groups, 20 );
+		} else {
+			// End loading
+			bookacti_stop_loading_booking_system( booking_system );
+		}
+	}
+	do_groups();
 }
 
 
@@ -455,7 +611,7 @@ function bookacti_switch_booking_method( booking_system, method ) {
 				booking_system.append( response.html_elements );
 				
 				// Load the booking method
-				bookacti_booking_method_set_up( booking_system, method );
+				bookacti_booking_method_set_up( booking_system );
 				
 				
 			} else {
@@ -1028,7 +1184,7 @@ function bookacti_get_event_availability_div( booking_system, event ) {
 }
 
 
-//Display an error message if no availability was found
+// Display an error message if no availability was found
 function bookacti_add_error_message( booking_system, message ) {
 	
 	message = message || bookacti_localized.error_no_events_bookable;
@@ -1068,7 +1224,9 @@ function bookacti_sort_events_array_by_dates( array, sort_by_end, desc ) {
 // Booking system actions based on booking method
 
 // Load the booking system according to booking method
-function bookacti_booking_method_set_up( booking_system, booking_method, reload_events ) {
+function bookacti_booking_method_set_up( booking_system, reload_events, booking_method ) {
+	var booking_system_id = booking_system.attr( 'id' );
+	booking_method = booking_method || bookacti.booking_system[ booking_system_id ][ 'method' ];
 	reload_events = reload_events ? 1 : 0;
 	
 	if( booking_method === 'calendar' || $j.inArray( booking_method, bookacti_localized.available_booking_methods ) === -1 ) {
@@ -1081,6 +1239,8 @@ function bookacti_booking_method_set_up( booking_system, booking_method, reload_
 
 // Fill the events in the booking method
 function bookacti_booking_method_fill_with_events( booking_system, booking_method ) {
+	var booking_system_id = booking_system.attr( 'id' );
+	booking_method = booking_method || bookacti.booking_system[ booking_system_id ][ 'method' ];
 	if( booking_method === 'calendar' || $j.inArray( booking_method, bookacti_localized.available_booking_methods ) === -1 ) {
 		bookacti_fill_calendar_with_events( booking_system );
 	} else {
@@ -1089,10 +1249,24 @@ function bookacti_booking_method_fill_with_events( booking_system, booking_metho
 }
 
 
+// Fill the events in the booking method
+function bookacti_booking_method_display_event_source( booking_system, event_source, booking_method ) {
+	var booking_system_id = booking_system.attr( 'id' );
+	booking_method = booking_method || bookacti.booking_system[ booking_system_id ][ 'method' ];
+	if( booking_method === 'calendar' || $j.inArray( booking_method, bookacti_localized.available_booking_methods ) === -1 ) {
+		bookacti_display_event_source_on_calendar( booking_system, event_source );
+	} else {
+		booking_system.trigger( 'bookacti_booking_method_display_event_source', [ booking_method, event_source ] );
+	}
+}
+
+
 // Update the calendar settings according to booking method
 function bookacti_booking_method_update_settings( booking_system, booking_method ) {
+	var booking_system_id = booking_system.attr( 'id' );
+	booking_method = booking_method || bookacti.booking_system[ booking_system_id ][ 'method' ];
 	if( booking_method === 'calendar' || $j.inArray( booking_method, bookacti_localized.available_booking_methods ) === -1 ) {
-		bookacti_update_calendar_settings( booking_system.find( '.bookacti-calendar:first' ), bookacti.booking_system[ booking_system.attr( 'id' ) ][ 'settings' ] );
+		bookacti_update_calendar_settings( booking_system.find( '.bookacti-calendar:first' ), bookacti.booking_system[ booking_system_id ][ 'settings' ] );
 	} else {
 		booking_system.trigger( 'bookacti_update_settings', [ booking_method ] );
 	}
@@ -1101,6 +1275,8 @@ function bookacti_booking_method_update_settings( booking_system, booking_method
 
 // Refetch events according to booking method
 function bookacti_booking_method_refetch_events( booking_system, booking_method ) {
+	var booking_system_id = booking_system.attr( 'id' );
+	booking_method = booking_method || bookacti.booking_system[ booking_system_id ][ 'method' ];
 	if( booking_method === 'calendar' || $j.inArray( booking_method, bookacti_localized.available_booking_methods ) === -1 ) {
 		booking_system.find( '.bookacti-calendar' ).fullCalendar( 'removeEvents' );
 		bookacti_fetch_events( booking_system );
@@ -1112,6 +1288,8 @@ function bookacti_booking_method_refetch_events( booking_system, booking_method 
 
 // Rerender events according to booking method
 function bookacti_booking_method_rerender_events( booking_system, booking_method ) {
+	var booking_system_id = booking_system.attr( 'id' );
+	booking_method = booking_method || bookacti.booking_system[ booking_system_id ][ 'method' ];
 	if( booking_method === 'calendar' || $j.inArray( booking_method, bookacti_localized.available_booking_methods ) === -1 ) {
 		bookacti_refresh_calendar_view( booking_system );
 		booking_system.fullCalendar( 'rerenderEvents' );
@@ -1120,6 +1298,9 @@ function bookacti_booking_method_rerender_events( booking_system, booking_method
 	}
 }
 
+
+
+// LOADING
 
 // Start a loading (or keep on loading if already loading)
 function bookacti_start_loading_booking_system( booking_system ) {
