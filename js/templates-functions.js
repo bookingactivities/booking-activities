@@ -1,6 +1,6 @@
 // TEMPLATE
 
-//Change default template on change in the select box
+// Change default template on change in the select box
 function bookacti_switch_template( selected_template_id ) {
 	
 	if( selected_template_id ) {
@@ -46,7 +46,8 @@ function bookacti_switch_template( selected_template_id ) {
 						bookacti_clear_events_on_calendar( $j( '#bookacti-template-calendar' ) );
 
 						// Load events on calendar
-						bookacti_display_events( $j( '#bookacti-template-calendar' ) );
+						var interval = $j( '#bookacti-template-calendar' ).fullCalendar( 'getView' );
+						bookacti_display_events_in_interval( $j( '#bookacti-template-calendar' ), interval );
 					
 					
 					// ACTIVITIES

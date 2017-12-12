@@ -303,11 +303,13 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 
 = 1.2.2 =
 * Feature - Booking Activities' notifications can now be sent along WooCommerce's notifications
-* Optimization - TO DO - Repeated events are loaded significantly faster
-* Optimization - Lighten some processes in calendar editor to make it faster
+* Optimization - TO DO - Events are loaded significantly faster
+* Optimization - Lighten some processes in calendar editor to make them faster
 * Optimization - Booking forms (with or without WooCommerce) are verified faster
 * Optimization - JS and CSS files are now versioned to allow smart cache refresh
 * Optimization - JS and CSS files are now minified, your pages will load faster
+* Tweak - Use CTRL+G to create a group of events in calendar editor (2+ events must be selected)
+* Tweak - Pressing ENTER key now brings focus "OK" button on dialogs of calendar editor
 * Fix - Loading feedback was displayed before booking system title
 * Fix - Alert pop-up was sometimes displayed on frontend with a permission-related error message
 * Fix - Bookings could be still pending after an WC order failed

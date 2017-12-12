@@ -14,6 +14,13 @@ function bookacti_init_template_dialogs() {
 		beforeClose: function() { bookacti_empty_all_dialog_forms(); }
     });
 	
+	// Press ENTER to bring focus on OK button
+	$j( '.bookacti-template-dialogs' ).on( 'keydown', function( e ) {
+		if( e.keyCode == $j.ui.keyCode.ENTER ) {
+			$j( this ).parent().find( '.ui-dialog-buttonpane button:first' ).focus(); 
+			return false; 
+		}
+	});	
 	
     //Individual param
 	$j( '#bookacti-activity-create-method-dialog' ).dialog({ 
@@ -77,6 +84,16 @@ function bookacti_init_template_dialogs() {
 	$j( '#bookacti-template-groups-of-events-container' ).on( 'click', '#bookacti-template-add-first-group-of-events-button img, #bookacti-insert-group-of-events img', function() {
 		bookacti_dialog_create_group_of_events();
     });
+	
+	// Init CTRL+G shortcut to display "create group of events" dialog
+	$j( document ).on( 'keydown', function( e ) {
+		if( e.ctrlKey && e.keyCode == 71 ) {
+			e.preventDefault(); e.stopPropagation(); // Prevent browser's default action
+			if( bookacti.booking_system[ 'bookacti-template-calendar' ][ 'selected_events' ].length >= 2 ) {
+				bookacti_dialog_create_group_of_events();
+			}
+		}
+	});
 	
 	// Init update group of events dialog
 	$j( '#bookacti-template-groups-of-events-container' ).on( 'click', '.bookacti-group-of-events-title, .bookacti-update-group-of-events img', function() {
