@@ -611,117 +611,166 @@ function bookacti_get_booking_dates_html( $booking ) {
 /***** EVENTS *****/
 
 /**
- * Create repeated events
+ * get occurences of repeated events
  * 
- * @version 1.1.0
+ * @since 1.2.2 (replace bookacti_create_repeated_events)
  * @param object $event Event data
- * @param array $shared_data	 Event data shared by every occurences of the event
- * @param array $args Additional data
+ * @param array $settings ['past_events' => bool, 'start' => string: calendar start date, 'end' => string: calendar end date]
+ * @param array $interval ['start' => string: start date, 'end' => string: end date]
  * @return array
  */
-function bookacti_create_repeated_events( $event, $shared_data = array(), $args ) {
+function bookacti_get_occurences_of_repeated_event( $event, $settings, $interval = array() ) {
+
+	$settings = array( 
+		'past_events' => true,
+		'start' => '2017-11-26',
+		'end' => '2036-12-31',
+	);
 	
-	// Sanitize arguments
-	$args = bookacti_sanitize_arguments_to_fetch_events( $args );
+	$interval = array(
+		'start' => '2017-11-26',
+		'end' => '2017-12-31',
+	);
+	
+	// Init variables to compute occurences
+	$event_start		= DateTime::createFromFormat( 'Y-m-d H:i:s', $event->start );
+    $event_end			= DateTime::createFromFormat( 'Y-m-d H:i:s', $event->end );
+    $event_duration		= $event_start->diff( $event_end );
+	
+	$event_start_time	= substr( $event->start, 11 );
+	$event_monthday		= $event_start->format( 'd' );
+
+	$repeat_from		= DateTime::createFromFormat( 'Y-m-d H:i:s', $event->repeat_from . ' 00:00:00' );
+    $repeat_to			= DateTime::createFromFormat( 'Y-m-d H:i:s', $event->repeat_to . ' 23:59:59' );
+	$repeat_interval	= array();
+
+	// Get site settings
+	$timezone			= bookacti_get_setting_value( 'bookacti_general_settings', 'timezone' );
+	$get_started_events	= bookacti_get_setting_value( 'bookacti_general_settings', 'started_events_bookable' );
+	
+	// Get context settings
+	$calendar_start		= DateTime::createFromFormat( 'Y-m-d H:i:s', $settings[ 'start' ] . ' 00:00:00' );
+	$calendar_end		= DateTime::createFromFormat( 'Y-m-d H:i:s', $settings[ 'end' ] . ' 23:59:59' );
 	
 	// Set current datetime
-	$timezone = bookacti_get_setting_value( 'bookacti_general_settings', 'timezone' );
-	$current_datetime_object = new DateTime( 'now', new DateTimeZone( $timezone ) );
-	
-    if( empty( $shared_data ) ) { 
-		$shared_data = array(
-			'id'				=> $event->event_id,
-			'template_id'		=> $event->template_id,
-			'title'				=> apply_filters( 'bookacti_translate_text', $event->title ),
-			'multilingual_title'=> $event->title,
-			'allDay'			=> false,
-			'color'				=> $event->color,
-			'activity_id'		=> $event->activity_id,
-			'availability'		=> $event->availability
-		);
-		if( isset( $event->is_resizable ) && isset( $event->event_settings ) && isset( $event->activity_settings ) ) {
-			$shared_data['durationEditable']	= $event->is_resizable;
-			$shared_data['event_settings']		= maybe_unserialize( $event->event_settings );
-			$shared_data['activity_settings']	= maybe_unserialize( $event->activity_settings );
+	$current_time		= new DateTime( 'now', new DateTimeZone( $timezone ) );
+
+	// Make sure repeated events don't start in the past if not explicitly allowed
+	if( ! $settings[ 'past_events' ] ) {
+		if( $current_time > $repeat_from ) { 
+			$current_date = $current_time->format( 'Y-m-d' );
+			
+			$repeat_from = DateTime::createFromFormat( 'Y-m-d H:i:s', $current_date . ' 00:00:00' );
+			
+			// If started event are NOT allowed
+			$first_potential_event = DateTime::createFromFormat( 'Y-m-d H:i:s', $current_date . ' ' . $event_start_time );
+			$first_potential_event->add( $event_duration );
+			if( ! $get_started_events || $first_potential_event <= $current_time ) {
+				$repeat_from->add( new DateInterval( 'P1D' ) );
+			}
 		}
 	}
-	
-	$started_events_bookable = bookacti_get_setting_value( 'bookacti_general_settings', 'started_events_bookable' );
-	
-	//Determine the number of day to add according to the repetition frequence
-    $to_add = bookacti_units_to_add_to_repeat_event( $event );
-	
-    //Get event duration
-    $event_start	= DateTime::createFromFormat('Y-m-d H:i:s', $event->start );
-    $event_end		= DateTime::createFromFormat('Y-m-d H:i:s', $event->end );
-    $event_duration = $event_start->diff( $event_end );
 
-    //The first event created will begin at the 'repeat from' date and at the 'event.start' hour
-    $start_hours    = substr( $event->start, 11 );
-    $start_datetime = DateTime::createFromFormat('Y-m-d H:i:s', $event->repeat_from . ' ' . $start_hours );
-    //It will last the same duration as the event
-    $end_datetime   = clone $start_datetime;
-    $end_datetime   = $end_datetime->add( $event_duration );
+	// Make sure repeated events don't spread over templates dates
+	if( $calendar_start > $repeat_from ){ $repeat_from	= $calendar_start; }
+	if( $calendar_end < $repeat_to )	{ $repeat_to	= $calendar_end; }
 
-    //Compute the timestamp of the begin and the end of the very first event of the repetition period
-    $start_timestamp= $start_datetime->format('U');
-    $end_timestamp  = $end_datetime->format('U');
-	
-    //Compute the number of days during the repetition period
-    $repeat_from	= DateTime::createFromFormat('Y-m-d', $event->repeat_from );
-    $repeat_to		= DateTime::createFromFormat('Y-m-d', $event->repeat_to );
-    $interval       = $repeat_from->diff( $repeat_to )->days;
+	// Check if the repetition period is in the interval to be rendered
+	if( $interval ) {
+		$interval_start = DateTime::createFromFormat( 'Y-m-d H:i:s', $interval[ 'start' ] . ' 00:00:00' );
+		$interval_end	= DateTime::createFromFormat( 'Y-m-d H:i:s', $interval[ 'end' ] . ' 23:59:59' );
+		
+		// If the repetition period is totally outside the desired interval, skip the event
+		if( ( $interval_start > $repeat_from && $interval_start > $repeat_to )
+		||  ( $interval_end < $repeat_from && $interval_end < $repeat_to ) ) { return array(); }
+		// Else, restrict the repetition period
+		if( $interval_start > $repeat_from )	{ $repeat_from = clone $interval_start; }
+		if( $interval_end < $repeat_to )		{ $repeat_to = clone $interval_end; }
+	}
 
-    //Create the event every X days ($days_to_add) from the begining of the repetition period
-    $repeated_events_array = array();
-    
-        if( $to_add['unit'] === 'days' )    { $iteration = $interval / $to_add['number']; }
-    elseif( $to_add['unit'] === 'months' )  { $iteration = $interval / ( $to_add['number'] * 30.5 ); }
-		
-	$event_start		= new DateTime( '@' . $start_timestamp );
-    $event_end			= new DateTime( '@' . $end_timestamp );
-	$interval_to_add	= DateInterval::createFromDateString( $to_add['number'] . ' ' . $to_add['unit'] );
-	
-    for( $i=0; $i <= $iteration; $i++ ) {
-		
-        $is_exception	= bookacti_is_repeat_exception( $event->event_id, date( 'Y-m-d', $event_start->format( 'U' ) ) );
-        $has_started	= $event_start->getTimestamp() < ( $current_datetime_object->getTimestamp() + $current_datetime_object->getOffset() );
-        $has_ended		= $event_end->getTimestamp() < ( $current_datetime_object->getTimestamp() + $current_datetime_object->getOffset() );
-		$is_in_range	= bookacti_is_event_in_its_template_range( $event->event_id, $event_start->format('Y-m-d H:i:s'), $event_end->format('Y-m-d H:i:s') );
-		$is_booked		= bookacti_get_number_of_bookings( $event->event_id, $event_start->format('Y-m-d H:i:s'), $event_end->format('Y-m-d H:i:s') ) > 0;
-		$category_ids	= bookacti_get_event_group_category_ids( $event->event_id, $event_start->format('Y-m-d H:i:s'), $event_end->format('Y-m-d H:i:s') );
-		$is_in_category	= empty( $args[ 'group_categories' ] ) ? true : array_intersect( $category_ids, $args[ 'group_categories' ] );
-		
-        if( ( ( ! $args[ 'groups_only' ]																		// If single events are displayed, do not care about categories
-			||    $args[ 'groups_only' ] && $is_in_category && ! empty( $category_ids ) )						// Else, filter events by category
-			) && (
-				$args[ 'context' ] === 'editor'																	// Show all events on templates 
-			||  $args[ 'context' ] === 'booking_page' && $is_exception == 0 && ( $is_in_range || $is_booked )	// If we are on booking page, show booked events even if they are out of range
-			||  $args[ 'past_events' ] && $is_exception == 0 && $is_in_range									// If we also fetch past events, show all events but those wich are on an exception
-			||  ( $args[ 'context' ] !== 'editor' && $is_exception == 0 && $is_in_range							// Don't show exception on frontend (on editor, it is done on event render)
-				&& ( ! $has_started																				// Don't show started events on frontend
-					|| ( $started_events_bookable && $has_started && ! $has_ended ) )							// Show in progress events on frontend if user decides so
-				) 
-			)
-		  ) {
+	switch( $event->repeat_freq ) {
+		case 'daily':
+			$repeat_interval = new DateInterval( 'P1D' );
+			break;
+		case 'weekly':
+			$repeat_interval = new DateInterval( 'P7D' );
+			// We need to make sure the repetition start from the week day of the event
+			$event_weekday = $event_start->format( 'N' );
+			if( $repeat_from->format( 'N' ) !== $event_weekday ) { $repeat_from->modify( 'next ' . $event_start->format( 'l' ) ); }
+			break;
+		case 'monthly':
+			// We need to make sure the repetition starts on the event month day
+			if( $repeat_from->format( 'd' ) !== $event_monthday ) {
+				if( $repeat_from->format( 'd' ) < $event_monthday ) { $repeat_from->modify( 'last day of previous month' )->modify( '+' . $event_monthday . ' day' ); }
+				else { 
+					$repeat_from->modify( 'last day of this month' )->modify( '+' . $event_monthday . ' day' ); 
+				}
+				
+				// If the event_monthday is 31 (or 29, 30 or 31 in January), it could have jumped the next month
+				// Make sure it doesn't happen
+				if( $repeat_from->format( 'd' ) !== $event_monthday ) {
+					$repeat_from->modify( '-1 month' );
+					if( $event_monthday > $repeat_from->format( 't' ) ) { $repeat_from->modify( 'last day of this month' ); }
+				}
+			}
 			
-			$event_array = array(
-				'start'			=> $event_start->format('Y-m-d H:i:s'),
-				'end'			=> $event_end->format('Y-m-d H:i:s'),
-				'bookings'		=> bookacti_get_number_of_bookings( $event->event_id, $event_start->format('Y-m-d H:i:s'), $event_end->format('Y-m-d H:i:s') )
-			);
-			$event_array = array_merge( $shared_data, $event_array );
-			
-            $repeated_events_array[] = $event_array;
-        }
-        
-        $event_start->add( $interval_to_add );
-        $event_end->add( $interval_to_add );
-    }
+			// The repeat_interval will be computed directly in the loop
+			break;
+		default:
+			$repeat_interval = new DateInterval( 'P1D' ); // Default to daily to avoid unexpected behavior such as infinite loop
+	}
 
-    return $repeated_events_array;
+	// Properties common to each events of the 
+	$shared_properties = array(
+		'id'				=> $event->event_id,
+		'title'				=> apply_filters( 'bookacti_translate_text', $event->title ),
+		'color'				=> $event->color,
+		'durationEditable'	=> $event->is_resizable === '1' ? true : false
+	);
+
+	// Compute occurences
+	$events		= array();
+	$loop		= clone $repeat_from;
+	$end_loop	= $repeat_to->format( 'U' );
+
+	while( $loop->format( 'U' ) < $end_loop ) {
+
+		$occurence_start = DateTime::createFromFormat( 'Y-m-d H:i:s', $loop->format( 'Y-m-d' ) . ' ' . $event_start_time );
+		$occurence_end = clone $occurence_start;
+		$occurence_end->add( $event_duration );
+
+		// Check if the event is in the interval to be rendered
+		if( $interval ) {
+			if( $interval_start > $occurence_start || $interval_end < $occurence_start ) { $loop->add( $repeat_interval ); continue; }
+		}
+
+		// Compute start and end dates
+		$event_occurence = array(
+			'start'	=> $occurence_start->format( 'Y-m-d H:i:s' ),
+			'end'	=> $occurence_end->format( 'Y-m-d H:i:s' )
+		);
+
+		// Add this occurrence to events array
+		$events[] = array_merge( $event_occurence, $shared_properties );
+
+		// Alter repeat_interval to make sure it matches the last day of next month
+		if( $event->repeat_freq === 'monthly' ) {
+			$next_month = clone $loop;
+			$next_month->modify( 'last day of this month' )->modify( '+' . $event_monthday . ' day' );
+			if( $next_month->format( 'd' ) !== $event_monthday ) {
+				$next_month->modify( '-1 month' );
+				if( $event_monthday > $next_month->format( 't' ) ) { $next_month->modify( 'last day of this month' ); }
+			}
+			$days_to_next_month	= abs( $next_month->diff( $loop )->format( '%a' ) );		
+			$repeat_interval = new DateInterval( 'P' . $days_to_next_month . 'D' );
+		}
+
+		// Increase loop
+		$loop->add( $repeat_interval );
+	}
+
+	return $events;
 }
-
 
 // Determine the number of day or month to add according to the repetition frequence
 function bookacti_units_to_add_to_repeat_event( $event ) {

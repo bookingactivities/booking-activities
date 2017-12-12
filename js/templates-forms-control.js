@@ -328,8 +328,8 @@ function bookacti_validate_event_repetition_data( event ) {
 
 	// Get params
 	var min_bookings    = parseInt( $j( '#bookacti-event-data-dialog #bookacti-event-availability' ).attr( 'min' ) );
-	var repeat_freq     = $j( '#bookacti-event-data-dialog #bookacti-event-repeat-freq').val() || event.repeat_freq + '';
-	var current_freq	= event.repeat_freq + '';
+	var repeat_freq     = $j( '#bookacti-event-data-dialog #bookacti-event-repeat-freq').val() || bookacti.booking_system[ 'bookacti-template-calendar' ][ 'events_data' ][ event.id ][ 'repeat_freq' ] + '';
+	var current_freq	= bookacti.booking_system[ 'bookacti-template-calendar' ][ 'events_data' ][ event.id ][ 'repeat_freq' ] + '';
 	var repeat_from     = moment( $j( '#bookacti-event-data-dialog #bookacti-event-repeat-from' ).val() );
 	var repeat_from_max = moment( $j( '#bookacti-event-data-dialog #bookacti-event-repeat-from' ).attr('max') ).format( 'YYYY-MM-DD' );
 	var repeat_to       = moment( $j( '#bookacti-event-data-dialog #bookacti-event-repeat-to' ).val() );

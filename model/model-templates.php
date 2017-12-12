@@ -16,62 +16,66 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	 * @param int $event_id
 	 * @return array
 	 */
-    function bookacti_fetch_events_for_calendar_editor( $template_id = NULL, $event_id = NULL ) {
-        global $wpdb;
-        
+	function bookacti_fetch_events_for_calendar_editor( $template_id = NULL, $event_id = NULL ) {
+		global $wpdb;
+
 		// Get all events
 		$query  = 'SELECT E.id as event_id, E.template_id, E.title, E.start, E.end, E.repeat_freq, E.repeat_from, E.repeat_to, E.availability, A.color, A.is_resizable, A.id as activity_id ' 
-                    . ' FROM ' . BOOKACTI_TABLE_EVENTS . ' as E, ' . BOOKACTI_TABLE_ACTIVITIES . ' as A '
-                    . ' WHERE E.activity_id = A.id '
-                    . ' AND E.active = 1 ';
-		
-        // If we know the event id, we only get this event
-        if( $event_id != '' && isset( $event_id ) && ! is_null( $event_id ) ) {
-            
+					. ' FROM ' . BOOKACTI_TABLE_EVENTS . ' as E, ' . BOOKACTI_TABLE_ACTIVITIES . ' as A '
+					. ' WHERE E.activity_id = A.id '
+					. ' AND E.active = 1 ';
+
+		// If we know the event id, we only get this event
+		if( $event_id != '' && isset( $event_id ) && ! is_null( $event_id ) ) {
+
 			$query  .= ' AND E.id = %d';
-            $prep_query = $wpdb->prepare( $query, $event_id );
-        
-        // If we know the template id, we get all events of this template
-        } else if ( $template_id != '' && isset( $template_id ) && ! is_null( $template_id ) ) {
-            
-            $query  .= ' AND E.template_id = %d';
-            $prep_query = $wpdb->prepare( $query, $template_id );
-        }
-		
-        $events = $wpdb->get_results( $prep_query, OBJECT );
-        
-        $events_array = array( 'single' => array(), 'repeated' => array() );
-        foreach ( $events as $event ) {
-            // Have to convert 0 and 1 to true or false...
-			$event->is_resizable = $event->is_resizable === '1' ? true : false;
-            
-			$event_array = array(
+			$prep_query = $wpdb->prepare( $query, $event_id );
+
+		// If we know the template id, we get all events of this template
+		} else if ( $template_id != '' && isset( $template_id ) && ! is_null( $template_id ) ) {
+
+			$query  .= ' AND E.template_id = %d';
+			$prep_query = $wpdb->prepare( $query, $template_id );
+		}
+
+		$events = $wpdb->get_results( $prep_query, OBJECT );
+
+		$events_array = array( 'data' => array(), 'events' => array() );
+		foreach ( $events as $event ) {
+
+			$event_fc_data = array(
 				'id'				=> $event->event_id,
-				'template_id'		=> $event->template_id,
 				'title'				=> apply_filters( 'bookacti_translate_text', $event->title ),
-				'multilingual_title'=> $event->title,
-				'allDay'			=> false,
 				'start'				=> $event->start,
 				'end'				=> $event->end,
 				'color'				=> $event->color,
+				'durationEditable'	=> $event->is_resizable === '1' ? true : false
+			);
+			
+			$event_bookacti_data = array(
+				'multilingual_title'=> $event->title,
+				'template_id'		=> $event->template_id,
 				'activity_id'		=> $event->activity_id,
 				'availability'		=> $event->availability,
-				'durationEditable'	=> $event->is_resizable,
 				'repeat_freq'		=> $event->repeat_freq,
 				'repeat_from'		=> $event->repeat_from,
 				'repeat_to'			=> $event->repeat_to,
 				'event_settings'	=> bookacti_get_metadata( 'event', $event->event_id )
 			);
 			
-            if( $event->repeat_freq === 'none' ) {
-                $events_array[ 'single' ][ $event->event_id ] = $event_array;
-            } else {
-                $events_array[ 'repeated' ][ $event->event_id ] = $event_array;
-            }
-        }
-        
-        return $events_array;
-    }
+			// Build events data array
+			$events_array[ 'data' ][ $event->event_id ] = array_merge( $event_fc_data, $event_bookacti_data );
+
+			// Build events array
+			if( $event->repeat_freq === 'none' ) {
+				$events_array[ 'events' ][] = $event_data;
+			} else {
+				$events_array[ 'events' ] = array_merge( $events_array[ 'events' ], bookacti_get_occurences_of_repeated_event( $event ) );
+			}
+		}
+
+		return $events_array;
+	}
 	
 	
     //INSERT AN EVENT

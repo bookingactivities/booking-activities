@@ -146,7 +146,8 @@ function bookacti_filter_bookings_by_templates( booking_system ) {
 					bookacti.booking_system[ booking_system_id ][ 'settings' ]				= response.settings;
 					
 					// Update calendar content data
-					bookacti.booking_system[ booking_system_id ][ 'events' ]				= response[ 'events' ];
+					bookacti.booking_system[ booking_system_id ][ 'events' ]				= response.events;
+					bookacti.booking_system[ booking_system_id ][ 'events_data' ]			= response.events_data;
 					bookacti.booking_system[ booking_system_id ][ 'activities_data' ]		= response.activities_data;
 					bookacti.booking_system[ booking_system_id ][ 'groups_events' ]			= response.groups_events;
 					bookacti.booking_system[ booking_system_id ][ 'groups_data' ]			= response.groups_data;

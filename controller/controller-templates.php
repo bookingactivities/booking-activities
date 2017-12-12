@@ -102,9 +102,10 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 		if( $is_nonce_valid && $is_allowed ) {
 			
-			$has_bookings = bookacti_get_number_of_bookings( $event_id );
+			$is_duplicated  = intval( $_POST[ 'is_duplicated' ] );
+			$has_bookings	= bookacti_get_number_of_bookings( $event_id );
 
-			if( is_numeric( $has_bookings ) && $has_bookings > 0 ) {
+			if( ! $is_duplicated && is_numeric( $has_bookings ) && $has_bookings > 0 ) {
 
 				wp_send_json( array( 'status' => 'failed', 'error' => 'has_bookings' ) );
 
@@ -114,7 +115,6 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 				$event_start    = bookacti_sanitize_datetime( $_POST[ 'event_start' ] );
 				$event_end      = bookacti_sanitize_datetime( $_POST[ 'event_end' ] );
 				$delta_days     = intval( $_POST[ 'delta_days' ] );
-				$is_duplicated  = intval( $_POST[ 'is_duplicated' ] );
 				
 				// Maybe update grouped events if the event belong to a group
 				if( ! $is_duplicated ) {
@@ -904,7 +904,8 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 				'groups_list'			=> $groups_list, 
 				'exceptions'			=> $exceptions, 
 				
-				'events'				=> $events,
+				'events'				=> $events[ 'events' ],
+				'events_data'			=> $events[ 'data' ],
 				'bookings'				=> $bookings,
 				'activities_data'		=> $activities_data, 
 				'groups_events'			=> $groups_events, 

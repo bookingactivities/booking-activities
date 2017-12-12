@@ -63,8 +63,8 @@ function bookacti_set_calendar_up( booking_system, reload_events ) {
 			element.attr( 'data-event-start',	event.start.format( 'YYYY-MM-DD HH:mm:ss' ) );
 			element.data( 'event-end',			event.end.format( 'YYYY-MM-DD HH:mm:ss' ) );
 			element.attr( 'data-event-end',		event.end.format( 'YYYY-MM-DD HH:mm:ss' ) );
-			element.data( 'activity-id',		event.activity_id );
-			element.attr( 'data-activity-id',	event.activity_id );
+			element.data( 'activity-id',		bookacti.booking_system[ booking_system_id ][ 'events_data' ][ event.id ][ 'activity_id' ] );
+			element.attr( 'data-activity-id',	bookacti.booking_system[ booking_system_id ][ 'events_data' ][ event.id ][ 'activity_id' ] );
 			event.render = 1;
 			
 			if( view.name.indexOf( 'basic' ) > -1 || view.name.indexOf( 'month' ) > -1 ){
@@ -73,7 +73,7 @@ function bookacti_set_calendar_up( booking_system, reload_events ) {
 			
 			// Add availability div
 			event.bookings = bookacti_get_event_number_of_bookings( event, booking_system_id );
-			if( event.bookings != null && event.availability != null ) {
+			if( event.bookings != null ) {
 
 				var is_available = bookacti_is_event_available( booking_system, event );
 				
@@ -95,8 +95,9 @@ function bookacti_set_calendar_up( booking_system, reload_events ) {
 			}
 			
 			// Check if the event is on an exception
-			if( event.repeat_freq ) {
-				if( event.repeat_freq !== 'none' ) {
+			var event_repeat_freq = bookacti.booking_system[ booking_system_id ][ 'events_data' ][ event.id ][ 'repeat_freq' ];
+			if( event_repeat_freq ) {
+				if( event_repeat_freq !== 'none' ) {
 					if( bookacti.booking_system[ booking_system_id ][ 'exceptions' ] !== undefined 
 					&&  bookacti.booking_system[ booking_system_id ][ 'exceptions' ][ event.id ] !== undefined ) {
 						$j.each( bookacti.booking_system[ booking_system_id ][ 'exceptions' ][ event.id ], function ( i, excep ) {
@@ -139,8 +140,7 @@ function bookacti_set_calendar_up( booking_system, reload_events ) {
 	
 	// Check if events array is empty
 	var are_events = false;
-	if( ! $j.isEmptyObject( bookacti.booking_system[ booking_system_id ][ 'events' ][ 'single' ] )
-	||  ! $j.isEmptyObject( bookacti.booking_system[ booking_system_id ][ 'events' ][ 'repeated' ] ) ) { are_events = true; }
+	if( bookacti.booking_system[ booking_system_id ][ 'events' ].length ) { are_events = true; }
 	
 	// Load events on calendar
 	if( ! reload_events && are_events ) {

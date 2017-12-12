@@ -647,11 +647,13 @@ function bookacti_dialog_update_event( event ) {
 						
 						// Store new event data
 						var new_event = event;
-						new_event.title			= $j( '#bookacti-event-title' ).val();
-						new_event.availability	= $j( '#bookacti-event-availability' ).val();
-						new_event.repeat_freq	= $j( '#bookacti-event-repeat-freq' ).val();
-						new_event.repeat_from	= $j( '#bookacti-event-repeat-from' ).val();
-						new_event.repeat_to		= $j( '#bookacti-event-repeat-to' ).val();
+						new_event.title = $j( '#bookacti-event-title' ).val();
+						var new_event_data = {
+							'availability'	: $j( '#bookacti-event-availability' ).val(),
+							'repeat_freq'	: $j( '#bookacti-event-repeat-freq' ).val(),
+							'repeat_from'	: $j( '#bookacti-event-repeat-from' ).val(),
+							'repeat_to'		: $j( '#bookacti-event-repeat-to' ).val()
+						};
 						
 						// Store new exceptions list
 						var new_exceptions = $j( '#bookacti-event-exceptions-selectbox' ).val() ? $j( '#bookacti-event-exceptions-selectbox' ).val() : [];
@@ -674,6 +676,13 @@ function bookacti_dialog_update_event( event ) {
 										// Unselect the event or occurences of the event
 										bookacti_unselect_event( event, undefined, true );
 										
+										// Update event data
+										bookacti.booking_system[ 'bookacti-template-calendar' ][ 'events_data' ][ event.id ][ 'title' ]			= new_event.title;
+										bookacti.booking_system[ 'bookacti-template-calendar' ][ 'events_data' ][ event.id ][ 'availability' ]	= new_event_data.availability;
+										bookacti.booking_system[ 'bookacti-template-calendar' ][ 'events_data' ][ event.id ][ 'repeat_freq' ]	= new_event_data.repeat_freq;
+										bookacti.booking_system[ 'bookacti-template-calendar' ][ 'events_data' ][ event.id ][ 'repeat_from' ]	= new_event_data.repeat_from;
+										bookacti.booking_system[ 'bookacti-template-calendar' ][ 'events_data' ][ event.id ][ 'repeat_to' ]		= new_event_data.repeat_to;
+										
 										// Update groups events
 										bookacti.booking_system[ 'bookacti-template-calendar' ][ 'groups_events' ] = response.groups_events;
 										
@@ -684,14 +693,10 @@ function bookacti_dialog_update_event( event ) {
 										});
 										
 										// Delete old event
-										if( response.repeat_freq && response.repeat_freq !== 'none' ) {
-											$j( '#bookacti-template-calendar' ).fullCalendar( 'removeEventSource', 'event_' + event.id );
-										} else {
-											bookacti_clear_events_on_calendar( $j( '#bookacti-template-calendar' ), event );
-										}
+										bookacti_clear_events_on_calendar( $j( '#bookacti-template-calendar' ), event );
 										
 										// Add new event
-										if( new_event.repeat_freq !== 'none' ) {
+										if( new_event_data.repeat_freq !== 'none' ) {
 											bookacti_display_repeated_events( $j( '#bookacti-template-calendar' ), [ new_event ] );
 										} else {
 											$j( '#bookacti-template-calendar' ).fullCalendar( 'addEventSource', [ new_event ] );
@@ -849,7 +854,8 @@ function bookacti_dialog_delete_event( event ) {
 								}
 								
 								// If the event is repeated, display unbind dialog
-								if( event.repeat_freq !== 'none' ) {
+								var repeat_freq = bookacti.booking_system[ 'bookacti-template-calendar' ][ 'events_data' ][ event.id ][ 'repeat_freq' ];
+								if( repeat_freq !== 'none' ) {
 									bookacti_dialog_unbind_occurences( event, [ 'delete' ] );
 								} 
 								
