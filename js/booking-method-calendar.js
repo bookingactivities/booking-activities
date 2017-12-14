@@ -448,8 +448,6 @@ function bookacti_update_calendar_settings( calendar, settings ) {
 		calendar.fullCalendar( 'option', settings_to_update );
 	}
 	
-	calendar.fullCalendar( 'option', 'validRange', settings_to_update.validRange );
-	
 	calendar.trigger( 'bookacti_calendar_settings_updated', [ settings_to_update, settings ] );
 }
 

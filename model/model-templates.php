@@ -14,9 +14,10 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	 * @global wpdb $wpdb
 	 * @param int $template_id
 	 * @param int $event_id
+	 * @param array $interval ['past_events' => bool, 'start' => string: start date, 'end' => string: end date]
 	 * @return array
 	 */
-	function bookacti_fetch_events_for_calendar_editor( $template_id = NULL, $event_id = NULL ) {
+	function bookacti_fetch_events_for_calendar_editor( $template_id = NULL, $event_id = NULL, $interval = array() ) {
 		global $wpdb;
 
 		// Get all events
@@ -68,9 +69,9 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 			// Build events array
 			if( $event->repeat_freq === 'none' ) {
-				$events_array[ 'events' ][] = $event_data;
+				$events_array[ 'events' ][] = $event_fc_data;
 			} else {
-				$events_array[ 'events' ] = array_merge( $events_array[ 'events' ], bookacti_get_occurences_of_repeated_event( $event ) );
+				$events_array[ 'events' ] = array_merge( $events_array[ 'events' ], bookacti_get_occurences_of_repeated_event( $event, $interval ) );
 			}
 		}
 

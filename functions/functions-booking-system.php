@@ -611,81 +611,133 @@ function bookacti_get_booking_dates_html( $booking ) {
 /***** EVENTS *****/
 
 /**
+ * Get the first interval of events to load. Computed from now's date and template interval.
+ * 
+ * @since 1.2.2
+ * @param array $template_interval Array( 'start'=>Calendar start, 'end'=> Calendar end) 
+ * @param int $interval_duration Number of days of the interval
+ * @param bool $past_events
+ * @return array
+ */
+function bookacti_get_first_interval_of_events( $template_interval, $interval_duration = 90, $past_events = false ) {
+	
+	$timezone			= bookacti_get_setting_value( 'bookacti_general_settings', 'timezone' );
+	$current_time		= new DateTime( 'now', new DateTimeZone( $timezone ) );
+	$current_date		= $current_time->format( 'Y-m-d' );
+	
+	$calendar_start		= DateTime::createFromFormat( 'Y-m-d H:i:s', $template_interval[ 'start' ] . ' 00:00:00' );
+	$calendar_end		= DateTime::createFromFormat( 'Y-m-d H:i:s', $template_interval[ 'end' ] . ' 23:59:59' );
+
+	if( ! $past_events && $calendar_end < $current_time ) { return array(); }
+		
+	$interval_start		= DateTime::createFromFormat( 'Y-m-d H:i:s', $current_date . ' 00:00:00' );
+	$interval_end		= DateTime::createFromFormat( 'Y-m-d H:i:s', $current_date . ' 23:59:59' );
+	
+	$half_interval		= round( intval( $interval_duration ) / 2 );
+	$interval_end_days_to_add = $half_interval;
+	
+	// Compute Interval start
+	
+	if( $past_events ) {
+		$interval_start->sub( new DateInterval( 'P' . $half_interval . 'D' ) );
+		if( $calendar_start > $interval_start ) {
+			$interval_end_days_to_add += abs( $interval_start->diff( $calendar_start )->format( '%a' ) );
+			$interval_start = clone $calendar_start;
+		}
+	} else {
+		$interval_end_days_to_add += $half_interval;
+	}
+
+	// Compute interval end
+	$interval_end->add( new DateInterval( 'P' . $interval_end_days_to_add . 'D' ) );
+	if( $calendar_end < $interval_end ) {
+		$interval_end = $calendar_end;
+	}
+
+	$interval = array( 'past_events' => $past_events, 'start' => $interval_start->format( 'Y-m-d' ), 'end' => $interval_end->format( 'Y-m-d' ) );
+
+	return $interval;
+}
+
+
+/**
+ * Sanitize events interval
+ * 
+ * @since 1.2.2
+ * @param type $interval
+ * @return type
+ */
+function bookacti_sanitize_events_interval( $interval ) {
+	
+	if( ! $interval || ! is_array( $interval ) ) { return array(); }
+	
+	$sanitized_interval = array(
+		'past_events'	=> isset( $interval[ 'past_events' ] ) && $interval[ 'past_events' ] ? true : false,
+		'start'			=> isset( $interval[ 'start' ] ) ? bookacti_sanitize_date( $interval[ 'start' ] ) : false,
+		'end'			=> isset( $interval[ 'end' ] ) ? bookacti_sanitize_date( $interval[ 'end' ] ) : false
+	);
+	
+	return $sanitized_interval;
+}
+
+
+/**
  * get occurences of repeated events
  * 
  * @since 1.2.2 (replace bookacti_create_repeated_events)
  * @param object $event Event data
- * @param array $settings ['past_events' => bool, 'start' => string: calendar start date, 'end' => string: calendar end date]
- * @param array $interval ['start' => string: start date, 'end' => string: end date]
+ * @param array $interval array('past_events' => bool, 'start' => string: start date, 'end' => string: end date)
  * @return array
  */
-function bookacti_get_occurences_of_repeated_event( $event, $settings, $interval = array() ) {
+function bookacti_get_occurences_of_repeated_event( $event, $interval = array() ) {
 
-	$settings = array( 
-		'past_events' => true,
-		'start' => '2017-11-26',
-		'end' => '2036-12-31',
-	);
-	
-	$interval = array(
-		'start' => '2017-11-26',
-		'end' => '2017-12-31',
-	);
-	
 	// Init variables to compute occurences
 	$event_start		= DateTime::createFromFormat( 'Y-m-d H:i:s', $event->start );
-    $event_end			= DateTime::createFromFormat( 'Y-m-d H:i:s', $event->end );
-    $event_duration		= $event_start->diff( $event_end );
-	
+	$event_end			= DateTime::createFromFormat( 'Y-m-d H:i:s', $event->end );
+	$event_duration		= $event_start->diff( $event_end );
+
 	$event_start_time	= substr( $event->start, 11 );
 	$event_monthday		= $event_start->format( 'd' );
 
 	$repeat_from		= DateTime::createFromFormat( 'Y-m-d H:i:s', $event->repeat_from . ' 00:00:00' );
-    $repeat_to			= DateTime::createFromFormat( 'Y-m-d H:i:s', $event->repeat_to . ' 23:59:59' );
+	$repeat_to			= DateTime::createFromFormat( 'Y-m-d H:i:s', $event->repeat_to . ' 23:59:59' );
 	$repeat_interval	= array();
 
 	// Get site settings
 	$timezone			= bookacti_get_setting_value( 'bookacti_general_settings', 'timezone' );
 	$get_started_events	= bookacti_get_setting_value( 'bookacti_general_settings', 'started_events_bookable' );
-	
-	// Get context settings
-	$calendar_start		= DateTime::createFromFormat( 'Y-m-d H:i:s', $settings[ 'start' ] . ' 00:00:00' );
-	$calendar_end		= DateTime::createFromFormat( 'Y-m-d H:i:s', $settings[ 'end' ] . ' 23:59:59' );
-	
+
 	// Set current datetime
 	$current_time		= new DateTime( 'now', new DateTimeZone( $timezone ) );
 
 	// Make sure repeated events don't start in the past if not explicitly allowed
-	if( ! $settings[ 'past_events' ] ) {
-		if( $current_time > $repeat_from ) { 
-			$current_date = $current_time->format( 'Y-m-d' );
-			
-			$repeat_from = DateTime::createFromFormat( 'Y-m-d H:i:s', $current_date . ' 00:00:00' );
-			
-			// If started event are NOT allowed
-			$first_potential_event = DateTime::createFromFormat( 'Y-m-d H:i:s', $current_date . ' ' . $event_start_time );
-			$first_potential_event->add( $event_duration );
-			if( ! $get_started_events || $first_potential_event <= $current_time ) {
-				$repeat_from->add( new DateInterval( 'P1D' ) );
-			}
+	if( ! $interval[ 'past_events' ] && $current_time > $repeat_from ) {
+		$current_date = $current_time->format( 'Y-m-d' );
+
+		$repeat_from = DateTime::createFromFormat( 'Y-m-d H:i:s', $current_date . ' 00:00:00' );
+
+		// If started event are NOT allowed
+		$first_potential_event = DateTime::createFromFormat( 'Y-m-d H:i:s', $current_date . ' ' . $event_start_time );
+		$first_potential_event->add( $event_duration );
+		if( ! $get_started_events || $first_potential_event <= $current_time ) {
+			$repeat_from->add( new DateInterval( 'P1D' ) );
 		}
 	}
 
-	// Make sure repeated events don't spread over templates dates
-	if( $calendar_start > $repeat_from ){ $repeat_from	= $calendar_start; }
-	if( $calendar_end < $repeat_to )	{ $repeat_to	= $calendar_end; }
-
 	// Check if the repetition period is in the interval to be rendered
 	if( $interval ) {
-		$interval_start = DateTime::createFromFormat( 'Y-m-d H:i:s', $interval[ 'start' ] . ' 00:00:00' );
-		$interval_end	= DateTime::createFromFormat( 'Y-m-d H:i:s', $interval[ 'end' ] . ' 23:59:59' );
-		
 		// If the repetition period is totally outside the desired interval, skip the event
-		if( ( $interval_start > $repeat_from && $interval_start > $repeat_to )
-		||  ( $interval_end < $repeat_from && $interval_end < $repeat_to ) ) { return array(); }
 		// Else, restrict the repetition period
-		if( $interval_start > $repeat_from )	{ $repeat_from = clone $interval_start; }
-		if( $interval_end < $repeat_to )		{ $repeat_to = clone $interval_end; }
+		if( $interval[ 'start' ] ) {
+			$interval_start = DateTime::createFromFormat( 'Y-m-d H:i:s', $interval[ 'start' ] . ' 00:00:00' );
+			if( $interval_start > $repeat_from && $interval_start > $repeat_to ) { return array(); }
+			if( $interval_start > $repeat_from ) { $repeat_from = clone $interval_start; }
+		}
+		if( $interval[ 'end' ] ) {
+			$interval_end	= DateTime::createFromFormat( 'Y-m-d H:i:s', $interval[ 'end' ] . ' 23:59:59' );
+			if( $interval_end < $repeat_from && $interval_end < $repeat_to ) { return array(); }
+			if( $interval_end < $repeat_to ) { $repeat_to = clone $interval_end; }
+		}
 	}
 
 	switch( $event->repeat_freq ) {
@@ -701,11 +753,12 @@ function bookacti_get_occurences_of_repeated_event( $event, $settings, $interval
 		case 'monthly':
 			// We need to make sure the repetition starts on the event month day
 			if( $repeat_from->format( 'd' ) !== $event_monthday ) {
-				if( $repeat_from->format( 'd' ) < $event_monthday ) { $repeat_from->modify( 'last day of previous month' )->modify( '+' . $event_monthday . ' day' ); }
-				else { 
+				if( $repeat_from->format( 'd' ) < $event_monthday ) {
+					$repeat_from->modify( 'last day of previous month' )->modify( '+' . $event_monthday . ' day' );
+				} else { 
 					$repeat_from->modify( 'last day of this month' )->modify( '+' . $event_monthday . ' day' ); 
 				}
-				
+
 				// If the event_monthday is 31 (or 29, 30 or 31 in January), it could have jumped the next month
 				// Make sure it doesn't happen
 				if( $repeat_from->format( 'd' ) !== $event_monthday ) {
@@ -713,7 +766,7 @@ function bookacti_get_occurences_of_repeated_event( $event, $settings, $interval
 					if( $event_monthday > $repeat_from->format( 't' ) ) { $repeat_from->modify( 'last day of this month' ); }
 				}
 			}
-			
+
 			// The repeat_interval will be computed directly in the loop
 			break;
 		default:
@@ -741,7 +794,8 @@ function bookacti_get_occurences_of_repeated_event( $event, $settings, $interval
 
 		// Check if the event is in the interval to be rendered
 		if( $interval ) {
-			if( $interval_start > $occurence_start || $interval_end < $occurence_start ) { $loop->add( $repeat_interval ); continue; }
+			if( $interval[ 'start' ] && $interval_start > $occurence_start ) { $loop->add( $repeat_interval ); continue; }
+			if( $interval[ 'end' ] && $interval_end < $occurence_start ) { $loop->add( $repeat_interval ); continue; }
 		}
 
 		// Compute start and end dates
@@ -772,52 +826,6 @@ function bookacti_get_occurences_of_repeated_event( $event, $settings, $interval
 	return $events;
 }
 
-// Determine the number of day or month to add according to the repetition frequence
-function bookacti_units_to_add_to_repeat_event( $event ) {
-    $to_add = array( 'number' => 0, 'unit' => 'days' );
-    
-    if( $event->repeat_freq === 'daily' )   { $to_add['number'] = 1; $to_add['unit'] = 'days'; }
-    
-    if( $event->repeat_freq === 'weekly' )  { 
-        $weekday_event  = date( 'N', strtotime( $event->start ) );
-        $weekday_from   = date( 'N', strtotime( $event->repeat_from ) );
-        $new_repeat_from_datetime   = DateTime::createFromFormat('Y-m-d', $event->repeat_from );
-        $new_repeat_from_timestamp  = $new_repeat_from_datetime->format( 'U' );
-
-        //Add one day to 'repeat-from' date until the weekday is the same as the event and set it as the new repat-from date
-        $i=0;
-        while ( $weekday_event !== $weekday_from ) {
-            $weekday_from = date('N', strtotime('+' . $i . 'days', $new_repeat_from_timestamp ) );
-            $event->repeat_from = date('Y-m-d', strtotime('+' . $i . 'days', $new_repeat_from_timestamp ) );
-            $i++;
-        }
-
-        $to_add['number']   = 7;
-        $to_add['unit']     = 'days';  
-    }
-    
-    if( $event->repeat_freq === 'monthly' ) {
-        $event_start_datetime       = DateTime::createFromFormat( 'Y-m-d H:i:s', $event->start );
-        $new_repeat_from_datetime   = DateTime::createFromFormat( 'Y-m-d', $event->repeat_from );
-        $event_start_timestamp      = $event_start_datetime->format( 'U' );
-        $new_repeat_from_timestamp  = $new_repeat_from_datetime->format( 'U' );
-		
-        //Substract one month to the start date of the event until the 'repeat-from' date is reach
-		$interval_to_substract = DateInterval::createFromDateString( '1 month' );
-        do {
-            $event->repeat_from = $event_start_datetime->format( 'Y-m-d' );
-            //Set the first occurence of the event as the new repeat-from date
-			$event_start_datetime->sub( $interval_to_substract );
-			$event_start_timestamp = $event_start_datetime->format( 'U' );
-        }
-        while ( $event_start_timestamp > $new_repeat_from_timestamp );
-
-        $to_add['number']   = 1;
-        $to_add['unit']     = 'months';  
-    }
-    
-    return $to_add;
-}
 
 
 /**

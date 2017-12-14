@@ -15,9 +15,16 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		
 		if( $is_nonce_valid && $is_allowed && $template_id ) {
 			
-			$event_id	= intval( $_POST['event_id'] );
-			$events		= bookacti_fetch_events_for_calendar_editor( $template_id, $event_id );
-			wp_send_json( array( 'status' => 'success', 'events' => $events ) );
+			$event_id	= intval( $_POST[ 'event_id' ] );
+			$interval	= bookacti_sanitize_events_interval( $_POST[ 'interval' ] );
+			$interval[ 'past_events' ] = true;
+			
+			$events		= bookacti_fetch_events_for_calendar_editor( $template_id, $event_id, $interval );
+			wp_send_json( array( 
+				'status' => 'success', 
+				'events' => $events[ 'events' ] ? $events[ 'events' ] : array(),
+				'events_data' => $events[ 'data' ] ? $events[ 'data' ] : array()
+			));
 			
 		} else {
 			wp_send_json( array( 'status' => 'failed', 'error' => 'not_allowed' ) );
@@ -886,16 +893,17 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			$updated			= bookacti_update_user_default_template( $template_id );
 			$activities_list	= bookacti_get_template_activities_list( $template_id );
 			$groups_list		= bookacti_get_template_groups_of_events_list( $template_id );
-			$exceptions			= bookacti_get_exceptions( $template_id );
 			
-			$events				= bookacti_fetch_events_for_calendar_editor( $template_id );
 			$bookings			= bookacti_get_number_of_bookings_by_events( $template_id );
 			$activities_data	= bookacti_get_activities_by_template( $template_id, true );
 			$groups_events		= bookacti_get_groups_events( $template_id );
 			$groups_data		= bookacti_get_groups_of_events_by_template( $template_id );
 			$categories_data	= bookacti_get_group_categories_by_template( $template_id );
+			$exceptions			= bookacti_get_exceptions( $template_id );
 			$settings			= bookacti_get_templates_settings( $template_id );
 			
+			$events_interval	= bookacti_get_first_interval_of_events( $settings, 30, true );
+			$events				= $events_interval ? bookacti_fetch_events_for_calendar_editor( $template_id, null, $events_interval ) : array();
 			
 			wp_send_json( array(
 				'status'				=> 'success', 
@@ -904,8 +912,9 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 				'groups_list'			=> $groups_list, 
 				'exceptions'			=> $exceptions, 
 				
-				'events'				=> $events[ 'events' ],
-				'events_data'			=> $events[ 'data' ],
+				'events'				=> $events[ 'events' ] ? $events[ 'events' ] : array(),
+				'events_data'			=> $events[ 'data' ] ? $events[ 'data' ] : array(),
+				'events_interval'		=> $events_interval,
 				'bookings'				=> $bookings,
 				'activities_data'		=> $activities_data, 
 				'groups_events'			=> $groups_events, 
