@@ -17,12 +17,11 @@ $j( document ).ready( function() {
 		bookacti.booking_system[ 'bookacti-template-calendar' ][ 'groups_events' ]			= [];
 		bookacti.booking_system[ 'bookacti-template-calendar' ][ 'groups_data' ]			= [];
 		bookacti.booking_system[ 'bookacti-template-calendar' ][ 'activities_data' ]		= {};
-		bookacti.booking_system[ 'bookacti-template-calendar' ][ 'events' ]					= [];
 		bookacti.booking_system[ 'bookacti-template-calendar' ][ 'events_data' ]			= [];
 		bookacti.booking_system[ 'bookacti-template-calendar' ][ 'events_interval' ]		= [];
 		bookacti.booking_system[ 'bookacti-template-calendar' ][ 'group_categories_data' ]	= [];
-		bookacti.booking_system[ 'bookacti-template-calendar' ][ 'settings' ]				= []; 
-		bookacti.booking_system[ 'bookacti-template-calendar' ][ 'settings' ]				= { 
+		bookacti.booking_system[ 'bookacti-template-calendar' ][ 'template_data' ]			= []; 
+		bookacti.booking_system[ 'bookacti-template-calendar' ][ 'template_data' ]			= { 
 			'start' : $j( '#bookacti-template-picker option[value="' + bookacti.selected_template + '"]' ).data( 'template-start' ) || false, 
 			'end' : $j( '#bookacti-template-picker option[value="' + bookacti.selected_template + '"]' ).data( 'template-end' ) || false 
 		};
@@ -344,39 +343,33 @@ function bookacti_load_template_calendar() {
 		// eventReceive : When an extern draggable event is dropped on the calendar. "this" refer to the new created event on the calendar.
 		eventReceive: function( event ) {
 			
-			//Calculate the end datetime thanks to start datetime and duration
-				//Init variables
-				event.end		= moment( event.start );
-				var title		= event.title;
-				var activity_id = 0;
-				var availability= 0;
-				var duration    = '000.00:00:00';
-				var resizable   = 0;
+			// Init variables
+			var title		= event.title;
+			var activity_id = 0;
+			var availability= 0;
+			var duration    = '000.00:00:00';
+			var resizable   = 0;
 
-				// Retrieve the event param
-				$j( '#bookacti-template-activities-container .fc-event' ).each( function(){
-					if( $j( this ).html() === title ) {
-						title		= $j( this ).data( 'title' );
-						activity_id = $j( this ).data( 'activity-id' );
-						availability= $j( this ).data( 'availability' );
-						duration    = $j( this ).data( 'duration' );
-						resizable   = $j( this ).data( 'resizable' );
-					}
-				});
+			// Retrieve the event param
+			$j( '#bookacti-template-activities-container .fc-event' ).each( function(){
+				if( $j( this ).html() === title ) {
+					title		= $j( this ).data( 'title' );
+					activity_id = $j( this ).data( 'activity-id' );
+					availability= $j( this ).data( 'availability' );
+					duration    = $j( this ).data( 'duration' );
+					resizable   = $j( this ).data( 'resizable' );
+				}
+			});
+			
+			// Calculate the end datetime thanks to start datetime and duration
+			event.end		= event.start.clone();
+			event.end.add( moment.duration( duration ) );
 
-				//Retrieve day / hours / mn / s from duration
-				var days    = parseInt(duration.substr( 0, 3 ) );
-				var hours   = parseInt(duration.substr( 4, 5 ) );
-				var minutes = parseInt(duration.substr( 7, 8 ) );
-				var seconds = parseInt(duration.substr( 10, 11) );
+			if( parseInt( resizable ) === 1 ) { event.durationEditable = true; }
 
-				event.end.add( { d: days, h: hours, m: minutes, s: seconds } );
-
-				if( parseInt( resizable ) === 1 ) { event.durationEditable = true; }
-
-				// Gether event variables to save in db
-				var start       = event.start.format( 'YYYY-MM-DD HH:mm:ss' );
-				var end         = event.end.format( 'YYYY-MM-DD HH:mm:ss' );
+			// Gether event variables to save in db
+			var start	= event.start.format( 'YYYY-MM-DD HH:mm:ss' );
+			var end		= event.end.format( 'YYYY-MM-DD HH:mm:ss' );
 
 			bookacti_start_template_loading();
 
@@ -397,18 +390,10 @@ function bookacti_load_template_calendar() {
 					if( response.status === 'success' ) {
 						// Give the database generated id to the event, 
 						// so that any further changes to this event before page refresh will be also saved
-						event.id = response.eventid;
+						event.id = response.event_id;
 						event.bookings = 0;
 						
-						bookacti.booking_system[ 'bookacti-template-calendar' ][ 'events_data' ][ event.id ] = {
-							'title'			: title,
-							'start'			: start,
-							'end'			: end,
-							'activity_id'	: activity_id ? activity_id : 0,
-							'availability'	: availability ? availability : 0,
-							'repeat_freq'	: 'none',
-							'durationEditable'	: event.durationEditable
-						};
+						bookacti.booking_system[ 'bookacti-template-calendar' ][ 'events_data' ][ event.id ] = response.event_data;
 						
 						calendar.fullCalendar( 'updateEvent', event );
 
@@ -538,9 +523,10 @@ function bookacti_load_template_calendar() {
 			var start		= event.start.format( 'YYYY-MM-DD HH:mm:ss' );
 			var end			= ( event.end === null ) ? start : event.end.format( 'YYYY-MM-DD HH:mm:ss' );
 			var delta_days	= delta._days;
-
+			var interval	= bookacti.booking_system[ 'bookacti-template-calendar' ][ 'events_interval' ];
+			
 			bookacti_start_template_loading();
-
+			
 			$j.ajax({
 				url: ajaxurl, 
 				data: { 'action': 'bookactiMoveEvent', 
@@ -548,6 +534,7 @@ function bookacti_load_template_calendar() {
 						'event_id': id, 
 						'event_start': start, 
 						'event_end': end,
+						'interval': interval,
 						'is_duplicated': is_alt_key_pressed,
 						'nonce': bookacti_localized.nonce_move_or_resize_event
 					}, 
@@ -563,22 +550,18 @@ function bookacti_load_template_calendar() {
 						// Display duplicated event
 						if( is_alt_key_pressed ) {
 							var new_event_id = response.event_id;
-							var event_sources = {};
 							
 							// Update exceptions
-							bookacti.booking_system[ 'bookacti-template-calendar' ][ 'exceptions' ][ new_event_id ] = response.exceptions[ new_event_id ];
-							
-							// Load the new event on calendar
-							$j.extend( bookacti.booking_system[ 'bookacti-template-calendar' ][ 'events' ], response.events );
-							if( bookacti.booking_system[ 'bookacti-template-calendar' ][ 'events_data' ][ event.id ][ 'repeat_freq' ] !== 'none' ) {
-								bookacti_display_repeated_events( $j( '#bookacti-template-calendar' ), response.events );
-							} else {
-								bookacti_display_single_event( $j( '#bookacti-template-calendar' ), response.events );
+							if( typeof response.exceptions[ new_event_id ] !== 'undefined' ) {
+								bookacti.booking_system[ 'bookacti-template-calendar' ][ 'exceptions' ][ new_event_id ] = response.exceptions[ new_event_id ];
 							}
 							
-							$j.each( event_sources, function( i, event_source ) {
-								$j( '#bookacti-template-calendar' ).fullCalendar( 'addEventSource', event_source );
-							});
+							// Load the new event on calendar
+							$j.extend( bookacti.booking_system[ 'bookacti-template-calendar' ][ 'events_data' ], response.events_data );
+							
+							$j( '#bookacti-template-calendar' ).fullCalendar( 'addEventSource', response.events );
+							
+							// AddEventSource will rerender events, then, new exceptions will also be taken into account
 							
 							return false; // Exit function
 						}
@@ -605,6 +588,13 @@ function bookacti_load_template_calendar() {
 								}
 							});
 						});
+						
+						// Render updated event to make sure it fits in events interval
+						if( response.events.length > 0 ) {
+							$j( '#bookacti-template-calendar' ).fullCalendar( 'removeEvents', id );
+							$j( '#bookacti-template-calendar' ).fullCalendar( 'addEventSource', response.events );
+						}
+						
 					}
 
 					else if( response.status === 'failed' ) { 

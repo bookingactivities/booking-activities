@@ -7,7 +7,7 @@ echo "<h1>" . esc_html__( 'Bookings', BOOKACTI_PLUGIN_NAME ) . "</h1>";
 
 $templates = bookacti_fetch_templates();
 
-if( empty( $templates ) ) {
+if( ! $templates ) {
 	$editor_path = 'admin.php?page=bookacti_calendars';
 	$editor_url = admin_url( $editor_path );
 	?>
@@ -52,13 +52,13 @@ if( empty( $templates ) ) {
 				$default_template = bookacti_get_user_default_template();
 				$i = 0;
 				foreach ( $templates as $template ) {
-					if( ! $default_template && $i === 0 ) { $default_template = $template->id; }
+					if( ! $default_template && $i === 0 ) { $default_template = $template[ 'id' ]; }
 					
 					echo  "<div class='bookacti-bookings-filter-template bookacti-bookings-filter' "
-						.	"data-template-id='"    . esc_attr( $template->id ) . "' "
-						.	selected( $template->id, $default_template, false )
+						.	"data-template-id='" . esc_attr( $template[ 'id' ] ) . "' "
+						.	selected( $template[ 'id' ], $default_template, false )
 						. " >"
-						.	esc_html( $template->title )
+						.	esc_html( $template[ 'title' ] )
 						. "</div>";
 					
 					$i++;

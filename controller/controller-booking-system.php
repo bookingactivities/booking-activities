@@ -111,7 +111,7 @@ function bookacti_controller_reload_booking_system() {
 		$activities_data	= bookacti_get_activities_by_template( $attributes[ 'calendars' ], true );
 		$exceptions			= bookacti_get_exceptions( $attributes[ 'calendars' ] );
 		$bookings			= bookacti_get_number_of_bookings_by_events( $attributes[ 'calendars' ] );
-		$settings			= bookacti_get_mixed_template_settings( $attributes[ 'calendars' ] );
+		$template_data		= bookacti_get_mixed_template_data( $attributes[ 'calendars' ] );
 		
 		$groups_events	= array();
 		if( $attributes[ 'group_categories' ] !== false ) { 
@@ -136,7 +136,7 @@ function bookacti_controller_reload_booking_system() {
 			'groups_events'			=> $groups_events,
 			'groups_data'			=> $groups_data,
 			'group_categories_data'	=> $categories_data,
-			'settings'				=> $settings
+			'template_data'			=> $template_data
 		) );
 		
 	} else {
@@ -185,6 +185,8 @@ add_action( 'wp_ajax_nopriv_bookactiSwitchBookingMethod', 'bookacti_controller_s
 
 /**
  * Get booking system data
+ * 
+ * @version 1.2.2
  */
 function bookacti_controller_get_booking_system_data() {
 
@@ -211,13 +213,13 @@ function bookacti_controller_get_booking_system_data() {
 	}
 	
 	if( $is_nonce_valid && $is_allowed ) {
-		$settings = array();
+		$template_data = array();
 		if( count( $template_ids ) > 0 ) {
-			$settings = bookacti_get_mixed_template_settings( $template_ids );
+			$template_data = bookacti_get_mixed_template_data( $template_ids );
 		}
 		
-		if( ! empty( $settings ) ){
-			wp_send_json( array( 'status' => 'success', 'settings' => $settings ) );
+		if( $template_data ) {
+			wp_send_json( array( 'status' => 'success', 'template_data' => $template_data ) );
 		} else {
 			wp_send_json( array( 'status' => 'failed' ) );
 		}

@@ -99,32 +99,6 @@ function bookacti_format_template_settings( $template_settings ) {
 }
 
 
-// Format activity templates
-function bookacti_format_activity_templates( $activity_templates = array(), $mandatory_templates = array() ) {
-	
-	$activity_templates		= bookacti_ids_to_array( $activity_templates );
-	$mandatory_templates	= bookacti_ids_to_array( $activity_templates );
-	
-	// Add mandatory templates if they are not already
-	if( ! empty( $mandatory_templates ) ) {
-		foreach( $mandatory_templates as $mandatory_template ) {
-			if( ! empty( $mandatory_template ) && ! in_array( $mandatory_template, $activity_templates, true ) ) {
-				$activity_templates[] = $mandatory_template;
-			}
-		}
-	}
-	
-	// Check permission to alter template
-	foreach( $activity_templates as $i => $activity_template ) {
-		if( ! current_user_can( 'bookacti_edit_templates' ) || ! bookacti_user_can_manage_template( $activity_template ) ) {
-			unset( $activity_templates[ $i ] );
-		}
-	}
-	
-	return apply_filters( 'bookacti_activity_templates', $activity_templates );
-}
-
-
 // Format activity managers
 function bookacti_format_activity_managers( $activity_managers = array() ) {
 	

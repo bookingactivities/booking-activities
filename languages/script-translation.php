@@ -164,7 +164,6 @@ $bookacti_translation_array = apply_filters( 'bookacti_translation_array', array
 
 	// ADVICE
 	'advice_switch_to_maintenance'      => esc_html__( 'Please consider switching your website to maintenance mode when working on a published calendar.', BOOKACTI_PLUGIN_NAME ),
-	'advice_activity_created_elsewhere' => esc_html__( 'The activity has been successfully created but it is not available for this calendar.', BOOKACTI_PLUGIN_NAME ),
 	'advice_booking_refunded'			=> esc_html__( 'Your booking has been successfully refunded.', BOOKACTI_PLUGIN_NAME ),
 	'advice_refund_request_email_sent'	=> esc_html__( 'Your refund request has been sent. We will contact you soon.', BOOKACTI_PLUGIN_NAME ),
 
@@ -249,7 +248,6 @@ $bookacti_translation_array = apply_filters( 'bookacti_translation_array', array
 	'nonce_reschedule_booking'			=> wp_create_nonce( 'bookacti_reschedule_booking' ),
 
 	'nonce_fetch_template_events'		=> wp_create_nonce( 'bookacti_fetch_template_events' ),
-	'nonce_get_event_data'				=> wp_create_nonce( 'bookacti_get_event_data' ),
 	'nonce_get_exceptions'				=> wp_create_nonce( 'bookacti_get_exceptions' ),
 	'nonce_get_booking_numbers'			=> wp_create_nonce( 'bookacti_get_booking_numbers' ),
 
@@ -259,18 +257,13 @@ $bookacti_translation_array = apply_filters( 'bookacti_translation_array', array
 	'nonce_delete_event_forced'			=> wp_create_nonce( 'bookacti_delete_event_forced' ),
 	'nonce_unbind_occurences'			=> wp_create_nonce( 'bookacti_unbind_occurences' ),
 	
-	'nonce_get_group_of_events_data'	=> wp_create_nonce( 'bookacti_get_group_of_events_data' ),
 	'nonce_delete_group_of_events'		=> wp_create_nonce( 'bookacti_delete_group_of_events' ),
-
-	'nonce_get_group_category_data'		=> wp_create_nonce( 'bookacti_get_group_category_data' ),
 	'nonce_delete_group_category'		=> wp_create_nonce( 'bookacti_delete_group_category' ),
 	
-	'nonce_get_template_data'			=> wp_create_nonce( 'bookacti_get_template_data' ),
 	'nonce_switch_template'				=> wp_create_nonce( 'bookacti_switch_template' ),
 	'nonce_deactivate_template'			=> wp_create_nonce( 'bookacti_deactivate_template' ),
 
 	'nonce_get_activities_by_template'	=> wp_create_nonce( 'bookacti_get_activities_by_template' ),
-	'nonce_get_activity_data'			=> wp_create_nonce( 'bookacti_get_activity_data' ),
 	'nonce_import_activity'				=> wp_create_nonce( 'bookacti_import_activity' ),
 	'nonce_deactivate_activity'			=> wp_create_nonce( 'bookacti_deactivate_activity' ),
 

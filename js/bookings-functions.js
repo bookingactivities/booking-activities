@@ -143,7 +143,7 @@ function bookacti_filter_bookings_by_templates( booking_system ) {
 					bookacti.booking_system[ booking_system_id ][ 'calendars' ]				= response.calendar_ids;
 					bookacti.booking_system[ booking_system_id ][ 'activities' ]			= response.activity_ids;
 					bookacti.booking_system[ booking_system_id ][ 'group_categories' ]		= response.group_categories;
-					bookacti.booking_system[ booking_system_id ][ 'settings' ]				= response.settings;
+					bookacti.booking_system[ booking_system_id ][ 'template_data' ]			= response.template_data;
 					
 					// Update calendar content data
 					bookacti.booking_system[ booking_system_id ][ 'events' ]				= response.events;
@@ -154,7 +154,7 @@ function bookacti_filter_bookings_by_templates( booking_system ) {
 					bookacti.booking_system[ booking_system_id ][ 'group_categories_data' ]	= response.group_categories_data;
 					
 					// Update booking system settings
-					bookacti_booking_method_update_settings( booking_system, booking_method );
+					bookacti_booking_method_update_template_data( booking_system, booking_method );
 					
 					// Fill the calendar with events
 					bookacti_booking_method_fill_with_events( booking_system, booking_method );

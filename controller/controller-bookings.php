@@ -31,8 +31,12 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 
 // BOOKINGS FILTERS
-	// Change selected template
-	add_action( 'wp_ajax_bookactiSelectTemplateFilter', 'bookacti_controller_select_template_filter' );
+
+	/**
+	 * AJAX Controller - Change selected template
+	 * 
+	 * @version 1.2.2
+	 */
     function bookacti_controller_select_template_filter() {
 		
 		// Check nonce
@@ -64,7 +68,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			$activities_html = bookacti_get_activities_html_for_booking_page( $template_ids );
 			
 			// Get calendar settings
-			$settings			= bookacti_get_mixed_template_settings( $template_ids );
+			$template_data		= bookacti_get_mixed_template_data( $template_ids );
 			$activity_ids		= bookacti_get_activity_ids_by_template( $template_ids, false );
 			$group_categories	= bookacti_get_group_category_ids_by_template( $template_ids );
 			
@@ -95,12 +99,13 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 				'activity_ids'			=> $activity_ids,
 				'group_categories'		=> $group_categories,
 				'group_categories_data'	=> $categories_data,
-				'settings'				=> $settings
+				'template_data'			=> $template_data
 			) );
 		} else {
 			wp_send_json( array( 'status' => 'failed', 'error' => 'not_allowed' ) );
 		}
 	}
+	add_action( 'wp_ajax_bookactiSelectTemplateFilter', 'bookacti_controller_select_template_filter' );
 
 
 

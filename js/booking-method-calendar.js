@@ -136,7 +136,7 @@ function bookacti_set_calendar_up( booking_system, reload_events ) {
 	}); 
 	
 	// Update calendar settings
-	bookacti_update_calendar_settings( calendar, bookacti.booking_system[ booking_system_id ][ 'settings' ] );
+	bookacti_update_calendar_settings( calendar, bookacti.booking_system[ booking_system_id ][ 'template_data' ] );
 	
 	// Check if events array is empty
 	var are_events = false;
@@ -270,8 +270,8 @@ function bookacti_get_calendar_period( booking_system ) {
 	var calendar			= booking_system.find( '.bookacti-calendar' );
 	
 	var template_range = {
-		'start'	: moment( bookacti.booking_system[ booking_system_id ][ 'settings' ][ 'start' ] ),
-		'end'	: moment( bookacti.booking_system[ booking_system_id ][ 'settings' ][ 'end' ] )
+		'start'	: moment( bookacti.booking_system[ booking_system_id ][ 'template_data' ][ 'start' ] ),
+		'end'	: moment( bookacti.booking_system[ booking_system_id ][ 'template_data' ][ 'end' ] )
 	};
 	
 	var event_range	= bookacti_get_first_and_last_events_on_calendar( calendar );
@@ -427,14 +427,15 @@ function bookacti_add_class_according_to_event_size( element ) {
 
 
 // Dynamically update calendar settings
-function bookacti_update_calendar_settings( calendar, settings ) {
+function bookacti_update_calendar_settings( calendar, template_data ) {
 	
 	var settings_to_update = {};
+	var settings = template_data.settings;
 	
-	if( settings.start && settings.end ) {
+	if( template_data.start && template_data.end ) {
 		settings_to_update.validRange = {
-            start: moment( settings.start ),
-            end: moment( settings.end ).add( 1, 'days' )
+            start: moment( template_data.start ),
+            end: moment( template_data.end ).add( 1, 'days' )
         };
 	}
 	

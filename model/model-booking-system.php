@@ -183,7 +183,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 				'repeat_freq'		=> $event->repeat_freq,
 				'repeat_from'		=> $event->repeat_from,
 				'repeat_to'			=> $event->repeat_to,
-				'event_settings'	=> bookacti_get_metadata( 'event', $event->event_id )
+				'settings'			=> bookacti_get_metadata( 'event', $event->event_id )
 			);
 
 			if( $event->repeat_freq === 'none' ) {
@@ -510,6 +510,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	 * Get groups of events data by template ids
 	 * 
 	 * @since 1.1.0
+	 * @version 1.2.2
 	 * 
 	 * @global wpdb $wpdb
 	 * @param array|int $template_ids
@@ -519,11 +520,8 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	function bookacti_get_groups_of_events_by_template( $template_ids = array(), $fetch_inactive_groups = false ) {
 		
 		// If empty, take them all
-		if( empty( $template_ids ) ) { 
-			$templates = bookacti_fetch_templates( true );
-			foreach( $templates as $template ) {
-				$template_ids[] = $template->id;
-			}
+		if( ! $template_ids ) {
+			$template_ids = array_keys( bookacti_fetch_templates( array(), true ) );
 		}
 		
 		// Convert numeric to array
@@ -941,6 +939,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	 * Retrieve group categories data by template ids
 	 * 
 	 * @since 1.1.0
+	 * @version 1.2.2
 	 * 
 	 * @global wpdb $wpdb
 	 * @param array|int $template_ids
@@ -951,11 +950,8 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	function bookacti_get_group_categories_by_template( $template_ids = array(), $fetch_inactive = false ) {
 		
 		// If empty, take them all
-		if( empty( $template_ids ) ) { 
-			$templates = bookacti_fetch_templates( true );
-			foreach( $templates as $template ) {
-				$template_ids[] = $template->id;
-			}
+		if( ! $template_ids ) {
+			$template_ids = array_keys( bookacti_fetch_templates( array(), true ) );
 		}
 		
 		// Convert numeric to array
@@ -1011,6 +1007,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	 * Retrieve group category ids by template ids
 	 * 
 	 * @since 1.1.0
+	 * @version 1.2.2
 	 * 
 	 * @global wpdb $wpdb
 	 * @param array|int $template_ids
@@ -1020,11 +1017,8 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	function bookacti_get_group_category_ids_by_template( $template_ids = array(), $fetch_inactive = false ) {
 		
 		// If empty, take them all
-		if( empty( $template_ids ) ) { 
-			$templates = bookacti_fetch_templates( true );
-			foreach( $templates as $template ) {
-				$template_ids[] = $template->id;
-			}
+		if( ! $template_ids ) {
+			$template_ids = array_keys( bookacti_fetch_templates( array(), true ) );
 		}
 		
 		// Convert numeric to array
@@ -1144,27 +1138,31 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	}
 	
 	
-	// UPDATE MANAGERS
+	/**
+	 * Update managers
+	 * 
+	 * @version 1.2.2
+	 * @param string $object_type
+	 * @param int $object_id
+	 * @param array $managers_array
+	 * @return int
+	 */
 	function bookacti_update_managers( $object_type, $object_id, $managers_array ) {
-		
-		if ( ! $object_type || ! is_numeric( $object_id ) || ! is_array( $managers_array ) || empty( $managers_array ) ) {
-			return false;
-		}
-		
+
+		if( ! $object_type || ! is_numeric( $object_id ) || ! is_array( $managers_array ) ) { return false;	}
+
 		$object_id = absint( $object_id );
-		if ( ! $object_id ) {
-			return false;
-		}
-		
+		if( ! $object_id ) { return false; }
+
 		$current_managers = bookacti_get_managers( $object_type, $object_id );
-		
+
 		// INSERT NEW USERS
 		$inserted = 0;
 		$new_managers = array_diff( $managers_array, $current_managers );
 		if( ! empty( $new_managers ) ) {
 			$inserted = bookacti_insert_managers( $object_type, $object_id, $new_managers );
 		}
-		
+
 		// DELETE USERS WHO ARE NO LONGER IN THE LIST
 		$deleted = 0;
 		$old_managers = array_diff( $current_managers, $managers_array );

@@ -7,8 +7,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 /**
  * Get a booking system based on given parameters
  * 
- * @since 1.0.0
- * @version 1.1.0
+ * @version 1.2.2
  * 
  * @param array $atts [id, classes, calendars, activities, groups, method]
  * @param boolean $echo Wether to return or directly echo the booking system
@@ -55,7 +54,7 @@ function bookacti_get_booking_system( $atts, $echo = false ) {
 				bookacti.booking_system[ '<?php echo $atts[ 'id' ]; ?>' ][ 'groups_events' ]			= <?php echo json_encode( $groups_events ); ?>;	
 				bookacti.booking_system[ '<?php echo $atts[ 'id' ]; ?>' ][ 'groups_data' ]				= <?php echo json_encode( $groups_data ); ?>;	
 				bookacti.booking_system[ '<?php echo $atts[ 'id' ]; ?>' ][ 'group_categories_data' ]	= <?php echo json_encode( $categories_data ); ?>;	
-				bookacti.booking_system[ '<?php echo $atts[ 'id' ]; ?>' ][ 'settings' ]					= <?php echo json_encode( bookacti_get_mixed_template_settings( $atts[ 'calendars' ] ) ); ?>;	
+				bookacti.booking_system[ '<?php echo $atts[ 'id' ]; ?>' ][ 'template_data' ]			= <?php echo json_encode( bookacti_get_mixed_template_data( $atts[ 'calendars' ] ) ); ?>;	
 			<?php } ?>
 		</script>
 				
@@ -253,11 +252,11 @@ function bookacti_format_booking_system_attributes( $atts = array(), $shortcode 
 	$atts[ 'activities' ]	= array_unique( $atts[ 'activities' ] );
 	
 	// Check if desired templates exist
-	$available_templates = bookacti_fetch_templates( true );
+	$available_template_ids = array_keys( bookacti_fetch_templates( array(), true ) );
 	foreach( $atts[ 'calendars' ] as $i => $template_id ) {
 		$is_existing = false;
-		foreach( $available_templates as $available_template ) {
-			if( $available_template->id == intval( $template_id ) ) {
+		foreach( $available_template_ids as $available_template_id ) {
+			if( $available_template_id == intval( $template_id ) ) {
 				$is_existing = true;
 				break;
 			}
@@ -664,15 +663,14 @@ function bookacti_get_first_interval_of_events( $template_interval, $interval_du
  * Sanitize events interval
  * 
  * @since 1.2.2
- * @param type $interval
- * @return type
+ * @param array $interval
+ * @return array
  */
 function bookacti_sanitize_events_interval( $interval ) {
 	
 	if( ! $interval || ! is_array( $interval ) ) { return array(); }
 	
 	$sanitized_interval = array(
-		'past_events'	=> isset( $interval[ 'past_events' ] ) && $interval[ 'past_events' ] ? true : false,
 		'start'			=> isset( $interval[ 'start' ] ) ? bookacti_sanitize_date( $interval[ 'start' ] ) : false,
 		'end'			=> isset( $interval[ 'end' ] ) ? bookacti_sanitize_date( $interval[ 'end' ] ) : false
 	);
@@ -685,11 +683,12 @@ function bookacti_sanitize_events_interval( $interval ) {
  * get occurences of repeated events
  * 
  * @since 1.2.2 (replace bookacti_create_repeated_events)
- * @param object $event Event data
+ * @param object $event Event data 
+ * @param boolean $past_events Whether to compute past events
  * @param array $interval array('past_events' => bool, 'start' => string: start date, 'end' => string: end date)
  * @return array
  */
-function bookacti_get_occurences_of_repeated_event( $event, $interval = array() ) {
+function bookacti_get_occurences_of_repeated_event( $event, $past_events = false, $interval = array() ) {
 
 	// Init variables to compute occurences
 	$event_start		= DateTime::createFromFormat( 'Y-m-d H:i:s', $event->start );
@@ -711,7 +710,7 @@ function bookacti_get_occurences_of_repeated_event( $event, $interval = array() 
 	$current_time		= new DateTime( 'now', new DateTimeZone( $timezone ) );
 
 	// Make sure repeated events don't start in the past if not explicitly allowed
-	if( ! $interval[ 'past_events' ] && $current_time > $repeat_from ) {
+	if( ! $past_events && $current_time > $repeat_from ) {
 		$current_date = $current_time->format( 'Y-m-d' );
 
 		$repeat_from = DateTime::createFromFormat( 'Y-m-d H:i:s', $current_date . ' 00:00:00' );
