@@ -14,7 +14,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	 * @global wpdb $wpdb
 	 * @param int $template_id
 	 * @param int $event_id
-	 * @param array $interval ['past_events' => bool, 'start' => string: start date, 'end' => string: end date]
+	 * @param array $interval ['start' => string: start date, 'end' => string: end date]
 	 * @return array
 	 */
 	function bookacti_fetch_events_for_calendar_editor( $template_id = NULL, $event_id = NULL, $interval = array() ) {
@@ -27,7 +27,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 					. ' AND E.active = 1 ';
 
 		// If we know the event id, we only get this event
-		if( $event_id != '' && isset( $event_id ) && ! is_null( $event_id ) ) {
+		if( $event_id ) {
 
 			$query  .= ' AND E.id IN ( %d';
 			
@@ -42,7 +42,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			$prep_query = $wpdb->prepare( $query, $event_id );
 
 		// If we know the template id, we get all events of this template
-		} else if ( $template_id != '' && isset( $template_id ) && ! is_null( $template_id ) ) {
+		} else if ( $template_id ) {
 
 			$query  .= ' AND E.template_id = %d';
 			$prep_query = $wpdb->prepare( $query, $template_id );

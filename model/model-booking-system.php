@@ -10,9 +10,10 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	 * @version 1.2.2
 	 * 
 	 * @param array $args
+	 * @param array $interval ['start' => string: start date, 'end' => string: end date]
 	 * @return array $events_array Array of events
 	 */
-    function bookacti_fetch_events( $args ) {
+    function bookacti_fetch_events( $args, $interval = array() ) {
 		
 		global $wpdb;
 		
@@ -165,31 +166,36 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		$events = $wpdb->get_results( $prep_query, OBJECT );
 		
 		// Prepare the array of events to return
-		$events_array = array( 'single' => array(), 'repeated' => array() );
+		$events_array = array( 'data' => array(), 'events' => array() );
 		foreach ( $events as $event ) {
 			
-			$event_array = array(
+			$event_fc_data = array(
 				'id'				=> $event->event_id,
-				'template_id'		=> $event->template_id,
 				'title'				=> apply_filters( 'bookacti_translate_text', $event->title ),
-				'multilingual_title'=> $event->title,
-				'allDay'			=> false,
 				'start'				=> $event->start,
 				'end'				=> $event->end,
-				'color'				=> $event->color,
+				'color'				=> $event->color
+			);
+			
+			$event_bookacti_data = array(
+				'multilingual_title'=> $event->title,
+				'template_id'		=> $event->template_id,
 				'activity_id'		=> $event->activity_id,
 				'availability'		=> $event->availability,
-				'durationEditable'	=> false,
 				'repeat_freq'		=> $event->repeat_freq,
 				'repeat_from'		=> $event->repeat_from,
 				'repeat_to'			=> $event->repeat_to,
 				'settings'			=> bookacti_get_metadata( 'event', $event->event_id )
 			);
 
+			// Build events data array
+			$events_array[ 'data' ][ $event->event_id ] = array_merge( $event_fc_data, $event_bookacti_data );
+
+			// Build events array
 			if( $event->repeat_freq === 'none' ) {
-				$events_array[ 'single' ][ $event->event_id ] = $event_array;
+				$events_array[ 'events' ][] = $event_fc_data;
 			} else {
-				$events_array[ 'repeated' ][ $event->event_id ] = $event_array;
+				$events_array[ 'events' ] = array_merge( $events_array[ 'events' ], bookacti_get_occurences_of_repeated_event( $event, $args[ 'past_events' ], $interval ) );
 			}
 		}
 		

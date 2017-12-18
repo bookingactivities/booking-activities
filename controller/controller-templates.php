@@ -122,7 +122,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 							'status'		=> 'success', 
 							'event_id'		=> $new_event_id, 
 							'events'		=> $events[ 'events' ] ? $events[ 'events' ] : array(),
-							'events_data'	=> $events[ 'data' ] ? $events[ 'data' ] : array(),
+							'event_data'	=> $events[ 'data' ][ $new_event_id ] ? $events[ 'data' ][ $new_event_id ] : array(),
 							'exceptions'	=> $exceptions ) 
 						); 
 					} else { 
@@ -133,7 +133,8 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 						$events = bookacti_fetch_events_for_calendar_editor( null, $event_id, $interval );
 						wp_send_json( array( 
 							'status' => 'success', 
-							'events' => $events[ 'events' ] ? $events[ 'events' ] : array() 
+							'events' => $events[ 'events' ] ? $events[ 'events' ] : array(),
+							'event_data' => $events[ 'data' ][ $event_id ] ? $events[ 'data' ][ $event_id ] : array() 
 						)); 
 					} else if ( $updated === 0 ) { 
 						wp_send_json( array( 'status' => 'nochanges' ) ); 
@@ -840,7 +841,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			$exceptions			= bookacti_get_exceptions( $template_id );
 			$templates_data		= bookacti_fetch_templates( $template_id, true );
 			
-			$events_interval	= bookacti_get_first_interval_of_events( $templates_data[ $template_id ], 30, true );
+			$events_interval	= bookacti_get_new_interval_of_events( $templates_data[ $template_id ], array(), 92, true );
 			$events				= $events_interval ? bookacti_fetch_events_for_calendar_editor( $template_id, null, $events_interval ) : array();
 			
 			wp_send_json( array(

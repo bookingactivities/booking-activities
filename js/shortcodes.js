@@ -132,9 +132,9 @@ $j( document ).ready( function() {
 			
 			// Limit the max quantity
 			if( bookacti.booking_system[ booking_system_id ][ 'picked_events' ].length > 1 ) {
-				available_places = bookacti_get_group_availability( bookacti.booking_system[ booking_system_id ][ 'picked_events' ] );
+				available_places = bookacti_get_group_availability( $j( this ), bookacti.booking_system[ booking_system_id ][ 'picked_events' ] );
 			} else {
-				available_places = bookacti_get_event_availability( bookacti.booking_system[ booking_system_id ][ 'picked_events' ][ 0 ] );
+				available_places = bookacti_get_event_availability( $j( this ), bookacti.booking_system[ booking_system_id ][ 'picked_events' ][ 0 ] );
 			}
 			
 			$j( this ).parents( 'form' ).find( 'input.bookacti-quantity' ).attr( 'max', available_places );

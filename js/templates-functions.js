@@ -615,7 +615,7 @@ function bookacti_refresh_shortcode() {
 function bookacti_fetch_events_on_template( event_id, interval ) {
    
 	event_id = event_id || null;
-    interval = interval || bookacti.booking_system[ 'bookacti-template-calendar' ][ 'events_interval' ];
+	interval = interval || bookacti.booking_system[ 'bookacti-template-calendar' ][ 'events_interval' ];
 	
 	if( $j.isEmptyObject( interval ) ) {
 		var current_view = $j( '#bookacti-template-calendar' ).fullCalendar( 'getView' );
@@ -687,28 +687,6 @@ function bookacti_refetch_events_on_template( event ) {
 	var min_interval	= $j( '#bookacti-template-calendar' ).fullCalendar( 'getView' );
 	var interval		= bookacti_get_new_interval_of_events( $j( '#bookacti-template-calendar' ), min_interval );
 	bookacti_fetch_events_on_template( event_id, interval );
-}
-
-
-// Clear all events on the calendar
-function bookacti_clear_events_on_calendar( booking_system, event ) {
-	event = event || null;
-	var event_id = null;
-	var calendar = booking_system.hasClass( 'fc' ) ? booking_system : booking_system.find( '.fc' );
-	
-	if( event !== null) {
-		if( event._id !== undefined ) {
-			if( event._id.indexOf('_') >= 0 ) {
-				calendar.fullCalendar( 'removeEvents', event._id );
-			}
-		}
-		calendar.fullCalendar( 'removeEvents', event.id );
-		event_id = event.id;
-	} else {
-		calendar.fullCalendar( 'removeEvents' );
-	}
-	
-	return event_id;
 }
 
 

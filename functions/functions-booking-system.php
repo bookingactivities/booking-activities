@@ -34,6 +34,11 @@ function bookacti_get_booking_system( $atts, $echo = false ) {
 			// Events related data
 			$when_events_load = bookacti_get_setting_value( 'bookacti_general_settings', 'when_events_load' ); 
 			if( $when_events_load === 'on_page_load' && $atts[ 'auto_load' ] ) { 
+				
+				$templates_data		= bookacti_get_mixed_template_data( $atts[ 'calendars' ] );
+				$events_interval	= bookacti_get_new_interval_of_events( $templates_data, array(), 92, false );
+				$events				= bookacti_fetch_events( $atts, $events_interval );
+				
 				$groups_events = array();
 				if( $atts[ 'group_categories' ] !== false ) { 
 					$groups_events		= bookacti_get_groups_events( $atts[ 'calendars' ], $atts[ 'group_categories' ] );
@@ -47,14 +52,16 @@ function bookacti_get_booking_system( $atts, $echo = false ) {
 					$categories_data	= bookacti_get_group_categories( $atts[ 'group_categories' ] );
 				}
 			?>
-				bookacti.booking_system[ '<?php echo $atts[ 'id' ]; ?>' ][ 'events' ]					= <?php echo json_encode( bookacti_fetch_events( $atts ) ); ?>;
+				bookacti.booking_system[ '<?php echo $atts[ 'id' ]; ?>' ][ 'events' ]					= <?php echo json_encode( $events[ 'events' ] ? $events[ 'events' ] : array() ); ?>;
+				bookacti.booking_system[ '<?php echo $atts[ 'id' ]; ?>' ][ 'events_data' ]				= <?php echo json_encode( $events[ 'data' ] ? $events[ 'data' ] : array() ); ?>;
+				bookacti.booking_system[ '<?php echo $atts[ 'id' ]; ?>' ][ 'events_interval' ]			= <?php echo json_encode( $events_interval ); ?>;
 				bookacti.booking_system[ '<?php echo $atts[ 'id' ]; ?>' ][ 'exceptions' ]				= <?php echo json_encode( bookacti_get_exceptions( $atts[ 'calendars' ] ) ); ?>;
 				bookacti.booking_system[ '<?php echo $atts[ 'id' ]; ?>' ][ 'bookings' ]					= <?php echo json_encode( bookacti_get_number_of_bookings_by_events( $atts[ 'calendars' ] ) ); ?>;
 				bookacti.booking_system[ '<?php echo $atts[ 'id' ]; ?>' ][ 'activities_data' ]			= <?php echo json_encode( bookacti_get_activities_by_template( $atts[ 'calendars' ], true ) ); ?>;
 				bookacti.booking_system[ '<?php echo $atts[ 'id' ]; ?>' ][ 'groups_events' ]			= <?php echo json_encode( $groups_events ); ?>;	
 				bookacti.booking_system[ '<?php echo $atts[ 'id' ]; ?>' ][ 'groups_data' ]				= <?php echo json_encode( $groups_data ); ?>;	
 				bookacti.booking_system[ '<?php echo $atts[ 'id' ]; ?>' ][ 'group_categories_data' ]	= <?php echo json_encode( $categories_data ); ?>;	
-				bookacti.booking_system[ '<?php echo $atts[ 'id' ]; ?>' ][ 'template_data' ]			= <?php echo json_encode( bookacti_get_mixed_template_data( $atts[ 'calendars' ] ) ); ?>;	
+				bookacti.booking_system[ '<?php echo $atts[ 'id' ]; ?>' ][ 'template_data' ]			= <?php echo json_encode( $templates_data ); ?>;	
 			<?php } ?>
 		</script>
 				
@@ -610,29 +617,36 @@ function bookacti_get_booking_dates_html( $booking ) {
 /***** EVENTS *****/
 
 /**
- * Get the first interval of events to load. Computed from now's date and template interval.
+ * Get a new interval of events to load. Computed from the compulsory interval, or now's date and template interval.
  * 
  * @since 1.2.2
- * @param array $template_interval Array( 'start'=>Calendar start, 'end'=> Calendar end) 
+ * @param array $templates_interval array( 'start'=>Calendar start, 'end'=> Calendar end) 
+ * @param array $min_interval array( 'start'=>Calendar start, 'end'=> Calendar end). Current date if not set.
  * @param int $interval_duration Number of days of the interval
  * @param bool $past_events
  * @return array
  */
-function bookacti_get_first_interval_of_events( $template_interval, $interval_duration = 90, $past_events = false ) {
+function bookacti_get_new_interval_of_events( $templates_interval, $min_interval = array(), $interval_duration = 92, $past_events = false ) {
+	
+	if( ! isset( $templates_interval[ 'start' ] ) || ! isset( $templates_interval[ 'end' ] ) ) { return array(); }
 	
 	$timezone			= bookacti_get_setting_value( 'bookacti_general_settings', 'timezone' );
 	$current_time		= new DateTime( 'now', new DateTimeZone( $timezone ) );
 	$current_date		= $current_time->format( 'Y-m-d' );
 	
-	$calendar_start		= DateTime::createFromFormat( 'Y-m-d H:i:s', $template_interval[ 'start' ] . ' 00:00:00' );
-	$calendar_end		= DateTime::createFromFormat( 'Y-m-d H:i:s', $template_interval[ 'end' ] . ' 23:59:59' );
+	$calendar_start		= DateTime::createFromFormat( 'Y-m-d H:i:s', $templates_interval[ 'start' ] . ' 00:00:00' );
+	$calendar_end		= DateTime::createFromFormat( 'Y-m-d H:i:s', $templates_interval[ 'end' ] . ' 23:59:59' );
 
 	if( ! $past_events && $calendar_end < $current_time ) { return array(); }
-		
-	$interval_start		= DateTime::createFromFormat( 'Y-m-d H:i:s', $current_date . ' 00:00:00' );
-	$interval_end		= DateTime::createFromFormat( 'Y-m-d H:i:s', $current_date . ' 23:59:59' );
 	
-	$half_interval		= round( intval( $interval_duration ) / 2 );
+	$min_interval		= $min_interval ? $min_interval : array( 'start' => $current_date, 'end' => $current_date );
+	$interval_start		= DateTime::createFromFormat( 'Y-m-d H:i:s', $min_interval[ 'start' ] . ' 00:00:00' );
+	$interval_end		= DateTime::createFromFormat( 'Y-m-d H:i:s', $min_interval[ 'end' ] . ' 23:59:59' );
+	$min_interval_duration = intval( abs( $interval_end->diff( $interval_start )->format( '%a' ) ) );
+	
+	if( $min_interval_duration > $interval_duration ) { $interval_duration = $min_interval_duration; }
+	
+	$half_interval		= round( intval( $interval_duration - $min_interval_duration ) / 2 );
 	$interval_end_days_to_add = $half_interval;
 	
 	// Compute Interval start
@@ -653,7 +667,10 @@ function bookacti_get_first_interval_of_events( $template_interval, $interval_du
 		$interval_end = $calendar_end;
 	}
 
-	$interval = array( 'past_events' => $past_events, 'start' => $interval_start->format( 'Y-m-d' ), 'end' => $interval_end->format( 'Y-m-d' ) );
+	$interval = array( 
+		'start' => $interval_start->format( 'Y-m-d' ), 
+		'end' => $interval_end->format( 'Y-m-d' ) 
+	);
 
 	return $interval;
 }
@@ -685,7 +702,7 @@ function bookacti_sanitize_events_interval( $interval ) {
  * @since 1.2.2 (replace bookacti_create_repeated_events)
  * @param object $event Event data 
  * @param boolean $past_events Whether to compute past events
- * @param array $interval array('past_events' => bool, 'start' => string: start date, 'end' => string: end date)
+ * @param array $interval array('start' => string: start date, 'end' => string: end date)
  * @return array
  */
 function bookacti_get_occurences_of_repeated_event( $event, $past_events = false, $interval = array() ) {
@@ -793,8 +810,8 @@ function bookacti_get_occurences_of_repeated_event( $event, $past_events = false
 
 		// Check if the event is in the interval to be rendered
 		if( $interval ) {
-			if( $interval[ 'start' ] && $interval_start > $occurence_start ) { $loop->add( $repeat_interval ); continue; }
-			if( $interval[ 'end' ] && $interval_end < $occurence_start ) { $loop->add( $repeat_interval ); continue; }
+			if( $interval[ 'start' ] && $interval_start > $occurence_start ){ $loop->add( $repeat_interval ); continue; }
+			if( $interval[ 'end' ] && $interval_end < $occurence_start )	{ $loop->add( $repeat_interval ); continue; }
 		}
 
 		// Compute start and end dates

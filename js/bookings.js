@@ -32,8 +32,8 @@ $j( document ).ready(function() {
 					
 					var active_bookings	= parseInt( event.bookings );
 					var is_bookings		= active_bookings > 0 ? 1 : 0;
-					var availability	= parseInt( bookacti.booking_system[ booking_system_id ][ 'events_data' ][ event.id ][ 'availability' ] );
-					var available_places= bookacti_get_event_availability( event );
+					var availability	= parseInt( bookacti.booking_system[ 'bookacti-booking-system-bookings-page' ][ 'events_data' ][ event.id ][ 'availability' ] );
+					var available_places= bookacti_get_event_availability( booking_system, event );
 					
 					// Detect if the event is available or full, and if it is booked or not
 					var class_no_availability	= availability === 0 ? 'bookacti-no-availability' : '';

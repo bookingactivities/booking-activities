@@ -5,6 +5,7 @@ function bookacti_set_calendar_up( booking_system, reload_events ) {
 	
 	var booking_system_id	= booking_system.attr( 'id' );
 	var calendar			= booking_system.find( '.bookacti-calendar:first' );
+	bookacti.booking_system[ booking_system_id ][ 'load_events' ] = false;
 	
 	calendar.fullCalendar({
 
@@ -46,11 +47,13 @@ function bookacti_set_calendar_up( booking_system, reload_events ) {
 
 		//Load an empty array to allow the callback 'loading' to work
 		events: function( start, end, timezone, callback ) {
-			var empty_array = [];
-			callback( empty_array );
+			callback( [] );
 		},
 
-		viewRender: function( view ){
+		viewRender: function( view ){ 
+			if( bookacti.booking_system[ booking_system_id ][ 'load_events' ] === true ) { 
+				bookacti_fetch_view_events( booking_system, view );
+			}
 		},
 
 		// When an event is rendered
@@ -149,7 +152,8 @@ function bookacti_set_calendar_up( booking_system, reload_events ) {
 		
 	} else if( reload_events ) {
 		// Fetch events from database
-		bookacti_fetch_events( booking_system );
+		var view = calendar.fullCalendar( 'getView' );
+		bookacti_fetch_view_events( booking_system, view );
 		
 	} else if( ! are_events ) {
 		// If no events are bookable, display an error
@@ -172,6 +176,8 @@ function bookacti_set_calendar_up( booking_system, reload_events ) {
 		bookacti_unpick_all_events_on_calendar( $j( this ) );
 	});
 	
+	bookacti.booking_system[ booking_system_id ][ 'load_events' ] = true;
+	
 	booking_system.trigger( 'bookacti_after_calendar_set_up' );
 }
 
@@ -187,17 +193,39 @@ function bookacti_fill_calendar_with_events( booking_system ) {
 	
 	// Add events on calendar
 	if( bookacti.booking_system[ booking_system_id ][ 'groups_only' ] ) {
-		bookacti_display_group_events( booking_system );
+		//bookacti_display_group_events( booking_system );
 	} else {
-		bookacti_display_events( booking_system );
+		calendar.fullCalendar( 'addEventSource', bookacti.booking_system[ booking_system_id ][ 'events' ] );
 	}
 	
 	// Set calendar period
-	var period = bookacti_get_calendar_period( booking_system );
-	bookacti.booking_system[ booking_system_id ][ 'period' ] = period;
+//	var period = bookacti_get_calendar_period( booking_system );
+//	bookacti.booking_system[ booking_system_id ][ 'period' ] = period;
 	
 	// Refresh the calendar
-	bookacti_refresh_calendar_view( booking_system );
+//	bookacti_refresh_calendar_view( booking_system );
+}
+
+
+// Clear all events on the calendar
+function bookacti_clear_events_on_calendar( booking_system, event ) {
+	event = event || null;
+	var event_id = null;
+	var calendar = booking_system.hasClass( 'fc' ) ? booking_system : booking_system.find( '.fc' );
+	
+	if( event !== null) {
+		if( event._id !== undefined ) {
+			if( event._id.indexOf('_') >= 0 ) {
+				calendar.fullCalendar( 'removeEvents', event._id );
+			}
+		}
+		calendar.fullCalendar( 'removeEvents', event.id );
+		event_id = event.id;
+	} else {
+		calendar.fullCalendar( 'removeEvents' );
+	}
+	
+	return event_id;
 }
 
 

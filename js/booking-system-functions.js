@@ -1,8 +1,15 @@
 // Retrieve the events to show and fill the the booking system
-function bookacti_fetch_events( booking_system ) {
+function bookacti_fetch_events( booking_system, interval ) {
 	
 	var booking_system_id	= booking_system.attr( 'id' );
 	var attributes			= bookacti.booking_system[ booking_system_id ];
+	
+	interval = interval || attributes[ 'events_interval' ];
+	
+	console.log( 'interval to load', interval );
+	
+	// Update events interval before success to prevent to fetch the same interval twice
+	bookacti.booking_system[ booking_system_id ][ 'events_interval' ] = bookacti_get_extended_events_interval( booking_system, interval );
 	
 	bookacti_start_loading_booking_system( booking_system );
 	
@@ -13,6 +20,7 @@ function bookacti_fetch_events( booking_system ) {
 			'action': 'bookactiFetchEvents', 
 			'attributes': JSON.stringify( attributes ),
 			'is_admin': bookacti_localized.is_admin, 
+			'interval': interval, 
 			'nonce': bookacti_localized.nonce_fetch_events 
 		},
         dataType: 'json',
@@ -20,23 +28,35 @@ function bookacti_fetch_events( booking_system ) {
 			
 			if( response.status === 'success' ) {
 				
-				// Update calendar content data
-				bookacti.booking_system[ booking_system_id ][ 'events' ]				= response.events;
-				bookacti.booking_system[ booking_system_id ][ 'events_data' ]			= response.events_data;
-				bookacti.booking_system[ booking_system_id ][ 'exceptions' ]			= response.exceptions;
-				bookacti.booking_system[ booking_system_id ][ 'bookings' ]				= response.bookings;
-				bookacti.booking_system[ booking_system_id ][ 'activities_data' ]		= response.activities_data;
-				bookacti.booking_system[ booking_system_id ][ 'groups_events' ]			= response.groups_events;
-				bookacti.booking_system[ booking_system_id ][ 'groups_data' ]			= response.groups_data;
-				bookacti.booking_system[ booking_system_id ][ 'group_categories_data' ]	= response.group_categories_data;
+				var now = new Date().getTime();
 				
+				// Extend or replace the events array if it was empty
+				if( $j.isEmptyObject( bookacti.booking_system[ booking_system_id ][ 'events' ] ) ) {
+					bookacti.booking_system[ booking_system_id ][ 'events' ] = response.events;
+				} else {
+					$j.extend( bookacti.booking_system[ booking_system_id ][ 'events' ], response.events );
+				}
+				
+				// Extend or replace the events data array if it was empty
+				if( $j.isEmptyObject( bookacti.booking_system[ booking_system_id ][ 'events_data' ] ) ) {
+					bookacti.booking_system[ booking_system_id ][ 'events_data' ] = response.events_data;
+				} else {
+					$j.extend( bookacti.booking_system[ booking_system_id ][ 'events_data' ], response.events_data );
+				}
+				
+				console.log( 'total interval loaded', bookacti.booking_system[ booking_system_id ][ 'events_interval' ] );
+				
+				// Load new events on calendar
 				if( response.events.length ) {
 					// Fill events according to booking method
-					bookacti_booking_method_fill_with_events( booking_system, attributes.method );
+					bookacti_booking_method_display_event_source( booking_system, response.events, attributes.method );
 				} else {
 					// If no events are bookable, display an error
 					bookacti_add_error_message( booking_system, bookacti_localized.error_no_events_bookable );
 				}
+				
+				var then = new Date().getTime();
+				console.log( 'Loading time: ', then - now );
 				
 			} else {
 				var error_message = bookacti_localized.error_display_event;
@@ -87,13 +107,14 @@ function bookacti_reload_booking_system( booking_system ) {
 				// Update events and settings
 				bookacti.booking_system[ booking_system_id ][ 'events' ]				= response.events;
 				bookacti.booking_system[ booking_system_id ][ 'events_data' ]			= response.events_data;
+				bookacti.booking_system[ booking_system_id ][ 'events_interval' ]		= response.events_interval;
 				bookacti.booking_system[ booking_system_id ][ 'exceptions' ]			= response.exceptions;
 				bookacti.booking_system[ booking_system_id ][ 'bookings' ]				= response.bookings;
 				bookacti.booking_system[ booking_system_id ][ 'activities_data' ]		= response.activities_data;
 				bookacti.booking_system[ booking_system_id ][ 'groups_events' ]			= response.groups_events;
 				bookacti.booking_system[ booking_system_id ][ 'groups_data' ]			= response.groups_data;
 				bookacti.booking_system[ booking_system_id ][ 'group_categories_data' ]	= response.group_categories_data;
-				bookacti.booking_system[ booking_system_id ][ 'template_data' ]				= response.template_data;
+				bookacti.booking_system[ booking_system_id ][ 'template_data' ]			= response.template_data;
 				
 				// Fill the booking method elements
 				booking_system.append( response.html_elements );
@@ -1241,14 +1262,15 @@ function bookacti_get_event_number_of_bookings( event, booking_system_id ) {
 
 
 // Get event available places
-function bookacti_get_event_availability( event ) {
+function bookacti_get_event_availability( booking_system, event ) {
+	var booking_system_id = booking_system.attr( 'id' );
 	var event_availability = bookacti.booking_system[ booking_system_id ][ 'events_data' ][ event.id ][ 'availability' ];
 	return parseInt( event_availability ) - parseInt( event.bookings );
 }
 
 
 // Get group available places
-function bookacti_get_group_availability( group_events ) {
+function bookacti_get_group_availability( booking_system, group_events ) {
 	
 	if( ! $j.isArray( group_events ) || group_events.length <= 0 ) {
 		return 0;
@@ -1256,7 +1278,7 @@ function bookacti_get_group_availability( group_events ) {
 	
 	var min_availability = 999999999999; // Any big int
 	$j.each( group_events, function( i, event ) {
-		var event_availability = bookacti_get_event_availability( event );
+		var event_availability = bookacti_get_event_availability( booking_system, event );
 		min_availability = event_availability < min_availability ? event_availability : min_availability;
 	});
 	
@@ -1268,7 +1290,7 @@ function bookacti_get_group_availability( group_events ) {
 function bookacti_is_event_available( booking_system, event ) {
 	
 	var booking_system_id	= booking_system.attr( 'id' );
-	var availability		= bookacti_get_event_availability( event );
+	var availability		= bookacti_get_event_availability( booking_system, event );
 	var is_available		= false;
 	
 	if( availability > 0 )  {
@@ -1281,7 +1303,7 @@ function bookacti_is_event_available( booking_system, event ) {
 				// Check if the event is available in one group at least
 				is_available = false;
 				$j.each( group_ids, function( i, group_id ) {
-					var group_availability = bookacti_get_group_availability( bookacti.booking_system[ booking_system_id ][ 'groups_events' ][ group_id ] );
+					var group_availability = bookacti_get_group_availability( booking_system, bookacti.booking_system[ booking_system_id ][ 'groups_events' ][ group_id ] );
 					if( group_availability > 0 ) {
 						is_available = true;
 						return false; // Break the loop
@@ -1321,7 +1343,7 @@ function bookacti_get_event_availability_div( booking_system, event ) {
 	
 	var booking_system_id = booking_system.attr( 'id' );
 	
-	var available_places = bookacti_get_event_availability( event );
+	var available_places = bookacti_get_event_availability( booking_system, event );
 	
 	var unit_name = '';
 	var activity_id = bookacti.booking_system[ booking_system_id ][ 'events_data' ][ event.id ][ 'activity_id' ];

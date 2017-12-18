@@ -76,7 +76,7 @@ function bookacti_dialog_choose_group_of_events( booking_system, group_ids, even
 			var booking_html = bookings > 1 ? bookacti_localized.bookings : bookacti_localized.booking;
 			avail_html = bookings + ' ' + booking_html;
 		} else {
-			var availability	= bookacti_get_event_availability( event );
+			var availability	= bookacti_get_event_availability( booking_system, event );
 			var avail			= availability > 1 ? bookacti_localized.avails : bookacti_localized.avail;
 			avail_html = availability + ' ' + avail;
 		}
@@ -114,7 +114,7 @@ function bookacti_dialog_choose_group_of_events( booking_system, group_ids, even
 		group_id = parseInt( group_id );
 		if( typeof bookacti.booking_system[ booking_system_id ][ 'groups_events' ][ group_id ] !== 'undefined' ) {
 			
-			var availability	= bookacti_get_group_availability( bookacti.booking_system[ booking_system_id ][ 'groups_events' ][ group_id ] );
+			var availability	= bookacti_get_group_availability( booking_system, bookacti.booking_system[ booking_system_id ][ 'groups_events' ][ group_id ] );
 			
 			var container = $j( '<div />', {});
 			var option_container = $j( '<div />', {

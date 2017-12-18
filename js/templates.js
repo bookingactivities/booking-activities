@@ -544,10 +544,7 @@ function bookacti_load_template_calendar() {
 					
 					if( response.status === 'success' ) { 
 						
-						var start_time	= event.start.format( 'HH:mm:ss' );
-						var end_time	= event.end.format( 'HH:mm:ss' );
-						
-						// Display duplicated event
+						// Display duplicated event(s)
 						if( is_alt_key_pressed ) {
 							var new_event_id = response.event_id;
 							
@@ -556,14 +553,25 @@ function bookacti_load_template_calendar() {
 								bookacti.booking_system[ 'bookacti-template-calendar' ][ 'exceptions' ][ new_event_id ] = response.exceptions[ new_event_id ];
 							}
 							
-							// Load the new event on calendar
-							$j.extend( bookacti.booking_system[ 'bookacti-template-calendar' ][ 'events_data' ], response.events_data );
+							// Add new event data
+							if( ! $j.isEmptyObject( response.event_data ) ) {
+								bookacti.booking_system[ 'bookacti-template-calendar' ][ 'events_data' ][ new_event_id ] = response.event_data;
+							}
 							
+							// Load the new event on calendar
 							$j( '#bookacti-template-calendar' ).fullCalendar( 'addEventSource', response.events );
 							
 							// AddEventSource will rerender events, then, new exceptions will also be taken into account
 							
 							return false; // Exit function
+						}
+						
+						var start_time	= event.start.format( 'HH:mm:ss' );
+						var end_time	= event.end.format( 'HH:mm:ss' );
+						
+						// Update event data
+						if( ! $j.isEmptyObject( response.event_data ) ) {
+							bookacti.booking_system[ 'bookacti-template-calendar' ][ 'events_data' ][ id ] = response.event_data;
 						}
 						
 						// Update selected events
