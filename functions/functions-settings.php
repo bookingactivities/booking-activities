@@ -16,6 +16,7 @@ function bookacti_define_default_settings_constants() {
 	
 	if( ! defined( 'BOOKACTI_BOOKING_METHOD' ) )						{ define( 'BOOKACTI_BOOKING_METHOD', 'calendar' ); }
 	if( ! defined( 'BOOKACTI_WHEN_EVENTS_LOAD' ) )						{ define( 'BOOKACTI_WHEN_EVENTS_LOAD', 'on_page_load' ); }
+	if( ! defined( 'BOOKACTI_EVENT_LOADING_WINDOW' ) )					{ define( 'BOOKACTI_EVENT_LOADING_WINDOW', 92 ); }
 	if( ! defined( 'BOOKACTI_STARTED_EVENTS_BOOKABLE' ) )				{ define( 'BOOKACTI_STARTED_EVENTS_BOOKABLE', '0' ); }
 	if( ! defined( 'BOOKACTI_DEFAULT_BOOKING_STATE' ) )					{ define( 'BOOKACTI_DEFAULT_BOOKING_STATE', 'pending' ); }
 	if( ! defined( 'BOOKACTI_TIMEZONE' ) )								{ $date = new DateTime(); $tz = $date->getTimezone()->getName(); define( 'BOOKACTI_TIMEZONE', $tz ); }
@@ -64,6 +65,7 @@ function bookacti_init_settings_values() {
 	$default_general_settings = get_option( 'bookacti_general_settings' );
 	if( ! isset( $default_general_settings['booking_method'] ) )			{ $default_general_settings['booking_method']			= BOOKACTI_BOOKING_METHOD; }
 	if( ! isset( $default_general_settings['when_events_load'] ) )			{ $default_general_settings['when_events_load']			= BOOKACTI_WHEN_EVENTS_LOAD; }
+	if( ! isset( $default_general_settings['event_loading_window'] ) )		{ $default_general_settings['event_loading_window']		= BOOKACTI_EVENT_LOADING_WINDOW; }
 	if( ! isset( $default_general_settings['started_events_bookable'] ) )	{ $default_general_settings['started_events_bookable']	= BOOKACTI_STARTED_EVENTS_BOOKABLE; }
 	if( ! isset( $default_general_settings['default_booking_state'] ) )		{ $default_general_settings['default_booking_state']	= BOOKACTI_DEFAULT_BOOKING_STATE; }
 	if( ! isset( $default_general_settings['date_format'] ) )				{ $default_general_settings['date_format']				= BOOKACTI_DATE_FORMAT; }
@@ -112,6 +114,7 @@ function bookacti_reset_settings() {
 	$default_general_settings = array();
 	$default_general_settings['booking_method']				= BOOKACTI_BOOKING_METHOD;
 	$default_general_settings['when_events_load']			= BOOKACTI_WHEN_EVENTS_LOAD;
+	$default_general_settings['event_loading_window']		= BOOKACTI_EVENT_LOADING_WINDOW;
 	$default_general_settings['started_events_bookable']	= BOOKACTI_STARTED_EVENTS_BOOKABLE;
 	$default_general_settings['default_booking_state']		= BOOKACTI_DEFAULT_BOOKING_STATE;
 	$default_general_settings['date_format']				= BOOKACTI_DATE_FORMAT;
@@ -285,6 +288,25 @@ function bookacti_settings_section_bookings_callback() { }
 							),
 			'value'		=> bookacti_get_setting_value( 'bookacti_general_settings', 'when_events_load' ),
 			'tip'		=> apply_filters( 'bookacti_when_events_load_tip', __( 'Choose whether you want to load events when the page is loaded (faster) or after.', BOOKACTI_PLUGIN_NAME ) )
+		);
+		bookacti_display_field( $args );
+	}
+	
+
+	/**
+	 * Display Event Loading Window setting
+	 * 
+	 * @since 1.2.2
+	 */
+	function bookacti_settings_field_event_loading_window_callback() {
+		$args = array(
+			'type'		=> 'number',
+			'name'		=> 'bookacti_general_settings[event_loading_window]',
+			'id'		=> 'event_loading_window',
+			'options'	=> array( 'min' => 1 ),
+			'label'		=> ' ' . esc_html__( 'days', BOOKACTI_PLUGIN_NAME ),
+			'value'		=> bookacti_get_setting_value( 'bookacti_general_settings', 'event_loading_window' ),
+			'tip'		=> __( 'Events are loaded at intervals as the user navigates the calendar. E.g.: If you set "92", events will be loaded for 92 days. When the user reaches the 92nd days on the calendar, events of the next 92 days will be loaded.', BOOKACTI_PLUGIN_NAME )
 		);
 		bookacti_display_field( $args );
 	}

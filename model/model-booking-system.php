@@ -26,7 +26,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		$user_timestamp_offset		= $current_datetime_object->format( 'P' );
 		
 		// Prepare the query
-		$query  = 'SELECT DISTINCT E.id as event_id, E.template_id, E.title, E.start, E.end, E.repeat_freq, E.repeat_from, E.repeat_to, E.availability, A.color, A.id as activity_id, IFNULL( B.bookings, 0 ) as bookings '
+		$query  = 'SELECT DISTINCT E.id as event_id, E.template_id, E.title, E.start, E.end, E.repeat_freq, E.repeat_from, E.repeat_to, E.availability, A.color, A.id as activity_id, IFNULL( B.bookings, 0 ) as bookings, 0 as is_resizable '
 				. ' FROM ' . BOOKACTI_TABLE_ACTIVITIES . ' as A, ' . BOOKACTI_TABLE_TEMPLATES . ' as T, ' . BOOKACTI_TABLE_EVENTS . ' as E '
 				. ' LEFT JOIN (
 						SELECT SUM( quantity ) as bookings, event_id FROM ' . BOOKACTI_TABLE_BOOKINGS . ' WHERE active = 1 GROUP BY event_id
@@ -50,8 +50,8 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 								AND (	UNIX_TIMESTAMP( CONVERT_TZ( E.start, %s, @@global.time_zone ) ) >= 
 										UNIX_TIMESTAMP( CONVERT_TZ( T.start_date, %s, @@global.time_zone ) ) 
 									AND
-										UNIX_TIMESTAMP( CONVERT_TZ( ( E.end + INTERVAL -24 HOUR ), %s, @@global.time_zone ) ) <= 
-										UNIX_TIMESTAMP( CONVERT_TZ( T.end_date, %s, @@global.time_zone ) ) 
+										UNIX_TIMESTAMP( CONVERT_TZ( E.end, %s, @@global.time_zone ) ) <= 
+										UNIX_TIMESTAMP( CONVERT_TZ( ( T.end_date + INTERVAL 24 HOUR ), %s, @@global.time_zone ) ) 
 									) 
 							) 
 							OR
@@ -59,13 +59,13 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 								AND NOT (	UNIX_TIMESTAMP( CONVERT_TZ( E.repeat_from, %s, @@global.time_zone ) ) < 
 											UNIX_TIMESTAMP( CONVERT_TZ( T.start_date, %s, @@global.time_zone ) ) 
 										AND 
-											UNIX_TIMESTAMP( CONVERT_TZ( ( E.repeat_to + INTERVAL -24 HOUR ), %s, @@global.time_zone ) ) < 
+											UNIX_TIMESTAMP( CONVERT_TZ( E.repeat_to, %s, @@global.time_zone ) ) < 
 											UNIX_TIMESTAMP( CONVERT_TZ( T.start_date, %s, @@global.time_zone ) ) 
 										)
 								AND NOT (	UNIX_TIMESTAMP( CONVERT_TZ( E.repeat_from, %s, @@global.time_zone ) ) > 
 											UNIX_TIMESTAMP( CONVERT_TZ( T.end_date, %s, @@global.time_zone ) ) 
 										AND 
-											UNIX_TIMESTAMP( CONVERT_TZ( ( E.repeat_to + INTERVAL -24 HOUR ), %s, @@global.time_zone ) ) > 
+											UNIX_TIMESTAMP( CONVERT_TZ( E.repeat_to, %s, @@global.time_zone ) ) > 
 											UNIX_TIMESTAMP( CONVERT_TZ( T.end_date, %s, @@global.time_zone ) ) 
 										)
 							) 
@@ -76,30 +76,80 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		for( $i = 0; $i < 12; $i++ ) {
 			$variables[] = $user_timestamp_offset;
 		}
+		
+		// Do not fetch events out of the desired interval
+		if( $interval ) {
+			$query  .= ' 
+			AND (
+					( 	NULLIF( E.repeat_freq, "none" ) IS NULL 
+						AND (	UNIX_TIMESTAMP( CONVERT_TZ( E.start, %s, @@global.time_zone ) ) >= 
+								UNIX_TIMESTAMP( CONVERT_TZ( %s, %s, @@global.time_zone ) ) 
+							AND
+								UNIX_TIMESTAMP( CONVERT_TZ( E.end, %s, @@global.time_zone ) ) <= 
+								UNIX_TIMESTAMP( CONVERT_TZ( ( %s + INTERVAL 24 HOUR ), %s, @@global.time_zone ) ) 
+							) 
+					) 
+					OR
+					( 	E.repeat_freq IS NOT NULL
+						AND NOT (	UNIX_TIMESTAMP( CONVERT_TZ( E.repeat_from, %s, @@global.time_zone ) ) < 
+									UNIX_TIMESTAMP( CONVERT_TZ( %s, %s, @@global.time_zone ) ) 
+								AND 
+									UNIX_TIMESTAMP( CONVERT_TZ( E.repeat_to, %s, @@global.time_zone ) ) < 
+									UNIX_TIMESTAMP( CONVERT_TZ( %s, %s, @@global.time_zone ) ) 
+								)
+						AND NOT (	UNIX_TIMESTAMP( CONVERT_TZ( E.repeat_from, %s, @@global.time_zone ) ) > 
+									UNIX_TIMESTAMP( CONVERT_TZ( %s, %s, @@global.time_zone ) ) 
+								AND 
+									UNIX_TIMESTAMP( CONVERT_TZ( E.repeat_to, %s, @@global.time_zone ) ) > 
+									UNIX_TIMESTAMP( CONVERT_TZ( %s, %s, @@global.time_zone ) ) 
+								)
+					) 
+				)';
+			
+			$variables[] = $user_timestamp_offset;
+			$variables[] = $interval[ 'start' ];
+			$variables[] = $user_timestamp_offset;
+			$variables[] = $user_timestamp_offset;
+			$variables[] = $interval[ 'end' ];
+			$variables[] = $user_timestamp_offset;
+			$variables[] = $user_timestamp_offset;
+			$variables[] = $interval[ 'start' ];
+			$variables[] = $user_timestamp_offset;
+			$variables[] = $user_timestamp_offset;
+			$variables[] = $interval[ 'start' ];
+			$variables[] = $user_timestamp_offset;
+			$variables[] = $user_timestamp_offset;
+			$variables[] = $interval[ 'end' ];
+			$variables[] = $user_timestamp_offset;
+			$variables[] = $user_timestamp_offset;
+			$variables[] = $interval[ 'end' ];
+			$variables[] = $user_timestamp_offset;
+		}
 
 		// Whether to fetch past events
 		if( ! $args[ 'past_events' ] ) {
 
 			$started_events_bookable = bookacti_get_setting_value( 'bookacti_general_settings', 'started_events_bookable' );
+			
+			$query .= ' AND (	UNIX_TIMESTAMP( CONVERT_TZ( E.start, %s, @@global.time_zone ) ) >= %d 
+							OR	UNIX_TIMESTAMP( CONVERT_TZ( ( E.repeat_to + INTERVAL 24 HOUR ), %s, @@global.time_zone ) ) >= %d ';
+			
+			$variables[] = $user_timestamp_offset;
+			$variables[] = $user_timestamp;
+			$variables[] = $user_timestamp_offset;
+			$variables[] = $user_timestamp;
+			
 			if( $started_events_bookable ) {
 				// Fetch events already started but not finished
-				$query .= ' AND ( ( UNIX_TIMESTAMP( CONVERT_TZ( E.start, %s, @@global.time_zone ) ) <= %d AND UNIX_TIMESTAMP( CONVERT_TZ( E.end, %s, @@global.time_zone ) ) >= %d ) OR UNIX_TIMESTAMP( CONVERT_TZ( E.start, %s, @@global.time_zone ) ) >= %d OR UNIX_TIMESTAMP( CONVERT_TZ( ( E.repeat_to + INTERVAL -24 HOUR ), %s, @@global.time_zone ) ) >= %d ) ';
-				$variables[] = $user_timestamp_offset;
-				$variables[] = $user_timestamp;
-				$variables[] = $user_timestamp_offset;
-				$variables[] = $user_timestamp;
-				$variables[] = $user_timestamp_offset;
-				$variables[] = $user_timestamp;
-				$variables[] = $user_timestamp_offset;
-				$variables[] = $user_timestamp;
-			} else {
-				// Fetch only future events
-				$query .= ' AND ( UNIX_TIMESTAMP( CONVERT_TZ( E.start, %s, @@global.time_zone ) ) >= %d OR UNIX_TIMESTAMP( CONVERT_TZ( ( E.repeat_to + INTERVAL -24 HOUR ), %s, @@global.time_zone ) ) >= %d ) ';
+				$query .= ' OR	(	UNIX_TIMESTAMP( CONVERT_TZ( E.start, %s, @@global.time_zone ) ) <= %d 
+								AND UNIX_TIMESTAMP( CONVERT_TZ( E.end, %s, @@global.time_zone ) ) >= %d 
+								)';
 				$variables[] = $user_timestamp_offset;
 				$variables[] = $user_timestamp;
 				$variables[] = $user_timestamp_offset;
 				$variables[] = $user_timestamp;
 			}
+			$query .= ') ';
 		}
 		
 		// If there are template ids, only get events from those templates 
@@ -157,47 +207,16 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		$query  .= ' ORDER BY E.start ASC ';
 		
 		
-		// Prepare the array of variable to prepare the query
+		// Safely apply variables to the query
 		$prep_query = $query;
-		if( ! empty( $variables ) ) {
+		if( $variables ) {
 			$prep_query = $wpdb->prepare( $query, $variables );
 		}
 		
 		$events = $wpdb->get_results( $prep_query, OBJECT );
 		
-		// Prepare the array of events to return
-		$events_array = array( 'data' => array(), 'events' => array() );
-		foreach ( $events as $event ) {
-			
-			$event_fc_data = array(
-				'id'				=> $event->event_id,
-				'title'				=> apply_filters( 'bookacti_translate_text', $event->title ),
-				'start'				=> $event->start,
-				'end'				=> $event->end,
-				'color'				=> $event->color
-			);
-			
-			$event_bookacti_data = array(
-				'multilingual_title'=> $event->title,
-				'template_id'		=> $event->template_id,
-				'activity_id'		=> $event->activity_id,
-				'availability'		=> $event->availability,
-				'repeat_freq'		=> $event->repeat_freq,
-				'repeat_from'		=> $event->repeat_from,
-				'repeat_to'			=> $event->repeat_to,
-				'settings'			=> bookacti_get_metadata( 'event', $event->event_id )
-			);
-
-			// Build events data array
-			$events_array[ 'data' ][ $event->event_id ] = array_merge( $event_fc_data, $event_bookacti_data );
-
-			// Build events array
-			if( $event->repeat_freq === 'none' ) {
-				$events_array[ 'events' ][] = $event_fc_data;
-			} else {
-				$events_array[ 'events' ] = array_merge( $events_array[ 'events' ], bookacti_get_occurences_of_repeated_event( $event, $args[ 'past_events' ], $interval ) );
-			}
-		}
+		// Transform raw events from database to array of individual events
+		$events_array = bookacti_get_events_array_from_db_events( $events, $args[ 'past_events' ], $interval );
 		
 		return $events_array;
     }

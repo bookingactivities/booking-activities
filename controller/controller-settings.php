@@ -32,6 +32,14 @@ function bookacti_init_settings() {
 		'bookacti_general_settings', 
 		'bookacti_settings_section_general'
 	);
+	
+	add_settings_field(  
+		'event_loading_window', 
+		__( 'Load events every', BOOKACTI_PLUGIN_NAME ), 
+		'bookacti_settings_field_event_loading_window_callback', 
+		'bookacti_general_settings', 
+		'bookacti_settings_section_general'
+	);
 
 	add_settings_field(  
 		'started_events_bookable', 

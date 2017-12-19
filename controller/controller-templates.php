@@ -841,7 +841,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			$exceptions			= bookacti_get_exceptions( $template_id );
 			$templates_data		= bookacti_fetch_templates( $template_id, true );
 			
-			$events_interval	= bookacti_get_new_interval_of_events( $templates_data[ $template_id ], array(), 92, true );
+			$events_interval	= bookacti_get_new_interval_of_events( $templates_data[ $template_id ], array(), false, true );
 			$events				= $events_interval ? bookacti_fetch_events_for_calendar_editor( $template_id, null, $events_interval ) : array();
 			
 			wp_send_json( array(

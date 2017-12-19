@@ -19,13 +19,20 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	 */
 	function bookacti_fetch_events_for_calendar_editor( $template_id = NULL, $event_id = NULL, $interval = array() ) {
 		global $wpdb;
-
+		
+		// Set current datetime
+		$timezone					= new DateTimeZone( bookacti_get_setting_value( 'bookacti_general_settings', 'timezone' ) );
+		$current_datetime_object	= new DateTime( 'now', $timezone );
+		$user_timestamp_offset		= $current_datetime_object->format( 'P' );
+		
 		// Get all events
 		$query  = 'SELECT E.id as event_id, E.template_id, E.title, E.start, E.end, E.repeat_freq, E.repeat_from, E.repeat_to, E.availability, A.color, A.is_resizable, A.id as activity_id ' 
 					. ' FROM ' . BOOKACTI_TABLE_EVENTS . ' as E, ' . BOOKACTI_TABLE_ACTIVITIES . ' as A '
 					. ' WHERE E.activity_id = A.id '
 					. ' AND E.active = 1 ';
-
+		
+		$variables = array();
+		
 		// If we know the event id, we only get this event
 		if( $event_id ) {
 
@@ -39,50 +46,73 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			
 			$query  .= ' ) ';
 			
-			$prep_query = $wpdb->prepare( $query, $event_id );
+			$variables[] = $event_id;
 
 		// If we know the template id, we get all events of this template
 		} else if ( $template_id ) {
 
 			$query  .= ' AND E.template_id = %d';
-			$prep_query = $wpdb->prepare( $query, $template_id );
+			$variables[] = $template_id;
 		}
-
+		
+		// Do not fetch events out of the desired interval
+		if( $interval ) {
+			$query  .= ' 
+			AND (
+					( 	NULLIF( E.repeat_freq, "none" ) IS NULL 
+						AND (	UNIX_TIMESTAMP( CONVERT_TZ( E.start, %s, @@global.time_zone ) ) >= 
+								UNIX_TIMESTAMP( CONVERT_TZ( %s, %s, @@global.time_zone ) ) 
+							AND
+								UNIX_TIMESTAMP( CONVERT_TZ( E.end, %s, @@global.time_zone ) ) <= 
+								UNIX_TIMESTAMP( CONVERT_TZ( ( %s + INTERVAL 24 HOUR ), %s, @@global.time_zone ) ) 
+							) 
+					) 
+					OR
+					( 	E.repeat_freq IS NOT NULL
+						AND NOT (	UNIX_TIMESTAMP( CONVERT_TZ( E.repeat_from, %s, @@global.time_zone ) ) < 
+									UNIX_TIMESTAMP( CONVERT_TZ( %s, %s, @@global.time_zone ) ) 
+								AND 
+									UNIX_TIMESTAMP( CONVERT_TZ( E.repeat_to, %s, @@global.time_zone ) ) < 
+									UNIX_TIMESTAMP( CONVERT_TZ( %s, %s, @@global.time_zone ) ) 
+								)
+						AND NOT (	UNIX_TIMESTAMP( CONVERT_TZ( E.repeat_from, %s, @@global.time_zone ) ) > 
+									UNIX_TIMESTAMP( CONVERT_TZ( %s, %s, @@global.time_zone ) ) 
+								AND 
+									UNIX_TIMESTAMP( CONVERT_TZ( E.repeat_to, %s, @@global.time_zone ) ) > 
+									UNIX_TIMESTAMP( CONVERT_TZ( %s, %s, @@global.time_zone ) ) 
+								)
+					) 
+				)';
+			$variables[] = $user_timestamp_offset;
+			$variables[] = $interval[ 'start' ];
+			$variables[] = $user_timestamp_offset;
+			$variables[] = $user_timestamp_offset;
+			$variables[] = $interval[ 'end' ];
+			$variables[] = $user_timestamp_offset;
+			$variables[] = $user_timestamp_offset;
+			$variables[] = $interval[ 'start' ];
+			$variables[] = $user_timestamp_offset;
+			$variables[] = $user_timestamp_offset;
+			$variables[] = $interval[ 'start' ];
+			$variables[] = $user_timestamp_offset;
+			$variables[] = $user_timestamp_offset;
+			$variables[] = $interval[ 'end' ];
+			$variables[] = $user_timestamp_offset;
+			$variables[] = $user_timestamp_offset;
+			$variables[] = $interval[ 'end' ];
+			$variables[] = $user_timestamp_offset;
+		}
+		
+		// Safely apply variables to the query
+		$prep_query = $query;
+		if( $variables ) {
+			$prep_query = $wpdb->prepare( $query, $variables );
+		}
+		
 		$events = $wpdb->get_results( $prep_query, OBJECT );
 
-		$events_array = array( 'data' => array(), 'events' => array() );
-		foreach ( $events as $event ) {
-
-			$event_fc_data = array(
-				'id'				=> $event->event_id,
-				'title'				=> apply_filters( 'bookacti_translate_text', $event->title ),
-				'start'				=> $event->start,
-				'end'				=> $event->end,
-				'color'				=> $event->color,
-				'durationEditable'	=> $event->is_resizable === '1' ? true : false
-			);
-			
-			$event_bookacti_data = array(
-				'multilingual_title'=> $event->title,
-				'template_id'		=> $event->template_id,
-				'activity_id'		=> $event->activity_id,
-				'availability'		=> $event->availability,
-				'repeat_freq'		=> $event->repeat_freq,
-				'repeat_from'		=> $event->repeat_from,
-				'repeat_to'			=> $event->repeat_to,
-				'settings'			=> bookacti_get_metadata( 'event', $event->event_id )
-			);
-			
-			// Build events data array
-			$events_array[ 'data' ][ $event->event_id ] = array_merge( $event_fc_data, $event_bookacti_data );
-
-			// Build events array
-			if( $event->repeat_freq === 'none' ) {
-				$events_array[ 'events' ][] = $event_fc_data;
-			} else {
-				$events_array[ 'events' ] = array_merge( $events_array[ 'events' ], bookacti_get_occurences_of_repeated_event( $event, true, $interval ) );
-			}
-		}
+		// Transform raw events from database to array of individual events
+		$events_array = bookacti_get_events_array_from_db_events( $events, true, $interval );
 
 		return $events_array;
 	}

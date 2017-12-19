@@ -304,7 +304,7 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 = 1.2.2 =
 * Feature - Booking Activities' notifications can now be sent along WooCommerce's notifications
 * Optimization - DOING - Events are loaded significantly faster
-* Optimization - DOING - Events are loaded at intervals as the user navigates the calendar
+* Optimization - DOING - Events are loaded at intervals as the user navigates the calendar (configurable in Booking Activities settings)
 * Optimization - Calendar editor operations are processed significantly faster
 * Optimization - Booking forms (with or without WooCommerce) are verified faster
 * Optimization - JS and CSS files are now versioned to allow smart cache refresh
@@ -315,6 +315,7 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 * Fix - Alert pop-up was sometimes displayed on frontend with a permission-related error message
 * Fix - Bookings could be still pending after an WC order failed
 * Fix - Bookings status were not up to date in WooCommerce's notifications
+* Fix - Events didn't appear when "repeat to" value was set to tomorrow
 * Lib - Updated FullCalendar to 3.7.0 and Moment JS to 2.19.2
 
 = 1.2.1 - 2017/11/17 =

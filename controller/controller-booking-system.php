@@ -88,7 +88,7 @@ function bookacti_controller_reload_booking_system() {
 		
 		// Gets calendar content: events, activities and groups
 		$template_data		= bookacti_get_mixed_template_data( $attributes[ 'calendars' ] );
-		$events_interval	= bookacti_get_new_interval_of_events( $template_data, array(), 92, true );
+		$events_interval	= bookacti_get_new_interval_of_events( $template_data, array(), false, $attributes[ 'past_events' ] );
 		$events				= bookacti_fetch_events( $attributes, $events_interval );
 		$activities_data	= bookacti_get_activities_by_template( $attributes[ 'calendars' ], true );
 		$exceptions			= bookacti_get_exceptions( $attributes[ 'calendars' ] );

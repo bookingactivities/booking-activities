@@ -36,7 +36,7 @@ function bookacti_send_notification_when_booking_state_changes( $booking_id, $st
 	if( isset( $args[ 'send_notifications' ] ) && ! $args[ 'send_notifications' ] ) { return; }
 	
 	// If the booking is part of a group and the whole group is affected by this change, do not send notification here
-	if( $args[ 'booking_group_state_changed' ] ) { return; }
+	if( isset( $args[ 'booking_group_state_changed' ] ) && $args[ 'booking_group_state_changed' ] ) { return; }
 	
 	// If we cannot know if the action was made by customer or admin, send to both
 	$send_to_both = false;

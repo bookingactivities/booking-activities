@@ -155,9 +155,6 @@ function bookacti_set_calendar_up( booking_system, reload_events ) {
 		var view = calendar.fullCalendar( 'getView' );
 		bookacti_fetch_view_events( booking_system, view );
 		
-	} else if( ! are_events ) {
-		// If no events are bookable, display an error
-		bookacti_add_error_message( booking_system, bookacti_localized.error_no_events_bookable );
 	}
 	
 	// Refresh the display of selected events when you click on the View More link
@@ -381,10 +378,6 @@ function bookacti_refresh_calendar_view( booking_system ) {
 			calendar.show();
 			
 			booking_system.trigger( 'bookacti_view_refreshed' );
-
-		} else {
-
-			bookacti_add_error_message( booking_system, bookacti_localized.error_no_events_bookable );
 		}
 	}
 }

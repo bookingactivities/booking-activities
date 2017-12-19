@@ -36,7 +36,7 @@ function bookacti_get_booking_system( $atts, $echo = false ) {
 			if( $when_events_load === 'on_page_load' && $atts[ 'auto_load' ] ) { 
 				
 				$templates_data		= bookacti_get_mixed_template_data( $atts[ 'calendars' ] );
-				$events_interval	= bookacti_get_new_interval_of_events( $templates_data, array(), 92, false );
+				$events_interval	= bookacti_get_new_interval_of_events( $templates_data );
 				$events				= bookacti_fetch_events( $atts, $events_interval );
 				
 				$groups_events = array();
@@ -617,6 +617,54 @@ function bookacti_get_booking_dates_html( $booking ) {
 /***** EVENTS *****/
 
 /**
+ * Get array of events from raw events from database
+ * 
+ * @since 1.2.2
+ * @param array $events Array of objects events from database
+ * @param boolean $past_events
+ * @param array $interval array('start'=> start date, 'end'=> end date)
+ * @return array
+ */
+function bookacti_get_events_array_from_db_events( $events, $past_events, $interval ) {
+	$events_array = array( 'data' => array(), 'events' => array() );
+	foreach ( $events as $event ) {
+
+		$event_fc_data = array(
+			'id'				=> $event->event_id,
+			'title'				=> apply_filters( 'bookacti_translate_text', $event->title ),
+			'start'				=> $event->start,
+			'end'				=> $event->end,
+			'color'				=> $event->color,
+			'durationEditable'	=> $event->is_resizable === '1' ? true : false
+		);
+
+		$event_bookacti_data = array(
+			'multilingual_title'=> $event->title,
+			'template_id'		=> $event->template_id,
+			'activity_id'		=> $event->activity_id,
+			'availability'		=> $event->availability,
+			'repeat_freq'		=> $event->repeat_freq,
+			'repeat_from'		=> $event->repeat_from,
+			'repeat_to'			=> $event->repeat_to,
+			'settings'			=> bookacti_get_metadata( 'event', $event->event_id )
+		);
+
+		// Build events data array
+		$events_array[ 'data' ][ $event->event_id ] = array_merge( $event_fc_data, $event_bookacti_data );
+
+		// Build events array
+		if( $event->repeat_freq === 'none' ) {
+			$events_array[ 'events' ][] = $event_fc_data;
+		} else {
+			$events_array[ 'events' ] = array_merge( $events_array[ 'events' ], bookacti_get_occurences_of_repeated_event( $event, $past_events, $interval ) );
+		}
+	}
+
+	return $events_array;
+}
+
+
+/**
  * Get a new interval of events to load. Computed from the compulsory interval, or now's date and template interval.
  * 
  * @since 1.2.2
@@ -626,31 +674,32 @@ function bookacti_get_booking_dates_html( $booking ) {
  * @param bool $past_events
  * @return array
  */
-function bookacti_get_new_interval_of_events( $templates_interval, $min_interval = array(), $interval_duration = 92, $past_events = false ) {
+function bookacti_get_new_interval_of_events( $templates_interval, $min_interval = array(), $interval_duration = false, $past_events = false ) {
 	
 	if( ! isset( $templates_interval[ 'start' ] ) || ! isset( $templates_interval[ 'end' ] ) ) { return array(); }
 	
-	$timezone			= bookacti_get_setting_value( 'bookacti_general_settings', 'timezone' );
-	$current_time		= new DateTime( 'now', new DateTimeZone( $timezone ) );
+	$timezone			= new DateTimeZone( bookacti_get_setting_value( 'bookacti_general_settings', 'timezone' ) );
+	$current_time		= new DateTime( 'now', $timezone );
 	$current_date		= $current_time->format( 'Y-m-d' );
 	
-	$calendar_start		= DateTime::createFromFormat( 'Y-m-d H:i:s', $templates_interval[ 'start' ] . ' 00:00:00' );
-	$calendar_end		= DateTime::createFromFormat( 'Y-m-d H:i:s', $templates_interval[ 'end' ] . ' 23:59:59' );
+	$calendar_start		= new DateTime( $templates_interval[ 'start' ] . ' 00:00:00', $timezone );
+	$calendar_end		= new DateTime( $templates_interval[ 'end' ] . ' 23:59:59', $timezone );
 
 	if( ! $past_events && $calendar_end < $current_time ) { return array(); }
 	
 	$min_interval		= $min_interval ? $min_interval : array( 'start' => $current_date, 'end' => $current_date );
-	$interval_start		= DateTime::createFromFormat( 'Y-m-d H:i:s', $min_interval[ 'start' ] . ' 00:00:00' );
-	$interval_end		= DateTime::createFromFormat( 'Y-m-d H:i:s', $min_interval[ 'end' ] . ' 23:59:59' );
+	$interval_duration	= $interval_duration ? intval( $interval_duration ) : intval( bookacti_get_setting_value( 'bookacti_general_settings', 'event_loading_window' ) );
+	
+	$interval_start		= new DateTime( $min_interval[ 'start' ] . ' 00:00:00', $timezone );
+	$interval_end		= new DateTime( $min_interval[ 'end' ] . ' 23:59:59', $timezone );
 	$min_interval_duration = intval( abs( $interval_end->diff( $interval_start )->format( '%a' ) ) );
 	
 	if( $min_interval_duration > $interval_duration ) { $interval_duration = $min_interval_duration; }
 	
-	$half_interval		= round( intval( $interval_duration - $min_interval_duration ) / 2 );
+	$half_interval		= abs( round( intval( $interval_duration - $min_interval_duration ) / 2 ) );
 	$interval_end_days_to_add = $half_interval;
 	
 	// Compute Interval start
-	
 	if( $past_events ) {
 		$interval_start->sub( new DateInterval( 'P' . $half_interval . 'D' ) );
 		if( $calendar_start > $interval_start ) {
@@ -688,8 +737,8 @@ function bookacti_sanitize_events_interval( $interval ) {
 	if( ! $interval || ! is_array( $interval ) ) { return array(); }
 	
 	$sanitized_interval = array(
-		'start'			=> isset( $interval[ 'start' ] ) ? bookacti_sanitize_date( $interval[ 'start' ] ) : false,
-		'end'			=> isset( $interval[ 'end' ] ) ? bookacti_sanitize_date( $interval[ 'end' ] ) : false
+		'start'	=> isset( $interval[ 'start' ] ) ? bookacti_sanitize_date( $interval[ 'start' ] ) : false,
+		'end'	=> isset( $interval[ 'end' ] ) ? bookacti_sanitize_date( $interval[ 'end' ] ) : false
 	);
 	
 	return $sanitized_interval;
@@ -707,52 +756,52 @@ function bookacti_sanitize_events_interval( $interval ) {
  */
 function bookacti_get_occurences_of_repeated_event( $event, $past_events = false, $interval = array() ) {
 
+	// Get site settings
+	$timezone			= new DateTimeZone( bookacti_get_setting_value( 'bookacti_general_settings', 'timezone' ) );
+	$get_started_events	= bookacti_get_setting_value( 'bookacti_general_settings', 'started_events_bookable' );
+
 	// Init variables to compute occurences
-	$event_start		= DateTime::createFromFormat( 'Y-m-d H:i:s', $event->start );
-	$event_end			= DateTime::createFromFormat( 'Y-m-d H:i:s', $event->end );
+	$event_start		= new DateTime( $event->start, $timezone );
+	$event_end			= new DateTime( $event->end, $timezone );
 	$event_duration		= $event_start->diff( $event_end );
 
 	$event_start_time	= substr( $event->start, 11 );
 	$event_monthday		= $event_start->format( 'd' );
 
-	$repeat_from		= DateTime::createFromFormat( 'Y-m-d H:i:s', $event->repeat_from . ' 00:00:00' );
-	$repeat_to			= DateTime::createFromFormat( 'Y-m-d H:i:s', $event->repeat_to . ' 23:59:59' );
+	$repeat_from		= new DateTime( $event->repeat_from . ' 00:00:00', $timezone );
+	$repeat_to			= new DateTime( $event->repeat_to . ' 23:59:59', $timezone );
 	$repeat_interval	= array();
 
-	// Get site settings
-	$timezone			= bookacti_get_setting_value( 'bookacti_general_settings', 'timezone' );
-	$get_started_events	= bookacti_get_setting_value( 'bookacti_general_settings', 'started_events_bookable' );
-
-	// Set current datetime
-	$current_time		= new DateTime( 'now', new DateTimeZone( $timezone ) );
-
-	// Make sure repeated events don't start in the past if not explicitly allowed
-	if( ! $past_events && $current_time > $repeat_from ) {
-		$current_date = $current_time->format( 'Y-m-d' );
-
-		$repeat_from = DateTime::createFromFormat( 'Y-m-d H:i:s', $current_date . ' 00:00:00' );
-
-		// If started event are NOT allowed
-		$first_potential_event = DateTime::createFromFormat( 'Y-m-d H:i:s', $current_date . ' ' . $event_start_time );
-		$first_potential_event->add( $event_duration );
-		if( ! $get_started_events || $first_potential_event <= $current_time ) {
-			$repeat_from->add( new DateInterval( 'P1D' ) );
-		}
-	}
+	$current_time		= new DateTime( 'now', $timezone );
 
 	// Check if the repetition period is in the interval to be rendered
 	if( $interval ) {
 		// If the repetition period is totally outside the desired interval, skip the event
 		// Else, restrict the repetition period
 		if( $interval[ 'start' ] ) {
-			$interval_start = DateTime::createFromFormat( 'Y-m-d H:i:s', $interval[ 'start' ] . ' 00:00:00' );
+			$interval_start = new DateTime( $interval[ 'start' ] . ' 00:00:00', $timezone );
 			if( $interval_start > $repeat_from && $interval_start > $repeat_to ) { return array(); }
 			if( $interval_start > $repeat_from ) { $repeat_from = clone $interval_start; }
 		}
 		if( $interval[ 'end' ] ) {
-			$interval_end	= DateTime::createFromFormat( 'Y-m-d H:i:s', $interval[ 'end' ] . ' 23:59:59' );
+			$interval_end	= new DateTime( $interval[ 'end' ] . ' 23:59:59', $timezone );
 			if( $interval_end < $repeat_from && $interval_end < $repeat_to ) { return array(); }
 			if( $interval_end < $repeat_to ) { $repeat_to = clone $interval_end; }
+		}
+	}
+	
+	// Make sure repeated events don't start in the past if not explicitly allowed
+	if( ! $past_events && $current_time > $repeat_from ) {
+		$current_date = $current_time->format( 'Y-m-d' );
+
+		$repeat_from = new DateTime( $current_date . ' 00:00:00', $timezone );
+
+		// If started event are NOT allowed
+		$first_potential_event = new DateTime( $current_date . ' ' . $event_start_time, $timezone );
+		$first_potential_event->add( $event_duration );
+		
+		if( ! $get_started_events || $first_potential_event <= $current_time ) {
+			$repeat_from->add( new DateInterval( 'P1D' ) );
 		}
 	}
 
@@ -804,7 +853,7 @@ function bookacti_get_occurences_of_repeated_event( $event, $past_events = false
 
 	while( $loop->format( 'U' ) < $end_loop ) {
 
-		$occurence_start = DateTime::createFromFormat( 'Y-m-d H:i:s', $loop->format( 'Y-m-d' ) . ' ' . $event_start_time );
+		$occurence_start = new DateTime( $loop->format( 'Y-m-d' ) . ' ' . $event_start_time, $timezone );
 		$occurence_end = clone $occurence_start;
 		$occurence_end->add( $event_duration );
 

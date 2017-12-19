@@ -50,9 +50,6 @@ function bookacti_fetch_events( booking_system, interval ) {
 				if( response.events.length ) {
 					// Fill events according to booking method
 					bookacti_booking_method_display_event_source( booking_system, response.events, attributes.method );
-				} else {
-					// If no events are bookable, display an error
-					bookacti_add_error_message( booking_system, bookacti_localized.error_no_events_bookable );
 				}
 				
 				var then = new Date().getTime();
@@ -115,7 +112,7 @@ function bookacti_reload_booking_system( booking_system ) {
 				bookacti.booking_system[ booking_system_id ][ 'groups_data' ]			= response.groups_data;
 				bookacti.booking_system[ booking_system_id ][ 'group_categories_data' ]	= response.group_categories_data;
 				bookacti.booking_system[ booking_system_id ][ 'template_data' ]			= response.template_data;
-				
+				console.log( 'total interval load', response.events_interval );
 				// Fill the booking method elements
 				booking_system.append( response.html_elements );
 				
@@ -672,7 +669,7 @@ function bookacti_fetch_view_events( booking_system, view ) {
 	var view_end		= view.end.clone().subtract( 1, 'days' );
 	
 	var new_interval	= false;
-	var event_window	= 92;
+	var event_window	= parseInt( bookacti_localized.event_loading_window );
 	var min_interval	= {
 		'start' : view_start.clone(),
 		'end' : view_end.clone()
@@ -697,15 +694,20 @@ function bookacti_fetch_view_events( booking_system, view ) {
 
 			var new_interval_start	= interval_start.clone();
 			var new_interval_end	= interval_end.clone();
-
+			
+			var day_before_view_start	= view.start.clone().subtract( 1, 'days' );
+			var day_after_view_end		= view.end.clone();
+			
 			// If the current view include the old interval or if they are not connected at all,
 			// Remove the current events and fetch events of the new interval
-			if( ( view_start.isBefore( interval_start ) && view_end.isAfter( interval_end ) ) 
-			||  ( view_end.isBefore( interval_start ) )	
-			||  ( view_start.isAfter( interval_end ) ) ) {
+			if((	( view_start.isBefore( interval_start ) && view_end.isAfter( interval_end ) ) 
+				||  ( view_end.isBefore( interval_start ) )	
+				||  ( view_start.isAfter( interval_end ) ) )
+				&&	! day_before_view_start.isSame( interval_end )
+				&&	! day_after_view_end.isSame( interval_start ) ){
 				console.log( 'clear' );
 				// Remove events
-				bookacti_booking_method_clear_events( $j( '#bookacti-template-calendar' ) );
+				bookacti_booking_method_clear_events( booking_system );
 
 				// Compute new interval
 				var new_interval = bookacti_get_new_interval_of_events( booking_system, min_interval, event_window );
@@ -713,7 +715,7 @@ function bookacti_fetch_view_events( booking_system, view ) {
 
 			else {
 				// If current view starts before current interval of events, loads previous bunch of events
-				if( view_start.isBefore( interval_start ) ) {
+				if( view_start.isBefore( interval_start ) || day_after_view_end.isSame( interval_start ) ) {
 					console.log( 'previous' );
 					new_interval_start.subtract( event_window, 'days' );
 					if( view_start.isBefore( new_interval_start ) ) {
@@ -726,7 +728,7 @@ function bookacti_fetch_view_events( booking_system, view ) {
 				}
 
 				// If current view ends after current interval of events, loads next bunch of events
-				else if( view_end.isAfter( interval_end ) ) {
+				else if( view_end.isAfter( interval_end ) || day_before_view_start.isSame( interval_end ) ) {
 					console.log( 'next' );
 					new_interval_end.add( event_window, 'days' );
 					if( view_end.isAfter( new_interval_end ) ) {
@@ -775,7 +777,7 @@ function bookacti_get_new_interval_of_events( booking_system, min_interval, inte
 	if( ! past_events && calendar_end.isBefore( current_time ) ) { return []; }
 	
 	min_interval		= min_interval || { 'start' : current_date, 'end' : current_date };
-	interval_duration	= parseInt( interval_duration ) || 92;
+	interval_duration	= parseInt( interval_duration ) || parseInt( bookacti_localized.event_loading_window );
 	
 	var interval_start	= moment( min_interval.start );
 	var interval_end	= moment( min_interval.end ).add( 1, 'days' );
@@ -1205,7 +1207,7 @@ function bookacti_update_settings_from_database( booking_system, template_ids ) 
 				bookacti.booking_system[ booking_system_id ][ 'template_data' ] = response.template_data;
 				
 				// Update calendar settings
-				if( booking_system.attr( 'id' ) === 'bookacti-template-calendar' ) {
+				if( booking_system_id === 'bookacti-template-calendar' ) {
 					bookacti_update_calendar_settings( booking_system, response.template_data );
 				} else {
 					bookacti_booking_method_update_template_data( booking_system );
@@ -1385,18 +1387,6 @@ function bookacti_get_event_availability_div( booking_system, event ) {
 			+ '</div>';
 	
 	return div;
-}
-
-
-// Display an error message if no availability was found
-function bookacti_add_error_message( booking_system, message ) {
-	
-	message = message || bookacti_localized.error_no_events_bookable;
-	
-	booking_system.hide();
-	booking_system.siblings( '.bookacti-notices' ).empty().append( "<ul class='bookacti-error-list'><li>" + message + "</li></ul>" ).show();
-	
-	booking_system.trigger( 'bookacti_error_displayed', [ message ] );
 }
 
 
