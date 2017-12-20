@@ -113,7 +113,8 @@ function bookacti_switch_template( selected_template_id ) {
 						
 						// Load events on calendar
 						var view = $j( '#bookacti-template-calendar' ).fullCalendar( 'getView' );
-						bookacti_fetch_view_events( $j( '#bookacti-template-calendar' ), view );
+						var interval = { 'start': moment.utc( view.intervalStart ), 'end': moment.utc( view.intervalEnd ).subtract( 1, 'days' ) };
+						bookacti_fetch_events_from_interval( $j( '#bookacti-template-calendar' ), interval );
 						
 						// Re-enable events to load when view changes
 						bookacti.load_events = true;

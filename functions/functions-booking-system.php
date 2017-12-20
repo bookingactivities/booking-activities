@@ -37,7 +37,12 @@ function bookacti_get_booking_system( $atts, $echo = false ) {
 				
 				$templates_data		= bookacti_get_mixed_template_data( $atts[ 'calendars' ] );
 				$events_interval	= bookacti_get_new_interval_of_events( $templates_data );
-				$events				= bookacti_fetch_events( $atts, $events_interval );
+				
+				if( $atts[ 'groups_only' ] ) {
+					$events			= bookacti_fetch_grouped_events( $atts[ 'calendars' ], $atts[ 'activities' ], array(), $atts[ 'group_categories' ], $atts[ 'past_events' ], $events_interval );
+				} else {
+					$events			= bookacti_fetch_events( $atts[ 'calendars' ], $atts[ 'activities' ], $atts[ 'past_events' ], $events_interval );	
+				}
 				
 				$groups_events = array();
 				if( $atts[ 'group_categories' ] !== false ) { 
@@ -361,61 +366,6 @@ function bookacti_format_booking_system_attributes( $atts = array(), $shortcode 
 
 
 /**
- * Sanitize arguments used to fetch events on the booking system
- * 
- * @param array $args
- * @return array
- */
-function bookacti_sanitize_arguments_to_fetch_events( $args ) {
-	// Sanitize arguments
-	$default_args = array(
-		'calendars'			=> array(),
-		'activities'		=> array(),
-		'group_categories'	=> array(),
-		'groups_only'		=> false,
-		'past_events'		=> false,
-		'context'			=> 'frontend'
-	);
-
-	$sanitized_args = array();
-	foreach( $default_args as $default_key => $default_value ) {
-		
-		if( ! isset( $args[ $default_key ] ) ) {
-			$sanitized_args[ $default_key ] = $default_value;
-			continue;
-		}
-		
-		switch ( $default_key ) {
-			case 'calendars':
-			case 'activities':
-			case 'group_categories':
-				$sanitized_args[ $default_key ] = ! empty( $args[ $default_key ] ) && is_array( $args[ $default_key ] ) ? $args[ $default_key ] : $default_value;
-				break;
-			case 'groups_only':
-			case 'past_events':
-				if( in_array( $args[ $default_key ], array( 0, '0', false, 'false' ), true ) ) {
-					$sanitized_args[ $default_key ] = false;
-				}
-				else if( in_array( $args[ $default_key ], array( 1, '1', true, 'true' ), true ) ) {
-					$sanitized_args[ $default_key ] = true;
-				}
-				else {
-					$sanitized_args[ $default_key ] = $default_value;
-				}
-				break;
-			case 'context':
-				$sanitized_args[ $default_key ] = in_array( $args[ $default_key ], array( 'frontend', 'booking_page', 'editor' ), true ) ? $args[ $default_key ] : $default_value;
-				break;
-			default:
-				$sanitized_args[ $default_key ] = $default_value;
-		}
-	}
-
-	return $sanitized_args;
-}
-
-
-/**
  * Validate booking form (verify the info of the selected event before booking it)
  * 
  * @version 1.1.0
@@ -668,26 +618,35 @@ function bookacti_get_events_array_from_db_events( $events, $past_events, $inter
  * Get a new interval of events to load. Computed from the compulsory interval, or now's date and template interval.
  * 
  * @since 1.2.2
- * @param array $templates_interval array( 'start'=>Calendar start, 'end'=> Calendar end) 
- * @param array $min_interval array( 'start'=>Calendar start, 'end'=> Calendar end). Current date if not set.
+ * @param array $template_interval array( 'start'=>Calendar start, 'end'=> Calendar end) 
+ * @param array $min_interval array( 'start'=> Calendar start, 'end'=> Calendar end)
  * @param int $interval_duration Number of days of the interval
  * @param bool $past_events
  * @return array
  */
-function bookacti_get_new_interval_of_events( $templates_interval, $min_interval = array(), $interval_duration = false, $past_events = false ) {
+function bookacti_get_new_interval_of_events( $template_interval, $min_interval = array(), $interval_duration = false, $past_events = false ) {
 	
-	if( ! isset( $templates_interval[ 'start' ] ) || ! isset( $templates_interval[ 'end' ] ) ) { return array(); }
+	if( ! isset( $template_interval[ 'start' ] ) || ! isset( $template_interval[ 'end' ] ) ) { return array(); }
 	
 	$timezone			= new DateTimeZone( bookacti_get_setting_value( 'bookacti_general_settings', 'timezone' ) );
 	$current_time		= new DateTime( 'now', $timezone );
 	$current_date		= $current_time->format( 'Y-m-d' );
 	
-	$calendar_start		= new DateTime( $templates_interval[ 'start' ] . ' 00:00:00', $timezone );
-	$calendar_end		= new DateTime( $templates_interval[ 'end' ] . ' 23:59:59', $timezone );
-
+	$calendar_start		= new DateTime( $template_interval[ 'start' ] . ' 00:00:00', $timezone );
+	$calendar_end		= new DateTime( $template_interval[ 'end' ] . ' 23:59:59', $timezone );
+	
 	if( ! $past_events && $calendar_end < $current_time ) { return array(); }
 	
-	$min_interval		= $min_interval ? $min_interval : array( 'start' => $current_date, 'end' => $current_date );
+	if( ! $min_interval ) {
+		if( $calendar_start > $current_time ) {
+			$min_interval = array( 'start' => $template_interval[ 'start' ], 'end' => $template_interval[ 'start' ] );
+		} else if( $calendar_end < $current_time ) {
+			$min_interval = array( 'start' => $template_interval[ 'end' ], 'end' => $template_interval[ 'end' ] );
+		} else {
+			$min_interval = array( 'start' => $current_date, 'end' => $current_date );
+		}
+	}
+	
 	$interval_duration	= $interval_duration ? intval( $interval_duration ) : intval( bookacti_get_setting_value( 'bookacti_general_settings', 'event_loading_window' ) );
 	
 	$interval_start		= new DateTime( $min_interval[ 'start' ] . ' 00:00:00', $timezone );
@@ -720,7 +679,7 @@ function bookacti_get_new_interval_of_events( $templates_interval, $min_interval
 		'start' => $interval_start->format( 'Y-m-d' ), 
 		'end' => $interval_end->format( 'Y-m-d' ) 
 	);
-
+	
 	return $interval;
 }
 

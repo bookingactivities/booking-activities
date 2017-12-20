@@ -72,17 +72,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			$activity_ids		= bookacti_get_activity_ids_by_template( $template_ids, false );
 			$group_categories	= bookacti_get_group_category_ids_by_template( $template_ids );
 			
-			// Gets calendar content: events, activities and groups
-			$args = array(
-				'calendars' => $template_ids,
-				'activities' => array(),
-				'categories' => array(),
-				'groups_only' => false,
-				'past_events' => true,
-				'context' => 'booking_page'
-			);
-			
-			$events				= bookacti_fetch_events( $args );
+			$events				= bookacti_fetch_events( $template_ids, array(), true );
 			$activities_data	= bookacti_get_activities_by_template( $template_ids, true );
 			$groups_events		= bookacti_get_groups_events( $template_ids, $group_categories, array(), true );
 			$groups_data		= bookacti_get_groups_of_events_by_template( $template_ids );

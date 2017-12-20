@@ -144,7 +144,8 @@ function bookacti_load_template_calendar() {
 		viewRender: function( view ) {
 			// Maybe fetch the events on the view (if not already)
 			if( bookacti.load_events === true ) { 
-				bookacti_fetch_view_events( $j( '#bookacti-template-calendar' ), view );
+				var interval = { 'start': moment.utc( view.intervalStart ), 'end': moment.utc( view.intervalEnd ).subtract( 1, 'days' ) };
+				bookacti_fetch_events_from_interval( $j( '#bookacti-template-calendar' ), interval );
 			}
 			
 			// Change the height of the calendar to match the available hours in agenda views

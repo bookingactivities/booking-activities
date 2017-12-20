@@ -46,10 +46,9 @@ function bookacti_fetch_events( booking_system, interval ) {
 				
 				console.log( 'total interval loaded', bookacti.booking_system[ booking_system_id ][ 'events_interval' ] );
 				
-				// Load new events on calendar
+				// Display new events
 				if( response.events.length ) {
-					// Fill events according to booking method
-					bookacti_booking_method_display_event_source( booking_system, response.events, attributes.method );
+					bookacti_booking_method_display_events( booking_system, response.events, attributes.method );
 				}
 				
 				var then = new Date().getTime();
@@ -112,7 +111,8 @@ function bookacti_reload_booking_system( booking_system ) {
 				bookacti.booking_system[ booking_system_id ][ 'groups_data' ]			= response.groups_data;
 				bookacti.booking_system[ booking_system_id ][ 'group_categories_data' ]	= response.group_categories_data;
 				bookacti.booking_system[ booking_system_id ][ 'template_data' ]			= response.template_data;
-				console.log( 'total interval load', response.events_interval );
+				
+				console.log( 'total interval loaded', response.events_interval );
 				// Fill the booking method elements
 				booking_system.append( response.html_elements );
 				
@@ -137,461 +137,6 @@ function bookacti_reload_booking_system( booking_system ) {
 			bookacti_stop_loading_booking_system( booking_system );
 		}
     });	
-}
-
-
-// Display events sources of both single and repeated events
-function bookacti_display_events( booking_system, single_events, repeated_events ) {
-	bookacti_display_single_events( booking_system, single_events );
-	bookacti_display_repeated_events( booking_system, repeated_events );
-}
-
-
-// Display events sources of both single and repeated events
-function bookacti_display_events_in_interval( booking_system, interval, single_events, repeated_events ) {
-	
-	interval = interval || false;
-	
-	bookacti_display_single_events( booking_system, single_events, interval );
-	bookacti_display_repeated_events( booking_system, repeated_events, interval );
-}
-
-
-// Get single events sources by activities
-function bookacti_display_single_events( booking_system, single_events, interval ) {
-	
-	var booking_system_id = booking_system.attr( 'id' );
-	
-	single_events	= single_events || false;
-	interval		= interval || false;
-	
-	// If booking system settings are not set or if there is no repeated event, return an empty array
-	if( ! bookacti.booking_system[ booking_system_id ] || ! single_events ) { return []; }
-	
-	// The maximum browser loading time to keep it reponsive
-	var maxTimePerChunk = 100;
-	
-	// Return current time
-    function now() { return new Date().getTime(); }
-	
-	var calendar_start	= moment( bookacti.booking_system[ booking_system_id ][ 'template_data' ][ 'start' ] );
-	var calendar_end	= moment( bookacti.booking_system[ booking_system_id ][ 'template_data' ][ 'end' ] ).add( 1, 'days' );
-	var current_time	= moment( bookacti_localized.current_time );
-	
-	var event_ids		= Object.keys( single_events );
-	var events_length	= event_ids.length;
-	
-	// Start loading
-	if( booking_system_id === 'bookacti-template-calendar' ) {
-		bookacti_start_template_loading();
-	} else {
-		bookacti_start_loading_booking_system( booking_system );
-	}
-	
-	// Process each event one after another and let browser refresh between each to prevent a total freeze
-	var index = 0;
-	function do_events() {
-	
-		var startTime = now();
-		
-		while( index < events_length && (now() - startTime) <= maxTimePerChunk ) {
-
-			// Init variables
-			var event_id			= event_ids[ index ];
-			var single_event		= single_events[ event_id ];
-			var event_start_date	= single_event.start.substr( 0, 10 );
-			
-			// Check if the event is in the interval to be rendered
-			if( interval ) {
-				if( interval.start.isAfter( event_start_date ) || interval.end.isBefore( event_start_date ) ) { ++index; continue; }
-			}
-			
-			// Make sure the event isn't past if not explicitly allowed
-			if( ! bookacti.booking_system[ booking_system_id ][ 'past_events' ] ) {
-				if( current_time.isAfter( single_event.start ) ) { 
-					// If started event are allowed
-					if( ! bookacti_localized.started_events_bookable || current_time.isAfter( single_event.end ) ) {
-						++index; continue;
-					}
-				}
-			}
-
-			// Make sure events are not out of templates, else skip to next event
-			if( calendar_start.isAfter( event_start_date ) || calendar_end.isBefore( event_start_date ) ) { ++index; continue; }
-
-			// Create a source for each event
-			var event_source = { 
-				'id'				: 'event_' + single_event.id,
-				'allDayDefault'		: false,
-				'color'				: bookacti.booking_system[ booking_system_id ][ 'events_data' ][ single_event.id ][ 'color' ],
-				'durationEditable'	: bookacti.booking_system[ booking_system_id ][ 'events_data' ][ single_event.id ][ 'is_resizable' ] && bookacti_localized.is_admin ? true : false,
-				'events'			: [ single_event ]
-			};
-			
-			// Display this event source
-			if( event_source.events.length !== 0 ) {
-				bookacti_booking_method_display_event_source( booking_system, event_source );
-			}
-		
-			++index;
-		}
-		
-		if( index < events_length ) {
-			// set Timeout for "async" iteration
-			setTimeout( do_events, 0 );
-		} else {
-			// End loading
-			if( booking_system_id === 'bookacti-template-calendar' ) {
-				bookacti_stop_template_loading();
-			} else {
-				bookacti_stop_loading_booking_system( booking_system );
-			}
-		}
-	}
-	do_events();
-}
-
-
-// Get repeated events sources by event
-function bookacti_display_repeated_events( booking_system, repeated_events, interval ) {
-
-	var booking_system_id = booking_system.attr( 'id' );
-	
-	repeated_events	= repeated_events || false;
-	interval		= interval || false;
-	
-	// If booking system settings are not set or if there is no repeated event, return an empty array
-	if( ! bookacti.booking_system[ booking_system_id ] || ! repeated_events ) { return []; }
-	
-	// The maximum browser loading time to keep it reponsive
-	var maxTimePerChunk = 50;
-	
-	// Return current time
-    function now() { return new Date().getTime(); }
-
-	var calendar_start	= moment( bookacti.booking_system[ booking_system_id ][ 'template_data' ][ 'start' ] );
-	var calendar_end	= moment( bookacti.booking_system[ booking_system_id ][ 'template_data' ][ 'end' ] );
-	var current_time	= moment( bookacti_localized.current_time );
-	
-	var event_ids		= Object.keys( repeated_events );
-	var events_length	= event_ids.length;
-	
-	// Start loading
-	if( booking_system_id === 'bookacti-template-calendar' ) {
-		bookacti_start_template_loading();
-	} else {
-		bookacti_start_loading_booking_system( booking_system );
-	}
-	
-	// Process each event one after another and let browser refresh between each to prevent a total freeze
-	var index = 0;
-	function do_events() {
-		
-		var startTime = now();
-		
-		while( index < events_length && (now() - startTime) <= maxTimePerChunk ) {
-			
-			// Init variables to compute occurences
-			var event_id			= event_ids[ index ];
-			var event_start			= moment( repeated_events[ event_id ].start );
-			var event_end			= moment( repeated_events[ event_id ].end );
-			var event_duration		= Math.abs( event_end.diff( event_start, 'seconds' ) );
-			var event_start_time	= event_start.format( 'HH:mm:ss' );
-			var event_monthday		= event_start.date();
-
-			var repeat_from			= moment( repeated_events[ event_id ].repeat_from );
-			var repeat_to			= moment( repeated_events[ event_id ].repeat_to );
-			var repeat_interval		= {};
-
-			// Make sure repeated events don't start in the past if not explicitly allowed
-			if( ! bookacti.booking_system[ booking_system_id ][ 'past_events' ] ) {
-				if( current_time.isAfter( repeat_from ) ) { 
-					// If started event are allowed
-					var current_date = bookacti_localized.current_time.substr( 0, 10 );
-					var first_potential_event = moment( current_date + ' ' + event_start_time );
-					first_potential_event.add( event_duration, 'seconds' );
-					if( bookacti_localized.started_events_bookable && first_potential_event.isAfter( current_time ) ) {
-						repeat_from = moment( current_date ); 
-					} 
-
-					// If started event are NOT allowed
-					else {
-						repeat_from = moment( current_date ).add( 1, 'days' ); 
-					}
-				}
-			}
-
-			// Make sure repeated events don't spread over templates dates
-			if( calendar_start.isAfter( repeat_from ) )	{ repeat_from = calendar_start; }
-			if( calendar_end.isBefore( repeat_to ) )	{ repeat_to = calendar_end; }
-
-			// Check if the repetition period is in the interval to be rendered
-			if( interval ) {
-				// If the repetition period is totally outside the desired interval, skip the event
-				if( ( interval.start.isAfter( repeat_from ) && interval.start.isAfter( repeat_to ) )
-				||  ( interval.end.isBefore( repeat_from ) && interval.end.isBefore( repeat_to ) ) ) { ++index; continue; }
-				// Else, restrict the repetition period
-				if( interval.start.isAfter( repeat_from ) )	{ repeat_from = interval.start.clone(); }
-				if( interval.end.isBefore( repeat_to ) )	{ repeat_to = interval.end.clone(); }
-			}
-			
-			switch( repeated_events[ event_id ].repeat_freq ) {
-				case 'daily':
-					repeat_interval	= { 'days': 1 };
-					break;
-				case 'weekly':
-					repeat_interval	= { 'days': 7 };
-					// We need to make sure the repetition start from the week day of the event
-					var event_weekday = event_start.isoWeekday();
-					if( repeat_from.isoWeekday() <= event_weekday ) { repeat_from.isoWeekday( event_weekday ); }
-					else { repeat_from.add( 1, 'weeks' ).isoWeekday( event_weekday ); }
-					break;
-				case 'monthly':
-					// We need to make sure the repetition starts on the event month day
-					if( repeat_from.date() <= event_monthday ) { repeat_from.date( event_monthday ); }
-					else { 
-						repeat_from.add( 1, 'months' ).date( event_monthday ); 
-
-						// If the event_monthday is 31 (or 29, 30 or 31 in January), it could have jumped the next month
-						// Make sure it doesn't happen
-						if( repeat_from.date() !== event_monthday ) {
-							repeat_from.subtract( 1, 'months' );
-							if( event_monthday > repeat_from.daysInMonth() ) { repeat_from.endOf( 'month' ); }
-						}
-					}
-
-					// The repeat_interval will be computed directly in the loop
-					break;
-				default:
-					repeat_interval	= { 'days': 1 }; // Default to daily to avoid unexpected behavior such as infinite loop
-			}
-			
-			// Event sources don't support custom properties. We must include them in each events
-			var shared_properties = {
-				'id'				: repeated_events[ event_id ].id,
-				'title'				: repeated_events[ event_id ].title
-			};
-
-			// Common properties (same as shared_properties, but these are supported by FullCalendar eventSource object)
-			var event_source = { 
-				'id'				: 'event_' + repeated_events[ event_id ].id,
-				'allDayDefault'		: false,
-				'color'				: repeated_events[ event_id ].color,
-				'durationEditable'	: repeated_events[ event_id ].is_resizable && bookacti_localized.is_admin ? true : false,
-				'events'			: []
-			};
-			
-			// Start loading
-			if( booking_system_id === 'bookacti-template-calendar' ) { bookacti_start_template_loading(); } 
-			else { bookacti_start_loading_booking_system( booking_system ); }
-			
-			// Compute occurences
-			var loop = repeat_from;
-			var chunk_nb = 0;
-			var end_loop = repeat_to.unix();
-			
-			function do_occurrences() {
-				
-				var startTime2 = now();
-				
-				event_source.id += '_' + chunk_nb;
-
-				// Split the event rendering into chunks of a variable size
-				// Render as many event as possible in maxTimePerChunk milliseconds
-				while( loop.unix() < end_loop && ( now() - startTime2 ) <= maxTimePerChunk ) {
-
-					var occurence_start = moment( loop.format( 'YYYY-MM-DD' ) + ' ' + event_start_time );
-					var occurence_end = occurence_start.clone().add( event_duration, 'seconds' );
-					
-					// Check if the event is in the interval to be rendered
-					if( interval ) {
-						if( interval.start.isAfter( occurence_start ) || interval.end.isBefore( occurence_start ) ) { loop.add( repeat_interval ); continue; }
-					}
-					
-					// Compute start and end dates
-					var event_occurence = {
-						'start'	: occurence_start,
-						'end'	: occurence_end
-					};
-
-					// Merge shared and specific properties
-					event_occurence = $j.extend( event_occurence, shared_properties );
-
-					// Add this occurrence to events array
-					event_source.events.push( event_occurence );
-
-					// Alter repeat_interval to make sure it matches the last day of next month
-					if( repeated_events[ event_id ].repeat_freq === 'monthly' ) {
-						var next_month = loop.clone().add( 1, 'months' ).date( event_monthday );
-						if( next_month.date() !== event_monthday ) {
-							next_month.subtract( 1, 'months' );
-							if( event_monthday > next_month.daysInMonth() ) { next_month.endOf( 'month' ); }
-						}
-						var days_to_next_month	= Math.abs( next_month.diff( loop, 'days' ) );		
-						repeat_interval = { 'days': days_to_next_month };
-					}
-
-					// Increase loop
-					loop.add( repeat_interval );
-				}
-
-				// Display this event source
-				if( event_source.events.length !== 0 ) {
-					bookacti_booking_method_display_event_source( booking_system, event_source );
-				}
-				
-				if( loop.unix() < end_loop ) {
-					// set Timeout for "async" iteration
-					++chunk_nb;
-					setTimeout( do_occurrences, 0 );
-				}  else {
-					// End loading
-					if( booking_system_id === 'bookacti-template-calendar' ) {
-						bookacti_stop_template_loading();
-					} else {
-						bookacti_stop_loading_booking_system( booking_system );
-					}
-				}
-			}    
-			do_occurrences();
-			
-			++index;
-		}
-		
-		if( index < events_length ) {
-			// set Timeout for "async" iteration
-			setTimeout( do_events, 0 );
-		} else {
-			// End loading
-			if( booking_system_id === 'bookacti-template-calendar' ) {
-				bookacti_stop_template_loading();
-			} else {
-				bookacti_stop_loading_booking_system( booking_system );
-			}
-		}
-	}    
-	do_events();
-}
-
-
-// Retrieve events sources by group of events
-function bookacti_display_group_events( booking_system, groups ) {
-	
-	var booking_system_id = booking_system.attr( 'id' );
-	groups = groups || bookacti.booking_system[ booking_system_id ][ 'groups_events' ];
-	
-	var group_categories	= bookacti.booking_system[ booking_system_id ][ 'group_categories' ];
-	
-	if( $j.isEmptyObject( groups ) || group_categories.length === 0 ) { return []; }
-	
-	var activities		= bookacti.booking_system[ booking_system_id ][ 'activities' ];
-	var calendar_start	= moment( bookacti.booking_system[ booking_system_id ][ 'template_data' ][ 'start' ] );
-	var calendar_end	= moment( bookacti.booking_system[ booking_system_id ][ 'template_data' ][ 'end' ] );
-	var current_time	= moment( bookacti_localized.current_time );
-	
-	// The maximum browser loading time to keep it reponsive
-	var maxTimePerChunk = 100;
-	
-	// Return current time
-    function now() { return new Date().getTime(); }
-	
-	var group_ids		= Object.keys( groups );
-	var groups_length	= group_ids.length;
-	
-	// Start loading
-	bookacti_start_loading_booking_system( booking_system );
-	
-	// Process each group of events event one after another and let browser refresh between each to prevent a total freeze
-	var group_index = 0;
-	function do_groups() {
-		
-		var startTime = now();
-		
-		while( group_index < groups_length && (now() - startTime) <= maxTimePerChunk ) {
-			
-			var group_id		= group_ids[ group_index ];
-			var events			= groups[ group_id ];
-			var events_length	= events.length;
-			
-			var event_index	= 0;
-			var chunk_nb	= 0;
-			function do_events() {
-				
-				var startTime = now();
-				
-				var event_source = { 
-					'id'				: 'group_' + group_id + '_' + chunk_nb,
-					'allDayDefault'		: false,
-					'durationEditable'	: false,
-					'events'			: []
-				};
-		
-				while( event_index < events_length && (now() - startTime) <= maxTimePerChunk ) {
-					
-					var group_event = events[ event_index ];
-					var event_start_date = group_event.start.substr( 0, 10 );
-
-					// Check if the event is part of displayed activities
-					var activity_id = bookacti.booking_system[ booking_system_id ][ 'events_data' ][ group_event.id ][ 'activity_id' ];
-					if( activities.length && $j.inArray( activity_id, activities ) ) {
-						return true;
-					}
-
-					// Make sure the event isn't past if not explicitly allowed
-					if( ! bookacti.booking_system[ booking_system_id ][ 'past_events' ] ) {
-						if( current_time.isAfter( group_event.start ) ) { 
-							// If started event are allowed
-							if( ! bookacti_localized.started_events_bookable || current_time.isAfter( group_event.end ) ) {
-								return true;
-							}
-						}
-					}
-
-					// Make sure events are not out of templates, else skip to next event
-					if( calendar_start.isAfter( event_start_date ) || calendar_end.isBefore( event_start_date ) ) { return true; }
-
-					// Reconstitute a correct event
-					var event = {
-						'id'				: group_event.id,
-						'title'				: group_event.title,
-						'start'				: group_event.start,
-						'end'				: group_event.end,
-						'color'				: bookacti.booking_system[ booking_system_id ][ 'events_data' ][ group_event.id ][ 'color' ]
-					};
-					
-					event_source.events.push( event );
-					
-					++event_index;
-				}
-				
-				// Display this event source
-				if( event_source.events.length !== 0 ) {
-					bookacti_booking_method_display_event_source( booking_system, event_source );
-				}
-				
-				if( event_index < events_length ) {
-					// set Timeout for "async" iteration
-					++chunk_nb;
-					setTimeout( do_events, 10 );
-				} else {
-					// End loading
-					bookacti_stop_loading_booking_system( booking_system );
-				}
-			}
-			do_events();
-			
-			++group_index;
-		}
-		
-		if( group_index < groups_length ) {
-			// set Timeout for "async" iteration
-			setTimeout( do_groups, 20 );
-		} else {
-			// End loading
-			bookacti_stop_loading_booking_system( booking_system );
-		}
-	}
-	do_groups();
 }
 
 
@@ -657,87 +202,87 @@ function bookacti_switch_booking_method( booking_system, method ) {
 }
 
 
-// Display events of a specific view
-function bookacti_fetch_view_events( booking_system, view ) {
+// Display events of a specific interval
+function bookacti_fetch_events_from_interval( booking_system, desired_interval ) {
 	
-	var booking_system_id = booking_system.attr( 'id' );
+	var booking_system_id	= booking_system.attr( 'id' );
 	
-	var interval		= bookacti.booking_system[ booking_system_id ][ 'events_interval' ];
-	var settings		= bookacti.booking_system[ booking_system_id ][ 'template_data' ];
+	var current_interval	= bookacti.booking_system[ booking_system_id ][ 'events_interval' ];
+	var settings			= bookacti.booking_system[ booking_system_id ][ 'template_data' ];
 	
-	var view_start		= view.start.clone();
-	var view_end		= view.end.clone().subtract( 1, 'days' );
+	var calendar_start	= moment.utc( settings.start );
+	var calendar_end	= moment.utc( settings.end );
+
+	var desired_interval_start	= desired_interval.start.isBefore( calendar_start ) ? calendar_start.clone() : desired_interval.start.clone();
+	var desired_interval_end	= desired_interval.end.isAfter( calendar_end ) ? calendar_end.clone() : desired_interval.end.clone();
 	
 	var new_interval	= false;
 	var event_window	= parseInt( bookacti_localized.event_loading_window );
 	var min_interval	= {
-		'start' : view_start.clone(),
-		'end' : view_end.clone()
+		'start' : desired_interval_start.clone(),
+		'end' : desired_interval_end.clone()
 	};
 	
 	// Compute the new interval of events to load
 	// If no events has ever been loaded, compute the first interval to load
-	if( $j.isEmptyObject( interval ) ) { 
+	if( $j.isEmptyObject( current_interval ) ) { 
 		new_interval = bookacti_get_new_interval_of_events( booking_system, min_interval, event_window );
 	} 
 
-	// Else, check if the view contain unloaded days, and if so, load events for this new interval
+	// Else, check if the desired_interval contain unloaded days, and if so, load events for this new interval
 	else { 
 
-		var interval_start	= moment.utc( interval.start );
-		var interval_end	= moment.utc( interval.end );
+		var current_interval_start	= moment.utc( current_interval.start );
+		var current_interval_end	= moment.utc( current_interval.end );
 
-		if( view_start.isBefore( interval_start ) || view_end.isAfter( interval_end ) ) {
-
-			var calendar_start	= moment.utc( settings.start );
-			var calendar_end	= moment.utc( settings.end );
-
-			var new_interval_start	= interval_start.clone();
-			var new_interval_end	= interval_end.clone();
+		if( desired_interval_start.isBefore( current_interval_start ) || desired_interval_end.isAfter( current_interval_end ) ) {
 			
-			var day_before_view_start	= view.start.clone().subtract( 1, 'days' );
-			var day_after_view_end		= view.end.clone();
+			var new_interval_start	= current_interval_start.clone();
+			var new_interval_end	= current_interval_end.clone();
 			
-			// If the current view include the old interval or if they are not connected at all,
+			var day_before_desired_interval_start	= desired_interval.start.clone().subtract( 1, 'days' );
+			var day_after_desired_interval_end		= desired_interval.end.clone().add( 1, 'days' );
+			
+			// If the current desired_interval include the old interval or if they are not connected at all,
 			// Remove the current events and fetch events of the new interval
-			if((	( view_start.isBefore( interval_start ) && view_end.isAfter( interval_end ) ) 
-				||  ( view_end.isBefore( interval_start ) )	
-				||  ( view_start.isAfter( interval_end ) ) )
-				&&	! day_before_view_start.isSame( interval_end )
-				&&	! day_after_view_end.isSame( interval_start ) ){
+			if((	( desired_interval_start.isBefore( current_interval_start ) && desired_interval_end.isAfter( current_interval_end ) ) 
+				||  ( desired_interval_end.isBefore( current_interval_start ) )	
+				||  ( desired_interval_start.isAfter( current_interval_end ) ) )
+				&&	! day_before_desired_interval_start.isSame( current_interval_end )
+				&&	! day_after_desired_interval_end.isSame( current_interval_start ) ){
 				console.log( 'clear' );
 				// Remove events
 				bookacti_booking_method_clear_events( booking_system );
 
 				// Compute new interval
-				var new_interval = bookacti_get_new_interval_of_events( booking_system, min_interval, event_window );
+				new_interval = bookacti_get_new_interval_of_events( booking_system, min_interval, event_window );
 			}
 
 			else {
-				// If current view starts before current interval of events, loads previous bunch of events
-				if( view_start.isBefore( interval_start ) || day_after_view_end.isSame( interval_start ) ) {
+				// If the desired interval starts before current interval of events, loads previous bunch of events
+				if( desired_interval_start.isBefore( current_interval_start ) || day_after_desired_interval_end.isSame( current_interval_start ) ) {
 					console.log( 'previous' );
 					new_interval_start.subtract( event_window, 'days' );
-					if( view_start.isBefore( new_interval_start ) ) {
-						new_interval_start = view_start.clone();
+					if( desired_interval_start.isBefore( new_interval_start ) ) {
+						new_interval_start = desired_interval_start.clone();
 					}
 					if( new_interval_start.isBefore( calendar_start ) ) { 
 						new_interval_start = calendar_start.clone();
 					}
-					new_interval_end = interval_start.clone().subtract( 1, 'days' );
+					new_interval_end = current_interval_start.clone().subtract( 1, 'days' );
 				}
 
-				// If current view ends after current interval of events, loads next bunch of events
-				else if( view_end.isAfter( interval_end ) || day_before_view_start.isSame( interval_end ) ) {
+				// If the desired interval ends after current interval of events, loads next bunch of events
+				else if( desired_interval_end.isAfter( current_interval_end ) || day_before_desired_interval_start.isSame( current_interval_end ) ) {
 					console.log( 'next' );
 					new_interval_end.add( event_window, 'days' );
-					if( view_end.isAfter( new_interval_end ) ) {
-						new_interval_end = view_end.clone();
+					if( desired_interval_end.isAfter( new_interval_end ) ) {
+						new_interval_end = desired_interval_end.clone();
 					}
 					if( new_interval_end.isAfter( calendar_end ) ) { 
 						new_interval_end = calendar_end.clone();
 					}
-					new_interval_start = interval_end.clone().add( 1, 'days' );
+					new_interval_start = current_interval_end.clone().add( 1, 'days' );
 				}
 
 				new_interval = {
@@ -776,7 +321,16 @@ function bookacti_get_new_interval_of_events( booking_system, min_interval, inte
 	
 	if( ! past_events && calendar_end.isBefore( current_time ) ) { return []; }
 	
-	min_interval		= min_interval || { 'start' : current_date, 'end' : current_date };
+	if( $j.isEmptyObject( min_interval ) ) {
+		if( calendar_start.isAfter( current_time ) ) {
+			min_interval = { 'start': template_interval.start, 'end': template_interval.start };
+		} else if( calendar_end.isBefore( current_time ) ) {
+			min_interval = { 'start': template_interval.end, 'end': template_interval.end };
+		} else {
+			min_interval = { 'start': current_date, 'end': current_date };
+		}
+	}
+	
 	interval_duration	= parseInt( interval_duration ) || parseInt( bookacti_localized.event_loading_window );
 	
 	var interval_start	= moment( min_interval.start );
@@ -1433,25 +987,13 @@ function bookacti_booking_method_set_up( booking_system, reload_events, booking_
 
 
 // Fill the events in the booking method
-function bookacti_booking_method_fill_with_events( booking_system, booking_method ) {
+function bookacti_booking_method_display_events( booking_system, events, booking_method ) {
 	var booking_system_id = booking_system.attr( 'id' );
 	booking_method = booking_method || bookacti.booking_system[ booking_system_id ][ 'method' ];
 	if( booking_method === 'calendar' || $j.inArray( booking_method, bookacti_localized.available_booking_methods ) === -1 ) {
-		bookacti_fill_calendar_with_events( booking_system );
+		bookacti_display_events_on_calendar( booking_system, events );
 	} else {
-		booking_system.trigger( 'bookacti_booking_method_fill_with_events', [ booking_method ] );
-	}
-}
-
-
-// Fill the events in the booking method
-function bookacti_booking_method_display_event_source( booking_system, event_source, booking_method ) {
-	var booking_system_id = booking_system.attr( 'id' );
-	booking_method = booking_method || bookacti.booking_system[ booking_system_id ][ 'method' ];
-	if( booking_method === 'calendar' || $j.inArray( booking_method, bookacti_localized.available_booking_methods ) === -1 ) {
-		bookacti_display_event_source_on_calendar( booking_system, event_source );
-	} else {
-		booking_system.trigger( 'bookacti_booking_method_display_event_source', [ booking_method, event_source ] );
+		booking_system.trigger( 'bookacti_booking_method_display_events', [ booking_method, events ] );
 	}
 }
 
@@ -1487,8 +1029,7 @@ function bookacti_booking_method_rerender_events( booking_system, booking_method
 	var booking_system_id = booking_system.attr( 'id' );
 	booking_method = booking_method || bookacti.booking_system[ booking_system_id ][ 'method' ];
 	if( booking_method === 'calendar' || $j.inArray( booking_method, bookacti_localized.available_booking_methods ) === -1 ) {
-		bookacti_refresh_calendar_view( booking_system );
-		booking_system.fullCalendar( 'rerenderEvents' );
+		booking_system.find( '.bookacti-calendar' ).fullCalendar( 'rerenderEvents' );
 	} else {
 		booking_system.trigger( 'bookacti_rerender_events', [ booking_method ] );
 	}

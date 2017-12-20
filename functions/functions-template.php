@@ -120,8 +120,8 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		
 		$mixed_settings	= array();
 		
-		foreach( $templates_data as $templates_data ){
-			$settings = $templates_data[ 'settings' ];
+		foreach( $templates_data as $template_data ){
+			$settings = $template_data[ 'settings' ];
 			if( isset( $settings[ 'minTime' ] ) ) {
 				//Keep the lower value
 				if(  ! isset( $mixed_settings[ 'minTime' ] ) 
