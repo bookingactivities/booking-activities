@@ -100,8 +100,7 @@ if( ! $templates ) {
 		'method'				=> 'calendar',
 		'id'					=> 'booking-system-bookings-page',
 		'classes'				=> 'admin-booking-system',
-		'past_events'			=> 1,
-		'context'				=> 'booking_page'
+		'past_events'			=> 1
 	);
     bookacti_get_booking_system( $atts, true );
 	?>

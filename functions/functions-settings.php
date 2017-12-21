@@ -821,13 +821,21 @@ function bookacti_settings_section_bookings_callback() { }
 	 * Get a custom message by id
 	 * 
 	 * @since 1.2.0
+	 * @version 1.2.2
 	 * @param string $message_id
 	 * @param boolean $raw Whether to retrieve the raw value from database or the option parsed through get_option
 	 * @return string
 	 */
 	function bookacti_get_message( $message_id, $raw = false ) {
 		$messages = bookacti_get_messages( $raw );
-		return $messages[ $message_id ] ? $messages[ $message_id ][ 'value' ] : '';
+		
+		$message = $messages[ $message_id ] ? $messages[ $message_id ][ 'value' ] : '';
+		
+		if( ! $raw ) {
+			$message = apply_filters( 'bookacti_translate_text', $message );
+		}
+		
+		return $message;
 	}
 	
 	

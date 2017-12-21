@@ -112,9 +112,10 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	 * 
 	 * @since	1.2.2 (was bookacti_get_mixed_template_settings)
 	 * @param	array|int $template_ids Array of template ids or single template id
+	 * @param	boolean $past_events Whether to allow past events
 	 * @return	array
 	 */
-	function bookacti_get_mixed_template_data( $template_ids ) {
+	function bookacti_get_mixed_template_data( $template_ids, $past_events = false ) {
 		
 		$templates_data = bookacti_fetch_templates( $template_ids, true );
 		
@@ -162,10 +163,20 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			);
 		}
 		
+		// Limit the template range to future events
+		if( ! $past_events ) {
+			$timezone			= new DateTimeZone( bookacti_get_setting_value( 'bookacti_general_settings', 'timezone' ) );
+			$current_time		= new DateTime( 'now', $timezone );
+			$template_start		= new DateTime( $mixed_data[ 'start' ], $timezone );
+			if( $template_start < $current_time ) {
+				$mixed_data[ 'start' ] = $current_time->format( 'Y-m-d' );
+			}
+		}
+		
 		// Add mixed settings
 		$mixed_data[ 'settings' ] = $mixed_settings;
 		
-		return apply_filters( 'bookacti_mixed_template_settings', $mixed_data, $templates_data, $template_ids );
+		return apply_filters( 'bookacti_mixed_template_settings', $mixed_data, $templates_data, $template_ids, $past_events );
 	}
 
 

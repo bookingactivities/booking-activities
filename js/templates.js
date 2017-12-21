@@ -185,7 +185,7 @@ function bookacti_load_template_calendar() {
 			// Add availability div
 			if( typeof event_data !== 'undefined' && event_data.availability ) {
 				var availability = parseInt( event_data.availability );
-				event.bookings = bookacti_get_event_number_of_bookings( event, 'bookacti-template-calendar' );
+				event.bookings = bookacti_get_event_number_of_bookings( $j( '#bookacti-template-calendar' ), event );
 				if( event.bookings != null ) {
 					var class_no_availability = '', class_booked = '', class_full = '';
 

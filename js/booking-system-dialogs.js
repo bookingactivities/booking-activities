@@ -72,7 +72,7 @@ function bookacti_dialog_choose_group_of_events( booking_system, group_ids, even
 		// Show availability or bookings
 		var avail_html = '';
 		if( context === 'booking_page' ) {
-			var bookings = bookacti_get_bookings_number_for_a_single_grouped_event( event, group_ids, bookacti.booking_system[ booking_system_id ][ 'groups_events' ] );
+			var bookings = bookacti_get_bookings_number_for_a_single_grouped_event( booking_system, event, group_ids );
 			var booking_html = bookings > 1 ? bookacti_localized.bookings : bookacti_localized.booking;
 			avail_html = bookings + ' ' + booking_html;
 		} else {

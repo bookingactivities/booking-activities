@@ -316,6 +316,7 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 * Fix - Bookings could be still pending after an WC order failed
 * Fix - Bookings status were not up to date in WooCommerce's notifications
 * Fix - Events didn't appear when "repeat to" value was set to tomorrow
+* Fix - Custom messages were not translated on multilangual sites
 * Lib - Updated FullCalendar to 3.7.0 and Moment JS to 2.19.2
 
 = 1.2.1 - 2017/11/17 =

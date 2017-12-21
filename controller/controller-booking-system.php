@@ -38,6 +38,8 @@ function bookacti_controller_fetch_events() {
 		
 		if( $attributes[ 'groups_only' ] ) {
 			$events	= bookacti_fetch_grouped_events( $attributes[ 'calendars' ], $attributes[ 'activities' ], array(), $attributes[ 'group_categories' ], $attributes[ 'past_events' ], $events_interval );
+		} else if( $attributes[ 'id' ] === 'bookacti-booking-system-bookings-page' ) {
+			$events = bookacti_fetch_booked_events( $attributes[ 'calendars' ], $attributes[ 'activities' ], array(), $attributes[ 'past_events' ], $events_interval );
 		} else {
 			$events	= bookacti_fetch_events( $attributes[ 'calendars' ], $attributes[ 'activities' ], $attributes[ 'past_events' ], $events_interval );	
 		}
@@ -92,7 +94,7 @@ function bookacti_controller_reload_booking_system() {
 		$html_elements = bookacti_get_booking_method_html( $attributes[ 'method' ], $attributes );
 		
 		// Gets calendar content: events, activities and groups
-		$template_data		= bookacti_get_mixed_template_data( $attributes[ 'calendars' ] );
+		$template_data		= bookacti_get_mixed_template_data( $attributes[ 'calendars' ], $attributes[ 'past_events' ] );
 		$events_interval	= bookacti_get_new_interval_of_events( $template_data, array(), false, $attributes[ 'past_events' ] );
 		$activities_data	= bookacti_get_activities_by_template( $attributes[ 'calendars' ], true );
 		$exceptions			= bookacti_get_exceptions( $attributes[ 'calendars' ] );
@@ -100,6 +102,8 @@ function bookacti_controller_reload_booking_system() {
 		
 		if( $attributes[ 'groups_only' ] ) {
 			$events	= bookacti_fetch_grouped_events( $attributes[ 'calendars' ], $attributes[ 'activities' ], array(), $attributes[ 'group_categories' ], $attributes[ 'past_events' ], $events_interval );
+		} else if( $attributes[ 'id' ] === 'bookacti-booking-system-bookings-page' ) {
+			$events = bookacti_fetch_booked_events( $attributes[ 'calendars' ], $attributes[ 'activities' ], array(), $attributes[ 'past_events' ], $events_interval );
 		} else {
 			$events	= bookacti_fetch_events( $attributes[ 'calendars' ], $attributes[ 'activities' ], $attributes[ 'past_events' ], $events_interval );	
 		}
@@ -138,90 +142,6 @@ function bookacti_controller_reload_booking_system() {
 }
 add_action( 'wp_ajax_bookactiReloadBookingSystem', 'bookacti_controller_reload_booking_system' );
 add_action( 'wp_ajax_nopriv_bookactiReloadBookingSystem', 'bookacti_controller_reload_booking_system' );
-
-
-/**
- * Retrieve HTML elements of the desired booking method
- * 
- * @since 1.1.0
- */
-function bookacti_controller_switch_booking_method() {
-	
-	// Check nonce and if the booking system has been initialized correctly
-	$is_nonce_valid	= check_ajax_referer( 'bookacti_switch_booking_method', 'nonce', false );
-	
-	if( $is_nonce_valid ) {
-		
-		$method		= sanitize_title_with_dashes( $_POST[ 'method' ] );
-		$attributes	= bookacti_format_booking_system_attributes( json_decode( stripslashes( $_POST[ 'attributes' ] ), true ) );
-		
-		// Get HTML elements used by the booking method
-		$available_booking_methods = bookacti_get_available_booking_methods();
-		if( $method === 'calendar' || ! in_array( $method, array_keys( $available_booking_methods ), true ) ) {
-			$html_elements = bookacti_retrieve_calendar_elements( $attributes );
-		} else {
-			$html_elements = apply_filters( 'bookacti_get_booking_method_html_elements', '', $method, $attributes );
-		}
-		
-		wp_send_json( array( 
-			'status'		=> 'success', 
-			'html_elements'	=> $html_elements
-		) );
-		
-	} else {
-		wp_send_json( array( 'status' => 'failed', 'error' => 'not_allowed' ) );
-	}
-}
-add_action( 'wp_ajax_bookactiSwitchBookingMethod', 'bookacti_controller_switch_booking_method' );
-add_action( 'wp_ajax_nopriv_bookactiSwitchBookingMethod', 'bookacti_controller_switch_booking_method' );
-
-
-/**
- * Get booking system data
- * 
- * @version 1.2.2
- */
-function bookacti_controller_get_booking_system_data() {
-
-	$is_admin		= intval( $_POST[ 'is_admin' ] );
-	$template_ids	= bookacti_ids_to_array( $_POST[ 'template_ids' ] );
-	
-	// Check nonce
-	$is_nonce_valid = check_ajax_referer( 'bookacti_get_booking_system_data', 'nonce', false );
-	
-	// On admin side, check capabilities
-	$is_allowed = true;
-	if( $is_nonce_valid && $is_admin && ! is_super_admin() ) {		
-		$bypass_template_managers_check = apply_filters( 'bookacti_bypass_template_managers_check', false );
-		if( ! $bypass_template_managers_check ){
-			// Remove templates current user is not allowed to manage
-			foreach( $template_ids as $i => $template_id ){
-				if( ! bookacti_user_can_manage_template( $template_id ) ) {
-					unset( $template_ids[ $i ] );
-				}
-			}
-			// If none remains, disallow the action
-			if( empty( $template_ids ) ) { $is_allowed = false; }
-		}
-	}
-	
-	if( $is_nonce_valid && $is_allowed ) {
-		$template_data = array();
-		if( count( $template_ids ) > 0 ) {
-			$template_data = bookacti_get_mixed_template_data( $template_ids );
-		}
-		
-		if( $template_data ) {
-			wp_send_json( array( 'status' => 'success', 'template_data' => $template_data ) );
-		} else {
-			wp_send_json( array( 'status' => 'failed' ) );
-		}
-	} else {
-		wp_send_json( array( 'status' => 'failed', 'error' => 'not_allowed' ) );
-	}
-}
-add_action( 'wp_ajax_bookactiGetBookingSystemData', 'bookacti_controller_get_booking_system_data' );
-add_action( 'wp_ajax_nopriv_bookactiGetBookingSystemData', 'bookacti_controller_get_booking_system_data' );
 
 
 /**

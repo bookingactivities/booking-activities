@@ -326,6 +326,124 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	
 	
 	/**
+	 * Fetch booked events only
+	 * 
+	 * @since 1.2.2
+	 * @global wpdb $wpdb
+	 * @param array $templates
+	 * @param array $activities
+	 * @param array $booking_status
+	 * @param boolean $past_events
+	 * @param array $interval array('start' => string: start date, 'end' => string: end date)
+	 * @return array
+	 */
+	function bookacti_fetch_booked_events( $templates = array(), $activities = array(), $booking_status = array(), $past_events = false, $interval = array() ) {
+		
+		global $wpdb;
+		
+		// Set current datetime
+		$timezone					= new DateTimeZone( bookacti_get_setting_value( 'bookacti_general_settings', 'timezone' ) );
+		$current_datetime_object	= new DateTime( 'now', $timezone );
+		$user_timestamp				= $current_datetime_object->format( 'U' );
+		$user_timestamp_offset		= $current_datetime_object->format( 'P' );
+		
+		$fetch_inactive_bookings	= bookacti_get_setting_value_by_user( 'bookacti_bookings_settings', 'show_inactive_bookings' );
+		$fetch_temporary_bookings	= bookacti_get_setting_value_by_user( 'bookacti_bookings_settings', 'show_temporary_bookings' );
+		
+		$variables					= array();
+		
+		// Prepare the query
+		$query  = 'SELECT DISTINCT B.event_id, E.template_id, E.title, B.event_start as start, B.event_end as end, "none" as repeat_freq, E.repeat_from, E.repeat_to, E.availability, A.color, A.id as activity_id, 0 as is_resizable '
+				. ' FROM ' . BOOKACTI_TABLE_BOOKINGS . ' as B, ' . BOOKACTI_TABLE_ACTIVITIES . ' as A, ' . BOOKACTI_TABLE_TEMPLATES . ' as T, ' . BOOKACTI_TABLE_EVENTS . ' as E '
+				. ' WHERE B.event_id = E.id '
+				. ' AND E.activity_id = A.id '
+				. ' AND E.template_id = T.id ';
+		
+		if( ! $fetch_inactive_bookings ) {
+			$query  .= ' AND B.active = 1';
+		}
+		
+		// Get events from desired templates only
+		if( $templates ) {
+			$query  .= ' AND E.template_id IN ( %d';
+			for( $i=1,$len=count($templates); $i < $len; ++$i ) {
+				$query  .= ', %d';
+			}
+			$query  .= ' ) ';
+			$variables = array_merge( $variables, $templates );
+		}
+		
+		// Get events from desired activities only
+		if( $activities ) {
+			$query  .= ' AND A.id IN ( %d';
+			for( $i=1,$len=count($activities); $i < $len; ++$i ) {
+				$query  .= ', %d';
+			}
+			$query  .= ' ) ';
+			$variables = array_merge( $variables, $activities );
+		}
+		
+		// Whether to fetch temporary bookings
+		if( ! $fetch_temporary_bookings ) { 
+			$key = array_search( 'in_cart', $booking_status );
+			if( $key !== false ) { unset( $booking_status[ $key ] ); }
+			else {
+				$query .= ' AND B.state != "in_cart" ';
+			}
+		}
+		
+		// Fetch events from desired booking status only
+		if( $booking_status ) {
+			// Get the event only if it belongs to a group of the allowed categories
+			$query .= ' AND B.state IN ( %s';
+			for( $i=1, $len=count($booking_status); $i < $len; ++$i ) {
+				$query .= ', %s';
+			}
+			$query .= ' ) ';
+			$variables = array_merge( $variables, $booking_status );
+		}
+		
+		// Do not fetch events out of the desired interval
+		if( $interval ) {
+			$query .= ' AND (	UNIX_TIMESTAMP( CONVERT_TZ( B.event_start, %s, @@global.time_zone ) ) >= 
+								UNIX_TIMESTAMP( CONVERT_TZ( %s, %s, @@global.time_zone ) ) 
+								AND 
+								UNIX_TIMESTAMP( CONVERT_TZ( B.event_end, %s, @@global.time_zone ) ) <= 
+								UNIX_TIMESTAMP( CONVERT_TZ( ( %s + INTERVAL 24 HOUR ), %s, @@global.time_zone ) ) 
+							)';
+			
+			$variables[] = $user_timestamp_offset;
+			$variables[] = $interval[ 'start' ];
+			$variables[] = $user_timestamp_offset;
+			$variables[] = $user_timestamp_offset;
+			$variables[] = $interval[ 'end' ];
+			$variables[] = $user_timestamp_offset;
+		}
+
+		// Whether to fetch past events
+		if( ! $past_events ) {
+			$query .= ' AND ( UNIX_TIMESTAMP( CONVERT_TZ( B.event_start, %s, @@global.time_zone ) ) >= %d ) ';
+			
+			$variables[] = $user_timestamp_offset;
+			$variables[] = $user_timestamp;
+		}
+		
+		$query  .= ' ORDER BY B.event_start ASC ';
+		
+		// Safely apply variables to the query
+		$prep_query = $wpdb->prepare( $query, $variables );
+		
+		// Get events complying with parameters
+		$events = $wpdb->get_results( $prep_query, OBJECT );
+
+		// Transform raw events from database to array of individual events
+		$events_array = bookacti_get_events_array_from_db_events( $events, $past_events, $interval );
+
+		return $events_array;
+	}
+	
+	
+	/**
 	 * Get event by id
 	 * 
 	 * @version 1.2.2 
@@ -1195,7 +1313,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	 * Get the mixed range (start and end dates) of a group of template
 	 *
 	 * @since  1.0.6
-	 * @version  1.1.0
+	 * @version  1.2.2
 	 * @param  array $template_ids Array of template ids
 	 * @return array (start, end)
 	 */
@@ -1211,25 +1329,25 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		
 		global $wpdb;
 		
-		$range_query	= 'SELECT MIN( start_date ) as start, MAX( end_date ) as end FROM ' . BOOKACTI_TABLE_TEMPLATES;
-		$range_prepare	= $range_query;
+		$range_query = 'SELECT MIN( start_date ) as start, MAX( end_date ) as end '
+					 . ' FROM ' . BOOKACTI_TABLE_TEMPLATES
+					 . ' WHERE active = 1 ';
+		
+		$variables = array();
 		
 		// If templates ids were given, search only in those templates
-		if( ! empty( $template_ids ) ) {
-			$range_query	.= ' WHERE id IN ( %d';
-
-			if( count( $template_ids ) >= 2 )  {
-				for( $i = 0; $i < count( $template_ids ) - 1; $i++ ) {
-					$range_query  .= ', %d';
-				}
+		if( $template_ids ) {
+			$range_query .= ' AND id IN ( %d';
+			for( $i=1, $len=count($template_ids); $i < $len; ++$i ) {
+				$range_query  .= ', %d';
 			}
-
-			$range_query	.= ')';
+			$range_query .= ')';
 			
-			$range_prepare	= $wpdb->prepare( $range_query, $template_ids );
+			$variables = $template_ids;
 		}
 		
-		$range			= $wpdb->get_row( $range_prepare, ARRAY_A );
+		$range_prepare = $wpdb->prepare( $range_query, $template_ids );
+		$range = $wpdb->get_row( $range_prepare, ARRAY_A );
 		
 		return $range;
 	}

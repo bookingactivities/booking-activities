@@ -514,7 +514,7 @@ function bookacti_dialog_update_event( event ) {
 	var event_data		= bookacti.booking_system[ 'bookacti-template-calendar' ][ 'events_data' ][ event.id ];
 	var event_bookings	= bookacti.booking_system[ 'bookacti-template-calendar' ][ 'bookings' ][ event.id ];
 	var event_exceptions= bookacti.booking_system[ 'bookacti-template-calendar' ][ 'exceptions' ][ event.id ];
-	var bookings_number	= bookacti_get_event_number_of_bookings( event, 'bookacti-template-calendar' );
+	var bookings_number	= bookacti_get_event_number_of_bookings( $j( '#bookacti-template-calendar' ), event );
 
 	var template_start  = bookacti.booking_system[ 'bookacti-template-calendar' ][ 'template_data' ][ 'start' ];
 	var template_end    = bookacti.booking_system[ 'bookacti-template-calendar' ][ 'template_data' ][ 'end' ];

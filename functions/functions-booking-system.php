@@ -35,13 +35,15 @@ function bookacti_get_booking_system( $atts, $echo = false ) {
 			$when_events_load = bookacti_get_setting_value( 'bookacti_general_settings', 'when_events_load' ); 
 			if( $when_events_load === 'on_page_load' && $atts[ 'auto_load' ] ) { 
 				
-				$templates_data		= bookacti_get_mixed_template_data( $atts[ 'calendars' ] );
+				$templates_data		= bookacti_get_mixed_template_data( $atts[ 'calendars' ], $atts[ 'past_events' ] );
 				$events_interval	= bookacti_get_new_interval_of_events( $templates_data );
 				
 				if( $atts[ 'groups_only' ] ) {
 					$events			= bookacti_fetch_grouped_events( $atts[ 'calendars' ], $atts[ 'activities' ], array(), $atts[ 'group_categories' ], $atts[ 'past_events' ], $events_interval );
+				} else if( $atts[ 'id' ] === 'bookacti-booking-system-bookings-page' ) {
+					$events			= bookacti_fetch_booked_events( $atts[ 'calendars' ], $atts[ 'activities' ],  array(), $atts[ 'past_events' ], $events_interval );
 				} else {
-					$events			= bookacti_fetch_events( $atts[ 'calendars' ], $atts[ 'activities' ], $atts[ 'past_events' ], $events_interval );	
+					$events			= bookacti_fetch_events( $atts[ 'calendars' ], $atts[ 'activities' ], $atts[ 'past_events' ], $events_interval );
 				}
 				
 				$groups_events = array();
@@ -213,8 +215,7 @@ function bookacti_format_booking_system_attributes( $atts = array(), $shortcode 
 		'url'					=> '',
 		'button'				=> bookacti_get_message( 'booking_form_submit_button' ),
 		'auto_load'				=> 1,
-		'past_events'			=> 0,
-		'context'				=> 'frontend'
+		'past_events'			=> 0
     ) );
 	
 	// Replace empty mandatory values by default
@@ -356,9 +357,6 @@ function bookacti_format_booking_system_attributes( $atts = array(), $shortcode 
 	
 	// Sanitize submit button label
 	$atts[ 'button' ] = esc_html( sanitize_text_field( $atts[ 'button' ] ) );
-	
-	// Make sure context is valid
-	$atts[ 'context' ] = in_array( $atts[ 'context' ], array( 'frontend', 'editor', 'booking_page' ), true ) ? $atts[ 'context' ] : 'frontend';
 	
 	
 	return apply_filters( 'bookacti_formatted_booking_system_attributes', $atts, $shortcode );

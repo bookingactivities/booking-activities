@@ -97,11 +97,10 @@ function bookacti_select_bookings_filter( e, booking_system, selected_filter ) {
 
 // Filter bookings by template
 function bookacti_filter_bookings_by_templates( booking_system ) {
-		
+	
 	var booking_system_id	= booking_system.attr( 'id' );
-	var attributes			= bookacti.booking_system[ booking_system_id ];
-	var booking_method		= attributes.method;
-		
+	var calendar			= booking_system.find( '.bookacti-calendar' );
+	
 	// Retrieve the selected templates
 	var selected_templates	= [];
 	$j( '.bookacti-bookings-filter-template[selected]' ).each( function(){
@@ -135,31 +134,32 @@ function bookacti_filter_bookings_by_templates( booking_system ) {
 				
 				if( response.status === 'success' ) {
 					
-					// Replace activities filters HTML
-					$j( '#bookacti-activities-filter-content' ).html( response.activities_html );
-					bookacti_filter_bookings_by_activities( booking_system );
+					// Update booking system settings
+					bookacti_update_calendar_settings( calendar, response.template_data );
+					
+					// Remove all events on calendar
+					calendar.fullCalendar( 'gotoDate', moment() );
+					bookacti_booking_method_clear_events( booking_system );
 					
 					// Update calendar data
+					bookacti.booking_system[ booking_system_id ][ 'events' ]				= response.events;
 					bookacti.booking_system[ booking_system_id ][ 'calendars' ]				= response.calendar_ids;
 					bookacti.booking_system[ booking_system_id ][ 'activities' ]			= response.activity_ids;
 					bookacti.booking_system[ booking_system_id ][ 'group_categories' ]		= response.group_categories;
 					bookacti.booking_system[ booking_system_id ][ 'template_data' ]			= response.template_data;
-					
-					// Update calendar content data
-					bookacti.booking_system[ booking_system_id ][ 'events' ]				= response.events;
 					bookacti.booking_system[ booking_system_id ][ 'events_data' ]			= response.events_data;
+					bookacti.booking_system[ booking_system_id ][ 'events_interval' ]		= response.events_interval;
 					bookacti.booking_system[ booking_system_id ][ 'activities_data' ]		= response.activities_data;
 					bookacti.booking_system[ booking_system_id ][ 'groups_events' ]			= response.groups_events;
 					bookacti.booking_system[ booking_system_id ][ 'groups_data' ]			= response.groups_data;
 					bookacti.booking_system[ booking_system_id ][ 'group_categories_data' ]	= response.group_categories_data;
+					bookacti.booking_system[ booking_system_id ][ 'bookings' ]				= response.bookings;
 					
-					// Update booking system settings
-					bookacti_booking_method_update_template_data( booking_system, booking_method );
-					
-					// Fill the calendar with events
-					bookacti_booking_method_fill_with_events( booking_system, booking_method );
+					// Fill the calendar with new events
+					bookacti_display_events_on_calendar( booking_system, response.events );
 				
 					// Filter by activities
+					$j( '#bookacti-activities-filter-content' ).html( response.activities_html );
 					bookacti_filter_bookings_by_activities( booking_system );
 					
 				} else if( response.status === 'failed' ) {
@@ -201,8 +201,7 @@ function bookacti_filter_bookings_by_activities( booking_system ) {
 		bookacti.hidden_activities.splice( idx, 1 );
 	});
 	
-	var booking_method = bookacti.booking_system[ booking_system.attr( 'id' ) ][ 'method' ];
-	bookacti_booking_method_rerender_events( booking_system, booking_method );
+	booking_system.find( '.bookacti-calendar' ).fullCalendar( 'rerenderEvents' );
 }
 
 

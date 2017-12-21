@@ -68,20 +68,24 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			$activities_html = bookacti_get_activities_html_for_booking_page( $template_ids );
 			
 			// Get calendar settings
-			$template_data		= bookacti_get_mixed_template_data( $template_ids );
+			$template_data		= bookacti_get_mixed_template_data( $template_ids, true );
 			$activity_ids		= bookacti_get_activity_ids_by_template( $template_ids, false );
 			$group_categories	= bookacti_get_group_category_ids_by_template( $template_ids );
 			
-			$events				= bookacti_fetch_events( $template_ids, array(), true );
+			$events_interval	= bookacti_get_new_interval_of_events( $template_data, array(), false, true );
+			$events				= bookacti_fetch_booked_events( $template_ids, array(), array(), true, $events_interval );
 			$activities_data	= bookacti_get_activities_by_template( $template_ids, true );
 			$groups_events		= bookacti_get_groups_events( $template_ids, $group_categories, array(), true );
 			$groups_data		= bookacti_get_groups_of_events_by_template( $template_ids );
 			$categories_data	= bookacti_get_group_categories_by_template( $template_ids );
+			$bookings			= bookacti_get_number_of_bookings_by_events( $template_ids );
 			
 			wp_send_json( array( 
 				'status'				=> 'success', 
 				'activities_html'		=> $activities_html, 
-				'events'				=> $events, 
+				'events'				=> $events[ 'events' ] ? $events[ 'events' ] : array(), 
+				'events_data'			=> $events[ 'data' ] ? $events[ 'data' ] : array(), 
+				'events_interval'		=> $events_interval,
 				'activities_data'		=> $activities_data, 
 				'groups_events'			=> $groups_events,
 				'groups_data'			=> $groups_data,
@@ -89,7 +93,8 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 				'activity_ids'			=> $activity_ids,
 				'group_categories'		=> $group_categories,
 				'group_categories_data'	=> $categories_data,
-				'template_data'			=> $template_data
+				'template_data'			=> $template_data,
+				'bookings'				=> $bookings
 			) );
 		} else {
 			wp_send_json( array( 'status' => 'failed', 'error' => 'not_allowed' ) );
