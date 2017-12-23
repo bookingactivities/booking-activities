@@ -623,8 +623,6 @@ function bookacti_fetch_events_on_template( event_id, interval ) {
 		interval = bookacti_get_new_interval_of_events( $j( '#bookacti-template-calendar' ), current_view );
 	}
 	
-	console.log( 'interval to load', interval );
-	
 	// Update events interval before success to prevent to fetch the same interval twice
 	bookacti.booking_system[ 'bookacti-template-calendar' ][ 'events_interval' ] = bookacti_get_extended_events_interval( $j( '#bookacti-template-calendar' ), interval );
 	
@@ -642,8 +640,6 @@ function bookacti_fetch_events_on_template( event_id, interval ) {
         success: function( response ){
 			if( response.status === 'success' ) {
 				
-				var now = new Date().getTime();
-				
 				// Extend or replace the events data array if it was empty
 				if( $j.isEmptyObject( bookacti.booking_system[ 'bookacti-template-calendar' ][ 'events_data' ] ) ) {
 					bookacti.booking_system[ 'bookacti-template-calendar' ][ 'events_data' ] = response.events_data;
@@ -651,13 +647,8 @@ function bookacti_fetch_events_on_template( event_id, interval ) {
 					$j.extend( bookacti.booking_system[ 'bookacti-template-calendar' ][ 'events_data' ], response.events_data );
 				}
 				
-				console.log( 'total interval loaded', bookacti.booking_system[ 'bookacti-template-calendar' ][ 'events_interval' ] );
-				
 				// Load new events on calendar
 				$j( '#bookacti-template-calendar' ).fullCalendar( 'addEventSource', response.events );
-				
-				var then = new Date().getTime();
-				console.log( 'Loading time: ', then - now );
 				
 			} else if( response.error === 'not_allowed' ) {
 				

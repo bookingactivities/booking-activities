@@ -34,9 +34,9 @@ function bookacti_init_settings() {
 	);
 	
 	add_settings_field(  
-		'event_loading_window', 
+		'event_load_interval', 
 		__( 'Load events every', BOOKACTI_PLUGIN_NAME ), 
-		'bookacti_settings_field_event_loading_window_callback', 
+		'bookacti_settings_field_event_load_interval_callback', 
 		'bookacti_general_settings', 
 		'bookacti_settings_section_general'
 	);

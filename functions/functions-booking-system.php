@@ -645,7 +645,7 @@ function bookacti_get_new_interval_of_events( $template_interval, $min_interval 
 		}
 	}
 	
-	$interval_duration	= $interval_duration ? intval( $interval_duration ) : intval( bookacti_get_setting_value( 'bookacti_general_settings', 'event_loading_window' ) );
+	$interval_duration	= $interval_duration ? intval( $interval_duration ) : intval( bookacti_get_setting_value( 'bookacti_general_settings', 'event_load_interval' ) );
 	
 	$interval_start		= new DateTime( $min_interval[ 'start' ] . ' 00:00:00', $timezone );
 	$interval_end		= new DateTime( $min_interval[ 'end' ] . ' 23:59:59', $timezone );

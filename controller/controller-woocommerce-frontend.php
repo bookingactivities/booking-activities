@@ -22,12 +22,14 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		$translation_array[ 'days' ]							= esc_html__( 'days', BOOKACTI_PLUGIN_NAME );
 		$translation_array[ 'day' ]								= esc_html_x( 'day', 'singular of days',BOOKACTI_PLUGIN_NAME );
 		$translation_array[ 'error_remove_expired_cart_item' ]	= esc_html__(  'Error occurs while trying to remove expired cart item.', BOOKACTI_PLUGIN_NAME );
-		$translation_array[ 'error_cart_expired' ]				= __( 'Your cart has expired.', BOOKACTI_PLUGIN_NAME );
-		$translation_array[ 'coupon_code' ]						= __( 'Coupon', BOOKACTI_PLUGIN_NAME );
+		$translation_array[ 'error_cart_expired' ]				= esc_html__( 'Your cart has expired.', BOOKACTI_PLUGIN_NAME );
+		$translation_array[ 'coupon_code' ]						= esc_html__( 'Coupon', BOOKACTI_PLUGIN_NAME );
 		/* translators: %1$s is the coupon code. Ex: AAB12. */
-		$translation_array[ 'advice_coupon_code' ]				= __( 'The coupon code is %1$s. Use it on your next cart!', BOOKACTI_PLUGIN_NAME );
+		$translation_array[ 'advice_coupon_code' ]				= esc_html__( 'The coupon code is %1$s. Use it on your next cart!', BOOKACTI_PLUGIN_NAME );
 		/* translators: %1$s is the amount of the coupon. Ex: $10. */
-		$translation_array[ 'advice_coupon_created' ]			= __( 'A %1$s coupon has been created. You can use it once for any order at any time.', BOOKACTI_PLUGIN_NAME );
+		$translation_array[ 'advice_coupon_created' ]			= esc_html__( 'A %1$s coupon has been created. You can use it once for any order at any time.', BOOKACTI_PLUGIN_NAME );
+		$translation_array[ 'add_product_to_cart_button_text' ]	= esc_html__( 'Add to cart', 'woocommerce' );
+		$translation_array[ 'add_booking_to_cart_button_text' ]	= bookacti_get_message( 'booking_form_submit_button' );
 		$translation_array[ 'site_booking_method' ]				= $site_booking_method;
 		
 		return $translation_array;
@@ -152,7 +154,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	
 
 // ADD TO CART (SINGLE PRODUCT PAGE)
-
+	
 	/**
 	 * Add fields to single product page (front-end)
 	 * 

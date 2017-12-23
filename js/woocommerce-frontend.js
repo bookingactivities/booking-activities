@@ -66,7 +66,11 @@ $j( document ).ready( function() {
 
 					// Change the booking system if a variation is selected
 					booking_system.parents( '.variations_form' ).find( '.single_variation_wrap' ).on( 'show_variation', function( event, variation ) { 
+						// Switch booking system
 						bookacti_switch_booking_system_according_to_variation( booking_system, variation );
+						// Change Add to cart button label
+						var new_button_text = variation[ 'bookacti_is_activity' ] ? bookacti_localized.add_booking_to_cart_button_text : bookacti_localized.add_product_to_cart_button_text;
+						booking_system.parents( '.variations_form' ).find( '.single_add_to_cart_button' ).text( new_button_text );
 					});
 				}
 			});

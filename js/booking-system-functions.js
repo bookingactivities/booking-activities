@@ -5,9 +5,7 @@ function bookacti_fetch_events( booking_system, interval ) {
 	var attributes			= bookacti.booking_system[ booking_system_id ];
 	
 	interval = interval || attributes[ 'events_interval' ];
-	
-	console.log( 'interval to load', interval );
-	
+
 	// Update events interval before success to prevent to fetch the same interval twice
 	bookacti.booking_system[ booking_system_id ][ 'events_interval' ] = bookacti_get_extended_events_interval( booking_system, interval );
 	
@@ -28,8 +26,6 @@ function bookacti_fetch_events( booking_system, interval ) {
 			
 			if( response.status === 'success' ) {
 				
-				var now = new Date().getTime();
-				
 				// Extend or replace the events array if it was empty
 				if( $j.isEmptyObject( bookacti.booking_system[ booking_system_id ][ 'events' ] ) ) {
 					bookacti.booking_system[ booking_system_id ][ 'events' ] = response.events;
@@ -44,15 +40,10 @@ function bookacti_fetch_events( booking_system, interval ) {
 					$j.extend( bookacti.booking_system[ booking_system_id ][ 'events_data' ], response.events_data );
 				}
 				
-				console.log( 'total interval loaded', bookacti.booking_system[ booking_system_id ][ 'events_interval' ] );
-				
 				// Display new events
 				if( response.events.length ) {
 					bookacti_booking_method_display_events( booking_system, response.events );
 				}
-				
-				var then = new Date().getTime();
-				console.log( 'Loading time: ', then - now );
 				
 			} else {
 				var error_message = bookacti_localized.error_display_event;
@@ -112,7 +103,6 @@ function bookacti_reload_booking_system( booking_system ) {
 				bookacti.booking_system[ booking_system_id ][ 'group_categories_data' ]	= response.group_categories_data;
 				bookacti.booking_system[ booking_system_id ][ 'template_data' ]			= response.template_data;
 				
-				console.log( 'total interval loaded', response.events_interval );
 				// Fill the booking method elements
 				booking_system.append( response.html_elements );
 				
@@ -210,15 +200,15 @@ function bookacti_fetch_events_from_interval( booking_system, desired_interval )
 	var current_interval	= bookacti.booking_system[ booking_system_id ][ 'events_interval' ];
 	var settings			= bookacti.booking_system[ booking_system_id ][ 'template_data' ];
 	
-	var calendar_start	= moment.utc( settings.start );
-	var calendar_end	= moment.utc( settings.end );
+	var calendar_start		= moment.utc( settings.start );
+	var calendar_end		= moment.utc( settings.end );
 
 	var desired_interval_start	= desired_interval.start.isBefore( calendar_start ) ? calendar_start.clone() : desired_interval.start.clone();
 	var desired_interval_end	= desired_interval.end.isAfter( calendar_end ) ? calendar_end.clone() : desired_interval.end.clone();
 	
-	var new_interval	= false;
-	var event_window	= parseInt( bookacti_localized.event_loading_window );
-	var min_interval	= {
+	var new_interval		= false;
+	var event_load_interval	= parseInt( bookacti_localized.event_load_interval );
+	var min_interval		= {
 		'start' : desired_interval_start.clone(),
 		'end' : desired_interval_end.clone()
 	};
@@ -226,7 +216,7 @@ function bookacti_fetch_events_from_interval( booking_system, desired_interval )
 	// Compute the new interval of events to load
 	// If no events has ever been loaded, compute the first interval to load
 	if( $j.isEmptyObject( current_interval ) ) { 
-		new_interval = bookacti_get_new_interval_of_events( booking_system, min_interval, event_window );
+		new_interval = bookacti_get_new_interval_of_events( booking_system, min_interval, event_load_interval );
 	} 
 
 	// Else, check if the desired_interval contain unloaded days, and if so, load events for this new interval
@@ -250,19 +240,18 @@ function bookacti_fetch_events_from_interval( booking_system, desired_interval )
 				||  ( desired_interval_start.isAfter( current_interval_end ) ) )
 				&&	! day_before_desired_interval_start.isSame( current_interval_end )
 				&&	! day_after_desired_interval_end.isSame( current_interval_start ) ){
-				console.log( 'clear' );
+
 				// Remove events
 				bookacti_booking_method_clear_events( booking_system );
 
 				// Compute new interval
-				new_interval = bookacti_get_new_interval_of_events( booking_system, min_interval, event_window );
+				new_interval = bookacti_get_new_interval_of_events( booking_system, min_interval, event_load_interval );
 			}
 
 			else {
 				// If the desired interval starts before current interval of events, loads previous bunch of events
 				if( desired_interval_start.isBefore( current_interval_start ) || day_after_desired_interval_end.isSame( current_interval_start ) ) {
-					console.log( 'previous' );
-					new_interval_start.subtract( event_window, 'days' );
+					new_interval_start.subtract( event_load_interval, 'days' );
 					if( desired_interval_start.isBefore( new_interval_start ) ) {
 						new_interval_start = desired_interval_start.clone();
 					}
@@ -274,8 +263,7 @@ function bookacti_fetch_events_from_interval( booking_system, desired_interval )
 
 				// If the desired interval ends after current interval of events, loads next bunch of events
 				else if( desired_interval_end.isAfter( current_interval_end ) || day_before_desired_interval_start.isSame( current_interval_end ) ) {
-					console.log( 'next' );
-					new_interval_end.add( event_window, 'days' );
+					new_interval_end.add( event_load_interval, 'days' );
 					if( desired_interval_end.isAfter( new_interval_end ) ) {
 						new_interval_end = desired_interval_end.clone();
 					}
@@ -331,7 +319,7 @@ function bookacti_get_new_interval_of_events( booking_system, min_interval, inte
 		}
 	}
 	
-	interval_duration	= parseInt( interval_duration ) || parseInt( bookacti_localized.event_loading_window );
+	interval_duration	= parseInt( interval_duration ) || parseInt( bookacti_localized.event_load_interval );
 	
 	var interval_start	= moment( min_interval.start );
 	var interval_end	= moment( min_interval.end ).add( 1, 'days' );
