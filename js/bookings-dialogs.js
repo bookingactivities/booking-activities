@@ -605,20 +605,20 @@ function bookacti_dialog_reschedule_booking( booking_id ) {
 				
 				// init var
 				var booking_system_id	= booking_system.attr( 'id' );
-				var template_id			= response.template_id;
-				var activity_id			= response.activity_id;
-				booking_quantity		= response.quantity;
+				var template_id			= response.booking_data.template_id;
+				var activity_id			= response.booking_data.activity_id;
+				booking_quantity		= response.booking_data.quantity;
 				
 				// Replace global data
 				bookacti.booking_system[ booking_system_id ][ 'calendars' ]		= template_id ? [ template_id ] : [];
 				bookacti.booking_system[ booking_system_id ][ 'activities' ]	= activity_id ? [ activity_id ] : [];
 				
-				booking_system.trigger( 'bookacti_before_booking_system_loads', [ response.event_settings ] );
+				booking_system.trigger( 'bookacti_before_reschedule_booking_system_loads', [ response.booking_data ] );
 				
 				// Load booking system with new data
 				bookacti_reload_booking_system( booking_system );
 				
-				//Open the modal dialog
+				// Open the modal dialog
 				$j( '#bookacti-reschedule-booking-dialog' ).dialog( 'open' );
 				
 				
@@ -642,20 +642,10 @@ function bookacti_dialog_reschedule_booking( booking_id ) {
 	});
 	
 	
-	//Add the buttons
+	// Add the buttons
     $j( '#bookacti-reschedule-booking-dialog' ).dialog( 'option', 'buttons',
-		// Cancel button    
+		  // Reschedule booking button
 		[{
-            text: bookacti_localized.dialog_button_cancel,
-            
-            //On click on the OK Button, new values are send to a script that update the database
-            click: function() {
-				//Close the modal dialog
-				$j( this ).dialog( 'close' );
-            }
-        },
-		// Reschedule booking button
-		{
 			text: bookacti_localized.dialog_button_reschedule,
 			'class': 'bookacti-dialog-delete-button',
 			
@@ -695,7 +685,7 @@ function bookacti_dialog_reschedule_booking( booking_id ) {
 
 							if( response.status === 'success' ) {
 								
-								//Close the modal dialog
+								// Close the modal dialog
 								$j( '#bookacti-reschedule-booking-dialog' ).dialog( 'close' );
 
 								if( is_bookings_page ) {
@@ -726,6 +716,16 @@ function bookacti_dialog_reschedule_booking( booking_id ) {
 					});
 				}
 			}
-		}]
+		},
+		// Cancel button
+		{
+            text: bookacti_localized.dialog_button_cancel,
+            
+            // On click on the OK Button, new values are send to a script that update the database
+            click: function() {
+				//Close the modal dialog
+				$j( this ).dialog( 'close' );
+            }
+        }]
     );
 }

@@ -375,6 +375,8 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 		/**
 		 * AJAX Controller - Get booking system data by booking ID
+		 * 
+		 * @version 1.2.2
 		 */
 		function bookacti_controller_get_booking_data() {
 
@@ -387,8 +389,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 				$booking_data = bookacti_get_booking_data( $booking_id );
 
 				if( is_array( $booking_data ) && ! empty( $booking_data ) ) {
-					$booking_data[ 'status' ] = 'success';
-					wp_send_json( $booking_data );
+					wp_send_json( array( 'status' => 'success', 'booking_data' => $booking_data ) );
 				} else {
 					wp_send_json( array( 'status' => 'failed', 'error' => 'empty_data' ) );
 				}

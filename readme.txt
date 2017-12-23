@@ -5,7 +5,7 @@ Tags: booking activities, booking sport, booking form, event reservation, reserv
 Requires at least: 3.6
 Tested up to: 4.9
 Requires PHP: 5.3
-Stable tag: 1.2.1
+Stable tag: 1.2.2
 License: GPLv3 or later
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
 
@@ -317,7 +317,7 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 * Fix - Bookings status were not up to date in WooCommerce's notifications
 * Fix - Events didn't appear when "repeat to" value was set to tomorrow
 * Fix - Custom messages were not translated on multilangual sites
-* Lib - Updated FullCalendar to 3.7.0 and Moment JS to 2.19.2
+* Lib - Update FullCalendar to 3.8.0 and Moment JS to 2.20.0
 
 = 1.2.1 - 2017/11/17 =
 * Feature - Added a snap frequency option in editor to place your events at precise timeslot
