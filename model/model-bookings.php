@@ -332,7 +332,6 @@ function bookacti_get_number_of_bookings_by_events( $template_ids = array(), $ev
 	$bookings_query = 'SELECT B.event_id, B.event_start, B.event_end, SUM( B.quantity ) as quantity '
 					. ' FROM ' . BOOKACTI_TABLE_BOOKINGS . ' as B, ' . BOOKACTI_TABLE_EVENTS . ' as E '
 					. ' WHERE B.active = 1 '
-					. ' AND E.active = 1 '
 					. ' AND B.event_id = E.id ';
 	
 	$variables_array = array();

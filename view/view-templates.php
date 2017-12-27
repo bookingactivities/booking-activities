@@ -5,6 +5,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 $current_user_can_create_template	= current_user_can( 'bookacti_create_templates' );
 $current_user_can_edit_template		= current_user_can( 'bookacti_edit_templates' );
 $current_user_can_create_activities	= current_user_can( 'bookacti_create_activities' );
+$default_template = false;
 
 echo "<div class='wrap'>";
 echo "<h1>" . esc_html__( 'Calendars', BOOKACTI_PLUGIN_NAME ) . "</h1>";
@@ -84,7 +85,7 @@ echo "<h1>" . esc_html__( 'Calendars', BOOKACTI_PLUGIN_NAME ) . "</h1>";
             <?php
 			// Display list of activities
 			$activity_list = '';
-			if( isset( $default_template ) && $default_template > 0 ) {
+			if( $default_template ) {
 				$activity_list = bookacti_get_template_activities_list( $default_template ); 
 			}
 			?>

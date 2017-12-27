@@ -572,9 +572,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	 */
 	function bookacti_get_template_groups_of_events_list( $template_id ) {
 		
-		if( empty( $template_id ) ) {
-			return false;
-		}
+		if( ! $template_id ) { return false; }
 		
 		$current_user_can_edit_template	= current_user_can( 'bookacti_edit_templates' );
 		

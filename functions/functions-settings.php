@@ -144,6 +144,7 @@ function bookacti_delete_settings() {
 	delete_option( 'bookacti_cancellation_settings' );
 	delete_option( 'bookacti_general_settings' );
 	delete_option( 'bookacti_notifications_settings' );
+	delete_option( 'bookacti_messages_settings' );
 	
 	do_action( 'bookacti_delete_settings' );
 }
