@@ -22,12 +22,14 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		$translation_array[ 'days' ]							= esc_html__( 'days', BOOKACTI_PLUGIN_NAME );
 		$translation_array[ 'day' ]								= esc_html_x( 'day', 'singular of days',BOOKACTI_PLUGIN_NAME );
 		$translation_array[ 'error_remove_expired_cart_item' ]	= esc_html__(  'Error occurs while trying to remove expired cart item.', BOOKACTI_PLUGIN_NAME );
-		$translation_array[ 'error_cart_expired' ]				= __( 'Your cart has expired.', BOOKACTI_PLUGIN_NAME );
-		$translation_array[ 'coupon_code' ]						= __( 'Coupon', BOOKACTI_PLUGIN_NAME );
+		$translation_array[ 'error_cart_expired' ]				= esc_html__( 'Your cart has expired.', BOOKACTI_PLUGIN_NAME );
+		$translation_array[ 'coupon_code' ]						= esc_html__( 'Coupon', BOOKACTI_PLUGIN_NAME );
 		/* translators: %1$s is the coupon code. Ex: AAB12. */
-		$translation_array[ 'advice_coupon_code' ]				= __( 'The coupon code is %1$s. Use it on your next cart!', BOOKACTI_PLUGIN_NAME );
+		$translation_array[ 'advice_coupon_code' ]				= esc_html__( 'The coupon code is %1$s. Use it on your next cart!', BOOKACTI_PLUGIN_NAME );
 		/* translators: %1$s is the amount of the coupon. Ex: $10. */
-		$translation_array[ 'advice_coupon_created' ]			= __( 'A %1$s coupon has been created. You can use it once for any order at any time.', BOOKACTI_PLUGIN_NAME );
+		$translation_array[ 'advice_coupon_created' ]			= esc_html__( 'A %1$s coupon has been created. You can use it once for any order at any time.', BOOKACTI_PLUGIN_NAME );
+		$translation_array[ 'add_product_to_cart_button_text' ]	= esc_html__( 'Add to cart', 'woocommerce' );
+		$translation_array[ 'add_booking_to_cart_button_text' ]	= bookacti_get_message( 'booking_form_submit_button' );
 		$translation_array[ 'site_booking_method' ]				= $site_booking_method;
 		
 		return $translation_array;
@@ -152,7 +154,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	
 
 // ADD TO CART (SINGLE PRODUCT PAGE)
-
+	
 	/**
 	 * Add fields to single product page (front-end)
 	 * 
@@ -1315,13 +1317,13 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	/**
 	 * Change bookings state after user validate checkout
 	 * 
-	 * @since 1.0.0
+	 * @since 1.2.2 (was bookacti_delay_expiration_date_for_payment before)
 	 * 
 	 * @param int $order_id
 	 * @param array $order_details
 	 * @param WC_Order $order
 	 */
-	function bookacti_delay_expiration_date_for_payment( $order_id, $order_details, $order ) {
+	function bookacti_change_booking_state_after_checkout( $order_id, $order_details, $order ) {
 		
 		// Bind order and user id to the bookings and turn its state to 
 		// 'pending' for payment
@@ -1330,10 +1332,9 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		if( WC()->cart->needs_payment() ) { $state = 'pending'; $alert_admin = false; }
 		else { $state = bookacti_get_setting_value( 'bookacti_general_settings', 'default_booking_state' ); $alert_admin = true; }
 		
-		// Change state of all bookings of the order to 'pending' if a payment is required, or <user defined state> if not
-		bookacti_turn_order_bookings_to( $order_id, $state, $alert_admin );
+		bookacti_turn_order_bookings_to( $order, $state, $alert_admin, array( 'is_new_order' => true ) );
 	}
-	add_action( 'woocommerce_checkout_order_processed', 'bookacti_delay_expiration_date_for_payment', 10, 3 );
+	add_action( 'woocommerce_checkout_order_processed', 'bookacti_change_booking_state_after_checkout', 10, 3 );
 	
 	
 	

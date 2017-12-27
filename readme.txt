@@ -5,7 +5,7 @@ Tags: booking activities, booking sport, booking form, event reservation, reserv
 Requires at least: 3.6
 Tested up to: 4.9
 Requires PHP: 5.3
-Stable tag: 1.2.1
+Stable tag: 1.2.2
 License: GPLv3 or later
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
 
@@ -300,6 +300,25 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 
 
 == Changelog ==
+
+= 1.2.2 - 2017/12/27 =
+* Feature - Booking Activities' notifications can now be sent along WooCommerce's notifications
+* Optimization - Events are loaded significantly faster
+* Optimization - Events are loaded at intervals as the user navigates the calendar (configure it in Booking Activities settings)
+* Optimization - Calendar editor operations are processed significantly faster
+* Optimization - Booking forms (with or without WooCommerce) are verified faster
+* Optimization - JS and CSS files are now versioned to allow smart cache refresh
+* Optimization - JS and CSS files are now minified, your pages will load faster
+* Tweak - Use CTRL+G to create a group of events in calendar editor (2+ events must be selected)
+* Tweak - Pressing ENTER key now brings focus "OK" button on dialogs of calendar editor
+* Fix - Loading feedback was displayed before booking system title
+* Fix - Alert pop-up was sometimes displayed on frontend with a permission-related error message
+* Fix - Bookings could still be pending after a WC order failed
+* Fix - Bookings status were not up to date in WooCommerce's notifications
+* Fix - Events didn't appear when "repeat to" value was set to tomorrow
+* Fix - Custom messages were not translated on multilangual sites
+* Fix - Add to cart button label is switched according to WooCommerce variation type
+* Lib - Update FullCalendar to 3.8.0 and Moment JS to 2.20.0
 
 = 1.2.1 - 2017/11/17 =
 * Feature - Added a snap frequency option in editor to place your events at precise timeslot

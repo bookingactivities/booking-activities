@@ -7,7 +7,7 @@ echo "<h1>" . esc_html__( 'Bookings', BOOKACTI_PLUGIN_NAME ) . "</h1>";
 
 $templates = bookacti_fetch_templates();
 
-if( empty( $templates ) ) {
+if( ! $templates ) {
 	$editor_path = 'admin.php?page=bookacti_calendars';
 	$editor_url = admin_url( $editor_path );
 	?>
@@ -16,7 +16,7 @@ if( empty( $templates ) ) {
 			<?php
 			/* translators: %1$s and %2$s delimit the link to Calendar Editor page. */
 			echo sprintf(	
-					esc_html__( "Welcome! It seems you don't have any calendar yet. Go to %1$sCalendar Editor%2$s to create your first calendar.", BOOKACTI_PLUGIN_NAME ),
+					esc_html__( 'Welcome! It seems you don\'t have any calendar yet. Go to %1$sCalendar Editor%2$s to create your first calendar.', BOOKACTI_PLUGIN_NAME ),
 					'<a href="' . esc_url( $editor_url ) . '" >', 
 					'</a>' );
 			?>
@@ -52,13 +52,13 @@ if( empty( $templates ) ) {
 				$default_template = bookacti_get_user_default_template();
 				$i = 0;
 				foreach ( $templates as $template ) {
-					if( ! $default_template && $i === 0 ) { $default_template = $template->id; }
+					if( ! $default_template && $i === 0 ) { $default_template = $template[ 'id' ]; }
 					
 					echo  "<div class='bookacti-bookings-filter-template bookacti-bookings-filter' "
-						.	"data-template-id='"    . esc_attr( $template->id ) . "' "
-						.	selected( $template->id, $default_template, false )
+						.	"data-template-id='" . esc_attr( $template[ 'id' ] ) . "' "
+						.	selected( $template[ 'id' ], $default_template, false )
 						. " >"
-						.	esc_html( $template->title )
+						.	esc_html( $template[ 'title' ] )
 						. "</div>";
 					
 					$i++;
@@ -100,8 +100,7 @@ if( empty( $templates ) ) {
 		'method'				=> 'calendar',
 		'id'					=> 'booking-system-bookings-page',
 		'classes'				=> 'admin-booking-system',
-		'past_events'			=> 1,
-		'context'				=> 'booking_page'
+		'past_events'			=> 1
 	);
     bookacti_get_booking_system( $atts, true );
 	?>

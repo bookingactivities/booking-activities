@@ -106,103 +106,77 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 
 // TEMPLATE SETTINGS
-	/**
-	 * Get templates settings
-	 *
-	 * @since	1.0.0
-	 * @version	1.0.6
-	 * @param	array|int $template_ids Array of template ids or single template id
-	 * @return	array
-	 */
-	function bookacti_get_templates_settings( $template_ids ) {
-		
-		if( is_numeric( $template_ids ) ) {
-			$template_ids = array( $template_ids );
-		}
-				
-		$is_empty = empty( $template_ids );
-				
-		// Get templates range (start and end dates)
-		$templates_range = array();
-		$templates = bookacti_fetch_templates( true );
-		foreach( $templates as $template ) {
-			// If empty, take them all
-			if( $is_empty ) {
-				$template_ids[] = $template->id;
-			}
-			$templates_range[ $template->id ] = array( 'start' => $template->start_date, 'end' => $template->end_date );
-		}
-		
-		
-		$return_array = array();
-		
-		if( is_numeric( $template_ids ) || ( is_array( $template_ids ) && count( $template_ids ) === 1 ) ) {
-			$template_id	= is_numeric( $template_ids ) ? $template_ids : $template_ids[0];
-			$template_meta	= bookacti_get_metadata( 'template', $template_id );
-			$return_array	= array_merge( $template_meta, $templates_range[ $template_id ] );
-		} else {
-			foreach( $template_ids as $template_id ) {
-				$template_meta					= bookacti_get_metadata( 'template', $template_id );
-				$return_array[ $template_id ]	= array_merge( $template_meta, $templates_range[ $template_id ] );
-			}
-		}
-
-		return $return_array;
-	}
-
 
 	/**
 	 * Get a unique template setting made from a combination of multiple template settings
-	 *
-	 * @since	1.0.0
-	 * @version	1.0.6
+	 * 
+	 * @since	1.2.2 (was bookacti_get_mixed_template_settings)
 	 * @param	array|int $template_ids Array of template ids or single template id
+	 * @param	boolean $past_events Whether to allow past events
 	 * @return	array
 	 */
-	function bookacti_get_mixed_template_settings( $template_ids ) {
+	function bookacti_get_mixed_template_data( $template_ids, $past_events = false ) {
 		
-		$templates_settings = bookacti_get_templates_settings( $template_ids );
-		if( is_numeric( $template_ids ) || ( is_array( $template_ids ) && count( $template_ids ) === 1 ) ) {
-			$template_id = is_numeric( $template_ids ) ? $template_ids : reset( $template_ids );
-			$templates_settings = array( $template_id => $templates_settings );
-		}
+		$templates_data = bookacti_fetch_templates( $template_ids, true );
+		
 		$mixed_settings	= array();
 		
-		if( count( $templates_settings ) > 1 ) {
-			foreach( $templates_settings as $settings ){
-				if( isset( $settings[ 'minTime' ] ) ) {
-					//Keep the lower value
-					if(  ! isset( $mixed_settings[ 'minTime' ] ) 
-						|| isset( $mixed_settings[ 'minTime' ] ) && strtotime( $settings[ 'minTime' ] ) < strtotime( $mixed_settings[ 'minTime' ] ) ) {
+		foreach( $templates_data as $template_data ){
+			$settings = $template_data[ 'settings' ];
+			if( isset( $settings[ 'minTime' ] ) ) {
+				//Keep the lower value
+				if(  ! isset( $mixed_settings[ 'minTime' ] ) 
+					|| isset( $mixed_settings[ 'minTime' ] ) && strtotime( $settings[ 'minTime' ] ) < strtotime( $mixed_settings[ 'minTime' ] ) ) {
 
-						$mixed_settings[ 'minTime' ] = $settings[ 'minTime' ];
-					} 
-				}
-				if( isset( $settings[ 'maxTime' ] ) ) {
-					//Keep the higher value
-					if(  ! isset( $mixed_settings[ 'maxTime' ] ) 
-						|| isset( $mixed_settings[ 'maxTime' ] ) && strtotime( $settings[ 'maxTime' ] ) > strtotime( $mixed_settings[ 'maxTime' ] ) ) {
-
-						$mixed_settings[ 'maxTime' ] = $settings[ 'maxTime' ];
-					} 
-				}
-				if( isset( $settings[ 'snapDuration' ] ) ) {
-					//Keep the lower value
-					if(  ! isset( $mixed_settings[ 'snapDuration' ] ) 
-						|| isset( $mixed_settings[ 'snapDuration' ] ) && strtotime( $settings[ 'snapDuration' ] ) < strtotime( $mixed_settings[ 'snapDuration' ] ) ) {
-
-						$mixed_settings[ 'snapDuration' ] = $settings[ 'snapDuration' ];
-					} 
-				}
+					$mixed_settings[ 'minTime' ] = $settings[ 'minTime' ];
+				} 
 			}
-			
-			$templates_mixed_range	= bookacti_get_mixed_template_range( $template_ids );
-			$mixed_settings			= array_merge( $mixed_settings, $templates_mixed_range );
-		} else {
-			$mixed_settings = $templates_settings[ $template_id ];
+			if( isset( $settings[ 'maxTime' ] ) ) {
+				//Keep the higher value
+				if(  ! isset( $mixed_settings[ 'maxTime' ] ) 
+					|| isset( $mixed_settings[ 'maxTime' ] ) && strtotime( $settings[ 'maxTime' ] ) > strtotime( $mixed_settings[ 'maxTime' ] ) ) {
+
+					$mixed_settings[ 'maxTime' ] = $settings[ 'maxTime' ];
+				} 
+			}
+			if( isset( $settings[ 'snapDuration' ] ) ) {
+				//Keep the lower value
+				if(  ! isset( $mixed_settings[ 'snapDuration' ] ) 
+					|| isset( $mixed_settings[ 'snapDuration' ] ) && strtotime( $settings[ 'snapDuration' ] ) < strtotime( $mixed_settings[ 'snapDuration' ] ) ) {
+
+					$mixed_settings[ 'snapDuration' ] = $settings[ 'snapDuration' ];
+				} 
+			}
 		}
 		
-		return apply_filters( 'bookacti_mixed_template_settings', $mixed_settings, $templates_settings, $template_ids );
+		$mixed_data = array();
+		
+		// Get mixed template range
+		if( count( $templates_data ) > 1 ) {
+			$mixed_data	= bookacti_get_mixed_template_range( $template_ids );
+		} else {
+			reset( $templates_data );
+			$first_key = key( $templates_data );
+			$mixed_data = array( 
+				'start'	=> $templates_data[ $first_key ][ 'start' ],
+				'end'	=> $templates_data[ $first_key ][ 'end' ]
+			);
+		}
+		
+		// Limit the template range to future events
+		if( ! $past_events ) {
+			$timezone			= new DateTimeZone( bookacti_get_setting_value( 'bookacti_general_settings', 'timezone' ) );
+			$current_time		= new DateTime( 'now', $timezone );
+			$template_start		= new DateTime( $mixed_data[ 'start' ], $timezone );
+			if( $template_start < $current_time ) {
+				$mixed_data[ 'start' ] = $current_time->format( 'Y-m-d' );
+			}
+		}
+		
+		// Add mixed settings
+		$mixed_data[ 'settings' ] = $mixed_settings;
+		
+		return apply_filters( 'bookacti_mixed_template_settings', $mixed_data, $templates_data, $template_ids, $past_events );
 	}
 
 
@@ -285,8 +259,18 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	}
 
 	
-	// UPDATE THE LIST OF ACTIVITIES ASSOCIATED TO A TEMPLATE ID
+	/**
+	 * Update the list of activities associated to a template id
+	 * 
+	 * @version 1.2.2
+	 * @param array $new_activities
+	 * @param int $template_id
+	 * @return int|false
+	 */
 	function bookacti_bind_activities_to_template( $new_activities, $template_id ) {
+		
+		if( is_numeric( $new_activities ) ) { $new_activities = array( $new_activities ); }
+		
 		$old_activities = bookacti_get_activity_ids_by_template( $template_id, false );
 		
 		// Unset templates already added
@@ -588,9 +572,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	 */
 	function bookacti_get_template_groups_of_events_list( $template_id ) {
 		
-		if( empty( $template_id ) ) {
-			return false;
-		}
+		if( ! $template_id ) { return false; }
 		
 		$current_user_can_edit_template	= current_user_can( 'bookacti_edit_templates' );
 		

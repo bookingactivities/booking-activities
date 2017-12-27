@@ -32,6 +32,14 @@ function bookacti_init_settings() {
 		'bookacti_general_settings', 
 		'bookacti_settings_section_general'
 	);
+	
+	add_settings_field(  
+		'event_load_interval', 
+		__( 'Load events every', BOOKACTI_PLUGIN_NAME ), 
+		'bookacti_settings_field_event_load_interval_callback', 
+		'bookacti_general_settings', 
+		'bookacti_settings_section_general'
+	);
 
 	add_settings_field(  
 		'started_events_bookable', 
@@ -328,7 +336,7 @@ function bookacti_fill_notification_settings_page( $notification_id ) {
 						if( $tags ) {
 					?>
 						<div class='bookacti-notifications-tags-list' >
-							<p><?php _e( 'Use these tags:' ); ?></p>
+							<p><?php _e( 'Use these tags:', BOOKACTI_PLUGIN_NAME ); ?></p>
 					<?php
 							foreach( $tags as $tag => $tip ) {
 					?>

@@ -92,8 +92,8 @@ function bookacti_dialog_bookings_filters_param( booking_system ) {
 							if( response.error === 'not_allowed' ) {
 								message_error += '\n' + bookacti_localized.error_not_allowed;
 							}
+							console.log( message_error );
 							console.log( response );
-							alert( message_error );
 						}
 					},
 					error: function( e ){
@@ -153,8 +153,8 @@ function bookacti_dialog_booking_list_param( booking_system ) {
 							if( response.error === 'not_allowed' ) {
 								message_error += '\n' + bookacti_localized.error_not_allowed;
 							}
+							console.log( message_error );
 							console.log( response );
-							alert( message_error );
 						}
 					},
 					error: function( e ){
@@ -199,7 +199,7 @@ function bookacti_dialog_cancel_booking( booking_id, booking_type ) {
 		// Cancel booking button
 		{
 			text: bookacti_localized.dialog_button_cancel_booking,
-			class: 'bookacti-dialog-delete-button',
+			'class': 'bookacti-dialog-delete-button',
 			
 			click: function() { 
 				
@@ -245,7 +245,7 @@ function bookacti_dialog_cancel_booking( booking_id, booking_type ) {
 							if( response.error === 'not_allowed' ) {
 								message_error += '\n' + bookacti_localized.error_not_allowed;
 							}
-							alert( message_error );
+							console.log( message_error );
 							console.log( response );
 						}
 						
@@ -309,13 +309,13 @@ function bookacti_dialog_refund_booking( booking_id, booking_type ) {
 					
 					// Add a textarea to let the customer explain his choice
 					var message_container = $j( '<div />', {
-						id: 'bookacti-refund-message'
+						'id': 'bookacti-refund-message'
 					} );
 					var message_title = $j( '<strong />', {
-						text: bookacti_localized.ask_for_reasons
+						'text': bookacti_localized.ask_for_reasons
 					} );
 					var message_input = $j( '<textarea />', {
-						name: 'refund-message'
+						'name': 'refund-message'
 					} );
 					message_container.append( message_title );
 					message_container.append( message_input );
@@ -392,7 +392,7 @@ function bookacti_dialog_refund_booking( booking_id, booking_type ) {
 										} else if( response.message ) {
 											message_error += '\n' + response.message;
 										}
-										alert( message_error );
+										console.log( message_error );
 										console.log( response );
 									}
 
@@ -424,7 +424,7 @@ function bookacti_dialog_refund_booking( booking_id, booking_type ) {
 				if( response.error === 'not_allowed' ) {
 					message_error += '\n' + bookacti_localized.error_not_allowed;
 				}
-				alert( message_error );
+				console.log( message_error );
 				console.log( response );
 			}
 
@@ -555,8 +555,8 @@ function bookacti_dialog_change_booking_state( booking_id, booking_type ) {
 								if( typeof response.message !== 'undefined' ) {
 									message_error += '\n' + response.message;
 								}
+								console.log( message_error );
 								console.log( response );
-								alert( message_error );
 							}
 
 						},
@@ -605,20 +605,20 @@ function bookacti_dialog_reschedule_booking( booking_id ) {
 				
 				// init var
 				var booking_system_id	= booking_system.attr( 'id' );
-				var template_id			= response.template_id;
-				var activity_id			= response.activity_id;
-				booking_quantity		= response.quantity;
+				var template_id			= response.booking_data.template_id;
+				var activity_id			= response.booking_data.activity_id;
+				booking_quantity		= response.booking_data.quantity;
 				
 				// Replace global data
 				bookacti.booking_system[ booking_system_id ][ 'calendars' ]		= template_id ? [ template_id ] : [];
 				bookacti.booking_system[ booking_system_id ][ 'activities' ]	= activity_id ? [ activity_id ] : [];
 				
-				booking_system.trigger( 'bookacti_before_booking_system_loads', [ response.event_settings ] );
+				booking_system.trigger( 'bookacti_before_reschedule_booking_system_loads', [ response.booking_data ] );
 				
 				// Load booking system with new data
 				bookacti_reload_booking_system( booking_system );
 				
-				//Open the modal dialog
+				// Open the modal dialog
 				$j( '#bookacti-reschedule-booking-dialog' ).dialog( 'open' );
 				
 				
@@ -627,8 +627,8 @@ function bookacti_dialog_reschedule_booking( booking_id ) {
 				if( response.error === 'not_allowed' ) {
 					message_error += '\n' + bookacti_localized.error_not_allowed;
 				}
+				console.log( message_error );
 				console.log( response );
-				alert( message_error );
 			}
 
 		},
@@ -642,22 +642,12 @@ function bookacti_dialog_reschedule_booking( booking_id ) {
 	});
 	
 	
-	//Add the buttons
+	// Add the buttons
     $j( '#bookacti-reschedule-booking-dialog' ).dialog( 'option', 'buttons',
-		// Cancel button    
+		  // Reschedule booking button
 		[{
-            text: bookacti_localized.dialog_button_cancel,
-            
-            //On click on the OK Button, new values are send to a script that update the database
-            click: function() {
-				//Close the modal dialog
-				$j( this ).dialog( 'close' );
-            }
-        },
-		// Reschedule booking button
-		{
 			text: bookacti_localized.dialog_button_reschedule,
-			class: 'bookacti-dialog-delete-button',
+			'class': 'bookacti-dialog-delete-button',
 			
 			click: function() { 
 				
@@ -695,7 +685,7 @@ function bookacti_dialog_reschedule_booking( booking_id ) {
 
 							if( response.status === 'success' ) {
 								
-								//Close the modal dialog
+								// Close the modal dialog
 								$j( '#bookacti-reschedule-booking-dialog' ).dialog( 'close' );
 
 								if( is_bookings_page ) {
@@ -708,7 +698,7 @@ function bookacti_dialog_reschedule_booking( booking_id ) {
 
 							} else {
 								if( response.error == null ) {
-									alert( bookacti_localized.error_reschedule_booking );
+									console.log( bookacti_localized.error_reschedule_booking );
 									console.log( response );
 								}
 
@@ -726,6 +716,16 @@ function bookacti_dialog_reschedule_booking( booking_id ) {
 					});
 				}
 			}
-		}]
+		},
+		// Cancel button
+		{
+            text: bookacti_localized.dialog_button_cancel,
+            
+            // On click on the OK Button, new values are send to a script that update the database
+            click: function() {
+				//Close the modal dialog
+				$j( this ).dialog( 'close' );
+            }
+        }]
     );
 }

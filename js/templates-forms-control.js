@@ -149,7 +149,6 @@ function bookacti_validate_activity_form() {
 		'isHoursInfTo23'	: false,
 		'isMinutesInfTo59'	: false,
 		'isSupToZero'		: false,
-		'areTemplates'		: false,
 		'send'				: false
 	};
     
@@ -166,7 +165,6 @@ function bookacti_validate_activity_form() {
     if( valid_form.isHours     && hours <= 23   && hours >= 0 )		{ valid_form.isHoursInfTo23    = true; }
     if( valid_form.isMinutes   && minutes <= 59 && minutes >= 0 )	{ valid_form.isMinutesInfTo59  = true; }
     if( days > 0 || hours > 0 || minutes > 0 )						{ valid_form.isSupToZero		= true; }
-    if( templates > 0 )												{ valid_form.areTemplates		= true; }
     
     if( valid_form.isTitle 
 	&&  valid_form.isColor 
@@ -174,8 +172,7 @@ function bookacti_validate_activity_form() {
 	&&  valid_form.isDaysInfTo365 
 	&&  valid_form.isHoursInfTo23 
 	&&  valid_form.isMinutesInfTo59 
-	&&  valid_form.isSupToZero 
-	&&  valid_form.areTemplates ) { valid_form.send = true; }
+	&&  valid_form.isSupToZero ) { valid_form.send = true; }
 	
     // Clean the feedbacks before displaying new feedbacks
     $j( '#bookacti-activity-data-dialog .form-error' ).remove();
@@ -217,10 +214,6 @@ function bookacti_validate_activity_form() {
     if( ! valid_form.isSupToZero ) { 
         $j( '#bookacti-activity-duration-days, #bookacti-activity-duration-hours, #bookacti-activity-duration-minutes' ).addClass( 'input-error' );
         $j( '#bookacti-activity-duration-days' ).parent().append( "<div class='form-error'>" + bookacti_localized.error_activity_duration_is_null + "</div>" );
-    }
-    if( ! valid_form.areTemplates ) { 
-        $j( '#bookacti-activity-templates-select-box' ).addClass( 'input-error' );
-        $j( '#bookacti-activity-templates-select-box' ).parent().append( "<div class='form-error'>" + bookacti_localized.error_no_templates_for_activity + "</div>" );
     }
     
     // WARNINGS
@@ -328,8 +321,8 @@ function bookacti_validate_event_repetition_data( event ) {
 
 	// Get params
 	var min_bookings    = parseInt( $j( '#bookacti-event-data-dialog #bookacti-event-availability' ).attr( 'min' ) );
-	var repeat_freq     = $j( '#bookacti-event-data-dialog #bookacti-event-repeat-freq').val() || event.repeat_freq + '';
-	var current_freq	= event.repeat_freq + '';
+	var repeat_freq     = $j( '#bookacti-event-data-dialog #bookacti-event-repeat-freq').val() || bookacti.booking_system[ 'bookacti-template-calendar' ][ 'events_data' ][ event.id ][ 'repeat_freq' ] + '';
+	var current_freq	= bookacti.booking_system[ 'bookacti-template-calendar' ][ 'events_data' ][ event.id ][ 'repeat_freq' ] + '';
 	var repeat_from     = moment( $j( '#bookacti-event-data-dialog #bookacti-event-repeat-from' ).val() );
 	var repeat_from_max = moment( $j( '#bookacti-event-data-dialog #bookacti-event-repeat-from' ).attr('max') ).format( 'YYYY-MM-DD' );
 	var repeat_to       = moment( $j( '#bookacti-event-data-dialog #bookacti-event-repeat-to' ).val() );

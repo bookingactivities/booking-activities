@@ -4,75 +4,118 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 
 // EVENTS
-	// FETCH ALL EVENTS
+
 	/**
 	 * Fetch all events of a template or an event
 	 * 
 	 * @since 1.1.0 (replace bookacti_fetch_events from 1.0.0)
+	 * @version 1.2.2
 	 * 
 	 * @global wpdb $wpdb
 	 * @param int $template_id
 	 * @param int $event_id
+	 * @param array $interval ['start' => string: start date, 'end' => string: end date]
 	 * @return array
 	 */
-    function bookacti_fetch_events_for_calendar_editor( $template_id = NULL, $event_id = NULL ) {
-        global $wpdb;
-        
+	function bookacti_fetch_events_for_calendar_editor( $template_id = NULL, $event_id = NULL, $interval = array() ) {
+		global $wpdb;
+		
+		// Set current datetime
+		$timezone					= new DateTimeZone( bookacti_get_setting_value( 'bookacti_general_settings', 'timezone' ) );
+		$current_datetime_object	= new DateTime( 'now', $timezone );
+		$user_timestamp_offset		= $current_datetime_object->format( 'P' );
+		
 		// Get all events
 		$query  = 'SELECT E.id as event_id, E.template_id, E.title, E.start, E.end, E.repeat_freq, E.repeat_from, E.repeat_to, E.availability, A.color, A.is_resizable, A.id as activity_id ' 
-                    . ' FROM ' . BOOKACTI_TABLE_EVENTS . ' as E, ' . BOOKACTI_TABLE_ACTIVITIES . ' as A '
-                    . ' WHERE E.activity_id = A.id '
-                    . ' AND E.active = 1 ';
+					. ' FROM ' . BOOKACTI_TABLE_EVENTS . ' as E, ' . BOOKACTI_TABLE_ACTIVITIES . ' as A '
+					. ' WHERE E.activity_id = A.id '
+					. ' AND E.active = 1 ';
 		
-        //if we know the event id, we only get this event
-        if( $event_id != '' && isset( $event_id ) && ! is_null( $event_id ) ) {
-            
-			$query  .= ' AND E.id = %d';
-            $prep_query = $wpdb->prepare( $query, $event_id );
-        
-        //if we know the template id, we get all events of this template
-        } else if ( $template_id != '' && isset( $template_id ) && ! is_null( $template_id ) ) {
-            
-            $query  .= ' AND E.template_id = %d';
-            $prep_query = $wpdb->prepare( $query, $template_id );
-        }
+		$variables = array();
 		
-        $events = $wpdb->get_results( $prep_query, OBJECT );
-        
-        $events_array = array();
-        foreach ( $events as $event ) {
-            //Have to convert 0 and 1 to true or false...
-			$event->is_resizable = $event->is_resizable === '1' ? true : false;
-            
-			$event_array = array(
-				'id'				=> $event->event_id,
-				'template_id'		=> $event->template_id,
-				'title'				=> apply_filters( 'bookacti_translate_text', $event->title ),
-				'multilingual_title'=> $event->title,
-				'allDay'			=> false,
-				'color'				=> $event->color,
-				'activity_id'		=> $event->activity_id,
-				'availability'		=> $event->availability,
-				'durationEditable'	=> $event->is_resizable,
-				'repeat_freq'		=> $event->repeat_freq,
-				'event_settings'	=> bookacti_get_metadata( 'event', $event->event_id )
-			);
+		// If we know the event id, we only get this event
+		if( $event_id ) {
+
+			$query  .= ' AND E.id IN ( %d';
 			
-            if( $event->repeat_freq === 'none' ) {
-                
-                $event_array['start']			= $event->start;
-                $event_array['end']				= $event->end;
-                $event_array['bookings']		= bookacti_get_number_of_bookings( $event->event_id, $event->start, $event->end );
-				
-                array_push( $events_array, $event_array );
-            } else {
-				$repeated_events_array = bookacti_create_repeated_events( $event, $event_array, array( 'past_events' => true, 'context' => 'editor' ) );
-                $events_array = array_merge( $events_array, $repeated_events_array );
-            }
-        }
-        
-        return $events_array;
-    }
+			if( is_array( $event_id ) && count( $event_id ) > 1 ) {
+				for( $i=1, $len=count($event_id); $i < $len; ++$i ) {
+					$query  .= ', %d ';
+				}
+			}
+			
+			$query  .= ' ) ';
+			
+			$variables[] = $event_id;
+
+		// If we know the template id, we get all events of this template
+		} else if ( $template_id ) {
+
+			$query  .= ' AND E.template_id = %d';
+			$variables[] = $template_id;
+		}
+		
+		// Do not fetch events out of the desired interval
+		if( $interval ) {
+			$query  .= ' 
+			AND (
+					( 	NULLIF( E.repeat_freq, "none" ) IS NULL 
+						AND (	UNIX_TIMESTAMP( CONVERT_TZ( E.start, %s, @@global.time_zone ) ) >= 
+								UNIX_TIMESTAMP( CONVERT_TZ( %s, %s, @@global.time_zone ) ) 
+							AND
+								UNIX_TIMESTAMP( CONVERT_TZ( E.end, %s, @@global.time_zone ) ) <= 
+								UNIX_TIMESTAMP( CONVERT_TZ( ( %s + INTERVAL 24 HOUR ), %s, @@global.time_zone ) ) 
+							) 
+					) 
+					OR
+					( 	E.repeat_freq IS NOT NULL
+						AND NOT (	UNIX_TIMESTAMP( CONVERT_TZ( E.repeat_from, %s, @@global.time_zone ) ) < 
+									UNIX_TIMESTAMP( CONVERT_TZ( %s, %s, @@global.time_zone ) ) 
+								AND 
+									UNIX_TIMESTAMP( CONVERT_TZ( E.repeat_to, %s, @@global.time_zone ) ) < 
+									UNIX_TIMESTAMP( CONVERT_TZ( %s, %s, @@global.time_zone ) ) 
+								)
+						AND NOT (	UNIX_TIMESTAMP( CONVERT_TZ( E.repeat_from, %s, @@global.time_zone ) ) > 
+									UNIX_TIMESTAMP( CONVERT_TZ( %s, %s, @@global.time_zone ) ) 
+								AND 
+									UNIX_TIMESTAMP( CONVERT_TZ( E.repeat_to, %s, @@global.time_zone ) ) > 
+									UNIX_TIMESTAMP( CONVERT_TZ( %s, %s, @@global.time_zone ) ) 
+								)
+					) 
+				)';
+			$variables[] = $user_timestamp_offset;
+			$variables[] = $interval[ 'start' ];
+			$variables[] = $user_timestamp_offset;
+			$variables[] = $user_timestamp_offset;
+			$variables[] = $interval[ 'end' ];
+			$variables[] = $user_timestamp_offset;
+			$variables[] = $user_timestamp_offset;
+			$variables[] = $interval[ 'start' ];
+			$variables[] = $user_timestamp_offset;
+			$variables[] = $user_timestamp_offset;
+			$variables[] = $interval[ 'start' ];
+			$variables[] = $user_timestamp_offset;
+			$variables[] = $user_timestamp_offset;
+			$variables[] = $interval[ 'end' ];
+			$variables[] = $user_timestamp_offset;
+			$variables[] = $user_timestamp_offset;
+			$variables[] = $interval[ 'end' ];
+			$variables[] = $user_timestamp_offset;
+		}
+		
+		// Safely apply variables to the query
+		$prep_query = $query;
+		if( $variables ) {
+			$prep_query = $wpdb->prepare( $query, $variables );
+		}
+		
+		$events = $wpdb->get_results( $prep_query, OBJECT );
+
+		// Transform raw events from database to array of individual events
+		$events_array = bookacti_get_events_array_from_db_events( $events, true, $interval );
+
+		return $events_array;
+	}
 	
 	
     //INSERT AN EVENT
@@ -97,9 +140,9 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 	
 	/**
-	 * Update an event
+	 * Change event dates and time or duplicate these new values to another event
 	 * 
-	 * @version 1.1.0
+	 * @since 1.2.2 (was bookacti_update_event)
 	 * 
 	 * @global wpdb $wpdb
 	 * @param int $event_id
@@ -110,22 +153,22 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	 * @param boolean $is_duplicated
 	 * @return int|false|null
 	 */
-    function bookacti_update_event( $event_id, $event_start, $event_end, $action, $delta_days = NULL, $is_duplicated = false ) {
-        global $wpdb;
-        
+    function bookacti_move_or_resize_event( $event_id, $event_start, $event_end, $action, $delta_days = 0, $is_duplicated = false ) {
+		global $wpdb;
+
 		$event_query = 'SELECT * FROM ' . BOOKACTI_TABLE_EVENTS . ' WHERE id = %d ';
 		$event_query_prep = $wpdb->prepare( $event_query, $event_id );
-        $event = $wpdb->get_row( $event_query_prep, OBJECT );
-        
-        $values         = array( 'start' => $event_start, 'end' => $event_end, 'repeat_from' => $event->repeat_from, 'repeat_to' => $event->repeat_to );
-        $values_format  = array( '%s', '%s', '%s', '%s' );
-        
-        if( $action === 'move' && $event->repeat_freq !== 'none' && $delta_days !== NULL && $delta_days !== 0 ) {
-            // Delay by the same amount of time the repetion period
-            $repeat_from_datetime   = DateTime::createFromFormat('Y-m-d', $event->repeat_from );
-            $repeat_to_datetime     = DateTime::createFromFormat('Y-m-d', $event->repeat_to );
+		$event = $wpdb->get_row( $event_query_prep, OBJECT );
+
+		$values         = array( 'start' => $event_start, 'end' => $event_end, 'repeat_from' => $event->repeat_from, 'repeat_to' => $event->repeat_to );
+		$values_format  = array( '%s', '%s', '%s', '%s' );
+
+		if( $action === 'move' && $event->repeat_freq !== 'none' && $delta_days !== 0 ) {
+			// Delay by the same amount of time the repetion period
+			$repeat_from_datetime   = DateTime::createFromFormat('Y-m-d', $event->repeat_from );
+			$repeat_to_datetime     = DateTime::createFromFormat('Y-m-d', $event->repeat_to );
 			$delta_days_interval	= DateInterval::createFromDateString( abs( $delta_days ) . ' days' );
-            
+
 			if( $delta_days > 0 ) {
 				$repeat_from_datetime->add( $delta_days_interval );
 				$repeat_to_datetime->add( $delta_days_interval );
@@ -133,32 +176,32 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 				$repeat_from_datetime->sub( $delta_days_interval );
 				$repeat_to_datetime->sub( $delta_days_interval );
 			}
-			
-            //Format the new repeat from and repeat to value
-            $values['repeat_from']	= $repeat_from_datetime->format( 'Y-m-d' );
+
+			// Format the new repeat from and repeat to value
+			$values['repeat_from']	= $repeat_from_datetime->format( 'Y-m-d' );
 			$values['repeat_to']	= $repeat_to_datetime->format( 'Y-m-d' );
-        }
-        
+		}
+
 		if( $is_duplicated ) {
-			
+
 			$query			= ' INSERT INTO ' . BOOKACTI_TABLE_EVENTS . ' ( template_id, activity_id, title, start, end, availability, repeat_freq, repeat_from, repeat_to ) '
-							. ' SELECT template_id, activity_id, title, %s, %s, availability, repeat_freq, %s, %s '
+							. ' SELECT template_id, activity_id, title, %s, %s, availability, repeat_freq, NULLIF( %s, "" ), NULLIF( %s, "" ) '
 							. ' FROM ' . BOOKACTI_TABLE_EVENTS
 							. ' WHERE id = %d ';
 			$query_prep		= $wpdb->prepare( $query, $values['start'], $values['end'], $values['repeat_from'], $values['repeat_to'], $event_id );
 			$inserted		= $wpdb->query( $query_prep );
 			$new_event_id	= $wpdb->insert_id;
-			
+
 			// Duplicate exceptions
 			$exceptions = bookacti_duplicate_exceptions( $event_id, $new_event_id );
-			
+
 			// Duplicate event metadata
 			$duplicated = bookacti_duplicate_metadata( 'event', $event_id, $new_event_id );
-			
+
 			return $new_event_id;
-			
+
 		} else {
-			
+
 			// Update the event
 			$updated = $wpdb->update( 
 				BOOKACTI_TABLE_EVENTS, 
@@ -167,14 +210,28 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 				$values_format,
 				array( '%d' )
 			);
-			
+
 			return $updated;
 		}        
     }
 
 	
-    //UPDATE EVENT PARAM
-    function bookacti_set_event_data( $event_id, $event_title, $event_availability, $event_start, $event_end, $event_repeat_freq, $event_repeat_from, $event_repeat_to, $dates_excep_array, $settings ) {
+	/**
+	 * Update event data
+	 * 
+	 * @version 1.2.2 (was bookacti_set_event_data)
+	 * @global wpdb $wpdb
+	 * @param int $event_id
+	 * @param string $event_title
+	 * @param int $event_availability
+	 * @param string $event_start
+	 * @param string $event_end
+	 * @param string $event_repeat_freq
+	 * @param string $event_repeat_from
+	 * @param string $event_repeat_to
+	 * @return int|false
+	 */
+    function bookacti_update_event( $event_id, $event_title, $event_availability, $event_start, $event_end, $event_repeat_freq, $event_repeat_from, $event_repeat_to ) {
         global $wpdb;
 		
 		// Get event
@@ -189,7 +246,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			$event_repeat_to = null;
 		}
 		
-        //Update event params
+        // Update the event
         $updated_event = $wpdb->update( 
             BOOKACTI_TABLE_EVENTS, 
             array( 
@@ -206,15 +263,6 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
             array( '%d' )
         );
         
-		// Update event metadata
-		$updated_event_meta = bookacti_update_metadata( 'event', $event_id, $settings );
-		
-        //Insert new exeption
-        $inserted_excep = bookacti_insert_exeptions( $event_id, $dates_excep_array );
-        
-        //Remove exceptions that do not longer exist
-        $deleted_excep = bookacti_remove_exceptions( $event_id, $dates_excep_array );
-        
 		// If event repeat frequency has changed, we must remove this event from all groups
 		if( $event_repeat_freq !== $initial_event->repeat_freq ) {
 			bookacti_delete_event_from_groups( $event_id );
@@ -225,12 +273,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			bookacti_delete_out_of_range_occurences_from_groups( $event_id );
 		}
 		
-        $return_array['updated_event']		= $updated_event;
-        $return_array['updated_event_meta']	= $updated_event_meta;
-        $return_array['inserted_excep']		= $inserted_excep;
-        $return_array['deleted_excep']		= $deleted_excep;
-        
-        return $return_array;
+        return $updated_event;
     }
 
 	
@@ -265,31 +308,6 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
         return $deleted;
     }
-	
-    
-    // GET EVENT PARAM
-    function bookacti_get_event_data( $event_id ) {
-        global $wpdb;
-
-        $query_param  = 'SELECT * FROM ' . BOOKACTI_TABLE_EVENTS . ' WHERE id=' . $event_id;
-        $data = $wpdb->get_row( $query_param, ARRAY_A );
-        
-        $query_excep	= 'SELECT exception_value FROM ' . BOOKACTI_TABLE_EXCEPTIONS . ' WHERE event_id = %d';
-        $query_prep		= $wpdb->prepare( $query_excep, $event_id );
-        $excep			= $wpdb->get_results( $query_prep, ARRAY_A );
-        
-        $min_avail  = bookacti_get_min_availability( $event_id );
-        $min_period = bookacti_get_min_period( NULL, $event_id );
-        
-        $data['exceptions']			= $excep;
-        $data['min_availability']	= $min_avail;
-        $data['max_from']			= $min_period['from'];
-        $data['min_to']				= $min_period['to'];
-        $data['is_bookings']		= $min_period['is_bookings'];
-        $data['settings']			= bookacti_get_metadata( 'event', $event_id );
-        
-        return $data;
-    }
     
 	
 	// GET EVENT TEMPLATE ID
@@ -307,13 +325,13 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	/**
 	 * Unbind selected occurence of an event
 	 * 
-	 * @version 1.1.4
+	 * @version 1.2.2
 	 * 
 	 * @global wpdb $wpdb
 	 * @param int $event_id
 	 * @param string $event_start
 	 * @param string $event_end
-	 * @return array
+	 * @return int
 	 */
     function bookacti_unbind_selected_occurrence( $event_id, $event_start, $event_end ) {
         global $wpdb;
@@ -355,93 +373,83 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			);
 		}
 		
-		// Get the new created events to render instead of the old ones (now treated as exceptions)
-        if( $insert_excep !== false && $insert_event !== false && $duplicated !== false ) {
-            $new_events = bookacti_fetch_events_for_calendar_editor( NULL, $unbound_event_id );
-        }
-        
-        return $new_events;
+        return $unbound_event_id;
     }
     
 	
 	/**
 	 * Unbind booked occurences of an event
 	 * 
-	 * @version 1.1.0
+	 * @version 1.2.2
 	 * 
 	 * @global wpdb $wpdb
 	 * @param int $event_id
-	 * @return array
+	 * @return int
 	 */
     function bookacti_unbind_booked_occurrences( $event_id ) {
-        global $wpdb;
-        
-        // Duplicate the original event and its exceptions
-        $duplicated_event_id = bookacti_duplicate_event( $event_id );
-        
-        // Get occurences to unbind
-        $booked_events_query = 'SELECT * FROM ' . BOOKACTI_TABLE_BOOKINGS . ' WHERE event_id = %d AND active = 1 ORDER BY event_start ASC ';
-        $booked_events_prep = $wpdb->prepare( $booked_events_query, $event_id );
-        $booked_events = $wpdb->get_results( $booked_events_prep, OBJECT );
-		
+		global $wpdb;
+
+		// Duplicate the original event and its exceptions
+		$duplicated_event_id = bookacti_duplicate_event( $event_id );
+
+		// Get occurences to unbind
+		$booked_events_query = 'SELECT * FROM ' . BOOKACTI_TABLE_BOOKINGS . ' WHERE event_id = %d AND active = 1 ORDER BY event_start ASC ';
+		$booked_events_prep = $wpdb->prepare( $booked_events_query, $event_id );
+		$booked_events = $wpdb->get_results( $booked_events_prep, OBJECT );
+
 		// Replace all occurrences' event id in groups (we will turn it back to the original id for booked events)
 		bookacti_update_grouped_event_id( $event_id, false, false, $duplicated_event_id );
-		
-		
-        //For each occurence to unbind...
-        $first_booking  = '';
-        $last_booking   = '';
-        foreach( $booked_events as $event_to_unbind ) {
+
+
+		// For each occurence to unbind...
+		$first_booking  = '';
+		$last_booking   = '';
+		foreach( $booked_events as $event_to_unbind ) {
 			// Give back its original event id to booked occurences
 			bookacti_update_grouped_event_id( $duplicated_event_id, $event_to_unbind->event_start, $event_to_unbind->event_end, $event_id );
-			
-            // Get the smallest repeat period possible
-            if( $first_booking === '' ) { $first_booking = substr( $event_to_unbind->event_start, 0, 10 ); }
-            $last_booking = substr( $event_to_unbind->event_start, 0, 10 );
-            
-            // Create an exception on the day of the occurence
-            $dates_excep_array = array ( substr( $event_to_unbind->event_start, 0, 10 ) );
-            $inserted_excep_on_new_event = bookacti_insert_exeptions( $duplicated_event_id, $dates_excep_array );
-        }
-        
-        //Set the smallest repeat period possible to the original event
-        $wpdb->update( 
-            BOOKACTI_TABLE_EVENTS, 
-            array( 
-                'repeat_from' => $first_booking,
-                'repeat_to' => $last_booking,
-            ),
-            array( 'id' => $event_id ),
-            array( '%s', '%s' ),
-            array( '%d' )
-        );
-        
-        //Add an exception on days that are not booked on the original event
-        $date_timestamp = strtotime( $first_booking );
-        $date = date('Y-m-d', $date_timestamp );
-        $dates_excep_array = array ();
-        while( $date != $last_booking ) {
-            $set_exception = true;
-            foreach( $booked_events as $booked_event ) {
-                $date_booked = substr( $booked_event->event_start, 0, 10 );
-                if( $date_booked == $date ) { $set_exception = false; }
-            }
-            
-            if( $set_exception ) {
-                array_push( $dates_excep_array, $date );
-            }
-            
-            $date_timestamp = strtotime( '+1 day', $date_timestamp );
-            $date = date('Y-m-d', $date_timestamp );
-        }
-        $inserted_excep_on_booked_event = bookacti_insert_exeptions( $event_id, $dates_excep_array );
-        
-        if( $duplicated_event_id ) {
-            //Get the new created events to render instead of the old ones (now treated as exceptions)
-            $new_events = bookacti_fetch_events_for_calendar_editor( NULL, $duplicated_event_id );
-        }
-        
-        return $new_events;
+
+			// Get the smallest repeat period possible
+			if( $first_booking === '' ) { $first_booking = substr( $event_to_unbind->event_start, 0, 10 ); }
+			$last_booking = substr( $event_to_unbind->event_start, 0, 10 );
+
+			// Create an exception on the day of the occurence
+			$dates_excep_array = array ( substr( $event_to_unbind->event_start, 0, 10 ) );
+			bookacti_insert_exeptions( $duplicated_event_id, $dates_excep_array );
+		}
+
+		// Set the smallest repeat period possible to the original event
+		$wpdb->update( 
+			BOOKACTI_TABLE_EVENTS, 
+			array( 
+				'repeat_from' => $first_booking,
+				'repeat_to' => $last_booking,
+			),
+			array( 'id' => $event_id ),
+			array( '%s', '%s' ),
+			array( '%d' )
+		);
+
+		// Add an exception on days that are not booked on the original event
+		$date_timestamp = strtotime( $first_booking );
+		$date = date( 'Y-m-d', $date_timestamp );
+		$dates_excep_array = array ();
+		while( $date != $last_booking ) {
+			$set_exception = true;
+			foreach( $booked_events as $booked_event ) {
+				$date_booked = substr( $booked_event->event_start, 0, 10 );
+				if( $date_booked == $date ) { $set_exception = false; }
+			}
+
+			if( $set_exception ) {
+				array_push( $dates_excep_array, $date );
+			}
+
+			$date_timestamp = strtotime( '+1 day', $date_timestamp );
+			$date = date( 'Y-m-d', $date_timestamp );
+		}
+		bookacti_insert_exeptions( $event_id, $dates_excep_array );
+
+		return $duplicated_event_id;
     }
     
 	
@@ -513,7 +521,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
     }
     
 	
-    //GET THE PERIOD OF TIME BETWEEN THE FIRST AND THE LAST BOOKING OF AN EVENT / A TEMPLATE
+    // GET THE PERIOD OF TIME BETWEEN THE FIRST AND THE LAST BOOKING OF AN EVENT / A TEMPLATE
     function bookacti_get_min_period( $template_id = NULL, $event_id = NULL ) {
         global $wpdb;
         
@@ -640,54 +648,10 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
         
         return $deleted_except;
     }
-    
-	
-    //GET ALL EXCEPTION OF A TEMPLATE OR AN EVENT
-    function bookacti_get_exceptions( $template_id = NULL, $event_id = NULL ) {
-        global $wpdb;
-        
-        $is_event_id    = ! ( $event_id == ''     || ! isset( $event_id )     || is_null( $event_id ) );
-        $is_template_id = ! ( $template_id == ''  || ! isset( $template_id )  || is_null( $template_id ) );
-        
-        if( ! $is_event_id && ! $is_template_id ) {
-            $excep_query = 'SELECT event_id, exception_type, exception_value FROM ' . BOOKACTI_TABLE_EXCEPTIONS . ' ORDER BY exception_value ASC ';
-        } else if ( $is_event_id ) {
-            $excep_query = 'SELECT event_id, exception_type, exception_value FROM ' . BOOKACTI_TABLE_EXCEPTIONS . ' WHERE event_id = %d ORDER BY exception_value ASC ';
-            $excep_query = $wpdb->prepare( $excep_query, $event_id );
-        } else if ( ! $is_event_id && $is_template_id ) {
-            $excep_query = 'SELECT X.event_id, X.exception_type, X.exception_value '
-                        . ' FROM '  . BOOKACTI_TABLE_EXCEPTIONS . ' as X, '
-                                    . BOOKACTI_TABLE_EVENTS . ' as E '
-                        . ' WHERE X.event_id = E.id '
-                        . ' AND E.template_id = %d '
-                        . ' ORDER BY exception_value ASC ';
-            $excep_query = $wpdb->prepare( $excep_query, $template_id );
-        }
-        
-        //Check if the date exists in exceptions database for this event
-        $exceptions = $wpdb->get_results( $excep_query, OBJECT );
-        
-        $exceptions_array = array();
-        if( $exceptions ) {
-            foreach( $exceptions as $exception ) {
-                $exception_array = array();
-                $exception_array[ 'type' ]  = $exception->exception_type;
-                $exception_array[ 'value' ] = $exception->exception_value;
 
-                if( ! is_array( $exceptions_array[ $exception->event_id ] ) ) {
-                    $exceptions_array[ $exception->event_id ] = array();
-                }
-                array_push( $exceptions_array[ $exception->event_id ], $exception_array );
-            }
-        }
-        
-        //If not insert it
-        return $exceptions_array;
-    }
-	
-	
-	
-	
+
+
+
 // GROUP OF EVENTS
 	/**
 	 * Insert a group of events
@@ -1503,29 +1467,57 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	
 	
 // TEMPLATES
-    // FETCH TEMPLATES
-    function bookacti_fetch_templates( $ignore_permissions = false ) {
-        global $wpdb;
-		
-        $query  = 'SELECT * FROM ' . BOOKACTI_TABLE_TEMPLATES . ' WHERE active = 1';
-        $templates = $wpdb->get_results( $query, OBJECT );
-		
-		foreach( $templates as $i => $template ) {
-			$template->admin	= bookacti_get_managers( 'template', $template->id );
-			$template->settings = bookacti_get_metadata( 'template', $template->id );
-			$templates[$i] = $template;
 
-			// If user is not super admin, check permission
-			$bypass_template_managers_check = apply_filters( 'bookacti_bypass_template_managers_check', false );
-			if( ! is_super_admin() && ! $bypass_template_managers_check && ! $ignore_permissions ) {
-				$user_id = get_current_user_id();
-				if( empty( $template->admin ) || ! in_array( $user_id, $template->admin, true ) ) {
-					unset( $templates[$i] );
-				}
+	/**
+	 * Get templates data
+	 * 
+	 * @version 1.2.2
+	 * @global wpdb $wpdb
+	 * @param array $template_ids
+	 * @param boolean $ignore_permissions
+	 * @return array
+	 */
+    function bookacti_fetch_templates( $template_ids = array(), $ignore_permissions = false ) {
+        
+		if( is_numeric( $template_ids ) ) { $template_ids = array( $template_ids ); }
+		
+		global $wpdb;
+		
+        $query  = 'SELECT id, title, start_date as start, end_date as end, active '
+				. ' FROM ' . BOOKACTI_TABLE_TEMPLATES 
+				. ' WHERE active = 1';
+		
+		if( $template_ids ) {
+			$query  .= ' AND id IN ( %d';
+			for( $i=1,$len=count($template_ids); $i<$len; ++$i ) {
+				$query  .= ', %d';
 			}
+			$query  .= ' ) ';
+			$query = $wpdb->prepare( $query, $template_ids );
 		}
 		
-        return $templates;
+        $templates = $wpdb->get_results( $query, ARRAY_A );
+		
+		$templates_data = array();
+		foreach( $templates as $template ) {
+			$template_id = $template[ 'id' ];
+			$template[ 'admin' ] = bookacti_get_managers( 'template', $template_id );
+			
+			// If user is not super admin, check permission
+			$bypass_template_managers_check = apply_filters( 'bookacti_bypass_template_managers_check', false );
+			if( ! $ignore_permissions && ! $bypass_template_managers_check && ! is_super_admin() ) {
+				$user_id = get_current_user_id();
+				if( empty( $template[ 'admin' ] ) || ! in_array( $user_id, $template[ 'admin' ], true ) ) {
+					continue;
+				}
+			}
+			
+			$template[ 'settings' ] = bookacti_get_metadata( 'template', $template_id );
+			
+			$templates_data[ $template_id ] = $template;
+		}
+		
+        return $templates_data;
     }
 	
 	
@@ -1666,13 +1658,20 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
     }
     
 	
-    //UPDATE TEMPLATE
-    function bookacti_update_template( $template_id, $template_title, $template_start, $template_end, $template_managers, $template_meta ) { 
+	/**
+	 * Update template
+	 * 
+	 * @global wpdb $wpdb
+	 * @param int $template_id
+	 * @param string $template_title
+	 * @param string $template_start
+	 * @param string $template_end
+	 * @return int|false
+	 */
+    function bookacti_update_template( $template_id, $template_title, $template_start, $template_end ) { 
         global $wpdb;
         
-		$updated = 0;
-		
-        $updated1 = $wpdb->update( 
+        $updated = $wpdb->update( 
             BOOKACTI_TABLE_TEMPLATES, 
             array( 
                 'title'         => $template_title,
@@ -1683,26 +1682,6 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
             array( '%s', '%s', '%s' ),
             array( '%d' )
         );
-		
-		// Insert Managers
-		$updated2 = 0;
-		if( ! empty( $template_managers ) ) {
-			$updated2 = bookacti_update_managers( 'template', $template_id, $template_managers );
-		}
-		
-		// Insert Meta
-		$updated3 = 0;
-		if( ! empty( $template_meta ) ) {
-			$updated3 = bookacti_update_metadata( 'template', $template_id, $template_meta );
-		}
-		
-		if( is_int( $updated1 ) && is_int( $updated2 ) &&  is_int( $updated3 ) ) {
-			$updated = $updated1 + $updated2 + $updated3;
-		}
-		
-		if( $updated1 === false || $updated2 === false || $updated3 === false ) {
-			$updated = false;
-		}
 		
         return $updated;
     }
@@ -1722,35 +1701,51 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
     }
 	
 	
-    // GET ACTIVITY PARAMETERS
-    function bookacti_get_activity( $activity_id, $return_type = OBJECT ) {
-        
-		$return_type = $return_type === OBJECT ? OBJECT : ARRAY_A;
-		
+    /**
+	 * Get activity data
+	 * 
+	 * @version 1.2.2
+	 * @global wpdb $wpdb
+	 * @param int $activity_id
+	 * @return object
+	 */
+    function bookacti_get_activity( $activity_id ) {
+       
 		global $wpdb;
 
         $query		= 'SELECT * FROM ' . BOOKACTI_TABLE_ACTIVITIES . ' WHERE id = %d';
         $prep		= $wpdb->prepare( $query, $activity_id );
-        $activity	= $wpdb->get_row( $prep, $return_type );
-		
-		$templates = bookacti_get_templates_by_activity( $activity_id );
+        $activity	= $wpdb->get_row( $prep, OBJECT );
 		
 		// Get activity settings and managers
-		if( $return_type === ARRAY_A ) {
-			$activity[ 'admin' ]	= bookacti_get_managers( 'activity', $activity_id );
-			$activity[ 'settings' ] = bookacti_get_metadata( 'activity', $activity_id );
-			$activity[ 'templates' ]= $templates;
-		} else {
-			$activity->admin	= bookacti_get_managers( 'activity', $activity_id );
-			$activity->settings	= bookacti_get_metadata( 'activity', $activity_id );
-			$activity->templates= $templates;
-		}
-		
+		$activity->admin	= bookacti_get_managers( 'activity', $activity_id );
+		$activity->settings	= bookacti_get_metadata( 'activity', $activity_id );
+
+		$activity->multilingual_title = $activity->title;
+		$activity->title	= apply_filters( 'bookacti_translate_text', $activity->title );
+
+		$unit_name_singular	= isset( $activity->settings[ 'unit_name_singular' ] )	? $activity->settings[ 'unit_name_singular' ]	: '';
+		$unit_name_plural	= isset( $activity->settings[ 'unit_name_plural' ] )	? $activity->settings[ 'unit_name_plural' ]		: '';
+
+		$activity->settings[ 'unit_name_singular' ] = apply_filters( 'bookacti_translate_text', $unit_name_singular );
+		$activity->settings[ 'unit_name_plural' ]	= apply_filters( 'bookacti_translate_text', $unit_name_plural );
+			
 		return $activity;
     }
 	    
 	
-    //INSERT AN ACTIVITY
+	/**
+	 * Insert an activity
+	 * 
+	 * @version 1.2.2
+	 * @global wpdb $wpdb
+	 * @param string $activity_title
+	 * @param string $activity_color
+	 * @param int $activity_availability
+	 * @param string $activity_duration
+	 * @param int $activity_resizable
+	 * @return int|false
+	 */
     function bookacti_insert_activity( $activity_title, $activity_color, $activity_availability, $activity_duration, $activity_resizable, $activity_managers, $activity_templates, $activity_settings ) {
         global $wpdb;
 
@@ -1769,17 +1764,24 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		
 		$activity_id = $wpdb->insert_id;
 		
-		bookacti_insert_managers( 'activity', $activity_id, $activity_managers );
-		bookacti_insert_metadata( 'activity', $activity_id, $activity_settings );
-		
-		bookacti_insert_templates_x_activities( $activity_templates, array( $activity_id ) );
-		
         return $activity_id;
     }
     
-	
-    // UPDATE ACTIVITY 
-    function bookacti_update_activity( $activity_id, $activity_title, $activity_color, $activity_availability, $activity_duration, $activity_resizable, $activity_managers, $activity_templates, $activity_settings ) {
+
+	/**
+	 * Update an activity
+	 * 
+	 * @version 1.2.2
+	 * @global wpdb $wpdb
+	 * @param int $activity_id
+	 * @param string $activity_title
+	 * @param string $activity_color
+	 * @param int $activity_availability
+	 * @param string $activity_duration
+	 * @param int $activity_resizable
+	 * @return int|false
+	 */
+    function bookacti_update_activity( $activity_id, $activity_title, $activity_color, $activity_availability, $activity_duration, $activity_resizable ) {
         global $wpdb;
         
         $updated = $wpdb->update( 
@@ -1796,16 +1798,19 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
             array( '%d' )
         );
 		
-		bookacti_update_managers( 'activity', $activity_id, $activity_managers );
-		bookacti_update_metadata( 'activity', $activity_id, $activity_settings );
-		
-		$updated2 = bookacti_update_templates_list_by_activity_id( $activity_templates, $activity_id );
-		
-        return $updated + $updated2;
+        return $updated;
     }
     
 	
-    //UPDATE EVENTS TITLE TO MATCH THE ACTIVITY TITLE
+	/**
+	 * Update events title to match the activity title
+	 * 
+	 * @global wpdb $wpdb
+	 * @param int $activity_id
+	 * @param string $activity_old_title
+	 * @param string $activity_title
+	 * @return int|false
+	 */
     function bookacti_update_events_title( $activity_id, $activity_old_title, $activity_title ) {
         global $wpdb;
         
@@ -1937,7 +1942,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	/**
 	 * Get activities by template
 	 * 
-	 * @version 1.1.0
+	 * @version 1.2.2
 	 * 
 	 * @global wpdb $wpdb
 	 * @param array $template_ids
@@ -1948,11 +1953,8 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		global $wpdb;
 		
 		// If empty, take them all
-		if( empty( $template_ids ) ) { 
-			$templates = bookacti_fetch_templates( true );
-			foreach( $templates as $template ) {
-				$template_ids[] = $template->id;
-			}
+		if( ! $template_ids ) {
+			$template_ids = array_keys( bookacti_fetch_templates( array(), true ) );
 		}
 
 		// Convert numeric to array
@@ -2008,6 +2010,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	 * Get an array of all activity ids bound to designated templates
 	 * 
 	 * @since 1.1.0
+	 * @version 1.2.2
 	 * 
 	 * @global wpdb $wpdb
 	 * @param array $template_ids
@@ -2019,11 +2022,8 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		global $wpdb;
 
 		// If empty, take them all
-		if( empty( $template_ids ) ) { 
-			$templates = bookacti_fetch_templates( true );
-			foreach( $templates as $template ) {
-				$template_ids[] = $template->id;
-			}
+		if( ! $template_ids ) {
+			$template_ids = array_keys( bookacti_fetch_templates( array(), true ) );
 		}
 
 		// Convert numeric to array

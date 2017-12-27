@@ -31,8 +31,12 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 
 // BOOKINGS FILTERS
-	// Change selected template
-	add_action( 'wp_ajax_bookactiSelectTemplateFilter', 'bookacti_controller_select_template_filter' );
+
+	/**
+	 * AJAX Controller - Change selected template
+	 * 
+	 * @version 1.2.2
+	 */
     function bookacti_controller_select_template_filter() {
 		
 		// Check nonce
@@ -64,30 +68,24 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			$activities_html = bookacti_get_activities_html_for_booking_page( $template_ids );
 			
 			// Get calendar settings
-			$settings			= bookacti_get_mixed_template_settings( $template_ids );
+			$template_data		= bookacti_get_mixed_template_data( $template_ids, true );
 			$activity_ids		= bookacti_get_activity_ids_by_template( $template_ids, false );
 			$group_categories	= bookacti_get_group_category_ids_by_template( $template_ids );
 			
-			// Gets calendar content: events, activities and groups
-			$args = array(
-				'calendars' => $template_ids,
-				'activities' => array(),
-				'categories' => array(),
-				'groups_only' => false,
-				'past_events' => true,
-				'context' => 'booking_page'
-			);
-			
-			$events				= bookacti_fetch_events( $args );
+			$events_interval	= bookacti_get_new_interval_of_events( $template_data, array(), false, true );
+			$events				= bookacti_fetch_booked_events( $template_ids, array(), array(), true, $events_interval );
 			$activities_data	= bookacti_get_activities_by_template( $template_ids, true );
 			$groups_events		= bookacti_get_groups_events( $template_ids, $group_categories, array(), true );
 			$groups_data		= bookacti_get_groups_of_events_by_template( $template_ids );
 			$categories_data	= bookacti_get_group_categories_by_template( $template_ids );
+			$bookings			= bookacti_get_number_of_bookings_by_events( $template_ids );
 			
 			wp_send_json( array( 
 				'status'				=> 'success', 
 				'activities_html'		=> $activities_html, 
-				'events'				=> $events, 
+				'events'				=> $events[ 'events' ] ? $events[ 'events' ] : array(), 
+				'events_data'			=> $events[ 'data' ] ? $events[ 'data' ] : array(), 
+				'events_interval'		=> $events_interval,
 				'activities_data'		=> $activities_data, 
 				'groups_events'			=> $groups_events,
 				'groups_data'			=> $groups_data,
@@ -95,12 +93,14 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 				'activity_ids'			=> $activity_ids,
 				'group_categories'		=> $group_categories,
 				'group_categories_data'	=> $categories_data,
-				'settings'				=> $settings
+				'template_data'			=> $template_data,
+				'bookings'				=> $bookings
 			) );
 		} else {
 			wp_send_json( array( 'status' => 'failed', 'error' => 'not_allowed' ) );
 		}
 	}
+	add_action( 'wp_ajax_bookactiSelectTemplateFilter', 'bookacti_controller_select_template_filter' );
 
 
 
@@ -375,6 +375,8 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 		/**
 		 * AJAX Controller - Get booking system data by booking ID
+		 * 
+		 * @version 1.2.2
 		 */
 		function bookacti_controller_get_booking_data() {
 
@@ -387,8 +389,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 				$booking_data = bookacti_get_booking_data( $booking_id );
 
 				if( is_array( $booking_data ) && ! empty( $booking_data ) ) {
-					$booking_data[ 'status' ] = 'success';
-					wp_send_json( $booking_data );
+					wp_send_json( array( 'status' => 'success', 'booking_data' => $booking_data ) );
 				} else {
 					wp_send_json( array( 'status' => 'failed', 'error' => 'empty_data' ) );
 				}

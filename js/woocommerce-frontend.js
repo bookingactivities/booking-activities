@@ -66,7 +66,11 @@ $j( document ).ready( function() {
 
 					// Change the booking system if a variation is selected
 					booking_system.parents( '.variations_form' ).find( '.single_variation_wrap' ).on( 'show_variation', function( event, variation ) { 
+						// Switch booking system
 						bookacti_switch_booking_system_according_to_variation( booking_system, variation );
+						// Change Add to cart button label
+						var new_button_text = variation[ 'bookacti_is_activity' ] ? bookacti_localized.add_booking_to_cart_button_text : bookacti_localized.add_product_to_cart_button_text;
+						booking_system.parents( '.variations_form' ).find( '.single_add_to_cart_button' ).text( new_button_text );
 					});
 				}
 			});
@@ -139,9 +143,9 @@ $j( document ).ready( function() {
 
 				// Limit the max quantity
 				if( bookacti.booking_system[ booking_system_id ][ 'picked_events' ].length > 1 ) {
-					available_places = bookacti_get_group_availability( bookacti.booking_system[ booking_system_id ][ 'picked_events' ] );
+					available_places = bookacti_get_group_availability( $j( this ), bookacti.booking_system[ booking_system_id ][ 'picked_events' ] );
 				} else {
-					available_places = bookacti_get_event_availability( bookacti.booking_system[ booking_system_id ][ 'picked_events' ][ 0 ] );
+					available_places = bookacti_get_event_availability( $j( this ), bookacti.booking_system[ booking_system_id ][ 'picked_events' ][ 0 ] );
 				}
 
 				$j( this ).parents( 'form' ).find( '.quantity .qty' ).attr( 'max', available_places );

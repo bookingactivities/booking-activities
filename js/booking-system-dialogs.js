@@ -58,43 +58,43 @@ function bookacti_dialog_choose_group_of_events( booking_system, group_ids, even
 		
 		var container = $j( '<div />', {});
 		var option_container = $j( '<div />', {
-			class: 'bookacti-group-of-events-option',
+			'class': 'bookacti-group-of-events-option',
 			'data-group-id': group_id,
 			'data-show-events': 0
 		});
 		var radio = $j( '<input />', {
-			id: 'bookacti-group-of-events-' + group_id,
-			type: 'radio',
-			name: 'group_of_events',
-			value: group_id
+			'id': 'bookacti-group-of-events-' + group_id,
+			'type': 'radio',
+			'name': 'group_of_events',
+			'value': group_id
 		});
 		
 		// Show availability or bookings
 		var avail_html = '';
 		if( context === 'booking_page' ) {
-			var bookings = bookacti_get_bookings_number_for_a_single_grouped_event( event, group_ids, bookacti.booking_system[ booking_system_id ][ 'groups_events' ] );
+			var bookings = bookacti_get_bookings_number_for_a_single_grouped_event( booking_system, event, group_ids );
 			var booking_html = bookings > 1 ? bookacti_localized.bookings : bookacti_localized.booking;
 			avail_html = bookings + ' ' + booking_html;
 		} else {
-			var availability	= bookacti_get_event_availability( event );
+			var availability	= bookacti_get_event_availability( booking_system, event );
 			var avail			= availability > 1 ? bookacti_localized.avails : bookacti_localized.avail;
 			avail_html = availability + ' ' + avail;
 		}
 		
 		var label = $j( '<label />', {
-			html: bookacti_localized.single_event + ' <span class="bookacti-group-availability" >(' + avail_html + ')</span>',
-			for: 'bookacti-group-of-events-' + group_id
+			'html': bookacti_localized.single_event + ' <span class="bookacti-group-availability" >(' + avail_html + ')</span>',
+			'for': 'bookacti-group-of-events-' + group_id
 		});
 
 		var event_list = $j( '<ul />', {
-			class: 'bookacti-group-of-events-list',
+			'class': 'bookacti-group-of-events-list',
 			'data-group-id': group_id
 		});
 		
 		var event_duration	=  bookacti_format_event_duration( event.start, event.end );
 
 		var list_element = $j( '<li />', {
-			html: '<span class="bookacti-booking-event-title" >'  + event.title + '</span>' 
+			'html': '<span class="bookacti-booking-event-title" >'  + event.title + '</span>' 
 				+ '<span class="bookacti-booking-event-title-separator" > - </span>' 
 				+ event_duration
 		});
@@ -114,20 +114,20 @@ function bookacti_dialog_choose_group_of_events( booking_system, group_ids, even
 		group_id = parseInt( group_id );
 		if( typeof bookacti.booking_system[ booking_system_id ][ 'groups_events' ][ group_id ] !== 'undefined' ) {
 			
-			var availability	= bookacti_get_group_availability( bookacti.booking_system[ booking_system_id ][ 'groups_events' ][ group_id ] );
+			var availability	= bookacti_get_group_availability( booking_system, bookacti.booking_system[ booking_system_id ][ 'groups_events' ][ group_id ] );
 			
 			var container = $j( '<div />', {});
 			var option_container = $j( '<div />', {
-				class: 'bookacti-group-of-events-option',
+				'class': 'bookacti-group-of-events-option',
 				'data-group-id': group_id,
 				'data-show-events': 0
 			});
 			var radio = $j( '<input />', {
-				id: 'bookacti-group-of-events-' + group_id,
-				type: 'radio',
-				name: 'group_of_events',
+				'id': 'bookacti-group-of-events-' + group_id,
+				'type': 'radio',
+				'name': 'group_of_events',
 				'disabled': context !== 'booking_page' && availability <= 0,
-				value: group_id
+				'value': group_id
 			});
 			
 			// Show availability or bookings
@@ -159,7 +159,7 @@ function bookacti_dialog_choose_group_of_events( booking_system, group_ids, even
 			
 			// Build the group events list
 			var event_list = $j( '<ul />', {
-				class: 'bookacti-group-of-events-list',
+				'class': 'bookacti-group-of-events-list',
 				'data-group-id': group_id
 			});
 			
@@ -178,7 +178,7 @@ function bookacti_dialog_choose_group_of_events( booking_system, group_ids, even
 				}
 				
 				var list_element = $j( '<li />', {
-					html: event.title + ' - ' + event_duration
+					'html': event.title + ' - ' + event_duration
 				});
 				
 				event_list.append( list_element );

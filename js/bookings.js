@@ -1,6 +1,7 @@
 $j( document ).ready(function() {
 	
-	var booking_system = $j( '#bookacti-booking-system-bookings-page' );
+	var booking_system		= $j( '#bookacti-booking-system-bookings-page' );
+	var booking_system_id	= 'bookacti-booking-system-bookings-page';
 	
 	if( booking_system.length ) {
 
@@ -10,10 +11,11 @@ $j( document ).ready(function() {
 
 				element = element || undefined;
 
-				//Check if the event is hidden
-				if( bookacti.hidden_activities !== undefined && event.activity_id !== undefined ) {
+				// Check if the event is hidden
+				var activity_id = bookacti.booking_system[ booking_system_id ][ 'events_data' ][ event.id ][ 'activity_id' ];
+				if( bookacti.hidden_activities !== undefined && activity_id !== undefined ) {
 					$j.each( bookacti.hidden_activities, function ( i, activity_id_to_hide ) {
-						if( parseInt( event.activity_id ) === activity_id_to_hide ) {
+						if( parseInt( activity_id ) === activity_id_to_hide ) {
 							if( typeof element !== 'undefined' ) { element.addClass( 'event-exception' ); }
 							event.render = 0;
 						}
@@ -31,11 +33,11 @@ $j( document ).ready(function() {
 					
 					var active_bookings	= parseInt( event.bookings );
 					var is_bookings		= active_bookings > 0 ? 1 : 0;
-					var availability	= parseInt( event.availability );
-					var available_places= bookacti_get_event_availability( event );
+					var availability	= parseInt( bookacti.booking_system[ booking_system_id ][ 'events_data' ][ event.id ][ 'availability' ] );
+					var available_places= bookacti_get_event_availability( booking_system, event );
 					
 					// Detect if the event is available or full, and if it is booked or not
-					var class_no_availability	= parseInt( event.availability ) === 0 ? 'bookacti-no-availability' : '';
+					var class_no_availability	= availability === 0 ? 'bookacti-no-availability' : '';
 					var class_booked			= is_bookings ? 'bookacti-booked' : 'bookacti-not-booked';
 					var class_full				= available_places <= 0 ? 'bookacti-full' : '';
 					

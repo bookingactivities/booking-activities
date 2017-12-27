@@ -201,56 +201,53 @@ add_filter( 'bookacti_when_events_load_tip', 'bookacti_add_wc_mention_to_when_ev
 
 
 /**
- * Add a mention to notifications
+ * Add notification global settings
  * 
- * @since 1.2.0
- * @version 1.2.1
- * @param array $notifications
- * @return array
+ * @since 1.2.2
+ * @param array $notification_settings
+ * @param string $notification_id
  */
-function bookacti_add_wc_mention_to_notifications( $notifications ) {
+function bookacti_display_wc_notification_global_settings( $notification_settings, $notification_id ) {
 	
-	if( ! isset( $notifications[ 'admin_refunded_booking' ] ) ) {
-		$notifications[ 'admin_refunded_booking' ] = array(
-			'id'			=> 'admin_refunded_booking',
-			'active'		=> 1,
-			'title'			=> __( 'Customer has been refunded', BOOKACTI_PLUGIN_NAME ),
-			'description'	=> __( 'This notification is sent to the administrator when a customer is successfully reimbursed for a booking.', BOOKACTI_PLUGIN_NAME ),
-			'email'			=> array(
-				'active'	=> 1,
-				'to'		=> array( get_bloginfo( 'admin_email' ) ),
-				'subject'	=> __( 'Booking refunded', BOOKACTI_PLUGIN_NAME ),
-				/* translators: Keep tags as is (this is a tag: {tag}), they will be replaced in code. This is the default email an administrator receive when a booking is refunded */
-				'message'	=> __( '<p>A customer has been reimbursed for this booking:</p>
-									<p>{booking_list}</p>
-									<p>Contact him: {user_firstname} {user_lastname} ({user_email})</p>
-									<p><a href="{booking_admin_url}">Click here</a> to edit this booking (ID: {booking_id}).</p>', BOOKACTI_PLUGIN_NAME ) )
-		);
+	$active_with_wc_settings = array( 
+		'admin_new_booking'				=> array( 
+			'label'			=>  __( 'Send when an order is made', BOOKACTI_PLUGIN_NAME ), 
+			'description'	=>  __( 'Wether to send this automatic notification when a new WooCommerce order is made, for each booking (group) of the order.', BOOKACTI_PLUGIN_NAME ) ), 
+		'customer_pending_booking'		=> array( 
+			'label'			=>  __( 'Send when an order is processing', BOOKACTI_PLUGIN_NAME ), 
+			'description'	=>  __( 'Wether to send this automatic notification when a WooCommerce order is "Processing", for each booking (group) affected in the order. It will not be sent for "Pending" orders (when an order is pending payment), because the booking is still considered as temporary. It may be sent along the WooCommerce confirmation email.', BOOKACTI_PLUGIN_NAME ) ), 
+		'customer_booked_booking'		=> array( 
+			'label'			=>  __( 'Send when an order is completed', BOOKACTI_PLUGIN_NAME ), 
+			'description'	=>  __( 'Wether to send this automatic notification when a WooCommerce order is "Completed", for each booking (group) affected in the order. It may be sent along the WooCommerce confirmation email.', BOOKACTI_PLUGIN_NAME ) ), 
+		'customer_cancelled_booking'	=> array( 
+			'label'			=>  __( 'Send when an order is cancelled', BOOKACTI_PLUGIN_NAME ), 
+			'description'	=>  __( 'Wether to send this automatic notification when a WooCommerce order is "Cancelled", for each booking (group) affected in the order. It will not be sent for "Failed" orders (when a pending payment fails), because the booking is still considered as temporary.', BOOKACTI_PLUGIN_NAME ) ),
+		'customer_refunded_booking'		=> array( 
+			'label'			=>  __( 'Send when an order is refunded', BOOKACTI_PLUGIN_NAME ), 
+			'description'	=>  __( 'Wether to send this automatic notification when a WooCommerce order is "Refunded", for each booking (group) affected in the order. It may be sent along the WooCommerce refund email.', BOOKACTI_PLUGIN_NAME ) )
+	);
+	
+	if( in_array( $notification_id, array_keys( $active_with_wc_settings ) ) ) {
+	?>
+		<tr>
+			<th scope='row' ><?php echo $active_with_wc_settings[ $notification_id ][ 'label' ]; ?></th>
+			<td>
+				<?php 
+				$args = array(
+					'type'	=> 'checkbox',
+					'name'	=> 'bookacti_notification[active_with_wc]',
+					'id'	=> 'bookacti_notification_' . $notification_id . 'active_with_wc',
+					'value'	=> $notification_settings[ 'active_with_wc' ] ? $notification_settings[ 'active_with_wc' ] : 0,
+					'tip'	=> $active_with_wc_settings[ $notification_id ][ 'description' ]
+				);
+				bookacti_display_field( $args );
+				?>
+			</td>
+		</tr>
+	<?php
 	}
-	
-	if( isset( $notifications[ 'admin_new_booking' ] ) ) {
-		$notifications[ 'admin_new_booking' ][ 'description' ]			.= '<br/>' . __( 'To avoid double notification, this will not be sent if WooCommerce triggered this change.', BOOKACTI_PLUGIN_NAME );
-	}
-	
-	if( isset( $notifications[ 'customer_pending_booking' ] ) ) {
-		$notifications[ 'customer_pending_booking' ][ 'description' ]	.= '<br/>' . __( 'To avoid double notification, this will not be sent if WooCommerce triggered this change.', BOOKACTI_PLUGIN_NAME );
-	}
-	
-	if( isset( $notifications[ 'customer_booked_booking' ] ) ) {
-		$notifications[ 'customer_booked_booking' ][ 'description' ]	.= '<br/>' . __( 'To avoid double notification, this will not be sent if WooCommerce triggered this change.', BOOKACTI_PLUGIN_NAME );
-	}
-	
-	if( isset( $notifications[ 'customer_cancelled_booking' ] ) ) {
-		$notifications[ 'customer_cancelled_booking' ][ 'description' ]	.= '<br/>' . __( 'To avoid double notification, this will not be sent if WooCommerce triggered this change.', BOOKACTI_PLUGIN_NAME );
-	}
-	
-	if( isset( $notifications[ 'customer_refunded_booking' ] ) ) {
-		$notifications[ 'customer_refunded_booking' ][ 'description' ]	.= '<br/>' . __( 'To avoid double notification, this will not be sent if WooCommerce triggered this change.', BOOKACTI_PLUGIN_NAME );
-	}
-	
-	return $notifications;
 }
-add_filter( 'bookacti_notifications_default_settings', 'bookacti_add_wc_mention_to_notifications', 10, 1 );
+add_action( 'bookacti_notification_settings_page_global', 'bookacti_display_wc_notification_global_settings', 10, 2 );
 
 
 /**

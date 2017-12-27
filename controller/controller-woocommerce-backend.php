@@ -521,10 +521,10 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 					<?php 
 						$templates_options = '';
 						foreach( $templates as $template ) {
-							$template_title = apply_filters( 'bookacti_translate_text', $template->title );
+							$template_title = apply_filters( 'bookacti_translate_text', $template[ 'title' ] );
 							$templates_options .= '<option '
-													.  'value="' . esc_attr( $template->id ) . '" '
-													. selected( in_array( $template->id, $current_templates ), true, true ) . ' >'
+													.  'value="' . esc_attr( $template[ 'id' ] ) . '" '
+													. selected( in_array( $template[ 'id' ], $current_templates ), true, true ) . ' >'
 														. esc_html( $template_title )
 												.  '</option>';
 						}
@@ -811,10 +811,6 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 		//Retrieve templates and assiociated data
 		$templates = bookacti_fetch_templates();
-		$templates_array = array();
-		foreach( $templates as $template ) {
-			$templates_array[ $template->id ] = $template->title;
-		}
 		$activities = bookacti_fetch_activities_with_templates_association();
 		$categories	= bookacti_get_group_categories_by_template();
 
@@ -845,10 +841,10 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		$current_groups_single_events	= get_post_meta( $variation->ID, 'bookacti_variable_groups_single_events', true );
 		$current_booking_method			= get_post_meta( $variation->ID, 'bookacti_variable_booking_method', true );
 		
-		$is_default_template			= empty( $templates_array ) || $current_templates === 'parent'			|| is_null( $current_templates );
-		$is_default_activity			= empty( $activities )		|| $current_activities === 'parent'			|| is_null( $current_activities );
-		$is_default_group_categories	= empty( $categories )		|| $current_group_categories === 'parent'	|| is_null( $current_group_categories );
-		$is_default_booking_method		= empty( $templates_array ) || $current_booking_method === 'parent'		|| is_null( $current_booking_method );
+		$is_default_template			= empty( $templates )	|| $current_templates === 'parent'			|| is_null( $current_templates );
+		$is_default_activity			= empty( $activities )	|| $current_activities === 'parent'			|| is_null( $current_activities );
+		$is_default_group_categories	= empty( $categories )	|| $current_group_categories === 'parent'	|| is_null( $current_group_categories );
+		$is_default_booking_method		= empty( $templates )	|| $current_booking_method === 'parent'		|| is_null( $current_booking_method );
 	?>
 		
 		<div class='show_if_variation_activity <?php echo $is_active; ?>'>
@@ -890,7 +886,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 						data-loop='<?php echo esc_attr( $loop ); ?>' 
 						data-parent='<?php echo esc_attr( $parent_template_id ); ?>' 
 						<?php 
-							if( count( $templates_array ) > 1 ) { echo 'style="margin-right:10px;"'; } 
+							if( count( $templates ) > 1 ) { echo 'style="margin-right:10px;"'; } 
 							if( is_array( $current_templates ) && count( $current_templates ) > 1 ) { echo 'multiple'; } 
 						?> >
 					<?php 
@@ -903,18 +899,18 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 						</option>
 					<?php
 					} else if( $is_default_template ) {
-						// Return first template id of $templates_array
-						$current_templates = array( current( array_keys( $templates_array ) ) );
+						// Return first template id of $templates
+						$current_templates = array( current( array_keys( $templates ) ) );
 					}
 					
-					foreach( $templates_array as $key => $value ) {
-						$selected = is_array( $current_templates ) ? selected( in_array( $key, $current_templates ), true, false ) : '';
+					foreach( $templates as $template ) {
+						$selected = is_array( $current_templates ) ? selected( in_array( $template[ 'id' ], $current_templates ), true, false ) : '';
 					
 						echo  '<option '
-								. ' value="' . esc_attr( $key ) . '" '
+								. ' value="' . esc_attr( $template[ 'id' ] ) . '" '
 								. $selected
 							. '>'
-								. esc_html( $value )
+								. esc_html( $template[ 'title' ] )
 							. '</option>';
 					}
 					?>

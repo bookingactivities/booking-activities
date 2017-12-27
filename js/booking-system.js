@@ -11,12 +11,7 @@ $j( document ).ready( function() {
 			bookacti_fill_form_fields( $j( this ), event, group_id );
 			bookacti_fill_picked_events_list( $j( this ) );
 		});
-		
-		// Init on submit event action
-		$j( '.bookacti-booking-system-container' ).on( 'bookacti_submit_booking_form', function() {
-		});
-		
-		
+				
 		$j( '.bookacti-booking-system' ).each( function() { 
 			
 			// Retrieve the info required to show the desired events
@@ -30,7 +25,7 @@ $j( document ).ready( function() {
 			// Load the booking system
 			if( attributes.auto_load && booking_system_id !== 'bookacti-booking-system-reschedule' ) {
 				if( bookacti_localized.when_events_load === 'on_page_load' ) {
-					bookacti_booking_method_set_up( booking_system, attributes.method, false );
+					bookacti_booking_method_set_up( booking_system, false );
 				} else {
 					bookacti_reload_booking_system( booking_system );
 				}

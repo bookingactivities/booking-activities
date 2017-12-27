@@ -7,7 +7,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	$templates = bookacti_fetch_templates();
 	$templates_options = '';
 	foreach( $templates as $template ) {
-		$templates_options .= '<option value="' . esc_attr( $template->id ) . '" >' . esc_html( $template->title ) . '</option>';
+		$templates_options .= '<option value="' . esc_attr( $template[ 'id' ] ) . '" >' . esc_html( $template[ 'title' ] ) . '</option>';
 	}
 
 	// Users options list
@@ -592,26 +592,6 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 						<select name='activity-managers[]' id='bookacti-activity-managers-select-box' class='bookacti-items-select-box' multiple >
 						</select>
 						<button type='button' id='bookacti-remove-activity-managers' class='bookacti-remove-items' ><?php esc_html_e( 'Remove selected', BOOKACTI_PLUGIN_NAME ); ?></button>
-					</div>
-				</div>
-				<div id='bookacti-activity-templates-container' class='bookacti-items-container' data-type='templates' >
-					<label id='bookacti-activity-templates-title' class='bookacti-fullwidth-label' >
-					<?php 
-						esc_html_e( 'Make this activity available on calendars:', BOOKACTI_PLUGIN_NAME ); 
-						$tip = __( 'An activity can be used on multiple calendars. You can add this activity to another calendar&apos;s list here. You will also be given the choice to import an existing activity when you will add an activity to the list of another calendar.', BOOKACTI_PLUGIN_NAME );
-						bookacti_help_tip( $tip );
-					?>
-					</label>
-					<div id='bookacti-add-activity-templates-container' >
-						<select id='bookacti-add-new-activity-templates-select-box' class='bookacti-add-new-items-select-box bookacti-template-select-box' >
-							<?php echo $params[ 'templates_options' ]; ?>
-						</select>
-						<button type='button' id='bookacti-add-activity-templates' class='bookacti-add-items' ><?php esc_html_e( 'Add calendar', BOOKACTI_PLUGIN_NAME ); ?></button>
-					</div>
-					<div id='bookacti-activity-templates-list-container' class='bookacti-items-list-container' >
-						<select name='activity-templates[]' id='bookacti-activity-templates-select-box' class='bookacti-items-select-box' multiple >
-						</select>
-						<button type='button' id='bookacti-remove-activity-templates' class='bookacti-remove-items' ><?php esc_html_e( 'Remove selected', BOOKACTI_PLUGIN_NAME ); ?></button>
 					</div>
 				</div>
 			<?php

@@ -16,6 +16,7 @@ function bookacti_define_default_settings_constants() {
 	
 	if( ! defined( 'BOOKACTI_BOOKING_METHOD' ) )						{ define( 'BOOKACTI_BOOKING_METHOD', 'calendar' ); }
 	if( ! defined( 'BOOKACTI_WHEN_EVENTS_LOAD' ) )						{ define( 'BOOKACTI_WHEN_EVENTS_LOAD', 'on_page_load' ); }
+	if( ! defined( 'BOOKACTI_EVENT_LOAD_INTERVAL' ) )					{ define( 'BOOKACTI_EVENT_LOAD_INTERVAL', 92 ); }
 	if( ! defined( 'BOOKACTI_STARTED_EVENTS_BOOKABLE' ) )				{ define( 'BOOKACTI_STARTED_EVENTS_BOOKABLE', '0' ); }
 	if( ! defined( 'BOOKACTI_DEFAULT_BOOKING_STATE' ) )					{ define( 'BOOKACTI_DEFAULT_BOOKING_STATE', 'pending' ); }
 	if( ! defined( 'BOOKACTI_TIMEZONE' ) )								{ $date = new DateTime(); $tz = $date->getTimezone()->getName(); define( 'BOOKACTI_TIMEZONE', $tz ); }
@@ -64,6 +65,7 @@ function bookacti_init_settings_values() {
 	$default_general_settings = get_option( 'bookacti_general_settings' );
 	if( ! isset( $default_general_settings['booking_method'] ) )			{ $default_general_settings['booking_method']			= BOOKACTI_BOOKING_METHOD; }
 	if( ! isset( $default_general_settings['when_events_load'] ) )			{ $default_general_settings['when_events_load']			= BOOKACTI_WHEN_EVENTS_LOAD; }
+	if( ! isset( $default_general_settings['event_load_interval'] ) )		{ $default_general_settings['event_load_interval']		= BOOKACTI_EVENT_LOAD_INTERVAL; }
 	if( ! isset( $default_general_settings['started_events_bookable'] ) )	{ $default_general_settings['started_events_bookable']	= BOOKACTI_STARTED_EVENTS_BOOKABLE; }
 	if( ! isset( $default_general_settings['default_booking_state'] ) )		{ $default_general_settings['default_booking_state']	= BOOKACTI_DEFAULT_BOOKING_STATE; }
 	if( ! isset( $default_general_settings['date_format'] ) )				{ $default_general_settings['date_format']				= BOOKACTI_DATE_FORMAT; }
@@ -112,6 +114,7 @@ function bookacti_reset_settings() {
 	$default_general_settings = array();
 	$default_general_settings['booking_method']				= BOOKACTI_BOOKING_METHOD;
 	$default_general_settings['when_events_load']			= BOOKACTI_WHEN_EVENTS_LOAD;
+	$default_general_settings['event_load_interval']		= BOOKACTI_EVENT_LOAD_INTERVAL;
 	$default_general_settings['started_events_bookable']	= BOOKACTI_STARTED_EVENTS_BOOKABLE;
 	$default_general_settings['default_booking_state']		= BOOKACTI_DEFAULT_BOOKING_STATE;
 	$default_general_settings['date_format']				= BOOKACTI_DATE_FORMAT;
@@ -141,6 +144,7 @@ function bookacti_delete_settings() {
 	delete_option( 'bookacti_cancellation_settings' );
 	delete_option( 'bookacti_general_settings' );
 	delete_option( 'bookacti_notifications_settings' );
+	delete_option( 'bookacti_messages_settings' );
 	
 	do_action( 'bookacti_delete_settings' );
 }
@@ -285,6 +289,25 @@ function bookacti_settings_section_bookings_callback() { }
 							),
 			'value'		=> bookacti_get_setting_value( 'bookacti_general_settings', 'when_events_load' ),
 			'tip'		=> apply_filters( 'bookacti_when_events_load_tip', __( 'Choose whether you want to load events when the page is loaded (faster) or after.', BOOKACTI_PLUGIN_NAME ) )
+		);
+		bookacti_display_field( $args );
+	}
+	
+
+	/**
+	 * Display Event Load Interval setting
+	 * 
+	 * @since 1.2.2
+	 */
+	function bookacti_settings_field_event_load_interval_callback() {
+		$args = array(
+			'type'		=> 'number',
+			'name'		=> 'bookacti_general_settings[event_load_interval]',
+			'id'		=> 'event_load_interval',
+			'options'	=> array( 'min' => 1 ),
+			'label'		=> ' ' . esc_html__( 'days', BOOKACTI_PLUGIN_NAME ),
+			'value'		=> bookacti_get_setting_value( 'bookacti_general_settings', 'event_load_interval' ),
+			'tip'		=> __( 'Events are loaded at intervals as the user navigates the calendar. E.g.: If you set "92", events will be loaded for 92 days. When the user reaches the 92nd days on the calendar, events of the next 92 days will be loaded.', BOOKACTI_PLUGIN_NAME )
 		);
 		bookacti_display_field( $args );
 	}
@@ -799,13 +822,21 @@ function bookacti_settings_section_bookings_callback() { }
 	 * Get a custom message by id
 	 * 
 	 * @since 1.2.0
+	 * @version 1.2.2
 	 * @param string $message_id
 	 * @param boolean $raw Whether to retrieve the raw value from database or the option parsed through get_option
 	 * @return string
 	 */
 	function bookacti_get_message( $message_id, $raw = false ) {
 		$messages = bookacti_get_messages( $raw );
-		return $messages[ $message_id ] ? $messages[ $message_id ][ 'value' ] : '';
+		
+		$message = $messages[ $message_id ] ? $messages[ $message_id ][ 'value' ] : '';
+		
+		if( ! $raw ) {
+			$message = apply_filters( 'bookacti_translate_text', $message );
+		}
+		
+		return $message;
 	}
 	
 	
