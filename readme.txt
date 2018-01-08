@@ -301,6 +301,10 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 
 == Changelog ==
 
+= 1.2.3 - 2018/01 =
+* Fix - AJAX error when creating an activity with PHP 7.1+
+* Fix - Fatal error when trying to update activity which doesn't have events on calendar
+
 = 1.2.2 - 2017/12/27 =
 * Feature - Booking Activities' notifications can now be sent along WooCommerce's notifications
 * Optimization - Events are loaded significantly faster
@@ -313,7 +317,7 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 * Tweak - Pressing ENTER key now brings focus "OK" button on dialogs of calendar editor
 * Fix - Loading feedback was displayed before booking system title
 * Fix - Alert pop-up was sometimes displayed on frontend with a permission-related error message
-* Fix - Bookings could still be pending after an WC order failed
+* Fix - Bookings could still be pending after a WC order failed
 * Fix - Bookings status were not up to date in WooCommerce's notifications
 * Fix - Events didn't appear when "repeat to" value was set to tomorrow
 * Fix - Custom messages were not translated on multilangual sites
