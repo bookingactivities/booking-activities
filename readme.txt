@@ -5,7 +5,7 @@ Tags: booking activities, booking sport, booking form, event reservation, reserv
 Requires at least: 3.6
 Tested up to: 4.9
 Requires PHP: 5.3
-Stable tag: 1.2.2
+Stable tag: 1.2.3
 License: GPLv3 or later
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
 
@@ -301,7 +301,7 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 
 == Changelog ==
 
-= 1.2.3 - 2018/01 =
+= 1.2.3 - 2018/01/09 =
 * Fix - AJAX error when creating an activity with PHP 7.1+
 * Fix - Fatal error when trying to update activity which doesn't have events on calendar
 
