@@ -834,7 +834,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			$groups_list		= bookacti_get_template_groups_of_events_list( $template_id );
 			
 			$bookings			= bookacti_get_number_of_bookings_by_events( $template_id );
-			$activities_data	= bookacti_get_activities_by_template( $template_id, true );
+			$activities_data	= bookacti_get_activities_by_template( $template_id, false );
 			$groups_events		= bookacti_get_groups_events( $template_id );
 			$groups_data		= bookacti_get_groups_of_events_by_template( $template_id );
 			$categories_data	= bookacti_get_group_categories_by_template( $template_id );
@@ -1005,7 +1005,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 			if( $inserted ) {
 
-				$activities_data = bookacti_get_activities_by_template( $template_id, true );
+				$activities_data = bookacti_get_activities_by_template( $template_id, false );
 
 				wp_send_json( array( 'status' => 'success', 'activity_ids' => $activity_ids, 'activities_data' => $activities_data ) );
 			} else if( $was_empty ) {

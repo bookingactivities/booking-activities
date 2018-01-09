@@ -1746,7 +1746,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	 * @param int $activity_resizable
 	 * @return int|false
 	 */
-    function bookacti_insert_activity( $activity_title, $activity_color, $activity_availability, $activity_duration, $activity_resizable, $activity_managers, $activity_templates, $activity_settings ) {
+    function bookacti_insert_activity( $activity_title, $activity_color, $activity_availability, $activity_duration, $activity_resizable ) {
         global $wpdb;
 
         $wpdb->insert( 
