@@ -126,34 +126,107 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	
 	
 	/**
-	 * Get all bookings bound to an event
+	 * Format booking filters
 	 * 
-	 * @param int $event_id
-	 * @param string $event_start
-	 * @param string $event_end
-	 * @param int $template_id
+	 * @since 1.3.0
+	 * @param array $filters 
 	 * @return array
 	 */
-	function bookacti_get_bookings_data_for_bookings_list( $event_id, $event_start, $event_end, $template_id = NULL ) {
+	function bookacti_format_booking_filters( $filters ) {
 
-		// Retrieve inactive and temporary bookings ?
-		$active_only	= true;
+		// Whether to retrieve inactive bookings ?
+		$active_only = true;
 		$show_inactive_bookings	= bookacti_get_setting_value_by_user( 'bookacti_bookings_settings', 'show_inactive_bookings' );
-		
 		if( intval( $show_inactive_bookings ) === 1 ) { $active_only = false; }
 
-		$booking_data = apply_filters( 'bookacti_get_bookings_data_for_bookings_list', array(
-			'template_id'	=> $template_id, 
-			'event_id'		=> $event_id, 
-			'event_start'	=> $event_start, 
-			'event_end'		=> $event_end, 
-			'active_only'	=> $active_only, 
-			'state_not_in'	=> array()
-		) );
-
-		$bookings = bookacti_get_bookings( $booking_data[ 'template_id' ], 0, $booking_data[ 'event_id' ], $booking_data[ 'event_start' ], $booking_data[ 'event_end' ], $booking_data[ 'active_only' ], $booking_data[ 'state_not_in' ] );
+		$default_filters = apply_filters( 'bookacti_default_booking_filters', array(
+			'templates'			=> array(), 
+			'activities'		=> array(), 
+			'booking_group_id'	=> 0, 
+			'event_group_id'	=> 0, 
+			'event_id'			=> 0, 
+			'event_start'		=> '', 
+			'event_end'			=> '', 
+			'active_only'		=> $active_only, 
+			'status'			=> array( 'booked', 'pending', 'cancelled', 'refunded', 'refund_requested' ), 
+			'order_by'			=> array( 'creation_date', 'id', 'event_start' ), 
+			'order'				=> 'desc' 
+		));
 		
-		return $bookings;
+		$formatted_filters = array();
+		foreach( $default_filters as $filter => $default_value ) {
+			// If a filter isn't set, use the default value
+			if( ! isset( $filters[ $filter ] ) ) {
+				$formatted_filters[ $filter ] = $default_value;
+				continue;
+			}
+			
+			$current_value = $filters[ $filter ];
+			
+			// Else, check if its value is correct, or use default
+			if( in_array( $filter, array( 'templates' ) ) ) {
+				if( is_numeric( $current_value ) ) { $current_value = array( $current_value ); }
+				if( is_array( $current_value ) ) {
+					// Check if current user is allowed to manage desired templates, or unset them
+					if( ! empty( $current_value ) ) {
+						foreach( $current_value as $i => $template_id ) {
+						if( ! bookacti_user_can_manage_template( $template_id ) ) {
+								unset( $current_value[ $i ] );
+							}
+						}
+					}
+					// Re-check if the template list is empty because some template filters may have been removed
+					// and get all allowed templates if it is empty
+					if( empty( $current_value ) ) {
+						$current_value = array_keys( bookacti_fetch_templates() );
+					}
+				}
+				else { $current_value = $default_value; }
+				
+			} else if( in_array( $filter, array( 'activities' ), true ) ) {
+				if( is_numeric( $current_value ) )	{ $current_value = array( $current_value ); }
+				if( ! is_array( $current_value ) )	{ $current_value = $default_value; }
+				
+			} else if( in_array( $filter, array( 'status', 'order_by' ), true ) ) {
+				if( is_string( $current_value ) )	{ $current_value = array( $current_value ); }
+				if( ! is_array( $current_value ) )	{ $current_value = $default_value; }
+				
+			} else if( in_array( $filter, array( 'booking_group_id', 'event_group_id', 'event_id' ), true ) ) {
+				if( ! is_numeric( $current_value ) ){ $current_value = $default_value; }
+			
+			} else if( in_array( $filter, array( 'event_start', 'event_end' ), true ) ) {
+				$current_value = bookacti_sanitize_datetime( $current_value );
+				if( $current_value ) { $current_value = bookacti_format_datetime( $current_value ); }
+				else { $current_value = $default_value; }
+			
+			} else if( $filter === 'active_only' ) {
+				if( in_array( $current_value, array( true, 'true', 1, '1' ), true ) )	{ $current_value = true; }
+				if( in_array( $current_value, array( false, 'false', 0, '0' ), true ) )	{ $current_value = false; }
+				if( ! is_bool( $current_value ) ) { $current_value = $default_value; }
+				
+			} else if( $filter === 'order_by' ) {
+				$sortable_columns = array( 
+					'id', 
+					'user_id', 
+					'event_id', 
+					'event_start', 
+					'event_end', 
+					'state', 
+					'quantity', 
+					'template_id', 
+					'activity_id', 
+					'creation_date' 
+				);
+				if( ! in_array( $current_value, $sortable_columns, true ) ) { $current_value = $default_value; }
+				
+			} else if( $filter === 'order' ) {
+				if( ! in_array( $current_value, array( 'asc', 'desc' ), true ) ) { $current_value = $default_value; }
+			}
+			
+			$formatted_filters[ $filter ] = $current_value;
+		}
+		
+		return $formatted_filters;
 	}
 	
 	

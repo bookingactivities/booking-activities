@@ -240,6 +240,43 @@ function bookacti_init_settings() {
 add_action( 'admin_init', 'bookacti_init_settings' );
 
 
+
+// SCREEN OPTIONS
+
+/**
+ * Add screen options
+ * 
+ * @since 1.3.0
+ */
+function bookacti_add_screen_options() {
+	add_action( 'load-booking-activities_page_bookacti_bookings', 'bookacti_display_bookings_screen_options' );
+}
+add_action( 'admin_menu', 'bookacti_add_screen_options', 20 );
+
+/**
+ * Add booking page columns screen options
+ */
+function bookacti_add_booking_page_screen_option() {
+	new Bookings_List_Table();
+}
+add_action( 'admin_head-booking-activities_page_bookacti_bookings', 'bookacti_add_booking_page_screen_option' );
+
+
+/**
+ * Save screen options
+ * 
+ * @since 1.3.0
+ */
+function bookacti_save_bookings_screen_options( $status, $option, $value ) {
+	if( 'bookacti_bookings_per_page' == $option ) {
+		return $value;
+	}
+	return $status;
+}
+add_filter( 'set-screen-option', 'bookacti_save_bookings_screen_options', 10, 3 );
+
+
+
 // NOTIFICATIONS
 
 /**

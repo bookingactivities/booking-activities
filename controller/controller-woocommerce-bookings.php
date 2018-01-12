@@ -259,6 +259,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	/**
 	 * Fill booking list columns
 	 * 
+	 * @version 1.3.0
 	 * @param array $booking_item
 	 * @param object $booking
 	 * @param WP_User $user
@@ -266,6 +267,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	 */
 	function bookacti_woocommerce_fill_booking_list_custom_columns( $booking_item, $booking, $user ) {
 		
+		$customer = '';
 		if( $user ) {
 			if( is_numeric( $booking->user_id ) && $user->billing_first_name && $user->billing_last_name ) {
 				$customer = '<a '
@@ -305,13 +307,14 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	/**
 	 * Reorder columns from booking list
 	 * 
+	 * @version 1.3.0
 	 * @param array $columns_order
 	 * @return array
 	 */
 	function bookacti_woocommerce_order_booking_list_custom_columns( $columns_order ) {
 		
-		$columns_order[ 24 ] = 'email';
-		$columns_order[ 27 ] = 'phone';
+		$columns_order[ 34 ] = 'email';
+		$columns_order[ 37 ] = 'phone';
 		
 		return $columns_order;
 	}
@@ -319,19 +322,18 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	
 	
 	/**
-	 * Filter booking list before retrieving bookings
+	 * Change booking filters
 	 * 
-	 * @param array $bookings_data
+	 * @version 1.3.0 (was bookacti_filter_bookings_list_before_retrieving_bookings)
+	 * @param array $filters
 	 * @return array
 	 */
-	function bookacti_filter_bookings_list_before_retrieving_bookings( $bookings_data ) {
-		$show_temporary_bookings = bookacti_get_setting_value_by_user( 'bookacti_bookings_settings', 'show_temporary_bookings' );
-		if( intval( $show_temporary_bookings ) === 0 ) { $bookings_data[ 'state_not_in' ][] = 'in_cart'; }
-		
-		return $bookings_data;
+	function bookacti_wc_default_booking_filters( $filters ) {
+		$filters[ 'states' ][] = 'in_cart';
+		return $filters;
 	}
-	add_filter( 'bookacti_get_bookings_data_for_bookings_list', 'bookacti_filter_bookings_list_before_retrieving_bookings', 10 );
-	add_filter( 'bookacti_get_booking_groups_data_for_bookings_list', 'bookacti_filter_bookings_list_before_retrieving_bookings', 10 );
+	add_filter( 'bookacti_default_booking_filters', 'bookacti_wc_default_booking_filters', 10 );
+	add_filter( 'bookacti_get_booking_groups_data_for_bookings_list', 'bookacti_wc_default_booking_filters', 10 );
 
 
 

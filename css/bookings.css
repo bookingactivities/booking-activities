@@ -39,7 +39,6 @@ span:not(.bookacti-not-booked) .bookacti-active-bookings-number				{ font-weight
 #bookacti-bookings-list-container .has-row-actions				{ position: relative; }
 #bookacti-bookings-list-container .has-row-actions .toggle-row	{ display: block; }
 
-#bookacti-bookings-list-container .tablenav			{ display: none; }
 #bookacti-bookings-list-container .column-id		{ width: 6%; white-space: nowrap; }
 #bookacti-bookings-list-container .column-quantity	{ width: 6%; white-space: nowrap; }
 #bookacti-bookings-list-container .column-state		{ width: 15%; }

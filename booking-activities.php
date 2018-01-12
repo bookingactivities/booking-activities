@@ -309,8 +309,10 @@ function bookacti_check_version( $from_activate = false ) {
 
 
 // ADMIN MENU
-add_action( 'admin_menu', 'bookacti_create_menu' );
-function bookacti_create_menu(){
+/**
+ * Create the Admin Menu
+ */
+function bookacti_create_menu() {
     // Add a menu and submenus
     $icon_url = 'dashicons-calendar-alt';
     add_menu_page( __( 'Booking Activities', BOOKACTI_PLUGIN_NAME ), _x( 'Booking Activities', 'Name of the tab in the menu', BOOKACTI_PLUGIN_NAME ), 'bookacti_manage_booking_activities', 'booking-activities', null, $icon_url, '56.5' );
@@ -319,6 +321,7 @@ function bookacti_create_menu(){
 	add_submenu_page( 'booking-activities',	__( 'Bookings', BOOKACTI_PLUGIN_NAME ),									__( 'Bookings', BOOKACTI_PLUGIN_NAME ),						'bookacti_manage_bookings',						'bookacti_bookings',	'bookacti_bookings_page' );
     add_submenu_page( 'booking-activities',	__( 'Settings', BOOKACTI_PLUGIN_NAME ),									__( 'Settings', BOOKACTI_PLUGIN_NAME ),						'bookacti_manage_booking_activities_settings',	'bookacti_settings',	'bookacti_settings_page' );
 }
+add_action( 'admin_menu', 'bookacti_create_menu' );
 
 
 // Landing Page

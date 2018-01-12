@@ -194,77 +194,112 @@ function bookacti_update_booking_quantity( $booking_id, $new_quantity, $expirati
 	
 
 /**
- * Get all bookings of a template or an event
+ * Get bookings according to filters
  * 
- * @version 1.1.0
- * 
+ * @version 1.3.0
  * @global wpdb $wpdb
- * @param int $template_id
- * @param int $booking_group_id
- * @param int $event_id
- * @param string $event_start
- * @param string $event_end
- * @param boolean $active_only
- * @param array $state_not_in
+ * @param array $filters
  * @return array
  */
-function bookacti_get_bookings( $template_id = NULL, $booking_group_id = NULL, $event_id = NULL, $event_start = NULL, $event_end = NULL, $active_only = true, $state_not_in = array() ) {
+function bookacti_get_bookings( $filters ) {
 	global $wpdb;
+	
+	$bookings_query = ' SELECT DISTINCT B.*, E.title as event_title, A.id as activity_id, A.title as activity_title, T.id as template_id, T.title as template_title ' 
+					. ' FROM ' . BOOKACTI_TABLE_BOOKINGS . ' as B, ' . BOOKACTI_TABLE_EVENTS . ' as E, ' . BOOKACTI_TABLE_ACTIVITIES . ' as A, ' . BOOKACTI_TABLE_TEMPLATES . ' as T, ' . BOOKACTI_TABLE_BOOKING_GROUPS . ' as BG '
+					. ' WHERE B.event_id = E.id '
+					. ' AND B.event_id = E.id '
+					. ' AND E.activity_id = A.id '
+					. ' AND E.template_id = T.id ';
 
-	$bookings_query = ' SELECT B.* ' 
-					. ' FROM ' . BOOKACTI_TABLE_BOOKINGS . ' as B, ' . BOOKACTI_TABLE_EVENTS . ' as E '
-					. ' WHERE B.event_id = E.id ';
-
-	if( $active_only ) {
+	if( $filters[ 'active_only' ] ) {
 		$bookings_query .= ' AND B.active = 1 ';
 	}
 
 	$array_of_variables = array();
 
-	if( ! empty( $state_not_in ) ) {
-		$bookings_query .= ' AND B.state NOT IN ( %s ';
-		if( count( $state_not_in ) >= 2 )  {
-			for( $i = 0; $i < count( $state_not_in ) - 1; $i++ ) {
+	if( $filters[ 'status' ] ) {
+		$bookings_query .= ' AND B.state IN ( %s ';
+		$array_count = count( $filters[ 'status' ] );
+		if( $array_count >= 2 ) {
+			for( $i=1; $i<$array_count; ++$i ) {
 				$bookings_query  .= ', %s ';
 			}
 		}
 		$bookings_query  .= ') ';
-		$array_of_variables = array_merge( $array_of_variables, $state_not_in );
+		$array_of_variables = array_merge( $array_of_variables, $filters[ 'status' ] );
+	}
+	
+	if( $filters[ 'templates' ] ) {
+		$bookings_query .= ' AND E.template_id IN ( %d ';
+		$array_count = count( $filters[ 'templates' ] );
+		if( $array_count >= 2 )  {
+			for( $i=1; $i<$array_count; ++$i ) {
+				$bookings_query  .= ', %d ';
+			}
+		}
+		$bookings_query  .= ') ';
+		$array_of_variables = array_merge( $array_of_variables, $filters[ 'templates' ] );
+	}
+	
+	if( $filters[ 'activities' ] ) {
+		$bookings_query .= ' AND E.activity_id IN ( %d ';
+		$array_count = count( $filters[ 'activities' ] );
+		if( $array_count >= 2 )  {
+			for( $i=1; $i<$array_count; ++$i ) {
+				$bookings_query  .= ', %d ';
+			}
+		}
+		$bookings_query  .= ') ';
+		$array_of_variables = array_merge( $array_of_variables, $filters[ 'activities' ] );
+	}
+	
+	if( is_numeric( $filters[ 'booking_group_id' ] ) && $filters[ 'booking_group_id' ] != 0 ) {
+		$bookings_query  .= ' AND B.group_id = %d ';
+		$array_of_variables[] =  intval( $filters[ 'booking_group_id' ] );
+	} else if( $filters[ 'booking_group_id' ] === 'none' ) {
+		$bookings_query  .= ' AND B.group_id IS NULL ';
+	}
+	
+	if( $filters[ 'event_group_id' ] ) {
+		$bookings_query .=	' AND E.group_id = BG.event_group_id '
+						.	' AND BG.event_group_id = %d ';
+		$array_of_variables[] = $filters[ 'event_group_id' ];
+	}
+	
+	if( $filters[ 'event_id' ] ) {
+		$bookings_query .= ' AND B.event_id = %d ';
+		$array_of_variables[] = $filters[ 'event_id' ];
 	}
 
-	if( $booking_group_id !== NULL ) {
-		if( $booking_group_id === 0 ) {
-			$bookings_query  .= ' AND B.group_id IS NULL ';
-		} else if( is_int( $booking_group_id ) && $booking_group_id > 0 ) {
-			$bookings_query  .= ' AND B.group_id = %d ';
-			$array_of_variables[] =  $booking_group_id;
+	if( $filters[ 'event_start' ] ) {
+		$bookings_query .= ' AND B.event_start = %s ';
+		$array_of_variables[] = $filters[ 'event_start' ];
+	}
+
+	if( $filters[ 'event_end' ] ) {
+		$bookings_query .= ' AND B.event_end = %s ';
+		$array_of_variables[] = $filters[ 'event_end' ];
+	}
+	
+	if( $filters[ 'order_by' ] ) {
+		$bookings_query .= ' ORDER BY ' . $filters[ 'order_by' ][ 0 ];
+		$array_count = count( $filters[ 'order_by' ] );
+		if( $array_count >= 2 )  {
+			for( $i=1; $i<$array_count; ++$i ) {
+				$bookings_query  .= ', ' . $filters[ 'order_by' ][ $i ];
+			}
+		}
+		
+		if( $filters[ 'order' ] ) {
+			$bookings_query .= ' ' . $filters[ 'order' ];
 		}
 	}
 	
-	if( $event_id ) {
-		$bookings_query .= ' AND B.event_id = %d ';
-		$array_of_variables[] = $event_id;
+	if( $array_of_variables ) {
+		$bookings_query = $wpdb->prepare( $bookings_query, $array_of_variables );
 	}
-
-	if( $template_id ) {
-		$bookings_query .= ' AND E.template_id = %d ';
-		$array_of_variables[] =  $template_id;
-	}
-
-	if( $event_start ) {
-		$bookings_query .= ' AND B.event_start = %s ';
-		$array_of_variables[] =  $event_start;
-	}
-
-	if( $event_end ) {
-		$bookings_query .= ' AND B.event_end = %s ';
-		$array_of_variables[] =  $event_end;
-	}
-
-	$bookings_query .= ' ORDER BY B.event_start, B.event_end ASC ';
-
-	$prepare_bookings_query = $wpdb->prepare( $bookings_query, $array_of_variables );
-	$bookings = $wpdb->get_results( $prepare_bookings_query, OBJECT );
+	
+	$bookings = $wpdb->get_results( $bookings_query, OBJECT );
 	
 	return $bookings;
 }
@@ -941,7 +976,7 @@ function bookacti_reschedule_booking( $booking_id, $event_id, $event_start, $eve
 		if( ! empty( $state_not_in ) ) {
 			$query .= ' AND state NOT IN ( %s ';
 			if( count( $state_not_in ) >= 2 )  {
-				for( $i = 0; $i < count( $state_not_in ) - 1; $i++ ) {
+				for( $i = 0; $i < count( $state_not_in ) - 1; ++$i ) {
 					$query  .= ', %s ';
 				}
 			}

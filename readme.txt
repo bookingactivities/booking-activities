@@ -301,6 +301,10 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 
 == Changelog ==
 
+= 1.3.0 - 2018/01 =
+* Tweak - Booking list is now paginated and columns can be hidden (in screen options) and sorted
+* Tweak - ON/OFF button: clearly display "ON" and "OFF" for a better understanding
+
 = 1.2.3 - 2018/01/09 =
 * Fix - AJAX error when creating an activity with PHP 7.1+
 * Fix - Fatal error when trying to update activity which doesn't have events on calendar

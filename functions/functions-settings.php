@@ -240,7 +240,7 @@ function bookacti_settings_section_bookings_callback() { }
 
 
 
-//GENERAL SETTINGS 
+// GENERAL SETTINGS 
 
 	/**
 	 * Display "Booking method" setting
@@ -851,6 +851,26 @@ function bookacti_settings_section_bookings_callback() { }
 	function bookacti_settings_field_templates_filter_callback() { }
 	function bookacti_settings_field_activities_filter_callback() { }
 	function bookacti_settings_field_show_inactive_bookings_callback() { }
+	
+	/**
+	 * Display Booking page options in screen options area
+	 * 
+	 * @since 1.3
+	 */
+	function bookacti_display_bookings_screen_options() {
+		$screen = get_current_screen();
+
+		// Don't do anything if we are not on the booking page
+		if( ! is_object( $screen ) || $screen->id != 'booking-activities_page_bookacti_bookings' ) { return; }
+
+		// Bookings per page
+		add_screen_option( 'per_page', array(
+			'label' => __( 'Bookings per page:', BOOKACTI_PLUGIN_NAME ),
+			'default' => 20,
+			'option' => 'bookacti_bookings_per_page'
+		));
+	}
+	
 	
 	
 // RESET NOTICES

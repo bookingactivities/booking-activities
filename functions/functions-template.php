@@ -4,7 +4,13 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 
 // PERMISSIONS
-	// CHECK IF USER IS ALLOWED TO MANAGE TEMPLATE
+	/**
+	 * Check if user is allowed to manage template
+	 * 
+	 * @param int $template_id
+	 * @param int $user_id
+	 * @return boolean
+	 */
 	function bookacti_user_can_manage_template( $template_id, $user_id = false ) {
 
 		$user_can_manage_template = false;
