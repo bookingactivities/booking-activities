@@ -1,11 +1,32 @@
-//Launch dialogs
-function bookacti_bind_bookings_dialogs( booking_system ) {
-    $j( '#bookacti-bookings-filters-param-gear' ).on( 'click', 'img', function() {
-        bookacti_dialog_bookings_filters_param( booking_system ); 
-    });
-    $j( '#bookacti-bookings-list-param-gear' ).on( 'click', 'img', function() {
-        bookacti_dialog_booking_list_param( booking_system ); 
-    });
+// Init booking filter action
+function bookacti_init_booking_filters_actions() {
+	// Pick an event on the calendar
+	$j( '#bookacti-pick-event-filter' ).on( 'click', function() {
+		// Show/hide calendar
+	});
+
+	// Apply filters
+	$j( '#bookacti-booking-list-filters-form' ).on( 'submit', function( e ) {
+		//e.preventDefault();
+		// Fill booking list (reload the page ?)
+		//bookacti_filter_booking_list();
+	});
+}
+
+
+// Filter the booking list with current filters values
+function bookacti_filter_booking_list() {
+	var data = $j( '#bookacti-booking-list-filters-form' ).serializeObject();
+	var serialized = $j( '#bookacti-booking-list-filters-form' ).serialize();
+		
+	// Update the URL without refreshing the page
+//	var newurl = window.location.protocol + "//" + window.location.host + window.location.pathname + '?page=bookacti_bookings&' + serialized;
+//	window.history.pushState({path:newurl},'',newurl);
+	
+	// Refresh the page to apply filters
+//	data.page = 'bookacti_bookings';
+//	var url_parameters = $j.param( data );
+//	window.location.replace( form.attr( 'action' ) );
 }
 
 
@@ -55,43 +76,6 @@ function bookacti_init_booking_actions() {
 			}
 		}
 	});
-}
-
-
-// Init booking filters
-function bookacti_init_booking_filters( booking_system ) {
-    $j( '.bookacti-bookings-filter-activity, .bookacti-bookings-filter-template' ).off( 'click' ).on( 'click', function( e ){
-		bookacti_select_bookings_filter( e, booking_system, $j( this ) );
-		
-		if( $j( this ).hasClass( 'bookacti-bookings-filter-template' ) ) {
-			bookacti_filter_bookings_by_templates( booking_system );
-		} else if( $j( this ).hasClass( 'bookacti-bookings-filter-activity' ) ) {
-			bookacti_filter_bookings_by_activities( booking_system );
-		}
-	});
-	
-	// Apply activity filters on first load
-	bookacti_filter_bookings_by_activities( booking_system );
-}
-
-
-// Select bookings filters
-function bookacti_select_bookings_filter( e, booking_system, selected_filter ) {
-	
-	e = e || false;
-	
-	// Select the filters (press CTRL to select multiple for non touch devices)
-	if( e && ! bookacti.is_touch_device ) {
-		if( ! e.ctrlKey ) {
-			selected_filter.parent().find( '.bookacti-bookings-filter' ).attr( 'selected', false );
-		}
-	}
-	
-	if( selected_filter.is( '[selected]' ) ) {
-		selected_filter.attr( 'selected', false );
-	} else {
-		selected_filter.attr( 'selected', true );
-	}
 }
 
 
@@ -267,27 +251,6 @@ function bookacti_fill_booking_list( booking_system, event, event_group_id, book
 			bookacti_stop_loading_booking_system( booking_system );
 		}
 	});
-}
-
-
-// Deactivate booking filters & booking list action buttons & dialogs
-function bookacti_bookings_enter_loading_state( booking_system ) {
-	$j( '.bookacti-bookings-title-gear' ).off( 'click' );
-	$j( '.bookacti-bookings-filter' ).off( 'click' );
-	
-	$j( '.bookacti-bookings-title-gear' ).attr( 'disabled', true );
-	$j( '.bookacti-bookings-filter-content' ).attr( 'disabled', true );
-	$j( '#bookacti-bookings-list .bookacti-booking-action' ).attr( 'disabled', true );
-}
-
-// Deactivate booking list action buttons
-function bookacti_bookings_exit_loading_state( booking_system ) {
-	bookacti_init_booking_filters( booking_system );
-	bookacti_bind_bookings_dialogs( booking_system );
-	
-	$j( '.bookacti-bookings-title-gear' ).attr( 'disabled', false );
-	$j( '.bookacti-bookings-filter-content' ).attr( 'disabled', false );
-	$j( '#bookacti-bookings-list .bookacti-booking-action' ).attr( 'disabled', false );
 }
 
 

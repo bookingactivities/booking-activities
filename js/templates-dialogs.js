@@ -1048,37 +1048,15 @@ function bookacti_dialog_import_activity() {
 								// Update activities data array
 								bookacti.booking_system[ 'bookacti-template-calendar' ][ 'activities_data' ] = response.activities_data;
 								
-								var plugin_path = bookacti_localized.plugin_path;
-								var activity_list = '';
-
+								// Refresh the draggable activity list
+								if( response.activity_list ) {
+									$j( '#bookacti-template-activity-list' ).empty().append( response.activity_list );
+								}
+							
+								// Remove the added activity from the import activity select box
 								$j.each( activity_ids, function( i, activity_id ) {
-									// Add the selectd activity to draggable activity list
-									activity_list	+= "<div class='activity-row'>"
-													+       "<div class='activity-show-hide' >"
-													+           "<img src='" + plugin_path + "/img/show.png' data-activity-id='" + activity_id + "' data-activity-visible='1' />"
-													+       "</div>"
-													+       "<div class='activity-container'>"
-													+           "<div class='fc-event ui-draggable ui-draggable-handle' "
-													+           "data-title='"			+ $j( 'select#activities-to-import option[value="' + activity_id + '"]' ).attr( 'data-title' ) + "' "
-													+           "data-activity-id='"	+ activity_id + "' "
-													+           "data-color='"			+ $j( 'select#activities-to-import option[value="' + activity_id + '"]' ).attr( 'data-color' ) + "' "
-													+           "data-availability='"	+ $j( 'select#activities-to-import option[value="' + activity_id + '"]' ).attr( 'data-availability' ) + "' "
-													+           "data-duration='"		+ $j( 'select#activities-to-import option[value="' + activity_id + '"]' ).attr( 'data-duration' ) + "' "
-													+           "data-resizable='"		+ $j( 'select#activities-to-import option[value="' + activity_id + '"]' ).attr( 'data-resizable' ) + "' "
-													+           ">"
-													+               $j( 'select#activities-to-import option[value="' + activity_id + '"]' ).html()
-													+           "</div>"
-													+       "</div>"
-													+       "<div class='activity-gear' >"
-													+           "<img src='" + plugin_path + "/img/gear.png' data-activity-id='" + activity_id + "' />"
-													+       "</div>"
-													+  "</div>";
-
-									// Remove the added activity from the select box
 									$j( 'select#activities-to-import option[value="' + activity_id + '"]' ).remove();
 								});
-
-								$j( '#bookacti-template-activity-list' ).append( activity_list );
 								
 								//Reinitialize the activities to apply changes
 								bookacti_init_activities();
@@ -1192,29 +1170,10 @@ function bookacti_dialog_create_activity() {
 								// Update activities data array
 								bookacti.booking_system[ 'bookacti-template-calendar' ][ 'activities_data' ][ response.activity_id ] = response.activity_data;
 								
-								// Display activity row
-								$j( '#bookacti-template-activity-list' ).append(
-									"<div class='activity-row'>"
-								+       "<div class='activity-show-hide' >"
-								+           "<img src='" + plugin_path + "/img/show.png' data-activity-id='" + response.activity_id + "' data-activity-visible='1' />"
-								+       "</div>"
-								+       "<div class='activity-container'>"
-								+           "<div class='fc-event ui-draggable ui-draggable-handle' "
-								+           "data-title='" + response.activity_data.multilingual_title + "' "
-								+           "data-activity-id='" + response.activity_id + "' "
-								+           "data-color='" + color + "' "
-								+           "data-availability='" + availability + "' "
-								+           "data-duration='" + duration + "' "
-								+           "data-resizable='" + resizable + "' "
-								+           ">"
-								+               response.activity_data.title
-								+           "</div>"
-								+       "</div>"
-								+       "<div class='activity-gear' >"
-								+           "<img src='" + plugin_path + "/img/gear.png' data-activity-id='" + response.activity_id + "' />"
-								+       "</div>"
-								+   "</div>"
-								);
+								// Refresh the draggable activity list
+								if( response.activity_list ) {
+									$j( '#bookacti-template-activity-list' ).empty().append( response.activity_list );
+								}
 
 								// Reinitialize the activities to apply changes
 								bookacti_init_activities();
@@ -1344,33 +1303,23 @@ function bookacti_dialog_update_activity( activity_id ) {
 				if( is_form_valid ) {
 					bookacti_start_template_loading();
 
-					//Save updated values in database
+					// Save updated values in database
 					$j.ajax({
 						url: ajaxurl, 
 						data: data,
 						type: 'POST',
 						dataType: 'json',
 						success: function( response ){
-
+							
 							// If success
 							if( response.status === 'success' ) {
 								// Update activities data array
 								bookacti.booking_system[ 'bookacti-template-calendar' ][ 'activities_data' ][ activity_id ] = response.activity_data;
 								
-								// Update the data in the activities list
-								$j( '.fc-event[data-activity-id="' + activity_id + '"]' ).html( response.activity_data.title );
-
-								$j( '.fc-event[data-activity-id="' + activity_id + '"]' ).data( 'title', response.activity_data.multilingual_title );
-								$j( '.fc-event[data-activity-id="' + activity_id + '"]' ).data( 'color', color );
-								$j( '.fc-event[data-activity-id="' + activity_id + '"]' ).data( 'availability', availability );
-								$j( '.fc-event[data-activity-id="' + activity_id + '"]' ).data( 'duration', duration );
-								$j( '.fc-event[data-activity-id="' + activity_id + '"]' ).data( 'resizable', resizable );
-
-								$j( '.fc-event[data-activity-id="' + activity_id + '"]' ).attr( 'data-title', response.activity_data.multilingual_title );
-								$j( '.fc-event[data-activity-id="' + activity_id + '"]' ).attr( 'data-color', color );
-								$j( '.fc-event[data-activity-id="' + activity_id + '"]' ).attr( 'data-availability', availability );
-								$j( '.fc-event[data-activity-id="' + activity_id + '"]' ).attr( 'data-duration', duration );
-								$j( '.fc-event[data-activity-id="' + activity_id + '"]' ).attr( 'data-resizable', resizable );
+								// Refresh the draggable activity list
+								if( response.activity_list ) {
+									$j( '#bookacti-template-activity-list' ).empty().append( response.activity_list );
+								}
 								
 								// Reinitialize the activities to apply changes
 								bookacti_init_activities();

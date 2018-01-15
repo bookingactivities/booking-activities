@@ -162,7 +162,6 @@ function bookacti_load_template_calendar() {
 			
 			var event_data = bookacti.booking_system[ 'bookacti-template-calendar' ][ 'events_data' ][ event.id ];
 			
-			
 			// Add some info to the event
 			element.data( 'event-id',			event.id );
 			element.attr( 'data-event-id',		event.id );
@@ -344,34 +343,20 @@ function bookacti_load_template_calendar() {
 		// eventReceive : When an extern draggable event is dropped on the calendar. "this" refer to the new created event on the calendar.
 		eventReceive: function( event ) {
 			
-			// Init variables
-			var title		= event.title;
-			var activity_id = 0;
-			var availability= 0;
-			var duration    = '000.00:00:00';
-			var resizable   = 0;
-
-			// Retrieve the event param
-			$j( '#bookacti-template-activities-container .fc-event' ).each( function(){
-				if( $j( this ).html() === title ) {
-					title		= $j( this ).data( 'title' );
-					activity_id = $j( this ).data( 'activity-id' );
-					availability= $j( this ).data( 'availability' );
-					duration    = $j( this ).data( 'duration' );
-					resizable   = $j( this ).data( 'resizable' );
-				}
-			});
+			var activity_id		= parseInt( event.activity_id );
+			var activity_data	= bookacti.booking_system[ 'bookacti-template-calendar' ][ 'activities_data' ][ activity_id ];
+			
+			// If the activity was not found, return false
+			if( ! activity_data ) { return false; }
 			
 			// Calculate the end datetime thanks to start datetime and duration
-			event.end		= event.start.clone();
-			event.end.add( moment.duration( duration ) );
-
-			if( parseInt( resizable ) === 1 ) { event.durationEditable = true; }
-
-			// Gether event variables to save in db
-			var start	= event.start.format( 'YYYY-MM-DD HH:mm:ss' );
-			var end		= event.end.format( 'YYYY-MM-DD HH:mm:ss' );
-
+			event.end = event.start.clone();
+			event.end.add( moment.duration( activity_data[ 'duration' ] ) );
+			
+			// Whether the event is resizable 
+			if( parseInt( activity_data[ 'is_resizable' ] ) === 1 ) { event.durationEditable = true; }
+			
+			
 			bookacti_start_template_loading();
 
 			$j.ajax({
@@ -379,15 +364,16 @@ function bookacti_load_template_calendar() {
 				data: { 'action': 'bookactiInsertEvent', 
 						'activity_id': activity_id, 
 						'template_id': bookacti.selected_template, 
-						'event_title': title, 
-						'event_start': start, 
-						'event_end': end,
-						'event_availability': availability,
+						'event_title': activity_data[ 'multilingual_title' ], 
+						'event_start': event.start.format( 'YYYY-MM-DD HH:mm:ss' ), 
+						'event_end': event.end.format( 'YYYY-MM-DD HH:mm:ss' ),
+						'event_availability': activity_data[ 'availability' ],
 						'nonce': bookacti_localized.nonce_insert_event
 					}, 
 				type: 'POST',
 				dataType: 'json',
 				success: function( response ){
+					
 					if( response.status === 'success' ) {
 						// Give the database generated id to the event, 
 						// so that any further changes to this event before page refresh will be also saved

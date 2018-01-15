@@ -140,38 +140,6 @@ function bookacti_delete_cart_settings() {
 
 
 /**
- * Add bookings list settings
- * 
- * @version 1.2.0
- * @param array $params
- */
-function bookacti_add_booking_list_in_cart_filter( $params ) {
-	$user_id = $params[ 'user_id' ];
-	$show_temporary_bookings_array	= bookacti_get_setting_value( 'bookacti_bookings_settings', 'show_temporary_bookings' );
-	$show_temporary_bookings		= 0;
-	if( is_array( $show_temporary_bookings_array ) && isset( $show_temporary_bookings_array[ $user_id ] ) && ! is_null( $show_temporary_bookings_array[ $user_id ] ) ) {
-		$show_temporary_bookings	= $show_temporary_bookings_array[ $user_id ];
-	}
-		
-	$args = array(
-		'type'	=> 'checkbox',
-		'name'	=> 'bookings-show-temporary-bookings',
-		'id'	=> 'bookacti-bookings-show-temporary-bookings',
-		'value'	=> $show_temporary_bookings,
-		'tip'	=> __( 'Show temporary bookings in the booking list (in cart bookings).', BOOKACTI_PLUGIN_NAME )
-	);
-	
-	?>
-	<div>
-		<label for='bookacti-bookings-show-temporary-bookings' ><?php esc_html_e( 'Show temporary bookings', BOOKACTI_PLUGIN_NAME ); ?></label>
-		<?php bookacti_display_field( $args ); ?>
-	</div>
-<?php
-}
-add_action( 'bookacti_booking_list_tab_filter_after', 'bookacti_add_booking_list_in_cart_filter', 10, 1 );
-
-
-/**
  * Add a mention to booking method tip
  * 
  * @param string $tip

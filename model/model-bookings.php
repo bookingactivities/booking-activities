@@ -210,13 +210,36 @@ function bookacti_get_bookings( $filters ) {
 					. ' AND B.event_id = E.id '
 					. ' AND E.activity_id = A.id '
 					. ' AND E.template_id = T.id ';
+	
+	// Set current datetime
+	$timezone					= new DateTimeZone( bookacti_get_setting_value( 'bookacti_general_settings', 'timezone' ) );
+	$current_datetime_object	= new DateTime( 'now', $timezone );
+	$user_timestamp_offset		= $current_datetime_object->format( 'P' );
+	
+	$variables = array();
 
-	if( $filters[ 'active_only' ] ) {
-		$bookings_query .= ' AND B.active = 1 ';
+	// Do not fetch events out of the desired interval
+	if( $filters[ 'from' ] ) {
+		$bookings_query  .= ' 
+		AND (	UNIX_TIMESTAMP( CONVERT_TZ( B.event_start, %s, @@global.time_zone ) ) >= 
+				UNIX_TIMESTAMP( CONVERT_TZ( %s, %s, @@global.time_zone ) ) )';
+
+		$variables[] = $user_timestamp_offset;
+		$variables[] = $filters[ 'from' ];
+		$variables[] = $user_timestamp_offset;
 	}
+	
+	if( $filters[ 'to' ] ) {
+		$bookings_query  .= ' 
+		AND (	UNIX_TIMESTAMP( CONVERT_TZ( B.event_start, %s, @@global.time_zone ) ) <= 
+				UNIX_TIMESTAMP( CONVERT_TZ( ( %s + INTERVAL 24 HOUR ), %s, @@global.time_zone ) ) 
+			)';
 
-	$array_of_variables = array();
-
+		$variables[] = $user_timestamp_offset;
+		$variables[] = $filters[ 'to' ];
+		$variables[] = $user_timestamp_offset;
+	}
+	
 	if( $filters[ 'status' ] ) {
 		$bookings_query .= ' AND B.state IN ( %s ';
 		$array_count = count( $filters[ 'status' ] );
@@ -226,7 +249,7 @@ function bookacti_get_bookings( $filters ) {
 			}
 		}
 		$bookings_query  .= ') ';
-		$array_of_variables = array_merge( $array_of_variables, $filters[ 'status' ] );
+		$variables = array_merge( $variables, $filters[ 'status' ] );
 	}
 	
 	if( $filters[ 'templates' ] ) {
@@ -238,7 +261,7 @@ function bookacti_get_bookings( $filters ) {
 			}
 		}
 		$bookings_query  .= ') ';
-		$array_of_variables = array_merge( $array_of_variables, $filters[ 'templates' ] );
+		$variables = array_merge( $variables, $filters[ 'templates' ] );
 	}
 	
 	if( $filters[ 'activities' ] ) {
@@ -250,12 +273,12 @@ function bookacti_get_bookings( $filters ) {
 			}
 		}
 		$bookings_query  .= ') ';
-		$array_of_variables = array_merge( $array_of_variables, $filters[ 'activities' ] );
+		$variables = array_merge( $variables, $filters[ 'activities' ] );
 	}
 	
 	if( is_numeric( $filters[ 'booking_group_id' ] ) && $filters[ 'booking_group_id' ] != 0 ) {
 		$bookings_query  .= ' AND B.group_id = %d ';
-		$array_of_variables[] =  intval( $filters[ 'booking_group_id' ] );
+		$variables[] =  intval( $filters[ 'booking_group_id' ] );
 	} else if( $filters[ 'booking_group_id' ] === 'none' ) {
 		$bookings_query  .= ' AND B.group_id IS NULL ';
 	}
@@ -263,22 +286,27 @@ function bookacti_get_bookings( $filters ) {
 	if( $filters[ 'event_group_id' ] ) {
 		$bookings_query .=	' AND E.group_id = BG.event_group_id '
 						.	' AND BG.event_group_id = %d ';
-		$array_of_variables[] = $filters[ 'event_group_id' ];
+		$variables[] = $filters[ 'event_group_id' ];
 	}
 	
 	if( $filters[ 'event_id' ] ) {
 		$bookings_query .= ' AND B.event_id = %d ';
-		$array_of_variables[] = $filters[ 'event_id' ];
+		$variables[] = $filters[ 'event_id' ];
 	}
 
 	if( $filters[ 'event_start' ] ) {
 		$bookings_query .= ' AND B.event_start = %s ';
-		$array_of_variables[] = $filters[ 'event_start' ];
+		$variables[] = $filters[ 'event_start' ];
 	}
 
 	if( $filters[ 'event_end' ] ) {
 		$bookings_query .= ' AND B.event_end = %s ';
-		$array_of_variables[] = $filters[ 'event_end' ];
+		$variables[] = $filters[ 'event_end' ];
+	}
+	
+	if( $filters[ 'user_id' ] ) {
+		$bookings_query .= ' AND B.user_id = %d ';
+		$variables[] = $filters[ 'user_id' ];
 	}
 	
 	if( $filters[ 'order_by' ] ) {
@@ -295,8 +323,8 @@ function bookacti_get_bookings( $filters ) {
 		}
 	}
 	
-	if( $array_of_variables ) {
-		$bookings_query = $wpdb->prepare( $bookings_query, $array_of_variables );
+	if( $variables ) {
+		$bookings_query = $wpdb->prepare( $bookings_query, $variables );
 	}
 	
 	$bookings = $wpdb->get_results( $bookings_query, OBJECT );

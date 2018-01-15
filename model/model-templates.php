@@ -2064,7 +2064,14 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	}
 	
 	
-	// GET TEMPLATES BY ACTIVITY
+	/**
+	 * Get templates by activity
+	 * 
+	 * @global wpdb $wpdb
+	 * @param array $activity_ids
+	 * @param boolean $id_only
+	 * @return array
+	 */
     function bookacti_get_templates_by_activity( $activity_ids, $id_only = true ) {
         global $wpdb;
 		

@@ -134,11 +134,6 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	 */
 	function bookacti_format_booking_filters( $filters ) {
 
-		// Whether to retrieve inactive bookings ?
-		$active_only = true;
-		$show_inactive_bookings	= bookacti_get_setting_value_by_user( 'bookacti_bookings_settings', 'show_inactive_bookings' );
-		if( intval( $show_inactive_bookings ) === 1 ) { $active_only = false; }
-
 		$default_filters = apply_filters( 'bookacti_default_booking_filters', array(
 			'templates'			=> array(), 
 			'activities'		=> array(), 
@@ -147,8 +142,10 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			'event_id'			=> 0, 
 			'event_start'		=> '', 
 			'event_end'			=> '', 
-			'active_only'		=> $active_only, 
 			'status'			=> array( 'booked', 'pending', 'cancelled', 'refunded', 'refund_requested' ), 
+			'user_id'			=> 0,
+			'from'				=> '',
+			'to'				=> '',
 			'order_by'			=> array( 'creation_date', 'id', 'event_start' ), 
 			'order'				=> 'desc' 
 		));
@@ -170,7 +167,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 					// Check if current user is allowed to manage desired templates, or unset them
 					if( ! empty( $current_value ) ) {
 						foreach( $current_value as $i => $template_id ) {
-						if( ! bookacti_user_can_manage_template( $template_id ) ) {
+						if( ! is_numeric( $template_id ) || ! bookacti_user_can_manage_template( $template_id ) ) {
 								unset( $current_value[ $i ] );
 							}
 						}
@@ -186,22 +183,25 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			} else if( in_array( $filter, array( 'activities' ), true ) ) {
 				if( is_numeric( $current_value ) )	{ $current_value = array( $current_value ); }
 				if( ! is_array( $current_value ) )	{ $current_value = $default_value; }
+				else if( $i = array_search( 'all', $current_value ) !== false ) { unset( $current_value[ $i ] ); }
 				
 			} else if( in_array( $filter, array( 'status', 'order_by' ), true ) ) {
 				if( is_string( $current_value ) )	{ $current_value = array( $current_value ); }
 				if( ! is_array( $current_value ) )	{ $current_value = $default_value; }
+				else if( $i = array_search( 'all', $current_value ) !== false ) { unset( $current_value[ $i ] ); }
 				
-			} else if( in_array( $filter, array( 'booking_group_id', 'event_group_id', 'event_id' ), true ) ) {
+			} else if( in_array( $filter, array( 'booking_group_id', 'event_group_id', 'event_id', 'user_id' ), true ) ) {
 				if( ! is_numeric( $current_value ) ){ $current_value = $default_value; }
 			
 			} else if( in_array( $filter, array( 'event_start', 'event_end' ), true ) ) {
-				$current_value = bookacti_sanitize_datetime( $current_value );
-				if( $current_value ) { $current_value = bookacti_format_datetime( $current_value ); }
-				else { $current_value = $default_value; }
+				if( ! bookacti_sanitize_datetime( $current_value ) ) { $current_value = $default_value; }
+			
+			} else if( in_array( $filter, array( 'from', 'to' ), true ) ) {
+				if( ! bookacti_sanitize_date( $current_value ) ) { $current_value = $default_value; }
 			
 			} else if( $filter === 'active_only' ) {
-				if( in_array( $current_value, array( true, 'true', 1, '1' ), true ) )	{ $current_value = true; }
-				if( in_array( $current_value, array( false, 'false', 0, '0' ), true ) )	{ $current_value = false; }
+					if( in_array( $current_value, array( true, 'true', 1, '1' ), true ) )	{ $current_value = true; }
+				else if( in_array( $current_value, array( false, 'false', 0, '0' ), true ) ){ $current_value = false; }
 				if( ! is_bool( $current_value ) ) { $current_value = $default_value; }
 				
 			} else if( $filter === 'order_by' ) {
@@ -593,7 +593,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			if( bookacti_booking_can_be_refunded( $booking_id ) ) {
 				$possible_actions_array[ 'refund' ] = array( 
 					'class'			=> 'bookacti-refund-booking',
-					'label'			=> __( 'Request a refund', BOOKACTI_PLUGIN_NAME ),
+					'label'			=> current_user_can( 'bookacti_edit_bookings' ) ? _x( 'Refund', 'Button label to trigger the refund action', BOOKACTI_PLUGIN_NAME ) : __( 'Request a refund', BOOKACTI_PLUGIN_NAME ),
 					'description'	=> __( 'Refund the booking with one of the available refund method.', BOOKACTI_PLUGIN_NAME ),
 					'link'			=> '',
 					'admin_or_front'=> 'both' );
@@ -631,9 +631,13 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 										. 'id="bookacti-booking-action-' . esc_attr( $action_id ) . '-' . esc_attr( $booking_id ) . '" '
 										. 'class="button ' . esc_attr( $action[ 'class' ] ) . ' bookacti-booking-action bookacti-tip" '
 										. 'data-tip="' . esc_attr( $action[ 'description' ] ) . '" '
-										. 'data-booking-id="' . esc_attr( $booking_id ) . '" >' 
-											. esc_html( $action[ 'label' ] )
-									. '</a>';
+										. 'data-booking-id="' . esc_attr( $booking_id ) . '" >';
+					
+					if( $admin_or_front === 'front' || $action[ 'admin_or_front' ] === 'front' ) { 
+						$action_html .= esc_html( $action[ 'label' ] ); 
+					}
+					
+					$action_html	.= '</a>';
 					if( $return_array ) {
 						$actions_array[] = $action_html;
 					} else {
@@ -711,7 +715,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			if( bookacti_booking_group_can_be_refunded( $booking_group_id ) ) {
 				$possible_actions_array[ 'refund' ] = array( 
 					'class'			=> 'bookacti-refund-booking-group',
-					'label'			=> __( 'Request a refund', BOOKACTI_PLUGIN_NAME ),
+					'label'			=> current_user_can( 'bookacti_edit_bookings' ) ? _x( 'Refund', 'Button label to trigger the refund action', BOOKACTI_PLUGIN_NAME ) : __( 'Request a refund', BOOKACTI_PLUGIN_NAME ),
 					'description'	=> __( 'Refund the booking group with one of the available refund method.', BOOKACTI_PLUGIN_NAME ),
 					'link'			=> '',
 					'admin_or_front'=> 'both' );
@@ -837,6 +841,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	 * Get refund actions for a specific booking or booking group
 	 * 
 	 * @since 1.1.0
+	 * @version 1.3.0
 	 * 
 	 * @param int $booking_or_booking_group_id
 	 * @param string $booking_type Defined if the given id is a booking id or a booking group id. Accepted values are 'single' and 'group'.
@@ -846,7 +851,9 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		
 		$possible_actions = bookacti_get_refund_actions();
 		
+		// If current user is a customer
 		if( ! current_user_can( 'bookacti_edit_bookings' ) ) {
+			// Keep only allowed action
 			$allowed_actions = bookacti_get_setting_value( 'bookacti_cancellation_settings', 'refund_actions_after_cancellation' );
 			if( ! is_array( $allowed_actions ) ) {
 				if( ! empty( $allowed_actions ) ) {
@@ -857,6 +864,11 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			}
 			// Keep all possible actions that are allowed
 			$possible_actions = array_intersect_key( $possible_actions, $allowed_actions );
+		
+		// If current user is an admin
+		} else {
+			// Email action is useless, remove it
+			if( isset( $possible_actions[ 'email' ] ) ) { unset( $possible_actions[ 'email' ] ); }
 		}
 		
 		if( $booking_type === 'single' ) {
@@ -1046,11 +1058,11 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	 */
 	function bookacti_get_booking_state_labels() {
 		$booking_states_labels = apply_filters( 'bookacti_booking_states_labels_array', array(
+			'booked'			=> array( 'display_state' => 'good',	'label' => __( 'Booked', BOOKACTI_PLUGIN_NAME ) ),
+			'pending'			=> array( 'display_state' => 'warning',	'label' => __( 'Pending', BOOKACTI_PLUGIN_NAME ) ),
 			'cancelled'			=> array( 'display_state' => 'bad',		'label' => __( 'Cancelled', BOOKACTI_PLUGIN_NAME ) ),
 			'refunded'			=> array( 'display_state' => 'bad',		'label' => __( 'Refunded', BOOKACTI_PLUGIN_NAME ) ),
-			'refund_requested'	=> array( 'display_state' => 'bad',		'label' => __( 'Refund requested', BOOKACTI_PLUGIN_NAME ) ),
-			'pending'			=> array( 'display_state' => 'warning',	'label' => __( 'Pending', BOOKACTI_PLUGIN_NAME ) ),
-			'booked'			=> array( 'display_state' => 'good',	'label' => __( 'Booked', BOOKACTI_PLUGIN_NAME ) )
+			'refund_requested'	=> array( 'display_state' => 'bad',		'label' => __( 'Refund requested', BOOKACTI_PLUGIN_NAME ) )
 		) );
 
 		return $booking_states_labels;
@@ -1060,14 +1072,20 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	/**
 	 * Give a the formatted and translated booking state
 	 * 
+	 * @version 1.3.0
 	 * @param string $state
+	 * @param boolean $icon_only
 	 * @return string
 	 */
-	function bookacti_format_booking_state( $state ) {
+	function bookacti_format_booking_state( $state, $icon_only = false ) {
 		$booking_states_labels = bookacti_get_booking_state_labels();
 
 		if( isset( $booking_states_labels[ $state ] ) ) {
-			$formatted_value = '<span class="bookacti-booking-state bookacti-booking-state-' . esc_attr( $booking_states_labels[ $state ][ 'display_state' ] ) . '" data-booking-state="' . esc_attr( $state ) . '" >' . esc_html( $booking_states_labels[ $state ][ 'label' ] ) . '</span>';
+			if( $icon_only ) {
+				$formatted_value = '<span class="bookacti-booking-state bookacti-booking-state-' . esc_attr( $booking_states_labels[ $state ][ 'display_state' ] ) . ' bookacti-tip" data-booking-state="' . esc_attr( $state ) . '" data-tip="'. esc_html( $booking_states_labels[ $state ][ 'label' ] ) . '" ></span>';
+			} else {
+				$formatted_value = '<span class="bookacti-booking-state bookacti-booking-state-' . esc_attr( $booking_states_labels[ $state ][ 'display_state' ] ) . '" data-booking-state="' . esc_attr( $state ) . '" >' . esc_html( $booking_states_labels[ $state ][ 'label' ] ) . '</span>';
+			}
 		} else {
 			$formatted_value = '<span class="bookacti-booking-state" data-booking-state="' . esc_attr( $state ) . '" >' . esc_html__( $state, BOOKACTI_PLUGIN_NAME ) . '</span>';
 		}

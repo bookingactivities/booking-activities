@@ -247,7 +247,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	 * Display various fields
 	 * 
 	 * @since 1.2.0
-	 * @version 1.2.1
+	 * @version 1.3.0
 	 * @param array $args ['type', 'name', 'label', 'id', 'class', 'placeholder', 'options', 'value', 'tip']
 	 */
 	function bookacti_display_field( $args ) {
@@ -366,11 +366,13 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			<select	name=	'<?php echo esc_attr( $args[ 'name' ] ); ?>' 
 					id=		'<?php echo esc_attr( $args[ 'id' ] ); ?>' 
 					class=	'bookacti-select <?php echo esc_attr( $args[ 'class' ] ); ?>' 
+					<?php if( $args[ 'multiple' ] ) { echo 'multiple'; } ?>
 			>
 			<?php foreach( $args[ 'options' ] as $option_id => $option_value ) { ?>
 				<option value='<?php echo esc_attr( $option_id ); ?>'
 						id='<?php echo esc_attr( $args[ 'id' ] ) . '_' . esc_attr( $option_id ); ?>'
-						<?php selected( $args[ 'value' ], $option_id ); ?>
+						<?php	if( $args[ 'multiple' ] ) { selected( true, in_array( $option_id, $args[ 'value' ] ) ); }
+								else { selected( $args[ 'value' ], $option_id ); }?>
 				>
 						<?php echo esc_html( $option_value ); ?>
 				</option>
@@ -401,7 +403,8 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	 * Format arguments to diplay a proper field
 	 * 
 	 * @since 1.2.0
-	 * @param array $args ['type', 'name', 'label', 'id', 'class', 'placeholder', 'options', 'value', 'tip']
+	 * @version 1.3.0
+	 * @param array $args ['type', 'name', 'label', 'id', 'class', 'placeholder', 'options', 'value', 'multiple', 'tip']
 	 * @return array|false
 	 */
 	function bookacti_format_field_args( $args ) {
@@ -426,6 +429,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			'placeholder'	=> '',
 			'options'		=> array(),
 			'value'			=> '',
+			'multiple'		=> false,
 			'tip'			=> ''
 		);
 
@@ -433,18 +437,31 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		foreach( $default_args as $key => $default_value ) {
 			$args[ $key ] = isset( $args[ $key ] ) ? $args[ $key ] : $default_value;
 		}
-
+		
+		// Sanitize id and name
+		$args[ 'id' ]	= sanitize_title_with_dashes( $args[ 'id' ] );
+		$args[ 'name' ]	= sanitize_title_with_dashes( $args[ 'name' ] );
+		
 		// If no id, use name instead
-		$args[ 'id' ] = $args[ 'id' ] ? $args[ 'id' ] : sanitize_title_with_dashes( $args[ 'name' ] );
+		$args[ 'id' ] = $args[ 'id' ] ? $args[ 'id' ] : $args[ 'name' ];
 
 		// Make sure fields with multiple options have 'options' set
 		if( in_array( $args[ 'type' ], array( 'checkboxes', 'radio', 'select' ) ) ){
 			if( ! $args[ 'options' ] ) { return false; }
 		}
-
+		
+		// If multiple, make sure name has brackets and value is an array
+		if( $args[ 'multiple' ] ) {
+			if( strpos( '[', $args[ 'name' ] ) === false ) {
+				$args[ 'name' ]	.= '[]';
+			}
+		}
+		
 		// Make sure checkboxes have their value as an array
-		if( $args[ 'type' ] === 'checkboxes' ){
-			if( ! is_array( $args[ 'value' ] ) ) { return false; }
+		if( $args[ 'type' ] === 'checkboxes' || $args[ 'multiple' ] ){
+			if( ! is_array( $args[ 'value' ] ) ) { 
+				$args[ 'value' ] = array( $args[ 'value' ] );
+			}
 		}
 
 		// Make sure 'number' has min and max
@@ -512,6 +529,74 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		</div>
 		<?php
 		if( $disabled ) { echo '<input type="hidden" name="' . esc_attr( $name ) . '" value="' . esc_attr( $current_value ) . '" />'; }
+	}
+	
+	
+	/**
+	 * Create a user selectbox
+	 * 
+	 * @since 1.3.0
+	 * @param array $args
+	 * @return string|void
+	 */
+	function bookacti_display_user_selectbox( $args ) {
+		
+		$defaults = array(
+			'show_option_all' => '', 'show_option_none' => '', 'option_none_value' => -1,
+			'option_label' => array( 'display_name' ), 'echo' => 1,
+			'selected' => 0, 'name' => 'user_id', 'class' => '', 'id' => '',
+			'include' => array(), 'exclude' => array(),
+			'role' => array(), 'role__in' => array(), 'role__not_in' => array(),
+			'orderby' => 'display_name', 'order' => 'ASC'
+		);
+		
+		$args	= apply_filters( 'bookacti_user_selectbox_args', wp_parse_args( $args, $defaults ), $args );
+		$users	= bookacti_get_users_data( $args );
+		
+		ob_start();
+		?>
+		
+		<select id='<?php echo $args[ 'id' ]; ?>' name='<?php echo $args[ 'name' ]; ?>' class='bookacti-user-selectbox <?php echo $args[ 'class' ]; ?>' >
+			<option value='' ><?php echo esc_html__( 'Search for a customer', BOOKACTI_PLUGIN_NAME ); ?></option>
+			<?php
+				if( $args[ 'show_option_all' ] ) {
+					?><option value='0' ><?php echo $args[ 'show_option_all' ]; ?></option><?php
+				}
+
+				if( $args[ 'show_option_none' ] ) {
+					$_selected = selected( $args[ 'option_none_value' ], $args[ 'selected' ], false );
+					?><option value='<?php echo esc_attr( $args[ 'option_none_value' ] ); ?>' <?php echo $_selected ?> ><?php echo $args[ 'show_option_none' ]; ?></option><?php
+				}
+			
+				do_action( 'bookacti_add_user_selectbox_options', $args );
+
+				foreach( $users as $user ){
+					$_selected = selected( $user->ID, $args[ 'selected' ], false );
+					
+					// Build the option label based on the array
+					$label = '';
+					foreach( $args[ 'option_label' ] as $show ) {
+						if( preg_match( '/^[a-zA-Z0-9_]+$/' , $show ) && isset( $user->$show ) ) {
+							$label .= $user->$show;
+						} else {
+							$label .= $show;
+						}
+					}
+			?>
+					<option value='<?php echo $user->ID; ?>' <?php echo $_selected ?> ><?php echo esc_html( $label ); ?></option>
+			<?php
+				}
+			?>
+		</select>
+
+		<?php
+		$output = ob_get_clean();
+		
+		// Return the output...
+		if( ! $args[ 'echo' ] ) { return $output; }
+		
+		// ...or echo
+		echo $output;
 	}
 
 
@@ -605,14 +690,19 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	/**
 	 * Format datetime to be displayed in a human comprehensible way
 	 * 
+	 * @version 1.3.0
 	 * @param string $datetime Date format "YYYY-MM-DD HH:mm:ss" is expected
+	 * @param string $format 
 	 * @return string
 	 */
-	function bookacti_format_datetime( $datetime ) {
+	function bookacti_format_datetime( $datetime, $format = '' ) {
 		if( preg_match( '/\d{4}-[01]\d-[0-3]\dT[0-2]\d:[0-5]\d:[0-5]\d/', $datetime ) 
 		||  preg_match( '/\d{4}-[01]\d-[0-3]\d [0-2]\d:[0-5]\d:[0-5]\d/', $datetime ) ) {
-			/* translators: Datetime format. Must be adapted to each country. Use wp date_i18n documentation to find the appropriated combinaison https://codex.wordpress.org/Formatting_Date_and_Time */
-			$datetime = date_i18n( __( 'l, F d, Y h:i a', BOOKACTI_PLUGIN_NAME ), strtotime( $datetime ) );
+			if( ! $format ) {
+				/* translators: Datetime format. Must be adapted to each country. Use wp date_i18n documentation to find the appropriated combinaison https://codex.wordpress.org/Formatting_Date_and_Time */
+				$format = __( 'l, F d, Y h:i a', BOOKACTI_PLUGIN_NAME );
+			}
+			$datetime = date_i18n( $format, strtotime( $datetime ) );
 			$datetime = ! mb_check_encoding( $datetime, 'UTF-8' ) ? utf8_encode( $datetime ) : $datetime;
 		}
 		return $datetime;

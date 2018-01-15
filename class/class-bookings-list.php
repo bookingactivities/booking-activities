@@ -57,7 +57,8 @@ if( ! class_exists( 'Bookings_List_Table' ) ) {
 				'end_date'		=> __( 'End', BOOKACTI_PLUGIN_NAME ),
 				'template_title'=> __( 'Calendar', BOOKACTI_PLUGIN_NAME ),
 				'activity_title'=> __( 'Activity', BOOKACTI_PLUGIN_NAME ),
-				'creation_date'	=> __( 'Date', BOOKACTI_PLUGIN_NAME )
+				'creation_date'	=> __( 'Date', BOOKACTI_PLUGIN_NAME ),
+				'actions'		=> __( 'Actions', BOOKACTI_PLUGIN_NAME )
 			);
 
 			/**
@@ -74,15 +75,16 @@ if( ! class_exists( 'Bookings_List_Table' ) ) {
 			$columns_order = array(
 				10 => 'cb',
 				20 => 'id',
-				30 => 'customer',
-				40 => 'event_title',
-				50 => 'start_date',
-				60 => 'end_date',
-				70 => 'state',
+				30 => 'state',
+				40 => 'customer',
+				50 => 'event_title',
+				60 => 'start_date',
+				70 => 'end_date',
 				80 => 'quantity',
 				90 => 'template_title',
 				100 => 'activity_title',
-				110 => 'creation_date'
+				110 => 'creation_date',
+				120 => 'actions'
 			);
 
 			/**
@@ -115,23 +117,20 @@ if( ! class_exists( 'Bookings_List_Table' ) ) {
 		 */
 		public function get_default_hidden_columns( $hidden, $screen ) {
 			if( $screen->id == $this->screen->id ) {
-				$hidden = array(
+				$hidden = apply_filters( 'bookacti_booking_list_default_hidden_columns', array(
 					'end_date',
 					'template_title',
-					'activity_title',
-					'creation_date'
-				);
+					'activity_title'
+				));
 			}
 			return $hidden;
 		}
 		
 		
 		/**
-		 * Get default hidden columns
+		 * Get sortable columns
 		 * 
 		 * @since 1.3.0
-		 * @param array $hidden
-		 * @param WP_Screen $screen
 		 * @return array
 		 */
 		protected function get_sortable_columns() {
@@ -208,24 +207,6 @@ if( ! class_exists( 'Bookings_List_Table' ) ) {
 		public function column_default( $item, $column_name ) {
 			return isset( $item[ $column_name ] ) ? $item[ $column_name ] : '';
 		}
-
-		
-		/**
-		 * Fill "Customer" column and add action buttons
-		 * 
-		 * @param array $item
-		 * @return string
-		 */
-		public function column_customer( $item ) {
-			
-			if( $item[ 'booking_type' ] === 'group' ) {
-				$actions = bookacti_get_booking_group_actions_html( $item[ 'id' ], 'admin', true );
-			} else {
-				$actions = bookacti_get_booking_actions_html( $item[ 'id' ], 'admin', true );
-			}
-			
-			return sprintf( '%1$s %2$s', $item[ 'customer' ], $this->row_actions( $actions, false, $item[ 'booking_type' ] ) );
-		}
 		
 		
 		/**
@@ -244,15 +225,18 @@ if( ! class_exists( 'Bookings_List_Table' ) ) {
 			// Get filters from URL if no filter was directly passed
 			if( ! $filters ) {
 				$filters = array(
-					'templates'			=> isset( $_REQUEST[ 'calendars' ] )		? explode( ',', $_REQUEST[ 'calendars' ] ) : array(), 
-					'activities'		=> isset( $_REQUEST[ 'activities' ] )		? explode( ',', $_REQUEST[ 'activities' ] ) : array(), 
+					'templates'			=> isset( $_REQUEST[ 'templates' ] )		? $_REQUEST[ 'templates' ] : array(), 
+					'activities'		=> isset( $_REQUEST[ 'activities' ] )		? $_REQUEST[ 'activities' ] : array(), 
 					'booking_group_id'	=> isset( $_REQUEST[ 'booking_group_id' ] )	? intval( $_REQUEST[ 'booking_group_id' ] ): 0, 
 					'event_group_id'	=> isset( $_REQUEST[ 'event_group_id' ] )	? intval( $_REQUEST[ 'event_group_id' ] ): 0, 
 					'event_id'			=> isset( $_REQUEST[ 'event_id' ] )			? intval( $_REQUEST[ 'event_id' ] ): 0, 
 					'event_start'		=> isset( $_REQUEST[ 'event_start' ] )		? bookacti_sanitize_datetime( $_REQUEST[ 'event_start' ] )	: '', 
 					'event_end'			=> isset( $_REQUEST[ 'event_end' ] )		? bookacti_sanitize_datetime( $_REQUEST[ 'event_end' ] )	: '',
-					'status'			=> isset( $_REQUEST[ 'status' ] )			? explode( ',', $_REQUEST[ 'status' ] )	: array(),
-					'order_by'			=> isset( $_REQUEST[ 'orderby' ] )			? explode( ',', $_REQUEST[ 'orderby' ] ) : 'id',
+					'status'			=> isset( $_REQUEST[ 'status' ] )			? $_REQUEST[ 'status' ] : array(),
+					'user_id'			=> isset( $_REQUEST[ 'user_id' ] )			? $_REQUEST[ 'user_id' ] : 0,
+					'from'				=> isset( $_REQUEST[ 'from' ] )				? $_REQUEST[ 'from' ] : '',
+					'to'				=> isset( $_REQUEST[ 'to' ] )				? $_REQUEST[ 'to' ] : '',
+					'order_by'			=> isset( $_REQUEST[ 'orderby' ] )			? $_REQUEST[ 'orderby' ] : 'id',
 					'order'				=> isset( $_REQUEST[ 'order' ] )			? $_REQUEST[ 'order' ] : 'creation_date'
 				);
 			}
@@ -270,7 +254,7 @@ if( ! class_exists( 'Bookings_List_Table' ) ) {
 					$user_ids[] = $booking->user_id;
 				}
 			}
-			$users = bookacti_get_users_data( $user_ids );
+			$users = bookacti_get_users_data( array( 'include' => $user_ids ) );
 			
 			// Build booking list
 			$booking_list_items = array();
@@ -298,7 +282,13 @@ if( ! class_exists( 'Bookings_List_Table' ) ) {
 					$customer = esc_html( __( 'Unknown user', BOOKACTI_PLUGIN_NAME ) . ' (' . $booking->user_id . ')' );
 				}
 				
-				$state = bookacti_format_booking_state( $booking->state );
+				$state = bookacti_format_booking_state( $booking->state, true );
+				
+//				if( $item[ 'booking_type' ] === 'group' ) {
+//					$actions = bookacti_get_booking_group_actions_html( $item[ 'id' ], 'admin', true );
+//				} else {
+					$actions = bookacti_get_booking_actions_html( $booking->id, 'admin' );
+//				}
 				
 				$booking_item = apply_filters( 'bookacti_booking_list_booking_columns', array( 
 					'customer'		=> $customer,
@@ -310,7 +300,9 @@ if( ! class_exists( 'Bookings_List_Table' ) ) {
 					'end_date'		=> bookacti_format_datetime( $booking->event_end ),
 					'template_title'=> apply_filters( 'bookacti_translate_text', $booking->template_title ),
 					'activity_title'=> apply_filters( 'bookacti_translate_text', $booking->activity_title ),
-					'creation_date'	=> bookacti_format_datetime( $booking->creation_date ),
+					/* translators: Datetime format. Must be adapted to each country. Use wp date_i18n documentation to find the appropriated combinaison https://codex.wordpress.org/Formatting_Date_and_Time */
+					'creation_date'	=> bookacti_format_datetime( $booking->creation_date, __( 'F d, Y', BOOKACTI_PLUGIN_NAME ) ),
+					'actions'		=> $actions,
 					'order_id'		=> $booking->order_id,
 					'booking_type'	=> 'single',
 					'primary_data'	=> array( 
@@ -434,37 +426,6 @@ if( ! class_exists( 'Bookings_List_Table' ) ) {
 			
 			return $returned_columns;
 		}
-		
-		
-		/**
-		* Generate row actions div
-		*
-		* @version 1.1.0
-		* @access protected
-		* @param array $actions The list of actions
-		* @param bool $always_visible Whether the actions should be always visible
-		* @param bool $booking_type 'group' or 'single'
-		* @return string
-		*/
-		protected function row_actions( $actions, $always_visible = false, $booking_type = 'single' ) {
-			$action_count = count( $actions );
-			$i = 0;
-
-			if ( !$action_count )
-				return '';
-			
-			$class_visible		= $always_visible ? 'visible' : '';
-			$class_booking_type = $booking_type === 'group' ? 'bookacti-booking-group-actions' : 'bookacti-booking-actions';
-			$out = '<div class="row-actions ' . esc_attr( $class_booking_type ) . ' ' . esc_attr( $class_visible ) . '">';
-			foreach ( $actions as $action => $link ) {
-				++$i;
-				$sep = $i == $action_count ? '' : ' | ';
-				$out .= $link . $sep;
-			}
-			$out .= '</div>';
-			
-			return $out;
-	   }
 	}
 }
 

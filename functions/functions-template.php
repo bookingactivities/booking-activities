@@ -59,54 +59,54 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	/**
 	 * Retrieve template activities list
 	 * 
-	 * @since 1.0.0
-	 * @version 1.1.0
-	 * 
+	 * @version 1.3.0
 	 * @param int $template_id
 	 * @return boolean|string 
 	 */
 	function bookacti_get_template_activities_list( $template_id ) {
 		
-		if( empty( $template_id ) ) {
+		if( ! $template_id ) {
 			return false;
 		}
 		
-		$list = '';
 		$activities = bookacti_fetch_activities();
 		$template_activities = bookacti_get_activity_ids_by_template( $template_id, false );
-
+		
+		ob_start();
 		foreach ( $activities as $activity ) {
 			if( in_array( $activity->id, $template_activities ) ) {
 				$title = apply_filters( 'bookacti_translate_text', $activity->title );
-
-				$list	.=	"<div class='activity-row'>"
-						.       "<div class='activity-show-hide' >"
-						.           "<img src='" . esc_url( plugins_url() . "/" . BOOKACTI_PLUGIN_NAME . "/img/show.png" ) . "' data-activity-id='" . esc_attr( $activity->id ) . "' data-activity-visible='1' />"
-						.       "</div>"
-						.       "<div class='activity-container'>"
-						.           "<div "
-						.				"class='fc-event ui-draggable ui-draggable-handle' "
-						.				"data-title='"			. esc_attr( $activity->title ) . "' "
-						.				"data-activity-id='"	. esc_attr( $activity->id )				. "' "
-						.				"data-color='"			. esc_attr( $activity->color )			. "' "
-						.				"data-availability='"	. esc_attr( $activity->availability	)	. "' "
-						.				"data-start='12:00' "
-						.				"data-duration='"		. esc_attr( $activity->duration )		. "' "
-						.				"data-resizable='"		. esc_attr( $activity->is_resizable	)	. "' "
-						.           ">"
-						.               $title
-						.           "</div>"
-						.       "</div>";
-				if( current_user_can( 'bookacti_edit_activities' ) && bookacti_user_can_manage_activity( $activity->id ) ) {	
-					$list .=	"<div class='activity-gear' >"
-						.           "<img src='" . esc_url( plugins_url() . "/" . BOOKACTI_PLUGIN_NAME . "/img/gear.png" ) . "' data-activity-id='" . esc_attr( $activity->id ) . "' />"
-						.       "</div>";
+				?>
+				<div class='activity-row'>
+					<div class='activity-show-hide' >
+						<img src='<?php echo esc_url( plugins_url() . "/" . BOOKACTI_PLUGIN_NAME . "/img/show.png" ); ?>' data-activity-id='<?php echo esc_attr( $activity->id ); ?>' data-activity-visible='1' />
+					</div>
+					<div class='activity-container'>
+						<div
+							class='fc-event ui-draggable ui-draggable-handle'
+							data-event='{"title": "<?php echo esc_attr( $title ) ?>", "activity_id": "<?php echo esc_attr( $activity->id ) ?>", "color": "<?php echo esc_attr( $activity->color ) ?>"}' 
+							data-activity-id='<?php echo esc_attr( $activity->id ) ?>'
+							data-duration='<?php echo esc_attr( $activity->duration ) ?>'
+							style='border-color:<?php echo esc_attr( $activity->color ) ?>; background-color:<?php echo esc_attr( $activity->color ) ?>'
+							>
+							<?php echo $title; ?>
+						</div>
+					</div>
+				<?php
+				if( current_user_can( 'bookacti_edit_activities' ) && bookacti_user_can_manage_activity( $activity->id ) ) {
+				?>
+					<div class='activity-gear' >
+						<img src='<?php echo esc_url( plugins_url() . "/" . BOOKACTI_PLUGIN_NAME . "/img/gear.png" ); ?>' data-activity-id='<?php echo esc_attr( $activity->id ); ?>' />
+					</div>
+				<?php
 				}
-				$list	.=	"</div>";
+				?>
+				</div>
+				<?php
 			}
 		}
 
-		return $list;
+		return ob_get_clean();
 	}
 
 

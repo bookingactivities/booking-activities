@@ -25,6 +25,8 @@ Try this reservation tool live on the [demo website](http://demo.booking-activit
 
 [youtube https://www.youtube.com/watch?v=Q7gbK5i4DPU]
 
+*Video made with v1.1.1. Booking Activities is constantly evolving.*
+
 
 = Main features =
 
@@ -302,8 +304,13 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 == Changelog ==
 
 = 1.3.0 - 2018/01 =
-* Tweak - Booking list is now paginated and columns can be hidden (in screen options) and sorted
+* Tweak - Bookings page has been redesigned
+* Feature - Filter your booking list by calendars, activities, status, date, and customers (and also by events like before)
+* Feature - Booking list is now paginated and columns can be hidden (in screen options) and sorted
 * Tweak - ON/OFF button: clearly display "ON" and "OFF" for a better understanding
+* Tweak - Email refund option is no longer proposed to administrators
+* Fix - Activities with a title containing special characters triggered a fatal error when an event was dropped
+* Fix - Picking a group of events not already loaded triggered a fatal error (events of the group still need to be rendered)
 
 = 1.2.3 - 2018/01/09 =
 * Fix - AJAX error when creating an activity with PHP 7.1+

@@ -313,12 +313,29 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	 */
 	function bookacti_woocommerce_order_booking_list_custom_columns( $columns_order ) {
 		
-		$columns_order[ 34 ] = 'email';
-		$columns_order[ 37 ] = 'phone';
+		$columns_order[ 44 ] = 'email';
+		$columns_order[ 47 ] = 'phone';
 		
 		return $columns_order;
 	}
 	add_filter( 'bookacti_booking_list_columns_order', 'bookacti_woocommerce_order_booking_list_custom_columns', 10, 1 );
+	
+	
+	/**
+	 * Edit default hidden columns in booking list
+	 * 
+	 * @since 1.3.0
+	 * @param array $hidden_columns
+	 * @return array
+	 */
+	function bookacti_woocommerce_booking_list_hidden_columns( $hidden_columns ) {
+		
+		$hidden_columns[] = 'email';
+		$hidden_columns[] = 'phone';
+
+		return $hidden_columns;
+	}
+	add_filter( 'bookacti_booking_list_default_hidden_columns', 'bookacti_woocommerce_booking_list_hidden_columns', 10, 1 );
 	
 	
 	/**
