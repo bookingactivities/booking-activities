@@ -1421,7 +1421,7 @@ function bookacti_dialog_delete_activity( activity_id ) {
 								
 								$j( '.fc-event[data-activity-id="' + activity_id + '"]' ).parents( '.activity-row' ).remove();
 								
-								// refresh events if user choosed to deleted them
+								// refresh events if user chose to deleted them
 								if( delete_events ) {
 									bookacti_refetch_events_on_template();
 								}

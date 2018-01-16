@@ -284,7 +284,7 @@ function bookacti_get_bookings( $filters ) {
 	}
 	
 	if( $filters[ 'event_group_id' ] ) {
-		$bookings_query .=	' AND E.group_id = BG.event_group_id '
+		$bookings_query .=	' AND B.group_id = BG.id '
 						.	' AND BG.event_group_id = %d ';
 		$variables[] = $filters[ 'event_group_id' ];
 	}

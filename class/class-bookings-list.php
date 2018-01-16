@@ -224,14 +224,29 @@ if( ! class_exists( 'Bookings_List_Table' ) ) {
 			
 			// Get filters from URL if no filter was directly passed
 			if( ! $filters ) {
+				
+				// Accepts two different parameter names for booking system related paramters
+				$event_group_id = 0; $event_id = 0; $event_start = ''; $event_end = '';
+				if( isset( $_REQUEST[ 'bookacti_group_id' ] )	&& $_REQUEST[ 'bookacti_group_id' ] !== 'single' )	{ $event_group_id = intval( $_REQUEST[ 'bookacti_group_id' ] ); }
+				if( isset( $_REQUEST[ 'event_group_id' ] )		&& $_REQUEST[ 'event_group_id' ] !== 'single' )		{ $event_group_id = intval( $_REQUEST[ 'event_group_id' ] ); }
+				if( $event_group_id === 0 ) {
+					if( isset( $_REQUEST[ 'bookacti_event_id' ] ) )		{ $event_id		= intval( $_REQUEST[ 'bookacti_event_id' ] ); }
+					if( isset( $_REQUEST[ 'event_id' ] ) )				{ $event_id		= intval( $_REQUEST[ 'event_id' ] ); }
+					if( isset( $_REQUEST[ 'bookacti_event_start' ] ) )	{ $event_start	= bookacti_sanitize_datetime( $_REQUEST[ 'bookacti_event_start' ] ); }
+					if( isset( $_REQUEST[ 'event_start' ] ) )			{ $event_start	= bookacti_sanitize_datetime( $_REQUEST[ 'event_start' ] ); }
+					if( isset( $_REQUEST[ 'bookacti_event_end' ] ) )	{ $event_end	= bookacti_sanitize_datetime( $_REQUEST[ 'bookacti_event_end' ] ); }
+					if( isset( $_REQUEST[ 'event_end' ] ) )				{ $event_end	= bookacti_sanitize_datetime( $_REQUEST[ 'event_end' ] ); }
+				}
+				
 				$filters = array(
+					'bookings_only'		=> 1,
 					'templates'			=> isset( $_REQUEST[ 'templates' ] )		? $_REQUEST[ 'templates' ] : array(), 
 					'activities'		=> isset( $_REQUEST[ 'activities' ] )		? $_REQUEST[ 'activities' ] : array(), 
 					'booking_group_id'	=> isset( $_REQUEST[ 'booking_group_id' ] )	? intval( $_REQUEST[ 'booking_group_id' ] ): 0, 
-					'event_group_id'	=> isset( $_REQUEST[ 'event_group_id' ] )	? intval( $_REQUEST[ 'event_group_id' ] ): 0, 
-					'event_id'			=> isset( $_REQUEST[ 'event_id' ] )			? intval( $_REQUEST[ 'event_id' ] ): 0, 
-					'event_start'		=> isset( $_REQUEST[ 'event_start' ] )		? bookacti_sanitize_datetime( $_REQUEST[ 'event_start' ] )	: '', 
-					'event_end'			=> isset( $_REQUEST[ 'event_end' ] )		? bookacti_sanitize_datetime( $_REQUEST[ 'event_end' ] )	: '',
+					'event_group_id'	=> $event_group_id, 
+					'event_id'			=> $event_id, 
+					'event_start'		=> $event_start, 
+					'event_end'			=> $event_end,
 					'status'			=> isset( $_REQUEST[ 'status' ] )			? $_REQUEST[ 'status' ] : array(),
 					'user_id'			=> isset( $_REQUEST[ 'user_id' ] )			? $_REQUEST[ 'user_id' ] : 0,
 					'from'				=> isset( $_REQUEST[ 'from' ] )				? $_REQUEST[ 'from' ] : '',
@@ -279,6 +294,7 @@ if( ! class_exists( 'Bookings_List_Table' ) ) {
 									. esc_html( $user->user_login . ' (' . $user->user_email . ')' )
 							. ' </a>';
 				} else {
+					$user = new stdClass();
 					$customer = esc_html( __( 'Unknown user', BOOKACTI_PLUGIN_NAME ) . ' (' . $booking->user_id . ')' );
 				}
 				

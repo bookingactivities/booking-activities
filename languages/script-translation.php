@@ -63,6 +63,8 @@ $bookacti_translation_array = apply_filters( 'bookacti_translation_array', array
 	'booking_form_new_booking_button'	=> bookacti_get_message( 'booking_form_new_booking_button' ),
 	'placeholder_select_customer'		=> esc_html__( 'Search for a customer', BOOKACTI_PLUGIN_NAME ),
 	'show_all_customers'				=> esc_html__( 'Show all customers', BOOKACTI_PLUGIN_NAME ),
+	'pick_an_event'						=> esc_html__( 'Pick an event', BOOKACTI_PLUGIN_NAME ),
+	'hide_calendar'						=> esc_html__( 'Hide calendar', BOOKACTI_PLUGIN_NAME ),
 
 	// ERRORS
 	'error_retrieve_event_data'			=> esc_html__( 'Error occurs when trying to retrieve event parameters.', BOOKACTI_PLUGIN_NAME ),

@@ -35,7 +35,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	/**
 	 * AJAX Controller - Change selected template
 	 * 
-	 * @version 1.2.2
+	 * @version 1.3.0
 	 */
     function bookacti_controller_select_template_filter() {
 		
@@ -73,7 +73,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			$group_categories	= bookacti_get_group_category_ids_by_template( $template_ids );
 			
 			$events_interval	= bookacti_get_new_interval_of_events( $template_data, array(), false, true );
-			$events				= bookacti_fetch_booked_events( $template_ids, array(), array(), true, $events_interval );
+			$events				= bookacti_fetch_booked_events( $template_ids, array(), array(), 0, true, $events_interval );
 			$activities_data	= bookacti_get_activities_by_template( $template_ids, true );
 			$groups_events		= bookacti_get_groups_events( $template_ids, $group_categories, array(), true );
 			$groups_data		= bookacti_get_groups_of_events_by_template( $template_ids );

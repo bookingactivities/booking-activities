@@ -19,8 +19,12 @@ $j( document ).ready( function() {
 			var booking_system_id	= booking_system.attr( 'id' );
 			var attributes			= bookacti.booking_system[ booking_system_id ];
 			
-			bookacti.booking_system[ booking_system_id ][ 'loading_number' ]	= 0;
-			bookacti.booking_system[ booking_system_id ][ 'picked_events' ]		= [];
+			if( typeof bookacti.booking_system[ booking_system_id ][ 'loading_number' ] === 'undefined' ) {
+				bookacti.booking_system[ booking_system_id ][ 'loading_number' ] = 0;
+			}
+			if( typeof bookacti.booking_system[ booking_system_id ][ 'picked_events' ] === 'undefined' ) {
+				bookacti.booking_system[ booking_system_id ][ 'picked_events' ]	= [];
+			}
 			
 			// Load the booking system
 			if( attributes.auto_load && booking_system_id !== 'bookacti-booking-system-reschedule' ) {

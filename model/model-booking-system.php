@@ -329,15 +329,17 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	 * Fetch booked events only
 	 * 
 	 * @since 1.2.2
+	 * @version 1.3.0
 	 * @global wpdb $wpdb
 	 * @param array $templates
 	 * @param array $activities
 	 * @param array $booking_status
+	 * @param int $user_id
 	 * @param boolean $past_events
 	 * @param array $interval array('start' => string: start date, 'end' => string: end date)
 	 * @return array
 	 */
-	function bookacti_fetch_booked_events( $templates = array(), $activities = array(), $booking_status = array(), $past_events = false, $interval = array() ) {
+	function bookacti_fetch_booked_events( $templates = array(), $activities = array(), $booking_status = array(), $user_id = 0, $past_events = false, $interval = array() ) {
 		
 		global $wpdb;
 		
@@ -347,9 +349,6 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		$user_timestamp				= $current_datetime_object->format( 'U' );
 		$user_timestamp_offset		= $current_datetime_object->format( 'P' );
 		
-		$fetch_inactive_bookings	= bookacti_get_setting_value_by_user( 'bookacti_bookings_settings', 'show_inactive_bookings' );
-		$fetch_temporary_bookings	= bookacti_get_setting_value_by_user( 'bookacti_bookings_settings', 'show_temporary_bookings' );
-		
 		$variables					= array();
 		
 		// Prepare the query
@@ -358,10 +357,6 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 				. ' WHERE B.event_id = E.id '
 				. ' AND E.activity_id = A.id '
 				. ' AND E.template_id = T.id ';
-		
-		if( ! $fetch_inactive_bookings ) {
-			$query  .= ' AND B.active = 1';
-		}
 		
 		// Get events from desired templates only
 		if( $templates ) {
@@ -383,15 +378,6 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			$variables = array_merge( $variables, $activities );
 		}
 		
-		// Whether to fetch temporary bookings
-		if( ! $fetch_temporary_bookings ) { 
-			$key = array_search( 'in_cart', $booking_status );
-			if( $key !== false ) { unset( $booking_status[ $key ] ); }
-			else {
-				$query .= ' AND B.state != "in_cart" ';
-			}
-		}
-		
 		// Fetch events from desired booking status only
 		if( $booking_status ) {
 			// Get the event only if it belongs to a group of the allowed categories
@@ -401,6 +387,12 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			}
 			$query .= ' ) ';
 			$variables = array_merge( $variables, $booking_status );
+		}
+		
+		// Filter bookings by user
+		if( $user_id ) {
+			$query .= ' AND B.user_id = %s ';
+			$variables[] = $user_id ;
 		}
 		
 		// Do not fetch events out of the desired interval
@@ -432,7 +424,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		
 		// Safely apply variables to the query
 		$prep_query = $wpdb->prepare( $query, $variables );
-		
+
 		// Get events complying with parameters
 		$events = $wpdb->get_results( $prep_query, OBJECT );
 

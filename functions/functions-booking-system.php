@@ -7,17 +7,17 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 /**
  * Get a booking system based on given parameters
  * 
- * @version 1.2.2
+ * @version 1.3.0
  * 
  * @param array $atts [id, classes, calendars, activities, groups, method]
  * @param boolean $echo Wether to return or directly echo the booking system
  * @return string
  */
 function bookacti_get_booking_system( $atts, $echo = false ) {
-	
+
 	// Format booking system attributes
 	$atts = bookacti_format_booking_system_attributes( $atts );
-	
+
 	if( ! $echo ) {
 		ob_start();
 	}
@@ -40,8 +40,8 @@ function bookacti_get_booking_system( $atts, $echo = false ) {
 				
 				if( $atts[ 'groups_only' ] ) {
 					$events			= bookacti_fetch_grouped_events( $atts[ 'calendars' ], $atts[ 'activities' ], array(), $atts[ 'group_categories' ], $atts[ 'past_events' ], $events_interval );
-				} else if( $atts[ 'id' ] === 'bookacti-booking-system-bookings-page' ) {
-					$events			= bookacti_fetch_booked_events( $atts[ 'calendars' ], $atts[ 'activities' ],  array(), $atts[ 'past_events' ], $events_interval );
+				} else if( $atts[ 'bookings_only' ] ) {
+					$events			= bookacti_fetch_booked_events( $atts[ 'calendars' ], $atts[ 'activities' ], $atts[ 'status' ], $atts[ 'user_id' ], $atts[ 'past_events' ], $events_interval );
 				} else {
 					$events			= bookacti_fetch_events( $atts[ 'calendars' ], $atts[ 'activities' ], $atts[ 'past_events' ], $events_interval );
 				}
@@ -211,6 +211,9 @@ function bookacti_format_booking_system_attributes( $atts = array(), $shortcode 
         'group_categories'		=> false,
         'groups_only'			=> 0,
         'groups_single_events'	=> 0,
+        'bookings_only'			=> 0,
+        'status'				=> array(),
+        'user_id'				=> 'current',
         'method'				=> 'calendar',
 		'url'					=> '',
 		'button'				=> bookacti_get_message( 'booking_form_submit_button' ),
@@ -323,7 +326,7 @@ function bookacti_format_booking_system_attributes( $atts = array(), $shortcode 
 	}
 	
 	// Sanitize booleans
-	$booleans_to_check = array( 'groups_only', 'groups_single_events', 'auto_load', 'past_events' );
+	$booleans_to_check = array( 'bookings_only', 'groups_only', 'groups_single_events', 'auto_load', 'past_events' );
 	foreach( $booleans_to_check as $key ) {
 		$atts[ $key ] = in_array( $atts[ $key ], array( 1, '1', true, 'true', 'yes', 'ok' ), true ) ? 1 : 0;
 	}
@@ -338,6 +341,29 @@ function bookacti_format_booking_system_attributes( $atts = array(), $shortcode 
 	$available_booking_methods = bookacti_get_available_booking_methods();
 	if( ! in_array( $atts[ 'method' ], array_keys( $available_booking_methods ), true ) ) {
 		$atts[ 'method' ] = 'calendar';
+	}
+	
+	// Sanitize user id
+	$atts[ 'user_id' ] = esc_attr( $atts[ 'user_id' ] );
+	if( $atts[ 'user_id' ] === 'current' ) { $atts[ 'user_id' ] = get_current_user_id(); }
+	
+	// Sanitize booking status
+	if( is_string( $atts[ 'status' ] ) ) {
+		$atts[ 'status' ] = array_map( 'sanitize_title_with_dashes', explode( ',', preg_replace( array(
+			'/[^\d,]/',    // Matches anything that's not a comma or number.
+			'/(?<=,),+/',  // Matches consecutive commas.
+			'/^,+/',       // Matches leading commas.
+			'/,+$/'        // Matches trailing commas.
+		), '', 	$atts[ 'status' ] ) ) );
+	}
+	
+	// Check if desired status are registered
+	$available_booking_status = array_keys( bookacti_get_booking_state_labels() );
+	
+	foreach( $atts[ 'status' ] as $i => $status ) {
+		if( ! in_array( $status, $available_booking_status, true ) ) {
+			unset( $atts[ 'status' ][ $i ] );
+		}
 	}
 	
 	// Give a random id if not supplied

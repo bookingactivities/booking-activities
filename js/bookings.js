@@ -1,7 +1,7 @@
 $j( document ).ready(function() {
 	
 	var booking_system		= $j( '#bookacti-booking-system-bookings-page' );
-	var booking_system_id	= 'bookacti-booking-system-bookings-page';
+	var booking_system_id	= booking_system.attr( 'id' );
 
 // FILTERS
 	// Init filter actions
@@ -13,14 +13,10 @@ $j( document ).ready(function() {
 		element = element || undefined;
 
 		// Check if the event is hidden
-		var activity_id = bookacti.booking_system[ booking_system_id ][ 'events_data' ][ event.id ][ 'activity_id' ];
-		if( bookacti.hidden_activities !== undefined && activity_id !== undefined ) {
-			$j.each( bookacti.hidden_activities, function ( i, activity_id_to_hide ) {
-				if( parseInt( activity_id ) === activity_id_to_hide ) {
-					if( typeof element !== 'undefined' ) { element.addClass( 'event-exception' ); }
-					event.render = 0;
-				}
-			});
+		var activity_id			= bookacti.booking_system[ booking_system_id ][ 'events_data' ][ event.id ][ 'activity_id' ];
+		var visible_activities	= $j( '#bookacti-booking-filter-activities' ).val() ? $j( '#bookacti-booking-filter-activities' ).val() : [];
+		if( visible_activities.length && $j.inArray( activity_id, visible_activities ) < 0 ) {
+			event.render = 0;
 		}
 
 		if( typeof element !== 'undefined' ) {
@@ -65,17 +61,42 @@ $j( document ).ready(function() {
 
 // BOOKING LIST
 	// Show the booking list
-	booking_system.on( 'bookacti_event_click', function( e, event, group_id ) { 
-		if( group_id === 'single' ) {
-			bookacti_fill_booking_list( booking_system, event );
+//	booking_system.on( 'bookacti_event_click', function( e, event, group_id ) { 
+//		if( group_id === 'single' ) {
+//			bookacti_fill_booking_list( booking_system, event );
+//		}
+//	});
+//
+//	// Show the booking group list
+//	booking_system.on( 'bookacti_group_of_events_chosen', function( e, group_id, event ) { 
+//		if( group_id === 'single' || $j.isNumeric( group_id ) ) {
+//			bookacti_fill_booking_list( booking_system, event,group_id );
+//		}
+//	});
+	
+	// Apply some filters after the caladar has set up
+	booking_system.on( 'bookacti_after_calendar_set_up', function() { 
+		var calendar = booking_system.find( '.bookacti-calendar' );
+		
+		// Fill default inputs, if defualt values are availables
+		var default_inputs = bookacti.booking_system[ 'bookacti-booking-system-bookings-page' ][ 'default_inputs' ];
+		if( ! $j.isEmptyObject( default_inputs ) ) {
+			if( default_inputs.group_id == 0 ) { default_inputs.group_id = 'single'; }
+			booking_system.siblings( '.bookacti-booking-system-inputs' ).find( 'input[name="bookacti_group_id"]' ).val( default_inputs.group_id );
+			booking_system.siblings( '.bookacti-booking-system-inputs' ).find( 'input[name="bookacti_event_id"]' ).val( default_inputs.id );
+			booking_system.siblings( '.bookacti-booking-system-inputs' ).find( 'input[name="bookacti_event_start"]' ).val( default_inputs.start );
+			booking_system.siblings( '.bookacti-booking-system-inputs' ).find( 'input[name="bookacti_event_end"]' ).val( default_inputs.end );
+			delete bookacti.booking_system[ 'bookacti-booking-system-bookings-page' ][ 'default_inputs' ];
 		}
-	});
-
-	// Show the booking group list
-	booking_system.on( 'bookacti_group_of_events_choosed', function( e, group_id, event ) { 
-		if( group_id === 'single' || $j.isNumeric( group_id ) ) {
-			bookacti_fill_booking_list( booking_system, event,group_id );
+		
+		// Go to the first picked events
+		var picked_events = bookacti.booking_system[ 'bookacti-booking-system-bookings-page' ][ 'picked_events' ];
+		if( ! $j.isEmptyObject( bookacti.booking_system[ 'bookacti-booking-system-bookings-page' ][ 'picked_events' ] ) ) {
+			calendar.fullCalendar( 'gotoDate', moment( picked_events[ 0 ][ 'start' ] ) );
 		}
+		
+		// Apply date filter
+		bookacti_refresh_calendar_according_to_date_filter( calendar );
 	});
 
 	// Load tooltip for booking actions retrieved via AJAX

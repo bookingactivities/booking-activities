@@ -2111,18 +2111,37 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	/**
 	 * Fetch activities with the list of associated templated
 	 * 
-	 * @since 1.0.0
-	 * @version 1.1.0
-	 * 
+	 * @version 1.3.0
 	 * @global wpdb $wpdb
+	 * @param array $template_ids
 	 * @return array [ activity_id ][id, title, color, duration, availability, is_resizable, active, template_ids] where template_ids = [id, id, id, ...]
 	 */
-	function bookacti_fetch_activities_with_templates_association() {
+	function bookacti_fetch_activities_with_templates_association( $template_ids = array() ) {
 		global $wpdb;
+		
+		// Convert numeric to array
+		if( ! is_array( $template_ids ) ){
+			$template_id = intval( $template_ids );
+			$template_ids = array();
+			if( $template_id ) {
+				$template_ids[] = $template_id;
+			}
+		}
 		
 		$query  = 'SELECT A.*, TA.template_id FROM ' . BOOKACTI_TABLE_ACTIVITIES . ' as A, ' . BOOKACTI_TABLE_TEMP_ACTI . ' as TA ' 
 				. ' WHERE active=1 '
 				. ' AND A.id = TA.activity_id';
+		
+		// Filter by template
+		if( $template_ids ) {
+			$query .= ' AND TA.template_id IN ( %d';
+			for( $i=1, $len=count( $template_ids ); $i < $len; ++$i ) {
+				$query .= ', %d';
+			}
+			$query .= ') ';
+			$query = $wpdb->prepare( $query, $template_ids );
+		}
+		
 		$activities = $wpdb->get_results( $query, ARRAY_A );
 		
 		$activities_array = array();

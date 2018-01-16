@@ -5,9 +5,8 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 /**
  * AJAX Controller - Fetch events in order to display them
- *
- * @since	1.0.0
- * @version	1.2.2
+ * 
+ * @version	1.3.0
  */
 function bookacti_controller_fetch_events() {
 	// Check nonce
@@ -38,8 +37,8 @@ function bookacti_controller_fetch_events() {
 		
 		if( $attributes[ 'groups_only' ] ) {
 			$events	= bookacti_fetch_grouped_events( $attributes[ 'calendars' ], $attributes[ 'activities' ], array(), $attributes[ 'group_categories' ], $attributes[ 'past_events' ], $events_interval );
-		} else if( $attributes[ 'id' ] === 'bookacti-booking-system-bookings-page' ) {
-			$events = bookacti_fetch_booked_events( $attributes[ 'calendars' ], $attributes[ 'activities' ], array(), $attributes[ 'past_events' ], $events_interval );
+		} else if( $attributes[ 'bookings_only' ] ) {
+			$events = bookacti_fetch_booked_events( $attributes[ 'calendars' ], $attributes[ 'activities' ], $attributes[ 'status' ], $attributes[ 'user_id' ], $attributes[ 'past_events' ], $events_interval );
 		} else {
 			$events	= bookacti_fetch_events( $attributes[ 'calendars' ], $attributes[ 'activities' ], $attributes[ 'past_events' ], $events_interval );	
 		}
@@ -62,7 +61,7 @@ add_action( 'wp_ajax_nopriv_bookactiFetchEvents', 'bookacti_controller_fetch_eve
  * Reload booking system with new attributes via AJAX
  * 
  * @since 1.1.0
- * @version 1.2.2
+ * @version 1.3.0
  */
 function bookacti_controller_reload_booking_system() {
 	
@@ -102,8 +101,8 @@ function bookacti_controller_reload_booking_system() {
 		
 		if( $attributes[ 'groups_only' ] ) {
 			$events	= bookacti_fetch_grouped_events( $attributes[ 'calendars' ], $attributes[ 'activities' ], array(), $attributes[ 'group_categories' ], $attributes[ 'past_events' ], $events_interval );
-		} else if( $attributes[ 'id' ] === 'bookacti-booking-system-bookings-page' ) {
-			$events = bookacti_fetch_booked_events( $attributes[ 'calendars' ], $attributes[ 'activities' ], array(), $attributes[ 'past_events' ], $events_interval );
+		} else if( $attributes[ 'bookings_only' ] ) {
+			$events = bookacti_fetch_booked_events( $attributes[ 'calendars' ], $attributes[ 'activities' ], $attributes[ 'status' ], $attributes[ 'user_id' ], $attributes[ 'past_events' ], $events_interval );
 		} else {
 			$events	= bookacti_fetch_events( $attributes[ 'calendars' ], $attributes[ 'activities' ], $attributes[ 'past_events' ], $events_interval );	
 		}

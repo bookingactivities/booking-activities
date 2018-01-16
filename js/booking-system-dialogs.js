@@ -229,7 +229,7 @@ function bookacti_dialog_choose_group_of_events( booking_system, group_ids, even
 				bookacti_unpick_all_events( booking_system );
 				bookacti_pick_events_of_group( booking_system, group_id, event );
 				
-				booking_system.trigger( 'bookacti_group_of_events_choosed', [ group_id, event ] );
+				booking_system.trigger( 'bookacti_group_of_events_chosen', [ group_id, event ] );
 				
 				//Close the modal dialog
 				$j( this ).dialog( 'close' );

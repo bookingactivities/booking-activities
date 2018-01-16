@@ -53,7 +53,7 @@ if( ! $templates ) {
 							unset( $_REQUEST[ 'templates' ][0] ); // unset 'all' value
 						}
 					}
-				
+					
 					$default_template	= bookacti_get_user_default_template();
 					$selected_templates	= isset( $_REQUEST[ 'templates' ] ) ? $_REQUEST[ 'templates' ] : array( $default_template );
 					$templates_select_options = array();
@@ -89,10 +89,10 @@ if( ! $templates ) {
 						}
 					}
 					
-					$activities = bookacti_get_activities_by_template( $selected_templates, false );
+					$activities = bookacti_fetch_activities_with_templates_association( array_keys( $templates ) );
 					$activities_select_options = array();
 					foreach ( $activities as $activity_id => $activity ) {
-						$activities_select_options[ $activity_id ] = esc_html( $activity->title );
+						$activities_select_options[ $activity_id ] = esc_html( apply_filters( 'bookacti_translate_text', $activity[ 'title' ] ) );
 					}
 					$args = array(
 						'type'		=> 'select',
@@ -127,12 +127,13 @@ if( ! $templates ) {
 					foreach ( $statuses as $status_id => $status ) {
 						$status_select_options[ $status_id ] = esc_html( $status[ 'label' ] );
 					}
+					$selected_status = isset( $_REQUEST[ 'status' ] ) ? $_REQUEST[ 'status' ] : array();
 					$args = array(
 						'type'		=> 'select',
 						'name'		=> 'status',
 						'id'		=> 'bookacti-booking-filter-status',
 						'options'	=> $status_select_options,
-						'value'		=> isset( $_REQUEST[ 'status' ] ) ? $_REQUEST[ 'status' ] : array(),
+						'value'		=> $selected_status,
 						'multiple'	=> true
 					);
 					bookacti_display_field( $args );
@@ -154,12 +155,13 @@ if( ! $templates ) {
 				</div>
 				<div class='bookacti-bookings-filter-content' >
 				<?php
+					$selected_user = isset( $_REQUEST[ 'user_id' ] ) ? intval( $_REQUEST[ 'user_id' ] ) : 0;
 					$args = apply_filters( 'bookacti_booking_list_user_selectbox_args', array(
 						'name'				=> 'user_id',
 						'id'				=> 'bookacti-booking-filter-customer',
 						'show_option_all'	=> __( 'All', BOOKACTI_PLUGIN_NAME ),
 						'option_label'		=> array( 'user_login', ' (', 'user_email', ')' ),
-						'selected'			=> isset( $_REQUEST[ 'user_id' ] ) ? intval( $_REQUEST[ 'user_id' ] ) : 0,
+						'selected'			=> $selected_user,
 						'echo'				=> true
 					));
 					bookacti_display_user_selectbox( $args );
@@ -171,15 +173,52 @@ if( ! $templates ) {
 					<?php echo esc_html__( 'Event', BOOKACTI_PLUGIN_NAME ); ?>
 				</div>
 				<div class='bookacti-bookings-filter-content' >
+					<?php
+						// Get selected (group of) event(s) data (if any)
+						// Accepts two different parameter name
+						$event_group_id = 0; $event_id = 0; $event_start = ''; $event_end = ''; $picked_events = array();
+						if( isset( $_REQUEST[ 'bookacti_group_id' ] )	&& $_REQUEST[ 'bookacti_group_id' ] !== 'single' )	{ $event_group_id = intval( $_REQUEST[ 'bookacti_group_id' ] ); }
+						if( isset( $_REQUEST[ 'event_group_id' ] )		&& $_REQUEST[ 'event_group_id' ] !== 'single' )		{ $event_group_id = intval( $_REQUEST[ 'event_group_id' ] ); }
+						if( isset( $_REQUEST[ 'bookacti_event_id' ] ) )		{ $event_id		= intval( $_REQUEST[ 'bookacti_event_id' ] ); }
+						if( isset( $_REQUEST[ 'event_id' ] ) )				{ $event_id		= intval( $_REQUEST[ 'event_id' ] ); }
+						if( isset( $_REQUEST[ 'bookacti_event_start' ] ) )	{ $event_start	= bookacti_sanitize_datetime( $_REQUEST[ 'bookacti_event_start' ] ); }
+						if( isset( $_REQUEST[ 'event_start' ] ) )			{ $event_start	= bookacti_sanitize_datetime( $_REQUEST[ 'event_start' ] ); }
+						if( isset( $_REQUEST[ 'bookacti_event_end' ] ) )	{ $event_end	= bookacti_sanitize_datetime( $_REQUEST[ 'bookacti_event_end' ] ); }
+						if( isset( $_REQUEST[ 'event_end' ] ) )				{ $event_end	= bookacti_sanitize_datetime( $_REQUEST[ 'event_end' ] ); }
+
+						// Fill picked events array
+						if( $event_group_id === 0 && $event_id !== 0 ) {
+							$picked_events[] = array(
+								'id' => $event_id,
+								'start' => $event_start,
+								'end' => $event_end
+							);
+						} else if( $event_group_id ) {
+							$picked_events = bookacti_get_group_events( $event_group_id );
+						}
+
+						// Fill booking system default inputs
+						$default_inputs = array(
+							'group_id' => $event_group_id,
+							'id' => $event_id,
+							'start' => $event_start,
+							'end' => $event_end
+						);
+						
+						$display_calendar = $picked_events ? 'block' : 'none';
+					?>
 					<a class='button' id='bookacti-pick-event-filter' >
-						<?php _e( 'Pick an event', BOOKACTI_PLUGIN_NAME ); ?>
+						<?php echo $picked_events ? __( 'Hide calendar', BOOKACTI_PLUGIN_NAME ) : __( 'Pick an event', BOOKACTI_PLUGIN_NAME ); ?>
+					</a>
+					<a class='button' id='bookacti-unpick-events-filter' style='display:<?php echo $display_calendar; ?>' >
+						<?php _e( 'Unpick events', BOOKACTI_PLUGIN_NAME ); ?>
 					</a>
 				</div>
 			</div>
 			<?php
 				do_action( 'bookacti_after_booking_filters' );
 			?>
-			<div id='bookacti-event-filter-container' class='bookacti-bookings-filter-container' >
+			<div id='bookacti-submit-filter-container' class='bookacti-bookings-filter-container' >
 				<div class='bookacti-bookings-filter-title' >
 					<?php echo esc_html_x( 'Filter', 'verb', BOOKACTI_PLUGIN_NAME ); ?>
 				</div>
@@ -187,34 +226,32 @@ if( ! $templates ) {
 					<input type='submit' class='button button-primary button-large' value='<?php _e( 'Apply filters', BOOKACTI_PLUGIN_NAME ); ?>' />
 				</div>
 			</div>
+			<div id='bookacti-booking-system-filter-container' style='display:<?php echo $display_calendar; ?>'>
+				<?php
+					// Display the booking system
+					$atts = array( 
+						'calendars'				=> $selected_templates,
+						'bookings_only'			=> 1,
+						'status'				=> $selected_status,
+						'user_id'				=> $selected_user,
+						'group_categories'		=> array(),
+						'groups_only'			=> 0,
+						'groups_single_events'	=> 1,
+						'method'				=> 'calendar',
+						'id'					=> 'booking-system-bookings-page',
+						'classes'				=> 'admin-booking-system',
+						'past_events'			=> 1
+					);
+					bookacti_get_booking_system( $atts, true );
+				?>
+				<script>
+					bookacti.booking_system[ 'bookacti-booking-system-bookings-page' ][ 'templates_per_activities' ]	= <?php echo json_encode( $activities ); ?>;
+					bookacti.booking_system[ 'bookacti-booking-system-bookings-page' ][ 'picked_events' ]				= <?php echo json_encode( $picked_events ); ?>;
+					bookacti.booking_system[ 'bookacti-booking-system-bookings-page' ][ 'default_inputs' ]				= <?php echo json_encode( $default_inputs ); ?>;
+				</script>
+			</div>
 		</form>
 	</div>
-	
-	<?php
-/*
-	// Display booking system title
-	add_filter( 'bookacti_booking_system_title', 'bookacti_bookings_booking_system_title', 10, 2 );
-	function bookacti_bookings_booking_system_title( $title, $atts ) {
-		if( $atts[ 'id' ] === 'bookacti-booking-system-bookings-page' ) {
-			$title = '<h2>' . esc_html__( 'Pick an event to show its bookings', BOOKACTI_PLUGIN_NAME ) . '</h2>';
-		}
-		return $title;
-	}
-	
-	// Display the booking system
-	$atts = array( 
-		'calendars'				=> array( $default_template ),
-		'group_categories'		=> array(),
-		'groups_only'			=> 0,
-		'groups_single_events'	=> 1,
-		'method'				=> 'calendar',
-		'id'					=> 'booking-system-bookings-page',
-		'classes'				=> 'admin-booking-system',
-		'past_events'			=> 1
-	);
-    bookacti_get_booking_system( $atts, true );
-*/
-	?>
 	
 	<div id='bookacti-bookings-list-container' >
 		<?php

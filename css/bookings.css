@@ -18,14 +18,15 @@
 /** FILTERS **/
 .bookacti-bookings-filter-container	{ display: inline-block;  vertical-align: top; width: 150px; margin-right: 10px; }
 .bookacti-bookings-filter-title		{ font-weight: bold; line-height: 2.5em; }
-.bookacti-bookings-filter-content select[multiple]			{ height: 56px; box-sizing: border-box; padding: 0; margin: 0; }
+.bookacti-bookings-filter-content select[multiple]			{ height: 60px; box-sizing: border-box; padding: 0; margin: 0; }
 .bookacti-bookings-filter-content select[multiple] option	{ height: 22px; box-sizing: border-box; padding: 2px 4px; margin: 0; }
 .bookacti-bookings-filter-content select, 
 .bookacti-bookings-filter-content input, 
 .bookacti-bookings-filter-content a			{ width: 150px; }
 
-#bookacti-event-filter-container a			{ text-align: center; }
-#bookacti-event-filter-container a::before	{ font-family: 'dashicons'; content: "\f508"; font-size: 1.2em; vertical-align: bottom; }
+#bookacti-event-filter-container a	{ text-align: center; }
+#bookacti-pick-event-filter::before	{ font-family: 'dashicons'; content: "\f508"; margin-right: 4px; font-size: 1.2em; vertical-align: bottom; }
+#bookacti-unpick-events-filter		{ margin-top: 4px; }
 
 #bookacti-customer-filter-container .bookacti-combobox					{ min-height: 28px; width: 100%; }
 #bookacti-customer-filter-container .bookacti-combobox > *				{ background-color: #fff; border-color: #ddd; box-shadow: inset 0 1px 0 rgba(0,0,0,.07); }
@@ -33,13 +34,17 @@
 #bookacti-customer-filter-container .bookacti-combobox-input			{ padding: 2px 6px; min-width: 0; max-width: 132px; min-height: 28px; border-right: none; border-bottom-right-radius: 0; border-top-right-radius: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 #bookacti-customer-filter-container .bookacti-combobox-toggle.ui-state-hover .ui-icon { background-image: url(../lib/jquery-ui/themes/booking-activities/images/ui-icons_565d61_256x240.png); }
 
+.bookacti-submit-filter-centered { display: block; margin: 20px auto; }
+.bookacti-submit-filter-centered .bookacti-bookings-filter-title { display: none; }
+
+
 /** BOOKING SYSTEM **/
+#bookacti-booking-system-filter-container										{ margin-top: 20px; }
 #bookacti-booking-system-bookings-page .bookacti-booking-system-title		{ display: none; }
-#bookacti-booking-system-bookings-page-container							{ display: table-cell; padding-left: 20px; vertical-align: top; }
 #bookacti-bookings-container .bookacti-picked-events						{ display: none !important; }
 #bookacti-booking-system-bookings-page .bookacti-calendar .bookacti-availability-container 
 span:not(.bookacti-not-booked) .bookacti-active-bookings-number				{ font-weight: bold; font-size: larger; }
-#bookacti-booking-system-bookings-page .bookacti-calendar .bookacti-available-places.bookacti-booked	{ background-color: rgba(255, 255, 0, 0.4); }
+#bookacti-booking-system-bookings-page .bookacti-calendar .bookacti-available-places.bookacti-booked { background-color: rgba(255, 255, 0, 0.4); }
 
 
 /** BOOKING LIST **/
@@ -214,7 +219,7 @@ a.bookacti-booking-action					{ display: inline-block; word-spacing: 0; margin: 
 	.bookacti-bookings-filter-content select, 
 	.bookacti-bookings-filter-content input, 
 	.bookacti-bookings-filter-content a { width: 100%; }
-	#wpbody .bookacti-bookings-filter-content select[multiple] { height: 56px; }
+	#wpbody .bookacti-bookings-filter-content select[multiple] { height: 60px; }
 	#bookacti-customer-filter-container .bookacti-combobox-input			{ max-width: none; }
 	#bookacti-customer-filter-container .ui-button.bookacti-combobox-toggle	{ width: 32px; }
 }

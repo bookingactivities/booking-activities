@@ -268,20 +268,18 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	function bookacti_woocommerce_fill_booking_list_custom_columns( $booking_item, $booking, $user ) {
 		
 		$customer = '';
-		if( $user ) {
-			if( is_numeric( $booking->user_id ) && $user->billing_first_name && $user->billing_last_name ) {
-				$customer = '<a '
-							. ' href="' . esc_url( get_admin_url() . 'user-edit.php?user_id=' . $booking->user_id ) . '" '
-							. ' target="_blank" '
-							. ' >'
-								. esc_html( $user->billing_first_name . ' ' . $user->billing_last_name )
-						. ' </a>';
-			}
+		if( is_numeric( $booking->user_id ) && $user->billing_first_name && $user->billing_last_name ) {
+			$customer = '<a '
+						. ' href="' . esc_url( get_admin_url() . 'user-edit.php?user_id=' . $booking->user_id ) . '" '
+						. ' target="_blank" '
+						. ' >'
+							. esc_html( $user->billing_first_name . ' ' . $user->billing_last_name )
+					. ' </a>';
+			
+			$booking_item[ 'customer' ]	= $customer ? $customer : $booking_item[ 'customer' ];
+			$booking_item[ 'email' ]	= $user->billing_email;
+			$booking_item[ 'phone' ]	= $user->billing_phone;
 		}
-		
-		$booking_item[ 'customer' ]	= $customer ? $customer : $booking_item[ 'customer' ];
-		$booking_item[ 'email' ]	= $user->billing_email;
-		$booking_item[ 'phone' ]	= $user->billing_phone;
 		
 		return $booking_item;
 	}
