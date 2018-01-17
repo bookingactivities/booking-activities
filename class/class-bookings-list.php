@@ -167,13 +167,14 @@ if( ! class_exists( 'Bookings_List_Table' ) ) {
 		 * Prepare the items to be displayed in the list
 		 * 
 		 * @version 1.3.0
+		 * @param array $filters
 		 */
-		public function prepare_items() {
+		public function prepare_items( $filters = array() ) {
 			
 			$this->get_column_info();
 			$this->_column_headers[0] = $this->get_columns();
 			
-			$items = $this->get_booking_list_items();
+			$items = $this->get_booking_list_items( $filters );
 			
 			// Get the number of booking to display per page
 			$user			= get_current_user_id();
@@ -239,7 +240,6 @@ if( ! class_exists( 'Bookings_List_Table' ) ) {
 				}
 				
 				$filters = array(
-					'bookings_only'		=> 1,
 					'templates'			=> isset( $_REQUEST[ 'templates' ] )		? $_REQUEST[ 'templates' ] : array(), 
 					'activities'		=> isset( $_REQUEST[ 'activities' ] )		? $_REQUEST[ 'activities' ] : array(), 
 					'booking_group_id'	=> isset( $_REQUEST[ 'booking_group_id' ] )	? intval( $_REQUEST[ 'booking_group_id' ] ): 0, 
@@ -251,8 +251,8 @@ if( ! class_exists( 'Bookings_List_Table' ) ) {
 					'user_id'			=> isset( $_REQUEST[ 'user_id' ] )			? $_REQUEST[ 'user_id' ] : 0,
 					'from'				=> isset( $_REQUEST[ 'from' ] )				? $_REQUEST[ 'from' ] : '',
 					'to'				=> isset( $_REQUEST[ 'to' ] )				? $_REQUEST[ 'to' ] : '',
-					'order_by'			=> isset( $_REQUEST[ 'orderby' ] )			? $_REQUEST[ 'orderby' ] : 'id',
-					'order'				=> isset( $_REQUEST[ 'order' ] )			? $_REQUEST[ 'order' ] : 'creation_date'
+					'order_by'			=> isset( $_REQUEST[ 'orderby' ] )			? $_REQUEST[ 'orderby' ] : array( 'creation_date', 'id' ),
+					'order'				=> isset( $_REQUEST[ 'order' ] )			? $_REQUEST[ 'order' ] : 'DESC'
 				);
 			}
 			
@@ -261,7 +261,11 @@ if( ! class_exists( 'Bookings_List_Table' ) ) {
 			
 			// Request bookings corresponding to filters
 			$bookings = bookacti_get_bookings( $formatted_filters );
-						
+			
+			// Retrieve booking groups data
+			$booking_groups		= bookacti_get_booking_groups( $formatted_filters );
+			$displayed_groups	= array();
+			
 			// Retrieve information about users and stock them into an array sorted by user id
 			$user_ids = array();
 			foreach( $bookings as $booking ) {
@@ -275,61 +279,84 @@ if( ! class_exists( 'Bookings_List_Table' ) ) {
 			$booking_list_items = array();
 			foreach( $bookings as $booking ) {
 				
-				// Booking group fields
-//				if( $is_group_of_events ) {
-//					$quantity = bookacti_get_booking_group_quantity( $booking->id );
-//					
-//				// Single booking fields
-//				} else {
-					$quantity = $booking->quantity;
-//				}
+				// Display one single row for a booking group, instead of each bookings of the group
+				if( $booking->group_id && ! $filters[ 'booking_group_id' ] ) {
+					// If the group row has already been displayed, or if it is not found, continue
+					if( in_array( $booking->group_id, $displayed_groups, true ) 
+					||  ! isset( $booking_groups[ $booking->group_id ] ) ) { continue; }
+					
+					$group		= $booking_groups[ $booking->group_id ];
+					
+					$raw_id		= $group->id;
+					$id			= $group->id . '<span class="bookacti-booking-group-indicator">' . _x( 'Group', 'noun', BOOKACTI_PLUGIN_NAME ) . '</span>';
+					$user_id	= $group->user_id;
+					$state		= bookacti_format_booking_state( $group->state, true );
+					$title		= $group->group_title;
+					$start		= $group->start;
+					$end		= $group->end;
+					$quantity	= bookacti_get_booking_group_quantity( $group->id );
+					$order_id	= $group->order_id;
+					$actions	= bookacti_get_booking_group_actions_html( $group->id, 'admin' );
+					$activity_title	= '';
+					$booking_type	= 'group';
+					
+					$displayed_groups[] = $booking->group_id;
 				
-				// Common fields
-				if( is_numeric( $booking->user_id ) ) {
-					$user = $users[ $booking->user_id ];
+				// Single booking
+				} else {
+					
+					$raw_id		= $booking->id;
+					$id			= $booking->group_id ? $booking->id . '<span class="bookacti-booking-group-id" >' . $booking->group_id . '</span>' : $booking->id;
+					$user_id	= $booking->user_id;
+					$state		= bookacti_format_booking_state( $booking->state, true );
+					$title		= $booking->event_title;
+					$start		= $booking->event_start;
+					$end		= $booking->event_end;
+					$quantity	= $booking->quantity;
+					$order_id	= $booking->order_id;
+					$actions	= bookacti_get_booking_actions_html( $booking->id, 'admin' );
+					$activity_title	= $booking->activity_title;
+					$booking_type	= 'single';
+				}
+				
+				// Format customer column
+				if( is_numeric( $user_id ) ) {
+					$user = $users[ $user_id ];
 					$customer = '<a '
-								. ' href="' . esc_url( get_admin_url() . 'user-edit.php?user_id=' . $booking->user_id ) . '" '
+								. ' href="' . esc_url( get_admin_url() . 'user-edit.php?user_id=' . $user_id ) . '" '
 								. ' target="_blank" '
 								. ' >'
 									. esc_html( $user->user_login . ' (' . $user->user_email . ')' )
 							. ' </a>';
 				} else {
 					$user = new stdClass();
-					$customer = esc_html( __( 'Unknown user', BOOKACTI_PLUGIN_NAME ) . ' (' . $booking->user_id . ')' );
+					$customer = esc_html( __( 'Unknown user', BOOKACTI_PLUGIN_NAME ) . ' (' . $user_id . ')' );
 				}
 				
-				$state = bookacti_format_booking_state( $booking->state, true );
-				
-//				if( $item[ 'booking_type' ] === 'group' ) {
-//					$actions = bookacti_get_booking_group_actions_html( $item[ 'id' ], 'admin', true );
-//				} else {
-					$actions = bookacti_get_booking_actions_html( $booking->id, 'admin' );
-//				}
-				
 				$booking_item = apply_filters( 'bookacti_booking_list_booking_columns', array( 
+					'id'			=> $id,
 					'customer'		=> $customer,
 					'state'			=> $state,
 					'quantity'		=> $quantity,
-					'id'			=> $booking->id,
-					'event_title'	=> apply_filters( 'bookacti_translate_text', $booking->event_title ),
-					'start_date'	=> bookacti_format_datetime( $booking->event_start ),
-					'end_date'		=> bookacti_format_datetime( $booking->event_end ),
+					'event_title'	=> apply_filters( 'bookacti_translate_text', $title ),
+					'start_date'	=> bookacti_format_datetime( $start ),
+					'end_date'		=> bookacti_format_datetime( $end ),
 					'template_title'=> apply_filters( 'bookacti_translate_text', $booking->template_title ),
-					'activity_title'=> apply_filters( 'bookacti_translate_text', $booking->activity_title ),
+					'activity_title'=> apply_filters( 'bookacti_translate_text', $activity_title ),
 					/* translators: Datetime format. Must be adapted to each country. Use wp date_i18n documentation to find the appropriated combinaison https://codex.wordpress.org/Formatting_Date_and_Time */
 					'creation_date'	=> bookacti_format_datetime( $booking->creation_date, __( 'F d, Y', BOOKACTI_PLUGIN_NAME ) ),
 					'actions'		=> $actions,
-					'order_id'		=> $booking->order_id,
-					'booking_type'	=> 'single',
+					'order_id'		=> $order_id,
+					'booking_type'	=> $booking_type,
 					'primary_data'	=> array( 
-						'(' . _x( 'id', 'An id is a unique identification number', BOOKACTI_PLUGIN_NAME ) . ': ' . $booking->id . ')', 
+						'(' . _x( 'id', 'An id is a unique identification number', BOOKACTI_PLUGIN_NAME ) . ': ' . $id . ')', 
 						$state, 
 						'x' . $quantity 
 					)
 				), $booking, $user );
 				
 				// Add info on the primary column to make them directly visible in responsive view
-				if( ! empty( $booking_item[ 'primary_data' ] ) ) {
+				if( $booking_item[ 'primary_data' ] ) {
 					$primary_column_name = $this->get_primary_column();
 					$primary_data = '<div class="bookacti-booking-primary-data-container">';
 					foreach( $booking_item[ 'primary_data' ] as $single_primary_data ) {

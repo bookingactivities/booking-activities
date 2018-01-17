@@ -5,15 +5,9 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 /**
  * Define default settings values
  * 
- * @version 1.2.1
+ * @version 1.3.0
  */
 function bookacti_define_default_settings_constants() {
-	if( ! defined( 'BOOKACTI_DEFAULT_TEMPLATE_PER_USER' ) )				{ define( 'BOOKACTI_DEFAULT_TEMPLATE_PER_USER', '0' ); }
-	if( ! defined( 'BOOKACTI_SHOW_PAST_EVENTS' ) )						{ define( 'BOOKACTI_SHOW_PAST_EVENTS', '1' ); }
-	if( ! defined( 'BOOKACTI_ALLOW_TEMPLATES_FILTER' ) )				{ define( 'BOOKACTI_ALLOW_TEMPLATES_FILTER', '1' ); }
-	if( ! defined( 'BOOKACTI_ALLOW_ACTIVITIES_FILTER' ) )				{ define( 'BOOKACTI_ALLOW_ACTIVITIES_FILTER', '1' ); }
-	if( ! defined( 'BOOKACTI_SHOW_INACTIVE_BOOKINGS' ) )				{ define( 'BOOKACTI_SHOW_INACTIVE_BOOKINGS', '0' ); }
-	
 	if( ! defined( 'BOOKACTI_BOOKING_METHOD' ) )						{ define( 'BOOKACTI_BOOKING_METHOD', 'calendar' ); }
 	if( ! defined( 'BOOKACTI_WHEN_EVENTS_LOAD' ) )						{ define( 'BOOKACTI_WHEN_EVENTS_LOAD', 'on_page_load' ); }
 	if( ! defined( 'BOOKACTI_EVENT_LOAD_INTERVAL' ) )					{ define( 'BOOKACTI_EVENT_LOAD_INTERVAL', 92 ); }
@@ -40,20 +34,9 @@ add_action( 'plugins_loaded', 'bookacti_define_default_settings_constants' );
 /**
  * Set settings values to their default value if null
  * 
- * @version 1.2.1
+ * @version 1.3.0
  */
 function bookacti_init_settings_values() {
-	
-	$default_template_settings = get_option( 'bookacti_template_settings' );
-	if( ! isset( $default_template_settings['default_template_per_user'] ) ){ $default_template_settings['default_template_per_user']	= BOOKACTI_DEFAULT_TEMPLATE_PER_USER; }
-	update_option( 'bookacti_template_settings', $default_template_settings );
-	
-	$default_bookings_settings = get_option( 'bookacti_bookings_settings' );
-	if( ! isset( $default_bookings_settings['show_past_events'] ) )			{ $default_bookings_settings['show_past_events']		= BOOKACTI_SHOW_PAST_EVENTS; }
-	if( ! isset( $default_bookings_settings['allow_templates_filter'] ) )	{ $default_bookings_settings['allow_templates_filter']	= BOOKACTI_ALLOW_TEMPLATES_FILTER; }
-	if( ! isset( $default_bookings_settings['allow_activities_filter'] ) )	{ $default_bookings_settings['allow_activities_filter']	= BOOKACTI_ALLOW_ACTIVITIES_FILTER; }
-	if( ! isset( $default_bookings_settings['show_inactive_bookings'] ) )	{ $default_bookings_settings['show_inactive_bookings']	= BOOKACTI_SHOW_INACTIVE_BOOKINGS; }
-	update_option( 'bookacti_bookings_settings', $default_bookings_settings );
 	
 	$default_cancellation_settings = get_option( 'bookacti_cancellation_settings' );
 	if( ! isset( $default_cancellation_settings['allow_customers_to_cancel'] ) )			{ $default_bookings_settings['allow_customers_to_cancel']				= BOOKACTI_ALLOW_CUSTOMERS_TO_CANCEL; }
@@ -86,22 +69,9 @@ function bookacti_init_settings_values() {
 /**
  * Reset settings to default values
  * 
- * @version 1.2.1
+ * @version 1.3.0
  */
 function bookacti_reset_settings() {
-	
-	$default_template_settings = array();
-	$default_template_settings['default_template_per_user']	= BOOKACTI_DEFAULT_TEMPLATE_PER_USER;
-	
-	update_option( 'bookacti_template_settings', $default_template_settings );
-	
-	$default_bookings_settings = array();
-	$default_bookings_settings['show_past_events']			= BOOKACTI_SHOW_PAST_EVENTS;
-	$default_bookings_settings['allow_templates_filter']	= BOOKACTI_ALLOW_TEMPLATES_FILTER;
-	$default_bookings_settings['allow_activities_filter']	= BOOKACTI_ALLOW_ACTIVITIES_FILTER;
-	$default_bookings_settings['show_inactive_bookings']	= BOOKACTI_SHOW_INACTIVE_BOOKINGS;
-	
-	update_option( 'bookacti_bookings_settings', $default_bookings_settings );
 	
 	$default_cancellation_settings = array();
 	$default_cancellation_settings['allow_customers_to_cancel']				= BOOKACTI_ALLOW_CUSTOMERS_TO_CANCEL;
@@ -136,15 +106,18 @@ function bookacti_reset_settings() {
 /**
  * Delete settings
  * 
- * @version 1.2.0
+ * @version 1.3.0
  */
 function bookacti_delete_settings() {
-	delete_option( 'bookacti_template_settings' );
-	delete_option( 'bookacti_bookings_settings' );
-	delete_option( 'bookacti_cancellation_settings' );
+	delete_option( 'bookacti_template_settings' ); // Deprecated
+	delete_option( 'bookacti_bookings_settings' ); // Deprecated
 	delete_option( 'bookacti_general_settings' );
+	delete_option( 'bookacti_cancellation_settings' );
 	delete_option( 'bookacti_notifications_settings' );
 	delete_option( 'bookacti_messages_settings' );
+	
+	bookacti_delete_user_meta( 'bookacti_default_template' );
+	bookacti_delete_user_meta( 'bookacti_status_filter' );
 	
 	do_action( 'bookacti_delete_settings' );
 }
@@ -185,50 +158,6 @@ function bookacti_get_setting_value( $setting_page, $setting_field, $translate =
 }
 
 
-/**
- * Get setting value by user
- * 
- * @version 1.1.0
- * @param string $setting_page
- * @param string $setting_field
- * @param int $user_id
- * @return mixed
- */
-function bookacti_get_setting_value_by_user( $setting_page, $setting_field, $user_id = false, $translate = true ) {
-
-	$user_id = $user_id ? $user_id : get_current_user_id();
-	$settings = get_option( $setting_page );
-	
-	if( ! is_array( $settings ) ){
-		$settings = array();
-	}
-	
-	if( ! isset( $settings[ $setting_field ] ) || ! is_array( $settings[ $setting_field ] ) ) {
-		$settings[ $setting_field ] = array();
-	}
-	
-	if( ! isset( $settings[ $setting_field ][ $user_id ] ) 
-	||  ( ! $settings[ $setting_field ] && $settings[ $setting_field ] !== '0' && $settings[ $setting_field ] !== 0 ) ) {
-		if( defined( 'BOOKACTI_' . strtoupper( $setting_field ) ) ) {
-			$settings[ $setting_field ][ $user_id ] = constant( 'BOOKACTI_' . strtoupper( $setting_field ) );
-			update_option( $setting_page, $settings );
-		} else {
-			$settings[ $setting_field ][ $user_id ] = false;
-		}
-	}
-	
-	if( ! $translate ) {
-		return $settings[ $setting_field ][ $user_id ];
-	}
-	
-	if( is_string( $settings[ $setting_field ][ $user_id ] ) ) {
-		$settings[ $setting_field ][ $user_id ] = apply_filters( 'bookacti_translate_text', $settings[ $setting_field ][ $user_id ] );
-	}
-		
-	return $settings[ $setting_field ][ $user_id ];
-}
-
-
 
 
 // SECTION CALLBACKS
@@ -238,6 +167,26 @@ function bookacti_settings_section_template_callback() { }
 function bookacti_settings_section_bookings_callback() { }
 
 
+// BOOKINGS SETTINGS
+
+	/**
+	 * Display Booking page options in screen options area
+	 * 
+	 * @since 1.3.0
+	 */
+	function bookacti_display_bookings_screen_options() {
+		$screen = get_current_screen();
+
+		// Don't do anything if we are not on the booking page
+		if( ! is_object( $screen ) || $screen->id != 'booking-activities_page_bookacti_bookings' ) { return; }
+
+		// Bookings per page
+		add_screen_option( 'per_page', array(
+			'label' => __( 'Bookings per page:', BOOKACTI_PLUGIN_NAME ),
+			'default' => 20,
+			'option' => 'bookacti_bookings_per_page'
+		));
+	}
 
 
 // GENERAL SETTINGS 
@@ -838,41 +787,9 @@ function bookacti_settings_section_bookings_callback() { }
 		
 		return $message;
 	}
-	
-	
 
-// TEMPLATE SETTINGS
-	function bookacti_settings_field_default_template_callback() { }
-	
-	
-	
-// BOOKINGS SETTINGS
-	function bookacti_settings_field_show_past_events_callback() { }
-	function bookacti_settings_field_templates_filter_callback() { }
-	function bookacti_settings_field_activities_filter_callback() { }
-	function bookacti_settings_field_show_inactive_bookings_callback() { }
-	
-	/**
-	 * Display Booking page options in screen options area
-	 * 
-	 * @since 1.3
-	 */
-	function bookacti_display_bookings_screen_options() {
-		$screen = get_current_screen();
 
-		// Don't do anything if we are not on the booking page
-		if( ! is_object( $screen ) || $screen->id != 'booking-activities_page_bookacti_bookings' ) { return; }
 
-		// Bookings per page
-		add_screen_option( 'per_page', array(
-			'label' => __( 'Bookings per page:', BOOKACTI_PLUGIN_NAME ),
-			'default' => 20,
-			'option' => 'bookacti_bookings_per_page'
-		));
-	}
-	
-	
-	
 // RESET NOTICES
 function bookacti_reset_notices() {
 	delete_option( 'bookacti-install-date' );

@@ -1652,7 +1652,6 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 // SETTINGS
 	
-	function bookacti_settings_field_show_temporary_bookings_callback() { }
 	function bookacti_settings_section_cart_callback() {}
 	
 	/**

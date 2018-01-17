@@ -5,7 +5,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 /**
  * Init Booking Activities settings
  * 
- * @version 1.2.1
+ * @version 1.3.0
  */
 function bookacti_init_settings() { 
 
@@ -71,66 +71,6 @@ function bookacti_init_settings() {
 		'bookacti_settings_field_date_format_callback', 
 		'bookacti_general_settings', 
 		'bookacti_settings_section_general' 
-	);
-	
-	
-	
-	/* Template settings Section */
-	add_settings_section( 
-		'bookacti_settings_section_template',
-		__( 'Calendars Settings', BOOKACTI_PLUGIN_NAME ),
-		'bookacti_settings_section_template_callback',
-		'bookacti_template_settings'
-	);
-
-	add_settings_field(  
-		'default_template_per_user', 
-		__( 'Default calendar per user', BOOKACTI_PLUGIN_NAME ), 
-		'bookacti_settings_field_default_template_callback', 
-		'bookacti_template_settings', 
-		'bookacti_settings_section_template' 
-	);
-	
-	
-	
-	/* Bookings settings Section */
-	add_settings_section( 
-		'bookacti_settings_section_bookings',
-		__( 'Bookings Settings', BOOKACTI_PLUGIN_NAME ),
-		'bookacti_settings_section_bookings_callback',
-		'bookacti_bookings_settings'
-	);
-
-	add_settings_field(  
-		'show_past_events', 
-		__( 'Show past events', BOOKACTI_PLUGIN_NAME ), 
-		'bookacti_settings_field_show_past_events_callback', 
-		'bookacti_bookings_settings', 
-		'bookacti_settings_section_bookings' 
-	);
-
-	add_settings_field(  
-		'allow_templates_filter', 
-		__( 'Allow calendars filter', BOOKACTI_PLUGIN_NAME ), 
-		'bookacti_settings_field_templates_filter_callback', 
-		'bookacti_bookings_settings', 
-		'bookacti_settings_section_bookings' 
-	);
-
-	add_settings_field(  
-		'allow_activities_filter', 
-		__( 'Allow activities filter', BOOKACTI_PLUGIN_NAME ), 
-		'bookacti_settings_field_activities_filter_callback', 
-		'bookacti_bookings_settings', 
-		'bookacti_settings_section_bookings' 
-	);
-
-	add_settings_field(  
-		'show_inactive_bookings', 
-		__( 'Show inactive bookings', BOOKACTI_PLUGIN_NAME ), 
-		'bookacti_settings_field_show_inactive_bookings_callback', 
-		'bookacti_bookings_settings', 
-		'bookacti_settings_section_bookings' 
 	);
 	
 	
@@ -521,6 +461,56 @@ function bookacti_format_old_notifications_settings() {
 	}
 }
 add_action( 'bookacti_updated', 'bookacti_format_old_notifications_settings' );
+
+
+/**
+ * Ensure backward compatibility between 1.2.* and 1.3
+ * 
+ * @version 1.3.0
+ */
+function bookacti_transfer_old_settings() {
+	if( ! version_compare( BOOKACTI_VERSION, '1.3.0', '>=' ) ) { return false; }
+	
+	// Transfer default template settings
+	$template_settings = get_option( 'bookacti_template_settings' );
+	if( $template_settings && $template_settings['default_template_per_user'] ) {
+		foreach( $template_settings['default_template_per_user'] as $user_id => $default_template ) {
+			update_user_meta( $user_id, 'bookacti_default_template', $default_template );
+		}
+		delete_option( 'bookacti_template_settings' );
+	}
+	
+	// Transfer display inactive and temporary bookings in booking list
+	$bookings_settings = get_option( 'bookacti_bookings_settings' );
+	if( $bookings_settings ) {
+		$default_status_filter = array();
+		$user_ids = array();
+		if( $bookings_settings[ 'show_inactive_bookings' ] ) {
+			$user_ids = array_keys( $bookings_settings[ 'show_inactive_bookings' ] );
+			foreach( $bookings_settings[ 'show_inactive_bookings' ] as $user_id => $show_inactive_bookings ) {
+				if( $show_inactive_bookings ) {
+					$default_status_filter[ $user_id ] = array( 'cancelled', 'refunded', 'refund_requested' );
+				}
+			}
+		}
+		if( $bookings_settings[ 'show_temporary_bookings' ] ) {
+			$user_ids = array_merge( $user_ids, array_keys( $bookings_settings[ 'show_temporary_bookings' ] ) );
+			foreach( $bookings_settings[ 'show_temporary_bookings' ] as $user_id => $show_temporary_bookings ) {
+				if( $show_inactive_bookings ) {
+					if( ! isset( $default_status_filter[ $user_id ] ) ) { $default_status_filter[ $user_id ] = array(); }
+					$default_status_filter[ $user_id ][] = 'in_cart';
+				}
+			}
+		}
+		
+		foreach( $user_ids as $user_id ) {
+			update_user_meta( $user_id, 'bookacti_status_filter', $default_template );
+		}
+		
+		delete_option( 'bookacti_bookings_settings' );
+	}
+}
+add_action( 'bookacti_updated', 'bookacti_transfer_old_settings' );
 
 
 

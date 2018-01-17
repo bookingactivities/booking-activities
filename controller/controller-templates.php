@@ -829,7 +829,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 		if( $is_nonce_valid && $is_allowed ) {
 
-			$updated			= bookacti_update_user_default_template( $template_id );
+			$updated			= update_user_meta( get_current_user_id(), 'bookacti_default_template', $template_id );
 			$activities_list	= bookacti_get_template_activities_list( $template_id );
 			$groups_list		= bookacti_get_template_groups_of_events_list( $template_id );
 			

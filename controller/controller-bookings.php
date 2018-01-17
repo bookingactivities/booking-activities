@@ -61,7 +61,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		if( $is_nonce_valid && $is_allowed ) {
 			
 			// Change default template to the first selected
-			bookacti_update_user_default_template( $template_ids[ 0 ] );
+			update_user_meta( get_current_user_id(), 'bookacti_default_template', $template_ids[ 0 ] );
 			
 			// Actvity filters change depending on the templates selection, 
 			// this retrieve the HTML for activity filters corresponding to templates selection

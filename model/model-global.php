@@ -186,3 +186,38 @@ function bookacti_get_users_data( $args = array() ) {
 
 	return $return_array;
 }
+
+
+/**
+ * Delete a user meta for all users
+ * 
+ * @since 1.3.0
+ * @global wpdb $wpdb
+ * @param string $meta_key
+ * @param string $meta_value
+ * @param int $user_id
+ * @return false|int
+ */
+function bookacti_delete_user_meta( $meta_key, $user_id = 0, $meta_value = '' ) {
+	
+	global $wpdb;
+	
+	$query = 'DELETE FROM ' . $wpdb->prefix . 'usermeta WHERE meta_key = %s ';
+	
+	$variables = array( $meta_key );
+	
+	if( $user_id ) {
+		$query .= ' AND user_id = %d ';
+		$variables[] = $user_id;
+	}
+	
+	if( $meta_value ) {
+		$query .= ' AND meta_value = %s ';
+		$variables[] = $meta_value;
+	}
+	
+	$query = $wpdb->prepare( $query, $variables );
+	$deleted = $wpdb->query( $query );
+	
+	return $deleted;
+}

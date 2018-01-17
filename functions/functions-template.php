@@ -187,53 +187,6 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 
 
-// USER DEFAULT TEMPLATE
-	// GET USER DEFAULT TEMPLATE
-	function bookacti_get_user_default_template( $user_id = false ) {
-
-		$user_id = $user_id ? $user_id : get_current_user_id();
-
-		$template_settings = get_option( 'bookacti_template_settings' );
-
-		if( empty( $template_settings ) ){
-			$template_settings = array();
-		}
-		if( empty( $template_settings['default_template_per_user'] ) ) {
-			$template_settings['default_template_per_user'] = array();
-		} 
-		if( empty( $template_settings['default_template_per_user'][ $user_id ] ) ) {
-			$template_settings['default_template_per_user'][ $user_id ] = 0;
-		} 
-
-		return intval( $template_settings['default_template_per_user'][ $user_id ] );
-	}
-
-
-	// UPDATE USER DEFAULT TEMPLATE
-	function bookacti_update_user_default_template( $template_id, $user_id = false ) {
-
-		$user_id = $user_id ? $user_id : get_current_user_id();
-
-		$template_settings = get_option( 'bookacti_template_settings' );
-		if( ! is_array( $template_settings['default_template_per_user'] ) ) {
-			$template_settings['default_template_per_user'] = array();
-		}
-
-		// If no change, return 0
-		if( isset( $template_settings['default_template_per_user'][ $user_id ] )
-		&&  $template_settings['default_template_per_user'][ $user_id ] === $template_id ) {
-			return 0;
-		}
-
-		$template_settings['default_template_per_user'][ $user_id ] = $template_id;
-
-		$is_updated = update_option( 'bookacti_template_settings', $template_settings );
-
-		return $is_updated;
-	}
-
-
-
 // TEMPLATES X ACTIVITIES ASSOCIATION
 	// UPDATE THE LIST OF TEMPLATES ASSOCIATED TO AN ACTIVITY ID
 	function bookacti_update_templates_list_by_activity_id( $new_templates, $activity_id ) {

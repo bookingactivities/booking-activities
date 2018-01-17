@@ -820,9 +820,11 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	 * Get an array of all group of events ids bound to designated category
 	 * 
 	 * @since 1.1.0
+	 * @version 1.3.0
 	 * 
 	 * @global wpdb $wpdb
-	 * @param array $template_ids
+	 * @param array $category_ids
+	 * @param boolean $fetch_inactive
 	 * @return array
 	 */
 	function bookacti_get_groups_of_events_ids_by_category( $category_ids = array(), $fetch_inactive = false ) {
@@ -854,8 +856,11 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			$query .= ' AND G.active = 1 ';
 		}
 		
-		$prep	= $wpdb->prepare( $query, $category_ids );
-		$groups	= $wpdb->get_results( $prep, OBJECT );
+		if( $category_ids ) {
+			$query = $wpdb->prepare( $query, $category_ids );
+		}
+		
+		$groups	= $wpdb->get_results( $query, OBJECT );
 
 		$groups_ids = array();
 		foreach( $groups as $group ) {
@@ -941,7 +946,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	/**
 	 * Delete events from a group
 	 * 
-	 * version 1.1.4
+	 * @version 1.1.4
 	 * @since 1.1.0
 	 * 
 	 * @global wpdb $wpdb
@@ -1043,6 +1048,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	 * Delete events from specific activiy and template from all groups of events
 	 * 
 	 * @since 1.1.4
+	 * @version 1.3.0
 	 * 
 	 * @global wpdb $wpdb
 	 * @param int $activity_id
@@ -1076,8 +1082,11 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			$variables[] = $template_id;
 		}
 		
-		$prep			= $wpdb->prepare( $query, $variables );
-        $deactivated	= $wpdb->query( $prep );
+		if( $variables ) {
+			$query = $wpdb->prepare( $query, $variables );
+		}
+		
+        $deactivated = $wpdb->query( $query );
 		
 		return $deactivated;
 	}
@@ -1942,7 +1951,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	/**
 	 * Get activities by template
 	 * 
-	 * @version 1.2.2
+	 * @version 1.3.0
 	 * 
 	 * @global wpdb $wpdb
 	 * @param array $template_ids
@@ -1982,9 +1991,12 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		}
 
 		$query .= ' )';
-
-		$prep		= $wpdb->prepare( $query, $template_ids );
-		$activities	= $wpdb->get_results( $prep, OBJECT );
+		
+		if( $template_ids ) {
+			$query = $wpdb->prepare( $query, $template_ids );
+		}
+		
+		$activities = $wpdb->get_results( $query, OBJECT );
 
 		$activities_array = array();
 		foreach( $activities as $activity ) {
@@ -2010,7 +2022,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	 * Get an array of all activity ids bound to designated templates
 	 * 
 	 * @since 1.1.0
-	 * @version 1.2.2
+	 * @version 1.3.0
 	 * 
 	 * @global wpdb $wpdb
 	 * @param array $template_ids
@@ -2051,9 +2063,12 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		}
 
 		$query .= ' )';
-
-		$prep		= $wpdb->prepare( $query, $template_ids );
-		$activities	= $wpdb->get_results( $prep, OBJECT );
+		
+		if( $template_ids ) {
+			$query = $wpdb->prepare( $query, $template_ids );
+		}
+		
+		$activities = $wpdb->get_results( $query, OBJECT );
 
 		$activities_ids = array();
 		foreach( $activities as $activity ) {

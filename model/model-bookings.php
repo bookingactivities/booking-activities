@@ -310,23 +310,18 @@ function bookacti_get_bookings( $filters ) {
 	}
 	
 	if( $filters[ 'order_by' ] ) {
-		$bookings_query .= ' ORDER BY ' . $filters[ 'order_by' ][ 0 ];
-		$array_count = count( $filters[ 'order_by' ] );
-		if( $array_count >= 2 )  {
-			for( $i=1; $i<$array_count; ++$i ) {
-				$bookings_query  .= ', ' . $filters[ 'order_by' ][ $i ];
-			}
-		}
-		
-		if( $filters[ 'order' ] ) {
-			$bookings_query .= ' ' . $filters[ 'order' ];
+		$bookings_query .= ' ORDER BY ';
+		for( $i=0,$len=count($filters[ 'order_by' ]); $i<$len; ++$i ) {
+			$bookings_query  .= $filters[ 'order_by' ][ $i ];
+			if( $filters[ 'order' ] ) { $bookings_query  .= ' ' . $filters[ 'order' ]; }
+			if( $i < $len-1 ) { $bookings_query  .= ', '; }
 		}
 	}
 	
 	if( $variables ) {
 		$bookings_query = $wpdb->prepare( $bookings_query, $variables );
 	}
-	
+
 	$bookings = $wpdb->get_results( $bookings_query, OBJECT );
 	
 	return $bookings;
@@ -370,7 +365,7 @@ function bookacti_get_number_of_bookings( $event_id, $event_start = NULL, $event
 /**
  * Get number of bookings ordered by events
  * 
- * @version 1.2.2
+ * @version 1.3.0
  * 
  * @global wpdb $wpdb
  * @param array $template_ids
@@ -397,7 +392,7 @@ function bookacti_get_number_of_bookings_by_events( $template_ids = array(), $ev
 					. ' WHERE B.active = 1 '
 					. ' AND B.event_id = E.id ';
 	
-	$variables_array = array();
+	$variables = array();
 	
 	// Filter by template
 	if( $template_ids ) {
@@ -412,7 +407,7 @@ function bookacti_get_number_of_bookings_by_events( $template_ids = array(), $ev
 		
 		$bookings_query	.= ' ) ';
 		
-		$variables_array = $template_ids;
+		$variables = $template_ids;
 	}
 	
 	// Filter by event
@@ -428,14 +423,17 @@ function bookacti_get_number_of_bookings_by_events( $template_ids = array(), $ev
 		
 		$bookings_query	.= ' ) ';
 		
-		$variables_array = $event_ids;
+		$variables = $event_ids;
 	}
 	
 	$bookings_query .= ' GROUP BY B.event_id, B.event_start, B.event_end '
 					. ' ORDER BY B.event_id, B.event_start, B.event_end ';
 	
-	$bookings_prep	= $wpdb->prepare( $bookings_query, $variables_array );
-	$bookings		= $wpdb->get_results( $bookings_prep, ARRAY_A );
+	if( $variables ) {
+		$bookings_query = $wpdb->prepare( $bookings_query, $variables );
+	}
+	
+	$bookings = $wpdb->get_results( $bookings_query, ARRAY_A );
 	
 	// Order the array by event id
 	$return_array = array();
@@ -981,43 +979,85 @@ function bookacti_reschedule_booking( $booking_id, $event_id, $event_start, $eve
 	
 	
 	/**
-	 * Get booking groups by group of events id
+	 * Get booking groups according to filters
 	 * 
-	 * @since 1.1.0
+	 * @since 1.3.0 (was bookacti_get_booking_groups_by_group_of_events)
 	 * 
 	 * @global wpdb $wpdb
 	 * @param int $booking_group_id
 	 * @return object
 	 */
-	function bookacti_get_booking_groups_by_group_of_events( $group_of_events_id, $active_only = true, $state_not_in = array() ) {
+	function bookacti_get_booking_groups( $filters ) {
 		global $wpdb;
 
-		$query	= 'SELECT * FROM ' . BOOKACTI_TABLE_BOOKING_GROUPS
-				. ' WHERE event_group_id = %d';
+		$query	= 'SELECT BG.*, EG.title as group_title, EG.category_id, C.title as category_title, C.template_id, GE.start, GE.end '
+				. ' FROM ' . BOOKACTI_TABLE_BOOKING_GROUPS . ' as BG ' 
+				. ' JOIN ' . BOOKACTI_TABLE_EVENT_GROUPS . ' as EG ON BG.event_group_id = EG.id '
+				. ' JOIN ' . BOOKACTI_TABLE_GROUP_CATEGORIES . ' as C ON EG.category_id = C.id ';
+				
+		// Get the first and the last event of the group and keep respectively their start and end datetime
+		$query .= ' LEFT JOIN ( SELECT group_id, MIN( event_start ) as start, MAX( event_end ) as end '
+				. ' FROM ' . BOOKACTI_TABLE_GROUPS_EVENTS 
+				. ' GROUP BY group_id ' . ' ) as GE '
+				. ' ON GE.group_id = BG.event_group_id ';
+				
+		$query .= ' WHERE true ';
 		
-		if( $active_only ) {
-			$query .= ' AND active = 1 ';
-		}
-		
-		$array_of_variables = array( $group_of_events_id );
+		$variables = array();
 
-		if( ! empty( $state_not_in ) ) {
-			$query .= ' AND state NOT IN ( %s ';
-			if( count( $state_not_in ) >= 2 )  {
-				for( $i = 0; $i < count( $state_not_in ) - 1; ++$i ) {
+		if( $filters[ 'status' ] ) {
+			$query .= ' AND BG.state IN ( %s ';
+			$array_count = count( $filters[ 'status' ] );
+			if( $array_count >= 2 ) {
+				for( $i=1; $i<$array_count; ++$i ) {
 					$query  .= ', %s ';
 				}
 			}
 			$query  .= ') ';
-			$array_of_variables = array_merge( $array_of_variables, $state_not_in );
+			$variables = array_merge( $variables, $filters[ 'status' ] );
+		}
+
+		if( $filters[ 'templates' ] ) {
+			$query .= ' AND C.template_id IN ( %d ';
+			$array_count = count( $filters[ 'templates' ] );
+			if( $array_count >= 2 )  {
+				for( $i=1; $i<$array_count; ++$i ) {
+					$query  .= ', %d ';
+				}
+			}
+			$query  .= ') ';
+			$variables = array_merge( $variables, $filters[ 'templates' ] );
+		}
+
+		if( is_numeric( $filters[ 'booking_group_id' ] ) && $filters[ 'booking_group_id' ] != 0 ) {
+			$query  .= ' AND BG.id = %d ';
+			$variables[] =  intval( $filters[ 'booking_group_id' ] );
+		}
+
+		if( $filters[ 'event_group_id' ] ) {
+			$query .= ' AND BG.event_group_id = %d ';
+			$variables[] = $filters[ 'event_group_id' ];
+		}
+
+		if( $filters[ 'user_id' ] ) {
+			$query .= ' AND BG.user_id = %d ';
+			$variables[] = $filters[ 'user_id' ];
+		}
+
+		$query .= ' ORDER BY id ASC ';
+		
+		if( $variables ) {
+			$query = $wpdb->prepare( $query, $variables );
 		}
 		
-		$query .= ' ORDER BY id DESC ';
+		$booking_groups = $wpdb->get_results( $query, OBJECT );
 		
-		$prep	= $wpdb->prepare( $query, $array_of_variables );
-		$groups	= $wpdb->get_results( $prep, OBJECT );
-
-		return $groups;
+		$booking_groups_array = array();
+		foreach( $booking_groups as $booking_group ) {
+			$booking_groups_array[ $booking_group->id ] = $booking_group;
+		}
+		
+		return $booking_groups_array;
 	}
 	
 	
@@ -1115,14 +1155,14 @@ function bookacti_reschedule_booking( $booking_id, $event_id, $event_start, $eve
 					. ' WHERE user_id = %s'
 					. ' AND event_group_id = %d';
 
-		$parameters	= array( $user_id, $event_group_id );
+		$variables	= array( $user_id, $event_group_id );
 
 		if( ! empty( $state ) ) {
 			$query .=  ' AND state = %s';
-			$parameters[] = $state;
+			$variables[] = $state;
 		}
 
-		$prep		= $wpdb->prepare( $query, $parameters );
+		$prep		= $wpdb->prepare( $query, $variables );
 		$group_id	= $wpdb->get_var( $prep );
 
 		if( ! is_null( $group_id ) ) {

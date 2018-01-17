@@ -39,7 +39,7 @@ echo "<h1>" . esc_html__( 'Calendars', BOOKACTI_PLUGIN_NAME ) . "</h1>";
 					<select name='template-picker' id='bookacti-template-picker' >
 					<?php
 						if( $templates ) {
-							$default_template = bookacti_get_user_default_template();
+							$default_template = get_user_meta( get_current_user_id(), 'bookacti_default_template', true );
 
 							$default_template_found = false;
 							foreach ( $templates as $template ) {
@@ -59,8 +59,8 @@ echo "<h1>" . esc_html__( 'Calendars', BOOKACTI_PLUGIN_NAME ) . "</h1>";
 							if ( ! $default_template_found ) { 
 								reset( $templates );
 								$current_template = current( $templates );
-								$default_template = $current_template[ 'id' ]; 
-								bookacti_update_user_default_template( $default_template );
+								$default_template = $current_template[ 'id' ];
+								update_user_meta( get_current_user_id(), 'bookacti_default_template', $default_template );
 							}
 						}
 					?>

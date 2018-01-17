@@ -2,7 +2,9 @@ $j( document ).ready(function() {
 	
 	var booking_system		= $j( '#bookacti-booking-system-bookings-page' );
 	var booking_system_id	= booking_system.attr( 'id' );
-
+	
+	if( ! booking_system.length ) { return false; }
+	
 // FILTERS
 	// Init filter actions
 	bookacti_init_booking_filters_actions();

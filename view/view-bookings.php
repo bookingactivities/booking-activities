@@ -54,11 +54,9 @@ if( ! $templates ) {
 						}
 					}
 					
-					$default_template	= bookacti_get_user_default_template();
-					$selected_templates	= isset( $_REQUEST[ 'templates' ] ) ? $_REQUEST[ 'templates' ] : array( $default_template );
+					$selected_templates	= isset( $_REQUEST[ 'templates' ] ) ? $_REQUEST[ 'templates' ] : array();
 					$templates_select_options = array();
 					foreach ( $templates as $template_id => $template ) {
-						if( ! $default_template ) { $default_template = $template_id; }
 						$templates_select_options[ $template_id ] = esc_html( $template[ 'title' ] );
 					}
 					$args = array(
@@ -94,12 +92,13 @@ if( ! $templates ) {
 					foreach ( $activities as $activity_id => $activity ) {
 						$activities_select_options[ $activity_id ] = esc_html( apply_filters( 'bookacti_translate_text', $activity[ 'title' ] ) );
 					}
+					$selected_activities = isset( $_REQUEST[ 'activities' ] ) ? $_REQUEST[ 'activities' ] : array();
 					$args = array(
 						'type'		=> 'select',
 						'name'		=> 'activities',
 						'id'		=> 'bookacti-booking-filter-activities',
 						'options'	=> $activities_select_options,
-						'value'		=> isset( $_REQUEST[ 'activities' ] ) ? $_REQUEST[ 'activities' ] : array(),
+						'value'		=> $selected_activities,
 						'multiple'	=> true
 					);
 					bookacti_display_field( $args );
@@ -121,13 +120,15 @@ if( ! $templates ) {
 							unset( $_REQUEST[ 'status' ][0] ); // unset 'all' value
 						}
 					}
-				
+					
+					$default_status = get_user_meta( get_current_user_id(), 'bookacti_status_filter', true );
+					$default_status = $default_status ? $default_status : array();
 					$statuses = bookacti_get_booking_state_labels();
 					$status_select_options = array();
 					foreach ( $statuses as $status_id => $status ) {
 						$status_select_options[ $status_id ] = esc_html( $status[ 'label' ] );
 					}
-					$selected_status = isset( $_REQUEST[ 'status' ] ) ? $_REQUEST[ 'status' ] : array();
+					$selected_status = isset( $_REQUEST[ 'status' ] ) ? $_REQUEST[ 'status' ] : $default_status;
 					$args = array(
 						'type'		=> 'select',
 						'name'		=> 'status',
@@ -137,6 +138,11 @@ if( ! $templates ) {
 						'multiple'	=> true
 					);
 					bookacti_display_field( $args );
+					
+					// Update user default status filter
+					if( $selected_status != $default_status ) {
+						update_user_meta( get_current_user_id(), 'bookacti_status_filter', $selected_status );
+					}
 				?>
 				</div>
 			</div>
@@ -145,8 +151,12 @@ if( ! $templates ) {
 					<?php echo esc_html__( 'Date', BOOKACTI_PLUGIN_NAME ); ?>
 				</div>
 				<div class='bookacti-bookings-filter-content' >
-					<div><input type='text' onfocus="(this.type='date')" onblur="(this.type='text')" name='from' id='bookacti-booking-filter-dates-from' placeholder='<?php _e( 'From', BOOKACTI_PLUGIN_NAME ); ?>' value='<?php echo isset( $_REQUEST[ 'from' ] ) ? bookacti_sanitize_date( $_REQUEST[ 'from' ] ) : ''; ?>' ></div>
-					<div><input type='text' onfocus="(this.type='date')" onblur="(this.type='text')" name='to'  id='bookacti-booking-filter-dates-to' placeholder='<?php _e( 'To', BOOKACTI_PLUGIN_NAME ); ?>' value='<?php echo isset( $_REQUEST[ 'to' ] ) ? bookacti_sanitize_date( $_REQUEST[ 'to' ] ) : ''; ?>' ></div>
+					<?php
+					$from	= isset( $_REQUEST[ 'from' ] ) ? bookacti_sanitize_date( $_REQUEST[ 'from' ] ) : ''; 
+					$to		= isset( $_REQUEST[ 'to' ] ) ? bookacti_sanitize_date( $_REQUEST[ 'to' ] ) : ''; 
+					?>
+					<div><input type='text' onfocus="(this.type='date')" onblur="(this.type='text')" name='from' id='bookacti-booking-filter-dates-from' placeholder='<?php _e( 'From', BOOKACTI_PLUGIN_NAME ); ?>' value='<?php echo $from; ?>' ></div>
+					<div><input type='text' onfocus="(this.type='date')" onblur="(this.type='text')" name='to'  id='bookacti-booking-filter-dates-to' placeholder='<?php _e( 'To', BOOKACTI_PLUGIN_NAME ); ?>' value='<?php echo $to; ?>' ></div>
 				</div>
 			</div>
 			<div id='bookacti-customer-filter-container' class='bookacti-bookings-filter-container' >
@@ -189,9 +199,9 @@ if( ! $templates ) {
 						// Fill picked events array
 						if( $event_group_id === 0 && $event_id !== 0 ) {
 							$picked_events[] = array(
-								'id' => $event_id,
-								'start' => $event_start,
-								'end' => $event_end
+								'id'	=> $event_id,
+								'start'	=> $event_start,
+								'end'	=> $event_end
 							);
 						} else if( $event_group_id ) {
 							$picked_events = bookacti_get_group_events( $event_group_id );
@@ -199,10 +209,10 @@ if( ! $templates ) {
 
 						// Fill booking system default inputs
 						$default_inputs = array(
-							'group_id' => $event_group_id,
-							'id' => $event_id,
-							'start' => $event_start,
-							'end' => $event_end
+							'group_id'	=> $event_group_id,
+							'id'		=> $event_id,
+							'start'		=> $event_start,
+							'end'		=> $event_end
 						);
 						
 						$display_calendar = $picked_events ? 'block' : 'none';
@@ -230,8 +240,8 @@ if( ! $templates ) {
 				<?php
 					// Display the booking system
 					$atts = array( 
-						'calendars'				=> $selected_templates,
 						'bookings_only'			=> 1,
+						'calendars'				=> $selected_templates,
 						'status'				=> $selected_status,
 						'user_id'				=> $selected_user,
 						'group_categories'		=> array(),
@@ -259,8 +269,24 @@ if( ! $templates ) {
 		?>
 		<div id='bookacti-bookings-list' >
 		<?php
+			$filters = array(
+				'templates'			=> $selected_templates, 
+				'activities'		=> $selected_activities, 
+				'booking_group_id'	=> isset( $_REQUEST[ 'booking_group_id' ] )	? intval( $_REQUEST[ 'booking_group_id' ] ): 0, 
+				'event_group_id'	=> $event_group_id, 
+				'event_id'			=> $event_id, 
+				'event_start'		=> $event_start, 
+				'event_end'			=> $event_end,
+				'status'			=> $selected_status,
+				'user_id'			=> $selected_user,
+				'from'				=> $from,
+				'to'				=> $to,
+				'order_by'			=> isset( $_REQUEST[ 'orderby' ] )	? $_REQUEST[ 'orderby' ] : array( 'creation_date', 'id' ),
+				'order'				=> isset( $_REQUEST[ 'order' ] )	? $_REQUEST[ 'order' ] : 'DESC'
+			);
+		
 			$bookings_list_table = new Bookings_List_Table();
-			$bookings_list_table->prepare_items();
+			$bookings_list_table->prepare_items( $filters );
 			$bookings_list_table->display();
 		?>
 		</div>

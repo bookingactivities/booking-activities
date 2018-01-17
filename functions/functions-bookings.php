@@ -228,30 +228,6 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		
 		return $formatted_filters;
 	}
-	
-	
-	/**
-	 * Get all booking groups bound to a group of events
-	 * 
-	 * @param int $group_id
-	 * @return array
-	 */
-	function bookacti_get_booking_groups_data_for_bookings_list( $group_id ) {
-
-		// Retrieve inactive and temporary bookings ?
-		$active_only = true;
-		$show_inactive_bookings	= bookacti_get_setting_value_by_user( 'bookacti_bookings_settings', 'show_inactive_bookings' );
-		if( intval( $show_inactive_bookings ) === 1 ) { $active_only = false; }
-
-		$booking_data = apply_filters( 'bookacti_get_booking_groups_data_for_bookings_list', array(
-			'group_id'		=> $group_id, 
-			'active_only'	=> $active_only, 
-			'state_not_in'	=> array()
-		) );
-
-		return bookacti_get_booking_groups_by_group_of_events( $booking_data[ 'group_id' ], $booking_data[ 'active_only' ], $booking_data[ 'state_not_in' ] );
-	}
-
 
 
 
@@ -606,7 +582,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		/**
 		 * Get booking actions html
 		 * 
-		 * @version 1.1.0
+		 * @version 1.3.0
 		 * 
 		 * @param int $booking_id
 		 * @param string $admin_or_front
@@ -753,9 +729,13 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 										. 'id="bookacti-booking-group-action-' . esc_attr( $action_id ) . '-' . intval( $booking_group_id ) . '" '
 										. 'class="button ' . esc_attr( $action[ 'class' ] ) . ' bookacti-booking-group-action bookacti-tip" '
 										. 'data-tip="' . esc_attr( $action[ 'description' ] ) . '" '
-										. 'data-booking-group-id="' . intval( $booking_group_id ) . '" >' 
-											. esc_html( $action[ 'label' ] )
-									. '</a>';
+										. 'data-booking-group-id="' . intval( $booking_group_id ) . '" >';
+					
+					if( $admin_or_front === 'front' || $action[ 'admin_or_front' ] === 'front' ) { 
+						$action_html .= esc_html( $action[ 'label' ] ); 
+					}
+					
+					$action_html	.= '</a>';
 					
 					if( $return_array ) {
 						$actions_array[] = $action_html;

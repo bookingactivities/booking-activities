@@ -348,7 +348,6 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		return $filters;
 	}
 	add_filter( 'bookacti_default_booking_filters', 'bookacti_wc_default_booking_filters', 10 );
-	add_filter( 'bookacti_get_booking_groups_data_for_bookings_list', 'bookacti_wc_default_booking_filters', 10 );
 
 
 

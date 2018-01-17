@@ -227,7 +227,6 @@ $bookacti_translation_array = apply_filters( 'bookacti_translation_array', array
 	'when_events_load'					=> bookacti_get_setting_value( 'bookacti_general_settings',	'when_events_load' ),
 	'event_load_interval'				=> bookacti_get_setting_value( 'bookacti_general_settings', 'event_load_interval' ),
 	'date_format'						=> bookacti_get_setting_value( 'bookacti_general_settings',	'date_format' ),
-	'show_past_events_on_bookings_page'	=> bookacti_get_setting_value_by_user( 'bookacti_bookings_settings', 'show_past_events' ),
 
 	'plugin_path'						=> plugins_url() . '/' . BOOKACTI_PLUGIN_NAME,
 	'site_url'							=> get_site_url(),
