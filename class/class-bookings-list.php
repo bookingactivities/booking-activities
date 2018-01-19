@@ -230,7 +230,8 @@ if( ! class_exists( 'Bookings_List_Table' ) ) {
 		public function get_booking_list_items() {
 			
 			// Request bookings corresponding to filters
-			$bookings = bookacti_get_bookings( $this->filters );
+			$group_by_booking_groups = ! $this->filters[ 'booking_group_id' ];
+			$bookings = bookacti_get_bookings( $this->filters, $group_by_booking_groups );
 			
 			// Retrieve booking groups data
 			$booking_groups		= bookacti_get_booking_groups( $this->filters );
@@ -395,11 +396,13 @@ if( ! class_exists( 'Bookings_List_Table' ) ) {
 		
 		
 		/**
+		 * Get the total amount of bookings according to filters
 		 * 
+		 * @since 1.3.0
 		 * @return int
 		 */
 		public function get_total_items_count() {
-			$group_by_booking_groups = ! isset( $this->filters[ 'booking_group_id' ] );
+			$group_by_booking_groups = ! $this->filters[ 'booking_group_id' ];
 			return bookacti_get_number_of_booking_rows( $this->filters, $group_by_booking_groups );
 		}
 		
