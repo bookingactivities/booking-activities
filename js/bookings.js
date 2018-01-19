@@ -53,14 +53,6 @@ $j( document ).ready(function() {
 	});
 
 
-// DIALOGS
-	// Init the Dialogs
-	bookacti_init_bookings_dialogs();
-
-	// Init booking actions
-	bookacti_init_booking_actions();
-
-
 // BOOKING LIST
 	// Show the booking list
 //	booking_system.on( 'bookacti_event_click', function( e, event, group_id ) { 
@@ -102,8 +94,32 @@ $j( document ).ready(function() {
 	});
 
 	// Load tooltip for booking actions retrieved via AJAX
-	$j( '#bookacti-bookings-list' ).on( 'bookacti_booking_list_filled', function(){
+	$j( '#bookacti-bookings-list' ).on( 'bookacti_booking_list_filled bookacti_grouped_bookings_displayed', function(){
 		bookacti_init_tooltip();
+	});
+	
+	// Refresh the calendar when a booking has been reschedule
+	$j( 'body' ).on( 'bookacti_booking_rescheduled', function(){
+		var booking_system = $j( '#bookacti-booking-system-bookings-page' );
+		bookacti_booking_method_refetch_events( booking_system );
+		bookacti_refresh_booking_numbers( booking_system );
+	});
+	
+	// Refresh bookings number when a booking state has changed from active to inactive and vice versa
+	$j( 'body' ).on( 'bookacti_booking_state_changed', function( e, booking_id, booking_type, new_state, is_bookings_page, active_changed ){
+		bookacti_init_tooltip();
+		
+		if( ! active_changed ) { return false; }
+		var booking_system = $j( '#bookacti-booking-system-bookings-page' );
+		bookacti_refresh_booking_numbers( booking_system );
+	});
+	
+	// Refresh bookings number when a booking is refunded
+	$j( 'body' ).on( 'bookacti_booking_refunded', function(){
+		bookacti_init_tooltip();
+		
+		var booking_system = $j( '#bookacti-booking-system-bookings-page' );
+		bookacti_refresh_booking_numbers( booking_system );
 	});
 });
 

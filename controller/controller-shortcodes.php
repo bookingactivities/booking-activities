@@ -24,7 +24,6 @@ add_action( 'init', 'bookacti_shortcodes_init');
  *									groups_single_events='0'		// Allow to book grouped events as single events
  *									method='calendar' ]			// Display method
  * 
- * @since 1.0.0
  * @version 1.1.0
  * 
  * @param array $atts [id, classes, calendars, activities, groups, method]
@@ -58,7 +57,6 @@ function bookacti_shortcode_calendar( $atts = array(), $content = null, $tag = '
  *									url='http://...']		// URL to be redirected after submission
  *									button='Book']			// Name of the booking form submit button
  * 
- * @since 1.0.0
  * @version 1.1.0
  * 
  * @param array $atts [id, classes, calendars, activities, groups, method, url, button]
@@ -111,8 +109,7 @@ function bookacti_shortcode_booking_form( $atts = array(), $content = null, $tag
  * Display a user related booking list via shortcode
  * Eg: [bookingactivities_list user='1'] // Single user id, if empty default to current user id
  * 
- * @since 1.0.0
- * @version 1.1.0
+ * @version 1.3.0
  * 
  * @param array $atts [user]
  * @param string $content
@@ -135,18 +132,7 @@ function bookacti_shortcode_bookings_list( $atts = array(), $content = null, $ta
 		return apply_filters( 'bookacti_shortcode_' . $tag . '_output', '', $atts, $content );
 	}
 	
-	// Set up booking list columns
-	$columns = apply_filters( 'bookacti_user_bookings_list_columns_titles', array(
-		10	=> array( 'id' => 'id',			'title' => esc_html_x( 'id', 'An id is a unique identification number' ), BOOKACTI_PLUGIN_NAME ),
-		20	=> array( 'id' => 'activity',	'title' => esc_html__( 'Activity', BOOKACTI_PLUGIN_NAME ) ),
-		40	=> array( 'id' => 'quantity',	'title' => esc_html__( 'Quantity', BOOKACTI_PLUGIN_NAME ) ),
-		50	=> array( 'id' => 'state',		'title' => esc_html_x( 'State', 'State of a booking', BOOKACTI_PLUGIN_NAME ) ),
-		100 => array( 'id' => 'actions',	'title' => esc_html__( 'Actions', BOOKACTI_PLUGIN_NAME ) )
-	), $atts[ 'user' ] );
-	
-	// Order columns
-	ksort( $columns );
-	
+	$columns = bookacti_get_booking_list_columns( $atts[ 'user' ] );
 	
 	// TABLE HEADER
 	$head_columns = '';
@@ -154,95 +140,9 @@ function bookacti_shortcode_bookings_list( $atts = array(), $content = null, $ta
 		$head_columns .= "<th class='bookacti-column-" . sanitize_title_with_dashes( $column[ 'id' ] ) . "' ><div class='bookacti-booking-" . $column[ 'id' ] . "-title' >" . $column[ 'title' ] . "</div></th>";
 	} 
 	
-	
 	// TABLE CONTENT
-	$bookings				= bookacti_get_bookings_by_user_id( $atts[ 'user' ] ); 
-	$list_items				= array();
-	$groups_already_added	= array();
-	$hidden_states			= apply_filters( 'bookacti_bookings_list_hidden_states', array( 'in_cart', 'expired', 'removed' ) );
-	
-	
-	// Build an array of bookings rows
-	foreach( $bookings as $booking ) {
-
-		// Single Bookings
-		if( empty( $booking->group_id ) ) {
-
-			if( ! in_array( $booking->state, $hidden_states, true ) ) {
-
-				$list_items[] = apply_filters( 'bookacti_user_bookings_list_columns_value', array(
-					'id'		=> $booking->id,
-					'activity'	=> bookacti_get_formatted_booking_events_list( array( $booking ) ),
-					'quantity'	=> $booking->quantity,
-					'state'		=> bookacti_format_booking_state( $booking->state ),
-					'actions'	=> bookacti_get_booking_actions_html( $booking->id, 'front' ),
-					'type'		=> 'single'
-				), $booking, $atts[ 'user' ] );
-			}
-
-		// Booking groups
-		} else if( ! in_array( $booking->group_id, $groups_already_added, true ) ) {
-
-			$state = bookacti_get_booking_group_state( $booking->group_id ); 
-
-			if( ! in_array( $state, $hidden_states, true ) ) {
-
-				$quantity		= bookacti_get_booking_group_quantity( $booking->group_id ); 
-				$group_bookings = bookacti_get_bookings_by_booking_group_id( $booking->group_id ); 
-
-				$list_items[] = apply_filters( 'bookacti_user_bookings_list_columns_value', array(
-					'id'		=> $booking->group_id,
-					'activity'	=> bookacti_get_formatted_booking_events_list( $group_bookings ),
-					'quantity'	=> $quantity,
-					'state'		=> bookacti_format_booking_state( $state ),
-					'actions'	=> bookacti_get_booking_group_actions_html( $booking->group_id, 'front' ),
-					'type'		=> 'group'
-				), $booking, $atts[ 'user' ] );
-
-				// Flag the group as 'already added' to make it appears only once in the list
-				$groups_already_added[] = $booking->group_id;
-			}
-		}
-
-	}
-
-	
-	// Build the HTML booking rows
-	$body_columns = '';
-	foreach( $list_items as $list_item ) {
-		$body_columns .= "<tr>";
-		foreach( $columns as $column ) {
-
-			// Format output values
-			switch ( $column[ 'id' ] ) {
-				case 'id':
-					$value = isset( $list_item[ 'id' ] ) ? intval( $list_item[ 'id' ] ) : '';
-					break;
-				case 'activity':
-					$value = isset( $list_item[ 'activity' ] ) ? $list_item[ 'activity' ] : '';
-					break;
-				case 'quantity':
-					$value = isset( $list_item[ 'quantity' ] ) ? intval( $list_item[ 'quantity' ] ) : '';
-					break;
-				case 'state':
-				case 'actions':
-				default:
-					$value = isset( $list_item[ $column[ 'id' ] ] ) ? $list_item[ $column[ 'id' ] ] : '';
-			}
-
-			$class_empty = empty( $value ) ? 'bookacti-empty-column' : '';
-			$body_columns .=  "<td data-title='" . esc_attr( $column[ 'title' ] ) . "' class='bookacti-column-" . sanitize_title_with_dashes( $column[ 'id' ] ) . ' ' . $class_empty . "' ><div class='bookacti-booking-" . $column[ 'id' ] . "' >"  . $value . "</div></td>";
-		} 
-		$body_columns .= "</tr>";
-	}
-	
-	// If there are no booking rows
-	if( empty( $list_items ) ) {
-		$body_columns	.= "<tr>"
-						.	"<td colspan='" . esc_attr( count( $columns ) ) . "'>" . esc_html__( "You don't have any bookings.", BOOKACTI_PLUGIN_NAME ) . "</td>"
-						. "</tr>";
-	}
-	
+	$bookings	= bookacti_get_bookings_by_user_id( $atts[ 'user' ] ); 
+	$rows		= bookacti_get_booking_list_rows( $bookings, $columns, $atts[ 'user' ] );
 	
 	// TABLE OUTPUT
 	$output = "<div id='bookacti-user-bookings-list-" . $atts[ 'user' ] . "' class='bookacti-user-bookings-list'>
@@ -253,7 +153,7 @@ function bookacti_shortcode_bookings_list( $atts = array(), $content = null, $ta
 							"</tr>
 						</thead>
 						<tbody>"
-							. $body_columns .
+							. $rows .
 						"</tbody>
 					</table>
 				</div>";
@@ -268,7 +168,6 @@ function bookacti_shortcode_bookings_list( $atts = array(), $content = null, $ta
 /**
  * Check if booking form is correct and then book the event, or send the error message
  * 
- * @since 1.0.0
  * @version 1.2.0
  */
 function bookacti_controller_validate_booking_form() {

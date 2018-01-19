@@ -6,6 +6,8 @@ $j( document ).ready( function() {
 		$j( 'body' ).on( 'bookacti_booking_rescheduled', function( e, booking_id, start, end, response ){
 			var row	= $j( '.bookacti-booking-action[data-booking-id="' + booking_id + '"]' ).parents( 'tr' );
 			
+			if( ! row.hasClass( 'bookacti-order-item-activity' ) ) { return false; }
+			
 			// Update available actions
 			row.find( '.bookacti-booking-actions' ).html( response.actions_html );
 			

@@ -334,21 +334,6 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		return $hidden_columns;
 	}
 	add_filter( 'bookacti_booking_list_default_hidden_columns', 'bookacti_woocommerce_booking_list_hidden_columns', 10, 1 );
-	
-	
-	/**
-	 * Change booking filters
-	 * 
-	 * @version 1.3.0 (was bookacti_filter_bookings_list_before_retrieving_bookings)
-	 * @param array $filters
-	 * @return array
-	 */
-	function bookacti_wc_default_booking_filters( $filters ) {
-		$filters[ 'states' ][] = 'in_cart';
-		return $filters;
-	}
-	add_filter( 'bookacti_default_booking_filters', 'bookacti_wc_default_booking_filters', 10 );
-
 
 
 

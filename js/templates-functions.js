@@ -28,6 +28,7 @@ function bookacti_switch_template( selected_template_id ) {
 					bookacti.selected_template = parseInt( selected_template_id );
 					
 					// Update data array
+					bookacti.booking_system[ 'bookacti-template-calendar' ][ 'calendars' ]				= [ bookacti.selected_template ];
 					bookacti.booking_system[ 'bookacti-template-calendar' ][ 'bookings' ]				= response.bookings;
 					bookacti.booking_system[ 'bookacti-template-calendar' ][ 'exceptions' ]				= response.exceptions;
 					bookacti.booking_system[ 'bookacti-template-calendar' ][ 'activities_data' ]		= response.activities_data;
@@ -697,52 +698,6 @@ function bookacti_delete_event( event ) {
 	$j( '#bookacti-template-calendar' ).fullCalendar( 'removeEvents', event.id );
 	$j( '#bookacti-template-calendar' ).fullCalendar( 'refetchEvents' );
 }
-
-
-// Refresh booking numbers
-function bookacti_refresh_booking_numbers( template_id, event_id ) {
-    event_id = event_id || null;
-    
-    bookacti_start_template_loading(); 
-    $j.ajax({
-        url: ajaxurl,
-        type: 'POST',
-        data: { 'action': 'bookactiGetBookingNumbers', 
-                'template_id': template_id, 
-				'event_id': event_id,
-				'nonce': bookacti_localized.nonce_get_booking_numbers
-			},
-        dataType: 'json',
-        success: function( response ){
-			if( response.status === 'success' ) {
-				
-				if( event_id ) {
-					if( bookacti.booking_system[ 'bookacti-template-calendar' ][ 'bookings' ][ event_id ] ) {
-						delete bookacti.booking_system[ 'bookacti-template-calendar' ][ 'bookings' ][ event_id ];
-					}
-					bookacti.booking_system[ 'bookacti-template-calendar' ][ 'bookings' ][ event_id ] = response[ 'bookings' ][ event_id ];
-				} else {
-					bookacti.booking_system[ 'bookacti-template-calendar' ][ 'bookings' ] = response[ 'bookings' ];
-				}
-				
-				$j( '#bookacti-template-calendar' ).fullCalendar( 'rerenderEvents' );
-				
-			} else if( response.error === 'not_allowed' ) {
-				
-				alert( bookacti_localized.error_retrieve_booking_numbers + '\n' + bookacti_localized.error_not_allowed );
-				console.log( response );
-			}
-        },
-        error: function( e ){
-            alert ( 'AJAX ' + bookacti_localized.error_retrieve_booking_numbers );
-            console.log( e );
-        },
-        complete: function() { 
-			bookacti_stop_template_loading();
-		}
-    });
-}
-
 
 
 

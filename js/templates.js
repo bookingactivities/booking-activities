@@ -12,6 +12,7 @@ $j( document ).ready( function() {
 		
 		// Init globals
 		bookacti.booking_system[ 'bookacti-template-calendar' ]								= [];
+		bookacti.booking_system[ 'bookacti-template-calendar' ][ 'calendars' ]				= bookacti.selected_template ? [ bookacti.selected_template ] : [];
 		bookacti.booking_system[ 'bookacti-template-calendar' ][ 'bookings' ]				= [];
 		bookacti.booking_system[ 'bookacti-template-calendar' ][ 'exceptions' ]				= [];
 		bookacti.booking_system[ 'bookacti-template-calendar' ][ 'groups_events' ]			= [];
@@ -464,7 +465,7 @@ function bookacti_load_template_calendar() {
 						if( response.error === 'has_bookings' ) {
 							// If the event's booking number is not up to date, refresh it
 							if( ! event.bookings ) {
-								bookacti_refresh_booking_numbers( bookacti.selected_template, event.id );
+								bookacti_refresh_booking_numbers( $j( '#bookacti-template-calendar' ), event.id );
 							}
 							// If the event is repeated, display unbind dialog
 							if( bookacti.booking_system[ 'bookacti-template-calendar' ][ 'events_data' ][ event.id ][ 'repeat_freq' ] !== 'none' ) {
@@ -475,7 +476,7 @@ function bookacti_load_template_calendar() {
 							if( response.error === 'not_allowed' ) {
 								error_message += '\n' + bookacti_localized.error_not_allowed;
 							} else if( response.error === 'has_bookings' ) {
-								bookacti_refresh_booking_numbers( bookacti.selected_template, event.id );
+								bookacti_refresh_booking_numbers( $j( '#bookacti-template-calendar' ), event.id );
 								error_message += '\n' + bookacti_localized.error_edit_locked_event;
 								error_message += '\n' + bookacti_localized.advice_switch_to_maintenance + '\n';
 							}
@@ -597,7 +598,7 @@ function bookacti_load_template_calendar() {
 						if( response.error === 'has_bookings' ) {
 							// If the event's booking number is not up to date, refresh it
 							if( ! event.bookings ) {
-								bookacti_refresh_booking_numbers( bookacti.selected_template, event.id );
+								bookacti_refresh_booking_numbers( $j( '#bookacti-template-calendar' ), event.id );
 							}
 							// If the event is repeated, display unbind dialog
 							if( bookacti.booking_system[ 'bookacti-template-calendar' ][ 'events_data' ][ event.id ][ 'repeat_freq' ] !== 'none' ) {
@@ -608,7 +609,7 @@ function bookacti_load_template_calendar() {
 							if( response.error === 'not_allowed' ) {
 								error_message += '\n' + bookacti_localized.error_not_allowed;
 							} else if( response.error === 'has_bookings' ) {
-								bookacti_refresh_booking_numbers( bookacti.selected_template, event.id );
+								bookacti_refresh_booking_numbers( $j( '#bookacti-template-calendar' ), event.id );
 								error_message += '\n' + bookacti_localized.error_edit_locked_event;
 								error_message += '\n' + bookacti_localized.advice_switch_to_maintenance + '\n';
 							}

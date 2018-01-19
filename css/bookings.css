@@ -44,6 +44,8 @@ span:not(.bookacti-not-booked) .bookacti-active-bookings-number				{ font-weight
 
 
 /** BOOKING LIST **/
+#bookacti-bookings-list-container tr.hidden { display: none; }
+
 #bookacti-bookings-list-container .row-actions					{ display: none; position: static; }
 #bookacti-bookings-list-container tr.is-expanded .row-actions	{ display: block; }
 #bookacti-bookings-list-container .has-row-actions				{ position: relative; }
@@ -66,6 +68,20 @@ span:not(.bookacti-not-booked) .bookacti-active-bookings-number				{ font-weight
 #bookacti-bookings-list-container .column-id .bookacti-booking-group-id			{ display: block; font-size: 0.8em; font-style: italic; }
 #bookacti-bookings-list-container .column-id .bookacti-booking-group-id::before	{ content: '\0021AA  '; }
 
+.wp-admin a.bookacti-show-booking-group-bookings.active,
+.wp-admin a.bookacti-show-booking-group-bookings.active:hover								{ background-color: #3689b1; }
+.wp-admin a.bookacti-show-booking-group-bookings.active:after								{ color: #fff; }
+#bookacti-bookings-list-container .bookacti-gouped-booking:not(.hidden) .check-column		{ border-left: 2px solid #3689b1; }
+#bookacti-bookings-list-container .bookacti-gouped-booking:not(.hidden) .column-actions		{ border-right: 2px solid #3689b1; }
+#bookacti-bookings-list-container .bookacti-booking-group + tr.bookacti-gouped-booking:not(.hidden) td,
+#bookacti-bookings-list-container .bookacti-booking-group + tr.bookacti-gouped-booking:not(.hidden) th,
+#bookacti-bookings-list-container .bookacti-gouped-booking:not(.hidden) + tr.bookacti-booking-group td,
+#bookacti-bookings-list-container .bookacti-gouped-booking:not(.hidden) + tr.bookacti-booking-group th,
+#bookacti-bookings-list-container .bookacti-gouped-booking:not(.hidden) + tr.bookacti-single-booking:not(.bookacti-gouped-booking) td,
+#bookacti-bookings-list-container .bookacti-gouped-booking:not(.hidden) + tr.bookacti-single-booking:not(.bookacti-gouped-booking) th { border-top: 2px solid #3689b1; }
+#bookacti-bookings-list-container .bookacti-booking-group + tr.bookacti-gouped-booking:not(.hidden) th.check-column			{ position: relative; }
+#bookacti-bookings-list-container .bookacti-booking-group + tr.bookacti-gouped-booking:not(.hidden) th.check-column:before	{ content: 'group'; position: absolute; top: 0; left: 0; padding: 0 5px 2px 3px; font-size: 0.8em; font-style: italic; background-color: #3689b1; color: #fff; border-bottom-right-radius: 4px; }
+
 .bookacti-booking-primary-data-container	{ display: none; margin-left: 10px; }
 .bookacti-booking-primary-data				{ display: inline-block; margin-right: 10px; }
 .bookacti-booking-primary-data:last-child	{ margin-right: 0; }
@@ -75,11 +91,10 @@ span:not(.bookacti-not-booked) .bookacti-active-bookings-number				{ font-weight
 .bookacti-booking-state-good			{ color: #82c818; }
 .bookacti-booking-state-warning			{ color: #f89b2f; }
 .bookacti-booking-state-bad				{ color: #b81c23; }
-.bookacti-booking-state:before			{ font-family: 'dashicons'; font-size: 1.6em; font-weight: bold; white-space: nowrap; }
-.bookacti-booking-state-good:before		{ content: '\f147  ';  }
-.bookacti-booking-state-warning:before	{ content: '\f534  ';  }
-.bookacti-booking-state[data-booking-state="pending"]:before { content: '\f534  '; }
-.bookacti-booking-state-bad:before		{ content: '\f158  ';  }
+.bookacti-booking-state:before			{ font-size: 1.5em; font-weight: bold; white-space: nowrap; }
+.bookacti-booking-state-good:before		{ content: '\2714  ';  }
+.bookacti-booking-state-warning:before	{ content: '\26A0  ';  }
+.bookacti-booking-state-bad:before		{ content: '\2716  ';  }
 
 .wp-admin a.bookacti-booking-action, 
 .wp-admin a.bookacti-booking-group-action				{ width: 2em; height: 2em; padding: 0; text-align: center; }
@@ -202,6 +217,8 @@ a.bookacti-booking-action					{ display: inline-block; word-spacing: 0; margin: 
 	#bookacti-bookings-list-container .button		{ padding: 3px 6px; font-size: 1em; }
 	#bookacti-bookings-list-container .bookacti-booking-group-indicator,
 	#bookacti-bookings-list-container .bookacti-booking-group-id	{ display: inline; margin-left: 4px; }
+	#bookacti-bookings-list-container .bookacti-booking-group + tr.bookacti-gouped-booking:not(.hidden) td:not(.column-primary)	{ border-top: none; }
+	#bookacti-bookings-list-container .bookacti-gouped-booking:not(.hidden) td { border-right: 2px solid #3689b1; }
 	
 	/* Frontend Bookings list */
 	.bookacti-user-bookings-list thead				{ display: none; }

@@ -16,6 +16,7 @@ if( ! class_exists( 'Bookings_List_Table' ) ) {
 	class Bookings_List_Table extends WP_List_Table {
 		
 		public $items;
+		public $filters;
 		protected $screen;
 		
 		/**
@@ -168,30 +169,35 @@ if( ! class_exists( 'Bookings_List_Table' ) ) {
 		 * 
 		 * @version 1.3.0
 		 * @param array $filters
+		 * @param boolean $no_pagination
 		 */
-		public function prepare_items( $filters = array() ) {
+		public function prepare_items( $filters = array(), $no_pagination = false ) {
 			
 			$this->get_column_info();
 			$this->_column_headers[0] = $this->get_columns();
 			
-			$items = $this->get_booking_list_items( $filters );
+			$this->filters = $this->format_filters( $filters );
 			
-			// Get the number of booking to display per page
-			$user			= get_current_user_id();
-			$screen			= $this->get_wp_screen();
-			$screen_option	= $screen->get_option( 'per_page', 'option' );
-			$per_page		= get_user_meta( $user, $screen_option, true );
-			if( empty ( $per_page) || $per_page < 1 ) {
-				$per_page = $screen->get_option( 'per_page', 'default' );
+			if( ! $no_pagination ) {
+				// Get the number of booking to display per page
+				$screen			= $this->get_wp_screen();
+				$screen_option	= $screen->get_option( 'per_page', 'option' );
+				$per_page		= intval( get_user_meta( get_current_user_id(), $screen_option, true ) );
+				if( empty ( $per_page ) || $per_page < 1 ) {
+					$per_page = $screen->get_option( 'per_page', 'default' );
+				}
+
+				// Set pagination
+				$this->set_pagination_args( array(
+					'total_items' => $this->get_total_items_count(),
+					'per_page'    => $per_page
+				) );
+
+				$this->filters[ 'offset' ]		= ( $this->get_pagenum() - 1 ) * $per_page;
+				$this->filters[ 'per_page' ]	= $per_page;
 			}
 			
-			// Set pagination
-			$this->set_pagination_args( array(
-				'total_items' => count( $items ),
-				'per_page'    => $per_page
-			) );
-			
-			$items = array_slice( $items,( ( $this->get_pagenum() - 1 ) * $per_page ), $per_page );
+			$items = $this->get_booking_list_items();
 			
 			$this->items = $items;
 		}
@@ -221,49 +227,13 @@ if( ! class_exists( 'Bookings_List_Table' ) ) {
 		 * @param int $booking_group_id
 		 * @return array
 		 */
-		public function get_booking_list_items( $filters = array() ) {
-			
-			// Get filters from URL if no filter was directly passed
-			if( ! $filters ) {
-				
-				// Accepts two different parameter names for booking system related paramters
-				$event_group_id = 0; $event_id = 0; $event_start = ''; $event_end = '';
-				if( isset( $_REQUEST[ 'bookacti_group_id' ] )	&& $_REQUEST[ 'bookacti_group_id' ] !== 'single' )	{ $event_group_id = intval( $_REQUEST[ 'bookacti_group_id' ] ); }
-				if( isset( $_REQUEST[ 'event_group_id' ] )		&& $_REQUEST[ 'event_group_id' ] !== 'single' )		{ $event_group_id = intval( $_REQUEST[ 'event_group_id' ] ); }
-				if( $event_group_id === 0 ) {
-					if( isset( $_REQUEST[ 'bookacti_event_id' ] ) )		{ $event_id		= intval( $_REQUEST[ 'bookacti_event_id' ] ); }
-					if( isset( $_REQUEST[ 'event_id' ] ) )				{ $event_id		= intval( $_REQUEST[ 'event_id' ] ); }
-					if( isset( $_REQUEST[ 'bookacti_event_start' ] ) )	{ $event_start	= bookacti_sanitize_datetime( $_REQUEST[ 'bookacti_event_start' ] ); }
-					if( isset( $_REQUEST[ 'event_start' ] ) )			{ $event_start	= bookacti_sanitize_datetime( $_REQUEST[ 'event_start' ] ); }
-					if( isset( $_REQUEST[ 'bookacti_event_end' ] ) )	{ $event_end	= bookacti_sanitize_datetime( $_REQUEST[ 'bookacti_event_end' ] ); }
-					if( isset( $_REQUEST[ 'event_end' ] ) )				{ $event_end	= bookacti_sanitize_datetime( $_REQUEST[ 'event_end' ] ); }
-				}
-				
-				$filters = array(
-					'templates'			=> isset( $_REQUEST[ 'templates' ] )		? $_REQUEST[ 'templates' ] : array(), 
-					'activities'		=> isset( $_REQUEST[ 'activities' ] )		? $_REQUEST[ 'activities' ] : array(), 
-					'booking_group_id'	=> isset( $_REQUEST[ 'booking_group_id' ] )	? intval( $_REQUEST[ 'booking_group_id' ] ): 0, 
-					'event_group_id'	=> $event_group_id, 
-					'event_id'			=> $event_id, 
-					'event_start'		=> $event_start, 
-					'event_end'			=> $event_end,
-					'status'			=> isset( $_REQUEST[ 'status' ] )			? $_REQUEST[ 'status' ] : array(),
-					'user_id'			=> isset( $_REQUEST[ 'user_id' ] )			? $_REQUEST[ 'user_id' ] : 0,
-					'from'				=> isset( $_REQUEST[ 'from' ] )				? $_REQUEST[ 'from' ] : '',
-					'to'				=> isset( $_REQUEST[ 'to' ] )				? $_REQUEST[ 'to' ] : '',
-					'order_by'			=> isset( $_REQUEST[ 'orderby' ] )			? $_REQUEST[ 'orderby' ] : array( 'creation_date', 'id' ),
-					'order'				=> isset( $_REQUEST[ 'order' ] )			? $_REQUEST[ 'order' ] : 'DESC'
-				);
-			}
-			
-			// Format filters before making the request
-			$formatted_filters = bookacti_format_booking_filters( $filters );
+		public function get_booking_list_items() {
 			
 			// Request bookings corresponding to filters
-			$bookings = bookacti_get_bookings( $formatted_filters );
+			$bookings = bookacti_get_bookings( $this->filters );
 			
 			// Retrieve booking groups data
-			$booking_groups		= bookacti_get_booking_groups( $formatted_filters );
+			$booking_groups		= bookacti_get_booking_groups( $this->filters );
 			$displayed_groups	= array();
 			
 			// Retrieve information about users and stock them into an array sorted by user id
@@ -280,7 +250,7 @@ if( ! class_exists( 'Bookings_List_Table' ) ) {
 			foreach( $bookings as $booking ) {
 				
 				// Display one single row for a booking group, instead of each bookings of the group
-				if( $booking->group_id && ! $filters[ 'booking_group_id' ] ) {
+				if( $booking->group_id && ! $this->filters[ 'booking_group_id' ] && ! $this->filters[ 'booking_id' ] ) {
 					// If the group row has already been displayed, or if it is not found, continue
 					if( in_array( $booking->group_id, $displayed_groups, true ) 
 					||  ! isset( $booking_groups[ $booking->group_id ] ) ) { continue; }
@@ -288,6 +258,7 @@ if( ! class_exists( 'Bookings_List_Table' ) ) {
 					$group		= $booking_groups[ $booking->group_id ];
 					
 					$raw_id		= $group->id;
+					$tr_class	= 'bookacti-booking-group';
 					$id			= $group->id . '<span class="bookacti-booking-group-indicator">' . _x( 'Group', 'noun', BOOKACTI_PLUGIN_NAME ) . '</span>';
 					$user_id	= $group->user_id;
 					$state		= bookacti_format_booking_state( $group->state, true );
@@ -306,6 +277,7 @@ if( ! class_exists( 'Bookings_List_Table' ) ) {
 				} else {
 					
 					$raw_id		= $booking->id;
+					$tr_class	= $booking->group_id ? 'bookacti-single-booking bookacti-gouped-booking' : 'bookacti-single-booking';
 					$id			= $booking->group_id ? $booking->id . '<span class="bookacti-booking-group-id" >' . $booking->group_id . '</span>' : $booking->id;
 					$user_id	= $booking->user_id;
 					$state		= bookacti_format_booking_state( $booking->state, true );
@@ -334,6 +306,7 @@ if( ! class_exists( 'Bookings_List_Table' ) ) {
 				}
 				
 				$booking_item = apply_filters( 'bookacti_booking_list_booking_columns', array( 
+					'tr_class'		=> $tr_class,
 					'id'			=> $id,
 					'customer'		=> $customer,
 					'state'			=> $state,
@@ -374,6 +347,64 @@ if( ! class_exists( 'Bookings_List_Table' ) ) {
 		
 		
 		/**
+		 * Format filters passed as argument or retrieved via POST or GET
+		 * @param array $filters
+		 * @return array
+		 */
+		public function format_filters( $filters = array() ) {
+			
+			// Get filters from URL if no filter was directly passed
+			if( ! $filters ) {
+				
+				// Accepts two different parameter names for booking system related paramters
+				$event_group_id = 0; $event_id = 0; $event_start = ''; $event_end = '';
+				if( isset( $_REQUEST[ 'bookacti_group_id' ] )	&& $_REQUEST[ 'bookacti_group_id' ] !== 'single' )	{ $event_group_id = intval( $_REQUEST[ 'bookacti_group_id' ] ); }
+				if( isset( $_REQUEST[ 'event_group_id' ] )		&& $_REQUEST[ 'event_group_id' ] !== 'single' )		{ $event_group_id = intval( $_REQUEST[ 'event_group_id' ] ); }
+				if( $event_group_id === 0 ) {
+					if( isset( $_REQUEST[ 'bookacti_event_id' ] ) )		{ $event_id		= intval( $_REQUEST[ 'bookacti_event_id' ] ); }
+					if( isset( $_REQUEST[ 'event_id' ] ) )				{ $event_id		= intval( $_REQUEST[ 'event_id' ] ); }
+					if( isset( $_REQUEST[ 'bookacti_event_start' ] ) )	{ $event_start	= bookacti_sanitize_datetime( $_REQUEST[ 'bookacti_event_start' ] ); }
+					if( isset( $_REQUEST[ 'event_start' ] ) )			{ $event_start	= bookacti_sanitize_datetime( $_REQUEST[ 'event_start' ] ); }
+					if( isset( $_REQUEST[ 'bookacti_event_end' ] ) )	{ $event_end	= bookacti_sanitize_datetime( $_REQUEST[ 'bookacti_event_end' ] ); }
+					if( isset( $_REQUEST[ 'event_end' ] ) )				{ $event_end	= bookacti_sanitize_datetime( $_REQUEST[ 'event_end' ] ); }
+				}
+				
+				$filters = array(
+					'templates'			=> isset( $_REQUEST[ 'templates' ] )		? $_REQUEST[ 'templates' ] : array(), 
+					'activities'		=> isset( $_REQUEST[ 'activities' ] )		? $_REQUEST[ 'activities' ] : array(), 
+					'booking_id'		=> isset( $_REQUEST[ 'booking_id' ] )		? intval( $_REQUEST[ 'booking_id' ] ): 0, 
+					'booking_group_id'	=> isset( $_REQUEST[ 'booking_group_id' ] )	? intval( $_REQUEST[ 'booking_group_id' ] ): 0, 
+					'event_group_id'	=> $event_group_id, 
+					'event_id'			=> $event_id, 
+					'event_start'		=> $event_start, 
+					'event_end'			=> $event_end,
+					'status'			=> isset( $_REQUEST[ 'status' ] )			? $_REQUEST[ 'status' ] : array(),
+					'user_id'			=> isset( $_REQUEST[ 'user_id' ] )			? $_REQUEST[ 'user_id' ] : 0,
+					'from'				=> isset( $_REQUEST[ 'from' ] )				? $_REQUEST[ 'from' ] : '',
+					'to'				=> isset( $_REQUEST[ 'to' ] )				? $_REQUEST[ 'to' ] : '',
+					'order_by'			=> isset( $_REQUEST[ 'orderby' ] )			? $_REQUEST[ 'orderby' ] : array( 'creation_date', 'id' ),
+					'order'				=> isset( $_REQUEST[ 'order' ] )			? $_REQUEST[ 'order' ] : 'DESC'
+				);
+			}
+
+			// Format filters before making the request
+			$filters = bookacti_format_booking_filters( $filters );
+			
+			return $filters;
+		}
+		
+		
+		/**
+		 * 
+		 * @return int
+		 */
+		public function get_total_items_count() {
+			$group_by_booking_groups = ! isset( $this->filters[ 'booking_group_id' ] );
+			return bookacti_get_number_of_booking_rows( $this->filters, $group_by_booking_groups );
+		}
+		
+		
+		/**
 		 * Get the tbody element for the list table.
 		 * 
 		 * @access public
@@ -404,11 +435,13 @@ if( ! class_exists( 'Bookings_List_Table' ) ) {
 		/**
 		 * Returns content for a single row of the table
 		 * 
+		 * @version 1.3.0
 		 * @access public
-		 * @param object $item The current item
+		 * @param array $item The current item
 		 */
 		public function get_single_row( $item ) {
-			$row  = '<tr>';
+			$class = $item[ 'tr_class' ] ? $item[ 'tr_class' ] : '';
+			$row  = '<tr class="' . $class . '">';
 			$row .= $this->get_single_row_columns( $item );
 			$row .= '</tr>';
 			
@@ -469,19 +502,31 @@ if( ! class_exists( 'Bookings_List_Table' ) ) {
 			
 			return $returned_columns;
 		}
+		
+		
+		/**
+		 * Display content for a single row of the table
+		 * 
+		 * @version 1.3.0
+		 * @access public
+		 * @param array $item The current item
+		 */
+		public function single_row( $item ) {
+			$class = $item[ 'tr_class' ] ? $item[ 'tr_class' ] : '';
+			echo '<tr class="' . $class . '">';
+			$this->single_row_columns( $item );
+			echo '</tr>';
+		}
+
+		
+		/**
+		 * Get default primary column name
+		 * 
+		 * @since 1.3.0
+		 * @return string
+		 */
+		public function get_default_primary_column_name() {
+			return apply_filters( 'bookacti_booking_list_primary_column', 'customer', $this->screen );
+		}
 	}
 }
-
-
-/**
- * Set the primary columns
- * 
- * @param string $column
- * @param string $screen
- * @return string
- */
-function bookacti_bookings_list_table_primary_column( $column, $screen ) {
-	if( $screen === 'booking-activities_page_bookacti_bookings' ) { $column = 'customer'; }
-	return $column;
-}
-add_filter( 'list_table_primary_column', 'bookacti_bookings_list_table_primary_column', 10, 2 );

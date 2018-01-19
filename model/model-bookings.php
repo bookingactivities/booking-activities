@@ -276,6 +276,11 @@ function bookacti_get_bookings( $filters ) {
 		$variables = array_merge( $variables, $filters[ 'activities' ] );
 	}
 	
+	if( $filters[ 'booking_id' ] ) {
+		$bookings_query .=	' AND B.id = %d ';
+		$variables[] = $filters[ 'booking_id' ];
+	}
+	
 	if( is_numeric( $filters[ 'booking_group_id' ] ) && $filters[ 'booking_group_id' ] != 0 ) {
 		$bookings_query  .= ' AND B.group_id = %d ';
 		$variables[] =  intval( $filters[ 'booking_group_id' ] );
@@ -318,6 +323,19 @@ function bookacti_get_bookings( $filters ) {
 		}
 	}
 	
+	if( $filters[ 'offset' ] || $filters[ 'per_page' ] ) {
+		$bookings_query .= ' LIMIT ';
+		if( $filters[ 'offset' ] ) {
+			$bookings_query .= '%d';
+			if( $filters[ 'per_page' ] ) { $bookings_query .= ', '; }
+			$variables[] = $filters[ 'offset' ];
+		}
+		if( $filters[ 'per_page' ] ) { 
+			$bookings_query .= '%d ';
+			$variables[] = $filters[ 'per_page' ];
+		}
+	}
+	
 	if( $variables ) {
 		$bookings_query = $wpdb->prepare( $bookings_query, $variables );
 	}
@@ -325,6 +343,143 @@ function bookacti_get_bookings( $filters ) {
 	$bookings = $wpdb->get_results( $bookings_query, OBJECT );
 	
 	return $bookings;
+}
+
+
+/**
+ * Get the total amount of bookings according to filters
+ * 
+ * @since 1.3.0
+ * @global wpdb $wpdb
+ * @param array $filters
+ * @param boolean $group_by_booking_groups Whether to count a group as one booking
+ * @return int
+ */
+function bookacti_get_number_of_booking_rows( $filters = array(), $group_by_booking_groups = false ) {
+	global $wpdb;
+	
+	$bookings_query = ' SELECT COUNT( DISTINCT B.id ) as list_items_count' 
+					. ' FROM ' . BOOKACTI_TABLE_BOOKINGS . ' as B, ' . BOOKACTI_TABLE_EVENTS . ' as E, ' . BOOKACTI_TABLE_ACTIVITIES . ' as A, ' . BOOKACTI_TABLE_TEMPLATES . ' as T, ' . BOOKACTI_TABLE_BOOKING_GROUPS . ' as BG '
+					. ' WHERE B.event_id = E.id '
+					. ' AND B.event_id = E.id '
+					. ' AND E.activity_id = A.id '
+					. ' AND E.template_id = T.id ';
+	
+	// Set current datetime
+	$timezone					= new DateTimeZone( bookacti_get_setting_value( 'bookacti_general_settings', 'timezone' ) );
+	$current_datetime_object	= new DateTime( 'now', $timezone );
+	$user_timestamp_offset		= $current_datetime_object->format( 'P' );
+	
+	$variables = array();
+	
+	// Whether to count bookings of the same groups as one item
+	if( $group_by_booking_groups ) {
+		$bookings_query  .= ' GROUP BY IFNULL( B.group_id , B.id )';
+	}
+	
+	// Do not fetch events out of the desired interval
+	if( $filters[ 'from' ] ) {
+		$bookings_query  .= ' 
+		AND (	UNIX_TIMESTAMP( CONVERT_TZ( B.event_start, %s, @@global.time_zone ) ) >= 
+				UNIX_TIMESTAMP( CONVERT_TZ( %s, %s, @@global.time_zone ) ) )';
+
+		$variables[] = $user_timestamp_offset;
+		$variables[] = $filters[ 'from' ];
+		$variables[] = $user_timestamp_offset;
+	}
+	
+	if( $filters[ 'to' ] ) {
+		$bookings_query  .= ' 
+		AND (	UNIX_TIMESTAMP( CONVERT_TZ( B.event_start, %s, @@global.time_zone ) ) <= 
+				UNIX_TIMESTAMP( CONVERT_TZ( ( %s + INTERVAL 24 HOUR ), %s, @@global.time_zone ) ) 
+			)';
+
+		$variables[] = $user_timestamp_offset;
+		$variables[] = $filters[ 'to' ];
+		$variables[] = $user_timestamp_offset;
+	}
+	
+	if( $filters[ 'status' ] ) {
+		$bookings_query .= ' AND B.state IN ( %s ';
+		$array_count = count( $filters[ 'status' ] );
+		if( $array_count >= 2 ) {
+			for( $i=1; $i<$array_count; ++$i ) {
+				$bookings_query  .= ', %s ';
+			}
+		}
+		$bookings_query  .= ') ';
+		$variables = array_merge( $variables, $filters[ 'status' ] );
+	}
+	
+	if( $filters[ 'templates' ] ) {
+		$bookings_query .= ' AND E.template_id IN ( %d ';
+		$array_count = count( $filters[ 'templates' ] );
+		if( $array_count >= 2 )  {
+			for( $i=1; $i<$array_count; ++$i ) {
+				$bookings_query  .= ', %d ';
+			}
+		}
+		$bookings_query  .= ') ';
+		$variables = array_merge( $variables, $filters[ 'templates' ] );
+	}
+	
+	if( $filters[ 'activities' ] ) {
+		$bookings_query .= ' AND E.activity_id IN ( %d ';
+		$array_count = count( $filters[ 'activities' ] );
+		if( $array_count >= 2 )  {
+			for( $i=1; $i<$array_count; ++$i ) {
+				$bookings_query  .= ', %d ';
+			}
+		}
+		$bookings_query  .= ') ';
+		$variables = array_merge( $variables, $filters[ 'activities' ] );
+	}
+	
+	if( $filters[ 'booking_id' ] ) {
+		$bookings_query .=	' AND B.id = %d ';
+		$variables[] = $filters[ 'booking_id' ];
+	}
+	
+	if( is_numeric( $filters[ 'booking_group_id' ] ) && $filters[ 'booking_group_id' ] != 0 ) {
+		$bookings_query  .= ' AND B.group_id = %d ';
+		$variables[] =  intval( $filters[ 'booking_group_id' ] );
+	} else if( $filters[ 'booking_group_id' ] === 'none' ) {
+		$bookings_query  .= ' AND B.group_id IS NULL ';
+	}
+	
+	if( $filters[ 'event_group_id' ] ) {
+		$bookings_query .=	' AND B.group_id = BG.id '
+						.	' AND BG.event_group_id = %d ';
+		$variables[] = $filters[ 'event_group_id' ];
+	}
+	
+	if( $filters[ 'event_id' ] ) {
+		$bookings_query .= ' AND B.event_id = %d ';
+		$variables[] = $filters[ 'event_id' ];
+	}
+
+	if( $filters[ 'event_start' ] ) {
+		$bookings_query .= ' AND B.event_start = %s ';
+		$variables[] = $filters[ 'event_start' ];
+	}
+
+	if( $filters[ 'event_end' ] ) {
+		$bookings_query .= ' AND B.event_end = %s ';
+		$variables[] = $filters[ 'event_end' ];
+	}
+	
+	if( $filters[ 'user_id' ] ) {
+		$bookings_query .= ' AND B.user_id = %d ';
+		$variables[] = $filters[ 'user_id' ];
+	}
+	
+	if( $variables ) {
+		$bookings_query = $wpdb->prepare( $bookings_query, $variables );
+	}
+
+	$count = $wpdb->get_var( $bookings_query );
+
+	return $count ? $count : 0;
 }
 
 
