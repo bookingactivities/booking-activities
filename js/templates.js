@@ -5,6 +5,7 @@ $j( document ).ready( function() {
 		
 		// Init calendar editor specific globals
 		bookacti.selected_template	= parseInt( $j( '#bookacti-template-picker' ).val() ) || 0;
+		bookacti.hidden_activities	= [];
 		bookacti.selected_category	= 'new';
 		bookacti.is_dragging		= false;
 		bookacti.blocked_events		= false;

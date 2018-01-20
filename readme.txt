@@ -308,11 +308,14 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 * Feature - Filter your booking list by calendars, activities, status, date, and customers (and also by events like before)
 * Feature - The booking list is now paginated and columns can be hidden (in screen options) and sorted
 * Feature - Display your customers' bookings calendar with the shortcode [bookingactivities_calendar bookings_only="1"]
+* Tweak - Date format can be set more specifically, and the separator between dates can be changed
 * Tweak - ON/OFF button: clearly display "ON" and "OFF" for a better understanding
 * Tweak - Email refund option is no longer offered to administrators
 * Fix - Activities with a title containing special characters triggered a fatal error when an event was dropped
 * Fix - Picking a group of events not already loaded triggered a fatal error (events of the group still need to be rendered)
 * Fix - Error notice about wpdb::prepare since WP 4.9+ (can cause fatal error if WP_DEBUG was set to true)
+* Fix - Show / Hide activities in calendar editor triggers fatal error
+* **Breaking change** - Date format needs to be set again in Booking Activities settings, in "Messages" tab
 
 = 1.2.3 - 2018/01/09 =
 * Fix - AJAX error when creating an activity with PHP 7.1+

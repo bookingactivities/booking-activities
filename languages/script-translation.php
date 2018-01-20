@@ -7,6 +7,8 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 $current_datetime_object = new DateTime( 'now', new DateTimeZone( bookacti_get_setting_value( 'bookacti_general_settings', 'timezone' ) ) );
 $can_edit_bookings = current_user_can( 'bookacti_edit_bookings' );
 
+$messages = bookacti_get_messages();
+
 // Fill the translation array to use it in js 
 $bookacti_translation_array = apply_filters( 'bookacti_translation_array', array(
 
@@ -22,7 +24,7 @@ $bookacti_translation_array = apply_filters( 'bookacti_translation_array', array
 	'dialog_import_activity_title'			=> esc_html__( 'Import existing activity', BOOKACTI_PLUGIN_NAME ),
 	'dialog_create_activity_title'			=> esc_html__( 'Create new activity', BOOKACTI_PLUGIN_NAME ),
 	'dialog_update_activity_title'		    => esc_html__( 'Update activity parameters', BOOKACTI_PLUGIN_NAME ),
-	'dialog_choose_group_of_events_title'	=> esc_html__( 'This event is available in several bundles', BOOKACTI_PLUGIN_NAME ),
+	'dialog_choose_group_of_events_title'	=> $messages[ 'choose_group_dialog_title' ][ 'value' ],
 	'dialog_create_group_of_events_title'	=> esc_html__( 'Create a group of events', BOOKACTI_PLUGIN_NAME ),
 	'dialog_update_group_of_events_title'	=> esc_html__( 'Update a group of events', BOOKACTI_PLUGIN_NAME ),
 	'dialog_delete_group_of_events_title'	=> esc_html__( 'Delete a group of events', BOOKACTI_PLUGIN_NAME ),
@@ -60,7 +62,7 @@ $bookacti_translation_array = apply_filters( 'bookacti_translation_array', array
 	'calendar_button_list_month'		=> esc_html__( 'list month', BOOKACTI_PLUGIN_NAME ),
 	'calendar_button_list_week'			=> esc_html__( 'list week', BOOKACTI_PLUGIN_NAME ),
 	'calendar_button_list_day'			=> esc_html__( 'list day', BOOKACTI_PLUGIN_NAME ),
-	'booking_form_new_booking_button'	=> bookacti_get_message( 'booking_form_new_booking_button' ),
+	'booking_form_new_booking_button'	=> $messages[ 'booking_form_new_booking_button' ][ 'value' ],
 	'placeholder_select_customer'		=> esc_html__( 'Search for a customer', BOOKACTI_PLUGIN_NAME ),
 	'show_all_customers'				=> esc_html__( 'Show all customers', BOOKACTI_PLUGIN_NAME ),
 	'pick_an_event'						=> esc_html__( 'Pick an event', BOOKACTI_PLUGIN_NAME ),
@@ -226,7 +228,12 @@ $bookacti_translation_array = apply_filters( 'bookacti_translation_array', array
 	'started_events_bookable'			=> bookacti_get_setting_value( 'bookacti_general_settings',	'started_events_bookable' ) ? true : false,
 	'when_events_load'					=> bookacti_get_setting_value( 'bookacti_general_settings',	'when_events_load' ),
 	'event_load_interval'				=> bookacti_get_setting_value( 'bookacti_general_settings', 'event_load_interval' ),
-	'date_format'						=> bookacti_get_setting_value( 'bookacti_general_settings',	'date_format' ),
+	
+	'date_format'						=> $messages[ 'date_format_short' ][ 'value' ],
+	'date_format_long'					=> $messages[ 'date_format_long' ][ 'value' ],
+	'time_format'						=> $messages[ 'time_format' ][ 'value' ],
+	'dates_separator'					=> $messages[ 'dates_separator' ][ 'value' ],
+	'date_time_separator'				=> $messages[ 'date_time_separator' ][ 'value' ],
 
 	'plugin_path'						=> plugins_url() . '/' . BOOKACTI_PLUGIN_NAME,
 	'site_url'							=> get_site_url(),

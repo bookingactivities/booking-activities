@@ -33,14 +33,14 @@ $j( document ).ready( function() {
 				
 				// Update start and end dates 
 				if( $j( '.wc-item-meta-bookacti_event_start.wc-item-meta-value' ).length ) {
-					row.find( '.wc-item-meta-bookacti_event_start.wc-item-meta-value' ).html( event_start.format( bookacti_localized.date_format ) );
-					row.find( '.wc-item-meta-bookacti_event_end.wc-item-meta-value' ).html( event_end.format( bookacti_localized.date_format ) );
+					row.find( '.wc-item-meta-bookacti_event_start.wc-item-meta-value' ).html( event_start.formatPHP( bookacti_localized.date_format_long ) );
+					row.find( '.wc-item-meta-bookacti_event_end.wc-item-meta-value' ).html( event_end.formatPHP( bookacti_localized.date_format_long ) );
 
 				}
 				// WOOCOMMERCE 3.0.0 backward compatibility
 				if( $j( 'dd.variation-bookacti_event_start p' ).length ) {
-					row.find( 'dd.variation-bookacti_event_start p' ).html( event_start.format( bookacti_localized.date_format ) );
-					row.find( 'dd.variation-bookacti_event_end p' ).html( event_end.format( bookacti_localized.date_format ) );
+					row.find( 'dd.variation-bookacti_event_start p' ).html( event_start.formatPHP( bookacti_localized.date_format_long ) );
+					row.find( 'dd.variation-bookacti_event_end p' ).html( event_end.formatPHP( bookacti_localized.date_format_long ) );
 				}
 			}
 		});

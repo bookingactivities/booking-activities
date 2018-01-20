@@ -5,12 +5,9 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 /**
  * Initialize Booking Activities shortcodes
  */
-function bookacti_shortcodes_init() {
-	add_shortcode( 'bookingactivities_calendar', 'bookacti_shortcode_calendar' );
-	add_shortcode( 'bookingactivities_form', 'bookacti_shortcode_booking_form' );
-	add_shortcode( 'bookingactivities_list', 'bookacti_shortcode_bookings_list' );
-}
-add_action( 'init', 'bookacti_shortcodes_init');
+add_shortcode( 'bookingactivities_calendar', 'bookacti_shortcode_calendar' );
+add_shortcode( 'bookingactivities_form', 'bookacti_shortcode_booking_form' );
+add_shortcode( 'bookingactivities_list', 'bookacti_shortcode_bookings_list' );
 
 
 /**

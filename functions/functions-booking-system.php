@@ -934,10 +934,12 @@ function bookacti_get_formatted_booking_events_list( $booking_events, $quantity 
 				$event_end = bookacti_format_datetime( $event[ 'end' ] );
 			}
 			
-			$class = $start_and_end_same_day ? 'bookacti-booking-event-end-same-day' : '';
+			$class		= $start_and_end_same_day ? 'bookacti-booking-event-end-same-day' : '';
+			$separator	= $start_and_end_same_day ? bookacti_get_message( 'date_time_separator' ) : bookacti_get_message( 'dates_separator' );
+			
 			// Place an arrow between start and end
 			$event_duration = '<span class="bookacti-booking-event-start" >' . $event_start . '</span>'
-							. '<span class="bookacti-booking-event-date-separator ' . $class . '" >' . ' &rarr; ' . '</span>'
+							. '<span class="bookacti-booking-event-date-separator ' . $class . '" >' . $separator . '</span>'
 							. '<span class="bookacti-booking-event-end ' . $class . '" >' . $event_end . '</span>';
 		}
 		

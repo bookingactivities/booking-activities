@@ -1501,9 +1501,9 @@ function bookacti_dialog_create_group_of_events( category_id ) {
 		var event_start = moment( event.start );
 		var event_end = moment( event.end );
 		
-		var event_duration = event_start.format( bookacti_localized.date_format ) + ' &rarr; ' + event_end.format( bookacti_localized.date_format );
+		var event_duration = event_start.formatPHP( bookacti_localized.date_format ) + bookacti_localized.dates_separator + event_end.formatPHP( bookacti_localized.date_format );
 		if( event.start.substr( 0, 10 ) === event.end.substr( 0, 10 ) ) {
-			event_duration = event_start.format( bookacti_localized.date_format ) + ' &rarr; ' + event_end.format( 'LT' );
+			event_duration = event_start.formatPHP( bookacti_localized.date_format ) + bookacti_localized.date_time_separator + event_end.formatPHP( bookacti_localized.time_format );
 		}
 		var option = $j( '<option />', {
 						'html': event.title + ' - ' + event_duration
@@ -1632,9 +1632,9 @@ function bookacti_dialog_update_group_of_events( group_id ) {
 		var event_start = moment( event.start );
 		var event_end = moment( event.end );
 		
-		var event_duration = event_start.format( bookacti_localized.date_format ) + ' &rarr; ' + event_end.format( bookacti_localized.date_format );
+		var event_duration = event_start.formatPHP( bookacti_localized.date_format ) + bookacti_localized.dates_separator + event_end.formatPHP( bookacti_localized.date_format );
 		if( event.start.substr( 0, 10 ) === event.end.substr( 0, 10 ) ) {
-			event_duration = event_start.format( bookacti_localized.date_format ) + ' &rarr; ' + event_end.format( 'LT' );
+			event_duration = event_start.formatPHP( bookacti_localized.date_format ) + bookacti_localized.date_time_separator + event_end.formatPHP( bookacti_localized.time_format );
 		}
 		var option = $j( '<option />', {
 						'html': event.title + ' - ' + event_duration

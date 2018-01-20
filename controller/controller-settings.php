@@ -64,14 +64,6 @@ function bookacti_init_settings() {
 		'bookacti_general_settings', 
 		'bookacti_settings_section_general' 
 	);
-
-	add_settings_field(  
-		'date_format', 
-		__( 'Date format', BOOKACTI_PLUGIN_NAME ), 
-		'bookacti_settings_field_date_format_callback', 
-		'bookacti_general_settings', 
-		'bookacti_settings_section_general' 
-	);
 	
 	
 	

@@ -24,8 +24,9 @@ function bookacti_switch_template( selected_template_id ) {
 				if( response.status === 'success' ) {
 					
 					// Change the global var
-					var is_first_template = bookacti.selected_template ? false : true;
-					bookacti.selected_template = parseInt( selected_template_id );
+					var is_first_template		= bookacti.selected_template ? false : true;
+					bookacti.selected_template	= parseInt( selected_template_id );
+					bookacti.hidden_activities	= [];
 					
 					// Update data array
 					bookacti.booking_system[ 'bookacti-template-calendar' ][ 'calendars' ]				= [ bookacti.selected_template ];

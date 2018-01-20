@@ -735,14 +735,10 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 					
 					if( strtotime( $expiration_date ) > time() ) {
 
-						/* translators: In context this sentence is followed by a countdown: Ex: 'Your cart expires in 3 days 12:35:26' or 'Your cart expires in 01:30:05'*/
-						$timeout = "<div class='bookacti-cart-expiration-container woocommerce-info'>";
-						$timeout .= esc_html__( 'Your cart expires in', BOOKACTI_PLUGIN_NAME );
-						$timeout .= " <span class='bookacti-countdown bookacti-cart-expiration' data-expiration-date='" . esc_attr( $expiration_date ) . "' ></span>";
-						$timeout .= '</div>';
-
+						$timeout = '<div class="bookacti-cart-expiration-container woocommerce-info">' . bookacti_get_message( 'cart_countdown' ) . '</div>';
+						$timeout = str_replace( '{countdown}', '<span class="bookacti-countdown bookacti-cart-expiration" data-expiration-date="' . esc_attr( $expiration_date ) . '" ></span>', $timeout );
+						
 						echo $timeout;
-
 					}
 				} else {
 					bookacti_set_cart_timeout( null );

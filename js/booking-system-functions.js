@@ -696,16 +696,17 @@ function bookacti_format_event_duration( start, end ) {
 	start	= start instanceof moment ? start.format( 'YYYY-MM-DD HH:mm:ss' ) : start;
 	end		= end instanceof moment ? end.format( 'YYYY-MM-DD HH:mm:ss' ) : end;
 	
-	var start_and_end_same_day	= start.substr( 0, 10 ) === end.substr( 0, 10 );
-	var class_same_day			= start_and_end_same_day ? 'bookacti-booking-event-end-same-day' : '';
-	var end_format				= start_and_end_same_day ? 'LT' : bookacti_localized.date_format;
-	
 	var event_start = moment( start ).locale( bookacti_localized.current_lang_code );
 	var event_end = moment( end ).locale( bookacti_localized.current_lang_code );
 	
-	var event_duration	= '<span class="bookacti-booking-event-start">' + event_start.format( bookacti_localized.date_format ) + '</span>' 
-						+ '<span class="bookacti-booking-event-date-separator ' + class_same_day + '"> &rarr; ' + '</span>' 
-						+ '<span class="bookacti-booking-event-end ' + class_same_day + '">' + event_end.format( end_format ) + '</span>';
+	var start_and_end_same_day	= start.substr( 0, 10 ) === end.substr( 0, 10 );
+	var class_same_day			= start_and_end_same_day ? 'bookacti-booking-event-end-same-day' : '';
+	var event_end_formatted		= start_and_end_same_day ? event_end.formatPHP( bookacti_localized.time_format ) : event_end.formatPHP( bookacti_localized.date_format );
+	var separator				= start_and_end_same_day ? bookacti_localized.date_time_separator : bookacti_localized.dates_separator;
+	
+	var event_duration	= '<span class="bookacti-booking-event-start">' + event_start.formatPHP( bookacti_localized.date_format ) + '</span>' 
+						+ '<span class="bookacti-booking-event-date-separator ' + class_same_day + '">' + separator +  '</span>' 
+						+ '<span class="bookacti-booking-event-end ' + class_same_day + '">' + event_end_formatted + '</span>';
 	
 	return event_duration;
 }

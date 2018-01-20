@@ -61,6 +61,7 @@ function bookacti_load_textdomain() {
 add_action( 'plugins_loaded', 'bookacti_load_textdomain' );
 
 
+
 // INCLUDE PHP FUNCTIONS
 include_once( 'functions/functions-global.php' ); 
 include_once( 'functions/functions-booking-system.php' ); 
@@ -250,10 +251,6 @@ function bookacti_activate() {
 
 	// Create tables in database
     bookacti_create_tables();
-	
-	// Insert default values for plugin settings
-	bookacti_define_default_settings_constants();
-	bookacti_init_settings_values();
 	
 	// Keep in memory the first installed date
 	$install_date = get_option( 'bookacti-install-date' );

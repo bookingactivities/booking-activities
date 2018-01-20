@@ -440,10 +440,9 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		
 		// Sanitize id and name
 		$args[ 'id' ]	= sanitize_title_with_dashes( $args[ 'id' ] );
-		$args[ 'name' ]	= sanitize_title_with_dashes( $args[ 'name' ] );
 		
 		// If no id, use name instead
-		$args[ 'id' ] = $args[ 'id' ] ? $args[ 'id' ] : $args[ 'name' ];
+		$args[ 'id' ] = $args[ 'id' ] ? $args[ 'id' ] : sanitize_title_with_dashes( $args[ 'name' ] );
 
 		// Make sure fields with multiple options have 'options' set
 		if( in_array( $args[ 'type' ], array( 'checkboxes', 'radio', 'select' ) ) ){
@@ -507,8 +506,11 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	 * @param boolean $disabled
 	 */
 	function bookacti_onoffswitch( $name, $current_value, $id = NULL, $disabled = false ) {
-
-		$checked = checked( '1', esc_attr( $current_value ), false );
+		
+		// Format current value
+		$current_value = in_array( $current_value, array( true, 'true', 1, '1', 'on' ), true ) ? '1' : '0';
+		
+		$checked = checked( '1', $current_value, false );
 		if( is_null ( $id ) || $id === '' || ! $id ) { $id = $name; }
 
 		?>
@@ -699,8 +701,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		if( preg_match( '/\d{4}-[01]\d-[0-3]\dT[0-2]\d:[0-5]\d:[0-5]\d/', $datetime ) 
 		||  preg_match( '/\d{4}-[01]\d-[0-3]\d [0-2]\d:[0-5]\d:[0-5]\d/', $datetime ) ) {
 			if( ! $format ) {
-				/* translators: Datetime format. Must be adapted to each country. Use wp date_i18n documentation to find the appropriated combinaison https://codex.wordpress.org/Formatting_Date_and_Time */
-				$format = __( 'l, F d, Y h:i a', BOOKACTI_PLUGIN_NAME );
+				$format = bookacti_get_message( 'date_format_long' );
 			}
 			$datetime = date_i18n( $format, strtotime( $datetime ) );
 			$datetime = ! mb_check_encoding( $datetime, 'UTF-8' ) ? utf8_encode( $datetime ) : $datetime;
