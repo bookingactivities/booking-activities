@@ -100,6 +100,7 @@
 	.bookacti-availability-container span								{ -webkit-border-radius: 3px 0 0 3px; border-radius: 3px 0 0 3px; }
 	.bookacti-availability-container .bookacti-bookings					{ padding: 1px 0 1px 1px; }
 	.bookacti-availability-container .bookacti-total-availability		{ padding: 1px 1px 1px 0; }
+	.bookacti-availability-container .bookacti-active-bookings-number,
 	.bookacti-availability-container .bookacti-available-places-number	{ font-weight: bold; font-size: larger; }
 
 	.bookacti-available-places.bookacti-booked, 

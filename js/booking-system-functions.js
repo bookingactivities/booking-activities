@@ -944,6 +944,28 @@ function bookacti_get_event_availability_div( booking_system, event ) {
 }
 
 
+// Get a div with event booking number
+function bookacti_get_event_number_of_bookings_div( booking_system, event ) {
+	
+	var booking_system_id	= booking_system.attr( 'id' );
+	var availability		= parseInt( bookacti.booking_system[ booking_system_id ][ 'events_data' ][ event.id ][ 'availability' ] );
+	var bookings_number		= bookacti_get_event_number_of_bookings( booking_system, event );
+	var available_places	= bookacti_get_event_availability( booking_system, event );
+	
+	var class_no_availability	= availability === 0 ? 'bookacti-no-availability' : '';
+	var class_booked			= bookings_number > 0 ? 'bookacti-booked' : 'bookacti-not-booked';
+	var class_full				= available_places <= 0 ? 'bookacti-full' : '';
+	
+	var div	= '<div class="bookacti-availability-container" >' 
+				+ '<span class="bookacti-available-places ' + class_booked + ' ' + class_full + ' ' + class_no_availability + '" >'
+					+ '<span class="bookacti-active-bookings-number">' + bookings_number + '</span>'
+				+ '</span>'
+			+ '</div>';
+	
+	return div;
+}
+
+
 // Sort an array of events by dates
 function bookacti_sort_events_array_by_dates( array, sort_by_end, desc, labels ) {
 	

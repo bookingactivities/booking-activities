@@ -308,7 +308,7 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 * Feature - Filter your booking list by calendars, activities, status, date, and customers (and also by events like before)
 * Feature - The booking list is now paginated and columns can be hidden (in screen options) and sorted
 * Feature - Bookings have a new "Payment status" property, with 3 possible values: No payment required, owed, paid.
-* Feature - Display your customers' bookings calendar with the shortcode [bookingactivities_calendar bookings_only="1"]
+* Feature - Display your customers' bookings calendar with the shortcode [bookingactivities_calendar bookings_only="true" user_id="current" past_events="true"]
 * Feature - Customize frontend dialogs titles and buttons labels (and content for some of them)
 * Tweak - Date format can be set more specifically, and the separator between dates can be changed
 * Tweak - ON/OFF button: clearly display "ON" and "OFF" for a better understanding

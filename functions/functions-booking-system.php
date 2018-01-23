@@ -37,11 +37,13 @@ function bookacti_get_booking_system( $atts, $echo = false ) {
 				
 				$templates_data		= bookacti_get_mixed_template_data( $atts[ 'calendars' ], $atts[ 'past_events' ] );
 				$events_interval	= bookacti_get_new_interval_of_events( $templates_data );
+				$user_ids			= array();
 				
 				if( $atts[ 'groups_only' ] ) {
 					$events			= bookacti_fetch_grouped_events( $atts[ 'calendars' ], $atts[ 'activities' ], array(), $atts[ 'group_categories' ], $atts[ 'past_events' ], $events_interval );
 				} else if( $atts[ 'bookings_only' ] ) {
 					$events			= bookacti_fetch_booked_events( $atts[ 'calendars' ], $atts[ 'activities' ], $atts[ 'status' ], $atts[ 'user_id' ], $atts[ 'past_events' ], $events_interval );
+					$user_ids		= $atts[ 'user_id' ];
 				} else {
 					$events			= bookacti_fetch_events( $atts[ 'calendars' ], $atts[ 'activities' ], $atts[ 'past_events' ], $events_interval );
 				}
@@ -63,7 +65,7 @@ function bookacti_get_booking_system( $atts, $echo = false ) {
 				bookacti.booking_system[ '<?php echo $atts[ 'id' ]; ?>' ][ 'events_data' ]				= <?php echo json_encode( $events[ 'data' ] ? $events[ 'data' ] : array() ); ?>;
 				bookacti.booking_system[ '<?php echo $atts[ 'id' ]; ?>' ][ 'events_interval' ]			= <?php echo json_encode( $events_interval ); ?>;
 				bookacti.booking_system[ '<?php echo $atts[ 'id' ]; ?>' ][ 'exceptions' ]				= <?php echo json_encode( bookacti_get_exceptions( $atts[ 'calendars' ] ) ); ?>;
-				bookacti.booking_system[ '<?php echo $atts[ 'id' ]; ?>' ][ 'bookings' ]					= <?php echo json_encode( bookacti_get_number_of_bookings_by_events( $atts[ 'calendars' ] ) ); ?>;
+				bookacti.booking_system[ '<?php echo $atts[ 'id' ]; ?>' ][ 'bookings' ]					= <?php echo json_encode( bookacti_get_number_of_bookings_by_events( $atts[ 'calendars' ], array(), $user_ids ) ); ?>;
 				bookacti.booking_system[ '<?php echo $atts[ 'id' ]; ?>' ][ 'activities_data' ]			= <?php echo json_encode( bookacti_get_activities_by_template( $atts[ 'calendars' ], true ) ); ?>;
 				bookacti.booking_system[ '<?php echo $atts[ 'id' ]; ?>' ][ 'groups_events' ]			= <?php echo json_encode( $groups_events ); ?>;	
 				bookacti.booking_system[ '<?php echo $atts[ 'id' ]; ?>' ][ 'groups_data' ]				= <?php echo json_encode( $groups_data ); ?>;	
@@ -194,7 +196,7 @@ function bookacti_retrieve_calendar_elements( $booking_system_atts ) {
 /**
  * Check booking system attributes and format them to be correct
  * 
- * @version 1.2.0
+ * @version 1.3.0
  * 
  * @param array $atts [id, classes, calendars, activities, groups, method, url, button]
  * @param string $shortcode
@@ -213,7 +215,7 @@ function bookacti_format_booking_system_attributes( $atts = array(), $shortcode 
         'groups_single_events'	=> 0,
         'bookings_only'			=> 0,
         'status'				=> array(),
-        'user_id'				=> 'current',
+        'user_id'				=> 0,
         'method'				=> 'calendar',
 		'url'					=> '',
 		'button'				=> bookacti_get_message( 'booking_form_submit_button' ),

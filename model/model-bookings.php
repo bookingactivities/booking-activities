@@ -535,9 +535,10 @@ function bookacti_get_number_of_bookings( $event_id, $event_start = NULL, $event
  * @global wpdb $wpdb
  * @param array $template_ids
  * @param array $event_ids
+ * @param array $user_ids
  * @return array
  */
-function bookacti_get_number_of_bookings_by_events( $template_ids = array(), $event_ids = array() ) {
+function bookacti_get_number_of_bookings_by_events( $template_ids = array(), $event_ids = array(), $user_ids = array() ) {
 	global $wpdb;
 
 	// Convert numeric to array
@@ -550,6 +551,11 @@ function bookacti_get_number_of_bookings_by_events( $template_ids = array(), $ev
 		$event_id = intval( $event_ids );
 		$event_ids = array();
 		if( $event_id ) { $event_ids[] = $event_id; }
+	}
+	if( ! is_array( $user_ids ) ){
+		$user_id = intval( $user_ids );
+		$user_ids = array();
+		if( $user_id ) { $user_ids[] = $user_id; }
 	}
 
 	$bookings_query = 'SELECT B.event_id, B.event_start, B.event_end, SUM( B.quantity ) as quantity '
@@ -589,6 +595,22 @@ function bookacti_get_number_of_bookings_by_events( $template_ids = array(), $ev
 		$bookings_query	.= ' ) ';
 		
 		$variables = $event_ids;
+	}
+	
+	// Filter by user
+	if( $user_ids ) {
+		$bookings_query	.= ' AND B.user_id IN ( ';
+		
+		$i = 1;
+		foreach( $user_ids as $user_id ){
+			$bookings_query .= ' %d';
+			if( $i < count( $user_ids ) ) { $bookings_query .= ','; }
+			++$i;
+		}
+		
+		$bookings_query	.= ' ) ';
+		
+		$variables = $user_ids;
 	}
 	
 	$bookings_query .= ' GROUP BY B.event_id, B.event_start, B.event_end '
