@@ -880,7 +880,7 @@ function bookacti_get_occurences_of_repeated_event( $event, $past_events = false
  * Build a user-friendly events list
  * 
  * @since 1.1.0
- * @version 1.2.1
+ * @version 1.3.0
  * 
  * @param array $booking_events
  * @param int|string $quantity
@@ -915,6 +915,11 @@ function bookacti_get_formatted_booking_events_list( $booking_events, $quantity 
 		);
 	}
 	
+	$datetime_format		= bookacti_get_message( 'date_format_long' );
+	$date_time_spearator	= bookacti_get_message( 'date_time_separator' );
+	$dates_spearator		= bookacti_get_message( 'dates_separator' );
+	$quantity_separator		= bookacti_get_message( 'quantity_separator' );
+	
 	$events_list = '';
 	foreach( $formatted_events as $event ) {
 		
@@ -922,7 +927,7 @@ function bookacti_get_formatted_booking_events_list( $booking_events, $quantity 
 		$event_duration = '';
 		if( $event[ 'start' ] && $event[ 'end' ] ) {
 			
-			$event_start = bookacti_format_datetime( $event[ 'start' ] );
+			$event_start = bookacti_format_datetime( $event[ 'start' ], $datetime_format );
 			
 			// Format differently if the event start and end on the same day
 			$start_and_end_same_day	= substr( $event[ 'start' ], 0, 10 ) === substr( $event[ 'end' ], 0, 10 );
@@ -931,11 +936,11 @@ function bookacti_get_formatted_booking_events_list( $booking_events, $quantity 
 				$event_end = date_i18n( __( 'h:i a', BOOKACTI_PLUGIN_NAME ), strtotime( $event[ 'end' ] ) );
 				$event_end = ! mb_check_encoding( $event_end, 'UTF-8' ) ? utf8_encode( $event_end ) : $event_end;
 			} else {
-				$event_end = bookacti_format_datetime( $event[ 'end' ] );
+				$event_end = bookacti_format_datetime( $event[ 'end' ], $datetime_format );
 			}
 			
 			$class		= $start_and_end_same_day ? 'bookacti-booking-event-end-same-day' : '';
-			$separator	= $start_and_end_same_day ? bookacti_get_message( 'date_time_separator' ) : bookacti_get_message( 'dates_separator' );
+			$separator	= $start_and_end_same_day ? $date_time_spearator : $dates_spearator;
 			
 			// Place an arrow between start and end
 			$event_duration = '<span class="bookacti-booking-event-start" >' . $event_start . '</span>'
@@ -958,7 +963,7 @@ function bookacti_get_formatted_booking_events_list( $booking_events, $quantity 
 			}
 			
 			if( $event[ 'quantity' ] && $quantity !== 'hide' ) {
-				$events_list .= '<span class="bookacti-booking-event-quantity-separator" >' . ' x' . '</span>';
+				$events_list .= '<span class="bookacti-booking-event-quantity-separator" >' . $quantity_separator . '</span>';
 				$events_list .= '<span class="bookacti-booking-event-quantity" >' . $event[ 'quantity' ] . '</span>';
 			}
 			
@@ -1004,17 +1009,19 @@ function bookacti_get_formatted_booking_events_list( $booking_events, $quantity 
 	/**
 	 * Book all events of a group
 	 * 
+	 * @version 1.3.0
 	 * @param int $user_id
 	 * @param int $event_group_id
 	 * @param int $quantity
 	 * @param string $state
+	 * @param string $payment_status
 	 * @param string $expiration_date
 	 * @return int|boolean
 	 */
-	function bookacti_book_group_of_events( $user_id, $event_group_id, $quantity, $state = 'booked', $expiration_date = NULL ) {
+	function bookacti_book_group_of_events( $user_id, $event_group_id, $quantity, $state = 'booked', $payment_status = 'none', $expiration_date = NULL ) {
 				
 		// Insert the booking group
-		$booking_group_id = bookacti_insert_booking_group( $user_id, $event_group_id, $state );
+		$booking_group_id = bookacti_insert_booking_group( $user_id, $event_group_id, $state, $payment_status );
 		
 		if( empty( $booking_group_id ) ) {
 			return false;
@@ -1029,7 +1036,7 @@ function bookacti_get_formatted_booking_events_list( $booking_events, $quantity 
 		// Insert bookings
 		$events = bookacti_get_group_events( $event_group_id );
 		foreach( $events as $event ) {
-			bookacti_insert_booking( $user_id, $event[ 'id' ], $event[ 'start' ], $event[ 'end' ], $quantity, $state, $expiration_date, $booking_group_id );
+			bookacti_insert_booking( $user_id, $event[ 'id' ], $event[ 'start' ], $event[ 'end' ], $quantity, $state, $payment_status, $expiration_date, $booking_group_id );
 		}
 		
 		return $booking_group_id;

@@ -17,6 +17,7 @@ function bookacti_get_default_settings() {
 		'event_load_interval'					=> 92,
 		'started_events_bookable'				=> false,
 		'default_booking_state'					=> 'pending',
+		'default_payment_status'				=> 'none',
 		'timezone'								=> $tz,
 		'allow_customers_to_cancel'				=> true,
 		'allow_customers_to_reschedule'			=> true,
@@ -224,8 +225,33 @@ function bookacti_settings_section_bookings_callback() { }
 								'booked' => __( 'Booked', BOOKACTI_PLUGIN_NAME )
 							),
 			'value'		=> bookacti_get_setting_value( 'bookacti_general_settings', 'default_booking_state' ),
-			/* translators: The word 'Calendar' refers to a booking method you have to translate too. Make sure you use the same word for both translation. */
 			'tip'		=> __( 'Choose what status a booking should have when a customer complete the booking form.', BOOKACTI_PLUGIN_NAME )
+		);
+		bookacti_display_field( $args );
+	}
+	
+	
+	/**
+	 * Display "default payment status" setting
+	 * 
+	 * @since 1.3.0
+	 */
+	function bookacti_settings_field_default_payment_status_callback() {
+		
+		$payment_status = bookacti_get_payment_status_labels();
+		$payment_status_array = array();
+		foreach( $payment_status as $payment_status_id => $payment_status_data ) {
+			$payment_status_array[ esc_attr( $payment_status_id ) ] = esc_html( $payment_status_data[ 'label' ] );
+		}
+		
+		$args = array(
+			'type'		=> 'select',
+			'name'		=> 'bookacti_general_settings[default_payment_status]',
+			'id'		=> 'default_payment_status',
+			'options'	=> $payment_status_array,
+			'value'		=> bookacti_get_setting_value( 'bookacti_general_settings', 'default_payment_status' ),
+			/* translators: The word 'Calendar' refers to a booking method you have to translate too. Make sure you use the same word for both translation. */
+			'tip'		=> __( 'Choose what payment status a booking should have when a customer complete the booking form.', BOOKACTI_PLUGIN_NAME )
 		);
 		bookacti_display_field( $args );
 	}
@@ -611,52 +637,87 @@ function bookacti_settings_section_bookings_callback() { }
 	 * @version 1.3.0
 	 */
 	function bookacti_get_default_messages() {
-		$wp_date_format_link = '<a href="https://codex.wordpress.org/Formatting_Date_and_Time" target="_blank" >' .  __( 'Formatting Date and Time', BOOKACTI_PLUGIN_NAME ) . '</a>';
+		$wp_date_format_link = '<a href="https://codex.wordpress.org/Formatting_Date_and_Time" target="_blank" >' .  esc_html__( 'Formatting Date and Time', BOOKACTI_PLUGIN_NAME ) . '</a>';
 		
 		$messages = array(
 			'date_format_long' => array(
-				'value'			=> __( 'l, F jS, Y g:i A', BOOKACTI_PLUGIN_NAME ),
-				'description'	=> sprintf( __( 'Complete date format. See the tags here: %1$s.', BOOKACTI_PLUGIN_NAME ), $wp_date_format_link )
+				'value'			=> esc_html__( 'l, F jS, Y g:i A', BOOKACTI_PLUGIN_NAME ),
+				'description'	=> sprintf( esc_html__( 'Complete date format. See the tags here: %1$s.', BOOKACTI_PLUGIN_NAME ), $wp_date_format_link )
 			),
 			'date_format_short' => array(
-				'value'			=> __( 'M, jS - g:i A', BOOKACTI_PLUGIN_NAME ),
-				'description'	=> sprintf( __( 'Short date format. See the tags here: %1$s.', BOOKACTI_PLUGIN_NAME ), $wp_date_format_link )
+				'value'			=> esc_html__( 'M, jS - g:i A', BOOKACTI_PLUGIN_NAME ),
+				'description'	=> sprintf( esc_html__( 'Short date format. See the tags here: %1$s.', BOOKACTI_PLUGIN_NAME ), $wp_date_format_link )
 			),
 			'time_format' => array(
-				'value'			=> __( 'g:i A', BOOKACTI_PLUGIN_NAME ),
-				'description'	=> sprintf( __( 'Time format. It will be used when a time is displayed alone. See the tags here: %1$s.', BOOKACTI_PLUGIN_NAME ), $wp_date_format_link )
+				'value'			=> esc_html__( 'g:i A', BOOKACTI_PLUGIN_NAME ),
+				'description'	=> sprintf( esc_html__( 'Time format. It will be used when a time is displayed alone. See the tags here: %1$s.', BOOKACTI_PLUGIN_NAME ), $wp_date_format_link )
 			),
 			'dates_separator' => array(
 				'value'			=> '&nbsp;&rarr;&nbsp;',
-				'description'	=> __( 'Separator between two dates. Write "&amp;nbsp;" to make a space.', BOOKACTI_PLUGIN_NAME )
+				'description'	=> esc_html__( 'Separator between two dates. Write "&amp;nbsp;" to make a space.', BOOKACTI_PLUGIN_NAME )
 			),
 			'date_time_separator' => array(
 				'value'			=> '&nbsp;&rarr;&nbsp;',
-				'description'	=> __( 'Separator between a date and a time. Write "&amp;nbsp;" to make a space.', BOOKACTI_PLUGIN_NAME )
+				'description'	=> esc_html__( 'Separator between a date and a time. Write "&amp;nbsp;" to make a space.', BOOKACTI_PLUGIN_NAME )
+			),
+			'quantity_separator' => array(
+				'value'			=> '&nbsp;x',
+				'description'	=> esc_html__( 'Separator between the event dates and its quantity. Write "&amp;nbsp;" to make a space.', BOOKACTI_PLUGIN_NAME )
 			),
 			'calendar_title' => array(
-				'value'			=> __( 'Pick an event on the calendar:', BOOKACTI_PLUGIN_NAME ),
-				'description'	=> __( 'Instructions displayed before the calendar.', BOOKACTI_PLUGIN_NAME )
+				'value'			=> esc_html__( 'Pick an event on the calendar:', BOOKACTI_PLUGIN_NAME ),
+				'description'	=> esc_html__( 'Instructions displayed before the calendar.', BOOKACTI_PLUGIN_NAME )
 			),
 			'booking_success' => array(
-				'value'			=> __( 'Your event has been booked successfully!', BOOKACTI_PLUGIN_NAME ),
-				'description'	=> __( 'When a reservation has been successfully registered.', BOOKACTI_PLUGIN_NAME )
+				'value'			=> esc_html__( 'Your event has been booked successfully!', BOOKACTI_PLUGIN_NAME ),
+				'description'	=> esc_html__( 'When a reservation has been successfully registered.', BOOKACTI_PLUGIN_NAME )
 			),
 			'booking_form_submit_button' => array(
-				'value'			=> __( 'Book', BOOKACTI_PLUGIN_NAME ),
-				'description'	=> __( 'Submit button label.', BOOKACTI_PLUGIN_NAME )
+				'value'			=> esc_html__( 'Book', BOOKACTI_PLUGIN_NAME ),
+				'description'	=> esc_html__( 'Submit button label.', BOOKACTI_PLUGIN_NAME )
 			),
 			'booking_form_new_booking_button' => array(
-				'value'			=> __( 'Make a new booking', BOOKACTI_PLUGIN_NAME ),
-				'description'	=> __( 'Button label to make a new booking after the booking form has been submitted.', BOOKACTI_PLUGIN_NAME )
+				'value'			=> esc_html__( 'Make a new booking', BOOKACTI_PLUGIN_NAME ),
+				'description'	=> esc_html__( 'Button label to make a new booking after the booking form has been submitted.', BOOKACTI_PLUGIN_NAME )
 			),
 			'choose_group_dialog_title' => array(
-				'value'			=> __( 'This event is available in several bundles', BOOKACTI_PLUGIN_NAME ),
-				'description'	=> __( 'Dialog title. It appears when a user clicks on an event bundled in multiple groups.', BOOKACTI_PLUGIN_NAME )
+				'value'			=> esc_html__( 'This event is available in several bundles', BOOKACTI_PLUGIN_NAME ),
+				'description'	=> esc_html__( 'Choose a group of events dialog title. It appears when a user clicks on an event bundled in multiple groups.', BOOKACTI_PLUGIN_NAME )
 			),
-			'choose_group_dialog_description' => array(
-				'value'			=> __( 'Which group of events do you want to pick?', BOOKACTI_PLUGIN_NAME ),
-				'description'	=> __( 'Explain that the user have to pick one the groups listed below in the dialog.', BOOKACTI_PLUGIN_NAME )
+			'choose_group_dialog_content' => array(
+				'value'			=> esc_html__( 'Which group of events do you want to pick?', BOOKACTI_PLUGIN_NAME ),
+				'description'	=> esc_html__( 'Choose a group of events dialog content.', BOOKACTI_PLUGIN_NAME ),
+				'input_type'	=> 'textarea'
+			),
+			'cancel_dialog_button' => array(
+				'value'			=> esc_html_x( 'Cancel', 'Cancel bookings button label. It opens the dialog.', BOOKACTI_PLUGIN_NAME ),
+				'description'	=> esc_html__( 'Cancel bookings button label.', BOOKACTI_PLUGIN_NAME )
+			),
+			'cancel_dialog_title' => array(
+				'value'			=> esc_html_x( 'Cancel the booking', 'Dialog title', BOOKACTI_PLUGIN_NAME ),
+				'description'	=> esc_html__( 'Cancel bookings dialog title.', BOOKACTI_PLUGIN_NAME )
+			),
+			'cancel_dialog_content' => array(
+				'value'			=> esc_html__( 'Do you really want to cancel this booking?', BOOKACTI_PLUGIN_NAME ) . '
+' . esc_html__( 'If you have already paid, you will be able to request a refund.', BOOKACTI_PLUGIN_NAME ),
+				'description'	=> esc_html__( 'Cancel bookings dialog content.', BOOKACTI_PLUGIN_NAME ),
+				'input_type'	=> 'textarea'
+			),
+			'reschedule_dialog_button' => array(
+				'value'			=> esc_html_x( 'Reschedule', 'Button label to trigger the refund action', BOOKACTI_PLUGIN_NAME ),
+				'description'	=> esc_html__( 'Reschedule booking button label.', BOOKACTI_PLUGIN_NAME )
+			),
+			'reschedule_dialog_title' => array(
+				'value'			=> esc_html_x( 'Reschedule the booking', 'Dialog title', BOOKACTI_PLUGIN_NAME ),
+				'description'	=> esc_html__( 'Reschedule booking dialog title.', BOOKACTI_PLUGIN_NAME )
+			),
+			'refund_dialog_button' => array(
+				'value'			=> esc_html_x( 'Request a refund', 'Button label to trigger the refund action', BOOKACTI_PLUGIN_NAME ),
+				'description'	=> esc_html__( 'Refund booking button label.', BOOKACTI_PLUGIN_NAME )
+			),
+			'refund_dialog_title' => array(
+				'value'			=> esc_html_x( 'Request a refund', 'Dialog title', BOOKACTI_PLUGIN_NAME ),
+				'description'	=> esc_html__( 'Refund booking dialog title.', BOOKACTI_PLUGIN_NAME )
 			),
 		);
 		

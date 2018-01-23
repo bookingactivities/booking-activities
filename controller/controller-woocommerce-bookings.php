@@ -123,18 +123,19 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	/**
 	 * Turn a temporary booking to permanent if order gets complete
 	 * 
-	 * @version 1.2.2
+	 * @version 1.3.0
 	 * @param int $order_id
 	 * @param WC_Order $order
+	 * @param string $payment_status
 	 */
 	function bookacti_turn_temporary_booking_to_permanent( $order_id, $order ) {
 		
-		//Change state of all bookings of the order from 'pending' to 'booked'
-		bookacti_turn_order_bookings_to( $order, 'booked', true );
+		// Change state of all bookings of the order from 'pending' to 'booked'
+		bookacti_turn_order_bookings_to( $order, 'booked', 'paid', true );
 		
-		//It is possible that pending bookings remain bound to the order if the user change his mind after he placed the order, but before he paid it.
-		//He then changed his cart, placed a new order, paid it, and only part of the old order is booked (or even nothing), the rest is still 'pending'
-		//Then we just turn 'pending' booking bound to this order to 'cancelled'
+		// It is possible that pending bookings remain bound to the order if the user change his mind after he placed the order, but before he paid it.
+		// He then changed his cart, placed a new order, paid it, and only part of the old order is booked (or even nothing), the rest is still 'pending'
+		// Then we just turn 'pending' booking bound to this order to 'cancelled'
 		bookacti_cancel_order_pending_bookings( $order_id );
 	}
 	add_action( 'woocommerce_order_status_completed', 'bookacti_turn_temporary_booking_to_permanent', 5, 2 );
@@ -143,14 +144,14 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	/**
 	 * Cancel the temporary booking if it failed
 	 * 
-	 * @version 1.2.2
+	 * @version 1.3.0
 	 * @param int $order_id
 	 * @param WC_Order $order
 	 */
 	function bookacti_cancelled_order( $order_id, $order ) {
 		
-		//Change state of all bookings of the order to 'cancelled' and free the bookings
-		bookacti_turn_order_bookings_to( $order, 'cancelled', false );
+		// Change state of all bookings of the order to 'cancelled' and free the bookings
+		bookacti_turn_order_bookings_to( $order, 'cancelled', NULL, false );
 		
 		// It is possible that 'pending' bookings remain if the user has changed his cart before payment, we must cancel them
 		bookacti_cancel_order_pending_bookings( $order_id );
@@ -162,9 +163,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	/**
 	 * Turn paid order status to complete if the order has only activities
 	 * 
-	 * @since 1.0.0
-	 * @version 1.1.0
-	 * 
+	 * @version 1.3.0
 	 * @param string $order_status
 	 * @param int $order_id
 	 * @return string
@@ -205,7 +204,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 				// If there are at least one activity in the middle of other products, 
 				// we won't mark the order as 'completed', but we still need to mark the activities as 'booked'
 				} else if( $has_activities ) {
-					bookacti_turn_temporary_booking_to_permanent( $order_id );
+					bookacti_turn_temporary_booking_to_permanent( $order_id, $order );
 				}
 			}
 		}
@@ -311,8 +310,8 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	 */
 	function bookacti_woocommerce_order_booking_list_custom_columns( $columns_order ) {
 		
-		$columns_order[ 44 ] = 'email';
-		$columns_order[ 47 ] = 'phone';
+		$columns_order[ 54 ] = 'email';
+		$columns_order[ 57 ] = 'phone';
 		
 		return $columns_order;
 	}

@@ -183,6 +183,7 @@ add_action( 'bookacti_notification_settings_page_global', 'bookacti_display_wc_n
  * Add customizable messages
  * 
  * @since 1.2.0
+ * @version 1.3.0
  * @param array $messages
  * @return array
  */
@@ -191,13 +192,13 @@ function bookacti_wc_default_messages( $messages ) {
 	$wc_messages = array( 
 		'temporary_booking_success' => array(
 			/* translators: {time} tag is a variable standing for an amount of days, hours and minutes. Ex: {time}' can be '1 day, 6 hours, 30 minutes'. */
-			'value'			=> __( 'Your activity is temporarily booked for {time}. Please proceed to checkout.', BOOKACTI_PLUGIN_NAME ),
-			'description'	=> __( 'When a temporary booking is added to cart. Use the {time} tag to display the remaining time before expiration.', BOOKACTI_PLUGIN_NAME )
+			'value'			=> esc_html__( 'Your activity is temporarily booked for {time}. Please proceed to checkout.', BOOKACTI_PLUGIN_NAME ),
+			'description'	=> esc_html__( 'When a temporary booking is added to cart. Use the {time} tag to display the remaining time before expiration.', BOOKACTI_PLUGIN_NAME )
 		),
 		'cart_countdown' => array(
 			/* translators: {countdown} tag is to be replaced by a real-time countdown: E.g.: 'Your cart expires in 3 days 12:35:26' or 'Your cart expires in 01:30:05'*/
-			'value'			=> __( 'Your cart expires in {countdown}', BOOKACTI_PLUGIN_NAME ),
-			'description'	=> __( 'This message will be displayed above your cart. Use the {countdown} tag to display the real-time countdown.', BOOKACTI_PLUGIN_NAME )
+			'value'			=> esc_html__( 'Your cart expires in {countdown}', BOOKACTI_PLUGIN_NAME ),
+			'description'	=> esc_html__( 'This message will be displayed above your cart. Use the {countdown} tag to display the real-time countdown.', BOOKACTI_PLUGIN_NAME )
 		)
 	);
 	

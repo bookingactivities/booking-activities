@@ -418,6 +418,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		return bookacti_is_shop_manager() ? true : $allowed;
 	}
 	add_filter( 'bookacti_bypass_template_managers_check', 'bookacti_bypass_checks_for_shop_managers', 10, 1 );
+	add_filter( 'bookacti_bypass_activity_managers_check', 'bookacti_bypass_checks_for_shop_managers', 10, 1 );
 	
 	
 	

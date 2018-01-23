@@ -14,6 +14,11 @@ function bookacti_init_template_dialogs() {
 		beforeClose: function() { bookacti_empty_all_dialog_forms(); }
     });
 	
+	// Make dialogs close when the user click outside
+	$j( '.ui-widget-overlay' ).live( 'click', function (){
+		$j( 'div:ui-dialog:visible' ).dialog( 'close' );
+	});
+	
 	// Press ENTER to bring focus on OK button
 	$j( '.bookacti-template-dialogs' ).on( 'keydown', function( e ) {
 		if( e.keyCode == $j.ui.keyCode.ENTER ) {

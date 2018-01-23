@@ -58,6 +58,14 @@ function bookacti_init_settings() {
 	);
 
 	add_settings_field(  
+		'default_payment_status', 
+		__( 'Default payment status', BOOKACTI_PLUGIN_NAME ), 
+		'bookacti_settings_field_default_payment_status_callback', 
+		'bookacti_general_settings', 
+		'bookacti_settings_section_general' 
+	);
+
+	add_settings_field(  
 		'timezone', 
 		__( 'Calendars timezone', BOOKACTI_PLUGIN_NAME ), 
 		'bookacti_settings_field_timezone_callback', 
@@ -512,6 +520,7 @@ add_action( 'bookacti_updated', 'bookacti_transfer_old_settings' );
  * Display messages fields
  * 
  * @since 1.2.0
+ * @version 1.3.0
  */
 function bookacti_display_messages_fields() {
 	$messages = bookacti_get_messages( true );
@@ -519,7 +528,11 @@ function bookacti_display_messages_fields() {
 ?>
 		<div class='bookacti-message-setting' >
 			<em><?php echo $message[ 'description' ] ?></em><br/>
-			<input type='text' id='bookacti_messages_settings_<?php echo $message_id; ?>' name='bookacti_messages_settings[<?php echo $message_id; ?>]' value='<?php echo $message[ 'value' ] ?>' /></em>
+			<?php if( isset( $message[ 'input_type' ] ) && $message[ 'input_type' ] === 'textarea' ) { ?>
+			<textarea id='bookacti_messages_settings_<?php echo $message_id; ?>' name='bookacti_messages_settings[<?php echo $message_id; ?>]' ><?php echo $message[ 'value' ]; ?></textarea>
+			<?php } else { ?>
+				<input type='text' id='bookacti_messages_settings_<?php echo $message_id; ?>' name='bookacti_messages_settings[<?php echo $message_id; ?>]' value='<?php echo $message[ 'value' ]; ?>' />
+			<?php } ?>
 		</div>
 <?php
 	}

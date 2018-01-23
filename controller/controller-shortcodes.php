@@ -165,7 +165,7 @@ function bookacti_shortcode_bookings_list( $atts = array(), $content = null, $ta
 /**
  * Check if booking form is correct and then book the event, or send the error message
  * 
- * @version 1.2.0
+ * @version 1.3.0
  */
 function bookacti_controller_validate_booking_form() {
 	
@@ -184,7 +184,8 @@ function bookacti_controller_validate_booking_form() {
 			'event_start'		=> bookacti_sanitize_datetime( $_POST[ 'bookacti_event_start' ] ),
 			'event_end'			=> bookacti_sanitize_datetime( $_POST[ 'bookacti_event_end' ] ),
 			'quantity'			=> intval( $_POST[ 'bookacti_quantity' ] ),
-			'default_state'		=> bookacti_get_setting_value( 'bookacti_general_settings', 'default_booking_state' ) 
+			'default_state'		=> bookacti_get_setting_value( 'bookacti_general_settings', 'default_booking_state' ), 
+			'payment_status'	=> bookacti_get_setting_value( 'bookacti_general_settings', 'default_payment_status' )
 		) );
 
 		//Check if the form is ok and if so Book temporarily the event
@@ -206,6 +207,7 @@ function bookacti_controller_validate_booking_form() {
 														$booking_form_values[ 'event_end' ], 
 														$booking_form_values[ 'quantity' ], 
 														$booking_form_values[ 'default_state' ],
+														$booking_form_values[ 'payment_status' ],
 														$booking_form_values[ 'group_id' ] );
 			
 				if( ! empty( $booking_id ) ) {
@@ -224,6 +226,7 @@ function bookacti_controller_validate_booking_form() {
 																	$booking_form_values[ 'group_id' ], 
 																	$booking_form_values[ 'quantity' ], 
 																	$booking_form_values[ 'default_state' ], 
+																	$booking_form_values[ 'payment_status' ], 
 																	NULL );
 				
 				if( ! empty( $booking_group_id ) ) {

@@ -135,22 +135,23 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	function bookacti_format_booking_filters( $filters ) {
 
 		$default_filters = apply_filters( 'bookacti_default_booking_filters', array(
-			'templates'			=> array(), 
-			'activities'		=> array(), 
-			'booking_id'		=> 0, 
-			'booking_group_id'	=> 0, 
-			'event_group_id'	=> 0, 
-			'event_id'			=> 0, 
-			'event_start'		=> '', 
-			'event_end'			=> '', 
-			'status'			=> array( 'booked', 'pending', 'cancelled', 'refunded', 'refund_requested' ), 
-			'user_id'			=> 0,
-			'from'				=> '',
-			'to'				=> '',
-			'order_by'			=> array( 'creation_date', 'id', 'event_start' ), 
-			'order'				=> 'desc',
-			'offset'			=> 0,
-			'per_page'			=> 0
+			'templates'					=> array(), 
+			'activities'				=> array(), 
+			'booking_id'				=> 0, 
+			'booking_group_id'			=> 0, 
+			'booking_group_single_row'	=> 0, 
+			'event_group_id'			=> 0, 
+			'event_id'					=> 0, 
+			'event_start'				=> '', 
+			'event_end'					=> '', 
+			'status'					=> array( 'booked', 'pending', 'cancelled', 'refunded', 'refund_requested' ), 
+			'user_id'					=> 0,
+			'from'						=> '',
+			'to'						=> '',
+			'order_by'					=> array( 'creation_date', 'id', 'event_start' ), 
+			'order'						=> 'desc',
+			'offset'					=> 0,
+			'per_page'					=> 0
 		));
 		
 		$formatted_filters = array();
@@ -202,8 +203,8 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			} else if( in_array( $filter, array( 'from', 'to' ), true ) ) {
 				if( ! bookacti_sanitize_date( $current_value ) ) { $current_value = $default_value; }
 			
-			} else if( $filter === 'active_only' ) {
-					if( in_array( $current_value, array( true, 'true', 1, '1' ), true ) )	{ $current_value = true; }
+			} else if( in_array( $filter, array( 'active_only', 'booking_group_single_row' ), true ) ) {
+					 if( in_array( $current_value, array( true, 'true', 1, '1' ), true ) )	{ $current_value = true; }
 				else if( in_array( $current_value, array( false, 'false', 0, '0' ), true ) ){ $current_value = false; }
 				if( ! is_bool( $current_value ) ) { $current_value = $default_value; }
 				
@@ -1051,6 +1052,22 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		return $booking_states_labels;
 	}
 	
+	/**
+	 * Retrieve payment status labels and display data
+	 * 
+	 * @since 1.3.0
+	 * @return array
+	 */
+	function bookacti_get_payment_status_labels() {
+		$payment_status_labels = apply_filters( 'bookacti_payment_status_labels_array', array(
+			'none'	=> array( 'display_state' => 'disabled','label' => __( 'No payment required', BOOKACTI_PLUGIN_NAME ) ),
+			'owed'	=> array( 'display_state' => 'warning',	'label' => __( 'Owed', BOOKACTI_PLUGIN_NAME ) ),
+			'paid'	=> array( 'display_state' => 'good',	'label' => __( 'Paid', BOOKACTI_PLUGIN_NAME ) )
+		) );
+
+		return $payment_status_labels;
+	}
+	
 	
 	/**
 	 * Give a the formatted and translated booking state
@@ -1062,18 +1079,45 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	 */
 	function bookacti_format_booking_state( $state, $icon_only = false ) {
 		$booking_states_labels = bookacti_get_booking_state_labels();
-
+		
+		$formatted_value = '';
 		if( isset( $booking_states_labels[ $state ] ) ) {
 			if( $icon_only ) {
 				$formatted_value = '<span class="bookacti-booking-state bookacti-booking-state-' . esc_attr( $booking_states_labels[ $state ][ 'display_state' ] ) . ' bookacti-tip" data-booking-state="' . esc_attr( $state ) . '" data-tip="'. esc_html( $booking_states_labels[ $state ][ 'label' ] ) . '" ></span>';
 			} else {
 				$formatted_value = '<span class="bookacti-booking-state bookacti-booking-state-' . esc_attr( $booking_states_labels[ $state ][ 'display_state' ] ) . '" data-booking-state="' . esc_attr( $state ) . '" >' . esc_html( $booking_states_labels[ $state ][ 'label' ] ) . '</span>';
 			}
-		} else {
+		} else if( $state ) {
 			$formatted_value = '<span class="bookacti-booking-state" data-booking-state="' . esc_attr( $state ) . '" >' . esc_html__( $state, BOOKACTI_PLUGIN_NAME ) . '</span>';
 		}
 
 		return apply_filters( 'bookacti_booking_states_display', $formatted_value, $state, $icon_only );
+	}
+	
+	
+	/**
+	 * Give a the formatted and translated payment status
+	 * 
+	 * @since 1.3.0
+	 * @param string $status
+	 * @param boolean $icon_only
+	 * @return string
+	 */
+	function bookacti_format_payment_status( $status, $icon_only = false ) {
+		$payment_status_labels = bookacti_get_payment_status_labels();
+		
+		$formatted_value = '';
+		if( isset( $payment_status_labels[ $status ] ) ) {
+			if( $icon_only ) {
+				$formatted_value = '<span class="bookacti-payment-status bookacti-payment-status-' . esc_attr( $payment_status_labels[ $status ][ 'display_state' ] ) . ' bookacti-tip" data-payment-status="' . esc_attr( $status ) . '" data-tip="'. esc_html( $payment_status_labels[ $status ][ 'label' ] ) . '" ></span>';
+			} else {
+				$formatted_value = '<span class="bookacti-payment-status bookacti-payment-status-' . esc_attr( $payment_status_labels[ $status ][ 'display_state' ] ) . '" data-payment-status="' . esc_attr( $status ) . '" >' . esc_html( $payment_status_labels[ $status ][ 'label' ] ) . '</span>';
+			}
+		} else if( $status ) {
+			$formatted_value = '<span class="bookacti-payment-status" data-payment-status="' . esc_attr( $status ) . '" >' . esc_html__( $status, BOOKACTI_PLUGIN_NAME ) . '</span>';
+		}
+
+		return apply_filters( 'bookacti_payment_status_display', $formatted_value, $status, $icon_only );
 	}
 
 	

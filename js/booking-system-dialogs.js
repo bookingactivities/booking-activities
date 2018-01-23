@@ -14,6 +14,11 @@ function bookacti_init_booking_system_dialogs() {
 		close: function() {}
 	});
 
+	// Make dialogs close when the user click outside
+	$j( '.ui-widget-overlay' ).live( 'click', function (){
+		$j( 'div:ui-dialog:visible' ).dialog( 'close' );
+	});
+
 	//Individual param
 	$j( '#bookacti-choose-group-of-events-dialog' ).dialog({ 
 		title: bookacti_localized.dialog_choose_group_of_events_title

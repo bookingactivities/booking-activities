@@ -156,17 +156,17 @@ function bookacti_get_cart_expiration_date_per_user( $user_id ) {
 /**
  * Change bookings state and fill user and order id
  * 
- * @version 1.2.0
- * 
+ * @version 1.3.0
  * @global wpdb $wpdb
  * @param int $user_id
  * @param int $order_id
  * @param array $booking_id_array
  * @param string $state
+ * @param string $payment_status
  * @param array $states_in
  * @return string
  */
-function bookacti_change_order_bookings_state( $user_id = NULL, $order_id = NULL, $booking_id_array = array(), $state = 'booked', $states_in = 'active' ) {
+function bookacti_change_order_bookings_state( $user_id = NULL, $order_id = NULL, $booking_id_array = array(), $state = 'booked', $payment_status = NULL, $states_in = 'active' ) {
 
 	global $wpdb;
 
@@ -188,11 +188,17 @@ function bookacti_change_order_bookings_state( $user_id = NULL, $order_id = NULL
 	$array_of_variables = array( 'state' => $state, 'active' => $active );
 
 	// Check user id
+	if( $payment_status ){
+		$query .= ' payment_status = %s ';
+		if( $user_id || $order_id ) { $query .= ', '; }
+		$array_of_variables[] = $payment_status;
+	}
+
+	// Check user id
 	if( $user_id ){
-		$query .= ' user_id = %s';
+		$query .= ' user_id = %s ';
 		if( $order_id ) { $query .= ', '; }
 		$array_of_variables[] = $user_id;
-
 	}
 
 	// Check order id
@@ -201,7 +207,7 @@ function bookacti_change_order_bookings_state( $user_id = NULL, $order_id = NULL
 		$array_of_variables[] = $order_id;
 	}
 
-	//Complete the query with all the booking ids
+	// Complete the query with all the booking ids
 	$query  .= ' WHERE id IN ( %d ';
 	if( count( $booking_id_array ) >= 2 )  {
 		for( $i = 0; $i < count( $booking_id_array ) - 1; $i++ ) {
@@ -224,7 +230,7 @@ function bookacti_change_order_bookings_state( $user_id = NULL, $order_id = NULL
 		$array_of_variables = array_merge( $array_of_variables, $states_in );
 	}
 
-	//Prepare and execute the query
+	// Prepare and execute the query
 
 	$query_prep = $wpdb->prepare( $query, $array_of_variables );
 	$updated	= $wpdb->query( $query_prep );

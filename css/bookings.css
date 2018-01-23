@@ -41,11 +41,22 @@
 #bookacti-booking-system-bookings-page .bookacti-calendar .bookacti-availability-container 
 span:not(.bookacti-not-booked) .bookacti-active-bookings-number				{ font-weight: bold; font-size: larger; }
 #bookacti-booking-system-bookings-page .bookacti-calendar .bookacti-available-places.bookacti-booked { background-color: rgba(255, 255, 0, 0.4); }
-
+#bookacti-booking-system-reschedule-container,
+#bookacti-booking-system-reschedule-container .bookacti-booking-system-title { margin-bottom: 20px; }
 
 /** BOOKING LIST **/
 #bookacti-bookings-list-container tr.hidden { display: none; }
 
+#bookacti-bookings-list-container th.sortable a, 
+#bookacti-bookings-list-container th.sorted a					{ overflow: visible; white-space: nowrap; }
+#bookacti-bookings-list-container th.sortable a span, 
+#bookacti-bookings-list-container th.sorted a span				{ float: none; display: inline-block; vertical-align: top; }
+#bookacti-bookings-list-container .sorting-indicator			{ display: none !important; }
+#bookacti-bookings-list-container th.asc a:focus span.sorting-indicator, 
+#bookacti-bookings-list-container th.asc:hover span.sorting-indicator, 
+#bookacti-bookings-list-container th.desc a:focus span.sorting-indicator, 
+#bookacti-bookings-list-container th.desc:hover span.sorting-indicator, 
+#bookacti-bookings-list-container th.sorted .sorting-indicator	{ display: inline-block !important; }
 #bookacti-bookings-list-container .row-actions					{ display: none; position: static; }
 #bookacti-bookings-list-container tr.is-expanded .row-actions	{ display: block; }
 #bookacti-bookings-list-container .has-row-actions				{ position: relative; }
@@ -54,7 +65,8 @@ span:not(.bookacti-not-booked) .bookacti-active-bookings-number				{ font-weight
 #bookacti-bookings-list-container .column-quantity .sorting-indicator { display: inline-block; vertical-align: top; float: none; }
 #bookacti-bookings-list-container .column-id,
 #bookacti-bookings-list-container .column-quantity		{ width: 40px; white-space: nowrap; text-align: center; }
-#bookacti-bookings-list-container .column-state			{ width: 72px; text-align: center; }
+#bookacti-bookings-list-container .column-payment_status,
+#bookacti-bookings-list-container .column-state			{ width: 50px; text-align: center; }
 #bookacti-bookings-list-container .column-event_title,
 #bookacti-bookings-list-container .column-activity_title,
 #bookacti-bookings-list-container .column-template_title,
@@ -92,15 +104,27 @@ span:not(.bookacti-not-booked) .bookacti-active-bookings-number				{ font-weight
 .bookacti-booking-primary-data				{ display: inline-block; margin-right: 10px; }
 .bookacti-booking-primary-data:last-child	{ margin-right: 0; }
 
+.bookacti-payment-status.bookacti-tip,
 .bookacti-booking-state.bookacti-tip	{ padding: 0; }
+.bookacti-payment-status,
 .bookacti-booking-state					{ font-weight: bold; }
+.bookacti-payment-status-good,
 .bookacti-booking-state-good			{ color: #82c818; }
+.bookacti-payment-status-warning,
 .bookacti-booking-state-warning			{ color: #f89b2f; }
+.bookacti-payment-status-bad,
 .bookacti-booking-state-bad				{ color: #b81c23; }
+.bookacti-payment-status-disabled		{ color: #555; }
+.bookacti-payment-status:before,
 .bookacti-booking-state:before			{ font-size: 1.5em; font-weight: bold; white-space: nowrap; }
-.bookacti-booking-state-good:before		{ content: '\2714  ';  }
-.bookacti-booking-state-warning:before	{ content: '\26A0  ';  }
-.bookacti-booking-state-bad:before		{ content: '\2716  ';  }
+.bookacti-payment-status-good:before,
+.bookacti-booking-state-good:before		{ content: '\2714  '; }
+.bookacti-payment-status-warning:before,
+.bookacti-booking-state-warning:before	{ content: '\26A0  '; }
+.bookacti-payment-status-bad:before,
+.bookacti-booking-state-bad:before		{ content: '\2716  '; }
+.bookacti-payment-status-disabled:before{ content: '\2013  '; }
+
 
 .wp-admin a.bookacti-booking-action, 
 .wp-admin a.bookacti-booking-group-action				{ width: 2em; height: 2em; padding: 0; text-align: center; }
@@ -219,10 +243,21 @@ a.bookacti-booking-action					{ display: inline-block; word-spacing: 0; margin: 
 	.bookacti-booking-primary-data-container			{ display: inline-block; }
 	#bookacti-bookings-list-container .column-id,
 	#bookacti-bookings-list-container .column-state,
-	#bookacti-bookings-list-container .quantity		{ display: none !important; }
+	#bookacti-bookings-list-container .column-payment_status,
+	#bookacti-bookings-list-container .column-quantity,
+	#bookacti-bookings-list-container .column-id.hidden ~ .column-primary .bookacti-column-id,
+	#bookacti-bookings-list-container .column-state.hidden ~ .column-primary .bookacti-booking-state,
+	#bookacti-bookings-list-container .column-payment_status.hidden ~ .column-primary .bookacti-payment-status { display: none !important; }
 	#bookacti-bookings-list-container .button		{ padding: 3px 6px; font-size: 1em; }
 	#bookacti-bookings-list-container .bookacti-booking-group-indicator,
 	#bookacti-bookings-list-container .bookacti-booking-group-id	{ display: inline; margin-left: 4px; }
+	
+	#bookacti-bookings-list-container .bookacti-booking-primary-data .bookacti-payment-status::before			{ content: '$'; font-weight: 600; }
+	#bookacti-bookings-list-container .bookacti-booking-primary-data .bookacti-payment-status::after			{ font-size: smaller; vertical-align: super; }
+	#bookacti-bookings-list-container .bookacti-booking-primary-data .bookacti-payment-status-good:after		{ content: '\2714  '; }
+	#bookacti-bookings-list-container .bookacti-booking-primary-data .bookacti-payment-status-warning:after		{ content: '\26A0  '; }
+	#bookacti-bookings-list-container .bookacti-booking-primary-data .bookacti-payment-status-bad:after			{ content: '\2716  '; }
+	#bookacti-bookings-list-container .bookacti-booking-primary-data .bookacti-payment-status-disabled:after	{ content: '\2013  '; }
 	
 	#bookacti-bookings-list-container tbody#the-list > .bookacti-gouped-booking:last-child:not(.hidden) td						{ border-bottom: none !important; }
 	#bookacti-bookings-list-container tbody#the-list > .bookacti-gouped-booking:last-child:not(.hidden):not(.is-expanded) td.column-primary,

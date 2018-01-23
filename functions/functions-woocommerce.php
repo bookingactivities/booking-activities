@@ -8,7 +8,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	 * Insert or update a booking in cart
 	 * 
 	 * @since 1.1.0 (replace bookacti_insert_booking_in_cart)
-	 * 
+	 * @version 1.3.0
 	 * @param int $user_id
 	 * @param int $event_id
 	 * @param string $event_start
@@ -45,7 +45,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			$expiration_date = bookacti_get_expiration_time();
 
 			// Insert a new booking
-			$booking_id = bookacti_insert_booking( $user_id, $event_id, $event_start, $event_end, $quantity, 'in_cart', $expiration_date );
+			$booking_id = bookacti_insert_booking( $user_id, $event_id, $event_start, $event_end, $quantity, 'in_cart', 'none', $expiration_date );
 
 			if( ! is_null( $booking_id ) ) {
 				$return_array[ 'status' ] = 'success';
@@ -67,7 +67,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	 * Insert a booking group in cart
 	 * 
 	 * @since 1.1.0
-	 * 
+	 * @version 1.3.0
 	 * @param int $user_id
 	 * @param int $event_group_id
 	 * @param int $quantity
@@ -101,7 +101,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			$expiration_date = bookacti_get_expiration_time();
 
 			// Book all events of the group
-			$booking_group_id = bookacti_book_group_of_events( $user_id, $event_group_id, $quantity, 'in_cart', $expiration_date );
+			$booking_group_id = bookacti_book_group_of_events( $user_id, $event_group_id, $quantity, 'in_cart', 'none', $expiration_date );
 
 			if( ! is_null( $booking_group_id ) ) {
 				$return_array['status'] = 'success';
@@ -644,16 +644,15 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	 * Turn all bookings of an order to the desired status. 
 	 * Also make sure that bookings are bound to the order and the associated user.
 	 * 
-	 * @since 1.0.0
-	 * @version 1.2.2
-	 * 
+	 * @version 1.3.0
 	 * @param WC_Order $order
 	 * @param string $state
+	 * @param string $payment_status
 	 * @param boolean $alert_if_fails
 	 * @param array $args
 	 * @return int|false
 	 */
-	function bookacti_turn_order_bookings_to( $order, $state = 'booked', $alert_if_fails = false, $args = array() ) {
+	function bookacti_turn_order_bookings_to( $order, $state = 'booked', $payment_status = NULL, $alert_if_fails = false, $args = array() ) {
 
 		// Retrieve order data
 		if( is_numeric( $order ) ) {
@@ -689,7 +688,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 				$booking_group_state	= $item[ 'bookacti_state' ];
 				$is_active				= in_array( $booking_group_state, bookacti_get_active_booking_states(), true ) ? 1 : 0;
 				$update_state			= $is_active ? $state : null;
-				bookacti_update_booking_group( $booking_group_id, $update_state, $user_id, $order_id );
+				bookacti_update_booking_group( $booking_group_id, $update_state, $payment_status, $user_id, $order_id );
 			}
 		}
 		
@@ -703,7 +702,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			return $response;
 		}
 
-		$updated = bookacti_change_order_bookings_state( $user_id, $order_id, $booking_id_array, $state );
+		$updated = bookacti_change_order_bookings_state( $user_id, $order_id, $booking_id_array, $state, $payment_status );
 
 		$response[ 'status' ]	= 'success';
 		$response[ 'errors' ]	= array();

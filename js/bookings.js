@@ -106,7 +106,7 @@ $j( document ).ready(function() {
 	});
 	
 	// Refresh bookings number when a booking state has changed from active to inactive and vice versa
-	$j( 'body' ).on( 'bookacti_booking_state_changed', function( e, booking_id, booking_type, new_state, is_bookings_page, active_changed ){
+	$j( 'body' ).on( 'bookacti_booking_state_changed', function( e, booking_id, booking_type, new_state, old_state, is_bookings_page, active_changed ){
 		bookacti_init_tooltip();
 		
 		if( ! active_changed ) { return false; }

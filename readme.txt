@@ -307,7 +307,9 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 * Tweak - Bookings page has been redesigned
 * Feature - Filter your booking list by calendars, activities, status, date, and customers (and also by events like before)
 * Feature - The booking list is now paginated and columns can be hidden (in screen options) and sorted
+* Feature - Bookings have a new "Payment status" property, with 3 possible values: No payment required, owed, paid.
 * Feature - Display your customers' bookings calendar with the shortcode [bookingactivities_calendar bookings_only="1"]
+* Feature - Customize frontend dialogs titles and buttons labels (and content for some of them)
 * Tweak - Date format can be set more specifically, and the separator between dates can be changed
 * Tweak - ON/OFF button: clearly display "ON" and "OFF" for a better understanding
 * Tweak - Email refund option is no longer offered to administrators
@@ -315,6 +317,7 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 * Fix - Picking a group of events not already loaded triggered a fatal error (events of the group still need to be rendered)
 * Fix - Error notice about wpdb::prepare since WP 4.9+ (can cause fatal error if WP_DEBUG was set to true)
 * Fix - Show / Hide activities in calendar editor triggers fatal error
+* Fix - Shop Managers (WooCommerce role) were not able to edit activities
 * **Breaking change** - Date format needs to be set again in Booking Activities settings, in "Messages" tab
 
 = 1.2.3 - 2018/01/09 =

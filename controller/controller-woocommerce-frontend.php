@@ -1314,7 +1314,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	 * Change bookings state after user validate checkout
 	 * 
 	 * @since 1.2.2 (was bookacti_delay_expiration_date_for_payment before)
-	 * 
+	 * @version 1.3.0
 	 * @param int $order_id
 	 * @param array $order_details
 	 * @param WC_Order $order
@@ -1325,10 +1325,17 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		// 'pending' for payment
 		// <user defined state> if no payment are required
 		
-		if( WC()->cart->needs_payment() ) { $state = 'pending'; $alert_admin = false; }
-		else { $state = bookacti_get_setting_value( 'bookacti_general_settings', 'default_booking_state' ); $alert_admin = true; }
+		if( WC()->cart->needs_payment() ) { 
+			$state = 'pending'; 
+			$alert_admin = false; 
+			$payment_status = 'owed';
+		} else { 
+			$state = bookacti_get_setting_value( 'bookacti_general_settings', 'default_booking_state' ); 
+			$payment_status = bookacti_get_setting_value( 'bookacti_general_settings', 'default_payment_status' ); 
+			$alert_admin = true;
+		}
 		
-		bookacti_turn_order_bookings_to( $order, $state, $alert_admin, array( 'is_new_order' => true ) );
+		bookacti_turn_order_bookings_to( $order, $state, $payment_status, $alert_admin, array( 'is_new_order' => true ) );
 	}
 	add_action( 'woocommerce_checkout_order_processed', 'bookacti_change_booking_state_after_checkout', 10, 3 );
 	

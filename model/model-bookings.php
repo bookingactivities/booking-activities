@@ -5,7 +5,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 /**
  * Book an event
  * 
- * @version 1.1.0
+ * @version 1.3.0
  * 
  * @global wpdb $wpdb
  * @param int $user_id
@@ -14,11 +14,12 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
  * @param string $event_end
  * @param int $quantity
  * @param string $state
+ * @param string $payment_status
  * @param string $expiration_date
  * @param int $booking_group_id
  * @return int|null
  */
-function bookacti_insert_booking( $user_id, $event_id, $event_start, $event_end, $quantity, $state, $expiration_date = NULL, $booking_group_id = NULL ) {
+function bookacti_insert_booking( $user_id, $event_id, $event_start, $event_end, $quantity, $state, $payment_status, $expiration_date = NULL, $booking_group_id = NULL ) {
 	global $wpdb;
 	
 	$active = in_array( $state, bookacti_get_active_booking_states(), true ) ? 1 : 0;
@@ -35,11 +36,12 @@ function bookacti_insert_booking( $user_id, $event_id, $event_start, $event_end,
 			'event_end'			=> $event_end,
 			'quantity'			=> $quantity,
 			'state'				=> $state,
+			'payment_status'	=> $payment_status,
 			'creation_date'		=> $creation_date,
 			'expiration_date'	=> $expiration_date,
 			'active'			=> $active
 		),
-		array( '%d', '%d', '%s', '%s', '%s', '%d', '%s', '%s', '%s', '%d' )
+		array( '%d', '%d', '%s', '%s', '%s', '%d', '%s', '%s', '%s', '%s', '%d' )
 	);
 	
 	$booking_id = $wpdb->insert_id;
@@ -829,6 +831,29 @@ function bookacti_update_booking_state( $booking_id, $state, $active = 'auto' ) 
 
 
 /**
+ * Update booking payment status
+ * 
+ * @since 1.3.0
+ * @global wpdb $wpdb
+ * @param int $booking_id
+ * @param string $status
+ * @return int|false
+ */
+function bookacti_update_booking_payment_status( $booking_id, $status ) {
+	
+	global $wpdb;
+	
+	$query		= 'UPDATE ' . BOOKACTI_TABLE_BOOKINGS . ' '
+				. ' SET payment_status = %s '
+				. ' WHERE id = %d';
+	$prep		= $wpdb->prepare( $query, $status, $booking_id );
+	$updated	= $wpdb->query( $prep );
+	
+	return $updated;
+}
+
+
+/**
  * Forced update of booking quantity (do not check availability)
  * 
  * @global wpdb $wpdb
@@ -877,14 +902,15 @@ function bookacti_reschedule_booking( $booking_id, $event_id, $event_start, $eve
 	 * Insert a booking group
 	 * 
 	 * @since 1.1.0
-	 * 
+	 * @version 1.3.0
 	 * @global wpdb $wpdb
 	 * @param int $user_id
 	 * @param int $event_group_id
 	 * @param string $state
+	 * @param string $payment_status
 	 * @return int
 	 */
-	function bookacti_insert_booking_group( $user_id, $event_group_id, $state ) {
+	function bookacti_insert_booking_group( $user_id, $event_group_id, $state, $payment_status ) {
 		global $wpdb;
 
 		$active = in_array( $state, bookacti_get_active_booking_states(), true ) ? 1 : 0;
@@ -895,9 +921,10 @@ function bookacti_reschedule_booking( $booking_id, $event_id, $event_start, $eve
 				'event_group_id'	=> $event_group_id,
 				'user_id'			=> $user_id,
 				'state'				=> $state,
+				'payment_status'	=> $payment_status,
 				'active'			=> $active
 			),
-			array( '%d', '%d', '%s', '%d' )
+			array( '%d', '%d', '%s', '%s', '%d' )
 		);
 
 		$booking_group_id = $wpdb->insert_id;
@@ -964,6 +991,55 @@ function bookacti_reschedule_booking( $booking_id, $event_id, $event_start, $eve
 	
 	
 	/**
+	 * Update booking group state
+	 * 
+	 * @since 1.3.0
+	 * 
+	 * @global wpdb $wpdb
+	 * @param int $booking_group_id
+	 * @param string $state
+	 * @param 0|1|'auto' $active
+	 * @param boolean $update_bookings Whether to updates bookings state of the group.
+	 * @param boolean $same_status Whether bookings payment status must be the same as the group to be updated.
+	 * @return int|boolean|null
+	 */
+	function bookacti_update_booking_group_payment_status( $booking_group_id, $status, $update_bookings = false, $same_status = false ) {
+
+		global $wpdb;
+
+		if( $same_status ) {
+			$old_status = bookacti_get_booking_group_payment_status( $booking_group_id );
+		}
+
+		$query1		= 'UPDATE ' . BOOKACTI_TABLE_BOOKING_GROUPS . ' '
+					. ' SET payment_status = %s '
+					. ' WHERE id = %d';
+		$prep1		= $wpdb->prepare( $query1, $status, $booking_group_id );
+		$updated1	= $wpdb->query( $prep1 );
+		
+		$updated = $updated1;
+		
+		if( $update_bookings ) {
+			
+			$where_status = false;
+			if( $same_status && $old_status ) {
+				$where_status = $old_status;
+			}
+			
+			$updated2 = bookacti_update_booking_group_bookings_payment_status( $booking_group_id, $status, $where_status );
+			
+			if( is_int( $updated1 ) && is_int( $updated2 ) ) {
+				$updated = $updated1 + $updated2;
+			} else {
+				return false;
+			}
+		}
+		
+		return $updated;
+	}
+	
+	
+	/**
 	 * Update booking group bookings state
 	 * 
 	 * @since 1.1.0
@@ -1002,7 +1078,7 @@ function bookacti_reschedule_booking( $booking_id, $event_id, $event_start, $eve
 			return 0;
 		}
 		
-		// Cancel bundled bookings
+		// Change bundled bookings state
 		$query		= 'UPDATE ' . BOOKACTI_TABLE_BOOKINGS 
 					. ' SET state = %s, active = IFNULL( NULLIF( %d, -1 ), active ) '
 					. ' WHERE group_id = %d';
@@ -1011,6 +1087,56 @@ function bookacti_reschedule_booking( $booking_id, $event_id, $event_start, $eve
 		
 		if( ! empty( $where_state ) ) {
 			$query	.= ' AND state = %s ';
+			$variables_array[] = $where_state;
+		}
+
+		$prep		= $wpdb->prepare( $query, $variables_array );
+		$updated	= $wpdb->query( $prep );
+		
+		return $updated;
+	}
+	
+	
+	/**
+	 * Update booking group bookings payment status
+	 * 
+	 * @since 1.3.0
+	 * 
+	 * @global wpdb $wpdb
+	 * @param int $booking_group_id
+	 * @param string $state
+	 * @param string|false $where_state
+	 * @return type
+	 */
+	function bookacti_update_booking_group_bookings_payment_status( $booking_group_id, $state, $where_state = false ) {
+
+		global $wpdb;
+
+		// Get booking ids
+		$query_bookings	= 'SELECT id FROM ' . BOOKACTI_TABLE_BOOKINGS 
+						. ' WHERE group_id = %d ';
+		
+		$variables_bookings = array( $booking_group_id );
+		
+		if( ! empty( $where_state ) ) {
+			$query_bookings .= ' AND payment_status = %s ';
+			$variables_bookings[] = $where_state;
+		}
+		
+		$prep_bookings	= $wpdb->prepare( $query_bookings, $variables_bookings );
+		$bookings		= $wpdb->get_results( $prep_bookings, OBJECT );
+		
+		if( ! $bookings ) { return 0; }
+		
+		// Change bundled bookings payment status
+		$query		= 'UPDATE ' . BOOKACTI_TABLE_BOOKINGS 
+					. ' SET payment_status = %s '
+					. ' WHERE group_id = %d';
+
+		$variables_array = array( $state, $booking_group_id );
+		
+		if( ! empty( $where_state ) ) {
+			$query	.= ' AND payment_status = %s ';
 			$variables_array[] = $where_state;
 		}
 
@@ -1056,14 +1182,14 @@ function bookacti_reschedule_booking( $booking_id, $event_id, $event_start, $eve
 	 * Update booking group
 	 * 
 	 * @since 1.1.0
-	 * 
+	 * @version 1.3.0
 	 * @global wpdb $wpdb
 	 * @param int $booking_group_id
 	 * @param string $state
 	 * @param 0|1|'auto' $active
 	 * @return boolean|null
 	 */
-	function bookacti_update_booking_group( $booking_group_id, $state = NULL, $user_id = NULL, $order_id = NULL, $event_group_id = NULL, $active = 'auto' ) {
+	function bookacti_update_booking_group( $booking_group_id, $state = NULL, $payment_status = NULL, $user_id = NULL, $order_id = NULL, $event_group_id = NULL, $active = 'auto' ) {
 
 		global $wpdb;
 		
@@ -1071,29 +1197,34 @@ function bookacti_reschedule_booking( $booking_id, $event_id, $event_start, $eve
 		
 		$variables_array = array();
 		
-		if( ! empty( $state ) ) {
+		if( $state ) {
 			$query .= 'state = %s, ';
 			$variables_array[] = $state;
 		}
 		
-		if( ! empty( $user_id ) ) {
-			$query .= 'user_id = %s, ';
+		if( $payment_status ) {
+			$query .= ' payment_status = %s, ';
+			$variables_array[] = $payment_status;
+		}
+		
+		if( $user_id ) {
+			$query .= ' user_id = %s, ';
 			$variables_array[] = $user_id;
 		}
 		
-		if( ! empty( $order_id ) ) {
-			$query .= 'order_id = %d, ';
+		if( $order_id ) {
+			$query .= ' order_id = %d, ';
 			$variables_array[] = $order_id;
 		}
 		
-		if( ! empty( $event_group_id ) ) {
-			$query .= 'event_group_id = %d, ';
+		if( $event_group_id ) {
+			$query .= ' event_group_id = %d, ';
 			$variables_array[] = $event_group_id;
 		}
 		
-		if( ! empty( $state ) && $active === 'auto' ) {
+		if( $state && $active === 'auto' ) {
 			$active = in_array( $state, bookacti_get_active_booking_states(), true ) ? 1 : 0;
-		} else if( ( empty( $state ) && $active !== 0 && $active !== 1 ) ) {
+		} else if( ! $state && $active !== 0 && $active !== 1 ) {
 			$active = -1;
 		}
 		
@@ -1264,6 +1395,28 @@ function bookacti_reschedule_booking( $booking_id, $event_id, $event_start, $eve
 		
 		return $state;
 	}
+
+	
+	/**
+	 * Get a booking group payment status
+	 * 
+	 * @since 1.3.0
+	 * 
+	 * @global wpdb $wpdb
+	 * @param int $booking_group_id
+	 * @return object
+	 */
+	function bookacti_get_booking_group_payment_status( $booking_group_id ) {
+		global $wpdb;
+
+		$query	= 'SELECT payment_status FROM ' . BOOKACTI_TABLE_BOOKING_GROUPS 
+				. ' WHERE id = %d';
+		$prep	= $wpdb->prepare( $query, $booking_group_id );
+		$state	= $wpdb->get_var( $prep );
+		
+		return $state;
+	}
+	
 	
 	/**
 	 * Get booking group's user id

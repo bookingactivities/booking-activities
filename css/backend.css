@@ -43,6 +43,7 @@
 #bookacti-settings select { min-width: 300px; }
 
 #bookacti-settings textarea { min-height: 100px; }
+#bookacti-settings .bookacti-message-setting textarea { min-height: 0; resize: both; }
 
 #bookacti_refund_actions,
 #bookacti_refund_actions .bookacti_checkbox	{ display: inline-block; }

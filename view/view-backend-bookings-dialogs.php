@@ -42,6 +42,17 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 				bookacti_display_field( $args );
 			?>
 		</div>
+		<div>
+			<label for='bookacti-select-payment-status' ><?php esc_html_e( 'Payment status', BOOKACTI_PLUGIN_NAME ); ?></label>
+			<select name='select-payment-status' id='bookacti-select-payment-status' >
+				<?php
+				$payment_status = bookacti_get_payment_status_labels();
+				foreach( $payment_status as $payment_status_id => $payment_status_data ) {
+					echo '<option value="' . esc_attr( $payment_status_id ) . '" >' . esc_html( $payment_status_data[ 'label' ] ) . '</option>';
+				}
+				?>
+			</select>
+		</div>
 	</form>
 </div>
 

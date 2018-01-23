@@ -270,19 +270,21 @@ if( ! $templates ) {
 		<div id='bookacti-bookings-list' >
 		<?php
 			$filters = array(
-				'templates'			=> $selected_templates, 
-				'activities'		=> $selected_activities, 
-				'booking_group_id'	=> isset( $_REQUEST[ 'booking_group_id' ] )	? intval( $_REQUEST[ 'booking_group_id' ] ): 0, 
-				'event_group_id'	=> $event_group_id, 
-				'event_id'			=> $event_id, 
-				'event_start'		=> $event_start, 
-				'event_end'			=> $event_end,
-				'status'			=> $selected_status,
-				'user_id'			=> $selected_user,
-				'from'				=> $from,
-				'to'				=> $to,
-				'order_by'			=> isset( $_REQUEST[ 'orderby' ] )	? $_REQUEST[ 'orderby' ] : array( 'creation_date', 'id' ),
-				'order'				=> isset( $_REQUEST[ 'order' ] )	? $_REQUEST[ 'order' ] : 'DESC'
+				'templates'					=> $selected_templates, 
+				'activities'				=> $selected_activities, 
+				'booking_id'				=> isset( $_REQUEST[ 'booking_id' ] )		? intval( $_REQUEST[ 'booking_id' ] ): 0, 
+				'booking_group_id'			=> isset( $_REQUEST[ 'booking_group_id' ] )	? intval( $_REQUEST[ 'booking_group_id' ] ): 0, 
+				'booking_group_single_row'	=> isset( $_REQUEST[ 'booking_group_single_row' ] )	? intval( $_REQUEST[ 'booking_group_single_row' ] ): 0,
+				'event_group_id'			=> $event_group_id, 
+				'event_id'					=> $event_id, 
+				'event_start'				=> $event_start, 
+				'event_end'					=> $event_end,
+				'status'					=> $selected_status,
+				'user_id'					=> $selected_user,
+				'from'						=> $from,
+				'to'						=> $to,
+				'order_by'					=> isset( $_REQUEST[ 'orderby' ] )	? $_REQUEST[ 'orderby' ] : array( 'creation_date', 'id' ),
+				'order'						=> isset( $_REQUEST[ 'order' ] )	? $_REQUEST[ 'order' ] : 'DESC'
 			);
 		
 			$bookings_list_table = new Bookings_List_Table();
