@@ -341,9 +341,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	/**
 	 * Validate add to cart form and temporarily book the event
 	 * 
-	 * @since 1.0.0
-	 * @version 1.1.0
-	 * 
+	 * @version 1.3.0
 	 * @global WooCommerce $woocommerce
 	 * @param boolean $true
 	 * @param int $product_id
@@ -384,37 +382,43 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 				// Check if data are correct befor booking
 				$response = bookacti_validate_booking_form( $group_id, $event_id, $event_start, $event_end, $quantity );
 				
-				if( $response[ 'status' ] === 'success' ) {
+				// Display error message
+				if( $response[ 'status' ] !== 'success' ) {
+					wc_add_notice( $response[ 'message' ], 'error' );
+					return false;
+				}
+				
+				// Book a single event temporarily
+				if( $group_id === 'single' ) {
 
-					// Book a single event temporarily
-					if( $group_id === 'single' ) {
-						
-						// Book temporarily the event
-						$response = bookacti_add_booking_to_cart( $user_id, $event_id, $event_start, $event_end, $quantity, 0 );
-					
-						// If the event is booked, add the booking ID to the corresponding hidden field
-						if( $response[ 'status' ] === 'success' ) {
-							$_POST[ 'bookacti_booking_id' ] = intval( $response[ 'id' ] );
-							return true;
-						}
-					
-					// Book a groups of events temporarily
-					} else if( is_numeric( $group_id ) ) {
-						
-						// Book temporarily the group of event
-						$response = bookacti_add_booking_group_to_cart( $user_id, $group_id, $quantity );
-						
-						// If the events are booked, add the booking group ID to the corresponding hidden field
-						if( $response[ 'status' ] === 'success' ) {
-							$_POST[ 'bookacti_booking_group_id' ] = intval( $response[ 'id' ] );
-							return true;
-						}
+					// Book temporarily the event
+					$response = bookacti_add_booking_to_cart( $user_id, $event_id, $event_start, $event_end, $quantity, 0 );
+
+					// If the event is booked, add the booking ID to the corresponding hidden field
+					if( $response[ 'status' ] === 'success' ) {
+						$_POST[ 'bookacti_booking_id' ] = intval( $response[ 'id' ] );
+						return true;
+					}
+
+				// Book a groups of events temporarily
+				} else if( is_numeric( $group_id ) ) {
+
+					// Book temporarily the group of event
+					$response = bookacti_add_booking_group_to_cart( $user_id, $group_id, $quantity );
+
+					// If the events are booked, add the booking group ID to the corresponding hidden field
+					if( $response[ 'status' ] === 'success' ) {
+						$_POST[ 'bookacti_booking_group_id' ] = intval( $response[ 'id' ] );
+						return true;
 					}
 				}
 				
 				// Display error message
-				wc_add_notice( $response[ 'message' ], 'error' );
-
+				if( isset( $response[ 'message' ] ) && $response[ 'message' ] ) { 
+					wc_add_notice( $response[ 'message' ], 'error' ); 
+				}
+				
+				// Return false at this point
 				return false;
 			}
 		}
@@ -669,7 +673,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			
 
 	
-//CART & CHECKOUT
+// CART & CHECKOUT
 
 	/**
 	 * Add the timeout to cart and checkout
@@ -1311,6 +1315,59 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	
 	
 	/**
+	 * Check bookings availability before validating checkout 
+	 * in case that "in_cart" state is not active
+	 * 
+	 * @since  1.3.0
+	 * @param  array $posted_data An array of posted data.
+	 * @param  WP_Error $errors
+	 */
+	function bookacti_availability_check_before_checkout( $posted_data, &$errors = null ) {
+		// Do not make this check if "in_cart" bookings are active, because they already hold their own booking quantity 
+		if( in_array( 'in_cart', bookacti_get_active_booking_states(), true ) ) { return; }
+		
+		// Check availability
+		global $woocommerce;
+		$cart_contents = $woocommerce->cart->get_cart();
+		
+		foreach( $cart_contents as $cart_item ) {
+			// Initialize on success for non-activity products
+			$validated = array( 'status' => 'success' );
+
+			// Single event
+			if( isset( $cart_item['_bookacti_options'] ) && isset( $cart_item['_bookacti_options']['bookacti_booking_id'] ) ) {
+				$booking_id = $cart_item['_bookacti_options']['bookacti_booking_id'];
+				if( ! is_null( $booking_id ) ) {
+					$event		= json_decode( $cart_item['_bookacti_options']['bookacti_booked_events'] );
+					$validated	= bookacti_validate_booking_form( 'single', $event[0]->event_id, $event[0]->event_start, $event[0]->event_end, $cart_item['quantity'] );
+				}
+
+			// Group of events
+			} else if( isset( $cart_item['_bookacti_options'] ) && isset( $cart_item['_bookacti_options']['bookacti_booking_group_id'] ) ) {
+				$booking_group_id = $cart_item['_bookacti_options']['bookacti_booking_group_id'];
+				if( ! is_null( $booking_group_id ) ) {
+					$event			= json_decode( $cart_item['_bookacti_options']['bookacti_booked_events'] );
+					$booking_group	= bookacti_get_booking_group_by_id( $booking_group_id );
+					$validated		= bookacti_validate_booking_form( $booking_group->event_group_id, $event[0]->event_id, $event[0]->event_start, $event[0]->event_end, $cart_item['quantity'] );
+				}
+			}
+			
+			// Display the error and stop checkout processing
+			if( $validated[ 'status' ] !== 'success' ) {
+				if( version_compare( WC_VERSION, '3.0.0', '>=' ) ) {
+					$errors->add( $validated[ 'error' ], $validated[ 'message' ] );
+
+				// WOOCOMMERCE 3.0.0 backward compatibility
+				} else {
+					wc_add_notice( $validated[ 'message' ], 'error' );
+				}
+			}
+		}
+	}
+	add_action( 'woocommerce_after_checkout_validation', 'bookacti_availability_check_before_checkout', 10, 2 );
+	
+	
+	/**
 	 * Change bookings state after user validate checkout
 	 * 
 	 * @since 1.2.2 (was bookacti_delay_expiration_date_for_payment before)
@@ -1320,15 +1377,13 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	 * @param WC_Order $order
 	 */
 	function bookacti_change_booking_state_after_checkout( $order_id, $order_details, $order ) {
-		
 		// Bind order and user id to the bookings and turn its state to 
 		// 'pending' for payment
 		// <user defined state> if no payment are required
-		
 		if( WC()->cart->needs_payment() ) { 
 			$state = 'pending'; 
-			$alert_admin = false; 
 			$payment_status = 'owed';
+			$alert_admin = false; 
 		} else { 
 			$state = bookacti_get_setting_value( 'bookacti_general_settings', 'default_booking_state' ); 
 			$payment_status = bookacti_get_setting_value( 'bookacti_general_settings', 'default_payment_status' ); 

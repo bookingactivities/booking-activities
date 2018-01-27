@@ -51,7 +51,7 @@ $j( document ).ready( function() {
 	// SINGLE PRODUCT
 	
 		// Handle variations
-		if( $j( 'body.woocommerce form.cart .bookacti-booking-system' ).length ) { 
+		if( $j( '.woocommerce form.cart .bookacti-booking-system' ).length ) { 
 			$j( '.bookacti-booking-system' ).each( function() {	
 				var booking_system		= $j( this );
 				var booking_system_id	= booking_system.attr( 'id' );

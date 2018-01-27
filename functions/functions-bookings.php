@@ -189,7 +189,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 				if( ! is_array( $current_value ) )	{ $current_value = $default_value; }
 				else if( $i = array_search( 'all', $current_value ) !== false ) { unset( $current_value[ $i ] ); }
 				
-			} else if( in_array( $filter, array( 'status', 'order_by' ), true ) ) {
+			} else if( in_array( $filter, array( 'status' ), true ) ) {
 				if( is_string( $current_value ) )	{ $current_value = array( $current_value ); }
 				if( ! is_array( $current_value ) )	{ $current_value = $default_value; }
 				else if( $i = array_search( 'all', $current_value ) !== false ) { unset( $current_value[ $i ] ); }
@@ -221,7 +221,13 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 					'activity_id', 
 					'creation_date' 
 				);
-				if( ! in_array( $current_value, $sortable_columns, true ) ) { $current_value = $default_value; }
+				if( is_string( $current_value ) )	{ 
+					if( ! in_array( $current_value, $sortable_columns, true ) ) { $current_value = $default_value; }
+					else { $current_value = array( $current_value ); }
+				}
+				if( ! is_array( $current_value ) )				{ $current_value = $default_value; }
+				if( $current_value[ 0 ] === 'creation_date' )	{ $current_value = array( 'creation_date', 'id', 'event_start' ); }
+				else if( $current_value[ 0 ] === 'id' )			{ $current_value = array( 'id', 'event_start' ); }
 				
 			} else if( $filter === 'order' ) {
 				if( ! in_array( $current_value, array( 'asc', 'desc' ), true ) ) { $current_value = $default_value; }

@@ -394,7 +394,7 @@ function bookacti_format_booking_system_attributes( $atts = array(), $shortcode 
 /**
  * Validate booking form (verify the info of the selected event before booking it)
  * 
- * @version 1.1.0
+ * @version 1.3.0
  * @param int $group_id
  * @param int $event_id
  * @param string $event_start Start datetime of the event to check (format 2017-12-31T23:59:59)
@@ -405,14 +405,19 @@ function bookacti_format_booking_system_attributes( $atts = array(), $shortcode 
 function bookacti_validate_booking_form( $group_id, $event_id, $event_start, $event_end, $quantity ) {
 	
 	if( $group_id === 'single' ) {
+		$event			= bookacti_get_event_by_id( $event_id );
+		$title			= apply_filters( 'bookacti_translate_text', $event->title );
+		
+		$exists			= bookacti_is_existing_event( $event, $event_start, $event_end );
 		$availability	= bookacti_get_event_availability( $event_id, $event_start, $event_end );
-		$exists			= bookacti_is_existing_event( $event_id, $event_start, $event_end );
 		$is_in_range	= bookacti_is_event_in_its_template_range( $event_id, $event_start, $event_end );
 	
 	} else if( is_numeric( $group_id ) ) {
+		$group			= bookacti_get_group_of_events( $group_id );
+		$title			= apply_filters( 'bookacti_translate_text', $group->title );
 		
+		$exists			= bookacti_is_existing_group_of_events( $group );
 		$availability	= bookacti_get_group_of_events_availability( $group_id );
-		$exists			= bookacti_is_existing_group_of_events( $group_id );
 		$is_in_range	= bookacti_is_group_of_events_in_its_template_range( $group_id );
 	}
 	
@@ -445,10 +450,20 @@ function bookacti_validate_booking_form( $group_id, $event_id, $event_start, $ev
 		} else if( ! $is_qty_sup_to_0 ) {
 			$validated['error'] = 'qty_inf_to_0';
 			$validated['message'] = __( 'The amount of desired bookings is less than or equal to 0. Please increase the quantity.', BOOKACTI_PLUGIN_NAME );
+		} else if( $availability === 0 ) {
+			$validated['error'] = 'no_availability';
+			$validated['availability'] = $availability;
+			/* translators: %1$s is the event title. */
+			$validated['message'] = sprintf( __( 'The event "%1$s" is no longer available on this time slot. Please choose another event.', BOOKACTI_PLUGIN_NAME ), $title );
 		} else if( $is_qty_sup_to_avail ) {
 			$validated['error'] = 'qty_sup_to_avail';
 			$validated['availability'] = $availability;
-			$validated['message'] = sprintf( __( 'You want to make %1$s bookings but only %2$s are available. Please pick another event or lower the quantity.', BOOKACTI_PLUGIN_NAME ), $quantity, $availability );
+			$validated['message'] = /* translators: %1$s is a variable number of bookings, %2$s is the event title. This sentence is followed by two others : 'but only %1$s is available on this time slot.' and 'Please choose another event or decrease the quantity.' */
+									sprintf( _n( 'You want to make %1$s booking of "%2$s" event', 'You want to make %1$s bookings of "%2$s" event', $quantity, BOOKACTI_PLUGIN_NAME ), $quantity, $title )
+									/* translators: %1$s is a variable number of bookings. This sentence is preceded by : 'You want to make %1$s booking of "%2$s" event' and followed by 'Please choose another event or decrease the quantity.' */
+							. ' ' . sprintf( _n( 'but only %1$s is available on this time slot.', 'but only %1$s are available on this time slot. ', $availability, BOOKACTI_PLUGIN_NAME ), $availability )
+									/* translators: This sentence is preceded by two others : 'You want to make %1$s booking of "%2$s" event' and 'but only %1$s is available on this time slot.' */
+							. ' ' . __( 'Please choose another event or decrease the quantity.', BOOKACTI_PLUGIN_NAME );
 		} else {
 			$validated['error'] = 'failed';
 			$validated['message'] = __( 'An error occurred, please try again.', BOOKACTI_PLUGIN_NAME );
@@ -462,23 +477,25 @@ function bookacti_validate_booking_form( $group_id, $event_id, $event_start, $ev
 /**
  * Check if an event or an occurence exists
  * 
- * @version 1.2.2
+ * @version 1.3.0
  * 
- * @param int $event_id
+ * @param object $event
  * @param string $event_start
  * @param string $event_end
  * @return boolean
  */
-function bookacti_is_existing_event( $event_id, $event_start = NULL, $event_end = NULL ) {
-
-	$event = bookacti_get_event_by_id( $event_id );
+function bookacti_is_existing_event( $event, $event_start = NULL, $event_end = NULL ) {
+	
+	if( is_numeric( $event ) ) {
+		$event = bookacti_get_event_by_id( $event );
+	}
 
 	$is_existing_event = false;
 	if( $event ) {
 		if( $event->repeat_freq && $event->repeat_freq !== 'none' ) {
 			$is_existing_event = bookacti_is_existing_occurence( $event, $event_start, $event_end );
 		} else {
-			$is_existing_event = bookacti_is_existing_single_event( $event_id, $event_start, $event_end );
+			$is_existing_event = bookacti_is_existing_single_event( $event->id, $event_start, $event_end );
 		}
 	}
 
@@ -548,14 +565,18 @@ function bookacti_is_existing_occurence( $event, $event_start, $event_end = NULL
  * Check if the group of event exists
  * 
  * @since 1.1.0
+ * @version 1.3.0
  * 
- * @param int $group_id
+ * @param object|int $group
  * @return boolean
  */
-function bookacti_is_existing_group_of_events( $group_id ) {
-
+function bookacti_is_existing_group_of_events( $group ) {
+	
+	if( is_numeric( $group ) ) {
+		$group = bookacti_get_group_of_events( $group );
+	}
+	
 	// Try to retrieve the group and check the result
-	$group = bookacti_get_group_of_events( $group_id );
 	return ! empty( $group );
 }
 
@@ -989,16 +1010,19 @@ function bookacti_get_formatted_booking_events_list( $booking_events, $quantity 
 	/**
 	 * Get group of events availability (= the lowest availability among its events)
 	 * 
+	 * @since 1.1.0
+	 * @version 1.3.0
 	 * @param int $event_group_id
+	 * @param array $include_states
 	 * @return int
 	 */
-	function bookacti_get_group_of_events_availability( $event_group_id ) {
+	function bookacti_get_group_of_events_availability( $event_group_id, $include_states = array() ) {
 
 		$events = bookacti_get_group_events( $event_group_id, true );
 
 		$max = 999999999; // Any big int
 		foreach( $events as $event ) {
-			$availability = bookacti_get_event_availability( $event[ 'id' ], $event[ 'start' ], $event[ 'end' ] );
+			$availability = bookacti_get_event_availability( $event[ 'id' ], $event[ 'start' ], $event[ 'end' ], $include_states );
 			if( $availability < $max ) {
 				$max = $availability;
 			}

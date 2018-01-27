@@ -45,7 +45,10 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	 * @return array
 	 */
 	function bookacti_add_woocommerce_active_booking_states( $active_states ) {
-		$active_states[] = 'in_cart';
+		$is_expiration_active = bookacti_get_setting_value( 'bookacti_cart_settings', 'is_cart_expiration_active' );
+		if( $is_expiration_active ) {
+			$active_states[] = 'in_cart';
+		}
 		return $active_states;
 	}
 	add_filter( 'bookacti_active_booking_states', 'bookacti_add_woocommerce_active_booking_states' );
@@ -90,27 +93,24 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	 * Change booking state to 'removed' or 'in_cart' depending on its quantity
 	 * 
 	 * @since 1.1.0
+	 * @version 1.3.0
 	 * 
 	 * @param array $data
 	 * @param object $booking
 	 * @return array
 	 */
 	function bookacti_change_booking_state_to_removed_or_in_cart_depending_on_its_quantity( $data, $booking ) {
-		
 		// If quantity is null, change booking state to 'removed' and keep the booking quantity
 		if( $data[ 'quantity' ] <= 0 ) { 
-			
 			$data[ 'state' ]	= $data[ 'context' ] === 'frontend' ? 'removed' : 'cancelled'; 
-			$data[ 'quantity' ]	= intval( $booking->quantity ); 
-			$data[ 'active' ]	= 0; 
+			$data[ 'quantity' ]	= intval( $booking->quantity );
+			$data[ 'active' ]	= in_array( $data[ 'state' ], bookacti_get_active_booking_states(), true ) ? 1 : 0;
 		
 		// If the booking was removed and its quantity is raised higher than 0, turn its state back to 'in_cart'
 		} else if( $booking->state === 'removed' ) {
-			
-			$data[ 'state' ]	= $data[ 'context' ] === 'frontend' ? 'in_cart' : 'pending'; 
-			$data[ 'active' ]	= 1; 
+			$data[ 'state' ]	= $data[ 'context' ] === 'frontend' ? 'in_cart' : 'pending';
+			$data[ 'active' ]	= in_array( $data[ 'state' ], bookacti_get_active_booking_states(), true ) ? 1 : 0;
 		}
-		
 		return $data;
 	}
 	add_filter( 'bookacti_update_booking_quantity_data', 'bookacti_change_booking_state_to_removed_or_in_cart_depending_on_its_quantity', 10, 2 );
@@ -126,17 +126,18 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	 * @version 1.3.0
 	 * @param int $order_id
 	 * @param WC_Order $order
+	 * @param string $booking_status
 	 * @param string $payment_status
 	 */
-	function bookacti_turn_temporary_booking_to_permanent( $order_id, $order ) {
+	function bookacti_turn_temporary_booking_to_permanent( $order_id, $order, $booking_status = 'booked', $payment_status = 'paid' ) {
 		
 		// Change state of all bookings of the order from 'pending' to 'booked'
-		bookacti_turn_order_bookings_to( $order, 'booked', 'paid', true );
+		$updated = bookacti_turn_order_bookings_to( $order, $booking_status, $payment_status, true );
 		
 		// It is possible that pending bookings remain bound to the order if the user change his mind after he placed the order, but before he paid it.
 		// He then changed his cart, placed a new order, paid it, and only part of the old order is booked (or even nothing), the rest is still 'pending'
 		// Then we just turn 'pending' booking bound to this order to 'cancelled'
-		bookacti_cancel_order_pending_bookings( $order_id );
+		bookacti_cancel_order_pending_bookings( $order_id, $updated[ 'booking_ids' ], $updated[ 'booking_group_ids' ] );
 	}
 	add_action( 'woocommerce_order_status_completed', 'bookacti_turn_temporary_booking_to_permanent', 5, 2 );
 	
@@ -204,7 +205,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 				// If there are at least one activity in the middle of other products, 
 				// we won't mark the order as 'completed', but we still need to mark the activities as 'booked'
 				} else if( $has_activities ) {
-					bookacti_turn_temporary_booking_to_permanent( $order_id, $order );
+					bookacti_turn_temporary_booking_to_permanent( $order_id, $order, 'pending', 'owed' );
 				}
 			}
 		}

@@ -51,14 +51,11 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 				$return_array[ 'status' ] = 'success';
 				$return_array[ 'action' ] = 'inserted';
 				$return_array[ 'id' ] = $booking_id;
+			} else {
+				$return_array[ 'message' ]= __( 'Error occurs when trying to temporarily book your event. Please try later.', BOOKACTI_PLUGIN_NAME );
 			}
 		}
-
-		// If failed, write a message
-		if( $return_array[ 'status' ] === 'failed' ) {
-			$return_array[ 'message' ] = __( 'Error occurs when trying to temporarily book your event. Please try later.', BOOKACTI_PLUGIN_NAME );
-		}
-
+		
 		return $return_array;
 	}
 
@@ -91,9 +88,8 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 				$return_array[ 'status' ] = 'success';
 				$return_array[ 'action' ] = 'updated';
 				$return_array[ 'id' ] = $booking_group_id;
-			} else {
-				$return_array[ 'status' ]	= 'failed';
-				$return_array[ 'message' ]	= __( 'An error occurs while trying to change a product quantity. Please try again later.', BOOKACTI_PLUGIN_NAME );
+			} else if( isset( $group_updated[ 'message' ] ) ) {
+				$return_array[ 'message' ]= $group_updated[ 'message' ];
 			}
 
 		} else {
@@ -107,12 +103,9 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 				$return_array['status'] = 'success';
 				$return_array['action'] = 'inserted';
 				$return_array['id']		= $booking_group_id;
+			} else if( isset( $group_updated[ 'message' ] ) ) {
+				$return_array['message'] = __( 'Error occurs when trying to temporarily book the group of events. Please try later.', BOOKACTI_PLUGIN_NAME );
 			}
-		}
-
-		// If failed, write a message
-		if( $return_array['status'] === 'failed' ) {
-			$return_array['message'] = __( 'Error occurs when trying to temporarily book the group of events. Please try later.', BOOKACTI_PLUGIN_NAME );
 		}
 
 		return $return_array;
@@ -123,7 +116,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	 * Update quantity, control the results ans display feedback accordingly
 	 * 
 	 * @since 1.0.0
-	 * @version 1.1.0
+	 * @version 1.3.0
 	 * 
 	 * @global woocommerce $woocommerce
 	 * @param int $booking_id
@@ -138,14 +131,14 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		if( $context === 'frontend' ) {
 			$current_cart_expiration_date = bookacti_get_cart_timeout();
 
-			$is_cart_empty_and_expired		= ( $woocommerce->cart->get_cart_contents_count() === $new_quantity && strtotime( $current_cart_expiration_date ) <= time() );
-			$is_per_product_expiration		= bookacti_get_setting_value( 'bookacti_cart_settings', 'is_cart_expiration_per_product' );
-			$reset_timeout_on_change		= bookacti_get_setting_value( 'bookacti_cart_settings', 'reset_cart_timeout_on_change' );
-			$is_expiration_active			= bookacti_get_setting_value( 'bookacti_cart_settings', 'is_cart_expiration_active' );
-			$timeout						= bookacti_get_setting_value( 'bookacti_cart_settings', 'cart_timeout' );
+			$is_cart_empty_and_expired	= ( $woocommerce->cart->get_cart_contents_count() === $new_quantity && strtotime( $current_cart_expiration_date ) <= time() );
+			$is_per_product_expiration	= bookacti_get_setting_value( 'bookacti_cart_settings', 'is_cart_expiration_per_product' );
+			$reset_timeout_on_change	= bookacti_get_setting_value( 'bookacti_cart_settings', 'reset_cart_timeout_on_change' );
+			$is_expiration_active		= bookacti_get_setting_value( 'bookacti_cart_settings', 'is_cart_expiration_active' );
+			$timeout					= bookacti_get_setting_value( 'bookacti_cart_settings', 'cart_timeout' );
 
 			$new_expiration_date = NULL;
-			if( $reset_timeout_on_change || $is_cart_empty_and_expired ) {
+			if( $is_expiration_active && ( $reset_timeout_on_change || $is_cart_empty_and_expired ) ) {
 				$new_expiration_date = date( 'c', strtotime( '+' . $timeout . ' minutes' ) );
 			}
 		}
@@ -193,7 +186,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	 * Update quantity, control the results ans display feedback accordingly
 	 * 
 	 * @since 1.1.0
-	 * @version 1.2.0
+	 * @version 1.3.0
 	 * 
 	 * @param int $booking_group_id
 	 * @param int $quantity
@@ -214,13 +207,13 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 		// Get group availability
 		$group				= bookacti_get_booking_group_by_id( $booking_group_id );
-		$group_availability	= bookacti_get_group_of_events_availability( $group->event_group_id );
+		$group_availability	= bookacti_get_group_of_events_availability( $group->event_group_id, array( 'in_cart' ) );
 
 		// Make sure all events have enough places available
 		// Look for the most booked event of the booking group
 		$max_booked = 0;
 		foreach( $bookings as $booking ) {
-			if( $booking->active && $booking->quantity > $max_booked ) {
+			if( ( $booking->active || $booking->state === 'in_cart' ) && $booking->quantity > $max_booked ) {
 				$max_booked = intval( $booking->quantity );
 			}
 		}
@@ -255,7 +248,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			$no_changes = 0;
 			foreach( $bookings as $booking ) {
 
-				$booking_qty	= $booking->active ? intval( $booking->quantity ) : 0;
+				$booking_qty	= $booking->active || $booking->state === 'in_cart' ? intval( $booking->quantity ) : 0;
 
 				// Make sure new quantity isn't over group availability
 				$new_quantity = $add_quantity ? $quantity + $booking_qty : $quantity;
@@ -305,6 +298,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 				if( isset( $updated2 ) && ! $updated2 ) {
 					$response[ 'status' ]	= 'failed';
 					$response[ 'error' ]	= 'update_booking_group_state';
+					$response[ 'message' ]	= __( 'An error occurs while trying to update booking group state. Please try again later.', BOOKACTI_PLUGIN_NAME );
 				}
 			}
 		}
@@ -667,7 +661,8 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		$user_id	= $order->get_user_id();
 		
 		// Create an array with order booking ids
-		$booking_id_array = array();
+		$booking_id_array		= array();
+		$booking_group_id_array = array();
 		foreach( $items as $key => $item ) {
 			// Single event
 			if( isset( $item[ 'bookacti_booking_id' ] ) && $item[ 'bookacti_booking_id' ] ) {				
@@ -679,20 +674,20 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			} else if( isset( $item[ 'bookacti_booking_group_id' ] ) && $item[ 'bookacti_booking_group_id' ] ) {
 				// Add the group booking ids to the bookings array to change state
 				$booking_group_id	= $item[ 'bookacti_booking_group_id' ];
+				$booking_group_id_array[] = $booking_group_id;
 				
 				$booking_ids		= bookacti_get_booking_group_bookings_ids( $booking_group_id );
 				$booking_id_array	= array_merge( $booking_id_array, $booking_ids );
 				
 				// Change the booking group state accordingly
 				// Also change its user_id and order_id to make sure it is up to date
-				$booking_group_state	= $item[ 'bookacti_state' ];
-				$is_active				= in_array( $booking_group_state, bookacti_get_active_booking_states(), true ) ? 1 : 0;
-				$update_state			= $is_active ? $state : null;
-				bookacti_update_booking_group( $booking_group_id, $update_state, $payment_status, $user_id, $order_id );
+				bookacti_update_booking_group( $booking_group_id, $state, $payment_status, $user_id, $order_id );
 			}
 		}
 		
 		$response = array();
+		$response[ 'booking_ids' ]			= $booking_id_array;
+		$response[ 'booking_group_ids' ]	= $booking_group_id_array;
 		
 		// If no bookings return error
 		if( ! $booking_id_array ) {
@@ -704,9 +699,9 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 		$updated = bookacti_change_order_bookings_state( $user_id, $order_id, $booking_id_array, $state, $payment_status );
 
-		$response[ 'status' ]	= 'success';
-		$response[ 'errors' ]	= array();
-		$response[ 'updated' ]	= $updated;
+		$response[ 'status' ]		= 'success';
+		$response[ 'errors' ]		= array();
+		$response[ 'updated' ]		= $updated;
 		
 		// Check if an error occured during booking state update
 		if( $updated === false ) {
@@ -1666,7 +1661,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		bookacti_onoffswitch( $name, $is_active, $id );
 		
 		// Display the tip
-		$tip = __( "If you deactivate cart expiration, the temporary bookings made when a user add an activity to cart will become permanent, even if the user doesn't proceed to checkout.", BOOKACTI_PLUGIN_NAME );
+		$tip = __( "If you deactivate cart expiration, in-cart bookings are no longer protected: the event availability can decrease between the moment a customer add it to his cart and the moment he actually complete his order. If the event is no longer available at checkout, an error message will explain your customer what to do.", BOOKACTI_PLUGIN_NAME );
 		bookacti_help_tip( $tip );
 	}
 	

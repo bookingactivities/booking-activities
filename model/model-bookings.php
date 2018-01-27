@@ -57,7 +57,7 @@ function bookacti_insert_booking( $user_id, $event_id, $event_start, $event_end,
 /**
  * Check if a booking exists and return its id
  * 
- * @version 1.1.0
+ * @version 1.3.0
  * 
  * @global wpdb $wpdb
  * @param int $user_id
@@ -77,8 +77,7 @@ function bookacti_booking_exists( $user_id, $event_id, $event_start, $event_end,
 			. ' AND event_start = %s '
 			. ' AND event_end = %s '
 			. ' AND state = %s '
-			. ' AND expiration_date > UTC_TIMESTAMP() '
-			. ' AND active = 1 ';
+			. ' AND ( expiration_date IS NULL OR expiration_date > UTC_TIMESTAMP() ) ';
 	
 	$variables = array( $user_id, $event_id, $event_start, $event_end, $state );
 	
@@ -496,30 +495,46 @@ function bookacti_get_number_of_booking_rows( $filters = array(), $group_by_book
 /**
  * Get number of booking of a specific event or a specific occurrence
  * 
+ * @version 1.3.0
  * @global wpdb $wpdb
  * @param int $event_id
  * @param string $event_start Optional. Used for an ccurrence of a repeated event.
  * @param string $event_end Optional. Used for an occurrence of a repeated event.
+ * @param array $include_states Optional. Count bookings with desired inactive states in total.
  * @return int
  */
-function bookacti_get_number_of_bookings( $event_id, $event_start = NULL, $event_end = NULL ) {
+function bookacti_get_number_of_bookings( $event_id, $event_start = NULL, $event_end = NULL, $include_states = array() ) {
 	global $wpdb;
 
-	if( $event_start !== NULL && $event_end !== NULL ) {
-		$bookings_query = 'SELECT SUM(quantity) FROM ' . BOOKACTI_TABLE_BOOKINGS
-						. ' WHERE event_id = %d'
-						. ' AND event_start = %s'
-						. ' AND event_end = %s'
-						. ' AND active = 1';
-		$bookings_prep = $wpdb->prepare( $bookings_query, $event_id, $event_start, $event_end );
-	} else {
-		$bookings_query = 'SELECT SUM(quantity) FROM ' . BOOKACTI_TABLE_BOOKINGS
-						. ' WHERE event_id = %d'
-						. ' AND active = 1';
-		$bookings_prep = $wpdb->prepare( $bookings_query, $event_id );
+	$query = 'SELECT SUM(quantity) FROM ' . BOOKACTI_TABLE_BOOKINGS
+					. ' WHERE event_id = %d';
+	
+	$variables = array( $event_id );
+	
+	if( $event_start ) {
+		$query .= ' AND event_start = %s';
+		$variables[] = $event_start;
 	}
+	
+	if( $event_end ) {
+		$query .= ' AND event_end = %s';
+		$variables[] = $event_end;
+	}
+	
+	if( $include_states ) {
+		$query .= ' AND ( active = 1 OR state IN ( %s';
+		for( $i=1, $len=count($include_states); $i < $len; ++$i ) {
+			$query  .= ', %s';
+		}
+		$query .= ') )';
 
-	$bookings = $wpdb->get_var( $bookings_prep );
+		$variables = array_merge( $variables, $include_states );
+	} else {
+		$query .= ' AND active = 1 ';
+	}
+	
+	$query		= $wpdb->prepare( $query, $variables );
+	$bookings	= $wpdb->get_var( $query );
 
 	if( is_null( $bookings ) ) { $bookings = 0; }
 
@@ -1489,11 +1504,11 @@ function bookacti_reschedule_booking( $booking_id, $event_id, $event_start, $eve
 	function bookacti_booking_group_exists( $user_id, $event_group_id, $state = NULL ) {
 		global $wpdb;
 
-		$query		= 'SELECT id FROM ' . BOOKACTI_TABLE_BOOKING_GROUPS 
-					. ' WHERE user_id = %s'
-					. ' AND event_group_id = %d';
+		$query	= 'SELECT id FROM ' . BOOKACTI_TABLE_BOOKING_GROUPS 
+				. ' WHERE user_id = %s'
+				. ' AND event_group_id = %d';
 
-		$variables	= array( $user_id, $event_group_id );
+		$variables = array( $user_id, $event_group_id );
 
 		if( ! empty( $state ) ) {
 			$query .=  ' AND state = %s';

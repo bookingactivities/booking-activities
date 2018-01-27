@@ -310,6 +310,7 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 * Feature - Bookings have a new "Payment status" property, with 3 possible values: No payment required, owed, paid.
 * Feature - Display your customers' bookings calendar with the shortcode [bookingactivities_calendar bookings_only="true" user_id="current" past_events="true"]
 * Feature - Customize frontend dialogs titles and buttons labels (and content for some of them)
+* Tweak - In-cart bookings are no longer active when the cart expiration is deactivated. The availability check is made on checkout.
 * Tweak - Date format can be set more specifically, and the separator between dates can be changed
 * Tweak - ON/OFF button: clearly display "ON" and "OFF" for a better understanding
 * Tweak - Email refund option is no longer offered to administrators
@@ -318,6 +319,7 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 * Fix - Error notice about wpdb::prepare since WP 4.9+ (can cause fatal error if WP_DEBUG was set to true)
 * Fix - Show / Hide activities in calendar editor triggers fatal error
 * Fix - Shop Managers (WooCommerce role) were not able to edit activities
+* Fix - WooCommerce [product_page] shortcode is now working with variable product marked as activity
 * **Breaking change** - Date format needs to be set again in Booking Activities settings, in "Messages" tab
 
 = 1.2.3 - 2018/01/09 =

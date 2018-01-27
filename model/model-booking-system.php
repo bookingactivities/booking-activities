@@ -504,13 +504,15 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	/**
 	 * Get the number of remaining places of an event (total places - booked places)
 	 * 
+	 * @version 1.3.0
 	 * @global wpdb $wpdb
 	 * @param int $event_id
 	 * @param string $event_start Format "YYYY-MM-DD HH:mm:ss"
 	 * @param string $event_end Format "YYYY-MM-DD HH:mm:ss"
+	 * @param array $include_states
 	 * @return int
 	 */
-	function bookacti_get_event_availability( $event_id, $event_start, $event_end ) {
+	function bookacti_get_event_availability( $event_id, $event_start, $event_end, $include_states = array() ) {
 		global $wpdb;
 
         $query_total_avail  = 'SELECT availability FROM ' . BOOKACTI_TABLE_EVENTS . ' WHERE id = %d';
@@ -519,7 +521,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
         
 		if( ! $total_avail ) { $availability = 0; }
 		
-        $bookings = bookacti_get_number_of_bookings( $event_id, $event_start, $event_end );
+        $bookings = bookacti_get_number_of_bookings( $event_id, $event_start, $event_end, $include_states );
         
 		$availability = $total_avail - $bookings;
 		
