@@ -1661,7 +1661,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		bookacti_onoffswitch( $name, $is_active, $id );
 		
 		// Display the tip
-		$tip = __( "If you deactivate cart expiration, in-cart bookings are no longer protected: the event availability can decrease between the moment a customer add it to his cart and the moment he actually complete his order. If the event is no longer available at checkout, an error message will explain your customer what to do.", BOOKACTI_PLUGIN_NAME );
+		$tip = __( "If cart expiration is off, the booking is made at the end of the checkout process. It means that an event available at the moment you add it to cart can be no longer available at the moment you wish to complete the order. With cart expiration on, the booking is made when it is added to cart and remains temporary until the end of the checkout process.", BOOKACTI_PLUGIN_NAME );
 		bookacti_help_tip( $tip );
 	}
 	

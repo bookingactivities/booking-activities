@@ -203,7 +203,9 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 					$order_status = 'completed';
 					
 				// If there are at least one activity in the middle of other products, 
-				// we won't mark the order as 'completed', but we still need to mark the activities as 'booked'
+				// we won't mark the order as 'completed', but we still need to mark the bookings as 'pending' and 'owed'
+				// until the order changes state. At that time the bookings state will be redifined by other hooks
+				// such as "woocommerce_order_status_pending_to_processing" and "woocommerce_order_status_completed"
 				} else if( $has_activities ) {
 					bookacti_turn_temporary_booking_to_permanent( $order_id, $order, 'pending', 'owed' );
 				}
@@ -214,6 +216,46 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	}
 	add_filter( 'woocommerce_payment_complete_order_status', 'bookacti_set_order_status_to_completed_after_payment', 10, 2 );
 	
+	
+	/**
+	 * Turn bookings of a paid order containing non-activity products to booked
+	 * 
+	 * @version 1.3.0
+	 * @param int $order_id
+	 * @param WC_Order $order
+	 */
+	function bookacti_turn_non_activity_order_bookings_to_permanent( $order_id, $order ) {
+		
+		if( ! $order ) { $order = wc_get_order( $order_id ); }
+		if( ! $order ) { return false; }
+		
+		// If the order hasn't been paid, return
+		// WOOCOMMERCE 3.0.0 backward compatibility 
+		if( version_compare( WC_VERSION, '3.0.0', '>=' ) ) {
+			if( ! $order->get_date_paid( 'edit' ) ) { return false; }
+		} else {
+			if( ! get_post_meta( $order_id, '_paid_date', true ) ) { return false; }
+		}
+		
+		// Retrieve bought items
+		$items = $order->get_items();
+
+		// Determine if the order is only composed of activities
+		$are_activities = true;
+		foreach( $items as $item ) {
+			if( ! isset( $item[ 'bookacti_booking_id' ] ) && ! isset( $item[ 'bookacti_booking_group_id' ] )  ) {
+				$are_activities = false;
+				break;
+			}
+		}
+
+		// If there are at least one activity in the middle of other products, 
+		// mark the bookings as 'booked' and 'paid'
+		if( ! $are_activities ) {
+			bookacti_turn_temporary_booking_to_permanent( $order_id, $order, 'booked', 'paid' );
+		}
+	}
+	add_action( 'woocommerce_order_status_pending_to_processing', 'bookacti_turn_non_activity_order_bookings_to_permanent', 5, 2 );
 	
 	
 	
