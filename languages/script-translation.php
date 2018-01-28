@@ -5,6 +5,9 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 // Don't localize strings here, please use .po file with poedit and submit the .mo generated file to the plugin author
 
 $current_datetime_object = new DateTime( 'now', new DateTimeZone( bookacti_get_setting_value( 'bookacti_general_settings', 'timezone' ) ) );
+$can_edit_bookings = current_user_can( 'bookacti_edit_bookings' );
+
+$messages = bookacti_get_messages();
 
 // Fill the translation array to use it in js 
 $bookacti_translation_array = apply_filters( 'bookacti_translation_array', array(
@@ -21,7 +24,7 @@ $bookacti_translation_array = apply_filters( 'bookacti_translation_array', array
 	'dialog_import_activity_title'			=> esc_html__( 'Import existing activity', BOOKACTI_PLUGIN_NAME ),
 	'dialog_create_activity_title'			=> esc_html__( 'Create new activity', BOOKACTI_PLUGIN_NAME ),
 	'dialog_update_activity_title'		    => esc_html__( 'Update activity parameters', BOOKACTI_PLUGIN_NAME ),
-	'dialog_choose_group_of_events_title'	=> esc_html__( 'This event is available in several bundles', BOOKACTI_PLUGIN_NAME ),
+	'dialog_choose_group_of_events_title'	=> apply_filters( 'bookacti_translate_text', $messages[ 'choose_group_dialog_title' ][ 'value' ] ),
 	'dialog_create_group_of_events_title'	=> esc_html__( 'Create a group of events', BOOKACTI_PLUGIN_NAME ),
 	'dialog_update_group_of_events_title'	=> esc_html__( 'Update a group of events', BOOKACTI_PLUGIN_NAME ),
 	'dialog_delete_group_of_events_title'	=> esc_html__( 'Delete a group of events', BOOKACTI_PLUGIN_NAME ),
@@ -29,11 +32,9 @@ $bookacti_translation_array = apply_filters( 'bookacti_translation_array', array
 	'dialog_update_group_category_title'	=> esc_html__( 'Update a group category', BOOKACTI_PLUGIN_NAME ),
 	'dialog_delete_group_category_title'	=> esc_html__( 'Delete a group category', BOOKACTI_PLUGIN_NAME ),
 	'dialog_locked_event'					=> esc_html__( 'Locked event', BOOKACTI_PLUGIN_NAME ),
-	'booking_filters_parameters'			=> esc_html__( 'Booking filters parameters', BOOKACTI_PLUGIN_NAME ),
-	'booking_list_parameters'				=> esc_html__( 'Booking list parameters', BOOKACTI_PLUGIN_NAME ),
-	'booking_action_cancel'					=> esc_html_x( 'Cancel booking', 'Dialog title', BOOKACTI_PLUGIN_NAME ),
-	'booking_action_reschedule'				=> esc_html__( 'Reschedule booking', BOOKACTI_PLUGIN_NAME ),
-	'booking_action_refund'					=> esc_html_x( 'Request a refund', 'Dialog title', BOOKACTI_PLUGIN_NAME ),
+	'booking_action_cancel'					=> apply_filters( 'bookacti_translate_text', $messages[ 'cancel_dialog_title' ][ 'value' ] ),
+	'booking_action_reschedule'				=> apply_filters( 'bookacti_translate_text', $messages[ 'reschedule_dialog_title' ][ 'value' ] ),
+	'booking_action_refund'					=> $can_edit_bookings ? esc_html_x( 'Refund a booking', 'Dialog title', BOOKACTI_PLUGIN_NAME ) : apply_filters( 'bookacti_translate_text', $messages[ 'refund_dialog_title' ][ 'value' ] ),
 	'booking_confirm_refund'				=> esc_html__( 'Refund confirmation', BOOKACTI_PLUGIN_NAME ),
 	'booking_change_state'					=> esc_html__( 'Change booking state', BOOKACTI_PLUGIN_NAME ),
 
@@ -43,7 +44,7 @@ $bookacti_translation_array = apply_filters( 'bookacti_translation_array', array
 	'dialog_button_yes'                 => esc_html__( 'Yes', BOOKACTI_PLUGIN_NAME ),
 	'dialog_button_no'                  => esc_html__( 'No', BOOKACTI_PLUGIN_NAME ),
 	'dialog_button_delete'              => esc_html__( 'Delete', BOOKACTI_PLUGIN_NAME ),
-	'dialog_button_cancel'              => esc_html__( 'Cancel', BOOKACTI_PLUGIN_NAME ),
+	'dialog_button_cancel'              => esc_html_x( 'Cancel', 'Close a dialog without doing anything', BOOKACTI_PLUGIN_NAME ),
 	'dialog_button_create_activity'		=> esc_html__( 'Create Activity', BOOKACTI_PLUGIN_NAME ),
 	'dialog_button_import_activity'		=> esc_html__( 'Import Activity', BOOKACTI_PLUGIN_NAME ),
 	/* translators: 'unbind' is the process to isolate one (or several) event from a repeating event in order to edit it independently. 'Unbind selected' is a button that isolate the event the user clicked on. */
@@ -54,14 +55,19 @@ $bookacti_translation_array = apply_filters( 'bookacti_translation_array', array
 	'dialog_button_unbind_all'          => esc_html__( 'Unbind All', BOOKACTI_PLUGIN_NAME ),
 	/* translators: 'unbind' is the process to isolate one (or several) event from a repeating event  in order to edit it independently. 'Unbind' is a button that open a dialog where the user can choose wether to unbind the selected event, all events or booked events. */
 	'dialog_button_unbind'				=> esc_html__( 'Unbind', BOOKACTI_PLUGIN_NAME ),
+	'dialog_button_cancel'              => apply_filters( 'bookacti_translate_text', $messages[ 'cancel_dialog_button' ][ 'value' ] ),
 	'dialog_button_cancel_booking'		=> esc_html_x( 'Cancel booking', 'Button label to trigger the cancel action', BOOKACTI_PLUGIN_NAME ),
-	'dialog_button_reschedule'			=> esc_html_x( 'Reschedule', 'Button label to trigger the refund action', BOOKACTI_PLUGIN_NAME ),
-	'dialog_button_refund'				=> esc_html_x( 'Request a refund', 'Button label to trigger the refund action', BOOKACTI_PLUGIN_NAME ),
+	'dialog_button_reschedule'			=> apply_filters( 'bookacti_translate_text', $messages[ 'reschedule_dialog_button' ][ 'value' ] ),
+	'dialog_button_refund'				=> $can_edit_bookings ? esc_html_x( 'Refund', 'Button label to trigger the refund action', BOOKACTI_PLUGIN_NAME ) : apply_filters( 'bookacti_translate_text', $messages[ 'refund_dialog_button' ][ 'value' ] ),
 	'calendar_button_list_year'			=> esc_html__( 'list year', BOOKACTI_PLUGIN_NAME ),
 	'calendar_button_list_month'		=> esc_html__( 'list month', BOOKACTI_PLUGIN_NAME ),
 	'calendar_button_list_week'			=> esc_html__( 'list week', BOOKACTI_PLUGIN_NAME ),
 	'calendar_button_list_day'			=> esc_html__( 'list day', BOOKACTI_PLUGIN_NAME ),
-	'booking_form_new_booking_button'	=> bookacti_get_message( 'booking_form_new_booking_button' ),
+	'booking_form_new_booking_button'	=> apply_filters( 'bookacti_translate_text', $messages[ 'booking_form_new_booking_button' ][ 'value' ] ),
+	'placeholder_select_customer'		=> esc_html__( 'Search for a customer', BOOKACTI_PLUGIN_NAME ),
+	'show_all_customers'				=> esc_html__( 'Show all customers', BOOKACTI_PLUGIN_NAME ),
+	'pick_an_event'						=> esc_html__( 'Pick an event', BOOKACTI_PLUGIN_NAME ),
+	'hide_calendar'						=> esc_html__( 'Hide calendar', BOOKACTI_PLUGIN_NAME ),
 
 	// ERRORS
 	'error_retrieve_event_data'			=> esc_html__( 'Error occurs when trying to retrieve event parameters.', BOOKACTI_PLUGIN_NAME ),
@@ -223,8 +229,12 @@ $bookacti_translation_array = apply_filters( 'bookacti_translation_array', array
 	'started_events_bookable'			=> bookacti_get_setting_value( 'bookacti_general_settings',	'started_events_bookable' ) ? true : false,
 	'when_events_load'					=> bookacti_get_setting_value( 'bookacti_general_settings',	'when_events_load' ),
 	'event_load_interval'				=> bookacti_get_setting_value( 'bookacti_general_settings', 'event_load_interval' ),
-	'date_format'						=> bookacti_get_setting_value( 'bookacti_general_settings',	'date_format' ),
-	'show_past_events_on_bookings_page'	=> bookacti_get_setting_value_by_user( 'bookacti_bookings_settings', 'show_past_events' ),
+	
+	'date_format'						=> apply_filters( 'bookacti_translate_text', $messages[ 'date_format_short' ][ 'value' ] ),
+	'date_format_long'					=> apply_filters( 'bookacti_translate_text', $messages[ 'date_format_long' ][ 'value' ] ),
+	'time_format'						=> apply_filters( 'bookacti_translate_text', $messages[ 'time_format' ][ 'value' ] ),
+	'dates_separator'					=> apply_filters( 'bookacti_translate_text', $messages[ 'dates_separator' ][ 'value' ] ),
+	'date_time_separator'				=> apply_filters( 'bookacti_translate_text', $messages[ 'date_time_separator' ][ 'value' ] ),
 
 	'plugin_path'						=> plugins_url() . '/' . BOOKACTI_PLUGIN_NAME,
 	'site_url'							=> get_site_url(),

@@ -2,12 +2,16 @@
 // Exit if accessed directly
 if ( ! defined( 'ABSPATH' ) ) { exit; }
 
-// Create the tables to save the events states
+/**
+ * Create Booking Activities database tables
+ * 
+ * @version 1.3.0
+ * @global wpdb $wpdb
+ */
 function bookacti_create_tables() {
 	global $wpdb;
 	$wpdb->hide_errors();
 
-	// Prepare the creation queries
 	$table_templates_query = 'CREATE TABLE ' . BOOKACTI_TABLE_TEMPLATES . ' ( 
 		id MEDIUMINT(9) UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY, 
 		title VARCHAR(128), 
@@ -81,7 +85,7 @@ function bookacti_create_tables() {
 		exception_type VARCHAR(10) NOT NULL DEFAULT "date",
 		exception_value VARCHAR(10) ) ' . $wpdb->get_charset_collate() . ';';
 
-	//user_id can accept hashes of 32 chars, that is why it is a VARCHAR(32)
+	// user_id can accept hashes of 32 chars, that is why it is a VARCHAR(32)
 	$table_bookings_query = 'CREATE TABLE ' . BOOKACTI_TABLE_BOOKINGS . ' ( 
 		id MEDIUMINT(9) UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY, 
 		user_id VARCHAR(32), 
@@ -91,6 +95,7 @@ function bookacti_create_tables() {
 		event_start DATETIME, 
 		event_end DATETIME, 
 		state VARCHAR(32) NOT NULL DEFAULT "booked", 
+		payment_status VARCHAR(32) NOT NULL DEFAULT "none", 
 		creation_date DATETIME, 
 		expiration_date DATETIME, 
 		quantity MEDIUMINT(9) UNSIGNED NOT NULL DEFAULT 1, 
@@ -101,7 +106,8 @@ function bookacti_create_tables() {
 		event_group_id MEDIUMINT(9) UNSIGNED, 
 		user_id VARCHAR(32), 
 		order_id MEDIUMINT(9) UNSIGNED, 
-		state VARCHAR(32) NOT NULL DEFAULT "booked", 
+		state VARCHAR(32) NOT NULL DEFAULT "booked",
+		payment_status VARCHAR(32) NOT NULL DEFAULT "none", 
 		active TINYINT(1) UNSIGNED NOT NULL DEFAULT 1 ) ' . $wpdb->get_charset_collate() . ';';
 
 	// Execute the queries
@@ -124,12 +130,14 @@ function bookacti_create_tables() {
 }
 
 
-// Drop Booking Activities tables
+/**
+ * Remove Bookings activities tables from database
+ * 
+ * @global wpdb $wpdb
+ */
 function bookacti_drop_tables() {
 	global $wpdb;
 	$wpdb->hide_errors();
-
-	// Prepare the creation queries
 	$wpdb->query( 'DROP TABLE IF EXISTS ' . BOOKACTI_TABLE_TEMPLATES . '; ' );
 	$wpdb->query( 'DROP TABLE IF EXISTS ' . BOOKACTI_TABLE_ACTIVITIES . '; ' );
 	$wpdb->query( 'DROP TABLE IF EXISTS ' . BOOKACTI_TABLE_EVENTS . '; ' );

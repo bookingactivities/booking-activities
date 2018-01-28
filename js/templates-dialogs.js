@@ -14,6 +14,11 @@ function bookacti_init_template_dialogs() {
 		beforeClose: function() { bookacti_empty_all_dialog_forms(); }
     });
 	
+	// Make dialogs close when the user click outside
+	$j( '.ui-widget-overlay' ).live( 'click', function (){
+		$j( 'div:ui-dialog:visible' ).dialog( 'close' );
+	});
+	
 	// Press ENTER to bring focus on OK button
 	$j( '.bookacti-template-dialogs' ).on( 'keydown', function( e ) {
 		if( e.keyCode == $j.ui.keyCode.ENTER ) {
@@ -716,7 +721,7 @@ function bookacti_dialog_update_event( event ) {
 		text: bookacti_localized.dialog_button_delete,
 		'class': 'bookacti-dialog-delete-button bookacti-dialog-left-button',
 
-		//On click on the OK Button, new values are send to a script that update the database
+		// On click on the OK Button, new values are send to a script that update the database
 		click: function() {
 			bookacti_dialog_delete_event( event );
 		}
@@ -779,7 +784,7 @@ function bookacti_dialog_delete_event( event ) {
 							if( response.error === 'has_bookings' ) {
 								// If the event's booking number is not up to date, refresh it
 								if( ! event.bookings ) {
-									bookacti_refresh_booking_numbers( 'bookacti-template-calendar', event.id );
+									bookacti_refresh_booking_numbers( $j( '#bookacti-template-calendar' ), event.id );
 								}
 								
 								// If the event is repeated, display unbind dialog
@@ -1048,37 +1053,15 @@ function bookacti_dialog_import_activity() {
 								// Update activities data array
 								bookacti.booking_system[ 'bookacti-template-calendar' ][ 'activities_data' ] = response.activities_data;
 								
-								var plugin_path = bookacti_localized.plugin_path;
-								var activity_list = '';
-
+								// Refresh the draggable activity list
+								if( response.activity_list ) {
+									$j( '#bookacti-template-activity-list' ).empty().append( response.activity_list );
+								}
+							
+								// Remove the added activity from the import activity select box
 								$j.each( activity_ids, function( i, activity_id ) {
-									// Add the selectd activity to draggable activity list
-									activity_list	+= "<div class='activity-row'>"
-													+       "<div class='activity-show-hide' >"
-													+           "<img src='" + plugin_path + "/img/show.png' data-activity-id='" + activity_id + "' data-activity-visible='1' />"
-													+       "</div>"
-													+       "<div class='activity-container'>"
-													+           "<div class='fc-event ui-draggable ui-draggable-handle' "
-													+           "data-title='"			+ $j( 'select#activities-to-import option[value="' + activity_id + '"]' ).attr( 'data-title' ) + "' "
-													+           "data-activity-id='"	+ activity_id + "' "
-													+           "data-color='"			+ $j( 'select#activities-to-import option[value="' + activity_id + '"]' ).attr( 'data-color' ) + "' "
-													+           "data-availability='"	+ $j( 'select#activities-to-import option[value="' + activity_id + '"]' ).attr( 'data-availability' ) + "' "
-													+           "data-duration='"		+ $j( 'select#activities-to-import option[value="' + activity_id + '"]' ).attr( 'data-duration' ) + "' "
-													+           "data-resizable='"		+ $j( 'select#activities-to-import option[value="' + activity_id + '"]' ).attr( 'data-resizable' ) + "' "
-													+           ">"
-													+               $j( 'select#activities-to-import option[value="' + activity_id + '"]' ).html()
-													+           "</div>"
-													+       "</div>"
-													+       "<div class='activity-gear' >"
-													+           "<img src='" + plugin_path + "/img/gear.png' data-activity-id='" + activity_id + "' />"
-													+       "</div>"
-													+  "</div>";
-
-									// Remove the added activity from the select box
 									$j( 'select#activities-to-import option[value="' + activity_id + '"]' ).remove();
 								});
-
-								$j( '#bookacti-template-activity-list' ).append( activity_list );
 								
 								//Reinitialize the activities to apply changes
 								bookacti_init_activities();
@@ -1192,29 +1175,10 @@ function bookacti_dialog_create_activity() {
 								// Update activities data array
 								bookacti.booking_system[ 'bookacti-template-calendar' ][ 'activities_data' ][ response.activity_id ] = response.activity_data;
 								
-								// Display activity row
-								$j( '#bookacti-template-activity-list' ).append(
-									"<div class='activity-row'>"
-								+       "<div class='activity-show-hide' >"
-								+           "<img src='" + plugin_path + "/img/show.png' data-activity-id='" + response.activity_id + "' data-activity-visible='1' />"
-								+       "</div>"
-								+       "<div class='activity-container'>"
-								+           "<div class='fc-event ui-draggable ui-draggable-handle' "
-								+           "data-title='" + response.activity_data.multilingual_title + "' "
-								+           "data-activity-id='" + response.activity_id + "' "
-								+           "data-color='" + color + "' "
-								+           "data-availability='" + availability + "' "
-								+           "data-duration='" + duration + "' "
-								+           "data-resizable='" + resizable + "' "
-								+           ">"
-								+               response.activity_data.title
-								+           "</div>"
-								+       "</div>"
-								+       "<div class='activity-gear' >"
-								+           "<img src='" + plugin_path + "/img/gear.png' data-activity-id='" + response.activity_id + "' />"
-								+       "</div>"
-								+   "</div>"
-								);
+								// Refresh the draggable activity list
+								if( response.activity_list ) {
+									$j( '#bookacti-template-activity-list' ).empty().append( response.activity_list );
+								}
 
 								// Reinitialize the activities to apply changes
 								bookacti_init_activities();
@@ -1344,33 +1308,23 @@ function bookacti_dialog_update_activity( activity_id ) {
 				if( is_form_valid ) {
 					bookacti_start_template_loading();
 
-					//Save updated values in database
+					// Save updated values in database
 					$j.ajax({
 						url: ajaxurl, 
 						data: data,
 						type: 'POST',
 						dataType: 'json',
 						success: function( response ){
-
+							
 							// If success
 							if( response.status === 'success' ) {
 								// Update activities data array
 								bookacti.booking_system[ 'bookacti-template-calendar' ][ 'activities_data' ][ activity_id ] = response.activity_data;
 								
-								// Update the data in the activities list
-								$j( '.fc-event[data-activity-id="' + activity_id + '"]' ).html( response.activity_data.title );
-
-								$j( '.fc-event[data-activity-id="' + activity_id + '"]' ).data( 'title', response.activity_data.multilingual_title );
-								$j( '.fc-event[data-activity-id="' + activity_id + '"]' ).data( 'color', color );
-								$j( '.fc-event[data-activity-id="' + activity_id + '"]' ).data( 'availability', availability );
-								$j( '.fc-event[data-activity-id="' + activity_id + '"]' ).data( 'duration', duration );
-								$j( '.fc-event[data-activity-id="' + activity_id + '"]' ).data( 'resizable', resizable );
-
-								$j( '.fc-event[data-activity-id="' + activity_id + '"]' ).attr( 'data-title', response.activity_data.multilingual_title );
-								$j( '.fc-event[data-activity-id="' + activity_id + '"]' ).attr( 'data-color', color );
-								$j( '.fc-event[data-activity-id="' + activity_id + '"]' ).attr( 'data-availability', availability );
-								$j( '.fc-event[data-activity-id="' + activity_id + '"]' ).attr( 'data-duration', duration );
-								$j( '.fc-event[data-activity-id="' + activity_id + '"]' ).attr( 'data-resizable', resizable );
+								// Refresh the draggable activity list
+								if( response.activity_list ) {
+									$j( '#bookacti-template-activity-list' ).empty().append( response.activity_list );
+								}
 								
 								// Reinitialize the activities to apply changes
 								bookacti_init_activities();
@@ -1472,7 +1426,7 @@ function bookacti_dialog_delete_activity( activity_id ) {
 								
 								$j( '.fc-event[data-activity-id="' + activity_id + '"]' ).parents( '.activity-row' ).remove();
 								
-								// refresh events if user choosed to deleted them
+								// refresh events if user chose to deleted them
 								if( delete_events ) {
 									bookacti_refetch_events_on_template();
 								}
@@ -1552,9 +1506,9 @@ function bookacti_dialog_create_group_of_events( category_id ) {
 		var event_start = moment( event.start );
 		var event_end = moment( event.end );
 		
-		var event_duration = event_start.format( bookacti_localized.date_format ) + ' &rarr; ' + event_end.format( bookacti_localized.date_format );
+		var event_duration = event_start.formatPHP( bookacti_localized.date_format ) + bookacti_localized.dates_separator + event_end.formatPHP( bookacti_localized.date_format );
 		if( event.start.substr( 0, 10 ) === event.end.substr( 0, 10 ) ) {
-			event_duration = event_start.format( bookacti_localized.date_format ) + ' &rarr; ' + event_end.format( 'LT' );
+			event_duration = event_start.formatPHP( bookacti_localized.date_format ) + bookacti_localized.date_time_separator + event_end.formatPHP( bookacti_localized.time_format );
 		}
 		var option = $j( '<option />', {
 						'html': event.title + ' - ' + event_duration
@@ -1683,9 +1637,9 @@ function bookacti_dialog_update_group_of_events( group_id ) {
 		var event_start = moment( event.start );
 		var event_end = moment( event.end );
 		
-		var event_duration = event_start.format( bookacti_localized.date_format ) + ' &rarr; ' + event_end.format( bookacti_localized.date_format );
+		var event_duration = event_start.formatPHP( bookacti_localized.date_format ) + bookacti_localized.dates_separator + event_end.formatPHP( bookacti_localized.date_format );
 		if( event.start.substr( 0, 10 ) === event.end.substr( 0, 10 ) ) {
-			event_duration = event_start.format( bookacti_localized.date_format ) + ' &rarr; ' + event_end.format( 'LT' );
+			event_duration = event_start.formatPHP( bookacti_localized.date_format ) + bookacti_localized.date_time_separator + event_end.formatPHP( bookacti_localized.time_format );
 		}
 		var option = $j( '<option />', {
 						'html': event.title + ' - ' + event_duration

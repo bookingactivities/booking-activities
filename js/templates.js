@@ -5,6 +5,7 @@ $j( document ).ready( function() {
 		
 		// Init calendar editor specific globals
 		bookacti.selected_template	= parseInt( $j( '#bookacti-template-picker' ).val() ) || 0;
+		bookacti.hidden_activities	= [];
 		bookacti.selected_category	= 'new';
 		bookacti.is_dragging		= false;
 		bookacti.blocked_events		= false;
@@ -12,6 +13,7 @@ $j( document ).ready( function() {
 		
 		// Init globals
 		bookacti.booking_system[ 'bookacti-template-calendar' ]								= [];
+		bookacti.booking_system[ 'bookacti-template-calendar' ][ 'calendars' ]				= bookacti.selected_template ? [ bookacti.selected_template ] : [];
 		bookacti.booking_system[ 'bookacti-template-calendar' ][ 'bookings' ]				= [];
 		bookacti.booking_system[ 'bookacti-template-calendar' ][ 'exceptions' ]				= [];
 		bookacti.booking_system[ 'bookacti-template-calendar' ][ 'groups_events' ]			= [];
@@ -161,7 +163,6 @@ function bookacti_load_template_calendar() {
 		eventRender: function( event, element, view ) { 
 			
 			var event_data = bookacti.booking_system[ 'bookacti-template-calendar' ][ 'events_data' ][ event.id ];
-			
 			
 			// Add some info to the event
 			element.data( 'event-id',			event.id );
@@ -344,34 +345,20 @@ function bookacti_load_template_calendar() {
 		// eventReceive : When an extern draggable event is dropped on the calendar. "this" refer to the new created event on the calendar.
 		eventReceive: function( event ) {
 			
-			// Init variables
-			var title		= event.title;
-			var activity_id = 0;
-			var availability= 0;
-			var duration    = '000.00:00:00';
-			var resizable   = 0;
-
-			// Retrieve the event param
-			$j( '#bookacti-template-activities-container .fc-event' ).each( function(){
-				if( $j( this ).html() === title ) {
-					title		= $j( this ).data( 'title' );
-					activity_id = $j( this ).data( 'activity-id' );
-					availability= $j( this ).data( 'availability' );
-					duration    = $j( this ).data( 'duration' );
-					resizable   = $j( this ).data( 'resizable' );
-				}
-			});
+			var activity_id		= parseInt( event.activity_id );
+			var activity_data	= bookacti.booking_system[ 'bookacti-template-calendar' ][ 'activities_data' ][ activity_id ];
+			
+			// If the activity was not found, return false
+			if( ! activity_data ) { return false; }
 			
 			// Calculate the end datetime thanks to start datetime and duration
-			event.end		= event.start.clone();
-			event.end.add( moment.duration( duration ) );
-
-			if( parseInt( resizable ) === 1 ) { event.durationEditable = true; }
-
-			// Gether event variables to save in db
-			var start	= event.start.format( 'YYYY-MM-DD HH:mm:ss' );
-			var end		= event.end.format( 'YYYY-MM-DD HH:mm:ss' );
-
+			event.end = event.start.clone();
+			event.end.add( moment.duration( activity_data[ 'duration' ] ) );
+			
+			// Whether the event is resizable 
+			if( parseInt( activity_data[ 'is_resizable' ] ) === 1 ) { event.durationEditable = true; }
+			
+			
 			bookacti_start_template_loading();
 
 			$j.ajax({
@@ -379,15 +366,16 @@ function bookacti_load_template_calendar() {
 				data: { 'action': 'bookactiInsertEvent', 
 						'activity_id': activity_id, 
 						'template_id': bookacti.selected_template, 
-						'event_title': title, 
-						'event_start': start, 
-						'event_end': end,
-						'event_availability': availability,
+						'event_title': activity_data[ 'multilingual_title' ], 
+						'event_start': event.start.format( 'YYYY-MM-DD HH:mm:ss' ), 
+						'event_end': event.end.format( 'YYYY-MM-DD HH:mm:ss' ),
+						'event_availability': activity_data[ 'availability' ],
 						'nonce': bookacti_localized.nonce_insert_event
 					}, 
 				type: 'POST',
 				dataType: 'json',
 				success: function( response ){
+					
 					if( response.status === 'success' ) {
 						// Give the database generated id to the event, 
 						// so that any further changes to this event before page refresh will be also saved
@@ -478,7 +466,7 @@ function bookacti_load_template_calendar() {
 						if( response.error === 'has_bookings' ) {
 							// If the event's booking number is not up to date, refresh it
 							if( ! event.bookings ) {
-								bookacti_refresh_booking_numbers( bookacti.selected_template, event.id );
+								bookacti_refresh_booking_numbers( $j( '#bookacti-template-calendar' ), event.id );
 							}
 							// If the event is repeated, display unbind dialog
 							if( bookacti.booking_system[ 'bookacti-template-calendar' ][ 'events_data' ][ event.id ][ 'repeat_freq' ] !== 'none' ) {
@@ -489,7 +477,7 @@ function bookacti_load_template_calendar() {
 							if( response.error === 'not_allowed' ) {
 								error_message += '\n' + bookacti_localized.error_not_allowed;
 							} else if( response.error === 'has_bookings' ) {
-								bookacti_refresh_booking_numbers( bookacti.selected_template, event.id );
+								bookacti_refresh_booking_numbers( $j( '#bookacti-template-calendar' ), event.id );
 								error_message += '\n' + bookacti_localized.error_edit_locked_event;
 								error_message += '\n' + bookacti_localized.advice_switch_to_maintenance + '\n';
 							}
@@ -611,7 +599,7 @@ function bookacti_load_template_calendar() {
 						if( response.error === 'has_bookings' ) {
 							// If the event's booking number is not up to date, refresh it
 							if( ! event.bookings ) {
-								bookacti_refresh_booking_numbers( bookacti.selected_template, event.id );
+								bookacti_refresh_booking_numbers( $j( '#bookacti-template-calendar' ), event.id );
 							}
 							// If the event is repeated, display unbind dialog
 							if( bookacti.booking_system[ 'bookacti-template-calendar' ][ 'events_data' ][ event.id ][ 'repeat_freq' ] !== 'none' ) {
@@ -622,7 +610,7 @@ function bookacti_load_template_calendar() {
 							if( response.error === 'not_allowed' ) {
 								error_message += '\n' + bookacti_localized.error_not_allowed;
 							} else if( response.error === 'has_bookings' ) {
-								bookacti_refresh_booking_numbers( bookacti.selected_template, event.id );
+								bookacti_refresh_booking_numbers( $j( '#bookacti-template-calendar' ), event.id );
 								error_message += '\n' + bookacti_localized.error_edit_locked_event;
 								error_message += '\n' + bookacti_localized.advice_switch_to_maintenance + '\n';
 							}

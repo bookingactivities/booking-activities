@@ -4,7 +4,13 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 
 // PERMISSIONS
-	// CHECK IF USER IS ALLOWED TO MANAGE TEMPLATE
+	/**
+	 * Check if user is allowed to manage template
+	 * 
+	 * @param int $template_id
+	 * @param int $user_id
+	 * @return boolean
+	 */
 	function bookacti_user_can_manage_template( $template_id, $user_id = false ) {
 
 		$user_can_manage_template = false;
@@ -53,54 +59,54 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	/**
 	 * Retrieve template activities list
 	 * 
-	 * @since 1.0.0
-	 * @version 1.1.0
-	 * 
+	 * @version 1.3.0
 	 * @param int $template_id
 	 * @return boolean|string 
 	 */
 	function bookacti_get_template_activities_list( $template_id ) {
 		
-		if( empty( $template_id ) ) {
+		if( ! $template_id ) {
 			return false;
 		}
 		
-		$list = '';
 		$activities = bookacti_fetch_activities();
 		$template_activities = bookacti_get_activity_ids_by_template( $template_id, false );
-
+		
+		ob_start();
 		foreach ( $activities as $activity ) {
 			if( in_array( $activity->id, $template_activities ) ) {
 				$title = apply_filters( 'bookacti_translate_text', $activity->title );
-
-				$list	.=	"<div class='activity-row'>"
-						.       "<div class='activity-show-hide' >"
-						.           "<img src='" . esc_url( plugins_url() . "/" . BOOKACTI_PLUGIN_NAME . "/img/show.png" ) . "' data-activity-id='" . esc_attr( $activity->id ) . "' data-activity-visible='1' />"
-						.       "</div>"
-						.       "<div class='activity-container'>"
-						.           "<div "
-						.				"class='fc-event ui-draggable ui-draggable-handle' "
-						.				"data-title='"			. esc_attr( $activity->title ) . "' "
-						.				"data-activity-id='"	. esc_attr( $activity->id )				. "' "
-						.				"data-color='"			. esc_attr( $activity->color )			. "' "
-						.				"data-availability='"	. esc_attr( $activity->availability	)	. "' "
-						.				"data-start='12:00' "
-						.				"data-duration='"		. esc_attr( $activity->duration )		. "' "
-						.				"data-resizable='"		. esc_attr( $activity->is_resizable	)	. "' "
-						.           ">"
-						.               $title
-						.           "</div>"
-						.       "</div>";
-				if( current_user_can( 'bookacti_edit_activities' ) && bookacti_user_can_manage_activity( $activity->id ) ) {	
-					$list .=	"<div class='activity-gear' >"
-						.           "<img src='" . esc_url( plugins_url() . "/" . BOOKACTI_PLUGIN_NAME . "/img/gear.png" ) . "' data-activity-id='" . esc_attr( $activity->id ) . "' />"
-						.       "</div>";
+				?>
+				<div class='activity-row'>
+					<div class='activity-show-hide' >
+						<img src='<?php echo esc_url( plugins_url() . "/" . BOOKACTI_PLUGIN_NAME . "/img/show.png" ); ?>' data-activity-id='<?php echo esc_attr( $activity->id ); ?>' data-activity-visible='1' />
+					</div>
+					<div class='activity-container'>
+						<div
+							class='fc-event ui-draggable ui-draggable-handle'
+							data-event='{"title": "<?php echo esc_attr( $title ) ?>", "activity_id": "<?php echo esc_attr( $activity->id ) ?>", "color": "<?php echo esc_attr( $activity->color ) ?>"}' 
+							data-activity-id='<?php echo esc_attr( $activity->id ) ?>'
+							data-duration='<?php echo esc_attr( $activity->duration ) ?>'
+							style='border-color:<?php echo esc_attr( $activity->color ) ?>; background-color:<?php echo esc_attr( $activity->color ) ?>'
+							>
+							<?php echo $title; ?>
+						</div>
+					</div>
+				<?php
+				if( current_user_can( 'bookacti_edit_activities' ) && bookacti_user_can_manage_activity( $activity->id ) ) {
+				?>
+					<div class='activity-gear' >
+						<img src='<?php echo esc_url( plugins_url() . "/" . BOOKACTI_PLUGIN_NAME . "/img/gear.png" ); ?>' data-activity-id='<?php echo esc_attr( $activity->id ); ?>' />
+					</div>
+				<?php
 				}
-				$list	.=	"</div>";
+				?>
+				</div>
+				<?php
 			}
 		}
 
-		return $list;
+		return ob_get_clean();
 	}
 
 
@@ -177,53 +183,6 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		$mixed_data[ 'settings' ] = $mixed_settings;
 		
 		return apply_filters( 'bookacti_mixed_template_settings', $mixed_data, $templates_data, $template_ids, $past_events );
-	}
-
-
-
-// USER DEFAULT TEMPLATE
-	// GET USER DEFAULT TEMPLATE
-	function bookacti_get_user_default_template( $user_id = false ) {
-
-		$user_id = $user_id ? $user_id : get_current_user_id();
-
-		$template_settings = get_option( 'bookacti_template_settings' );
-
-		if( empty( $template_settings ) ){
-			$template_settings = array();
-		}
-		if( empty( $template_settings['default_template_per_user'] ) ) {
-			$template_settings['default_template_per_user'] = array();
-		} 
-		if( empty( $template_settings['default_template_per_user'][ $user_id ] ) ) {
-			$template_settings['default_template_per_user'][ $user_id ] = 0;
-		} 
-
-		return intval( $template_settings['default_template_per_user'][ $user_id ] );
-	}
-
-
-	// UPDATE USER DEFAULT TEMPLATE
-	function bookacti_update_user_default_template( $template_id, $user_id = false ) {
-
-		$user_id = $user_id ? $user_id : get_current_user_id();
-
-		$template_settings = get_option( 'bookacti_template_settings' );
-		if( ! is_array( $template_settings['default_template_per_user'] ) ) {
-			$template_settings['default_template_per_user'] = array();
-		}
-
-		// If no change, return 0
-		if( isset( $template_settings['default_template_per_user'][ $user_id ] )
-		&&  $template_settings['default_template_per_user'][ $user_id ] === $template_id ) {
-			return 0;
-		}
-
-		$template_settings['default_template_per_user'][ $user_id ] = $template_id;
-
-		$is_updated = update_option( 'bookacti_template_settings', $template_settings );
-
-		return $is_updated;
 	}
 
 

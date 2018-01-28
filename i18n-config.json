@@ -1,4 +1,4 @@
-{ "vendor": { "plugins/booking-activities": "1.2.1" },
+{ "vendor": { "plugins/booking-activities": "1.3.0" },
 	"admin-config":{
 		"bookacti_calendars":{
 			"pages":{ "admin.php":"" },
@@ -12,7 +12,9 @@
 			"forms":{
 				"bookacti-settings":{
 					"fields":{
-						"bookacti-settings-date-format":{},
+						"bookacti-settings-date-format-short":{},
+						"bookacti-settings-date-format-long":{},
+						"bookacti-settings-time-format":{},
 						"bookacti_notification_customer_pending_booking_email_subject":{},
 						"bookacti_notification_customer_pending_booking_email_message":{},
 						"bookacti_notification_customer_booked_booking_email_subject":{},
@@ -23,11 +25,27 @@
 						"bookacti_notification_customer_rescheduled_booking_email_message":{},
 						"bookacti_notification_customer_refunded_booking_email_subject":{},
 						"bookacti_notification_customer_refunded_booking_email_message":{},
+						"bookacti_messages_settings_date_format_short":{},
+						"bookacti_messages_settings_date_format_long":{},
+						"bookacti_messages_settings_time_format":{},
+						"bookacti_messages_settings_dates_separator":{},
+						"bookacti_messages_settings_date_time_separator":{},
+						"bookacti_messages_settings_quantity_separator":{},
 						"bookacti_messages_settings_calendar_title":{},
 						"bookacti_messages_settings_booking_success":{},
 						"bookacti_messages_settings_booking_form_submit_button":{},
 						"bookacti_messages_settings_booking_form_new_booking_button":{},
-						"bookacti_messages_settings_temporary_booking_success":{}
+						"bookacti_messages_settings_choose_group_dialog_title":{},
+						"bookacti_messages_settings_choose_group_dialog_content":{},
+						"bookacti_messages_settings_cancel_dialog_button":{},
+						"bookacti_messages_settings_cancel_dialog_title":{},
+						"bookacti_messages_settings_cancel_dialog_content":{},
+						"bookacti_messages_settings_reschedule_dialog_button":{},
+						"bookacti_messages_settings_reschedule_dialog_title":{},
+						"bookacti_messages_settings_refund_dialog_button":{},
+						"bookacti_messages_settings_refund_dialog_title":{},
+						"bookacti_messages_settings_temporary_booking_success":{},
+						"bookacti_messages_settings_cart_countdown":{}
 					}
 				},
 				"bookacti-activity-data-form":{

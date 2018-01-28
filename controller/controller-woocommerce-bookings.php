@@ -45,7 +45,10 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	 * @return array
 	 */
 	function bookacti_add_woocommerce_active_booking_states( $active_states ) {
-		$active_states[] = 'in_cart';
+		$is_expiration_active = bookacti_get_setting_value( 'bookacti_cart_settings', 'is_cart_expiration_active' );
+		if( $is_expiration_active ) {
+			$active_states[] = 'in_cart';
+		}
 		return $active_states;
 	}
 	add_filter( 'bookacti_active_booking_states', 'bookacti_add_woocommerce_active_booking_states' );
@@ -90,27 +93,24 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	 * Change booking state to 'removed' or 'in_cart' depending on its quantity
 	 * 
 	 * @since 1.1.0
+	 * @version 1.3.0
 	 * 
 	 * @param array $data
 	 * @param object $booking
 	 * @return array
 	 */
 	function bookacti_change_booking_state_to_removed_or_in_cart_depending_on_its_quantity( $data, $booking ) {
-		
 		// If quantity is null, change booking state to 'removed' and keep the booking quantity
 		if( $data[ 'quantity' ] <= 0 ) { 
-			
 			$data[ 'state' ]	= $data[ 'context' ] === 'frontend' ? 'removed' : 'cancelled'; 
-			$data[ 'quantity' ]	= intval( $booking->quantity ); 
-			$data[ 'active' ]	= 0; 
+			$data[ 'quantity' ]	= intval( $booking->quantity );
+			$data[ 'active' ]	= in_array( $data[ 'state' ], bookacti_get_active_booking_states(), true ) ? 1 : 0;
 		
 		// If the booking was removed and its quantity is raised higher than 0, turn its state back to 'in_cart'
 		} else if( $booking->state === 'removed' ) {
-			
-			$data[ 'state' ]	= $data[ 'context' ] === 'frontend' ? 'in_cart' : 'pending'; 
-			$data[ 'active' ]	= 1; 
+			$data[ 'state' ]	= $data[ 'context' ] === 'frontend' ? 'in_cart' : 'pending';
+			$data[ 'active' ]	= in_array( $data[ 'state' ], bookacti_get_active_booking_states(), true ) ? 1 : 0;
 		}
-		
 		return $data;
 	}
 	add_filter( 'bookacti_update_booking_quantity_data', 'bookacti_change_booking_state_to_removed_or_in_cart_depending_on_its_quantity', 10, 2 );
@@ -123,19 +123,21 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	/**
 	 * Turn a temporary booking to permanent if order gets complete
 	 * 
-	 * @version 1.2.2
+	 * @version 1.3.0
 	 * @param int $order_id
 	 * @param WC_Order $order
+	 * @param string $booking_status
+	 * @param string $payment_status
 	 */
-	function bookacti_turn_temporary_booking_to_permanent( $order_id, $order ) {
+	function bookacti_turn_temporary_booking_to_permanent( $order_id, $order, $booking_status = 'booked', $payment_status = 'paid' ) {
 		
-		//Change state of all bookings of the order from 'pending' to 'booked'
-		bookacti_turn_order_bookings_to( $order, 'booked', true );
+		// Change state of all bookings of the order from 'pending' to 'booked'
+		$updated = bookacti_turn_order_bookings_to( $order, $booking_status, $payment_status, true );
 		
-		//It is possible that pending bookings remain bound to the order if the user change his mind after he placed the order, but before he paid it.
-		//He then changed his cart, placed a new order, paid it, and only part of the old order is booked (or even nothing), the rest is still 'pending'
-		//Then we just turn 'pending' booking bound to this order to 'cancelled'
-		bookacti_cancel_order_pending_bookings( $order_id );
+		// It is possible that pending bookings remain bound to the order if the user change his mind after he placed the order, but before he paid it.
+		// He then changed his cart, placed a new order, paid it, and only part of the old order is booked (or even nothing), the rest is still 'pending'
+		// Then we just turn 'pending' booking bound to this order to 'cancelled'
+		bookacti_cancel_order_pending_bookings( $order_id, $updated[ 'booking_ids' ], $updated[ 'booking_group_ids' ] );
 	}
 	add_action( 'woocommerce_order_status_completed', 'bookacti_turn_temporary_booking_to_permanent', 5, 2 );
 	
@@ -143,14 +145,14 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	/**
 	 * Cancel the temporary booking if it failed
 	 * 
-	 * @version 1.2.2
+	 * @version 1.3.0
 	 * @param int $order_id
 	 * @param WC_Order $order
 	 */
 	function bookacti_cancelled_order( $order_id, $order ) {
 		
-		//Change state of all bookings of the order to 'cancelled' and free the bookings
-		bookacti_turn_order_bookings_to( $order, 'cancelled', false );
+		// Change state of all bookings of the order to 'cancelled' and free the bookings
+		bookacti_turn_order_bookings_to( $order, 'cancelled', NULL, false );
 		
 		// It is possible that 'pending' bookings remain if the user has changed his cart before payment, we must cancel them
 		bookacti_cancel_order_pending_bookings( $order_id );
@@ -162,9 +164,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	/**
 	 * Turn paid order status to complete if the order has only activities
 	 * 
-	 * @since 1.0.0
-	 * @version 1.1.0
-	 * 
+	 * @version 1.3.0
 	 * @param string $order_status
 	 * @param int $order_id
 	 * @return string
@@ -203,9 +203,11 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 					$order_status = 'completed';
 					
 				// If there are at least one activity in the middle of other products, 
-				// we won't mark the order as 'completed', but we still need to mark the activities as 'booked'
+				// we won't mark the order as 'completed', but we still need to mark the bookings as 'pending' and 'owed'
+				// until the order changes state. At that time the bookings state will be redifined by other hooks
+				// such as "woocommerce_order_status_pending_to_processing" and "woocommerce_order_status_completed"
 				} else if( $has_activities ) {
-					bookacti_turn_temporary_booking_to_permanent( $order_id );
+					bookacti_turn_temporary_booking_to_permanent( $order_id, $order, 'pending', 'owed' );
 				}
 			}
 		}
@@ -214,6 +216,46 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	}
 	add_filter( 'woocommerce_payment_complete_order_status', 'bookacti_set_order_status_to_completed_after_payment', 10, 2 );
 	
+	
+	/**
+	 * Turn bookings of a paid order containing non-activity products to booked
+	 * 
+	 * @version 1.3.0
+	 * @param int $order_id
+	 * @param WC_Order $order
+	 */
+	function bookacti_turn_non_activity_order_bookings_to_permanent( $order_id, $order ) {
+		
+		if( ! $order ) { $order = wc_get_order( $order_id ); }
+		if( ! $order ) { return false; }
+		
+		// If the order hasn't been paid, return
+		// WOOCOMMERCE 3.0.0 backward compatibility 
+		if( version_compare( WC_VERSION, '3.0.0', '>=' ) ) {
+			if( ! $order->get_date_paid( 'edit' ) ) { return false; }
+		} else {
+			if( ! get_post_meta( $order_id, '_paid_date', true ) ) { return false; }
+		}
+		
+		// Retrieve bought items
+		$items = $order->get_items();
+
+		// Determine if the order is only composed of activities
+		$are_activities = true;
+		foreach( $items as $item ) {
+			if( ! isset( $item[ 'bookacti_booking_id' ] ) && ! isset( $item[ 'bookacti_booking_group_id' ] )  ) {
+				$are_activities = false;
+				break;
+			}
+		}
+
+		// If there are at least one activity in the middle of other products, 
+		// mark the bookings as 'booked' and 'paid'
+		if( ! $are_activities ) {
+			bookacti_turn_temporary_booking_to_permanent( $order_id, $order, 'booked', 'paid' );
+		}
+	}
+	add_action( 'woocommerce_order_status_pending_to_processing', 'bookacti_turn_non_activity_order_bookings_to_permanent', 5, 2 );
 	
 	
 	
@@ -259,6 +301,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	/**
 	 * Fill booking list columns
 	 * 
+	 * @version 1.3.0
 	 * @param array $booking_item
 	 * @param object $booking
 	 * @param WP_User $user
@@ -266,20 +309,19 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	 */
 	function bookacti_woocommerce_fill_booking_list_custom_columns( $booking_item, $booking, $user ) {
 		
-		if( $user ) {
-			if( is_numeric( $booking->user_id ) && $user->billing_first_name && $user->billing_last_name ) {
-				$customer = '<a '
-							. ' href="' . esc_url( get_admin_url() . 'user-edit.php?user_id=' . $booking->user_id ) . '" '
-							. ' target="_blank" '
-							. ' >'
-								. esc_html( $user->billing_first_name . ' ' . $user->billing_last_name )
-						. ' </a>';
-			}
+		$customer = '';
+		if( is_numeric( $booking->user_id ) && $user->billing_first_name && $user->billing_last_name ) {
+			$customer = '<a '
+						. ' href="' . esc_url( get_admin_url() . 'user-edit.php?user_id=' . $booking->user_id ) . '" '
+						. ' target="_blank" '
+						. ' >'
+							. esc_html( $user->billing_first_name . ' ' . $user->billing_last_name )
+					. ' </a>';
+			
+			$booking_item[ 'customer' ]	= $customer ? $customer : $booking_item[ 'customer' ];
+			$booking_item[ 'email' ]	= $user->billing_email;
+			$booking_item[ 'phone' ]	= $user->billing_phone;
 		}
-		
-		$booking_item[ 'customer' ]	= $customer ? $customer : $booking_item[ 'customer' ];
-		$booking_item[ 'email' ]	= $user->billing_email;
-		$booking_item[ 'phone' ]	= $user->billing_phone;
 		
 		return $booking_item;
 	}
@@ -305,13 +347,14 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	/**
 	 * Reorder columns from booking list
 	 * 
+	 * @version 1.3.0
 	 * @param array $columns_order
 	 * @return array
 	 */
 	function bookacti_woocommerce_order_booking_list_custom_columns( $columns_order ) {
 		
-		$columns_order[ 24 ] = 'email';
-		$columns_order[ 27 ] = 'phone';
+		$columns_order[ 54 ] = 'email';
+		$columns_order[ 57 ] = 'phone';
 		
 		return $columns_order;
 	}
@@ -319,20 +362,20 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	
 	
 	/**
-	 * Filter booking list before retrieving bookings
+	 * Edit default hidden columns in booking list
 	 * 
-	 * @param array $bookings_data
+	 * @since 1.3.0
+	 * @param array $hidden_columns
 	 * @return array
 	 */
-	function bookacti_filter_bookings_list_before_retrieving_bookings( $bookings_data ) {
-		$show_temporary_bookings = bookacti_get_setting_value_by_user( 'bookacti_bookings_settings', 'show_temporary_bookings' );
-		if( intval( $show_temporary_bookings ) === 0 ) { $bookings_data[ 'state_not_in' ][] = 'in_cart'; }
+	function bookacti_woocommerce_booking_list_hidden_columns( $hidden_columns ) {
 		
-		return $bookings_data;
-	}
-	add_filter( 'bookacti_get_bookings_data_for_bookings_list', 'bookacti_filter_bookings_list_before_retrieving_bookings', 10 );
-	add_filter( 'bookacti_get_booking_groups_data_for_bookings_list', 'bookacti_filter_bookings_list_before_retrieving_bookings', 10 );
+		$hidden_columns[] = 'email';
+		$hidden_columns[] = 'phone';
 
+		return $hidden_columns;
+	}
+	add_filter( 'bookacti_booking_list_default_hidden_columns', 'bookacti_woocommerce_booking_list_hidden_columns', 10, 1 );
 
 
 

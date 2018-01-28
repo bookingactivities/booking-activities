@@ -6,11 +6,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 <!-- Frontend and backend - Cancel booking -->
 <div id='bookacti-cancel-booking-dialog' class='bookacti-backend-dialog bookacti-bookings-dialog' style='display:none;' >
 <?php
-	echo '<p>'
-			. esc_html__( 'Do you really want to cancel this booking?', BOOKACTI_PLUGIN_NAME )
-		. '</p><p>'
-			. esc_html__( 'If you have already paid, you will be able to request a refund.', BOOKACTI_PLUGIN_NAME )
-		. '</p>';
+	echo wp_kses_post( wpautop( bookacti_get_message( 'cancel_dialog_content' ) ) );
 ?>
 </div>
 

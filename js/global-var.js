@@ -11,9 +11,6 @@ var bookacti = {
 		},
 	'is_touch_device': false,
 
-	// Bookings
-	'hidden_activities': [],
-
 	// Woocommerce
 	'parent_booking_system': [],
 	'is_variation_activity': []

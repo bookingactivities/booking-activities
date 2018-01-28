@@ -25,15 +25,6 @@ function bookacti_add_cart_tab_content( $active_tab ) {
 // Add Cart settings section
 add_action( 'bookacti_add_settings', 'bookacti_add_woocommerce_cart_settings_section' );
 function bookacti_add_woocommerce_cart_settings_section() {
-	/* Bookings */
-	add_settings_field(  
-		'show_temporary_bookings', 
-		__( 'Show temporary bookings', BOOKACTI_PLUGIN_NAME ), 
-		'bookacti_settings_field_show_temporary_bookings_callback', 
-		'bookacti_bookings_settings', 
-		'bookacti_settings_section_bookings' 
-	);
-	
 	
 	/* Cart settings Section */
 	add_settings_section( 
@@ -81,54 +72,24 @@ function bookacti_add_woocommerce_cart_settings_section() {
 }
 
 
-// Define default cart settings value
-add_action( 'bookacti_define_settings_constants', 'bookacti_define_cart_settings_constants' );
-function bookacti_define_cart_settings_constants() {
-	// Bookings
-	if( ! defined( 'BOOKACTI_SHOW_TEMPORARY_BOOKINGS' ) )		{ define( 'BOOKACTI_SHOW_TEMPORARY_BOOKINGS', '1' ); }
+// 
+/**
+ * Define default cart settings values
+ * 
+ * @since 1.3.0 (was bookacti_define_cart_settings_constants)
+ * @param array $settings
+ * @return array
+ */
+function bookacti_cart_default_settings( $settings ) {
 	
-	// Cart
-	if( ! defined( 'BOOKACTI_IS_CART_EXPIRATION_ACTIVE' ) )		{ define( 'BOOKACTI_IS_CART_EXPIRATION_ACTIVE', '1' ); }
-	if( ! defined( 'BOOKACTI_IS_CART_EXPIRATION_PER_PRODUCT' ) ){ define( 'BOOKACTI_IS_CART_EXPIRATION_PER_PRODUCT', '0' ); }
-	if( ! defined( 'BOOKACTI_CART_TIMEOUT' ) )					{ define( 'BOOKACTI_CART_TIMEOUT', '30' ); }
-	if( ! defined( 'BOOKACTI_RESET_CART_TIMEOUT_ON_CHANGE' ) )	{ define( 'BOOKACTI_RESET_CART_TIMEOUT_ON_CHANGE', '0' ); }
-}
-
-
-// Init cart settings value to default
-add_action( 'bookacti_init_settings_value', 'bookacti_init_cart_settings_value' );
-function bookacti_init_cart_settings_value() {
-	// Bookings
-	$default_bookings_settings = get_option( 'bookacti_bookings_settings' );
-	if( ! isset( $default_bookings_settings['show_temporary_bookings'] ) )	{ $default_bookings_settings['show_temporary_bookings']		= BOOKACTI_SHOW_TEMPORARY_BOOKINGS; }
-	update_option( 'bookacti_bookings_settings', $default_bookings_settings );
+	$settings[ 'is_cart_expiration_active' ]		= true;
+	$settings[ 'is_cart_expiration_per_product' ]	= false;
+	$settings[ 'cart_timeout' ]						= 30;
+	$settings[ 'reset_cart_timeout_on_change' ]		= false;
 	
-	// Cart
-	$default_cart_settings = get_option( 'bookacti_cart_settings' );
-	if( ! isset( $default_cart_settings['is_cart_expiration_active'] ) )	{ $default_cart_settings['is_cart_expiration_active']		= BOOKACTI_IS_CART_EXPIRATION_ACTIVE; }
-	if( ! isset( $default_cart_settings['is_cart_expiration_per_product'] )){ $default_cart_settings['is_cart_expiration_per_product']	= BOOKACTI_IS_CART_EXPIRATION_PER_PRODUCT; }
-	if( ! isset( $default_cart_settings['cart_timeout'] ) )					{ $default_cart_settings['cart_timeout']					= BOOKACTI_CART_TIMEOUT; }
-	if( ! isset( $default_cart_settings['reset_cart_timeout_on_change'] ) )	{ $default_cart_settings['reset_cart_timeout_on_change']	= BOOKACTI_RESET_CART_TIMEOUT_ON_CHANGE; }
-	update_option( 'bookacti_cart_settings', $default_cart_settings );
+	return $settings;
 }
-
-
-// Reset cart settings values to default
-add_action( 'bookacti_reset_settings', 'bookacti_reset_cart_settings' );
-function bookacti_reset_cart_settings() {
-	// Bookings
-	$default_bookings_settings = array();
-	$default_bookings_settings['show_temporary_bookings']		= BOOKACTI_SHOW_TEMPORARY_BOOKINGS;
-	update_option( 'bookacti_bookings_settings', $default_bookings_settings );
-	
-	// Cart
-	$default_cart_settings = array();
-	$default_cart_settings['is_cart_expiration_active']			= BOOKACTI_IS_CART_EXPIRATION_ACTIVE;
-	$default_cart_settings['is_cart_expiration_per_product']	= BOOKACTI_IS_CART_EXPIRATION_PER_PRODUCT;
-	$default_cart_settings['cart_timeout']						= BOOKACTI_CART_TIMEOUT;
-	$default_cart_settings['reset_cart_timeout_on_change']		= BOOKACTI_RESET_CART_TIMEOUT_ON_CHANGE;
-	update_option( 'bookacti_cart_settings', $default_cart_settings );
-}
+add_filter( 'bookacti_default_settings', 'bookacti_cart_default_settings' );
 
 
 // Delete cart settings
@@ -137,38 +98,6 @@ function bookacti_delete_cart_settings() {
 	// Delete Cart Settings
 	delete_option( 'bookacti_cart_settings' );
 }
-
-
-/**
- * Add bookings list settings
- * 
- * @version 1.2.0
- * @param array $params
- */
-function bookacti_add_booking_list_in_cart_filter( $params ) {
-	$user_id = $params[ 'user_id' ];
-	$show_temporary_bookings_array	= bookacti_get_setting_value( 'bookacti_bookings_settings', 'show_temporary_bookings' );
-	$show_temporary_bookings		= 0;
-	if( is_array( $show_temporary_bookings_array ) && isset( $show_temporary_bookings_array[ $user_id ] ) && ! is_null( $show_temporary_bookings_array[ $user_id ] ) ) {
-		$show_temporary_bookings	= $show_temporary_bookings_array[ $user_id ];
-	}
-		
-	$args = array(
-		'type'	=> 'checkbox',
-		'name'	=> 'bookings-show-temporary-bookings',
-		'id'	=> 'bookacti-bookings-show-temporary-bookings',
-		'value'	=> $show_temporary_bookings,
-		'tip'	=> __( 'Show temporary bookings in the booking list (in cart bookings).', BOOKACTI_PLUGIN_NAME )
-	);
-	
-	?>
-	<div>
-		<label for='bookacti-bookings-show-temporary-bookings' ><?php esc_html_e( 'Show temporary bookings', BOOKACTI_PLUGIN_NAME ); ?></label>
-		<?php bookacti_display_field( $args ); ?>
-	</div>
-<?php
-}
-add_action( 'bookacti_booking_list_tab_filter_after', 'bookacti_add_booking_list_in_cart_filter', 10, 1 );
 
 
 /**
@@ -182,7 +111,7 @@ function bookacti_add_wc_mention_to_booking_method_tip( $tip ) {
 	$tip .= esc_html__( 'This parameter can be overriden by products settings in woocommerce.', BOOKACTI_PLUGIN_NAME );
 	return $tip;
 }
-add_filter( 'bookacti_booking_methods_tip', 'bookacti_add_wc_mention_to_booking_method_tip', 1, 10 );
+add_filter( 'bookacti_booking_methods_tip', 'bookacti_add_wc_mention_to_booking_method_tip', 20, 1 );
 
 
 /**
@@ -254,17 +183,25 @@ add_action( 'bookacti_notification_settings_page_global', 'bookacti_display_wc_n
  * Add customizable messages
  * 
  * @since 1.2.0
+ * @version 1.3.0
  * @param array $messages
  * @return array
  */
 function bookacti_wc_default_messages( $messages ) {
 	
-	$messages[ 'temporary_booking_success' ] = array(
-		/* translators: '{time}' is a variable standing for an amount of days, hours and minutes. Ex: {time}' can be '1 day, 6 hours, 30 minutes'. */
-		'value'			=> __( 'Your activity is temporarily booked for {time}. Please proceed to checkout.', BOOKACTI_PLUGIN_NAME ),
-		'description'	=> __( 'When a temporary booking is added to cart. Use {time} tag to display the remaining time before expiration.', BOOKACTI_PLUGIN_NAME )
+	$wc_messages = array( 
+		'temporary_booking_success' => array(
+			/* translators: {time} tag is a variable standing for an amount of days, hours and minutes. Ex: {time}' can be '1 day, 6 hours, 30 minutes'. */
+			'value'			=> esc_html__( 'Your activity is temporarily booked for {time}. Please proceed to checkout.', BOOKACTI_PLUGIN_NAME ),
+			'description'	=> esc_html__( 'When a temporary booking is added to cart. Use the {time} tag to display the remaining time before expiration.', BOOKACTI_PLUGIN_NAME )
+		),
+		'cart_countdown' => array(
+			/* translators: {countdown} tag is to be replaced by a real-time countdown: E.g.: 'Your cart expires in 3 days 12:35:26' or 'Your cart expires in 01:30:05'*/
+			'value'			=> esc_html__( 'Your cart expires in {countdown}', BOOKACTI_PLUGIN_NAME ),
+			'description'	=> esc_html__( 'This message will be displayed above your cart. Use the {countdown} tag to display the real-time countdown.', BOOKACTI_PLUGIN_NAME )
+		)
 	);
 	
-	return $messages;
+	return array_merge( $messages, $wc_messages );
 }
 add_filter( 'bookacti_default_messages', 'bookacti_wc_default_messages', 10, 1 );

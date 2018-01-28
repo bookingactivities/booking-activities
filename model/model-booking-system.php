@@ -7,7 +7,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	/**
 	 * Fetch events by templates and / or activities
 	 *
-	 * @version 1.2.2
+	 * @version 1.3.0
 	 * 
 	 * @param array $templates
 	 * @param array $activities
@@ -165,10 +165,12 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		
 		
 		// Safely apply variables to the query
-		$prep_query = $wpdb->prepare( $query, $variables );
+		if( $variables ) {
+			$query = $wpdb->prepare( $query, $variables );
+		}
 		
 		// Get events complying with parameters
-		$events = $wpdb->get_results( $prep_query, OBJECT );
+		$events = $wpdb->get_results( $query, OBJECT );
 		
 		// Transform raw events from database to array of individual events
 		$events_array = bookacti_get_events_array_from_db_events( $events, $past_events, $interval );
@@ -329,15 +331,17 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	 * Fetch booked events only
 	 * 
 	 * @since 1.2.2
+	 * @version 1.3.0
 	 * @global wpdb $wpdb
 	 * @param array $templates
 	 * @param array $activities
 	 * @param array $booking_status
+	 * @param int $user_id
 	 * @param boolean $past_events
 	 * @param array $interval array('start' => string: start date, 'end' => string: end date)
 	 * @return array
 	 */
-	function bookacti_fetch_booked_events( $templates = array(), $activities = array(), $booking_status = array(), $past_events = false, $interval = array() ) {
+	function bookacti_fetch_booked_events( $templates = array(), $activities = array(), $booking_status = array(), $user_id = 0, $past_events = false, $interval = array() ) {
 		
 		global $wpdb;
 		
@@ -347,9 +351,6 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		$user_timestamp				= $current_datetime_object->format( 'U' );
 		$user_timestamp_offset		= $current_datetime_object->format( 'P' );
 		
-		$fetch_inactive_bookings	= bookacti_get_setting_value_by_user( 'bookacti_bookings_settings', 'show_inactive_bookings' );
-		$fetch_temporary_bookings	= bookacti_get_setting_value_by_user( 'bookacti_bookings_settings', 'show_temporary_bookings' );
-		
 		$variables					= array();
 		
 		// Prepare the query
@@ -358,10 +359,6 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 				. ' WHERE B.event_id = E.id '
 				. ' AND E.activity_id = A.id '
 				. ' AND E.template_id = T.id ';
-		
-		if( ! $fetch_inactive_bookings ) {
-			$query  .= ' AND B.active = 1';
-		}
 		
 		// Get events from desired templates only
 		if( $templates ) {
@@ -383,15 +380,6 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			$variables = array_merge( $variables, $activities );
 		}
 		
-		// Whether to fetch temporary bookings
-		if( ! $fetch_temporary_bookings ) { 
-			$key = array_search( 'in_cart', $booking_status );
-			if( $key !== false ) { unset( $booking_status[ $key ] ); }
-			else {
-				$query .= ' AND B.state != "in_cart" ';
-			}
-		}
-		
 		// Fetch events from desired booking status only
 		if( $booking_status ) {
 			// Get the event only if it belongs to a group of the allowed categories
@@ -401,6 +389,12 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			}
 			$query .= ' ) ';
 			$variables = array_merge( $variables, $booking_status );
+		}
+		
+		// Filter bookings by user
+		if( $user_id ) {
+			$query .= ' AND B.user_id = %s ';
+			$variables[] = $user_id ;
 		}
 		
 		// Do not fetch events out of the desired interval
@@ -431,10 +425,12 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		$query  .= ' ORDER BY B.event_start ASC ';
 		
 		// Safely apply variables to the query
-		$prep_query = $wpdb->prepare( $query, $variables );
+		if( $variables ) {
+			$query = $wpdb->prepare( $query, $variables );
+		}
 		
 		// Get events complying with parameters
-		$events = $wpdb->get_results( $prep_query, OBJECT );
+		$events = $wpdb->get_results( $query, OBJECT );
 
 		// Transform raw events from database to array of individual events
 		$events_array = bookacti_get_events_array_from_db_events( $events, $past_events, $interval );
@@ -508,13 +504,15 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	/**
 	 * Get the number of remaining places of an event (total places - booked places)
 	 * 
+	 * @version 1.3.0
 	 * @global wpdb $wpdb
 	 * @param int $event_id
 	 * @param string $event_start Format "YYYY-MM-DD HH:mm:ss"
 	 * @param string $event_end Format "YYYY-MM-DD HH:mm:ss"
+	 * @param array $include_states
 	 * @return int
 	 */
-	function bookacti_get_event_availability( $event_id, $event_start, $event_end ) {
+	function bookacti_get_event_availability( $event_id, $event_start, $event_end, $include_states = array() ) {
 		global $wpdb;
 
         $query_total_avail  = 'SELECT availability FROM ' . BOOKACTI_TABLE_EVENTS . ' WHERE id = %d';
@@ -523,7 +521,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
         
 		if( ! $total_avail ) { $availability = 0; }
 		
-        $bookings = bookacti_get_number_of_bookings( $event_id, $event_start, $event_end );
+        $bookings = bookacti_get_number_of_bookings( $event_id, $event_start, $event_end, $include_states );
         
 		$availability = $total_avail - $bookings;
 		
@@ -600,7 +598,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	/**
 	 * Get event repetition exceptions by templates or by events
 	 * 
-	 * @version 1.2.2
+	 * @version 1.3.0
 	 * @global wpdb $wpdb
 	 * @param array $template_ids
 	 * @param array $event_ids
@@ -662,7 +660,10 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			$variables = $template_ids;
 		}
 		
-		$excep_query = $wpdb->prepare( $excep_query, $variables );
+		if( $variables ) {
+			$excep_query = $wpdb->prepare( $excep_query, $variables );
+		}
+		
 		$exceptions = $wpdb->get_results( $excep_query, ARRAY_A );
 		
 		// Order exceptions by event id
@@ -756,7 +757,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	 * Get groups of events data by template ids
 	 * 
 	 * @since 1.1.0
-	 * @version 1.2.2
+	 * @version 1.3.0
 	 * 
 	 * @global wpdb $wpdb
 	 * @param array|int $template_ids
@@ -801,8 +802,11 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		
 		$query .= ' ORDER BY G.category_id';
 		
-        $prep	= $wpdb->prepare( $query, $template_ids );
-        $groups	= $wpdb->get_results( $prep, ARRAY_A );
+		if( $template_ids ) {
+			$query = $wpdb->prepare( $query, $template_ids );
+		}
+		
+        $groups	= $wpdb->get_results( $query, ARRAY_A );
 		
 		$groups_data = array();
 		foreach( $groups as $group ) {
@@ -827,6 +831,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	 * Get groups of events data by category
 	 * 
 	 * @since 1.1.0
+	 * @version 1.3.0
 	 * 
 	 * @global wpdb $wpdb
 	 * @param array|int $category_ids
@@ -871,8 +876,11 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		
 		$query .= ' ORDER BY category_id';
 		
-        $prep	= $wpdb->prepare( $query, $category_ids );
-        $groups	= $wpdb->get_results( $prep, ARRAY_A );
+		if( $category_ids ) {
+			$query = $wpdb->prepare( $query, $category_ids );
+		}
+		
+        $groups = $wpdb->get_results( $query, ARRAY_A );
 		
 		$groups_data = array();
 		foreach( $groups as $group ) {
@@ -901,6 +909,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	 * Get the groups events belonging to a template, a category or / and a group, ordered by group
 	 * 
 	 * @since 1.1.0
+	 * @version 1.3.0
 	 * 
 	 * @global wpdb $wpdb
 	 * @param array $template_ids
@@ -1004,7 +1013,10 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		
 		$query .= ' ORDER BY GE.group_id, GE.event_start ';
 		
-		$query	= $wpdb->prepare( $query, $variables );
+		if( $variables ) {
+			$query = $wpdb->prepare( $query, $variables );
+		}
+		
         $events = $wpdb->get_results( $query, ARRAY_A );
 		
 		// Order by groups
@@ -1119,6 +1131,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	 * Retrieve group categories data by id
 	 * 
 	 * @since 1.1.0
+	 * @version 1.3.0
 	 * 
 	 * @global wpdb $wpdb
 	 * @param array|int $category_ids
@@ -1159,8 +1172,11 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			$query .= ' AND active = 1 ';
 		}
 		
-        $prep		= $wpdb->prepare( $query, $category_ids );
-        $categories	= $wpdb->get_results( $prep, ARRAY_A );
+		if( $category_ids ) {
+			$query = $wpdb->prepare( $query, $category_ids );
+		}
+        
+        $categories = $wpdb->get_results( $query, ARRAY_A );
 		
 		$categories_data = array();
 		foreach( $categories as $category ) {
@@ -1185,7 +1201,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	 * Retrieve group categories data by template ids
 	 * 
 	 * @since 1.1.0
-	 * @version 1.2.2
+	 * @version 1.3.0
 	 * 
 	 * @global wpdb $wpdb
 	 * @param array|int $template_ids
@@ -1227,8 +1243,11 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			$query .= ' AND active = 1 ';
 		}
 		
-        $prep		= $wpdb->prepare( $query, $template_ids );
-        $categories	= $wpdb->get_results( $prep, ARRAY_A );
+		if( $template_ids ) {
+			$query = $wpdb->prepare( $query, $template_ids );
+		}
+		
+        $categories = $wpdb->get_results( $query, ARRAY_A );
 		
         $categories_data = array();
 		foreach( $categories as $category ) {
@@ -1253,7 +1272,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	 * Retrieve group category ids by template ids
 	 * 
 	 * @since 1.1.0
-	 * @version 1.2.2
+	 * @version 1.3.0
 	 * 
 	 * @global wpdb $wpdb
 	 * @param array|int $template_ids
@@ -1294,8 +1313,11 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			$query .= ' AND active = 1 ';
 		}
 		
-        $prep		= $wpdb->prepare( $query, $template_ids );
-        $categories	= $wpdb->get_results( $prep, OBJECT );
+		if( $template_ids ) {
+			$query = $wpdb->prepare( $query, $template_ids );
+		}
+        
+        $categories = $wpdb->get_results( $query, OBJECT );
 		
 		$category_ids = array();
 		foreach( $categories as $category ) {
@@ -1313,7 +1335,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	 * Get the mixed range (start and end dates) of a group of template
 	 *
 	 * @since  1.0.6
-	 * @version  1.2.2
+	 * @version  1.3.0
 	 * @param  array $template_ids Array of template ids
 	 * @return array (start, end)
 	 */
@@ -1346,8 +1368,11 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			$variables = $template_ids;
 		}
 		
-		$range_prepare = $wpdb->prepare( $range_query, $template_ids );
-		$range = $wpdb->get_row( $range_prepare, ARRAY_A );
+		if( $template_ids ) {
+			$range_query = $wpdb->prepare( $range_query, $template_ids );
+		}
+		
+		$range = $wpdb->get_row( $range_query, ARRAY_A );
 		
 		return $range;
 	}

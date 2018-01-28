@@ -24,10 +24,12 @@ function bookacti_switch_template( selected_template_id ) {
 				if( response.status === 'success' ) {
 					
 					// Change the global var
-					var is_first_template = bookacti.selected_template ? false : true;
-					bookacti.selected_template = parseInt( selected_template_id );
+					var is_first_template		= bookacti.selected_template ? false : true;
+					bookacti.selected_template	= parseInt( selected_template_id );
+					bookacti.hidden_activities	= [];
 					
 					// Update data array
+					bookacti.booking_system[ 'bookacti-template-calendar' ][ 'calendars' ]				= [ bookacti.selected_template ];
 					bookacti.booking_system[ 'bookacti-template-calendar' ][ 'bookings' ]				= response.bookings;
 					bookacti.booking_system[ 'bookacti-template-calendar' ][ 'exceptions' ]				= response.exceptions;
 					bookacti.booking_system[ 'bookacti-template-calendar' ][ 'activities_data' ]		= response.activities_data;
@@ -169,21 +171,7 @@ function bookacti_switch_template( selected_template_id ) {
 
 function bookacti_init_activities() {
     $j( '#bookacti-template-activities-container .fc-event' ).each( function() {
-        var resizable = false;
-        if( $j( this ).data( 'resizable' ) === '1' ){ resizable = true; }
-       
-        // Store data so the calendar knows to render an event upon drop
-        $j( this ).data( 'event', {
-            title:              $j.trim( $j( this ).text() ),
-            durationEditable:   resizable,
-            color:              $j( this ).data( 'color' ),
-            stick:              true
-        });
-
-        // Set also the color for the draggable event
-        $j(this).css( 'background-color', $j(this).data( 'color' ) );
-        $j(this).css( 'border-color', $j(this).data( 'color' ) );
-
+		
         // Make the event draggable using jQuery UI
         $j(this).draggable({
             zIndex: 1000,
@@ -363,9 +351,7 @@ function bookacti_init_show_hide_groups_switch() {
 // Select all events of a group onto the calendar
 function bookacti_select_events_of_group( group_id ) {
 	
-	if( ! group_id ) {
-		return false;
-	}
+	if( ! group_id ) { return false; }
 	
 	// Exit others groups editing mode
 	bookacti_exit_group_edition();
@@ -381,12 +367,16 @@ function bookacti_select_events_of_group( group_id ) {
 	}
 
 	// Select the events of the group
+	var change_icon = true;
 	$j.each( bookacti.booking_system[ 'bookacti-template-calendar' ][ 'groups_events' ][ group_id ], function( i, event ){
-		bookacti_select_event( event );
+		var is_selected = bookacti_select_event( event );
+		if( is_selected === false ) { change_icon = false; }
 	});
 	
 	// Change group settings icon and wait for the user to validate the selected events
-	$j( '.bookacti-group-of-events[data-group-id="' + group_id + '"]' ).find( '.bookacti-update-group-of-events img' ).attr( 'src', bookacti_localized.plugin_path + '/img/tick.png' ).addClass( 'validate-group' );
+	if( change_icon ) {
+		$j( '.bookacti-group-of-events[data-group-id="' + group_id + '"]' ).find( '.bookacti-update-group-of-events img' ).attr( 'src', bookacti_localized.plugin_path + '/img/tick.png' ).addClass( 'validate-group' );
+	}
 }
 
 
@@ -395,7 +385,8 @@ function bookacti_select_event( event ) {
 	
 	// Return false if we don't have both event id and event start
 	if( ( typeof event !== 'object' )
-	||  ( typeof event === 'object' && ( typeof event.id === 'undefined' || typeof event.start === 'undefined' ) ) ) {
+	||  ( typeof event === 'object' && ( typeof event.id === 'undefined' || typeof event.start === 'undefined' ) )
+	||  ( typeof bookacti.booking_system[ 'bookacti-template-calendar' ][ 'events_data' ][ event.id ] === 'undefined' ) ) {
 		return false;
 	}
 	
@@ -708,52 +699,6 @@ function bookacti_delete_event( event ) {
 	$j( '#bookacti-template-calendar' ).fullCalendar( 'removeEvents', event.id );
 	$j( '#bookacti-template-calendar' ).fullCalendar( 'refetchEvents' );
 }
-
-
-// Refresh booking numbers
-function bookacti_refresh_booking_numbers( template_id, event_id ) {
-    event_id = event_id || null;
-    
-    bookacti_start_template_loading(); 
-    $j.ajax({
-        url: ajaxurl,
-        type: 'POST',
-        data: { 'action': 'bookactiGetBookingNumbers', 
-                'template_id': template_id, 
-				'event_id': event_id,
-				'nonce': bookacti_localized.nonce_get_booking_numbers
-			},
-        dataType: 'json',
-        success: function( response ){
-			if( response.status === 'success' ) {
-				
-				if( event_id ) {
-					if( bookacti.booking_system[ 'bookacti-template-calendar' ][ 'bookings' ][ event_id ] ) {
-						delete bookacti.booking_system[ 'bookacti-template-calendar' ][ 'bookings' ][ event_id ];
-					}
-					bookacti.booking_system[ 'bookacti-template-calendar' ][ 'bookings' ][ event_id ] = response[ 'bookings' ][ event_id ];
-				} else {
-					bookacti.booking_system[ 'bookacti-template-calendar' ][ 'bookings' ] = response[ 'bookings' ];
-				}
-				
-				$j( '#bookacti-template-calendar' ).fullCalendar( 'rerenderEvents' );
-				
-			} else if( response.error === 'not_allowed' ) {
-				
-				alert( bookacti_localized.error_retrieve_booking_numbers + '\n' + bookacti_localized.error_not_allowed );
-				console.log( response );
-			}
-        },
-        error: function( e ){
-            alert ( 'AJAX ' + bookacti_localized.error_retrieve_booking_numbers );
-            console.log( e );
-        },
-        complete: function() { 
-			bookacti_stop_template_loading();
-		}
-    });
-}
-
 
 
 
@@ -1212,24 +1157,19 @@ function bookacti_load_activities_bound_to_template( selected_template_id ) {
 			type: 'POST',
 			dataType: 'json',
 			success: function(response) {
+				// Empty current list of activity
+				$j( 'select#activities-to-import' ).empty();
+				
 				if( response.status === 'success' ) {
 					// Fill the available activities select box
 					var activity_options = '';
 					$j.each( response.activities, function( activity_id, activity ){
 						if( ! $j( '#bookacti-template-activity-list .activity-row .fc-event[data-activity-id="' + activity_id + '"]' ).length ) {
-							activity_options += '<option '
-												+ 'value="' + activity_id + '" '
-												+ 'data-title="' + activity.multilingual_title + '" ' 
-												+ 'data-color="' + activity.color + '" ' 
-												+ 'data-availability="' + activity.availability + '" ' 
-												+ 'data-duration="' + activity.duration + '" ' 
-												+ 'data-resizable="' + activity.is_resizable + '" >' 
-													+ activity.title 
-											+ '</option>';
+							activity_options += '<option value="' + activity_id + '" >' + activity.title + '</option>';
 						}
 					});
 					if( activity_options !== '' ) {
-						$j( 'select#activities-to-import' ).empty().append( activity_options );
+						$j( 'select#activities-to-import' ).append( activity_options );
 					} else {
 						$j( '#bookacti-activities-bound-to-template' ).append( '<div class="form-error">' + bookacti_localized.error_no_avail_activity_bound + '</div>' );
 					}

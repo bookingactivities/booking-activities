@@ -14,6 +14,11 @@ function bookacti_init_booking_system_dialogs() {
 		close: function() {}
 	});
 
+	// Make dialogs close when the user click outside
+	$j( '.ui-widget-overlay' ).live( 'click', function (){
+		$j( 'div:ui-dialog:visible' ).dialog( 'close' );
+	});
+
 	//Individual param
 	$j( '#bookacti-choose-group-of-events-dialog' ).dialog({ 
 		title: bookacti_localized.dialog_choose_group_of_events_title
@@ -171,10 +176,9 @@ function bookacti_dialog_choose_group_of_events( booking_system, group_ids, even
 				var event_start = moment( event.start ).locale( bookacti_localized.current_lang_code );
 				var event_end = moment( event.end ).locale( bookacti_localized.current_lang_code );
 				
-				var event_duration = event_start.format( bookacti_localized.date_format ) + ' &rarr; ' + event_end.format( bookacti_localized.date_format );
+				var event_duration = event_start.formatPHP( bookacti_localized.date_format ) + bookacti_localized.dates_separator + event_end.formatPHP( bookacti_localized.date_format );
 				if( start_and_end_same_day ) {
-					
-					event_duration = event_start.format( bookacti_localized.date_format ) + ' &rarr; ' + event_end.format( 'LT' );
+					event_duration = event_start.formatPHP( bookacti_localized.date_format ) + bookacti_localized.date_time_separator + event_end.formatPHP( bookacti_localized.time_format );
 				}
 				
 				var list_element = $j( '<li />', {
@@ -229,7 +233,7 @@ function bookacti_dialog_choose_group_of_events( booking_system, group_ids, even
 				bookacti_unpick_all_events( booking_system );
 				bookacti_pick_events_of_group( booking_system, group_id, event );
 				
-				booking_system.trigger( 'bookacti_group_of_events_choosed', [ group_id, event ] );
+				booking_system.trigger( 'bookacti_group_of_events_chosen', [ group_id, event ] );
 				
 				//Close the modal dialog
 				$j( this ).dialog( 'close' );

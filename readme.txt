@@ -5,7 +5,7 @@ Tags: booking activities, booking sport, booking form, event reservation, reserv
 Requires at least: 3.6
 Tested up to: 4.9
 Requires PHP: 5.3
-Stable tag: 1.2.3
+Stable tag: 1.3.0
 License: GPLv3 or later
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
 
@@ -25,6 +25,8 @@ Try this reservation tool live on the [demo website](http://demo.booking-activit
 
 [youtube https://www.youtube.com/watch?v=Q7gbK5i4DPU]
 
+*Video made with v1.1.1. Booking Activities is constantly evolving.*
+
 
 = Main features =
 
@@ -40,7 +42,8 @@ Try this reservation tool live on the [demo website](http://demo.booking-activit
 
 **Display**
 
-* **Shortcodes** to display reservation forms, customer's bookings list, or simple calendars
+* **Shortcodes** to display reservation forms or simple calendars
+* ★ Display your customer's bookings calendar and their bookings list with a shortcode
 * ★ Display events from multiple schedules and activities at once
 * ★ **One-click booking**: just pick the desired event on the calendar and click on "Book"! 
 * *If you do not use WooCommerce, customers must be logged in to make a reservation*
@@ -57,7 +60,7 @@ Try this reservation tool live on the [demo website](http://demo.booking-activit
 
 **Manage reservations**
 
-* Click on the desired event on the booking calendar to show the event reservation list
+* Find all your bookings at a glance on a calendar and in a list. Use dynamic filters, sorting, and custom columns.
 * Booking actions: validate, cancel, reschedule, ★ refund...
 * ★ Your customers can **cancel** or **reschedule** their bookings and **ask a refund** by themselves
 
@@ -72,6 +75,7 @@ Try this reservation tool live on the [demo website](http://demo.booking-activit
 
 * **Multilingual support** with ★ QTranslateX (free plugin)
 * ★ Auto-detect and switch languages, date/time format, first day of the week...
+* Customize most frontend messages directly in the settings
 * Fully translated in English and French. You can also help us [translating Booking Activities](https://translate.wordpress.org/projects/wp-plugins/booking-activities) in your language.
 
 **The best inside**
@@ -290,9 +294,9 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 7. Easily bind a planning to a WooCommerce product. You can choose to display events from multiple activities, and multiple calendars.
 8. Booking Activities event calendars can be integrated to both simple and variable products.
 9. A reservation form appears automatically on desired WooCommerce product pages.
-10. WooCommerce cart expiration system: when time is up, bookings are cancelled and cart emptied.
-11. Manage your bookings: just click on the desired event on the reservation schedule and its bookings list appears. Then choose a booking action: change state (cancel, validate), reschedule, refund...
-12. Customers also have their bookings list thanks to a shortcode. They can cancel, reschedule or ask a refund by their own (if you allow them).
+10. WooCommerce cart expiration system: when time is up, bookings are cancelled and cart emptied. You can also disable it.
+11. Your bookings are displayed on a calendar and in a list that you can filter, sort and customize. Manage your bookings: change state (cancel, validate), reschedule, refund...
+12. Customers also have their bookings list and calendar thanks to a shortcode. They can cancel, reschedule or ask a refund by their own (if you allow them).
 13. Your customers can manage their bookings from their WooCommerce orders as well.
 14. Orders status are bound to their bookings status. If bookings are cancelled / booked / refunded, so do the order (and vice-versa).
 15. Email notifications are automatically sent to the customer or the administrator when they need to be informed of a change.
@@ -300,6 +304,26 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 
 
 == Changelog ==
+
+= 1.3.0 - 2018/01/28 =
+* Tweak - Bookings page has been redesigned
+* Feature - Filter your booking list by calendars, activities, status, date, and customers (and also by events like before)
+* Feature - The booking list is now paginated and columns can be hidden (in screen options) and sorted
+* Feature - Bookings have a new "Payment status" property, with 3 possible values: No payment required, owed, paid.
+* Feature - Display your customers' bookings calendar with the shortcode [bookingactivities_calendar bookings_only="true" user_id="current" past_events="true"]
+* Feature - Customize frontend dialogs titles and buttons labels (and content for some of them)
+* Tweak - In-cart bookings are no longer active when the cart expiration is deactivated. The availability check is made on checkout.
+* Tweak - Date format can be set more specifically, and the separator between dates can be changed
+* Tweak - ON/OFF button: clearly display "ON" and "OFF" for a better understanding
+* Tweak - Email refund option is no longer offered to administrators
+* Fix - Activities with a title containing special characters triggered a fatal error when an event was dropped
+* Fix - Picking a group of events not already loaded triggered a fatal error (events of the group still need to be rendered)
+* Fix - Error notice about wpdb::prepare since WP 4.9+ (can cause fatal error if WP_DEBUG was set to true)
+* Fix - Show / Hide activities in calendar editor triggers fatal error
+* Fix - Shop Managers (WooCommerce role) were not able to edit activities
+* Fix - WooCommerce [product_page] shortcode is now working with variable product marked as activity
+* Fix - Bookings in a WooCommerce order containing a non-activity products were still "Pending" after payment is received
+* **Breaking change** - Date format needs to be set again in Booking Activities settings, in "Messages" tab
 
 = 1.2.3 - 2018/01/09 =
 * Fix - AJAX error when creating an activity with PHP 7.1+

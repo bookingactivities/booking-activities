@@ -79,14 +79,18 @@ function bookacti_set_calendar_up( booking_system, reload_events ) {
 			event.bookings = bookacti_get_event_number_of_bookings( booking_system, event );
 			if( event.bookings != null ) {
 
-				var is_available = bookacti_is_event_available( booking_system, event );
+				var bookings_only = bookacti.booking_system[ booking_system_id ][ 'bookings_only' ] == 1 ? true : false;
+				var avail_div = '';
 				
 				// If the event or its group is not available, disable the event
-				if( ! is_available ) {
-					element.addClass( 'bookacti-event-unavailable' );
+				if( bookings_only ) {
+					avail_div = bookacti_get_event_number_of_bookings_div( booking_system, event );
+				} else {
+					var is_available = bookacti_is_event_available( booking_system, event );
+					if( ! is_available ) { element.addClass( 'bookacti-event-unavailable' ); }
+					avail_div = bookacti_get_event_availability_div( booking_system, event );
 				}
 				
-				var avail_div = bookacti_get_event_availability_div( booking_system, event );
 				element.append( avail_div );
 			}
 			
