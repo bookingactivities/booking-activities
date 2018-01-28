@@ -394,7 +394,7 @@ function bookacti_refresh_booking_numbers( booking_system, event_ids ) {
 	}
 
     $j.ajax({
-        url: ajaxurl,
+        url: bookacti_localized.ajaxurl,
         type: 'POST',
         data: { 'action': 'bookactiGetBookingNumbers', 
                 'template_id': template_ids, 

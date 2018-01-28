@@ -5,7 +5,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 /**
  * Book an event
  * 
- * @version 1.3.0
+ * @version 1.3.1
  * 
  * @global wpdb $wpdb
  * @param int $user_id
@@ -24,25 +24,28 @@ function bookacti_insert_booking( $user_id, $event_id, $event_start, $event_end,
 	
 	$active = in_array( $state, bookacti_get_active_booking_states(), true ) ? 1 : 0;
 	
-	$creation_date = date( 'c' );
+	$creation_date = substr( date( 'c' ), 0, 19 );
 	
-	$wpdb->insert( 
-		BOOKACTI_TABLE_BOOKINGS, 
-		array( 
-			'group_id'			=> $booking_group_id,
-			'event_id'			=> $event_id,
-			'user_id'			=> $user_id,
-			'event_start'		=> $event_start,
-			'event_end'			=> $event_end,
-			'quantity'			=> $quantity,
-			'state'				=> $state,
-			'payment_status'	=> $payment_status,
-			'creation_date'		=> $creation_date,
-			'expiration_date'	=> $expiration_date,
-			'active'			=> $active
-		),
-		array( '%d', '%d', '%s', '%s', '%s', '%d', '%s', '%s', '%s', '%s', '%d' )
+	$query = 'INSERT INTO ' . BOOKACTI_TABLE_BOOKINGS 
+			. ' ( group_id, event_id, user_id, event_start, event_end, quantity, state, payment_status, creation_date, expiration_date, active ) ' 
+			. ' VALUES ( NULLIF( %d, 0), %d, %s, %s, %s, %d, %s, %s, %s, NULLIF( %s, ""), %d )';
+	
+	$variables = array( 
+		is_numeric( $booking_group_id ) ? intval( $booking_group_id ) : 0,
+		$event_id,
+		$user_id,
+		$event_start,
+		$event_end,
+		$quantity,
+		$state,
+		$payment_status,
+		$creation_date,
+		$expiration_date,
+		$active
 	);
+	
+	$query = $wpdb->prepare( $query, $variables );
+	$wpdb->query( $query );
 	
 	$booking_id = $wpdb->insert_id;
 	
@@ -197,7 +200,7 @@ function bookacti_update_booking_quantity( $booking_id, $new_quantity, $expirati
 /**
  * Get bookings according to filters
  * 
- * @version 1.3.0
+ * @version 1.3.1
  * @global wpdb $wpdb
  * @param array $filters
  * @param boolean $group_by_booking_groups Whether to retrieve only the first event of groups
@@ -207,8 +210,13 @@ function bookacti_get_bookings( $filters, $group_by_booking_groups = false ) {
 	global $wpdb;
 	
 	$bookings_query = ' SELECT DISTINCT B.*, E.title as event_title, A.id as activity_id, A.title as activity_title, T.id as template_id, T.title as template_title ' 
-					. ' FROM ' . BOOKACTI_TABLE_BOOKINGS . ' as B, ' . BOOKACTI_TABLE_EVENTS . ' as E, ' . BOOKACTI_TABLE_ACTIVITIES . ' as A, ' . BOOKACTI_TABLE_TEMPLATES . ' as T, ' . BOOKACTI_TABLE_BOOKING_GROUPS . ' as BG '
-					. ' WHERE B.event_id = E.id '
+					. ' FROM ' . BOOKACTI_TABLE_BOOKINGS . ' as B, ' . BOOKACTI_TABLE_EVENTS . ' as E, ' . BOOKACTI_TABLE_ACTIVITIES . ' as A, ' . BOOKACTI_TABLE_TEMPLATES . ' as T ';
+					
+	if( $filters[ 'event_group_id' ] ) {
+		$bookings_query		.= ', ' . BOOKACTI_TABLE_BOOKING_GROUPS . ' as BG ';
+	}
+			
+	$bookings_query .= ' WHERE B.event_id = E.id '
 					. ' AND B.event_id = E.id '
 					. ' AND E.activity_id = A.id '
 					. ' AND E.template_id = T.id ';
@@ -345,7 +353,7 @@ function bookacti_get_bookings( $filters, $group_by_booking_groups = false ) {
 	if( $variables ) {
 		$bookings_query = $wpdb->prepare( $bookings_query, $variables );
 	}
-
+	
 	$bookings = $wpdb->get_results( $bookings_query, OBJECT );
 	
 	return $bookings;
@@ -355,7 +363,7 @@ function bookacti_get_bookings( $filters, $group_by_booking_groups = false ) {
 /**
  * Get the total amount of bookings according to filters
  * 
- * @since 1.3.0
+ * @since 1.3.1
  * @global wpdb $wpdb
  * @param array $filters
  * @param boolean $group_by_booking_groups Whether to count a group as one booking
@@ -366,8 +374,13 @@ function bookacti_get_number_of_booking_rows( $filters = array(), $group_by_book
 	
 	$bookings_query	= ' SELECT SUM( list_items_count ) FROM ( '
 						. ' SELECT COUNT( DISTINCT B.id ) as list_items_count' 
-						. ' FROM ' . BOOKACTI_TABLE_BOOKINGS . ' as B, ' . BOOKACTI_TABLE_EVENTS . ' as E, ' . BOOKACTI_TABLE_ACTIVITIES . ' as A, ' . BOOKACTI_TABLE_TEMPLATES . ' as T, ' . BOOKACTI_TABLE_BOOKING_GROUPS . ' as BG '
-						. ' WHERE B.event_id = E.id '
+						. ' FROM ' . BOOKACTI_TABLE_BOOKINGS . ' as B, ' . BOOKACTI_TABLE_EVENTS . ' as E, ' . BOOKACTI_TABLE_ACTIVITIES . ' as A, ' . BOOKACTI_TABLE_TEMPLATES . ' as T ';
+	
+	if( $filters[ 'event_group_id' ] ) {
+		$bookings_query		.= ', ' . BOOKACTI_TABLE_BOOKING_GROUPS . ' as BG ';
+	}
+	
+	$bookings_query		.= ' WHERE B.event_id = E.id '
 						. ' AND B.event_id = E.id '
 						. ' AND E.activity_id = A.id '
 						. ' AND E.template_id = T.id ';
