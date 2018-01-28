@@ -165,7 +165,7 @@ function bookacti_shortcode_bookings_list( $atts = array(), $content = null, $ta
 /**
  * Check if booking form is correct and then book the event, or send the error message
  * 
- * @version 1.3.0
+ * @version 1.3.1
  */
 function bookacti_controller_validate_booking_form() {
 	
@@ -208,6 +208,7 @@ function bookacti_controller_validate_booking_form() {
 														$booking_form_values[ 'quantity' ], 
 														$booking_form_values[ 'default_state' ],
 														$booking_form_values[ 'payment_status' ],
+														null,
 														$booking_form_values[ 'group_id' ] );
 			
 				if( ! empty( $booking_id ) ) {

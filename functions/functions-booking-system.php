@@ -477,7 +477,7 @@ function bookacti_validate_booking_form( $group_id, $event_id, $event_start, $ev
 /**
  * Check if an event or an occurence exists
  * 
- * @version 1.3.0
+ * @version 1.3.1
  * 
  * @param object $event
  * @param string $event_start
@@ -495,7 +495,7 @@ function bookacti_is_existing_event( $event, $event_start = NULL, $event_end = N
 		if( $event->repeat_freq && $event->repeat_freq !== 'none' ) {
 			$is_existing_event = bookacti_is_existing_occurence( $event, $event_start, $event_end );
 		} else {
-			$is_existing_event = bookacti_is_existing_single_event( $event->id, $event_start, $event_end );
+			$is_existing_event = bookacti_is_existing_single_event( $event->event_id, $event_start, $event_end );
 		}
 	}
 

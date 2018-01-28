@@ -70,9 +70,8 @@ $j( document ).ready( function() {
 							
 							// Reload events
 							var booking_system_id	= booking_system.attr( 'id' );
-							var booking_method		= bookacti.booking_system[ booking_system_id ][ 'method' ];
 							
-							bookacti_booking_method_refetch_events( booking_system, booking_method );
+							bookacti_refresh_booking_numbers( booking_system );
 						}
 						
 					} else {

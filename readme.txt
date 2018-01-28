@@ -5,7 +5,7 @@ Tags: booking activities, booking sport, booking form, event reservation, reserv
 Requires at least: 3.6
 Tested up to: 4.9
 Requires PHP: 5.3
-Stable tag: 1.3.0
+Stable tag: 1.3.1
 License: GPLv3 or later
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
 
@@ -304,6 +304,12 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 
 
 == Changelog ==
+
+= 1.3.1 - 2018/01/28 =
+* Fix - Empty booking list if booking groups table was empty
+* Fix - "Do not exist" error when trying to book single non-recurring events that did exist
+* Fix - Incorrect booking values if the booking was made with a booking form
+* Fix - Bookings numbers were not reloaded after booking form was sent
 
 = 1.3.0 - 2018/01/28 =
 * Tweak - Bookings page has been redesigned
