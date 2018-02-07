@@ -740,7 +740,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	/**
 	 * AJAX Controller - Update template
 	 * 
-	 * @version	1.0.6
+	 * @version	1.3.2
 	 */
 	function bookacti_controller_update_template() {
 		
@@ -761,12 +761,19 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			// Update template only if its data are consistent
 			if( $is_template_valid['status'] === 'valid' ) {
 
-				$template_settings	= bookacti_format_template_settings( $_POST['templateOptions'] );
-				$template_managers	= bookacti_format_template_managers( $_POST['template-managers'] );
-				
 				$updated_template	= bookacti_update_template( $template_id, $template_title, $template_start, $template_end );
-				$updated_managers	= bookacti_update_managers( 'template', $template_id, $template_managers );
-				$updated_metadata	= bookacti_update_metadata( 'template', $template_id, $template_settings );
+				
+				$updated_metadata = 0;
+				if( isset( $_POST['templateOptions'] ) ) {
+					$template_settings	= bookacti_format_template_settings( $_POST['templateOptions'] );
+					$updated_metadata	= bookacti_update_metadata( 'template', $template_id, $template_settings );
+				}
+				
+				$updated_managers = 0;
+				if( isset( $_POST['template-managers'] ) ) {
+					$template_managers	= bookacti_format_template_managers( $_POST['template-managers'] );
+					$updated_managers	= bookacti_update_managers( 'template', $template_id, $template_managers );
+				}
 				
 				if( $updated_template > 0 || intval( $updated_managers ) > 0 || intval( $updated_metadata ) > 0 ) {
 					$templates_data = bookacti_fetch_templates( $template_id, true );

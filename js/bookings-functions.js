@@ -34,9 +34,9 @@ function bookacti_init_booking_filters_actions() {
 				bookacti_reload_booking_system_according_to_filters( booking_system );
 			}
 			
-			$j( '#bookacti-pick-event-filter' ).text( bookacti_localized.hide_calendar );
+			$j( '#bookacti-pick-event-filter' ).text( bookacti_localized.hide_calendar ).attr( 'title', bookacti_localized.hide_calendar );
 		} else {
-			$j( '#bookacti-pick-event-filter' ).text( bookacti_localized.pick_an_event );
+			$j( '#bookacti-pick-event-filter' ).text( bookacti_localized.pick_an_event ).attr( 'title', bookacti_localized.pick_an_event );
 		}
 		
 		// Show / Hide calendar

@@ -14,7 +14,7 @@
 #bookacti-template-container .fc-unthemed th,
 #bookacti-template-container .fc-unthemed thead { border-color: #bbb; }
 
-#bookacti-template-sidebar, #bookacti-template-calendar, #bookacti-first-template-container { display: table-cell; vertical-align: top; }
+#bookacti-template-sidebar, #bookacti-first-template-container { display: table-cell; vertical-align: top; }
 
 #bookacti-template-container + hr { margin: 30px auto; }
 
@@ -47,7 +47,7 @@
 
 
 /***** Sidebar *****/
-#bookacti-template-sidebar		{ display: table-cell; width: 240px; padding-right: 20px; border-right: 1px dashed #aaa; }
+#bookacti-template-sidebar		{ display: table-cell; min-width: 240px; width: 240px; padding-right: 20px; border-right: 1px dashed #aaa; }
 .bookacti-disabled-img			{ cursor: auto; pointer-events: none; opacity: 0.5; }
 
 .bookacti-templates-box			{ -webkit-border-radius: 6px; border-radius: 6px; padding: 10px; margin-bottom: 12px; border: 1px solid #bbb; }
@@ -97,7 +97,8 @@
 
 /***** template content *****/
 /* Template calendar */
-#bookacti-template-content { display: table-cell; padding-left: 20px; }
+#bookacti-template-content	{ display: table-cell; padding-left: 20px; width: 100%; }
+#bookacti-template-calendar	{ vertical-align: top; width: 100%; }
 
 /* First Template Area */
 #bookacti-shortcode-generator-container.bookacti-no-template,

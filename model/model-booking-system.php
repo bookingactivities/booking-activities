@@ -1380,7 +1380,14 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	
 	
 // PERMISSIONS
-	// GET MANAGERS
+	/**
+	 * Get managers
+	 * 
+	 * @global wpdb $wpdb
+	 * @param string $object_type
+	 * @param int $object_id
+	 * @return array
+	 */
 	function bookacti_get_managers( $object_type, $object_id ) {
 		global $wpdb;
 		
@@ -1445,7 +1452,15 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	}
 
 	
-	// INSERT MANAGERS
+	/**
+	 * Insert managers
+	 * 
+	 * @global wpdb $wpdb
+	 * @param string $object_type
+	 * @param int $object_id
+	 * @param array $managers_array
+	 * @return int|boolean
+	 */
 	function bookacti_insert_managers( $object_type, $object_id, $managers_array ) {
 		
 		global $wpdb;
@@ -1480,7 +1495,15 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	}
 	
 	
-	// DELETE MANAGERS
+	/**
+	 * Delete managers
+	 * 
+	 * @global wpdb $wpdb
+	 * @param string $object_type
+	 * @param int $object_id
+	 * @param array $managers_array
+	 * @return int|boolean
+	 */
 	function bookacti_delete_managers( $object_type, $object_id, $managers_array ) {
 		
 		global $wpdb;
@@ -1516,7 +1539,16 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	
 	
 // METADATA
-	// GET METADATA
+	/**
+	 * Get metadata
+	 * 
+	 * @global wpdb $wpdb
+	 * @param string $object_type
+	 * @param int $object_id
+	 * @param string $meta_key
+	 * @param boolean $single
+	 * @return mixed
+	 */
 	function bookacti_get_metadata( $object_type, $object_id, $meta_key = '', $single = false ) {
 		global $wpdb;
 		
@@ -1562,7 +1594,16 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	}
 	
 	
-	// UPDATE METADATA
+	/**
+	 * Update metadata
+	 * 
+	 * @version 1.3.2
+	 * @global wpdb $wpdb
+	 * @param string $object_type
+	 * @param int $object_id
+	 * @param array $metadata_array
+	 * @return boolean|int
+	 */
 	function bookacti_update_metadata( $object_type, $object_id, $metadata_array ) {
 		
 		global $wpdb;
@@ -1593,8 +1634,8 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		$updated = 0;
 		$existing_metadata = array_intersect_key( $metadata_array, $current_metadata );
 		if( ! empty( $existing_metadata ) ) {
-			$update_metadata_query = 'UPDATE ' . BOOKACTI_TABLE_META . ' SET meta_value = ';
-			$update_metadata_query_end .= ' WHERE object_type = %s AND object_id = %d AND meta_key = %s;';
+			$update_metadata_query		= 'UPDATE ' . BOOKACTI_TABLE_META . ' SET meta_value = ';
+			$update_metadata_query_end	= ' WHERE object_type = %s AND object_id = %d AND meta_key = %s;';
 
 			foreach( $existing_metadata as $meta_key => $meta_value ) {
 
@@ -1627,7 +1668,15 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	}
 
 
-	// INSERT META
+	/**
+	 * Insert metadata
+	 * 
+	 * @global wpdb $wpdb
+	 * @param string $object_type
+	 * @param int $object_id
+	 * @param array $metadata_array
+	 * @return int|boolean
+	 */
 	function bookacti_insert_metadata( $object_type, $object_id, $metadata_array ) {
 		
 		global $wpdb;
@@ -1669,7 +1718,15 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	}
 	
 	
-	// DUPLICATE METADATA
+	/**
+	 * Duplicate metadata
+	 * 
+	 * @global wpdb $wpdb
+	 * @param string $object_type
+	 * @param int $source_id
+	 * @param int $recipient_id
+	 * @return int|boolean
+	 */
 	function bookacti_duplicate_metadata( $object_type, $source_id, $recipient_id ) {
 	
 		global $wpdb;
@@ -1695,7 +1752,16 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		return $inserted;
 	}
 	
-	// DELETE METADATA
+	
+	/**
+	 * Delete metadata
+	 * 
+	 * @global wpdb $wpdb
+	 * @param string $object_type
+	 * @param int $object_id
+	 * @param array $metadata_key_array
+	 * @return int|boolean
+	 */
 	function bookacti_delete_metadata( $object_type, $object_id, $metadata_key_array ) {
 		
 		global $wpdb;

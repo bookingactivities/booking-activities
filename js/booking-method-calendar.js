@@ -342,7 +342,7 @@ function bookacti_add_class_according_to_event_size( element ) {
 function bookacti_update_calendar_settings( calendar, template_data ) {
 	
 	var settings_to_update = {};
-	var settings = template_data.settings;
+	var settings = $j.extend( true, {}, template_data.settings ); // Clone template data settings to prevent third party to affect the original data
 	
 	if( template_data.start && template_data.end ) {
 		settings_to_update.validRange = {

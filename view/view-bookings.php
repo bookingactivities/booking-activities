@@ -122,13 +122,14 @@ if( ! $templates ) {
 					}
 					
 					$default_status = get_user_meta( get_current_user_id(), 'bookacti_status_filter', true );
-					$default_status = $default_status ? $default_status : array();
+					$default_status = is_array( $default_status ) ? $default_status : array( 'booked', 'pending', 'cancelled', 'refunded', 'refund_requested' );
 					$statuses = bookacti_get_booking_state_labels();
 					$status_select_options = array();
 					foreach ( $statuses as $status_id => $status ) {
 						$status_select_options[ $status_id ] = esc_html( $status[ 'label' ] );
 					}
 					$selected_status = isset( $_REQUEST[ 'status' ] ) ? $_REQUEST[ 'status' ] : $default_status;
+					$selected_status = is_array( $selected_status ) ? $selected_status : array( $selected_status );
 					$args = array(
 						'type'		=> 'select',
 						'name'		=> 'status',
@@ -215,12 +216,13 @@ if( ! $templates ) {
 							'end'		=> $event_end
 						);
 						
-						$display_calendar = $picked_events ? 'block' : 'none';
+						$display_calendar		= $picked_events ? 'block' : 'none';
+						$calendar_button_label	= $picked_events ? __( 'Hide calendar', BOOKACTI_PLUGIN_NAME ) : __( 'Pick an event', BOOKACTI_PLUGIN_NAME );
 					?>
-					<a class='button' id='bookacti-pick-event-filter' >
-						<?php echo $picked_events ? __( 'Hide calendar', BOOKACTI_PLUGIN_NAME ) : __( 'Pick an event', BOOKACTI_PLUGIN_NAME ); ?>
+					<a class='button' id='bookacti-pick-event-filter' title='<?php echo $calendar_button_label; ?>' >
+						<?php echo $calendar_button_label; ?>
 					</a>
-					<a class='button' id='bookacti-unpick-events-filter' style='display:<?php echo $display_calendar; ?>' >
+					<a class='button' id='bookacti-unpick-events-filter' title='<?php _e( 'Unpick events', BOOKACTI_PLUGIN_NAME ); ?>' style='display:<?php echo $display_calendar; ?>' >
 						<?php _e( 'Unpick events', BOOKACTI_PLUGIN_NAME ); ?>
 					</a>
 				</div>
@@ -233,7 +235,7 @@ if( ! $templates ) {
 					<?php echo esc_html_x( 'Filter', 'verb', BOOKACTI_PLUGIN_NAME ); ?>
 				</div>
 				<div class='bookacti-bookings-filter-content' >
-					<input type='submit' class='button button-primary button-large' value='<?php _e( 'Apply filters', BOOKACTI_PLUGIN_NAME ); ?>' />
+					<input type='submit' class='button button-primary button-large' value='<?php _e( 'Apply filters', BOOKACTI_PLUGIN_NAME ); ?>' title='<?php _e( 'Apply filters', BOOKACTI_PLUGIN_NAME ); ?>' />
 				</div>
 			</div>
 			<div id='bookacti-booking-system-filter-container' style='display:<?php echo $display_calendar; ?>'>
@@ -270,8 +272,8 @@ if( ! $templates ) {
 		<div id='bookacti-bookings-list' >
 		<?php
 			$filters = array(
-				'templates'					=> array_values( $selected_templates ), 
-				'activities'				=> array_values( $selected_activities ), 
+				'templates'					=> $selected_templates, 
+				'activities'				=> $selected_activities, 
 				'booking_id'				=> isset( $_REQUEST[ 'booking_id' ] )		? intval( $_REQUEST[ 'booking_id' ] ): 0, 
 				'booking_group_id'			=> isset( $_REQUEST[ 'booking_group_id' ] )	? intval( $_REQUEST[ 'booking_group_id' ] ): 0, 
 				'booking_group_single_row'	=> isset( $_REQUEST[ 'booking_group_single_row' ] )	? intval( $_REQUEST[ 'booking_group_single_row' ] ): 0,
@@ -279,7 +281,7 @@ if( ! $templates ) {
 				'event_id'					=> $event_id, 
 				'event_start'				=> $event_start, 
 				'event_end'					=> $event_end,
-				'status'					=> array_values( $selected_status ),
+				'status'					=> $selected_status,
 				'user_id'					=> $selected_user,
 				'from'						=> $from,
 				'to'						=> $to,

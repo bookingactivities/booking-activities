@@ -20,7 +20,7 @@
 .bookacti-bookings-filter-content input, 
 .bookacti-bookings-filter-content a			{ width: 150px; }
 
-#bookacti-event-filter-container a	{ text-align: center; }
+#bookacti-event-filter-container a	{ text-align: center; overflow: hidden; text-overflow: ellipsis; }
 #bookacti-pick-event-filter::before	{ font-family: 'dashicons'; content: "\f508"; margin-right: 4px; font-size: 1.2em; vertical-align: bottom; }
 #bookacti-unpick-events-filter		{ margin-top: 4px; }
 
@@ -30,7 +30,8 @@
 #bookacti-customer-filter-container .bookacti-combobox-input			{ padding: 2px 6px; min-width: 0; max-width: 132px; min-height: 28px; border-right: none; border-bottom-right-radius: 0; border-top-right-radius: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 #bookacti-customer-filter-container .bookacti-combobox-toggle.ui-state-hover .ui-icon { background-image: url(../lib/jquery-ui/themes/booking-activities/images/ui-icons_565d61_256x240.png); }
 
-.bookacti-submit-filter-centered { display: block; margin: 20px auto; }
+#bookacti-submit-filter-container input	{ overflow: hidden; text-overflow: ellipsis; }
+.bookacti-submit-filter-centered		{ display: block; margin: 20px auto; }
 .bookacti-submit-filter-centered .bookacti-bookings-filter-title { display: none; }
 
 

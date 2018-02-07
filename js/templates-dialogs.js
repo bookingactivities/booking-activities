@@ -364,11 +364,6 @@ function bookacti_dialog_update_template( template_id ) {
 								// Dynamically update template settings
 								bookacti_update_calendar_settings( $j( '#bookacti-template-calendar' ), response.template_data );
 
-								// Change the view to match start and end date of the template
-								var start_template = moment( response.template_data.start );
-								var end_template = moment( response.template_data.end );
-								bookacti_set_valid_range( $j( '#bookacti-template-calendar' ), start_template, end_template );
-
 							// If no changes
 							} else if ( response.status === 'nochanges' ) {
 
