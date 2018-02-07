@@ -216,12 +216,13 @@ if( ! $templates ) {
 							'end'		=> $event_end
 						);
 						
-						$display_calendar = $picked_events ? 'block' : 'none';
+						$display_calendar		= $picked_events ? 'block' : 'none';
+						$calendar_button_label	= $picked_events ? __( 'Hide calendar', BOOKACTI_PLUGIN_NAME ) : __( 'Pick an event', BOOKACTI_PLUGIN_NAME );
 					?>
-					<a class='button' id='bookacti-pick-event-filter' >
-						<?php echo $picked_events ? __( 'Hide calendar', BOOKACTI_PLUGIN_NAME ) : __( 'Pick an event', BOOKACTI_PLUGIN_NAME ); ?>
+					<a class='button' id='bookacti-pick-event-filter' title='<?php echo $calendar_button_label; ?>' >
+						<?php echo $calendar_button_label; ?>
 					</a>
-					<a class='button' id='bookacti-unpick-events-filter' style='display:<?php echo $display_calendar; ?>' >
+					<a class='button' id='bookacti-unpick-events-filter' title='<?php _e( 'Unpick events', BOOKACTI_PLUGIN_NAME ); ?>' style='display:<?php echo $display_calendar; ?>' >
 						<?php _e( 'Unpick events', BOOKACTI_PLUGIN_NAME ); ?>
 					</a>
 				</div>
@@ -234,7 +235,7 @@ if( ! $templates ) {
 					<?php echo esc_html_x( 'Filter', 'verb', BOOKACTI_PLUGIN_NAME ); ?>
 				</div>
 				<div class='bookacti-bookings-filter-content' >
-					<input type='submit' class='button button-primary button-large' value='<?php _e( 'Apply filters', BOOKACTI_PLUGIN_NAME ); ?>' />
+					<input type='submit' class='button button-primary button-large' value='<?php _e( 'Apply filters', BOOKACTI_PLUGIN_NAME ); ?>' title='<?php _e( 'Apply filters', BOOKACTI_PLUGIN_NAME ); ?>' />
 				</div>
 			</div>
 			<div id='bookacti-booking-system-filter-container' style='display:<?php echo $display_calendar; ?>'>

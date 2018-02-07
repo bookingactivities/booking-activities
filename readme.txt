@@ -5,7 +5,7 @@ Tags: booking activities, booking sport, booking form, event reservation, reserv
 Requires at least: 3.6
 Tested up to: 4.9
 Requires PHP: 5.3
-Stable tag: 1.3.1
+Stable tag: 1.3.2
 License: GPLv3 or later
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
 
@@ -303,7 +303,7 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 
 == Changelog ==
 
-= 1.3.2 = 
+= 1.3.2 - 2018/02/07 = 
 * Tweak - Do not select temporary states as booking list filter (in cart, expired, removed)
 * Tweak - Calendar editor is now always full width
 * Fix - Wrong total of booking rows
@@ -311,7 +311,9 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 * Fix - Custom time format was not applied in booking lists (in cart, checkout and order)
 * Fix - Duplicated events when booking system needed to reload
 * Fix - Compatibility with some optimization plugin
+* Fix - Hide overflowing button labels in Bookings page
 * Fix - Readme FAQ now matches Booking Activities 1.3 changes
+* Lib - Update FullCalendar to 3.8.2 and Moment JS to 2.20.1
 
 = 1.3.1 - 2018/01/28 =
 * Fix - Empty booking list if booking groups table was empty
