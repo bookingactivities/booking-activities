@@ -7,7 +7,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 /**
  * Get a booking system based on given parameters
  * 
- * @version 1.3.0
+ * @version 1.3.2
  * 
  * @param array $atts [id, classes, calendars, activities, groups, method]
  * @param boolean $echo Wether to return or directly echo the booking system
@@ -27,6 +27,8 @@ function bookacti_get_booking_system( $atts, $echo = false ) {
 	<div class='bookacti-booking-system-container' id='<?php echo esc_attr( $atts[ 'id' ] . '-container' ); ?>' >
 	
 		<script>
+			// Compatibility with Optimization plugins
+			if( typeof bookacti === 'undefined' ) { var bookacti = { booking_system:[] }; }
 			
 			bookacti.booking_system[ '<?php echo $atts[ 'id' ]; ?>' ] = <?php echo json_encode( $atts ); ?>;
 		
@@ -597,18 +599,6 @@ function bookacti_seconds_to_explode_time( $seconds ) {
 }
 
 
-// Get html enclosing booking dates
-function bookacti_get_booking_dates_html( $booking ) {
-	$formatted_dates = bookacti_format_booking_dates( $booking->event_start, $booking->event_end );
-	$html = "
-	<span class='bookacti-booking-start' >" . esc_html( $formatted_dates[ 'start' ] ) . "</span>
-	<span class='bookacti-booking-date-separator' >" . esc_html( $formatted_dates[ 'separator' ] ) . "</span>
-	<span class='bookacti-booking-end " . esc_attr( $formatted_dates[ 'to_hour_or_date' ] ) . "' >" . esc_html( $formatted_dates[ 'end' ] ) . "</span>";
-	
-	return $html;
-}
-
-
 
 
 /***** EVENTS *****/
@@ -903,7 +893,7 @@ function bookacti_get_occurences_of_repeated_event( $event, $past_events = false
  * Build a user-friendly events list
  * 
  * @since 1.1.0
- * @version 1.3.0
+ * @version 1.3.2
  * 
  * @param array $booking_events
  * @param int|string $quantity
@@ -939,8 +929,9 @@ function bookacti_get_formatted_booking_events_list( $booking_events, $quantity 
 	}
 	
 	$datetime_format		= bookacti_get_message( 'date_format_long' );
-	$date_time_spearator	= bookacti_get_message( 'date_time_separator' );
-	$dates_spearator		= bookacti_get_message( 'dates_separator' );
+	$time_format			= bookacti_get_message( 'time_format' );
+	$date_time_separator	= bookacti_get_message( 'date_time_separator' );
+	$dates_separator		= bookacti_get_message( 'dates_separator' );
 	$quantity_separator		= bookacti_get_message( 'quantity_separator' );
 	
 	$events_list = '';
@@ -955,15 +946,14 @@ function bookacti_get_formatted_booking_events_list( $booking_events, $quantity 
 			// Format differently if the event start and end on the same day
 			$start_and_end_same_day	= substr( $event[ 'start' ], 0, 10 ) === substr( $event[ 'end' ], 0, 10 );
 			if( $start_and_end_same_day ) {
-				/* translators: Datetime format. Must be adapted to each country. Use wp date_i18n documentation to find the appropriated combinaison https://codex.wordpress.org/Formatting_Date_and_Time */
-				$event_end = date_i18n( __( 'h:i a', BOOKACTI_PLUGIN_NAME ), strtotime( $event[ 'end' ] ) );
+				$event_end = date_i18n( $time_format, strtotime( $event[ 'end' ] ) );
 				$event_end = ! mb_check_encoding( $event_end, 'UTF-8' ) ? utf8_encode( $event_end ) : $event_end;
 			} else {
 				$event_end = bookacti_format_datetime( $event[ 'end' ], $datetime_format );
 			}
 			
 			$class		= $start_and_end_same_day ? 'bookacti-booking-event-end-same-day' : '';
-			$separator	= $start_and_end_same_day ? $date_time_spearator : $dates_spearator;
+			$separator	= $start_and_end_same_day ? $date_time_separator : $dates_separator;
 			
 			// Place an arrow between start and end
 			$event_duration = '<span class="bookacti-booking-event-start" >' . $event_start . '</span>'

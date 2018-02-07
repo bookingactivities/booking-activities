@@ -257,15 +257,13 @@ Else, they will be cancelled later, with the others in that case.
 
 = My events appears to be booked, but no bookings appear in the list =
 Temporary bookings (such as In cart events) take active slots but may not appear in the bookings list.
-Click on the desired event on the reservation calendar, in "Bookings" page.
-Then, just click on the settings wheel above the bookings list, and check 'Display temporary bookings'.
-Now you can see all kind of active bookings (booked, pending, in cart).
+Go to the "Bookings" page, under the "States" filter select "Booked", "Pending" and "In cart" (use CTRL+Click to select multiple row).
+Then, just click on "Apply Filters". Now you can see all kind of active bookings.
 
 
 = Cancelled bookings disapeared from the list, I need to see them! =
-Click on the desired event on the booking schedule, in "Bookings" page.
-Just click on the settings wheel above the bookings list, and check 'Display inactive bookings'.
-Now you can see inactive bookings (cancelled, expired, removed, refunded, refund requested).
+Got to the "Bookings" page. Under the "States" filter, select all the available status (click on a status and press CTRL+A to select all rows).
+Click on "Apply Filters" and then you will be able to see inactive bookings (cancelled, expired, removed, refunded, refund requested).
 
 
 = Email notifications are not sent =
@@ -304,6 +302,16 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 
 
 == Changelog ==
+
+= 1.3.2 = 
+* Tweak - Do not select temporary states as booking list filter (in cart, expired, removed)
+* Tweak - Calendar editor is now always full width
+* Fix - Wrong total of booking rows
+* Fix - Calendar settings could be unexpectedly changed using bookacti_update_calendar_settings() JS hooks
+* Fix - Custom time format was not applied in booking lists (in cart, checkout and order)
+* Fix - Duplicated events when booking system needed to reload
+* Fix - Compatibility with some optimization plugin
+* Fix - Readme FAQ now matches Booking Activities 1.3 changes
 
 = 1.3.1 - 2018/01/28 =
 * Fix - Empty booking list if booking groups table was empty

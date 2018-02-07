@@ -220,7 +220,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	/**
 	 * Turn bookings of a paid order containing non-activity products to booked
 	 * 
-	 * @version 1.3.0
+	 * @version 1.3.2
 	 * @param int $order_id
 	 * @param WC_Order $order
 	 */
@@ -239,7 +239,16 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		
 		// Retrieve bought items
 		$items = $order->get_items();
-
+		
+		// Determine if the order has at least 1 activity
+		$has_activities = false;
+		foreach( $items as $item ) {
+			if( isset( $item[ 'bookacti_booking_id' ] ) || isset( $item[ 'bookacti_booking_group_id' ] ) ) {
+				$has_activities = true;
+				break;
+			}
+		}
+		
 		// Determine if the order is only composed of activities
 		$are_activities = true;
 		foreach( $items as $item ) {
@@ -251,7 +260,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 		// If there are at least one activity in the middle of other products, 
 		// mark the bookings as 'booked' and 'paid'
-		if( ! $are_activities ) {
+		if( ! $are_activities && $has_activities ) {
 			bookacti_turn_temporary_booking_to_permanent( $order_id, $order, 'booked', 'paid' );
 		}
 	}

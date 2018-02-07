@@ -641,14 +641,17 @@ function bookacti_settings_section_bookings_callback() { }
 		
 		$messages = array(
 			'date_format_long' => array(
+				/* translators: Datetime format. Must be adapted to each country. Use wp date_i18n documentation to find the appropriated combinaison https://codex.wordpress.org/Formatting_Date_and_Time */
 				'value'			=> esc_html__( 'l, F jS, Y g:i A', BOOKACTI_PLUGIN_NAME ),
 				'description'	=> sprintf( esc_html__( 'Complete date format. See the tags here: %1$s.', BOOKACTI_PLUGIN_NAME ), $wp_date_format_link )
 			),
 			'date_format_short' => array(
+				/* translators: Datetime format. Must be adapted to each country. Use wp date_i18n documentation to find the appropriated combinaison https://codex.wordpress.org/Formatting_Date_and_Time */
 				'value'			=> esc_html__( 'M, jS - g:i A', BOOKACTI_PLUGIN_NAME ),
 				'description'	=> sprintf( esc_html__( 'Short date format. See the tags here: %1$s.', BOOKACTI_PLUGIN_NAME ), $wp_date_format_link )
 			),
 			'time_format' => array(
+				/* translators: Time format. Must be adapted to each country. Use wp date_i18n documentation to find the appropriated combinaison https://codex.wordpress.org/Formatting_Date_and_Time */
 				'value'			=> esc_html__( 'g:i A', BOOKACTI_PLUGIN_NAME ),
 				'description'	=> sprintf( esc_html__( 'Time format. It will be used when a time is displayed alone. See the tags here: %1$s.', BOOKACTI_PLUGIN_NAME ), $wp_date_format_link )
 			),

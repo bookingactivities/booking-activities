@@ -122,13 +122,14 @@ if( ! $templates ) {
 					}
 					
 					$default_status = get_user_meta( get_current_user_id(), 'bookacti_status_filter', true );
-					$default_status = $default_status ? $default_status : array();
+					$default_status = is_array( $default_status ) ? $default_status : array( 'booked', 'pending', 'cancelled', 'refunded', 'refund_requested' );
 					$statuses = bookacti_get_booking_state_labels();
 					$status_select_options = array();
 					foreach ( $statuses as $status_id => $status ) {
 						$status_select_options[ $status_id ] = esc_html( $status[ 'label' ] );
 					}
 					$selected_status = isset( $_REQUEST[ 'status' ] ) ? $_REQUEST[ 'status' ] : $default_status;
+					$selected_status = is_array( $selected_status ) ? $selected_status : array( $selected_status );
 					$args = array(
 						'type'		=> 'select',
 						'name'		=> 'status',
@@ -270,8 +271,8 @@ if( ! $templates ) {
 		<div id='bookacti-bookings-list' >
 		<?php
 			$filters = array(
-				'templates'					=> array_values( $selected_templates ), 
-				'activities'				=> array_values( $selected_activities ), 
+				'templates'					=> $selected_templates, 
+				'activities'				=> $selected_activities, 
 				'booking_id'				=> isset( $_REQUEST[ 'booking_id' ] )		? intval( $_REQUEST[ 'booking_id' ] ): 0, 
 				'booking_group_id'			=> isset( $_REQUEST[ 'booking_group_id' ] )	? intval( $_REQUEST[ 'booking_group_id' ] ): 0, 
 				'booking_group_single_row'	=> isset( $_REQUEST[ 'booking_group_single_row' ] )	? intval( $_REQUEST[ 'booking_group_single_row' ] ): 0,
@@ -279,7 +280,7 @@ if( ! $templates ) {
 				'event_id'					=> $event_id, 
 				'event_start'				=> $event_start, 
 				'event_end'					=> $event_end,
-				'status'					=> array_values( $selected_status ),
+				'status'					=> $selected_status,
 				'user_id'					=> $selected_user,
 				'from'						=> $from,
 				'to'						=> $to,

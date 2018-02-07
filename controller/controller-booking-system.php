@@ -61,7 +61,7 @@ add_action( 'wp_ajax_nopriv_bookactiFetchEvents', 'bookacti_controller_fetch_eve
  * Reload booking system with new attributes via AJAX
  * 
  * @since 1.1.0
- * @version 1.3.0
+ * @version 1.3.2
  */
 function bookacti_controller_reload_booking_system() {
 	
@@ -88,6 +88,9 @@ function bookacti_controller_reload_booking_system() {
 	}
 	
 	if( $is_nonce_valid && $is_allowed ) {
+		
+		$template_data		= bookacti_get_mixed_template_data( $attributes[ 'calendars' ], $attributes[ 'past_events' ] );
+		$events_interval	= bookacti_get_new_interval_of_events( $template_data, array(), false, $attributes[ 'past_events' ] );
 		
 		// Get HTML elements used by the booking method
 		$html_elements = bookacti_get_booking_method_html( $attributes[ 'method' ], $attributes );
@@ -116,8 +119,6 @@ function bookacti_controller_reload_booking_system() {
 			$categories_data	= bookacti_get_group_categories( $attributes[ 'group_categories' ] );
 		}
 		
-		$template_data		= bookacti_get_mixed_template_data( $attributes[ 'calendars' ], $attributes[ 'past_events' ] );
-		$events_interval	= bookacti_get_new_interval_of_events( $template_data, array(), false, $attributes[ 'past_events' ] );
 		$activities_data	= bookacti_get_activities_by_template( $attributes[ 'calendars' ], true );
 		$exceptions			= bookacti_get_exceptions( $attributes[ 'calendars' ] );
 		$bookings			= bookacti_get_number_of_bookings_by_events( $attributes[ 'calendars' ], array(), $user_ids );
@@ -148,12 +149,12 @@ add_action( 'wp_ajax_nopriv_bookactiReloadBookingSystem', 'bookacti_controller_r
 /**
  * AJAX Controller - Get booking numbers for a given template and / or event
  * 
- * @version 1.3.0
+ * @version 1.3.2
  */
 function bookacti_controller_get_booking_numbers() {
 
-	$template_ids	= intval( $_POST['template_ids'] );
-	$event_ids		= intval( $_POST['event_ids'] );
+	$template_ids	= isset( $_POST['template_ids'] ) ? intval( $_POST['template_ids'] ) : array();
+	$event_ids		= isset( $_POST['event_ids'] ) ? intval( $_POST['event_ids'] ) : array();
 
 	// Check nonce and capabilities
 	$is_nonce_valid	= check_ajax_referer( 'bookacti_get_booking_numbers', 'nonce', false );

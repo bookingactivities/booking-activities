@@ -200,7 +200,7 @@ function bookacti_update_booking_quantity( $booking_id, $new_quantity, $expirati
 /**
  * Get bookings according to filters
  * 
- * @version 1.3.1
+ * @version 1.3.2
  * @global wpdb $wpdb
  * @param array $filters
  * @param boolean $group_by_booking_groups Whether to retrieve only the first event of groups
@@ -217,7 +217,6 @@ function bookacti_get_bookings( $filters, $group_by_booking_groups = false ) {
 	}
 			
 	$bookings_query .= ' WHERE B.event_id = E.id '
-					. ' AND B.event_id = E.id '
 					. ' AND E.activity_id = A.id '
 					. ' AND E.template_id = T.id ';
 	
@@ -361,9 +360,10 @@ function bookacti_get_bookings( $filters, $group_by_booking_groups = false ) {
 
 
 /**
- * Get the total amount of bookings according to filters
+ * Get the total amount of booking rows according to filters
  * 
  * @since 1.3.1
+ * @version 1.3.2
  * @global wpdb $wpdb
  * @param array $filters
  * @param boolean $group_by_booking_groups Whether to count a group as one booking
@@ -372,7 +372,7 @@ function bookacti_get_bookings( $filters, $group_by_booking_groups = false ) {
 function bookacti_get_number_of_booking_rows( $filters = array(), $group_by_booking_groups = false ) {
 	global $wpdb;
 	
-	$bookings_query	= ' SELECT SUM( list_items_count ) FROM ( '
+	$bookings_query	= ' SELECT COUNT( list_items_count ) FROM ( '
 						. ' SELECT COUNT( DISTINCT B.id ) as list_items_count' 
 						. ' FROM ' . BOOKACTI_TABLE_BOOKINGS . ' as B, ' . BOOKACTI_TABLE_EVENTS . ' as E, ' . BOOKACTI_TABLE_ACTIVITIES . ' as A, ' . BOOKACTI_TABLE_TEMPLATES . ' as T ';
 	
@@ -381,7 +381,6 @@ function bookacti_get_number_of_booking_rows( $filters = array(), $group_by_book
 	}
 	
 	$bookings_query		.= ' WHERE B.event_id = E.id '
-						. ' AND B.event_id = E.id '
 						. ' AND E.activity_id = A.id '
 						. ' AND E.template_id = T.id ';
 	
@@ -498,7 +497,7 @@ function bookacti_get_number_of_booking_rows( $filters = array(), $group_by_book
 	if( $variables ) {
 		$bookings_query = $wpdb->prepare( $bookings_query, $variables );
 	}
-
+	
 	$count = $wpdb->get_var( $bookings_query );
 
 	return $count ? $count : 0;

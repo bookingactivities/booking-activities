@@ -1134,39 +1134,10 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	 */
 	function bookacti_get_active_booking_states() {
 		return apply_filters( 'bookacti_active_booking_states', array( 'booked', 'pending' ) );
-	}
-	
-	
-	/**
-	 * Format a booking date 
-	 * 
-	 * @param string $start
-	 * @param string $end
-	 * @return array
-	 */
-	function bookacti_format_booking_dates( $start, $end ) {
+	}	
 
-		// Make 'from' and 'to' intelligible values
-		$from_val		= bookacti_format_datetime( $start );
-		$sep_val		= '';
-		$to_val			= '';
-		$to_hour_or_date= '';
-		if( substr( $start, 0, 10 ) === substr( $end, 0, 10 ) ) { 
-			$sep_val= ' ' . _x( 'to', 'between two hours', BOOKACTI_PLUGIN_NAME ) . ' ';
-			/* translators: Datetime format. Must be adapted to each country. Use wp date_i18n documentation to find the appropriated combinaison https://codex.wordpress.org/Formatting_Date_and_Time */
-			$to_val = date_i18n( __( 'h:i a', BOOKACTI_PLUGIN_NAME ), strtotime( $end ) );
-			$to_val = ! mb_check_encoding( $to_val, 'UTF-8' ) ? utf8_encode( $to_val ) : $to_val;
-			$to_hour_or_date = 'to_hour';
-		} else {
-			$sep_val= ' ' . _x( 'to', 'between two dates', BOOKACTI_PLUGIN_NAME ) . ' ';
-			$to_val	= bookacti_format_datetime( $end );
-			$to_hour_or_date = 'to_date';
-		}
 
-		return array( 'start' => $from_val, 'separator' => $sep_val, 'end' => $to_val, 'to_hour_or_date' => $to_hour_or_date );
-	}
-	
-	
+
 
 // SHORTCODE BOOKINGS LIST
 
