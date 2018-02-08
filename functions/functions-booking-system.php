@@ -745,6 +745,7 @@ function bookacti_sanitize_events_interval( $interval ) {
  * get occurences of repeated events
  * 
  * @since 1.2.2 (replace bookacti_create_repeated_events)
+ * @version 1.3.3
  * @param object $event Event data 
  * @param boolean $past_events Whether to compute past events
  * @param array $interval array('start' => string: start date, 'end' => string: end date)
@@ -792,15 +793,22 @@ function bookacti_get_occurences_of_repeated_event( $event, $past_events = false
 
 		$repeat_from = new DateTime( $current_date . ' 00:00:00', $timezone );
 
-		// If started event are NOT allowed
-		$first_potential_event = new DateTime( $current_date . ' ' . $event_start_time, $timezone );
-		$first_potential_event->add( $event_duration );
+		$first_potential_event_start		= new DateTime( $current_date . ' ' . $event_start_time, $timezone );
+		$first_potential_event_end			= clone $first_potential_event_start;
+		$first_potential_event_end->add( $event_duration );
 		
-		if( ! $get_started_events || $first_potential_event <= $current_time ) {
+		$first_potential_event_is_past		= $first_potential_event_end <= $current_time;
+		$first_potential_event_has_started	= $first_potential_event_start <= $current_time;
+		
+		// Set the repetition "from" date to tommorow if:
+		// - The first postential event is today but is already past
+		// - The first potential event is today but has already started and started event are not allowed
+		if(  $first_potential_event_is_past
+		|| ( $first_potential_event_has_started && ! $get_started_events ) ) {
 			$repeat_from->add( new DateInterval( 'P1D' ) );
 		}
 	}
-
+	
 	switch( $event->repeat_freq ) {
 		case 'daily':
 			$repeat_interval = new DateInterval( 'P1D' );
@@ -833,7 +841,7 @@ function bookacti_get_occurences_of_repeated_event( $event, $past_events = false
 		default:
 			$repeat_interval = new DateInterval( 'P1D' ); // Default to daily to avoid unexpected behavior such as infinite loop
 	}
-
+	
 	// Properties common to each events of the 
 	$shared_properties = array(
 		'id'				=> $event->event_id,
