@@ -303,6 +303,9 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 
 == Changelog ==
 
+= 1.3.3 =
+* Fix - Repeated events were not displayed on today's date at a future time
+
 = 1.3.2 - 2018/02/07 = 
 * Tweak - Do not select temporary states as booking list filter (in cart, expired, removed)
 * Tweak - Calendar editor is now always full width
