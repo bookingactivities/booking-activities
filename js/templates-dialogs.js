@@ -1128,20 +1128,18 @@ function bookacti_dialog_create_activity() {
 		[{
 			text: bookacti_localized.dialog_button_ok,
 
-			//On click on the OK Button, new values are send to a script that update the database
+			// On click on the OK Button, new values are send to a script that update the database
 			click: function() {
 				
 				// Prepare fields
 				$j( '#bookacti-activity-data-form select[multiple] option' ).attr( 'selected', true );
 
-				//Get the data to save
-				var color           = $j( '#bookacti-activity-color' ).val();
-				var availability    = $j( '#bookacti-activity-availability' ).val();
-				var days            = $j( '#bookacti-activity-duration-days' ).val();
-				var hours           = $j( '#bookacti-activity-duration-hours' ).val();
-				var minutes         = $j( '#bookacti-activity-duration-minutes' ).val();
-				var duration        = bookacti_pad( days, 3 ) + '.' + bookacti_pad( hours, 2 ) + ':' + bookacti_pad( minutes, 2 ) + ':00';
-				var resizable       = $j( '#bookacti-activity-resizable' ).prop('checked');
+				// Get the data to save
+				var days		= $j( '#bookacti-activity-duration-days' ).val();
+				var hours		= $j( '#bookacti-activity-duration-hours' ).val();
+				var minutes		= $j( '#bookacti-activity-duration-minutes' ).val();
+				var duration	= bookacti_pad( days, 3 ) + '.' + bookacti_pad( hours, 2 ) + ':' + bookacti_pad( minutes, 2 ) + ':00';
+				var resizable	= $j( '#bookacti-activity-resizable' ).prop('checked');
 				if( resizable ) { resizable = '1'; } else { resizable = '0'; }
 				resizable = resizable.toString();
 
@@ -1154,7 +1152,7 @@ function bookacti_dialog_create_activity() {
 				if( is_form_valid ) {
 					bookacti_start_template_loading();
 
-					//Save the new activity in database
+					// Save the new activity in database
 					$j.ajax({
 						url: ajaxurl, 
 						data: data,
@@ -1519,16 +1517,16 @@ function bookacti_dialog_create_group_of_events( category_id ) {
 		[{
 			text: bookacti_localized.dialog_button_ok,
 
-			//On click on the OK Button, new values are send to a script that update the database
+			// On click on the OK Button, new values are send to a script that update the database
 			click: function() {
 				
 				// Prepare fields
 				$j( '#bookacti-group-of-events-action' ).val( 'bookactiInsertGroupOfEvents' );
 				$j( '#bookacti-group-of-events-form select[multiple] option' ).attr( 'selected', true );
 				
-				//Get the data to save
+				// Get the data to save
 				var selected_category_id	= $j( '#bookacti-group-of-events-category-selectbox' ).val();
-				bookacti.selected_category			= selected_category_id;
+				bookacti.selected_category	= selected_category_id;
 				
 				var data = $j( '#bookacti-group-of-events-form' ).serializeArray();
 				data.push( { name: 'template_id', value: bookacti.selected_template } );
@@ -1539,7 +1537,7 @@ function bookacti_dialog_create_group_of_events( category_id ) {
 				if( is_form_valid ) {
 					bookacti_start_template_loading();
 					
-					//Save the new group of events in database
+					// Save the new group of events in database
 					$j.ajax({
 						url: ajaxurl, 
 						data: data,

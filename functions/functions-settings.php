@@ -16,6 +16,8 @@ function bookacti_get_default_settings() {
 		'when_events_load'						=> 'on_page_load',
 		'event_load_interval'					=> 92,
 		'started_events_bookable'				=> false,
+		'availability_period_start'				=> 0,
+		'availability_period_end'				=> 0,
 		'default_booking_state'					=> 'pending',
 		'default_payment_status'				=> 'none',
 		'timezone'								=> $tz,
@@ -211,6 +213,55 @@ function bookacti_settings_section_bookings_callback() { }
 	
 	
 	/**
+	 * Display event availability period start setting
+	 * 
+	 * @since 1.4.0
+	 */
+	function bookacti_settings_field_availability_period_start_callback() {
+		
+		$tip = __( 'Set the beginning of the availability period. E.g.: "2", your customers may book events starting in 2 days at the earliest. They are no longer allowed to book events starting earlier (like today or tomorrow).', BOOKACTI_PLUGIN_NAME );
+		$tip .= '<br/>' . __( 'This parameter applies to all events. An calendar-specific parameter is available in calendar settings.', BOOKACTI_PLUGIN_NAME );
+		
+		$args = array(
+			'type'		=> 'number',
+			'name'		=> 'bookacti_general_settings[availability_period_start]',
+			'id'		=> 'availability_period_start',
+			'options'	=> array( 'min' => 0 ),
+			/* translators: Arrive after a field indicating a number of days before the event. E.g.: "Events will be bookable in 2 days from today". */
+			'label'		=> ' ' . esc_html__( 'days from today', BOOKACTI_PLUGIN_NAME ),
+			'value'		=> bookacti_get_setting_value( 'bookacti_general_settings', 'availability_period_start' ),
+			'tip'		=> $tip
+		);
+		bookacti_display_field( $args );
+	}
+	
+	
+	/**
+	 * Display event availability period end setting
+	 * 
+	 * @since 1.4.0
+	 */
+	function bookacti_settings_field_availability_period_end_callback() {
+		
+		$tip = __( 'Set the end of the availability period. E.g.: "30", your customers may book events starting within 30 days at the latest. They are not allowed yet to book events starting later.', BOOKACTI_PLUGIN_NAME );
+		$tip .= '<br/>' . __( 'Set it to "0" to ignore this parameter.', BOOKACTI_PLUGIN_NAME );
+		$tip .= '<br/>' . __( 'This parameter applies to all events. An calendar-specific parameter is available in calendar settings.', BOOKACTI_PLUGIN_NAME );
+		
+		$args = array(
+			'type'		=> 'number',
+			'name'		=> 'bookacti_general_settings[availability_period_end]',
+			'id'		=> 'availability_period_end',
+			'options'	=> array( 'min' => 0 ),
+			/* translators: Arrive after a field indicating a number of days before the event. E.g.: "Events will be bookable in 2 days from today". */
+			'label'		=> ' ' . esc_html__( 'days from today', BOOKACTI_PLUGIN_NAME ),
+			'value'		=> bookacti_get_setting_value( 'bookacti_general_settings', 'availability_period_end' ),
+			'tip'		=> $tip
+		);
+		bookacti_display_field( $args );
+	}
+	
+	
+	/**
 	 * Display "default booking state" setting
 	 * 
 	 * @version 1.2.0
@@ -363,7 +414,7 @@ function bookacti_settings_section_bookings_callback() { }
 			'options'	=> array( 'min' => 0 ),
 			'value'		=> bookacti_get_setting_value( 'bookacti_cancellation_settings', 'cancellation_min_delay_before_event' ),
 			'label'		=> ' ' . esc_html__( 'days before the event', BOOKACTI_PLUGIN_NAME ),
-			'tip'		=> __( 'Define the delay before the event in which the customer will not be able to cancel his booking no more. Ex: "7": Customers will be able to cancel their booking at least 7 days before the event starts. After that, it will be to late.', BOOKACTI_PLUGIN_NAME )
+			'tip'		=> __( 'Set the end of the allowed changes period (cancellation, rescheduling). E.g.: "7", your customers may change their reservations at least 7 days before the start of the event. After that, they won\'t be allowed to change them anymore.', BOOKACTI_PLUGIN_NAME )
 		);
 		bookacti_display_field( $args );
 	}
@@ -501,57 +552,6 @@ function bookacti_settings_section_bookings_callback() { }
 		</table>
 	   <?php
 	   bookacti_display_banp_promo();
-	}
-	
-	
-	/**
-	 * Display a promotional area for Notification Pack add-on
-	 */
-	function bookacti_display_banp_promo() {
-		$is_plugin_active	= bookacti_is_plugin_active( 'ba-notification-pack/ba-notification-pack.php' );
-		$license_status		= get_option( 'banp_license_status' );
-
-		// If the plugin is activated but the license is not active yet
-		if( $is_plugin_active && ( ! $license_status || $license_status !== 'valid' ) ) {
-			?>
-			<div id='bookacti-banp-promo' class='bookacti-addon-promo' >
-				<p>
-				<?php 
-					/* translators: %s = add-on name */
-					echo sprintf( __( 'Thank you for purchasing %s add-on!', BOOKACTI_PLUGIN_NAME ), 
-								 '<strong>' . esc_html__( 'Notification Pack', BOOKACTI_PLUGIN_NAME ) . '</strong>' ); 
-				?>
-				</p><p>
-					<?php esc_html_e( "It seems you didn't activate your license yet. Please follow these instructions to activate your license:", BOOKACTI_PLUGIN_NAME ); ?>
-				</p><p>
-					<strong>
-						<a href='https://booking-activities.fr/en/docs/user-documentation/notification-pack/prerequisite-installation-license-activation-notification-pack-add-on/?utm_source=plugin&utm_medium=plugin&utm_content=encart-promo-settings' target='_blank' >
-							<?php 
-							/* translators: %s = add-on name */
-								echo sprintf( __( 'How to activate %s license?', BOOKACTI_PLUGIN_NAME ), 
-											  esc_html__( 'Notification Pack', BOOKACTI_PLUGIN_NAME ) ); 
-							?>
-						</a>
-					</strong>
-				</p>
-			</div>
-			<?php
-		}
-
-		else if( ! $license_status || $license_status !== 'valid' ) {
-			?>
-			<div id='bookacti-banp-promo' class='bookacti-addon-promo' >
-				<?php 
-				$addon_link = '<strong><a href="https://booking-activities.fr/en/downloads/notification-pack/?utm_source=plugin&utm_medium=plugin&utm_campaign=notification-pack&utm_content=encart-promo-settings" target="_blank" >';
-				$addon_link .= esc_html__( 'Notification Pack', BOOKACTI_PLUGIN_NAME );
-				$addon_link .= '</a></strong>';
-				/* translators: %1$s is the placeholder for Notification Pack add-on link */
-				echo sprintf( esc_html__( 'You can send all these notifications and booking reminders via email, SMS and Push with %1$s add-on!', BOOKACTI_PLUGIN_NAME ), $addon_link ); 
-				?>
-				<div><a href='https://booking-activities.fr/en/downloads/notification-pack/?utm_source=plugin&utm_medium=plugin&utm_campaign=notification-pack&utm_content=encart-promo-settings' class='button' target='_blank' ><?php esc_html_e( 'Learn more', BOOKACTI_PLUGIN_NAME ); ?></a></div>
-			</div>
-			<?php
-		}
 	}
 	
 	
@@ -852,4 +852,112 @@ function bookacti_get_screen_ids() {
 		$administrator->remove_cap( 'bookacti_edit_bookings' );
 
 		do_action( 'bookacti_unset_capabilities' );
+	}
+
+
+
+
+// PROMO
+
+	/**
+	 * Display a promotional area for Display Pack add-on
+	 * @since 1.2.0
+	 */
+	function bookacti_display_badp_promo() {
+		$is_plugin_active	= bookacti_is_plugin_active( 'ba-display-pack/ba-display-pack.php' );
+		$license_status		= get_option( 'badp_license_status' );
+
+		// If the plugin is activated but the license is not active yet
+		if( $is_plugin_active && ( empty( $license_status ) || $license_status !== 'valid' ) ) {
+			?>
+			<div class='bookacti-addon-promo' >
+				<p>
+				<?php 
+					/* translators: %s = add-on name */
+					echo sprintf( __( 'Thank you for purchasing %s add-on!', BOOKACTI_PLUGIN_NAME ), 
+								 '<strong>' . esc_html( __( 'Display Pack', BOOKACTI_PLUGIN_NAME ) ) . '</strong>' ); 
+				?>
+				</p><p>
+					<?php esc_html_e( "It seems you didn't activate your license yet. Please follow these instructions to activate your license:", BOOKACTI_PLUGIN_NAME ); ?>
+				</p><p>
+					<strong>
+						<a href='https://booking-activities.fr/en/docs/user-documentation/get-started-with-display-pack-add-on/prerequisite-installation-license-activation-of-display-pack-add-on/?utm_source=plugin&utm_medium=plugin&utm_content=encart-promo-calendar' target='_blank' >
+							<?php 
+							/* translators: %s = add-on name */
+								echo sprintf( __( 'How to activate %s license?', BOOKACTI_PLUGIN_NAME ), 
+											  esc_html( __( 'Display Pack', BOOKACTI_PLUGIN_NAME ) ) ); 
+							?>
+						</a>
+					</strong>
+				</p>
+			</div>
+			<?php
+		}
+
+		else if( empty( $license_status ) || $license_status !== 'valid' ) {
+			?>
+			<div class='bookacti-addon-promo' >
+				<?php 
+				$addon_link = '<a href="https://booking-activities.fr/en/downloads/display-pack/?utm_source=plugin&utm_medium=plugin&utm_campaign=display-pack&utm_content=encart-promo-calendar" target="_blank" >';
+				$addon_link .= esc_html( __( 'Display Pack', BOOKACTI_PLUGIN_NAME ) );
+				$addon_link .= '</a>';
+				/* transmators: %1$s is the placeholder for Display Pack add-on link */
+				echo sprintf( esc_html( __( 'Get other essential customization options with %1$s add-on!', BOOKACTI_PLUGIN_NAME ) ), $addon_link ); 
+				?>
+				<div><a href='https://booking-activities.fr/en/downloads/display-pack/?utm_source=plugin&utm_medium=plugin&utm_campaign=display-pack&utm_content=encart-promo-calendar' class='button' target='_blank' ><?php esc_html_e( 'Learn more', BOOKACTI_PLUGIN_NAME ); ?></a></div>
+			</div>
+			<?php
+		}
+	}
+	
+	
+	/**
+	 * Display a promotional area for Notification Pack add-on
+	 * @since 1.2.0
+	 */
+	function bookacti_display_banp_promo() {
+		$is_plugin_active	= bookacti_is_plugin_active( 'ba-notification-pack/ba-notification-pack.php' );
+		$license_status		= get_option( 'banp_license_status' );
+
+		// If the plugin is activated but the license is not active yet
+		if( $is_plugin_active && ( ! $license_status || $license_status !== 'valid' ) ) {
+			?>
+			<div id='bookacti-banp-promo' class='bookacti-addon-promo' >
+				<p>
+				<?php 
+					/* translators: %s = add-on name */
+					echo sprintf( __( 'Thank you for purchasing %s add-on!', BOOKACTI_PLUGIN_NAME ), 
+								 '<strong>' . esc_html__( 'Notification Pack', BOOKACTI_PLUGIN_NAME ) . '</strong>' ); 
+				?>
+				</p><p>
+					<?php esc_html_e( "It seems you didn't activate your license yet. Please follow these instructions to activate your license:", BOOKACTI_PLUGIN_NAME ); ?>
+				</p><p>
+					<strong>
+						<a href='https://booking-activities.fr/en/docs/user-documentation/notification-pack/prerequisite-installation-license-activation-notification-pack-add-on/?utm_source=plugin&utm_medium=plugin&utm_content=encart-promo-settings' target='_blank' >
+							<?php 
+							/* translators: %s = add-on name */
+								echo sprintf( __( 'How to activate %s license?', BOOKACTI_PLUGIN_NAME ), 
+											  esc_html__( 'Notification Pack', BOOKACTI_PLUGIN_NAME ) ); 
+							?>
+						</a>
+					</strong>
+				</p>
+			</div>
+			<?php
+		}
+
+		else if( ! $license_status || $license_status !== 'valid' ) {
+			?>
+			<div id='bookacti-banp-promo' class='bookacti-addon-promo' >
+				<?php 
+				$addon_link = '<strong><a href="https://booking-activities.fr/en/downloads/notification-pack/?utm_source=plugin&utm_medium=plugin&utm_campaign=notification-pack&utm_content=encart-promo-settings" target="_blank" >';
+				$addon_link .= esc_html__( 'Notification Pack', BOOKACTI_PLUGIN_NAME );
+				$addon_link .= '</a></strong>';
+				/* translators: %1$s is the placeholder for Notification Pack add-on link */
+				echo sprintf( esc_html__( 'You can send all these notifications and booking reminders via email, SMS and Push with %1$s add-on!', BOOKACTI_PLUGIN_NAME ), $addon_link ); 
+				?>
+				<div><a href='https://booking-activities.fr/en/downloads/notification-pack/?utm_source=plugin&utm_medium=plugin&utm_campaign=notification-pack&utm_content=encart-promo-settings' class='button' target='_blank' ><?php esc_html_e( 'Learn more', BOOKACTI_PLUGIN_NAME ); ?></a></div>
+			</div>
+			<?php
+		}
 	}
