@@ -142,7 +142,9 @@ function bookacti_dialog_add_new_template() {
     $j( '#bookacti-template-closing' ).val( moment().add( 7, 'days' ).format( 'YYYY-MM-DD' ) );
 	$j( '#bookacti-template-data-minTime' ).val( '08:00' );
 	$j( '#bookacti-template-data-maxTime' ).val( '20:00' );
-	$j( '#badp-template-data-snapDuration' ).val( '00:30' );
+	$j( '#bookacti-template-data-snapDuration' ).val( '00:30' );
+	$j( '#bookacti-template-availability-period-start' ).val( -1 );
+	$j( '#bookacti-template-availability-period-end' ).val( -1 );
 	
 	$j( '#bookacti-template-data-dialog' ).trigger( 'bookacti_default_template_settings' );
 	
@@ -362,7 +364,7 @@ function bookacti_dialog_update_template( template_id ) {
 								$j( '#bookacti-template-picker option[value=' + template_id + ']' ).attr( 'data-template-end', response.template_data.end );
 								
 								// Dynamically update template settings
-								bookacti_update_calendar_settings( $j( '#bookacti-template-calendar' ), response.template_data );
+								bookacti_update_calendar_settings( $j( '#bookacti-template-calendar' ) );
 
 							// If no changes
 							} else if ( response.status === 'nochanges' ) {

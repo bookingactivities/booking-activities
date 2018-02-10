@@ -52,7 +52,7 @@ function bookacti_init_settings() {
 	add_settings_field(  
 		'availability_period_start', 
 		/* translators: Followed by a field indicating a number of days before the event. E.g.: "Events will be bookable in 2 days from today". */
-		__( 'Events will bookable in', BOOKACTI_PLUGIN_NAME ), 
+		__( 'Events will be bookable in', BOOKACTI_PLUGIN_NAME ), 
 		'bookacti_settings_field_availability_period_start_callback', 
 		'bookacti_general_settings', 
 		'bookacti_settings_section_general' 

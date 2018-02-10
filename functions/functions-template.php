@@ -117,6 +117,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	 * Get a unique template setting made from a combination of multiple template settings
 	 * 
 	 * @since	1.2.2 (was bookacti_get_mixed_template_settings)
+	 * @version 1.4.0
 	 * @param	array|int $template_ids Array of template ids or single template id
 	 * @param	boolean $past_events Whether to allow past events
 	 * @return	array
@@ -130,7 +131,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		foreach( $templates_data as $template_data ){
 			$settings = $template_data[ 'settings' ];
 			if( isset( $settings[ 'minTime' ] ) ) {
-				//Keep the lower value
+				// Keep the lower value
 				if(  ! isset( $mixed_settings[ 'minTime' ] ) 
 					|| isset( $mixed_settings[ 'minTime' ] ) && strtotime( $settings[ 'minTime' ] ) < strtotime( $mixed_settings[ 'minTime' ] ) ) {
 
@@ -138,7 +139,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 				} 
 			}
 			if( isset( $settings[ 'maxTime' ] ) ) {
-				//Keep the higher value
+				// Keep the higher value
 				if(  ! isset( $mixed_settings[ 'maxTime' ] ) 
 					|| isset( $mixed_settings[ 'maxTime' ] ) && strtotime( $settings[ 'maxTime' ] ) > strtotime( $mixed_settings[ 'maxTime' ] ) ) {
 
@@ -146,13 +147,37 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 				} 
 			}
 			if( isset( $settings[ 'snapDuration' ] ) ) {
-				//Keep the lower value
+				// Keep the lower value
 				if(  ! isset( $mixed_settings[ 'snapDuration' ] ) 
 					|| isset( $mixed_settings[ 'snapDuration' ] ) && strtotime( $settings[ 'snapDuration' ] ) < strtotime( $mixed_settings[ 'snapDuration' ] ) ) {
 
 					$mixed_settings[ 'snapDuration' ] = $settings[ 'snapDuration' ];
 				} 
 			}
+			if( ! $past_events && isset( $settings[ 'availability_period_start' ] ) && $settings[ 'availability_period_start' ] != -1 ) {
+				// Keep the higher value
+				if(  ! isset( $mixed_settings[ 'availability_period_start' ] ) 
+					|| isset( $mixed_settings[ 'availability_period_start' ] ) && $settings[ 'availability_period_start' ] > $mixed_settings[ 'availability_period_start' ] ) {
+
+					$mixed_settings[ 'availability_period_start' ] = $settings[ 'availability_period_start' ];
+				} 
+			}
+			if( ! $past_events && isset( $settings[ 'availability_period_end' ] ) && $settings[ 'availability_period_end' ] != -1 ) {
+				// Keep the lower value
+				if(  ! isset( $mixed_settings[ 'availability_period_end' ] ) 
+					|| isset( $mixed_settings[ 'availability_period_end' ] ) && $settings[ 'availability_period_end' ] < $mixed_settings[ 'availability_period_end' ] ) {
+
+					$mixed_settings[ 'availability_period_end' ] = $settings[ 'availability_period_end' ];
+				} 
+			}
+		}
+		
+		// Take default availability period if not set
+		if( ! isset( $mixed_settings[ 'availability_period_start' ] ) ) {
+			$mixed_settings[ 'availability_period_start' ] = $past_events ? 0 : bookacti_get_setting_value( 'bookacti_general_settings', 'availability_period_start' );
+		}
+		if( ! isset( $mixed_settings[ 'availability_period_end' ] ) ) {
+			$mixed_settings[ 'availability_period_end' ] = $past_events ? 0 : bookacti_get_setting_value( 'bookacti_general_settings', 'availability_period_end' );
 		}
 		
 		$mixed_data = array();

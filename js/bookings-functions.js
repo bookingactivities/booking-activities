@@ -124,13 +124,12 @@ function bookacti_refresh_calendar_according_to_date_filter( calendar ) {
 	var from	= moment( $j( '#bookacti-booking-filter-dates-from' ).val() );
 	var to		= moment( $j( '#bookacti-booking-filter-dates-to' ).val() );
 	
-	var template_data = {
-		'start': from.isValid() ? from.format( 'YYYY-MM-DD' ) : bookacti.booking_system[ 'bookacti-booking-system-bookings-page' ][ 'template_data' ][ 'start' ],
-		'end': to.isValid() ? to.format( 'YYYY-MM-DD' ) : bookacti.booking_system[ 'bookacti-booking-system-bookings-page' ][ 'template_data' ][ 'end' ],
-		'settings': {}
+	var interval_filter = {
+		"start": from.isValid() ? from : moment( bookacti.booking_system[ 'bookacti-booking-system-bookings-page' ][ 'template_data' ][ 'start' ] ),
+		"end": to.isValid() ? to.add( 1, 'days' ) : moment( bookacti.booking_system[ 'bookacti-booking-system-bookings-page' ][ 'template_data' ][ 'end' ] ).add( 1, 'days' )
 	};
 	
-	bookacti_update_calendar_settings( calendar, template_data );
+	calendar.fullCalendar( 'option', 'validRange', interval_filter );
 }
 
 
@@ -155,7 +154,7 @@ function bookacti_reload_booking_system_according_to_filters( booking_system ) {
 
 // Init booking actions
 function bookacti_init_booking_actions() {
-	$j( '.bookacti-booking-actions, .bookacti-booking-group-actions, #bookacti-bookings-list' ).on( 'click', '.bookacti-booking-action, .bookacti-booking-group-action', function ( e ) {
+	$j( '.bookacti-user-bookings-list, .bookacti-order-item-activity, #bookacti-bookings-list' ).on( 'click', '.bookacti-booking-action, .bookacti-booking-group-action', function ( e ) {
 		e.preventDefault();
 		
 		// Single Bookings

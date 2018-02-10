@@ -101,7 +101,7 @@ function bookacti_switch_template( selected_template_id ) {
 
 					// TEMPLATE SETTINGS
 						// Update calendar settings
-						bookacti_update_calendar_settings( $j( '#bookacti-template-calendar' ), response.template_data );
+						bookacti_update_calendar_settings( $j( '#bookacti-template-calendar' ) );
 					
 					
 					// VIEW

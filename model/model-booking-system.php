@@ -545,6 +545,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	 * Determine if an event or one of its occurrence is included in calendar range
 	 *
 	 * @since  1.0.6
+	 * @version 1.4.0
 	 * @param  int		$event_id		ID of the event to check
 	 * @param  string	$event_start	Start datetime of the event to check (format 2017-12-31T23:59:59)
 	 * @param  string	$event_end		End datetime of the event to check (format 2017-12-31T23:59:59)
@@ -556,32 +557,57 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		$event_start	= bookacti_sanitize_datetime( $event_start );
 		$event_end		= bookacti_sanitize_datetime( $event_end );
 
-		if( empty( $event_id ) || empty( $event_start ) || empty( $event_end ) ) {
-			return false;
-		}
+		if( ! $event_id || ! $event_start || ! $event_end ) { return false; }
 		
 		global $wpdb;
 		
 		// Get template range in order to be compared with the event dates
-		$range_query	= 'SELECT T.start_date as start, T.end_date as end FROM ' . BOOKACTI_TABLE_TEMPLATES . ' as T, ' . BOOKACTI_TABLE_EVENTS . ' as E '
-						. ' WHERE E.template_id = T.id '
-						. ' AND E.id = %d ';
-		$range_prepare	= $wpdb->prepare( $range_query, $event_id );
-		$range			= $wpdb->get_row( $range_prepare, OBJECT );
+		$query		= 'SELECT T.id, T.start_date as start, T.end_date as end FROM ' . BOOKACTI_TABLE_TEMPLATES . ' as T, ' . BOOKACTI_TABLE_EVENTS . ' as E '
+					. ' WHERE E.template_id = T.id '
+					. ' AND E.id = %d ';
+		$query		= $wpdb->prepare( $query, $event_id );
+		$template	= $wpdb->get_row( $query, OBJECT );
 		
-		if( empty( $range ) ){
-			return false;
+		if( ! $template ) { return false; }
+		
+		$timezone		= new DateTimeZone( bookacti_get_setting_value( 'bookacti_general_settings', 'timezone' ) );
+		$current_time	= new DateTime( 'now', $timezone );
+		$current_date	= $current_time->format( 'Y-m-d' );
+		
+		$event_start_datetime		= new DateTime( $event_start, $timezone );
+		$event_end_datetime			= new DateTime( $event_end, $timezone );
+		
+		$availability_period_start	= $template->start;
+		$availability_period_end	= $template->end;
+		
+		// Restrict template interval if an availability period is set
+		if( ! apply_filters( 'bookacti_bypass_availability_period_check', false ) ) {
+			
+			// Take default availability period if not set
+			$template_settings = bookacti_get_metadata( 'template', $template->id );
+			if( ! isset( $template_settings[ 'availability_period_start' ] ) || intval( $template_settings[ 'availability_period_start' ] ) < 0 )	{ $template_settings[ 'availability_period_start' ] = bookacti_get_setting_value( 'bookacti_general_settings', 'availability_period_start' ); }
+			if( ! isset( $template_settings[ 'availability_period_end' ] ) || intval( $template_settings[ 'availability_period_end' ] ) < 0 )		{ $template_settings[ 'availability_period_end' ] = bookacti_get_setting_value( 'bookacti_general_settings', 'availability_period_end' ); }
+			
+			if( $template_settings[ 'availability_period_start' ] > 0 ) {
+				$availability_start_time = clone $current_time;
+				$availability_start_time->add( new DateInterval( 'P' . $template_settings[ 'availability_period_start' ] . 'D' ) );
+				$availability_start_date = $availability_start_time->format( 'Y-m-d' );
+				if( strtotime( $availability_start_date ) > strtotime( $template->start ) ) {
+					$availability_period_start = $availability_start_date;
+				}
+			}
+			if( $template_settings[ 'availability_period_end' ] > 0 ) {
+				$availability_end_time = clone $current_time;
+				$availability_end_time->add( new DateInterval( 'P' . $template_settings[ 'availability_period_end' ] . 'D' ) );
+				$availability_end_date = $availability_end_time->format( 'Y-m-d' );
+				if( strtotime( $availability_end_date ) < strtotime( $template->end ) ) {
+					$availability_period_end = $availability_end_date;
+				}
+			}
 		}
 		
-		// Make sure datetimes have this format 'Y-m-d H:i:s'
-		$event_start	= str_replace( 'T', ' ', $event_start );
-		$event_end		= str_replace( 'T', ' ', $event_end );
-		
-		$event_start_datetime		= DateTime::createFromFormat('Y-m-d H:i:s', $event_start );
-		$event_end_datetime			= DateTime::createFromFormat('Y-m-d H:i:s', $event_end );
-		$template_start_datetime	= DateTime::createFromFormat('Y-m-d H:i:s', $range->start . ' 00:00:00' );
-		$template_end_datetime		= DateTime::createFromFormat('Y-m-d H:i:s', $range->end . ' 00:00:00' );
-		$template_end_datetime->add( new DateInterval( 'P1D' ) );
+		$template_start_datetime	= new DateTime( $availability_period_start . ' 00:00:00', $timezone );
+		$template_end_datetime		= new DateTime( $availability_period_end . ' 23:59:59', $timezone );
 		
 		if( $event_start_datetime >= $template_start_datetime 
 		&&  $event_end_datetime   <= $template_end_datetime ) {

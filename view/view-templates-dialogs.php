@@ -216,7 +216,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 						'callback'		=> 'bookacti_fill_template_tab_agenda',
 						'parameters'	=> array(),
 						'order'			=> 40 ),
-				array(	'label'			=> __( 'Events', BADP_PLUGIN_NAME ),
+				array(	'label'			=> __( 'Events', BOOKACTI_PLUGIN_NAME ),
 						'callback'		=> 'bookacti_fill_template_tab_events',
 						'parameters'	=> array(),
 						'order'			=> 50 ),
@@ -275,7 +275,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			
 			
 			function bookacti_fill_template_tab_agenda() {
-				do_action( 'bookacti_template_tab_agenda_before' );
+				do_action( 'bookacti_template_tab_events_before' );
 			?>
 				<div>
 					<label for='bookacti-template-data-minTime' >
@@ -323,7 +323,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 					?>
 				</div>
 			<?php
-				do_action( 'bookacti_template_tab_agenda_after' );
+				do_action( 'bookacti_template_tab_events_after' );
 				
 				bookacti_display_badp_promo();
 			}
@@ -338,7 +338,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 				do_action( 'bookacti_template_tab_events_before', $params );
 			?>
 				<div>
-					<label for='bookacti-template-availability-period-start' ><?php /* translators: Followed by a field indicating a number of days before the event. E.g.: "Events will bookable in 2 days from today". */ esc_html_e( 'Events will bookable in', BOOKACTI_PLUGIN_NAME ); ?></label>
+					<label for='bookacti-template-availability-period-start' ><?php /* translators: Followed by a field indicating a number of days before the event. E.g.: "Events will be bookable in 2 days from today". */ esc_html_e( 'Events will be bookable in', BOOKACTI_PLUGIN_NAME ); ?></label>
 					<input	type='number' 
 							name='templateOptions[availability_period_start]' 
 							id='bookacti-template-availability-period-start' 

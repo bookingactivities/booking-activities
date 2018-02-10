@@ -72,9 +72,11 @@ function bookacti_format_template_settings( $template_settings ) {
 	
 	// Default settings
 	$default_settings = apply_filters( 'bookacti_template_default_settings', array(
-		'minTime'				=> '08:00',
-		'maxTime'				=> '20:00',
-		'snapDuration'			=> '00:30'
+		'minTime'					=> '08:00',
+		'maxTime'					=> '20:00',
+		'snapDuration'				=> '00:30',
+		'availability_period_start'	=> -1,
+		'availability_period_end'	=> -1
 	) );
 	
 	$settings = array();

@@ -655,7 +655,8 @@ function bookacti_get_events_array_from_db_events( $events, $past_events, $inter
  * Get a new interval of events to load. Computed from the compulsory interval, or now's date and template interval.
  * 
  * @since 1.2.2
- * @param array $template_interval array( 'start'=>Calendar start, 'end'=> Calendar end) 
+ * @version 1.4.0
+ * @param array $template_interval array( 'start'=>Calendar start, 'end'=> Calendar end, 'settings'=> array( 'availability_period_start'=> Relative start from today, 'availability_period_end'=> Relative end from today) ) 
  * @param array $min_interval array( 'start'=> Calendar start, 'end'=> Calendar end)
  * @param int $interval_duration Number of days of the interval
  * @param bool $past_events
@@ -665,20 +666,44 @@ function bookacti_get_new_interval_of_events( $template_interval, $min_interval 
 	
 	if( ! isset( $template_interval[ 'start' ] ) || ! isset( $template_interval[ 'end' ] ) ) { return array(); }
 	
-	$timezone			= new DateTimeZone( bookacti_get_setting_value( 'bookacti_general_settings', 'timezone' ) );
-	$current_time		= new DateTime( 'now', $timezone );
-	$current_date		= $current_time->format( 'Y-m-d' );
+	// Take default availability period if not set
+	if( ! isset( $template_interval[ 'settings' ][ 'availability_period_start' ] ) ){ $template_interval[ 'settings' ][ 'availability_period_start' ] = bookacti_get_setting_value( 'bookacti_general_settings', 'availability_period_start' ); }
+	if( ! isset( $template_interval[ 'settings' ][ 'availability_period_end' ] ) )	{ $template_interval[ 'settings' ][ 'availability_period_end' ] = bookacti_get_setting_value( 'bookacti_general_settings', 'availability_period_end' ); }
 	
-	$calendar_start		= new DateTime( $template_interval[ 'start' ] . ' 00:00:00', $timezone );
-	$calendar_end		= new DateTime( $template_interval[ 'end' ] . ' 23:59:59', $timezone );
+	$timezone		= new DateTimeZone( bookacti_get_setting_value( 'bookacti_general_settings', 'timezone' ) );
+	$current_time	= new DateTime( 'now', $timezone );
+	$current_date	= $current_time->format( 'Y-m-d' );
+	
+	// Restrict template interval if an availability period is set
+	$availability_period_start	= $template_interval[ 'start' ];
+	$availability_period_end	= $template_interval[ 'end' ];
+	if( $template_interval[ 'settings' ][ 'availability_period_start' ] > 0 ) {
+		$availability_start_time = clone $current_time;
+		$availability_start_time->add( new DateInterval( 'P' . $template_interval[ 'settings' ][ 'availability_period_start' ] . 'D' ) );
+		$availability_start_date = $availability_start_time->format( 'Y-m-d' );
+		if( strtotime( $availability_start_date ) > strtotime( $template_interval[ 'start' ] ) ) {
+			$availability_period_start = $availability_start_date;
+		}
+	}
+	if( $template_interval[ 'settings' ][ 'availability_period_end' ] > 0 ) {
+		$availability_end_time = clone $current_time;
+		$availability_end_time->add( new DateInterval( 'P' . $template_interval[ 'settings' ][ 'availability_period_end' ] . 'D' ) );
+		$availability_end_date = $availability_end_time->format( 'Y-m-d' );
+		if( strtotime( $availability_end_date ) < strtotime( $template_interval[ 'end' ] ) ) {
+			$availability_period_end = $availability_end_date;
+		}
+	}
+
+	$calendar_start	= new DateTime( $availability_period_start . ' 00:00:00', $timezone );
+	$calendar_end	= new DateTime( $availability_period_end . ' 23:59:59', $timezone );
 	
 	if( ! $past_events && $calendar_end < $current_time ) { return array(); }
 	
 	if( ! $min_interval ) {
 		if( $calendar_start > $current_time ) {
-			$min_interval = array( 'start' => $template_interval[ 'start' ], 'end' => $template_interval[ 'start' ] );
+			$min_interval = array( 'start' => $availability_period_start, 'end' => $availability_period_start );
 		} else if( $calendar_end < $current_time ) {
-			$min_interval = array( 'start' => $template_interval[ 'end' ], 'end' => $template_interval[ 'end' ] );
+			$min_interval = array( 'start' => $availability_period_end, 'end' => $availability_period_end );
 		} else {
 			$min_interval = array( 'start' => $current_date, 'end' => $current_date );
 		}
@@ -716,7 +741,7 @@ function bookacti_get_new_interval_of_events( $template_interval, $min_interval 
 		'start' => $interval_start->format( 'Y-m-d' ), 
 		'end' => $interval_end->format( 'Y-m-d' ) 
 	);
-	
+
 	return $interval;
 }
 
