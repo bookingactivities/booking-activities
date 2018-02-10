@@ -306,6 +306,8 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 = 1.3.3 =
 * Fix - Repeated events were not displayed on today's date at a future time
 * Fix - The dropped off events were disappearing when the view changes in calendar editor
+* Fix - Booking action buttons are back in frontend WooCommerce orders details
+* Fix - The snapDuration default value was not automatically displayed in calendar settings
 
 = 1.3.2 - 2018/02/07 = 
 * Tweak - Do not select temporary states as booking list filter (in cart, expired, removed)

@@ -155,7 +155,7 @@ function bookacti_reload_booking_system_according_to_filters( booking_system ) {
 
 // Init booking actions
 function bookacti_init_booking_actions() {
-	$j( '.bookacti-booking-actions, .bookacti-booking-group-actions, #bookacti-bookings-list' ).on( 'click', '.bookacti-booking-action, .bookacti-booking-group-action', function ( e ) {
+	$j( '.bookacti-user-bookings-list, .bookacti-order-item-activity, #bookacti-bookings-list' ).on( 'click', '.bookacti-booking-action, .bookacti-booking-group-action', function ( e ) {
 		e.preventDefault();
 		
 		// Single Bookings

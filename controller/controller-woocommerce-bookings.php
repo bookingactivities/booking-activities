@@ -286,13 +286,14 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	 * Add actions html elements to booking rows
 	 * 
 	 * @version 1.2.0
+	 * @version 1.3.3
 	 * @param int $item_id
 	 * @param WC_Order_item $item
 	 * @param WC_Order $order
 	 * @param boolean $plain_text
 	 */
 	function bookacti_add_actions_to_bookings( $item_id, $item, $order, $plain_text = true ) {
-		if( ! $plain_text || ( isset( $_GET[ 'pay_for_order' ] ) && $_GET[ 'pay_for_order' ] ) ) { return; }
+		if( $plain_text || ( isset( $_GET[ 'pay_for_order' ] ) && $_GET[ 'pay_for_order' ] ) ) { return; }
 		
 		if( isset( $item['bookacti_booking_id'] ) ) {
 			echo bookacti_get_booking_actions_html( $item['bookacti_booking_id'], 'front', false, true );
