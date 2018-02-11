@@ -308,6 +308,7 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 * Fix - The dropped off events were disappearing when the view changes in calendar editor
 * Fix - Booking action buttons are back in frontend WooCommerce orders details
 * Fix - The snapDuration default value was not automatically displayed in calendar settings
+* Fix - PHP notice in WooCommerce variations
 
 = 1.3.2 - 2018/02/07 = 
 * Tweak - Do not select temporary states as booking list filter (in cart, expired, removed)
