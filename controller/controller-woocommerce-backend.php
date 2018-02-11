@@ -802,7 +802,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	 * Add custom fields for activity variation product type
 	 * 
 	 * @since 1.0.0
-	 * @version 1.1.0
+	 * @version 1.3.3
 	 * 
 	 * @param int $loop
 	 * @param array $variation_data
@@ -885,7 +885,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 						id='bookacti_variable_template_<?php echo esc_attr( $loop ); ?>' 
 						class='bookacti_variable_template' 
 						data-loop='<?php echo esc_attr( $loop ); ?>' 
-						data-parent='<?php echo esc_attr( $parent_template_id ); ?>' 
+						data-parent='<?php echo is_array( $parent_template_id ) ? esc_attr( implode( ',', $parent_template_id ) ) : esc_attr( $parent_template_id ); ?>' 
 						<?php 
 							if( count( $templates ) > 1 ) { echo 'style="margin-right:10px;"'; } 
 							if( is_array( $current_templates ) && count( $current_templates ) > 1 ) { echo 'multiple'; } 
@@ -937,7 +937,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 						id='bookacti_variable_activity_<?php echo esc_attr( $loop ); ?>' 
 						class='bookacti_variable_activity' 
 						data-loop='<?php echo esc_attr( $loop ); ?>' 
-						data-parent='<?php echo esc_attr( $parent_activity_id ); ?>' 
+						data-parent='<?php echo is_array( $parent_activity_id ) ? esc_attr( implode( ',', $parent_activity_id ) ) : esc_attr( $parent_activity_id ); ?>' 
 						<?php 
 							if( count( $activities ) > 1 ) { echo 'style="margin-right:10px;"'; } 
 							if( is_array( $current_activities ) && count( $current_activities ) > 1 ) { echo 'multiple'; } 
@@ -984,7 +984,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 						id='bookacti_variable_group_categories_<?php echo esc_attr( $loop ); ?>' 
 						class='bookacti_variable_group_categories' 
 						data-loop='<?php echo esc_attr( $loop ); ?>' 
-						data-parent='<?php echo is_array( $parent_group_categories ) ? esc_attr( implode( ',', $parent_group_categories ) ) : ! empty( $parent_group_categories ) ? esc_attr( $parent_group_categories ) : 'none'; ?>'
+						data-parent='<?php if( is_array( $parent_group_categories ) ) { echo esc_attr( implode( ',', $parent_group_categories ) ); } else if( $parent_group_categories ) { echo esc_attr( $parent_group_categories ); } else { echo 'none'; } ?>'
 						<?php 
 							if( count( $categories ) > 1 ) { echo 'style="margin-right:10px;"'; } 
 							if( is_array( $current_group_categories ) && count( $current_group_categories ) > 1 ) { echo 'multiple'; } 
