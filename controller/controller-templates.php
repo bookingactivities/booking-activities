@@ -155,6 +155,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	 * AJAX Controller - Update event
 	 * 
 	 * @since 1.2.2 (was bookacti_controller_update_event_data)
+	 * @version 1.4.0
 	 */
 	function bookacti_controller_update_event() {
 		
@@ -170,9 +171,9 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			$event_availability	= intval( $_POST['event-availability'] );
 			$sanitized_freq		= sanitize_title_with_dashes( $_POST['event-repeat-freq'] );
 			$event_repeat_freq	= in_array( $sanitized_freq, array( 'none', 'daily', 'weekly', 'monthly' ), true ) ? $sanitized_freq : 'none';
-			$event_repeat_from	= bookacti_sanitize_date( $_POST['event-repeat-from'] );
-			$event_repeat_to	= bookacti_sanitize_date( $_POST['event-repeat-to'] );
-			$dates_excep_array	= bookacti_sanitize_date_array( $_POST['event-repeat-excep'] );
+			$event_repeat_from	= isset( $_POST['event-repeat-from'] ) ? bookacti_sanitize_date( $_POST['event-repeat-from'] ) : '';
+			$event_repeat_to	= isset( $_POST['event-repeat-to'] ) ? bookacti_sanitize_date( $_POST['event-repeat-to'] ) : '';
+			$dates_excep_array	= isset( $_POST['event-repeat-excep'] ) ? bookacti_sanitize_date_array( $_POST['event-repeat-excep'] ) : array();
 			
 			// Check if input data are complete and consistent 
 			$event_validation	= bookacti_validate_event( $event_id, $event_availability, $event_repeat_freq, $event_repeat_from, $event_repeat_to );
@@ -182,7 +183,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 				$event_title		= sanitize_text_field( stripslashes( $_POST['event-title'] ) );
 				$event_start		= bookacti_sanitize_datetime( $_POST['event-start'] );
 				$event_end			= bookacti_sanitize_datetime( $_POST['event-end'] );
-				$settings			= is_array( $_POST['eventOptions'] ) ? $_POST['eventOptions'] : array();
+				$settings			= isset( $_POST['eventOptions'] ) && is_array( $_POST['eventOptions'] ) ? $_POST['eventOptions'] : array();
 				$formatted_settings = bookacti_format_event_settings( $settings );
 				
 				// Update event data
@@ -427,6 +428,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	 * Create a group of events with AJAX
 	 * 
 	 * @since 1.1.0
+	 * @version 1.4.0
 	 */
 	function bookacti_controller_insert_group_of_events() {
 		
@@ -455,7 +457,8 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		$is_category = bookacti_group_category_exists( $category_id, $template_id );
 		
 		if( ! $is_category ) {
-			$category_settings	= bookacti_format_group_category_settings( $_POST['groupCategoryOptions'] );
+			$cat_options_array	= isset( $_POST['groupCategoryOptions'] ) && is_array( $_POST['groupCategoryOptions'] ) ? $_POST['groupCategoryOptions'] : array();
+			$category_settings	= bookacti_format_group_category_settings( $cat_options_array );
 			$category_id		= bookacti_insert_group_category( $category_title, $template_id, $category_settings );
 		}
 		
@@ -464,8 +467,9 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		}
 		
 		// Insert the new group of event
-		$group_settings	= bookacti_format_group_of_events_settings( $_POST['groupOfEventsOptions'] );
-		$group_id		= bookacti_create_group_of_events( $events, $category_id, $group_title, $group_settings );
+		$group_options_array	= isset( $_POST['groupOfEventsOptions'] ) && is_array( $_POST['groupOfEventsOptions'] ) ? $_POST['groupOfEventsOptions'] : array();
+		$group_settings			= bookacti_format_group_of_events_settings( $group_options_array );
+		$group_id				= bookacti_create_group_of_events( $events, $category_id, $group_title, $group_settings );
 		
 		if( empty( $group_id ) ) {
 			wp_send_json( array( 'status' => 'failed', 'error' => 'invalid_events', 'events' => $events, 'group_id' => $group_id ) );
@@ -489,6 +493,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	 * Update group of events data with AJAX
 	 * 
 	 * @since 1.1.0
+	 * @version 1.4.0
 	 */
 	function bookacti_controller_update_group_of_events() {
 		
@@ -518,7 +523,8 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		$is_category = bookacti_group_category_exists( $category_id, $template_id );
 		
 		if( ! $is_category ) {
-			$category_settings	= bookacti_format_group_category_settings( $_POST['groupCategoryOptions'] );
+			$cat_options_array	= isset( $_POST['groupCategoryOptions'] ) && is_array( $_POST['groupCategoryOptions'] ) ? $_POST['groupCategoryOptions'] : array();
+			$category_settings	= bookacti_format_group_category_settings( $cat_options_array );
 			$category_id		= bookacti_insert_group_category( $category_title, $template_id, $category_settings );
 		}
 		
@@ -527,8 +533,9 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		}
 		
 		// Insert the new group of event
-		$group_settings	= bookacti_format_group_of_events_settings( $_POST['groupOfEventsOptions'] );
-		$updated		= bookacti_edit_group_of_events( $group_id, $category_id, $group_title, $events, $group_settings );
+		$group_options_array	= isset( $_POST['groupOfEventsOptions'] ) && is_array( $_POST['groupOfEventsOptions'] ) ? $_POST['groupOfEventsOptions'] : array();
+		$group_settings			= bookacti_format_group_of_events_settings( $group_options_array );
+		$updated				= bookacti_edit_group_of_events( $group_id, $category_id, $group_title, $events, $group_settings );
 		
 		if( $updated === false ) {
 			wp_send_json( array( 'status' => 'failed', 'error' => 'invalid_events', 'events' => $events, 'group_id' => $group_id ) );
@@ -598,6 +605,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	 * Update group category data with AJAX
 	 * 
 	 * @since 1.1.0
+	 * @version 1.4.0
 	 */
 	function bookacti_controller_update_group_category() {
 
@@ -616,7 +624,8 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			// Update template only if its data are consistent
 			if( $is_group_category_valid[ 'status' ] === 'valid' ) {
 				
-				$category_settings = bookacti_format_group_category_settings( $_POST['groupCategoryOptions'] );
+				$cat_options_array	= isset( $_POST['groupCategoryOptions'] ) && is_array( $_POST['groupCategoryOptions'] ) ? $_POST['groupCategoryOptions'] : array();
+				$category_settings	= bookacti_format_group_category_settings( $cat_options_array );
 				
 				$updated = bookacti_update_group_category( $category_id, $category_title, $category_settings );
 				
@@ -699,7 +708,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	/**
 	 * AJAX Controller - Create a new template
 	 * 
-	 * @version	1.0.6
+	 * @version	1.4.0
 	 */
 	function bookacti_controller_insert_template() {
 		
@@ -719,8 +728,11 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			if( $is_template_valid['status'] === 'valid' ) {
 			
 				$duplicated_template_id	= intval( $_POST['duplicated-template-id'] );
-				$template_managers		= bookacti_format_template_managers( $_POST['template-managers'] );
-				$template_settings		= bookacti_format_template_settings( $_POST['templateOptions'] );
+				$managers_array			= isset( $_POST['template-managers'] ) ? bookacti_ids_to_array( $_POST['template-managers'] ) : array();
+				$options_array			= isset( $_POST['templateOptions'] ) && is_array( $_POST['templateOptions'] ) ? $_POST['templateOptions'] : array();
+			
+				$template_managers		= bookacti_format_template_managers( $managers_array );
+				$template_settings		= bookacti_format_template_settings( $options_array );
 
 				$lastid = bookacti_insert_template( $template_title, $template_start, $template_end, $template_managers, $template_settings, $duplicated_template_id );
 
@@ -740,7 +752,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	/**
 	 * AJAX Controller - Update template
 	 * 
-	 * @version	1.3.2
+	 * @version	1.4.0
 	 */
 	function bookacti_controller_update_template() {
 		
@@ -771,7 +783,8 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 				
 				$updated_managers = 0;
 				if( isset( $_POST['template-managers'] ) ) {
-					$template_managers	= bookacti_format_template_managers( $_POST['template-managers'] );
+					$managers_array		= bookacti_ids_to_array( $_POST['template-managers'] );
+					$template_managers	= bookacti_format_template_managers( $managers_array );
 					$updated_managers	= bookacti_update_managers( 'template', $template_id, $template_managers );
 				}
 				
@@ -884,7 +897,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	/**
 	 * AJAX Controller - Create a new activity
 	 * 
-	 * @version 1.3.0
+	 * @version 1.4.0
 	 */
 	function bookacti_controller_insert_activity() {
 
@@ -900,10 +913,12 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			$activity_availability	= intval( $_POST['activity-availability'] );
 			$activity_duration		= bookacti_sanitize_duration( $_POST['activity-duration'] );
 			$activity_resizable		= intval( $_POST['activity-resizable'] );
-
+			$managers_array			= isset( $_POST['activity-managers'] ) ? bookacti_ids_to_array( $_POST['activity-managers'] ) : array();
+			$options_array			= isset( $_POST['activityOptions'] ) && is_array( $_POST['activityOptions'] ) ? $_POST['activityOptions'] : array();
+			
 			// Format arrays and check templates permissions
-			$activity_managers	= bookacti_format_activity_managers( $_POST['activity-managers'] );
-			$activity_settings	= bookacti_format_activity_settings( $_POST['activityOptions'] );
+			$activity_managers	= bookacti_format_activity_managers( $managers_array );
+			$activity_settings	= bookacti_format_activity_settings( $options_array );
 			
 			// Insert the activity and its metadata
 			$activity_id = bookacti_insert_activity( $activity_title, $activity_color, $activity_availability, $activity_duration, $activity_resizable );
@@ -931,7 +946,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
     /**
 	 * AJAX Controller - Update an activity
 	 * 
-	 * @version 1.3.0
+	 * @version 1.4.0
 	 */
 	function bookacti_controller_update_activity() {
 
@@ -950,10 +965,12 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			$activity_availability	= intval( $_POST['activity-availability'] );
 			$activity_duration		= bookacti_sanitize_duration( $_POST['activity-duration'] );
 			$activity_resizable		= intval( $_POST['activity-resizable'] );
-
+			$managers_array			= isset( $_POST['activity-managers'] ) ? bookacti_ids_to_array( $_POST['activity-managers'] ) : array();
+			$options_array			= isset( $_POST['activityOptions'] ) && is_array( $_POST['activityOptions'] ) ? $_POST['activityOptions'] : array();
+			
 			// Format arrays and check templates permissions
-			$activity_managers	= bookacti_format_activity_managers( $_POST['activity-managers'] );
-			$activity_settings	= bookacti_format_activity_settings( $_POST['activityOptions'] );
+			$activity_managers	= bookacti_format_activity_managers( $managers_array );
+			$activity_settings	= bookacti_format_activity_settings( $options_array );
 			
 			// Update the activity and its metadata
 			$updated_activity	= bookacti_update_activity( $activity_id, $activity_title, $activity_color, $activity_availability, $activity_duration, $activity_resizable );

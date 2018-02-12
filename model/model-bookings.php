@@ -109,7 +109,7 @@ function bookacti_booking_exists( $user_id, $event_id, $event_start, $event_end,
 /**
  * Update booking quantity if possible
  * 
- * @version 1.2.0
+ * @version 1.4.0
  * 
  * @global wpdb $wpdb
  * @param int $booking_id
@@ -121,76 +121,50 @@ function bookacti_booking_exists( $user_id, $event_id, $event_start, $event_end,
 function bookacti_update_booking_quantity( $booking_id, $new_quantity, $expiration_date = '', $context = 'frontend' ) {
 	global $wpdb;
 	
-	$booking = bookacti_get_booking_by_id( $booking_id );
-	
-	$old_state = $booking->state;
-	
-	$new_quantity = intval( $new_quantity );
-	$old_quantity = intval( $booking->quantity );
-	$availability = intval( bookacti_get_event_availability( $booking->event_id, $booking->event_start, $booking->event_end ) );
+	$booking		= bookacti_get_booking_by_id( $booking_id );
+	$old_state		= $booking->state;
+	$old_quantity	= intval( $booking->quantity );
+	$new_quantity	= intval( $new_quantity );
+	$return_array	= array( 'status' => '' );
 
-	$return_array = array();
-	$return_array['status'] = '';
+	// Prepare variables
+	$data = apply_filters( 'bookacti_update_booking_quantity_data', array( 
+		'quantity' => $new_quantity,
+		'state' => '', // Empty string to keep current value
+		'active' => -1, // -1 to keep current value
+		'expiration_date' => $expiration_date, // Empty string to keep current value
+		'context' => $context
+	), $booking );
 
-	// If the updated booking is active, you must count the quantity already booked by this user in the total quantity available for him
-	if( $booking->active ) {
-		$new_availability = $availability + $old_quantity - $new_quantity;
-		$return_array['availability'] = $availability + $old_quantity;
-	} else {
-		$new_availability = $availability - $new_quantity;
-		$return_array['availability'] = $availability;
-	}
+	$query	= 'UPDATE ' . BOOKACTI_TABLE_BOOKINGS 
+			. ' SET quantity = %d, '
+			. ' state = IFNULL( NULLIF( %s, "" ), state ), '
+			. ' active = IFNULL( NULLIF( %d, -1 ), active ), '
+			. ' expiration_date = IFNULL( NULLIF( %s, "" ), expiration_date ) '
+			. ' WHERE id = %d ';
 
-	if( intval( $new_availability ) >= 0 ) {
-		
-		// Prepare variables
-		$data = apply_filters( 'bookacti_update_booking_quantity_data', array( 
-			'quantity' => $new_quantity,
-			'state' => NULL,
-			'active' => -1,
-			'expiration_date' => $expiration_date,
-			'context' => $context
-		), $booking );
-		
-		$query	= 'UPDATE ' . BOOKACTI_TABLE_BOOKINGS 
-				. ' SET quantity = %d, '
-				. ' state = IFNULL( NULLIF( %s, "" ), state ), '
-				. ' active = IFNULL( NULLIF( %d, -1 ), active ), '
-				. ' expiration_date = IFNULL( NULLIF( %s, "" ), expiration_date ) '
-				. ' WHERE id = %d ';
+	$prep_query	= $wpdb->prepare( $query, $data[ 'quantity' ], $data[ 'state' ], $data[ 'active' ], $data[ 'expiration_date' ], $booking_id );
+	$updated	= $wpdb->query( $prep_query );
 
-		$prep_query	= $wpdb->prepare( $query, $data[ 'quantity' ], $data[ 'state' ], $data[ 'active' ], $data[ 'expiration_date' ], $booking_id );
-		$updated	= $wpdb->query( $prep_query );
+	if( $updated > 0 ){
 
-		if( $updated > 0 ){
-			
-			// If state has changed
-			if( ! $booking->group_id && $data[ 'state' ] && is_string( $data[ 'state' ] ) && $old_state !== $data[ 'state' ] ) {
-				$is_admin = $context === 'admin' ? true : false;
-				do_action( 'bookacti_booking_state_changed', $booking_id, $data[ 'state' ], array( 'is_admin' => $is_admin ) );
-			}
-			
-			// If quantity has changed
-			if( intval( $data[ 'quantity' ] ) > 0 && intval( $data[ 'quantity' ] ) !== $old_quantity ) {
-				do_action( 'bookacti_booking_quantity_updated', $booking_id, intval( $data[ 'quantity' ] ), $old_quantity );
-			}
-
-			$return_array['status'] = 'success';
-		} else if( $updated === 0 ) {
-			$return_array['status'] = 'no_change';
-		} else {
-			$return_array['status'] = 'failed';
+		// If state has changed
+		if( ! $booking->group_id && $data[ 'state' ] && is_string( $data[ 'state' ] ) && $old_state !== $data[ 'state' ] ) {
+			$is_admin = $context === 'admin' ? true : false;
+			do_action( 'bookacti_booking_state_changed', $booking_id, $data[ 'state' ], array( 'is_admin' => $is_admin ) );
 		}
 
+		// If quantity has changed
+		if( intval( $data[ 'quantity' ] ) > 0 && intval( $data[ 'quantity' ] ) !== $old_quantity ) {
+			do_action( 'bookacti_booking_quantity_updated', $booking_id, intval( $data[ 'quantity' ] ), $old_quantity );
+		}
+
+		$return_array['status'] = 'success';
+	} else if( $updated === 0 ) {
+		$return_array['status'] = 'no_change';
 	} else {
-		
 		$return_array['status'] = 'failed';
-		
-		if( $return_array['availability'] > 0 ) {
-			$return_array['error'] = 'qty_sup_to_avail';
-		} else {
-			$return_array['error'] = 'no_availability';
-		}
+		$return_array['error'] = 'failed';
 	}
 
 	return $return_array;

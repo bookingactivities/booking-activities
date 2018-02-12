@@ -76,8 +76,7 @@ function bookacti_set_calendar_up( booking_system, reload_events ) {
 			}			
 			
 			// Add availability div
-			event.bookings = bookacti_get_event_number_of_bookings( booking_system, event );
-			if( event.bookings != null ) {
+			if( bookacti_get_event_number_of_bookings( booking_system, event ) != null ) {
 
 				var bookings_only = bookacti.booking_system[ booking_system_id ][ 'bookings_only' ] == 1 ? true : false;
 				var avail_div = '';

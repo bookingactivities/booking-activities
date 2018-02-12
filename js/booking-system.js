@@ -34,6 +34,7 @@ $j( document ).ready( function() {
 					bookacti_reload_booking_system( booking_system );
 				}
 			}
+			console.log( bookacti.booking_system[ booking_system_id ] );
 		});		
 	}
 

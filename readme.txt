@@ -5,7 +5,7 @@ Tags: booking activities, booking sport, booking form, event reservation, reserv
 Requires at least: 3.6
 Tested up to: 4.9
 Requires PHP: 5.3
-Stable tag: 1.3.2
+Stable tag: 1.3.3
 License: GPLv3 or later
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
 
@@ -305,8 +305,11 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 
 = 1.4.0 =
 * Feature - Set the advance booking period (customers can book events from X to Y days from today) globally and per calendar
+* Feature - Set the minimum booking quantity required per user (activity option and group category option)
+* Fix - Wrong error message when quantity <= 0 in booking form
+* Fix - PHP notice when updating single events and activity or calendar with no managers
 
-= 1.3.3 =
+= 1.3.3 - 2018/02/11 =
 * Fix - Repeated events were not displayed on today's date at a future time
 * Fix - The dropped off events were disappearing when the view changes in calendar editor
 * Fix - Booking action buttons are back in frontend WooCommerce orders details

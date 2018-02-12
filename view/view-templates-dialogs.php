@@ -584,15 +584,15 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 					?>
 				</div>
 				<div>
-					<label for='bookacti-activity-min-change-delay' ><?php /* translators: Followed by a field indicating a number of days before the event. E.g.: "Changes permitted up to 2 days before the event". */ esc_html_e( 'Changes permitted up to', BOOKACTI_PLUGIN_NAME ); ?></label>
+					<label for='bookacti-activity-booking-changes-deadline' ><?php /* translators: Followed by a field indicating a number of days before the event. E.g.: "Changes permitted up to 2 days before the event". */ esc_html_e( 'Booking changes are permitted up to', BOOKACTI_PLUGIN_NAME ); ?></label>
 					<input	type='number' 
-							name='activityOptions[min_change_delay]' 
-							id='bookacti-activity-min-change-delay' 
+							name='activityOptions[booking_changes_deadline]' 
+							id='bookacti-activity-booking-changes-deadline' 
 							min='-1' step='1'
 							onkeypress='return event.charCode >= 48 && event.charCode <= 57' />
 					<?php
 						_e( 'days before the event', BOOKACTI_PLUGIN_NAME );
-						$tip = __( 'Set the end of the allowed changes period (cancellation, rescheduling). E.g.: "7", your customers may change their reservations at least 7 days before the start of the event. After that, they won\'t be allowed to change them anymore.', BOOKACTI_PLUGIN_NAME );
+						$tip = __( 'Set the end of the period during which reservation changes are allowed (cancellation, rescheduling). E.g.: "7", your customers may change their reservations at least 7 days before the start of the event. After that, they won\'t be allowed to change them anymore.', BOOKACTI_PLUGIN_NAME );
 						$tip .= '<br/>' . __( 'This parameter applies to the events of this activity only. A global parameter is available in global settings.', BOOKACTI_PLUGIN_NAME );
 						$tip .= '<br/>' . __( 'Set it to "-1" to use the global value.', BOOKACTI_PLUGIN_NAME );
 						bookacti_help_tip( $tip );
@@ -852,7 +852,11 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 				array(	'label'			=> __( 'General', BOOKACTI_PLUGIN_NAME ),
 						'callback'		=> 'bookacti_fill_group_category_tab_general',
 						'parameters'	=> array(),
-						'order'			=> 10 )
+						'order'			=> 10 ),
+				array(	'label'			=> __( 'Availability', BOOKACTI_PLUGIN_NAME ),
+						'callback'		=> 'bookacti_fill_group_category_tab_availability',
+						'parameters'	=> array(),
+						'order'			=> 20 )
 			) );
 			
 			// Display tabs
@@ -872,6 +876,73 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 				</div>
 		<?php
 				do_action( 'bookacti_group_category_tab_general_after', $params );
+			}
+			
+			/**
+			 * Display the fields in the "Availability" tab of the Group Category dialog
+			 * 
+			 * @since 1.4.0
+			 * @param array $params
+			 */
+			function bookacti_fill_group_category_tab_availability( $params ) {
+				do_action( 'bookacti_group_category_tab_availability_before', $params );
+			?>
+				<div>
+					<label for='bookacti-group-category-min-bookings-per-user' ><?php esc_html_e( 'Min bookings per user', BOOKACTI_PLUGIN_NAME ); ?></label>
+					<input	type='number' 
+							name='groupCategoryOptions[min_bookings_per_user]' 
+							id='bookacti-group-category-min-bookings-per-user' 
+							min='0' step='1' 
+							onkeypress='return event.charCode >= 48 && event.charCode <= 57' />
+					<?php
+						$tip = __( 'The minimum booking quantity a user has to make on a group of events of this category. E.g.: "3", the customer must book at least 3 places of the desired group of events.', BOOKACTI_PLUGIN_NAME );
+						$tip .= '<br/>' . __( 'Set it to "0" to ignore this parameter.', BOOKACTI_PLUGIN_NAME );
+						bookacti_help_tip( $tip );
+					?>
+				</div>
+				<div>
+					<label for='bookacti-group-category-max-bookings-per-user' ><?php esc_html_e( 'Max bookings per user', BOOKACTI_PLUGIN_NAME ); ?></label>
+					<input	type='number' 
+							name='groupCategoryOptions[max_bookings_per_user]' 
+							id='bookacti-group-category-max-bookings-per-user' 
+							min='0' step='1'
+							onkeypress='return event.charCode >= 48 && event.charCode <= 57' />
+					<?php
+						$tip = __( 'The maximum booking quantity a user can make on a group of events of this category. E.g.: "1", the customer can only book one place of the desired group of events, and he won\'t be allowed to book it twice.', BOOKACTI_PLUGIN_NAME );
+						$tip .= '<br/>' . __( 'Set it to "0" to ignore this parameter.', BOOKACTI_PLUGIN_NAME );
+						bookacti_help_tip( $tip );
+					?>
+				</div>
+				<div>
+					<label for='bookacti-group-category-max-users-per-event' ><?php esc_html_e( 'Max users per event', BOOKACTI_PLUGIN_NAME ); ?></label>
+					<input	type='number' 
+							name='groupCategoryOptions[max_users_per_event]' 
+							id='bookacti-group-category-max-users-per-event' 
+							min='0' step='1' 
+							onkeypress='return event.charCode >= 48 && event.charCode <= 57' />
+					<?php
+						$tip = __( 'Set how many different users can book the same group of events. E.g.: "1", only one user can book a specific group of events; once he has booked it, the group of events won\'t be available for anyone else anymore, even if it isn\'t full. Usefull for private events.', BOOKACTI_PLUGIN_NAME );
+						$tip .= '<br/>' . __( 'Set it to "0" to ignore this parameter.', BOOKACTI_PLUGIN_NAME );
+						bookacti_help_tip( $tip );
+					?>
+				</div>
+				<div>
+					<label for='bookacti-group-category-booking-changes-deadline' ><?php /* translators: Followed by a field indicating a number of days before the event. E.g.: "Changes permitted up to 2 days before the event". */ esc_html_e( 'Booking changes are permitted up to', BOOKACTI_PLUGIN_NAME ); ?></label>
+					<input	type='number' 
+							name='groupCategoryOptions[booking_changes_deadline]' 
+							id='bookacti-group-category-booking-changes-deadline' 
+							min='-1' step='1'
+							onkeypress='return event.charCode >= 48 && event.charCode <= 57' />
+					<?php
+						_e( 'days before the first event', BOOKACTI_PLUGIN_NAME );
+						$tip = __( 'Set the end of the period during which reservation changes are allowed (cancellation). E.g.: "7", your customers may change their reservations at least 7 days before the start of the first event of the group. After that, they won\'t be allowed to change them anymore.', BOOKACTI_PLUGIN_NAME );
+						$tip .= '<br/>' . __( 'This parameter applies to the group of events of this category only. A global parameter is available in global settings.', BOOKACTI_PLUGIN_NAME );
+						$tip .= '<br/>' . __( 'Set it to "-1" to use the global value.', BOOKACTI_PLUGIN_NAME );
+						bookacti_help_tip( $tip );
+					?>
+				</div>
+			<?php
+				do_action( 'bookacti_group_category_tab_availability_after', $params );
 			}
 		?>
 	</form>

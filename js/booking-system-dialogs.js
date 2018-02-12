@@ -61,19 +61,6 @@ function bookacti_dialog_choose_group_of_events( booking_system, group_ids, even
 	if( bookacti.booking_system[ booking_system_id ][ 'groups_single_events' ] ) {
 		var group_id = 'single';
 		
-		var container = $j( '<div />', {});
-		var option_container = $j( '<div />', {
-			'class': 'bookacti-group-of-events-option',
-			'data-group-id': group_id,
-			'data-show-events': 0
-		});
-		var radio = $j( '<input />', {
-			'id': 'bookacti-group-of-events-' + group_id,
-			'type': 'radio',
-			'name': 'group_of_events',
-			'value': group_id
-		});
-		
 		// Show availability or bookings
 		var avail_html = '';
 		if( context === 'booking_page' ) {
@@ -85,6 +72,29 @@ function bookacti_dialog_choose_group_of_events( booking_system, group_ids, even
 			var avail			= availability > 1 ? bookacti_localized.avails : bookacti_localized.avail;
 			avail_html = availability + ' ' + avail;
 		}
+		
+		// Check if the single event is available taking into account the min quantity
+		var is_available = false;
+		if( bookacti.booking_system[ booking_system_id ][ 'events_data' ][ event.id ] != null ) {
+			var activity_id		= parseInt( bookacti.booking_system[ booking_system_id ][ 'events_data' ][ event.id ][ 'activity_id' ] );
+			var activity_data	= bookacti.booking_system[ booking_system_id ][ 'activities_data' ][ activity_id ][ 'settings' ];
+			var min_quantity	= activity_data[ 'min_bookings_per_user' ] != null ? activity_data[ 'min_bookings_per_user' ] : 0;
+			if( min_quantity <= availability ) { is_available = true; }
+		}
+		
+		var container = $j( '<div />', {});
+		var option_container = $j( '<div />', {
+			'class': 'bookacti-group-of-events-option',
+			'data-group-id': group_id,
+			'data-show-events': 0
+		});
+		var radio = $j( '<input />', {
+			'id': 'bookacti-group-of-events-' + group_id,
+			'type': 'radio',
+			'name': 'group_of_events',
+			'value': group_id,
+			'disabled': context !== 'booking_page' && ! is_available,
+		});
 		
 		var label = $j( '<label />', {
 			'html': bookacti_localized.single_event + ' <span class="bookacti-group-availability" >(' + avail_html + ')</span>',
@@ -121,7 +131,16 @@ function bookacti_dialog_choose_group_of_events( booking_system, group_ids, even
 			
 			var availability	= bookacti_get_group_availability( booking_system, bookacti.booking_system[ booking_system_id ][ 'groups_events' ][ group_id ] );
 			
-			var container = $j( '<div />', {});
+			// Check if the group of events is available taking into account the min quantity
+			var is_available = false;
+			if( bookacti.booking_system[ booking_system_id ][ 'groups_data' ][ group_id ] != null ) {
+				var category_id		= parseInt( bookacti.booking_system[ booking_system_id ][ 'groups_data' ][ group_id ][ 'category_id' ] );
+				var category_data	= bookacti.booking_system[ booking_system_id ][ 'group_categories_data' ][ category_id ][ 'settings' ];
+				var min_quantity	= category_data[ 'min_bookings_per_user' ] != null ? category_data[ 'min_bookings_per_user' ] : 0;
+				if( min_quantity <= availability && availability > 0 ) { is_available = true; }
+			}
+			
+			var container = $j( '<div />', {} );
 			var option_container = $j( '<div />', {
 				'class': 'bookacti-group-of-events-option',
 				'data-group-id': group_id,
@@ -131,7 +150,7 @@ function bookacti_dialog_choose_group_of_events( booking_system, group_ids, even
 				'id': 'bookacti-group-of-events-' + group_id,
 				'type': 'radio',
 				'name': 'group_of_events',
-				'disabled': context !== 'booking_page' && availability <= 0,
+				'disabled': context !== 'booking_page' && ! is_available,
 				'value': group_id
 			});
 			

@@ -780,7 +780,7 @@ function bookacti_dialog_delete_event( event ) {
                         } else {
 							if( response.error === 'has_bookings' ) {
 								// If the event's booking number is not up to date, refresh it
-								if( ! event.bookings ) {
+								if( ! bookacti_get_event_number_of_bookings( booking_system, event ) ) {
 									bookacti_refresh_booking_numbers( $j( '#bookacti-template-calendar' ), event.id );
 								}
 								
@@ -1883,7 +1883,7 @@ function bookacti_dialog_update_group_category( category_id ) {
 				$j( '#bookacti-group-category-action' ).val( 'bookactiUpdateGroupCategory' );
 				$j( '#bookacti-group-category-form select[multiple] option' ).attr( 'selected', true );
 
-				//Get the data to save
+				// Get the data to save
 				var data = $j( '#bookacti-group-category-form' ).serializeArray();
 				data.push( { name: 'category_id', value: category_id } );
 

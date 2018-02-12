@@ -396,7 +396,7 @@ function bookacti_format_booking_system_attributes( $atts = array(), $shortcode 
 /**
  * Validate booking form (verify the info of the selected event before booking it)
  * 
- * @version 1.3.0
+ * @version 1.4.0
  * @param int $group_id
  * @param int $event_id
  * @param string $event_start Start datetime of the event to check (format 2017-12-31T23:59:59)
@@ -409,32 +409,38 @@ function bookacti_validate_booking_form( $group_id, $event_id, $event_start, $ev
 	if( $group_id === 'single' ) {
 		$event			= bookacti_get_event_by_id( $event_id );
 		$title			= apply_filters( 'bookacti_translate_text', $event->title );
+		$activity_data	= bookacti_get_metadata( 'activity', $event->activity_id );
 		
 		$exists			= bookacti_is_existing_event( $event, $event_start, $event_end );
 		$availability	= bookacti_get_event_availability( $event_id, $event_start, $event_end );
 		$is_in_range	= bookacti_is_event_in_its_template_range( $event_id, $event_start, $event_end );
-	
+		$min_quantity	= isset( $activity_data[ 'min_bookings_per_user' ] ) ? intval( $activity_data[ 'min_bookings_per_user' ] ) : 0;
+		
 	} else if( is_numeric( $group_id ) ) {
 		$group			= bookacti_get_group_of_events( $group_id );
 		$title			= apply_filters( 'bookacti_translate_text', $group->title );
+		$category_data	= bookacti_get_metadata( 'group_category', $group->category_id );
 		
 		$exists			= bookacti_is_existing_group_of_events( $group );
 		$availability	= bookacti_get_group_of_events_availability( $group_id );
 		$is_in_range	= bookacti_is_group_of_events_in_its_template_range( $group_id );
+		$min_quantity	= isset( $category_data[ 'min_bookings_per_user' ] ) ? intval( $category_data[ 'min_bookings_per_user' ] ) : 0;
 	}
 	
 	// Init boolean test variables
 	$is_event				= false;
 	$is_qty_sup_to_avail	= false;
 	$is_qty_sup_to_0		= false;
+	$is_qty_sup_to_min		= false;
 	$can_book				= false;
 
 	// Make the tests and change the booleans
 	if( $group_id !== '' && $event_id !== '' && $event_start !== '' && $event_end !== '' )	{ $is_event = true; }
 	if( intval( $quantity ) > 0 )															{ $is_qty_sup_to_0 = true; }
-	if( intval( $availability ) - intval( $quantity ) < 0 )									{ $is_qty_sup_to_avail = true; }
+	if( intval( $quantity ) > intval( $availability ) )										{ $is_qty_sup_to_avail = true; }
+	if( intval( $quantity ) >= intval( $min_quantity ) )									{ $is_qty_sup_to_min = true; }
 	
-	if( $is_event && $exists && $is_in_range && $is_qty_sup_to_0 && ! $is_qty_sup_to_avail ) { $can_book = true; }
+	if( $is_event && $exists && $is_in_range && $is_qty_sup_to_0 && $is_qty_sup_to_min && ! $is_qty_sup_to_avail ) { $can_book = true; }
 
 	if( $can_book ) {
 		$validated['status'] = 'success';
@@ -452,6 +458,14 @@ function bookacti_validate_booking_form( $group_id, $event_id, $event_start, $ev
 		} else if( ! $is_qty_sup_to_0 ) {
 			$validated['error'] = 'qty_inf_to_0';
 			$validated['message'] = __( 'The amount of desired bookings is less than or equal to 0. Please increase the quantity.', BOOKACTI_PLUGIN_NAME );
+		} else if( ! $is_qty_sup_to_min ) {
+			$validated['error'] = 'qty_inf_to_min';
+			$validated['message'] = /* translators: %1$s is a variable number of bookings, %2$s is the event title. This sentence is followed by two others : 'but the minimum quantity required is %1$s.' and 'Please choose another event or decrease the quantity.' */
+						sprintf( _n( 'You want to make %1$s booking of "%2$s"', 'You want to make %1$s bookings of "%2$s"', $quantity, BOOKACTI_PLUGIN_NAME ), $quantity, $title )
+						/* translators: %1$s is a variable number of bookings. This sentence is preceded by : 'You want to make %1$s booking of "%2$s"' and followed by 'Please choose another event or decrease the quantity.' */
+				. ' ' . sprintf( __( 'but the minimum quantity required is %1$s.', BOOKACTI_PLUGIN_NAME ), $min_quantity )
+						/* translators: This sentence is preceded by two others : 'You want to make %1$s booking of "%2$s"' and 'but the minimum quantity required is %1$s.' */
+				. ' ' . __( 'Please choose another event or increase the quantity.', BOOKACTI_PLUGIN_NAME );
 		} else if( $availability === 0 ) {
 			$validated['error'] = 'no_availability';
 			$validated['availability'] = $availability;
@@ -461,10 +475,10 @@ function bookacti_validate_booking_form( $group_id, $event_id, $event_start, $ev
 			$validated['error'] = 'qty_sup_to_avail';
 			$validated['availability'] = $availability;
 			$validated['message'] = /* translators: %1$s is a variable number of bookings, %2$s is the event title. This sentence is followed by two others : 'but only %1$s is available on this time slot.' and 'Please choose another event or decrease the quantity.' */
-									sprintf( _n( 'You want to make %1$s booking of "%2$s" event', 'You want to make %1$s bookings of "%2$s" event', $quantity, BOOKACTI_PLUGIN_NAME ), $quantity, $title )
-									/* translators: %1$s is a variable number of bookings. This sentence is preceded by : 'You want to make %1$s booking of "%2$s" event' and followed by 'Please choose another event or decrease the quantity.' */
+									sprintf( _n( 'You want to make %1$s booking of "%2$s"', 'You want to make %1$s bookings of "%2$s"', $quantity, BOOKACTI_PLUGIN_NAME ), $quantity, $title )
+									/* translators: %1$s is a variable number of bookings. This sentence is preceded by : 'You want to make %1$s booking of "%2$s"' and followed by 'Please choose another event or decrease the quantity.' */
 							. ' ' . sprintf( _n( 'but only %1$s is available on this time slot.', 'but only %1$s are available on this time slot. ', $availability, BOOKACTI_PLUGIN_NAME ), $availability )
-									/* translators: This sentence is preceded by two others : 'You want to make %1$s booking of "%2$s" event' and 'but only %1$s is available on this time slot.' */
+									/* translators: This sentence is preceded by two others : 'You want to make %1$s booking of "%2$s"' and 'but only %1$s is available on this time slot.' */
 							. ' ' . __( 'Please choose another event or decrease the quantity.', BOOKACTI_PLUGIN_NAME );
 		} else {
 			$validated['error'] = 'failed';

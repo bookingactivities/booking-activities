@@ -137,26 +137,10 @@ $j( document ).ready( function() {
 
 		// Set quantity on eventClick
 		$j( 'body.woocommerce form.cart' ).on( 'bookacti_picked_events_list_data', '.bookacti-booking-system', function( e, event_summary_data ) {
-			if( $j( this ).parents( 'form' ).find( '.quantity .qty' ).length ) {
-
-				var booking_system_id	= $j( this ).attr( 'id' );
-				var quantity			= parseInt( $j( this ).parents( 'form' ).find( '.quantity .qty' ).val() );
-				var available_places	= 0; 
-
-				// Limit the max quantity
-				if( bookacti.booking_system[ booking_system_id ][ 'picked_events' ].length > 1 ) {
-					available_places = bookacti_get_group_availability( $j( this ), bookacti.booking_system[ booking_system_id ][ 'picked_events' ] );
-				} else {
-					available_places = bookacti_get_event_availability( $j( this ), bookacti.booking_system[ booking_system_id ][ 'picked_events' ][ 0 ] );
-				}
-
-				$j( this ).parents( 'form' ).find( '.quantity .qty' ).attr( 'max', available_places );
-				if( quantity > available_places ) {
-					$j( this ).parents( 'form' ).find( '.quantity .qty' ).val( available_places );
-					quantity = available_places;
-				}
-
-				event_summary_data.quantity = quantity;
+			var booking_system = $j( this );
+			var qty_field = booking_system.parents( 'form' ).find( '.quantity .qty' );
+			if( qty_field.length ) {
+				bookacti_set_min_and_max_quantity( booking_system, qty_field, event_summary_data );
 			}
 		});
 	
