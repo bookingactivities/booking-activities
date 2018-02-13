@@ -286,13 +286,20 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	 * Add actions html elements to booking rows
 	 * 
 	 * @version 1.3.3
+	 * @global boolean $is_email
 	 * @param int $item_id
 	 * @param WC_Order_item $item
 	 * @param WC_Order $order
 	 * @param boolean $plain_text
 	 */
 	function bookacti_add_actions_to_bookings( $item_id, $item, $order, $plain_text = true ) {
-		if( $plain_text || ( isset( $_GET[ 'pay_for_order' ] ) && $_GET[ 'pay_for_order' ] ) ) { return; }
+		global $is_email;
+		
+		// Don't display booking actions in emails, in plain text and in payment page
+		if( ( isset( $is_email ) && $is_email ) || $plain_text || ( isset( $_GET[ 'pay_for_order' ] ) && $_GET[ 'pay_for_order' ] ) ) { 
+			$GLOBALS[ 'is_email' ] = false; 
+			return;
+		}
 		
 		if( isset( $item['bookacti_booking_id'] ) ) {
 			echo bookacti_get_booking_actions_html( $item['bookacti_booking_id'], 'front', false, true );
@@ -302,6 +309,17 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	}
 	add_action( 'woocommerce_order_item_meta_end', 'bookacti_add_actions_to_bookings', 10, 4 );
 	
+	
+	/**
+	 * Set a flag before displaying order items to decide whether to display booking actions
+	 * @param array $args
+	 * @return array
+	 */
+	function bookacti_order_items_set_email_flag( $args ) {
+		$GLOBALS[ 'is_email' ] = true;
+		return $args;
+	}
+	add_filter( 'woocommerce_email_order_items_args', 'bookacti_order_items_set_email_flag', 10, 1 );
 	
 	
 	

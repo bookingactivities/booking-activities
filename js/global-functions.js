@@ -119,7 +119,6 @@ function bookacti_init_user_selectbox() {
 				this.input = $j( "<input>" )
 					.appendTo( this.wrapper )
 					.val( value )
-					.attr( "title", bookacti_localized.placeholder_select_customer )
 					.attr( "placeholder", bookacti_localized.placeholder_select_customer )
 					.addClass( "bookacti-combobox-input ui-widget ui-widget-content ui-state-default ui-corner-left" )
 					.autocomplete({

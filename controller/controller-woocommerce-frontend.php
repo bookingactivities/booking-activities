@@ -1319,10 +1319,11 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	 * in case that "in_cart" state is not active
 	 * 
 	 * @since  1.3.0
+	 * @version 1.4.0
 	 * @param  array $posted_data An array of posted data.
 	 * @param  WP_Error $errors
 	 */
-	function bookacti_availability_check_before_checkout( $posted_data, &$errors = null ) {
+	function bookacti_availability_check_before_checkout( $posted_data, $errors = null ) {
 		// Do not make this check if "in_cart" bookings are active, because they already hold their own booking quantity 
 		if( in_array( 'in_cart', bookacti_get_active_booking_states(), true ) ) { return; }
 		
