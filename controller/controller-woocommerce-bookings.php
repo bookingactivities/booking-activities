@@ -285,7 +285,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	/**
 	 * Add actions html elements to booking rows
 	 * 
-	 * @version 1.3.3
+	 * @version 1.4.0
 	 * @global boolean $is_email
 	 * @param int $item_id
 	 * @param WC_Order_item $item
@@ -312,6 +312,8 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	
 	/**
 	 * Set a flag before displaying order items to decide whether to display booking actions
+	 * 
+	 * @since 1.4.0
 	 * @param array $args
 	 * @return array
 	 */

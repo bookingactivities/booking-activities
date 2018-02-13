@@ -309,7 +309,7 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 * Fix - Wrong error message when quantity <= 0 in booking form
 * Fix - PHP notice when updating single events and activity or calendar with no managers
 * Fix - Don't display booking actions in emails
-* Fix - PHP warning and notice when a WooCommerce order was made and notifications sent
+* Fix - PHP warnings and notices when a WooCommerce order was made and notifications sent
 
 = 1.3.3 - 2018/02/11 =
 * Fix - Repeated events were not displayed on today's date at a future time
