@@ -160,7 +160,7 @@ $j( document ).ready( function() {
 // Switch booking system according to variation
 function bookacti_switch_booking_system_according_to_variation( booking_system, variation ) {
 	
-	var booking_system_id		= booking_system.attr( 'id' );
+	var booking_system_id = booking_system.attr( 'id' );
 	
 	booking_system.empty();
 	bookacti_clear_booking_system_displayed_info( booking_system );
@@ -340,6 +340,12 @@ function bookacti_refresh_cart_after_expiration( countdown ) {
 }
 
 
+// Check if a booking system is active
+function bookacti_booking_system_is_active( booking_system ) {
+	return ! booking_system.siblings( '.bookacti-booking-system-inputs input' ).is( ':disabled' );
+}
+
+
 // Deactivate booking system
 function bookacti_deactivate_booking_system( booking_system ) {
 	booking_system.parent().hide();
@@ -349,6 +355,7 @@ function bookacti_deactivate_booking_system( booking_system ) {
 
 // Activate booking system
 function bookacti_activate_booking_system( booking_system ) {
+	if( bookacti_booking_system_is_active( booking_system ) ) { return; }
 	
 	var booking_method = bookacti.booking_system[ booking_system.attr( 'id' ) ][ 'method' ];
 	

@@ -327,19 +327,33 @@ function bookacti_cancel_order_pending_bookings( $order_id, $not_booking_ids = a
  * Limiting to 31 days make it very improbable that two customers with the same id create an account or log in
  * 
  * @since 1.0.0
+ * @version 1.4.0
+ * @global wpdb $wpdb
+ * @param int $user_id
+ * @param string $customer_id
+ * @return false|int
  */
 function bookacti_update_bookings_user_id( $user_id, $customer_id ) {
 
 	global $wpdb;
-	
+	// Single Bookings
 	$query		= 'UPDATE ' . BOOKACTI_TABLE_BOOKINGS 
-				. ' SET user_id = %d '
+				. ' SET user_id = %s '
 				. ' WHERE user_id = %s '
 				. ' AND expiration_date >= DATE_SUB( UTC_TIMESTAMP(), INTERVAL 31 DAY ) ';
 	$query_prep	= $wpdb->prepare( $query, $user_id, $customer_id );
-	$updated	= $wpdb->query( $query_prep );
-
-	return $updated;
+	$updated1	= $wpdb->query( $query_prep );
+	
+	// Booking Groups
+	$query		= 'UPDATE ' . BOOKACTI_TABLE_BOOKING_GROUPS 
+				. ' SET user_id = %s '
+				. ' WHERE user_id = %s ';
+	$query_prep	= $wpdb->prepare( $query, $user_id, $customer_id );
+	$updated2	= $wpdb->query( $query_prep );
+	
+	if( $updated1 === false || $updated2 === false ) { return false; }
+	
+	return $updated1 + $updated2;
 }
 
 

@@ -41,7 +41,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	 * Change 'user_id' of bookings from customer id to user id when he logs in
 	 * 
 	 * @since 1.0.0
-	 * 
+	 * @version 1.4.0
 	 * @global WooCommerce $woocommerce
 	 * @param string $user_login
 	 * @param WP_User $user
@@ -51,7 +51,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		global $woocommerce;
 		$customer_id = $woocommerce->session->get_customer_id();
 		
-		// Make sure the customer was not logged in (it could be a user switching from two accounts)
+		// Make sure the customer was not logged in (it could be a user switching between two accounts)
 		if( ! bookacti_user_id_exists( $customer_id ) ) {
 			// update customer id to user id
 			bookacti_update_bookings_user_id( $user->ID, $customer_id );
@@ -63,6 +63,9 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			$cart_expiration_date = bookacti_get_cart_expiration_date_per_user( $user->ID );
 			update_user_meta( $user->ID, 'bookacti_expiration_cart', $cart_expiration_date );
 		}
+		
+		// Check if user's cart is still valid or change it if necessary (according to min and max bookings restrictions)
+		bookacti_update_cart_item_quantity_according_to_booking_restrictions();
 	}
 	add_action( 'wp_login', 'bookacti_change_customer_id_to_user_id', 20, 2 );
 	
@@ -698,7 +701,6 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 				
 				global $woocommerce;
 				$cart_contents = $woocommerce->cart->get_cart();
-
 				if( ! empty( $cart_contents ) ) {
 
 					$cart_keys = array_keys( $cart_contents );

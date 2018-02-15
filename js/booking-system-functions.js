@@ -732,30 +732,35 @@ function bookacti_fill_picked_events_list( booking_system ) {
 function bookacti_set_min_and_max_quantity( booking_system, qty_field, event_summary_data ) {
 	var booking_system_id	= booking_system.attr( 'id' );
 	var quantity			= parseInt( qty_field.val() );
-	var available_places, min_quantity	= 0; 
+	var available_places	= 0; 
+	var min_quantity		= 1;
+	var max_quantity		= false;
 	
 	// Groups of events
 	if( $j.isNumeric( booking_system.siblings( '.bookacti-booking-system-inputs' ).find( 'input[name="bookacti_group_id"]' ).val() ) ) {
 		var group_id		= booking_system.siblings( '.bookacti-booking-system-inputs' ).find( 'input[name="bookacti_group_id"]' ).val();
 		var category_id		= parseInt( bookacti.booking_system[ booking_system_id ][ 'groups_data' ][ group_id ][ 'category_id' ] );
 		var category_data	= bookacti.booking_system[ booking_system_id ][ 'group_categories_data' ][ category_id ][ 'settings' ];
-		min_quantity		= category_data[ 'min_bookings_per_user' ] != null ? category_data[ 'min_bookings_per_user' ] : 0;
+		min_quantity		= category_data[ 'min_bookings_per_user' ] != null ? category_data[ 'min_bookings_per_user' ] : 1;
+		max_quantity		= category_data[ 'max_bookings_per_user' ] != null ? category_data[ 'max_bookings_per_user' ] : false;
 		available_places	= bookacti_get_group_availability( booking_system, bookacti.booking_system[ booking_system_id ][ 'picked_events' ] );
-	
+		
 	// Single events
 	} else {
 		var event_id		= parseInt( bookacti.booking_system[ booking_system_id ][ 'picked_events' ][ 0 ][ 'id' ] );
 		var activity_id		= parseInt( bookacti.booking_system[ booking_system_id ][ 'events_data' ][ event_id ][ 'activity_id' ] );
 		var activity_data	= bookacti.booking_system[ booking_system_id ][ 'activities_data' ][ activity_id ][ 'settings' ];
-		min_quantity		= activity_data[ 'min_bookings_per_user' ] != null ? activity_data[ 'min_bookings_per_user' ] : 0;
+		min_quantity		= activity_data[ 'min_bookings_per_user' ] != null ? activity_data[ 'min_bookings_per_user' ] : 1;
+		max_quantity		= activity_data[ 'max_bookings_per_user' ] != null ? activity_data[ 'max_bookings_per_user' ] : false;
 		available_places	= bookacti_get_event_availability( booking_system, bookacti.booking_system[ booking_system_id ][ 'picked_events' ][ 0 ] );
 	}
 	
 	// Limit the max quantity
-	qty_field.attr( 'max', available_places );
-	if( quantity > available_places ) {
-		qty_field.val( available_places );
-		quantity = available_places;
+	max_quantity = max_quantity && max_quantity < available_places ? max_quantity : available_places;
+	qty_field.attr( 'max', max_quantity );
+	if( quantity > max_quantity ) {
+		qty_field.val( max_quantity );
+		quantity = max_quantity;
 	}
 
 	// Force a min quantity
