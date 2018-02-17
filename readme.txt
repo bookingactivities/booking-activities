@@ -308,6 +308,7 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 * Feature - Set the minimum booking quantity required per user (activity option and group category option)
 * Feature - Set the maximum booking quantity allowed per user (activity option and group category option)
 * Feature - Set the maximum number of different users allowed to book the same (group of) event(s) (activity option and group category option)
+* Feature - Set the booking changes deadline per activity: customers can change their events X days before they start (global option already exists)
 * Fix - Wrong error message when quantity <= 0 in booking form
 * Fix - PHP notice when updating single events and activity or calendar with no managers
 * Fix - Don't display booking actions in emails

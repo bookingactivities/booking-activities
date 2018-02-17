@@ -8,7 +8,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	 * Check if a booking is whithin the athorized delay as of now
 	 * 
 	 * @since 1.1.0
-	 * @version 1.2.0
+	 * @version 1.4.0
 	 * 
 	 * @param object|int $booking
 	 * @return boolean
@@ -19,16 +19,32 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			$booking = bookacti_get_booking_by_id( $booking );
 		}
 
-		if( ! is_object( $booking ) ) {
-			return false;
-		}
+		if( ! is_object( $booking ) ) { return false; }
 
 		$is_in_delay	= false;
-		$delay			= bookacti_get_setting_value( 'bookacti_cancellation_settings', 'cancellation_min_delay_before_event' );
+		$delay_global	= bookacti_get_setting_value( 'bookacti_cancellation_settings', 'cancellation_min_delay_before_event' );
 		$timezone		= bookacti_get_setting_value( 'bookacti_general_settings', 'timezone' );
-
-		if( ! is_numeric( $delay ) || $delay < 0 ) { $delay = 0; } 
-
+		
+		// Get the more specific per activity / group category delay
+		$delay_specific = false;
+		if( $booking->group_id ) {
+			$booking_group	= bookacti_get_booking_group_by_id( $booking->group_id );
+			$event_group	= bookacti_get_group_of_events( $booking_group->event_group_id );
+			$category_data	= bookacti_get_metadata( 'group_category', $event_group->category_id );
+			$delay_specific	= isset( $category_data[ 'booking_changes_deadline' ] ) ? intval( $category_data[ 'booking_changes_deadline' ] ) : false;
+		} else {
+			$event			= bookacti_get_event_by_id( $booking->event_id );
+			$activity_data	= bookacti_get_metadata( 'activity', $event->activity_id );
+			$delay_specific	= isset( $activity_data[ 'booking_changes_deadline' ] ) ? intval( $activity_data[ 'booking_changes_deadline' ] ) : false;
+		}
+		
+		// Sanitize
+		if( ! is_numeric( $delay_specific ) || $delay_specific < 0 ){ $delay_specific = false; } 
+		if( ! is_numeric( $delay_global ) || $delay_global < 0 )	{ $delay_global = 0; } 
+		
+		// Choose the most specific defined value
+		$delay = $delay_specific !== false ? $delay_specific : $delay_global;
+		
 		$event_datetime		= DateTime::createFromFormat( 'Y-m-d H:i:s', $booking->event_start );
 		$delay_datetime		= $event_datetime->sub( new DateInterval( 'P' . $delay . 'D' ) );
 		$current_datetime	= new DateTime( 'now', new DateTimeZone( $timezone ) );
