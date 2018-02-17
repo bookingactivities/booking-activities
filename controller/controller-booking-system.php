@@ -61,7 +61,7 @@ add_action( 'wp_ajax_nopriv_bookactiFetchEvents', 'bookacti_controller_fetch_eve
  * Reload booking system with new attributes via AJAX
  * 
  * @since 1.1.0
- * @version 1.3.2
+ * @version 1.4.0
  */
 function bookacti_controller_reload_booking_system() {
 	
@@ -111,12 +111,12 @@ function bookacti_controller_reload_booking_system() {
 			$groups_events		= bookacti_get_groups_events( $attributes[ 'calendars' ], $attributes[ 'group_categories' ] );
 		}
 		
-		if( empty( $attributes[ 'group_categories' ] ) ) {
-			$groups_data		= bookacti_get_groups_of_events_by_template( $attributes[ 'calendars' ] );
-			$categories_data	= bookacti_get_group_categories_by_template( $attributes[ 'calendars' ] );
+		if( ! $attributes[ 'group_categories' ] ) {
+			$groups_data		= bookacti_get_groups_of_events( $attributes[ 'calendars' ] );
+			$categories_data	= bookacti_get_group_categories( $attributes[ 'calendars' ] );
 		} else {
-			$groups_data		= bookacti_get_groups_of_events_by_category( $attributes[ 'group_categories' ] );
-			$categories_data	= bookacti_get_group_categories( $attributes[ 'group_categories' ] );
+			$groups_data		= bookacti_get_groups_of_events( array(), $attributes[ 'group_categories' ] );
+			$categories_data	= bookacti_get_group_categories( array(), $attributes[ 'group_categories' ] );
 		}
 		
 		$activities_data	= bookacti_get_activities_by_template( $attributes[ 'calendars' ], true );

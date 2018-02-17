@@ -384,11 +384,11 @@ function bookacti_settings_section_bookings_callback() { }
 	/**
 	 * Activate reschedule for customers
 	 * 
-	 * @version 1.2.0
+	 * @version 1.4.0
 	 */
 	function bookacti_settings_field_activate_reschedule_callback() {
 		$tip  = __( 'Allow or disallow customers to reschedule a booking after they order it.', BOOKACTI_PLUGIN_NAME );
-		$tip .= '<br/>' . __( "This won't apply to group of bookings.", BOOKACTI_PLUGIN_NAME );
+		$tip .= '<br/>' . __( "This won't apply to groups of bookings.", BOOKACTI_PLUGIN_NAME );
 		
 		$args = array(
 			'type'	=> 'checkbox',

@@ -476,7 +476,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	/**
 	 * Content of the activity tab
 	 * 
-	 * @version 1.1.0
+	 * @version 1.4.0
 	 * 
 	 * @global type $thepostid
 	 */
@@ -597,7 +597,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			<div class='options_group'>
 				<?php 
 					$groups_field_id	= '_bookacti_group_categories'; 
-					$categories			= bookacti_get_group_categories_by_template();
+					$categories			= bookacti_get_group_categories();
 					$current_categories	= get_post_meta( $thepostid, $groups_field_id, true );
 					$current_categories	= is_numeric( $current_categories ) ? array( $current_categories ) : $current_categories;
 				?>
@@ -802,7 +802,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	 * Add custom fields for activity variation product type
 	 * 
 	 * @since 1.0.0
-	 * @version 1.3.3
+	 * @version 1.4.0
 	 * 
 	 * @param int $loop
 	 * @param array $variation_data
@@ -813,7 +813,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		//Retrieve templates and assiociated data
 		$templates = bookacti_fetch_templates();
 		$activities = bookacti_fetch_activities_with_templates_association();
-		$categories	= bookacti_get_group_categories_by_template();
+		$categories	= bookacti_get_group_categories();
 
 		//Check if variation is flagged as activity
 		$is_variation_activity = get_post_meta( $variation->ID, 'bookacti_variable_is_activity', true );

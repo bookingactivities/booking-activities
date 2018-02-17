@@ -788,45 +788,57 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	/**
 	 * Get groups of events data by template ids
 	 * 
-	 * @since 1.1.0
-	 * @version 1.3.0
+	 * @since 1.4.0 (was bookacti_get_groups_of_events_by_template and bookacti_get_groups_of_events_by_category
 	 * 
 	 * @global wpdb $wpdb
 	 * @param array|int $template_ids
+	 * @param array|int $category_ids
 	 * @param boolean $fetch_inactive_groups
 	 * @return array
 	 */
-	function bookacti_get_groups_of_events_by_template( $template_ids = array(), $fetch_inactive_groups = false ) {
+	function bookacti_get_groups_of_events( $template_ids = array(), $category_ids = array(), $fetch_inactive_groups = false ) {
 		
 		// If empty, take them all
-		if( ! $template_ids ) {
-			$template_ids = array_keys( bookacti_fetch_templates( array(), true ) );
-		}
+		if( ! $template_ids ) { $template_ids = array(); }
+		if( ! $category_ids ) { $category_ids = array(); }
 		
 		// Convert numeric to array
-		if( ! is_array( $template_ids ) ){
-			$template_id = intval( $template_ids );
-			$template_ids = array();
-			if( $template_id ) {
-				$template_ids[] = $template_id;
-			}
-		}
+		if( is_numeric( $template_ids ) ) { $template_ids = array( intval( $template_ids ) ); }
+		if( ! is_array( $template_ids ) ) { $template_ids = array(); }
+		if( is_numeric( $category_ids ) ) { $category_ids = array( intval( $category_ids ) ); }
+		if( ! is_array( $category_ids ) ) { $category_ids = array(); }
 		
 		global $wpdb;
 		
         $query	= 'SELECT G.* '
 				. ' FROM ' . BOOKACTI_TABLE_EVENT_GROUPS . ' as G, ' . BOOKACTI_TABLE_GROUP_CATEGORIES . ' as C '
-				. ' WHERE C.id = G.category_id '
-				. ' AND C.template_id IN ( ';
+				. ' WHERE C.id = G.category_id ';
 		
-		$i = 1;
-		foreach( $template_ids as $template_id ){
-			$query .= ' %d';
-			if( $i < count( $template_ids ) ) { $query .= ','; }
-			$i++;
+		$variables = array();
+		
+		if( $template_ids ) {
+			$query .= ' AND C.template_id IN ( %d ';
+			$array_count = count( $template_ids );
+			if( $array_count >= 2 ) {
+				for( $i=1; $i<$array_count; ++$i ) {
+					$query .= ', %d ';
+				}
+			}
+			$query .= ') ';
+			$variables = array_merge( $variables, $template_ids );
 		}
 		
-		$query .= ' )';
+		if( $category_ids ) {
+			$query .= ' AND G.category_id IN ( %d ';
+			$array_count = count( $category_ids );
+			if( $array_count >= 2 ) {
+				for( $i=1; $i<$array_count; ++$i ) {
+					$query .= ', %d ';
+				}
+			}
+			$query .= ') ';
+			$variables = array_merge( $variables, $category_ids );
+		}
 		
 		if( ! $fetch_inactive_groups ) {
 			$query .= ' AND G.active = 1 ';
@@ -834,12 +846,13 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		
 		$query .= ' ORDER BY G.category_id';
 		
-		if( $template_ids ) {
-			$query = $wpdb->prepare( $query, $template_ids );
+		if( $variables ) {
+			$query = $wpdb->prepare( $query, $variables );
 		}
 		
         $groups	= $wpdb->get_results( $query, ARRAY_A );
 		
+		$current_user_id = apply_filters( 'bookacti_current_user_id', get_current_user_id() );
 		$groups_data = array();
 		foreach( $groups as $group ) {
 			
@@ -852,79 +865,10 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			// Add metadata
 			$group[ 'settings' ] = bookacti_get_metadata( 'group_of_events', $group_id );
 			
-			$groups_data[ $group_id ] = $group;
-		}
-		
-        return $groups_data;
-	}
-	
-	
-	/**
-	 * Get groups of events data by category
-	 * 
-	 * @since 1.1.0
-	 * @version 1.3.0
-	 * 
-	 * @global wpdb $wpdb
-	 * @param array|int $category_ids
-	 * @param boolean $fetch_inactive_groups
-	 * @return array
-	 */
-	function bookacti_get_groups_of_events_by_category( $category_ids = array(), $fetch_inactive_groups = false ) {
-		
-		// If empty, return empty array
-		if( empty( $category_ids ) ) { 
-			return array();
-		}
-		
-		
-		// Convert numeric to array
-		if( ! is_array( $category_ids ) ){
-			$category_id = intval( $category_ids );
-			$category_ids = array();
-			if( $category_id ) {
-				$category_ids[] = $category_id;
-			}
-		}
-		
-		global $wpdb;
-		
-        $query	= 'SELECT G.* '
-				. ' FROM ' . BOOKACTI_TABLE_EVENT_GROUPS . ' as G, ' . BOOKACTI_TABLE_GROUP_CATEGORIES . ' as C '
-				. ' WHERE G.category_id IN ( ';
-		
-		$i = 1;
-		foreach( $category_ids as $category_id ){
-			$query .= ' %d';
-			if( $i < count( $category_ids ) ) { $query .= ','; }
-			$i++;
-		}
-		
-		$query .= ' )';
-		
-		if( ! $fetch_inactive_groups ) {
-			$query .= ' AND G.active = 1 ';
-		}
-		
-		$query .= ' ORDER BY category_id';
-		
-		if( $category_ids ) {
-			$query = $wpdb->prepare( $query, $category_ids );
-		}
-		
-        $groups = $wpdb->get_results( $query, ARRAY_A );
-		
-		$groups_data = array();
-		foreach( $groups as $group ) {
-			
-			$group_id = $group[ 'id' ];
-			
-			// Translate title
-			$group[ 'multilingual_title' ]	= $group[ 'title' ];
-			$group[ 'title' ]				= apply_filters( 'bookacti_translate_text', $group[ 'title' ] );
-			
-			// Add metadata
-			$group[ 'settings' ] = bookacti_get_metadata( 'group_of_events', $group_id );
+			// Add info about booking per users
+			$quantity_per_user = bookacti_get_number_of_bookings_per_user_by_group_of_events( $group_id );
+			$group[ 'distinct_users' ]			= count( $quantity_per_user );
+			$group[ 'current_user_bookings' ]	= $current_user_id && isset( $quantity_per_user[ $current_user_id ] ) ? $quantity_per_user[ $current_user_id ] : 0;
 			
 			$groups_data[ $group_id ] = $group;
 		}
@@ -1163,125 +1107,68 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	 * Retrieve group categories data by id
 	 * 
 	 * @since 1.1.0
-	 * @version 1.3.0
+	 * @version 1.4.0
 	 * 
 	 * @global wpdb $wpdb
+	 * @param array|int $template_ids
 	 * @param array|int $category_ids
 	 * @param boolean $fetch_inactive
 	 * @return array|boolean
 	 */
-	function bookacti_get_group_categories( $category_ids = array(), $fetch_inactive = false ) {
+	function bookacti_get_group_categories( $template_ids = array(), $category_ids = array(), $fetch_inactive = false ) {
 		
 		// If empty, take them all
-		if( empty( $category_ids ) ) { 
-			return false;
-		}
+		if( ! $template_ids ) { $template_ids = array(); }
+		if( ! $category_ids ) { $category_ids = array(); }
 		
 		// Convert numeric to array
-		if( ! is_array( $category_ids ) ){
-			$category_id = intval( $category_ids );
-			$category_ids = array();
-			if( $category_id ) {
-				$category_ids[] = $category_id;
-			}
-		}
+		if( is_numeric( $template_ids ) ) { $template_ids = array( intval( $template_ids ) ); }
+		if( ! is_array( $template_ids ) ) { $template_ids = array(); }
+		if( is_numeric( $category_ids ) ) { $category_ids = array( intval( $category_ids ) ); }
+		if( ! is_array( $category_ids ) ) { $category_ids = array(); }
 		
 		global $wpdb;
 		
-        $query	= 'SELECT * FROM ' . BOOKACTI_TABLE_GROUP_CATEGORIES 
-				. ' WHERE id IN ( ';
+        $query	= 'SELECT * FROM ' . BOOKACTI_TABLE_GROUP_CATEGORIES . ' as C '
+				. ' WHERE TRUE ';
 		
-		$i = 1;
-		foreach( $category_ids as $category_id ){
-			$query .= ' %d';
-			if( $i < count( $category_ids ) ) { $query .= ','; }
-			$i++;
+		$variables = array();
+		
+		if( $template_ids ) {
+			$query .= ' AND C.template_id IN ( %d ';
+			$array_count = count( $template_ids );
+			if( $array_count >= 2 ) {
+				for( $i=1; $i<$array_count; ++$i ) {
+					$query .= ', %d ';
+				}
+			}
+			$query .= ') ';
+			$variables = array_merge( $variables, $template_ids );
 		}
 		
-		$query .= ' )';
+		if( $category_ids ) {
+			$query .= ' AND C.id IN ( %d ';
+			$array_count = count( $category_ids );
+			if( $array_count >= 2 ) {
+				for( $i=1; $i<$array_count; ++$i ) {
+					$query .= ', %d ';
+				}
+			}
+			$query .= ') ';
+			$variables = array_merge( $variables, $category_ids );
+		}
 		
 		if( ! $fetch_inactive ) {
 			$query .= ' AND active = 1 ';
 		}
 		
-		if( $category_ids ) {
-			$query = $wpdb->prepare( $query, $category_ids );
+		if( $variables ) {
+			$query = $wpdb->prepare( $query, $variables );
 		}
         
         $categories = $wpdb->get_results( $query, ARRAY_A );
 		
 		$categories_data = array();
-		foreach( $categories as $category ) {
-			
-			$category_id = $category[ 'id' ];
-			
-			// Translate title
-			$category[ 'multilingual_title' ]	= $category[ 'title' ];
-			$category[ 'title' ]				= apply_filters( 'bookacti_translate_text', $category[ 'title' ] );
-			
-			// Add metadata
-			$category[ 'settings' ] = bookacti_get_metadata( 'group_category', $category_id );
-			
-			$categories_data[ $category_id ] = $category;
-		}
-		
-        return $categories_data;
-	}
-	
-	
-	/**
-	 * Retrieve group categories data by template ids
-	 * 
-	 * @since 1.1.0
-	 * @version 1.3.0
-	 * 
-	 * @global wpdb $wpdb
-	 * @param array|int $template_ids
-	 * @param boolean $fetch_inactive
-	 * @param OBJECT|ARRAY_A $return_type
-	 * @return array|boolean
-	 */
-	function bookacti_get_group_categories_by_template( $template_ids = array(), $fetch_inactive = false ) {
-		
-		// If empty, take them all
-		if( ! $template_ids ) {
-			$template_ids = array_keys( bookacti_fetch_templates( array(), true ) );
-		}
-		
-		// Convert numeric to array
-		if( ! is_array( $template_ids ) ){
-			$template_id = intval( $template_ids );
-			$template_ids = array();
-			if( $template_id ) {
-				$template_ids[] = $template_id;
-			}
-		}
-		
-		global $wpdb;
-		
-        $query	= 'SELECT * FROM ' . BOOKACTI_TABLE_GROUP_CATEGORIES 
-				. ' WHERE template_id IN ( ';
-		
-		$i = 1;
-		foreach( $template_ids as $template_id ){
-			$query .= ' %d';
-			if( $i < count( $template_ids ) ) { $query .= ','; }
-			$i++;
-		}
-		
-		$query .= ' )';
-		
-		if( ! $fetch_inactive ) {
-			$query .= ' AND active = 1 ';
-		}
-		
-		if( $template_ids ) {
-			$query = $wpdb->prepare( $query, $template_ids );
-		}
-		
-        $categories = $wpdb->get_results( $query, ARRAY_A );
-		
-        $categories_data = array();
 		foreach( $categories as $category ) {
 			
 			$category_id = $category[ 'id' ];

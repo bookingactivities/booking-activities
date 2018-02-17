@@ -781,7 +781,12 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			bookacti_display_tabs( $group_of_events_tabs, 'group-of-events' );
 			
 			
-			// GENERAL tab
+			/**
+			 * Fill "General" tab of "Group of Events" dialog
+			 * 
+			 * @version 1.4.0
+			 * @param array $params
+			 */
 			function bookacti_fill_group_of_events_tab_general( $params ) {
 				do_action( 'bookacti_group_of_events_tab_general_before', $params );
 		?>
@@ -800,7 +805,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 						<?php
 							$template_id = get_user_meta( get_current_user_id(), 'bookacti_default_template', true );
 							if( ! empty( $template_id ) ) {
-								$categories	= bookacti_get_group_categories_by_template( $template_id );
+								$categories	= bookacti_get_group_categories( $template_id );
 								foreach( $categories as $category ) {
 									echo "<option value='" . $category[ 'id' ] . "' >" . $category[ 'title' ] . "</option>";
 								}
@@ -936,7 +941,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 					<?php
 						_e( 'days before the first event', BOOKACTI_PLUGIN_NAME );
 						$tip = __( 'Set the end of the period during which reservation changes are allowed (cancellation). E.g.: "7", your customers may change their reservations at least 7 days before the start of the first event of the group. After that, they won\'t be allowed to change them anymore.', BOOKACTI_PLUGIN_NAME );
-						$tip .= '<br/>' . __( 'This parameter applies to the group of events of this category only. A global parameter is available in global settings.', BOOKACTI_PLUGIN_NAME );
+						$tip .= '<br/>' . __( 'This parameter applies to the groups of events of this category only. A global parameter is available in global settings.', BOOKACTI_PLUGIN_NAME );
 						$tip .= '<br/>' . __( 'Set it to "-1" to use the global value.', BOOKACTI_PLUGIN_NAME );
 						bookacti_help_tip( $tip );
 					?>

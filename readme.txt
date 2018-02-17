@@ -304,15 +304,18 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 == Changelog ==
 
 = 1.4.0 =
-* Feature - Set the advance booking period (customers can book events from X to Y days from today) globally and per calendar
+* Feature - Set the advance booking period: customers can book events from X to Y days from today (global option and calendar option)
 * Feature - Set the minimum booking quantity required per user (activity option and group category option)
 * Feature - Set the maximum booking quantity allowed per user (activity option and group category option)
+* Feature - Set the maximum number of different users allowed to book the same (group of) event(s) (activity option and group category option)
 * Fix - Wrong error message when quantity <= 0 in booking form
 * Fix - PHP notice when updating single events and activity or calendar with no managers
 * Fix - Don't display booking actions in emails
 * Fix - PHP warnings and notices when a WooCommerce order was made and notifications sent
 * Fix - JS error on WC variation loaded with another default booking method than "Calendar"
 * Fix - Incorrect booking groups user ids if users made their bookings before logging in
+* Fix - PHP notices after updating custom parameters in calendar editor
+* Fix - JS errors when an event of a group was past
 
 = 1.3.3 - 2018/02/11 =
 * Fix - Repeated events were not displayed on today's date at a future time

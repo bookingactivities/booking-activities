@@ -173,10 +173,11 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			$activity_data	= bookacti_get_metadata( 'activity', $event->activity_id );
 			$min_quantity	= isset( $activity_data[ 'min_bookings_per_user' ] ) ? intval( $activity_data[ 'min_bookings_per_user' ] ) : 0;
 			$max_quantity	= isset( $activity_data[ 'max_bookings_per_user' ] ) ? intval( $activity_data[ 'max_bookings_per_user' ] ) : 0;
-
+			$max_users		= isset( $activity_data[ 'max_users_per_event' ] ) ? intval( $activity_data[ 'max_users_per_event' ] ) : 0;
+			
 			// Check if the user has already booked this event
 			$quantity_already_booked = 0;
-			if( $min_quantity || $max_quantity ) {
+			if( $min_quantity || $max_quantity || $max_users ) {
 				$filters = bookacti_format_booking_filters( array(
 					'event_id'				=> $booking->event_id,
 					'event_start'			=> $booking->event_start,
@@ -187,7 +188,14 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 				) );
 				$quantity_already_booked = bookacti_get_number_of_bookings( $filters );
 			}
-
+			
+			// Check if the event has already been booked by other users
+			$number_of_users = 0;
+			if( $max_users ) {
+				$bookings_made_by_other_users = bookacti_get_number_of_bookings_per_user_by_event( $event_id, $event_start, $event_end );
+				$number_of_users = count( $bookings_made_by_other_users );
+			}
+			
 			if( $min_quantity !== 0 && ( $new_quantity + $quantity_already_booked ) < $min_quantity ) { 
 				$response[ 'status' ] = 'failed';
 				$response[ 'error' ] = 'qty_inf_to_min';
@@ -195,6 +203,10 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			if( $max_quantity !== 0 && $new_quantity > ( $max_quantity - $quantity_already_booked ) ) { 
 				$response[ 'status' ] = 'failed';
 				$response[ 'error' ] = 'qty_sup_to_max';
+			}
+			if( $max_users !== 0 && ! $quantity_already_booked && $number_of_users >= $max_users ) { 
+				$response[ 'status' ] = 'failed';
+				$response[ 'error' ] = 'users_sup_to_max';
 			}
 		}
 		
@@ -226,35 +238,33 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 						. ' ' . __( 'Please choose another event or decrease the quantity.', BOOKACTI_PLUGIN_NAME );
 					
 				} else if( $response[ 'error' ] === 'qty_inf_to_min' ) {
-					 /* translators: %1$s is a variable number of bookings, %2$s is the event title. This sentence is followed by two others : 'but the minimum quantity required is %1$s.' and 'Please choose another event or increase the quantity.' */
+					 /* translators: %1$s is a variable number of bookings, %2$s is the event title. This sentence is followed by two others : 'but the minimum number of reservations required per user is %1$s.' and 'Please choose another event or increase the quantity.' */
 					$message = sprintf( _n( 'You want to make %1$s booking of "%2$s"', 'You want to make %1$s bookings of "%2$s"', $new_quantity, BOOKACTI_PLUGIN_NAME ), $new_quantity, $title );
 					if( $quantity_already_booked ) {
 						/* translators: %1$s and %2$s are variable numbers of bookings, always >= 1. This sentence is preceded by : 'You want to make %1$s booking of "%2$s"' and followed by 'Please choose another event or increase the quantity.' */
-						$message .= ' ' . sprintf( _n( 'and you have already booked it once, but the minimum quantity required is %2$s.', 'and you have already booked it %1$s times, but the minimum quantity required is %2$s.', $quantity_already_booked, BOOKACTI_PLUGIN_NAME ), $quantity_already_booked, $min_quantity );
-						/* translators: replace "2 times" in "but you have already booked it %1$s times and the maximum allowed quantity is %2$s." */
-						$message = str_replace( '2 times', __( 'twice', BOOKACTI_PLUGIN_NAME ), $message );
+						$message .= ' ' . sprintf( _n( 'and you have already booked %1$s place, but the minimum number of reservations required per user is %2$s.', 'and you have already booked %1$s places, but the minimum number of reservations required per user is %2$s.', $quantity_already_booked, BOOKACTI_PLUGIN_NAME ), $quantity_already_booked, $min_quantity );
 					} else {
 						/* translators: %1$s is a variable number of bookings. This sentence is preceded by : 'You want to make %1$s booking of "%2$s"' and followed by 'Please choose another event or increase the quantity.' */
-						$message .= ' ' . sprintf( __( 'but the minimum quantity required is %1$s.', BOOKACTI_PLUGIN_NAME ), $min_quantity );
+						$message .= ' ' . sprintf( __( 'but the minimum number of reservations required per user is %1$s.', BOOKACTI_PLUGIN_NAME ), $min_quantity );
 					}
-					/* translators: This sentence is preceded by two others : 'You want to make %1$s booking of "%2$s"' and 'but the minimum quantity required is %1$s.' */
-					$message .=	' ' . __( 'Please choose another event or increase the quantity.', BOOKACTI_PLUGIN_NAME );
+					/* translators: %1$s is a variable quantity. This sentence is preceded by two others : 'You want to make %1$s booking of "%2$s"' and 'but the minimum number of reservations required per user is %1$s.' */
+					$message .=	' ' . sprintf( __( 'Please choose another event or increase the quantity to %1$s.', BOOKACTI_PLUGIN_NAME ), $min_quantity - $quantity_already_booked );
 				
 				} else if( $response[ 'error' ] === 'qty_sup_to_max' ) {
-					/* translators: %1$s is a variable number of bookings, %2$s is the event title. This sentence is followed by two others : 'but the maximum quantity allowed is %1$s.' and 'Please choose another event or decrease the quantity.' */
+					/* translators: %1$s is a variable number of bookings, %2$s is the event title. This sentence is followed by two others : 'but the maximum number of reservations allowed per user is %1$s.' and 'Please choose another event or decrease the quantity.' */
 					$message = sprintf( _n( 'You want to make %1$s booking of "%2$s"', 'You want to make %1$s bookings of "%2$s"', $new_quantity, BOOKACTI_PLUGIN_NAME ), $new_quantity, $title );
 					if( $quantity_already_booked ) {
 						/* translators: %1$s and %2$s are variable numbers of bookings, always >= 1. This sentence is preceded by : 'You want to make %1$s booking of "%2$s"' and followed by 'Please choose another event or decrease the quantity.' */
-						$message .= ' ' . sprintf( _n( 'but you have already booked it once and the maximum quantity allowed is %2$s.', 'but you have already booked it %1$s times and the maximum quantity allowed is %2$s.', $quantity_already_booked, BOOKACTI_PLUGIN_NAME ), $quantity_already_booked, $max_quantity );
-						/* translators: replace "2 times" in "but you have already booked it %1$s times and the maximum allowed quantity is %2$s." */
-						$message = str_replace( '2 times', __( 'twice', BOOKACTI_PLUGIN_NAME ), $message );
+						$message .= ' ' . sprintf( _n( 'but you have already booked %1$s place and the maximum number of reservations allowed per user is %2$s.', 'but you have already booked %1$s places and the maximum number of reservations allowed per user is %2$s.', $quantity_already_booked, BOOKACTI_PLUGIN_NAME ), $quantity_already_booked, $max_quantity );
 					} else {
 						/* translators: %1$s is a variable number of bookings. This sentence is preceded by : 'You want to make %1$s booking of "%2$s"' and followed by 'Please choose another event or decrease the quantity.' */
-						$message .= ' ' . sprintf( __( 'but the maximum quantity allowed is %1$s.', BOOKACTI_PLUGIN_NAME ), $max_quantity );
+						$message .= ' ' . sprintf( __( 'but the maximum number of reservations allowed per user is %1$s.', BOOKACTI_PLUGIN_NAME ), $max_quantity );
 					}
-					/* translators: This sentence is preceded by two others : 'You want to make %1$s booking of "%2$s"' and 'but the maximum quantity allowed is %1$s.' */
-					$message .= ' ' . __( 'Please choose another event or decrease the quantity.', BOOKACTI_PLUGIN_NAME );
-				
+					/* translators: %1$s is a variable quantity. This sentence is preceded by two others : 'You want to make %1$s booking of "%2$s"' and 'but the maximum number of reservations allowed per user is %1$s.' */
+					$message .= ' ' . sprintf( __( 'Please choose another event or decrease the quantity to %1$s.', BOOKACTI_PLUGIN_NAME ), $max_quantity - $quantity_already_booked );
+				} else if( $response[ 'error' ] === 'users_sup_to_max' ) {
+					$message = __( 'This event has reached the maximum number of users allowed. Bookings from other users are no longer accepted. Please choose another event.', BOOKACTI_PLUGIN_NAME );
+
 				} else if( $response[ 'error' ] === 'no_availability' ) {
 					// If the event is no longer available, notify the user
 					$message = __( 'This event is no longer available. Please choose another event.', BOOKACTI_PLUGIN_NAME );
@@ -289,7 +299,8 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		$quantity		= intval( $quantity );
 		$add_quantity	= $add_quantity ? true : false;
 		
-		$response = array( 'status' => 'success' );
+		$response	= array( 'status' => 'success' );
+		$message	= '';
 
 		// Get bookings of the group
 		$bookings			= bookacti_get_bookings_by_booking_group_id( $booking_group_id );
@@ -317,7 +328,6 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			$response[ 'availability' ]	= $add_quantity ? $group_availability : $group_availability + $max_booked;
 			
 			if( $context === 'frontend' ) {
-				$message = '';
 				if( $response[ 'availability' ] > 0 ) {
 					$message =	/* translators: %1$s is a variable number of bookings. This sentence is followed by two others : 'but only %1$s is available on this time slot.' and 'Please choose another event or decrease the quantity.' */
 								sprintf( _n( 'You want to add %1$s booking to your cart', 'You want to add %1$s bookings to your cart', $quantity, BOOKACTI_PLUGIN_NAME ), $quantity )
@@ -339,10 +349,11 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			$category_data	= bookacti_get_metadata( 'group_category', $event_group->category_id );
 			$min_quantity	= isset( $category_data[ 'min_bookings_per_user' ] ) ? intval( $category_data[ 'min_bookings_per_user' ] ) : 0;
 			$max_quantity	= isset( $category_data[ 'max_bookings_per_user' ] ) ? intval( $category_data[ 'max_bookings_per_user' ] ) : 0;
+			$max_users		= isset( $category_data[ 'max_users_per_event' ] ) ? intval( $category_data[ 'max_users_per_event' ] ) : 0;
 			
 			// Check if the user has already booked this event
 			$quantity_already_booked = 0;
-			if( $min_quantity || $max_quantity ) {
+			if( $min_quantity || $max_quantity || $max_users ) {
 				$filters = bookacti_format_booking_filters( array(
 					'event_group_id'			=> $group->event_group_id,
 					'user_id'					=> $group->user_id,
@@ -353,45 +364,52 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 				$quantity_already_booked = bookacti_get_number_of_bookings( $filters );
 			}
 			
+			// Check if the event has already been booked by other users
+			$number_of_users = 0;
+			if( $max_users ) {
+				$bookings_made_by_other_users = bookacti_get_number_of_bookings_per_user_by_group_of_events( $group->event_group_id );
+				$number_of_users = count( $bookings_made_by_other_users );
+			}
+			
 			if( $min_quantity !== 0 && ( $booking_max_new_quantity + $quantity_already_booked ) < $min_quantity ) {
 				$response[ 'status' ] = 'failed';
 				$response[ 'error' ] = 'qty_inf_to_min';
-				/* translators: %1$s is a variable number of bookings, %2$s is the event title. This sentence is followed by two others : 'but the minimum quantity required is %1$s.' and 'Please choose another event or increase the quantity.' */
+				/* translators: %1$s is a variable number of bookings, %2$s is the event title. This sentence is followed by two others : 'but the minimum number of reservations required per user is %1$s.' and 'Please choose another event or increase the quantity.' */
 				$message = sprintf( _n( 'You want to make %1$s booking of "%2$s"', 'You want to make %1$s bookings of "%2$s"', $booking_max_new_quantity, BOOKACTI_PLUGIN_NAME ), $booking_max_new_quantity, $title );
 				if( $quantity_already_booked ) {
 					/* translators: %1$s and %2$s are variable numbers of bookings, always >= 1. This sentence is preceded by : 'You want to make %1$s booking of "%2$s"' and followed by 'Please choose another event or increase the quantity.' */
-					$message .= ' ' . sprintf( _n( 'and you have already booked it once, but the minimum quantity required is %2$s.', 'and you have already booked it %1$s times, but the minimum quantity required is %2$s.', $quantity_already_booked, BOOKACTI_PLUGIN_NAME ), $quantity_already_booked, $min_quantity );
-					/* translators: replace "2 times" in "but you have already booked it %1$s times and the maximum allowed quantity is %2$s." */
-					$message = str_replace( '2 times', __( 'twice', BOOKACTI_PLUGIN_NAME ), $message );
+					$message .= ' ' . sprintf( _n( 'and you have already booked %1$s place, but the minimum number of reservations required per user is %2$s.', 'and you have already booked %1$s places, but the minimum number of reservations required per user is %2$s.', $quantity_already_booked, BOOKACTI_PLUGIN_NAME ), $quantity_already_booked, $min_quantity );
 				} else {
 					/* translators: %1$s is a variable number of bookings. This sentence is preceded by : 'You want to make %1$s booking of "%2$s"' and followed by 'Please choose another event or increase the quantity.' */
-					$message .= ' ' . sprintf( __( 'but the minimum quantity required is %1$s.', BOOKACTI_PLUGIN_NAME ), $min_quantity );
+					$message .= ' ' . sprintf( __( 'but the minimum number of reservations required per user is %1$s.', BOOKACTI_PLUGIN_NAME ), $min_quantity );
 				}
-				/* translators: This sentence is preceded by two others : 'You want to make %1$s booking of "%2$s"' and 'but the minimum quantity required is %1$s.' */
-				$message .= ' ' . __( 'Please choose another event or increase the quantity.', BOOKACTI_PLUGIN_NAME );
-				
-				if( $message && ! wc_has_notice( $message, 'error' ) ) { wc_add_notice( $message, 'error' ); }
+				/* translators: %1$s is a variable quantity. This sentence is preceded by two others : 'You want to make %1$s booking of "%2$s"' and 'but the minimum number of reservations required per user is %1$s.' */
+				$message .= ' ' . sprintf( __( 'Please choose another event or increase the quantity to %1$s.', BOOKACTI_PLUGIN_NAME ), $min_quantity - $booking_max_new_quantity );
 			}
 			
 			if( $max_quantity !== 0 && $booking_max_new_quantity > ( $max_quantity - $quantity_already_booked ) ) {
 				$response[ 'status' ] = 'failed';
 				$response[ 'error' ] = 'qty_sup_to_max';
-				/* translators: %1$s is a variable number of bookings, %2$s is the event title. This sentence is followed by two others : 'but the maximum quantity allowed is %1$s.' and 'Please choose another event or decrease the quantity.' */
+				/* translators: %1$s is a variable number of bookings, %2$s is the event title. This sentence is followed by two others : 'but the maximum number of reservations allowed per user is %1$s.' and 'Please choose another event or decrease the quantity.' */
 				$message = sprintf( _n( 'You want to make %1$s booking of "%2$s"', 'You want to make %1$s bookings of "%2$s"', $booking_max_new_quantity, BOOKACTI_PLUGIN_NAME ), $booking_max_new_quantity, $title );
 				if( $quantity_already_booked ) {
 					/* translators: %1$s and %2$s are variable numbers of bookings, always >= 1. This sentence is preceded by : 'You want to make %1$s booking of "%2$s"' and followed by 'Please choose another event or decrease the quantity.' */
-					$message .= ' ' . sprintf( _n( 'but you have already booked it once and the maximum quantity allowed is %2$s.', 'but you have already booked it %1$s times and the maximum quantity allowed is %2$s.', $quantity_already_booked, BOOKACTI_PLUGIN_NAME ), $quantity_already_booked, $max_quantity );
-					/* translators: replace "2 times" in "but you have already booked it %1$s times and the maximum allowed quantity is %2$s." */
-					$message = str_replace( '2 times', __( 'twice', BOOKACTI_PLUGIN_NAME ), $message );
+					$message .= ' ' . sprintf( _n( 'but you have already booked %1$s place and the maximum number of reservations allowed per user is %2$s.', 'but you have already booked %1$s places and the maximum number of reservations allowed per user is %2$s.', $quantity_already_booked, BOOKACTI_PLUGIN_NAME ), $quantity_already_booked, $max_quantity );
 				} else {
 					/* translators: %1$s is a variable number of bookings. This sentence is preceded by : 'You want to make %1$s booking of "%2$s"' and followed by 'Please choose another event or decrease the quantity.' */
-					$message .= ' ' . sprintf( __( 'but the maximum quantity allowed is %1$s.', BOOKACTI_PLUGIN_NAME ), $max_quantity );
+					$message .= ' ' . sprintf( __( 'but the maximum number of reservations allowed per user is %1$s.', BOOKACTI_PLUGIN_NAME ), $max_quantity );
 				}
-				/* translators: This sentence is preceded by two others : 'You want to make %1$s booking of "%2$s"' and 'but the maximum quantity allowed is %1$s.' */
-				$message .= ' ' . __( 'Please choose another event or decrease the quantity.', BOOKACTI_PLUGIN_NAME );
-				
-				if( $message && ! wc_has_notice( $message, 'error' ) ) { wc_add_notice( $message, 'error' ); }
+				/* translators: %1$s is a variable quantity. This sentence is preceded by two others : 'You want to make %1$s booking of "%2$s"' and 'but the maximum number of reservations allowed per user is %1$s.' */
+				$message .= ' ' . sprintf( __( 'Please choose another event or decrease the quantity to %1$s.', BOOKACTI_PLUGIN_NAME ), $max_quantity - $booking_max_new_quantity );
 			}
+			
+			if( $max_users !== 0 && ! $quantity_already_booked && $number_of_users >= $max_users ) { 
+				$response[ 'status' ] = 'failed';
+				$response[ 'error' ] = 'users_sup_to_max';
+				$message = __( 'This event has reached the maximum number of users allowed. Bookings from other users are no longer accepted. Please choose another event.', BOOKACTI_PLUGIN_NAME );
+			}
+			
+			if( $message && ! wc_has_notice( $message, 'error' ) ) { wc_add_notice( $message, 'error' ); }
 		}
 		
 		if( $response[ 'status' ] === 'success' ) {
@@ -846,35 +864,31 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 				if( $min_quantity !== 0 && ( $quantity + $quantity_already_booked ) < $min_quantity ) { 
 					$restricted_quantity = $min_quantity - $quantity_already_booked;
 					
-					/* translators: %1$s is a variable number of bookings, %2$s is the event title. This sentence is followed by two others : 'but the minimum quantity required is %1$s.' and 'The quantity has been automatically increased to %1$s to match the requirements.' */
+					/* translators: %1$s is a variable number of bookings, %2$s is the event title. This sentence is followed by two others : 'but the minimum number of reservations required per user is %1$s.' and 'The quantity has been automatically increased to %1$s to match the requirements.' */
 					$message = sprintf( _n( 'You want to make %1$s booking of "%2$s"', 'You want to make %1$s bookings of "%2$s"', $quantity, BOOKACTI_PLUGIN_NAME ), $quantity, $title );
 					if( $quantity_already_booked ) {
 						/* translators: %1$s and %2$s are variable numbers of bookings, always >= 1. This sentence is preceded by : 'You want to make %1$s booking of "%2$s"' and followed by 'The quantity has been automatically increased to %1$s to match the requirements.' */
-						$message .= ' ' . sprintf( _n( 'and you have already booked it once, but the minimum quantity required is %2$s.', 'and you have already booked it %1$s times, but the minimum quantity required is %2$s.', $quantity_already_booked, BOOKACTI_PLUGIN_NAME ), $quantity_already_booked, $min_quantity );
-						/* translators: replace "2 times" in "but you have already booked it %1$s times and the maximum allowed quantity is %2$s." */
-						$message = str_replace( '2 times', __( 'twice', BOOKACTI_PLUGIN_NAME ), $message );
+						$message .= ' ' . sprintf( _n( 'and you have already booked %1$s place, but the minimum number of reservations required per user is %2$s.', 'and you have already booked %1$s places, but the minimum number of reservations required per user is %2$s.', $quantity_already_booked, BOOKACTI_PLUGIN_NAME ), $quantity_already_booked, $min_quantity );
 					} else {
 						/* translators: %1$s is a variable number of bookings. This sentence is preceded by : 'You want to make %1$s booking of "%2$s"' and followed by 'The quantity has been automatically increased to %1$s to match the requirement.' */
-						$message .= ' ' . sprintf( __( 'but the minimum quantity required is %1$s.', BOOKACTI_PLUGIN_NAME ), $min_quantity );
+						$message .= ' ' . sprintf( __( 'but the minimum number of reservations required per user is %1$s.', BOOKACTI_PLUGIN_NAME ), $min_quantity );
 					}
-					/* translators: %1$s is a variable number of bookings. This sentence is preceded by two others : 'You want to make %1$s booking of "%2$s"' and 'but the minimum quantity required is %1$s.' */
+					/* translators: %1$s is a variable number of bookings. This sentence is preceded by two others : 'You want to make %1$s booking of "%2$s"' and 'but the minimum number of reservations required per user is %1$s.' */
 					$message .= ' ' . sprintf( __( 'The quantity has been automatically increased to %1$s.', BOOKACTI_PLUGIN_NAME ), $restricted_quantity );
 				}
 				if( $max_quantity !== 0 && $quantity > ( $max_quantity - $quantity_already_booked ) ) { 
 					$restricted_quantity = $max_quantity - $quantity_already_booked;
 					
-					/* translators: %1$s is a variable number of bookings, %2$s is the event title. This sentence is followed by two others : 'but the maximum quantity allowed is %1$s.' and 'The quantity has been automatically decreased to %1$s to match the requirements.' */
+					/* translators: %1$s is a variable number of bookings, %2$s is the event title. This sentence is followed by two others : 'but the maximum number of reservations allowed per user is %1$s.' and 'The quantity has been automatically decreased to %1$s to match the requirements.' */
 					$message = sprintf( _n( 'You want to make %1$s booking of "%2$s"', 'You want to make %1$s bookings of "%2$s"', $quantity, BOOKACTI_PLUGIN_NAME ), $quantity, $title );
 					if( $quantity_already_booked ) {
 						/* translators: %1$s and %2$s are variable numbers of bookings, always >= 1. This sentence is preceded by : 'You want to make %1$s booking of "%2$s"' and followed by 'The quantity has been automatically decreased to %1$s to match the requirements.' */
-						$message .= ' ' . sprintf( _n( 'but you have already booked it once and the maximum quantity allowed is %2$s.', 'but you have already booked it %1$s times and the maximum quantity allowed is %2$s.', $quantity_already_booked, BOOKACTI_PLUGIN_NAME ), $quantity_already_booked, $max_quantity );
-						/* translators: replace "2 times" in "but you have already booked it %1$s times and the maximum allowed quantity is %2$s." */
-						$message = str_replace( '2 times', __( 'twice', BOOKACTI_PLUGIN_NAME ), $message );
+						$message .= ' ' . sprintf( _n( 'but you have already booked %1$s place and the maximum number of reservations allowed per user is %2$s.', 'but you have already booked %1$s places and the maximum number of reservations allowed per user is %2$s.', $quantity_already_booked, BOOKACTI_PLUGIN_NAME ), $quantity_already_booked, $max_quantity );
 					} else {
 						/* translators: %1$s is a variable number of bookings. This sentence is preceded by : 'You want to make %1$s booking of "%2$s"' and followed by 'The quantity has been automatically decreased to %1$s to match the requirements.' */
-						$message .= ' ' . sprintf( __( 'but the maximum quantity allowed is %1$s.', BOOKACTI_PLUGIN_NAME ), $max_quantity );
+						$message .= ' ' . sprintf( __( 'but the maximum number of reservations allowed per user is %1$s.', BOOKACTI_PLUGIN_NAME ), $max_quantity );
 					}
-					/* translators: %1$s is a variable quantity of bookings. This sentence is preceded by two others : 'You want to make %1$s booking of "%2$s"' and 'but the maximum quantity allowed is %1$s.' */
+					/* translators: %1$s is a variable quantity of bookings. This sentence is preceded by two others : 'You want to make %1$s booking of "%2$s"' and 'but the maximum number of reservations allowed per user is %1$s.' */
 					$message .= ' ' . sprintf( __( 'The quantity has been automatically decreased to %1$s.', BOOKACTI_PLUGIN_NAME ), $restricted_quantity );
 				}
 				

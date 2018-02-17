@@ -550,7 +550,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	 * Retrieve template groups of events list
 	 * 
 	 * @since 1.1.0
-	 * 
+	 * @version 1.4.0
 	 * @param int $template_id
 	 * @return string|boolean
 	 */
@@ -563,8 +563,8 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		$list =	"";
 		
 		// Retrieve groups by categories
-		$categories	= bookacti_get_group_categories_by_template( $template_id );
-		$groups		= bookacti_get_groups_of_events_by_template( $template_id );
+		$categories	= bookacti_get_group_categories( $template_id );
+		$groups		= bookacti_get_groups_of_events( $template_id );
 		foreach( $categories as $category ) {
 			
 			$category_title			= $category[ 'title' ];
