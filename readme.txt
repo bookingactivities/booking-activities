@@ -310,6 +310,8 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 * Feature - Set the maximum number of different users allowed to book the same (group of) event(s) (activity option and group category option)
 * Feature - Set which user roles are allowed to book wich (group of) event(s) (activity option and group category option)
 * Feature - Set the booking changes deadline per activity: customers can change their events X days before they start (global option already exists)
+* Feature - Set whether to allow to book started groups of events (global option and group category option)
+* Tweak - Groups of events can be unselected in calendar editor
 * Fix - Wrong error message when quantity <= 0 in booking form
 * Fix - PHP notice when updating single events and activity or calendar with no managers
 * Fix - Don't display booking actions in emails
@@ -318,6 +320,7 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 * Fix - Incorrect booking groups user ids if users made their bookings before logging in
 * Fix - PHP notices after updating custom parameters in calendar editor
 * Fix - JS errors when an event of a group was past
+* Fix - Past groups of events are no longer retrieved on frontend
 
 = 1.3.3 - 2018/02/11 =
 * Fix - Repeated events were not displayed on today's date at a future time

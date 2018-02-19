@@ -93,7 +93,7 @@
 .bookacti-groups-of-events-list,
 #bookacti-template-add-first-group-of-events-container { display: none; }
 .bookacti-group-category:not(:last-child) .bookacti-groups-of-events-list { margin-bottom: 10px; }
-
+.bookacti-group-of-events.bookacti-selected-group .bookacti-group-of-events-title { font-weight: 600; padding-left: 10px; }
 
 /***** template content *****/
 /* Template calendar */

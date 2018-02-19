@@ -1026,7 +1026,7 @@ function bookacti_is_event_available( booking_system, event ) {
 				
 				// Check the max quantity allowed AND
 				// Check the max number of different users allowed
-				var max_qty_ok, max_users_ok = true;
+				var max_qty_ok = true, max_users_ok = true;
 				if( group != null ) {
 					var max_users		= typeof category_data[ 'max_users_per_event' ] === 'undefined' ? 0 : ( category_data[ 'max_users_per_event' ] ? parseInt( category_data[ 'max_users_per_event' ] ) : 0 );
 					var max_quantity	= typeof category_data[ 'max_bookings_per_user' ] === 'undefined' ? 0 : ( category_data[ 'max_bookings_per_user' ] ? parseInt( category_data[ 'max_bookings_per_user' ] ) : 0 );

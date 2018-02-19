@@ -793,10 +793,11 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	 * @global wpdb $wpdb
 	 * @param array|int $template_ids
 	 * @param array|int $category_ids
+	 * @param boolean $fetch_past_groups
 	 * @param boolean $fetch_inactive_groups
 	 * @return array
 	 */
-	function bookacti_get_groups_of_events( $template_ids = array(), $category_ids = array(), $fetch_inactive_groups = false ) {
+	function bookacti_get_groups_of_events( $template_ids = array(), $category_ids = array(), $fetch_past_groups = false, $fetch_inactive_groups = false ) {
 		
 		// If empty, take them all
 		if( ! $template_ids ) { $template_ids = array(); }
@@ -808,13 +809,39 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		if( is_numeric( $category_ids ) ) { $category_ids = array( intval( $category_ids ) ); }
 		if( ! is_array( $category_ids ) ) { $category_ids = array(); }
 		
+		$started_groups_bookable	= bookacti_get_setting_value( 'bookacti_general_settings', 'started_groups_bookable' );
+		$timezone					= new DateTimeZone( bookacti_get_setting_value( 'bookacti_general_settings', 'timezone' ) );
+		$current_datetime_object	= new DateTime( 'now', $timezone );
+		$user_timestamp				= $current_datetime_object->format( 'U' );
+		$user_timestamp_offset		= $current_datetime_object->format( 'P' );
+		
 		global $wpdb;
 		
-        $query	= 'SELECT G.* '
-				. ' FROM ' . BOOKACTI_TABLE_EVENT_GROUPS . ' as G, ' . BOOKACTI_TABLE_GROUP_CATEGORIES . ' as C '
-				. ' WHERE C.id = G.category_id ';
-		
 		$variables = array();
+		
+		$query	= 'SELECT G.* '
+				. ' FROM ' . BOOKACTI_TABLE_EVENT_GROUPS . ' as G ' 
+				. ' JOIN ' . BOOKACTI_TABLE_GROUP_CATEGORIES . ' as C ';
+		
+		// Join the meta table to filter groups already started
+		$query .= ' LEFT JOIN ( 
+					SELECT object_id as group_category_id, IFNULL( NULLIF( meta_value, -1 ), %d ) as started_groups_bookable
+					FROM ' . BOOKACTI_TABLE_META . ' 
+					WHERE object_type = "group_category" 
+					AND meta_key = "started_groups_bookable" 
+				) as M ON M.group_category_id = C.id ';
+		
+		$variables[] = $started_groups_bookable;
+		
+		// Join the groups events table to filter groups already started
+		$query .= ' LEFT JOIN ( 
+					SELECT group_id, MIN( event_start ) as first_event, MAX( event_end ) as last_event
+					FROM ' . BOOKACTI_TABLE_GROUPS_EVENTS . ' 
+					WHERE active = 1 
+					GROUP BY group_id
+				) as GE ON GE.group_id = G.id ';
+		
+		$query .= ' WHERE C.id = G.category_id ';
 		
 		if( $template_ids ) {
 			$query .= ' AND C.template_id IN ( %d ';
@@ -840,11 +867,31 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			$variables = array_merge( $variables, $category_ids );
 		}
 		
+		if( ! $fetch_past_groups ) {
+			// Do not get past groups of events
+			$query .= ' AND GE.last_event IS NOT NULL '
+					. ' AND UNIX_TIMESTAMP( CONVERT_TZ( GE.last_event, %s, @@global.time_zone ) ) >= %d ';
+
+			$variables[] = $user_timestamp_offset;
+			$variables[] = $user_timestamp;
+			
+			// Whether to get started groups of events
+			$query .= ' AND GE.first_event IS NOT NULL '
+					. ' AND ( '
+						. ' M.started_groups_bookable = 1 '
+					. ' OR '
+						. ' UNIX_TIMESTAMP( CONVERT_TZ( GE.first_event, %s, @@global.time_zone ) ) >= %d '
+					.' ) ';
+			
+			$variables[] = $user_timestamp_offset;
+			$variables[] = $user_timestamp;
+		}
+		
 		if( ! $fetch_inactive_groups ) {
 			$query .= ' AND G.active = 1 ';
 		}
 		
-		$query .= ' ORDER BY G.category_id';
+		$query .= ' ORDER BY G.category_id ';
 		
 		if( $variables ) {
 			$query = $wpdb->prepare( $query, $variables );

@@ -564,7 +564,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		
 		// Retrieve groups by categories
 		$categories	= bookacti_get_group_categories( $template_id );
-		$groups		= bookacti_get_groups_of_events( $template_id );
+		$groups		= bookacti_get_groups_of_events( $template_id, array(), true );
 		foreach( $categories as $category ) {
 			
 			$category_title			= $category[ 'title' ];

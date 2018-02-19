@@ -977,6 +977,28 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 						bookacti_help_tip( $tip );
 					?>
 				</div>
+				<div>
+					<label for='bookacti-group-category-started-groups-bookable' ><?php esc_html_e( 'Are started groups bookable?', BOOKACTI_PLUGIN_NAME ); ?></label>
+					<?php
+						$tip = __( 'Allow or disallow users to book a group of events that has already begun.', BOOKACTI_PLUGIN_NAME );
+						$tip .= '<br/>' . __( 'This parameter applies to the groups of events of this category only. A global parameter is available in global settings.', BOOKACTI_PLUGIN_NAME );
+						$tip .= '<br/>' . __( 'Set it to "Site setting" to use the global value.', BOOKACTI_PLUGIN_NAME );
+						
+						$args = array(
+							'type'	=> 'select',
+							'name'	=> 'groupCategoryOptions[started_groups_bookable]',
+							'id'	=> 'bookacti-group-category-started-groups-bookable',
+							'options'	=> array( 
+								'-1' => __( 'Site setting', BOOKACTI_PLUGIN_NAME ),
+								'0' => __( 'No', BOOKACTI_PLUGIN_NAME ),
+								'1' => __( 'Yes', BOOKACTI_PLUGIN_NAME )
+							),
+							'value'	=> -1,
+							'tip'	=> $tip
+						);
+						bookacti_display_field( $args );
+					?>
+				</div>
 			<?php
 				do_action( 'bookacti_group_category_tab_availability_after', $params );
 			}

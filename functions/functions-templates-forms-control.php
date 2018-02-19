@@ -395,6 +395,7 @@ function bookacti_format_group_category_settings( $category_settings ) {
 		'max_bookings_per_user'		=> 0,
 		'max_users_per_event'		=> 0,
 		'booking_changes_deadline'	=> -1,
+		'started_groups_bookable'	=> -1,
 		'allowed_roles'				=> array()
 	) );
 	

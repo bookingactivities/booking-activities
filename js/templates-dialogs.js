@@ -101,9 +101,14 @@ function bookacti_init_template_dialogs() {
 	});
 	
 	// Init update group of events dialog
-	$j( '#bookacti-template-groups-of-events-container' ).on( 'click', '.bookacti-group-of-events-title, .bookacti-update-group-of-events img', function() {
-		var group_id = $j( this ).parents( '.bookacti-group-of-events' ).data( 'group-id' );
-		bookacti_update_group_of_events( group_id );
+	$j( '#bookacti-template-groups-of-events-container' ).on( 'click', '.bookacti-update-group-of-events img', function() {
+		var group_id	= $j( this ).parents( '.bookacti-group-of-events' ).data( 'group-id' );
+		var is_selected	= $j( this ).parents( '.bookacti-group-of-events' ).hasClass( 'bookacti-selected-group' );
+		var are_selected = is_selected;
+		if( ! is_selected ) {
+			are_selected = bookacti_select_events_of_group( group_id );
+		}
+		if( are_selected ) { bookacti_dialog_update_group_of_events( group_id ) };
     });
 	
 	// Init update group category dialog
@@ -1566,12 +1571,12 @@ function bookacti_dialog_create_group_of_events( category_id ) {
 								// Add the group row to the category
 								bookacti_add_group_of_events( response.group_id, response.group.title, response.category_id );
 								
+								// Unselect the events
+								bookacti_unselect_all_events();
+								
 								// Refresh events
 								$j( '#bookacti-template-calendar' ).fullCalendar( 'rerenderEvents' );
-								$j( '#bookacti-insert-group-of-events' ).css( 'visibility', 'hidden' );
 								
-								// Exit group editing mode
-								bookacti_exit_group_edition();
 								
 							//If error
 							} else {
@@ -1598,17 +1603,6 @@ function bookacti_dialog_create_group_of_events( category_id ) {
 			}
 		}]
 	);
-}
-
-
-// Whether to let the user update the selected events or open the group of events update dialog
-function bookacti_update_group_of_events( group_id ) {
-	var open_dialog = $j( '.bookacti-group-of-events[data-group-id="' + group_id + '"] .bookacti-update-group-of-events img' ).hasClass( 'validate-group' );
-	if( open_dialog ) {
-		bookacti_dialog_update_group_of_events( group_id );
-	} else {
-		bookacti_select_events_of_group( group_id );
-	}
 }
 
 
@@ -1721,12 +1715,11 @@ function bookacti_dialog_update_group_of_events( group_id ) {
 									$j( '.bookacti-group-of-events[data-group-id="' + group_id + '"] .bookacti-group-of-events-title' ).html( group_short_title );
 								}
 								
+								// Unselect the events
+								bookacti_unselect_all_events();
+								
 								// Refresh events
 								$j( '#bookacti-template-calendar' ).fullCalendar( 'rerenderEvents' );
-								$j( '#bookacti-insert-group-of-events' ).css( 'visibility', 'hidden' );
-								
-								// Exit group editing mode
-								bookacti_exit_group_edition();
 								
 								
 							// If error

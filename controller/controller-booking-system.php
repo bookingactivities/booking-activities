@@ -6,7 +6,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 /**
  * AJAX Controller - Fetch events in order to display them
  * 
- * @version	1.3.0
+ * @version	1.4.0
  */
 function bookacti_controller_fetch_events() {
 	// Check nonce
@@ -36,7 +36,9 @@ function bookacti_controller_fetch_events() {
 		$events_interval = bookacti_sanitize_events_interval( $_POST[ 'interval' ] );
 		
 		if( $attributes[ 'groups_only' ] ) {
-			$events	= bookacti_fetch_grouped_events( $attributes[ 'calendars' ], $attributes[ 'activities' ], array(), $attributes[ 'group_categories' ], $attributes[ 'past_events' ], $events_interval );
+			$groups_ids = array( 0 );
+			foreach( $attributes[ 'group_data' ] as $group_id => $group_data ) { $groups_ids[] = $group_id; }
+			$events	= bookacti_fetch_grouped_events( $attributes[ 'calendars' ], $attributes[ 'activities' ], $groups_ids, $attributes[ 'group_categories' ], $attributes[ 'past_events' ], $events_interval );
 		} else if( $attributes[ 'bookings_only' ] ) {
 			$events = bookacti_fetch_booked_events( $attributes[ 'calendars' ], $attributes[ 'activities' ], $attributes[ 'status' ], $attributes[ 'user_id' ], $attributes[ 'past_events' ], $events_interval );
 		} else {
@@ -96,27 +98,25 @@ function bookacti_controller_reload_booking_system() {
 		$html_elements = bookacti_get_booking_method_html( $attributes[ 'method' ], $attributes );
 		
 		// Gets calendar content: events, activities and groups
+		$groups_data		= bookacti_get_groups_of_events( $attributes[ 'calendars' ], $attributes[ 'group_categories' ], $attributes[ 'past_events' ] );
+		$categories_data	= bookacti_get_group_categories( $attributes[ 'calendars' ], $attributes[ 'group_categories' ] );
+		
+		$groups_ids = array( 0 );
+		foreach( $groups_data as $group_id => $group_data ) { $groups_ids[] = $group_id; }
+		
+		$groups_events = array();
+		if( $atts[ 'group_categories' ] !== false ) {
+			$groups_events = bookacti_get_groups_events( $atts[ 'calendars' ], $atts[ 'group_categories' ], $groups_ids );
+		}
+		
 		$user_ids = array();
 		if( $attributes[ 'groups_only' ] ) {
-			$events		= bookacti_fetch_grouped_events( $attributes[ 'calendars' ], $attributes[ 'activities' ], array(), $attributes[ 'group_categories' ], $attributes[ 'past_events' ], $events_interval );
+			$events		= bookacti_fetch_grouped_events( $attributes[ 'calendars' ], $attributes[ 'activities' ], $groups_ids, $attributes[ 'group_categories' ], $attributes[ 'past_events' ], $events_interval );
 		} else if( $attributes[ 'bookings_only' ] ) {
 			$events		= bookacti_fetch_booked_events( $attributes[ 'calendars' ], $attributes[ 'activities' ], $attributes[ 'status' ], $attributes[ 'user_id' ], $attributes[ 'past_events' ], $events_interval );
 			$user_ids	= $attributes[ 'user_id' ];
 		} else {
 			$events		= bookacti_fetch_events( $attributes[ 'calendars' ], $attributes[ 'activities' ], $attributes[ 'past_events' ], $events_interval );	
-		}
-		
-		$groups_events	= array();
-		if( $attributes[ 'group_categories' ] !== false ) { 
-			$groups_events		= bookacti_get_groups_events( $attributes[ 'calendars' ], $attributes[ 'group_categories' ] );
-		}
-		
-		if( ! $attributes[ 'group_categories' ] ) {
-			$groups_data		= bookacti_get_groups_of_events( $attributes[ 'calendars' ] );
-			$categories_data	= bookacti_get_group_categories( $attributes[ 'calendars' ] );
-		} else {
-			$groups_data		= bookacti_get_groups_of_events( array(), $attributes[ 'group_categories' ] );
-			$categories_data	= bookacti_get_group_categories( array(), $attributes[ 'group_categories' ] );
 		}
 		
 		$activities_data	= bookacti_get_activities_by_template( $attributes[ 'calendars' ], true );

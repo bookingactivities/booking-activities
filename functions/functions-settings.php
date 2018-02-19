@@ -6,6 +6,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
  * Get default settings values
  * 
  * @since 1.3.0 (was bookacti_define_default_settings_constants)
+ * @version 1.4.0
  */
 function bookacti_get_default_settings() {
 	$date = new DateTime(); 
@@ -16,6 +17,7 @@ function bookacti_get_default_settings() {
 		'when_events_load'						=> 'on_page_load',
 		'event_load_interval'					=> 92,
 		'started_events_bookable'				=> false,
+		'started_groups_bookable'				=> false,
 		'availability_period_start'				=> 0,
 		'availability_period_end'				=> 0,
 		'default_booking_state'					=> 'pending',
@@ -196,9 +198,9 @@ function bookacti_settings_section_bookings_callback() { }
 	
 	
 	/**
-	 * Display "Can the user book an event that began?" setting
+	 * Display "Is the user allowed to book an event that has already begun?" setting
 	 * 
-	 * @version 1.2.0
+	 * @version 1.4.0
 	 */
 	function bookacti_settings_field_started_events_bookable_callback() {
 		$args = array(
@@ -206,7 +208,27 @@ function bookacti_settings_section_bookings_callback() { }
 			'name'	=> 'bookacti_general_settings[started_events_bookable]',
 			'id'	=> 'started_events_bookable',
 			'value'	=> bookacti_get_setting_value( 'bookacti_general_settings', 'started_events_bookable' ),
-			'tip'	=> __( 'Allow or disallow users to book an event that already began.', BOOKACTI_PLUGIN_NAME )
+			'tip'	=> __( 'Allow or disallow users to book an event that has already begun.', BOOKACTI_PLUGIN_NAME )
+		);
+		bookacti_display_field( $args );
+	}
+	
+	
+	/**
+	 * Display "Is the user allowed to book a group of events that has already begun?" setting
+	 * 
+	 * @since 1.4.0
+	 */
+	function bookacti_settings_field_started_groups_bookable_callback() {
+		$tip = __( 'Allow or disallow users to book a group of events that has already begun.', BOOKACTI_PLUGIN_NAME );
+		$tip .= '<br/>' . __( 'This parameter applies to all groups of events. An group category-specific parameter is available in group category settings, in the calendar editor.', BOOKACTI_PLUGIN_NAME );
+		
+		$args = array(
+			'type'	=> 'checkbox',
+			'name'	=> 'bookacti_general_settings[started_groups_bookable]',
+			'id'	=> 'started_groups_bookable',
+			'value'	=> bookacti_get_setting_value( 'bookacti_general_settings', 'started_groups_bookable' ),
+			'tip'	=> $tip
 		);
 		bookacti_display_field( $args );
 	}
@@ -220,7 +242,7 @@ function bookacti_settings_section_bookings_callback() { }
 	function bookacti_settings_field_availability_period_start_callback() {
 		
 		$tip = __( 'Set the beginning of the availability period. E.g.: "2", your customers may book events starting in 2 days at the earliest. They are no longer allowed to book events starting earlier (like today or tomorrow).', BOOKACTI_PLUGIN_NAME );
-		$tip .= '<br/>' . __( 'This parameter applies to all events. An calendar-specific parameter is available in calendar settings.', BOOKACTI_PLUGIN_NAME );
+		$tip .= '<br/>' . __( 'This parameter applies to all events. An calendar-specific parameter is available in calendar settings, in the calendar editor.', BOOKACTI_PLUGIN_NAME );
 		
 		$args = array(
 			'type'		=> 'number',
