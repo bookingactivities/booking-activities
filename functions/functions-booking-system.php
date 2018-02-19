@@ -198,7 +198,7 @@ function bookacti_retrieve_calendar_elements( $booking_system_atts ) {
 /**
  * Check booking system attributes and format them to be correct
  * 
- * @version 1.3.0
+ * @version 1.4.0
  * 
  * @param array $atts [id, classes, calendars, activities, groups, method, url, button]
  * @param string $shortcode
@@ -222,11 +222,18 @@ function bookacti_format_booking_system_attributes( $atts = array(), $shortcode 
 		'url'					=> '',
 		'button'				=> bookacti_get_message( 'booking_form_submit_button' ),
 		'auto_load'				=> 1,
-		'past_events'			=> 0
+		'past_events'			=> 0,
+		'check_roles'			=> 1
     ) );
 	
 	// Replace empty mandatory values by default
 	$atts = shortcode_atts( $defaults, $atts, $shortcode );
+	
+	// Sanitize booleans
+	$booleans_to_check = array( 'bookings_only', 'groups_only', 'groups_single_events', 'auto_load', 'past_events', 'check_roles' );
+	foreach( $booleans_to_check as $key ) {
+		$atts[ $key ] = in_array( $atts[ $key ], array( 1, '1', true, 'true', 'yes', 'ok' ), true ) ? 1 : 0;
+	}
 	
 	// Format comma separated lists into arrays of integers
 	if( is_string( $atts[ 'calendars' ] ) || is_numeric( $atts[ 'calendars' ] ) ) {
@@ -286,37 +293,23 @@ function bookacti_format_booking_system_attributes( $atts = array(), $shortcode 
 		}
 	}
 	
-	// Check if desired activities exist
-	if( ! empty( $atts[ 'calendars' ] ) ) {
-		$available_activities = bookacti_get_activity_ids_by_template( $atts[ 'calendars' ], false );
-		foreach( $atts[ 'activities' ] as $i => $activity_id ) {
-			if( ! in_array( intval( $activity_id ), $available_activities ) ) {
-				unset( $atts[ 'activities' ][ $i ] );
-			}
-		}
-	} else {
-		$available_activities = bookacti_fetch_activities();
-		foreach( $atts[ 'activities' ] as $i => $activity_id ) {
-			$is_existing = false;
-			foreach( $available_activities as $available_activity ) {
-				if( $available_activity->id == intval( $activity_id ) ) {
-					$is_existing = true;
-					break;
-				}
-			}
-			if( ! $is_existing ) {
-				unset( $atts[ 'activities' ][ $i ] );
-			}
+	// Check if desired activities exist and are allowed according to current user role
+	$available_activity_ids = bookacti_get_activity_ids_by_template( $atts[ 'calendars' ], false, $atts[ 'check_roles' ] );
+	foreach( $atts[ 'activities' ] as $i => $activity_id ) {
+		if( ! in_array( intval( $activity_id ), $available_activity_ids, true ) ) {
+			unset( $atts[ 'activities' ][ $i ] );
 		}
 	}
+	if( ! $atts[ 'activities' ] ) { $atts[ 'activities' ] = $available_activity_ids; }
 	
-	// Check if desired groups exist
+	// Check if desired group categories exist and are allowed according to current user role
+	$available_category_ids = bookacti_get_group_category_ids_by_template( $atts[ 'calendars' ], false, $atts[ 'check_roles' ] );
 	if( is_array( $atts[ 'group_categories' ] ) ) { 
 		// Remove duplicated values
 		$atts[ 'group_categories' ] = array_unique( $atts[ 'group_categories' ] ); 
 		
-		$available_category_ids = bookacti_get_group_category_ids_by_template( $atts[ 'calendars' ] );
 		foreach( $atts[ 'group_categories' ] as $i => $category_id ) {
+			$is_existing = false;
 			foreach( $available_category_ids as $available_category_id ) {
 				if( $available_category_id == intval( $category_id ) ) {
 					$is_existing = true;
@@ -327,13 +320,8 @@ function bookacti_format_booking_system_attributes( $atts = array(), $shortcode 
 				unset( $atts[ 'group_categories' ][ $i ] );
 			}
 		}
-	}
-	
-	// Sanitize booleans
-	$booleans_to_check = array( 'bookings_only', 'groups_only', 'groups_single_events', 'auto_load', 'past_events' );
-	foreach( $booleans_to_check as $key ) {
-		$atts[ $key ] = in_array( $atts[ $key ], array( 1, '1', true, 'true', 'yes', 'ok' ), true ) ? 1 : 0;
-	}
+	} 
+	if( ! $atts[ 'group_categories' ] ) { $atts[ 'group_categories' ] = $available_category_ids; }
 	
 	// If booking method is set to 'site', get the site default
 	$atts[ 'method' ] = esc_attr( $atts[ 'method' ] );
@@ -409,6 +397,7 @@ function bookacti_validate_booking_form( $group_id, $event_id, $event_start, $ev
 	$user_id = get_current_user_id();
 	$quantity_already_booked = 0;
 	$number_of_users = 0;
+	$allowed_roles = array();
 	
 	if( $group_id === 'single' ) {
 		$event			= bookacti_get_event_by_id( $event_id );
@@ -440,6 +429,11 @@ function bookacti_validate_booking_form( $group_id, $event_id, $event_start, $ev
 			$number_of_users = count( $bookings_made_by_other_users );
 		}
 		
+		// Check allowed roles
+		if( isset( $activity_data[ 'allowed_roles' ] ) && $activity_data[ 'allowed_roles' ] ) {
+			$allowed_roles = $activity_data[ 'allowed_roles' ];
+		}
+		
 	} else if( is_numeric( $group_id ) ) {
 		$group			= bookacti_get_group_of_events( $group_id );
 		$title			= apply_filters( 'bookacti_translate_text', $group->title );
@@ -468,6 +462,11 @@ function bookacti_validate_booking_form( $group_id, $event_id, $event_start, $ev
 			$bookings_made_by_other_users = bookacti_get_number_of_bookings_per_user_by_group_of_events( $group_id );
 			$number_of_users = count( $bookings_made_by_other_users );
 		}
+		
+		// Check allowed roles
+		if( isset( $category_data[ 'allowed_roles' ] ) && $category_data[ 'allowed_roles' ] ) {
+			$allowed_roles = $category_data[ 'allowed_roles' ];
+		}
 	}
 	
 	// Init boolean test variables
@@ -477,6 +476,7 @@ function bookacti_validate_booking_form( $group_id, $event_id, $event_start, $ev
 	$is_qty_sup_to_min		= false;
 	$is_qty_inf_to_max		= false;
 	$is_users_inf_to_max	= false;
+	$has_allowed_roles		= false;
 	$can_book				= false;
 	
 	// Sanitize
@@ -490,8 +490,15 @@ function bookacti_validate_booking_form( $group_id, $event_id, $event_start, $ev
 	if( $min_quantity === 0 || ( $quantity + $quantity_already_booked ) >= $min_quantity )	{ $is_qty_sup_to_min = true; }
 	if( $max_quantity === 0 || $quantity <= ( $max_quantity - $quantity_already_booked ) )	{ $is_qty_inf_to_max = true; }
 	if( $max_users === 0 || $quantity_already_booked || $number_of_users < $max_users )		{ $is_users_inf_to_max = true; }
-
-	if( $is_event && $exists && $is_in_range && $is_qty_sup_to_0 && $is_qty_sup_to_min && $is_qty_inf_to_max && $is_users_inf_to_max && $is_qty_inf_to_avail ) { $can_book = true; }
+	if( ! $allowed_roles )																	{ $has_allowed_roles = true; }
+	else { 
+		$current_user	= wp_get_current_user();
+		$roles			= $current_user->roles;
+		$is_allowed		= array_intersect( $roles, $allowed_roles );
+		if( $is_allowed ) { $has_allowed_roles = true; }
+	}
+	
+	if( $is_event && $exists && $is_in_range && $is_qty_sup_to_0 && $is_qty_sup_to_min && $is_qty_inf_to_max && $is_users_inf_to_max && $is_qty_inf_to_avail && $has_allowed_roles ) { $can_book = true; }
 
 	if( $can_book ) {
 		$validated['status'] = 'success';
@@ -552,6 +559,9 @@ function bookacti_validate_booking_form( $group_id, $event_id, $event_start, $ev
 							. ' ' . sprintf( _n( 'but only %1$s is available on this time slot.', 'but only %1$s are available on this time slot. ', $availability, BOOKACTI_PLUGIN_NAME ), $availability )
 									/* translators: This sentence is preceded by two others : 'You want to make %1$s booking of "%2$s"' and 'but only %1$s is available on this time slot.' */
 							. ' ' . __( 'Please choose another event or decrease the quantity.', BOOKACTI_PLUGIN_NAME );
+		} else if( ! $has_allowed_roles ) {
+			$validated['error'] = 'role_not_allowed';
+			$validated['message'] = __( 'This event is not available in your user category. Please choose another event.', BOOKACTI_PLUGIN_NAME );
 		} else {
 			$validated['error'] = 'failed';
 			$validated['message'] = __( 'An error occurred, please try again.', BOOKACTI_PLUGIN_NAME );

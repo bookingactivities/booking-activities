@@ -645,10 +645,37 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			<?php
 				do_action( 'bookacti_activity_tab_terminology_after', $params );
 			}
-		
+			
+			/**
+			 * Display the fields in the "Permissions" tab of the Activity dialog
+			 * 
+			 * @version 1.4.0
+			 * @param array $params
+			 */
 			function bookacti_fill_activity_tab_permissions( $params ) {
 				do_action( 'bookacti_activity_tab_permissions_before', $params );
 			?>
+				<div>
+					<label for='bookacti-activity-roles' class='bookacti-fullwidth-label' >
+						<?php 
+						esc_html_e( 'Who can book this activity?', BOOKACTI_PLUGIN_NAME );
+						
+						$tip  = __( 'Choose who is allowed to book the events of this activity.', BOOKACTI_PLUGIN_NAME );
+						$tip  .= '<br/>' . __( 'Use CTRL+Click to pick or unpick a role. Don\'t pick any role to allow everybody.', BOOKACTI_PLUGIN_NAME );
+						bookacti_help_tip( $tip );
+					?>
+					</label>
+					<div>
+						<select name='activityOptions[allowed_roles][]'  id='bookacti-activity-roles' multiple >
+						<?php 
+							$roles = get_editable_roles();
+							foreach( $roles as $role_id => $role ) {
+								echo '<option value="' . esc_attr( $role_id ) . '" >' . esc_html( $role[ 'name' ] ) . '</option>'; 
+							}
+						?>
+						</select>
+					</div>
+				</div>
 				<div id='bookacti-activity-managers-container' class='bookacti-items-container' data-type='users' >
 					<label id='bookacti-activity-managers-title' class='bookacti-fullwidth-label' >
 						<?php 
@@ -861,7 +888,11 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 				array(	'label'			=> __( 'Availability', BOOKACTI_PLUGIN_NAME ),
 						'callback'		=> 'bookacti_fill_group_category_tab_availability',
 						'parameters'	=> array(),
-						'order'			=> 20 )
+						'order'			=> 20 ),
+				array(	'label'			=> __( 'Permissions', BOOKACTI_PLUGIN_NAME ),
+						'callback'		=> 'bookacti_fill_group_category_tab_permissions',
+						'parameters'	=> array(),
+						'order'			=> 100 )
 			) );
 			
 			// Display tabs
@@ -948,6 +979,41 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 				</div>
 			<?php
 				do_action( 'bookacti_group_category_tab_availability_after', $params );
+			}
+			
+			
+			/**
+			 * Display the fields in the "Permissions" tab of the Group Category dialog
+			 * 
+			 * @version 1.4.0
+			 * @param array $params
+			 */
+			function bookacti_fill_group_category_tab_permissions( $params ) {
+				do_action( 'bookacti_group_category_tab_permissions_before', $params );
+			?>
+				<div>
+					<label for='bookacti-group-category-roles' class='bookacti-fullwidth-label' >
+						<?php 
+						esc_html_e( 'Who can book this category of groups?', BOOKACTI_PLUGIN_NAME );
+						
+						$tip  = __( 'Choose who is allowed to book the groups of this category.', BOOKACTI_PLUGIN_NAME );
+						$tip  .= '<br/>' . __( 'Use CTRL+Click to pick or unpick a role. Don\'t pick any role to allow everybody.', BOOKACTI_PLUGIN_NAME );
+						bookacti_help_tip( $tip );
+					?>
+					</label>
+					<div>
+						<select name='groupCategoryOptions[allowed_roles][]'  id='bookacti-group-category-roles' multiple >
+						<?php 
+							$roles = get_editable_roles();
+							foreach( $roles as $role_id => $role ) {
+								echo '<option value="' . esc_attr( $role_id ) . '" >' . esc_html( $role[ 'name' ] ) . '</option>'; 
+							}
+						?>
+						</select>
+					</div>
+				</div>
+			<?php
+				do_action( 'bookacti_group_category_tab_permissions_after', $params );
 			}
 		?>
 	</form>

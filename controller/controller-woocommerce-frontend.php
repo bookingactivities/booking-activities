@@ -65,7 +65,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		}
 		
 		// Check if user's cart is still valid or change it if necessary (according to min and max bookings restrictions)
-		bookacti_update_cart_item_quantity_according_to_booking_restrictions();
+		bookacti_update_cart_item_quantity_according_to_booking_restrictions( $user->ID );
 	}
 	add_action( 'wp_login', 'bookacti_change_customer_id_to_user_id', 20, 2 );
 	

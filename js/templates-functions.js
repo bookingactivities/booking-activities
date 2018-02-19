@@ -822,7 +822,7 @@ function bookacti_fill_settings_fields( settings, prefix ) {
 			// Select multiple
 			} else if( $j( 'select[name="' + prefix + '[' + key + '][]"]' ).length ) {
 				$j.each( value, function( i, option ){
-					$j( 'select[name="' + prefix + '[' + key + ']"] option[value="' + option + '"]' ).attr( 'selected', true );
+					$j( 'select[name="' + prefix + '[' + key + '][]"] option[value="' + option + '"]' ).attr( 'selected', true );
 				});
 				
 			// Input and Textarea

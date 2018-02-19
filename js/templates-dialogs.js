@@ -185,7 +185,7 @@ function bookacti_dialog_add_new_template() {
             click: function() {
 				// Prepare fields
 				$j( '#bookacti-template-data-form-action' ).val( 'bookactiInsertTemplate' );
-				$j( '#bookacti-template-data-form select[multiple] option' ).attr( 'selected', true );
+				$j( '#bookacti-template-data-form select[multiple].bookacti-items-select-box option' ).attr( 'selected', true );
 				
                 //Get the data to save
                 var title	= $j( '#bookacti-template-title' ).val();
@@ -333,7 +333,7 @@ function bookacti_dialog_update_template( template_id ) {
 				// Prepare fields
 				$j( '#bookacti-template-data-form-template-id' ).val( template_id );
 				$j( '#bookacti-template-data-form-action' ).val( 'bookactiUpdateTemplate' );
-				$j( '#bookacti-template-data-form select[multiple] option' ).attr( 'selected', true );
+				$j( '#bookacti-template-data-form select[multiple].bookacti-items-select-box option' ).attr( 'selected', true );
 
 				// Gether the data to save
 				var data = $j( '#bookacti-template-data-form' ).serialize();
@@ -593,7 +593,7 @@ function bookacti_dialog_update_event( event ) {
 			$j( '#bookacti-event-data-form-event-start' ).val( event.start.format( 'YYYY-MM-DD HH:mm:ss' ) );
 			$j( '#bookacti-event-data-form-event-end' ).val( event.end.format( 'YYYY-MM-DD HH:mm:ss' ) );
 			$j( '#bookacti-event-data-form-action' ).val( 'bookactiUpdateEvent' );
-			$j( '#bookacti-event-data-form select[multiple] option' ).attr( 'selected', true );
+			$j( '#bookacti-event-data-form select[multiple].bookacti-items-select-box option' ).attr( 'selected', true );
 
 			var data = $j( '#bookacti-event-data-form' ).serializeObject();
 
@@ -1134,7 +1134,7 @@ function bookacti_dialog_create_activity() {
 			click: function() {
 				
 				// Prepare fields
-				$j( '#bookacti-activity-data-form select[multiple] option' ).attr( 'selected', true );
+				$j( '#bookacti-activity-data-form select[multiple].bookacti-items-select-box option' ).attr( 'selected', true );
 
 				// Get the data to save
 				var days		= $j( '#bookacti-activity-duration-days' ).val();
@@ -1281,7 +1281,7 @@ function bookacti_dialog_update_activity( activity_id ) {
 			click: function() {
 				
 				// Prepare fields
-				$j( '#bookacti-activity-data-form select[multiple] option' ).attr( 'selected', true );
+				$j( '#bookacti-activity-data-form select[multiple].bookacti-items-select-box option' ).attr( 'selected', true );
 
 				// Get the data to save
 				var color           = $j( '#bookacti-activity-color' ).val();
@@ -1524,7 +1524,7 @@ function bookacti_dialog_create_group_of_events( category_id ) {
 				
 				// Prepare fields
 				$j( '#bookacti-group-of-events-action' ).val( 'bookactiInsertGroupOfEvents' );
-				$j( '#bookacti-group-of-events-form select[multiple] option' ).attr( 'selected', true );
+				$j( '#bookacti-group-of-events-form select[multiple].bookacti-items-select-box option' ).attr( 'selected', true );
 				
 				// Get the data to save
 				var selected_category_id	= $j( '#bookacti-group-of-events-category-selectbox' ).val();
@@ -1671,7 +1671,7 @@ function bookacti_dialog_update_group_of_events( group_id ) {
 				
 				// Prepare fields
 				$j( '#bookacti-group-of-events-action' ).val( 'bookactiUpdateGroupOfEvents' );
-				$j( '#bookacti-group-of-events-form select[multiple] option' ).attr( 'selected', true );
+				$j( '#bookacti-group-of-events-form select[multiple].bookacti-items-select-box option' ).attr( 'selected', true );
 				
 				//Get the data to save
 				var selected_category_id	= $j( '#bookacti-group-of-events-category-selectbox' ).val();
@@ -1881,7 +1881,7 @@ function bookacti_dialog_update_group_category( category_id ) {
 
 				// Prepare fields
 				$j( '#bookacti-group-category-action' ).val( 'bookactiUpdateGroupCategory' );
-				$j( '#bookacti-group-category-form select[multiple] option' ).attr( 'selected', true );
+				$j( '#bookacti-group-category-form select[multiple].bookacti-items-select-box option' ).attr( 'selected', true );
 
 				// Get the data to save
 				var data = $j( '#bookacti-group-category-form' ).serializeArray();

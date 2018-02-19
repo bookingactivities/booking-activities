@@ -1191,14 +1191,15 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	 * Retrieve group category ids by template ids
 	 * 
 	 * @since 1.1.0
-	 * @version 1.3.0
+	 * @version 1.4.0
 	 * 
 	 * @global wpdb $wpdb
 	 * @param array|int $template_ids
 	 * @param boolean $fetch_inactive
+	 * @param boolean $allowed_roles_only
 	 * @return array|boolean
 	 */
-	function bookacti_get_group_category_ids_by_template( $template_ids = array(), $fetch_inactive = false ) {
+	function bookacti_get_group_category_ids_by_template( $template_ids = array(), $fetch_inactive = false, $allowed_roles_only = false ) {
 		
 		// If empty, take them all
 		if( ! $template_ids ) {
@@ -1214,28 +1215,61 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			}
 		}
 		
+		$variables = array();
+		
 		global $wpdb;
 		
-        $query	= 'SELECT id FROM ' . BOOKACTI_TABLE_GROUP_CATEGORIES 
-				. ' WHERE template_id IN ( ';
+        $query	= 'SELECT id FROM ' . BOOKACTI_TABLE_GROUP_CATEGORIES . ' as C ';
 		
-		$i = 1;
-		foreach( $template_ids as $template_id ){
-			$query .= ' %d';
-			if( $i < count( $template_ids ) ) { $query .= ','; }
-			$i++;
+		// Join the meta table to filter by roles
+		if( $allowed_roles_only ) {
+			$query .= ' LEFT JOIN ( 
+							SELECT meta_value as roles, object_id as group_category_id 
+							FROM ' . BOOKACTI_TABLE_META . ' 
+							WHERE object_type = "group_category" 
+							AND meta_key = "allowed_roles" 
+						) as M ON M.group_category_id = C.id ';
 		}
 		
-		$query .= ' )';
+		$query .= ' WHERE TRUE ';
+		
+		// Filter by roles
+		if( $allowed_roles_only ) {
+			$current_user	= wp_get_current_user();
+			$roles			= $current_user->roles;
+			
+			$query .= ' AND ( ( M.roles = "a:0:{}" OR M.roles IS NULL OR M.roles = "" ) ';
+			if( $roles ) {
+				foreach( $roles as $i => $role ) {
+					$query .= ' OR M.roles LIKE %s ';
+					// Prefix and suffix each element of the array
+					$roles[ $i ] = '%' . $wpdb->esc_like( $role ) . '%';
+				}
+				$variables = array_merge( $variables, $roles );
+			}
+			$query .= ' ) ';
+		}
+		
+		// Filter by templates
+		if( $template_ids ) {
+			$query .= ' AND C.template_id IN ( %d ';
+			$array_count = count( $template_ids );
+			if( $array_count >= 2 ) {
+				for( $i=1; $i<$array_count; ++$i ) {
+					$query .= ', %d ';
+				}
+			}
+			$query .= ') ';
+			$variables = array_merge( $variables, $template_ids );
+		}
 		
 		if( ! $fetch_inactive ) {
-			$query .= ' AND active = 1 ';
+			$query .= ' AND C.active = 1 ';
 		}
 		
-		if( $template_ids ) {
-			$query = $wpdb->prepare( $query, $template_ids );
+		if( $variables ) {
+			$query = $wpdb->prepare( $query, $variables );
 		}
-        
         $categories = $wpdb->get_results( $query, OBJECT );
 		
 		$category_ids = array();
