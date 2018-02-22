@@ -98,20 +98,26 @@ function bookacti_controller_reload_booking_system() {
 		$html_elements = bookacti_get_booking_method_html( $attributes[ 'method' ], $attributes );
 		
 		// Gets calendar content: events, activities and groups
-		$groups_data		= bookacti_get_groups_of_events( $attributes[ 'calendars' ], $attributes[ 'group_categories' ], $attributes[ 'past_events' ] );
-		$categories_data	= bookacti_get_group_categories( $attributes[ 'calendars' ], $attributes[ 'group_categories' ] );
+		$user_ids			= array();
+		$groups_ids			= array();
+		$groups_data		= array();
+		$categories_data	= array();
+		$groups_events		= array();
+		$events				= array( 'events' => array(), 'data' => array() );
 		
-		$groups_ids = array( 0 );
-		foreach( $groups_data as $group_id => $group_data ) { $groups_ids[] = $group_id; }
-		
-		$groups_events = array();
 		if( $atts[ 'group_categories' ] !== false ) {
-			$groups_events = bookacti_get_groups_events( $atts[ 'calendars' ], $atts[ 'group_categories' ], $groups_ids );
+			$groups_data		= bookacti_get_groups_of_events( $attributes[ 'calendars' ], $attributes[ 'group_categories' ], $attributes[ 'past_events' ] );
+			$categories_data	= bookacti_get_group_categories( $attributes[ 'calendars' ], $attributes[ 'group_categories' ] );
+			
+			foreach( $groups_data as $group_id => $group_data ) { $groups_ids[] = $group_id; }
+			
+			$groups_events		= ! $groups_ids ? array() : bookacti_get_groups_events( $atts[ 'calendars' ], $atts[ 'group_categories' ], $groups_ids );
 		}
 		
-		$user_ids = array();
 		if( $attributes[ 'groups_only' ] ) {
-			$events		= bookacti_fetch_grouped_events( $attributes[ 'calendars' ], $attributes[ 'activities' ], $groups_ids, $attributes[ 'group_categories' ], $attributes[ 'past_events' ], $events_interval );
+			if( $groups_ids ) { 
+				$events	= bookacti_fetch_grouped_events( $attributes[ 'calendars' ], $attributes[ 'activities' ], $groups_ids, $attributes[ 'group_categories' ], $attributes[ 'past_events' ], $events_interval ); 
+			}
 		} else if( $attributes[ 'bookings_only' ] ) {
 			$events		= bookacti_fetch_booked_events( $attributes[ 'calendars' ], $attributes[ 'activities' ], $attributes[ 'status' ], $attributes[ 'user_id' ], $attributes[ 'past_events' ], $events_interval );
 			$user_ids	= $attributes[ 'user_id' ];

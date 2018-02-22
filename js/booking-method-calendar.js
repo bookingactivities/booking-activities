@@ -341,8 +341,8 @@ function bookacti_update_calendar_settings( booking_system ) {
 	
 	if( template_data.start && template_data.end ) {
 		settings_to_update.validRange = {
-            start: moment( availability_period.start ),
-            end: moment( availability_period.end ).add( 1, 'days' )
+            "start": moment( availability_period.start ),
+            "end": moment( availability_period.end ).add( 1, 'days' )
         };
 	}
 	

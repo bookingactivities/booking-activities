@@ -160,7 +160,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			'event_id'					=> 0, 
 			'event_start'				=> '', 
 			'event_end'					=> '', 
-			'status'					=> array( 'booked', 'pending', 'cancelled', 'refunded', 'refund_requested' ), 
+			'status'					=> array(), 
 			'user_id'					=> 0,
 			'from'						=> '',
 			'to'						=> '',

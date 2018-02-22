@@ -334,18 +334,21 @@ function bookacti_settings_section_bookings_callback() { }
 	 * Display Timezone setting
 	 * 
 	 * @since 1.1.0
+	 * @version 1.4.0
 	 */
 	function bookacti_settings_field_timezone_callback() {
 		$regions = array(
-			'UTC' => DateTimeZone::UTC,
-			'Africa' => DateTimeZone::AFRICA,
-			'America' => DateTimeZone::AMERICA,
-			'Antarctica' => DateTimeZone::ANTARCTICA,
-			'Asia' => DateTimeZone::ASIA,
-			'Atlantic' => DateTimeZone::ATLANTIC,
-			'Europe' => DateTimeZone::EUROPE,
-			'Indian' => DateTimeZone::INDIAN,
-			'Pacific' => DateTimeZone::PACIFIC
+			'UTC'			=> DateTimeZone::UTC,
+			'Africa'		=> DateTimeZone::AFRICA,
+			'America'		=> DateTimeZone::AMERICA,
+			'Antarctica'	=> DateTimeZone::ANTARCTICA,
+			'Arctic'		=> DateTimeZone::ARCTIC,
+			'Asia'			=> DateTimeZone::ASIA,
+			'Atlantic'		=> DateTimeZone::ATLANTIC,
+			'Australia'		=> DateTimeZone::AUSTRALIA,
+			'Europe'		=> DateTimeZone::EUROPE,
+			'Indian'		=> DateTimeZone::INDIAN,
+			'Pacific'		=> DateTimeZone::PACIFIC
 		);
 		
 		$timezones = array();
@@ -353,11 +356,8 @@ function bookacti_settings_section_bookings_callback() { }
 		foreach ( $regions as $name => $mask ) {
 			$zones = DateTimeZone::listIdentifiers( $mask );
 			foreach( $zones as $timezone ) {
-				// Lets sample the time there right now
 				$time = new DateTime( NULL, new DateTimeZone( $timezone ) );
-				// Us dumb Americans can't handle millitary time
 				$ampm = $time->format( 'H' ) > 12 ? ' (' . $time->format( 'g:i a' ) . ')' : '';
-				// Remove region name and add a sample time
 				$label = $name === 'UTC' ? $name : substr( $timezone, strlen( $name ) + 1 );
 				$timezones[ $name ][ $timezone ] = $label . ' - ' . $time->format( 'H:i' ) . $ampm;
 			}
@@ -376,7 +376,7 @@ function bookacti_settings_section_bookings_callback() { }
 		}
 		echo '</select>';
 		
-		// Display the tip 
+		// Display the help tip 
 		$tip  = __( 'Pick the timezone corresponding to where your business takes place.', BOOKACTI_PLUGIN_NAME );
 		bookacti_help_tip( $tip );
 	}

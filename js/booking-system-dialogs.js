@@ -160,7 +160,7 @@ function bookacti_dialog_choose_group_of_events( booking_system, group_ids, even
 		group_id = parseInt( group_id );
 		if( typeof bookacti.booking_system[ booking_system_id ][ 'groups_events' ][ group_id ] !== 'undefined' ) {
 			
-			var availability	= bookacti_get_group_availability( booking_system, bookacti.booking_system[ booking_system_id ][ 'groups_events' ][ group_id ] );
+			var availability = bookacti.booking_system[ booking_system_id ][ 'groups_data' ][ group_id ][ 'availability' ];
 			
 			// Check group of events availability
 			var is_available = true;

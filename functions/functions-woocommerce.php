@@ -175,9 +175,12 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			$max_quantity	= isset( $activity_data[ 'max_bookings_per_user' ] ) ? intval( $activity_data[ 'max_bookings_per_user' ] ) : 0;
 			$max_users		= isset( $activity_data[ 'max_users_per_event' ] ) ? intval( $activity_data[ 'max_users_per_event' ] ) : 0;
 			
-			// Check if the user has already booked this event
-			$quantity_already_booked = 0;
+			$quantity_already_booked	= 0;
+			$number_of_users			= 0;
+			$current_quantity			= 0;
+			
 			if( $min_quantity || $max_quantity || $max_users ) {
+				// Check if the user has already booked this event
 				$filters = bookacti_format_booking_filters( array(
 					'event_id'				=> $booking->event_id,
 					'event_start'			=> $booking->event_start,
@@ -187,13 +190,11 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 					'not_in__booking_id'	=> array( $booking->id )
 				) );
 				$quantity_already_booked = bookacti_get_number_of_bookings( $filters );
-			}
-			
-			// Check if the event has already been booked by other users
-			$number_of_users = 0;
-			if( $max_users ) {
-				$bookings_made_by_other_users = bookacti_get_number_of_bookings_per_user_by_event( $event_id, $event_start, $event_end );
-				$number_of_users = count( $bookings_made_by_other_users );
+				
+				// Check if the event has already been booked by other users
+				$bookings_made_by_other_users = bookacti_get_number_of_bookings_per_user_by_event( $booking->event_id, $booking->event_start, $booking->event_end );
+				$number_of_users	= count( $bookings_made_by_other_users );
+				$current_quantity	= isset( $bookings_made_by_other_users[ $booking->user_id ] ) ? $bookings_made_by_other_users[ $booking->user_id ] : 0;
 			}
 			
 			if( $min_quantity !== 0 && ( $new_quantity + $quantity_already_booked ) < $min_quantity ) { 
@@ -204,7 +205,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 				$response[ 'status' ] = 'failed';
 				$response[ 'error' ] = 'qty_sup_to_max';
 			}
-			if( $max_users !== 0 && ! $quantity_already_booked && $number_of_users >= $max_users ) { 
+			if( $max_users !== 0 && $current_quantity === 0 && $number_of_users >= $max_users ) { 
 				$response[ 'status' ] = 'failed';
 				$response[ 'error' ] = 'users_sup_to_max';
 			}
@@ -248,7 +249,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 						$message .= ' ' . sprintf( __( 'but the minimum number of reservations required per user is %1$s.', BOOKACTI_PLUGIN_NAME ), $min_quantity );
 					}
 					/* translators: %1$s is a variable quantity. This sentence is preceded by two others : 'You want to make %1$s booking of "%2$s"' and 'but the minimum number of reservations required per user is %1$s.' */
-					$message .=	' ' . sprintf( __( 'Please choose another event or increase the quantity to %1$s.', BOOKACTI_PLUGIN_NAME ), $min_quantity - $quantity_already_booked );
+					$message .=	' ' . sprintf( __( 'Please choose another event or increase the quantity to %1$s.', BOOKACTI_PLUGIN_NAME ), $min_quantity - $current_quantity );
 				
 				} else if( $response[ 'error' ] === 'qty_sup_to_max' ) {
 					/* translators: %1$s is a variable number of bookings, %2$s is the event title. This sentence is followed by two others : 'but the maximum number of reservations allowed per user is %1$s.' and 'Please choose another event or decrease the quantity.' */
@@ -261,7 +262,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 						$message .= ' ' . sprintf( __( 'but the maximum number of reservations allowed per user is %1$s.', BOOKACTI_PLUGIN_NAME ), $max_quantity );
 					}
 					/* translators: %1$s is a variable quantity. This sentence is preceded by two others : 'You want to make %1$s booking of "%2$s"' and 'but the maximum number of reservations allowed per user is %1$s.' */
-					$message .= ' ' . sprintf( __( 'Please choose another event or decrease the quantity to %1$s.', BOOKACTI_PLUGIN_NAME ), $max_quantity - $quantity_already_booked );
+					$message .= $max_quantity - $current_quantity > 0 ? ' ' . sprintf( __( 'Please choose another event or decrease the quantity to %1$s.', BOOKACTI_PLUGIN_NAME ), $max_quantity - $current_quantity ) : ' ' . __( 'Please choose another event', BOOKACTI_PLUGIN_NAME );
 				} else if( $response[ 'error' ] === 'users_sup_to_max' ) {
 					$message = __( 'This event has reached the maximum number of users allowed. Bookings from other users are no longer accepted. Please choose another event.', BOOKACTI_PLUGIN_NAME );
 
@@ -307,7 +308,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 		// Get group availability
 		$group				= bookacti_get_booking_group_by_id( $booking_group_id );
-		$group_availability	= bookacti_get_group_of_events_availability( $group->event_group_id, array( 'in_cart' ) );
+		$group_availability	= bookacti_get_group_of_events_availability( $group->event_group_id );
 
 		// Make sure all events have enough places available
 		// Look for the most booked event of the booking group
@@ -351,9 +352,12 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			$max_quantity	= isset( $category_data[ 'max_bookings_per_user' ] ) ? intval( $category_data[ 'max_bookings_per_user' ] ) : 0;
 			$max_users		= isset( $category_data[ 'max_users_per_event' ] ) ? intval( $category_data[ 'max_users_per_event' ] ) : 0;
 			
-			// Check if the user has already booked this event
-			$quantity_already_booked = 0;
+			$quantity_already_booked	= 0;
+			$number_of_users			= 0;
+			$current_quantity			= 0;
+			
 			if( $min_quantity || $max_quantity || $max_users ) {
+				// Check if the user has already booked this event
 				$filters = bookacti_format_booking_filters( array(
 					'event_group_id'			=> $group->event_group_id,
 					'user_id'					=> $group->user_id,
@@ -362,13 +366,11 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 					'group_by'					=> 'booking_group'
 				) );
 				$quantity_already_booked = bookacti_get_number_of_bookings( $filters );
-			}
-			
-			// Check if the event has already been booked by other users
-			$number_of_users = 0;
-			if( $max_users ) {
+				
+				// Check if the event has already been booked by other users
 				$bookings_made_by_other_users = bookacti_get_number_of_bookings_per_user_by_group_of_events( $group->event_group_id );
-				$number_of_users = count( $bookings_made_by_other_users );
+				$number_of_users	= count( $bookings_made_by_other_users );
+				$current_quantity	= isset( $bookings_made_by_other_users[ $booking->user_id ] ) ? $bookings_made_by_other_users[ $booking->user_id ] : 0;
 			}
 			
 			if( $min_quantity !== 0 && ( $booking_max_new_quantity + $quantity_already_booked ) < $min_quantity ) {
@@ -384,7 +386,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 					$message .= ' ' . sprintf( __( 'but the minimum number of reservations required per user is %1$s.', BOOKACTI_PLUGIN_NAME ), $min_quantity );
 				}
 				/* translators: %1$s is a variable quantity. This sentence is preceded by two others : 'You want to make %1$s booking of "%2$s"' and 'but the minimum number of reservations required per user is %1$s.' */
-				$message .= ' ' . sprintf( __( 'Please choose another event or increase the quantity to %1$s.', BOOKACTI_PLUGIN_NAME ), $min_quantity - $booking_max_new_quantity );
+				$message .= ' ' . sprintf( __( 'Please choose another event or increase the quantity to %1$s.', BOOKACTI_PLUGIN_NAME ), $min_quantity - $quantity_already_booked );
 			}
 			
 			if( $max_quantity !== 0 && $booking_max_new_quantity > ( $max_quantity - $quantity_already_booked ) ) {
@@ -400,10 +402,10 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 					$message .= ' ' . sprintf( __( 'but the maximum number of reservations allowed per user is %1$s.', BOOKACTI_PLUGIN_NAME ), $max_quantity );
 				}
 				/* translators: %1$s is a variable quantity. This sentence is preceded by two others : 'You want to make %1$s booking of "%2$s"' and 'but the maximum number of reservations allowed per user is %1$s.' */
-				$message .= ' ' . sprintf( __( 'Please choose another event or decrease the quantity to %1$s.', BOOKACTI_PLUGIN_NAME ), $max_quantity - $booking_max_new_quantity );
+				$message .= $max_quantity - $quantity_already_booked > 0 ? ' ' . sprintf( __( 'Please choose another event or decrease the quantity to %1$s.', BOOKACTI_PLUGIN_NAME ), $max_quantity - $quantity_already_booked ) : ' ' . __( 'Please choose another event', BOOKACTI_PLUGIN_NAME );
 			}
 			
-			if( $max_users !== 0 && ! $quantity_already_booked && $number_of_users >= $max_users ) { 
+			if( $max_users !== 0 && $current_quantity === 0 && $number_of_users >= $max_users ) { 
 				$response[ 'status' ] = 'failed';
 				$response[ 'error' ] = 'users_sup_to_max';
 				$message = __( 'This event has reached the maximum number of users allowed. Bookings from other users are no longer accepted. Please choose another event.', BOOKACTI_PLUGIN_NAME );
@@ -908,7 +910,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 				}
 				
 				// Check if the product has to be removed
-				if( $allowed_roles ) {
+				if( $allowed_roles && ! apply_filters( 'bookacti_bypass_roles_check', false ) ) {
 					$current_user	= $user_id ? get_user_by( 'id', $user_id ) : wp_get_current_user();
 					$roles			= $current_user->roles;
 					$is_allowed		= array_intersect( $roles, $allowed_roles );

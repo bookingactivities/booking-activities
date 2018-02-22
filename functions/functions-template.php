@@ -173,10 +173,10 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		}
 		
 		// Take default availability period if not set
-		if( ! isset( $mixed_settings[ 'availability_period_start' ] ) ) {
+		if( ! isset( $mixed_settings[ 'availability_period_start' ] ) || $mixed_settings[ 'availability_period_start' ] === '' ) {
 			$mixed_settings[ 'availability_period_start' ] = $past_events ? 0 : bookacti_get_setting_value( 'bookacti_general_settings', 'availability_period_start' );
 		}
-		if( ! isset( $mixed_settings[ 'availability_period_end' ] ) ) {
+		if( ! isset( $mixed_settings[ 'availability_period_end' ] ) || $mixed_settings[ 'availability_period_end' ] === '' ) {
 			$mixed_settings[ 'availability_period_end' ] = $past_events ? 0 : bookacti_get_setting_value( 'bookacti_general_settings', 'availability_period_end' );
 		}
 		

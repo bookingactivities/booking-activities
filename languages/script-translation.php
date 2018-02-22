@@ -98,7 +98,7 @@ $bookacti_translation_array = apply_filters( 'bookacti_translation_array', array
 	'error_retrieve_activity_bound'		=> esc_html__( 'Error occurs when trying to retrieve activities bound to calendars.', BOOKACTI_PLUGIN_NAME ),
 	'error_no_avail_activity_bound'		=> esc_html__( 'No available activities found for this calendar.', BOOKACTI_PLUGIN_NAME ),
 	'error_update_bound_events'         => esc_html__( 'Error occurs when trying to update events bound to the updated activity.', BOOKACTI_PLUGIN_NAME ),
-	'error_edit_locked_event'           => esc_html__( 'This event is booked, you cannot move it, change its duration, nor delete it.', BOOKACTI_PLUGIN_NAME ),
+	'error_edit_locked_event'           => esc_html__( 'This event is booked, you cannot move it nor change its duration.', BOOKACTI_PLUGIN_NAME ),
 	'error_unbind_occurences'           => esc_html__( 'Error occurs when trying to unbind occurrences of the event.', BOOKACTI_PLUGIN_NAME ),
 	/* translators: In the context, it is one of the message following 'There are bookings on at least one of the occurence of this event. You can't: ' */
 	'error_move_locked_event'           => esc_html__( 'Move this occurence because it will affect the complete event.', BOOKACTI_PLUGIN_NAME ),

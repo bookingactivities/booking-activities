@@ -828,7 +828,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 				<div>
 					<label for='bookacti-group-of-events-category-selectbox' ><?php esc_html_e( 'Group category', BOOKACTI_PLUGIN_NAME ); ?></label>
 					<select name='group-of-events-category' id='bookacti-group-of-events-category-selectbox' >
-						<option value='new' >New Category</option>
+						<option value='new' ><?php _e( 'New category', BOOKACTI_PLUGIN_NAME ); ?></option>
 						<?php
 							$template_id = get_user_meta( get_current_user_id(), 'bookacti_default_template', true );
 							if( ! empty( $template_id ) ) {

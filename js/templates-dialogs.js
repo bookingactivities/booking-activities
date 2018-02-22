@@ -533,9 +533,9 @@ function bookacti_dialog_update_event( event ) {
 	
 	if( event_data.repeat_from && event_data.repeat_from !== '0000-00-00' )	{ repeat_from = event_data.repeat_from; };
 	if( event_data.repeat_to   && event_data.repeat_to   !== '0000-00-00' )	{ repeat_to = event_data.repeat_to; };
-
+	
 	// Fill the form with database param
-	$j( '#bookacti-event-title' ).val( event_data.title );
+	$j( '#bookacti-event-title' ).val( event_data.multilingual_title );
 	$j( '#bookacti-event-availability' ).val( event_data.availability );
 	$j( '#bookacti-event-availability' ).attr( 'min', bookings_number );
 	$j( '#bookacti-event-repeat-freq option[value="' + event_data.repeat_freq + '"]' ).prop( 'selected', true );
@@ -598,22 +598,12 @@ function bookacti_dialog_update_event( event ) {
 			$j( '#bookacti-event-data-form-event-start' ).val( event.start.format( 'YYYY-MM-DD HH:mm:ss' ) );
 			$j( '#bookacti-event-data-form-event-end' ).val( event.end.format( 'YYYY-MM-DD HH:mm:ss' ) );
 			$j( '#bookacti-event-data-form-action' ).val( 'bookactiUpdateEvent' );
-			$j( '#bookacti-event-data-form select[multiple].bookacti-items-select-box option' ).attr( 'selected', true );
+			$j( '#bookacti-event-data-form select[multiple]#bookacti-event-exceptions-selectbox option' ).attr( 'selected', true );
 
 			var data = $j( '#bookacti-event-data-form' ).serializeObject();
 
 			data[ 'interval' ] = bookacti.booking_system[ 'bookacti-template-calendar' ][ 'events_interval' ];
-
-			// Store new event data
-			var new_event = event;
-			new_event.title = $j( '#bookacti-event-title' ).val();
-			var new_event_data = {
-				'availability'	: $j( '#bookacti-event-availability' ).val(),
-				'repeat_freq'	: $j( '#bookacti-event-repeat-freq' ).val(),
-				'repeat_from'	: $j( '#bookacti-event-repeat-from' ).val(),
-				'repeat_to'		: $j( '#bookacti-event-repeat-to' ).val()
-			};
-
+			
 			// Store new exceptions list
 			var new_exceptions = $j( '#bookacti-event-exceptions-selectbox' ).val() ? $j( '#bookacti-event-exceptions-selectbox' ).val() : [];
 

@@ -39,21 +39,27 @@ function bookacti_get_booking_system( $atts, $echo = false ) {
 				
 				$templates_data		= bookacti_get_mixed_template_data( $atts[ 'calendars' ], $atts[ 'past_events' ] );
 				$events_interval	= bookacti_get_new_interval_of_events( $templates_data );
+				
 				$user_ids			= array();
+				$groups_ids			= array();
+				$groups_data		= array();
+				$categories_data	= array();
+				$groups_events		= array();
+				$events				= array( 'events' => array(), 'data' => array() );
 				
-				$groups_data		= bookacti_get_groups_of_events( $atts[ 'calendars' ], $atts[ 'group_categories' ], $atts[ 'past_events' ] );
-				$categories_data	= bookacti_get_group_categories( $atts[ 'calendars' ], $atts[ 'group_categories' ] );
-				
-				$groups_ids = array( 0 );
-				foreach( $groups_data as $group_id => $group_data ) { $groups_ids[] = $group_id; }
-				
-				$groups_events = array();
 				if( $atts[ 'group_categories' ] !== false ) {
-					$groups_events = bookacti_get_groups_events( $atts[ 'calendars' ], $atts[ 'group_categories' ], $groups_ids );
+					$groups_data		= bookacti_get_groups_of_events( $atts[ 'calendars' ], $atts[ 'group_categories' ], $atts[ 'past_events' ], false, $templates_data );
+					$categories_data	= bookacti_get_group_categories( $atts[ 'calendars' ], $atts[ 'group_categories' ] );
+				
+					foreach( $groups_data as $group_id => $group_data ) { $groups_ids[] = $group_id; }
+					
+					$groups_events		= ! $groups_ids ? array() : bookacti_get_groups_events( $atts[ 'calendars' ], $atts[ 'group_categories' ], $groups_ids );
 				} 
 				
 				if( $atts[ 'groups_only' ] ) {
-					$events		= bookacti_fetch_grouped_events( $atts[ 'calendars' ], $atts[ 'activities' ], $groups_ids, $atts[ 'group_categories' ], $atts[ 'past_events' ], $events_interval );
+					if( $groups_ids ) { 
+						$events	= bookacti_fetch_grouped_events( $atts[ 'calendars' ], $atts[ 'activities' ], $groups_ids, $atts[ 'group_categories' ], $atts[ 'past_events' ], $events_interval );
+					}
 				} else if( $atts[ 'bookings_only' ] ) {
 					$events		= bookacti_fetch_booked_events( $atts[ 'calendars' ], $atts[ 'activities' ], $atts[ 'status' ], $atts[ 'user_id' ], $atts[ 'past_events' ], $events_interval );
 					$user_ids	= $atts[ 'user_id' ];
@@ -319,8 +325,8 @@ function bookacti_format_booking_system_attributes( $atts = array(), $shortcode 
 				unset( $atts[ 'group_categories' ][ $i ] );
 			}
 		}
-	} 
-	if( ! $atts[ 'group_categories' ] ) { $atts[ 'group_categories' ] = $available_category_ids; }
+		if( ! $atts[ 'group_categories' ] ) { $atts[ 'group_categories' ] = $available_category_ids; }
+	}
 	
 	// If booking method is set to 'site', get the site default
 	$atts[ 'method' ] = esc_attr( $atts[ 'method' ] );
@@ -413,11 +419,11 @@ function bookacti_validate_booking_form( $group_id, $event_id, $event_start, $ev
 		// Check if the user has already booked this event
 		if( ( $min_quantity || $max_quantity || $max_users ) && $user_id ) {
 			$filters = bookacti_format_booking_filters( array(
-				'event_id'				=> $event_id,
-				'event_start'			=> $event_start,
-				'event_end'				=> $event_end,
-				'user_id'				=> $user_id,
-				'active'				=> 1
+				'event_id'		=> $event_id,
+				'event_start'	=> $event_start,
+				'event_end'		=> $event_end,
+				'user_id'		=> $user_id,
+				'active'		=> 1
 			) );
 			$quantity_already_booked = bookacti_get_number_of_bookings( $filters );
 		}
@@ -489,7 +495,7 @@ function bookacti_validate_booking_form( $group_id, $event_id, $event_start, $ev
 	if( $min_quantity === 0 || ( $quantity + $quantity_already_booked ) >= $min_quantity )	{ $is_qty_sup_to_min = true; }
 	if( $max_quantity === 0 || $quantity <= ( $max_quantity - $quantity_already_booked ) )	{ $is_qty_inf_to_max = true; }
 	if( $max_users === 0 || $quantity_already_booked || $number_of_users < $max_users )		{ $is_users_inf_to_max = true; }
-	if( ! $allowed_roles )																	{ $has_allowed_roles = true; }
+	if( ! $allowed_roles || apply_filters( 'bookacti_bypass_roles_check', false ) )			{ $has_allowed_roles = true; }
 	else { 
 		$current_user	= wp_get_current_user();
 		$roles			= $current_user->roles;
@@ -540,7 +546,7 @@ function bookacti_validate_booking_form( $group_id, $event_id, $event_start, $ev
 				$validated['message'] .= ' ' . sprintf( __( 'but the maximum number of reservations allowed per user is %1$s.', BOOKACTI_PLUGIN_NAME ), $max_quantity );
 			}
 			/* translators: %1$s is a variable quantity. This sentence is preceded by two others : 'You want to make %1$s booking of "%2$s"' and 'but the maximum number of reservations allowed per user is %1$s.' */
-			$validated['message'] .= ' ' . sprintf( __( 'Please choose another event or decrease the quantity to %1$s.', BOOKACTI_PLUGIN_NAME ), $max_quantity - $quantity_already_booked );
+			$validated['message'] .= $max_quantity - $quantity_already_booked > 0  ? ' ' . sprintf( __( 'Please choose another event or decrease the quantity to %1$s.', BOOKACTI_PLUGIN_NAME ), $max_quantity - $quantity_already_booked ) : ' ' . __( 'Please choose another event', BOOKACTI_PLUGIN_NAME );
 		} else if( ! $is_users_inf_to_max ) {
 			$validated['error'] = 'users_sup_to_max';
 			$validated['message'] = __( 'This event has reached the maximum number of users allowed. Bookings from other users are no longer accepted. Please choose another event.', BOOKACTI_PLUGIN_NAME );
@@ -1124,31 +1130,6 @@ function bookacti_get_formatted_booking_events_list( $booking_events, $quantity 
 
 
 // GROUPS OF EVENTS
-
-	/**
-	 * Get group of events availability (= the lowest availability among its events)
-	 * 
-	 * @since 1.1.0
-	 * @version 1.3.0
-	 * @param int $event_group_id
-	 * @param array $include_states
-	 * @return int
-	 */
-	function bookacti_get_group_of_events_availability( $event_group_id, $include_states = array() ) {
-
-		$events = bookacti_get_group_events( $event_group_id, true );
-
-		$max = 999999999; // Any big int
-		foreach( $events as $event ) {
-			$availability = bookacti_get_event_availability( $event[ 'id' ], $event[ 'start' ], $event[ 'end' ], $include_states );
-			if( $availability < $max ) {
-				$max = $availability;
-			}
-		}
-
-		return $max;
-	}
-	
 	
 	/**
 	 * Book all events of a group

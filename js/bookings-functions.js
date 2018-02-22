@@ -368,7 +368,7 @@ function bookacti_validate_picked_events( booking_system, quantity ) {
 				});
 				valid_form.are_picked_events_same_as_group = are_in_group;
 				
-				total_avail = bookacti_get_group_availability( booking_system, bookacti.booking_system[ booking_system_id ][ 'groups_events' ][ group_id ] );
+				total_avail = bookacti.booking_system[ booking_system_id ][ 'groups_data' ][ group_id ][ 'availability' ];
 			}
 		}
 	}

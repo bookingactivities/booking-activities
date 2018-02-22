@@ -613,29 +613,3 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		return $booking_item;
 	}
 	add_filter( 'bookacti_booking_list_booking_columns', 'bookacti_change_customer_name_in_bookings_list', 10, 3 );
-	
-	
-	/**
-	 * Bypass availability period check for administrator
-	 * 
-	 * @since 1.4.0
-	 * @param boolean $bypass
-	 * @return boolean
-	 */
-	function bookacti_bypass_availability_period_check_for_roles( $bypass ) {
-		
-		if( $bypass ) { return $bypass; }
-		
-		// Array of roles allowed to see the activities above
-		$allowed_roles = array( 'administrator', 'shop_manager' );
-
-		// Get current user role
-		$current_user = wp_get_current_user();
-		$roles = $current_user->roles;
-		
-		if( array_intersect( $roles, $allowed_roles ) ) { return true; }
-		
-		return $bypass;
-	}
-	add_filter( 'bookacti_bypass_availability_period_check', 'bookacti_bypass_availability_period_check_for_roles', 10, 1 );
-	

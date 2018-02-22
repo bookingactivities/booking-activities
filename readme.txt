@@ -5,7 +5,7 @@ Tags: booking activities, booking sport, booking form, event reservation, reserv
 Requires at least: 3.6
 Tested up to: 4.9
 Requires PHP: 5.3
-Stable tag: 1.3.3
+Stable tag: 1.4.0
 License: GPLv3 or later
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
 
@@ -312,6 +312,10 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 * Feature - Set the booking changes deadline per activity: customers can change their events X days before they start (global option already exists)
 * Feature - Set whether to allow to book started groups of events (global option and group category option)
 * Tweak - Groups of events can be unselected in calendar editor
+* Optimization - Only the required groups of events data are retrieved on frontend
+* Optimization - Do not process the whole render function while dragging or resizing events
+* Optimization - Instant JS alert while dragging or resizing a booked event instead of waiting for PHP check
+* Optimization - Get event / group of events availability with a single query
 * Fix - Wrong error message when quantity <= 0 in booking form
 * Fix - PHP notice when updating single events and activity or calendar with no managers
 * Fix - Don't display booking actions in emails
@@ -320,7 +324,10 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 * Fix - Incorrect booking groups user ids if users made their bookings before logging in
 * Fix - PHP notices after updating custom parameters in calendar editor
 * Fix - JS errors when an event of a group was past
-* Fix - Past groups of events are no longer retrieved on frontend
+* Fix - Australia and Arctic timezones added
+* Fix - Multilingual event titles were not displayed in event dialog in calendar editor
+* Fix - No alert displayed while trying to move or resize a booked event
+* Fix - JS error while trying to compute group availability if events of the group were not retrieved yet
 
 = 1.3.3 - 2018/02/11 =
 * Fix - Repeated events were not displayed on today's date at a future time
