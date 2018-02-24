@@ -207,8 +207,7 @@ function bookacti_format_event_settings( $event_settings ) {
 /**
  * Make sure the availability is higher than the bookings already made
  * 
- * @version 1.1.4
- * 
+ * @version 1.4.0
  * @param int $event_id
  * @param int $event_availability
  * @param string $repeat_freq
@@ -217,30 +216,28 @@ function bookacti_format_event_settings( $event_settings ) {
  * @return array
  */
 function bookacti_validate_event( $event_id, $event_availability, $repeat_freq, $repeat_from, $repeat_to ) {
-    //Get info required
+    // Get info required
     $min_avail          = bookacti_get_min_availability( $event_id );
     $min_period         = bookacti_get_min_period( NULL, $event_id );
     $repeat_from_time   = strtotime( $repeat_from );
     $repeat_to_time     = strtotime( $repeat_to );
-    $max_from           = strtotime( $min_period['from'] );
-    $min_to             = strtotime( $min_period['to'] );
+    $max_from           = $min_period ? strtotime( $min_period[ 'from' ] ) : '';
+    $min_to             = $min_period ? strtotime( $min_period[ 'to' ] ) : '';
     
-    //Init var to check with worst case
+    // Init var to check with worst case
     $isAvailSupToBookings           = false;
     $isRepeatFromBeforeFirstBooked  = false;
     $isRepeatToAfterLastBooked      = false;
     	
-    //Make the tests
-    if( $min_avail !== null ) {
+    // Make the tests
+    if( $min_avail ) {
         if( intval( $event_availability ) >= intval( $min_avail ) ) {
             $isAvailSupToBookings = true;
         }
     }
-    if( $min_period !== null ) {
-        if( $min_period['is_bookings'] > 0 ) {
-            if( $repeat_from_time <= $max_from ){ $isRepeatFromBeforeFirstBooked = true; }
-            if( $repeat_to_time   >= $min_to )  { $isRepeatToAfterLastBooked = true; }
-        }
+    if( $min_period ) {
+		if( $repeat_from_time <= $max_from ){ $isRepeatFromBeforeFirstBooked = true; }
+		if( $repeat_to_time   >= $min_to )  { $isRepeatToAfterLastBooked = true; }
     }
     
     $return_array = array();

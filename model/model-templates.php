@@ -498,65 +498,78 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
     }
 	
     
-    //GET MIN AVAILABILITY
+	/**
+	 * Get min availability
+	 * 
+	 * @version 1.4.0
+	 * @global wpdb $wpdb
+	 * @param int $event_id
+	 * @return int
+	 */
     function bookacti_get_min_availability( $event_id ) {
         global $wpdb;
         
-        //Get all different booked occurrences of the event
+        // Get all different booked occurrences of the event
         $booked_occurrences_query   = 'SELECT SUM( quantity ) '
 									. ' FROM ' . BOOKACTI_TABLE_BOOKINGS 
 									. ' WHERE active = 1 '
 									. '	AND event_id = %d '
-									. '	GROUP BY event_start'
-									. '	ORDER BY quantity'
-									. '	DESC LIMIT 1';
+									. '	GROUP BY CONCAT( event_id, event_start, event_end ) '
+									. '	ORDER BY quantity '
+									. '	DESC LIMIT 1 ';
         $booked_occurrences_prep    = $wpdb->prepare( $booked_occurrences_query, $event_id );
         $booked_occurrences         = $wpdb->get_var( $booked_occurrences_prep );
         
-		if( is_null( $booked_occurrences ) ) {
-			$booked_occurrences = 0;
-		}
+		if( ! $booked_occurrences ) { $booked_occurrences = 0; }
 		
 		return $booked_occurrences;
     }
     
 	
-    // GET THE PERIOD OF TIME BETWEEN THE FIRST AND THE LAST BOOKING OF AN EVENT / A TEMPLATE
+	/**
+	 * Get the period of time between the first and the last booking of an event / a template
+	 * 
+	 * @version 1.4.0
+	 * @global wpdb $wpdb
+	 * @param int $template_id
+	 * @param int $event_id
+	 * @return false|array
+	 */
     function bookacti_get_min_period( $template_id = NULL, $event_id = NULL ) {
-        global $wpdb;
-        
-        //Get min period for event
-        if( $event_id !== NULL ) {
-            $period_query   = 'SELECT event_start FROM ' . BOOKACTI_TABLE_BOOKINGS . ' WHERE active = 1 AND event_id = %d ORDER BY event_start ';
-            $min_from_query = $period_query . ' ASC LIMIT 1';
-            $min_to_query   = $period_query . ' DESC LIMIT 1';
-            $var            = $event_id;
-            
-        //Get min period for template
-        } else if( $template_id !== NULL ) {
-            $period_query   =  'SELECT B.event_start FROM ' . BOOKACTI_TABLE_BOOKINGS . ' as B, ' . BOOKACTI_TABLE_EVENTS . ' as E '
-                            . ' WHERE B.active = 1 '
-                            . ' AND B.event_id = E.id '
-                            . ' AND E.template_id = %d ' 
-                            . ' ORDER BY B.event_start ';
-            $min_from_query = $period_query . ' ASC LIMIT 1';
-            $min_to_query   = $period_query . ' DESC LIMIT 1';
-            $var            = $template_id;
-        }
-        $min_from_query_prep= $wpdb->prepare( $min_from_query, $var );
-        $min_to_query_prep  = $wpdb->prepare( $min_to_query, $var );
-        $first_booking      = $wpdb->get_row( $min_from_query_prep, OBJECT );
-        $last_booking       = $wpdb->get_row( $min_to_query_prep, OBJECT );
-        
-        if( $first_booking && $last_booking ) {
-            $period = array(    'is_bookings' => true, 
-                                'from' => substr( $first_booking->event_start, 0, 10 ), 
-                                'to' => substr( $last_booking->event_start, 0, 10 ) );
-        } else {
-            $period = array( 'is_bookings' => false, 'first_booking' => $first_booking, 'last_booking' => $last_booking );
-        }
-        
-        return $period;
+		global $wpdb;
+
+		// Get min period for event
+		if( $event_id ) {
+			$period_query   = 'SELECT event_start FROM ' . BOOKACTI_TABLE_BOOKINGS . ' WHERE active = 1 AND event_id = %d ORDER BY event_start ';
+			$min_from_query = $period_query . ' ASC LIMIT 1';
+			$min_to_query   = $period_query . ' DESC LIMIT 1';
+			$var            = $event_id;
+
+		// Get min period for template
+		} else if( $template_id ) {
+			$period_query   =  'SELECT B.event_start FROM ' . BOOKACTI_TABLE_BOOKINGS . ' as B, ' . BOOKACTI_TABLE_EVENTS . ' as E '
+							. ' WHERE B.active = 1 '
+							. ' AND B.event_id = E.id '
+							. ' AND E.template_id = %d ' 
+							. ' ORDER BY B.event_start ';
+			$min_from_query = $period_query . ' ASC LIMIT 1';
+			$min_to_query   = $period_query . ' DESC LIMIT 1';
+			$var            = $template_id;
+		}
+		$min_from_query_prep= $wpdb->prepare( $min_from_query, $var );
+		$min_to_query_prep  = $wpdb->prepare( $min_to_query, $var );
+		$first_booking      = $wpdb->get_row( $min_from_query_prep, OBJECT );
+		$last_booking       = $wpdb->get_row( $min_to_query_prep, OBJECT );
+
+		$period = false;
+		if( $first_booking && $last_booking ) {
+			$period = array(
+				'from' => substr( $first_booking->event_start, 0, 10 ), 
+				'to' => substr( $last_booking->event_start, 0, 10 )
+			);
+		}
+
+		return $period;
     }
 
 	

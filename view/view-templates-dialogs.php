@@ -230,7 +230,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			bookacti_display_tabs( $template_tabs, 'template' );
 
 			//Tab content for template general tab
-			function bookacti_fill_template_tab_general( $params ) {
+			function bookacti_fill_template_tab_general( $params = array() ) {
 				$templates_options = $params[ 'template_options' ];
 				do_action( 'bookacti_template_tab_general_before', $params );
 			?>
@@ -274,8 +274,8 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			} 
 			
 			
-			function bookacti_fill_template_tab_agenda() {
-				do_action( 'bookacti_template_tab_events_before' );
+			function bookacti_fill_template_tab_agenda( $params = array() ) {
+				do_action( 'bookacti_template_tab_agenda_before', $params );
 			?>
 				<div>
 					<label for='bookacti-template-data-minTime' >
@@ -323,7 +323,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 					?>
 				</div>
 			<?php
-				do_action( 'bookacti_template_tab_events_after' );
+				do_action( 'bookacti_template_tab_agenda_after', $params );
 				
 				bookacti_display_badp_promo();
 			}
@@ -377,7 +377,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			
 			
 			// Tab content for permission tab
-			function bookacti_fill_template_tab_permissions( $params ) {
+			function bookacti_fill_template_tab_permissions( $params = array() ) {
 				$users_options_for_templates = $params[ 'users_options_for_templates' ];
 				do_action( 'bookacti_template_tab_permissions_before', $params );
 			?>	
@@ -454,7 +454,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			?>
 			
 			<?php
-			function bookacti_fill_activity_tab_general( $params ) {
+			function bookacti_fill_activity_tab_general( $params = array() ) {
 				do_action( 'bookacti_activity_tab_general_before', $params );
 			?>
 				<div>
@@ -541,7 +541,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			 * @since 1.4.0
 			 * @param array $params
 			 */
-			function bookacti_fill_activity_tab_availability( $params ) {
+			function bookacti_fill_activity_tab_availability( $params = array() ) {
 				do_action( 'bookacti_activity_tab_availability_before', $params );
 			?>
 				<div>
@@ -603,7 +603,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			}
 			
 			
-			function bookacti_fill_activity_tab_terminology( $params ) {
+			function bookacti_fill_activity_tab_terminology( $params = array() ) {
 				do_action( 'bookacti_activity_tab_terminology_before', $params );
 			?>
 				<div>
@@ -652,7 +652,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			 * @version 1.4.0
 			 * @param array $params
 			 */
-			function bookacti_fill_activity_tab_permissions( $params ) {
+			function bookacti_fill_activity_tab_permissions( $params = array() ) {
 				do_action( 'bookacti_activity_tab_permissions_before', $params );
 			?>
 				<div>
@@ -814,7 +814,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			 * @version 1.4.0
 			 * @param array $params
 			 */
-			function bookacti_fill_group_of_events_tab_general( $params ) {
+			function bookacti_fill_group_of_events_tab_general( $params = array() ) {
 				do_action( 'bookacti_group_of_events_tab_general_before', $params );
 		?>
 				<div>
@@ -899,7 +899,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			bookacti_display_tabs( $group_category_tabs, 'group-category' );
 			
 			// GENERAL tab
-			function bookacti_fill_group_category_tab_general( $params ) {
+			function bookacti_fill_group_category_tab_general( $params = array() ) {
 				do_action( 'bookacti_group_category_tab_general_before', $params );
 		?>
 				<div>
@@ -920,7 +920,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			 * @since 1.4.0
 			 * @param array $params
 			 */
-			function bookacti_fill_group_category_tab_availability( $params ) {
+			function bookacti_fill_group_category_tab_availability( $params = array() ) {
 				do_action( 'bookacti_group_category_tab_availability_before', $params );
 			?>
 				<div>
@@ -1010,7 +1010,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			 * @version 1.4.0
 			 * @param array $params
 			 */
-			function bookacti_fill_group_category_tab_permissions( $params ) {
+			function bookacti_fill_group_category_tab_permissions( $params = array() ) {
 				do_action( 'bookacti_group_category_tab_permissions_before', $params );
 			?>
 				<div>

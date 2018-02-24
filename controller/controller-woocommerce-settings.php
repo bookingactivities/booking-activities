@@ -126,7 +126,7 @@ function bookacti_add_wc_mention_to_when_events_load_tip( $tip ) {
 	$tip .= esc_html__( 'WC Variable products calendars will always load after page load.', BOOKACTI_PLUGIN_NAME );
 	return $tip;
 }
-add_filter( 'bookacti_when_events_load_tip', 'bookacti_add_wc_mention_to_when_events_load_tip', 1, 10 );
+add_filter( 'bookacti_when_events_load_tip', 'bookacti_add_wc_mention_to_when_events_load_tip', 10, 1 );
 
 
 /**
