@@ -39,6 +39,27 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	
 	
 	/**
+	 * Get customer id for non-logged in users
+	 * 
+	 * @since 1.4.0
+	 * @global woocommerce $woocommerce
+	 * @param int $current_user_id
+	 * @return string|0
+	 */
+	function bookacti_get_customer_id_for_non_logged_in_users( $current_user_id ) {
+		if( $current_user_id ) { return $current_user_id; }
+		
+		global $woocommerce;
+		if( isset( $woocommerce->session ) ) {
+			return $woocommerce->session->get_customer_id();
+		}
+		
+		return 0;
+	}
+	add_filter( 'bookacti_current_user_id', 'bookacti_get_customer_id_for_non_logged_in_users', 10, 1 );
+	
+	
+	/**
 	 * Add 'in_cart' state to active states
 	 * 
 	 * @param array $active_states
@@ -114,9 +135,9 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		return $data;
 	}
 	add_filter( 'bookacti_update_booking_quantity_data', 'bookacti_change_booking_state_to_removed_or_in_cart_depending_on_its_quantity', 10, 2 );
-	
-	
-	
+
+
+
 
 // ORDER AND BOOKING STATUS
 	
@@ -285,15 +306,21 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	/**
 	 * Add actions html elements to booking rows
 	 * 
-	 * @version 1.2.0
-	 * @version 1.3.3
+	 * @version 1.4.0
+	 * @global boolean $is_email
 	 * @param int $item_id
 	 * @param WC_Order_item $item
 	 * @param WC_Order $order
 	 * @param boolean $plain_text
 	 */
 	function bookacti_add_actions_to_bookings( $item_id, $item, $order, $plain_text = true ) {
-		if( $plain_text || ( isset( $_GET[ 'pay_for_order' ] ) && $_GET[ 'pay_for_order' ] ) ) { return; }
+		global $is_email;
+		
+		// Don't display booking actions in emails, in plain text and in payment page
+		if( ( isset( $is_email ) && $is_email ) || $plain_text || ( isset( $_GET[ 'pay_for_order' ] ) && $_GET[ 'pay_for_order' ] ) ) { 
+			$GLOBALS[ 'is_email' ] = false; 
+			return;
+		}
 		
 		if( isset( $item['bookacti_booking_id'] ) ) {
 			echo bookacti_get_booking_actions_html( $item['bookacti_booking_id'], 'front', false, true );
@@ -303,6 +330,19 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	}
 	add_action( 'woocommerce_order_item_meta_end', 'bookacti_add_actions_to_bookings', 10, 4 );
 	
+	
+	/**
+	 * Set a flag before displaying order items to decide whether to display booking actions
+	 * 
+	 * @since 1.4.0
+	 * @param array $args
+	 * @return array
+	 */
+	function bookacti_order_items_set_email_flag( $args ) {
+		$GLOBALS[ 'is_email' ] = true;
+		return $args;
+	}
+	add_filter( 'woocommerce_email_order_items_args', 'bookacti_order_items_set_email_flag', 10, 1 );
 	
 	
 	

@@ -222,7 +222,7 @@ if( ! class_exists( 'Bookings_List_Table' ) ) {
 		/**
 		 * Get booking list items. Parameters can be passed in the URL.
 		 * 
-		 * @version 1.3.0
+		 * @version 1.4.0
 		 * @param int $event_group_id
 		 * @param int $event_id
 		 * @param string $event_start
@@ -233,8 +233,8 @@ if( ! class_exists( 'Bookings_List_Table' ) ) {
 		public function get_booking_list_items() {
 			
 			// Request bookings corresponding to filters
-			$group_by_booking_groups = ! $this->filters[ 'booking_group_id' ] || $this->filters[ 'booking_group_single_row' ];
-			$bookings = bookacti_get_bookings( $this->filters, $group_by_booking_groups );
+			if( ! $this->filters[ 'booking_group_id' ] ) { $this->filters[ 'group_by' ] = 'booking_group'; }
+			$bookings = bookacti_get_bookings( $this->filters );
 			
 			// Retrieve booking groups data
 			$booking_groups		= bookacti_get_booking_groups( $this->filters );
@@ -258,7 +258,7 @@ if( ! class_exists( 'Bookings_List_Table' ) ) {
 			foreach( $bookings as $booking ) {
 				
 				// Display one single row for a booking group, instead of each bookings of the group
-				if( $booking->group_id && ( ! $this->filters[ 'booking_group_id' ] || $this->filters[ 'booking_group_single_row' ] ) && ! $this->filters[ 'booking_id' ] ) {
+				if( $booking->group_id && ( ! $this->filters[ 'booking_group_id' ] || $this->filters[ 'group_by' ] === 'booking_group' ) && ! $this->filters[ 'booking_id' ] ) {
 					// If the group row has already been displayed, or if it is not found, continue
 					if( in_array( $booking->group_id, $displayed_groups, true ) 
 					||  ! isset( $booking_groups[ $booking->group_id ] ) ) { continue; }
@@ -388,8 +388,7 @@ if( ! class_exists( 'Bookings_List_Table' ) ) {
 					'templates'					=> isset( $_REQUEST[ 'templates' ] )		? $_REQUEST[ 'templates' ] : array(), 
 					'activities'				=> isset( $_REQUEST[ 'activities' ] )		? $_REQUEST[ 'activities' ] : array(), 
 					'booking_id'				=> isset( $_REQUEST[ 'booking_id' ] )		? intval( $_REQUEST[ 'booking_id' ] ): 0, 
-					'booking_group_id'			=> isset( $_REQUEST[ 'booking_group_id' ] )	? intval( $_REQUEST[ 'booking_group_id' ] ): 0, 
-					'booking_group_single_row'	=> isset( $_REQUEST[ 'booking_group_single_row' ] )	? intval( $_REQUEST[ 'booking_group_single_row' ] ): 0, 
+					'booking_group_id'			=> isset( $_REQUEST[ 'booking_group_id' ] )	? intval( $_REQUEST[ 'booking_group_id' ] ): 0,
 					'event_group_id'			=> $event_group_id, 
 					'event_id'					=> $event_id, 
 					'event_start'				=> $event_start, 
@@ -398,6 +397,7 @@ if( ! class_exists( 'Bookings_List_Table' ) ) {
 					'user_id'					=> isset( $_REQUEST[ 'user_id' ] )			? $_REQUEST[ 'user_id' ] : 0,
 					'from'						=> isset( $_REQUEST[ 'from' ] )				? $_REQUEST[ 'from' ] : '',
 					'to'						=> isset( $_REQUEST[ 'to' ] )				? $_REQUEST[ 'to' ] : '',
+					'group_by'					=> isset( $_REQUEST[ 'group_by' ] )			? $_REQUEST[ 'group_by' ] : '',
 					'order_by'					=> isset( $_REQUEST[ 'orderby' ] )			? $_REQUEST[ 'orderby' ] : array( 'creation_date', 'id' ),
 					'order'						=> isset( $_REQUEST[ 'order' ] )			? $_REQUEST[ 'order' ] : 'DESC'
 				);
@@ -414,11 +414,12 @@ if( ! class_exists( 'Bookings_List_Table' ) ) {
 		 * Get the total amount of bookings according to filters
 		 * 
 		 * @since 1.3.0
+		 * @version 1.4.0
 		 * @return int
 		 */
 		public function get_total_items_count() {
-			$group_by_booking_groups = ! $this->filters[ 'booking_group_id' ];
-			return bookacti_get_number_of_booking_rows( $this->filters, $group_by_booking_groups );
+			if( ! $this->filters[ 'booking_group_id' ] ) { $this->filters[ 'group_by' ] = 'booking_group'; }
+			return bookacti_get_number_of_booking_rows( $this->filters );
 		}
 		
 		

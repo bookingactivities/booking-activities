@@ -8,6 +8,7 @@ $j( document ).ready( function() {
 		bookacti.hidden_activities	= [];
 		bookacti.selected_category	= 'new';
 		bookacti.is_dragging		= false;
+		bookacti.is_resizing		= false;
 		bookacti.blocked_events		= false;
 		bookacti.load_events		= false;
 		
@@ -161,6 +162,8 @@ function bookacti_load_template_calendar() {
 
 		// When an event is rendered
 		eventRender: function( event, element, view ) { 
+			// Directly return true if the event is resizing or dragging to avoid overload
+			if( bookacti.is_dragging || bookacti.is_resizing ) { return true; }
 			
 			var event_data = bookacti.booking_system[ 'bookacti-template-calendar' ][ 'events_data' ][ event.id ];
 			
@@ -418,6 +421,24 @@ function bookacti_load_template_calendar() {
 
 		// eventResize : When an event is resized
 		eventResize: function( event, delta, revertFunc ) {
+			// Do not allow to edit booked events
+			var origin_event = {
+					"id": event.id,
+					"start": event.start.clone(),
+					"end": event.end.clone().subtract( delta._data ),
+				};
+			var bookings = bookacti_get_event_number_of_bookings( $j( '#bookacti-template-calendar' ), origin_event );
+			if( bookings > 0 ) {
+				revertFunc();
+				var is_repeated = bookacti.booking_system[ 'bookacti-template-calendar' ][ 'events_data' ][ event.id ][ 'repeat_freq' ] !== 'none';
+				if( is_repeated ) {
+					bookacti_dialog_unbind_occurences( event, [ 'resize' ] );
+				} else {
+					alert( bookacti_localized.error_edit_locked_event );
+				}
+				return false;
+			}
+			
 			// Get event var to save in db
 			var id			= event.id;
 			var start		= event.start.format('YYYY-MM-DD HH:mm:ss');
@@ -472,18 +493,18 @@ function bookacti_load_template_calendar() {
 							if( bookacti.booking_system[ 'bookacti-template-calendar' ][ 'events_data' ][ event.id ][ 'repeat_freq' ] !== 'none' ) {
 								bookacti_dialog_unbind_occurences( event, [ 'resize' ] );
 							} 
-						} else {
-							var error_message = bookacti_localized.error_resize_event;
-							if( response.error === 'not_allowed' ) {
-								error_message += '\n' + bookacti_localized.error_not_allowed;
-							} else if( response.error === 'has_bookings' ) {
-								bookacti_refresh_booking_numbers( $j( '#bookacti-template-calendar' ), event.id );
-								error_message += '\n' + bookacti_localized.error_edit_locked_event;
-								error_message += '\n' + bookacti_localized.advice_switch_to_maintenance + '\n';
-							}
-							alert( error_message );
-							console.log( response );
 						}
+						
+						var error_message = bookacti_localized.error_resize_event;
+						if( response.error === 'not_allowed' ) {
+							error_message += '\n' + bookacti_localized.error_not_allowed;
+						} else if( response.error === 'has_bookings' ) {
+							bookacti_refresh_booking_numbers( $j( '#bookacti-template-calendar' ), event.id );
+							error_message += '\n' + bookacti_localized.error_edit_locked_event;
+							error_message += '\n' + bookacti_localized.advice_switch_to_maintenance + '\n';
+						}
+						alert( error_message );
+						console.log( response );
 					}
 				},
 				error: function( e ){
@@ -500,13 +521,34 @@ function bookacti_load_template_calendar() {
 
 		// eventDrop : When an event is moved to an other day / hour
 		eventDrop: function( event, delta, revertFunc, e ) {
+			
+			// Check if the event is duplicated
 			var is_alt_key_pressed = 0;
 			if( e.altKey ) { is_alt_key_pressed = 1; }
 
 			if( is_alt_key_pressed ) {
 				revertFunc();
+				
+			} else {
+				// Do not allow to edit a booked event
+				var origin_event = {
+					"id": event.id,
+					"start": event.start.clone().subtract( delta._data ),
+					"end": event.end.clone().subtract( delta._data ),
+				};
+				var bookings = bookacti_get_event_number_of_bookings( $j( '#bookacti-template-calendar' ), origin_event );
+				if( bookings > 0 ) {
+					revertFunc();
+					var is_repeated = bookacti.booking_system[ 'bookacti-template-calendar' ][ 'events_data' ][ event.id ][ 'repeat_freq' ] !== 'none';
+					if( is_repeated ) {
+						bookacti_dialog_unbind_occurences( event, [ 'move' ] );
+					} else {
+						alert( bookacti_localized.error_edit_locked_event );
+					}
+					return false;
+				}
 			}
-
+			
 			// Update the event changes in database
 			var id			= event.id;
 			var start		= event.start.format( 'YYYY-MM-DD HH:mm:ss' );
@@ -605,18 +647,18 @@ function bookacti_load_template_calendar() {
 							if( bookacti.booking_system[ 'bookacti-template-calendar' ][ 'events_data' ][ event.id ][ 'repeat_freq' ] !== 'none' ) {
 								bookacti_dialog_unbind_occurences( event, [ 'move' ] );
 							}
-						} else {
-							var error_message = bookacti_localized.error_move_event;
-							if( response.error === 'not_allowed' ) {
-								error_message += '\n' + bookacti_localized.error_not_allowed;
-							} else if( response.error === 'has_bookings' ) {
-								bookacti_refresh_booking_numbers( $j( '#bookacti-template-calendar' ), event.id );
-								error_message += '\n' + bookacti_localized.error_edit_locked_event;
-								error_message += '\n' + bookacti_localized.advice_switch_to_maintenance + '\n';
-							}
-							alert( error_message );
-							console.log( response );
 						}
+						
+						var error_message = bookacti_localized.error_move_event;
+						if( response.error === 'not_allowed' ) {
+							error_message += '\n' + bookacti_localized.error_not_allowed;
+						} else if( response.error === 'has_bookings' ) {
+							bookacti_refresh_booking_numbers( $j( '#bookacti-template-calendar' ), event.id );
+							error_message += '\n' + bookacti_localized.error_edit_locked_event;
+							error_message += '\n' + bookacti_localized.advice_switch_to_maintenance + '\n';
+						}
+						alert( error_message );
+						console.log( response );
 					}
 				},
 				error: function( e ) {
@@ -630,15 +672,26 @@ function bookacti_load_template_calendar() {
 			});
 		},
 
-		//When the user drag an event
+		// When the user drag an event
 		eventDragStart: function ( event, jsEvent, ui, view ) {
 			bookacti.is_dragging = true;
 		},
 
 
-		//When the user drop an event, even if it is not on the calendar or if there is no change of date / hour
+		// When the user drop an event, even if it is not on the calendar or if there is no change of date / hour
 		eventDragStop: function ( event, jsEvent, ui, view ) {
 			bookacti.is_dragging = false;
+		},
+
+		// When the user resize an event
+		eventResizeStart: function ( event, jsEvent, ui, view ) {
+			bookacti.is_resizing = true;
+		},
+
+
+		// When the user re an event, even if it is not on the calendar or if there is no change of date / hour
+		eventResizeStop: function ( event, jsEvent, ui, view ) {
+			bookacti.is_resizing = false;
 		},
 
 

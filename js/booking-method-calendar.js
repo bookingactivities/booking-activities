@@ -76,8 +76,7 @@ function bookacti_set_calendar_up( booking_system, reload_events ) {
 			}			
 			
 			// Add availability div
-			event.bookings = bookacti_get_event_number_of_bookings( booking_system, event );
-			if( event.bookings != null ) {
+			if( bookacti_get_event_number_of_bookings( booking_system, event ) != null ) {
 
 				var bookings_only = bookacti.booking_system[ booking_system_id ][ 'bookings_only' ] == 1 ? true : false;
 				var avail_div = '';
@@ -144,7 +143,7 @@ function bookacti_set_calendar_up( booking_system, reload_events ) {
 	}); 
 	
 	// Update calendar settings
-	bookacti_update_calendar_settings( calendar, bookacti.booking_system[ booking_system_id ][ 'template_data' ] );
+	bookacti_update_calendar_settings( booking_system );
 	
 	// Load events on calendar
 	if( ! reload_events && bookacti.booking_system[ booking_system_id ][ 'events' ].length ) {
@@ -274,15 +273,6 @@ function bookacti_refresh_picked_events_on_calendar( booking_system ) {
 	booking_system.trigger( 'bookacti_refresh_picked_events_on_calendar' );
 }
 
-// Refresh view after a change of start and end
-function bookacti_set_valid_range( calendar, start, end ) {
-	// Update calendar valid range 
-	calendar.fullCalendar( 'option', 'validRange', {
-		start: start,
-		end: end.add( 1, 'days' )
-	});
-}
-
 
 // Get first and last events on calendar
 function bookacti_get_first_and_last_events_on_calendar( calendar ) {
@@ -339,21 +329,28 @@ function bookacti_add_class_according_to_event_size( element ) {
 
 
 // Dynamically update calendar settings
-function bookacti_update_calendar_settings( calendar, template_data ) {
+function bookacti_update_calendar_settings( booking_system ) {
 	
-	var settings_to_update = {};
-	var settings = $j.extend( true, {}, template_data.settings ); // Clone template data settings to prevent third party to affect the original data
+	var settings_to_update	= {};
+	var booking_system_id	= booking_system.attr( 'id' );
+	var template_data		= bookacti.booking_system[ booking_system_id ][ 'template_data' ];
+	var settings			= $j.extend( true, {}, template_data.settings ); // Clone template data settings to prevent third party to affect the original data
+	var calendar			= booking_system.find( '.fc' ).addBack( '.fc' ).first();
+
+	var availability_period	= bookacti_get_availability_period( booking_system );
 	
 	if( template_data.start && template_data.end ) {
 		settings_to_update.validRange = {
-            start: moment( template_data.start ),
-            end: moment( template_data.end ).add( 1, 'days' )
+            "start": moment( availability_period.start ),
+            "end": moment( availability_period.end ).add( 1, 'days' )
         };
 	}
 	
 	if( settings.minTime )		{ settings_to_update.minTime		= settings.minTime; }
 	if( settings.maxTime )		{ settings_to_update.maxTime		= settings.maxTime === '00:00' ? '24:00' : settings.maxTime; }
 	if( settings.snapDuration ) { settings_to_update.snapDuration	= settings.snapDuration; }
+	
+	if( ! calendar.data( 'fullCalendar' ) ) { return false; }
 	
 	calendar.trigger( 'bookacti_before_update_calendar_settings', [ settings_to_update, settings ] );
 	

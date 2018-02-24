@@ -101,9 +101,14 @@ function bookacti_init_template_dialogs() {
 	});
 	
 	// Init update group of events dialog
-	$j( '#bookacti-template-groups-of-events-container' ).on( 'click', '.bookacti-group-of-events-title, .bookacti-update-group-of-events img', function() {
-		var group_id = $j( this ).parents( '.bookacti-group-of-events' ).data( 'group-id' );
-		bookacti_update_group_of_events( group_id );
+	$j( '#bookacti-template-groups-of-events-container' ).on( 'click', '.bookacti-update-group-of-events img', function() {
+		var group_id	= $j( this ).parents( '.bookacti-group-of-events' ).data( 'group-id' );
+		var is_selected	= $j( this ).parents( '.bookacti-group-of-events' ).hasClass( 'bookacti-selected-group' );
+		var are_selected = is_selected;
+		if( ! is_selected ) {
+			are_selected = bookacti_select_events_of_group( group_id );
+		}
+		if( are_selected ) { bookacti_dialog_update_group_of_events( group_id ) };
     });
 	
 	// Init update group category dialog
@@ -143,6 +148,8 @@ function bookacti_dialog_add_new_template() {
 	$j( '#bookacti-template-data-minTime' ).val( '08:00' );
 	$j( '#bookacti-template-data-maxTime' ).val( '20:00' );
 	$j( '#bookacti-template-data-snapDuration' ).val( '00:30' );
+	$j( '#bookacti-template-availability-period-start' ).val( -1 );
+	$j( '#bookacti-template-availability-period-end' ).val( -1 );
 	
 	$j( '#bookacti-template-data-dialog' ).trigger( 'bookacti_default_template_settings' );
 	
@@ -183,7 +190,7 @@ function bookacti_dialog_add_new_template() {
             click: function() {
 				// Prepare fields
 				$j( '#bookacti-template-data-form-action' ).val( 'bookactiInsertTemplate' );
-				$j( '#bookacti-template-data-form select[multiple] option' ).attr( 'selected', true );
+				$j( '#bookacti-template-data-form select[multiple].bookacti-items-select-box option' ).attr( 'selected', true );
 				
                 //Get the data to save
                 var title	= $j( '#bookacti-template-title' ).val();
@@ -331,7 +338,7 @@ function bookacti_dialog_update_template( template_id ) {
 				// Prepare fields
 				$j( '#bookacti-template-data-form-template-id' ).val( template_id );
 				$j( '#bookacti-template-data-form-action' ).val( 'bookactiUpdateTemplate' );
-				$j( '#bookacti-template-data-form select[multiple] option' ).attr( 'selected', true );
+				$j( '#bookacti-template-data-form select[multiple].bookacti-items-select-box option' ).attr( 'selected', true );
 
 				// Gether the data to save
 				var data = $j( '#bookacti-template-data-form' ).serialize();
@@ -362,7 +369,7 @@ function bookacti_dialog_update_template( template_id ) {
 								$j( '#bookacti-template-picker option[value=' + template_id + ']' ).attr( 'data-template-end', response.template_data.end );
 								
 								// Dynamically update template settings
-								bookacti_update_calendar_settings( $j( '#bookacti-template-calendar' ), response.template_data );
+								bookacti_update_calendar_settings( $j( '#bookacti-template-calendar' ) );
 
 							// If no changes
 							} else if ( response.status === 'nochanges' ) {
@@ -526,9 +533,9 @@ function bookacti_dialog_update_event( event ) {
 	
 	if( event_data.repeat_from && event_data.repeat_from !== '0000-00-00' )	{ repeat_from = event_data.repeat_from; };
 	if( event_data.repeat_to   && event_data.repeat_to   !== '0000-00-00' )	{ repeat_to = event_data.repeat_to; };
-
+	
 	// Fill the form with database param
-	$j( '#bookacti-event-title' ).val( event_data.title );
+	$j( '#bookacti-event-title' ).val( event_data.multilingual_title );
 	$j( '#bookacti-event-availability' ).val( event_data.availability );
 	$j( '#bookacti-event-availability' ).attr( 'min', bookings_number );
 	$j( '#bookacti-event-repeat-freq option[value="' + event_data.repeat_freq + '"]' ).prop( 'selected', true );
@@ -591,22 +598,12 @@ function bookacti_dialog_update_event( event ) {
 			$j( '#bookacti-event-data-form-event-start' ).val( event.start.format( 'YYYY-MM-DD HH:mm:ss' ) );
 			$j( '#bookacti-event-data-form-event-end' ).val( event.end.format( 'YYYY-MM-DD HH:mm:ss' ) );
 			$j( '#bookacti-event-data-form-action' ).val( 'bookactiUpdateEvent' );
-			$j( '#bookacti-event-data-form select[multiple] option' ).attr( 'selected', true );
+			$j( '#bookacti-event-data-form select[multiple]#bookacti-event-exceptions-selectbox option' ).attr( 'selected', true );
 
 			var data = $j( '#bookacti-event-data-form' ).serializeObject();
 
 			data[ 'interval' ] = bookacti.booking_system[ 'bookacti-template-calendar' ][ 'events_interval' ];
-
-			// Store new event data
-			var new_event = event;
-			new_event.title = $j( '#bookacti-event-title' ).val();
-			var new_event_data = {
-				'availability'	: $j( '#bookacti-event-availability' ).val(),
-				'repeat_freq'	: $j( '#bookacti-event-repeat-freq' ).val(),
-				'repeat_from'	: $j( '#bookacti-event-repeat-from' ).val(),
-				'repeat_to'		: $j( '#bookacti-event-repeat-to' ).val()
-			};
-
+			
 			// Store new exceptions list
 			var new_exceptions = $j( '#bookacti-event-exceptions-selectbox' ).val() ? $j( '#bookacti-event-exceptions-selectbox' ).val() : [];
 
@@ -778,7 +775,7 @@ function bookacti_dialog_delete_event( event ) {
                         } else {
 							if( response.error === 'has_bookings' ) {
 								// If the event's booking number is not up to date, refresh it
-								if( ! event.bookings ) {
+								if( ! bookacti_get_event_number_of_bookings( booking_system, event ) ) {
 									bookacti_refresh_booking_numbers( $j( '#bookacti-template-calendar' ), event.id );
 								}
 								
@@ -1128,20 +1125,18 @@ function bookacti_dialog_create_activity() {
 		[{
 			text: bookacti_localized.dialog_button_ok,
 
-			//On click on the OK Button, new values are send to a script that update the database
+			// On click on the OK Button, new values are send to a script that update the database
 			click: function() {
 				
 				// Prepare fields
-				$j( '#bookacti-activity-data-form select[multiple] option' ).attr( 'selected', true );
+				$j( '#bookacti-activity-data-form select[multiple].bookacti-items-select-box option' ).attr( 'selected', true );
 
-				//Get the data to save
-				var color           = $j( '#bookacti-activity-color' ).val();
-				var availability    = $j( '#bookacti-activity-availability' ).val();
-				var days            = $j( '#bookacti-activity-duration-days' ).val();
-				var hours           = $j( '#bookacti-activity-duration-hours' ).val();
-				var minutes         = $j( '#bookacti-activity-duration-minutes' ).val();
-				var duration        = bookacti_pad( days, 3 ) + '.' + bookacti_pad( hours, 2 ) + ':' + bookacti_pad( minutes, 2 ) + ':00';
-				var resizable       = $j( '#bookacti-activity-resizable' ).prop('checked');
+				// Get the data to save
+				var days		= $j( '#bookacti-activity-duration-days' ).val();
+				var hours		= $j( '#bookacti-activity-duration-hours' ).val();
+				var minutes		= $j( '#bookacti-activity-duration-minutes' ).val();
+				var duration	= bookacti_pad( days, 3 ) + '.' + bookacti_pad( hours, 2 ) + ':' + bookacti_pad( minutes, 2 ) + ':00';
+				var resizable	= $j( '#bookacti-activity-resizable' ).prop('checked');
 				if( resizable ) { resizable = '1'; } else { resizable = '0'; }
 				resizable = resizable.toString();
 
@@ -1154,7 +1149,7 @@ function bookacti_dialog_create_activity() {
 				if( is_form_valid ) {
 					bookacti_start_template_loading();
 
-					//Save the new activity in database
+					// Save the new activity in database
 					$j.ajax({
 						url: ajaxurl, 
 						data: data,
@@ -1281,7 +1276,7 @@ function bookacti_dialog_update_activity( activity_id ) {
 			click: function() {
 				
 				// Prepare fields
-				$j( '#bookacti-activity-data-form select[multiple] option' ).attr( 'selected', true );
+				$j( '#bookacti-activity-data-form select[multiple].bookacti-items-select-box option' ).attr( 'selected', true );
 
 				// Get the data to save
 				var color           = $j( '#bookacti-activity-color' ).val();
@@ -1519,16 +1514,16 @@ function bookacti_dialog_create_group_of_events( category_id ) {
 		[{
 			text: bookacti_localized.dialog_button_ok,
 
-			//On click on the OK Button, new values are send to a script that update the database
+			// On click on the OK Button, new values are send to a script that update the database
 			click: function() {
 				
 				// Prepare fields
 				$j( '#bookacti-group-of-events-action' ).val( 'bookactiInsertGroupOfEvents' );
-				$j( '#bookacti-group-of-events-form select[multiple] option' ).attr( 'selected', true );
+				$j( '#bookacti-group-of-events-form select[multiple].bookacti-items-select-box option' ).attr( 'selected', true );
 				
-				//Get the data to save
+				// Get the data to save
 				var selected_category_id	= $j( '#bookacti-group-of-events-category-selectbox' ).val();
-				bookacti.selected_category			= selected_category_id;
+				bookacti.selected_category	= selected_category_id;
 				
 				var data = $j( '#bookacti-group-of-events-form' ).serializeArray();
 				data.push( { name: 'template_id', value: bookacti.selected_template } );
@@ -1539,7 +1534,7 @@ function bookacti_dialog_create_group_of_events( category_id ) {
 				if( is_form_valid ) {
 					bookacti_start_template_loading();
 					
-					//Save the new group of events in database
+					// Save the new group of events in database
 					$j.ajax({
 						url: ajaxurl, 
 						data: data,
@@ -1566,12 +1561,12 @@ function bookacti_dialog_create_group_of_events( category_id ) {
 								// Add the group row to the category
 								bookacti_add_group_of_events( response.group_id, response.group.title, response.category_id );
 								
+								// Unselect the events
+								bookacti_unselect_all_events();
+								
 								// Refresh events
 								$j( '#bookacti-template-calendar' ).fullCalendar( 'rerenderEvents' );
-								$j( '#bookacti-insert-group-of-events' ).css( 'visibility', 'hidden' );
 								
-								// Exit group editing mode
-								bookacti_exit_group_edition();
 								
 							//If error
 							} else {
@@ -1598,17 +1593,6 @@ function bookacti_dialog_create_group_of_events( category_id ) {
 			}
 		}]
 	);
-}
-
-
-// Whether to let the user update the selected events or open the group of events update dialog
-function bookacti_update_group_of_events( group_id ) {
-	var open_dialog = $j( '.bookacti-group-of-events[data-group-id="' + group_id + '"] .bookacti-update-group-of-events img' ).hasClass( 'validate-group' );
-	if( open_dialog ) {
-		bookacti_dialog_update_group_of_events( group_id );
-	} else {
-		bookacti_select_events_of_group( group_id );
-	}
 }
 
 
@@ -1671,7 +1655,7 @@ function bookacti_dialog_update_group_of_events( group_id ) {
 				
 				// Prepare fields
 				$j( '#bookacti-group-of-events-action' ).val( 'bookactiUpdateGroupOfEvents' );
-				$j( '#bookacti-group-of-events-form select[multiple] option' ).attr( 'selected', true );
+				$j( '#bookacti-group-of-events-form select[multiple].bookacti-items-select-box option' ).attr( 'selected', true );
 				
 				//Get the data to save
 				var selected_category_id	= $j( '#bookacti-group-of-events-category-selectbox' ).val();
@@ -1721,12 +1705,11 @@ function bookacti_dialog_update_group_of_events( group_id ) {
 									$j( '.bookacti-group-of-events[data-group-id="' + group_id + '"] .bookacti-group-of-events-title' ).html( group_short_title );
 								}
 								
+								// Unselect the events
+								bookacti_unselect_all_events();
+								
 								// Refresh events
 								$j( '#bookacti-template-calendar' ).fullCalendar( 'rerenderEvents' );
-								$j( '#bookacti-insert-group-of-events' ).css( 'visibility', 'hidden' );
-								
-								// Exit group editing mode
-								bookacti_exit_group_edition();
 								
 								
 							// If error
@@ -1881,9 +1864,9 @@ function bookacti_dialog_update_group_category( category_id ) {
 
 				// Prepare fields
 				$j( '#bookacti-group-category-action' ).val( 'bookactiUpdateGroupCategory' );
-				$j( '#bookacti-group-category-form select[multiple] option' ).attr( 'selected', true );
+				$j( '#bookacti-group-category-form select[multiple].bookacti-items-select-box option' ).attr( 'selected', true );
 
-				//Get the data to save
+				// Get the data to save
 				var data = $j( '#bookacti-group-category-form' ).serializeArray();
 				data.push( { name: 'category_id', value: category_id } );
 

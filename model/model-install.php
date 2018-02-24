@@ -5,31 +5,37 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 /**
  * Create Booking Activities database tables
  * 
- * @version 1.3.0
+ * @version 1.4.0
  * @global wpdb $wpdb
  */
 function bookacti_create_tables() {
 	global $wpdb;
 	$wpdb->hide_errors();
-
+	$collate = '';
+	if ( $wpdb->has_cap( 'collation' ) ) {
+		$collate = $wpdb->get_charset_collate();
+	}
+	
 	$table_templates_query = 'CREATE TABLE ' . BOOKACTI_TABLE_TEMPLATES . ' ( 
-		id MEDIUMINT(9) UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY, 
+		id MEDIUMINT(9) UNSIGNED NOT NULL AUTO_INCREMENT, 
 		title VARCHAR(128), 
 		start_date DATE, 
 		end_date DATE,  
-		active TINYINT(1) UNSIGNED NOT NULL DEFAULT 1 ) ' . $wpdb->get_charset_collate() . ';';
+		active TINYINT(1) UNSIGNED NOT NULL DEFAULT 1,
+		PRIMARY KEY ( id ) ) ' . $collate . ';';
 
 	$table_activities_query = 'CREATE TABLE ' . BOOKACTI_TABLE_ACTIVITIES . ' ( 
-		id MEDIUMINT(9) UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY, 
+		id MEDIUMINT(9) UNSIGNED NOT NULL AUTO_INCREMENT, 
 		title VARCHAR(128), 
 		duration VARCHAR(12) NOT NULL DEFAULT "000.01:00:00", 
 		is_resizable TINYINT(1) UNSIGNED NOT NULL DEFAULT 0, 
 		color VARCHAR(9) NOT NULL DEFAULT "#3a87ad", 
 		availability MEDIUMINT(9) UNSIGNED NOT NULL DEFAULT 0, 
-		active TINYINT(1) NOT NULL DEFAULT 1 ) ' . $wpdb->get_charset_collate() . ';';
+		active TINYINT(1) NOT NULL DEFAULT 1,
+		PRIMARY KEY ( id ) ) ' . $collate . ';';
 
 	$table_events_query = 'CREATE TABLE ' . BOOKACTI_TABLE_EVENTS . ' ( 
-		id MEDIUMINT(9) UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY, 
+		id MEDIUMINT(9) UNSIGNED NOT NULL AUTO_INCREMENT, 
 		template_id MEDIUMINT(9) UNSIGNED NOT NULL, 
 		activity_id MEDIUMINT(9) UNSIGNED NOT NULL, 
 		title VARCHAR(128), 
@@ -39,55 +45,63 @@ function bookacti_create_tables() {
 		repeat_freq VARCHAR(8) NOT NULL DEFAULT "none", 
 		repeat_from DATE, 
 		repeat_to DATE,
-		active TINYINT(1) NOT NULL DEFAULT 1 ) ' . $wpdb->get_charset_collate() . ';';
+		active TINYINT(1) NOT NULL DEFAULT 1,
+		PRIMARY KEY ( id ) ) ' . $collate . ';';
 
 	$table_event_groups_query = 'CREATE TABLE ' . BOOKACTI_TABLE_EVENT_GROUPS . ' ( 
-		id MEDIUMINT(9) UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY, 
+		id MEDIUMINT(9) UNSIGNED NOT NULL AUTO_INCREMENT, 
 		category_id MEDIUMINT(9) UNSIGNED NOT NULL, 
 		title VARCHAR(128), 
-		active TINYINT(1) NOT NULL DEFAULT 1 ) ' . $wpdb->get_charset_collate() . ';';
+		active TINYINT(1) NOT NULL DEFAULT 1,
+		PRIMARY KEY ( id ) ) ' . $collate . ';';
 
 	$table_groups_events_query = 'CREATE TABLE ' . BOOKACTI_TABLE_GROUPS_EVENTS . ' ( 
-		id MEDIUMINT(9) UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY, 
+		id MEDIUMINT(9) UNSIGNED NOT NULL AUTO_INCREMENT, 
 		group_id MEDIUMINT(9) UNSIGNED NOT NULL, 
 		event_id MEDIUMINT(9) UNSIGNED NOT NULL, 
 		event_start DATETIME, 
 		event_end DATETIME, 
-		active TINYINT(1) NOT NULL DEFAULT 1 ) ' . $wpdb->get_charset_collate() . ';';
+		active TINYINT(1) NOT NULL DEFAULT 1,
+		PRIMARY KEY ( id ) ) ' . $collate . ';';
 
 	$table_group_categories_query = 'CREATE TABLE ' . BOOKACTI_TABLE_GROUP_CATEGORIES . ' ( 
-		id MEDIUMINT(9) UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY, 
+		id MEDIUMINT(9) UNSIGNED NOT NULL AUTO_INCREMENT, 
 		template_id MEDIUMINT(9) UNSIGNED NOT NULL, 
 		title VARCHAR(128), 
-		active TINYINT(1) NOT NULL DEFAULT 1 ) ' . $wpdb->get_charset_collate() . ';';
+		active TINYINT(1) NOT NULL DEFAULT 1,
+		PRIMARY KEY ( id ) ) ' . $collate . ';';
 
 	$table_meta_query = 'CREATE TABLE ' . BOOKACTI_TABLE_META . ' ( 
-		id MEDIUMINT(9) UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY, 
+		id MEDIUMINT(9) UNSIGNED NOT NULL AUTO_INCREMENT, 
 		object_type VARCHAR(128), 
 		object_id MEDIUMINT(9) UNSIGNED, 
 		meta_key VARCHAR(255), 
-		meta_value LONGTEXT ) ' . $wpdb->get_charset_collate() . ';';
+		meta_value LONGTEXT,
+		PRIMARY KEY ( id ) ) ' . $collate . ';';
 
 	$table_permissions_query = 'CREATE TABLE ' . BOOKACTI_TABLE_PERMISSIONS . ' ( 
-		id MEDIUMINT(9) UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY, 
+		id MEDIUMINT(9) UNSIGNED NOT NULL AUTO_INCREMENT, 
 		object_type VARCHAR(128), 
 		object_id MEDIUMINT(9) UNSIGNED, 
-		user_id MEDIUMINT(9) UNSIGNED ) ' . $wpdb->get_charset_collate() . ';';
+		user_id MEDIUMINT(9) UNSIGNED,
+		PRIMARY KEY ( id ) ) ' . $collate . ';';
 
 	$table_templates_activities_query = 'CREATE TABLE ' . BOOKACTI_TABLE_TEMP_ACTI . ' ( 
-		id MEDIUMINT(9) UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY, 
+		id MEDIUMINT(9) UNSIGNED NOT NULL AUTO_INCREMENT, 
 		template_id MEDIUMINT(9) UNSIGNED, 
-		activity_id MEDIUMINT(9) UNSIGNED ) ' . $wpdb->get_charset_collate() . ';';
+		activity_id MEDIUMINT(9) UNSIGNED,
+		PRIMARY KEY ( id ) ) ' . $collate . ';';
 
 	$table_exceptions_query = 'CREATE TABLE ' . BOOKACTI_TABLE_EXCEPTIONS . ' ( 
-		id MEDIUMINT(9) UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY, 
+		id MEDIUMINT(9) UNSIGNED NOT NULL AUTO_INCREMENT, 
 		event_id MEDIUMINT(9) UNSIGNED NOT NULL, 
 		exception_type VARCHAR(10) NOT NULL DEFAULT "date",
-		exception_value VARCHAR(10) ) ' . $wpdb->get_charset_collate() . ';';
+		exception_value VARCHAR(10),
+		PRIMARY KEY ( id ) ) ' . $collate . ';';
 
 	// user_id can accept hashes of 32 chars, that is why it is a VARCHAR(32)
 	$table_bookings_query = 'CREATE TABLE ' . BOOKACTI_TABLE_BOOKINGS . ' ( 
-		id MEDIUMINT(9) UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY, 
+		id MEDIUMINT(9) UNSIGNED NOT NULL AUTO_INCREMENT, 
 		user_id VARCHAR(32), 
 		order_id MEDIUMINT(9) UNSIGNED, 
 		group_id MEDIUMINT(9) UNSIGNED, 
@@ -99,16 +113,18 @@ function bookacti_create_tables() {
 		creation_date DATETIME, 
 		expiration_date DATETIME, 
 		quantity MEDIUMINT(9) UNSIGNED NOT NULL DEFAULT 1, 
-		active TINYINT(1) UNSIGNED NOT NULL DEFAULT 1 ) ' . $wpdb->get_charset_collate() . ';';
+		active TINYINT(1) UNSIGNED NOT NULL DEFAULT 1,
+		PRIMARY KEY ( id ) ) ' . $collate . ';';
 
 	$table_booking_groups_query = 'CREATE TABLE ' . BOOKACTI_TABLE_BOOKING_GROUPS . ' ( 
-		id MEDIUMINT(9) UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY, 
+		id MEDIUMINT(9) UNSIGNED NOT NULL AUTO_INCREMENT, 
 		event_group_id MEDIUMINT(9) UNSIGNED, 
 		user_id VARCHAR(32), 
 		order_id MEDIUMINT(9) UNSIGNED, 
 		state VARCHAR(32) NOT NULL DEFAULT "booked",
 		payment_status VARCHAR(32) NOT NULL DEFAULT "none", 
-		active TINYINT(1) UNSIGNED NOT NULL DEFAULT 1 ) ' . $wpdb->get_charset_collate() . ';';
+		active TINYINT(1) UNSIGNED NOT NULL DEFAULT 1,
+		PRIMARY KEY ( id ) ) ' . $collate . ';';
 
 	// Execute the queries
 	if( ! function_exists( 'dbDelta' ) ) {

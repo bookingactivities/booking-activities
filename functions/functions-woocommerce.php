@@ -8,7 +8,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	 * Insert or update a booking in cart
 	 * 
 	 * @since 1.1.0 (replace bookacti_insert_booking_in_cart)
-	 * @version 1.3.0
+	 * @version 1.4.0
 	 * @param int $user_id
 	 * @param int $event_id
 	 * @param string $event_start
@@ -21,13 +21,14 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 		$return_array = array( 'status' => 'failed' );
 
-		//Check if the booking already exists 
-		$booking_id = bookacti_booking_exists( $user_id, $event_id, $event_start, $event_end, 'in_cart', $booking_group_id );
+		// Check if the booking already exists 
+		$booking_ids = bookacti_booking_exists( $user_id, $event_id, $event_start, $event_end, 'in_cart', $booking_group_id );
 
 		// if booking already exist in cart, just update its quantity and expiration date
-		if( $booking_id ) {
+		if( $booking_ids ) {
 
 			// Get booking and add new quantity to old one
+			$booking_id		= $booking_ids[ 0 ];
 			$booking		= bookacti_get_booking_by_id( $booking_id );
 			$new_quantity	= intval( $booking->quantity ) + intval( $quantity );
 
@@ -64,7 +65,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	 * Insert a booking group in cart
 	 * 
 	 * @since 1.1.0
-	 * @version 1.3.0
+	 * @version 1.4.0
 	 * @param int $user_id
 	 * @param int $event_group_id
 	 * @param int $quantity
@@ -75,12 +76,13 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		$return_array = array( 'status' => 'failed' );
 
 		//Check if the booking already exists 
-		$booking_group_id	= bookacti_booking_group_exists( $user_id, $event_group_id, 'in_cart' );
+		$booking_group_ids = bookacti_booking_group_exists( $user_id, $event_group_id, 'in_cart' );
 
 		// if booking group already exist in cart, just update its bookings quantity and expiration date
-		if( $booking_group_id ) {
+		if( $booking_group_ids ) {
 
 			// Update quantity of each bookings
+			$booking_group_id = $booking_group_ids[ 0 ];
 			$group_updated = bookacti_controller_update_booking_group_quantity( $booking_group_id, $quantity, true );
 
 			// If each event has been updated return $booking_group_id
@@ -115,9 +117,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	/**
 	 * Update quantity, control the results ans display feedback accordingly
 	 * 
-	 * @since 1.0.0
-	 * @version 1.3.0
-	 * 
+	 * @version 1.4.0
 	 * @global woocommerce $woocommerce
 	 * @param int $booking_id
 	 * @param int $new_quantity
@@ -126,6 +126,8 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	 */
 	function bookacti_controller_update_booking_quantity( $booking_id, $new_quantity, $context = 'frontend' ) {
 		global $woocommerce;
+		
+		$response = array( 'status' => '' );
 		
 		// Get cart data and the expiration date
 		if( $context === 'frontend' ) {
@@ -142,8 +144,80 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 				$new_expiration_date = date( 'c', strtotime( '+' . $timeout . ' minutes' ) );
 			}
 		}
+		
+		// Check booking availability before updating quantity
+		$booking		= bookacti_get_booking_by_id( $booking_id );
+		$old_quantity	= intval( $booking->quantity );
+		$availability	= intval( bookacti_get_event_availability( $booking->event_id, $booking->event_start, $booking->event_end ) );
 
-		$response = bookacti_update_booking_quantity( $booking_id, $new_quantity, $new_expiration_date, $context );
+		// If the updated booking is active, you must count the quantity already booked by this user in the total quantity available for him
+		if( $booking->active ) {
+			$new_availability = $availability + $old_quantity - $new_quantity;
+			$availability += $old_quantity;
+		} else {
+			$new_availability = $availability - $new_quantity;
+		}
+		
+		if( intval( $new_availability ) < 0 ) {
+			$response[ 'status' ] = 'failed';
+			if( $availability > 0 ) { $response[ 'error' ] = 'qty_sup_to_avail'; } 
+			else { $response[ 'error' ] = 'no_availability'; }
+		}
+		
+		// Check if the booking number is superior or equal to min quantity
+		// Check only single events (group of events are checked in bookacti_controller_update_booking_group_quantity)
+		if( $response[ 'status' ] !== 'failed' && $context === 'frontend' && $new_quantity !== 0 && ! $booking->group_id ) {
+			
+			$event			= bookacti_get_event_by_id( $booking->event_id );
+			$title			= apply_filters( 'bookacti_translate_text', $event->title );
+			$activity_data	= bookacti_get_metadata( 'activity', $event->activity_id );
+			$min_quantity	= isset( $activity_data[ 'min_bookings_per_user' ] ) ? intval( $activity_data[ 'min_bookings_per_user' ] ) : 0;
+			$max_quantity	= isset( $activity_data[ 'max_bookings_per_user' ] ) ? intval( $activity_data[ 'max_bookings_per_user' ] ) : 0;
+			$max_users		= isset( $activity_data[ 'max_users_per_event' ] ) ? intval( $activity_data[ 'max_users_per_event' ] ) : 0;
+			
+			$quantity_already_booked	= 0;
+			$number_of_users			= 0;
+			$current_quantity			= 0;
+			
+			if( $min_quantity || $max_quantity || $max_users ) {
+				// Check if the user has already booked this event
+				$filters = bookacti_format_booking_filters( array(
+					'event_id'				=> $booking->event_id,
+					'event_start'			=> $booking->event_start,
+					'event_end'				=> $booking->event_end,
+					'user_id'				=> $booking->user_id,
+					'active'				=> 1,
+					'not_in__booking_id'	=> array( $booking->id )
+				) );
+				$quantity_already_booked = bookacti_get_number_of_bookings( $filters );
+				
+				// Check if the event has already been booked by other users
+				$bookings_made_by_other_users = bookacti_get_number_of_bookings_per_user_by_event( $booking->event_id, $booking->event_start, $booking->event_end );
+				$number_of_users	= count( $bookings_made_by_other_users );
+				$current_quantity	= isset( $bookings_made_by_other_users[ $booking->user_id ] ) ? $bookings_made_by_other_users[ $booking->user_id ] : 0;
+			}
+			
+			if( $min_quantity !== 0 && ( $new_quantity + $quantity_already_booked ) < $min_quantity ) { 
+				$response[ 'status' ] = 'failed';
+				$response[ 'error' ] = 'qty_inf_to_min';
+			}
+			if( $max_quantity !== 0 && $new_quantity > ( $max_quantity - $quantity_already_booked ) ) { 
+				$response[ 'status' ] = 'failed';
+				$response[ 'error' ] = 'qty_sup_to_max';
+			}
+			if( $max_users !== 0 && $current_quantity === 0 && $number_of_users >= $max_users ) { 
+				$response[ 'status' ] = 'failed';
+				$response[ 'error' ] = 'users_sup_to_max';
+			}
+		}
+		
+		// Update booking quantity
+		if( $response[ 'status' ] !== 'failed' ) {		
+			$response = bookacti_update_booking_quantity( $booking_id, $new_quantity, $new_expiration_date, $context );
+		}
+		
+		// Add the availability to the returned result
+		$response[ 'availability' ] = $availability;
 		
 		// Update cart expiration date if needed
 		if( $context === 'frontend' ) {
@@ -155,26 +229,53 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 				bookacti_reset_cart_expiration_dates( $new_expiration_date );
 				
 			} else if( $response[ 'status' ] === 'failed' ) {
-
+				$message = '';
 				if( $response[ 'error' ] === 'qty_sup_to_avail' ) {
-					wc_add_notice( 
-								/* translators: %1$s is a variable number of bookings. This sentence is followed by two others : 'but only %1$s is available on this time slot.' and 'Please choose another event or decrease the quantity.' */
+					$message = /* translators: %1$s is a variable number of bookings. This sentence is followed by two others : 'but only %1$s is available on this time slot.' and 'Please choose another event or decrease the quantity.' */
 								sprintf( _n( 'You want to add %1$s booking to your cart', 'You want to add %1$s bookings to your cart', $new_quantity, BOOKACTI_PLUGIN_NAME ), $new_quantity )
 								/* translators: %1$s is a variable number of bookings. This sentence is preceded by : 'You want to add %1$s booking to your cart' and followed by 'Please choose another event or decrease the quantity.' */
 						. ' ' . sprintf( _n( 'but only %1$s is available on this time slot.', 'but only %1$s are available on this time slot. ', $response[ 'availability' ], BOOKACTI_PLUGIN_NAME ), $response[ 'availability' ] )
 								/* translators: This sentence is preceded by two others : 'You want to add %1$s booking to your cart' and 'but only %1$s is available on this time slot.' */
-						. ' ' . __( 'Please choose another event or decrease the quantity.', BOOKACTI_PLUGIN_NAME )
-					, 'error' );
+						. ' ' . __( 'Please choose another event or decrease the quantity.', BOOKACTI_PLUGIN_NAME );
+					
+				} else if( $response[ 'error' ] === 'qty_inf_to_min' ) {
+					 /* translators: %1$s is a variable number of bookings, %2$s is the event title. This sentence is followed by two others : 'but the minimum number of reservations required per user is %1$s.' and 'Please choose another event or increase the quantity.' */
+					$message = sprintf( _n( 'You want to make %1$s booking of "%2$s"', 'You want to make %1$s bookings of "%2$s"', $new_quantity, BOOKACTI_PLUGIN_NAME ), $new_quantity, $title );
+					if( $quantity_already_booked ) {
+						/* translators: %1$s and %2$s are variable numbers of bookings, always >= 1. This sentence is preceded by : 'You want to make %1$s booking of "%2$s"' and followed by 'Please choose another event or increase the quantity.' */
+						$message .= ' ' . sprintf( _n( 'and you have already booked %1$s place, but the minimum number of reservations required per user is %2$s.', 'and you have already booked %1$s places, but the minimum number of reservations required per user is %2$s.', $quantity_already_booked, BOOKACTI_PLUGIN_NAME ), $quantity_already_booked, $min_quantity );
+					} else {
+						/* translators: %1$s is a variable number of bookings. This sentence is preceded by : 'You want to make %1$s booking of "%2$s"' and followed by 'Please choose another event or increase the quantity.' */
+						$message .= ' ' . sprintf( __( 'but the minimum number of reservations required per user is %1$s.', BOOKACTI_PLUGIN_NAME ), $min_quantity );
+					}
+					/* translators: %1$s is a variable quantity. This sentence is preceded by two others : 'You want to make %1$s booking of "%2$s"' and 'but the minimum number of reservations required per user is %1$s.' */
+					$message .=	' ' . sprintf( __( 'Please choose another event or increase the quantity to %1$s.', BOOKACTI_PLUGIN_NAME ), $min_quantity - $current_quantity );
+				
+				} else if( $response[ 'error' ] === 'qty_sup_to_max' ) {
+					/* translators: %1$s is a variable number of bookings, %2$s is the event title. This sentence is followed by two others : 'but the maximum number of reservations allowed per user is %1$s.' and 'Please choose another event or decrease the quantity.' */
+					$message = sprintf( _n( 'You want to make %1$s booking of "%2$s"', 'You want to make %1$s bookings of "%2$s"', $new_quantity, BOOKACTI_PLUGIN_NAME ), $new_quantity, $title );
+					if( $quantity_already_booked ) {
+						/* translators: %1$s and %2$s are variable numbers of bookings, always >= 1. This sentence is preceded by : 'You want to make %1$s booking of "%2$s"' and followed by 'Please choose another event or decrease the quantity.' */
+						$message .= ' ' . sprintf( _n( 'but you have already booked %1$s place and the maximum number of reservations allowed per user is %2$s.', 'but you have already booked %1$s places and the maximum number of reservations allowed per user is %2$s.', $quantity_already_booked, BOOKACTI_PLUGIN_NAME ), $quantity_already_booked, $max_quantity );
+					} else {
+						/* translators: %1$s is a variable number of bookings. This sentence is preceded by : 'You want to make %1$s booking of "%2$s"' and followed by 'Please choose another event or decrease the quantity.' */
+						$message .= ' ' . sprintf( __( 'but the maximum number of reservations allowed per user is %1$s.', BOOKACTI_PLUGIN_NAME ), $max_quantity );
+					}
+					/* translators: %1$s is a variable quantity. This sentence is preceded by two others : 'You want to make %1$s booking of "%2$s"' and 'but the maximum number of reservations allowed per user is %1$s.' */
+					$message .= $max_quantity - $current_quantity > 0 ? ' ' . sprintf( __( 'Please choose another event or decrease the quantity to %1$s.', BOOKACTI_PLUGIN_NAME ), $max_quantity - $current_quantity ) : ' ' . __( 'Please choose another event', BOOKACTI_PLUGIN_NAME );
+				} else if( $response[ 'error' ] === 'users_sup_to_max' ) {
+					$message = __( 'This event has reached the maximum number of users allowed. Bookings from other users are no longer accepted. Please choose another event.', BOOKACTI_PLUGIN_NAME );
 
 				} else if( $response[ 'error' ] === 'no_availability' ) {
 					// If the event is no longer available, notify the user
-					wc_add_notice( __( 'This event is no longer available. Please choose another event.', BOOKACTI_PLUGIN_NAME ), 'error' );
+					$message = __( 'This event is no longer available. Please choose another event.', BOOKACTI_PLUGIN_NAME );
 
 				} else if( $response[ 'error' ] === 'failed' ) {
-
-					wc_add_notice( __( 'An error occurs while trying to change a product quantity. Please try again later.', BOOKACTI_PLUGIN_NAME ), 'error' );
-
+					// If an unknown error has occured during the database operation
+					$message = __( 'An error occurs while trying to change a product quantity. Please try again later.', BOOKACTI_PLUGIN_NAME );
 				}
+				
+				if( $message && ! wc_has_notice( $message, 'error' ) ) { wc_add_notice( $message, 'error' ); }
 			}
 		}
 
@@ -186,8 +287,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	 * Update quantity, control the results ans display feedback accordingly
 	 * 
 	 * @since 1.1.0
-	 * @version 1.3.0
-	 * 
+	 * @version 1.4.0
 	 * @param int $booking_group_id
 	 * @param int $quantity
 	 * @param boolean $add_quantity
@@ -200,14 +300,15 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		$quantity		= intval( $quantity );
 		$add_quantity	= $add_quantity ? true : false;
 		
-		$response = array( 'status' => 'success' );
+		$response	= array( 'status' => 'success' );
+		$message	= '';
 
 		// Get bookings of the group
 		$bookings			= bookacti_get_bookings_by_booking_group_id( $booking_group_id );
 
 		// Get group availability
 		$group				= bookacti_get_booking_group_by_id( $booking_group_id );
-		$group_availability	= bookacti_get_group_of_events_availability( $group->event_group_id, array( 'in_cart' ) );
+		$group_availability	= bookacti_get_group_of_events_availability( $group->event_group_id );
 
 		// Make sure all events have enough places available
 		// Look for the most booked event of the booking group
@@ -229,18 +330,88 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			
 			if( $context === 'frontend' ) {
 				if( $response[ 'availability' ] > 0 ) {
-					wc_add_notice( 
-								/* translators: %1$s is a variable number of bookings. This sentence is followed by two others : 'but only %1$s is available on this time slot.' and 'Please choose another event or decrease the quantity.' */
+					$message =	/* translators: %1$s is a variable number of bookings. This sentence is followed by two others : 'but only %1$s is available on this time slot.' and 'Please choose another event or decrease the quantity.' */
 								sprintf( _n( 'You want to add %1$s booking to your cart', 'You want to add %1$s bookings to your cart', $quantity, BOOKACTI_PLUGIN_NAME ), $quantity )
 								/* translators: %1$s is a variable number of bookings. This sentence is preceded by : 'You want to add %1$s booking to your cart' and followed by 'Please choose another event or decrease the quantity.' */
 						. ' ' . sprintf( _n( 'but only %1$s is available on this time slot.', 'but only %1$s are available on this time slot. ', $response[ 'availability' ], BOOKACTI_PLUGIN_NAME ), $response[ 'availability' ] )
 								/* translators: This sentence is preceded by two others : 'You want to add %1$s booking to your cart' and 'but only %1$s is available on this time slot.' */
-						. ' ' . __( 'Please choose another event or decrease the quantity.', BOOKACTI_PLUGIN_NAME )
-					, 'error' );
+						. ' ' . __( 'Please choose another event or decrease the quantity.', BOOKACTI_PLUGIN_NAME );
 				} else {
-					wc_add_notice( __( 'This event is no longer available. Please choose another event.', BOOKACTI_PLUGIN_NAME ), 'error' );
+					$message = __( 'This event is no longer available. Please choose another event.', BOOKACTI_PLUGIN_NAME );
 				}
+				if( $message && ! wc_has_notice( $message, 'error' ) ) { wc_add_notice( $message, 'error' ); }
 			}
+		}
+		
+		// Check if min quantity <= booking number <= max quantity
+		if( $context === 'frontend' && $booking_max_new_quantity !== 0 ) {
+			$event_group	= bookacti_get_group_of_events( $group->event_group_id );
+			$title			= apply_filters( 'bookacti_translate_text', $event_group->title );
+			$category_data	= bookacti_get_metadata( 'group_category', $event_group->category_id );
+			$min_quantity	= isset( $category_data[ 'min_bookings_per_user' ] ) ? intval( $category_data[ 'min_bookings_per_user' ] ) : 0;
+			$max_quantity	= isset( $category_data[ 'max_bookings_per_user' ] ) ? intval( $category_data[ 'max_bookings_per_user' ] ) : 0;
+			$max_users		= isset( $category_data[ 'max_users_per_event' ] ) ? intval( $category_data[ 'max_users_per_event' ] ) : 0;
+			
+			$quantity_already_booked	= 0;
+			$number_of_users			= 0;
+			$current_quantity			= 0;
+			
+			if( $min_quantity || $max_quantity || $max_users ) {
+				// Check if the user has already booked this event
+				$filters = bookacti_format_booking_filters( array(
+					'event_group_id'			=> $group->event_group_id,
+					'user_id'					=> $group->user_id,
+					'active'					=> 1,
+					'not_in__booking_group_id'	=> array( $group->id ),
+					'group_by'					=> 'booking_group'
+				) );
+				$quantity_already_booked = bookacti_get_number_of_bookings( $filters );
+				
+				// Check if the event has already been booked by other users
+				$bookings_made_by_other_users = bookacti_get_number_of_bookings_per_user_by_group_of_events( $group->event_group_id );
+				$number_of_users	= count( $bookings_made_by_other_users );
+				$current_quantity	= isset( $bookings_made_by_other_users[ $booking->user_id ] ) ? $bookings_made_by_other_users[ $booking->user_id ] : 0;
+			}
+			
+			if( $min_quantity !== 0 && ( $booking_max_new_quantity + $quantity_already_booked ) < $min_quantity ) {
+				$response[ 'status' ] = 'failed';
+				$response[ 'error' ] = 'qty_inf_to_min';
+				/* translators: %1$s is a variable number of bookings, %2$s is the event title. This sentence is followed by two others : 'but the minimum number of reservations required per user is %1$s.' and 'Please choose another event or increase the quantity.' */
+				$message = sprintf( _n( 'You want to make %1$s booking of "%2$s"', 'You want to make %1$s bookings of "%2$s"', $booking_max_new_quantity, BOOKACTI_PLUGIN_NAME ), $booking_max_new_quantity, $title );
+				if( $quantity_already_booked ) {
+					/* translators: %1$s and %2$s are variable numbers of bookings, always >= 1. This sentence is preceded by : 'You want to make %1$s booking of "%2$s"' and followed by 'Please choose another event or increase the quantity.' */
+					$message .= ' ' . sprintf( _n( 'and you have already booked %1$s place, but the minimum number of reservations required per user is %2$s.', 'and you have already booked %1$s places, but the minimum number of reservations required per user is %2$s.', $quantity_already_booked, BOOKACTI_PLUGIN_NAME ), $quantity_already_booked, $min_quantity );
+				} else {
+					/* translators: %1$s is a variable number of bookings. This sentence is preceded by : 'You want to make %1$s booking of "%2$s"' and followed by 'Please choose another event or increase the quantity.' */
+					$message .= ' ' . sprintf( __( 'but the minimum number of reservations required per user is %1$s.', BOOKACTI_PLUGIN_NAME ), $min_quantity );
+				}
+				/* translators: %1$s is a variable quantity. This sentence is preceded by two others : 'You want to make %1$s booking of "%2$s"' and 'but the minimum number of reservations required per user is %1$s.' */
+				$message .= ' ' . sprintf( __( 'Please choose another event or increase the quantity to %1$s.', BOOKACTI_PLUGIN_NAME ), $min_quantity - $quantity_already_booked );
+			}
+			
+			if( $max_quantity !== 0 && $booking_max_new_quantity > ( $max_quantity - $quantity_already_booked ) ) {
+				$response[ 'status' ] = 'failed';
+				$response[ 'error' ] = 'qty_sup_to_max';
+				/* translators: %1$s is a variable number of bookings, %2$s is the event title. This sentence is followed by two others : 'but the maximum number of reservations allowed per user is %1$s.' and 'Please choose another event or decrease the quantity.' */
+				$message = sprintf( _n( 'You want to make %1$s booking of "%2$s"', 'You want to make %1$s bookings of "%2$s"', $booking_max_new_quantity, BOOKACTI_PLUGIN_NAME ), $booking_max_new_quantity, $title );
+				if( $quantity_already_booked ) {
+					/* translators: %1$s and %2$s are variable numbers of bookings, always >= 1. This sentence is preceded by : 'You want to make %1$s booking of "%2$s"' and followed by 'Please choose another event or decrease the quantity.' */
+					$message .= ' ' . sprintf( _n( 'but you have already booked %1$s place and the maximum number of reservations allowed per user is %2$s.', 'but you have already booked %1$s places and the maximum number of reservations allowed per user is %2$s.', $quantity_already_booked, BOOKACTI_PLUGIN_NAME ), $quantity_already_booked, $max_quantity );
+				} else {
+					/* translators: %1$s is a variable number of bookings. This sentence is preceded by : 'You want to make %1$s booking of "%2$s"' and followed by 'Please choose another event or decrease the quantity.' */
+					$message .= ' ' . sprintf( __( 'but the maximum number of reservations allowed per user is %1$s.', BOOKACTI_PLUGIN_NAME ), $max_quantity );
+				}
+				/* translators: %1$s is a variable quantity. This sentence is preceded by two others : 'You want to make %1$s booking of "%2$s"' and 'but the maximum number of reservations allowed per user is %1$s.' */
+				$message .= $max_quantity - $quantity_already_booked > 0 ? ' ' . sprintf( __( 'Please choose another event or decrease the quantity to %1$s.', BOOKACTI_PLUGIN_NAME ), $max_quantity - $quantity_already_booked ) : ' ' . __( 'Please choose another event', BOOKACTI_PLUGIN_NAME );
+			}
+			
+			if( $max_users !== 0 && $current_quantity === 0 && $number_of_users >= $max_users ) { 
+				$response[ 'status' ] = 'failed';
+				$response[ 'error' ] = 'users_sup_to_max';
+				$message = __( 'This event has reached the maximum number of users allowed. Bookings from other users are no longer accepted. Please choose another event.', BOOKACTI_PLUGIN_NAME );
+			}
+			
+			if( $message && ! wc_has_notice( $message, 'error' ) ) { wc_add_notice( $message, 'error' ); }
 		}
 		
 		if( $response[ 'status' ] === 'success' ) {
@@ -614,6 +785,163 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		return apply_filters( 'bookacti_formatted_time_before_expiration', $remaining_time, $expiration_date );
 	}
 	
+	
+	/**
+	 * Change cart item quantity to make them respect the booking restrictions (min booking per user, max...)
+	 * 
+	 * @since 1.4.0
+	 * @global woocommerce $woocommerce
+	 * @param int $user_id
+	 * @return void|int
+	 */
+	function bookacti_update_cart_item_quantity_according_to_booking_restrictions( $user_id = 0 ) {
+		
+		global $woocommerce;
+		if( ! $woocommerce ) { return; }
+		if( ! $woocommerce->cart ) { return; }
+		
+		$cart_contents = $woocommerce->cart->get_cart();
+
+		if( ! $cart_contents ) { return; }
+		
+		$updated_items = 0;
+		$cart_keys = array_keys( $cart_contents );
+		foreach ( $cart_keys as $key ) {
+			if( isset( $cart_contents[$key]['_bookacti_options'] ) ) {
+				
+				$booking_type	= '';
+				$quantity		= $cart_contents[$key]['quantity'];
+				$allowed_roles	= array();
+				$message		= '';
+				
+				// Single event
+				if( isset( $cart_contents[$key]['_bookacti_options']['bookacti_booking_id'] ) && $cart_contents[$key]['_bookacti_options']['bookacti_booking_id'] ) {
+					$booking_type	= 'single';
+					$booking_id		= $cart_contents[$key]['_bookacti_options']['bookacti_booking_id'];
+					$booking		= bookacti_get_booking_by_id( $booking_id );
+					$event			= bookacti_get_event_by_id( $booking->event_id );
+					$title			= apply_filters( 'bookacti_translate_text', $event->title );
+					$activity_data	= bookacti_get_metadata( 'activity', $event->activity_id );
+					$min_quantity	= isset( $activity_data[ 'min_bookings_per_user' ] ) ? intval( $activity_data[ 'min_bookings_per_user' ] ) : 0;
+					$max_quantity	= isset( $activity_data[ 'max_bookings_per_user' ] ) ? intval( $activity_data[ 'max_bookings_per_user' ] ) : 0;
+
+					// Check if the user has already booked this event
+					$quantity_already_booked = 0;
+					if( $min_quantity || $max_quantity ) {
+						$filters = bookacti_format_booking_filters( array(
+							'event_id'				=> $booking->event_id,
+							'event_start'			=> $booking->event_start,
+							'event_end'				=> $booking->event_end,
+							'user_id'				=> $booking->user_id,
+							'active'				=> 1,
+							'not_in__booking_id'	=> array( $booking->id )
+						) );
+						$quantity_already_booked = bookacti_get_number_of_bookings( $filters );
+					}
+					
+					// Check allowed roles
+					if( isset( $activity_data[ 'allowed_roles' ] ) && $activity_data[ 'allowed_roles' ] ) {
+						$allowed_roles = $activity_data[ 'allowed_roles' ];
+					}
+					
+				// Group of events
+				} else if( isset( $cart_contents[$key]['_bookacti_options']['bookacti_booking_group_id'] ) && $cart_contents[$key]['_bookacti_options']['bookacti_booking_group_id'] ) {
+					$booking_type		= 'group';
+					$booking_group_id	= $cart_contents[$key]['_bookacti_options']['bookacti_booking_group_id'];
+					$booking_group		= bookacti_get_booking_group_by_id( $booking_group_id );
+					$event_group		= bookacti_get_group_of_events( $booking_group->event_group_id );
+					$title				= apply_filters( 'bookacti_translate_text', $event_group->title );
+					$category_data		= bookacti_get_metadata( 'group_category', $event_group->category_id );
+					$min_quantity		= isset( $category_data[ 'min_bookings_per_user' ] ) ? intval( $category_data[ 'min_bookings_per_user' ] ) : 0;
+					$max_quantity		= isset( $category_data[ 'max_bookings_per_user' ] ) ? intval( $category_data[ 'max_bookings_per_user' ] ) : 0;
+			
+					// Check if the user has already booked this event
+					$quantity_already_booked = 0;
+					if( $min_quantity || $max_quantity ) {
+						$filters = bookacti_format_booking_filters( array(
+							'event_group_id'			=> $booking_group->event_group_id,
+							'user_id'					=> $booking_group->user_id,
+							'active'					=> 1,
+							'not_in__booking_group_id'	=> array( $booking_group->id ),
+							'group_by'					=> 'booking_group'
+						) );
+						$quantity_already_booked = bookacti_get_number_of_bookings( $filters );
+					}
+					
+					// Check allowed roles
+					if( isset( $category_data[ 'allowed_roles' ] ) && $category_data[ 'allowed_roles' ] ) {
+						$allowed_roles = $category_data[ 'allowed_roles' ];
+					}
+				}
+				
+				// Check if the quantity has to be changed
+				$restricted_quantity = false;
+				
+				if( $min_quantity !== 0 && ( $quantity + $quantity_already_booked ) < $min_quantity ) { 
+					$restricted_quantity = $min_quantity - $quantity_already_booked;
+					
+					/* translators: %1$s is a variable number of bookings, %2$s is the event title. This sentence is followed by two others : 'but the minimum number of reservations required per user is %1$s.' and 'The quantity has been automatically increased to %1$s.' */
+					$message = sprintf( _n( 'You want to make %1$s booking of "%2$s"', 'You want to make %1$s bookings of "%2$s"', $quantity, BOOKACTI_PLUGIN_NAME ), $quantity, $title );
+					if( $quantity_already_booked ) {
+						/* translators: %1$s and %2$s are variable numbers of bookings, always >= 1. This sentence is preceded by : 'You want to make %1$s bookings of "%2$s"' and followed by 'The quantity has been automatically increased to %1$s.' */
+						$message .= ' ' . sprintf( _n( 'and you have already booked %1$s place, but the minimum number of reservations required per user is %2$s.', 'and you have already booked %1$s places, but the minimum number of reservations required per user is %2$s.', $quantity_already_booked, BOOKACTI_PLUGIN_NAME ), $quantity_already_booked, $min_quantity );
+					} else {
+						/* translators: %1$s is a variable number of bookings. This sentence is preceded by : 'You want to make %1$s bookings of "%2$s"' and followed by 'The quantity has been automatically increased to %1$s.' */
+						$message .= ' ' . sprintf( __( 'but the minimum number of reservations required per user is %1$s.', BOOKACTI_PLUGIN_NAME ), $min_quantity );
+					}
+					/* translators: %1$s is a variable number of bookings. This sentence is preceded by two others : 'You want to make %1$s bookings of "%2$s"' and 'but the minimum number of reservations required per user is %1$s.' */
+					$message .= ' ' . sprintf( __( 'The quantity has been automatically increased to %1$s.', BOOKACTI_PLUGIN_NAME ), $restricted_quantity );
+				}
+				
+				if( $max_quantity !== 0 && $quantity > ( $max_quantity - $quantity_already_booked ) ) { 
+					$restricted_quantity = $max_quantity - $quantity_already_booked;
+					
+					/* translators: %1$s is a variable number of bookings, %2$s is the event title. This sentence is followed by two others : 'but the maximum number of reservations allowed per user is %1$s.' and 'The quantity has been automatically decreased to %1$s.' */
+					$message = sprintf( _n( 'You want to make %1$s booking of "%2$s"', 'You want to make %1$s bookings of "%2$s"', $quantity, BOOKACTI_PLUGIN_NAME ), $quantity, $title );
+					if( $quantity_already_booked ) {
+						/* translators: %1$s and %2$s are variable numbers of bookings, always >= 1. This sentence is preceded by : 'You want to make %1$s bookings of "%2$s"' and followed by 'The quantity has been automatically decreased to %1$s.' */
+						$message .= ' ' . sprintf( _n( 'but you have already booked %1$s place and the maximum number of reservations allowed per user is %2$s.', 'but you have already booked %1$s places and the maximum number of reservations allowed per user is %2$s.', $quantity_already_booked, BOOKACTI_PLUGIN_NAME ), $quantity_already_booked, $max_quantity );
+					} else {
+						/* translators: %1$s is a variable number of bookings. This sentence is preceded by : 'You want to make %1$s bookings of "%2$s"' and followed by 'The quantity has been automatically decreased to %1$s.' */
+						$message .= ' ' . sprintf( __( 'but the maximum number of reservations allowed per user is %1$s.', BOOKACTI_PLUGIN_NAME ), $max_quantity );
+					}
+					/* translators: %1$s is a variable quantity of bookings. This sentence is preceded by two others : 'You want to make %1$s bookings of "%2$s"' and 'but the maximum number of reservations allowed per user is %1$s.' */
+					$message .= ' ' . sprintf( __( 'The quantity has been automatically decreased to %1$s.', BOOKACTI_PLUGIN_NAME ), $restricted_quantity );
+				}
+				
+				// Check if the product has to be removed
+				if( $allowed_roles && ! apply_filters( 'bookacti_bypass_roles_check', false ) ) {
+					$current_user	= $user_id ? get_user_by( 'id', $user_id ) : wp_get_current_user();
+					$roles			= $current_user->roles;
+					$is_allowed		= array_intersect( $roles, $allowed_roles );
+					if( ! $is_allowed ) { 
+						$restricted_quantity = 0;
+						/* translators: %1$s is the event title. This sentence is followed by: 'This event has been automatically removed from your cart.' */
+						$message = ' ' . sprintf( __( 'The event "%1$s" is not available in your user category.', BOOKACTI_PLUGIN_NAME ), $title );
+						$message .= ' ' . __( 'This event has been automatically removed from your cart.', BOOKACTI_PLUGIN_NAME );
+					}
+				}
+				
+				// Change the quantity if necessary and notify the user
+				if( $restricted_quantity !== false ) {
+					$updated = $woocommerce->cart->set_quantity( $key, $restricted_quantity, true );
+					if( $updated ) {
+						if( $booking_type === 'single' ) {
+							bookacti_controller_update_booking_quantity( $booking_id, $restricted_quantity );
+						} else if( $booking_type === 'group' ) {
+							bookacti_controller_update_booking_group_quantity( $booking_group_id, $restricted_quantity );
+						}
+						if( $message && ! wc_has_notice( $message, 'error' ) ) { wc_add_notice( $message, 'error' ); }
+						++$updated_items;
+					}
+				}
+			}
+		}
+		
+		return $updated_items;
+	}
+
+
 
 
 // ORDERS

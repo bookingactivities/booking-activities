@@ -36,7 +36,12 @@ function bookacti_validate_template_data( $template_title, $template_start, $tem
 }
 
 
-// Format template managers
+/**
+ * Format template managers
+ * 
+ * @param array $template_managers
+ * @return array
+ */
 function bookacti_format_template_managers( $template_managers = array() ) {
 	
 	$template_managers = bookacti_ids_to_array( $template_managers );
@@ -63,7 +68,13 @@ function bookacti_format_template_managers( $template_managers = array() ) {
 }
 
 
-// Format template settings
+/**
+ * Format template settings
+ * 
+ * @version 1.4.0
+ * @param array $template_settings
+ * @return array
+ */
 function bookacti_format_template_settings( $template_settings ) {
 	
 	if( empty( $template_settings ) ) {
@@ -72,17 +83,19 @@ function bookacti_format_template_settings( $template_settings ) {
 	
 	// Default settings
 	$default_settings = apply_filters( 'bookacti_template_default_settings', array(
-		'minTime'				=> '08:00',
-		'maxTime'				=> '20:00',
-		'snapDuration'			=> '00:30'
+		'minTime'					=> '08:00',
+		'maxTime'					=> '20:00',
+		'snapDuration'				=> '00:30',
+		'availability_period_start'	=> -1,
+		'availability_period_end'	=> -1
 	) );
 	
 	$settings = array();
 		
 	// Check if all templates settings are filled
 	foreach( $default_settings as $setting_key => $setting_default_value ){
-		if( is_string( $template_settings[ $setting_key ] ) ){ $template_settings[ $setting_key ] = stripslashes( $template_settings[ $setting_key ] ); }
-		$settings[ $setting_key ] = ! empty( $template_settings[ $setting_key ] ) ? $template_settings[ $setting_key ] : $setting_default_value;
+		if( isset( $template_settings[ $setting_key ] ) && is_string( $template_settings[ $setting_key ] ) ){ $template_settings[ $setting_key ] = stripslashes( $template_settings[ $setting_key ] ); }
+		$settings[ $setting_key ] = isset( $template_settings[ $setting_key ] ) && $template_settings[ $setting_key ] !== null ? $template_settings[ $setting_key ] : $setting_default_value;
 	}
 
 	// Make sure minTime is before maxTime
@@ -99,7 +112,12 @@ function bookacti_format_template_settings( $template_settings ) {
 }
 
 
-// Format activity managers
+/**
+ * Format activity managers
+ * 
+ * @param array $activity_managers
+ * @return array
+ */
 function bookacti_format_activity_managers( $activity_managers = array() ) {
 	
 	$activity_managers = bookacti_ids_to_array( $activity_managers );
@@ -124,7 +142,13 @@ function bookacti_format_activity_managers( $activity_managers = array() ) {
 }
 
 
-// Format activity settings
+/**
+ * Format activity settings
+ * 
+ * @version 1.4.0
+ * @param array $activity_settings
+ * @return array
+ */
 function bookacti_format_activity_settings( $activity_settings ) {
 	
 	if( empty( $activity_settings ) ) {
@@ -136,20 +160,31 @@ function bookacti_format_activity_settings( $activity_settings ) {
 		'unit_name_singular'		=> '',
 		'unit_name_plural'			=> '',
 		'show_unit_in_availability'	=> 0,
-		'places_number'				=> 0
+		'places_number'				=> 0,
+		'min_bookings_per_user'		=> 0,
+		'max_bookings_per_user'		=> 0,
+		'max_users_per_event'		=> 0,
+		'booking_changes_deadline'	=> -1,
+		'allowed_roles'				=> array()
 	) );
 	
 	$settings = array();
 	foreach( $default_settings as $setting_key => $setting_default_value ){
-		if( is_string( $activity_settings[ $setting_key ] ) ){ $activity_settings[ $setting_key ] = stripslashes( $activity_settings[ $setting_key ] ); }
-		$settings[ $setting_key ] = ( $activity_settings[ $setting_key ] !== null ) ? $activity_settings[ $setting_key ] : $setting_default_value;
+		if( isset( $activity_settings[ $setting_key ] ) && is_string( $activity_settings[ $setting_key ] ) ){ $activity_settings[ $setting_key ] = stripslashes( $activity_settings[ $setting_key ] ); }
+		$settings[ $setting_key ] = isset( $activity_settings[ $setting_key ] ) && $activity_settings[ $setting_key ] !== null ? $activity_settings[ $setting_key ] : $setting_default_value;
 	}
 	
 	return apply_filters( 'bookacti_activity_settings', $settings );
 }
 
 
-// Format event settings
+/**
+ * Format event settings
+ * 
+ * @version 1.4.0
+ * @param array $event_settings
+ * @return array
+ */
 function bookacti_format_event_settings( $event_settings ) {
 	
 	if( empty( $event_settings ) ) {
@@ -161,8 +196,8 @@ function bookacti_format_event_settings( $event_settings ) {
 	
 	$settings = array();
 	foreach( $default_settings as $setting_key => $setting_default_value ){
-		if( is_string( $event_settings[ $setting_key ] ) ){ $event_settings[ $setting_key ] = stripslashes( $event_settings[ $setting_key ] ); }
-		$settings[ $setting_key ] = ( $event_settings[ $setting_key ] !== null ) ? $event_settings[ $setting_key ] : $setting_default_value;
+		if( isset( $event_settings[ $setting_key ] ) && is_string( $event_settings[ $setting_key ] ) ){ $event_settings[ $setting_key ] = stripslashes( $event_settings[ $setting_key ] ); }
+		$settings[ $setting_key ] = isset( $event_settings[ $setting_key ] ) && $event_settings[ $setting_key ] !== null ? $event_settings[ $setting_key ] : $setting_default_value;
 	}
 	
 	return apply_filters( 'bookacti_event_settings', $settings );
@@ -172,8 +207,7 @@ function bookacti_format_event_settings( $event_settings ) {
 /**
  * Make sure the availability is higher than the bookings already made
  * 
- * @version 1.1.4
- * 
+ * @version 1.4.0
  * @param int $event_id
  * @param int $event_availability
  * @param string $repeat_freq
@@ -182,30 +216,28 @@ function bookacti_format_event_settings( $event_settings ) {
  * @return array
  */
 function bookacti_validate_event( $event_id, $event_availability, $repeat_freq, $repeat_from, $repeat_to ) {
-    //Get info required
+    // Get info required
     $min_avail          = bookacti_get_min_availability( $event_id );
     $min_period         = bookacti_get_min_period( NULL, $event_id );
     $repeat_from_time   = strtotime( $repeat_from );
     $repeat_to_time     = strtotime( $repeat_to );
-    $max_from           = strtotime( $min_period['from'] );
-    $min_to             = strtotime( $min_period['to'] );
+    $max_from           = $min_period ? strtotime( $min_period[ 'from' ] ) : '';
+    $min_to             = $min_period ? strtotime( $min_period[ 'to' ] ) : '';
     
-    //Init var to check with worst case
+    // Init var to check with worst case
     $isAvailSupToBookings           = false;
     $isRepeatFromBeforeFirstBooked  = false;
     $isRepeatToAfterLastBooked      = false;
     	
-    //Make the tests
-    if( $min_avail !== null ) {
+    // Make the tests
+    if( $min_avail ) {
         if( intval( $event_availability ) >= intval( $min_avail ) ) {
             $isAvailSupToBookings = true;
         }
     }
-    if( $min_period !== null ) {
-        if( $min_period['is_bookings'] > 0 ) {
-            if( $repeat_from_time <= $max_from ){ $isRepeatFromBeforeFirstBooked = true; }
-            if( $repeat_to_time   >= $min_to )  { $isRepeatToAfterLastBooked = true; }
-        }
+    if( $min_period ) {
+		if( $repeat_from_time <= $max_from ){ $isRepeatFromBeforeFirstBooked = true; }
+		if( $repeat_to_time   >= $min_to )  { $isRepeatToAfterLastBooked = true; }
     }
     
     $return_array = array();
@@ -283,7 +315,7 @@ function bookacti_validate_group_of_events_data( $group_title, $category_id, $ca
  * Format group of events data or apply default value
  * 
  * @since 1.1.0
- * 
+ * @version 1.4.0
  * @param array $group_settings
  * @return array
  */
@@ -300,8 +332,8 @@ function bookacti_format_group_of_events_settings( $group_settings ) {
 		
 	// Check if all templates settings are filled
 	foreach( $default_settings as $setting_key => $setting_default_value ){
-		if( is_string( $group_settings[ $setting_key ] ) ){ $group_settings[ $setting_key ] = stripslashes( $group_settings[ $setting_key ] ); }
-		$settings[ $setting_key ] = ! empty( $group_settings[ $setting_key ] ) ? $group_settings[ $setting_key ] : $setting_default_value;
+		if( isset( $group_settings[ $setting_key ] ) && is_string( $group_settings[ $setting_key ] ) ){ $group_settings[ $setting_key ] = stripslashes( $group_settings[ $setting_key ] ); }
+		$settings[ $setting_key ] = isset( $group_settings[ $setting_key ] ) && $group_settings[ $setting_key ] !== null ? $group_settings[ $setting_key ] : $setting_default_value;
 	}
 	
 	return apply_filters( 'bookacti_group_of_events_settings', $settings );
@@ -344,9 +376,9 @@ function bookacti_validate_group_category_data( $title ) {
  * Format group category data or apply default value
  * 
  * @since 1.1.0
- * 
- * @param type $category_settings
- * @return type
+ * @version 1.4.0
+ * @param array $category_settings
+ * @return array
  */
 function bookacti_format_group_category_settings( $category_settings ) {
 	
@@ -355,14 +387,21 @@ function bookacti_format_group_category_settings( $category_settings ) {
 	}
 	
 	// Default settings
-	$default_settings = apply_filters( 'bookacti_group_category_default_settings', array() );
+	$default_settings = apply_filters( 'bookacti_group_category_default_settings', array( 
+		'min_bookings_per_user'		=> 0,
+		'max_bookings_per_user'		=> 0,
+		'max_users_per_event'		=> 0,
+		'booking_changes_deadline'	=> -1,
+		'started_groups_bookable'	=> -1,
+		'allowed_roles'				=> array()
+	) );
 	
 	$settings = array();
 		
 	// Check if all templates settings are filled
 	foreach( $default_settings as $setting_key => $setting_default_value ){
-		if( is_string( $category_settings[ $setting_key ] ) ){ $category_settings[ $setting_key ] = stripslashes( $category_settings[ $setting_key ] ); }
-		$settings[ $setting_key ] = ! empty( $category_settings[ $setting_key ] ) ? $category_settings[ $setting_key ] : $setting_default_value;
+		if( isset( $category_settings[ $setting_key ] ) && is_string( $category_settings[ $setting_key ] ) ){ $category_settings[ $setting_key ] = stripslashes( $category_settings[ $setting_key ] ); }
+		$settings[ $setting_key ] = isset( $category_settings[ $setting_key ] ) && $category_settings[ $setting_key ] !== null ? $category_settings[ $setting_key ] : $setting_default_value;
 	}
 	
 	return apply_filters( 'bookacti_group_category_settings', $settings );

@@ -7,7 +7,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 /**
  * Get a booking system based on given parameters
  * 
- * @version 1.3.2
+ * @version 1.4.0
  * 
  * @param array $atts [id, classes, calendars, activities, groups, method]
  * @param boolean $echo Wether to return or directly echo the booking system
@@ -39,29 +39,34 @@ function bookacti_get_booking_system( $atts, $echo = false ) {
 				
 				$templates_data		= bookacti_get_mixed_template_data( $atts[ 'calendars' ], $atts[ 'past_events' ] );
 				$events_interval	= bookacti_get_new_interval_of_events( $templates_data );
+				
 				$user_ids			= array();
+				$groups_ids			= array();
+				$groups_data		= array();
+				$categories_data	= array();
+				$groups_events		= array();
+				$events				= array( 'events' => array(), 'data' => array() );
 				
-				if( $atts[ 'groups_only' ] ) {
-					$events			= bookacti_fetch_grouped_events( $atts[ 'calendars' ], $atts[ 'activities' ], array(), $atts[ 'group_categories' ], $atts[ 'past_events' ], $events_interval );
-				} else if( $atts[ 'bookings_only' ] ) {
-					$events			= bookacti_fetch_booked_events( $atts[ 'calendars' ], $atts[ 'activities' ], $atts[ 'status' ], $atts[ 'user_id' ], $atts[ 'past_events' ], $events_interval );
-					$user_ids		= $atts[ 'user_id' ];
-				} else {
-					$events			= bookacti_fetch_events( $atts[ 'calendars' ], $atts[ 'activities' ], $atts[ 'past_events' ], $events_interval );
-				}
+				if( $atts[ 'group_categories' ] !== false ) {
+					$groups_data		= bookacti_get_groups_of_events( $atts[ 'calendars' ], $atts[ 'group_categories' ], $atts[ 'past_events' ], false, $templates_data );
+					$categories_data	= bookacti_get_group_categories( $atts[ 'calendars' ], $atts[ 'group_categories' ] );
 				
-				$groups_events = array();
-				if( $atts[ 'group_categories' ] !== false ) { 
-					$groups_events		= bookacti_get_groups_events( $atts[ 'calendars' ], $atts[ 'group_categories' ] );
+					foreach( $groups_data as $group_id => $group_data ) { $groups_ids[] = $group_id; }
+					
+					$groups_events		= ! $groups_ids ? array() : bookacti_get_groups_events( $atts[ 'calendars' ], $atts[ 'group_categories' ], $groups_ids );
 				} 
 				
-				if( empty( $atts[ 'group_categories' ] ) ) {
-					$groups_data		= bookacti_get_groups_of_events_by_template( $atts[ 'calendars' ] );
-					$categories_data	= bookacti_get_group_categories_by_template( $atts[ 'calendars' ] );
+				if( $atts[ 'groups_only' ] ) {
+					if( $groups_ids ) { 
+						$events	= bookacti_fetch_grouped_events( $atts[ 'calendars' ], $atts[ 'activities' ], $groups_ids, $atts[ 'group_categories' ], $atts[ 'past_events' ], $events_interval );
+					}
+				} else if( $atts[ 'bookings_only' ] ) {
+					$events		= bookacti_fetch_booked_events( $atts[ 'calendars' ], $atts[ 'activities' ], $atts[ 'status' ], $atts[ 'user_id' ], $atts[ 'past_events' ], $events_interval );
+					$user_ids	= $atts[ 'user_id' ];
 				} else {
-					$groups_data		= bookacti_get_groups_of_events_by_category( $atts[ 'group_categories' ] );
-					$categories_data	= bookacti_get_group_categories( $atts[ 'group_categories' ] );
+					$events		= bookacti_fetch_events( $atts[ 'calendars' ], $atts[ 'activities' ], $atts[ 'past_events' ], $events_interval );
 				}
+				
 			?>
 				bookacti.booking_system[ '<?php echo $atts[ 'id' ]; ?>' ][ 'events' ]					= <?php echo json_encode( $events[ 'events' ] ? $events[ 'events' ] : array() ); ?>;
 				bookacti.booking_system[ '<?php echo $atts[ 'id' ]; ?>' ][ 'events_data' ]				= <?php echo json_encode( $events[ 'data' ] ? $events[ 'data' ] : array() ); ?>;
@@ -198,7 +203,7 @@ function bookacti_retrieve_calendar_elements( $booking_system_atts ) {
 /**
  * Check booking system attributes and format them to be correct
  * 
- * @version 1.3.0
+ * @version 1.4.0
  * 
  * @param array $atts [id, classes, calendars, activities, groups, method, url, button]
  * @param string $shortcode
@@ -222,11 +227,18 @@ function bookacti_format_booking_system_attributes( $atts = array(), $shortcode 
 		'url'					=> '',
 		'button'				=> bookacti_get_message( 'booking_form_submit_button' ),
 		'auto_load'				=> 1,
-		'past_events'			=> 0
+		'past_events'			=> 0,
+		'check_roles'			=> 1
     ) );
 	
 	// Replace empty mandatory values by default
 	$atts = shortcode_atts( $defaults, $atts, $shortcode );
+	
+	// Sanitize booleans
+	$booleans_to_check = array( 'bookings_only', 'groups_only', 'groups_single_events', 'auto_load', 'past_events', 'check_roles' );
+	foreach( $booleans_to_check as $key ) {
+		$atts[ $key ] = in_array( $atts[ $key ], array( 1, '1', true, 'true', 'yes', 'ok' ), true ) ? 1 : 0;
+	}
 	
 	// Format comma separated lists into arrays of integers
 	if( is_string( $atts[ 'calendars' ] ) || is_numeric( $atts[ 'calendars' ] ) ) {
@@ -286,37 +298,23 @@ function bookacti_format_booking_system_attributes( $atts = array(), $shortcode 
 		}
 	}
 	
-	// Check if desired activities exist
-	if( ! empty( $atts[ 'calendars' ] ) ) {
-		$available_activities = bookacti_get_activity_ids_by_template( $atts[ 'calendars' ], false );
-		foreach( $atts[ 'activities' ] as $i => $activity_id ) {
-			if( ! in_array( intval( $activity_id ), $available_activities ) ) {
-				unset( $atts[ 'activities' ][ $i ] );
-			}
-		}
-	} else {
-		$available_activities = bookacti_fetch_activities();
-		foreach( $atts[ 'activities' ] as $i => $activity_id ) {
-			$is_existing = false;
-			foreach( $available_activities as $available_activity ) {
-				if( $available_activity->id == intval( $activity_id ) ) {
-					$is_existing = true;
-					break;
-				}
-			}
-			if( ! $is_existing ) {
-				unset( $atts[ 'activities' ][ $i ] );
-			}
+	// Check if desired activities exist and are allowed according to current user role
+	$available_activity_ids = bookacti_get_activity_ids_by_template( $atts[ 'calendars' ], false, $atts[ 'check_roles' ] );
+	foreach( $atts[ 'activities' ] as $i => $activity_id ) {
+		if( ! in_array( intval( $activity_id ), $available_activity_ids, true ) ) {
+			unset( $atts[ 'activities' ][ $i ] );
 		}
 	}
+	if( ! $atts[ 'activities' ] ) { $atts[ 'activities' ] = $available_activity_ids; }
 	
-	// Check if desired groups exist
+	// Check if desired group categories exist and are allowed according to current user role
+	$available_category_ids = bookacti_get_group_category_ids_by_template( $atts[ 'calendars' ], false, $atts[ 'check_roles' ] );
 	if( is_array( $atts[ 'group_categories' ] ) ) { 
 		// Remove duplicated values
 		$atts[ 'group_categories' ] = array_unique( $atts[ 'group_categories' ] ); 
 		
-		$available_category_ids = bookacti_get_group_category_ids_by_template( $atts[ 'calendars' ] );
 		foreach( $atts[ 'group_categories' ] as $i => $category_id ) {
+			$is_existing = false;
 			foreach( $available_category_ids as $available_category_id ) {
 				if( $available_category_id == intval( $category_id ) ) {
 					$is_existing = true;
@@ -327,12 +325,7 @@ function bookacti_format_booking_system_attributes( $atts = array(), $shortcode 
 				unset( $atts[ 'group_categories' ][ $i ] );
 			}
 		}
-	}
-	
-	// Sanitize booleans
-	$booleans_to_check = array( 'bookings_only', 'groups_only', 'groups_single_events', 'auto_load', 'past_events' );
-	foreach( $booleans_to_check as $key ) {
-		$atts[ $key ] = in_array( $atts[ $key ], array( 1, '1', true, 'true', 'yes', 'ok' ), true ) ? 1 : 0;
+		if( ! $atts[ 'group_categories' ] ) { $atts[ 'group_categories' ] = $available_category_ids; }
 	}
 	
 	// If booking method is set to 'site', get the site default
@@ -396,7 +389,7 @@ function bookacti_format_booking_system_attributes( $atts = array(), $shortcode 
 /**
  * Validate booking form (verify the info of the selected event before booking it)
  * 
- * @version 1.3.0
+ * @version 1.4.0
  * @param int $group_id
  * @param int $event_id
  * @param string $event_start Start datetime of the event to check (format 2017-12-31T23:59:59)
@@ -406,35 +399,111 @@ function bookacti_format_booking_system_attributes( $atts = array(), $shortcode 
  */
 function bookacti_validate_booking_form( $group_id, $event_id, $event_start, $event_end, $quantity ) {
 	
+	$user_id = get_current_user_id();
+	$quantity_already_booked = 0;
+	$number_of_users = 0;
+	$allowed_roles = array();
+	
 	if( $group_id === 'single' ) {
 		$event			= bookacti_get_event_by_id( $event_id );
 		$title			= apply_filters( 'bookacti_translate_text', $event->title );
+		$activity_data	= bookacti_get_metadata( 'activity', $event->activity_id );
 		
 		$exists			= bookacti_is_existing_event( $event, $event_start, $event_end );
 		$availability	= bookacti_get_event_availability( $event_id, $event_start, $event_end );
 		$is_in_range	= bookacti_is_event_in_its_template_range( $event_id, $event_start, $event_end );
-	
+		$min_quantity	= isset( $activity_data[ 'min_bookings_per_user' ] ) ? intval( $activity_data[ 'min_bookings_per_user' ] ) : 0;
+		$max_quantity	= isset( $activity_data[ 'max_bookings_per_user' ] ) ? intval( $activity_data[ 'max_bookings_per_user' ] ) : 0;
+		$max_users		= isset( $activity_data[ 'max_users_per_event' ] ) ? intval( $activity_data[ 'max_users_per_event' ] ) : 0;
+		
+		// Check if the user has already booked this event
+		if( ( $min_quantity || $max_quantity || $max_users ) && $user_id ) {
+			$filters = bookacti_format_booking_filters( array(
+				'event_id'		=> $event_id,
+				'event_start'	=> $event_start,
+				'event_end'		=> $event_end,
+				'user_id'		=> $user_id,
+				'active'		=> 1
+			) );
+			$quantity_already_booked = bookacti_get_number_of_bookings( $filters );
+		}
+		
+		// Check if the event has already been booked by other users
+		if( $max_users ) {
+			$bookings_made_by_other_users = bookacti_get_number_of_bookings_per_user_by_event( $event_id, $event_start, $event_end );
+			$number_of_users = count( $bookings_made_by_other_users );
+		}
+		
+		// Check allowed roles
+		if( isset( $activity_data[ 'allowed_roles' ] ) && $activity_data[ 'allowed_roles' ] ) {
+			$allowed_roles = $activity_data[ 'allowed_roles' ];
+		}
+		
 	} else if( is_numeric( $group_id ) ) {
 		$group			= bookacti_get_group_of_events( $group_id );
 		$title			= apply_filters( 'bookacti_translate_text', $group->title );
+		$category_data	= bookacti_get_metadata( 'group_category', $group->category_id );
 		
 		$exists			= bookacti_is_existing_group_of_events( $group );
 		$availability	= bookacti_get_group_of_events_availability( $group_id );
 		$is_in_range	= bookacti_is_group_of_events_in_its_template_range( $group_id );
+		$min_quantity	= isset( $category_data[ 'min_bookings_per_user' ] ) ? intval( $category_data[ 'min_bookings_per_user' ] ) : 0;
+		$max_quantity	= isset( $category_data[ 'max_bookings_per_user' ] ) ? intval( $category_data[ 'max_bookings_per_user' ] ) : 0;
+		$max_users		= isset( $category_data[ 'max_users_per_event' ] ) ? intval( $category_data[ 'max_users_per_event' ] ) : 0;
+		
+		// Check if the user has already booked this group of events
+		if( ( $min_quantity || $max_quantity || $max_users ) && $user_id ) {
+			$filters = bookacti_format_booking_filters( array(
+				'event_group_id'		=> $group_id,
+				'user_id'				=> $user_id,
+				'active'				=> 1,
+				'group_by'				=> 'booking_group'
+			) );
+			$quantity_already_booked = bookacti_get_number_of_bookings( $filters );
+		}
+		
+		// Check if the event has already been booked by other users
+		if( $max_users ) {
+			$bookings_made_by_other_users = bookacti_get_number_of_bookings_per_user_by_group_of_events( $group_id );
+			$number_of_users = count( $bookings_made_by_other_users );
+		}
+		
+		// Check allowed roles
+		if( isset( $category_data[ 'allowed_roles' ] ) && $category_data[ 'allowed_roles' ] ) {
+			$allowed_roles = $category_data[ 'allowed_roles' ];
+		}
 	}
 	
 	// Init boolean test variables
 	$is_event				= false;
-	$is_qty_sup_to_avail	= false;
+	$is_qty_inf_to_avail	= false;
 	$is_qty_sup_to_0		= false;
+	$is_qty_sup_to_min		= false;
+	$is_qty_inf_to_max		= false;
+	$is_users_inf_to_max	= false;
+	$has_allowed_roles		= false;
 	$can_book				= false;
-
+	
+	// Sanitize
+	$quantity		= intval( $quantity );
+	$availability	= intval( $availability );
+	
 	// Make the tests and change the booleans
 	if( $group_id !== '' && $event_id !== '' && $event_start !== '' && $event_end !== '' )	{ $is_event = true; }
-	if( intval( $quantity ) > 0 )															{ $is_qty_sup_to_0 = true; }
-	if( intval( $availability ) - intval( $quantity ) < 0 )									{ $is_qty_sup_to_avail = true; }
+	if( $quantity > 0 )																		{ $is_qty_sup_to_0 = true; }
+	if( $quantity <= $availability )														{ $is_qty_inf_to_avail = true; }
+	if( $min_quantity === 0 || ( $quantity + $quantity_already_booked ) >= $min_quantity )	{ $is_qty_sup_to_min = true; }
+	if( $max_quantity === 0 || $quantity <= ( $max_quantity - $quantity_already_booked ) )	{ $is_qty_inf_to_max = true; }
+	if( $max_users === 0 || $quantity_already_booked || $number_of_users < $max_users )		{ $is_users_inf_to_max = true; }
+	if( ! $allowed_roles || apply_filters( 'bookacti_bypass_roles_check', false ) )			{ $has_allowed_roles = true; }
+	else { 
+		$current_user	= wp_get_current_user();
+		$roles			= $current_user->roles;
+		$is_allowed		= array_intersect( $roles, $allowed_roles );
+		if( $is_allowed ) { $has_allowed_roles = true; }
+	}
 	
-	if( $is_event && $exists && $is_in_range && $is_qty_sup_to_0 && ! $is_qty_sup_to_avail ) { $can_book = true; }
+	if( $is_event && $exists && $is_in_range && $is_qty_sup_to_0 && $is_qty_sup_to_min && $is_qty_inf_to_max && $is_users_inf_to_max && $is_qty_inf_to_avail && $has_allowed_roles ) { $can_book = true; }
 
 	if( $can_book ) {
 		$validated['status'] = 'success';
@@ -452,26 +521,58 @@ function bookacti_validate_booking_form( $group_id, $event_id, $event_start, $ev
 		} else if( ! $is_qty_sup_to_0 ) {
 			$validated['error'] = 'qty_inf_to_0';
 			$validated['message'] = __( 'The amount of desired bookings is less than or equal to 0. Please increase the quantity.', BOOKACTI_PLUGIN_NAME );
+		} else if( ! $is_qty_sup_to_min ) {
+			$validated['error'] = 'qty_inf_to_min';
+			/* translators: %1$s is a variable number of bookings, %2$s is the event title. This sentence is followed by two others : 'but the minimum number of reservations required per user is %1$s.' and 'Please choose another event or increase the quantity.' */
+			$validated['message'] = sprintf( _n( 'You want to make %1$s booking of "%2$s"', 'You want to make %1$s bookings of "%2$s"', $quantity, BOOKACTI_PLUGIN_NAME ), $quantity, $title );
+			if( $quantity_already_booked ) {
+				/* translators: %1$s and %2$s are variable numbers of bookings, always >= 1. This sentence is preceded by : 'You want to make %1$s booking of "%2$s"' and followed by 'Please choose another event or increase the quantity.' */
+				$validated['message'] .= ' ' . sprintf( _n( 'and you have already booked %1$s place, but the minimum number of reservations required per user is %2$s.', 'and you have already booked %1$s places, but the minimum number of reservations required per user is %2$s.', $quantity_already_booked, BOOKACTI_PLUGIN_NAME ), $quantity_already_booked, $min_quantity );
+			} else {
+				/* translators: %1$s is a variable number of bookings. This sentence is preceded by : 'You want to make %1$s booking of "%2$s"' and followed by 'Please choose another event or increase the quantity.' */
+				$validated['message'] .= ' ' . sprintf( __( 'but the minimum number of reservations required per user is %1$s.', BOOKACTI_PLUGIN_NAME ), $min_quantity );
+			}	
+			/* translators: %1$s is a variable quantity. This sentence is preceded by two others : 'You want to make %1$s booking of "%2$s"' and 'but the minimum number of reservations required per user is %1$s.' */
+			$validated['message'] .= ' ' . sprintf( __( 'Please choose another event or increase the quantity to %1$s.', BOOKACTI_PLUGIN_NAME ), $min_quantity - $quantity_already_booked );
+		} else if( ! $is_qty_inf_to_max ) {
+			$validated['error'] = 'qty_sup_to_max';
+			/* translators: %1$s is a variable number of bookings, %2$s is the event title. This sentence is followed by two others : 'but the maximum number of reservations allowed per user is %1$s.' and 'Please choose another event or decrease the quantity.' */
+			$validated['message'] = sprintf( _n( 'You want to make %1$s booking of "%2$s"', 'You want to make %1$s bookings of "%2$s"', $quantity, BOOKACTI_PLUGIN_NAME ), $quantity, $title );
+			if( $quantity_already_booked ) {
+				/* translators: %1$s and %2$s are variable numbers of bookings, always >= 1. This sentence is preceded by : 'You want to make %1$s booking of "%2$s"' and followed by 'Please choose another event or decrease the quantity.' */
+				$validated['message'] .= ' ' . sprintf( _n( 'but you have already booked %1$s place and the maximum number of reservations allowed per user is %2$s.', 'but you have already booked %1$s places and the maximum number of reservations allowed per user is %2$s.', $quantity_already_booked, BOOKACTI_PLUGIN_NAME ), $quantity_already_booked, $max_quantity );
+			} else {
+				/* translators: %1$s is a variable number of bookings. This sentence is preceded by : 'You want to make %1$s booking of "%2$s"' and followed by 'Please choose another event or decrease the quantity.' */
+				$validated['message'] .= ' ' . sprintf( __( 'but the maximum number of reservations allowed per user is %1$s.', BOOKACTI_PLUGIN_NAME ), $max_quantity );
+			}
+			/* translators: %1$s is a variable quantity. This sentence is preceded by two others : 'You want to make %1$s booking of "%2$s"' and 'but the maximum number of reservations allowed per user is %1$s.' */
+			$validated['message'] .= $max_quantity - $quantity_already_booked > 0  ? ' ' . sprintf( __( 'Please choose another event or decrease the quantity to %1$s.', BOOKACTI_PLUGIN_NAME ), $max_quantity - $quantity_already_booked ) : ' ' . __( 'Please choose another event', BOOKACTI_PLUGIN_NAME );
+		} else if( ! $is_users_inf_to_max ) {
+			$validated['error'] = 'users_sup_to_max';
+			$validated['message'] = __( 'This event has reached the maximum number of users allowed. Bookings from other users are no longer accepted. Please choose another event.', BOOKACTI_PLUGIN_NAME );
 		} else if( $availability === 0 ) {
 			$validated['error'] = 'no_availability';
 			$validated['availability'] = $availability;
 			/* translators: %1$s is the event title. */
 			$validated['message'] = sprintf( __( 'The event "%1$s" is no longer available on this time slot. Please choose another event.', BOOKACTI_PLUGIN_NAME ), $title );
-		} else if( $is_qty_sup_to_avail ) {
+		} else if( ! $is_qty_inf_to_avail ) {
 			$validated['error'] = 'qty_sup_to_avail';
 			$validated['availability'] = $availability;
 			$validated['message'] = /* translators: %1$s is a variable number of bookings, %2$s is the event title. This sentence is followed by two others : 'but only %1$s is available on this time slot.' and 'Please choose another event or decrease the quantity.' */
-									sprintf( _n( 'You want to make %1$s booking of "%2$s" event', 'You want to make %1$s bookings of "%2$s" event', $quantity, BOOKACTI_PLUGIN_NAME ), $quantity, $title )
-									/* translators: %1$s is a variable number of bookings. This sentence is preceded by : 'You want to make %1$s booking of "%2$s" event' and followed by 'Please choose another event or decrease the quantity.' */
+									sprintf( _n( 'You want to make %1$s booking of "%2$s"', 'You want to make %1$s bookings of "%2$s"', $quantity, BOOKACTI_PLUGIN_NAME ), $quantity, $title )
+									/* translators: %1$s is a variable number of bookings. This sentence is preceded by : 'You want to make %1$s booking of "%2$s"' and followed by 'Please choose another event or decrease the quantity.' */
 							. ' ' . sprintf( _n( 'but only %1$s is available on this time slot.', 'but only %1$s are available on this time slot. ', $availability, BOOKACTI_PLUGIN_NAME ), $availability )
-									/* translators: This sentence is preceded by two others : 'You want to make %1$s booking of "%2$s" event' and 'but only %1$s is available on this time slot.' */
+									/* translators: This sentence is preceded by two others : 'You want to make %1$s booking of "%2$s"' and 'but only %1$s is available on this time slot.' */
 							. ' ' . __( 'Please choose another event or decrease the quantity.', BOOKACTI_PLUGIN_NAME );
+		} else if( ! $has_allowed_roles ) {
+			$validated['error'] = 'role_not_allowed';
+			$validated['message'] = __( 'This event is not available in your user category. Please choose another event.', BOOKACTI_PLUGIN_NAME );
 		} else {
 			$validated['error'] = 'failed';
 			$validated['message'] = __( 'An error occurred, please try again.', BOOKACTI_PLUGIN_NAME );
 		}
 	}
-
+	
 	return apply_filters( 'bookacti_validate_booking_form', $validated, $group_id, $event_id, $event_start, $event_end, $quantity );
 }
 
@@ -655,7 +756,8 @@ function bookacti_get_events_array_from_db_events( $events, $past_events, $inter
  * Get a new interval of events to load. Computed from the compulsory interval, or now's date and template interval.
  * 
  * @since 1.2.2
- * @param array $template_interval array( 'start'=>Calendar start, 'end'=> Calendar end) 
+ * @version 1.4.0
+ * @param array $template_interval array( 'start'=>Calendar start, 'end'=> Calendar end, 'settings'=> array( 'availability_period_start'=> Relative start from today, 'availability_period_end'=> Relative end from today) ) 
  * @param array $min_interval array( 'start'=> Calendar start, 'end'=> Calendar end)
  * @param int $interval_duration Number of days of the interval
  * @param bool $past_events
@@ -665,20 +767,44 @@ function bookacti_get_new_interval_of_events( $template_interval, $min_interval 
 	
 	if( ! isset( $template_interval[ 'start' ] ) || ! isset( $template_interval[ 'end' ] ) ) { return array(); }
 	
-	$timezone			= new DateTimeZone( bookacti_get_setting_value( 'bookacti_general_settings', 'timezone' ) );
-	$current_time		= new DateTime( 'now', $timezone );
-	$current_date		= $current_time->format( 'Y-m-d' );
+	// Take default availability period if not set
+	if( ! isset( $template_interval[ 'settings' ][ 'availability_period_start' ] ) ){ $template_interval[ 'settings' ][ 'availability_period_start' ] = bookacti_get_setting_value( 'bookacti_general_settings', 'availability_period_start' ); }
+	if( ! isset( $template_interval[ 'settings' ][ 'availability_period_end' ] ) )	{ $template_interval[ 'settings' ][ 'availability_period_end' ] = bookacti_get_setting_value( 'bookacti_general_settings', 'availability_period_end' ); }
 	
-	$calendar_start		= new DateTime( $template_interval[ 'start' ] . ' 00:00:00', $timezone );
-	$calendar_end		= new DateTime( $template_interval[ 'end' ] . ' 23:59:59', $timezone );
+	$timezone		= new DateTimeZone( bookacti_get_setting_value( 'bookacti_general_settings', 'timezone' ) );
+	$current_time	= new DateTime( 'now', $timezone );
+	$current_date	= $current_time->format( 'Y-m-d' );
+	
+	// Restrict template interval if an availability period is set
+	$availability_period_start	= $template_interval[ 'start' ];
+	$availability_period_end	= $template_interval[ 'end' ];
+	if( $template_interval[ 'settings' ][ 'availability_period_start' ] > 0 ) {
+		$availability_start_time = clone $current_time;
+		$availability_start_time->add( new DateInterval( 'P' . $template_interval[ 'settings' ][ 'availability_period_start' ] . 'D' ) );
+		$availability_start_date = $availability_start_time->format( 'Y-m-d' );
+		if( strtotime( $availability_start_date ) > strtotime( $template_interval[ 'start' ] ) ) {
+			$availability_period_start = $availability_start_date;
+		}
+	}
+	if( $template_interval[ 'settings' ][ 'availability_period_end' ] > 0 ) {
+		$availability_end_time = clone $current_time;
+		$availability_end_time->add( new DateInterval( 'P' . $template_interval[ 'settings' ][ 'availability_period_end' ] . 'D' ) );
+		$availability_end_date = $availability_end_time->format( 'Y-m-d' );
+		if( strtotime( $availability_end_date ) < strtotime( $template_interval[ 'end' ] ) ) {
+			$availability_period_end = $availability_end_date;
+		}
+	}
+
+	$calendar_start	= new DateTime( $availability_period_start . ' 00:00:00', $timezone );
+	$calendar_end	= new DateTime( $availability_period_end . ' 23:59:59', $timezone );
 	
 	if( ! $past_events && $calendar_end < $current_time ) { return array(); }
 	
 	if( ! $min_interval ) {
 		if( $calendar_start > $current_time ) {
-			$min_interval = array( 'start' => $template_interval[ 'start' ], 'end' => $template_interval[ 'start' ] );
+			$min_interval = array( 'start' => $availability_period_start, 'end' => $availability_period_start );
 		} else if( $calendar_end < $current_time ) {
-			$min_interval = array( 'start' => $template_interval[ 'end' ], 'end' => $template_interval[ 'end' ] );
+			$min_interval = array( 'start' => $availability_period_end, 'end' => $availability_period_end );
 		} else {
 			$min_interval = array( 'start' => $current_date, 'end' => $current_date );
 		}
@@ -716,7 +842,7 @@ function bookacti_get_new_interval_of_events( $template_interval, $min_interval 
 		'start' => $interval_start->format( 'Y-m-d' ), 
 		'end' => $interval_end->format( 'Y-m-d' ) 
 	);
-	
+
 	return $interval;
 }
 
@@ -1004,31 +1130,6 @@ function bookacti_get_formatted_booking_events_list( $booking_events, $quantity 
 
 
 // GROUPS OF EVENTS
-
-	/**
-	 * Get group of events availability (= the lowest availability among its events)
-	 * 
-	 * @since 1.1.0
-	 * @version 1.3.0
-	 * @param int $event_group_id
-	 * @param array $include_states
-	 * @return int
-	 */
-	function bookacti_get_group_of_events_availability( $event_group_id, $include_states = array() ) {
-
-		$events = bookacti_get_group_events( $event_group_id, true );
-
-		$max = 999999999; // Any big int
-		foreach( $events as $event ) {
-			$availability = bookacti_get_event_availability( $event[ 'id' ], $event[ 'start' ], $event[ 'end' ], $include_states );
-			if( $availability < $max ) {
-				$max = $availability;
-			}
-		}
-
-		return $max;
-	}
-	
 	
 	/**
 	 * Book all events of a group

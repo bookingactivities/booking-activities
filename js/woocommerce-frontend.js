@@ -137,26 +137,10 @@ $j( document ).ready( function() {
 
 		// Set quantity on eventClick
 		$j( 'body.woocommerce form.cart' ).on( 'bookacti_picked_events_list_data', '.bookacti-booking-system', function( e, event_summary_data ) {
-			if( $j( this ).parents( 'form' ).find( '.quantity .qty' ).length ) {
-
-				var booking_system_id	= $j( this ).attr( 'id' );
-				var quantity			= parseInt( $j( this ).parents( 'form' ).find( '.quantity .qty' ).val() );
-				var available_places	= 0; 
-
-				// Limit the max quantity
-				if( bookacti.booking_system[ booking_system_id ][ 'picked_events' ].length > 1 ) {
-					available_places = bookacti_get_group_availability( $j( this ), bookacti.booking_system[ booking_system_id ][ 'picked_events' ] );
-				} else {
-					available_places = bookacti_get_event_availability( $j( this ), bookacti.booking_system[ booking_system_id ][ 'picked_events' ][ 0 ] );
-				}
-
-				$j( this ).parents( 'form' ).find( '.quantity .qty' ).attr( 'max', available_places );
-				if( quantity > available_places ) {
-					$j( this ).parents( 'form' ).find( '.quantity .qty' ).val( available_places );
-					quantity = available_places;
-				}
-
-				event_summary_data.quantity = quantity;
+			var booking_system = $j( this );
+			var qty_field = booking_system.parents( 'form' ).find( '.quantity .qty' );
+			if( qty_field.length ) {
+				bookacti_set_min_and_max_quantity( booking_system, qty_field, event_summary_data );
 			}
 		});
 	
@@ -176,7 +160,7 @@ $j( document ).ready( function() {
 // Switch booking system according to variation
 function bookacti_switch_booking_system_according_to_variation( booking_system, variation ) {
 	
-	var booking_system_id		= booking_system.attr( 'id' );
+	var booking_system_id = booking_system.attr( 'id' );
 	
 	booking_system.empty();
 	bookacti_clear_booking_system_displayed_info( booking_system );
@@ -356,6 +340,12 @@ function bookacti_refresh_cart_after_expiration( countdown ) {
 }
 
 
+// Check if a booking system is active
+function bookacti_booking_system_is_active( booking_system ) {
+	return ! booking_system.siblings( '.bookacti-booking-system-inputs input' ).is( ':disabled' );
+}
+
+
 // Deactivate booking system
 function bookacti_deactivate_booking_system( booking_system ) {
 	booking_system.parent().hide();
@@ -365,6 +355,7 @@ function bookacti_deactivate_booking_system( booking_system ) {
 
 // Activate booking system
 function bookacti_activate_booking_system( booking_system ) {
+	if( bookacti_booking_system_is_active( booking_system ) ) { return; }
 	
 	var booking_method = bookacti.booking_system[ booking_system.attr( 'id' ) ][ 'method' ];
 	

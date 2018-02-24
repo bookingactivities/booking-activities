@@ -476,7 +476,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	/**
 	 * Content of the activity tab
 	 * 
-	 * @version 1.1.0
+	 * @version 1.4.0
 	 * 
 	 * @global type $thepostid
 	 */
@@ -597,7 +597,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			<div class='options_group'>
 				<?php 
 					$groups_field_id	= '_bookacti_group_categories'; 
-					$categories			= bookacti_get_group_categories_by_template();
+					$categories			= bookacti_get_group_categories();
 					$current_categories	= get_post_meta( $thepostid, $groups_field_id, true );
 					$current_categories	= is_numeric( $current_categories ) ? array( $current_categories ) : $current_categories;
 				?>
@@ -802,7 +802,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	 * Add custom fields for activity variation product type
 	 * 
 	 * @since 1.0.0
-	 * @version 1.3.3
+	 * @version 1.4.0
 	 * 
 	 * @param int $loop
 	 * @param array $variation_data
@@ -813,7 +813,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		//Retrieve templates and assiociated data
 		$templates = bookacti_fetch_templates();
 		$activities = bookacti_fetch_activities_with_templates_association();
-		$categories	= bookacti_get_group_categories_by_template();
+		$categories	= bookacti_get_group_categories();
 
 		//Check if variation is flagged as activity
 		$is_variation_activity = get_post_meta( $variation->ID, 'bookacti_variable_is_activity', true );
@@ -984,7 +984,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 						id='bookacti_variable_group_categories_<?php echo esc_attr( $loop ); ?>' 
 						class='bookacti_variable_group_categories' 
 						data-loop='<?php echo esc_attr( $loop ); ?>' 
-						data-parent='<?php if( is_array( $parent_group_categories ) ) { echo esc_attr( implode( ',', $parent_group_categories ) ); } else if( $parent_group_categories ) { echo esc_attr( $parent_group_categories ); } else { echo 'none'; } ?>' 
+						data-parent='<?php if( is_array( $parent_group_categories ) ) { echo esc_attr( implode( ',', $parent_group_categories ) ); } else if( $parent_group_categories ) { echo esc_attr( $parent_group_categories ); } else { echo 'none'; } ?>'
 						<?php 
 							if( count( $categories ) > 1 ) { echo 'style="margin-right:10px;"'; } 
 							if( is_array( $current_group_categories ) && count( $current_group_categories ) > 1 ) { echo 'multiple'; } 

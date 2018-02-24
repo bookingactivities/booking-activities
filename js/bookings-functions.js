@@ -124,13 +124,12 @@ function bookacti_refresh_calendar_according_to_date_filter( calendar ) {
 	var from	= moment( $j( '#bookacti-booking-filter-dates-from' ).val() );
 	var to		= moment( $j( '#bookacti-booking-filter-dates-to' ).val() );
 	
-	var template_data = {
-		'start': from.isValid() ? from.format( 'YYYY-MM-DD' ) : bookacti.booking_system[ 'bookacti-booking-system-bookings-page' ][ 'template_data' ][ 'start' ],
-		'end': to.isValid() ? to.format( 'YYYY-MM-DD' ) : bookacti.booking_system[ 'bookacti-booking-system-bookings-page' ][ 'template_data' ][ 'end' ],
-		'settings': {}
+	var interval_filter = {
+		"start": from.isValid() ? from : moment( bookacti.booking_system[ 'bookacti-booking-system-bookings-page' ][ 'template_data' ][ 'start' ] ),
+		"end": to.isValid() ? to.add( 1, 'days' ) : moment( bookacti.booking_system[ 'bookacti-booking-system-bookings-page' ][ 'template_data' ][ 'end' ] ).add( 1, 'days' )
 	};
 	
-	bookacti_update_calendar_settings( calendar, template_data );
+	calendar.fullCalendar( 'option', 'validRange', interval_filter );
 }
 
 
@@ -335,9 +334,9 @@ function bookacti_validate_picked_events( booking_system, quantity ) {
 	if( valid_form.is_group && typeof bookacti.booking_system[ booking_system_id ][ 'picked_events' ] !== 'undefined' ) {
 		// Validate single event
 		if( group_id === 'single' && bookacti.booking_system[ booking_system_id ][ 'picked_events' ].length === 1 ) {
-				if( bookacti.booking_system[ booking_system_id ][ 'picked_events' ][0]['id']		=== event_id 
+				if( bookacti.booking_system[ booking_system_id ][ 'picked_events' ][0]['id']	=== event_id 
 				&&  bookacti.booking_system[ booking_system_id ][ 'picked_events' ][0]['start']	=== event_start 
-				&&  bookacti.booking_system[ booking_system_id ][ 'picked_events' ][0]['end']		=== event_end ) {
+				&&  bookacti.booking_system[ booking_system_id ][ 'picked_events' ][0]['end']	=== event_end ) {
 
 					valid_form.is_event_in_selected = true;
 
@@ -369,7 +368,7 @@ function bookacti_validate_picked_events( booking_system, quantity ) {
 				});
 				valid_form.are_picked_events_same_as_group = are_in_group;
 				
-				total_avail = bookacti_get_group_availability( booking_system, bookacti.booking_system[ booking_system_id ][ 'groups_events' ][ group_id ] );
+				total_avail = bookacti.booking_system[ booking_system_id ][ 'groups_data' ][ group_id ][ 'availability' ];
 			}
 		}
 	}
@@ -400,7 +399,7 @@ function bookacti_validate_picked_events( booking_system, quantity ) {
 	//Check the results and build error list
 	if( ! valid_form.send ) {
 		var error_list = '';
-		if( ( ! valid_form.is_event || ! valid_form.is_event_in_selected ) && ! valid_form.is_corrupted ){ 
+		if( ( ! valid_form.is_event || ! valid_form.is_event_in_selected ) && group_id === 'single' && ! valid_form.is_corrupted ){ 
 			error_list += '<li>' + bookacti_localized.error_select_schedule + '</li>' ; 
 		}
 		if( valid_form.is_qty_sup_to_avail ){ 

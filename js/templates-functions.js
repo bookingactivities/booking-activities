@@ -101,7 +101,7 @@ function bookacti_switch_template( selected_template_id ) {
 
 					// TEMPLATE SETTINGS
 						// Update calendar settings
-						bookacti_update_calendar_settings( $j( '#bookacti-template-calendar' ), response.template_data );
+						bookacti_update_calendar_settings( $j( '#bookacti-template-calendar' ) );
 					
 					
 					// VIEW
@@ -239,13 +239,15 @@ function bookacti_init_groups_of_events() {
 			bookacti_refresh_selected_events_display();
 		});
 
-		// Display tuto if there is there is at least two events selected and no group categories yet
-		$j( '#bookacti-template-calendar' ).on( 'bookacti_select_event bookacti_unselect_event', function(){
+		// Maybe display groups of events tuto
+		$j( '#bookacti-template-calendar' ).on( 'bookacti_select_event bookacti_unselect_event bookacti_unselect_all_events', function(){
 			bookacti_maybe_display_add_group_of_events_button();
+		});
 
-			// Exit group editing mode
-			if( bookacti.booking_system[ 'bookacti-template-calendar' ][ 'selected_events' ].length < 2 ) {
-				bookacti_exit_group_edition();
+		// Exit group editing mode
+		$j( '#bookacti-template-calendar' ).on( 'bookacti_select_event bookacti_unselect_event', function(){
+			if( bookacti.booking_system[ 'bookacti-template-calendar' ][ 'selected_events' ].length <= 0 ) {
+				bookacti_unselect_all_events();
 			}
 		});
 	}
@@ -254,6 +256,17 @@ function bookacti_init_groups_of_events() {
 	$j( '#bookacti-group-categories' ).on( 'click', '.bookacti-group-category-title', function(){
 		var category_id = $j( this ).parent().data( 'group-category-id' );
 		bookacti_expand_collapse_groups_of_events( category_id );
+	});
+	
+	// Select / Unselect events of a group
+	$j( '#bookacti-group-categories' ).on( 'click', '.bookacti-group-of-events-title', function(){
+		var is_selected	= $j( this ).parents( '.bookacti-group-of-events' ).hasClass( 'bookacti-selected-group' );
+		if( ! is_selected ) {
+			var group_id = $j( this ).parents( '.bookacti-group-of-events' ).data( 'group-id' );
+			bookacti_select_events_of_group( group_id );
+		} else {
+			bookacti_unselect_all_events();
+		}
 	});
 }
 
@@ -353,13 +366,12 @@ function bookacti_select_events_of_group( group_id ) {
 	
 	if( ! group_id ) { return false; }
 	
-	// Exit others groups editing mode
-	bookacti_exit_group_edition();
+	// Unselect the events
+	bookacti_unselect_all_events();
 	
 	// Empty the selected events and refresh them
 	bookacti.booking_system[ 'bookacti-template-calendar' ][ 'selected_events' ] = [];
 	$j( '#bookacti-template-calendar' ).fullCalendar( 'rerenderEvents' );
-	$j( '#bookacti-insert-group-of-events' ).css( 'visibility', 'hidden' );
 	
 	// Change view to the 1st event selected to make sure that at least 1 event is in the view
 	if( typeof bookacti.booking_system[ 'bookacti-template-calendar' ][ 'groups_events' ][ group_id ] !== 'undefined' ) {
@@ -367,16 +379,18 @@ function bookacti_select_events_of_group( group_id ) {
 	}
 
 	// Select the events of the group
-	var change_icon = true;
+	var are_selected = true;
 	$j.each( bookacti.booking_system[ 'bookacti-template-calendar' ][ 'groups_events' ][ group_id ], function( i, event ){
 		var is_selected = bookacti_select_event( event );
-		if( is_selected === false ) { change_icon = false; }
+		if( is_selected === false ) { are_selected = false; }
 	});
 	
 	// Change group settings icon and wait for the user to validate the selected events
-	if( change_icon ) {
-		$j( '.bookacti-group-of-events[data-group-id="' + group_id + '"]' ).find( '.bookacti-update-group-of-events img' ).attr( 'src', bookacti_localized.plugin_path + '/img/tick.png' ).addClass( 'validate-group' );
+	if( are_selected ) {
+		$j( '.bookacti-group-of-events[data-group-id="' + group_id + '"]' ).addClass( 'bookacti-selected-group' );
 	}
+	
+	return are_selected;
 }
 
 
@@ -420,6 +434,8 @@ function bookacti_select_event( event ) {
 	});
 
 	$j( '#bookacti-template-calendar' ).trigger( 'bookacti_select_event', [ event ] );
+	
+	return true;
 }
 
 
@@ -461,7 +477,6 @@ function bookacti_unselect_event( event, start, all ) {
 	elements.find( '.bookacti-event-action-select' ).hide();
 	
 	// Remove selected event(s) from memory 
-	
 	var selected_events = $j.grep( bookacti.booking_system[ 'bookacti-template-calendar' ][ 'selected_events' ], function( selected_event ){
 		if( selected_event.id == event.id 
 		&&  (  all 
@@ -477,6 +492,25 @@ function bookacti_unselect_event( event, start, all ) {
 	bookacti.booking_system[ 'bookacti-template-calendar' ][ 'selected_events' ] = selected_events;
 	
 	$j( '#bookacti-template-calendar' ).trigger( 'bookacti_unselect_event', [ event, all ] );
+}
+
+
+// Unselect all events
+function bookacti_unselect_all_events() {
+	// Unselect on screen events
+	$j( '.fc-event' ).removeClass( 'bookacti-selected-event' );
+	
+	// Specific treatment for calendar editor
+	$j( '.fc-event' ).find( '.bookacti-event-action-select-checkbox' ).prop( 'checked', false );
+	$j( '.fc-event' ).find( '.bookacti-event-action-select' ).hide();
+	
+	// Remove selected event(s) from memory 
+	bookacti.booking_system[ 'bookacti-template-calendar' ][ 'selected_events' ] = [];
+	
+	// Remove "selected" classes
+	$j( '.bookacti-group-of-events.bookacti-selected-group' ).removeClass( 'bookacti-selected-group' );
+	
+	$j( '#bookacti-template-calendar' ).trigger( 'bookacti_unselect_all_events' );
 }
 
 
@@ -822,7 +856,7 @@ function bookacti_fill_settings_fields( settings, prefix ) {
 			// Select multiple
 			} else if( $j( 'select[name="' + prefix + '[' + key + '][]"]' ).length ) {
 				$j.each( value, function( i, option ){
-					$j( 'select[name="' + prefix + '[' + key + ']"] option[value="' + option + '"]' ).attr( 'selected', true );
+					$j( 'select[name="' + prefix + '[' + key + '][]"] option[value="' + option + '"]' ).attr( 'selected', true );
 				});
 				
 			// Input and Textarea
@@ -1079,12 +1113,6 @@ function bookacti_maybe_display_add_group_of_events_button() {
 			}
 		}
 	}
-}
-
-
-// Exit group editing mode
-function bookacti_exit_group_edition() {
-	$j( '.bookacti-update-group-of-events img.validate-group' ).attr( 'src', bookacti_localized.plugin_path + '/img/gear.png' ).removeClass( 'validate-group' );
 }
 
 

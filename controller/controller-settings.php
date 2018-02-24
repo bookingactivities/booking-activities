@@ -5,7 +5,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 /**
  * Init Booking Activities settings
  * 
- * @version 1.3.0
+ * @version 1.4.0
  */
 function bookacti_init_settings() { 
 
@@ -45,6 +45,32 @@ function bookacti_init_settings() {
 		'started_events_bookable', 
 		__( 'Are started events bookable?', BOOKACTI_PLUGIN_NAME ), 
 		'bookacti_settings_field_started_events_bookable_callback', 
+		'bookacti_general_settings', 
+		'bookacti_settings_section_general' 
+	);
+
+	add_settings_field(  
+		'started_groups_bookable', 
+		__( 'Are started groups of events bookable?', BOOKACTI_PLUGIN_NAME ), 
+		'bookacti_settings_field_started_groups_bookable_callback', 
+		'bookacti_general_settings', 
+		'bookacti_settings_section_general' 
+	);
+
+	add_settings_field(  
+		'availability_period_start', 
+		/* translators: Followed by a field indicating a number of days before the event. E.g.: "Events will be bookable in 2 days from today". */
+		__( 'Events will be bookable in', BOOKACTI_PLUGIN_NAME ), 
+		'bookacti_settings_field_availability_period_start_callback', 
+		'bookacti_general_settings', 
+		'bookacti_settings_section_general' 
+	);
+
+	add_settings_field(  
+		'availability_period_end', 
+		/* translators: Followed by a field indicating a number of days before the event. E.g.: "Events are bookable for up to 30 days from today". */
+		__( 'Events are bookable for up to', BOOKACTI_PLUGIN_NAME ), 
+		'bookacti_settings_field_availability_period_end_callback', 
 		'bookacti_general_settings', 
 		'bookacti_settings_section_general' 
 	);
@@ -100,8 +126,9 @@ function bookacti_init_settings() {
 	);
 	
 	add_settings_field(  
-		'cancellation_min_delay_before_event',                      
-		__( 'Min delay before event', BOOKACTI_PLUGIN_NAME ),               
+		'cancellation_min_delay_before_event', 
+		/* translators: Followed by a field indicating a number of days before the event. E.g.: "Changes permitted up to 2 days before the event". */
+		__( 'Changes permitted up to', BOOKACTI_PLUGIN_NAME ),               
 		'bookacti_settings_field_cancellation_delay_callback',   
 		'bookacti_cancellation_settings',                     
 		'bookacti_settings_section_cancellation' 

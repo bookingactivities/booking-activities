@@ -325,8 +325,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	/**
 	 * Unbind selected occurence of an event
 	 * 
-	 * @version 1.2.2
-	 * 
+	 * @version 1.4.0
 	 * @global wpdb $wpdb
 	 * @param int $event_id
 	 * @param string $event_start
@@ -356,7 +355,8 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
         $insert_excep = bookacti_insert_exeptions( $event_id, $dates_excep_array );
 		
 		// If the event was booked, move its bookings to the new single event
-		$has_bookings = bookacti_get_number_of_bookings( $event_id );
+		$filters = bookacti_format_booking_filters( array( 'event_id' => $event_id ) );
+		$has_bookings = bookacti_get_number_of_bookings( $filters );
 		if( is_numeric( $has_bookings ) && $has_bookings > 0  ) {
 			$bookings_moved = $wpdb->update( 
 				BOOKACTI_TABLE_BOOKINGS, 
@@ -498,65 +498,78 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
     }
 	
     
-    //GET MIN AVAILABILITY
+	/**
+	 * Get min availability
+	 * 
+	 * @version 1.4.0
+	 * @global wpdb $wpdb
+	 * @param int $event_id
+	 * @return int
+	 */
     function bookacti_get_min_availability( $event_id ) {
         global $wpdb;
         
-        //Get all different booked occurrences of the event
+        // Get all different booked occurrences of the event
         $booked_occurrences_query   = 'SELECT SUM( quantity ) '
 									. ' FROM ' . BOOKACTI_TABLE_BOOKINGS 
 									. ' WHERE active = 1 '
 									. '	AND event_id = %d '
-									. '	GROUP BY event_start'
-									. '	ORDER BY quantity'
-									. '	DESC LIMIT 1';
+									. '	GROUP BY CONCAT( event_id, event_start, event_end ) '
+									. '	ORDER BY quantity '
+									. '	DESC LIMIT 1 ';
         $booked_occurrences_prep    = $wpdb->prepare( $booked_occurrences_query, $event_id );
         $booked_occurrences         = $wpdb->get_var( $booked_occurrences_prep );
         
-		if( is_null( $booked_occurrences ) ) {
-			$booked_occurrences = 0;
-		}
+		if( ! $booked_occurrences ) { $booked_occurrences = 0; }
 		
 		return $booked_occurrences;
     }
     
 	
-    // GET THE PERIOD OF TIME BETWEEN THE FIRST AND THE LAST BOOKING OF AN EVENT / A TEMPLATE
+	/**
+	 * Get the period of time between the first and the last booking of an event / a template
+	 * 
+	 * @version 1.4.0
+	 * @global wpdb $wpdb
+	 * @param int $template_id
+	 * @param int $event_id
+	 * @return false|array
+	 */
     function bookacti_get_min_period( $template_id = NULL, $event_id = NULL ) {
-        global $wpdb;
-        
-        //Get min period for event
-        if( $event_id !== NULL ) {
-            $period_query   = 'SELECT event_start FROM ' . BOOKACTI_TABLE_BOOKINGS . ' WHERE active = 1 AND event_id = %d ORDER BY event_start ';
-            $min_from_query = $period_query . ' ASC LIMIT 1';
-            $min_to_query   = $period_query . ' DESC LIMIT 1';
-            $var            = $event_id;
-            
-        //Get min period for template
-        } else if( $template_id !== NULL ) {
-            $period_query   =  'SELECT B.event_start FROM ' . BOOKACTI_TABLE_BOOKINGS . ' as B, ' . BOOKACTI_TABLE_EVENTS . ' as E '
-                            . ' WHERE B.active = 1 '
-                            . ' AND B.event_id = E.id '
-                            . ' AND E.template_id = %d ' 
-                            . ' ORDER BY B.event_start ';
-            $min_from_query = $period_query . ' ASC LIMIT 1';
-            $min_to_query   = $period_query . ' DESC LIMIT 1';
-            $var            = $template_id;
-        }
-        $min_from_query_prep= $wpdb->prepare( $min_from_query, $var );
-        $min_to_query_prep  = $wpdb->prepare( $min_to_query, $var );
-        $first_booking      = $wpdb->get_row( $min_from_query_prep, OBJECT );
-        $last_booking       = $wpdb->get_row( $min_to_query_prep, OBJECT );
-        
-        if( $first_booking && $last_booking ) {
-            $period = array(    'is_bookings' => true, 
-                                'from' => substr( $first_booking->event_start, 0, 10 ), 
-                                'to' => substr( $last_booking->event_start, 0, 10 ) );
-        } else {
-            $period = array( 'is_bookings' => false, 'first_booking' => $first_booking, 'last_booking' => $last_booking );
-        }
-        
-        return $period;
+		global $wpdb;
+
+		// Get min period for event
+		if( $event_id ) {
+			$period_query   = 'SELECT event_start FROM ' . BOOKACTI_TABLE_BOOKINGS . ' WHERE active = 1 AND event_id = %d ORDER BY event_start ';
+			$min_from_query = $period_query . ' ASC LIMIT 1';
+			$min_to_query   = $period_query . ' DESC LIMIT 1';
+			$var            = $event_id;
+
+		// Get min period for template
+		} else if( $template_id ) {
+			$period_query   =  'SELECT B.event_start FROM ' . BOOKACTI_TABLE_BOOKINGS . ' as B, ' . BOOKACTI_TABLE_EVENTS . ' as E '
+							. ' WHERE B.active = 1 '
+							. ' AND B.event_id = E.id '
+							. ' AND E.template_id = %d ' 
+							. ' ORDER BY B.event_start ';
+			$min_from_query = $period_query . ' ASC LIMIT 1';
+			$min_to_query   = $period_query . ' DESC LIMIT 1';
+			$var            = $template_id;
+		}
+		$min_from_query_prep= $wpdb->prepare( $min_from_query, $var );
+		$min_to_query_prep  = $wpdb->prepare( $min_to_query, $var );
+		$first_booking      = $wpdb->get_row( $min_from_query_prep, OBJECT );
+		$last_booking       = $wpdb->get_row( $min_to_query_prep, OBJECT );
+
+		$period = false;
+		if( $first_booking && $last_booking ) {
+			$period = array(
+				'from' => substr( $first_booking->event_start, 0, 10 ), 
+				'to' => substr( $last_booking->event_start, 0, 10 )
+			);
+		}
+
+		return $period;
     }
 
 	
@@ -1471,10 +1484,10 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		
 		return $template_id;
 	}
-	
-	
-	
-	
+
+
+
+
 // TEMPLATES
 
 	/**
@@ -1699,13 +1712,54 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	
 	
 // ACTIVITIES
-    // FETCH ACTIVITIES
-    function bookacti_fetch_activities( $return_type = OBJECT ) {
+	/**
+	 * Get activities
+	 * 
+	 * @version 1.4.0
+	 * @global wpdb $wpdb
+	 * @param boolean $allowed_roles_only
+	 * @param OBJECT|ARRAY_A $return_type
+	 * @return array|false
+	 */
+    function bookacti_fetch_activities( $allowed_roles_only = false, $return_type = OBJECT ) {
         global $wpdb;
 
-        $query  = 'SELECT * FROM ' . BOOKACTI_TABLE_ACTIVITIES . ' WHERE active=1';
-        $activities = $wpdb->get_results( $query, $return_type );
+        $query = 'SELECT * FROM ' . BOOKACTI_TABLE_ACTIVITIES . ' as A ';
+		
+		// Join the meta table to filter by roles
+		if( $allowed_roles_only ) {
+			$query .= ' LEFT JOIN ( 
+							SELECT meta_value as roles, object_id as activity_id 
+							FROM ' . BOOKACTI_TABLE_META . ' 
+							WHERE object_type = "activity" 
+							AND meta_key = "allowed_roles" 
+						) as M ON M.activity_id = A.id ';
+		}
 
+		$query .= ' WHERE active = 1';
+		
+		// Filter by roles
+		if( $allowed_roles_only ) {
+			$current_user	= wp_get_current_user();
+			$roles			= $current_user->roles;
+			
+			$query .= ' AND ( ( M.roles = "a:0:{}" OR M.roles IS NULL OR M.roles = "" ) ';
+			if( $roles ) {
+				foreach( $roles as $i => $role ) {
+					$query .= ' OR M.roles LIKE %s ';
+					// Prefix and suffix each element of the array
+					$roles[ $i ] = '%' . $wpdb->esc_like( $role ) . '%';
+				}
+				$variables = array_merge( $variables, $roles );
+			}
+			$query .= ' ) ';
+		}
+		
+        $activities = $wpdb->get_results( $query, $return_type );
+		
+		if( $activities === false ) { return false; }
+		if( ! is_array( $activities ) ) { return array(); }
+		
         return $activities;
     }
 	
@@ -2022,22 +2076,18 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	 * Get an array of all activity ids bound to designated templates
 	 * 
 	 * @since 1.1.0
-	 * @version 1.3.0
+	 * @version 1.4.0
 	 * 
 	 * @global wpdb $wpdb
 	 * @param array $template_ids
 	 * @param boolean $based_on_events Whether to retrieve activity ids bound to templates or activity ids bound to events of templates
+	 * @param boolean $allowed_roles_only Whether to retrieve only allowed activity based on current user role
 	 * @return array
 	 */
-	function bookacti_get_activity_ids_by_template( $template_ids = array(), $based_on_events = false ) {
+	function bookacti_get_activity_ids_by_template( $template_ids = array(), $based_on_events = false, $allowed_roles_only = false ) {
 		
 		global $wpdb;
-
-		// If empty, take them all
-		if( ! $template_ids ) {
-			$template_ids = array_keys( bookacti_fetch_templates( array(), true ) );
-		}
-
+		
 		// Convert numeric to array
 		if( ! is_array( $template_ids ) ){
 			$template_id = intval( $template_ids );
@@ -2047,25 +2097,59 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			}
 		}
 		
-		if( $based_on_events ) {
-			$query	= 'SELECT DISTINCT E.activity_id as id FROM ' . BOOKACTI_TABLE_EVENTS . ' as E '
-					. ' WHERE E.template_id IN (';
-		} else {
-			$query	= 'SELECT DISTINCT A.id FROM ' . BOOKACTI_TABLE_TEMP_ACTI . ' as TA, ' . BOOKACTI_TABLE_ACTIVITIES . ' as A '
-					. ' WHERE A.id = TA.activity_id AND TA.template_id IN (';
-		}
-
-		$i = 1;
-		foreach( $template_ids as $template_id ){
-			$query .= ' %d';
-			if( $i < count( $template_ids ) ) { $query .= ','; }
-			$i++;
-		}
-
-		$query .= ' )';
+		$variables = array();
 		
+		if( $based_on_events ) { 
+			$query	= 'SELECT DISTINCT E.activity_id as id FROM ' . BOOKACTI_TABLE_EVENTS . ' as E ';
+		} else {
+			$query	= 'SELECT DISTINCT A.id FROM ' . BOOKACTI_TABLE_TEMP_ACTI . ' as TA, ' . BOOKACTI_TABLE_ACTIVITIES . ' as A ';
+		}
+		
+		// Join the meta table to filter by roles
+		if( $allowed_roles_only ) {
+			$query .= ' LEFT JOIN ( 
+							SELECT meta_value as roles, object_id as activity_id 
+							FROM ' . BOOKACTI_TABLE_META . ' 
+							WHERE object_type = "activity" 
+							AND meta_key = "allowed_roles" 
+						) as M ';
+			$query .= $based_on_events ? ' ON M.activity_id = E.activity_id ' : ' ON M.activity_id = A.id ';
+		}
+		
+		$query .= $based_on_events ? ' WHERE TRUE ' : ' WHERE A.id = TA.activity_id ';
+		
+		// Filter by roles
+		if( $allowed_roles_only ) {
+			$current_user	= wp_get_current_user();
+			$roles			= $current_user->roles;
+			
+			$query .= ' AND ( ( M.roles = "a:0:{}" OR M.roles IS NULL OR M.roles = "" ) ';
+			if( $roles ) {
+				foreach( $roles as $i => $role ) {
+					$query .= ' OR M.roles LIKE %s ';
+					// Prefix and suffix each element of the array
+					$roles[ $i ] = '%' . $wpdb->esc_like( $role ) . '%';
+				}
+				$variables = array_merge( $variables, $roles );
+			}
+			$query .= ' ) ';
+		}
+		
+		// Filter by templates
 		if( $template_ids ) {
-			$query = $wpdb->prepare( $query, $template_ids );
+			$query .= $based_on_events ? ' AND E.template_id IN ( %d ' : ' AND TA.template_id IN ( %d ';
+			$array_count = count( $template_ids );
+			if( $array_count >= 2 ) {
+				for( $i=1; $i<$array_count; ++$i ) {
+					$query .= ', %d ';
+				}
+			}
+			$query .= ') ';
+			$variables = array_merge( $variables, $template_ids );
+		}
+		
+		if( $variables ) {
+			$query = $wpdb->prepare( $query, $variables );
 		}
 		
 		$activities = $wpdb->get_results( $query, OBJECT );

@@ -509,7 +509,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		 * AJAX Controller - Change booking group state
 		 * 
 		 * @since 1.1.0
-		 * @version 1.3.0
+		 * @version 1.4.0
 		 */
 		function bookacti_controller_change_booking_group_state() {
 
@@ -572,12 +572,12 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			}
 			
 			$Bookings_List_Table = new Bookings_List_Table();
-			$Bookings_List_Table->prepare_items( array( 'booking_group_id' => $booking_group_id, 'booking_group_single_row' => 1 ), true );
+			$Bookings_List_Table->prepare_items( array( 'booking_group_id' => $booking_group_id, 'group_by' => 'booking_group' ), true );
 			$row = $Bookings_List_Table->get_rows_or_placeholder();
 
 			$rows = '';
 			if( $reload_grouped_bookings ) {
-				$Bookings_List_Table->prepare_items( array( 'booking_group_id' => $booking_group_id, 'booking_group_single_row' => 0 ), true );
+				$Bookings_List_Table->prepare_items( array( 'booking_group_id' => $booking_group_id ), true );
 				$rows = $Bookings_List_Table->get_rows_or_placeholder();
 			}
 			

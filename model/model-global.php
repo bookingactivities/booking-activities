@@ -41,7 +41,7 @@ function bookacti_user_id_exists( $user_id ) {
 /**
  * Get users metadata
  * 
- * @version 1.3.0
+ * @version 1.4.0
  * @global wpdb $wpdb
  * @param array $args
  * @return array
@@ -122,7 +122,7 @@ function bookacti_get_users_data( $args = array() ) {
 		}
 		// Prefix and suffix each element of the array
 		foreach( $args[ 'role' ] as $i => $role ) {
-			$args[ 'role' ][ $i ] = '%:\"' . $wpdb->esc_like( $role ) . '\";%';
+			$args[ 'role' ][ $i ] = '%' . $wpdb->esc_like( $role ) . '%';
 		}
 		$variables = array_merge( $variables, $args[ 'role' ] );
 	}
@@ -139,7 +139,7 @@ function bookacti_get_users_data( $args = array() ) {
 		$users_info_query .= ' ) ';
 		// Prefix and suffix each element of the array
 		foreach( $args[ 'role__in' ] as $i => $role ) {
-			$args[ 'role__in' ][ $i ] = '%:\"' . $wpdb->esc_like( $role ) . '\";%';
+			$args[ 'role__in' ][ $i ] = '%' . $wpdb->esc_like( $role ) . '%';
 		}
 		$variables = array_merge( $variables, $args[ 'role__in' ] );
 	}
@@ -152,7 +152,7 @@ function bookacti_get_users_data( $args = array() ) {
 		}
 		// Prefix and suffix each element of the array
 		foreach( $args[ 'role__not_in' ] as $i => $role ) {
-			$args[ 'role__not_in' ][ $i ] = '%:\"' . $wpdb->esc_like( $role ) . '\";%';
+			$args[ 'role__not_in' ][ $i ] = '%' . $wpdb->esc_like( $role ) . '%';
 		}
 		$variables = array_merge( $variables, $args[ 'role__not_in' ] );
 	}

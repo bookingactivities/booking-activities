@@ -196,6 +196,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	</form>
 </div>
 
+
 <!-- Template params -->
 <div id='bookacti-template-data-dialog' class='bookacti-backend-dialog bookacti-template-dialogs tabs' style='display:none;' >
 	<form id='bookacti-template-data-form' >
@@ -213,7 +214,12 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 						'order'			=> 10 ),
 				array(	'label'			=> __( 'Agenda', BOOKACTI_PLUGIN_NAME ),
 						'callback'		=> 'bookacti_fill_template_tab_agenda',
+						'parameters'	=> array(),
 						'order'			=> 40 ),
+				array(	'label'			=> __( 'Events', BOOKACTI_PLUGIN_NAME ),
+						'callback'		=> 'bookacti_fill_template_tab_events',
+						'parameters'	=> array(),
+						'order'			=> 50 ),
 				array(	'label'			=> __( 'Permissions', BOOKACTI_PLUGIN_NAME ),
 						'callback'		=> 'bookacti_fill_template_tab_permissions',
 						'parameters'	=> array( 'users_options_for_templates' => $users_options_for_templates ),
@@ -224,7 +230,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			bookacti_display_tabs( $template_tabs, 'template' );
 
 			//Tab content for template general tab
-			function bookacti_fill_template_tab_general( $params ) {
+			function bookacti_fill_template_tab_general( $params = array() ) {
 				$templates_options = $params[ 'template_options' ];
 				do_action( 'bookacti_template_tab_general_before', $params );
 			?>
@@ -268,8 +274,8 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			} 
 			
 			
-			function bookacti_fill_template_tab_agenda() {
-				do_action( 'bookacti_template_tab_agenda_before' );
+			function bookacti_fill_template_tab_agenda( $params = array() ) {
+				do_action( 'bookacti_template_tab_agenda_before', $params );
 			?>
 				<div>
 					<label for='bookacti-template-data-minTime' >
@@ -317,57 +323,61 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 					?>
 				</div>
 			<?php
-				do_action( 'bookacti_template_tab_agenda_after' );
+				do_action( 'bookacti_template_tab_agenda_after', $params );
 				
-				$is_plugin_active	= bookacti_is_plugin_active( 'ba-display-pack/ba-display-pack.php' );
-				$license_status		= get_option( 'badp_license_status' );
-				
-				// If the plugin is activated but the license is not active yet
-				if( $is_plugin_active && ( empty( $license_status ) || $license_status !== 'valid' ) ) {
-					?>
-					<div class='bookacti-addon-promo' >
-						<p>
-						<?php 
-							/* translators: %s = add-on name */
-							echo sprintf( __( 'Thank you for purchasing %s add-on!', BOOKACTI_PLUGIN_NAME ), 
-										 '<strong>' . esc_html( __( 'Display Pack', BOOKACTI_PLUGIN_NAME ) ) . '</strong>' ); 
-						?>
-						</p><p>
-							<?php esc_html_e( "It seems you didn't activate your license yet. Please follow these instructions to activate your license:", BOOKACTI_PLUGIN_NAME ); ?>
-						</p><p>
-							<strong>
-								<a href='https://booking-activities.fr/en/docs/user-documentation/get-started-with-display-pack-add-on/prerequisite-installation-license-activation-of-display-pack-add-on/?utm_source=plugin&utm_medium=plugin&utm_content=encart-promo-calendar' target='_blank' >
-									<?php 
-									/* translators: %s = add-on name */
-										echo sprintf( __( 'How to activate %s license?', BOOKACTI_PLUGIN_NAME ), 
-													  esc_html( __( 'Display Pack', BOOKACTI_PLUGIN_NAME ) ) ); 
-									?>
-								</a>
-							</strong>
-						</p>
-					</div>
+				bookacti_display_badp_promo();
+			}
+			
+			/** 
+			 * Tab content for "Events" tab
+			 * 
+			 * @since 1.4.0
+			 * @param array $params
+			 */
+			function bookacti_fill_template_tab_events( $params = array() ) {
+				do_action( 'bookacti_template_tab_events_before', $params );
+			?>
+				<div>
+					<label for='bookacti-template-availability-period-start' ><?php /* translators: Followed by a field indicating a number of days before the event. E.g.: "Events will be bookable in 2 days from today". */ esc_html_e( 'Events will be bookable in', BOOKACTI_PLUGIN_NAME ); ?></label>
+					<input	type='number' 
+							name='templateOptions[availability_period_start]' 
+							id='bookacti-template-availability-period-start' 
+							min='-1' step='1' 
+							onkeypress='return event.charCode >= 48 && event.charCode <= 57' />
 					<?php
-				}
-				
-				else if( empty( $license_status ) || $license_status !== 'valid' ) {
+						/* translators: Arrive after a field indicating a number of days before the event. E.g.: "Events will be bookable in 2 days from today". */
+						_e( 'days from today', BOOKACTI_PLUGIN_NAME );
+						$tip = __( 'Set the beginning of the availability period. E.g.: "2", your customers may book events starting in 2 days at the earliest. They are no longer allowed to book events starting earlier (like today or tomorrow).', BOOKACTI_PLUGIN_NAME );
+						$tip .= '<br/>' . __( 'This parameter applies to the events of this calendar only. A global parameter is available in global settings.', BOOKACTI_PLUGIN_NAME );
+						$tip .= '<br/>' . __( 'Set it to "-1" to use the global value.', BOOKACTI_PLUGIN_NAME );
+						bookacti_help_tip( $tip );
 					?>
-					<div class='bookacti-addon-promo' >
-						<?php 
-						$addon_link = '<a href="https://booking-activities.fr/en/downloads/display-pack/?utm_source=plugin&utm_medium=plugin&utm_campaign=display-pack&utm_content=encart-promo-calendar" target="_blank" >';
-						$addon_link .= esc_html( __( 'Display Pack', BOOKACTI_PLUGIN_NAME ) );
-						$addon_link .= '</a>';
-						/* transmators: %1$s is the placeholder for Display Pack add-on link */
-						echo sprintf( esc_html( __( 'Get other essential customization options with %1$s add-on!', BOOKACTI_PLUGIN_NAME ) ), $addon_link ); 
-						?>
-						<div><a href='https://booking-activities.fr/en/downloads/display-pack/?utm_source=plugin&utm_medium=plugin&utm_campaign=display-pack&utm_content=encart-promo-calendar' class='button' target='_blank' ><?php esc_html_e( 'Learn more', BOOKACTI_PLUGIN_NAME ); ?></a></div>
-					</div>
+				</div>
+				<div>
+					<label for='bookacti-template-availability-period-end' ><?php /* translators: Followed by a field indicating a number of days before the event. E.g.: "Events are bookable for up to 30 days from today". */ esc_html_e( 'Events are bookable for up to', BOOKACTI_PLUGIN_NAME ); ?></label>
+					<input	type='number' 
+							name='templateOptions[availability_period_end]' 
+							id='bookacti-template-availability-period-end' 
+							min='-1' step='1'
+							onkeypress='return event.charCode >= 48 && event.charCode <= 57' />
 					<?php
-				}
+						/* translators: Arrive after a field indicating a number of days before the event. E.g.: "Events will be bookable in 2 days from today". */
+						_e( 'days from today', BOOKACTI_PLUGIN_NAME );
+						$tip = __( 'Set the end of the availability period. E.g.: "30", your customers may book events starting within 30 days at the latest. They are not allowed yet to book events starting later.', BOOKACTI_PLUGIN_NAME );
+						$tip .= '<br/>' . __( 'This parameter applies to the events of this calendar only. A global parameter is available in global settings.', BOOKACTI_PLUGIN_NAME );
+						$tip .= '<br/>' . __( 'Set it to "-1" to use the global value.', BOOKACTI_PLUGIN_NAME );
+						bookacti_help_tip( $tip );
+					?>
+				</div>
+			<?php
+				do_action( 'bookacti_template_tab_events_after', $params );
+				
+				bookacti_display_badp_promo();
 			}
 			
 			
-			//Tab content for permission general tab
-			function bookacti_fill_template_tab_permissions( $params ) {
+			// Tab content for permission tab
+			function bookacti_fill_template_tab_permissions( $params = array() ) {
 				$users_options_for_templates = $params[ 'users_options_for_templates' ];
 				do_action( 'bookacti_template_tab_permissions_before', $params );
 			?>	
@@ -406,6 +416,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	</form>
 </div>
 
+
 <!-- Activity param -->
 <div id='bookacti-activity-data-dialog' class='bookacti-backend-dialog bookacti-template-dialogs' style='display:none;' >
 	<form id='bookacti-activity-data-form' >
@@ -417,16 +428,20 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		<div id='bookacti-activity-dialog-lang-switcher' class='bookacti-lang-switcher' ></div>
 			
 			<?php
-			// Fill the array of tabs with their label, callback for content and display order
+				// Fill the array of tabs with their label, callback for content and display order
 				$activity_tabs = apply_filters( 'bookacti_activity_dialog_tabs', array (
 					array(	'label'			=> __( 'General', BOOKACTI_PLUGIN_NAME ),
 							'callback'		=> 'bookacti_fill_activity_tab_general',
 							'parameters'	=> array(),
 							'order'			=> 10 ),
+					array(	'label'			=> __( 'Availability', BOOKACTI_PLUGIN_NAME ),
+							'callback'		=> 'bookacti_fill_activity_tab_availability',
+							'parameters'	=> array(),
+							'order'			=> 10 ),
 					array(	'label'			=> __( 'Terminology', BOOKACTI_PLUGIN_NAME ),
 							'callback'		=> 'bookacti_fill_activity_tab_terminology',
 							'parameters'	=> array(),
-							'order'			=> 20 ),
+							'order'			=> 30 ),
 					array(	'label'			=> __( 'Permissions', BOOKACTI_PLUGIN_NAME ),
 							'callback'		=> 'bookacti_fill_activity_tab_permissions',
 							'parameters'	=> array(	'users_options_for_activities' => $users_options_for_activities,
@@ -439,7 +454,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			?>
 			
 			<?php
-			function bookacti_fill_activity_tab_general( $params ) {
+			function bookacti_fill_activity_tab_general( $params = array() ) {
 				do_action( 'bookacti_activity_tab_general_before', $params );
 			?>
 				<div>
@@ -519,7 +534,76 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 				do_action( 'bookacti_activity_tab_general_after', $params );
 			}
 			
-			function bookacti_fill_activity_tab_terminology( $params ) {
+			
+			/**
+			 * Display the fields in the "Availability" tab of the Activity dialog
+			 * 
+			 * @since 1.4.0
+			 * @param array $params
+			 */
+			function bookacti_fill_activity_tab_availability( $params = array() ) {
+				do_action( 'bookacti_activity_tab_availability_before', $params );
+			?>
+				<div>
+					<label for='bookacti-activity-min-bookings-per-user' ><?php esc_html_e( 'Min bookings per user', BOOKACTI_PLUGIN_NAME ); ?></label>
+					<input	type='number' 
+							name='activityOptions[min_bookings_per_user]' 
+							id='bookacti-activity-min-bookings-per-user' 
+							min='0' step='1' 
+							onkeypress='return event.charCode >= 48 && event.charCode <= 57' />
+					<?php
+						$tip = __( 'The minimum booking quantity a user has to make on an event of this activity. E.g.: "3", the customer must book at least 3 places of the desired event.', BOOKACTI_PLUGIN_NAME );
+						$tip .= '<br/>' . __( 'Set it to "0" to ignore this parameter.', BOOKACTI_PLUGIN_NAME );
+						bookacti_help_tip( $tip );
+					?>
+				</div>
+				<div>
+					<label for='bookacti-activity-max-bookings-per-user' ><?php esc_html_e( 'Max bookings per user', BOOKACTI_PLUGIN_NAME ); ?></label>
+					<input	type='number' 
+							name='activityOptions[max_bookings_per_user]' 
+							id='bookacti-activity-max-bookings-per-user' 
+							min='0' step='1'
+							onkeypress='return event.charCode >= 48 && event.charCode <= 57' />
+					<?php
+						$tip = __( 'The maximum booking quantity a user can make on an event of this activity. E.g.: "1", the customer can only book one place of the desired event, and he won\'t be allowed to book it twice.', BOOKACTI_PLUGIN_NAME );
+						$tip .= '<br/>' . __( 'Set it to "0" to ignore this parameter.', BOOKACTI_PLUGIN_NAME );
+						bookacti_help_tip( $tip );
+					?>
+				</div>
+				<div>
+					<label for='bookacti-activity-max-users-per-event' ><?php esc_html_e( 'Max users per event', BOOKACTI_PLUGIN_NAME ); ?></label>
+					<input	type='number' 
+							name='activityOptions[max_users_per_event]' 
+							id='bookacti-activity-max-users-per-event' 
+							min='0' step='1' 
+							onkeypress='return event.charCode >= 48 && event.charCode <= 57' />
+					<?php
+						$tip = __( 'Set how many different users can book the same event. E.g.: "1", only one user can book a specific event; once he has booked it, the event won\'t be available for anyone else anymore, even if it isn\'t full. Usefull for private events.', BOOKACTI_PLUGIN_NAME );
+						$tip .= '<br/>' . __( 'Set it to "0" to ignore this parameter.', BOOKACTI_PLUGIN_NAME );
+						bookacti_help_tip( $tip );
+					?>
+				</div>
+				<div>
+					<label for='bookacti-activity-booking-changes-deadline' ><?php /* translators: Followed by a field indicating a number of days before the event. E.g.: "Changes permitted up to 2 days before the event". */ esc_html_e( 'Booking changes are permitted up to', BOOKACTI_PLUGIN_NAME ); ?></label>
+					<input	type='number' 
+							name='activityOptions[booking_changes_deadline]' 
+							id='bookacti-activity-booking-changes-deadline' 
+							min='-1' step='1'
+							onkeypress='return event.charCode >= 48 && event.charCode <= 57' />
+					<?php
+						_e( 'days before the event', BOOKACTI_PLUGIN_NAME );
+						$tip = __( 'Set the end of the period during which reservation changes are allowed (cancellation, rescheduling). E.g.: "7", your customers may change their reservations at least 7 days before the start of the event. After that, they won\'t be allowed to change them anymore.', BOOKACTI_PLUGIN_NAME );
+						$tip .= '<br/>' . __( 'This parameter applies to the events of this activity only. A global parameter is available in global settings.', BOOKACTI_PLUGIN_NAME );
+						$tip .= '<br/>' . __( 'Set it to "-1" to use the global value.', BOOKACTI_PLUGIN_NAME );
+						bookacti_help_tip( $tip );
+					?>
+				</div>
+			<?php
+				do_action( 'bookacti_activity_tab_availability_after', $params );
+			}
+			
+			
+			function bookacti_fill_activity_tab_terminology( $params = array() ) {
 				do_action( 'bookacti_activity_tab_terminology_before', $params );
 			?>
 				<div>
@@ -561,10 +645,37 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			<?php
 				do_action( 'bookacti_activity_tab_terminology_after', $params );
 			}
-		
-			function bookacti_fill_activity_tab_permissions( $params ) {
+			
+			/**
+			 * Display the fields in the "Permissions" tab of the Activity dialog
+			 * 
+			 * @version 1.4.0
+			 * @param array $params
+			 */
+			function bookacti_fill_activity_tab_permissions( $params = array() ) {
 				do_action( 'bookacti_activity_tab_permissions_before', $params );
 			?>
+				<div>
+					<label for='bookacti-activity-roles' class='bookacti-fullwidth-label' >
+						<?php 
+						esc_html_e( 'Who can book this activity?', BOOKACTI_PLUGIN_NAME );
+						
+						$tip  = __( 'Choose who is allowed to book the events of this activity.', BOOKACTI_PLUGIN_NAME );
+						$tip  .= '<br/>' . __( 'Use CTRL+Click to pick or unpick a role. Don\'t pick any role to allow everybody.', BOOKACTI_PLUGIN_NAME );
+						bookacti_help_tip( $tip );
+					?>
+					</label>
+					<div>
+						<select name='activityOptions[allowed_roles][]'  id='bookacti-activity-roles' multiple >
+						<?php 
+							$roles = get_editable_roles();
+							foreach( $roles as $role_id => $role ) {
+								echo '<option value="' . esc_attr( $role_id ) . '" >' . esc_html( $role[ 'name' ] ) . '</option>'; 
+							}
+						?>
+						</select>
+					</div>
+				</div>
 				<div id='bookacti-activity-managers-container' class='bookacti-items-container' data-type='users' >
 					<label id='bookacti-activity-managers-title' class='bookacti-fullwidth-label' >
 						<?php 
@@ -697,8 +808,13 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			bookacti_display_tabs( $group_of_events_tabs, 'group-of-events' );
 			
 			
-			// GENERAL tab
-			function bookacti_fill_group_of_events_tab_general( $params ) {
+			/**
+			 * Fill "General" tab of "Group of Events" dialog
+			 * 
+			 * @version 1.4.0
+			 * @param array $params
+			 */
+			function bookacti_fill_group_of_events_tab_general( $params = array() ) {
 				do_action( 'bookacti_group_of_events_tab_general_before', $params );
 		?>
 				<div>
@@ -712,11 +828,11 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 				<div>
 					<label for='bookacti-group-of-events-category-selectbox' ><?php esc_html_e( 'Group category', BOOKACTI_PLUGIN_NAME ); ?></label>
 					<select name='group-of-events-category' id='bookacti-group-of-events-category-selectbox' >
-						<option value='new' >New Category</option>
+						<option value='new' ><?php _e( 'New category', BOOKACTI_PLUGIN_NAME ); ?></option>
 						<?php
 							$template_id = get_user_meta( get_current_user_id(), 'bookacti_default_template', true );
 							if( ! empty( $template_id ) ) {
-								$categories	= bookacti_get_group_categories_by_template( $template_id );
+								$categories	= bookacti_get_group_categories( $template_id );
 								foreach( $categories as $category ) {
 									echo "<option value='" . $category[ 'id' ] . "' >" . $category[ 'title' ] . "</option>";
 								}
@@ -768,14 +884,22 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 				array(	'label'			=> __( 'General', BOOKACTI_PLUGIN_NAME ),
 						'callback'		=> 'bookacti_fill_group_category_tab_general',
 						'parameters'	=> array(),
-						'order'			=> 10 )
+						'order'			=> 10 ),
+				array(	'label'			=> __( 'Availability', BOOKACTI_PLUGIN_NAME ),
+						'callback'		=> 'bookacti_fill_group_category_tab_availability',
+						'parameters'	=> array(),
+						'order'			=> 20 ),
+				array(	'label'			=> __( 'Permissions', BOOKACTI_PLUGIN_NAME ),
+						'callback'		=> 'bookacti_fill_group_category_tab_permissions',
+						'parameters'	=> array(),
+						'order'			=> 100 )
 			) );
 			
 			// Display tabs
 			bookacti_display_tabs( $group_category_tabs, 'group-category' );
 			
 			// GENERAL tab
-			function bookacti_fill_group_category_tab_general( $params ) {
+			function bookacti_fill_group_category_tab_general( $params = array() ) {
 				do_action( 'bookacti_group_category_tab_general_before', $params );
 		?>
 				<div>
@@ -788,6 +912,130 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 				</div>
 		<?php
 				do_action( 'bookacti_group_category_tab_general_after', $params );
+			}
+			
+			/**
+			 * Display the fields in the "Availability" tab of the Group Category dialog
+			 * 
+			 * @since 1.4.0
+			 * @param array $params
+			 */
+			function bookacti_fill_group_category_tab_availability( $params = array() ) {
+				do_action( 'bookacti_group_category_tab_availability_before', $params );
+			?>
+				<div>
+					<label for='bookacti-group-category-min-bookings-per-user' ><?php esc_html_e( 'Min bookings per user', BOOKACTI_PLUGIN_NAME ); ?></label>
+					<input	type='number' 
+							name='groupCategoryOptions[min_bookings_per_user]' 
+							id='bookacti-group-category-min-bookings-per-user' 
+							min='0' step='1' 
+							onkeypress='return event.charCode >= 48 && event.charCode <= 57' />
+					<?php
+						$tip = __( 'The minimum booking quantity a user has to make on a group of events of this category. E.g.: "3", the customer must book at least 3 places of the desired group of events.', BOOKACTI_PLUGIN_NAME );
+						$tip .= '<br/>' . __( 'Set it to "0" to ignore this parameter.', BOOKACTI_PLUGIN_NAME );
+						bookacti_help_tip( $tip );
+					?>
+				</div>
+				<div>
+					<label for='bookacti-group-category-max-bookings-per-user' ><?php esc_html_e( 'Max bookings per user', BOOKACTI_PLUGIN_NAME ); ?></label>
+					<input	type='number' 
+							name='groupCategoryOptions[max_bookings_per_user]' 
+							id='bookacti-group-category-max-bookings-per-user' 
+							min='0' step='1'
+							onkeypress='return event.charCode >= 48 && event.charCode <= 57' />
+					<?php
+						$tip = __( 'The maximum booking quantity a user can make on a group of events of this category. E.g.: "1", the customer can only book one place of the desired group of events, and he won\'t be allowed to book it twice.', BOOKACTI_PLUGIN_NAME );
+						$tip .= '<br/>' . __( 'Set it to "0" to ignore this parameter.', BOOKACTI_PLUGIN_NAME );
+						bookacti_help_tip( $tip );
+					?>
+				</div>
+				<div>
+					<label for='bookacti-group-category-max-users-per-event' ><?php esc_html_e( 'Max users per event', BOOKACTI_PLUGIN_NAME ); ?></label>
+					<input	type='number' 
+							name='groupCategoryOptions[max_users_per_event]' 
+							id='bookacti-group-category-max-users-per-event' 
+							min='0' step='1' 
+							onkeypress='return event.charCode >= 48 && event.charCode <= 57' />
+					<?php
+						$tip = __( 'Set how many different users can book the same group of events. E.g.: "1", only one user can book a specific group of events; once he has booked it, the group of events won\'t be available for anyone else anymore, even if it isn\'t full. Usefull for private events.', BOOKACTI_PLUGIN_NAME );
+						$tip .= '<br/>' . __( 'Set it to "0" to ignore this parameter.', BOOKACTI_PLUGIN_NAME );
+						bookacti_help_tip( $tip );
+					?>
+				</div>
+				<div>
+					<label for='bookacti-group-category-booking-changes-deadline' ><?php /* translators: Followed by a field indicating a number of days before the event. E.g.: "Changes permitted up to 2 days before the event". */ esc_html_e( 'Booking changes are permitted up to', BOOKACTI_PLUGIN_NAME ); ?></label>
+					<input	type='number' 
+							name='groupCategoryOptions[booking_changes_deadline]' 
+							id='bookacti-group-category-booking-changes-deadline' 
+							min='-1' step='1'
+							onkeypress='return event.charCode >= 48 && event.charCode <= 57' />
+					<?php
+						_e( 'days before the first event', BOOKACTI_PLUGIN_NAME );
+						$tip = __( 'Set the end of the period during which reservation changes are allowed (cancellation). E.g.: "7", your customers may change their reservations at least 7 days before the start of the first event of the group. After that, they won\'t be allowed to change them anymore.', BOOKACTI_PLUGIN_NAME );
+						$tip .= '<br/>' . __( 'This parameter applies to the groups of events of this category only. A global parameter is available in global settings.', BOOKACTI_PLUGIN_NAME );
+						$tip .= '<br/>' . __( 'Set it to "-1" to use the global value.', BOOKACTI_PLUGIN_NAME );
+						bookacti_help_tip( $tip );
+					?>
+				</div>
+				<div>
+					<label for='bookacti-group-category-started-groups-bookable' ><?php esc_html_e( 'Are started groups bookable?', BOOKACTI_PLUGIN_NAME ); ?></label>
+					<?php
+						$tip = __( 'Allow or disallow users to book a group of events that has already begun.', BOOKACTI_PLUGIN_NAME );
+						$tip .= '<br/>' . __( 'This parameter applies to the groups of events of this category only. A global parameter is available in global settings.', BOOKACTI_PLUGIN_NAME );
+						$tip .= '<br/>' . __( 'Set it to "Site setting" to use the global value.', BOOKACTI_PLUGIN_NAME );
+						
+						$args = array(
+							'type'	=> 'select',
+							'name'	=> 'groupCategoryOptions[started_groups_bookable]',
+							'id'	=> 'bookacti-group-category-started-groups-bookable',
+							'options'	=> array( 
+								'-1' => __( 'Site setting', BOOKACTI_PLUGIN_NAME ),
+								'0' => __( 'No', BOOKACTI_PLUGIN_NAME ),
+								'1' => __( 'Yes', BOOKACTI_PLUGIN_NAME )
+							),
+							'value'	=> -1,
+							'tip'	=> $tip
+						);
+						bookacti_display_field( $args );
+					?>
+				</div>
+			<?php
+				do_action( 'bookacti_group_category_tab_availability_after', $params );
+			}
+			
+			
+			/**
+			 * Display the fields in the "Permissions" tab of the Group Category dialog
+			 * 
+			 * @version 1.4.0
+			 * @param array $params
+			 */
+			function bookacti_fill_group_category_tab_permissions( $params = array() ) {
+				do_action( 'bookacti_group_category_tab_permissions_before', $params );
+			?>
+				<div>
+					<label for='bookacti-group-category-roles' class='bookacti-fullwidth-label' >
+						<?php 
+						esc_html_e( 'Who can book this category of groups?', BOOKACTI_PLUGIN_NAME );
+						
+						$tip  = __( 'Choose who is allowed to book the groups of this category.', BOOKACTI_PLUGIN_NAME );
+						$tip  .= '<br/>' . __( 'Use CTRL+Click to pick or unpick a role. Don\'t pick any role to allow everybody.', BOOKACTI_PLUGIN_NAME );
+						bookacti_help_tip( $tip );
+					?>
+					</label>
+					<div>
+						<select name='groupCategoryOptions[allowed_roles][]'  id='bookacti-group-category-roles' multiple >
+						<?php 
+							$roles = get_editable_roles();
+							foreach( $roles as $role_id => $role ) {
+								echo '<option value="' . esc_attr( $role_id ) . '" >' . esc_html( $role[ 'name' ] ) . '</option>'; 
+							}
+						?>
+						</select>
+					</div>
+				</div>
+			<?php
+				do_action( 'bookacti_group_category_tab_permissions_after', $params );
 			}
 		?>
 	</form>

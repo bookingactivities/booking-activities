@@ -252,7 +252,8 @@ if( ! $templates ) {
 						'method'				=> 'calendar',
 						'id'					=> 'booking-system-bookings-page',
 						'classes'				=> 'admin-booking-system',
-						'past_events'			=> 1
+						'past_events'			=> 1,
+						'check_roles'			=> 0
 					);
 					bookacti_get_booking_system( $atts, true );
 				?>
@@ -276,7 +277,6 @@ if( ! $templates ) {
 				'activities'				=> $selected_activities, 
 				'booking_id'				=> isset( $_REQUEST[ 'booking_id' ] )		? intval( $_REQUEST[ 'booking_id' ] ): 0, 
 				'booking_group_id'			=> isset( $_REQUEST[ 'booking_group_id' ] )	? intval( $_REQUEST[ 'booking_group_id' ] ): 0, 
-				'booking_group_single_row'	=> isset( $_REQUEST[ 'booking_group_single_row' ] )	? intval( $_REQUEST[ 'booking_group_single_row' ] ): 0,
 				'event_group_id'			=> $event_group_id, 
 				'event_id'					=> $event_id, 
 				'event_start'				=> $event_start, 
@@ -285,6 +285,7 @@ if( ! $templates ) {
 				'user_id'					=> $selected_user,
 				'from'						=> $from,
 				'to'						=> $to,
+				'group_by'					=> isset( $_REQUEST[ 'group_by' ] )	? $_REQUEST[ 'group_by' ] : '',
 				'order_by'					=> isset( $_REQUEST[ 'orderby' ] )	? $_REQUEST[ 'orderby' ] : array( 'creation_date', 'id' ),
 				'order'						=> isset( $_REQUEST[ 'order' ] )	? $_REQUEST[ 'order' ] : 'DESC'
 			);

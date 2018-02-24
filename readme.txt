@@ -5,7 +5,7 @@ Tags: booking activities, booking sport, booking form, event reservation, reserv
 Requires at least: 3.6
 Tested up to: 4.9
 Requires PHP: 5.3
-Stable tag: 1.3.3
+Stable tag: 1.4.0
 License: GPLv3 or later
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
 
@@ -60,9 +60,17 @@ Try this reservation tool live on the [demo website](http://demo.booking-activit
 
 **Manage reservations**
 
-* Find all your bookings at a glance on a calendar and in a list. Use dynamic filters, sorting, and custom columns.
+* Find all your bookings at a glance on a calendar and in a list. Use dynamic filters, sorting, and custom columns
 * Booking actions: validate, cancel, reschedule, ★ refund...
 * ★ Your customers can **cancel** or **reschedule** their bookings and **ask a refund** by themselves
+* Permission management system: your managers manage only their own calendars and reservations
+
+**Availability options**
+
+* Set the **booking period**: customers can't book too early or too late
+* Make your **events private** or bookable by multiple users
+* ★ Set the min and max bookings allowed per user per event
+* Offer some activities to certain user roles only
 
 **Notifications**
 
@@ -302,6 +310,33 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 
 
 == Changelog ==
+
+= 1.4.0 - 2018/02/24 =
+* Feature - Set the advance booking period: customers can book events from X to Y days from today (global option and calendar option)
+* Feature - Set the minimum booking quantity required per user (activity option and group category option)
+* Feature - Set the maximum booking quantity allowed per user (activity option and group category option)
+* Feature - Set the maximum number of different users allowed to book the same (group of) event(s) (for private events) (activity option and group category option)
+* Feature - Set which user roles are allowed to book wich (group of) event(s) (activity option and group category option)
+* Feature - Set the booking changes deadline per activity: customers can change their events X days before they start (global option already exists)
+* Feature - Set whether to allow to book started groups of events (global option and group category option)
+* Tweak - Groups of events can be unselected in calendar editor
+* Optimization - Only the required groups of events data are retrieved on frontend
+* Optimization - Do not process the whole render function while dragging or resizing events
+* Optimization - Instant JS alert while dragging or resizing a booked event instead of waiting for PHP check
+* Optimization - Get event / group of events availability with a single query
+* Fix - Wrong error message when quantity <= 0 in booking form
+* Fix - PHP notice when updating single events and activity or calendar with no managers
+* Fix - Don't display booking actions in emails
+* Fix - PHP warnings and notices when a WooCommerce order was made and notifications sent
+* Fix - JS error on WC variation loaded with another default booking method than "Calendar"
+* Fix - Incorrect booking groups user ids if users made their bookings before logging in
+* Fix - PHP notices after updating custom parameters in calendar editor
+* Fix - JS errors when an event of a group was past
+* Fix - Australia and Arctic timezones added
+* Fix - Multilingual event titles were not displayed in event dialog in calendar editor
+* Fix - No alert displayed while trying to move or resize a booked event
+* Fix - JS error while trying to compute group availability if events of the group were not retrieved yet
+* Fix - PHP notices on activation: Multiple primary keys
 
 = 1.3.3 - 2018/02/11 =
 * Fix - Repeated events were not displayed on today's date at a future time

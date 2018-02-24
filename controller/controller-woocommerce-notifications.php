@@ -6,6 +6,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
  * Send one notification per booking to admin and customer when an order contining bookings is made or when its status changes
  *
  * @since 1.2.2
+ * @version 1.4.0
  * @param WC_Order $order
  * @param string $new_status
  * @param array $args
@@ -18,11 +19,13 @@ function bookacti_send_notification_when_order_status_changes( $order, $new_stat
 	
 	if( ! $order ) { return; }
 	
+	$action = isset( $_REQUEST[ 'action' ] ) ? $_REQUEST[ 'action' ] : '';
+	
 	// Check if the administrator must be notified
 	// If the booking status is pending or booked, notify administrator, unless HE originated this change
 	$notify_admin = 0;
 	if(	 in_array( $new_status, array( 'booked', 'pending' ) )
-	&& ! in_array( $_REQUEST[ 'action' ], array( 'woocommerce_mark_order_status', 'editpost' ) ) ) {
+	&& ! in_array( $action, array( 'woocommerce_mark_order_status', 'editpost' ) ) ) {
 		$admin_notification	= bookacti_get_notification_settings( 'admin_new_booking' );
 		$notify_admin		= $admin_notification[ 'active_with_wc' ] ? 1 : 0;
 	}
@@ -49,7 +52,7 @@ function bookacti_send_notification_when_order_status_changes( $order, $new_stat
 		if( ! $item || ( ! isset( $item[ 'bookacti_booking_id' ] ) && ! isset( $item[ 'bookacti_booking_group_id' ] ) ) ) { continue; }
 		
 		// If the state hasn't changed, do not send the notifications, unless it is a new order
-		$old_status = $args[ 'old_status' ] ? $args[ 'old_status' ] : wc_get_order_item_meta( $order_item_id, 'bookacti_state', true );
+		$old_status = isset( $args[ 'old_status' ] ) && $args[ 'old_status' ] ? $args[ 'old_status' ] : wc_get_order_item_meta( $order_item_id, 'bookacti_state', true );
 		if( $old_status === $new_status && ! $args[ 'is_new_order' ] ) { continue; }
 		
 		// Get booking ID and booking type ('single' or 'group')
