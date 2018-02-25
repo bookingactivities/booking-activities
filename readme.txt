@@ -314,6 +314,7 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 = 1.4.1 - 2018/02/25 =
 * Fix - Error while trying to update an event in calendar editor
 * Fix - Error while trying to delete a group of events
+* Fix - Error while trying to delete a booked event
 
 = 1.4.0 - 2018/02/24 =
 * Feature - Set the advance booking period: customers can book events from X to Y days from today (global option and calendar option)
