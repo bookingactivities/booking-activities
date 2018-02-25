@@ -1586,9 +1586,9 @@ function bookacti_reschedule_booking( $booking_id, $event_id, $event_start, $eve
 	 * Get booking groups according to filters
 	 * 
 	 * @since 1.3.0 (was bookacti_get_booking_groups_by_group_of_events)
-	 * @version 1.4.0
+	 * @version 1.4.1
 	 * @global wpdb $wpdb
-	 * @param int $booking_group_id
+	 * @param array $filters Use bookacti_format_booking_filters() before
 	 * @return object
 	 */
 	function bookacti_get_booking_groups( $filters ) {
@@ -1646,6 +1646,11 @@ function bookacti_reschedule_booking( $booking_id, $event_id, $event_start, $eve
 		if( $filters[ 'user_id' ] ) {
 			$query .= ' AND BG.user_id = %s ';
 			$variables[] = $filters[ 'user_id' ];
+		}
+
+		if( $filters[ 'active' ] !== false ) {
+			$query .= ' AND BG.active = %d ';
+			$variables[] = $filters[ 'active' ];
 		}
 
 		$query .= ' ORDER BY id ASC ';

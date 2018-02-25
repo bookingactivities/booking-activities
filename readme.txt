@@ -5,7 +5,7 @@ Tags: booking activities, booking sport, booking form, event reservation, reserv
 Requires at least: 3.6
 Tested up to: 4.9
 Requires PHP: 5.3
-Stable tag: 1.4.0
+Stable tag: 1.4.1
 License: GPLv3 or later
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
 
@@ -270,7 +270,7 @@ Then, just click on "Apply Filters". Now you can see all kind of active bookings
 
 
 = Cancelled bookings disapeared from the list, I need to see them! =
-Got to the "Bookings" page. Under the "States" filter, select all the available status (click on a status and press CTRL+A to select all rows).
+Go to the "Bookings" page. Under the "States" filter, select all the available status (click on a status and press CTRL+A to select all rows).
 Click on "Apply Filters" and then you will be able to see inactive bookings (cancelled, expired, removed, refunded, refund requested).
 
 
@@ -310,6 +310,10 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 
 
 == Changelog ==
+
+= 1.4.1 - 2018/02/25 =
+* Fix - Error while trying to update an event in calendar editor
+* Fix - Error while trying to delete a group of events
 
 = 1.4.0 - 2018/02/24 =
 * Feature - Set the advance booking period: customers can book events from X to Y days from today (global option and calendar option)
