@@ -775,7 +775,7 @@ function bookacti_dialog_delete_event( event ) {
                         } else {
 							if( response.error === 'has_bookings' ) {
 								// If the event's booking number is not up to date, refresh it
-								if( ! bookacti_get_event_number_of_bookings( booking_system, event ) ) {
+								if( ! bookacti_get_event_number_of_bookings( $j( '#bookacti-template-calendar' ), event ) ) {
 									bookacti_refresh_booking_numbers( $j( '#bookacti-template-calendar' ), event.id );
 								}
 								
