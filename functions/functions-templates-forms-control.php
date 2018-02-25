@@ -207,7 +207,7 @@ function bookacti_format_event_settings( $event_settings ) {
 /**
  * Make sure the availability is higher than the bookings already made
  * 
- * @version 1.4.0
+ * @version 1.4.1
  * @param int $event_id
  * @param int $event_availability
  * @param string $repeat_freq
@@ -216,50 +216,50 @@ function bookacti_format_event_settings( $event_settings ) {
  * @return array
  */
 function bookacti_validate_event( $event_id, $event_availability, $repeat_freq, $repeat_from, $repeat_to ) {
-    // Get info required
-    $min_avail          = bookacti_get_min_availability( $event_id );
-    $min_period         = bookacti_get_min_period( NULL, $event_id );
-    $repeat_from_time   = strtotime( $repeat_from );
-    $repeat_to_time     = strtotime( $repeat_to );
-    $max_from           = $min_period ? strtotime( $min_period[ 'from' ] ) : '';
-    $min_to             = $min_period ? strtotime( $min_period[ 'to' ] ) : '';
-    
-    // Init var to check with worst case
-    $isAvailSupToBookings           = false;
-    $isRepeatFromBeforeFirstBooked  = false;
-    $isRepeatToAfterLastBooked      = false;
-    	
-    // Make the tests
-    if( $min_avail ) {
-        if( intval( $event_availability ) >= intval( $min_avail ) ) {
-            $isAvailSupToBookings = true;
-        }
-    }
-    if( $min_period ) {
+	// Get info required
+	$min_avail          = bookacti_get_min_availability( $event_id );
+	$min_period         = bookacti_get_min_period( NULL, $event_id );
+	$repeat_from_time   = strtotime( $repeat_from );
+	$repeat_to_time     = strtotime( $repeat_to );
+	$max_from           = $min_period ? strtotime( $min_period[ 'from' ] ) : '';
+	$min_to             = $min_period ? strtotime( $min_period[ 'to' ] ) : '';
+
+	// Init var to check with worst case
+	$isAvailSupToBookings           = $min_avail ? false : true;
+	$isRepeatFromBeforeFirstBooked  = false;
+	$isRepeatToAfterLastBooked      = false;
+
+	// Make the tests
+	if( $min_avail ) {
+		if( intval( $event_availability ) >= intval( $min_avail ) ) {
+			$isAvailSupToBookings = true;
+		}
+	}
+	if( $min_period ) {
 		if( $repeat_from_time <= $max_from ){ $isRepeatFromBeforeFirstBooked = true; }
 		if( $repeat_to_time   >= $min_to )  { $isRepeatToAfterLastBooked = true; }
-    }
-    
-    $return_array = array();
-    $return_array['status'] = 'valid';
-    $return_array['errors'] = array();
-    if( ! $isAvailSupToBookings ){
-        $return_array['status'] = 'not_valid';
-        $return_array['min_availability'] = $min_avail;
-        array_push ( $return_array['errors'], 'error_less_avail_than_bookings' );
-    }
-    if( ( $repeat_freq !== 'none' ) && ( $min_period['is_bookings'] > 0 ) && ( ! $isRepeatFromBeforeFirstBooked || ! $isRepeatToAfterLastBooked ) ){
-        $return_array['status'] = 'not_valid';
-        $return_array['from'] = date( 'Y-m-d', $max_from );
-        $return_array['to'] = date( 'Y-m-d', $min_to );
-        array_push ( $return_array['errors'], 'error_booked_events_out_of_period' );
-    }
-    if( ( $repeat_freq !== 'none' ) && ( ! $repeat_from || ! $repeat_to ) ){
-        $return_array['status'] = 'not_valid';
-        array_push ( $return_array['errors'], 'error_repeat_period_not_set' );
-    }
-    
-    return $return_array;
+	}
+
+	$return_array = array();
+	$return_array['status'] = 'valid';
+	$return_array['errors'] = array();
+	if( ! $isAvailSupToBookings ){
+		$return_array['status'] = 'not_valid';
+		$return_array['min_availability'] = $min_avail;
+		array_push ( $return_array['errors'], 'error_less_avail_than_bookings' );
+	}
+	if( ( $repeat_freq !== 'none' ) && ( $min_period['is_bookings'] > 0 ) && ( ! $isRepeatFromBeforeFirstBooked || ! $isRepeatToAfterLastBooked ) ){
+		$return_array['status'] = 'not_valid';
+		$return_array['from'] = date( 'Y-m-d', $max_from );
+		$return_array['to'] = date( 'Y-m-d', $min_to );
+		array_push ( $return_array['errors'], 'error_booked_events_out_of_period' );
+	}
+	if( ( $repeat_freq !== 'none' ) && ( ! $repeat_from || ! $repeat_to ) ){
+		$return_array['status'] = 'not_valid';
+		array_push ( $return_array['errors'], 'error_repeat_period_not_set' );
+	}
+
+	return $return_array;
 }
 
 

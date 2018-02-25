@@ -565,6 +565,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	 * Delete a group of events with AJAX
 	 * 
 	 * @since 1.1.0
+	 * @version 1.4.1
 	 */
 	function bookacti_controller_delete_group_of_events() {
 		
@@ -578,7 +579,8 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		if( $is_nonce_valid && $is_allowed ) {
 			
 			// Check if the group has been booked
-			$booking_groups = bookacti_get_booking_groups_by_group_of_events( $group_id, false );
+			$filters		= bookacti_format_booking_filters( array( 'event_group_id' => $group_id ) );
+			$booking_groups = bookacti_get_booking_groups( $filters );
 			
 			// Delete groups with no bookings
 			if( empty( $booking_groups ) ) {
@@ -656,6 +658,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	 * Delete a group category with AJAX
 	 * 
 	 * @since 1.1.0
+	 * @version 1.4.1
 	 */
 	function bookacti_controller_delete_group_category() {
 		
@@ -673,7 +676,8 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			// Check if one of the groups of this category has been booked
 			$delete_category = true;
 			foreach( $groups_ids as $group_id ) {
-				$booking_groups = bookacti_get_booking_groups_by_group_of_events( $group_id, false );
+				$filters		= bookacti_format_booking_filters( array( 'event_group_id' => $group_id ) );
+				$booking_groups = bookacti_get_booking_groups( $filters );
 				
 				// Delete groups with no bookings
 				if( empty( $booking_groups ) ) {
