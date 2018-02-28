@@ -1277,8 +1277,6 @@ function bookacti_start_loading_booking_system( booking_system ) {
 			booking_system.append( loading_div );
 		}
 		
-	} else {
-		booking_system.trigger( 'bookacti_start_loading', [ booking_method, loading_div ] );
 	}
 	
 	if( bookacti.booking_system[ booking_system_id ][ 'loading_number' ] === 0 ) {
@@ -1286,6 +1284,8 @@ function bookacti_start_loading_booking_system( booking_system ) {
 	}
 	
 	bookacti.booking_system[ booking_system_id ][ 'loading_number' ]++;
+	
+	booking_system.trigger( 'bookacti_start_loading', [ booking_method, loading_div ] );
 }
 
 
@@ -1302,17 +1302,16 @@ function bookacti_stop_loading_booking_system( booking_system, force_exit ) {
 	
 	if( force_exit ) { bookacti.booking_system[ booking_system_id ][ 'loading_number' ] = 0; }
 	
+	booking_system.trigger( 'bookacti_stop_loading' );
+	
 	// Action to do after everything has loaded
 	if( bookacti.booking_system[ booking_system_id ][ 'loading_number' ] === 0 ) {
 		
 		if( booking_method === 'calendar' || $j.inArray( booking_method, bookacti_localized.available_booking_methods ) === -1 ) {		
 			bookacti_exit_calendar_loading_state( booking_system.find( '.bookacti-calendar' ) );
-		} else {
-			booking_system.trigger( 'bookacti_stop_loading', [ booking_method ] );
 		}
 		
 		booking_system.find( '.bookacti-loading-alt' ).remove();
-		booking_system.trigger( 'bookacti_exit_loading_state' );
-		
+		booking_system.trigger( 'bookacti_exit_loading_state', [ booking_method, force_exit ] );
 	}
 }

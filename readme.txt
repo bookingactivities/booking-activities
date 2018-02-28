@@ -311,6 +311,10 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 
 == Changelog ==
 
+= 1.4.2 =
+* Fix - Groups of events were only retrieved for the first interval if "Groups only" box was checked
+* Fix - Booking calendar didn't appeared on WooCommerce variation switch if the calendar was hidden before
+
 = 1.4.1 - 2018/02/25 =
 * Fix - Error while trying to update an event in calendar editor
 * Fix - Error while trying to delete a group of events
