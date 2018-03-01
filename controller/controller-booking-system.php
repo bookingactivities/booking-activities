@@ -6,14 +6,14 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 /**
  * AJAX Controller - Fetch events in order to display them
  * 
- * @version	1.4.0
+ * @version	1.4.2
  */
 function bookacti_controller_fetch_events() {
 	// Check nonce
 	$is_nonce_valid	= check_ajax_referer( 'bookacti_fetch_events', 'nonce', false );
 	$is_admin		= intval( $_POST[ 'is_admin' ] );
-	
-	$attributes		= bookacti_format_booking_system_attributes( json_decode( stripslashes( $_POST[ 'attributes' ] ), true ) );
+	$raw_attributes	= (array) json_decode( stripslashes( $_POST[ 'attributes' ] ) );
+	$attributes		= bookacti_format_booking_system_attributes( $raw_attributes, true );
 	
 	// On admin side only, check capabilities
 	$is_allowed = true;
@@ -33,12 +33,15 @@ function bookacti_controller_fetch_events() {
 	
 	if( $is_nonce_valid && $is_allowed ) {
 		
-		$events_interval = bookacti_sanitize_events_interval( $_POST[ 'interval' ] );
+		$events_interval	= bookacti_sanitize_events_interval( $_POST[ 'interval' ] );
+		$events				= array( 'events' => array(), 'data' => array() );
 		
 		if( $attributes[ 'groups_only' ] ) {
-			$groups_ids = array( 0 );
-			foreach( $attributes[ 'group_data' ] as $group_id => $group_data ) { $groups_ids[] = $group_id; }
-			$events	= bookacti_fetch_grouped_events( $attributes[ 'calendars' ], $attributes[ 'activities' ], $groups_ids, $attributes[ 'group_categories' ], $attributes[ 'past_events' ], $events_interval );
+			$groups_data	= isset( $raw_attributes[ 'groups_data' ] ) ? (array) $raw_attributes[ 'groups_data' ] : array();
+			$groups_ids		= $groups_data ? array_keys( $groups_data ) : array();
+			if( $groups_ids ) {
+				$events	= bookacti_fetch_grouped_events( $attributes[ 'calendars' ], $attributes[ 'activities' ], $groups_ids, $attributes[ 'group_categories' ], $attributes[ 'past_events' ], $events_interval );
+			}
 		} else if( $attributes[ 'bookings_only' ] ) {
 			$events = bookacti_fetch_booked_events( $attributes[ 'calendars' ], $attributes[ 'activities' ], $attributes[ 'status' ], $attributes[ 'user_id' ], $attributes[ 'past_events' ], $events_interval );
 		} else {

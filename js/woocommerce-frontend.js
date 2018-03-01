@@ -172,8 +172,10 @@ function bookacti_switch_booking_system_according_to_variation( booking_system, 
 	&&  variation[ 'variation_is_visible' ] ) {
 		
 		bookacti.is_variation_activity[ variation[ 'variation_id' ] ] = true;
-		bookacti_activate_booking_system( booking_system, variation[ 'variation_id' ] );
-
+		
+		// Make sure the booking system is visible and active
+		bookacti_activate_booking_system( booking_system );
+		
 		var template_id				= $j.isArray( variation[ 'bookacti_template_id' ] ) ? variation[ 'bookacti_template_id' ] : [ variation[ 'bookacti_template_id' ] ];
 		var activity_id				= $j.isArray( variation[ 'bookacti_activity_id' ] ) ? variation[ 'bookacti_activity_id' ] : [ variation[ 'bookacti_activity_id' ] ];
 		var group_categories		= $j.isArray( variation[ 'bookacti_group_categories' ] ) ? variation[ 'bookacti_group_categories' ] : [ variation[ 'bookacti_group_categories' ] ];
@@ -355,13 +357,14 @@ function bookacti_deactivate_booking_system( booking_system ) {
 
 // Activate booking system
 function bookacti_activate_booking_system( booking_system ) {
-	if( bookacti_booking_system_is_active( booking_system ) ) { return; }
-	
-	var booking_method = bookacti.booking_system[ booking_system.attr( 'id' ) ][ 'method' ];
 	
 	booking_system.parent().show();
+	
+	if( bookacti_booking_system_is_active( booking_system ) ) { return; }
+	
 	booking_system.siblings( '.bookacti-booking-system-inputs input' ).prop( 'disabled', false );
 	
+	var booking_method = bookacti.booking_system[ booking_system.attr( 'id' ) ][ 'method' ];
 	bookacti_booking_method_rerender_events( booking_system, booking_method );
 }
 

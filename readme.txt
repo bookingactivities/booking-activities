@@ -5,7 +5,7 @@ Tags: booking activities, booking sport, booking form, event reservation, reserv
 Requires at least: 3.6
 Tested up to: 4.9
 Requires PHP: 5.3
-Stable tag: 1.4.1
+Stable tag: 1.4.2
 License: GPLv3 or later
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
 
@@ -310,6 +310,10 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 
 
 == Changelog ==
+
+= 1.4.2 - 2018/03/01 =
+* Fix - Groups of events were only retrieved for the first interval if "Groups only" box was checked
+* Fix - Booking calendar didn't appeared on WooCommerce variation switch if the calendar was hidden before
 
 = 1.4.1 - 2018/02/25 =
 * Fix - Error while trying to update an event in calendar editor
