@@ -159,7 +159,7 @@ echo "<h1>" . esc_html__( 'Calendars', BOOKACTI_PLUGIN_NAME ) . "</h1>";
 		<?php
 		if( $templates ) {
 		?>
-			<div id='bookacti-template-calendar'></div>
+			<div id='bookacti-template-calendar' class='bookacti-calendar' ></div>
 		<?php
 		} else if( $current_user_can_create_template ) {
 			?>

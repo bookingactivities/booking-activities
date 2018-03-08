@@ -311,6 +311,12 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 
 == Changelog ==
 
+= 1.4.3 - 2018/03 =
+* Fix - Groups of events were not properly retrieved for WooCommerce variations
+* Fix - PHP notice when updating an order containing non-booking items
+* Fix - PHP notice when updating a WooCommerce product with only 1 calendar, 1 activity or 1 group category
+* Fix - Every classes and CSS instructions are prefixed by "bookacti"
+
 = 1.4.2 - 2018/03/01 =
 * Fix - Groups of events were only retrieved for the first interval if "Groups only" box was checked
 * Fix - Booking calendar didn't appeared on WooCommerce variation switch if the calendar was hidden before

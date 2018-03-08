@@ -19,13 +19,13 @@ $j( document ).ready( function() {
 // Init tooltip
 function bookacti_init_tooltip() {
 	$j( '.bookacti-tip' ).tooltip({
-		items:	'[data-tip]',
-		content: function () {
+		"items":	'[data-tip]',
+		"content": function () {
 			return $j( this ).data( 'tip' );
 		},
-		show:	{ effect: 'fadeIn', duration: 200 },
-		hide:	{ effect: 'fadeOut', duration: 200 },
-		close: function(event, ui) {
+		"show":	{ effect: 'fadeIn', duration: 200 },
+		"hide":	{ effect: 'fadeOut', duration: 200 },
+		"close": function(event, ui) {
 			ui.tooltip.hover( function() {
 				$j( this ).stop( true ).fadeTo( 200, 1 ); 
 			},

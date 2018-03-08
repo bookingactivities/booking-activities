@@ -14,15 +14,16 @@ $j( document ).ready( function() {
 function bookacti_init_bookings_dialogs() {
 	//Common param
 	$j( '.bookacti-bookings-dialog' ).dialog({ 
-		modal:      true,
-		autoOpen:   false,
-		minHeight:  300,
-		minWidth:   440,
-		resize:		'auto',
-		show:       true,
-		hide:       true,
-		closeText:  '&#10006;',
-		close: function() {}
+		"modal":		true,
+		"autoOpen":		false,
+		"minHeight":	300,
+		"minWidth":		440,
+		"resize":		'auto',
+		"show":			true,
+		"hide":			true,
+		"dialogClass":	'bookacti-dialog',
+		"closeText":	'&#10006;',
+		"close":		function() {}
 	});
 	
 	// Make dialogs close when the user click outside

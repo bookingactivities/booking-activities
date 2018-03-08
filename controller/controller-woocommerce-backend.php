@@ -476,7 +476,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	/**
 	 * Content of the activity tab
 	 * 
-	 * @version 1.4.0
+	 * @version 1.4.3
 	 * 
 	 * @global type $thepostid
 	 */
@@ -504,7 +504,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 					$template_field_id	= '_bookacti_template'; 
 					$templates = bookacti_fetch_templates();
 					$current_templates	= get_post_meta( $thepostid, $template_field_id, true );
-					$current_templates	= is_numeric( $current_templates ) ? array( $current_templates ) : $current_templates;
+					$current_templates	= ! is_array( $current_templates ) ? array( $current_templates ) : $current_templates;
 				?>
 				<p class="form-field <?php echo $template_field_id; ?>_field" >
 					<label for="<?php echo $template_field_id; ?>">
@@ -551,7 +551,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 					$activity_field_id	= '_bookacti_activity'; 
 					$activities			= bookacti_fetch_activities_with_templates_association();
 					$current_activities	= get_post_meta( $thepostid, $activity_field_id, true );
-					$current_activities	= is_numeric( $current_activities ) ? array( $current_activities ) : $current_activities;
+					$current_activities	= ! is_array( $current_activities ) ? array( $current_activities ) : $current_activities;
 				?>
 				<p class="form-field <?php echo $activity_field_id; ?>_field" >
 					<label for="<?php echo $activity_field_id; ?>">
@@ -599,7 +599,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 					$groups_field_id	= '_bookacti_group_categories'; 
 					$categories			= bookacti_get_group_categories();
 					$current_categories	= get_post_meta( $thepostid, $groups_field_id, true );
-					$current_categories	= is_numeric( $current_categories ) ? array( $current_categories ) : $current_categories;
+					$current_categories	= ! is_array( $current_categories ) ? array( $current_categories ) : $current_categories;
 				?>
 				<p class="form-field <?php echo $groups_field_id; ?>_field" >
 					<label for="<?php echo $groups_field_id; ?>">

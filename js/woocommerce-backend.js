@@ -8,7 +8,7 @@ $j( document ).ready( function() {
 	
 	//Show or hide activities depending on the selected template
 	// On load
-	bookacti_show_hide_template_related_options( '#_bookacti_template' );
+	if( $j( '#_bookacti_template' ).length ) { bookacti_show_hide_template_related_options( '#_bookacti_template' ); }
 	// On change
 	$j( '#_bookacti_template, bookacti_variable_template' ).on( 'change', function(){ 
 		bookacti_show_hide_template_related_options( this );

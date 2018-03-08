@@ -309,9 +309,10 @@ function bookacti_uninstall() {
 // UPDATE
 add_action( 'init', 'bookacti_check_version', 5 );
 function bookacti_check_version( $from_activate = false ) {
-	if( get_option( 'bookacti_version' ) !== BOOKACTI_VERSION ) {
+	$old_version = get_option( 'bookacti_version' );
+	if( $old_version !== BOOKACTI_VERSION ) {
 		if( ! $from_activate ) { bookacti_activate(); }
-		do_action( 'bookacti_updated' );
+		do_action( 'bookacti_updated', $old_version );
 	}
 }
 

@@ -1,17 +1,18 @@
 // INITIALIZATION
 
 function bookacti_init_template_dialogs() {
-    //Common param
+    // Common param
     $j( '.bookacti-template-dialogs' ).dialog({ 
-		modal:      true,
-		autoOpen:   false,
-		minHeight:  300,
-		minWidth:   520,
-		resize:		'auto',
-		show:       true,
-		hide:       true,
-		closeText:  '&#10006;',
-		beforeClose: function() { bookacti_empty_all_dialog_forms(); }
+		"modal":		true,
+		"autoOpen":		false,
+		"minHeight":	300,
+		"minWidth":		520,
+		"resize":		'auto',
+		"show":			true,
+		"hide":			true,
+		"dialogClass":	'bookacti-dialog',
+		"closeText":	'&#10006;',
+		"beforeClose":	function() { bookacti_empty_all_dialog_forms(); }
     });
 	
 	// Make dialogs close when the user click outside
@@ -1021,8 +1022,8 @@ function bookacti_dialog_import_activity() {
 			//On click on the OK Button, new values are send to a script that update the database
 			click: function() {
 
-				$j( '#bookacti-activity-import-dialog .input-error' ).removeClass( 'input-error' );
-				$j( '#bookacti-activity-import-dialog .form-error' ).remove();
+				$j( '#bookacti-activity-import-dialog .bookacti-input-error' ).removeClass( 'bookacti-input-error' );
+				$j( '#bookacti-activity-import-dialog .bookacti-form-error' ).remove();
 
 				var activity_ids = $j( 'select#activities-to-import' ).val();
 
@@ -1066,8 +1067,8 @@ function bookacti_dialog_import_activity() {
 								$j( '#bookacti-activity-create-method-dialog' ).dialog( 'close' );
 
 							} else if ( response.status === 'no_activity' ) {
-								$j( '#activities-to-import' ).addClass( 'input-error' );
-								$j( '#bookacti-activities-bound-to-template' ).append( '<div class="form-error" >' + bookacti_localized.error_no_activity_selected + '</div>' );
+								$j( '#activities-to-import' ).addClass( 'bookacti-input-error' );
+								$j( '#bookacti-activities-bound-to-template' ).append( '<div class="bookacti-form-error" >' + bookacti_localized.error_no_activity_selected + '</div>' );
 							} else {
 								var error_message = bookacti_localized.error_import_activity;
 								if( response.error === 'not_allowed' ) {
@@ -1087,8 +1088,8 @@ function bookacti_dialog_import_activity() {
 					});
 
 				} else {
-					$j( '#activities-to-import' ).addClass( 'input-error' );
-					$j( '#bookacti-activities-bound-to-template' ).append( '<div class="form-error" >' + bookacti_localized.error_no_activity_selected + '</div>' );
+					$j( '#activities-to-import' ).addClass( 'bookacti-input-error' );
+					$j( '#bookacti-activities-bound-to-template' ).append( '<div class="bookacti-form-error" >' + bookacti_localized.error_no_activity_selected + '</div>' );
 				}
 			}
 		},
