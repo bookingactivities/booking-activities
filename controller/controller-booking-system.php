@@ -6,14 +6,14 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 /**
  * AJAX Controller - Fetch events in order to display them
  * 
- * @version	1.4.2
+ * @version	1.4.3
  */
 function bookacti_controller_fetch_events() {
 	// Check nonce
 	$is_nonce_valid	= check_ajax_referer( 'bookacti_fetch_events', 'nonce', false );
 	$is_admin		= intval( $_POST[ 'is_admin' ] );
-	$raw_attributes	= (array) json_decode( stripslashes( $_POST[ 'attributes' ] ) );
-	$attributes		= bookacti_format_booking_system_attributes( $raw_attributes, true );
+	$raw_attributes	= json_decode( stripslashes( $_POST[ 'attributes' ] ), true );
+	$attributes		= bookacti_format_booking_system_attributes( $raw_attributes );
 	
 	// On admin side only, check capabilities
 	$is_allowed = true;
@@ -66,7 +66,7 @@ add_action( 'wp_ajax_nopriv_bookactiFetchEvents', 'bookacti_controller_fetch_eve
  * Reload booking system with new attributes via AJAX
  * 
  * @since 1.1.0
- * @version 1.4.0
+ * @version 1.4.3
  */
 function bookacti_controller_reload_booking_system() {
 	
@@ -108,13 +108,13 @@ function bookacti_controller_reload_booking_system() {
 		$groups_events		= array();
 		$events				= array( 'events' => array(), 'data' => array() );
 		
-		if( $atts[ 'group_categories' ] !== false ) {
+		if( $attributes[ 'group_categories' ] !== false ) {
 			$groups_data		= bookacti_get_groups_of_events( $attributes[ 'calendars' ], $attributes[ 'group_categories' ], $attributes[ 'past_events' ] );
 			$categories_data	= bookacti_get_group_categories( $attributes[ 'calendars' ], $attributes[ 'group_categories' ] );
 			
 			foreach( $groups_data as $group_id => $group_data ) { $groups_ids[] = $group_id; }
 			
-			$groups_events		= ! $groups_ids ? array() : bookacti_get_groups_events( $atts[ 'calendars' ], $atts[ 'group_categories' ], $groups_ids );
+			$groups_events		= ! $groups_ids ? array() : bookacti_get_groups_events( $attributes[ 'calendars' ], $attributes[ 'group_categories' ], $groups_ids );
 		}
 		
 		if( $attributes[ 'groups_only' ] ) {

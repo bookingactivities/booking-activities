@@ -73,11 +73,11 @@
 .bookacti-message-setting input	{ margin-top: 6px; }
 
 /** DIALOGS **/
-.input-warning  { border-color: #d80 !important; }
-.input-error    { border-color: #f00 !important; }
-.form-error		{ color: #f00; font-style: italic; }
-.form-warning	{ color: orange; font-style: italic; }
-.error-exception{ color: orange; }
+.bookacti-input-warning		{ border-color: #d80 !important; }
+.bookacti-input-error		{ border-color: #f00 !important; }
+.bookacti-form-error		{ color: #f00; font-style: italic; }
+.bookacti-form-warning		{ color: orange; font-style: italic; }
+.bookacti-error-exception	{ color: orange; }
 
 .bookacti-backend-dialog { display: none; }
 

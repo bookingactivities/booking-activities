@@ -3,15 +3,16 @@
 function bookacti_init_booking_system_dialogs() {
 	//Common param
 	$j( '.bookacti-booking-system-dialog' ).dialog({ 
-		modal:      true,
-		autoOpen:   false,
-		minHeight:  300,
-		minWidth:   400,
-		resize:		'auto',
-		show:       true,
-		hide:       true,
-		closeText:  '&#10006;',
-		close: function() {}
+		"modal":		true,
+		"autoOpen":		false,
+		"minHeight":	300,
+		"minWidth":		400,
+		"resize":		'auto',
+		"show":			true,
+		"hide":			true,
+		"dialogClass":	'bookacti-dialog',
+		"closeText":	'&#10006;',
+		"close":		function() {}
 	});
 
 	// Make dialogs close when the user click outside

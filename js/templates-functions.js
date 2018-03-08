@@ -812,7 +812,7 @@ function bookacti_init_add_and_remove_items() {
 
 // Empty all dialog forms
 function bookacti_empty_all_dialog_forms() {
-    $j( '.bookacti-backend-dialog .form-error' ).remove();
+    $j( '.bookacti-backend-dialog .bookacti-form-error' ).remove();
 	$j( '.bookacti-backend-dialog input[type="hidden"]:not([name^="nonce"]):not([name="_wp_http_referer"])' ).val( '' );
 	$j( '.bookacti-backend-dialog input[type="text"]' ).val( '' );
     $j( '.bookacti-backend-dialog input[type="number"]' ).val( '' );
@@ -1171,7 +1171,7 @@ function bookacti_load_activities_bound_to_template( selected_template_id ) {
 	
 	if( parseInt( selected_template_id ) !== parseInt( bookacti.selected_template ) ) {
 
-		$j( '#bookacti-activities-bound-to-template .form-error' ).remove();
+		$j( '#bookacti-activities-bound-to-template .bookacti-form-error' ).remove();
 
 		bookacti_start_template_loading();
 
@@ -1199,10 +1199,10 @@ function bookacti_load_activities_bound_to_template( selected_template_id ) {
 					if( activity_options !== '' ) {
 						$j( 'select#activities-to-import' ).append( activity_options );
 					} else {
-						$j( '#bookacti-activities-bound-to-template' ).append( '<div class="form-error">' + bookacti_localized.error_no_avail_activity_bound + '</div>' );
+						$j( '#bookacti-activities-bound-to-template' ).append( '<div class="bookacti-form-error">' + bookacti_localized.error_no_avail_activity_bound + '</div>' );
 					}
 				} else if ( response.status === 'no_activity' ) {
-					$j( '#bookacti-activities-bound-to-template' ).append( '<div class="form-error">' + bookacti_localized.error_no_avail_activity_bound + '</div>' );
+					$j( '#bookacti-activities-bound-to-template' ).append( '<div class="bookacti-form-error">' + bookacti_localized.error_no_avail_activity_bound + '</div>' );
 				} else {
 					var message_error = bookacti_localized.error_retrieve_activity_bound;
 					if( response.error === 'not_allowed' ) {

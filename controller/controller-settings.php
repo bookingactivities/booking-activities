@@ -434,10 +434,10 @@ add_action( 'wp_ajax_bookactiUpdateNotification', 'bookacti_controller_update_no
 /**
  * Ensure backward compatibility between 1.2.0 and 1.2.1+
  * 
- * @version 1.2.1
+ * @version 1.4.3
  */
-function bookacti_format_old_notifications_settings() {
-	if( version_compare( BOOKACTI_VERSION, '1.2.1', '>=' ) ) {
+function bookacti_format_old_notifications_settings( $old_version ) {
+	if( version_compare( $old_version, '1.2.1', '<' ) ) {
 		// get all db options
 		$alloptions = wp_load_alloptions(); // get_option() calls wp_load_alloptions() itself, so there is no overhead at runtime 
 		
@@ -487,7 +487,7 @@ function bookacti_format_old_notifications_settings() {
 		}
 	}
 }
-add_action( 'bookacti_updated', 'bookacti_format_old_notifications_settings' );
+add_action( 'bookacti_updated', 'bookacti_format_old_notifications_settings', 10, 1 );
 
 
 

@@ -316,6 +316,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	 * To be used since WC 3.0 instead of bookacti_add_values_to_order_item_meta, on woocommerce_checkout_create_order_line_item hook
 	 * 
 	 * @since 1.1.0
+	 * @version 1.4.3
 	 * 
 	 * @param WC_Order_Item_Product $item
 	 * @param string $cart_item_key
@@ -323,11 +324,16 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	 * @param WC_Order $order
 	 */
 	function bookacti_save_order_item_metadata( $item, $cart_item_key, $values, $order ) {
+		
+		// Do not process non-booking metadata
+		if( ! array_key_exists( '_bookacti_options', $values ) ) { return; }
+		
 		// Single event data
 		if( isset( $values['_bookacti_options']['bookacti_booking_id'] ) ) {
 
 			$state = bookacti_get_booking_state( $values['_bookacti_options']['bookacti_booking_id'] );
 			$item->add_meta_data( 'bookacti_booking_id', intval( $values['_bookacti_options']['bookacti_booking_id'] ), true );
+		
 		// Group of events data
 		} else if( isset( $values['_bookacti_options']['bookacti_booking_group_id'] ) ) {
 
