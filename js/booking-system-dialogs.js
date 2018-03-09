@@ -178,7 +178,9 @@ function bookacti_dialog_choose_group_of_events( booking_system, group_ids, even
 				
 				var max_users		= typeof category_data[ 'max_users_per_event' ] === 'undefined' ? 0 : ( category_data[ 'max_users_per_event' ] ? parseInt( category_data[ 'max_users_per_event' ] ) : 0 );
 				var max_quantity	= typeof category_data[ 'max_bookings_per_user' ] === 'undefined' ? 0 : ( category_data[ 'max_bookings_per_user' ] ? parseInt( category_data[ 'max_bookings_per_user' ] ) : 0 );
-				if( max_qty_ok || max_users ) {
+				
+				var max_qty_ok = max_users_ok = true;
+				if( max_quantity || max_users ) {
 					var qty_booked = parseInt( group[ 'current_user_bookings' ] );
 					if( max_users && qty_booked === 0 && group[ 'distinct_users' ] >= max_users ) {
 						max_users_ok = false;
@@ -299,13 +301,15 @@ function bookacti_dialog_choose_group_of_events( booking_system, group_ids, even
 				
 				var group_id = $j( '#bookacti-groups-of-events-list input[type="radio"]:checked' ).val();
 				
-				// Pick events and fill form inputs
-				bookacti_unpick_all_events( booking_system );
-				bookacti_pick_events_of_group( booking_system, group_id, event );
+				if( typeof group_id !== 'undefined' ) {
+					// Pick events and fill form inputs
+					bookacti_unpick_all_events( booking_system );
+					bookacti_pick_events_of_group( booking_system, group_id, event );
+
+					booking_system.trigger( 'bookacti_group_of_events_chosen', [ group_id, event ] );
+				}
 				
-				booking_system.trigger( 'bookacti_group_of_events_chosen', [ group_id, event ] );
-				
-				//Close the modal dialog
+				// Close the modal dialog
 				$j( this ).dialog( 'close' );
             }
         }]

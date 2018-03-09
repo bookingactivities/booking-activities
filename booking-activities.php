@@ -306,8 +306,10 @@ function bookacti_uninstall() {
 }
 
 
-// UPDATE
-add_action( 'init', 'bookacti_check_version', 5 );
+/**
+ * Update Booking Activities
+ * @version 1.4.3
+ */
 function bookacti_check_version( $from_activate = false ) {
 	$old_version = get_option( 'bookacti_version' );
 	if( $old_version !== BOOKACTI_VERSION ) {
@@ -315,6 +317,7 @@ function bookacti_check_version( $from_activate = false ) {
 		do_action( 'bookacti_updated', $old_version );
 	}
 }
+add_action( 'init', 'bookacti_check_version', 5 );
 
 
 // ADMIN MENU

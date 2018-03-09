@@ -248,6 +248,7 @@ function bookacti_init_groups_of_events() {
 		$j( '#bookacti-template-calendar' ).on( 'bookacti_select_event bookacti_unselect_event', function(){
 			if( bookacti.booking_system[ 'bookacti-template-calendar' ][ 'selected_events' ].length <= 0 ) {
 				bookacti_unselect_all_events();
+				bookacti_refresh_selected_events_display();
 			}
 		});
 	}
@@ -266,6 +267,7 @@ function bookacti_init_groups_of_events() {
 			bookacti_select_events_of_group( group_id );
 		} else {
 			bookacti_unselect_all_events();
+			bookacti_refresh_selected_events_display();
 		}
 	});
 }
