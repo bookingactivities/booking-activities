@@ -1010,7 +1010,7 @@ function bookacti_is_event_available( booking_system, event ) {
 					var max_quantity	= typeof category_data[ 'max_bookings_per_user' ] === 'undefined' ? 0 : ( category_data[ 'max_bookings_per_user' ] ? parseInt( category_data[ 'max_bookings_per_user' ] ) : 0 );
 					var min_quantity	= typeof category_data[ 'min_bookings_per_user' ] === 'undefined' ? 0 : ( category_data[ 'min_bookings_per_user' ] ? parseInt( category_data[ 'min_bookings_per_user' ] ) : 0 );
 					
-					if( min_quantity || max_qty_ok || max_users ) {
+					if( min_quantity || max_quantity || max_users ) {
 						var qty_booked = parseInt( group[ 'current_user_bookings' ] );
 						if( max_users && qty_booked === 0 && group[ 'distinct_users' ] >= max_users ) {
 							max_users_ok = false;

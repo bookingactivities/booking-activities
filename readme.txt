@@ -5,7 +5,7 @@ Tags: booking activities, booking sport, booking form, event reservation, reserv
 Requires at least: 3.6
 Tested up to: 4.9
 Requires PHP: 5.3
-Stable tag: 1.4.2
+Stable tag: 1.4.3
 License: GPLv3 or later
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
 
@@ -311,11 +311,14 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 
 == Changelog ==
 
-= 1.4.3 - 2018/03 =
+= 1.4.3 - 2018/03/09 =
 * Fix - Groups of events were not properly retrieved for WooCommerce variations
 * Fix - PHP notice when updating an order containing non-booking items
 * Fix - PHP notice when updating a WooCommerce product with only 1 calendar, 1 activity or 1 group category
 * Fix - Every classes and CSS instructions are prefixed by "bookacti"
+* Fix - Do not select the single event if choose group of events dialog is validated with no group chosen
+* Fix - Groups of events were sometimes mistakenly disabled in choose group of events dialog
+* Lib - Update FullCalendar to 3.9.0 and Moment JS to 2.21.0
 
 = 1.4.2 - 2018/03/01 =
 * Fix - Groups of events were only retrieved for the first interval if "Groups only" box was checked

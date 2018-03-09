@@ -143,7 +143,7 @@
 
 /* Group of events dialog */
 #bookacti-group-of-events-new-category-title { display: none; }
-
+.bookacti-group-of-events-summary { max-width: 100%; overflow: auto; }
 
 
 /***** RESPONSIVE DESIGN *****/
