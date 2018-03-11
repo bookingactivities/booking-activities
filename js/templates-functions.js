@@ -279,19 +279,18 @@ function bookacti_add_group_category( id, title ) {
 	var plugin_path = bookacti_localized.plugin_path;
 	
 	// Add the category row
-	var category_short_title = title.length > 16 ? title.substr( 0, 16 ) + '&#8230;' : title;
 	$j( '#bookacti-group-categories' ).append(
 		"<div class='bookacti-group-category'  data-group-category-id='" + id + "' data-show-groups='0' data-visible='1' >"
 	+       "<div class='bookacti-group-category-show-hide' >"
 	+           "<img src='" + plugin_path + "/img/show.png' />"
 	+       "</div>"
 	+       "<div class='bookacti-group-category-title' title='" + title + "' >"
-	+			"<span>" + category_short_title + "</span>"
+	+			"<span>" + title + "</span>"
 	+		"</div>"
 	+		"<div class='bookacti-update-group-category' >"
 	+			"<img src='" + plugin_path + "/img/gear.png' />"
 	+		"</div>"
-	+		"<div class='bookacti-groups-of-events-list'>"
+	+		"<div class='bookacti-groups-of-events-list bookacti-custom-scrollbar'>"
 	+		"</div>"
 	+   "</div>"
 	);

@@ -325,7 +325,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	/**
 	 * Unbind selected occurence of an event
 	 * 
-	 * @version 1.4.0
+	 * @version 1.4.4
 	 * @global wpdb $wpdb
 	 * @param int $event_id
 	 * @param string $event_start
@@ -355,23 +355,19 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
         $insert_excep = bookacti_insert_exeptions( $event_id, $dates_excep_array );
 		
 		// If the event was booked, move its bookings to the new single event
-		$filters = bookacti_format_booking_filters( array( 'event_id' => $event_id ) );
-		$has_bookings = bookacti_get_number_of_bookings( $filters );
-		if( is_numeric( $has_bookings ) && $has_bookings > 0  ) {
-			$bookings_moved = $wpdb->update( 
-				BOOKACTI_TABLE_BOOKINGS, 
-				array( 
-					'event_id' => $unbound_event_id
-				),
-				array( 
-					'event_id' => $event_id,
-					'event_start' => $event_start,
-					'event_end' => $event_end,
-				),
-				array( '%d' ),
-				array( '%d', '%s', '%s' )
-			);
-		}
+		$bookings_moved = $wpdb->update( 
+			BOOKACTI_TABLE_BOOKINGS, 
+			array( 
+				'event_id' => $unbound_event_id
+			),
+			array( 
+				'event_id' => $event_id,
+				'event_start' => $event_start,
+				'event_end' => $event_end,
+			),
+			array( '%d' ),
+			array( '%d', '%s', '%s' )
+		);
 		
         return $unbound_event_id;
     }

@@ -857,7 +857,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 				<div>
 					<!-- This field is only used for feedback, it is not used to pass any AJAX data, events list is passed through an array made with JS -->
 					<label for='bookacti-group-of-events-summary' ><?php esc_html_e( 'Events list', BOOKACTI_PLUGIN_NAME ); ?></label>
-					<select multiple id='bookacti-group-of-events-summary' ></select>
+					<select multiple id='bookacti-group-of-events-summary' class='bookacti-custom-scrollbar' ></select>
 				</div>
 		<?php
 				
