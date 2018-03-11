@@ -47,11 +47,7 @@
 
 
 /***** Sidebar *****/
-<<<<<<< HEAD
-#bookacti-template-sidebar		{ display: table-cell; min-width: 240px; width: 240px; padding-right: 20px; border-right: 1px dashed #aaa; }
-=======
 #bookacti-template-sidebar		{ display: table-cell; min-width: 240px; width: 240px; max-width: 240px; padding-right: 20px; border-right: 1px dashed #aaa; }
->>>>>>> dev
 .bookacti-disabled-img			{ cursor: auto; pointer-events: none; opacity: 0.5; }
 
 .bookacti-templates-box			{ -webkit-border-radius: 6px; border-radius: 6px; padding: 10px; margin-bottom: 12px; border: 1px solid #bbb; }
@@ -83,20 +79,12 @@
 .bookacti-group-category-show-hide		{ padding-right: 10px; }
 .bookacti-update-group-category			{ padding-left: 10px; }
 .bookacti-update-group-of-events		{ padding-right: 10px; }
-<<<<<<< HEAD
-.bookacti-groups-of-events-list			{ margin-left: 38px; padding-left: 7px; margin-top: 8px; border-left: 1px dotted rgba(0,0,0,0.3); }
-=======
 .bookacti-groups-of-events-list			{ margin-left: 38px; padding-left: 7px; margin-top: 8px; border-left: 1px dotted rgba(0,0,0,0.3); max-height: 150px; overflow-y: auto; overflow-x: hidden; }
->>>>>>> dev
 .bookacti-group-category img			{ display: inline; vertical-align: middle; cursor: pointer; max-width: 20px; max-height: 20px; }
 .bookacti-group-category-title			{ width: 100%; cursor: pointer; }
 .bookacti-group-category-title span		{ font-weight: 600; }
 .bookacti-group-category-title,
-<<<<<<< HEAD
-.bookacti-group-of-events-title			{ width: 100%; max-width: 120px; white-space: nowrap; overflow: hidden; transition: all 0.2s; }
-=======
 .bookacti-group-of-events-title			{ width: 100%; max-width: 120px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; transition: all 0.2s; }
->>>>>>> dev
 .bookacti-group-of-events-title:hover	{ cursor: pointer; padding-left: 10px; }
 .bookacti-group-category .bookacti-group-category-title::before							{ display: table-cell; vertical-align: middle; font-size: 0.8em; position: relative; min-width: 16px; text-align: left; }
 .bookacti-group-category[data-show-groups='0'] .bookacti-group-category-title::before	{ content: '\25B7 '; }
@@ -155,11 +143,7 @@
 
 /* Group of events dialog */
 #bookacti-group-of-events-new-category-title { display: none; }
-<<<<<<< HEAD
-.bookacti-group-of-events-summary { max-width: 100%; overflow: auto; }
-=======
 #bookacti-group-of-events-summary { width: 100%; max-width: 100%; overflow: auto; }
->>>>>>> dev
 
 
 /***** RESPONSIVE DESIGN *****/

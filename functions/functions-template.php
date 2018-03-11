@@ -587,27 +587,15 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 							</div>";
 			}
 			
-<<<<<<< HEAD
-			$list	.= 	   "<div class='bookacti-groups-of-events-list' >";
-=======
 			$list	.= 	   "<div class='bookacti-groups-of-events-list bookacti-custom-scrollbar' >";
->>>>>>> dev
 			
 			foreach( $groups as $group_id => $group ) {
 				if( $group[ 'category_id' ] === $category[ 'id' ] ) {
 					$group_title		= $group[ 'title' ];
-<<<<<<< HEAD
-					$group_short_title	= strlen( $group_title ) > 16 ? substr( $group_title, 0, 16 ) . '&#8230;' : $group_title;
-					
-					$list	.=	   "<div class='bookacti-group-of-events' data-group-id='" . $group_id . "' >
-										<div class='bookacti-group-of-events-title' title='" . $group_title . "' >
-											" . $group_short_title . " 
-=======
 					
 					$list	.=	   "<div class='bookacti-group-of-events' data-group-id='" . $group_id . "' >
 										<div class='bookacti-group-of-events-title' title='" . $group_title . "' >
 											" . $group_title . " 
->>>>>>> dev
 										</div>";
 					if( $current_user_can_edit_template ) {
 						$list	.=	   "<div class='bookacti-update-group-of-events' >

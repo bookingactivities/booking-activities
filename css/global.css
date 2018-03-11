@@ -8,15 +8,12 @@
 .ui-button.bookacti-combobox-toggle	{ position: absolute; display: inline-block; top: 0; right: -1px; padding: 0; margin: 0; width: 32px; min-height: 40px; box-sizing: border-box; border-bottom-right-radius: 3px; border-top-right-radius: 3px; }
 .bookacti-combobox-input			{ margin: 0; margin-right: -1px; padding: 5px 10px; min-width: 200px; min-height: 40px; width: auto; border-radius: 3px; }
 
-<<<<<<< HEAD
-=======
 /* Custom Scrollbar */
 .bookacti-custom-scrollbar::-webkit-scrollbar				{ width: 4px; height: 4px; }
 .bookacti-custom-scrollbar::-webkit-scrollbar-track 		{ background: #f1f1f1; border-radius: 5px; }
 .bookacti-custom-scrollbar::-webkit-scrollbar-thumb 		{ background: #A5A5A5; border-radius: 5px; }
 .bookacti-custom-scrollbar::-webkit-scrollbar-thumb:hover	{ background: #418FB6; }
 
->>>>>>> dev
 
 /* Booking System */
 .bookacti-booking-system-form .bookacti-booking-system-labels,
@@ -33,24 +30,14 @@
 .bookacti-notices ul.bookacti-success-list	{ border-left-color: green; }
 
 /* Choose group dialog */
-<<<<<<< HEAD
-.bookacti-group-of-events-list			{ display: none; }
-=======
 .bookacti-group-of-events-list			{ display: none; list-style-type: none; border-left: 1px solid rgba(0,0,0,0.2); padding-left: 10px; margin: 5px 2px 10px 25px; max-height: 200px; white-space: nowrap; overflow: auto; font-size: small; }
->>>>>>> dev
 .bookacti-group-of-events-option		{ margin-top: 15px; }
 .bookacti-group-of-events-option label	{ margin-left: 10px; vertical-align: middle; }
 .bookacti-group-availability			{ font-size: 0.8em; font-style: italic; }
 .bookacti-group-of-events-option input	{ vertical-align: middle; }
-<<<<<<< HEAD
-.bookacti-group-of-events-list			{ list-style-type: none; border-left: 1px solid rgba(0,0,0,0.2); padding-left: 10px; margin: 5px 0 10px 25px; }
-.bookacti-group-of-events-option input[name="group_of_events"][disabled] + label { opacity: 0.5; }
-
-=======
 .bookacti-group-of-events-option input[name="group_of_events"][disabled] + label { opacity: 0.5; }
 .bookacti-group-of-events-list .bookacti-booking-event-duration	{ font-size: smaller; font-style: italic; }
 .bookacti-group-of-events-list .bookacti-booking-event-title	{ font-weight: 600; }
->>>>>>> dev
 
 
 /** BOOKINGS **/
