@@ -78,7 +78,11 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	 * AJAX Controller - Move or resize an event, possibly while duplicating it
 	 * 
 	 * @since 1.2.2 (was bookacti_controller_update_event)
+<<<<<<< HEAD
 	 * @version 1.4.0
+=======
+	 * @version 1.4.4
+>>>>>>> dev
 	 */
 	function bookacti_controller_move_or_resize_event() {
 		
@@ -92,7 +96,11 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		if( $is_nonce_valid && $is_allowed ) {
 			
 			$is_duplicated  = intval( $_POST[ 'is_duplicated' ] );
+<<<<<<< HEAD
 			$filters = bookacti_format_booking_filters( array( 'event_id' => $event_id ) );
+=======
+			$filters = bookacti_format_booking_filters( array( 'event_id' => $event_id, 'active' => 1 ) );
+>>>>>>> dev
 			$has_bookings = bookacti_get_number_of_bookings( $filters );
 
 			if( ! $is_duplicated && is_numeric( $has_bookings ) && $has_bookings > 0 ) {
@@ -298,7 +306,11 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	/**
 	 * AJAX Controller - Delete an event if it doesn't have bookings
 	 * 
+<<<<<<< HEAD
 	 * @version 1.4.0
+=======
+	 * @version 1.4.4
+>>>>>>> dev
 	 */
 	function bookacti_controller_delete_event() {
 
@@ -311,7 +323,11 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 		if( $is_nonce_valid && $is_allowed ) {
 
+<<<<<<< HEAD
 			$filters = bookacti_format_booking_filters( array( 'event_id' => $event_id ) );
+=======
+			$filters = bookacti_format_booking_filters( array( 'event_id' => $event_id, 'active' => 1 ) );
+>>>>>>> dev
 			$has_bookings = bookacti_get_number_of_bookings( $filters );
 
 			if( is_numeric( $has_bookings ) && $has_bookings > 0 ) {

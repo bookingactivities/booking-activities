@@ -1502,7 +1502,11 @@ function bookacti_dialog_create_group_of_events( category_id ) {
 			event_duration = event_start.formatPHP( bookacti_localized.date_format ) + bookacti_localized.date_time_separator + event_end.formatPHP( bookacti_localized.time_format );
 		}
 		var option = $j( '<option />', {
+<<<<<<< HEAD
 						'html': event.title + ' - ' + event_duration
+=======
+						'html': event_duration + ' - ' + event.title
+>>>>>>> dev
 					} );
 		option.appendTo( '#bookacti-group-of-events-summary' );
 	});
@@ -1622,7 +1626,11 @@ function bookacti_dialog_update_group_of_events( group_id ) {
 			event_duration = event_start.formatPHP( bookacti_localized.date_format ) + bookacti_localized.date_time_separator + event_end.formatPHP( bookacti_localized.time_format );
 		}
 		var option = $j( '<option />', {
+<<<<<<< HEAD
 						'html': event.title + ' - ' + event_duration
+=======
+						'html': event_duration + ' - ' + event.title
+>>>>>>> dev
 					} );
 		option.appendTo( '#bookacti-group-of-events-summary' );
 	});

@@ -134,6 +134,7 @@ function bookacti_dialog_choose_group_of_events( booking_system, group_ids, even
 		});
 
 		var event_list = $j( '<ul />', {
+<<<<<<< HEAD
 			'class': 'bookacti-group-of-events-list',
 			'data-group-id': group_id
 		});
@@ -144,6 +145,18 @@ function bookacti_dialog_choose_group_of_events( booking_system, group_ids, even
 			'html': '<span class="bookacti-booking-event-title" >'  + event.title + '</span>' 
 				+ '<span class="bookacti-booking-event-title-separator" > - </span>' 
 				+ event_duration
+=======
+			'class': 'bookacti-group-of-events-list bookacti-custom-scrollbar',
+			'data-group-id': group_id
+		});
+		
+		var event_duration = bookacti_format_event_duration( event.start, event.end );
+
+		var list_element = $j( '<li />', {
+			'html': '<span class="bookacti-booking-event-duration" >'  + event_duration + '</span>' 
+				+ '<span class="bookacti-booking-event-title-separator" > - </span>' 
+				+ '<span class="bookacti-booking-event-title" >'  + event.title + '</span>' 
+>>>>>>> dev
 		});
 		
 		option_container.append( radio );
@@ -236,7 +249,11 @@ function bookacti_dialog_choose_group_of_events( booking_system, group_ids, even
 			
 			// Build the group events list
 			var event_list = $j( '<ul />', {
+<<<<<<< HEAD
 				'class': 'bookacti-group-of-events-list',
+=======
+				'class': 'bookacti-group-of-events-list bookacti-custom-scrollbar',
+>>>>>>> dev
 				'data-group-id': group_id
 			});
 			
@@ -254,7 +271,13 @@ function bookacti_dialog_choose_group_of_events( booking_system, group_ids, even
 				}
 				
 				var list_element = $j( '<li />', {
+<<<<<<< HEAD
 					'html': event.title + ' - ' + event_duration
+=======
+					'html':	'<span class="bookacti-booking-event-duration" >'  + event_duration + '</span>' 
+							+ '<span class="bookacti-booking-event-title-separator" > - </span>'  
+							+ '<span class="bookacti-booking-event-title" >'  + event.title + '</span>'
+>>>>>>> dev
 				});
 				
 				event_list.append( list_element );
