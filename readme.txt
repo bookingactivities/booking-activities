@@ -311,6 +311,9 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 
 == Changelog ==
 
+= 1.5.0 =
+* Feature - Customizable booking forms !
+
 = 1.4.4 - 2018/03 =
 * Tweak - Changed events list CSS in "Pick a group of events" dialog
 * Tweak - Added a scrollbar in groups of events list in calendar editor

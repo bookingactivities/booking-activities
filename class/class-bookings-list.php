@@ -23,6 +23,7 @@ if( ! class_exists( 'Bookings_List_Table' ) ) {
 		 * Set up the Booking list table
 		 * 
 		 * @version 1.3.0
+		 * @access public
 		 */
 		public function __construct(){
 			parent::__construct( array(
@@ -42,6 +43,7 @@ if( ! class_exists( 'Bookings_List_Table' ) ) {
 		 * Get booking list table columns
 		 * 
 		 * @version 1.3.0
+		 * @access public
 		 * @return array
 		 */
 		public function get_columns(){
@@ -114,6 +116,7 @@ if( ! class_exists( 'Bookings_List_Table' ) ) {
 		 * Get default hidden columns
 		 * 
 		 * @since 1.3.0
+		 * @access public
 		 * @param array $hidden
 		 * @param WP_Screen $screen
 		 * @return array
@@ -134,6 +137,7 @@ if( ! class_exists( 'Bookings_List_Table' ) ) {
 		 * Get sortable columns
 		 * 
 		 * @since 1.3.0
+		 * @access public
 		 * @return array
 		 */
 		protected function get_sortable_columns() {
@@ -157,6 +161,7 @@ if( ! class_exists( 'Bookings_List_Table' ) ) {
 		 * Get the screen property
 		 * 
 		 * @since 1.3.0
+		 * @access public
 		 * @return WP_Screen
 		 */
 		private function get_wp_screen() {
@@ -171,6 +176,7 @@ if( ! class_exists( 'Bookings_List_Table' ) ) {
 		 * Prepare the items to be displayed in the list
 		 * 
 		 * @version 1.3.0
+		 * @access public
 		 * @param array $filters
 		 * @param boolean $no_pagination
 		 */
@@ -210,6 +216,7 @@ if( ! class_exists( 'Bookings_List_Table' ) ) {
 		 * Fill columns
 		 * 
 		 * @version 1.3.0
+		 * @access public
 		 * @param array $item
 		 * @param string $column_name
 		 * @return string
@@ -222,12 +229,8 @@ if( ! class_exists( 'Bookings_List_Table' ) ) {
 		/**
 		 * Get booking list items. Parameters can be passed in the URL.
 		 * 
-		 * @version 1.4.0
-		 * @param int $event_group_id
-		 * @param int $event_id
-		 * @param string $event_start
-		 * @param string $event_end
-		 * @param int $booking_group_id
+		 * @version 1.5.0
+		 * @access public
 		 * @return array
 		 */
 		public function get_booking_list_items() {
@@ -315,9 +318,6 @@ if( ! class_exists( 'Bookings_List_Table' ) ) {
 					$customer = esc_html( __( 'Unknown user', BOOKACTI_PLUGIN_NAME ) . ' (' . $user_id . ')' );
 				}
 				
-				$primary_data = array();
-				
-				
 				$booking_item = apply_filters( 'bookacti_booking_list_booking_columns', array( 
 					'tr_class'		=> $tr_class,
 					'id'			=> $id,
@@ -363,6 +363,7 @@ if( ! class_exists( 'Bookings_List_Table' ) ) {
 		
 		/**
 		 * Format filters passed as argument or retrieved via POST or GET
+		 * @access public
 		 * @param array $filters
 		 * @return array
 		 */
@@ -415,6 +416,7 @@ if( ! class_exists( 'Bookings_List_Table' ) ) {
 		 * 
 		 * @since 1.3.0
 		 * @version 1.4.0
+		 * @access public
 		 * @return int
 		 */
 		public function get_total_items_count() {
@@ -542,6 +544,7 @@ if( ! class_exists( 'Bookings_List_Table' ) ) {
 		 * Get default primary column name
 		 * 
 		 * @since 1.3.0
+		 * @access public
 		 * @return string
 		 */
 		public function get_default_primary_column_name() {

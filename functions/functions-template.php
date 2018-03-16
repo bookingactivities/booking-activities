@@ -8,7 +8,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	 * Check if user is allowed to manage template
 	 * 
 	 * @param int $template_id
-	 * @param int $user_id
+	 * @param int|false $user_id False for current user
 	 * @return boolean
 	 */
 	function bookacti_user_can_manage_template( $template_id, $user_id = false ) {
@@ -25,8 +25,13 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		return apply_filters( 'bookacti_user_can_manage_template', $user_can_manage_template, $template_id, $user_id );
 	}
 
-
-	// CHECK IF USER IS ALLOWED TO MANAGE ACTIVITY
+	
+	/**
+	 * Check if user is allowed to manage activity
+	 * @param int $activity_id
+	 * @param int|false $user_id False for current user
+	 * @return boolean
+	 */
 	function bookacti_user_can_manage_activity( $activity_id, $user_id = false ) {
 
 		$user_can_manage_activity = false;
@@ -42,13 +47,21 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	}
 	
 	
-	// GET TEMPLATE MANAGERS
+	/**
+	 * Get template managers
+	 * @param int $activity_id
+	 * @return array
+	 */
 	function bookacti_get_template_managers( $template_id ) {
 		return bookacti_get_managers( 'template', $template_id );
 	}
 	
 	
-	// GET ACTIVITY MANAGERS
+	/**
+	 * Get activity managers
+	 * @param int $activity_id
+	 * @return array
+	 */
 	function bookacti_get_activity_managers( $activity_id ) {	
 		return bookacti_get_managers( 'activity', $activity_id );
 	}

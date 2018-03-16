@@ -123,6 +123,36 @@ function bookacti_settings_section_bookings_callback() { }
 		));
 	}
 
+	
+// FORMS SETTINGS
+
+	/**
+	 * Display Form page options in screen options area
+	 * 
+	 * @since 1.5.0
+	 */
+	function bookacti_display_forms_screen_options() {
+		$screen = get_current_screen();
+
+		// Don't do anything if we are not on the booking page
+		if( ! is_object( $screen ) || $screen->id != 'booking-activities_page_bookacti_forms' ) { return; }
+		
+		if( ! empty( $_REQUEST[ 'action' ] ) && in_array( $_REQUEST[ 'action' ], array( 'edit', 'create' ), true ) ) {
+			// Layout columns number
+			add_screen_option( 'layout_columns', array( 
+				'max' => 2, 
+				'default' => 2 
+			));
+		} else {
+			// Bookings per page
+			add_screen_option( 'per_page', array(
+				'label' => __( 'Forms per page:', BOOKACTI_PLUGIN_NAME ),
+				'default' => 20,
+				'option' => 'bookacti_forms_per_page'
+			));
+		}
+	}
+	
 
 // GENERAL SETTINGS 
 
@@ -841,6 +871,7 @@ function bookacti_get_screen_ids() {
 		$administrator->add_cap( 'bookacti_manage_booking_activities' );
 		$administrator->add_cap( 'bookacti_manage_bookings' );
 		$administrator->add_cap( 'bookacti_manage_templates' );
+		$administrator->add_cap( 'bookacti_manage_forms' );
 		$administrator->add_cap( 'bookacti_manage_booking_activities_settings' );
 		$administrator->add_cap( 'bookacti_read_templates' );
 		$administrator->add_cap( 'bookacti_create_templates' );
@@ -851,6 +882,9 @@ function bookacti_get_screen_ids() {
 		$administrator->add_cap( 'bookacti_delete_activities' );
 		$administrator->add_cap( 'bookacti_create_bookings' );
 		$administrator->add_cap( 'bookacti_edit_bookings' );
+		$administrator->add_cap( 'bookacti_create_forms' );
+		$administrator->add_cap( 'bookacti_edit_forms' );
+		$administrator->add_cap( 'bookacti_delete_forms' );
 
 		do_action( 'bookacti_set_capabilities' );
 	}
@@ -862,6 +896,7 @@ function bookacti_get_screen_ids() {
 		$administrator->remove_cap( 'bookacti_manage_booking_activities' );
 		$administrator->remove_cap( 'bookacti_manage_bookings' );
 		$administrator->remove_cap( 'bookacti_manage_templates' );
+		$administrator->remove_cap( 'bookacti_manage_forms' );
 		$administrator->remove_cap( 'bookacti_manage_booking_activities_settings' );
 		$administrator->remove_cap( 'bookacti_read_templates' );
 		$administrator->remove_cap( 'bookacti_create_templates' );
@@ -872,7 +907,10 @@ function bookacti_get_screen_ids() {
 		$administrator->remove_cap( 'bookacti_delete_activities' );
 		$administrator->remove_cap( 'bookacti_create_bookings' );
 		$administrator->remove_cap( 'bookacti_edit_bookings' );
-
+		$administrator->remove_cap( 'bookacti_create_forms' );
+		$administrator->remove_cap( 'bookacti_edit_forms' );
+		$administrator->remove_cap( 'bookacti_delete_forms' );
+		
 		do_action( 'bookacti_unset_capabilities' );
 	}
 

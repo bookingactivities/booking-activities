@@ -277,40 +277,55 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
     }
 
 	
-    // DEACTIVATE AN EVENT
-    function bookacti_deactivate_event( $event_id ) {
-        global $wpdb;
-        
-        //Remove the event
-        $deactivated = $wpdb->update( 
-            BOOKACTI_TABLE_EVENTS, 
-            array( 
-                'active' => 0
-            ),
-            array( 'id' => $event_id ),
-            array( '%d' ),
-            array( '%d' )
-        );
-		
-        return $deactivated;
-    }
+	/**
+	 * Deactivate an event
+	 * @global wpdb $wpdb
+	 * @param int $event_id
+	 * @return int|false
+	 */
+	function bookacti_deactivate_event( $event_id ) {
+		global $wpdb;
+
+		// Deactivate the event
+		$deactivated = $wpdb->update( 
+			BOOKACTI_TABLE_EVENTS, 
+			array( 
+				'active' => 0
+			),
+			array( 'id' => $event_id ),
+			array( '%d' ),
+			array( '%d' )
+		);
+
+		return $deactivated;
+	}
 
 	
-    // DELETE AN EVENT
-    function bookacti_delete_event( $event_id ) {
-        global $wpdb;
-        
-        //Remove the event
-        $deleted = $wpdb->delete( BOOKACTI_TABLE_EVENTS, array( 'id' => $event_id ) );
-        
-        //Also remove linked exceptions
-        bookacti_remove_exceptions( $event_id );
+	/**
+	 * Delete an event
+	 * @global wpdb $wpdb
+	 * @param int $event_id
+	 * @return int|false
+	 */
+	function bookacti_delete_event( $event_id ) {
+		global $wpdb;
 
-        return $deleted;
-    }
+		// Remove the event
+		$deleted = $wpdb->delete( BOOKACTI_TABLE_EVENTS, array( 'id' => $event_id ) );
+
+		// Also remove its exceptions
+		bookacti_remove_exceptions( $event_id );
+
+		return $deleted;
+	}
     
 	
-	// GET EVENT TEMPLATE ID
+	/**
+	 * Get event template id
+	 * @global wpdb $wpdb
+	 * @param int $event_id
+	 * @return int|false
+	 */
     function bookacti_get_event_template_id( $event_id ) {
         global $wpdb;
 
