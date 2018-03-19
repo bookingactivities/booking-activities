@@ -79,6 +79,7 @@ include_once( 'controller/controller-settings.php' );
 include_once( 'controller/controller-notifications.php' );
 include_once( 'controller/controller-bookings.php' );
 include_once( 'controller/controller-forms.php' );
+include_once( 'controller/controller-woocommerce-forms.php' );
 include_once( 'controller/controller-shortcodes.php' );
 
 
@@ -237,6 +238,7 @@ function bookacti_enqueue_backend_scripts() {
 	wp_localize_script( 'bookacti-js-templates-functions',		'bookacti_localized', $bookacti_translation_array );
 	wp_localize_script( 'bookacti-js-templates-dialogs',		'bookacti_localized', $bookacti_translation_array );
 	wp_localize_script( 'bookacti-js-templates',				'bookacti_localized', $bookacti_translation_array );
+	wp_localize_script( 'bookacti-js-woocommerce-backend',		'bookacti_localized', $bookacti_translation_array );
 	wp_localize_script( 'bookacti-js-settings',					'bookacti_localized', $bookacti_translation_array );
 	
 	// ENQUEUE SCRIPTS

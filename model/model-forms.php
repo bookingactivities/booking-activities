@@ -2,6 +2,9 @@
 // Exit if accessed directly
 if ( ! defined( 'ABSPATH' ) ) { exit; }
 
+
+// FORMS
+
 /**
  * Get forms according to filters
  * @since 1.5.0
@@ -256,4 +259,34 @@ function bookacti_delete_form( $form_id ) {
 	);
 	
 	return $deleted;
+}
+
+
+
+
+// FORM FIELDS
+
+/**
+ * Get the fields of the desired form
+ * Use 
+ * @since 1.5.0
+ * @global wpdb $wpdb
+ * @param int $form_id
+ * @return array|false
+ */
+function bookacti_get_form_fields( $form_id ) {
+	global $wpdb;
+	
+	$query	= 'SELECT * FROM ' . BOOKACTI_TABLE_FORM_FIELDS . ' as FF '
+			. ' WHERE FF.form_id = %d';
+	
+	$variables = array( $form_id );
+	
+	if( $variables ) {
+		$query = $wpdb->prepare( $query, $variables );
+	}
+	
+	$fields = $wpdb->get_results( $query, ARRAY_A );
+	
+	return $fields;
 }

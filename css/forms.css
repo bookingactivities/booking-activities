@@ -8,7 +8,8 @@
 #bookacti-form-list-container .column-id .sorting-indicator	{ display: inline-block; vertical-align: top; float: none; }
 #bookacti-form-list-container .column-id					{ width: 40px; white-space: nowrap; text-align: center; }
 
-#bookacti-form-list-container .column-shortcode input		{ background: inherit; color: inherit; font-size: 12px; border: none; box-shadow: none; padding: 4px 8px; margin: 0; }
+#bookacti-form-list-container .column-shortcode input,
+#bookacti-form-editor-page-container #bookacti-form-shortcode { background: inherit; color: inherit; font-size: 12px; border: none; box-shadow: none; padding: 4px 8px; margin: 0; }
 
 @media screen and ( max-width: 782px ) {
 	.bookacti-form-primary-data-container { display: inline-block; }
@@ -19,3 +20,5 @@
 
 /** FORM EDITOR **/
 #poststuff #bookacti_form_publish .inside { margin: 0; padding: 0; }
+
+#bookacti-form-wc-integration-tuto img { width: 100%; max-width: 720px; }

@@ -46,7 +46,7 @@ Try this reservation tool live on the [demo website](http://demo.booking-activit
 * ★ Display your customer's bookings calendar and their bookings list with a shortcode
 * ★ Display events from multiple schedules and activities at once
 * ★ **One-click booking**: just pick the desired event on the calendar and click on "Book"! 
-* *If you do not use WooCommerce, customers must be logged in to make a reservation*
+* *Customers must be logged in to make a reservation*
 * 100% responsive: looks great on mobiles, tablets and computers.
 
 **Online payments with WooCommerce**
@@ -313,6 +313,7 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 
 = 1.5.0 =
 * Feature - Customizable booking forms !
+* Tweak - Add a dismissible admin notice to inform that WooCommerce "guest checkout" option isn't supported
 
 = 1.4.4 - 2018/03 =
 * Tweak - Changed events list CSS in "Pick a group of events" dialog

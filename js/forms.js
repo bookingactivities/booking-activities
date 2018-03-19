@@ -1,12 +1,12 @@
 $j( document ).ready( function() {
 	// Load this file only on form editor page
-	if( ! $j( '#bookacti-booking-form' ).length ) { return; }
+	if( ! $j( 'form#bookacti-form-editor-page-form' ).length ) { return; }
 	
 	// Add / remove form managers
 	bookacti_init_add_and_remove_items();
 	
 	// Save a form (create or update)
-	$j( '#bookacti-booking-form' ).on( 'submit', function( e ) {
+	$j( 'form#bookacti-form-editor-page-form' ).on( 'submit', function( e ) {
 		e.preventDefault();
 		// Select all form managers
 		$j( '#bookacti-form-managers-select-box option' ).attr( 'selected', true );
@@ -36,7 +36,7 @@ $j( document ).ready( function() {
 					
 					// If on edit page, display feedback
 					} else {
-						$j( '#bookacti-form-editor-container' ).before( '<div class="notice notice-success is-dismissible bookacti-form-notice" ><p>' + response.message + '</p></div>' );
+						$j( '#bookacti-form-editor-page-container' ).before( '<div class="notice notice-success is-dismissible bookacti-form-notice" ><p>' + response.message + '</p></div>' );
 					}
 					
 				} else if( response.status === 'failed' ) {
@@ -46,7 +46,7 @@ $j( document ).ready( function() {
 					}
 					
 					// Display feedback
-					$j( '#bookacti-form-editor-container' ).before( '<div class="notice notice-error is-dismissible bookacti-form-notice" ><p>' + error_message + '</p></div>' );
+					$j( '#bookacti-form-editor-page-container' ).before( '<div class="notice notice-error is-dismissible bookacti-form-notice" ><p>' + error_message + '</p></div>' );
 				
 					console.log( response );
 				}
@@ -55,7 +55,7 @@ $j( document ).ready( function() {
 				var error_message = action === 'bookactiInsertForm' ? 'AJAX ' + bookacti_localized.error_create_form : 'AJAX ' + bookacti_localized.error_update_form;
 				
 				// Display feedback
-				$j( '#bookacti-form-editor-container' ).before( '<div class="notice notice-error is-dismissible bookacti-form-notice" ><p>' + error_message + '</p></div>' );
+				$j( '#bookacti-form-editor-page-container' ).before( '<div class="notice notice-error is-dismissible bookacti-form-notice" ><p>' + error_message + '</p></div>' );
 				
 				console.log( e );
 			},

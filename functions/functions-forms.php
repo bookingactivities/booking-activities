@@ -97,6 +97,186 @@ function bookacti_format_form_filters( $filters = array() ) {
 // FORM EDITOR
 
 /**
+ * Get a sorted array of fields for the desired form
+ * @since 1.5.0
+ * @param int $form_id
+ * @return array|false
+ */
+function bookacti_get_sorted_form_fields( $form_id ) {
+	
+	$fields = bookacti_get_form_fields( $form_id );
+	
+	// Sort form fields by customer custom order
+	$field_order = bookacti_get_metadata( 'form', $form_id, 'field_order', true );
+	if( $field_order ) {
+		$ordered_fields = array();
+		foreach( $field_order as $field_name ) {
+			foreach( $fields as $i => $field ) {
+				if( $field[ 'name' ] !== $field_name ) { continue; }
+				
+				$ordered_fields[] = $fields[ $i ];
+				unset( $fields[ $i ] );
+				
+				break;
+			}
+		}
+		// Add the remaining unordered fields (if any)
+		if( $fields ) {
+			foreach( $fields as $field ) {
+				$ordered_fields[] = $field;
+			}
+		}
+		$fields = $ordered_fields;
+	}
+	
+	// Format form fields
+	foreach( $fields as $i => $field ) {
+		$fields[ $i ] = bookacti_format_form_field_data( $field );
+	}
+	
+	return apply_filters( 'bookacti_sorted_form_fields', $fields, $form_id );
+}
+
+
+/**
+ * Get fields data
+ * @see bookacti_format_form_field_data to properly format your array
+ * @since 1.5.0
+ * @return array
+ */
+function bookacti_get_default_form_fields_data() {
+	// Add you custom fields here.
+	// Two fields can have the same type, but different data. Set the custom data here. 
+	// See bookacti_format_form_field_data to know what kind of custom data you can use for each field type.
+	$fields_data = array(
+		'calendar'	=> array( 'type' => 'calendar' ),
+		'login'		=> array( 'type' => 'login' ),
+		'free_html'	=> array( 'type' => 'free_html' ),
+		'quantity'	=> array( 'type' => 'quantity' ),
+		'submit'	=> array( 'type' => 'submit' )
+	);
+	
+	// Format field data according to their type
+	foreach( $fields_data as $field_name => $field_data ) {
+		$fields_data[ $field_name ] = bookacti_format_form_field_data( $field_data );
+	}
+	
+	return apply_filters( 'bookacti_default_form_fields_data', $fields_data );
+}
+
+
+/**
+ * Format field data according to its type
+ * @since 1.5.0
+ * @param array|string $field_data
+ * @return array|false
+ */
+function bookacti_format_form_field_data( $field_data ) {
+	
+	// Check if the field type is valid
+	$allowed_field_types = bookacti_get_field_types();
+	
+	$field_type = '';
+	if( is_array( $field_data ) && empty( $field_data[ 'type' ] ) ) { return false; }
+	else { $field_type = sanitize_title_with_dashes( $field_data[ 'type' ] ); $field_data[ 'type' ] = $field_type; }
+	if( is_string( $field_data ) ) { $field_type = sanitize_title_with_dashes( $field_data ); $field_data = array(); }
+	if( ! in_array( $field_type, $allowed_field_types, true ) ) { return false; }
+	
+	// Set the common default data
+	$common_default = array( 
+		'name' => $field_type,		// Text identifier of the field
+		'type' => $field_type,		// Field type [calendar, quantity, submit, login, free_html, or you custom types]
+		'title' => $field_type,		// Field title display in form editor
+		'label' => '',				// Text displayed for the field in frontend
+		'id' => '',					// Field's id
+		'class' => '',				// Field's classes
+		'options' => array(),		// Array of allowed values
+		'value' => '',				// Default value among the allowed values
+		'callback' => '',			// Function called to display the field
+		'callback_args' => array(),	// Array of arguments for the callback
+		'placeholder' => '',		// Text displayed in transparency when the field is empty
+		'tip' => '',				// Help text displayed in a tooltip next to the field
+		'compulsory' => 0			// If the field cannot be deleted
+	);
+	
+	$formatted_field_data = array();
+	
+	// Format field data according to its type
+	if( $field_type === 'calendar' ) {
+		// Set default common data
+		$common_default[ 'title' ]		= __( 'Calendar', BOOKACTI_PLUGIN_NAME );
+		$common_default[ 'compulsory' ]	= 1;
+		$common_default[ 'callback' ]	= '';
+		
+		// Format booking system data
+		$booking_system_data	= bookacti_format_booking_system_attributes( $field_data );
+		$formatted_field_data	= array_merge( $booking_system_data, $field_data );
+		
+		// Format calendar settings data
+		$calendar_settings					= ! empty( $field_data[ 'settings' ] ) ? $field_data[ 'settings' ] : array();
+		$formatted_field_data[ 'settings' ]	= bookacti_format_template_settings( $calendar_settings );
+		
+	} else if( $field_type === 'login' ) {
+		// Set default common data
+		$common_default[ 'title' ] = __( 'Login / Register', BOOKACTI_PLUGIN_NAME );
+		
+		$login_default = array(
+			'login_options'			=> array( 'email', 'user_login' ),
+			'login_type'			=> 'email',
+			'login_label'			=> __( 'E-mail', BOOKACTI_PLUGIN_NAME ),
+			'login_placeholder'		=> '',
+			'password_label'		=> __( 'Password', BOOKACTI_PLUGIN_NAME ),
+			'password_placeholder'	=> '',
+			'generate_password'		=> 0,
+			'send_account_email'	=> 0
+		);
+		$formatted_field_data = array_merge( $login_default, $field_data );
+		
+	} else if( $field_type === 'quantity' ) {
+		// Set default common data
+		$common_default[ 'title' ]		= __( 'Quantity', BOOKACTI_PLUGIN_NAME );
+		$common_default[ 'label' ]		= __( 'Quantity', BOOKACTI_PLUGIN_NAME );
+		$common_default[ 'compulsory' ] = 1;
+		
+	} else if( $field_type === 'submit' ) {
+		// Set default common data
+		$common_default[ 'title' ]		= __( 'Submit button', BOOKACTI_PLUGIN_NAME );
+		$common_default[ 'label' ]		= __( 'Book', BOOKACTI_PLUGIN_NAME );
+		$common_default[ 'compulsory' ] = 1;
+		
+	} else if( $field_type === 'free_html' ) {
+		// Set default common data
+		$common_default[ 'title' ]		= __( 'Free text', BOOKACTI_PLUGIN_NAME );
+	}
+	
+	// Format default values
+	if( is_array( $field_data ) ) {
+		$formatted_field_data = array_merge( $common_default, $formatted_field_data );
+	}
+	
+	return apply_filters( 'bookacti_formatted_field_data', $formatted_field_data, $field_data, $field_type );
+}
+
+
+/**
+ * Get array of valid field types
+ * @since 1.5.0
+ * @return array
+ */
+function bookacti_get_field_types() {
+	$field_types = array(
+		'calendar',
+		'login',
+		'quantity',
+		'submit',
+		'free_html'
+	);
+	
+	return apply_filters( 'bookacti_field_types', $field_types );
+}
+
+
+/**
  * Display 'managers' metabox content for forms
  * @since 1.5.0
  */
@@ -209,6 +389,27 @@ function bookacti_display_form_publish_meta_box( $form ) {
 	</div>
 <?php
 }
+
+
+/**
+ * Display 'integration tuto' metabox content for forms
+ * @since 1.5.0
+ * @param object $form
+ */
+function bookacti_display_form_integration_tuto_meta_box( $form ) {
+	$shortcode = '[bookingactivities_form id="' . $form->id . '"]';
+?>
+	<h3><?php _e( 'Integrate in a post, page, or text widget', BOOKACTI_PLUGIN_NAME ) ?></h3>
+	<div>
+		<p><em><label for='bookacti-form-shortcode'><?php esc_html_e( 'Copy this shortcode and paste it into your post, page, or text widget content:', BOOKACTI_PLUGIN_NAME ); ?></label></em></p>
+		<p class='shortcode wp-ui-highlight'>
+			<input type='text' id='bookacti-form-shortcode' onfocus='this.select();' readonly='readonly' class='large-text code' value='<?php echo esc_attr( $shortcode ); ?>' />
+		</p>
+	</div>
+<?php
+	do_action( 'bookacti_after_form_integration_tuto', $form );
+}
+
 
 
 

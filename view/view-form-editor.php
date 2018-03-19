@@ -59,13 +59,13 @@ if( $form_id === 'new' ) {
 		}
 	?>
 	
-	<div id='bookacti-form-editor-container' >
+	<div id='bookacti-form-editor-page-container' >
 		<?php
 			do_action( 'bookacti_before_form_editor' );
 			$form_action = $form_id === 'new' ? 'new' : 'edit';
 			$redirect_url = 'admin.php?page=bookacti_forms';
 		?>
-		<form name='post' action='<?php echo $redirect_url; ?>' method='post' id='bookacti-booking-form' >
+		<form name='post' action='<?php echo $redirect_url; ?>' method='post' id='bookacti-form-editor-page-form' >
 			<?php
 			/* Used to save closed meta boxes and their order */
 			wp_nonce_field( 'bookacti_insert_or_update_form', 'nonce_insert_or_update_form', false );
@@ -86,52 +86,85 @@ if( $form_id === 'new' ) {
 								<input type='text' name='form_title' size='30' value='<?php echo esc_attr( $form->title ); ?>' id='title' spellcheck='true' autocomplete='off' placeholder='<?php echo $title_placeholder; ?>' required />
 							</div>
 						</div>
+						
 						<div id='postdivrich' class='postarea' >
 						<?php
 							// Check if the form editor shall be displayed
-							$display_form_editor = true;
+							$error_message = '';
 							// Check if the form is published
 							if( empty( $form_id ) || ! is_numeric( $form_id ) ) {
-								$display_form_editor = false;
-								?>
-								<div id='bookacti-form-' >
-									<h2>
-									<?php
-										echo esc_html__( 'Before creating your form, you need to set a title and publish your form.', BOOKACTI_PLUGIN_NAME );
-									?>
-									</h2>
-								</div>
-								<?php
+								$error_message = esc_html__( 'Please set a title and publish your form first.', BOOKACTI_PLUGIN_NAME );
+							
+							// Check if the user has available calendars
 							} else {
-								$display_form_editor = false;
-								// Check if the user has available calendars
+								
 								$templates = bookacti_fetch_templates();
 								if( ! $templates ) {
-									$editor_path = 'admin.php?page=bookacti_calendars';
-									$editor_url = admin_url( $editor_path );
-									?>
-									<div id='bookacti-first-template-container' >
-										<h2>
-										<?php
-											/* translators: %1$s and %2$s delimit the link to Calendar Editor page. */
-											echo sprintf(	
-													esc_html__( 'Welcome! It seems you don\'t have any calendar yet. Go to %1$sCalendar Editor%2$s to create your first calendar.', BOOKACTI_PLUGIN_NAME ),
-													'<a href="' . esc_url( $editor_url ) . '" >', 
-													'</a>' );
-										?>
-										</h2>
-									</div>
-									<?php
+									$editor_path	= 'admin.php?page=bookacti_calendars';
+									$editor_url		= admin_url( $editor_path );
+									$error_message	= sprintf( esc_html__( 'Welcome! It seems you don\'t have any calendar yet. Go to %1$sCalendar Editor%2$s to create your first calendar.', BOOKACTI_PLUGIN_NAME ),
+														'<a href="' . esc_url( $editor_url ) . '" >', 
+														'</a>' 
+													);
 								}
 							}
 							
-							// FORM EDITOR
-							if( $display_form_editor ) {
+							// Form editor not available error message
+							if( $error_message ) {
 							?>
-							<div id='bookacti-form-editor' >
-								
-							</div>
+								<div id='bookacti-form-editor-not-available' ><h2><?php echo $error_message; ?></h2></div>
 							<?php
+							
+							// FORM EDITOR
+							} else {
+								// Get form fields in the custom order
+								$fields_data = bookacti_get_default_form_fields_data();
+								$form_fields = bookacti_get_sorted_form_fields( $form_id );
+								
+								// Make sure that all compulsory fields will be displayed
+								foreach( $fields_data as $field_name => $field_data ) {
+									if( empty( $field_data[ 'compulsory' ] ) ) { continue; }
+									$is_displayed = false;
+									foreach( $form_fields as $form_field ) {
+										if( $form_field[ 'name' ] === $field_name ) { $is_displayed = true; break; }
+									}
+									if( ! $is_displayed ) { $form_fields[] = $field_data; }
+								}
+								
+								?>
+								<div id='bookacti-form-editor' >
+									<?php
+									// Display form fields 
+									foreach( $form_fields as $form_field ) {
+										$field_name = $form_field[ 'name' ];
+										if( empty( $fields_data[ $field_name ] ) ) { continue; }
+									?>
+									<div id='bookacti-form-field-<?php echo $field_name; ?>' class='bookacti-form-field' >
+										<div class='bookacti-form-field-header' >
+											<div class='bookacti-form-field-title' >
+												<?php echo $form_field[ 'title' ]; ?>
+											</div>
+											<div class='bookacti-form-field-actions' >
+												<div class='bookacti-edit-form-field'></div>
+											<?php if( ! $form_field[ 'compulsory' ] ) { ?>
+												<div class='bookacti-remove-form-field'></div>
+											<?php } ?>
+											</div>
+										</div>
+										<div class='bookacti-form-field-content' >
+										<?php
+											$valid_callback = bookacti_validate_callback( $form_field[ 'callback' ], $form_field[ 'callback_args' ], true );
+											if( $valid_callback ) {
+												call_user_func_array( $form_field[ 'callback' ], $form_field[ 'callback_args' ] );
+											}
+										?>
+										</div>
+									</div>
+									<?php
+									}
+									?>
+								</div>
+								<?php
 							}
 						?>
 						</div>

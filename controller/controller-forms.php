@@ -12,6 +12,11 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 function bookacti_form_editor_meta_boxes() {
 	if( empty( $_REQUEST[ 'action' ] ) || ! in_array( $_REQUEST[ 'action' ], array( 'edit', 'new' ), true ) ) { return; }
 	
+	// Main
+	if( $_REQUEST[ 'action' ] === 'edit' && ! empty( $_REQUEST[ 'form_id' ] ) && is_numeric( $_REQUEST[ 'form_id' ] ) ) {
+		add_meta_box( 'bookacti_form_integration_tuto', __( 'How to integrate this form on your site', BOOKACTI_PLUGIN_NAME ), 'bookacti_display_form_integration_tuto_meta_box', 'booking-activities_page_bookacti_forms', 'advanced', 'low' );
+	}
+	
 	// Sidebar
 	add_meta_box( 'bookacti_form_publish', __( 'Publish', BOOKACTI_PLUGIN_NAME ), 'bookacti_display_form_publish_meta_box', 'booking-activities_page_bookacti_forms', 'side', 'high' );
 	add_meta_box( 'bookacti_form_managers', __( 'Managers', BOOKACTI_PLUGIN_NAME ), 'bookacti_display_form_managers_meta_box', 'booking-activities_page_bookacti_forms', 'side', 'default' );
