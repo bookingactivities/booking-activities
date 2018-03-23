@@ -54,7 +54,7 @@ function bookacti_shortcode_calendar( $atts = array(), $content = null, $tag = '
  *									url='http://...']		// URL to be redirected after submission
  *									button='Book']			// Name of the booking form submit button
  * 
- * @version 1.1.0
+ * @version 1.5.0
  * 
  * @param array $atts [id, classes, calendars, activities, groups, method, url, button]
  * @param string $content
@@ -63,9 +63,13 @@ function bookacti_shortcode_calendar( $atts = array(), $content = null, $tag = '
  */
 function bookacti_shortcode_booking_form( $atts = array(), $content = null, $tag = '' ) {
 	
-	// Format attributes
+	// Format booking system attributes
     $atts = array_change_key_case( (array) $atts, CASE_LOWER );
 	$atts = bookacti_format_booking_system_attributes( $atts );
+	
+	// Format form attributes
+	$atts[ 'url' ]		= esc_url( $atts[ 'url' ] );
+	$atts[ 'button' ]	= ! empty( $atts[ 'button' ] ) ? esc_html( sanitize_text_field( $atts[ 'button' ] ) ) : bookacti_get_message( 'booking_form_submit_button' );
 	
 	$output = "<form action='" . $atts[ 'url' ] . "' 
 					class='bookacti-booking-system-form' 

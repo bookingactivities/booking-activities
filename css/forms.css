@@ -19,6 +19,24 @@
 
 
 /** FORM EDITOR **/
-#poststuff #bookacti_form_publish .inside { margin: 0; padding: 0; }
 
+/* Page option */
+body.booking-activities_page_bookacti_forms label[for='bookacti_form_publish-hide'] { display: none; }
+
+/* Editor */
+#bookacti-form-editor-container			{ border: 1px solid #e5e5e5; box-shadow: 0 1px 1px rgba(0,0,0,.04); background: #f5f5f5; margin-top: 20px; }
+#bookacti-form-editor-title				{ background: #fff; border-bottom: 1px solid #e5e5e5; }
+#bookacti-form-editor-description		{ padding: 1em; }
+#bookacti-form-editor-description p		{ padding: 0; margin: 0; font-style: italic; }
+#bookacti-form-editor					{ padding: 1em 1em 0 1em; }
+.bookacti-form-editor-field				{ margin-bottom: 1em; border: 1px solid #e5e5e5; box-sizing: border-box; }
+.bookacti-form-editor-field-header		{ max-height: 0; opacity: 0; border-bottom: 1px solid #e5e5e5; transition: max-height 0.2s; }
+.bookacti-form-editor-field-header h3	{ margin: 0; padding: 1em; cursor: move; }
+.bookacti-form-editor-field-body		{ padding: 1em; }
+
+.bookacti-form-editor-field.focus		{ border: 1px solid #e5e5e5; background: #fff; transition: all 0.2s; }
+.bookacti-form-editor-field.focus .bookacti-form-editor-field-header { max-height: 500px; opacity: 1; transition: max-height 1s, opacity 0.2s 0s; }
+
+/* Metaboxes */
+#poststuff #bookacti_form_publish .inside { margin: 0; padding: 0; }
 #bookacti-form-wc-integration-tuto img { width: 100%; max-width: 720px; }

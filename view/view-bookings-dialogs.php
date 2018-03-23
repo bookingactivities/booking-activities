@@ -22,7 +22,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	$atts = array( 
 		'method'		=> $reschedule_booking_method,
 		'id'			=> 'booking-system-reschedule',
-		'classes'		=> is_admin() ? 'admin-booking-system' : '',
+		'class'			=> is_admin() ? 'admin-booking-system' : '',
 		'past_events'	=> is_admin() ? 1 : 0,
 		'context'		=> is_admin() ? 'booking_page' : 'frontend',
 		'auto_load'		=> 0

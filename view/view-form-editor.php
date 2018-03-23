@@ -120,49 +120,60 @@ if( $form_id === 'new' ) {
 								// Get form fields in the custom order
 								$fields_data = bookacti_get_default_form_fields_data();
 								$form_fields = bookacti_get_sorted_form_fields( $form_id );
+								$is_new_form = empty( $form_fields );
 								
 								// Make sure that all compulsory fields will be displayed
 								foreach( $fields_data as $field_name => $field_data ) {
-									if( empty( $field_data[ 'compulsory' ] ) ) { continue; }
+									if( ! ( ! empty( $field_data[ 'compulsory' ] ) || ( $is_new_form && $field_data[ 'default' ] ) ) ) { continue; }
 									$is_displayed = false;
-									foreach( $form_fields as $form_field ) {
-										if( $form_field[ 'name' ] === $field_name ) { $is_displayed = true; break; }
+									foreach( $form_fields as $j => $form_field ) {
+										if( $form_field[ 'name' ] === $field_name ) { 
+											$is_displayed = true; 
+											break; 
+										}
 									}
-									if( ! $is_displayed ) { $form_fields[] = $field_data; }
+									if( ! $is_displayed ) { 
+										$form_fields[] = $field_data; 
+									}
 								}
-								
 								?>
-								<div id='bookacti-form-editor' >
-									<?php
-									// Display form fields 
-									foreach( $form_fields as $form_field ) {
-										$field_name = $form_field[ 'name' ];
-										if( empty( $fields_data[ $field_name ] ) ) { continue; }
-									?>
-									<div id='bookacti-form-field-<?php echo $field_name; ?>' class='bookacti-form-field' >
-										<div class='bookacti-form-field-header' >
-											<div class='bookacti-form-field-title' >
-												<?php echo $form_field[ 'title' ]; ?>
-											</div>
-											<div class='bookacti-form-field-actions' >
-												<div class='bookacti-edit-form-field'></div>
-											<?php if( ! $form_field[ 'compulsory' ] ) { ?>
-												<div class='bookacti-remove-form-field'></div>
-											<?php } ?>
-											</div>
-										</div>
-										<div class='bookacti-form-field-content' >
-										<?php
-											$valid_callback = bookacti_validate_callback( $form_field[ 'callback' ], $form_field[ 'callback_args' ], true );
-											if( $valid_callback ) {
-												call_user_func_array( $form_field[ 'callback' ], $form_field[ 'callback_args' ] );
-											}
-										?>
-										</div>
+								
+								<div id='bookacti-form-editor-container' >
+									<div id='bookacti-form-editor-title' >
+										<h2><?php _e( 'Form editor', BOOKACTI_PLUGIN_NAME ) ?></h2>
+										<span id='bookacti-add-field-to-form'></span>
 									</div>
-									<?php
-									}
-									?>
+									<div id='bookacti-form-editor-description' >
+										<p><?php _e( 'Mouseover a field to display its options. Drag and drop fields to switch their positions.', BOOKACTI_PLUGIN_NAME ) ?></p>
+									</div>
+									<div id='bookacti-form-editor' >
+										<?php
+										// Display form fields 
+										foreach( $form_fields as $form_field ) {
+											$field_name = $form_field[ 'name' ];
+										?>
+										<div id='bookacti-form-editor-field-<?php echo $field_name; ?>' class='bookacti-form-editor-field focus' >
+											<div class='bookacti-form-editor-field-header ui-sortable-handle' >
+												<h3 class='bookacti-form-editor-field-title' >
+													<?php echo $form_field[ 'title' ]; ?>
+												</h3>
+												<div class='bookacti-form-editor-field-actions' >
+													<div class='bookacti-edit-form-field'></div>
+												<?php if( ! $form_field[ 'compulsory' ] ) { ?>
+													<div class='bookacti-remove-form-field'></div>
+												<?php } ?>
+												</div>
+											</div>
+											<div class='bookacti-form-editor-field-body' >
+											<?php
+												bookacti_diplay_form_field( $form_field, $form_id, 'form-editor-instance', 'edit' );
+											?>
+											</div>
+										</div>
+										<?php
+										}
+										?>
+									</div>
 								</div>
 								<?php
 							}

@@ -161,7 +161,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	/**
 	 * Add fields to single product page (front-end)
 	 * 
-	 * @version 1.1.0
+	 * @version 1.5.0
 	 * 
 	 * @global WC_Product $product
 	 */
@@ -205,7 +205,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 				'method'				=> $booking_method,
 				'auto_load'				=> $product->is_type( 'variable' ) ? 0 : 1,
 				'id'					=> 'booking-system-product-' . $product->get_id(),
-				'classes'				=> 'bookacti-frontend-booking-system bookacti-woocommerce-product-booking-system'
+				'class'				=> 'bookacti-frontend-booking-system bookacti-woocommerce-product-booking-system'
 			);
 			bookacti_get_booking_system( $atts, true );
 		}

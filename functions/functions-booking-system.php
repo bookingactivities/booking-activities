@@ -7,7 +7,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 /**
  * Get a booking system based on given parameters
  * 
- * @version 1.4.0
+ * @version 1.5.0
  * 
  * @param array $atts [id, classes, calendars, activities, groups, method]
  * @param boolean $echo Wether to return or directly echo the booking system
@@ -37,8 +37,11 @@ function bookacti_get_booking_system( $atts, $echo = false ) {
 			$when_events_load = bookacti_get_setting_value( 'bookacti_general_settings', 'when_events_load' ); 
 			if( $when_events_load === 'on_page_load' && $atts[ 'auto_load' ] ) { 
 				
-				$templates_data		= bookacti_get_mixed_template_data( $atts[ 'calendars' ], $atts[ 'past_events' ] );
-				$events_interval	= bookacti_get_new_interval_of_events( $templates_data );
+				if( ! $atts[ 'template_data' ] ) {
+					$atts[ 'template_data' ] = bookacti_get_mixed_template_data( $atts[ 'calendars' ], $atts[ 'past_events' ] );
+				}
+				
+				$events_interval	= bookacti_get_new_interval_of_events( $atts[ 'template_data' ] );
 				
 				$user_ids			= array();
 				$groups_ids			= array();
@@ -48,7 +51,7 @@ function bookacti_get_booking_system( $atts, $echo = false ) {
 				$events				= array( 'events' => array(), 'data' => array() );
 				
 				if( $atts[ 'group_categories' ] !== false ) {
-					$groups_data		= bookacti_get_groups_of_events( $atts[ 'calendars' ], $atts[ 'group_categories' ], $atts[ 'past_events' ], false, $templates_data );
+					$groups_data		= bookacti_get_groups_of_events( $atts[ 'calendars' ], $atts[ 'group_categories' ], $atts[ 'past_events' ], false, $atts[ 'template_data' ] );
 					$categories_data	= bookacti_get_group_categories( $atts[ 'calendars' ], $atts[ 'group_categories' ] );
 				
 					foreach( $groups_data as $group_id => $group_data ) { $groups_ids[] = $group_id; }
@@ -77,7 +80,7 @@ function bookacti_get_booking_system( $atts, $echo = false ) {
 				bookacti.booking_system[ '<?php echo $atts[ 'id' ]; ?>' ][ 'groups_events' ]			= <?php echo json_encode( $groups_events ); ?>;	
 				bookacti.booking_system[ '<?php echo $atts[ 'id' ]; ?>' ][ 'groups_data' ]				= <?php echo json_encode( $groups_data ); ?>;	
 				bookacti.booking_system[ '<?php echo $atts[ 'id' ]; ?>' ][ 'group_categories_data' ]	= <?php echo json_encode( $categories_data ); ?>;	
-				bookacti.booking_system[ '<?php echo $atts[ 'id' ]; ?>' ][ 'template_data' ]			= <?php echo json_encode( $templates_data ); ?>;	
+				bookacti.booking_system[ '<?php echo $atts[ 'id' ]; ?>' ][ 'template_data' ]			= <?php echo json_encode( $atts[ 'template_data' ] ); ?>;	
 			<?php } ?>
 		</script>
 				
@@ -97,13 +100,13 @@ function bookacti_get_booking_system( $atts, $echo = false ) {
 		
 		<?php do_action( 'bookacti_before_booking_system', $atts ); ?>
 		
-		<div id='<?php echo esc_attr( $atts[ 'id' ] ); ?>' class='bookacti-booking-system <?php echo esc_attr( $atts[ 'classes' ] ); ?>' >
+		<div id='<?php echo esc_attr( $atts[ 'id' ] ); ?>' class='bookacti-booking-system <?php echo esc_attr( $atts[ 'class' ] ); ?>' >
 			<?php echo bookacti_get_booking_method_html( $atts[ 'method' ], $atts ); ?>
 		</div>
 		
 		<?php do_action( 'bookacti_after_booking_system', $atts ); ?>
 		
-		<div class='bookacti-picked-events' >
+		<div class='bookacti-picked-events' style='display:none;' >
 			<div class='bookacti-picked-events-list-title' ></div>
 			<ul class='bookacti-picked-events-list' >
 				<?php do_action( 'bookacti_picked_events_list', $atts ); ?>
@@ -112,7 +115,7 @@ function bookacti_get_booking_system( $atts, $echo = false ) {
 		
 		<?php do_action( 'bookacti_after_picked_events_list', $atts ); ?>
 		
-		<div class='bookacti-notices' >
+		<div class='bookacti-notices' style='display:none;' >
 			<?php do_action( 'bookacti_booking_system_errors', $atts ); ?>
 		</div>
 		
@@ -203,9 +206,9 @@ function bookacti_retrieve_calendar_elements( $booking_system_atts ) {
 /**
  * Check booking system attributes and format them to be correct
  * 
- * @version 1.4.0
+ * @version 1.5.0
  * 
- * @param array $atts [id, classes, calendars, activities, groups, method, url, button]
+ * @param array $atts 
  * @param string $shortcode
  * @return type
  */
@@ -214,7 +217,8 @@ function bookacti_format_booking_system_attributes( $atts = array(), $shortcode 
 	// Set default value
 	$defaults = apply_filters( 'bookacti_booking_system_default_attributes', array(
         'id'					=> '',
-        'classes'				=> '',
+        'class'					=> '',
+		'template_data'			=> array(),
         'calendars'				=> array(),
         'activities'			=> array(),
         'group_categories'		=> false,
@@ -224,8 +228,6 @@ function bookacti_format_booking_system_attributes( $atts = array(), $shortcode 
         'status'				=> array(),
         'user_id'				=> 0,
         'method'				=> 'calendar',
-		'url'					=> '',
-		'button'				=> bookacti_get_message( 'booking_form_submit_button' ),
 		'auto_load'				=> 1,
 		'past_events'			=> 0,
 		'check_roles'			=> 1
@@ -328,6 +330,14 @@ function bookacti_format_booking_system_attributes( $atts = array(), $shortcode 
 		if( ! $atts[ 'group_categories' ] ) { $atts[ 'group_categories' ] = $available_category_ids; }
 	}
 	
+	// Format template data
+	if( ! empty( $atts[ 'template_data' ] ) && is_array( $atts[ 'template_data' ] ) ) {
+		$templates_data = bookacti_get_mixed_template_data( $atts[ 'calendars' ], $atts[ 'past_events' ] );
+		$atts[ 'template_data' ][ 'start' ]		= ! empty( $atts[ 'template_data' ][ 'start' ] ) && bookacti_sanitize_date( $atts[ 'template_data' ][ 'start' ] ) ? bookacti_sanitize_date( $atts[ 'template_data' ][ 'start' ] ) : $templates_data[ 'start' ];
+		$atts[ 'template_data' ][ 'end' ]		= ! empty( $atts[ 'template_data' ][ 'end' ] ) && bookacti_sanitize_date( $atts[ 'template_data' ][ 'end' ] ) ? bookacti_sanitize_date( $atts[ 'template_data' ][ 'end' ] ) : $templates_data[ 'end' ];
+		$atts[ 'template_data' ][ 'settings' ]	= ! empty( $atts[ 'template_data' ][ 'settings' ] ) ? bookacti_format_template_settings( $atts[ 'template_data' ][ 'settings' ] ) : $templates_data[ 'settings' ];
+	}
+	
 	// If booking method is set to 'site', get the site default
 	$atts[ 'method' ] = esc_attr( $atts[ 'method' ] );
 	if( $atts[ 'method' ] === 'site' ) {
@@ -373,14 +383,7 @@ function bookacti_format_booking_system_attributes( $atts = array(), $shortcode 
 	$atts[ 'id' ]	= esc_attr( $atts[ 'id' ] );
 	
 	// Format classes
-	$atts[ 'classes' ]	= ! empty( $atts[ 'classes' ] )	? esc_attr( $atts[ 'classes' ] ) : '';
-	
-	// Sanitize redirect URL
-	$atts[ 'url' ] = esc_url( $atts[ 'url' ] );
-	
-	// Sanitize submit button label
-	$atts[ 'button' ] = esc_html( sanitize_text_field( $atts[ 'button' ] ) );
-	
+	$atts[ 'class' ]	= ! empty( $atts[ 'class' ] )	? esc_attr( $atts[ 'class' ] ) : '';
 	
 	return apply_filters( 'bookacti_formatted_booking_system_attributes', $atts, $shortcode );
 }

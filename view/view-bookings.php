@@ -251,7 +251,7 @@ if( ! $templates ) {
 						'groups_single_events'	=> 1,
 						'method'				=> 'calendar',
 						'id'					=> 'booking-system-bookings-page',
-						'classes'				=> 'admin-booking-system',
+						'class'					=> 'admin-booking-system',
 						'past_events'			=> 1,
 						'check_roles'			=> 0
 					);

@@ -2,6 +2,112 @@
 // Exit if accessed directly
 if ( ! defined( 'ABSPATH' ) ) { exit; }
 
+// FORM FIELDS
+
+/**
+ * Display the form field 'calendar'
+ * @since 1.5.0
+ * @param array $field
+ * @param int $form_id
+ * @param string $instance_id
+ * @param string $context
+ */
+function bookacti_display_form_field_calendar( $field, $form_id, $instance_id, $context ) {
+	bookacti_get_booking_system( $field, true );
+}
+add_action( 'bookacti_diplay_form_field_calendar', 'bookacti_display_form_field_calendar', 10, 4 );
+
+
+/**
+ * Display the form field 'login'
+ * @since 1.5.0
+ * @param string $html
+ * @param array $field
+ * @param int $form_id
+ * @param string $instance_id
+ * @param string $context
+ * @return string
+ */
+function bookacti_display_form_field_login( $html, $field, $form_id, $instance_id, $context ) {
+	$field_id = ! empty( $field[ 'id' ] ) ? $field[ 'id' ] : $field[ 'name' ] . '-' . $instance_id;
+	$login_type = $field[ 'login_type' ];
+	ob_start();
+?>
+	<div class='bookacti-form-field-container' id='<?php if( ! empty( $field[ 'name' ] ) ) { echo 'bookacti-form-field-' . $field[ 'name' ]; } ?>' >
+		<div class='bookacti-form-field-label' >
+			<label for='<?php echo $field_id; ?>' ><?php echo $login_type === 'email' ? __( 'E-mail', BOOKACTI_PLUGIN_NAME ) : __( 'Username', BOOKACTI_PLUGIN_NAME ); ?></label>
+		<?php if( ! empty( $field[ 'login_tip' ] ) ) { bookacti_help_tip( $field[ 'login_tip' ] ); } ?>
+		</div>
+		<div class='bookacti-form-field-content' >
+		<input name='bookacti_<?php echo $login_type; ?>'
+			id='<?php echo $field_id; ?>'
+			class='bookacti-form-field bookacti-login bookacti-<?php echo $login_type . ' ' . $field[ 'class' ]; ?>'
+			type='<?php echo $login_type === 'email' ? 'email' : 'text'; ?>'/>
+		</div>
+		
+		<?php if( empty( $field[ 'generate_password' ] ) ) { ?>
+			<div class='bookacti-form-field-label' >
+				<label for='<?php echo $field_id . '-password'; ?>' ><?php _e( 'Password', BOOKACTI_PLUGIN_NAME ); ?></label>
+			<?php if( ! empty( $field[ 'password_tip' ] ) ) { bookacti_help_tip( $field[ 'password_tip' ] ); } ?>
+			</div>
+			<div class='bookacti-form-field-content' >
+			<input name='bookacti_password'
+				id='<?php echo $field_id . '-password'; ?>'
+				class='bookacti-form-field bookacti-password'
+				type='password'/>
+			</div>
+		<?php } ?>
+	</div>
+<?php
+	$html = ob_get_clean();
+	return $html;
+}
+add_filter( 'bookacti_html_form_field_login', 'bookacti_display_form_field_login', 10, 5 );
+
+
+/**
+ * Display the form field 'quantity'
+ * @since 1.5.0
+ * @param array $field
+ * @param int $form_id
+ * @param string $instance_id
+ * @param string $context
+ */
+function bookacti_display_form_field_quantity( $field, $form_id, $instance_id, $context ) {
+	$field_id = ! empty( $field[ 'id' ] ) ? $field[ 'id' ] : $field[ 'name' ] . '-' . $instance_id;
+?>
+	<input	name='bookacti_quantity'
+			id='<?php echo $field_id; ?>'
+			class='bookacti-form-field bookacti-quantity <?php echo $field[ 'class' ]; ?>'
+			type='number' 
+			min='1'
+			value='1' />
+<?php
+}
+add_action( 'bookacti_diplay_form_field_quantity', 'bookacti_display_form_field_quantity', 10, 4 );
+
+
+/**
+ * Display the form field 'submit'
+ * @since 1.5.0
+ * @param array $field
+ * @param int $form_id
+ * @param string $instance_id
+ * @param string $context
+ */
+function bookacti_display_form_field_submit( $field, $form_id, $instance_id, $context ) {
+	$field_id = ! empty( $field[ 'id' ] ) ? $field[ 'id' ] : $field[ 'name' ] . '-' . $instance_id;
+?>
+	<input type='<?php echo $context === 'edit' ? 'button' : 'submit'; ?>'
+		id='<?php echo $field_id; ?>' 
+		class='bookacti-submit-form button <?php echo $field[ 'class' ]; ?>' 
+		value='<?php echo $field[ 'label' ]; ?>' />
+<?php
+}
+add_action( 'bookacti_diplay_form_field_submit', 'bookacti_display_form_field_submit', 10, 4 );
+
+
+
 
 // FORM EDITOR PAGE
 
@@ -12,14 +118,13 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 function bookacti_form_editor_meta_boxes() {
 	if( empty( $_REQUEST[ 'action' ] ) || ! in_array( $_REQUEST[ 'action' ], array( 'edit', 'new' ), true ) ) { return; }
 	
-	// Main
-	if( $_REQUEST[ 'action' ] === 'edit' && ! empty( $_REQUEST[ 'form_id' ] ) && is_numeric( $_REQUEST[ 'form_id' ] ) ) {
-		add_meta_box( 'bookacti_form_integration_tuto', __( 'How to integrate this form on your site', BOOKACTI_PLUGIN_NAME ), 'bookacti_display_form_integration_tuto_meta_box', 'booking-activities_page_bookacti_forms', 'advanced', 'low' );
-	}
-	
 	// Sidebar
 	add_meta_box( 'bookacti_form_publish', __( 'Publish', BOOKACTI_PLUGIN_NAME ), 'bookacti_display_form_publish_meta_box', 'booking-activities_page_bookacti_forms', 'side', 'high' );
 	add_meta_box( 'bookacti_form_managers', __( 'Managers', BOOKACTI_PLUGIN_NAME ), 'bookacti_display_form_managers_meta_box', 'booking-activities_page_bookacti_forms', 'side', 'default' );
+
+	if( $_REQUEST[ 'action' ] === 'edit' && ! empty( $_REQUEST[ 'form_id' ] ) && is_numeric( $_REQUEST[ 'form_id' ] ) ) {
+		add_meta_box( 'bookacti_form_integration_tuto', __( 'How to integrate this form on your site', BOOKACTI_PLUGIN_NAME ), 'bookacti_display_form_integration_tuto_meta_box', 'booking-activities_page_bookacti_forms', 'side', 'low' );
+	}
 }
 add_action( 'add_meta_boxes_booking-activities_page_bookacti_forms', 'bookacti_form_editor_meta_boxes' );
 

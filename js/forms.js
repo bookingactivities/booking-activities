@@ -5,6 +5,14 @@ $j( document ).ready( function() {
 	// Add / remove form managers
 	bookacti_init_add_and_remove_items();
 	
+	// Hover form field in editor
+	if( ! bookacti.is_touch_device ) {
+		$j( '.bookacti-form-editor-field' ).removeClass( 'focus' );
+		$j( '#bookacti-form-editor' ).on( 'hover', '.bookacti-form-editor-field', function(){
+			$j( this ).toggleClass( 'focus' );
+		});
+	}
+	
 	// Save a form (create or update)
 	$j( 'form#bookacti-form-editor-page-form' ).on( 'submit', function( e ) {
 		e.preventDefault();

@@ -277,7 +277,7 @@ function bookacti_delete_form( $form_id ) {
 function bookacti_get_form_fields( $form_id ) {
 	global $wpdb;
 	
-	$query	= 'SELECT * FROM ' . BOOKACTI_TABLE_FORM_FIELDS . ' as FF '
+	$query	= 'SELECT id as form_field_id, title, active FROM ' . BOOKACTI_TABLE_FORM_FIELDS . ' as FF '
 			. ' WHERE FF.form_id = %d';
 	
 	$variables = array( $form_id );

@@ -2087,7 +2087,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	 * Get an array of all activity ids bound to designated templates
 	 * 
 	 * @since 1.1.0
-	 * @version 1.4.0
+	 * @version 1.5.0
 	 * 
 	 * @global wpdb $wpdb
 	 * @param array $template_ids
@@ -2111,9 +2111,9 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		$variables = array();
 		
 		if( $based_on_events ) { 
-			$query	= 'SELECT DISTINCT E.activity_id as id FROM ' . BOOKACTI_TABLE_EVENTS . ' as E ';
+			$query	= 'SELECT DISTINCT E.activity_id as unique_activity_id FROM ' . BOOKACTI_TABLE_EVENTS . ' as E ';
 		} else {
-			$query	= 'SELECT DISTINCT A.id FROM ' . BOOKACTI_TABLE_TEMP_ACTI . ' as TA, ' . BOOKACTI_TABLE_ACTIVITIES . ' as A ';
+			$query	= 'SELECT DISTINCT A.id as unique_activity_id FROM ' . BOOKACTI_TABLE_TEMP_ACTI . ' as TA, ' . BOOKACTI_TABLE_ACTIVITIES . ' as A ';
 		}
 		
 		// Join the meta table to filter by roles
@@ -2159,6 +2159,8 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			$variables = array_merge( $variables, $template_ids );
 		}
 		
+		$query .= ' ORDER BY unique_activity_id ASC ';
+		
 		if( $variables ) {
 			$query = $wpdb->prepare( $query, $variables );
 		}
@@ -2167,7 +2169,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 		$activities_ids = array();
 		foreach( $activities as $activity ) {
-			$activities_ids[] = intval( $activity->id );
+			$activities_ids[] = intval( $activity->unique_activity_id );
 		}
 		
 		return $activities_ids;

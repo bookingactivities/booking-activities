@@ -100,11 +100,13 @@ function bookacti_format_form_filters( $filters = array() ) {
  * Get a sorted array of fields for the desired form
  * @since 1.5.0
  * @param int $form_id
- * @return array|false
+ * @return array
  */
 function bookacti_get_sorted_form_fields( $form_id ) {
 	
 	$fields = bookacti_get_form_fields( $form_id );
+	
+	if( ! $fields ) { return array(); }
 	
 	// Sort form fields by customer custom order
 	$field_order = bookacti_get_metadata( 'form', $form_id, 'field_order', true );
@@ -129,8 +131,16 @@ function bookacti_get_sorted_form_fields( $form_id ) {
 		$fields = $ordered_fields;
 	}
 	
+	// Add form field metadata and 
 	// Format form fields
 	foreach( $fields as $i => $field ) {
+		// Add field-specific data
+		$field_metadata = bookacti_get_metadata( 'form_field', $field->form_field_id );
+		if( is_array( $field_metadata ) ) { 
+			$field = array_merge( $field, $field_metadata );
+		}
+		
+		// Format data
 		$fields[ $i ] = bookacti_format_form_field_data( $field );
 	}
 	
@@ -192,11 +202,10 @@ function bookacti_format_form_field_data( $field_data ) {
 		'class' => '',				// Field's classes
 		'options' => array(),		// Array of allowed values
 		'value' => '',				// Default value among the allowed values
-		'callback' => '',			// Function called to display the field
-		'callback_args' => array(),	// Array of arguments for the callback
 		'placeholder' => '',		// Text displayed in transparency when the field is empty
 		'tip' => '',				// Help text displayed in a tooltip next to the field
-		'compulsory' => 0			// If the field cannot be deleted
+		'compulsory' => 0,			// If the field cannot be deleted
+		'default' => 0				// If the field is set by default (if compulsory, it is by default too)
 	);
 	
 	$formatted_field_data = array();
@@ -204,31 +213,28 @@ function bookacti_format_form_field_data( $field_data ) {
 	// Format field data according to its type
 	if( $field_type === 'calendar' ) {
 		// Set default common data
-		$common_default[ 'title' ]		= __( 'Calendar', BOOKACTI_PLUGIN_NAME );
-		$common_default[ 'compulsory' ]	= 1;
-		$common_default[ 'callback' ]	= '';
+		$common_default[ 'title' ]			= __( 'Calendar', BOOKACTI_PLUGIN_NAME );
+		$common_default[ 'compulsory' ]		= 1;
+		$common_default[ 'default' ]		= 1;
 		
 		// Format booking system data
 		$booking_system_data	= bookacti_format_booking_system_attributes( $field_data );
 		$formatted_field_data	= array_merge( $booking_system_data, $field_data );
 		
-		// Format calendar settings data
-		$calendar_settings					= ! empty( $field_data[ 'settings' ] ) ? $field_data[ 'settings' ] : array();
-		$formatted_field_data[ 'settings' ]	= bookacti_format_template_settings( $calendar_settings );
 		
 	} else if( $field_type === 'login' ) {
 		// Set default common data
 		$common_default[ 'title' ] = __( 'Login / Register', BOOKACTI_PLUGIN_NAME );
 		
 		$login_default = array(
-			'login_options'			=> array( 'email', 'user_login' ),
-			'login_type'			=> 'email',
-			'login_label'			=> __( 'E-mail', BOOKACTI_PLUGIN_NAME ),
+			'login_type'			=> 'email', // email or username
 			'login_placeholder'		=> '',
-			'password_label'		=> __( 'Password', BOOKACTI_PLUGIN_NAME ),
 			'password_placeholder'	=> '',
+			'login_tip'				=> '',
+			'password_tip'			=> '',
 			'generate_password'		=> 0,
-			'send_account_email'	=> 0
+			'send_account_email'	=> 0,
+			'default'				=> 1
 		);
 		$formatted_field_data = array_merge( $login_default, $field_data );
 		
@@ -237,12 +243,14 @@ function bookacti_format_form_field_data( $field_data ) {
 		$common_default[ 'title' ]		= __( 'Quantity', BOOKACTI_PLUGIN_NAME );
 		$common_default[ 'label' ]		= __( 'Quantity', BOOKACTI_PLUGIN_NAME );
 		$common_default[ 'compulsory' ] = 1;
+		$common_default[ 'default' ] = 1;
 		
 	} else if( $field_type === 'submit' ) {
 		// Set default common data
 		$common_default[ 'title' ]		= __( 'Submit button', BOOKACTI_PLUGIN_NAME );
 		$common_default[ 'label' ]		= __( 'Book', BOOKACTI_PLUGIN_NAME );
 		$common_default[ 'compulsory' ] = 1;
+		$common_default[ 'default' ]	= 1;
 		
 	} else if( $field_type === 'free_html' ) {
 		// Set default common data
@@ -275,6 +283,48 @@ function bookacti_get_field_types() {
 	return apply_filters( 'bookacti_field_types', $field_types );
 }
 
+
+/**
+ * Display a form field
+ * @since 1.5.0
+ * @param array $field
+ * @param int $form_id
+ * @param string $instance_id
+ * @param string $context
+ * @return string|void
+ */
+function bookacti_diplay_form_field( $field, $form_id = 0, $instance_id = '', $context = 'display', $echo = true ) {
+	
+	if( empty( $field[ 'name' ] ) ) { return ''; };
+	
+	if( ! $instance_id ) { $instance_id = rand(); }
+	$field_id = ! empty( $field[ 'id' ] ) ? $field[ 'id' ] : $field[ 'name' ] . '-' . $instance_id;
+	
+	ob_start();
+?>
+	<div class='bookacti-form-field-container' id='<?php if( ! empty( $field[ 'name' ] ) ) { echo 'bookacti-form-field-' . $field[ 'name' ]; } ?>' >
+	<?php if( ! empty( $field[ 'label' ] ) && $field[ 'name' ] !== 'submit' ) { ?>
+		<div class='bookacti-form-field-label' >
+			<label for='<?php echo $field_id; ?>' ><?php echo $field[ 'label' ]; ?></label>
+		<?php if( ! empty( $field[ 'tip' ] ) ) { bookacti_help_tip( $field[ 'tip' ] ); } ?>
+		</div>
+	<?php } ?>
+		<div class='bookacti-form-field-content' >
+		<?php 
+			do_action( 'bookacti_diplay_form_field_' . $field[ 'name' ], $field, $form_id, $instance_id, $context ); 
+		?>
+		</div>
+	</div>
+<?php
+	$html = apply_filters( 'bookacti_html_form_field_' . $field[ 'name' ], ob_get_clean(), $field, $form_id, $instance_id, $context );
+	if( ! $echo ) { return $html; }
+	echo $html;
+}
+
+
+
+
+// FORM EDITOR METABOXES
 
 /**
  * Display 'managers' metabox content for forms
