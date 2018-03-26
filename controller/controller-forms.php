@@ -123,7 +123,7 @@ function bookacti_form_editor_meta_boxes() {
 	add_meta_box( 'bookacti_form_managers', __( 'Managers', BOOKACTI_PLUGIN_NAME ), 'bookacti_display_form_managers_meta_box', 'booking-activities_page_bookacti_forms', 'side', 'default' );
 
 	if( $_REQUEST[ 'action' ] === 'edit' && ! empty( $_REQUEST[ 'form_id' ] ) && is_numeric( $_REQUEST[ 'form_id' ] ) ) {
-		add_meta_box( 'bookacti_form_integration_tuto', __( 'How to integrate this form on your site', BOOKACTI_PLUGIN_NAME ), 'bookacti_display_form_integration_tuto_meta_box', 'booking-activities_page_bookacti_forms', 'side', 'low' );
+		add_meta_box( 'bookacti_form_integration_tuto', __( 'How to integrate this form', BOOKACTI_PLUGIN_NAME ), 'bookacti_display_form_integration_tuto_meta_box', 'booking-activities_page_bookacti_forms', 'side', 'low' );
 	}
 }
 add_action( 'add_meta_boxes_booking-activities_page_bookacti_forms', 'bookacti_form_editor_meta_boxes' );
@@ -347,3 +347,35 @@ function bookacti_controller_remove_form() {
 	}
 }
 add_action( 'all_admin_notices', 'bookacti_controller_remove_form', 10 );
+
+
+
+
+// FORM FIELDS
+/**
+ * AJAX Controller - Save form field order
+ * @since 1.5.0
+ */
+function bookacti_controller_save_form_field_order() {
+	$form_id = intval( $_POST[ 'form_id' ] );
+	
+	// Check nonce and capabilities
+	$is_nonce_valid	= check_ajax_referer( 'bookacti_form_field_order', 'nonce', false );
+	$is_allowed		= current_user_can( 'bookacti_edit_forms' ) && bookacti_user_can_manage_form( $form_id );
+	
+	if( $is_nonce_valid && $is_allowed && $form_id ) {
+		
+		$field_order	= bookacti_sanitize_form_field_order( $form_id, $_POST[ 'field_order' ] );
+		$updated		= bookacti_update_metadata( 'form', $form_id, array( 'field_order' => $field_order ) );
+		
+		if( $updated !== false ) {
+			wp_send_json( array( 'status' => 'success' ) );
+		} else {
+			wp_send_json( array( 'status' => 'failed', 'error' => 'not_updated' ) );
+		}
+		
+	} else {
+		wp_send_json( array( 'status' => 'failed', 'error' => 'not_allowed' ) );
+	}
+}
+add_action( 'wp_ajax_bookactiSaveFormFieldOrder', 'bookacti_controller_save_form_field_order', 10 );

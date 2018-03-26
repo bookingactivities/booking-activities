@@ -24,7 +24,6 @@ if( $form_id === 'new' ) {
 	$form = new stdClass();
 	$form->id		= 'new';
 	$form->title	= '';
-	$form->content	= '';
 	$form->active	= 1;
 
 // Get form data by id
@@ -61,7 +60,7 @@ if( $form_id === 'new' ) {
 	
 	<div id='bookacti-form-editor-page-container' >
 		<?php
-			do_action( 'bookacti_before_form_editor' );
+			do_action( 'bookacti_form_editor_page_before', $form );
 			$form_action = $form_id === 'new' ? 'new' : 'edit';
 			$redirect_url = 'admin.php?page=bookacti_forms';
 		?>
@@ -74,7 +73,7 @@ if( $form_id === 'new' ) {
 			?>
 			<input type='hidden' name='page' value='bookacti_forms' />
 			<input type='hidden' name='action' value='<?php echo $form_id === 'new' ? 'bookactiInsertForm' : 'bookactiUpdateForm'; ?>' />
-			<input type='hidden' name='form_id' value='<?php echo $form_id; ?>' />
+			<input type='hidden' name='form_id' value='<?php echo $form_id; ?>' id='bookacti-form-id' />
 			
 			<div id='poststuff'>
 				<div id='post-body' class='metabox-holder columns-<?php echo 1 == get_current_screen()->get_columns() ? '1' : '2'; ?>'>
@@ -117,9 +116,13 @@ if( $form_id === 'new' ) {
 							
 							// FORM EDITOR
 							} else {
+								
+								// Display a nonce for form field order
+								wp_nonce_field( 'bookacti_form_field_order', 'bookacti_nonce_form_field_order', false );
+								
 								// Get form fields in the custom order
 								$fields_data = bookacti_get_default_form_fields_data();
-								$form_fields = bookacti_get_sorted_form_fields( $form_id );
+								$form_fields = bookacti_get_form_fields_data( $form_id );
 								$is_new_form = empty( $form_fields );
 								
 								// Make sure that all compulsory fields will be displayed
@@ -136,35 +139,49 @@ if( $form_id === 'new' ) {
 										$form_fields[] = $field_data; 
 									}
 								}
+								$form_fields = bookacti_sort_form_fields_array( $form_id, $form_fields );
 								?>
 								
 								<div id='bookacti-form-editor-container' >
 									<div id='bookacti-form-editor-title' >
 										<h2><?php _e( 'Form editor', BOOKACTI_PLUGIN_NAME ) ?></h2>
-										<span id='bookacti-add-field-to-form'></span>
+										<span id='bookacti-add-field-to-form' class='bookacti-edit-form-field dashicons dashicons-plus' title='<?php _e( 'Add a new field to your form', BOOKACTI_PLUGIN_NAME ); ?>'></span>
 									</div>
 									<div id='bookacti-form-editor-description' >
-										<p><?php _e( 'Mouseover a field to display its options. Drag and drop fields to switch their positions.', BOOKACTI_PLUGIN_NAME ) ?></p>
+										<p>
+										<?php 
+											/* translators: the placeholders are icons related to the action */
+											echo sprintf( __( 'Click on %1$s to add, %2$s to edit, %3$s to remove and %4$s to preview your form fields.<br/>Drag and drop fields to switch their positions.', BOOKACTI_PLUGIN_NAME ),
+												'<span class="dashicons dashicons-plus"></span>',
+												'<span class="dashicons dashicons-admin-generic"></span>',
+												'<span class="dashicons dashicons-trash"></span>',
+												'<span class="dashicons dashicons-arrow-down"></span>' ); 
+											do_action( 'bookacti_form_editor_description_after', $form );
+										?>
+										</p>
 									</div>
 									<div id='bookacti-form-editor' >
 										<?php
+										do_action( 'bookacti_form_editor_before', $form );
+										
 										// Display form fields 
 										foreach( $form_fields as $form_field ) {
 											$field_name = $form_field[ 'name' ];
 										?>
-										<div id='bookacti-form-editor-field-<?php echo $field_name; ?>' class='bookacti-form-editor-field focus' >
-											<div class='bookacti-form-editor-field-header ui-sortable-handle' >
+										<div id='bookacti-form-editor-field-<?php echo $field_name; ?>' class='bookacti-form-editor-field' data-field-name='<?php echo $field_name; ?>' >
+											<div class='bookacti-form-editor-field-header' >
 												<h3 class='bookacti-form-editor-field-title' >
 													<?php echo $form_field[ 'title' ]; ?>
 												</h3>
 												<div class='bookacti-form-editor-field-actions' >
-													<div class='bookacti-edit-form-field'></div>
+													<div class='bookacti-form-editor-field-action bookacti-edit-form-field dashicons dashicons-admin-generic' title='<?php _e( 'Change field settings', BOOKACTI_PLUGIN_NAME ); ?>'></div>
 												<?php if( ! $form_field[ 'compulsory' ] ) { ?>
-													<div class='bookacti-remove-form-field'></div>
+													<div class='bookacti-form-editor-field-action bookacti-remove-form-field dashicons dashicons-trash' title='<?php _e( 'Remove this field', BOOKACTI_PLUGIN_NAME ); ?>'></div>
 												<?php } ?>
+													<div class='bookacti-field-toggle dashicons dashicons-arrow-down' title='<?php _e( 'Show / Hide', BOOKACTI_PLUGIN_NAME ); ?>'></div>
 												</div>
 											</div>
-											<div class='bookacti-form-editor-field-body' >
+											<div class='bookacti-form-editor-field-body' style='display:none;' >
 											<?php
 												bookacti_diplay_form_field( $form_field, $form_id, 'form-editor-instance', 'edit' );
 											?>
@@ -172,6 +189,8 @@ if( $form_id === 'new' ) {
 										</div>
 										<?php
 										}
+										
+										do_action( 'bookacti_form_editor_after', $form );
 										?>
 									</div>
 								</div>
@@ -196,7 +215,10 @@ if( $form_id === 'new' ) {
 			</div>
 		</form>
 		<?php
-			do_action( 'bookacti_after_form_editor' );
+			do_action( 'bookacti_form_editor_page_after', $form );
 		?>
 	</div>
 </div>
+<?php
+// Include dialogs
+//include_once( 'view-form-editor-dialogs.php' );

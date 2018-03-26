@@ -141,6 +141,7 @@ Then feel free to tell us if you miss a feature, if you find a bug or anything t
 
 * **WordPress**: 3.6 or later
 * **PHP**: 5.3 or later
+* **MySQL**: 5.6 or later
 * **WooCommerce**: 2.6 or later (deprecated, update to 3.x asap) 
 * *Booking Activities can be used without WooCommerce*
 

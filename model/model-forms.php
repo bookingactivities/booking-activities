@@ -268,7 +268,6 @@ function bookacti_delete_form( $form_id ) {
 
 /**
  * Get the fields of the desired form
- * Use 
  * @since 1.5.0
  * @global wpdb $wpdb
  * @param int $form_id

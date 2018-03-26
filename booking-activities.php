@@ -198,7 +198,7 @@ function bookacti_enqueue_high_priority_backend_scripts() {
 	// INCLUDE JAVASCRIPT FILES
 	wp_register_script( 'bookacti-js-backend-functions',	plugins_url( 'js/backend-functions.min.js', __FILE__ ),	array( 'jquery', 'bookacti-js-global-var', 'jquery-ui-dialog', 'jquery-ui-tabs', 'jquery-ui-tooltip' ), BOOKACTI_VERSION, true );
 	wp_register_script( 'bookacti-js-bookings',				plugins_url( 'js/bookings.min.js', __FILE__ ),			array( 'jquery', 'bookacti-js-global-var', 'bookacti-js-fullcalendar', 'bookacti-js-global-functions', 'bookacti-js-backend-functions' ), BOOKACTI_VERSION, true );
-	wp_register_script( 'bookacti-js-forms',				plugins_url( 'js/forms.min.js', __FILE__ ),				array( 'jquery', 'bookacti-js-global-var', 'bookacti-js-booking-system-functions' ), BOOKACTI_VERSION, true );
+	wp_register_script( 'bookacti-js-forms',				plugins_url( 'js/forms.min.js', __FILE__ ),				array( 'jquery', 'bookacti-js-global-var', 'bookacti-js-booking-system-functions', 'jquery-ui-sortable' ), BOOKACTI_VERSION, true );
 	
 	// LOCALIZE SCRIPTS
 	global $bookacti_translation_array;
