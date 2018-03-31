@@ -32,7 +32,7 @@ echo "<h1>" . esc_html__( 'Calendars', BOOKACTI_PLUGIN_NAME ) . "</h1>";
 				<div class='bookacti-template-box-title' >
 					<h4><?php echo esc_html__( 'Calendars', BOOKACTI_PLUGIN_NAME ); ?></h4>
 					<?php if( $current_user_can_create_template ) { ?>
-					<div class='bookacti-insert-button' id='bookacti-insert-template' ><img src='<?php echo esc_url( plugins_url() . '/' . BOOKACTI_PLUGIN_NAME . '/img/add.png' ); ?>' /></div>
+					<div class='bookacti-insert-button dashicons dashicons-plus-alt' id='bookacti-insert-template' ></div>
 					<?php } ?>
 				</div>
 				<div id='bookacti-template-picker-container' >
@@ -67,9 +67,7 @@ echo "<h1>" . esc_html__( 'Calendars', BOOKACTI_PLUGIN_NAME ) . "</h1>";
 					</select>
 				</div>
 				<?php if( $current_user_can_edit_template ) { ?>
-					<div id='bookacti-update-template' >
-						<img src='<?php echo esc_url( plugins_url() . '/' . BOOKACTI_PLUGIN_NAME . '/img/gear.png' ); ?>' />
-					</div>
+					<div id='bookacti-update-template'><span class='dashicons dashicons-admin-generic'></span></div>
 				<?php } ?>
         </div>
 
@@ -78,7 +76,7 @@ echo "<h1>" . esc_html__( 'Calendars', BOOKACTI_PLUGIN_NAME ) . "</h1>";
             <div class='bookacti-template-box-title' >
                 <h4><?php echo esc_html__( 'Activities', BOOKACTI_PLUGIN_NAME ); ?></h4>
 				<?php if( $current_user_can_create_activities ) { ?>
-                <div class='bookacti-insert-button' id='bookacti-insert-activity' ><img src='<?php echo esc_url( plugins_url() . '/' . BOOKACTI_PLUGIN_NAME . '/img/add.png' ); ?>' /></div>
+                <div class='bookacti-insert-button dashicons dashicons-plus-alt' id='bookacti-insert-activity' ></div>
 				<?php } ?>
             </div>
             
@@ -109,9 +107,7 @@ echo "<h1>" . esc_html__( 'Calendars', BOOKACTI_PLUGIN_NAME ) . "</h1>";
 					<h2>
 						<?php _e( 'Create your first activity', BOOKACTI_PLUGIN_NAME ); ?>
 					</h2>
-					<div id='bookacti-template-add-first-activity-button' >
-						<img src='<?php echo esc_url( plugins_url() . '/' . BOOKACTI_PLUGIN_NAME . '/img/add.png' ); ?>' />
-					</div>
+					<div id='bookacti-template-add-first-activity-button' class='dashicons dashicons-plus-alt'></div>
 				</div>
 			<?php } ?>
         </div>
@@ -121,7 +117,7 @@ echo "<h1>" . esc_html__( 'Calendars', BOOKACTI_PLUGIN_NAME ) . "</h1>";
 			<div class='bookacti-template-box-title' >
 				<h4><?php echo esc_html__( 'Groups of events', BOOKACTI_PLUGIN_NAME ); ?></h4>
 				<?php if( $current_user_can_edit_template ) { ?>
-                <div class='bookacti-insert-button' id='bookacti-insert-group-of-events' ><img src='<?php echo esc_url( plugins_url() . '/' . BOOKACTI_PLUGIN_NAME . '/img/add.png' ); ?>' /></div>
+                <div class='bookacti-insert-button dashicons dashicons-plus-alt' id='bookacti-insert-group-of-events' ></div>
 				<?php } ?>
 			</div>
 			
@@ -145,9 +141,7 @@ echo "<h1>" . esc_html__( 'Calendars', BOOKACTI_PLUGIN_NAME ) . "</h1>";
 					<h2>
 						<?php _e( 'Create your first group of events', BOOKACTI_PLUGIN_NAME ); ?>
 					</h2>
-					<div id='bookacti-template-add-first-group-of-events-button' >
-						<img src='<?php echo esc_url( plugins_url() . '/' . BOOKACTI_PLUGIN_NAME . '/img/add.png' ); ?>' />
-					</div>
+					<div id='bookacti-template-add-first-group-of-events-button' class='dashicons dashicons-plus-alt' ></div>
 				</div>
 				<?php
 			}
@@ -167,9 +161,7 @@ echo "<h1>" . esc_html__( 'Calendars', BOOKACTI_PLUGIN_NAME ) . "</h1>";
 				<h2>
 					<?php esc_html_e( "Welcome to Booking Activities! Let's start by creating your first calendar", BOOKACTI_PLUGIN_NAME ); ?>
 				</h2>
-				<div id='bookacti-add-first-template-button' >
-					<img src='<?php echo esc_url( plugins_url() . '/' . BOOKACTI_PLUGIN_NAME . '/img/add.png' ); ?>' />
-				</div>
+				<div id='bookacti-add-first-template-button' class='dashicons dashicons-plus-alt' ></div>
 			</div>
 			<?php
 		} else {

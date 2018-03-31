@@ -76,18 +76,18 @@ function bookacti_init_template_dialogs() {
 	});
 	
 	// Init new template dialog
-	$j( '#bookacti-template-container' ).on( 'click', '#bookacti-insert-template img, #bookacti-add-first-template-button img', function() { 
+	$j( '#bookacti-template-container' ).on( 'click', '#bookacti-insert-template, #bookacti-add-first-template-button', function() { 
         bookacti_dialog_add_new_template(); 
     });
 	
 	// Init update activity dialog
-	$j( '#bookacti-template-activity-list' ).on( 'click', '.activity-gear img', function() {
+	$j( '#bookacti-template-activity-list' ).on( 'click', '.activity-gear', function() {
         var activity_id = $j( this ).data( 'activity-id' );
         bookacti_dialog_update_activity( activity_id ); 
     });
 	
 	// Init create group of events dialog
-	$j( '#bookacti-template-groups-of-events-container' ).on( 'click', '#bookacti-template-add-first-group-of-events-button img, #bookacti-insert-group-of-events img', function() {
+	$j( '#bookacti-template-groups-of-events-container' ).on( 'click', '#bookacti-template-add-first-group-of-events-button, #bookacti-insert-group-of-events', function() {
 		bookacti_dialog_create_group_of_events();
     });
 	
@@ -102,7 +102,7 @@ function bookacti_init_template_dialogs() {
 	});
 	
 	// Init update group of events dialog
-	$j( '#bookacti-template-groups-of-events-container' ).on( 'click', '.bookacti-update-group-of-events img', function() {
+	$j( '#bookacti-template-groups-of-events-container' ).on( 'click', '.bookacti-update-group-of-events', function() {
 		var group_id	= $j( this ).parents( '.bookacti-group-of-events' ).data( 'group-id' );
 		var is_selected	= $j( this ).parents( '.bookacti-group-of-events' ).hasClass( 'bookacti-selected-group' );
 		var are_selected = is_selected;
@@ -113,7 +113,7 @@ function bookacti_init_template_dialogs() {
     });
 	
 	// Init update group category dialog
-	$j( '#bookacti-group-categories' ).on( 'click', '.bookacti-update-group-category img', function() {
+	$j( '#bookacti-group-categories' ).on( 'click', '.bookacti-update-group-category', function() {
         var category_id = $j( this ).parents( '.bookacti-group-category' ).data( 'group-category-id' );
         bookacti_dialog_update_group_category( category_id ); 
     });
@@ -207,7 +207,7 @@ function bookacti_dialog_add_new_template() {
 					if( $j( '#bookacti-template-calendar' ).length ) {
 						bookacti_start_template_loading();
 					} else if( $j( '#bookacti-first-template-container' ).length ) {
-						$j( '#bookacti-add-first-template-button img' ).attr( 'src', bookacti_localized.plugin_path + '/img/ajax-loader.gif' );
+						$j( '#bookacti-add-first-template-button' ).removeClass( 'dashicons dashicons-plus-alt' ).addClass( 'spinner' );
 					}
 					
 					//Save the new template in database
@@ -272,7 +272,7 @@ function bookacti_dialog_add_new_template() {
                         complete: function() { 
 							
 							if( $j( '#bookacti-first-template-container' ).length ) {
-								$j( '#bookacti-add-first-template-button img' ).attr( 'src', bookacti_localized.plugin_path + '/img/add.png' );
+								$j( '#bookacti-add-first-template-button' ).removeClass( 'spinner' ).addClass( 'dashicons dashicons-plus-alt' );
 							}
 							
                             bookacti_stop_template_loading();

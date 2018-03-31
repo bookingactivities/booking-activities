@@ -483,13 +483,11 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	/**
 	 * Display help toolbox
 	 * 
-	 * @version 1.2.1
+	 * @version 1.5.0
 	 * @param string $tip
 	 */
 	function bookacti_help_tip( $tip, $echo = true ){
-		$tip = "<span class='bookacti-tip' data-tip='" . esc_attr( $tip ) . "'>"
-				. "<img src='" . esc_url( plugins_url() . '/' . BOOKACTI_PLUGIN_NAME . '/img/help.png' ) . "' />"
-			. "</span>";
+		$tip = "<span class='dashicons dashicons-editor-help bookacti-tip' data-tip='" . esc_attr( $tip ) . "'></span>";
 		
 		if( $echo ) { echo $tip; }
 		

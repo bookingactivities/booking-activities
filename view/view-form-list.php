@@ -31,12 +31,12 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		<?php
 			$bookings_list_table = new Forms_List_Table();
 			
-			$active	= isset( $_REQUEST[ 'active' ] ) && ! $_REQUEST[ 'active' ] ? 0 : 1;
-			
 			$filters = array(
 				'id'		=> isset( $_REQUEST[ 'id' ] )		? $_REQUEST[ 'id' ] : array(), 
-				'title'		=> isset( $_REQUEST[ 'title' ] )	? $_REQUEST[ 'activities' ] : '', 
-				'active'	=> $active, 
+				'title'		=> isset( $_REQUEST[ 'title' ] )	? $_REQUEST[ 'title' ] : '', 
+				'user_id'	=> isset( $_REQUEST[ 'user_id' ] )	? $_REQUEST[ 'user_id' ] : 0, 
+				'status'	=> isset( $_REQUEST[ 'status' ] )	? $_REQUEST[ 'status' ] : array( 'publish' ), 
+				'active'	=> isset( $_REQUEST[ 'active' ] )	? $_REQUEST[ 'active' ] : false, 
 				'order_by'	=> isset( $_REQUEST[ 'orderby' ] )	? $_REQUEST[ 'orderby' ] : array( 'id' ),
 				'order'		=> isset( $_REQUEST[ 'order' ] )	? $_REQUEST[ 'order' ] : 'DESC'
 			);

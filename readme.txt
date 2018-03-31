@@ -5,7 +5,7 @@ Tags: booking activities, booking sport, booking form, event reservation, reserv
 Requires at least: 3.6
 Tested up to: 4.9
 Requires PHP: 5.3
-Stable tag: 1.4.3
+Stable tag: 1.5.0
 License: GPLv3 or later
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
 
@@ -315,6 +315,7 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 = 1.5.0 =
 * Feature - Customizable booking forms !
 * Tweak - Add a dismissible admin notice to inform that WooCommerce "guest checkout" option isn't supported
+* Tweak - Use core dashicons instead of additional images in backend
 
 = 1.4.4 - 2018/03 =
 * Tweak - Changed events list CSS in "Pick a group of events" dialog

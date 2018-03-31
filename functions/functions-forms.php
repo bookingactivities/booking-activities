@@ -16,6 +16,8 @@ function bookacti_format_form_filters( $filters = array() ) {
 	$default_filters = apply_filters( 'bookacti_default_booking_filters', array(
 		'id'			=> array(), 
 		'title'			=> '', 
+		'status'		=> array(), 
+		'user_id'		=> 0, 
 		'active'		=> false,
 		'order_by'		=> array( 'id' ), 
 		'order'			=> 'desc',
@@ -52,14 +54,23 @@ function bookacti_format_form_filters( $filters = array() ) {
 				}
 			}
 			else { $current_value = $default_value; }
-
+		
 		} else if( in_array( $filter, array( 'id' ), true ) ) {
 			if( is_numeric( $current_value ) )	{ $current_value = array( $current_value ); }
 			if( ! is_array( $current_value ) )	{ $current_value = $default_value; }
 			else if( $i = array_search( 'all', $current_value ) !== false ) { unset( $current_value[ $i ] ); }
-
+		
 		} else if( in_array( $filter, array( 'title' ), true ) ) {
 			if( ! is_string( $current_value ) ) { $current_value = $default_value; }
+		
+		} else if( in_array( $filter, array( 'status' ), true ) ) {
+			if( is_string( $current_value ) )	{ $current_value = array( $current_value ); }
+			if( ! is_array( $current_value ) )	{ $current_value = $default_value; }
+			else { 
+				$i = array_search( 'all', $current_value );
+				if( $i !== false ) { unset( $current_value[ $i ] ); }
+			}
+			
 			
 		} else if( in_array( $filter, array( 'active' ), true ) ) {
 				 if( in_array( $current_value, array( true, 'true', 1, '1' ), true ) )	{ $current_value = 1; }
@@ -80,14 +91,14 @@ function bookacti_format_form_filters( $filters = array() ) {
 		} else if( $filter === 'order' ) {
 			if( ! in_array( $current_value, array( 'asc', 'desc' ), true ) ) { $current_value = $default_value; }
 
-		} else if( in_array( $filter, array( 'offset', 'per_page' ), true ) ) {
+		} else if( in_array( $filter, array( 'user_id', 'offset', 'per_page' ), true ) ) {
 			if( ! is_numeric( $current_value ) ){ $current_value = $default_value; }
 
 		}
-				
+		
 		$formatted_filters[ $filter ] = $current_value;
 	}
-
+	
 	return $formatted_filters;
 }
 
@@ -112,7 +123,7 @@ function bookacti_get_form_fields_data( $form_id ) {
 	// Format form fields
 	foreach( $fields as $i => $field ) {
 		// Add field-specific data
-		$field_metadata = bookacti_get_metadata( 'form_field', $field->form_field_id );
+		$field_metadata = bookacti_get_metadata( 'form_field', $field[ 'form_field_id' ] );
 		if( is_array( $field_metadata ) ) { 
 			$field = array_merge( $field, $field_metadata );
 		}
@@ -121,7 +132,7 @@ function bookacti_get_form_fields_data( $form_id ) {
 		$fields[ $i ] = bookacti_format_form_field_data( $field );
 	}
 	
-	return apply_filters( 'bookacti_sorted_form_fields', $fields, $form_id );
+	return apply_filters( 'bookacti_form_fields', $fields, $form_id );
 }
 
 
@@ -190,20 +201,17 @@ function bookacti_format_form_field_data( $field_data ) {
 	
 	// Format field data according to its type
 	if( $field_type === 'calendar' ) {
-		// Set default common data
-		$common_default[ 'title' ]		= __( 'Calendar', BOOKACTI_PLUGIN_NAME );
-		$common_default[ 'compulsory' ]	= 1;
-		$common_default[ 'default' ]	= 1;
-		
 		// Format booking system data
 		$booking_system_data	= bookacti_format_booking_system_attributes( $field_data );
 		$formatted_field_data	= array_merge( $booking_system_data, $field_data );
 		
+		// Set default common data
+		$formatted_field_data[ 'title' ]		= empty( $field_data[ 'title' ] ) ? __( 'Calendar', BOOKACTI_PLUGIN_NAME ) : $field_data[ 'title' ];
+		$formatted_field_data[ 'compulsory' ]	= 1;
+		$formatted_field_data[ 'default' ]		= 1;
 		
 	} else if( $field_type === 'login' ) {
-		// Set default common data
-		$common_default[ 'title' ] = __( 'Login / Register', BOOKACTI_PLUGIN_NAME );
-		
+		// Set login-specific default data
 		$login_default = array(
 			'login_type'			=> 'email', // email or username
 			'login_placeholder'		=> '',
@@ -216,28 +224,29 @@ function bookacti_format_form_field_data( $field_data ) {
 		);
 		$formatted_field_data = array_merge( $login_default, $field_data );
 		
+		// Set default common data
+		$formatted_field_data[ 'title' ] = empty( $field_data[ 'title' ] ) ? __( 'Login / Register', BOOKACTI_PLUGIN_NAME ) : $field_data[ 'title' ];
+		
 	} else if( $field_type === 'quantity' ) {
 		// Set default common data
-		$common_default[ 'title' ]		= __( 'Quantity', BOOKACTI_PLUGIN_NAME );
-		$common_default[ 'label' ]		= __( 'Quantity', BOOKACTI_PLUGIN_NAME );
-		$common_default[ 'compulsory' ] = 1;
-		$common_default[ 'default' ]	= 1;
+		$formatted_field_data[ 'title' ]		= empty( $field_data[ 'title' ] ) ? __( 'Quantity', BOOKACTI_PLUGIN_NAME ) : $field_data[ 'title' ];
+		$formatted_field_data[ 'label' ]		= empty( $field_data[ 'label' ] ) ? __( 'Quantity', BOOKACTI_PLUGIN_NAME ) : $field_data[ 'label' ];
+		$formatted_field_data[ 'default' ]		= 1;
 		
 	} else if( $field_type === 'submit' ) {
 		// Set default common data
-		$common_default[ 'title' ]		= __( 'Submit button', BOOKACTI_PLUGIN_NAME );
-		$common_default[ 'label' ]		= __( 'Book', BOOKACTI_PLUGIN_NAME );
-		$common_default[ 'compulsory' ] = 1;
-		$common_default[ 'default' ]	= 1;
+		$formatted_field_data[ 'title' ]		= empty( $field_data[ 'title' ] ) ? __( 'Submit button', BOOKACTI_PLUGIN_NAME ) : $field_data[ 'title' ];
+		$formatted_field_data[ 'label' ]		= empty( $field_data[ 'label' ] ) ? __( 'Book', BOOKACTI_PLUGIN_NAME ) : $field_data[ 'label' ];
+		$formatted_field_data[ 'default' ]		= 1;
 		
 	} else if( $field_type === 'free_text' ) {
 		// Set default common data
-		$common_default[ 'title' ]	= __( 'Free text', BOOKACTI_PLUGIN_NAME );
-		$common_default[ 'unique' ]	= 0;
+		$formatted_field_data[ 'title' ]	= empty( $field_data[ 'title' ] ) ? __( 'Free text', BOOKACTI_PLUGIN_NAME ) : $field_data[ 'title' ];
+		$formatted_field_data[ 'unique' ]	= 0;
 	}
 	
 	// Format default values
-	if( is_array( $field_data ) ) {
+	if( ! empty( $formatted_field_data ) ) {
 		$formatted_field_data = array_merge( $common_default, $formatted_field_data );
 	}
 	
@@ -328,7 +337,9 @@ function bookacti_sanitize_form_field_order( $form_id, $field_order ) {
 			}
 		}
 		
-		// If the field name or the field type doesn't exist, remove the entire field
+		// Remove the field if:
+		// - the field name doesn't exist
+		// - the field type doesn't exist
 		if( ! $field_exists || ! in_array( $field_type, $allowed_types, true ) ) { unset( $field_order[ $i ] ); }
 	}
 	
@@ -343,37 +354,42 @@ function bookacti_sanitize_form_field_order( $form_id, $field_order ) {
 
 
 /**
- * Sort fileds array by field order
+ * Sort fields array by field order
  * @since 1.5.0
+ * @param int $form_id
  * @param array $fields
+ * @param boolean $remove_unordered_fields Whether to remove the fields that are not in the field order array 
  * @return array
  */
-function bookacti_sort_form_fields_array( $form_id, $fields ) {
+function bookacti_sort_form_fields_array( $form_id, $fields, $remove_unordered_fields = false ) {
 	// Sort form fields by customer custom order
 	$field_order = bookacti_get_metadata( 'form', $form_id, 'field_order', true );
 	
-	if( $field_order ) {
-		$ordered_fields = array();
+	if( $field_order ) { 
+		$ordered_fields		= array();
+		$remaining_fields	= $fields;
 		foreach( $field_order as $field_name ) {
 			foreach( $fields as $i => $field ) {
 				if( $field[ 'name' ] !== $field_name ) { continue; }
-				
+
 				$ordered_fields[] = $fields[ $i ];
-				unset( $fields[ $i ] );
-				
+				unset( $remaining_fields[ $i ] );
+
 				break;
 			}
 		}
+
 		// Add the remaining unordered fields (if any)
-		if( $fields ) {
-			foreach( $fields as $field ) {
-				$ordered_fields[] = $field;
+		if( ! $remove_unordered_fields && $remaining_fields ) {
+			foreach( $remaining_fields as $remaining_field ) {
+				$ordered_fields[] = $remaining_field;
 			}
 		}
-		$fields = $ordered_fields;
+	} else {
+		$ordered_fields = $fields;
 	}
 	
-	return $fields;
+	return apply_filters( 'bookacti_ordered_form_fields', $ordered_fields, $form_id, $fields, $remove_unordered_fields );
 }
 
 
@@ -487,7 +503,7 @@ function bookacti_display_form_publish_meta_box( $form ) {
 
 			<div id='publishing-action'>
 				<span class='spinner'></span>
-				<input name='save' type='submit' class='button button-primary button-large' id='publish' value='<?php echo $form->id === 'new' ? esc_attr_x( 'Publish', 'forms', BOOKACTI_PLUGIN_NAME ) : esc_attr_x( 'Update', 'forms', BOOKACTI_PLUGIN_NAME ); ?>' />
+				<input id='bookacti-save-form-button' name='save' type='submit' class='button button-primary button-large' id='publish' value='<?php echo ! $form->active ? esc_attr_x( 'Publish', 'forms', BOOKACTI_PLUGIN_NAME ) : esc_attr_x( 'Update', 'forms', BOOKACTI_PLUGIN_NAME ); ?>' />
 			</div>
 			<div class='clear'></div>
 		</div>
@@ -502,7 +518,7 @@ function bookacti_display_form_publish_meta_box( $form ) {
  * @param object $form
  */
 function bookacti_display_form_integration_tuto_meta_box( $form ) {
-	$shortcode = '[bookingactivities_form id="' . $form->id . '"]';
+	$shortcode = '[bookingactivities_form form="' . $form->id . '"]';
 ?>
 	<h4><?php _e( 'Integrate in a post, page, or text widget', BOOKACTI_PLUGIN_NAME ) ?></h4>
 	<div>

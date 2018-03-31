@@ -28,6 +28,25 @@ add_action( 'bookacti_after_form_integration_tuto', 'bookacti_display_wc_form_in
  * @param object $form
  */
 function bookacti_form_editor_wc_description( $form ) {
-	echo '<p>' . sprintf( __( 'The fields with this icon %1$s will NOT appear on WooCommerce product page.', BOOKACTI_PLUGIN_NAME ), '<span class="bookacti-wc-icon bookacti-wc-icon-not-supported"></span>' ) . '</p>';
+	echo '<p>' . sprintf( __( 'The fields with this icon %1$s will NOT appear on WooCommerce product pages.', BOOKACTI_PLUGIN_NAME ), '<span class="bookacti-wc-icon-not-supported"></span>' );
+	bookacti_help_tip( __( 'These fields already exist in WooCommerce. E.g.: Quantity and Submit are already part of product pages. Login, Phone and Address are already asked on checkout page...', BOOKACTI_PLUGIN_NAME ) );
+	echo '</p>';
 }
 add_action( 'bookacti_form_editor_description_after', 'bookacti_form_editor_wc_description', 10, 1 );
+
+
+/**
+ * Add an icon before WC unsupported form field in form editor
+ * @since 1.5.0
+ * @param array $formatted_field_data
+ * @param array $field_data
+ * @param string $field_type
+ * @return array
+ */
+function bookacti_form_editor_wc_field_title( $formatted_field_data, $field_data, $field_type ) {
+	if( in_array( $formatted_field_data[ 'name' ], bookacti_get_wc_unsupported_form_fields(), true ) ) {
+		$formatted_field_data[ 'title' ] = '<span class="bookacti-wc-icon-not-supported"></span>' . $formatted_field_data[ 'title' ];
+	}
+	return $formatted_field_data;
+}
+add_filter( 'bookacti_formatted_field_data', 'bookacti_form_editor_wc_field_title', 10, 3 );

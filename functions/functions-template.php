@@ -72,7 +72,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	/**
 	 * Retrieve template activities list
 	 * 
-	 * @version 1.3.3
+	 * @version 1.5.0
 	 * @param int $template_id
 	 * @return boolean|string 
 	 */
@@ -91,9 +91,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 				$title = apply_filters( 'bookacti_translate_text', $activity->title );
 				?>
 				<div class='activity-row'>
-					<div class='activity-show-hide' >
-						<img src='<?php echo esc_url( plugins_url() . "/" . BOOKACTI_PLUGIN_NAME . "/img/show.png" ); ?>' data-activity-id='<?php echo esc_attr( $activity->id ); ?>' data-activity-visible='1' />
-					</div>
+					<div class='activity-show-hide dashicons dashicons-visibility' data-activity-id='<?php echo esc_attr( $activity->id ); ?>' data-activity-visible='1' ></div>
 					<div class='activity-container'>
 						<div
 							class='fc-event ui-draggable ui-draggable-handle'
@@ -108,9 +106,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 				<?php
 				if( current_user_can( 'bookacti_edit_activities' ) && bookacti_user_can_manage_activity( $activity->id ) ) {
 				?>
-					<div class='activity-gear' >
-						<img src='<?php echo esc_url( plugins_url() . "/" . BOOKACTI_PLUGIN_NAME . "/img/gear.png" ); ?>' data-activity-id='<?php echo esc_attr( $activity->id ); ?>' />
-					</div>
+					<div class='activity-gear dashicons dashicons-admin-generic' data-activity-id='<?php echo esc_attr( $activity->id ); ?>' ></div>
 				<?php
 				}
 				?>
@@ -563,7 +559,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	 * Retrieve template groups of events list
 	 * 
 	 * @since 1.1.0
-	 * @version 1.4.0
+	 * @version 1.5.0
 	 * @param int $template_id
 	 * @return string|boolean
 	 */
@@ -584,9 +580,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			$category_short_title	= strlen( $category_title ) > 16 ? substr( $category_title, 0, 16 ) . '&#8230;' : $category_title;
 			
 			$list	.= "<div class='bookacti-group-category' data-group-category-id='" . $category[ 'id' ] . "' data-show-groups='0' data-visible='1' >
-							<div class='bookacti-group-category-show-hide' >
-								<img src='" . esc_url( plugins_url() . '/' . BOOKACTI_PLUGIN_NAME . '/img/show.png' ) . "' />
-							</div>
+							<div class='bookacti-group-category-show-hide dashicons dashicons-visibility' ></div>
 							<?php  ?>
 							<div class='bookacti-group-category-title' title='" . $category_title . "' >
 								<span>
@@ -595,9 +589,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 							</div>";
 			
 			if( $current_user_can_edit_template ) {
-				$list	.= "<div class='bookacti-update-group-category' >
-								<img src='" . esc_url( plugins_url() . '/' . BOOKACTI_PLUGIN_NAME . '/img/gear.png' ) . "' />
-							</div>";
+				$list	.= "<div class='bookacti-update-group-category dashicons dashicons-admin-generic' ></div>";
 			}
 			
 			$list	.= 	   "<div class='bookacti-groups-of-events-list bookacti-custom-scrollbar' >";
@@ -611,9 +603,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 											" . $group_title . " 
 										</div>";
 					if( $current_user_can_edit_template ) {
-						$list	.=	   "<div class='bookacti-update-group-of-events' >
-											<img src='" . esc_url( plugins_url() . '/' . BOOKACTI_PLUGIN_NAME . '/img/gear.png' ) . "' />
-										</div>";
+						$list	.=	   "<div class='bookacti-update-group-of-events dashicons dashicons-admin-generic' ></div>";
 					}
 					$list	.=	   "</div>";
 				}

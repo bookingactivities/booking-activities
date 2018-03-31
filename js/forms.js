@@ -39,8 +39,9 @@ $j( document ).ready( function() {
 	
 	// Save a form (create or update)
 	$j( 'form#bookacti-form-editor-page-form' ).on( 'submit', function( e ) {
+		if( ! $j( 'form#bookacti-form-editor-page-form' ).length ) { return; }
 		e.preventDefault();
-		bookacti_save_form( $j( this ) );
+		bookacti_save_form();
 	});
 });
 
@@ -50,14 +51,21 @@ $j( document ).ready( function() {
  * @since 1.5.0
  * @param html_element form
  */
-function bookacti_save_form( form ) {
+function bookacti_save_form() {
 	// Select all form managers
 	$j( '#bookacti-form-managers-select-box option' ).attr( 'selected', true );
 	
+	// Move form editor outside the <form> before serialize
+	$j( '#bookacti-form-editor-container' ).appendTo( '#bookacti-form-editor-page-container' );
+	
 	// Serialize form values
-	var action	= form.find( 'input[name="action"]' ).val();
-	var data	= form.serialize();
-
+	var form		= $j( 'form#bookacti-form-editor-page-form' );
+	var is_active	= form.find( 'input[name="is_active"]' ).val();
+	var data		= form.serialize();
+	
+	// Move form editor back inside the <form> after serialize
+	$j( '#bookacti-form-editor-container' ).appendTo( '#postdivrich' );
+	
 	// Display spinner
 	$j( '#publishing-action .spinner' ).css( 'visibility', 'visible' );
 
@@ -73,17 +81,14 @@ function bookacti_save_form( form ) {
 			$j( '.bookacti-form-notice' ).remove();
 
 			if( response.status === 'success' ) {
-				// If newly created, go to edit page
-				if( action === 'bookactiInsertForm' ) {
-					window.location.replace( form.attr( 'action' ) + '&action=edit&form_id=' + response.form_id + '&notice=created' );
-
-				// If on edit page, display feedback
-				} else {
-					$j( '#bookacti-form-editor-page-container' ).before( '<div class="notice notice-success is-dismissible bookacti-form-notice" ><p>' + response.message + '</p></div>' );
-				}
-
+				// If the form was inactive, redirect
+				if( is_active == 0 ) { window.location.replace( form.attr( 'action' ) + '&notice=published' ); }
+				
+				// Else, Display feedback
+				else { $j( '#bookacti-form-editor-page-container' ).before( '<div class="notice notice-success is-dismissible bookacti-form-notice" ><p>' + response.message + '</p></div>' ); }
+				
 			} else if( response.status === 'failed' ) {
-				var error_message = action === 'bookactiInsertForm' ? bookacti_localized.error_create_form : bookacti_localized.error_update_form;
+				var error_message = bookacti_localized.error_update_form;
 				if( response.error === 'not_allowed' ) {
 					error_message += '\n' + bookacti_localized.error_not_allowed;
 				}
@@ -95,7 +100,7 @@ function bookacti_save_form( form ) {
 			}
 		},
 		error: function( e ){
-			var error_message = action === 'bookactiInsertForm' ? 'AJAX ' + bookacti_localized.error_create_form : 'AJAX ' + bookacti_localized.error_update_form;
+			var error_message = 'AJAX ' + bookacti_localized.error_update_form;
 
 			// Display feedback
 			$j( '#bookacti-form-editor-page-container' ).before( '<div class="notice notice-error is-dismissible bookacti-form-notice" ><p>' + error_message + '</p></div>' );
@@ -133,7 +138,6 @@ function bookacti_save_form_field_order() {
 			'field_order': field_order,
 			'nonce': nonce
 		};
-	console.log( data );
 	
 	// Save the new field order in database
 	$j.ajax({
@@ -142,10 +146,7 @@ function bookacti_save_form_field_order() {
 		type: 'POST',
 		dataType: 'json',
 		success: function( response ){
-
-			// Remove current notices about the form
-			$j( '.bookacti-form-notice' ).remove();
-
+			
 			if( response.status === 'success' ) {
 				
 
@@ -154,18 +155,16 @@ function bookacti_save_form_field_order() {
 				if( response.error === 'not_allowed' ) {
 					error_message += '\n' + bookacti_localized.error_not_allowed;
 				}
-
+				console.log( error_message );
 				console.log( response );
 			}
 		},
 		error: function( e ){
 			var error_message = 'AJAX ' + bookacti_localized.error_order_form_fields;
 
+			console.log( error_message );
 			console.log( e );
 		},
-		complete: function() { 
-			// Stop the spinner
-			$j( '#publishing-action .spinner' ).css( 'visibility', 'hidden' );
-		}
+		complete: function() {}
 	});
 }

@@ -122,9 +122,7 @@ function bookacti_form_editor_meta_boxes() {
 	add_meta_box( 'bookacti_form_publish', __( 'Publish', BOOKACTI_PLUGIN_NAME ), 'bookacti_display_form_publish_meta_box', 'booking-activities_page_bookacti_forms', 'side', 'high' );
 	add_meta_box( 'bookacti_form_managers', __( 'Managers', BOOKACTI_PLUGIN_NAME ), 'bookacti_display_form_managers_meta_box', 'booking-activities_page_bookacti_forms', 'side', 'default' );
 
-	if( $_REQUEST[ 'action' ] === 'edit' && ! empty( $_REQUEST[ 'form_id' ] ) && is_numeric( $_REQUEST[ 'form_id' ] ) ) {
-		add_meta_box( 'bookacti_form_integration_tuto', __( 'How to integrate this form', BOOKACTI_PLUGIN_NAME ), 'bookacti_display_form_integration_tuto_meta_box', 'booking-activities_page_bookacti_forms', 'side', 'low' );
-	}
+	add_meta_box( 'bookacti_form_integration_tuto', __( 'How to integrate this form', BOOKACTI_PLUGIN_NAME ), 'bookacti_display_form_integration_tuto_meta_box', 'booking-activities_page_bookacti_forms', 'side', 'low' );
 }
 add_action( 'add_meta_boxes_booking-activities_page_bookacti_forms', 'bookacti_form_editor_meta_boxes' );
 
@@ -165,60 +163,26 @@ add_action( 'admin_footer-booking-activities_page_bookacti_forms', 'bookacti_pri
 // BOOKING FORMS CRUD
 
 /**
- * AJAX Controller - Insert a booking form
- * @since 1.5.0
- */
-function bookacti_controller_insert_form() {
-	// Check nonce and capabilities
-	$is_nonce_valid	= check_ajax_referer( 'bookacti_insert_or_update_form', 'nonce_insert_or_update_form', false );
-	$is_allowed		= current_user_can( 'bookacti_create_forms' );
-
-	if( ! $is_nonce_valid || ! $is_allowed ) {
-		wp_send_json( array( 'status' => 'failed', 'error' => 'not_allowed' ) );
-	}
-	
-	$form_title		= sanitize_text_field( stripslashes( $_REQUEST['form_title'] ) );
-	$managers_array	= isset( $_REQUEST['form-managers'] ) ? bookacti_ids_to_array( $_REQUEST['form-managers'] ) : array();
-	$form_managers	= bookacti_format_form_managers( $managers_array );
-	
-	// Create the form
-	$form_id = bookacti_create_form( $form_title );
-
-	// Feedback error
-	if( $form_id === false ) {
-		wp_send_json( array( 'status' => 'failed', 'error' => 'query_failed' ) );
-	}
-
-	// Insert Managers
-	bookacti_insert_managers( 'form', $form_id, $form_managers );
-	
-	add_action( 'bookacti_form_created', $form_id );
-	
-	wp_send_json( array( 'status' => 'success', 'form_id' => $form_id, 'message' => esc_html__( 'The booking form has been created.', BOOKACTI_PLUGIN_NAME ) ) );
-}
-add_action( 'wp_ajax_bookactiInsertForm', 'bookacti_controller_insert_form' );
-
-
-/**
  * AJAX Controller - Update a booking form
  * @since 1.5.0
  */
 function bookacti_controller_update_form() {
 	// Check nonce and capabilities
-	$is_nonce_valid	= check_ajax_referer( 'bookacti_insert_or_update_form', 'nonce_insert_or_update_form', false );
-	$is_allowed		= current_user_can( 'bookacti_edit_forms' );
+	$form_id		= intval( $_REQUEST['form_id'] );
+	$is_nonce_valid	= check_ajax_referer( 'bookacti_update_form', 'nonce_update_form', false );
+	$is_allowed		= current_user_can( 'bookacti_edit_forms' ) && bookacti_user_can_manage_form( $form_id );
 
 	if( ! $is_nonce_valid || ! $is_allowed ) {
 		wp_send_json( array( 'status' => 'failed', 'error' => 'not_allowed' ) );
 	}
 	
-	$form_id		= intval( $_REQUEST['form_id'] );
+	$was_active		= intval( $_REQUEST['is_active'] );
 	$form_title		= sanitize_text_field( stripslashes( $_REQUEST['form_title'] ) );
 	$managers_array	= isset( $_REQUEST['form-managers'] ) ? bookacti_ids_to_array( $_REQUEST['form-managers'] ) : array();
 	$form_managers	= bookacti_format_form_managers( $managers_array );
 	
 	// Create the form
-	$updated = bookacti_update_form( $form_id, $form_title );
+	$updated = bookacti_update_form( $form_id, $form_title, -1, '', 'publish', 1 );
 
 	// Feedback error
 	if( $updated === false ) {
@@ -230,7 +194,7 @@ function bookacti_controller_update_form() {
 	
 	add_action( 'bookacti_form_updated', $form_id );
 
-	wp_send_json( array( 'status' => 'success', 'message' => esc_html__( 'The booking form has been updated.', BOOKACTI_PLUGIN_NAME ) ) );
+	wp_send_json( array( 'status' => 'success', 'message' => ! $was_active ? esc_html__( 'The booking form is published.', BOOKACTI_PLUGIN_NAME ) : esc_html__( 'The booking form has been updated.', BOOKACTI_PLUGIN_NAME ) ) );
 }
 add_action( 'wp_ajax_bookactiUpdateForm', 'bookacti_controller_update_form' );
 
@@ -263,7 +227,7 @@ function bookacti_controller_remove_form() {
 	if( $_REQUEST[ 'action' ] === 'trash' || $_REQUEST[ 'action' ] === 'delete' ) {
 		
 		// Check if current user is allowed to remove the booking form
-		$can_delete_form = current_user_can( 'bookacti_delete_forms' );
+		$can_delete_form = current_user_can( 'bookacti_delete_forms' ) && bookacti_user_can_manage_form( $form_id );
 		if( ! $can_delete_form ) {
 		?>
 			<div class='notice notice-error is-dismissible bookacti-form-notice' >

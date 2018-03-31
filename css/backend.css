@@ -1,9 +1,8 @@
 /***** GENERAL *****/
 
-
-/***** ALL PAGES *****/
 .bookacti-nav-tab-wrapper { margin-bottom: 16px !important; }
-.bookacti-tip  {
+.bookacti-tip.dashicons-editor-help:before { color: #565d61; }
+.bookacti-tip {
 	position: relative;
 	vertical-align: middle;
 	padding: 0 10px;
@@ -62,6 +61,9 @@
 
 #bookacti-notifications-list-column-active			{ width: 1px; }
 .bookacti-notifications-list-column-value-active	{ text-align: center; }
+
+.bookacti-notifications-list-column-value-actions a .dashicons:before		{ color: #565d61; }
+.bookacti-notifications-list-column-value-actions a .dashicons:hover:before { color: #418fb6; }
 
 #bookacti-banp-promo				{ max-width: 500px; margin-top: 20px; }
 .bookacti-notifications-tag-promo	{ background: #ffff78; }

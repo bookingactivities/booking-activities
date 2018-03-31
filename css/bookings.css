@@ -1,16 +1,5 @@
 /***** BOOKINGS PAGE *****/
 
-/** GLOBAL **/
-.bookacti-bookings-title			{ margin-right: 5px; }
-.bookacti-bookings-title,
-.bookacti-bookings-title-gear		{ display: inline-block; vertical-align: middle; }
-.bookacti-bookings-title-gear		{ cursor: pointer; width: 20px; height: 20px; }
-.bookacti-bookings-title-gear img	{ max-width: 20px; max-height: 20px;}
-
-.bookacti-bookings-title-gear[disabled],
-.bookacti-bookings-filter[disabled] { opacity: 0.4; pointer-events: none; }
-
-
 /** FILTERS **/
 .bookacti-bookings-filter-container	{ display: inline-block;  vertical-align: top; width: 150px; margin-right: 10px; }
 .bookacti-bookings-filter-title		{ font-weight: bold; line-height: 2.5em; }

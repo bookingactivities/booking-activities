@@ -1972,6 +1972,19 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 
 
+// FORMS
+	/**
+	 * Get WC unsupported form fields names
+	 * @since 1.5.0
+	 * @return array
+	 */
+	function bookacti_get_wc_unsupported_form_fields() {
+		return apply_filters( 'bookacti_wc_unsupported_form_fields', array( 'login', 'quantity', 'submit', 'phone', 'address' ) );
+	}
+
+
+
+
 // SETTINGS
 	
 	function bookacti_settings_section_cart_callback() {}

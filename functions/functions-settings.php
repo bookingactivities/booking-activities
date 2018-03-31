@@ -510,10 +510,11 @@ function bookacti_settings_section_bookings_callback() { }
 // NOTIFICATIONS SETTINGS 
 	
 	/**
-	* Settings section callback - Notifications - General settings (displayed before settings)
-	* 
-	* @since 1.2.1 (was bookacti_settings_section_notifications_callback in 1.2.0)
-	*/
+	 * Settings section callback - Notifications - General settings (displayed before settings)
+	 * 
+	 * @since 1.2.1 (was bookacti_settings_section_notifications_callback in 1.2.0)
+	 * @version 1.5.0
+	 */
    function bookacti_settings_section_notifications_general_callback() { 
 
 		// Display a table of configurable notifications
@@ -555,9 +556,7 @@ function bookacti_settings_section_bookings_callback() { }
 					'active'		=> '<span class="dashicons ' . $active_icon . '"></span>',
 					'title'			=> '<a href="' . esc_url( '?page=bookacti_settings&tab=notifications&notification_id=' . sanitize_title_with_dashes( $notification_id ) ) . '" >' . esc_html( $notification_settings[ 'title' ] ) . '</a>' . $description,
 					'recipients'	=> substr( $notification_id, 0, 8 ) === 'customer' ? esc_html__( 'Customer', BOOKACTI_PLUGIN_NAME ) : esc_html__( 'Administrator', BOOKACTI_PLUGIN_NAME ),
-					'actions'		=> '<a href="' . esc_url( '?page=bookacti_settings&tab=notifications&notification_id=' . sanitize_title_with_dashes( $notification_id ) ) . '" >' 
-										. '<img src="' . plugins_url() . '/' . BOOKACTI_PLUGIN_NAME . '/img/gear.png" />' 
-									. '</a>'
+					'actions'		=> '<a href="' . esc_url( '?page=bookacti_settings&tab=notifications&notification_id=' . sanitize_title_with_dashes( $notification_id ) ) . '" title="' . esc_attr__( 'Edit this notification', BOOKACTI_PLUGIN_NAME ) . '" ><span class="dashicons dashicons-admin-generic" ></span></a>'
 				), $notification_settings, $notification_id );
 				
 				?>

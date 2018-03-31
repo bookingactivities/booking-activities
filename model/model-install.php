@@ -87,6 +87,9 @@ function bookacti_create_tables() {
 	$table_forms_query = 'CREATE TABLE ' . BOOKACTI_TABLE_FORMS . ' ( 
 		id MEDIUMINT(9) UNSIGNED NOT NULL AUTO_INCREMENT, 
 		title TEXT,
+		user_id MEDIUMINT(9),
+		creation_date DATETIME,
+		status VARCHAR(32) NOT NULL DEFAULT "publish",
 		active TINYINT(1) NOT NULL DEFAULT 1,
 		PRIMARY KEY ( id ) ) ' . $collate . ';';
 	
@@ -94,6 +97,7 @@ function bookacti_create_tables() {
 		id MEDIUMINT(9) UNSIGNED NOT NULL AUTO_INCREMENT, 
 		form_id MEDIUMINT(9) UNSIGNED NOT NULL, 
 		name VARCHAR(128), 
+		type VARCHAR(128), 
 		label TEXT, 
 		options TEXT, 
 		value TEXT, 

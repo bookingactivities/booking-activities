@@ -48,6 +48,9 @@ if( ! class_exists( 'Forms_List_Table' ) ) {
 				'cb'		=> '<input type="checkbox" />',
 				'id'		=> _x( 'id', 'An id is a unique identification number', BOOKACTI_PLUGIN_NAME ),
 				'title'		=> __( 'Title', BOOKACTI_PLUGIN_NAME ),
+				'author'	=> __( 'Author', BOOKACTI_PLUGIN_NAME ),
+				'date'		=> __( 'Date', BOOKACTI_PLUGIN_NAME ),
+				'status'	=> _x( 'Status', 'Form status', BOOKACTI_PLUGIN_NAME ),
 				'shortcode'	=> __( 'Shortcode', BOOKACTI_PLUGIN_NAME ),
 				'active'	=> __( 'Active', BOOKACTI_PLUGIN_NAME )
 			);
@@ -68,7 +71,10 @@ if( ! class_exists( 'Forms_List_Table' ) ) {
 				20 => 'id',
 				30 => 'title',
 				40 => 'shortcode',
-				50 => 'active'
+				50 => 'author',
+				60 => 'date',
+				70 => 'status',
+				80 => 'active'
 			);
 
 			/**
@@ -101,6 +107,7 @@ if( ! class_exists( 'Forms_List_Table' ) ) {
 		public function get_default_hidden_columns( $hidden, $screen ) {
 			if( $screen->id == $this->screen->id ) {
 				$hidden = apply_filters( 'bookacti_form_list_default_hidden_columns', array(
+					'status',
 					'active'
 				) );
 			}
@@ -116,7 +123,10 @@ if( ! class_exists( 'Forms_List_Table' ) ) {
 		protected function get_sortable_columns() {
 			return array(
 				'id'	=> array( 'id', true ),
-				'title'	=> array( 'title', false )
+				'title'	=> array( 'title', false ),
+				'author'=> array( 'user_id', false ),
+				'date'	=> array( 'creation_date', false ),
+				'status'=> array( 'status', false )
 			);
 		}
 		
@@ -267,13 +277,20 @@ if( ! class_exists( 'Forms_List_Table' ) ) {
 				}
 				
 				// Build shortcode
-				$shortcode = '[bookingactivities_form id="' . $id . '"]';
+				$shortcode = '[bookingactivities_form form="' . $id . '"]';
 				$shortcode = "<input type='text' onfocus='this.select();' readonly='readonly' value='" . $shortcode . "' class='large-text code'>";
+				
+				// Author name
+				$user_object = get_user_by( 'id', $form->user_id );
+				$author = $user_object->display_name;
 				
 				$form_item = apply_filters( 'bookacti_form_list_form_columns', array( 
 					'id'			=> $id,
 					'title'			=> $title,
 					'shortcode'		=> $shortcode,
+					'author'		=> $author,
+					'date'			=> bookacti_format_datetime( $form->creation_date, __( 'F d, Y', BOOKACTI_PLUGIN_NAME ) ),
+					'status'		=> $form->status,
 					'active'		=> $active,
 					'active_raw'	=> $form->active,
 					'primary_data'	=> array()
@@ -314,6 +331,8 @@ if( ! class_exists( 'Forms_List_Table' ) ) {
 				$filters = array(
 					'id'		=> isset( $_REQUEST[ 'id' ] )		? $_REQUEST[ 'id' ] : array(), 
 					'title'		=> isset( $_REQUEST[ 'title' ] )	? $_REQUEST[ 'activities' ] : '', 
+					'user_id'	=> isset( $_REQUEST[ 'user_id' ] )	? $_REQUEST[ 'user_id' ] : 0, 
+					'status'	=> isset( $_REQUEST[ 'status' ] )	? $_REQUEST[ 'status' ] : '', 
 					'active'	=> $active, 
 					'order_by'	=> isset( $_REQUEST[ 'orderby' ] )	? $_REQUEST[ 'orderby' ] : array( 'id' ),
 					'order'		=> isset( $_REQUEST[ 'order' ] )	? $_REQUEST[ 'order' ] : 'DESC'
@@ -453,23 +472,23 @@ if( ! class_exists( 'Forms_List_Table' ) ) {
 		 * @return array
 		 */
 		protected function get_views() {
-			$active_current		= 'current';
-			$inactive_current	= '';
-			if( isset( $_GET[ 'active' ] ) && ! $_GET[ 'active' ] ) { 
-				$active_current		= '';
-				$inactive_current	= 'current';
+			$published_current	= 'current';
+			$trash_current		= '';
+			if( isset( $_REQUEST[ 'status' ] ) && $_REQUEST[ 'status' ] === 'trash' ) { 
+				$published_current	= '';
+				$trash_current		= 'current';
 			}
 			
 			$filters			= bookacti_format_form_filters();
-			$active_filter		= $filters; $active_filter[ 'active' ] = 1;
-			$inactive_filter	= $filters; $inactive_filter[ 'active' ] = 0;
+			$published_filter	= $filters; $published_filter[ 'status' ] = array( 'publish' );
+			$trash_filter		= $filters; $trash_filter[ 'status' ] = array( 'trash' );
 			
-			$active_count	= bookacti_get_number_of_form_rows( $active_filter );
-			$inactive_count = bookacti_get_number_of_form_rows( $inactive_filter );
+			$published_count	= bookacti_get_number_of_form_rows( $published_filter );
+			$trash_count		= bookacti_get_number_of_form_rows( $trash_filter );
 			
 			return array(
-				'active'	=> '<a href="' . esc_url( get_admin_url() . 'admin.php?page=bookacti_forms' ) . '" class="' . $active_current . '" >' . esc_html_x( 'Active', 'forms', BOOKACTI_PLUGIN_NAME ) . ' <span class="count">(' . $active_count . ')</span></a>',
-				'inactive'	=> '<a href="' . esc_url( get_admin_url() . 'admin.php?page=bookacti_forms&active=0' ) . '" class="' . $inactive_current . '" >' . esc_html_x( 'Inactive', 'forms', BOOKACTI_PLUGIN_NAME ) . ' <span class="count">(' . $inactive_count . ')</span></a>'
+				'published'	=> '<a href="' . esc_url( get_admin_url() . 'admin.php?page=bookacti_forms' ) . '" class="' . $published_current . '" >' . esc_html_x( 'Published', 'forms', BOOKACTI_PLUGIN_NAME ) . ' <span class="count">(' . $published_count . ')</span></a>',
+				'trash'		=> '<a href="' . esc_url( get_admin_url() . 'admin.php?page=bookacti_forms&status=trash' ) . '" class="' . $trash_current . '" >' . esc_html_x( 'Trash', 'forms', BOOKACTI_PLUGIN_NAME ) . ' <span class="count">(' . $trash_count . ')</span></a>'
 			);
 		}
 		
