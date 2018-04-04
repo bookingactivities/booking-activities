@@ -140,22 +140,6 @@ $form = $forms[ 0 ];
 								// Get form fields in the custom order
 								$fields_data = bookacti_get_default_form_fields_data();
 								$form_fields = bookacti_get_form_fields_data( $form_id );
-								$is_new_form = empty( $form_fields );
-								
-								// Make sure that all compulsory fields will be displayed
-//								foreach( $fields_data as $field_name => $field_data ) {
-//									if( ! ( ! empty( $field_data[ 'compulsory' ] ) || ( $is_new_form && $field_data[ 'default' ] ) ) ) { continue; }
-//									$is_displayed = false;
-//									foreach( $form_fields as $j => $form_field ) {
-//										if( $form_field[ 'name' ] === $field_name ) { 
-//											$is_displayed = true; 
-//											break; 
-//										}
-//									}
-//									if( ! $is_displayed ) { 
-//										$form_fields[] = $field_data; 
-//									}
-//								}
 								$form_fields = bookacti_sort_form_fields_array( $form_id, $form_fields );
 								?>
 								
@@ -167,7 +151,7 @@ $form = $forms[ 0 ];
 										<div id='bookacti-form-editor-actions' >
 											<?php do_action( 'bookacti_form_editor_actions_before', $form ); ?>
 											<div id='bookacti-edit-form-settings' class='bookacti-form-editor-action dashicons dashicons-admin-generic' title='<?php _e( 'Change form settings', BOOKACTI_PLUGIN_NAME ); ?>'></div>
-											<div id='bookacti-add-field-to-form' class='bookacti-form-editor-action dashicons dashicons-plus-alt' title='<?php _e( 'Add a new field to your form', BOOKACTI_PLUGIN_NAME ); ?>'></div>
+											<div id='bookacti-insert-form-field' class='bookacti-form-editor-action dashicons dashicons-plus-alt' title='<?php _e( 'Add a new field to your form', BOOKACTI_PLUGIN_NAME ); ?>'></div>
 											<?php do_action( 'bookacti_form_editor_actions_after', $form ); ?>
 										</div>
 									</div>
@@ -189,32 +173,8 @@ $form = $forms[ 0 ];
 										do_action( 'bookacti_form_editor_before', $form );
 										
 										// Display form fields 
-										foreach( $form_fields as $form_field ) {
-											$field_name = $form_field[ 'name' ];
-										?>
-										<div id='bookacti-form-editor-field-<?php echo $field_name; ?>' class='bookacti-form-editor-field' data-field-name='<?php echo $field_name; ?>' >
-											<div class='bookacti-form-editor-field-header' >
-												<div class='bookacti-form-editor-field-title' >
-													<h3><?php echo $form_field[ 'title' ]; ?></h3>
-												</div>
-												<div class='bookacti-form-editor-field-actions' >
-													<?php do_action( 'bookacti_form_editor_field_actions_before', $form_field, $form ); ?>
-													<div class='bookacti-form-editor-field-action bookacti-edit-form-field dashicons dashicons-admin-generic' title='<?php _e( 'Change field settings', BOOKACTI_PLUGIN_NAME ); ?>'></div>
-												<?php if( ! $form_field[ 'compulsory' ] ) { ?>
-													<div class='bookacti-form-editor-field-action bookacti-remove-form-field dashicons dashicons-trash' title='<?php _e( 'Remove this field', BOOKACTI_PLUGIN_NAME ); ?>'></div>
-												<?php }
-													do_action( 'bookacti_form_editor_field_actions_after', $form_field, $form ); 
-												?>
-													<div class='bookacti-field-toggle dashicons dashicons-arrow-down' title='<?php _e( 'Show / Hide', BOOKACTI_PLUGIN_NAME ); ?>'></div>
-												</div>
-											</div>
-											<div class='bookacti-form-editor-field-body' style='display:none;' >
-											<?php
-												bookacti_diplay_form_field( $form_field, $form_id, 'form-editor-instance', 'edit' );
-											?>
-											</div>
-										</div>
-										<?php
+										foreach( $form_fields as $field ) {
+											bookacti_diplay_form_field_for_editor( $field, $form_id );
 										}
 										
 										do_action( 'bookacti_form_editor_after', $form );
@@ -247,5 +207,7 @@ $form = $forms[ 0 ];
 	</div>
 </div>
 <?php
-// Include dialogs
-//include_once( 'view-form-editor-dialogs.php' );
+// Include form editor dialogs
+if( ! $error_message ) {
+	include_once( 'view-form-editor-dialogs.php' );
+}

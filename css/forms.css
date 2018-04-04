@@ -48,9 +48,17 @@ body.booking-activities_page_bookacti_forms label[for='bookacti_form_publish-hid
 .bookacti-form-editor-field-actions > *:hover,
 #bookacti-form-editor-container .dashicons-plus-alt	{ color: #418fb6; }
 #bookacti-form-editor-container .dashicons-plus-alt	{ transition: all 0.2s; }
-#bookacti-add-field-to-form:hover					{ font-size: 32px; height: 32px; width: 32px; margin-right: -6px; transition: all 0.2s; }
+#bookacti-insert-form-field:hover					{ font-size: 32px; height: 32px; width: 32px; margin-right: -6px; transition: all 0.2s; }
 
 .bookacti-form-editor-field-header .bookacti-wc-icon-not-supported	{ display: inline-block; vertical-align: middle; margin-right: 20px; font-weight: normal; }
+
+
+/* Dialogs */
+.bookacti-form-dialog label:not(.bookacti-onoffswitch-label),
+.bookacti-form-dialog m label:not(.bookacti-onoffswitch-label) { display: inline-block; width: 150px; font-family: Arial,Helvetica,sans-serif; font-weight: bold; }
+.bookacti-form-dialog  > div			{ margin-bottom: 10px; }
+.bookacti-form-dialog  > div:last-child	{ margin-bottom: 0; }
+
 
 /* Metaboxes */
 #poststuff #bookacti_form_publish .inside	{ margin: 0; padding: 0; }

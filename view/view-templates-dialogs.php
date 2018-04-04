@@ -157,7 +157,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			<div id='bookacti-event-repeat-period-container'>
 				<div>
 					<label for='bookacti-event-repeat-from' ><?php esc_html_e( 'Repeat from', BOOKACTI_PLUGIN_NAME ); ?></label>
-					<input type='date' name='event-repeat-from' id='bookacti-event-repeat-from' data-verified='false' />
+					<input type='date' name='event-repeat-from' id='bookacti-event-repeat-from' data-verified='false' max='2037-12-31' />
 					<?php
 						$tip = __( 'Set the starting date of the repetition. The occurences of the event will be added from this date.', BOOKACTI_PLUGIN_NAME );
 						bookacti_help_tip( $tip );
@@ -165,7 +165,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 				</div>
 				<div>
 					<label for='bookacti-event-repeat-to' ><?php esc_html_e( 'Repeat to', BOOKACTI_PLUGIN_NAME ); ?></label>
-					<input type='date' name='event-repeat-to' id='bookacti-event-repeat-to' data-verified='false' />
+					<input type='date' name='event-repeat-to' id='bookacti-event-repeat-to' data-verified='false' max='2037-12-31' />
 					<?php
 						$tip = __( 'Set the ending date of the repetition. The occurences of the event will be added until this date.', BOOKACTI_PLUGIN_NAME );
 						bookacti_help_tip( $tip );
@@ -181,7 +181,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 				?>
 				</label>
 				<div id='bookacti-event-add-exception-container' >
-					<input type='date' id='bookacti-event-exception-date-picker' >
+					<input type='date' id='bookacti-event-exception-date-picker' max='2037-12-31' >
 					<button type='button' id='bookacti-event-add-exception-button' ><?php esc_html_e( 'Add', BOOKACTI_PLUGIN_NAME ); ?></button>
 				</div>
 				<div>
@@ -255,7 +255,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 				</div>
 				<div>
 					<label for='bookacti-template-opening' ><?php esc_html_e( 'Opening', BOOKACTI_PLUGIN_NAME ); ?></label>
-					<input type='date' name='template-opening' id='bookacti-template-opening' >
+					<input type='date' name='template-opening' id='bookacti-template-opening' max='2037-12-31' >
 					<?php
 						$tip = __( 'The starting date of your calendar. Basically it should be the date of your first event.', BOOKACTI_PLUGIN_NAME );
 						bookacti_help_tip( $tip );
@@ -263,7 +263,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 				</div>
 				<div>
 					<label for='bookacti-template-closing' ><?php esc_html_e( 'Closing', BOOKACTI_PLUGIN_NAME ); ?></label>
-					<input type='date' name='template-closing' id='bookacti-template-closing' >
+					<input type='date' name='template-closing' id='bookacti-template-closing' max='2037-12-31' >
 					<?php
 						$tip = __( 'The ending date of your calendar. Basically it should be the date of your last event.', BOOKACTI_PLUGIN_NAME );
 						bookacti_help_tip( $tip );

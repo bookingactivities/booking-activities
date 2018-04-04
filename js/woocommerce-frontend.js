@@ -118,7 +118,7 @@ $j( document ).ready( function() {
 							form.find( '.bookacti-booking-system-container' ).trigger( 'bookacti_submit_booking_form' );
 							return true;
 						} else {
-							return false; // Prevent submission
+							e.preventDefault();
 						}
 					}
 				}

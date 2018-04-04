@@ -188,7 +188,7 @@ function bookacti_init_activities() {
         });
     });
 	if( bookacti.blocked_events === true ) {
-		$j( '#bookacti-template-activities-container .dashicons' ).addClass( 'bookacti-disabled-img' );
+		$j( '#bookacti-template-activities-container .dashicons' ).addClass( 'bookacti-disabled' );
 		$j( '#bookacti-template-activities-container .fc-event' ).addClass( 'bookacti-event-unavailable' );
 	}
 	
@@ -1002,7 +1002,7 @@ function bookacti_enter_template_loading_state() {
 	
 	
 	bookacti.blocked_events = true;
-	$j( '#bookacti-template-sidebar .dashicons' ).addClass( 'bookacti-disabled-img' );
+	$j( '#bookacti-template-sidebar .dashicons' ).addClass( 'bookacti-disabled' );
 	$j( '.bookacti-template-dialogs' ).find( 'input, select, button' ).attr( 'disabled', true );
 	$j( '#bookacti-template-picker' ).attr( 'disabled', true );
 	$j( '#bookacti-template-calendar' ).fullCalendar( 'rerenderEvents' );
@@ -1019,7 +1019,7 @@ function bookacti_exit_template_loading_state( force_exit ) {
 	$j( '#bookacti-template-calendar' ).find( '.bookacti-loading-alt' ).remove();
 	
 	bookacti.blocked_events = false;
-	$j( '#bookacti-template-sidebar .dashicons' ).removeClass( 'bookacti-disabled-img' );
+	$j( '#bookacti-template-sidebar .dashicons' ).removeClass( 'bookacti-disabled' );
 	$j( '.bookacti-template-dialogs' ).find( 'input, select, button' ).attr( 'disabled', false );
 	$j( '#bookacti-template-picker' ).attr( 'disabled', false );
 	$j( '#bookacti-template-calendar' ).fullCalendar( 'rerenderEvents' );

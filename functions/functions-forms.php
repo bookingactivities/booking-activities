@@ -123,7 +123,7 @@ function bookacti_get_form_fields_data( $form_id ) {
 	// Format form fields
 	foreach( $fields as $i => $field ) {
 		// Add field-specific data
-		$field_metadata = bookacti_get_metadata( 'form_field', $field[ 'form_field_id' ] );
+		$field_metadata = bookacti_get_metadata( 'form_field', $field[ 'field_id' ] );
 		if( is_array( $field_metadata ) ) { 
 			$field = array_merge( $field, $field_metadata );
 		}
@@ -182,6 +182,7 @@ function bookacti_format_form_field_data( $field_data ) {
 	
 	// Set the common default data
 	$common_default = array( 
+		'field_id' => 0,			// Field ID
 		'name' => $field_type,		// Text identifier of the field
 		'type' => $field_type,		// Field type [calendar, quantity, submit, login, free_text, or you custom types]
 		'title' => $field_type,		// Field title display in form editor
@@ -197,13 +198,13 @@ function bookacti_format_form_field_data( $field_data ) {
 		'unique' => 1				// If the user can add multiple occurence of this field in the form
 	);
 	
-	$formatted_field_data = array();
+	$formatted_field_data = $field_data;
 	
 	// Format field data according to its type
 	if( $field_type === 'calendar' ) {
 		// Format booking system data
 		$booking_system_data	= bookacti_format_booking_system_attributes( $field_data );
-		$formatted_field_data	= array_merge( $booking_system_data, $field_data );
+		$formatted_field_data	= array_merge( $formatted_field_data, $booking_system_data );
 		
 		// Set default common data
 		$formatted_field_data[ 'title' ]		= empty( $field_data[ 'title' ] ) ? __( 'Calendar', BOOKACTI_PLUGIN_NAME ) : $field_data[ 'title' ];
@@ -222,7 +223,7 @@ function bookacti_format_form_field_data( $field_data ) {
 			'send_account_email'	=> 0,
 			'default'				=> 1
 		);
-		$formatted_field_data = array_merge( $login_default, $field_data );
+		$formatted_field_data = array_merge( $login_default, $formatted_field_data );
 		
 		// Set default common data
 		$formatted_field_data[ 'title' ] = empty( $field_data[ 'title' ] ) ? __( 'Login / Register', BOOKACTI_PLUGIN_NAME ) : $field_data[ 'title' ];
@@ -273,6 +274,47 @@ function bookacti_get_field_types() {
 
 
 /**
+ * Display a form field for the form editor
+ * @since 1.5.0
+ * @param array $field
+ * @param int $form_id
+ * @param boolean $echo
+ * @return string|void
+ */
+function bookacti_diplay_form_field_for_editor( $field, $form_id, $echo = true ) {
+	$field_name = $field[ 'name' ];
+	$field[ 'id' ] = 'bookacti-form-editor-' . $field_name;
+	if( ! $field[ 'unique' ] ) { $field[ 'id' ] .= '-' . $field[ 'field_id' ]; }
+	if( ! $echo ) { ob_start(); };
+	?>
+	<div id='bookacti-form-editor-field-<?php echo $field[ 'field_id' ]; ?>' class='bookacti-form-editor-field' data-field-id='<?php echo $field[ 'field_id' ]; ?>' data-field-name='<?php echo $field[ 'name' ]; ?>' >
+		<div class='bookacti-form-editor-field-header' >
+			<div class='bookacti-form-editor-field-title' >
+				<h3><?php echo $field[ 'title' ]; ?></h3>
+			</div>
+			<div class='bookacti-form-editor-field-actions' >
+				<?php do_action( 'bookacti_form_editor_field_actions_before', $field, $form_id ); ?>
+				<div class='bookacti-form-editor-field-action bookacti-edit-form-field dashicons dashicons-admin-generic' title='<?php _e( 'Change field settings', BOOKACTI_PLUGIN_NAME ); ?>'></div>
+			<?php if( ! $field[ 'compulsory' ] ) { ?>
+				<div class='bookacti-form-editor-field-action bookacti-remove-form-field dashicons dashicons-trash' title='<?php _e( 'Remove this field', BOOKACTI_PLUGIN_NAME ); ?>'></div>
+			<?php }
+				do_action( 'bookacti_form_editor_field_actions_after', $field, $form_id ); 
+			?>
+				<div class='bookacti-field-toggle dashicons dashicons-arrow-down' title='<?php _e( 'Show / Hide', BOOKACTI_PLUGIN_NAME ); ?>'></div>
+			</div>
+		</div>
+		<div class='bookacti-form-editor-field-body' style='display:none;' >
+		<?php
+			bookacti_diplay_form_field( $field, $form_id, 'bookacti-form-editor', 'edit' );
+		?>
+		</div>
+	</div>
+<?php
+	if( ! $echo ) { return ob_get_clean(); }
+}
+
+
+/**
  * Display a form field
  * @since 1.5.0
  * @param array $field
@@ -286,11 +328,11 @@ function bookacti_diplay_form_field( $field, $form_id = 0, $instance_id = '', $c
 	if( empty( $field[ 'name' ] ) ) { return ''; };
 	
 	if( ! $instance_id ) { $instance_id = rand(); }
-	$field_id = ! empty( $field[ 'id' ] ) ? $field[ 'id' ] : $field[ 'name' ] . '-' . $instance_id;
+	$field_id = ! empty( $field[ 'id' ] ) ? $field[ 'id' ] : $field[ 'field_id' ] . '-' . $instance_id;
 	
 	ob_start();
 ?>
-	<div class='bookacti-form-field-container' id='<?php if( ! empty( $field[ 'name' ] ) ) { echo 'bookacti-form-field-' . $field[ 'name' ]; } ?>' >
+	<div class='bookacti-form-field-container <?php if( ! empty( $field[ 'name' ] ) ) { echo 'bookacti-form-field-name-' . $field[ 'name' ]; } if( ! empty( $field[ 'field_id' ] ) ) { echo 'bookacti-form-field-id-' . $field[ 'field_id' ]; } ?>' >
 	<?php if( ! empty( $field[ 'label' ] ) && $field[ 'name' ] !== 'submit' ) { ?>
 		<div class='bookacti-form-field-label' >
 			<label for='<?php echo $field_id; ?>' ><?php echo $field[ 'label' ]; ?></label>
@@ -318,38 +360,25 @@ function bookacti_diplay_form_field( $field, $form_id = 0, $instance_id = '', $c
  * @return array
  */
 function bookacti_sanitize_form_field_order( $form_id, $field_order ) {
-	$default_fields = bookacti_get_default_form_fields_data();
-	$custom_fields	= $form_id ? bookacti_get_form_fields( $form_id ) : array();
-	$allowed_types	= bookacti_get_field_types();
 	
-	// Check if fields exist
-	$field_exists = false; $field_type = '';
-	foreach( $field_order as $i => $field_name ) {
-		// Check if the field name exists in the default fields
-		foreach( $default_fields as $default_field ) { 
-			if( $default_field[ 'name' ] === $field_name ) { $field_exists = true; $field_type = $default_field[ 'type' ]; break; }
-		}
-		
-		if( ! $field_exists && $custom_fields ) {
-			// Check if the field name exists in the custom fields
-			foreach( $custom_fields as $custom_field ) { 
-				if( $custom_field[ 'name' ] === $field_name ) { $field_exists = true; $field_type = $custom_field[ 'type' ]; break; }
-			}
-		}
-		
-		// Remove the field if:
-		// - the field name doesn't exist
-		// - the field type doesn't exist
-		if( ! $field_exists || ! in_array( $field_type, $allowed_types, true ) ) { unset( $field_order[ $i ] ); }
+	$custom_fields = bookacti_get_form_fields( $form_id );
+	
+	if( ! $custom_fields ) { return array(); }
+	
+	// Get existing field ids for the desired form
+	$existing_field_ids = array();
+	foreach( $custom_fields as $custom_field ) {
+		$existing_field_ids[] = $custom_field[ 'field_id' ];
 	}
 	
-	// Make sure that all compulsory fields are in the array
-	foreach( $default_fields as $field_name => $field_data ) {
-		if( ! ( ! empty( $field_data[ 'compulsory' ] ) || ( ! $form_id && $field_data[ 'default' ] ) ) ) { continue; }
-		if( ! in_array( $field_name, $field_order, true ) ) { $field_order[] = $field_name; }
-	}
+	// Keep only existing field ids
+	$intersect = array_intersect( $field_order, $existing_field_ids );
 	
-	return array_values( $field_order );
+	// Add existing missing field ids to field order
+	$diff				= array_diff( $intersect, $existing_field_ids );
+	$sanitized_order	= array_merge( $intersect, $diff );
+	
+	return array_values( $sanitized_order );
 }
 
 
@@ -368,9 +397,9 @@ function bookacti_sort_form_fields_array( $form_id, $fields, $remove_unordered_f
 	if( $field_order ) { 
 		$ordered_fields		= array();
 		$remaining_fields	= $fields;
-		foreach( $field_order as $field_name ) {
+		foreach( $field_order as $field_id ) {
 			foreach( $fields as $i => $field ) {
-				if( $field[ 'name' ] !== $field_name ) { continue; }
+				if( $field[ 'field_id' ] !== $field_id ) { continue; }
 
 				$ordered_fields[] = $fields[ $i ];
 				unset( $remaining_fields[ $i ] );

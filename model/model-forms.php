@@ -385,6 +385,74 @@ function bookacti_insert_default_form_fields( $form_id ) {
 	return $inserted;
 }
 
+
+/**
+ * Insert a form field
+ * @since 1.5.0
+ * @global wpdb $wpdb
+ * @param int $form_id
+ * @param string $field_name
+ * @return int|false
+ */
+function bookacti_insert_form_field( $form_id, $field_name ) {
+	global $wpdb;
+	
+	$default_fields = bookacti_get_default_form_fields_data();
+	
+	// Insert the form field
+	$created = $wpdb->insert( 
+		BOOKACTI_TABLE_FORM_FIELDS, 
+		array( 
+			'form_id'		=> $form_id,
+			'name'			=> $default_fields[ $field_name ][ 'name' ],
+			'type'			=> $default_fields[ $field_name ][ 'type' ],
+			'label'			=> $default_fields[ $field_name ][ 'label' ],
+			'options'		=> maybe_serialize( $default_fields[ $field_name ][ 'options' ] ),
+			'value'			=> $default_fields[ $field_name ][ 'value' ],
+			'placeholder'	=> $default_fields[ $field_name ][ 'placeholder' ],
+			'tip'			=> $default_fields[ $field_name ][ 'tip' ],
+			'active'		=> 1
+		),
+		array( '%d', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%d' )
+	);
+	
+	if( ! $created ) { return $created; }
+	
+	$field_id = $wpdb->insert_id;
+	
+	return $field_id;
+}
+
+
+/**
+ * Get the fields of the desired form
+ * @since 1.5.0
+ * @global wpdb $wpdb
+ * @param int $form_id
+ * @return array|false
+ */
+function bookacti_get_form_field( $field_id ) {
+	global $wpdb;
+	
+	$query	= 'SELECT id as field_id, form_id, name, type, label, options, value, placeholder, tip, active FROM ' . BOOKACTI_TABLE_FORM_FIELDS . ' as FF '
+			. ' WHERE FF.id = %d';
+	
+	$variables = array( $field_id );
+	
+	if( $variables ) {
+		$query = $wpdb->prepare( $query, $variables );
+	}
+	
+	$field = $wpdb->get_row( $query, ARRAY_A );
+	
+	if( ! $field ) { return array(); }
+	
+	$field[ 'options' ] = maybe_unserialize( $field[ 'options' ] );
+	
+	return $field;
+}
+
+
 /**
  * Get the fields of the desired form
  * @since 1.5.0
@@ -395,7 +463,7 @@ function bookacti_insert_default_form_fields( $form_id ) {
 function bookacti_get_form_fields( $form_id ) {
 	global $wpdb;
 	
-	$query	= 'SELECT id as form_field_id, name, type, label, options, value, placeholder, tip, active FROM ' . BOOKACTI_TABLE_FORM_FIELDS . ' as FF '
+	$query	= 'SELECT id as field_id, form_id, name, type, label, options, value, placeholder, tip, active FROM ' . BOOKACTI_TABLE_FORM_FIELDS . ' as FF '
 			. ' WHERE FF.form_id = %d';
 	
 	$variables = array( $form_id );
@@ -429,6 +497,16 @@ function bookacti_delete_form_field( $field_id ) {
 		BOOKACTI_TABLE_FORM_FIELDS, 
 		array( 'id' => $field_id ), 
 		array( '%d' ) 
+	);
+	
+	// Delete field metadata
+	$wpdb->delete( 
+		BOOKACTI_TABLE_META, 
+		array( 
+			'object_type' => 'form_field',
+			'object_id' => $field_id 
+		), 
+		array( '%s', '%d' ) 
 	);
 	
 	return $deleted;

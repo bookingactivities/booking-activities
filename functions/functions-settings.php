@@ -839,7 +839,9 @@ function bookacti_settings_section_bookings_callback() { }
 
 
 
-// RESET NOTICES
+/**
+ * Reset notices
+ */
 function bookacti_reset_notices() {
 	delete_option( 'bookacti-install-date' );
 	delete_option( 'bookacti-first20-notice-viewed' );
@@ -850,11 +852,13 @@ function bookacti_reset_notices() {
 
 /**
  * Get Booking Activities admin screen ids
+ * @version 1.5.0
  */
 function bookacti_get_screen_ids() {
 	$screens = array(
 		'toplevel_page_booking-activities',
 		'booking-activities_page_bookacti_calendars',
+		'booking-activities_page_bookacti_forms',
 		'booking-activities_page_bookacti_bookings',
 		'booking-activities_page_bookacti_settings'
 	);

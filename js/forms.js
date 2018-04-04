@@ -18,16 +18,6 @@ $j( document ).ready( function() {
 		}
     });
 	
-	// Open edit field dialog box
-	$j( '.bookacti-edit-form-field' ).on( 'click', function( e ) {
-		e.stopPropagation();
-	});
-	
-	// Open delete field dialog box
-	$j( '.bookacti-remove-form-field' ).on( 'click', function( e ) {
-		e.stopPropagation();
-	});
-	
 	// Sort form fields in editor
 	$j( '#bookacti-form-editor' ).sortable( { 
 		items: '.bookacti-form-editor-field:not(.ui-state-disabled)',
@@ -49,7 +39,6 @@ $j( document ).ready( function() {
 /**
  * Save form data
  * @since 1.5.0
- * @param html_element form
  */
 function bookacti_save_form() {
 	// Select all form managers
@@ -68,6 +57,7 @@ function bookacti_save_form() {
 	
 	// Display spinner
 	$j( '#publishing-action .spinner' ).css( 'visibility', 'visible' );
+	bookacti_form_editor_enter_loading_state();
 
 	// Save the new form in database
 	$j.ajax({
@@ -110,6 +100,7 @@ function bookacti_save_form() {
 		complete: function() { 
 			// Stop the spinner
 			$j( '#publishing-action .spinner' ).css( 'visibility', 'hidden' );
+			bookacti_form_editor_exit_loading_state();
 		}
 	});
 }
@@ -117,6 +108,7 @@ function bookacti_save_form() {
 
 /**
  * Save field order
+ * @since 1.5.0
  */
 function bookacti_save_form_field_order() {
 	var form_id = $j( '#bookacti-form-id' ).val();
@@ -126,7 +118,7 @@ function bookacti_save_form_field_order() {
 	// Get field in document order
 	var field_order = [];
 	$j( '.bookacti-form-editor-field' ).each( function(){
-		field_order.push( $j( this ).data( 'field-name' ) );
+		field_order.push( $j( this ).data( 'field-id' ) );
 	});
 	
 	if( ! field_order.length ) { return; }
@@ -139,6 +131,8 @@ function bookacti_save_form_field_order() {
 			'nonce': nonce
 		};
 	
+	bookacti_form_editor_enter_loading_state();
+	
 	// Save the new field order in database
 	$j.ajax({
 		url: ajaxurl, 
@@ -147,10 +141,7 @@ function bookacti_save_form_field_order() {
 		dataType: 'json',
 		success: function( response ){
 			
-			if( response.status === 'success' ) {
-				
-
-			} else if( response.status === 'failed' ) {
+			if( response.status === 'failed' ) {
 				var error_message = bookacti_localized.error_order_form_fields;
 				if( response.error === 'not_allowed' ) {
 					error_message += '\n' + bookacti_localized.error_not_allowed;
@@ -165,6 +156,16 @@ function bookacti_save_form_field_order() {
 			console.log( error_message );
 			console.log( e );
 		},
-		complete: function() {}
+		complete: function() { bookacti_form_editor_exit_loading_state(); }
 	});
+}
+
+
+function bookacti_form_editor_enter_loading_state() {
+	$j( '.bookacti-form-editor-action, .bookacti-form-editor-field-action' ).addClass( 'bookacti-disabled' );
+}
+
+
+function bookacti_form_editor_exit_loading_state() {
+	$j( '.bookacti-form-editor-action, .bookacti-form-editor-field-action' ).removeClass( 'bookacti-disabled' );
 }

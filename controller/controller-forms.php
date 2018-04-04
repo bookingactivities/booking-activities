@@ -13,6 +13,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
  * @param string $context
  */
 function bookacti_display_form_field_calendar( $field, $form_id, $instance_id, $context ) {
+	$field[ 'id' ] = ! empty( $field[ 'id' ] ) ? $field[ 'id' ] : $field[ 'field_id' ] . '-' . $instance_id;
 	bookacti_get_booking_system( $field, true );
 }
 add_action( 'bookacti_diplay_form_field_calendar', 'bookacti_display_form_field_calendar', 10, 4 );
@@ -29,9 +30,8 @@ add_action( 'bookacti_diplay_form_field_calendar', 'bookacti_display_form_field_
  * @return string
  */
 function bookacti_display_form_field_login( $html, $field, $form_id, $instance_id, $context ) {
-	$field_id = ! empty( $field[ 'id' ] ) ? $field[ 'id' ] : $field[ 'name' ] . '-' . $instance_id;
+	$field_id = ! empty( $field[ 'id' ] ) ? $field[ 'id' ] : $field[ 'field_id' ] . '-' . $instance_id;
 	$login_type = $field[ 'login_type' ];
-	ob_start();
 ?>
 	<div class='bookacti-form-field-container' id='<?php if( ! empty( $field[ 'name' ] ) ) { echo 'bookacti-form-field-' . $field[ 'name' ]; } ?>' >
 		<div class='bookacti-form-field-label' >
@@ -59,8 +59,6 @@ function bookacti_display_form_field_login( $html, $field, $form_id, $instance_i
 		<?php } ?>
 	</div>
 <?php
-	$html = ob_get_clean();
-	return $html;
 }
 add_filter( 'bookacti_html_form_field_login', 'bookacti_display_form_field_login', 10, 5 );
 
@@ -74,7 +72,7 @@ add_filter( 'bookacti_html_form_field_login', 'bookacti_display_form_field_login
  * @param string $context
  */
 function bookacti_display_form_field_quantity( $field, $form_id, $instance_id, $context ) {
-	$field_id = ! empty( $field[ 'id' ] ) ? $field[ 'id' ] : $field[ 'name' ] . '-' . $instance_id;
+	$field_id = ! empty( $field[ 'id' ] ) ? $field[ 'id' ] : $field[ 'field_id' ] . '-' . $instance_id;
 ?>
 	<input	name='bookacti_quantity'
 			id='<?php echo $field_id; ?>'
@@ -96,7 +94,7 @@ add_action( 'bookacti_diplay_form_field_quantity', 'bookacti_display_form_field_
  * @param string $context
  */
 function bookacti_display_form_field_submit( $field, $form_id, $instance_id, $context ) {
-	$field_id = ! empty( $field[ 'id' ] ) ? $field[ 'id' ] : $field[ 'name' ] . '-' . $instance_id;
+	$field_id = ! empty( $field[ 'id' ] ) ? $field[ 'id' ] : $field[ 'field_id' ] . '-' . $instance_id;
 ?>
 	<input type='<?php echo $context === 'edit' ? 'button' : 'submit'; ?>'
 		id='<?php echo $field_id; ?>' 
@@ -105,6 +103,23 @@ function bookacti_display_form_field_submit( $field, $form_id, $instance_id, $co
 <?php
 }
 add_action( 'bookacti_diplay_form_field_submit', 'bookacti_display_form_field_submit', 10, 4 );
+
+
+/**
+ * Display the form field 'submit'
+ * @since 1.5.0
+ * @param array $field
+ * @param int $form_id
+ * @param string $instance_id
+ * @param string $context
+ */
+function bookacti_display_form_field_free_text( $field, $form_id, $instance_id, $context ) {
+	$field_id = ! empty( $field[ 'id' ] ) ? $field[ 'id' ] : $field[ 'field_id' ] . '-' . $instance_id;
+?>
+	<div id='<?php echo $field_id; ?>' class='bookacti-form-free-text' ><?php echo $field[ 'value' ]; ?></div>
+<?php
+}
+add_action( 'bookacti_diplay_form_field_free_text', 'bookacti_display_form_field_free_text', 10, 4 );
 
 
 
@@ -160,7 +175,7 @@ add_action( 'admin_footer-booking-activities_page_bookacti_forms', 'bookacti_pri
 
 
 
-// BOOKING FORMS CRUD
+// BOOKING FORMS
 
 /**
  * AJAX Controller - Update a booking form
@@ -316,6 +331,103 @@ add_action( 'all_admin_notices', 'bookacti_controller_remove_form', 10 );
 
 
 // FORM FIELDS
+
+/**
+ * AJAX Controller - Insert a form field
+ * @since 1.5.0
+ */
+function bookacti_controller_insert_form_field() {
+	$form_id = intval( $_POST[ 'form_id' ] );
+	
+	// Check nonce and capabilities
+	$is_nonce_valid	= check_ajax_referer( 'bookacti_insert_form_field', 'nonce', false );
+	$is_allowed		= current_user_can( 'bookacti_edit_forms' ) && bookacti_user_can_manage_form( $form_id );
+	
+	if( $is_nonce_valid && $is_allowed && $form_id ) {
+		
+		$field_name = $_POST[ 'field_name' ];
+		
+		// Check if the field is known
+		$fields_data = bookacti_get_default_form_fields_data();
+		if( ! in_array( $field_name, array_keys( $fields_data ), true ) ) {
+			wp_send_json( array( 'status' => 'failed', 'error' => 'unknown_field' ) );
+		}
+		
+		// Check if the field already exists
+		$form_fields = bookacti_get_form_fields_data( $form_id );
+		$field_already_added = array();
+		foreach( $form_fields as $form_field ) { $field_already_added[] = $form_field[ 'name' ]; }
+		if( in_array( $field_name, $field_already_added, true ) && $field_data[ 'unique' ] ) {
+			wp_send_json( array( 'status' => 'failed', 'error' => 'field_already_added' ) );
+		}
+		
+		// Insert form field
+		$field_id = bookacti_insert_form_field( $form_id, $field_name );
+		
+		if( $field_id !== false ) {
+			
+			$fields_data[ $field_name ][ 'field_id' ] = $field_id;
+			
+			// Update field order
+			$field_order	= bookacti_get_metadata( 'form', $form_id, 'field_order', true );
+			$field_order[]	= $field_id;
+			bookacti_update_metadata( 'form', $form_id, array( 'field_order' => $field_order ) );
+			
+			// Get field editor HTML
+			$field_html = bookacti_diplay_form_field_for_editor( $fields_data[ $field_name ], $form_id, false );
+			
+			wp_send_json( array( 'status' => 'success', 'field_id' => $field_id, 'field_html' => $field_html ) );
+		} else {
+			wp_send_json( array( 'status' => 'failed', 'error' => 'not_updated' ) );
+		}
+		
+	} else {
+		wp_send_json( array( 'status' => 'failed', 'error' => 'not_allowed' ) );
+	}
+}
+add_action( 'wp_ajax_bookactiInsertFormField', 'bookacti_controller_insert_form_field', 10 );
+
+/**
+ * AJAX Controller - Remove a form field
+ * @since 1.5.0
+ */
+function bookacti_controller_remove_form_field() {
+	
+	$field_id	= intval( $_POST[ 'field_id' ] );
+	$field		= bookacti_get_form_field( $field_id );
+	
+	// Check nonce and capabilities
+	$is_nonce_valid	= check_ajax_referer( 'bookacti_remove_form_field', 'nonce', false );
+	$is_allowed		= current_user_can( 'bookacti_edit_forms' ) && bookacti_user_can_manage_form( $field[ 'form_id' ] );
+	
+	if( $is_nonce_valid && $is_allowed && $field_id ) {
+		
+		// Remove the form field and its metadata
+		$removed = bookacti_delete_form_field( $field_id );
+		
+		if( $removed !== false ) {
+			
+			// Update field order
+			$field_order	= bookacti_get_metadata( 'form', $field[ 'form_id' ], 'field_order', true );
+			$order_index	= array_search( $field_id, $field_order );
+			
+			if( $order_index !== false ) {
+				unset( $field_order[ $order_index ] );
+				bookacti_update_metadata( 'form', $field[ 'form_id' ], array( 'field_order' => array_values( $field_order ) ) );
+			}
+			
+			wp_send_json( array( 'status' => 'success' ) );
+		} else {
+			wp_send_json( array( 'status' => 'failed', 'error' => 'not_updated' ) );
+		}
+		
+	} else {
+		wp_send_json( array( 'status' => 'failed', 'error' => 'not_allowed' ) );
+	}
+}
+add_action( 'wp_ajax_bookactiRemoveFormField', 'bookacti_controller_remove_form_field', 10 );
+
+
 /**
  * AJAX Controller - Save form field order
  * @since 1.5.0

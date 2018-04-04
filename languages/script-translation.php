@@ -37,6 +37,8 @@ $bookacti_translation_array = apply_filters( 'bookacti_translation_array', array
 	'booking_action_refund'					=> $can_edit_bookings ? esc_html_x( 'Refund a booking', 'Dialog title', BOOKACTI_PLUGIN_NAME ) : apply_filters( 'bookacti_translate_text', $messages[ 'refund_dialog_title' ][ 'value' ] ),
 	'booking_confirm_refund'				=> esc_html__( 'Refund confirmation', BOOKACTI_PLUGIN_NAME ),
 	'booking_change_state'					=> esc_html__( 'Change booking state', BOOKACTI_PLUGIN_NAME ),
+	'form_field_action_insert'				=> esc_html__( 'Add a field to the form', BOOKACTI_PLUGIN_NAME ),
+	'form_field_action_remove'				=> esc_html__( 'Remove this field from the form', BOOKACTI_PLUGIN_NAME ),
 
 
 	// BUTTONS
@@ -138,6 +140,8 @@ $bookacti_translation_array = apply_filters( 'bookacti_translation_array', array
 	'error_get_refund_booking_actions'	=> esc_html__( 'Error occurs while trying to request available refund actions.  Please contact the administrator.', BOOKACTI_PLUGIN_NAME ),
 	'error_refund_booking'				=> esc_html__( 'Error occurs while trying to request a refund. Please contact the administrator.', BOOKACTI_PLUGIN_NAME ),
 	'error_user_not_logged_in'			=> esc_html__( 'You are not logged in. Please create an account and log in first.', BOOKACTI_PLUGIN_NAME ),
+	'error_insert_form_field'			=> esc_html__( 'Error occurs when trying to insert a field to the form.', BOOKACTI_PLUGIN_NAME ),
+	'error_remove_form_field'			=> esc_html__( 'Error occurs when trying to remove a field to the form.', BOOKACTI_PLUGIN_NAME ),
 
 
 	// FORMS CHECK

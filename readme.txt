@@ -321,6 +321,8 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 * Tweak - Changed events list CSS in "Pick a group of events" dialog
 * Tweak - Added a scrollbar in groups of events list in calendar editor
 * Fix - Cannot move, resize or delete an event even if all its bookings are cancelled
+* Fix - Calendars cannot close later than 2037-12-31 because of year 2038 bug
+* Fix - Show error message when no event is selected
 
 = 1.4.3 - 2018/03/09 =
 * Fix - Groups of events were not properly retrieved for WooCommerce variations
