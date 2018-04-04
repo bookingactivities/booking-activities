@@ -399,7 +399,7 @@ function bookacti_validate_picked_events( booking_system, quantity ) {
 	//Check the results and build error list
 	if( ! valid_form.send ) {
 		var error_list = '';
-		if( ( ! valid_form.is_event || ! valid_form.is_event_in_selected ) && group_id === 'single' && ! valid_form.is_corrupted ){ 
+		if( ( ! valid_form.is_event || ! valid_form.is_event_in_selected ) && ! valid_form.is_corrupted ){ 
 			error_list += '<li>' + bookacti_localized.error_select_schedule + '</li>' ; 
 		}
 		if( valid_form.is_qty_sup_to_avail ){ 
