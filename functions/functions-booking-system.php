@@ -204,18 +204,12 @@ function bookacti_retrieve_calendar_elements( $booking_system_atts ) {
 
 
 /**
- * Check booking system attributes and format them to be correct
- * 
- * @version 1.5.0
- * 
- * @param array $atts 
- * @param string $shortcode
- * @return type
+ * Get default booking system attributes
+ * @since 1.5.0
+ * @return array
  */
-function bookacti_format_booking_system_attributes( $atts = array(), $shortcode = '' ) {
-	
-	// Set default value
-	$defaults = apply_filters( 'bookacti_booking_system_default_attributes', array(
+function bookacti_get_booking_system_default_attributes() {
+	return apply_filters( 'bookacti_booking_system_default_attributes', array(
         'id'					=> '',
         'class'					=> '',
 		'template_data'			=> array(),
@@ -232,6 +226,22 @@ function bookacti_format_booking_system_attributes( $atts = array(), $shortcode 
 		'past_events'			=> 0,
 		'check_roles'			=> 1
     ) );
+}
+
+
+/**
+ * Check booking system attributes and format them to be correct
+ * 
+ * @version 1.5.0
+ * 
+ * @param array $atts 
+ * @param string $shortcode
+ * @return type
+ */
+function bookacti_format_booking_system_attributes( $atts = array(), $shortcode = '' ) {
+	
+	// Set default value
+	$defaults = bookacti_get_booking_system_default_attributes();
 	
 	// Replace empty mandatory values by default
 	$atts = shortcode_atts( $defaults, $atts, $shortcode );

@@ -825,3 +825,68 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		
 		return true;
 	}
+	
+	
+	/**
+	 * Sanitize the values of an array
+	 * @since 1.5.0
+	 * @param array $default_data
+	 * @param array $raw_data
+	 * @param array $keys_by_type
+	 * @param array $sanitized_data
+	 * @return array
+	 */
+	function bookacti_sanitize_values( $default_data, $raw_data, $keys_by_type, $sanitized_data = array() ) {
+		// Sanitize the keys-by-type array
+		$allowed_types = array( 'int', 'bool', 'str', 'str_id', 'array' );
+		foreach( $allowed_types as $allowed_type ) {
+			if( ! isset( $keys_by_type[ $allowed_type ] ) ) { $keys_by_type[ $allowed_type ] = array(); }
+		}
+		
+		// Make an array of all keys that will be sanitized
+		$keys_to_sanitize = array();
+		foreach( $keys_by_type as $type => $keys ) {
+			if( ! in_array( $type, $allowed_types, true ) ) { continue; }
+			if( ! is_array( $keys ) ) { $keys_by_type[ $type ] = array( $keys ); }
+			foreach( $keys as $key ) {
+				$keys_to_sanitize[] = $key;
+			}
+		}
+		
+		// Format each value according to its type
+		foreach( $default_data as $key => $default_value ) {
+			// Do not process keys without types
+			if( ! in_array( $key, $keys_to_sanitize, true ) ) { continue; }
+			// Skip already sanitized values
+			if( isset( $sanitized_data[ $key ] ) ) { continue; }
+			// Set undefined values to default and continue
+			if( ! isset( $raw_data[ $key ] ) ) { $sanitized_data[ $key ] = $default_value; continue; }
+
+			// Sanitize integers
+			if( in_array( $key, $keys_by_type[ 'int' ], true ) ) { 
+				$sanitized_data[ $key ] = is_numeric( $raw_data[ $key ] ) ? intval( $raw_data[ $key ] ) : $default_value;
+			}
+
+			// Sanitize string identifiers
+			else if( in_array( $key, $keys_by_type[ 'str_id' ], true ) ) { 
+				$sanitized_data[ $key ] = is_string( $raw_data[ $key ] ) ? sanitize_title_with_dashes( $raw_data[ $key ] ) : $default_value;
+			}
+
+			// Sanitize text
+			else if( in_array( $key, $keys_by_type[ 'str' ], true ) ) { 
+				$sanitized_data[ $key ] = is_string( $raw_data[ $key ] ) ? sanitize_text_field( $raw_data[ $key ] ) : $default_value;
+			}
+
+			// Sanitize array
+			else if( in_array( $key, $keys_by_type[ 'array' ], true ) ) { 
+				$sanitized_data[ $key ] = is_array( $raw_data[ $key ] ) ? $raw_data[ $key ] : $default_value;
+			}
+
+			// Sanitize boolean
+			else if( in_array( $key, $keys_by_type[ 'bool' ], true ) ) { 
+				$sanitized_data[ $key ] = in_array( $raw_data[ $key ], array( 1, '1', true, 'true' ), true ) ? 1 : 0;
+			}
+		}
+		
+		return $sanitized_data;
+	}

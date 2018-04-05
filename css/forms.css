@@ -54,10 +54,9 @@ body.booking-activities_page_bookacti_forms label[for='bookacti_form_publish-hid
 
 
 /* Dialogs */
-.bookacti-form-dialog label:not(.bookacti-onoffswitch-label),
-.bookacti-form-dialog m label:not(.bookacti-onoffswitch-label) { display: inline-block; width: 150px; font-family: Arial,Helvetica,sans-serif; font-weight: bold; }
-.bookacti-form-dialog  > div			{ margin-bottom: 10px; }
-.bookacti-form-dialog  > div:last-child	{ margin-bottom: 0; }
+.bookacti-form-dialog form label:not(.bookacti-onoffswitch-label) { display: inline-block; width: 150px; font-family: Arial,Helvetica,sans-serif; font-weight: bold; }
+.bookacti-form-dialog form > div			{ margin-bottom: 10px; }
+.bookacti-form-dialog form > div:last-child	{ margin-bottom: 0; }
 
 
 /* Metaboxes */

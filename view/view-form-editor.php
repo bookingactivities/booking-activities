@@ -138,10 +138,15 @@ $form = $forms[ 0 ];
 								wp_nonce_field( 'bookacti_form_field_order', 'bookacti_nonce_form_field_order', false );
 								
 								// Get form fields in the custom order
-								$fields_data = bookacti_get_default_form_fields_data();
 								$form_fields = bookacti_get_form_fields_data( $form_id );
-								$form_fields = bookacti_sort_form_fields_array( $form_id, $form_fields );
 								?>
+								
+								<script>
+									// Compatibility with Optimization plugins
+									if( typeof bookacti === 'undefined' ) { var bookacti = { booking_system:[] }; }
+									// Pass fields data to JS
+									bookacti.form_editor = <?php echo json_encode( $form_fields ); ?>;
+								</script>
 								
 								<div id='bookacti-form-editor-container' >
 									<div id='bookacti-form-editor-header' >
@@ -173,7 +178,8 @@ $form = $forms[ 0 ];
 										do_action( 'bookacti_form_editor_before', $form );
 										
 										// Display form fields 
-										foreach( $form_fields as $field ) {
+										$ordered_form_fields = bookacti_sort_form_fields_array( $form_id, $form_fields );
+										foreach( $ordered_form_fields as $field ) {
 											bookacti_diplay_form_field_for_editor( $field, $form_id );
 										}
 										

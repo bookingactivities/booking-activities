@@ -37,9 +37,6 @@ $bookacti_translation_array = apply_filters( 'bookacti_translation_array', array
 	'booking_action_refund'					=> $can_edit_bookings ? esc_html_x( 'Refund a booking', 'Dialog title', BOOKACTI_PLUGIN_NAME ) : apply_filters( 'bookacti_translate_text', $messages[ 'refund_dialog_title' ][ 'value' ] ),
 	'booking_confirm_refund'				=> esc_html__( 'Refund confirmation', BOOKACTI_PLUGIN_NAME ),
 	'booking_change_state'					=> esc_html__( 'Change booking state', BOOKACTI_PLUGIN_NAME ),
-	'form_field_action_insert'				=> esc_html__( 'Add a field to the form', BOOKACTI_PLUGIN_NAME ),
-	'form_field_action_remove'				=> esc_html__( 'Remove this field from the form', BOOKACTI_PLUGIN_NAME ),
-
 
 	// BUTTONS
 	'dialog_button_ok'                  => esc_html__( 'OK', BOOKACTI_PLUGIN_NAME ),
@@ -119,7 +116,10 @@ $bookacti_translation_array = apply_filters( 'bookacti_translation_array', array
 	'error_create_form'					=> esc_html__( 'Error occurs when trying to create the form.', BOOKACTI_PLUGIN_NAME ),
 	'error_update_form'					=> esc_html__( 'Error occurs when trying to update the form.', BOOKACTI_PLUGIN_NAME ),
 	'error_order_form_fields'			=> esc_html__( 'Error occurs while trying to reorder form fields.', BOOKACTI_PLUGIN_NAME ),
-	
+	'error_insert_form_field'			=> esc_html__( 'Error occurs when trying to insert a field to the form.', BOOKACTI_PLUGIN_NAME ),
+	'error_remove_form_field'			=> esc_html__( 'Error occurs when trying to remove the field.', BOOKACTI_PLUGIN_NAME ),
+	'error_update_form_field'			=> esc_html__( 'Error occurs when trying to update the field.', BOOKACTI_PLUGIN_NAME ),
+
 	'error_display_product_events'		=> esc_html__( 'Error occurs when trying to display product events. Please try later.', BOOKACTI_PLUGIN_NAME ),
 	'error_book_temporary'				=> esc_html__( 'Error occurs when trying to temporarily book your event. Please try later.', BOOKACTI_PLUGIN_NAME ),
 	'error_book'						=> esc_html__( 'Error occurs when trying to book your event. Please try again.', BOOKACTI_PLUGIN_NAME ),
@@ -140,9 +140,7 @@ $bookacti_translation_array = apply_filters( 'bookacti_translation_array', array
 	'error_get_refund_booking_actions'	=> esc_html__( 'Error occurs while trying to request available refund actions.  Please contact the administrator.', BOOKACTI_PLUGIN_NAME ),
 	'error_refund_booking'				=> esc_html__( 'Error occurs while trying to request a refund. Please contact the administrator.', BOOKACTI_PLUGIN_NAME ),
 	'error_user_not_logged_in'			=> esc_html__( 'You are not logged in. Please create an account and log in first.', BOOKACTI_PLUGIN_NAME ),
-	'error_insert_form_field'			=> esc_html__( 'Error occurs when trying to insert a field to the form.', BOOKACTI_PLUGIN_NAME ),
-	'error_remove_form_field'			=> esc_html__( 'Error occurs when trying to remove a field to the form.', BOOKACTI_PLUGIN_NAME ),
-
+	
 
 	// FORMS CHECK
 	'error_fill_field'                  => esc_html__( 'Please fill this field.', BOOKACTI_PLUGIN_NAME ),

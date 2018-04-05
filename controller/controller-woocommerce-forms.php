@@ -38,15 +38,14 @@ add_action( 'bookacti_form_editor_description_after', 'bookacti_form_editor_wc_d
 /**
  * Add an icon before WC unsupported form field in form editor
  * @since 1.5.0
- * @param array $formatted_field_data
  * @param array $field_data
- * @param string $field_type
+ * @param array $raw_field_data
  * @return array
  */
-function bookacti_form_editor_wc_field_title( $formatted_field_data, $field_data, $field_type ) {
-	if( in_array( $formatted_field_data[ 'name' ], bookacti_get_wc_unsupported_form_fields(), true ) ) {
-		$formatted_field_data[ 'title' ] = '<span class="bookacti-wc-icon-not-supported"></span>' . $formatted_field_data[ 'title' ];
+function bookacti_form_editor_wc_field_title( $field_data, $raw_field_data ) {
+	if( in_array( $field_data[ 'name' ], bookacti_get_wc_unsupported_form_fields(), true ) ) {
+		$field_data[ 'title' ] = '<span class="bookacti-wc-icon-not-supported"></span>' . $field_data[ 'title' ];
 	}
-	return $formatted_field_data;
+	return $field_data;
 }
-add_filter( 'bookacti_formatted_field_data', 'bookacti_form_editor_wc_field_title', 10, 3 );
+add_filter( 'bookacti_formatted_field_data', 'bookacti_form_editor_wc_field_title', 10, 2 );

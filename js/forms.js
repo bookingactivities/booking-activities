@@ -1,12 +1,20 @@
 $j( document ).ready( function() {
 	// Load this file only on form editor page
-	if( ! $j( 'form#bookacti-form-editor-page-form' ).length ) { return; }
+	if( ! $j( 'form#bookacti-form-editor-page-form' ).length || typeof bookacti.form_editor === 'undefined' ) { return; }
 	
 	// Add / remove form managers
 	bookacti_init_add_and_remove_items();
 	
+	// Init the Dialogs
+	bookacti_init_form_editor_dialogs();
+
+	// Init booking actions
+	bookacti_init_form_editor_actions();
+	
 	// Minimize / Maximize field
-	$j( '.bookacti-form-editor-field-header' ).on( 'click', function() {
+	$j( '#bookacti-form-editor' ).on( 'click', '.bookacti-form-editor-field-header', function( e ) {
+		if( $j( e.target ).hasClass( 'bookacti-form-editor-field-action' ) ) { return; }
+	
 		var icon = $j( this ).find( '.bookacti-field-toggle' );
 		icon.toggleClass( 'dashicons-arrow-up dashicons-arrow-down' );
 		icon.closest( '.bookacti-form-editor-field' ).find( '.bookacti-form-editor-field-body' ).toggle();

@@ -397,20 +397,20 @@ function bookacti_insert_default_form_fields( $form_id ) {
 function bookacti_insert_form_field( $form_id, $field_name ) {
 	global $wpdb;
 	
-	$default_fields = bookacti_get_default_form_fields_data();
+	$default_field = array_map( 'maybe_serialize', bookacti_get_default_form_fields_data( $field_name ) );
 	
 	// Insert the form field
 	$created = $wpdb->insert( 
 		BOOKACTI_TABLE_FORM_FIELDS, 
 		array( 
 			'form_id'		=> $form_id,
-			'name'			=> $default_fields[ $field_name ][ 'name' ],
-			'type'			=> $default_fields[ $field_name ][ 'type' ],
-			'label'			=> $default_fields[ $field_name ][ 'label' ],
-			'options'		=> maybe_serialize( $default_fields[ $field_name ][ 'options' ] ),
-			'value'			=> $default_fields[ $field_name ][ 'value' ],
-			'placeholder'	=> $default_fields[ $field_name ][ 'placeholder' ],
-			'tip'			=> $default_fields[ $field_name ][ 'tip' ],
+			'name'			=> $default_field[ 'name' ],
+			'type'			=> $default_field[ 'type' ],
+			'label'			=> $default_field[ 'label' ],
+			'options'		=> $default_field[ 'options' ],
+			'value'			=> $default_field[ 'value' ],
+			'placeholder'	=> $default_field[ 'placeholder' ],
+			'tip'			=> $default_field[ 'tip' ],
 			'active'		=> 1
 		),
 		array( '%d', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%d' )
@@ -447,7 +447,7 @@ function bookacti_get_form_field( $field_id ) {
 	
 	if( ! $field ) { return array(); }
 	
-	$field[ 'options' ] = maybe_unserialize( $field[ 'options' ] );
+	$field = array_map( 'maybe_unserialize', $field );
 	
 	return $field;
 }
@@ -464,7 +464,8 @@ function bookacti_get_form_fields( $form_id ) {
 	global $wpdb;
 	
 	$query	= 'SELECT id as field_id, form_id, name, type, label, options, value, placeholder, tip, active FROM ' . BOOKACTI_TABLE_FORM_FIELDS . ' as FF '
-			. ' WHERE FF.form_id = %d';
+			. ' WHERE FF.form_id = %d '
+			. ' ORDER BY id ASC ';
 	
 	$variables = array( $form_id );
 	
@@ -474,11 +475,41 @@ function bookacti_get_form_fields( $form_id ) {
 	
 	$fields = $wpdb->get_results( $query, ARRAY_A );
 	
+	$fields_by_id = array();
 	foreach( $fields as $i => $field ) {
-		$fields[ $i ][ 'options' ] = maybe_unserialize( $field[ 'options' ] );
+		$fields_by_id[ $field[ 'field_id' ] ] = array_map( 'maybe_unserialize', $field );
 	}
 	
-	return $fields;
+	return $fields_by_id;
+}
+
+
+/**
+ * Update a form field
+ * @since 1.5.0
+ * @global wpdb $wpdb
+ * @param array $field_data
+ * @return int|false
+ */
+function bookacti_update_form_field( $field_data ) {
+	global $wpdb;
+	
+	// Update common data
+	$updated = $wpdb->update( 
+		BOOKACTI_TABLE_FORM_FIELDS, 
+		array( 
+			'label'			=> maybe_serialize( $field_data[ 'label' ] ),
+			'placeholder'	=> maybe_serialize( $field_data[ 'placeholder' ] ),
+			'tip'			=> maybe_serialize( $field_data[ 'tip' ] ),
+			'options'		=> maybe_serialize( $field_data[ 'options' ] ),
+			'value'			=> maybe_serialize( $field_data[ 'value' ] )
+		),
+		array( 'id' => $field_data[ 'field_id' ] ),
+		array( '%s', '%s', '%s', '%s', '%s' ),
+		array( '%d' )
+	);
+	
+	return $updated;
 }
 
 
