@@ -5,7 +5,7 @@ Tags: booking activities, booking sport, booking form, event reservation, reserv
 Requires at least: 3.6
 Tested up to: 4.9
 Requires PHP: 5.3
-Stable tag: 1.4.3
+Stable tag: 1.4.4
 License: GPLv3 or later
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
 
@@ -311,10 +311,12 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 
 == Changelog ==
 
-= 1.4.4 - 2018/03 =
+= 1.4.4 - 2018/04/06 =
 * Tweak - Changed events list CSS in "Pick a group of events" dialog
 * Tweak - Added a scrollbar in groups of events list in calendar editor
 * Fix - Cannot move, resize or delete an event even if all its bookings are cancelled
+* Fix - Show error message when no event is selected
+* Fix - Calendars cannot close later than 2037-12-31 because of year 2038 bug
 
 = 1.4.3 - 2018/03/09 =
 * Fix - Groups of events were not properly retrieved for WooCommerce variations

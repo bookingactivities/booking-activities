@@ -550,7 +550,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	 * Retrieve template groups of events list
 	 * 
 	 * @since 1.1.0
-	 * @version 1.4.0
+	 * @version 1.4.4
 	 * @param int $template_id
 	 * @return string|boolean
 	 */
