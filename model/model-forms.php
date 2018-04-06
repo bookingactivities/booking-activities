@@ -346,7 +346,13 @@ function bookacti_delete_form( $form_id ) {
 function bookacti_insert_default_form_fields( $form_id ) {
 	global $wpdb;
 	
-	$default_fields		= bookacti_get_default_form_fields_data();
+	$default_fields = bookacti_get_default_form_fields_data();
+	
+	// Sanitize default data
+	foreach( $default_fields as $i => $default_field ) {
+		$default_fields[ $i ] = bookacti_sanitize_form_field_data( $default_field );
+	}
+	
 	$fields_to_insert	= array();
 	foreach( $default_fields as $default_field ) {
 		if( ! empty( $default_field[ 'compulsory' ] ) || ! empty( $default_field[ 'default' ] ) ) { $fields_to_insert[] = $default_field; }
@@ -434,7 +440,7 @@ function bookacti_insert_form_field( $form_id, $field_name ) {
 function bookacti_get_form_field( $field_id ) {
 	global $wpdb;
 	
-	$query	= 'SELECT id as field_id, form_id, name, type, label, options, value, placeholder, tip, active FROM ' . BOOKACTI_TABLE_FORM_FIELDS . ' as FF '
+	$query	= 'SELECT id as field_id, form_id, name, type, title, label, options, value, placeholder, tip, active FROM ' . BOOKACTI_TABLE_FORM_FIELDS . ' as FF '
 			. ' WHERE FF.id = %d';
 	
 	$variables = array( $field_id );
@@ -463,7 +469,7 @@ function bookacti_get_form_field( $field_id ) {
 function bookacti_get_form_fields( $form_id ) {
 	global $wpdb;
 	
-	$query	= 'SELECT id as field_id, form_id, name, type, label, options, value, placeholder, tip, active FROM ' . BOOKACTI_TABLE_FORM_FIELDS . ' as FF '
+	$query	= 'SELECT id as field_id, form_id, name, type, title, label, options, value, placeholder, tip, active FROM ' . BOOKACTI_TABLE_FORM_FIELDS . ' as FF '
 			. ' WHERE FF.form_id = %d '
 			. ' ORDER BY id ASC ';
 	
@@ -494,18 +500,26 @@ function bookacti_get_form_fields( $form_id ) {
 function bookacti_update_form_field( $field_data ) {
 	global $wpdb;
 	
+	$fields = array( 
+		'label'			=> maybe_serialize( $field_data[ 'label' ] ),
+		'placeholder'	=> maybe_serialize( $field_data[ 'placeholder' ] ),
+		'tip'			=> maybe_serialize( $field_data[ 'tip' ] ),
+		'options'		=> maybe_serialize( $field_data[ 'options' ] ),
+		'value'			=> maybe_serialize( $field_data[ 'value' ] )
+	);
+	$field_formats = array( '%s', '%s', '%s', '%s', '%s' );
+	
+	if( isset( $field_data[ 'unique' ] ) && ! $field_data[ 'unique' ] ) {
+		$fields[ 'title' ] = maybe_serialize( $field_data[ 'title' ] );
+		$field_formats[] = '%s';
+	}
+	
 	// Update common data
 	$updated = $wpdb->update( 
 		BOOKACTI_TABLE_FORM_FIELDS, 
-		array( 
-			'label'			=> maybe_serialize( $field_data[ 'label' ] ),
-			'placeholder'	=> maybe_serialize( $field_data[ 'placeholder' ] ),
-			'tip'			=> maybe_serialize( $field_data[ 'tip' ] ),
-			'options'		=> maybe_serialize( $field_data[ 'options' ] ),
-			'value'			=> maybe_serialize( $field_data[ 'value' ] )
-		),
+		$fields,
 		array( 'id' => $field_data[ 'field_id' ] ),
-		array( '%s', '%s', '%s', '%s', '%s' ),
+		$field_formats,
 		array( '%d' )
 	);
 	

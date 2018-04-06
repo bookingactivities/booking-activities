@@ -98,6 +98,7 @@ function bookacti_create_tables() {
 		form_id MEDIUMINT(9) UNSIGNED NOT NULL, 
 		name VARCHAR(128), 
 		type VARCHAR(128), 
+		title TEXT, 
 		label TEXT, 
 		options TEXT, 
 		value TEXT, 

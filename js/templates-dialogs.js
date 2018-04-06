@@ -12,7 +12,12 @@ function bookacti_init_template_dialogs() {
 		"hide":			true,
 		"dialogClass":	'bookacti-dialog',
 		"closeText":	'&#10006;',
-		"beforeClose":	function() { bookacti_empty_all_dialog_forms(); }
+		"beforeClose":	function() { 
+			var scope = '.bookacti-template-dialogs';
+			var dialog_id = $j( this ).attr( 'id' );
+			if( dialog_id ) { scope = '#' + dialog_id; }
+			bookacti_empty_all_dialog_forms( scope ); 
+		}
     });
 	
 	// Make dialogs close when the user click outside
@@ -22,7 +27,7 @@ function bookacti_init_template_dialogs() {
 	
 	// Press ENTER to bring focus on OK button
 	$j( '.bookacti-template-dialogs' ).on( 'keydown', function( e ) {
-		if( e.keyCode == $j.ui.keyCode.ENTER ) {
+		if( ! $j( 'textarea' ).is( ':focus' ) && e.keyCode == $j.ui.keyCode.ENTER ) {
 			$j( this ).parent().find( '.ui-dialog-buttonpane button:first' ).focus(); 
 			return false; 
 		}
@@ -323,7 +328,7 @@ function bookacti_dialog_update_template( template_id ) {
 	// Settings tabs
 	$j( '#bookacti-template-data-dialog' ).trigger( 'bookacti_default_template_settings' );
 	if( ! $j.isEmptyObject( template_data.settings ) ) {
-		bookacti_fill_settings_fields( template_data.settings, 'templateOptions' );
+		bookacti_fill_fields_from_array( template_data.settings, 'templateOptions' );
 	}
 
 
@@ -568,7 +573,7 @@ function bookacti_dialog_update_event( event ) {
 
 	// Fill additional settings
 	if( typeof event_data.settings !== 'undefined' ) {
-		bookacti_fill_settings_fields( event_data.settings, 'eventOptions' );
+		bookacti_fill_fields_from_array( event_data.settings, 'eventOptions' );
 	}
 
 	// Refresh qtranslate fields to make a correct display of multilingual fields
@@ -1255,7 +1260,7 @@ function bookacti_dialog_update_activity( activity_id ) {
 
 	// Settings tabs
 	if( activity_data.settings ) {
-		bookacti_fill_settings_fields( activity_data.settings, 'activityOptions' );
+		bookacti_fill_fields_from_array( activity_data.settings, 'activityOptions' );
 	}
 
 	// Refresh qtranslate fields to make a correct display of multilingual fields
@@ -1635,7 +1640,7 @@ function bookacti_dialog_update_group_of_events( group_id ) {
 
 	// Other settings
 	if( group_data.settings ) {
-		bookacti_fill_settings_fields( group_data.settings, 'groupOfEventsOptions' );
+		bookacti_fill_fields_from_array( group_data.settings, 'groupOfEventsOptions' );
 	}
 
 	// Refresh qtranslate fields to make a correct display of multilingual fields
@@ -1844,7 +1849,7 @@ function bookacti_dialog_update_group_category( category_id ) {
 
 	// Other settings
 	if( category_data.settings ) {
-		bookacti_fill_settings_fields( category_data.settings, 'groupCategoryOptions' );
+		bookacti_fill_fields_from_array( category_data.settings, 'groupCategoryOptions' );
 	}
 
 	// Refresh qtranslate fields to make a correct display of multilingual fields

@@ -247,7 +247,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	 * Display various fields
 	 * 
 	 * @since 1.2.0
-	 * @version 1.3.0
+	 * @version 1.5.0
 	 * @param array $args ['type', 'name', 'label', 'id', 'class', 'placeholder', 'options', 'value', 'tip']
 	 */
 	function bookacti_display_field( $args ) {
@@ -259,7 +259,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		// Display field according to type
 
 		// TEXT & NUMBER
-		if( in_array( $args[ 'type' ], array( 'text', 'number' ) ) ) {
+		if( in_array( $args[ 'type' ], array( 'text', 'number', 'email', 'password' ) ) ) {
 		?>
 			<input	type=		'<?php echo esc_attr( $args[ 'type' ] ); ?>' 
 					name=		'<?php echo esc_attr( $args[ 'name' ] ); ?>' 
@@ -416,7 +416,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		if( ! isset( $args[ 'type' ] ) || ! isset( $args[ 'name' ] ) ) { return false; }
 
 		// If field type is not supported, return
-		if( ! in_array( $args[ 'type' ], array( 'text', 'number', 'checkbox', 'checkboxes', 'select', 'radio', 'textarea', 'editor' ) ) ) { 
+		if( ! in_array( $args[ 'type' ], array( 'text', 'email', 'password', 'number', 'checkbox', 'checkboxes', 'select', 'radio', 'textarea', 'editor' ) ) ) { 
 			return false; 
 		}
 
@@ -442,7 +442,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		$args[ 'id' ]	= sanitize_title_with_dashes( $args[ 'id' ] );
 		
 		// If no id, use name instead
-		$args[ 'id' ] = $args[ 'id' ] ? $args[ 'id' ] : sanitize_title_with_dashes( $args[ 'name' ] );
+		$args[ 'id' ] = $args[ 'id' ] ? $args[ 'id' ] : sanitize_title_with_dashes( $args[ 'name' ] ) . '-' . rand();
 
 		// Make sure fields with multiple options have 'options' set
 		if( in_array( $args[ 'type' ], array( 'checkboxes', 'radio', 'select' ) ) ){

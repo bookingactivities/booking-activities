@@ -11,13 +11,29 @@ function bookacti_init_form_editor_dialogs() {
 		"hide":			true,
 		"dialogClass":	'bookacti-dialog',
 		"closeText":	'&#10006;',
-		"close":		function() {}
+		"beforeClose":	function() { 
+			var scope = '.bookacti-form-dialog';
+			var dialog_id = $j( this ).attr( 'id' );
+			if( dialog_id ) { scope = '#' + dialog_id; }
+			bookacti_empty_all_dialog_forms( scope ); 
+		}
 	});
+	
+	// Specific param
+	$j( '#bookacti-form-field-dialog-free_text' ).dialog( 'option', 'width', 540 );
 	
 	// Make dialogs close when the user click outside
 	$j( '.ui-widget-overlay' ).live( 'click', function (){
 		$j( 'div:ui-dialog:visible' ).dialog( 'close' );
 	});
+	
+	// Press ENTER to bring focus on OK button
+	$j( '.bookacti-form-dialog' ).on( 'keydown', function( e ) {
+		if( ! $j( 'textarea' ).is( ':focus' ) && e.keyCode == $j.ui.keyCode.ENTER ) {
+			$j( this ).parent().find( '.ui-dialog-buttonpane button:first' ).focus(); 
+			return false; 
+		}
+	});	
 }
 
 
@@ -55,13 +71,8 @@ function bookacti_dialog_insert_form_field() {
 	
 	// Add the buttons
     $j( '#bookacti-insert-form-field-dialog' ).dialog( 'option', 'buttons',
-		// Cancel button    
-		[{
-            text: bookacti_localized.dialog_button_cancel,
-            click: function() { $j( this ).dialog( 'close' ); }
-        },
 		// OK button
-		{
+		[{
 			text: bookacti_localized.dialog_button_ok,			
 			click: function() { 
 				
@@ -132,13 +143,8 @@ function bookacti_dialog_remove_form_field( field_id, field_name ) {
 	
 	// Add the buttons
     $j( '#bookacti-remove-form-field-dialog' ).dialog( 'option', 'buttons',
-		// Cancel button    
+		// OK button   
 		[{
-            text: bookacti_localized.dialog_button_cancel,
-            click: function() { $j( this ).dialog( 'close' ); }
-        },
-		// OK button
-		{
 			text: bookacti_localized.dialog_button_ok,			
 			click: function() { 
 				
@@ -201,24 +207,34 @@ function bookacti_dialog_remove_form_field( field_id, field_name ) {
 function bookacti_dialog_update_form_field( field_id, field_name ) {
 	
 	// Fill field id
+	$j( 'form#bookacti-form-field-form-' + field_name + ' input[name="action"]' ).val( 'bookactiUpdateFormField' );
 	$j( 'form#bookacti-form-field-form-' + field_name + ' input[name="field_id"]' ).val( field_id );
+	
+	// Fill the fields with current data
+	bookacti_fill_fields_from_array( bookacti.form_editor[ field_id ], '', 'form#bookacti-form-field-form-' + field_name );
+	
+	// Refresh qtranslate fields to make a correct display of multilingual fields
+	if( bookacti_localized.is_qtranslate ) {
+		$j( 'form#bookacti-form-field-form-' + field_name + ' .qtranxs-translatable' ).each( function() { 
+			bookacti_refresh_qtx_field( this ); 
+		});
+	}
 	
 	// Open the modal dialog
     $j( '#bookacti-form-field-dialog-' + field_name ).dialog( 'open' );
 	
 	// Add the buttons
     $j( '#bookacti-form-field-dialog-' + field_name ).dialog( 'option', 'buttons',
-		// Cancel button    
-		[{
-            text: bookacti_localized.dialog_button_cancel,
-            click: function() { $j( this ).dialog( 'close' ); }
-        },
 		// OK button
-		{
+		[{
 			text: bookacti_localized.dialog_button_ok,			
 			click: function() { 
 				
+				// Save tineMCE editors content 
+				if( tinyMCE ) { tinyMCE.triggerSave(); }
+				
 				var data = $j( 'form#bookacti-form-field-form-' + field_name ).serializeObject();
+				var is_visible = $j( '#bookacti-form-editor-field-' + field_id + ' .bookacti-form-editor-field-body' ).is( ':visible' );
 				
 				// Display a loader
 				bookacti_form_editor_enter_loading_state();
@@ -243,6 +259,9 @@ function bookacti_dialog_update_form_field( field_id, field_name ) {
 							
 							// Reload tooltip for generated content
 							bookacti_init_tooltip();
+							
+							// Toogle field
+							if( is_visible ) { $j( '#bookacti-form-editor-field-' + field_id + ' .bookacti-form-editor-field-header' ).trigger( 'click' ); }
 							
 							$j( '#bookacti-form-editor' ).trigger( 'bookacti_field_updated', [ field_id ] );
 							

@@ -91,6 +91,97 @@ function bookacti_init_tooltip() {
 }
 
 
+// Empty all dialog forms
+function bookacti_empty_all_dialog_forms( scope ) {
+	scope = typeof scope === 'undefined' || ! scope ? '' : scope + ' ';
+	
+    $j( scope + '.bookacti-backend-dialog .bookacti-form-error' ).remove();
+	$j( scope + '.bookacti-backend-dialog input[type="hidden"]:not([name^="nonce"]):not([name="_wp_http_referer"])' ).val( '' );
+	$j( scope + '.bookacti-backend-dialog input[type="text"]' ).val( '' );
+    $j( scope + '.bookacti-backend-dialog input[type="number"]' ).val( '' );
+    $j( scope + '.bookacti-backend-dialog textarea' ).val( '' );
+    $j( scope + '.bookacti-backend-dialog input[type="color"]' ).val( '#3a87ad' );
+    $j( scope + '.bookacti-backend-dialog input[type="checkbox"]' ).attr( 'checked', false );
+    $j( scope + '.bookacti-backend-dialog input[type="radio"]' ).attr( 'checked', false );
+    $j( scope + '.bookacti-backend-dialog option' ).prop( 'selected', false );
+    $j( scope + '.bookacti-backend-dialog .exception' ).remove();
+    $j( scope + '.bookacti-backend-dialog select.bookacti-add-new-items-select-box option' ).show().attr( 'disabled', false );
+    $j( scope + '.bookacti-backend-dialog select.bookacti-items-select-box option' ).remove();
+	if( tinyMCE ) { 
+		$j( scope + 'textarea.wp-editor-area' ).each( function(){
+			var tmce_id = $j( this ).attr( 'id' );
+			if( tinyMCE.get( tmce_id ) ) {
+				tinyMCE.get( tmce_id ).setContent( '' );
+			}
+		});
+	}
+}
+
+
+// Fill custom settings fields in a form
+function bookacti_fill_fields_from_array( fields, field_prefix, scope ) {
+	field_prefix = field_prefix || '';
+	scope = typeof scope === 'undefined' || ! scope ? '' : scope + ' ';
+
+	$j.each( fields, function( key, value ) {
+		if( fields[ key ] ) {
+			var field_name = field_prefix ? field_prefix + '[' + key + ']' : key;
+			
+			// Checkbox
+			if( $j( scope + 'input[name="' + field_name + '[]"]' ).is( ':checkbox' ) 
+			||  $j( scope + 'input[name="' + field_name + '"]' ).is( ':checkbox' ) ) {
+				if( $j.isArray( value ) ){
+					$j( scope + 'input[name="' + field_name + '[]"]' ).attr( 'checked', false );
+					$j.each( value, function( i, checkbox_value ){
+						$j( scope + 'input[name="' + field_name + '[]"][value="' + checkbox_value + '"]' ).attr( 'checked', true );
+					});
+				} else if( value == 1 ) {
+					$j( scope + 'input[name="' + field_name + '"]' ).attr( 'checked', true );
+				} else {
+					$j( scope + 'input[name="' + field_name + '"]' ).attr( 'checked', false );
+				}
+				
+			// Radio
+			} else if( $j( scope + 'input[name="' + field_name + '"]' ).is( ':radio' ) ) {
+				$j( scope + 'input[name="' + field_name + '"][value="' + value + '"]' ).prop( 'checked', true );
+				
+			// Select
+			} else if( $j( scope + 'select[name="' + field_name + '"]' ).length ) {
+				$j( scope + 'select[name="' + field_name + '"] option[value="' + value + '"]' ).attr( 'selected', true );
+				
+			// Select multiple
+			} else if( $j( scope + 'select[name="' + field_name + '[]"]' ).length ) {
+				$j.each( value, function( i, option ){
+					$j( scope + 'select[name="' + field_name + '[]"] option[value="' + option + '"]' ).attr( 'selected', true );
+				});
+				
+			// Input and Textarea
+			} else {
+				if( $j.isPlainObject( value ) ) {
+					$j.each( value, function( i, field_value ){
+						if( $j( scope + 'input[name="' + field_name + '[' + i + ']' + '"]' ).attr( 'type' ) === 'time' && field_value === '24:00' ) { field_value = '00:00'; }
+						
+						$j( scope + 'input[name="' + field_name + '[' + i + ']' + '"]' ).val( field_value );
+						$j( scope + 'textarea[name="' + field_name + '[' + i + ']' + '"]' ).val( field_value );
+					});
+				} else {
+					// If the time value is 24:00, reset it to 00:00
+					if( $j( scope + 'input[name="' + field_name + '"]' ).attr( 'type' ) === 'time' && value === '24:00' ) { value = '00:00'; }
+					$j( scope + 'input[name="' + field_name + '"]' ).val( value );
+					$j( scope + 'textarea[name="' + field_name + '"]' ).val( value );
+					if( $j( scope + 'textarea[name="' + field_name + '"]' ).hasClass( 'wp-editor-area' ) && tinyMCE ) {
+						var tmce_id = $j( scope + 'textarea[name="' + field_name + '"]' ).attr( 'id' );
+						if( tinyMCE.get( tmce_id ) ) {
+							tinyMCE.get( tmce_id ).setContent( value );
+						}
+					}
+				}
+			}
+		}
+	});
+}
+
+
 // Update multilangual fields with qtranslate X
 function bookacti_update_qtx_field( field ){
 	if( typeof qTranslateConfig !== 'undefined' ) {

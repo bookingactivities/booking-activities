@@ -179,5 +179,137 @@ foreach( $fields_data as $field_name => $field_data ) {
 	</form>
 </div>
 
+
+<!-- Quantity field dialog -->
+<div id='bookacti-form-field-dialog-quantity' class='bookacti-backend-dialog bookacti-form-dialog' style='display:none;' title='<?php /* translators: Title of the Update field dialog. %s is the field title. */ echo sprintf( __( '%s options', BOOKACTI_PLUGIN_NAME ), strip_tags( $fields_data[ 'quantity' ][ 'title' ] ) ); ?>' >
+	<form id='bookacti-form-field-form-quantity' >
+		<input type='hidden' name='action' value='bookactiUpdateFormField' />
+		<input type='hidden' name='nonce' value='<?php echo wp_create_nonce( 'bookacti_update_form_field' ); ?>' />
+		<input type='hidden' name='field_id' value='' />
+		<?php 
+			do_action( 'bookacti_quantity_dialog_before', $form );
+		?>
+		<div>
+			<label for='bookacti-quantity-label'><?php _e( 'Label', BOOKACTI_PLUGIN_NAME ); ?></label>
+			<?php 
+				$args = array(
+					'type'	=> 'text',
+					'name'	=> 'label',
+					'id'	=> 'bookacti-quantity-label',
+					'value'	=> $fields_data[ 'quantity' ][ 'label' ],
+					'tip'	=> __( 'Text displayed before the field.', BOOKACTI_PLUGIN_NAME )
+				);
+				bookacti_display_field( $args );
+			?>
+		</div>
+		<div>
+			<label for='bookacti-quantity-placeholder'><?php _e( 'Placeholder', BOOKACTI_PLUGIN_NAME ); ?></label>
+			<?php 
+				$args = array(
+					'type'	=> 'text',
+					'name'	=> 'placeholder',
+					'id'	=> 'bookacti-quantity-placeholder',
+					'value'	=> $fields_data[ 'quantity' ][ 'placeholder' ],
+					'tip'	=> __( 'Text displayed in transparency in the field when it is empty.', BOOKACTI_PLUGIN_NAME )
+				);
+				bookacti_display_field( $args );
+			?>
+		</div>
+		<div>
+			<label for='bookacti-quantity-tip'><?php _e( 'Tip', BOOKACTI_PLUGIN_NAME ); ?></label>
+			<?php 
+				$args = array(
+					'type'	=> 'text',
+					'name'	=> 'tip',
+					'id'	=> 'bookacti-quantity-tip',
+					'value'	=> $fields_data[ 'quantity' ][ 'tip' ],
+					'tip'	=> __( 'Text displayed in the tooltip next to the field.', BOOKACTI_PLUGIN_NAME )
+				);
+				bookacti_display_field( $args );
+			?>
+		</div>
+		<?php 
+			do_action( 'bookacti_quantity_dialog_after', $form );
+		?>
+		<p>
+		<?php
+			// Warning about min and max values
+			_e( 'Min and Max values are dynamilly set according to the selected event and its availability settings.', BOOKACTI_PLUGIN_NAME );
+		?>
+		</p>
+	</form>
+</div>
+
+
+<!-- Submit button dialog -->
+<div id='bookacti-form-field-dialog-submit' class='bookacti-backend-dialog bookacti-form-dialog' style='display:none;' title='<?php /* translators: Title of the Update field dialog. %s is the field title. */ echo sprintf( __( '%s options', BOOKACTI_PLUGIN_NAME ), strip_tags( $fields_data[ 'submit' ][ 'title' ] ) ); ?>' >
+	<form id='bookacti-form-field-form-submit' >
+		<input type='hidden' name='action' value='bookactiUpdateFormField' />
+		<input type='hidden' name='nonce' value='<?php echo wp_create_nonce( 'bookacti_update_form_field' ); ?>' />
+		<input type='hidden' name='field_id' value='' />
+		<?php 
+			do_action( 'bookacti_submit_dialog_before', $form );
+		?>
+		<div>
+			<label for='bookacti-submit-value'><?php _e( 'Button text', BOOKACTI_PLUGIN_NAME ); ?></label>
+			<?php 
+				$args = array(
+					'type'	=> 'text',
+					'name'	=> 'value',
+					'id'	=> 'bookacti-submit-value',
+					'value'	=> $fields_data[ 'submit' ][ 'value' ],
+					'tip'	=> __( 'Text displayed on the button.', BOOKACTI_PLUGIN_NAME )
+				);
+				bookacti_display_field( $args );
+			?>
+		</div>
+		<?php 
+			do_action( 'bookacti_submit_dialog_after', $form );
+		?>
+	</form>
+</div>
+
+
+<!-- Free text field dialog -->
+<div id='bookacti-form-field-dialog-free_text' class='bookacti-backend-dialog bookacti-form-dialog' style='display:none;' title='<?php /* translators: Title of the Update field dialog. %s is the field title. */ echo sprintf( __( '%s options', BOOKACTI_PLUGIN_NAME ), strip_tags( $fields_data[ 'free_text' ][ 'title' ] ) ); ?>' >
+	<form id='bookacti-form-field-form-free_text' >
+		<input type='hidden' name='action' value='bookactiUpdateFormField' />
+		<input type='hidden' name='nonce' value='<?php echo wp_create_nonce( 'bookacti_update_form_field' ); ?>' />
+		<input type='hidden' name='field_id' value='' />
+		<?php 
+			do_action( 'bookacti_free_text_dialog_before', $form );
+		?>
+		<div>
+			<label for='bookacti-free_text-title'><?php _e( 'Title', BOOKACTI_PLUGIN_NAME ); ?></label>
+			<?php 
+				$args = array(
+					'type'	=> 'text',
+					'name'	=> 'title',
+					'id'	=> 'bookacti-free_text-title',
+					'value'	=> $fields_data[ 'free_text' ][ 'title' ],
+					'tip'	=> __( 'Field title displayed in form editor only.', BOOKACTI_PLUGIN_NAME )
+				);
+				bookacti_display_field( $args );
+			?>
+		</div>
+		<div>
+			<label for='bookacti-free_text-value' class='bookacti-fullwidth-label' ><?php _e( 'Free text', BOOKACTI_PLUGIN_NAME ); ?></label>
+			<?php 
+				$args = array(
+					'type'	=> 'editor',
+					'name'	=> 'value',
+					'id'	=> 'bookacti-free_text-value',
+					'value'	=> $fields_data[ 'free_text' ][ 'value' ]
+				);
+				bookacti_display_field( $args );
+			?>
+		</div>
+		<?php 
+			do_action( 'bookacti_free_text_dialog_after', $form );
+		?>
+	</form>
+</div>
+
+
 <?php
 do_action( 'bookacti_form_editor_dialogs', $form, $form_fields, $fields_data );

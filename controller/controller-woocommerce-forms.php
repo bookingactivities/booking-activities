@@ -49,3 +49,4 @@ function bookacti_form_editor_wc_field_title( $field_data, $raw_field_data ) {
 	return $field_data;
 }
 add_filter( 'bookacti_formatted_field_data', 'bookacti_form_editor_wc_field_title', 10, 2 );
+add_filter( 'bookacti_sanitized_field_data', 'bookacti_form_editor_wc_field_title', 10, 2 );
