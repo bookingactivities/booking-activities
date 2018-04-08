@@ -119,7 +119,7 @@ $bookacti_translation_array = apply_filters( 'bookacti_translation_array', array
 	'error_insert_form_field'			=> esc_html__( 'Error occurs when trying to insert a field to the form.', BOOKACTI_PLUGIN_NAME ),
 	'error_remove_form_field'			=> esc_html__( 'Error occurs when trying to remove the field.', BOOKACTI_PLUGIN_NAME ),
 	'error_update_form_field'			=> esc_html__( 'Error occurs when trying to update the field.', BOOKACTI_PLUGIN_NAME ),
-
+	
 	'error_display_product_events'		=> esc_html__( 'Error occurs when trying to display product events. Please try later.', BOOKACTI_PLUGIN_NAME ),
 	'error_book_temporary'				=> esc_html__( 'Error occurs when trying to temporarily book your event. Please try later.', BOOKACTI_PLUGIN_NAME ),
 	'error_book'						=> esc_html__( 'Error occurs when trying to book your event. Please try again.', BOOKACTI_PLUGIN_NAME ),

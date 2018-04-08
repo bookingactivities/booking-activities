@@ -41,6 +41,9 @@ function bookacti_init_form_editor_dialogs() {
 function bookacti_init_form_editor_actions() {
 	// Open form dialog boxes
 	$j( '#bookacti-form-editor-actions' ).on( 'click', '.bookacti-form-editor-action', function( e ) {
+		if( $j( this ).is( '#bookacti-update-form-meta' ) ){
+			bookacti_dialog_update_form_meta();
+		}
 		if( $j( this ).is( '#bookacti-insert-form-field' ) ){
 			bookacti_dialog_insert_form_field();
 		}
@@ -62,6 +65,83 @@ function bookacti_init_form_editor_actions() {
 
 
 // DIALOGS
+
+// Update Form Meta
+function bookacti_dialog_update_form_meta() {
+	
+	var form_id	= $j( '#bookacti-form-id' ).val();
+	
+	// Fill field id
+	$j( 'form#bookacti-update-form-meta-form input[name="action"]' ).val( 'bookactiUpdateFormMeta' );
+	$j( 'form#bookacti-update-form-meta-form input[name="form_id"]' ).val( form_id );
+	
+	// Fill the fields with current data
+	bookacti_fill_fields_from_array( bookacti.form_editor.form, '', 'form#bookacti-update-form-meta-form' );
+	
+	// Refresh qtranslate fields to make a correct display of multilingual fields
+	if( bookacti_localized.is_qtranslate ) {
+		$j( 'form#bookacti-update-form-meta-form .qtranxs-translatable' ).each( function() { 
+			bookacti_refresh_qtx_field( this ); 
+		});
+	}
+	
+	// Open the modal dialog
+    $j( '#bookacti-form-meta-dialog' ).dialog( 'open' );
+	
+	// Add the buttons
+    $j( '#bookacti-form-meta-dialog' ).dialog( 'option', 'buttons',
+		// OK button
+		[{
+			text: bookacti_localized.dialog_button_ok,			
+			click: function() { 
+				
+				// Save tineMCE editors content 
+				if( tinyMCE ) { tinyMCE.triggerSave(); }
+				
+				var data = $j( 'form#bookacti-update-form-meta-form' ).serializeObject();
+				
+				// Display a loader
+				bookacti_form_editor_enter_loading_state();
+				
+				$j.ajax({
+					url: ajaxurl,
+					type: 'POST',
+					data: data,
+					dataType: 'json',
+					success: function( response ){
+						
+						if( response.status === 'success' ) {
+							
+							bookacti.form_editor.form = response.form_data;
+							
+							$j( '#bookacti-form-editor' ).trigger( 'bookacti_form_meta_updated' );
+							
+						} else if( response.status === 'failed' ) {
+							var message_error = bookacti_localized.error_update_form;
+							if( response.error === 'not_allowed' ) {
+								message_error += '\n' + bookacti_localized.error_not_allowed;
+							}
+							console.log( message_error );
+							console.log( response );
+						}
+						
+					},
+					error: function( e ){
+						console.log( 'AJAX ' + bookacti_localized.error_update_form );
+						console.log( e );
+					},
+					complete: function() {
+						bookacti_form_editor_exit_loading_state();
+					}
+				});
+				
+				// Close the modal dialog
+				$j( this ).dialog( 'close' );
+			}
+		}]
+    );
+}
+
 
 // Insert form field
 function bookacti_dialog_insert_form_field() {
@@ -100,7 +180,8 @@ function bookacti_dialog_insert_form_field() {
 							$j( '#bookacti-form-editor' ).append( response.field_html );
 							
 							// Update the field data
-							bookacti.form_editor[ response.field_id ] = response.field_data;
+							bookacti.form_editor.fields[ response.field_id ] = response.field_data;
+							bookacti.form_editor.form.field_order = response.field_order;
 							
 							// Prevent this field from being inserted again (if unique)
 							$j( '#bookacti-field-to-insert option[value="' + field_name + '"][data-unique="1"]' ).attr( 'disabled', true );
@@ -169,7 +250,8 @@ function bookacti_dialog_remove_form_field( field_id, field_name ) {
 							$j( '#bookacti-form-editor-field-' + field_id ).remove();
 							
 							// Remove field data
-							delete bookacti.form_editor[ field_id ];
+							delete bookacti.form_editor.fields[ field_id ];
+							bookacti.form_editor.form.field_order = response.field_order;
 							
 							// Enable this field to be inserted again
 							$j( '#bookacti-field-to-insert option[value="' + field_name + '"]' ).attr( 'disabled', false );
@@ -203,7 +285,7 @@ function bookacti_dialog_remove_form_field( field_id, field_name ) {
 }
 
 
-// Update Form Field: Login
+// Update Form Field
 function bookacti_dialog_update_form_field( field_id, field_name ) {
 	
 	// Fill field id
@@ -211,7 +293,7 @@ function bookacti_dialog_update_form_field( field_id, field_name ) {
 	$j( 'form#bookacti-form-field-form-' + field_name + ' input[name="field_id"]' ).val( field_id );
 	
 	// Fill the fields with current data
-	bookacti_fill_fields_from_array( bookacti.form_editor[ field_id ], '', 'form#bookacti-form-field-form-' + field_name );
+	bookacti_fill_fields_from_array( bookacti.form_editor.fields[ field_id ], '', 'form#bookacti-form-field-form-' + field_name );
 	
 	// Refresh qtranslate fields to make a correct display of multilingual fields
 	if( bookacti_localized.is_qtranslate ) {
@@ -254,7 +336,7 @@ function bookacti_dialog_update_form_field( field_id, field_name ) {
 								// Update the field content
 								$j( '#bookacti-form-editor-field-' + field_id ).replaceWith( response.field_html );
 								// Update the field data
-								bookacti.form_editor[ field_id ] = response.field_data;
+								bookacti.form_editor.fields[ field_id ] = response.field_data;
 							}
 							
 							// Reload tooltip for generated content

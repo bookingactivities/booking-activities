@@ -8,7 +8,7 @@ $j( document ).ready( function() {
 	// Init the Dialogs
 	bookacti_init_form_editor_dialogs();
 
-	// Init booking actions
+	// Init form editor actions
 	bookacti_init_form_editor_actions();
 	
 	// Minimize / Maximize field
@@ -79,6 +79,9 @@ function bookacti_save_form() {
 			$j( '.bookacti-form-notice' ).remove();
 
 			if( response.status === 'success' ) {
+				
+				$j( 'body' ).trigger( 'bookacti_form_updated' );
+				
 				// If the form was inactive, redirect
 				if( is_active == 0 ) { window.location.replace( form.attr( 'action' ) + '&notice=published' ); }
 				
@@ -149,7 +152,12 @@ function bookacti_save_form_field_order() {
 		dataType: 'json',
 		success: function( response ){
 			
-			if( response.status === 'failed' ) {
+			if( response.status === 'success' ) {
+				bookacti.form_editor.form.field_order = response.field_order;
+				
+				$j( '#bookacti-form-editor' ).trigger( 'bookacti_form_field_order_updated' );
+				
+			} else if( response.status === 'failed' ) {
 				var error_message = bookacti_localized.error_order_form_fields;
 				if( response.error === 'not_allowed' ) {
 					error_message += '\n' + bookacti_localized.error_not_allowed;

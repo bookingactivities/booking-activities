@@ -104,6 +104,7 @@ function bookacti_create_tables() {
 		value TEXT, 
 		placeholder TEXT, 
 		tip TEXT, 
+		required TINYINT(1) NOT NULL DEFAULT 0, 
 		active TINYINT(1) NOT NULL DEFAULT 1, 
 		PRIMARY KEY ( id ) ) ' . $collate . ';';
 	

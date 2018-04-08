@@ -42,12 +42,9 @@ $can_edit_form		= current_user_can( 'bookacti_edit_forms' );
 if ( ! $can_edit_form || ! $can_manage_form ) { echo __( 'You are not allowed to do this.', BOOKACTI_PLUGIN_NAME ); exit; }
 
 // Get form data by id
-$filters	= bookacti_format_form_filters( array( 'id' => array( $form_id ) ) );
-$forms		= bookacti_get_forms( $filters );
+$form = bookacti_get_form_data( $form_id );
 
-if( empty( $forms[ 0 ] ) || empty( $forms ) ) { return; }
-
-$form = $forms[ 0 ];
+if( ! $form ) { return; }
 
 ?>
 <div class='wrap'>
@@ -89,7 +86,7 @@ $form = $forms[ 0 ];
 			?>
 			<input type='hidden' name='page' value='bookacti_forms' />
 			<input type='hidden' name='action' value='bookactiUpdateForm' />
-			<input type='hidden' name='is_active' value='<?php echo $form->active; ?>' />
+			<input type='hidden' name='is_active' value='<?php echo $form[ 'active' ]; ?>' />
 			<input type='hidden' name='form_id' value='<?php echo $form_id; ?>' id='bookacti-form-id' />
 			
 			<div id='poststuff'>
@@ -99,7 +96,7 @@ $form = $forms[ 0 ];
 							<div id='titlewrap'>
 								<?php $title_placeholder = __( 'Enter form title here', BOOKACTI_PLUGIN_NAME ); ?>
 								<label class='screen-reader-text' id='title-prompt-text' for='title'><?php echo $title_placeholder; ?></label>
-								<input type='text' name='form_title' size='30' value='<?php echo esc_attr( $form->title ); ?>' id='title' spellcheck='true' autocomplete='off' placeholder='<?php echo $title_placeholder; ?>' required />
+								<input type='text' name='form_title' size='30' value='<?php echo esc_attr( $form[ 'title' ] ); ?>' id='title' spellcheck='true' autocomplete='off' placeholder='<?php echo $title_placeholder; ?>' required />
 							</div>
 						</div>
 						
@@ -145,7 +142,9 @@ $form = $forms[ 0 ];
 									// Compatibility with Optimization plugins
 									if( typeof bookacti === 'undefined' ) { var bookacti = { booking_system:[] }; }
 									// Pass fields data to JS
-									bookacti.form_editor = <?php echo json_encode( $form_fields ); ?>;
+									bookacti.form_editor = [];
+									bookacti.form_editor.form	= <?php echo json_encode( $form ); ?>;
+									bookacti.form_editor.fields = <?php echo json_encode( $form_fields ); ?>;
 								</script>
 								
 								<div id='bookacti-form-editor-container' >
@@ -155,7 +154,7 @@ $form = $forms[ 0 ];
 										</div>
 										<div id='bookacti-form-editor-actions' >
 											<?php do_action( 'bookacti_form_editor_actions_before', $form ); ?>
-											<div id='bookacti-edit-form-settings' class='bookacti-form-editor-action dashicons dashicons-admin-generic' title='<?php _e( 'Change form settings', BOOKACTI_PLUGIN_NAME ); ?>'></div>
+											<div id='bookacti-update-form-meta' class='bookacti-form-editor-action dashicons dashicons-admin-generic' title='<?php _e( 'Change form settings', BOOKACTI_PLUGIN_NAME ); ?>'></div>
 											<div id='bookacti-insert-form-field' class='bookacti-form-editor-action dashicons dashicons-plus-alt' title='<?php _e( 'Add a new field to your form', BOOKACTI_PLUGIN_NAME ); ?>'></div>
 											<?php do_action( 'bookacti_form_editor_actions_after', $form ); ?>
 										</div>

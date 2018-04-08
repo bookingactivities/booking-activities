@@ -270,7 +270,8 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 				<?php if( $args[ 'type' ] === 'number' ) { ?>
 					min=		'<?php echo esc_attr( $args[ 'options' ][ 'min' ] ); ?>' 
 					max=		'<?php echo esc_attr( $args[ 'options' ][ 'max' ] ); ?>'
-				<?php } ?>
+				<?php }
+				if( $args[ 'required' ] ) { echo ' required'; } ?>
 			/>
 		<?php if( $args[ 'label' ] ) { ?>
 			<label	for='<?php echo esc_attr( $args[ 'id' ] ); ?>' >
@@ -288,6 +289,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 				id=			'<?php echo esc_attr( $args[ 'id' ] ); ?>' 
 				class=		'bookacti-textarea <?php echo esc_attr( $args[ 'class' ] ); ?>' 
 				placeholder='<?php echo esc_attr( $args[ 'placeholder' ] ); ?>'
+				<?php if( $args[ 'required' ] ) { echo ' required'; } ?>
 			><?php echo $args[ 'value' ]; ?></textarea>
 		<?php if( $args[ 'label' ] ) { ?>
 				<label	for='<?php echo esc_attr( $args[ 'id' ] ); ?>' >
@@ -342,6 +344,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 							type='radio' 
 							value='<?php echo esc_attr( $option[ 'id' ] ); ?>'
 							<?php if( isset( $args[ 'value' ] ) ) { checked( $args[ 'value' ], $option[ 'id' ], true ); } ?>
+							<?php if( $args[ 'required' ] ) { echo ' required'; } ?>
 					/>
 				<?php if( $option[ 'label' ] ) { ?>
 					<label for='<?php echo esc_attr( $args[ 'id' ] ) . '_' . esc_attr( $option[ 'id' ] ); ?>' >
@@ -367,6 +370,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 					id=		'<?php echo esc_attr( $args[ 'id' ] ); ?>' 
 					class=	'bookacti-select <?php echo esc_attr( $args[ 'class' ] ); ?>' 
 					<?php if( $args[ 'multiple' ] ) { echo 'multiple'; } ?>
+					<?php if( $args[ 'required' ] ) { echo ' required'; } ?>
 			>
 			<?php foreach( $args[ 'options' ] as $option_id => $option_value ) { ?>
 				<option value='<?php echo esc_attr( $option_id ); ?>'
@@ -430,7 +434,8 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			'options'		=> array(),
 			'value'			=> '',
 			'multiple'		=> false,
-			'tip'			=> ''
+			'tip'			=> '',
+			'required'		=> 0
 		);
 
 		// Replace empty value by default
@@ -443,7 +448,10 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		
 		// If no id, use name instead
 		$args[ 'id' ] = $args[ 'id' ] ? $args[ 'id' ] : sanitize_title_with_dashes( $args[ 'name' ] ) . '-' . rand();
-
+		
+		// Sanitize required
+		$args[ 'required' ] = isset( $args[ 'required' ] ) && $args[ 'required' ] ? 1 : 0;
+		
 		// Make sure fields with multiple options have 'options' set
 		if( in_array( $args[ 'type' ], array( 'checkboxes', 'radio', 'select' ) ) ){
 			if( ! $args[ 'options' ] ) { return false; }
@@ -838,7 +846,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	 */
 	function bookacti_sanitize_values( $default_data, $raw_data, $keys_by_type, $sanitized_data = array() ) {
 		// Sanitize the keys-by-type array
-		$allowed_types = array( 'int', 'bool', 'str', 'str_id', 'array' );
+		$allowed_types = array( 'int', 'bool', 'str', 'str_id', 'array', 'datetime' );
 		foreach( $allowed_types as $allowed_type ) {
 			if( ! isset( $keys_by_type[ $allowed_type ] ) ) { $keys_by_type[ $allowed_type ] = array(); }
 		}
@@ -869,12 +877,12 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 			// Sanitize string identifiers
 			else if( in_array( $key, $keys_by_type[ 'str_id' ], true ) ) { 
-				$sanitized_data[ $key ] = is_string( $raw_data[ $key ] ) ? sanitize_title_with_dashes( $raw_data[ $key ] ) : $default_value;
+				$sanitized_data[ $key ] = is_string( $raw_data[ $key ] ) ? sanitize_title_with_dashes( stripslashes( $raw_data[ $key ] ) ) : $default_value;
 			}
 
 			// Sanitize text
 			else if( in_array( $key, $keys_by_type[ 'str' ], true ) ) { 
-				$sanitized_data[ $key ] = is_string( $raw_data[ $key ] ) ? sanitize_text_field( $raw_data[ $key ] ) : $default_value;
+				$sanitized_data[ $key ] = is_string( $raw_data[ $key ] ) ? sanitize_text_field( stripslashes( $raw_data[ $key ] ) ) : $default_value;
 			}
 
 			// Sanitize array
@@ -886,7 +894,13 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			else if( in_array( $key, $keys_by_type[ 'bool' ], true ) ) { 
 				$sanitized_data[ $key ] = in_array( $raw_data[ $key ], array( 1, '1', true, 'true' ), true ) ? 1 : 0;
 			}
+
+			// Sanitize datetime
+			else if( in_array( $key, $keys_by_type[ 'datetime' ], true ) ) { 
+				$sanitized_data[ $key ] = bookacti_sanitize_datetime( $raw_data[ $key ] );
+				if( ! $sanitized_data[ $key ] ) { $sanitized_data[ $key ] = $default_value; }
+			}
 		}
 		
-		return $sanitized_data;
+		return apply_filters( 'bookacti_sanitized_data', $sanitized_data, $default_data, $raw_data, $keys_by_type );
 	}

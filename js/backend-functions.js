@@ -8,6 +8,11 @@ $j( document ).ready( function() {
 	// Tabs
 	$j( '.bookacti-tabs' ).tabs();
 	
+	// Show/hide Advanced options
+	$j( '.bookacti-show-hide-advanced-options' ).on( 'click', function( e ){
+		bookacti_show_hide_advanced_options( $j( this ) );
+	});
+	
 	// Tooltip
 	bookacti_init_tooltip();
 	
@@ -16,6 +21,13 @@ $j( document ).ready( function() {
 	
 });
 
+
+function bookacti_show_hide_advanced_options( button ) {
+	button.closest( 'form' ).find( '.bookacti-advanced-option' ).toggle();
+	button.toggleClass( 'bookacti-show-advanced-options bookacti-hide-advanced-options' );
+	if( button.hasClass( 'bookacti-show-advanced-options' ) )		{ button.html( button.data( 'show-title' ) ); }
+	else if( button.hasClass( 'bookacti-hide-advanced-options' ) )	{ button.html( button.data( 'hide-title' ) ); }
+}
 
 // Init Add / Remove items boxes
 function bookacti_init_add_and_remove_items() {
@@ -122,23 +134,30 @@ function bookacti_empty_all_dialog_forms( scope ) {
 function bookacti_fill_fields_from_array( fields, field_prefix, scope ) {
 	field_prefix = field_prefix || '';
 	scope = typeof scope === 'undefined' || ! scope ? '' : scope + ' ';
-
+	
 	$j.each( fields, function( key, value ) {
 		if( fields[ key ] ) {
 			var field_name = field_prefix ? field_prefix + '[' + key + ']' : key;
 			
+			// If the value is also a plain object, fill its fields recursively
+			if( $j.isPlainObject( value ) ) {
+				bookacti_fill_fields_from_array( value, field_name, scope );
+				return true; // Jump to next field
+			}
+			
 			// Checkbox
-			if( $j( scope + 'input[name="' + field_name + '[]"]' ).is( ':checkbox' ) 
-			||  $j( scope + 'input[name="' + field_name + '"]' ).is( ':checkbox' ) ) {
+			if( $j( scope + 'input[type="checkbox"][name="' + field_name + '[]"]' ).length 
+			||  $j( scope + 'input[type="checkbox"][name="' + field_name + '"]' ).length ) {
+				
 				if( $j.isArray( value ) ){
-					$j( scope + 'input[name="' + field_name + '[]"]' ).attr( 'checked', false );
+					$j( scope + 'input[type="checkbox"][name="' + field_name + '[]"]' ).attr( 'checked', false );
 					$j.each( value, function( i, checkbox_value ){
-						$j( scope + 'input[name="' + field_name + '[]"][value="' + checkbox_value + '"]' ).attr( 'checked', true );
+						$j( scope + 'input[type="checkbox"][name="' + field_name + '[]"][value="' + checkbox_value + '"]' ).attr( 'checked', true );
 					});
 				} else if( value == 1 ) {
-					$j( scope + 'input[name="' + field_name + '"]' ).attr( 'checked', true );
+					$j( scope + 'input[type="checkbox"][name="' + field_name + '"]' ).attr( 'checked', true );
 				} else {
-					$j( scope + 'input[name="' + field_name + '"]' ).attr( 'checked', false );
+					$j( scope + 'input[type="checkbox"][name="' + field_name + '"]' ).attr( 'checked', false );
 				}
 				
 			// Radio
@@ -157,23 +176,14 @@ function bookacti_fill_fields_from_array( fields, field_prefix, scope ) {
 				
 			// Input and Textarea
 			} else {
-				if( $j.isPlainObject( value ) ) {
-					$j.each( value, function( i, field_value ){
-						if( $j( scope + 'input[name="' + field_name + '[' + i + ']' + '"]' ).attr( 'type' ) === 'time' && field_value === '24:00' ) { field_value = '00:00'; }
-						
-						$j( scope + 'input[name="' + field_name + '[' + i + ']' + '"]' ).val( field_value );
-						$j( scope + 'textarea[name="' + field_name + '[' + i + ']' + '"]' ).val( field_value );
-					});
-				} else {
-					// If the time value is 24:00, reset it to 00:00
-					if( $j( scope + 'input[name="' + field_name + '"]' ).attr( 'type' ) === 'time' && value === '24:00' ) { value = '00:00'; }
-					$j( scope + 'input[name="' + field_name + '"]' ).val( value );
-					$j( scope + 'textarea[name="' + field_name + '"]' ).val( value );
-					if( $j( scope + 'textarea[name="' + field_name + '"]' ).hasClass( 'wp-editor-area' ) && tinyMCE ) {
-						var tmce_id = $j( scope + 'textarea[name="' + field_name + '"]' ).attr( 'id' );
-						if( tinyMCE.get( tmce_id ) ) {
-							tinyMCE.get( tmce_id ).setContent( value );
-						}
+				// If the time value is 24:00, reset it to 00:00
+				if( $j( scope + 'input[name="' + field_name + '"]' ).attr( 'type' ) === 'time' && value === '24:00' ) { value = '00:00'; }
+				$j( scope + 'input[name="' + field_name + '"]' ).val( value );
+				$j( scope + 'textarea[name="' + field_name + '"]' ).val( value );
+				if( $j( scope + 'textarea[name="' + field_name + '"]' ).hasClass( 'wp-editor-area' ) && tinyMCE ) {
+					var tmce_id = $j( scope + 'textarea[name="' + field_name + '"]' ).attr( 'id' );
+					if( tinyMCE.get( tmce_id ) ) {
+						tinyMCE.get( tmce_id ).setContent( value );
 					}
 				}
 			}

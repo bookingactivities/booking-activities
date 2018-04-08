@@ -158,6 +158,24 @@ function bookacti_get_number_of_form_rows( $filters = array() ) {
 
 
 /**
+ * Get forms according to filters
+ * @since 1.5.0
+ * @global wpdb $wpdb
+ * @param int $form_id
+ * @return array
+ */
+function bookacti_get_form( $form_id ) {
+	global $wpdb;
+
+	$query	= ' SELECT F.id as form_id, title, user_id, creation_date, status, active FROM ' . BOOKACTI_TABLE_FORMS . ' as F WHERE F.id = %d ';
+	$query	= $wpdb->prepare( $query, $form_id );
+	$form	= $wpdb->get_row( $query, ARRAY_A );
+
+	return $form;
+}
+
+
+/**
  * Create a form
  * @since 1.5.0
  * @global wpdb $wpdb
@@ -360,12 +378,12 @@ function bookacti_insert_default_form_fields( $form_id ) {
 	
 	if( ! $fields_to_insert ) { return 0; }
 	
-	$query = 'INSERT INTO ' . BOOKACTI_TABLE_FORM_FIELDS . ' ( form_id, name, type, label, options, value, placeholder, tip, active ) VALUES ';
+	$query = 'INSERT INTO ' . BOOKACTI_TABLE_FORM_FIELDS . ' ( form_id, name, type, label, options, value, placeholder, tip, required, active ) VALUES ';
 	
 	$variables = array();
 	
 	for( $i=0,$len=count($fields_to_insert); $i < $len; ++$i ) {
-		$query .= ' ( %d, %s, %s, %s, %s, %s, %s, %s, 1 )';
+		$query .= ' ( %d, %s, %s, %s, %s, %s, %s, %s, %d, 1 )';
 		$variables = array_merge( $variables, array( 
 			$form_id, 
 			$fields_to_insert[ $i ][ 'name' ], 
@@ -374,7 +392,8 @@ function bookacti_insert_default_form_fields( $form_id ) {
 			maybe_serialize( $fields_to_insert[ $i ][ 'options' ] ), 
 			$fields_to_insert[ $i ][ 'value' ], 
 			$fields_to_insert[ $i ][ 'placeholder' ], 
-			$fields_to_insert[ $i ][ 'tip' ] )
+			$fields_to_insert[ $i ][ 'tip' ],
+			$fields_to_insert[ $i ][ 'required' ] )
 		);
 		if( $i < $len-1 ) { $query .= ','; }
 		else { $query .= ';'; }
@@ -440,7 +459,7 @@ function bookacti_insert_form_field( $form_id, $field_name ) {
 function bookacti_get_form_field( $field_id ) {
 	global $wpdb;
 	
-	$query	= 'SELECT id as field_id, form_id, name, type, title, label, options, value, placeholder, tip, active FROM ' . BOOKACTI_TABLE_FORM_FIELDS . ' as FF '
+	$query	= 'SELECT id as field_id, form_id, name, type, title, label, options, value, placeholder, tip, required, active FROM ' . BOOKACTI_TABLE_FORM_FIELDS . ' as FF '
 			. ' WHERE FF.id = %d';
 	
 	$variables = array( $field_id );
@@ -469,7 +488,7 @@ function bookacti_get_form_field( $field_id ) {
 function bookacti_get_form_fields( $form_id ) {
 	global $wpdb;
 	
-	$query	= 'SELECT id as field_id, form_id, name, type, title, label, options, value, placeholder, tip, active FROM ' . BOOKACTI_TABLE_FORM_FIELDS . ' as FF '
+	$query	= 'SELECT id as field_id, form_id, name, type, title, label, options, value, placeholder, tip, required, active FROM ' . BOOKACTI_TABLE_FORM_FIELDS . ' as FF '
 			. ' WHERE FF.form_id = %d '
 			. ' ORDER BY id ASC ';
 	

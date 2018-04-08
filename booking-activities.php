@@ -198,7 +198,7 @@ function bookacti_enqueue_high_priority_backend_scripts() {
 	// INCLUDE JAVASCRIPT FILES
 	wp_register_script( 'bookacti-js-backend-functions',	plugins_url( 'js/backend-functions.min.js', __FILE__ ),	array( 'jquery', 'bookacti-js-global-var', 'jquery-ui-dialog', 'jquery-ui-tabs', 'jquery-ui-tooltip' ), BOOKACTI_VERSION, true );
 	wp_register_script( 'bookacti-js-bookings',				plugins_url( 'js/bookings.min.js', __FILE__ ),			array( 'jquery', 'bookacti-js-global-var', 'bookacti-js-fullcalendar', 'bookacti-js-global-functions', 'bookacti-js-backend-functions' ), BOOKACTI_VERSION, true );
-	wp_register_script( 'bookacti-js-forms',				plugins_url( 'js/forms.min.js', __FILE__ ),				array( 'jquery', 'bookacti-js-global-var', 'bookacti-js-booking-system-functions', 'jquery-ui-sortable' ), BOOKACTI_VERSION, true );
+	wp_register_script( 'bookacti-js-forms',				plugins_url( 'js/form-editor.min.js', __FILE__ ),		array( 'jquery', 'bookacti-js-global-var', 'bookacti-js-booking-system-functions', 'jquery-ui-sortable' ), BOOKACTI_VERSION, true );
 	
 	// LOCALIZE SCRIPTS
 	global $bookacti_translation_array;
@@ -231,7 +231,7 @@ function bookacti_enqueue_backend_scripts() {
 	wp_register_script( 'bookacti-js-templates',				plugins_url( 'js/templates.min.js', __FILE__ ),					array( 'jquery', 'bookacti-js-global-var', 'bookacti-js-fullcalendar', 'bookacti-js-global-functions', 'bookacti-js-templates-functions', 'bookacti-js-templates-dialogs' ), BOOKACTI_VERSION, true );
 	wp_register_script( 'bookacti-js-woocommerce-backend',		plugins_url( 'js/woocommerce-backend.min.js', __FILE__ ),		array( 'jquery', 'bookacti-js-global-var', 'bookacti-js-moment' ), BOOKACTI_VERSION, true );
 	wp_register_script( 'bookacti-js-settings',					plugins_url( 'js/settings.min.js', __FILE__ ),					array( 'jquery' ), BOOKACTI_VERSION, true );
-	wp_register_script( 'bookacti-js-forms-dialogs',			plugins_url( 'js/forms-dialogs.min.js', __FILE__ ),				array( 'jquery', 'bookacti-js-global-var', 'bookacti-js-moment', 'jquery-ui-dialog', 'bookacti-js-backend-functions' ), BOOKACTI_VERSION, true );
+	wp_register_script( 'bookacti-js-forms-dialogs',			plugins_url( 'js/form-editor-dialogs.min.js', __FILE__ ),				array( 'jquery', 'bookacti-js-global-var', 'bookacti-js-moment', 'jquery-ui-dialog', 'bookacti-js-backend-functions' ), BOOKACTI_VERSION, true );
 	
 	// LOCALIZE SCRIPTS
 	global $bookacti_translation_array;
