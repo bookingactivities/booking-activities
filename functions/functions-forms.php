@@ -411,7 +411,15 @@ function bookacti_get_default_form_fields_data( $field_name = '' ) {
  */
 function bookacti_get_default_form_fields_meta( $field_name = '' ) {
 	
-	// Add register fields default
+	// Calendar default meta
+	$calendar_meta = bookacti_get_booking_system_default_attributes();
+	unset( $calendar_meta[ 'id' ] );
+	unset( $calendar_meta[ 'class' ] );
+	unset( $calendar_meta[ 'template_data' ] );
+	unset( $calendar_meta[ 'auto_load' ] );
+	unset( $calendar_meta[ 'check_roles' ] );
+	
+	// Add register fields default meta to login field meta
 	$register_fields	= bookacti_get_default_register_fields_data();
 	$register_defaults	= array( 'displayed' => array(), 'required' => array() );
 	foreach( $register_fields as $register_field_name => $register_field ) {
@@ -419,8 +427,9 @@ function bookacti_get_default_form_fields_meta( $field_name = '' ) {
 		$register_defaults[ 'required' ][ $register_field_name ]	= ! empty( $register_field[ 'required' ] )	? $register_field[ 'required' ] : 0;
 	}
 	
+	
 	$fields_meta = apply_filters( 'bookacti_default_form_fields_meta', array(
-		'calendar'	=> bookacti_get_booking_system_default_attributes(),
+		'calendar'	=> $calendar_meta,
 		'login'		=> array(
 			'generate_password'			=> 0,
 			'send_new_account_email'	=> 1,
@@ -551,6 +560,8 @@ function bookacti_sanitize_form_field_data( $raw_field_data ) {
 	
 	// Format field-specific data and metadata
 	if( $raw_field_data[ 'name' ] === 'calendar' ) {
+		// Format booking system data
+		$field_meta = bookacti_format_booking_system_attributes( $raw_field_data );
 		
 	} else if( $raw_field_data[ 'name' ] === 'login' ) {
 		// Format meta values

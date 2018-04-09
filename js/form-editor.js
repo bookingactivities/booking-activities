@@ -50,7 +50,7 @@ $j( document ).ready( function() {
  */
 function bookacti_save_form() {
 	// Select all form managers
-	$j( '#bookacti-form-managers-select-box option' ).attr( 'selected', true );
+	$j( '#bookacti-form-managers-select-box option' ).prop( 'selected', true );
 	
 	// Move form editor outside the <form> before serialize
 	$j( '#bookacti-form-editor-container' ).appendTo( '#bookacti-form-editor-page-container' );

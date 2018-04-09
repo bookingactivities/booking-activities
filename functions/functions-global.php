@@ -544,6 +544,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	 * Create a user selectbox
 	 * 
 	 * @since 1.3.0
+	 * @version 1.5.0
 	 * @param array $args
 	 * @return string|void
 	 */
@@ -568,7 +569,8 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			<option value='' ><?php echo esc_html__( 'Search for a customer', BOOKACTI_PLUGIN_NAME ); ?></option>
 			<?php
 				if( $args[ 'show_option_all' ] ) {
-					?><option value='0' ><?php echo $args[ 'show_option_all' ]; ?></option><?php
+					$_selected = selected( 0, $args[ 'selected' ], false );
+					?><option value='0' <?php echo $_selected ?> ><?php echo $args[ 'show_option_all' ]; ?></option><?php
 				}
 
 				if( $args[ 'show_option_none' ] ) {

@@ -476,7 +476,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	/**
 	 * Content of the activity tab
 	 * 
-	 * @version 1.4.3
+	 * @version 1.5.0
 	 * 
 	 * @global type $thepostid
 	 */
@@ -691,7 +691,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 						?>
 						</label>
 						<?php
-							$tip = __( 'When a customer pick an event, let him choose between the group or the single event.', BOOKACTI_PLUGIN_NAME );
+							$tip = __( 'When a customer picks an event belonging to a group, let him choose between the group or the event alone.', BOOKACTI_PLUGIN_NAME );
 							echo wc_help_tip( $tip );
 						?>
 					</span>
@@ -770,6 +770,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	 * Add custom variation product type option
 	 * 
 	 * @since 1.0.0
+	 * @version 1.5.0
 	 * 
 	 * @param int $loop
 	 * @param array $variation_data
@@ -1072,7 +1073,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 					?>
 					</label>
 					<?php
-						$tip = __( 'When a customer pick an event, let him choose between the group or the single event.', BOOKACTI_PLUGIN_NAME );
+						$tip = __( 'When a customer picks an event belonging to a group, let him choose between the group or the event alone.', BOOKACTI_PLUGIN_NAME );
 						echo wc_help_tip( $tip );
 					?>
 				</span>

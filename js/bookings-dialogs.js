@@ -184,7 +184,7 @@ function bookacti_dialog_refund_booking( booking_id, booking_type ) {
 				if( ! $j.isEmptyObject( response.actions_array ) ) {
 					
 					// Check the first radio
-					$j( '#bookacti-refund-options input[type="radio"]:first' ).attr( 'checked', true );
+					$j( '#bookacti-refund-options input[type="radio"]:first' ).prop( 'checked', true );
 					
 					// Add a textarea to let the customer explain his choice
 					var message_container = $j( '<div />', {
@@ -398,8 +398,8 @@ function bookacti_dialog_change_booking_state( booking_id, booking_type ) {
 	// Select the current state
 	var booking_state	= row.find( '.bookacti-booking-state' ).data( 'booking-state' );
 	var payment_status	= row.find( '.bookacti-payment-status' ).data( 'payment-status' );
-	if( booking_state )	{ $j( '#bookacti-select-booking-state option[value="' + booking_state + '"]' ).attr( 'selected', true ); }
-	if( payment_status ){ $j( '#bookacti-select-payment-status option[value="' + payment_status + '"]' ).attr( 'selected', true ); }
+	if( booking_state )	{ $j( '#bookacti-select-booking-state option[value="' + booking_state + '"]' ).prop( 'selected', true ); }
+	if( payment_status ){ $j( '#bookacti-select-payment-status option[value="' + payment_status + '"]' ).prop( 'selected', true ); }
 	$j( '#bookacti-send-notifications-on-state-change' ).prop( 'checked', false );
 	
 	// Add the buttons

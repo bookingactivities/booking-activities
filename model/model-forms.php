@@ -472,7 +472,9 @@ function bookacti_get_form_field( $field_id ) {
 	
 	if( ! $field ) { return array(); }
 	
-	$field = array_map( 'maybe_unserialize', $field );
+	foreach( $field as $field_key => $field_value ) {
+		$field[ $field_key ] = maybe_unserialize( $field_value );
+	}
 	
 	return $field;
 }
@@ -502,7 +504,9 @@ function bookacti_get_form_fields( $form_id ) {
 	
 	$fields_by_id = array();
 	foreach( $fields as $i => $field ) {
-		$fields_by_id[ $field[ 'field_id' ] ] = array_map( 'maybe_unserialize', $field );
+		foreach( $field as $field_key => $field_value ) {
+			$fields_by_id[ $field[ 'field_id' ] ][ $field_key ] = maybe_unserialize( $field_value );
+		}
 	}
 	
 	return $fields_by_id;

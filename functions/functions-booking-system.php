@@ -361,7 +361,7 @@ function bookacti_format_booking_system_attributes( $atts = array(), $shortcode 
 	}
 	
 	// Sanitize user id
-	$atts[ 'user_id' ] = esc_attr( $atts[ 'user_id' ] );
+	$atts[ 'user_id' ] = is_numeric( $atts[ 'user_id' ] ) ? intval( $atts[ 'user_id' ] ) : esc_attr( $atts[ 'user_id' ] );
 	if( $atts[ 'user_id' ] === 'current' ) { $atts[ 'user_id' ] = get_current_user_id(); }
 	
 	// Sanitize booking status

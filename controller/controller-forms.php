@@ -13,7 +13,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
  * @param string $context
  */
 function bookacti_display_form_field_calendar( $field, $form_id, $instance_id, $context ) {
-	$field[ 'id' ] = ! empty( $field[ 'id' ] ) ? $field[ 'id' ] : $field[ 'field_id' ] . '-' . $instance_id;
+	$field_id = ! empty( $field[ 'id' ] ) ? esc_attr( $field[ 'id' ] ) : esc_attr( $field[ 'field_id' ] . '-' . $instance_id );
 	bookacti_get_booking_system( $field, true );
 }
 add_action( 'bookacti_diplay_form_field_calendar', 'bookacti_display_form_field_calendar', 10, 4 );
@@ -36,18 +36,18 @@ function bookacti_display_form_field_login( $html, $field, $form_id, $instance_i
 	$field_id = ! empty( $field[ 'id' ] ) ? esc_attr( $field[ 'id' ] ) : esc_attr( $field[ 'field_id' ] . '-' . $instance_id );
 	ob_start();
 ?>
-	<div class='bookacti-form-field-container <?php if( ! empty( $field[ 'name' ] ) ) { echo ' bookacti-form-field-name-' . $field[ 'name' ]; } if( ! empty( $field[ 'field_id' ] ) ) { echo ' bookacti-form-field-id-' . $field[ 'field_id' ]; } ?>' id='<?php echo $field_id; ?>' >
+	<div class='bookacti-form-field-container <?php if( ! empty( $field[ 'name' ] ) ) { echo ' bookacti-form-field-name-' . esc_attr( $field[ 'name' ] ); } if( ! empty( $field[ 'field_id' ] ) ) { echo ' bookacti-form-field-id-' . esc_attr( $field[ 'field_id' ] ); } ?>' id='<?php echo $field_id; ?>' >
 		<div class='bookacti-login-form-field-container' id='<?php echo $field_id; ?>-email-container' >
 			<div class='bookacti-form-field-label' >
 				<label for='<?php echo $field_id . '-email'; ?>' >
 				<?php 
-					echo apply_filters( 'bookacti_translate_text', esc_html( $field[ 'label' ][ 'email' ] ) ); 
+					echo esc_html( apply_filters( 'bookacti_translate_text', $field[ 'label' ][ 'email' ] ) ); 
 					if( $field[ 'required_fields' ][ 'email' ] ) {
-						echo '<span class="bookacti-required-field"></span>';
+						echo '<span class="bookacti-required-field" title="' . esc_attr__( 'Required field', BOOKACTI_PLUGIN_NAME ) . '"></span>';
 					}
 				?>
 				</label>
-			<?php if( ! empty( $field[ 'tip' ][ 'email' ] ) ) { bookacti_help_tip( apply_filters( 'bookacti_translate_text', esc_html( $field[ 'tip' ][ 'email' ] ) ) ); } ?>
+			<?php if( ! empty( $field[ 'tip' ][ 'email' ] ) ) { bookacti_help_tip( esc_html( apply_filters( 'bookacti_translate_text', $field[ 'tip' ][ 'email' ] ) ) ); } ?>
 			</div>
 			<div class='bookacti-form-field-content' >
 			<?php 
@@ -56,7 +56,7 @@ function bookacti_display_form_field_login( $html, $field, $form_id, $instance_i
 					'name'			=> 'bookacti_email',
 					'id'			=> $field_id . '-email',
 					'class'			=> 'bookacti-form-field bookacti-email',
-					'placeholder'	=> apply_filters( 'bookacti_translate_text', esc_attr( $field[ 'placeholder' ][ 'email' ] ) )
+					'placeholder'	=> esc_attr( apply_filters( 'bookacti_translate_text', $field[ 'placeholder' ][ 'email' ] ) )
 				);
 				bookacti_display_field( $args );
 			?>
@@ -69,13 +69,13 @@ function bookacti_display_form_field_login( $html, $field, $form_id, $instance_i
 				<div class='bookacti-form-field-label' >
 					<label for='<?php echo $field_id . '-password'; ?>' >
 					<?php 
-						echo apply_filters( 'bookacti_translate_text', esc_html( $field[ 'label' ][ 'password' ] ) ); 
+						echo esc_html( apply_filters( 'bookacti_translate_text', $field[ 'label' ][ 'password' ] ) ); 
 						if( $field[ 'required_fields' ][ 'password' ] ) {
-							echo '<span class="bookacti-required-field"></span>';
+							echo '<span class="bookacti-required-field" title="' . __( 'Required field', BOOKACTI_PLUGIN_NAME ) . '"></span>';
 						}
 					?>
 					</label>
-				<?php if( ! empty( $field[ 'tip' ][ 'password' ] ) ) { bookacti_help_tip( apply_filters( 'bookacti_translate_text', esc_html( $field[ 'tip' ][ 'password' ] ) ) ); } ?>
+				<?php if( ! empty( $field[ 'tip' ][ 'password' ] ) ) { bookacti_help_tip( esc_html( apply_filters( 'bookacti_translate_text', $field[ 'tip' ][ 'password' ] ) ) ); } ?>
 				</div>
 				<div class='bookacti-form-field-content' >
 				<?php 
@@ -84,7 +84,7 @@ function bookacti_display_form_field_login( $html, $field, $form_id, $instance_i
 						'name'			=> 'bookacti_password',
 						'id'			=> $field_id . '-password',
 						'class'			=> 'bookacti-form-field bookacti-password',
-						'placeholder'	=> apply_filters( 'bookacti_translate_text', esc_attr( $field[ 'placeholder' ][ 'password' ] ) )
+						'placeholder'	=> esc_attr( apply_filters( 'bookacti_translate_text', $field[ 'placeholder' ][ 'password' ] ) )
 					);
 					bookacti_display_field( $args );
 				?>
@@ -96,16 +96,17 @@ function bookacti_display_form_field_login( $html, $field, $form_id, $instance_i
 			?>
 			<div class='bookacti-login-form-field-container' id='<?php echo $field_id; ?>-register-container' >
 				<div class='bookacti-form-field-content' >
-					<input type='checkbox' name='bookacti_register' id='<?php echo $field_id; ?>-register' class='bookacti-form-field bookacti-register' />
-					<label for='<?php echo $field_id; ?>-register'><?php echo apply_filters( 'bookacti_translate_text', esc_html( $field[ 'label' ][ 'register' ] ) ); ?></label>
-					<?php bookacti_help_tip( apply_filters( 'bookacti_translate_text', esc_html( $field[ 'tip' ][ 'register' ] ) ) ); ?>
+					<input type='hidden' name='bookacti_register' value='0' />
+					<input type='checkbox' name='bookacti_register' value='1' id='<?php echo $field_id; ?>-register' class='bookacti-form-field bookacti-register' />
+					<label for='<?php echo $field_id; ?>-register'><?php echo esc_html( apply_filters( 'bookacti_translate_text', $field[ 'label' ][ 'register' ] ) ); ?></label>
+					<?php bookacti_help_tip( esc_html( apply_filters( 'bookacti_translate_text', $field[ 'tip' ][ 'register' ] ) ) ); ?>
 				</div>
 			</div>
 			<?php 
 			// Display registration fields if any
 			$register_fields = bookacti_get_default_register_fields_data();
 			if( in_array( 1, array_values( array_intersect_key( $field[ 'displayed_fields' ], $register_fields ) ) ) ) { ?>
-				<fieldset class='bookacti-register-fields' id='<?php echo $field_id; ?>-register-fields'>
+				<fieldset class='bookacti-register-fields' id='<?php echo $field_id; ?>-register-fields' style='<?php if( $context !== 'edit' ) { echo 'display:none;'; } ?>' >
 				<?php foreach( $register_fields as $register_field_name => $register_field ) {
 						if( ! empty( $field[ 'displayed_fields' ][ $register_field_name ] ) ) { 
 						?>
@@ -114,13 +115,13 @@ function bookacti_display_form_field_login( $html, $field, $form_id, $instance_i
 								<div class='bookacti-form-field-label' >
 									<label for='<?php echo esc_attr( $field_id . '-' . $register_field_name ); ?>' >
 									<?php 
-										echo apply_filters( 'bookacti_translate_text', esc_html( $field[ 'label' ][ $register_field_name ] ) ); 
+										echo esc_html( apply_filters( 'bookacti_translate_text', $field[ 'label' ][ $register_field_name ] ) ); 
 										if( $field[ 'required_fields' ][ $register_field_name ] ) {
-											echo '<span class="bookacti-required-field"></span>';
+											echo '<span class="bookacti-required-field" title="' . esc_attr__( 'Required field', BOOKACTI_PLUGIN_NAME ) . '"></span>';
 										}
 									?>
 									</label>
-								<?php if( ! empty( $field[ 'tip' ][ $register_field_name ] ) ) { bookacti_help_tip( apply_filters( 'bookacti_translate_text', esc_html( $field[ 'tip' ][ $register_field_name ] ) ) ); } ?>
+								<?php if( ! empty( $field[ 'tip' ][ $register_field_name ] ) ) { bookacti_help_tip( esc_html( apply_filters( 'bookacti_translate_text', $field[ 'tip' ][ $register_field_name ] ) ) ); } ?>
 								</div>
 							<?php } ?>
 							<div class='bookacti-form-field-content' >
@@ -131,11 +132,11 @@ function bookacti_display_form_field_login( $html, $field, $form_id, $instance_i
 									'id'			=> esc_attr( $field_id . '-' . $register_field_name ),
 									'class'			=> esc_attr( 'bookacti-form-field bookacti-' . $register_field_name ),
 									'required'		=> esc_attr( $field[ 'required_fields' ][ $register_field_name ] ),
-									'placeholder'	=> apply_filters( 'bookacti_translate_text', esc_attr( $field[ 'placeholder' ][ $register_field_name ] ) )
+									'placeholder'	=> esc_attr( apply_filters( 'bookacti_translate_text', $field[ 'placeholder' ][ $register_field_name ] ) )
 								);
 								if( $register_field[ 'type' ] === 'checkbox' ) { 
-									$args[ 'label' ]= apply_filters( 'bookacti_translate_text', esc_html( $field[ 'label' ][ $register_field_name ] ) ); 
-									$args[ 'tip' ]	= apply_filters( 'bookacti_translate_text', esc_html( $field[ 'tip' ][ $register_field_name ] ) ); 
+									$args[ 'label' ]= esc_html( apply_filters( 'bookacti_translate_text', $field[ 'label' ][ $register_field_name ] ) ); 
+									$args[ 'tip' ]	= esc_html( apply_filters( 'bookacti_translate_text', $field[ 'tip' ][ $register_field_name ] ) ); 
 								}
 								bookacti_display_field( $args );
 							?>
@@ -172,7 +173,7 @@ function bookacti_display_form_field_quantity( $field, $form_id, $instance_id, $
 		'type'			=> 'number',
 		'name'			=> 'bookacti_quantity',
 		'class'			=> 'bookacti-form-field bookacti-quantity',
-		'placeholder'	=> apply_filters( 'bookacti_translate_text', esc_attr( $field[ 'placeholder' ] ) ),
+		'placeholder'	=> esc_attr( apply_filters( 'bookacti_translate_text', $field[ 'placeholder' ] ) ),
 		'options'		=> array( 'min' => 1 ),
 		'value'			=> 1
 	);
@@ -193,10 +194,10 @@ function bookacti_display_form_field_submit( $html, $field, $form_id, $instance_
 	$field_id = ! empty( $field[ 'id' ] ) ? esc_attr( $field[ 'id' ] ) : esc_attr( $field[ 'field_id' ] . '-' . $instance_id );
 	ob_start();
 ?>
-	<div class='bookacti-form-field-container <?php echo $field[ 'class' ]; if( ! empty( $field[ 'name' ] ) ) { echo ' bookacti-form-field-name-' . $field[ 'name' ]; } if( ! empty( $field[ 'field_id' ] ) ) { echo ' bookacti-form-field-id-' . $field[ 'field_id' ]; } ?>' id='<?php echo $field_id; ?>' >
+	<div class='bookacti-form-field-container <?php echo esc_attr( $field[ 'class' ] ); if( ! empty( $field[ 'name' ] ) ) { echo ' bookacti-form-field-name-' . esc_attr( $field[ 'name' ] ); } if( ! empty( $field[ 'field_id' ] ) ) { echo ' bookacti-form-field-id-' . esc_attr( $field[ 'field_id' ] ); } ?>' id='<?php echo $field_id; ?>' >
 		<input type='<?php echo $context === 'edit' ? 'button' : 'submit'; ?>'
 			class='bookacti-submit-form button' 
-			value='<?php echo apply_filters( 'bookacti_translate_text', esc_attr( $field[ 'value' ] ) ); ?>' />
+			value='<?php echo esc_attr( apply_filters( 'bookacti_translate_text', $field[ 'value' ] ) ); ?>' />
 	</div>
 <?php
 	return ob_get_clean();
@@ -215,7 +216,7 @@ add_filter( 'bookacti_html_form_field_submit', 'bookacti_display_form_field_subm
 function bookacti_display_form_field_free_text( $field, $form_id, $instance_id, $context ) {
 	$field_id = ! empty( $field[ 'id' ] ) ? esc_attr( $field[ 'id' ] ) : esc_attr( $field[ 'field_id' ] . '-' . $instance_id );
 ?>
-<div id='<?php echo $field_id; ?>' class='bookacti-form-free-text <?php echo esc_attr( $field[ 'class' ] ); ?>' ><?php echo apply_filters( 'bookacti_translate_text', wpautop( $field[ 'value' ] ) ); ?></div>
+<div id='<?php echo $field_id; ?>' class='bookacti-form-free-text <?php echo esc_attr( $field[ 'class' ] ); ?>' ><?php echo wpautop( apply_filters( 'bookacti_translate_text', $field[ 'value' ] ) ); ?></div>
 <?php
 }
 add_action( 'bookacti_diplay_form_field_free_text', 'bookacti_display_form_field_free_text', 10, 4 );

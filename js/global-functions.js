@@ -132,13 +132,13 @@ function bookacti_init_user_selectbox() {
 
 				this._on( this.input, {
 					autocompleteselect: function( event, ui ) {
-					  ui.item.option.selected = true;
-					  this._trigger( "select", event, {
-						item: ui.item.option
-					  });
-
-					  // Trigger action and pass selected option
-					  $j( this.element ).trigger( 'bookacti_customers_selectbox_changed', [ ui.item.option ] );
+						ui.item.option.selected = true;
+						this._trigger( "select", event, {
+						  item: ui.item.option
+						});
+						
+						// Trigger action and pass selected option
+						$j( this.element ).trigger( 'bookacti_customers_selectbox_changed', [ ui.item.option ] );
 
 					},
 

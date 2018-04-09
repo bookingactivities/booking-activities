@@ -7,16 +7,11 @@ $j( document ).ready( function() {
 	});
 	
 	//Show or hide activities depending on the selected template
-	// On load
-	if( $j( '#_bookacti_template' ).length ) { bookacti_show_hide_template_related_options( '#_bookacti_template' ); }
 	// On change
-	$j( '#_bookacti_template, bookacti_variable_template' ).on( 'change', function(){ 
-		bookacti_show_hide_template_related_options( this );
-	});
-	
-	// Switch selectbox to multiple
-	$j( '#woocommerce-product-data' ).on( 'change', '.bookacti-multiple-select', function(){
-		bookacti_switch_select_to_multiple( this );
+	$j( 'bookacti_variable_template' ).on( 'change', function(){ 
+		var template_ids	= $j( '#_bookacti_template' ).val();
+		var options			= $j( '[data-bookacti-show-if-templates]' );
+		bookacti_show_hide_template_related_options( template_ids, options );
 	});
 	
 	//Show or hide activity fields on variation page in the backend
@@ -24,7 +19,10 @@ $j( document ).ready( function() {
 	$j( '#woocommerce-product-data' ).on( 'woocommerce_variations_loaded', function() {
 		bookacti_show_hide_activity_variation_fields();
 		$j( '#woocommerce-product-data .bookacti_variable_template' ).each( function() {
-			bookacti_show_hide_template_related_options( this, true );
+			var template_ids = $j( this ).val();
+			if( template_ids === 'parent' ) { template_ids = $j( '#_bookacti_template' ).val() || $j( this ).data( 'parent' ); }
+			var options = $j( '[name$="[' + $j( template ).data( 'loop' ) + ']"] [data-bookacti-show-if-templates], [name$="[' + $j( this ).data( 'loop' ) + '][]"] [data-bookacti-show-if-templates]' );
+			bookacti_show_hide_template_related_options( template_ids, options );
 		});
 	});
 	// On change
@@ -32,7 +30,10 @@ $j( document ).ready( function() {
 		bookacti_show_hide_activity_variation_fields( this );
 	});
 	$j( '#woocommerce-product-data' ).on( 'change', '.bookacti_variable_template', function(){ 
-		bookacti_show_hide_template_related_options( this, true );
+		var template_ids = $j( this ).val();
+		if( template_ids === 'parent' ) { template_ids = $j( '#_bookacti_template' ).val() || $j( this ).data( 'parent' ); }
+		var options = $j( '[name$="[' + $j( template ).data( 'loop' ) + ']"] [data-bookacti-show-if-templates], [name$="[' + $j( this ).data( 'loop' ) + '][]"] [data-bookacti-show-if-templates]' );
+		bookacti_show_hide_template_related_options( template_ids, options );
 	});
 	
 	// Force virtual on activities variations
@@ -73,89 +74,6 @@ function bookacti_show_hide_activity_tab() {
 			$j( '.bookacti_hide_if_activity.hide_if_virtual' ).hide();
 		}
 	}
-}
-
-
-// Switch a selectbox to multiple
-function bookacti_switch_select_to_multiple( checkbox ) {
-	
-	var select_id	= $j( checkbox ).data( 'select-id' );
-	var select_name	= $j( 'select#' + select_id ).attr( 'name' );;
-	var is_checked	= $j( checkbox ).is( ':checked' );
-	
-	$j( 'select#' + select_id ).prop( 'multiple', is_checked );
-	
-	// Forbidden values if multiple selection is allowed
-	$j( 'select#' + select_id + ' option[value="none"]' ).prop( 'disabled', is_checked );
-	$j( 'select#' + select_id + ' option[value="parent"]' ).prop( 'disabled', is_checked );
-	$j( 'select#' + select_id + ' option[value="site"]' ).prop( 'disabled', is_checked );
-	$j( 'select#' + select_id + ' option:disabled:selected' ).prop( 'selected', false );
-	$j( 'select#' + select_id + ' option:not(:visible):selected' ).prop( 'selected', false );
-	
-	// Add the [] at the end of the select name
-	if( is_checked && select_name.indexOf( '[]' ) < 0 ) { 
-		$j( 'select#' + select_id ).attr( 'name', select_name + '[]' ); 
-	} else { 
-		$j( 'select#' + select_id ).attr( 'name', select_name.replace( '[]', '' ) ); 
-	}
-}
-
-
-// Show or hide activities depending on the selected template
-function bookacti_show_hide_template_related_options( template, is_variation ) {
-	
-	is_variation = is_variation ? 1 : 0;
-	
-	// Init variables
-	var template_ids	= $j( template ).val();
-	var options			= $j( '[data-bookacti-show-if-templates]' );
-	var change_selected = [];
-	if( is_variation ) {
-		if( template_ids === 'parent' ) { template_ids = $j( '#_bookacti_template' ).val() || $j( template ).data( 'parent' ); }
-		options = $j( '[name$="[' + $j( template ).data( 'loop' ) + ']"] [data-bookacti-show-if-templates], [name$="[' + $j( template ).data( 'loop' ) + '][]"] [data-bookacti-show-if-templates]' );
-	}
-	
-	if( $j.isNumeric( template_ids ) ) {
-		template_ids = [ template_ids ];
-	}
-	
-	// Show all
-	options.removeClass( 'bookacti-hide-fields' );
-	
-	// Hide not allowed
-	options.each( function() {
-		
-		var option = $j( this );
-		
-		// Retrieve allowed templates array
-		var allowed_templates = option.data( 'bookacti-show-if-templates' ).toString();
-		if( allowed_templates.indexOf( ',' ) >= 0 ) {
-			allowed_templates = allowed_templates.split( ',' );
-		} else {
-			allowed_templates = [ allowed_templates ];
-		}
-		
-		// Hide not allowed data and flag if one of them was selected
-		var hide = true;
-		$j.each( template_ids, function( i, template_id ) {
-			if( $j.inArray( template_id.toString(), allowed_templates ) >= 0 ) {
-				hide = false;
-			}
-		});
-		
-		if( hide ) {
-			if( option.is( ':selected' ) ) { 
-				change_selected.push( option ); 
-			}
-			option.addClass( 'bookacti-hide-fields' );
-		}
-	});
-
-	// Change selected activity automatically if it gets hidden
-	$j.each( change_selected, function( i, old_selected_option ) {
-		old_selected_option.removeAttr( 'selected' );
-		old_selected_option.siblings( 'option:not(.bookacti-hide-fields):not(:disabled):first' ).attr( 'selected', 'selected' );
-	});
 }
 
 

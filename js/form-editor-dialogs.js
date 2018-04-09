@@ -292,6 +292,23 @@ function bookacti_dialog_update_form_field( field_id, field_name ) {
 	$j( 'form#bookacti-form-field-form-' + field_name + ' input[name="action"]' ).val( 'bookactiUpdateFormField' );
 	$j( 'form#bookacti-form-field-form-' + field_name + ' input[name="field_id"]' ).val( field_id );
 	
+	// Transform multiple select
+	if( $j( 'form#bookacti-form-field-form-' + field_name + ' .bookacti-multiple-select' ).length ) {
+		$j( 'form#bookacti-form-field-form-' + field_name + ' .bookacti-multiple-select' ).each( function(){
+			var select_id = $j( this ).data( 'select-id' );
+			var select_name = $j( '#' + select_id ).attr( 'name' );
+			if( ! ( select_name in bookacti.form_editor.fields[ field_id ] ) ) { return; }
+			if( $j.isPlainObject( bookacti.form_editor.fields[ field_id ][ select_name ] )
+			 || (  $j.isArray( bookacti.form_editor.fields[ field_id ][ select_name ] ) 
+				&& bookacti.form_editor.fields[ field_id ][ select_name ].length > 1 ) ) {
+				$j( this ).prop( 'checked', true );
+			} else {
+				$j( this ).prop( 'checked', false );
+			}
+			bookacti_switch_select_to_multiple( this );
+		});
+	}
+	
 	// Fill the fields with current data
 	bookacti_fill_fields_from_array( bookacti.form_editor.fields[ field_id ], '', 'form#bookacti-form-field-form-' + field_name );
 	
@@ -330,14 +347,11 @@ function bookacti_dialog_update_form_field( field_id, field_name ) {
 						
 						if( response.status === 'success' ) {
 							
-							if( field_name === 'calendar' ) {
-								
-							} else {
-								// Update the field content
-								$j( '#bookacti-form-editor-field-' + field_id ).replaceWith( response.field_html );
-								// Update the field data
-								bookacti.form_editor.fields[ field_id ] = response.field_data;
-							}
+							// Update the field content
+							$j( '#bookacti-form-editor-field-' + field_id ).replaceWith( response.field_html );
+							
+							// Update the field data
+							bookacti.form_editor.fields[ field_id ] = response.field_data;
 							
 							// Reload tooltip for generated content
 							bookacti_init_tooltip();
