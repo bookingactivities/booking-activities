@@ -1,7 +1,7 @@
 // INITIALIZATION
 // Initialize bookings dialogs
 function bookacti_init_booking_system_dialogs() {
-	//Common param
+	// Common param
 	$j( '.bookacti-booking-system-dialog' ).dialog({ 
 		"modal":		true,
 		"autoOpen":		false,
@@ -20,7 +20,7 @@ function bookacti_init_booking_system_dialogs() {
 		$j( 'div:ui-dialog:visible' ).dialog( 'close' );
 	});
 
-	//Individual param
+	// Individual param
 	$j( '#bookacti-choose-group-of-events-dialog' ).dialog({ 
 		title: bookacti_localized.dialog_choose_group_of_events_title
 	});

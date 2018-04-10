@@ -259,7 +259,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		// Display field according to type
 
 		// TEXT & NUMBER
-		if( in_array( $args[ 'type' ], array( 'text', 'number', 'email', 'password' ) ) ) {
+		if( in_array( $args[ 'type' ], array( 'text', 'number', 'date', 'email', 'password' ) ) ) {
 		?>
 			<input	type=		'<?php echo esc_attr( $args[ 'type' ] ); ?>' 
 					name=		'<?php echo esc_attr( $args[ 'name' ] ); ?>' 
@@ -270,6 +270,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 				<?php if( $args[ 'type' ] === 'number' ) { ?>
 					min=		'<?php echo esc_attr( $args[ 'options' ][ 'min' ] ); ?>' 
 					max=		'<?php echo esc_attr( $args[ 'options' ][ 'max' ] ); ?>'
+					step=		'<?php echo esc_attr( $args[ 'options' ][ 'step' ] ); ?>'
 				<?php }
 				if( $args[ 'required' ] ) { echo ' required'; } ?>
 			/>
@@ -420,7 +421,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		if( ! isset( $args[ 'type' ] ) || ! isset( $args[ 'name' ] ) ) { return false; }
 
 		// If field type is not supported, return
-		if( ! in_array( $args[ 'type' ], array( 'text', 'email', 'password', 'number', 'checkbox', 'checkboxes', 'select', 'radio', 'textarea', 'editor' ) ) ) { 
+		if( ! in_array( $args[ 'type' ], array( 'text', 'email', 'date', 'password', 'number', 'checkbox', 'checkboxes', 'select', 'radio', 'textarea', 'editor' ) ) ) { 
 			return false; 
 		}
 
@@ -472,9 +473,10 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		}
 
 		// Make sure 'number' has min and max
-		else if( $args[ 'type' ] === 'number' ) {
+		else if( $args[ 'type' ] === 'number' || $args[ 'type' ] === 'date' ) {
 			$args[ 'options' ][ 'min' ] = isset( $args[ 'options' ][ 'min' ] ) ? $args[ 'options' ][ 'min' ] : '';
 			$args[ 'options' ][ 'max' ] = isset( $args[ 'options' ][ 'max' ] ) ? $args[ 'options' ][ 'max' ] : '';
+			$args[ 'options' ][ 'step' ] = isset( $args[ 'options' ][ 'step' ] ) ? $args[ 'options' ][ 'step' ] : '';
 		}
 
 		// Make sure that if 'editor' has options, options is an array
@@ -552,6 +554,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		
 		$defaults = array(
 			'show_option_all' => '', 'show_option_none' => '', 'option_none_value' => -1,
+			'show_option_current' => '', 'option_current_value' => 'current',
 			'option_label' => array( 'display_name' ), 'echo' => 1,
 			'selected' => 0, 'name' => 'user_id', 'class' => '', 'id' => '',
 			'include' => array(), 'exclude' => array(),
@@ -576,6 +579,11 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 				if( $args[ 'show_option_none' ] ) {
 					$_selected = selected( $args[ 'option_none_value' ], $args[ 'selected' ], false );
 					?><option value='<?php echo esc_attr( $args[ 'option_none_value' ] ); ?>' <?php echo $_selected ?> ><?php echo $args[ 'show_option_none' ]; ?></option><?php
+				}
+
+				if( $args[ 'show_option_current' ] ) {
+					$_selected = selected( $args[ 'option_current_value' ], $args[ 'selected' ], false );
+					?><option value='<?php echo esc_attr( $args[ 'option_current_value' ] ); ?>' <?php echo $_selected ?> ><?php echo $args[ 'show_option_current' ]; ?></option><?php
 				}
 			
 				do_action( 'bookacti_add_user_selectbox_options', $args );

@@ -130,6 +130,7 @@ function bookacti_empty_all_dialog_forms( scope ) {
 	$j( scope + 'input[type="hidden"]:not([name^="nonce"]):not([name="_wp_http_referer"])' ).val( '' );
 	$j( scope + 'input[type="text"]' ).val( '' );
     $j( scope + 'input[type="number"]' ).val( '' );
+    $j( scope + 'input[type="date"]' ).val( '' );
     $j( scope + 'textarea' ).val( '' );
     $j( scope + 'input[type="color"]' ).val( '#3a87ad' );
     $j( scope + 'input[type="checkbox"]' ).prop( 'checked', false );

@@ -37,7 +37,7 @@ function bookacti_get_booking_system( $atts, $echo = false ) {
 			$when_events_load = bookacti_get_setting_value( 'bookacti_general_settings', 'when_events_load' ); 
 			if( $when_events_load === 'on_page_load' && $atts[ 'auto_load' ] ) { 
 				
-				if( ! $atts[ 'template_data' ] ) {
+				if( empty( $atts[ 'template_data' ] ) ) {
 					$atts[ 'template_data' ] = bookacti_get_mixed_template_data( $atts[ 'calendars' ], $atts[ 'past_events' ] );
 				}
 				
@@ -388,12 +388,12 @@ function bookacti_format_booking_system_attributes( $atts = array(), $shortcode 
 		$atts[ 'id' ] = rand(); 
 	}
 	if( substr( strval( $atts[ 'id' ] ), 0, 9 ) !== 'bookacti-' ) {
-		$atts[ 'id' ]	= 'bookacti-' . $atts[ 'id' ];
+		$atts[ 'id' ] = 'bookacti-' . $atts[ 'id' ];
 	}
-	$atts[ 'id' ]	= esc_attr( $atts[ 'id' ] );
+	$atts[ 'id' ] = esc_attr( $atts[ 'id' ] );
 	
 	// Format classes
-	$atts[ 'class' ]	= ! empty( $atts[ 'class' ] )	? esc_attr( $atts[ 'class' ] ) : '';
+	$atts[ 'class' ] = ! empty( $atts[ 'class' ] )	? esc_attr( $atts[ 'class' ] ) : '';
 	
 	return apply_filters( 'bookacti_formatted_booking_system_attributes', $atts, $shortcode );
 }

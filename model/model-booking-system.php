@@ -884,7 +884,8 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		$availability_period_end	= $templates_data[ 'end' ];
 
 		if( ! apply_filters( 'bookacti_bypass_availability_period_check', false ) ) {
-			if( $templates_data[ 'settings' ][ 'availability_period_start' ] > 0 ) {
+			if( ! empty( $templates_data[ 'settings' ][ 'availability_period_start' ] ) 
+				&& $templates_data[ 'settings' ][ 'availability_period_start' ] > 0 ) {
 				$availability_start_time = clone $current_datetime_object;
 				$availability_start_time->add( new DateInterval( 'P' . $templates_data[ 'settings' ][ 'availability_period_start' ] . 'D' ) );
 				$availability_start_date = $availability_start_time->format( 'Y-m-d' );
@@ -892,7 +893,8 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 					$availability_period_start = $availability_start_date;
 				}
 			}
-			if( $templates_data[ 'settings' ][ 'availability_period_end' ] > 0 ) {
+			if( ! empty( $templates_data[ 'settings' ][ 'availability_period_end' ] ) 
+				&& $templates_data[ 'settings' ][ 'availability_period_end' ] > 0 ) {
 				$availability_end_time = clone $current_datetime_object;
 				$availability_end_time->add( new DateInterval( 'P' . $templates_data[ 'settings' ][ 'availability_period_end' ] . 'D' ) );
 				$availability_end_date = $availability_end_time->format( 'Y-m-d' );

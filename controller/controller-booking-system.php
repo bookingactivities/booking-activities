@@ -66,7 +66,7 @@ add_action( 'wp_ajax_nopriv_bookactiFetchEvents', 'bookacti_controller_fetch_eve
  * Reload booking system with new attributes via AJAX
  * 
  * @since 1.1.0
- * @version 1.4.3
+ * @version 1.5.0
  */
 function bookacti_controller_reload_booking_system() {
 	
@@ -94,8 +94,11 @@ function bookacti_controller_reload_booking_system() {
 	
 	if( $is_nonce_valid && $is_allowed ) {
 		
-		$template_data		= bookacti_get_mixed_template_data( $attributes[ 'calendars' ], $attributes[ 'past_events' ] );
-		$events_interval	= bookacti_get_new_interval_of_events( $template_data, array(), false, $attributes[ 'past_events' ] );
+		if( empty( $attributes[ 'template_data' ] ) ) {
+			$attributes[ 'template_data' ] = bookacti_get_mixed_template_data( $attributes[ 'calendars' ], $attributes[ 'past_events' ] );
+		}
+		
+		$events_interval = bookacti_get_new_interval_of_events( $attributes[ 'template_data' ], array(), false, $attributes[ 'past_events' ] );
 		
 		// Get HTML elements used by the booking method
 		$html_elements = bookacti_get_booking_method_html( $attributes[ 'method' ], $attributes );
@@ -109,7 +112,7 @@ function bookacti_controller_reload_booking_system() {
 		$events				= array( 'events' => array(), 'data' => array() );
 		
 		if( $attributes[ 'group_categories' ] !== false ) {
-			$groups_data		= bookacti_get_groups_of_events( $attributes[ 'calendars' ], $attributes[ 'group_categories' ], $attributes[ 'past_events' ] );
+			$groups_data		= bookacti_get_groups_of_events( $attributes[ 'calendars' ], $attributes[ 'group_categories' ], $attributes[ 'past_events' ], $attributes[ 'template_data' ] );
 			$categories_data	= bookacti_get_group_categories( $attributes[ 'calendars' ], $attributes[ 'group_categories' ] );
 			
 			foreach( $groups_data as $group_id => $group_data ) { $groups_ids[] = $group_id; }
@@ -144,7 +147,7 @@ function bookacti_controller_reload_booking_system() {
 			'groups_events'			=> $groups_events,
 			'groups_data'			=> $groups_data,
 			'group_categories_data'	=> $categories_data,
-			'template_data'			=> $template_data
+			'template_data'			=> $attributes[ 'template_data' ]
 		) );
 		
 	} else {

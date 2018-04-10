@@ -183,6 +183,8 @@ foreach( $fields_data as $field_name => $field_data ) {
 			?>
 			</div>
 		
+		<fieldset>
+			<legend><?php _e( 'Event sources', BOOKACTI_PLUGIN_NAME ); ?></legend>
 			<div>
 			<?php
 				$template_field_id	= '_bookacti_template'; 
@@ -191,7 +193,7 @@ foreach( $fields_data as $field_name => $field_data ) {
 				<label for='<?php echo $template_field_id; ?>'><?php esc_html_e( 'Calendar', BOOKACTI_PLUGIN_NAME ); ?></label>
 				<select id='<?php echo $template_field_id; ?>' 
 						name='calendars' 
-						<?php if( count( $templates ) > 1 ) { echo 'style="margin-right:10px;"'; } ?> >
+						<?php if( count( $templates ) > 1 ) { echo 'style="margin-right:5px;"'; } ?> >
 				<?php 
 					foreach( $templates as $template ) {
 						$template_title = apply_filters( 'bookacti_translate_text', $template[ 'title' ] );
@@ -211,7 +213,7 @@ foreach( $fields_data as $field_name => $field_data ) {
 						   style='display:none' />
 				</span>
 			<?php } 
-				$tip = esc_html__( 'Select the calendars from which the events will be retrieved.', BOOKACTI_PLUGIN_NAME );
+				$tip = esc_html__( 'Retrieve events from the selected calendars only.', BOOKACTI_PLUGIN_NAME );
 				/* translators: %s is the "+" icon to click on. */
 				if( count( $templates ) > 1 ) { $tip .= '<br/>' . sprintf( esc_html__( 'To select multiple values, click on %s', BOOKACTI_PLUGIN_NAME ), '<span class="dashicons dashicons-plus"></span>' ); }
 				bookacti_help_tip( $tip );
@@ -227,7 +229,7 @@ foreach( $fields_data as $field_name => $field_data ) {
 				<label for="<?php echo $activity_field_id; ?>"><?php esc_html_e( 'Activity', BOOKACTI_PLUGIN_NAME ); ?></label>
 				<select id='<?php echo $activity_field_id; ?>' 
 						name='<?php echo $activity_field_id; ?>'
-						<?php if( count( $activities ) > 1 ) { echo 'style="margin-right:10px;"'; } ?> >
+						<?php if( count( $activities ) > 1 ) { echo 'style="margin-right:5px;"'; } ?> >
 				<?php 
 					foreach( $activities as $activity ) {
 						$activity_title = apply_filters( 'bookacti_translate_text', $activity[ 'title' ] );
@@ -249,14 +251,16 @@ foreach( $fields_data as $field_name => $field_data ) {
 						   style='display:none' />
 				</span>
 			<?php } 
-				$tip = esc_html__( 'Select the activities from which the events will be retrieved.', BOOKACTI_PLUGIN_NAME );
+				$tip = esc_html__( 'Retrieve events from the selected activities only.', BOOKACTI_PLUGIN_NAME );
 				/* translators: %s is the "+" icon to click on. */
 				if( count( $activities ) > 1 ) { $tip .= '<br/>' . sprintf( esc_html__( 'To select multiple values, click on %s', BOOKACTI_PLUGIN_NAME ), '<span class="dashicons dashicons-plus"></span>' ); }
 				bookacti_help_tip( $tip );
 			?>
 			</div>
+		</fieldset>
 		
-		
+		<fieldset>
+			<legend><?php _e( 'Groups of events', BOOKACTI_PLUGIN_NAME ); ?></legend>
 			<div>
 			<?php 
 				$groups_field_id	= 'group_categories'; 
@@ -265,7 +269,7 @@ foreach( $fields_data as $field_name => $field_data ) {
 				<label for='<?php echo $groups_field_id; ?>'><?php esc_html_e( 'Group category', BOOKACTI_PLUGIN_NAME ); ?></label>
 				<select id='<?php echo $groups_field_id; ?>' 
 						name='<?php echo $groups_field_id; ?>'
-						<?php if( count( $categories ) > 1 ) { echo 'style="margin-right:10px;"'; } ?> >
+						<?php if( count( $categories ) > 1 ) { echo 'style="margin-right:5px;"'; } ?> >
 					<option value='none' ><?php _ex( 'None', 'About group category', BOOKACTI_PLUGIN_NAME ); ?></option>
 				<?php 
 					foreach( $categories as $category ) {
@@ -288,7 +292,7 @@ foreach( $fields_data as $field_name => $field_data ) {
 						   style='display:none' />
 				</span>
 			<?php } 
-				$tip = esc_html__( 'Select the group categories from which the groups of events will be retrieved.', BOOKACTI_PLUGIN_NAME );
+				$tip = esc_html__( 'Retrieve groups of events from the selected group categories only.', BOOKACTI_PLUGIN_NAME );
 				/* translators: %s is the "+" icon to click on. */
 				if( count( $categories ) > 1 ) { $tip .= '<br/>' . sprintf( esc_html__( 'To select multiple values, click on %s', BOOKACTI_PLUGIN_NAME ), '<span class="dashicons dashicons-plus"></span>' ); }
 				bookacti_help_tip( $tip );
@@ -304,6 +308,7 @@ foreach( $fields_data as $field_name => $field_data ) {
 					'type' => 'checkbox',
 					'name' => 'groups_only',
 					'id' => '_bookacti_groups_only',
+					'value' => 0,
 					'tip' => esc_html__( 'Display only groups of events if checked. Else, also display the other single events (if any).', BOOKACTI_PLUGIN_NAME )
 				);
 				bookacti_display_field( $args );
@@ -312,43 +317,125 @@ foreach( $fields_data as $field_name => $field_data ) {
 		
 		
 			<div>
-				<label for='groups_single_events' ><?php echo esc_html_e( 'Book grouped events alone', BOOKACTI_PLUGIN_NAME ); ?></label>
+				<label for='groups_single_events' ><?php esc_html_e( 'Book grouped events alone', BOOKACTI_PLUGIN_NAME ); ?></label>
 				<?php 
 				// Groups events alone checkbox
 				$args = array(
 					'type' => 'checkbox',
 					'name' => 'groups_single_events',
 					'id' => 'groups_single_events',
+					'value' => 0,
 					'tip' => esc_html__( 'When a customer picks an event belonging to a group, let him choose between the group or the event alone.', BOOKACTI_PLUGIN_NAME )
 				);
 				bookacti_display_field( $args );
 				?>
 			</div>
+		</fieldset>
 		
-		
+		<fieldset>
+			<legend><?php _e( 'Availability period', BOOKACTI_PLUGIN_NAME ); ?></legend>
 			<div>
-				<label for='past_events' ><?php echo esc_html_e( 'Past events', BOOKACTI_PLUGIN_NAME ); ?></label>
-				<?php 
-				// Groups events alone checkbox
+				<label for='availability_period_start' ><?php /* translators: Followed by a field indicating a number of days before the event. E.g.: "Events will be bookable in 2 days from today". */ esc_html_e( 'Events will be bookable in', BOOKACTI_PLUGIN_NAME ); ?></label>
+				<?php
+				$tip = __( 'Set the beginning of the availability period. E.g.: "2", your customers may book events starting in 2 days at the earliest. They are no longer allowed to book events starting earlier (like today or tomorrow).', BOOKACTI_PLUGIN_NAME );
+				$tip .= '<br/>' . __( 'Set it to "-1" to use the global value.', BOOKACTI_PLUGIN_NAME );
+				
+				$args = array(
+					'type' => 'number',
+					'name' => 'availability_period_start',
+					'id' => 'availability_period_start',
+					'options' => array( 'min' => -1, 'step' => 1 ),
+					/* translators: Arrives after a field indicating a number of days before the event. E.g.: "Events will be bookable in 2 days from today". */
+					'label' => esc_html__( 'days from today', BOOKACTI_PLUGIN_NAME ),
+					'tip' => $tip
+				);
+				bookacti_display_field( $args );
+				?>
+			</div>
+			<div>
+				<label for='availability_period_end' ><?php /* translators: Followed by a field indicating a number of days before the event. E.g.: "Events are bookable for up to 30 days from today". */ esc_html_e( 'Events are bookable for up to', BOOKACTI_PLUGIN_NAME ); ?></label>
+				<?php
+				$tip = __( 'Set the end of the availability period. E.g.: "30", your customers may book events starting within 30 days at the latest. They are not allowed yet to book events starting later.', BOOKACTI_PLUGIN_NAME );
+				$tip .= '<br/>' . __( 'Set it to "-1" to use the global value.', BOOKACTI_PLUGIN_NAME );
+						
+				$args = array(
+					'type' => 'number',
+					'name' => 'availability_period_end',
+					'id' => 'availability_period_end',
+					'options' => array( 'min' => -1, 'step' => 1 ),
+					/* translators: Arrives after a field indicating a number of days before the event. E.g.: "Events will be bookable in 2 days from today". */
+					'label' => esc_html__( 'days from today', BOOKACTI_PLUGIN_NAME ),
+					'tip' => $tip
+				);
+				bookacti_display_field( $args );
+				?>
+			</div>
+			<div class='bookacti-advanced-option'>
+				<label for='start' ><?php esc_html_e( 'Opening', BOOKACTI_PLUGIN_NAME ); ?></label>
+				<?php
+				$args = array(
+					'type' => 'date',
+					'name' => 'start',
+					'id' => 'start',
+					'tip' => __( 'The calendar will start at this date.', BOOKACTI_PLUGIN_NAME )
+				);
+				bookacti_display_field( $args );
+				?>
+			</div>
+			<div class='bookacti-advanced-option'>
+				<label for='end' ><?php esc_html_e( 'Closing', BOOKACTI_PLUGIN_NAME ); ?></label>
+				<?php
+				$args = array(
+					'type' => 'date',
+					'name' => 'end',
+					'id' => 'end',
+					'tip' => __( 'The calendar will end at this date.', BOOKACTI_PLUGIN_NAME )
+				);
+				bookacti_display_field( $args );
+				?>
+			</div>
+		</fieldset>
+		
+		<fieldset class='bookacti-advanced-option'>
+			<legend><?php _e( 'Past events', BOOKACTI_PLUGIN_NAME ); ?></legend>
+			<div>
+				<label for='past_events' ><?php echo esc_html_x( 'Display them?', 'About past events', BOOKACTI_PLUGIN_NAME ); ?></label>
+				<?php
 				$args = array(
 					'type' => 'checkbox',
 					'name' => 'past_events',
 					'id' => 'past_events',
+					'value' => 0,
 					'tip' => esc_html__( 'Whether to display past events.', BOOKACTI_PLUGIN_NAME )
 				);
 				bookacti_display_field( $args );
 				?>
 			</div>
-		
-		
-			<div class='bookacti-advanced-option' >
-				<label for='bookings_only' ><?php echo esc_html_e( 'Booked only', BOOKACTI_PLUGIN_NAME ); ?></label>
+			<div>
+				<label for='past_events_bookable' ><?php echo esc_html_x( 'Are they bookable?', 'About past events', BOOKACTI_PLUGIN_NAME ); ?></label>
 				<?php 
-				// Groups events alone checkbox
+				$args = array(
+					'type' => 'checkbox',
+					'name' => 'past_events_bookable',
+					'id' => 'past_events_bookable',
+					'value' => 0,
+					'tip' => esc_html__( 'Whether to allow customers to select past events and book them.', BOOKACTI_PLUGIN_NAME )
+				);
+				bookacti_display_field( $args );
+				?>
+			</div>
+		</fieldset>
+		
+		<fieldset class='bookacti-advanced-option'>
+			<legend><?php _e( 'Booked events', BOOKACTI_PLUGIN_NAME ); ?></legend>
+			<div>
+				<label for='bookings_only' ><?php esc_html_e( 'Booked only', BOOKACTI_PLUGIN_NAME ); ?></label>
+				<?php
 				$args = array(
 					'type' => 'checkbox',
 					'name' => 'bookings_only',
 					'id' => 'bookings_only',
+					'value' => 0,
 					'tip' => esc_html__( 'Display only events that has been booked.', BOOKACTI_PLUGIN_NAME )
 				);
 				bookacti_display_field( $args );
@@ -356,12 +443,12 @@ foreach( $fields_data as $field_name => $field_data ) {
 			</div>
 		
 		
-			<div class='bookacti-advanced-option' >
+			<div>
 				<?php $status_field_id = 'status'; ?>
-				<label for='<?php echo $status_field_id; ?>' ><?php echo esc_html_e( 'Bookings status', BOOKACTI_PLUGIN_NAME ); ?></label>
+				<label for='<?php echo $status_field_id; ?>' ><?php esc_html_e( 'Bookings status', BOOKACTI_PLUGIN_NAME ); ?></label>
 				<select id='<?php echo $status_field_id; ?>'
 						name='<?php echo $status_field_id; ?>'
-						<?php if( count( $categories ) > 1 ) { echo 'style="margin-right:10px;"'; } ?> >
+						<?php if( count( $categories ) > 1 ) { echo 'style="margin-right:5px;"'; } ?> >
 					<option value='none' ><?php _ex( 'None', 'About booking status', BOOKACTI_PLUGIN_NAME ); ?></option>
 				<?php
 					$statuses = bookacti_get_booking_state_labels();
@@ -382,7 +469,7 @@ foreach( $fields_data as $field_name => $field_data ) {
 						   style='display:none' />
 				</span>
 			<?php } 
-				$tip = esc_html__( 'Only booked events with the selected booking status will be retrieved.', BOOKACTI_PLUGIN_NAME );
+				$tip = esc_html__( 'Retrieve booked events with the selected booking status only.', BOOKACTI_PLUGIN_NAME );
 				$tip .= ' ' . esc_html__( '"Booked only" option must be activated.', BOOKACTI_PLUGIN_NAME );
 				/* translators: %s is the "+" icon to click on. */
 				if( count( $statuses ) > 1 ) { $tip .= '<br/>' . sprintf( esc_html__( 'To select multiple values, click on %s', BOOKACTI_PLUGIN_NAME ), '<span class="dashicons dashicons-plus"></span>' ); }
@@ -391,25 +478,27 @@ foreach( $fields_data as $field_name => $field_data ) {
 			</div>
 		
 		
-			<div class='bookacti-advanced-option'>
+			<div>
 			<?php $status_field_id = 'user_id'; ?>
-				<label for='<?php echo $status_field_id; ?>' ><?php echo esc_html__( 'Customer', BOOKACTI_PLUGIN_NAME ); ?></label>
+				<label for='<?php echo $status_field_id; ?>' ><?php esc_html_e( 'Customer', BOOKACTI_PLUGIN_NAME ); ?></label>
 			<?php
 				$args = apply_filters( 'bookacti_booking_list_user_selectbox_args', array(
-					'name'				=> $status_field_id,
-					'id'				=> $status_field_id,
-					'show_option_all'	=> __( 'None', BOOKACTI_PLUGIN_NAME ),
-					'option_label'		=> array( 'user_login', ' (', 'user_email', ')' ),
-					'selected'			=> 0,
-					'echo'				=> true
+					'name'					=> $status_field_id,
+					'id'					=> $status_field_id,
+					'show_option_all'		=> __( 'None', BOOKACTI_PLUGIN_NAME ),
+					'show_option_current'	=> __( 'Current user', BOOKACTI_PLUGIN_NAME ),
+					'option_label'			=> array( 'user_login', ' (', 'user_email', ')' ),
+					'selected'				=> 0,
+					'echo'					=> true
 				));
 				bookacti_display_user_selectbox( $args );
 				
-				$tip = esc_html__( 'Only events booked by the selected user will be retrieved.', BOOKACTI_PLUGIN_NAME );
+				$tip = esc_html__( 'Retrieve events booked by the selected user only.', BOOKACTI_PLUGIN_NAME );
 				$tip .= ' ' . esc_html__( '"Booked only" option must be activated.', BOOKACTI_PLUGIN_NAME );
 				bookacti_help_tip( $tip );
 			?>
 			</div>
+		</fieldset>
 		<?php
 			do_action( 'bookacti_calendar_dialog_filters_tab_after', $params );
 		}
@@ -474,7 +563,6 @@ foreach( $fields_data as $field_name => $field_data ) {
 							'type'	=> 'text',
 							'name'	=> 'label[email]',
 							'id'	=> 'bookacti-email-label',
-							'value'	=> $fields_data[ 'login' ][ 'label' ][ 'email' ],
 							'tip'	=> __( 'Text displayed before the field.', BOOKACTI_PLUGIN_NAME )
 						);
 						bookacti_display_field( $args );
@@ -487,7 +575,6 @@ foreach( $fields_data as $field_name => $field_data ) {
 							'type'	=> 'text',
 							'name'	=> 'placeholder[email]',
 							'id'	=> 'bookacti-email-placeholder',
-							'value'	=> $fields_data[ 'login' ][ 'placeholder' ][ 'email' ],
 							'tip'	=> __( 'Text displayed in transparency in the field when it is empty.', BOOKACTI_PLUGIN_NAME )
 						);
 						bookacti_display_field( $args );
@@ -500,7 +587,6 @@ foreach( $fields_data as $field_name => $field_data ) {
 							'type'	=> 'text',
 							'name'	=> 'tip[email]',
 							'id'	=> 'bookacti-email-tip',
-							'value'	=> $fields_data[ 'login' ][ 'tip' ][ 'email' ],
 							'tip'	=> __( 'Text displayed in the tooltip next to the field.', BOOKACTI_PLUGIN_NAME )
 						);
 						bookacti_display_field( $args );
@@ -516,7 +602,6 @@ foreach( $fields_data as $field_name => $field_data ) {
 							'type'	=> 'text',
 							'name'	=> 'label[password]',
 							'id'	=> 'bookacti-password-label',
-							'value'	=> $fields_data[ 'login' ][ 'label' ][ 'password' ],
 							'tip'	=> __( 'Text displayed before the field.', BOOKACTI_PLUGIN_NAME )
 						);
 						bookacti_display_field( $args );
@@ -529,7 +614,6 @@ foreach( $fields_data as $field_name => $field_data ) {
 							'type'	=> 'text',
 							'name'	=> 'placeholder[password]',
 							'id'	=> 'bookacti-password-placeholder',
-							'value'	=> $fields_data[ 'login' ][ 'placeholder' ][ 'password' ],
 							'tip'	=> __( 'Text displayed in transparency in the field when it is empty.', BOOKACTI_PLUGIN_NAME )
 						);
 						bookacti_display_field( $args );
@@ -542,7 +626,6 @@ foreach( $fields_data as $field_name => $field_data ) {
 							'type'	=> 'text',
 							'name'	=> 'tip[password]',
 							'id'	=> 'bookacti-password-tip',
-							'value'	=> $fields_data[ 'login' ][ 'tip' ][ 'password' ],
 							'tip'	=> __( 'Text displayed in the tooltip next to the field.', BOOKACTI_PLUGIN_NAME )
 						);
 						bookacti_display_field( $args );
@@ -571,7 +654,6 @@ foreach( $fields_data as $field_name => $field_data ) {
 						'type'	=> 'checkbox',
 						'name'	=> 'displayed_fields[register]',
 						'id'	=> 'bookacti-displayed_fields-register',
-						'value'	=> $fields_data[ 'login' ][ 'displayed_fields' ][ 'register' ],
 						'tip'	=> __( 'Are users allowed to create an account while submitting this booking form?', BOOKACTI_PLUGIN_NAME )
 					);
 					bookacti_display_field( $args );
@@ -584,7 +666,6 @@ foreach( $fields_data as $field_name => $field_data ) {
 						'type'	=> 'text',
 						'name'	=> 'label[register]',
 						'id'	=> 'bookacti-register-label',
-						'value'	=> $fields_data[ 'login' ][ 'label' ][ 'register' ],
 						'tip'	=> __( 'Text displayed before the field.', BOOKACTI_PLUGIN_NAME )
 					);
 					bookacti_display_field( $args );
@@ -597,7 +678,6 @@ foreach( $fields_data as $field_name => $field_data ) {
 						'type'	=> 'text',
 						'name'	=> 'tip[register]',
 						'id'	=> 'bookacti-register-tip',
-						'value'	=> $fields_data[ 'login' ][ 'tip' ][ 'register' ],
 						'tip'	=> __( 'Text displayed in the tooltip next to the field.', BOOKACTI_PLUGIN_NAME )
 					);
 					bookacti_display_field( $args );
@@ -610,7 +690,7 @@ foreach( $fields_data as $field_name => $field_data ) {
 						'type'	=> 'checkbox',
 						'name'	=> 'generate_password',
 						'id'	=> 'bookacti-generate-password',
-						'value'	=> $fields_data[ 'login' ][ 'generate_password' ],
+						'value'	=> 0,
 						'tip'	=> __( 'Whether to automatically generate the password.', BOOKACTI_PLUGIN_NAME )
 					);
 					bookacti_display_field( $args );
@@ -623,7 +703,7 @@ foreach( $fields_data as $field_name => $field_data ) {
 						'type'	=> 'checkbox',
 						'name'	=> 'send_new_account_email',
 						'id'	=> 'bookacti-send-new-account-email',
-						'value'	=> $fields_data[ 'login' ][ 'send_new_account_email' ],
+						'value'	=> 0,
 						'tip'	=> __( 'Whether to automatically send an email to the user if he has created an account with the booking form.', BOOKACTI_PLUGIN_NAME )
 					);
 					bookacti_display_field( $args );
@@ -653,7 +733,7 @@ foreach( $fields_data as $field_name => $field_data ) {
 							'type'	=> 'checkbox',
 							'name'	=> 'displayed_fields[first_name]',
 							'id'	=> 'bookacti-displayed_fields-first_name',
-							'value'	=> $fields_data[ 'login' ][ 'displayed_fields' ][ 'first_name' ],
+							'value'	=> 0,
 							'tip'	=> __( 'Whether this field is displayed in the form.', BOOKACTI_PLUGIN_NAME )
 						);
 						bookacti_display_field( $args );
@@ -666,7 +746,6 @@ foreach( $fields_data as $field_name => $field_data ) {
 							'type'	=> 'text',
 							'name'	=> 'label[first_name]',
 							'id'	=> 'bookacti-first_name-label',
-							'value'	=> $fields_data[ 'login' ][ 'label' ][ 'first_name' ],
 							'tip'	=> __( 'Text displayed before the field.', BOOKACTI_PLUGIN_NAME )
 						);
 						bookacti_display_field( $args );
@@ -679,7 +758,6 @@ foreach( $fields_data as $field_name => $field_data ) {
 							'type'	=> 'text',
 							'name'	=> 'placeholder[first_name]',
 							'id'	=> 'bookacti-first_name-placeholder',
-							'value'	=> $fields_data[ 'login' ][ 'placeholder' ][ 'first_name' ],
 							'tip'	=> __( 'Text displayed in transparency in the field when it is empty.', BOOKACTI_PLUGIN_NAME )
 						);
 						bookacti_display_field( $args );
@@ -692,7 +770,6 @@ foreach( $fields_data as $field_name => $field_data ) {
 							'type'	=> 'text',
 							'name'	=> 'tip[first_name]',
 							'id'	=> 'bookacti-first_name-tip',
-							'value'	=> $fields_data[ 'login' ][ 'tip' ][ 'first_name' ],
 							'tip'	=> __( 'Text displayed in the tooltip next to the field.', BOOKACTI_PLUGIN_NAME )
 						);
 						bookacti_display_field( $args );
@@ -705,7 +782,7 @@ foreach( $fields_data as $field_name => $field_data ) {
 							'type'	=> 'checkbox',
 							'name'	=> 'required_fields[first_name]',
 							'id'	=> 'bookacti-required_fields-first_name',
-							'value'	=> $fields_data[ 'login' ][ 'required_fields' ][ 'first_name' ],
+							'value'	=> 0,
 							'tip'	=> __( 'Whether this field is compulsory.', BOOKACTI_PLUGIN_NAME )
 						);
 						bookacti_display_field( $args );
@@ -721,7 +798,7 @@ foreach( $fields_data as $field_name => $field_data ) {
 							'type'	=> 'checkbox',
 							'name'	=> 'displayed_fields[last_name]',
 							'id'	=> 'bookacti-displayed_fields-last_name',
-							'value'	=> $fields_data[ 'login' ][ 'displayed_fields' ][ 'last_name' ],
+							'value'	=> 0,
 							'tip'	=> __( 'Whether this field is displayed in the form.', BOOKACTI_PLUGIN_NAME )
 						);
 						bookacti_display_field( $args );
@@ -734,7 +811,6 @@ foreach( $fields_data as $field_name => $field_data ) {
 							'type'	=> 'text',
 							'name'	=> 'label[last_name]',
 							'id'	=> 'bookacti-last_name-label',
-							'value'	=> $fields_data[ 'login' ][ 'label' ][ 'last_name' ],
 							'tip'	=> __( 'Text displayed before the field.', BOOKACTI_PLUGIN_NAME )
 						);
 						bookacti_display_field( $args );
@@ -747,7 +823,6 @@ foreach( $fields_data as $field_name => $field_data ) {
 							'type'	=> 'text',
 							'name'	=> 'placeholder[last_name]',
 							'id'	=> 'bookacti-last_name-placeholder',
-							'value'	=> $fields_data[ 'login' ][ 'placeholder' ][ 'last_name' ],
 							'tip'	=> __( 'Text displayed in transparency in the field when it is empty.', BOOKACTI_PLUGIN_NAME )
 						);
 						bookacti_display_field( $args );
@@ -760,7 +835,6 @@ foreach( $fields_data as $field_name => $field_data ) {
 							'type'	=> 'text',
 							'name'	=> 'tip[last_name]',
 							'id'	=> 'bookacti-last_name-tip',
-							'value'	=> $fields_data[ 'login' ][ 'tip' ][ 'last_name' ],
 							'tip'	=> __( 'Text displayed in the tooltip next to the field.', BOOKACTI_PLUGIN_NAME )
 						);
 						bookacti_display_field( $args );
@@ -773,7 +847,7 @@ foreach( $fields_data as $field_name => $field_data ) {
 							'type'	=> 'checkbox',
 							'name'	=> 'required_fields[last_name]',
 							'id'	=> 'bookacti-required_fields-last_name',
-							'value'	=> $fields_data[ 'login' ][ 'required_fields' ][ 'last_name' ],
+							'value'	=> 0,
 							'tip'	=> __( 'Whether this field is compulsory.', BOOKACTI_PLUGIN_NAME )
 						);
 						bookacti_display_field( $args );
@@ -789,7 +863,7 @@ foreach( $fields_data as $field_name => $field_data ) {
 							'type'	=> 'checkbox',
 							'name'	=> 'displayed_fields[phone]',
 							'id'	=> 'bookacti-displayed_fields-phone',
-							'value'	=> $fields_data[ 'login' ][ 'displayed_fields' ][ 'phone' ],
+							'value'	=> 0,
 							'tip'	=> __( 'Whether this field is displayed in the form.', BOOKACTI_PLUGIN_NAME )
 						);
 						bookacti_display_field( $args );
@@ -802,7 +876,6 @@ foreach( $fields_data as $field_name => $field_data ) {
 							'type'	=> 'text',
 							'name'	=> 'label[phone]',
 							'id'	=> 'bookacti-phone-label',
-							'value'	=> $fields_data[ 'login' ][ 'label' ][ 'phone' ],
 							'tip'	=> __( 'Text displayed before the field.', BOOKACTI_PLUGIN_NAME )
 						);
 						bookacti_display_field( $args );
@@ -815,7 +888,6 @@ foreach( $fields_data as $field_name => $field_data ) {
 							'type'	=> 'text',
 							'name'	=> 'placeholder[phone]',
 							'id'	=> 'bookacti-phone-placeholder',
-							'value'	=> $fields_data[ 'login' ][ 'placeholder' ][ 'phone' ],
 							'tip'	=> __( 'Text displayed in transparency in the field when it is empty.', BOOKACTI_PLUGIN_NAME )
 						);
 						bookacti_display_field( $args );
@@ -828,7 +900,6 @@ foreach( $fields_data as $field_name => $field_data ) {
 							'type'	=> 'text',
 							'name'	=> 'tip[phone]',
 							'id'	=> 'bookacti-phone-tip',
-							'value'	=> $fields_data[ 'login' ][ 'tip' ][ 'phone' ],
 							'tip'	=> __( 'Text displayed in the tooltip next to the field.', BOOKACTI_PLUGIN_NAME )
 						);
 						bookacti_display_field( $args );
@@ -841,7 +912,7 @@ foreach( $fields_data as $field_name => $field_data ) {
 							'type'	=> 'checkbox',
 							'name'	=> 'required_fields[phone]',
 							'id'	=> 'bookacti-required_fields-phone',
-							'value'	=> $fields_data[ 'login' ][ 'required_fields' ][ 'phone' ],
+							'value'	=> 0,
 							'tip'	=> __( 'Whether this field is compulsory.', BOOKACTI_PLUGIN_NAME )
 						);
 						bookacti_display_field( $args );
@@ -877,7 +948,6 @@ foreach( $fields_data as $field_name => $field_data ) {
 					'type'	=> 'text',
 					'name'	=> 'label',
 					'id'	=> 'bookacti-quantity-label',
-					'value'	=> $fields_data[ 'quantity' ][ 'label' ],
 					'tip'	=> __( 'Text displayed before the field.', BOOKACTI_PLUGIN_NAME )
 				);
 				bookacti_display_field( $args );
@@ -890,7 +960,6 @@ foreach( $fields_data as $field_name => $field_data ) {
 					'type'	=> 'text',
 					'name'	=> 'placeholder',
 					'id'	=> 'bookacti-quantity-placeholder',
-					'value'	=> $fields_data[ 'quantity' ][ 'placeholder' ],
 					'tip'	=> __( 'Text displayed in transparency in the field when it is empty.', BOOKACTI_PLUGIN_NAME )
 				);
 				bookacti_display_field( $args );
@@ -903,7 +972,6 @@ foreach( $fields_data as $field_name => $field_data ) {
 					'type'	=> 'text',
 					'name'	=> 'tip',
 					'id'	=> 'bookacti-quantity-tip',
-					'value'	=> $fields_data[ 'quantity' ][ 'tip' ],
 					'tip'	=> __( 'Text displayed in the tooltip next to the field.', BOOKACTI_PLUGIN_NAME )
 				);
 				bookacti_display_field( $args );
@@ -938,7 +1006,6 @@ foreach( $fields_data as $field_name => $field_data ) {
 					'type'	=> 'text',
 					'name'	=> 'value',
 					'id'	=> 'bookacti-submit-value',
-					'value'	=> $fields_data[ 'submit' ][ 'value' ],
 					'tip'	=> __( 'Text displayed on the button.', BOOKACTI_PLUGIN_NAME )
 				);
 				bookacti_display_field( $args );
@@ -967,7 +1034,6 @@ foreach( $fields_data as $field_name => $field_data ) {
 					'type'	=> 'text',
 					'name'	=> 'title',
 					'id'	=> 'bookacti-free_text-title',
-					'value'	=> $fields_data[ 'free_text' ][ 'title' ],
 					'tip'	=> __( 'Field title displayed in form editor only.', BOOKACTI_PLUGIN_NAME )
 				);
 				bookacti_display_field( $args );
@@ -980,7 +1046,6 @@ foreach( $fields_data as $field_name => $field_data ) {
 					'type'	=> 'editor',
 					'name'	=> 'value',
 					'id'	=> 'bookacti-free_text-value',
-					'value'	=> $fields_data[ 'free_text' ][ 'value' ]
 				);
 				bookacti_display_field( $args );
 			?>

@@ -412,12 +412,19 @@ function bookacti_get_default_form_fields_data( $field_name = '' ) {
 function bookacti_get_default_form_fields_meta( $field_name = '' ) {
 	
 	// Calendar default meta
-	$calendar_meta = bookacti_get_booking_system_default_attributes();
-	unset( $calendar_meta[ 'id' ] );
-	unset( $calendar_meta[ 'class' ] );
-	unset( $calendar_meta[ 'template_data' ] );
-	unset( $calendar_meta[ 'auto_load' ] );
-	unset( $calendar_meta[ 'check_roles' ] );
+	$booking_system_meta = bookacti_get_booking_system_default_attributes();
+	unset( $booking_system_meta[ 'template_data' ] );
+	unset( $booking_system_meta[ 'auto_load' ] );
+	unset( $booking_system_meta[ 'check_roles' ] );
+	
+	$template_meta = bookacti_format_template_settings( array() );
+	unset( $template_meta[ 'snapDuration' ] );
+	
+	$calendar_meta = array_merge( $booking_system_meta, $template_meta, array(
+		'start' => '',
+		'end' => '',
+		'past_events_bookable' => 0
+	) );
 	
 	// Add register fields default meta to login field meta
 	$register_fields	= bookacti_get_default_register_fields_data();
@@ -470,8 +477,32 @@ function bookacti_format_form_field_data( $raw_field_data ) {
 	
 	// Format field-specific data and metadata
 	if( $raw_field_data[ 'name' ] === 'calendar' ) {
+		// Build template_data array
+		$raw_field_data[ 'template_data' ] = array(
+			'start'		=> isset( $raw_field_data[ 'start' ] ) ? $raw_field_data[ 'start' ] : $default_meta[ 'start' ],
+			'end'		=> isset( $raw_field_data[ 'end' ] ) ? $raw_field_data[ 'end' ] : $default_meta[ 'end' ],
+			'settings'	=> array_intersect_key( $raw_field_data, bookacti_format_template_settings( array() ) )
+		);
+		
 		// Format booking system data
 		$field_meta = bookacti_format_booking_system_attributes( $raw_field_data );
+		
+		// Keep some meta unformatted
+		$field_meta[ 'raw' ] = array(
+			'start'				=> isset( $raw_field_data[ 'start' ] ) ? $raw_field_data[ 'start' ] : $default_meta[ 'start' ],
+			'end'				=> isset( $raw_field_data[ 'end' ] ) ? $raw_field_data[ 'end' ] : $default_meta[ 'end' ],
+			'method'			=> isset( $raw_field_data[ 'method' ] ) ? $raw_field_data[ 'method' ] : $default_meta[ 'method' ],
+			'group_categories'	=> isset( $raw_field_data[ 'group_categories' ] ) ? $raw_field_data[ 'group_categories' ] : $default_meta[ 'group_categories' ],
+			'user_id'			=> isset( $raw_field_data[ 'user_id' ] ) ? $raw_field_data[ 'user_id' ] : $default_meta[ 'user_id' ],
+			'id'				=> isset( $raw_field_data[ 'id' ] ) ? sanitize_title_with_dashes( $raw_field_data[ 'id' ] ) : $default_meta[ 'id' ],
+			'class'				=> isset( $raw_field_data[ 'class' ] ) ? sanitize_title( $raw_field_data[ 'class' ] ) : $default_meta[ 'class' ]
+		);
+		
+		// Format additional meta
+		$keys_by_type = array( 'bool' => array( 'past_events_bookable' ) );
+		$additional_meta = bookacti_sanitize_values( $default_meta, $raw_field_data, $keys_by_type );
+		$field_meta = array_merge( $field_meta, $additional_meta );
+		
 		
 	} else if( $raw_field_data[ 'name' ] === 'login' ) {
 		// Format meta values
@@ -487,25 +518,23 @@ function bookacti_format_form_field_data( $raw_field_data ) {
 		$register_defaults = bookacti_get_default_register_fields_data();
 		$fields = array( 'label', 'placeholder', 'tip', 'displayed_fields', 'required_fields' );
 		foreach( $fields as $field ) {
-			if( isset( $raw_field_data[ $field ] ) ) {
-				$raw_field_data[ $field ] = maybe_unserialize( $raw_field_data[ $field ] );
-				if( is_array( $raw_field_data[ $field ] ) ) {
-					// Format register
-					$register_fields = array();
-					foreach( $register_defaults as $register_field_name => $register_default ) {
-						$register_fields[ $register_field_name ] = isset( $raw_field_data[ $field ][ $register_field_name ] ) ? $raw_field_data[ $field ][ $register_field_name ] : $register_default[ $field ];
-					}
-					
-					// Merge register fields
-					$field_data[ $field ] = array_merge( array( 
-						'email'			=> isset( $raw_field_data[ $field ][ 'email' ] ) ? $raw_field_data[ $field ][ 'email' ] : $default_data[ $field ][ 'email' ], 
-						'password'		=> isset( $raw_field_data[ $field ][ 'password' ] ) ? $raw_field_data[ $field ][ 'password' ] : $default_data[ $field ][ 'password' ],
-						'register'		=> isset( $raw_field_data[ $field ][ 'register' ] ) ? $raw_field_data[ $field ][ 'register' ] : $default_data[ $field ][ 'register' ]
-					), $register_fields );
-					
-				} else {
-					$field_data[ $field ] = $default_data[ $field ];
+			$raw_field_data[ $field ] = isset( $raw_field_data[ $field ] ) ? maybe_unserialize( $raw_field_data[ $field ] ) : false;
+			if( is_array( $raw_field_data[ $field ] ) ) {
+				// Format register
+				$register_fields = array();
+				foreach( $register_defaults as $register_field_name => $register_default ) {
+					$register_fields[ $register_field_name ] = isset( $raw_field_data[ $field ][ $register_field_name ] ) ? $raw_field_data[ $field ][ $register_field_name ] : $register_default[ $field ];
 				}
+
+				// Merge register fields
+				$field_data[ $field ] = array_merge( array( 
+					'email'			=> isset( $raw_field_data[ $field ][ 'email' ] ) ? $raw_field_data[ $field ][ 'email' ] : $default_data[ $field ][ 'email' ], 
+					'password'		=> isset( $raw_field_data[ $field ][ 'password' ] ) ? $raw_field_data[ $field ][ 'password' ] : $default_data[ $field ][ 'password' ],
+					'register'		=> isset( $raw_field_data[ $field ][ 'register' ] ) ? $raw_field_data[ $field ][ 'register' ] : $default_data[ $field ][ 'register' ]
+				), $register_fields );
+
+			} else {
+				$field_data[ $field ] = $default_data[ $field ];
 			}
 		}
 		
@@ -558,13 +587,40 @@ function bookacti_sanitize_form_field_data( $raw_field_data ) {
 	$field_data	= array();
 	$field_meta	= array();
 	
-	// Format field-specific data and metadata
+	// Sanitize field-specific data and metadata
 	if( $raw_field_data[ 'name' ] === 'calendar' ) {
-		// Format booking system data
+		// Build template_data array
+		$raw_field_data[ 'template_data' ] = array(
+			'start'		=> isset( $raw_field_data[ 'start' ] ) ? $raw_field_data[ 'start' ] : $default_meta[ 'start' ],
+			'end'		=> isset( $raw_field_data[ 'end' ] ) ? $raw_field_data[ 'end' ] : $default_meta[ 'end' ],
+			'settings'	=> array_intersect_key( $raw_field_data, bookacti_format_template_settings( array() ) ) 
+		);
+		
+		// Sanitize booking system data
 		$field_meta = bookacti_format_booking_system_attributes( $raw_field_data );
 		
+		// Keep some meta unformatted
+		if( isset( $raw_field_data[ 'method' ] ) && $raw_field_data[ 'method' ] === 'site' )					{ $field_meta[ 'method' ] = 'site'; }
+		if( isset( $raw_field_data[ 'group_categories' ] ) && $raw_field_data[ 'group_categories' ] === 'none' ){ $field_meta[ 'group_categories' ] = 'none'; }
+		if( isset( $raw_field_data[ 'user_id' ] ) && $raw_field_data[ 'user_id' ] === 'current' )				{ $field_meta[ 'user_id' ] = 'current'; }
+		$field_meta[ 'id' ]		= isset( $raw_field_data[ 'id' ] ) && $raw_field_data[ 'id' ] !== '' ? sanitize_title_with_dashes( $raw_field_data[ 'id' ] ) : $default_meta[ 'id' ];
+		$field_meta[ 'class' ]	= isset( $raw_field_data[ 'class' ] ) && $raw_field_data[ 'class' ] !== '' ? sanitize_title( $raw_field_data[ 'class' ] ) : $default_meta[ 'class' ];
+		
+		// Deconstruct template_data
+		$field_meta[ 'start' ]	= isset( $raw_field_data[ 'start' ] ) && $raw_field_data[ 'start' ] !== '' ? $field_meta[ 'template_data' ][ 'start' ] : $default_meta[ 'start' ];
+		$field_meta[ 'end' ]	= isset( $raw_field_data[ 'end' ] ) && $raw_field_data[ 'end' ] !== '' ? $field_meta[ 'template_data' ][ 'end' ] : $default_meta[ 'end' ];
+		foreach( $field_meta[ 'template_data' ][ 'settings' ] as $key => $value ) {
+			if( ! isset( $default_meta[ $key ] ) ) { continue; }
+			$field_meta[ $key ] = isset( $raw_field_data[ $key ] ) && $raw_field_data[ $key ] !== '' ? $value : $default_meta[ $key ];
+		}
+		
+		// bookacti_log( $raw_field_data );Sanitize additional meta
+		$keys_by_type = array( 'bool' => array( 'past_events_bookable' ) );
+		$additional_meta = bookacti_sanitize_values( $default_meta, $raw_field_data, $keys_by_type );
+		$field_meta = array_merge( $field_meta, $additional_meta );
+		
 	} else if( $raw_field_data[ 'name' ] === 'login' ) {
-		// Format meta values
+		// Sanitize meta values
 		$keys_by_type = array( 'bool' => array( 'generate_password', 'send_new_account_email' ) );
 		$field_meta = bookacti_sanitize_values( $default_meta, $raw_field_data, $keys_by_type, $field_meta );
 		
@@ -572,8 +628,8 @@ function bookacti_sanitize_form_field_data( $raw_field_data ) {
 		$default_data[ 'displayed_fields' ] = $default_meta[ 'displayed_fields' ];
 		$default_data[ 'required_fields' ] = $default_meta[ 'required_fields' ];
 
-		// Format common values (specific cases)
-		// Format label, placeholder and tip
+		// Sanitize common values (specific cases)
+		// Sanitize label, placeholder and tip
 		$register_defaults = bookacti_get_default_register_fields_data();
 		$fields = array( 'label', 'placeholder', 'tip', 'displayed_fields', 'required_fields' );
 		foreach( $fields as $field ) {
@@ -595,8 +651,8 @@ function bookacti_sanitize_form_field_data( $raw_field_data ) {
 				} else {
 					$field_data[ $field ] = $default_data[ $field ];
 				}
-				$raw_field_data[ $field ] = maybe_serialize( $raw_field_data[ $field ] );
 			}
+			$field_data[ $field ] = maybe_serialize( $field_data[ $field ] );
 		}
 		
 	} else if( $raw_field_data[ 'name' ] === 'quantity' ) {
@@ -614,17 +670,21 @@ function bookacti_sanitize_form_field_data( $raw_field_data ) {
 		}
 	}
 	
-	// Format common values
+	// Sanitize common values
 	$keys_by_type = array( 
 		'int'		=> array( 'field_id' ),
 		'str_id'	=> array( 'name', 'type', 'id' ),
 		'str'		=> array( 'title', 'label', 'class', 'value', 'placeholder', 'tip' ),
 		'array'		=> array( 'options' ),
-		'bool'		=> array( 'compulsory', 'default', 'unique' )
+		'bool'		=> array( 'compulsory', 'default', 'unique', 'required' )
 	);
 	$field_data = bookacti_sanitize_values( $default_data, $raw_field_data, $keys_by_type, $field_data );
 	
 	$field_data[ 'options' ] = maybe_serialize( $field_data[ 'options' ] );
+	
+	// Keep only allowed data and metadata
+	$field_data = array_intersect_key( $field_data, $default_data );
+	$field_meta = array_intersect_key( $field_meta, $default_meta );
 	
 	// Merge common data and metadata
 	$field_data = array_merge( $field_data, $field_meta );

@@ -114,7 +114,7 @@ function bookacti_dialog_update_form_meta() {
 							
 							bookacti.form_editor.form = response.form_data;
 							
-							$j( '#bookacti-form-editor' ).trigger( 'bookacti_form_meta_updated' );
+							$j( '#bookacti-form-editor' ).trigger( 'bookacti_form_meta_updated', [ form_id ] );
 							
 						} else if( response.status === 'failed' ) {
 							var message_error = bookacti_localized.error_update_form;
@@ -187,7 +187,7 @@ function bookacti_dialog_insert_form_field() {
 							$j( '#bookacti-field-to-insert option[value="' + field_name + '"][data-unique="1"]' ).attr( 'disabled', true );
 							$j( '#bookacti-field-to-insert' ).val( $j( '#bookacti-field-to-insert option:not([disabled]):first' ).val() );
 							
-							$j( '#bookacti-form-editor' ).trigger( 'bookacti_field_inserted', [ response.field_id ] );
+							$j( '#bookacti-form-editor' ).trigger( 'bookacti_field_inserted', [ response.field_id, field_name ] );
 							
 						} else if( response.status === 'failed' ) {
 							var message_error = bookacti_localized.error_insert_form_field;
@@ -256,7 +256,7 @@ function bookacti_dialog_remove_form_field( field_id, field_name ) {
 							// Enable this field to be inserted again
 							$j( '#bookacti-field-to-insert option[value="' + field_name + '"]' ).attr( 'disabled', false );
 							
-							$j( '#bookacti-form-editor' ).trigger( 'bookacti_field_removed', [ field_id ] );
+							$j( '#bookacti-form-editor' ).trigger( 'bookacti_field_removed', [ field_id, field_name ] );
 							
 						} else if( response.status === 'failed' ) {
 							var message_error = bookacti_localized.error_remove_form_field;
@@ -319,6 +319,8 @@ function bookacti_dialog_update_form_field( field_id, field_name ) {
 		});
 	}
 	
+	$j( '#bookacti-form-editor' ).trigger( 'bookacti_field_update_dialog', [ field_id, field_name ] );
+	
 	// Open the modal dialog
     $j( '#bookacti-form-field-dialog-' + field_name ).dialog( 'open' );
 	
@@ -348,7 +350,12 @@ function bookacti_dialog_update_form_field( field_id, field_name ) {
 						if( response.status === 'success' ) {
 							
 							// Update the field content
-							$j( '#bookacti-form-editor-field-' + field_id ).replaceWith( response.field_html );
+							if( field_name !== 'calendar' ) {
+								$j( '#bookacti-form-editor-field-' + field_id ).replaceWith( response.field_html );
+								
+								// Toogle field
+								if( is_visible ) { $j( '#bookacti-form-editor-field-' + field_id + ' .bookacti-form-editor-field-header' ).trigger( 'click' ); }
+							}
 							
 							// Update the field data
 							bookacti.form_editor.fields[ field_id ] = response.field_data;
@@ -356,10 +363,7 @@ function bookacti_dialog_update_form_field( field_id, field_name ) {
 							// Reload tooltip for generated content
 							bookacti_init_tooltip();
 							
-							// Toogle field
-							if( is_visible ) { $j( '#bookacti-form-editor-field-' + field_id + ' .bookacti-form-editor-field-header' ).trigger( 'click' ); }
-							
-							$j( '#bookacti-form-editor' ).trigger( 'bookacti_field_updated', [ field_id ] );
+							$j( '#bookacti-form-editor' ).trigger( 'bookacti_field_updated', [ field_id, field_name, response ] );
 							
 						} else if( response.status === 'failed' ) {
 							var message_error = bookacti_localized.error_update_form_field;

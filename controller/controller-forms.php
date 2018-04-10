@@ -617,8 +617,8 @@ function bookacti_controller_update_form_field() {
 	if( $is_nonce_valid && $is_allowed && $form_id ) {
 		
 		// Sanitize data
-		$raw_data		= array_merge( $field, $_POST );
-		$sanitized_data	= bookacti_sanitize_form_field_data( $raw_data );
+		$_POST[ 'name' ] = $field[ 'name' ]; $_POST[ 'type' ] = $field[ 'type' ];
+		$sanitized_data	= bookacti_sanitize_form_field_data( $_POST );
 		
 		// Update form field
 		$updated = bookacti_update_form_field( $sanitized_data );

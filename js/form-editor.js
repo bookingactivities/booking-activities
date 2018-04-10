@@ -41,6 +41,44 @@ $j( document ).ready( function() {
 		e.preventDefault();
 		bookacti_save_form();
 	});
+	
+	// Field-specific actions
+	$j( '#bookacti-form-editor' ).on( 'bookacti_field_update_dialog', function( e, field_id, field_name ){
+		if( field_name === 'calendar' ) {
+			// Fill fields with raw values
+			//bookacti_fill_fields_from_array( bookacti.form_editor.fields[ field_id ].template_data, '', 'form#bookacti-form-field-form-' + field_name );
+			bookacti_fill_fields_from_array( bookacti.form_editor.fields[ field_id ].template_data.settings, '', 'form#bookacti-form-field-form-' + field_name );
+			bookacti_fill_fields_from_array( bookacti.form_editor.fields[ field_id ].raw, '', 'form#bookacti-form-field-form-' + field_name );
+			
+			// Calendars and Activities array: if empty, select all
+			if( bookacti.form_editor.fields[ field_id ].calendars.length === 0 ) {
+				$j( '#bookacti-multiple-select-_bookacti_template' ).prop( 'checked', true );
+				bookacti_switch_select_to_multiple( '#bookacti-multiple-select-_bookacti_template' );
+				$j( '#_bookacti_template option' ).prop( 'selected', true );
+				$j( '#_bookacti_template' ).trigger( 'change' );
+			}
+			if( bookacti.form_editor.fields[ field_id ].activities.length === 0 ) {
+				$j( '#bookacti-multiple-select-activities' ).prop( 'checked', true );
+				bookacti_switch_select_to_multiple( '#bookacti-multiple-select-activities' );
+				$j( '#activities option' ).prop( 'selected', true );
+			}
+		}
+	});
+	$j( '#bookacti-form-editor' ).on( 'bookacti_field_updated', function( e, field_id, field_name ){
+		if( field_name === 'calendar' ) {
+			var booking_system = $j( '#bookacti-form-editor-field-' + field_id + ' .bookacti-booking-system' );
+			
+			// Clear booking system
+			booking_system.empty();
+			bookacti_clear_booking_system_displayed_info( booking_system );
+
+			// Reload booking system
+			bookacti.booking_system[ 'bookacti-form-editor-calendar' ] = [];
+			bookacti.booking_system[ 'bookacti-form-editor-calendar' ] = $j.extend( true, {}, bookacti.form_editor.fields[ field_id ] ); // Clone field data, else cahnging booking_system data will change field data
+			
+			bookacti_reload_booking_system( booking_system );
+		}
+	});
 });
 
 

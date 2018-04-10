@@ -54,11 +54,13 @@ body.booking-activities_page_bookacti_forms label[for='bookacti_form_publish-hid
 
 
 /* Dialogs */
-.bookacti-form-dialog form div > label:not(.bookacti-onoffswitch-label) { display: inline-block; max-width: 130px; font-family: Arial,Helvetica,sans-serif; font-weight: bold; }
+.bookacti-form-dialog form div > label:not(.bookacti-onoffswitch-label) { display: inline-block; width: 130px; max-width: 130px; font-family: Arial,Helvetica,sans-serif; font-weight: bold; }
 .bookacti-form-dialog form fieldset > div,
 .bookacti-form-dialog form > div			{ margin-bottom: 10px; }
 .bookacti-form-dialog form fieldset > div:last-child,
 .bookacti-form-dialog form > div:last-child	{ margin-bottom: 0; }
+
+.bookacti-form-dialog .bookacti-combobox-input	{ min-width: 150px; width: 150px; }
 
 
 /* Metaboxes */

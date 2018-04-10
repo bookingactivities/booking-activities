@@ -5,7 +5,7 @@
 .bookacti-tip {
 	position: relative;
 	vertical-align: middle;
-	padding-left: 10px;
+	padding-left: 5px;
 }
 #tiptip_content {
     color: #fff;
@@ -110,7 +110,7 @@
 /* Tabs */
 .bookacti-tabs .bookacti-tab-content div > label:not(.bookacti-onoffswitch-label)	{ display: inline-block; width: 150px; font-weight: bold; }
 .bookacti-tabs .bookacti-tab-content div > label.bookacti-fullwidth-label			{ width: 100%; }
-.bookacti-tabs .bookacti-tab-content div > input[type='checkbox'] + label:not(.bookacti-onoffswitch-label) { display: inline; width: auto; font-weight: normal; }
+.bookacti-tabs .bookacti-tab-content div > input + label:not(.bookacti-onoffswitch-label) { display: inline; width: auto; font-weight: normal; }
 .bookacti-tabs .bookacti-tab-content .bookacti-checkbox-group div { display: inline-block; margin-right: 20px; }
 .bookacti-tabs .bookacti-tab-content > div { margin-bottom: 10px; }
 .bookacti-tabs .bookacti-tab-content > div.bookacti-display-inline-block { display: inline-block; }

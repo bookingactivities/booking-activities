@@ -345,7 +345,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 							min='-1' step='1' 
 							onkeypress='return event.charCode >= 48 && event.charCode <= 57' />
 					<?php
-						/* translators: Arrive after a field indicating a number of days before the event. E.g.: "Events will be bookable in 2 days from today". */
+						/* translators: Arrives after a field indicating a number of days before the event. E.g.: "Events will be bookable in 2 days from today". */
 						_e( 'days from today', BOOKACTI_PLUGIN_NAME );
 						$tip = __( 'Set the beginning of the availability period. E.g.: "2", your customers may book events starting in 2 days at the earliest. They are no longer allowed to book events starting earlier (like today or tomorrow).', BOOKACTI_PLUGIN_NAME );
 						$tip .= '<br/>' . __( 'This parameter applies to the events of this calendar only. A global parameter is available in global settings.', BOOKACTI_PLUGIN_NAME );
@@ -361,7 +361,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 							min='-1' step='1'
 							onkeypress='return event.charCode >= 48 && event.charCode <= 57' />
 					<?php
-						/* translators: Arrive after a field indicating a number of days before the event. E.g.: "Events will be bookable in 2 days from today". */
+						/* translators: Arrives after a field indicating a number of days before the event. E.g.: "Events will be bookable in 2 days from today". */
 						_e( 'days from today', BOOKACTI_PLUGIN_NAME );
 						$tip = __( 'Set the end of the availability period. E.g.: "30", your customers may book events starting within 30 days at the latest. They are not allowed yet to book events starting later.', BOOKACTI_PLUGIN_NAME );
 						$tip .= '<br/>' . __( 'This parameter applies to the events of this calendar only. A global parameter is available in global settings.', BOOKACTI_PLUGIN_NAME );
