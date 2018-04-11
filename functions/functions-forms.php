@@ -495,7 +495,7 @@ function bookacti_format_form_field_data( $raw_field_data ) {
 			'group_categories'	=> isset( $raw_field_data[ 'group_categories' ] ) ? $raw_field_data[ 'group_categories' ] : $default_meta[ 'group_categories' ],
 			'user_id'			=> isset( $raw_field_data[ 'user_id' ] ) ? $raw_field_data[ 'user_id' ] : $default_meta[ 'user_id' ],
 			'id'				=> isset( $raw_field_data[ 'id' ] ) ? sanitize_title_with_dashes( $raw_field_data[ 'id' ] ) : $default_meta[ 'id' ],
-			'class'				=> isset( $raw_field_data[ 'class' ] ) ? sanitize_title( $raw_field_data[ 'class' ] ) : $default_meta[ 'class' ]
+			'class'				=> isset( $raw_field_data[ 'class' ] ) ? sanitize_text_field( $raw_field_data[ 'class' ] ) : $default_meta[ 'class' ]
 		);
 		
 		// Format additional meta
@@ -604,7 +604,7 @@ function bookacti_sanitize_form_field_data( $raw_field_data ) {
 		if( isset( $raw_field_data[ 'group_categories' ] ) && $raw_field_data[ 'group_categories' ] === 'none' ){ $field_meta[ 'group_categories' ] = 'none'; }
 		if( isset( $raw_field_data[ 'user_id' ] ) && $raw_field_data[ 'user_id' ] === 'current' )				{ $field_meta[ 'user_id' ] = 'current'; }
 		$field_meta[ 'id' ]		= isset( $raw_field_data[ 'id' ] ) && $raw_field_data[ 'id' ] !== '' ? sanitize_title_with_dashes( $raw_field_data[ 'id' ] ) : $default_meta[ 'id' ];
-		$field_meta[ 'class' ]	= isset( $raw_field_data[ 'class' ] ) && $raw_field_data[ 'class' ] !== '' ? sanitize_title( $raw_field_data[ 'class' ] ) : $default_meta[ 'class' ];
+		$field_meta[ 'class' ]	= isset( $raw_field_data[ 'class' ] ) && $raw_field_data[ 'class' ] !== '' ? sanitize_text_field( $raw_field_data[ 'class' ] ) : $default_meta[ 'class' ];
 		
 		// Deconstruct template_data
 		$field_meta[ 'start' ]	= isset( $raw_field_data[ 'start' ] ) && $raw_field_data[ 'start' ] !== '' ? $field_meta[ 'template_data' ][ 'start' ] : $default_meta[ 'start' ];
@@ -614,7 +614,7 @@ function bookacti_sanitize_form_field_data( $raw_field_data ) {
 			$field_meta[ $key ] = isset( $raw_field_data[ $key ] ) && $raw_field_data[ $key ] !== '' ? $value : $default_meta[ $key ];
 		}
 		
-		// bookacti_log( $raw_field_data );Sanitize additional meta
+		// Sanitize additional meta
 		$keys_by_type = array( 'bool' => array( 'past_events_bookable' ) );
 		$additional_meta = bookacti_sanitize_values( $default_meta, $raw_field_data, $keys_by_type );
 		$field_meta = array_merge( $field_meta, $additional_meta );

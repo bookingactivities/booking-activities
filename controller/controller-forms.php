@@ -627,6 +627,7 @@ function bookacti_controller_update_form_field() {
 			
 			// Extract metadata only
 			$field_meta = array_intersect_key( $sanitized_data, bookacti_get_default_form_fields_meta( $field[ 'name' ] ) );
+			
 			if( $field_meta ) {
 				// Update field metadata
 				bookacti_update_metadata( 'form_field', $field_id, $field_meta );

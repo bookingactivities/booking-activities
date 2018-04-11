@@ -167,63 +167,61 @@ function bookacti_fill_fields_from_array( fields, field_prefix, scope ) {
 	scope = typeof scope === 'undefined' || ! scope ? '' : scope + ' ';
 	
 	$j.each( fields, function( key, value ) {
-		if( fields[ key ] ) {
-			var field_name = field_prefix ? field_prefix + '[' + key + ']' : key;
-			
-			// If the value is also a plain object, fill its fields recursively
-			if( $j.isPlainObject( value ) ) {
-				bookacti_fill_fields_from_array( value, field_name, scope );
-				return true; // Jump to next field
-			}
-			
-			// Checkbox
-			if( $j( scope + 'input[type="checkbox"][name="' + field_name + '[]"]' ).length 
-			||  $j( scope + 'input[type="checkbox"][name="' + field_name + '"]' ).length ) {
-				
-				if( $j.isArray( value ) ){
-					$j( scope + 'input[type="checkbox"][name="' + field_name + '[]"]' ).prop( 'checked', false );
-					$j.each( value, function( i, checkbox_value ){
-						$j( scope + 'input[type="checkbox"][name="' + field_name + '[]"][value="' + checkbox_value + '"]' ).prop( 'checked', true );
-					});
-				} else if( value == 1 ) {
-					$j( scope + 'input[type="checkbox"][name="' + field_name + '"]' ).prop( 'checked', true );
-				} else {
-					$j( scope + 'input[type="checkbox"][name="' + field_name + '"]' ).prop( 'checked', false );
-				}
-				
-			// Radio
-			} else if( $j( scope + 'input[name="' + field_name + '"]' ).is( ':radio' ) ) {
-				$j( scope + 'input[name="' + field_name + '"][value="' + value + '"]' ).prop( 'checked', true );
-				
-			// Select
-			} else if( $j( scope + 'select[name="' + field_name + '"]' ).length ) {
-				$j( scope + 'select[name="' + field_name + '"] option[value="' + value + '"]' ).prop( 'selected', true );
-				$j( scope + 'select[name="' + field_name + '"]' ).trigger( 'change' );
-				// Update user-selectbox
-				if( $j( scope + 'select[name="' + field_name + '"].bookacti-user-selectbox' ).length ) {
-					var new_value = $j( scope + 'select[name="' + field_name + '"].bookacti-user-selectbox option:selected' ).html();
-					$j( scope + 'select[name="' + field_name + '"].bookacti-user-selectbox' ).siblings( '.bookacti-combobox' ).find( '.bookacti-combobox-input' ).val( new_value );
-				}
-				
-			// Select multiple
-			} else if( $j( scope + 'select[name="' + field_name + '[]"]' ).length ) {
-				$j.each( value, function( i, option ){
-					$j( scope + 'select[name="' + field_name + '[]"] option[value="' + option + '"]' ).prop( 'selected', true );
+		var field_name = field_prefix ? field_prefix + '[' + key + ']' : key;
+
+		// If the value is also a plain object, fill its fields recursively
+		if( $j.isPlainObject( value ) ) {
+			bookacti_fill_fields_from_array( value, field_name, scope );
+			return true; // Jump to next field
+		}
+
+		// Checkbox
+		if( $j( scope + 'input[type="checkbox"][name="' + field_name + '[]"]' ).length 
+		||  $j( scope + 'input[type="checkbox"][name="' + field_name + '"]' ).length ) {
+
+			if( $j.isArray( value ) ){
+				$j( scope + 'input[type="checkbox"][name="' + field_name + '[]"]' ).prop( 'checked', false );
+				$j.each( value, function( i, checkbox_value ){
+					$j( scope + 'input[type="checkbox"][name="' + field_name + '[]"][value="' + checkbox_value + '"]' ).prop( 'checked', true );
 				});
-				$j( scope + 'select[name="' + field_name + '[]"]' ).trigger( 'change' );
-				
-			// Input and Textarea
+			} else if( value == 1 ) {
+				$j( scope + 'input[type="checkbox"][name="' + field_name + '"]' ).prop( 'checked', true );
 			} else {
-				// If the time value is 24:00, reset it to 00:00
-				if( $j( scope + 'input[name="' + field_name + '"]' ).attr( 'type' ) === 'time' && value === '24:00' ) { value = '00:00'; }
-				$j( scope + 'input[name="' + field_name + '"]' ).val( value );
-				$j( scope + 'textarea[name="' + field_name + '"]' ).val( value );
-				if( typeof tinyMCE !== 'undefined' ) {
-					if( tinyMCE && $j( scope + 'textarea[name="' + field_name + '"]' ).hasClass( 'wp-editor-area' ) ) {
-						var tmce_id = $j( scope + 'textarea[name="' + field_name + '"]' ).attr( 'id' );
-						if( tinyMCE.get( tmce_id ) ) {
-							tinyMCE.get( tmce_id ).setContent( value );
-						}
+				$j( scope + 'input[type="checkbox"][name="' + field_name + '"]' ).prop( 'checked', false );
+			}
+
+		// Radio
+		} else if( $j( scope + 'input[name="' + field_name + '"]' ).is( ':radio' ) ) {
+			$j( scope + 'input[name="' + field_name + '"][value="' + value + '"]' ).prop( 'checked', true );
+
+		// Select
+		} else if( $j( scope + 'select[name="' + field_name + '"]' ).length ) {
+			$j( scope + 'select[name="' + field_name + '"] option[value="' + value + '"]' ).prop( 'selected', true );
+			$j( scope + 'select[name="' + field_name + '"]' ).trigger( 'change' );
+			// Update user-selectbox
+			if( $j( scope + 'select[name="' + field_name + '"].bookacti-user-selectbox' ).length ) {
+				var new_value = $j( scope + 'select[name="' + field_name + '"].bookacti-user-selectbox option:selected' ).html();
+				$j( scope + 'select[name="' + field_name + '"].bookacti-user-selectbox' ).siblings( '.bookacti-combobox' ).find( '.bookacti-combobox-input' ).val( new_value );
+			}
+
+		// Select multiple
+		} else if( $j( scope + 'select[name="' + field_name + '[]"]' ).length ) {
+			$j.each( value, function( i, option ){
+				$j( scope + 'select[name="' + field_name + '[]"] option[value="' + option + '"]' ).prop( 'selected', true );
+			});
+			$j( scope + 'select[name="' + field_name + '[]"]' ).trigger( 'change' );
+
+		// Input and Textarea
+		} else {
+			// If the time value is 24:00, reset it to 00:00
+			if( $j( scope + 'input[name="' + field_name + '"]' ).attr( 'type' ) === 'time' && value === '24:00' ) { value = '00:00'; }
+			$j( scope + 'input[name="' + field_name + '"]' ).val( value );
+			$j( scope + 'textarea[name="' + field_name + '"]' ).val( value );
+			if( typeof tinyMCE !== 'undefined' ) {
+				if( tinyMCE && $j( scope + 'textarea[name="' + field_name + '"]' ).hasClass( 'wp-editor-area' ) ) {
+					var tmce_id = $j( scope + 'textarea[name="' + field_name + '"]' ).attr( 'id' );
+					if( tinyMCE.get( tmce_id ) ) {
+						tinyMCE.get( tmce_id ).setContent( value );
 					}
 				}
 			}

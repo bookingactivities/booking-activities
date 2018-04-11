@@ -26,7 +26,7 @@ function bookacti_get_default_settings() {
 		'allow_customers_to_cancel'				=> true,
 		'allow_customers_to_reschedule'			=> true,
 		'cancellation_min_delay_before_event'	=> 7,
-		'refund_actions_after_cancellation'		=> 'do_nothing',
+		'refund_actions_after_cancellation'		=> array(),
 		'notifications_from_name'				=> get_bloginfo( 'name' ),
 		'notifications_from_email'				=> get_bloginfo( 'admin_email' ),
 		'notifications_async'					=> true
@@ -475,15 +475,14 @@ function bookacti_settings_section_bookings_callback() { }
 	/**
 	 * Possible actions to take after cancellation needing refund
 	 * 
-	 * @version 1.2.0
+	 * @version 1.5.0
 	 */
 	function bookacti_settings_field_cancellation_refund_actions_callback() {
 		
 		$actions = bookacti_get_setting_value( 'bookacti_cancellation_settings', 'refund_actions_after_cancellation' );
 		
-		if( ! is_array( $actions ) ) {
-			$actions = $actions ? array( $actions => 1 ) : array();
-		}
+		if( is_string( $actions ) ) { $actions = array( $actions ); }
+		if( ! is_array( $actions ) ) { $actions = array(); }
 		
 		$args = array(
 			'type'		=> 'checkboxes',
@@ -496,10 +495,6 @@ function bookacti_settings_section_bookings_callback() { }
 		
 		?>
 		<div id='bookacti_refund_actions'>
-			<input name='bookacti_cancellation_settings[refund_actions_after_cancellation][do_nothing]' 
-				type='hidden' 
-				value='1'
-			/>
 			<?php bookacti_display_field( $args ); ?>
 		</div>
 		<?php

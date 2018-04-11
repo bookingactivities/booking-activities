@@ -871,13 +871,13 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			$allowed_actions = bookacti_get_setting_value( 'bookacti_cancellation_settings', 'refund_actions_after_cancellation' );
 			if( ! is_array( $allowed_actions ) ) {
 				if( ! empty( $allowed_actions ) ) {
-					$allowed_actions = array( $allowed_actions => 1 );
+					$allowed_actions = array( $allowed_actions );
 				} else {
 					$allowed_actions = array();
 				}
 			}
 			// Keep all possible actions that are allowed
-			$possible_actions = array_intersect_key( $possible_actions, $allowed_actions );
+			$possible_actions = array_intersect_key( $possible_actions, array_flip( $allowed_actions ) );
 		
 		// If current user is an admin
 		} else {

@@ -86,8 +86,8 @@ function bookacti_format_template_settings( $template_settings ) {
 		'minTime'					=> '08:00',
 		'maxTime'					=> '20:00',
 		'snapDuration'				=> '00:30',
-		'availability_period_start'	=> -1,
-		'availability_period_end'	=> -1
+		'availability_period_start'	=> '',
+		'availability_period_end'	=> ''
 	) );
 	
 	$settings = array();

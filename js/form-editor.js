@@ -41,7 +41,7 @@ $j( document ).ready( function() {
 		e.preventDefault();
 		bookacti_save_form();
 	});
-	
+	console.log( bookacti.form_editor );
 	// Field-specific actions
 	$j( '#bookacti-form-editor' ).on( 'bookacti_field_update_dialog', function( e, field_id, field_name ){
 		if( field_name === 'calendar' ) {

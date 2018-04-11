@@ -287,8 +287,6 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 					<input type="time" name="templateOptions[minTime]" id='bookacti-template-data-minTime' value='08:00'>
 					<?php
 					$tip = __( "Set when you want the days to begin on the calendar. Ex: '06:00' Days will begin at 06:00am.", BOOKACTI_PLUGIN_NAME );
-					$tip .= ' ' . __( "See more at", BOOKACTI_PLUGIN_NAME );
-					$tip .= ' <a href="http://fullcalendar.io/docs/agenda/minTime/" target="_blank" >minTime</a>.';
 					bookacti_help_tip( $tip );
 					?>
 				</div>
@@ -302,8 +300,6 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 					<input type="time" name="templateOptions[maxTime]" id='bookacti-template-data-maxTime' value='20:00' >
 					<?php
 					$tip = __( "Set when you want the days to end on the calendar. Ex: '18:00' Days will end at 06:00pm.", BOOKACTI_PLUGIN_NAME );
-					$tip .= ' ' . __( "See more at", BOOKACTI_PLUGIN_NAME );
-					$tip .= ' <a href="http://fullcalendar.io/docs/agenda/maxTime/" target="_blank" >maxTime</a>.';
 					bookacti_help_tip( $tip );
 					?>
 				</div>
@@ -317,8 +313,6 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 					<input type="time" name="templateOptions[snapDuration]" id='bookacti-template-data-snapDuration' value='00:30' >
 					<?php
 					$tip = __( "The time interval at which a dragged event will snap to the agenda view time grid. Ex: '00:20', you will be able to drop an event every 20 minutes (at 6:00am, 6:20am, 6:40am...).", BOOKACTI_PLUGIN_NAME );
-					$tip .= ' ' . __( "See more at", BOOKACTI_PLUGIN_NAME );
-					$tip .= ' <a href="http://fullcalendar.io/docs/agenda/snapDuration/" target="_blank" >snapDuration</a>.';
 					bookacti_help_tip( $tip );
 					?>
 				</div>
@@ -517,8 +511,6 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 						bookacti_onoffswitch( $name, 0, $id );
 					
 						$tip = __( "Allow to resize an event directly on calendar.", BOOKACTI_PLUGIN_NAME );
-						$tip .= ' ' . __( "See more at", BOOKACTI_PLUGIN_NAME );
-						$tip .= ' <a href="http://fullcalendar.io/docs/event_ui/eventDurationEditable/" target="_blank" >eventDurationEditable</a>';
 						bookacti_help_tip( $tip );
 					?>
 				</div>

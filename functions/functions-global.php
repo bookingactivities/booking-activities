@@ -259,7 +259,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		// Display field according to type
 
 		// TEXT & NUMBER
-		if( in_array( $args[ 'type' ], array( 'text', 'number', 'date', 'email', 'password' ) ) ) {
+		if( in_array( $args[ 'type' ], array( 'text', 'number', 'date', 'time', 'email', 'password' ) ) ) {
 		?>
 			<input	type=		'<?php echo esc_attr( $args[ 'type' ] ); ?>' 
 					name=		'<?php echo esc_attr( $args[ 'name' ] ); ?>' 
@@ -267,7 +267,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 					class=		'bookacti-input <?php echo esc_attr( $args[ 'class' ] ); ?>' 
 					placeholder='<?php echo esc_attr( $args[ 'placeholder' ] ); ?>' 
 					value=		'<?php echo esc_attr( $args[ 'value' ] ); ?>' 
-				<?php if( $args[ 'type' ] === 'number' ) { ?>
+				<?php if( in_array( $args[ 'type' ], array( 'number', 'date', 'time' ) ) ) { ?>
 					min=		'<?php echo esc_attr( $args[ 'options' ][ 'min' ] ); ?>' 
 					max=		'<?php echo esc_attr( $args[ 'options' ][ 'max' ] ); ?>'
 					step=		'<?php echo esc_attr( $args[ 'options' ][ 'step' ] ); ?>'
@@ -307,24 +307,30 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 		// MULTIPLE CHECKBOX
 		else if( $args[ 'type' ] === 'checkboxes' ) {
+			?>
+			<input  name='<?php echo esc_attr( $args[ 'name' ] ) . '[]'; ?>' 
+					id='<?php echo esc_attr( $args[ 'id' ] ) . '_none'; ?>'
+					type='hidden' 
+					value='none' />
+			<?php
 			foreach( $args[ 'options' ] as $option ) {
 			?>
 				<div class='bookacti_checkbox'>
-					<input	name='<?php echo esc_attr( $args[ 'name' ] ) . '[' . esc_attr( $option[ 'id' ] ) . ']'; ?>' 
+					<input	name='<?php echo esc_attr( $args[ 'name' ] ) . '[]'; ?>' 
 							id='<?php echo esc_attr( $args[ 'id' ] ) . '_' . esc_attr( $option[ 'id' ] ); ?>' 
 							class='bookacti-input <?php echo esc_attr( $args[ 'class' ] ); ?>' 
 							type='checkbox' 
-							value='1'
-							<?php if( isset( $args[ 'value' ][ $option[ 'id' ] ] ) ) { checked( $args[ 'value' ][ $option[ 'id' ] ], 1, true ); } ?>
+							value='<?php echo $option[ 'id' ]; ?>'
+							<?php if( in_array( $option[ 'id' ], $args[ 'value' ], true ) ){ echo 'checked'; } ?>
 					/>
-				<?php if( $option[ 'label' ] ) { ?>
+				<?php if( ! empty( $option[ 'label' ] ) ) { ?>
 					<label for='<?php echo esc_attr( $args[ 'id' ] ) . '_' . esc_attr( $option[ 'id' ] ); ?>' >
 						<?php echo apply_filters( 'bookacti_translate_text', $option[ 'label' ] ); ?>
 					</label>
 				<?php
 					}
 					// Display the tip
-					if( $option[ 'description' ] ) {
+					if( ! empty( $option[ 'description' ] ) ) {
 						$tip = apply_filters( 'bookacti_translate_text', $option[ 'description' ] );
 						bookacti_help_tip( $tip );
 					}
@@ -421,7 +427,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		if( ! isset( $args[ 'type' ] ) || ! isset( $args[ 'name' ] ) ) { return false; }
 
 		// If field type is not supported, return
-		if( ! in_array( $args[ 'type' ], array( 'text', 'email', 'date', 'password', 'number', 'checkbox', 'checkboxes', 'select', 'radio', 'textarea', 'editor' ) ) ) { 
+		if( ! in_array( $args[ 'type' ], array( 'text', 'email', 'date', 'time', 'password', 'number', 'checkbox', 'checkboxes', 'select', 'radio', 'textarea', 'editor' ) ) ) { 
 			return false; 
 		}
 
@@ -473,7 +479,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		}
 
 		// Make sure 'number' has min and max
-		else if( $args[ 'type' ] === 'number' || $args[ 'type' ] === 'date' ) {
+		else if( in_array( $args[ 'type' ], array( 'number', 'date', 'time' ) ) ) {
 			$args[ 'options' ][ 'min' ] = isset( $args[ 'options' ][ 'min' ] ) ? $args[ 'options' ][ 'min' ] : '';
 			$args[ 'options' ][ 'max' ] = isset( $args[ 'options' ][ 'max' ] ) ? $args[ 'options' ][ 'max' ] : '';
 			$args[ 'options' ][ 'step' ] = isset( $args[ 'options' ][ 'step' ] ) ? $args[ 'options' ][ 'step' ] : '';

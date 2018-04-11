@@ -316,6 +316,7 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 * Feature - Customizable booking forms !
 * Tweak - Add a dismissible admin notice to inform that WooCommerce "guest checkout" option isn't supported
 * Tweak - Use core dashicons instead of additional images in backend
+* **Breaking change** - Refund actions in Booking Activities settings must be set again
 
 = 1.4.4 - 2018/04/06 =
 * Tweak - Changed events list CSS in "Pick a group of events" dialog

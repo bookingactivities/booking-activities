@@ -79,7 +79,6 @@ include_once( 'controller/controller-settings.php' );
 include_once( 'controller/controller-notifications.php' );
 include_once( 'controller/controller-bookings.php' );
 include_once( 'controller/controller-forms.php' );
-include_once( 'controller/controller-woocommerce-forms.php' );
 include_once( 'controller/controller-shortcodes.php' );
 
 
@@ -106,6 +105,7 @@ if( bookacti_is_plugin_active( 'woocommerce/woocommerce.php' ) ) {
 	include_once( 'controller/controller-woocommerce-frontend.php' );
 	include_once( 'controller/controller-woocommerce-settings.php' );
 	include_once( 'controller/controller-woocommerce-notifications.php' );
+	include_once( 'controller/controller-woocommerce-forms.php' );
 	include_once( 'functions/functions-woocommerce.php' );
 	require_once( 'model/model-woocommerce.php' );
 }

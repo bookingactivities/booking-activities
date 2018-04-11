@@ -29,10 +29,10 @@ add_action( 'bookacti_after_form_integration_tuto', 'bookacti_display_wc_form_in
  */
 function bookacti_form_editor_wc_description( $form ) {
 	echo '<p>' . sprintf( __( 'The fields with this icon %1$s will NOT appear on WooCommerce product pages.', BOOKACTI_PLUGIN_NAME ), '<span class="bookacti-wc-icon-not-supported"></span>' );
-	bookacti_help_tip( __( 'These fields already exist in WooCommerce. E.g.: Quantity and Submit are already part of product pages. Login, Phone and Address are already asked on checkout page...', BOOKACTI_PLUGIN_NAME ) );
+	bookacti_help_tip( __( 'These fields already exist in WooCommerce. E.g.: Quantity and Submit are already part of product pages. Login and register fields are already asked on checkout page.', BOOKACTI_PLUGIN_NAME ) );
 	echo '</p>';
 }
-add_action( 'bookacti_form_editor_description_after', 'bookacti_form_editor_wc_description', 10, 1 );
+add_action( 'bookacti_form_editor_description_after', 'bookacti_form_editor_wc_description', 20, 1 );
 
 
 /**
