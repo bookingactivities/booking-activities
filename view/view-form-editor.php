@@ -19,17 +19,10 @@ if( ! $form_id ) { exit; }
 if( $form_id === 'new' ) {
 	// Exit if not allowed to create a form
 	$can_create_form = current_user_can( 'bookacti_create_forms' );
-	if( ! $can_create_form ) { echo __( 'You are not allowed to do this.', BOOKACTI_PLUGIN_NAME ); exit; }
+	if( ! $can_create_form ) { esc_html_e( 'You are not allowed to do this.', BOOKACTI_PLUGIN_NAME ); exit; }
 	
-	// Insert form
-	$form_id = bookacti_insert_form( '', 'auto-draft', 0 );
-	
-	// Insert default form fields
-	bookacti_insert_default_form_fields( $form_id );
-	
-	// Insert default form managers
-	$form_managers = bookacti_format_form_managers();
-	bookacti_update_managers( 'form', $form_id, $form_managers );
+	$form_id = bookacti_create_form();
+	if( ! $form_id ) { esc_html_e( 'Error occurs when trying to create the form.', BOOKACTI_PLUGIN_NAME ); exit; }
 	
 	// Change current url to the edit url
 	$form_url = is_multisite() ? network_admin_url( 'admin.php?page=bookacti_forms&action=edit&form_id=' . $form_id ) : admin_url( 'admin.php?page=bookacti_forms&action=edit&form_id=' . $form_id );
@@ -179,7 +172,7 @@ if( ! $form ) { return; }
 										// Display form fields 
 										$ordered_form_fields = bookacti_sort_form_fields_array( $form_id, $form_fields );
 										foreach( $ordered_form_fields as $field ) {
-											bookacti_diplay_form_field_for_editor( $field, $form_id );
+											bookacti_display_form_field_for_editor( $field );
 										}
 										
 										do_action( 'bookacti_form_editor_after', $form );

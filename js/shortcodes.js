@@ -1,7 +1,7 @@
 $j( document ).ready( function() {
 	
 	// Intercept booking form submission
-	$j( '.bookacti-booking-system-form' ).on( 'submit', function( e ){
+	$j( '.bookacti-booking-form' ).on( 'submit', function( e ){
 		// Prevent submission
 		e.preventDefault();
 		
@@ -9,7 +9,7 @@ $j( document ).ready( function() {
 		var booking_system	= form.find( '.bookacti-booking-system' );
 		
 		// Disable the submit button to avoid multiple booking
-		form.find( '.bookacti-booking-system-field-submit-container input[type="submit"]' ).prop( 'disabled', true );
+		form.find( '.bookacti-form-field-name-submit input[type="submit"]' ).prop( 'disabled', true );
 		
 		// If not logged in
 		if( typeof bookacti_localized.current_user_id === 'undefined'
@@ -19,7 +19,7 @@ $j( document ).ready( function() {
 			booking_system.siblings( '.bookacti-notices' ).empty().append( "<ul class='bookacti-error-list'><li>" + bookacti_localized.error_user_not_logged_in + "</li></ul>" ).show();
 			
 			// Re-enable the submit button
-			form.find( '.bookacti-booking-system-field-submit-container input[type="submit"]' ).prop( 'disabled', false );
+			form.find( '.bookacti-form-field-name-submit input[type="submit"]' ).prop( 'disabled', false );
 			
 			// End script
 			return false;			
@@ -29,7 +29,7 @@ $j( document ).ready( function() {
 		
 		if( ! is_valid_event ) {
 			// Re-enable the submit button
-			form.find( '.bookacti-booking-system-field-submit-container input[type="submit"]' ).prop( 'disabled', false );
+			form.find( '.bookacti-form-field-name-submit input[type="submit"]' ).prop( 'disabled', false );
 			
 			// End script
 			return false;
@@ -56,10 +56,10 @@ $j( document ).ready( function() {
 					if( response.status === 'success' ) {
 						
 						// Hide fields and submit button to avoid duplicated bookings
-						form.find( '.bookacti-booking-system-field-container:not(.bookacti-booking-system-field-submit-container), .bookacti-booking-system-field-submit-container input[type="submit"]' ).hide();
+						form.find( '.bookacti-form-field-container:not(.bookacti-form-field-name-submit):not(.bookacti-form-field-name-calendar), .bookacti-form-field-name-submit input[type="submit"]' ).hide();
 						
 						// Show a "Make a new booking" button to avoid refreshing the page to make a new booking
-						form.find( '.bookacti-booking-system-field-submit-container' ).append( '<input type="button" class="bookacti-new-booking-button" value="' + bookacti_localized.booking_form_new_booking_button + '" />' );
+						form.find( '.bookacti-form-field-name-submit' ).append( '<input type="button" class="bookacti-new-booking-button" value="' + bookacti_localized.booking_form_new_booking_button + '" />' );
 						
 						message = "<ul class='bookacti-success-list bookacti-persistent-notice'><li>" + response.message + "</li></ul>";
 						
@@ -89,7 +89,7 @@ $j( document ).ready( function() {
 					bookacti_stop_loading_booking_system( booking_system );
 					
 					// Re-enable the submit button
-					form.find( '.bookacti-booking-system-field-submit-container input[type="submit"]' ).prop( 'disabled', false );
+					form.find( '.bookacti-form-field-name-submit input[type="submit"]' ).prop( 'disabled', false );
 				}
 			});	
 		}
@@ -97,7 +97,7 @@ $j( document ).ready( function() {
 	
 	
 	// Display booking system fields and submit button if the user want to make a new booking
-	$j( '.bookacti-booking-system-form' ).on( 'click', '.bookacti-new-booking-button', function(){
+	$j( '.bookacti-booking-form' ).on( 'click', '.bookacti-new-booking-button', function(){
 		var form = $j( this ).parents( 'form' );
 		var booking_system	= form.find( '.bookacti-booking-system' );
 		
@@ -105,13 +105,13 @@ $j( document ).ready( function() {
 		bookacti_clear_booking_system_displayed_info( booking_system );
 		
 		// Display form fields and submit button, and then, delete the "Make a new booking" button
-		form.find( '.bookacti-booking-system-field-container:not(.bookacti-booking-system-field-submit-container), .bookacti-booking-system-field-submit-container input[type="submit"]' ).show();
+		form.find( '.bookacti-form-field-container:not(.bookacti-form-field-name-submit), .bookacti-form-field-name-submit input[type="submit"]' ).show();
 		$j( this ).remove();
 	});
 	
 	
 	// Change activity summary on qty change
-	$j( '.bookacti-booking-system-form' ).on( 'keyup mouseup', 'input.bookacti-quantity', function() {
+	$j( '.bookacti-booking-form' ).on( 'keyup mouseup', 'input.bookacti-quantity', function() {
 		var booking_system = $j( this ).parents( 'form' ).find( '.bookacti-booking-system' );
 		if( booking_system.length ) {
 			bookacti_fill_picked_events_list( booking_system );
@@ -120,7 +120,7 @@ $j( document ).ready( function() {
 	
 	
 	// Set quantity on eventClick
-	$j( '.bookacti-booking-system-form' ).on( 'bookacti_picked_events_list_data', '.bookacti-booking-system', function( e, event_summary_data, event ) {
+	$j( '.bookacti-booking-form' ).on( 'bookacti_picked_events_list_data', '.bookacti-booking-system', function( e, event_summary_data, event ) {
 		var booking_system = $j( this );
 		var qty_field = booking_system.parents( 'form' ).find( 'input.bookacti-quantity' );
 		if( qty_field.length ) {
@@ -130,7 +130,7 @@ $j( document ).ready( function() {
 	
 	
 	// Enable submit booking button
-	$j( 'form.bookacti-booking-system-form .bookacti-booking-system' ).on( 'bookacti_view_refreshed bookacti_displayed_info_cleared', function( e ) {
+	$j( 'form.bookacti-booking-form .bookacti-booking-system' ).on( 'bookacti_view_refreshed bookacti_displayed_info_cleared', function( e ) {
 		var booking_form = $j( this ).parents( 'form' );
 		booking_form.find( 'input[name="bookacti_quantity"]' ).attr( 'disabled', false );
 		booking_form.find( 'button[type="submit"]' ).attr( 'disabled', false );
@@ -138,7 +138,7 @@ $j( document ).ready( function() {
 
 
 	// Disable submit booking button
-	$j( 'form.bookacti-booking-system-form .bookacti-booking-system' ).on( 'bookacti_error_displayed', function( e ) {
+	$j( 'form.bookacti-booking-form .bookacti-booking-system' ).on( 'bookacti_error_displayed', function( e ) {
 		var booking_form = $j( this ).parents( 'form' );
 		booking_form.find( 'input[name="bookacti_quantity"]' ).attr( 'disabled', true );
 		booking_form.find( 'button[type="submit"]' ).attr( 'disabled', true );

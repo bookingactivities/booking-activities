@@ -101,7 +101,14 @@ function bookacti_get_booking_system( $atts, $echo = false ) {
 		<?php do_action( 'bookacti_before_booking_system', $atts ); ?>
 		
 		<div id='<?php echo esc_attr( $atts[ 'id' ] ); ?>' class='bookacti-booking-system <?php echo esc_attr( $atts[ 'class' ] ); ?>' >
-			<?php echo bookacti_get_booking_method_html( $atts[ 'method' ], $atts ); ?>
+			<?php echo bookacti_get_booking_method_html( $atts[ 'method' ], $atts ); 
+			if( $when_events_load === 'on_page_load' && $atts[ 'auto_load' ] ) { 
+			?>
+			<div class='bookacti-loading-alt'> 
+				<img class='bookacti-loader' src='<?php echo plugins_url() . '/' . BOOKACTI_PLUGIN_NAME; ?>/img/ajax-loader.gif' title='<?php esc_html_e( 'Loading', BOOKACTI_PLUGIN_NAME ); ?>' />
+				<span class='bookacti-loading-alt-text' ><?php esc_html_e( 'Loading', BOOKACTI_PLUGIN_NAME ); ?></span>
+			</div>
+			<?php } ?>
 		</div>
 		
 		<?php do_action( 'bookacti_after_booking_system', $atts ); ?>

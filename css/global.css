@@ -16,14 +16,6 @@
 
 
 /* Booking System */
-.bookacti-booking-system-form .bookacti-booking-system-labels,
-.bookacti-booking-system-form .bookacti-booking-system-field						{ display: inline-block; vertical-align: middle; width: 150px; margin: 0; }
-.bookacti-booking-system-form .bookacti-booking-system-field-container				{ margin-bottom: 20px; }
-.bookacti-booking-system-form .bookacti-booking-system-field-submit-container		{ text-align: center; }
-.bookacti-booking-system-form .bookacti-booking-system-field-submit-container input	{ cursor: pointer; }
-.bookacti-booking-system-form .bookacti-booking-system-field-container *			{ display: inline-block; margin-right: 15px; }
-.bookacti-booking-system-form .bookacti-booking-system-field-container *:last-child	{ margin-right: 0; }
-
 .bookacti-notices							{ display: none; }
 .bookacti-notices ul						{ margin: 30px 0; padding: 10px 30px; border-left: 4px solid dodgerblue; box-shadow: 0 1px 1px 0 rgba(0,0,0,.1); background-color: rgba(255,255,255,.5); border-radius: 0 5px 5px 0; }
 .bookacti-notices ul.bookacti-error-list	{ border-left-color: red; }

@@ -419,6 +419,8 @@ function bookacti_insert_default_form_fields( $form_id ) {
 function bookacti_insert_form_field( $form_id, $field_name ) {
 	global $wpdb;
 	
+	$default_field = bookacti_sanitize_form_field_data( bookacti_get_default_form_fields_data( $field_name ) );
+	
 	// Insert the form field
 	$created = $wpdb->insert( 
 		BOOKACTI_TABLE_FORM_FIELDS, 

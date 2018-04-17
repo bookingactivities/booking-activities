@@ -92,8 +92,8 @@ function bookacti_dialog_update_form_meta() {
     $j( '#bookacti-form-meta-dialog' ).dialog( 'option', 'buttons',
 		// OK button
 		[{
-			text: bookacti_localized.dialog_button_ok,			
-			click: function() { 
+			'text': bookacti_localized.dialog_button_ok,			
+			'click': function() { 
 				
 				// Save tineMCE editors content 
 				if( tinyMCE ) { tinyMCE.triggerSave(); }
@@ -387,6 +387,73 @@ function bookacti_dialog_update_form_field( field_id, field_name ) {
 				// Close the modal dialog
 				$j( this ).dialog( 'close' );
 			}
-		}]
+		},
+		// Reset Button
+		{
+			'text': bookacti_localized.dialog_button_reset,
+			'class': 'bookacti-dialog-delete-button bookacti-dialog-left-button',
+			'click': function() {
+				
+				// Save tineMCE editors content 
+				if( tinyMCE ) { tinyMCE.triggerSave(); }
+				
+				$j( 'form#bookacti-form-field-form-' + field_name + ' input[name="action"]' ).val( 'bookactiResetFormField' );
+				var data = $j( 'form#bookacti-form-field-form-' + field_name ).serializeObject();
+				var is_visible = $j( '#bookacti-form-editor-field-' + field_id + ' .bookacti-form-editor-field-body' ).is( ':visible' );
+				
+				console.log( data );
+				
+				// Display a loader
+				bookacti_form_editor_enter_loading_state();
+				
+				$j.ajax({
+					url: ajaxurl,
+					type: 'POST',
+					data: data,
+					dataType: 'json',
+					success: function( response ){
+						
+						if( response.status === 'success' ) {
+							
+							// Update the field content
+							if( field_name !== 'calendar' ) {
+								$j( '#bookacti-form-editor-field-' + field_id ).replaceWith( response.field_html );
+								
+								// Toogle field
+								if( is_visible ) { $j( '#bookacti-form-editor-field-' + field_id + ' .bookacti-form-editor-field-header' ).trigger( 'click' ); }
+							}
+							
+							// Update the field data
+							bookacti.form_editor.fields[ field_id ] = response.field_data;
+							
+							// Reload tooltip for generated content
+							bookacti_init_tooltip();
+							
+							$j( '#bookacti-form-editor' ).trigger( 'bookacti_field_reset', [ field_id, field_name, response ] );
+							
+						} else if( response.status === 'failed' ) {
+							var message_error = bookacti_localized.error_reset_form;
+							if( response.error === 'not_allowed' ) {
+								message_error += '\n' + bookacti_localized.error_not_allowed;
+							}
+							console.log( message_error );
+							console.log( response );
+						}
+						
+					},
+					error: function( e ){
+						console.log( 'AJAX ' + bookacti_localized.error_reset_form );
+						console.log( e );
+					},
+					complete: function() {
+						bookacti_form_editor_exit_loading_state();
+					}
+				});
+				
+				// Close the modal dialog
+				$j( this ).dialog( 'close' );
+			}
+		}
+		]
     );
 }

@@ -30,6 +30,10 @@ $j( document ).ready( function() {
 			if( attributes.auto_load && booking_system_id !== 'bookacti-booking-system-reschedule' ) {
 				if( bookacti_localized.when_events_load === 'on_page_load' ) {
 					bookacti_booking_method_set_up( booking_system, false );
+					
+					// remove initial loading feedback
+					booking_system.find( '.bookacti-loading-alt' ).remove();
+					
 				} else {
 					bookacti_reload_booking_system( booking_system );
 				}

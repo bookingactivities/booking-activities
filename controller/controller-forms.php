@@ -12,11 +12,10 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
  * @param string $instance_id
  * @param string $context
  */
-function bookacti_display_form_field_calendar( $field, $form_id, $instance_id, $context ) {
-	$field_id = ! empty( $field[ 'id' ] ) ? esc_attr( $field[ 'id' ] ) : esc_attr( $field[ 'field_id' ] . '-' . $instance_id );
+function bookacti_display_form_field_calendar( $field, $instance_id, $context ) {
 	bookacti_get_booking_system( $field, true );
 }
-add_action( 'bookacti_diplay_form_field_calendar', 'bookacti_display_form_field_calendar', 10, 4 );
+add_action( 'bookacti_display_form_field_calendar', 'bookacti_display_form_field_calendar', 10, 3 );
 
 
 /**
@@ -29,15 +28,19 @@ add_action( 'bookacti_diplay_form_field_calendar', 'bookacti_display_form_field_
  * @param string $context
  * @return string
  */
-function bookacti_display_form_field_login( $html, $field, $form_id, $instance_id, $context ) {
+function bookacti_display_form_field_login( $html, $field, $instance_id, $context ) {
 	
 	if( $context !== 'edit' && is_user_logged_in() ) { return ''; }
 	
-	$field_id = ! empty( $field[ 'id' ] ) ? esc_attr( $field[ 'id' ] ) : esc_attr( $field[ 'field_id' ] . '-' . $instance_id );
+	$field_id		= ! empty( $field[ 'id' ] ) ? esc_attr( $field[ 'id' ] ) : esc_attr( 'bookacti-form-field-' . $field[ 'type' ] . '-' . $field[ 'field_id' ] . '-' . $instance_id );
+	$field_class	= 'bookacti-form-field-container';
+	if( ! empty( $field[ 'name' ] ) )		{ $field_class .= ' bookacti-form-field-name-' . esc_attr( $field[ 'name' ] ); } 
+	if( ! empty( $field[ 'field_id' ] ) )	{ $field_class .= ' bookacti-form-field-id-' . esc_attr( $field[ 'field_id' ] ); }
+	if( ! empty( $field[ 'class' ] ) )		{ $field_class .= ' ' . esc_attr( $field[ 'class' ] ); }
 	ob_start();
 ?>
-	<div class='bookacti-form-field-container <?php if( ! empty( $field[ 'name' ] ) ) { echo ' bookacti-form-field-name-' . esc_attr( $field[ 'name' ] ); } if( ! empty( $field[ 'field_id' ] ) ) { echo ' bookacti-form-field-id-' . esc_attr( $field[ 'field_id' ] ); } ?>' id='<?php echo $field_id; ?>' >
-		<div class='bookacti-login-form-field-container' id='<?php echo $field_id; ?>-email-container' >
+	<div class='<?php echo $field_class; ?>' id='<?php echo $field_id; ?>' >
+		<div class='bookacti-form-field-login-field-container' id='<?php echo $field_id; ?>-email-container' >
 			<div class='bookacti-form-field-label' >
 				<label for='<?php echo $field_id . '-email'; ?>' >
 				<?php 
@@ -65,7 +68,7 @@ function bookacti_display_form_field_login( $html, $field, $form_id, $instance_i
 		<?php 
 		if( empty( $field[ 'generate_password' ] ) ) { 
 		?>
-			<div class='bookacti-login-form-field-container' id='<?php echo $field_id; ?>-password-container' >
+			<div class='bookacti-form-field-login-field-container' id='<?php echo $field_id; ?>-password-container' >
 				<div class='bookacti-form-field-label' >
 					<label for='<?php echo $field_id . '-password'; ?>' >
 					<?php 
@@ -94,7 +97,7 @@ function bookacti_display_form_field_login( $html, $field, $form_id, $instance_i
 		
 		if( ! empty( $field[ 'displayed_fields' ][ 'new_account' ] ) ) { 
 			?>
-			<div class='bookacti-login-form-field-container' id='<?php echo $field_id; ?>-register-container' >
+			<div class='bookacti-form-field-login-field-container' id='<?php echo $field_id; ?>-register-container' >
 				<div class='bookacti-form-field-content' >
 					<input type='hidden' name='bookacti_register' value='0' />
 					<input type='checkbox' name='bookacti_register' value='1' id='<?php echo $field_id; ?>-register' class='bookacti-form-field bookacti-register' />
@@ -110,7 +113,7 @@ function bookacti_display_form_field_login( $html, $field, $form_id, $instance_i
 				<?php foreach( $register_fields as $register_field_name => $register_field ) {
 						if( ! empty( $field[ 'displayed_fields' ][ $register_field_name ] ) ) { 
 						?>
-						<div class='bookacti-login-form-field-container' id='<?php echo esc_attr( $field_id . '-' . $register_field_name ); ?>-container' >
+						<div class='bookacti-form-field-login-field-container' id='<?php echo esc_attr( $field_id . '-' . $register_field_name ); ?>-container' >
 							<?php if( $register_field[ 'type' ] !== 'checkbox' ) { ?>
 								<div class='bookacti-form-field-label' >
 									<label for='<?php echo esc_attr( $field_id . '-' . $register_field_name ); ?>' >
@@ -157,7 +160,7 @@ function bookacti_display_form_field_login( $html, $field, $form_id, $instance_i
 <?php
 	return ob_get_clean();
 }
-add_filter( 'bookacti_html_form_field_login', 'bookacti_display_form_field_login', 10, 5 );
+add_filter( 'bookacti_html_form_field_login', 'bookacti_display_form_field_login', 10, 4 );
 
 
 /**
@@ -168,7 +171,7 @@ add_filter( 'bookacti_html_form_field_login', 'bookacti_display_form_field_login
  * @param string $instance_id
  * @param string $context
  */
-function bookacti_display_form_field_quantity( $field, $form_id, $instance_id, $context ) {
+function bookacti_display_form_field_quantity( $field, $instance_id, $context ) {
 	$args = array(
 		'type'			=> 'number',
 		'name'			=> 'bookacti_quantity',
@@ -179,7 +182,7 @@ function bookacti_display_form_field_quantity( $field, $form_id, $instance_id, $
 	);
 	bookacti_display_field( $args );
 }
-add_action( 'bookacti_diplay_form_field_quantity', 'bookacti_display_form_field_quantity', 10, 4 );
+add_action( 'bookacti_display_form_field_quantity', 'bookacti_display_form_field_quantity', 10, 3 );
 
 
 /**
@@ -190,11 +193,15 @@ add_action( 'bookacti_diplay_form_field_quantity', 'bookacti_display_form_field_
  * @param string $instance_id
  * @param string $context
  */
-function bookacti_display_form_field_submit( $html, $field, $form_id, $instance_id, $context ) {
-	$field_id = ! empty( $field[ 'id' ] ) ? esc_attr( $field[ 'id' ] ) : esc_attr( $field[ 'field_id' ] . '-' . $instance_id );
+function bookacti_display_form_field_submit( $html, $field, $instance_id, $context ) {
+	$field_id		= ! empty( $field[ 'id' ] ) ? esc_attr( $field[ 'id' ] ) : esc_attr( 'bookacti-form-field-' . $field[ 'type' ] . '-' . $field[ 'field_id' ] . '-' . $instance_id );
+	$field_class	= 'bookacti-form-field-container bookacti-form-field-name-submit';
+	if( ! empty( $field[ 'name' ] ) )		{ $field_class .= ' bookacti-form-field-name-' . esc_attr( $field[ 'name' ] ); } 
+	if( ! empty( $field[ 'field_id' ] ) )	{ $field_class .= ' bookacti-form-field-id-' . esc_attr( $field[ 'field_id' ] ); }
+	if( ! empty( $field[ 'class' ] ) )		{ $field_class .= ' ' . esc_attr( $field[ 'class' ] ); }
 	ob_start();
 ?>
-	<div class='bookacti-form-field-container <?php echo esc_attr( $field[ 'class' ] ); if( ! empty( $field[ 'name' ] ) ) { echo ' bookacti-form-field-name-' . esc_attr( $field[ 'name' ] ); } if( ! empty( $field[ 'field_id' ] ) ) { echo ' bookacti-form-field-id-' . esc_attr( $field[ 'field_id' ] ); } ?>' id='<?php echo $field_id; ?>' >
+	<div class='<?php echo $field_class; ?>' id='<?php echo $field_id; ?>' >
 		<input type='<?php echo $context === 'edit' ? 'button' : 'submit'; ?>'
 			class='bookacti-submit-form button' 
 			value='<?php echo esc_attr( apply_filters( 'bookacti_translate_text', $field[ 'value' ] ) ); ?>' />
@@ -202,7 +209,7 @@ function bookacti_display_form_field_submit( $html, $field, $form_id, $instance_
 <?php
 	return ob_get_clean();
 }
-add_filter( 'bookacti_html_form_field_submit', 'bookacti_display_form_field_submit', 10, 5 );
+add_filter( 'bookacti_html_form_field_submit', 'bookacti_display_form_field_submit', 10, 4 );
 
 
 /**
@@ -213,13 +220,18 @@ add_filter( 'bookacti_html_form_field_submit', 'bookacti_display_form_field_subm
  * @param string $instance_id
  * @param string $context
  */
-function bookacti_display_form_field_free_text( $field, $form_id, $instance_id, $context ) {
-	$field_id = ! empty( $field[ 'id' ] ) ? esc_attr( $field[ 'id' ] ) : esc_attr( $field[ 'field_id' ] . '-' . $instance_id );
+function bookacti_display_form_field_free_text( $field, $instance_id, $context ) {
+	$field_id = ! empty( $field[ 'id' ] ) ? esc_attr( $field[ 'id' ] ) : esc_attr( 'bookacti-form-field-' . $field[ 'type' ] . '-' . $field[ 'field_id' ] . '-' . $instance_id );
 ?>
-<div id='<?php echo $field_id; ?>' class='bookacti-form-free-text <?php echo esc_attr( $field[ 'class' ] ); ?>' ><?php echo wpautop( apply_filters( 'bookacti_translate_text', $field[ 'value' ] ) ); ?></div>
+<div id='<?php echo $field_id; ?>' class='bookacti-form-free-text <?php echo esc_attr( $field[ 'class' ] ); ?>' >
+<?php 
+	$html = wpautop( apply_filters( 'bookacti_translate_text', $field[ 'value' ] ) );
+	echo $context === 'edit' ? $html : do_shortcode( $html ); 
+?>
+</div>
 <?php
 }
-add_action( 'bookacti_diplay_form_field_free_text', 'bookacti_display_form_field_free_text', 10, 4 );
+add_action( 'bookacti_display_form_field_free_text', 'bookacti_display_form_field_free_text', 10, 3 );
 
 
 
@@ -278,6 +290,30 @@ add_action( 'admin_footer-booking-activities_page_bookacti_forms', 'bookacti_pri
 // EDITOR - FORMS
 
 /**
+ * Create a new form
+ * @since 1.5.0
+ * @return int|false
+ */
+function bookacti_create_form() {
+	// Insert form
+	$form_id = bookacti_insert_form( '', 'auto-draft', 0 );
+	
+	if( $form_id === false ) { return $form_id; }
+	
+	// Insert default form fields
+	bookacti_insert_default_form_fields( $form_id );
+	
+	// Insert default form managers
+	$form_managers = bookacti_format_form_managers();
+	bookacti_update_managers( 'form', $form_id, $form_managers );
+	
+	do_action( 'bookacti_form_inserted', $form_id );
+	
+	return $form_id;
+}
+
+
+/**
  * AJAX Controller - Update a booking form
  * @since 1.5.0
  */
@@ -307,7 +343,7 @@ function bookacti_controller_update_form() {
 	// Insert Managers
 	bookacti_update_managers( 'form', $form_id, $form_managers );
 	
-	add_action( 'bookacti_form_updated', $form_id );
+	do_action( 'bookacti_form_updated', $form_id );
 
 	wp_send_json( array( 'status' => 'success', 'message' => ! $was_active ? esc_html__( 'The booking form is published.', BOOKACTI_PLUGIN_NAME ) : esc_html__( 'The booking form has been updated.', BOOKACTI_PLUGIN_NAME ) ) );
 }
@@ -365,6 +401,7 @@ function bookacti_controller_remove_form() {
 		
 		// Feedback success
 		if( $removed ) {
+			do_action( 'bookacti_form_removed', $form_id );
 		?>
 			<div class='notice notice-success is-dismissible bookacti-form-notice' >
 				<p>
@@ -405,6 +442,7 @@ function bookacti_controller_remove_form() {
 		
 		// Feedback success
 		if( $restored ) {
+			do_action( 'bookacti_form_restored', $form_id );
 		?>
 			<div class='notice notice-success is-dismissible bookacti-form-notice' >
 				<p>
@@ -454,6 +492,9 @@ function bookacti_controller_update_form_meta() {
 		$updated = bookacti_update_metadata( 'form', $form_id, $form_meta );
 		
 		if( $updated !== false ) {
+			
+			do_action( 'bookacti_form_meta_updated', $form_id );
+			
 			// Get form data
 			$form_data = bookacti_get_form_data( $form_id );
 			
@@ -514,9 +555,11 @@ function bookacti_controller_insert_form_field() {
 			$field_order[]	= $field_id;
 			bookacti_update_metadata( 'form', $form_id, array( 'field_order' => $field_order ) );
 			
+			do_action( 'bookacti_form_field_inserted', $field_id );
+			
 			// Get field data and HTML for editor
 			$field_data	= bookacti_get_form_field_data( $field_id );
-			$field_html = bookacti_diplay_form_field_for_editor( $field_data, $form_id, false );
+			$field_html = bookacti_display_form_field_for_editor( $field_data, false );
 			
 			wp_send_json( array( 'status' => 'success', 'field_id' => $field_id, 'field_data' => $field_data, 'field_html' => $field_html, 'field_order' => $field_order ) );
 		} else {
@@ -528,6 +571,7 @@ function bookacti_controller_insert_form_field() {
 	}
 }
 add_action( 'wp_ajax_bookactiInsertFormField', 'bookacti_controller_insert_form_field', 10 );
+
 
 /**
  * AJAX Controller - Remove a form field
@@ -548,6 +592,8 @@ function bookacti_controller_remove_form_field() {
 		$removed = bookacti_delete_form_field( $field_id );
 		
 		if( $removed !== false ) {
+			
+			do_action( 'bookacti_form_field_removed', $field );
 			
 			// Update field order
 			$field_order	= bookacti_get_metadata( 'form', $field[ 'form_id' ], 'field_order', true );
@@ -586,6 +632,8 @@ function bookacti_controller_save_form_field_order() {
 		
 		$field_order	= bookacti_sanitize_form_field_order( $form_id, $_POST[ 'field_order' ] );
 		$updated		= bookacti_update_metadata( 'form', $form_id, array( 'field_order' => $field_order ) );
+		
+		do_action( 'bookacti_form_field_order_updated', $form_id, $field_order );
 		
 		if( $updated !== false ) {
 			wp_send_json( array( 'status' => 'success', 'field_order' => $field_order ) );
@@ -633,9 +681,11 @@ function bookacti_controller_update_form_field() {
 				bookacti_update_metadata( 'form_field', $field_id, $field_meta );
 			}
 			
+			do_action( 'bookacti_form_field_updated', $field, $sanitized_data );
+			
 			// Get field data and HTML for editor
 			$field_data	= bookacti_get_form_field_data( $field_id );
-			$field_html = bookacti_diplay_form_field_for_editor( $field_data, $form_id, false );
+			$field_html = bookacti_display_form_field_for_editor( $field_data, false );
 			
 			wp_send_json( array( 'status' => 'success', 'field_data' => $field_data, 'field_html' => $field_html ) );
 		} else {
@@ -647,3 +697,72 @@ function bookacti_controller_update_form_field() {
 	}
 }
 add_action( 'wp_ajax_bookactiUpdateFormField', 'bookacti_controller_update_form_field', 10 );
+
+
+/**
+ * AJAX Controller - Reset form meta
+ * @since 1.5.0
+ */
+function bookacti_controller_reset_form_field() {
+	
+	$field_id	= intval( $_POST[ 'field_id' ] );
+	$field		= bookacti_get_form_field_data( $field_id );
+	$form_id	= $field[ 'form_id' ];
+	
+	// Check nonce and capabilities
+	$is_nonce_valid	= check_ajax_referer( 'bookacti_update_form_field', 'nonce', false );
+	$is_allowed		= current_user_can( 'bookacti_edit_forms' ) && bookacti_user_can_manage_form( $form_id );
+	
+	if( $is_nonce_valid && $is_allowed && $form_id ) {
+		
+		// Update form field with default values
+		$defaults_data	= bookacti_sanitize_form_field_data( bookacti_get_default_form_fields_data( $field[ 'name' ] ) );
+		$defaults_data[ 'field_id' ] = $field_id;
+		$updated		= bookacti_update_form_field( $defaults_data );
+		
+		if( $updated !== false ) {
+			
+			// Delete all metadata to apply default
+			$defaults_meta = bookacti_get_default_form_fields_meta( $field[ 'name' ] );
+			if( $defaults_meta ) {
+				$deleted = bookacti_delete_metadata( 'form_field', $field_id, array_keys( $defaults_meta ) );
+			}
+			
+			do_action( 'bookacti_form_field_reset', $field );
+			
+			// Get field data and HTML for editor
+			$field_data	= bookacti_get_form_field_data( $field_id );
+			$field_html = bookacti_display_form_field_for_editor( $field_data, false );
+			
+			wp_send_json( array( 'status' => 'success', 'field_data' => $field_data, 'field_html' => $field_html ) );
+		} else {
+			wp_send_json( array( 'status' => 'failed', 'error' => 'not_updated' ) );
+		}
+		
+	} else {
+		wp_send_json( array( 'status' => 'failed', 'error' => 'not_allowed' ) );
+	}
+}
+add_action( 'wp_ajax_bookactiResetFormField', 'bookacti_controller_reset_form_field', 10 );
+
+
+/**
+ * Keep calendars meta while reseting calendar form field metadata
+ * @since 1.5.0
+ * @param array $field_data
+ * @param array $old_field_data
+ */
+function bookacti_reset_calendar_form_field_exceptions( $field_data ) {
+	// Keep calendars
+	if( $field_data[ 'type' ] === 'calendar' && isset( $_POST[ 'calendars' ] ) ) {
+		// Sanitize data
+		$_POST[ 'name' ]	= $field_data[ 'name' ]; $_POST[ 'type' ] = $field_data[ 'type' ];
+		$sanitized_data		= bookacti_format_booking_system_attributes( $_POST );
+		// Update calendars
+		if( isset( $sanitized_data[ 'calendars' ] ) ) {
+			$meta_to_update = array( 'calendars' => $sanitized_data[ 'calendars' ] );
+			bookacti_update_metadata( 'form_field', $field_data[ 'field_id' ], $meta_to_update );
+		}
+	}
+}
+add_action( 'bookacti_form_field_reset', 'bookacti_reset_calendar_form_field_exceptions', 10, 1 );

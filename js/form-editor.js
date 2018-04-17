@@ -68,7 +68,7 @@ $j( document ).ready( function() {
 	});
 	
 	// Update calendar field
-	$j( '#bookacti-form-editor' ).on( 'bookacti_field_updated', function( e, field_id, field_name ){
+	$j( '#bookacti-form-editor' ).on( 'bookacti_field_updated bookacti_field_reset', function( e, field_id, field_name ){
 		if( field_name === 'calendar' ) {
 			var booking_system = $j( '#bookacti-form-editor-field-' + field_id + ' .bookacti-booking-system' );
 			
