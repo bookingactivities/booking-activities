@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Booking Activities
  * Plugin URI: https://booking-activities.fr/en/?utm_source=plugin&utm_medium=plugin&utm_content=header
- * Description: Booking system specialized in activities (sports, cultural, leisure, events, and yours!). Works great with WooCommerce.
+ * Description: Booking system specialized in activities (sports, cultural, leisure, events...). Works great with WooCommerce.
  * Version: 1.5.0
  * Author: Booking Activities Team
  * Author URI: https://booking-activities.fr/en/?utm_source=plugin&utm_medium=plugin&utm_content=header
@@ -45,7 +45,7 @@ if( ! defined( 'BOOKACTI_PLUGIN_BASENAME' ) )	{ define( 'BOOKACTI_PLUGIN_BASENAM
 
 // HEADER STRINGS (For translation)
 __( 'Booking Activities', BOOKACTI_PLUGIN_NAME );
-__( 'Booking system specialized in activities (sports, cultural, leisure, events, and yours!). Works great with WooCommerce.', BOOKACTI_PLUGIN_NAME );
+__( 'Booking system specialized in activities (sports, cultural, leisure, events...). Works great with WooCommerce.', BOOKACTI_PLUGIN_NAME );
 
 
 // INCLUDE LANGUAGES FILES

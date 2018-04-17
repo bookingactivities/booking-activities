@@ -41,8 +41,10 @@ $j( document ).ready( function() {
 		e.preventDefault();
 		bookacti_save_form();
 	});
+	
 	console.log( bookacti.form_editor );
-	// Field-specific actions
+	
+	// Field-specific actions when a user open its dialog
 	$j( '#bookacti-form-editor' ).on( 'bookacti_field_update_dialog', function( e, field_id, field_name ){
 		if( field_name === 'calendar' ) {
 			// Fill fields with raw values
@@ -64,6 +66,8 @@ $j( document ).ready( function() {
 			}
 		}
 	});
+	
+	// Update calendar field
 	$j( '#bookacti-form-editor' ).on( 'bookacti_field_updated', function( e, field_id, field_name ){
 		if( field_name === 'calendar' ) {
 			var booking_system = $j( '#bookacti-form-editor-field-' + field_id + ' .bookacti-booking-system' );
@@ -78,6 +82,12 @@ $j( document ).ready( function() {
 			
 			bookacti_reload_booking_system( booking_system );
 		}
+	});
+	
+	// Confirm before leaving if the form isn't published
+	$j( window ).bind( 'beforeunload', function( e ){
+		if( $j( '#major-publishing-actions' ).data( 'popup' ) ) { return true; } // Confirm before redirect
+		else { e = null; } // Redirect
 	});
 });
 
@@ -121,7 +131,10 @@ function bookacti_save_form() {
 				$j( 'body' ).trigger( 'bookacti_form_updated' );
 				
 				// If the form was inactive, redirect
-				if( is_active == 0 ) { window.location.replace( form.attr( 'action' ) + '&notice=published' ); }
+				if( is_active == 0 ) { 
+					$j( '#major-publishing-actions' ).data( 'popup', 0 ); // Required, else a confirm pop-up will appear
+					window.location.replace( form.attr( 'action' ) + '&notice=published' ); 
+				}
 				
 				// Else, Display feedback
 				else { $j( '#bookacti-form-editor-page-container' ).before( '<div class="notice notice-success is-dismissible bookacti-form-notice" ><p>' + response.message + '</p></div>' ); }

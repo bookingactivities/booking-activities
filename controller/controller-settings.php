@@ -286,7 +286,7 @@ function bookacti_fill_notification_settings_page( $notification_id ) {
 
 		<?php do_action( 'bookacti_notification_settings_page_before', $notification_settings, $notification_id ); ?>
 
-		<h3><?php _ex( 'Global notifications settings', BOOKACTI_PLUGIN_NAME ); ?></h3>
+		<h3><?php _e( 'Global notifications settings', BOOKACTI_PLUGIN_NAME ); ?></h3>
 		<table class='form-table' id='bookacti-notification-global-settings' >
 			<tbody>
 				<tr>

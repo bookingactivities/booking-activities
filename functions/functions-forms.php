@@ -334,7 +334,7 @@ function bookacti_get_default_form_fields_data( $field_name = '' ) {
 	);
 	
 	// Add register fields default
-	$register_fields	= bookacti_get_default_register_fields_data();
+	$register_fields	= bookacti_get_register_fields_default_data();
 	$register_defaults	= array( 'label' => array(), 'placeholder' => array(), 'tip' => array() );
 	foreach( $register_fields as $register_field_name => $register_field ) {
 		$register_defaults[ 'label' ][ $register_field_name ]		= ! empty( $register_field[ 'label' ] )			? $register_field[ 'label' ] : '';
@@ -359,10 +359,10 @@ function bookacti_get_default_form_fields_data( $field_name = '' ) {
 			'label'			=> array_merge( array( 
 								'email'			=> __( 'Email', BOOKACTI_PLUGIN_NAME ), 
 								'password'		=> __( 'Password', BOOKACTI_PLUGIN_NAME ), 
-								'register'		=> __( 'Create a new account', BOOKACTI_PLUGIN_NAME )
+								'new_account'	=> __( 'Create a new account', BOOKACTI_PLUGIN_NAME )
 							), $register_defaults[ 'label' ] ),
-			'placeholder'	=> array_merge( array( 'email' => '', 'password' => '', 'register' => '' ), $register_defaults[ 'placeholder' ] ),
-			'tip'			=> array_merge( array( 'email' => '', 'password' => '', 'register' => '' ), $register_defaults[ 'tip' ] )
+			'placeholder'	=> array_merge( array( 'email' => '', 'password' => '', 'new_account' => '' ), $register_defaults[ 'placeholder' ] ),
+			'tip'			=> array_merge( array( 'email' => '', 'password' => '', 'new_account' => '' ), $register_defaults[ 'tip' ] )
 		),
 		'free_text' => array( 
 			'name'			=> 'free_text',
@@ -427,7 +427,7 @@ function bookacti_get_default_form_fields_meta( $field_name = '' ) {
 	) );
 	
 	// Add register fields default meta to login field meta
-	$register_fields	= bookacti_get_default_register_fields_data();
+	$register_fields	= bookacti_get_register_fields_default_data();
 	$register_defaults	= array( 'displayed' => array(), 'required' => array() );
 	foreach( $register_fields as $register_field_name => $register_field ) {
 		$register_defaults[ 'displayed' ][ $register_field_name ]	= ! empty( $register_field[ 'displayed' ] )	? $register_field[ 'displayed' ] : 1;
@@ -440,8 +440,8 @@ function bookacti_get_default_form_fields_meta( $field_name = '' ) {
 		'login'		=> array(
 			'generate_password'			=> 0,
 			'send_new_account_email'	=> 1,
-			'displayed_fields'			=> array_merge( array( 'email' => 1, 'password' => 1, 'register' => 1 ), $register_defaults[ 'displayed' ] ),
-			'required_fields'			=> array_merge( array( 'email' => 1, 'password' => 1, 'register' => 0 ), $register_defaults[ 'required' ] )
+			'displayed_fields'			=> array_merge( array( 'email' => 1, 'password' => 1, 'new_account' => 1 ), $register_defaults[ 'displayed' ] ),
+			'required_fields'			=> array_merge( array( 'email' => 1, 'password' => 1, 'new_account' => 0 ), $register_defaults[ 'required' ] )
 		),
 		'free_text'	=> array(),
 		'quantity'	=> array(),
@@ -515,7 +515,7 @@ function bookacti_format_form_field_data( $raw_field_data ) {
 		
 		// Format common values (specific cases)
 		// Format label, placeholder and tip
-		$register_defaults = bookacti_get_default_register_fields_data();
+		$register_defaults = bookacti_get_register_fields_default_data();
 		$fields = array( 'label', 'placeholder', 'tip', 'displayed_fields', 'required_fields' );
 		foreach( $fields as $field ) {
 			$raw_field_data[ $field ] = isset( $raw_field_data[ $field ] ) ? maybe_unserialize( $raw_field_data[ $field ] ) : false;
@@ -530,7 +530,7 @@ function bookacti_format_form_field_data( $raw_field_data ) {
 				$field_data[ $field ] = array_merge( array( 
 					'email'			=> isset( $raw_field_data[ $field ][ 'email' ] ) ? $raw_field_data[ $field ][ 'email' ] : $default_data[ $field ][ 'email' ], 
 					'password'		=> isset( $raw_field_data[ $field ][ 'password' ] ) ? $raw_field_data[ $field ][ 'password' ] : $default_data[ $field ][ 'password' ],
-					'register'		=> isset( $raw_field_data[ $field ][ 'register' ] ) ? $raw_field_data[ $field ][ 'register' ] : $default_data[ $field ][ 'register' ]
+					'new_account'	=> isset( $raw_field_data[ $field ][ 'new_account' ] ) ? $raw_field_data[ $field ][ 'new_account' ] : $default_data[ $field ][ 'new_account' ]
 				), $register_fields );
 
 			} else {
@@ -630,27 +630,26 @@ function bookacti_sanitize_form_field_data( $raw_field_data ) {
 
 		// Sanitize common values (specific cases)
 		// Sanitize label, placeholder and tip
-		$register_defaults = bookacti_get_default_register_fields_data();
+		$register_defaults = bookacti_get_register_fields_default_data();
 		$fields = array( 'label', 'placeholder', 'tip', 'displayed_fields', 'required_fields' );
 		foreach( $fields as $field ) {
-			if( isset( $raw_field_data[ $field ] ) ) {
-				$raw_field_data[ $field ] = maybe_unserialize( $raw_field_data[ $field ] );
-				if( is_array( $raw_field_data[ $field ] ) ) {
-					// Sanitize register fields
-					$register_fields = array();
-					foreach( $register_defaults as $register_field_name => $register_default ) {
-						$register_fields[ $register_field_name ] = isset( $raw_field_data[ $field ][ $register_field_name ] ) ? stripslashes( $raw_field_data[ $field ][ $register_field_name ] ) : $register_default[ $field ];
-					}
-					
-					// Merge register fields
-					$field_data[ $field ] = array_merge( array( 
-						'email'			=> isset( $raw_field_data[ $field ][ 'email' ] ) ? stripslashes( $raw_field_data[ $field ][ 'email' ] ) : $default_data[ $field ][ 'email' ], 
-						'password'		=> isset( $raw_field_data[ $field ][ 'password' ] ) ? stripslashes( $raw_field_data[ $field ][ 'password' ] ) : $default_data[ $field ][ 'password' ],
-						'register'		=> isset( $raw_field_data[ $field ][ 'register' ] ) ? stripslashes( $raw_field_data[ $field ][ 'register' ] ) : $default_data[ $field ][ 'register' ]
-					), $register_fields );
-				} else {
-					$field_data[ $field ] = $default_data[ $field ];
+			if( ! isset( $raw_field_data[ $field ] ) ) { continue; }
+			$raw_field_data[ $field ] = maybe_unserialize( $raw_field_data[ $field ] );
+			if( is_array( $raw_field_data[ $field ] ) ) {
+				// Sanitize register fields
+				$register_fields = array();
+				foreach( $register_defaults as $register_field_name => $register_default ) {
+					$register_fields[ $register_field_name ] = isset( $raw_field_data[ $field ][ $register_field_name ] ) ? stripslashes( $raw_field_data[ $field ][ $register_field_name ] ) : $register_default[ $field ];
 				}
+
+				// Merge register fields
+				$field_data[ $field ] = array_merge( array( 
+					'email'			=> isset( $raw_field_data[ $field ][ 'email' ] ) ? stripslashes( $raw_field_data[ $field ][ 'email' ] ) : $default_data[ $field ][ 'email' ], 
+					'password'		=> isset( $raw_field_data[ $field ][ 'password' ] ) ? stripslashes( $raw_field_data[ $field ][ 'password' ] ) : $default_data[ $field ][ 'password' ],
+					'new_account'	=> isset( $raw_field_data[ $field ][ 'new_account' ] ) ? stripslashes( $raw_field_data[ $field ][ 'new_account' ] ) : $default_data[ $field ][ 'new_account' ]
+				), $register_fields );
+			} else {
+				$field_data[ $field ] = $default_data[ $field ];
 			}
 			$field_data[ $field ] = maybe_serialize( $field_data[ $field ] );
 		}
@@ -852,16 +851,17 @@ function bookacti_sort_form_fields_array( $form_id, $fields, $remove_unordered_f
 // LOGIN / REGISTER
 
 /**
- * Get user meta fields 
+ * Get user meta fields default data
  * @since 1.5.0
+ * @param array $fields
  * @return array
  */
-function bookacti_get_default_register_fields_data() {
-	return apply_filters( 'bookacti_register_fields', array(
+function bookacti_get_register_fields_default_data( $fields = array() ) {
+	$defaults = array(
 		'first_name' => array( 
 			'name'			=> 'first_name', 
 			'type'			=> 'text', 
-			'label'			=> __( 'First name', BOOKACTI_PLUGIN_NAME ), 
+			'label'			=> esc_html__( 'First name', BOOKACTI_PLUGIN_NAME ), 
 			'placeholder'	=> '', 
 			'tip'			=> '', 
 			'required'		=> 0, 
@@ -870,7 +870,7 @@ function bookacti_get_default_register_fields_data() {
 		'last_name' => array( 
 			'name'			=> 'last_name', 
 			'type'			=> 'text', 
-			'label'			=> __( 'Last name', BOOKACTI_PLUGIN_NAME ), 
+			'label'			=> esc_html__( 'Last name', BOOKACTI_PLUGIN_NAME ), 
 			'placeholder'	=> '', 
 			'tip'			=> '', 
 			'required'		=> 0, 
@@ -879,13 +879,15 @@ function bookacti_get_default_register_fields_data() {
 		'phone' => array( 
 			'name'			=> 'phone', 
 			'type'			=> 'text', 
-			'label'			=> __( 'Phone number', BOOKACTI_PLUGIN_NAME ), 
+			'label'			=> esc_html__( 'Phone number', BOOKACTI_PLUGIN_NAME ), 
 			'placeholder'	=> '', 
 			'tip'			=> '', 
 			'required'		=> 0, 
 			'displayed'		=> 1
 		)
-	));
+	);
+	
+	return apply_filters( 'bookacti_register_fields_default_data', $defaults, $fields );
 }
 
 
@@ -980,7 +982,7 @@ function bookacti_display_form_managers_meta_box( $form ) {
 function bookacti_display_form_publish_meta_box( $form ) {
 ?>
 	<div class='submitbox' id='submitpost'>
-		<div id='major-publishing-actions'>
+		<div id='major-publishing-actions' data-popup='<?php echo ! $form[ 'active' ] && $form[ 'status' ] !== 'trash' ? 1 : 0; ?>' >
 			<div id='delete-action'>
 			<?php
 				if ( current_user_can( 'bookacti_delete_forms' ) ) {
@@ -999,7 +1001,13 @@ function bookacti_display_form_publish_meta_box( $form ) {
 
 			<div id='publishing-action'>
 				<span class='spinner'></span>
-				<input id='bookacti-save-form-button' name='save' type='submit' class='button button-primary button-large' id='publish' value='<?php echo ! $form[ 'active' ] ? esc_attr_x( 'Publish', 'forms', BOOKACTI_PLUGIN_NAME ) : esc_attr_x( 'Update', 'forms', BOOKACTI_PLUGIN_NAME ); ?>' />
+				<input id='bookacti-save-form-button' 
+					   name='save' 
+					   type='submit' 
+					   class='button button-primary button-large' 
+					   id='publish' 
+					   value='<?php echo ! $form[ 'active' ] ? esc_attr_x( 'Publish', 'forms', BOOKACTI_PLUGIN_NAME ) : esc_attr_x( 'Update', 'forms', BOOKACTI_PLUGIN_NAME ); ?>' 
+				/>
 			</div>
 			<div class='clear'></div>
 		</div>

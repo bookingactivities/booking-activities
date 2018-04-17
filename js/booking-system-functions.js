@@ -700,12 +700,12 @@ function bookacti_fill_picked_events_list( booking_system ) {
 				var event_duration = bookacti_format_event_duration( event.start, event.end );
 				
 				var event_data = {
-					'title': '<span class="bookacti-booking-event-title" >'  + event.title + '</span>',
+					'title': event.title,
 					'duration': event_duration,
 					'quantity': 1
 				};
 
-				booking_system.trigger( 'bookacti_picked_events_list_data', [ event_data ] );
+				booking_system.trigger( 'bookacti_picked_events_list_data', [ event_data, event ] );
 				
 				var activity_id = 0;
 				if( event.group_id && typeof bookacti.booking_system[ booking_system_id ][ 'groups_events' ][ event.group_id ] !== 'undefined' ) {
@@ -725,10 +725,14 @@ function bookacti_fill_picked_events_list( booking_system ) {
 					unit = '<span class="bookacti-booking-event-quantity-separator" > - </span>' 
 						 + '<span class="bookacti-booking-event-quantity" >' + unit + '</span>';
 				}
-
-				var list_element = $j( '<li />', {
-					'html': event_data.title + '<span class="bookacti-booking-event-title-separator" > - </span>' + event_duration + unit
-				});
+				
+				var list_element_data = {
+					'html': '<span class="bookacti-booking-event-title" >' + event_data.title + '</span><span class="bookacti-booking-event-title-separator" > - </span>' + event_data.duration + unit
+				};
+				
+				booking_system.trigger( 'bookacti_picked_events_list_element_data', [ list_element_data, event ] );
+				
+				var list_element = $j( '<li />', list_element_data );
 
 				event_list.append( list_element );
 			});

@@ -136,7 +136,7 @@ $j( document ).ready( function() {
 
 
 		// Set quantity on eventClick
-		$j( 'body.woocommerce form.cart' ).on( 'bookacti_picked_events_list_data', '.bookacti-booking-system', function( e, event_summary_data ) {
+		$j( 'body.woocommerce form.cart' ).on( 'bookacti_picked_events_list_data', '.bookacti-booking-system', function( e, event_summary_data, event ) {
 			var booking_system = $j( this );
 			var qty_field = booking_system.parents( 'form' ).find( '.quantity .qty' );
 			if( qty_field.length ) {

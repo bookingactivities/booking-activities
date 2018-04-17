@@ -9,7 +9,7 @@ Stable tag: 1.5.0
 License: GPLv3 or later
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
 
-Reservation system specialized in activities: sports, leisure, courses, events, tourism, cultural, and yours! Works great with WooCommerce.
+Reservation system specialized in activities: sports, leisure, courses, events, tourism, and many more! Works great with WooCommerce.
 
 
 == Description ==

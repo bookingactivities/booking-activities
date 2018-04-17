@@ -92,19 +92,19 @@ function bookacti_display_form_field_login( $html, $field, $form_id, $instance_i
 			</div>
 		<?php } 
 		
-		if( ! empty( $field[ 'displayed_fields' ][ 'register' ] ) ) { 
+		if( ! empty( $field[ 'displayed_fields' ][ 'new_account' ] ) ) { 
 			?>
 			<div class='bookacti-login-form-field-container' id='<?php echo $field_id; ?>-register-container' >
 				<div class='bookacti-form-field-content' >
 					<input type='hidden' name='bookacti_register' value='0' />
 					<input type='checkbox' name='bookacti_register' value='1' id='<?php echo $field_id; ?>-register' class='bookacti-form-field bookacti-register' />
-					<label for='<?php echo $field_id; ?>-register'><?php echo esc_html( apply_filters( 'bookacti_translate_text', $field[ 'label' ][ 'register' ] ) ); ?></label>
-					<?php bookacti_help_tip( esc_html( apply_filters( 'bookacti_translate_text', $field[ 'tip' ][ 'register' ] ) ) ); ?>
+					<label for='<?php echo $field_id; ?>-register'><?php echo esc_html( apply_filters( 'bookacti_translate_text', $field[ 'label' ][ 'new_account' ] ) ); ?></label>
+					<?php bookacti_help_tip( esc_html( apply_filters( 'bookacti_translate_text', $field[ 'tip' ][ 'new_account' ] ) ) ); ?>
 				</div>
 			</div>
 			<?php 
 			// Display registration fields if any
-			$register_fields = bookacti_get_default_register_fields_data();
+			$register_fields = bookacti_get_register_fields_default_data();
 			if( in_array( 1, array_values( array_intersect_key( $field[ 'displayed_fields' ], $register_fields ) ) ) ) { ?>
 				<fieldset class='bookacti-register-fields' id='<?php echo $field_id; ?>-register-fields' style='<?php if( $context !== 'edit' ) { echo 'display:none;'; } ?>' >
 				<?php foreach( $register_fields as $register_field_name => $register_field ) {

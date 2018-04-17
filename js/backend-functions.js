@@ -42,7 +42,7 @@ $j( document ).ready( function() {
 
 
 function bookacti_show_hide_advanced_options( button ) {
-	button.closest( 'form' ).find( '.bookacti-advanced-option' ).toggle();
+	button.closest( 'form' ).find( '.bookacti-hidden-field' ).toggle();
 	button.toggleClass( 'bookacti-show-advanced-options bookacti-hide-advanced-options' );
 	if( button.hasClass( 'bookacti-show-advanced-options' ) )		{ button.html( button.data( 'show-title' ) ); }
 	else if( button.hasClass( 'bookacti-hide-advanced-options' ) )	{ button.html( button.data( 'hide-title' ) ); }

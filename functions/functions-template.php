@@ -121,7 +121,45 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 
 // TEMPLATE SETTINGS
+	
+	/**
+	 * Get additionnal calendar fields default data
+	 * @since 1.5.0
+	 * @param array $fields
+	 * @return array
+	 */
+	function bookacti_get_calendar_fields_default_data( $fields = array() ) {
+		if( ! is_array( $fields ) ) { $fields = array(); }
+		$defaults = array();
+	
+		// Day Begin
+		if( ! $fields || in_array( 'minTime', $fields, true ) ) {
+			$defaults[ 'minTime' ] = array(
+				'type'			=> 'time',
+				'name'			=> 'minTime',
+				'value'			=> '08:00',
+				/* translators: Refers to the first hour displayed on calendar. More information: http://fullcalendar.io/docs/agenda/minTime/ */
+				'title'			=> esc_html__( 'Day begin', BOOKACTI_PLUGIN_NAME ),
+				'tip'			=> esc_html__( 'Set when you want the days to begin on the calendar. Ex: "06:00" Days will begin at 06:00am.', BOOKACTI_PLUGIN_NAME )
+			);
+		}
 
+		// Day end
+		if( ! $fields || in_array( 'maxTime', $fields, true ) ) {
+			$defaults[ 'maxTime' ] = array(
+				'type'			=> 'time',
+				'name'			=> 'maxTime',
+				'value'			=> '20:00',
+				/* translators: Refers to the first hour displayed on calendar. More information: http://fullcalendar.io/docs/agenda/minTime/ */
+				'title'			=> esc_html__( 'Day end', BOOKACTI_PLUGIN_NAME ),
+				'tip'			=> esc_html__( 'Set when you want the days to end on the calendar. Ex: "18:00" Days will end at 06:00pm.', BOOKACTI_PLUGIN_NAME )
+			);
+		}
+		
+		return apply_filters( 'bookacti_calendar_fields_default_data', $defaults, $fields );
+	}
+	
+	
 	/**
 	 * Get a unique template setting made from a combination of multiple template settings
 	 * 

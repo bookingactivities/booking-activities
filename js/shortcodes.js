@@ -120,7 +120,7 @@ $j( document ).ready( function() {
 	
 	
 	// Set quantity on eventClick
-	$j( '.bookacti-booking-system-form' ).on( 'bookacti_picked_events_list_data', '.bookacti-booking-system', function( e, event_summary_data ) {
+	$j( '.bookacti-booking-system-form' ).on( 'bookacti_picked_events_list_data', '.bookacti-booking-system', function( e, event_summary_data, event ) {
 		var booking_system = $j( this );
 		var qty_field = booking_system.parents( 'form' ).find( 'input.bookacti-quantity' );
 		if( qty_field.length ) {

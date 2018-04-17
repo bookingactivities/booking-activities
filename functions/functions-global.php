@@ -242,7 +242,47 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	
 	
 // FORMS
+	/**
+	 * Display fields
+	 * @since 1.5.0
+	 * @param array $args
+	 */
+	function bookacti_display_fields( $fields, $args = array() ) {
+		
+		if( empty( $fields ) || ! is_array( $fields ) )	{ return; }
+		
+		// Format parameters
+		if( ! isset( $args[ 'hidden' ] ) || ! is_array( $args[ 'hidden' ] ) )	{ $args[ 'hidden' ] = array(); }
+		if( ! isset( $args[ 'prefix' ] ) || ! is_string( $args[ 'prefix' ] ) )	{ $args[ 'prefix' ] = ''; }
 
+		foreach( $fields as $field_name => $field ) {
+			
+			if( empty( $field[ 'name' ] ) ) { $field[ 'name' ] = $field_name; }
+			$field[ 'name' ]	= $args[ 'prefix' ] ? $args[ 'prefix' ] . '[' . $field_name . ']' : $field[ 'name' ];
+			$field[ 'id' ]		= empty( $field[ 'id' ] ) ? 'bookacti-calendar-' . $field_name : $field[ 'id' ];
+			$field[ 'hidden' ]	= in_array( $field_name, $args[ 'hidden' ], true ) ? 1 : 0;
+
+			// If custom type, call another function to display this field
+			if( $field[ 'type' ] === 'custom' ) {
+				do_action( 'bookacti_display_custom_field', $field, $field_name );
+				continue;
+			}
+			// Else, display standard field
+		?>
+			<div class='bookacti-field-container <?php if( $field[ 'hidden' ] ) { echo 'bookacti-hidden-field'; } ?>'>
+				<label for='<?php echo $field[ 'id' ]; ?>' class='<?php if( $field[ 'type' ] === 'checkboxes' ) { echo 'bookacti-fullwidth-label'; } ?>' >
+				<?php 
+					echo $field[ 'title' ];
+					if( $field[ 'type' ] === 'checkboxes' ) { bookacti_help_tip( $field[ 'tip' ] ); unset( $field[ 'tip' ] ); }
+				?>
+				</label>
+				<?php bookacti_display_field( $field ); ?>
+			</div>
+		<?php
+		}
+	}
+	
+	
 	/**
 	 * Display various fields
 	 * 
@@ -255,7 +295,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		$args = bookacti_format_field_args( $args );
 
 		if( ! $args ) { return; }
-
+		
 		// Display field according to type
 
 		// TEXT & NUMBER
@@ -271,6 +311,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 					min=		'<?php echo esc_attr( $args[ 'options' ][ 'min' ] ); ?>' 
 					max=		'<?php echo esc_attr( $args[ 'options' ][ 'max' ] ); ?>'
 					step=		'<?php echo esc_attr( $args[ 'options' ][ 'step' ] ); ?>'
+					<?php if( ! empty( $args[ 'attr' ] ) ) { echo $args[ 'attr' ]; } ?>
 				<?php }
 				if( $args[ 'required' ] ) { echo ' required'; } ?>
 			/>
@@ -290,6 +331,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 				id=			'<?php echo esc_attr( $args[ 'id' ] ); ?>' 
 				class=		'bookacti-textarea <?php echo esc_attr( $args[ 'class' ] ); ?>' 
 				placeholder='<?php echo esc_attr( $args[ 'placeholder' ] ); ?>'
+				<?php if( ! empty( $args[ 'attr' ] ) ) { echo $args[ 'attr' ]; } ?>
 				<?php if( $args[ 'required' ] ) { echo ' required'; } ?>
 			><?php echo $args[ 'value' ]; ?></textarea>
 		<?php if( $args[ 'label' ] ) { ?>
@@ -321,6 +363,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 							class='bookacti-input <?php echo esc_attr( $args[ 'class' ] ); ?>' 
 							type='checkbox' 
 							value='<?php echo $option[ 'id' ]; ?>'
+							<?php if( ! empty( $args[ 'attr' ][ $option[ 'id' ] ] ) ) { echo $args[ 'attr' ][ $option[ 'id' ] ]; } ?>
 							<?php if( in_array( $option[ 'id' ], $args[ 'value' ], true ) ){ echo 'checked'; } ?>
 					/>
 				<?php if( ! empty( $option[ 'label' ] ) ) { ?>
@@ -350,6 +393,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 							class='bookacti-input <?php echo esc_attr( $args[ 'class' ] ); ?>' 
 							type='radio' 
 							value='<?php echo esc_attr( $option[ 'id' ] ); ?>'
+							<?php if( ! empty( $args[ 'attr' ][ $option[ 'id' ] ] ) ) { echo $args[ 'attr' ][ $option[ 'id' ] ]; } ?>
 							<?php if( isset( $args[ 'value' ] ) ) { checked( $args[ 'value' ], $option[ 'id' ], true ); } ?>
 							<?php if( $args[ 'required' ] ) { echo ' required'; } ?>
 					/>
@@ -376,12 +420,13 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			<select	name=	'<?php echo esc_attr( $args[ 'name' ] ); ?>' 
 					id=		'<?php echo esc_attr( $args[ 'id' ] ); ?>' 
 					class=	'bookacti-select <?php echo esc_attr( $args[ 'class' ] ); ?>' 
-					<?php if( $args[ 'multiple' ] ) { echo 'multiple'; } ?>
+					<?php if( $args[ 'multiple' ] && $args[ 'multiple' ] !== 'maybe' ) { echo 'multiple'; } ?>
 					<?php if( $args[ 'required' ] ) { echo ' required'; } ?>
 			>
 			<?php foreach( $args[ 'options' ] as $option_id => $option_value ) { ?>
 				<option value='<?php echo esc_attr( $option_id ); ?>'
 						id='<?php echo esc_attr( $args[ 'id' ] ) . '_' . esc_attr( $option_id ); ?>'
+						<?php if( ! empty( $args[ 'attr' ][ $option_id ] ) ) { echo $args[ 'attr' ][ $option_id ]; } ?>
 						<?php	if( $args[ 'multiple' ] ) { selected( true, in_array( $option_id, $args[ 'value' ] ) ); }
 								else { selected( $args[ 'value' ], $option_id ); }?>
 				>
@@ -389,7 +434,24 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 				</option>
 			<?php } ?>
 			</select>
-		<?php if( $args[ 'label' ] ) { ?>
+		<?php 
+			if( $args[ 'multiple' ] === 'maybe' && count( $args[ 'options' ] ) > 1 ) { ?>
+				<span class='bookacti-multiple-select-container' >
+					<label for='bookacti-multiple-select-<?php echo esc_attr( $args[ 'id' ] ); ?>' ><span class='dashicons dashicons-plus' title='<?php esc_attr_e( 'Multiple selection', BOOKACTI_PLUGIN_NAME ); ?>'></span></label>
+					<input type='checkbox' 
+						   class='bookacti-multiple-select' 
+						   id='bookacti-multiple-select-<?php echo esc_attr( $args[ 'id' ] ); ?>' 
+						   data-select-id='<?php echo esc_attr( $args[ 'id' ] ); ?>'
+						   style='display:none' />
+				</span>
+		<?php 
+				// Add select multiple values instructions
+				if( $args[ 'tip' ] ) {
+					/* translators: %s is the "+" icon to click on. */
+					$args[ 'tip' ] .= '<br/>' . sprintf( esc_html__( 'To select multiple values, click on %s and use CTRL+Click to pick or unpick a value.', BOOKACTI_PLUGIN_NAME ), '<span class="dashicons dashicons-plus"></span>' );
+				}
+			} 
+			if( $args[ 'label' ] ) { ?>
 			<label for='<?php echo esc_attr( $args[ 'id' ] ); ?>' >
 				<?php echo apply_filters( 'bookacti_translate_text', $args[ 'label' ] ); ?>
 			</label>
@@ -400,6 +462,11 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		// TINYMCE editor
 		else if( $args[ 'type' ] === 'editor' ) {
 			wp_editor( $args[ 'value' ], $args[ 'id' ], $args[ 'options' ] );
+		}
+
+		// User ID
+		else if( $args[ 'type' ] === 'user_id' ) {
+			bookacti_display_user_selectbox( $args[ 'options' ] );
 		}
 
 
@@ -414,7 +481,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	 * Format arguments to diplay a proper field
 	 * 
 	 * @since 1.2.0
-	 * @version 1.3.0
+	 * @version 1.5.0
 	 * @param array $args ['type', 'name', 'label', 'id', 'class', 'placeholder', 'options', 'value', 'multiple', 'tip']
 	 * @return array|false
 	 */
@@ -427,7 +494,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		if( ! isset( $args[ 'type' ] ) || ! isset( $args[ 'name' ] ) ) { return false; }
 
 		// If field type is not supported, return
-		if( ! in_array( $args[ 'type' ], array( 'text', 'email', 'date', 'time', 'password', 'number', 'checkbox', 'checkboxes', 'select', 'radio', 'textarea', 'editor' ) ) ) { 
+		if( ! in_array( $args[ 'type' ], array( 'text', 'email', 'date', 'time', 'password', 'number', 'checkbox', 'checkboxes', 'select', 'radio', 'textarea', 'editor', 'user_id' ) ) ) { 
 			return false; 
 		}
 
@@ -439,6 +506,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			'class'			=> '',
 			'placeholder'	=> '',
 			'options'		=> array(),
+			'attr'			=> '',
 			'value'			=> '',
 			'multiple'		=> false,
 			'tip'			=> '',
@@ -460,15 +528,20 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		$args[ 'required' ] = isset( $args[ 'required' ] ) && $args[ 'required' ] ? 1 : 0;
 		
 		// Make sure fields with multiple options have 'options' set
-		if( in_array( $args[ 'type' ], array( 'checkboxes', 'radio', 'select' ) ) ){
+		if( in_array( $args[ 'type' ], array( 'checkboxes', 'radio', 'select', 'user_id' ) ) ){
 			if( ! $args[ 'options' ] ) { return false; }
+			if( ! is_array( $args[ 'attr' ] ) ) { $args[ 'attr' ] = array(); }
+		} else {
+			if( ! is_string( $args[ 'attr' ] ) ) { $args[ 'attr' ] = ''; }
 		}
 		
 		// If multiple, make sure name has brackets and value is an array
-		if( $args[ 'multiple' ] ) {
-			if( strpos( '[', $args[ 'name' ] ) === false ) {
+		if( in_array( $args[ 'multiple' ], array( 'true', true, '1', 1 ), true ) ) {
+			if( strpos( '[]', $args[ 'name' ] ) === false ) {
 				$args[ 'name' ]	.= '[]';
 			}
+		} else if( $args[ 'multiple' ] && $args[ 'type' ] === 'select' ) {
+			$args[ 'multiple' ] = 'maybe';
 		}
 		
 		// Make sure checkboxes have their value as an array
