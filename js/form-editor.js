@@ -42,8 +42,6 @@ $j( document ).ready( function() {
 		bookacti_save_form();
 	});
 	
-	console.log( bookacti.form_editor );
-	
 	// Field-specific actions when a user open its dialog
 	$j( '#bookacti-form-editor' ).on( 'bookacti_field_update_dialog', function( e, field_id, field_name ){
 		if( field_name === 'calendar' ) {
@@ -70,15 +68,16 @@ $j( document ).ready( function() {
 	// Update calendar field
 	$j( '#bookacti-form-editor' ).on( 'bookacti_field_updated bookacti_field_reset', function( e, field_id, field_name ){
 		if( field_name === 'calendar' ) {
-			var booking_system = $j( '#bookacti-form-editor-field-' + field_id + ' .bookacti-booking-system' );
+			var booking_system		= $j( '#bookacti-form-editor-field-' + field_id + ' .bookacti-booking-system' );
+			var booking_system_id	= booking_system.attr( 'id' );
 			
 			// Clear booking system
 			booking_system.empty();
 			bookacti_clear_booking_system_displayed_info( booking_system );
 
 			// Reload booking system
-			bookacti.booking_system[ 'bookacti-form-editor-calendar' ] = [];
-			bookacti.booking_system[ 'bookacti-form-editor-calendar' ] = $j.extend( true, {}, bookacti.form_editor.fields[ field_id ] ); // Clone field data, else cahnging booking_system data will change field data
+			bookacti.booking_system[ booking_system_id ] = [];
+			bookacti.booking_system[ booking_system_id ] = $j.extend( true, {}, bookacti.form_editor.fields[ field_id ] ); // Clone field data, else cahnging booking_system data will change field data
 			
 			bookacti_reload_booking_system( booking_system );
 		}

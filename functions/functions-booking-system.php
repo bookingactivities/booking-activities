@@ -115,7 +115,7 @@ function bookacti_get_booking_system( $atts, $echo = false ) {
 		
 		<div class='bookacti-picked-events' style='display:none;' >
 			<div class='bookacti-picked-events-list-title' ></div>
-			<ul class='bookacti-picked-events-list' >
+			<ul class='bookacti-picked-events-list bookacti-custom-scrollbar' >
 				<?php do_action( 'bookacti_picked_events_list', $atts ); ?>
 			</ul>
 		</div>
@@ -395,7 +395,7 @@ function bookacti_format_booking_system_attributes( $atts = array(), $shortcode 
 		$atts[ 'id' ] = rand(); 
 	}
 	if( substr( strval( $atts[ 'id' ] ), 0, 9 ) !== 'bookacti-' ) {
-		$atts[ 'id' ] = 'bookacti-' . $atts[ 'id' ];
+		$atts[ 'id' ] = 'bookacti-booking-system-' . $atts[ 'id' ];
 	}
 	$atts[ 'id' ] = esc_attr( $atts[ 'id' ] );
 	
@@ -1395,7 +1395,7 @@ function bookacti_get_formatted_booking_events_list( $booking_events, $quantity 
 	
 	// Wrap the list only if it is not empty
 	if( ! empty( $events_list ) ) {
-		$events_list = '<ul class="bookacti-booking-events-list" >' . $events_list . '</ul>';
+		$events_list = '<ul class="bookacti-booking-events-list bookacti-custom-scrollbar" >' . $events_list . '</ul>';
 	}
 	
 	return apply_filters( 'bookacti_formatted_booking_events_list', $events_list, $booking_events, $quantity, $locale );

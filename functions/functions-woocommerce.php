@@ -1638,9 +1638,48 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 		return false;
 	}
+	
+	
+	/**
+	 * Find matching product variation
+	 * @since 1.5.0
+	 * @param WC_Product $product
+	 * @param array $attributes
+	 * @return int Matching variation ID or 0.
+	 */
+	function bookacti_get_product_variation_matching_attributes( $product, $attributes ) {
+		// Format attributes array
+		foreach( $attributes as $key => $value ) {
+			if( strpos( $key, 'attribute_' ) === 0 ) { continue; }
+			unset( $attributes[ $key ] );
+			$attributes[ sprintf( 'attribute_%s', $key ) ] = $value;
+		}
+		// Find matching variation
+		if( class_exists( 'WC_Data_Store' ) ) {
+			$data_store = WC_Data_Store::load( 'product' );
+			return $data_store->find_matching_product_variation( $product, $attributes );
+		} else {
+			return $product->get_matching_variation( $attributes );
+		}
+	}
+	
+	
+	/**
+	 * Get variation default attributes
+	 * @since 1.5.0
+	 * @param WC_Product $product
+	 * @return array
+	 */
+	function bookacti_get_product_default_attributes( $product ) {
+		if( method_exists( $product, 'get_default_attributes' ) ) {
+			return $product->get_default_attributes();
+		} else {
+			return $product->get_variation_default_attributes();
+		}
+	}
 
 
-
+	
 
 // REFUND
 
@@ -1979,7 +2018,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	 * @return array
 	 */
 	function bookacti_get_wc_unsupported_form_fields() {
-		return apply_filters( 'bookacti_wc_unsupported_form_fields', array( 'login', 'quantity', 'submit', 'phone', 'address' ) );
+		return apply_filters( 'bookacti_wc_unsupported_form_fields', array( 'login', 'quantity', 'submit' ) );
 	}
 
 

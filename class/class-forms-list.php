@@ -23,6 +23,9 @@ if( ! class_exists( 'Forms_List_Table' ) ) {
 		 * @access public
 		 */
 		public function __construct(){
+			// This global variable is required to create screen
+			if( ! isset( $GLOBALS[ 'hook_suffix' ] ) ) { $GLOBALS[ 'hook_suffix' ] = null; }
+			
 			parent::__construct( array(
 				/*translator:  */
 				'singular'	=> 'form',	// Singular name of the listed records
@@ -222,11 +225,11 @@ if( ! class_exists( 'Forms_List_Table' ) ) {
 											. '</a>';
 					} else {
 						// Add the 'restore' action
-						$actions[ 'restore' ] = '<a href="' . esc_url( wp_nonce_url( get_admin_url() . 'admin.php?page=bookacti_forms', 'restore-form_' . $form_id ) . '&action=restore&active=0&form_id=' . $form_id ) . '" >'
+						$actions[ 'restore' ] = '<a href="' . esc_url( wp_nonce_url( get_admin_url() . 'admin.php?page=bookacti_forms', 'restore-form_' . $form_id ) . '&action=restore&form_id=' . $form_id ) . '" >'
 												. esc_html_x( 'Restore', 'forms', BOOKACTI_PLUGIN_NAME )
 											. '</a>';
 						// Add the 'delete' action
-						$actions[ 'delete' ] = '<a href="' . esc_url( wp_nonce_url( get_admin_url() . 'admin.php?page=bookacti_forms', 'delete-form_' . $form_id ) . '&action=delete&active=0&form_id=' . $form_id ) . '" >'
+						$actions[ 'delete' ] = '<a href="' . esc_url( wp_nonce_url( get_admin_url() . 'admin.php?page=bookacti_forms', 'delete-form_' . $form_id ) . '&status=trash&action=delete&form_id=' . $form_id ) . '" >'
 												. esc_html_x( 'Delete Permanently', 'forms', BOOKACTI_PLUGIN_NAME )
 											. '</a>';
 					}
@@ -234,7 +237,7 @@ if( ! class_exists( 'Forms_List_Table' ) ) {
 			}
 			
 			$actions = apply_filters( 'bookacti_form_list_row_actions', $actions, $item );
-			
+		
 			// Add a span and a class to each action
 			foreach( $actions as $action_id => $link ) {
 				$actions[ $action_id ] = '<span class="' . $action_id . '">' . $link . '</span>';

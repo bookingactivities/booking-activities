@@ -173,7 +173,7 @@ function bookacti_update_booking_quantity( $booking_id, $new_quantity, $expirati
 /**
  * Get bookings according to filters. 
  * 
- * @version 1.4.0
+ * @version 1.5.0
  * @global wpdb $wpdb
  * @param array $filters Use bookacti_format_booking_filters() before
  * @return array
@@ -181,7 +181,7 @@ function bookacti_update_booking_quantity( $booking_id, $new_quantity, $expirati
 function bookacti_get_bookings( $filters ) {
 	global $wpdb;
 	
-	$query	= ' SELECT DISTINCT B.*, E.title as event_title, A.id as activity_id, A.title as activity_title, T.id as template_id, T.title as template_title ' 
+	$query	= ' SELECT DISTINCT B.*, E.title as event_title, A.id as activity_id, A.title as activity_title, T.id as template_id, T.title as template_title, IFNULL( group_id, UUID() ) as unique_group_id ' 
 			. ' FROM ' . BOOKACTI_TABLE_BOOKINGS . ' as B, ' . BOOKACTI_TABLE_EVENTS . ' as E, ' . BOOKACTI_TABLE_ACTIVITIES . ' as A, ' . BOOKACTI_TABLE_TEMPLATES . ' as T ';
 					
 	if( $filters[ 'event_group_id' ] ) {
@@ -337,7 +337,7 @@ function bookacti_get_bookings( $filters ) {
 	}
 	
 	if( $filters[ 'group_by' ] === 'booking_group' ) {
-		$query .= ' GROUP BY IFNULL( B.group_id , B.id ) ';
+		$query .= ' GROUP BY unique_group_id ';
 	}
 	
 	if( $filters[ 'order_by' ] ) {
@@ -365,9 +365,12 @@ function bookacti_get_bookings( $filters ) {
 	if( $variables ) {
 		$query = $wpdb->prepare( $query, $variables );
 	}
+	
+	$query = apply_filters( 'bookacti_get_bookings_query', $query, $filters );
+	
 	$bookings = $wpdb->get_results( $query, OBJECT );
 	
-	return $bookings;
+	return apply_filters( 'bookacti_get_bookings', $bookings, $filters, $query );
 }
 
 
@@ -375,7 +378,7 @@ function bookacti_get_bookings( $filters ) {
  * Get the total amount of booking rows according to filters
  * 
  * @since 1.3.1
- * @version 1.4.0
+ * @version 1.5.0
  * @global wpdb $wpdb
  * @param array $filters Use bookacti_format_booking_filters() before
  * @return int
@@ -384,7 +387,7 @@ function bookacti_get_number_of_booking_rows( $filters = array() ) {
 	global $wpdb;
 	
 	$query	= ' SELECT COUNT( list_items_count ) FROM ( '
-				. ' SELECT COUNT( DISTINCT B.id ) as list_items_count' 
+				. ' SELECT COUNT( DISTINCT B.id ) as list_items_count, IFNULL( group_id, UUID() ) as unique_group_id ' 
 				. ' FROM ' . BOOKACTI_TABLE_BOOKINGS . ' as B, ' . BOOKACTI_TABLE_EVENTS . ' as E, ' . BOOKACTI_TABLE_ACTIVITIES . ' as A, ' . BOOKACTI_TABLE_TEMPLATES . ' as T ';
 	
 	if( $filters[ 'event_group_id' ] ) {
@@ -541,7 +544,7 @@ function bookacti_get_number_of_booking_rows( $filters = array() ) {
 	
 	// Whether to count bookings of the same groups as one item
 	if( $filters[ 'group_by' ] === 'booking_group' ) {
-		$query .= ' GROUP BY IFNULL( B.group_id , B.id ) ';
+		$query .= ' GROUP BY unique_group_id ';
 	}
 	
 	$query .= ' ) as C ';
@@ -550,16 +553,20 @@ function bookacti_get_number_of_booking_rows( $filters = array() ) {
 		$query = $wpdb->prepare( $query, $variables );
 	}
 	
+	$query = apply_filters( 'bookacti_get_number_of_booking_rows_query', $query, $filters );
+	
 	$count = $wpdb->get_var( $query );
+	
+	if( ! $count ) { $count = 0; }
 
-	return $count ? $count : 0;
+	return apply_filters( 'bookacti_get_number_of_booking_rows', $count, $filters, $query );
 }
 
 
 /**
  * Get number of booking of a specific event or a specific occurrence
  * 
- * @version 1.4.0
+ * @version 1.5.0
  * @global wpdb $wpdb
  * @param array $filters Use bookacti_format_booking_filters() before
  * @return int
@@ -571,7 +578,7 @@ function bookacti_get_number_of_bookings( $filters ) {
 	
 	if( $filters[ 'group_by' ] === 'booking_group' ) {
 		$query	= ' SELECT SUM( quantity ) FROM ( '
-					. ' SELECT MAX( B.quantity ) as quantity ';
+					. ' SELECT MAX( B.quantity ) as quantity, IFNULL( group_id, UUID() ) as unique_group_id ';
 	} else {
 		$query = ' SELECT SUM( B.quantity ) as quantity ';
 	}
@@ -727,23 +734,26 @@ function bookacti_get_number_of_bookings( $filters ) {
 	
 	// Whether to count bookings of the same groups as one item
 	if( $filters[ 'group_by' ] === 'booking_group' ) {
-		$query .= ' GROUP BY IFNULL( B.group_id , B.id ) ';
+		$query .= ' GROUP BY unique_group_id ';
 		$query .= ' ) as C '; // Close the first SELECT FROM
 	}
 	
-	$query		= $wpdb->prepare( $query, $variables );
-	$bookings	= $wpdb->get_var( $query );
+	$query = $wpdb->prepare( $query, $variables );
+	
+	$query = apply_filters( 'bookacti_get_number_of_bookings_query', $query, $filters );
+	
+	$bookings = $wpdb->get_var( $query );
 
 	if( ! $bookings ) { $bookings = 0; }
 
-	return $bookings;
+	return apply_filters( 'bookacti_get_number_of_bookings', $bookings, $filters, $query );
 }
 
 
 /**
  * Get number of bookings ordered by events
  * 
- * @version 1.4.0
+ * @version 1.5.0
  * @global wpdb $wpdb
  * @param array $template_ids
  * @param array $event_ids

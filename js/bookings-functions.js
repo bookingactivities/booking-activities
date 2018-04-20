@@ -144,6 +144,7 @@ function bookacti_reload_booking_system_according_to_filters( booking_system ) {
 	bookacti.booking_system[ booking_system_id ][ 'calendars' ] = selected_templates ? selected_templates : [];
 	bookacti.booking_system[ booking_system_id ][ 'status' ]	= selected_status ? selected_status : [];
 	bookacti.booking_system[ booking_system_id ][ 'user_id' ]	= selected_user ? selected_user : 0;
+	bookacti.booking_system[ booking_system_id ][ 'template_data' ] = [];
 	
 	bookacti_reload_booking_system( booking_system );
 }
@@ -245,6 +246,7 @@ function bookacti_display_grouped_bookings( booking_system, booking_group_id ) {
 				// Update the booking list
 				$j( '#bookacti-bookings-list-container #the-list tr.no-items' ).remove();
 				group_row.after( response.rows );
+				bookacti_refresh_list_table_hidden_columns();
 				
 				/**
 				 * Trigger after the booking list has been filled.
@@ -290,6 +292,22 @@ function bookacti_booking_row_exit_loading_state( row ) {
 	row.find( '.bookacti-booking-state' ).show();
 	row.find( '.bookacti-booking-action' ).attr( 'disabled', false );
 }
+
+
+// Refresh Shown / Hidden column
+function bookacti_refresh_list_table_hidden_columns() {
+	// Show / Hide columns according to page options
+	$j( '.hide-column-tog' ).each( function(){ 
+		var column = $j( this ).val();
+		console.log( column );
+		if( $j( this ).prop( 'checked' ) ) { 
+			$j( '.column-' + column ).removeClass( 'hidden' ); 
+		} else { 
+			$j( '.column-' + column ).addClass( 'hidden' ); 
+		}
+	});
+}
+
 
 
 

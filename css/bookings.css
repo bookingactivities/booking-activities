@@ -63,7 +63,7 @@
 #bookacti-bookings-list-container .column-start_date,
 #bookacti-bookings-list-container .column-end_date,
 #bookacti-bookings-list-container .column-creation_date	{ width: 12%; }
-#bookacti-bookings-list-container .column-actions		{ width: 140px; }
+#bookacti-bookings-list-container .column-actions		{ width: 172px; }
 
 #bookacti-bookings-list-container .column-id									{ padding: 8px 0; }
 #bookacti-bookings-list-container .column-id .bookacti-booking-group-indicator,

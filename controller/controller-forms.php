@@ -13,6 +13,11 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
  * @param string $context
  */
 function bookacti_display_form_field_calendar( $field, $instance_id, $context ) {
+	// Do not keep ID and class (already used for the container)
+	$field[ 'id' ] = $instance_id; 
+	$field[ 'class' ] = '';
+	
+	// Display the booking system
 	bookacti_get_booking_system( $field, true );
 }
 add_action( 'bookacti_display_form_field_calendar', 'bookacti_display_form_field_calendar', 10, 3 );
@@ -174,9 +179,9 @@ add_filter( 'bookacti_html_form_field_login', 'bookacti_display_form_field_login
 function bookacti_display_form_field_quantity( $field, $instance_id, $context ) {
 	$args = array(
 		'type'			=> 'number',
-		'name'			=> 'bookacti_quantity',
+		'name'			=> 'quantity',
 		'class'			=> 'bookacti-form-field bookacti-quantity',
-		'placeholder'	=> esc_attr( apply_filters( 'bookacti_translate_text', $field[ 'placeholder' ] ) ),
+		'placeholder'	=> ! empty( $field[ 'placeholder' ] ) ? esc_attr( apply_filters( 'bookacti_translate_text', $field[ 'placeholder' ] ) ) : '',
 		'options'		=> array( 'min' => 1 ),
 		'value'			=> 1
 	);
@@ -232,6 +237,61 @@ function bookacti_display_form_field_free_text( $field, $instance_id, $context )
 <?php
 }
 add_action( 'bookacti_display_form_field_free_text', 'bookacti_display_form_field_free_text', 10, 3 );
+
+
+/**
+ * Add a compulsory quantity input for correct booking form functionning
+ * @since 1.5.0
+ * @param array $fields
+ * @param array $form
+ * @param string $instance_id
+ * @param string $context
+ * @return array
+ */
+function bookacti_display_compulsory_quantity_form_field( $fields, $form, $instance_id, $context ) {
+	if( $context !== 'display' ) { return $fields; }
+	
+	// If there is no "quantity" input, add a default hidden quantity input
+	$fields_types = array();
+	foreach( $fields as $field ) { if( ! empty( $field[ 'type' ] ) ) { $fields_types[] = $field[ 'type' ]; } }
+	if( in_array( 'submit', $fields_types, true ) && ! in_array( 'quantity', $fields_types, true ) ) {
+		$field = bookacti_get_default_form_fields_data( 'quantity' );
+		$field[ 'id' ] .= ' bookacti-compulsory-quantity-field';
+		$field[ 'class' ] .= ' bookacti-hidden-field';
+		$fields[] = $field;
+	}
+	
+	return $fields;
+}
+add_filter( 'bookacti_displayed_form_fields', 'bookacti_display_compulsory_quantity_form_field', 10, 4 );
+
+
+
+// FORM
+/**
+ * AJAX Controller - Get a booking form
+ * @since 1.5.0
+ */
+function bookacti_controller_get_form() {
+	// Check nonce and capabilities
+	$form_id		= intval( $_POST[ 'form_id' ] );
+	$is_nonce_valid	= check_ajax_referer( 'bookacti_get_form', 'nonce', false );
+
+	if( ! $is_nonce_valid ) { wp_send_json( array( 'status' => 'failed', 'error' => 'not_allowed' ) ); }
+	
+	$instance_id	= ! empty( $_POST[ 'instance_id' ] ) ? sanitize_title_with_dashes( $_POST[ 'instance_id' ] ) : '';
+	$context		= ! empty( $_POST[ 'context' ] ) ? sanitize_title_with_dashes( $_POST[ 'context' ] ) : 'display';
+	
+	// Get the form
+	$form_html		= bookacti_display_form( $form_id, $instance_id, $context, false );
+	
+	// Feedback error
+	if( ! $form_html ) { wp_send_json( array( 'status' => 'failed', 'error' => 'no_form' ) ); }
+	
+	wp_send_json( array( 'status' => 'success', 'form_html' => $form_html ) );
+}
+add_action( 'wp_ajax_bookactiGetForm', 'bookacti_controller_get_form' );
+add_action( 'wp_ajax_nopriv_bookactiGetForm', 'bookacti_controller_get_form' );
 
 
 

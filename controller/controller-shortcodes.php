@@ -78,12 +78,12 @@ function bookacti_shortcode_booking_form( $atts = array(), $content = null, $tag
 	$atts = array();
 	$atts[ 'url' ]		= ! empty( $atts[ 'url' ] ) ? esc_url( $atts[ 'url' ] ) : '';
 	$atts[ 'button' ]	= ! empty( $atts[ 'button' ] ) ? esc_html( sanitize_text_field( $atts[ 'button' ] ) ) : bookacti_get_message( 'booking_form_submit_button' );
-	$atts[ 'id' ]		= ! empty( $atts[ 'id' ] ) ? esc_attr( $atts[ 'id' ] ) : esc_attr( 'bookacti-form-' . rand() );
+	$atts[ 'id' ]		= ! empty( $atts[ 'id' ] ) ? esc_attr( $atts[ 'id' ] ) : rand();
 	$atts = array_merge( $bs_atts, $atts );
 	
 	$output = "<form action='" . $atts[ 'url' ] . "' 
 					class='bookacti-booking-form' 
-					id='" . $atts[ 'id' ] . "' >
+					id='bookacti-form-" . $atts[ 'id' ] . "' >
 				  <input type='hidden' name='action' value='bookactiSubmitBookingForm' />"
 
 				  . wp_nonce_field( 'bookacti_booking_form', 'nonce_booking_form', true, false )
@@ -94,12 +94,12 @@ function bookacti_shortcode_booking_form( $atts = array(), $content = null, $tag
 					  <label for='bookacti-quantity-booking-form-" . $atts[ 'id' ] . "' class='bookacti-form-field-label' >"
 						  . __( 'Quantity', BOOKACTI_PLUGIN_NAME ) .
 					  "</label>
-					  <input	name='bookacti_quantity'
-							  id='bookacti-quantity-booking-form-" . $atts[ 'id' ] . "'
-							  class='bookacti-form-field bookacti-quantity'
-							  type='number' 
-							  min='1'
-							  value='1' />
+					  <input name='quantity'
+							 id='bookacti-quantity-booking-form-" . $atts[ 'id' ] . "'
+							 class='bookacti-form-field bookacti-quantity'
+							 type='number' 
+							 min='1'
+							 value='1' />
 				  </div>"
 
 				  .  apply_filters( 'bookacti_booking_form_fields', '', $atts, $content ) .
@@ -195,7 +195,7 @@ function bookacti_controller_validate_booking_form() {
 			'event_id'			=> intval( $_POST[ 'bookacti_event_id' ] ),
 			'event_start'		=> bookacti_sanitize_datetime( $_POST[ 'bookacti_event_start' ] ),
 			'event_end'			=> bookacti_sanitize_datetime( $_POST[ 'bookacti_event_end' ] ),
-			'quantity'			=> intval( $_POST[ 'bookacti_quantity' ] ),
+			'quantity'			=> intval( $_POST[ 'quantity' ] ),
 			'default_state'		=> bookacti_get_setting_value( 'bookacti_general_settings', 'default_booking_state' ), 
 			'payment_status'	=> bookacti_get_setting_value( 'bookacti_general_settings', 'default_payment_status' )
 		) );

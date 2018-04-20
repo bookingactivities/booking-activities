@@ -250,7 +250,7 @@ if( ! $templates ) {
 						'groups_only'			=> 0,
 						'groups_single_events'	=> 1,
 						'method'				=> 'calendar',
-						'id'					=> 'booking-system-bookings-page',
+						'id'					=> 'bookacti-booking-system-bookings-page',
 						'class'					=> 'admin-booking-system',
 						'past_events'			=> 1,
 						'check_roles'			=> 0

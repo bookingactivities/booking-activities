@@ -463,6 +463,7 @@ function bookacti_dialog_change_booking_state( booking_id, booking_type ) {
 								
 								// Replace the row
 								row.replaceWith( response.row );
+								bookacti_refresh_list_table_hidden_columns();
 								
 								// Update booking state
 								if( booking_state !== new_booking_state ) {
@@ -547,6 +548,7 @@ function bookacti_dialog_reschedule_booking( booking_id ) {
 				// Replace global data
 				bookacti.booking_system[ booking_system_id ][ 'calendars' ]		= template_id ? [ template_id ] : [];
 				bookacti.booking_system[ booking_system_id ][ 'activities' ]	= activity_id ? [ activity_id ] : [];
+				bookacti.booking_system[ booking_system_id ][ 'template_data' ]	= [];
 				
 				booking_system.trigger( 'bookacti_before_reschedule_booking_system_loads', [ response.booking_data ] );
 				
@@ -637,6 +639,7 @@ function bookacti_dialog_reschedule_booking( booking_id ) {
 								if( row.parents( '#bookacti-bookings-list, .bookacti-user-bookings-list' ).length > 0 ) {
 									row.after( response.row );
 									row.remove();
+									bookacti_refresh_list_table_hidden_columns();
 								}
 								
 								$j( 'body' ).trigger( 'bookacti_booking_rescheduled', [ booking_id, event_start, event_end, response ] );

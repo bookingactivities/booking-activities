@@ -117,6 +117,7 @@ $bookacti_translation_array = apply_filters( 'bookacti_translation_array', array
 	'error_create_form'					=> esc_html__( 'Error occurs when trying to create the form.', BOOKACTI_PLUGIN_NAME ),
 	'error_update_form'					=> esc_html__( 'Error occurs when trying to update the form.', BOOKACTI_PLUGIN_NAME ),
 	'error_reset_form'					=> esc_html__( 'Error occurs when trying to reset the form.', BOOKACTI_PLUGIN_NAME ),
+	'error_load_form'					=> esc_html__( 'Error occurs when trying to load the form.', BOOKACTI_PLUGIN_NAME ),
 	'error_order_form_fields'			=> esc_html__( 'Error occurs while trying to reorder form fields.', BOOKACTI_PLUGIN_NAME ),
 	'error_insert_form_field'			=> esc_html__( 'Error occurs when trying to insert a field to the form.', BOOKACTI_PLUGIN_NAME ),
 	'error_remove_form_field'			=> esc_html__( 'Error occurs when trying to remove the field.', BOOKACTI_PLUGIN_NAME ),
@@ -263,6 +264,7 @@ $bookacti_translation_array = apply_filters( 'bookacti_translation_array', array
 	'nonce_get_booking_rows'			=> wp_create_nonce( 'bookacti_get_booking_rows' ),
 	'nonce_get_refund_actions_html'		=> wp_create_nonce( 'bookacti_get_refund_actions_html' ),
 	'nonce_get_booking_data'			=> wp_create_nonce( 'bookacti_get_booking_data' ),
+	'nonce_get_form'					=> wp_create_nonce( 'bookacti_get_form' ),
 
 	'nonce_cancel_booking'				=> wp_create_nonce( 'bookacti_cancel_booking' ),
 	'nonce_reschedule_booking'			=> wp_create_nonce( 'bookacti_reschedule_booking' ),

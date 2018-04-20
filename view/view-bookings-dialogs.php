@@ -21,7 +21,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	$reschedule_booking_method = apply_filters( 'bookacti_reschedule_booking_method', 'calendar' );
 	$atts = array( 
 		'method'		=> $reschedule_booking_method,
-		'id'			=> 'booking-system-reschedule',
+		'id'			=> 'bookacti-booking-system-reschedule',
 		'class'			=> is_admin() ? 'admin-booking-system' : '',
 		'past_events'	=> is_admin() ? 1 : 0,
 		'context'		=> is_admin() ? 'booking_page' : 'frontend',

@@ -160,18 +160,57 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	
 	/**
 	 * Add fields to single product page (front-end)
-	 * 
 	 * @version 1.5.0
-	 * 
 	 * @global WC_Product $product
 	 */
 	function bookacti_add_booking_system_in_single_product_page() {
-
 		global $product;
 		
 		$is_activity = bookacti_product_is_activity( $product );
+		if( ! $is_activity ) { return; }
 		
-		if( $is_activity ) {
+		$form_id = get_post_meta( $product->get_id(), '_bookacti_form', true );
+		
+		if( $form_id ) {
+			$form_instance_id = '';
+			// Show form on single product page or on variable product with a default value
+			if( $product->is_type( 'single' ) ) {
+				$form_instance_id = 'product-' . $product->get_id();
+			}
+			else if( $product->is_type( 'variable' ) ) {
+				$default_attributes		= bookacti_get_product_default_attributes( $product );
+				$default_variation_id	= bookacti_get_product_variation_matching_attributes( $product, $default_attributes );
+				
+				if( ! $default_variation_id ) { return; }
+				
+				$form_id = get_post_meta( $default_variation_id, 'bookacti_variable_form', true );
+				
+				if( ! $form_id ) { return; }
+				
+				$form_instance_id = 'product-variation-' . $default_variation_id;
+			}
+			if( ! $form_instance_id ) { return; }
+			?>
+			<div class='bookacti-form-fields' 
+				 data-product-id='<?php echo $product->get_id(); ?>'
+				 data-variation-id='<?php if( ! empty( $default_variation_id ) ) { echo $default_variation_id; } ?>'
+				 data-form-id='<?php echo $form_id; ?>'>
+				<?php 
+					$form_html = bookacti_display_form( $form_id, $form_instance_id, 'wc_product_page', false ); 
+					echo $form_html;
+					if( $default_variation_id ) {
+				?>
+				<script>
+					if( typeof bookacti.form_fields === 'undefined' ) { bookacti.form_fields = []; }
+					bookacti.form_fields[ '<?php echo $form_id; ?>' ] = <?php echo json_encode( $form_html ); ?>;
+				</script>
+				<?php } ?>
+			</div>
+			<?php
+		} 
+		
+		/** BACKWARD COMPATIBILITY < 1.5 **/
+		else {
 			
 			$booking_method			= get_post_meta( $product->get_id(), '_bookacti_booking_method', true );
 			$template_id			= get_post_meta( $product->get_id(), '_bookacti_template', true );
@@ -179,7 +218,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			$group_categories		= get_post_meta( $product->get_id(), '_bookacti_group_categories', true );
 			$groups_only			= get_post_meta( $product->get_id(), '_bookacti_groups_only', true );
 			$groups_single_events	= get_post_meta( $product->get_id(), '_bookacti_groups_single_events', true );
-			
+
 			// Convert 'site' booking methods to actual booking method
 			// And make sure the resulting booking method exists
 			$available_booking_methods = bookacti_get_available_booking_methods();
@@ -195,7 +234,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 					$booking_method = 'calendar';
 				}
 			}
-			
+
 			$atts = array( 
 				'calendars'				=> is_numeric( $template_id ) ? array( $template_id ) : $template_id,
 				'activities'			=> is_numeric( $activity_id ) ? array( $activity_id ) : $activity_id,
@@ -204,8 +243,8 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 				'groups_single_events'	=> $groups_single_events === 'yes' ? 1 : 0,
 				'method'				=> $booking_method,
 				'auto_load'				=> $product->is_type( 'variable' ) ? 0 : 1,
-				'id'					=> 'booking-system-product-' . $product->get_id(),
-				'class'				=> 'bookacti-frontend-booking-system bookacti-woocommerce-product-booking-system'
+				'id'					=> 'bookacti-booking-system-product-' . $product->get_id(),
+				'class'					=> 'bookacti-frontend-booking-system bookacti-woocommerce-product-booking-system'
 			);
 			bookacti_get_booking_system( $atts, true );
 		}
@@ -214,11 +253,56 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	
 	
 	/**
+	 * Remove WC unsupported fields on product pages
+	 * @since 1.5.0
+	 * @param array $fields
+	 * @param array $form
+	 * @param string $instance_id
+	 * @param string $context
+	 * @return array
+	 */
+	function bookacti_remove_unsupported_fields_from_product_page( $fields, $form, $instance_id, $context ) {
+		if( $context !== 'wc_product_page' ) { return $fields; }
+		
+		$unsupported_fields = bookacti_get_wc_unsupported_form_fields();
+		foreach( $fields as $i => $field ) {
+			if( in_array( $field[ 'type' ], $unsupported_fields, true ) ) {
+				unset( $fields[ $i ] );
+			}
+		}
+		return $fields;
+	}
+	add_filter( 'bookacti_displayed_form_fields', 'bookacti_remove_unsupported_fields_from_product_page', 10, 4 );
+	
+	
+	/**
+	 * Display a specific 'calendar' field on product pages
+	 * @since 1.5.0
+	 * @param array $field
+	 * @param int $form_id
+	 * @param string $instance_id
+	 * @param string $context
+	 */
+	function bookacti_display_form_field_calendar_on_wc_product_page( $field, $instance_id, $context ) {
+		if( $context !== 'wc_product_page' ) { return; }
+		
+		// Remove default behavior
+		remove_action( 'bookacti_display_form_field_calendar', 'bookacti_display_form_field_calendar', 10 );
+		
+		// Do not keep ID and class (already used for the container)
+		$field[ 'id' ] = $instance_id; 
+		$field[ 'class' ] = 'bookacti-woocommerce-product-booking-system';
+
+		// Display the booking system
+		bookacti_get_booking_system( $field, true );
+	}
+	add_action( 'bookacti_display_form_field_calendar', 'bookacti_display_form_field_calendar_on_wc_product_page', 5, 3 );
+	
+	
+	/**
 	 * Add cart item data (all sent in one array)
 	 * 
-	 * @since 1.0.0
 	 * @version 1.1.0
-	 * 
 	 * @param array $cart_item_data
 	 * @param int $product_id
 	 * @param int $variation_id

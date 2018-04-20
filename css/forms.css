@@ -76,10 +76,11 @@ body.booking-activities_page_bookacti_forms label[for='bookacti_form_publish-hid
 .bookacti-booking-form  .bookacti-form-field-label,
 .bookacti-booking-form  .bookacti-form-field							{ display: inline-block; vertical-align: middle; width: 150px; margin: 0; }
 .bookacti-booking-form  .bookacti-form-field-container					{ margin-bottom: 20px; }
-.bookacti-booking-form  .bookacti-form-field-name-submit			{ text-align: center; }
-.bookacti-booking-form  .bookacti-form-field-name-submit input		{ cursor: pointer; }
+.bookacti-booking-form  .bookacti-form-field-name-submit				{ text-align: center; }
+.bookacti-booking-form  .bookacti-form-field-name-submit input			{ cursor: pointer; }
 .bookacti-booking-form  .bookacti-form-field-container > *				{ display: inline-block; margin-right: 15px; }
 .bookacti-booking-form  .bookacti-form-field-container > *:last-child	{ margin-right: 0; }
+.bookacti-booking-form  .bookacti-hidden-field							{ display: none; }
 
 .bookacti-form-field-login-field-container				{ margin-bottom: 10px; }
 .bookacti-form-field-login-field-container:last-child	{ margin-bottom: 0; }

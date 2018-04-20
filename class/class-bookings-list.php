@@ -22,10 +22,13 @@ if( ! class_exists( 'Bookings_List_Table' ) ) {
 		/**
 		 * Set up the Booking list table
 		 * 
-		 * @version 1.3.0
+		 * @version 1.5.0
 		 * @access public
 		 */
 		public function __construct(){
+			// This global variable is required to create screen
+			if( ! isset( $GLOBALS[ 'hook_suffix' ] ) ) { $GLOBALS[ 'hook_suffix' ] = null; }
+			
 			parent::__construct( array(
 				/*translator:  */
 				'singular'	=> 'booking',	// Singular name of the listed records

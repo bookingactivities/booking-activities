@@ -153,10 +153,11 @@ function bookacti_sanitize_form_data( $raw_form_data ) {
  * @version 1.5.0
  * @param int $form_id
  * @param string $instance_id
+ * @param string $context
  * @param boolean $echo
  * @return void|string
  */
-function bookacti_display_form( $form_id, $instance_id = '', $echo = true ) {
+function bookacti_display_form( $form_id, $instance_id = '', $context = 'display', $echo = true ) {
 	
 	if( ! $form_id ) { return ''; }
 	
@@ -166,32 +167,47 @@ function bookacti_display_form( $form_id, $instance_id = '', $echo = true ) {
 	
 	// Set the form unique CSS selector
 	if( ! $instance_id ) {
-		$instance_id = ! empty( $form[ 'id' ] ) ? esc_attr( $form[ 'id' ] ) : esc_attr( 'bookacti-form-' . $form[ 'form_id' ] . '-' . rand() );
+		$instance_id = ! empty( $form[ 'id' ] ) ? esc_attr( $form[ 'id' ] ) : esc_attr( 'form-' . $form[ 'form_id' ] . '-' . rand() );
 	}
 	
+	$fields = bookacti_get_form_fields_data( $form_id );
+	$ordered_form_fields = bookacti_sort_form_fields_array( $form_id, $fields );
+	
+	$displayed_form_fields = apply_filters( 'bookacti_displayed_form_fields', $ordered_form_fields, $form, $instance_id, $context );
+	
+	// Build array of field types
+	$fields_types = array();
+	foreach( $displayed_form_fields as $field ) { if( ! empty( $field[ 'type' ] ) ) { $fields_types[] = $field[ 'type' ]; } }
+	$is_form = in_array( 'submit', $fields_types, true ) ? 1 : 0;
+	
 	ob_start();
+	
+	// Add form container only if there is a "submit" button
+	if( $is_form ) {
 	?>
-	<form action='<?php if( ! empty( $form[ 'redirect_url' ] ) ) { echo esc_url( $form[ 'redirect_url' ] ); } ?>'
-		  id='<?php echo $instance_id; ?>'
-		  class='bookacti-booking-form <?php echo $form[ 'class' ]; ?>' >
-		
-		<input type='hidden' name='action' value='bookactiSubmitBookingForm' />
+		<form action='<?php if( ! empty( $form[ 'redirect_url' ] ) ) { echo esc_url( $form[ 'redirect_url' ] ); } ?>'
+			  id='<?php echo empty( $form[ 'id' ] ) ? 'bookacti-' . $instance_id : $instance_id; ?>'
+			  class='bookacti-booking-form bookacti-booking-form-<?php echo $form_id . ' ' . $form[ 'class' ]; ?>' >
+			
+			<input type='hidden' name='action' value='bookactiSubmitBookingForm' />
 	<?php 
-		echo wp_nonce_field( 'bookacti_booking_form', 'nonce_booking_form', true, false );
-		
-		do_action( 'bookacti_form_before', $form, $instance_id );
-		
-		$fields = bookacti_get_form_fields_data( $form_id );
-		$ordered_form_fields = apply_filters( 'bookacti_displayed_form_fields', bookacti_sort_form_fields_array( $form_id, $fields ), $form, $instance_id );
-		foreach( $ordered_form_fields as $field ) {
-			bookacti_display_form_field( $field, $instance_id, 'display', true );
-		}
-		
-		do_action( 'bookacti_form_after', $form, $instance_id );
+			echo wp_nonce_field( 'bookacti_booking_form', 'nonce_booking_form', true, false );
+	}
+			do_action( 'bookacti_form_before', $form, $instance_id, $context );
+			
+			foreach( $displayed_form_fields as $field ) {
+				bookacti_display_form_field( $field, $instance_id, $context, true );
+			}
+			
+			do_action( 'bookacti_form_after', $form, $instance_id, $context );
+	
+	if( $is_form ) {
 	?>
-	</form>
+		</form>
 	<?php
-	$html = apply_filters( 'bookacti_form_html', ob_get_clean(), $form, $instance_id );
+	}
+	
+	$html = apply_filters( 'bookacti_form_html', ob_get_clean(), $form, $instance_id, $context );
 	if( ! $echo ) { return $html; }
 	echo $html;
 }
@@ -444,9 +460,10 @@ function bookacti_format_form_field_data( $raw_field_data ) {
 			'method'			=> isset( $raw_field_data[ 'method' ] ) ? $raw_field_data[ 'method' ] : $default_meta[ 'method' ],
 			'group_categories'	=> isset( $raw_field_data[ 'group_categories' ] ) ? $raw_field_data[ 'group_categories' ] : $default_meta[ 'group_categories' ],
 			'user_id'			=> isset( $raw_field_data[ 'user_id' ] ) ? $raw_field_data[ 'user_id' ] : $default_meta[ 'user_id' ],
-			'id'				=> isset( $raw_field_data[ 'id' ] ) ? sanitize_title_with_dashes( $raw_field_data[ 'id' ] ) : $default_meta[ 'id' ],
-			'class'				=> isset( $raw_field_data[ 'class' ] ) ? sanitize_text_field( $raw_field_data[ 'class' ] ) : $default_meta[ 'class' ]
 		);
+		$field_meta[ 'id' ]		= isset( $raw_field_data[ 'id' ] ) ? sanitize_title_with_dashes( $raw_field_data[ 'id' ] ) : $default_meta[ 'id' ];
+		$field_meta[ 'class' ] 	= isset( $raw_field_data[ 'class' ] ) ? sanitize_text_field( $raw_field_data[ 'class' ] ) : $default_meta[ 'class' ];
+		
 		
 		// Format additional meta
 		$keys_by_type = array( 'bool' => array( 'past_events_bookable' ) );
@@ -715,7 +732,7 @@ function bookacti_display_form_field_for_editor( $field, $echo = true ) {
 		</div>
 		<div class='bookacti-form-editor-field-body' style='display:none;' >
 		<?php
-			bookacti_display_form_field( $field, 'bookacti-form-editor', 'edit' );
+			bookacti_display_form_field( $field, 'form-editor', 'edit' );
 		?>
 		</div>
 	</div>
@@ -1045,11 +1062,11 @@ function bookacti_display_form_publish_meta_box( $form ) {
 			<?php
 				if ( current_user_can( 'bookacti_delete_forms' ) ) {
 					if( ! $form[ 'active' ] ) {
-						echo '<a href="' . esc_url( wp_nonce_url( get_admin_url() . 'admin.php?page=bookacti_forms', 'delete-form_' . $form[ 'form_id' ] ) . '&action=delete&active=0&form_id=' . $form[ 'form_id' ] ) . '" class="submitdelete deletion" >'
+						echo '<a href="' . esc_url( wp_nonce_url( get_admin_url() . 'admin.php?page=bookacti_forms', 'delete-form_' . $form[ 'form_id' ] ) . '&action=delete&form_id=' . $form[ 'form_id' ] ) . '" class="submitdelete deletion" >'
 								. esc_html_x( 'Delete Permanently', 'forms', BOOKACTI_PLUGIN_NAME )
 							. '</a>';
 					} else {
-						echo '<a href="' . esc_url( wp_nonce_url( get_admin_url() . 'admin.php?page=bookacti_forms', 'trash-form_' . $form[ 'form_id' ] ) . '&action=trash&form_id=' . $form[ 'form_id' ] ) . '" class="submitdelete deletion" >'
+						echo '<a href="' . esc_url( wp_nonce_url( get_admin_url() . 'admin.php?page=bookacti_forms', 'trash-form_' . $form[ 'form_id' ] ) . '&status=trash&action=trash&form_id=' . $form[ 'form_id' ] ) . '" class="submitdelete deletion" >'
 								. esc_html_x( 'Move to trash', 'forms', BOOKACTI_PLUGIN_NAME )
 							. '</a>';
 					}

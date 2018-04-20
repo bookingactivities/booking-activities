@@ -1,27 +1,39 @@
 $j( document ).ready( function() {
-	
-	//Show or hide the activity tab on product page in the backend
+
+	// Show or hide the activity tab on product page in the backend
 	bookacti_show_hide_activity_tab();
 	$j( '.type_box select, .type_box input' ).on( 'change', function(){ 
 		bookacti_show_hide_activity_tab();
 	});
 	
-	//Show or hide activities depending on the selected template
-	// On change
-	$j( 'bookacti_variable_template' ).on( 'change', function(){ 
-		var template_ids	= $j( '#_bookacti_template' ).val();
-		var options			= $j( '[data-bookacti-show-if-templates]' );
-		bookacti_show_hide_template_related_options( template_ids, options );
+	// Change form link according to selected form
+	$j( '#woocommerce-product-data' ).on( 'change', '#_bookacti_form, .bookacti_variable_form', function( e ){ 
+		var link = $j( '.bookacti-form-selectbox-link[data-form-selectbox-id="' + $j( this ).attr( 'id' ) + '"] a' );
+		if( ! link.length ) { return; }
+		if( $j( this ).val() == 0 ) {
+			link.parent().hide();
+		} else {
+			link.attr( 'href', bookacti_localized.admin_url + 'admin.php?page=bookacti_forms&action=edit&form_id=' + $j( this ).val() );
+			link.parent().show();
+		}
 	});
 	
-	//Show or hide activity fields on variation page in the backend
+	// Show or Hide deprecated fields
+	$j( '#woocommerce-product-data' ).on( 'click', '.bookacti-show-deprecated', function( e ){ 
+		e.preventDefault();
+		$j( '.bookacti-deprecated-hidden' ).toggle();
+	});
+	
+	/** START BACKWARD COMPATIBILITY < 1.5 **/
+	
+	// Show or hide activity fields on variation page in the backend
 	// On load
 	$j( '#woocommerce-product-data' ).on( 'woocommerce_variations_loaded', function() {
 		bookacti_show_hide_activity_variation_fields();
 		$j( '#woocommerce-product-data .bookacti_variable_template' ).each( function() {
 			var template_ids = $j( this ).val();
 			if( template_ids === 'parent' ) { template_ids = $j( '#_bookacti_template' ).val() || $j( this ).data( 'parent' ); }
-			var options = $j( '[name$="[' + $j( template ).data( 'loop' ) + ']"] [data-bookacti-show-if-templates], [name$="[' + $j( this ).data( 'loop' ) + '][]"] [data-bookacti-show-if-templates]' );
+			var options = $j( '[name$="[' + $j( this ).data( 'loop' ) + ']"] [data-bookacti-show-if-templates], [name$="[' + $j( this ).data( 'loop' ) + '][]"] [data-bookacti-show-if-templates]' );
 			bookacti_show_hide_template_related_options( template_ids, options );
 		});
 	});
@@ -32,9 +44,11 @@ $j( document ).ready( function() {
 	$j( '#woocommerce-product-data' ).on( 'change', '.bookacti_variable_template', function(){ 
 		var template_ids = $j( this ).val();
 		if( template_ids === 'parent' ) { template_ids = $j( '#_bookacti_template' ).val() || $j( this ).data( 'parent' ); }
-		var options = $j( '[name$="[' + $j( template ).data( 'loop' ) + ']"] [data-bookacti-show-if-templates], [name$="[' + $j( this ).data( 'loop' ) + '][]"] [data-bookacti-show-if-templates]' );
+		var options = $j( '[name$="[' + $j( this ).data( 'loop' ) + ']"] [data-bookacti-show-if-templates], [name$="[' + $j( this ).data( 'loop' ) + '][]"] [data-bookacti-show-if-templates]' );
 		bookacti_show_hide_template_related_options( template_ids, options );
 	});
+	
+	/** END BACKWARD COMPATIBILITY < 1.5 **/
 	
 	// Force virtual on activities variations
 	$j( '#woocommerce-product-data' ).on( 'change', '.variable_is_virtual', function(){ 

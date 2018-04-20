@@ -67,7 +67,6 @@ $j( document ).ready( function() {
 							// Go to URL
 							window.location.replace( form.attr( 'action' ) );
 						} else {
-							
 							// Reload booking numbers
 							bookacti_refresh_booking_numbers( booking_system );
 						}
@@ -132,7 +131,7 @@ $j( document ).ready( function() {
 	// Enable submit booking button
 	$j( 'form.bookacti-booking-form .bookacti-booking-system' ).on( 'bookacti_view_refreshed bookacti_displayed_info_cleared', function( e ) {
 		var booking_form = $j( this ).parents( 'form' );
-		booking_form.find( 'input[name="bookacti_quantity"]' ).attr( 'disabled', false );
+		booking_form.find( 'input[name="quantity"]' ).attr( 'disabled', false );
 		booking_form.find( 'button[type="submit"]' ).attr( 'disabled', false );
 	});
 
@@ -140,7 +139,7 @@ $j( document ).ready( function() {
 	// Disable submit booking button
 	$j( 'form.bookacti-booking-form .bookacti-booking-system' ).on( 'bookacti_error_displayed', function( e ) {
 		var booking_form = $j( this ).parents( 'form' );
-		booking_form.find( 'input[name="bookacti_quantity"]' ).attr( 'disabled', true );
+		booking_form.find( 'input[name="quantity"]' ).attr( 'disabled', true );
 		booking_form.find( 'button[type="submit"]' ).attr( 'disabled', true );
 	});
 });
