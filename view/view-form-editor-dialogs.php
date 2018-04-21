@@ -385,6 +385,47 @@ foreach( $fields_data as $field_name => $field_data ) {
 					?>
 				</div>
 			</fieldset>
+			<fieldset>
+				<legend><?php _e( 'Forgotten password', BOOKACTI_PLUGIN_NAME ); ?></legend>
+				<div>
+					<label for='bookacti-forgotten_password-label'><?php _e( 'Displayed', BOOKACTI_PLUGIN_NAME ); ?></label>
+					<?php 
+						$args = array(
+							'type'	=> 'checkbox',
+							'name'	=> 'displayed_fields[forgotten_password]',
+							'id'	=> 'bookacti-displayed_fields-forgotten_password',
+							'value'	=> 0,
+							'title'	=> esc_html__( 'Displayed', BOOKACTI_PLUGIN_NAME ),
+							'tip'	=> esc_html__( 'Whether this field is displayed in the form.', BOOKACTI_PLUGIN_NAME )
+						);
+						bookacti_display_field( $args );
+					?>
+				</div>
+				<div>
+					<label for='bookacti-forgotten_password-label'><?php _e( 'Label', BOOKACTI_PLUGIN_NAME ); ?></label>
+					<?php 
+						$args = array(
+							'type'	=> 'text',
+							'name'	=> 'label[forgotten_password]',
+							'id'	=> 'bookacti-forgotten_password-label',
+							'tip'	=> __( 'Text displayed before the field.', BOOKACTI_PLUGIN_NAME )
+						);
+						bookacti_display_field( $args );
+					?>
+				</div>
+				<div class='bookacti-hidden-field' >
+					<label for='bookacti-forgotten_password-tip'><?php _e( 'Tooltip', BOOKACTI_PLUGIN_NAME ); ?></label>
+					<?php 
+						$args = array(
+							'type'	=> 'text',
+							'name'	=> 'tip[forgotten_password]',
+							'id'	=> 'bookacti-forgotten_password-tip',
+							'tip'	=> __( 'Text displayed in the tooltip next to the field.', BOOKACTI_PLUGIN_NAME )
+						);
+						bookacti_display_field( $args );
+					?>
+				</div>
+			</fieldset>
 		<?php 
 			do_action( 'bookacti_login_dialog_login_tab_after', $params );
 		}
@@ -506,6 +547,25 @@ foreach( $fields_data as $field_name => $field_data ) {
 						'id'	=> 'bookacti-send-new-account-email',
 						'value'	=> 0,
 						'tip'	=> __( 'Whether to automatically send an email to the user if he has created an account with the booking form.', BOOKACTI_PLUGIN_NAME )
+					);
+					bookacti_display_field( $args );
+				?>
+			</div>
+			<div>
+				<label for='bookacti-new-user-role'><?php _e( 'New user role', BOOKACTI_PLUGIN_NAME ); ?></label>
+				<?php 
+					// Get roles options
+					$roles = get_editable_roles();
+					$roles_options = array();
+					foreach( $roles as $role_id => $role ) { $roles_options[ $role_id ] = $role[ 'name' ]; }
+				
+					$args = array(
+						'type'		=> 'select',
+						'name'		=> 'new_user_role',
+						'id'		=> 'bookacti-new-user-role',
+						'options'	=> $roles_options,
+						'value'		=> 'subscriber',
+						'tip'		=> __( 'Choose a role to give to a user who has registered while booking an event with this form.', BOOKACTI_PLUGIN_NAME )
 					);
 					bookacti_display_field( $args );
 				?>

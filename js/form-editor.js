@@ -5,8 +5,8 @@ $j( document ).ready( function() {
 	// Add / remove form managers
 	bookacti_init_add_and_remove_items();
 	
-	// Init the Dialogs
-	bookacti_init_form_editor_dialogs();
+	// Specific dialogs
+	$j( '#bookacti-form-field-dialog-free_text' ).dialog( 'option', 'width', 540 );
 
 	// Init form editor actions
 	bookacti_init_form_editor_actions();

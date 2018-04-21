@@ -92,7 +92,8 @@ $j( document ).ready( function() {
 					// Switch form
 					wc_form.find( '.single_variation_wrap' ).on( 'show_variation', function( e, variation ) { 
 						var form_container = wc_form.find( '.bookacti-form-fields' );
-						if( variation.variation_id === form_container.data( 'variation-id' ) ) { return; }
+						if( variation.variation_id === form_container.data( 'variation-id' ) 
+						&&  typeof bookacti.form_fields[ form_container.data( 'form-id' ) ] !== 'undefined' ) { return; }
 						// Switch form
 						bookacti_switch_product_variation_form( form_container, variation );
 					});

@@ -316,10 +316,12 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 * Feature - Customizable booking forms !
 * Tweak - Add a dismissible admin notice to inform that WooCommerce "guest checkout" option isn't supported
 * Tweak - Use core dashicons instead of additional images in backend
+* Tweak - When to load the events? setting now also apply to product variation if a default variation is set
 * Fix - Booking groups sometimes not appearing in booking list
 * Fix - Show / Hide columns according to page options in booking list after a row is refreshed
 * Fix - PHP warning during AJAX request which needs to create an instance of the Booking List
 * Fix - PHP warning when deleting a non-booking order item in the admin panel
+* Fix - PHP warning sometimes occurs before sending a notification
 * **Breaking change** - Refund actions in Booking Activities settings must be set again
 
 = 1.4.4 - 2018/04/06 =

@@ -256,10 +256,11 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		if( ! isset( $args[ 'prefix' ] ) || ! is_string( $args[ 'prefix' ] ) )	{ $args[ 'prefix' ] = ''; }
 
 		foreach( $fields as $field_name => $field ) {
+			if( empty( $field[ 'type' ] ) ) { continue; }
 			
 			if( empty( $field[ 'name' ] ) ) { $field[ 'name' ] = $field_name; }
-			$field[ 'name' ]	= $args[ 'prefix' ] ? $args[ 'prefix' ] . '[' . $field_name . ']' : $field[ 'name' ];
-			$field[ 'id' ]		= empty( $field[ 'id' ] ) ? 'bookacti-calendar-' . $field_name : $field[ 'id' ];
+			$field[ 'name' ]	= ! empty( $args[ 'prefix' ] ) ? $args[ 'prefix' ] . '[' . $field_name . ']' : $field[ 'name' ];
+			$field[ 'id' ]		= empty( $field[ 'id' ] ) ? 'bookacti-' . $field_name : $field[ 'id' ];
 			$field[ 'hidden' ]	= in_array( $field_name, $args[ 'hidden' ], true ) ? 1 : 0;
 
 			// If custom type, call another function to display this field
@@ -269,14 +270,21 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			}
 			// Else, display standard field
 		?>
-			<div class='bookacti-field-container <?php if( $field[ 'hidden' ] ) { echo 'bookacti-hidden-field'; } ?>'>
+			<div class='bookacti-field-container <?php if( ! empty( $field[ 'hidden' ] ) ) { echo 'bookacti-hidden-field'; } ?>'>
+			<?php 
+			// Display field title
+			if( ! empty( $field[ 'title' ] ) ) { 
+			?>
 				<label for='<?php echo $field[ 'id' ]; ?>' class='<?php if( $field[ 'type' ] === 'checkboxes' ) { echo 'bookacti-fullwidth-label'; } ?>' >
 				<?php 
 					echo $field[ 'title' ];
 					if( $field[ 'type' ] === 'checkboxes' ) { bookacti_help_tip( $field[ 'tip' ] ); unset( $field[ 'tip' ] ); }
 				?>
 				</label>
-				<?php bookacti_display_field( $field ); ?>
+			<?php } 
+				// Display field
+				bookacti_display_field( $field ); 
+			?>
 			</div>
 		<?php
 		}

@@ -323,12 +323,13 @@ function bookacti_get_default_form_fields_data( $field_name = '' ) {
 			'title'			=> __( 'Login / Register', BOOKACTI_PLUGIN_NAME ),
 			'default'		=> 1,
 			'label'			=> array_merge( array( 
-								'email'			=> __( 'Email', BOOKACTI_PLUGIN_NAME ), 
-								'password'		=> __( 'Password', BOOKACTI_PLUGIN_NAME ), 
-								'new_account'	=> __( 'Create a new account', BOOKACTI_PLUGIN_NAME )
+								'email'					=> __( 'Email', BOOKACTI_PLUGIN_NAME ), 
+								'password'				=> __( 'Password', BOOKACTI_PLUGIN_NAME ), 
+								'forgotten_password'	=> __( 'Forgot your password?', BOOKACTI_PLUGIN_NAME ), 
+								'new_account'			=> __( 'Create an account', BOOKACTI_PLUGIN_NAME )
 							), $register_defaults[ 'label' ] ),
-			'placeholder'	=> array_merge( array( 'email' => '', 'password' => '', 'new_account' => '' ), $register_defaults[ 'placeholder' ] ),
-			'tip'			=> array_merge( array( 'email' => '', 'password' => '', 'new_account' => '' ), $register_defaults[ 'tip' ] )
+			'placeholder'	=> array_merge( array( 'email' => '', 'password' => '', 'new_account' => '', 'forgotten_password' => '' ), $register_defaults[ 'placeholder' ] ),
+			'tip'			=> array_merge( array( 'email' => '', 'password' => '', 'new_account' => '', 'forgotten_password' => '' ), $register_defaults[ 'tip' ] )
 		),
 		'free_text' => array( 
 			'name'			=> 'free_text',
@@ -406,8 +407,9 @@ function bookacti_get_default_form_fields_meta( $field_name = '' ) {
 		'login'		=> array(
 			'generate_password'			=> 0,
 			'send_new_account_email'	=> 1,
-			'displayed_fields'			=> array_merge( array( 'email' => 1, 'password' => 1, 'new_account' => 1 ), $register_defaults[ 'displayed' ] ),
-			'required_fields'			=> array_merge( array( 'email' => 1, 'password' => 1, 'new_account' => 0 ), $register_defaults[ 'required' ] )
+			'new_user_role'				=> 'subscriber',
+			'displayed_fields'			=> array_merge( array( 'email' => 1, 'password' => 1, 'forgotten_password' => 1, 'new_account' => 1 ), $register_defaults[ 'displayed' ] ),
+			'required_fields'			=> array_merge( array( 'email' => 1, 'password' => 1, 'forgotten_password' => 0, 'new_account' => 0 ), $register_defaults[ 'required' ] )
 		),
 		'free_text'	=> array(),
 		'quantity'	=> array(),
@@ -473,7 +475,10 @@ function bookacti_format_form_field_data( $raw_field_data ) {
 		
 	} else if( $raw_field_data[ 'name' ] === 'login' ) {
 		// Format meta values
-		$keys_by_type = array( 'bool' => array( 'generate_password', 'send_new_account_email' ) );
+		$keys_by_type = array( 
+			'bool' => array( 'generate_password', 'send_new_account_email' ),
+			'str_id' => array( 'new_user_role' )
+		);
 		$field_meta = bookacti_sanitize_values( $default_meta, $raw_field_data, $keys_by_type, $field_meta );
 		
 		// Treat 'required_fields' and 'displayed_fields' field meta as a common field data
@@ -495,9 +500,10 @@ function bookacti_format_form_field_data( $raw_field_data ) {
 
 				// Merge register fields
 				$field_data[ $field ] = array_merge( array( 
-					'email'			=> isset( $raw_field_data[ $field ][ 'email' ] ) ? $raw_field_data[ $field ][ 'email' ] : $default_data[ $field ][ 'email' ], 
-					'password'		=> isset( $raw_field_data[ $field ][ 'password' ] ) ? $raw_field_data[ $field ][ 'password' ] : $default_data[ $field ][ 'password' ],
-					'new_account'	=> isset( $raw_field_data[ $field ][ 'new_account' ] ) ? $raw_field_data[ $field ][ 'new_account' ] : $default_data[ $field ][ 'new_account' ]
+					'email'				=> isset( $raw_field_data[ $field ][ 'email' ] ) ? $raw_field_data[ $field ][ 'email' ] : $default_data[ $field ][ 'email' ], 
+					'password'			=> isset( $raw_field_data[ $field ][ 'password' ] ) ? $raw_field_data[ $field ][ 'password' ] : $default_data[ $field ][ 'password' ],
+					'forgotten_password'=> isset( $raw_field_data[ $field ][ 'forgotten_password' ] ) ? $raw_field_data[ $field ][ 'forgotten_password' ] : $default_data[ $field ][ 'forgotten_password' ],
+					'new_account'		=> isset( $raw_field_data[ $field ][ 'new_account' ] ) ? $raw_field_data[ $field ][ 'new_account' ] : $default_data[ $field ][ 'new_account' ]
 				), $register_fields );
 
 			} else {
@@ -589,7 +595,10 @@ function bookacti_sanitize_form_field_data( $raw_field_data ) {
 		
 	} else if( $raw_field_data[ 'name' ] === 'login' ) {
 		// Sanitize meta values
-		$keys_by_type = array( 'bool' => array( 'generate_password', 'send_new_account_email' ) );
+		$keys_by_type = array( 
+			'bool' => array( 'generate_password', 'send_new_account_email' ),
+			'str_id' => array( 'new_user_role' )
+		);
 		$field_meta = bookacti_sanitize_values( $default_meta, $raw_field_data, $keys_by_type, $field_meta );
 		
 		// Treat 'required_fields' and 'displayed_fields' field meta as a common field data
@@ -612,9 +621,10 @@ function bookacti_sanitize_form_field_data( $raw_field_data ) {
 
 				// Merge register fields
 				$field_data[ $field ] = array_merge( array( 
-					'email'			=> isset( $raw_field_data[ $field ][ 'email' ] ) ? stripslashes( $raw_field_data[ $field ][ 'email' ] ) : $default_data[ $field ][ 'email' ], 
-					'password'		=> isset( $raw_field_data[ $field ][ 'password' ] ) ? stripslashes( $raw_field_data[ $field ][ 'password' ] ) : $default_data[ $field ][ 'password' ],
-					'new_account'	=> isset( $raw_field_data[ $field ][ 'new_account' ] ) ? stripslashes( $raw_field_data[ $field ][ 'new_account' ] ) : $default_data[ $field ][ 'new_account' ]
+					'email'				=> isset( $raw_field_data[ $field ][ 'email' ] ) ? stripslashes( $raw_field_data[ $field ][ 'email' ] ) : $default_data[ $field ][ 'email' ], 
+					'password'			=> isset( $raw_field_data[ $field ][ 'password' ] ) ? stripslashes( $raw_field_data[ $field ][ 'password' ] ) : $default_data[ $field ][ 'password' ],
+					'forgotten_password'=> isset( $raw_field_data[ $field ][ 'forgotten_password' ] ) ? stripslashes( $raw_field_data[ $field ][ 'forgotten_password' ] ) : $default_data[ $field ][ 'forgotten_password' ],
+					'new_account'		=> isset( $raw_field_data[ $field ][ 'new_account' ] ) ? stripslashes( $raw_field_data[ $field ][ 'new_account' ] ) : $default_data[ $field ][ 'new_account' ]
 				), $register_fields );
 			} else {
 				$field_data[ $field ] = $default_data[ $field ];

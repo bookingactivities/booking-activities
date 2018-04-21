@@ -138,21 +138,6 @@ add_filter( 'bookacti_booking_methods_tip', 'bookacti_add_wc_mention_to_booking_
 
 
 /**
- * Add a mention to when events load setting tip
- * 
- * @since 1.1.0
- * @param string $tip
- * @return string
- */
-function bookacti_add_wc_mention_to_when_events_load_tip( $tip ) {
-	$tip .= '<br/>';
-	$tip .= esc_html__( 'WC Variable products calendars will always load after page load.', BOOKACTI_PLUGIN_NAME );
-	return $tip;
-}
-add_filter( 'bookacti_when_events_load_tip', 'bookacti_add_wc_mention_to_when_events_load_tip', 10, 1 );
-
-
-/**
  * Add notification global settings
  * 
  * @since 1.2.2

@@ -34,8 +34,7 @@ function bookacti_get_booking_system( $atts, $echo = false ) {
 		
 			<?php 
 			// Events related data
-			$when_events_load = bookacti_get_setting_value( 'bookacti_general_settings', 'when_events_load' ); 
-			if( $when_events_load === 'on_page_load' && $atts[ 'auto_load' ] ) { 
+			if( $atts[ 'auto_load' ] ) { 
 				
 				if( empty( $atts[ 'template_data' ] ) ) {
 					$atts[ 'template_data' ] = bookacti_get_mixed_template_data( $atts[ 'calendars' ], $atts[ 'past_events' ] );
@@ -102,7 +101,7 @@ function bookacti_get_booking_system( $atts, $echo = false ) {
 		
 		<div id='<?php echo esc_attr( $atts[ 'id' ] ); ?>' class='bookacti-booking-system <?php echo esc_attr( $atts[ 'class' ] ); ?>' >
 			<?php echo bookacti_get_booking_method_html( $atts[ 'method' ], $atts ); 
-			if( $when_events_load === 'on_page_load' && $atts[ 'auto_load' ] ) { 
+			if( $atts[ 'auto_load' ] ) { 
 			?>
 			<div class='bookacti-loading-alt'> 
 				<img class='bookacti-loader' src='<?php echo plugins_url() . '/' . BOOKACTI_PLUGIN_NAME; ?>/img/ajax-loader.gif' title='<?php esc_html_e( 'Loading', BOOKACTI_PLUGIN_NAME ); ?>' />

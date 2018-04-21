@@ -153,7 +153,7 @@ a.bookacti-booking-action					{ display: inline-block; word-spacing: 0; margin: 
 /** DIALOGS **/
 .bookacti-dialog { font-family: "Open Sans",sans-serif !important; font-size: 1em !important; overflow: visible !important; }
 .bookacti-dialog ~ .ui-widget-overlay { 
-    position: absolute;
+    position: fixed;
     top: 0; 
     left: 0; 
     width:100%;

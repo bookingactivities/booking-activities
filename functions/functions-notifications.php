@@ -390,6 +390,7 @@ function bookacti_get_notifications_tags_values( $booking_id, $booking_type, $no
  * Send a notification according to its settings
  * 
  * @since 1.2.1 (was bookacti_send_email in 1.2.0)
+ * @version 1.5.0
  * @param string $notification_id Must exists in "bookacti_notifications_default_settings"
  * @param int $booking_id
  * @param string $booking_type "single" or "group"
@@ -410,7 +411,7 @@ function bookacti_send_notification( $notification_id, $booking_id, $booking_typ
 	$notification = bookacti_get_notification_settings( $notification_id );
 	
 	// Replace or add notification settings
-	if( $args && $args[ 'notification' ] ) {
+	if( ! empty( $args ) && ! empty( $args[ 'notification' ] ) ) {
 		$notification = array_merge( $notification, $args[ 'notification' ] );
 	}
 	
@@ -441,7 +442,7 @@ function bookacti_send_notification( $notification_id, $booking_id, $booking_typ
 	$tags = bookacti_get_notifications_tags_values( $booking_id, $booking_type, $notification_id, $locale );
 	
 	// Replace or add tags values
-	if( $args && $args[ 'tags' ] ) {
+	if( ! empty( $args ) && ! empty( $args[ 'tags' ] ) ) {
 		$tags = array_merge( $tags, $args[ 'tags' ] );
 	}
 	

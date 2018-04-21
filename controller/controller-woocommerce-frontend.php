@@ -196,15 +196,21 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 				 data-variation-id='<?php if( ! empty( $default_variation_id ) ) { echo $default_variation_id; } ?>'
 				 data-form-id='<?php echo $form_id; ?>'>
 				<?php 
-					$form_html = bookacti_display_form( $form_id, $form_instance_id, 'wc_product_page', false ); 
-					echo $form_html;
-					if( $default_variation_id ) {
-				?>
-				<script>
-					if( typeof bookacti.form_fields === 'undefined' ) { bookacti.form_fields = []; }
-					bookacti.form_fields[ '<?php echo $form_id; ?>' ] = <?php echo json_encode( $form_html ); ?>;
-				</script>
-				<?php } ?>
+					// Load booking form now only if it is set to load on page load
+					$when_events_load = bookacti_get_setting_value( 'bookacti_general_settings', 'when_events_load' ); 
+					if( $when_events_load === 'on_page_load' ) {
+						$form_html = bookacti_display_form( $form_id, $form_instance_id, 'wc_product_page', false ); 
+						echo $form_html;
+						if( $default_variation_id ) {
+						?>
+							<script>
+								if( typeof bookacti.form_fields === 'undefined' ) { bookacti.form_fields = []; }
+								bookacti.form_fields[ '<?php echo $form_id; ?>' ] = <?php echo json_encode( $form_html ); ?>;
+							</script>
+						<?php
+						}
+					}
+				?>			
 			</div>
 			<?php
 		} 
