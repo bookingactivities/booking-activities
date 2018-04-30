@@ -108,6 +108,9 @@ function bookacti_format_template_settings( $template_settings ) {
 		$settings[ 'minTime' ] = $temp_max;
 	}
 	
+	// Make sure snapDuration is not null
+	if( $settings[ 'snapDuration' ] === '00:00' ) { $settings[ 'snapDuration' ] = '00:01'; }
+	
 	return apply_filters( 'bookacti_template_settings', $settings );
 }
 

@@ -93,7 +93,9 @@ $j( document ).ready( function() {
 					wc_form.find( '.single_variation_wrap' ).on( 'show_variation', function( e, variation ) { 
 						var form_container = wc_form.find( '.bookacti-form-fields' );
 						if( variation.variation_id === form_container.data( 'variation-id' ) 
-						&&  typeof bookacti.form_fields[ form_container.data( 'form-id' ) ] !== 'undefined' ) { return; }
+						&&  typeof bookacti.form_fields[ form_container.data( 'form-id' ) ] !== 'undefined' ) { 
+							bookacti.is_variation_activity[ variation[ 'variation_id' ] ] = true;
+							return; }
 						// Switch form
 						bookacti_switch_product_variation_form( form_container, variation );
 					});
@@ -132,14 +134,16 @@ $j( document ).ready( function() {
 				}
 
 				if( proceed_to_validation ) {
-					if( form.find( '.bookacti-booking-system-container' ).length ) {
+					if( form.find( '.bookacti-booking-system' ).length ) {
 						// Submit form if all is OK
 						var is_valid = bookacti_validate_picked_events( form.find( '.bookacti-booking-system' ), form.find( '.quantity input.qty' ).val() );
 						if( is_valid ) {
 							// Trigger action before sending form
-							form.find( '.bookacti-booking-system-container' ).trigger( 'bookacti_submit_booking_form' );
+							form.trigger( 'bookacti_before_submit_booking_form' );
 							return true;
 						} else {
+							// Scroll to error message
+							bookacti_scroll_to( form.find( '.bookacti-booking-system-container .bookacti-notices' ), 500, 'middle' );
 							return false; // Prevent form submission
 						}
 					}
@@ -261,7 +265,10 @@ function bookacti_fill_product_variation_form( form_container, variation, form_h
 	// Load the booking system
 	var booking_system = form_container.find( '.bookacti-booking-system' );
 	bookacti_booking_method_set_up( booking_system );
-
+	
+	// Initialize dialog
+	bookacti_init_booking_system_dialogs();
+	
 	// Remove initial loading feedback
 	booking_system.find( '.bookacti-loading-alt' ).remove();
 

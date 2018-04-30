@@ -164,7 +164,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	 * Get a unique template setting made from a combination of multiple template settings
 	 * 
 	 * @since	1.2.2 (was bookacti_get_mixed_template_settings)
-	 * @version 1.4.0
+	 * @version 1.5.0
 	 * @param	array|int $template_ids Array of template ids or single template id
 	 * @param	boolean $past_events Whether to allow past events
 	 * @return	array
@@ -618,8 +618,6 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			$category_short_title	= strlen( $category_title ) > 16 ? substr( $category_title, 0, 16 ) . '&#8230;' : $category_title;
 			
 			$list	.= "<div class='bookacti-group-category' data-group-category-id='" . $category[ 'id' ] . "' data-show-groups='0' data-visible='1' >
-							<div class='bookacti-group-category-show-hide dashicons dashicons-visibility' ></div>
-							<?php  ?>
 							<div class='bookacti-group-category-title' title='" . $category_title . "' >
 								<span>
 									" . $category_short_title . "
@@ -630,7 +628,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 				$list	.= "<div class='bookacti-update-group-category dashicons dashicons-admin-generic' ></div>";
 			}
 			
-			$list	.= 	   "<div class='bookacti-groups-of-events-list bookacti-custom-scrollbar' >";
+			$list	.= 	   "<div class='bookacti-groups-of-events-editor-list bookacti-custom-scrollbar' >";
 			
 			foreach( $groups as $group_id => $group ) {
 				if( $group[ 'category_id' ] === $category[ 'id' ] ) {

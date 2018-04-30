@@ -526,6 +526,25 @@ foreach( $fields_data as $field_name => $field_data ) {
 			do_action( 'bookacti_login_dialog_options_tab_before', $params );
 		?>
 			<div>
+				<label for='bookacti-min_password_strength'><?php _e( 'Min. password strength', BOOKACTI_PLUGIN_NAME ); ?></label>
+				<?php 
+					$args = array(
+						'type'		=> 'select',
+						'name'		=> 'min_password_strength',
+						'id'		=> 'bookacti-min_password_strength',
+						'options'	=> array(
+											1 => _x( 'Very weak', 'password strength' ),
+											2 => _x( 'Weak', 'password strength' ),
+											3 => _x( 'Medium', 'password strength' ),
+											4 => _x( 'Strong', 'password strength' )
+										),
+						'value'		=> 1,
+						'tip'		=> __( 'Set the minimum password strength required.', BOOKACTI_PLUGIN_NAME )
+					);
+					bookacti_display_field( $args );
+				?>
+			</div>
+			<div>
 				<label for='bookacti-generate-password'><?php _e( 'Generate Password?', BOOKACTI_PLUGIN_NAME ); ?></label>
 				<?php 
 					$args = array(

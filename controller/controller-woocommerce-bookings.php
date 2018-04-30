@@ -351,16 +351,15 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	/**
 	 * Fill booking list columns
 	 * 
-	 * @version 1.3.0
+	 * @version 1.5.0
 	 * @param array $booking_item
 	 * @param object $booking
 	 * @param WP_User $user
 	 * @return array
 	 */
 	function bookacti_woocommerce_fill_booking_list_custom_columns( $booking_item, $booking, $user ) {
-		
-		$customer = '';
-		if( is_numeric( $booking->user_id ) && $user->billing_first_name && $user->billing_last_name ) {
+		// User data
+		if( ! empty( $booking->user_id ) && is_numeric( $booking->user_id ) && ! empty( $user->billing_first_name ) && ! empty( $user->billing_last_name ) ) {
 			$customer = '<a '
 						. ' href="' . esc_url( get_admin_url() . 'user-edit.php?user_id=' . $booking->user_id ) . '" '
 						. ' target="_blank" '
@@ -369,9 +368,39 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 					. ' </a>';
 			
 			$booking_item[ 'customer' ]	= $customer ? $customer : $booking_item[ 'customer' ];
-			$booking_item[ 'email' ]	= $user->billing_email;
-			$booking_item[ 'phone' ]	= $user->billing_phone;
+			$booking_item[ 'email' ]	= $user->billing_email ? $user->billing_email : $booking_item[ 'email' ];
+			$booking_item[ 'phone' ]	= $user->billing_phone ? $user->billing_phone : $booking_item[ 'phone' ];
 		}
+		
+		// Product data
+		$product_title = '';
+		if( ! empty( $booking->order_id ) ) {
+			$order_item = false;
+			if( $booking_item[ 'booking_type' ] === 'single' ) {
+				$order_item = bookacti_get_order_item_by_booking_id( $booking->id );
+			} else if( $booking_item[ 'booking_type' ] === 'group' ) {
+				$order_item = bookacti_get_order_item_by_booking_group_id( $booking->group_id );
+			}
+			if( ! empty( $order_item ) ) {
+				// WOOCOMMERCE 3.0.0 backward compatibility 
+				if( version_compare( WC_VERSION, '3.0.0', '>=' ) ) {
+					$product_id		= $order_item->get_product_id();
+					$product_name	= $order_item->get_name();
+				} else {
+					if( is_array( $order_item ) ) {
+						$product_id		= ! empty( $order_item[ 'product_id' ] ) ? $order_item[ 'product_id' ] : '';
+						$product_name	= ! empty( $order_item[ 'name' ] ) ? $order_item[ 'name' ] : '';
+					}
+				}
+				if( ! empty( $product_name ) ) {
+					$product_title = apply_filters( 'bookacti_translate_text', $product_name );
+				}
+				if( ! empty( $product_id ) ) {
+					$product_title = '<a href="' . get_edit_post_link( $product_id ) . '" target="_blank">' . $product_title . '</a>';
+				}
+			}
+		}
+		$booking_item[ 'product' ] = $product_title;
 		
 		return $booking_item;
 	}
@@ -380,15 +409,12 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	
 	/**
 	 * Add columns to bookings list
-	 * 
+	 * @version 1.5.0
 	 * @param array $columns
 	 * @return array
 	 */
 	function bookacti_woocommerce_add_booking_list_custom_columns( $columns ) {
-		
-		$columns[ 'email' ] = __( 'Email', BOOKACTI_PLUGIN_NAME );
-		$columns[ 'phone' ] = __( 'Phone', BOOKACTI_PLUGIN_NAME );
-		
+		$columns[ 'product' ] = __( 'Product', BOOKACTI_PLUGIN_NAME );
 		return $columns;
 	}
 	add_filter( 'bookacti_booking_list_columns', 'bookacti_woocommerce_add_booking_list_custom_columns', 10, 1 );
@@ -396,16 +422,12 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	
 	/**
 	 * Reorder columns from booking list
-	 * 
-	 * @version 1.3.0
+	 * @version 1.5.0
 	 * @param array $columns_order
 	 * @return array
 	 */
 	function bookacti_woocommerce_order_booking_list_custom_columns( $columns_order ) {
-		
-		$columns_order[ 54 ] = 'email';
-		$columns_order[ 57 ] = 'phone';
-		
+		$columns_order[ 65 ] = 'product';
 		return $columns_order;
 	}
 	add_filter( 'bookacti_booking_list_columns_order', 'bookacti_woocommerce_order_booking_list_custom_columns', 10, 1 );
@@ -414,22 +436,19 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	/**
 	 * Edit default hidden columns in booking list
 	 * 
-	 * @since 1.3.0
+	 * @since 1.5.0
 	 * @param array $hidden_columns
 	 * @return array
 	 */
 	function bookacti_woocommerce_booking_list_hidden_columns( $hidden_columns ) {
-		
-		$hidden_columns[] = 'email';
-		$hidden_columns[] = 'phone';
-
+		$hidden_columns[] = 'product';
 		return $hidden_columns;
 	}
 	add_filter( 'bookacti_booking_list_default_hidden_columns', 'bookacti_woocommerce_booking_list_hidden_columns', 10, 1 );
 
 
 
-// BOOKING ACTIONS: CANCEL / REFUND / RESCHEDULE
+// BOOKING ACTIONS: CANCEL / REFUND / RESCHEDULE / DELETE
 	
 	
 	/**
@@ -926,3 +945,211 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		}
 	}
 	add_action( 'bookacti_booking_rescheduled', 'bookacti_woocommerce_update_booking_dates', 10, 3 );
+	
+	
+	/**
+	 * Add WC fields to delete booking form
+	 * @since 1.5.0
+	 */
+	function bookacti_add_wc_fields_to_delete_booking_form() {
+	?>
+		<div class='bookacti-delete-wc-order-item-container' style='display:none;'>
+			<hr/>
+			<p class='bookacti-dialog-intro bookacti-delete-wc-order-item-description'>
+				<?php esc_html_e( 'This booking is bound to an item in a WooCommerce order. Do you want to remove the booking data from this item as well?', BOOKACTI_PLUGIN_NAME ); ?>
+			</p>
+			<?php
+				$args = array(
+					'type' => 'select',
+					'name' => 'order-item-action',
+					'value' => 'none',
+					'options' => array(
+						'none' => esc_html__( 'Do nothing', BOOKACTI_PLUGIN_NAME ),
+						'delete_meta' => esc_html__( 'Delete the booking metadata', BOOKACTI_PLUGIN_NAME ),
+						'delete_item' => esc_html__( 'Delete the whole item', BOOKACTI_PLUGIN_NAME )
+					),
+					/* translators: %s is the option name corresponding to this description */
+					'tip' => sprintf( esc_html__( '%s: The WooCommerce order item will be kept as is.', BOOKACTI_PLUGIN_NAME ), '<strong>' . esc_html__( 'Do nothing', BOOKACTI_PLUGIN_NAME ) . '</strong>' )
+					/* translators: %s is the option name corresponding to this description */
+					. '<br/>' . sprintf( esc_html__( '%s: The order item will be kept as a normal product. All its metadata concerning the booking will be removed.', BOOKACTI_PLUGIN_NAME ), '<strong>' . esc_html__( 'Delete the booking metadata', BOOKACTI_PLUGIN_NAME ) . '</strong>' )
+					/* translators: %s is the option name corresponding to this description */
+					. '<br/>' . sprintf( esc_html__( '%s: The item will be totally removed from the order.', BOOKACTI_PLUGIN_NAME ), '<strong>' . esc_html__( 'Delete the whole item', BOOKACTI_PLUGIN_NAME ) . '</strong>' )
+				);
+				bookacti_display_field( $args );
+			?>
+		</div>
+	<?php
+	}
+	add_action( 'bookacti_delete_booking_form_after', 'bookacti_add_wc_fields_to_delete_booking_form', 10 );
+	
+	
+	/**
+	 * AJAX Controller - Delete an order item (or only its metadata)
+	 * @since 1.5.0
+	 * @param WC_Order_Item $order_item
+	 * @param string $action "delete_meta" to delete only Booking Activities data from the item. "delete_item" to delete the whole item.
+	 */
+	function bookacti_controller_delete_order_item( $order_item, $action ) {
+		
+		if( ! $action ) { 
+			$array = array(
+				'status'	=> 'failed',
+				'error'		=> 'no_action',
+				'message'	=> esc_html__( 'The booking is bound to an item in a WooCommerce Order, but no action has been set about it.', BOOKACTI_PLUGIN_NAME )
+			);
+			bookacti_send_json( $array, 'delete_order_item' );
+		}
+		
+		if( $action === 'none' ) { return; }
+		
+		// Get item id and order id
+		$item_id = 0; $order_id = 0;
+		// WOOCOMMERCE 3.0.0 backward compatibility 
+		if( version_compare( WC_VERSION, '3.0.0', '>=' ) ) {
+			$item_id	= $order_item->get_id();
+			$order_id	= $order_item->get_order_id();
+		} else {
+			$item_id	= $order_item[ 'id' ];
+			$order_id	= $order_item[ 'order_id' ];
+		}
+		
+		$order = wc_get_order( $order_id );
+		
+		// Remove all metadata related to Booking Activities from the order item
+		if( $action === 'delete_meta' ) {
+			wc_delete_order_item_meta( $item_id, 'bookacti_booking_id' );
+			wc_delete_order_item_meta( $item_id, 'bookacti_booking_group_id' );
+			wc_delete_order_item_meta( $item_id, 'bookacti_booked_events' );
+			wc_delete_order_item_meta( $item_id, 'bookacti_state' );
+			wc_delete_order_item_meta( $item_id, '_bookacti_refund_method' );
+			wc_delete_order_item_meta( $item_id, 'bookacti_refund_coupon' );
+			
+			if( $order ) { 
+				/* translators: %s is the item id. */
+				$message = sprintf( esc_html__( 'The order item %s booking metadata have been deleted while deleting the corresponding booking.', BOOKACTI_PLUGIN_NAME ), $item_id );
+				$order->add_order_note( $message, 0, 0 );
+			}
+			
+		// Remove the whole order item
+		} else if( $action === 'delete_item' ) {
+			$deleted = wc_delete_order_item( $item_id );
+			
+			if( ! $deleted ) {
+				$array = array(
+					'status'	=> 'failed',
+					'error'		=> 'not_deleted',
+					'message'	=> esc_html__( 'An error occurred while trying to delete the order item.', BOOKACTI_PLUGIN_NAME ) 
+								   . ' ' . '<a href="' . get_edit_post_link( $order_id ) . '">' . esc_html__( 'Please proceed manually.', BOOKACTI_PLUGIN_NAME ) . '</a>'
+				);
+				bookacti_send_json( $array, 'delete_order_item' );
+			}
+			
+			if( $order ) { 
+				/* translators: %s is the item id. */
+				$message = sprintf( esc_html__( 'The order item %s has been deleted while deleting the corresponding booking.', BOOKACTI_PLUGIN_NAME ), $item_id );
+				$order->add_order_note( $message, 0, 0 );
+			}
+			
+		// Unknown action
+		} else {
+			$array = array(
+				'status'	=> 'failed',
+				'error'		=> 'unknown_action',
+				'message'	=> esc_html__( 'The action to take on the order item is unknown.', BOOKACTI_PLUGIN_NAME )
+			);
+			bookacti_send_json( $array, 'delete_order_item' );
+		}
+	}
+	
+	
+	/**
+	 * AJAX Controller - Delete an order item (or only its metadata) bound to a specific booking group
+	 * @since 1.5.0
+	 * @param int $booking_group_id
+	 */
+	function bookacti_controller_delete_order_item_bound_to_booking_group( $booking_group_id ) {
+		$action = ! empty( $_POST[ 'order-item-action' ] ) ? $_POST[ 'order-item-action' ] : 'none';
+		
+		$order_item = bookacti_get_order_item_by_booking_group_id( $booking_group_id );
+		
+		if( ! $order_item ) { return; }
+		
+		bookacti_controller_delete_order_item( $order_item, $action );
+	}
+	add_action( 'bookacti_before_delete_booking_group', 'bookacti_controller_delete_order_item_bound_to_booking_group', 10, 1 );
+	
+	
+	/**
+	 * AJAX Controller - Delete an order item (or only its metadata) bound to a specific booking
+	 * @since 1.5.0
+	 * @param int $booking_id
+	 */
+	function bookacti_controller_delete_order_item_bound_to_booking( $booking_id ) {
+		$action = ! empty( $_POST[ 'order-item-action' ] ) ? $_POST[ 'order-item-action' ] : 'none';
+		
+		$order_item = bookacti_get_order_item_by_booking_id( $booking_id );
+		
+		if( $order_item ) { 
+			bookacti_controller_delete_order_item( $order_item, $action );
+			return;
+		}
+	}
+	add_action( 'bookacti_before_delete_booking', 'bookacti_controller_delete_order_item_bound_to_booking', 10, 1 );
+	
+	
+	/**
+	 * Remove a grouped booking from order item metadata
+	 * @since 1.5.0
+	 * @param int $booking_id
+	 */
+	function bookacti_remove_grouped_booking_from_order_item( $booking_id ) {
+		// If the booking is part of a group...
+		$booking = bookacti_get_booking_by_id( $booking_id );
+		if( ! $booking || ! $booking->group_id ) { return; }
+		
+		// ...And if this group is bound to a WC order item
+		$order_item = bookacti_get_order_item_by_booking_group_id( $booking->group_id );
+		if( ! $order_item ) { return; }
+		
+		// Get item id
+		// WOOCOMMERCE 3.0.0 backward compatibility 
+		if( version_compare( WC_VERSION, '3.0.0', '>=' ) ) {
+			$item_id	= $order_item->get_id();
+			$order_id	= $order_item->get_order_id();
+		} else {
+			$item_id	= $order_item[ 'id' ];
+			$order_id	= $order_item[ 'order_id' ];
+		}
+		
+		// Get the bookings list
+		$grouped_bookings = wc_get_order_item_meta( $item_id, 'bookacti_booked_events', true );
+		if( ! bookacti_is_json( $grouped_bookings ) ) { return; }
+		
+		// Format booking list as an array of objects
+		$grouped_bookings = json_decode( $grouped_bookings );
+		if( ! $grouped_bookings ) { return; }
+		
+		// Remove the desired booking from the list
+		$grouped_bookings_nb = count( $grouped_bookings );
+		foreach( $grouped_bookings as $i => $grouped_booking ) {
+			if( $grouped_booking->event_id === $booking->event_id 
+			&&  $grouped_booking->event_start === $booking->event_start 
+			&&  $grouped_booking->event_end === $booking->event_end ) {
+				unset( $grouped_bookings[ $i ] );
+				break;
+			}
+		}
+		
+		// If the booking has been deleted, update the order item list of bookings
+		if( $grouped_bookings_nb !== count( $grouped_bookings ) ) {
+			wc_update_order_item_meta( $item_id, 'bookacti_booked_events', json_encode( array_values( $grouped_bookings ) ) );
+			
+			$order = wc_get_order( $order_id );
+			if( $order ) { 
+				/* translators: %s is the item id. */
+				$message = sprintf( esc_html__( 'The order item %s booking metadata have been updated after one of its booking was deleted.', BOOKACTI_PLUGIN_NAME ), $item_id );
+				$order->add_order_note( $message, 0, 0 );
+			}
+		}
+	}
+	add_action( 'bookacti_before_delete_booking', 'bookacti_remove_grouped_booking_from_order_item', 20, 1 );

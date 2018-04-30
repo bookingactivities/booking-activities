@@ -83,20 +83,18 @@ function bookacti_switch_template( selected_template_id ) {
 
 
 					// SHORTCODE GENERATOR
-						// Update shortcode generator calendars list
-						bookacti_update_shortcode_generator_template_id( bookacti.selected_template );
+						// Update create form link template id
+						bookacti_update_create_form_link_template_id( bookacti.selected_template );
 						
-						// Update shortcode generator activities list
+						// Update create form link activities
 						var activity_ids = [];
 						$j( '#bookacti-template-activity-list .activity-row .activity-show-hide' ).each( function(){
 							if( $j( this ).data( 'activity-visible' ) == 1 ) {
 								activity_ids.push( $j( this ).data( 'activity-id' ) );
 							}
 						});
-						bookacti_update_shortcode_generator_activity_ids( activity_ids, true, true );
-
-						// Update shortcode generator groups list
-						bookacti_update_shortcode_generator_group_category_ids( category_ids, true, true );
+						bookacti_remove_activities_from_create_form_link( 'all' );
+						bookacti_add_activities_to_create_form_link( activity_ids );
 
 
 					// TEMPLATE SETTINGS
@@ -146,7 +144,7 @@ function bookacti_switch_template( selected_template_id ) {
 		
 		// Display the create calendar tuto
 		$j( '#bookacti-template-calendar' ).after( $j( "<div id='bookacti-first-template-container'><h2>" + bookacti_localized.create_first_calendar + "</h2><div id='bookacti-add-first-template-button' class='dashicons dashicons-plus-alt' ></div></div>" ) );
-		$j( '#bookacti-template-sidebar, #bookacti-shortcode-generator-container' ).addClass( 'bookacti-no-template' );
+		$j( '#bookacti-template-sidebar, #bookacti-calendar-integration-tuto-container' ).addClass( 'bookacti-no-template' );
 		$j( '#bookacti-template-calendar' ).remove();
 		$j( '.activity-row' ).remove();
 		
@@ -221,9 +219,13 @@ function bookacti_init_show_hide_activities_switch() {
 
 		$j( '#bookacti-template-calendar' ).fullCalendar( 'rerenderEvents' );
 
-		//Update shortcode generator activities list
+		// Update create form link
 		var is_visible = $j( this ).data( 'activity-visible' );
-		bookacti_update_shortcode_generator_activity_ids( activity_id, is_visible, false );
+		if( is_visible ) {
+			bookacti_add_activities_to_create_form_link( activity_id );
+		} else {
+			bookacti_remove_activities_from_create_form_link( activity_id );
+		}
 	});
 }
 
@@ -281,12 +283,11 @@ function bookacti_add_group_category( id, title ) {
 	// Add the category row
 	$j( '#bookacti-group-categories' ).append(
 		"<div class='bookacti-group-category'  data-group-category-id='" + id + "' data-show-groups='0' data-visible='1' >"
-	+       "<div class='bookacti-group-category-show-hide dashicons dashicons-visibility' ></div>"
 	+       "<div class='bookacti-group-category-title' title='" + title + "' >"
 	+			"<span>" + title + "</span>"
 	+		"</div>"
 	+		"<div class='bookacti-update-group-category dashicons dashicons-admin-generic' ></div>"
-	+		"<div class='bookacti-groups-of-events-list bookacti-custom-scrollbar'>"
+	+		"<div class='bookacti-groups-of-events-editor-list bookacti-custom-scrollbar'>"
 	+		"</div>"
 	+   "</div>"
 	);
@@ -295,9 +296,6 @@ function bookacti_add_group_category( id, title ) {
 	$j( '#bookacti-group-of-events-category-selectbox' ).append( 
 		"<option value='"+ id + "' >" + title + "</option>"
 	);
-
-	// Add the category to the shortcode generator
-	bookacti_update_shortcode_generator_group_category_ids( id, true, false );
 
 	// Define this category as default
 	bookacti.selected_category = id;
@@ -314,7 +312,7 @@ function bookacti_add_group_of_events( id, title, category_id ) {
 	
 	// Add the group row to the category
 	var group_short_title = title.length > 16 ? title.substr( 0, 16 ) + '&#8230;' : title;
-	$j( '.bookacti-group-category[data-group-category-id="' + category_id + '"] .bookacti-groups-of-events-list' ).append(
+	$j( '.bookacti-group-category[data-group-category-id="' + category_id + '"] .bookacti-groups-of-events-editor-list' ).append(
 		"<div class='bookacti-group-of-events' data-group-id='" + id + "' >"
 	+		"<div class='bookacti-group-of-events-title' title='" + title + "'>"
 	+			group_short_title
@@ -325,34 +323,6 @@ function bookacti_add_group_of_events( id, title, category_id ) {
 	
 	// Expand the group category
 	bookacti_expand_collapse_groups_of_events( category_id, 'expand', true );
-}
-
-
-// Show / Hide switch for groups
-function bookacti_init_show_hide_groups_switch() {
-    
-    $j( '#bookacti-group-categories' ).on( 'click', '.bookacti-group-category-show-hide', function() { 
-        
-        var category_element	= $j( this ).parents( '.bookacti-group-category' );
-        var category_id			= category_element.data( 'group-category-id' );
-        
-		if( category_element.data( 'visible' ) === 1 ) {
-			$j( this ).removeClass( 'dashicons-visibility' );
-			$j( this ).addClass( 'dashicons-hidden' );
-			category_element.data( 'visible', 0 );
-			category_element.attr( 'data-visible', 0 );
-
-		} else {
-			$j( this ).addClass( 'dashicons-visibility' );
-			$j( this ).removeClass( 'dashicons-hidden' );
-			category_element.data( 'visible', 1 );
-			category_element.attr( 'data-visible', 1 );
-		}
-		
-		//Update shortcode generator groups list
-		var is_visible = category_element.data( 'visible' );
-		bookacti_update_shortcode_generator_group_category_ids( category_id, is_visible, false );
-    });
 }
 
 
@@ -537,96 +507,54 @@ function bookacti_refresh_selected_events_display() {
 
 
 
-// SHORTCODES
 
-//Update shortcode generator template_id
-function bookacti_update_shortcode_generator_template_id( new_template_id ) {
-	$j( '.bookacti-shortcode-calendar-ids' ).each( function(){
-		// Display new activities list
-		$j( this ).text( new_template_id );
-	});
-	
-	bookacti_refresh_shortcode();
+// Create form link
+
+// Update create form link template_id
+function bookacti_update_create_form_link_template_id( new_template_id ) {
+	// Replace the old template id with the new one
+	$j( '#bookacti-calendar-integration-tuto-container input[name="calendar_field[calendars][]"]' ).val( new_template_id );
+	bookacti_update_create_form_link_url();
 }
 
 
-//Update shortcode generator activities list
-function bookacti_update_shortcode_generator_activity_ids( activity_ids, is_visible, remove_others ) {
+// Add activities to the create form link parameters
+function bookacti_add_activities_to_create_form_link( activity_ids ) {
+	if( $j.isNumeric( activity_ids ) ) { activity_ids = [ activity_ids ]; }
+	// Add activity ids
+	$j.each( activity_ids, function( i, activity_id ){
+		var field = "<input type='hidden' name='calendar_field[activities][]' value='" + activity_id + "'/>";
+		$j( '#bookacti-calendar-integration-tuto-container' ).prepend( field );
+	});
+	bookacti_update_create_form_link_url();
+}
+
+
+// Remove activities to the create form link parameters
+function bookacti_remove_activities_from_create_form_link( activity_ids ) {
+	// Remove all activity ids
+	if( activity_ids === 'all' ) {
+		$j( '#bookacti-calendar-integration-tuto-container input[name="calendar_field[activities][]"]' ).remove();
+	} 
 	
-	// Init and format parameters
-	activity_ids	= $j.isNumeric( activity_ids ) ? [ activity_ids ] : activity_ids;
-	is_visible		= is_visible ? true : false;
-	remove_others	= remove_others ? true : false;
-	
-	$j( '.bookacti-shortcode-activity-ids' ).each( function(){
-		// Retrieve activities displayed in shortcode
-		var shortcode_activity_ids = [];
-		if(  remove_others !== true && ! $j( this ).is( ':empty' ) ) {
-			shortcode_activity_ids = $j( this ).text().split(',');
-		}
-		
-		// Add or remove activity ids
+	// Remove specific activity ids
+	else {
+		if( $j.isNumeric( activity_ids ) ) { activity_ids = [ activity_ids ]; }
 		$j.each( activity_ids, function( i, activity_id ){
-			var idx = $j.inArray( activity_id.toString(), shortcode_activity_ids );
-			if( is_visible === true && idx === -1 ) {
-				shortcode_activity_ids.push( activity_id );
-			} else if( idx !== -1 ) {
-				shortcode_activity_ids.splice( idx, 1 );
-			}
+			$j( '#bookacti-calendar-integration-tuto-container input[name="calendar_field[activities][]"][value="' + activity_id + '"]' ).remove();
 		});
-
-		// Display new activities list
-		$j( this ).text( shortcode_activity_ids.join() );
-	});
-	
-	bookacti_refresh_shortcode();
+	}
+	bookacti_update_create_form_link_url();
 }
 
 
-//Update shortcode generator groups list
-function bookacti_update_shortcode_generator_group_category_ids( category_ids, is_visible, remove_others ) {
-	
-	// Init and format parameters
-	category_ids	= $j.isNumeric( category_ids ) ? [ category_ids ] : category_ids;
-	is_visible		= is_visible ? true : false;
-	remove_others	= remove_others ? true : false;
-	
-	$j( '.bookacti-shortcode-group-category-ids' ).each( function(){
-		// Retrieve activities displayed in shortcode
-		var shortcode_category_ids = [];
-		if(  remove_others !== true && ! $j( this ).is( ':empty' ) ) {
-			shortcode_category_ids = $j( this ).text().split(',');
-		}
-		
-		// Add or remove activity ids
-		$j.each( category_ids, function( i, category_id ){
-			var idx = $j.inArray( category_id.toString(), shortcode_category_ids );
-			if( is_visible === true && idx === -1 ) {
-				shortcode_category_ids.push( category_id );
-			} else if( idx !== -1 ) {
-				shortcode_category_ids.splice( idx, 1 );
-			}
-		});
-
-		// Display new activities list
-		$j( this ).text( shortcode_category_ids.join() );
-	});
-	
-	bookacti_refresh_shortcode();
+// Update the URL of the create form link according to the hidden inputs
+function bookacti_update_create_form_link_url() {
+	var base_url	= $j( '#bookacti-create-form-link' ).data( 'base-url' );
+	var parameters	= $j( '#bookacti-calendar-integration-tuto-container input' ).serialize();
+	$j( '#bookacti-create-form-link' ).attr( 'href', base_url + '?' + parameters );
 }
 
-
-// Refresh shortcodes display
-function bookacti_refresh_shortcode() {
-	$j( '.bookacti-shortcode' ).each( function(){
-		var id			= $j( this ).attr( 'id' );
-		var constructor	= $j( '#' + id + '-constructor' );
-		
-		if( constructor.length ) {
-			$j( this ).html( constructor.text() );
-		}
-	});
-}
 
 
 
@@ -1008,7 +936,7 @@ function bookacti_expand_collapse_groups_of_events( category_id, force_to, one_b
 	if( ( is_shown || force_to === 'collapse' ) && force_to !== 'expand' ) {
 		$j( '.bookacti-group-category[data-group-category-id="' + category_id + '"]' ).attr( 'data-show-groups', 0 );
 		$j( '.bookacti-group-category[data-group-category-id="' + category_id + '"]' ).data( 'show-groups', 0 );
-		$j( '.bookacti-group-category[data-group-category-id="' + category_id + '"] .bookacti-groups-of-events-list' ).hide( 200 );
+		$j( '.bookacti-group-category[data-group-category-id="' + category_id + '"] .bookacti-groups-of-events-editor-list' ).slideUp( 200 );
 	} else if( ( ! is_shown || force_to === 'expand' ) && force_to !== 'collapse' ) {
 		
 		// Collapse the others if one_by_one is set to true
@@ -1016,7 +944,7 @@ function bookacti_expand_collapse_groups_of_events( category_id, force_to, one_b
 		
 		$j( '.bookacti-group-category[data-group-category-id="' + category_id + '"]' ).attr( 'data-show-groups', 1 );
 		$j( '.bookacti-group-category[data-group-category-id="' + category_id + '"]' ).data( 'show-groups', 1 );
-		$j( '.bookacti-group-category[data-group-category-id="' + category_id + '"] .bookacti-groups-of-events-list' ).show( 200 );
+		$j( '.bookacti-group-category[data-group-category-id="' + category_id + '"] .bookacti-groups-of-events-editor-list' ).slideDown( 200 );
 	}
 }
 
@@ -1040,11 +968,11 @@ function bookacti_expand_collapse_all_groups_of_events( action, exceptions ) {
 	if( action === 'collapse' ) {
 		$j( categories_selector ).attr( 'data-show-groups', 0 );
 		$j( categories_selector ).data( 'show-groups', 0 );
-		$j( categories_selector + ' .bookacti-groups-of-events-list' ).hide( 200 );
+		$j( categories_selector + ' .bookacti-groups-of-events-editor-list' ).slideUp( 200 );
 	} else if( action === 'expand' ) {
 		$j( categories_selector ).attr( 'data-show-groups', 1 );
 		$j( categories_selector ).data( 'show-groups', 1 );
-		$j( categories_selector + ' .bookacti-groups-of-events-list' ).show( 200 );
+		$j( categories_selector + ' .bookacti-groups-of-events-editor-list' ).slideDown( 200 );
 	}
 }
 

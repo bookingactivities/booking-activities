@@ -24,30 +24,31 @@ $j( document ).ready( function() {
 		$j( '.bookacti-deprecated-hidden' ).toggle();
 	});
 	
-	/** START BACKWARD COMPATIBILITY < 1.5 **/
-	
 	// Show or hide activity fields on variation page in the backend
 	// On load
 	$j( '#woocommerce-product-data' ).on( 'woocommerce_variations_loaded', function() {
 		bookacti_show_hide_activity_variation_fields();
+		/** START BACKWARD COMPATIBILITY < 1.5 **/
 		$j( '#woocommerce-product-data .bookacti_variable_template' ).each( function() {
 			var template_ids = $j( this ).val();
 			if( template_ids === 'parent' ) { template_ids = $j( '#_bookacti_template' ).val() || $j( this ).data( 'parent' ); }
 			var options = $j( '[name$="[' + $j( this ).data( 'loop' ) + ']"] [data-bookacti-show-if-templates], [name$="[' + $j( this ).data( 'loop' ) + '][]"] [data-bookacti-show-if-templates]' );
 			bookacti_show_hide_template_related_options( template_ids, options );
 		});
+		/** END BACKWARD COMPATIBILITY < 1.5 **/
 	});
 	// On change
 	$j( '#woocommerce-product-data' ).on( 'change', '.bookacti_variable_is_activity', function(){ 
 		bookacti_show_hide_activity_variation_fields( this );
 	});
+	
+	/** START BACKWARD COMPATIBILITY < 1.5 **/
 	$j( '#woocommerce-product-data' ).on( 'change', '.bookacti_variable_template', function(){ 
 		var template_ids = $j( this ).val();
 		if( template_ids === 'parent' ) { template_ids = $j( '#_bookacti_template' ).val() || $j( this ).data( 'parent' ); }
 		var options = $j( '[name$="[' + $j( this ).data( 'loop' ) + ']"] [data-bookacti-show-if-templates], [name$="[' + $j( this ).data( 'loop' ) + '][]"] [data-bookacti-show-if-templates]' );
 		bookacti_show_hide_template_related_options( template_ids, options );
 	});
-	
 	/** END BACKWARD COMPATIBILITY < 1.5 **/
 	
 	// Force virtual on activities variations
@@ -61,10 +62,49 @@ $j( document ).ready( function() {
 	
 	// Dismiss notices
 	$j( '.bookacti-guest-checkout-notice .notice-dismiss' ).on( 'click', function(){ bookacti_dismiss_guest_checkout_notice(); });
+	
+	// Show / Hide WC field in delete booking dialog
+	$j( '.bookacti-user-bookings-list, .bookacti-order-item-activity, #bookacti-bookings-list' ).on( 'click', '.bookacti-booking-action, .bookacti-booking-group-action', function ( e ) {
+		e.preventDefault();
+		// Reset WC fields
+		if( $j( this ).hasClass( 'bookacti-delete-booking' ) || $j( this ).hasClass( 'bookacti-delete-booking-group' ) ) {
+			$j( '.bookacti-delete-wc-order-item-container select' ).val( 'none' );
+		}
+		
+		var has_wc_order = false;
+		// Single Bookings
+		if( $j( this ).hasClass( 'bookacti-delete-booking' ) ) {
+			var booking_id = $j( this ).data( 'booking-id' );
+			if( $j( '.bookacti-view-booking-order[data-booking-id="' + booking_id + '"]' ).length 
+			&&  ! $j( '.bookacti-view-booking-order[data-booking-id="' + booking_id + '"]' ).parents( '.bookacti-gouped-booking' ).length ) { 
+				has_wc_order = true; 
+			}
+			
+		// Booking Groups
+		} else if( $j( this ).hasClass( 'bookacti-delete-booking-group' ) ) {
+			var booking_group_id = $j( this ).data( 'booking-group-id' );
+			if( $j( '.bookacti-view-booking-order[data-booking-group-id="' + booking_group_id + '"]' ).length ) { has_wc_order = true; }
+		}
+		
+		if( has_wc_order ) { $j( '.bookacti-delete-wc-order-item-container' ).show(); } 
+		else { $j( '.bookacti-delete-wc-order-item-container' ).hide(); }
+	});
+	
+	// Migrate old product setting to Booking Activities 1.5 forms
+	$j( '#woocommerce-product-data' ).on( 'click', '.bookacti-generate-product-booking-form, .bookacti-generate-variation-booking-form', function( e ) {
+		e.preventDefault();
+		var product_id = $j( '#post_ID' ).val();
+		var variation_id = 0;
+		if( $j( this ).hasClass( 'bookacti-generate-variation-booking-form' ) ) {
+			var loop = $j( this ).data( 'loop' );
+			variation_id = $j( 'input[name="variable_post_id[' + loop + ']"]' ).val();
+		}
+		bookacti_migrate_product_activity_settings_to_booking_form( product_id, variation_id, $j( this ) );
+	});
 });
 
 
-//Show or hide the activity tab on product page in the backend
+// Show or hide the activity tab on product page in the backend
 function bookacti_show_hide_activity_tab() {
 	
 	$j( '.bookacti_show_if_activity' ).hide();
@@ -91,7 +131,7 @@ function bookacti_show_hide_activity_tab() {
 }
 
 
-//Show or hide activity fields on variation page in the backend
+// Show or hide activity fields on variation page in the backend
 function bookacti_show_hide_activity_variation_fields( checkbox ) {
 	
 	checkbox = checkbox || undefined;
@@ -146,6 +186,77 @@ function bookacti_dismiss_guest_checkout_notice() {
 			console.log( e );
 		},
 		complete: function() { 
+		}
+	});
+}
+
+
+/**
+ * Migrate product settings to a new booking form. 
+ * This is a helper for WooCommerce users to migrate to Booking Activities 1.5.
+ * @since 1.5.0
+ * @returns {void}
+ */
+function bookacti_migrate_product_activity_settings_to_booking_form( product_id, variation_id, button ) {
+	
+	// Remove old feedbacks
+	var container = button.parent();
+	container.find( '.bookacti-notices' ).remove();
+	
+	// Display a loader
+	var loading_div = '<div class="bookacti-loading-alt">' 
+					+	'<img class="bookacti-loader" src="' + bookacti_localized.plugin_path + '/img/ajax-loader.gif" title="' + bookacti_localized.loading + '" />'
+					+	'<span class="bookacti-loading-alt-text" >' + bookacti_localized.loading + '</span>'
+					+ '</div>';
+	button.after( loading_div );
+	
+	$j.ajax({
+		url: ajaxurl,
+		type: 'POST',
+		data: { "action": 'bookactiMigrateProductSettings',
+				"product_id": product_id,
+				"variation_id": variation_id
+			},
+		dataType: 'json',
+		success: function( response ){
+			
+			// Add the form to the selectbox and select it
+			if( typeof response.form_id !== 'undefined' ) {
+				var form_selectbox = ''; 
+				if( variation_id ) { form_selectbox = $j( '#bookacti_variable_form_' + button.data( 'loop' ) ); } 
+				else { form_selectbox = $j( '#_bookacti_form' ); }
+				
+				if( form_selectbox.length ) {
+					form_selectbox.append( '<option value="' + response.form_id + '">' + response.form_title + '</option>' );
+					form_selectbox.find( 'option[value="' + response.form_id + '"]' ).prop( 'selected', true ).trigger( 'change' );
+				}
+			}
+			
+			// Display the feedback message
+			if( typeof response.message !== 'undefined' ) {
+				var message_class = '';
+				if( response.status === 'failed' ) { message_class = 'bookacti-error-list'; }
+				if( response.status === 'warning' ) { message_class = 'bookacti-warning-list'; }
+				if( response.status === 'success' ) { message_class = 'bookacti-success-list'; }
+				
+				// Display feedbacks
+				button.after( '<div class="bookacti-notices"><ul class="' + message_class + '"><li>' + response.message + '</li></ul></div>' );
+			}
+			
+			if( response.status === 'success' ) {
+				button.remove();
+			} else {
+				console.log( response );
+			}
+			
+		},
+		error: function( e ){
+			console.log( 'AJAX ' + bookacti_localized.error_create_form );
+			console.log( e );
+		},
+		complete: function() {
+			container.find( '.bookacti-notices' ).show();
+			container.find( '.bookacti-loading-alt' ).remove();
 		}
 	});
 }

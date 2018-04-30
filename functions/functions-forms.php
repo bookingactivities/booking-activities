@@ -38,7 +38,7 @@ function bookacti_get_default_form_data() {
 	return apply_filters( 'bookacti_default_form_data', array( 
 		'form_id' => 0,			// Form ID
 		'title' => '',			// Form title displayed in form list and form editor
-		'user_id' => -1,			// Author user ID
+		'user_id' => -1,		// Author user ID
 		'creation_date' => '',	// Datetime when the form was created
 		'status' => '',			// Form status
 		'active' => -1			// If the form is active
@@ -190,8 +190,9 @@ function bookacti_display_form( $form_id, $instance_id = '', $context = 'display
 			  class='bookacti-booking-form bookacti-booking-form-<?php echo $form_id . ' ' . $form[ 'class' ]; ?>' >
 			
 			<input type='hidden' name='action' value='bookactiSubmitBookingForm' />
+			<input type='hidden' name='form_id' value='<?php echo $form_id; ?>' />
 	<?php 
-			echo wp_nonce_field( 'bookacti_booking_form', 'nonce_booking_form', true, false );
+			wp_nonce_field( 'bookacti_booking_form', 'nonce_booking_form', false, true );
 	}
 			do_action( 'bookacti_form_before', $form, $instance_id, $context );
 			
@@ -203,6 +204,7 @@ function bookacti_display_form( $form_id, $instance_id = '', $context = 'display
 	
 	if( $is_form ) {
 	?>
+			<div class='bookacti-notices' style='display:none;'></div>
 		</form>
 	<?php
 	}
@@ -246,7 +248,7 @@ function bookacti_get_form_fields_data( $form_id ) {
 
 
 /**
- * Get all field data as an array
+ * Get the desired field data as an array
  * @since 1.5.0
  * @param int $field_id
  * @return array
@@ -254,19 +256,43 @@ function bookacti_get_form_fields_data( $form_id ) {
 function bookacti_get_form_field_data( $field_id ) {
 	
 	$field = bookacti_get_form_field( $field_id );
-	
 	if( ! $field ) { return array(); }
 	
-	// Add form field metadata and
+	// Add form field metadata
 	$field_metadata = bookacti_get_metadata( 'form_field', $field[ 'field_id' ] );
 	if( is_array( $field_metadata ) ) { 
 		$field = array_merge( $field, $field_metadata );
 	}
 		
 	// Format data
-	$field = bookacti_format_form_field_data( $field );
+	$field_data = bookacti_format_form_field_data( $field );
 	
-	return apply_filters( 'bookacti_form_field', $field );
+	return apply_filters( 'bookacti_form_field', $field_data );
+}
+
+
+/**
+ * Get the desired field data as an array. The field name must be unique, only the first will be retrieved.
+ * @since 1.5.0
+ * @param int $form_id
+ * @param string $field_name
+ * @return array
+ */
+function bookacti_get_form_field_data_by_name( $form_id, $field_name ) {
+	
+	$field = bookacti_get_form_field_by_name( $form_id, $field_name );
+	if( ! $field ) { return array(); }
+	
+	// Add form field metadata 
+	$field_metadata = bookacti_get_metadata( 'form_field', $field[ 'field_id' ] );
+	if( is_array( $field_metadata ) ) { 
+		$field = array_merge( $field, $field_metadata );
+	}
+	
+	// Format data
+	$field_data = bookacti_format_form_field_data( $field );
+	
+	return apply_filters( 'bookacti_form_field', $field_data );
 }
 
 
@@ -387,11 +413,7 @@ function bookacti_get_default_form_fields_meta( $field_name = '' ) {
 	$template_meta = bookacti_format_template_settings( array() );
 	unset( $template_meta[ 'snapDuration' ] );
 	
-	$calendar_meta = array_merge( $booking_system_meta, $template_meta, array(
-		'start' => '',
-		'end' => '',
-		'past_events_bookable' => 0
-	) );
+	$calendar_meta = array_merge( $booking_system_meta, $template_meta, array( 'start' => '', 'end' => '' ) );
 	
 	// Add register fields default meta to login field meta
 	$register_fields	= bookacti_get_register_fields_default_data();
@@ -405,6 +427,7 @@ function bookacti_get_default_form_fields_meta( $field_name = '' ) {
 	$fields_meta = apply_filters( 'bookacti_default_form_fields_meta', array(
 		'calendar'	=> $calendar_meta,
 		'login'		=> array(
+			'min_password_strength'		=> 4,
 			'generate_password'			=> 0,
 			'send_new_account_email'	=> 1,
 			'new_user_role'				=> 'subscriber',
@@ -467,17 +490,12 @@ function bookacti_format_form_field_data( $raw_field_data ) {
 		$field_meta[ 'class' ] 	= isset( $raw_field_data[ 'class' ] ) ? sanitize_text_field( $raw_field_data[ 'class' ] ) : $default_meta[ 'class' ];
 		
 		
-		// Format additional meta
-		$keys_by_type = array( 'bool' => array( 'past_events_bookable' ) );
-		$additional_meta = bookacti_sanitize_values( $default_meta, $raw_field_data, $keys_by_type );
-		$field_meta = array_merge( $field_meta, $additional_meta );
-		
-		
 	} else if( $raw_field_data[ 'name' ] === 'login' ) {
 		// Format meta values
 		$keys_by_type = array( 
-			'bool' => array( 'generate_password', 'send_new_account_email' ),
-			'str_id' => array( 'new_user_role' )
+			'bool'		=> array( 'generate_password', 'send_new_account_email' ),
+			'int'		=> array( 'min_password_strength' ),
+			'str_id'	=> array( 'new_user_role' )
 		);
 		$field_meta = bookacti_sanitize_values( $default_meta, $raw_field_data, $keys_by_type, $field_meta );
 		
@@ -588,16 +606,13 @@ function bookacti_sanitize_form_field_data( $raw_field_data ) {
 			$field_meta[ $key ] = isset( $raw_field_data[ $key ] ) && $raw_field_data[ $key ] !== '' ? $value : $default_meta[ $key ];
 		}
 		
-		// Sanitize additional meta
-		$keys_by_type = array( 'bool' => array( 'past_events_bookable' ) );
-		$additional_meta = bookacti_sanitize_values( $default_meta, $raw_field_data, $keys_by_type );
-		$field_meta = array_merge( $field_meta, $additional_meta );
 		
 	} else if( $raw_field_data[ 'name' ] === 'login' ) {
 		// Sanitize meta values
 		$keys_by_type = array( 
-			'bool' => array( 'generate_password', 'send_new_account_email' ),
-			'str_id' => array( 'new_user_role' )
+			'bool'		=> array( 'generate_password', 'send_new_account_email' ),
+			'int'		=> array( 'min_password_strength' ),
+			'str_id'	=> array( 'new_user_role' )
 		);
 		$field_meta = bookacti_sanitize_values( $default_meta, $raw_field_data, $keys_by_type, $field_meta );
 		
@@ -671,6 +686,76 @@ function bookacti_sanitize_form_field_data( $raw_field_data ) {
 
 
 /**
+ * Update the metadata of a specific field
+ * @since 1.5.0
+ * @param array $meta
+ * @param int|string $field_id_or_name If you give the field name, it must be a unique field and you must give the form id
+ * @param int $form_id Required only if you give the field name instead of the field id
+ * @return int|false
+ */
+function bookacti_update_form_field_meta( $meta, $field_id_or_name, $form_id = 0 ) {
+	// If we haven't the form ID nor the field ID
+	if( ! is_numeric( $field_id_or_name ) && ! $form_id ) { return false; }
+	// If we have the form id but not the unique field name
+	if( $form_id && ! $field_id_or_name ) { return false; }
+	
+	// Get field
+	if( is_numeric( $field_id_or_name ) ) {
+		$field	= bookacti_get_form_field( $field_id_or_name );
+	} else {
+		$field	= bookacti_get_form_field_by_name( $form_id, $field_id_or_name );
+	}
+	
+	if( ! $field ) { return false; }
+	
+	// Sanitize calendar data
+	$field_required_data	= array( 'type' => $field[ 'type' ], 'name' => $field[ 'name' ] );
+	$field_raw_data			= array_merge( $field_required_data, $meta );
+	$field_sanitized_data	= bookacti_sanitize_form_field_data( $field_raw_data );
+	$field_sanitized_meta	= array_intersect_key( $field_sanitized_data, bookacti_get_default_form_fields_meta( $field[ 'name' ] ) );
+	
+	// Update calendar metadata
+	if( ! $field_sanitized_meta ) { return false; }
+	
+	$updated = bookacti_update_metadata( 'form_field', $field[ 'field_id' ], $field_sanitized_meta );
+	
+	return $updated;
+}
+
+
+/**
+ * Sanitize the values entered by the user in the form fields
+ * @since 1.5.0
+ * @param array $values
+ * @param string $field_type
+ * @return array
+ */
+function bookacti_sanitize_form_field_values( $values, $field_type = '' ) {
+	if( ! $field_type && empty( $values[ 'type' ] ) ) { return $values; }
+	if( ! $field_type && ! empty( $values[ 'type' ] ) ) { $field_type = $values[ 'type' ]; }
+	
+	$sanitized_values = array();
+	
+	// Login fields
+	if( $field_type === 'login' ) {
+		$sanitized_values[ 'email' ]	= ! empty( $values[ 'email' ] ) ? sanitize_email( stripslashes( $values[ 'email' ] ) ) : '';
+		$sanitized_values[ 'password' ]	= ! empty( $values[ 'password' ] ) ? trim( stripslashes( $values[ 'password' ] ) ) : '';
+		$sanitized_values[ 'password_strength' ] = ! empty( $values[ 'password_strength' ] ) ? intval( $values[ 'password_strength' ] ) : 0;
+		$default_register_data = bookacti_get_register_fields_default_data();
+		$default_register_values = array();
+		foreach( $default_register_data as $field_name => $register_field ) {
+			$default_register_values[ $field_name ] = $register_field[ 'value' ];
+		}
+		$keys_by_type = array( 'str' => array( 'first_name', 'last_name', 'phone' ) );
+		$sanitized_register_values = bookacti_sanitize_values( $default_register_values, $values, $keys_by_type );
+		$sanitized_values = array_merge( $sanitized_values, $sanitized_register_values );
+	}
+	
+	return apply_filters( 'bookacti_sanitize_form_field_values', $sanitized_values, $values, $field_type );
+}
+
+
+/**
  * Display a form field
  * @since 1.5.0
  * @param array $field
@@ -681,7 +766,7 @@ function bookacti_sanitize_form_field_data( $raw_field_data ) {
  */
 function bookacti_display_form_field( $field, $instance_id = '', $context = 'display', $echo = true ) {
 	
-	if( empty( $field[ 'name' ] ) ) { return ''; };
+	if( empty( $field[ 'name' ] ) ) { return ''; }
 	
 	if( ! $instance_id ) { $instance_id = rand(); }
 	$field_id		= ! empty( $field[ 'id' ] ) ? esc_attr( $field[ 'id' ] ) : esc_attr( 'bookacti-form-field-' . $field[ 'type' ] . '-' . $field[ 'field_id' ] . '-' . $instance_id );
@@ -722,7 +807,7 @@ function bookacti_display_form_field_for_editor( $field, $echo = true ) {
 	$field_name = esc_attr( $field[ 'name' ] );
 	$field[ 'id' ] = esc_attr( 'bookacti-form-editor-' . $field_name );
 	if( ! $field[ 'unique' ] ) { $field[ 'id' ] .= '-' . esc_attr( $field[ 'field_id' ] ); }
-	if( ! $echo ) { ob_start(); };
+	if( ! $echo ) { ob_start(); }
 	?>
 	<div id='bookacti-form-editor-field-<?php echo esc_attr( $field[ 'field_id' ] ); ?>' class='bookacti-form-editor-field' data-field-id='<?php echo esc_attr( $field[ 'field_id' ] ); ?>' data-field-name='<?php echo esc_attr( $field[ 'name' ] ); ?>' >
 		<div class='bookacti-form-editor-field-header' >
@@ -748,6 +833,44 @@ function bookacti_display_form_field_for_editor( $field, $echo = true ) {
 	</div>
 <?php
 	if( ! $echo ) { return ob_get_clean(); }
+}
+
+
+/**
+ * Validate register fields
+ * @since 1.5.0
+ * @param array $login_values
+ * @param array $login_data
+ * @return array
+ */
+function bookacti_validate_registration( $login_values, $login_data ) {
+		
+	$return_array = array( 'messages' => array() );
+
+	// Check email
+	if( ! is_email( $login_values[ 'email' ] ) ) { 
+		$return_array[ 'messages' ][ 'invalid_email' ] = esc_html__( 'Invalid email address.', BOOKACTI_PLUGIN_NAME );
+	}
+	
+	// Check if password exists
+	if( ! $login_values[ 'password' ] && ! $login_data[ 'generate_password' ] ) {
+		$return_array[ 'messages' ][ 'invalid_password' ] = esc_html__( 'Invalid password.', BOOKACTI_PLUGIN_NAME );
+	}
+	
+	// Check password strength
+	if( $login_values[ 'password_strength' ] < $login_data[ 'min_password_strength' ] ) {
+		$return_array[ 'messages' ][ 'invalid_password_strength' ] = esc_html__( 'Your password is not strong enough.', BOOKACTI_PLUGIN_NAME );
+	}
+	
+	// Check that required register fields are filled
+	foreach( $login_data[ 'required_fields' ] as $field_name => $is_required ) {
+		if( $is_required && empty( $login_values[ $field_name ] ) ) {
+			/* translators: %s is the field name. */
+			$return_array[ 'messages' ][ 'missing_' . $field_name ] = sprintf( __( 'The field "%s" is required.' ), $login_data[ 'label' ][ $field_name ] );
+		}
+	}
+	
+	return apply_filters( 'bookacti_validate_registration_form', $return_array, $login_values );
 }
 
 
@@ -836,10 +959,9 @@ function bookacti_sort_form_fields_array( $form_id, $fields, $remove_unordered_f
 /**
  * Get user meta fields default data
  * @since 1.5.0
- * @param array $fields
  * @return array
  */
-function bookacti_get_register_fields_default_data( $fields = array() ) {
+function bookacti_get_register_fields_default_data() {
 	$defaults = array(
 		'first_name' => array( 
 			'name'			=> 'first_name', 
@@ -847,6 +969,7 @@ function bookacti_get_register_fields_default_data( $fields = array() ) {
 			'label'			=> esc_html__( 'First name', BOOKACTI_PLUGIN_NAME ), 
 			'placeholder'	=> '', 
 			'tip'			=> '', 
+			'value'			=> '', 
 			'required'		=> 0, 
 			'displayed'		=> 1
 		),
@@ -856,6 +979,7 @@ function bookacti_get_register_fields_default_data( $fields = array() ) {
 			'label'			=> esc_html__( 'Last name', BOOKACTI_PLUGIN_NAME ), 
 			'placeholder'	=> '', 
 			'tip'			=> '', 
+			'value'			=> '', 
 			'required'		=> 0, 
 			'displayed'		=> 1
 		),
@@ -865,12 +989,13 @@ function bookacti_get_register_fields_default_data( $fields = array() ) {
 			'label'			=> esc_html__( 'Phone number', BOOKACTI_PLUGIN_NAME ), 
 			'placeholder'	=> '', 
 			'tip'			=> '', 
+			'value'			=> '', 
 			'required'		=> 0, 
 			'displayed'		=> 1
 		)
 	);
 	
-	return apply_filters( 'bookacti_register_fields_default_data', $defaults, $fields );
+	return apply_filters( 'bookacti_register_fields_default_data', $defaults );
 }
 
 

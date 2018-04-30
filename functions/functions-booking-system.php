@@ -18,9 +18,7 @@ function bookacti_get_booking_system( $atts, $echo = false ) {
 	// Format booking system attributes
 	$atts = bookacti_format_booking_system_attributes( $atts );
 
-	if( ! $echo ) {
-		ob_start();
-	}
+	if( ! $echo ) { ob_start(); }
 	
 	do_action( 'bookacti_before_booking_form', $atts );
 ?>
@@ -40,7 +38,7 @@ function bookacti_get_booking_system( $atts, $echo = false ) {
 					$atts[ 'template_data' ] = bookacti_get_mixed_template_data( $atts[ 'calendars' ], $atts[ 'past_events' ] );
 				}
 				
-				$events_interval	= bookacti_get_new_interval_of_events( $atts[ 'template_data' ] );
+				$events_interval	= bookacti_get_new_interval_of_events( $atts[ 'template_data' ], array(), false, $atts[ 'past_events' ] );
 				
 				$user_ids			= array();
 				$groups_ids			= array();
@@ -127,16 +125,35 @@ function bookacti_get_booking_system( $atts, $echo = false ) {
 		
 		<?php do_action( 'bookacti_after_booking_system_errors', $atts ); ?>
 	</div>
+	<div id='<?php echo $atts[ 'id' ] . '-dialogs'; ?>' class='bookacti-booking-system-dialogs' >
+		<?php
+			bookacti_display_booking_system_dialogs( $atts[ 'id' ] );
+		?>
+	</div>
 <?php
-
 	do_action( 'bookacti_after_booking_form', $atts );
 	
-	// Include frontend dialogs if they are not already
-	include_once( WP_PLUGIN_DIR . '/' . BOOKACTI_PLUGIN_NAME . '/view/view-booking-system-dialogs.php' );
-	
-	if( ! $echo ) {
-		return ob_get_clean();
-	}
+	if( ! $echo ) { return ob_get_clean(); }
+}
+
+
+/**
+ * Display booking system dialogs
+ * @since 1.5.0
+ * @param string $booking_system_id
+ */
+function bookacti_display_booking_system_dialogs( $booking_system_id ) {
+?>
+	<!-- Choose a group of events -->
+	<div id='<?php echo $booking_system_id . '-choose-group-of-events-dialog' ?>' 
+		 class='bookacti-choose-group-of-events-dialog bookacti-booking-system-dialog' 
+		 title='<?php echo bookacti_get_message( 'choose_group_dialog_title' ); ?>' 
+		 style='display:none;' >
+		<?php echo bookacti_get_message( 'choose_group_dialog_content' ); ?>
+		<div id='<?php echo $booking_system_id . '-groups-of-events-list' ?>' class='bookacti-groups-of-events-list' ></div>
+	</div>
+
+	<?php do_action( 'bookacti_display_booking_system_dialogs', $booking_system_id );
 }
 
 
@@ -230,6 +247,7 @@ function bookacti_get_booking_system_default_attributes() {
         'method'				=> 'calendar',
 		'auto_load'				=> 1,
 		'past_events'			=> 0,
+		'past_events_bookable'	=> 0,
 		'check_roles'			=> 1
     ) );
 }
@@ -241,19 +259,18 @@ function bookacti_get_booking_system_default_attributes() {
  * @version 1.5.0
  * 
  * @param array $atts 
- * @param string $shortcode
  * @return type
  */
-function bookacti_format_booking_system_attributes( $atts = array(), $shortcode = '' ) {
+function bookacti_format_booking_system_attributes( $atts = array() ) {
 	
 	// Set default value
 	$defaults = bookacti_get_booking_system_default_attributes();
 	
 	// Replace empty mandatory values by default
-	$atts = shortcode_atts( $defaults, $atts, $shortcode );
+	$atts = shortcode_atts( $defaults, $atts );
 	
 	// Sanitize booleans
-	$booleans_to_check = array( 'bookings_only', 'groups_only', 'groups_single_events', 'auto_load', 'past_events', 'check_roles' );
+	$booleans_to_check = array( 'bookings_only', 'groups_only', 'groups_single_events', 'auto_load', 'past_events', 'past_events_bookable', 'check_roles' );
 	foreach( $booleans_to_check as $key ) {
 		$atts[ $key ] = in_array( $atts[ $key ], array( 1, '1', true, 'true', 'yes', 'ok' ), true ) ? 1 : 0;
 	}
@@ -401,7 +418,7 @@ function bookacti_format_booking_system_attributes( $atts = array(), $shortcode 
 	// Format classes
 	$atts[ 'class' ] = ! empty( $atts[ 'class' ] )	? esc_attr( $atts[ 'class' ] ) : '';
 	
-	return apply_filters( 'bookacti_formatted_booking_system_attributes', $atts, $shortcode );
+	return apply_filters( 'bookacti_formatted_booking_system_attributes', $atts );
 }
 
 
@@ -658,27 +675,61 @@ function bookacti_get_booking_system_fields_default_data( $fields = array() ) {
 /**
  * Validate booking form (verify the info of the selected event before booking it)
  * 
- * @version 1.4.0
+ * @version 1.5.0
  * @param int $group_id
  * @param int $event_id
  * @param string $event_start Start datetime of the event to check (format 2017-12-31T23:59:59)
  * @param string $event_end End datetime of the event to check (format 2017-12-31T23:59:59)
  * @param int $quantity Desired number of bookings
+ * @param int $form_id Set your form id to validate the event against its form parameters. Default is 0: ignore form validation.
  * @return array
  */
-function bookacti_validate_booking_form( $group_id, $event_id, $event_start, $event_end, $quantity ) {
+function bookacti_validate_booking_form( $group_id, $event_id, $event_start, $event_end, $quantity, $form_id = 0 ) {
 	
+	$validated = array( 'status' => 'failed' );
+	
+	// Check if the event / group exists before everything
+	$exists = false;
+	if( $group_id === 'single' ) {
+		$event	= bookacti_get_event_by_id( $event_id );
+		$exists	= bookacti_is_existing_event( $event, $event_start, $event_end );
+	} else if( is_numeric( $group_id ) ) {
+		$group	= bookacti_get_group_of_events( $group_id );
+		$exists	= bookacti_is_existing_group_of_events( $group );
+	}
+	if( ! $exists ) {
+		$validated['error'] = 'do_not_exist';
+		$validated['message'] = $group_id === 'single' ? __( "The event doesn't exist, please pick an event and try again.", BOOKACTI_PLUGIN_NAME ) : __( "The group of events doesn't exist, please pick an event and try again.", BOOKACTI_PLUGIN_NAME );
+		return apply_filters( 'bookacti_validate_booking_form', $validated, $group_id, $event_id, $event_start, $event_end, $quantity, $form_id );
+	}
+	
+	
+	// Form checks
+	if( $form_id ) { 
+		// Check if the event can be booked on the given form
+		if( $group_id === 'single' ) {
+			$form_validated = bookacti_is_event_available_on_form( $form_id, $event_id, $event_start, $event_end );
+		} else if( is_numeric( $group_id ) ) {
+			$form_validated = bookacti_is_group_of_events_available_on_form( $form_id, $group_id );
+		}
+		
+		// If the event doesn't match the form parameters, stop the validation here and return the error
+		if( $form_validated[ 'status' ] !== 'success' ) {
+			return apply_filters( 'bookacti_validate_booking_form', $form_validated, $group_id, $event_id, $event_start, $event_end, $quantity, $form_id );
+		}
+	}
+	
+	// Availability checks
 	$user_id = get_current_user_id();
 	$quantity_already_booked = 0;
 	$number_of_users = 0;
 	$allowed_roles = array();
 	
+	// Validate single booking
 	if( $group_id === 'single' ) {
-		$event			= bookacti_get_event_by_id( $event_id );
 		$title			= apply_filters( 'bookacti_translate_text', $event->title );
 		$activity_data	= bookacti_get_metadata( 'activity', $event->activity_id );
 		
-		$exists			= bookacti_is_existing_event( $event, $event_start, $event_end );
 		$availability	= bookacti_get_event_availability( $event_id, $event_start, $event_end );
 		$is_in_range	= bookacti_is_event_in_its_template_range( $event_id, $event_start, $event_end );
 		$min_quantity	= isset( $activity_data[ 'min_bookings_per_user' ] ) ? intval( $activity_data[ 'min_bookings_per_user' ] ) : 0;
@@ -707,13 +758,12 @@ function bookacti_validate_booking_form( $group_id, $event_id, $event_start, $ev
 		if( isset( $activity_data[ 'allowed_roles' ] ) && $activity_data[ 'allowed_roles' ] ) {
 			$allowed_roles = $activity_data[ 'allowed_roles' ];
 		}
-		
+	
+	// Validate group booking
 	} else if( is_numeric( $group_id ) ) {
-		$group			= bookacti_get_group_of_events( $group_id );
 		$title			= apply_filters( 'bookacti_translate_text', $group->title );
 		$category_data	= bookacti_get_metadata( 'group_category', $group->category_id );
 		
-		$exists			= bookacti_is_existing_group_of_events( $group );
 		$availability	= bookacti_get_group_of_events_availability( $group_id );
 		$is_in_range	= bookacti_is_group_of_events_in_its_template_range( $group_id );
 		$min_quantity	= isset( $category_data[ 'min_bookings_per_user' ] ) ? intval( $category_data[ 'min_bookings_per_user' ] ) : 0;
@@ -778,10 +828,7 @@ function bookacti_validate_booking_form( $group_id, $event_id, $event_start, $ev
 		$validated['status'] = 'success';
 	} else {
 		$validated['status'] = 'failed';
-		if( ! $exists ) {
-			$validated['error'] = 'do_not_exist';
-			$validated['message'] = $group_id === 'single' ? __( "The event doesn't exist, please pick an event and try again.", BOOKACTI_PLUGIN_NAME ) : __( "The group of events doesn't exist, please pick an event and try again.", BOOKACTI_PLUGIN_NAME );
-		} else if( ! $is_in_range ) {
+		if( ! $is_in_range ) {
 			$validated['error'] = 'out_of_range';
 			$validated['message'] = $group_id === 'single' ? __( 'The event is out of calendar range, please pick an event and try again.', BOOKACTI_PLUGIN_NAME ) :  __( 'The group of events is out of calendar range, please pick an event and try again.', BOOKACTI_PLUGIN_NAME );
 		} else if( ! $is_event ) {
@@ -842,7 +889,7 @@ function bookacti_validate_booking_form( $group_id, $event_id, $event_start, $ev
 		}
 	}
 	
-	return apply_filters( 'bookacti_validate_booking_form', $validated, $group_id, $event_id, $event_start, $event_end, $quantity );
+	return apply_filters( 'bookacti_validate_booking_form', $validated, $group_id, $event_id, $event_start, $event_end, $quantity, $form_id );
 }
 
 
@@ -950,6 +997,184 @@ function bookacti_is_existing_group_of_events( $group ) {
 	
 	// Try to retrieve the group and check the result
 	return ! empty( $group );
+}
+
+
+/**
+ * Check if an event can be book with the given form
+ * @since 1.5.0
+ * @param int $form_id
+ * @param int $event_id
+ * @param string $event_start
+ * @param string $event_end
+ * @return array
+ */
+function bookacti_is_event_available_on_form( $form_id, $event_id, $event_start, $event_end ) {
+	
+	$validated		= array( 'status' => 'failed' );
+	$calendar_data	= bookacti_get_form_field_data_by_name( $form_id, 'calendar' );
+
+	// Check if the form exists and if it has a calendar field (compulsory)
+	$form_exists = ! empty( $calendar_data );
+	if( ! $form_exists ) {
+		$validated['error'] = 'invalid_form';
+		$validated['message'] = __( 'Failed to retrieve the requested form data.', BOOKACTI_PLUGIN_NAME );
+		return $validated;
+	}
+	
+	
+	// Check if the event is displayed on the form
+	$belongs_to_form = true;
+	$event = bookacti_get_event_by_id( $event_id );
+
+	// If the form calendar doesn't have the event template or the event activity
+	if( ( $calendar_data[ 'calendars' ] && ! in_array( $event->template_id, $calendar_data[ 'calendars' ] ) )
+	||  ( $calendar_data[ 'activities' ] && ! in_array( $event->activity_id, $calendar_data[ 'activities' ] ) ) ) {
+		$belongs_to_form = false;
+		$validated['message'] = __( 'The selected event is not supposed to be available on this form.', BOOKACTI_PLUGIN_NAME );
+	}
+
+	// If the form calendar have groups, with no possibility to book a single event
+	if( $belongs_to_form && $calendar_data[ 'group_categories' ] !== false && ! $calendar_data[ 'groups_single_events' ] ) {
+		if( $calendar_data[ 'groups_only' ] ) {
+			$belongs_to_form = false;
+			$validated['message'] = __( 'You cannot book single events with this form, you must select a group of events.', BOOKACTI_PLUGIN_NAME );
+		} else {
+			// Check if the event belong to a group
+			$event_groups = bookacti_get_event_groups( $event->event_id, $event_start, $event_end );
+			$event_categories = array();
+			foreach( $event_groups as $event_group ) {
+				if( ! in_array( $event_group->category_id, $event_categories ) ) {
+					$event_categories[] = $event_group->category_id;
+				}
+			}
+
+			// If the categories array is empty, it means "take all categories"
+			if( is_array( $calendar_data[ 'group_categories' ] ) && empty( $calendar_data[ 'group_categories' ] ) ) {
+				$calendar_data[ 'group_categories' ] = array_keys( bookacti_get_group_categories( $event->template_id ) );
+			}
+
+			// Check if the event belong to a group available on the calendar
+			if( array_intersect( $event_categories, $calendar_data[ 'group_categories' ] ) ) {
+				$belongs_to_form = false;
+				$validated['message'] = __( 'The selected event is part of a group and cannot be booked alone.', BOOKACTI_PLUGIN_NAME );
+			}
+		}
+	}
+	
+	if( ! $belongs_to_form ) {
+		$validated['error'] = 'event_not_in_form';
+		return $validated;
+	}
+	
+	
+	// Check if the event is past
+	$is_past			= false;
+	$timezone			= new DateTimeZone( bookacti_get_setting_value( 'bookacti_general_settings', 'timezone' ) );
+	$get_started_events	= bookacti_get_setting_value( 'bookacti_general_settings', 'started_events_bookable' );
+	$event_start_obj	= new DateTime( $event_start, $timezone );
+	$event_end_obj		= new DateTime( $event_end, $timezone );
+	$current_time		= new DateTime( 'now', $timezone );
+	
+	if( ( ! $calendar_data[ 'past_events_bookable' ] && $event_start_obj < $current_time )
+	&& ! ( $get_started_events && $event_end_obj > $current_time ) ) {
+		$is_past = true;
+	}
+
+	if( $is_past ) {
+		$validated['error'] = 'past_event';
+		$validated['message'] = __( 'You cannot book a past event.', BOOKACTI_PLUGIN_NAME );
+		return $validated;
+	}
+	
+	
+	// So far, so good
+	$validated[ 'status' ] = 'success';
+	return $validated;
+}
+
+
+/**
+ * Check if a group of events can be book with the given form
+ * @since 1.5.0
+ * @param int $form_id
+ * @param int $group_id
+ * @return array
+ */
+function bookacti_is_group_of_events_available_on_form( $form_id, $group_id ) {
+	
+	$validated		= array( 'status' => 'failed' );
+	$calendar_data	= bookacti_get_form_field_data_by_name( $form_id, 'calendar' );;
+	
+	// Check if the form exists and if it has a calendar field (compulsory)
+	$form_exists = ! empty( $calendar_data );
+	if( ! $form_exists ) {
+		$validated['error'] = 'invalid_form';
+		$validated['message'] = __( 'Failed to retrieve the requested form data.', BOOKACTI_PLUGIN_NAME );
+		return $validated;
+	}
+	
+	
+	// Check if the group of events is displayed on the form
+	$belongs_to_form	= true;
+	$group				= bookacti_get_group_of_events( $group_id );
+	$template_id		= bookacti_get_group_category_template_id( $group->category_id );
+		
+	// If the form calendar doesn't have the group of events' template
+	if( $calendar_data[ 'calendars' ] && ! in_array( $template_id, $calendar_data[ 'calendars' ] ) ) {
+		$belongs_to_form = false;
+		$validated['message'] = __( 'The selected events are not supposed to be available on this form.', BOOKACTI_PLUGIN_NAME );
+	}
+	
+	// If the form calendar doesn't have groups
+	if( $belongs_to_form && $calendar_data[ 'group_categories' ] === false ) {
+		$belongs_to_form = false;
+		$validated['message'] = __( 'You cannot book groups of events with this form, you must select a single event.', BOOKACTI_PLUGIN_NAME );
+	}
+
+	// If the form calendar have groups
+	if( $belongs_to_form && is_array( $calendar_data[ 'group_categories' ] ) ) {
+		// If the categories array is empty, it means "take all categories"
+		if( empty( $calendar_data[ 'group_categories' ] ) ) {
+			$calendar_data[ 'group_categories' ] = array_keys( bookacti_get_group_categories( $template_id ) );
+		}
+
+		// Check if the group of event category is available on this form
+		if( ! in_array( $group->category_id, $calendar_data[ 'group_categories' ] ) ) {
+			$belongs_to_form = false;
+			$validated['message'] = __( 'The selected goup of events is not supposed to be available on this form.', BOOKACTI_PLUGIN_NAME );
+		}
+	}
+	
+	if( ! $belongs_to_form ) {
+		$validated['error'] = 'event_not_in_form';
+		return $validated;
+	}
+	
+	
+	// Check if the group of events is past
+	$is_past			= false;
+	$timezone			= new DateTimeZone( bookacti_get_setting_value( 'bookacti_general_settings', 'timezone' ) );
+	$get_started_groups	= bookacti_get_setting_value( 'bookacti_general_settings', 'started_groups_bookable' );
+	$group_start		= new DateTime( $group->start, $timezone );
+	$group_end			= new DateTime( $group->end, $timezone );
+	$current_time		= new DateTime( 'now', $timezone );
+	
+	if( ( ! $calendar_data[ 'past_events_bookable' ] && $group_start < $current_time )
+	&& ! ( $get_started_groups && $group_end > $current_time ) ) {
+		$is_past = true;
+	}
+
+	if( $is_past ) {
+		$validated['error'] = 'past_event';
+		$validated['message'] = __( 'You cannot book a past group of events.', BOOKACTI_PLUGIN_NAME );
+		return $validated;
+	}
+	
+	
+	// So far, so good
+	$validated[ 'status' ] = 'success';
+	return $validated;
 }
 
 

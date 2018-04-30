@@ -18,6 +18,7 @@
 .bookacti-notices							{ display: none; }
 .bookacti-notices ul						{ margin: 30px 0; padding: 10px 30px; border-left: 4px solid dodgerblue; box-shadow: 0 1px 1px 0 rgba(0,0,0,.1); background-color: rgba(255,255,255,.5); border-radius: 0 5px 5px 0; }
 .bookacti-notices ul.bookacti-error-list	{ border-left-color: red; }
+.bookacti-notices ul.bookacti-warning-list	{ border-left-color: #ffb900; }
 .bookacti-notices ul.bookacti-success-list	{ border-left-color: green; }
 
 .bookacti-picked-events-list.bookacti-custom-scrollbar,
@@ -32,6 +33,10 @@
 .bookacti-group-of-events-option input[name="group_of_events"][disabled] + label { opacity: 0.5; }
 .bookacti-group-of-events-list .bookacti-booking-event-duration	{ font-size: smaller; font-style: italic; }
 .bookacti-group-of-events-list .bookacti-booking-event-title	{ font-weight: 600; }
+
+/* Global dialogs */
+.bookacti-dialog .bookacti-loading-alt { width: fit-content; margin: 30px auto; }
+
 
 
 /** BOOKINGS **/

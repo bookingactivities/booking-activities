@@ -1,4 +1,9 @@
 <?php 
+/**
+ * Calendar editor dialogs
+ * @version 1.5.0
+ */
+
 // Exit if accessed directly
 if ( ! defined( 'ABSPATH' ) ) { exit; }
 
@@ -58,7 +63,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 <div id='bookacti-delete-activity-dialog' class='bookacti-backend-dialog bookacti-template-dialogs' style='display:none;' >
 	<div>
 		<?php esc_html_e( 'Are you sure to delete this activity permanently?', BOOKACTI_PLUGIN_NAME ); ?><br/>
-		<em><?php esc_html_e( 'You will never be able to place new events from this activity anymore.', BOOKACTI_PLUGIN_NAME ); ?></em>
+		<em><?php esc_html_e( 'You won\'t be able to place new events from this activity anymore.', BOOKACTI_PLUGIN_NAME ); ?></em>
 	</div>
 	<div id='bookacti-delete-activity-options'>
 		<input type='checkbox' id='bookacti-delete-activity-events' name='bookacti_delete_activity_events' />
@@ -310,7 +315,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 						_e( 'Snap frequency', BOOKACTI_PLUGIN_NAME );
 						?>
 					</label>
-					<input type="time" name="templateOptions[snapDuration]" id='bookacti-template-data-snapDuration' value='00:30' >
+					<input type="time" name="templateOptions[snapDuration]" id='bookacti-template-data-snapDuration' value='00:30' min='00:01' >
 					<?php
 					$tip = __( "The time interval at which a dragged event will snap to the agenda view time grid. Ex: '00:20', you will be able to drop an event every 20 minutes (at 6:00am, 6:20am, 6:40am...).", BOOKACTI_PLUGIN_NAME );
 					bookacti_help_tip( $tip );

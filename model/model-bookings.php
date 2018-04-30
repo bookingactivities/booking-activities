@@ -181,7 +181,7 @@ function bookacti_update_booking_quantity( $booking_id, $new_quantity, $expirati
 function bookacti_get_bookings( $filters ) {
 	global $wpdb;
 	
-	$query	= ' SELECT DISTINCT B.*, E.title as event_title, A.id as activity_id, A.title as activity_title, T.id as template_id, T.title as template_title, IFNULL( group_id, UUID() ) as unique_group_id ' 
+	$query	= ' SELECT DISTINCT B.*, E.title as event_title, A.id as activity_id, A.title as activity_title, T.id as template_id, T.title as template_title, IFNULL( B.group_id, UUID() ) as unique_group_id ' 
 			. ' FROM ' . BOOKACTI_TABLE_BOOKINGS . ' as B, ' . BOOKACTI_TABLE_EVENTS . ' as E, ' . BOOKACTI_TABLE_ACTIVITIES . ' as A, ' . BOOKACTI_TABLE_TEMPLATES . ' as T ';
 					
 	if( $filters[ 'event_group_id' ] ) {
@@ -387,7 +387,7 @@ function bookacti_get_number_of_booking_rows( $filters = array() ) {
 	global $wpdb;
 	
 	$query	= ' SELECT COUNT( list_items_count ) FROM ( '
-				. ' SELECT COUNT( DISTINCT B.id ) as list_items_count, IFNULL( group_id, UUID() ) as unique_group_id ' 
+				. ' SELECT COUNT( DISTINCT B.id ) as list_items_count, IFNULL( B.group_id, UUID() ) as unique_group_id ' 
 				. ' FROM ' . BOOKACTI_TABLE_BOOKINGS . ' as B, ' . BOOKACTI_TABLE_EVENTS . ' as E, ' . BOOKACTI_TABLE_ACTIVITIES . ' as A, ' . BOOKACTI_TABLE_TEMPLATES . ' as T ';
 	
 	if( $filters[ 'event_group_id' ] ) {
@@ -578,7 +578,7 @@ function bookacti_get_number_of_bookings( $filters ) {
 	
 	if( $filters[ 'group_by' ] === 'booking_group' ) {
 		$query	= ' SELECT SUM( quantity ) FROM ( '
-					. ' SELECT MAX( B.quantity ) as quantity, IFNULL( group_id, UUID() ) as unique_group_id ';
+					. ' SELECT MAX( B.quantity ) as quantity, IFNULL( B.group_id, UUID() ) as unique_group_id ';
 	} else {
 		$query = ' SELECT SUM( B.quantity ) as quantity ';
 	}
@@ -1212,6 +1212,28 @@ function bookacti_reschedule_booking( $booking_id, $event_id, $event_start, $eve
 	$updated	= $wpdb->query( $prep );
 	
 	return $updated;
+}
+
+
+/**
+ * Delete a booking
+ * @since 1.5.0
+ * @global wpdb $wpdb
+ * @param int $booking_id
+ * @return int|false
+ */
+function bookacti_delete_booking( $booking_id ) {
+	global $wpdb;
+	
+	// Delete booking group metadata
+	bookacti_delete_metadata( 'booking', $booking_id );
+	
+	// Delete booking
+	$query	= 'DELETE FROM ' . BOOKACTI_TABLE_BOOKINGS . ' WHERE id = %d ';
+	$query	= $wpdb->prepare( $query, $booking_id );
+	$deleted= $wpdb->query( $query );
+	
+	return $deleted;
 }
 
 
@@ -1892,4 +1914,57 @@ function bookacti_reschedule_booking( $booking_id, $event_id, $event_start, $eve
 		}
 		
 		return $max_qty;
+	}
+	
+	
+	/**
+	 * Delete a booking group 
+	 * @since 1.5.0
+	 * @global wpdb $wpdb
+	 * @param int $booking_group_id
+	 * @return int|false
+	 */
+	function bookacti_delete_booking_group( $booking_group_id ) {
+		global $wpdb;
+		
+		// Delete booking group metadata
+		bookacti_delete_metadata( 'booking_group', $booking_group_id );
+		
+		// Delete booking group
+		$query		= 'DELETE FROM ' . BOOKACTI_TABLE_BOOKING_GROUPS . ' WHERE id = %d';
+		$query		= $wpdb->prepare( $query, $booking_group_id );
+		$deleted	= $wpdb->query( $query );
+		
+		return $deleted;
+	}
+	
+	
+	/**
+	 * Delete the bookings of a booking group 
+	 * @since 1.5.0
+	 * @global wpdb $wpdb
+	 * @param int $booking_group_id
+	 * @return int|false
+	 */
+	function bookacti_delete_booking_group_bookings( $booking_group_id ) {
+		global $wpdb;
+		
+		// Delete bookings metadata
+		$booking_ids = bookacti_get_booking_group_bookings_ids( $booking_group_id );
+		if( $booking_ids ) {
+			$query = 'DELETE FROM ' . BOOKACTI_TABLE_META . ' WHERE object_type = "booking" AND object_id IN( %d';
+			for( $i=1,$len=count($booking_ids); $i < $len; ++$i ) {
+				$query .= ', %d';
+			}
+			$query .= ' ) ';
+			$query	= $wpdb->prepare( $query, $booking_ids );
+			$deleted= $wpdb->query( $query );
+		}
+		
+		// Delete bookings
+		$query	= 'DELETE FROM ' . BOOKACTI_TABLE_BOOKINGS . ' WHERE group_id = %d ';
+		$query	= $wpdb->prepare( $query, $booking_group_id );
+		$deleted= $wpdb->query( $query );
+		
+		return $deleted;
 	}

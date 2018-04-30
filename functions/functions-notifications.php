@@ -507,3 +507,43 @@ function bookacti_send_email_notification( $notification, $tags = array(), $loca
 	
 	return $sent;
 }
+
+
+// Allow this function to be replaced
+if( ! function_exists( 'bookacti_send_new_user_notification' ) ) {
+
+/**
+ * Email login credentials to a newly-registered user in an asynchronous way
+ * @since 1.5.0
+ * @global string  $wp_version
+ * @param  int     $user_id   User ID.
+ * @param  string  $notify    Optional. Type of notification that should happen. Accepts 'admin' or an empty
+ *                            string (admin only), 'user', or 'both' (admin and user). Default 'both'.
+ * @param  boolean $async     Whether to send the notification asynchronously. 
+ */
+function bookacti_send_new_user_notification( $user_id, $notify = 'both', $async = true ) {
+	// Send notifications asynchronously
+	$allow_async = apply_filters( 'bookacti_allow_async_notifications', bookacti_get_setting_value( 'bookacti_notifications_settings', 'notifications_async' ) );
+	if( $allow_async && $async ) {
+		wp_schedule_single_event( time(), 'bookacti_send_async_new_user_notification', array( $user_id, $notify, false ) );
+		return;
+	}	
+	
+	// Send new user email in a backward compatible way
+	global $wp_version;
+	if( $notify === 'user' && version_compare( $wp_version, '4.6.0', '<' ) ) { $notify = 'both'; }
+	
+	if( version_compare( $wp_version, '4.3.1', '>=' ) ) {
+		wp_new_user_notification( $user_id, null, $notify );
+	} else if( version_compare( $wp_version, '4.3.0', '==' ) ) {
+		wp_new_user_notification( $user_id, $notify );
+	} else {
+		$user = get_user_by( 'id', $user_id );
+		wp_new_user_notification( $user_id, $user->user_pass );
+	}
+}
+
+// Hook the asynchronous call and send the new user notification
+add_action( 'bookacti_send_async_new_user_notification', 'bookacti_send_new_user_notification', 10, 3 );
+
+}

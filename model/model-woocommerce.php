@@ -3,7 +3,11 @@
 if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 
-// GET WOOCOMMERCE PRODUCTS
+/**
+ * Get woocommerce products
+ * @global wpdb $wpdb
+ * @return array
+ */
 function bookacti_fetch_woo_products() {
 	global $wpdb;
 
@@ -60,7 +64,12 @@ function bookacti_get_booking_event_data( $booking_id ){
 }
 
 
-// Get booking order id
+/**
+ * Get booking order id
+ * @global wpdb $wpdb
+ * @param int $booking_id
+ * @return string|null
+ */
 function bookacti_get_booking_order_id( $booking_id ) {
 	global $wpdb;
 
@@ -72,7 +81,12 @@ function bookacti_get_booking_order_id( $booking_id ) {
 }
 
 
-// Get booking expiration date
+/**
+ * Get booking expiration date
+ * @global wpdb $wpdb
+ * @param int $booking_id
+ * @return string|null
+ */
 function bookacti_get_booking_expiration_date( $booking_id ) {
 	global $wpdb;
 
@@ -84,16 +98,22 @@ function bookacti_get_booking_expiration_date( $booking_id ) {
 }
 
 
-// Check if the booking has expired
+/**
+ * Check if the booking has expired
+ * @version 1.5.0
+ * @global wpdb $wpdb
+ * @param type $booking_id
+ * @return boolean
+ */
 function bookacti_is_expired_booking( $booking_id ) {
 	global $wpdb;
 
-	$query_expired	= 'SELECT * '
-					. ' FROM ' . BOOKACTI_TABLE_BOOKINGS 
-					. ' WHERE id = %d ';
+	$query_expired	= 'SELECT * FROM ' . BOOKACTI_TABLE_BOOKINGS . ' WHERE id = %d ';
 	$prep_expired	= $wpdb->prepare( $query_expired, $booking_id );
 	$booking		= $wpdb->get_row( $prep_expired, OBJECT );
-
+	
+	if( ! $booking ) { return true; }
+	
 	$expired = false;
 	if( $booking->state === 'in_cart' && ( strtotime( $booking->expiration_date ) <= time() ) ) { 
 		$expired = true;
@@ -106,7 +126,14 @@ function bookacti_is_expired_booking( $booking_id ) {
 }
 
 
-// Reset bookings expiration dates that are currently in cart
+/**
+ * Reset bookings expiration dates that are currently in cart
+ * @global wpdb $wpdb
+ * @param string $user_id
+ * @param array $booking_id_array
+ * @param string $expiration_date
+ * @return int|false
+ */
 function bookacti_update_in_cart_bookings_expiration_date( $user_id, $booking_id_array, $expiration_date ) {
 	global $wpdb;
 
@@ -137,7 +164,12 @@ function bookacti_update_in_cart_bookings_expiration_date( $user_id, $booking_id
 }
 
 
-// Get cart expiration of a specified user. Return null if there is no activity in cart
+/**
+ * Get cart expiration of a specified user. Return null if there is no activity in cart
+ * @global wpdb $wpdb
+ * @param string $user_id
+ * @return string|null
+ */
 function bookacti_get_cart_expiration_date_per_user( $user_id ) {
 	global $wpdb;
 
@@ -433,7 +465,11 @@ function bookacti_deactivate_expired_bookings() {
 }
 
 
-// Cancel all 'in_cart' bookings
+/**
+ * Cancel all 'in_cart' bookings
+ * @global wpdb $wpdb
+ * @return int|false
+ */
 function bookacti_cancel_in_cart_bookings() {
 
 	global $wpdb;

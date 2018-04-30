@@ -13,6 +13,27 @@ window.addEventListener( 'touchstart', function bookacti_detect_touch_device() {
 }, false );
 
 
+// Scroll to element
+function bookacti_scroll_to( element, speed, position ) {
+	speed	= $j.isNumeric( speed ) ? parseInt( speed ) : 500;
+	position= position !== 'middle' ? 'top' : 'middle';
+	
+	var elOffset = element.offset().top;
+	var offset = elOffset;
+	
+	if( position === 'middle' ) {	
+		var elHeight = element.height();
+		var windowHeight = $j( window ).height();
+
+		if( elHeight < windowHeight ) {
+		  offset = elOffset - ( ( windowHeight / 2 ) - ( elHeight / 2 ) );
+		}
+	}
+	
+	$j( 'html, body' ).animate( {scrollTop: offset}, speed );
+}
+
+
 // Add 0 before a number until it has *max* digits
 function bookacti_pad( str, max ) {
   str = str.toString();

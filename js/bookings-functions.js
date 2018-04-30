@@ -170,6 +170,8 @@ function bookacti_init_booking_actions() {
 				bookacti_dialog_refund_booking( booking_id, 'single' );
 			} else if( $j( this ).hasClass( 'bookacti-change-booking-state' ) ){
 				bookacti_dialog_change_booking_state( booking_id, 'single' );
+			} else if( $j( this ).hasClass( 'bookacti-delete-booking' ) ){
+				bookacti_dialog_delete_booking( booking_id, 'single' );
 			}
 		
 		// Booking Groups
@@ -184,6 +186,8 @@ function bookacti_init_booking_actions() {
 				bookacti_dialog_change_booking_state( booking_group_id, 'group' );
 			} else if( $j( this ).hasClass( 'bookacti-show-booking-group-bookings' ) ){
 				bookacti_display_grouped_bookings( $j( '#bookacti-booking-system-bookings-page' ), booking_group_id );
+			} else if( $j( this ).hasClass( 'bookacti-delete-booking-group' ) ){
+				bookacti_dialog_delete_booking( booking_group_id, 'group' );
 			}
 			
 		}
@@ -299,7 +303,6 @@ function bookacti_refresh_list_table_hidden_columns() {
 	// Show / Hide columns according to page options
 	$j( '.hide-column-tog' ).each( function(){ 
 		var column = $j( this ).val();
-		console.log( column );
 		if( $j( this ).prop( 'checked' ) ) { 
 			$j( '.column-' + column ).removeClass( 'hidden' ); 
 		} else { 

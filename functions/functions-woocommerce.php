@@ -1206,10 +1206,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	
 	/**
 	 * Get woocommerce order item id by booking id
-	 * 
-	 * @since 1.0.0
-	 * @version 1.1.0
-	 * 
+	 * @version 1.5.0
 	 * @param int $booking_id
 	 * @return array
 	 */
@@ -1246,9 +1243,11 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			}
 
 			if( $is_in_item ) {
-				$item				= $order_items[ $order_item_id ];
-				$item[ 'id' ]		= $order_item_id;
-				$item[ 'order_id' ]	= $order_id;
+				$item = $order_items[ $order_item_id ];
+				if( is_array( $item ) ) {
+					$item[ 'id' ]		= $order_item_id;
+					$item[ 'order_id' ]	= $order_id;
+				}
 			}
 		}
 
@@ -1258,9 +1257,8 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	
 	/**
 	 * Get woocommerce order item id by booking group id
-	 * 
 	 * @since 1.1.0
-	 * 
+	 * @version 1.5.0
 	 * @param int $booking_group_id
 	 * @return array
 	 */
@@ -1288,9 +1286,11 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			}
 
 			if( $is_in_item ) {
-				$item				= $order_items[ $order_item_id ];
-				$item[ 'id' ]		= $order_item_id;
-				$item[ 'order_id' ]	= $order_id;
+				$item = $order_items[ $order_item_id ];
+				if( is_array( $item ) ) {
+					$item[ 'id' ]		= $order_item_id;
+					$item[ 'order_id' ]	= $order_id;
+				}
 			}
 		}
 
@@ -1331,7 +1331,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			'class'			=> 'bookacti-view-booking-order _blank',
 			'label'			=> __( 'View order', BOOKACTI_PLUGIN_NAME ),
 			'description'	=> __( 'Go to the related WooCommerce admin order page.', BOOKACTI_PLUGIN_NAME ),
-			'link'			=> get_admin_url() . 'post.php?post=' . $order_id . '&action=edit',
+			'link'			=> get_edit_post_link( $order_id ),
 			'admin_or_front'=> 'admin' 
 		);
 		

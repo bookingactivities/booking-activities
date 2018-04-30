@@ -6,11 +6,13 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
  * Send a notification to admin and customer when a new booking is made
  * 
  * @since 1.2.2 (was bookacti_send_notification_admin_new_booking in 1.2.1)
+ * @version 1.5.0
  * @param int $booking_id
  * @param array $booking_form_values
  * @param string $booking_type
+ * @param int $form_id
  */
-function bookacti_send_notification_when_booking_is_made( $booking_id, $booking_form_values, $booking_type ) {
+function bookacti_send_notification_when_booking_is_made( $booking_id, $booking_form_values, $booking_type, $form_id = 0 ) {
 	// Send a booking confirmation to the customer
 	$status = $booking_type === 'group' ? bookacti_get_booking_group_state( $booking_id ) : bookacti_get_booking_state( $booking_id );
 	bookacti_send_notification( 'customer_' . $status . '_booking', $booking_id, $booking_type );
@@ -18,7 +20,7 @@ function bookacti_send_notification_when_booking_is_made( $booking_id, $booking_
 	// Alert administrators that a new booking has been made
 	bookacti_send_notification( 'admin_new_booking', $booking_id, $booking_type );
 }
-add_action( 'bookacti_booking_form_validated', 'bookacti_send_notification_when_booking_is_made', 10, 3 );
+add_action( 'bookacti_booking_form_validated', 'bookacti_send_notification_when_booking_is_made', 10, 4 );
 
 
 

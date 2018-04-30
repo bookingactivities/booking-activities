@@ -447,7 +447,7 @@ function bookacti_insert_form_field( $form_id, $field_name ) {
 
 
 /**
- * Get the fields of the desired form
+ * Get the desired field by id
  * @since 1.5.0
  * @global wpdb $wpdb
  * @param int $form_id
@@ -460,6 +460,40 @@ function bookacti_get_form_field( $field_id ) {
 			. ' WHERE FF.id = %d';
 	
 	$variables = array( $field_id );
+	
+	if( $variables ) {
+		$query = $wpdb->prepare( $query, $variables );
+	}
+	
+	$field = $wpdb->get_row( $query, ARRAY_A );
+	
+	if( ! $field ) { return array(); }
+	
+	foreach( $field as $field_key => $field_value ) {
+		$field[ $field_key ] = maybe_unserialize( $field_value );
+	}
+	
+	return $field;
+}
+
+
+/**
+ * Get a field by name in the desired form
+ * @since 1.5.0
+ * @global wpdb $wpdb
+ * @param int $form_id
+ * @param string $field_name
+ * @return array|false
+ */
+function bookacti_get_form_field_by_name( $form_id, $field_name ) {
+	global $wpdb;
+	
+	$query	= 'SELECT id as field_id, form_id, name, type, title, label, options, value, placeholder, tip, required, active FROM ' . BOOKACTI_TABLE_FORM_FIELDS . ' as FF '
+			. ' WHERE FF.form_id = %d '
+			. ' AND FF.name = %s '
+			. ' LIMIT 1 ';
+	
+	$variables = array( $form_id, $field_name );
 	
 	if( $variables ) {
 		$query = $wpdb->prepare( $query, $variables );

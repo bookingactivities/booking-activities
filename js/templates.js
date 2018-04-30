@@ -34,15 +34,15 @@ $j( document ).ready( function() {
 		bookacti.booking_system[ 'bookacti-template-calendar' ][ 'loading_number' ]			= 0;
 		bookacti.booking_system[ 'bookacti-template-calendar' ][ 'method' ]					= 'calendar';
 		bookacti.booking_system[ 'bookacti-template-calendar' ][ 'past_events' ]			= true;
+		bookacti.booking_system[ 'bookacti-template-calendar' ][ 'past_events_bookable' ]	= true;
 		
 		
 		// initialize activities and groups
 		bookacti_init_activities();
 		bookacti_init_groups_of_events();
 
-		// Show and Hide activities / groups
+		// Show and Hide activities
 		bookacti_init_show_hide_activities_switch();
-		bookacti_init_show_hide_groups_switch();
 		
 		// DIALOGS
 		// Init the Dialogs

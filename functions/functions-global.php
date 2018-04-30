@@ -11,12 +11,53 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	 * @return boolean
 	 */
 	function bookacti_is_plugin_active( $plugin_path_and_name ) {
-
 		if( ! function_exists( 'is_plugin_active' ) ) {
 			include_once( ABSPATH . 'wp-admin/includes/plugin.php' );
 		}
-
 		return is_plugin_active( $plugin_path_and_name );
+	}
+	
+	
+	/**
+	 * Send a filtered array via json during an ajax process
+	 * @since 1.5.0
+	 * @param array $array Array to encode as JSON, then print and die.
+	 * @param string $action Name of the filter to allow third-party modifications
+	 */
+	function bookacti_send_json( $array, $action ) {
+		if( empty( $array[ 'status' ] ) ) { $array[ 'status' ] = 'failed'; }
+		$response = apply_filters( 'bookacti_send_json_' . $action, $array );
+		wp_send_json( $response );
+	}
+	
+	
+	/**
+	 * Send a filtered array via json to stop an ajax process running with an invalid nonce
+	 * @since 1.5.0
+	 * @param string $action Name of the filter to allow third-party modifications
+	 */
+	function bookacti_send_json_invalid_nonce( $action ) {
+		$return_array = array( 
+			'status'	=> 'failed', 
+			'error'		=> 'invalid_nonce', 
+			'message'	=> esc_html__( 'Invalid nonce.', BOOKACTI_PLUGIN_NAME ) . ' ' . __( 'Please reload the page and try again.', BOOKACTI_PLUGIN_NAME )
+		);
+		bookacti_send_json( $return_array, $action );
+	}
+	
+	
+	/**
+	 * Send a filtered array via json to stop a not allowed an ajax process
+	 * @since 1.5.0
+	 * @param string $action Name of the filter to allow third-party modifications
+	 */
+	function bookacti_send_json_not_allowed( $action ) {
+		$return_array = array( 
+			'status'	=> 'failed', 
+			'error'		=> 'not_allowed', 
+			'message'	=> esc_html__( 'You are not allowed to do this.', BOOKACTI_PLUGIN_NAME )
+		);
+		bookacti_send_json( $return_array, $action );
 	}
 
 	
@@ -296,7 +337,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	 * 
 	 * @since 1.2.0
 	 * @version 1.5.0
-	 * @param array $args ['type', 'name', 'label', 'id', 'class', 'placeholder', 'options', 'value', 'tip']
+	 * @param array $args ['type', 'name', 'label', 'id', 'class', 'placeholder', 'options', 'attr', 'value', 'tip', 'required']
 	 */
 	function bookacti_display_field( $args ) {
 
@@ -490,7 +531,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	 * 
 	 * @since 1.2.0
 	 * @version 1.5.0
-	 * @param array $args ['type', 'name', 'label', 'id', 'class', 'placeholder', 'options', 'value', 'multiple', 'tip']
+	 * @param array $args ['type', 'name', 'label', 'id', 'class', 'placeholder', 'options', 'attr', 'value', 'multiple', 'tip', 'required']
 	 * @return array|false
 	 */
 	function bookacti_format_field_args( $args ) {
@@ -534,6 +575,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		
 		// Sanitize required
 		$args[ 'required' ] = isset( $args[ 'required' ] ) && $args[ 'required' ] ? 1 : 0;
+		if( $args[ 'required' ] ) { $args[ 'class' ] .= ' bookacti-required-field'; }
 		
 		// Make sure fields with multiple options have 'options' set
 		if( in_array( $args[ 'type' ], array( 'checkboxes', 'radio', 'select', 'user_id' ) ) ){
@@ -1000,4 +1042,48 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		}
 		
 		return apply_filters( 'bookacti_sanitized_data', $sanitized_data, $default_data, $raw_data, $keys_by_type );
+	}
+
+
+
+
+// USERS
+
+	/**
+	 * Programmatically logs a user in
+	 * @since 1.5.0
+	 * @param string $username
+	 * @return bool True if the login was successful; false if it wasn't
+	 */
+	function bookacti_log_user_in( $username ) {
+		
+		if ( is_user_logged_in() ) { wp_logout(); }
+		
+		// hook in earlier than other callbacks to short-circuit them
+		add_filter( 'authenticate', 'bookacti_allow_to_log_user_in_programmatically', 10, 3 );
+		$user = wp_signon( array( 'user_login' => $username ) );
+		remove_filter( 'authenticate', 'bookacti_allow_to_log_user_in_programmatically', 10, 3 );
+
+		if( is_a( $user, 'WP_User' ) ) {
+			wp_set_current_user( $user->ID, $user->user_login );
+			if ( is_user_logged_in() ) { return true; }
+		}
+		return false;
+	}
+	
+	
+	/**
+	 * An 'authenticate' filter callback that authenticates the user using only the username.
+	 *
+	 * To avoid potential security vulnerabilities, this should only be used in the context of a programmatic login,
+	 * and unhooked immediately after it fires.
+	 * 
+	 * @since 1.5.0
+	 * @param WP_User $user
+	 * @param string $username
+	 * @param string $password
+	 * @return bool|WP_User a WP_User object if the username matched an existing user, or false if it didn't
+	 */
+	function bookacti_allow_to_log_user_in_programmatically( $user, $username, $password ) {
+		return get_user_by( 'login', $username );
 	}

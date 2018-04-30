@@ -12,8 +12,10 @@ if( empty( $_REQUEST[ 'action' ] ) && ! empty( $_REQUEST[ 'form_id' ] ) ) {
 }
 
 $form_id = ! empty( $_REQUEST[ 'action' ] ) && $_REQUEST[ 'action' ] === 'new' ? 'new' : intval( $_REQUEST[ 'form_id' ] );
+$is_new  = $form_id === 'new' ? 1 : 0;
 
 if( ! $form_id ) { exit; }
+
 
 // Create a new form
 if( $form_id === 'new' ) {
@@ -21,18 +23,35 @@ if( $form_id === 'new' ) {
 	$can_create_form = current_user_can( 'bookacti_create_forms' );
 	if( ! $can_create_form ) { esc_html_e( 'You are not allowed to do this.', BOOKACTI_PLUGIN_NAME ); exit; }
 	
-	$form_id = bookacti_create_form();
+	$title = ! empty( $_REQUEST[ 'title' ] ) ? sanitize_text_field( stripslashes( $_REQUEST[ 'title' ] ) ) : '';
+	
+	$form_id = bookacti_create_form( $title );
 	if( ! $form_id ) { esc_html_e( 'Error occurs when trying to create the form.', BOOKACTI_PLUGIN_NAME ); exit; }
+	
+	// Insert calendar data (if any)
+	if( ! empty( $_REQUEST[ 'calendar_field' ] ) ) {
+		$default_calendar_meta = array();
+		if( isset( $_REQUEST[ 'calendar_field' ][ 'calendars' ] ) ) {
+			$template_data = bookacti_get_mixed_template_data( $_REQUEST[ 'calendar_field' ][ 'calendars' ], false );
+			$default_calendar_meta				= $template_data[ 'settings' ];
+			$default_calendar_meta[ 'start' ]	= $template_data[ 'start' ];
+			$default_calendar_meta[ 'end' ]		= $template_data[ 'end' ];
+		}
+		$raw_calendar_meta		= array_merge( array( 'start' => 'default', 'end' => 'default' ), $default_calendar_meta, $_REQUEST[ 'calendar_field' ] );
+		bookacti_update_form_field_meta( $raw_calendar_meta, 'calendar', $form_id );
+	}
 	
 	// Change current url to the edit url
 	$form_url = is_multisite() ? network_admin_url( 'admin.php?page=bookacti_forms&action=edit&form_id=' . $form_id ) : admin_url( 'admin.php?page=bookacti_forms&action=edit&form_id=' . $form_id );
 	header( 'Location: ' . $form_url );
 }
 
+
 // Exit if not allowed to edit current form
 $can_manage_form	= bookacti_user_can_manage_form( $form_id );
 $can_edit_form		= current_user_can( 'bookacti_edit_forms' );
 if ( ! $can_edit_form || ! $can_manage_form ) { echo __( 'You are not allowed to do this.', BOOKACTI_PLUGIN_NAME ); exit; }
+
 
 // Get form data by id
 $form = bookacti_get_form_data( $form_id );
@@ -41,33 +60,36 @@ if( ! $form ) { return; }
 
 ?>
 <div class='wrap'>
-	<h1>
-	<?php 
-		echo $form_id === 'new' ? esc_html__( 'Add New Booking Form', BOOKACTI_PLUGIN_NAME ) : esc_html__( 'Edit Booking Form', BOOKACTI_PLUGIN_NAME ); 
-	?>
-	</h1>
+	<h1><?php esc_html_e( 'Edit Booking Form', BOOKACTI_PLUGIN_NAME ); ?></h1>
 	<hr class='wp-header-end' />
 	
 	<?php
-		// Display contextual notices
-		if( ! empty( $_REQUEST[ 'notice' ] ) ) {
-		?>
-			<div class='notice notice-success is-dismissible bookacti-form-notice' >
-				<p>
-				<?php 
-					if( $_REQUEST[ 'notice' ] === 'published' ) { _e( 'The booking form is published.', BOOKACTI_PLUGIN_NAME ); }
-					else if( $_REQUEST[ 'notice' ] === 'updated' ) { _e( 'The booking form has been updated.', BOOKACTI_PLUGIN_NAME ); } 
-				?>
-				</p>
-			</div>
-		<?php
-		}
+	// Display contextual notices
+	if( ! empty( $_REQUEST[ 'notice' ] ) ) {
 	?>
-	
+		<div class='notice notice-success is-dismissible bookacti-form-notice' >
+			<p>
+			<?php 
+				if( $_REQUEST[ 'notice' ] === 'published' ) { _e( 'The booking form is published.', BOOKACTI_PLUGIN_NAME ); }
+				else if( $_REQUEST[ 'notice' ] === 'updated' ) { _e( 'The booking form has been updated.', BOOKACTI_PLUGIN_NAME ); } 
+			?>
+			</p>
+		</div>
+	<?php
+	}
+	if( ! $form[ 'active' ] && $form[ 'status' ] !== 'trash' ) {
+	?>
+		<div class='notice notice-warning is-dismissible bookacti-form-notice' >
+			<p>
+			<?php esc_attr_e( 'This booking form is not published yet. You need to publish it to make it available and permanent.', BOOKACTI_PLUGIN_NAME ); ?>
+			</p>
+		</div>
+	<?php
+	}
+	?>
 	<div id='bookacti-form-editor-page-container' >
 		<?php
 			do_action( 'bookacti_form_editor_page_before', $form );
-			$form_action = $form_id === 'new' ? 'new' : 'edit';
 			$redirect_url = 'admin.php?page=bookacti_forms&action=edit&form_id=' . $form_id;
 		?>
 		<form name='post' action='<?php echo $redirect_url; ?>' method='post' id='bookacti-form-editor-page-form' novalidate >
@@ -209,3 +231,6 @@ if( ! $form ) { return; }
 if( ! $error_message ) {
 	include_once( 'view-form-editor-dialogs.php' );
 }
+?>
+</div><!-- Close #wpbody -->
+</div><!-- Close #wpcontent -->

@@ -70,16 +70,16 @@
 .activity-gear			{ display: table-cell; vertical-align: middle; padding-left: 10px; cursor: pointer; }
 #bookacti-template-activities-container .fc-event { cursor: move; max-height: 16px; padding-left: 5px; width: 100%; }
 
-.bookacti-group-category-show-hide,
+#bookacti-template-groups-of-events-container	{ padding-right: 6px; }
+#bookacti-group-categories						{ max-height: 400px; overflow-y: auto; padding-right: 4px; }
 .bookacti-group-category-title,
 .bookacti-update-group-category,
 .bookacti-group-of-events-title,
 .bookacti-update-group-of-events,
 .bookacti-group-category-title span		{ display: table-cell; vertical-align: middle; }
-.bookacti-group-category-show-hide		{ padding-right: 10px; cursor: pointer; }
 .bookacti-update-group-category			{ padding-left: 10px; cursor: pointer; }
-.bookacti-update-group-of-events		{ padding-right: 10px; cursor: pointer; }
-.bookacti-groups-of-events-list			{ margin-left: 38px; padding-left: 7px; margin-top: 8px; border-left: 1px dotted rgba(0,0,0,0.3); max-height: 150px; overflow-y: auto; overflow-x: hidden; cursor: pointer; }
+.bookacti-update-group-of-events		{ padding-right: 8px; cursor: pointer; }
+.bookacti-groups-of-events-editor-list	{ margin-left: 8px; padding-left: 7px; margin-top: 8px; border-left: 1px dotted rgba(0,0,0,0.3); max-height: 150px; overflow-y: auto; overflow-x: hidden; cursor: pointer; }
 .bookacti-group-category-title			{ width: 100%; cursor: pointer; }
 .bookacti-group-category-title span		{ font-weight: 600; }
 .bookacti-group-category-title,
@@ -89,10 +89,10 @@
 .bookacti-group-category[data-show-groups='0'] .bookacti-group-category-title::before	{ content: '\25B7 '; }
 .bookacti-group-category[data-show-groups='1'] .bookacti-group-category-title::before	{ content: '\25E2 '; }
 #bookacti-insert-group-of-events		{ visibility: hidden; }
-.bookacti-groups-of-events-list,
+.bookacti-groups-of-events-editor-list,
 #bookacti-template-add-first-group-of-events-container { display: none; }
-.bookacti-group-category:not(:last-child) .bookacti-groups-of-events-list { margin-bottom: 10px; }
-.bookacti-group-of-events.bookacti-selected-group .bookacti-group-of-events-title { font-weight: 600; padding-left: 10px; }
+.bookacti-group-category:not(:last-child) .bookacti-groups-of-events-editor-list	{ margin-bottom: 10px; }
+.bookacti-group-of-events.bookacti-selected-group .bookacti-group-of-events-title	{ font-weight: 600; padding-left: 10px; }
 
 /***** template content *****/
 /* Template calendar */
@@ -100,7 +100,7 @@
 #bookacti-template-calendar	{ vertical-align: top; width: 100%; }
 
 /* First Template Area */
-#bookacti-shortcode-generator-container.bookacti-no-template,
+#bookacti-calendar-integration-tuto-container.bookacti-no-template,
 #bookacti-template-sidebar.bookacti-no-template		{ display: none; }
 #bookacti-first-template-container					{ height: 300px; }
 #bookacti-first-template-container,
@@ -109,10 +109,6 @@
 #bookacti-add-first-template-button					{ cursor: pointer; font-size: 100px; }
 #bookacti-template-add-first-group-of-events-button,
 #bookacti-template-add-first-activity-button		{ cursor: pointer; font-size: 60px; }
-
-
-/***** Shortcode generator *****/
-.bookacti-shortcode-constructor { display: none; }
 
 
 /***** Template dialogs *****/
@@ -131,9 +127,9 @@
 
 #bookacti-activity-duration-days,
 #bookacti-activity-duration-hours,
-#bookacti-activity-duration-minutes				{ width: 50px; }
+#bookacti-activity-duration-minutes	{ width: 50px; }
 
-#bookacti-delete-activity-options				{ margin-top: 20px; }
+#bookacti-delete-activity-options	{ margin-top: 20px; }
 
 
 /* Unbind dialog */

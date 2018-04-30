@@ -4,18 +4,39 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 
 /**
+ * Add a description how to embbed calendars to woocommerce products
+ * @since 1.5.0
+ * @param string $step2
+ * @param int $template_id
+ */
+function bookacti_display_wc_calendar_integration_description( $step, $template_id ) {
+	$description = '<ul><li>';
+	$description .= '<strong>' . esc_html__( 'Without WooCommerce:', BOOKACTI_PLUGIN_NAME ) . '</strong> ' . $step;
+	$description .= '</li><li>';
+	$description .= '<strong>' . esc_html__( 'With WooCommerce:', BOOKACTI_PLUGIN_NAME ) . '</strong> ' . esc_html__( 'Bind the booking form to the desired product in the product data', BOOKACTI_PLUGIN_NAME );
+	$description .= '</li></ul>';
+	return $description;
+}
+add_filter( 'bookacti_calendar_integration_tuto', 'bookacti_display_wc_calendar_integration_description', 10, 2 );
+
+
+/**
  * Add a description how to embbed forms to woocommerce products
  * @since 1.5.0
- * @param object $form
+ * @param array $form
  */
 function bookacti_display_wc_form_integration_description( $form ) {
+	$img_link = esc_url( plugins_url() . '/' . BOOKACTI_PLUGIN_NAME . '/img/wc-integration.png' );
 ?>
 	<h4><?php _e( 'Integrate with a WooCommerce product', BOOKACTI_PLUGIN_NAME ) ?></h4>
 	<div>
 		<p><em><?php esc_html_e( 'Select this form in your product data, in the "Activity" tab.', BOOKACTI_PLUGIN_NAME ); ?></em></p>
 		<p id='bookacti-form-wc-integration-tuto' >
-			<img src='<?php echo esc_url( plugins_url() . '/' . BOOKACTI_PLUGIN_NAME . '/img/wc-integration.png' ); ?>' />
+			<a href='<?php echo $img_link; ?>' target='_blank' style='display:block;'>
+				<img src='<?php echo $img_link; ?>'/>
+			</a>
 		</p>
+		<p><em><?php esc_html_e( 'For variable products, you can set a different form for each variation.', BOOKACTI_PLUGIN_NAME ); ?></em></p>
 	</div>
 <?php
 }
@@ -25,7 +46,7 @@ add_action( 'bookacti_after_form_integration_tuto', 'bookacti_display_wc_form_in
 /**
  * Add a WooCommerce-related description to the form editor
  * @since 1.5.0
- * @param object $form
+ * @param array $form
  */
 function bookacti_form_editor_wc_description( $form ) {
 	echo '<p>' . sprintf( __( 'The fields with this icon %1$s will NOT appear on WooCommerce product pages.', BOOKACTI_PLUGIN_NAME ), '<span class="bookacti-wc-icon-not-supported"></span>' );

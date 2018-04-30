@@ -73,8 +73,8 @@
 .bookacti-message-setting		{ margin-bottom: 20px; }
 .bookacti-message-setting input	{ margin-top: 6px; }
 
-.bookacti_checkbox	{ display: inline-block; margin-right: 20px; min-width: 100px; box-sizing: border-box; }
-
+.bookacti_checkbox	{ display: inline-block; margin-right: 20px; min-width: 100px; max-width: 100px; box-sizing: border-box; overflow: hidden; white-space: nowrap; }
+#bookacti_refund_actions .bookacti_checkbox { max-width: none; overflow: visible; }
 
 /** DIALOGS **/
 .bookacti-input-warning		{ border-color: #d80 !important; }
@@ -111,10 +111,10 @@
 /* Tabs */
 .bookacti-tabs .bookacti-tab-content div > label:not(.bookacti-onoffswitch-label)	{ display: inline-block; width: 150px; font-weight: bold; }
 .bookacti-tabs .bookacti-tab-content div > label.bookacti-fullwidth-label			{ display: block; width: 100%; }
-.bookacti-tabs .bookacti-tab-content div > input + label:not(.bookacti-onoffswitch-label) { display: inline; width: auto; font-weight: normal; }
+.bookacti-tabs .bookacti-tab-content div > input:not([type="hidden"]) + label:not(.bookacti-onoffswitch-label) { display: inline; width: auto; font-weight: normal; }
 .bookacti-tabs .bookacti-tab-content > div { margin-bottom: 10px; }
-.bookacti-tabs .bookacti-tab-content > div.bookacti-display-inline-block { display: inline-block; }
 .bookacti-tabs .bookacti-tab-content > div:last-child { margin-bottom: 0; }
+.bookacti-tabs .bookacti-tab-content .bookacti-display-inline-block { display: inline-block; }
 
 
 

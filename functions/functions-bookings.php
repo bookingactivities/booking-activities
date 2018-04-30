@@ -290,19 +290,16 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 		/**
 		 * Check if a booking can be cancelled
-		 * 
-		 * @version 1.1.0
-		 * 
+		 * @version 1.5.0
 		 * @param int $booking_id
 		 * @return boolean
 		 */
 		function bookacti_booking_can_be_cancelled( $booking_id, $bypass_group_check = false ) {
-			
-			$booking	= bookacti_get_booking_by_id( $booking_id );
 			$is_allowed	= true;
 			
 			if( ! current_user_can( 'bookacti_edit_bookings' ) ) {
 				// Init variable
+				$booking			= bookacti_get_booking_by_id( $booking_id );
 				$is_cancel_allowed	= bookacti_get_setting_value( 'bookacti_cancellation_settings', 'allow_customers_to_cancel' );
 				$is_grouped			= $bypass_group_check ? false : ! empty( $booking->group_id );
 				$is_in_delay		= apply_filters( 'bookacti_bypass_delay', false, $booking_id ) ? true : bookacti_is_booking_in_delay( $booking );
@@ -317,20 +314,16 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 		/**
 		 * Check if a booking is allowed to be rescheduled
-		 * 
-		 * @version 1.1.0
-		 * 
+		 * @version 1.5.0
 		 * @param int $booking_id
 		 * @return boolean
 		 */
 		function bookacti_booking_can_be_rescheduled( $booking_id ) {
-			
-			$booking	= bookacti_get_booking_by_id( $booking_id );
 			$is_allowed	= true;
 			
 			if( ! current_user_can( 'bookacti_edit_bookings' ) ) {
-				
 				// First check if the booking is part of a group
+				$booking	= bookacti_get_booking_by_id( $booking_id );
 				$is_allowed	= empty( $booking->group_id );
 				
 				if( $is_allowed ) {
@@ -562,7 +555,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 		/**
 		 * Get booking actions array
-		 * 
+		 * @version 1.5.0
 		 * @param int $booking_id
 		 * @return array
 		 */
@@ -570,7 +563,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 			$is_cancel_allowed		= bookacti_booking_can_be_cancelled( $booking_id );
 			$is_reschedule_allowed	= bookacti_booking_can_be_rescheduled( $booking_id );
-
+			
 			$possible_actions_array = array();
 
 			if( current_user_can( 'bookacti_edit_bookings' ) ) {
@@ -608,7 +601,16 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 					'link'			=> '',
 					'admin_or_front'=> 'both' );
 			}
-
+			
+			if( current_user_can( 'bookacti_delete_bookings' ) ) {
+				$possible_actions_array[ 'delete' ] = array( 
+					'class'			=> 'bookacti-delete-booking',
+					'label'			=> __( 'Delete',  BOOKACTI_PLUGIN_NAME ),
+					'description'	=> __( 'Delete permanently the booking.', BOOKACTI_PLUGIN_NAME ),
+					'link'			=> '',
+					'admin_or_front'=> 'admin' );
+			}
+			
 			return apply_filters( 'bookacti_booking_actions', $possible_actions_array, $booking_id );
 		}
 
@@ -616,8 +618,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		/**
 		 * Get booking actions html
 		 * 
-		 * @version 1.3.0
-		 * 
+		 * @version 1.5.0
 		 * @param int $booking_id
 		 * @param string $admin_or_front
 		 * @param boolean $return_array
@@ -627,12 +628,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		function bookacti_get_booking_actions_html( $booking_id, $admin_or_front = 'both', $return_array = false, $with_container = false ) {
 
 			$actions = bookacti_get_booking_actions_array( $booking_id );
-			
-			if( $return_array ) {
-				$actions_array	= array();
-			} else {
-				$actions_html	= '';
-			}
+			$actions_html_array	= array();
 			
 			foreach( $actions as $action_id => $action ){
 				if( $admin_or_front === 'both' || $action[ 'admin_or_front' ] === 'both' || $admin_or_front === $action[ 'admin_or_front' ] ) {
@@ -648,23 +644,16 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 					}
 					
 					$action_html	.= '</a>';
-					if( $return_array ) {
-						$actions_array[] = $action_html;
-					} else {
-						$actions_html .= $action_html . ' | ';
-					}
+					$actions_html_array[] = $action_html;
 				}
 			}
 			
 			// Return the array of html actions
 			if( $return_array ) {
-				return apply_filters( 'bookacti_booking_actions_html_array', $actions_array, $booking_id, $admin_or_front );
+				return apply_filters( 'bookacti_booking_actions_html_array', $actions_html_array, $booking_id, $admin_or_front );
 			}
 			
-			// Delete the last useless separator
-			if( substr( $actions_html, -3 ) === ' | ' ) {
-				$actions_html = substr( $actions_html, 0, -3 );
-			}
+			$actions_html = implode( ' | ', $actions_html_array );
 			
 			// Allow third party to add actions
 			$actions_html	= apply_filters( 'bookacti_before_booking_actions', '', $booking_id, $admin_or_front )
@@ -688,7 +677,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		/**
 		 * Get booking group actions array
 		 * 
-		 * @version 1.1.0
+		 * @version 1.5.0
 		 * 
 		 * @param int $booking_group_id
 		 * @return array
@@ -730,7 +719,16 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 					'link'			=> '',
 					'admin_or_front'=> 'both' );
 			}
-
+			
+			if( current_user_can( 'bookacti_delete_bookings' ) ) {
+				$possible_actions_array[ 'delete' ] = array( 
+					'class'			=> 'bookacti-delete-booking-group',
+					'label'			=> __( 'Delete', BOOKACTI_PLUGIN_NAME ),
+					'description'	=> __( 'Delete permanently the booking group.', BOOKACTI_PLUGIN_NAME ),
+					'link'			=> '',
+					'admin_or_front'=> 'admin' );
+			}
+			
 			return apply_filters( 'bookacti_booking_group_actions', $possible_actions_array, $booking_group_id );
 		}
 
@@ -738,7 +736,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		/**
 		 * Get booking group actions html
 		 *  
-		 * @version 1.1.0
+		 * @version 1.5.0
 		 * 
 		 * @param int $booking_group_id
 		 * @param string $admin_or_front
@@ -749,12 +747,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			function bookacti_get_booking_group_actions_html( $booking_group_id, $admin_or_front = 'both', $return_array = false, $with_container = false ) {
 			
 			$actions = bookacti_get_booking_group_actions_array( $booking_group_id );
-			
-			if( $return_array ) {
-				$actions_array	= array();
-			} else {
-				$actions_html	= '';
-			}
+			$actions_html_array	= array();
 			
 			foreach( $actions as $action_id => $action ){
 				if( $admin_or_front === 'both' || $action[ 'admin_or_front' ] === 'both' || $admin_or_front === $action[ 'admin_or_front' ] ) {
@@ -770,24 +763,16 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 					}
 					
 					$action_html	.= '</a>';
-					
-					if( $return_array ) {
-						$actions_array[] = $action_html;
-					} else {
-						$actions_html .= $action_html . ' | ';
-					}
+					$actions_html_array[] = $action_html;
 				}
 			}
 			
 			// Return the array of html actions
 			if( $return_array ) {
-				return apply_filters( 'bookacti_booking_group_actions_html_array', $actions_array, $booking_group_id, $admin_or_front );
+				return apply_filters( 'bookacti_booking_group_actions_html_array', $actions_html_array, $booking_group_id, $admin_or_front );
 			}
 			
-			// Delete the last useless separator
-			if( substr( $actions_html, -3 ) === ' | ' ) {
-				$actions_html = substr( $actions_html, 0, -3 );
-			}
+			$actions_html = implode( ' | ', $actions_html_array );
 			
 			// Allow third party to add actions
 			$actions_html	= apply_filters( 'bookacti_before_booking_group_actions', '', $booking_group_id, $admin_or_front ) 
@@ -1163,7 +1148,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 
 
-// SHORTCODE BOOKINGS LIST
+// SHORTCODE BOOKING LIST
 
 /**
  * Get booking list columns 

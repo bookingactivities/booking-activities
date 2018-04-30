@@ -741,7 +741,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	 * Get group of events data
 	 * 
 	 * @since 1.1.0
-	 * 
+	 * @version 1.5.0
 	 * @global wpdb $wpdb
 	 * @param int $group_id
 	 * @param OBJECT|ARRAY_A $return_type
@@ -753,7 +753,14 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		
 		global $wpdb;
 		
-        $query	= 'SELECT * FROM ' . BOOKACTI_TABLE_EVENT_GROUPS . ' WHERE id = %d ';
+        $query	= 'SELECT G.*, GE.start, GE.end FROM ' . BOOKACTI_TABLE_EVENT_GROUPS . ' as G ';
+		$query .= ' LEFT JOIN ( 
+						SELECT group_id, MIN( event_start ) as start, MAX( event_end ) as end
+						FROM ' . BOOKACTI_TABLE_GROUPS_EVENTS . ' 
+						WHERE active = 1 
+						GROUP BY group_id
+					) as GE ON GE.group_id = G.id ';
+		$query .= ' WHERE G.id = %d ';
         $prep	= $wpdb->prepare( $query, $group_id );
         $group	= $wpdb->get_row( $prep, $return_type );
 		
@@ -785,7 +792,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	 * Get groups of events data by template ids
 	 * 
 	 * @since 1.4.0 (was bookacti_get_groups_of_events_by_template and bookacti_get_groups_of_events_by_category
-	 * 
+	 * @version 1.5.0
 	 * @global wpdb $wpdb
 	 * @param array|int $template_ids
 	 * @param array|int $category_ids
@@ -817,7 +824,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		
 		$variables = array();
 		
-		$query	= 'SELECT G.* '
+		$query	= 'SELECT G.*, GE.start, GE.end '
 				. ' FROM ' . BOOKACTI_TABLE_EVENT_GROUPS . ' as G ' 
 				. ' JOIN ' . BOOKACTI_TABLE_GROUP_CATEGORIES . ' as C '
 				. ' JOIN ' . BOOKACTI_TABLE_TEMPLATES . ' as T ';
@@ -834,7 +841,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		
 		// Join the groups events table to filter groups already started
 		$query .= ' LEFT JOIN ( 
-						SELECT group_id, MIN( event_start ) as first_event, MAX( event_end ) as last_event
+						SELECT group_id, MIN( event_start ) as start, MAX( event_end ) as end
 						FROM ' . BOOKACTI_TABLE_GROUPS_EVENTS . ' 
 						WHERE active = 1 
 						GROUP BY group_id
@@ -842,8 +849,8 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		
 		$query .= ' WHERE C.id = G.category_id '
 				. ' AND C.template_id = T.id '
-				. ' AND GE.first_event IS NOT NULL '
-				. ' AND GE.last_event IS NOT NULL ';
+				. ' AND GE.start IS NOT NULL '
+				. ' AND GE.end IS NOT NULL ';
 		
 		if( $template_ids ) {
 			$query .= ' AND C.template_id IN ( %d ';
@@ -870,8 +877,8 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		}
 		
 		// Make sure groups are in their template range
-		$query .= ' AND UNIX_TIMESTAMP( CONVERT_TZ( GE.first_event, %s, @@global.time_zone ) ) >= UNIX_TIMESTAMP( CONVERT_TZ( T.start_date, %s, @@global.time_zone ) ) ';
-		$query .= ' AND UNIX_TIMESTAMP( CONVERT_TZ( GE.last_event, %s, @@global.time_zone ) ) <= UNIX_TIMESTAMP( CONVERT_TZ( T.end_date + INTERVAL 24 HOUR, %s, @@global.time_zone ) ) ';
+		$query .= ' AND UNIX_TIMESTAMP( CONVERT_TZ( GE.start, %s, @@global.time_zone ) ) >= UNIX_TIMESTAMP( CONVERT_TZ( T.start_date, %s, @@global.time_zone ) ) ';
+		$query .= ' AND UNIX_TIMESTAMP( CONVERT_TZ( GE.end, %s, @@global.time_zone ) ) <= UNIX_TIMESTAMP( CONVERT_TZ( T.end_date + INTERVAL 24 HOUR, %s, @@global.time_zone ) ) ';
 		
 		$variables[] = $user_timestamp_offset;
 		$variables[] = $user_timestamp_offset;
@@ -904,13 +911,13 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			}
 		}
 		
-		$past_query = ' UNIX_TIMESTAMP( CONVERT_TZ( GE.first_event, %s, @@global.time_zone ) ) >= UNIX_TIMESTAMP( CONVERT_TZ( %s, %s, @@global.time_zone ) ) ';
+		$past_query = ' UNIX_TIMESTAMP( CONVERT_TZ( GE.start, %s, @@global.time_zone ) ) >= UNIX_TIMESTAMP( CONVERT_TZ( %s, %s, @@global.time_zone ) ) ';
 		if( ! $fetch_past_groups ) {
 			$past_query = ' ( M.started_groups_bookable = 1 ' . ' OR  ' . $past_query . ' ) ';
 		}
 		
 		$query .= ' AND ' . $past_query 
-				. ' AND UNIX_TIMESTAMP( CONVERT_TZ( GE.last_event, %s, @@global.time_zone ) ) <= UNIX_TIMESTAMP( CONVERT_TZ( %s + INTERVAL 24 HOUR, %s, @@global.time_zone ) ) ';
+				. ' AND UNIX_TIMESTAMP( CONVERT_TZ( GE.end, %s, @@global.time_zone ) ) <= UNIX_TIMESTAMP( CONVERT_TZ( %s + INTERVAL 24 HOUR, %s, @@global.time_zone ) ) ';
 
 		$variables[] = $user_timestamp_offset;
 		$variables[] = $availability_period_start;
@@ -1695,7 +1702,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	 * @param string $object_type
 	 * @param int $object_id
 	 * @param array $metadata_array
-	 * @return boolean|int
+	 * @return int|false
 	 */
 	function bookacti_update_metadata( $object_type, $object_id, $metadata_array ) {
 		
@@ -1848,41 +1855,35 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	
 	/**
 	 * Delete metadata
-	 * 
+	 * @version 1.5.0
 	 * @global wpdb $wpdb
 	 * @param string $object_type
 	 * @param int $object_id
-	 * @param array $metadata_key_array
+	 * @param array $metadata_key_array Array of metadata keys to delete. Leave it empty to delete all metadata of the desired object.
 	 * @return int|boolean
 	 */
-	function bookacti_delete_metadata( $object_type, $object_id, $metadata_key_array ) {
-		
+	function bookacti_delete_metadata( $object_type, $object_id, $metadata_key_array = array() ) {
 		global $wpdb;
 		
-		if ( ! $object_type || ! is_numeric( $object_id ) || ! is_array( $metadata_key_array ) || empty( $metadata_key_array ) ) {
-			return false;
-		}
+		if( ! $object_type || ! is_numeric( $object_id ) || ! is_array( $metadata_key_array ) ) { return false; }
 		
 		$object_id = absint( $object_id );
-		if ( ! $object_id ) {
-			return false;
-		}
+		if( ! $object_id ) { return false; }
 	
-		$delete_metadata_query = 'DELETE FROM ' . BOOKACTI_TABLE_META . ' WHERE object_type = %s AND object_id = %d AND meta_key IN( ';
-		$delete_variables_array = array( $object_type, $object_id );
-		$j = 0;
-		foreach( $metadata_key_array as $metadata_key ) {
-			$delete_metadata_query .= '%s';
-			
-			if( ++$j === count( $metadata_key_array ) ) {
-				$delete_metadata_query .= ' );';
-			} else {
-				$delete_metadata_query .= ', ';
+		$query = 'DELETE FROM ' . BOOKACTI_TABLE_META . ' WHERE object_type = %s AND object_id = %d ';
+		
+		$variables = array( $object_type, $object_id );
+		
+		if( $metadata_key_array ) {
+			$query .= ' AND meta_key IN( %s';
+			for( $i=1,$len=count($metadata_key_array); $i < $len; ++$i ) {
+				$query .= ', %s';
 			}
-			$delete_variables_array[] = $metadata_key;
+			$query .= ' ) ';
+			$variables = array_merge( $variables, array_values( $metadata_key_array ) );
 		}
-		$delete_query_prep = $wpdb->prepare( $delete_metadata_query, $delete_variables_array );
-		$deleted = $wpdb->query( $delete_query_prep );
+		$query = $wpdb->prepare( $query, $variables );
+		$deleted = $wpdb->query( $query );
 		
 		return $deleted;
 	}

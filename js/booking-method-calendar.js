@@ -10,7 +10,7 @@ function bookacti_set_calendar_up( booking_system, reload_events ) {
 	calendar.fullCalendar({
 
 		// Header : Functionnality to Display above the calendar
-		header:  {
+		header: {
 			left: 'prev,next today',
 			center: 'title',
 			right: 'month,agendaWeek,agendaDay'

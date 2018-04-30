@@ -718,7 +718,7 @@ function bookacti_settings_section_bookings_callback() { }
 				'description'	=> esc_html__( 'Instructions displayed before the calendar.', BOOKACTI_PLUGIN_NAME )
 			),
 			'booking_success' => array(
-				'value'			=> esc_html__( 'Your event has been booked successfully!', BOOKACTI_PLUGIN_NAME ),
+				'value'			=> esc_html__( 'Your reservation has been processed!', BOOKACTI_PLUGIN_NAME ),
 				'description'	=> esc_html__( 'When a reservation has been successfully registered.', BOOKACTI_PLUGIN_NAME )
 			),
 			'booking_form_submit_button' => array(
@@ -863,7 +863,10 @@ function bookacti_get_screen_ids() {
 
 
 // ROLES AND CAPABILITIES
-	// Add roles and capabilities
+	/**
+	 * Add roles and capabilities
+	 * @version 1.5.0
+	 */
 	function bookacti_set_role_and_cap() {
 		$administrator = get_role( 'administrator' );
 		$administrator->add_cap( 'bookacti_manage_booking_activities' );
@@ -880,15 +883,19 @@ function bookacti_get_screen_ids() {
 		$administrator->add_cap( 'bookacti_delete_activities' );
 		$administrator->add_cap( 'bookacti_create_bookings' );
 		$administrator->add_cap( 'bookacti_edit_bookings' );
+		$administrator->add_cap( 'bookacti_delete_bookings' );
 		$administrator->add_cap( 'bookacti_create_forms' );
 		$administrator->add_cap( 'bookacti_edit_forms' );
 		$administrator->add_cap( 'bookacti_delete_forms' );
 
 		do_action( 'bookacti_set_capabilities' );
 	}
-
-
-	// Remove roles and capabilities
+	
+	
+	/**
+	 * Remove roles and capabilities
+	 * @version 1.5.0
+	 */
 	function bookacti_unset_role_and_cap() {
 		$administrator	= get_role( 'administrator' );
 		$administrator->remove_cap( 'bookacti_manage_booking_activities' );
@@ -905,6 +912,7 @@ function bookacti_get_screen_ids() {
 		$administrator->remove_cap( 'bookacti_delete_activities' );
 		$administrator->remove_cap( 'bookacti_create_bookings' );
 		$administrator->remove_cap( 'bookacti_edit_bookings' );
+		$administrator->remove_cap( 'bookacti_delete_bookings' );
 		$administrator->remove_cap( 'bookacti_create_forms' );
 		$administrator->remove_cap( 'bookacti_edit_forms' );
 		$administrator->remove_cap( 'bookacti_delete_forms' );

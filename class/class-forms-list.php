@@ -60,8 +60,9 @@ if( ! class_exists( 'Forms_List_Table' ) ) {
 
 			/**
 			 * Columns of the form list
-			 * You must use 'bookacti_form_list_columns_order' php filter order your custom columns.
-			 * You must use 'bookacti_fill_form_list_entry' jquery hook to fill your custom columns.
+			 * You must use 'bookacti_form_list_columns_order' php filter to order your custom columns.
+			 * You must use 'bookacti_form_list_default_hidden_columns' php filter to hide your custom columns by default.
+			 * You must use 'bookacti_form_list_form_columns' php filter to fill your custom columns.
 			 * 
 			 * @param array $columns
 			 */
@@ -272,7 +273,7 @@ if( ! class_exists( 'Forms_List_Table' ) ) {
 				$active		= $form->active ? __( 'Yes', BOOKACTI_PLUGIN_NAME ) : __( 'No', BOOKACTI_PLUGIN_NAME );
 				
 				// Format title column
-				$title = esc_html( $title );
+				$title = esc_html( apply_filters( 'bookacti_translate_text', $title ) );
 				if( $can_edit_forms ) {
 					$title	= '<a href="' . esc_url( get_admin_url() . 'admin.php?page=bookacti_forms&action=edit&form_id=' . $id ) . '" >'
 								. $title
@@ -530,6 +531,21 @@ if( ! class_exists( 'Forms_List_Table' ) ) {
 		 */
 		public function get_default_primary_column_name() {
 			return apply_filters( 'bookacti_form_list_primary_column', 'title', $this->screen );
+		}
+		
+		
+		/**
+		 * Display pagination inside a form to allow to jump to a page
+		 * @param string $which
+		 */
+		protected function pagination( $which ) {
+			if( $which !== 'top' ) { parent::pagination( $which ); return; }
+			?>
+			<form action='<?php echo admin_url( 'admin.php' ); ?>' >
+				<input type='hidden' name='page' value='bookacti_forms' />
+				<?php parent::pagination( $which ); ?>
+			</form>
+			<?php 
 		}
 	}
 }

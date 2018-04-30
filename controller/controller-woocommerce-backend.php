@@ -508,7 +508,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 					<?php 
 						/** START BACKWARD COMPATIBILITY < 1.5.0 **/
 						if( $current_templates ) { 
-							echo '<option value="0" selected >' . esc_html__( 'Use deprecated settings', BOOKACTI_PLUGIN_NAME ) . '</option>';
+							echo '<option value="0" selected >' . esc_html__( 'Use the deprecated settings', BOOKACTI_PLUGIN_NAME ) . '</option>';
 						}
 						/** END BACKWARD COMPATIBILITY < 1.5.0 **/
 						$forms_nb = 0;
@@ -554,12 +554,16 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 				<p class='form-field' >
 					<span>
 					<?php 
-					/* translators: %1$s and %2$s are <a> and </a> tags to go to the admin booking forms page. */
-						echo sprintf( esc_html__( 'As of Booking Activities 1.5, calendar settings have been moved to %1$sbooking forms%2$s. Please migrate your settings as soon as possible.', BOOKACTI_PLUGIN_NAME ),
+						/* translators: %1$s and %2$s are <a> and </a> tags to go to the admin booking forms page. */
+						echo sprintf( esc_html__( 'As of Booking Activities 1.5, calendar settings have been moved to %1$sbooking forms%2$s.', BOOKACTI_PLUGIN_NAME ),
 									  '<a href="' . esc_url( get_admin_url() . 'admin.php?page=bookacti_forms' ) . '" target="_blank">',
-									  '</a>' )
-							. '<br/>' . __( 'However, if you still need to access your old settings, click on this link:', BOOKACTI_PLUGIN_NAME ) 
-							. ' <a href="#" class="bookacti-show-deprecated">' . esc_html__( 'Show deprecated settings', BOOKACTI_PLUGIN_NAME )  . '</a>';
+									  '</a>' );
+						if( ! $current_form ) {
+							echo '<br/>' . esc_html__( 'Please manually migrate your settings as soon as possible or click on this button to do it automatically:', BOOKACTI_PLUGIN_NAME )
+							. ' <a href="#" class="button bookacti-generate-product-booking-form">' . esc_html__( 'Generate the booking form', BOOKACTI_PLUGIN_NAME ) . '</a>';
+						}
+						echo '<br/>' . esc_html__( 'However, if you still need to access your old settings, click on this link:', BOOKACTI_PLUGIN_NAME ) 
+							. ' <a href="#" class="bookacti-show-deprecated">' . esc_html__( 'Show the deprecated settings', BOOKACTI_PLUGIN_NAME )  . '</a>';
 					?>
 					</span>
 				</p>
@@ -690,7 +694,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 							if( count( $categories ) > 1 ) { echo 'style="margin-right:10px;"'; } 
 							if( is_array( $current_categories ) && count( $current_categories ) > 1 ) { echo 'multiple'; } 
 							?> >
-						<option value='none' ><?php _ex( 'None', 'About group category', BOOKACTI_PLUGIN_NAME ); ?></option>
+						<option value='none' <?php if( count( $current_categories ) > 1 ) { echo 'disabled'; } ?> ><?php _ex( 'None', 'About group category', BOOKACTI_PLUGIN_NAME ); ?></option>
 					<?php 
 						$groups_options	= '';
 						foreach( $categories as $category ) {
@@ -802,7 +806,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		}
 		
 		if( isset( $_POST['_bookacti_form'] ) ) {
-			update_post_meta( $post_id, '_bookacti_form', sanitize_text_field( $_POST['_bookacti_form'] ) );
+			update_post_meta( $post_id, '_bookacti_form', intval( $_POST['_bookacti_form'] ) );
 		}
 		
 		/** BACKWARD COMPATIBILITY < 1.5.0 **/
@@ -957,7 +961,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 					<?php
 					/** START BACKWARD COMPATIBILITY < 1.5.0 **/
 					if( $current_templates ) { 
-						echo '<option value="0" selected >' . esc_html__( 'Use deprecated settings', BOOKACTI_PLUGIN_NAME ) . '</option>';
+						echo '<option value="0" selected >' . esc_html__( 'Use the deprecated settings', BOOKACTI_PLUGIN_NAME ) . '</option>';
 					}
 					/** END BACKWARD COMPATIBILITY < 1.5.0 **/
 					
@@ -1005,11 +1009,16 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 				<span>
 				<?php 
 				/* translators: %1$s and %2$s are <a> and </a> tags to go to the admin booking forms page. */
-					echo sprintf( esc_html__( 'As of Booking Activities 1.5, calendar settings have been moved to %1$sbooking forms%2$s. Please migrate your settings as soon as possible.', BOOKACTI_PLUGIN_NAME ),
+					echo sprintf( esc_html__( 'As of Booking Activities 1.5, calendar settings have been moved to %1$sbooking forms%2$s.', BOOKACTI_PLUGIN_NAME ),
 								  '<a href="' . esc_url( get_admin_url() . 'admin.php?page=bookacti_forms' ) . '" target="_blank">',
-								  '</a>' )
-						. '<br/>' . __( 'However, if you still need to access your old settings, click on this link:', BOOKACTI_PLUGIN_NAME ) 
-						. ' <a href="#" class="bookacti-show-deprecated">' . esc_html__( 'Show deprecated settings', BOOKACTI_PLUGIN_NAME )  . '</a>';
+								  '</a>' );
+					if( ! $current_form ) {
+						echo '<br/>' . esc_html__( 'Please manually migrate your settings as soon as possible or click on this button to do it automatically:', BOOKACTI_PLUGIN_NAME )
+						. ' <a href="#" class="button bookacti-generate-variation-booking-form" data-loop="' . esc_attr( $loop ) . '">' . esc_html__( 'Generate the booking form', BOOKACTI_PLUGIN_NAME ) . '</a>';
+					}
+					
+					echo '<br/>' . __( 'However, if you still need to access your old settings, click on this link:', BOOKACTI_PLUGIN_NAME ) 
+						. ' <a href="#" class="bookacti-show-deprecated">' . esc_html__( 'Show the deprecated settings', BOOKACTI_PLUGIN_NAME )  . '</a>';
 				?>
 				</span>
 			</p>
@@ -1155,7 +1164,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 							esc_html_e( 'Parent setting', BOOKACTI_PLUGIN_NAME ); 
 						?>
 					</option>
-					<option value='none' <?php selected( true, $current_group_categories === 'none', true ) ?> ><?php _ex( 'None', 'About group category', BOOKACTI_PLUGIN_NAME ); ?></option>
+					<option value='none' <?php selected( true, $current_group_categories === 'none', true ) ?> <?php if( count( $current_group_categories ) > 1 ) { echo 'disabled'; } ?>><?php _ex( 'None', 'About group category', BOOKACTI_PLUGIN_NAME ); ?></option>
 					<?php
 					$groups_options	= '';
 					foreach( $categories as $category ) {
@@ -1382,14 +1391,158 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	add_filter( 'woocommerce_available_variation', 'bookacti_load_variation_settings_fields' );
 
 	
-	
+	/**
+	 * AJAX Controller - Migrate product or variation settings to a new booking form
+	 * @since 1.5.0
+	 */
+	function bookacti_controller_migrate_product_settings_to_booking_form() {
+		$json_action = 'migrate_product_settings';
+		// Check capabilities
+		if( ! current_user_can( 'bookacti_create_forms' ) ) {
+			bookacti_send_json_not_allowed( $json_action );
+		}
+		
+		$product_id		= intval( $_POST[ 'product_id' ] );
+		$variation_id	= intval( $_POST[ 'variation_id' ] );
+		
+		// Get the product metadata
+		$product = wc_get_product( $product_id );
+		
+		if( ! $product ) {
+			$return_array = array(
+				'status' => 'failed',
+				'error' => 'invalid_product',
+				'message' => esc_html__( 'Invalid product.', BOOKACTI_PLUGIN_NAME )
+			);
+			bookacti_send_json( $return_array, $json_action );
+		}
+		
+		// Format product meta
+		$booking_method		= get_post_meta( $product_id, '_bookacti_booking_method', true );
+		$group_categories	= get_post_meta( $product_id, '_bookacti_group_categories', true );
+		if( ! $group_categories ) { $group_categories = false; }
+		$product_booking_system_meta = array(
+			'method'				=> $booking_method !== 'site' ? $booking_method : bookacti_get_setting_value( 'bookacti_general_settings', 'booking_method' ),
+			'calendars'				=> get_post_meta( $product_id, '_bookacti_template', true ),
+			'activities'			=> get_post_meta( $product_id, '_bookacti_activity', true ),
+			'group_categories'		=> $group_categories,
+			'groups_single_events'	=> get_post_meta( $product_id, '_bookacti_groups_single_events', true ) === 'yes' ? 1 : 0,
+			'groups_only'			=> get_post_meta( $product_id, '_bookacti_groups_only', true ) === 'yes' ? 1 : 0
+		);
+		
+		// Get the variation metadata
+		if( $variation_id ) {
+			$variation = wc_get_product( $variation_id );
+			if( ! $variation ) {
+				$return_array = array(
+					'status'	=> 'failed',
+					'error'		=> 'invalid_variation',
+					'message'	=> esc_html__( 'Invalid product.', BOOKACTI_PLUGIN_NAME )
+				);
+				bookacti_send_json( $return_array, $json_action );
+			}
+			
+			// Format variation meta
+			$booking_method		= get_post_meta( $variation_id, 'bookacti_variable_booking_method', true );
+			if( $booking_method === 'site' ) { $booking_method = bookacti_get_setting_value( 'bookacti_general_settings', 'booking_method' ); }
+			$calendars			= get_post_meta( $variation_id, 'bookacti_variable_template', true );
+			$activities			= get_post_meta( $variation_id, 'bookacti_variable_activity', true );
+			$group_categories	= get_post_meta( $variation_id, 'bookacti_variable_group_categories', true );
+			if( ! $group_categories ) { $group_categories = false; }
+			$variation_booking_system_meta = array(
+				'method'				=> $booking_method !== 'parent' ? $booking_method : $product_booking_system_meta[ 'method' ],
+				'calendars'				=> $calendars !== 'parent' ? $calendars : $product_booking_system_meta[ 'calendars' ],
+				'activities'			=> $activities !== 'parent' ? $activities : $product_booking_system_meta[ 'activities' ],
+				'group_categories'		=> $group_categories !== 'parent' ? $group_categories : $product_booking_system_meta[ 'group_categories' ],
+				'groups_single_events'	=> get_post_meta( $product_id, 'bookacti_variable_groups_single_events', true ) === 'yes' ? 1 : 0,
+				'groups_only'			=> get_post_meta( $product_id, 'bookacti_variable_groups_only', true ) === 'yes' ? 1 : 0
+			);
+		}
+		
+		// Get the product name (that will be the form name as well)
+		if( version_compare( WC_VERSION, '3.0.0', '>=' ) ) {
+			$title = $variation_id ? $variation->get_name() : $product->get_name();
+		} else {
+			if( $variation_id ) {
+				$variation_post = get_post( $variation_id );
+				$title = $variation_post->post_title;
+			} else {
+				$title = $product->get_title();
+			}
+		}
+		
+		// Create the booking form
+		$form_id = bookacti_create_form( $title, 'publish', 1 );
+		if( ! $form_id ) { 
+			$return_array = array(
+				'status'	=> 'failed',
+				'error'		=> 'form_not_created',
+				'message'	=> esc_html__( 'An error occurs while trying to create the form.', BOOKACTI_PLUGIN_NAME )
+			);
+			bookacti_send_json( $return_array, $json_action );
+		}
+		
+		// Bind the form to the product
+		if( $variation_id ) {
+			$bound = update_post_meta( $variation_id, 'bookacti_variable_form', $form_id );
+			$booking_system_meta = $variation_booking_system_meta;
+		} else {
+			$bound = update_post_meta( $product_id, '_bookacti_form', $form_id );
+			$booking_system_meta = $product_booking_system_meta;
+		}
+		
+		// Insert calendar metadata
+		$template_data = bookacti_get_mixed_template_data( $booking_system_meta[ 'calendars' ], false );
+		$default_calendar_meta				= $template_data[ 'settings' ];
+		$default_calendar_meta[ 'start' ]	= $template_data[ 'start' ];
+		$default_calendar_meta[ 'end' ]		= $template_data[ 'end' ];
+		$raw_calendar_field_meta = array_merge( $default_calendar_meta, $booking_system_meta );
+		$meta_updated = bookacti_update_form_field_meta( $raw_calendar_field_meta, 'calendar', $form_id );
+		
+		// Return warnings and success
+		$return_array = array(
+			'form_id'		=> $form_id,
+			'form_title'	=> apply_filters( 'bookacti_translate_text', $title ),
+			'message'		=> array()
+		);
+		
+		$edit_form_link = ' <a href="' . esc_url( get_admin_url() . 'admin.php?page=bookacti_forms&action=edit&form_id=' . $form_id ) . '" target="_blank">' 
+							. esc_html__( 'Edit the form', BOOKACTI_PLUGIN_NAME ) 
+						. '</a>';
+		
+		if( $meta_updated !== false && $bound !== false ) {
+			$return_array[ 'message' ][] = esc_html__( 'The booking form has been created, configured and bound to the product. The migration is complete.', BOOKACTI_PLUGIN_NAME ) . $edit_form_link;
+		} else {
+			$return_array[ 'message' ][] = esc_html__( 'The booking form has been created, but a problem occurred.', BOOKACTI_PLUGIN_NAME ) . $edit_form_link;
+		}
+		
+		if( $meta_updated === false ) { 
+			$return_array[ 'error' ]	= 'meta_not_inserted';
+			$return_array[ 'message' ][]= esc_html__( 'The form hasn\'t been properly configured. Please configure it manually.', BOOKACTI_PLUGIN_NAME );
+			bookacti_send_json( $return_array, $json_action );
+		}
+		
+		if( $bound === false ) { 
+			$return_array[ 'error' ]	= 'not_bound';
+			$return_array[ 'message' ][]= esc_html__( 'The form isn\'t bound to the product. Please refresh the page, bind it manually, and update the product.', BOOKACTI_PLUGIN_NAME );
+		}
+		
+		// Send form id and title
+		$return_array[ 'status' ]	= isset( $return_array[ 'error' ] ) ? 'warning' : 'success';
+		$return_array[ 'message' ]	= implode( '</li><li>', $return_array[ 'message' ] );
+		
+		bookacti_send_json( $return_array, $json_action );
+	}
+	add_action( 'wp_ajax_bookactiMigrateProductSettings', 'bookacti_controller_migrate_product_settings_to_booking_form' );
+
+
+
 
 // ROLES AND CAPABILITIES
 
 	/**
 	 * Set Booking Activities roles and capabilities related to WooCommerce
-	 * 
-	 * @since 1.0.0
+	 * @version 1.5.0
 	 */
 	function bookacti_set_role_and_cap_for_woocommerce() {
 		$shop_manager = get_role( 'shop_manager' );
@@ -1406,6 +1559,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		$shop_manager->add_cap( 'bookacti_delete_activities' );
 		$shop_manager->add_cap( 'bookacti_create_bookings' );
 		$shop_manager->add_cap( 'bookacti_edit_bookings' );
+		$shop_manager->add_cap( 'bookacti_delete_bookings' );
 	}
 	add_action( 'bookacti_set_capabilities', 'bookacti_set_role_and_cap_for_woocommerce' );
 	add_action( 'woocommerce_installed', 'bookacti_set_role_and_cap_for_woocommerce' );
@@ -1413,8 +1567,6 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	
 	/**
 	 * Unset Booking Activities roles and capabilities related to WooCommerce (to be used on wp_roles_init)
-	 * 
-	 * @since 1.0.0
 	 */
 	function bookacti_unset_role_and_cap_for_woocommerce_on_woocommerce_uninstall() {
 		if( defined( 'WP_UNINSTALL_PLUGIN' ) && WP_UNINSTALL_PLUGIN === 'woocommerce/woocommerce.php' ) {
@@ -1426,8 +1578,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	
 	/**
 	 * Unset Booking Activities roles and capabilities related to WooCommerce
-	 * 
-	 * @since 1.0.0
+	 * @version 1.5.0
 	 */
 	function bookacti_unset_role_and_cap_for_woocommerce() {
 		$shop_manager = get_role( 'shop_manager' );
@@ -1444,5 +1595,6 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		$shop_manager->remove_cap( 'bookacti_delete_activities' );
 		$shop_manager->remove_cap( 'bookacti_create_bookings' );
 		$shop_manager->remove_cap( 'bookacti_edit_bookings' );
+		$shop_manager->remove_cap( 'bookacti_delete_bookings' );
 	}
 	add_action( 'bookacti_unset_capabilities', 'bookacti_unset_role_and_cap_for_woocommerce' );

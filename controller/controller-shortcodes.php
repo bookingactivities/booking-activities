@@ -84,9 +84,9 @@ function bookacti_shortcode_booking_form( $atts = array(), $content = null, $tag
 	$output = "<form action='" . $atts[ 'url' ] . "' 
 					class='bookacti-booking-form' 
 					id='bookacti-form-" . $atts[ 'id' ] . "' >
-				  <input type='hidden' name='action' value='bookactiSubmitBookingForm' />"
+				  <input type='hidden' name='action' value='bookactiSubmitBookingFormBWCompat' />"
 
-				  . wp_nonce_field( 'bookacti_booking_form', 'nonce_booking_form', true, false )
+				  . wp_nonce_field( 'bookacti_booking_form', 'nonce_booking_form', false, false )
 
 				  . bookacti_get_booking_system( $atts ) .
 
@@ -109,6 +109,7 @@ function bookacti_shortcode_booking_form( $atts = array(), $content = null, $tag
 							 class='button' 
 							 value='" . $atts[ 'button' ] . "' />
 				  </div>
+				  <div class='bookacti-notices' style='display:none;'></div>
 			  </form>";
 	
     return apply_filters( 'bookacti_shortcode_' . $tag . '_output', $output, $atts, $content );
@@ -178,9 +179,10 @@ function bookacti_shortcode_bookings_list( $atts = array(), $content = null, $ta
 /**
  * Check if booking form is correct and then book the event, or send the error message
  * 
- * @version 1.3.1
+ * @since 1.5.0 (was bookacti_controller_validate_booking_form)
+ * @deprecated since version 1.5.0
  */
-function bookacti_controller_validate_booking_form() {
+function bookacti_deprecated_controller_validate_booking_form() {
 	
 	// Check nonce and capabilities
 	$is_nonce_valid = check_ajax_referer( 'bookacti_booking_form', 'nonce_booking_form', false );
@@ -225,7 +227,7 @@ function bookacti_controller_validate_booking_form() {
 			
 				if( ! empty( $booking_id ) ) {
 
-					do_action( 'bookacti_booking_form_validated', $booking_id, $booking_form_values, 'single' );
+					do_action( 'bookacti_booking_form_validated', $booking_id, $booking_form_values, 'single', 0 );
 					
 					$message = bookacti_get_message( 'booking_success' );
 					wp_send_json( array( 'status' => 'success', 'message' => esc_html( $message ), 'booking_id' => $booking_id ) );
@@ -244,7 +246,7 @@ function bookacti_controller_validate_booking_form() {
 				
 				if( ! empty( $booking_group_id ) ) {
 
-					do_action( 'bookacti_booking_form_validated', $booking_group_id, $booking_form_values, 'group' );
+					do_action( 'bookacti_booking_form_validated', $booking_group_id, $booking_form_values, 'group', 0 );
 					
 					$message = __( 'Your events have been booked successfully!', BOOKACTI_PLUGIN_NAME );
 					wp_send_json( array( 'status' => 'success', 'message' => esc_html( $message ), 'booking_group_id' => $booking_group_id ) );
@@ -270,5 +272,5 @@ function bookacti_controller_validate_booking_form() {
 	
 	wp_send_json( array( 'status' =>  $return_array[ 'status' ], 'message' => esc_html( $return_array[ 'message' ] ) ) );
 }
-add_action( 'wp_ajax_bookactiSubmitBookingForm', 'bookacti_controller_validate_booking_form' );
-add_action( 'wp_ajax_nopriv_bookactiSubmitBookingForm', 'bookacti_controller_validate_booking_form' );
+add_action( 'wp_ajax_bookactiSubmitBookingFormBWCompat', 'bookacti_deprecated_controller_validate_booking_form' );
+add_action( 'wp_ajax_nopriv_bookactiSubmitBookingFormBWCompat', 'bookacti_deprecated_controller_validate_booking_form' );

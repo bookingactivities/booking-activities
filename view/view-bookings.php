@@ -1,4 +1,9 @@
 <?php
+/**
+ * Booking list page
+ * @version 1.5.0
+ */
+
 // Exit if accessed directly
 if ( ! defined( 'ABSPATH' ) ) { exit; }
 
@@ -253,6 +258,7 @@ if( ! $templates ) {
 						'id'					=> 'bookacti-booking-system-bookings-page',
 						'class'					=> 'admin-booking-system',
 						'past_events'			=> 1,
+						'past_events_bookable'	=> 1,
 						'check_roles'			=> 0
 					);
 					bookacti_get_booking_system( $atts, true );

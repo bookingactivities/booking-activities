@@ -1061,11 +1061,11 @@ function bookacti_dialog_import_activity() {
 									$j( 'select#activities-to-import option[value="' + activity_id + '"]' ).remove();
 								});
 								
-								//Reinitialize the activities to apply changes
+								// Reinitialize the activities to apply changes
 								bookacti_init_activities();
 
-								// Update shortcode generator
-								bookacti_update_shortcode_generator_activity_ids( activity_ids, true, false );
+								// Update create form link
+								bookacti_add_activities_to_create_form_link( activity_ids );
 
 								// Close the modal dialogs
 								$j( '#bookacti-activity-import-dialog' ).dialog( 'close' );
@@ -1179,8 +1179,8 @@ function bookacti_dialog_create_activity() {
 								// Reinitialize the activities to apply changes
 								bookacti_init_activities();
 
-								// Update shortcode generator
-								bookacti_update_shortcode_generator_activity_ids( response.activity_id, true, false );
+								// Update create form link
+								bookacti_add_activities_to_create_form_link( response.activity_id );
 
 
 							// If error
@@ -1430,8 +1430,8 @@ function bookacti_dialog_delete_activity( activity_id ) {
 								// Display tuto if there is no more activities available
 								bookacti_display_activity_tuto_if_no_activity_available();
 								
-								// Update shortcode generator
-								bookacti_update_shortcode_generator_activity_ids( activity_id, false, false );
+								// Update create form link
+								bookacti_remove_activities_from_create_form_link( activity_id );
 								
 							} else {
 								var error_message = bookacti_localized.error_delete_activity;

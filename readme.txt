@@ -182,11 +182,12 @@ Or read the full [features description](https://booking-activities.fr/en/documen
 = Display a reservation form = 
 *Make sure to have at least one calendar, one activity and one event at a future date* 
 
-1. Go to Booking Activities / Calendar Editor page
-2. Select the desired calendar and show / hide activities you want
-3. Copy the shortcode at the bottom of the page (it looks like `[bookingactivities_form calendars='' activities='']`)
-4. Past this shortcode in any post or page you like
-5. Go on this post / page frontend, the booking system appears! 
+1. Go to Booking Activities / Booking forms page
+2. Select the desired form or create a new one
+3. Click on the setting gear on the "Calendar" field to set the calendar(s) to display (and many other settings)
+4. Copy the shortcode given in the "How to integrate this form" area (it looks like `[bookingactivities_form form=""]`)
+5. Past this shortcode in any post or page you like
+6. Go on this post / page frontend, the booking form appears! 
 
 *The user must be logged in to book an event.*
 
@@ -196,11 +197,12 @@ Or read the full [features description](https://booking-activities.fr/en/documen
 = Display the calendar only = 
 *Make sure to have at least one calendar, one activity and one event at a future date* 
 
-1. Go to Booking Activities / Calendar Editor page
-2. Select the desired calendar and show / hide activities you want
-3. Copy the shortcode at the bottom of the page (it looks like `[bookingactivities_calendar calendars='' activities='']`)
-4. Past this shortcode in any post or page you like
-5. Go on this post / page frontend, the calendar appears!
+1. Go to Booking Activities / Booking forms page
+2. Select the desired form or create a new one
+3. Keep the "Calendar" field and remove all the others (like "Login/Register", "Quantity" and "Submit" fields)
+4. Copy the shortcode given in the "How to integrate this form" area (it looks like `[bookingactivities_form form=""]`)
+5. Past this shortcode in any post or page you like
+6. Go on this post / page frontend, the calendar appears alone! 
 
 
 = Display user's bookings list = 
@@ -314,14 +316,20 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 
 = 1.5.0 =
 * Feature - Customizable booking forms !
+* Feature - You can now delete your bookings and your booking groups from the booking list
+* Feature - You can display past events on frontend, they can be bookable or not
+* Tweak - Add a "Product" column in booking list (is the reservation was made with WooCommerce)
 * Tweak - Add a dismissible admin notice to inform that WooCommerce "guest checkout" option isn't supported
 * Tweak - Use core dashicons instead of additional images in backend
 * Tweak - When to load the events? setting now also apply to product variation if a default variation is set
 * Fix - Booking groups sometimes not appearing in booking list
 * Fix - Show / Hide columns according to page options in booking list after a row is refreshed
+* Fix - Booking list pagination didn't allow to jump to a specific page
+* Fix - Couldn't drag and drop activities in calendar editor with touch devices
 * Fix - PHP warning during AJAX request which needs to create an instance of the Booking List
 * Fix - PHP warning when deleting a non-booking order item in the admin panel
 * Fix - PHP warning sometimes occurs before sending a notification
+* Fix - If the snap frequency was 00:00, it wasn't possible to drop an event on the calendar editor
 * **Breaking change** - Refund actions in Booking Activities settings must be set again
 
 = 1.4.4 - 2018/04/06 =
