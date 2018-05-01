@@ -219,21 +219,21 @@ function bookacti_change_order_bookings_state( $user_id = NULL, $order_id = NULL
 
 	$array_of_variables = array( 'state' => $state, 'active' => $active );
 
-	// Check user id
+	// Update payment status
 	if( $payment_status ){
 		$query .= ' payment_status = %s ';
 		if( $user_id || $order_id ) { $query .= ', '; }
 		$array_of_variables[] = $payment_status;
 	}
 
-	// Check user id
+	// Update user id
 	if( $user_id ){
 		$query .= ' user_id = %s ';
 		if( $order_id ) { $query .= ', '; }
 		$array_of_variables[] = $user_id;
 	}
 
-	// Check order id
+	// Update order id
 	if( $order_id ){
 		$query .= ' order_id = %d ';
 		$array_of_variables[] = $order_id;

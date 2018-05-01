@@ -144,13 +144,14 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	/**
 	 * Turn a temporary booking to permanent if order gets complete
 	 * 
-	 * @version 1.3.0
+	 * @version 1.5.0
 	 * @param int $order_id
 	 * @param WC_Order $order
 	 * @param string $booking_status
 	 * @param string $payment_status
 	 */
-	function bookacti_turn_temporary_booking_to_permanent( $order_id, $order, $booking_status = 'booked', $payment_status = 'paid' ) {
+	function bookacti_turn_temporary_booking_to_permanent( $order_id, $order = null, $booking_status = 'booked', $payment_status = 'paid' ) {
+		if( ! $order ) { $order = wc_get_order( $order_id ); }
 		
 		// Change state of all bookings of the order from 'pending' to 'booked'
 		$updated = bookacti_turn_order_bookings_to( $order, $booking_status, $payment_status, true );
@@ -166,11 +167,12 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	/**
 	 * Cancel the temporary booking if it failed
 	 * 
-	 * @version 1.3.0
+	 * @version 1.5.0
 	 * @param int $order_id
 	 * @param WC_Order $order
 	 */
-	function bookacti_cancelled_order( $order_id, $order ) {
+	function bookacti_cancelled_order( $order_id, $order = null ) {
+		if( ! $order ) { $order = wc_get_order( $order_id ); }
 		
 		// Change state of all bookings of the order to 'cancelled' and free the bookings
 		bookacti_turn_order_bookings_to( $order, 'cancelled', NULL, false );
@@ -241,11 +243,11 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	/**
 	 * Turn bookings of a paid order containing non-activity products to booked
 	 * 
-	 * @version 1.3.2
+	 * @version 1.5.0
 	 * @param int $order_id
 	 * @param WC_Order $order
 	 */
-	function bookacti_turn_non_activity_order_bookings_to_permanent( $order_id, $order ) {
+	function bookacti_turn_non_activity_order_bookings_to_permanent( $order_id, $order = null ) {
 		
 		if( ! $order ) { $order = wc_get_order( $order_id ); }
 		if( ! $order ) { return false; }
@@ -278,7 +280,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 				break;
 			}
 		}
-
+		
 		// If there are at least one activity in the middle of other products, 
 		// mark the bookings as 'booked' and 'paid'
 		if( ! $are_activities && $has_activities ) {
@@ -629,7 +631,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	 * Turn order items booking status meta to new status
 	 *
 	 * @since 1.2.0
-	 * @version 1.2.2
+	 * @version 1.5.0
 	 * 
 	 * @param WC_Order $order
 	 * @param string $new_state
@@ -650,7 +652,11 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		foreach( $order_items as $order_item_id => $order_item ) {
 			$item				= $order_item;
 			$item[ 'id' ]		= $order_item_id;
-			$item[ 'order_id' ]	= $order->get_id();
+			if( version_compare( WC_VERSION, '3.0.0', '>=' ) ) {
+				$item[ 'order_id' ]	= $order->get_id();
+			} else {
+				$item[ 'order_id' ]	= $order->id;
+			}
 			
 			// Do not allow to update order status based on new bookings status 
 			// because this function is actually triggered after order status changed

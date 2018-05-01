@@ -966,7 +966,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	 * Turn all bookings of an order to the desired status. 
 	 * Also make sure that bookings are bound to the order and the associated user.
 	 * 
-	 * @version 1.3.0
+	 * @version 1.5.0
 	 * @param WC_Order $order
 	 * @param string $state
 	 * @param string $payment_status
@@ -984,24 +984,40 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		if( ! $order ) { return false; }
 
 		// Retrieve bought items and user id
-		$order_id	= $order->get_id();
 		$items		= $order->get_items();
 		$user_id	= $order->get_user_id();
+		if( version_compare( WC_VERSION, '3.0.0', '>=' ) ) {
+			$order_id	= $order->get_id();
+		} else {
+			$order_id	= $order->id;
+		}
 		
 		// Create an array with order booking ids
 		$booking_id_array		= array();
 		$booking_group_id_array = array();
 		foreach( $items as $key => $item ) {
+			if( version_compare( WC_VERSION, '3.0.0', '>=' ) ) {
+				if( isset( $item[ 'bookacti_booking_id' ] ) && $item[ 'bookacti_booking_id' ] ) {
+					$booking_id = $item[ 'bookacti_booking_id' ];
+				} else if( isset( $item[ 'bookacti_booking_group_id' ] ) && $item[ 'bookacti_booking_group_id' ] ) {
+					$booking_group_id= $item[ 'bookacti_booking_group_id' ];
+				}
+			} else {
+				if( isset( $item[ 'bookacti_booking_id' ] ) && $item[ 'bookacti_booking_id' ] ) {
+					$booking_id = $item[ 'item_meta' ][ 'bookacti_booking_id' ][ 0 ];
+				} else if( isset( $item[ 'item_meta' ][ 'bookacti_booking_group_id' ] ) && $item[ 'item_meta' ][ 'bookacti_booking_group_id' ] ) {
+					$booking_group_id= $item[ 'item_meta' ][ 'bookacti_booking_group_id' ][ 0 ];
+				}
+			}
+			
 			// Single event
-			if( isset( $item[ 'bookacti_booking_id' ] ) && $item[ 'bookacti_booking_id' ] ) {				
+			if( ! empty( $booking_id ) ) {				
 				// Add the booking id to the bookings array to change state
-				$booking_id = $item[ 'bookacti_booking_id' ];
 				array_push( $booking_id_array, $booking_id );
 
 			// Group of events
-			} else if( isset( $item[ 'bookacti_booking_group_id' ] ) && $item[ 'bookacti_booking_group_id' ] ) {
+			} else if( ! empty( $booking_group_id ) ) {
 				// Add the group booking ids to the bookings array to change state
-				$booking_group_id	= $item[ 'bookacti_booking_group_id' ];
 				$booking_group_id_array[] = $booking_group_id;
 				
 				$booking_ids		= bookacti_get_booking_group_bookings_ids( $booking_group_id );

@@ -1360,7 +1360,8 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	
 	/**
 	 * Add class to activity order item to identify them on order received page
-	 * 
+	 * @since 1.1.0
+	 * @version 1.5.0
 	 * @param string $classes
 	 * @param WC_Order_Item $item
 	 * @param WC_Order $order
@@ -1368,14 +1369,27 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	 */
 	function bookacti_add_class_to_activity_order_item( $classes, $item, $order ) {
 		
-		foreach ( $item->get_formatted_meta_data() as $meta_id => $meta ) {
-			// Single booking
-			if( $meta->key === 'bookacti_booking_id' ) {
-				$classes .= ' bookacti-order-item-activity bookacti-single-booking';
-			
-			// Group of bookings
-			} else if( $meta->key === 'bookacti_booking_group_id' ) {
-				$classes .= ' bookacti-order-item-activity bookacti-booking-group';
+		if( version_compare( WC_VERSION, '3.0.0', '>=' ) ) {
+			foreach ( $item->get_formatted_meta_data() as $meta_id => $meta ) {
+				// Single booking
+				if( $meta->key === 'bookacti_booking_id' ) {
+					$classes .= ' bookacti-order-item-activity bookacti-single-booking';
+
+				// Group of bookings
+				} else if( $meta->key === 'bookacti_booking_group_id' ) {
+					$classes .= ' bookacti-order-item-activity bookacti-booking-group';
+				}
+			}
+		} else {
+			foreach ( $item[ 'item_meta' ] as $meta_key => $meta_array ) {
+				// Single booking
+				if( $meta_key === 'bookacti_booking_id' ) {
+					$classes .= ' bookacti-order-item-activity bookacti-single-booking';
+
+				// Group of bookings
+				} else if( $meta_key === 'bookacti_booking_group_id' ) {
+					$classes .= ' bookacti-order-item-activity bookacti-booking-group';
+				}
 			}
 		}
 		
@@ -1462,8 +1476,9 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			}
 			
 			// Display the error and stop checkout processing
-			if( $validated[ 'status' ] !== 'success' ) {
+			if( $validated[ 'status' ] !== 'success' && isset( $validated[ 'message' ] ) ) {
 				if( version_compare( WC_VERSION, '3.0.0', '>=' ) ) {
+					if( ! isset( $validated[ 'error' ] ) ) { $validated[ 'error' ] = 'unknown_error'; }
 					$errors->add( $validated[ 'error' ], $validated[ 'message' ] );
 
 				// WOOCOMMERCE 3.0.0 backward compatibility
@@ -1480,12 +1495,14 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	 * Change bookings state after user validate checkout
 	 * 
 	 * @since 1.2.2 (was bookacti_delay_expiration_date_for_payment before)
-	 * @version 1.3.0
+	 * @version 1.5.0
 	 * @param int $order_id
 	 * @param array $order_details
 	 * @param WC_Order $order
 	 */
-	function bookacti_change_booking_state_after_checkout( $order_id, $order_details, $order ) {
+	function bookacti_change_booking_state_after_checkout( $order_id, $order_details, $order = null ) {
+		if( ! $order ) { $order = wc_get_order( $order_id ); }
+
 		// Bind order and user id to the bookings and turn its state to 
 		// 'pending' for payment
 		// <user defined state> if no payment are required

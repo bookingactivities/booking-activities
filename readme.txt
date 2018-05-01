@@ -330,6 +330,7 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 * Fix - PHP warning when deleting a non-booking order item in the admin panel
 * Fix - PHP warning sometimes occurs before sending a notification
 * Fix - If the snap frequency was 00:00, it wasn't possible to drop an event on the calendar editor
+* Fix - Woocommerce 2.6 backward compatibility various checkout issues
 * **Breaking change** - Refund actions in Booking Activities settings must be set again
 
 = 1.4.4 - 2018/04/06 =
