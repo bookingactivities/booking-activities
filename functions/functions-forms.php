@@ -815,17 +815,19 @@ function bookacti_display_form_field_for_editor( $field, $echo = true ) {
 				<h3><?php echo wp_kses_post( $field[ 'title' ] ); ?></h3>
 			</div>
 			<div class='bookacti-form-editor-field-actions' >
-				<?php do_action( 'bookacti_form_editor_field_actions_before', $field ); ?>
+			<?php 
+				do_action( 'bookacti_form_editor_field_actions_before', $field );
+			?>
 				<div class='bookacti-form-editor-field-action bookacti-edit-form-field dashicons dashicons-admin-generic' title='<?php esc_attr_e( 'Change field settings', BOOKACTI_PLUGIN_NAME ); ?>'></div>
 			<?php if( ! $field[ 'compulsory' ] ) { ?>
 				<div class='bookacti-form-editor-field-action bookacti-remove-form-field dashicons dashicons-trash' title='<?php esc_attr_e( 'Remove this field', BOOKACTI_PLUGIN_NAME ); ?>'></div>
 			<?php }
 				do_action( 'bookacti_form_editor_field_actions_after', $field ); 
 			?>
-				<div class='bookacti-field-toggle dashicons dashicons-arrow-down' title='<?php esc_attr_e( 'Show / Hide', BOOKACTI_PLUGIN_NAME ); ?>'></div>
+				<div class='bookacti-field-toggle dashicons <?php echo $field_name === 'calendar' ? 'dashicons-arrow-up' :'dashicons-arrow-down'; ?>' title='<?php esc_attr_e( 'Show / Hide', BOOKACTI_PLUGIN_NAME ); ?>'></div>
 			</div>
 		</div>
-		<div class='bookacti-form-editor-field-body' style='display:none;' >
+		<div class='bookacti-form-editor-field-body' style='<?php echo $field_name === 'calendar' ? '' : 'display:none;'; ?>' >
 		<?php
 			bookacti_display_form_field( $field, 'form-editor', 'edit' );
 		?>
@@ -1043,7 +1045,7 @@ function bookacti_sort_form_fields_array( $form_id, $fields, $remove_unordered_f
 			}
 		}
 	} else {
-		$ordered_fields = $fields;
+		$ordered_fields = array_values( $fields );
 	}
 	
 	return apply_filters( 'bookacti_ordered_form_fields', $ordered_fields, $form_id, $fields, $remove_unordered_fields );

@@ -25,7 +25,7 @@ if( $form_id === 'new' ) {
 	
 	$title = ! empty( $_REQUEST[ 'title' ] ) ? sanitize_text_field( stripslashes( $_REQUEST[ 'title' ] ) ) : '';
 	
-	$form_id = bookacti_create_form( $title );
+	$form_id = bookacti_create_form( $title, 'publish', 1 );
 	if( ! $form_id ) { esc_html_e( 'Error occurs when trying to create the form.', BOOKACTI_PLUGIN_NAME ); exit; }
 	
 	// Insert calendar data (if any)

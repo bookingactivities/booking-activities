@@ -174,7 +174,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		if( $form_id ) {
 			$form_instance_id = '';
 			// Show form on single product page or on variable product with a default value
-			if( $product->is_type( 'single' ) ) {
+			if( $product->is_type( 'simple' ) ) {
 				$form_instance_id = 'product-' . $product->get_id();
 			}
 			else if( $product->is_type( 'variable' ) ) {
@@ -196,19 +196,15 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 				 data-variation-id='<?php if( ! empty( $default_variation_id ) ) { echo $default_variation_id; } ?>'
 				 data-form-id='<?php echo $form_id; ?>'>
 				<?php 
-					// Load booking form now only if it is set to load on page load
-					$when_events_load = bookacti_get_setting_value( 'bookacti_general_settings', 'when_events_load' ); 
-					if( $when_events_load === 'on_page_load' ) {
-						$form_html = bookacti_display_form( $form_id, $form_instance_id, 'wc_product_page', false ); 
-						echo $form_html;
-						if( $default_variation_id ) {
-						?>
-							<script>
-								if( typeof bookacti.form_fields === 'undefined' ) { bookacti.form_fields = []; }
-								bookacti.form_fields[ '<?php echo $form_id; ?>' ] = <?php echo json_encode( $form_html ); ?>;
-							</script>
-						<?php
-						}
+					$form_html = bookacti_display_form( $form_id, $form_instance_id, 'wc_product_page', false ); 
+					echo $form_html;
+					if( ! empty( $default_variation_id ) ) {
+					?>
+						<script>
+							if( typeof bookacti.form_fields === 'undefined' ) { bookacti.form_fields = []; }
+							bookacti.form_fields[ '<?php echo $form_id; ?>' ] = <?php echo json_encode( $form_html ); ?>;
+						</script>
+					<?php
 					}
 				?>			
 			</div>

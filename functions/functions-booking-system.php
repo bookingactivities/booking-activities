@@ -245,7 +245,7 @@ function bookacti_get_booking_system_default_attributes() {
         'status'				=> array(),
         'user_id'				=> 0,
         'method'				=> 'calendar',
-		'auto_load'				=> 1,
+		'auto_load'				=> bookacti_get_setting_value( 'bookacti_general_settings', 'when_events_load' ) === 'on_page_load' ? 1 : 0,
 		'past_events'			=> 0,
 		'past_events_bookable'	=> 0,
 		'check_roles'			=> 1
