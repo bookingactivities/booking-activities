@@ -98,6 +98,14 @@ function bookacti_init_settings() {
 		'bookacti_general_settings', 
 		'bookacti_settings_section_general' 
 	);
+
+	add_settings_field(  
+		'default_calendar_view_threshold', 
+		__( 'Responsive calendar view threshold', BOOKACTI_PLUGIN_NAME ), 
+		'bookacti_settings_field_default_calendar_view_threshold_callback', 
+		'bookacti_general_settings', 
+		'bookacti_settings_section_general' 
+	);
 	
 	
 	
@@ -546,7 +554,7 @@ function bookacti_action_links_in_plugins_table( $links ) {
    $links = array( 'settings' => '<a href="' . admin_url( 'admin.php?page=bookacti_settings' ) . '" title="' . esc_attr( __( 'Manage Booking Activities Settings', BOOKACTI_PLUGIN_NAME ) ) . '">' . __( 'Settings', BOOKACTI_PLUGIN_NAME ) . '</a>' ) + $links;
    return $links;
 }
-add_filter( 'plugin_action_links_' . BOOKACTI_PLUGIN_BASENAME, 'bookacti_action_links_in_plugins_table', 10, 1 );
+add_filter( 'plugin_action_links_' . BOOKACTI_PLUGIN_NAME . '/' . BOOKACTI_PLUGIN_NAME . '.php', 'bookacti_action_links_in_plugins_table', 10, 1 );
 
 
 /** 
@@ -557,7 +565,7 @@ add_filter( 'plugin_action_links_' . BOOKACTI_PLUGIN_BASENAME, 'bookacti_action_
  * @return string
  */
 function bookacti_meta_links_in_plugins_table( $links, $file ) {
-   if ( $file == BOOKACTI_PLUGIN_BASENAME ) {
+   if ( $file == BOOKACTI_PLUGIN_NAME . '/' . BOOKACTI_PLUGIN_NAME . '.php' ) {
 		$links[ 'docs' ]	= '<a href="' . esc_url( apply_filters( 'bookacti_user_docs_url',	'https://booking-activities.fr/en/documentation/user-documentation/?utm_source=plugin&utm_medium=plugin&utm_content=plugin-list' ) ) . '" title="' . esc_attr( __( 'View Booking Activities Documentation', BOOKACTI_PLUGIN_NAME ) ) . '" target="_blank" >' . esc_html__( 'Docs', BOOKACTI_PLUGIN_NAME ) . '</a>';
 		$links[ 'report' ]	= '<a href="' . esc_url( apply_filters( 'bookacti_report_url',		'https://github.com/bookingactivities/booking-activities/issues/' ) ) . '" title="' . esc_attr( __( 'Report a bug or request a feature', BOOKACTI_PLUGIN_NAME ) ) . '" target="_blank" >' . esc_html__( 'Report & Request', BOOKACTI_PLUGIN_NAME ) . '</a>';
 		$links[ 'contact' ]	= '<a href="' . esc_url( apply_filters( 'bookacti_contact_url',		'https://booking-activities.fr/en/#contact?utm_source=plugin&utm_medium=plugin&utm_content=plugin-list' ) ) . '" title="' . esc_attr( __( 'Contact us directly', BOOKACTI_PLUGIN_NAME ) ) . '" target="_blank" >' . esc_html__( 'Contact us', BOOKACTI_PLUGIN_NAME ) . '</a>';

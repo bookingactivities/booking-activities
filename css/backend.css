@@ -6,6 +6,7 @@
 	position: relative;
 	vertical-align: middle;
 	padding-left: 5px;
+	cursor: help;
 }
 #tiptip_content {
     color: #fff;
@@ -39,9 +40,9 @@
 
 
 /***** SETTINGS *****/
-#bookacti-settings input:not([type='submit']):not([type='checkbox']):not([type='radio']):not([type='button']):not(.button), 
-#bookacti-settings textarea, 
-#bookacti-settings select { min-width: 300px; }
+#bookacti-settings input:not([type='submit']):not([type='checkbox']):not([type='radio']):not([type='button']):not(.button),
+#bookacti-settings select	{ min-width: 300px; max-width: 300px; }
+#bookacti-settings textarea	{ min-width: 300px;  }
 
 #bookacti-settings textarea { min-height: 100px; }
 #bookacti-settings .bookacti-message-setting textarea { min-height: 0; resize: both; }
@@ -110,7 +111,7 @@
 
 /* Tabs */
 .bookacti-tabs .bookacti-tab-content div > label:not(.bookacti-onoffswitch-label)	{ display: inline-block; width: 150px; font-weight: bold; }
-.bookacti-tabs .bookacti-tab-content div > label.bookacti-fullwidth-label			{ display: block; width: 100%; }
+.bookacti-tabs .bookacti-tab-content div > label.bookacti-fullwidth-label			{ display: block; width: 100%; cursor: auto; }
 .bookacti-tabs .bookacti-tab-content div > input:not([type="hidden"]) + label:not(.bookacti-onoffswitch-label) { display: inline; width: auto; font-weight: normal; }
 .bookacti-tabs .bookacti-tab-content > div { margin-bottom: 10px; }
 .bookacti-tabs .bookacti-tab-content > div:last-child { margin-bottom: 0; }

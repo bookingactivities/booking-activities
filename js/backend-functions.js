@@ -158,6 +158,8 @@ function bookacti_empty_all_dialog_forms( scope ) {
 			bookacti_switch_select_to_multiple( this );
 		});
 	}
+	
+	$j( 'body' ).trigger( 'bookacti_empty_all_dialogs_forms', [ scope ] );
 }
 
 

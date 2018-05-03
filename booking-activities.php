@@ -40,7 +40,6 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 // GLOBALS AND CONSTANTS
 if( ! defined( 'BOOKACTI_VERSION' ) )			{ define( 'BOOKACTI_VERSION', '1.5.0' ); }
 if( ! defined( 'BOOKACTI_PLUGIN_NAME' ) )		{ define( 'BOOKACTI_PLUGIN_NAME', 'booking-activities' ); }
-if( ! defined( 'BOOKACTI_PLUGIN_BASENAME' ) )	{ define( 'BOOKACTI_PLUGIN_BASENAME', plugin_basename( __FILE__ ) ); }
 
 
 // HEADER STRINGS (For translation)

@@ -23,6 +23,7 @@ function bookacti_get_default_settings() {
 		'default_booking_state'					=> 'pending',
 		'default_payment_status'				=> 'none',
 		'timezone'								=> $tz,
+		'default_calendar_view_threshold'		=> 640,
 		'allow_customers_to_cancel'				=> true,
 		'allow_customers_to_reschedule'			=> true,
 		'cancellation_min_delay_before_event'	=> 7,
@@ -171,7 +172,7 @@ function bookacti_settings_section_bookings_callback() { }
 		if( ! $license_status || $license_status !== 'valid' ) {
 			$tip .= '<br/>';
 			$tip .= sprintf( __( 'Get more display methods with %1$sDisplay Pack%2$s add-on!', BOOKACTI_PLUGIN_NAME ),
-							'<a href="https://booking-activities.fr/en/downloads/display-pack/?utm_source=plugin&utm_medium=plugin&utm_campaign=display-pack&utm_content=landing" target="_blank" >', '</a>');
+							'<a href="https://booking-activities.fr/en/downloads/display-pack/?utm_source=plugin&utm_medium=plugin&utm_campaign=display-pack&utm_content=settings" target="_blank" >', '</a>');
 		}
 		
 		$args = array(
@@ -409,6 +410,29 @@ function bookacti_settings_section_bookings_callback() { }
 		// Display the help tip 
 		$tip  = __( 'Pick the timezone corresponding to where your business takes place.', BOOKACTI_PLUGIN_NAME );
 		bookacti_help_tip( $tip );
+	}
+	
+	
+	/**
+	 * Display "Calendar default view: width threshold" setting
+	 * @since 1.5.0
+	 */
+	function bookacti_settings_field_default_calendar_view_threshold_callback() {
+		$addon_link = '<a href="https://booking-activities.fr/en/downloads/display-pack/?utm_source=plugin&utm_medium=plugin&utm_campaign=display-pack&utm_content=settings" target="_blank" >'
+					.	esc_html( __( 'Display Pack', BOOKACTI_PLUGIN_NAME ) )
+					. '</a>';
+		
+		$args = array(
+			'type'		=> 'number',
+			'name'		=> 'bookacti_general_settings[default_calendar_view_threshold]',
+			'id'		=> 'default_calendar_view_threshold',
+			'options'	=> array( 'min' => 0, 'step' => 1 ),
+			'value'		=> bookacti_get_setting_value( 'bookacti_general_settings', 'default_calendar_view_threshold' ),
+			'label'		=> esc_html_x( 'px', 'pixel short', BOOKACTI_PLUGIN_NAME ),
+			'tip'		=> esc_html__( 'The day view will be displayed by default if the calendar width is under that threshold when it is loaded. Else, it will be the week view.', BOOKACTI_PLUGIN_NAME )
+						. '<br/>' . sprintf( esc_html__( 'Get more views and granularity with %s add-on!' ), $addon_link )
+		);
+		bookacti_display_field( $args );
 	}
 
 

@@ -65,9 +65,14 @@ $j( document ).ready( function() {
 		// Clear booking system displayed info
 		bookacti_clear_booking_system_displayed_info( booking_system );
 		
+		// Clear form feedback messages
+		form.find( '> .bookacti-notices' ).empty();
+		
 		// Display form fields and submit button, and then, delete the "Make a new booking" button
 		form.find( '.bookacti-form-field-container, input[type="submit"]' ).show();
 		$j( this ).remove();
+		
+		form.trigger( 'bookacti_make_new_booking' );
 	});
 	
 	
@@ -204,7 +209,7 @@ function bookacti_check_password_strength( password_field, password_confirm_fiel
  */
 function bookacti_sumbit_booking_form( form ) {
 	var booking_system	= form.find( '.bookacti-booking-system' );
-		
+	
 	// Disable the submit button to avoid multiple booking
 	form.find( 'input[type="submit"]' ).prop( 'disabled', true );
 
@@ -228,6 +233,7 @@ function bookacti_sumbit_booking_form( form ) {
 	// Check password strength
 	if( ! are_login_fields_empty ) {
 		if( form.find( '.bookacti-new_account' ).is( ':checked' ) 
+		&& ! form.find( '.bookacti-generated-password' ).length
 		&& parseInt( form.find( '.bookacti-password_strength' ).val() ) < parseInt( form.find( '.bookacti-password_strength' ).attr( 'min' ) ) ) {
 			// Display the error message
 			form.find( '> .bookacti-notices' ).empty().append( "<ul class='bookacti-error-list'><li>" + bookacti_localized.error_password_not_strong_enough + "</li></ul>" ).show();

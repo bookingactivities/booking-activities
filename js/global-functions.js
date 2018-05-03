@@ -155,7 +155,7 @@ function bookacti_init_user_selectbox() {
 					autocompleteselect: function( event, ui ) {
 						ui.item.option.selected = true;
 						this._trigger( "select", event, {
-						  item: ui.item.option
+							item: ui.item.option
 						});
 						
 						// Trigger action and pass selected option

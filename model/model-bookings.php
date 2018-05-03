@@ -1343,7 +1343,7 @@ function bookacti_delete_booking( $booking_id ) {
 	 * @param 0|1|'auto' $active
 	 * @param boolean $update_bookings Whether to updates bookings state of the group.
 	 * @param boolean $same_status Whether bookings payment status must be the same as the group to be updated.
-	 * @return int|boolean|null
+	 * @return int|boolean
 	 */
 	function bookacti_update_booking_group_payment_status( $booking_group_id, $status, $update_bookings = false, $same_status = false ) {
 
@@ -1443,33 +1443,17 @@ function bookacti_delete_booking( $booking_id ) {
 	 * Update booking group bookings payment status
 	 * 
 	 * @since 1.3.0
-	 * 
+	 * @version 1.5.0
 	 * @global wpdb $wpdb
 	 * @param int $booking_group_id
 	 * @param string $state
 	 * @param string|false $where_state
-	 * @return type
+	 * @return int|false
 	 */
 	function bookacti_update_booking_group_bookings_payment_status( $booking_group_id, $state, $where_state = false ) {
 
 		global $wpdb;
 
-		// Get booking ids
-		$query_bookings	= 'SELECT id FROM ' . BOOKACTI_TABLE_BOOKINGS 
-						. ' WHERE group_id = %d ';
-		
-		$variables_bookings = array( $booking_group_id );
-		
-		if( ! empty( $where_state ) ) {
-			$query_bookings .= ' AND payment_status = %s ';
-			$variables_bookings[] = $where_state;
-		}
-		
-		$prep_bookings	= $wpdb->prepare( $query_bookings, $variables_bookings );
-		$bookings		= $wpdb->get_results( $prep_bookings, OBJECT );
-		
-		if( ! $bookings ) { return 0; }
-		
 		// Change bundled bookings payment status
 		$query		= 'UPDATE ' . BOOKACTI_TABLE_BOOKINGS 
 					. ' SET payment_status = %s '
@@ -1498,10 +1482,9 @@ function bookacti_delete_booking( $booking_id ) {
 	 * @param int $booking_group_id
 	 * @param int $quantity
 	 * @param boolean $add_quantity
-	 * @return int|false|null
+	 * @return int|false
 	 */
 	function bookacti_force_update_booking_group_bookings_quantity( $booking_group_id, $quantity, $add_quantity = false ) {
-
 		global $wpdb;
 				
 		$query	= 'UPDATE ' . BOOKACTI_TABLE_BOOKINGS 
@@ -1529,7 +1512,7 @@ function bookacti_delete_booking( $booking_id ) {
 	 * @param int $booking_group_id
 	 * @param string $state
 	 * @param 0|1|'auto' $active
-	 * @return boolean|null
+	 * @return int|false
 	 */
 	function bookacti_update_booking_group( $booking_group_id, $state = NULL, $payment_status = NULL, $user_id = NULL, $order_id = NULL, $event_group_id = NULL, $active = 'auto' ) {
 
@@ -1590,7 +1573,7 @@ function bookacti_delete_booking( $booking_id ) {
 	 * 
 	 * @global wpdb $wpdb
 	 * @param type $booking_id
-	 * @return type
+	 * @return int|false
 	 */
 	function bookacti_cancel_booking_group_and_its_bookings( $booking_group_id ) {
 		global $wpdb;
@@ -1771,7 +1754,7 @@ function bookacti_delete_booking( $booking_id ) {
 	 * @version 1.4.0
 	 * @global wpdb $wpdb
 	 * @param int $booking_group_id
-	 * @return int|false|null
+	 * @return int|null
 	 */
 	function bookacti_get_booking_group_owner( $booking_group_id ) {
 		global $wpdb;
@@ -1788,7 +1771,7 @@ function bookacti_delete_booking( $booking_id ) {
 	 * 
 	 * @global wpdb $wpdb
 	 * @param int $booking_id
-	 * @return int|boolean|null
+	 * @return int|null
 	 */
 	function bookacti_is_booking_group_active( $booking_group_id ) {
 		global $wpdb;

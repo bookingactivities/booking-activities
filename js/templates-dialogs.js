@@ -141,7 +141,10 @@ function bookacti_init_template_dialogs() {
 
 // TEMPLATES
 
-// Dialog Create Template
+/**
+ * Dialog Create Template
+ * @version 1.5.0
+ */
 function bookacti_dialog_add_new_template() {
     //Set the dialog title
     $j( '#bookacti-template-data-dialog' ).dialog({ 
@@ -184,10 +187,12 @@ function bookacti_dialog_add_new_template() {
 		$j( '#bookacti-template-duplicated-template-id' ).attr( 'disabled', true );
 	}
     
-	//Open the modal dialog
+	$j( '#bookacti-template-data-dialog' ).trigger( 'bookacti_template_data_dialog' );
+	
+	// Open the modal dialog
     $j( '#bookacti-template-data-dialog' ).dialog( 'open' );
 	
-    //Add the 'OK' button
+    // Add the 'OK' button
     $j( '#bookacti-template-data-dialog' ).dialog( 'option', 'buttons',
         [{
             text: bookacti_localized.dialog_button_ok,
@@ -293,7 +298,11 @@ function bookacti_dialog_add_new_template() {
 }
 
 
-// Dialog Update Template
+/**
+ * Dialog Update Template
+ * @version 1.5.0
+ * @param {int} template_id
+ */
 function bookacti_dialog_update_template( template_id ) {
 	
 	if( ! template_id ) { return false; }
@@ -330,7 +339,7 @@ function bookacti_dialog_update_template( template_id ) {
 	if( ! $j.isEmptyObject( template_data.settings ) ) {
 		bookacti_fill_fields_from_array( template_data.settings, 'templateOptions' );
 	}
-
+	$j( '#bookacti-template-data-dialog' ).trigger( 'bookacti_template_data_dialog', [ template_id ] );
 
 	// Add buttons
 	$j( '#bookacti-template-data-dialog' ).dialog( 'option', 'buttons',
@@ -338,7 +347,7 @@ function bookacti_dialog_update_template( template_id ) {
 		[{
 			text: bookacti_localized.dialog_button_ok, 
 
-			//On click on the OK Button, new values are send to a script that update the database
+			// On click on the OK Button, new values are send to a script that update the database
 			click: function() {
 
 				// Prepare fields
@@ -347,8 +356,8 @@ function bookacti_dialog_update_template( template_id ) {
 				$j( '#bookacti-template-data-form select[multiple].bookacti-items-select-box option' ).prop( 'selected', true );
 
 				// Gether the data to save
-				var data = $j( '#bookacti-template-data-form' ).serialize();
-
+				var data = $j( '#bookacti-template-data-form' ).serializeObject();
+				
 				var isFormValid = bookacti_validate_template_form();
 
 				if( isFormValid ) {

@@ -308,7 +308,7 @@ function bookacti_get_default_form_fields_data( $field_name = '' ) {
 	// Set the common default data
 	$default_data = array( 
 		'field_id' => 0,		// Field ID
-		'form_id' => 0,			// Field ID
+		'form_id' => 0,			// Form ID
 		'name' => '',			// Text identifier of the field
 		'type' => '',			// Field type [calendar, quantity, submit, login, free_text, or you custom types]
 		'title' => '',			// Field title display in form editor
@@ -858,7 +858,7 @@ function bookacti_validate_registration( $login_values, $login_data ) {
 	}
 	
 	// Check password strength
-	if( $login_values[ 'password_strength' ] < $login_data[ 'min_password_strength' ] ) {
+	if( $login_values[ 'password_strength' ] < $login_data[ 'min_password_strength' ] && ! $login_data[ 'generate_password' ] ) {
 		$return_array[ 'messages' ][ 'invalid_password_strength' ] = esc_html__( 'Your password is not strong enough.', BOOKACTI_PLUGIN_NAME );
 	}
 	
@@ -871,6 +871,104 @@ function bookacti_validate_registration( $login_values, $login_data ) {
 	}
 	
 	return apply_filters( 'bookacti_validate_registration_form', $return_array, $login_values );
+}
+
+
+/**
+ * Register a new user through a booking form
+ * @since 1.5.0
+ * @param array $login_values
+ * @param array $login_data
+ * @return WP_User|array
+ */
+function bookacti_register_a_new_user( $login_values, $login_data ) {
+	
+	$return_array = array( 'status' => 'failed' );
+	
+	$resgister_response = bookacti_validate_registration( $login_values, $login_data );
+
+	if( count( $resgister_response[ 'messages' ] ) ) {
+		$return_array[ 'error' ] = 'invalid_register_field';
+		$return_array[ 'message' ] = implode( '</li><li>', $resgister_response[ 'messages' ] );
+		return $return_array;
+	}
+
+	// Generate username
+	$username = ! empty( $login_values[ 'first_name' ] ) ? $login_values[ 'first_name' ] . ' ' : '';
+	$username .= ! empty( $login_values[ 'last_name' ] ) ? $login_values[ 'last_name' ] : '';
+	if( ! trim( $username ) ) {
+		$username = substr( $login_values[ 'email' ], 0, strpos( $login_values[ 'email' ], '@' ) );
+	}
+	$username = sanitize_title_with_dashes( $username );
+	$username_base = mb_strlen( $username ) > 60 ? substr( $username, 0, 50 ) : $username;
+	$i = 2;
+	while( username_exists( $username ) ) {
+		$username = $username_base . '-' . $i;
+		++$i;
+	}
+
+	// Let third party modify initial user data
+	$new_user_data = apply_filters( 'bookacti_register_user_data', array(
+		'user_login'	=> $username,
+		'user_pass'		=> ! empty( $login_data[ 'generate_password' ] ) ? wp_generate_password( 24 ) : $login_values[ 'password' ],
+		'user_email'	=> $login_values[ 'email' ],
+		'first_name'	=> ! empty( $login_values[ 'first_name' ] ) ? $login_values[ 'first_name' ] : '',
+		'last_name'		=> ! empty( $login_values[ 'last_name' ] ) ? $login_values[ 'last_name' ] : '',
+		'role'			=> $login_data[ 'new_user_role' ]
+	), $login_values );
+
+	// Create the user
+	$user_id = wp_insert_user( $new_user_data );
+	if( is_wp_error( $user_id ) ) { 
+		$return_array[ 'error' ]	= $user_id->get_error_code();
+		$return_array[ 'message' ]	= $user_id->get_error_message();
+		return $return_array;
+	}
+	$user = get_user_by( 'id', $user_id );
+
+	// Insert user metadata
+	$user_meta = array();
+	if( ! empty( $login_values[ 'phone' ] ) ) { $user_meta[ 'phone' ] = $login_values[ 'phone' ]; }
+	$user_meta = apply_filters( 'bookacti_register_user_metadata', $user_meta, $user, $login_values );
+	foreach( $user_meta as $meta_key => $meta_value ) {
+		update_user_meta( $user_id, $meta_key, $meta_value );
+	}
+
+	// Send the welcome email
+	$user_registered_notify = apply_filters( 'bookacti_new_registered_user_notify', empty( $login_data[ 'send_new_account_email' ] ) ? 'admin' : 'both', $user, $login_values );
+	bookacti_send_new_user_notification( $user_id, $user_registered_notify, true );
+	
+	return apply_filters( 'bookacti_new_registered_user', $user, $login_values, $login_data );
+}
+
+
+/**
+ * Validate login fields
+ * @since 1.5.0
+ * @param array $login_values
+ * @return WP_User|array
+ */
+function bookacti_validate_login( $login_values ) {
+		
+	$return_array = array( 'status' => 'failed' );
+
+	// Check if email is correct
+	$user	= get_user_by( 'email', $login_values[ 'email' ] );
+	if( ! $user ) { 
+		$return_array[ 'error' ]	= 'user_not_found';
+		$return_array[ 'message' ]	= esc_html__( 'This email address doesn\'t match any account.', BOOKACTI_PLUGIN_NAME );
+		return $return_array;
+	}
+
+	// Check if password is correct
+	$user = wp_authenticate( $user->user_email, $login_values[ 'password' ] );
+	if( ! is_a( $user, 'WP_User' ) ) { 
+		$return_array[ 'error' ]	= 'wrong_password';
+		$return_array[ 'message' ]	= esc_html__( 'The password is incorrect. Try again.', BOOKACTI_PLUGIN_NAME );
+		return $return_array;
+	}
+	
+	return apply_filters( 'bookacti_validate_login_form', $user, $login_values );
 }
 
 

@@ -311,7 +311,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			}
 			// Else, display standard field
 		?>
-			<div class='bookacti-field-container <?php if( ! empty( $field[ 'hidden' ] ) ) { echo 'bookacti-hidden-field'; } ?>'>
+			<div class='bookacti-field-container <?php if( ! empty( $field[ 'hidden' ] ) ) { echo 'bookacti-hidden-field'; } ?>' id='<?php echo $field[ 'id' ] . '-container'; ?>'>
 			<?php 
 			// Display field title
 			if( ! empty( $field[ 'title' ] ) ) { 
