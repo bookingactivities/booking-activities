@@ -69,7 +69,11 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		<input type='hidden' name='booking_type' value=''/>
 		<?php wp_nonce_field( 'bookacti_delete_booking', 'nonce_delete_booking' ); ?>
 		<p class='bookacti-dialog-intro bookacti-delete-single-booking-description' >
-			<?php esc_html_e( 'Are you sure to delete this booking permanently? This action cannot be undone.', BOOKACTI_PLUGIN_NAME ); ?>
+			<?php esc_html_e( 'Are you sure to delete this booking permanently?', BOOKACTI_PLUGIN_NAME ); ?>
+		</p>
+		<p class='bookacti-irreversible-action'>
+			<span class='dashicons dashicons-warning'></span>
+			<span><?php esc_html_e( 'This action cannot be undone.', BOOKACTI_PLUGIN_NAME ); ?></span>
 		</p>
 		<p class='bookacti-dialog-intro bookacti-delete-booking-group-description' style='display:none;'>
 			<?php esc_html_e( 'All the bookings included in this booking group will also be delete.', BOOKACTI_PLUGIN_NAME ); ?>

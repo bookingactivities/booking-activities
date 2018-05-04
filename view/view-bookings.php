@@ -259,7 +259,8 @@ if( ! $templates ) {
 						'class'					=> 'admin-booking-system',
 						'past_events'			=> 1,
 						'past_events_bookable'	=> 1,
-						'check_roles'			=> 0
+						'check_roles'			=> 0,
+						'auto_load'				=> 1 // Force to load on page load
 					);
 					bookacti_get_booking_system( $atts, true );
 				?>

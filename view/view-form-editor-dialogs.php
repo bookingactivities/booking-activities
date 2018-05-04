@@ -69,6 +69,7 @@ foreach( $fields_data as $field_name => $field_data ) {
 		<?php 
 			do_action( 'bookacti_form_meta_dialog_before', $form, $form_fields );
 		?>
+		<div id='bookacti-form-meta-dialog-lang-switcher' class='bookacti-lang-switcher' ></div>
 		<div>
 			<label for='bookacti-form-meta-id'><?php _e( 'ID', BOOKACTI_PLUGIN_NAME ); ?></label>
 			<?php 
@@ -258,6 +259,9 @@ foreach( $fields_data as $field_name => $field_data ) {
 			do_action( 'bookacti_calendar_dialog_calendar_tab_after', $params );
 		} 
 		?>
+		<div class='bookacti-hidden-field'>
+			<?php bookacti_display_badp_promo(); ?>
+		</div>
 		<div class='bookacti-show-hide-advanced-options bookacti-show-advanced-options' 
 			 data-show-title='<?php _e( 'Show advanced options', BOOKACTI_PLUGIN_NAME ); ?>'
 			 data-hide-title='<?php _e( 'Hide advanced options', BOOKACTI_PLUGIN_NAME ); ?>'>
@@ -539,7 +543,7 @@ foreach( $fields_data as $field_name => $field_data ) {
 											4 => _x( 'Strong', 'password strength' )
 										),
 						'value'		=> 1,
-						'tip'		=> __( 'Set the minimum password strength required.', BOOKACTI_PLUGIN_NAME )
+						'tip'		=> __( 'How strong the user password must be?', BOOKACTI_PLUGIN_NAME )
 					);
 					bookacti_display_field( $args );
 				?>
@@ -612,6 +616,7 @@ foreach( $fields_data as $field_name => $field_data ) {
 		<?php 
 			do_action( 'bookacti_quantity_dialog_before', $form, $form_fields );
 		?>
+		<div id='bookacti-form-field-dialog-quantity-lang-switcher' class='bookacti-lang-switcher' ></div>
 		<div>
 			<label for='bookacti-quantity-label'><?php _e( 'Label', BOOKACTI_PLUGIN_NAME ); ?></label>
 			<?php 
@@ -670,6 +675,7 @@ foreach( $fields_data as $field_name => $field_data ) {
 		<?php 
 			do_action( 'bookacti_submit_dialog_before', $form, $form_fields );
 		?>
+		<div id='bookacti-form-field-dialog-submit-lang-switcher' class='bookacti-lang-switcher' ></div>
 		<div>
 			<label for='bookacti-submit-value'><?php _e( 'Button text', BOOKACTI_PLUGIN_NAME ); ?></label>
 			<?php 
@@ -698,6 +704,7 @@ foreach( $fields_data as $field_name => $field_data ) {
 		<?php 
 			do_action( 'bookacti_free_text_dialog_before', $form, $form_fields );
 		?>
+		<div id='bookacti-form-field-dialog-free_text-lang-switcher' class='bookacti-lang-switcher' ></div>
 		<div>
 			<label for='bookacti-free_text-title'><?php _e( 'Title', BOOKACTI_PLUGIN_NAME ); ?></label>
 			<?php 

@@ -223,8 +223,6 @@ a.bookacti-booking-action					{ display: inline-block; word-spacing: 0; margin: 
 	#bookacti-change-booking-state-form > div				{ margin-bottom: 10px; }
 	#bookacti-change-booking-state-form > div:last-child	{ margin-bottom: 0; }
 	
-	.wp-admin .bookacti-delete-wc-order-item-description:before	{ font-family: 'dashicons'; content: '\f534'; font-size: 1.5em; display: block; float: left; margin: 3px 10px 0 0; color: #b81c23; }
-
 
 /***** RESPONSIVE DESIGN *****/
 

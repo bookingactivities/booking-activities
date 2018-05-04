@@ -185,7 +185,7 @@ function bookacti_display_form( $form_id, $instance_id = '', $context = 'display
 	// Add form container only if there is a "submit" button
 	if( $is_form ) {
 	?>
-		<form action='<?php if( ! empty( $form[ 'redirect_url' ] ) ) { echo esc_url( $form[ 'redirect_url' ] ); } ?>'
+		<form action='<?php if( ! empty( $form[ 'redirect_url' ] ) ) { echo esc_url( apply_filters( 'bookacti_translate_text', $form[ 'redirect_url' ] ) ); } ?>'
 			  id='<?php echo empty( $form[ 'id' ] ) ? 'bookacti-' . $instance_id : $instance_id; ?>'
 			  class='bookacti-booking-form bookacti-booking-form-<?php echo $form_id . ' ' . $form[ 'class' ]; ?>' >
 			
@@ -812,7 +812,7 @@ function bookacti_display_form_field_for_editor( $field, $echo = true ) {
 	<div id='bookacti-form-editor-field-<?php echo esc_attr( $field[ 'field_id' ] ); ?>' class='bookacti-form-editor-field' data-field-id='<?php echo esc_attr( $field[ 'field_id' ] ); ?>' data-field-name='<?php echo esc_attr( $field[ 'name' ] ); ?>' >
 		<div class='bookacti-form-editor-field-header' >
 			<div class='bookacti-form-editor-field-title' >
-				<h3><?php echo wp_kses_post( $field[ 'title' ] ); ?></h3>
+				<h3><?php echo wp_kses_post( apply_filters( 'bookacti_translate_text', $field[ 'title' ] ) ); ?></h3>
 			</div>
 			<div class='bookacti-form-editor-field-actions' >
 			<?php 
@@ -955,7 +955,7 @@ function bookacti_validate_login( $login_values ) {
 	$return_array = array( 'status' => 'failed' );
 
 	// Check if email is correct
-	$user	= get_user_by( 'email', $login_values[ 'email' ] );
+	$user = get_user_by( 'email', $login_values[ 'email' ] );
 	if( ! $user ) { 
 		$return_array[ 'error' ]	= 'user_not_found';
 		$return_array[ 'message' ]	= esc_html__( 'This email address doesn\'t match any account.', BOOKACTI_PLUGIN_NAME );

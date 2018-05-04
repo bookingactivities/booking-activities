@@ -8,7 +8,14 @@
 						"bookacti-activity-dialog-lang-switcher": { "where": "first" }, 
 						"bookacti-event-dialog-lang-switcher": { "where": "first" }, 
 						"bookacti-group-of-events-dialog-lang-switcher": { "where": "first" },
-						"bookacti-group-category-dialog-lang-switcher": { "where": "first" } },
+						"bookacti-group-category-dialog-lang-switcher": { "where": "first" },
+						"bookacti-form-editor-page-lang-switcher": { "where": "first" },
+						"bookacti-form-meta-dialog-lang-switcher": { "where": "first" },
+						"bookacti-form-field-dialog-login-lang-switcher": { "where": "first" },
+						"bookacti-form-field-dialog-quantity-lang-switcher": { "where": "first" },
+						"bookacti-form-field-dialog-submit-lang-switcher": { "where": "first" },
+						"bookacti-form-field-dialog-free_text-lang-switcher": { "where": "first" }
+			},
 			"forms":{
 				"bookacti-settings":{
 					"fields":{
@@ -69,6 +76,52 @@
 				"bookacti-group-category-form":{
 					"fields":{
 						"bookacti-group-category-title-field":{}
+					}
+				},
+				"bookacti-form-editor-page-form":{
+					"fields":{
+						"title":{}
+					}
+				},
+				"bookacti-form-field-form-login":{
+					"fields":{
+						"bookacti-email-label":{},
+						"bookacti-email-placeholder":{},
+						"bookacti-email-tip":{},
+						"bookacti-password-label":{},
+						"bookacti-password-placeholder":{},
+						"bookacti-password-tip":{},
+						"bookacti-forgotten_password-label":{},
+						"bookacti-forgotten_password-tip":{},
+						"bookacti-label-new_account":{},
+						"bookacti-tip-new_account":{},
+						"bookacti-label-first_name":{},
+						"bookacti-placeholder-first_name":{},
+						"bookacti-tip-first_name":{},
+						"bookacti-label-last_name":{},
+						"bookacti-placeholder-last_name":{},
+						"bookacti-tip-last_name":{},
+						"bookacti-label-phone":{},
+						"bookacti-placeholder-phone":{},
+						"bookacti-tip-phone":{}
+					}
+				},
+				"bookacti-form-field-form-quantity":{
+					"fields":{
+						"bookacti-quantity-label":{},
+						"bookacti-quantity-placeholder":{},
+						"bookacti-quantity-tip":{}
+					}
+				},
+				"bookacti-form-field-form-submit":{
+					"fields":{
+						"bookacti-submit-value":{}
+					}
+				},
+				"bookacti-form-field-form-free_text":{
+					"fields":{
+						"bookacti-free_text-title":{},
+						"bookacti-free_text-value":{}
 					}
 				}
 			}

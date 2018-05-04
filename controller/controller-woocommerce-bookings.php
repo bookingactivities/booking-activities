@@ -961,8 +961,11 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	?>
 		<div class='bookacti-delete-wc-order-item-container' style='display:none;'>
 			<hr/>
-			<p class='bookacti-dialog-intro bookacti-delete-wc-order-item-description'>
-				<?php esc_html_e( 'This booking is bound to an item in a WooCommerce order. Do you want to remove the booking data from this item as well?', BOOKACTI_PLUGIN_NAME ); ?>
+			<p class='bookacti-irreversible-action bookacti-delete-wc-order-item-description'>
+				<span class='dashicons dashicons-warning'></span>
+				<span>
+					<?php esc_html_e( 'This booking is bound to an item in a WooCommerce order. Do you want to remove the booking data from this item as well?', BOOKACTI_PLUGIN_NAME ); ?>
+				</span>
 			</p>
 			<?php
 				$args = array(

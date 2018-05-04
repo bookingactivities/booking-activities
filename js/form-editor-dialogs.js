@@ -274,14 +274,14 @@ function bookacti_dialog_update_form_field( field_id, field_name ) {
 	// Fill the fields with current data
 	bookacti_fill_fields_from_array( bookacti.form_editor.fields[ field_id ], '', 'form#bookacti-form-field-form-' + field_name );
 	
+	$j( '#bookacti-form-editor' ).trigger( 'bookacti_field_update_dialog', [ field_id, field_name ] );
+	
 	// Refresh qtranslate fields to make a correct display of multilingual fields
 	if( bookacti_localized.is_qtranslate ) {
 		$j( 'form#bookacti-form-field-form-' + field_name + ' .qtranxs-translatable' ).each( function() { 
 			bookacti_refresh_qtx_field( this ); 
 		});
 	}
-	
-	$j( '#bookacti-form-editor' ).trigger( 'bookacti_field_update_dialog', [ field_id, field_name ] );
 	
 	// Open the modal dialog
     $j( '#bookacti-form-field-dialog-' + field_name ).dialog( 'open' );
@@ -362,8 +362,6 @@ function bookacti_dialog_update_form_field( field_id, field_name ) {
 				$j( 'form#bookacti-form-field-form-' + field_name + ' input[name="action"]' ).val( 'bookactiResetFormField' );
 				var data = $j( 'form#bookacti-form-field-form-' + field_name ).serializeObject();
 				var is_visible = $j( '#bookacti-form-editor-field-' + field_id + ' .bookacti-form-editor-field-body' ).is( ':visible' );
-				
-				console.log( data );
 				
 				// Display a loader
 				bookacti_form_editor_enter_loading_state();

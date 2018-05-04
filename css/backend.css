@@ -21,6 +21,9 @@
 
 .bookacti-disabled { cursor: auto; pointer-events: none; opacity: 0.5; }
 
+.bookacti-irreversible-action span			{ display: table-cell; vertical-align: middle; }
+.bookacti-irreversible-action .dashicons	{ font-size: 1.5em; color: #b81c23; padding-right: 10px; }
+
 
 /***** CALENDAR *****/
 /** EVENTS **/

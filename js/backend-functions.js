@@ -326,8 +326,18 @@ function bookacti_refresh_qtx_field( field ){
 	if( typeof qTranslateConfig !== 'undefined' ) {
 		var qtx = qTranslateConfig.js.get_qtx();
 		$j( field ).removeClass('qtranxs-translatable');
-		qtx.refreshContentHook( field );
+		var h = qtx.refreshContentHook( field );
 		$j( field ).addClass('qtranxs-translatable');
+		
+		// Refresh tinyMCE (from "qtranslate-x\admin\js\common.js" updateTinyMCE line 588)
+		if( typeof tinyMCE !== 'undefined' ) {
+			if( tinyMCE && $j( '#' + field.id ).hasClass( 'wp-editor-area' ) ) {
+				if( tinyMCE.get( field.id ) ) {
+					h.mce = tinyMCE.get( field.id );
+					h.mce.setContent( h.contentField.value, { format: 'html' } );
+				}
+			}
+		}
 	}
 }
 

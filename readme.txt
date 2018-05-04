@@ -319,7 +319,7 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 * Feature - You can now delete your bookings and your booking groups from the booking list
 * Feature - You can display past events on frontend, they can be bookable or not
 * Feature - Responsive default calendar view: display day view for small calendars instead of week view (set the threshold in settings)
-* Tweak - Add a "Product" column in booking list (is the reservation was made with WooCommerce)
+* Tweak - Add a "Product" column in booking list (if the reservation was made with WooCommerce)
 * Tweak - Add a dismissible admin notice to inform that WooCommerce "guest checkout" option isn't supported
 * Tweak - Use core dashicons instead of additional images in backend
 * Tweak - When to load the events? setting now also apply to product variation if a default variation is set

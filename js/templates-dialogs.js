@@ -146,12 +146,12 @@ function bookacti_init_template_dialogs() {
  * @version 1.5.0
  */
 function bookacti_dialog_add_new_template() {
-    //Set the dialog title
+    // Set the dialog title
     $j( '#bookacti-template-data-dialog' ).dialog({ 
         title: bookacti_localized.dialog_create_template_title
     });
 	
-	//Set default values
+	// Set default values
     $j( '#bookacti-template-opening' ).val( moment().format( 'YYYY-MM-DD' ) );
     $j( '#bookacti-template-closing' ).val( moment().add( 7, 'days' ).format( 'YYYY-MM-DD' ) );
 	$j( '#bookacti-template-data-minTime' ).val( '08:00' );

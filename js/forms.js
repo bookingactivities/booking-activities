@@ -21,23 +21,11 @@ $j( document ).ready( function() {
 	
 	
 	// New account: Show / Hide register fields
+	$j( '.bookacti-new_account' ).each( function(){
+		bookacti_show_hide_register_fields( $j( this ) );
+	});
 	$j( 'body' ).on( 'change', '.bookacti-new_account', function( e ){
-		var password_strength			= $j( this ).parents( '.bookacti-form-field-container' ).find( '.bookacti-password-strength' );
-		var generated_password_field	= $j( this ).parents( '.bookacti-form-field-container' ).find( '.bookacti-generated-password' );
-		var register_fieldset			= $j( this ).parents( '.bookacti-form-field-login-field-container' ).find( 'fieldset.bookacti-register-fields' );
-		if( $j( this ).is( ':checked' ) ) { 
-			password_strength.show(); 
-			generated_password_field.hide(); 
-			generated_password_field.find( '.bookacti-required-field' ).prop( 'required', false );
-			register_fieldset.show(); 
-			register_fieldset.find( '.bookacti-required-field' ).prop( 'required', true );
-		} else { 
-			password_strength.hide(); 
-			generated_password_field.show(); 
-			generated_password_field.find( '.bookacti-required-field' ).prop( 'required', true );
-			register_fieldset.hide(); 
-			register_fieldset.find( '.bookacti-required-field' ).prop( 'required', false );
-		}
+		bookacti_show_hide_register_fields( $j( this ) );
 	});
 	
 	
@@ -148,6 +136,30 @@ function bookacti_init_form_dialogs() {
 			return false; 
 		}
 	});
+}
+
+
+/**
+ * Display or hide the register fields according to the "New account" checkbox
+ * @since 1.5.0
+ */
+function bookacti_show_hide_register_fields( new_account_checkbox ) {
+	var password_strength			= new_account_checkbox.parents( '.bookacti-form-field-container' ).find( '.bookacti-password-strength' );
+	var generated_password_field	= new_account_checkbox.parents( '.bookacti-form-field-container' ).find( '.bookacti-generated-password' );
+	var register_fieldset			= new_account_checkbox.parents( '.bookacti-form-field-login-field-container' ).find( 'fieldset.bookacti-register-fields' );
+	if( new_account_checkbox.is( ':checked' ) ) { 
+		password_strength.show(); 
+		generated_password_field.hide(); 
+		generated_password_field.find( '.bookacti-required-field' ).prop( 'required', false );
+		register_fieldset.show(); 
+		register_fieldset.find( '.bookacti-required-field' ).prop( 'required', true );
+	} else { 
+		password_strength.hide(); 
+		generated_password_field.show(); 
+		generated_password_field.find( '.bookacti-required-field' ).prop( 'required', true );
+		register_fieldset.hide(); 
+		register_fieldset.find( '.bookacti-required-field' ).prop( 'required', false );
+	}
 }
 
 

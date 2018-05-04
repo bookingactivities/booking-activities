@@ -104,6 +104,8 @@ if( ! $form ) { return; }
 			<input type='hidden' name='is_active' value='<?php echo $form[ 'active' ]; ?>' />
 			<input type='hidden' name='form_id' value='<?php echo $form_id; ?>' id='bookacti-form-id' />
 			
+			<div id='bookacti-form-editor-page-lang-switcher' class='bookacti-lang-switcher' ></div>
+			
 			<div id='poststuff'>
 				<div id='post-body' class='metabox-holder columns-<?php echo 1 == get_current_screen()->get_columns() ? '1' : '2'; ?>'>
 					<div id='post-body-content'>
