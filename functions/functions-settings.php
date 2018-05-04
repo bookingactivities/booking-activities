@@ -138,7 +138,7 @@ function bookacti_settings_section_bookings_callback() { }
 		// Don't do anything if we are not on the booking page
 		if( ! is_object( $screen ) || $screen->id != 'booking-activities_page_bookacti_forms' ) { return; }
 		
-		if( ! empty( $_REQUEST[ 'action' ] ) && in_array( $_REQUEST[ 'action' ], array( 'edit', 'create' ), true ) ) {
+		if( ! empty( $_REQUEST[ 'action' ] ) && in_array( $_REQUEST[ 'action' ], array( 'edit', 'new' ), true ) ) {
 			// Layout columns number
 			add_screen_option( 'layout_columns', array( 
 				'max' => 2, 

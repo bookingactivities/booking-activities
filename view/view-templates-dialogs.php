@@ -838,7 +838,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 					</select>
 					<?php
 						$tip = __( "Pick a category for your group of events.", BOOKACTI_PLUGIN_NAME );
-						$tip .= __( "Thanks to categories, you will be able to choose what groups of events are available on what calendars.", BOOKACTI_PLUGIN_NAME );
+						$tip .= __( "Thanks to categories, you will be able to choose what groups of events are available on what booking forms.", BOOKACTI_PLUGIN_NAME );
 						bookacti_help_tip( $tip );
 					?>
 				</div>
@@ -847,7 +847,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 					<input type='text' name='group-of-events-category-title' id='bookacti-group-of-events-category-title-field' />
 					<?php
 						$tip = __( "Name the group of events category.", BOOKACTI_PLUGIN_NAME );
-						$tip .= __( "Thanks to categories, you will be able to choose what groups of events are available on what calendars.", BOOKACTI_PLUGIN_NAME );
+						$tip .= __( "Thanks to categories, you will be able to choose what groups of events are available on what booking forms.", BOOKACTI_PLUGIN_NAME );
 						bookacti_help_tip( $tip );
 					?>
 				</div>

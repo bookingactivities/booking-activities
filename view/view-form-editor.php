@@ -11,41 +11,9 @@ if( empty( $_REQUEST[ 'action' ] ) && ! empty( $_REQUEST[ 'form_id' ] ) ) {
 	$_REQUEST[ 'action' ] = is_numeric( $_REQUEST[ 'form_id' ] ) ? 'edit' : 'new';
 }
 
-$form_id = ! empty( $_REQUEST[ 'action' ] ) && $_REQUEST[ 'action' ] === 'new' ? 'new' : intval( $_REQUEST[ 'form_id' ] );
-$is_new  = $form_id === 'new' ? 1 : 0;
+$form_id = ! empty( $_REQUEST[ 'form_id' ] ) ? intval( $_REQUEST[ 'form_id' ] ) : 0;
 
 if( ! $form_id ) { exit; }
-
-
-// Create a new form
-if( $form_id === 'new' ) {
-	// Exit if not allowed to create a form
-	$can_create_form = current_user_can( 'bookacti_create_forms' );
-	if( ! $can_create_form ) { esc_html_e( 'You are not allowed to do this.', BOOKACTI_PLUGIN_NAME ); exit; }
-	
-	$title = ! empty( $_REQUEST[ 'title' ] ) ? sanitize_text_field( stripslashes( $_REQUEST[ 'title' ] ) ) : '';
-	
-	$form_id = bookacti_create_form( $title, 'publish', 1 );
-	if( ! $form_id ) { esc_html_e( 'Error occurs when trying to create the form.', BOOKACTI_PLUGIN_NAME ); exit; }
-	
-	// Insert calendar data (if any)
-	if( ! empty( $_REQUEST[ 'calendar_field' ] ) ) {
-		$default_calendar_meta = array();
-		if( isset( $_REQUEST[ 'calendar_field' ][ 'calendars' ] ) ) {
-			$template_data = bookacti_get_mixed_template_data( $_REQUEST[ 'calendar_field' ][ 'calendars' ], false );
-			$default_calendar_meta				= $template_data[ 'settings' ];
-			$default_calendar_meta[ 'start' ]	= $template_data[ 'start' ];
-			$default_calendar_meta[ 'end' ]		= $template_data[ 'end' ];
-		}
-		$raw_calendar_meta		= array_merge( array( 'start' => 'default', 'end' => 'default' ), $default_calendar_meta, $_REQUEST[ 'calendar_field' ] );
-		bookacti_update_form_field_meta( $raw_calendar_meta, 'calendar', $form_id );
-	}
-	
-	// Change current url to the edit url
-	$form_url = is_multisite() ? network_admin_url( 'admin.php?page=bookacti_forms&action=edit&form_id=' . $form_id ) : admin_url( 'admin.php?page=bookacti_forms&action=edit&form_id=' . $form_id );
-	header( 'Location: ' . $form_url );
-}
-
 
 // Exit if not allowed to edit current form
 $can_manage_form	= bookacti_user_can_manage_form( $form_id );
@@ -56,7 +24,7 @@ if ( ! $can_edit_form || ! $can_manage_form ) { echo __( 'You are not allowed to
 // Get form data by id
 $form = bookacti_get_form_data( $form_id );
 
-if( ! $form ) { return; }
+if( ! $form ) { exit; }
 
 ?>
 <div class='wrap'>

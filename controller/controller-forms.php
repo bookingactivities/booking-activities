@@ -638,7 +638,7 @@ add_action( 'load-booking-activities_page_bookacti_forms', 'bookacti_allow_meta_
  * @since 1.5.0
  */
 function bookacti_print_metabox_script_in_form_editor_footer() {
-	if( empty( $_REQUEST[ 'action' ] ) || ! in_array( $_REQUEST[ 'action' ], array( 'edit', 'create' ), true ) ) { return; }
+	if( empty( $_REQUEST[ 'action' ] ) || ! in_array( $_REQUEST[ 'action' ], array( 'edit', 'new' ), true ) ) { return; }
 	?>
 		<script>$j( document ).ready( function(){ postboxes.add_postbox_toggles(pagenow); } );</script>
 	<?php
@@ -651,30 +651,39 @@ add_action( 'admin_footer-booking-activities_page_bookacti_forms', 'bookacti_pri
 // EDITOR - FORMS
 
 /**
- * Create a new form
+ * Create a booking form from REQUEST parameters
  * @since 1.5.0
- * @param string $title
- * @param string $status
- * @param int active
- * @return int|false
  */
-function bookacti_create_form( $title = '', $status = 'auto-draft', $active = 0 ) {
-	// Insert form
-	$form_id = bookacti_insert_form( $title, $status, $active );
+function bookacti_controller_create_form() {
+	if( empty( $_REQUEST[ 'action' ] ) || $_REQUEST[ 'action' ] !== 'new' ) { return; }
 	
-	if( $form_id === false ) { return $form_id; }
+	// Exit if not allowed to create a form
+	$can_create_form = current_user_can( 'bookacti_create_forms' );
+	if( ! $can_create_form ) { esc_html_e( 'You are not allowed to do this.', BOOKACTI_PLUGIN_NAME ); exit; }
 	
-	// Insert default form fields
-	bookacti_insert_default_form_fields( $form_id );
+	$title = ! empty( $_REQUEST[ 'title' ] ) ? sanitize_text_field( stripslashes( $_REQUEST[ 'title' ] ) ) : '';
 	
-	// Insert default form managers
-	$form_managers = bookacti_format_form_managers();
-	bookacti_update_managers( 'form', $form_id, $form_managers );
+	$form_id = bookacti_create_form( $title, 'publish', 1 );
+	if( ! $form_id ) { esc_html_e( 'Error occurs when trying to create the form.', BOOKACTI_PLUGIN_NAME ); exit; }
 	
-	do_action( 'bookacti_form_inserted', $form_id );
+	// Insert calendar data (if any)
+	if( ! empty( $_REQUEST[ 'calendar_field' ] ) ) {
+		$default_calendar_meta = array();
+		if( isset( $_REQUEST[ 'calendar_field' ][ 'calendars' ] ) ) {
+			$template_data = bookacti_get_mixed_template_data( $_REQUEST[ 'calendar_field' ][ 'calendars' ], false );
+			$default_calendar_meta				= $template_data[ 'settings' ];
+			$default_calendar_meta[ 'start' ]	= $template_data[ 'start' ];
+			$default_calendar_meta[ 'end' ]		= $template_data[ 'end' ];
+		}
+		$raw_calendar_meta		= array_merge( array( 'start' => 'default', 'end' => 'default' ), $default_calendar_meta, $_REQUEST[ 'calendar_field' ] );
+		bookacti_update_form_field_meta( $raw_calendar_meta, 'calendar', $form_id );
+	}
 	
-	return $form_id;
+	// Change current url to the edit url
+	$form_url = is_multisite() ? network_admin_url( 'admin.php?page=bookacti_forms&action=edit&form_id=' . $form_id ) : admin_url( 'admin.php?page=bookacti_forms&action=edit&form_id=' . $form_id );
+	header( 'Location: ' . $form_url );
 }
+add_action( 'load-booking-activities_page_bookacti_forms', 'bookacti_controller_create_form', 5 );
 
 
 /**

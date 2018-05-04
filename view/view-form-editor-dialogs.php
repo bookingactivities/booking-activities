@@ -78,7 +78,7 @@ foreach( $fields_data as $field_name => $field_data ) {
 					'name'	=> 'id',
 					'id'	=> 'bookacti-form-meta-id',
 					'value'	=> $form[ 'id' ],
-					'tip'	=> __( 'Form id. Leave this empty if you display this form multiple times on the same page.', BOOKACTI_PLUGIN_NAME )
+					'tip'	=> __( 'Set the form CSS id. Leave this empty if you display this form multiple times on the same page.', BOOKACTI_PLUGIN_NAME )
 				);
 				bookacti_display_field( $args );
 			?>
@@ -91,7 +91,7 @@ foreach( $fields_data as $field_name => $field_data ) {
 					'name'	=> 'class',
 					'id'	=> 'bookacti-form-meta-class',
 					'value'	=> $form[ 'class' ],
-					'tip'	=> __( 'Form class. Leave an empty space between each classes.', BOOKACTI_PLUGIN_NAME )
+					'tip'	=> __( 'Set the form CSS classes. Leave an empty space between each class.', BOOKACTI_PLUGIN_NAME )
 				);
 				bookacti_display_field( $args );
 			?>

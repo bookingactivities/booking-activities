@@ -246,7 +246,7 @@ add_action( 'admin_head-booking-activities_page_bookacti_bookings', 'bookacti_ad
  * @since 1.5.0
  */
 function bookacti_add_form_page_screen_option() {
-	if( empty( $_REQUEST[ 'action' ] ) || ! in_array( $_REQUEST[ 'action' ], array( 'edit', 'create' ), true ) ) {
+	if( empty( $_REQUEST[ 'action' ] ) || ! in_array( $_REQUEST[ 'action' ], array( 'edit', 'new' ), true ) ) {
 		new Forms_List_Table();
 	}
 }

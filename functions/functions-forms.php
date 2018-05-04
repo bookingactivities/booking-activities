@@ -5,6 +5,33 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 // FORM
 
 /**
+ * Create a new form
+ * @since 1.5.0
+ * @param string $title
+ * @param string $status
+ * @param int active
+ * @return int|false
+ */
+function bookacti_create_form( $title = '', $status = 'auto-draft', $active = 0 ) {
+	// Insert form
+	$form_id = bookacti_insert_form( $title, $status, $active );
+	
+	if( $form_id === false ) { return $form_id; }
+	
+	// Insert default form fields
+	bookacti_insert_default_form_fields( $form_id );
+	
+	// Insert default form managers
+	$form_managers = bookacti_format_form_managers();
+	bookacti_update_managers( 'form', $form_id, $form_managers );
+	
+	do_action( 'bookacti_form_inserted', $form_id );
+	
+	return $form_id;
+}
+
+
+/**
  * Get form data and metadata
  * @since 1.5.0
  * @param int $form_id
