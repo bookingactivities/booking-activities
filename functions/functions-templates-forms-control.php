@@ -71,14 +71,14 @@ function bookacti_format_template_managers( $template_managers = array() ) {
 /**
  * Format template settings
  * 
- * @version 1.4.0
+ * @version 1.5.0
  * @param array $template_settings
  * @return array
  */
-function bookacti_format_template_settings( $template_settings ) {
+function bookacti_format_template_settings( $raw_settings ) {
 	
-	if( empty( $template_settings ) ) {
-		$template_settings = array();
+	if( empty( $raw_settings ) ) {
+		$raw_settings = array();
 	}
 	
 	// Default settings
@@ -86,16 +86,16 @@ function bookacti_format_template_settings( $template_settings ) {
 		'minTime'					=> '08:00',
 		'maxTime'					=> '20:00',
 		'snapDuration'				=> '00:30',
-		'availability_period_start'	=> -1,
-		'availability_period_end'	=> -1
+		'availability_period_start'	=> '',
+		'availability_period_end'	=> ''
 	) );
 	
 	$settings = array();
 		
 	// Check if all templates settings are filled
 	foreach( $default_settings as $setting_key => $setting_default_value ){
-		if( isset( $template_settings[ $setting_key ] ) && is_string( $template_settings[ $setting_key ] ) ){ $template_settings[ $setting_key ] = stripslashes( $template_settings[ $setting_key ] ); }
-		$settings[ $setting_key ] = isset( $template_settings[ $setting_key ] ) && $template_settings[ $setting_key ] !== null ? $template_settings[ $setting_key ] : $setting_default_value;
+		if( isset( $raw_settings[ $setting_key ] ) && is_string( $raw_settings[ $setting_key ] ) ){ $raw_settings[ $setting_key ] = stripslashes( $raw_settings[ $setting_key ] ); }
+		$settings[ $setting_key ] = isset( $raw_settings[ $setting_key ] ) && $raw_settings[ $setting_key ] !== null ? $raw_settings[ $setting_key ] : $setting_default_value;
 	}
 
 	// Make sure minTime is before maxTime
@@ -108,7 +108,10 @@ function bookacti_format_template_settings( $template_settings ) {
 		$settings[ 'minTime' ] = $temp_max;
 	}
 	
-	return apply_filters( 'bookacti_template_settings', $settings );
+	// Make sure snapDuration is not null
+	if( $settings[ 'snapDuration' ] === '00:00' ) { $settings[ 'snapDuration' ] = '00:01'; }
+	
+	return apply_filters( 'bookacti_template_settings_formatted', $settings, $raw_settings );
 }
 
 

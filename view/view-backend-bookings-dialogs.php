@@ -1,9 +1,14 @@
 <?php 
+/**
+ * Backend booking dialogs
+ * @version 1.5.0
+ */
+
 // Exit if accessed directly
 if ( ! defined( 'ABSPATH' ) ) { exit; }
 ?>
 
-<div id='bookacti-change-booking-state-dialog' class='bookacti-backend-dialog bookacti-bookings-dialog' style='display:none;' >
+<div id='bookacti-change-booking-state-dialog' class='bookacti-backend-dialog bookacti-bookings-dialog' style='display:none;' title='<?php echo esc_html__( 'Change booking state', BOOKACTI_PLUGIN_NAME ); ?>'>
 	<form id='bookacti-change-booking-state-form'>
 		<?php
 		// Display nonce field
@@ -55,6 +60,29 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		</div>
 	</form>
 </div>
+
+
+<div id='bookacti-delete-booking-dialog' class='bookacti-backend-dialog bookacti-bookings-dialog' style='display:none;' title='<?php echo esc_html__( 'Delete a booking', BOOKACTI_PLUGIN_NAME ); ?>'>
+	<form id='bookacti-delete-booking-dialog-content'>
+		<input type='hidden' name='action' value='bookactiDeleteBooking'/>
+		<input type='hidden' name='booking_id' value='0'/>
+		<input type='hidden' name='booking_type' value=''/>
+		<?php wp_nonce_field( 'bookacti_delete_booking', 'nonce_delete_booking' ); ?>
+		<p class='bookacti-dialog-intro bookacti-delete-single-booking-description' >
+			<?php esc_html_e( 'Are you sure to delete this booking permanently?', BOOKACTI_PLUGIN_NAME ); ?>
+		</p>
+		<p class='bookacti-irreversible-action'>
+			<span class='dashicons dashicons-warning'></span>
+			<span><?php esc_html_e( 'This action cannot be undone.', BOOKACTI_PLUGIN_NAME ); ?></span>
+		</p>
+		<p class='bookacti-dialog-intro bookacti-delete-booking-group-description' style='display:none;'>
+			<?php esc_html_e( 'All the bookings included in this booking group will also be delete.', BOOKACTI_PLUGIN_NAME ); ?>
+		</p>
+		<?php do_action( 'bookacti_delete_booking_form_after' ); ?>
+	</form>
+</div>
+
+
 
 <?php 
 

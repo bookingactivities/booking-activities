@@ -86,7 +86,7 @@ add_action( 'bookacti_order_bookings_state_changed', 'bookacti_send_notification
  * @param int $order_id
  * @param WC_Order $order
  */
-function bookacti_send_notification_when_new_order_is_pending( $order_id, $order ) {
+function bookacti_send_notification_when_new_order_is_pending( $order_id, $order = null ) {
 	bookacti_send_notification_when_order_status_changes( $order_id, 'pending', array( 'is_new_order' => true ) );
 }
 add_action( 'woocommerce_order_status_pending_to_processing', 'bookacti_send_notification_when_new_order_is_pending', 20, 2 );
@@ -175,6 +175,7 @@ add_filter( 'bookacti_notification_sanitized_settings', 'bookacti_sanitize_wc_no
  * Make sure that WC order data are up to date when a WC notification is sent
  * 
  * @since 1.2.2
+ * @version 1.5.0
  * @param array $args
  * @return array
  */
@@ -192,8 +193,15 @@ function bookacti_wc_email_order_item_args( $args ) {
 	// If the order has no bookings, change nothing
 	if( ! $has_bookings ) { return $args; }
 	
+	// WOOCOMMERCE 3.0.0 BW compability
+	if( version_compare( WC_VERSION, '3.0.0', '>=' ) ) {
+		$order_id = $args[ 'order' ]->get_id();
+	} else {
+		$order_id = $args[ 'order' ]->id;
+	}
+	
 	// If the order has bookings, refresh the order instance to make sure data are up to date
-	$fresh_order_instance = wc_get_order( $args[ 'order' ]->get_id() );
+	$fresh_order_instance = wc_get_order( $order_id );
 	
 	$args[ 'order' ] = $fresh_order_instance;
 	$args[ 'items' ] = $fresh_order_instance->get_items();

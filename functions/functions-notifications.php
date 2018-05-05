@@ -390,6 +390,7 @@ function bookacti_get_notifications_tags_values( $booking_id, $booking_type, $no
  * Send a notification according to its settings
  * 
  * @since 1.2.1 (was bookacti_send_email in 1.2.0)
+ * @version 1.5.0
  * @param string $notification_id Must exists in "bookacti_notifications_default_settings"
  * @param int $booking_id
  * @param string $booking_type "single" or "group"
@@ -410,7 +411,7 @@ function bookacti_send_notification( $notification_id, $booking_id, $booking_typ
 	$notification = bookacti_get_notification_settings( $notification_id );
 	
 	// Replace or add notification settings
-	if( $args && $args[ 'notification' ] ) {
+	if( ! empty( $args ) && ! empty( $args[ 'notification' ] ) ) {
 		$notification = array_merge( $notification, $args[ 'notification' ] );
 	}
 	
@@ -441,7 +442,7 @@ function bookacti_send_notification( $notification_id, $booking_id, $booking_typ
 	$tags = bookacti_get_notifications_tags_values( $booking_id, $booking_type, $notification_id, $locale );
 	
 	// Replace or add tags values
-	if( $args && $args[ 'tags' ] ) {
+	if( ! empty( $args ) && ! empty( $args[ 'tags' ] ) ) {
 		$tags = array_merge( $tags, $args[ 'tags' ] );
 	}
 	
@@ -505,4 +506,44 @@ function bookacti_send_email_notification( $notification, $tags = array(), $loca
 	do_action( 'bookacti_email_notification_sent', $sent, $email_data, $notification, $tags, $locale );
 	
 	return $sent;
+}
+
+
+// Allow this function to be replaced
+if( ! function_exists( 'bookacti_send_new_user_notification' ) ) {
+
+/**
+ * Email login credentials to a newly-registered user in an asynchronous way
+ * @since 1.5.0
+ * @global string  $wp_version
+ * @param  int     $user_id   User ID.
+ * @param  string  $notify    Optional. Type of notification that should happen. Accepts 'admin' or an empty
+ *                            string (admin only), 'user', or 'both' (admin and user). Default 'both'.
+ * @param  boolean $async     Whether to send the notification asynchronously. 
+ */
+function bookacti_send_new_user_notification( $user_id, $notify = 'both', $async = true ) {
+	// Send notifications asynchronously
+	$allow_async = apply_filters( 'bookacti_allow_async_notifications', bookacti_get_setting_value( 'bookacti_notifications_settings', 'notifications_async' ) );
+	if( $allow_async && $async ) {
+		wp_schedule_single_event( time(), 'bookacti_send_async_new_user_notification', array( $user_id, $notify, false ) );
+		return;
+	}	
+	
+	// Send new user email in a backward compatible way
+	global $wp_version;
+	if( $notify === 'user' && version_compare( $wp_version, '4.6.0', '<' ) ) { $notify = 'both'; }
+	
+	if( version_compare( $wp_version, '4.3.1', '>=' ) ) {
+		wp_new_user_notification( $user_id, null, $notify );
+	} else if( version_compare( $wp_version, '4.3.0', '==' ) ) {
+		wp_new_user_notification( $user_id, $notify );
+	} else {
+		$user = get_user_by( 'id', $user_id );
+		wp_new_user_notification( $user_id, $user->user_pass );
+	}
+}
+
+// Hook the asynchronous call and send the new user notification
+add_action( 'bookacti_send_async_new_user_notification', 'bookacti_send_new_user_notification', 10, 3 );
+
 }

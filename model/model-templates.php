@@ -277,40 +277,55 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
     }
 
 	
-    // DEACTIVATE AN EVENT
-    function bookacti_deactivate_event( $event_id ) {
-        global $wpdb;
-        
-        //Remove the event
-        $deactivated = $wpdb->update( 
-            BOOKACTI_TABLE_EVENTS, 
-            array( 
-                'active' => 0
-            ),
-            array( 'id' => $event_id ),
-            array( '%d' ),
-            array( '%d' )
-        );
-		
-        return $deactivated;
-    }
+	/**
+	 * Deactivate an event
+	 * @global wpdb $wpdb
+	 * @param int $event_id
+	 * @return int|false
+	 */
+	function bookacti_deactivate_event( $event_id ) {
+		global $wpdb;
+
+		// Deactivate the event
+		$deactivated = $wpdb->update( 
+			BOOKACTI_TABLE_EVENTS, 
+			array( 
+				'active' => 0
+			),
+			array( 'id' => $event_id ),
+			array( '%d' ),
+			array( '%d' )
+		);
+
+		return $deactivated;
+	}
 
 	
-    // DELETE AN EVENT
-    function bookacti_delete_event( $event_id ) {
-        global $wpdb;
-        
-        //Remove the event
-        $deleted = $wpdb->delete( BOOKACTI_TABLE_EVENTS, array( 'id' => $event_id ) );
-        
-        //Also remove linked exceptions
-        bookacti_remove_exceptions( $event_id );
+	/**
+	 * Delete an event
+	 * @global wpdb $wpdb
+	 * @param int $event_id
+	 * @return int|false
+	 */
+	function bookacti_delete_event( $event_id ) {
+		global $wpdb;
 
-        return $deleted;
-    }
+		// Remove the event
+		$deleted = $wpdb->delete( BOOKACTI_TABLE_EVENTS, array( 'id' => $event_id ) );
+
+		// Also remove its exceptions
+		bookacti_remove_exceptions( $event_id );
+
+		return $deleted;
+	}
     
 	
-	// GET EVENT TEMPLATE ID
+	/**
+	 * Get event template id
+	 * @global wpdb $wpdb
+	 * @param int $event_id
+	 * @return int|false
+	 */
     function bookacti_get_event_template_id( $event_id ) {
         global $wpdb;
 
@@ -2072,7 +2087,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	 * Get an array of all activity ids bound to designated templates
 	 * 
 	 * @since 1.1.0
-	 * @version 1.4.0
+	 * @version 1.5.0
 	 * 
 	 * @global wpdb $wpdb
 	 * @param array $template_ids
@@ -2096,9 +2111,9 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		$variables = array();
 		
 		if( $based_on_events ) { 
-			$query	= 'SELECT DISTINCT E.activity_id as id FROM ' . BOOKACTI_TABLE_EVENTS . ' as E ';
+			$query	= 'SELECT DISTINCT E.activity_id as unique_activity_id FROM ' . BOOKACTI_TABLE_EVENTS . ' as E ';
 		} else {
-			$query	= 'SELECT DISTINCT A.id FROM ' . BOOKACTI_TABLE_TEMP_ACTI . ' as TA, ' . BOOKACTI_TABLE_ACTIVITIES . ' as A ';
+			$query	= 'SELECT DISTINCT A.id as unique_activity_id FROM ' . BOOKACTI_TABLE_TEMP_ACTI . ' as TA, ' . BOOKACTI_TABLE_ACTIVITIES . ' as A ';
 		}
 		
 		// Join the meta table to filter by roles
@@ -2144,6 +2159,8 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			$variables = array_merge( $variables, $template_ids );
 		}
 		
+		$query .= ' ORDER BY unique_activity_id ASC ';
+		
 		if( $variables ) {
 			$query = $wpdb->prepare( $query, $variables );
 		}
@@ -2152,7 +2169,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 		$activities_ids = array();
 		foreach( $activities as $activity ) {
-			$activities_ids[] = intval( $activity->id );
+			$activities_ids[] = intval( $activity->unique_activity_id );
 		}
 		
 		return $activities_ids;

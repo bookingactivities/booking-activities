@@ -1,4 +1,9 @@
 <?php
+/**
+ * Calendar editor page
+ * @version 1.5.0
+ */
+
 // Exit if accessed directly
 if ( ! defined( 'ABSPATH' ) ) { exit; }
 
@@ -32,7 +37,7 @@ echo "<h1>" . esc_html__( 'Calendars', BOOKACTI_PLUGIN_NAME ) . "</h1>";
 				<div class='bookacti-template-box-title' >
 					<h4><?php echo esc_html__( 'Calendars', BOOKACTI_PLUGIN_NAME ); ?></h4>
 					<?php if( $current_user_can_create_template ) { ?>
-					<div class='bookacti-insert-button' id='bookacti-insert-template' ><img src='<?php echo esc_url( plugins_url() . '/' . BOOKACTI_PLUGIN_NAME . '/img/add.png' ); ?>' /></div>
+					<div class='bookacti-insert-button dashicons dashicons-plus-alt' id='bookacti-insert-template' ></div>
 					<?php } ?>
 				</div>
 				<div id='bookacti-template-picker-container' >
@@ -67,9 +72,7 @@ echo "<h1>" . esc_html__( 'Calendars', BOOKACTI_PLUGIN_NAME ) . "</h1>";
 					</select>
 				</div>
 				<?php if( $current_user_can_edit_template ) { ?>
-					<div id='bookacti-update-template' >
-						<img src='<?php echo esc_url( plugins_url() . '/' . BOOKACTI_PLUGIN_NAME . '/img/gear.png' ); ?>' />
-					</div>
+					<div id='bookacti-update-template'><span class='dashicons dashicons-admin-generic'></span></div>
 				<?php } ?>
         </div>
 
@@ -78,7 +81,7 @@ echo "<h1>" . esc_html__( 'Calendars', BOOKACTI_PLUGIN_NAME ) . "</h1>";
             <div class='bookacti-template-box-title' >
                 <h4><?php echo esc_html__( 'Activities', BOOKACTI_PLUGIN_NAME ); ?></h4>
 				<?php if( $current_user_can_create_activities ) { ?>
-                <div class='bookacti-insert-button' id='bookacti-insert-activity' ><img src='<?php echo esc_url( plugins_url() . '/' . BOOKACTI_PLUGIN_NAME . '/img/add.png' ); ?>' /></div>
+                <div class='bookacti-insert-button dashicons dashicons-plus-alt' id='bookacti-insert-activity' ></div>
 				<?php } ?>
             </div>
             
@@ -109,9 +112,7 @@ echo "<h1>" . esc_html__( 'Calendars', BOOKACTI_PLUGIN_NAME ) . "</h1>";
 					<h2>
 						<?php _e( 'Create your first activity', BOOKACTI_PLUGIN_NAME ); ?>
 					</h2>
-					<div id='bookacti-template-add-first-activity-button' >
-						<img src='<?php echo esc_url( plugins_url() . '/' . BOOKACTI_PLUGIN_NAME . '/img/add.png' ); ?>' />
-					</div>
+					<div id='bookacti-template-add-first-activity-button' class='dashicons dashicons-plus-alt'></div>
 				</div>
 			<?php } ?>
         </div>
@@ -121,11 +122,11 @@ echo "<h1>" . esc_html__( 'Calendars', BOOKACTI_PLUGIN_NAME ) . "</h1>";
 			<div class='bookacti-template-box-title' >
 				<h4><?php echo esc_html__( 'Groups of events', BOOKACTI_PLUGIN_NAME ); ?></h4>
 				<?php if( $current_user_can_edit_template ) { ?>
-                <div class='bookacti-insert-button' id='bookacti-insert-group-of-events' ><img src='<?php echo esc_url( plugins_url() . '/' . BOOKACTI_PLUGIN_NAME . '/img/add.png' ); ?>' /></div>
+                <div class='bookacti-insert-button dashicons dashicons-plus-alt' id='bookacti-insert-group-of-events' ></div>
 				<?php } ?>
 			</div>
 			
-			<div id='bookacti-group-categories' >
+			<div id='bookacti-group-categories' class='bookacti-custom-scrollbar'>
 				<?php 
 					// Display the template's groups of events list
 					$groups_list = bookacti_get_template_groups_of_events_list( $default_template );
@@ -145,9 +146,7 @@ echo "<h1>" . esc_html__( 'Calendars', BOOKACTI_PLUGIN_NAME ) . "</h1>";
 					<h2>
 						<?php _e( 'Create your first group of events', BOOKACTI_PLUGIN_NAME ); ?>
 					</h2>
-					<div id='bookacti-template-add-first-group-of-events-button' >
-						<img src='<?php echo esc_url( plugins_url() . '/' . BOOKACTI_PLUGIN_NAME . '/img/add.png' ); ?>' />
-					</div>
+					<div id='bookacti-template-add-first-group-of-events-button' class='dashicons dashicons-plus-alt' ></div>
 				</div>
 				<?php
 			}
@@ -167,9 +166,7 @@ echo "<h1>" . esc_html__( 'Calendars', BOOKACTI_PLUGIN_NAME ) . "</h1>";
 				<h2>
 					<?php esc_html_e( "Welcome to Booking Activities! Let's start by creating your first calendar", BOOKACTI_PLUGIN_NAME ); ?>
 				</h2>
-				<div id='bookacti-add-first-template-button' >
-					<img src='<?php echo esc_url( plugins_url() . '/' . BOOKACTI_PLUGIN_NAME . '/img/add.png' ); ?>' />
-				</div>
+				<div id='bookacti-add-first-template-button' class='dashicons dashicons-plus-alt' ></div>
 			</div>
 			<?php
 		} else {
@@ -185,46 +182,42 @@ echo "<h1>" . esc_html__( 'Calendars', BOOKACTI_PLUGIN_NAME ) . "</h1>";
 	</div>
 </div>
 <hr/>
-<div id='bookacti-shortcode-generator-container' class='<?php if( ! $templates ) { echo 'bookacti-no-template'; } ?>' >
+<div id='bookacti-calendar-integration-tuto-container' class='<?php if( ! $templates ) { echo 'bookacti-no-template'; } ?>' >
 	<?php 
-		$template_id = $activity_ids = $category_ids = '';
-		$categories = array();
+		$template_id = '';
+		$activity_ids = array();
 		if( ! empty( $default_template ) ) {
 			$template_id	= $default_template;
-			$activity_ids	= implode( ',', bookacti_get_activity_ids_by_template( array( $template_id ), false ) );
-			$category_ids	= implode( ',', bookacti_get_group_category_ids_by_template( array( $template_id ) ) );
+			$activity_ids	= bookacti_get_activity_ids_by_template( array( $template_id ), false );
 		}
+		$new_form_basic_url = esc_url( get_admin_url() . 'admin.php' );
+		$initial_parameters = http_build_query( array( 
+			'page' => 'bookacti_forms',
+			'action' => 'new',
+			'calendars' => $template_id,
+			'activities' => $activity_ids,
+			'group_categories' => 'all',
+		));
+		$new_form_initial_url = $new_form_basic_url . '?' . $initial_parameters;
 	?>
-	<h3><?php esc_html_e( 'Shortcodes', BOOKACTI_PLUGIN_NAME ); ?></h3>
-	<h4><?php esc_html_e( 'Copy and paste them in any post you want:', BOOKACTI_PLUGIN_NAME ); ?></h4>
-	<p>
-		<span id='bookacti-shortcode-form-constructor' class='bookacti-shortcode-constructor' >
-			[bookingactivities_form	calendars='<span class='bookacti-shortcode-calendar-ids'><?php echo esc_html( $template_id ); ?></span>' 
-									activities='<span class='bookacti-shortcode-activity-ids'><?php echo esc_html( $activity_ids ); ?></span>' 
-									group_categories='<span class='bookacti-shortcode-group-category-ids'><?php echo esc_html( $category_ids ); ?></span>']
-		</span>
-		<code id='bookacti-shortcode-form' class='bookacti-shortcode' >
-			[bookingactivities_form]
-		</code>
-		<?php 
-			$tip = __( 'This shortcode will display a booking form with this calendar. Users will be able to book an event via this form.', BOOKACTI_PLUGIN_NAME );
-			bookacti_help_tip( $tip ); 
-		?>
-	</p>
-	<p>
-		<span id='bookacti-shortcode-calendar-constructor' class='bookacti-shortcode-constructor' >
-			[bookingactivities_calendar	calendars='<span class='bookacti-shortcode-calendar-ids'><?php echo esc_html( $template_id ); ?></span>' 
-										activities='<span class='bookacti-shortcode-activity-ids'><?php echo esc_html( $activity_ids ); ?></span>' 
-										group_categories='<span class='bookacti-shortcode-group-category-ids'><?php echo esc_html( $category_ids ); ?></span>']
-		</span>
-		<code id='bookacti-shortcode-calendar' class='bookacti-shortcode' >
-			[bookingactivities_calendar]
-		</code>
-		<?php 
-			$tip = __( "This shortcode will display this calendar alone. Users will only be able to browse the calendar, they can't make booking with it.", BOOKACTI_PLUGIN_NAME );
-			bookacti_help_tip( $tip ); 
-		?>
-	</p>
+	<input type='hidden' name='page' value='bookacti_forms'/>
+	<input type='hidden' name='action' value='new'/>
+	<input type='hidden' name='calendar_field[calendars][]' value='<?php echo $template_id; ?>'/>
+	<?php foreach( $activity_ids as $activity_id ) { ?>
+		<input type='hidden' name='calendar_field[activities][]' value='<?php echo $activity_id; ?>'/>
+	<?php } ?>
+	<input type='hidden' name='calendar_field[group_categories][]' value='all'/>
+	<h3><?php esc_html_e( 'Integrate this calendar to your site', BOOKACTI_PLUGIN_NAME ); ?></h3>
+	<ol>
+		<li>
+			<a href='<?php echo $new_form_initial_url; ?>' target='_blank' id='bookacti-create-form-link' data-base-url='<?php echo $new_form_basic_url; ?>'>
+				<?php esc_html_e( 'Click here to create a booking form with this calendar', BOOKACTI_PLUGIN_NAME ); ?>
+			</a>
+		</li>
+		<li>
+			<?php echo apply_filters( 'bookacti_calendar_integration_tuto', esc_html__( 'Copy and paste the booking form shortcode into the desired page or post', BOOKACTI_PLUGIN_NAME ), $template_id ); ?>
+		</li>
+	</ol>
 </div>
 
 <?php 

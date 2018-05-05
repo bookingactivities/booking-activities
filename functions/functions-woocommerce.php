@@ -966,7 +966,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	 * Turn all bookings of an order to the desired status. 
 	 * Also make sure that bookings are bound to the order and the associated user.
 	 * 
-	 * @version 1.3.0
+	 * @version 1.5.0
 	 * @param WC_Order $order
 	 * @param string $state
 	 * @param string $payment_status
@@ -984,24 +984,40 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		if( ! $order ) { return false; }
 
 		// Retrieve bought items and user id
-		$order_id	= $order->get_id();
 		$items		= $order->get_items();
 		$user_id	= $order->get_user_id();
+		if( version_compare( WC_VERSION, '3.0.0', '>=' ) ) {
+			$order_id	= $order->get_id();
+		} else {
+			$order_id	= $order->id;
+		}
 		
 		// Create an array with order booking ids
 		$booking_id_array		= array();
 		$booking_group_id_array = array();
 		foreach( $items as $key => $item ) {
+			if( version_compare( WC_VERSION, '3.0.0', '>=' ) ) {
+				if( isset( $item[ 'bookacti_booking_id' ] ) && $item[ 'bookacti_booking_id' ] ) {
+					$booking_id = $item[ 'bookacti_booking_id' ];
+				} else if( isset( $item[ 'bookacti_booking_group_id' ] ) && $item[ 'bookacti_booking_group_id' ] ) {
+					$booking_group_id= $item[ 'bookacti_booking_group_id' ];
+				}
+			} else {
+				if( isset( $item[ 'bookacti_booking_id' ] ) && $item[ 'bookacti_booking_id' ] ) {
+					$booking_id = $item[ 'item_meta' ][ 'bookacti_booking_id' ][ 0 ];
+				} else if( isset( $item[ 'item_meta' ][ 'bookacti_booking_group_id' ] ) && $item[ 'item_meta' ][ 'bookacti_booking_group_id' ] ) {
+					$booking_group_id= $item[ 'item_meta' ][ 'bookacti_booking_group_id' ][ 0 ];
+				}
+			}
+			
 			// Single event
-			if( isset( $item[ 'bookacti_booking_id' ] ) && $item[ 'bookacti_booking_id' ] ) {				
+			if( ! empty( $booking_id ) ) {				
 				// Add the booking id to the bookings array to change state
-				$booking_id = $item[ 'bookacti_booking_id' ];
 				array_push( $booking_id_array, $booking_id );
 
 			// Group of events
-			} else if( isset( $item[ 'bookacti_booking_group_id' ] ) && $item[ 'bookacti_booking_group_id' ] ) {
+			} else if( ! empty( $booking_group_id ) ) {
 				// Add the group booking ids to the bookings array to change state
-				$booking_group_id	= $item[ 'bookacti_booking_group_id' ];
 				$booking_group_id_array[] = $booking_group_id;
 				
 				$booking_ids		= bookacti_get_booking_group_bookings_ids( $booking_group_id );
@@ -1206,10 +1222,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	
 	/**
 	 * Get woocommerce order item id by booking id
-	 * 
-	 * @since 1.0.0
-	 * @version 1.1.0
-	 * 
+	 * @version 1.5.0
 	 * @param int $booking_id
 	 * @return array
 	 */
@@ -1246,9 +1259,11 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			}
 
 			if( $is_in_item ) {
-				$item				= $order_items[ $order_item_id ];
-				$item[ 'id' ]		= $order_item_id;
-				$item[ 'order_id' ]	= $order_id;
+				$item = $order_items[ $order_item_id ];
+				if( is_array( $item ) ) {
+					$item[ 'id' ]		= $order_item_id;
+					$item[ 'order_id' ]	= $order_id;
+				}
 			}
 		}
 
@@ -1258,9 +1273,8 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	
 	/**
 	 * Get woocommerce order item id by booking group id
-	 * 
 	 * @since 1.1.0
-	 * 
+	 * @version 1.5.0
 	 * @param int $booking_group_id
 	 * @return array
 	 */
@@ -1288,9 +1302,11 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			}
 
 			if( $is_in_item ) {
-				$item				= $order_items[ $order_item_id ];
-				$item[ 'id' ]		= $order_item_id;
-				$item[ 'order_id' ]	= $order_id;
+				$item = $order_items[ $order_item_id ];
+				if( is_array( $item ) ) {
+					$item[ 'id' ]		= $order_item_id;
+					$item[ 'order_id' ]	= $order_id;
+				}
 			}
 		}
 
@@ -1331,7 +1347,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			'class'			=> 'bookacti-view-booking-order _blank',
 			'label'			=> __( 'View order', BOOKACTI_PLUGIN_NAME ),
 			'description'	=> __( 'Go to the related WooCommerce admin order page.', BOOKACTI_PLUGIN_NAME ),
-			'link'			=> get_admin_url() . 'post.php?post=' . $order_id . '&action=edit',
+			'link'			=> get_edit_post_link( $order_id ),
 			'admin_or_front'=> 'admin' 
 		);
 		
@@ -1638,9 +1654,48 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 		return false;
 	}
+	
+	
+	/**
+	 * Find matching product variation
+	 * @since 1.5.0
+	 * @param WC_Product $product
+	 * @param array $attributes
+	 * @return int Matching variation ID or 0.
+	 */
+	function bookacti_get_product_variation_matching_attributes( $product, $attributes ) {
+		// Format attributes array
+		foreach( $attributes as $key => $value ) {
+			if( strpos( $key, 'attribute_' ) === 0 ) { continue; }
+			unset( $attributes[ $key ] );
+			$attributes[ sprintf( 'attribute_%s', $key ) ] = $value;
+		}
+		// Find matching variation
+		if( class_exists( 'WC_Data_Store' ) ) {
+			$data_store = WC_Data_Store::load( 'product' );
+			return $data_store->find_matching_product_variation( $product, $attributes );
+		} else {
+			return $product->get_matching_variation( $attributes );
+		}
+	}
+	
+	
+	/**
+	 * Get variation default attributes
+	 * @since 1.5.0
+	 * @param WC_Product $product
+	 * @return array
+	 */
+	function bookacti_get_product_default_attributes( $product ) {
+		if( method_exists( $product, 'get_default_attributes' ) ) {
+			return $product->get_default_attributes();
+		} else {
+			return $product->get_variation_default_attributes();
+		}
+	}
 
 
-
+	
 
 // REFUND
 
@@ -1967,6 +2022,19 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		// Stop the script execution
 		$message = __( 'Error occurs while trying to refund a booking.', BOOKACTI_PLUGIN_NAME );
 		wp_die( $message );
+	}
+
+
+
+
+// FORMS
+	/**
+	 * Get WC unsupported form fields names
+	 * @since 1.5.0
+	 * @return array
+	 */
+	function bookacti_get_wc_unsupported_form_fields() {
+		return apply_filters( 'bookacti_wc_unsupported_form_fields', array( 'login', 'quantity', 'submit' ) );
 	}
 
 

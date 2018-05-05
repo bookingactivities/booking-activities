@@ -10,7 +10,7 @@ function bookacti_set_calendar_up( booking_system, reload_events ) {
 	calendar.fullCalendar({
 
 		// Header : Functionnality to Display above the calendar
-		header:  {
+		header: {
 			left: 'prev,next today',
 			center: 'title',
 			right: 'month,agendaWeek,agendaDay'
@@ -19,7 +19,7 @@ function bookacti_set_calendar_up( booking_system, reload_events ) {
 		// OPTIONS
 		locale:					bookacti_localized.current_lang_code,
 		
-		defaultView:            'agendaWeek',
+		defaultView:            calendar.width() < bookacti_localized.default_view_threshold ? 'agendaDay' : 'agendaWeek',
 		weekNumbersWithinDays:	1,
 		allDaySlot:             false,
 		allDayDefault:          false,
@@ -331,12 +331,14 @@ function bookacti_add_class_according_to_event_size( element ) {
 // Dynamically update calendar settings
 function bookacti_update_calendar_settings( booking_system ) {
 	
+	var calendar			= booking_system.find( '.fc' ).addBack( '.fc' ).first();
+	if( ! calendar.data( 'fullCalendar' ) ) { return false; }
+	
 	var settings_to_update	= {};
 	var booking_system_id	= booking_system.attr( 'id' );
 	var template_data		= bookacti.booking_system[ booking_system_id ][ 'template_data' ];
 	var settings			= $j.extend( true, {}, template_data.settings ); // Clone template data settings to prevent third party to affect the original data
-	var calendar			= booking_system.find( '.fc' ).addBack( '.fc' ).first();
-
+	
 	var availability_period	= bookacti_get_availability_period( booking_system );
 	
 	if( template_data.start && template_data.end ) {
@@ -349,8 +351,6 @@ function bookacti_update_calendar_settings( booking_system ) {
 	if( settings.minTime )		{ settings_to_update.minTime		= settings.minTime; }
 	if( settings.maxTime )		{ settings_to_update.maxTime		= settings.maxTime === '00:00' ? '24:00' : settings.maxTime; }
 	if( settings.snapDuration ) { settings_to_update.snapDuration	= settings.snapDuration; }
-	
-	if( ! calendar.data( 'fullCalendar' ) ) { return false; }
 	
 	calendar.trigger( 'bookacti_before_update_calendar_settings', [ settings_to_update, settings ] );
 	

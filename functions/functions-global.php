@@ -11,12 +11,53 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	 * @return boolean
 	 */
 	function bookacti_is_plugin_active( $plugin_path_and_name ) {
-
 		if( ! function_exists( 'is_plugin_active' ) ) {
 			include_once( ABSPATH . 'wp-admin/includes/plugin.php' );
 		}
-
 		return is_plugin_active( $plugin_path_and_name );
+	}
+	
+	
+	/**
+	 * Send a filtered array via json during an ajax process
+	 * @since 1.5.0
+	 * @param array $array Array to encode as JSON, then print and die.
+	 * @param string $action Name of the filter to allow third-party modifications
+	 */
+	function bookacti_send_json( $array, $action ) {
+		if( empty( $array[ 'status' ] ) ) { $array[ 'status' ] = 'failed'; }
+		$response = apply_filters( 'bookacti_send_json_' . $action, $array );
+		wp_send_json( $response );
+	}
+	
+	
+	/**
+	 * Send a filtered array via json to stop an ajax process running with an invalid nonce
+	 * @since 1.5.0
+	 * @param string $action Name of the filter to allow third-party modifications
+	 */
+	function bookacti_send_json_invalid_nonce( $action ) {
+		$return_array = array( 
+			'status'	=> 'failed', 
+			'error'		=> 'invalid_nonce', 
+			'message'	=> esc_html__( 'Invalid nonce.', BOOKACTI_PLUGIN_NAME ) . ' ' . __( 'Please reload the page and try again.', BOOKACTI_PLUGIN_NAME )
+		);
+		bookacti_send_json( $return_array, $action );
+	}
+	
+	
+	/**
+	 * Send a filtered array via json to stop a not allowed an ajax process
+	 * @since 1.5.0
+	 * @param string $action Name of the filter to allow third-party modifications
+	 */
+	function bookacti_send_json_not_allowed( $action ) {
+		$return_array = array( 
+			'status'	=> 'failed', 
+			'error'		=> 'not_allowed', 
+			'message'	=> esc_html__( 'You are not allowed to do this.', BOOKACTI_PLUGIN_NAME )
+		);
+		bookacti_send_json( $return_array, $action );
 	}
 
 	
@@ -242,24 +283,72 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	
 	
 // FORMS
+	/**
+	 * Display fields
+	 * @since 1.5.0
+	 * @param array $args
+	 */
+	function bookacti_display_fields( $fields, $args = array() ) {
+		
+		if( empty( $fields ) || ! is_array( $fields ) )	{ return; }
+		
+		// Format parameters
+		if( ! isset( $args[ 'hidden' ] ) || ! is_array( $args[ 'hidden' ] ) )	{ $args[ 'hidden' ] = array(); }
+		if( ! isset( $args[ 'prefix' ] ) || ! is_string( $args[ 'prefix' ] ) )	{ $args[ 'prefix' ] = ''; }
 
+		foreach( $fields as $field_name => $field ) {
+			if( empty( $field[ 'type' ] ) ) { continue; }
+			
+			if( empty( $field[ 'name' ] ) ) { $field[ 'name' ] = $field_name; }
+			$field[ 'name' ]	= ! empty( $args[ 'prefix' ] ) ? $args[ 'prefix' ] . '[' . $field_name . ']' : $field[ 'name' ];
+			$field[ 'id' ]		= empty( $field[ 'id' ] ) ? 'bookacti-' . $field_name : $field[ 'id' ];
+			$field[ 'hidden' ]	= in_array( $field_name, $args[ 'hidden' ], true ) ? 1 : 0;
+
+			// If custom type, call another function to display this field
+			if( $field[ 'type' ] === 'custom' ) {
+				do_action( 'bookacti_display_custom_field', $field, $field_name );
+				continue;
+			}
+			// Else, display standard field
+		?>
+			<div class='bookacti-field-container <?php if( ! empty( $field[ 'hidden' ] ) ) { echo 'bookacti-hidden-field'; } ?>' id='<?php echo $field[ 'id' ] . '-container'; ?>'>
+			<?php 
+			// Display field title
+			if( ! empty( $field[ 'title' ] ) ) { 
+			?>
+				<label for='<?php echo $field[ 'id' ]; ?>' class='<?php if( $field[ 'type' ] === 'checkboxes' ) { echo 'bookacti-fullwidth-label'; } ?>' >
+				<?php 
+					echo $field[ 'title' ];
+					if( $field[ 'type' ] === 'checkboxes' ) { bookacti_help_tip( $field[ 'tip' ] ); unset( $field[ 'tip' ] ); }
+				?>
+				</label>
+			<?php } 
+				// Display field
+				bookacti_display_field( $field ); 
+			?>
+			</div>
+		<?php
+		}
+	}
+	
+	
 	/**
 	 * Display various fields
 	 * 
 	 * @since 1.2.0
-	 * @version 1.3.0
-	 * @param array $args ['type', 'name', 'label', 'id', 'class', 'placeholder', 'options', 'value', 'tip']
+	 * @version 1.5.0
+	 * @param array $args ['type', 'name', 'label', 'id', 'class', 'placeholder', 'options', 'attr', 'value', 'tip', 'required']
 	 */
 	function bookacti_display_field( $args ) {
 
 		$args = bookacti_format_field_args( $args );
 
 		if( ! $args ) { return; }
-
+		
 		// Display field according to type
 
 		// TEXT & NUMBER
-		if( in_array( $args[ 'type' ], array( 'text', 'number' ) ) ) {
+		if( in_array( $args[ 'type' ], array( 'text', 'number', 'date', 'time', 'email', 'password' ) ) ) {
 		?>
 			<input	type=		'<?php echo esc_attr( $args[ 'type' ] ); ?>' 
 					name=		'<?php echo esc_attr( $args[ 'name' ] ); ?>' 
@@ -267,10 +356,13 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 					class=		'bookacti-input <?php echo esc_attr( $args[ 'class' ] ); ?>' 
 					placeholder='<?php echo esc_attr( $args[ 'placeholder' ] ); ?>' 
 					value=		'<?php echo esc_attr( $args[ 'value' ] ); ?>' 
-				<?php if( $args[ 'type' ] === 'number' ) { ?>
+				<?php if( in_array( $args[ 'type' ], array( 'number', 'date', 'time' ) ) ) { ?>
 					min=		'<?php echo esc_attr( $args[ 'options' ][ 'min' ] ); ?>' 
 					max=		'<?php echo esc_attr( $args[ 'options' ][ 'max' ] ); ?>'
-				<?php } ?>
+					step=		'<?php echo esc_attr( $args[ 'options' ][ 'step' ] ); ?>'
+					<?php if( ! empty( $args[ 'attr' ] ) ) { echo $args[ 'attr' ]; } ?>
+				<?php }
+				if( $args[ 'required' ] ) { echo ' required'; } ?>
 			/>
 		<?php if( $args[ 'label' ] ) { ?>
 			<label	for='<?php echo esc_attr( $args[ 'id' ] ); ?>' >
@@ -288,6 +380,8 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 				id=			'<?php echo esc_attr( $args[ 'id' ] ); ?>' 
 				class=		'bookacti-textarea <?php echo esc_attr( $args[ 'class' ] ); ?>' 
 				placeholder='<?php echo esc_attr( $args[ 'placeholder' ] ); ?>'
+				<?php if( ! empty( $args[ 'attr' ] ) ) { echo $args[ 'attr' ]; } ?>
+				<?php if( $args[ 'required' ] ) { echo ' required'; } ?>
 			><?php echo $args[ 'value' ]; ?></textarea>
 		<?php if( $args[ 'label' ] ) { ?>
 				<label	for='<?php echo esc_attr( $args[ 'id' ] ); ?>' >
@@ -304,24 +398,31 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 		// MULTIPLE CHECKBOX
 		else if( $args[ 'type' ] === 'checkboxes' ) {
+			?>
+			<input  name='<?php echo esc_attr( $args[ 'name' ] ) . '[]'; ?>' 
+					id='<?php echo esc_attr( $args[ 'id' ] ) . '_none'; ?>'
+					type='hidden' 
+					value='none' />
+			<?php
 			foreach( $args[ 'options' ] as $option ) {
 			?>
 				<div class='bookacti_checkbox'>
-					<input	name='<?php echo esc_attr( $args[ 'name' ] ) . '[' . esc_attr( $option[ 'id' ] ) . ']'; ?>' 
+					<input	name='<?php echo esc_attr( $args[ 'name' ] ) . '[]'; ?>' 
 							id='<?php echo esc_attr( $args[ 'id' ] ) . '_' . esc_attr( $option[ 'id' ] ); ?>' 
 							class='bookacti-input <?php echo esc_attr( $args[ 'class' ] ); ?>' 
 							type='checkbox' 
-							value='1'
-							<?php if( isset( $args[ 'value' ][ $option[ 'id' ] ] ) ) { checked( $args[ 'value' ][ $option[ 'id' ] ], 1, true ); } ?>
+							value='<?php echo $option[ 'id' ]; ?>'
+							<?php if( ! empty( $args[ 'attr' ][ $option[ 'id' ] ] ) ) { echo $args[ 'attr' ][ $option[ 'id' ] ]; } ?>
+							<?php if( in_array( $option[ 'id' ], $args[ 'value' ], true ) ){ echo 'checked'; } ?>
 					/>
-				<?php if( $option[ 'label' ] ) { ?>
+				<?php if( ! empty( $option[ 'label' ] ) ) { ?>
 					<label for='<?php echo esc_attr( $args[ 'id' ] ) . '_' . esc_attr( $option[ 'id' ] ); ?>' >
 						<?php echo apply_filters( 'bookacti_translate_text', $option[ 'label' ] ); ?>
 					</label>
 				<?php
 					}
 					// Display the tip
-					if( $option[ 'description' ] ) {
+					if( ! empty( $option[ 'description' ] ) ) {
 						$tip = apply_filters( 'bookacti_translate_text', $option[ 'description' ] );
 						bookacti_help_tip( $tip );
 					}
@@ -341,7 +442,9 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 							class='bookacti-input <?php echo esc_attr( $args[ 'class' ] ); ?>' 
 							type='radio' 
 							value='<?php echo esc_attr( $option[ 'id' ] ); ?>'
+							<?php if( ! empty( $args[ 'attr' ][ $option[ 'id' ] ] ) ) { echo $args[ 'attr' ][ $option[ 'id' ] ]; } ?>
 							<?php if( isset( $args[ 'value' ] ) ) { checked( $args[ 'value' ], $option[ 'id' ], true ); } ?>
+							<?php if( $args[ 'required' ] ) { echo ' required'; } ?>
 					/>
 				<?php if( $option[ 'label' ] ) { ?>
 					<label for='<?php echo esc_attr( $args[ 'id' ] ) . '_' . esc_attr( $option[ 'id' ] ); ?>' >
@@ -366,11 +469,13 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			<select	name=	'<?php echo esc_attr( $args[ 'name' ] ); ?>' 
 					id=		'<?php echo esc_attr( $args[ 'id' ] ); ?>' 
 					class=	'bookacti-select <?php echo esc_attr( $args[ 'class' ] ); ?>' 
-					<?php if( $args[ 'multiple' ] ) { echo 'multiple'; } ?>
+					<?php if( $args[ 'multiple' ] && $args[ 'multiple' ] !== 'maybe' ) { echo 'multiple'; } ?>
+					<?php if( $args[ 'required' ] ) { echo ' required'; } ?>
 			>
 			<?php foreach( $args[ 'options' ] as $option_id => $option_value ) { ?>
 				<option value='<?php echo esc_attr( $option_id ); ?>'
 						id='<?php echo esc_attr( $args[ 'id' ] ) . '_' . esc_attr( $option_id ); ?>'
+						<?php if( ! empty( $args[ 'attr' ][ $option_id ] ) ) { echo $args[ 'attr' ][ $option_id ]; } ?>
 						<?php	if( $args[ 'multiple' ] ) { selected( true, in_array( $option_id, $args[ 'value' ] ) ); }
 								else { selected( $args[ 'value' ], $option_id ); }?>
 				>
@@ -378,7 +483,24 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 				</option>
 			<?php } ?>
 			</select>
-		<?php if( $args[ 'label' ] ) { ?>
+		<?php 
+			if( $args[ 'multiple' ] === 'maybe' && count( $args[ 'options' ] ) > 1 ) { ?>
+				<span class='bookacti-multiple-select-container' >
+					<label for='bookacti-multiple-select-<?php echo esc_attr( $args[ 'id' ] ); ?>' ><span class='dashicons dashicons-plus' title='<?php esc_attr_e( 'Multiple selection', BOOKACTI_PLUGIN_NAME ); ?>'></span></label>
+					<input type='checkbox' 
+						   class='bookacti-multiple-select' 
+						   id='bookacti-multiple-select-<?php echo esc_attr( $args[ 'id' ] ); ?>' 
+						   data-select-id='<?php echo esc_attr( $args[ 'id' ] ); ?>'
+						   style='display:none' />
+				</span>
+		<?php 
+				// Add select multiple values instructions
+				if( $args[ 'tip' ] ) {
+					/* translators: %s is the "+" icon to click on. */
+					$args[ 'tip' ] .= '<br/>' . sprintf( esc_html__( 'To select multiple values, click on %s and use CTRL+Click to pick or unpick a value.', BOOKACTI_PLUGIN_NAME ), '<span class="dashicons dashicons-plus"></span>' );
+				}
+			} 
+			if( $args[ 'label' ] ) { ?>
 			<label for='<?php echo esc_attr( $args[ 'id' ] ); ?>' >
 				<?php echo apply_filters( 'bookacti_translate_text', $args[ 'label' ] ); ?>
 			</label>
@@ -389,6 +511,11 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		// TINYMCE editor
 		else if( $args[ 'type' ] === 'editor' ) {
 			wp_editor( $args[ 'value' ], $args[ 'id' ], $args[ 'options' ] );
+		}
+
+		// User ID
+		else if( $args[ 'type' ] === 'user_id' ) {
+			bookacti_display_user_selectbox( $args[ 'options' ] );
 		}
 
 
@@ -403,8 +530,8 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	 * Format arguments to diplay a proper field
 	 * 
 	 * @since 1.2.0
-	 * @version 1.3.0
-	 * @param array $args ['type', 'name', 'label', 'id', 'class', 'placeholder', 'options', 'value', 'multiple', 'tip']
+	 * @version 1.5.0
+	 * @param array $args ['type', 'name', 'label', 'id', 'class', 'placeholder', 'options', 'attr', 'value', 'multiple', 'tip', 'required']
 	 * @return array|false
 	 */
 	function bookacti_format_field_args( $args ) {
@@ -416,7 +543,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		if( ! isset( $args[ 'type' ] ) || ! isset( $args[ 'name' ] ) ) { return false; }
 
 		// If field type is not supported, return
-		if( ! in_array( $args[ 'type' ], array( 'text', 'number', 'checkbox', 'checkboxes', 'select', 'radio', 'textarea', 'editor' ) ) ) { 
+		if( ! in_array( $args[ 'type' ], array( 'text', 'email', 'date', 'time', 'password', 'number', 'checkbox', 'checkboxes', 'select', 'radio', 'textarea', 'editor', 'user_id' ) ) ) { 
 			return false; 
 		}
 
@@ -428,9 +555,11 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			'class'			=> '',
 			'placeholder'	=> '',
 			'options'		=> array(),
+			'attr'			=> '',
 			'value'			=> '',
 			'multiple'		=> false,
-			'tip'			=> ''
+			'tip'			=> '',
+			'required'		=> 0
 		);
 
 		// Replace empty value by default
@@ -442,18 +571,27 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		$args[ 'id' ]	= sanitize_title_with_dashes( $args[ 'id' ] );
 		
 		// If no id, use name instead
-		$args[ 'id' ] = $args[ 'id' ] ? $args[ 'id' ] : sanitize_title_with_dashes( $args[ 'name' ] );
-
+		$args[ 'id' ] = $args[ 'id' ] ? $args[ 'id' ] : sanitize_title_with_dashes( $args[ 'name' ] ) . '-' . rand();
+		
+		// Sanitize required
+		$args[ 'required' ] = isset( $args[ 'required' ] ) && $args[ 'required' ] ? 1 : 0;
+		if( $args[ 'required' ] ) { $args[ 'class' ] .= ' bookacti-required-field'; }
+		
 		// Make sure fields with multiple options have 'options' set
-		if( in_array( $args[ 'type' ], array( 'checkboxes', 'radio', 'select' ) ) ){
+		if( in_array( $args[ 'type' ], array( 'checkboxes', 'radio', 'select', 'user_id' ) ) ){
 			if( ! $args[ 'options' ] ) { return false; }
+			if( ! is_array( $args[ 'attr' ] ) ) { $args[ 'attr' ] = array(); }
+		} else {
+			if( ! is_string( $args[ 'attr' ] ) ) { $args[ 'attr' ] = ''; }
 		}
 		
 		// If multiple, make sure name has brackets and value is an array
-		if( $args[ 'multiple' ] ) {
-			if( strpos( '[', $args[ 'name' ] ) === false ) {
+		if( in_array( $args[ 'multiple' ], array( 'true', true, '1', 1 ), true ) ) {
+			if( strpos( '[]', $args[ 'name' ] ) === false ) {
 				$args[ 'name' ]	.= '[]';
 			}
+		} else if( $args[ 'multiple' ] && $args[ 'type' ] === 'select' ) {
+			$args[ 'multiple' ] = 'maybe';
 		}
 		
 		// Make sure checkboxes have their value as an array
@@ -464,9 +602,10 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		}
 
 		// Make sure 'number' has min and max
-		else if( $args[ 'type' ] === 'number' ) {
+		else if( in_array( $args[ 'type' ], array( 'number', 'date', 'time' ) ) ) {
 			$args[ 'options' ][ 'min' ] = isset( $args[ 'options' ][ 'min' ] ) ? $args[ 'options' ][ 'min' ] : '';
 			$args[ 'options' ][ 'max' ] = isset( $args[ 'options' ][ 'max' ] ) ? $args[ 'options' ][ 'max' ] : '';
+			$args[ 'options' ][ 'step' ] = isset( $args[ 'options' ][ 'step' ] ) ? $args[ 'options' ][ 'step' ] : '';
 		}
 
 		// Make sure that if 'editor' has options, options is an array
@@ -483,13 +622,11 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	/**
 	 * Display help toolbox
 	 * 
-	 * @version 1.2.1
+	 * @version 1.5.0
 	 * @param string $tip
 	 */
 	function bookacti_help_tip( $tip, $echo = true ){
-		$tip = "<span class='bookacti-tip' data-tip='" . esc_attr( $tip ) . "'>"
-				. "<img src='" . esc_url( plugins_url() . '/' . BOOKACTI_PLUGIN_NAME . '/img/help.png' ) . "' />"
-			. "</span>";
+		$tip = "<span class='dashicons dashicons-editor-help bookacti-tip' data-tip='" . esc_attr( $tip ) . "'></span>";
 		
 		if( $echo ) { echo $tip; }
 		
@@ -538,6 +675,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	 * Create a user selectbox
 	 * 
 	 * @since 1.3.0
+	 * @version 1.5.0
 	 * @param array $args
 	 * @return string|void
 	 */
@@ -545,6 +683,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		
 		$defaults = array(
 			'show_option_all' => '', 'show_option_none' => '', 'option_none_value' => -1,
+			'show_option_current' => '', 'option_current_value' => 'current',
 			'option_label' => array( 'display_name' ), 'echo' => 1,
 			'selected' => 0, 'name' => 'user_id', 'class' => '', 'id' => '',
 			'include' => array(), 'exclude' => array(),
@@ -558,16 +697,22 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		ob_start();
 		?>
 		
-		<select id='<?php echo $args[ 'id' ]; ?>' name='<?php echo $args[ 'name' ]; ?>' class='bookacti-user-selectbox <?php echo $args[ 'class' ]; ?>' >
+		<select <?php if( $args[ 'id' ] ) { echo 'id="' . $args[ 'id' ] . '"'; } ?> name='<?php echo $args[ 'name' ]; ?>' class='bookacti-user-selectbox <?php echo $args[ 'class' ]; ?>' >
 			<option value='' ><?php echo esc_html__( 'Search for a customer', BOOKACTI_PLUGIN_NAME ); ?></option>
 			<?php
 				if( $args[ 'show_option_all' ] ) {
-					?><option value='0' ><?php echo $args[ 'show_option_all' ]; ?></option><?php
+					$_selected = selected( 0, $args[ 'selected' ], false );
+					?><option value='0' <?php echo $_selected ?> ><?php echo $args[ 'show_option_all' ]; ?></option><?php
 				}
 
 				if( $args[ 'show_option_none' ] ) {
 					$_selected = selected( $args[ 'option_none_value' ], $args[ 'selected' ], false );
 					?><option value='<?php echo esc_attr( $args[ 'option_none_value' ] ); ?>' <?php echo $_selected ?> ><?php echo $args[ 'show_option_none' ]; ?></option><?php
+				}
+
+				if( $args[ 'show_option_current' ] ) {
+					$_selected = selected( $args[ 'option_current_value' ], $args[ 'selected' ], false );
+					?><option value='<?php echo esc_attr( $args[ 'option_current_value' ] ); ?>' <?php echo $_selected ?> ><?php echo $args[ 'show_option_current' ]; ?></option><?php
 				}
 			
 				do_action( 'bookacti_add_user_selectbox_options', $args );
@@ -793,4 +938,152 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 		json_decode( $string );
 		return ( json_last_error() == JSON_ERROR_NONE );
+	}
+
+	/**
+	 * Check if a callback is valid
+	 * @since 1.5.0
+	 * @param string $callback
+	 * @param array $callback_args
+	 * @param boolean $displays_error
+	 * @return boolean
+	 */
+	function bookacti_validate_callback( $callback, $callback_args, $displays_error ) {
+		
+		if( empty( $callback ) ) {
+			if( $displays_error ) { _e( 'No callback function has been set.', BOOKACTI_PLUGIN_NAME ); }
+			return false;
+		}
+		
+		$is_valid_callback	= is_callable( $callback );
+		
+		if( ! is_callable( $callback ) ) {
+			if( $displays_error ) { 
+				/* translators: %s is the name the invalid function */
+				echo sprintf( __( 'Invalid callback function. Check if the function "%s" exists.', BOOKACTI_PLUGIN_NAME ), $callback ); 
+			}
+			return false;
+		}
+		
+		if( ! is_array( $callback_args ) ) {
+			if( $displays_error ) { _e( 'Callback arguments must be stored in an array.', BOOKACTI_PLUGIN_NAME ); }
+			return false;
+		}
+		
+		return true;
+	}
+	
+	
+	/**
+	 * Sanitize the values of an array
+	 * @since 1.5.0
+	 * @param array $default_data
+	 * @param array $raw_data
+	 * @param array $keys_by_type
+	 * @param array $sanitized_data
+	 * @return array
+	 */
+	function bookacti_sanitize_values( $default_data, $raw_data, $keys_by_type, $sanitized_data = array() ) {
+		// Sanitize the keys-by-type array
+		$allowed_types = array( 'int', 'bool', 'str', 'str_id', 'array', 'datetime' );
+		foreach( $allowed_types as $allowed_type ) {
+			if( ! isset( $keys_by_type[ $allowed_type ] ) ) { $keys_by_type[ $allowed_type ] = array(); }
+		}
+		
+		// Make an array of all keys that will be sanitized
+		$keys_to_sanitize = array();
+		foreach( $keys_by_type as $type => $keys ) {
+			if( ! in_array( $type, $allowed_types, true ) ) { continue; }
+			if( ! is_array( $keys ) ) { $keys_by_type[ $type ] = array( $keys ); }
+			foreach( $keys as $key ) {
+				$keys_to_sanitize[] = $key;
+			}
+		}
+		
+		// Format each value according to its type
+		foreach( $default_data as $key => $default_value ) {
+			// Do not process keys without types
+			if( ! in_array( $key, $keys_to_sanitize, true ) ) { continue; }
+			// Skip already sanitized values
+			if( isset( $sanitized_data[ $key ] ) ) { continue; }
+			// Set undefined values to default and continue
+			if( ! isset( $raw_data[ $key ] ) ) { $sanitized_data[ $key ] = $default_value; continue; }
+
+			// Sanitize integers
+			if( in_array( $key, $keys_by_type[ 'int' ], true ) ) { 
+				$sanitized_data[ $key ] = is_numeric( $raw_data[ $key ] ) ? intval( $raw_data[ $key ] ) : $default_value;
+			}
+
+			// Sanitize string identifiers
+			else if( in_array( $key, $keys_by_type[ 'str_id' ], true ) ) { 
+				$sanitized_data[ $key ] = is_string( $raw_data[ $key ] ) ? sanitize_title_with_dashes( stripslashes( $raw_data[ $key ] ) ) : $default_value;
+			}
+
+			// Sanitize text
+			else if( in_array( $key, $keys_by_type[ 'str' ], true ) ) { 
+				$sanitized_data[ $key ] = is_string( $raw_data[ $key ] ) ? sanitize_text_field( stripslashes( $raw_data[ $key ] ) ) : $default_value;
+			}
+
+			// Sanitize array
+			else if( in_array( $key, $keys_by_type[ 'array' ], true ) ) { 
+				$sanitized_data[ $key ] = is_array( $raw_data[ $key ] ) ? $raw_data[ $key ] : $default_value;
+			}
+
+			// Sanitize boolean
+			else if( in_array( $key, $keys_by_type[ 'bool' ], true ) ) { 
+				$sanitized_data[ $key ] = in_array( $raw_data[ $key ], array( 1, '1', true, 'true' ), true ) ? 1 : 0;
+			}
+
+			// Sanitize datetime
+			else if( in_array( $key, $keys_by_type[ 'datetime' ], true ) ) { 
+				$sanitized_data[ $key ] = bookacti_sanitize_datetime( $raw_data[ $key ] );
+				if( ! $sanitized_data[ $key ] ) { $sanitized_data[ $key ] = $default_value; }
+			}
+		}
+		
+		return apply_filters( 'bookacti_sanitized_data', $sanitized_data, $default_data, $raw_data, $keys_by_type );
+	}
+
+
+
+
+// USERS
+
+	/**
+	 * Programmatically logs a user in
+	 * @since 1.5.0
+	 * @param string $username
+	 * @return bool True if the login was successful; false if it wasn't
+	 */
+	function bookacti_log_user_in( $username ) {
+		
+		if ( is_user_logged_in() ) { wp_logout(); }
+		
+		// hook in earlier than other callbacks to short-circuit them
+		add_filter( 'authenticate', 'bookacti_allow_to_log_user_in_programmatically', 10, 3 );
+		$user = wp_signon( array( 'user_login' => $username ) );
+		remove_filter( 'authenticate', 'bookacti_allow_to_log_user_in_programmatically', 10, 3 );
+
+		if( is_a( $user, 'WP_User' ) ) {
+			wp_set_current_user( $user->ID, $user->user_login );
+			if ( is_user_logged_in() ) { return true; }
+		}
+		return false;
+	}
+	
+	
+	/**
+	 * An 'authenticate' filter callback that authenticates the user using only the username.
+	 *
+	 * To avoid potential security vulnerabilities, this should only be used in the context of a programmatic login,
+	 * and unhooked immediately after it fires.
+	 * 
+	 * @since 1.5.0
+	 * @param WP_User $user
+	 * @param string $username
+	 * @param string $password
+	 * @return bool|WP_User a WP_User object if the username matched an existing user, or false if it didn't
+	 */
+	function bookacti_allow_to_log_user_in_programmatically( $user, $username, $password ) {
+		return get_user_by( 'login', $username );
 	}

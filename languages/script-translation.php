@@ -20,11 +20,10 @@ $bookacti_translation_array = apply_filters( 'bookacti_translation_array', array
 	'dialog_delete_event_title'			    => esc_html__( 'Delete event', BOOKACTI_PLUGIN_NAME ),
 	'dialog_delete_booked_event_title'		=> esc_html__( 'Delete booked event', BOOKACTI_PLUGIN_NAME ),
 	'dialog_delete_activity_title'			=> esc_html__( 'Delete activity', BOOKACTI_PLUGIN_NAME ),
-	'dialog_choice_activity_title'		    => esc_html__( 'Create a new activity or use an existing activity ?', BOOKACTI_PLUGIN_NAME ),
+	'dialog_choice_activity_title'			=> esc_html__( 'Create a new activity or use an existing activity ?', BOOKACTI_PLUGIN_NAME ),
 	'dialog_import_activity_title'			=> esc_html__( 'Import existing activity', BOOKACTI_PLUGIN_NAME ),
 	'dialog_create_activity_title'			=> esc_html__( 'Create new activity', BOOKACTI_PLUGIN_NAME ),
-	'dialog_update_activity_title'		    => esc_html__( 'Update activity parameters', BOOKACTI_PLUGIN_NAME ),
-	'dialog_choose_group_of_events_title'	=> apply_filters( 'bookacti_translate_text', $messages[ 'choose_group_dialog_title' ][ 'value' ] ),
+	'dialog_update_activity_title'			=> esc_html__( 'Update activity parameters', BOOKACTI_PLUGIN_NAME ),
 	'dialog_create_group_of_events_title'	=> esc_html__( 'Create a group of events', BOOKACTI_PLUGIN_NAME ),
 	'dialog_update_group_of_events_title'	=> esc_html__( 'Update a group of events', BOOKACTI_PLUGIN_NAME ),
 	'dialog_delete_group_of_events_title'	=> esc_html__( 'Delete a group of events', BOOKACTI_PLUGIN_NAME ),
@@ -32,30 +31,25 @@ $bookacti_translation_array = apply_filters( 'bookacti_translation_array', array
 	'dialog_update_group_category_title'	=> esc_html__( 'Update a group category', BOOKACTI_PLUGIN_NAME ),
 	'dialog_delete_group_category_title'	=> esc_html__( 'Delete a group category', BOOKACTI_PLUGIN_NAME ),
 	'dialog_locked_event'					=> esc_html__( 'Locked event', BOOKACTI_PLUGIN_NAME ),
-	'booking_action_cancel'					=> apply_filters( 'bookacti_translate_text', $messages[ 'cancel_dialog_title' ][ 'value' ] ),
-	'booking_action_reschedule'				=> apply_filters( 'bookacti_translate_text', $messages[ 'reschedule_dialog_title' ][ 'value' ] ),
-	'booking_action_refund'					=> $can_edit_bookings ? esc_html_x( 'Refund a booking', 'Dialog title', BOOKACTI_PLUGIN_NAME ) : apply_filters( 'bookacti_translate_text', $messages[ 'refund_dialog_title' ][ 'value' ] ),
-	'booking_confirm_refund'				=> esc_html__( 'Refund confirmation', BOOKACTI_PLUGIN_NAME ),
-	'booking_change_state'					=> esc_html__( 'Change booking state', BOOKACTI_PLUGIN_NAME ),
-
 
 	// BUTTONS
 	'dialog_button_ok'                  => esc_html__( 'OK', BOOKACTI_PLUGIN_NAME ),
-	'dialog_button_yes'                 => esc_html__( 'Yes', BOOKACTI_PLUGIN_NAME ),
-	'dialog_button_no'                  => esc_html__( 'No', BOOKACTI_PLUGIN_NAME ),
-	'dialog_button_delete'              => esc_html__( 'Delete', BOOKACTI_PLUGIN_NAME ),
-	'dialog_button_cancel'              => esc_html_x( 'Cancel', 'Close a dialog without doing anything', BOOKACTI_PLUGIN_NAME ),
+	'dialog_button_yes'					=> esc_html__( 'Yes', BOOKACTI_PLUGIN_NAME ),
+	'dialog_button_no'					=> esc_html__( 'No', BOOKACTI_PLUGIN_NAME ),
+	'dialog_button_reset'				=> esc_html__( 'Reset', BOOKACTI_PLUGIN_NAME ),
+	'dialog_button_delete'				=> esc_html__( 'Delete', BOOKACTI_PLUGIN_NAME ),
+	'dialog_button_cancel'				=> esc_html_x( 'Cancel', 'Close a dialog without doing anything', BOOKACTI_PLUGIN_NAME ),
 	'dialog_button_create_activity'		=> esc_html__( 'Create Activity', BOOKACTI_PLUGIN_NAME ),
 	'dialog_button_import_activity'		=> esc_html__( 'Import Activity', BOOKACTI_PLUGIN_NAME ),
 	/* translators: 'unbind' is the process to isolate one (or several) event from a repeating event in order to edit it independently. 'Unbind selected' is a button that isolate the event the user clicked on. */
-	'dialog_button_unbind_selected'     => esc_html__( 'Unbind Selected', BOOKACTI_PLUGIN_NAME ),
+	'dialog_button_unbind_selected'		=> esc_html__( 'Unbind Selected', BOOKACTI_PLUGIN_NAME ),
 	/* translators: 'unbind' is the process to isolate one (or several) event from a repeating event  in order to edit it independently. 'Unbind booked' is a button that split the repeating event in two : one repeating event holding all the booked events (restricted edition), and the other holding the events without bookings (fully editable). */
-	'dialog_button_unbind_all_booked'   => esc_html__( 'Unbind Booked', BOOKACTI_PLUGIN_NAME ),
+	'dialog_button_unbind_all_booked'	=> esc_html__( 'Unbind Booked', BOOKACTI_PLUGIN_NAME ),
 	/* translators: 'unbind' is the process to isolate one (or several) event from a repeating event  in order to edit it independently. 'Unbind all' is a button that split the repeating event into multiple individual single events. */
-	'dialog_button_unbind_all'          => esc_html__( 'Unbind All', BOOKACTI_PLUGIN_NAME ),
+	'dialog_button_unbind_all'			=> esc_html__( 'Unbind All', BOOKACTI_PLUGIN_NAME ),
 	/* translators: 'unbind' is the process to isolate one (or several) event from a repeating event  in order to edit it independently. 'Unbind' is a button that open a dialog where the user can choose wether to unbind the selected event, all events or booked events. */
 	'dialog_button_unbind'				=> esc_html__( 'Unbind', BOOKACTI_PLUGIN_NAME ),
-	'dialog_button_cancel'              => apply_filters( 'bookacti_translate_text', $messages[ 'cancel_dialog_button' ][ 'value' ] ),
+	'dialog_button_cancel'				=> apply_filters( 'bookacti_translate_text', $messages[ 'cancel_dialog_button' ][ 'value' ] ),
 	'dialog_button_cancel_booking'		=> esc_html_x( 'Cancel booking', 'Button label to trigger the cancel action', BOOKACTI_PLUGIN_NAME ),
 	'dialog_button_reschedule'			=> apply_filters( 'bookacti_translate_text', $messages[ 'reschedule_dialog_button' ][ 'value' ] ),
 	'dialog_button_refund'				=> $can_edit_bookings ? esc_html_x( 'Refund', 'Button label to trigger the refund action', BOOKACTI_PLUGIN_NAME ) : apply_filters( 'bookacti_translate_text', $messages[ 'refund_dialog_button' ][ 'value' ] ),
@@ -114,6 +108,15 @@ $bookacti_translation_array = apply_filters( 'bookacti_translation_array', array
 	'error_create_group_category'		=> esc_html__( 'Error occurs when trying to create the group category.', BOOKACTI_PLUGIN_NAME ),
 	'error_update_group_category'		=> esc_html__( 'Error occurs when trying to update the group category.', BOOKACTI_PLUGIN_NAME ),
 	'error_delete_group_category'		=> esc_html__( 'Error occurs when trying to delete the group category.', BOOKACTI_PLUGIN_NAME ),
+	'error_create_form'					=> esc_html__( 'An error occurs while trying to create the form.', BOOKACTI_PLUGIN_NAME ),
+	'error_update_form'					=> esc_html__( 'An error occurs while trying to update the form.', BOOKACTI_PLUGIN_NAME ),
+	'error_reset_form'					=> esc_html__( 'An error occurs while trying to reset the form.', BOOKACTI_PLUGIN_NAME ),
+	'error_load_form'					=> esc_html__( 'An error occurs while trying to load the form.', BOOKACTI_PLUGIN_NAME ),
+	'error_order_form_fields'			=> esc_html__( 'An error occurs while trying to reorder form fields.', BOOKACTI_PLUGIN_NAME ),
+	'error_insert_form_field'			=> esc_html__( 'An error occurs while trying to insert a field to the form.', BOOKACTI_PLUGIN_NAME ),
+	'error_remove_form_field'			=> esc_html__( 'An error occurs while trying to remove the field.', BOOKACTI_PLUGIN_NAME ),
+	'error_update_form_field'			=> esc_html__( 'An error occurs while trying to update the field.', BOOKACTI_PLUGIN_NAME ),
+	'error_send_email'					=> esc_html__( 'An error occurs while trying to send the email. Please try again.', BOOKACTI_PLUGIN_NAME ),
 	
 	'error_display_product_events'		=> esc_html__( 'Error occurs when trying to display product events. Please try later.', BOOKACTI_PLUGIN_NAME ),
 	'error_book_temporary'				=> esc_html__( 'Error occurs when trying to temporarily book your event. Please try later.', BOOKACTI_PLUGIN_NAME ),
@@ -131,11 +134,13 @@ $bookacti_translation_array = apply_filters( 'bookacti_translation_array', array
 	'error_not_allowed'					=> esc_html__( 'You are not allowed to do this.', BOOKACTI_PLUGIN_NAME ),
 	'error_cancel_booking'				=> esc_html__( 'Error occurs while trying to cancel booking.', BOOKACTI_PLUGIN_NAME ),
 	'error_reschedule_booking'			=> esc_html__( 'Error occurs while trying to reschedule booking.', BOOKACTI_PLUGIN_NAME ),
+	'error_delete_booking'				=> esc_html__( 'An error occurred while trying to delete the booking.', BOOKACTI_PLUGIN_NAME ),
 	'error_change_booking_state'		=> esc_html__( 'Error occurs while trying to change booking state.', BOOKACTI_PLUGIN_NAME ),
 	'error_get_refund_booking_actions'	=> esc_html__( 'Error occurs while trying to request available refund actions.  Please contact the administrator.', BOOKACTI_PLUGIN_NAME ),
 	'error_refund_booking'				=> esc_html__( 'Error occurs while trying to request a refund. Please contact the administrator.', BOOKACTI_PLUGIN_NAME ),
 	'error_user_not_logged_in'			=> esc_html__( 'You are not logged in. Please create an account and log in first.', BOOKACTI_PLUGIN_NAME ),
-
+	'error_password_not_strong_enough'	=> esc_html__( 'Your password is not strong enough.', BOOKACTI_PLUGIN_NAME ),
+	
 
 	// FORMS CHECK
 	'error_fill_field'                  => esc_html__( 'Please fill this field.', BOOKACTI_PLUGIN_NAME ),
@@ -227,10 +232,11 @@ $bookacti_translation_array = apply_filters( 'bookacti_translation_array', array
 	'event_wide_width'					=> apply_filters( 'bookacti_event_wide_width', 250 ),
 
 	'started_events_bookable'			=> bookacti_get_setting_value( 'bookacti_general_settings',	'started_events_bookable' ) ? true : false,
-	'when_events_load'					=> bookacti_get_setting_value( 'bookacti_general_settings',	'when_events_load' ),
+	'started_groups_bookable'			=> bookacti_get_setting_value( 'bookacti_general_settings',	'started_groups_bookable' ) ? true : false,
 	'event_load_interval'				=> bookacti_get_setting_value( 'bookacti_general_settings', 'event_load_interval' ),
 	'availability_period_start'			=> bookacti_get_setting_value( 'bookacti_general_settings', 'availability_period_start' ),
 	'availability_period_end'			=> bookacti_get_setting_value( 'bookacti_general_settings', 'availability_period_end' ),
+	'default_view_threshold'			=> bookacti_get_setting_value( 'bookacti_general_settings', 'default_calendar_view_threshold' ),
 	
 	'date_format'						=> apply_filters( 'bookacti_translate_text', $messages[ 'date_format_short' ][ 'value' ] ),
 	'date_format_long'					=> apply_filters( 'bookacti_translate_text', $messages[ 'date_format_long' ][ 'value' ] ),
@@ -256,13 +262,13 @@ $bookacti_translation_array = apply_filters( 'bookacti_translation_array', array
 	'nonce_get_booking_rows'			=> wp_create_nonce( 'bookacti_get_booking_rows' ),
 	'nonce_get_refund_actions_html'		=> wp_create_nonce( 'bookacti_get_refund_actions_html' ),
 	'nonce_get_booking_data'			=> wp_create_nonce( 'bookacti_get_booking_data' ),
+	'nonce_get_form'					=> wp_create_nonce( 'bookacti_get_form' ),
 
 	'nonce_cancel_booking'				=> wp_create_nonce( 'bookacti_cancel_booking' ),
 	'nonce_reschedule_booking'			=> wp_create_nonce( 'bookacti_reschedule_booking' ),
 
 	'nonce_fetch_template_events'		=> wp_create_nonce( 'bookacti_fetch_template_events' ),
 	'nonce_get_exceptions'				=> wp_create_nonce( 'bookacti_get_exceptions' ),
-	'nonce_get_booking_numbers'			=> wp_create_nonce( 'bookacti_get_booking_numbers' ),
 
 	'nonce_insert_event'				=> wp_create_nonce( 'bookacti_insert_event' ),
 	'nonce_move_or_resize_event'		=> wp_create_nonce( 'bookacti_move_or_resize_event' ),

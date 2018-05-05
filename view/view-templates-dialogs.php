@@ -1,4 +1,9 @@
 <?php 
+/**
+ * Calendar editor dialogs
+ * @version 1.5.0
+ */
+
 // Exit if accessed directly
 if ( ! defined( 'ABSPATH' ) ) { exit; }
 
@@ -58,7 +63,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 <div id='bookacti-delete-activity-dialog' class='bookacti-backend-dialog bookacti-template-dialogs' style='display:none;' >
 	<div>
 		<?php esc_html_e( 'Are you sure to delete this activity permanently?', BOOKACTI_PLUGIN_NAME ); ?><br/>
-		<em><?php esc_html_e( 'You will never be able to place new events from this activity anymore.', BOOKACTI_PLUGIN_NAME ); ?></em>
+		<em><?php esc_html_e( 'You won\'t be able to place new events from this activity anymore.', BOOKACTI_PLUGIN_NAME ); ?></em>
 	</div>
 	<div id='bookacti-delete-activity-options'>
 		<input type='checkbox' id='bookacti-delete-activity-events' name='bookacti_delete_activity_events' />
@@ -287,8 +292,6 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 					<input type="time" name="templateOptions[minTime]" id='bookacti-template-data-minTime' value='08:00'>
 					<?php
 					$tip = __( "Set when you want the days to begin on the calendar. Ex: '06:00' Days will begin at 06:00am.", BOOKACTI_PLUGIN_NAME );
-					$tip .= ' ' . __( "See more at", BOOKACTI_PLUGIN_NAME );
-					$tip .= ' <a href="http://fullcalendar.io/docs/agenda/minTime/" target="_blank" >minTime</a>.';
 					bookacti_help_tip( $tip );
 					?>
 				</div>
@@ -302,8 +305,6 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 					<input type="time" name="templateOptions[maxTime]" id='bookacti-template-data-maxTime' value='20:00' >
 					<?php
 					$tip = __( "Set when you want the days to end on the calendar. Ex: '18:00' Days will end at 06:00pm.", BOOKACTI_PLUGIN_NAME );
-					$tip .= ' ' . __( "See more at", BOOKACTI_PLUGIN_NAME );
-					$tip .= ' <a href="http://fullcalendar.io/docs/agenda/maxTime/" target="_blank" >maxTime</a>.';
 					bookacti_help_tip( $tip );
 					?>
 				</div>
@@ -314,11 +315,9 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 						_e( 'Snap frequency', BOOKACTI_PLUGIN_NAME );
 						?>
 					</label>
-					<input type="time" name="templateOptions[snapDuration]" id='bookacti-template-data-snapDuration' value='00:30' >
+					<input type="time" name="templateOptions[snapDuration]" id='bookacti-template-data-snapDuration' value='00:30' min='00:01' >
 					<?php
 					$tip = __( "The time interval at which a dragged event will snap to the agenda view time grid. Ex: '00:20', you will be able to drop an event every 20 minutes (at 6:00am, 6:20am, 6:40am...).", BOOKACTI_PLUGIN_NAME );
-					$tip .= ' ' . __( "See more at", BOOKACTI_PLUGIN_NAME );
-					$tip .= ' <a href="http://fullcalendar.io/docs/agenda/snapDuration/" target="_blank" >snapDuration</a>.';
 					bookacti_help_tip( $tip );
 					?>
 				</div>
@@ -345,7 +344,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 							min='-1' step='1' 
 							onkeypress='return event.charCode >= 48 && event.charCode <= 57' />
 					<?php
-						/* translators: Arrive after a field indicating a number of days before the event. E.g.: "Events will be bookable in 2 days from today". */
+						/* translators: Arrives after a field indicating a number of days before the event. E.g.: "Events will be bookable in 2 days from today". */
 						_e( 'days from today', BOOKACTI_PLUGIN_NAME );
 						$tip = __( 'Set the beginning of the availability period. E.g.: "2", your customers may book events starting in 2 days at the earliest. They are no longer allowed to book events starting earlier (like today or tomorrow).', BOOKACTI_PLUGIN_NAME );
 						$tip .= '<br/>' . __( 'This parameter applies to the events of this calendar only. A global parameter is available in global settings.', BOOKACTI_PLUGIN_NAME );
@@ -361,7 +360,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 							min='-1' step='1'
 							onkeypress='return event.charCode >= 48 && event.charCode <= 57' />
 					<?php
-						/* translators: Arrive after a field indicating a number of days before the event. E.g.: "Events will be bookable in 2 days from today". */
+						/* translators: Arrives after a field indicating a number of days before the event. E.g.: "Events will be bookable in 2 days from today". */
 						_e( 'days from today', BOOKACTI_PLUGIN_NAME );
 						$tip = __( 'Set the end of the availability period. E.g.: "30", your customers may book events starting within 30 days at the latest. They are not allowed yet to book events starting later.', BOOKACTI_PLUGIN_NAME );
 						$tip .= '<br/>' . __( 'This parameter applies to the events of this calendar only. A global parameter is available in global settings.', BOOKACTI_PLUGIN_NAME );
@@ -517,8 +516,6 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 						bookacti_onoffswitch( $name, 0, $id );
 					
 						$tip = __( "Allow to resize an event directly on calendar.", BOOKACTI_PLUGIN_NAME );
-						$tip .= ' ' . __( "See more at", BOOKACTI_PLUGIN_NAME );
-						$tip .= ' <a href="http://fullcalendar.io/docs/event_ui/eventDurationEditable/" target="_blank" >eventDurationEditable</a>';
 						bookacti_help_tip( $tip );
 					?>
 				</div>
@@ -841,7 +838,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 					</select>
 					<?php
 						$tip = __( "Pick a category for your group of events.", BOOKACTI_PLUGIN_NAME );
-						$tip .= __( "Thanks to categories, you will be able to choose what groups of events are available on what calendars.", BOOKACTI_PLUGIN_NAME );
+						$tip .= __( "Thanks to categories, you will be able to choose what groups of events are available on what booking forms.", BOOKACTI_PLUGIN_NAME );
 						bookacti_help_tip( $tip );
 					?>
 				</div>
@@ -850,7 +847,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 					<input type='text' name='group-of-events-category-title' id='bookacti-group-of-events-category-title-field' />
 					<?php
 						$tip = __( "Name the group of events category.", BOOKACTI_PLUGIN_NAME );
-						$tip .= __( "Thanks to categories, you will be able to choose what groups of events are available on what calendars.", BOOKACTI_PLUGIN_NAME );
+						$tip .= __( "Thanks to categories, you will be able to choose what groups of events are available on what booking forms.", BOOKACTI_PLUGIN_NAME );
 						bookacti_help_tip( $tip );
 					?>
 				</div>

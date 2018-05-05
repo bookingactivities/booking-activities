@@ -12,7 +12,12 @@ function bookacti_init_template_dialogs() {
 		"hide":			true,
 		"dialogClass":	'bookacti-dialog',
 		"closeText":	'&#10006;',
-		"beforeClose":	function() { bookacti_empty_all_dialog_forms(); }
+		"beforeClose":	function() { 
+			var scope = '.bookacti-template-dialogs';
+			var dialog_id = $j( this ).attr( 'id' );
+			if( dialog_id ) { scope = '#' + dialog_id; }
+			bookacti_empty_all_dialog_forms( scope ); 
+		}
     });
 	
 	// Make dialogs close when the user click outside
@@ -22,7 +27,7 @@ function bookacti_init_template_dialogs() {
 	
 	// Press ENTER to bring focus on OK button
 	$j( '.bookacti-template-dialogs' ).on( 'keydown', function( e ) {
-		if( e.keyCode == $j.ui.keyCode.ENTER ) {
+		if( ! $j( 'textarea' ).is( ':focus' ) && e.keyCode == $j.ui.keyCode.ENTER ) {
 			$j( this ).parent().find( '.ui-dialog-buttonpane button:first' ).focus(); 
 			return false; 
 		}
@@ -76,18 +81,18 @@ function bookacti_init_template_dialogs() {
 	});
 	
 	// Init new template dialog
-	$j( '#bookacti-template-container' ).on( 'click', '#bookacti-insert-template img, #bookacti-add-first-template-button img', function() { 
+	$j( '#bookacti-template-container' ).on( 'click', '#bookacti-insert-template, #bookacti-add-first-template-button', function() { 
         bookacti_dialog_add_new_template(); 
     });
 	
 	// Init update activity dialog
-	$j( '#bookacti-template-activity-list' ).on( 'click', '.activity-gear img', function() {
+	$j( '#bookacti-template-activity-list' ).on( 'click', '.activity-gear', function() {
         var activity_id = $j( this ).data( 'activity-id' );
         bookacti_dialog_update_activity( activity_id ); 
     });
 	
 	// Init create group of events dialog
-	$j( '#bookacti-template-groups-of-events-container' ).on( 'click', '#bookacti-template-add-first-group-of-events-button img, #bookacti-insert-group-of-events img', function() {
+	$j( '#bookacti-template-groups-of-events-container' ).on( 'click', '#bookacti-template-add-first-group-of-events-button, #bookacti-insert-group-of-events', function() {
 		bookacti_dialog_create_group_of_events();
     });
 	
@@ -102,7 +107,7 @@ function bookacti_init_template_dialogs() {
 	});
 	
 	// Init update group of events dialog
-	$j( '#bookacti-template-groups-of-events-container' ).on( 'click', '.bookacti-update-group-of-events img', function() {
+	$j( '#bookacti-template-groups-of-events-container' ).on( 'click', '.bookacti-update-group-of-events', function() {
 		var group_id	= $j( this ).parents( '.bookacti-group-of-events' ).data( 'group-id' );
 		var is_selected	= $j( this ).parents( '.bookacti-group-of-events' ).hasClass( 'bookacti-selected-group' );
 		var are_selected = is_selected;
@@ -113,7 +118,7 @@ function bookacti_init_template_dialogs() {
     });
 	
 	// Init update group category dialog
-	$j( '#bookacti-group-categories' ).on( 'click', '.bookacti-update-group-category img', function() {
+	$j( '#bookacti-group-categories' ).on( 'click', '.bookacti-update-group-category', function() {
         var category_id = $j( this ).parents( '.bookacti-group-category' ).data( 'group-category-id' );
         bookacti_dialog_update_group_category( category_id ); 
     });
@@ -136,14 +141,17 @@ function bookacti_init_template_dialogs() {
 
 // TEMPLATES
 
-// Dialog Create Template
+/**
+ * Dialog Create Template
+ * @version 1.5.0
+ */
 function bookacti_dialog_add_new_template() {
-    //Set the dialog title
+    // Set the dialog title
     $j( '#bookacti-template-data-dialog' ).dialog({ 
         title: bookacti_localized.dialog_create_template_title
     });
 	
-	//Set default values
+	// Set default values
     $j( '#bookacti-template-opening' ).val( moment().format( 'YYYY-MM-DD' ) );
     $j( '#bookacti-template-closing' ).val( moment().add( 7, 'days' ).format( 'YYYY-MM-DD' ) );
 	$j( '#bookacti-template-data-minTime' ).val( '08:00' );
@@ -179,10 +187,12 @@ function bookacti_dialog_add_new_template() {
 		$j( '#bookacti-template-duplicated-template-id' ).attr( 'disabled', true );
 	}
     
-	//Open the modal dialog
+	$j( '#bookacti-template-data-dialog' ).trigger( 'bookacti_template_data_dialog' );
+	
+	// Open the modal dialog
     $j( '#bookacti-template-data-dialog' ).dialog( 'open' );
 	
-    //Add the 'OK' button
+    // Add the 'OK' button
     $j( '#bookacti-template-data-dialog' ).dialog( 'option', 'buttons',
         [{
             text: bookacti_localized.dialog_button_ok,
@@ -191,7 +201,7 @@ function bookacti_dialog_add_new_template() {
             click: function() {
 				// Prepare fields
 				$j( '#bookacti-template-data-form-action' ).val( 'bookactiInsertTemplate' );
-				$j( '#bookacti-template-data-form select[multiple].bookacti-items-select-box option' ).attr( 'selected', true );
+				$j( '#bookacti-template-data-form select[multiple].bookacti-items-select-box option' ).prop( 'selected', true );
 				
                 //Get the data to save
                 var title	= $j( '#bookacti-template-title' ).val();
@@ -207,7 +217,7 @@ function bookacti_dialog_add_new_template() {
 					if( $j( '#bookacti-template-calendar' ).length ) {
 						bookacti_start_template_loading();
 					} else if( $j( '#bookacti-first-template-container' ).length ) {
-						$j( '#bookacti-add-first-template-button img' ).attr( 'src', bookacti_localized.plugin_path + '/img/ajax-loader.gif' );
+						$j( '#bookacti-add-first-template-button' ).removeClass( 'dashicons dashicons-plus-alt' ).addClass( 'spinner' );
 					}
 					
 					//Save the new template in database
@@ -272,7 +282,7 @@ function bookacti_dialog_add_new_template() {
                         complete: function() { 
 							
 							if( $j( '#bookacti-first-template-container' ).length ) {
-								$j( '#bookacti-add-first-template-button img' ).attr( 'src', bookacti_localized.plugin_path + '/img/add.png' );
+								$j( '#bookacti-add-first-template-button' ).removeClass( 'spinner' ).addClass( 'dashicons dashicons-plus-alt' );
 							}
 							
                             bookacti_stop_template_loading();
@@ -288,7 +298,11 @@ function bookacti_dialog_add_new_template() {
 }
 
 
-// Dialog Update Template
+/**
+ * Dialog Update Template
+ * @version 1.5.0
+ * @param {int} template_id
+ */
 function bookacti_dialog_update_template( template_id ) {
 	
 	if( ! template_id ) { return false; }
@@ -323,9 +337,9 @@ function bookacti_dialog_update_template( template_id ) {
 	// Settings tabs
 	$j( '#bookacti-template-data-dialog' ).trigger( 'bookacti_default_template_settings' );
 	if( ! $j.isEmptyObject( template_data.settings ) ) {
-		bookacti_fill_settings_fields( template_data.settings, 'templateOptions' );
+		bookacti_fill_fields_from_array( template_data.settings, 'templateOptions' );
 	}
-
+	$j( '#bookacti-template-data-dialog' ).trigger( 'bookacti_template_data_dialog', [ template_id ] );
 
 	// Add buttons
 	$j( '#bookacti-template-data-dialog' ).dialog( 'option', 'buttons',
@@ -333,17 +347,17 @@ function bookacti_dialog_update_template( template_id ) {
 		[{
 			text: bookacti_localized.dialog_button_ok, 
 
-			//On click on the OK Button, new values are send to a script that update the database
+			// On click on the OK Button, new values are send to a script that update the database
 			click: function() {
 
 				// Prepare fields
 				$j( '#bookacti-template-data-form-template-id' ).val( template_id );
 				$j( '#bookacti-template-data-form-action' ).val( 'bookactiUpdateTemplate' );
-				$j( '#bookacti-template-data-form select[multiple].bookacti-items-select-box option' ).attr( 'selected', true );
+				$j( '#bookacti-template-data-form select[multiple].bookacti-items-select-box option' ).prop( 'selected', true );
 
 				// Gether the data to save
-				var data = $j( '#bookacti-template-data-form' ).serialize();
-
+				var data = $j( '#bookacti-template-data-form' ).serializeObject();
+				
 				var isFormValid = bookacti_validate_template_form();
 
 				if( isFormValid ) {
@@ -568,7 +582,7 @@ function bookacti_dialog_update_event( event ) {
 
 	// Fill additional settings
 	if( typeof event_data.settings !== 'undefined' ) {
-		bookacti_fill_settings_fields( event_data.settings, 'eventOptions' );
+		bookacti_fill_fields_from_array( event_data.settings, 'eventOptions' );
 	}
 
 	// Refresh qtranslate fields to make a correct display of multilingual fields
@@ -599,7 +613,7 @@ function bookacti_dialog_update_event( event ) {
 			$j( '#bookacti-event-data-form-event-start' ).val( event.start.format( 'YYYY-MM-DD HH:mm:ss' ) );
 			$j( '#bookacti-event-data-form-event-end' ).val( event.end.format( 'YYYY-MM-DD HH:mm:ss' ) );
 			$j( '#bookacti-event-data-form-action' ).val( 'bookactiUpdateEvent' );
-			$j( '#bookacti-event-data-form select[multiple]#bookacti-event-exceptions-selectbox option' ).attr( 'selected', true );
+			$j( '#bookacti-event-data-form select[multiple]#bookacti-event-exceptions-selectbox option' ).prop( 'selected', true );
 
 			var data = $j( '#bookacti-event-data-form' ).serializeObject();
 
@@ -1056,11 +1070,11 @@ function bookacti_dialog_import_activity() {
 									$j( 'select#activities-to-import option[value="' + activity_id + '"]' ).remove();
 								});
 								
-								//Reinitialize the activities to apply changes
+								// Reinitialize the activities to apply changes
 								bookacti_init_activities();
 
-								// Update shortcode generator
-								bookacti_update_shortcode_generator_activity_ids( activity_ids, true, false );
+								// Update create form link
+								bookacti_add_activities_to_create_form_link( activity_ids );
 
 								// Close the modal dialogs
 								$j( '#bookacti-activity-import-dialog' ).dialog( 'close' );
@@ -1130,7 +1144,7 @@ function bookacti_dialog_create_activity() {
 			click: function() {
 				
 				// Prepare fields
-				$j( '#bookacti-activity-data-form select[multiple].bookacti-items-select-box option' ).attr( 'selected', true );
+				$j( '#bookacti-activity-data-form select[multiple].bookacti-items-select-box option' ).prop( 'selected', true );
 
 				// Get the data to save
 				var days		= $j( '#bookacti-activity-duration-days' ).val();
@@ -1174,8 +1188,8 @@ function bookacti_dialog_create_activity() {
 								// Reinitialize the activities to apply changes
 								bookacti_init_activities();
 
-								// Update shortcode generator
-								bookacti_update_shortcode_generator_activity_ids( response.activity_id, true, false );
+								// Update create form link
+								bookacti_add_activities_to_create_form_link( response.activity_id );
 
 
 							// If error
@@ -1255,7 +1269,7 @@ function bookacti_dialog_update_activity( activity_id ) {
 
 	// Settings tabs
 	if( activity_data.settings ) {
-		bookacti_fill_settings_fields( activity_data.settings, 'activityOptions' );
+		bookacti_fill_fields_from_array( activity_data.settings, 'activityOptions' );
 	}
 
 	// Refresh qtranslate fields to make a correct display of multilingual fields
@@ -1277,7 +1291,7 @@ function bookacti_dialog_update_activity( activity_id ) {
 			click: function() {
 				
 				// Prepare fields
-				$j( '#bookacti-activity-data-form select[multiple].bookacti-items-select-box option' ).attr( 'selected', true );
+				$j( '#bookacti-activity-data-form select[multiple].bookacti-items-select-box option' ).prop( 'selected', true );
 
 				// Get the data to save
 				var color           = $j( '#bookacti-activity-color' ).val();
@@ -1425,8 +1439,8 @@ function bookacti_dialog_delete_activity( activity_id ) {
 								// Display tuto if there is no more activities available
 								bookacti_display_activity_tuto_if_no_activity_available();
 								
-								// Update shortcode generator
-								bookacti_update_shortcode_generator_activity_ids( activity_id, false, false );
+								// Update create form link
+								bookacti_remove_activities_from_create_form_link( activity_id );
 								
 							} else {
 								var error_message = bookacti_localized.error_delete_activity;
@@ -1520,7 +1534,7 @@ function bookacti_dialog_create_group_of_events( category_id ) {
 				
 				// Prepare fields
 				$j( '#bookacti-group-of-events-action' ).val( 'bookactiInsertGroupOfEvents' );
-				$j( '#bookacti-group-of-events-form select[multiple].bookacti-items-select-box option' ).attr( 'selected', true );
+				$j( '#bookacti-group-of-events-form select[multiple].bookacti-items-select-box option' ).prop( 'selected', true );
 				
 				// Get the data to save
 				var selected_category_id	= $j( '#bookacti-group-of-events-category-selectbox' ).val();
@@ -1635,7 +1649,7 @@ function bookacti_dialog_update_group_of_events( group_id ) {
 
 	// Other settings
 	if( group_data.settings ) {
-		bookacti_fill_settings_fields( group_data.settings, 'groupOfEventsOptions' );
+		bookacti_fill_fields_from_array( group_data.settings, 'groupOfEventsOptions' );
 	}
 
 	// Refresh qtranslate fields to make a correct display of multilingual fields
@@ -1656,7 +1670,7 @@ function bookacti_dialog_update_group_of_events( group_id ) {
 				
 				// Prepare fields
 				$j( '#bookacti-group-of-events-action' ).val( 'bookactiUpdateGroupOfEvents' );
-				$j( '#bookacti-group-of-events-form select[multiple].bookacti-items-select-box option' ).attr( 'selected', true );
+				$j( '#bookacti-group-of-events-form select[multiple].bookacti-items-select-box option' ).prop( 'selected', true );
 				
 				//Get the data to save
 				var selected_category_id	= $j( '#bookacti-group-of-events-category-selectbox' ).val();
@@ -1844,7 +1858,7 @@ function bookacti_dialog_update_group_category( category_id ) {
 
 	// Other settings
 	if( category_data.settings ) {
-		bookacti_fill_settings_fields( category_data.settings, 'groupCategoryOptions' );
+		bookacti_fill_fields_from_array( category_data.settings, 'groupCategoryOptions' );
 	}
 
 	// Refresh qtranslate fields to make a correct display of multilingual fields
@@ -1865,7 +1879,7 @@ function bookacti_dialog_update_group_category( category_id ) {
 
 				// Prepare fields
 				$j( '#bookacti-group-category-action' ).val( 'bookactiUpdateGroupCategory' );
-				$j( '#bookacti-group-category-form select[multiple].bookacti-items-select-box option' ).attr( 'selected', true );
+				$j( '#bookacti-group-category-form select[multiple].bookacti-items-select-box option' ).prop( 'selected', true );
 
 				// Get the data to save
 				var data = $j( '#bookacti-group-category-form' ).serializeArray();

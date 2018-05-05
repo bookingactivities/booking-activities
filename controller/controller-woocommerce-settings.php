@@ -2,28 +2,48 @@
 // Exit if accessed directly
 if ( ! defined( 'ABSPATH' ) ) { exit; }
 
+/**
+ * Add WooCommerce backend translation to be use in JS
+ * @since 1.5.0
+ * @param array $translation_array
+ * @return array
+ */
+function bookacti_wc_backend_translation_array( $translation_array ) {
+	$translation_array[ 'nonce_dismiss_guest_checkout_notice' ]	= wp_create_nonce( 'bookacti_dismiss_guest_checkout_notice' );
+	return $translation_array;
+}
+add_filter( 'bookacti_translation_array', 'bookacti_wc_backend_translation_array', 10, 1 );
 
-// Add settings tab
-add_filter( 'bookacti_settings_tabs', 'bookacti_add_cart_settings_tab', 5 ); 
+
+/**
+ * Add settings tab
+ * @param array $tabs
+ * @return array
+ */
 function bookacti_add_cart_settings_tab( $tabs ) {
 	$tabs['cart'] = __( 'Cart', BOOKACTI_PLUGIN_NAME );
 	
 	return $tabs;
 }
+add_filter( 'bookacti_settings_tabs', 'bookacti_add_cart_settings_tab', 5 ); 
 
 
-// Add cart tab content
-add_action( 'bookacti_settings_tab_content', 'bookacti_add_cart_tab_content' );
+/**
+ * Add cart tab content
+ * @param string $active_tab
+ */
 function bookacti_add_cart_tab_content( $active_tab ) {
 	if( $active_tab === 'cart' ) {
 		settings_fields( 'bookacti_cart_settings' );
 		do_settings_sections( 'bookacti_cart_settings' ); 
 	}
 }
+add_action( 'bookacti_settings_tab_content', 'bookacti_add_cart_tab_content' );
 
 
-// Add Cart settings section
-add_action( 'bookacti_add_settings', 'bookacti_add_woocommerce_cart_settings_section' );
+/**
+ * Add Cart settings section
+ */
 function bookacti_add_woocommerce_cart_settings_section() {
 	
 	/* Cart settings Section */
@@ -70,6 +90,7 @@ function bookacti_add_woocommerce_cart_settings_section() {
 	
 	register_setting('bookacti_cart_settings', 'bookacti_cart_settings' );
 }
+add_action( 'bookacti_add_settings', 'bookacti_add_woocommerce_cart_settings_section' );
 
 
 // 
@@ -92,12 +113,14 @@ function bookacti_cart_default_settings( $settings ) {
 add_filter( 'bookacti_default_settings', 'bookacti_cart_default_settings' );
 
 
-// Delete cart settings
-add_action( 'bookacti_delete_settings', 'bookacti_delete_cart_settings' );
+/**
+ * Delete cart settings
+ */
 function bookacti_delete_cart_settings() {
 	// Delete Cart Settings
 	delete_option( 'bookacti_cart_settings' );
 }
+add_action( 'bookacti_delete_settings', 'bookacti_delete_cart_settings' );
 
 
 /**
@@ -112,21 +135,6 @@ function bookacti_add_wc_mention_to_booking_method_tip( $tip ) {
 	return $tip;
 }
 add_filter( 'bookacti_booking_methods_tip', 'bookacti_add_wc_mention_to_booking_method_tip', 20, 1 );
-
-
-/**
- * Add a mention to when events load setting tip
- * 
- * @since 1.1.0
- * @param string $tip
- * @return string
- */
-function bookacti_add_wc_mention_to_when_events_load_tip( $tip ) {
-	$tip .= '<br/>';
-	$tip .= esc_html__( 'WC Variable products calendars will always load after page load.', BOOKACTI_PLUGIN_NAME );
-	return $tip;
-}
-add_filter( 'bookacti_when_events_load_tip', 'bookacti_add_wc_mention_to_when_events_load_tip', 10, 1 );
 
 
 /**
@@ -205,3 +213,71 @@ function bookacti_wc_default_messages( $messages ) {
 	return array_merge( $messages, $wc_messages );
 }
 add_filter( 'bookacti_default_messages', 'bookacti_wc_default_messages', 10, 1 );
+
+
+/**
+ * Display an error admin notice if guest checkout is allowed
+ * @since 1.5.0
+ */
+function bookacti_wc_guest_checkout_not_allowed_notice() {
+	$is_dismissed = get_option( 'bookacti-guest-checkout-notice-dismissed' );
+	if( ! $is_dismissed ) {
+		$guest_checkout_allowed = get_option( 'woocommerce_enable_guest_checkout' );
+		if( ! empty( $guest_checkout_allowed ) && $guest_checkout_allowed === 'yes' ) {
+		?>
+			<div class='notice notice-error bookacti-guest-checkout-notice is-dismissible' >
+				<p>
+				<?php 
+					$wc_settings_url = esc_url( get_admin_url() . 'admin.php?page=wc-settings&tab=checkout' );
+					echo __( 'Booking Activities doesn\'t support WooCommerce\'s <strong>guest checkout option</strong>. Please deactivate this option.', BOOKACTI_PLUGIN_NAME )
+						. ' ' . '<a href="' . $wc_settings_url . '" >' . __( 'Go to WooCommerce settings.', BOOKACTI_PLUGIN_NAME ) . '</a>'; 
+				?>
+				</p>
+			</div>
+		<?php
+		}
+	}
+}
+add_action( 'all_admin_notices', 'bookacti_wc_guest_checkout_not_allowed_notice' );
+
+
+/**
+ * Remove WC Guest Checkout option notice
+ * @since 1.5.0
+ */
+function bookacti_dismiss_guest_checkout_notice() {
+	
+	// Check nonce, no need to check capabilities
+	$is_nonce_valid = check_ajax_referer( 'bookacti_dismiss_guest_checkout_notice', 'nonce', false );
+	$is_allowed		= current_user_can( 'bookacti_manage_booking_activities' );
+
+	if( $is_nonce_valid && $is_allowed ) {
+	
+		$updated = update_option( 'bookacti-guest-checkout-notice-dismissed', 1 );
+		if( $updated ) {
+			wp_send_json( array( 'status' => 'success' ) );
+		} else {
+			wp_send_json( array( 'status' => 'failed', 'error' => 'not_updated' ) );
+		}
+	} else {
+		wp_send_json( array( 'status' => 'failed', 'error' => 'not_allowed' ) );
+	}
+}
+add_action( 'wp_ajax_bookactiDismissGuestCheckoutNotice', 'bookacti_dismiss_guest_checkout_notice' );
+
+
+/**
+ * Restore WC Guest Checkout option notice if the guest checkout box is checked again
+ * @since 1.5.0
+ * @global string $current_tab
+ */
+function bookacti_restore_guest_checkout_notice() {
+	global $current_tab;
+	if( $current_tab === 'checkout' ) {
+		$guest_checkout_allowed = get_option( 'woocommerce_enable_guest_checkout' );
+		if( ! empty( $guest_checkout_allowed ) && $guest_checkout_allowed === 'yes' ) {
+			delete_option( 'bookacti-guest-checkout-notice-dismissed' );
+		}
+	}
+}
+add_action( 'woocommerce_settings_saved', 'bookacti_restore_guest_checkout_notice' );

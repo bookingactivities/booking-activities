@@ -1,7 +1,8 @@
 // INITIALIZATION
 // Initialize bookings dialogs
 function bookacti_init_booking_system_dialogs() {
-	//Common param
+	
+	// Common param
 	$j( '.bookacti-booking-system-dialog' ).dialog({ 
 		"modal":		true,
 		"autoOpen":		false,
@@ -19,25 +20,29 @@ function bookacti_init_booking_system_dialogs() {
 	$j( '.ui-widget-overlay' ).live( 'click', function (){
 		$j( 'div:ui-dialog:visible' ).dialog( 'close' );
 	});
-
-	//Individual param
-	$j( '#bookacti-choose-group-of-events-dialog' ).dialog({ 
-		title: bookacti_localized.dialog_choose_group_of_events_title
+	
+	// Press ENTER to bring focus on OK button
+	$j( '.bookacti-booking-system-dialog' ).off( 'keydown' ).on( 'keydown', function( e ) {
+		if( ! $j( 'textarea' ).is( ':focus' ) && e.keyCode == $j.ui.keyCode.ENTER ) {
+			$j( this ).parent().find( '.ui-dialog-buttonpane button:first' ).focus(); 
+			return false; 
+		}
 	});
 	
 	// Show / Hide group events list
-	$j( '#bookacti-groups-of-events-list' ).on( 'bookacti_group_of_events_preview', 'input[name="group_of_events"]', function( e, event ) {
+	$j( '.bookacti-groups-of-events-list' ).off( 'bookacti_group_of_events_preview' ).on( 'bookacti_group_of_events_preview', 'input[name="group_of_events"]', function( e, event ) {
 		var group_id			= $j( this ).val();
-		var booking_system_id	= $j( '#bookacti-groups-of-events-list' ).data( 'booking-system-id' );
+		var groups_list			= $j( this ).parents( '.bookacti-groups-of-events-list' );
+		var booking_system_id	= groups_list.data( 'booking-system-id' );
 		var booking_system		= $j( '#' + booking_system_id );
 		
 		// Hide other events list
-		$j( '.bookacti-group-of-events-option[data-group-id!="' + group_id + '"]' ).data( 'show-events', 0 ).attr( 'data-show-events', 0 );
-		$j( '.bookacti-group-of-events-list[data-group-id!="' + group_id + '"]' ).hide( 200 );
+		groups_list.find( '.bookacti-group-of-events-option[data-group-id!="' + group_id + '"]' ).data( 'show-events', 0 ).attr( 'data-show-events', 0 );
+		groups_list.find( '.bookacti-group-of-events-list[data-group-id!="' + group_id + '"]' ).hide( 200 );
 		
 		// Show group events list
-		$j( '.bookacti-group-of-events-option[data-group-id="' + group_id + '"]' ).data( 'show-events', 1 ).attr( 'data-show-events', 1 );
-		$j( '.bookacti-group-of-events-list[data-group-id="' + group_id + '"]' ).show( 200 );
+		groups_list.find( '.bookacti-group-of-events-option[data-group-id="' + group_id + '"]' ).data( 'show-events', 1 ).attr( 'data-show-events', 1 );
+		groups_list.find( '.bookacti-group-of-events-list[data-group-id="' + group_id + '"]' ).show( 200 );
 		
 		// Pick events and fill form inputs
 		bookacti_unpick_all_events( booking_system );
@@ -49,12 +54,18 @@ function bookacti_init_booking_system_dialogs() {
 // Choose a group of events dialog
 function bookacti_dialog_choose_group_of_events( booking_system, group_ids, event ) {
 	
-	var booking_system_id = booking_system.attr( 'id' );
-	var context = booking_system_id === 'bookacti-booking-system-bookings-page' ? 'booking_page' : 'frontend';
+	var booking_system_id		= booking_system.attr( 'id' );
+	var context					= booking_system_id === 'bookacti-booking-system-bookings-page' ? 'booking_page' : 'frontend';
+	var dialog					= $j( '#' + booking_system_id + '-choose-group-of-events-dialog' );
+	var groups_of_events_list	= $j( '#' + booking_system_id + '-groups-of-events-list' );
 	
-	$j( '#bookacti-groups-of-events-list' ).data( 'booking-system-id', booking_system_id );
+	var past_events			= bookacti.booking_system[ booking_system_id ][ 'past_events' ];
+	var past_events_bookable= bookacti.booking_system[ booking_system_id ][ 'past_events_bookable' ];
+	var current_time		= moment.utc( bookacti_localized.current_time );
 	
-	$j( '#bookacti-groups-of-events-list' ).empty();
+	groups_of_events_list.data( 'booking-system-id', booking_system_id );
+	
+	groups_of_events_list.empty();
 	
 	// Fill the dialog with the different choices
 	
@@ -77,7 +88,17 @@ function bookacti_dialog_choose_group_of_events( booking_system, group_ids, even
 		// Check event availability
 		var is_available = true;
 		
-		if( typeof bookacti.booking_system[ booking_system_id ][ 'events_data' ][ event.id ] !== 'undefined' ) {
+		// Check if the event is past
+		if( past_events ) {
+			var event_start				= moment.utc( event.start ).clone();
+			var event_end				= moment.utc( event.end ).clone();
+			if( ! past_events_bookable && event_start.isBefore( current_time ) 
+			&& ! ( bookacti_localized.started_events_bookable && event_end.isAfter( current_time ) ) ) {
+				is_available = false;
+			}
+		}
+		
+		if( is_available && typeof bookacti.booking_system[ booking_system_id ][ 'events_data' ][ event.id ] !== 'undefined' ) {
 			// Check the min quantity required
 			is_available = false;
 			var min_qty_ok = false;
@@ -139,12 +160,24 @@ function bookacti_dialog_choose_group_of_events( booking_system, group_ids, even
 		});
 		
 		var event_duration = bookacti_format_event_duration( event.start, event.end );
+		
+		var event_data = {
+			'title': event.title,
+			'duration': event_duration,
+			'quantity': 1
+		};
 
-		var list_element = $j( '<li />', {
-			'html': '<span class="bookacti-booking-event-duration" >'  + event_duration + '</span>' 
+		booking_system.trigger( 'bookacti_group_of_events_list_data', [ event_data, event ] );
+		
+		var list_element_data = {
+			'html': '<span class="bookacti-booking-event-duration" >'  + event_data.duration + '</span>' 
 				+ '<span class="bookacti-booking-event-title-separator" > - </span>' 
-				+ '<span class="bookacti-booking-event-title" >'  + event.title + '</span>' 
-		});
+				+ '<span class="bookacti-booking-event-title" >'  + event_data.title + '</span>' 
+		};
+		
+		booking_system.trigger( 'bookacti_group_of_events_list_element_data', [ list_element_data, event ] );
+		
+		var list_element = $j( '<li />', list_element_data );
 		
 		option_container.append( radio );
 		option_container.append( label );
@@ -153,24 +186,35 @@ function bookacti_dialog_choose_group_of_events( booking_system, group_ids, even
 		event_list.append( list_element );
 		container.append( event_list );
 		
-		$j( '#bookacti-groups-of-events-list' ).append( container );
+		groups_of_events_list.append( container );
 	}
 	
 	// Add each available group of events as a radio option
 	$j.each( group_ids, function( i, group_id ) {
 		group_id = parseInt( group_id );
-		if( typeof bookacti.booking_system[ booking_system_id ][ 'groups_events' ][ group_id ] !== 'undefined' ) {
+		if( typeof bookacti.booking_system[ booking_system_id ][ 'groups_events' ][ group_id ] !== 'undefined'
+		&&  typeof bookacti.booking_system[ booking_system_id ][ 'groups_data' ][ group_id ] !== 'undefined') {
 			
-			var availability = bookacti.booking_system[ booking_system_id ][ 'groups_data' ][ group_id ][ 'availability' ];
+			var group			= bookacti.booking_system[ booking_system_id ][ 'groups_data' ][ group_id ];
+			var availability	= group.availability;
 			
 			// Check group of events availability
 			var is_available = true;
 			
-			if( typeof bookacti.booking_system[ booking_system_id ][ 'groups_data' ][ group_id ] !== 'undefined' ) {
+			// Check if the group is past
+			if( past_events ) {
+				var group_start	= moment.utc( group.start ).clone();
+				var group_end	= moment.utc( group.end ).clone();
+				if( ! past_events_bookable && group_start.isBefore( current_time ) 
+				&& ! ( bookacti_localized.started_groups_bookable && group_end.isAfter( current_time ) ) ) {
+					is_available = false; // Skip this group
+				}
+			}
+			
+			if( is_available ) {
 				// Check the min quantity
 				is_available		= false;
 				var min_qty_ok		= false;
-				var group			= bookacti.booking_system[ booking_system_id ][ 'groups_data' ][ group_id ];
 				var category_id		= parseInt( group[ 'category_id' ] );
 				var category_data	= bookacti.booking_system[ booking_system_id ][ 'group_categories_data' ][ category_id ][ 'settings' ];
 				var min_quantity	= typeof category_data[ 'min_bookings_per_user' ] === 'undefined' ? 0 : ( category_data[ 'min_bookings_per_user' ] ? parseInt( category_data[ 'min_bookings_per_user' ] ) : 0 );
@@ -267,26 +311,26 @@ function bookacti_dialog_choose_group_of_events( booking_system, group_ids, even
 			container.append( option_container );
 			container.append( event_list );
 						
-			$j( '#bookacti-groups-of-events-list' ).append( container );
+			groups_of_events_list.append( container );
 		}
 	});
 	
 	// Trigger a preview of the selection on change
-	$j( '#bookacti-groups-of-events-list input[name="group_of_events"]' ).on( 'change', function() { 
+	groups_of_events_list.find( 'input[name="group_of_events"]' ).on( 'change', function() { 
 		$j( this ).trigger( 'bookacti_group_of_events_preview', [ event ] ); 
 	});
 	
 	// Pick the first group by default and yell it
-	$j( '#bookacti-groups-of-events-list input[name="group_of_events"]:not([disabled]):first' ).prop( 'checked', true ).trigger( 'change' );
+	groups_of_events_list.find( 'input[name="group_of_events"]:not([disabled]):first' ).prop( 'checked', true ).trigger( 'change' );
 	
 	
 	// Open the modal dialog
-    $j( '#bookacti-choose-group-of-events-dialog' ).dialog( 'open' );
+    dialog.dialog( 'open' );
 	
 	// Make sure picked_events is emptied on close if no option has been selected
-    $j( '#bookacti-choose-group-of-events-dialog' ).dialog({
+    dialog.dialog({
 		close: function() {
-			var selected_group = $j('#bookacti-groups-of-events-list input[type="radio"]:checked').val();
+			var selected_group = groups_of_events_list.find( 'input[type="radio"]:checked').val();
 			// Empty the picked events if no group was choosen
 			if( typeof selected_group === 'undefined' ) {
 				bookacti_unpick_all_events( booking_system );
@@ -295,13 +339,13 @@ function bookacti_dialog_choose_group_of_events( booking_system, group_ids, even
 	});
 	
     // Add the 'OK' button
-    $j( '#bookacti-choose-group-of-events-dialog' ).dialog( 'option', 'buttons',
+    dialog.dialog( 'option', 'buttons',
         [{
             text: bookacti_localized.dialog_button_ok,
             
             click: function() {
 				
-				var group_id = $j( '#bookacti-groups-of-events-list input[type="radio"]:checked' ).val();
+				var group_id = groups_of_events_list.find( 'input[type="radio"]:checked' ).val();
 				
 				if( typeof group_id !== 'undefined' ) {
 					// Pick events and fill form inputs

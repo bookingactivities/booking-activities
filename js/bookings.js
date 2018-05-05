@@ -1,4 +1,4 @@
-$j( document ).ready(function() {
+$j( document ).ready( function() {
 	
 	var booking_system		= $j( '#bookacti-booking-system-bookings-page' );
 	var booking_system_id	= booking_system.attr( 'id' );

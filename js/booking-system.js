@@ -1,16 +1,16 @@
 $j( document ).ready( function() {
 	
-	//Check if booking systems exist before anything
+	// Init on pick events actions
+	$j( 'body' ).on( 'bookacti_events_picked', '.bookacti-booking-system', function( e, group_id, event ){
+		bookacti_fill_booking_system_fields( $j( this ), event, group_id );
+		bookacti_fill_picked_events_list( $j( this ) );
+	});
+	
+	// Check if booking systems exist before anything
 	if( $j( '.bookacti-booking-system' ).length ) { 
 		
 		// Init the Dialogs
 		bookacti_init_booking_system_dialogs();
-		
-		// Init on pick events actions
-		$j( '.bookacti-booking-system' ).on( 'bookacti_events_picked', function( e, group_id, event ){
-			bookacti_fill_form_fields( $j( this ), event, group_id );
-			bookacti_fill_picked_events_list( $j( this ) );
-		});
 				
 		$j( '.bookacti-booking-system' ).each( function() { 
 			
@@ -27,9 +27,13 @@ $j( document ).ready( function() {
 			}
 			
 			// Load the booking system
-			if( attributes.auto_load && booking_system_id !== 'bookacti-booking-system-reschedule' ) {
-				if( bookacti_localized.when_events_load === 'on_page_load' ) {
+			if( booking_system_id !== 'bookacti-booking-system-reschedule' ) {
+				if( attributes.auto_load ) {
 					bookacti_booking_method_set_up( booking_system, false );
+					
+					// remove initial loading feedback
+					booking_system.find( '.bookacti-loading-alt' ).remove();
+					
 				} else {
 					bookacti_reload_booking_system( booking_system );
 				}

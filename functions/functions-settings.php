@@ -23,10 +23,11 @@ function bookacti_get_default_settings() {
 		'default_booking_state'					=> 'pending',
 		'default_payment_status'				=> 'none',
 		'timezone'								=> $tz,
+		'default_calendar_view_threshold'		=> 640,
 		'allow_customers_to_cancel'				=> true,
 		'allow_customers_to_reschedule'			=> true,
 		'cancellation_min_delay_before_event'	=> 7,
-		'refund_actions_after_cancellation'		=> 'do_nothing',
+		'refund_actions_after_cancellation'		=> array(),
 		'notifications_from_name'				=> get_bloginfo( 'name' ),
 		'notifications_from_email'				=> get_bloginfo( 'admin_email' ),
 		'notifications_async'					=> true
@@ -123,6 +124,36 @@ function bookacti_settings_section_bookings_callback() { }
 		));
 	}
 
+	
+// FORMS SETTINGS
+
+	/**
+	 * Display Form page options in screen options area
+	 * 
+	 * @since 1.5.0
+	 */
+	function bookacti_display_forms_screen_options() {
+		$screen = get_current_screen();
+
+		// Don't do anything if we are not on the booking page
+		if( ! is_object( $screen ) || $screen->id != 'booking-activities_page_bookacti_forms' ) { return; }
+		
+		if( ! empty( $_REQUEST[ 'action' ] ) && in_array( $_REQUEST[ 'action' ], array( 'edit', 'new' ), true ) ) {
+			// Layout columns number
+			add_screen_option( 'layout_columns', array( 
+				'max' => 2, 
+				'default' => 2 
+			));
+		} else {
+			// Bookings per page
+			add_screen_option( 'per_page', array(
+				'label' => __( 'Forms per page:', BOOKACTI_PLUGIN_NAME ),
+				'default' => 20,
+				'option' => 'bookacti_forms_per_page'
+			));
+		}
+	}
+	
 
 // GENERAL SETTINGS 
 
@@ -141,7 +172,7 @@ function bookacti_settings_section_bookings_callback() { }
 		if( ! $license_status || $license_status !== 'valid' ) {
 			$tip .= '<br/>';
 			$tip .= sprintf( __( 'Get more display methods with %1$sDisplay Pack%2$s add-on!', BOOKACTI_PLUGIN_NAME ),
-							'<a href="https://booking-activities.fr/en/downloads/display-pack/?utm_source=plugin&utm_medium=plugin&utm_campaign=display-pack&utm_content=landing" target="_blank" >', '</a>');
+							'<a href="https://booking-activities.fr/en/downloads/display-pack/?utm_source=plugin&utm_medium=plugin&utm_campaign=display-pack&utm_content=settings" target="_blank" >', '</a>');
 		}
 		
 		$args = array(
@@ -380,6 +411,29 @@ function bookacti_settings_section_bookings_callback() { }
 		$tip  = __( 'Pick the timezone corresponding to where your business takes place.', BOOKACTI_PLUGIN_NAME );
 		bookacti_help_tip( $tip );
 	}
+	
+	
+	/**
+	 * Display "Calendar default view: width threshold" setting
+	 * @since 1.5.0
+	 */
+	function bookacti_settings_field_default_calendar_view_threshold_callback() {
+		$addon_link = '<a href="https://booking-activities.fr/en/downloads/display-pack/?utm_source=plugin&utm_medium=plugin&utm_campaign=display-pack&utm_content=settings" target="_blank" >'
+					.	esc_html( __( 'Display Pack', BOOKACTI_PLUGIN_NAME ) )
+					. '</a>';
+		
+		$args = array(
+			'type'		=> 'number',
+			'name'		=> 'bookacti_general_settings[default_calendar_view_threshold]',
+			'id'		=> 'default_calendar_view_threshold',
+			'options'	=> array( 'min' => 0, 'step' => 1 ),
+			'value'		=> bookacti_get_setting_value( 'bookacti_general_settings', 'default_calendar_view_threshold' ),
+			'label'		=> esc_html_x( 'px', 'pixel short', BOOKACTI_PLUGIN_NAME ),
+			'tip'		=> esc_html__( 'The day view will be displayed by default if the calendar width is under that threshold when it is loaded. Else, it will be the week view.', BOOKACTI_PLUGIN_NAME )
+						. '<br/>' . sprintf( esc_html__( 'Get more views and granularity with %s add-on!' ), $addon_link )
+		);
+		bookacti_display_field( $args );
+	}
 
 
 
@@ -445,15 +499,14 @@ function bookacti_settings_section_bookings_callback() { }
 	/**
 	 * Possible actions to take after cancellation needing refund
 	 * 
-	 * @version 1.2.0
+	 * @version 1.5.0
 	 */
 	function bookacti_settings_field_cancellation_refund_actions_callback() {
 		
 		$actions = bookacti_get_setting_value( 'bookacti_cancellation_settings', 'refund_actions_after_cancellation' );
 		
-		if( ! is_array( $actions ) ) {
-			$actions = $actions ? array( $actions => 1 ) : array();
-		}
+		if( is_string( $actions ) ) { $actions = array( $actions ); }
+		if( ! is_array( $actions ) ) { $actions = array(); }
 		
 		$args = array(
 			'type'		=> 'checkboxes',
@@ -466,10 +519,6 @@ function bookacti_settings_section_bookings_callback() { }
 		
 		?>
 		<div id='bookacti_refund_actions'>
-			<input name='bookacti_cancellation_settings[refund_actions_after_cancellation][do_nothing]' 
-				type='hidden' 
-				value='1'
-			/>
 			<?php bookacti_display_field( $args ); ?>
 		</div>
 		<?php
@@ -480,10 +529,11 @@ function bookacti_settings_section_bookings_callback() { }
 // NOTIFICATIONS SETTINGS 
 	
 	/**
-	* Settings section callback - Notifications - General settings (displayed before settings)
-	* 
-	* @since 1.2.1 (was bookacti_settings_section_notifications_callback in 1.2.0)
-	*/
+	 * Settings section callback - Notifications - General settings (displayed before settings)
+	 * 
+	 * @since 1.2.1 (was bookacti_settings_section_notifications_callback in 1.2.0)
+	 * @version 1.5.0
+	 */
    function bookacti_settings_section_notifications_general_callback() { 
 
 		// Display a table of configurable notifications
@@ -525,9 +575,7 @@ function bookacti_settings_section_bookings_callback() { }
 					'active'		=> '<span class="dashicons ' . $active_icon . '"></span>',
 					'title'			=> '<a href="' . esc_url( '?page=bookacti_settings&tab=notifications&notification_id=' . sanitize_title_with_dashes( $notification_id ) ) . '" >' . esc_html( $notification_settings[ 'title' ] ) . '</a>' . $description,
 					'recipients'	=> substr( $notification_id, 0, 8 ) === 'customer' ? esc_html__( 'Customer', BOOKACTI_PLUGIN_NAME ) : esc_html__( 'Administrator', BOOKACTI_PLUGIN_NAME ),
-					'actions'		=> '<a href="' . esc_url( '?page=bookacti_settings&tab=notifications&notification_id=' . sanitize_title_with_dashes( $notification_id ) ) . '" >' 
-										. '<img src="' . plugins_url() . '/' . BOOKACTI_PLUGIN_NAME . '/img/gear.png" />' 
-									. '</a>'
+					'actions'		=> '<a href="' . esc_url( '?page=bookacti_settings&tab=notifications&notification_id=' . sanitize_title_with_dashes( $notification_id ) ) . '" title="' . esc_attr__( 'Edit this notification', BOOKACTI_PLUGIN_NAME ) . '" ><span class="dashicons dashicons-admin-generic" ></span></a>'
 				), $notification_settings, $notification_id );
 				
 				?>
@@ -694,7 +742,7 @@ function bookacti_settings_section_bookings_callback() { }
 				'description'	=> esc_html__( 'Instructions displayed before the calendar.', BOOKACTI_PLUGIN_NAME )
 			),
 			'booking_success' => array(
-				'value'			=> esc_html__( 'Your event has been booked successfully!', BOOKACTI_PLUGIN_NAME ),
+				'value'			=> esc_html__( 'Your reservation has been processed!', BOOKACTI_PLUGIN_NAME ),
 				'description'	=> esc_html__( 'When a reservation has been successfully registered.', BOOKACTI_PLUGIN_NAME )
 			),
 			'booking_form_submit_button' => array(
@@ -810,7 +858,9 @@ function bookacti_settings_section_bookings_callback() { }
 
 
 
-// RESET NOTICES
+/**
+ * Reset notices
+ */
 function bookacti_reset_notices() {
 	delete_option( 'bookacti-install-date' );
 	delete_option( 'bookacti-first20-notice-viewed' );
@@ -821,11 +871,13 @@ function bookacti_reset_notices() {
 
 /**
  * Get Booking Activities admin screen ids
+ * @version 1.5.0
  */
 function bookacti_get_screen_ids() {
 	$screens = array(
 		'toplevel_page_booking-activities',
 		'booking-activities_page_bookacti_calendars',
+		'booking-activities_page_bookacti_forms',
 		'booking-activities_page_bookacti_bookings',
 		'booking-activities_page_bookacti_settings'
 	);
@@ -835,12 +887,16 @@ function bookacti_get_screen_ids() {
 
 
 // ROLES AND CAPABILITIES
-	// Add roles and capabilities
+	/**
+	 * Add roles and capabilities
+	 * @version 1.5.0
+	 */
 	function bookacti_set_role_and_cap() {
 		$administrator = get_role( 'administrator' );
 		$administrator->add_cap( 'bookacti_manage_booking_activities' );
 		$administrator->add_cap( 'bookacti_manage_bookings' );
 		$administrator->add_cap( 'bookacti_manage_templates' );
+		$administrator->add_cap( 'bookacti_manage_forms' );
 		$administrator->add_cap( 'bookacti_manage_booking_activities_settings' );
 		$administrator->add_cap( 'bookacti_read_templates' );
 		$administrator->add_cap( 'bookacti_create_templates' );
@@ -851,17 +907,25 @@ function bookacti_get_screen_ids() {
 		$administrator->add_cap( 'bookacti_delete_activities' );
 		$administrator->add_cap( 'bookacti_create_bookings' );
 		$administrator->add_cap( 'bookacti_edit_bookings' );
+		$administrator->add_cap( 'bookacti_delete_bookings' );
+		$administrator->add_cap( 'bookacti_create_forms' );
+		$administrator->add_cap( 'bookacti_edit_forms' );
+		$administrator->add_cap( 'bookacti_delete_forms' );
 
 		do_action( 'bookacti_set_capabilities' );
 	}
-
-
-	// Remove roles and capabilities
+	
+	
+	/**
+	 * Remove roles and capabilities
+	 * @version 1.5.0
+	 */
 	function bookacti_unset_role_and_cap() {
 		$administrator	= get_role( 'administrator' );
 		$administrator->remove_cap( 'bookacti_manage_booking_activities' );
 		$administrator->remove_cap( 'bookacti_manage_bookings' );
 		$administrator->remove_cap( 'bookacti_manage_templates' );
+		$administrator->remove_cap( 'bookacti_manage_forms' );
 		$administrator->remove_cap( 'bookacti_manage_booking_activities_settings' );
 		$administrator->remove_cap( 'bookacti_read_templates' );
 		$administrator->remove_cap( 'bookacti_create_templates' );
@@ -872,7 +936,11 @@ function bookacti_get_screen_ids() {
 		$administrator->remove_cap( 'bookacti_delete_activities' );
 		$administrator->remove_cap( 'bookacti_create_bookings' );
 		$administrator->remove_cap( 'bookacti_edit_bookings' );
-
+		$administrator->remove_cap( 'bookacti_delete_bookings' );
+		$administrator->remove_cap( 'bookacti_create_forms' );
+		$administrator->remove_cap( 'bookacti_edit_forms' );
+		$administrator->remove_cap( 'bookacti_delete_forms' );
+		
 		do_action( 'bookacti_unset_capabilities' );
 	}
 

@@ -1,16 +1,5 @@
 /***** BOOKINGS PAGE *****/
 
-/** GLOBAL **/
-.bookacti-bookings-title			{ margin-right: 5px; }
-.bookacti-bookings-title,
-.bookacti-bookings-title-gear		{ display: inline-block; vertical-align: middle; }
-.bookacti-bookings-title-gear		{ cursor: pointer; width: 20px; height: 20px; }
-.bookacti-bookings-title-gear img	{ max-width: 20px; max-height: 20px;}
-
-.bookacti-bookings-title-gear[disabled],
-.bookacti-bookings-filter[disabled] { opacity: 0.4; pointer-events: none; }
-
-
 /** FILTERS **/
 .bookacti-bookings-filter-container	{ display: inline-block;  vertical-align: top; width: 150px; margin-right: 10px; }
 .bookacti-bookings-filter-title		{ font-weight: bold; line-height: 2.5em; }
@@ -47,6 +36,11 @@
 
 /** BOOKING LIST **/
 #bookacti-bookings-list-container tr.hidden { display: none; }
+.alternate, .striped>tbody>:nth-child(odd), ul.striped>:nth-child(odd) {
+	-webkit-transition: background-color 400ms linear;
+	-ms-transition: background-color 400ms linear;
+	transition: background-color 400ms linear;
+}
 
 #bookacti-bookings-list-container th.sortable a, 
 #bookacti-bookings-list-container th.sorted a					{ overflow: visible; white-space: nowrap; }
@@ -71,10 +65,13 @@
 #bookacti-bookings-list-container .column-event_title,
 #bookacti-bookings-list-container .column-activity_title,
 #bookacti-bookings-list-container .column-template_title,
+#bookacti-bookings-list-container .column-product,
+#bookacti-bookings-list-container .column-email,
+#bookacti-bookings-list-container .column-phone,
 #bookacti-bookings-list-container .column-start_date,
 #bookacti-bookings-list-container .column-end_date,
 #bookacti-bookings-list-container .column-creation_date	{ width: 12%; }
-#bookacti-bookings-list-container .column-actions		{ width: 140px; }
+#bookacti-bookings-list-container .column-actions		{ width: 172px; }
 
 #bookacti-bookings-list-container .column-id									{ padding: 8px 0; }
 #bookacti-bookings-list-container .column-id .bookacti-booking-group-indicator,
@@ -135,6 +132,8 @@
 .wp-admin a.bookacti-change-booking-group-state:after	{ content: '\f464'; }
 .wp-admin a.bookacti-refund-booking:after,
 .wp-admin a.bookacti-refund-booking-group:after			{ content: '\f526'; }
+.wp-admin a.bookacti-delete-booking:after,
+.wp-admin a.bookacti-delete-booking-group:after			{ content: '\f182'; }
 .wp-admin a.bookacti-view-booking-order:after,
 .wp-admin a.bookacti-view-booking-group-order:after		{ font-family: 'WooCommerce'; content: '\e03d'; }
 .wp-admin a.bookacti-reschedule-booking:after			{ content: '\f469'; }
@@ -147,7 +146,7 @@ a.bookacti-booking-action					{ display: inline-block; word-spacing: 0; margin: 
 .wp-core-ui .button.bookacti-booking-group-action,
 .wp-core-ui .button.bookacti-booking-action	{ margin: 5px 0; vertical-align: middle; }
 
-/* Shortcodes */
+/* Shortcode Booking list */
 .bookacti-user-bookings-list		{ width: 100%; margin-bottom: 20px; }
 .bookacti-user-bookings-list table	{ width: 100%; background-color: rgba( 255,255,255,0.5 ); border: 1px solid rgba(0,0,0,.1); border-collapse: separate; border-radius: 5px; }
 .bookacti-user-bookings-list thead	{ background-color: rgba( 255,255,255,0.5 ); }
@@ -164,7 +163,7 @@ a.bookacti-booking-action					{ display: inline-block; word-spacing: 0; margin: 
 /** DIALOGS **/
 .bookacti-dialog { font-family: "Open Sans",sans-serif !important; font-size: 1em !important; overflow: visible !important; }
 .bookacti-dialog ~ .ui-widget-overlay { 
-    position: absolute;
+    position: fixed;
     top: 0; 
     left: 0; 
     width:100%;
@@ -220,11 +219,10 @@ a.bookacti-booking-action					{ display: inline-block; word-spacing: 0; margin: 
 	#bookacti-refund-message textarea				{ display: block; width: 100%; }
 	
 	#bookacti-reschedule-booking-dialog label:not(.bookacti-onoffswitch-label),
-	#bookacti-change-booking-state-form label:not(.bookacti-onoffswitch-label) { display: inline-block; width: 150px; font-weight: bold; }
+	#bookacti-change-booking-state-form label:not(.bookacti-onoffswitch-label) { display: inline-block; width: 150px; font-family: Arial,Helvetica,sans-serif; font-weight: bold; }
 	#bookacti-change-booking-state-form > div				{ margin-bottom: 10px; }
 	#bookacti-change-booking-state-form > div:last-child	{ margin-bottom: 0; }
-
-
+	
 
 /***** RESPONSIVE DESIGN *****/
 

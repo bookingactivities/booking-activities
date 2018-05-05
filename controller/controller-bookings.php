@@ -35,7 +35,6 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	
 
 // BOOKING ACTIONS
-	
 	// SINGLE BOOKING
 		/**
 		 * AJAX Controller - Cancel a booking
@@ -333,9 +332,52 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		}
 		add_action( 'wp_ajax_bookactiRescheduleBooking', 'bookacti_controller_reschedule_booking' );
 		add_action( 'wp_ajax_nopriv_bookactiRescheduleBooking', 'bookacti_controller_reschedule_booking' );
-	
-	
-	
+		
+		
+		/**
+		 * AJAX Controller - Delete a booking
+		 * @since 1.5.0
+		 */
+		function bookacti_controller_delete_booking() {
+
+			$booking_id = intval( $_POST[ 'booking_id' ] );
+			
+			// Check nonce
+			if( ! check_ajax_referer( 'bookacti_delete_booking', 'nonce_delete_booking', false ) ) { 
+				bookacti_send_json_invalid_nonce( 'delete_booking' ); 
+			}
+			
+			// Check capabilities
+			if( ! current_user_can( 'bookacti_delete_bookings' ) || ! bookacti_user_can_manage_booking( $booking_id ) ) { 
+				bookacti_send_json_not_allowed( 'delete_booking' ); 
+			}
+			
+			do_action( 'bookacti_before_delete_booking', $booking_id );
+			
+			$deleted = bookacti_delete_booking( $booking_id );
+
+			if( ! $deleted ) {
+				$return_array = array( 
+					'status'	=> 'failed', 
+					'error'		=> 'not_deleted', 
+					'message'	=> esc_html__( 'An error occurred while trying to delete the booking.', BOOKACTI_PLUGIN_NAME )
+				);
+				bookacti_send_json( $return_array, 'delete_booking' );
+			}
+			
+			// Delete booking metadata, if any
+			bookacti_delete_metadata( 'booking', $booking_id );
+
+			do_action( 'bookacti_booking_deleted', $booking_id );
+
+			$return_array = array( 'status' => 'success' );
+			bookacti_send_json( $return_array, 'delete_booking' );
+		}
+		add_action( 'wp_ajax_bookactiDeleteBooking', 'bookacti_controller_delete_booking' );
+
+
+
+
 	// BOOKING GROUPS
 		
 		/**
@@ -584,7 +626,56 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			wp_send_json( array( 'status' => 'success', 'row' => $row, 'grouped_booking_rows' => $rows, 'active_changed' => $active_changed ) );
 		}
 		add_action( 'wp_ajax_bookactiChangeBookingGroupState', 'bookacti_controller_change_booking_group_state' );
+		
+		
+		/**
+		 * AJAX Controller - Delete a booking group
+		 * @since 1.5.0
+		 */
+		function bookacti_controller_delete_booking_group() {
 
+			$booking_group_id = intval( $_POST[ 'booking_id' ] );
+			
+			// Check nonce
+			if( ! check_ajax_referer( 'bookacti_delete_booking', 'nonce_delete_booking', false ) ) { 
+				bookacti_send_json_invalid_nonce( 'delete_booking_group' ); 
+			}
+			
+			// Check capabilities
+			if( ! current_user_can( 'bookacti_delete_bookings' ) || ! bookacti_user_can_manage_booking_group( $booking_group_id ) ) { 
+				bookacti_send_json_not_allowed( 'delete_booking_group' ); 
+			}
+			
+			do_action( 'bookacti_before_delete_booking_group', $booking_group_id );
+			
+			$bookings_deleted = bookacti_delete_booking_group_bookings( $booking_group_id );
+			
+			if( $bookings_deleted === false ) {
+				$return_array = array( 
+					'status'	=> 'failed', 
+					'error'		=> 'grouped_bookings_not_deleted', 
+					'message'	=> esc_html__( 'An error occurred while trying to delete the bookings of the group.', BOOKACTI_PLUGIN_NAME )
+				);
+				bookacti_send_json( $return_array, 'delete_booking_group' );
+			}
+			
+			$group_deleted = bookacti_delete_booking_group( $booking_group_id );
+
+			if( ! $group_deleted ) {
+				$return_array = array( 
+					'status'	=> 'failed', 
+					'error'		=> 'not_deleted', 
+					'message'	=> esc_html__( 'An error occurred while trying to delete the booking group.', BOOKACTI_PLUGIN_NAME )
+				);
+				bookacti_send_json( $return_array, 'delete_booking_group' );
+			}
+			
+			do_action( 'bookacti_booking_group_deleted', $booking_group_id );
+
+			$return_array = array( 'status' => 'success' );
+			bookacti_send_json( $return_array, 'delete_booking_group' );
+		}
+		add_action( 'wp_ajax_bookactiDeleteBookingGroup', 'bookacti_controller_delete_booking_group' );
 
 
 

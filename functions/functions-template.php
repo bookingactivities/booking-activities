@@ -8,7 +8,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	 * Check if user is allowed to manage template
 	 * 
 	 * @param int $template_id
-	 * @param int $user_id
+	 * @param int|false $user_id False for current user
 	 * @return boolean
 	 */
 	function bookacti_user_can_manage_template( $template_id, $user_id = false ) {
@@ -25,8 +25,13 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		return apply_filters( 'bookacti_user_can_manage_template', $user_can_manage_template, $template_id, $user_id );
 	}
 
-
-	// CHECK IF USER IS ALLOWED TO MANAGE ACTIVITY
+	
+	/**
+	 * Check if user is allowed to manage activity
+	 * @param int $activity_id
+	 * @param int|false $user_id False for current user
+	 * @return boolean
+	 */
 	function bookacti_user_can_manage_activity( $activity_id, $user_id = false ) {
 
 		$user_can_manage_activity = false;
@@ -42,13 +47,21 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	}
 	
 	
-	// GET TEMPLATE MANAGERS
+	/**
+	 * Get template managers
+	 * @param int $activity_id
+	 * @return array
+	 */
 	function bookacti_get_template_managers( $template_id ) {
 		return bookacti_get_managers( 'template', $template_id );
 	}
 	
 	
-	// GET ACTIVITY MANAGERS
+	/**
+	 * Get activity managers
+	 * @param int $activity_id
+	 * @return array
+	 */
 	function bookacti_get_activity_managers( $activity_id ) {	
 		return bookacti_get_managers( 'activity', $activity_id );
 	}
@@ -59,7 +72,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	/**
 	 * Retrieve template activities list
 	 * 
-	 * @version 1.3.3
+	 * @version 1.5.0
 	 * @param int $template_id
 	 * @return boolean|string 
 	 */
@@ -78,9 +91,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 				$title = apply_filters( 'bookacti_translate_text', $activity->title );
 				?>
 				<div class='activity-row'>
-					<div class='activity-show-hide' >
-						<img src='<?php echo esc_url( plugins_url() . "/" . BOOKACTI_PLUGIN_NAME . "/img/show.png" ); ?>' data-activity-id='<?php echo esc_attr( $activity->id ); ?>' data-activity-visible='1' />
-					</div>
+					<div class='activity-show-hide dashicons dashicons-visibility' data-activity-id='<?php echo esc_attr( $activity->id ); ?>' data-activity-visible='1' ></div>
 					<div class='activity-container'>
 						<div
 							class='fc-event ui-draggable ui-draggable-handle'
@@ -95,9 +106,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 				<?php
 				if( current_user_can( 'bookacti_edit_activities' ) && bookacti_user_can_manage_activity( $activity->id ) ) {
 				?>
-					<div class='activity-gear' >
-						<img src='<?php echo esc_url( plugins_url() . "/" . BOOKACTI_PLUGIN_NAME . "/img/gear.png" ); ?>' data-activity-id='<?php echo esc_attr( $activity->id ); ?>' />
-					</div>
+					<div class='activity-gear dashicons dashicons-admin-generic' data-activity-id='<?php echo esc_attr( $activity->id ); ?>' ></div>
 				<?php
 				}
 				?>
@@ -112,12 +121,50 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 
 // TEMPLATE SETTINGS
+	
+	/**
+	 * Get additionnal calendar fields default data
+	 * @since 1.5.0
+	 * @param array $fields
+	 * @return array
+	 */
+	function bookacti_get_calendar_fields_default_data( $fields = array() ) {
+		if( ! is_array( $fields ) ) { $fields = array(); }
+		$defaults = array();
+	
+		// Day Begin
+		if( ! $fields || in_array( 'minTime', $fields, true ) ) {
+			$defaults[ 'minTime' ] = array(
+				'type'			=> 'time',
+				'name'			=> 'minTime',
+				'value'			=> '08:00',
+				/* translators: Refers to the first hour displayed on calendar. More information: http://fullcalendar.io/docs/agenda/minTime/ */
+				'title'			=> esc_html__( 'Day begin', BOOKACTI_PLUGIN_NAME ),
+				'tip'			=> esc_html__( 'Set when you want the days to begin on the calendar. Ex: "06:00" Days will begin at 06:00am.', BOOKACTI_PLUGIN_NAME )
+			);
+		}
 
+		// Day end
+		if( ! $fields || in_array( 'maxTime', $fields, true ) ) {
+			$defaults[ 'maxTime' ] = array(
+				'type'			=> 'time',
+				'name'			=> 'maxTime',
+				'value'			=> '20:00',
+				/* translators: Refers to the first hour displayed on calendar. More information: http://fullcalendar.io/docs/agenda/minTime/ */
+				'title'			=> esc_html__( 'Day end', BOOKACTI_PLUGIN_NAME ),
+				'tip'			=> esc_html__( 'Set when you want the days to end on the calendar. Ex: "18:00" Days will end at 06:00pm.', BOOKACTI_PLUGIN_NAME )
+			);
+		}
+		
+		return apply_filters( 'bookacti_calendar_fields_default_data', $defaults, $fields );
+	}
+	
+	
 	/**
 	 * Get a unique template setting made from a combination of multiple template settings
 	 * 
 	 * @since	1.2.2 (was bookacti_get_mixed_template_settings)
-	 * @version 1.4.0
+	 * @version 1.5.0
 	 * @param	array|int $template_ids Array of template ids or single template id
 	 * @param	boolean $past_events Whether to allow past events
 	 * @return	array
@@ -550,7 +597,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	 * Retrieve template groups of events list
 	 * 
 	 * @since 1.1.0
-	 * @version 1.4.4
+	 * @version 1.5.0
 	 * @param int $template_id
 	 * @return string|boolean
 	 */
@@ -571,10 +618,6 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			$category_short_title	= strlen( $category_title ) > 16 ? substr( $category_title, 0, 16 ) . '&#8230;' : $category_title;
 			
 			$list	.= "<div class='bookacti-group-category' data-group-category-id='" . $category[ 'id' ] . "' data-show-groups='0' data-visible='1' >
-							<div class='bookacti-group-category-show-hide' >
-								<img src='" . esc_url( plugins_url() . '/' . BOOKACTI_PLUGIN_NAME . '/img/show.png' ) . "' />
-							</div>
-							<?php  ?>
 							<div class='bookacti-group-category-title' title='" . $category_title . "' >
 								<span>
 									" . $category_short_title . "
@@ -582,12 +625,10 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 							</div>";
 			
 			if( $current_user_can_edit_template ) {
-				$list	.= "<div class='bookacti-update-group-category' >
-								<img src='" . esc_url( plugins_url() . '/' . BOOKACTI_PLUGIN_NAME . '/img/gear.png' ) . "' />
-							</div>";
+				$list	.= "<div class='bookacti-update-group-category dashicons dashicons-admin-generic' ></div>";
 			}
 			
-			$list	.= 	   "<div class='bookacti-groups-of-events-list bookacti-custom-scrollbar' >";
+			$list	.= 	   "<div class='bookacti-groups-of-events-editor-list bookacti-custom-scrollbar' >";
 			
 			foreach( $groups as $group_id => $group ) {
 				if( $group[ 'category_id' ] === $category[ 'id' ] ) {
@@ -598,9 +639,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 											" . $group_title . " 
 										</div>";
 					if( $current_user_can_edit_template ) {
-						$list	.=	   "<div class='bookacti-update-group-of-events' >
-											<img src='" . esc_url( plugins_url() . '/' . BOOKACTI_PLUGIN_NAME . '/img/gear.png' ) . "' />
-										</div>";
+						$list	.=	   "<div class='bookacti-update-group-of-events dashicons dashicons-admin-generic' ></div>";
 					}
 					$list	.=	   "</div>";
 				}

@@ -22,9 +22,13 @@ if( ! class_exists( 'Bookings_List_Table' ) ) {
 		/**
 		 * Set up the Booking list table
 		 * 
-		 * @version 1.3.0
+		 * @version 1.5.0
+		 * @access public
 		 */
 		public function __construct(){
+			// This global variable is required to create screen
+			if( ! isset( $GLOBALS[ 'hook_suffix' ] ) ) { $GLOBALS[ 'hook_suffix' ] = null; }
+			
 			parent::__construct( array(
 				/*translator:  */
 				'singular'	=> 'booking',	// Singular name of the listed records
@@ -41,7 +45,8 @@ if( ! class_exists( 'Bookings_List_Table' ) ) {
 		/**
 		 * Get booking list table columns
 		 * 
-		 * @version 1.3.0
+		 * @version 1.5.0
+		 * @access public
 		 * @return array
 		 */
 		public function get_columns(){
@@ -51,6 +56,8 @@ if( ! class_exists( 'Bookings_List_Table' ) ) {
 				'cb'			=> '<input type="checkbox" />',
 				'id'			=> _x( 'id', 'An id is a unique identification number', BOOKACTI_PLUGIN_NAME ),
 				'customer'		=> __( 'Customer', BOOKACTI_PLUGIN_NAME ),
+				'email'			=> __( 'Email', BOOKACTI_PLUGIN_NAME ),
+				'phone'			=> __( 'Phone', BOOKACTI_PLUGIN_NAME ),
 				'state'			=> _x( 'Status', 'Booking status', BOOKACTI_PLUGIN_NAME ),
 				'payment_status'=> _x( 'Paid', 'Payment status column name', BOOKACTI_PLUGIN_NAME ),
 				'quantity'		=> _x( 'Qty', 'Short for "Quantity"', BOOKACTI_PLUGIN_NAME ),
@@ -65,8 +72,9 @@ if( ! class_exists( 'Bookings_List_Table' ) ) {
 
 			/**
 			 * Columns of the booking list
-			 * You must use 'bookacti_booking_list_columns_order' php filter order your custom columns.
-			 * You must use 'bookacti_fill_booking_list_entry' jquery hook to fill your custom columns.
+			 * You must use 'bookacti_booking_list_columns_order' php filter to order your custom columns.
+			 * You must use 'bookacti_booking_list_default_hidden_columns' php filter to hide your custom columns by default.
+			 * You must use 'bookacti_booking_list_booking_columns' php filter to fill your custom columns.
 			 * 
 			 * @param array $columns
 			 */
@@ -80,6 +88,8 @@ if( ! class_exists( 'Bookings_List_Table' ) ) {
 				30 => 'state',
 				40 => 'payment_status',
 				50 => 'customer',
+				54 => 'email',
+				57 => 'phone',
 				60 => 'event_title',
 				70 => 'start_date',
 				80 => 'end_date',
@@ -114,6 +124,7 @@ if( ! class_exists( 'Bookings_List_Table' ) ) {
 		 * Get default hidden columns
 		 * 
 		 * @since 1.3.0
+		 * @access public
 		 * @param array $hidden
 		 * @param WP_Screen $screen
 		 * @return array
@@ -121,6 +132,8 @@ if( ! class_exists( 'Bookings_List_Table' ) ) {
 		public function get_default_hidden_columns( $hidden, $screen ) {
 			if( $screen->id == $this->screen->id ) {
 				$hidden = apply_filters( 'bookacti_booking_list_default_hidden_columns', array(
+					'email',
+					'phone',
 					'end_date',
 					'template_title',
 					'activity_title'
@@ -134,6 +147,7 @@ if( ! class_exists( 'Bookings_List_Table' ) ) {
 		 * Get sortable columns
 		 * 
 		 * @since 1.3.0
+		 * @access public
 		 * @return array
 		 */
 		protected function get_sortable_columns() {
@@ -157,6 +171,7 @@ if( ! class_exists( 'Bookings_List_Table' ) ) {
 		 * Get the screen property
 		 * 
 		 * @since 1.3.0
+		 * @access public
 		 * @return WP_Screen
 		 */
 		private function get_wp_screen() {
@@ -171,6 +186,7 @@ if( ! class_exists( 'Bookings_List_Table' ) ) {
 		 * Prepare the items to be displayed in the list
 		 * 
 		 * @version 1.3.0
+		 * @access public
 		 * @param array $filters
 		 * @param boolean $no_pagination
 		 */
@@ -210,6 +226,7 @@ if( ! class_exists( 'Bookings_List_Table' ) ) {
 		 * Fill columns
 		 * 
 		 * @version 1.3.0
+		 * @access public
 		 * @param array $item
 		 * @param string $column_name
 		 * @return string
@@ -222,18 +239,16 @@ if( ! class_exists( 'Bookings_List_Table' ) ) {
 		/**
 		 * Get booking list items. Parameters can be passed in the URL.
 		 * 
-		 * @version 1.4.0
-		 * @param int $event_group_id
-		 * @param int $event_id
-		 * @param string $event_start
-		 * @param string $event_end
-		 * @param int $booking_group_id
+		 * @version 1.5.0
+		 * @access public
 		 * @return array
 		 */
 		public function get_booking_list_items() {
 			
 			// Request bookings corresponding to filters
+			if( $this->filters[ 'event_id' ] && ! $this->filters[ 'event_group_id' ] ) { $this->filters[ 'booking_group_id' ] = 'none'; }
 			if( ! $this->filters[ 'booking_group_id' ] ) { $this->filters[ 'group_by' ] = 'booking_group'; }
+			
 			$bookings = bookacti_get_bookings( $this->filters );
 			
 			// Retrieve booking groups data
@@ -245,8 +260,18 @@ if( ! class_exists( 'Bookings_List_Table' ) ) {
 			foreach( $bookings as $booking ) {
 				if( ! in_array( $booking->user_id, $user_ids, true ) ){
 					$user_ids[] = $booking->user_id;
+					continue;
+				}
+				// If the booking group has a different user than the bookings of the group
+				if( ! $booking->group_id ) { continue; }
+				if( ! empty( $booking_groups[ $booking->group_id ] ) ) {
+					$booking_group = $booking_groups[ $booking->group_id ];
+					if( $booking_group->user_id !== $booking->user_id && ! in_array( $booking_group->user_id, $user_ids, true ) ) {
+						$user_ids[] = $booking_group->user_id;
+					}
 				}
 			}
+			
 			$users = bookacti_get_users_data( array( 'include' => $user_ids ) );
 			
 			// Get datetime format once for all (reduce SQL queries)
@@ -286,7 +311,7 @@ if( ! class_exists( 'Bookings_List_Table' ) ) {
 				} else {
 					
 					$raw_id		= $booking->id;
-					$tr_class	= $booking->group_id ? 'bookacti-single-booking bookacti-gouped-booking' : 'bookacti-single-booking';
+					$tr_class	= $booking->group_id ? 'bookacti-single-booking bookacti-gouped-booking bookacti-booking-group-id-' . $booking->group_id : 'bookacti-single-booking';
 					$id			= $booking->group_id ? $booking->id . '<span class="bookacti-booking-group-id" >' . $booking->group_id . '</span>' : $booking->id;
 					$user_id	= $booking->user_id;
 					$state		= bookacti_format_booking_state( $booking->state, true );
@@ -302,26 +327,29 @@ if( ! class_exists( 'Bookings_List_Table' ) ) {
 				}
 				
 				// Format customer column
-				if( is_numeric( $user_id ) ) {
+				if( $user_id && is_numeric( $user_id ) && ! empty( $users[ $user_id ] ) ) {
 					$user = $users[ $user_id ];
 					$customer = '<a '
 								. ' href="' . esc_url( get_admin_url() . 'user-edit.php?user_id=' . $user_id ) . '" '
 								. ' target="_blank" '
 								. ' >'
-									. esc_html( $user->user_login . ' (' . $user->user_email . ')' )
+									. $user->display_name
 							. ' </a>';
+					$email = ! empty( $user->user_email ) ? $user->user_email : '';
+					$phone = ! empty( $user->phone ) ? $user->phone : '';
 				} else {
 					$user = new stdClass();
 					$customer = esc_html( __( 'Unknown user', BOOKACTI_PLUGIN_NAME ) . ' (' . $user_id . ')' );
+					$email = '';
+					$phone = '';
 				}
-				
-				$primary_data = array();
-				
 				
 				$booking_item = apply_filters( 'bookacti_booking_list_booking_columns', array( 
 					'tr_class'		=> $tr_class,
 					'id'			=> $id,
 					'customer'		=> $customer,
+					'email'			=> $email,
+					'phone'			=> $phone,
 					'state'			=> $state,
 					'payment_status'=> $paid,
 					'quantity'		=> $quantity,
@@ -363,6 +391,7 @@ if( ! class_exists( 'Bookings_List_Table' ) ) {
 		
 		/**
 		 * Format filters passed as argument or retrieved via POST or GET
+		 * @access public
 		 * @param array $filters
 		 * @return array
 		 */
@@ -415,6 +444,7 @@ if( ! class_exists( 'Bookings_List_Table' ) ) {
 		 * 
 		 * @since 1.3.0
 		 * @version 1.4.0
+		 * @access public
 		 * @return int
 		 */
 		public function get_total_items_count() {
@@ -542,10 +572,27 @@ if( ! class_exists( 'Bookings_List_Table' ) ) {
 		 * Get default primary column name
 		 * 
 		 * @since 1.3.0
+		 * @access public
 		 * @return string
 		 */
 		public function get_default_primary_column_name() {
 			return apply_filters( 'bookacti_booking_list_primary_column', 'customer', $this->screen );
+		}
+		
+		
+		/**
+		 * Display pagination inside a form to allow to jump to a page
+		 * @since 1.5.0
+		 * @param string $which
+		 */
+		protected function pagination( $which ) {
+			if( $which !== 'top' ) { parent::pagination( $which ); return; }
+			?>
+			<form action='<?php echo admin_url( 'admin.php' ); ?>' >
+				<input type='hidden' name='page' value='bookacti_bookings' />
+				<?php parent::pagination( $which ); ?>
+			</form>
+			<?php 
 		}
 	}
 }

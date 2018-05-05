@@ -22,7 +22,7 @@ add_shortcode( 'bookingactivities_list', 'bookacti_shortcode_bookings_list' );
  *									method='calendar' ]			// Display method
  * 
  * @version 1.1.0
- * 
+ * @deprecated since 1.5.0
  * @param array $atts [id, classes, calendars, activities, groups, method]
  * @param string $content
  * @param string $tag Should be "bookingactivities_calendar"
@@ -43,59 +43,70 @@ function bookacti_shortcode_calendar( $atts = array(), $content = null, $tag = '
 
 /**
  * Display a booking form via shortcode
- * Eg: [bookingactivities_calendar	id='my-cal'				// Any id you want
- *									classes='full-width'		// Any class you want
- *									calendars='2'			// Comma separated calendar ids
- *									activities='1,2,10'		// Comma separated activity ids
- *									group_categories='5,10'	// Comma separated group category ids
- *									groups_only				// Only display groups
- *									groups_single_events	// Allow to book single events within groups
- *									method='waterfall' 
- *									url='http://...']		// URL to be redirected after submission
- *									button='Book']			// Name of the booking form submit button
+ * Eg: [bookingactivities_form form="Your form ID" id="Your form instance CSS ID"]
  * 
- * @version 1.1.0
+ * @version 1.5.0
  * 
- * @param array $atts [id, classes, calendars, activities, groups, method, url, button]
+ * @param array $atts [form, id]
  * @param string $content
  * @param string $tag Should be "bookingactivities_form"
  * @return string The booking form corresponding to given parameters
  */
 function bookacti_shortcode_booking_form( $atts = array(), $content = null, $tag = '' ) {
 	
-	// Format attributes
     $atts = array_change_key_case( (array) $atts, CASE_LOWER );
-	$atts = bookacti_format_booking_system_attributes( $atts );
+	if( ! empty( $atts[ 'form' ] ) ) {
+		$default_atts = array(
+			'form' => 0,
+			'id' => ''
+		);
+		$atts = shortcode_atts( $default_atts, $atts, $tag );
+		
+		// display the booking form
+		return bookacti_display_form( $atts[ 'form' ], $atts[ 'id' ], 'display', false );
+	}
+	
+	
+	/** BACKWARD COMPATIBILITY < 1.5 **/
+	
+	// Format booking system attributes
+	$bs_atts = bookacti_format_booking_system_attributes( $atts );
+	
+	// Format form attributes
+	$atts = array();
+	$atts[ 'url' ]		= ! empty( $atts[ 'url' ] ) ? esc_url( $atts[ 'url' ] ) : '';
+	$atts[ 'button' ]	= ! empty( $atts[ 'button' ] ) ? esc_html( sanitize_text_field( $atts[ 'button' ] ) ) : bookacti_get_message( 'booking_form_submit_button' );
+	$atts[ 'id' ]		= ! empty( $atts[ 'id' ] ) ? esc_attr( $atts[ 'id' ] ) : rand();
+	$atts = array_merge( $bs_atts, $atts );
 	
 	$output = "<form action='" . $atts[ 'url' ] . "' 
-					class='bookacti-booking-system-form' 
-					id='bookacti-booking-system-form-" . $atts[ 'id' ] . "' >
-				  <input type='hidden' name='action' value='bookactiSubmitBookingForm' />
-				  <input type='hidden' name='bookacti_booking_system_id' value='" . $atts[ 'id' ] . "' />"
-
-				  . wp_nonce_field( 'bookacti_booking_form', 'nonce_booking_form', true, false )
+					class='bookacti-booking-form' 
+					id='bookacti-form-" . $atts[ 'id' ] . "' >
+				  <input type='hidden' name='action' value='bookactiSubmitBookingFormBWCompat' />
+				  <input type='hidden' name='nonce_booking_form' value='" . wp_create_nonce( 'bookacti_booking_form' ) . "' />"
 
 				  . bookacti_get_booking_system( $atts ) .
 
-				  "<div class='bookacti-booking-system-field-container' >
-					  <label for='bookacti-quantity-booking-form-" . $atts[ 'id' ] . "' class='bookacti-booking-system-label' >"
+				  "<div class='bookacti-form-field-container' >
+					  <label for='bookacti-quantity-booking-form-" . $atts[ 'id' ] . "' class='bookacti-form-field-label' >"
 						  . __( 'Quantity', BOOKACTI_PLUGIN_NAME ) .
 					  "</label>
-					  <input	name='bookacti_quantity'
-							  id='bookacti-quantity-booking-form-" . $atts[ 'id' ] . "'
-							  class='bookacti-booking-system-field bookacti-quantity'
-							  type='number' 
-							  min='1'
-							  value='1' />
+					  <input name='quantity'
+							 id='bookacti-quantity-booking-form-" . $atts[ 'id' ] . "'
+							 class='bookacti-form-field bookacti-quantity'
+							 type='number' 
+							 min='1'
+							 value='1' />
 				  </div>"
 
 				  .  apply_filters( 'bookacti_booking_form_fields', '', $atts, $content ) .
 
-				  "<div class='bookacti-booking-system-field-container bookacti-booking-system-field-submit-container' >
+				  "<div class='bookacti-form-field-container bookacti-form-field-name-submit' >
 					  <input type='submit' 
 							 class='button' 
 							 value='" . $atts[ 'button' ] . "' />
 				  </div>
+				  <div class='bookacti-notices' style='display:none;'></div>
 			  </form>";
 	
     return apply_filters( 'bookacti_shortcode_' . $tag . '_output', $output, $atts, $content );
@@ -165,9 +176,10 @@ function bookacti_shortcode_bookings_list( $atts = array(), $content = null, $ta
 /**
  * Check if booking form is correct and then book the event, or send the error message
  * 
- * @version 1.3.1
+ * @since 1.5.0 (was bookacti_controller_validate_booking_form)
+ * @deprecated since version 1.5.0
  */
-function bookacti_controller_validate_booking_form() {
+function bookacti_deprecated_controller_validate_booking_form() {
 	
 	// Check nonce and capabilities
 	$is_nonce_valid = check_ajax_referer( 'bookacti_booking_form', 'nonce_booking_form', false );
@@ -178,12 +190,11 @@ function bookacti_controller_validate_booking_form() {
 		// Gether the form variables
 		$booking_form_values = apply_filters( 'bookacti_booking_form_values', array(
 			'user_id'			=> intval( get_current_user_id() ),
-			'booking_system_id'	=> sanitize_title_with_dashes( $_POST[ 'bookacti_booking_system_id' ] ),
 			'group_id'			=> is_numeric( $_POST[ 'bookacti_group_id' ] ) ? intval( $_POST[ 'bookacti_group_id' ] ) : 'single',
 			'event_id'			=> intval( $_POST[ 'bookacti_event_id' ] ),
 			'event_start'		=> bookacti_sanitize_datetime( $_POST[ 'bookacti_event_start' ] ),
 			'event_end'			=> bookacti_sanitize_datetime( $_POST[ 'bookacti_event_end' ] ),
-			'quantity'			=> intval( $_POST[ 'bookacti_quantity' ] ),
+			'quantity'			=> intval( $_POST[ 'quantity' ] ),
 			'default_state'		=> bookacti_get_setting_value( 'bookacti_general_settings', 'default_booking_state' ), 
 			'payment_status'	=> bookacti_get_setting_value( 'bookacti_general_settings', 'default_payment_status' )
 		) );
@@ -213,7 +224,7 @@ function bookacti_controller_validate_booking_form() {
 			
 				if( ! empty( $booking_id ) ) {
 
-					do_action( 'bookacti_booking_form_validated', $booking_id, $booking_form_values, 'single' );
+					do_action( 'bookacti_booking_form_validated', $booking_id, $booking_form_values, 'single', 0 );
 					
 					$message = bookacti_get_message( 'booking_success' );
 					wp_send_json( array( 'status' => 'success', 'message' => esc_html( $message ), 'booking_id' => $booking_id ) );
@@ -232,7 +243,7 @@ function bookacti_controller_validate_booking_form() {
 				
 				if( ! empty( $booking_group_id ) ) {
 
-					do_action( 'bookacti_booking_form_validated', $booking_group_id, $booking_form_values, 'group' );
+					do_action( 'bookacti_booking_form_validated', $booking_group_id, $booking_form_values, 'group', 0 );
 					
 					$message = __( 'Your events have been booked successfully!', BOOKACTI_PLUGIN_NAME );
 					wp_send_json( array( 'status' => 'success', 'message' => esc_html( $message ), 'booking_group_id' => $booking_group_id ) );
@@ -258,5 +269,5 @@ function bookacti_controller_validate_booking_form() {
 	
 	wp_send_json( array( 'status' =>  $return_array[ 'status' ], 'message' => esc_html( $return_array[ 'message' ] ) ) );
 }
-add_action( 'wp_ajax_bookactiSubmitBookingForm', 'bookacti_controller_validate_booking_form' );
-add_action( 'wp_ajax_nopriv_bookactiSubmitBookingForm', 'bookacti_controller_validate_booking_form' );
+add_action( 'wp_ajax_bookactiSubmitBookingFormBWCompat', 'bookacti_deprecated_controller_validate_booking_form' );
+add_action( 'wp_ajax_nopriv_bookactiSubmitBookingFormBWCompat', 'bookacti_deprecated_controller_validate_booking_form' );

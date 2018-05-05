@@ -798,9 +798,9 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 				if( $updated_template > 0 || intval( $updated_managers ) > 0 || intval( $updated_metadata ) > 0 ) {
 					$templates_data = bookacti_fetch_templates( $template_id, true );
 					wp_send_json( array( 'status' => 'success', 'template_data' => $templates_data[ $template_id ] ) );
-				} else if( $updated === 0 && ! $updated_managers && ! $updated_metadata ) { 
+				} else if( $updated_template === 0 && ! $updated_managers && ! $updated_metadata ) { 
 					wp_send_json( array( 'status' => 'nochanges' ) );
-				} else if( $updated === false ) { 
+				} else if( $updated_template === false ) { 
 					wp_send_json( array( 'status' => 'failed' ) );
 				}
 			} else {
