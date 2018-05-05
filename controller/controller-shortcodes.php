@@ -22,7 +22,7 @@ add_shortcode( 'bookingactivities_list', 'bookacti_shortcode_bookings_list' );
  *									method='calendar' ]			// Display method
  * 
  * @version 1.1.0
- * 
+ * @deprecated since 1.5.0
  * @param array $atts [id, classes, calendars, activities, groups, method]
  * @param string $content
  * @param string $tag Should be "bookingactivities_calendar"
@@ -58,14 +58,12 @@ function bookacti_shortcode_booking_form( $atts = array(), $content = null, $tag
 	if( ! empty( $atts[ 'form' ] ) ) {
 		$default_atts = array(
 			'form' => 0,
-			'id' => '0'
+			'id' => ''
 		);
 		$atts = shortcode_atts( $default_atts, $atts, $tag );
 		
 		// display the booking form
-		bookacti_display_form( $atts[ 'form' ], $atts[ 'id' ] );
-		
-		return;
+		return bookacti_display_form( $atts[ 'form' ], $atts[ 'id' ], 'display', false );
 	}
 	
 	
@@ -84,9 +82,8 @@ function bookacti_shortcode_booking_form( $atts = array(), $content = null, $tag
 	$output = "<form action='" . $atts[ 'url' ] . "' 
 					class='bookacti-booking-form' 
 					id='bookacti-form-" . $atts[ 'id' ] . "' >
-				  <input type='hidden' name='action' value='bookactiSubmitBookingFormBWCompat' />"
-
-				  . wp_nonce_field( 'bookacti_booking_form', 'nonce_booking_form', false, false )
+				  <input type='hidden' name='action' value='bookactiSubmitBookingFormBWCompat' />
+				  <input type='hidden' name='nonce_booking_form' value='" . wp_create_nonce( 'bookacti_booking_form' ) . "' />"
 
 				  . bookacti_get_booking_system( $atts ) .
 

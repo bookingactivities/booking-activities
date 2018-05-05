@@ -1472,7 +1472,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		}
 		
 		// Create the booking form
-		$form_id = bookacti_create_form( $title, 'publish', 1 );
+		$form_id = bookacti_create_form( $title, 'publish', 1, array( 'calendar' ) );
 		if( ! $form_id ) { 
 			$return_array = array(
 				'status'	=> 'failed',

@@ -697,7 +697,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		ob_start();
 		?>
 		
-		<select id='<?php echo $args[ 'id' ]; ?>' name='<?php echo $args[ 'name' ]; ?>' class='bookacti-user-selectbox <?php echo $args[ 'class' ]; ?>' >
+		<select <?php if( $args[ 'id' ] ) { echo 'id="' . $args[ 'id' ] . '"'; } ?> name='<?php echo $args[ 'name' ]; ?>' class='bookacti-user-selectbox <?php echo $args[ 'class' ]; ?>' >
 			<option value='' ><?php echo esc_html__( 'Search for a customer', BOOKACTI_PLUGIN_NAME ); ?></option>
 			<?php
 				if( $args[ 'show_option_all' ] ) {

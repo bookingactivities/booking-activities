@@ -969,13 +969,17 @@ function bookacti_controller_remove_form_field() {
 			do_action( 'bookacti_form_field_removed', $field );
 			
 			// Update field order
-			$field_order	= bookacti_get_metadata( 'form', $field[ 'form_id' ], 'field_order', true );
-			$order_index	= array_search( $field_id, $field_order );
-			
-			if( $order_index !== false ) {
-				unset( $field_order[ $order_index ] );
-				$field_order = array_values( $field_order );
-				bookacti_update_metadata( 'form', $field[ 'form_id' ], array( 'field_order' => $field_order ) );
+			$field_order = bookacti_get_metadata( 'form', $field[ 'form_id' ], 'field_order', true );
+			if( $field_order ) {
+				$order_index = array_search( $field_id, $field_order );
+
+				if( $order_index !== false ) {
+					unset( $field_order[ $order_index ] );
+					$field_order = array_values( $field_order );
+					bookacti_update_metadata( 'form', $field[ 'form_id' ], array( 'field_order' => $field_order ) );
+				}
+			} else {
+				$field_order = array();
 			}
 			
 			wp_send_json( array( 'status' => 'success', 'field_order' => $field_order ) );

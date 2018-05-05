@@ -359,9 +359,10 @@ function bookacti_delete_form( $form_id ) {
  * Insert default form fields
  * @global wpdb $wpdb
  * @param int $form_id
+ * @param array $to_insert Default field name to insert
  * @return int
  */
-function bookacti_insert_default_form_fields( $form_id ) {
+function bookacti_insert_default_form_fields( $form_id, $to_insert = array() ) {
 	global $wpdb;
 	
 	$default_fields = bookacti_get_default_form_fields_data();
@@ -369,6 +370,7 @@ function bookacti_insert_default_form_fields( $form_id ) {
 	$fields_to_insert = array();
 	foreach( $default_fields as $i => $default_field ) {
 		if( empty( $default_field[ 'compulsory' ] ) && empty( $default_field[ 'default' ] ) ) { continue; }
+		if( $to_insert && ! in_array( $default_field[ 'name' ], $to_insert ) ) { continue; }
 		// Sanitize default data
 		$fields_to_insert[] = bookacti_sanitize_form_field_data( $default_field );
 	}

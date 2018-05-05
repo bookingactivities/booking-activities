@@ -10,16 +10,17 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
  * @param string $title
  * @param string $status
  * @param int active
+ * @param array $to_insert Default field name to insert
  * @return int|false
  */
-function bookacti_create_form( $title = '', $status = 'auto-draft', $active = 0 ) {
+function bookacti_create_form( $title = '', $status = 'auto-draft', $active = 0, $to_insert = array() ) {
 	// Insert form
 	$form_id = bookacti_insert_form( $title, $status, $active );
 	
 	if( $form_id === false ) { return $form_id; }
 	
 	// Insert default form fields
-	bookacti_insert_default_form_fields( $form_id );
+	bookacti_insert_default_form_fields( $form_id, $to_insert );
 	
 	// Insert default form managers
 	$form_managers = bookacti_format_form_managers();
@@ -218,8 +219,8 @@ function bookacti_display_form( $form_id, $instance_id = '', $context = 'display
 			
 			<input type='hidden' name='action' value='bookactiSubmitBookingForm' />
 			<input type='hidden' name='form_id' value='<?php echo $form_id; ?>' />
-	<?php 
-			wp_nonce_field( 'bookacti_booking_form', 'nonce_booking_form', false, true );
+			<input type='hidden' name='nonce_booking_form' value='<?php echo wp_create_nonce( 'bookacti_booking_form' ); ?>' />
+	<?php
 	}
 			do_action( 'bookacti_form_before', $form, $instance_id, $context );
 			
