@@ -19,7 +19,7 @@ It is very easy to use:
 
 1. **Drag and drop** your activities onto your schedule.
 2. Copy / Paste a **shortcode** to display a booking form. Or **integrate it with WooCommerce** products.
-3. **Pick** an event onto this calendar and book it. 
+3. **Pick** an event on this calendar and book it. 
 
 Try this reservation tool live on the [demo website](http://demo.booking-activities.fr/en/)!
 
@@ -40,13 +40,13 @@ Try this reservation tool live on the [demo website](http://demo.booking-activit
 * Create **repeated events** (with desired frequency and exceptions dates)
 * Unlimited calendars, activities, events and bookings.
 
-**Display**
+**Booking forms**
 
+* **Fully customizable** forms in a WYSIWYG editor
 * **Shortcodes** to display reservation forms or simple calendars
-* ★ Display your customer's bookings calendar and their bookings list with a shortcode
 * ★ Display events from multiple schedules and activities at once
 * ★ **One-click booking**: just pick the desired event on the calendar and click on "Book"! 
-* *Customers must be logged in to make a reservation*
+* ★ **Seamless login / registration**: embedded in the form and processed with the reservation
 * 100% responsive: looks great on mobiles, tablets and computers.
 
 **Online payments with WooCommerce**
@@ -62,6 +62,7 @@ Try this reservation tool live on the [demo website](http://demo.booking-activit
 
 * Find all your bookings at a glance on a calendar and in a list. Use dynamic filters, sorting, and custom columns
 * Booking actions: validate, cancel, reschedule, ★ refund...
+* ★ Display your customer's bookings calendar and their booking list with a shortcode
 * ★ Your customers can **cancel** or **reschedule** their bookings and **ask a refund** by themselves
 * Permission management system: your managers manage only their own calendars and reservations
 
@@ -191,7 +192,7 @@ Or read the full [features description](https://booking-activities.fr/en/documen
 
 *The user must be logged in to book an event.*
 
-/!\ Booking forms displayed via shortcode are not bound to WooCommerce at all. If you want to bind a WC product to a calendar, check "Use it with WooCommerce" in this FAQ.
+/!\ Reservation forms displayed via shortcode are not bound to WooCommerce at all. If you want to bind a WC product to a calendar, check "Use it with WooCommerce" in this FAQ.
 
 
 = Display the calendar only = 
@@ -298,10 +299,10 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 2. WYSIWYG calendar editor. Simply drag and drop events. Click on events for additionnal settings (availability, repetition...).
 3. Create daily, weekly or monthly repeated events. You can add exception dates to the repetition.
 4. Grouping your events is simple: just select multiple events and click on 'Add a group'. Or select an existing group and start editing it right away.
-5. Use shortcodes to display a calendar alone or with booking form. You can display events from multiple calendars and activities at once.
-6. When a customer clicks on a grouped event, the whole group is selected. If the event is part of several groups, the customer has to choose one from a dialog.
-7. Easily bind a planning to a WooCommerce product. You can choose to display events from multiple activities, and multiple calendars.
-8. Booking Activities event calendars can be integrated to both simple and variable products.
+5. Create and customize your booking form. You can combine events and settings of multiple schedules. You can make each form unique.
+6. Use a shortcode to display a booking form (or a calendar alone). Your customer can log in or register seamlessly as they book.
+7. When a customer clicks on a grouped event, the whole group is selected. If the event is part of several groups, the customer has to choose one from a dialog.
+8. Easily bind a reservation form to a WooCommerce product. You can set a different event calendar to each variation.
 9. A reservation form appears automatically on desired WooCommerce product pages.
 10. WooCommerce cart expiration system: when time is up, bookings are cancelled and cart emptied. You can also disable it.
 11. Your bookings are displayed on a calendar and in a list that you can filter, sort and customize. Manage your bookings: change state (cancel, validate), reschedule, refund...
@@ -314,7 +315,7 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 
 == Changelog ==
 
-= 1.5.0 - 2018/05/04 =
+= 1.5.0 - 2018/05/05 =
 * Feature - Customizable booking forms !
 * Feature - You can now delete your bookings and your booking groups from the booking list
 * Feature - You can display past events on frontend, they can be bookable or not
