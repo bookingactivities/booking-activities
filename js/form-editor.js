@@ -52,14 +52,18 @@ $j( document ).ready( function() {
 			
 			// Calendars and Activities array: if empty, select all
 			if( bookacti.form_editor.fields[ field_id ].calendars.length === 0 ) {
-				$j( '#bookacti-multiple-select-_bookacti_template' ).prop( 'checked', true );
-				bookacti_switch_select_to_multiple( '#bookacti-multiple-select-_bookacti_template' );
+				if( $j( '#bookacti-multiple-select-_bookacti_template' ).length ) {
+					$j( '#bookacti-multiple-select-_bookacti_template' ).prop( 'checked', true );
+					bookacti_switch_select_to_multiple( '#bookacti-multiple-select-_bookacti_template' );
+				}
 				$j( '#_bookacti_template option' ).prop( 'selected', true );
 				$j( '#_bookacti_template' ).trigger( 'change' );
 			}
 			if( bookacti.form_editor.fields[ field_id ].activities.length === 0 ) {
-				$j( '#bookacti-multiple-select-activities' ).prop( 'checked', true );
-				bookacti_switch_select_to_multiple( '#bookacti-multiple-select-activities' );
+				if( $j( '#bookacti-multiple-select-activities' ).length ) {
+					$j( '#bookacti-multiple-select-activities' ).prop( 'checked', true );
+					bookacti_switch_select_to_multiple( '#bookacti-multiple-select-activities' );
+				}
 				$j( '#activities option' ).prop( 'selected', true );
 			}
 		}

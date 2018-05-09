@@ -939,39 +939,6 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		json_decode( $string );
 		return ( json_last_error() == JSON_ERROR_NONE );
 	}
-
-	/**
-	 * Check if a callback is valid
-	 * @since 1.5.0
-	 * @param string $callback
-	 * @param array $callback_args
-	 * @param boolean $displays_error
-	 * @return boolean
-	 */
-	function bookacti_validate_callback( $callback, $callback_args, $displays_error ) {
-		
-		if( empty( $callback ) ) {
-			if( $displays_error ) { _e( 'No callback function has been set.', BOOKACTI_PLUGIN_NAME ); }
-			return false;
-		}
-		
-		$is_valid_callback	= is_callable( $callback );
-		
-		if( ! is_callable( $callback ) ) {
-			if( $displays_error ) { 
-				/* translators: %s is the name the invalid function */
-				echo sprintf( __( 'Invalid callback function. Check if the function "%s" exists.', BOOKACTI_PLUGIN_NAME ), $callback ); 
-			}
-			return false;
-		}
-		
-		if( ! is_array( $callback_args ) ) {
-			if( $displays_error ) { _e( 'Callback arguments must be stored in an array.', BOOKACTI_PLUGIN_NAME ); }
-			return false;
-		}
-		
-		return true;
-	}
 	
 	
 	/**

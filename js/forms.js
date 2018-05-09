@@ -142,13 +142,18 @@ function bookacti_init_form_dialogs() {
 /**
  * Display or hide the register fields according to the "New account" checkbox
  * @since 1.5.0
+ * @version 1.5.1
  */
 function bookacti_show_hide_register_fields( new_account_checkbox ) {
 	var password_strength			= new_account_checkbox.parents( '.bookacti-form-field-container' ).find( '.bookacti-password-strength' );
 	var generated_password_field	= new_account_checkbox.parents( '.bookacti-form-field-container' ).find( '.bookacti-generated-password' );
+	var not_required_password_field	= new_account_checkbox.parents( '.bookacti-form-field-container' ).find( '.bookacti-password-not-required' );
 	var register_fieldset			= new_account_checkbox.parents( '.bookacti-form-field-login-field-container' ).find( 'fieldset.bookacti-register-fields' );
 	if( new_account_checkbox.is( ':checked' ) ) { 
 		password_strength.show(); 
+		not_required_password_field.show();
+		not_required_password_field.find( '.bookacti-required-field-indicator' ).show();
+		not_required_password_field.find( 'input[name="password"]' ).prop( 'required', true );
 		generated_password_field.hide(); 
 		generated_password_field.find( '.bookacti-required-field' ).prop( 'required', false );
 		register_fieldset.show(); 
@@ -157,6 +162,9 @@ function bookacti_show_hide_register_fields( new_account_checkbox ) {
 		password_strength.hide(); 
 		generated_password_field.show(); 
 		generated_password_field.find( '.bookacti-required-field' ).prop( 'required', true );
+		not_required_password_field.hide();
+		not_required_password_field.find( '.bookacti-required-field-indicator' ).hide();
+		not_required_password_field.find( 'input[name="password"]' ).prop( 'required', false );
 		register_fieldset.hide(); 
 		register_fieldset.find( '.bookacti-required-field' ).prop( 'required', false );
 	}
@@ -216,6 +224,7 @@ function bookacti_check_password_strength( password_field, password_confirm_fiel
 /**
  * Submit booking form
  * @since 1.5.0
+ * @version 1.5.1
  * @param html_element form
  * @returns {Boolean}
  */
@@ -228,13 +237,11 @@ function bookacti_sumbit_booking_form( form ) {
 	// Check if user is logged in
 	var is_logged_in = false;
 	if( typeof bookacti_localized.current_user_id !== 'undefined' ) {
-		if( bookacti_localized.current_user_id ) { is_logged_in = true; }
+		if( parseInt( bookacti_localized.current_user_id ) ) { is_logged_in = true; }
 	}
-	var are_login_fields_empty = true;
-	if( form.find( '.bookacti-email' ).length && form.find( '.bookacti-password' ).length ) {
-		if( form.find( '.bookacti-email' ).val() != '' && form.find( '.bookacti-password' ).val() != '' ) { are_login_fields_empty = false; }
-	}
-	if( ! is_logged_in && are_login_fields_empty ) {
+	var are_login_fields = form.find( '.bookacti-email' ).length ? true : false;
+	
+	if( ! is_logged_in && ! are_login_fields ) {
 		// Display the error message
 		form.find( '> .bookacti-notices' ).empty().append( "<ul class='bookacti-error-list'><li>" + bookacti_localized.error_user_not_logged_in + "</li></ul>" ).show();
 		// Re-enable the submit button
@@ -243,7 +250,7 @@ function bookacti_sumbit_booking_form( form ) {
 	}
 	
 	// Check password strength
-	if( ! are_login_fields_empty ) {
+	if( are_login_fields ) {
 		if( form.find( '.bookacti-new_account' ).is( ':checked' ) 
 		&& ! form.find( '.bookacti-generated-password' ).length
 		&& parseInt( form.find( '.bookacti-password_strength' ).val() ) < parseInt( form.find( '.bookacti-password_strength' ).attr( 'min' ) ) ) {
@@ -289,7 +296,7 @@ function bookacti_sumbit_booking_form( form ) {
 
 				// Show a "Make a new booking" button to avoid refreshing the page to make a new booking
 				var reload_page_class = '';
-				if( response.has_logged_in || response.has_registered ) { reload_page_class = 'bookacti-reload-page'; }
+				if( response.has_logged_in ) { reload_page_class = 'bookacti-reload-page'; }
 				form.find( '.bookacti-form-field-name-submit' ).append( '<input type="button" class="bookacti-new-booking-button ' + reload_page_class + '" value="' + bookacti_localized.booking_form_new_booking_button + '" />' );
 
 				message = "<ul class='bookacti-success-list bookacti-persistent-notice'><li>" + response.message + "</li></ul>";

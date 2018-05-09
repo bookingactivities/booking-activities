@@ -2,6 +2,7 @@
 /**
  * Form editor dialogs
  * @since 1.5.0
+ * @version 1.5.1
  */
 
 // Exit if accessed directly
@@ -161,7 +162,7 @@ foreach( $fields_data as $field_name => $field_data ) {
 		
 		/**
 		 * Display the content of the "Filters" tab of the "Calendar" dialog
-		 * @version 1.5.0
+		 * @since 1.5.0
 		 * @param array $params
 		 */
 		function bookacti_fill_calendar_dialog_filters_tab( $params ) {
@@ -196,7 +197,7 @@ foreach( $fields_data as $field_name => $field_data ) {
 		
 		/**
 		 * Display the content of the "Display" tab of the "Calendar" dialog
-		 * @version 1.5.0
+		 * @since 1.5.0
 		 * @param array $params
 		 */
 		function bookacti_fill_calendar_dialog_display_tab( $params ) {
@@ -215,7 +216,7 @@ foreach( $fields_data as $field_name => $field_data ) {
 		
 		/**
 		 * Display the content of the "Availability" tab of the "Calendar" dialog
-		 * @version 1.5.0
+		 * @since 1.5.0
 		 * @param array $params
 		 */
 		function bookacti_fill_calendar_dialog_availability_tab( $params ) {
@@ -242,7 +243,7 @@ foreach( $fields_data as $field_name => $field_data ) {
 		
 		/**
 		 * Display the content of the "Calendar" tab of the "Calendar" dialog
-		 * @version 1.5.0
+		 * @since 1.5.0
 		 * @param array $params
 		 */
 		function bookacti_fill_calendar_dialog_calendar_tab( $params ) {
@@ -305,7 +306,7 @@ foreach( $fields_data as $field_name => $field_data ) {
 		
 		/**
 		 * Display the content of the "Login" tab of the "Login" dialog
-		 * @version 1.5.0
+		 * @since 1.5.0
 		 * @param array $params
 		 */
 		function bookacti_fill_login_dialog_login_tab( $params ) {
@@ -437,7 +438,7 @@ foreach( $fields_data as $field_name => $field_data ) {
 		
 		/**
 		 * Display the content of the "Register" tab of the "Login" dialog
-		 * @version 1.5.0
+		 * @since 1.5.0
 		 * @param array $params
 		 */
 		function bookacti_fill_login_dialog_register_tab( $params ) {
@@ -523,12 +524,52 @@ foreach( $fields_data as $field_name => $field_data ) {
 		
 		/**
 		 * Display the content of the "Options" tab of the "Login" dialog
-		 * @version 1.5.0
+		 * @since 1.5.0
+		 * @version 1.5.1
 		 * @param array $params
 		 */
 		function bookacti_fill_login_dialog_options_tab( $params ) {
 			do_action( 'bookacti_login_dialog_options_tab_before', $params );
 		?>
+			<div>
+				<label for='bookacti-automatic-login'><?php _e( 'Automatic login', BOOKACTI_PLUGIN_NAME ); ?></label>
+				<?php 
+					$args = array(
+						'type'	=> 'checkbox',
+						'name'	=> 'automatic_login',
+						'id'	=> 'bookacti-automatic-login',
+						'value'	=> 1,
+						'tip'	=> __( 'Whether to automatically log the customer into his account after making a reservation.', BOOKACTI_PLUGIN_NAME )
+					);
+					bookacti_display_field( $args );
+				?>
+			</div>
+			<div>
+				<label for='bookacti-password-required'><?php _e( 'Password required', BOOKACTI_PLUGIN_NAME ); ?></label>
+				<?php 
+					$args = array(
+						'type'	=> 'checkbox',
+						'name'	=> 'required_fields[password]',
+						'id'	=> 'bookacti-required_fields-password',
+						'value'	=> 1,
+						'tip'	=> __( 'Disable this option to allow your customers to book without password authentication. They will simply have to give their e-mail address for the reservation to be made on their account. Becareful, anyone will be able to book on someone else\'s behalf with his email address only.', BOOKACTI_PLUGIN_NAME )
+					);
+					bookacti_display_field( $args );
+				?>
+			</div>
+			<div>
+				<label for='bookacti-generate-password'><?php _e( 'Generate Password', BOOKACTI_PLUGIN_NAME ); ?></label>
+				<?php 
+					$args = array(
+						'type'	=> 'checkbox',
+						'name'	=> 'generate_password',
+						'id'	=> 'bookacti-generate-password',
+						'value'	=> 0,
+						'tip'	=> __( 'Whether to automatically generate the password.', BOOKACTI_PLUGIN_NAME )
+					);
+					bookacti_display_field( $args );
+				?>
+			</div>
 			<div>
 				<label for='bookacti-min_password_strength'><?php _e( 'Min. password strength', BOOKACTI_PLUGIN_NAME ); ?></label>
 				<?php 
@@ -543,26 +584,13 @@ foreach( $fields_data as $field_name => $field_data ) {
 											4 => _x( 'Strong', 'password strength' )
 										),
 						'value'		=> 1,
-						'tip'		=> __( 'How strong the user password must be?', BOOKACTI_PLUGIN_NAME )
+						'tip'		=> __( 'How strong the user password must be if it is not generated?', BOOKACTI_PLUGIN_NAME )
 					);
 					bookacti_display_field( $args );
 				?>
 			</div>
 			<div>
-				<label for='bookacti-generate-password'><?php _e( 'Generate Password?', BOOKACTI_PLUGIN_NAME ); ?></label>
-				<?php 
-					$args = array(
-						'type'	=> 'checkbox',
-						'name'	=> 'generate_password',
-						'id'	=> 'bookacti-generate-password',
-						'value'	=> 0,
-						'tip'	=> __( 'Whether to automatically generate the password.', BOOKACTI_PLUGIN_NAME )
-					);
-					bookacti_display_field( $args );
-				?>
-			</div>
-			<div>
-				<label for='bookacti-send-new-account-email'><?php _e( 'Send new account email?', BOOKACTI_PLUGIN_NAME ); ?></label>
+				<label for='bookacti-send-new-account-email'><?php _e( 'Send new account email', BOOKACTI_PLUGIN_NAME ); ?></label>
 				<?php 
 					$args = array(
 						'type'	=> 'checkbox',
@@ -575,7 +603,10 @@ foreach( $fields_data as $field_name => $field_data ) {
 				?>
 			</div>
 			<div>
-				<label for='bookacti-new-user-role'><?php _e( 'New user role', BOOKACTI_PLUGIN_NAME ); ?></label>
+				<label for='bookacti-new-user-role'>
+					<?php /* translators: Option name corresponding to this description: Choose a role to give to a user who has registered while booking an event with this form.  */ 
+					_e( 'New user role', BOOKACTI_PLUGIN_NAME ); ?>
+				</label>
 				<?php 
 					// Get roles options
 					$roles = get_editable_roles();

@@ -25,6 +25,7 @@ add_action( 'bookacti_display_form_field_calendar', 'bookacti_display_form_field
 /**
  * Display the form field 'login'
  * @since 1.5.0
+ * @version 1.5.1
  * @param string $html
  * @param array $field
  * @param string $instance_id
@@ -67,12 +68,12 @@ function bookacti_display_form_field_login( $html, $field, $instance_id, $contex
 			?>
 			</div>
 		</div>
-		<div class='bookacti-form-field-login-field-container <?php if( ! empty( $field[ 'generate_password' ] ) ) { echo 'bookacti-generated-password'; } ?>' id='<?php echo $field_id; ?>-password-container' >
+		<div class='bookacti-form-field-login-field-container <?php if( ! empty( $field[ 'generate_password' ] ) ) { echo 'bookacti-generated-password '; } if( ! $field[ 'required_fields' ][ 'password' ] ) { echo 'bookacti-password-not-required'; } ?>' id='<?php echo $field_id; ?>-password-container' >
 			<div class='bookacti-form-field-label' >
 				<label for='<?php echo $field_id . '-password'; ?>' >
 				<?php 
 					echo esc_html( apply_filters( 'bookacti_translate_text', $field[ 'label' ][ 'password' ] ) ); 
-					if( $field[ 'required_fields' ][ 'password' ] ) {
+					if( $field[ 'required_fields' ][ 'password' ] || empty( $field[ 'generate_password' ] ) ) {
 						echo '<span class="bookacti-required-field-indicator" title="' . __( 'Required field', BOOKACTI_PLUGIN_NAME ) . '"></span>';
 					}
 				?>
@@ -409,7 +410,7 @@ add_action( 'wp_ajax_nopriv_bookactiForgottenPassword', 'bookacti_controller_for
 
 /**
  * Check if booking form is correct and then book the event, or send the error message
- * @version 1.5.0
+ * @version 1.5.1
  */
 function bookacti_controller_validate_booking_form() {
 	
@@ -440,7 +441,11 @@ function bookacti_controller_validate_booking_form() {
 		bookacti_send_json_invalid_nonce( 'submit_booking_form' );
 	}
 	
-	if( ! is_user_logged_in() ) {
+	$require_authentication = true;
+	
+	if( is_user_logged_in() ) {
+		$user_id = get_current_user_id();
+	} else {
 		// Retrieve login data
 		$login_values	= bookacti_sanitize_form_field_values( $_POST, 'login' );
 		$login_data		= array();
@@ -450,6 +455,7 @@ function bookacti_controller_validate_booking_form() {
 				break;
 			}
 		}
+		if( empty( $login_data[ 'required_fields' ][ 'password' ] ) ) { $require_authentication = false; }
 		
 		// Register
 		if( $login_data && ! empty( $_POST[ 'new_account' ] ) ) {
@@ -460,32 +466,34 @@ function bookacti_controller_validate_booking_form() {
 				bookacti_send_json( $user, 'submit_booking_form' );
 			}
 			
-			do_action( 'bookacti_before_log_in_user', $user );
-			
-			// Log the user in programmatically
-			$is_logged_in = bookacti_log_user_in( $user->user_login );
-			if( ! $is_logged_in ) { 
-				$return_array[ 'error' ]	= 'cannot_log_in';
-				$return_array[ 'message' ]	= esc_html__( 'An error occured while trying to log you in.', BOOKACTI_PLUGIN_NAME );
-				bookacti_send_json( $return_array, 'submit_booking_form' );
-			}
-			
 			$return_array[ 'has_registered' ]	= true;
-			$return_array[ 'message' ][]		= __( 'Your account has been successfully created.', BOOKACTI_PLUGIN_NAME ) . ' ' . __( 'You are now logged into your account.', BOOKACTI_PLUGIN_NAME );
-			$return_array[ 'user_id' ]			= $user->ID;
-
+			$return_array[ 'message' ][]		= __( 'Your account has been successfully created.', BOOKACTI_PLUGIN_NAME );
+			
+			
 		// Login
-		} else if( $login_data && isset( $_POST[ 'email' ] ) && isset( $_POST[ 'password' ] ) ) {
+		} else if( $login_data && isset( $_POST[ 'email' ] ) && ( isset( $_POST[ 'password' ] ) || ! $require_authentication ) ) {
 			
 			// Validate login fields
-			$user = bookacti_validate_login( $login_values );
+			$user = bookacti_validate_login( $login_values, $require_authentication );
 			if( ! is_a( $user, 'WP_User' ) ) {
 				bookacti_send_json( $user, 'submit_booking_form' );
 			}
 			
-			do_action( 'bookacti_before_log_in_user', $user );
 			
-			// Log the user in programmatically
+		// Not logged in and cannot log in with this form
+		} else {
+			$return_array[ 'error' ]	= 'not_logged_in';
+			$return_array[ 'message' ]	= __( 'You are not logged in. Please create an account and log in first.', BOOKACTI_PLUGIN_NAME );
+			bookacti_send_json( $return_array, 'submit_booking_form' );
+		}
+		
+		$user_id = $user->ID;
+		$return_array[ 'user_id' ] = $user_id;
+		
+		// Log the user in programmatically
+		if( $login_data[ 'automatic_login' ] ) {
+			do_action( 'bookacti_before_log_in_user', $user );
+
 			$is_logged_in = bookacti_log_user_in( $user->user_login );
 			if( ! $is_logged_in ) { 
 				$return_array[ 'error' ]	= 'cannot_log_in';
@@ -495,19 +503,12 @@ function bookacti_controller_validate_booking_form() {
 
 			$return_array[ 'has_logged_in' ]= true;
 			$return_array[ 'message' ][]	= __( 'You are now logged into your account.', BOOKACTI_PLUGIN_NAME );
-			
-			
-		// Not logged in and cannot log in with this form
-		} else {
-			$return_array[ 'error' ]	= 'not_logged_in';
-			$return_array[ 'message' ]	= __( 'You are not logged in. Please create an account and log in first.', BOOKACTI_PLUGIN_NAME );
-			bookacti_send_json( $return_array, 'submit_booking_form' );
 		}
 	}
 	
 	// Gether the form variables
 	$booking_form_values = apply_filters( 'bookacti_booking_form_values', array(
-		'user_id'			=> get_current_user_id(),
+		'user_id'			=> $user_id,
 		'group_id'			=> is_numeric( $_POST[ 'bookacti_group_id' ] ) ? intval( $_POST[ 'bookacti_group_id' ] ) : 'single',
 		'event_id'			=> intval( $_POST[ 'bookacti_event_id' ] ),
 		'event_start'		=> bookacti_sanitize_datetime( $_POST[ 'bookacti_event_start' ] ),
@@ -527,7 +528,7 @@ function bookacti_controller_validate_booking_form() {
 	}
 	
 	// Check if the user can book for someone else
-	if( $booking_form_values[ 'user_id' ] != get_current_user_id() && ! current_user_can( 'bookacti_edit_bookings' ) ) {
+	if( $booking_form_values[ 'user_id' ] != get_current_user_id() && ! current_user_can( 'bookacti_edit_bookings' ) && $require_authentication ) {
 		$return_array[ 'error' ] = 'invalid_user_id';
 		$return_array[ 'message' ] = __( 'You can\'t make a booking for someone else.', BOOKACTI_PLUGIN_NAME );
 		bookacti_send_json( $return_array, 'submit_booking_form' );
