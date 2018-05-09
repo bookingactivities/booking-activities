@@ -427,6 +427,7 @@ function bookacti_get_default_form_fields_data( $field_name = '' ) {
  * Get fields metadata
  * @see bookacti_format_form_field_data to properly format your array
  * @since 1.5.0
+ * @version 1.5.1
  * @param string $field_name
  * @return array
  */
@@ -455,6 +456,7 @@ function bookacti_get_default_form_fields_meta( $field_name = '' ) {
 	$fields_meta = apply_filters( 'bookacti_default_form_fields_meta', array(
 		'calendar'	=> $calendar_meta,
 		'login'		=> array(
+			'automatic_login'			=> 1,
 			'min_password_strength'		=> 4,
 			'generate_password'			=> 0,
 			'send_new_account_email'	=> 1,
@@ -478,6 +480,7 @@ function bookacti_get_default_form_fields_meta( $field_name = '' ) {
 /**
  * Format field data according to its type
  * @since 1.5.0
+ * @version 1.5.1
  * @param array|string $raw_field_data
  * @return array|false
  */
@@ -521,7 +524,7 @@ function bookacti_format_form_field_data( $raw_field_data ) {
 	} else if( $raw_field_data[ 'name' ] === 'login' ) {
 		// Format meta values
 		$keys_by_type = array( 
-			'bool'		=> array( 'generate_password', 'send_new_account_email' ),
+			'bool'		=> array( 'automatic_login', 'generate_password', 'send_new_account_email' ),
 			'int'		=> array( 'min_password_strength' ),
 			'str_id'	=> array( 'new_user_role' )
 		);
@@ -591,6 +594,7 @@ function bookacti_format_form_field_data( $raw_field_data ) {
 /**
  * Sanitize field data according to its type
  * @since 1.5.0
+ * @version 1.5.1
  * @param array|string $raw_field_data
  * @return array|false
  */
@@ -638,7 +642,7 @@ function bookacti_sanitize_form_field_data( $raw_field_data ) {
 	} else if( $raw_field_data[ 'name' ] === 'login' ) {
 		// Sanitize meta values
 		$keys_by_type = array( 
-			'bool'		=> array( 'generate_password', 'send_new_account_email' ),
+			'bool'		=> array( 'automatic_login', 'generate_password', 'send_new_account_email' ),
 			'int'		=> array( 'min_password_strength' ),
 			'str_id'	=> array( 'new_user_role' )
 		);
@@ -975,10 +979,12 @@ function bookacti_register_a_new_user( $login_values, $login_data ) {
 /**
  * Validate login fields
  * @since 1.5.0
+ * @version 1.5.1
  * @param array $login_values
+ * @param boolean $require_authentication Whether to authenticate the user
  * @return WP_User|array
  */
-function bookacti_validate_login( $login_values ) {
+function bookacti_validate_login( $login_values, $require_authentication = true ) {
 		
 	$return_array = array( 'status' => 'failed' );
 
@@ -991,11 +997,13 @@ function bookacti_validate_login( $login_values ) {
 	}
 
 	// Check if password is correct
-	$user = wp_authenticate( $user->user_email, $login_values[ 'password' ] );
-	if( ! is_a( $user, 'WP_User' ) ) { 
-		$return_array[ 'error' ]	= 'wrong_password';
-		$return_array[ 'message' ]	= esc_html__( 'The password is incorrect. Try again.', BOOKACTI_PLUGIN_NAME );
-		return $return_array;
+	if( $require_authentication ) {
+		$user = wp_authenticate( $user->user_email, $login_values[ 'password' ] );
+		if( ! is_a( $user, 'WP_User' ) ) { 
+			$return_array[ 'error' ]	= 'wrong_password';
+			$return_array[ 'message' ]	= esc_html__( 'The password is incorrect. Try again.', BOOKACTI_PLUGIN_NAME );
+			return $return_array;
+		}
 	}
 	
 	return apply_filters( 'bookacti_validate_login_form', $user, $login_values );

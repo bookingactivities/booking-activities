@@ -232,8 +232,14 @@ function bookacti_fill_fields_from_array( fields, field_prefix, scope ) {
 }
 
 
-// Switch a selectbox to multiple
+/**
+ * Switch a selectbox to multiple
+ * @version 1.5.1
+ * @param {dom_element} checkbox
+ */
 function bookacti_switch_select_to_multiple( checkbox ) {
+	
+	if( ! $j( checkbox ).length ) { return; }
 	
 	var select_id	= $j( checkbox ).data( 'select-id' );
 	var select_name	= $j( 'select#' + select_id ).attr( 'name' );;

@@ -425,6 +425,7 @@ function bookacti_format_booking_system_attributes( $atts = array() ) {
 /**
  * Get booking system fields default data
  * @since 1.5.0
+ * @version 1.5.1
  * @param array $fields
  * @return array
  */
@@ -472,7 +473,7 @@ function bookacti_get_booking_system_fields_default_data( $fields = array() ) {
 			'options'		=> $activities_options,
 			'attr'			=> $activities_options_attr,
 			'value'			=> '', 
-			'title'			=> esc_html__( 'Group category', BOOKACTI_PLUGIN_NAME ),
+			'title'			=> esc_html__( 'Activity', BOOKACTI_PLUGIN_NAME ),
 			'tip'			=> esc_html__( 'Retrieve events from the selected activities only.', BOOKACTI_PLUGIN_NAME )
 		);
 	}

@@ -5,7 +5,7 @@ Tags: booking activities, booking sport, booking form, event reservation, reserv
 Requires at least: 3.6
 Tested up to: 4.9
 Requires PHP: 5.3
-Stable tag: 1.5.0
+Stable tag: 1.5.1
 License: GPLv3 or later
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
 
@@ -315,8 +315,15 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 
 == Changelog ==
 
+= 1.5.1 - 2018/05/09 =
+* Feature - Add a setting to disable automatic login after booking
+* Feature - Add a setting to allow customers to book without authentication
+* Fix - Calendar field settings dialog may not open if the form was created from the "Add new" button
+* Fix - Missing JS check on form without login/register field
+
 = 1.5.0 - 2018/05/05 =
 * Feature - Customizable booking forms !
+* Feature - Login / Register seamlessly as you book 
 * Feature - You can now delete your bookings and your booking groups from the booking list
 * Feature - You can display past events on frontend, they can be bookable or not
 * Feature - Responsive default calendar view: display day view for small calendars instead of week view (set the threshold in settings)
