@@ -7,9 +7,7 @@ $j( document ).ready( function() {
 		e.preventDefault();
 		
 		// Save tineMCE editor content 
-		if( tinyMCE ) {
-			tinyMCE.triggerSave();
-		}
+		if( tinyMCE ) { tinyMCE.triggerSave(); }
 		
 		var form		= $j( this );
 		var form_data	= form.serializeObject(); // Need to use the homemade serializeObject to support multidimentionnal array

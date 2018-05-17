@@ -84,7 +84,7 @@ function bookacti_load_template_calendar() {
 	calendar.fullCalendar( {
 
 		// OPTIONS
-		locale:					bookacti_localized.current_lang_code,
+		locale:					bookacti_localized.fullcalendar_locale,
 
 		defaultView:            'agendaWeek',
 		minTime:                '08:00',

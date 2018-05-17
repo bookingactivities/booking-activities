@@ -1607,51 +1607,39 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	
 	/**
 	 * Tell if the product is activity or has variations that are activities
-	 * 
-	 * @version 1.0.4
-	 * 
+	 * @version 1.5.2
 	 * @param WC_Product|int $product
 	 * @return boolean
 	 */
 	function bookacti_product_is_activity( $product ) {
+		
+		// Get product or variation from ID
 		if( ! is_object( $product ) ) {
-			$product_id = intval( $product );
-
-			$is_product_activity	= get_post_meta( $product_id, '_bookacti_is_activity', true ) === 'yes';
-			$is_variation_activity	= get_post_meta( $product_id, 'bookacti_variable_is_activity', true ) === 'yes';
-
-			if( $is_product_activity || $is_variation_activity ) {
-				return true;
-			}
-
-		} else {
-			// WOOCOMMERCE 3.0.0 BW compability
-			if( version_compare( WC_VERSION, '3.0.0', '>=' ) ) {
-				if( method_exists( $product, 'get_visible_children' ) ) {
-					$variation_ids = $product->get_visible_children();
-				}
-			} else {
-				$variation_ids = $product->get_children( true );
-			}
-
-			$has_variation_activity = false;
-			if( ! empty( $variation_ids ) ) {
-				foreach( $variation_ids as $variation_id ) {
-					if( get_post_meta( $variation_id, 'bookacti_variable_is_activity', true ) === 'yes' ) {
-						$has_variation_activity = true;
-						break;
-					}
-				}
-			}
-
+			$product_id	= intval( $product );
+			$product	= wc_get_product( $product_id );
+			if( ! $product ) { return false; }
+		}
+		
+		$is_activity = false;
+		
+		if( $product->is_type( 'simple' ) ) {
 			$is_activity = get_post_meta( $product->get_id(), '_bookacti_is_activity', true ) === 'yes';
-
-			if(( $product->is_type( 'simple' ) && $is_activity ) 
-			|| ( $product->is_type( 'variable' ) && $has_variation_activity )) {
-				return true;
+		} 
+		
+		else if( $product->is_type( 'variation' ) ) {
+			$is_activity = get_post_meta( $product->get_id(), 'bookacti_variable_is_activity', true ) === 'yes';
+		}
+		
+		else if( $product->is_type( 'variable' ) ) {
+			$variations = $product->get_available_variations();
+			foreach( $variations as $variation ) {
+				if( empty( $variation[ 'bookacti_is_activity' ] ) ) { continue; }
+				$is_activity = $variation[ 'bookacti_is_activity' ];
+				break;
 			}
 		}
-
+		
+		if( $is_activity ) { return true; }
 		return false;
 	}
 	

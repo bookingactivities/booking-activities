@@ -222,6 +222,7 @@ $bookacti_translation_array = apply_filters( 'bookacti_translation_array', array
 	'ajaxurl'							=> admin_url( 'admin-ajax.php' ),
 	
 	'is_qtranslate'						=> bookacti_get_translation_plugin() === 'qtranslate',
+	'fullcalendar_locale'				=> bookacti_convert_wp_locale_to_fc_locale( bookacti_get_current_lang_code( true ) ),
 	'current_lang_code'					=> bookacti_get_current_lang_code(),
 	
 	'available_booking_methods'			=> array_keys( bookacti_get_available_booking_methods() ),
@@ -252,17 +253,10 @@ $bookacti_translation_array = apply_filters( 'bookacti_translation_array', array
 	'current_time'						=> $current_datetime_object->format( 'Y-m-d H:i:s' ),
 
 	// NONCES
-	'nonce_get_booking_system_data'		=> wp_create_nonce( 'bookacti_get_booking_system_data' ),
-	'nonce_switch_booking_method'		=> wp_create_nonce( 'bookacti_switch_booking_method' ),
-	'nonce_reload_booking_system'		=> wp_create_nonce( 'bookacti_reload_booking_system' ),
-
 	'nonce_selected_template_filter'	=> wp_create_nonce( 'bookacti_selected_template_filter' ),
-	'nonce_fetch_events'				=> wp_create_nonce( 'bookacti_fetch_events' ),
-	'nonce_get_bookings'				=> wp_create_nonce( 'bookacti_get_bookings' ),
 	'nonce_get_booking_rows'			=> wp_create_nonce( 'bookacti_get_booking_rows' ),
 	'nonce_get_refund_actions_html'		=> wp_create_nonce( 'bookacti_get_refund_actions_html' ),
 	'nonce_get_booking_data'			=> wp_create_nonce( 'bookacti_get_booking_data' ),
-	'nonce_get_form'					=> wp_create_nonce( 'bookacti_get_form' ),
 
 	'nonce_cancel_booking'				=> wp_create_nonce( 'bookacti_cancel_booking' ),
 	'nonce_reschedule_booking'			=> wp_create_nonce( 'bookacti_reschedule_booking' ),

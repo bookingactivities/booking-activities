@@ -275,6 +275,55 @@ add_action( 'bookacti_display_form_field_quantity', 'bookacti_display_form_field
 
 
 /**
+ * Display the form field 'checkbox'
+ * @since 1.5.2
+ * @param string $html
+ * @param array $field
+ * @param string $instance_id
+ * @param string $context
+ * @return string
+ */
+function bookacti_display_form_field_checkbox( $html, $field, $instance_id, $context ) {
+	
+	$field_id		= ! empty( $field[ 'id' ] ) ? esc_attr( $field[ 'id' ] ) : esc_attr( 'bookacti-form-field-' . $field[ 'type' ] . '-' . $field[ 'field_id' ] . '-' . $instance_id );
+	$field_class	= 'bookacti-form-field-container';
+	if( ! empty( $field[ 'name' ] ) )		{ $field_class .= ' bookacti-form-field-name-' . esc_attr( $field[ 'name' ] ); } 
+	if( ! empty( $field[ 'field_id' ] ) )	{ $field_class .= ' bookacti-form-field-id-' . esc_attr( $field[ 'field_id' ] ); }
+	if( ! empty( $field[ 'class' ] ) )		{ $field_class .= ' ' . esc_attr( $field[ 'class' ] ); }
+	ob_start();
+	?>
+	<div class='<?php echo $field_class; ?>' id='<?php echo $field_id; ?>' >
+		<div class='bookacti-form-field-checkbox-field-container' >
+			<div class='bookacti-form-field-checkbox-input' >
+				<input type='hidden' name='<?php echo esc_attr( $field[ 'name' ] ); ?>' value='0'/>
+				<input type='checkbox' 
+					   name='<?php echo esc_attr( $field[ 'name' ] ); ?>'
+					   id='<?php echo $field_id . '-input'; ?>'
+					   class='bookacti-form-field'
+					   value='1'
+					   <?php if( $field[ 'required' ] ) { echo 'required'; } ?>
+					   <?php if( $field[ 'value' ] ) { echo 'checked'; } ?> />
+			</div>
+			<div class='bookacti-form-field-checkbox-label' >
+				<label for='<?php echo $field_id . '-input'; ?>' >
+				<?php 
+					echo apply_filters( 'bookacti_translate_text', $field[ 'label' ] ); 
+					if( $field[ 'required' ] ) {
+						echo '<span class="bookacti-required-field-indicator" title="' . esc_attr__( 'Required field', BOOKACTI_PLUGIN_NAME ) . '"></span>';
+					}
+				?>
+				</label>
+			<?php if( ! empty( $field[ 'tip' ] ) ) { bookacti_help_tip( esc_html( apply_filters( 'bookacti_translate_text', $field[ 'tip' ] ) ) ); } ?>
+			</div>
+		</div>
+	</div>
+	<?php
+	return ob_get_clean();
+}
+add_filter( 'bookacti_html_form_field_checkbox', 'bookacti_display_form_field_checkbox', 10, 4 );
+
+
+/**
  * Display the form field 'submit'
  * @since 1.5.0
  * @param string $html
@@ -305,6 +354,7 @@ add_filter( 'bookacti_html_form_field_submit', 'bookacti_display_form_field_subm
 /**
  * Display the form field 'free_text'
  * @since 1.5.0
+ * @version 1.5.2
  * @param array $field
  * @param string $instance_id
  * @param string $context
@@ -314,7 +364,7 @@ function bookacti_display_form_field_free_text( $field, $instance_id, $context )
 	?>
 	<div id='<?php echo $field_id; ?>' class='bookacti-form-free-text <?php echo esc_attr( $field[ 'class' ] ); ?>' >
 	<?php 
-		$html = wpautop( apply_filters( 'bookacti_translate_text', $field[ 'value' ] ) );
+		$html = apply_filters( 'bookacti_translate_text', $field[ 'value' ] );
 		echo $context === 'edit' ? $html : do_shortcode( $html ); 
 	?>
 	</div>
@@ -357,14 +407,11 @@ add_filter( 'bookacti_displayed_form_fields', 'bookacti_display_compulsory_quant
 /**
  * AJAX Controller - Get a booking form
  * @since 1.5.0
+ * @version 1.5.2
  */
 function bookacti_controller_get_form() {
 	// Check nonce
 	$form_id		= intval( $_POST[ 'form_id' ] );
-	$is_nonce_valid	= check_ajax_referer( 'bookacti_get_form', 'nonce', false );
-
-	if( ! $is_nonce_valid ) { wp_send_json( array( 'status' => 'failed', 'error' => 'not_allowed' ) ); }
-	
 	$instance_id	= ! empty( $_POST[ 'instance_id' ] ) ? sanitize_title_with_dashes( $_POST[ 'instance_id' ] ) : '';
 	$context		= ! empty( $_POST[ 'context' ] ) ? sanitize_title_with_dashes( $_POST[ 'context' ] ) : 'display';
 	
@@ -410,9 +457,14 @@ add_action( 'wp_ajax_nopriv_bookactiForgottenPassword', 'bookacti_controller_for
 
 /**
  * Check if booking form is correct and then book the event, or send the error message
- * @version 1.5.1
+ * @version 1.5.2
  */
 function bookacti_controller_validate_booking_form() {
+	
+	// Check nonce
+	if( ! check_ajax_referer( 'bookacti_booking_form', 'nonce_booking_form', false ) ) {
+		bookacti_send_json_invalid_nonce( 'submit_booking_form' );
+	}
 	
 	$return_array = array(
 		'has_logged_in'		=> false,
@@ -436,9 +488,21 @@ function bookacti_controller_validate_booking_form() {
 	// Retrieve form field data 
 	$form_fields_data = bookacti_get_form_fields_data( $form_id );
 	
-	// Check nonce
-	if( ! check_ajax_referer( 'bookacti_booking_form', 'nonce_booking_form', false ) ) {
-		bookacti_send_json_invalid_nonce( 'submit_booking_form' );
+	// Let third party plugins validate their own part of the form
+	do_action( 'bookacti_validate_booking_form_submission', $form_id, $form_fields_data );
+	
+	// Validate terms
+	$has_terms = false;
+	foreach( $form_fields_data as $form_field_data ) {
+		if( $form_field_data[ 'name' ] === 'terms' ) { 
+			$has_terms = true;
+			break;
+		}
+	}
+	if( $has_terms && empty( $_POST[ 'terms' ] ) ) {
+		$return_array[ 'error' ]	= 'terms_not_agreed';
+		$return_array[ 'message' ]	= __( 'You must agree to the terms and conditions.', BOOKACTI_PLUGIN_NAME );
+		bookacti_send_json( $return_array, 'submit_booking_form' );
 	}
 	
 	$require_authentication = true;

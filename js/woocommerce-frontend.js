@@ -54,9 +54,9 @@ $j( document ).ready( function() {
 		if( $j( '.woocommerce form.cart.variations_form' ).length ) { 
 			$j( '.woocommerce form.cart.variations_form' ).each( function() {
 				var wc_form = $j( this );
+				
 				/** START BACKWARD COMPATIBILITY < 1.5 **/
-				if( wc_form.find( '.bookacti-booking-system' ).length && ! wc_form.find( '.bookacti-form-field-container .bookacti-booking-system' ).length ) { 
-
+				if( wc_form.find( '.bookacti-booking-system' ).length && ! wc_form.find( '.bookacti-form-fields' ).length ) { 
 					var booking_system		= wc_form.find( '.bookacti-booking-system' );
 					var booking_system_id	= booking_system.attr( 'id' );
 
@@ -76,30 +76,32 @@ $j( document ).ready( function() {
 						var new_button_text = variation[ 'bookacti_is_activity' ] ? bookacti_localized.add_booking_to_cart_button_text : bookacti_localized.add_product_to_cart_button_text;
 						wc_form.find( '.single_add_to_cart_button' ).text( new_button_text );
 					});
+					
+					return true; // continue
 				}
 				/** END BACKWARD COMPATIBILITY < 1.5 **/
-				else {
-					if( typeof bookacti.form_fields === 'undefined' ) { bookacti.form_fields = []; }
-					// Remove form
-					wc_form.on( 'reset_data', function( e ) { 
-						var form_container = wc_form.find( '.bookacti-form-fields' );
-						form_container.data( 'form-id', '' );
-						form_container.attr( 'data-form-id', '' );
-						form_container.data( 'variation-id', '' );
-						form_container.attr( 'data-variation-id', '' );
-						form_container.empty();
-					});
-					// Switch form
-					wc_form.find( '.single_variation_wrap' ).on( 'show_variation', function( e, variation ) { 
-						var form_container = wc_form.find( '.bookacti-form-fields' );
-						if( variation.variation_id === form_container.data( 'variation-id' ) 
-						&&  typeof bookacti.form_fields[ form_container.data( 'form-id' ) ] !== 'undefined' ) { 
-							bookacti.is_variation_activity[ variation[ 'variation_id' ] ] = true;
-							return; }
-						// Switch form
-						bookacti_switch_product_variation_form( form_container, variation );
-					});
-				}
+				
+				if( typeof bookacti.form_fields === 'undefined' ) { bookacti.form_fields = []; }
+				
+				// Empty the form
+				wc_form.on( 'reset_data', function( e ) { 
+					var form_container = wc_form.find( '.bookacti-form-fields' );
+					form_container.data( 'form-id', '' );
+					form_container.attr( 'data-form-id', '' );
+					form_container.data( 'variation-id', '' );
+					form_container.attr( 'data-variation-id', '' );
+					form_container.empty();
+				});
+				
+				// Switch form
+				wc_form.find( '.single_variation_wrap' ).on( 'show_variation', function( e, variation ) { 
+					var form_container = wc_form.find( '.bookacti-form-fields' );
+					bookacti_switch_product_variation_form( form_container, variation );
+					
+					// Change Add to cart button label
+					var new_button_text = variation[ 'bookacti_is_activity' ] ? bookacti_localized.add_booking_to_cart_button_text : bookacti_localized.add_product_to_cart_button_text;
+					wc_form.find( '.single_add_to_cart_button' ).text( new_button_text );
+				});
 			});
 		}
 	
@@ -221,8 +223,7 @@ function bookacti_switch_product_variation_form( form_container, variation ) {
 			'action': 'bookactiGetForm', 
 			'form_id': form_id, 
 			'instance_id': 'product-variation-' + variation[ 'variation_id' ], 
-			'context': 'wc_product_page', 
-			'nonce': bookacti_localized.nonce_get_form
+			'context': 'wc_switch_variation'
 		},
         dataType: 'json',
         success: function( response ){

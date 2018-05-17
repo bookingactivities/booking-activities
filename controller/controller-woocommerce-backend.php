@@ -429,18 +429,14 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 	/**
 	 * Add 'Activity' custom product type option
-	 * 
-	 * @since 1.0.0
-	 * @version 1.0.0
-	 * 
-	 * @param type $options_array
-	 * @return type
+	 * @version 1.5.2
+	 * @param array $options_array
+	 * @return array
 	 */
 	function bookacti_add_product_type_option( $options_array ) { 
-
 		$options_array[ 'bookacti_is_activity' ] = array(
 				'id'            => '_bookacti_is_activity',
-				'wrapper_class' => 'show_if_simple show_if_variable',
+				'wrapper_class' => 'show_if_simple',
 				/* translators: 'Activity' is the new type of product in WooCommerce */
 				'label'         => __( 'Activity', BOOKACTI_PLUGIN_NAME ),
 				/* translators: Description of the 'Activity' type of product in WooCommerce */
@@ -455,10 +451,6 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	
 	/**
 	 * Add 'Activity' custom product tab
-	 * 
-	 * @since 1.0.0
-	 * @version 1.0.0
-	 * 
 	 * @param array $tabs
 	 * @return array
 	 */
@@ -786,10 +778,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 	/**
 	 * Save custom activity product type and activity tab content
-	 * 
-	 * @since 1.0.0
 	 * @version 1.5.0
-	 * 
 	 * @param int $post_id
 	 */
 	function bookacti_save_custom_product_type_and_tab_content( $post_id ) { 
@@ -854,10 +843,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 	/**
 	 * Add custom variation product type option
-	 * 
-	 * @since 1.0.0
 	 * @version 1.5.0
-	 * 
 	 * @param int $loop
 	 * @param array $variation_data
 	 * @param WP_Post $variation
@@ -887,10 +873,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	
 	/**
 	 * Add custom fields for activity variation product type
-	 * 
-	 * @since 1.0.0
 	 * @version 1.4.0
-	 * 
 	 * @param int $loop
 	 * @param array $variation_data
 	 * @param WP_Post $variation

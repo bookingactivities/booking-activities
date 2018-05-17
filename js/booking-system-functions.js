@@ -18,8 +18,7 @@ function bookacti_fetch_events( booking_system, interval ) {
 			'action': 'bookactiFetchEvents', 
 			'attributes': JSON.stringify( attributes ),
 			'is_admin': bookacti_localized.is_admin, 
-			'interval': interval, 
-			'nonce': bookacti_localized.nonce_fetch_events 
+			'interval': interval
 		},
         dataType: 'json',
         success: function( response ){
@@ -65,7 +64,11 @@ function bookacti_fetch_events( booking_system, interval ) {
 }
 
 
-// Reload a booking system
+/**
+ * Reload a booking system
+ * @version 1.5.2
+ * @param {dom_element} booking_system
+ */
 function bookacti_reload_booking_system( booking_system ) {
 	
 	var booking_system_id	= booking_system.attr( 'id' );
@@ -79,8 +82,7 @@ function bookacti_reload_booking_system( booking_system ) {
         data: {	
 			'action': 'bookactiReloadBookingSystem', 
 			'attributes': JSON.stringify( attributes ),
-			'is_admin': bookacti_localized.is_admin,
-			'nonce': bookacti_localized.nonce_reload_booking_system
+			'is_admin': bookacti_localized.is_admin
 		},
         dataType: 'json',
         success: function( response ){
@@ -121,68 +123,6 @@ function bookacti_reload_booking_system( booking_system ) {
         },
         error: function( e ){
             console.log( 'AJAX ' + bookacti_localized.error_reload_booking_system );
-            console.log( e );
-        },
-        complete: function() { 
-			bookacti_stop_loading_booking_system( booking_system );
-		}
-    });	
-}
-
-
-// Switch a booking method
-function bookacti_switch_booking_method( booking_system, method ) {
-	
-	// Sanitize parameters
-	method = $j.inArray( method, bookacti_localized.available_booking_methods ) === -1 ? 'calendar' : method;
-	
-	// If no changes are made, do not perform the function
-	if( method === bookacti.booking_system[ booking_system_id ][ 'method' ] ) {
-		return false;
-	}
-	
-	var booking_system_id	= booking_system.attr( 'id' );
-	var attributes			= bookacti.booking_system[ booking_system_id ];
-	
-	bookacti_start_loading_booking_system( booking_system );
-	
-	$j.ajax({
-        url: bookacti_localized.ajaxurl,
-        type: 'POST',
-        data: {	
-			'action': 'bookactiSwitchBookingMethod', 
-			'booking_system_id': booking_system_id,
-			'attributes': JSON.stringify( attributes ),
-			'method': method,
-			'nonce': bookacti_localized.nonce_switch_booking_method
-		},
-        dataType: 'json',
-        success: function( response ){
-			
-			if( response.status === 'success' ) {
-				
-				// Change the booking system attribute
-				bookacti.booking_system[ booking_system_id ][ 'method' ] = method;
-				
-				// Fill the booking method elements
-				booking_system.empty();
-				booking_system.append( response.html_elements );
-				
-				// Load the booking method
-				bookacti_booking_method_set_up( booking_system );
-				
-				
-			} else {
-				var error_message = bookacti_localized.error_switch_booking_method;
-				if( response.error === 'not_allowed' ) {
-					error_message += '\n' + bookacti_localized.error_not_allowed;
-				}
-				console.log( error_message );
-				console.log( response );
-			}
-        },
-        error: function( e ){
-            console.log( 'AJAX ' + bookacti_localized.error_switch_booking_method );
             console.log( e );
         },
         complete: function() { 
