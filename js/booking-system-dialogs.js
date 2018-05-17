@@ -17,7 +17,7 @@ function bookacti_init_booking_system_dialogs() {
 	});
 
 	// Make dialogs close when the user click outside
-	$j( '.ui-widget-overlay' ).live( 'click', function (){
+	$j( 'body' ).on( 'click', '.ui-widget-overlay', function (){
 		$j( 'div:ui-dialog:visible' ).dialog( 'close' );
 	});
 	

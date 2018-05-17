@@ -5,11 +5,11 @@ Tags: booking activities, booking sport, booking form, event reservation, reserv
 Requires at least: 3.6
 Tested up to: 4.9
 Requires PHP: 5.3
-Stable tag: 1.5.1
+Stable tag: 1.5.2
 License: GPLv3 or later
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
 
-Reservation system specialized in activities: sports, leisure, courses, events, tourism, and many more! Works great with WooCommerce.
+Reservation system specialized in activities: sports, leisure, courses, events, tourism, and more! Works great with WooCommerce.
 
 
 == Description ==
@@ -314,6 +314,17 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 
 
 == Changelog ==
+
+= 1.5.2 - 2018/05/17 =
+* Feature - Add a "Terms" field (required checkbox)
+* Tweak - Removed "Activity" master checkbox on variable product. Checking it on each variations is enough.
+* Fix - JS error on WC Variable Products if they have no default variation and if calendar is loaded after page load
+* Fix - Calendar not displayed when switching WC non-activity variation to activity variation
+* Fix - Wrong button label when switching WC activity variation to non-activity variation: "Book" instead of "Add to cart"
+* Fix - Calendars locale-related settings didn't take the country into account (first day of week, time format...)
+* Fix - Deprecated .live function in newer jQuery versions replaced by .on
+* Fix - Remove unnecessary nonces that may cause troubles
+* Fix - Fields were added at the top of the form instead of at the bottom
 
 = 1.5.1 - 2018/05/09 =
 * Feature - Add a setting to disable automatic login after booking

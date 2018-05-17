@@ -101,6 +101,9 @@ fieldset.bookacti-register-fields							{ border: 1px solid #bbb; -webkit-border
 .bookacti-password.good			{ border-color: #ffc733; }
 .bookacti-password.strong		{ border-color: #83c373; }
 
+.bookacti-form-field-checkbox-input,
+.bookacti-form-field-checkbox-label	{ display: table-cell; vertical-align: top; }
+.bookacti-form-field-checkbox-label	{ padding: 0 10px; }
 
 .bookacti-form-field-name-submit		{ text-align: center; }
 .bookacti-form-field-name-submit input	{ cursor: pointer; }

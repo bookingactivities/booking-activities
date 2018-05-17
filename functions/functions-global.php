@@ -101,11 +101,11 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 	/**
 	 * Detect current language with Qtranslate X or WPML
-	 * 
+	 * @version 1.5.2
 	 * @return string 
 	 */
-	function bookacti_get_current_lang_code() {
-		$lang_code = substr( get_locale(), 0, strpos( get_locale(), '_' ) );
+	function bookacti_get_current_lang_code( $with_locale = false ) {
+		$lang_code = $with_locale ? get_locale() : substr( get_locale(), 0, strpos( get_locale(), '_' ) );
 
 		$is_qtranslate	= bookacti_is_plugin_active( 'qtranslate-x/qtranslate.php' );
 		$is_wpml		= bookacti_is_plugin_active( 'wpml/wpml.php' );
@@ -113,10 +113,20 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		if ( $is_qtranslate ) {
 			if( function_exists( 'qtranxf_getLanguage' ) ) {
 				$lang_code = qtranxf_getLanguage();
+				if( $with_locale ) {
+					global $q_config;
+					foreach( $q_config[ 'locale' ] as $code => $locale ) {
+						if( $code === $lang_code ) { $lang_code = $locale; break; }
+					}
+				}
 			}
 		} else if ( $is_wpml ) {
-			if ( defined( 'ICL_LANGUAGE_CODE' ) ) {
-				$lang_code = ICL_LANGUAGE_CODE;
+			$lang_code = apply_filters( 'wpml_current_language', NULL );
+			if( $with_locale ) {
+				$languages = apply_filters( 'wpml_active_languages', NULL );
+				foreach( $languages as $l ) {
+					if( $l[ 'active' ] ) { $lang_code = $l[ 'default_locale' ]; break; }
+				}
 			}
 		}
 		return $lang_code;
@@ -280,8 +290,61 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	}
 	
 	
+	/**
+	 * Get FullCalendar supported locale
+	 * @since 1.5.2
+	 * @return array
+	 */
+	function bookacti_get_fullcalendar_supported_locales() {
+		return apply_filters( 'bookacti_fullcalendar_locales', array( 
+			'af', 'ar-dz', 'ar-kw', 'ar-ly', 'ar-ma', 'ar-sa', 'ar-tn', 'ar', 'bg', 'bs', 'ca', 'cs', 
+			'da', 'de-at', 'de-ch', 'de', 'el', 'en-au', 'en-ca', 'en-gb', 'en-ie', 'en-nz', 'es-do', 'es-us', 'es', 'et', 'eu', 'fa', 'fi', 'fr-ca', 'fr-ch', 'fr', 
+			'gl', 'he', 'hi', 'hr', 'hu', 'id', 'is', 'it', 
+			'ja', 'ka', 'kk', 'ko', 'lb', 'lt', 'lv', 
+			'mk', 'ms-my', 'ms', 'nb', 'nl-be', 'nl', 'nn', 
+			'pl', 'pt-br', 'pt', 'ro', 'ru', 
+			'sk', 'sl', 'sq', 'sr-cyrl', 'sr', 'sv', 'th', 'tr', 'uk', 
+			'vi', 
+			'zh-cn', 'zh-tw' 
+		));
+	}
 	
 	
+	/**
+	 * Convert a WP formatted locale to the closest available FullCalendar locale
+	 * @since 1.5.2
+	 * @param string $wp_locale
+	 * @return string
+	 */
+	function bookacti_convert_wp_locale_to_fc_locale( $wp_locale = false ) {
+		if( ! $wp_locale ) { $wp_locale = bookacti_get_site_locale(); }
+		
+		// Format the locale like FC locale formatting
+		$fc_locale = $wp_locale;
+		
+		// Keep these formats "lang_COUNTRY" or "lang" only
+		$pos = strpos( $wp_locale, '_', strpos( $wp_locale, '_' ) + 1 );
+		if( $pos ) { $fc_locale = substr( $wp_locale, 0, $pos ); }
+		
+		// Replace _ by - and use lowercase only
+		$fc_locale = strtolower( str_replace( '_', '-', $fc_locale ) ); 
+		
+		// Check if the locale exists
+		$fc_locales = bookacti_get_fullcalendar_supported_locales();
+		if( ! in_array( $fc_locale, $fc_locales, true ) ) {
+			// Keep only the lang code
+			$fc_locale = strstr( $wp_locale, '_', true );
+			// Default to english if the locale doesn't exist at all
+			if( ! in_array( $fc_locale, $fc_locales, true ) ) {
+				$fc_locale = 'en';
+			}
+		}
+		return apply_filters( 'bookacti_fullcalendar_locale', $fc_locale, $wp_locale );
+	}
+
+
+
+
 // FORMS
 	/**
 	 * Display fields
@@ -617,7 +680,22 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 		return $args;
 	}
-
+	
+	
+	/**
+	 * Sanitize text from HTML editor in form fields
+	 * @since 1.5.2
+	 * @param string $html
+	 * @return string
+	 */
+	function bookacti_sanitize_form_field_free_text( $html ) {
+		$html = wp_kses_post( stripslashes( $html ) );
+		// Strip form tags
+		$tags = array( 'form', 'input', 'textarea', 'select', 'option', 'output' );
+		$html = preg_replace( '#<(' . implode( '|', $tags) . ')(?:[^>]+)?>.*?</\1>#s', '', $html );
+		return $html;
+	}
+	
 
 	/**
 	 * Display help toolbox

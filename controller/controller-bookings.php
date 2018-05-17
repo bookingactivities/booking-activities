@@ -242,27 +242,21 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 		/**
 		 * AJAX Controller - Get booking system data by booking ID
-		 * 
-		 * @version 1.2.2
+		 * @version 1.5.2
 		 */
 		function bookacti_controller_get_booking_data() {
-
 			// Check nonce, no need to check capabilities
 			$is_nonce_valid = check_ajax_referer( 'bookacti_get_booking_data', 'nonce', false );
 
-			if( $is_nonce_valid ) {
+			if( ! $is_nonce_valid ) { bookacti_send_json_invalid_nonce( 'get_booking_data' ); }
 
-				$booking_id	= intval( $_POST[ 'booking_id' ] );
-				$booking_data = bookacti_get_booking_data( $booking_id );
+			$booking_id	= intval( $_POST[ 'booking_id' ] );
+			$booking_data = bookacti_get_booking_data( $booking_id );
 
-				if( is_array( $booking_data ) && ! empty( $booking_data ) ) {
-					wp_send_json( array( 'status' => 'success', 'booking_data' => $booking_data ) );
-				} else {
-					wp_send_json( array( 'status' => 'failed', 'error' => 'empty_data' ) );
-				}
-
+			if( is_array( $booking_data ) && ! empty( $booking_data ) ) {
+				wp_send_json( array( 'status' => 'success', 'booking_data' => $booking_data ) );
 			} else {
-				wp_send_json( array( 'status' => 'failed', 'error' => 'not_allowed' ) );
+				wp_send_json( array( 'status' => 'failed', 'error' => 'empty_data' ) );
 			}
 		}
 		add_action( 'wp_ajax_bookactiGetBookingData', 'bookacti_controller_get_booking_data' );

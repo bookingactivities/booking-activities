@@ -1,4 +1,4 @@
-{ "vendor": { "plugins/booking-activities": "1.3.0" },
+{ "vendor": { "plugins/booking-activities": "1.5.2" },
 	"admin-config":{
 		"bookacti_calendars":{
 			"pages":{ "admin.php":"" },
@@ -14,7 +14,8 @@
 						"bookacti-form-field-dialog-login-lang-switcher": { "where": "first" },
 						"bookacti-form-field-dialog-quantity-lang-switcher": { "where": "first" },
 						"bookacti-form-field-dialog-submit-lang-switcher": { "where": "first" },
-						"bookacti-form-field-dialog-free_text-lang-switcher": { "where": "first" }
+						"bookacti-form-field-dialog-free_text-lang-switcher": { "where": "first" },
+						"bookacti-form-field-dialog-terms-lang-switcher": { "where": "first" }
 			},
 			"forms":{
 				"bookacti-settings":{
@@ -122,6 +123,11 @@
 					"fields":{
 						"bookacti-free_text-title":{},
 						"bookacti-free_text-value":{}
+					}
+				},
+				"bookacti-form-field-form-terms":{
+					"fields":{
+						"bookacti-terms-label":{}
 					}
 				}
 			}

@@ -7,6 +7,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 /**
  * Create a new form
  * @since 1.5.0
+ * @version 1.5.2
  * @param string $title
  * @param string $status
  * @param int active
@@ -20,7 +21,13 @@ function bookacti_create_form( $title = '', $status = 'auto-draft', $active = 0,
 	if( $form_id === false ) { return $form_id; }
 	
 	// Insert default form fields
-	bookacti_insert_default_form_fields( $form_id, $to_insert );
+	$inserted = bookacti_insert_default_form_fields( $form_id, $to_insert );
+	
+	if( $inserted ) {
+		// Save initial field order
+		$field_order = bookacti_sanitize_form_field_order( $form_id, array() );
+		bookacti_update_metadata( 'form', $form_id, array( 'field_order' => $field_order ) );
+	}
 	
 	// Insert default form managers
 	$form_managers = bookacti_format_form_managers();
@@ -328,6 +335,7 @@ function bookacti_get_form_field_data_by_name( $form_id, $field_name ) {
  * Get fields data
  * @see bookacti_format_form_field_data to properly format your array
  * @since 1.5.0
+ * @version 1.5.2
  * @param string $field_name
  * @return array
  */
@@ -399,6 +407,14 @@ function bookacti_get_default_form_fields_data( $field_name = '' ) {
 			'required'	=> 1,
 			'default'	=> 1
 		),
+		'terms' => array( 
+			'name'		=> 'terms',
+			'type'		=> 'checkbox',
+			'title'		=> __( 'Terms', BOOKACTI_PLUGIN_NAME ),
+			'label'		=> __( 'I have read and agree to the Terms and Conditions', BOOKACTI_PLUGIN_NAME ),
+			'required'	=> 1,
+			'default'	=> 0
+		),
 		'submit' => array( 
 			'name'		=> 'submit',
 			'type'		=> 'submit',
@@ -427,7 +443,7 @@ function bookacti_get_default_form_fields_data( $field_name = '' ) {
  * Get fields metadata
  * @see bookacti_format_form_field_data to properly format your array
  * @since 1.5.0
- * @version 1.5.1
+ * @version 1.5.2
  * @param string $field_name
  * @return array
  */
@@ -466,6 +482,7 @@ function bookacti_get_default_form_fields_meta( $field_name = '' ) {
 		),
 		'free_text'	=> array(),
 		'quantity'	=> array(),
+		'terms'		=> array(),
 		'submit'	=> array()
 	));
 	
@@ -480,7 +497,7 @@ function bookacti_get_default_form_fields_meta( $field_name = '' ) {
 /**
  * Format field data according to its type
  * @since 1.5.0
- * @version 1.5.1
+ * @version 1.5.2
  * @param array|string $raw_field_data
  * @return array|false
  */
@@ -561,12 +578,13 @@ function bookacti_format_form_field_data( $raw_field_data ) {
 		}
 		
 	} else if( $raw_field_data[ 'name' ] === 'quantity' ) {
+	} else if( $raw_field_data[ 'name' ] === 'terms' ) {
+		// Format common values (specific cases)
+		$field_data[ 'label' ] = $raw_field_data[ 'label' ];
 		
 	} else if( $raw_field_data[ 'name' ] === 'submit' ) {
-		
 	} else if( $raw_field_data[ 'name' ] === 'free_text' ) {
 		// Format common values (specific cases)
-		// Format value
 		if( isset( $raw_field_data[ 'value' ] ) ) {
 			$field_data[ 'value' ] = wpautop( $raw_field_data[ 'value' ] );
 		}
@@ -594,7 +612,7 @@ function bookacti_format_form_field_data( $raw_field_data ) {
 /**
  * Sanitize field data according to its type
  * @since 1.5.0
- * @version 1.5.1
+ * @version 1.5.2
  * @param array|string $raw_field_data
  * @return array|false
  */
@@ -680,17 +698,18 @@ function bookacti_sanitize_form_field_data( $raw_field_data ) {
 		}
 		
 	} else if( $raw_field_data[ 'name' ] === 'quantity' ) {
+	} else if( $raw_field_data[ 'name' ] === 'terms' ) {
+		// Sanitize common values (specific cases)
+		if( isset( $raw_field_data[ 'label' ] ) ) {
+			$field_data[ 'label' ] = bookacti_sanitize_form_field_free_text( $raw_field_data[ 'label' ] );
+		}
 		
 	} else if( $raw_field_data[ 'name' ] === 'submit' ) {
 		
 	} else if( $raw_field_data[ 'name' ] === 'free_text' ) {
 		// Sanitize common values (specific cases)
-		// Sanitize value
 		if( isset( $raw_field_data[ 'value' ] ) ) {
-			$field_data[ 'value' ] = wp_kses_post( stripslashes( $raw_field_data[ 'value' ] ) );
-			// Strip form tags
-			$tags = array( 'form', 'input', 'textarea', 'select', 'option', 'output' );
-			$field_data[ 'value' ] = preg_replace( '#<(' . implode( '|', $tags) . ')(?:[^>]+)?>.*?</\1>#s', '', $field_data[ 'value' ] );
+			$field_data[ 'value' ] = bookacti_sanitize_form_field_free_text( $raw_field_data[ 'value' ] );
 		}
 	}
 	
@@ -790,6 +809,7 @@ function bookacti_sanitize_form_field_values( $values, $field_type = '' ) {
 /**
  * Display a form field
  * @since 1.5.0
+ * @version 1.5.2
  * @param array $field
  * @param string $instance_id
  * @param string $context
@@ -817,12 +837,12 @@ function bookacti_display_form_field( $field, $instance_id = '', $context = 'dis
 	<?php } ?>
 		<div class='bookacti-form-field-content' >
 		<?php 
-			do_action( 'bookacti_display_form_field_' . $field[ 'name' ], $field, $instance_id, $context ); 
+			do_action( 'bookacti_display_form_field_' . $field[ 'type' ], $field, $instance_id, $context ); 
 		?>
 		</div>
 	</div>
 <?php
-	$html = apply_filters( 'bookacti_html_form_field_' . $field[ 'name' ], ob_get_clean(), $field, $instance_id, $context );
+	$html = apply_filters( 'bookacti_html_form_field_' . $field[ 'type' ], ob_get_clean(), $field, $instance_id, $context );
 	if( ! $echo ) { return $html; }
 	echo $html;
 }
@@ -831,6 +851,7 @@ function bookacti_display_form_field( $field, $instance_id = '', $context = 'dis
 /**
  * Display a form field for the form editor
  * @since 1.5.0
+ * @version 1.5.2
  * @param array $field
  * @param boolean $echo
  * @return string|void
@@ -1017,6 +1038,7 @@ function bookacti_validate_login( $login_values, $require_authentication = true 
 /**
  * Sanitize a field order array
  * @since 1.5.0
+ * @version 1.5.2
  * @param int $form_id
  * @param array $field_order
  * @return array
@@ -1037,7 +1059,7 @@ function bookacti_sanitize_form_field_order( $form_id, $field_order ) {
 	$intersect = array_intersect( $field_order, $existing_field_ids );
 	
 	// Add existing missing field ids to field order
-	$diff	= array_diff( $intersect, $existing_field_ids );
+	$diff	= array_diff( $existing_field_ids, $intersect );
 	$merge	= array_merge( $intersect, $diff );
 	
 	// Sanitize strings to integers

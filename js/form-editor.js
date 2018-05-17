@@ -88,7 +88,7 @@ $j( document ).ready( function() {
 	});
 	
 	// Confirm before leaving if the form isn't published
-	$j( window ).bind( 'beforeunload', function( e ){
+	$j( window ).on( 'beforeunload', function( e ){
 		if( $j( '#major-publishing-actions' ).data( 'popup' ) ) { return true; } // Confirm before redirect
 		else { e = null; } // Redirect
 	});

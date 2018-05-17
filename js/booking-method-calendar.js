@@ -17,7 +17,7 @@ function bookacti_set_calendar_up( booking_system, reload_events ) {
 		},
 
 		// OPTIONS
-		locale:					bookacti_localized.current_lang_code,
+		locale:					bookacti_localized.fullcalendar_locale,
 		
 		defaultView:            calendar.width() < bookacti_localized.default_view_threshold ? 'agendaDay' : 'agendaWeek',
 		weekNumbersWithinDays:	1,

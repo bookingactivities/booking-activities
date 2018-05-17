@@ -2,7 +2,7 @@
 /**
  * Form editor dialogs
  * @since 1.5.0
- * @version 1.5.1
+ * @version 1.5.2
  */
 
 // Exit if accessed directly
@@ -761,6 +761,46 @@ foreach( $fields_data as $field_name => $field_data ) {
 		</div>
 		<?php 
 			do_action( 'bookacti_free_text_dialog_after', $form, $form_fields );
+		?>
+	</form>
+</div>
+
+
+<!-- Terms field dialog -->
+<div id='bookacti-form-field-dialog-terms' class='bookacti-backend-dialog bookacti-form-dialog' style='display:none;' title='<?php /* translators: Title of the Update field dialog. %s is the field title. */ echo sprintf( __( '%s options', BOOKACTI_PLUGIN_NAME ), strip_tags( $fields_data[ 'terms' ][ 'title' ] ) ); ?>' >
+	<form id='bookacti-form-field-form-terms' >
+		<input type='hidden' name='action' value='bookactiUpdateFormField' />
+		<input type='hidden' name='nonce' value='<?php echo wp_create_nonce( 'bookacti_update_form_field' ); ?>' />
+		<input type='hidden' name='field_id' value='' />
+		<?php 
+			do_action( 'bookacti_terms_dialog_before', $form, $form_fields );
+		?>
+		<div id='bookacti-form-field-dialog-terms-lang-switcher' class='bookacti-lang-switcher' ></div>
+		<div>
+			<label for='bookacti-terms-value'><?php _e( 'Checked by default', BOOKACTI_PLUGIN_NAME ); ?></label>
+			<?php 
+				$args = array(
+					'type'	=> 'checkbox',
+					'name'	=> 'value',
+					'id'	=> 'bookacti-terms-value',
+					'tip'	=> __( 'Whether the checkbox should be checked by default.', BOOKACTI_PLUGIN_NAME )
+				);
+				bookacti_display_field( $args );
+			?>
+		</div>
+		<div>
+			<label for='bookacti-terms-label' class='bookacti-fullwidth-label' ><?php _e( 'Label', BOOKACTI_PLUGIN_NAME ); ?></label>
+			<?php 
+				$args = array(
+					'type'	=> 'editor',
+					'name'	=> 'label',
+					'id'	=> 'bookacti-terms-label',
+				);
+				bookacti_display_field( $args );
+			?>
+		</div>
+		<?php 
+			do_action( 'bookacti_terms_dialog_after', $form, $form_fields );
 		?>
 	</form>
 </div>
