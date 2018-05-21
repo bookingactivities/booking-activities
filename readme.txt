@@ -315,6 +315,19 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 
 == Changelog ==
 
+= 1.5.3 =
+* Tweak - User selectbox list has now a fixed size
+* Fix - WooCommerce integration screenshot may not appear in "How to integrate this form" box
+* Fix - Non-closing <div> in the form editor
+* Fix - Double "X" may appear on "Close dialog" button
+* Fix - Display an asterisc on all required fields
+* Fix - Fields metadata may not be formatted
+* Fix - Tooltip not showing on frontend
+* Fix - Field titles not translated on multilingue site in form editor
+* Dev - Add some useful hooks
+* Dev - bookacti_display_field() now handle 'hidden' and 'file' fields
+
+
 = 1.5.2 - 2018/05/17 =
 * Feature - Add a "Terms" field (required checkbox)
 * Tweak - Removed "Activity" master checkbox on variable product. Checking it on each variations is enough.

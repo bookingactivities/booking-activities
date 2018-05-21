@@ -97,31 +97,6 @@ function bookacti_init_add_and_remove_items() {
 }
 
 
-// Init tooltip
-function bookacti_init_tooltip() {
-	$j( '.bookacti-tip' ).tooltip({
-		"items":	'[data-tip]',
-		"content": function () {
-			return $j( this ).data( 'tip' );
-		},
-		"show":	{ effect: 'fadeIn', duration: 200 },
-		"hide":	{ effect: 'fadeOut', duration: 200 },
-		"close": function(event, ui) {
-			ui.tooltip.hover( function() {
-				$j( this ).stop( true ).fadeTo( 200, 1 ); 
-			},
-			function() {
-				$j( this ).fadeOut( '200', function() {
-					$j( this ).remove();
-				});
-			});
-		}
-	});
-	
-	$j( '.bookacti-tip' ).tooltip( 'close' );
-}
-
-
 // Empty all dialog forms
 function bookacti_empty_all_dialog_forms( scope ) {
 	scope = typeof scope === 'undefined' || ! scope ? '.bookacti-backend-dialog ' : scope + ' ';

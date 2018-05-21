@@ -399,32 +399,35 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	 * Display various fields
 	 * 
 	 * @since 1.2.0
-	 * @version 1.5.0
+	 * @version 1.5.3
 	 * @param array $args ['type', 'name', 'label', 'id', 'class', 'placeholder', 'options', 'attr', 'value', 'tip', 'required']
 	 */
 	function bookacti_display_field( $args ) {
-
+		
 		$args = bookacti_format_field_args( $args );
-
+		
 		if( ! $args ) { return; }
 		
 		// Display field according to type
 
 		// TEXT & NUMBER
-		if( in_array( $args[ 'type' ], array( 'text', 'number', 'date', 'time', 'email', 'password' ) ) ) {
+		if( in_array( $args[ 'type' ], array( 'text', 'hidden', 'number', 'date', 'time', 'email', 'password', 'file' ), true ) ) {
 		?>
 			<input	type=		'<?php echo esc_attr( $args[ 'type' ] ); ?>' 
 					name=		'<?php echo esc_attr( $args[ 'name' ] ); ?>' 
+					value=		'<?php echo esc_attr( $args[ 'value' ] ); ?>' 
 					id=			'<?php echo esc_attr( $args[ 'id' ] ); ?>' 
 					class=		'bookacti-input <?php echo esc_attr( $args[ 'class' ] ); ?>' 
+				<?php if( ! in_array( $args[ 'type' ], array( 'hidden', 'file' ) ) ) { ?>
 					placeholder='<?php echo esc_attr( $args[ 'placeholder' ] ); ?>' 
-					value=		'<?php echo esc_attr( $args[ 'value' ] ); ?>' 
-				<?php if( in_array( $args[ 'type' ], array( 'number', 'date', 'time' ) ) ) { ?>
+				<?php } 
+				if( in_array( $args[ 'type' ], array( 'number', 'date', 'time' ), true ) ) { ?>
 					min=		'<?php echo esc_attr( $args[ 'options' ][ 'min' ] ); ?>' 
 					max=		'<?php echo esc_attr( $args[ 'options' ][ 'max' ] ); ?>'
 					step=		'<?php echo esc_attr( $args[ 'options' ][ 'step' ] ); ?>'
-					<?php if( ! empty( $args[ 'attr' ] ) ) { echo $args[ 'attr' ]; } ?>
 				<?php }
+				if( ! empty( $args[ 'attr' ] ) ) { echo $args[ 'attr' ]; }
+				if( $args[ 'type' ] === 'file' && $args[ 'multiple' ] ) { echo ' multiple'; }
 				if( $args[ 'required' ] ) { echo ' required'; } ?>
 			/>
 		<?php if( $args[ 'label' ] ) { ?>
@@ -593,7 +596,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	 * Format arguments to diplay a proper field
 	 * 
 	 * @since 1.2.0
-	 * @version 1.5.0
+	 * @version 1.5.3
 	 * @param array $args ['type', 'name', 'label', 'id', 'class', 'placeholder', 'options', 'attr', 'value', 'multiple', 'tip', 'required']
 	 * @return array|false
 	 */
@@ -606,7 +609,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		if( ! isset( $args[ 'type' ] ) || ! isset( $args[ 'name' ] ) ) { return false; }
 
 		// If field type is not supported, return
-		if( ! in_array( $args[ 'type' ], array( 'text', 'email', 'date', 'time', 'password', 'number', 'checkbox', 'checkboxes', 'select', 'radio', 'textarea', 'editor', 'user_id' ) ) ) { 
+		if( ! in_array( $args[ 'type' ], array( 'text', 'hidden', 'email', 'date', 'time', 'password', 'number', 'checkbox', 'checkboxes', 'select', 'radio', 'textarea', 'file', 'editor', 'user_id' ) ) ) { 
 			return false; 
 		}
 
@@ -631,7 +634,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		}
 		
 		// Sanitize id and name
-		$args[ 'id' ]	= sanitize_title_with_dashes( $args[ 'id' ] );
+		$args[ 'id' ] = sanitize_title_with_dashes( $args[ 'id' ] );
 		
 		// If no id, use name instead
 		$args[ 'id' ] = $args[ 'id' ] ? $args[ 'id' ] : sanitize_title_with_dashes( $args[ 'name' ] ) . '-' . rand();
@@ -658,7 +661,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		}
 		
 		// Make sure checkboxes have their value as an array
-		if( $args[ 'type' ] === 'checkboxes' || $args[ 'multiple' ] ){
+		if( $args[ 'type' ] === 'checkboxes' || ( $args[ 'multiple' ] && $args[ 'type' ] !== 'file' ) ){
 			if( ! is_array( $args[ 'value' ] ) ) { 
 				$args[ 'value' ] = array( $args[ 'value' ] );
 			}

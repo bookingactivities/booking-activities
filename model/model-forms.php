@@ -413,7 +413,7 @@ function bookacti_insert_default_form_fields( $form_id, $to_insert = array() ) {
 /**
  * Insert a form field
  * @since 1.5.0
- * @version 1.5.2
+ * @version 1.5.3
  * @global wpdb $wpdb
  * @param int $form_id
  * @param string $field_name
@@ -431,7 +431,6 @@ function bookacti_insert_form_field( $form_id, $field_name ) {
 			'form_id'		=> $form_id,
 			'name'			=> $default_field[ 'name' ],
 			'type'			=> $default_field[ 'type' ],
-			'title'			=> $default_field[ 'title' ],
 			'label'			=> $default_field[ 'label' ],
 			'options'		=> $default_field[ 'options' ],
 			'value'			=> $default_field[ 'value' ],
@@ -440,7 +439,7 @@ function bookacti_insert_form_field( $form_id, $field_name ) {
 			'required'		=> $default_field[ 'required' ],
 			'active'		=> 1
 		),
-		array( '%d', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%d', '%d' )
+		array( '%d', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%d', '%d' )
 	);
 	
 	if( ! $created ) { return $created; }

@@ -270,6 +270,9 @@ function bookacti_fill_product_variation_form( form_container, variation, form_h
 	// Initialize dialog
 	bookacti_init_booking_system_dialogs();
 	
+	// Initialize tooltip
+	bookacti_init_tooltip();
+	
 	// Remove initial loading feedback
 	booking_system.find( '.bookacti-loading-alt' ).remove();
 

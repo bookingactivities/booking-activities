@@ -13,6 +13,32 @@ window.addEventListener( 'touchstart', function bookacti_detect_touch_device() {
 }, false );
 
 
+/**
+ * Init tooltip
+ */
+function bookacti_init_tooltip() {
+	$j( '.bookacti-tip' ).tooltip({
+		"items":	'[data-tip]',
+		"content": function () {
+			return $j( this ).data( 'tip' );
+		},
+		"show":	{ effect: 'fadeIn', duration: 200 },
+		"hide":	{ effect: 'fadeOut', duration: 200 },
+		"close": function(event, ui) {
+			ui.tooltip.hover( function() {
+				$j( this ).stop( true ).fadeTo( 200, 1 ); 
+			},
+			function() {
+				$j( this ).fadeOut( '200', function() {
+					$j( this ).remove();
+				});
+			});
+		}
+	});
+	$j( '.bookacti-tip' ).tooltip( 'close' );
+}
+
+
 // Scroll to element
 function bookacti_scroll_to( element, speed, position ) {
 	speed	= $j.isNumeric( speed ) ? parseInt( speed ) : 500;
@@ -118,6 +144,7 @@ $j.fn.serializeObject = function() {
 
 /**
  * Init Find-As-You-Type user selectbox
+ * @version 1.5.3
  */
 function bookacti_init_user_selectbox() {
 	// Jquery UI Autocomplete
@@ -167,6 +194,8 @@ function bookacti_init_user_selectbox() {
 					  this._removeIfInvalid( event, ui );
 					}
 				});
+				
+				this.input.autocomplete( 'widget' ).addClass( 'bookacti-combobox-list bookacti-custom-scrollbar' );
 			},
 
 			_createShowAllButton: function() {

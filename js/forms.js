@@ -2,6 +2,9 @@ $j( document ).ready( function() {
 	// Init the Dialogs
 	bookacti_init_form_dialogs();
 	
+	// Init tooltip on frontend booking forms
+	bookacti_init_tooltip();
+	
 	// Check password strength
 	$j( 'body' ).on( 'keyup', '.bookacti-booking-form input[name=password]', function( e ) {
 		var password_field			= $j( this );

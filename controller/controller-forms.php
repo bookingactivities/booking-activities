@@ -410,7 +410,7 @@ add_filter( 'bookacti_displayed_form_fields', 'bookacti_display_compulsory_quant
  * @version 1.5.2
  */
 function bookacti_controller_get_form() {
-	// Check nonce
+	// Sanitize values
 	$form_id		= intval( $_POST[ 'form_id' ] );
 	$instance_id	= ! empty( $_POST[ 'instance_id' ] ) ? sanitize_title_with_dashes( $_POST[ 'instance_id' ] ) : '';
 	$context		= ! empty( $_POST[ 'context' ] ) ? sanitize_title_with_dashes( $_POST[ 'context' ] ) : 'display';

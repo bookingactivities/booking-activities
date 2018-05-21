@@ -43,7 +43,7 @@ foreach( $fields_data as $field_name => $field_data ) {
 				}
 			?>
 			</select>
-		<div>
+		</div>
 		<?php 
 			do_action( 'bookacti_insert_form_field_dialog_after', $form, $form_fields );
 		?>

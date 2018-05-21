@@ -202,5 +202,3 @@ if( ! $error_message ) {
 	include_once( 'view-form-editor-dialogs.php' );
 }
 ?>
-</div><!-- Close #wpbody -->
-</div><!-- Close #wpcontent -->
