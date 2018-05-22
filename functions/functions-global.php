@@ -21,10 +21,11 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	/**
 	 * Send a filtered array via json during an ajax process
 	 * @since 1.5.0
+	 * @version 1.5.3
 	 * @param array $array Array to encode as JSON, then print and die.
 	 * @param string $action Name of the filter to allow third-party modifications
 	 */
-	function bookacti_send_json( $array, $action ) {
+	function bookacti_send_json( $array, $action = '' ) {
 		if( empty( $array[ 'status' ] ) ) { $array[ 'status' ] = 'failed'; }
 		$response = apply_filters( 'bookacti_send_json_' . $action, $array );
 		wp_send_json( $response );
@@ -34,9 +35,10 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	/**
 	 * Send a filtered array via json to stop an ajax process running with an invalid nonce
 	 * @since 1.5.0
+	 * @version 1.5.3
 	 * @param string $action Name of the filter to allow third-party modifications
 	 */
-	function bookacti_send_json_invalid_nonce( $action ) {
+	function bookacti_send_json_invalid_nonce( $action = '' ) {
 		$return_array = array( 
 			'status'	=> 'failed', 
 			'error'		=> 'invalid_nonce', 
@@ -49,9 +51,10 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	/**
 	 * Send a filtered array via json to stop a not allowed an ajax process
 	 * @since 1.5.0
+	 * @version 1.5.3
 	 * @param string $action Name of the filter to allow third-party modifications
 	 */
-	function bookacti_send_json_not_allowed( $action ) {
+	function bookacti_send_json_not_allowed( $action = '' ) {
 		$return_array = array( 
 			'status'	=> 'failed', 
 			'error'		=> 'not_allowed', 
@@ -519,7 +522,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 				<?php
 					}
 					// Display the tip
-					if( $option[ 'description' ] ) {
+					if( !empty( $option[ 'description' ] ) ) {
 						$tip = apply_filters( 'bookacti_translate_text', $option[ 'description' ] );
 						bookacti_help_tip( $tip );
 					}

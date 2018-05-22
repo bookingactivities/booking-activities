@@ -955,58 +955,81 @@ add_action( 'wp_ajax_bookactiUpdateFormMeta', 'bookacti_controller_update_form_m
 /**
  * AJAX Controller - Insert a form field
  * @since 1.5.0
+ * @version 1.5.3
  */
 function bookacti_controller_insert_form_field() {
+	
+	// Check nonce
+	if( ! check_ajax_referer( 'bookacti_insert_form_field', 'nonce', false ) ) {
+		bookacti_send_json_invalid_nonce( 'insert_form_field' );
+	}
+	
 	$form_id = intval( $_POST[ 'form_id' ] );
 	
-	// Check nonce and capabilities
-	$is_nonce_valid	= check_ajax_referer( 'bookacti_insert_form_field', 'nonce', false );
-	$is_allowed		= current_user_can( 'bookacti_edit_forms' ) && bookacti_user_can_manage_form( $form_id );
-	
-	if( $is_nonce_valid && $is_allowed && $form_id ) {
-		
-		$field_name = $_POST[ 'field_name' ];
-		
-		// Check if the field is known
-		$fields_data = bookacti_get_default_form_fields_data();
-		if( ! in_array( $field_name, array_keys( $fields_data ), true ) ) {
-			wp_send_json( array( 'status' => 'failed', 'error' => 'unknown_field' ) );
-		}
-		
-		// Check if the field already exists
-		$form_fields = bookacti_get_form_fields_data( $form_id );
-		$field_already_added = array();
-		foreach( $form_fields as $form_field ) { $field_already_added[] = $form_field[ 'name' ]; }
-		if( in_array( $field_name, $field_already_added, true ) && $fields_data[ $field_name ][ 'unique' ] ) {
-			wp_send_json( array( 'status' => 'failed', 'error' => 'field_already_added' ) );
-		}
-		
-		// Insert form field
-		$field_id = bookacti_insert_form_field( $form_id, $field_name );
-		
-		if( $field_id !== false ) {
-			
-			$fields_data[ $field_name ][ 'field_id' ] = $field_id;
-			
-			// Update field order
-			$field_order	= bookacti_get_metadata( 'form', $form_id, 'field_order', true );
-			$field_order[]	= $field_id;
-			bookacti_update_metadata( 'form', $form_id, array( 'field_order' => $field_order ) );
-			
-			do_action( 'bookacti_form_field_inserted', $field_id );
-			
-			// Get field data and HTML for editor
-			$field_data	= bookacti_get_form_field_data( $field_id );
-			$field_html = bookacti_display_form_field_for_editor( $field_data, false );
-			
-			wp_send_json( array( 'status' => 'success', 'field_id' => $field_id, 'field_data' => $field_data, 'field_html' => $field_html, 'field_order' => $field_order ) );
-		} else {
-			wp_send_json( array( 'status' => 'failed', 'error' => 'not_updated' ) );
-		}
-		
-	} else {
-		wp_send_json( array( 'status' => 'failed', 'error' => 'not_allowed' ) );
+	// Check form_id
+	if( ! $form_id ) {
+		bookacti_send_json( array( 
+			'status' => 'failed', 
+			'error' => 'invalid_form_id', 
+			'message' => __( 'Invalid form ID', BOOKACTI_PLUGIN_NAME ) ), 'insert_form_field' );
 	}
+	
+	// Check capabilities
+	if( ! current_user_can( 'bookacti_edit_forms' ) || ! bookacti_user_can_manage_form( $form_id ) ) {
+		bookacti_send_json_not_allowed( 'insert_form_field' );
+	}
+	
+	$field_name = $_POST[ 'field_name' ];
+
+	// Check if the field is known
+	$fields_data = bookacti_get_default_form_fields_data();
+	if( ! in_array( $field_name, array_keys( $fields_data ), true ) ) {
+		bookacti_send_json( array( 
+			'status' => 'failed', 
+			'error' => 'unknown_field_name', 
+			'message' => __( 'Unknown field', BOOKACTI_PLUGIN_NAME ) ), 'insert_form_field' );
+	}
+
+	// Check if the field already exists
+	$form_fields = bookacti_get_form_fields_data( $form_id );
+	$field_already_added = array();
+	foreach( $form_fields as $form_field ) { $field_already_added[] = $form_field[ 'name' ]; }
+	if( in_array( $field_name, $field_already_added, true ) && $fields_data[ $field_name ][ 'unique' ] ) {
+		bookacti_send_json( array( 
+			'status' => 'failed', 
+			'error' => 'field_already_added', 
+			'message' => __( 'This field has already been added to the form', BOOKACTI_PLUGIN_NAME ) ), 'insert_form_field' );
+	}
+
+	// Insert form field
+	$field_id = bookacti_insert_form_field( $form_id, $field_name );
+
+	if( $field_id === false ) {
+		bookacti_send_json( array( 
+			'status' => 'failed', 
+			'error' => 'not_inserted', 
+			'message' => __( 'An error occured while trying to insert the form field.', BOOKACTI_PLUGIN_NAME ) ), 'insert_form_field' );
+	}
+
+	$fields_data[ $field_name ][ 'field_id' ] = $field_id;
+
+	// Update field order
+	$field_order	= bookacti_get_metadata( 'form', $form_id, 'field_order', true );
+	$field_order[]	= $field_id;
+	bookacti_update_metadata( 'form', $form_id, array( 'field_order' => $field_order ) );
+
+	do_action( 'bookacti_form_field_inserted', $field_id );
+
+	// Get field data and HTML for editor
+	$field_data	= bookacti_get_form_field_data( $field_id );
+	$field_html = bookacti_display_form_field_for_editor( $field_data, false );
+
+	bookacti_send_json( array( 
+		'status' => 'success', 
+		'field_id' => $field_id, 
+		'field_data' => $field_data, 
+		'field_html' => $field_html, 
+		'field_order' => $field_order ), 'insert_form_field' );
 }
 add_action( 'wp_ajax_bookactiInsertFormField', 'bookacti_controller_insert_form_field', 10 );
 

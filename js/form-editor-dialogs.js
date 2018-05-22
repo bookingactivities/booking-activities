@@ -105,7 +105,11 @@ function bookacti_dialog_update_form_meta() {
 }
 
 
-// Insert form field
+/**
+ * Insert form field
+ * @since 1.5.0
+ * @version 1.5.3
+ */
 function bookacti_dialog_insert_form_field() {
 	
 	// Open the modal dialog
@@ -123,8 +127,16 @@ function bookacti_dialog_insert_form_field() {
 				var nonce		= $j( '#nonce_insert_form_field' ).val();
 				if( ! field_name || ! form_id || ! nonce ) { return; }
 				
+				// Clear errors
+				$j( '#bookacti-insert-form-field-dialog' ).find( '.bookacti-loading-alt,.bookacti-notices' ).remove();
+				
 				// Display a loader
 				bookacti_form_editor_enter_loading_state();
+				var loading_div = '<div class="bookacti-loading-alt">' 
+									+ '<img class="bookacti-loader" src="' + bookacti_localized.plugin_path + '/img/ajax-loader.gif" title="' + bookacti_localized.loading + '" />'
+									+ '<span class="bookacti-loading-alt-text" >' + bookacti_localized.loading + '</span>'
+								+ '</div>';
+				$j( '#bookacti-insert-form-field-dialog' ).append( loading_div );
 				
 				$j.ajax({
 					url: ajaxurl,
@@ -151,27 +163,26 @@ function bookacti_dialog_insert_form_field() {
 							
 							$j( '#bookacti-form-editor' ).trigger( 'bookacti_field_inserted', [ response.field_id, field_name ] );
 							
+							// Close the modal dialog
+							$j( '#bookacti-insert-form-field-dialog' ).dialog( 'close' );
+							
 						} else if( response.status === 'failed' ) {
-							var message_error = bookacti_localized.error_insert_form_field;
-							if( response.error === 'not_allowed' ) {
-								message_error += '\n' + bookacti_localized.error_not_allowed;
-							}
-							console.log( message_error );
+							$j( '#bookacti-insert-form-field-dialog' ).append( '<div class="bookacti-notices"><ul class="bookacti-error-list"><li>' + response.message + '</li></ul></div>' );
 							console.log( response );
 						}
 						
 					},
 					error: function( e ){
+						$j( '#bookacti-insert-form-field-dialog' ).append( '<div class="bookacti-notices"><ul class="bookacti-error-list"><li>AJAX ' + bookacti_localized.error_insert_form_field + '</li></ul></div>' );
 						console.log( 'AJAX ' + bookacti_localized.error_insert_form_field );
 						console.log( e );
 					},
 					complete: function() {
+						$j( '#bookacti-insert-form-field-dialog .bookacti-notices' ).show();
+						$j( '#bookacti-insert-form-field-dialog .bookacti-loading-alt' ).remove();
 						bookacti_form_editor_exit_loading_state();
 					}
 				});
-				
-				// Close the modal dialog
-				$j( this ).dialog( 'close' );
 			}
 		}]
     );
