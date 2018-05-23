@@ -347,7 +347,7 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 
 = 1.5.0 - 2018/05/05 =
 * Feature - Customizable booking forms !
-* Feature - Login / Register seamlessly as you book 
+* Feature - Log in / Register seamlessly as you book 
 * Feature - You can now delete your bookings and your booking groups from the booking list
 * Feature - You can display past events on frontend, they can be bookable or not
 * Feature - Responsive default calendar view: display day view for small calendars instead of week view (set the threshold in settings)

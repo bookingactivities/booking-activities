@@ -399,7 +399,7 @@ function bookacti_get_default_form_fields_data( $field_name = '' ) {
 		'login' => array( 
 			'name'			=> 'login',
 			'type'			=> 'login',
-			'title'			=> __( 'Login / Register', BOOKACTI_PLUGIN_NAME ),
+			'title'			=> __( 'Login / Registration', BOOKACTI_PLUGIN_NAME ),
 			'default'		=> 1,
 			'label'			=> array_merge( array( 
 								'email'					=> __( 'Email', BOOKACTI_PLUGIN_NAME ), 
@@ -1139,7 +1139,7 @@ function bookacti_sort_form_fields_array( $form_id, $fields, $remove_unordered_f
 
 
 
-// LOGIN / REGISTER
+// LOGIN / REGISTRATION
 
 /**
  * Get user meta fields default data
