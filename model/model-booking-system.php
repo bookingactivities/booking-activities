@@ -7,7 +7,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	/**
 	 * Fetch events by templates and / or activities
 	 *
-	 * @version 1.3.0
+	 * @version 1.5.3
 	 * 
 	 * @param array $templates
 	 * @param array $activities
@@ -164,10 +164,8 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		$query  .= ' ORDER BY E.start ASC ';
 		
 		
-		// Safely apply variables to the query
-		if( $variables ) {
-			$query = $wpdb->prepare( $query, $variables );
-		}
+		// Apply variables to the query
+		$query = apply_filters( 'bookacti_get_events_query', $wpdb->prepare( $query, $variables ), $templates, $activities, $past_events, $interval );
 		
 		// Get events complying with parameters
 		$events = $wpdb->get_results( $query, OBJECT );
@@ -175,13 +173,13 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		// Transform raw events from database to array of individual events
 		$events_array = bookacti_get_events_array_from_db_events( $events, $past_events, $interval );
 		
-		return $events_array;
+		return apply_filters( 'bookacti_get_events', $events_array, $templates, $activities, $past_events, $interval, $query );
     }
 	
 	
 	/**
 	 * Fetch events by groups and / or categories of groups
-	 * 
+	 * @version 1.5.3
 	 * @global wpdb $wpdb
 	 * @param array $templates
 	 * @param array $activities
@@ -314,24 +312,23 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		
 		$query  .= ' ORDER BY GE.event_start ASC ';
 		
-		// Safely apply variables to the query
-		$prep_query = $wpdb->prepare( $query, $variables );
+		// Apply variables to the query
+		$query = apply_filters( 'bookacti_get_grouped_events_query', $wpdb->prepare( $query, $variables ), $templates, $activities, $groups, $categories, $past_events, $interval );
 		
 		// Get events complying with parameters
-		$events = $wpdb->get_results( $prep_query, OBJECT );
+		$events = $wpdb->get_results( $query, OBJECT );
 
 		// Transform raw events from database to array of individual events
 		$events_array = bookacti_get_events_array_from_db_events( $events, $past_events, $interval );
 		
-		return $events_array;
+		return apply_filters( 'bookacti_get_grouped_events', $events_array, $templates, $activities, $groups, $categories, $past_events, $interval, $query );
 	}
 	
 	
 	/**
 	 * Fetch booked events only
-	 * 
 	 * @since 1.2.2
-	 * @version 1.3.0
+	 * @version 1.5.3
 	 * @global wpdb $wpdb
 	 * @param array $templates
 	 * @param array $activities
@@ -428,6 +425,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		if( $variables ) {
 			$query = $wpdb->prepare( $query, $variables );
 		}
+		$query = apply_filters( 'bookacti_get_booked_events_query', $query, $templates, $activities, $booking_status, $user_id, $past_events, $interval );
 		
 		// Get events complying with parameters
 		$events = $wpdb->get_results( $query, OBJECT );
@@ -435,7 +433,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		// Transform raw events from database to array of individual events
 		$events_array = bookacti_get_events_array_from_db_events( $events, $past_events, $interval );
 
-		return $events_array;
+		return apply_filters( 'bookacti_get_booked_events', $events_array, $templates, $activities, $booking_status, $user_id, $past_events, $interval, $query );
 	}
 	
 	

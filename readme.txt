@@ -5,7 +5,7 @@ Tags: booking activities, booking sport, booking form, event reservation, reserv
 Requires at least: 3.6
 Tested up to: 4.9
 Requires PHP: 5.3
-Stable tag: 1.5.2
+Stable tag: 1.5.3
 License: GPLv3 or later
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
 
@@ -315,6 +315,20 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 
 == Changelog ==
 
+= 1.5.3 - 2018/05/30 =
+* Tweak - User selectbox list has now a fixed size
+* Fix - "The field "Password" is required." error appears even with "Generate password" option on
+* Fix - "You can't book for someone else" error appears when "Automatic login" option is off
+* Fix - WooCommerce integration screenshot may not appear in "How to integrate this form" box
+* Fix - Non-closing <div> in the form editor
+* Fix - Double "X" may appear on "Close dialog" button
+* Fix - Display an asterisc on all required fields
+* Fix - Fields metadata may not be formatted
+* Fix - Tooltip not showing on frontend
+* Fix - Field titles not translated on multilingue site in form editor
+* Dev - Add some useful hooks
+* Dev - bookacti_display_field() now handle 'hidden' and 'file' fields
+
 = 1.5.2 - 2018/05/17 =
 * Feature - Add a "Terms" field (required checkbox)
 * Tweak - Removed "Activity" master checkbox on variable product. Checking it on each variations is enough.
@@ -334,7 +348,7 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 
 = 1.5.0 - 2018/05/05 =
 * Feature - Customizable booking forms !
-* Feature - Login / Register seamlessly as you book 
+* Feature - Log in / Register seamlessly as you book 
 * Feature - You can now delete your bookings and your booking groups from the booking list
 * Feature - You can display past events on frontend, they can be bookable or not
 * Feature - Responsive default calendar view: display day view for small calendars instead of week view (set the threshold in settings)

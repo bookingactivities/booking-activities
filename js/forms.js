@@ -2,6 +2,9 @@ $j( document ).ready( function() {
 	// Init the Dialogs
 	bookacti_init_form_dialogs();
 	
+	// Init tooltip on frontend booking forms
+	bookacti_init_tooltip();
+	
 	// Check password strength
 	$j( 'body' ).on( 'keyup', '.bookacti-booking-form input[name=password]', function( e ) {
 		var password_field			= $j( this );
@@ -271,11 +274,11 @@ function bookacti_sumbit_booking_form( form ) {
 		form.find( 'input[type="submit"]' ).prop( 'disabled', false );
 		return false; // End script
 	}
+
+	var data = new FormData( form.get(0) );
 	
 	// Trigger action before sending form
-	form.trigger( 'bookacti_before_submit_booking_form' );
-
-	var data = form.serializeObject();
+	form.trigger( 'bookacti_before_submit_booking_form', data );
 
 	bookacti_start_loading_booking_system( booking_system );
 
@@ -284,6 +287,9 @@ function bookacti_sumbit_booking_form( form ) {
 		type: 'POST',
 		data: data,
 		dataType: 'json',
+		cache: false,
+        contentType: false,
+        processData: false,
 		success: function( response ){
 			
 			var message = '';
@@ -324,8 +330,11 @@ function bookacti_sumbit_booking_form( form ) {
 			form.trigger( 'bookacti_booking_form_submitted', [ response, data ] );
 			
 			// Redirect
-			if( response.status === 'success' && form.attr( 'action' ) !== '' ) {
-				window.location.replace( form.attr( 'action' ) );
+			var redirect_url = form.attr( 'action' );
+			if( response.status === 'success' && typeof redirect_url !== 'undefined' ) {
+				if( redirect_url !== false && redirect_url !== '' ) {
+					window.location.replace( redirect_url );
+				}
 			}
 			
 		},

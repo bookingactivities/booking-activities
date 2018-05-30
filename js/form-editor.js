@@ -7,6 +7,7 @@ $j( document ).ready( function() {
 	
 	// Specific dialogs
 	$j( '#bookacti-form-field-dialog-free_text' ).dialog( 'option', 'width', 540 );
+	$j( '#bookacti-form-field-dialog-terms' ).dialog( 'option', 'width', 540 );
 
 	// Init form editor actions
 	bookacti_init_form_editor_actions();
