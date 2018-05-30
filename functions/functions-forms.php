@@ -797,6 +797,7 @@ function bookacti_update_form_field_meta( $meta, $field_id_or_name, $form_id = 0
 /**
  * Sanitize the values entered by the user in the form fields
  * @since 1.5.0
+ * @version 1.5.3
  * @param array $values
  * @param string $field_type
  * @return array
@@ -812,6 +813,7 @@ function bookacti_sanitize_form_field_values( $values, $field_type = '' ) {
 		$sanitized_values[ 'email' ]	= ! empty( $values[ 'email' ] ) ? sanitize_email( stripslashes( $values[ 'email' ] ) ) : '';
 		$sanitized_values[ 'password' ]	= ! empty( $values[ 'password' ] ) ? trim( stripslashes( $values[ 'password' ] ) ) : '';
 		$sanitized_values[ 'password_strength' ] = ! empty( $values[ 'password_strength' ] ) ? intval( $values[ 'password_strength' ] ) : 0;
+		$sanitized_values[ 'new_account' ] = ! empty( $values[ 'new_account' ] ) ? 1 : 0;
 		$default_register_data = bookacti_get_register_fields_default_data();
 		$default_register_values = array();
 		foreach( $default_register_data as $field_name => $register_field ) {
@@ -921,6 +923,7 @@ function bookacti_display_form_field_for_editor( $field, $echo = true ) {
 /**
  * Validate register fields
  * @since 1.5.0
+ * @version 1.5.3
  * @param array $login_values
  * @param array $login_data
  * @return array
@@ -947,8 +950,9 @@ function bookacti_validate_registration( $login_values, $login_data ) {
 	// Check that required register fields are filled
 	foreach( $login_data[ 'required_fields' ] as $field_name => $is_required ) {
 		if( $is_required && empty( $login_values[ $field_name ] ) ) {
+			if( $field_name === 'password' && ! empty( $login_values[ 'new_account' ] ) && $login_data[ 'generate_password' ] ) { continue; }
 			/* translators: %s is the field name. */
-			$return_array[ 'messages' ][ 'missing_' . $field_name ] = sprintf( __( 'The field "%s" is required.' ), $login_data[ 'label' ][ $field_name ] );
+			$return_array[ 'messages' ][ 'missing_' . $field_name ] = sprintf( __( 'The field "%s" is required.', BOOKACTI_PLUGIN_NAME ), $login_data[ 'label' ][ $field_name ] );
 		}
 	}
 	

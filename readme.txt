@@ -5,7 +5,7 @@ Tags: booking activities, booking sport, booking form, event reservation, reserv
 Requires at least: 3.6
 Tested up to: 4.9
 Requires PHP: 5.3
-Stable tag: 1.5.2
+Stable tag: 1.5.3
 License: GPLv3 or later
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
 
@@ -315,8 +315,10 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 
 == Changelog ==
 
-= 1.5.3 =
+= 1.5.3 - 2018/05/30 =
 * Tweak - User selectbox list has now a fixed size
+* Fix - "The field "Password" is required." error appears even with "Generate password" option on
+* Fix - "You can't book for someone else" error appears when "Automatic login" option is off
 * Fix - WooCommerce integration screenshot may not appear in "How to integrate this form" box
 * Fix - Non-closing <div> in the form editor
 * Fix - Double "X" may appear on "Close dialog" button

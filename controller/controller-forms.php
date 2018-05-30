@@ -457,7 +457,7 @@ add_action( 'wp_ajax_nopriv_bookactiForgottenPassword', 'bookacti_controller_for
 
 /**
  * Check if booking form is correct and then book the event, or send the error message
- * @version 1.5.2
+ * @version 1.5.3
  */
 function bookacti_controller_validate_booking_form() {
 	
@@ -470,8 +470,8 @@ function bookacti_controller_validate_booking_form() {
 		'has_logged_in'		=> false,
 		'has_registered'	=> false,
 		'user_id'			=> get_current_user_id(),
-		'status'			=> 'failed',
-		'error'				=> '',
+		'status'			=> '',
+		'error'				=> array(),
 		'message'			=> array(),
 		'booking_id'		=> 0,
 		'booking_group_id'	=> 0,
@@ -489,7 +489,11 @@ function bookacti_controller_validate_booking_form() {
 	$form_fields_data = bookacti_get_form_fields_data( $form_id );
 	
 	// Let third party plugins validate their own part of the form
-	do_action( 'bookacti_validate_booking_form_submission', $form_id, $form_fields_data );
+	$return_array = apply_filters( 'bookacti_validate_booking_form_submission', $return_array, $form_id, $form_fields_data );
+	if( $return_array[ 'status' ] === 'failed' || $return_array[ 'error' ] ) {
+		$return_array[ 'message' ] = implode( '</li><li>', $return_array[ 'message' ] );
+		bookacti_send_json( $return_array, 'submit_booking_form' );
+	}
 	
 	// Validate terms
 	$has_terms = false;
@@ -591,13 +595,6 @@ function bookacti_controller_validate_booking_form() {
 		bookacti_send_json( $return_array, 'submit_booking_form' );
 	}
 	
-	// Check if the user can book for someone else
-	if( $booking_form_values[ 'user_id' ] != get_current_user_id() && ! current_user_can( 'bookacti_edit_bookings' ) && $require_authentication ) {
-		$return_array[ 'error' ] = 'invalid_user_id';
-		$return_array[ 'message' ] = __( 'You can\'t make a booking for someone else.', BOOKACTI_PLUGIN_NAME );
-		bookacti_send_json( $return_array, 'submit_booking_form' );
-	}
-	
 	// Let third party plugins do their stuff before booking
 	do_action( 'bookacti_booking_form_before_booking', $form_id, $booking_form_values, $return_array );
 	
@@ -619,7 +616,7 @@ function bookacti_controller_validate_booking_form() {
 			$return_array[ 'message' ][]	= bookacti_get_message( 'booking_success' );
 			$return_array[ 'booking_id' ]	= $booking_id;
 			
-			$return_array = apply_filters( 'bookacti_bookig_form_validated_response', $return_array, $booking_id, $booking_form_values, 'single', $form_id );
+			$return_array = apply_filters( 'bookacti_booking_form_validated_response', $return_array, $booking_id, $booking_form_values, 'single', $form_id );
 			
 			$return_array[ 'message' ]		= implode( '</li><li>', $return_array[ 'message' ] );
 				
@@ -642,7 +639,7 @@ function bookacti_controller_validate_booking_form() {
 			$return_array[ 'message' ][]		= bookacti_get_message( 'booking_success' );
 			$return_array[ 'booking_group_id' ]	= $booking_group_id;
 			
-			$return_array = apply_filters( 'bookacti_bookig_form_validated_response', $return_array, $booking_group_id, $booking_form_values, 'group', $form_id );
+			$return_array = apply_filters( 'bookacti_booking_form_validated_response', $return_array, $booking_group_id, $booking_form_values, 'group', $form_id );
 			
 			$return_array[ 'message' ]			= implode( '</li><li>', $return_array[ 'message' ] );
 			

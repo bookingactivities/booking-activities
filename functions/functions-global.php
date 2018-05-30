@@ -545,7 +545,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 				<option value='<?php echo esc_attr( $option_id ); ?>'
 						id='<?php echo esc_attr( $args[ 'id' ] ) . '_' . esc_attr( $option_id ); ?>'
 						<?php if( ! empty( $args[ 'attr' ][ $option_id ] ) ) { echo $args[ 'attr' ][ $option_id ]; } ?>
-						<?php	if( $args[ 'multiple' ] ) { selected( true, in_array( $option_id, $args[ 'value' ] ) ); }
+						<?php	if( $args[ 'multiple' ] ) { selected( true, in_array( $option_id, $args[ 'value' ], true ) ); }
 								else { selected( $args[ 'value' ], $option_id ); }?>
 				>
 						<?php echo esc_html( $option_value ); ?>
