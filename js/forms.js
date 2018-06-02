@@ -292,6 +292,11 @@ function bookacti_sumbit_booking_form( form ) {
         processData: false,
 		success: function( response ){
 			
+			var redirect_url = form.attr( 'action' );
+			if( typeof redirect_url !== 'undefined' ) {
+				if( redirect_url === false || ! redirect_url ) { redirect_url = ''; }
+			}
+			
 			var message = '';
 			if( response.status !== 'success' ) {
 				message = "<ul class='bookacti-error-list'><li>" + response.message + "</li></ul>";
@@ -307,7 +312,7 @@ function bookacti_sumbit_booking_form( form ) {
 
 				message = "<ul class='bookacti-success-list bookacti-persistent-notice'><li>" + response.message + "</li></ul>";
 
-				if( form.attr( 'action' ) === '' ) {
+				if( ! redirect_url ) {
 					// Reload booking numbers
 					bookacti_refresh_booking_numbers( booking_system );
 				}
@@ -330,11 +335,8 @@ function bookacti_sumbit_booking_form( form ) {
 			form.trigger( 'bookacti_booking_form_submitted', [ response, data ] );
 			
 			// Redirect
-			var redirect_url = form.attr( 'action' );
-			if( response.status === 'success' && typeof redirect_url !== 'undefined' ) {
-				if( redirect_url !== false && redirect_url !== '' ) {
-					window.location.replace( redirect_url );
-				}
+			if( response.status === 'success' && redirect_url ) {
+				window.location.replace( redirect_url );
 			}
 			
 		},

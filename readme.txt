@@ -315,6 +315,11 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 
 == Changelog ==
 
+= 1.5.4 =
+* Fix - Inconsistency between cart items and bookings when the same event is booked twice from different products / variations
+* Fix - Bookings numbers were not refreshed after form submission
+* Dev - Add the form_id to booking data to know from which form the booking was made
+
 = 1.5.3 - 2018/05/30 =
 * Tweak - User selectbox list has now a fixed size
 * Fix - "The field "Password" is required." error appears even with "Generate password" option on

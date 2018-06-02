@@ -457,7 +457,7 @@ add_action( 'wp_ajax_nopriv_bookactiForgottenPassword', 'bookacti_controller_for
 
 /**
  * Check if booking form is correct and then book the event, or send the error message
- * @version 1.5.3
+ * @version 1.5.4
  */
 function bookacti_controller_validate_booking_form() {
 	
@@ -608,7 +608,8 @@ function bookacti_controller_validate_booking_form() {
 												$booking_form_values[ 'default_state' ],
 												$booking_form_values[ 'payment_status' ],
 												null,
-												null );
+												null,
+												$form_id );
 		if( ! empty( $booking_id ) ) {
 			do_action( 'bookacti_booking_form_validated', $booking_id, $booking_form_values, 'single', $form_id );
 
@@ -631,7 +632,8 @@ function bookacti_controller_validate_booking_form() {
 															$booking_form_values[ 'quantity' ], 
 															$booking_form_values[ 'default_state' ], 
 															$booking_form_values[ 'payment_status' ], 
-															null );
+															null,
+															$form_id );
 		if( ! empty( $booking_group_id ) ) {
 			do_action( 'bookacti_booking_form_validated', $booking_group_id, $booking_form_values, 'group', $form_id );
 			

@@ -145,7 +145,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	 * Format booking filters
 	 * 
 	 * @since 1.3.0
-	 * @version 1.4.0
+	 * @version 1.5.4
 	 * @param array $filters 
 	 * @return array
 	 */
@@ -162,6 +162,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			'event_end'					=> '', 
 			'status'					=> array(), 
 			'user_id'					=> 0,
+			'form_id'					=> 0,
 			'from'						=> '',
 			'to'						=> '',
 			'active'					=> false,
