@@ -350,6 +350,7 @@ function bookacti_get_bookings( $filters ) {
 	if( $filters[ 'order_by' ] ) {
 		$query .= ' ORDER BY ';
 		for( $i=0,$len=count($filters[ 'order_by' ]); $i<$len; ++$i ) {
+			if( $filters[ 'order_by' ][ $i ] === 'id' ) { $filters[ 'order_by' ][ $i ] = 'B.id'; }
 			$query .= $filters[ 'order_by' ][ $i ];
 			if( $filters[ 'order' ] ) { $query .= ' ' . $filters[ 'order' ]; }
 			if( $i < $len-1 ) { $query .= ', '; }
@@ -1701,6 +1702,11 @@ function bookacti_delete_booking( $booking_id ) {
 		if( $filters[ 'user_id' ] ) {
 			$query .= ' AND BG.user_id = %s ';
 			$variables[] = $filters[ 'user_id' ];
+		}
+
+		if( $filters[ 'form_id' ] ) {
+			$query .= ' AND BG.form_id = %d ';
+			$variables[] = $filters[ 'form_id' ];
 		}
 
 		if( $filters[ 'active' ] !== false ) {

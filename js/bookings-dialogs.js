@@ -12,7 +12,7 @@ $j( document ).ready( function() {
 
 // Initialize bookings dialogs
 function bookacti_init_bookings_dialogs() {
-	//Common param
+	// Common param
 	$j( '.bookacti-bookings-dialog' ).dialog({ 
 		"modal":		true,
 		"autoOpen":		false,

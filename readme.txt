@@ -318,6 +318,7 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 = 1.5.4 =
 * Fix - Inconsistency between cart items and bookings when the same event is booked twice from different products / variations
 * Fix - Bookings numbers were not refreshed after form submission
+* Fix - Tooltip not working after rescheduling a booking in the backend
 * Dev - Add the form_id to booking data to know from which form the booking was made
 
 = 1.5.3 - 2018/05/30 =

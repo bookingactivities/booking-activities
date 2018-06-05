@@ -97,23 +97,34 @@ function bookacti_init_add_and_remove_items() {
 }
 
 
-// Empty all dialog forms
+/**
+ * Empty all dialog forms fields
+ * @version 1.5.4
+ * @param {string} scope
+ */
 function bookacti_empty_all_dialog_forms( scope ) {
 	scope = typeof scope === 'undefined' || ! scope ? '.bookacti-backend-dialog ' : scope + ' ';
 
-    $j( scope + '.bookacti-form-error' ).remove();
+	$j( scope + '.bookacti-form-error' ).remove();
 	$j( scope + 'input[type="hidden"]:not([name^="nonce"]):not([name="_wp_http_referer"])' ).val( '' );
 	$j( scope + 'input[type="text"]' ).val( '' );
-    $j( scope + 'input[type="number"]' ).val( '' );
-    $j( scope + 'input[type="date"]' ).val( '' );
-    $j( scope + 'textarea' ).val( '' );
-    $j( scope + 'input[type="color"]' ).val( '#3a87ad' );
-    $j( scope + 'input[type="checkbox"]' ).prop( 'checked', false );
-    $j( scope + 'input[type="radio"]' ).prop( 'checked', false );
-    $j( scope + 'option' ).prop( 'selected', false );
-    $j( scope + '.exception' ).remove();
-    $j( scope + 'select.bookacti-add-new-items-select-box option' ).show().attr( 'disabled', false );
-    $j( scope + 'select.bookacti-items-select-box option' ).remove();
+	$j( scope + 'input[type="number"]' ).val( '' );
+	$j( scope + 'input[type="date"]' ).val( '' );
+	$j( scope + 'textarea' ).val( '' );
+	$j( scope + 'input[type="color"]' ).val( '#3a87ad' );
+	$j( scope + 'input[type="checkbox"]' ).prop( 'checked', false );
+	$j( scope + 'input[type="radio"]' ).prop( 'checked', false );
+	$j( scope + 'option' ).prop( 'selected', false );
+	$j( scope + '.exception' ).remove();
+	$j( scope + 'select.bookacti-add-new-items-select-box option' ).show().attr( 'disabled', false );
+	$j( scope + 'select.bookacti-items-select-box option' ).remove();
+	
+	if( $j( scope + 'input[type="file"]' ).length ) {
+		$j( scope + 'input[type="file"]' ).each( function() {
+			$j( this ).wrap('<form>').closest('form').get( 0 ).reset();
+			$j( this ).unwrap();
+		});
+	}
 	
 	// Reset tinyMCE editor
 	if( typeof tinyMCE !== 'undefined' ) { 
@@ -126,19 +137,25 @@ function bookacti_empty_all_dialog_forms( scope ) {
 			});
 		}
 	}
-	
+
 	// Reset switchable multiple select
 	if( $j( scope + '.bookacti-multiple-select' ).length ) {
 		$j( scope + '.bookacti-multiple-select' ).each( function(){
 			bookacti_switch_select_to_multiple( this );
 		});
 	}
-	
+
 	$j( 'body' ).trigger( 'bookacti_empty_all_dialogs_forms', [ scope ] );
 }
 
 
-// Fill custom settings fields in a form
+/**
+ * Fill custom settings fields in a form
+ * @version 1.5.4
+ * @param {array} fields
+ * @param {string} field_prefix
+ * @param {qtring} scope
+ */
 function bookacti_fill_fields_from_array( fields, field_prefix, scope ) {
 	field_prefix = field_prefix || '';
 	scope = typeof scope === 'undefined' || ! scope ? '' : scope + ' ';
@@ -190,6 +207,10 @@ function bookacti_fill_fields_from_array( fields, field_prefix, scope ) {
 
 		// Input and Textarea
 		} else {
+			// Do not handle file inputs
+			if( $j( scope + 'input[name="' + field_name + '"]' ).attr( 'type' ) === 'file' ) { 
+				return true; // Jump to next field
+			}
 			// If the time value is 24:00, reset it to 00:00
 			if( $j( scope + 'input[name="' + field_name + '"]' ).attr( 'type' ) === 'time' && value === '24:00' ) { value = '00:00'; }
 			$j( scope + 'input[name="' + field_name + '"]' ).val( value );

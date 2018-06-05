@@ -45,7 +45,7 @@ if( ! class_exists( 'Bookings_List_Table' ) ) {
 		/**
 		 * Get booking list table columns
 		 * 
-		 * @version 1.5.0
+		 * @version 1.5.4
 		 * @access public
 		 * @return array
 		 */
@@ -97,7 +97,7 @@ if( ! class_exists( 'Bookings_List_Table' ) ) {
 				100 => 'template_title',
 				110 => 'activity_title',
 				120 => 'creation_date',
-				130 => 'actions'
+				1000 => 'actions'
 			);
 
 			/**
@@ -239,7 +239,7 @@ if( ! class_exists( 'Bookings_List_Table' ) ) {
 		/**
 		 * Get booking list items. Parameters can be passed in the URL.
 		 * 
-		 * @version 1.5.0
+		 * @version 1.5.4
 		 * @access public
 		 * @return array
 		 */
@@ -347,6 +347,7 @@ if( ! class_exists( 'Bookings_List_Table' ) ) {
 				$booking_item = apply_filters( 'bookacti_booking_list_booking_columns', array( 
 					'tr_class'		=> $tr_class,
 					'id'			=> $id,
+					'raw_id'		=> $raw_id,
 					'customer'		=> $customer,
 					'email'			=> $email,
 					'phone'			=> $phone,
@@ -369,7 +370,7 @@ if( ! class_exists( 'Bookings_List_Table' ) ) {
 						$paid, 
 						'<span class="bookacti-column-quantity" >' . $quantity_separator . $quantity . '</span>',
 					)
-				), $booking, $user );
+				), $booking, $user, $this );
 				
 				// Add info on the primary column to make them directly visible in responsive view
 				if( $booking_item[ 'primary_data' ] ) {

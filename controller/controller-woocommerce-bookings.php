@@ -353,13 +353,13 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	/**
 	 * Fill booking list columns
 	 * 
-	 * @version 1.5.0
+	 * @version 1.5.4
 	 * @param array $booking_item
 	 * @param object $booking
 	 * @param WP_User $user
 	 * @return array
 	 */
-	function bookacti_woocommerce_fill_booking_list_custom_columns( $booking_item, $booking, $user ) {
+	function bookacti_woocommerce_fill_booking_list_custom_columns( $booking_item, $booking, $user, $list ) {
 		// User data
 		if( ! empty( $booking->user_id ) && is_numeric( $booking->user_id ) && ! empty( $user->billing_first_name ) && ! empty( $user->billing_last_name ) ) {
 			$customer = '<a '
@@ -406,7 +406,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		
 		return $booking_item;
 	}
-	add_filter( 'bookacti_booking_list_booking_columns', 'bookacti_woocommerce_fill_booking_list_custom_columns', 20, 3 );
+	add_filter( 'bookacti_booking_list_booking_columns', 'bookacti_woocommerce_fill_booking_list_custom_columns', 20, 4 );
 	
 	
 	/**

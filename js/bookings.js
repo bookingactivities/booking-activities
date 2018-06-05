@@ -63,6 +63,7 @@ $j( document ).ready( function() {
 	
 	// Refresh the calendar when a booking has been reschedule
 	$j( 'body' ).on( 'bookacti_booking_rescheduled', function(){
+		bookacti_init_tooltip();
 		var booking_system = $j( '#bookacti-booking-system-bookings-page' );
 		bookacti_booking_method_refetch_events( booking_system );
 		bookacti_refresh_booking_numbers( booking_system );
