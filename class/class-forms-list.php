@@ -536,12 +536,13 @@ if( ! class_exists( 'Forms_List_Table' ) ) {
 		
 		/**
 		 * Display pagination inside a form to allow to jump to a page
+		 * @version 1.5.4
 		 * @param string $which
 		 */
 		protected function pagination( $which ) {
 			if( $which !== 'top' ) { parent::pagination( $which ); return; }
 			?>
-			<form action='<?php echo admin_url( 'admin.php' ); ?>' >
+			<form action='<?php echo esc_url( add_query_arg( 'paged', '%d' ) ); ?>' class='bookacti-list-table-go-to-page-form' >
 				<input type='hidden' name='page' value='bookacti_forms' />
 				<?php parent::pagination( $which ); ?>
 			</form>

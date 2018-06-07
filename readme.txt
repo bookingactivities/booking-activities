@@ -319,7 +319,10 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 * Fix - Inconsistency between cart items and bookings when the same event is booked twice from different products / variations
 * Fix - Bookings numbers were not refreshed after form submission
 * Fix - Tooltip not working after rescheduling a booking in the backend
+* Fix - Booking list pagination didn't keep filters while jumping to a specific page
+* Fix - Booking filter values of "calendars" and "activities" didn't appear as selected when they are
 * Dev - Add the form_id to booking data to know from which form the booking was made
+* Dev - Add filters for the booking list: in__booking_id and in__booking_group_id
 
 = 1.5.3 - 2018/05/30 =
 * Tweak - User selectbox list has now a fixed size

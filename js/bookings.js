@@ -31,7 +31,7 @@ $j( document ).ready( function() {
 
 // BOOKING LIST
 	
-	// Apply some filters after the caladar has set up
+	// Apply some filters after the calendar has set up
 	booking_system.on( 'bookacti_after_calendar_set_up', function() { 
 		var calendar = booking_system.find( '.bookacti-calendar' );
 		

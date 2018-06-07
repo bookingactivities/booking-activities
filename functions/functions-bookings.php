@@ -171,6 +171,8 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			'order'						=> 'desc',
 			'offset'					=> 0,
 			'per_page'					=> 0,
+			'in__booking_id'			=> array(),
+			'in__booking_group_id'		=> array(),
 			'not_in__booking_id'		=> array(),
 			'not_in__booking_group_id'	=> array(),
 			'not_in__user_id'			=> array()
@@ -206,7 +208,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 				}
 				else { $current_value = $default_value; }
 				
-			} else if( in_array( $filter, array( 'activities', 'not_in__booking_id', 'not_in__booking_group_id', 'not_in__user_id' ), true ) ) {
+			} else if( in_array( $filter, array( 'activities', 'in__booking_id', 'in__booking_group_id', 'not_in__booking_id', 'not_in__booking_group_id', 'not_in__user_id' ), true ) ) {
 				if( is_numeric( $current_value ) )	{ $current_value = array( $current_value ); }
 				if( ! is_array( $current_value ) )	{ $current_value = $default_value; }
 				else if( $i = array_search( 'all', $current_value ) !== false ) { unset( $current_value[ $i ] ); }
@@ -261,7 +263,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			$formatted_filters[ $filter ] = $current_value;
 		}
 		
-		return $formatted_filters;
+		return apply_filters( 'bookacti_formatted_booking_filters', $formatted_filters, $filters, $default_filters );
 	}
 
 
