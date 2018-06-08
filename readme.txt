@@ -321,6 +321,8 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 * Fix - Tooltip not working after rescheduling a booking in the backend
 * Fix - Booking list pagination didn't keep filters while jumping to a specific page
 * Fix - Booking filter values of "calendars" and "activities" didn't appear as selected when they are
+* Fix - Order item meta may not be updated while updating booking status, refunding and rescheduling
+* Fix - PHP warning: Unknown is_new_order offset while sending a notification after a booking status changed
 * Dev - Add the form_id to booking data to know from which form the booking was made
 * Dev - Add filters for the booking list: in__booking_id and in__booking_group_id
 

@@ -1134,7 +1134,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	 * Update order item booking status meta to new status
 	 *
 	 * @since 1.2.0
-	 * @version 1.2.2
+	 * @version 1.5.4
 	 * 
 	 * @param int $item
 	 * @param string $new_state
@@ -1145,16 +1145,18 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		
 		if( ! $item || ( ! isset( $item[ 'bookacti_booking_id' ] ) && ! isset( $item[ 'bookacti_booking_group_id' ] ) ) ) { return; }
 		
+		$order_item_id = is_array( $item ) ? $item[ 'id' ] : $item->get_id();
+		
 		// Get old state
-		$old_state = wc_get_order_item_meta( $item[ 'id' ], 'bookacti_state', true );
+		$old_state = wc_get_order_item_meta( $order_item_id, 'bookacti_state', true );
 		
 		// Turn meta state to new state
-		wc_update_order_item_meta( $item[ 'id' ], 'bookacti_state', $new_state );
+		wc_update_order_item_meta( $order_item_id, 'bookacti_state', $new_state );
 		
 		// Add refund metadata
 		if( in_array( $new_state, array( 'refunded', 'refund_requested' ), true ) ) {
 			$refund_action = $args[ 'refund_action' ] ? $args[ 'refund_action' ] : 'manual';
-			wc_update_order_item_meta( $item[ 'id' ], '_bookacti_refund_method', $refund_action );
+			wc_update_order_item_meta( $order_item_id, '_bookacti_refund_method', $refund_action );
 		}
 		
 		if( is_numeric( $order ) ) {
@@ -1263,7 +1265,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	 * Get woocommerce order item id by booking id
 	 * @version 1.5.0
 	 * @param int $booking_id
-	 * @return array
+	 * @return array|false
 	 */
 	function bookacti_get_order_item_by_booking_id( $booking_id ) {
 
@@ -1313,9 +1315,9 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	/**
 	 * Get woocommerce order item id by booking group id
 	 * @since 1.1.0
-	 * @version 1.5.0
+	 * @version 1.5.4
 	 * @param int $booking_group_id
-	 * @return array
+	 * @return array|false
 	 */
 	function bookacti_get_order_item_by_booking_group_id( $booking_group_id ) {
 
@@ -1333,19 +1335,13 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 		$item = array();
 		foreach( $order_items as $order_item_id => $order_item ) {
-
-			$is_in_item = false;
 			// Check if the item is bound to a the desired booking
-			if( isset( $order_item[ 'bookacti_booking_group_id' ] ) && $order_item[ 'bookacti_booking_group_id' ] == $booking_group_id ) {
-				$is_in_item = true;
-			}
+			if( ! isset( $order_item[ 'bookacti_booking_group_id' ] ) || $order_item[ 'bookacti_booking_group_id' ] != $booking_group_id ) { continue; }
 
-			if( $is_in_item ) {
-				$item = $order_items[ $order_item_id ];
-				if( is_array( $item ) ) {
-					$item[ 'id' ]		= $order_item_id;
-					$item[ 'order_id' ]	= $order_id;
-				}
+			$item = $order_items[ $order_item_id ];
+			if( is_array( $item ) ) {
+				$item[ 'id' ]		= $order_item_id;
+				$item[ 'order_id' ]	= $order_id;
 			}
 		}
 
@@ -1796,7 +1792,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	/**
 	 * Create a coupon to refund a booking
 	 * 
-	 * @version 1.1.0
+	 * @version 1.5.4
 	 * 
 	 * @param int $booking_id
 	 * @param string $booking_type Determine if the given id is a booking id or a booking group. Accepted values are 'single' or 'group'.
@@ -1881,7 +1877,8 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 
 		// If coupon already exists, return it
-		$existing_coupon_code = wc_get_order_item_meta( $item[ 'id' ], 'bookacti_refund_coupon', true );
+		$order_item_id = is_array( $item ) ? $item[ 'id' ] : $item->get_id();
+		$existing_coupon_code = wc_get_order_item_meta( $order_item_id, 'bookacti_refund_coupon', true );
 		if( $existing_coupon_code ) {
 			$existing_coupon = WC()->api->WC_API_Coupons->get_coupon_by_code( $existing_coupon_code );
 
@@ -1914,7 +1911,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 			// Bind coupon to order item
 			$code = apply_filters( 'bookacti_refund_coupon_code', $coupon[ 'coupon' ][ 'code' ], $data, $user_data, $item );
-			wc_update_order_item_meta( $item[ 'id' ], 'bookacti_refund_coupon', $code );
+			wc_update_order_item_meta( $order_item_id, 'bookacti_refund_coupon', $code );
 
 			$return_data = array( 'status' => 'success', 'coupon_amount' => wc_price( $data['coupon']['amount'] ), 'coupon_code' => $code, 'new_state' => 'refunded' );
 
@@ -1933,7 +1930,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	/**
 	 * Auto refund (for supported gateway)
 	 * 
-	 * @version 1.1.0
+	 * @version 1.5.4
 	 * 
 	 * @param int $booking_id
 	 * @param string $booking_type Determine if the given id is a booking id or a booking group id. Accepted values are 'single' or 'group'.
@@ -1961,15 +1958,16 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			return array( 'status' => 'failed', 'error' => 'no_order_item_found' );
 		}
 		
-		$amount		= (float) $item[ 'line_total' ] + (float) $item[ 'line_tax' ];
+		$order_item_id = is_array( $item ) ? $item[ 'id' ] : $item->get_id();
+		$amount = (float) $item[ 'line_total' ] + (float) $item[ 'line_tax' ];
 
-		$reason		= __( 'Auto refund proceeded by user.', BOOKACTI_PLUGIN_NAME );
+		$reason = __( 'Auto refund proceeded by user.', BOOKACTI_PLUGIN_NAME );
 		if( $refund_message !== '' ) {
 			$reason	.= PHP_EOL . __( 'User message:', BOOKACTI_PLUGIN_NAME ) . PHP_EOL . $refund_message;
 		}
 
 		$line_items	= array();
-		$line_items[ $item[ 'id' ] ] = array(
+		$line_items[ $order_item_id ] = array(
 			'qty'			=> $item[ 'qty' ],
 			'refund_total'	=> $item[ 'line_total' ],
 			'refund_tax'	=> $item[ 'line_tax' ]
