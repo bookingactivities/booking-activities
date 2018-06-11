@@ -688,6 +688,7 @@ function bookacti_fill_picked_events_list( booking_system ) {
 function bookacti_set_min_and_max_quantity( booking_system, qty_field, event_summary_data ) {
 	var booking_system_id	= booking_system.attr( 'id' );
 	var quantity			= parseInt( qty_field.val() );
+	var new_quantity		= parseInt( qty_field.val() );
 	var available_places	= 0; 
 	var quantity_booked		= 0; 
 	var min_quantity		= 1;
@@ -733,7 +734,7 @@ function bookacti_set_min_and_max_quantity( booking_system, qty_field, event_sum
 	qty_field.attr( 'max', max_quantity );
 	if( quantity > max_quantity ) {
 		qty_field.val( max_quantity );
-		quantity = max_quantity;
+		new_quantity = max_quantity;
 	}
 	
 	// Force a min quantity
@@ -744,10 +745,12 @@ function bookacti_set_min_and_max_quantity( booking_system, qty_field, event_sum
 		// keep the higher amount to feedback that there are not enough places
 		if( min_quantity > available_places ) { qty_field.attr( 'max', min_quantity ); }
 		qty_field.val( min_quantity );
-		quantity = min_quantity;
+		new_quantity = min_quantity;
 	}
 
-	event_summary_data.quantity = quantity;
+	event_summary_data.quantity = new_quantity;
+	
+	if( quantity !== new_quantity ) { qty_field.trigger( 'bookacti_quantity_updated', [ quantity, event_summary_data ] ); }
 }
 
 
