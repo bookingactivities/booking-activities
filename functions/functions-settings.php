@@ -863,8 +863,6 @@ function bookacti_settings_section_bookings_callback() { }
  */
 function bookacti_reset_notices() {
 	delete_option( 'bookacti-install-date' );
-	delete_option( 'bookacti-first20-notice-viewed' );
-	delete_option( 'bookacti-first20-notice-dismissed' );
 	delete_option( 'bookacti-5stars-rating-notice-dismissed' );
 }
 

@@ -153,6 +153,9 @@ function bookacti_dialog_insert_form_field() {
 							// Insert the field
 							$j( '#bookacti-form-editor' ).append( response.field_html );
 							
+							// Reload tooltip for generated content
+							bookacti_init_tooltip();
+							
 							// Update the field data
 							bookacti.form_editor.fields[ response.field_id ] = response.field_data;
 							bookacti.form_editor.form.field_order = response.field_order;

@@ -262,13 +262,14 @@ function bookacti_display_form( $form_id, $instance_id = '', $context = 'display
 
 /**
  * Get form fields array
- * @since 1.5.0
+ * @since 1.5.4
  * @param int $form_id
+ * @param boolean $active_only Whether to fetch only active fields. Default "true".
  * @return array
  */
-function bookacti_get_form_fields_data( $form_id ) {
+function bookacti_get_form_fields_data( $form_id, $active_only = true ) {
 	
-	$fields = bookacti_get_form_fields( $form_id );
+	$fields = bookacti_get_form_fields( $form_id, $active_only );
 	
 	if( ! $fields ) { return array(); }
 	

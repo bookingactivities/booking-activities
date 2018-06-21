@@ -18,14 +18,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		<div id='bookacti-add-ons-container' >
 		<?php
 			$promo = $promo_price_29 = $promo_price_39 = $promo_price_59 = '';
-			$dismissed = get_option( 'bookacti-first20-notice-dismissed' );
-			if( ! $dismissed ) {
-				$promo = '-20%';
-				$promo_price_29 = '23.20€';
-				$promo_price_39 = '31.20€';
-				$promo_price_59 = '47.20€';
-			}
-		
+			
 			$add_ons = array(
 				'display-pack' => array( 
 					'prefix' => 'badp',
