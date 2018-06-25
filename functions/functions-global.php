@@ -720,7 +720,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	
 	/**
 	 * Create ON / OFF switch
-	 * 
+	 * @version 1.5.4
 	 * @param string $name
 	 * @param string $current_value
 	 * @param string $id
@@ -736,7 +736,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 		?>
 		<div class="bookacti-onoffswitch <?php if( $disabled ) { echo 'bookacti-disabled'; } ?>">
-			<input type="hidden" name="<?php echo esc_attr( $name ); ?>" value='0' />
+			<input type="hidden" name="<?php echo esc_attr( $name ); ?>" value='0' class='bookacti-onoffswitch-hidden-input' />
 			<input type="checkbox" 
 				   name="<?php echo esc_attr( $name ); ?>" 
 				   class="bookacti-onoffswitch-checkbox" 

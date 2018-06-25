@@ -1122,7 +1122,7 @@ add_action( 'wp_ajax_bookactiSaveFormFieldOrder', 'bookacti_controller_save_form
 /**
  * AJAX Controller - Update a field
  * @since 1.5.0
- * @version 1.5.3
+ * @version 1.5.4
  */
 function bookacti_controller_update_form_field() {
 	// Check nonce
@@ -1158,6 +1158,8 @@ function bookacti_controller_update_form_field() {
 	$field_meta = array_intersect_key( $sanitized_data, bookacti_get_default_form_fields_meta( $field[ 'name' ] ) );
 
 	if( $field_meta ) {
+		// Unserialize values before preocessing through bookacti_update_metadata
+		foreach( $field_meta as $key => $value ) { $field_meta[ $key ] = maybe_unserialize( $value ); }
 		// Update field metadata
 		bookacti_update_metadata( 'form_field', $field_id, $field_meta );
 	}

@@ -114,7 +114,7 @@ function bookacti_empty_all_dialog_forms( scope ) {
 	scope = typeof scope === 'undefined' || ! scope ? '.bookacti-backend-dialog ' : scope + ' ';
 
 	$j( scope + '.bookacti-form-error' ).remove();
-	$j( scope + 'input[type="hidden"]:not([name^="nonce"]):not([name="_wp_http_referer"])' ).val( '' );
+	$j( scope + 'input[type="hidden"]:not([name^="nonce"]):not([name="_wp_http_referer"]):not(.bookacti-onoffswitch-hidden-input)' ).val( '' );
 	$j( scope + 'input[type="text"]' ).val( '' );
 	$j( scope + 'input[type="email"]' ).val( '' );
 	$j( scope + 'input[type="password"]' ).val( '' );

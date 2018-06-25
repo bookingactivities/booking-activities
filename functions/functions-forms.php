@@ -514,7 +514,7 @@ function bookacti_get_default_form_fields_meta( $field_name = '' ) {
 /**
  * Format field data according to its type
  * @since 1.5.0
- * @version 1.5.3
+ * @version 1.5.4
  * @param array|string $raw_field_data
  * @return array|false
  */
@@ -565,8 +565,8 @@ function bookacti_format_form_field_data( $raw_field_data ) {
 		$field_meta = bookacti_sanitize_values( $default_meta, $raw_field_data, $keys_by_type, $field_meta );
 		
 		// Treat 'required_fields' and 'displayed_fields' field meta as a common field data
-		$default_data[ 'displayed_fields' ]	= $default_meta[ 'displayed_fields' ];
-		$default_data[ 'required_fields' ]	= $default_meta[ 'required_fields' ];
+		$default_data[ 'displayed_fields' ]	= $default_meta[ 'displayed_fields' ]; unset( $default_meta[ 'displayed_fields' ] );
+		$default_data[ 'required_fields' ]	= $default_meta[ 'required_fields' ]; unset( $default_meta[ 'required_fields' ] );
 		
 		// Format common values (specific cases)
 		// Format label, placeholder and tip
@@ -632,7 +632,7 @@ function bookacti_format_form_field_data( $raw_field_data ) {
 /**
  * Sanitize field data according to its type
  * @since 1.5.0
- * @version 1.5.2
+ * @version 1.5.4
  * @param array|string $raw_field_data
  * @return array|false
  */
@@ -687,8 +687,8 @@ function bookacti_sanitize_form_field_data( $raw_field_data ) {
 		$field_meta = bookacti_sanitize_values( $default_meta, $raw_field_data, $keys_by_type, $field_meta );
 		
 		// Treat 'required_fields' and 'displayed_fields' field meta as a common field data
-		$default_data[ 'displayed_fields' ] = $default_meta[ 'displayed_fields' ];
-		$default_data[ 'required_fields' ] = $default_meta[ 'required_fields' ];
+		$default_data[ 'displayed_fields' ] = $default_meta[ 'displayed_fields' ]; unset( $default_meta[ 'displayed_fields' ] );
+		$default_data[ 'required_fields' ] = $default_meta[ 'required_fields' ]; unset( $default_meta[ 'required_fields' ] );
 
 		// Sanitize common values (specific cases)
 		// Sanitize label, placeholder and tip

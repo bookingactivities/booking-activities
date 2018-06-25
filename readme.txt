@@ -317,6 +317,8 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 
 = 1.5.4 =
 * Fix - Inconsistency between cart items and bookings when the same event is booked twice from different products / variations
+* Fix - Couldn't save some Login / Registration field options
+* Fix - On/off checkboxes may not be saved on position off after closing the dialog once
 * Fix - Bookings numbers were not refreshed after form submission
 * Fix - Tooltip not working after rescheduling a booking in the backend
 * Fix - Booking list pagination didn't keep filters while jumping to a specific page
