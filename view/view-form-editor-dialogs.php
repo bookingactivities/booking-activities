@@ -46,6 +46,8 @@ foreach( $fields_data as $field_name => $field_data ) {
 		</div>
 		<?php 
 			do_action( 'bookacti_insert_form_field_dialog_after', $form, $form_fields );
+			
+			bookacti_display_baaf_promo();
 		?>
 	</form>
 </div>

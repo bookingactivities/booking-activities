@@ -36,7 +36,7 @@ body.booking-activities_page_bookacti_forms label[for='bookacti_form_publish-hid
 .bookacti-wc-icon-not-supported			{ position: relative; font-size: 20px; color: #cd5c5c; font-style: normal; margin-right: 13px; }
 .bookacti-wc-icon-not-supported::before	{ font-family: 'WooCommerce'; content: '\e03d'; }
 .bookacti-wc-icon-not-supported::after	{ font-family: 'dashicons'; content: '\f158'; font-size: 13px; position: absolute; bottom: -4px; }
-#bookacti-form-editor					{ padding: 1em 1em 0 1em; }
+#bookacti-form-editor					{ padding: 1em; }
 .bookacti-form-editor-field				{ margin-bottom: 1em; border: 1px solid #e5e5e5; background: #fff; box-sizing: border-box; }
 .bookacti-form-editor-field-header		{ display: flex; justify-content: space-between; cursor: move; padding: 1em; border-bottom: 1px solid #e5e5e5; transition: max-height 0.2s; }
 .bookacti-form-editor-field-header h3	{ display: inline-block; vertical-align: middle; margin: 0; padding: 0; }
@@ -51,6 +51,7 @@ body.booking-activities_page_bookacti_forms label[for='bookacti_form_publish-hid
 #bookacti-insert-form-field:hover					{ font-size: 32px; height: 32px; width: 32px; margin-right: -6px; transition: all 0.2s; }
 
 .bookacti-form-editor-field-header .bookacti-wc-icon-not-supported	{ display: inline-block; vertical-align: middle; margin-right: 20px; font-weight: normal; }
+#bookacti-form-editor .bookacti-addon-promo			{ text-align: left; }
 
 
 /* Dialogs */

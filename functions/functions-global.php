@@ -402,7 +402,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	 * Display various fields
 	 * 
 	 * @since 1.2.0
-	 * @version 1.5.3
+	 * @version 1.5.4
 	 * @param array $args ['type', 'name', 'label', 'id', 'class', 'placeholder', 'options', 'attr', 'value', 'tip', 'required']
 	 */
 	function bookacti_display_field( $args ) {
@@ -419,6 +419,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			<input	type=		'<?php echo esc_attr( $args[ 'type' ] ); ?>' 
 					name=		'<?php echo esc_attr( $args[ 'name' ] ); ?>' 
 					value=		'<?php echo esc_attr( $args[ 'value' ] ); ?>' 
+					autocomplete='<?php echo $args[ 'autocomplete' ] ? esc_attr( $args[ 'autocomplete' ] ) : 'off'; ?>'
 					id=			'<?php echo esc_attr( $args[ 'id' ] ); ?>' 
 					class=		'bookacti-input <?php echo esc_attr( $args[ 'class' ] ); ?>' 
 				<?php if( ! in_array( $args[ 'type' ], array( 'hidden', 'file' ) ) ) { ?>
@@ -447,6 +448,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			<textarea	
 				name=		'<?php echo esc_attr( $args[ 'name' ] ); ?>' 
 				id=			'<?php echo esc_attr( $args[ 'id' ] ); ?>' 
+				autocomplete='<?php echo $args[ 'autocomplete' ] ? esc_attr( $args[ 'autocomplete' ] ) : 'off'; ?>'
 				class=		'bookacti-textarea <?php echo esc_attr( $args[ 'class' ] ); ?>' 
 				placeholder='<?php echo esc_attr( $args[ 'placeholder' ] ); ?>'
 				<?php if( ! empty( $args[ 'attr' ] ) ) { echo $args[ 'attr' ]; } ?>
@@ -599,7 +601,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	 * Format arguments to diplay a proper field
 	 * 
 	 * @since 1.2.0
-	 * @version 1.5.3
+	 * @version 1.5.4
 	 * @param array $args ['type', 'name', 'label', 'id', 'class', 'placeholder', 'options', 'attr', 'value', 'multiple', 'tip', 'required']
 	 * @return array|false
 	 */
@@ -628,7 +630,8 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			'value'			=> '',
 			'multiple'		=> false,
 			'tip'			=> '',
-			'required'		=> 0
+			'required'		=> 0,
+			'autocomplete'	=> 0
 		);
 
 		// Replace empty value by default

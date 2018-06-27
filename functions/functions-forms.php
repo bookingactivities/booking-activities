@@ -223,7 +223,8 @@ function bookacti_display_form( $form_id, $instance_id = '', $context = 'display
 		$form_attributes = apply_filters( 'bookacti_form_attributes', array(
 			'action'	=> ! empty( $form[ 'redirect_url' ] ) ? apply_filters( 'bookacti_translate_text', esc_url( $form[ 'redirect_url' ] ) ) : '',
 			'id'		=> empty( $form[ 'id' ] ) ? 'bookacti-' . $instance_id : $instance_id,
-			'class'		=> 'bookacti-booking-form bookacti-booking-form-' . $form_id . ' ' . $form[ 'class' ]
+			'class'		=> 'bookacti-booking-form bookacti-booking-form-' . $form_id . ' ' . $form[ 'class' ],
+			'autocomplete' => 'off'
 		), $form_id, $displayed_form_fields );
 		$form_attributes_str = '';
 		foreach( $form_attributes as $form_attribute_key => $form_attribute_value ) {

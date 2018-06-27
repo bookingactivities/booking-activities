@@ -1049,3 +1049,55 @@ function bookacti_get_screen_ids() {
 			<?php
 		}
 	}
+	
+	
+	/**
+	 * Display a promotional area for Advanced Forms add-on
+	 * @since 1.5.4
+	 */
+	function bookacti_display_baaf_promo() {
+		$is_plugin_active	= bookacti_is_plugin_active( 'ba-advanced-forms/ba-advanced-forms.php' );
+		$license_status		= get_option( 'baaf_license_status' );
+
+		// If the plugin is activated but the license is not active yet
+		if( $is_plugin_active && ( ! $license_status || $license_status !== 'valid' ) ) {
+			?>
+			<div id='bookacti-baaf-promo' class='bookacti-addon-promo' >
+				<p>
+				<?php 
+					/* translators: %s = add-on name */
+					echo sprintf( __( 'Thank you for purchasing %s add-on!', BOOKACTI_PLUGIN_NAME ), 
+								 '<strong>' . esc_html__( 'Advanced Forms', BOOKACTI_PLUGIN_NAME ) . '</strong>' ); 
+				?>
+				</p><p>
+					<?php esc_html_e( "It seems you didn't activate your license yet. Please follow these instructions to activate your license:", BOOKACTI_PLUGIN_NAME ); ?>
+				</p><p>
+					<strong>
+						<a href='https://booking-activities.fr/en/docs/user-documentation/get-started-with-advanced-forms-add-on/prerequisite-installation-and-license-activation-of-advanced-forms-add-on/?utm_source=plugin&utm_medium=plugin&utm_content=encart-promo-form-dialog' target='_blank' >
+							<?php 
+							/* translators: %s = add-on name */
+								echo sprintf( __( 'How to activate %s license?', BOOKACTI_PLUGIN_NAME ), 
+											  esc_html__( 'Advanced Forms', BOOKACTI_PLUGIN_NAME ) ); 
+							?>
+						</a>
+					</strong>
+				</p>
+			</div>
+			<?php
+		}
+
+		else if( ! $license_status || $license_status !== 'valid' ) {
+			?>
+			<div id='bookacti-baaf-promo' class='bookacti-addon-promo' >
+				<?php 
+				$addon_link = '<strong><a href="https://booking-activities.fr/en/downloads/advanced-forms/?utm_source=plugin&utm_medium=plugin&utm_campaign=advanced-forms&utm_content=encart-promo-form-dialog" target="_blank" >';
+				$addon_link .= esc_html__( 'Advanced Forms', BOOKACTI_PLUGIN_NAME );
+				$addon_link .= '</a></strong>';
+				/* translators: %1$s is the placeholder for Advanced Forms add-on link */
+				echo sprintf( esc_html__( 'Create any kind of custom fields to get any information from your customers (text, number, file, checkboxes, selectbox, etc.) with %1$s add-on!', BOOKACTI_PLUGIN_NAME ), $addon_link ); 
+				?>
+				<div><a href='https://booking-activities.fr/en/downloads/advanced-forms/?utm_source=plugin&utm_medium=plugin&utm_campaign=advanced-forms&utm_content=encart-promo-form-dialog' class='button' target='_blank' ><?php esc_html_e( 'Learn more', BOOKACTI_PLUGIN_NAME ); ?></a></div>
+			</div>
+			<?php
+		}
+	}
