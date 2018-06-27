@@ -179,10 +179,8 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	
 	/**
 	 * Change booking quantity and status when a refund is deleted
-	 * 
 	 * @since 1.0.0
-	 * @version 1.2.0
-	 * 
+	 * @version 1.5.4
 	 * @param int $refund_id
 	 * @param int $order_id
 	 */
@@ -232,19 +230,23 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			$new_qty		= $init_qty - $refunded_qty;
 			
 			// Gether the booking (group) data
+			$state		= 'cancelled';
+			$active		= 0;
+			$old_qty	= 0;
 			if( $booking_type === 'group' ) {
-				
-				$booking_group	= bookacti_get_booking_group_by_id( $booking_group_id );
-				$state			= $booking_group->state;
-				$active			= $booking_group->active;
-				$old_qty		= bookacti_get_booking_group_quantity( $booking_group_id );
-				
+				$booking_group = bookacti_get_booking_group_by_id( $booking_group_id );
+				if( $booking_group ) {
+					$state		= $booking_group->state;
+					$active		= $booking_group->active;
+					$old_qty	= bookacti_get_booking_group_quantity( $booking_group_id );
+				}
 			} else {
-				
-				$booking	= bookacti_get_booking_by_id( $booking_id );
-				$state		= $booking->state;
-				$active		= $booking->active;
-				$old_qty	= $booking->quantity;
+				$booking = bookacti_get_booking_by_id( $booking_id );
+				if( $booking ) {
+					$state		= $booking->state;
+					$active		= $booking->active;
+					$old_qty	= $booking->quantity;
+				}
 			}
 			
 			

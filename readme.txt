@@ -48,6 +48,7 @@ Try this reservation tool live on the [demo website](http://demo.booking-activit
 * ★ **One-click booking**: just pick the desired event on the calendar and click on "Book"! 
 * ★ **Seamless login / registration**: embedded in the form and processed with the reservation
 * 100% responsive: looks great on mobiles, tablets and computers.
+* ★ Set any custom fields and any booking metadata thanks to [Advanced Forms](https://booking-activities.fr/en/downloads/advanced-forms/?utm_source=wp-plugin-page&utm_medium=wordpress&utm_campaign=advanced-forms&utm_content=readme) add-on
 
 **Online payments with WooCommerce**
 
@@ -97,9 +98,10 @@ See the whole [features list here](https://booking-activities.fr/en/documentatio
 
 = Extend these features with add-ons: =
 
+* **[Advanced Forms](https://booking-activities.fr/en/downloads/advanced-forms/?utm_source=wp-plugin-page&utm_medium=wordpress&utm_campaign=advanced-forms&utm_content=readme)**: Add any custom fields to your booking forms
 * **[Display Pack](https://booking-activities.fr/en/downloads/display-pack/?utm_source=wp-plugin-page&utm_medium=wordpress&utm_campaign=display-pack&utm_content=readme)**: Customize your calendars or set alternative display (datepicker)
-* **[Notification Pack](https://booking-activities.fr/en/downloads/notification-pack/?utm_source=wp-plugin-page&utm_medium=wordpress&utm_campaign=notification-pack&utm_content=readme)**: Send notifications and booking reminders by email, SMS and Push
 * **[Prices and Promotions](https://booking-activities.fr/en/downloads/prices-and-promotions/?utm_source=wp-plugin-page&utm_medium=wordpress&utm_campaign=prices-and-promotions&utm_content=readme)**: Set prices and discounts on specific events
+* **[Notification Pack](https://booking-activities.fr/en/downloads/notification-pack/?utm_source=wp-plugin-page&utm_medium=wordpress&utm_campaign=notification-pack&utm_content=readme)**: Send notifications and booking reminders by email, SMS and Push
 * **[Order for Customers](https://booking-activities.fr/en/downloads/order-for-customers/?utm_source=wp-plugin-page&utm_medium=wordpress&utm_campaign=order-for-customers&utm_content=readme)**: You can book / place an order in the name of your customers
 * **[Points of Sale](https://booking-activities.fr/en/downloads/points-of-sale/?utm_source=wp-plugin-page&utm_medium=wordpress&utm_campaign=points-of-sale&utm_content=readme)**: Each POS manager manage his own products, calendars and bookings
 
@@ -316,6 +318,7 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 == Changelog ==
 
 = 1.5.4 =
+* Tweak - Add the refund coupon code in customers' booking list
 * Fix - Inconsistency between cart items and bookings when the same event is booked twice from different products / variations
 * Fix - Couldn't save some Login / Registration field options
 * Fix - On/off checkboxes may not be saved on position off after closing the dialog once
@@ -324,6 +327,7 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 * Fix - Booking list pagination didn't keep filters while jumping to a specific page
 * Fix - Booking filter values of "calendars" and "activities" didn't appear as selected when they are
 * Fix - Order item meta may not be updated while updating booking status, refunding and rescheduling
+* Fix - Make sure booking or booking order item exists before anything to avoid PHP errors
 * Fix - PHP warning: Unknown is_new_order offset while sending a notification after a booking status changed
 * Dev - Add the form_id to booking data to know from which form the booking was made
 * Dev - Add filters for the booking list: in__booking_id and in__booking_group_id

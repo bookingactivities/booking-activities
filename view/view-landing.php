@@ -1,4 +1,9 @@
 <?php
+/**
+ * Booking Activities landing page
+ * @version 1.5.4
+ */
+
 // Exit if accessed directly
 if ( ! defined( 'ABSPATH' ) ) { exit; }
 ?>
@@ -17,47 +22,60 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		
 		<div id='bookacti-add-ons-container' >
 		<?php
-			$promo = $promo_price_29 = $promo_price_39 = $promo_price_59 = '';
+			$promo = $promo_price_29 = $promo_price_39 = $promo_price_49 = $promo_price_59 = '';
 			
 			$add_ons = array(
+				'advanced-forms' => array( 
+					'prefix' => 'baaf',
+					'title' => esc_html__( 'Advanced Forms', BOOKACTI_PLUGIN_NAME ),
+					'subtitle' => '',
+					'link' => 'https://booking-activities.fr/en/downloads/advanced-forms/?utm_source=plugin&utm_medium=plugin&utm_campaign=advanced-forms&utm_content=landing',
+					'screenshot' => true,
+					'light_color' => '#f291c2',
+					'dark_color' => '#402633',
+					'excerpt' => esc_html__( 'Add any kind of fields to your booking forms. Collect data from each participant. View, edit and filter the values in your booking list.', BOOKACTI_PLUGIN_NAME ),
+					'price' => '49.00€',
+					'promo' => $promo,
+					'promo_price' => $promo_price_49
+				),
 				'display-pack' => array( 
 					'prefix' => 'badp',
-					'title' => __( 'Display Pack', BOOKACTI_PLUGIN_NAME ),
+					'title' => esc_html__( 'Display Pack', BOOKACTI_PLUGIN_NAME ),
 					'subtitle' => '',
 					'link' => 'https://booking-activities.fr/en/downloads/display-pack/?utm_source=plugin&utm_medium=plugin&utm_campaign=display-pack&utm_content=landing',
 					'screenshot' => true,
 					'light_color' => '#c291f2',
 					'dark_color' => '#332640',
-					'excerpt' => __( 'Customize Booking Activities appearance with the alternate views and customization options of this pack.', BOOKACTI_PLUGIN_NAME ),
-					'price' => '39.00€',
-					'promo' => $promo,
-					'promo_price' => $promo_price_39
-				),
-				'notification-pack' => array( 
-					'prefix' => 'banp',
-					'title' => __( 'Notification Pack', BOOKACTI_PLUGIN_NAME ),
-					'subtitle' => '',
-					'link' => 'https://booking-activities.fr/en/downloads/notification-pack/?utm_source=plugin&utm_medium=plugin&utm_campaign=notification-pack&utm_content=landing',
-					'screenshot' => true,
-					'light_color' => '#91f2d2',
-					'dark_color' => '#264037',
-					'excerpt' => __( 'Send notifications and booking reminders via email, SMS and Push. Set specific messages for each event and use them in your notifications.', BOOKACTI_PLUGIN_NAME ),
+					'excerpt' => esc_html__( 'Customize Booking Activities appearance with the alternate views and customization options of this pack.', BOOKACTI_PLUGIN_NAME ),
 					'price' => '39.00€',
 					'promo' => $promo,
 					'promo_price' => $promo_price_39
 				),
 				'prices-and-promotions' => array( 
 					'prefix' => 'bapap',
-					'title' => __( 'Prices and Promotions', BOOKACTI_PLUGIN_NAME ),
+					'title' => esc_html__( 'Prices and Promotions', BOOKACTI_PLUGIN_NAME ),
 					'subtitle' => '',
 					'link' => 'https://booking-activities.fr/en/downloads/prices-and-promotions/?utm_source=plugin&utm_medium=plugin&utm_campaign=prices-and-promotions&utm_content=landing',
 					'screenshot' => true,
 					'light_color' => '#91d2f2',
 					'dark_color' => '#263740',
-					'excerpt' => __( 'Put a special price on your events, make promotions and strategically draw the attention of your customers.', BOOKACTI_PLUGIN_NAME ),
+					'excerpt' => esc_html__( 'Put a special price on your events, make promotions and strategically draw the attention of your customers.', BOOKACTI_PLUGIN_NAME ),
 					'price' => '59.00€',
 					'promo' => $promo,
 					'promo_price' => $promo_price_59
+				),
+				'notification-pack' => array( 
+					'prefix' => 'banp',
+					'title' => esc_html__( 'Notification Pack', BOOKACTI_PLUGIN_NAME ),
+					'subtitle' => '',
+					'link' => 'https://booking-activities.fr/en/downloads/notification-pack/?utm_source=plugin&utm_medium=plugin&utm_campaign=notification-pack&utm_content=landing',
+					'screenshot' => true,
+					'light_color' => '#91f2d2',
+					'dark_color' => '#264037',
+					'excerpt' => esc_html__( 'Send notifications and booking reminders via email, SMS and Push. Set specific messages for each event and use them in your notifications.', BOOKACTI_PLUGIN_NAME ),
+					'price' => '39.00€',
+					'promo' => $promo,
+					'promo_price' => $promo_price_39
 				),
 				'order-for-customers' => array( 
 					'prefix' => 'baofc',
@@ -67,20 +85,20 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 					'screenshot' => true,
 					'light_color' => '#f2ed91',
 					'dark_color' => '#403f26',
-					'excerpt' => __( 'Order and book for your customers and allow them to pay later on your website. Perfect for your operators and your salespersons.', BOOKACTI_PLUGIN_NAME ),
+					'excerpt' => esc_html__( 'Order and book for your customers and allow them to pay later on your website. Perfect for your operators and your salespersons.', BOOKACTI_PLUGIN_NAME ),
 					'price' => '29.00€',
 					'promo' => $promo,
 					'promo_price' => $promo_price_29
 				),
 				'points-of-sale' => array( 
 					'prefix' => 'bapos',
-					'title' => __( 'Points of Sale', BOOKACTI_PLUGIN_NAME ),
-					'subtitle' => __( '(requires WooCommerce)', BOOKACTI_PLUGIN_NAME ),
+					'title' => esc_html__( 'Points of Sale', BOOKACTI_PLUGIN_NAME ),
+					'subtitle' => esc_html__( '(requires WooCommerce)', BOOKACTI_PLUGIN_NAME ),
 					'link' => 'https://booking-activities.fr/en/downloads/points-of-sale/?utm_source=plugin&utm_medium=plugin&utm_campaign=points-of-sale&utm_content=landing',
 					'screenshot' => true,
 					'light_color' => '#91f2a1',
 					'dark_color' => '#26402a',
-					'excerpt' => __( 'You have several points of sale and one website for all. Thanks to this plugin, your points of sale managers will be able to manage independently their own activities, calendars and bookings from this single website.', BOOKACTI_PLUGIN_NAME ),
+					'excerpt' => esc_html__( 'You have several points of sale and one website for all. Thanks to this plugin, your points of sale managers will be able to manage independently their own activities, calendars and bookings from this single website.', BOOKACTI_PLUGIN_NAME ),
 					'price' => '59.00€',
 					'promo' => $promo,
 					'promo_price' => $promo_price_59

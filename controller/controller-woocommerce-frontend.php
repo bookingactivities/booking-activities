@@ -1532,7 +1532,8 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	
 	
 	/**
-	 * 
+	 * Add values in bookings list (refund, price)
+	 * @version 1.5.4
 	 * @param array $columns_value
 	 * @param object $booking
 	 * @param int $user_id
@@ -1541,8 +1542,30 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	function bookacti_add_woocommerce_prices_in_bookings_list( $columns_value, $booking, $user_id ) {
 		$item = bookacti_get_order_item_by_booking_id( $booking->id );
 		if( ! empty( $item ) ) {
-			$total_price = wc_price( (float) $item[ 'line_total' ] + (float) $item[ 'line_tax' ] );
+			// Add Price column value
+			// WOOCOMMERCE 3.0.0 backward compatibility 
+			$total	= is_array( $item ) ? $item[ 'line_total' ] : $item->get_total();
+			$tax	= is_array( $item ) ? $item[ 'line_tax' ] : $item->get_total_tax();
+			
+			$total_price = wc_price( (float) $total + (float) $tax );
 			$columns_value[ 'price' ] = $total_price ? $total_price : '/';
+			
+			// Add refund coupon code in "Status" column
+			if( $booking->state === 'refunded' ) {
+				// WOOCOMMERCE 3.0.0 backward compatibility
+				if( version_compare( WC_VERSION, '3.0.0', '>=' ) ) {
+					$item_meta = $item->get_formatted_meta_data();
+					foreach( $item_meta as $item_id => $meta_data ) {
+						if( $meta_data->key === 'bookacti_refund_coupon' ) { $coupon_code = $meta_data->value; }
+					}
+				} else {
+					$coupon_code = wc_get_order_item_meta( $item[ 'id' ], 'bookacti_refund_coupon', true );
+				}
+				
+				if( $coupon_code ) {
+					$columns_value[ 'state' ] .= '<br/><strong>' . esc_html__( 'Coupon code' ) . ':</strong> ' . $coupon_code;
+				}
+			}
 		}
 
 		return $columns_value;

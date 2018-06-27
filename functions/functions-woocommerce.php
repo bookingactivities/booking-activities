@@ -6,7 +6,6 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 	/**
 	 * Insert or update a booking in cart
-	 * 
 	 * @since 1.1.0 (replace bookacti_insert_booking_in_cart)
 	 * @version 1.5.4
 	 * @param int $product_id
@@ -48,19 +47,25 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		
 		if( $booking_id ) {
 			// Get booking and add new quantity to old one
-			$booking		= bookacti_get_booking_by_id( $booking_id );
-			$new_quantity	= intval( $booking->quantity ) + intval( $quantity );
+			$booking = bookacti_get_booking_by_id( $booking_id );
+			
+			if( $booking ) { 
+				$new_quantity = intval( $booking->quantity ) + intval( $quantity );
 
-			// Update quantity
-			$updated = bookacti_controller_update_booking_quantity( $booking_id, $new_quantity );
+				// Update quantity
+				$updated = bookacti_controller_update_booking_quantity( $booking_id, $new_quantity );
 
-			if( $updated[ 'status' ] === 'success' ) {
-				$return_array[ 'status' ] = 'success';
-				$return_array[ 'action' ] = 'updated';
-				$return_array[ 'id' ] = $booking->id;
+				if( $updated[ 'status' ] === 'success' ) {
+					$return_array[ 'status' ] = 'success';
+					$return_array[ 'action' ] = 'updated';
+					$return_array[ 'id' ] = $booking->id;
+				}
+			} else {
+				$booking_id = 0;
 			}
-
-		} else {
+		} 
+		
+		if( ! $booking_id ) {
 			
 			$expiration_date = bookacti_get_expiration_time();
 
@@ -1145,6 +1150,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		
 		if( ! $item || ( ! isset( $item[ 'bookacti_booking_id' ] ) && ! isset( $item[ 'bookacti_booking_group_id' ] ) ) ) { return; }
 		
+		// WOOCOMMERCE 3.0.0 backward compatibility 
 		$order_item_id = is_array( $item ) ? $item[ 'id' ] : $item->get_id();
 		
 		// Get old state
@@ -1392,8 +1398,8 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	
 	/**
 	 * Update order bookings if a partial refund is perfomed (refund of one or more items)
-	 * 
 	 * @since 1.2.0 (was part of bookacti_update_booking_when_order_item_is_refunded before)
+	 * @version 1.5.4
 	 * @param array $refunded_items
 	 * @param int $refund_id
 	 */
@@ -1420,10 +1426,12 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			if( $booking_id ) {
 
 				$booking = bookacti_get_booking_by_id( $booking_id );
-				$init_qty[ $booking_id ]= $booking->quantity;
-				$new_qty[ $booking_id ][ 'new_qty' ]		= $init_qty[ $booking_id ] - $refunded_qty;
-				$new_qty[ $booking->id ][ 'booking_type' ]	= 'single';
-
+				if( $booking ) {
+					$init_qty[ $booking->id ]= $booking->quantity;
+					$new_qty[ $booking->id ][ 'new_qty' ]		= $init_qty[ $booking->id ] - $refunded_qty;
+					$new_qty[ $booking->id ][ 'booking_type' ]	= 'single';
+				}
+				
 			// Booking group
 			} else if( $booking_group_id ) {
 
