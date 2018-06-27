@@ -185,7 +185,7 @@ function bookacti_sanitize_form_data( $raw_form_data ) {
 
 /**
  * Display a booking form
- * @version 1.5.3
+ * @version 1.5.4
  * @param int $form_id
  * @param string $instance_id
  * @param string $context
@@ -239,6 +239,7 @@ function bookacti_display_form( $form_id, $instance_id = '', $context = 'display
 			do_action( 'bookacti_form_before', $form, $instance_id, $context );
 			
 			foreach( $displayed_form_fields as $field ) {
+				if( ! $field ) { continue; }
 				bookacti_display_form_field( $field, $instance_id, $context, true );
 			}
 			
@@ -275,6 +276,7 @@ function bookacti_get_form_fields_data( $form_id, $active_only = true ) {
 	
 	// Add form field metadata and 
 	// Format form fields
+	$fields_data = array();
 	foreach( $fields as $i => $field ) {
 		// Add field-specific data
 		$field_metadata = bookacti_get_metadata( 'form_field', $field[ 'field_id' ] );
@@ -283,10 +285,13 @@ function bookacti_get_form_fields_data( $form_id, $active_only = true ) {
 		}
 		
 		// Format data
-		$fields[ $i ] = bookacti_format_form_field_data( $field );
+		$formatted_data = bookacti_format_form_field_data( $field );
+		if( $formatted_data ) {
+			$fields_data[ $i ] = $formatted_data;
+		}
 	}
 	
-	return apply_filters( 'bookacti_form_fields_data', $fields, $form_id );
+	return apply_filters( 'bookacti_form_fields_data', $fields_data, $form_id );
 }
 
 

@@ -1552,6 +1552,8 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			
 			// Add refund coupon code in "Status" column
 			if( $booking->state === 'refunded' ) {
+				$coupon_code = '';
+				
 				// WOOCOMMERCE 3.0.0 backward compatibility
 				if( version_compare( WC_VERSION, '3.0.0', '>=' ) ) {
 					$item_meta = $item->get_formatted_meta_data();

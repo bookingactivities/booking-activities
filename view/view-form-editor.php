@@ -2,6 +2,7 @@
 /**
  * Form editor page
  * @since 1.5.0
+ * @version 1.5.4
  */
 
 // Exit if accessed directly
@@ -164,6 +165,7 @@ if( ! $form ) { exit; }
 										// Display form fields 
 										$ordered_form_fields = bookacti_sort_form_fields_array( $form_id, $form_fields );
 										foreach( $ordered_form_fields as $field ) {
+											if( ! $field ) { continue; }
 											bookacti_display_form_field_for_editor( $field );
 										}
 										
