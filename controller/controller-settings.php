@@ -579,52 +579,6 @@ add_filter( 'plugin_row_meta', 'bookacti_meta_links_in_plugins_table', 10, 2 );
 // ADMIN PROMO NOTICES
 
 /** 
- * Display FIRST20 promo notice
- * 
- * @return void
- */
-function bookacti_first20_notice() {
-	$dismissed = get_option( 'bookacti-first20-notice-dismissed' );
-	if( $dismissed || ! current_user_can( 'bookacti_manage_booking_activities' ) ) {
-		return;
-	}
-	
-	$switch_message = false;
-	$viewed = get_option( 'bookacti-first20-notice-viewed' );
-	if( ! empty( $_GET ) && isset( $_GET[ 'page' ] ) ) {
-		if( sanitize_title_with_dashes( $_GET[ 'page' ] ) === 'booking-activities' ) {
-			$switch_message = true;
-			if( ! $viewed ) {
-				update_option( 'bookacti-first20-notice-viewed', 1 );
-				$viewed = 1;
-			}
-			if( isset( $_GET[ 'dismiss_first20_notice' ] ) && wp_verify_nonce( $_GET[ 'nonce' ], 'bookacti_dismiss_first20_notice' ) && current_user_can( 'bookacti_manage_booking_activities' ) ) {
-				update_option( 'bookacti-first20-notice-dismissed', 1 );
-				return;
-			}
-		} else if( $viewed ) {
-			return;
-		}
-	} else if( $viewed ) {
-		return;
-	}
-	?>
-		<div class='notice notice-success bookacti-first20-notice is-dismissible' >
-			<p><?php esc_html_e( 'Welcome to Booking Activities! To thank you for using our booking plugin, we give you a 20% discount on every add-ons with the code "FIRST20" on your first purchase on booking-activities.fr.', BOOKACTI_PLUGIN_NAME ); ?></p>
-			<p>
-			<?php if( ! $switch_message ) { ?>
-				<a class='button' href='<?php echo esc_url( admin_url( 'admin.php?page=booking-activities' ) ); ?>' ><?php esc_html_e( 'See add-ons and hide this message', BOOKACTI_PLUGIN_NAME ); ?></a>
-			<?php } else { ?>
-				<a class='button' href='<?php echo esc_url(  wp_nonce_url( admin_url( 'admin.php?page=booking-activities&dismiss_first20_notice=1' ), 'bookacti_dismiss_first20_notice', 'nonce' ) ); ?>' ><?php esc_html_e( 'I have already benefited from this offer, hide this message', BOOKACTI_PLUGIN_NAME ); ?></a>
-			<?php } ?>
-			</p>
-		</div>
-	<?php
-}
-add_action( 'all_admin_notices', 'bookacti_first20_notice' );
-
-
-/** 
  * Ask to rate the plugin 5 stars
  */
 function bookacti_5stars_rating_notice() {

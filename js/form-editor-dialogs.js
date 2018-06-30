@@ -153,6 +153,9 @@ function bookacti_dialog_insert_form_field() {
 							// Insert the field
 							$j( '#bookacti-form-editor' ).append( response.field_html );
 							
+							// Reload tooltip for generated content
+							bookacti_init_tooltip();
+							
 							// Update the field data
 							bookacti.form_editor.fields[ response.field_id ] = response.field_data;
 							bookacti.form_editor.form.field_order = response.field_order;
@@ -308,6 +311,9 @@ function bookacti_dialog_update_form_field( field_id, field_name ) {
 				
 				// Save tineMCE editors content 
 				if( tinyMCE ) { tinyMCE.triggerSave(); }
+				
+				// Prepare the fields
+				$j( 'form#bookacti-form-field-form-' + field_name + ' select[multiple].bookacti-items-select-box option' ).prop( 'selected', true );
 				
 				var data = $j( 'form#bookacti-form-field-form-' + field_name ).serializeObject();
 				var is_visible = $j( '#bookacti-form-editor-field-' + field_id + ' .bookacti-form-editor-field-body' ).is( ':visible' );

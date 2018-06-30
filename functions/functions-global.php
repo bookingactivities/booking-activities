@@ -402,7 +402,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	 * Display various fields
 	 * 
 	 * @since 1.2.0
-	 * @version 1.5.3
+	 * @version 1.5.4
 	 * @param array $args ['type', 'name', 'label', 'id', 'class', 'placeholder', 'options', 'attr', 'value', 'tip', 'required']
 	 */
 	function bookacti_display_field( $args ) {
@@ -414,11 +414,12 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		// Display field according to type
 
 		// TEXT & NUMBER
-		if( in_array( $args[ 'type' ], array( 'text', 'hidden', 'number', 'date', 'time', 'email', 'password', 'file' ), true ) ) {
+		if( in_array( $args[ 'type' ], array( 'text', 'hidden', 'number', 'date', 'time', 'email', 'tel', 'password', 'file' ), true ) ) {
 		?>
 			<input	type=		'<?php echo esc_attr( $args[ 'type' ] ); ?>' 
 					name=		'<?php echo esc_attr( $args[ 'name' ] ); ?>' 
 					value=		'<?php echo esc_attr( $args[ 'value' ] ); ?>' 
+					autocomplete='<?php echo $args[ 'autocomplete' ] ? esc_attr( $args[ 'autocomplete' ] ) : 'off'; ?>'
 					id=			'<?php echo esc_attr( $args[ 'id' ] ); ?>' 
 					class=		'bookacti-input <?php echo esc_attr( $args[ 'class' ] ); ?>' 
 				<?php if( ! in_array( $args[ 'type' ], array( 'hidden', 'file' ) ) ) { ?>
@@ -447,6 +448,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			<textarea	
 				name=		'<?php echo esc_attr( $args[ 'name' ] ); ?>' 
 				id=			'<?php echo esc_attr( $args[ 'id' ] ); ?>' 
+				autocomplete='<?php echo $args[ 'autocomplete' ] ? esc_attr( $args[ 'autocomplete' ] ) : 'off'; ?>'
 				class=		'bookacti-textarea <?php echo esc_attr( $args[ 'class' ] ); ?>' 
 				placeholder='<?php echo esc_attr( $args[ 'placeholder' ] ); ?>'
 				<?php if( ! empty( $args[ 'attr' ] ) ) { echo $args[ 'attr' ]; } ?>
@@ -599,7 +601,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	 * Format arguments to diplay a proper field
 	 * 
 	 * @since 1.2.0
-	 * @version 1.5.3
+	 * @version 1.5.4
 	 * @param array $args ['type', 'name', 'label', 'id', 'class', 'placeholder', 'options', 'attr', 'value', 'multiple', 'tip', 'required']
 	 * @return array|false
 	 */
@@ -612,7 +614,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		if( ! isset( $args[ 'type' ] ) || ! isset( $args[ 'name' ] ) ) { return false; }
 
 		// If field type is not supported, return
-		if( ! in_array( $args[ 'type' ], array( 'text', 'hidden', 'email', 'date', 'time', 'password', 'number', 'checkbox', 'checkboxes', 'select', 'radio', 'textarea', 'file', 'editor', 'user_id' ) ) ) { 
+		if( ! in_array( $args[ 'type' ], array( 'text', 'hidden', 'email', 'tel', 'date', 'time', 'password', 'number', 'checkbox', 'checkboxes', 'select', 'radio', 'textarea', 'file', 'editor', 'user_id' ) ) ) { 
 			return false; 
 		}
 
@@ -628,7 +630,8 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			'value'			=> '',
 			'multiple'		=> false,
 			'tip'			=> '',
-			'required'		=> 0
+			'required'		=> 0,
+			'autocomplete'	=> 0
 		);
 
 		// Replace empty value by default
@@ -720,7 +723,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	
 	/**
 	 * Create ON / OFF switch
-	 * 
+	 * @version 1.5.4
 	 * @param string $name
 	 * @param string $current_value
 	 * @param string $id
@@ -736,7 +739,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 		?>
 		<div class="bookacti-onoffswitch <?php if( $disabled ) { echo 'bookacti-disabled'; } ?>">
-			<input type="hidden" name="<?php echo esc_attr( $name ); ?>" value='0' />
+			<input type="hidden" name="<?php echo esc_attr( $name ); ?>" value='0' class='bookacti-onoffswitch-hidden-input' />
 			<input type="checkbox" 
 				   name="<?php echo esc_attr( $name ); ?>" 
 				   class="bookacti-onoffswitch-checkbox" 

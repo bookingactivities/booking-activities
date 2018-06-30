@@ -5,7 +5,7 @@ msgstr ""
 "Project-Id-Version: Booking Activities 1.5.3\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/booking-"
 "activities\n"
-"POT-Creation-Date: 2018-05-30 05:39:13+00:00\n"
+"POT-Creation-Date: 2018-06-27 21:39:25+00:00\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -23,7 +23,7 @@ msgstr ""
 
 #. #-#-#-#-#  booking-activities.pot (Booking Activities 1.5.3)  #-#-#-#-#
 #. Plugin Name of the plugin/theme
-#: booking-activities.php:382 view/view-landing.php:7
+#: booking-activities.php:382 view/view-landing.php:12
 msgid "Booking Activities"
 msgstr ""
 
@@ -59,9 +59,9 @@ msgstr ""
 msgid "Settings"
 msgstr ""
 
-#: class/class-bookings-list.php:57 class/class-bookings-list.php:367
-#: class/class-forms-list.php:52 functions/functions-bookings.php:1002
-#: functions/functions-bookings.php:1164
+#: class/class-bookings-list.php:57 class/class-bookings-list.php:368
+#: class/class-forms-list.php:52 functions/functions-bookings.php:1011
+#: functions/functions-bookings.php:1179
 msgctxt "An id is a unique identification number"
 msgid "id"
 msgstr ""
@@ -72,8 +72,8 @@ msgstr ""
 msgid "Customer"
 msgstr ""
 
-#: class/class-bookings-list.php:59 functions/functions-bookings.php:806
-#: functions/functions-forms.php:405
+#: class/class-bookings-list.php:59 functions/functions-bookings.php:815
+#: functions/functions-forms.php:412
 msgid "Email"
 msgstr ""
 
@@ -97,40 +97,40 @@ msgid "Qty"
 msgstr ""
 
 #: class/class-bookings-list.php:64 class/class-forms-list.php:53
-#: view/view-form-editor-dialogs.php:740 view/view-templates-dialogs.php:120
+#: view/view-form-editor-dialogs.php:742 view/view-templates-dialogs.php:120
 #: view/view-templates-dialogs.php:243 view/view-templates-dialogs.php:460
 msgid "Title"
 msgstr ""
 
 #: class/class-bookings-list.php:65
-#: controller/controller-woocommerce-frontend.php:1210
+#: controller/controller-woocommerce-frontend.php:1240
 msgid "Start"
 msgstr ""
 
 #: class/class-bookings-list.php:66
-#: controller/controller-woocommerce-frontend.php:1211
+#: controller/controller-woocommerce-frontend.php:1241
 msgid "End"
 msgstr ""
 
 #: class/class-bookings-list.php:67
-#: controller/controller-woocommerce-backend.php:584
-#: controller/controller-woocommerce-backend.php:1035
+#: controller/controller-woocommerce-backend.php:586
+#: controller/controller-woocommerce-backend.php:1037
 #: functions/functions-booking-system.php:167
-#: functions/functions-booking-system.php:453 functions/functions-forms.php:395
-#: view/view-form-editor-dialogs.php:153
+#: functions/functions-booking-system.php:453 functions/functions-forms.php:402
+#: view/view-form-editor-dialogs.php:155
 msgid "Calendar"
 msgstr ""
 
 #. translators: 'Activity' is the new type of product in WooCommerce
 #: class/class-bookings-list.php:68
-#: controller/controller-woocommerce-backend.php:441
-#: controller/controller-woocommerce-backend.php:459
-#: controller/controller-woocommerce-backend.php:631
-#: controller/controller-woocommerce-backend.php:863
-#: controller/controller-woocommerce-backend.php:933
-#: controller/controller-woocommerce-backend.php:1087
+#: controller/controller-woocommerce-backend.php:443
+#: controller/controller-woocommerce-backend.php:461
+#: controller/controller-woocommerce-backend.php:633
+#: controller/controller-woocommerce-backend.php:865
+#: controller/controller-woocommerce-backend.php:935
+#: controller/controller-woocommerce-backend.php:1089
 #: functions/functions-booking-system.php:476
-#: functions/functions-bookings.php:1165
+#: functions/functions-bookings.php:1180
 msgid "Activity"
 msgstr ""
 
@@ -139,7 +139,7 @@ msgstr ""
 msgid "Date"
 msgstr ""
 
-#: class/class-bookings-list.php:70 functions/functions-bookings.php:1168
+#: class/class-bookings-list.php:70 functions/functions-bookings.php:1183
 #: functions/functions-settings.php:545
 msgid "Actions"
 msgstr ""
@@ -156,11 +156,11 @@ msgstr ""
 #. translators: Datetime format. Must be adapted to each country. Use wp
 #. date_i18n documentation to find the appropriated combinaison
 #. https://codex.wordpress.org/Formatting_Date_and_Time
-#: class/class-bookings-list.php:362 class/class-forms-list.php:296
+#: class/class-bookings-list.php:363 class/class-forms-list.php:296
 msgid "F d, Y"
 msgstr ""
 
-#: class/class-bookings-list.php:465 class/class-forms-list.php:372
+#: class/class-bookings-list.php:466 class/class-forms-list.php:372
 msgid "No items found."
 msgstr ""
 
@@ -191,12 +191,12 @@ msgctxt "forms"
 msgid "Trash"
 msgstr ""
 
-#: class/class-forms-list.php:230 functions/functions-forms.php:1408
+#: class/class-forms-list.php:230 functions/functions-forms.php:1420
 msgctxt "forms"
 msgid "Restore"
 msgstr ""
 
-#: class/class-forms-list.php:234 functions/functions-forms.php:1390
+#: class/class-forms-list.php:234 functions/functions-forms.php:1402
 msgctxt "forms"
 msgid "Delete Permanently"
 msgstr ""
@@ -220,9 +220,9 @@ msgctxt "forms"
 msgid "Published"
 msgstr ""
 
-#: controller/controller-bookings.php:284 controller/controller-forms.php:724
+#: controller/controller-bookings.php:284 controller/controller-forms.php:733
 #: controller/controller-shortcodes.php:260 functions/functions-global.php:61
-#: languages/script-translation.php:134 view/view-form-editor.php:21
+#: languages/script-translation.php:134 view/view-form-editor.php:22
 msgid "You are not allowed to do this."
 msgstr ""
 
@@ -242,149 +242,149 @@ msgstr ""
 msgid "An error occurred while trying to delete the booking group."
 msgstr ""
 
-#: controller/controller-forms.php:51 controller/controller-forms.php:77
-#: controller/controller-forms.php:169 controller/controller-forms.php:312
-#: functions/functions-forms.php:860
+#: controller/controller-forms.php:52 controller/controller-forms.php:78
+#: controller/controller-forms.php:170 controller/controller-forms.php:317
+#: functions/functions-forms.php:867
 msgid "Required field"
 msgstr ""
 
-#: controller/controller-forms.php:110 view/view-form-editor-dialogs.php:394
+#: controller/controller-forms.php:111 view/view-form-editor-dialogs.php:396
 msgid "Forgotten password"
 msgstr ""
 
-#: controller/controller-forms.php:114
+#: controller/controller-forms.php:115
 msgid ""
 "Please enter your email address. You will receive a link to create a new "
 "password via email."
 msgstr ""
 
-#: controller/controller-forms.php:127
+#: controller/controller-forms.php:128
 msgid "Your email address"
 msgstr ""
 
-#: controller/controller-forms.php:242
+#: controller/controller-forms.php:245
 msgid "You are not %s?"
 msgstr ""
 
-#: controller/controller-forms.php:245
+#: controller/controller-forms.php:248
 msgid "Click here to log out."
 msgstr ""
 
-#: controller/controller-forms.php:442 functions/functions-forms.php:937
+#: controller/controller-forms.php:449 functions/functions-forms.php:949
 msgid "Invalid email address."
 msgstr ""
 
-#: controller/controller-forms.php:446 functions/functions-forms.php:1047
+#: controller/controller-forms.php:453 functions/functions-forms.php:1059
 msgid "This email address doesn't match any account."
 msgstr ""
 
-#: controller/controller-forms.php:450
+#: controller/controller-forms.php:457
 msgid "An email has been sent to %s, please check your inbox."
 msgstr ""
 
-#: controller/controller-forms.php:484
+#: controller/controller-forms.php:491
 msgid "Invalid form ID."
 msgstr ""
 
-#: controller/controller-forms.php:484 functions/functions-global.php:45
+#: controller/controller-forms.php:491 functions/functions-global.php:45
 msgid "Please reload the page and try again."
 msgstr ""
 
-#: controller/controller-forms.php:508
+#: controller/controller-forms.php:515
 msgid "You must agree to the terms and conditions."
 msgstr ""
 
-#: controller/controller-forms.php:538
+#: controller/controller-forms.php:545
 msgid "Your account has been successfully created."
 msgstr ""
 
-#: controller/controller-forms.php:554 controller/controller-shortcodes.php:262
+#: controller/controller-forms.php:561 controller/controller-shortcodes.php:262
 #: languages/script-translation.php:141
 msgid "You are not logged in. Please create an account and log in first."
 msgstr ""
 
-#: controller/controller-forms.php:568
+#: controller/controller-forms.php:575
 msgid "An error occured while trying to log you in."
 msgstr ""
 
-#: controller/controller-forms.php:573
+#: controller/controller-forms.php:580
 msgid "You are now logged into your account."
 msgstr ""
 
-#: controller/controller-forms.php:652 controller/controller-shortcodes.php:253
+#: controller/controller-forms.php:661 controller/controller-shortcodes.php:253
 #: functions/functions-booking-system.php:889
 msgid "An error occurred, please try again."
 msgstr ""
 
-#: controller/controller-forms.php:672
+#: controller/controller-forms.php:681
 msgid "Publish"
 msgstr ""
 
-#: controller/controller-forms.php:673
+#: controller/controller-forms.php:682
 msgid "Managers"
 msgstr ""
 
-#: controller/controller-forms.php:675
+#: controller/controller-forms.php:684
 msgid "How to integrate this form"
 msgstr ""
 
-#: controller/controller-forms.php:729
+#: controller/controller-forms.php:738
 msgid "Error occurs when trying to create the form."
 msgstr ""
 
-#: controller/controller-forms.php:783 view/view-form-editor.php:41
+#: controller/controller-forms.php:792 view/view-form-editor.php:42
 msgid "The booking form is published."
 msgstr ""
 
-#: controller/controller-forms.php:783 view/view-form-editor.php:42
+#: controller/controller-forms.php:792 view/view-form-editor.php:43
 msgid "The booking form has been updated."
 msgstr ""
 
-#: controller/controller-forms.php:805
+#: controller/controller-forms.php:814
 msgid "You are not allowed to do that."
 msgstr ""
 
-#: controller/controller-forms.php:821
+#: controller/controller-forms.php:830
 msgid "You are not allowed to remove a booking form."
 msgstr ""
 
-#: controller/controller-forms.php:843
+#: controller/controller-forms.php:852
 msgid "The booking form has been removed."
 msgstr ""
 
-#: controller/controller-forms.php:853
+#: controller/controller-forms.php:862
 msgid "An error occured while trying to delete a booking form."
 msgstr ""
 
-#: controller/controller-forms.php:869
+#: controller/controller-forms.php:878
 msgid "You are not allowed to restore a booking form."
 msgstr ""
 
-#: controller/controller-forms.php:884
+#: controller/controller-forms.php:893
 msgid "The booking form has been restored."
 msgstr ""
 
-#: controller/controller-forms.php:894
+#: controller/controller-forms.php:903
 msgid "An error occured while trying to restore a booking form."
 msgstr ""
 
-#: controller/controller-forms.php:971
+#: controller/controller-forms.php:980
 msgid "Invalid form ID"
 msgstr ""
 
-#: controller/controller-forms.php:987
+#: controller/controller-forms.php:996
 msgid "Unknown field"
 msgstr ""
 
-#: controller/controller-forms.php:998
+#: controller/controller-forms.php:1007
 msgid "This field has already been added to the form"
 msgstr ""
 
-#: controller/controller-forms.php:1008
+#: controller/controller-forms.php:1017
 msgid "An error occured while trying to insert the form field."
 msgstr ""
 
-#: controller/controller-forms.php:1144 languages/script-translation.php:118
+#: controller/controller-forms.php:1153 languages/script-translation.php:118
 msgid "An error occurs while trying to update the field."
 msgstr ""
 
@@ -393,8 +393,8 @@ msgid "General settings"
 msgstr ""
 
 #: controller/controller-settings.php:22
-#: controller/controller-woocommerce-backend.php:570
-#: controller/controller-woocommerce-backend.php:1011
+#: controller/controller-woocommerce-backend.php:572
+#: controller/controller-woocommerce-backend.php:1013
 msgid "Booking method"
 msgstr ""
 
@@ -540,8 +540,8 @@ msgid "Use these tags:"
 msgstr ""
 
 #: controller/controller-settings.php:381 functions/functions-settings.php:597
-#: functions/functions-settings.php:1020 functions/functions-settings.php:1030
-#: functions/functions-settings.php:1044 view/view-landing.php:45
+#: functions/functions-settings.php:1018 functions/functions-settings.php:1028
+#: functions/functions-settings.php:1042 view/view-landing.php:69
 msgid "Notification Pack"
 msgstr ""
 
@@ -580,51 +580,36 @@ msgstr ""
 msgid "Contact us"
 msgstr ""
 
-#: controller/controller-settings.php:613
-msgid ""
-"Welcome to Booking Activities! To thank you for using our booking plugin, we "
-"give you a 20% discount on every add-ons with the code \"FIRST20\" on your "
-"first purchase on booking-activities.fr."
-msgstr ""
-
-#: controller/controller-settings.php:616
-msgid "See add-ons and hide this message"
-msgstr ""
-
-#: controller/controller-settings.php:618
-msgid "I have already benefited from this offer, hide this message"
-msgstr ""
-
-#: controller/controller-settings.php:644
+#: controller/controller-settings.php:598
 msgid ""
 "<strong>Booking Activities</strong> has been helping you for one month now."
 msgstr ""
 
 #. translators: %s: five stars
-#: controller/controller-settings.php:647
+#: controller/controller-settings.php:601
 msgid ""
 "Would you help it back leaving us a %s rating? We need you now to make it "
 "last!"
 msgstr ""
 
-#: controller/controller-settings.php:652
+#: controller/controller-settings.php:606
 msgid "Ok, I'll rate you five stars!"
 msgstr ""
 
-#: controller/controller-settings.php:653
+#: controller/controller-settings.php:607
 msgid "I already rated you, hide this message"
 msgstr ""
 
 #. translators: %s: five stars
-#: controller/controller-settings.php:708
+#: controller/controller-settings.php:662
 msgid ""
 "If <strong>Booking Activities</strong> helps you, help it back leaving us a "
 "%s rating. We need you now to make it last!"
 msgstr ""
 
 #: controller/controller-shortcodes.php:92
-#: functions/functions-bookings.php:1166 functions/functions-forms.php:422
-#: functions/functions-forms.php:423
+#: functions/functions-bookings.php:1181 functions/functions-forms.php:429
+#: functions/functions-forms.php:430
 msgid "Quantity"
 msgstr ""
 
@@ -655,137 +640,137 @@ msgstr[1] ""
 #. 'Please choose another event or decrease the quantity.'
 #: controller/controller-woocommerce-backend.php:46
 #: functions/functions-booking-system.php:881
-#: functions/functions-woocommerce.php:237
-#: functions/functions-woocommerce.php:336
+#: functions/functions-woocommerce.php:281
+#: functions/functions-woocommerce.php:380
 msgid "but only %1$s is available on this time slot."
 msgid_plural "but only %1$s are available on this time slot. "
 msgstr[0] ""
 msgstr[1] ""
 
 #: controller/controller-woocommerce-backend.php:49
-#: controller/controller-woocommerce-backend.php:278
-#: functions/functions-woocommerce.php:271
-#: functions/functions-woocommerce.php:340
+#: controller/controller-woocommerce-backend.php:280
+#: functions/functions-woocommerce.php:315
+#: functions/functions-woocommerce.php:384
 msgid "This event is no longer available. Please choose another event."
 msgstr ""
 
 #: controller/controller-woocommerce-backend.php:52
-#: controller/controller-woocommerce-backend.php:281
-#: controller/controller-woocommerce-backend.php:334
+#: controller/controller-woocommerce-backend.php:283
+#: controller/controller-woocommerce-backend.php:336
 msgid "Error occurs while trying to update booking quantity."
 msgstr ""
 
 #. translators: Description of the 'Activity' type of product in WooCommerce
-#: controller/controller-woocommerce-backend.php:443
+#: controller/controller-woocommerce-backend.php:445
 msgid ""
 "Activities are bookable according to the defined calendar, and expire in "
 "cart."
 msgstr ""
 
-#: controller/controller-woocommerce-backend.php:493
-#: controller/controller-woocommerce-backend.php:938
+#: controller/controller-woocommerce-backend.php:495
+#: controller/controller-woocommerce-backend.php:940
 msgid "Booking form"
 msgstr ""
 
-#: controller/controller-woocommerce-backend.php:503
-#: controller/controller-woocommerce-backend.php:947
+#: controller/controller-woocommerce-backend.php:505
+#: controller/controller-woocommerce-backend.php:949
 msgid "Use the deprecated settings"
 msgstr ""
 
-#: controller/controller-woocommerce-backend.php:528
-#: controller/controller-woocommerce-backend.php:973
+#: controller/controller-woocommerce-backend.php:530
+#: controller/controller-woocommerce-backend.php:975
 msgid "Edit this form"
 msgstr ""
 
-#: controller/controller-woocommerce-backend.php:532
-#: controller/controller-woocommerce-backend.php:977
+#: controller/controller-woocommerce-backend.php:534
+#: controller/controller-woocommerce-backend.php:979
 msgid "Create a form"
 msgstr ""
 
 #. translators: %1$s and %2$s are <a> and </a> tags to go to the admin booking
 #. forms page.
-#: controller/controller-woocommerce-backend.php:550
-#: controller/controller-woocommerce-backend.php:995
+#: controller/controller-woocommerce-backend.php:552
+#: controller/controller-woocommerce-backend.php:997
 msgid ""
 "As of Booking Activities 1.5, calendar settings have been moved to "
 "%1$sbooking forms%2$s."
 msgstr ""
 
-#: controller/controller-woocommerce-backend.php:554
-#: controller/controller-woocommerce-backend.php:999
+#: controller/controller-woocommerce-backend.php:556
+#: controller/controller-woocommerce-backend.php:1001
 msgid ""
 "Please manually migrate your settings as soon as possible or click on this "
 "button to do it automatically:"
 msgstr ""
 
-#: controller/controller-woocommerce-backend.php:555
-#: controller/controller-woocommerce-backend.php:1000
+#: controller/controller-woocommerce-backend.php:557
+#: controller/controller-woocommerce-backend.php:1002
 msgid "Generate the booking form"
 msgstr ""
 
-#: controller/controller-woocommerce-backend.php:557
-#: controller/controller-woocommerce-backend.php:1003
+#: controller/controller-woocommerce-backend.php:559
+#: controller/controller-woocommerce-backend.php:1005
 msgid ""
 "However, if you still need to access your old settings, click on this link:"
 msgstr ""
 
-#: controller/controller-woocommerce-backend.php:558
-#: controller/controller-woocommerce-backend.php:1004
+#: controller/controller-woocommerce-backend.php:560
+#: controller/controller-woocommerce-backend.php:1006
 msgid "Show the deprecated settings"
 msgstr ""
 
 #. translators: This is an option in a select box that means 'Use the setting
 #. of the whole website'
-#: controller/controller-woocommerce-backend.php:565
-#: controller/controller-woocommerce-backend.php:1019
+#: controller/controller-woocommerce-backend.php:567
+#: controller/controller-woocommerce-backend.php:1021
 #: view/view-templates-dialogs.php:989
 msgid "Site setting"
 msgstr ""
 
-#: controller/controller-woocommerce-backend.php:614
-#: controller/controller-woocommerce-backend.php:662
-#: controller/controller-woocommerce-backend.php:714
-#: controller/controller-woocommerce-backend.php:1080
-#: controller/controller-woocommerce-backend.php:1127
-#: controller/controller-woocommerce-backend.php:1175
-#: functions/functions-global.php:558
+#: controller/controller-woocommerce-backend.php:616
+#: controller/controller-woocommerce-backend.php:664
+#: controller/controller-woocommerce-backend.php:716
+#: controller/controller-woocommerce-backend.php:1082
+#: controller/controller-woocommerce-backend.php:1129
+#: controller/controller-woocommerce-backend.php:1177
+#: functions/functions-global.php:560
 msgid "Multiple selection"
 msgstr ""
 
-#: controller/controller-woocommerce-backend.php:679
-#: controller/controller-woocommerce-backend.php:1134
+#: controller/controller-woocommerce-backend.php:681
+#: controller/controller-woocommerce-backend.php:1136
 #: functions/functions-booking-system.php:499
 #: view/view-templates-dialogs.php:826
 msgid "Group category"
 msgstr ""
 
-#: controller/controller-woocommerce-backend.php:689
-#: controller/controller-woocommerce-backend.php:1150
+#: controller/controller-woocommerce-backend.php:691
+#: controller/controller-woocommerce-backend.php:1152
 #: functions/functions-booking-system.php:485
 msgctxt "About group category"
 msgid "None"
 msgstr ""
 
-#: controller/controller-woocommerce-backend.php:736
-#: controller/controller-woocommerce-backend.php:1198
+#: controller/controller-woocommerce-backend.php:738
+#: controller/controller-woocommerce-backend.php:1200
 msgid "Display only the groups"
 msgstr ""
 
-#: controller/controller-woocommerce-backend.php:740
-#: controller/controller-woocommerce-backend.php:1202
+#: controller/controller-woocommerce-backend.php:742
+#: controller/controller-woocommerce-backend.php:1204
 #: functions/functions-booking-system.php:512
 msgid ""
 "Display only groups of events if checked. Else, also display the other "
 "single events (if any)."
 msgstr ""
 
-#: controller/controller-woocommerce-backend.php:762
-#: controller/controller-woocommerce-backend.php:1223
+#: controller/controller-woocommerce-backend.php:764
+#: controller/controller-woocommerce-backend.php:1225
 msgid "Allow to book grouped events also as single events"
 msgstr ""
 
-#: controller/controller-woocommerce-backend.php:766
-#: controller/controller-woocommerce-backend.php:1227
+#: controller/controller-woocommerce-backend.php:768
+#: controller/controller-woocommerce-backend.php:1229
 #: functions/functions-booking-system.php:523
 msgid ""
 "When a customer picks an event belonging to a group, let him choose between "
@@ -794,48 +779,48 @@ msgstr ""
 
 #. translators: Help tip to explain why and when you should check the
 #. 'Activity' type of product in WooCommerce
-#: controller/controller-woocommerce-backend.php:866
+#: controller/controller-woocommerce-backend.php:868
 msgid "Enable this option if the product is a bookable activity"
 msgstr ""
 
 #. translators: This is an option in a select box that means 'Use the setting
 #. of the parent'
-#: controller/controller-woocommerce-backend.php:1014
-#: controller/controller-woocommerce-backend.php:1050
-#: controller/controller-woocommerce-backend.php:1100
-#: controller/controller-woocommerce-backend.php:1147
+#: controller/controller-woocommerce-backend.php:1016
+#: controller/controller-woocommerce-backend.php:1052
+#: controller/controller-woocommerce-backend.php:1102
+#: controller/controller-woocommerce-backend.php:1149
 msgid "Parent setting"
 msgstr ""
 
-#: controller/controller-woocommerce-backend.php:1398
-#: controller/controller-woocommerce-backend.php:1423
+#: controller/controller-woocommerce-backend.php:1400
+#: controller/controller-woocommerce-backend.php:1425
 msgid "Invalid product."
 msgstr ""
 
-#: controller/controller-woocommerce-backend.php:1463
+#: controller/controller-woocommerce-backend.php:1465
 #: languages/script-translation.php:111
 msgid "An error occurs while trying to create the form."
 msgstr ""
 
-#: controller/controller-woocommerce-backend.php:1493
+#: controller/controller-woocommerce-backend.php:1495
 msgid "Edit the form"
 msgstr ""
 
-#: controller/controller-woocommerce-backend.php:1497
+#: controller/controller-woocommerce-backend.php:1499
 msgid ""
 "The booking form has been created, configured and bound to the product. The "
 "migration is complete."
 msgstr ""
 
-#: controller/controller-woocommerce-backend.php:1499
+#: controller/controller-woocommerce-backend.php:1501
 msgid "The booking form has been created, but a problem occurred."
 msgstr ""
 
-#: controller/controller-woocommerce-backend.php:1504
+#: controller/controller-woocommerce-backend.php:1506
 msgid "The form hasn't been properly configured. Please configure it manually."
 msgstr ""
 
-#: controller/controller-woocommerce-backend.php:1510
+#: controller/controller-woocommerce-backend.php:1512
 msgid ""
 "The form isn't bound to the product. Please refresh the page, bind it "
 "manually, and update the product."
@@ -862,112 +847,112 @@ msgstr ""
 msgid "The expired bookings were not correctly deactivated by cron."
 msgstr ""
 
-#: controller/controller-woocommerce-bookings.php:419
+#: controller/controller-woocommerce-bookings.php:417
 msgid "Product"
 msgstr ""
 
-#: controller/controller-woocommerce-bookings.php:540
+#: controller/controller-woocommerce-bookings.php:542
 msgid "Refund amount:"
 msgstr ""
 
-#: controller/controller-woocommerce-bookings.php:557
+#: controller/controller-woocommerce-bookings.php:559
 #: controller/controller-woocommerce-frontend.php:26
 msgid "Coupon"
 msgstr ""
 
-#: controller/controller-woocommerce-bookings.php:558
+#: controller/controller-woocommerce-bookings.php:560
 msgid ""
 "Create a coupon worth the price paid. The coupon can be used once for any "
 "orders at any time. "
 msgstr ""
 
-#: controller/controller-woocommerce-bookings.php:562
+#: controller/controller-woocommerce-bookings.php:564
 msgid "Auto refund"
 msgstr ""
 
-#: controller/controller-woocommerce-bookings.php:563
+#: controller/controller-woocommerce-bookings.php:565
 msgid "Refund automatically via the gateway used for payment."
 msgstr ""
 
-#: controller/controller-woocommerce-bookings.php:894
+#: controller/controller-woocommerce-bookings.php:913
 msgid "Click here to go to the order page and process the refund:"
 msgstr ""
 
-#: controller/controller-woocommerce-bookings.php:896
+#: controller/controller-woocommerce-bookings.php:915
 msgid "Go to refund page"
 msgstr ""
 
-#: controller/controller-woocommerce-bookings.php:967
+#: controller/controller-woocommerce-bookings.php:991
 msgid ""
 "This booking is bound to an item in a WooCommerce order. Do you want to "
 "remove the booking data from this item as well?"
 msgstr ""
 
-#: controller/controller-woocommerce-bookings.php:976
-#: controller/controller-woocommerce-bookings.php:981
+#: controller/controller-woocommerce-bookings.php:1000
+#: controller/controller-woocommerce-bookings.php:1005
 msgid "Do nothing"
 msgstr ""
 
-#: controller/controller-woocommerce-bookings.php:977
-#: controller/controller-woocommerce-bookings.php:983
+#: controller/controller-woocommerce-bookings.php:1001
+#: controller/controller-woocommerce-bookings.php:1007
 msgid "Delete the booking metadata"
 msgstr ""
 
-#: controller/controller-woocommerce-bookings.php:978
-#: controller/controller-woocommerce-bookings.php:985
+#: controller/controller-woocommerce-bookings.php:1002
+#: controller/controller-woocommerce-bookings.php:1009
 msgid "Delete the whole item"
 msgstr ""
 
 #. translators: %s is the option name corresponding to this description
-#: controller/controller-woocommerce-bookings.php:981
+#: controller/controller-woocommerce-bookings.php:1005
 msgid "%s: The WooCommerce order item will be kept as is."
 msgstr ""
 
 #. translators: %s is the option name corresponding to this description
-#: controller/controller-woocommerce-bookings.php:983
+#: controller/controller-woocommerce-bookings.php:1007
 msgid ""
 "%s: The order item will be kept as a normal product. All its metadata "
 "concerning the booking will be removed."
 msgstr ""
 
 #. translators: %s is the option name corresponding to this description
-#: controller/controller-woocommerce-bookings.php:985
+#: controller/controller-woocommerce-bookings.php:1009
 msgid "%s: The item will be totally removed from the order."
 msgstr ""
 
-#: controller/controller-woocommerce-bookings.php:1007
+#: controller/controller-woocommerce-bookings.php:1032
 msgid ""
 "The booking is bound to an item in a WooCommerce Order, but no action has "
 "been set about it."
 msgstr ""
 
 #. translators: %s is the item id.
-#: controller/controller-woocommerce-bookings.php:1038
+#: controller/controller-woocommerce-bookings.php:1057
 msgid ""
 "The order item %s booking metadata have been deleted while deleting the "
 "corresponding booking."
 msgstr ""
 
-#: controller/controller-woocommerce-bookings.php:1050
+#: controller/controller-woocommerce-bookings.php:1069
 msgid "An error occurred while trying to delete the order item."
 msgstr ""
 
-#: controller/controller-woocommerce-bookings.php:1051
+#: controller/controller-woocommerce-bookings.php:1070
 msgid "Please proceed manually."
 msgstr ""
 
 #. translators: %s is the item id.
-#: controller/controller-woocommerce-bookings.php:1058
+#: controller/controller-woocommerce-bookings.php:1077
 msgid ""
 "The order item %s has been deleted while deleting the corresponding booking."
 msgstr ""
 
-#: controller/controller-woocommerce-bookings.php:1067
+#: controller/controller-woocommerce-bookings.php:1086
 msgid "The action to take on the order item is unknown."
 msgstr ""
 
 #. translators: %s is the item id.
-#: controller/controller-woocommerce-bookings.php:1159
+#: controller/controller-woocommerce-bookings.php:1174
 msgid ""
 "The order item %s booking metadata have been updated after one of its "
 "booking was deleted."
@@ -1047,66 +1032,67 @@ msgstr ""
 msgid "Add to cart"
 msgstr ""
 
-#: controller/controller-woocommerce-frontend.php:493
+#: controller/controller-woocommerce-frontend.php:477
 #: functions/functions-booking-system.php:837
 msgid "You haven't picked any event. Please pick an event first."
 msgstr ""
 
 #. translators: %d is a variable number of products
-#: controller/controller-woocommerce-frontend.php:947
+#: controller/controller-woocommerce-frontend.php:983
 msgid "%d product has expired and has been automatically removed from cart."
 msgid_plural ""
 "%d products have expired and have been automatically removed from cart."
 msgstr[0] ""
 msgstr[1] ""
 
-#: controller/controller-woocommerce-frontend.php:1037
+#: controller/controller-woocommerce-frontend.php:1073
 msgid ""
 "You can't update quantity since this product is temporarily booked on an "
 "order pending payment. Please, first cancel the order or remove this product "
 "from cart."
 msgstr ""
 
-#: controller/controller-woocommerce-frontend.php:1177
-#: controller/controller-woocommerce-frontend.php:1291
+#: controller/controller-woocommerce-frontend.php:1210
+#: controller/controller-woocommerce-frontend.php:1310
 msgid "Booked event"
 msgid_plural "Booked events"
 msgstr[0] ""
 msgstr[1] ""
 
-#: controller/controller-woocommerce-frontend.php:1200
-#: functions/functions-woocommerce.php:1795
+#: controller/controller-woocommerce-frontend.php:1230
+#: functions/functions-woocommerce.php:1838
 msgid "Booking number"
 msgstr ""
 
-#: controller/controller-woocommerce-frontend.php:1202
-#: functions/functions-woocommerce.php:1797
+#: controller/controller-woocommerce-frontend.php:1232
+#: functions/functions-woocommerce.php:1840
 msgid "Booking group number"
 msgstr ""
 
-#: controller/controller-woocommerce-frontend.php:1203
-#: view/view-form-editor-dialogs.php:188
+#: controller/controller-woocommerce-frontend.php:1233
+#: view/view-form-editor-dialogs.php:190
 msgid "Booked events"
 msgstr ""
 
-#: controller/controller-woocommerce-frontend.php:1204
+#: controller/controller-woocommerce-frontend.php:1234
 msgid "Status"
 msgstr ""
 
-#: controller/controller-woocommerce-frontend.php:1205
+#: controller/controller-woocommerce-frontend.php:1235
 msgid "Refund method"
 msgstr ""
 
-#: controller/controller-woocommerce-frontend.php:1206
+#: controller/controller-woocommerce-frontend.php:1236
+#: controller/controller-woocommerce-frontend.php:1568
 #: languages/script-translation.php:196
 msgid "Coupon code"
 msgstr ""
 
-#: controller/controller-woocommerce-frontend.php:1209
+#: controller/controller-woocommerce-frontend.php:1239
 msgid "Event ID"
 msgstr ""
 
-#: controller/controller-woocommerce-frontend.php:1519
+#: controller/controller-woocommerce-frontend.php:1528
 msgid "Price"
 msgstr ""
 
@@ -1328,7 +1314,7 @@ msgid "Retrieve events booked by the selected user only."
 msgstr ""
 
 #: functions/functions-booking-system.php:581
-#: view/view-form-editor-dialogs.php:75
+#: view/view-form-editor-dialogs.php:77
 msgid "ID"
 msgstr ""
 
@@ -1339,7 +1325,7 @@ msgid ""
 msgstr ""
 
 #: functions/functions-booking-system.php:591
-#: view/view-form-editor-dialogs.php:88
+#: view/view-form-editor-dialogs.php:90
 msgid "Class"
 msgstr ""
 
@@ -1481,12 +1467,12 @@ msgstr ""
 #: functions/functions-booking-system.php:844
 #: functions/functions-booking-system.php:857
 #: functions/functions-booking-system.php:879
-#: functions/functions-woocommerce.php:243
-#: functions/functions-woocommerce.php:256
-#: functions/functions-woocommerce.php:380
-#: functions/functions-woocommerce.php:396
-#: functions/functions-woocommerce.php:884
-#: functions/functions-woocommerce.php:900
+#: functions/functions-woocommerce.php:287
+#: functions/functions-woocommerce.php:300
+#: functions/functions-woocommerce.php:424
+#: functions/functions-woocommerce.php:440
+#: functions/functions-woocommerce.php:928
+#: functions/functions-woocommerce.php:944
 msgid "You want to make %1$s booking of \"%2$s\""
 msgid_plural "You want to make %1$s bookings of \"%2$s\""
 msgstr[0] ""
@@ -1502,9 +1488,9 @@ msgstr[1] ""
 #. This sentence is preceded by : 'You want to make %1$s bookings of "%2$s"'
 #. and followed by 'The quantity has been automatically increased to %1$s.'
 #: functions/functions-booking-system.php:847
-#: functions/functions-woocommerce.php:246
-#: functions/functions-woocommerce.php:383
-#: functions/functions-woocommerce.php:887
+#: functions/functions-woocommerce.php:290
+#: functions/functions-woocommerce.php:427
+#: functions/functions-woocommerce.php:931
 msgid ""
 "and you have already booked %1$s place, but the minimum number of "
 "reservations required per user is %2$s."
@@ -1524,9 +1510,9 @@ msgstr[1] ""
 #. preceded by : 'You want to make %1$s bookings of "%2$s"' and followed by
 #. 'The quantity has been automatically increased to %1$s.'
 #: functions/functions-booking-system.php:850
-#: functions/functions-woocommerce.php:249
-#: functions/functions-woocommerce.php:386
-#: functions/functions-woocommerce.php:890
+#: functions/functions-woocommerce.php:293
+#: functions/functions-woocommerce.php:430
+#: functions/functions-woocommerce.php:934
 msgid "but the minimum number of reservations required per user is %1$s."
 msgstr ""
 
@@ -1534,8 +1520,8 @@ msgstr ""
 #. others : 'You want to make %1$s booking of "%2$s"' and 'but the minimum
 #. number of reservations required per user is %1$s.'
 #: functions/functions-booking-system.php:853
-#: functions/functions-woocommerce.php:252
-#: functions/functions-woocommerce.php:389
+#: functions/functions-woocommerce.php:296
+#: functions/functions-woocommerce.php:433
 msgid "Please choose another event or increase the quantity to %1$s."
 msgstr ""
 
@@ -1549,9 +1535,9 @@ msgstr ""
 #. This sentence is preceded by : 'You want to make %1$s bookings of "%2$s"'
 #. and followed by 'The quantity has been automatically decreased to %1$s.'
 #: functions/functions-booking-system.php:860
-#: functions/functions-woocommerce.php:259
-#: functions/functions-woocommerce.php:399
-#: functions/functions-woocommerce.php:903
+#: functions/functions-woocommerce.php:303
+#: functions/functions-woocommerce.php:443
+#: functions/functions-woocommerce.php:947
 msgid ""
 "but you have already booked %1$s place and the maximum number of "
 "reservations allowed per user is %2$s."
@@ -1571,9 +1557,9 @@ msgstr[1] ""
 #. preceded by : 'You want to make %1$s bookings of "%2$s"' and followed by
 #. 'The quantity has been automatically decreased to %1$s.'
 #: functions/functions-booking-system.php:863
-#: functions/functions-woocommerce.php:262
-#: functions/functions-woocommerce.php:402
-#: functions/functions-woocommerce.php:906
+#: functions/functions-woocommerce.php:306
+#: functions/functions-woocommerce.php:446
+#: functions/functions-woocommerce.php:950
 msgid "but the maximum number of reservations allowed per user is %1$s."
 msgstr ""
 
@@ -1581,20 +1567,20 @@ msgstr ""
 #. others : 'You want to make %1$s booking of "%2$s"' and 'but the maximum
 #. number of reservations allowed per user is %1$s.'
 #: functions/functions-booking-system.php:866
-#: functions/functions-woocommerce.php:265
-#: functions/functions-woocommerce.php:405
+#: functions/functions-woocommerce.php:309
+#: functions/functions-woocommerce.php:449
 msgid "Please choose another event or decrease the quantity to %1$s."
 msgstr ""
 
 #: functions/functions-booking-system.php:866
-#: functions/functions-woocommerce.php:265
-#: functions/functions-woocommerce.php:405
+#: functions/functions-woocommerce.php:309
+#: functions/functions-woocommerce.php:449
 msgid "Please choose another event"
 msgstr ""
 
 #: functions/functions-booking-system.php:869
-#: functions/functions-woocommerce.php:267
-#: functions/functions-woocommerce.php:411
+#: functions/functions-woocommerce.php:311
+#: functions/functions-woocommerce.php:455
 msgid ""
 "This event has reached the maximum number of users allowed. Bookings from "
 "other users are no longer accepted. Please choose another event."
@@ -1612,8 +1598,8 @@ msgstr ""
 #. translators: This sentence is preceded by two others : 'You want to add %1$s
 #. booking to your cart' and 'but only %1$s is available on this time slot.'
 #: functions/functions-booking-system.php:883
-#: functions/functions-woocommerce.php:239
-#: functions/functions-woocommerce.php:338
+#: functions/functions-woocommerce.php:283
+#: functions/functions-woocommerce.php:382
 msgid "Please choose another event or decrease the quantity."
 msgstr ""
 
@@ -1665,250 +1651,251 @@ msgstr ""
 msgid "You cannot book a past group of events."
 msgstr ""
 
-#: functions/functions-bookings.php:572 functions/functions-bookings.php:692
+#: functions/functions-bookings.php:581 functions/functions-bookings.php:701
 #: view/view-backend-bookings-dialogs.php:11
 msgid "Change booking state"
 msgstr ""
 
-#: functions/functions-bookings.php:573
+#: functions/functions-bookings.php:582
 msgid "Change the booking state to any available state."
 msgstr ""
 
-#: functions/functions-bookings.php:581 functions/functions-bookings.php:708
+#: functions/functions-bookings.php:590 functions/functions-bookings.php:717
 msgid "Cancel"
 msgstr ""
 
-#: functions/functions-bookings.php:582
+#: functions/functions-bookings.php:591
 msgid "Cancel the booking."
 msgstr ""
 
-#: functions/functions-bookings.php:590
+#: functions/functions-bookings.php:599
 msgid "Reschedule"
 msgstr ""
 
-#: functions/functions-bookings.php:591
+#: functions/functions-bookings.php:600
 msgid ""
 "Change the booking dates to any other available time slot for this event."
 msgstr ""
 
-#: functions/functions-bookings.php:599 functions/functions-bookings.php:717
+#: functions/functions-bookings.php:608 functions/functions-bookings.php:726
 #: languages/script-translation.php:55
 msgctxt "Button label to trigger the refund action"
 msgid "Refund"
 msgstr ""
 
-#: functions/functions-bookings.php:599 functions/functions-bookings.php:717
+#: functions/functions-bookings.php:608 functions/functions-bookings.php:726
 msgid "Request a refund"
 msgstr ""
 
-#: functions/functions-bookings.php:600
+#: functions/functions-bookings.php:609
 msgid "Refund the booking with one of the available refund method."
 msgstr ""
 
-#: functions/functions-bookings.php:608 functions/functions-bookings.php:726
+#: functions/functions-bookings.php:617 functions/functions-bookings.php:735
 #: languages/script-translation.php:40
 msgid "Delete"
 msgstr ""
 
-#: functions/functions-bookings.php:609
+#: functions/functions-bookings.php:618
 msgid "Delete permanently the booking."
 msgstr ""
 
-#: functions/functions-bookings.php:693
+#: functions/functions-bookings.php:702
 msgid "Change the booking group state to any available state."
 msgstr ""
 
-#: functions/functions-bookings.php:699
+#: functions/functions-bookings.php:708
 msgid "Edit bookings"
 msgstr ""
 
-#: functions/functions-bookings.php:700
+#: functions/functions-bookings.php:709
 msgid "Edit each booking of the group separately."
 msgstr ""
 
-#: functions/functions-bookings.php:709
+#: functions/functions-bookings.php:718
 msgid "Cancel the booking group."
 msgstr ""
 
-#: functions/functions-bookings.php:718
+#: functions/functions-bookings.php:727
 msgid "Refund the booking group with one of the available refund method."
 msgstr ""
 
-#: functions/functions-bookings.php:727
+#: functions/functions-bookings.php:736
 msgid "Delete permanently the booking group."
 msgstr ""
 
-#: functions/functions-bookings.php:807
+#: functions/functions-bookings.php:816
 msgid "Send a refund request by email to the administrator."
 msgstr ""
 
-#: functions/functions-bookings.php:945
+#: functions/functions-bookings.php:954
 msgid ""
 "Sorry, no available refund option were found. Please contact the "
 "administrator."
 msgstr ""
 
-#: functions/functions-bookings.php:953
+#: functions/functions-bookings.php:962
 msgid "There is only one available refund option:"
 msgstr ""
 
-#: functions/functions-bookings.php:955
+#: functions/functions-bookings.php:964
 msgid "Pick a refund option:"
 msgstr ""
 
 #. translators: %1$s is the booking id
-#: functions/functions-bookings.php:986
+#: functions/functions-bookings.php:993
 msgid "Refund request for booking group %1$s"
 msgstr ""
 
-#: functions/functions-bookings.php:986
+#: functions/functions-bookings.php:993
 msgid "Refund request for booking %1$s"
 msgstr ""
 
 #. translators: %1$s is a user name and %2$s is the booking ID.
-#: functions/functions-bookings.php:1024
+#: functions/functions-bookings.php:1039
 msgid "%1$s wants to be refunded for booking %2$s"
 msgstr ""
 
 #. translators: Message left by the user
-#: functions/functions-bookings.php:1036
+#: functions/functions-bookings.php:1051
 msgid "User message"
 msgstr ""
 
-#: functions/functions-bookings.php:1060 functions/functions-settings.php:329
+#: functions/functions-bookings.php:1075 functions/functions-settings.php:329
 #: languages/script-translation.php:189
 #: view/view-backend-bookings-dialogs.php:24
 msgid "Booked"
 msgstr ""
 
-#: functions/functions-bookings.php:1061 functions/functions-settings.php:328
+#: functions/functions-bookings.php:1076 functions/functions-settings.php:328
 #: view/view-backend-bookings-dialogs.php:25
 msgid "Pending"
 msgstr ""
 
-#: functions/functions-bookings.php:1062 languages/script-translation.php:188
+#: functions/functions-bookings.php:1077 languages/script-translation.php:188
 #: view/view-backend-bookings-dialogs.php:26
 msgid "Cancelled"
 msgstr ""
 
-#: functions/functions-bookings.php:1063 languages/script-translation.php:194
+#: functions/functions-bookings.php:1078 languages/script-translation.php:194
 #: view/view-backend-bookings-dialogs.php:28
 msgid "Refunded"
 msgstr ""
 
-#: functions/functions-bookings.php:1064 languages/script-translation.php:195
+#: functions/functions-bookings.php:1079 languages/script-translation.php:195
 #: view/view-backend-bookings-dialogs.php:27
 msgid "Refund requested"
 msgstr ""
 
-#: functions/functions-bookings.php:1078
+#: functions/functions-bookings.php:1093
 msgid "No payment required"
 msgstr ""
 
-#: functions/functions-bookings.php:1079
+#: functions/functions-bookings.php:1094
 msgid "Owed"
 msgstr ""
 
-#: functions/functions-bookings.php:1080
+#: functions/functions-bookings.php:1095
 msgid "Paid"
 msgstr ""
 
-#: functions/functions-bookings.php:1167
+#: functions/functions-bookings.php:1182
 msgctxt "State of a booking"
 msgid "State"
 msgstr ""
 
-#: functions/functions-bookings.php:1279
+#: functions/functions-bookings.php:1294
 msgid "You don't have any bookings."
 msgstr ""
 
-#: functions/functions-forms.php:402
+#: functions/functions-forms.php:409
 msgid "Login / Registration"
 msgstr ""
 
-#: functions/functions-forms.php:406 view/view-form-editor-dialogs.php:355
+#: functions/functions-forms.php:413 view/view-form-editor-dialogs.php:357
 msgid "Password"
 msgstr ""
 
-#: functions/functions-forms.php:407
+#: functions/functions-forms.php:414
 msgid "Forgot your password?"
 msgstr ""
 
-#: functions/functions-forms.php:408
+#: functions/functions-forms.php:415
 msgid "Create an account"
 msgstr ""
 
-#: functions/functions-forms.php:416 view/view-form-editor-dialogs.php:752
+#: functions/functions-forms.php:423 view/view-form-editor-dialogs.php:754
 msgid "Free text"
 msgstr ""
 
-#: functions/functions-forms.php:430
+#: functions/functions-forms.php:437
 msgid "Terms"
 msgstr ""
 
-#: functions/functions-forms.php:431
+#: functions/functions-forms.php:438
 msgid "I have read and agree to the terms and conditions"
 msgstr ""
 
-#: functions/functions-forms.php:438
+#: functions/functions-forms.php:444
 msgid "Submit button"
 msgstr ""
 
-#: functions/functions-forms.php:439 functions/functions-settings.php:749
+#: functions/functions-forms.php:445 functions/functions-settings.php:749
 msgid "Book"
 msgstr ""
 
-#: functions/functions-forms.php:903
+#: functions/functions-forms.php:915
 msgid "Change field settings"
 msgstr ""
 
-#: functions/functions-forms.php:905
+#: functions/functions-forms.php:917
 msgid "Remove this field"
 msgstr ""
 
-#: functions/functions-forms.php:909
+#: functions/functions-forms.php:921 view/view-form-editor.php:195
+#: view/view-form-editor.php:228 view/view-form-editor.php:259
 msgid "Show / Hide"
 msgstr ""
 
-#: functions/functions-forms.php:942
+#: functions/functions-forms.php:954
 msgid "Invalid password."
 msgstr ""
 
-#: functions/functions-forms.php:947 languages/script-translation.php:142
+#: functions/functions-forms.php:959 languages/script-translation.php:142
 msgid "Your password is not strong enough."
 msgstr ""
 
 #. translators: %s is the field name.
-#: functions/functions-forms.php:955
+#: functions/functions-forms.php:967
 msgid "The field \"%s\" is required."
 msgstr ""
 
-#: functions/functions-forms.php:1056
+#: functions/functions-forms.php:1068
 msgid "The password is incorrect. Try again."
 msgstr ""
 
-#: functions/functions-forms.php:1158
+#: functions/functions-forms.php:1170
 msgid "First name"
 msgstr ""
 
-#: functions/functions-forms.php:1168
+#: functions/functions-forms.php:1180
 msgid "Last name"
 msgstr ""
 
-#: functions/functions-forms.php:1178
+#: functions/functions-forms.php:1190
 msgid "Phone number"
 msgstr ""
 
-#: functions/functions-forms.php:1346
+#: functions/functions-forms.php:1358
 msgid "Who can manage this form?"
 msgstr ""
 
-#: functions/functions-forms.php:1347
+#: functions/functions-forms.php:1359
 msgid "Choose who is allowed to access this form."
 msgstr ""
 
 #. translators: %s = capabilities name
-#: functions/functions-forms.php:1349 view/view-templates-dialogs.php:389
+#: functions/functions-forms.php:1361 view/view-templates-dialogs.php:389
 #: view/view-templates-dialogs.php:683
 msgid ""
 "All administrators already have this privilege. If the selectbox is empty, "
@@ -1917,47 +1904,47 @@ msgstr ""
 
 #. translators: %1$s = Points of sale add-on link. %2$s = User role editor
 #. plugin name.
-#: functions/functions-forms.php:1352
+#: functions/functions-forms.php:1364
 msgid ""
 "Point of sale managers from %1$s add-on have these capabilities. If you want "
 "to grant a user these capabilities, use a plugin such as %2$s."
 msgstr ""
 
-#: functions/functions-forms.php:1353 view/view-landing.php:84
+#: functions/functions-forms.php:1365 view/view-landing.php:95
 #: view/view-templates-dialogs.php:394 view/view-templates-dialogs.php:687
 msgid "Points of Sale"
 msgstr ""
 
-#: functions/functions-forms.php:1363 view/view-templates-dialogs.php:404
+#: functions/functions-forms.php:1375 view/view-templates-dialogs.php:404
 #: view/view-templates-dialogs.php:697
 msgid "Add manager"
 msgstr ""
 
-#: functions/functions-forms.php:1369 view/view-templates-dialogs.php:409
+#: functions/functions-forms.php:1381 view/view-templates-dialogs.php:409
 #: view/view-templates-dialogs.php:702
 msgid "Remove selected"
 msgstr ""
 
-#: functions/functions-forms.php:1394
+#: functions/functions-forms.php:1406
 msgctxt "forms"
 msgid "Move to trash"
 msgstr ""
 
-#: functions/functions-forms.php:1408
+#: functions/functions-forms.php:1420
 msgctxt "forms"
 msgid "Update"
 msgstr ""
 
-#: functions/functions-forms.php:1408
+#: functions/functions-forms.php:1420
 msgctxt "forms"
 msgid "Publish"
 msgstr ""
 
-#: functions/functions-forms.php:1426
+#: functions/functions-forms.php:1438
 msgid "Integrate in a post, page, or text widget"
 msgstr ""
 
-#: functions/functions-forms.php:1428
+#: functions/functions-forms.php:1440
 msgid ""
 "Copy this shortcode and paste it into your post, page, or text widget "
 "content:"
@@ -1968,13 +1955,13 @@ msgid "Invalid nonce."
 msgstr ""
 
 #. translators: %s is the "+" icon to click on.
-#: functions/functions-global.php:569
+#: functions/functions-global.php:571
 msgid ""
 "To select multiple values, click on %s and use CTRL+Click to pick or unpick "
 "a value."
 msgstr ""
 
-#: functions/functions-global.php:785 languages/script-translation.php:61
+#: functions/functions-global.php:788 languages/script-translation.php:61
 msgid "Search for a customer"
 msgstr ""
 
@@ -2362,9 +2349,9 @@ msgstr ""
 msgid "Pick the timezone corresponding to where your business takes place."
 msgstr ""
 
-#: functions/functions-settings.php:422 functions/functions-settings.php:968
-#: functions/functions-settings.php:978 functions/functions-settings.php:992
-#: view/view-landing.php:32
+#: functions/functions-settings.php:422 functions/functions-settings.php:966
+#: functions/functions-settings.php:976 functions/functions-settings.php:990
+#: view/view-landing.php:43
 msgid "Display Pack"
 msgstr ""
 
@@ -2449,8 +2436,9 @@ msgid ""
 "notifications through SMS and Push."
 msgstr ""
 
-#: functions/functions-settings.php:605 functions/functions-settings.php:997
-#: functions/functions-settings.php:1049 functions/functions-template.php:419
+#: functions/functions-settings.php:605 functions/functions-settings.php:995
+#: functions/functions-settings.php:1047 functions/functions-settings.php:1099
+#: functions/functions-template.php:419 view/view-form-editor.php:378
 msgid "Learn more"
 msgstr ""
 
@@ -2642,33 +2630,46 @@ msgid "Refund booking dialog title."
 msgstr ""
 
 #. translators: %s = add-on name
-#: functions/functions-settings.php:967 functions/functions-settings.php:1019
-#: functions/functions-template.php:340
+#: functions/functions-settings.php:965 functions/functions-settings.php:1017
+#: functions/functions-settings.php:1069 functions/functions-template.php:340
 msgid "Thank you for purchasing %s add-on!"
 msgstr ""
 
-#: functions/functions-settings.php:971 functions/functions-settings.php:1023
-#: functions/functions-template.php:344
+#: functions/functions-settings.php:969 functions/functions-settings.php:1021
+#: functions/functions-settings.php:1073 functions/functions-template.php:344
 msgid ""
 "It seems you didn't activate your license yet. Please follow these "
 "instructions to activate your license:"
 msgstr ""
 
 #. translators: %s = add-on name
-#: functions/functions-settings.php:977 functions/functions-settings.php:1029
-#: functions/functions-template.php:350
+#: functions/functions-settings.php:975 functions/functions-settings.php:1027
+#: functions/functions-settings.php:1079 functions/functions-template.php:350
 msgid "How to activate %s license?"
 msgstr ""
 
-#: functions/functions-settings.php:995
+#: functions/functions-settings.php:993
 msgid "Get other essential customization options with %1$s add-on!"
 msgstr ""
 
 #. translators: %1$s is the placeholder for Notification Pack add-on link
-#: functions/functions-settings.php:1047
+#: functions/functions-settings.php:1045
 msgid ""
 "You can send all these notifications and booking reminders via email, SMS "
 "and Push with %1$s add-on!"
+msgstr ""
+
+#: functions/functions-settings.php:1070 functions/functions-settings.php:1080
+#: functions/functions-settings.php:1094 view/view-form-editor.php:178
+#: view/view-landing.php:30
+msgid "Advanced Forms"
+msgstr ""
+
+#. translators: %1$s is the placeholder for Advanced Forms add-on link
+#: functions/functions-settings.php:1097
+msgid ""
+"Create any kind of custom fields to get any information from your customers "
+"(text, number, file, checkboxes, selectbox, etc.) with %1$s add-on!"
 msgstr ""
 
 #. translators: Refers to the first hour displayed on calendar. More
@@ -2698,7 +2699,7 @@ msgid ""
 msgstr ""
 
 #: functions/functions-template.php:341 functions/functions-template.php:351
-#: functions/functions-template.php:365 view/view-landing.php:58
+#: functions/functions-template.php:365 view/view-landing.php:56
 msgid "Prices and Promotions"
 msgstr ""
 
@@ -2727,12 +2728,12 @@ msgctxt "Short for availabilities [plural noun]"
 msgid "avail."
 msgstr ""
 
-#: functions/functions-woocommerce.php:56 languages/script-translation.php:122
+#: functions/functions-woocommerce.php:80 languages/script-translation.php:122
 msgid ""
 "Error occurs when trying to temporarily book your event. Please try later."
 msgstr ""
 
-#: functions/functions-woocommerce.php:109
+#: functions/functions-woocommerce.php:153
 msgid ""
 "Error occurs when trying to temporarily book the group of events. Please try "
 "later."
@@ -2741,45 +2742,45 @@ msgstr ""
 #. translators: %1$s is a variable number of bookings. This sentence is
 #. followed by two others : 'but only %1$s is available on this time slot.' and
 #. 'Please choose another event or decrease the quantity.'
-#: functions/functions-woocommerce.php:235
-#: functions/functions-woocommerce.php:334
+#: functions/functions-woocommerce.php:279
+#: functions/functions-woocommerce.php:378
 msgid "You want to add %1$s booking to your cart"
 msgid_plural "You want to add %1$s bookings to your cart"
 msgstr[0] ""
 msgstr[1] ""
 
-#: functions/functions-woocommerce.php:275
+#: functions/functions-woocommerce.php:319
 msgid ""
 "An error occurs while trying to change a product quantity. Please try again "
 "later."
 msgstr ""
 
-#: functions/functions-woocommerce.php:472
+#: functions/functions-woocommerce.php:516
 msgid ""
 "An error occurs while trying to update booking group state. Please try again "
 "later."
 msgstr ""
 
-#: functions/functions-woocommerce.php:708 languages/script-translation.php:190
+#: functions/functions-woocommerce.php:752 languages/script-translation.php:190
 msgid "Pending payment"
 msgstr ""
 
 #. translators: %d is a variable number of days
-#: functions/functions-woocommerce.php:771
+#: functions/functions-woocommerce.php:815
 msgid "%d day"
 msgid_plural "%d days"
 msgstr[0] ""
 msgstr[1] ""
 
 #. translators: %d is a variable number of hours
-#: functions/functions-woocommerce.php:776
+#: functions/functions-woocommerce.php:820
 msgid "%d hour"
 msgid_plural "%d hours"
 msgstr[0] ""
 msgstr[1] ""
 
 #. translators: %d is a variable number of minutes
-#: functions/functions-woocommerce.php:781
+#: functions/functions-woocommerce.php:825
 msgid "%d minute"
 msgid_plural "%d minutes"
 msgstr[0] ""
@@ -2788,105 +2789,105 @@ msgstr[1] ""
 #. translators: %1$s is a variable number of bookings. This sentence is
 #. preceded by two others : 'You want to make %1$s bookings of "%2$s"' and 'but
 #. the minimum number of reservations required per user is %1$s.'
-#: functions/functions-woocommerce.php:893
+#: functions/functions-woocommerce.php:937
 msgid "The quantity has been automatically increased to %1$s."
 msgstr ""
 
 #. translators: %1$s is a variable quantity of bookings. This sentence is
 #. preceded by two others : 'You want to make %1$s bookings of "%2$s"' and 'but
 #. the maximum number of reservations allowed per user is %1$s.'
-#: functions/functions-woocommerce.php:909
+#: functions/functions-woocommerce.php:953
 msgid "The quantity has been automatically decreased to %1$s."
 msgstr ""
 
 #. translators: %1$s is the event title. This sentence is followed by: 'This
 #. event has been automatically removed from your cart.'
-#: functions/functions-woocommerce.php:920
+#: functions/functions-woocommerce.php:964
 msgid "The event \"%1$s\" is not available in your user category."
 msgstr ""
 
-#: functions/functions-woocommerce.php:921
+#: functions/functions-woocommerce.php:965
 msgid "This event has been automatically removed from your cart."
 msgstr ""
 
-#: functions/functions-woocommerce.php:1061
+#: functions/functions-woocommerce.php:1105
 msgid "Invalid user ID."
 msgstr ""
 
-#: functions/functions-woocommerce.php:1062
+#: functions/functions-woocommerce.php:1106
 msgid "Invalid order ID."
 msgstr ""
 
-#: functions/functions-woocommerce.php:1063
+#: functions/functions-woocommerce.php:1107
 msgid "Database failed to update."
 msgstr ""
 
-#: functions/functions-woocommerce.php:1064
+#: functions/functions-woocommerce.php:1108
 msgid "The order doesn't contains any booking IDs."
 msgstr ""
 
 #. translators: %1$s stands for booking ids and %2$s stands for the order id
-#: functions/functions-woocommerce.php:1073
-#: functions/functions-woocommerce.php:1076
+#: functions/functions-woocommerce.php:1117
+#: functions/functions-woocommerce.php:1120
 msgid "Booking %1$s has not been correctly validated for order %2$s"
 msgid_plural "Bookings %1$s have not been correctly validated for order %2$s."
 msgstr[0] ""
 msgstr[1] ""
 
-#: functions/functions-woocommerce.php:1077
+#: functions/functions-woocommerce.php:1121
 msgid "Here is the errors list:"
 msgstr ""
 
-#: functions/functions-woocommerce.php:1079
+#: functions/functions-woocommerce.php:1123
 msgid ""
 "Please verify the order and its bookings, and validate bookings manually if "
 "necessary."
 msgstr ""
 
 #. translators: %1$s is booking id, %2$s is old state, %3$s is new state
-#: functions/functions-woocommerce.php:1135
+#: functions/functions-woocommerce.php:1182
 msgid "Booking #%1$s state has been updated from %2$s to %3$s."
 msgstr ""
 
 #. translators: %1$s is booking group id, %2$s is old state, %3$s is new state
-#: functions/functions-woocommerce.php:1141
+#: functions/functions-woocommerce.php:1188
 msgid "Booking group #%1$s state has been updated from %2$s to %3$s."
 msgstr ""
 
-#: functions/functions-woocommerce.php:1348
+#: functions/functions-woocommerce.php:1389
 msgid "View order"
 msgstr ""
 
-#: functions/functions-woocommerce.php:1349
+#: functions/functions-woocommerce.php:1390
 msgid "Go to the related WooCommerce admin order page."
 msgstr ""
 
-#: functions/functions-woocommerce.php:1790
+#: functions/functions-woocommerce.php:1833
 msgid "Coupon created as a refund for:"
 msgstr ""
 
-#: functions/functions-woocommerce.php:1791
+#: functions/functions-woocommerce.php:1834
 msgid "User"
 msgstr ""
 
-#: functions/functions-woocommerce.php:1792
+#: functions/functions-woocommerce.php:1835
 msgid "Order"
 msgstr ""
 
-#: functions/functions-woocommerce.php:1809
-#: functions/functions-woocommerce.php:1929
+#: functions/functions-woocommerce.php:1852
+#: functions/functions-woocommerce.php:1974
 msgid "User message:"
 msgstr ""
 
-#: functions/functions-woocommerce.php:1927
+#: functions/functions-woocommerce.php:1972
 msgid "Auto refund proceeded by user."
 msgstr ""
 
-#: functions/functions-woocommerce.php:2011
+#: functions/functions-woocommerce.php:2056
 msgid "Error occurs while trying to refund a booking."
 msgstr ""
 
-#: functions/functions-woocommerce.php:2048
+#: functions/functions-woocommerce.php:2093
 msgid ""
 "If cart expiration is off, the booking is made at the end of the checkout "
 "process. It means that an event available at the moment you add it to cart "
@@ -2895,17 +2896,17 @@ msgid ""
 "remains temporary until the end of the checkout process."
 msgstr ""
 
-#: functions/functions-woocommerce.php:2067
+#: functions/functions-woocommerce.php:2112
 msgid ""
 "The expiration time will be set for each product independantly, each with "
 "their own countdown before being removed from cart."
 msgstr ""
 
-#: functions/functions-woocommerce.php:2089
+#: functions/functions-woocommerce.php:2134
 msgid "Define the amount of time a user has before his cart gets empty."
 msgstr ""
 
-#: functions/functions-woocommerce.php:2108
+#: functions/functions-woocommerce.php:2153
 msgid ""
 "The countdown will be reset each time a product is added, or when a product "
 "quantity is changed."
@@ -3605,7 +3606,7 @@ msgid "Whether to notify the customer of the booking reschedule."
 msgstr ""
 
 #. translators: %1$s and %2$s delimit the link to Calendar Editor page.
-#: view/view-bookings.php:24 view/view-form-editor.php:103
+#: view/view-bookings.php:24 view/view-form-editor.php:104
 msgid ""
 "Welcome! It seems you don't have any calendar yet. Go to %1$sCalendar Editor"
 "%2$s to create your first calendar."
@@ -3661,178 +3662,178 @@ msgstr ""
 msgid "Field to insert"
 msgstr ""
 
-#: view/view-form-editor-dialogs.php:55
+#: view/view-form-editor-dialogs.php:57
 msgid "Remove this field from the form"
 msgstr ""
 
-#: view/view-form-editor-dialogs.php:59
+#: view/view-form-editor-dialogs.php:61
 msgid "Are you sure to delete this field permanently?"
 msgstr ""
 
-#: view/view-form-editor-dialogs.php:65
+#: view/view-form-editor-dialogs.php:67
 msgid "Form options"
 msgstr ""
 
-#: view/view-form-editor-dialogs.php:82
+#: view/view-form-editor-dialogs.php:84
 msgid ""
 "Set the form CSS id. Leave this empty if you display this form multiple "
 "times on the same page."
 msgstr ""
 
-#: view/view-form-editor-dialogs.php:95
+#: view/view-form-editor-dialogs.php:97
 msgid "Set the form CSS classes. Leave an empty space between each class."
 msgstr ""
 
-#: view/view-form-editor-dialogs.php:101
+#: view/view-form-editor-dialogs.php:103
 msgid "Redirect URL"
 msgstr ""
 
-#: view/view-form-editor-dialogs.php:108
+#: view/view-form-editor-dialogs.php:110
 msgid ""
 "Page URL where the customer will be redirected after submitting the booking "
 "form."
 msgstr ""
 
 #. translators: Title of the Update field dialog. %s is the field title.
-#: view/view-form-editor-dialogs.php:121 view/view-form-editor-dialogs.php:276
-#: view/view-form-editor-dialogs.php:642 view/view-form-editor-dialogs.php:701
-#: view/view-form-editor-dialogs.php:730 view/view-form-editor-dialogs.php:770
+#: view/view-form-editor-dialogs.php:123 view/view-form-editor-dialogs.php:278
+#: view/view-form-editor-dialogs.php:644 view/view-form-editor-dialogs.php:703
+#: view/view-form-editor-dialogs.php:732 view/view-form-editor-dialogs.php:772
 msgid "%s options"
 msgstr ""
 
-#: view/view-form-editor-dialogs.php:138
+#: view/view-form-editor-dialogs.php:140
 msgid "Filters"
 msgstr ""
 
-#: view/view-form-editor-dialogs.php:143
+#: view/view-form-editor-dialogs.php:145
 msgid "Display"
 msgstr ""
 
-#: view/view-form-editor-dialogs.php:148 view/view-templates-dialogs.php:129
+#: view/view-form-editor-dialogs.php:150 view/view-templates-dialogs.php:129
 #: view/view-templates-dialogs.php:436 view/view-templates-dialogs.php:469
 #: view/view-templates-dialogs.php:885
 msgid "Availability"
 msgstr ""
 
-#: view/view-form-editor-dialogs.php:172
+#: view/view-form-editor-dialogs.php:174
 msgid "Event sources"
 msgstr ""
 
-#: view/view-form-editor-dialogs.php:180 view/view-templates.php:123
+#: view/view-form-editor-dialogs.php:182 view/view-templates.php:123
 msgid "Groups of events"
 msgstr ""
 
-#: view/view-form-editor-dialogs.php:207
+#: view/view-form-editor-dialogs.php:209
 msgid "CSS selectors"
 msgstr ""
 
-#: view/view-form-editor-dialogs.php:226
+#: view/view-form-editor-dialogs.php:228
 msgid "Availability period"
 msgstr ""
 
-#: view/view-form-editor-dialogs.php:234
+#: view/view-form-editor-dialogs.php:236
 msgid "Past events"
 msgstr ""
 
-#: view/view-form-editor-dialogs.php:253
+#: view/view-form-editor-dialogs.php:255
 msgid "Working time"
 msgstr ""
 
-#: view/view-form-editor-dialogs.php:267 view/view-form-editor-dialogs.php:269
-#: view/view-form-editor-dialogs.php:633 view/view-form-editor-dialogs.php:635
+#: view/view-form-editor-dialogs.php:269 view/view-form-editor-dialogs.php:271
+#: view/view-form-editor-dialogs.php:635 view/view-form-editor-dialogs.php:637
 msgid "Show advanced options"
 msgstr ""
 
-#: view/view-form-editor-dialogs.php:268 view/view-form-editor-dialogs.php:634
+#: view/view-form-editor-dialogs.php:270 view/view-form-editor-dialogs.php:636
 msgid "Hide advanced options"
 msgstr ""
 
-#: view/view-form-editor-dialogs.php:287
+#: view/view-form-editor-dialogs.php:289
 msgid "Login"
 msgstr ""
 
-#: view/view-form-editor-dialogs.php:292
+#: view/view-form-editor-dialogs.php:294
 msgid "Register"
 msgstr ""
 
-#: view/view-form-editor-dialogs.php:297
+#: view/view-form-editor-dialogs.php:299
 msgid "Options"
 msgstr ""
 
-#: view/view-form-editor-dialogs.php:316
+#: view/view-form-editor-dialogs.php:318
 msgid "Email address"
 msgstr ""
 
-#: view/view-form-editor-dialogs.php:318 view/view-form-editor-dialogs.php:357
-#: view/view-form-editor-dialogs.php:410 view/view-form-editor-dialogs.php:478
-#: view/view-form-editor-dialogs.php:652 view/view-form-editor-dialogs.php:792
+#: view/view-form-editor-dialogs.php:320 view/view-form-editor-dialogs.php:359
+#: view/view-form-editor-dialogs.php:412 view/view-form-editor-dialogs.php:480
+#: view/view-form-editor-dialogs.php:654 view/view-form-editor-dialogs.php:794
 msgid "Label"
 msgstr ""
 
-#: view/view-form-editor-dialogs.php:324 view/view-form-editor-dialogs.php:363
-#: view/view-form-editor-dialogs.php:416 view/view-form-editor-dialogs.php:479
-#: view/view-form-editor-dialogs.php:658
+#: view/view-form-editor-dialogs.php:326 view/view-form-editor-dialogs.php:365
+#: view/view-form-editor-dialogs.php:418 view/view-form-editor-dialogs.php:481
+#: view/view-form-editor-dialogs.php:660
 msgid "Text displayed before the field."
 msgstr ""
 
-#: view/view-form-editor-dialogs.php:330 view/view-form-editor-dialogs.php:369
-#: view/view-form-editor-dialogs.php:485 view/view-form-editor-dialogs.php:664
+#: view/view-form-editor-dialogs.php:332 view/view-form-editor-dialogs.php:371
+#: view/view-form-editor-dialogs.php:487 view/view-form-editor-dialogs.php:666
 msgid "Placeholder"
 msgstr ""
 
-#: view/view-form-editor-dialogs.php:336 view/view-form-editor-dialogs.php:375
-#: view/view-form-editor-dialogs.php:486 view/view-form-editor-dialogs.php:670
+#: view/view-form-editor-dialogs.php:338 view/view-form-editor-dialogs.php:377
+#: view/view-form-editor-dialogs.php:488 view/view-form-editor-dialogs.php:672
 msgid "Text displayed in transparency in the field when it is empty."
 msgstr ""
 
-#: view/view-form-editor-dialogs.php:342 view/view-form-editor-dialogs.php:381
-#: view/view-form-editor-dialogs.php:422 view/view-form-editor-dialogs.php:492
-#: view/view-form-editor-dialogs.php:676
+#: view/view-form-editor-dialogs.php:344 view/view-form-editor-dialogs.php:383
+#: view/view-form-editor-dialogs.php:424 view/view-form-editor-dialogs.php:494
+#: view/view-form-editor-dialogs.php:678
 msgid "Tooltip"
 msgstr ""
 
-#: view/view-form-editor-dialogs.php:348 view/view-form-editor-dialogs.php:387
-#: view/view-form-editor-dialogs.php:428 view/view-form-editor-dialogs.php:493
-#: view/view-form-editor-dialogs.php:682
+#: view/view-form-editor-dialogs.php:350 view/view-form-editor-dialogs.php:389
+#: view/view-form-editor-dialogs.php:430 view/view-form-editor-dialogs.php:495
+#: view/view-form-editor-dialogs.php:684
 msgid "Text displayed in the tooltip next to the field."
 msgstr ""
 
-#: view/view-form-editor-dialogs.php:396 view/view-form-editor-dialogs.php:403
-#: view/view-form-editor-dialogs.php:471
+#: view/view-form-editor-dialogs.php:398 view/view-form-editor-dialogs.php:405
+#: view/view-form-editor-dialogs.php:473
 msgid "Displayed"
 msgstr ""
 
-#: view/view-form-editor-dialogs.php:404 view/view-form-editor-dialogs.php:472
+#: view/view-form-editor-dialogs.php:406 view/view-form-editor-dialogs.php:474
 msgid "Whether this field is displayed in the form."
 msgstr ""
 
-#: view/view-form-editor-dialogs.php:451
+#: view/view-form-editor-dialogs.php:453
 msgid "New account"
 msgstr ""
 
-#: view/view-form-editor-dialogs.php:500
+#: view/view-form-editor-dialogs.php:502
 msgid "Required"
 msgstr ""
 
-#: view/view-form-editor-dialogs.php:501
+#: view/view-form-editor-dialogs.php:503
 msgid "Whether this field is compulsory."
 msgstr ""
 
-#: view/view-form-editor-dialogs.php:535
+#: view/view-form-editor-dialogs.php:537
 msgid "Automatic login"
 msgstr ""
 
-#: view/view-form-editor-dialogs.php:542
+#: view/view-form-editor-dialogs.php:544
 msgid ""
 "Whether to automatically log the customer into his account after making a "
 "reservation."
 msgstr ""
 
-#: view/view-form-editor-dialogs.php:548
+#: view/view-form-editor-dialogs.php:550
 msgid "Password required"
 msgstr ""
 
-#: view/view-form-editor-dialogs.php:555
+#: view/view-form-editor-dialogs.php:557
 msgid ""
 "Disable this option to allow your customers to book without password "
 "authentication. They will simply have to give their e-mail address for the "
@@ -3840,47 +3841,47 @@ msgid ""
 "book on someone else's behalf with his email address only."
 msgstr ""
 
-#: view/view-form-editor-dialogs.php:561
+#: view/view-form-editor-dialogs.php:563
 msgid "Generate Password"
 msgstr ""
 
-#: view/view-form-editor-dialogs.php:568
+#: view/view-form-editor-dialogs.php:570
 msgid "Whether to automatically generate the password."
 msgstr ""
 
-#: view/view-form-editor-dialogs.php:574
+#: view/view-form-editor-dialogs.php:576
 msgid "Min. password strength"
-msgstr ""
-
-#: view/view-form-editor-dialogs.php:581
-msgctxt "password strength"
-msgid "Very weak"
-msgstr ""
-
-#: view/view-form-editor-dialogs.php:582
-msgctxt "password strength"
-msgid "Weak"
 msgstr ""
 
 #: view/view-form-editor-dialogs.php:583
 msgctxt "password strength"
-msgid "Medium"
+msgid "Very weak"
 msgstr ""
 
 #: view/view-form-editor-dialogs.php:584
 msgctxt "password strength"
+msgid "Weak"
+msgstr ""
+
+#: view/view-form-editor-dialogs.php:585
+msgctxt "password strength"
+msgid "Medium"
+msgstr ""
+
+#: view/view-form-editor-dialogs.php:586
+msgctxt "password strength"
 msgid "Strong"
 msgstr ""
 
-#: view/view-form-editor-dialogs.php:587
+#: view/view-form-editor-dialogs.php:589
 msgid "How strong the user password must be if it is not generated?"
 msgstr ""
 
-#: view/view-form-editor-dialogs.php:593
+#: view/view-form-editor-dialogs.php:595
 msgid "Send new account email"
 msgstr ""
 
-#: view/view-form-editor-dialogs.php:600
+#: view/view-form-editor-dialogs.php:602
 msgid ""
 "Whether to automatically send an email to the user if he has created an "
 "account with the booking form."
@@ -3888,77 +3889,154 @@ msgstr ""
 
 #. translators: Option name corresponding to this description: Choose a role to
 #. give to a user who has registered while booking an event with this form.
-#: view/view-form-editor-dialogs.php:608
+#: view/view-form-editor-dialogs.php:610
 msgid "New user role"
 msgstr ""
 
-#: view/view-form-editor-dialogs.php:622
+#: view/view-form-editor-dialogs.php:624
 msgid ""
 "Choose a role to give to a user who has registered while booking an event "
 "with this form."
 msgstr ""
 
-#: view/view-form-editor-dialogs.php:693
+#: view/view-form-editor-dialogs.php:695
 msgid ""
 "Min and Max values are dynamilly set according to the selected event and its "
 "availability settings."
 msgstr ""
 
-#: view/view-form-editor-dialogs.php:711
+#: view/view-form-editor-dialogs.php:713
 msgid "Button text"
 msgstr ""
 
-#: view/view-form-editor-dialogs.php:717
+#: view/view-form-editor-dialogs.php:719
 msgid "Text displayed on the button."
 msgstr ""
 
-#: view/view-form-editor-dialogs.php:746
+#: view/view-form-editor-dialogs.php:748
 msgid "Field title displayed in form editor only."
 msgstr ""
 
-#: view/view-form-editor-dialogs.php:780
+#: view/view-form-editor-dialogs.php:782
 msgid "Checked by default"
 msgstr ""
 
-#: view/view-form-editor-dialogs.php:786
+#: view/view-form-editor-dialogs.php:788
 msgid "Whether the checkbox should be checked by default."
 msgstr ""
 
-#: view/view-form-editor.php:31
+#: view/view-form-editor.php:32
 msgid "Edit Booking Form"
 msgstr ""
 
-#: view/view-form-editor.php:52
+#: view/view-form-editor.php:53
 msgid ""
 "This booking form is not published yet. You need to publish it to make it "
 "available and permanent."
 msgstr ""
 
-#: view/view-form-editor.php:82
+#: view/view-form-editor.php:83
 msgid "Enter form title here"
 msgstr ""
 
-#: view/view-form-editor.php:94
+#: view/view-form-editor.php:95
 msgid "Please set a title and publish your form first."
 msgstr ""
 
-#: view/view-form-editor.php:138
+#: view/view-form-editor.php:139
 msgid "Form editor"
 msgstr ""
 
-#: view/view-form-editor.php:142
+#: view/view-form-editor.php:143
 msgid "Change form settings"
 msgstr ""
 
-#: view/view-form-editor.php:143
+#: view/view-form-editor.php:144
 msgid "Add a new field to your form"
 msgstr ""
 
 #. translators: the placeholders are icons related to the action
-#: view/view-form-editor.php:151
+#: view/view-form-editor.php:152
 msgid ""
 "Click on %1$s to add, %2$s to edit, %3$s to remove and %4$s to preview your "
 "form fields.<br/>Drag and drop fields to switch their positions."
+msgstr ""
+
+#. translators: %1$s is the placeholder for Advanced Forms add-on link
+#: view/view-form-editor.php:186
+msgid "Add any custom fields to your booking form thanks to the %1$s add-on:"
+msgstr ""
+
+#: view/view-form-editor.php:192 view/view-form-editor.php:225
+#: view/view-form-editor.php:256
+msgid "Example:"
+msgstr ""
+
+#: view/view-form-editor.php:192
+msgid "Height"
+msgstr ""
+
+#. translators: asking a human for his height
+#: view/view-form-editor.php:201 view/view-form-editor.php:267
+#: view/view-form-editor.php:321
+msgid "Your height:"
+msgstr ""
+
+#. translators: %1$s is the placeholder for Advanced Forms add-on link
+#: view/view-form-editor.php:204
+msgid ""
+"In this example, a number field has been added to the form in order to ask "
+"the customer's height. Thanks to the %1$s add-on, you can add any kind of "
+"field and ask any information to your customers."
+msgstr ""
+
+#: view/view-form-editor.php:217 view/view-form-editor.php:278
+#: view/view-form-editor.php:332
+msgctxt "short for centimeters"
+msgid "cm"
+msgstr ""
+
+#: view/view-form-editor.php:225
+msgid "Document(s)"
+msgstr ""
+
+#: view/view-form-editor.php:234 view/view-form-editor.php:283
+#: view/view-form-editor.php:337
+msgid "Any document(s):"
+msgstr ""
+
+#: view/view-form-editor.php:236
+msgid "You can even ask your customers for digital files."
+msgstr ""
+
+#: view/view-form-editor.php:256
+msgid "Fields for each participants"
+msgstr ""
+
+#: view/view-form-editor.php:264
+msgid "Participant #1"
+msgstr ""
+
+#: view/view-form-editor.php:298 view/view-form-editor.php:352
+msgid "Any other field:"
+msgstr ""
+
+#: view/view-form-editor.php:306 view/view-form-editor.php:360
+msgid "Any value"
+msgstr ""
+
+#: view/view-form-editor.php:307 view/view-form-editor.php:361
+msgid "Fully customizable"
+msgstr ""
+
+#: view/view-form-editor.php:318
+msgid "Participant #2"
+msgstr ""
+
+#: view/view-form-editor.php:373
+msgid ""
+"You can request data from each participant. The number of participants is "
+"proportional to the quantity reserved."
 msgstr ""
 
 #: view/view-form-list.php:11
@@ -3970,11 +4048,11 @@ msgctxt "form"
 msgid "Add New"
 msgstr ""
 
-#: view/view-landing.php:14
+#: view/view-landing.php:19
 msgid "Make the most of Booking Activities"
 msgstr ""
 
-#: view/view-landing.php:15
+#: view/view-landing.php:20
 msgid ""
 "You can extend Booking Activities functionnalities with the following great "
 "add-ons. They make your booking management easier and boost your turnover. "
@@ -3982,60 +4060,66 @@ msgid ""
 "money back guarantee. "
 msgstr ""
 
-#: view/view-landing.php:38
+#: view/view-landing.php:36
+msgid ""
+"Add any kind of fields to your booking forms. Collect data from each "
+"participant. View, edit and filter the values in your booking list."
+msgstr ""
+
+#: view/view-landing.php:49
 msgid ""
 "Customize Booking Activities appearance with the alternate views and "
 "customization options of this pack."
 msgstr ""
 
-#: view/view-landing.php:51
-msgid ""
-"Send notifications and booking reminders via email, SMS and Push. Set "
-"specific messages for each event and use them in your notifications."
-msgstr ""
-
-#: view/view-landing.php:64
+#: view/view-landing.php:62
 msgid ""
 "Put a special price on your events, make promotions and strategically draw "
 "the attention of your customers."
 msgstr ""
 
-#: view/view-landing.php:71 view/view-templates-dialogs.php:393
+#: view/view-landing.php:75
+msgid ""
+"Send notifications and booking reminders via email, SMS and Push. Set "
+"specific messages for each event and use them in your notifications."
+msgstr ""
+
+#: view/view-landing.php:82 view/view-templates-dialogs.php:393
 #: view/view-templates-dialogs.php:686
 msgid "Order for Customers"
 msgstr ""
 
-#: view/view-landing.php:77
+#: view/view-landing.php:88
 msgid ""
 "Order and book for your customers and allow them to pay later on your "
 "website. Perfect for your operators and your salespersons."
 msgstr ""
 
-#: view/view-landing.php:85
+#: view/view-landing.php:96
 msgid "(requires WooCommerce)"
 msgstr ""
 
-#: view/view-landing.php:90
+#: view/view-landing.php:101
 msgid ""
 "You have several points of sale and one website for all. Thanks to this "
 "plugin, your points of sale managers will be able to manage independently "
 "their own activities, calendars and bookings from this single website."
 msgstr ""
 
-#: view/view-landing.php:158
+#: view/view-landing.php:169
 msgctxt "Before add-on price"
 msgid "From"
 msgstr ""
 
-#: view/view-landing.php:174
+#: view/view-landing.php:185
 msgid "More information"
 msgstr ""
 
-#: view/view-landing.php:187
+#: view/view-landing.php:198
 msgid "Benefit from the best guarantees"
 msgstr ""
 
-#: view/view-landing.php:188
+#: view/view-landing.php:199
 msgid ""
 "Our customers satisfaction is what keep us moving in the right direction. We "
 "adapt our products according to your feedbacks in order to meet your needs. "
@@ -4045,27 +4129,27 @@ msgid ""
 "back guarantee on all our add-ons."
 msgstr ""
 
-#: view/view-landing.php:193
+#: view/view-landing.php:204
 msgid "Secure Payments"
 msgstr ""
 
-#: view/view-landing.php:194
+#: view/view-landing.php:205
 msgid "Online payments are secured by PayPal"
 msgstr ""
 
-#: view/view-landing.php:198
+#: view/view-landing.php:209
 msgid "30-Day money back guarantee"
 msgstr ""
 
-#: view/view-landing.php:199
+#: view/view-landing.php:210
 msgid "If you are not satisfied you will be 100% refunded"
 msgstr ""
 
-#: view/view-landing.php:203
+#: view/view-landing.php:214
 msgid "Ready to help"
 msgstr ""
 
-#: view/view-landing.php:204
+#: view/view-landing.php:215
 msgid "Contact us at contact@booking‑activities.fr, we answer within 48h"
 msgstr ""
 

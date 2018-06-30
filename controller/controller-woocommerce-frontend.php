@@ -333,61 +333,48 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	/**
 	 * Add cart item data (all sent in one array)
 	 * 
-	 * @version 1.1.0
+	 * @version 1.5.4
 	 * @param array $cart_item_data
 	 * @param int $product_id
 	 * @param int $variation_id
 	 * @return array
 	 */
 	function bookacti_add_item_data( $cart_item_data, $product_id, $variation_id ) {
-		
-		if( isset( $_POST[ 'bookacti_booking_id' ] ) || isset( $_POST[ 'bookacti_booking_group_id' ] ) ) {
+		if( ! isset( $_POST[ 'bookacti_booking_id' ] ) && ! isset( $_POST[ 'bookacti_booking_group_id' ] ) ) { return $cart_item_data; }
 			
-			$new_value = array();
-			
-			// Single event
-			if( isset( $_POST[ 'bookacti_booking_id' ] ) ) {
-				$booking_id	= intval( $_POST[ 'bookacti_booking_id' ] );
-				$event = bookacti_get_booking_event_data( $booking_id );
-				$new_value[ '_bookacti_options' ][ 'bookacti_booking_id' ]		= $booking_id;
-				$new_value[ '_bookacti_options' ][ 'bookacti_booked_events' ]	= json_encode( array( $event ) );
-				
-			// Group of events
-			} else {
-				$booking_group_id = intval( $_POST[ 'bookacti_booking_group_id' ] );
-				$events = bookacti_get_booking_group_events_data( $booking_group_id );
-				$new_value[ '_bookacti_options' ][ 'bookacti_booking_group_id' ]= $booking_group_id;
-				$new_value[ '_bookacti_options' ][ 'bookacti_booked_events' ]	= json_encode( $events );
-			}
-			
-			if( empty( $cart_item_data ) ) {
-				return $new_value;
-			} else {
-				return array_merge( $cart_item_data, $new_value );
-			}
+		$new_value = array();
+
+		// Single event
+		if( isset( $_POST[ 'bookacti_booking_id' ] ) ) {
+			$booking_id	= intval( $_POST[ 'bookacti_booking_id' ] );
+			$event = bookacti_get_booking_event_data( $booking_id );
+			$new_value[ '_bookacti_options' ][ 'bookacti_booking_id' ]		= $booking_id;
+			$new_value[ '_bookacti_options' ][ 'bookacti_booked_events' ]	= json_encode( array( $event ) );
+
+		// Group of events
+		} else {
+			$booking_group_id = intval( $_POST[ 'bookacti_booking_group_id' ] );
+			$events = bookacti_get_booking_group_events_data( $booking_group_id );
+			$new_value[ '_bookacti_options' ][ 'bookacti_booking_group_id' ]= $booking_group_id;
+			$new_value[ '_bookacti_options' ][ 'bookacti_booked_events' ]	= json_encode( $events );
 		}
 		
-		return $cart_item_data;
+		return array_merge( $cart_item_data, $new_value );
 	}
 	add_filter( 'woocommerce_add_cart_item_data', 'bookacti_add_item_data', 10, 3 );
 
 	
 	/**
-	 * Attaches cart item data to the item.
-	 * 
-	 * @since 1.0.0
-	 * 
-	 * @param type $item
-	 * @param type $values
-	 * @param type $key
-	 * @return type
+	 * Attaches cart item data to the item
+	 * @param array $item
+	 * @param array $values
+	 * @param string $key
+	 * @return array
 	 */
 	function bookacti_get_cart_items_from_session( $item, $values, $key ) {
-		
 		if ( array_key_exists( '_bookacti_options', $values ) ) {
 			$item[ '_bookacti_options' ] = $values[ '_bookacti_options' ];
 		}
-		
 		return $item;
 	}
 	add_filter( 'woocommerce_get_cart_item_from_session', 'bookacti_get_cart_items_from_session', 10, 3 );
@@ -396,33 +383,31 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	/**
 	 * Add the information as meta data so that it can be seen as part of the order 
 	 * (to hide any meta data from the customer just start it with an underscore)
+	 * To be used before WC 3.0 only, on woocommerce_add_order_item_meta hook
 	 * 
-	 * @version 1.1.0
-	 * 
+	 * @version 1.5.4
 	 * @param int $item_id
 	 * @param array $values
 	 */
 	function bookacti_add_values_to_order_item_meta( $item_id, $values ) {
-		
-		if ( array_key_exists( '_bookacti_options', $values ) ) {
+		if( ! array_key_exists( '_bookacti_options', $values ) ) { return; }
 			
-			// Single event data
-			if( isset( $values['_bookacti_options']['bookacti_booking_id'] ) ) {
-				
-				$state = bookacti_get_booking_state( $values['_bookacti_options']['bookacti_booking_id'] );
-				wc_add_order_item_meta( $item_id, 'bookacti_booking_id', intval( $values['_bookacti_options']['bookacti_booking_id'] ) );
-				
-			// Group of events data
-			} else if( isset( $values['_bookacti_options']['bookacti_booking_group_id'] ) ) {
-				
-				$state	= bookacti_get_booking_group_state( $values['_bookacti_options']['bookacti_booking_group_id'] );
-				wc_add_order_item_meta( $item_id, 'bookacti_booking_group_id', intval( $values['_bookacti_options']['bookacti_booking_group_id'] ) );
-			}
-			
-			// Common data
-			wc_add_order_item_meta( $item_id, 'bookacti_booked_events', $values['_bookacti_options']['bookacti_booked_events'] );
-			wc_add_order_item_meta( $item_id, 'bookacti_state', sanitize_title_with_dashes( $state ) );
+		// Single event data
+		if( isset( $values['_bookacti_options']['bookacti_booking_id'] ) ) {
+
+			$state = bookacti_get_booking_state( $values['_bookacti_options']['bookacti_booking_id'] );
+			wc_add_order_item_meta( $item_id, 'bookacti_booking_id', intval( $values['_bookacti_options']['bookacti_booking_id'] ) );
+
+		// Group of events data
+		} else if( isset( $values['_bookacti_options']['bookacti_booking_group_id'] ) ) {
+
+			$state	= bookacti_get_booking_group_state( $values['_bookacti_options']['bookacti_booking_group_id'] );
+			wc_add_order_item_meta( $item_id, 'bookacti_booking_group_id', intval( $values['_bookacti_options']['bookacti_booking_group_id'] ) );
 		}
+
+		// Common data
+		wc_add_order_item_meta( $item_id, 'bookacti_booked_events', $values['_bookacti_options']['bookacti_booked_events'] );
+		wc_add_order_item_meta( $item_id, 'bookacti_state', sanitize_title_with_dashes( $state ) );
 	}
 	
 	/**
@@ -464,7 +449,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 	/**
 	 * Validate add to cart form and temporarily book the event
-	 * @version 1.5.2
+	 * @version 1.5.4
 	 * @global WooCommerce $woocommerce
 	 * @param boolean $true
 	 * @param int $product_id
@@ -472,7 +457,6 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	 * @return boolean
 	 */
 	function bookacti_validate_add_to_cart_and_book_temporarily( $true, $product_id, $quantity ) {
-		
 		if( ! $true ) { return $true; }
 		
 		if( isset( $_POST[ 'variation_id' ] ) ) {
@@ -500,8 +484,9 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		if( is_user_logged_in() ) { $user_id = get_current_user_id(); }
 		
 		// Get product form ID
-		if( isset( $_POST[ 'variation_id' ] ) ) {
-			$form_id = get_post_meta( $_POST[ 'variation_id' ], 'bookacti_variable_form', true );
+		$variation_id = isset( $_POST[ 'variation_id' ] ) ? intval( $_POST[ 'variation_id' ] ) : 0;
+		if( $variation_id ) {
+			$form_id = get_post_meta( $variation_id, 'bookacti_variable_form', true );
 		} else {
 			$form_id = get_post_meta( $product_id, '_bookacti_form', true );
 		}
@@ -521,12 +506,12 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			wc_add_notice( $response[ 'message' ], 'error' );
 			return false;
 		}
-
+			
 		// Book a single event temporarily
 		if( $group_id === 'single' ) {
-
+			
 			// Book temporarily the event
-			$response = bookacti_add_booking_to_cart( $user_id, $event_id, $event_start, $event_end, $quantity, 0 );
+			$response = bookacti_add_booking_to_cart( $product_id, $variation_id, $user_id, $event_id, $event_start, $event_end, $quantity, $form_id );
 
 			// If the event is booked, add the booking ID to the corresponding hidden field
 			if( $response[ 'status' ] === 'success' ) {
@@ -538,7 +523,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		} else if( is_numeric( $group_id ) ) {
 
 			// Book temporarily the group of event
-			$response = bookacti_add_booking_group_to_cart( $user_id, $group_id, $quantity );
+			$response = bookacti_add_booking_group_to_cart( $product_id, $variation_id, $user_id, $group_id, $quantity, $form_id );
 
 			// If the events are booked, add the booking group ID to the corresponding hidden field
 			if( $response[ 'status' ] === 'success' ) {
@@ -556,7 +541,58 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		return false;
 	}
 	add_filter( 'woocommerce_add_to_cart_validation', 'bookacti_validate_add_to_cart_and_book_temporarily', 1000, 3 );
-
+	
+	
+	/**
+	 * If an activity is added to cart with the same booking data (same product, same variation, same booking) as an existing cart item
+	 * Merge the old cart items to the new one
+	 * @since 1.5.4
+	 * @global WooCommerce $woocommerce
+	 * @param array $cart_item_data
+	 * @param string $cart_item_key
+	 * @return array
+	 */
+	function bookacti_merge_cart_items_with_same_booking_data( $cart_item_data, $cart_item_key ) {
+		if( empty( $cart_item_data[ '_bookacti_options' ][ 'bookacti_booking_id' ] ) && empty( $cart_item_data[ '_bookacti_options' ][ 'bookacti_booking_group_id' ] ) ) { return $cart_item_id; }
+		
+		$product_id		= $cart_item_data[ 'product_id' ];
+		$variation_id	= $cart_item_data[ 'variation_id' ];
+		$quantity		= $cart_item_data[ 'quantity' ];
+		$new_quantity	= $quantity;
+		
+		global $woocommerce;
+		$cart_contents = $woocommerce->cart->get_cart();
+		foreach( $cart_contents as $the_key => $the_item ) {
+			// Same product
+			if( $product_id !== $the_item[ 'product_id' ] ) { continue; }
+			// Same variation
+			if( ( empty( $variation_id ) && ! empty( $the_item[ 'variation_id' ] ) )
+			||  ( ! empty( $variation_id ) && ( empty( $the_item[ 'variation_id' ] ) || $variation_id !== $the_item[ 'variation_id' ] ) ) ) { continue; }
+			// Same booking
+			if( isset( $cart_item_data[ '_bookacti_options' ][ 'bookacti_booking_id' ] ) ) {
+				if( empty( $the_item[ '_bookacti_options' ][ 'bookacti_booking_id' ] ) || $cart_item_data[ '_bookacti_options' ][ 'bookacti_booking_id' ] !== $the_item[ '_bookacti_options' ][ 'bookacti_booking_id' ] ) { continue; }
+			} else if( isset( $cart_item_data[ '_bookacti_options' ][ 'bookacti_booking_group_id' ] ) ) {
+				if( empty( $the_item[ '_bookacti_options' ][ 'bookacti_booking_group_id' ] ) || $cart_item_data[ '_bookacti_options' ][ 'bookacti_booking_group_id' ] !== $the_item[ '_bookacti_options' ][ 'bookacti_booking_group_id' ] ) { continue; }
+			}
+			
+			do_action( 'bookacti_merge_cart_item_before', $the_item, $the_key, $cart_item_data, $cart_item_key );
+			
+			// Add the quantity of the old cart item to the new one
+			$new_quantity += $the_item[ 'quantity' ];
+			
+			// Remove the old cart item
+			$woocommerce->cart->set_quantity( $the_key, 0, false );
+		}
+		
+		// Set the new cart item quantity if it has merged with other cart items
+		if( $new_quantity !== $quantity ) {
+			$cart_item_data[ 'quantity' ] = $new_quantity;
+		}
+		
+		return $cart_item_data;
+	}
+	add_filter( 'woocommerce_add_cart_item', 'bookacti_merge_cart_items_with_same_booking_data', 15, 2 );
+	
 	
 	/**
 	 * Set the timeout for a product added to cart
@@ -1155,10 +1191,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	
 	/**
 	 * Tell how to display the custom metadata in cart and checkout
-	 * 
-	 * @since 1.0.0
 	 * @version 1.1.0
-	 * 
 	 * @param array $item_data
 	 * @param array $cart_item_data
 	 * @return array
@@ -1186,10 +1219,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	
 	/**
 	 * Format label of custom metadata in cart and checkout
-	 * 
-	 * @since 1.0.0
 	 * @version 1.1.0
-	 * 
 	 * @param string $label
 	 * @param string $name
 	 * @return string
@@ -1217,28 +1247,24 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	
 	/**
 	 * Format value of custom metadata in order review
-	 * 
-	 * @since 1.0.0
-	 * 
+	 * @version 1.5.4
 	 * @param array $formatted_meta
 	 * @param WC_Order_Item_Meta $order_item_meta
 	 * @return array
 	 */
 	function bookacti_format_order_meta_data( $formatted_meta, $order_item_meta ) {
-		
 		foreach( $formatted_meta as $key => $meta ) {
+			if( substr( $meta[ 'key' ], 0, 9 ) !== 'bookacti_' ) { continue; }
+			
 			$value = $meta[ 'value' ];
 			
 			// Booking (group) state
 			if( $meta[ 'key' ] === 'bookacti_state' ) {
-				
 				$formatted_meta[ $key ][ 'value' ] = bookacti_format_booking_state( $value );
-				
 			} 
 			
 			// Booked events
 			else if( $meta[ 'key' ] === 'bookacti_booked_events' ) {
-				
 				$events	= json_decode( $value );
 				$formatted_meta[ $key ][ 'value' ] = bookacti_get_formatted_booking_events_list( $events );
 			} 
@@ -1246,11 +1272,9 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			// Deprecated data
 			// Event start and end
 			else if( $meta[ 'key' ] === 'bookacti_event_start' || $meta[ 'key' ] === 'bookacti_event_end' ) {
-				
 				$formatted_meta[ $key ][ 'value' ] = bookacti_format_datetime( $value );
 			}
 		}
-		
 		return $formatted_meta;
 	}
 	add_filter( 'woocommerce_order_items_meta_get_formatted', 'bookacti_format_order_meta_data', 10, 2 );
@@ -1258,23 +1282,18 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		
 	/**
 	 * Format order item mata values in order received page
-	 * 
 	 * Must be used since WC 3.0.0
-	 * 
 	 * @since 1.0.4
-	 * @version 1.1.0
-	 * 
+	 * @version 1.5.4
 	 * @param string $html
 	 * @param WC_Item $item
 	 * @param array $args
 	 * @return string
 	 */
-	function bookacti_format_order_item_meta( $html, $item, $args ) {
-		
-		$strings = array();
-		$html    = '';
-		
-		foreach ( $item->get_formatted_meta_data() as $meta_id => $meta ) {
+	function bookacti_format_order_item_meta( $formatted_meta, $item ) {
+		foreach( $formatted_meta as $meta_id => $meta ) {
+			if( substr( $meta->key, 0, 9 ) !== 'bookacti_' ) { continue; }
+			
 			// Format booking id
 			if( $meta->key === 'bookacti_booking_id' || $meta->key === 'bookacti_booking_group_id' ) {
 				$meta->display_value = intval( $meta->value );
@@ -1298,20 +1317,10 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			||  $meta->key === 'bookacti_event_end' ) {
 				$meta->display_value = bookacti_format_datetime( $meta->value );
 			}
-			
-			$value = $args['autop'] ? wp_kses_post( wpautop( make_clickable( $meta->display_value ) ) ) : wp_kses_post( make_clickable( $meta->display_value ) );
-			
-			$strings[]	= '<strong	class="wc-item-meta-label wc-item-meta-' . $meta->key . '">' . wp_kses_post( $meta->display_key ) . ':</strong> '
-						. '<span	class="wc-item-meta-value wc-item-meta-' . $meta->key . '">' . $value . '</span>';
 		}
-
-		if ( $strings ) {
-			$html = $args['before'] . implode( $args['separator'], $strings ) . $args['after'];
-		}
-		
-		return $html;
+		return $formatted_meta;
 	}
-	add_filter( 'woocommerce_display_item_meta', 'bookacti_format_order_item_meta', 10, 3 );
+	add_filter( 'woocommerce_order_item_get_formatted_meta_data', 'bookacti_format_order_item_meta', 10, 2 );
 	
 	
 	/**
@@ -1523,7 +1532,8 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	
 	
 	/**
-	 * 
+	 * Add values in bookings list (refund, price)
+	 * @version 1.5.4
 	 * @param array $columns_value
 	 * @param object $booking
 	 * @param int $user_id
@@ -1532,8 +1542,32 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	function bookacti_add_woocommerce_prices_in_bookings_list( $columns_value, $booking, $user_id ) {
 		$item = bookacti_get_order_item_by_booking_id( $booking->id );
 		if( ! empty( $item ) ) {
-			$total_price = wc_price( (float) $item[ 'line_total' ] + (float) $item[ 'line_tax' ] );
+			// Add Price column value
+			// WOOCOMMERCE 3.0.0 backward compatibility 
+			$total	= is_array( $item ) ? $item[ 'line_total' ] : $item->get_total();
+			$tax	= is_array( $item ) ? $item[ 'line_tax' ] : $item->get_total_tax();
+			
+			$total_price = wc_price( (float) $total + (float) $tax );
 			$columns_value[ 'price' ] = $total_price ? $total_price : '/';
+			
+			// Add refund coupon code in "Status" column
+			if( $booking->state === 'refunded' ) {
+				$coupon_code = '';
+				
+				// WOOCOMMERCE 3.0.0 backward compatibility
+				if( version_compare( WC_VERSION, '3.0.0', '>=' ) ) {
+					$item_meta = $item->get_formatted_meta_data();
+					foreach( $item_meta as $item_id => $meta_data ) {
+						if( $meta_data->key === 'bookacti_refund_coupon' ) { $coupon_code = $meta_data->value; }
+					}
+				} else {
+					$coupon_code = wc_get_order_item_meta( $item[ 'id' ], 'bookacti_refund_coupon', true );
+				}
+				
+				if( $coupon_code ) {
+					$columns_value[ 'state' ] .= '<br/><strong>' . esc_html__( 'Coupon code' ) . ':</strong> ' . $coupon_code;
+				}
+			}
 		}
 
 		return $columns_value;

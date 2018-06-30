@@ -1,10 +1,9 @@
 $j( document ).ready( function() {
-	// INITIALIZATION
-	if( $j( '.bookacti-booking-action' ).length || $j( '.bookacti-booking-group-action' ).length ) {
-		// Init the Dialogs
-		bookacti_init_bookings_dialogs();
-		
-		// Init booking actions
+	// Init the Dialogs
+	bookacti_init_bookings_dialogs();
+	
+	// Init booking actions
+	if( $j( '.bookacti-booking-action' ).length || $j( '.bookacti-booking-group-action' ).length ) {	
 		bookacti_init_booking_actions();
 	}
 });
@@ -12,7 +11,7 @@ $j( document ).ready( function() {
 
 // Initialize bookings dialogs
 function bookacti_init_bookings_dialogs() {
-	//Common param
+	// Common param
 	$j( '.bookacti-bookings-dialog' ).dialog({ 
 		"modal":		true,
 		"autoOpen":		false,
@@ -126,16 +125,15 @@ function bookacti_dialog_cancel_booking( booking_id, booking_type ) {
 		},
 		// Cancel button 
 		{
-            text: bookacti_localized.dialog_button_cancel,
-            
-            //On click on the OK Button, new values are send to a script that update the database
-            click: function() {
-				//Close the modal dialog
+			text: bookacti_localized.dialog_button_cancel,
+			// On click on the OK Button, new values are send to a script that update the database
+			click: function() {
+				// Close the modal dialog
 				$j( this ).dialog( 'close' );
-            }
-        }
+			}
+		}
 		]
-    );
+	);
 }
 
 

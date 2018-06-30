@@ -2,6 +2,7 @@
 /**
  * Form editor page
  * @since 1.5.0
+ * @version 1.5.4
  */
 
 // Exit if accessed directly
@@ -164,10 +165,220 @@ if( ! $form ) { exit; }
 										// Display form fields 
 										$ordered_form_fields = bookacti_sort_form_fields_array( $form_id, $form_fields );
 										foreach( $ordered_form_fields as $field ) {
+											if( ! $field ) { continue; }
 											bookacti_display_form_field_for_editor( $field );
 										}
 										
 										do_action( 'bookacti_form_editor_after', $form );
+										
+										// START ADVANCED FORMS ADD-ON PROMO
+										$is_plugin_active = bookacti_is_plugin_active( 'ba-advanced-forms/ba-advanced-forms.php' );
+										if( ! $is_plugin_active ) {
+											$addon_link = '<strong><a href="https://booking-activities.fr/en/downloads/advanced-forms/?utm_source=plugin&utm_medium=plugin&utm_campaign=advanced-forms&utm_content=form-editor-fields" target="_blank" >';
+											$addon_link .= esc_html__( 'Advanced Forms', BOOKACTI_PLUGIN_NAME );
+											$addon_link .= '</a></strong>';
+											?>
+											<hr/>
+											<div class='bookacti-addon-promo'>
+												<p>
+												<?php 
+													/* translators: %1$s is the placeholder for Advanced Forms add-on link */
+													echo sprintf( esc_html__( 'Add any custom fields to your booking form thanks to the %1$s add-on:' ), $addon_link ); 
+												?>
+												</p>
+												<div id='bookacti-form-editor-promo-field-height' class='bookacti-form-editor-field bookacti-form-editor-promo-field'>
+													<div class='bookacti-form-editor-field-header' >
+														<div class='bookacti-form-editor-field-title' >
+															<h3><?php echo esc_html__( 'Example:', BOOKACTI_PLUGIN_NAME ) . ' ' . esc_html__( 'Height', BOOKACTI_PLUGIN_NAME ); ?></h3>
+														</div>
+														<div class='bookacti-form-editor-field-actions' >
+															<div class='bookacti-field-toggle dashicons dashicons-arrow-down' title='<?php esc_attr_e( 'Show / Hide', BOOKACTI_PLUGIN_NAME ); ?>'></div>
+														</div>
+													</div>
+													<div class='bookacti-form-editor-field-body' style='display:none;'>
+														<div>
+															<div class='bookacti-form-field-label' >
+																<label><?php esc_html_e( 'Your height:', BOOKACTI_PLUGIN_NAME ); ?></label>
+																<?php 
+																	/* translators: %1$s is the placeholder for Advanced Forms add-on link */
+																	$tip = sprintf( esc_html__( 'In this example, a number field has been added to the form in order to ask the customer\'s height. Thanks to the %1$s add-on, you can add any kind of field and ask any information to your customers.', BOOKACTI_PLUGIN_NAME ), $addon_link );
+																	bookacti_help_tip( $tip ); 
+																?>
+															</div>
+															<div class='bookacti-form-field-content' >
+																<?php
+																	$args = array( 
+																		'type'		=> 'number',
+																		'name'		=> 'promo_height',
+																		'options'	=> array( 'min' => 110, 'max' => 240, 'step' => 1 )
+																	);
+																	bookacti_display_field( $args );
+																?>
+																<span><?php echo esc_html_x( 'cm', 'short for centimeters', BOOKACTI_PLUGIN_NAME ); ?></span>
+															</div>
+														</div>
+													</div>
+												</div>
+												<div id='bookacti-form-editor-promo-field-file' class='bookacti-form-editor-field bookacti-form-editor-promo-field'>
+													<div class='bookacti-form-editor-field-header' >
+														<div class='bookacti-form-editor-field-title' >
+															<h3><?php echo esc_html__( 'Example:', BOOKACTI_PLUGIN_NAME ) . ' ' . esc_html__( 'Document(s)', BOOKACTI_PLUGIN_NAME ); ?></h3>
+														</div>
+														<div class='bookacti-form-editor-field-actions' >
+															<div class='bookacti-field-toggle dashicons dashicons-arrow-down' title='<?php esc_attr_e( 'Show / Hide', BOOKACTI_PLUGIN_NAME ); ?>'></div>
+														</div>
+													</div>
+													<div class='bookacti-form-editor-field-body' style='display:none;'>
+														<div>
+															<div class='bookacti-form-field-label' >
+																<label><?php esc_html_e( 'Any document(s):', BOOKACTI_PLUGIN_NAME ); ?></label>
+																<?php 
+																	$tip = esc_html__( 'You can even ask your customers for digital files.', BOOKACTI_PLUGIN_NAME );
+																	bookacti_help_tip( $tip ); 
+																?>
+															</div>
+															<div class='bookacti-form-field-content' >
+																<?php
+																	$args = array( 
+																		'type'		=> 'file',
+																		'name'		=> 'promo_file',
+																		'multiple'	=> 1
+																	);
+																	bookacti_display_field( $args );
+																?>
+															</div>
+														</div>
+													</div>
+												</div>
+												<div id='bookacti-form-editor-promo-field-participants' class='bookacti-form-editor-field bookacti-form-editor-promo-field'>
+													<div class='bookacti-form-editor-field-header' >
+														<div class='bookacti-form-editor-field-title' >
+															<h3><?php echo esc_html__( 'Example:', BOOKACTI_PLUGIN_NAME ) . ' ' . esc_html__( 'Fields for each participants', BOOKACTI_PLUGIN_NAME ); ?></h3>
+														</div>
+														<div class='bookacti-form-editor-field-actions' >
+															<div class='bookacti-field-toggle dashicons dashicons-arrow-down' title='<?php esc_attr_e( 'Show / Hide', BOOKACTI_PLUGIN_NAME ); ?>'></div>
+														</div>
+													</div>
+													<div class='bookacti-form-editor-field-body' style='display:none;'>
+														<fieldset style='border: 1px solid #bbb;margin-bottom:20px;padding:10px;'>
+															<legend style='margin:auto;padding:0 10px;font-weight:bold;'><?php esc_html_e( 'Participant #1', BOOKACTI_PLUGIN_NAME ); ?></legend>
+															<div>
+																<div class='bookacti-form-field-label' >
+																	<label><?php esc_html_e( 'Your height:', BOOKACTI_PLUGIN_NAME ); ?></label>
+																</div>
+																<div class='bookacti-form-field-content' >
+																	<?php
+																		$args = array( 
+																			'type'		=> 'number',
+																			'name'		=> 'promo_height',
+																			'options'	=> array( 'min' => 110, 'max' => 240, 'step' => 1 )
+																		);
+																		bookacti_display_field( $args );
+																	?>
+																	<span><?php echo esc_html_x( 'cm', 'short for centimeters', BOOKACTI_PLUGIN_NAME ); ?></span>
+																</div>
+															</div>
+															<div>
+																<div class='bookacti-form-field-label' >
+																	<label><?php esc_html_e( 'Any document(s):', BOOKACTI_PLUGIN_NAME ); ?></label>
+																</div>
+																<div class='bookacti-form-field-content' >
+																	<?php
+																		$args = array( 
+																			'type'		=> 'file',
+																			'name'		=> 'promo_file',
+																			'multiple'	=> 1
+																		);
+																		bookacti_display_field( $args );
+																	?>
+																</div>
+															</div>
+															<div>
+																<div class='bookacti-form-field-label' >
+																	<label><?php esc_html_e( 'Any other field:', BOOKACTI_PLUGIN_NAME ); ?></label>
+																</div>
+																<div class='bookacti-form-field-content' >
+																	<?php
+																		$args = array( 
+																			'type'		=> 'select',
+																			'name'		=> 'promo_select1',
+																			'options'	=> array( 
+																				'value1' => esc_html__( 'Any value', BOOKACTI_PLUGIN_NAME ),
+																				'value2' => esc_html__( 'Fully customizable', BOOKACTI_PLUGIN_NAME ),
+																				'value3' => '...'
+																			)
+																		);
+																		bookacti_display_field( $args );
+																	?>
+																</div>
+															</div>
+															<div><span>...</span></div>
+														</fieldset>
+														<fieldset style='border: 1px solid #bbb;margin-bottom:20px;padding:10px;'>
+															<legend style='margin:auto;padding:0 10px;font-weight:bold;'><?php esc_html_e( 'Participant #2', BOOKACTI_PLUGIN_NAME ); ?></legend>
+															<div>
+																<div class='bookacti-form-field-label' >
+																	<label><?php /* translators: asking a human for his height */ esc_html_e( 'Your height:', BOOKACTI_PLUGIN_NAME ); ?></label>
+																</div>
+																<div class='bookacti-form-field-content' >
+																	<?php
+																		$args = array( 
+																			'type'		=> 'number',
+																			'name'		=> 'promo_height',
+																			'options'	=> array( 'min' => 110, 'max' => 240, 'step' => 1 )
+																		);
+																		bookacti_display_field( $args );
+																	?>
+																	<span><?php echo esc_html_x( 'cm', 'short for centimeters', BOOKACTI_PLUGIN_NAME ); ?></span>
+																</div>
+															</div>
+															<div>
+																<div class='bookacti-form-field-label' >
+																	<label><?php esc_html_e( 'Any document(s):', BOOKACTI_PLUGIN_NAME ); ?></label>
+																</div>
+																<div class='bookacti-form-field-content' >
+																	<?php
+																		$args = array( 
+																			'type'		=> 'file',
+																			'name'		=> 'promo_file',
+																			'multiple'	=> 1
+																		);
+																		bookacti_display_field( $args );
+																	?>
+																</div>
+															</div>
+															<div>
+																<div class='bookacti-form-field-label' >
+																	<label><?php esc_html_e( 'Any other field:', BOOKACTI_PLUGIN_NAME ); ?></label>
+																</div>
+																<div class='bookacti-form-field-content' >
+																	<?php
+																		$args = array( 
+																			'type'		=> 'select',
+																			'name'		=> 'promo_select2',
+																			'options'	=> array( 
+																				'value1' => esc_html__( 'Any value', BOOKACTI_PLUGIN_NAME ),
+																				'value2' => esc_html__( 'Fully customizable', BOOKACTI_PLUGIN_NAME ),
+																				'value3' => '...'
+																			)
+																		);
+																		bookacti_display_field( $args );
+																	?>
+																</div>
+															</div>
+															<div><span>...</span></div>
+														</fieldset>
+														<div>
+															<?php
+																esc_html_e( 'You can request data from each participant. The number of participants is proportional to the quantity reserved.', BOOKACTI_PLUGIN_NAME );
+															?>
+														</div>
+													</div>
+												</div>
+												<div style='text-align:center;'><a href='https://booking-activities.fr/en/downloads/advanced-forms/?utm_source=plugin&utm_medium=plugin&utm_campaign=advanced-forms&utm_content=form-editor-fields' class='button' target='_blank' ><?php esc_html_e( 'Learn more', BOOKACTI_PLUGIN_NAME ); ?></a></div>
+											</div>
+											<?php
+										} // END OF ADVANCED FORMS ADD-ON PROMO
 										?>
 									</div>
 								</div>

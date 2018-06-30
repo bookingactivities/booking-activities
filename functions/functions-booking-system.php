@@ -1633,19 +1633,20 @@ function bookacti_get_formatted_booking_events_list( $booking_events, $quantity 
 	/**
 	 * Book all events of a group
 	 * 
-	 * @version 1.3.0
+	 * @version 1.5.4
 	 * @param int $user_id
 	 * @param int $event_group_id
 	 * @param int $quantity
 	 * @param string $state
 	 * @param string $payment_status
 	 * @param string $expiration_date
+	 * @param int $form_id
 	 * @return int|boolean
 	 */
-	function bookacti_book_group_of_events( $user_id, $event_group_id, $quantity, $state = 'booked', $payment_status = 'none', $expiration_date = NULL ) {
+	function bookacti_book_group_of_events( $user_id, $event_group_id, $quantity, $state = 'booked', $payment_status = 'none', $expiration_date = NULL, $form_id = NULL ) {
 				
 		// Insert the booking group
-		$booking_group_id = bookacti_insert_booking_group( $user_id, $event_group_id, $state, $payment_status );
+		$booking_group_id = bookacti_insert_booking_group( $user_id, $event_group_id, $state, $payment_status, $form_id );
 		
 		if( empty( $booking_group_id ) ) {
 			return false;
@@ -1660,7 +1661,7 @@ function bookacti_get_formatted_booking_events_list( $booking_events, $quantity 
 		// Insert bookings
 		$events = bookacti_get_group_events( $event_group_id );
 		foreach( $events as $event ) {
-			bookacti_insert_booking( $user_id, $event[ 'id' ], $event[ 'start' ], $event[ 'end' ], $quantity, $state, $payment_status, $expiration_date, $booking_group_id );
+			bookacti_insert_booking( $user_id, $event[ 'id' ], $event[ 'start' ], $event[ 'end' ], $quantity, $state, $payment_status, $expiration_date, $booking_group_id, $form_id );
 		}
 		
 		return $booking_group_id;

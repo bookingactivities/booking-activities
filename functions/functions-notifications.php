@@ -318,9 +318,8 @@ function bookacti_get_notifications_tags( $notification_id = '' ) {
 
 /**
  * Get notifications tags and values corresponding to given booking
- * 
  * @since 1.2.0
- * @version 1.2.1
+ * @version 1.5.4
  * @param int $booking_id
  * @param string $booking_type 'group' or 'single'
  * @param string $notification_id
@@ -338,39 +337,41 @@ function bookacti_get_notifications_tags_values( $booking_id, $booking_type, $no
 	
 	$booking = $booking_type === 'group' ? bookacti_get_booking_group_by_id( $booking_id ) : bookacti_get_booking_by_id( $booking_id );
 	
-	if( $booking_type === 'group' ) {
-		$bookings			= bookacti_get_bookings_by_booking_group_id( $booking_id );
-		$group_of_events	= bookacti_get_group_of_events( $booking->event_group_id );
-		
-		$booking_data[ '{booking_quantity}' ]	= bookacti_get_booking_group_quantity( $booking_id );
-		$booking_data[ '{booking_total_qty}' ]	= 0;
-		foreach( $bookings as $grouped_booking ) { $booking_data[ '{booking_total_qty}' ] += intval( $grouped_booking->quantity ); }
-		$booking_data[ '{booking_title}' ]		= $group_of_events ? $group_of_events->title : '';
-		$booking_data[ '{booking_admin_url}' ]	= esc_url( admin_url( 'admin.php?page=bookacti_bookings' ) . '&event_group_id=' . $group_of_events->id );
-		
-	} else {
-		$bookings	= array( $booking );
-		$event		= bookacti_get_event_by_id( $booking->event_id );
-		
-		$booking_data[ '{booking_quantity}' ]	= $booking->quantity;
-		$booking_data[ '{booking_total_qty}' ]	= $booking_data[ '{booking_quantity}' ];
-		$booking_data[ '{booking_title}' ]		= $event ? $event->title : '';
-		$booking_data[ '{booking_start}' ]		= $booking->event_start;
-		$booking_data[ '{booking_end}' ]		= $booking->event_end;
-		$booking_data[ '{booking_admin_url}' ]	= esc_url( admin_url( 'admin.php?page=bookacti_bookings' ) . '&event_id=' . $booking->event_id . '&event_start=' . $booking->event_start . '&event_end=' . $booking->event_end );
-	}
+	if( $booking ) {
+		if( $booking_type === 'group' ) {
+			$bookings			= bookacti_get_bookings_by_booking_group_id( $booking_id );
+			$group_of_events	= bookacti_get_group_of_events( $booking->event_group_id );
 
-	$booking_data[ '{booking_id}' ]				= $booking_id;
-	$booking_data[ '{booking_title}' ]			= $booking_data[ '{booking_title}' ] ? apply_filters( 'bookacti_translate_text', $booking_data[ '{booking_title}' ], $locale ) : '';
-	$booking_data[ '{booking_status}' ]			= bookacti_format_booking_state( $booking->state );
-	$booking_data[ '{booking_list}' ]			= bookacti_get_formatted_booking_events_list( $bookings, 'show', $locale );
-	
-	if( $booking->user_id ) { 
-		$user = get_user_by( 'id', $booking->user_id );
-		if( $user ) { 
-			$booking_data[ '{user_firstname}' ]	= $user->first_name;
-			$booking_data[ '{user_lastname}' ]	= $user->last_name;
-			$booking_data[ '{user_email}' ]		= $user->user_email;
+			$booking_data[ '{booking_quantity}' ]	= bookacti_get_booking_group_quantity( $booking_id );
+			$booking_data[ '{booking_total_qty}' ]	= 0;
+			foreach( $bookings as $grouped_booking ) { $booking_data[ '{booking_total_qty}' ] += intval( $grouped_booking->quantity ); }
+			$booking_data[ '{booking_title}' ]		= $group_of_events ? $group_of_events->title : '';
+			$booking_data[ '{booking_admin_url}' ]	= esc_url( admin_url( 'admin.php?page=bookacti_bookings' ) . '&event_group_id=' . $group_of_events->id );
+
+		} else {
+			$bookings	= array( $booking );
+			$event		= bookacti_get_event_by_id( $booking->event_id );
+
+			$booking_data[ '{booking_quantity}' ]	= $booking->quantity;
+			$booking_data[ '{booking_total_qty}' ]	= $booking_data[ '{booking_quantity}' ];
+			$booking_data[ '{booking_title}' ]		= $event ? $event->title : '';
+			$booking_data[ '{booking_start}' ]		= $booking->event_start;
+			$booking_data[ '{booking_end}' ]		= $booking->event_end;
+			$booking_data[ '{booking_admin_url}' ]	= esc_url( admin_url( 'admin.php?page=bookacti_bookings' ) . '&event_id=' . $booking->event_id . '&event_start=' . $booking->event_start . '&event_end=' . $booking->event_end );
+		}
+
+		$booking_data[ '{booking_id}' ]				= $booking_id;
+		$booking_data[ '{booking_title}' ]			= $booking_data[ '{booking_title}' ] ? apply_filters( 'bookacti_translate_text', $booking_data[ '{booking_title}' ], $locale ) : '';
+		$booking_data[ '{booking_status}' ]			= bookacti_format_booking_state( $booking->state );
+		$booking_data[ '{booking_list}' ]			= bookacti_get_formatted_booking_events_list( $bookings, 'show', $locale );
+
+		if( $booking->user_id ) { 
+			$user = get_user_by( 'id', $booking->user_id );
+			if( $user ) { 
+				$booking_data[ '{user_firstname}' ]	= $user->first_name;
+				$booking_data[ '{user_lastname}' ]	= $user->last_name;
+				$booking_data[ '{user_email}' ]		= $user->user_email;
+			}
 		}
 	}
 	

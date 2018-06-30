@@ -5,7 +5,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 /**
  * Create Booking Activities database tables
  * 
- * @version 1.5.0
+ * @version 1.5.4
  * @global wpdb $wpdb
  */
 function bookacti_create_tables() {
@@ -113,6 +113,7 @@ function bookacti_create_tables() {
 		id MEDIUMINT(9) UNSIGNED NOT NULL AUTO_INCREMENT, 
 		user_id VARCHAR(32), 
 		order_id MEDIUMINT(9) UNSIGNED, 
+		form_id MEDIUMINT(9) UNSIGNED, 
 		group_id MEDIUMINT(9) UNSIGNED, 
 		event_id MEDIUMINT(9) UNSIGNED NOT NULL, 
 		event_start DATETIME, 
@@ -130,6 +131,7 @@ function bookacti_create_tables() {
 		event_group_id MEDIUMINT(9) UNSIGNED, 
 		user_id VARCHAR(32), 
 		order_id MEDIUMINT(9) UNSIGNED, 
+		form_id MEDIUMINT(9) UNSIGNED, 
 		state VARCHAR(32) NOT NULL DEFAULT "booked",
 		payment_status VARCHAR(32) NOT NULL DEFAULT "none", 
 		active TINYINT(1) UNSIGNED NOT NULL DEFAULT 1,

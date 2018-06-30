@@ -353,13 +353,13 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	/**
 	 * Fill booking list columns
 	 * 
-	 * @version 1.5.0
+	 * @version 1.5.4
 	 * @param array $booking_item
 	 * @param object $booking
 	 * @param WP_User $user
 	 * @return array
 	 */
-	function bookacti_woocommerce_fill_booking_list_custom_columns( $booking_item, $booking, $user ) {
+	function bookacti_woocommerce_fill_booking_list_custom_columns( $booking_item, $booking, $user, $list ) {
 		// User data
 		if( ! empty( $booking->user_id ) && is_numeric( $booking->user_id ) && ! empty( $user->billing_first_name ) && ! empty( $user->billing_last_name ) ) {
 			$customer = '<a '
@@ -377,22 +377,20 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		// Product data
 		$product_title = '';
 		if( ! empty( $booking->order_id ) ) {
-			$order_item = false;
+			$item = false;
 			if( $booking_item[ 'booking_type' ] === 'single' ) {
-				$order_item = bookacti_get_order_item_by_booking_id( $booking->id );
+				$item = bookacti_get_order_item_by_booking_id( $booking->id );
 			} else if( $booking_item[ 'booking_type' ] === 'group' ) {
-				$order_item = bookacti_get_order_item_by_booking_group_id( $booking->group_id );
+				$item = bookacti_get_order_item_by_booking_group_id( $booking->group_id );
 			}
-			if( ! empty( $order_item ) ) {
+			if( ! empty( $item ) ) {
 				// WOOCOMMERCE 3.0.0 backward compatibility 
 				if( version_compare( WC_VERSION, '3.0.0', '>=' ) ) {
-					$product_id		= $order_item->get_product_id();
-					$product_name	= $order_item->get_name();
-				} else {
-					if( is_array( $order_item ) ) {
-						$product_id		= ! empty( $order_item[ 'product_id' ] ) ? $order_item[ 'product_id' ] : '';
-						$product_name	= ! empty( $order_item[ 'name' ] ) ? $order_item[ 'name' ] : '';
-					}
+					$product_id		= $item->get_product_id();
+					$product_name	= $item->get_name();
+				} else if( is_array( $item ) ) {
+					$product_id		= ! empty( $item[ 'product_id' ] ) ? $item[ 'product_id' ] : '';
+					$product_name	= ! empty( $item[ 'name' ] ) ? $item[ 'name' ] : '';
 				}
 				if( ! empty( $product_name ) ) {
 					$product_title = apply_filters( 'bookacti_translate_text', $product_name );
@@ -406,7 +404,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		
 		return $booking_item;
 	}
-	add_filter( 'bookacti_booking_list_booking_columns', 'bookacti_woocommerce_fill_booking_list_custom_columns', 20, 3 );
+	add_filter( 'bookacti_booking_list_booking_columns', 'bookacti_woocommerce_fill_booking_list_custom_columns', 20, 4 );
 	
 	
 	/**
@@ -521,7 +519,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	
 	/**
 	 * Add price to be refunded in refund dialog
-	 * 
+	 * @version 1.5.4
 	 * @param string $text
 	 * @param int $booking_id
 	 * @param string $booking_type
@@ -536,7 +534,11 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		}
 		
 		if( $item ) {
-			$refund_amount = wc_price( (float) $item[ 'line_total' ] + (float) $item[ 'line_tax' ] );
+			// WOOCOMMERCE 3.0.0 backward compatibility 
+			$total	= is_array( $item ) ? $item[ 'line_total' ] : $item->get_total();
+			$tax	= is_array( $item ) ? $item[ 'line_tax' ] : $item->get_total_tax();
+			
+			$refund_amount = wc_price( (float) $total + (float) $tax );
 			$text .= '<div id="bookacti-refund-amount">' . esc_html__( 'Refund amount:', BOOKACTI_PLUGIN_NAME ) . ' <strong>' . $refund_amount . '</strong></div>';
 		}
 		return $text;
@@ -570,9 +572,8 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 	/**
 	 * Turn order item booking status meta to new status according to given booking id
-	 *
 	 * @since 1.2.0 (was bookacti_woocommerce_turn_booking_meta_state_to_new_state before)
-	 * 
+	 * @version 1.5.4
 	 * @param int $booking_id
 	 * @param string $new_state
 	 * @param array $args
@@ -590,6 +591,8 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		if( ! $order ) { return; }
 		
 		$item = bookacti_get_order_item_by_booking_id( $booking_id );
+		
+		if( ! $item ) { return; }
 		
 		bookacti_update_order_item_booking_status( $item, $new_state, $order, $args );
 	}
@@ -704,7 +707,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	
 	/**
 	 * Check if a booking can be refunded
-	 * 
+	 * @version 1.5.4
 	 * @param boolean $true
 	 * @param int $booking_id
 	 * @return boolean
@@ -716,11 +719,17 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			$order_id	= bookacti_get_booking_order_id( $booking_id );
 			$order		= wc_get_order( $order_id );
 			if( $order ) {
-				$item		= bookacti_get_order_item_by_booking_id( $booking_id );
-				$is_paid	= get_post_meta( $order_id, '_paid_date', true );
+				$item = bookacti_get_order_item_by_booking_id( $booking_id );
+				
+				if( ! $item ) { return false; }
+				
+				$is_paid = get_post_meta( $order_id, '_paid_date', true );
+				
+				// WOOCOMMERCE 3.0.0 backward compatibility 
+				$total = is_array( $item ) ? $item[ 'line_total' ] : $item->get_total();
 				
 				if( $order->get_status() === 'pending' 
-				||  $item[ 'line_total' ] <= 0
+				||  $total <= 0
 				||  ! $is_paid ) { $true = false; }
 			}
 		}
@@ -732,7 +741,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	
 	/**
 	 * Check if a booking group can be refunded
-	 * 
+	 * @version 1.5.4
 	 * @param boolean $true
 	 * @param int $booking_group_id
 	 * @return boolean
@@ -745,11 +754,17 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			$order		= wc_get_order( $order_id );
 			
 			if( $order ) {
-				$item		= bookacti_get_order_item_by_booking_group_id( $booking_group_id );
-				$is_paid	= get_post_meta( $order_id, '_paid_date', true );
+				$item = bookacti_get_order_item_by_booking_group_id( $booking_group_id );
+				
+				if( ! $item ) { return false; }
+				
+				$is_paid = get_post_meta( $order_id, '_paid_date', true );
+				
+				// WOOCOMMERCE 3.0.0 backward compatibility 
+				$total = is_array( $item ) ? $item[ 'line_total' ] : $item->get_total();
 				
 				if( $order->get_status() === 'pending' 
-				||  $item[ 'line_total' ] <= 0
+				||  $total <= 0
 				||  ! $is_paid ) { $true = false; }
 			}
 		}
@@ -836,9 +851,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	
 	/**
 	 * Refund request email data
-	 * 
-	 * @version 1.1.0
-	 * 
+	 * @version 1.5.4
 	 * @param array $data
 	 * @param int $booking_id
 	 * @param string $booking_type
@@ -854,14 +867,20 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		
 		if( empty( $item ) ) { return $data; }
 		
+		// WOOCOMMERCE 3.0.0 backward compatibility 
+		$item_name		= is_array( $item ) ? $item['name'] : $item->get_name();
+		$total			= is_array( $item ) ? $item['line_total'] : $item->get_total();
+		$tax			= is_array( $item ) ? $item['line_tax'] : $item->get_total_tax();
+		$variation_id	= is_array( $item ) ? $item['variation_id'] : $item->get_variation_id();
+		
 		$data['product']			= array();
-		$data['product']['name']	= apply_filters( 'bookacti_translate_text', $item['name'] );
-		if( $item['variation_id'] ){
-			$variation	= new WC_Product_Variation( $item['variation_id'] );
+		$data['product']['name']	= apply_filters( 'bookacti_translate_text', $item_name );
+		if( $variation_id ){
+			$variation	= new WC_Product_Variation( $variation_id );
 			$attributes	= $variation->get_variation_attributes();
 			$data['product']['attributes'] = implode( ' / ', $attributes );
 		}
-		$data['product']['price'] = wc_price( (float) $item['line_total'] + (float) $item['line_tax'] );
+		$data['product']['price'] = wc_price( (float) $total + (float) $tax );
 		
 		return $data;
 	}
@@ -904,8 +923,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	
 	/**
 	 * Update dates after reschedule
-	 * 
-	 * @version 1.2.0
+	 * @version 1.5.4
 	 * @param int $booking_id
 	 * @param object $old_booking
 	 * @param array $args
@@ -917,7 +935,10 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			
 		if( ! $item ) { return; }
 		
-		$booked_events = wc_get_order_item_meta( $item[ 'id' ], 'bookacti_booked_events' );
+		// WOOCOMMERCE 3.0.0 backward compatibility 
+		$order_item_id = is_array( $item ) ? $item[ 'id' ] : $item->get_id();
+		
+		$booked_events = wc_get_order_item_meta( $order_item_id, 'bookacti_booked_events' );
 		
 		if( ! empty( $booked_events ) ) {
 			
@@ -934,20 +955,23 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			
 			// Update only start and end of the desired booking
 			$booking = bookacti_get_booking_by_id( $booking_id );
+			
+			if( ! $booking ) { return; }
+			
 			$booked_events[ $key ]->event_start	= $booking->event_start;
 			$booked_events[ $key ]->event_end	= $booking->event_end;
 			
-			wc_update_order_item_meta( $item[ 'id' ], 'bookacti_booked_events', json_encode( $booked_events ) );
+			wc_update_order_item_meta( $order_item_id, 'bookacti_booked_events', json_encode( $booked_events ) );
 			
 		// For bookings made before Booking Activities 1.1.0
 		} else {
 			// Delete old data
-			wc_delete_order_item_meta( $item[ 'id' ], 'bookacti_event_start' );
-			wc_delete_order_item_meta( $item[ 'id' ], 'bookacti_event_end' );
+			wc_delete_order_item_meta( $order_item_id, 'bookacti_event_start' );
+			wc_delete_order_item_meta( $order_item_id, 'bookacti_event_end' );
 			
 			// Insert new booking data
 			$event = bookacti_get_booking_event_data( $booking_id );
-			wc_add_order_item_meta( $item[ 'id' ], 'bookacti_booked_events', json_encode( array( $event ) ) );
+			wc_add_order_item_meta( $order_item_id, 'bookacti_booked_events', json_encode( array( $event ) ) );
 		}
 	}
 	add_action( 'bookacti_booking_rescheduled', 'bookacti_woocommerce_update_booking_dates', 10, 3 );
@@ -995,10 +1019,11 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	/**
 	 * AJAX Controller - Delete an order item (or only its metadata)
 	 * @since 1.5.0
-	 * @param WC_Order_Item $order_item
+	 * @version 1.5.4
+	 * @param WC_Order_Item $item
 	 * @param string $action "delete_meta" to delete only Booking Activities data from the item. "delete_item" to delete the whole item.
 	 */
-	function bookacti_controller_delete_order_item( $order_item, $action ) {
+	function bookacti_controller_delete_order_item( $item, $action ) {
 		
 		if( ! $action ) { 
 			$array = array(
@@ -1012,15 +1037,9 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		if( $action === 'none' ) { return; }
 		
 		// Get item id and order id
-		$item_id = 0; $order_id = 0;
 		// WOOCOMMERCE 3.0.0 backward compatibility 
-		if( version_compare( WC_VERSION, '3.0.0', '>=' ) ) {
-			$item_id	= $order_item->get_id();
-			$order_id	= $order_item->get_order_id();
-		} else {
-			$item_id	= $order_item[ 'id' ];
-			$order_id	= $order_item[ 'order_id' ];
-		}
+		$item_id	= is_array( $item ) ? $item[ 'id' ] : $item->get_id();
+		$order_id	= is_array( $item ) ? $item[ 'order_id' ] : $item->get_order_id();
 		
 		$order = wc_get_order( $order_id );
 		
@@ -1079,11 +1098,11 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	function bookacti_controller_delete_order_item_bound_to_booking_group( $booking_group_id ) {
 		$action = ! empty( $_POST[ 'order-item-action' ] ) ? $_POST[ 'order-item-action' ] : 'none';
 		
-		$order_item = bookacti_get_order_item_by_booking_group_id( $booking_group_id );
+		$item = bookacti_get_order_item_by_booking_group_id( $booking_group_id );
 		
-		if( ! $order_item ) { return; }
+		if( ! $item ) { return; }
 		
-		bookacti_controller_delete_order_item( $order_item, $action );
+		bookacti_controller_delete_order_item( $item, $action );
 	}
 	add_action( 'bookacti_before_delete_booking_group', 'bookacti_controller_delete_order_item_bound_to_booking_group', 10, 1 );
 	
@@ -1096,10 +1115,10 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	function bookacti_controller_delete_order_item_bound_to_booking( $booking_id ) {
 		$action = ! empty( $_POST[ 'order-item-action' ] ) ? $_POST[ 'order-item-action' ] : 'none';
 		
-		$order_item = bookacti_get_order_item_by_booking_id( $booking_id );
+		$item = bookacti_get_order_item_by_booking_id( $booking_id );
 		
-		if( $order_item ) { 
-			bookacti_controller_delete_order_item( $order_item, $action );
+		if( $item ) { 
+			bookacti_controller_delete_order_item( $item, $action );
 			return;
 		}
 	}
@@ -1109,6 +1128,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	/**
 	 * Remove a grouped booking from order item metadata
 	 * @since 1.5.0
+	 * @version 1.5.4
 	 * @param int $booking_id
 	 */
 	function bookacti_remove_grouped_booking_from_order_item( $booking_id ) {
@@ -1117,18 +1137,13 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		if( ! $booking || ! $booking->group_id ) { return; }
 		
 		// ...And if this group is bound to a WC order item
-		$order_item = bookacti_get_order_item_by_booking_group_id( $booking->group_id );
-		if( ! $order_item ) { return; }
+		$item = bookacti_get_order_item_by_booking_group_id( $booking->group_id );
+		if( ! $item ) { return; }
 		
 		// Get item id
 		// WOOCOMMERCE 3.0.0 backward compatibility 
-		if( version_compare( WC_VERSION, '3.0.0', '>=' ) ) {
-			$item_id	= $order_item->get_id();
-			$order_id	= $order_item->get_order_id();
-		} else {
-			$item_id	= $order_item[ 'id' ];
-			$order_id	= $order_item[ 'order_id' ];
-		}
+		$item_id	= is_array( $item ) ? $item[ 'id' ] : $item->get_id();
+		$order_id	= is_array( $item ) ? $item[ 'order_id' ] : $item->get_order_id();
 		
 		// Get the bookings list
 		$grouped_bookings = wc_get_order_item_meta( $item_id, 'bookacti_booked_events', true );

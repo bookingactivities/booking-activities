@@ -1,7 +1,7 @@
 <?php
 /**
  * Booking list page
- * @version 1.5.0
+ * @version 1.5.4
  */
 
 // Exit if accessed directly
@@ -69,7 +69,7 @@ if( ! $templates ) {
 						'name'		=> 'templates',
 						'id'		=> 'bookacti-booking-filter-templates',
 						'options'	=> $templates_select_options,
-						'value'		=> $selected_templates,
+						'value'		=> array_map( 'intval', $selected_templates ),
 						'multiple'	=> true
 					);
 					bookacti_display_field( $args );
@@ -103,7 +103,7 @@ if( ! $templates ) {
 						'name'		=> 'activities',
 						'id'		=> 'bookacti-booking-filter-activities',
 						'options'	=> $activities_select_options,
-						'value'		=> $selected_activities,
+						'value'		=> array_map( 'intval', $selected_activities ),
 						'multiple'	=> true
 					);
 					bookacti_display_field( $args );
@@ -282,8 +282,8 @@ if( ! $templates ) {
 			$filters = array(
 				'templates'					=> $selected_templates, 
 				'activities'				=> $selected_activities, 
-				'booking_id'				=> isset( $_REQUEST[ 'booking_id' ] )		? intval( $_REQUEST[ 'booking_id' ] ): 0, 
-				'booking_group_id'			=> isset( $_REQUEST[ 'booking_group_id' ] )	? intval( $_REQUEST[ 'booking_group_id' ] ): 0, 
+				'booking_id'				=> isset( $_REQUEST[ 'booking_id' ] )		? intval( $_REQUEST[ 'booking_id' ] ) : 0, 
+				'booking_group_id'			=> isset( $_REQUEST[ 'booking_group_id' ] )	? intval( $_REQUEST[ 'booking_group_id' ] ) : 0, 
 				'event_group_id'			=> $event_group_id, 
 				'event_id'					=> $event_id, 
 				'event_start'				=> $event_start, 

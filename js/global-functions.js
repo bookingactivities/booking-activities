@@ -39,15 +39,21 @@ function bookacti_init_tooltip() {
 }
 
 
-// Scroll to element
+/**
+ * Scroll to element or to position
+ * @version 1.5.4
+ * @param {DOM_Element} or {number} element
+ * @param {int} speed
+ * @param {string} position Either "middle" or "top"
+ */
 function bookacti_scroll_to( element, speed, position ) {
 	speed	= $j.isNumeric( speed ) ? parseInt( speed ) : 500;
 	position= position !== 'middle' ? 'top' : 'middle';
 	
-	var elOffset = element.offset().top;
+	var elOffset = typeof element === 'number' ? element : element.offset().top;
 	var offset = elOffset;
 	
-	if( position === 'middle' ) {	
+	if( position === 'middle' && typeof element !== 'number' ) {	
 		var elHeight = element.height();
 		var windowHeight = $j( window ).height();
 
@@ -149,7 +155,7 @@ $j.fn.serializeObject = function() {
 function bookacti_init_user_selectbox() {
 	// Jquery UI Autocomplete
 	( function( $j ) {
-		$j.widget( "custom.combobox", {
+		$j.widget( "custom.bookacti_combobox", {
 			_create: function() {
 				this.wrapper = $j( "<span>" )
 					.addClass( "bookacti-combobox" )
@@ -287,7 +293,7 @@ function bookacti_init_user_selectbox() {
 	})( jQuery );
 
 	$j( function() {
-		$j( '.bookacti-user-selectbox' ).combobox();
+		$j( '.bookacti-user-selectbox' ).bookacti_combobox();
 	});
 }
 

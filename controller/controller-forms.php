@@ -25,7 +25,7 @@ add_action( 'bookacti_display_form_field_calendar', 'bookacti_display_form_field
 /**
  * Display the form field 'login'
  * @since 1.5.0
- * @version 1.5.1
+ * @version 1.5.4
  * @param string $html
  * @param array $field
  * @param string $instance_id
@@ -36,7 +36,8 @@ function bookacti_display_form_field_login( $html, $field, $instance_id, $contex
 	
 	$field_id		= ! empty( $field[ 'id' ] ) ? esc_attr( $field[ 'id' ] ) : esc_attr( 'bookacti-form-field-' . $field[ 'type' ] . '-' . $field[ 'field_id' ] . '-' . $instance_id );
 	$field_class	= 'bookacti-form-field-container';
-	if( ! empty( $field[ 'name' ] ) )		{ $field_class .= ' bookacti-form-field-name-' . esc_attr( $field[ 'name' ] ); } 
+	if( ! empty( $field[ 'name' ] ) )		{ $field_class .= ' bookacti-form-field-name-' . sanitize_title_with_dashes( esc_attr( $field[ 'name' ] ) ); } 
+	if( ! empty( $field[ 'type' ] ) )		{ $field_class .= ' bookacti-form-field-type-' . sanitize_title_with_dashes( esc_attr( $field[ 'type' ] ) ); } 
 	if( ! empty( $field[ 'field_id' ] ) )	{ $field_class .= ' bookacti-form-field-id-' . esc_attr( $field[ 'field_id' ] ); }
 	if( ! empty( $field[ 'class' ] ) )		{ $field_class .= ' ' . esc_attr( $field[ 'class' ] ); }
 	ob_start();
@@ -214,6 +215,7 @@ add_filter( 'bookacti_html_form_field_login', 'bookacti_display_form_field_login
 /**
  * Display the form field "Login / Registration" when the user is already logged in
  * @since 1.5.0
+ * @version 1.5.4
  * @param string $html
  * @param array $field
  * @param string $instance_id
@@ -230,7 +232,8 @@ function bookacti_display_form_field_login_when_logged_in( $html, $field, $insta
 	$user			= get_user_by( 'id', get_current_user_id() );
 	$field_id		= ! empty( $field[ 'id' ] ) ? esc_attr( $field[ 'id' ] ) : esc_attr( 'bookacti-form-field-' . $field[ 'type' ] . '-' . $field[ 'field_id' ] . '-' . $instance_id );
 	$field_class	= 'bookacti-form-field-container';
-	if( ! empty( $field[ 'name' ] ) )		{ $field_class .= ' bookacti-form-field-name-' . esc_attr( $field[ 'name' ] ); } 
+	if( ! empty( $field[ 'name' ] ) )		{ $field_class .= ' bookacti-form-field-name-' . sanitize_title_with_dashes( esc_attr( $field[ 'name' ] ) ); } 
+	if( ! empty( $field[ 'type' ] ) )		{ $field_class .= ' bookacti-form-field-type-' . sanitize_title_with_dashes( esc_attr( $field[ 'type' ] ) ); } 
 	if( ! empty( $field[ 'field_id' ] ) )	{ $field_class .= ' bookacti-form-field-id-' . esc_attr( $field[ 'field_id' ] ); }
 	if( ! empty( $field[ 'class' ] ) )		{ $field_class .= ' ' . esc_attr( $field[ 'class' ] ); }
 	ob_start();
@@ -277,6 +280,7 @@ add_action( 'bookacti_display_form_field_quantity', 'bookacti_display_form_field
 /**
  * Display the form field 'checkbox'
  * @since 1.5.2
+ * @version 1.5.4
  * @param string $html
  * @param array $field
  * @param string $instance_id
@@ -287,7 +291,8 @@ function bookacti_display_form_field_checkbox( $html, $field, $instance_id, $con
 	
 	$field_id		= ! empty( $field[ 'id' ] ) ? esc_attr( $field[ 'id' ] ) : esc_attr( 'bookacti-form-field-' . $field[ 'type' ] . '-' . $field[ 'field_id' ] . '-' . $instance_id );
 	$field_class	= 'bookacti-form-field-container';
-	if( ! empty( $field[ 'name' ] ) )		{ $field_class .= ' bookacti-form-field-name-' . esc_attr( $field[ 'name' ] ); } 
+	if( ! empty( $field[ 'name' ] ) )		{ $field_class .= ' bookacti-form-field-name-' . sanitize_title_with_dashes( esc_attr( $field[ 'name' ] ) ); } 
+	if( ! empty( $field[ 'type' ] ) )		{ $field_class .= ' bookacti-form-field-type-' . sanitize_title_with_dashes( esc_attr( $field[ 'type' ] ) ); } 
 	if( ! empty( $field[ 'field_id' ] ) )	{ $field_class .= ' bookacti-form-field-id-' . esc_attr( $field[ 'field_id' ] ); }
 	if( ! empty( $field[ 'class' ] ) )		{ $field_class .= ' ' . esc_attr( $field[ 'class' ] ); }
 	ob_start();
@@ -326,6 +331,7 @@ add_filter( 'bookacti_html_form_field_checkbox', 'bookacti_display_form_field_ch
 /**
  * Display the form field 'submit'
  * @since 1.5.0
+ * @version 1.5.4
  * @param string $html
  * @param array $field
  * @param string $instance_id
@@ -335,7 +341,8 @@ add_filter( 'bookacti_html_form_field_checkbox', 'bookacti_display_form_field_ch
 function bookacti_display_form_field_submit( $html, $field, $instance_id, $context ) {
 	$field_id		= ! empty( $field[ 'id' ] ) ? esc_attr( $field[ 'id' ] ) : esc_attr( 'bookacti-form-field-' . $field[ 'type' ] . '-' . $field[ 'field_id' ] . '-' . $instance_id );
 	$field_class	= 'bookacti-form-field-container';
-	if( ! empty( $field[ 'name' ] ) )		{ $field_class .= ' bookacti-form-field-name-' . esc_attr( $field[ 'name' ] ); } 
+	if( ! empty( $field[ 'name' ] ) )		{ $field_class .= ' bookacti-form-field-name-' . sanitize_title_with_dashes( esc_attr( $field[ 'name' ] ) ); } 
+	if( ! empty( $field[ 'type' ] ) )		{ $field_class .= ' bookacti-form-field-type-' . sanitize_title_with_dashes( esc_attr( $field[ 'type' ] ) ); } 
 	if( ! empty( $field[ 'field_id' ] ) )	{ $field_class .= ' bookacti-form-field-id-' . esc_attr( $field[ 'field_id' ] ); }
 	if( ! empty( $field[ 'class' ] ) )		{ $field_class .= ' ' . esc_attr( $field[ 'class' ] ); }
 	ob_start();
@@ -457,7 +464,7 @@ add_action( 'wp_ajax_nopriv_bookactiForgottenPassword', 'bookacti_controller_for
 
 /**
  * Check if booking form is correct and then book the event, or send the error message
- * @version 1.5.3
+ * @version 1.5.4
  */
 function bookacti_controller_validate_booking_form() {
 	
@@ -608,7 +615,8 @@ function bookacti_controller_validate_booking_form() {
 												$booking_form_values[ 'default_state' ],
 												$booking_form_values[ 'payment_status' ],
 												null,
-												null );
+												null,
+												$form_id );
 		if( ! empty( $booking_id ) ) {
 			do_action( 'bookacti_booking_form_validated', $booking_id, $booking_form_values, 'single', $form_id );
 
@@ -631,7 +639,8 @@ function bookacti_controller_validate_booking_form() {
 															$booking_form_values[ 'quantity' ], 
 															$booking_form_values[ 'default_state' ], 
 															$booking_form_values[ 'payment_status' ], 
-															null );
+															null,
+															$form_id );
 		if( ! empty( $booking_group_id ) ) {
 			do_action( 'bookacti_booking_form_validated', $booking_group_id, $booking_form_values, 'group', $form_id );
 			
@@ -1113,7 +1122,7 @@ add_action( 'wp_ajax_bookactiSaveFormFieldOrder', 'bookacti_controller_save_form
 /**
  * AJAX Controller - Update a field
  * @since 1.5.0
- * @version 1.5.3
+ * @version 1.5.4
  */
 function bookacti_controller_update_form_field() {
 	// Check nonce
@@ -1149,6 +1158,8 @@ function bookacti_controller_update_form_field() {
 	$field_meta = array_intersect_key( $sanitized_data, bookacti_get_default_form_fields_meta( $field[ 'name' ] ) );
 
 	if( $field_meta ) {
+		// Unserialize values before preocessing through bookacti_update_metadata
+		foreach( $field_meta as $key => $value ) { $field_meta[ $key ] = maybe_unserialize( $value ); }
 		// Update field metadata
 		bookacti_update_metadata( 'form_field', $field_id, $field_meta );
 	}

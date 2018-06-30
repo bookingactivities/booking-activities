@@ -38,7 +38,7 @@ foreach( $fields_data as $field_name => $field_data ) {
 					// Add the field if it isn't already in the form, or if it is not unique
 					$disabled = in_array( $field_data[ 'name' ], $field_already_added, true ) && $field_data[ 'unique' ] ? 'disabled' : '';
 					if( ! $field_data[ 'compulsory' ] ) {
-						echo '<option value="' . $field_data[ 'name' ] . '" data-unique="' . $field_data[ 'unique' ] . '" ' . $disabled . '>' . $field_data[ 'title' ] . '</option>';
+						echo '<option value="' . $field_data[ 'name' ] . '" data-unique="' . $field_data[ 'unique' ] . '" ' . $disabled . '>' . apply_filters( 'bookacti_translate_text', $field_data[ 'title' ] ) . '</option>';
 					}
 				}
 			?>
@@ -46,6 +46,8 @@ foreach( $fields_data as $field_name => $field_data ) {
 		</div>
 		<?php 
 			do_action( 'bookacti_insert_form_field_dialog_after', $form, $form_fields );
+			
+			bookacti_display_baaf_promo();
 		?>
 	</form>
 </div>

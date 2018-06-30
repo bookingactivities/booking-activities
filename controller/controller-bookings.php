@@ -677,14 +677,13 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	
 	/**
 	 * Change Customer name in bookings list
-	 *  
+	 * @version 1.5.4
 	 * @param array $booking_item
 	 * @param object $booking
 	 * @param WP_User $user
 	 * @return array
 	 */
-	function bookacti_change_customer_name_in_bookings_list( $booking_item, $booking, $user ) {
-		
+	function bookacti_change_customer_name_in_bookings_list( $booking_item, $booking, $user, $list ) {
 		if( is_numeric( $booking->user_id ) ) {
 			if( isset( $user->first_name ) && $user->last_name ) {
 				$customer = '<a  href="' . esc_url( get_admin_url() . 'user-edit.php?user_id=' . $booking->user_id ) . '" '
@@ -694,7 +693,6 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 				$booking_item[ 'customer' ] = $customer;
 			}
 		}
-		
 		return $booking_item;
 	}
-	add_filter( 'bookacti_booking_list_booking_columns', 'bookacti_change_customer_name_in_bookings_list', 10, 3 );
+	add_filter( 'bookacti_booking_list_booking_columns', 'bookacti_change_customer_name_in_bookings_list', 10, 4 );

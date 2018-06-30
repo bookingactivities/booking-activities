@@ -6,7 +6,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
  * Send one notification per booking to admin and customer when an order contining bookings is made or when its status changes
  *
  * @since 1.2.2
- * @version 1.4.0
+ * @version 1.5.4
  * @param WC_Order $order
  * @param string $new_status
  * @param array $args
@@ -53,7 +53,7 @@ function bookacti_send_notification_when_order_status_changes( $order, $new_stat
 		
 		// If the state hasn't changed, do not send the notifications, unless it is a new order
 		$old_status = isset( $args[ 'old_status' ] ) && $args[ 'old_status' ] ? $args[ 'old_status' ] : wc_get_order_item_meta( $order_item_id, 'bookacti_state', true );
-		if( $old_status === $new_status && ! $args[ 'is_new_order' ] ) { continue; }
+		if( $old_status === $new_status && empty( $args[ 'is_new_order' ] ) ) { continue; }
 		
 		// Get booking ID and booking type ('single' or 'group')
 		if( isset( $item[ 'bookacti_booking_id' ] ) ) {

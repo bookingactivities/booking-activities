@@ -31,7 +31,7 @@ $j( document ).ready( function() {
 
 // BOOKING LIST
 	
-	// Apply some filters after the caladar has set up
+	// Apply some filters after the calendar has set up
 	booking_system.on( 'bookacti_after_calendar_set_up', function() { 
 		var calendar = booking_system.find( '.bookacti-calendar' );
 		
@@ -63,6 +63,7 @@ $j( document ).ready( function() {
 	
 	// Refresh the calendar when a booking has been reschedule
 	$j( 'body' ).on( 'bookacti_booking_rescheduled', function(){
+		bookacti_init_tooltip();
 		var booking_system = $j( '#bookacti-booking-system-bookings-page' );
 		bookacti_booking_method_refetch_events( booking_system );
 		bookacti_refresh_booking_numbers( booking_system );
