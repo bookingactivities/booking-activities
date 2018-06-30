@@ -5,7 +5,7 @@ Tags: booking activities, booking sport, booking form, event reservation, reserv
 Requires at least: 3.6
 Tested up to: 4.9
 Requires PHP: 5.3
-Stable tag: 1.5.3
+Stable tag: 1.5.4
 License: GPLv3 or later
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
 
@@ -317,7 +317,7 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 
 == Changelog ==
 
-= 1.5.4 =
+= 1.5.4 - 2018/06/30 =
 * Tweak - Add the refund coupon code in customers' booking list
 * Fix - Inconsistency between cart items and bookings when the same event is booked twice from different products / variations
 * Fix - Couldn't save some Login / Registration field options
