@@ -553,7 +553,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	 * @return array
 	 */
 	function bookacti_merge_cart_items_with_same_booking_data( $cart_item_data, $cart_item_key ) {
-		if( empty( $cart_item_data[ '_bookacti_options' ][ 'bookacti_booking_id' ] ) && empty( $cart_item_data[ '_bookacti_options' ][ 'bookacti_booking_group_id' ] ) ) { return $cart_item_id; }
+		if( empty( $cart_item_data[ '_bookacti_options' ][ 'bookacti_booking_id' ] ) && empty( $cart_item_data[ '_bookacti_options' ][ 'bookacti_booking_group_id' ] ) ) { return $cart_item_data; }
 		
 		$product_id		= $cart_item_data[ 'product_id' ];
 		$variation_id	= $cart_item_data[ 'variation_id' ];
