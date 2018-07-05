@@ -172,7 +172,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		/**
 		 * AJAX Controller - Change booking state
 		 * 
-		 * @version 1.3.0
+		 * @version 1.5.6
 		 */
 		function bookacti_controller_change_booking_state() {
 
@@ -184,7 +184,8 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			
 			$new_booking_state	= array_key_exists( $booking_state, bookacti_get_booking_state_labels() ) ? $booking_state : false;
 			$new_payment_status	= array_key_exists( $payment_status, bookacti_get_payment_status_labels() ) ? $payment_status : false;
-
+			$active_changed		= false;
+			
 			// Check nonce, capabilities and other params
 			$is_nonce_valid			= check_ajax_referer( 'bookacti_change_booking_state', 'nonce', false );
 			$is_allowed				= current_user_can( 'bookacti_edit_bookings' );		
@@ -197,7 +198,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			if( $new_booking_state ) {
 				
 				$state_can_be_changed = bookacti_booking_state_can_be_changed_to( $booking_id, $new_booking_state );
-
+				
 				if( $state_can_be_changed ) {
 					$was_active	= bookacti_is_booking_active( $booking_id ) ? 1 : 0;
 					$active		= in_array( $new_booking_state, bookacti_get_active_booking_states(), true ) ? 1 : 0;
@@ -215,7 +216,9 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 					$updated = bookacti_update_booking_state( $booking_id, $new_booking_state );
 
 					if( ! $updated ) { wp_send_json( array( 'status' => 'failed' ) ); }
-
+					
+					if( $active !== $was_active ) { $active_changed = true; }
+					
 					do_action( 'bookacti_booking_state_changed', $booking_id, $new_booking_state, array( 'is_admin' => $is_bookings_page, 'active' => $active, 'send_notifications' => $send_notifications ) );
 				}
 			}
@@ -224,7 +227,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			if( $new_payment_status ) {
 				$updated = bookacti_update_booking_payment_status( $booking_id, $new_payment_status );
 				
-				if( ! $updated ) { wp_send_json( array( 'status' => 'failed' ) ); }
+				if( $updated === false ) { wp_send_json( array( 'status' => 'failed' ) ); }
 				
 				do_action( 'bookacti_booking_payment_status_changed', $booking_id, $new_payment_status, array( 'is_admin' => $is_bookings_page ) );
 			}
@@ -233,8 +236,6 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			$Bookings_List_Table->prepare_items( array( 'booking_id' => $booking_id ), true );
 			$row = $Bookings_List_Table->get_rows_or_placeholder();
 			
-			$active_changed = $active === $was_active ? false : true;
-
 			wp_send_json( array( 'status' => 'success', 'row' => $row, 'active_changed' => $active_changed ) );
 		}
 		add_action( 'wp_ajax_bookactiChangeBookingState', 'bookacti_controller_change_booking_state' );
@@ -577,7 +578,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 					$booking_group	= bookacti_get_booking_group_by_id( $booking_group_id );
 					$was_active		= $booking_group->active ? 1 : 0;
 					$active			= in_array( $new_booking_state, bookacti_get_active_booking_states(), true ) ? 1 : 0;
-					$active_changed = $active === $was_active ? false : true;
+					if( $active !== $was_active ) { $active_changed = true; }
 
 					// If the booking group was inactive and become active, we need to check availability
 					$validated['status'] = 'success';

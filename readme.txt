@@ -317,6 +317,13 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 
 == Changelog ==
 
+= 1.5.6 - 2018/07 =
+* Tweak - Changed "refunded" and "refund_requested" icon
+* Fix - Administrators cannot change booking states to "refunded" if the booking was not actually paid in WooCommerce
+* Fix - Cancelling / Completing orders in WooCommerce changed all their bookings states to "cancel" / "booked" -> now only in_cart and pending bookings are changed
+* Fix - Completing a WooCommerce order turned "no payment required" bookings to "paid"
+* Fix - PHP error while changing booking state
+
 = 1.5.5 - 2018/07/02 =
 * Fix - Non-activity products couldn't be added to cart
 

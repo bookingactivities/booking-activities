@@ -364,7 +364,12 @@ function bookacti_dialog_refund_confirmation( message ) {
 }
 
 
-// Change Booking State
+/**
+ * Change Booking State
+ * @version 1.5.6
+ * @param {int} booking_id
+ * @param {string} booking_type
+ */
 function bookacti_dialog_change_booking_state( booking_id, booking_type ) {
 	
 	// Sanitize booking_type
@@ -423,7 +428,7 @@ function bookacti_dialog_change_booking_state( booking_id, booking_type ) {
 						data: { 'action': action, 
 								'booking_id': booking_id,
 								'new_booking_state': booking_state !== new_booking_state ? new_booking_state : 0,
-								'new_payment_status': payment_status !== new_payment_status ? new_payment_status : 0,
+								'new_payment_status': new_payment_status,
 								'send_notifications': send_notifications,
 								'is_bookings_page': is_bookings_page,
 								'reload_grouped_bookings': reload_grouped_bookings,

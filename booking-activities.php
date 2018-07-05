@@ -157,6 +157,7 @@ function bookacti_enqueue_global_scripts() {
 	
 	// INCLUDE STYLESHEETS
 	wp_enqueue_style ( 'bookacti-css-global',		plugins_url( 'css/global.min.css', __FILE__ ), array(), BOOKACTI_VERSION );
+	wp_enqueue_style ( 'bookacti-css-fonts',		plugins_url( 'css/fonts.min.css', __FILE__ ), array(), BOOKACTI_VERSION );
 	wp_enqueue_style ( 'bookacti-css-bookings',		plugins_url( 'css/bookings.min.css', __FILE__ ), array(), BOOKACTI_VERSION );
 	wp_enqueue_style ( 'bookacti-css-forms',		plugins_url( 'css/forms.min.css', __FILE__ ), array(), BOOKACTI_VERSION );
 	wp_enqueue_style ( 'bookacti-css-woocommerce',	plugins_url( 'css/woocommerce.min.css', __FILE__ ), array(), BOOKACTI_VERSION );

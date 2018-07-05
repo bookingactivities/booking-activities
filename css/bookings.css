@@ -122,7 +122,9 @@
 .bookacti-payment-status-bad:before,
 .bookacti-booking-state-bad:before		{ content: '\2716  '; }
 .bookacti-payment-status-disabled:before{ content: '\2013  '; }
-
+.bookacti-booking-state-bad[data-booking-state="refund_requested"]::before,
+.bookacti-booking-state-bad[data-booking-state="refunded"]::before			{ content:'\0041'; font-family: 'booking_activities_icons'; }
+.bookacti-booking-state-bad[data-booking-state="refund_requested"]::after	{ content:'?'; }
 
 .wp-admin a.bookacti-booking-action, 
 .wp-admin a.bookacti-booking-group-action				{ width: 2em; height: 2em; padding: 0; text-align: center; }
