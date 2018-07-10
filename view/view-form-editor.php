@@ -183,7 +183,7 @@ if( ! $form ) { exit; }
 												<p>
 												<?php 
 													/* translators: %1$s is the placeholder for Advanced Forms add-on link */
-													echo sprintf( esc_html__( 'Add any custom fields to your booking form thanks to the %1$s add-on:' ), $addon_link ); 
+													echo sprintf( esc_html__( 'Add any custom fields to your booking form thanks to the %1$s add-on:', BOOKACTI_PLUGIN_NAME ), $addon_link ); 
 												?>
 												</p>
 												<div id='bookacti-form-editor-promo-field-height' class='bookacti-form-editor-field bookacti-form-editor-promo-field'>

@@ -1071,7 +1071,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 				
 				// Change the booking group state accordingly
 				// Also change its user_id and order_id to make sure it is up to date
-				bookacti_update_booking_group( $booking_group_id, $state, $payment_status, $user_id, $order_id, $states_in );
+				bookacti_update_booking_group( $booking_group_id, $state, $payment_status, $user_id, $order_id, NULL, 'auto', $states_in );
 			}
 		}
 		
@@ -1220,7 +1220,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	 * Turn the order state if it is composed of inactive / pending / booked bookings only
 	 * 
 	 * @since 1.1.0
-	 * @version 1.2.2
+	 * @version 1.5.6
 	 * 
 	 * @param int $order_id
 	 */
@@ -1256,8 +1256,8 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		$new_order_status = 'cancelled';
 		
 		if( in_array( 'pending', $states, true ) ) {
-			// Turn order status to pending payment
-			$new_order_status = 'processing';
+			// Turn order status to processing (or let it on on-hold)
+			$new_order_status = $order->get_status() === 'on-hold' ? 'on-hold' : 'processing';
 		} else if( in_array( 'booked', $states, true ) ) {
 			// Turn order status to completed
 			$new_order_status = 'completed';

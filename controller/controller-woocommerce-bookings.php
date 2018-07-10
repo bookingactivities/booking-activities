@@ -175,7 +175,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		if( ! $order ) { $order = wc_get_order( $order_id ); }
 		
 		// Change state of all bookings of the order to 'cancelled' and free the bookings
-		bookacti_turn_order_bookings_to( $order, 'cancelled', NULL, false, array( 'states_in' => array( 'pending', 'in_cart' ) ) );
+		bookacti_turn_order_bookings_to( $order, 'cancelled', NULL, false, array( 'states_in' => array( 'booked', 'pending', 'in_cart' ) ) );
 		
 		// It is possible that 'pending' bookings remain if the user has changed his cart before payment, we must cancel them
 		bookacti_cancel_order_pending_bookings( $order_id );

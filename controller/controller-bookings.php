@@ -546,7 +546,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		 * AJAX Controller - Change booking group state
 		 * 
 		 * @since 1.1.0
-		 * @version 1.4.0
+		 * @version 1.5.6
 		 */
 		function bookacti_controller_change_booking_group_state() {
 
@@ -603,7 +603,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			if( $new_payment_status ) {
 				$updated = bookacti_update_booking_group_payment_status( $booking_group_id, $new_payment_status, true, true );
 				
-				if( ! $updated ) { wp_send_json( array( 'status' => 'failed' ) ); }
+				if( $updated === false ) { wp_send_json( array( 'status' => 'failed' ) ); }
 				
 				do_action( 'bookacti_booking_group_payment_status_changed', $booking_group_id, $new_payment_status, array( 'is_admin' => $is_bookings_page ) );
 			}

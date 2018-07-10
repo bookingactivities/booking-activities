@@ -5,7 +5,7 @@ Tags: booking activities, booking sport, booking form, event reservation, reserv
 Requires at least: 3.6
 Tested up to: 4.9
 Requires PHP: 5.3
-Stable tag: 1.5.5
+Stable tag: 1.5.6
 License: GPLv3 or later
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
 
@@ -317,12 +317,14 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 
 == Changelog ==
 
-= 1.5.6 - 2018/07 =
-* Tweak - Changed "refunded" and "refund_requested" icon
+= 1.5.6 - 2018/07/10 =
+* Tweak - Changed "refunded" and "refund_requested" booking state icon
+* Tweak - Add messages in Booking Activities settings tooltips
 * Fix - Administrators cannot change booking states to "refunded" if the booking was not actually paid in WooCommerce
 * Fix - Cancelling / Completing orders in WooCommerce changed all their bookings states to "cancel" / "booked" -> now only in_cart and pending bookings are changed
 * Fix - Completing a WooCommerce order turned "no payment required" bookings to "paid"
 * Fix - PHP error while changing booking state
+* Dev - Add hooks to change the booking status change notifications recipient
 
 = 1.5.5 - 2018/07/02 =
 * Fix - Non-activity products couldn't be added to cart
