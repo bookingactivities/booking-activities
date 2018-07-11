@@ -188,7 +188,7 @@ function bookacti_get_cart_expiration_date_per_user( $user_id ) {
 /**
  * Change bookings state and fill user and order id
  * 
- * @version 1.3.0
+ * @version 1.5.6
  * @global wpdb $wpdb
  * @param int $user_id
  * @param int $order_id
@@ -221,8 +221,9 @@ function bookacti_change_order_bookings_state( $user_id = NULL, $order_id = NULL
 
 	// Update payment status
 	if( $payment_status ){
-		$query .= ' payment_status = %s ';
+		$query .= ' payment_status = CASE WHEN ( payment_status = "none" AND %s = "paid" ) THEN payment_status ELSE %s END ';
 		if( $user_id || $order_id ) { $query .= ', '; }
+		$array_of_variables[] = $payment_status;
 		$array_of_variables[] = $payment_status;
 	}
 
@@ -252,11 +253,10 @@ function bookacti_change_order_bookings_state( $user_id = NULL, $order_id = NULL
 
 	if( $states_in && is_array( $states_in ) ) {
 		$query  .= ' AND state IN ( ';
-		$i = 0;
-		foreach( $states_in as $state_in ) {
-			++$i;
+		$len = count( $states_in );
+		for( $i=1; $i <= $len; ++$i ) {
 			$query  .= '%s';
-			if( $i < count( $states_in ) ) { $query  .= ', '; }
+			if( $i < $len ) { $query  .= ', '; }
 		}
 		$query  .= ' ) ';
 		$array_of_variables = array_merge( $array_of_variables, $states_in );

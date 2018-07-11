@@ -144,7 +144,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	/**
 	 * Turn a temporary booking to permanent if order gets complete
 	 * 
-	 * @version 1.5.0
+	 * @version 1.5.6
 	 * @param int $order_id
 	 * @param WC_Order $order
 	 * @param string $booking_status
@@ -154,7 +154,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		if( ! $order ) { $order = wc_get_order( $order_id ); }
 		
 		// Change state of all bookings of the order from 'pending' to 'booked'
-		$updated = bookacti_turn_order_bookings_to( $order, $booking_status, $payment_status, true );
+		$updated = bookacti_turn_order_bookings_to( $order, $booking_status, $payment_status, true, array( 'states_in' => array( 'pending', 'in_cart' ) ) );
 		
 		// It is possible that pending bookings remain bound to the order if the user change his mind after he placed the order, but before he paid it.
 		// He then changed his cart, placed a new order, paid it, and only part of the old order is booked (or even nothing), the rest is still 'pending'
@@ -167,7 +167,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	/**
 	 * Cancel the temporary booking if it failed
 	 * 
-	 * @version 1.5.0
+	 * @version 1.5.6
 	 * @param int $order_id
 	 * @param WC_Order $order
 	 */
@@ -175,7 +175,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		if( ! $order ) { $order = wc_get_order( $order_id ); }
 		
 		// Change state of all bookings of the order to 'cancelled' and free the bookings
-		bookacti_turn_order_bookings_to( $order, 'cancelled', NULL, false );
+		bookacti_turn_order_bookings_to( $order, 'cancelled', NULL, false, array( 'states_in' => array( 'booked', 'pending', 'in_cart' ) ) );
 		
 		// It is possible that 'pending' bookings remain if the user has changed his cart before payment, we must cancel them
 		bookacti_cancel_order_pending_bookings( $order_id );
@@ -634,7 +634,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	 * Turn order items booking status meta to new status
 	 *
 	 * @since 1.2.0
-	 * @version 1.5.0
+	 * @version 1.5.6
 	 * 
 	 * @param WC_Order $order
 	 * @param string $new_state
@@ -653,12 +653,9 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		if( ! $order_items ) { return; }
 		
 		foreach( $order_items as $order_item_id => $order_item ) {
-			$item				= $order_item;
-			$item[ 'id' ]		= $order_item_id;
-			if( version_compare( WC_VERSION, '3.0.0', '>=' ) ) {
-				$item[ 'order_id' ]	= $order->get_id();
-			} else {
-				$item[ 'order_id' ]	= $order->id;
+			$item = $order_item;
+			if( version_compare( WC_VERSION, '3.0.0', '<' ) ) {
+				$item[ 'id' ] = $order_item_id;
 			}
 			
 			// Do not allow to update order status based on new bookings status 

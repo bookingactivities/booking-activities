@@ -397,38 +397,40 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 				$true = false; 
 
 			}
-
+			
 			return apply_filters( 'bookacti_booking_can_be_refunded', $true, $booking_id );
 		}
 
 
 		/**
 		 * Check if a booking state can be changed to another
-		 * 
+		 * @version 1.5.6
 		 * @param int $booking_id
 		 * @param string $new_state
 		 * @return boolean
 		 */
 		function bookacti_booking_state_can_be_changed_to( $booking_id, $new_state ) {
-
-			$true = true;
-			switch ( $new_state ) {
-				case 'cancelled':
-					$true = bookacti_booking_can_be_cancelled( $booking_id );
-					break;
-				case 'refund_requested':
-					if( current_user_can( 'bookacti_edit_bookings' ) ) {
-						$state = bookacti_get_booking_state( $booking_id );
-						if ( $state === 'refund_requested' ) {
-							$true = false; 
-						}
-					} else {
+			
+			$true		= true;
+			$is_admin	= current_user_can( 'bookacti_edit_bookings' );
+			
+			if( $is_admin ) {
+				$state = bookacti_get_booking_state( $booking_id );
+				if ( $state === $new_state ) {
+					$true = false; 
+				}
+			}
+			
+			if( ! $is_admin && $true ) {
+				switch ( $new_state ) {
+					case 'cancelled':
+						$true = bookacti_booking_can_be_cancelled( $booking_id );
+						break;
+					case 'refund_requested':
+					case 'refunded':
 						$true = bookacti_booking_can_be_refunded( $booking_id );
-					}
-					break;
-				case 'refunded':
-					$true = bookacti_booking_can_be_refunded( $booking_id );
-					break;
+						break;
+				}
 			}
 
 			return apply_filters( 'bookacti_booking_state_can_be_changed', $true, $booking_id, $new_state );

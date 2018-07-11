@@ -1010,7 +1010,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	 * Turn all bookings of an order to the desired status. 
 	 * Also make sure that bookings are bound to the order and the associated user.
 	 * 
-	 * @version 1.5.0
+	 * @version 1.5.6
 	 * @param WC_Order $order
 	 * @param string $state
 	 * @param string $payment_status
@@ -1026,7 +1026,9 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		}		
 		
 		if( ! $order ) { return false; }
-
+		
+		$states_in = ! empty( $args[ 'states_in' ] ) ? $args[ 'states_in' ] : array();
+		
 		// Retrieve bought items and user id
 		$items		= $order->get_items();
 		$user_id	= $order->get_user_id();
@@ -1069,7 +1071,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 				
 				// Change the booking group state accordingly
 				// Also change its user_id and order_id to make sure it is up to date
-				bookacti_update_booking_group( $booking_group_id, $state, $payment_status, $user_id, $order_id );
+				bookacti_update_booking_group( $booking_group_id, $state, $payment_status, $user_id, $order_id, NULL, 'auto', $states_in );
 			}
 		}
 		
@@ -1084,8 +1086,8 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			$response[ 'updated' ]	= 0;
 			return $response;
 		}
-
-		$updated = bookacti_change_order_bookings_state( $user_id, $order_id, $booking_id_array, $state, $payment_status );
+		
+		$updated = bookacti_change_order_bookings_state( $user_id, $order_id, $booking_id_array, $state, $payment_status, $states_in );
 
 		$response[ 'status' ]		= 'success';
 		$response[ 'errors' ]		= array();
@@ -1139,7 +1141,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	 * Update order item booking status meta to new status
 	 *
 	 * @since 1.2.0
-	 * @version 1.5.4
+	 * @version 1.5.6
 	 * 
 	 * @param int $item
 	 * @param string $new_state
@@ -1155,6 +1157,11 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		
 		// Get old state
 		$old_state = wc_get_order_item_meta( $order_item_id, 'bookacti_state', true );
+		$states_in = ! empty( $args[ 'states_in' ] ) ? $args[ 'states_in' ] : array();
+		
+		if( $states_in ) {
+			if( ! in_array( $old_state, $states_in, true ) ) { return; }
+		}
 		
 		// Turn meta state to new state
 		wc_update_order_item_meta( $order_item_id, 'bookacti_state', $new_state );
@@ -1213,7 +1220,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	 * Turn the order state if it is composed of inactive / pending / booked bookings only
 	 * 
 	 * @since 1.1.0
-	 * @version 1.2.2
+	 * @version 1.5.6
 	 * 
 	 * @param int $order_id
 	 */
@@ -1249,8 +1256,8 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		$new_order_status = 'cancelled';
 		
 		if( in_array( 'pending', $states, true ) ) {
-			// Turn order status to pending payment
-			$new_order_status = 'processing';
+			// Turn order status to processing (or let it on on-hold)
+			$new_order_status = $order->get_status() === 'on-hold' ? 'on-hold' : 'processing';
 		} else if( in_array( 'booked', $states, true ) ) {
 			// Turn order status to completed
 			$new_order_status = 'completed';

@@ -330,6 +330,7 @@ function bookacti_settings_section_bookings_callback() { }
 							),
 			'value'		=> bookacti_get_setting_value( 'bookacti_general_settings', 'default_booking_state' ),
 			'tip'		=> __( 'Choose what status a booking should have when a customer complete the booking form.', BOOKACTI_PLUGIN_NAME )
+						. '<br/>' . __( 'This option has no effect on bookings made with WooCommerce.', BOOKACTI_PLUGIN_NAME )
 		);
 		bookacti_display_field( $args );
 	}
@@ -356,7 +357,8 @@ function bookacti_settings_section_bookings_callback() { }
 			'value'		=> bookacti_get_setting_value( 'bookacti_general_settings', 'default_payment_status' ),
 			/* translators: The word 'Calendar' refers to a booking method you have to translate too. Make sure you use the same word for both translation. */
 			'tip'		=> __( 'Choose what payment status a booking should have when a customer complete the booking form.', BOOKACTI_PLUGIN_NAME )
-		);
+						. '<br/>' . __( 'This option has no effect on bookings made with WooCommerce.', BOOKACTI_PLUGIN_NAME )
+			);
 		bookacti_display_field( $args );
 	}
 	
@@ -452,6 +454,7 @@ function bookacti_settings_section_bookings_callback() { }
 			'id'	=> 'allow_customers_to_cancel',
 			'value'	=> bookacti_get_setting_value( 'bookacti_cancellation_settings', 'allow_customers_to_cancel' ),
 			'tip'	=> __( 'Allow or disallow customers to cancel a booking after they order it.', BOOKACTI_PLUGIN_NAME )
+					. '<br/>' . __( 'This option has no effect for administrators.', BOOKACTI_PLUGIN_NAME )
 		);
 		bookacti_display_field( $args );
 	}
@@ -465,6 +468,7 @@ function bookacti_settings_section_bookings_callback() { }
 	function bookacti_settings_field_activate_reschedule_callback() {
 		$tip  = __( 'Allow or disallow customers to reschedule a booking after they order it.', BOOKACTI_PLUGIN_NAME );
 		$tip .= '<br/>' . __( "This won't apply to groups of bookings.", BOOKACTI_PLUGIN_NAME );
+		$tip .= '<br/>' . __( 'This option has no effect for administrators.', BOOKACTI_PLUGIN_NAME );
 		
 		$args = array(
 			'type'	=> 'checkbox',
@@ -491,6 +495,7 @@ function bookacti_settings_section_bookings_callback() { }
 			'value'		=> bookacti_get_setting_value( 'bookacti_cancellation_settings', 'cancellation_min_delay_before_event' ),
 			'label'		=> ' ' . esc_html__( 'days before the event', BOOKACTI_PLUGIN_NAME ),
 			'tip'		=> __( 'Set the end of the allowed changes period (cancellation, rescheduling). E.g.: "7", your customers may change their reservations at least 7 days before the start of the event. After that, they won\'t be allowed to change them anymore.', BOOKACTI_PLUGIN_NAME )
+						. '<br/>' . __( 'This option has no effect for administrators.', BOOKACTI_PLUGIN_NAME )
 		);
 		bookacti_display_field( $args );
 	}
@@ -515,6 +520,7 @@ function bookacti_settings_section_bookings_callback() { }
 			'options'	=> bookacti_get_refund_actions(),
 			'value'		=> $actions,
 			'tip'		=> __( 'Define the actions a customer will be able to take to be refunded after he cancels a booking.', BOOKACTI_PLUGIN_NAME )
+						. '<br/>' . __( 'This option has no effect for administrators.', BOOKACTI_PLUGIN_NAME )
 		);
 		
 		?>

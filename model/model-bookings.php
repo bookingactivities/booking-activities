@@ -1638,18 +1638,19 @@ function bookacti_delete_booking( $booking_id ) {
 	 * Update booking group
 	 * 
 	 * @since 1.1.0
-	 * @version 1.3.0
+	 * @version 1.5.6
 	 * @global wpdb $wpdb
 	 * @param int $booking_group_id
 	 * @param string $state
 	 * @param 0|1|'auto' $active
+	 * @param array $states_in
 	 * @return int|false
 	 */
-	function bookacti_update_booking_group( $booking_group_id, $state = NULL, $payment_status = NULL, $user_id = NULL, $order_id = NULL, $event_group_id = NULL, $active = 'auto' ) {
+	function bookacti_update_booking_group( $booking_group_id, $state = NULL, $payment_status = NULL, $user_id = NULL, $order_id = NULL, $event_group_id = NULL, $active = 'auto', $states_in = array() ) {
 
 		global $wpdb;
 		
-		$query		= 'UPDATE ' . BOOKACTI_TABLE_BOOKING_GROUPS . ' SET ';
+		$query = 'UPDATE ' . BOOKACTI_TABLE_BOOKING_GROUPS . ' SET ';
 		
 		$variables_array = array();
 		
@@ -1659,7 +1660,8 @@ function bookacti_delete_booking( $booking_id ) {
 		}
 		
 		if( $payment_status ) {
-			$query .= ' payment_status = %s, ';
+			$query .= ' payment_status = CASE WHEN ( payment_status = "none" AND %s = "paid" ) THEN payment_status ELSE %s END, ';
+			$variables_array[] = $payment_status;
 			$variables_array[] = $payment_status;
 		}
 		
@@ -1689,6 +1691,17 @@ function bookacti_delete_booking( $booking_id ) {
 		
 		$variables_array[] = $active;
 		$variables_array[] = $booking_group_id;
+		
+		if( $states_in && is_array( $states_in ) ) {
+			$query  .= ' AND state IN ( ';
+			$len = count($states_in);
+			for( $i=1; $i <= $len; ++$i ) {
+				$query  .= '%s';
+				if( $i < $len ) { $query  .= ', '; }
+			}
+			$query  .= ' ) ';
+			$variables_array = array_merge( $variables_array, $states_in );
+		}
 		
 		$prep		= $wpdb->prepare( $query, $variables_array );
 		$updated	= $wpdb->query( $prep );

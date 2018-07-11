@@ -9,7 +9,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 ?>
 
 <div class='wrap'>
-<h1><?php esc_html_e( 'Booking Activities', BOOKACTI_PLUGIN_NAME ); ?></h1>
+<h1>Booking Activities</h1>
 
 <div id='bookacti-landing-container'>
 	
