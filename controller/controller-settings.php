@@ -580,6 +580,7 @@ add_filter( 'plugin_row_meta', 'bookacti_meta_links_in_plugins_table', 10, 2 );
 
 /** 
  * Ask to rate the plugin 5 stars
+ * @version 1.5.7
  */
 function bookacti_5stars_rating_notice() {
 	$dismissed = get_option( 'bookacti-5stars-rating-notice-dismissed' );
@@ -590,12 +591,12 @@ function bookacti_5stars_rating_notice() {
 				$install_datetime	= DateTime::createFromFormat( 'Y-m-d H:i:s', $install_date );
 				$current_datetime	= new DateTime();
 				$nb_days			= floor( $install_datetime->diff( $current_datetime )->days );
-				if( $nb_days >= 31 ) {
+				if( $nb_days >= 92 ) {
 					?>
 					<div class='notice notice-info bookacti-5stars-rating-notice is-dismissible' >
 						<p>
 							<?php 
-							_e( '<strong>Booking Activities</strong> has been helping you for one month now.', BOOKACTI_PLUGIN_NAME );
+							_e( '<strong>Booking Activities</strong> has been helping you for three months now.', BOOKACTI_PLUGIN_NAME );
 							/* translators: %s: five stars */
 							echo '<br/>' 
 								. sprintf( esc_html__( 'Would you help it back leaving us a %s rating? We need you now to make it last!', BOOKACTI_PLUGIN_NAME ), 

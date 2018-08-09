@@ -320,6 +320,7 @@ if( ! class_exists( 'Forms_List_Table' ) ) {
 		
 		/**
 		 * Format filters passed as argument or retrieved via POST or GET
+		 * @version 1.5.7
 		 * @access public
 		 * @param array $filters
 		 * @return array
@@ -334,7 +335,7 @@ if( ! class_exists( 'Forms_List_Table' ) ) {
 				
 				$filters = array(
 					'id'		=> isset( $_REQUEST[ 'id' ] )		? $_REQUEST[ 'id' ] : array(), 
-					'title'		=> isset( $_REQUEST[ 'title' ] )	? $_REQUEST[ 'activities' ] : '', 
+					'title'		=> isset( $_REQUEST[ 'title' ] )	? $_REQUEST[ 'title' ] : '', 
 					'user_id'	=> isset( $_REQUEST[ 'user_id' ] )	? $_REQUEST[ 'user_id' ] : 0, 
 					'status'	=> isset( $_REQUEST[ 'status' ] )	? $_REQUEST[ 'status' ] : '', 
 					'active'	=> $active, 

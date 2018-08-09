@@ -260,6 +260,7 @@ function bookacti_display_form( $form_id, $instance_id = '', $context = 'display
 
 
 
+
 // FORM FIELDS
 
 /**
@@ -1207,12 +1208,13 @@ function bookacti_get_register_fields_default_data() {
 /**
  * Format form filters
  * @since 1.5.0
+ * @version 1.5.7
  * @param array $filters 
  * @return array
  */
 function bookacti_format_form_filters( $filters = array() ) {
 
-	$default_filters = apply_filters( 'bookacti_default_booking_filters', array(
+	$default_filters = apply_filters( 'bookacti_default_form_filters', array(
 		'id'			=> array(), 
 		'title'			=> '', 
 		'status'		=> array(), 
@@ -1235,26 +1237,7 @@ function bookacti_format_form_filters( $filters = array() ) {
 		$current_value = $filters[ $filter ];
 
 		// Else, check if its value is correct, or use default
-		if( in_array( $filter, array( 'templates' ) ) ) {
-			if( is_numeric( $current_value ) ) { $current_value = array( $current_value ); }
-			if( is_array( $current_value ) ) {
-				// Check if current user is allowed to manage desired templates, or unset them
-				if( ! empty( $current_value ) ) {
-					foreach( $current_value as $i => $template_id ) {
-					if( ! is_numeric( $template_id ) || ! bookacti_user_can_manage_template( $template_id ) ) {
-							unset( $current_value[ $i ] );
-						}
-					}
-				}
-				// Re-check if the template list is empty because some template filters may have been removed
-				// and get all allowed templates if it is empty
-				if( empty( $current_value ) ) {
-					$current_value = array_keys( bookacti_fetch_templates() );
-				}
-			}
-			else { $current_value = $default_value; }
-		
-		} else if( in_array( $filter, array( 'id' ), true ) ) {
+		if( in_array( $filter, array( 'id' ), true ) ) {
 			if( is_numeric( $current_value ) )	{ $current_value = array( $current_value ); }
 			if( ! is_array( $current_value ) )	{ $current_value = $default_value; }
 			else if( $i = array_search( 'all', $current_value ) !== false ) { unset( $current_value[ $i ] ); }
@@ -1388,7 +1371,7 @@ function bookacti_display_form_managers_meta_box( $form ) {
 /**
  * Display 'publish' metabox content for forms
  * @since 1.5.0
- * @param object $form
+ * @param array $form
  */
 function bookacti_display_form_publish_meta_box( $form ) {
 ?>
@@ -1430,7 +1413,7 @@ function bookacti_display_form_publish_meta_box( $form ) {
 /**
  * Display 'integration tuto' metabox content for forms
  * @since 1.5.0
- * @param object $form
+ * @param array $form
  */
 function bookacti_display_form_integration_tuto_meta_box( $form ) {
 	$shortcode = '[bookingactivities_form form="' . $form[ 'form_id' ] . '"]';
@@ -1454,7 +1437,7 @@ function bookacti_display_form_integration_tuto_meta_box( $form ) {
 /**
  * Check if user is allowed to manage form
  * @since 1.5.0
- * @param int $template_id
+ * @param int $form_id
  * @param int $user_id
  * @return boolean
  */
@@ -1476,7 +1459,7 @@ function bookacti_user_can_manage_form( $form_id, $user_id = false ) {
 /**
  * Get form managers
  * @since 1.5.0
- * @param int $activity_id
+ * @param int $form_id
  * @return array
  */
 function bookacti_get_form_managers( $form_id ) {

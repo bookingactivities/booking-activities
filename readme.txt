@@ -48,7 +48,7 @@ Try this reservation tool live on the [demo website](http://demo.booking-activit
 * ★ **One-click booking**: just pick the desired event on the calendar and click on "Book"! 
 * ★ **Seamless login / registration**: embedded in the form and processed with the reservation
 * 100% responsive: looks great on mobiles, tablets and computers.
-* ★ Set any custom fields and any booking metadata thanks to [Advanced Forms](https://booking-activities.fr/en/downloads/advanced-forms/?utm_source=wp-plugin-page&utm_medium=wordpress&utm_campaign=advanced-forms&utm_content=readme) add-on
+* ★ *Set any custom fields and any booking metadata thanks to [Advanced Forms](https://booking-activities.fr/en/downloads/advanced-forms/?utm_source=wp-plugin-page&utm_medium=wordpress&utm_campaign=advanced-forms&utm_content=readme) add-on*
 
 **Online payments with WooCommerce**
 
@@ -317,11 +317,17 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 
 == Changelog ==
 
-= 1.5.6 - 2018/07/10 =
+= 1.5.7 =
+* Fix - Remove mbstring (PHP extension) dependency (use regex to check UTF8 if mbstring is not available)
+* Fix - Wrong URL in WC Guest Checkout notice
+* Fix - Prevent unwanted drags when clicking a field action in form editor
+* Fix - Wrong hook: 'bookacti_default_booking_filters' replaced with 'bookacti_default_form_filters'
+
+= 1.5.6 - 2018/07/11 =
 * Tweak - Changed "refunded" and "refund_requested" booking state icon
 * Tweak - Add messages in Booking Activities settings tooltips
 * Fix - Administrators cannot change booking states to "refunded" if the booking was not actually paid in WooCommerce
-* Fix - Cancelling / Completing orders in WooCommerce changed all their bookings states to "cancel" / "booked" -> now only in_cart and pending bookings are changed
+* Fix - Cancelling / Completing orders in WooCommerce changed all their bookings states to "cancel" / "booked". Now only "in_cart", "pending" and "booked" bookings are changed
 * Fix - Completing a WooCommerce order turned "no payment required" bookings to "paid"
 * Fix - PHP error while changing booking state
 * Dev - Add hooks to change the booking status change notifications recipient
@@ -349,7 +355,7 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 * Fix - "The field "Password" is required." error appears even with "Generate password" option on
 * Fix - "You can't book for someone else" error appears when "Automatic login" option is off
 * Fix - WooCommerce integration screenshot may not appear in "How to integrate this form" box
-* Fix - Non-closing <div> in the form editor
+* Fix - Non-closing div in the form editor
 * Fix - Double "X" may appear on "Close dialog" button
 * Fix - Display an asterisc on all required fields
 * Fix - Fields metadata may not be formatted
@@ -357,7 +363,6 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 * Fix - Field titles not translated on multilingue site in form editor
 * Dev - Add some useful hooks
 * Dev - bookacti_display_field() now handle 'hidden' and 'file' fields
-
 
 = 1.5.2 - 2018/05/17 =
 * Feature - Add a "Terms" field (required checkbox)
@@ -403,7 +408,6 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 * Fix - Cannot move, resize or delete an event even if all its bookings are cancelled
 * Fix - Show error message when no event is selected
 * Fix - Calendars cannot close later than 2037-12-31 because of year 2038 bug
-
 
 = 1.4.3 - 2018/03/09 =
 * Fix - Groups of events were not properly retrieved for WooCommerce variations

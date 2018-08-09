@@ -158,7 +158,7 @@ function bookacti_get_number_of_form_rows( $filters = array() ) {
 
 
 /**
- * Get forms according to filters
+ * Get form by id
  * @since 1.5.0
  * @global wpdb $wpdb
  * @param int $form_id
