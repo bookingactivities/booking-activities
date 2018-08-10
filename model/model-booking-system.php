@@ -1252,7 +1252,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	 * Retrieve group categories data by id
 	 * 
 	 * @since 1.1.0
-	 * @version 1.4.0
+	 * @version 1.5.7
 	 * 
 	 * @global wpdb $wpdb
 	 * @param array|int $template_ids
@@ -1306,6 +1306,8 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		if( ! $fetch_inactive ) {
 			$query .= ' AND active = 1 ';
 		}
+		
+		$query .= ' ORDER BY C.template_id ';
 		
 		if( $variables ) {
 			$query = $wpdb->prepare( $query, $variables );
