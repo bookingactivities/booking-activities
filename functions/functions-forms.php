@@ -999,7 +999,7 @@ function bookacti_register_a_new_user( $login_values, $login_data ) {
 		$username = substr( $login_values[ 'email' ], 0, strpos( $login_values[ 'email' ], '@' ) );
 	}
 	$username = sanitize_title_with_dashes( $username );
-	$username_base = mb_strlen( $username ) > 60 ? substr( $username, 0, 50 ) : $username;
+	$username_base = strlen( $username ) > 60 ? substr( $username, 0, 50 ) : $username;
 	$i = 2;
 	while( username_exists( $username ) ) {
 		$username = $username_base . '-' . $i;
