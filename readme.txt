@@ -321,7 +321,9 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 * Fix - Remove mbstring (PHP extension) dependency (use regex to check UTF8 if mbstring is not available)
 * Fix - Wrong URL in WC Guest Checkout notice
 * Fix - Prevent unwanted drags when clicking a field action in form editor
+* Fix - Error message related to min quantity can say "increase quantity to 0"
 * Fix - Wrong hook: 'bookacti_default_booking_filters' replaced with 'bookacti_default_form_filters'
+* Fix - Apostrophes didn't appear in customizable messages
 
 = 1.5.6 - 2018/07/11 =
 * Tweak - Changed "refunded" and "refund_requested" booking state icon

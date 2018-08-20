@@ -519,9 +519,8 @@ add_action( 'bookacti_updated', 'bookacti_format_old_notifications_settings', 10
 
 /**
  * Display messages fields
- * 
  * @since 1.2.0
- * @version 1.3.0
+ * @version 1.5.7
  */
 function bookacti_display_messages_fields() {
 	$messages = bookacti_get_messages( true );
@@ -530,9 +529,9 @@ function bookacti_display_messages_fields() {
 		<div class='bookacti-message-setting' >
 			<em><?php echo $message[ 'description' ] ?></em><br/>
 			<?php if( isset( $message[ 'input_type' ] ) && $message[ 'input_type' ] === 'textarea' ) { ?>
-			<textarea id='bookacti_messages_settings_<?php echo $message_id; ?>' name='bookacti_messages_settings[<?php echo $message_id; ?>]' ><?php echo $message[ 'value' ]; ?></textarea>
+				<textarea id='bookacti_messages_settings_<?php echo $message_id; ?>' name='bookacti_messages_settings[<?php echo $message_id; ?>]' ><?php echo esc_textarea( $message[ 'value' ] ); ?></textarea>
 			<?php } else { ?>
-				<input type='text' id='bookacti_messages_settings_<?php echo $message_id; ?>' name='bookacti_messages_settings[<?php echo $message_id; ?>]' value='<?php echo $message[ 'value' ]; ?>' />
+				<input type='text' id='bookacti_messages_settings_<?php echo $message_id; ?>' name='bookacti_messages_settings[<?php echo $message_id; ?>]' value='<?php esc_attr_e( $message[ 'value' ] ); ?>' />
 			<?php } ?>
 		</div>
 <?php
