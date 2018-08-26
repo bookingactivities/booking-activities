@@ -7,7 +7,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	/**
 	 * Insert or update a booking in cart
 	 * @since 1.1.0 (replace bookacti_insert_booking_in_cart)
-	 * @version 1.5.4
+	 * @version 1.5.7
 	 * @param int $product_id
 	 * @param int $variation_id
 	 * @param int $user_id
@@ -39,6 +39,8 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 				||  ( ! empty( $variation_id ) && ( empty( $cart_item[ 'variation_id' ] ) || $variation_id !== $cart_item[ 'variation_id' ] ) ) ) { continue; }
 				// Same booking
 				if( empty( $cart_item[ '_bookacti_options' ][ 'bookacti_booking_id' ] ) || ! in_array( intval( $cart_item[ '_bookacti_options' ][ 'bookacti_booking_id' ] ), $booking_ids, true ) ) { continue; }
+				// Same Third-party data
+				if( ! apply_filters( 'bookacti_merge_cart_item', true, $cart_item, $product_id, $variation_id, $quantity ) ) { continue; }
 				
 				$booking_id = $cart_item[ '_bookacti_options' ][ 'bookacti_booking_id' ];
 				break;
@@ -89,7 +91,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	 * Insert or update a booking group in cart
 	 * 
 	 * @since 1.1.0
-	 * @version 1.5.4
+	 * @version 1.5.7
 	 * @param int $product_id
 	 * @param int $variation_id
 	 * @param int $user_id
@@ -119,7 +121,9 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 				||  ( ! empty( $variation_id ) && ( empty( $cart_item[ 'variation_id' ] ) || $variation_id !== $cart_item[ 'variation_id' ] ) ) ) { continue; }
 				// Same booking
 				if( empty( $cart_item[ '_bookacti_options' ][ 'bookacti_booking_group_id' ] ) || ! in_array( intval( $cart_item[ '_bookacti_options' ][ 'bookacti_booking_group_id' ] ), $booking_group_ids, true ) ) { continue; }
-
+				// Same Third-party data
+				if( ! apply_filters( 'bookacti_merge_cart_item', true, $cart_item, $product_id, $variation_id, $quantity ) ) { continue; }
+				
 				$booking_group_id = $cart_item[ '_bookacti_options' ][ 'bookacti_booking_group_id' ];
 				break;
 			}

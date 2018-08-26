@@ -324,6 +324,7 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 * Fix - Error message related to min quantity can say "increase quantity to 0"
 * Fix - Wrong hook: 'bookacti_default_booking_filters' replaced with 'bookacti_default_form_filters'
 * Fix - Apostrophes didn't appear in customizable messages
+* Dev - Add hooks to give control over WC cart item merging
 
 = 1.5.6 - 2018/07/11 =
 * Tweak - Changed "refunded" and "refund_requested" booking state icon
