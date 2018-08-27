@@ -259,7 +259,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		}
 		
 		// Update booking quantity
-		if( $response[ 'status' ] !== 'failed' ) {		
+		if( $response[ 'status' ] !== 'failed' ) {
 			$response = bookacti_update_booking_quantity( $booking_id, $new_quantity, $new_expiration_date, $context );
 		}
 		
