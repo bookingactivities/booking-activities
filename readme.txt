@@ -319,6 +319,7 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 
 = 1.5.8 =
 * Dev - Add hooks to give control over WC cart item restored (when bound to a booking)
+* Dev - Add hooks to change notification data before they are sent or prevent them to be sent
 
 = 1.5.7 - 2018/08/27 =
 * Fix - Remove mbstring (PHP extension) dependency (use regex to check UTF8 if mbstring is not available)

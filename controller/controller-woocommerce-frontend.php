@@ -256,7 +256,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		</div>
 		<?php
 	}
-	add_action( 'woocommerce_before_add_to_cart_button', 'bookacti_add_booking_system_in_single_product_page', 10, 0 );
+	add_action( 'woocommerce_before_add_to_cart_button', 'bookacti_add_booking_system_in_single_product_page', 20, 0 );
 	
 	
 	/**
