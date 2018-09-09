@@ -7,7 +7,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	/**
 	 * Insert or update a booking in cart
 	 * @since 1.1.0 (replace bookacti_insert_booking_in_cart)
-	 * @version 1.5.4
+	 * @version 1.5.7
 	 * @param int $product_id
 	 * @param int $variation_id
 	 * @param int $user_id
@@ -39,6 +39,8 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 				||  ( ! empty( $variation_id ) && ( empty( $cart_item[ 'variation_id' ] ) || $variation_id !== $cart_item[ 'variation_id' ] ) ) ) { continue; }
 				// Same booking
 				if( empty( $cart_item[ '_bookacti_options' ][ 'bookacti_booking_id' ] ) || ! in_array( intval( $cart_item[ '_bookacti_options' ][ 'bookacti_booking_id' ] ), $booking_ids, true ) ) { continue; }
+				// Same Third-party data
+				if( ! apply_filters( 'bookacti_merge_cart_item', true, $cart_item, $product_id, $variation_id, $quantity ) ) { continue; }
 				
 				$booking_id = $cart_item[ '_bookacti_options' ][ 'bookacti_booking_id' ];
 				break;
@@ -89,7 +91,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	 * Insert or update a booking group in cart
 	 * 
 	 * @since 1.1.0
-	 * @version 1.5.4
+	 * @version 1.5.7
 	 * @param int $product_id
 	 * @param int $variation_id
 	 * @param int $user_id
@@ -119,7 +121,9 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 				||  ( ! empty( $variation_id ) && ( empty( $cart_item[ 'variation_id' ] ) || $variation_id !== $cart_item[ 'variation_id' ] ) ) ) { continue; }
 				// Same booking
 				if( empty( $cart_item[ '_bookacti_options' ][ 'bookacti_booking_group_id' ] ) || ! in_array( intval( $cart_item[ '_bookacti_options' ][ 'bookacti_booking_group_id' ] ), $booking_group_ids, true ) ) { continue; }
-
+				// Same Third-party data
+				if( ! apply_filters( 'bookacti_merge_cart_item', true, $cart_item, $product_id, $variation_id, $quantity ) ) { continue; }
+				
 				$booking_group_id = $cart_item[ '_bookacti_options' ][ 'bookacti_booking_group_id' ];
 				break;
 			}
@@ -160,8 +164,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 	/**
 	 * Update quantity, control the results ans display feedback accordingly
-	 * 
-	 * @version 1.4.0
+	 * @version 1.5.7
 	 * @global woocommerce $woocommerce
 	 * @param int $booking_id
 	 * @param int $new_quantity
@@ -293,7 +296,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 						$message .= ' ' . sprintf( __( 'but the minimum number of reservations required per user is %1$s.', BOOKACTI_PLUGIN_NAME ), $min_quantity );
 					}
 					/* translators: %1$s is a variable quantity. This sentence is preceded by two others : 'You want to make %1$s booking of "%2$s"' and 'but the minimum number of reservations required per user is %1$s.' */
-					$message .=	' ' . sprintf( __( 'Please choose another event or increase the quantity to %1$s.', BOOKACTI_PLUGIN_NAME ), $min_quantity - $current_quantity );
+					$message .=	$min_quantity - $current_quantity > 0  ? ' ' . sprintf( __( 'Please choose another event or increase the quantity to %1$s.', BOOKACTI_PLUGIN_NAME ), $min_quantity - $current_quantity ) : ' ' . __( 'Please choose another event', BOOKACTI_PLUGIN_NAME );
 				
 				} else if( $response[ 'error' ] === 'qty_sup_to_max' ) {
 					/* translators: %1$s is a variable number of bookings, %2$s is the event title. This sentence is followed by two others : 'but the maximum number of reservations allowed per user is %1$s.' and 'Please choose another event or decrease the quantity.' */
@@ -329,9 +332,8 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 	/**
 	 * Update quantity, control the results ans display feedback accordingly
-	 * 
 	 * @since 1.1.0
-	 * @version 1.4.0
+	 * @version 1.5.7
 	 * @param int $booking_group_id
 	 * @param int $quantity
 	 * @param boolean $add_quantity
@@ -430,7 +432,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 					$message .= ' ' . sprintf( __( 'but the minimum number of reservations required per user is %1$s.', BOOKACTI_PLUGIN_NAME ), $min_quantity );
 				}
 				/* translators: %1$s is a variable quantity. This sentence is preceded by two others : 'You want to make %1$s booking of "%2$s"' and 'but the minimum number of reservations required per user is %1$s.' */
-				$message .= ' ' . sprintf( __( 'Please choose another event or increase the quantity to %1$s.', BOOKACTI_PLUGIN_NAME ), $min_quantity - $quantity_already_booked );
+				$message .= $min_quantity - $quantity_already_booked > 0 ? ' ' . sprintf( __( 'Please choose another event or increase the quantity to %1$s.', BOOKACTI_PLUGIN_NAME ), $min_quantity - $quantity_already_booked ) : ' ' . __( 'Please choose another event', BOOKACTI_PLUGIN_NAME );
 			}
 			
 			if( $max_quantity !== 0 && $booking_max_new_quantity > ( $max_quantity - $quantity_already_booked ) ) {

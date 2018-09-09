@@ -705,16 +705,22 @@ add_action( 'load-booking-activities_page_bookacti_forms', 'bookacti_allow_meta_
  
 
 /**
- * Print metabox script to make it work on form editor
- * @since 1.5.0
+ * Print metabox script to make it work on non "post" edit pages
+ * @since 1.5.7 (was bookacti_print_metabox_script_in_form_editor_footer() since 1.5.0)
  */
-function bookacti_print_metabox_script_in_form_editor_footer() {
+function bookacti_print_metabox_script() {
 	if( empty( $_REQUEST[ 'action' ] ) || ! in_array( $_REQUEST[ 'action' ], array( 'edit', 'new' ), true ) ) { return; }
 	?>
 		<script>$j( document ).ready( function(){ postboxes.add_postbox_toggles(pagenow); } );</script>
 	<?php
 }
-add_action( 'admin_footer-booking-activities_page_bookacti_forms', 'bookacti_print_metabox_script_in_form_editor_footer' );
+
+/**
+ * Print metabox script to make it work on form editor
+ * @since 1.5.0
+ * @version 1.5.7
+ */
+add_action( 'admin_footer-booking-activities_page_bookacti_forms', 'bookacti_print_metabox_script' );
 
 
 

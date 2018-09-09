@@ -547,6 +547,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	 * If an activity is added to cart with the same booking data (same product, same variation, same booking) as an existing cart item
 	 * Merge the old cart items to the new one
 	 * @since 1.5.4
+	 * @version 1.5.7
 	 * @global WooCommerce $woocommerce
 	 * @param array $cart_item_data
 	 * @param string $cart_item_key
@@ -559,6 +560,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		$variation_id	= $cart_item_data[ 'variation_id' ];
 		$quantity		= $cart_item_data[ 'quantity' ];
 		$new_quantity	= $quantity;
+		$old_cart_items	= array();
 		
 		global $woocommerce;
 		$cart_contents = $woocommerce->cart->get_cart();
@@ -574,8 +576,11 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			} else if( isset( $cart_item_data[ '_bookacti_options' ][ 'bookacti_booking_group_id' ] ) ) {
 				if( empty( $the_item[ '_bookacti_options' ][ 'bookacti_booking_group_id' ] ) || $cart_item_data[ '_bookacti_options' ][ 'bookacti_booking_group_id' ] !== $the_item[ '_bookacti_options' ][ 'bookacti_booking_group_id' ] ) { continue; }
 			}
+			// Same Third-party data
+			if( ! apply_filters( 'bookacti_merge_cart_item', true, $the_item, $product_id, $variation_id, $quantity ) ) { continue; }
 			
-			do_action( 'bookacti_merge_cart_item_before', $the_item, $the_key, $cart_item_data, $cart_item_key );
+			$old_cart_items[ $the_key ] = $the_item;
+			do_action( 'bookacti_merge_cart_item_before', $the_item, $cart_item_data );
 			
 			// Add the quantity of the old cart item to the new one
 			$new_quantity += $the_item[ 'quantity' ];
@@ -587,6 +592,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		// Set the new cart item quantity if it has merged with other cart items
 		if( $new_quantity !== $quantity ) {
 			$cart_item_data[ 'quantity' ] = $new_quantity;
+			$cart_item_data = apply_filters( 'bookacti_cart_item_merged', $cart_item_data, $old_cart_items );
 		}
 		
 		return $cart_item_data;

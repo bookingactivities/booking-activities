@@ -218,6 +218,7 @@ add_filter( 'bookacti_default_messages', 'bookacti_wc_default_messages', 10, 1 )
 /**
  * Display an error admin notice if guest checkout is allowed
  * @since 1.5.0
+ * @version 1.5.7
  */
 function bookacti_wc_guest_checkout_not_allowed_notice() {
 	$is_dismissed = get_option( 'bookacti-guest-checkout-notice-dismissed' );
@@ -228,7 +229,8 @@ function bookacti_wc_guest_checkout_not_allowed_notice() {
 			<div class='notice notice-error bookacti-guest-checkout-notice is-dismissible' >
 				<p>
 				<?php 
-					$wc_settings_url = esc_url( get_admin_url() . 'admin.php?page=wc-settings&tab=checkout' );
+					$guest_checkout_tab = version_compare( WC_VERSION, '3.4.0', '>=' ) ? 'account' : 'checkout';
+					$wc_settings_url = esc_url( get_admin_url() . 'admin.php?page=wc-settings&tab=' . $guest_checkout_tab );
 					echo __( 'Booking Activities doesn\'t support WooCommerce\'s <strong>guest checkout option</strong>. Please deactivate this option.', BOOKACTI_PLUGIN_NAME )
 						. ' ' . '<a href="' . $wc_settings_url . '" >' . __( 'Go to WooCommerce settings.', BOOKACTI_PLUGIN_NAME ) . '</a>'; 
 				?>
@@ -269,11 +271,13 @@ add_action( 'wp_ajax_bookactiDismissGuestCheckoutNotice', 'bookacti_dismiss_gues
 /**
  * Restore WC Guest Checkout option notice if the guest checkout box is checked again
  * @since 1.5.0
+ * @version 1.5.7
  * @global string $current_tab
  */
 function bookacti_restore_guest_checkout_notice() {
 	global $current_tab;
-	if( $current_tab === 'checkout' ) {
+	$guest_checkout_tab = version_compare( WC_VERSION, '3.4.0', '>=' ) ? 'account' : 'checkout';
+	if( $current_tab === $guest_checkout_tab ) {
 		$guest_checkout_allowed = get_option( 'woocommerce_enable_guest_checkout' );
 		if( ! empty( $guest_checkout_allowed ) && $guest_checkout_allowed === 'yes' ) {
 			delete_option( 'bookacti-guest-checkout-notice-dismissed' );

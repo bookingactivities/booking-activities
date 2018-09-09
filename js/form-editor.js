@@ -30,7 +30,7 @@ $j( document ).ready( function() {
 	// Sort form fields in editor
 	$j( '#bookacti-form-editor' ).sortable( { 
 		items: '.bookacti-form-editor-field:not(.ui-state-disabled):not(.bookacti-form-editor-promo-field)',
-		handle: '.bookacti-form-editor-field-header',
+		handle: '.bookacti-form-editor-field-title',
 		placeholder: 'bookacti-form-editor-field-placeholder',
 		update: function( e, ui ) { bookacti_save_form_field_order(); }
 	});

@@ -675,8 +675,7 @@ function bookacti_get_booking_system_fields_default_data( $fields = array() ) {
 
 /**
  * Validate booking form (verify the info of the selected event before booking it)
- * 
- * @version 1.5.0
+ * @version 1.5.7
  * @param int $group_id
  * @param int $event_id
  * @param string $event_start Start datetime of the event to check (format 2017-12-31T23:59:59)
@@ -850,7 +849,7 @@ function bookacti_validate_booking_form( $group_id, $event_id, $event_start, $ev
 				$validated['message'] .= ' ' . sprintf( __( 'but the minimum number of reservations required per user is %1$s.', BOOKACTI_PLUGIN_NAME ), $min_quantity );
 			}	
 			/* translators: %1$s is a variable quantity. This sentence is preceded by two others : 'You want to make %1$s booking of "%2$s"' and 'but the minimum number of reservations required per user is %1$s.' */
-			$validated['message'] .= ' ' . sprintf( __( 'Please choose another event or increase the quantity to %1$s.', BOOKACTI_PLUGIN_NAME ), $min_quantity - $quantity_already_booked );
+			$validated['message'] .= $min_quantity - $quantity_already_booked > 0 ? ' ' . sprintf( __( 'Please choose another event or increase the quantity to %1$s.', BOOKACTI_PLUGIN_NAME ), $min_quantity - $quantity_already_booked ) : ' ' . __( 'Please choose another event', BOOKACTI_PLUGIN_NAME );
 		} else if( ! $is_qty_inf_to_max ) {
 			$validated['error'] = 'qty_sup_to_max';
 			/* translators: %1$s is a variable number of bookings, %2$s is the event title. This sentence is followed by two others : 'but the maximum number of reservations allowed per user is %1$s.' and 'Please choose another event or decrease the quantity.' */
@@ -1366,7 +1365,7 @@ function bookacti_sanitize_events_interval( $interval ) {
  * get occurences of repeated events
  * 
  * @since 1.2.2 (replace bookacti_create_repeated_events)
- * @version 1.3.3
+ * @version 1.5.7
  * @param object $event Event data 
  * @param boolean $past_events Whether to compute past events
  * @param array $interval array('start' => string: start date, 'end' => string: end date)
@@ -1463,6 +1462,8 @@ function bookacti_get_occurences_of_repeated_event( $event, $past_events = false
 			$repeat_interval = new DateInterval( 'P1D' ); // Default to daily to avoid unexpected behavior such as infinite loop
 	}
 	
+	$repeat_interval = apply_filters( 'bookacti_event_repeat_interval', $repeat_interval, $event, $past_events, $interval, $repeat_from, $repeat_to );
+	
 	// Properties common to each events of the 
 	$shared_properties = array(
 		'id'				=> $event->event_id,
@@ -1522,7 +1523,7 @@ function bookacti_get_occurences_of_repeated_event( $event, $past_events = false
  * Build a user-friendly events list
  * 
  * @since 1.1.0
- * @version 1.5.0
+ * @version 1.5.7
  * 
  * @param array $booking_events
  * @param int|string $quantity
@@ -1576,8 +1577,7 @@ function bookacti_get_formatted_booking_events_list( $booking_events, $quantity 
 			// Format differently if the event start and end on the same day
 			$start_and_end_same_day	= substr( $event[ 'start' ], 0, 10 ) === substr( $event[ 'end' ], 0, 10 );
 			if( $start_and_end_same_day ) {
-				$event_end = date_i18n( $time_format, strtotime( $event[ 'end' ] ) );
-				$event_end = ! mb_check_encoding( $event_end, 'UTF-8' ) ? utf8_encode( $event_end ) : $event_end;
+				$event_end = bookacti_format_datetime( $event[ 'end' ], $time_format );
 			} else {
 				$event_end = bookacti_format_datetime( $event[ 'end' ], $datetime_format );
 			}
