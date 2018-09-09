@@ -318,6 +318,7 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 == Changelog ==
 
 = 1.5.8 =
+* Fix - Hidden fields were shown after hitting "Make a new booking" button
 * Dev - Add hooks to give control over WC cart item restored (when bound to a booking)
 * Dev - Add hooks to change notification data before they are sent or prevent them to be sent
 

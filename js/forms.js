@@ -60,7 +60,7 @@ $j( document ).ready( function() {
 		form.find( '> .bookacti-notices' ).empty();
 		
 		// Display form fields and submit button, and then, delete the "Make a new booking" button
-		form.find( '.bookacti-form-field-container, input[type="submit"]' ).show();
+		form.find( '.bookacti-form-field-container:not(.bookacti-hidden-field), input[type="submit"]' ).show();
 		$j( this ).remove();
 		
 		form.trigger( 'bookacti_make_new_booking' );

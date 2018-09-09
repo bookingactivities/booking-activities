@@ -383,6 +383,7 @@ add_action( 'bookacti_display_form_field_free_text', 'bookacti_display_form_fiel
 /**
  * Add a compulsory quantity input for correct booking form functionning
  * @since 1.5.0
+ * @version 1.5.8
  * @param array $fields
  * @param array $form
  * @param string $instance_id
@@ -397,7 +398,7 @@ function bookacti_display_compulsory_quantity_form_field( $fields, $form, $insta
 	foreach( $fields as $field ) { if( ! empty( $field[ 'type' ] ) ) { $fields_types[] = $field[ 'type' ]; } }
 	if( in_array( 'submit', $fields_types, true ) && ! in_array( 'quantity', $fields_types, true ) ) {
 		$field = bookacti_get_default_form_fields_data( 'quantity' );
-		$field[ 'id' ]		= ' bookacti-compulsory-quantity-field';
+		$field[ 'id' ]		= 'bookacti-compulsory-quantity-field';
 		$field[ 'class' ]	.= ' bookacti-hidden-field';
 		$fields[] = $field;
 	}
