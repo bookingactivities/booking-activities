@@ -227,7 +227,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 					
 				// If there are at least one activity in the middle of other products, 
 				// we won't mark the order as 'completed', but we still need to mark the bookings as 'pending' and 'owed'
-				// until the order changes state. At that time the bookings state will be redifined by other hooks
+				// until the order changes state. At that time the bookings state will be redefined by other hooks
 				// such as "woocommerce_order_status_pending_to_processing" and "woocommerce_order_status_completed"
 				} else if( $has_activities ) {
 					bookacti_turn_temporary_booking_to_permanent( $order_id, $order, 'pending', 'owed' );

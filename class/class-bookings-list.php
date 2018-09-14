@@ -274,7 +274,7 @@ if( ! class_exists( 'Bookings_List_Table' ) ) {
 			
 			$users = bookacti_get_users_data( array( 'include' => $user_ids ) );
 			
-			// Get datetime format once for all (reduce SQL queries)
+			// Get datetime format
 			$datetime_format	= bookacti_get_message( 'date_format_long' );
 			$quantity_separator	= bookacti_get_message( 'quantity_separator' );
 			

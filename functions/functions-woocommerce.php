@@ -1012,7 +1012,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	 * Turn all bookings of an order to the desired status. 
 	 * Also make sure that bookings are bound to the order and the associated user.
 	 * 
-	 * @version 1.5.6
+	 * @version 1.5.8
 	 * @param WC_Order $order
 	 * @param string $state
 	 * @param string $payment_status
@@ -1051,7 +1051,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 					$booking_group_id= $item[ 'bookacti_booking_group_id' ];
 				}
 			} else {
-				if( isset( $item[ 'bookacti_booking_id' ] ) && $item[ 'bookacti_booking_id' ] ) {
+				if( isset( $item[ 'item_meta' ][ 'bookacti_booking_id' ] ) && $item[ 'item_meta' ][ 'bookacti_booking_id' ] ) {
 					$booking_id = $item[ 'item_meta' ][ 'bookacti_booking_id' ][ 0 ];
 				} else if( isset( $item[ 'item_meta' ][ 'bookacti_booking_group_id' ] ) && $item[ 'item_meta' ][ 'bookacti_booking_group_id' ] ) {
 					$booking_group_id= $item[ 'item_meta' ][ 'bookacti_booking_group_id' ][ 0 ];

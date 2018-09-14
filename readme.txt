@@ -319,6 +319,8 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 
 = 1.5.8 =
 * Fix - Hidden fields were shown after hitting "Make a new booking" button
+* Fix - PHP error when updating a reccuring event the new range doesn't include all booked occurences
+* Fix - WC orders bookings status were not change with WooCommerce < 3.0.0
 * Dev - Add hooks to give control over WC cart item restored (when bound to a booking)
 * Dev - Add hooks to change notification data before they are sent or prevent them to be sent
 

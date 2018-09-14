@@ -14,7 +14,7 @@ $j( document ).ready( function() {
 	});
 	
 	// Switch selectbox to multiple
-	$j( '.bookacti-multiple-select-container' ).on( 'change', '.bookacti-multiple-select', function(){
+	$j( 'body' ).on( 'change', '.bookacti-multiple-select-container .bookacti-multiple-select', function(){
 		bookacti_switch_select_to_multiple( this );
 	});
 	
@@ -242,7 +242,7 @@ function bookacti_fill_fields_from_array( fields, field_prefix, scope ) {
 
 /**
  * Switch a selectbox to multiple
- * @version 1.5.1
+ * @version 1.5.8
  * @param {dom_element} checkbox
  */
 function bookacti_switch_select_to_multiple( checkbox ) {
@@ -266,10 +266,10 @@ function bookacti_switch_select_to_multiple( checkbox ) {
 	// Add the [] at the end of the select name
 	if( is_checked && select_name.indexOf( '[]' ) < 0 ) { 
 		$j( 'select#' + select_id ).attr( 'name', select_name + '[]' ); 
-		$j( checkbox ).parents( '.bookacti-multiple-select-container' ).find( 'label span.dashicons' ).removeClass( 'dashicons-plus' ).addClass( 'dashicons-minus' );
+		$j( checkbox ).closest( '.bookacti-multiple-select-container' ).find( 'label span.dashicons' ).removeClass( 'dashicons-plus' ).addClass( 'dashicons-minus' );
 	} else { 
 		$j( 'select#' + select_id ).attr( 'name', select_name.replace( '[]', '' ) ); 
-		$j( checkbox ).parents( '.bookacti-multiple-select-container' ).find( 'label span.dashicons' ).removeClass( 'dashicons-minus' ).addClass( 'dashicons-plus' );
+		$j( checkbox ).closest( '.bookacti-multiple-select-container' ).find( 'label span.dashicons' ).removeClass( 'dashicons-minus' ).addClass( 'dashicons-plus' );
 	}
 }
 

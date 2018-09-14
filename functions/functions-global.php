@@ -402,7 +402,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	 * Display various fields
 	 * 
 	 * @since 1.2.0
-	 * @version 1.5.4
+	 * @version 1.5.8
 	 * @param array $args ['type', 'name', 'label', 'id', 'class', 'placeholder', 'options', 'attr', 'value', 'tip', 'required']
 	 */
 	function bookacti_display_field( $args ) {
@@ -540,6 +540,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			<select	name=	'<?php echo esc_attr( $args[ 'name' ] ); ?>' 
 					id=		'<?php echo esc_attr( $args[ 'id' ] ); ?>' 
 					class=	'bookacti-select <?php echo esc_attr( $args[ 'class' ] ); ?>' 
+					<?php if( ! empty( $args[ 'attr' ][ '<select>' ] ) ) { echo $args[ 'attr' ][ '<select>' ]; } ?>
 					<?php if( $args[ 'multiple' ] && $args[ 'multiple' ] !== 'maybe' ) { echo 'multiple'; } ?>
 					<?php if( $args[ 'required' ] ) { echo ' required'; } ?>
 			>
