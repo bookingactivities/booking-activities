@@ -9,10 +9,10 @@ $j( document ).ready( function() {
 	$j( 'body' ).on( 'keyup', '.bookacti-booking-form input[name=password]', function( e ) {
 		var password_field			= $j( this );
 		var password_confirm_field	= null;
-		var password_strength_meter	= $j( this ).parents( '.bookacti-form-field-container' ).find( '.bookacti-password-strength-meter' );
+		var password_strength_meter	= $j( this ).closest( '.bookacti-form-field-container' ).find( '.bookacti-password-strength-meter' );
 		var blacklisted_words		= [];
 		var pwd_strength = bookacti_check_password_strength( password_field, password_confirm_field, password_strength_meter, blacklisted_words );
-		$j( this ).parents( '.bookacti-form-field-container' ).find( 'input[name=password_strength]' ).val( pwd_strength );
+		$j( this ).closest( '.bookacti-form-field-container' ).find( 'input[name=password_strength]' ).val( pwd_strength );
 	});
 	
 	// Forgotten password dialog
@@ -50,7 +50,7 @@ $j( document ).ready( function() {
 			return; 
 		}
 		
-		var form = $j( this ).parents( 'form' );
+		var form = $j( this ).closest( 'form' );
 		var booking_system	= form.find( '.bookacti-booking-system' );
 		
 		// Clear booking system displayed info
@@ -69,7 +69,7 @@ $j( document ).ready( function() {
 	
 	// Change activity summary on qty change
 	$j( '.bookacti-booking-form' ).on( 'keyup mouseup', 'input.bookacti-quantity', function() {
-		var booking_system = $j( this ).parents( 'form' ).find( '.bookacti-booking-system' );
+		var booking_system = $j( this ).closest( 'form' ).find( '.bookacti-booking-system' );
 		if( booking_system.length ) {
 			bookacti_fill_picked_events_list( booking_system );
 		}
@@ -79,7 +79,7 @@ $j( document ).ready( function() {
 	// Set quantity on eventClick
 	$j( '.bookacti-booking-form' ).on( 'bookacti_picked_events_list_data', '.bookacti-booking-system', function( e, event_summary_data, event ) {
 		var booking_system = $j( this );
-		var qty_field = booking_system.parents( 'form' ).find( 'input.bookacti-quantity' );
+		var qty_field = booking_system.closest( 'form' ).find( 'input.bookacti-quantity' );
 		if( qty_field.length ) {
 			bookacti_set_min_and_max_quantity( booking_system, qty_field, event_summary_data );
 		}
@@ -88,7 +88,7 @@ $j( document ).ready( function() {
 	
 	// Enable submit booking button
 	$j( '.bookacti-booking-form .bookacti-booking-system' ).on( 'bookacti_view_refreshed bookacti_displayed_info_cleared', function( e ) {
-		var booking_form = $j( this ).parents( 'form' );
+		var booking_form = $j( this ).closest( 'form' );
 		booking_form.find( 'input[name="quantity"]' ).attr( 'disabled', false );
 		booking_form.find( 'button[type="submit"]' ).attr( 'disabled', false );
 	});
@@ -96,7 +96,7 @@ $j( document ).ready( function() {
 
 	// Disable submit booking button
 	$j( '.bookacti-booking-form .bookacti-booking-system' ).on( 'bookacti_error_displayed', function( e ) {
-		var booking_form = $j( this ).parents( 'form' );
+		var booking_form = $j( this ).closest( 'form' );
 		booking_form.find( 'input[name="quantity"]' ).attr( 'disabled', true );
 		booking_form.find( 'button[type="submit"]' ).attr( 'disabled', true );
 	});
@@ -145,26 +145,26 @@ function bookacti_init_form_dialogs() {
 /**
  * Display or hide the register fields according to the "New account" checkbox
  * @since 1.5.0
- * @version 1.5.1
+ * @version 1.5.8
  */
 function bookacti_show_hide_register_fields( new_account_checkbox ) {
-	var password_strength			= new_account_checkbox.parents( '.bookacti-form-field-container' ).find( '.bookacti-password-strength' );
-	var generated_password_field	= new_account_checkbox.parents( '.bookacti-form-field-container' ).find( '.bookacti-generated-password' );
-	var not_required_password_field	= new_account_checkbox.parents( '.bookacti-form-field-container' ).find( '.bookacti-password-not-required' );
-	var register_fieldset			= new_account_checkbox.parents( '.bookacti-form-field-login-field-container' ).find( 'fieldset.bookacti-register-fields' );
+	var password_strength			= new_account_checkbox.closest( '.bookacti-form-field-container' ).find( '.bookacti-password-strength' );
+	var generated_password_field	= new_account_checkbox.closest( '.bookacti-form-field-container' ).find( '.bookacti-generated-password' );
+	var not_required_password_field	= new_account_checkbox.closest( '.bookacti-form-field-container' ).find( '.bookacti-password-not-required' );
+	var register_fieldset			= new_account_checkbox.closest( '.bookacti-form-field-login-field-container' ).find( 'fieldset.bookacti-register-fields' );
 	if( new_account_checkbox.is( ':checked' ) ) { 
 		password_strength.show(); 
 		not_required_password_field.show();
 		not_required_password_field.find( '.bookacti-required-field-indicator' ).show();
 		not_required_password_field.find( 'input[name="password"]' ).prop( 'required', true );
 		generated_password_field.hide(); 
-		generated_password_field.find( '.bookacti-required-field' ).prop( 'required', false );
+		generated_password_field.find( 'input[name="password"]' ).prop( 'required', false );
 		register_fieldset.show(); 
 		register_fieldset.find( '.bookacti-required-field' ).prop( 'required', true );
 	} else { 
 		password_strength.hide(); 
 		generated_password_field.show(); 
-		generated_password_field.find( '.bookacti-required-field' ).prop( 'required', true );
+		generated_password_field.find( 'input[name="password"]' ).prop( 'required', true );
 		not_required_password_field.hide();
 		not_required_password_field.find( '.bookacti-required-field-indicator' ).hide();
 		not_required_password_field.find( 'input[name="password"]' ).prop( 'required', false );
