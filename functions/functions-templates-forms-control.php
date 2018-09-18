@@ -225,7 +225,7 @@ function bookacti_validate_event( $event_id, $event_availability, $repeat_freq, 
 	$repeat_to_time     = strtotime( $repeat_to );
 	$max_from           = $min_period ? strtotime( $min_period[ 'from' ] ) : '';
 	$min_to             = $min_period ? strtotime( $min_period[ 'to' ] ) : '';
-
+	
 	// Init var to check with worst case
 	$isAvailSupToBookings           = $min_avail ? false : true;
 	$isRepeatFromBeforeFirstBooked  = false;
@@ -250,7 +250,7 @@ function bookacti_validate_event( $event_id, $event_availability, $repeat_freq, 
 		$return_array['min_availability'] = $min_avail;
 		array_push ( $return_array['errors'], 'error_less_avail_than_bookings' );
 	}
-	if( $repeat_freq !== 'none' && ( ! $isRepeatFromBeforeFirstBooked || ! $isRepeatToAfterLastBooked ) ){
+	if( $repeat_freq !== 'none' && $min_period && ( ! $isRepeatFromBeforeFirstBooked || ! $isRepeatToAfterLastBooked ) ){
 		$return_array['status'] = 'not_valid';
 		$return_array['from'] = date( 'Y-m-d', $max_from );
 		$return_array['to'] = date( 'Y-m-d', $min_to );

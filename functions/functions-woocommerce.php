@@ -1699,14 +1699,29 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	/**
 	 * Find matching product variation
 	 * @since 1.5.0
+	 * @version 1.5.8
 	 * @param WC_Product $product
 	 * @param array $attributes
 	 * @return int Matching variation ID or 0.
 	 */
 	function bookacti_get_product_variation_matching_attributes( $product, $attributes ) {
+		$product_attributes = $product->get_attributes();
+		
 		// Format attributes array
 		foreach( $attributes as $key => $value ) {
-			if( strpos( $key, 'attribute_' ) === 0 ) { continue; }
+			// Take the untranslated value (in case of translated attributes)
+			foreach( $product_attributes as $product_attribute_key => $product_attribute ) {
+				if( $key !== apply_filters( 'bookacti_translate_text', $product_attribute_key ) 
+				&&  $key !== $product_attribute_key ) { continue; }
+				$options = version_compare( WC_VERSION, '3.0.0', '>=' ) ? $product_attribute->get_options() : array_map( 'trim', explode( '|', $product_attribute[ 'value' ] ) );
+				foreach( $options as $option_value ) {
+					if( $value !== apply_filters( 'bookacti_translate_text', $option_value ) 
+					&&  $value !== $option_value ) { continue; }
+					$value = $option_value;
+				}
+			}
+			
+			if( strpos( $key, 'attribute_' ) === 0 && $attributes[ $key ] === $value ) { continue; }
 			unset( $attributes[ $key ] );
 			$attributes[ sprintf( 'attribute_%s', $key ) ] = $value;
 		}
