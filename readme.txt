@@ -319,9 +319,10 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 
 = 1.5.8 =
 * Fix - Hidden fields were shown after hitting "Make a new booking" button
-* Fix - "Generate Password" option prevented the form to be sent (password field not focuasable)
-* Fix - PHP error when updating a reccuring event if the new range doesn't include all booked occurences
+* Fix - "Generate Password" option prevented the form to be sent (password field not focusable)
+* Fix - PHP error when updating a recurring event if the new range doesn't include all booked occurences
 * Fix - WC orders bookings status were not change with WooCommerce < 3.0.0
+* Fix - Remove corrupted cart items bookings when they are removed from cart
 * Dev - Add hooks to give control over WC cart item restored (when bound to a booking)
 * Dev - Add hooks to change notification data before they are sent or prevent them to be sent
 

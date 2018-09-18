@@ -1091,7 +1091,30 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	function bookacti_remove_bookings_of_removed_cart_item( $cart_item_key, $cart ) { 
 		global $woocommerce;
 		$item = $woocommerce->cart->get_cart_item( $cart_item_key );
-		
+		bookacti_remove_cart_item_bookings( $item );
+	}
+	add_action( 'woocommerce_remove_cart_item', 'bookacti_remove_bookings_of_removed_cart_item', 10, 2 ); 
+	
+	
+	/**
+	 * Remove corrupted cart items bookings when they are removed from cart
+	 * @since 1.5.8
+	 * @global WooCommerce $woocommerce
+	 * @param string $cart_item_key
+	 * @param array $item
+	 */
+	function bookacti_remove_bookings_of_corrupted_cart_items( $cart_item_key, $item ) {
+		bookacti_remove_cart_item_bookings( $item );
+	}
+	add_action( 'woocommerce_remove_cart_item_from_session', 'bookacti_remove_bookings_of_corrupted_cart_items', 10, 2 );
+
+	
+	/**
+	 * Remove cart item bookings
+	 * @since 1.5.8
+	 * @param array $item
+	 */
+	function bookacti_remove_cart_item_bookings( $item ) {
 		if( ! isset( $item['_bookacti_options'] ) ) { return; }
 		
 		// Single event
@@ -1099,7 +1122,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			$booking_id = $item['_bookacti_options']['bookacti_booking_id'];
 			$is_in_cart = bookacti_get_booking_state( $booking_id ) === 'in_cart';
 			if( $is_in_cart ) {
-				bookacti_controller_update_booking_quantity( $booking_id, 0 );
+				bookacti_update_booking_quantity( $booking_id, 0 );
 			}
 
 		// Group of events
@@ -1107,11 +1130,10 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			$booking_group_id = $item['_bookacti_options']['bookacti_booking_group_id'];
 			$is_in_cart = bookacti_get_booking_group_state( $booking_group_id ) === 'in_cart';
 			if( $is_in_cart ) {
-				bookacti_controller_update_booking_group_quantity( $booking_group_id, 0 );
+				bookacti_update_booking_group_quantity( $booking_group_id, 0 );
 			}
 		}
 	}
-	add_action( 'woocommerce_remove_cart_item', 'bookacti_remove_bookings_of_removed_cart_item', 10, 2 ); 
 	
 	 
 	/**
