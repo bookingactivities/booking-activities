@@ -1012,8 +1012,26 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		}
 		return false;
 	}
-
-
+	
+	
+	/**
+	 * Convert an amount of days to add to an interval format
+	 * @since 1.5.8
+	 * @param int|float $days_to_add
+	 * @param int|float $hours_to_add
+	 * @param int $minutes_to_add
+	 * @return string
+	 */
+	function bookacti_convert_days_to_add_to_interval_format( $days_to_add = 0, $hours_to_add = 0, $minutes_to_add = 0 ) {
+		$days			= intval( abs( $days_to_add ) );
+		if( ! $hours_to_add )	{ $hours_to_add = abs( ( $days_to_add - $days ) * 24 ); }
+		$hours			= intval( $hours_to_add );
+		if( ! $minutes_to_add )	{ $minutes_to_add = abs( ( $hours_to_add - $hours ) * 60 ); }
+		$minutes		= intval( $minutes_to_add );
+		return 'P' . $days . 'DT' . $hours . 'H' . $minutes . 'M';
+	}
+	
+	
 	/**
 	 * Sanitize array of dates
 	 * 
