@@ -100,7 +100,7 @@ See the whole [features list here](https://booking-activities.fr/en/documentatio
 
 * **[Advanced Forms](https://booking-activities.fr/en/downloads/advanced-forms/?utm_source=wp-plugin-page&utm_medium=wordpress&utm_campaign=advanced-forms&utm_content=readme)**: Add any custom fields to your booking forms
 * **[Display Pack](https://booking-activities.fr/en/downloads/display-pack/?utm_source=wp-plugin-page&utm_medium=wordpress&utm_campaign=display-pack&utm_content=readme)**: Customize your calendars or set alternative display (datepicker)
-* **[Prices and Promotions](https://booking-activities.fr/en/downloads/prices-and-promotions/?utm_source=wp-plugin-page&utm_medium=wordpress&utm_campaign=prices-and-promotions&utm_content=readme)**: Set prices and discounts on specific events
+* **[Prices and Credits](https://booking-activities.fr/en/downloads/prices-and-credits/?utm_source=wp-plugin-page&utm_medium=wordpress&utm_campaign=prices-and-credits&utm_content=readme)**: Set event-specific prices and pay with credits
 * **[Notification Pack](https://booking-activities.fr/en/downloads/notification-pack/?utm_source=wp-plugin-page&utm_medium=wordpress&utm_campaign=notification-pack&utm_content=readme)**: Send notifications and booking reminders by email, SMS and Push
 * **[Order for Customers](https://booking-activities.fr/en/downloads/order-for-customers/?utm_source=wp-plugin-page&utm_medium=wordpress&utm_campaign=order-for-customers&utm_content=readme)**: You can book / place an order in the name of your customers
 * **[Points of Sale](https://booking-activities.fr/en/downloads/points-of-sale/?utm_source=wp-plugin-page&utm_medium=wordpress&utm_campaign=points-of-sale&utm_content=readme)**: Each POS manager manage his own products, calendars and bookings
@@ -323,6 +323,8 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 * Fix - PHP error when updating a recurring event if the new range doesn't include all booked occurences
 * Fix - WC orders bookings status were not change with WooCommerce < 3.0.0
 * Fix - Remove corrupted cart items bookings when they are removed from cart
+* Fix - Update auto refund process to WC 3.0+ way (kept backward compatibility)
+* Fix - Booking groups status stayed 'in_cart' if they were added to cart after a single booking
 * Dev - Add hooks to give control over WC cart item restored (when bound to a booking)
 * Dev - Add hooks to change notification data before they are sent or prevent them to be sent
 

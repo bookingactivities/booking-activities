@@ -1073,17 +1073,21 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		$booking_id_array		= array();
 		$booking_group_id_array = array();
 		foreach( $items as $key => $item ) {
+			// Reset item booking id
+			$booking_id = 0;
+			$booking_group_id = 0;
+			
 			if( version_compare( WC_VERSION, '3.0.0', '>=' ) ) {
-				if( isset( $item[ 'bookacti_booking_id' ] ) && $item[ 'bookacti_booking_id' ] ) {
+				if( ! empty( $item[ 'bookacti_booking_id' ] )  ) {
 					$booking_id = $item[ 'bookacti_booking_id' ];
-				} else if( isset( $item[ 'bookacti_booking_group_id' ] ) && $item[ 'bookacti_booking_group_id' ] ) {
-					$booking_group_id= $item[ 'bookacti_booking_group_id' ];
+				} else if( ! empty( $item[ 'bookacti_booking_group_id' ] ) ) {
+					$booking_group_id = $item[ 'bookacti_booking_group_id' ];
 				}
 			} else {
-				if( isset( $item[ 'item_meta' ][ 'bookacti_booking_id' ] ) && $item[ 'item_meta' ][ 'bookacti_booking_id' ] ) {
+				if( ! empty( $item[ 'item_meta' ][ 'bookacti_booking_id' ] ) ) {
 					$booking_id = $item[ 'item_meta' ][ 'bookacti_booking_id' ][ 0 ];
-				} else if( isset( $item[ 'item_meta' ][ 'bookacti_booking_group_id' ] ) && $item[ 'item_meta' ][ 'bookacti_booking_group_id' ] ) {
-					$booking_group_id= $item[ 'item_meta' ][ 'bookacti_booking_group_id' ][ 0 ];
+				} else if( ! empty( $item[ 'item_meta' ][ 'bookacti_booking_group_id' ] ) ) {
+					$booking_group_id = $item[ 'item_meta' ][ 'bookacti_booking_group_id' ][ 0 ];
 				}
 			}
 			
@@ -1309,7 +1313,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	 * Get woocommerce order item id by booking id
 	 * @version 1.5.0
 	 * @param int $booking_id
-	 * @return array|false
+	 * @return WC_Order_Item|array|false
 	 */
 	function bookacti_get_order_item_by_booking_id( $booking_id ) {
 
@@ -1990,16 +1994,71 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	
 	/**
 	 * Auto refund (for supported gateway)
-	 * 
-	 * @version 1.5.4
-	 * 
+	 * @version 1.5.8
 	 * @param int $booking_id
 	 * @param string $booking_type Determine if the given id is a booking id or a booking group id. Accepted values are 'single' or 'group'.
 	 * @param string $refund_message
-	 * @return array|false
+	 * @return array
 	 */
 	function bookacti_auto_refund_booking( $booking_id, $booking_type, $refund_message ) {
+		if( version_compare( WC_VERSION, '3.0.0', '<' ) ) {
+			return bookacti_deprecated_auto_refund_booking( $booking_id, $booking_type, $refund_message );
+		}	
+		
+		// Get variables
+		if( $booking_type === 'single' ) {
+			$order_id	= bookacti_get_booking_order_id( $booking_id );
+			$item		= bookacti_get_order_item_by_booking_id( $booking_id );
+		} else if( $booking_type === 'group' ) {
+			$order_id	= bookacti_get_booking_group_order_id( $booking_id );
+			$item		= bookacti_get_order_item_by_booking_group_id( $booking_id );
+		}
+		
+		if( ! $item ) {
+			return array( 'status' => 'failed', 'error' => 'no_order_item_found' );
+		}
+		
+		$order_item_id = $item->get_id();
+		$amount = $item->get_total() + $item->get_total_tax();
 
+		$reason = __( 'Auto refund proceeded by user.', BOOKACTI_PLUGIN_NAME );
+		if( $refund_message !== '' ) {
+			$reason	.= PHP_EOL . __( 'User message:', BOOKACTI_PLUGIN_NAME ) . PHP_EOL . $refund_message;
+		}
+
+		$line_items	= array();
+		$line_items[ $order_item_id ] = array(
+			'qty'			=> $item->get_quantity(),
+			'refund_total'	=> $item->get_total(),
+			'refund_tax'	=> $item->get_total_tax()
+		);
+
+		$data = array(
+			'amount'			=> $amount,
+			'reason'			=> $reason,
+			'order_id'			=> $order_id,
+			'line_items'		=> $line_items,
+			'refund_payment'	=> true
+		);
+		
+		$refund = wc_create_refund( $data );
+		
+		if( is_wp_error( $refund ) ) {
+			return array( 'status' => 'failed', 'error' => $refund->get_error_code(), 'message' => $refund->get_error_message() );
+		}
+		
+		return array( 'status' => 'success', 'new_state' => 'refunded', 'refund' => $refund );
+	}
+
+	
+	/**
+	 * Deprecated Auto refund function (for supported gateway)
+	 * To be used with WooCommerce < 3.0
+	 * @since 1.5.8 (was bookacti_auto_refund_booking)
+	 * @param array $data
+	 * @return array
+	 */
+	function bookacti_deprecated_auto_refund_booking( $booking_id, $booking_type, $refund_message ) {
 		// Include & load API classes
 		if( ! class_exists( 'WC_API_Orders' ) ) {
 			WC()->api->includes();
@@ -2055,24 +2114,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		// Remove user cap to create coupon
 		if( ! $user_basically_can ) { $current_user->remove_cap( 'publish_shop_orders' ); }
 
-		if( is_array( $refund ) && ! is_wp_error( $refund ) ) {
-
-			// Trigger notifications and status changes
-			$order = wc_get_order( $order_id );
-			if ( $order->get_remaining_refund_amount() > 0 || ( $order->has_free_item() && $order->get_remaining_refund_items() > 0 ) ) {
-				do_action( 'woocommerce_order_partially_refunded', $order_id, $refund->id, $refund->id );
-			} else {
-				do_action( 'woocommerce_order_fully_refunded', $order_id, $refund->id );
-				$order->update_status( apply_filters( 'woocommerce_order_fully_refunded_status', 'refunded', $order_id, $refund->id ) );
-			}
-
-			do_action( 'woocommerce_order_refunded', $order_id, $refund->id );
-
-			$return_data = array( 'status' => 'success', 'new_state' => 'refunded' );
-			return $return_data;
-
-		} else if( is_wp_error( $refund ) ) {
-
+		if( is_wp_error( $refund ) ) {
 			// Delete order refund
 			$order_refunds = WC()->api->WC_API_Orders->get_order_refunds( $order_id );
 			if( ! empty( $order_refunds['order_refunds'] ) ) {
@@ -2082,14 +2124,23 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 					}
 				}
 			}
-
-			// Return error
-			return array( 'status' => 'failed', 'message' => $refund->get_error_message() );
+			return array( 'status' => 'failed', 'error' => $refund->get_error_code(), 'message' => $refund->get_error_message() );
+		}
+		
+		// Trigger notifications and status changes
+		$order = wc_get_order( $order_id );
+		if ( $order->get_remaining_refund_amount() > 0 || ( $order->has_free_item() && $order->get_remaining_refund_items() > 0 ) ) {
+			do_action( 'woocommerce_order_partially_refunded', $order_id, $refund->id, $refund->id );
+		} else {
+			do_action( 'woocommerce_order_fully_refunded', $order_id, $refund->id );
+			$order->update_status( apply_filters( 'woocommerce_order_fully_refunded_status', 'refunded', $order_id, $refund->id ) );
 		}
 
-		return false;
-	}
+		do_action( 'woocommerce_order_refunded', $order_id, $refund->id );
 
+		return array( 'status' => 'success', 'new_state' => 'refunded' );
+	}
+	
 	
 	/**
 	 * Delete a refund and die

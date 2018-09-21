@@ -326,7 +326,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 // EVENTS
 	function bookacti_promo_for_bapap_addon( $type = 'event' ) {
 		
-		$is_plugin_active = bookacti_is_plugin_active( 'ba-prices-and-promotions/ba-prices-and-promotions.php' );
+		$is_plugin_active = bookacti_is_plugin_active( 'ba-prices-and-credits/ba-prices-and-credits.php' );
 		
 		$license_status = get_option( 'bapap_license_status' );
 		
@@ -338,17 +338,17 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 				<?php 
 					/* translators: %s = add-on name */
 					echo sprintf( __( 'Thank you for purchasing %s add-on!', BOOKACTI_PLUGIN_NAME ), 
-								 '<strong>' . esc_html( __( 'Prices and Promotions', BOOKACTI_PLUGIN_NAME ) ) . '</strong>' ); 
+								 '<strong>' . esc_html( __( 'Prices and Credits', BOOKACTI_PLUGIN_NAME ) ) . '</strong>' ); 
 				?>
 				</p><p>
 					<?php esc_html_e( "It seems you didn't activate your license yet. Please follow these instructions to activate your license:", BOOKACTI_PLUGIN_NAME ); ?>
 				</p><p>
 					<strong>
-						<a href='https://booking-activities.fr/en/docs/user-documentation/get-started-with-prices-and-promotions-add-on/prerequisite-installation-license-activation-of-prices-and-promotions-add-on/?utm_source=plugin&utm_medium=plugin&utm_content=encart-promo-<?php echo $type; ?>' target='_blank' >
+						<a href='https://booking-activities.fr/en/docs/user-documentation/get-started-with-prices-and-credits-add-on/prerequisite-installation-license-activation-of-prices-and-credits-add-on/?utm_source=plugin&utm_medium=plugin&utm_content=encart-promo-<?php echo $type; ?>' target='_blank' >
 							<?php 
 							/* translators: %s = add-on name */
 								echo sprintf( __( 'How to activate %s license?', BOOKACTI_PLUGIN_NAME ), 
-											  esc_html( __( 'Prices and Promotions', BOOKACTI_PLUGIN_NAME ) ) ); 
+											  esc_html( __( 'Prices and Credits', BOOKACTI_PLUGIN_NAME ) ) ); 
 							?>
 						</a>
 					</strong>
@@ -361,17 +361,17 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			?>
 			<div class='bookacti-addon-promo' >
 				<?php 
-				$addon_link = '<a href="https://booking-activities.fr/en/downloads/prices-and-promotions/?utm_source=plugin&utm_medium=plugin&utm_medium=plugin&utm_campaign=prices-and-promotions&utm_content=encart-promo-' . $type . '" target="_blank" >';
-				$addon_link .= esc_html( __( 'Prices and Promotions', BOOKACTI_PLUGIN_NAME ) );
+				$addon_link = '<a href="https://booking-activities.fr/en/downloads/prices-and-credits/?utm_source=plugin&utm_medium=plugin&utm_medium=plugin&utm_campaign=prices-and-credits&utm_content=encart-promo-' . $type . '" target="_blank" >';
+				$addon_link .= esc_html( __( 'Prices and Credits', BOOKACTI_PLUGIN_NAME ) );
 				$addon_link .= '</a>';
-				/* translators: %s is the placeholder for Price and Promotion add-on link */
+				/* translators: %s is the placeholder for Prices and Credits add-on link */
 				$message = '';
 				$event_name = '';
 				if( $type === 'group-of-events' ) {
-					$message = esc_html( __( 'Set a price or a promotion on your groups of events with %s add-on !', BOOKACTI_PLUGIN_NAME ) );
+					$message = esc_html( __( 'Set a price or a promotion in cash or in credits on your groups of events with %s add-on !', BOOKACTI_PLUGIN_NAME ) );
 					$event_name = __( 'My grouped event', BOOKACTI_PLUGIN_NAME );
 				} else {
-					$message = esc_html( __( 'Set a price or a promotion on your events with %s add-on !', BOOKACTI_PLUGIN_NAME ) );
+					$message = esc_html( __( 'Set a price or a promotion in cash or in credits on your events with %s add-on !', BOOKACTI_PLUGIN_NAME ) );
 					$event_name = __( 'My event', BOOKACTI_PLUGIN_NAME );
 				}
 				echo sprintf( $message, $addon_link ); 
@@ -415,8 +415,29 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 							<span class="bookacti-price bookacti-promo" style="display: block; width: fit-content; white-space: nowrap; margin: 4px auto; padding: 5px; font-weight: bolder; font-size: 1.2em; border: 1px solid #fff; -webkit-border-radius: 3px;  border-radius: 3px;  background-color: rgba(0,0,0,0.3); color: #fff;">- 20%</span>
 						</div>
 					</a>
+					<a class="fc-time-grid-event fc-v-event fc-event fc-start fc-end bookacti-event-has-price bookacti-narrow-event" >
+						<div class="fc-content">
+							<div class="fc-time" data-start="7:00" data-full="7:00 AM - 8:30 AM">
+								<span>7:00 - 8:30</span>
+							</div>
+							<div class="fc-title"><?php echo $event_name; ?></div>
+						</div>
+						<div class="fc-bg"></div>
+						<div class="bookacti-availability-container">
+							<span class="bookacti-available-places bookacti-not-booked ">
+								<span class="bookacti-available-places-number">50</span>
+								<span class="bookacti-available-places-unit-name"> </span>
+								<span class="bookacti-available-places-avail-particle"> <?php _ex( 'avail.', 'Short for availabilities [plural noun]', BOOKACTI_PLUGIN_NAME ); ?></span>
+							</span>
+						</div>
+						<div class="bookacti-price-container">
+							<span class="bookacti-price bookacti-promo" style="display: block; width: fit-content; white-space: nowrap; margin: 4px auto; padding: 5px; font-weight: bolder; font-size: 1.2em; border: 1px solid #fff; -webkit-border-radius: 3px;  border-radius: 3px;  background-color: rgba(0,0,0,0.3); color: #fff;">
+								<?php $amount = 12; echo sprintf( _n( '%d credit', '%d credits', $amount ), $amount ); ?>
+							</span>
+						</div>
+					</a>
 				</div>
-				<div><a href='https://booking-activities.fr/en/downloads/prices-and-promotions/?utm_source=plugin&utm_medium=plugin&utm_medium=plugin&utm_campaign=prices-and-promotions&utm_content=encart-promo-<?php echo $type; ?>' class='button' target='_blank' ><?php esc_html_e( 'Learn more', BOOKACTI_PLUGIN_NAME ); ?></a></div>
+				<div><a href='https://booking-activities.fr/en/downloads/prices-and-credits/?utm_source=plugin&utm_medium=plugin&utm_medium=plugin&utm_campaign=prices-and-credits&utm_content=encart-promo-<?php echo $type; ?>' class='button' target='_blank' ><?php esc_html_e( 'Learn more', BOOKACTI_PLUGIN_NAME ); ?></a></div>
 			</div>
 			<?php
 		}

@@ -5,7 +5,7 @@ msgstr ""
 "Project-Id-Version: Booking Activities 1.5.7\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/booking-"
 "activities\n"
-"POT-Creation-Date: 2018-09-14 15:14:58+00:00\n"
+"POT-Creation-Date: 2018-09-20 21:18:33+00:00\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -87,12 +87,12 @@ msgid "Title"
 msgstr ""
 
 #: class/class-bookings-list.php:65
-#: controller/controller-woocommerce-frontend.php:1235
+#: controller/controller-woocommerce-frontend.php:1257
 msgid "Start"
 msgstr ""
 
 #: class/class-bookings-list.php:66
-#: controller/controller-woocommerce-frontend.php:1236
+#: controller/controller-woocommerce-frontend.php:1258
 msgid "End"
 msgstr ""
 
@@ -1042,47 +1042,47 @@ msgid ""
 "from cart."
 msgstr ""
 
-#: controller/controller-woocommerce-frontend.php:1205
-#: controller/controller-woocommerce-frontend.php:1305
+#: controller/controller-woocommerce-frontend.php:1227
+#: controller/controller-woocommerce-frontend.php:1327
 msgid "Booked event"
 msgid_plural "Booked events"
 msgstr[0] ""
 msgstr[1] ""
 
-#: controller/controller-woocommerce-frontend.php:1225
-#: functions/functions-woocommerce.php:1847
+#: controller/controller-woocommerce-frontend.php:1247
+#: functions/functions-woocommerce.php:1895
 msgid "Booking number"
 msgstr ""
 
-#: controller/controller-woocommerce-frontend.php:1227
-#: functions/functions-woocommerce.php:1849
+#: controller/controller-woocommerce-frontend.php:1249
+#: functions/functions-woocommerce.php:1897
 msgid "Booking group number"
 msgstr ""
 
-#: controller/controller-woocommerce-frontend.php:1228
+#: controller/controller-woocommerce-frontend.php:1250
 #: view/view-form-editor-dialogs.php:190
 msgid "Booked events"
 msgstr ""
 
-#: controller/controller-woocommerce-frontend.php:1229
+#: controller/controller-woocommerce-frontend.php:1251
 msgid "Status"
 msgstr ""
 
-#: controller/controller-woocommerce-frontend.php:1230
+#: controller/controller-woocommerce-frontend.php:1252
 msgid "Refund method"
 msgstr ""
 
-#: controller/controller-woocommerce-frontend.php:1231
-#: controller/controller-woocommerce-frontend.php:1563
+#: controller/controller-woocommerce-frontend.php:1253
+#: controller/controller-woocommerce-frontend.php:1585
 #: languages/script-translation.php:196
 msgid "Coupon code"
 msgstr ""
 
-#: controller/controller-woocommerce-frontend.php:1234
+#: controller/controller-woocommerce-frontend.php:1256
 msgid "Event ID"
 msgstr ""
 
-#: controller/controller-woocommerce-frontend.php:1523
+#: controller/controller-woocommerce-frontend.php:1545
 msgid "Price"
 msgstr ""
 
@@ -1461,8 +1461,8 @@ msgstr ""
 #: functions/functions-woocommerce.php:303
 #: functions/functions-woocommerce.php:426
 #: functions/functions-woocommerce.php:442
-#: functions/functions-woocommerce.php:930
-#: functions/functions-woocommerce.php:946
+#: functions/functions-woocommerce.php:959
+#: functions/functions-woocommerce.php:975
 msgid "You want to make %1$s booking of \"%2$s\""
 msgid_plural "You want to make %1$s bookings of \"%2$s\""
 msgstr[0] ""
@@ -1480,7 +1480,7 @@ msgstr[1] ""
 #: functions/functions-booking-system.php:846
 #: functions/functions-woocommerce.php:293
 #: functions/functions-woocommerce.php:429
-#: functions/functions-woocommerce.php:933
+#: functions/functions-woocommerce.php:962
 msgid ""
 "and you have already booked %1$s place, but the minimum number of "
 "reservations required per user is %2$s."
@@ -1502,7 +1502,7 @@ msgstr[1] ""
 #: functions/functions-booking-system.php:849
 #: functions/functions-woocommerce.php:296
 #: functions/functions-woocommerce.php:432
-#: functions/functions-woocommerce.php:936
+#: functions/functions-woocommerce.php:965
 msgid "but the minimum number of reservations required per user is %1$s."
 msgstr ""
 
@@ -1536,7 +1536,7 @@ msgstr ""
 #: functions/functions-booking-system.php:859
 #: functions/functions-woocommerce.php:306
 #: functions/functions-woocommerce.php:445
-#: functions/functions-woocommerce.php:949
+#: functions/functions-woocommerce.php:978
 msgid ""
 "but you have already booked %1$s place and the maximum number of "
 "reservations allowed per user is %2$s."
@@ -1558,7 +1558,7 @@ msgstr[1] ""
 #: functions/functions-booking-system.php:862
 #: functions/functions-woocommerce.php:309
 #: functions/functions-woocommerce.php:448
-#: functions/functions-woocommerce.php:952
+#: functions/functions-woocommerce.php:981
 msgid "but the maximum number of reservations allowed per user is %1$s."
 msgstr ""
 
@@ -2348,7 +2348,7 @@ msgstr ""
 
 #: functions/functions-settings.php:424 functions/functions-settings.php:972
 #: functions/functions-settings.php:982 functions/functions-settings.php:996
-#: view/view-landing.php:43
+#: view/view-landing.php:56
 msgid "Display Pack"
 msgstr ""
 
@@ -2663,7 +2663,7 @@ msgstr ""
 
 #: functions/functions-settings.php:1076 functions/functions-settings.php:1086
 #: functions/functions-settings.php:1100 view/view-form-editor.php:178
-#: view/view-landing.php:30
+#: view/view-landing.php:43
 msgid "Advanced Forms"
 msgstr ""
 
@@ -2701,13 +2701,15 @@ msgid ""
 msgstr ""
 
 #: functions/functions-template.php:341 functions/functions-template.php:351
-#: functions/functions-template.php:365 view/view-landing.php:56
-msgid "Prices and Promotions"
+#: functions/functions-template.php:365 view/view-landing.php:30
+msgid "Prices and Credits"
 msgstr ""
 
-#. translators: %s is the placeholder for Price and Promotion add-on link
+#. translators: %s is the placeholder for Prices and Credits add-on link
 #: functions/functions-template.php:371
-msgid "Set a price or a promotion on your groups of events with %s add-on !"
+msgid ""
+"Set a price or a promotion in cash or in credits on your groups of events "
+"with %s add-on !"
 msgstr ""
 
 #: functions/functions-template.php:372
@@ -2715,7 +2717,9 @@ msgid "My grouped event"
 msgstr ""
 
 #: functions/functions-template.php:374
-msgid "Set a price or a promotion on your events with %s add-on !"
+msgid ""
+"Set a price or a promotion in cash or in credits on your events with %s add-"
+"on !"
 msgstr ""
 
 #: functions/functions-template.php:375
@@ -2757,32 +2761,32 @@ msgid ""
 "later."
 msgstr ""
 
-#: functions/functions-woocommerce.php:518
+#: functions/functions-woocommerce.php:548
 msgid ""
 "An error occurs while trying to update booking group state. Please try again "
 "later."
 msgstr ""
 
-#: functions/functions-woocommerce.php:754 languages/script-translation.php:190
+#: functions/functions-woocommerce.php:783 languages/script-translation.php:190
 msgid "Pending payment"
 msgstr ""
 
 #. translators: %d is a variable number of days
-#: functions/functions-woocommerce.php:817
+#: functions/functions-woocommerce.php:846
 msgid "%d day"
 msgid_plural "%d days"
 msgstr[0] ""
 msgstr[1] ""
 
 #. translators: %d is a variable number of hours
-#: functions/functions-woocommerce.php:822
+#: functions/functions-woocommerce.php:851
 msgid "%d hour"
 msgid_plural "%d hours"
 msgstr[0] ""
 msgstr[1] ""
 
 #. translators: %d is a variable number of minutes
-#: functions/functions-woocommerce.php:827
+#: functions/functions-woocommerce.php:856
 msgid "%d minute"
 msgid_plural "%d minutes"
 msgstr[0] ""
@@ -2791,105 +2795,107 @@ msgstr[1] ""
 #. translators: %1$s is a variable number of bookings. This sentence is
 #. preceded by two others : 'You want to make %1$s bookings of "%2$s"' and 'but
 #. the minimum number of reservations required per user is %1$s.'
-#: functions/functions-woocommerce.php:939
+#: functions/functions-woocommerce.php:968
 msgid "The quantity has been automatically increased to %1$s."
 msgstr ""
 
 #. translators: %1$s is a variable quantity of bookings. This sentence is
 #. preceded by two others : 'You want to make %1$s bookings of "%2$s"' and 'but
 #. the maximum number of reservations allowed per user is %1$s.'
-#: functions/functions-woocommerce.php:955
+#: functions/functions-woocommerce.php:984
 msgid "The quantity has been automatically decreased to %1$s."
 msgstr ""
 
 #. translators: %1$s is the event title. This sentence is followed by: 'This
 #. event has been automatically removed from your cart.'
-#: functions/functions-woocommerce.php:966
+#: functions/functions-woocommerce.php:995
 msgid "The event \"%1$s\" is not available in your user category."
 msgstr ""
 
-#: functions/functions-woocommerce.php:967
+#: functions/functions-woocommerce.php:996
 msgid "This event has been automatically removed from your cart."
 msgstr ""
 
-#: functions/functions-woocommerce.php:1109
+#: functions/functions-woocommerce.php:1142
 msgid "Invalid user ID."
 msgstr ""
 
-#: functions/functions-woocommerce.php:1110
+#: functions/functions-woocommerce.php:1143
 msgid "Invalid order ID."
 msgstr ""
 
-#: functions/functions-woocommerce.php:1111
+#: functions/functions-woocommerce.php:1144
 msgid "Database failed to update."
 msgstr ""
 
-#: functions/functions-woocommerce.php:1112
+#: functions/functions-woocommerce.php:1145
 msgid "The order doesn't contains any booking IDs."
 msgstr ""
 
 #. translators: %1$s stands for booking ids and %2$s stands for the order id
-#: functions/functions-woocommerce.php:1121
-#: functions/functions-woocommerce.php:1124
+#: functions/functions-woocommerce.php:1154
+#: functions/functions-woocommerce.php:1157
 msgid "Booking %1$s has not been correctly validated for order %2$s"
 msgid_plural "Bookings %1$s have not been correctly validated for order %2$s."
 msgstr[0] ""
 msgstr[1] ""
 
-#: functions/functions-woocommerce.php:1125
+#: functions/functions-woocommerce.php:1158
 msgid "Here is the errors list:"
 msgstr ""
 
-#: functions/functions-woocommerce.php:1127
+#: functions/functions-woocommerce.php:1160
 msgid ""
 "Please verify the order and its bookings, and validate bookings manually if "
 "necessary."
 msgstr ""
 
 #. translators: %1$s is booking id, %2$s is old state, %3$s is new state
-#: functions/functions-woocommerce.php:1191
+#: functions/functions-woocommerce.php:1224
 msgid "Booking #%1$s state has been updated from %2$s to %3$s."
 msgstr ""
 
 #. translators: %1$s is booking group id, %2$s is old state, %3$s is new state
-#: functions/functions-woocommerce.php:1197
+#: functions/functions-woocommerce.php:1230
 msgid "Booking group #%1$s state has been updated from %2$s to %3$s."
 msgstr ""
 
-#: functions/functions-woocommerce.php:1398
+#: functions/functions-woocommerce.php:1431
 msgid "View order"
 msgstr ""
 
-#: functions/functions-woocommerce.php:1399
+#: functions/functions-woocommerce.php:1432
 msgid "Go to the related WooCommerce admin order page."
 msgstr ""
 
-#: functions/functions-woocommerce.php:1842
+#: functions/functions-woocommerce.php:1890
 msgid "Coupon created as a refund for:"
 msgstr ""
 
-#: functions/functions-woocommerce.php:1843
+#: functions/functions-woocommerce.php:1891
 msgid "User"
 msgstr ""
 
-#: functions/functions-woocommerce.php:1844
+#: functions/functions-woocommerce.php:1892
 msgid "Order"
 msgstr ""
 
-#: functions/functions-woocommerce.php:1861
-#: functions/functions-woocommerce.php:1983
+#: functions/functions-woocommerce.php:1909
+#: functions/functions-woocommerce.php:2026
+#: functions/functions-woocommerce.php:2086
 msgid "User message:"
 msgstr ""
 
-#: functions/functions-woocommerce.php:1981
+#: functions/functions-woocommerce.php:2024
+#: functions/functions-woocommerce.php:2084
 msgid "Auto refund proceeded by user."
 msgstr ""
 
-#: functions/functions-woocommerce.php:2065
+#: functions/functions-woocommerce.php:2160
 msgid "Error occurs while trying to refund a booking."
 msgstr ""
 
-#: functions/functions-woocommerce.php:2102
+#: functions/functions-woocommerce.php:2197
 msgid ""
 "If cart expiration is off, the booking is made at the end of the checkout "
 "process. It means that an event available at the moment you add it to cart "
@@ -2898,17 +2904,17 @@ msgid ""
 "remains temporary until the end of the checkout process."
 msgstr ""
 
-#: functions/functions-woocommerce.php:2121
+#: functions/functions-woocommerce.php:2216
 msgid ""
 "The expiration time will be set for each product independantly, each with "
 "their own countdown before being removed from cart."
 msgstr ""
 
-#: functions/functions-woocommerce.php:2143
+#: functions/functions-woocommerce.php:2238
 msgid "Define the amount of time a user has before his cart gets empty."
 msgstr ""
 
-#: functions/functions-woocommerce.php:2162
+#: functions/functions-woocommerce.php:2257
 msgid ""
 "The countdown will be reset each time a product is added, or when a product "
 "quantity is changed."
@@ -4057,27 +4063,26 @@ msgstr ""
 #: view/view-landing.php:20
 msgid ""
 "You can extend Booking Activities functionnalities with the following great "
-"add-ons. They make your booking management easier and boost your turnover. "
-"Pick the one you are interested in and just give it a try, you have a 30-day "
-"money back guarantee. "
+"add-ons. Pick the one you are interested in and just give it a try, you have "
+"a 30-day money back guarantee. "
 msgstr ""
 
 #: view/view-landing.php:36
+msgid ""
+"Put a price in cash or in credits on your events, sell booking passes and "
+"redeem them on your forms."
+msgstr ""
+
+#: view/view-landing.php:49
 msgid ""
 "Add any kind of fields to your booking forms. Collect data from each "
 "participant. View, edit and filter the values in your booking list."
 msgstr ""
 
-#: view/view-landing.php:49
+#: view/view-landing.php:62
 msgid ""
 "Customize Booking Activities appearance with the alternate views and "
 "customization options of this pack."
-msgstr ""
-
-#: view/view-landing.php:62
-msgid ""
-"Put a special price on your events, make promotions and strategically draw "
-"the attention of your customers."
 msgstr ""
 
 #: view/view-landing.php:75
