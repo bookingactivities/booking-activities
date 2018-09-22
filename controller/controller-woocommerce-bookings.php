@@ -187,57 +187,55 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	/**
 	 * Turn paid order status to complete if the order has only activities
 	 * 
-	 * @version 1.3.0
+	 * @version 1.5.8
 	 * @param string $order_status
 	 * @param int $order_id
 	 * @return string
 	 */
 	function bookacti_set_order_status_to_completed_after_payment( $order_status, $order_id ) {
 		
-		if( $order_status === 'processing' || $order_status === 'pending' ) {
-		
-			$order = wc_get_order( $order_id );
-			if( ! empty( $order ) ) {
+		if( ! in_array( $order_status, array( 'processing', 'pending' ), true ) ) { return $order_status; }
 
-				// Retrieve bought items
-				$items = $order->get_items();
+		$order = wc_get_order( $order_id );
+		if( empty( $order ) ) { return $order_status; }
 
-				// Determine if the order has at least 1 activity
-				$has_activities = false;
-				foreach( $items as $item ) {
-					if( isset( $item[ 'bookacti_booking_id' ] ) || isset( $item[ 'bookacti_booking_group_id' ] ) ) {
-						$has_activities = true;
-						break;
-					}
-				}
-				
-				// Determine if the order is only composed of activities
-				$are_activities = true;
-				foreach( $items as $item ) {
-					if( ! isset( $item[ 'bookacti_booking_id' ] ) && ! isset( $item[ 'bookacti_booking_group_id' ] )  ) {
-						$are_activities = false;
-						break;
-					}
-				}
-				
-				// If there are only activities, mark the order as 'completed' and 
-				// a function hooked to woocommerce_order_status_completed will mark the activities as 'booked'
-				if( $are_activities ) {
-					$order_status = 'completed';
-					
-				// If there are at least one activity in the middle of other products, 
-				// we won't mark the order as 'completed', but we still need to mark the bookings as 'pending' and 'owed'
-				// until the order changes state. At that time the bookings state will be redefined by other hooks
-				// such as "woocommerce_order_status_pending_to_processing" and "woocommerce_order_status_completed"
-				} else if( $has_activities ) {
-					bookacti_turn_temporary_booking_to_permanent( $order_id, $order, 'pending', 'owed' );
-				}
+		// Retrieve bought items
+		$items = $order->get_items();
+
+		// Check if the order has at least 1 activity
+		$has_activities = false;
+		foreach( $items as $item ) {
+			if( isset( $item[ 'bookacti_booking_id' ] ) || isset( $item[ 'bookacti_booking_group_id' ] ) ) {
+				$has_activities = true;
+				break;
 			}
 		}
-		
+
+		// Check if the order is only composed of activities
+		$are_activities = true;
+		foreach( $items as $item ) {
+			if( ! isset( $item[ 'bookacti_booking_id' ] ) && ! isset( $item[ 'bookacti_booking_group_id' ] )  ) {
+				$are_activities = false;
+				break;
+			}
+		}
+
+		// If there are only activities, mark the order as 'completed' and 
+		// a function hooked to woocommerce_order_status_completed will mark the activities as 'booked'
+		if( $are_activities ) {
+			$order_status = 'completed';
+
+		// If there are at least one activity in the middle of other products, 
+		// we won't mark the order as 'completed', but we still need to mark the bookings as 'pending' and 'owed'
+		// until the order changes state. At that time the bookings state will be redefined by other hooks
+		// such as "woocommerce_order_status_pending_to_processing" and "woocommerce_order_status_completed"
+		} else if( $has_activities ) {
+			bookacti_turn_temporary_booking_to_permanent( $order_id, $order, 'pending', 'owed' );
+		}
+
 		return $order_status;
 	}
-	add_filter( 'woocommerce_payment_complete_order_status', 'bookacti_set_order_status_to_completed_after_payment', 10, 2 );
+	add_filter( 'woocommerce_payment_complete_order_status', 'bookacti_set_order_status_to_completed_after_payment', 20, 2 );
 	
 	
 	/**
@@ -263,7 +261,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		// Retrieve bought items
 		$items = $order->get_items();
 		
-		// Determine if the order has at least 1 activity
+		// Check if the order has at least 1 activity
 		$has_activities = false;
 		foreach( $items as $item ) {
 			if( isset( $item[ 'bookacti_booking_id' ] ) || isset( $item[ 'bookacti_booking_group_id' ] ) ) {
@@ -272,7 +270,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			}
 		}
 		
-		// Determine if the order is only composed of activities
+		// Check if the order is only composed of activities
 		$are_activities = true;
 		foreach( $items as $item ) {
 			if( ! isset( $item[ 'bookacti_booking_id' ] ) && ! isset( $item[ 'bookacti_booking_group_id' ] )  ) {

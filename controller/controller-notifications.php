@@ -20,7 +20,7 @@ function bookacti_send_notification_when_booking_is_made( $booking_id, $booking_
 	// Alert administrators that a new booking has been made
 	bookacti_send_notification( 'admin_new_booking', $booking_id, $booking_type );
 }
-add_action( 'bookacti_booking_form_validated', 'bookacti_send_notification_when_booking_is_made', 10, 4 );
+add_action( 'bookacti_booking_form_validated', 'bookacti_send_notification_when_booking_is_made', 20, 4 );
 
 
 

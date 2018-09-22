@@ -122,7 +122,7 @@ This booking system has been specially designed to fulfill the needs of **most a
 * For **tourism, sport and leisure** (nautical, aerial, land, mountain, foot or wheels, outdoor or indoor...)
 * For **courses, trainings, exhibitions** (education, music, drawing, seminar...)
 * For **cultural activities** (museum, theatre / cinema, booking events...)
-* *For you too, but you are not in this list? Please, [tell us](https://booking-activities.fr/en/?utm_source=wp-plugin-page&utm_medium=wordpress&utm_content=readme#contact)* :)
+* *For you too, but you are not in this list? [Tell us](https://booking-activities.fr/en/?utm_source=wp-plugin-page&utm_medium=wordpress&utm_content=readme#contact)* :)
 
 
 = We are listening =
