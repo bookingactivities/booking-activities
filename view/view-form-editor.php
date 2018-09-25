@@ -174,9 +174,7 @@ if( ! $form ) { exit; }
 										// START ADVANCED FORMS ADD-ON PROMO
 										$is_plugin_active = bookacti_is_plugin_active( 'ba-advanced-forms/ba-advanced-forms.php' );
 										if( ! $is_plugin_active ) {
-											$addon_link = '<strong><a href="https://booking-activities.fr/en/downloads/advanced-forms/?utm_source=plugin&utm_medium=plugin&utm_campaign=advanced-forms&utm_content=form-editor-fields" target="_blank" >';
-											$addon_link .= esc_html__( 'Advanced Forms', BOOKACTI_PLUGIN_NAME );
-											$addon_link .= '</a></strong>';
+											$addon_link = '<strong><a href="https://booking-activities.fr/en/downloads/advanced-forms/?utm_source=plugin&utm_medium=plugin&utm_campaign=advanced-forms&utm_content=form-editor-fields" target="_blank" >Advanced Forms</a></strong>';
 											?>
 											<hr/>
 											<div class='bookacti-addon-promo'>

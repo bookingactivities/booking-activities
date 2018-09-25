@@ -53,7 +53,7 @@ function bookacti_init_booking_filters_actions() {
 	
 	// Display the "unpick events" button
 	var booking_system = $j( '#bookacti-booking-system-bookings-page' );
-	booking_system.on( 'bookacti_event_click', function( e, event, group_id ) { 
+	booking_system.on( 'bookacti_event_click', function( e, event, group_id, open_dialog ) { 
 		$j( '#bookacti-unpick-events-filter' ).show( 200 );
 	});
 	

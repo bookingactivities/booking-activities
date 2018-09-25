@@ -1,28 +1,11 @@
-// INITIALIZATION
-// Initialize bookings dialogs
-function bookacti_init_booking_system_dialogs() {
-	
-	// Common param
-	$j( '.bookacti-booking-system-dialog' ).dialog({ 
-		"modal":		true,
-		"autoOpen":		false,
-		"minHeight":	300,
-		"minWidth":		400,
-		"resize":		'auto',
-		"show":			true,
-		"hide":			true,
-		"dialogClass":	'bookacti-dialog',
-		"closeText":	'&#10006;',
-		"close":		function() {}
-	});
-
+$j( document ).ready( function() {
 	// Make dialogs close when the user click outside
 	$j( 'body' ).on( 'click', '.ui-widget-overlay', function (){
 		$j( 'div:ui-dialog:visible' ).dialog( 'close' );
 	});
 	
 	// Press ENTER to bring focus on OK button
-	$j( '.bookacti-booking-system-dialog' ).off( 'keydown' ).on( 'keydown', function( e ) {
+	$j( 'body' ).on( 'keydown', '.bookacti-booking-system-dialog', function( e ) {
 		if( ! $j( 'textarea' ).is( ':focus' ) && e.keyCode == $j.ui.keyCode.ENTER ) {
 			$j( this ).parent().find( '.ui-dialog-buttonpane button:first' ).focus(); 
 			return false; 
@@ -30,11 +13,9 @@ function bookacti_init_booking_system_dialogs() {
 	});
 	
 	// Show / Hide group events list
-	$j( '.bookacti-groups-of-events-list' ).off( 'bookacti_group_of_events_preview' ).on( 'bookacti_group_of_events_preview', 'input[name="group_of_events"]', function( e, event ) {
-		var group_id			= $j( this ).val();
-		var groups_list			= $j( this ).parents( '.bookacti-groups-of-events-list' );
-		var booking_system_id	= groups_list.data( 'booking-system-id' );
-		var booking_system		= $j( '#' + booking_system_id );
+	$j( 'body' ).on( 'bookacti_group_of_events_preview', '.bookacti-booking-system', function( e, group_id, event ) {
+		var booking_system	= $j( this );
+		var groups_list		= booking_system.closest( 'bookacti-booking-system-container' ).find( '.bookacti-groups-of-events-list' );
 		
 		// Hide other events list
 		groups_list.find( '.bookacti-group-of-events-option[data-group-id!="' + group_id + '"]' ).data( 'show-events', 0 ).attr( 'data-show-events', 0 );
@@ -47,6 +28,25 @@ function bookacti_init_booking_system_dialogs() {
 		// Pick events and fill form inputs
 		bookacti_unpick_all_events( booking_system );
 		bookacti_pick_events_of_group( booking_system, group_id, event );
+	});
+});
+
+
+// INITIALIZATION
+// Initialize bookings dialogs
+function bookacti_init_booking_system_dialogs() {
+	// Common param
+	$j( '.bookacti-booking-system-dialog' ).dialog({ 
+		"modal":		true,
+		"autoOpen":		false,
+		"minHeight":	300,
+		"minWidth":		400,
+		"resize":		'auto',
+		"show":			true,
+		"hide":			true,
+		"dialogClass":	'bookacti-dialog',
+		"closeText":	'&#10006;',
+		"close":		function() {}
 	});
 }
 
@@ -317,7 +317,8 @@ function bookacti_dialog_choose_group_of_events( booking_system, group_ids, even
 	
 	// Trigger a preview of the selection on change
 	groups_of_events_list.find( 'input[name="group_of_events"]' ).on( 'change', function() { 
-		$j( this ).trigger( 'bookacti_group_of_events_preview', [ event ] ); 
+		var group_id = $j( this ).val();
+		booking_system.trigger( 'bookacti_group_of_events_preview', [ group_id, event ] ); 
 	});
 	
 	// Pick the first group by default and yell it

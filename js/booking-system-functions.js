@@ -427,8 +427,10 @@ function bookacti_event_click( booking_system, event ) {
 	
 	// Open a dialog to choose the group of events 
 	// if there are several groups, or if users can choose between the single event and at least one group
+	var open_dialog = false;
 	if( ( $j.isArray( group_ids ) && group_ids.length > 1 )
 	||  ( $j.isArray( group_ids ) && group_ids.length === 1 && bookacti.booking_system[ booking_system_id ][ 'groups_single_events' ] ) ) {
+		open_dialog = true;
 		bookacti_dialog_choose_group_of_events( booking_system, group_ids, event );
 	} else {
 		// Pick events (single or whole group)
@@ -439,7 +441,7 @@ function bookacti_event_click( booking_system, event ) {
 	group_ids = $j.isArray( group_ids ) && group_ids.length === 1 ? group_ids[ 0 ] : group_ids;
 	
 	// Yell the event has been clicked
-	booking_system.trigger( 'bookacti_event_click', [ event, group_ids ] );
+	booking_system.trigger( 'bookacti_event_click', [ event, group_ids, open_dialog ] );
 }
 
 

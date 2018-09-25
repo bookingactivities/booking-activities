@@ -332,6 +332,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		/**
 		 * AJAX Controller - Delete a booking
 		 * @since 1.5.0
+		 * @version 1.5.8
 		 */
 		function bookacti_controller_delete_booking() {
 
@@ -360,9 +361,6 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 				bookacti_send_json( $return_array, 'delete_booking' );
 			}
 			
-			// Delete booking metadata, if any
-			bookacti_delete_metadata( 'booking', $booking_id );
-
 			do_action( 'bookacti_booking_deleted', $booking_id );
 
 			$return_array = array( 'status' => 'success' );

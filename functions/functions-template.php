@@ -338,7 +338,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 				<?php 
 					/* translators: %s = add-on name */
 					echo sprintf( __( 'Thank you for purchasing %s add-on!', BOOKACTI_PLUGIN_NAME ), 
-								 '<strong>' . esc_html( __( 'Prices and Credits', BOOKACTI_PLUGIN_NAME ) ) . '</strong>' ); 
+								 '<strong>Prices and Credits</strong>' ); 
 				?>
 				</p><p>
 					<?php esc_html_e( "It seems you didn't activate your license yet. Please follow these instructions to activate your license:", BOOKACTI_PLUGIN_NAME ); ?>
@@ -347,8 +347,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 						<a href='https://booking-activities.fr/en/docs/user-documentation/get-started-with-prices-and-credits-add-on/prerequisite-installation-license-activation-of-prices-and-credits-add-on/?utm_source=plugin&utm_medium=plugin&utm_content=encart-promo-<?php echo $type; ?>' target='_blank' >
 							<?php 
 							/* translators: %s = add-on name */
-								echo sprintf( __( 'How to activate %s license?', BOOKACTI_PLUGIN_NAME ), 
-											  esc_html( __( 'Prices and Credits', BOOKACTI_PLUGIN_NAME ) ) ); 
+								echo sprintf( __( 'How to activate %s license?', BOOKACTI_PLUGIN_NAME ), 'Prices and Credits' ); 
 							?>
 						</a>
 					</strong>
@@ -361,16 +360,15 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			?>
 			<div class='bookacti-addon-promo' >
 				<?php 
-				$addon_link = '<a href="https://booking-activities.fr/en/downloads/prices-and-credits/?utm_source=plugin&utm_medium=plugin&utm_medium=plugin&utm_campaign=prices-and-credits&utm_content=encart-promo-' . $type . '" target="_blank" >';
-				$addon_link .= esc_html( __( 'Prices and Credits', BOOKACTI_PLUGIN_NAME ) );
-				$addon_link .= '</a>';
-				/* translators: %s is the placeholder for Prices and Credits add-on link */
+				$addon_link = '<a href="https://booking-activities.fr/en/downloads/prices-and-credits/?utm_source=plugin&utm_medium=plugin&utm_medium=plugin&utm_campaign=prices-and-credits&utm_content=encart-promo-' . $type . '" target="_blank" >Prices and Credits</a>';
 				$message = '';
 				$event_name = '';
 				if( $type === 'group-of-events' ) {
+					/* translators: %s is the placeholder for Prices and Credits add-on link */
 					$message = esc_html( __( 'Set a price or a promotion in cash or in credits on your groups of events with %s add-on !', BOOKACTI_PLUGIN_NAME ) );
 					$event_name = __( 'My grouped event', BOOKACTI_PLUGIN_NAME );
 				} else {
+					/* translators: %s is the placeholder for Prices and Credits add-on link */
 					$message = esc_html( __( 'Set a price or a promotion in cash or in credits on your events with %s add-on !', BOOKACTI_PLUGIN_NAME ) );
 					$event_name = __( 'My event', BOOKACTI_PLUGIN_NAME );
 				}

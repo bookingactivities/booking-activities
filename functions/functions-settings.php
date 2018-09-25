@@ -171,8 +171,8 @@ function bookacti_settings_section_bookings_callback() { }
 		$license_status = get_option( 'badp_license_status' );
 		if( ! $license_status || $license_status !== 'valid' ) {
 			$tip .= '<br/>';
-			$tip .= sprintf( __( 'Get more display methods with %1$sDisplay Pack%2$s add-on!', BOOKACTI_PLUGIN_NAME ),
-							'<a href="https://booking-activities.fr/en/downloads/display-pack/?utm_source=plugin&utm_medium=plugin&utm_campaign=display-pack&utm_content=settings" target="_blank" >', '</a>');
+			$tip .= sprintf( __( 'Get more display methods with the %s add-on!', BOOKACTI_PLUGIN_NAME ),
+							'<a href="https://booking-activities.fr/en/downloads/display-pack/?utm_source=plugin&utm_medium=plugin&utm_campaign=display-pack&utm_content=settings" target="_blank" >Display Pack</a>');
 		}
 		
 		$args = array(
@@ -420,9 +420,7 @@ function bookacti_settings_section_bookings_callback() { }
 	 * @since 1.5.0
 	 */
 	function bookacti_settings_field_default_calendar_view_threshold_callback() {
-		$addon_link = '<a href="https://booking-activities.fr/en/downloads/display-pack/?utm_source=plugin&utm_medium=plugin&utm_campaign=display-pack&utm_content=settings" target="_blank" >'
-					.	esc_html( __( 'Display Pack', BOOKACTI_PLUGIN_NAME ) )
-					. '</a>';
+		$addon_link = '<a href="https://booking-activities.fr/en/downloads/display-pack/?utm_source=plugin&utm_medium=plugin&utm_campaign=display-pack&utm_content=settings" target="_blank" >Display Pack</a>';
 		
 		$args = array(
 			'type'		=> 'number',
@@ -599,9 +597,7 @@ function bookacti_settings_section_bookings_callback() { }
 			<?php } 
 			$is_plugin_active = bookacti_is_plugin_active( 'ba-notification-pack/ba-notification-pack.php' );
 			if( ! $is_plugin_active ) {
-				$addon_link = '<a href="https://booking-activities.fr/en/downloads/notification-pack/?utm_source=plugin&utm_medium=plugin&utm_campaign=notification-pack&utm_content=settings-notification-list" target="_blank" >';
-				$addon_link .= esc_html__( 'Notification Pack', BOOKACTI_PLUGIN_NAME );
-				$addon_link .= '</a>';
+				$addon_link = '<a href="https://booking-activities.fr/en/downloads/notification-pack/?utm_source=plugin&utm_medium=plugin&utm_campaign=notification-pack&utm_content=settings-notification-list" target="_blank" >Notification Pack</a>';
 				$columns_values = array(
 					'active'		=> '<span class="dashicons dashicons-no"></span>',
 					'title'			=> '<strong>' . esc_html__( '1 day before a booked event (reminder)', BOOKACTI_PLUGIN_NAME ) . '</strong>' 
@@ -968,8 +964,7 @@ function bookacti_get_screen_ids() {
 				<p>
 				<?php 
 					/* translators: %s = add-on name */
-					echo sprintf( __( 'Thank you for purchasing %s add-on!', BOOKACTI_PLUGIN_NAME ), 
-								 '<strong>' . esc_html( __( 'Display Pack', BOOKACTI_PLUGIN_NAME ) ) . '</strong>' ); 
+					echo sprintf( __( 'Thank you for purchasing %s add-on!', BOOKACTI_PLUGIN_NAME ), '<strong>Display Pack</strong>' ); 
 				?>
 				</p><p>
 					<?php esc_html_e( "It seems you didn't activate your license yet. Please follow these instructions to activate your license:", BOOKACTI_PLUGIN_NAME ); ?>
@@ -978,8 +973,7 @@ function bookacti_get_screen_ids() {
 						<a href='https://booking-activities.fr/en/docs/user-documentation/get-started-with-display-pack-add-on/prerequisite-installation-license-activation-of-display-pack-add-on/?utm_source=plugin&utm_medium=plugin&utm_content=encart-promo-calendar' target='_blank' >
 							<?php 
 							/* translators: %s = add-on name */
-								echo sprintf( __( 'How to activate %s license?', BOOKACTI_PLUGIN_NAME ), 
-											  esc_html( __( 'Display Pack', BOOKACTI_PLUGIN_NAME ) ) ); 
+								echo sprintf( __( 'How to activate %s license?', BOOKACTI_PLUGIN_NAME ), 'Display Pack' ); 
 							?>
 						</a>
 					</strong>
@@ -992,9 +986,7 @@ function bookacti_get_screen_ids() {
 			?>
 			<div class='bookacti-addon-promo' >
 				<?php 
-				$addon_link = '<a href="https://booking-activities.fr/en/downloads/display-pack/?utm_source=plugin&utm_medium=plugin&utm_campaign=display-pack&utm_content=encart-promo-calendar" target="_blank" >';
-				$addon_link .= esc_html( __( 'Display Pack', BOOKACTI_PLUGIN_NAME ) );
-				$addon_link .= '</a>';
+				$addon_link = '<a href="https://booking-activities.fr/en/downloads/display-pack/?utm_source=plugin&utm_medium=plugin&utm_campaign=display-pack&utm_content=encart-promo-calendar" target="_blank" >Display Pack</a>';
 				/* transmators: %1$s is the placeholder for Display Pack add-on link */
 				echo sprintf( esc_html( __( 'Get other essential customization options with %1$s add-on!', BOOKACTI_PLUGIN_NAME ) ), $addon_link ); 
 				?>
@@ -1020,8 +1012,7 @@ function bookacti_get_screen_ids() {
 				<p>
 				<?php 
 					/* translators: %s = add-on name */
-					echo sprintf( __( 'Thank you for purchasing %s add-on!', BOOKACTI_PLUGIN_NAME ), 
-								 '<strong>' . esc_html__( 'Notification Pack', BOOKACTI_PLUGIN_NAME ) . '</strong>' ); 
+					echo sprintf( __( 'Thank you for purchasing %s add-on!', BOOKACTI_PLUGIN_NAME ), '<strong>Notification Pack</strong>' ); 
 				?>
 				</p><p>
 					<?php esc_html_e( "It seems you didn't activate your license yet. Please follow these instructions to activate your license:", BOOKACTI_PLUGIN_NAME ); ?>
@@ -1030,8 +1021,7 @@ function bookacti_get_screen_ids() {
 						<a href='https://booking-activities.fr/en/docs/user-documentation/notification-pack/prerequisite-installation-license-activation-notification-pack-add-on/?utm_source=plugin&utm_medium=plugin&utm_content=encart-promo-settings' target='_blank' >
 							<?php 
 							/* translators: %s = add-on name */
-								echo sprintf( __( 'How to activate %s license?', BOOKACTI_PLUGIN_NAME ), 
-											  esc_html__( 'Notification Pack', BOOKACTI_PLUGIN_NAME ) ); 
+								echo sprintf( __( 'How to activate %s license?', BOOKACTI_PLUGIN_NAME ), 'Notification Pack' ); 
 							?>
 						</a>
 					</strong>
@@ -1044,9 +1034,7 @@ function bookacti_get_screen_ids() {
 			?>
 			<div id='bookacti-banp-promo' class='bookacti-addon-promo' >
 				<?php 
-				$addon_link = '<strong><a href="https://booking-activities.fr/en/downloads/notification-pack/?utm_source=plugin&utm_medium=plugin&utm_campaign=notification-pack&utm_content=encart-promo-settings" target="_blank" >';
-				$addon_link .= esc_html__( 'Notification Pack', BOOKACTI_PLUGIN_NAME );
-				$addon_link .= '</a></strong>';
+				$addon_link = '<strong><a href="https://booking-activities.fr/en/downloads/notification-pack/?utm_source=plugin&utm_medium=plugin&utm_campaign=notification-pack&utm_content=encart-promo-settings" target="_blank" >Notification Pack</a></strong>';
 				/* translators: %1$s is the placeholder for Notification Pack add-on link */
 				echo sprintf( esc_html__( 'You can send all these notifications and booking reminders via email, SMS and Push with %1$s add-on!', BOOKACTI_PLUGIN_NAME ), $addon_link ); 
 				?>
@@ -1072,8 +1060,7 @@ function bookacti_get_screen_ids() {
 				<p>
 				<?php 
 					/* translators: %s = add-on name */
-					echo sprintf( __( 'Thank you for purchasing %s add-on!', BOOKACTI_PLUGIN_NAME ), 
-								 '<strong>' . esc_html__( 'Advanced Forms', BOOKACTI_PLUGIN_NAME ) . '</strong>' ); 
+					echo sprintf( __( 'Thank you for purchasing %s add-on!', BOOKACTI_PLUGIN_NAME ), '<strong>Advanced Forms</strong>' ); 
 				?>
 				</p><p>
 					<?php esc_html_e( "It seems you didn't activate your license yet. Please follow these instructions to activate your license:", BOOKACTI_PLUGIN_NAME ); ?>
@@ -1082,8 +1069,7 @@ function bookacti_get_screen_ids() {
 						<a href='https://booking-activities.fr/en/docs/user-documentation/get-started-with-advanced-forms-add-on/prerequisite-installation-and-license-activation-of-advanced-forms-add-on/?utm_source=plugin&utm_medium=plugin&utm_content=encart-promo-form-dialog' target='_blank' >
 							<?php 
 							/* translators: %s = add-on name */
-								echo sprintf( __( 'How to activate %s license?', BOOKACTI_PLUGIN_NAME ), 
-											  esc_html__( 'Advanced Forms', BOOKACTI_PLUGIN_NAME ) ); 
+								echo sprintf( __( 'How to activate %s license?', BOOKACTI_PLUGIN_NAME ), 'Advanced Forms' ); 
 							?>
 						</a>
 					</strong>
@@ -1096,9 +1082,7 @@ function bookacti_get_screen_ids() {
 			?>
 			<div id='bookacti-baaf-promo' class='bookacti-addon-promo' >
 				<?php 
-				$addon_link = '<strong><a href="https://booking-activities.fr/en/downloads/advanced-forms/?utm_source=plugin&utm_medium=plugin&utm_campaign=advanced-forms&utm_content=encart-promo-form-dialog" target="_blank" >';
-				$addon_link .= esc_html__( 'Advanced Forms', BOOKACTI_PLUGIN_NAME );
-				$addon_link .= '</a></strong>';
+				$addon_link = '<strong><a href="https://booking-activities.fr/en/downloads/advanced-forms/?utm_source=plugin&utm_medium=plugin&utm_campaign=advanced-forms&utm_content=encart-promo-form-dialog" target="_blank" >Advanced Forms</a></strong>';
 				/* translators: %1$s is the placeholder for Advanced Forms add-on link */
 				echo sprintf( esc_html__( 'Create any kind of custom fields to get any information from your customers (text, number, file, checkboxes, selectbox, etc.) with %1$s add-on!', BOOKACTI_PLUGIN_NAME ), $addon_link ); 
 				?>

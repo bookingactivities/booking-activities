@@ -1856,9 +1856,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	
 	/**
 	 * Create a coupon to refund a booking
-	 * 
-	 * @version 1.5.4
-	 * 
+	 * @version 1.5.8
 	 * @param int $booking_id
 	 * @param string $booking_type Determine if the given id is a booking id or a booking group. Accepted values are 'single' or 'group'.
 	 * @param string $refund_message
@@ -1963,10 +1961,17 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		$i = 1;
 		$coupon = array();
 		$code_template = apply_filters( 'bookacti_refund_coupon_code_template', 'R{user_id}N{refund_number}' );
-		$code_template = str_replace( '{user_id}', '%1$d', $code_template );
-		$code_template = str_replace( '{refund_number}', '%2$d', $code_template );
+		$code_template = str_replace( '{user_id}', '%1$s', $code_template );
+		$code_template = str_replace( '{refund_number}', '%2$s', $code_template );
+		$data['coupon']['code'] = sprintf( $code_template, $user_id, $i );
+		
+		$data = apply_filters( 'bookacti_refund_coupon_data', $data, $user_data, $item );
+		
 		do {
-			$data['coupon']['code'] = sprintf( $code_template, $user_id, $i );
+			// For the first occurence, try to use the code that may have been changed with 'bookacti_refund_coupon_data' hook
+			if( $i !== 1 ) { 
+				$data['coupon']['code'] = sprintf( $code_template, $user_id, $i ); 
+			}
 			$coupon = WC()->api->WC_API_Coupons->create_coupon( $data );
 			$i++;
 		}
@@ -1975,7 +1980,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		if( ! empty( $coupon ) && ! is_wp_error( $coupon ) ) {
 
 			// Bind coupon to order item
-			$code = apply_filters( 'bookacti_refund_coupon_code', $coupon[ 'coupon' ][ 'code' ], $data, $user_data, $item );
+			$code = apply_filters( 'bookacti_refund_coupon_code', $coupon[ 'coupon' ][ 'code' ], $data, $coupon, $user_data, $item );
 			wc_update_order_item_meta( $order_item_id, 'bookacti_refund_coupon', $code );
 
 			$return_data = array( 'status' => 'success', 'coupon_amount' => wc_price( $data['coupon']['amount'] ), 'coupon_code' => $code, 'new_state' => 'refunded' );
@@ -1990,7 +1995,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		
 		return $return_data;
 	}
-
+	
 	
 	/**
 	 * Auto refund (for supported gateway)
