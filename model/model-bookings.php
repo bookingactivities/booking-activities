@@ -1130,7 +1130,7 @@ function bookacti_get_booking_by_id( $booking_id ) {
 
 /**
  * Get booking data
- * 
+ * @version 1.5.8
  * @global wpdb $wpdb
  * @param int $booking_id
  * @return array
@@ -1138,18 +1138,18 @@ function bookacti_get_booking_by_id( $booking_id ) {
 function bookacti_get_booking_data( $booking_id ) {
 	global $wpdb;
 	
-	$query	= 'SELECT B.quantity, E.id as event_id, E.template_id, E.activity_id, B.group_id as booking_group '
-			. ' FROM ' . BOOKACTI_TABLE_ACTIVITIES . ' as A, ' . BOOKACTI_TABLE_EVENTS . ' as E, ' . BOOKACTI_TABLE_BOOKINGS . ' as B '
-			. ' WHERE E.activity_id = A.id '
-			. ' AND B.event_id = E.id '
+	$query	= 'SELECT B.*, E.id as event_id, E.template_id, E.activity_id '
+			. ' FROM ' . BOOKACTI_TABLE_EVENTS . ' as E, ' . BOOKACTI_TABLE_BOOKINGS . ' as B '
+			. ' WHERE B.event_id = E.id '
 			. ' AND B.id = %d ';
 	$prep	= $wpdb->prepare( $query, $booking_id );
-	$booking_system_info = $wpdb->get_row( $prep, ARRAY_A );
+	$booking_data = $wpdb->get_row( $prep, ARRAY_A );
 	
-	$booking_system_info[ 'event_settings' ]	= bookacti_get_metadata( 'event', $booking_system_info[ 'event_id' ] );
-	$booking_system_info[ 'activity_settings' ]	= bookacti_get_metadata( 'activity', $booking_system_info[ 'activity_id' ] );
+	$booking_data[ 'booking_settings' ]	= bookacti_get_metadata( 'booking', $booking_id );
+	$booking_data[ 'event_settings' ]	= bookacti_get_metadata( 'event', $booking_data[ 'event_id' ] );
+	$booking_data[ 'activity_settings' ]= bookacti_get_metadata( 'activity', $booking_data[ 'activity_id' ] );
 	
-	return $booking_system_info;
+	return $booking_data;
 }
 
 
