@@ -524,7 +524,6 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	 * @return string
 	 */
 	function bookacti_display_price_to_be_refunded( $text, $booking_id, $booking_type ) {
-		
 		if( $booking_type === 'single' ) {
 			$item = bookacti_get_order_item_by_booking_id( $booking_id );
 		} else if( $booking_type === 'group' ) {
@@ -541,7 +540,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		}
 		return $text;
 	}
-	add_filter( 'bookacti_before_refund_actions', 'bookacti_display_price_to_be_refunded', 10, 3 );
+	add_filter( 'bookacti_before_refund_actions', 'bookacti_display_price_to_be_refunded', 20, 3 );
 	
 	
 	/**
@@ -702,32 +701,29 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	
 	/**
 	 * Check if a booking can be refunded
-	 * @version 1.5.4
+	 * @version 1.5.8
 	 * @param boolean $true
 	 * @param int $booking_id
 	 * @return boolean
 	 */
 	function bookacti_woocommerce_booking_can_be_refunded( $true, $booking_id ) {
+		if( ! $true || current_user_can( 'bookacti_edit_bookings' ) ) { return $true; }
 		
-		if( $true && ! current_user_can( 'bookacti_edit_bookings' ) ) {
-			// Init var
-			$order_id	= bookacti_get_booking_order_id( $booking_id );
-			$order		= wc_get_order( $order_id );
-			if( $order ) {
-				$item = bookacti_get_order_item_by_booking_id( $booking_id );
-				
-				if( ! $item ) { return false; }
-				
-				$is_paid = get_post_meta( $order_id, '_paid_date', true );
-				
-				// WOOCOMMERCE 3.0.0 backward compatibility 
-				$total = is_array( $item ) ? $item[ 'line_total' ] : $item->get_total();
-				
-				if( $order->get_status() === 'pending' 
-				||  $total <= 0
-				||  ! $is_paid ) { $true = false; }
-			}
-		}
+		// Init var
+		$order_id	= bookacti_get_booking_order_id( $booking_id );
+		$order		= wc_get_order( $order_id );
+		if( ! $order ) { return $true; }
+		if( $order->get_status() === 'pending' ) { return false; }
+		
+		$item = bookacti_get_order_item_by_booking_id( $booking_id );
+		if( ! $item ) { return false; }
+
+		$is_paid = get_post_meta( $order_id, '_paid_date', true );
+		if( ! $is_paid ) { return false; }
+		
+		// WOOCOMMERCE 3.0.0 backward compatibility 
+		$total = version_compare( WC_VERSION, '3.0.0', '>=' ) ? $item->get_total() : $item[ 'line_total' ];
+		if( $total <= 0 ) { return false; }
 		
 		return $true;
 	}
@@ -736,34 +732,29 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	
 	/**
 	 * Check if a booking group can be refunded
-	 * @version 1.5.4
+	 * @version 1.5.8
 	 * @param boolean $true
 	 * @param int $booking_group_id
 	 * @return boolean
 	 */
 	function bookacti_woocommerce_booking_group_can_be_refunded( $true, $booking_group_id ) {
-		
-		if( $true && ! current_user_can( 'bookacti_edit_bookings' ) ) {
+		if( ! $true || current_user_can( 'bookacti_edit_bookings' ) ) { return $true; }
 			
-			$order_id	= bookacti_get_booking_group_order_id( $booking_group_id );
-			$order		= wc_get_order( $order_id );
-			
-			if( $order ) {
-				$item = bookacti_get_order_item_by_booking_group_id( $booking_group_id );
-				
-				if( ! $item ) { return false; }
-				
-				$is_paid = get_post_meta( $order_id, '_paid_date', true );
-				
-				// WOOCOMMERCE 3.0.0 backward compatibility 
-				$total = is_array( $item ) ? $item[ 'line_total' ] : $item->get_total();
-				
-				if( $order->get_status() === 'pending' 
-				||  $total <= 0
-				||  ! $is_paid ) { $true = false; }
-			}
-		}
+		$order_id	= bookacti_get_booking_group_order_id( $booking_group_id );
+		$order		= wc_get_order( $order_id );
+		if( ! $order ) { return $true; }
+		if( $order->get_status() === 'pending' ) { $true = false; }
 		
+		$item = bookacti_get_order_item_by_booking_group_id( $booking_group_id );
+		if( ! $item ) { return false; }
+
+		$is_paid = get_post_meta( $order_id, '_paid_date', true );
+		if( ! $is_paid ) { $true = false; }
+		
+		// WOOCOMMERCE 3.0.0 backward compatibility 
+		$total = version_compare( WC_VERSION, '3.0.0', '>=' ) ? $item->get_total() : $item[ 'line_total' ];
+		if( $total <= 0 ) { $true = false; }
+			
 		return $true;
 	}
 	add_filter( 'bookacti_booking_group_can_be_refunded', 'bookacti_woocommerce_booking_group_can_be_refunded', 10, 2 );

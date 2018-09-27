@@ -2020,7 +2020,11 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		}
 		
 		if( ! $item ) {
-			return array( 'status' => 'failed', 'error' => 'no_order_item_found' );
+			return array( 
+				'status'	=> 'failed', 
+				'error'		=> 'no_order_item_found',
+				'message'	=> esc_html__( 'The order item bound to the booking was not found.', BOOKACTI_PLUGIN_NAME )
+			);
 		}
 		
 		$order_item_id = $item->get_id();
@@ -2080,7 +2084,11 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		}
 		
 		if( ! $item ) {
-			return array( 'status' => 'failed', 'error' => 'no_order_item_found' );
+			return array( 
+				'status'	=> 'failed', 
+				'error'		=> 'no_order_item_found',
+				'message'	=> esc_html__( 'The order item bound to the booking was not found.', BOOKACTI_PLUGIN_NAME )
+			);
 		}
 		
 		$order_item_id = is_array( $item ) ? $item[ 'id' ] : $item->get_id();
