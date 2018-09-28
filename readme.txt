@@ -5,7 +5,7 @@ Tags: booking activities, booking sport, booking form, event reservation, reserv
 Requires at least: 3.6
 Tested up to: 4.9
 Requires PHP: 5.3
-Stable tag: 1.5.7
+Stable tag: 1.5.8
 License: GPLv3 or later
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
 
@@ -317,7 +317,7 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 
 == Changelog ==
 
-= 1.5.8 =
+= 1.5.8 - 2018/09/28 =
 * Fix - Hidden fields were shown after hitting "Make a new booking" button
 * Fix - "Generate Password" option prevented the form to be sent (password field not focusable)
 * Fix - PHP error when updating a recurring event if the new range doesn't include all booked occurences

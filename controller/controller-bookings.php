@@ -145,7 +145,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 				}
 
 				if( $refunded[ 'status' ] === 'success' ) {
-					$new_state = $refunded[ 'new_state' ] ? $refunded[ 'new_state' ] : 'refunded';
+					$new_state = ! empty( $refunded[ 'new_state' ] ) ? $refunded[ 'new_state' ] : 'refunded';
 					$updated = bookacti_update_booking_state( $booking_id, $new_state );
 
 					// Hook status changes

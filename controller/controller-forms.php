@@ -438,6 +438,7 @@ add_action( 'wp_ajax_nopriv_bookactiGetForm', 'bookacti_controller_get_form' );
 /**
  * AJAX Controller - Send the forgotten password email
  * @since 1.5.0
+ * @version 1.5.8
  */
 function bookacti_controller_forgotten_password() {
 	// Check nonce
@@ -453,7 +454,12 @@ function bookacti_controller_forgotten_password() {
 	
 	if( ! $user ) { wp_send_json( array( 'status' => 'failed', 'error' => 'user_not_found', 'message' => esc_html__( 'This email address doesn\'t match any account.', BOOKACTI_PLUGIN_NAME ) ) ); }
 	
-	wp_send_new_user_notifications( $user->ID, apply_filters( 'bookacti_forgotten_password_notify', 'user', $user ) );
+	// WordPress 4.4.0 backward compatibility
+	if( function_exists( 'wp_send_new_user_notifications' ) ) {
+		wp_send_new_user_notifications( $user->ID, apply_filters( 'bookacti_forgotten_password_notify', 'user', $user ) );
+	} else {
+		wp_new_user_notification( $user->ID, null, apply_filters( 'bookacti_forgotten_password_notify', 'user', $user ) );
+	}
 	
 	$message = sprintf( esc_html__( 'An email has been sent to %s, please check your inbox.', BOOKACTI_PLUGIN_NAME ), $email );
 	
