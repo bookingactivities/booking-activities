@@ -17,7 +17,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	<div id='bookacti-add-ons'>	
 		<div id='bookacti-add-ons-intro' >
 			<h3><?php esc_html_e( 'Make the most of Booking Activities', BOOKACTI_PLUGIN_NAME ); ?></h3>
-			<p><?php esc_html_e( 'You can extend Booking Activities functionnalities with the following great add-ons. They make your booking management easier and boost your turnover. Pick the one you are interested in and just give it a try, you have a 30-day money back guarantee. ', BOOKACTI_PLUGIN_NAME ); ?></p>
+			<p><?php esc_html_e( 'You can extend Booking Activities functionnalities with the following great add-ons. Pick the one you are interested in and just give it a try, you have a 30-day money back guarantee. ', BOOKACTI_PLUGIN_NAME ); ?></p>
 		</div>
 		
 		<div id='bookacti-add-ons-container' >
@@ -25,9 +25,22 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			$promo = $promo_price_29 = $promo_price_39 = $promo_price_49 = $promo_price_59 = '';
 			
 			$add_ons = array(
+				'prices-and-credits' => array( 
+					'prefix' => 'bapap',
+					'title' => 'Prices and Credits',
+					'subtitle' => '',
+					'link' => 'https://booking-activities.fr/en/downloads/prices-and-credits/?utm_source=plugin&utm_medium=plugin&utm_campaign=prices-and-credits&utm_content=landing',
+					'screenshot' => true,
+					'light_color' => '#91d2f2',
+					'dark_color' => '#263740',
+					'excerpt' => esc_html__( 'Put a price in cash or in credits on your events, sell booking passes and redeem them on your forms.', BOOKACTI_PLUGIN_NAME ),
+					'price' => '59.00€',
+					'promo' => $promo,
+					'promo_price' => $promo_price_59
+				),
 				'advanced-forms' => array( 
 					'prefix' => 'baaf',
-					'title' => esc_html__( 'Advanced Forms', BOOKACTI_PLUGIN_NAME ),
+					'title' => 'Advanced Forms',
 					'subtitle' => '',
 					'link' => 'https://booking-activities.fr/en/downloads/advanced-forms/?utm_source=plugin&utm_medium=plugin&utm_campaign=advanced-forms&utm_content=landing',
 					'screenshot' => true,
@@ -40,7 +53,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 				),
 				'display-pack' => array( 
 					'prefix' => 'badp',
-					'title' => esc_html__( 'Display Pack', BOOKACTI_PLUGIN_NAME ),
+					'title' => 'Display Pack',
 					'subtitle' => '',
 					'link' => 'https://booking-activities.fr/en/downloads/display-pack/?utm_source=plugin&utm_medium=plugin&utm_campaign=display-pack&utm_content=landing',
 					'screenshot' => true,
@@ -51,22 +64,9 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 					'promo' => $promo,
 					'promo_price' => $promo_price_39
 				),
-				'prices-and-promotions' => array( 
-					'prefix' => 'bapap',
-					'title' => esc_html__( 'Prices and Promotions', BOOKACTI_PLUGIN_NAME ),
-					'subtitle' => '',
-					'link' => 'https://booking-activities.fr/en/downloads/prices-and-promotions/?utm_source=plugin&utm_medium=plugin&utm_campaign=prices-and-promotions&utm_content=landing',
-					'screenshot' => true,
-					'light_color' => '#91d2f2',
-					'dark_color' => '#263740',
-					'excerpt' => esc_html__( 'Put a special price on your events, make promotions and strategically draw the attention of your customers.', BOOKACTI_PLUGIN_NAME ),
-					'price' => '59.00€',
-					'promo' => $promo,
-					'promo_price' => $promo_price_59
-				),
 				'notification-pack' => array( 
 					'prefix' => 'banp',
-					'title' => esc_html__( 'Notification Pack', BOOKACTI_PLUGIN_NAME ),
+					'title' => 'Notification Pack',
 					'subtitle' => '',
 					'link' => 'https://booking-activities.fr/en/downloads/notification-pack/?utm_source=plugin&utm_medium=plugin&utm_campaign=notification-pack&utm_content=landing',
 					'screenshot' => true,
@@ -79,7 +79,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 				),
 				'order-for-customers' => array( 
 					'prefix' => 'baofc',
-					'title' => __( 'Order for Customers', BOOKACTI_PLUGIN_NAME ),
+					'title' => 'Order for Customers',
 					'subtitle' => '',
 					'link' => 'https://booking-activities.fr/en/downloads/order-for-customers/?utm_source=plugin&utm_medium=plugin&utm_campaign=order-for-customers&utm_content=landing',
 					'screenshot' => true,
@@ -92,7 +92,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 				),
 				'points-of-sale' => array( 
 					'prefix' => 'bapos',
-					'title' => esc_html__( 'Points of Sale', BOOKACTI_PLUGIN_NAME ),
+					'title' => 'Points of Sale',
 					'subtitle' => esc_html__( '(requires WooCommerce)', BOOKACTI_PLUGIN_NAME ),
 					'link' => 'https://booking-activities.fr/en/downloads/points-of-sale/?utm_source=plugin&utm_medium=plugin&utm_campaign=points-of-sale&utm_content=landing',
 					'screenshot' => true,

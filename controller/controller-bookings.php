@@ -111,8 +111,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 		/**
 		 * AJAX Controller - Refund a booking
-		 * 
-		 * @version 1.3.0
+		 * @version 1.5.8
 		 */
 		function bookacti_controller_refund_booking() {
 
@@ -135,14 +134,18 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 					if( $refunded ) {
 						$refunded = array( 'status' => 'success', 'new_state' => 'refund_requested' );
 					} else {
-						$refunded = array( 'status' => 'failed', 'error' => 'cannot_send_email' );
+						$refunded = array( 
+							'status'	=> 'failed', 
+							'error'		=> 'cannot_send_email', 
+							'message'	=> esc_html__( 'An error occured while trying to send the email.', BOOKACTI_PLUGIN_NAME ) 
+						);
 					}
 				} else {
 					$refunded = apply_filters( 'bookacti_refund_booking', array( 'status' => 'failed' ), $booking_id, 'single', $refund_action, $refund_message );
 				}
 
 				if( $refunded[ 'status' ] === 'success' ) {
-					$new_state = $refunded[ 'new_state' ] ? $refunded[ 'new_state' ] : 'refunded';
+					$new_state = ! empty( $refunded[ 'new_state' ] ) ? $refunded[ 'new_state' ] : 'refunded';
 					$updated = bookacti_update_booking_state( $booking_id, $new_state );
 
 					// Hook status changes
@@ -159,10 +162,10 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 					$refunded[ 'formatted_state' ] = bookacti_format_booking_state( $new_state, $is_admin );
 				}
 
-				wp_send_json( $refunded );
+				bookacti_send_json( $refunded, 'refund_booking' );
 
 			} else {
-				wp_send_json( array( 'status' => 'failed', 'error' => 'not_allowed' ) );
+				bookacti_send_json_not_allowed( 'refund_booking' );
 			}
 		}
 		add_action( 'wp_ajax_bookactiRefundBooking', 'bookacti_controller_refund_booking' );
@@ -266,8 +269,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 		/**
 		 * AJAX Controller - Reschedule a booking
-		 * 
-		 * @version 1.3.0
+		 * @version 1.5.8
 		 */
 		function bookacti_controller_reschedule_booking() {
 
@@ -279,12 +281,17 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			// Check nonce, capabilities and other params
 			$is_nonce_valid		= check_ajax_referer( 'bookacti_reschedule_booking', 'nonce', false );
 			$is_allowed			= bookacti_user_can_manage_booking( $booking_id );
-			$can_be_rescheduled	= bookacti_booking_can_be_rescheduled_to( $booking_id, $event_id, $event_start, $event_end );
 			
-			if( ! $is_nonce_valid || ! $is_allowed || !$can_be_rescheduled ) {
+			if( ! $is_nonce_valid || ! $is_allowed ) {
 				wp_send_json( array( 'status' => 'failed', 'error' => 'not_allowed', 'message' => esc_html__( 'You are not allowed to do this.', BOOKACTI_PLUGIN_NAME ) ) );
 			}
-
+			
+			// Check if the desired event is eligible according to the current booking
+			$can_be_rescheduled	= bookacti_booking_can_be_rescheduled_to( $booking_id, $event_id, $event_start, $event_end );
+			if( $can_be_rescheduled[ 'status' ] !== 'success' ) {
+				bookacti_send_json( $can_be_rescheduled );
+			}
+			
 			// Validate availability
 			$booking	= bookacti_get_booking_by_id( $booking_id );
 			$validated	= bookacti_validate_booking_form( 'single', $event_id, $event_start, $event_end, $booking->quantity );
@@ -332,6 +339,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		/**
 		 * AJAX Controller - Delete a booking
 		 * @since 1.5.0
+		 * @version 1.5.8
 		 */
 		function bookacti_controller_delete_booking() {
 
@@ -360,9 +368,6 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 				bookacti_send_json( $return_array, 'delete_booking' );
 			}
 			
-			// Delete booking metadata, if any
-			bookacti_delete_metadata( 'booking', $booking_id );
-
 			do_action( 'bookacti_booking_deleted', $booking_id );
 
 			$return_array = array( 'status' => 'success' );

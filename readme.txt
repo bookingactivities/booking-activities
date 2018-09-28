@@ -5,7 +5,7 @@ Tags: booking activities, booking sport, booking form, event reservation, reserv
 Requires at least: 3.6
 Tested up to: 4.9
 Requires PHP: 5.3
-Stable tag: 1.5.7
+Stable tag: 1.5.8
 License: GPLv3 or later
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
 
@@ -100,7 +100,7 @@ See the whole [features list here](https://booking-activities.fr/en/documentatio
 
 * **[Advanced Forms](https://booking-activities.fr/en/downloads/advanced-forms/?utm_source=wp-plugin-page&utm_medium=wordpress&utm_campaign=advanced-forms&utm_content=readme)**: Add any custom fields to your booking forms
 * **[Display Pack](https://booking-activities.fr/en/downloads/display-pack/?utm_source=wp-plugin-page&utm_medium=wordpress&utm_campaign=display-pack&utm_content=readme)**: Customize your calendars or set alternative display (datepicker)
-* **[Prices and Promotions](https://booking-activities.fr/en/downloads/prices-and-promotions/?utm_source=wp-plugin-page&utm_medium=wordpress&utm_campaign=prices-and-promotions&utm_content=readme)**: Set prices and discounts on specific events
+* **[Prices and Credits](https://booking-activities.fr/en/downloads/prices-and-credits/?utm_source=wp-plugin-page&utm_medium=wordpress&utm_campaign=prices-and-credits&utm_content=readme)**: Set event-specific prices and pay with credits
 * **[Notification Pack](https://booking-activities.fr/en/downloads/notification-pack/?utm_source=wp-plugin-page&utm_medium=wordpress&utm_campaign=notification-pack&utm_content=readme)**: Send notifications and booking reminders by email, SMS and Push
 * **[Order for Customers](https://booking-activities.fr/en/downloads/order-for-customers/?utm_source=wp-plugin-page&utm_medium=wordpress&utm_campaign=order-for-customers&utm_content=readme)**: You can book / place an order in the name of your customers
 * **[Points of Sale](https://booking-activities.fr/en/downloads/points-of-sale/?utm_source=wp-plugin-page&utm_medium=wordpress&utm_campaign=points-of-sale&utm_content=readme)**: Each POS manager manage his own products, calendars and bookings
@@ -122,7 +122,7 @@ This booking system has been specially designed to fulfill the needs of **most a
 * For **tourism, sport and leisure** (nautical, aerial, land, mountain, foot or wheels, outdoor or indoor...)
 * For **courses, trainings, exhibitions** (education, music, drawing, seminar...)
 * For **cultural activities** (museum, theatre / cinema, booking events...)
-* *For you too, but you are not in this list? Please, [tell us](https://booking-activities.fr/en/?utm_source=wp-plugin-page&utm_medium=wordpress&utm_content=readme#contact)* :)
+* *For you too, but you are not in this list? [Tell us](https://booking-activities.fr/en/?utm_source=wp-plugin-page&utm_medium=wordpress&utm_content=readme#contact)* :)
 
 
 = We are listening =
@@ -316,6 +316,17 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 
 
 == Changelog ==
+
+= 1.5.8 - 2018/09/28 =
+* Fix - Hidden fields were shown after hitting "Make a new booking" button
+* Fix - "Generate Password" option prevented the form to be sent (password field not focusable)
+* Fix - PHP error when updating a recurring event if the new range doesn't include all booked occurences
+* Fix - WC orders bookings status were not change with WooCommerce < 3.0.0
+* Fix - Remove corrupted cart items bookings when they are removed from cart
+* Fix - Update auto refund process to WC 3.0+ way (kept backward compatibility)
+* Fix - Booking groups status stayed 'in_cart' if they were added to cart after a single booking
+* Dev - Add hooks to give control over WC cart item restored (when bound to a booking)
+* Dev - Add hooks to change notification data before they are sent or prevent them to be sent
 
 = 1.5.7 - 2018/08/27 =
 * Fix - Remove mbstring (PHP extension) dependency (use regex to check UTF8 if mbstring is not available)

@@ -187,57 +187,55 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	/**
 	 * Turn paid order status to complete if the order has only activities
 	 * 
-	 * @version 1.3.0
+	 * @version 1.5.8
 	 * @param string $order_status
 	 * @param int $order_id
 	 * @return string
 	 */
 	function bookacti_set_order_status_to_completed_after_payment( $order_status, $order_id ) {
 		
-		if( $order_status === 'processing' || $order_status === 'pending' ) {
-		
-			$order = wc_get_order( $order_id );
-			if( ! empty( $order ) ) {
+		if( ! in_array( $order_status, array( 'processing', 'pending' ), true ) ) { return $order_status; }
 
-				// Retrieve bought items
-				$items = $order->get_items();
+		$order = wc_get_order( $order_id );
+		if( empty( $order ) ) { return $order_status; }
 
-				// Determine if the order has at least 1 activity
-				$has_activities = false;
-				foreach( $items as $item ) {
-					if( isset( $item[ 'bookacti_booking_id' ] ) || isset( $item[ 'bookacti_booking_group_id' ] ) ) {
-						$has_activities = true;
-						break;
-					}
-				}
-				
-				// Determine if the order is only composed of activities
-				$are_activities = true;
-				foreach( $items as $item ) {
-					if( ! isset( $item[ 'bookacti_booking_id' ] ) && ! isset( $item[ 'bookacti_booking_group_id' ] )  ) {
-						$are_activities = false;
-						break;
-					}
-				}
-				
-				// If there are only activities, mark the order as 'completed' and 
-				// a function hooked to woocommerce_order_status_completed will mark the activities as 'booked'
-				if( $are_activities ) {
-					$order_status = 'completed';
-					
-				// If there are at least one activity in the middle of other products, 
-				// we won't mark the order as 'completed', but we still need to mark the bookings as 'pending' and 'owed'
-				// until the order changes state. At that time the bookings state will be redifined by other hooks
-				// such as "woocommerce_order_status_pending_to_processing" and "woocommerce_order_status_completed"
-				} else if( $has_activities ) {
-					bookacti_turn_temporary_booking_to_permanent( $order_id, $order, 'pending', 'owed' );
-				}
+		// Retrieve bought items
+		$items = $order->get_items();
+
+		// Check if the order has at least 1 activity
+		$has_activities = false;
+		foreach( $items as $item ) {
+			if( isset( $item[ 'bookacti_booking_id' ] ) || isset( $item[ 'bookacti_booking_group_id' ] ) ) {
+				$has_activities = true;
+				break;
 			}
 		}
-		
+
+		// Check if the order is only composed of activities
+		$are_activities = true;
+		foreach( $items as $item ) {
+			if( ! isset( $item[ 'bookacti_booking_id' ] ) && ! isset( $item[ 'bookacti_booking_group_id' ] )  ) {
+				$are_activities = false;
+				break;
+			}
+		}
+
+		// If there are only activities, mark the order as 'completed' and 
+		// a function hooked to woocommerce_order_status_completed will mark the activities as 'booked'
+		if( $are_activities ) {
+			$order_status = 'completed';
+
+		// If there are at least one activity in the middle of other products, 
+		// we won't mark the order as 'completed', but we still need to mark the bookings as 'pending' and 'owed'
+		// until the order changes state. At that time the bookings state will be redefined by other hooks
+		// such as "woocommerce_order_status_pending_to_processing" and "woocommerce_order_status_completed"
+		} else if( $has_activities ) {
+			bookacti_turn_temporary_booking_to_permanent( $order_id, $order, 'pending', 'owed' );
+		}
+
 		return $order_status;
 	}
-	add_filter( 'woocommerce_payment_complete_order_status', 'bookacti_set_order_status_to_completed_after_payment', 10, 2 );
+	add_filter( 'woocommerce_payment_complete_order_status', 'bookacti_set_order_status_to_completed_after_payment', 20, 2 );
 	
 	
 	/**
@@ -263,7 +261,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		// Retrieve bought items
 		$items = $order->get_items();
 		
-		// Determine if the order has at least 1 activity
+		// Check if the order has at least 1 activity
 		$has_activities = false;
 		foreach( $items as $item ) {
 			if( isset( $item[ 'bookacti_booking_id' ] ) || isset( $item[ 'bookacti_booking_group_id' ] ) ) {
@@ -272,7 +270,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			}
 		}
 		
-		// Determine if the order is only composed of activities
+		// Check if the order is only composed of activities
 		$are_activities = true;
 		foreach( $items as $item ) {
 			if( ! isset( $item[ 'bookacti_booking_id' ] ) && ! isset( $item[ 'bookacti_booking_group_id' ] )  ) {
@@ -526,7 +524,6 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	 * @return string
 	 */
 	function bookacti_display_price_to_be_refunded( $text, $booking_id, $booking_type ) {
-		
 		if( $booking_type === 'single' ) {
 			$item = bookacti_get_order_item_by_booking_id( $booking_id );
 		} else if( $booking_type === 'group' ) {
@@ -543,7 +540,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		}
 		return $text;
 	}
-	add_filter( 'bookacti_before_refund_actions', 'bookacti_display_price_to_be_refunded', 10, 3 );
+	add_filter( 'bookacti_before_refund_actions', 'bookacti_display_price_to_be_refunded', 20, 3 );
 	
 	
 	/**
@@ -704,32 +701,29 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	
 	/**
 	 * Check if a booking can be refunded
-	 * @version 1.5.4
+	 * @version 1.5.8
 	 * @param boolean $true
 	 * @param int $booking_id
 	 * @return boolean
 	 */
 	function bookacti_woocommerce_booking_can_be_refunded( $true, $booking_id ) {
+		if( ! $true || current_user_can( 'bookacti_edit_bookings' ) ) { return $true; }
 		
-		if( $true && ! current_user_can( 'bookacti_edit_bookings' ) ) {
-			// Init var
-			$order_id	= bookacti_get_booking_order_id( $booking_id );
-			$order		= wc_get_order( $order_id );
-			if( $order ) {
-				$item = bookacti_get_order_item_by_booking_id( $booking_id );
-				
-				if( ! $item ) { return false; }
-				
-				$is_paid = get_post_meta( $order_id, '_paid_date', true );
-				
-				// WOOCOMMERCE 3.0.0 backward compatibility 
-				$total = is_array( $item ) ? $item[ 'line_total' ] : $item->get_total();
-				
-				if( $order->get_status() === 'pending' 
-				||  $total <= 0
-				||  ! $is_paid ) { $true = false; }
-			}
-		}
+		// Init var
+		$order_id	= bookacti_get_booking_order_id( $booking_id );
+		$order		= wc_get_order( $order_id );
+		if( ! $order ) { return $true; }
+		if( $order->get_status() === 'pending' ) { return false; }
+		
+		$item = bookacti_get_order_item_by_booking_id( $booking_id );
+		if( ! $item ) { return false; }
+
+		$is_paid = get_post_meta( $order_id, '_paid_date', true );
+		if( ! $is_paid ) { return false; }
+		
+		// WOOCOMMERCE 3.0.0 backward compatibility 
+		$total = version_compare( WC_VERSION, '3.0.0', '>=' ) ? $item->get_total() : $item[ 'line_total' ];
+		if( $total <= 0 ) { return false; }
 		
 		return $true;
 	}
@@ -738,34 +732,29 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	
 	/**
 	 * Check if a booking group can be refunded
-	 * @version 1.5.4
+	 * @version 1.5.8
 	 * @param boolean $true
 	 * @param int $booking_group_id
 	 * @return boolean
 	 */
 	function bookacti_woocommerce_booking_group_can_be_refunded( $true, $booking_group_id ) {
-		
-		if( $true && ! current_user_can( 'bookacti_edit_bookings' ) ) {
+		if( ! $true || current_user_can( 'bookacti_edit_bookings' ) ) { return $true; }
 			
-			$order_id	= bookacti_get_booking_group_order_id( $booking_group_id );
-			$order		= wc_get_order( $order_id );
-			
-			if( $order ) {
-				$item = bookacti_get_order_item_by_booking_group_id( $booking_group_id );
-				
-				if( ! $item ) { return false; }
-				
-				$is_paid = get_post_meta( $order_id, '_paid_date', true );
-				
-				// WOOCOMMERCE 3.0.0 backward compatibility 
-				$total = is_array( $item ) ? $item[ 'line_total' ] : $item->get_total();
-				
-				if( $order->get_status() === 'pending' 
-				||  $total <= 0
-				||  ! $is_paid ) { $true = false; }
-			}
-		}
+		$order_id	= bookacti_get_booking_group_order_id( $booking_group_id );
+		$order		= wc_get_order( $order_id );
+		if( ! $order ) { return $true; }
+		if( $order->get_status() === 'pending' ) { $true = false; }
 		
+		$item = bookacti_get_order_item_by_booking_group_id( $booking_group_id );
+		if( ! $item ) { return false; }
+
+		$is_paid = get_post_meta( $order_id, '_paid_date', true );
+		if( ! $is_paid ) { $true = false; }
+		
+		// WOOCOMMERCE 3.0.0 backward compatibility 
+		$total = version_compare( WC_VERSION, '3.0.0', '>=' ) ? $item->get_total() : $item[ 'line_total' ];
+		if( $total <= 0 ) { $true = false; }
+			
 		return $true;
 	}
 	add_filter( 'bookacti_booking_group_can_be_refunded', 'bookacti_woocommerce_booking_group_can_be_refunded', 10, 2 );

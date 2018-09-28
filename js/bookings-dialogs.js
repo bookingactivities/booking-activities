@@ -137,7 +137,12 @@ function bookacti_dialog_cancel_booking( booking_id, booking_type ) {
 }
 
 
-// Refund a cancel booking
+/**
+ * Refund a cancelled booking
+ * @version 1.5.8
+ * @param {int} booking_id
+ * @param {string} booking_type
+ */
 function bookacti_dialog_refund_booking( booking_id, booking_type ) {
 	
 	// Sanitize booking_type
@@ -188,6 +193,9 @@ function bookacti_dialog_refund_booking( booking_id, booking_type ) {
 						'class': 'bookacti-dialog-delete-button',
 
 						click: function() { 
+							
+							// Reset error notices
+							$j( '#bookacti-refund-booking-dialog .bookacti-notices' ).remove();
 							
 							var row, actions_container;
 							if( booking_type === 'single' ) {
@@ -270,14 +278,18 @@ function bookacti_dialog_refund_booking( booking_id, booking_type ) {
 										
 									} else if( response.status === 'failed' ) {
 										
-										var message_error = bookacti_localized.error_refund_booking;
-										if( response.error === 'not_allowed' ) {
-											message_error += '\n' + bookacti_localized.error_not_allowed;
-										} else if( response.error ) {
-											message_error += '\n' + response.error;
-										} else if( response.message ) {
-											message_error += '\n' + response.message;
+										var message_error = '';
+										if( response.message ) {
+											message_error += response.message;
+										} else {
+											message_error += bookacti_localized.error_refund_booking;
+											if( response.error ) {
+												message_error += ' (' + response.error + ')';
+											}
 										}
+										
+										$j( '#bookacti-refund-booking-dialog' ).append( '<div class="bookacti-notices"><ul class="bookacti-error-list"><li>' + message_error + '</li></ul></div>' );
+										
 										console.log( message_error );
 										console.log( response );
 									}

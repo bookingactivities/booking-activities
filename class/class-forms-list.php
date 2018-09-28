@@ -222,7 +222,7 @@ if( ! class_exists( 'Forms_List_Table' ) ) {
 					if( $item[ 'active_raw' ] ) {
 						// Add the 'trash' action
 						$actions[ 'trash' ] = '<a href="' . esc_url( wp_nonce_url( get_admin_url() . 'admin.php?page=bookacti_forms', 'trash-form_' . $form_id ) . '&action=trash&form_id=' . $form_id ) . '" >'
-												. esc_html_x( 'Trash', 'forms', BOOKACTI_PLUGIN_NAME )
+												. esc_html_x( 'Trash', 'forms action', BOOKACTI_PLUGIN_NAME )
 											. '</a>';
 					} else {
 						// Add the 'restore' action
@@ -492,8 +492,8 @@ if( ! class_exists( 'Forms_List_Table' ) ) {
 			$trash_count		= bookacti_get_number_of_form_rows( $trash_filter );
 			
 			return array(
-				'published'	=> '<a href="' . esc_url( get_admin_url() . 'admin.php?page=bookacti_forms' ) . '" class="' . $published_current . '" >' . esc_html_x( 'Published', 'forms', BOOKACTI_PLUGIN_NAME ) . ' <span class="count">(' . $published_count . ')</span></a>',
-				'trash'		=> '<a href="' . esc_url( get_admin_url() . 'admin.php?page=bookacti_forms&status=trash' ) . '" class="' . $trash_current . '" >' . esc_html_x( 'Trash', 'forms', BOOKACTI_PLUGIN_NAME ) . ' <span class="count">(' . $trash_count . ')</span></a>'
+				'published'	=> '<a href="' . esc_url( get_admin_url() . 'admin.php?page=bookacti_forms' ) . '" class="' . $published_current . '" >' . esc_html_x( 'Published', 'forms status', BOOKACTI_PLUGIN_NAME ) . ' <span class="count">(' . $published_count . ')</span></a>',
+				'trash'		=> '<a href="' . esc_url( get_admin_url() . 'admin.php?page=bookacti_forms&status=trash' ) . '" class="' . $trash_current . '" >' . esc_html_x( 'Trash', 'forms status', BOOKACTI_PLUGIN_NAME ) . ' <span class="count">(' . $trash_count . ')</span></a>'
 			);
 		}
 		

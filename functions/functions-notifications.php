@@ -391,7 +391,7 @@ function bookacti_get_notifications_tags_values( $booking_id, $booking_type, $no
  * Send a notification according to its settings
  * 
  * @since 1.2.1 (was bookacti_send_email in 1.2.0)
- * @version 1.5.0
+ * @version 1.5.8
  * @param string $notification_id Must exists in "bookacti_notifications_default_settings"
  * @param int $booking_id
  * @param string $booking_type "single" or "group"
@@ -446,6 +446,12 @@ function bookacti_send_notification( $notification_id, $booking_id, $booking_typ
 	if( ! empty( $args ) && ! empty( $args[ 'tags' ] ) ) {
 		$tags = array_merge( $tags, $args[ 'tags' ] );
 	}
+	
+	$notification	= apply_filters( 'bookacti_notification_data', $notification, $tags, $locale, $booking_id, $booking_type, $args );
+	$tags			= apply_filters( 'bookacti_notification_tags', $tags, $notification, $locale, $booking_id, $booking_type, $args );
+	$allow_sending	= apply_filters( 'bookacti_notification_sending_allowed', true, $notification, $tags, $locale, $booking_id, $booking_type, $args );
+	
+	if( ! $allow_sending ) { bookacti_restore_locale(); return array(); } 
 	
 	// Send email notification
 	$sent = array( 'email' => 0 );

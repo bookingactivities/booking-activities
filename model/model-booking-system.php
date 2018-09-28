@@ -531,6 +531,22 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	
 	
 	/**
+	 * Deprecated - Get event and its activity metadata (used for backward compatibility)
+	 * @param int $event_id
+	 * @return array
+	 */
+	function bookacti_get_settings_by_event( $event_id ) {
+		
+		$event = bookacti_get_event_by_id( $event_id );
+		
+		$settings[ 'event' ]	= bookacti_get_metadata( 'event', $event_id );
+		$settings[ 'activity' ]	= bookacti_get_metadata( 'activity', $event->activity_id );
+		
+		return $settings;
+	}
+	
+	
+	/**
 	 * Determine if an event or one of its occurrence is included in calendar range
 	 *
 	 * @since  1.0.6

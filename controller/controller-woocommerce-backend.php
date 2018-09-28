@@ -448,7 +448,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		
 		return $options_array; 
 	}
-	add_filter( 'product_type_options', 'bookacti_add_product_type_option', 1, 1 ); 
+	add_filter( 'product_type_options', 'bookacti_add_product_type_option', 10, 1 ); 
 	
 	
 	/**
@@ -466,16 +466,15 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 		return $tabs;
 	}
-	add_filter( 'woocommerce_product_data_tabs', 'bookacti_create_activity_tab' );
+	add_filter( 'woocommerce_product_data_tabs', 'bookacti_create_activity_tab', 10, 1 );
 	
 	
 	/**
 	 * Content of the activity tab
 	 * @version 1.5.0
-	 * @global type $thepostid
+	 * @global int $thepostid
 	 */
 	function bookacti_activity_tab_content() {
-
 		global $thepostid;
 		?>
 		<div id='bookacti_activity_options' class='panel woocommerce_options_panel'>

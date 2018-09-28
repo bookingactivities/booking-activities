@@ -259,7 +259,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		}
 		
 		// Update booking quantity
-		if( $response[ 'status' ] !== 'failed' ) {		
+		if( $response[ 'status' ] !== 'failed' ) {
 			$response = bookacti_update_booking_quantity( $booking_id, $new_quantity, $new_expiration_date, $context );
 		}
 		
@@ -331,9 +331,9 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 
 	/**
-	 * Update quantity, control the results ans display feedback accordingly
+	 * Update booking group quantity, control the results ans display feedback accordingly
 	 * @since 1.1.0
-	 * @version 1.5.7
+	 * @version 1.5.8
 	 * @param int $booking_group_id
 	 * @param int $quantity
 	 * @param boolean $add_quantity
@@ -461,62 +461,91 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		}
 		
 		if( $response[ 'status' ] === 'success' ) {
-			// Update each booking quantity
-			$no_changes = 0;
-			foreach( $bookings as $booking ) {
+			$response = bookacti_update_booking_group_quantity( $booking_group_id, $quantity, $add_quantity, $context );
+		}
+		
+		return $response;
+	}
+	
+	
+	/**
+	 * Update booking group and its bookings quantity
+	 * @since 1.5.8
+	 * @param int $booking_group_id
+	 * @param int $quantity
+	 * @param boolean $add_quantity
+	 * @param string $context
+	 * @return array
+	 */
+	function bookacti_update_booking_group_quantity( $booking_group_id, $quantity, $add_quantity = false, $context = 'frontend' ) {
+		$response = array( 'status' => 'success' );
 
-				$booking_qty	= $booking->active || $booking->state === 'in_cart' ? intval( $booking->quantity ) : 0;
+		// Get bookings of the group
+		$bookings = bookacti_get_bookings_by_booking_group_id( $booking_group_id );
+		
+		// Get group availability
+		$group				= bookacti_get_booking_group_by_id( $booking_group_id );
+		$group_availability	= bookacti_get_group_of_events_availability( $group->event_group_id );
+		
+		// Update each booking quantity
+		$no_changes = 0;
+		foreach( $bookings as $booking ) {
 
-				// Make sure new quantity isn't over group availability
-				$new_quantity = $add_quantity ? $quantity + $booking_qty : $quantity;
-				if( $new_quantity > ( $group_availability + $booking_qty ) ){
-					$new_quantity = $add_quantity ? $group_availability : $group_availability + $booking_qty;
-				}
+			$booking_qty	= $booking->active || $booking->state === 'in_cart' ? intval( $booking->quantity ) : 0;
 
-				// Update quantity
+			// Make sure new quantity isn't over group availability
+			$new_quantity = $add_quantity ? $quantity + $booking_qty : $quantity;
+			if( $new_quantity > ( $group_availability + $booking_qty ) ){
+				$new_quantity = $add_quantity ? $group_availability : $group_availability + $booking_qty;
+			}
+
+			// Update quantity
+			if( $new_quantity !== 0 ) {
 				$updated1 = bookacti_controller_update_booking_quantity( $booking->id, $new_quantity, $context );
-				
-				// If one fails, set the whole group update status to failed
-				if( ! isset( $updated1[ 'status' ] ) || $updated1[ 'status' ] === 'failed' ) {
-					$response[ 'status' ]	= 'failed';
-					$response[ 'error' ]	= $updated1[ 'error' ];
-				} 
-				
-				// Count how many booking doesn't change
-				else if( $updated1[ 'status' ] === 'no_change' ) {
-					$no_changes++;
-				}
+			} else {
+				$updated1 = bookacti_update_booking_quantity( $booking->id, $new_quantity, '', $context );
 			}
 			
-			// If no bookings were updated
-			if( $no_changes >= count( $bookings ) ) {
-				$response[ 'status' ]	= 'no_change';
+			// If one fails, set the whole group update status to failed
+			if( ! isset( $updated1[ 'status' ] ) || $updated1[ 'status' ] === 'failed' ) {
+				$response[ 'status' ]	= 'failed';
+				$response[ 'error' ]	= $updated1[ 'error' ];
+			} 
+
+			// Count how many booking doesn't change
+			else if( $updated1[ 'status' ] === 'no_change' ) {
+				$no_changes++;
 			}
-			
-			// Change booking group state
-			if( $response[ 'status' ] === 'success' ) {
+		}
 
-				$is_admin = $context === 'admin' ? true : false;
-				
-				// Change booking group state to remove if quantity = 0
-				if( ! $add_quantity && $quantity === 0 ) {
-					$new_state	= $context === 'frontend' ? 'removed' : 'cancelled';
-					$updated2	= bookacti_update_booking_group_state( $booking_group_id, $new_state );
-					do_action( 'bookacti_booking_group_state_changed', $booking_group_id, $new_state, array( 'is_admin' => $is_admin ) );
-				}
+		// If no bookings were updated
+		if( $no_changes >= count( $bookings ) ) {
+			$response[ 'status' ]	= 'no_change';
+		}
 
-				// If the group used to be removed (quantity = 0), turn its state to in_cart
-				else if( $group->state === 'removed' && $quantity > 0 ) {
-					$new_state = $context === 'frontend' ? 'in_cart' : 'pending';
-					$updated2 = bookacti_update_booking_group_state( $booking_group_id, $new_state );
-					do_action( 'bookacti_booking_group_state_changed', $booking_group_id, $new_state, array( 'is_admin' => $is_admin ) );
-				}
+		// Change booking group state
+		if( $response[ 'status' ] === 'success' ) {
 
-				if( isset( $updated2 ) && ! $updated2 ) {
-					$response[ 'status' ]	= 'failed';
-					$response[ 'error' ]	= 'update_booking_group_state';
-					$response[ 'message' ]	= __( 'An error occurs while trying to update booking group state. Please try again later.', BOOKACTI_PLUGIN_NAME );
-				}
+			$is_admin = $context === 'admin' ? true : false;
+
+			// Change booking group state to remove if quantity = 0
+			if( ! $add_quantity && $quantity === 0 ) {
+				$new_state	= $context === 'frontend' ? 'removed' : 'cancelled';
+				$updated2	= bookacti_update_booking_group_state( $booking_group_id, $new_state );
+				do_action( 'bookacti_booking_group_state_changed', $booking_group_id, $new_state, array( 'is_admin' => $is_admin ) );
+			}
+
+			// If the group used to be removed (quantity = 0), turn its state to in_cart
+			else if( $group->state === 'removed' && $quantity > 0 ) {
+				$new_state = $context === 'frontend' ? 'in_cart' : 'pending';
+				$updated2 = bookacti_update_booking_group_state( $booking_group_id, $new_state );
+				do_action( 'bookacti_booking_group_state_changed', $booking_group_id, $new_state, array( 'is_admin' => $is_admin ) );
+			}
+
+			if( isset( $updated2 ) && ! $updated2 ) {
+				$response[ 'status' ]	= 'failed';
+				$response[ 'error' ]	= 'update_booking_group_state';
+				$response[ 'message' ]	= __( 'An error occurs while trying to update booking group state. Please try again later.', BOOKACTI_PLUGIN_NAME );
 			}
 		}
 		
@@ -1012,7 +1041,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	 * Turn all bookings of an order to the desired status. 
 	 * Also make sure that bookings are bound to the order and the associated user.
 	 * 
-	 * @version 1.5.6
+	 * @version 1.5.8
 	 * @param WC_Order $order
 	 * @param string $state
 	 * @param string $payment_status
@@ -1044,17 +1073,21 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		$booking_id_array		= array();
 		$booking_group_id_array = array();
 		foreach( $items as $key => $item ) {
+			// Reset item booking id
+			$booking_id = 0;
+			$booking_group_id = 0;
+			
 			if( version_compare( WC_VERSION, '3.0.0', '>=' ) ) {
-				if( isset( $item[ 'bookacti_booking_id' ] ) && $item[ 'bookacti_booking_id' ] ) {
+				if( ! empty( $item[ 'bookacti_booking_id' ] )  ) {
 					$booking_id = $item[ 'bookacti_booking_id' ];
-				} else if( isset( $item[ 'bookacti_booking_group_id' ] ) && $item[ 'bookacti_booking_group_id' ] ) {
-					$booking_group_id= $item[ 'bookacti_booking_group_id' ];
+				} else if( ! empty( $item[ 'bookacti_booking_group_id' ] ) ) {
+					$booking_group_id = $item[ 'bookacti_booking_group_id' ];
 				}
 			} else {
-				if( isset( $item[ 'bookacti_booking_id' ] ) && $item[ 'bookacti_booking_id' ] ) {
+				if( ! empty( $item[ 'item_meta' ][ 'bookacti_booking_id' ] ) ) {
 					$booking_id = $item[ 'item_meta' ][ 'bookacti_booking_id' ][ 0 ];
-				} else if( isset( $item[ 'item_meta' ][ 'bookacti_booking_group_id' ] ) && $item[ 'item_meta' ][ 'bookacti_booking_group_id' ] ) {
-					$booking_group_id= $item[ 'item_meta' ][ 'bookacti_booking_group_id' ][ 0 ];
+				} else if( ! empty( $item[ 'item_meta' ][ 'bookacti_booking_group_id' ] ) ) {
+					$booking_group_id = $item[ 'item_meta' ][ 'bookacti_booking_group_id' ][ 0 ];
 				}
 			}
 			
@@ -1280,7 +1313,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	 * Get woocommerce order item id by booking id
 	 * @version 1.5.0
 	 * @param int $booking_id
-	 * @return array|false
+	 * @return WC_Order_Item|array|false
 	 */
 	function bookacti_get_order_item_by_booking_id( $booking_id ) {
 
@@ -1699,14 +1732,29 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	/**
 	 * Find matching product variation
 	 * @since 1.5.0
+	 * @version 1.5.8
 	 * @param WC_Product $product
 	 * @param array $attributes
 	 * @return int Matching variation ID or 0.
 	 */
 	function bookacti_get_product_variation_matching_attributes( $product, $attributes ) {
+		$product_attributes = $product->get_attributes();
+		
 		// Format attributes array
 		foreach( $attributes as $key => $value ) {
-			if( strpos( $key, 'attribute_' ) === 0 ) { continue; }
+			// Take the untranslated value (in case of translated attributes)
+			foreach( $product_attributes as $product_attribute_key => $product_attribute ) {
+				if( $key !== apply_filters( 'bookacti_translate_text', $product_attribute_key ) 
+				&&  $key !== $product_attribute_key ) { continue; }
+				$options = version_compare( WC_VERSION, '3.0.0', '>=' ) ? $product_attribute->get_options() : array_map( 'trim', explode( '|', $product_attribute[ 'value' ] ) );
+				foreach( $options as $option_value ) {
+					if( $value !== apply_filters( 'bookacti_translate_text', $option_value ) 
+					&&  $value !== $option_value ) { continue; }
+					$value = $option_value;
+				}
+			}
+			
+			if( strpos( $key, 'attribute_' ) === 0 && $attributes[ $key ] === $value ) { continue; }
 			unset( $attributes[ $key ] );
 			$attributes[ sprintf( 'attribute_%s', $key ) ] = $value;
 		}
@@ -1808,9 +1856,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	
 	/**
 	 * Create a coupon to refund a booking
-	 * 
-	 * @version 1.5.4
-	 * 
+	 * @version 1.5.8
 	 * @param int $booking_id
 	 * @param string $booking_type Determine if the given id is a booking id or a booking group. Accepted values are 'single' or 'group'.
 	 * @param string $refund_message
@@ -1915,10 +1961,17 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		$i = 1;
 		$coupon = array();
 		$code_template = apply_filters( 'bookacti_refund_coupon_code_template', 'R{user_id}N{refund_number}' );
-		$code_template = str_replace( '{user_id}', '%1$d', $code_template );
-		$code_template = str_replace( '{refund_number}', '%2$d', $code_template );
+		$code_template = str_replace( '{user_id}', '%1$s', $code_template );
+		$code_template = str_replace( '{refund_number}', '%2$s', $code_template );
+		$data['coupon']['code'] = sprintf( $code_template, $user_id, $i );
+		
+		$data = apply_filters( 'bookacti_refund_coupon_data', $data, $user_data, $item );
+		
 		do {
-			$data['coupon']['code'] = sprintf( $code_template, $user_id, $i );
+			// For the first occurence, try to use the code that may have been changed with 'bookacti_refund_coupon_data' hook
+			if( $i !== 1 ) { 
+				$data['coupon']['code'] = sprintf( $code_template, $user_id, $i ); 
+			}
 			$coupon = WC()->api->WC_API_Coupons->create_coupon( $data );
 			$i++;
 		}
@@ -1927,7 +1980,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		if( ! empty( $coupon ) && ! is_wp_error( $coupon ) ) {
 
 			// Bind coupon to order item
-			$code = apply_filters( 'bookacti_refund_coupon_code', $coupon[ 'coupon' ][ 'code' ], $data, $user_data, $item );
+			$code = apply_filters( 'bookacti_refund_coupon_code', $coupon[ 'coupon' ][ 'code' ], $data, $coupon, $user_data, $item );
 			wc_update_order_item_meta( $order_item_id, 'bookacti_refund_coupon', $code );
 
 			$return_data = array( 'status' => 'success', 'coupon_amount' => wc_price( $data['coupon']['amount'] ), 'coupon_code' => $code, 'new_state' => 'refunded' );
@@ -1942,20 +1995,79 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		
 		return $return_data;
 	}
-
+	
 	
 	/**
 	 * Auto refund (for supported gateway)
-	 * 
-	 * @version 1.5.4
-	 * 
+	 * @version 1.5.8
 	 * @param int $booking_id
 	 * @param string $booking_type Determine if the given id is a booking id or a booking group id. Accepted values are 'single' or 'group'.
 	 * @param string $refund_message
-	 * @return array|false
+	 * @return array
 	 */
 	function bookacti_auto_refund_booking( $booking_id, $booking_type, $refund_message ) {
+		if( version_compare( WC_VERSION, '3.0.0', '<' ) ) {
+			return bookacti_deprecated_auto_refund_booking( $booking_id, $booking_type, $refund_message );
+		}	
+		
+		// Get variables
+		if( $booking_type === 'single' ) {
+			$order_id	= bookacti_get_booking_order_id( $booking_id );
+			$item		= bookacti_get_order_item_by_booking_id( $booking_id );
+		} else if( $booking_type === 'group' ) {
+			$order_id	= bookacti_get_booking_group_order_id( $booking_id );
+			$item		= bookacti_get_order_item_by_booking_group_id( $booking_id );
+		}
+		
+		if( ! $item ) {
+			return array( 
+				'status'	=> 'failed', 
+				'error'		=> 'no_order_item_found',
+				'message'	=> esc_html__( 'The order item bound to the booking was not found.', BOOKACTI_PLUGIN_NAME )
+			);
+		}
+		
+		$order_item_id = $item->get_id();
+		$amount = $item->get_total() + $item->get_total_tax();
 
+		$reason = __( 'Auto refund proceeded by user.', BOOKACTI_PLUGIN_NAME );
+		if( $refund_message !== '' ) {
+			$reason	.= PHP_EOL . __( 'User message:', BOOKACTI_PLUGIN_NAME ) . PHP_EOL . $refund_message;
+		}
+
+		$line_items	= array();
+		$line_items[ $order_item_id ] = array(
+			'qty'			=> $item->get_quantity(),
+			'refund_total'	=> $item->get_total(),
+			'refund_tax'	=> $item->get_total_tax()
+		);
+
+		$data = array(
+			'amount'			=> $amount,
+			'reason'			=> $reason,
+			'order_id'			=> $order_id,
+			'line_items'		=> $line_items,
+			'refund_payment'	=> true
+		);
+		
+		$refund = wc_create_refund( $data );
+		
+		if( is_wp_error( $refund ) ) {
+			return array( 'status' => 'failed', 'error' => $refund->get_error_code(), 'message' => $refund->get_error_message() );
+		}
+		
+		return array( 'status' => 'success', 'new_state' => 'refunded', 'refund' => $refund );
+	}
+
+	
+	/**
+	 * Deprecated Auto refund function (for supported gateway)
+	 * To be used with WooCommerce < 3.0
+	 * @since 1.5.8 (was bookacti_auto_refund_booking)
+	 * @param array $data
+	 * @return array
+	 */
+	function bookacti_deprecated_auto_refund_booking( $booking_id, $booking_type, $refund_message ) {
 		// Include & load API classes
 		if( ! class_exists( 'WC_API_Orders' ) ) {
 			WC()->api->includes();
@@ -1972,7 +2084,11 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		}
 		
 		if( ! $item ) {
-			return array( 'status' => 'failed', 'error' => 'no_order_item_found' );
+			return array( 
+				'status'	=> 'failed', 
+				'error'		=> 'no_order_item_found',
+				'message'	=> esc_html__( 'The order item bound to the booking was not found.', BOOKACTI_PLUGIN_NAME )
+			);
 		}
 		
 		$order_item_id = is_array( $item ) ? $item[ 'id' ] : $item->get_id();
@@ -2011,24 +2127,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		// Remove user cap to create coupon
 		if( ! $user_basically_can ) { $current_user->remove_cap( 'publish_shop_orders' ); }
 
-		if( is_array( $refund ) && ! is_wp_error( $refund ) ) {
-
-			// Trigger notifications and status changes
-			$order = wc_get_order( $order_id );
-			if ( $order->get_remaining_refund_amount() > 0 || ( $order->has_free_item() && $order->get_remaining_refund_items() > 0 ) ) {
-				do_action( 'woocommerce_order_partially_refunded', $order_id, $refund->id, $refund->id );
-			} else {
-				do_action( 'woocommerce_order_fully_refunded', $order_id, $refund->id );
-				$order->update_status( apply_filters( 'woocommerce_order_fully_refunded_status', 'refunded', $order_id, $refund->id ) );
-			}
-
-			do_action( 'woocommerce_order_refunded', $order_id, $refund->id );
-
-			$return_data = array( 'status' => 'success', 'new_state' => 'refunded' );
-			return $return_data;
-
-		} else if( is_wp_error( $refund ) ) {
-
+		if( is_wp_error( $refund ) ) {
 			// Delete order refund
 			$order_refunds = WC()->api->WC_API_Orders->get_order_refunds( $order_id );
 			if( ! empty( $order_refunds['order_refunds'] ) ) {
@@ -2038,14 +2137,23 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 					}
 				}
 			}
-
-			// Return error
-			return array( 'status' => 'failed', 'message' => $refund->get_error_message() );
+			return array( 'status' => 'failed', 'error' => $refund->get_error_code(), 'message' => $refund->get_error_message() );
+		}
+		
+		// Trigger notifications and status changes
+		$order = wc_get_order( $order_id );
+		if ( $order->get_remaining_refund_amount() > 0 || ( $order->has_free_item() && $order->get_remaining_refund_items() > 0 ) ) {
+			do_action( 'woocommerce_order_partially_refunded', $order_id, $refund->id, $refund->id );
+		} else {
+			do_action( 'woocommerce_order_fully_refunded', $order_id, $refund->id );
+			$order->update_status( apply_filters( 'woocommerce_order_fully_refunded_status', 'refunded', $order_id, $refund->id ) );
 		}
 
-		return false;
-	}
+		do_action( 'woocommerce_order_refunded', $order_id, $refund->id );
 
+		return array( 'status' => 'success', 'new_state' => 'refunded' );
+	}
+	
 	
 	/**
 	 * Delete a refund and die

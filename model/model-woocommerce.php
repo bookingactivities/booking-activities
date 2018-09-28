@@ -391,10 +391,7 @@ function bookacti_update_bookings_user_id( $user_id, $customer_id ) {
 
 /**
  * Deactivate expired bookings
- *
- * @since	1.0.0
- * @version	1.2.0
- * 
+ * @version	1.5.8
  * @global type $wpdb
  * @return array|0|false
  */
@@ -453,11 +450,11 @@ function bookacti_deactivate_expired_bookings() {
 		foreach( $deactivated_bookings as $deactivated_booking ) {
 			$return[] = $deactivated_booking->id;
 			if( ! $deactivated_booking->group_id ) {
-				do_action( 'bookacti_booking_expired', $deactivated_booking->id, 'expired', array() );
+				do_action( 'bookacti_booking_expired', $deactivated_booking->id );
 			}
 		}
 		foreach( $expired_group_ids as $expired_group_id ) {
-			do_action( 'bookacti_booking_group_expired', $expired_group_id, 'expired', array() );
+			do_action( 'bookacti_booking_group_expired', $expired_group_id );
 		}
 	}
 	
@@ -471,7 +468,6 @@ function bookacti_deactivate_expired_bookings() {
  * @return int|false
  */
 function bookacti_cancel_in_cart_bookings() {
-
 	global $wpdb;
 
 	$query_cancel_in_cart = 'UPDATE ' . BOOKACTI_TABLE_BOOKINGS . ' SET active = 0, state = "cancelled" WHERE state = "in_cart" AND active = 1';

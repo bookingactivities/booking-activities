@@ -349,9 +349,8 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		
 		/**
 		 * Check if a booking can be rescheduled to another event
-		 * 
 		 * @since 1.1.0
-		 * 
+		 * @version 1.5.8
 		 * @param int $booking_id
 		 * @param int $event_id
 		 * @param string $event_start
@@ -360,9 +359,15 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		 */
 		function bookacti_booking_can_be_rescheduled_to( $booking_id, $event_id, $event_start, $event_end ) {
 			
+			$return_array = array( 'status' => 'success' );
 			$is_allowed = bookacti_booking_can_be_rescheduled( $booking_id );
-			
-			return apply_filters( 'bookacti_booking_can_be_rescheduled_to', $is_allowed, $booking_id, $event_id, $event_start, $event_end );
+			if( ! $is_allowed ) {
+				$return_array[ 'status' ] = 'failed';
+				$return_array[ 'error' ] = 'reschedule_not_allowed';
+				$return_array[ 'message' ] = esc_html__( 'You are not allowed to reschedule this event.', BOOKACTI_PLUGIN_NAME );
+			}
+						
+			return apply_filters( 'bookacti_booking_can_be_rescheduled_to', $return_array, $booking_id, $event_id, $event_start, $event_end );
 		}
 
 

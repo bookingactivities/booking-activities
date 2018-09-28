@@ -198,7 +198,7 @@ function bookacti_switch_product_variation_form( form_container, variation ) {
 	
 	bookacti.is_variation_activity[ variation[ 'variation_id' ] ] = true;
 	
-	var form_id = variation[ 'bookacti_form_id' ];
+	var form_id = parseInt( variation[ 'bookacti_form_id' ] );
 	
 	if( ! form_id ) { return; }
 	

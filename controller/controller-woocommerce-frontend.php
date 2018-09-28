@@ -256,7 +256,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		</div>
 		<?php
 	}
-	add_action( 'woocommerce_before_add_to_cart_button', 'bookacti_add_booking_system_in_single_product_page', 10, 0 );
+	add_action( 'woocommerce_before_add_to_cart_button', 'bookacti_add_booking_system_in_single_product_page', 20, 0 );
 	
 	
 	/**
@@ -1009,10 +1009,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 	/**
 	 * If quantity changes in cart, temporarily book the extra quantity if possible
-	 * 
-	 * @since 1.0.0
-	 * @version 1.1.0
-	 * 
+	 * @version 1.5.8
 	 * @global WooCommerce $woocommerce
 	 * @param int $wc_stock_amount
 	 * @param string $cart_item_key
@@ -1026,21 +1023,21 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		// Item data
 		$old_quantity	= $item[ 'quantity' ];
 		$new_quantity	= $wc_stock_amount;
+		$is_in_cart		= false;
 		
 		if( ! isset( $item['_bookacti_options'] ) || $new_quantity === $old_quantity ) { 
 			return $wc_stock_amount;
 		}
 		
 		// Single event
-		if( isset( $item['_bookacti_options']['bookacti_booking_id'] ) && ! empty( $item['_bookacti_options']['bookacti_booking_id'] ) ) {
-			
+		if( ! empty( $item['_bookacti_options']['bookacti_booking_id'] ) ) {
 			$booking_id = $item['_bookacti_options']['bookacti_booking_id'];
 			$is_in_cart = bookacti_get_booking_state( $booking_id ) === 'in_cart';
 			
 			if( $is_in_cart ) {
 
 				$response = bookacti_controller_update_booking_quantity( $booking_id, $new_quantity );
-
+				
 				while( $response[ 'status' ] === 'failed' && $response[ 'error' ] === 'qty_sup_to_avail' ) {
 					$new_quantity = intval( $response[ 'availability' ] );
 					$woocommerce->cart->set_quantity( $cart_item_key, $new_quantity, true );
@@ -1053,7 +1050,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			}
 
 		// Group of events
-		} else if( isset( $item['_bookacti_options']['bookacti_booking_group_id'] ) && ! empty( $item['_bookacti_options']['bookacti_booking_group_id'] ) ) {
+		} else if( ! empty( $item['_bookacti_options']['bookacti_booking_group_id'] ) ) {
 			$booking_group_id	= $item['_bookacti_options']['bookacti_booking_group_id'];
 			$is_in_cart			= bookacti_get_booking_group_state( $booking_group_id ) === 'in_cart';
 			
@@ -1074,7 +1071,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		}
 		
 		// If the product is not "in_cart", it means that the order in already in process (maybe waiting for payment)
-		if( isset( $is_in_cart ) && empty( $is_in_cart ) ) {
+		if( ! $is_in_cart ) {
 			$new_quantity = $old_quantity;
 			wc_add_notice( __( "You can't update quantity since this product is temporarily booked on an order pending payment. Please, first cancel the order or remove this product from cart.", BOOKACTI_PLUGIN_NAME ), 'error' );
 		}
@@ -1086,57 +1083,67 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	
 	/**
 	 * Remove in_cart bookings when cart items are removed from cart
-	 * 
-	 * @since 1.0.0
-	 * @version 1.1.0
-	 * 
+	 * @version 1.5.8
 	 * @global WooCommerce $woocommerce
-	 * @param type $cart_item_key
+	 * @param string $cart_item_key
 	 * @param WC_Cart $cart
 	 */
 	function bookacti_remove_bookings_of_removed_cart_item( $cart_item_key, $cart ) { 
-		
 		global $woocommerce;
 		$item = $woocommerce->cart->get_cart_item( $cart_item_key );
+		bookacti_remove_cart_item_bookings( $item );
+	}
+	add_action( 'woocommerce_remove_cart_item', 'bookacti_remove_bookings_of_removed_cart_item', 10, 2 ); 
+	
+	
+	/**
+	 * Remove corrupted cart items bookings when they are removed from cart
+	 * @since 1.5.8
+	 * @global WooCommerce $woocommerce
+	 * @param string $cart_item_key
+	 * @param array $item
+	 */
+	function bookacti_remove_bookings_of_corrupted_cart_items( $cart_item_key, $item ) {
+		bookacti_remove_cart_item_bookings( $item );
+	}
+	add_action( 'woocommerce_remove_cart_item_from_session', 'bookacti_remove_bookings_of_corrupted_cart_items', 10, 2 );
+
+	
+	/**
+	 * Remove cart item bookings
+	 * @since 1.5.8
+	 * @param array $item
+	 */
+	function bookacti_remove_cart_item_bookings( $item ) {
+		if( ! isset( $item['_bookacti_options'] ) ) { return; }
 		
-		if( isset( $item['_bookacti_options'] ) ) {
-			// Single event
-			if( isset( $item['_bookacti_options']['bookacti_booking_id'] ) && ! empty( $item['_bookacti_options']['bookacti_booking_id'] ) ) {
+		// Single event
+		if( ! empty( $item['_bookacti_options']['bookacti_booking_id'] ) ) {
+			$booking_id = $item['_bookacti_options']['bookacti_booking_id'];
+			$is_in_cart = bookacti_get_booking_state( $booking_id ) === 'in_cart';
+			if( $is_in_cart ) {
+				bookacti_update_booking_quantity( $booking_id, 0 );
+			}
 
-				$booking_id = $item['_bookacti_options']['bookacti_booking_id'];
-
-				$is_in_cart = bookacti_get_booking_state( $booking_id ) === 'in_cart';
-				if( $is_in_cart ) {
-					bookacti_controller_update_booking_quantity( $booking_id, 0 );
-				}
-			
-			// Group of events
-			} else if( isset( $item['_bookacti_options']['bookacti_booking_group_id'] ) && ! empty( $item['_bookacti_options']['bookacti_booking_group_id'] ) ) {
-			
-				$booking_group_id = $item['_bookacti_options']['bookacti_booking_group_id'];
-
-				$is_in_cart = bookacti_get_booking_group_state( $booking_group_id ) === 'in_cart';
-				if( $is_in_cart ) {
-					bookacti_controller_update_booking_group_quantity( $booking_group_id, 0 );
-				}
+		// Group of events
+		} else if( ! empty( $item['_bookacti_options']['bookacti_booking_group_id'] ) ) {
+			$booking_group_id = $item['_bookacti_options']['bookacti_booking_group_id'];
+			$is_in_cart = bookacti_get_booking_group_state( $booking_group_id ) === 'in_cart';
+			if( $is_in_cart ) {
+				bookacti_update_booking_group_quantity( $booking_group_id, 0 );
 			}
 		}
 	}
-	add_action( 'woocommerce_remove_cart_item', 'bookacti_remove_bookings_of_removed_cart_item', 10, 2 ); 
 	
 	 
 	/**
 	 * Restore the booking if user change his mind after deleting one
-	 * 
-	 * @since 1.0.0
-	 * @version 1.1.0
-	 * 
+	 * @version 1.5.8
 	 * @global WooCommerce $woocommerce
 	 * @param string $cart_item_key
 	 * @param WC_Cart $cart
 	 */
 	function bookacti_restore_bookings_of_removed_cart_item( $cart_item_key, $cart ) { 
-		
 		global $woocommerce;
 		$item = $woocommerce->cart->get_cart_item( $cart_item_key );
 		
@@ -1147,13 +1154,11 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			$new_quantity	= $item[ 'quantity' ];
 			
 			// Single event
-			if( isset( $item['_bookacti_options']['bookacti_booking_id'] ) && ! empty( $item['_bookacti_options']['bookacti_booking_id'] ) ) {
-
+			if( ! empty( $item['_bookacti_options']['bookacti_booking_id'] ) ) {
 				$booking_id = $item['_bookacti_options']['bookacti_booking_id'];
 				$is_removed	= bookacti_get_booking_state( $booking_id ) === 'removed';
 
 				if( $is_removed ) {
-					
 					$response = bookacti_controller_update_booking_quantity( $booking_id, $new_quantity );
 
 					while( $response[ 'status' ] === 'failed' && $response[ 'error' ] === 'qty_sup_to_avail' ) {
@@ -1162,20 +1167,22 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 						$response = bookacti_controller_update_booking_quantity( $booking_id, $new_quantity );
 					}
 					
-					if( ! in_array( $response['status'], array( 'success', 'no_change' ), true ) ) {
+					$is_restored = apply_filters( 'bookacti_restore_bookings_of_restored_cart_item', in_array( $response[ 'status' ], array( 'success', 'no_change' ), true ), $cart_item_key, $new_quantity );
+					
+					if( ! $is_restored ) {
 						$woocommerce->cart->set_quantity( $cart_item_key, 0, true );
-						$response = bookacti_controller_update_booking_quantity( $booking_id, 0 );
+						bookacti_controller_update_booking_quantity( $booking_id, 0 );
+					} else {
+						do_action( 'bookacti_bookings_of_restored_cart_item_restored', $cart_item_key, $new_quantity );
 					}
 				}
 			
 			// Group of events
-			} else if( isset( $item['_bookacti_options']['bookacti_booking_group_id'] ) && ! empty( $item['_bookacti_options']['bookacti_booking_group_id'] ) ) {
-				
+			} else if( ! empty( $item['_bookacti_options']['bookacti_booking_group_id'] ) ) {
 				$booking_group_id = $item['_bookacti_options']['bookacti_booking_group_id'];
 				$is_removed	= bookacti_get_booking_group_state( $booking_group_id ) === 'removed';
 
 				if( $is_removed ) {
-					
 					$response = bookacti_controller_update_booking_group_quantity( $booking_group_id, $new_quantity );
 					
 					while( $response[ 'status' ] === 'failed' && $response[ 'error' ] === 'qty_sup_to_avail' ) {
@@ -1184,9 +1191,13 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 						$response = bookacti_controller_update_booking_group_quantity( $booking_group_id, $new_quantity );
 					}
 					
-					if( ! in_array( $response[ 'status' ], array( 'success', 'no_change' ), true ) ) {
+					$is_restored = apply_filters( 'bookacti_restore_bookings_of_restored_cart_item', in_array( $response[ 'status' ], array( 'success', 'no_change' ), true ), $cart_item_key, $new_quantity );
+					
+					if( ! $is_restored ) {
 						$woocommerce->cart->set_quantity( $cart_item_key, 0, true );
 						bookacti_controller_update_booking_group_quantity( $booking_group_id, 0 );
+					} else {
+						do_action( 'bookacti_bookings_of_restored_cart_item_restored', $cart_item_key, $new_quantity );
 					}
 				}
 			}
@@ -1360,7 +1371,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	/**
 	 * Add class to activity order item to identify them on order received page
 	 * @since 1.1.0
-	 * @version 1.5.0
+	 * @version 1.5.8
 	 * @param string $classes
 	 * @param WC_Order_Item $item
 	 * @param WC_Order $order
@@ -1369,15 +1380,11 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	function bookacti_add_class_to_activity_order_item( $classes, $item, $order ) {
 		
 		if( version_compare( WC_VERSION, '3.0.0', '>=' ) ) {
-			foreach ( $item->get_formatted_meta_data() as $meta_id => $meta ) {
-				// Single booking
-				if( $meta->key === 'bookacti_booking_id' ) {
-					$classes .= ' bookacti-order-item-activity bookacti-single-booking';
-
-				// Group of bookings
-				} else if( $meta->key === 'bookacti_booking_group_id' ) {
-					$classes .= ' bookacti-order-item-activity bookacti-booking-group';
-				}
+			$booking_id = wc_get_order_item_meta( $item->get_id(), 'bookacti_booking_id', true );
+			if( $booking_id ) {
+				$classes .= ' bookacti-order-item-activity bookacti-single-booking';
+			} else if( wc_get_order_item_meta( $item->get_id(), 'bookacti_booking_group_id', true ) ) {
+				$classes .= ' bookacti-order-item-activity bookacti-booking-group';
 			}
 		} else {
 			foreach ( $item[ 'item_meta' ] as $meta_key => $meta_array ) {
@@ -1539,7 +1546,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	
 	/**
 	 * Add values in bookings list (refund, price)
-	 * @version 1.5.4
+	 * @version 1.5.8
 	 * @param array $columns_value
 	 * @param object $booking
 	 * @param int $user_id
@@ -1549,12 +1556,17 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		$item = bookacti_get_order_item_by_booking_id( $booking->id );
 		if( ! empty( $item ) ) {
 			// Add Price column value
-			// WOOCOMMERCE 3.0.0 backward compatibility 
-			$total	= is_array( $item ) ? $item[ 'line_total' ] : $item->get_total();
-			$tax	= is_array( $item ) ? $item[ 'line_tax' ] : $item->get_total_tax();
+			// WOOCOMMERCE 3.0.0 backward compatibility
+			if( version_compare( WC_VERSION, '3.0.0', '>=' ) ) {
+				$total	= $item->get_total();
+				$tax	= $item->get_total_tax();
+			} else {
+				$total	= $item[ 'line_total' ];
+				$tax	= $item[ 'line_tax' ];
+			}
 			
-			$total_price = wc_price( (float) $total + (float) $tax );
-			$columns_value[ 'price' ] = $total_price ? $total_price : '/';
+			$price_value = apply_filters( 'bookacti_user_bookings_list_order_item_price', wc_price( (float) $total + (float) $tax ), $item, $columns_value, $booking, $user_id );
+			$columns_value[ 'price' ] = $price_value ? $price_value : '/';
 			
 			// Add refund coupon code in "Status" column
 			if( $booking->state === 'refunded' ) {
@@ -1562,16 +1574,16 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 				
 				// WOOCOMMERCE 3.0.0 backward compatibility
 				if( version_compare( WC_VERSION, '3.0.0', '>=' ) ) {
-					$item_meta = $item->get_formatted_meta_data();
-					foreach( $item_meta as $item_id => $meta_data ) {
-						if( $meta_data->key === 'bookacti_refund_coupon' ) { $coupon_code = $meta_data->value; }
-					}
+					$coupon_code = wc_get_order_item_meta( $item->get_id(), 'bookacti_refund_coupon', true );
 				} else {
 					$coupon_code = wc_get_order_item_meta( $item[ 'id' ], 'bookacti_refund_coupon', true );
 				}
 				
 				if( $coupon_code ) {
-					$columns_value[ 'state' ] .= '<br/><strong>' . esc_html__( 'Coupon code' ) . ':</strong> ' . $coupon_code;
+					$coupon_value = apply_filters( 'bookacti_user_bookings_list_order_item_coupon', '<br/><strong>' . esc_html__( 'Coupon code' ) . ':</strong> ' . $coupon_code, $coupon_code, $item, $columns_value, $booking, $user_id );
+					if( $coupon_value ) {
+						$columns_value[ 'state' ] .= $coupon_value;
+					}
 				}
 			}
 		}

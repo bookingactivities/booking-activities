@@ -402,7 +402,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	 * Display various fields
 	 * 
 	 * @since 1.2.0
-	 * @version 1.5.4
+	 * @version 1.5.8
 	 * @param array $args ['type', 'name', 'label', 'id', 'class', 'placeholder', 'options', 'attr', 'value', 'tip', 'required']
 	 */
 	function bookacti_display_field( $args ) {
@@ -540,6 +540,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			<select	name=	'<?php echo esc_attr( $args[ 'name' ] ); ?>' 
 					id=		'<?php echo esc_attr( $args[ 'id' ] ); ?>' 
 					class=	'bookacti-select <?php echo esc_attr( $args[ 'class' ] ); ?>' 
+					<?php if( ! empty( $args[ 'attr' ][ '<select>' ] ) ) { echo $args[ 'attr' ][ '<select>' ]; } ?>
 					<?php if( $args[ 'multiple' ] && $args[ 'multiple' ] !== 'maybe' ) { echo 'multiple'; } ?>
 					<?php if( $args[ 'required' ] ) { echo ' required'; } ?>
 			>
@@ -1011,8 +1012,26 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		}
 		return false;
 	}
-
-
+	
+	
+	/**
+	 * Convert an amount of days to add to an interval format
+	 * @since 1.5.8
+	 * @param int|float $days_to_add
+	 * @param int|float $hours_to_add
+	 * @param int $minutes_to_add
+	 * @return string
+	 */
+	function bookacti_convert_days_to_add_to_interval_format( $days_to_add = 0, $hours_to_add = 0, $minutes_to_add = 0 ) {
+		$days			= intval( abs( $days_to_add ) );
+		if( ! $hours_to_add )	{ $hours_to_add = abs( ( $days_to_add - $days ) * 24 ); }
+		$hours			= intval( $hours_to_add );
+		if( ! $minutes_to_add )	{ $minutes_to_add = abs( ( $hours_to_add - $hours ) * 60 ); }
+		$minutes		= intval( $minutes_to_add );
+		return 'P' . $days . 'DT' . $hours . 'H' . $minutes . 'M';
+	}
+	
+	
 	/**
 	 * Sanitize array of dates
 	 * 
