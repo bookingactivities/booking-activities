@@ -930,7 +930,7 @@ function bookacti_maybe_display_add_group_of_events_button() {
 // Expand or Collapse groups of events
 function bookacti_expand_collapse_groups_of_events( category_id, force_to, one_by_one ) {
 	one_by_one	= one_by_one ? true : false;
-	force_to	= $j.inArray( force_to, [ 'expand', 'collapse' ] ) !== -1 ? force_to : false;
+	force_to	= $j.inArray( force_to, [ 'expand', 'collapse' ] ) >= 0 ? force_to : false;
 	
 	var is_shown = $j( '.bookacti-group-category[data-group-category-id="' + category_id + '"]' ).data( 'show-groups' );
 	if( ( is_shown || force_to === 'collapse' ) && force_to !== 'expand' ) {

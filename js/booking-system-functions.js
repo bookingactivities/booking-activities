@@ -905,7 +905,7 @@ function bookacti_is_event_available( booking_system, event ) {
 	// Check if the event is part of a group
 	var group_ids = bookacti_get_event_group_ids( booking_system, event );
 	var is_in_group = $j.isArray( group_ids ) && group_ids.length > 0;
-
+	
 	// Single events
 	if( ( ! is_in_group || ( is_in_group && bookacti.booking_system[ booking_system_id ][ 'groups_single_events' ] ) ) 
 	&&  typeof bookacti.booking_system[ booking_system_id ][ 'events_data' ][ event.id ] !== 'undefined' ) {
@@ -961,21 +961,26 @@ function bookacti_is_event_available( booking_system, event ) {
 	// Check if at least one group is available
 	if( is_in_group && ! is_available ) {
 		$j.each( group_ids, function( i, group_id ) {
-			var group = bookacti.booking_system[ booking_system_id ][ 'groups_data' ][ group_id ];
-			// Check if the group is past
-			if( past_events ) {
-				var group_start	= moment.utc( group.start ).clone();
-				var group_end	= moment.utc( group.end ).clone();
-				if( ! past_events_bookable && group_start.isBefore( current_time ) 
-				&& ! ( bookacti_localized.started_groups_bookable && group_end.isAfter( current_time ) ) ) {
-					return true; // Skip this group
+			var group					= bookacti.booking_system[ booking_system_id ][ 'groups_data' ][ group_id ];
+			var category_id				= parseInt( group[ 'category_id' ] );
+			var category_data			= bookacti.booking_system[ booking_system_id ][ 'group_categories_data' ][ category_id ][ 'settings' ];
+			var started_groups_bookable	= bookacti_localized.started_groups_bookable;
+			if( typeof category_data[ 'started_groups_bookable' ] !== 'undefined' ) {
+				if( $j.inArray( category_data[ 'started_groups_bookable' ], [ 0, 1, '0', '1', true, false ] ) >= 0 ) {
+					started_groups_bookable	= parseInt( category_data[ 'started_groups_bookable' ] );
 				}
+			}
+			
+			// Check if the group is past
+			var group_start	= moment.utc( group.start ).clone();
+			var group_end	= moment.utc( group.end ).clone();
+			if( ! past_events_bookable && group_start.isBefore( current_time ) 
+			&& ! ( started_groups_bookable && group_end.isAfter( current_time ) ) ) {
+				return true; // Skip this group
 			}
 			
 			var group_availability = bookacti.booking_system[ booking_system_id ][ 'groups_data' ][ group_id ][ 'availability' ];
 			if( group_availability > 0 ) {
-				var category_id		= parseInt( group[ 'category_id' ] );
-				var category_data	= bookacti.booking_system[ booking_system_id ][ 'group_categories_data' ][ category_id ][ 'settings' ];
 								
 				// Check the min and max quantity allowed AND
 				// Check the max number of different users allowed

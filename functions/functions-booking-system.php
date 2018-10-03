@@ -48,7 +48,7 @@ function bookacti_get_booking_system( $atts, $echo = false ) {
 				$events				= array( 'events' => array(), 'data' => array() );
 				
 				if( $atts[ 'group_categories' ] !== false ) {
-					$groups_data		= bookacti_get_groups_of_events( $atts[ 'calendars' ], $atts[ 'group_categories' ], $atts[ 'past_events' ], false, $atts[ 'template_data' ] );
+					$groups_data		= bookacti_get_groups_of_events( $atts[ 'calendars' ], $atts[ 'group_categories' ], $atts[ 'past_events' ], true, false, $atts[ 'template_data' ] );
 					$categories_data	= bookacti_get_group_categories( $atts[ 'calendars' ], $atts[ 'group_categories' ] );
 				
 					foreach( $groups_data as $group_id => $group_data ) { $groups_ids[] = $group_id; }
@@ -1097,6 +1097,7 @@ function bookacti_is_event_available_on_form( $form_id, $event_id, $event_start,
 /**
  * Check if a group of events can be book with the given form
  * @since 1.5.0
+ * @version 1.5.9
  * @param int $form_id
  * @param int $group_id
  * @return array
@@ -1118,10 +1119,10 @@ function bookacti_is_group_of_events_available_on_form( $form_id, $group_id ) {
 	// Check if the group of events is displayed on the form
 	$belongs_to_form	= true;
 	$group				= bookacti_get_group_of_events( $group_id );
-	$template_id		= bookacti_get_group_category_template_id( $group->category_id );
+	$category			= bookacti_get_group_category( $group->category_id, ARRAY_A );
 		
 	// If the form calendar doesn't have the group of events' template
-	if( $calendar_data[ 'calendars' ] && ! in_array( $template_id, $calendar_data[ 'calendars' ] ) ) {
+	if( $calendar_data[ 'calendars' ] && ! in_array( $category[ 'template_id' ], $calendar_data[ 'calendars' ] ) ) {
 		$belongs_to_form = false;
 		$validated['message'] = __( 'The selected events are not supposed to be available on this form.', BOOKACTI_PLUGIN_NAME );
 	}
@@ -1136,7 +1137,7 @@ function bookacti_is_group_of_events_available_on_form( $form_id, $group_id ) {
 	if( $belongs_to_form && is_array( $calendar_data[ 'group_categories' ] ) ) {
 		// If the categories array is empty, it means "take all categories"
 		if( empty( $calendar_data[ 'group_categories' ] ) ) {
-			$calendar_data[ 'group_categories' ] = array_keys( bookacti_get_group_categories( $template_id ) );
+			$calendar_data[ 'group_categories' ] = array_keys( bookacti_get_group_categories( $category[ 'template_id' ] ) );
 		}
 
 		// Check if the group of event category is available on this form
@@ -1153,15 +1154,15 @@ function bookacti_is_group_of_events_available_on_form( $form_id, $group_id ) {
 	
 	
 	// Check if the group of events is past
-	$is_past			= false;
-	$timezone			= new DateTimeZone( bookacti_get_setting_value( 'bookacti_general_settings', 'timezone' ) );
-	$get_started_groups	= bookacti_get_setting_value( 'bookacti_general_settings', 'started_groups_bookable' );
-	$group_start		= new DateTime( $group->start, $timezone );
-	$group_end			= new DateTime( $group->end, $timezone );
-	$current_time		= new DateTime( 'now', $timezone );
+	$is_past					= false;
+	$timezone					= new DateTimeZone( bookacti_get_setting_value( 'bookacti_general_settings', 'timezone' ) );
+	$started_groups_bookable	= isset( $category[ 'settings' ][ 'started_groups_bookable' ] ) && in_array( $category[ 'settings' ][ 'started_groups_bookable' ], array( 0, 1, '0', '1', true, false ), true ) ? intval( $category[ 'settings' ][ 'started_groups_bookable' ] ) : bookacti_get_setting_value( 'bookacti_general_settings', 'started_groups_bookable' );
+	$group_start				= new DateTime( $group->start, $timezone );
+	$group_end					= new DateTime( $group->end, $timezone );
+	$current_time				= new DateTime( 'now', $timezone );
 	
 	if( ( ! $calendar_data[ 'past_events_bookable' ] && $group_start < $current_time )
-	&& ! ( $get_started_groups && $group_end > $current_time ) ) {
+	&& ! ( $started_groups_bookable && $group_end > $current_time ) ) {
 		$is_past = true;
 	}
 

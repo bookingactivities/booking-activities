@@ -151,7 +151,7 @@ function bookacti_dialog_insert_form_field() {
 						
 						if( response.status === 'success' ) {
 							// Insert the field
-							$j( '#bookacti-form-editor' ).append( response.field_html );
+							$j( '#bookacti-form-editor > .bookacti-form-editor-field:last' ).after( response.field_html );
 							
 							// Reload tooltip for generated content
 							bookacti_init_tooltip();

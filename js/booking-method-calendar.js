@@ -314,17 +314,21 @@ function bookacti_get_first_and_last_events_on_calendar( calendar ) {
 }
 
 
-// Add class for formatting
+/**
+ * Add CSS classes to events accoding to their size
+ * @version 1.5.9
+ * @param {dom_element} element
+ */
 function bookacti_add_class_according_to_event_size( element ) {
 	
 	var custom_size = bookacti.event_sizes;
 	
 	$j( element ).trigger( 'bookacti_event_sizes', [ element, custom_size ] );
 	
-	if( $j( element ).innerHeight() < custom_size.tiny_height )	{ element.addClass( 'bookacti-tiny-event' ); }
-	if( $j( element ).innerHeight() < custom_size.small_height ){ element.addClass( 'bookacti-small-event' ); }
-	if( $j( element ).innerWidth() < custom_size.narrow_width )	{ element.addClass( 'bookacti-narrow-event' ); }
-	if( $j( element ).innerWidth() > custom_size.wide_width )	{ element.addClass( 'bookacti-wide-event' ); element.removeClass( 'fc-short' ); }
+	if( $j( element ).innerHeight() < custom_size.tiny_height )	{ element.addClass( 'bookacti-tiny-event' ).removeClass( 'bookacti-small-event' ); }
+	if( $j( element ).innerHeight() < custom_size.small_height ){ element.addClass( 'bookacti-small-event' ).removeClass( 'bookacti-tiny-event' ); }
+	if( $j( element ).innerWidth() < custom_size.narrow_width )	{ element.addClass( 'bookacti-narrow-event' ).removeClass( 'bookacti-wide-event' ); }
+	if( $j( element ).innerWidth() > custom_size.wide_width )	{ element.addClass( 'bookacti-wide-event' ).removeClass( 'bookacti-narrow-event' ); element.removeClass( 'fc-short' ); }
 }
 
 

@@ -317,6 +317,13 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 
 == Changelog ==
 
+= 1.5.9 =
+* Fix - Events of past groups looked bookable even when they were not 
+* Fix - Past groups of events couldn't be booked even if it's group category allowed it
+* Fix - Events list didn't appeared in group of events dialog
+* Fix - Fields were inserted below the form editor
+* Fix - Contradictory events size-related CSS classes
+
 = 1.5.8 - 2018/09/28 =
 * Fix - Hidden fields were shown after hitting "Make a new booking" button
 * Fix - "Generate Password" option prevented the form to be sent (password field not focusable)

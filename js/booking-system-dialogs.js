@@ -14,8 +14,9 @@ $j( document ).ready( function() {
 	
 	// Show / Hide group events list
 	$j( 'body' ).on( 'bookacti_group_of_events_preview', '.bookacti-booking-system', function( e, group_id, event ) {
-		var booking_system	= $j( this );
-		var groups_list		= booking_system.closest( 'bookacti-booking-system-container' ).find( '.bookacti-groups-of-events-list' );
+		var booking_system		= $j( this );
+		var booking_system_id	= $j( this ).attr( 'id' );
+		var groups_list			= $j( '#' + booking_system_id + '-choose-group-of-events-dialog .bookacti-groups-of-events-list' );
 		
 		// Hide other events list
 		groups_list.find( '.bookacti-group-of-events-option[data-group-id!="' + group_id + '"]' ).data( 'show-events', 0 ).attr( 'data-show-events', 0 );
@@ -195,28 +196,32 @@ function bookacti_dialog_choose_group_of_events( booking_system, group_ids, even
 		if( typeof bookacti.booking_system[ booking_system_id ][ 'groups_events' ][ group_id ] !== 'undefined'
 		&&  typeof bookacti.booking_system[ booking_system_id ][ 'groups_data' ][ group_id ] !== 'undefined') {
 			
-			var group			= bookacti.booking_system[ booking_system_id ][ 'groups_data' ][ group_id ];
-			var availability	= group.availability;
+			var group					= bookacti.booking_system[ booking_system_id ][ 'groups_data' ][ group_id ];
+			var availability			= group.availability;
+			var category_id				= parseInt( group[ 'category_id' ] );
+			var category_data			= bookacti.booking_system[ booking_system_id ][ 'group_categories_data' ][ category_id ][ 'settings' ];
+			var started_groups_bookable	= bookacti_localized.started_groups_bookable;
+			if( typeof category_data[ 'started_groups_bookable' ] !== 'undefined' ) {
+				if( $j.inArray( category_data[ 'started_groups_bookable' ], [ 0, 1, '0', '1', true, false ] ) >= 0 ) {
+					started_groups_bookable	= parseInt( category_data[ 'started_groups_bookable' ] );
+				}
+			}
 			
 			// Check group of events availability
 			var is_available = true;
 			
 			// Check if the group is past
-			if( past_events ) {
-				var group_start	= moment.utc( group.start ).clone();
-				var group_end	= moment.utc( group.end ).clone();
-				if( ! past_events_bookable && group_start.isBefore( current_time ) 
-				&& ! ( bookacti_localized.started_groups_bookable && group_end.isAfter( current_time ) ) ) {
-					is_available = false; // Skip this group
-				}
+			var group_start	= moment.utc( group.start ).clone();
+			var group_end	= moment.utc( group.end ).clone();
+			if( ! past_events_bookable && group_start.isBefore( current_time ) 
+			&& ! ( started_groups_bookable && group_end.isAfter( current_time ) ) ) {
+				is_available = false; // Skip this group
 			}
 			
 			if( is_available ) {
 				// Check the min quantity
 				is_available		= false;
 				var min_qty_ok		= false;
-				var category_id		= parseInt( group[ 'category_id' ] );
-				var category_data	= bookacti.booking_system[ booking_system_id ][ 'group_categories_data' ][ category_id ][ 'settings' ];
 				var min_quantity	= typeof category_data[ 'min_bookings_per_user' ] === 'undefined' ? 0 : ( category_data[ 'min_bookings_per_user' ] ? parseInt( category_data[ 'min_bookings_per_user' ] ) : 0 );
 				if( min_quantity <= availability && availability > 0 ) { min_qty_ok = true; }
 				
