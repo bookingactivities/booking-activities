@@ -1130,7 +1130,7 @@ function bookacti_get_booking_by_id( $booking_id ) {
 
 /**
  * Get booking data
- * @version 1.5.8
+ * @version 1.5.9
  * @global wpdb $wpdb
  * @param int $booking_id
  * @return array
@@ -1145,9 +1145,10 @@ function bookacti_get_booking_data( $booking_id ) {
 	$prep	= $wpdb->prepare( $query, $booking_id );
 	$booking_data = $wpdb->get_row( $prep, ARRAY_A );
 	
-	$booking_data[ 'booking_settings' ]	= bookacti_get_metadata( 'booking', $booking_id );
-	$booking_data[ 'event_settings' ]	= bookacti_get_metadata( 'event', $booking_data[ 'event_id' ] );
-	$booking_data[ 'activity_settings' ]= bookacti_get_metadata( 'activity', $booking_data[ 'activity_id' ] );
+	$booking_data[ 'booking_settings' ]			= bookacti_get_metadata( 'booking', $booking_id );
+	$booking_data[ 'event_settings' ]			= bookacti_get_metadata( 'event', $booking_data[ 'event_id' ] );
+	$booking_data[ 'activity_settings' ]		= bookacti_get_metadata( 'activity', $booking_data[ 'activity_id' ] );
+	$booking_data[ 'form_calendar_settings' ]	= ! empty( $booking_data[ 'form_id' ] ) ? bookacti_get_form_field_data_by_name( $booking_data[ 'form_id' ], 'calendar' ) : bookacti_get_default_form_fields_data( 'calendar' );
 	
 	return $booking_data;
 }

@@ -409,24 +409,14 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 		/**
 		 * Check if a booking state can be changed to another
-		 * @version 1.5.6
+		 * @version 1.5.9
 		 * @param int $booking_id
 		 * @param string $new_state
 		 * @return boolean
 		 */
 		function bookacti_booking_state_can_be_changed_to( $booking_id, $new_state ) {
-			
-			$true		= true;
-			$is_admin	= current_user_can( 'bookacti_edit_bookings' );
-			
-			if( $is_admin ) {
-				$state = bookacti_get_booking_state( $booking_id );
-				if ( $state === $new_state ) {
-					$true = false; 
-				}
-			}
-			
-			if( ! $is_admin && $true ) {
+			$true = true;
+			if( ! current_user_can( 'bookacti_edit_bookings' ) ) {
 				switch ( $new_state ) {
 					case 'cancelled':
 						$true = bookacti_booking_can_be_cancelled( $booking_id );
@@ -437,7 +427,6 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 						break;
 				}
 			}
-
 			return apply_filters( 'bookacti_booking_state_can_be_changed', $true, $booking_id, $new_state );
 		}
 	
@@ -472,26 +461,24 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 		/**
 		 * Check if a booking group can be cancelled
-		 * 
 		 * @since 1.1.0
-		 * 
+		 * @version 1.5.9
 		 * @param int $booking_group_id
 		 * @return boolean
 		 */
 		function bookacti_booking_group_can_be_cancelled( $booking_group_id ) {
-			
-			$booking_ids = bookacti_get_booking_group_bookings_ids( $booking_group_id );
-			
-			$booking_group_can_be_cancelled = true;
-			foreach( $booking_ids as $booking_id ) {
-				$is_allowed = bookacti_booking_can_be_cancelled( $booking_id, true );
-				if( ! $is_allowed ) {
-					$booking_group_can_be_cancelled = false;
-					break; // If one of the booking of the group is not allowed, return false immediatly
+			$true = true;
+			if( ! current_user_can( 'bookacti_edit_bookings' ) ) {
+				$booking_ids = bookacti_get_booking_group_bookings_ids( $booking_group_id );
+				foreach( $booking_ids as $booking_id ) {
+					$is_allowed = bookacti_booking_can_be_cancelled( $booking_id, true );
+					if( ! $is_allowed ) {
+						$true = false;
+						break; // If one of the booking of the group is not allowed, return false immediatly
+					}
 				}
 			}
-			
-			return apply_filters( 'bookacti_booking_group_can_be_cancelled', $booking_group_can_be_cancelled, $booking_group_id );
+			return apply_filters( 'bookacti_booking_group_can_be_cancelled', $true, $booking_group_id );
 		}
 
 
@@ -530,27 +517,20 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 		/**
 		 * Check if a booking group state can be changed to another
-		 * 
 		 * @since 1.1.0
-		 * 
+		 * @version 1.5.9
 		 * @param int $booking_group_id
 		 * @param string $new_state
 		 * @return boolean
 		 */
 		function bookacti_booking_group_state_can_be_changed_to( $booking_group_id, $new_state ) {
-
 			$true = true;
 			switch ( $new_state ) {
 				case 'cancelled':
 					$true = bookacti_booking_group_can_be_cancelled( $booking_group_id );
 					break;
 				case 'refund_requested':
-					if( current_user_can( 'bookacti_edit_bookings' ) ) {
-						$state = bookacti_get_booking_group_state( $booking_group_id );
-						if ( $state === 'refund_requested' ) {
-							$true = false; 
-						}
-					} else {
+					if( ! current_user_can( 'bookacti_edit_bookings' ) ) {
 						$true = bookacti_booking_group_can_be_refunded( $booking_group_id );
 					}
 					break;
@@ -558,7 +538,6 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 					$true = bookacti_booking_group_can_be_refunded( $booking_group_id );
 					break;
 			}
-
 			return apply_filters( 'bookacti_booking_group_state_can_be_changed', $true, $booking_group_id, $new_state );
 		}
 

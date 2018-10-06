@@ -52,14 +52,20 @@ function bookacti_init_booking_system_dialogs() {
 }
 
 
-// Choose a group of events dialog
+/**
+ * Choose a group of events dialog
+ * @version 1.5.9
+ * @param {dom_element} booking_system
+ * @param {array} group_ids
+ * @param {object} event
+ */
 function bookacti_dialog_choose_group_of_events( booking_system, group_ids, event ) {
 	
 	var booking_system_id		= booking_system.attr( 'id' );
-	var context					= booking_system_id === 'bookacti-booking-system-bookings-page' ? 'booking_page' : 'frontend';
 	var dialog					= $j( '#' + booking_system_id + '-choose-group-of-events-dialog' );
 	var groups_of_events_list	= $j( '#' + booking_system_id + '-groups-of-events-list' );
 	
+	var bookings_only		= bookacti.booking_system[ booking_system_id ][ 'bookings_only' ];
 	var past_events			= bookacti.booking_system[ booking_system_id ][ 'past_events' ];
 	var past_events_bookable= bookacti.booking_system[ booking_system_id ][ 'past_events_bookable' ];
 	var current_time		= moment.utc( bookacti_localized.current_time );
@@ -76,7 +82,7 @@ function bookacti_dialog_choose_group_of_events( booking_system, group_ids, even
 		
 		// Show availability or bookings
 		var avail_html = '';
-		if( context === 'booking_page' ) {
+		if( bookings_only ) {
 			var bookings = bookacti_get_bookings_number_for_a_single_grouped_event( booking_system, event, group_ids );
 			var booking_html = bookings > 1 ? bookacti_localized.bookings : bookacti_localized.booking;
 			avail_html = bookings + ' ' + booking_html;
@@ -147,7 +153,7 @@ function bookacti_dialog_choose_group_of_events( booking_system, group_ids, even
 			'type': 'radio',
 			'name': 'group_of_events',
 			'value': group_id,
-			'disabled': context !== 'booking_page' && ! is_available,
+			'disabled': ! bookings_only && ! is_available,
 		});
 		
 		var label = $j( '<label />', {
@@ -252,13 +258,13 @@ function bookacti_dialog_choose_group_of_events( booking_system, group_ids, even
 				'id': 'bookacti-group-of-events-' + group_id,
 				'type': 'radio',
 				'name': 'group_of_events',
-				'disabled': context !== 'booking_page' && ! is_available,
+				'disabled': ! bookings_only && ! is_available,
 				'value': group_id
 			});
 			
 			// Show availability or bookings
 			var avail_html = '';
-			if( context === 'booking_page' ) {
+			if( bookings_only ) {
 				var bookings = 0;
 				$j.each( bookacti.booking_system[ booking_system_id ][ 'groups_events' ][ group_id ], function( i, grouped_event ){
 					if( event.id == grouped_event.id

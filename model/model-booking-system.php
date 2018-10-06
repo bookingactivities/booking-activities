@@ -546,82 +546,6 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	}
 	
 	
-	/**
-	 * Determine if an event or one of its occurrence is included in calendar range
-	 *
-	 * @since  1.0.6
-	 * @version 1.4.0
-	 * @param  int		$event_id		ID of the event to check
-	 * @param  string	$event_start	Start datetime of the event to check (format 2017-12-31T23:59:59)
-	 * @param  string	$event_end		End datetime of the event to check (format 2017-12-31T23:59:59)
-	 * @return bool
-	 */
-	function bookacti_is_event_in_its_template_range( $event_id, $event_start, $event_end ) {
-		// Sanitize params
-		$event_id		= intval( $event_id );
-		$event_start	= bookacti_sanitize_datetime( $event_start );
-		$event_end		= bookacti_sanitize_datetime( $event_end );
-
-		if( ! $event_id || ! $event_start || ! $event_end ) { return false; }
-		
-		global $wpdb;
-		
-		// Get template range in order to be compared with the event dates
-		$query		= 'SELECT T.id, T.start_date as start, T.end_date as end FROM ' . BOOKACTI_TABLE_TEMPLATES . ' as T, ' . BOOKACTI_TABLE_EVENTS . ' as E '
-					. ' WHERE E.template_id = T.id '
-					. ' AND E.id = %d ';
-		$query		= $wpdb->prepare( $query, $event_id );
-		$template	= $wpdb->get_row( $query, OBJECT );
-		
-		if( ! $template ) { return false; }
-		
-		$timezone		= new DateTimeZone( bookacti_get_setting_value( 'bookacti_general_settings', 'timezone' ) );
-		$current_time	= new DateTime( 'now', $timezone );
-		
-		$event_start_datetime		= new DateTime( $event_start, $timezone );
-		$event_end_datetime			= new DateTime( $event_end, $timezone );
-		
-		$availability_period_start	= $template->start;
-		$availability_period_end	= $template->end;
-		
-		// Restrict template interval if an availability period is set
-		if( ! apply_filters( 'bookacti_bypass_availability_period_check', false ) ) {
-			
-			// Take default availability period if not set
-			$template_settings = bookacti_get_metadata( 'template', $template->id );
-			if( ! isset( $template_settings[ 'availability_period_start' ] ) || $template_settings[ 'availability_period_start' ] === '' || intval( $template_settings[ 'availability_period_start' ] ) < 0 )	{ $template_settings[ 'availability_period_start' ] = intval( bookacti_get_setting_value( 'bookacti_general_settings', 'availability_period_start' ) ); }
-			if( ! isset( $template_settings[ 'availability_period_end' ] ) || $template_settings[ 'availability_period_end' ] === '' || intval( $template_settings[ 'availability_period_end' ] ) < 0 )			{ $template_settings[ 'availability_period_end' ] = intval( bookacti_get_setting_value( 'bookacti_general_settings', 'availability_period_end' ) ); }
-			
-			if( $template_settings[ 'availability_period_start' ] > 0 ) {
-				$availability_start_time = clone $current_time;
-				$availability_start_time->add( new DateInterval( 'P' . $template_settings[ 'availability_period_start' ] . 'D' ) );
-				$availability_start_date = $availability_start_time->format( 'Y-m-d' );
-				if( strtotime( $availability_start_date ) > strtotime( $template->start ) ) {
-					$availability_period_start = $availability_start_date;
-				}
-			}
-			if( $template_settings[ 'availability_period_end' ] > 0 ) {
-				$availability_end_time = clone $current_time;
-				$availability_end_time->add( new DateInterval( 'P' . $template_settings[ 'availability_period_end' ] . 'D' ) );
-				$availability_end_date = $availability_end_time->format( 'Y-m-d' );
-				if( strtotime( $availability_end_date ) < strtotime( $template->end ) ) {
-					$availability_period_end = $availability_end_date;
-				}
-			}
-		}
-		
-		$template_start_datetime	= new DateTime( $availability_period_start . ' 00:00:00', $timezone );
-		$template_end_datetime		= new DateTime( $availability_period_end . ' 23:59:59', $timezone );
-		
-		if( $event_start_datetime >= $template_start_datetime 
-		&&  $event_end_datetime   <= $template_end_datetime ) {
-			return true;
-		}
-		
-		return false;
-	}
-
-
 	
 	
 // EXCEPTIONS
@@ -888,32 +812,9 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		$variables[] = $user_timestamp_offset;
 		
 		// Do not get a group of events if its events are not fully included in the availability period
-		// Also check if started groups of events are to be retrieved or not
-		$availability_period_start	= $templates_data[ 'start' ];
-		$availability_period_end	= $templates_data[ 'end' ];
-
-		if( ! apply_filters( 'bookacti_bypass_availability_period_check', false ) ) {
-			if( ! empty( $templates_data[ 'settings' ][ 'availability_period_start' ] ) 
-				&& $templates_data[ 'settings' ][ 'availability_period_start' ] > 0 ) {
-				$availability_start_time = clone $current_datetime_object;
-				$availability_start_time->add( new DateInterval( 'P' . $templates_data[ 'settings' ][ 'availability_period_start' ] . 'D' ) );
-				$availability_start_date = $availability_start_time->format( 'Y-m-d' );
-				if( strtotime( $availability_start_date ) > strtotime( $templates_data[ 'start' ] ) ) {
-					$availability_period_start = $availability_start_date;
-				}
-			}
-			if( ! empty( $templates_data[ 'settings' ][ 'availability_period_end' ] ) 
-				&& $templates_data[ 'settings' ][ 'availability_period_end' ] > 0 ) {
-				$availability_end_time = clone $current_datetime_object;
-				$availability_end_time->add( new DateInterval( 'P' . $templates_data[ 'settings' ][ 'availability_period_end' ] . 'D' ) );
-				$availability_end_date = $availability_end_time->format( 'Y-m-d' );
-				if( strtotime( $availability_end_date ) < strtotime( $templates_data[ 'end' ] ) ) {
-					$availability_period_end = $availability_end_date;
-				}
-			}
-		}
+		$availability_period = bookacti_get_availability_period( $templates_data, $fetch_past_groups );
 		
-		// Make sure that the groups begin after $availability_period_start
+		// Make sure that the groups begin after availability period start
 		// except if we want past groups or started groups
 		if( ! $fetch_past_groups && $fetch_started_groups !== true ) {
 			$past_query = ' UNIX_TIMESTAMP( CONVERT_TZ( GE.start, %s, @@global.time_zone ) ) >= UNIX_TIMESTAMP( CONVERT_TZ( %s, %s, @@global.time_zone ) ) ';
@@ -924,14 +825,14 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 			$query .= ' AND ' . $past_query;
 			$variables[] = $user_timestamp_offset;
-			$variables[] = $availability_period_start;
+			$variables[] = $availability_period[ 'start' ];
 			$variables[] = $user_timestamp_offset;
 		}
 		
-		// Make sure that the groups end before $availability_period_end in any case
+		// Make sure that the groups end before availability period end in any case
 		$query .= ' AND UNIX_TIMESTAMP( CONVERT_TZ( GE.end, %s, @@global.time_zone ) ) <= UNIX_TIMESTAMP( CONVERT_TZ( %s + INTERVAL 24 HOUR, %s, @@global.time_zone ) ) ';
 		$variables[] = $user_timestamp_offset;
-		$variables[] = $availability_period_end;
+		$variables[] = $availability_period[ 'end' ];
 		$variables[] = $user_timestamp_offset;
 		
 		if( ! $fetch_inactive_groups ) {
@@ -1139,90 +1040,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		
 		return $groups_events;
 	}
-	
-	
-	/**
-	 * Determine if a group of events is totally included in calendar range
-	 *
-	 * @since 1.1.0
-	 * @version 1.4.0
-	 * @param int $group_id
-	 * @return bool
-	 */
-	function bookacti_is_group_of_events_in_its_template_range( $group_id ) {
 		
-		// Sanitize params
-		$group_id = intval( $group_id );
-
-		if( ! $group_id ) { return false; }
-		
-		global $wpdb;
-		
-		// Get template range in order to be compared with the event dates
-		$range_query	= 'SELECT T.id, T.start_date as start, T.end_date as end '
-						. ' FROM ' . BOOKACTI_TABLE_TEMPLATES . ' as T, ' . BOOKACTI_TABLE_EVENT_GROUPS . ' as G, ' . BOOKACTI_TABLE_GROUP_CATEGORIES . ' as C '
-						. ' WHERE C.template_id = T.id '
-						. ' AND G.category_id = C.id '
-						. ' AND G.id = %d ';
-		$range_prepare	= $wpdb->prepare( $range_query, $group_id );
-		$template		= $wpdb->get_row( $range_prepare, OBJECT );
-		
-		if( ! $template ){ return false; }
-		
-		$availability_period_start	= $template->start;
-		$availability_period_end	= $template->end;
-		
-		$timezone = new DateTimeZone( bookacti_get_setting_value( 'bookacti_general_settings', 'timezone' ) );
-		
-		// Restrict template interval if an availability period is set
-		if( ! apply_filters( 'bookacti_bypass_availability_period_check', false ) ) {
-		
-			$current_time = new DateTime( 'now', $timezone );
-			
-			// Take default availability period if not set
-			$template_settings = bookacti_get_metadata( 'template', $template->id );
-			if( ! isset( $template_settings[ 'availability_period_start' ] ) || $template_settings[ 'availability_period_start' ] === '' || intval( $template_settings[ 'availability_period_start' ] ) < 0 )	{ $template_settings[ 'availability_period_start' ] = intval( bookacti_get_setting_value( 'bookacti_general_settings', 'availability_period_start' ) ); }
-			if( ! isset( $template_settings[ 'availability_period_end' ] ) || $template_settings[ 'availability_period_end' ] === '' || intval( $template_settings[ 'availability_period_end' ] ) < 0 )			{ $template_settings[ 'availability_period_end' ] = intval( bookacti_get_setting_value( 'bookacti_general_settings', 'availability_period_end' ) ); }
-			
-			if( $template_settings[ 'availability_period_start' ] > 0 ) {
-				$availability_start_time = clone $current_time;
-				$availability_start_time->add( new DateInterval( 'P' . $template_settings[ 'availability_period_start' ] . 'D' ) );
-				$availability_start_date = $availability_start_time->format( 'Y-m-d' );
-				if( strtotime( $availability_start_date ) > strtotime( $template->start ) ) {
-					$availability_period_start = $availability_start_date;
-				}
-			}
-			if( $template_settings[ 'availability_period_end' ] > 0 ) {
-				$availability_end_time = clone $current_time;
-				$availability_end_time->add( new DateInterval( 'P' . $template_settings[ 'availability_period_end' ] . 'D' ) );
-				$availability_end_date = $availability_end_time->format( 'Y-m-d' );
-				if( strtotime( $availability_end_date ) < strtotime( $template->end ) ) {
-					$availability_period_end = $availability_end_date;
-				}
-			}
-		}
-		
-		// Get the first and the last event of the group and keep respectively their start and end datetime
-		$events_range_query		= 'SELECT MIN( event_start ) as start, MAX( event_end ) as end '
-								. ' FROM ' . BOOKACTI_TABLE_GROUPS_EVENTS
-								. ' WHERE group_id = %d ';
-		$events_range_prepare	= $wpdb->prepare( $events_range_query, $group_id );
-		$events_range			= $wpdb->get_row( $events_range_prepare, OBJECT );
-		
-		$event_start_datetime		= new DateTime( $events_range->start, $timezone );
-		$event_end_datetime			= new DateTime( $events_range->end, $timezone );
-		$template_start_datetime	= new DateTime( $availability_period_start . ' 00:00:00', $timezone );
-		$template_end_datetime		= new DateTime( $availability_period_end . ' 00:00:00', $timezone );
-		$template_end_datetime->add( new DateInterval( 'P1D' ) );
-		
-		if( $event_start_datetime >= $template_start_datetime 
-		&&  $event_end_datetime   <= $template_end_datetime ) {
-			return true;
-		}
-		
-		return false;
-	}
-	
 	
 	/**
 	 * Get groups of an event
