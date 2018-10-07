@@ -82,7 +82,7 @@ $j( document ).ready( function() {
 
 			// Reload booking system
 			bookacti.booking_system[ booking_system_id ] = [];
-			bookacti.booking_system[ booking_system_id ] = $j.extend( true, {}, bookacti.form_editor.fields[ field_id ] ); // Clone field data, else cahnging booking_system data will change field data
+			bookacti.booking_system[ booking_system_id ] = $j.extend( true, {}, bookacti.form_editor.fields[ field_id ] ); // Clone field data, else changing booking_system data will change field data
 			
 			bookacti_reload_booking_system( booking_system );
 		}

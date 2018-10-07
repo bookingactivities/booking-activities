@@ -425,7 +425,7 @@ function bookacti_format_booking_system_attributes( $atts = array() ) {
 /**
  * Get booking system fields default data
  * @since 1.5.0
- * @version 1.5.1
+ * @version 1.5.9
  * @param array $fields
  * @return array
  */
@@ -654,7 +654,7 @@ function bookacti_get_booking_system_fields_default_data( $fields = array() ) {
 			'name'			=> 'past_events',
 			'value'			=> 0,
 			'title'			=> esc_html__( 'Display past events', BOOKACTI_PLUGIN_NAME ),
-			'tip'			=> esc_html__( 'Whether to display past events.', BOOKACTI_PLUGIN_NAME )
+			'tip'			=> esc_html__( 'Display events out of the availability period. If they cannot be booked, they will be grayed out.', BOOKACTI_PLUGIN_NAME )
 		);
 	}
 	
@@ -665,7 +665,7 @@ function bookacti_get_booking_system_fields_default_data( $fields = array() ) {
 			'name'			=> 'past_events_bookable',
 			'value'			=> 0,
 			'title'			=> esc_html__( 'Make past events bookable', BOOKACTI_PLUGIN_NAME ),
-			'tip'			=> esc_html__( 'Whether to allow customers to select past events and book them.', BOOKACTI_PLUGIN_NAME )
+			'tip'			=> esc_html__( 'Allow customers to select events out of the avilability period and book them.', BOOKACTI_PLUGIN_NAME )
 		);
 	}
 	
@@ -1304,9 +1304,9 @@ function bookacti_get_new_interval_of_events( $template_interval, $min_interval 
 	
 	if( ! $min_interval ) {
 		if( $calendar_start > $current_time ) {
-			$min_interval = array( 'start' => $availability_period_start, 'end' => $availability_period_start );
+			$min_interval = array( 'start' => $availability_period[ 'start' ], 'end' => $availability_period[ 'start' ] );
 		} else if( $calendar_end < $current_time ) {
-			$min_interval = array( 'start' => $availability_period_end, 'end' => $availability_period_end );
+			$min_interval = array( 'start' => $availability_period[ 'end' ], 'end' => $availability_period[ 'end' ] );
 		} else {
 			$min_interval = array( 'start' => $current_date, 'end' => $current_date );
 		}

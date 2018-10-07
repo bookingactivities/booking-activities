@@ -608,6 +608,8 @@ function bookacti_dialog_reschedule_booking( booking_id ) {
 				// Load only the events from the same activity of the same calendar as the booked event
 				bookacti.booking_system[ booking_system_id ][ 'calendars' ]		= template_id ? [ template_id ] : [];
 				bookacti.booking_system[ booking_system_id ][ 'activities' ]	= activity_id ? [ activity_id ] : [];
+				
+				// On the admin booking page, display past events and make them bookable
 				if( is_bookings_page ) {
 					bookacti.booking_system[ booking_system_id ][ 'past_events' ]			= 1;
 					bookacti.booking_system[ booking_system_id ][ 'past_events_bookable' ]	= 1;

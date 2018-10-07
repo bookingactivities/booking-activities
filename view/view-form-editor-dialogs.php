@@ -232,11 +232,11 @@ foreach( $fields_data as $field_name => $field_data ) {
 			?>
 		</fieldset>
 		
-		<fieldset class='bookacti-hidden-field'>
+		<fieldset>
 			<legend><?php _e( 'Past events', BOOKACTI_PLUGIN_NAME ); ?></legend>
 			<?php 
 				$fields = bookacti_get_booking_system_fields_default_data( array( 'past_events', 'past_events_bookable' ) );
-				bookacti_display_fields( $fields );
+				bookacti_display_fields( $fields, array( 'hidden' => array( 'past_events_bookable' ) ) );
 			?>
 		</fieldset>
 		<?php 

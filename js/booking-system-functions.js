@@ -449,13 +449,17 @@ function bookacti_event_click( booking_system, event ) {
 	var booking_system_id = booking_system.attr( 'id' );
 	
 	// Get the group id of an event or open a dialog to choose a group
-	var group_ids = bookacti_get_event_group_ids( booking_system, event );
+	var group_ids = 'single';
+	if( booking_system_id !== 'bookacti-booking-system-reschedule' ) {
+		group_ids = bookacti_get_event_group_ids( booking_system, event );
+	}
 	
 	// Open a dialog to choose the group of events 
 	// if there are several groups, or if users can choose between the single event and at least one group
 	var open_dialog = false;
-	if( ( $j.isArray( group_ids ) && group_ids.length > 1 )
-	||  ( $j.isArray( group_ids ) && group_ids.length === 1 && bookacti.booking_system[ booking_system_id ][ 'groups_single_events' ] ) ) {
+	if( $j.isArray( group_ids )
+	&&	(	( group_ids.length > 1 )
+		||  ( group_ids.length === 1 && bookacti.booking_system[ booking_system_id ][ 'groups_single_events' ] ) ) ) {
 		open_dialog = true;
 		bookacti_dialog_choose_group_of_events( booking_system, group_ids, event );
 	} else {
@@ -915,7 +919,13 @@ function bookacti_get_event_availability( booking_system, event ) {
 }
 
 
-// Check if an event is event available
+/**
+ * Check if an event is event available
+ * @verion 1.5.9
+ * @param {dom_element} booking_system
+ * @param {object} event
+ * @returns {boolean}
+ */
 function bookacti_is_event_available( booking_system, event ) {
 	
 	var booking_system_id	= booking_system.attr( 'id' );
@@ -930,8 +940,14 @@ function bookacti_is_event_available( booking_system, event ) {
 	if( availability <= 0 ) { return false; }
 	
 	// Check if the event is part of a group
-	var group_ids = bookacti_get_event_group_ids( booking_system, event );
-	var is_in_group = $j.isArray( group_ids ) && group_ids.length > 0;
+	var group_ids				= bookacti_get_event_group_ids( booking_system, event );
+	var is_in_group				= $j.isArray( group_ids ) && group_ids.length > 0;
+	var groups_single_events	= bookacti.booking_system[ booking_system_id ][ 'groups_single_events' ];
+	
+	// If the event is part of a group (and not bookable alone) on the reschedule calendar, it cannot be available
+	if( booking_system_id === 'bookacti-booking-system-reschedule' && is_in_group && ! groups_single_events ) {
+		return false;
+	}
 	
 	// Single events
 	if( ( ! is_in_group || ( is_in_group && bookacti.booking_system[ booking_system_id ][ 'groups_single_events' ] ) ) 

@@ -5,7 +5,7 @@ Tags: booking activities, booking sport, booking form, event reservation, reserv
 Requires at least: 3.6
 Tested up to: 4.9
 Requires PHP: 5.3
-Stable tag: 1.5.8
+Stable tag: 1.5.9
 License: GPLv3 or later
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
 
@@ -218,12 +218,12 @@ Or read the full [features description](https://booking-activities.fr/en/documen
 
 
 = Use it with WooCommerce = 
-*Make sure to have at least one calendar, one activity and one event at a future date for each activity* 
+*Make sure to have at least one booking form with one event available at a future date* 
 *You also need to activate WooCommerce and create one product* 
 
 1. Go to Products / *Your Product*
 2. In 'Product data' area, check 'Activity', a new 'Activity' tab appears
-3. In 'Activity' tab, set a calendar and an activity to be bound to the product
+3. In 'Activity' tab, bind the desired booking form to the product
 4. Go on this product page on the frontend, a booking form appears!
 
 *For Variable Products, you need to check the 'Activity' checkbox and set a calendar and an activity for each variation.* 
@@ -239,7 +239,7 @@ Yes, you can accept payments for bookings through WooCommerce. Booking Activitie
 
 
 = Should I accept payments for bookings? =
-Quite a reccuring question from activities providers. Here is a pros and cons analysis:
+Here is a pros and cons analysis:
 
 **PROS:**
 
@@ -254,7 +254,7 @@ Quite a reccuring question from activities providers. Here is a pros and cons an
 * Takes more time for customers, and more diffult process, higher cart abandonment rate
 * You will have to do much more development, administrative and legal procedures, and you will have more expenses (bank commission, maintenance ...)
 
-We still recommend to accept online payments since it's a great way to automate your business management and make it grow.
+We recommend to accept online payments since it's a great way to automate your business management and make it grow.
 
 
 = Events are not "Booked" after booking form submission, they are "Pending", why? =
@@ -269,7 +269,7 @@ Usually, users are still on your website when their bookings expire, if so, they
 Else, they will be cancelled later, with the others in that case.
 
 
-= My events appears to be booked, but no bookings appear in the list =
+= My events appear to be booked, but no bookings appear in the list =
 Temporary bookings (such as In cart events) take active slots but may not appear in the bookings list.
 Go to the "Bookings" page, under the "States" filter select "Booked", "Pending" and "In cart" (use CTRL+Click to select multiple row).
 Then, just click on "Apply Filters". Now you can see all kind of active bookings.
@@ -317,7 +317,7 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 
 == Changelog ==
 
-= 1.5.9 =
+= 1.5.9 - 2018/10/07 =
 * Tweak - Availability period is now checked on server side and is compatible with the "Display past events" option
 * Tweak - Reschedule calendar has now the same booking constraints as the calendar of the form used for the reservation
 * Tweak - Display a feedback in "cancel" and "change status" booking dialogs when an error occurs
