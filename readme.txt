@@ -319,11 +319,14 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 
 = 1.5.9 - 2018/10/11 =
 * Tweak - Availability period is now checked on server side and is compatible with the "Display past events" option
-* Tweak - Reschedule calendar has now the same booking constraints as the calendar of the form used for the reservation
+* Tweak - Reschedule calendar has now the same booking constraints as the calendar of the form used for the reservation (for customers only)
+* Tweak - Allow administrators to reschedule a booking to any event of the same activity, on any calendars
+* Tweak - Check if booked events have the same activity as rescheduled bookings on server side too
 * Tweak - Display a feedback in "cancel" and "change status" booking dialogs when an error occurs
 * Fix - Groups of events looked bookable even when they were not (past, or out of the availability period)
 * Fix - Past groups of events couldn't be booked even if it's group category allowed it
 * Fix - Events list didn't appeared in group of events dialog
+* Fix - Do not allow to reschedule a booking if its event has been removed from database (not only from calendar editor)
 * Fix - Fields were inserted below the form editor
 * Fix - Contradictory events size-related CSS classes
 * Fix - Cannot change inactive booking status to active if the event wasn't in its calendar availability period

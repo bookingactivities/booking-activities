@@ -593,7 +593,6 @@ function bookacti_dialog_reschedule_booking( booking_id ) {
 				
 				// init var
 				var booking_system_id	= booking_system.attr( 'id' );
-				var template_id			= response.booking_data.template_id;
 				var activity_id			= response.booking_data.activity_id;
 				booking_quantity		= response.booking_data.quantity;
 				
@@ -606,13 +605,15 @@ function bookacti_dialog_reschedule_booking( booking_id ) {
 				});
 				
 				// Load only the events from the same activity of the same calendar as the booked event
-				bookacti.booking_system[ booking_system_id ][ 'calendars' ]		= template_id ? [ template_id ] : [];
-				bookacti.booking_system[ booking_system_id ][ 'activities' ]	= activity_id ? [ activity_id ] : [];
+				bookacti.booking_system[ booking_system_id ][ 'activities' ] = activity_id ? [ activity_id ] : [ 0 ];
 				
-				// On the admin booking page, display past events and make them bookable
+				// On the admin booking page, display past events and grouped events, from all calendars, and make them all bookable
 				if( is_bookings_page ) {
+					bookacti.booking_system[ booking_system_id ][ 'calendars' ]				= [];
+					bookacti.booking_system[ booking_system_id ][ 'groups_single_events' ]	= 1;
 					bookacti.booking_system[ booking_system_id ][ 'past_events' ]			= 1;
 					bookacti.booking_system[ booking_system_id ][ 'past_events_bookable' ]	= 1;
+					bookacti.booking_system[ booking_system_id ][ 'template_data' ]			= [];
 				}
 				
 				booking_system.trigger( 'bookacti_before_reschedule_booking_system_loads', [ response.booking_data ] );

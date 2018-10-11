@@ -1063,7 +1063,7 @@ function bookacti_is_event_available_on_form( $form_id, $event_id, $event_start,
 	
 	$past_events_bookable = isset( $calendar_data[ 'past_events_bookable' ] ) ? $calendar_data[ 'past_events_bookable' ] : 0;
 	
-	if( ! apply_filters( 'bookacti_bypass_availability_period_check', $past_events_bookable ) ) {
+	if( ! $past_events_bookable ) {
 		// Check if the event is past
 		$timezone					= new DateTimeZone( bookacti_get_setting_value( 'bookacti_general_settings', 'timezone' ) );
 		$started_events_bookable	= bookacti_get_setting_value( 'bookacti_general_settings', 'started_events_bookable' );
@@ -1162,7 +1162,7 @@ function bookacti_is_group_of_events_available_on_form( $form_id, $group_id ) {
 	
 	$past_events_bookable = isset( $calendar_data[ 'past_events_bookable' ] ) ? $calendar_data[ 'past_events_bookable' ] : 0;
 	
-	if( ! apply_filters( 'bookacti_bypass_availability_period_check', $past_events_bookable ) ) {
+	if( ! $past_events_bookable ) {
 		// Check if the event is past
 		$timezone					= new DateTimeZone( bookacti_get_setting_value( 'bookacti_general_settings', 'timezone' ) );
 		$started_groups_bookable	= isset( $category[ 'settings' ][ 'started_groups_bookable' ] ) && in_array( $category[ 'settings' ][ 'started_groups_bookable' ], array( 0, 1, '0', '1', true, false ), true ) ? intval( $category[ 'settings' ][ 'started_groups_bookable' ] ) : bookacti_get_setting_value( 'bookacti_general_settings', 'started_groups_bookable' );

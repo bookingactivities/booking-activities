@@ -320,19 +320,20 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 		/**
 		 * Check if a booking is allowed to be rescheduled
-		 * @version 1.5.4
+		 * @version 1.5.9
 		 * @param int $booking_id
 		 * @return boolean
 		 */
 		function bookacti_booking_can_be_rescheduled( $booking_id ) {
 			$is_allowed	= true;
 			
+			$booking = bookacti_get_booking_by_id( $booking_id );
+			
 			if( ! current_user_can( 'bookacti_edit_bookings' ) ) {
-				// First check if the booking is part of a group
-				$booking = bookacti_get_booking_by_id( $booking_id );
 				
 				if( ! $booking ) { return apply_filters( 'bookacti_booking_can_be_rescheduled', false, $booking_id ); }
 				
+				// First check if the booking is part of a group
 				$is_allowed	= empty( $booking->group_id );
 				if( $is_allowed ) {
 					// Init variable
@@ -343,6 +344,11 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 				}
 			}
 			
+			// If the booked event has been removed, we cannot know its activity, then, the booking cannot be rescheduled.
+			if( ! bookacti_get_event_by_id( $booking->event_id ) ) {
+				$is_allowed = false;
+			}
+			
 			return apply_filters( 'bookacti_booking_can_be_rescheduled', $is_allowed, $booking_id );
 		}
 		
@@ -350,7 +356,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		/**
 		 * Check if a booking can be rescheduled to another event
 		 * @since 1.1.0
-		 * @version 1.5.8
+		 * @version 1.5.9
 		 * @param int $booking_id
 		 * @param int $event_id
 		 * @param string $event_start
@@ -365,8 +371,19 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 				$return_array[ 'status' ] = 'failed';
 				$return_array[ 'error' ] = 'reschedule_not_allowed';
 				$return_array[ 'message' ] = esc_html__( 'You are not allowed to reschedule this event.', BOOKACTI_PLUGIN_NAME );
+				return apply_filters( 'bookacti_booking_can_be_rescheduled_to', $return_array, $booking_id, $event_id, $event_start, $event_end );
 			}
-						
+			
+			$booking	= bookacti_get_booking_by_id( $booking_id );
+			$from_event	= bookacti_get_event_by_id( $booking->event_id );
+			$to_event	= bookacti_get_event_by_id( $event_id );
+			
+			if( $from_event->activity_id !== $to_event->activity_id ) {
+				$return_array[ 'status' ] = 'failed';
+				$return_array[ 'error' ] = 'reschedule_to_different_activity';
+				$return_array[ 'message' ] = esc_html__( 'The desired event haven\'t the same activity as the booked event.', BOOKACTI_PLUGIN_NAME );
+			}
+			
 			return apply_filters( 'bookacti_booking_can_be_rescheduled_to', $return_array, $booking_id, $event_id, $event_start, $event_end );
 		}
 

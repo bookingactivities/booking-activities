@@ -288,7 +288,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			
 			// Validate availability
 			$booking	= bookacti_get_booking_by_id( $booking_id );
-			$form_id	= ! empty( $booking->form_id ) ? $booking->form_id : 0;
+			$form_id	= ! empty( $booking->form_id ) && ! current_user_can( 'bookacti_edit_bookings' ) ? $booking->form_id : 0;
 			$validated	= bookacti_validate_booking_form( 'single', $event_id, $event_start, $event_end, $booking->quantity, $form_id );
 
 			if( $validated[ 'status' ] !== 'success' ) {
@@ -329,24 +329,6 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		}
 		add_action( 'wp_ajax_bookactiRescheduleBooking', 'bookacti_controller_reschedule_booking' );
 		add_action( 'wp_ajax_nopriv_bookactiRescheduleBooking', 'bookacti_controller_reschedule_booking' );
-		
-		
-		/**
-		 * Allow administrators to reschedule an event regarless of the form availability period
-		 * @since 1.5.9
-		 * @param boolean $true
-		 * @return boolean
-		 */
-		function bookacti_bypass_availability_period_check_for_admin_reschedule( $true ) {
-			if( ! empty( $_POST[ 'action' ] ) 
-			 && $_POST[ 'action' ] === 'bookactiRescheduleBooking' 
-			 && current_user_can( 'bookacti_edit_bookings' ) ) {
-				return true;
-			}
-
-			return $true;
-		}
-		add_filter( 'bookacti_bypass_availability_period_check', 'bookacti_bypass_availability_period_check_for_admin_reschedule', 10, 1 );
 		
 		
 		/**
