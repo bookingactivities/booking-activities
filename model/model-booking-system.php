@@ -716,19 +716,18 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	
 	/**
 	 * Get groups of events data by template ids
-	 * 
-	 * @since 1.4.0 (was bookacti_get_groups_of_events_by_template and bookacti_get_groups_of_events_by_category
+	 * @since 1.4.0 (was bookacti_get_groups_of_events_by_template and bookacti_get_groups_of_events_by_category)
 	 * @version 1.5.9
 	 * @global wpdb $wpdb
 	 * @param array|int $template_ids
 	 * @param array|int $category_ids
-	 * @param boolean $fetch_past_groups
+	 * @param boolean $bypass_avail_period
 	 * @param boolean|"bookable_only" $fetch_started_groups
 	 * @param boolean $fetch_inactive_groups
 	 * @param array $templates_data
 	 * @return array
 	 */
-	function bookacti_get_groups_of_events( $template_ids = array(), $category_ids = array(), $fetch_past_groups = false, $fetch_started_groups = 'bookable_only', $fetch_inactive_groups = false, $templates_data = array() ) {
+	function bookacti_get_groups_of_events( $template_ids = array(), $category_ids = array(), $bypass_avail_period = false, $fetch_started_groups = 'bookable_only', $fetch_inactive_groups = false, $templates_data = array() ) {
 		
 		// If empty, take them all
 		if( ! $template_ids ) { $template_ids = array(); }
@@ -739,7 +738,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		if( ! is_array( $template_ids ) )	{ $template_ids = array(); }
 		if( is_numeric( $category_ids ) )	{ $category_ids = array( intval( $category_ids ) ); }
 		if( ! is_array( $category_ids ) )	{ $category_ids = array(); }
-		if( ! $templates_data )				{ $templates_data = bookacti_get_mixed_template_data( $template_ids, $fetch_past_groups ); }
+		if( ! $templates_data )				{ $templates_data = bookacti_get_mixed_template_data( $template_ids, $bypass_avail_period ); }
 		
 		$started_groups_bookable	= bookacti_get_setting_value( 'bookacti_general_settings', 'started_groups_bookable' );
 		$timezone					= new DateTimeZone( bookacti_get_setting_value( 'bookacti_general_settings', 'timezone' ) );
@@ -803,37 +802,49 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		}
 		
 		// Make sure groups are in their template range
-		$query .= ' AND UNIX_TIMESTAMP( CONVERT_TZ( GE.start, %s, @@global.time_zone ) ) >= UNIX_TIMESTAMP( CONVERT_TZ( T.start_date, %s, @@global.time_zone ) ) ';
-		$query .= ' AND UNIX_TIMESTAMP( CONVERT_TZ( GE.end, %s, @@global.time_zone ) ) <= UNIX_TIMESTAMP( CONVERT_TZ( T.end_date + INTERVAL 24 HOUR, %s, @@global.time_zone ) ) ';
+		$query .= ' AND CAST( GE.start AS DATE ) >= T.start_date ';
+		$query .= ' AND CAST( GE.end AS DATE ) <= T.end_date ';
 		
-		$variables[] = $user_timestamp_offset;
-		$variables[] = $user_timestamp_offset;
-		$variables[] = $user_timestamp_offset;
-		$variables[] = $user_timestamp_offset;
-		
-		// Do not get a group of events if its events are not fully included in the availability period
-		$availability_period = bookacti_get_availability_period( $templates_data, $fetch_past_groups );
-		
-		// Make sure that the groups begin after availability period start
-		// except if we want past groups or started groups
-		if( ! $fetch_past_groups && $fetch_started_groups !== true ) {
-			$past_query = ' UNIX_TIMESTAMP( CONVERT_TZ( GE.start, %s, @@global.time_zone ) ) >= UNIX_TIMESTAMP( CONVERT_TZ( %s, %s, @@global.time_zone ) ) ';
-			// We may only want started groups that are bookable
-			if( $fetch_started_groups === 'bookable_only' ) {
-				$past_query = ' ( M.started_groups_bookable = 1 ' . ' OR  ' . $past_query . ' ) ';
-			}
-
-			$query .= ' AND ' . $past_query;
-			$variables[] = $user_timestamp_offset;
+		// Make sure that the groups begin after availability period start and end before availability period end
+		// except if we want past groups or started groups (it also applies to future events out of the availability period)
+		if( ! $bypass_avail_period ) {
+			
+			$availability_period = bookacti_get_availability_period( $templates_data, $bypass_avail_period );
+			$start_after	= ' ( CAST( GE.start AS DATE ) >= %s ) ';
+			$end_before		= ' ( CAST( GE.end AS DATE ) <= %s ) ';
+			
+			// By default, get only groups of events fully included in the availability period
+			$availability_period_query	= $start_after . ' AND ' . $end_before;
+			
 			$variables[] = $availability_period[ 'start' ];
-			$variables[] = $user_timestamp_offset;
+			$variables[] = $availability_period[ 'end' ];
+			
+			// If $fetch_started_groups, get groups that have at least one event in the availability period
+			if( $fetch_started_groups ) {
+				$start_before	= ' ( CAST( GE.start AS DATE ) <= %s ) ';
+				$end_after		= ' ( CAST( GE.end AS DATE ) >= %s ) ';
+				
+				$is_partly_in_avail_period	=   ' ( ' . $start_before . ' AND ' . $end_after . ' ) '
+											. 'OR ( ' . $start_after . ' AND ' . $start_before . ' ) '
+											. 'OR ( ' . $end_after . ' AND ' . $end_before . ' ) ';
+				
+				// We may only want started groups that are bookable
+				if( $fetch_started_groups === 'bookable_only' ) {
+					$availability_period_query = ' ( ' . $availability_period_query . ' ) OR ( ( ' . $is_partly_in_avail_period . ' ) AND M.started_groups_bookable = 1 ) ';
+				} else {
+					$availability_period_query = ' ( ' . $availability_period_query . ' ) OR ' . $is_partly_in_avail_period;
+				}
+				
+				$variables[] = $availability_period[ 'start' ];
+				$variables[] = $availability_period[ 'end' ];
+				$variables[] = $availability_period[ 'start' ];
+				$variables[] = $availability_period[ 'end' ];
+				$variables[] = $availability_period[ 'start' ];
+				$variables[] = $availability_period[ 'end' ];
+			}
+			
+			$query .= ' AND ( ' . $availability_period_query . ' ) ';
 		}
-		
-		// Make sure that the groups end before availability period end in any case
-		$query .= ' AND UNIX_TIMESTAMP( CONVERT_TZ( GE.end, %s, @@global.time_zone ) ) <= UNIX_TIMESTAMP( CONVERT_TZ( %s + INTERVAL 24 HOUR, %s, @@global.time_zone ) ) ';
-		$variables[] = $user_timestamp_offset;
-		$variables[] = $availability_period[ 'end' ];
-		$variables[] = $user_timestamp_offset;
 		
 		if( ! $fetch_inactive_groups ) {
 			$query .= ' AND G.active = 1 ';

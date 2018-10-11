@@ -5,7 +5,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 /**
  * Book an event
  * 
- * @version 1.5.4
+ * @version 1.5.9
  * 
  * @global wpdb $wpdb
  * @param int $user_id
@@ -52,7 +52,7 @@ function bookacti_insert_booking( $user_id, $event_id, $event_start, $event_end,
 	$booking_id = $wpdb->insert_id;
 	
 	if( $booking_id !== false ) {
-		do_action( 'bookacti_booking_inserted', $booking_id );
+		do_action( 'bookacti_booking_inserted', $booking_id, $variables );
 	}
 	
 	return $booking_id;
@@ -1375,7 +1375,7 @@ function bookacti_delete_booking( $booking_id ) {
 	 * Insert a booking group
 	 * 
 	 * @since 1.1.0
-	 * @version 1.5.4
+	 * @version 1.5.9
 	 * @global wpdb $wpdb
 	 * @param int $user_id
 	 * @param int $event_group_id
@@ -1391,7 +1391,7 @@ function bookacti_delete_booking( $booking_id ) {
 		
 		$query = 'INSERT INTO ' . BOOKACTI_TABLE_BOOKING_GROUPS 
 				. ' ( event_group_id, user_id, form_id, state, payment_status, active ) ' 
-				. ' VALUES ( %d, %d, NULLIF( %d, 0), %s, %s, %d )';
+				. ' VALUES ( %d, %s, NULLIF( %d, 0), %s, %s, %d )';
 
 		$variables = array( 
 			$event_group_id,

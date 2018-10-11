@@ -6,9 +6,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 /***** BOOKING SYSTEM *****/
 /**
  * Get a booking system based on given parameters
- * 
- * @version 1.5.0
- * 
+ * @version 1.5.9
  * @param array $atts [id, classes, calendars, activities, groups, method]
  * @param boolean $echo Wether to return or directly echo the booking system
  * @return string
@@ -48,7 +46,7 @@ function bookacti_get_booking_system( $atts, $echo = false ) {
 				$events				= array( 'events' => array(), 'data' => array() );
 				
 				if( $atts[ 'group_categories' ] !== false ) {
-					$groups_data		= bookacti_get_groups_of_events( $atts[ 'calendars' ], $atts[ 'group_categories' ], $atts[ 'past_events' ], true, false, $atts[ 'template_data' ] );
+					$groups_data		= bookacti_get_groups_of_events( $atts[ 'calendars' ], $atts[ 'group_categories' ], $atts[ 'past_events_bookable' ], true, false, $atts[ 'template_data' ] );
 					$categories_data	= bookacti_get_group_categories( $atts[ 'calendars' ], $atts[ 'group_categories' ] );
 				
 					foreach( $groups_data as $group_id => $group_data ) { $groups_ids[] = $group_id; }
@@ -665,7 +663,7 @@ function bookacti_get_booking_system_fields_default_data( $fields = array() ) {
 			'name'			=> 'past_events_bookable',
 			'value'			=> 0,
 			'title'			=> esc_html__( 'Make past events bookable', BOOKACTI_PLUGIN_NAME ),
-			'tip'			=> esc_html__( 'Allow customers to select events out of the avilability period and book them.', BOOKACTI_PLUGIN_NAME )
+			'tip'			=> esc_html__( 'Allow customers to select events out of the availability period and book them.', BOOKACTI_PLUGIN_NAME )
 		);
 	}
 	
@@ -1063,15 +1061,16 @@ function bookacti_is_event_available_on_form( $form_id, $event_id, $event_start,
 		return $validated;
 	}
 	
-	if( ! apply_filters( 'bookacti_bypass_availability_period_check', false ) ) {
+	$past_events_bookable = isset( $calendar_data[ 'past_events_bookable' ] ) ? $calendar_data[ 'past_events_bookable' ] : 0;
+	
+	if( ! apply_filters( 'bookacti_bypass_availability_period_check', $past_events_bookable ) ) {
 		// Check if the event is past
 		$timezone					= new DateTimeZone( bookacti_get_setting_value( 'bookacti_general_settings', 'timezone' ) );
 		$started_events_bookable	= bookacti_get_setting_value( 'bookacti_general_settings', 'started_events_bookable' );
-		$past_events_bookable		= isset( $calendar_data[ 'past_events_bookable' ] ) ? $calendar_data[ 'past_events_bookable' ] : $started_events_bookable;
 		$event_start_obj			= new DateTime( $event_start, $timezone );
 		$event_end_obj				= new DateTime( $event_end, $timezone );
 		$current_time				= new DateTime( 'now', $timezone );
-		if( ( ! $past_events_bookable && $event_start_obj < $current_time )
+		if( ( $event_start_obj < $current_time )
 		&& ! ( $started_events_bookable && $event_end_obj > $current_time ) ) {
 			$validated['error'] = 'past_event';
 			$validated['message'] = esc_html__( 'You cannot book a past event.', BOOKACTI_PLUGIN_NAME );
@@ -1079,18 +1078,17 @@ function bookacti_is_event_available_on_form( $form_id, $event_id, $event_start,
 		}
 	
 		// Check if the event is in the availability period
-		$availability_period = bookacti_get_availability_period( $calendar_data[ 'template_data' ] );
-
+		$availability_period = bookacti_get_availability_period( $calendar_data[ 'template_data' ], $past_events_bookable );
 		$calendar_start	= new DateTime( $availability_period[ 'start' ] . ' 00:00:00', $timezone );
 		$calendar_end	= new DateTime( $availability_period[ 'end' ] . ' 23:59:59', $timezone );
 
-		if( ! $past_events_bookable && $event_start_obj < $calendar_start ) {
+		if( $event_start_obj < $calendar_start ) {
 			$validated['error'] = 'event_starts_before_availability_period';
 			/* translators: %s is a formatted date (e.g.: "January 20, 2018") */
 			$validated['message'] = sprintf( esc_html__( 'You cannot book an event that starts before %s.', BOOKACTI_PLUGIN_NAME ), bookacti_format_datetime( $calendar_start->format( 'Y-m-d H:i:s' ), esc_html__( 'F d, Y', BOOKACTI_PLUGIN_NAME ) ) );
 			return $validated;
 		}
-		if( ! $past_events_bookable && $event_end_obj > $calendar_end ) {
+		if( $event_end_obj > $calendar_end ) {
 			$validated['error'] = 'event_ends_after_availability_period';
 			/* translators: %s is a formatted date (e.g.: "January 20, 2018") */
 			$validated['message'] = sprintf( esc_html__( 'You cannot book an event that takes place after %s.', BOOKACTI_PLUGIN_NAME ), bookacti_format_datetime( $calendar_end->format( 'Y-m-d H:i:s' ), esc_html__( 'F d, Y', BOOKACTI_PLUGIN_NAME ) ) );
@@ -1162,34 +1160,34 @@ function bookacti_is_group_of_events_available_on_form( $form_id, $group_id ) {
 		return $validated;
 	}
 	
-	if( ! apply_filters( 'bookacti_bypass_availability_period_check', false ) ) {
+	$past_events_bookable = isset( $calendar_data[ 'past_events_bookable' ] ) ? $calendar_data[ 'past_events_bookable' ] : 0;
+	
+	if( ! apply_filters( 'bookacti_bypass_availability_period_check', $past_events_bookable ) ) {
 		// Check if the event is past
 		$timezone					= new DateTimeZone( bookacti_get_setting_value( 'bookacti_general_settings', 'timezone' ) );
 		$started_groups_bookable	= isset( $category[ 'settings' ][ 'started_groups_bookable' ] ) && in_array( $category[ 'settings' ][ 'started_groups_bookable' ], array( 0, 1, '0', '1', true, false ), true ) ? intval( $category[ 'settings' ][ 'started_groups_bookable' ] ) : bookacti_get_setting_value( 'bookacti_general_settings', 'started_groups_bookable' );
-		$past_events_bookable		= isset( $calendar_data[ 'past_events_bookable' ] ) ? $calendar_data[ 'past_events_bookable' ] : $started_groups_bookable;
 		$group_start				= new DateTime( $group->start, $timezone );
 		$group_end					= new DateTime( $group->end, $timezone );
 		$current_time				= new DateTime( 'now', $timezone );
-		if( ( ! $past_events_bookable && $group_start < $current_time )
+		if( ( $group_start < $current_time )
 		&& ! ( $started_groups_bookable && $group_end > $current_time ) ) {
 			$validated['error'] = 'past_group_of_events';
-			$validated['message'] = esc_html__( 'You cannot book a past group of events.', BOOKACTI_PLUGIN_NAME );
+			$validated['message'] = esc_html__( 'You cannot book a group of events if any of its events is past.', BOOKACTI_PLUGIN_NAME );
 			return $validated;
 		}
 	
 		// Check if the group of events is in the availability period
-		$availability_period = bookacti_get_availability_period( $calendar_data[ 'template_data' ] );
-
+		$availability_period = bookacti_get_availability_period( $calendar_data[ 'template_data' ], $past_events_bookable );
 		$calendar_start	= new DateTime( $availability_period[ 'start' ] . ' 00:00:00', $timezone );
 		$calendar_end	= new DateTime( $availability_period[ 'end' ] . ' 23:59:59', $timezone );
 
-		if( ! $past_events_bookable && $group_start < $calendar_start ) {
+		if( $group_start < $calendar_start ) {
 			$validated['error'] = 'group_of_events_starts_before_availability_period';
 			/* translators: %s is a formatted date (e.g.: "January 20, 2018") */
 			$validated['message'] = sprintf( esc_html__( 'You cannot book a group if any of its events starts before %s.', BOOKACTI_PLUGIN_NAME ), bookacti_format_datetime( $calendar_start->format( 'Y-m-d H:i:s' ), esc_html__( 'F d, Y', BOOKACTI_PLUGIN_NAME ) ) );
 			return $validated;
 		}
-		if( ! $past_events_bookable && $group_end > $calendar_end ) {
+		if( $group_end > $calendar_end ) {
 			$validated['error'] = 'group_of_events_ends_after_availability_period';
 			/* translators: %s is a formatted date (e.g.: "January 20, 2018") */
 			$validated['message'] = sprintf( esc_html__( 'You cannot book a group if any of its events takes place after %s.', BOOKACTI_PLUGIN_NAME ), bookacti_format_datetime( $calendar_end->format( 'Y-m-d H:i:s' ), esc_html__( 'F d, Y', BOOKACTI_PLUGIN_NAME ) ) );

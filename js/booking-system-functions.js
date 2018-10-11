@@ -950,7 +950,7 @@ function bookacti_is_event_available( booking_system, event ) {
 	}
 	
 	// Single events
-	if( ( ! is_in_group || ( is_in_group && bookacti.booking_system[ booking_system_id ][ 'groups_single_events' ] ) ) 
+	if( ( ! is_in_group || ( is_in_group && groups_single_events ) ) 
 	&&  typeof bookacti.booking_system[ booking_system_id ][ 'events_data' ][ event.id ] !== 'undefined' ) {
 		// Check if the event is past or out of the availability period
 		var is_past = false;
@@ -964,7 +964,7 @@ function bookacti_is_event_available( booking_system, event ) {
 			}
 			
 			// Check if the event is in the availability period
-			if( ! past_events_bookable && ( event_start.isBefore( availability_period.start ) || event_end.isAfter( availability_period.end ) ) ) {
+			if( ! past_events_bookable && ( event_start.isBefore( availability_period.start ) || event_end.isAfter( availability_period.end + ' 23:59:59' ) ) ) {
 				is_past = true;
 			}
 		}
@@ -1029,13 +1029,13 @@ function bookacti_is_event_available( booking_system, event ) {
 			}
 			
 			// Check if the group of events is in the availability period
-			if( ! past_events_bookable && ( group_start.isBefore( availability_period.start ) || group_end.isAfter( availability_period.end ) ) ) {
-				return true;
+			if( ! past_events_bookable && ( group_start.isBefore( availability_period.start ) || group_end.isAfter( availability_period.end + ' 23:59:59' ) ) ) {
+				return true; // Skip this group
 			}
 			
 			var group_availability = bookacti.booking_system[ booking_system_id ][ 'groups_data' ][ group_id ][ 'availability' ];
 			if( group_availability > 0 ) {
-								
+				
 				// Check the min and max quantity allowed AND
 				// Check the max number of different users allowed
 				var min_qty_ok = max_qty_ok = max_users_ok = true;
