@@ -59,7 +59,7 @@ add_action( 'wp_ajax_nopriv_bookactiFetchEvents', 'bookacti_controller_fetch_eve
 /**
  * Reload booking system with new attributes via AJAX
  * @since 1.1.0
- * @version 1.5.2
+ * @version 1.5.9
  */
 function bookacti_controller_reload_booking_system() {
 	
@@ -102,7 +102,7 @@ function bookacti_controller_reload_booking_system() {
 	$events				= array( 'events' => array(), 'data' => array() );
 
 	if( $attributes[ 'group_categories' ] !== false ) {
-		$groups_data		= bookacti_get_groups_of_events( $attributes[ 'calendars' ], $attributes[ 'group_categories' ], $attributes[ 'past_events' ], $attributes[ 'template_data' ] );
+		$groups_data		= bookacti_get_groups_of_events( $attributes[ 'calendars' ], $attributes[ 'group_categories' ], $attributes[ 'past_events_bookable' ], true, false, $attributes[ 'template_data' ] );
 		$categories_data	= bookacti_get_group_categories( $attributes[ 'calendars' ], $attributes[ 'group_categories' ] );
 
 		foreach( $groups_data as $group_id => $group_data ) { $groups_ids[] = $group_id; }

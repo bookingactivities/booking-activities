@@ -145,10 +145,10 @@ $bookacti_translation_array = apply_filters( 'bookacti_translation_array', array
 	// FORMS CHECK
 	'error_fill_field'                  => esc_html__( 'Please fill this field.', BOOKACTI_PLUGIN_NAME ),
 	'error_invalid_value'               => esc_html__( 'Please select a valid value.', BOOKACTI_PLUGIN_NAME ),
-	'error_template_end_before_begin'   => esc_html__( 'The calendar period can not end before it started.', BOOKACTI_PLUGIN_NAME ),
+	'error_template_end_before_begin'   => esc_html__( 'The calendar period cannot end before it started.', BOOKACTI_PLUGIN_NAME ),
 	'error_day_end_before_begin'		=> esc_html__( 'Day end time must be after day start time.', BOOKACTI_PLUGIN_NAME ),
 	'error_repeat_period_not_set'		=> esc_html__( 'The repetition period is not set.', BOOKACTI_PLUGIN_NAME ),
-	'error_repeat_end_before_begin'     => esc_html__( 'The repetition period can not end before it started.', BOOKACTI_PLUGIN_NAME ),
+	'error_repeat_end_before_begin'     => esc_html__( 'The repetition period cannot end before it started.', BOOKACTI_PLUGIN_NAME ),
 	'error_repeat_start_before_template'=> esc_html__( 'The repetition period should not start before the beginning date of the calendar.', BOOKACTI_PLUGIN_NAME ),
 	'error_repeat_end_after_template'   => esc_html__( 'The repetition period should not end after the end date of the calendar.', BOOKACTI_PLUGIN_NAME ),
 	'error_days_sup_to_365'             => esc_html__( 'The number of days should be between 0 and 365.', BOOKACTI_PLUGIN_NAME ),

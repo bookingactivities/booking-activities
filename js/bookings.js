@@ -17,7 +17,7 @@ $j( document ).ready( function() {
 		// Check if the event is hidden
 		var activity_id			= bookacti.booking_system[ booking_system_id ][ 'events_data' ][ event.id ][ 'activity_id' ];
 		var visible_activities	= $j( '#bookacti-booking-filter-activities' ).val() ? $j( '#bookacti-booking-filter-activities' ).val() : [];
-		if( visible_activities.length && $j.inArray( activity_id, visible_activities ) < 0 ) {
+		if( visible_activities.length && $j.inArray( activity_id, visible_activities ) === -1 ) {
 			event.render = 0;
 		}
 		

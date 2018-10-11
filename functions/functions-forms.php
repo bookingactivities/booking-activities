@@ -521,7 +521,7 @@ function bookacti_get_default_form_fields_meta( $field_name = '' ) {
 /**
  * Format field data according to its type
  * @since 1.5.0
- * @version 1.5.4
+ * @version 1.5.9
  * @param array|string $raw_field_data
  * @return array|false
  */
@@ -549,6 +549,16 @@ function bookacti_format_form_field_data( $raw_field_data ) {
 		
 		// Format booking system data
 		$field_meta = bookacti_format_booking_system_attributes( $raw_field_data );
+		
+		// Deconstruct template_data
+		foreach( $default_meta as $default_meta_key => $default_meta_value ) {
+			if( isset( $field_meta[ 'template_data' ][ 'settings' ][ $default_meta_key ] ) ) {
+				$field_meta[ $default_meta_key ] = $field_meta[ 'template_data' ][ 'settings' ][ $default_meta_key ];
+			}
+			else if( $default_meta_key !== 'settings' && isset( $field_meta[ 'template_data' ][ $default_meta_key ] ) ) {
+				$field_meta[ $default_meta_key ] = $field_meta[ 'template_data' ][ $default_meta_key ];
+			}
+		}
 		
 		// Keep some meta unformatted
 		$field_meta[ 'raw' ] = array(
@@ -639,7 +649,7 @@ function bookacti_format_form_field_data( $raw_field_data ) {
 /**
  * Sanitize field data according to its type
  * @since 1.5.0
- * @version 1.5.4
+ * @version 1.5.9
  * @param array|string $raw_field_data
  * @return array|false
  */
@@ -668,13 +678,6 @@ function bookacti_sanitize_form_field_data( $raw_field_data ) {
 		// Sanitize booking system data
 		$field_meta = bookacti_format_booking_system_attributes( $raw_field_data );
 		
-		// Keep some meta unformatted
-		if( isset( $raw_field_data[ 'method' ] ) && $raw_field_data[ 'method' ] === 'site' )					{ $field_meta[ 'method' ] = 'site'; }
-		if( isset( $raw_field_data[ 'group_categories' ] ) && $raw_field_data[ 'group_categories' ] === 'none' ){ $field_meta[ 'group_categories' ] = 'none'; }
-		if( isset( $raw_field_data[ 'user_id' ] ) && $raw_field_data[ 'user_id' ] === 'current' )				{ $field_meta[ 'user_id' ] = 'current'; }
-		$field_meta[ 'id' ]		= isset( $raw_field_data[ 'id' ] ) && $raw_field_data[ 'id' ] !== '' ? sanitize_title_with_dashes( $raw_field_data[ 'id' ] ) : $default_meta[ 'id' ];
-		$field_meta[ 'class' ]	= isset( $raw_field_data[ 'class' ] ) && $raw_field_data[ 'class' ] !== '' ? sanitize_text_field( $raw_field_data[ 'class' ] ) : $default_meta[ 'class' ];
-		
 		// Deconstruct template_data
 		$field_meta[ 'start' ]	= isset( $raw_field_data[ 'start' ] ) && $raw_field_data[ 'start' ] !== '' ? $field_meta[ 'template_data' ][ 'start' ] : $default_meta[ 'start' ];
 		$field_meta[ 'end' ]	= isset( $raw_field_data[ 'end' ] ) && $raw_field_data[ 'end' ] !== '' ? $field_meta[ 'template_data' ][ 'end' ] : $default_meta[ 'end' ];
@@ -682,6 +685,13 @@ function bookacti_sanitize_form_field_data( $raw_field_data ) {
 			if( ! isset( $default_meta[ $key ] ) ) { continue; }
 			$field_meta[ $key ] = isset( $raw_field_data[ $key ] ) && $raw_field_data[ $key ] !== '' ? $value : $default_meta[ $key ];
 		}
+		
+		// Keep some meta unformatted
+		if( isset( $raw_field_data[ 'method' ] ) && $raw_field_data[ 'method' ] === 'site' )					{ $field_meta[ 'method' ] = 'site'; }
+		if( isset( $raw_field_data[ 'group_categories' ] ) && $raw_field_data[ 'group_categories' ] === 'none' ){ $field_meta[ 'group_categories' ] = 'none'; }
+		if( isset( $raw_field_data[ 'user_id' ] ) && $raw_field_data[ 'user_id' ] === 'current' )				{ $field_meta[ 'user_id' ] = 'current'; }
+		$field_meta[ 'id' ]		= isset( $raw_field_data[ 'id' ] ) && $raw_field_data[ 'id' ] !== '' ? sanitize_title_with_dashes( $raw_field_data[ 'id' ] ) : $default_meta[ 'id' ];
+		$field_meta[ 'class' ]	= isset( $raw_field_data[ 'class' ] ) && $raw_field_data[ 'class' ] !== '' ? sanitize_text_field( $raw_field_data[ 'class' ] ) : $default_meta[ 'class' ];
 		
 		
 	} else if( $raw_field_data[ 'name' ] === 'login' ) {

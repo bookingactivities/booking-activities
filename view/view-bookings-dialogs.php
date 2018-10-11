@@ -41,7 +41,6 @@ $messages = bookacti_get_messages();
 		'class'					=> is_admin() ? 'admin-booking-system' : '',
 		'past_events'			=> is_admin() ? 1 : 0,
 		'past_events_bookable'	=> is_admin() ? 1 : 0,
-		'context'				=> is_admin() ? 'booking_page' : 'frontend',
 		'auto_load'				=> 0
 	);
 	bookacti_get_booking_system( $atts, true );

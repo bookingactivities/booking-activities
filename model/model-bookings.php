@@ -5,7 +5,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 /**
  * Book an event
  * 
- * @version 1.5.4
+ * @version 1.5.9
  * 
  * @global wpdb $wpdb
  * @param int $user_id
@@ -52,7 +52,7 @@ function bookacti_insert_booking( $user_id, $event_id, $event_start, $event_end,
 	$booking_id = $wpdb->insert_id;
 	
 	if( $booking_id !== false ) {
-		do_action( 'bookacti_booking_inserted', $booking_id );
+		do_action( 'bookacti_booking_inserted', $booking_id, $variables );
 	}
 	
 	return $booking_id;
@@ -1130,7 +1130,7 @@ function bookacti_get_booking_by_id( $booking_id ) {
 
 /**
  * Get booking data
- * @version 1.5.8
+ * @version 1.5.9
  * @global wpdb $wpdb
  * @param int $booking_id
  * @return array
@@ -1138,16 +1138,20 @@ function bookacti_get_booking_by_id( $booking_id ) {
 function bookacti_get_booking_data( $booking_id ) {
 	global $wpdb;
 	
-	$query	= 'SELECT B.*, E.id as event_id, E.template_id, E.activity_id '
-			. ' FROM ' . BOOKACTI_TABLE_EVENTS . ' as E, ' . BOOKACTI_TABLE_BOOKINGS . ' as B '
+	$query	= 'SELECT B.*, E.template_id, E.activity_id '
+			. ' FROM ' . BOOKACTI_TABLE_BOOKINGS . ' as B, ' . BOOKACTI_TABLE_EVENTS . ' as E '
 			. ' WHERE B.event_id = E.id '
 			. ' AND B.id = %d ';
 	$prep	= $wpdb->prepare( $query, $booking_id );
 	$booking_data = $wpdb->get_row( $prep, ARRAY_A );
 	
-	$booking_data[ 'booking_settings' ]	= bookacti_get_metadata( 'booking', $booking_id );
-	$booking_data[ 'event_settings' ]	= bookacti_get_metadata( 'event', $booking_data[ 'event_id' ] );
-	$booking_data[ 'activity_settings' ]= bookacti_get_metadata( 'activity', $booking_data[ 'activity_id' ] );
+	if( empty( $booking_data[ 'template_id' ] ) ) { $booking_data[ 'template_id' ] = 0; }
+	if( empty( $booking_data[ 'activity_id' ] ) ) { $booking_data[ 'activity_id' ] = 0; }
+	
+	$booking_data[ 'booking_settings' ]			= bookacti_get_metadata( 'booking', $booking_id );
+	$booking_data[ 'event_settings' ]			= bookacti_get_metadata( 'event', $booking_data[ 'event_id' ] );
+	$booking_data[ 'activity_settings' ]		= ! empty( $booking_data[ 'activity_id' ] ) ? bookacti_get_metadata( 'activity', $booking_data[ 'activity_id' ] ) : bookacti_format_activity_settings(); 
+	$booking_data[ 'form_calendar_settings' ]	= ! empty( $booking_data[ 'form_id' ] ) ? bookacti_get_form_field_data_by_name( $booking_data[ 'form_id' ], 'calendar' ) : bookacti_get_default_form_fields_data( 'calendar' );
 	
 	return $booking_data;
 }
@@ -1374,7 +1378,7 @@ function bookacti_delete_booking( $booking_id ) {
 	 * Insert a booking group
 	 * 
 	 * @since 1.1.0
-	 * @version 1.5.4
+	 * @version 1.5.9
 	 * @global wpdb $wpdb
 	 * @param int $user_id
 	 * @param int $event_group_id
@@ -1390,7 +1394,7 @@ function bookacti_delete_booking( $booking_id ) {
 		
 		$query = 'INSERT INTO ' . BOOKACTI_TABLE_BOOKING_GROUPS 
 				. ' ( event_group_id, user_id, form_id, state, payment_status, active ) ' 
-				. ' VALUES ( %d, %d, NULLIF( %d, 0), %s, %s, %d )';
+				. ' VALUES ( %d, %s, NULLIF( %d, 0), %s, %s, %d )';
 
 		$variables = array( 
 			$event_group_id,
