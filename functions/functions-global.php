@@ -104,16 +104,16 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 	/**
 	 * Detect current language with Qtranslate X or WPML
-	 * @version 1.5.2
+	 * @version 1.6.0
+	 * @param boolean $with_locale
 	 * @return string 
 	 */
 	function bookacti_get_current_lang_code( $with_locale = false ) {
-		$lang_code = $with_locale ? get_locale() : substr( get_locale(), 0, strpos( get_locale(), '_' ) );
-
-		$is_qtranslate	= bookacti_is_plugin_active( 'qtranslate-x/qtranslate.php' );
-		$is_wpml		= bookacti_is_plugin_active( 'wpml/wpml.php' );
-
-		if ( $is_qtranslate ) {
+		
+		$locale		= get_locale();
+		$lang_code	= $with_locale ? $locale : substr( $locale, 0, strpos( $locale, '_' ) );
+		
+		if( bookacti_is_plugin_active( 'qtranslate-x/qtranslate.php' ) ) {
 			if( function_exists( 'qtranxf_getLanguage' ) ) {
 				$lang_code = qtranxf_getLanguage();
 				if( $with_locale ) {
@@ -123,7 +123,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 					}
 				}
 			}
-		} else if ( $is_wpml ) {
+		} else if ( bookacti_is_plugin_active( 'wpml/wpml.php' ) ) {
 			$lang_code = apply_filters( 'wpml_current_language', NULL );
 			if( $with_locale ) {
 				$languages = apply_filters( 'wpml_active_languages', NULL );
@@ -132,6 +132,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 				}
 			}
 		}
+		
 		return $lang_code;
 	}
 	

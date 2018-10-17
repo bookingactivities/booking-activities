@@ -1255,3 +1255,124 @@ function bookacti_reset_calendar_form_field_exceptions( $field_data ) {
 	}
 }
 add_action( 'bookacti_form_field_reset', 'bookacti_reset_calendar_form_field_exceptions', 10, 1 );
+
+
+/**
+ * Add the "Export" action to the "Calendar" field in form editor
+ * @version 1.6.0
+ * @param array $field
+ */
+function bookacti_add_export_action_to_calendar_field( $field ) {
+	if( $field[ 'name' ] !== 'calendar' ) { return; }
+	?>
+	<div class='bookacti-form-editor-field-action bookacti-export-events dashicons dashicons-external' title='<?php esc_attr_e( 'Export events', BOOKACTI_PLUGIN_NAME ); ?>'></div>
+	<?php
+}
+add_action( 'bookacti_form_editor_field_actions_after', 'bookacti_add_export_action_to_calendar_field', 10, 1 );
+
+
+/**
+ * AJAX Controller - Reset form export events URL
+ * @since 1.6.0
+ */
+function bookacti_controller_reset_form_export_events_url() {
+	
+	$form_id = $_POST[ 'form_id' ];
+	
+	// Check nonce and capabilities
+	$is_nonce_valid	= check_ajax_referer( 'bookacti_reset_export_events_url', 'nonce', false );
+	$is_allowed		= current_user_can( 'bookacti_edit_forms' ) && bookacti_user_can_manage_form( $form_id );
+	
+	if( ! $is_nonce_valid || ! $is_allowed || ! $form_id ) {
+		bookacti_send_json_not_allowed( 'reset_export_events_url' );
+	}
+	
+	// Update form secret key
+	$new_secret_key = md5( microtime().rand() );
+	$old_secret_key = bookacti_get_metadata( 'form', $form_id, 'secret_key', true );
+	$updated		= bookacti_update_metadata( 'form', $form_id, array( 'secret_key' => $new_secret_key ) );
+	
+	if( $updated === false ) {
+		bookacti_send_json( array( 'status' => 'failed', 'error' => 'not_updated' ), 'reset_export_events_url' );
+	}
+	
+	do_action( 'bookacti_export_events_url_reset', $form_id, $new_secret_key, $old_secret_key );
+	
+	bookacti_send_json( 
+		array( 
+			'status' => 'success', 
+			'new_secret_key' => $new_secret_key, 
+			'old_secret_key' => $old_secret_key,
+			'message' => esc_html__( 'The secret key has been changed. The old link won\'t work anymore. Use the new link above to export your events.', BOOKACTI_PLUGIN_NAME ) 
+		), 
+		'reset_export_events_url' );
+}
+add_action( 'wp_ajax_bookactiResetExportEventsUrl', 'bookacti_controller_reset_form_export_events_url', 10 );
+
+
+/**
+ * Export events of a specifc form
+ * @since 1.6.0
+ */
+function bookacti_export_form_events() {
+	if( empty( $_REQUEST[ 'action' ] ) || $_REQUEST[ 'action' ] !== 'export_form_events' ) { return; }
+	
+	// Check if the form is valid
+	$form_id = ! empty( $_REQUEST[ 'form_id' ] ) ? intval( $_REQUEST[ 'form_id' ] ) : 0;
+	if( ! $form_id ) { esc_html_e( 'Invalid form ID.', BOOKACTI_PLUGIN_NAME ); exit; }
+	
+	// Check the filename
+	$parsed_url = parse_url( $_SERVER[ 'REQUEST_URI' ] ); 
+	$filename	= 'booking-activities-events-form-' . $form_id . '.ics';
+	if( basename( $parsed_url[ 'path' ] ) !== $filename ) { esc_html_e( 'Invalid filename.', BOOKACTI_PLUGIN_NAME ); exit; }
+	
+	// Check if the secret key exists
+	$key = ! empty( $_REQUEST[ 'key' ] ) ? $_REQUEST[ 'key' ] : '';
+	if( ! $key ) { esc_html_e( 'Missing key.', BOOKACTI_PLUGIN_NAME ); exit; }
+	
+	// Check if the secret key is correct
+	$secret_key = bookacti_get_metadata( 'form', $form_id, 'secret_key', true );
+	if( $key !== $secret_key ) { esc_html_e( 'Invalid key.', BOOKACTI_PLUGIN_NAME ); exit; }
+	
+	// Check if the form has a valid 'calendar' field
+	$calendar_field = bookacti_get_form_field_data_by_name( $form_id, 'calendar' );
+	if( ! $calendar_field ) { esc_html_e( 'Cannot find the calendar field of the requested form.', BOOKACTI_PLUGIN_NAME ); exit; }
+	
+	// Replace the past events form value with the values given in the URL
+	if( ! empty( $_REQUEST[ 'past_events' ] ) && $_REQUEST[ 'past_events' ] !== 'auto' ) {
+		$calendar_field[ 'past_events' ]			= $_REQUEST[ 'past_events' ] ? 1 : 0;
+		$calendar_field[ 'past_events_bookable' ]	= $_REQUEST[ 'past_events' ] ? 1 : 0;
+	}
+	
+	// Retrieve all events, bypass the interval
+	$events_interval = bookacti_get_new_interval_of_events( $calendar_field[ 'template_data' ], array(), 999999999, $calendar_field[ 'past_events' ] );
+	
+	// Get the events
+	$groups_ids	= array();
+	$events		= array( 'events' => array(), 'data' => array() );
+	if( $calendar_field[ 'groups_only' ] ) {
+		if( $calendar_field[ 'group_categories' ] !== false ) {
+			$groups_data = bookacti_get_groups_of_events( $calendar_field[ 'calendars' ], $calendar_field[ 'group_categories' ], $calendar_field[ 'past_events_bookable' ], true, false, $calendar_field[ 'template_data' ] );
+			foreach( $groups_data as $group_id => $group_data ) { $groups_ids[] = $group_id; }
+		}
+		if( $groups_ids ) { 
+			$events	= bookacti_fetch_grouped_events( $calendar_field[ 'calendars' ], $calendar_field[ 'activities' ], $groups_ids, $calendar_field[ 'group_categories' ], $calendar_field[ 'past_events' ], $events_interval );
+		}
+	} else if( $calendar_field[ 'bookings_only' ] ) {
+		$events		= bookacti_fetch_booked_events( $calendar_field[ 'calendars' ], $calendar_field[ 'activities' ], $calendar_field[ 'status' ], $calendar_field[ 'user_id' ], $calendar_field[ 'past_events' ], $events_interval );
+	} else {
+		$events		= bookacti_fetch_events( $calendar_field[ 'calendars' ], $calendar_field[ 'activities' ], $calendar_field[ 'past_events' ], $events_interval );
+	}
+	
+	echo '<pre>';
+	echo bookacti_convert_events_to_ical( $events, $form_id );
+	echo '</pre>';
+	
+//	header( 'Content-type: text/calendar; charset=utf-8' );
+//	header( 'Content-Disposition: attachment; filename=' . $filename );
+//	header( 'Cache-Control: no-cache, must-revalidate' ); // HTTP/1.1
+//	header( 'Expires: Sat, 26 Jul 1997 05:00:00 GMT' ); // Expired date to force third-party calendars to refresh soon
+	
+	exit;
+}
+add_action( 'init', 'bookacti_export_form_events', 10 );

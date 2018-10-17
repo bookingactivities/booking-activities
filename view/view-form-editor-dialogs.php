@@ -2,7 +2,7 @@
 /**
  * Form editor dialogs
  * @since 1.5.0
- * @version 1.5.2
+ * @version 1.6.0
  */
 
 // Exit if accessed directly
@@ -69,7 +69,7 @@ foreach( $fields_data as $field_name => $field_data ) {
 		<input type='hidden' name='action' value='bookactiUpdateFormMeta' />
 		<input type='hidden' name='nonce' value='<?php echo wp_create_nonce( 'bookacti_update_form' ); ?>' />
 		<input type='hidden' name='form_id' value='<?php $form_id ?>' />
-		<?php 
+		<?php
 			do_action( 'bookacti_form_meta_dialog_before', $form, $form_fields );
 		?>
 		<div id='bookacti-form-meta-dialog-lang-switcher' class='bookacti-lang-switcher' ></div>
@@ -807,6 +807,38 @@ foreach( $fields_data as $field_name => $field_data ) {
 	</form>
 </div>
 
+<!-- Export for events dialog -->
+<div id='bookacti-export-events-dialog' class='bookacti-backend-dialog bookacti-form-dialog' style='display:none;' title='<?php _e( 'Export events from this calendar', BOOKACTI_PLUGIN_NAME ); ?>' >
+	<form id='bookacti-export-events-form' >
+		<?php wp_nonce_field( 'bookacti_reset_export_events_url', 'nonce_reset_export_events_url', false ); ?>
+		<input type='hidden' name='action' value='' />
+		<?php
+			$lang = bookacti_get_current_lang_code();
+			$secret_key = bookacti_get_metadata( 'form', $form_id, 'secret_key', true );
+			if( ! $secret_key ) {
+				$secret_key = md5( microtime().rand() );
+				bookacti_update_metadata( 'form', $form_id, array( 'secret_key' => $secret_key ) );
+			}
+			
+			$ical_url = esc_url( home_url( 'booking-activities-events-form-' . $form_id . '.ics?action=export_form_events&form_id=' . $form_id . '&key=' . $secret_key . '&past_events=auto&lang=' . $lang ) );
+		?>
+		<div id='bookacti-export-events-dialog-lang-switcher' class='bookacti-lang-switcher' ></div>
+		<div>
+			<p><strong><?php esc_html_e( 'Secret address in iCal format', BOOKACTI_PLUGIN_NAME ); ?></strong></p>
+			<p><input type='text' id='bookacti_export_events_url_secret' data-value='<?php echo $ical_url; ?>' value='<?php echo $ical_url; ?>' readonly onfocus='this.select();' /></p>
+			<p>
+				<small>
+					<?php esc_html_e( 'Use this address to synchronize the events of this calendar on other applications without making it public.', BOOKACTI_PLUGIN_NAME ); ?>
+				</small>
+			</p>
+			<p>
+				<small>
+					<?php esc_html_e( 'Warning: Only share this address with those you trust to see all event details for this calendar.', BOOKACTI_PLUGIN_NAME ); ?>
+				</small>
+			</p>
+		</div>
+	</form>
+</div>
 
 <?php
 do_action( 'bookacti_form_editor_dialogs', $form, $form_fields );
