@@ -1503,8 +1503,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 	/**
 	 * Get templates data
-	 * 
-	 * @version 1.2.2
+	 * @version 1.6.0
 	 * @global wpdb $wpdb
 	 * @param array $template_ids
 	 * @param boolean $ignore_permissions
@@ -1531,15 +1530,22 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		
         $templates = $wpdb->get_results( $query, ARRAY_A );
 		
+		// Check if we need to check permissions
+		if( ! $ignore_permissions ) {
+			$bypass_template_managers_check = apply_filters( 'bookacti_bypass_template_managers_check', false );
+			if( $bypass_template_managers_check || is_super_admin() ) {
+				$ignore_permissions = true;
+			}
+		}
+		
+		$user_id = get_current_user_id();
 		$templates_data = array();
 		foreach( $templates as $template ) {
 			$template_id = $template[ 'id' ];
 			$template[ 'admin' ] = bookacti_get_managers( 'template', $template_id );
 			
-			// If user is not super admin, check permission
-			$bypass_template_managers_check = apply_filters( 'bookacti_bypass_template_managers_check', false );
-			if( ! $ignore_permissions && ! $bypass_template_managers_check && ! is_super_admin() ) {
-				$user_id = get_current_user_id();
+			// Check permission
+			if( ! $ignore_permissions ) {
 				if( empty( $template[ 'admin' ] ) || ! in_array( $user_id, $template[ 'admin' ], true ) ) {
 					continue;
 				}

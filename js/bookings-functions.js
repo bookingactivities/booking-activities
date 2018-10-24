@@ -153,7 +153,9 @@ function bookacti_reload_booking_system_according_to_filters( booking_system ) {
 
 // BOOKING LIST
 
-// Init booking actions
+/**
+ * Init booking actions
+ */
 function bookacti_init_booking_actions() {
 	$j( '.bookacti-user-bookings-list, .bookacti-order-item-activity, #bookacti-bookings-list' ).on( 'click', '.bookacti-booking-action, .bookacti-booking-group-action', function ( e ) {
 		e.preventDefault();
@@ -200,6 +202,26 @@ function bookacti_init_booking_actions() {
 			} else {
 				location.href = $j( this ).attr( 'href' );
 			}
+		}
+	});
+	
+	// Add / remove items in multiple selectbox
+	bookacti_init_add_and_remove_items();
+}
+
+
+/**
+ * Init booking bulk actions
+ * @since 1.6.0
+ */
+function bookacti_init_booking_bulk_actions() {
+	$j( '.bookacti-bookings-bulk-action' ).on( 'submit', function( e ) {
+		if( $j( this ).find( '[name="action"]' ).val() == -1 ) {
+			e.preventDefault();
+		}
+		else if( $j( this ).find( '[name="action"]' ).val() === 'export' ) {
+			bookacti_dialog_export_bookings();
+			e.preventDefault();
 		}
 	});
 }

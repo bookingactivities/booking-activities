@@ -737,13 +737,14 @@ add_action( 'admin_footer-booking-activities_page_bookacti_forms', 'bookacti_pri
 /**
  * Create a booking form from REQUEST parameters
  * @since 1.5.0
+ * @version 1.6.0
  */
 function bookacti_controller_create_form() {
 	if( empty( $_REQUEST[ 'action' ] ) || $_REQUEST[ 'action' ] !== 'new' ) { return; }
 	
 	// Exit if not allowed to create a form
 	$can_create_form = current_user_can( 'bookacti_create_forms' );
-	if( ! $can_create_form ) { esc_html_e( 'You are not allowed to do this.', BOOKACTI_PLUGIN_NAME ); exit; }
+	if( ! $can_create_form ) { esc_html_e( 'You are not allowed to do that.', BOOKACTI_PLUGIN_NAME ); exit; }
 	
 	$title = ! empty( $_REQUEST[ 'title' ] ) ? sanitize_text_field( stripslashes( $_REQUEST[ 'title' ] ) ) : '';
 	
@@ -1364,14 +1365,12 @@ function bookacti_export_form_events() {
 		$events		= bookacti_fetch_events( $calendar_field[ 'calendars' ], $calendar_field[ 'activities' ], $calendar_field[ 'past_events' ], $events_interval );
 	}
 	
-	echo '<pre>';
-	echo bookacti_convert_events_to_ical( $events, $form_id );
-	echo '</pre>';
+	header( 'Content-type: text/calendar; charset=utf-8' );
+	header( 'Content-Disposition: attachment; filename=' . $filename );
+	header( 'Cache-Control: no-cache, must-revalidate' ); // HTTP/1.1
+	header( 'Expires: Sat, 26 Jul 1997 05:00:00 GMT' ); // Expired date to force third-party calendars to refresh soon
 	
-//	header( 'Content-type: text/calendar; charset=utf-8' );
-//	header( 'Content-Disposition: attachment; filename=' . $filename );
-//	header( 'Cache-Control: no-cache, must-revalidate' ); // HTTP/1.1
-//	header( 'Expires: Sat, 26 Jul 1997 05:00:00 GMT' ); // Expired date to force third-party calendars to refresh soon
+	echo bookacti_convert_events_to_ical( $events, $form_id );
 	
 	exit;
 }

@@ -692,7 +692,7 @@ foreach( $fields_data as $field_name => $field_data ) {
 		<p>
 		<?php
 			// Warning about min and max values
-			_e( 'Min and Max values are dynamilly set according to the selected event and its availability settings.', BOOKACTI_PLUGIN_NAME );
+			esc_html_e( 'Min and Max values are dynamically set according to the selected event and its availability settings.', BOOKACTI_PLUGIN_NAME );
 		?>
 		</p>
 	</form>
@@ -808,7 +808,7 @@ foreach( $fields_data as $field_name => $field_data ) {
 </div>
 
 <!-- Export for events dialog -->
-<div id='bookacti-export-events-dialog' class='bookacti-backend-dialog bookacti-form-dialog' style='display:none;' title='<?php _e( 'Export events from this calendar', BOOKACTI_PLUGIN_NAME ); ?>' >
+<div id='bookacti-export-events-dialog' class='bookacti-backend-dialog bookacti-form-dialog' style='display:none;' title='<?php esc_html_e( 'Export events from this calendar', BOOKACTI_PLUGIN_NAME ); ?>' >
 	<form id='bookacti-export-events-form' >
 		<?php wp_nonce_field( 'bookacti_reset_export_events_url', 'nonce_reset_export_events_url', false ); ?>
 		<input type='hidden' name='action' value='' />
@@ -822,18 +822,39 @@ foreach( $fields_data as $field_name => $field_data ) {
 			
 			$ical_url = esc_url( home_url( 'booking-activities-events-form-' . $form_id . '.ics?action=export_form_events&form_id=' . $form_id . '&key=' . $secret_key . '&past_events=auto&lang=' . $lang ) );
 		?>
-		<div id='bookacti-export-events-dialog-lang-switcher' class='bookacti-lang-switcher' ></div>
 		<div>
 			<p><strong><?php esc_html_e( 'Secret address in iCal format', BOOKACTI_PLUGIN_NAME ); ?></strong></p>
-			<p><input type='text' id='bookacti_export_events_url_secret' data-value='<?php echo $ical_url; ?>' value='<?php echo $ical_url; ?>' readonly onfocus='this.select();' /></p>
+			<div class='bookacti_export_url'>
+				<div class='bookacti_export_url_field' ><input type='text' id='bookacti_export_events_url_secret' data-value='<?php echo $ical_url; ?>' value='<?php echo $ical_url; ?>' readonly onfocus='this.select();' /></div>
+				<div class='bookacti_export_button' ><input type='button' value='<?php esc_html( _ex( 'Export', 'action', BOOKACTI_PLUGIN_NAME ) ); ?>' /></div>
+			</div>
 			<p>
 				<small>
 					<?php esc_html_e( 'Use this address to synchronize the events of this calendar on other applications without making it public.', BOOKACTI_PLUGIN_NAME ); ?>
 				</small>
 			</p>
-			<p>
+			<p class='bookacti-warning'>
+				<span class='dashicons dashicons-warning' ></span>
 				<small>
-					<?php esc_html_e( 'Warning: Only share this address with those you trust to see all event details for this calendar.', BOOKACTI_PLUGIN_NAME ); ?>
+					<?php 
+						esc_html_e( 'This link provides real-time data. However, some apps may synchronize only every 24h, or more.', BOOKACTI_PLUGIN_NAME ); 
+						echo ' ';
+					?>
+					<strong>
+					<?php
+						esc_html_e( 'That\'s why your changes won\'t be applied in real time on your synched apps.', BOOKACTI_PLUGIN_NAME ); 
+					?>
+					</strong>
+				</small>
+			</p>
+			<p class='bookacti-warning'>
+				<span class='dashicons dashicons-warning' ></span>
+				<small>
+					<?php 
+						esc_html_e( 'Only share this address with those you trust to see all your events details.', BOOKACTI_PLUGIN_NAME );
+						echo ' ';
+						esc_html_e( 'You can reset your secret key with the "Reset" button below. This will nullify the previously generated export links.', BOOKACTI_PLUGIN_NAME );
+					?>
 				</small>
 			</p>
 		</div>

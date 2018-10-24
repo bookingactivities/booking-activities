@@ -1678,7 +1678,7 @@ function bookacti_get_formatted_booking_events_list( $booking_events, $quantity 
 
 
 /**
- * Convert an array of events into an ical formatted file
+ * Convert an array of events into ical format
  * @since 1.6.0
  * @param array $events
  * @param int $form_id
@@ -1698,6 +1698,7 @@ function bookacti_convert_events_to_ical( $events, $form_id = 0 ) {
 		$sequence = intval( bookacti_get_metadata( 'form', $form_id, 'ical_sequence', true ) ) + 1;
 		bookacti_update_metadata( 'form', $form_id, array( 'ical_sequence' => $sequence ) );
 	}
+	$occurence_counter = array();
 	
 	$form_name		= $form ? apply_filters( 'bookacti_translate_text', $form[ 'title' ] ) : $form_id;
 	$site_url		= home_url();
@@ -1716,9 +1717,9 @@ function bookacti_convert_events_to_ical( $events, $form_id = 0 ) {
 		'VERSION'		=> '2.0',
 		'CALSCALE'		=> 'GREGORIAN',
 		'METHOD'		=> 'PUBLISH',
-		'X-WR-CALNAME'	=> $form_name . ' (' . $site_name . ')',
+		'X-WR-CALNAME'	=> bookacti_sanitize_ical_property( $form_name . ' (' . $site_name . ')', 'X-WR-CALNAME' ),
 		'X-WR-TIMEZONE'	=> $timezone,
-		'X-WR-CALDESC'	=> $description
+		'X-WR-CALDESC'	=> bookacti_sanitize_ical_property( $description, 'X-WR-CALDESC' )
 	), $events, $form_id );
 	
 	// Display the calendar header
@@ -1730,20 +1731,28 @@ function bookacti_convert_events_to_ical( $events, $form_id = 0 ) {
 			echo $property . ':' . $value . PHP_EOL;
 		}
 		do_action( 'bookacti_ical_vcalendar_before', $events, $form_id );
-	
+		
 		foreach( $events[ 'events' ] as $event ) {
+			// Increase the occurence counter
+			if( ! isset( $occurence_counter[ $event[ 'id' ] ] ) ) {
+				$occurence_counter[ $event[ 'id' ] ] = 0;
+			}
+			$occurence_counter[ $event[ 'id' ] ] += 1;
+			
+			$uid			= $event[ 'id' ] . '-' . $occurence_counter[ $event[ 'id' ] ] . '@' . $site_host;
 			$event_start	= new DateTime( $event[ 'start' ], $timezone_obj );
 			$event_end		= new DateTime( $event[ 'end' ], $timezone_obj );
 			$current_time	= new DateTime( 'now', $timezone_obj );
+			$now_formatted	= $current_time->format( 'Ymd\THis\Z' );
 
 			$vevent_properties = apply_filters( 'bookacti_ical_vevent_properties', array(
-				'UID'			=> $event[ 'id' ] . '@' . $site_host,
+				'UID'			=> $uid,
 				'DTSTART'		=> $event_start->format( 'Ymd\THis\Z' ),
 				'DTEND'			=> $event_end->format( 'Ymd\THis\Z' ),
-				'DTSTAMP'		=> $current_time->format( 'Ymd\THis\Z' ),
+				'DTSTAMP'		=> $now_formatted,
 				'CREATED'		=> '',
 				'LAST-MODIFIED' => '',
-				'SUMMARY'		=> $event[ 'title' ],
+				'SUMMARY'		=> bookacti_sanitize_ical_property( $event[ 'title' ], 'SUMMARY' ),
 				'DESCRIPTION'	=> '',
 				'LOCATION'		=> '',
 				'SEQUENCE'		=> $sequence,
@@ -1770,9 +1779,10 @@ function bookacti_convert_events_to_ical( $events, $form_id = 0 ) {
 	END:VCALENDAR
 	<?php
 	
-	// Remove white space at the beginning and at the end of each new lines
-	return preg_replace( '/^\s+|\s+$/m', '', ob_get_clean() );
+	// Remove tabs at the beginning and at the end of each new lines
+	return preg_replace( '/^\t+|\t+$/m', '', ob_get_clean() );
 }
+
 
 
 

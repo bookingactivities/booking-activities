@@ -169,12 +169,12 @@ if( ! class_exists( 'Bookings_List_Table' ) ) {
 		
 		/**
 		 * Get the screen property
-		 * 
 		 * @since 1.3.0
+		 * @version 1.6.0
 		 * @access public
 		 * @return WP_Screen
 		 */
-		private function get_wp_screen() {
+		public function get_wp_screen() {
 		   if( empty( $this->screen ) ) {
 			  $this->screen = get_current_screen();
 		   }
@@ -238,8 +238,7 @@ if( ! class_exists( 'Bookings_List_Table' ) ) {
 		
 		/**
 		 * Get booking list items. Parameters can be passed in the URL.
-		 * 
-		 * @version 1.5.4
+		 * @version 1.6.0
 		 * @access public
 		 * @return array
 		 */
@@ -247,7 +246,7 @@ if( ! class_exists( 'Bookings_List_Table' ) ) {
 			
 			// Request bookings corresponding to filters
 			if( $this->filters[ 'event_id' ] && ! $this->filters[ 'event_group_id' ] ) { $this->filters[ 'booking_group_id' ] = 'none'; }
-			if( ! $this->filters[ 'booking_group_id' ] ) { $this->filters[ 'group_by' ] = 'booking_group'; }
+			if( ! $this->filters[ 'booking_group_id' ] && $this->filters[ 'group_by' ] !== 'none' ) { $this->filters[ 'group_by' ] = 'booking_group'; }
 			
 			$bookings = bookacti_get_bookings( $this->filters );
 			
@@ -283,7 +282,7 @@ if( ! class_exists( 'Bookings_List_Table' ) ) {
 			foreach( $bookings as $booking ) {
 				
 				// Display one single row for a booking group, instead of each bookings of the group
-				if( $booking->group_id && ( ! $this->filters[ 'booking_group_id' ] || $this->filters[ 'group_by' ] === 'booking_group' ) && ! $this->filters[ 'booking_id' ] ) {
+				if( $booking->group_id && $this->filters[ 'group_by' ] !== 'none' && ( ! $this->filters[ 'booking_group_id' ] || $this->filters[ 'group_by' ] === 'booking_group' ) && ! $this->filters[ 'booking_id' ] ) {
 					// If the group row has already been displayed, or if it is not found, continue
 					if( in_array( $booking->group_id, $displayed_groups, true ) 
 					||  ! isset( $booking_groups[ $booking->group_id ] ) ) { continue; }
@@ -444,12 +443,12 @@ if( ! class_exists( 'Bookings_List_Table' ) ) {
 		 * Get the total amount of bookings according to filters
 		 * 
 		 * @since 1.3.0
-		 * @version 1.4.0
+		 * @version 1.6.0
 		 * @access public
 		 * @return int
 		 */
 		public function get_total_items_count() {
-			if( ! $this->filters[ 'booking_group_id' ] ) { $this->filters[ 'group_by' ] = 'booking_group'; }
+			if( ! $this->filters[ 'booking_group_id' ] && $this->filters[ 'group_by' ] !== 'none' ) { $this->filters[ 'group_by' ] = 'booking_group'; }
 			return bookacti_get_number_of_booking_rows( $this->filters );
 		}
 		
@@ -595,6 +594,61 @@ if( ! class_exists( 'Bookings_List_Table' ) ) {
 				<?php parent::pagination( $which ); ?>
 			</form>
 			<?php 
+		}
+		
+		
+		/**
+		 * Generate the table navigation above or below the table
+		 * @since 1.6.0
+		 * @param string $which
+		 */
+		protected function display_tablenav( $which ) {
+			?>
+			<div class='tablenav <?php echo esc_attr( $which ); ?>'>
+				<?php if ( $this->has_items() ) { ?>
+				<div class='alignleft actions bulkactions'>
+					<form method='post' class='bookacti-bookings-bulk-action'>
+						<input type='hidden' name='page' value='bookacti_bookings' />
+						<input type='hidden' name='nonce_bookings_bulk_action' value='<?php echo wp_create_nonce( 'bulk-' . $this->_args[ 'plural' ] ); ?>' />
+						<?php $this->bulk_actions( $which ); ?>
+					</form>
+				</div>
+				<?php }
+				$this->extra_tablenav( $which );
+				$this->pagination( $which );
+			?>
+				<br class='clear'/>
+			</div>
+			<?php
+		}
+		
+		
+		/**
+		 * Get an associative array ( option_name => option_title ) with the list
+		 * of bulk actions available on this table.
+		 * @since 1.6.0
+		 * @return array
+		 */
+		protected function get_bulk_actions() {
+			return array(
+				'export' => esc_html__( 'Export', BOOKACTI_PLUGIN_NAME )
+			);
+		}
+		
+		
+		/**
+		 * Process the selected bulk action
+		 * @since 1.6.0
+		 */
+		public function process_bulk_action() {
+			if( empty( $_REQUEST[ 'nonce_bookings_bulk_action' ] ) ) { return; }
+			
+			$action = 'bulk-' . $this->_args[ 'plural' ];
+			check_admin_referer( $action );
+			
+			$action = $this->current_action();
+			
+			return;
 		}
 	}
 }

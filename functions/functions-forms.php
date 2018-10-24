@@ -1447,6 +1447,7 @@ function bookacti_display_form_integration_tuto_meta_box( $form ) {
 /**
  * Check if user is allowed to manage form
  * @since 1.5.0
+ * @version 1.6.0
  * @param int $form_id
  * @param int $user_id
  * @return boolean
@@ -1459,7 +1460,9 @@ function bookacti_user_can_manage_form( $form_id, $user_id = false ) {
 	if( is_super_admin() || $bypass_form_managers_check ) { $user_can_manage_form = true; }
 	else {
 		$admins = bookacti_get_form_managers( $form_id );
-		if( in_array( $user_id, $admins, true ) ) { $user_can_manage_form = true; }
+		if( $admins ) {
+			if( in_array( $user_id, $admins, true ) ) { $user_can_manage_form = true; }
+		}
 	}
 
 	return apply_filters( 'bookacti_user_can_manage_form', $user_can_manage_form, $form_id, $user_id );

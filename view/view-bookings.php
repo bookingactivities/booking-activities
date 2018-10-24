@@ -1,7 +1,7 @@
 <?php
 /**
  * Booking list page
- * @version 1.5.4
+ * @version 1.6.0
  */
 
 // Exit if accessed directly
@@ -115,7 +115,7 @@ if( ! $templates ) {
 					<?php echo esc_html_x( 'Status', 'Booking status', BOOKACTI_PLUGIN_NAME ); ?>
 				</div>
 				<div class='bookacti-bookings-filter-content' >
-					<input type='hidden' name='status[]' value='' />
+					<input type='hidden' name='status[]' value='all' />
 				<?php
 					// Format templates from URL
 					if( isset( $_REQUEST[ 'status' ] ) ) {

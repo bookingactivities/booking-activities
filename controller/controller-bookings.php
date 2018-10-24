@@ -263,7 +263,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 		/**
 		 * AJAX Controller - Reschedule a booking
-		 * @version 1.5.9
+		 * @version 1.6.0
 		 */
 		function bookacti_controller_reschedule_booking() {
 
@@ -277,7 +277,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			$is_allowed			= bookacti_user_can_manage_booking( $booking_id );
 			
 			if( ! $is_nonce_valid || ! $is_allowed ) {
-				wp_send_json( array( 'status' => 'failed', 'error' => 'not_allowed', 'message' => esc_html__( 'You are not allowed to do this.', BOOKACTI_PLUGIN_NAME ) ) );
+				wp_send_json( array( 'status' => 'failed', 'error' => 'not_allowed', 'message' => esc_html__( 'You are not allowed to do that.', BOOKACTI_PLUGIN_NAME ) ) );
 			}
 			
 			// Check if the desired event is eligible according to the current booking
@@ -663,6 +663,73 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			bookacti_send_json( $return_array, 'delete_booking_group' );
 		}
 		add_action( 'wp_ajax_bookactiDeleteBookingGroup', 'bookacti_controller_delete_booking_group' );
+
+	
+	// BULK ACTIONS
+		/**
+		 * Generate the export bookings URL according to current filters and export settings
+		 * @since 1.6.0
+		 */
+		function bookacti_controller_generate_export_bookings_url() {
+						
+			// Check nonce
+			if( ! check_ajax_referer( 'bookacti_export_bookings_url', 'nonce_export_bookings_url', false ) ) { 
+				bookacti_send_json_invalid_nonce( 'export_bookings_url' ); 
+			}
+			
+			// Check capabilities
+			if( ! current_user_can( 'bookacti_manage_bookings' ) ) { 
+				bookacti_send_json_not_allowed( 'export_bookings_url' ); 
+			}
+			
+			$lang = bookacti_get_current_lang_code();
+			$message = esc_html__( 'The link has been correctly generated. Use the link above to export your bookings.', BOOKACTI_PLUGIN_NAME );
+			
+			// Get or generate current user export secret key
+			$current_user_id = get_current_user_id();
+			$secret_key = get_user_meta( $current_user_id, 'bookacti_secret_key', true );
+			if( ! $secret_key || ! empty( $_POST[ 'reset_key' ] ) ) {
+				$secret_key = $current_user_id . '-' . md5( microtime().rand() );
+				update_user_meta( $current_user_id, 'bookacti_secret_key', $secret_key );
+				if( ! empty( $_POST[ 'reset_key' ] ) ) {
+					$message .= '<br/><em>' . esc_html__( 'Your secret key has been changed. The old links that you have generated won\'t work anymore.', BOOKACTI_PLUGIN_NAME ) . '</em>';
+				}
+			}
+			
+			// Get formatted booking filters
+			if( isset( $_POST[ 'booking_filters' ][ 'templates' ] ) && $_POST[ 'booking_filters' ][ 'templates' ][ 0 ] === 'all' ) {
+				unset( $_POST[ 'booking_filters' ][ 'templates' ] );
+			}
+			$default_fitlers = bookacti_format_booking_filters();
+			$booking_filters = bookacti_format_booking_filters( $_POST[ 'booking_filters' ] );
+			
+			if( isset( $_POST[ 'export_groups' ] ) ) {
+				$booking_filters[ 'group_by' ] = $_POST[ 'export_groups' ] === 'groups' ? 'booking_group' : 'none';
+			}
+			
+			// Keep only the required data to keep the URL as short as possible
+			foreach( $booking_filters as $filter_name => $filter_value ) {
+				if( is_numeric( $filter_value ) && is_string( $filter_value ) ) { 
+					$filter_value = is_float( $filter_value + 0 ) ? floatval( $filter_value ) : intval( $filter_value );
+				}
+				if( $default_fitlers[ $filter_name ] === $filter_value ) {
+					unset( $booking_filters[ $filter_name ] );
+				}
+			}
+			
+			// Add the required settings to the URL
+			$csv_url = home_url( 'booking-activities-bookings-' . $current_user_id . '.csv?action=export_bookings&key=' . $secret_key . '&lang=' . $lang );
+			if( $booking_filters ) {
+				$csv_url = add_query_arg( $booking_filters, $csv_url );
+			}
+			if( ! empty( $_POST[ 'columns' ] ) ) {
+				$csv_url = add_query_arg( array( 'columns' => $_POST[ 'columns' ] ), $csv_url );
+			}
+			
+			bookacti_send_json( array( 'status' => 'success', 'url' => esc_url_raw( $csv_url ), 'message' => $message ), 'export_bookings_url' ); 
+		}
+		add_action( 'wp_ajax_bookactiExportBookingsUrl', 'bookacti_controller_generate_export_bookings_url' );
+
 
 
 

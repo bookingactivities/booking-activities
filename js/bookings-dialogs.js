@@ -6,10 +6,24 @@ $j( document ).ready( function() {
 	if( $j( '.bookacti-booking-action' ).length || $j( '.bookacti-booking-group-action' ).length ) {	
 		bookacti_init_booking_actions();
 	}
+	
+	/**
+	 * Init booking bulk actions
+	 * @since 1.6.0
+	 */
+	if( $j( '.bookacti-bookings-bulk-action' ).length ) {	
+		bookacti_init_booking_bulk_actions();
+		
+		$j( '.bookacti_export_button input[type="button"]' ).on( 'click', function() {
+			var url = $j( this ).closest( '.bookacti_export_url' ).find( '.bookacti_export_url_field input' ).val();
+			if( url ) {
+				window.open( url, '_blank' );
+			}
+		});
+	}
 });
 
 
-//
 /**
  * Initialize bookings dialogs
  */
@@ -162,7 +176,7 @@ function bookacti_dialog_cancel_booking( booking_id, booking_type ) {
 
 /**
  * Refund a cancelled booking
- * @version 1.5.9
+ * @version 1.6.0
  * @param {int} booking_id
  * @param {string} booking_type
  */
@@ -208,7 +222,7 @@ function bookacti_dialog_refund_booking( booking_id, booking_type ) {
 					} );
 					message_container.append( message_title );
 					message_container.append( message_input );
-					$j( '#bookacti-refund-options' ).after( message_container );
+					$j( '#bookacti-refund-options' ).append( message_container );
 					
 					buttons.push(
 					{
@@ -744,9 +758,8 @@ function bookacti_dialog_reschedule_booking( booking_id ) {
  * Delete a booking or a booking group
  * @since 1.5.0
  * @version 1.5.9
- * @param {type} booking_id
- * @param {type} booking_type
- * @returns {undefined}
+ * @param {int} booking_id
+ * @param {string} booking_type
  */
 function bookacti_dialog_delete_booking( booking_id, booking_type ) {
 	
@@ -862,4 +875,108 @@ function bookacti_dialog_delete_booking( booking_id, booking_type ) {
 	
 	// Open the modal dialog
     $j( '#bookacti-delete-booking-dialog' ).dialog( 'open' );
+}
+
+
+/**
+ * Export bookings dialog
+ * @since 1.6.0
+ */
+function bookacti_dialog_export_bookings() {
+	
+	// Reset URL
+	$j( '#bookacti_export_bookings_url_secret' ).val( '' );
+	$j( '#bookacti-export-bookings-url-container' ).hide();
+	
+	// Reset error notices
+	$j( '#bookacti-export-bookings-dialog .bookacti-notices' ).remove();
+	
+	// Add the buttons
+	$j( '#bookacti-export-bookings-dialog' ).dialog( 'option', 'buttons',
+		// OK button   
+		[{
+			'text': bookacti_localized.dialog_button_ok,			
+			'click': function() { 
+				bookacti_generate_export_bookings_url( false );
+			}
+		},
+		
+		// Reset the address
+		{
+			'text': bookacti_localized.dialog_button_reset,
+			'class': 'bookacti-dialog-delete-button bookacti-dialog-left-button',
+			'click': function() { 
+				bookacti_generate_export_bookings_url( true );
+			}
+		}
+		]
+    );
+	
+	// Open the modal dialog
+    $j( '#bookacti-export-bookings-dialog' ).dialog( 'open' );
+}
+
+
+function bookacti_generate_export_bookings_url( reset_key ) {
+	reset_key = reset_key || false;
+	
+	// Reset error notices
+	$j( '#bookacti-export-bookings-dialog .bookacti-notices' ).remove();
+
+	// Display a loader
+	var loading_div = '<div class="bookacti-loading-alt">' 
+						+ '<img class="bookacti-loader" src="' + bookacti_localized.plugin_path + '/img/ajax-loader.gif" title="' + bookacti_localized.loading + '" />'
+						+ '<span class="bookacti-loading-alt-text" >' + bookacti_localized.loading + '</span>'
+					+ '</div>';
+	$j( '#bookacti-export-bookings-dialog' ).append( loading_div );
+	
+	// Multiple select
+	$j( '#bookacti-export-bookings-dialog select[multiple].bookacti-items-select-box option' ).prop( 'selected', true );
+	
+	// Get current filters and export settings
+	var data = $j( '#bookacti-export-bookings-form' ).serializeObject();
+	data.action = 'bookactiExportBookingsUrl';
+	data.reset_key = reset_key ? 1 : 0;
+	data.booking_filters = $j( '#bookacti-booking-list-filters-form' ).serializeObject();
+	
+	$j.ajax({
+		url: ajaxurl,
+		type: 'POST',
+		data: data,
+		dataType: 'json',
+		success: function( response ){
+			if( response.status === 'success' ) {
+
+				$j( '#bookacti_export_bookings_url_secret' ).val( response.url );
+				$j( '#bookacti-export-bookings-dialog' ).append( '<div class="bookacti-notices"><ul class="bookacti-success-list"><li>' + response.message + '</li></ul></div>' ).show();
+				
+				$j( '#bookacti-export-bookings-url-container' ).show();
+				
+				$j( '#bookacti-form-editor' ).trigger( 'bookacti_export_bookings_url', [ response ] );
+
+			} else if( response.status === 'failed' ) {
+
+				var error_message = typeof response.message !== 'undefined' ? response.message : '';
+				if( ! error_message ) {
+					error_message += bookacti_localized.error_reset_export_bookings_url;
+					var error_code = typeof response.error !== 'undefined' ? response.error : '';
+					if( error_code ) {
+						error_message += ' (' + error_code + ')';
+					}
+				}
+				$j( '#bookacti-export-bookings-dialog' ).append( '<div class="bookacti-notices"><ul class="bookacti-error-list"><li>' + error_message + '</li></ul></div>' ).show();
+				console.log( error_message );
+				console.log( response );
+			}
+		},
+		error: function( e ){
+			$j( '#bookacti-export-bookings-dialog' ).append( '<div class="bookacti-notices"><ul class="bookacti-error-list"><li>' + 'AJAX ' + bookacti_localized.error_reset_export_bookings_url + '</li></ul></div>' ).show();
+			console.log( 'AJAX ' + bookacti_localized.error_reset_export_bookings_url );
+			console.log( e );
+		},
+		complete: function() {
+			$j( '#bookacti-export-bookings-dialog .bookacti-notices' ).show();
+			$j( '#bookacti-export-bookings-dialog .bookacti-loading-alt' ).remove();
+		}
+	});
 }

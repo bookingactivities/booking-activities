@@ -51,14 +51,14 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	/**
 	 * Send a filtered array via json to stop a not allowed an ajax process
 	 * @since 1.5.0
-	 * @version 1.5.3
+	 * @version 1.6.0
 	 * @param string $action Name of the filter to allow third-party modifications
 	 */
 	function bookacti_send_json_not_allowed( $action = '' ) {
 		$return_array = array( 
 			'status'	=> 'failed', 
 			'error'		=> 'not_allowed', 
-			'message'	=> esc_html__( 'You are not allowed to do this.', BOOKACTI_PLUGIN_NAME )
+			'message'	=> esc_html__( 'You are not allowed to do that.', BOOKACTI_PLUGIN_NAME )
 		);
 		bookacti_send_json( $return_array, $action );
 	}
@@ -922,6 +922,27 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	
 	
 	/**
+	 * Use mb_substr if available, else use a regex
+	 * @since 1.6.0
+	 * @param string $string
+	 * @param int $offset
+	 * @param int|null $length
+	 * @return string
+	 */
+	function bookacti_substr( $string, $offset = 0, $length = null ) {
+		$substr = '';
+		if( function_exists( 'mb_substr' ) ) {
+			$substr = mb_substr( $string, $offset, $length );
+		} else {
+			$arr = preg_split( '//u', $string );
+			$slice = array_slice( $arr, $offset + 1, $length );
+			$substr = implode( '', $slice );
+		}
+		return $substr;
+	}
+	
+	
+	/**
 	 * Sort array of arrays with a ['order'] index
 	 * 
 	 * @param array $a
@@ -1145,10 +1166,50 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		
 		return apply_filters( 'bookacti_sanitized_data', $sanitized_data, $default_data, $raw_data, $keys_by_type );
 	}
+	
+	
+	/**
+	 * Escape illegal caracters in ical properties
+	 * @since 1.6.0
+	 * @param string $value
+	 * @param string $property_name
+	 * @return string
+	 */
+	function bookacti_sanitize_ical_property( $value, $property_name = '' ) {
+		$value = trim( $value );									// Remove whitespaces at the start and at the end of the string
+		$value = strip_tags( $value );								// Remove PHP and HTML elements
+		$value = html_entity_decode( $value );						// Decode html entities first because semicolons will be escaped
+		$value = preg_replace( '/([\,;])/', '\\\$1', $value );		// Escape illegal caracters in ical properties
+		$value = preg_replace( '/' . PHP_EOL . '+/', ' ', $value ); // Replace End of lines with a whitespace
+		$value = preg_replace( '/\s{2,}/', ' ', $value );			// Replace multiple whitespaces with a single space
+		$property_name_len = strlen( $property_name ) + 1;			// Add 1 character for the colon (:) after the property name
+		$lines = array();
+		while( strlen( $value ) > ( 75 - $property_name_len ) ) {
+			$space = ( 75 - $property_name_len );
+			$mbcc = $space;
+			while( $mbcc ) {
+				$line = bookacti_substr( $value, 0, $mbcc );
+				$oct = strlen( $line );
+				if ( $oct > $space ) {
+					$mbcc -= $oct - $space;
+				}
+				else {
+					$lines[] = $line;
+					$property_name_len = 0; // The leading space doesn't count
+					$value = bookacti_substr( $value, $mbcc );
+					break;
+				}
+			}
+		}
+		if( ! empty( $value ) ) {
+			$lines[] = $value;
+		}
+		return implode( PHP_EOL . ' ', $lines ); // Line break + leading space
+	}
 
 
-
-
+	
+	
 // USERS
 
 	/**

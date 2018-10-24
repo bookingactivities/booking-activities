@@ -117,6 +117,7 @@ $bookacti_translation_array = apply_filters( 'bookacti_translation_array', array
 	'error_remove_form_field'			=> esc_html__( 'An error occurs while trying to remove the field.', BOOKACTI_PLUGIN_NAME ),
 	'error_update_form_field'			=> esc_html__( 'An error occurs while trying to update the field.', BOOKACTI_PLUGIN_NAME ),
 	'error_reset_export_events_url'		=> esc_html__( 'An error occurs while trying to reset the event feed URL.', BOOKACTI_PLUGIN_NAME ),
+	'error_reset_export_bookings_url'	=> esc_html__( 'An error occurs while trying to generate the bookings feed URL.', BOOKACTI_PLUGIN_NAME ),
 	'error_send_email'					=> esc_html__( 'An error occurs while trying to send the email. Please try again.', BOOKACTI_PLUGIN_NAME ),
 	
 	'error_display_product_events'		=> esc_html__( 'Error occurs when trying to display product events. Please try later.', BOOKACTI_PLUGIN_NAME ),
@@ -132,7 +133,7 @@ $bookacti_translation_array = apply_filters( 'bookacti_translation_array', array
 	'error_switch_booking_method'		=> esc_html__( 'Error occurs while trying to switch booking method.', BOOKACTI_PLUGIN_NAME ),
 	'error_reload_booking_system'		=> esc_html__( 'Error occurs while trying to reload booking system.', BOOKACTI_PLUGIN_NAME ),
 	'error_update_settings'				=> esc_html__( 'Error occurs while trying to update settings.', BOOKACTI_PLUGIN_NAME ),
-	'error_not_allowed'					=> esc_html__( 'You are not allowed to do this.', BOOKACTI_PLUGIN_NAME ),
+	'error_not_allowed'					=> esc_html__( 'You are not allowed to do that.', BOOKACTI_PLUGIN_NAME ),
 	'error_cancel_booking'				=> esc_html__( 'Error occurs while trying to cancel booking.', BOOKACTI_PLUGIN_NAME ),
 	'error_reschedule_booking'			=> esc_html__( 'Error occurs while trying to reschedule booking.', BOOKACTI_PLUGIN_NAME ),
 	'error_delete_booking'				=> esc_html__( 'An error occurred while trying to delete the booking.', BOOKACTI_PLUGIN_NAME ),

@@ -177,6 +177,7 @@ function bookacti_shortcode_bookings_list( $atts = array(), $content = null, $ta
  * Check if booking form is correct and then book the event, or send the error message
  * 
  * @since 1.5.0 (was bookacti_controller_validate_booking_form)
+ * @version 1.6.0
  * @deprecated since version 1.5.0
  */
 function bookacti_deprecated_controller_validate_booking_form() {
@@ -257,7 +258,7 @@ function bookacti_deprecated_controller_validate_booking_form() {
 		}
 		
 	} else {
-		$message = __( 'You are not allowed to do this.', BOOKACTI_PLUGIN_NAME );
+		$message = __( 'You are not allowed to do that.', BOOKACTI_PLUGIN_NAME );
 		if( ! $is_allowed ) {
 			$message = __( 'You are not logged in. Please create an account and log in first.', BOOKACTI_PLUGIN_NAME );
 		}

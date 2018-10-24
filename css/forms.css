@@ -70,7 +70,6 @@ body.booking-activities_page_bookacti_forms label[for='bookacti_form_publish-hid
 
 .bookacti-form-dialog .bookacti-combobox-input	{ min-width: 150px; width: 150px; }
 
-#bookacti_export_events_url_secret { padding: 10px; max-width: none; width: 100%; }
 
 /* Metaboxes */
 #poststuff #bookacti_form_publish .inside	{ margin: 0; padding: 0; }

@@ -546,7 +546,7 @@ function bookacti_dialog_export_events( form_id ) {
 						
 					},
 					error: function( e ){
-						$j( '#bookacti-export-events-dialog' ).append( '<div class="bookacti-notices"><ul class="bookacti-error-list"><li>' + 'AJAX ' + bookacti_localized.error_change_booking_state + '</li></ul></div>' ).show();
+						$j( '#bookacti-export-events-dialog' ).append( '<div class="bookacti-notices"><ul class="bookacti-error-list"><li>' + 'AJAX ' + bookacti_localized.error_reset_export_events_url + '</li></ul></div>' ).show();
 						console.log( 'AJAX ' + bookacti_localized.error_reset_export_events_url );
 						console.log( e );
 					},

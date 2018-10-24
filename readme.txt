@@ -317,6 +317,14 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 
 == Changelog ==
 
+= 1.6.0 =
+* Feature - Export your events to ical (ics) files
+* Feature - Synchronize your events with third-party apps (e.g.: Google Agenda) (one way: export only)
+* Feature - Export your bookings to CSV files
+* Feature - Synchronize your booking list to third-party apps (e.g.: Google Sheet) (one way: export only)
+* Fix - Booking form not appearing on WC variable product pages if the default variation was non-activity
+* Fix - Possible PHP error while checking templates, activities and forms permission if they are not set
+
 = 1.5.9 - 2018/10/11 =
 * Tweak - Availability period is now checked on server side and is compatible with the "Display past events" option
 * Tweak - Reschedule calendar has now the same booking constraints as the calendar of the form used for the reservation (for customers only)

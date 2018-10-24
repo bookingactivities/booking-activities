@@ -145,11 +145,11 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	 * Format booking filters
 	 * 
 	 * @since 1.3.0
-	 * @version 1.5.4
+	 * @version 1.6.0
 	 * @param array $filters 
 	 * @return array
 	 */
-	function bookacti_format_booking_filters( $filters ) {
+	function bookacti_format_booking_filters( $filters = array() ) {
 
 		$default_filters = apply_filters( 'bookacti_default_booking_filters', array(
 			'templates'					=> array(), 
@@ -211,12 +211,12 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			} else if( in_array( $filter, array( 'activities', 'in__booking_id', 'in__booking_group_id', 'not_in__booking_id', 'not_in__booking_group_id', 'not_in__user_id' ), true ) ) {
 				if( is_numeric( $current_value ) )	{ $current_value = array( $current_value ); }
 				if( ! is_array( $current_value ) )	{ $current_value = $default_value; }
-				else if( $i = array_search( 'all', $current_value ) !== false ) { unset( $current_value[ $i ] ); }
+				else if( ( $i = array_search( 'all', $current_value ) ) !== false ) { unset( $current_value[ $i ] ); }
 				
 			} else if( in_array( $filter, array( 'status' ), true ) ) {
 				if( is_string( $current_value ) )	{ $current_value = array( $current_value ); }
 				if( ! is_array( $current_value ) )	{ $current_value = $default_value; }
-				else if( $i = array_search( 'all', $current_value ) !== false ) { unset( $current_value[ $i ] ); }
+				else if( ( $i = array_search( 'all', $current_value ) ) !== false ) { unset( $current_value[ $i ] ); }
 				
 			} else if( in_array( $filter, array( 'booking_id', 'booking_group_id', 'event_group_id', 'event_id', 'user_id', 'offset', 'per_page' ), true ) ) {
 				if( ! is_numeric( $current_value ) ){ $current_value = $default_value; }
@@ -257,7 +257,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 				if( ! in_array( $current_value, array( 'asc', 'desc' ), true ) ) { $current_value = $default_value; }
 			
 			} else if( $filter === 'group_by' ) {
-				if( ! in_array( $current_value, array( 'booking_group' ), true ) ) { $current_value = $default_value; }
+				if( ! in_array( $current_value, array( 'none', 'booking_group' ), true ) ) { $current_value = $default_value; }
 			}
 			
 			$formatted_filters[ $filter ] = $current_value;
