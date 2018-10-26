@@ -10,14 +10,13 @@ if( ! class_exists( 'Bookings_List_Table' ) ) {
 	
 	/**
 	 * Bookings WP_List_Table
-	 * 
-	 * @version 1.3.0
+	 * @version 1.6.0
 	 */
 	class Bookings_List_Table extends WP_List_Table {
 		
 		public $items;
 		public $filters;
-		protected $screen;
+		public $screen;
 		
 		/**
 		 * Set up the Booking list table
@@ -184,8 +183,7 @@ if( ! class_exists( 'Bookings_List_Table' ) ) {
 		
 		/**
 		 * Prepare the items to be displayed in the list
-		 * 
-		 * @version 1.3.0
+		 * @version 1.6.0
 		 * @access public
 		 * @param array $filters
 		 * @param boolean $no_pagination
@@ -199,13 +197,8 @@ if( ! class_exists( 'Bookings_List_Table' ) ) {
 			
 			if( ! $no_pagination ) {
 				// Get the number of booking to display per page
-				$screen			= $this->get_wp_screen();
-				$screen_option	= $screen->get_option( 'per_page', 'option' );
-				$per_page		= intval( get_user_meta( get_current_user_id(), $screen_option, true ) );
-				if( empty ( $per_page ) || $per_page < 1 ) {
-					$per_page = $screen->get_option( 'per_page', 'default' );
-				}
-
+				$per_page = $this->get_rows_number_per_page();
+				
 				// Set pagination
 				$this->set_pagination_args( array(
 					'total_items' => $this->get_total_items_count(),
@@ -250,24 +243,30 @@ if( ! class_exists( 'Bookings_List_Table' ) ) {
 			
 			$bookings = bookacti_get_bookings( $this->filters );
 			
-			// Retrieve booking groups data
-			$booking_groups		= bookacti_get_booking_groups( $this->filters );
-			$displayed_groups	= array();
+			// Check if the bookings list can contain groups
+			$may_have_groups = false; 
+			if( $this->filters[ 'group_by' ] !== 'none' && ( ! $this->filters[ 'booking_group_id' ] || $this->filters[ 'group_by' ] === 'booking_group' ) && ! $this->filters[ 'booking_id' ] ) {
+				$may_have_groups = true;
+				$displayed_groups = array();
+			}
+			
+			// Retrieve the required groups data only
+			if( $may_have_groups ) {
+				$group_ids = array();
+				foreach( $bookings as $booking ) {
+					if( ! in_array( $booking->group_id, $group_ids, true ) ){
+						$group_ids[] = $booking->group_id;
+					}
+				}
+				$group_filters = bookacti_format_booking_filters( array( 'in__booking_group_id' => $group_ids, 'templates' => '' ) );
+				$booking_groups = bookacti_get_booking_groups( $group_filters );
+			}
 			
 			// Retrieve information about users and stock them into an array sorted by user id
 			$user_ids = array();
 			foreach( $bookings as $booking ) {
 				if( ! in_array( $booking->user_id, $user_ids, true ) ){
 					$user_ids[] = $booking->user_id;
-					continue;
-				}
-				// If the booking group has a different user than the bookings of the group
-				if( ! $booking->group_id ) { continue; }
-				if( ! empty( $booking_groups[ $booking->group_id ] ) ) {
-					$booking_group = $booking_groups[ $booking->group_id ];
-					if( $booking_group->user_id !== $booking->user_id && ! in_array( $booking_group->user_id, $user_ids, true ) ) {
-						$user_ids[] = $booking_group->user_id;
-					}
 				}
 			}
 			
@@ -282,45 +281,43 @@ if( ! class_exists( 'Bookings_List_Table' ) ) {
 			foreach( $bookings as $booking ) {
 				
 				// Display one single row for a booking group, instead of each bookings of the group
-				if( $booking->group_id && $this->filters[ 'group_by' ] !== 'none' && ( ! $this->filters[ 'booking_group_id' ] || $this->filters[ 'group_by' ] === 'booking_group' ) && ! $this->filters[ 'booking_id' ] ) {
+				if( $booking->group_id && $may_have_groups ) {
 					// If the group row has already been displayed, or if it is not found, continue
-					if( in_array( $booking->group_id, $displayed_groups, true ) 
-					||  ! isset( $booking_groups[ $booking->group_id ] ) ) { continue; }
+					if( isset( $displayed_groups[ $booking->group_id ] ) 
+					||  empty( $booking_groups[ $booking->group_id ] ) ) { continue; }
 					
-					$group		= $booking_groups[ $booking->group_id ];
-					
-					$raw_id		= $group->id;
-					$tr_class	= 'bookacti-booking-group';
-					$id			= $group->id . '<span class="bookacti-booking-group-indicator">' . _x( 'Group', 'noun', BOOKACTI_PLUGIN_NAME ) . '</span>';
-					$user_id	= $group->user_id;
-					$state		= bookacti_format_booking_state( $group->state, true );
-					$paid		= bookacti_format_payment_status( $group->payment_status, true );
-					$title		= $group->group_title;
-					$start		= $group->start;
-					$end		= $group->end;
-					$quantity	= bookacti_get_booking_group_quantity( $group->id );
-					$order_id	= $group->order_id;
-					$actions	= bookacti_get_booking_group_actions_html( $group->id, 'admin' );
+					$group			= $booking_groups[ $booking->group_id ];
+					$raw_id			= $group->id;
+					$tr_class		= 'bookacti-booking-group';
+					$id				= $group->id . '<span class="bookacti-booking-group-indicator">' . _x( 'Group', 'noun', BOOKACTI_PLUGIN_NAME ) . '</span>';
+					$user_id		= $group->user_id;
+					$state			= bookacti_format_booking_state( $group->state, true );
+					$paid			= bookacti_format_payment_status( $group->payment_status, true );
+					$title			= $group->group_title;
+					$start			= $group->start;
+					$end			= $group->end;
+					$quantity		= bookacti_get_booking_group_quantity( $group->id );
+					$order_id		= $group->order_id;
+					$actions		= bookacti_get_booking_group_actions_html( $group->id, 'admin' );
 					$activity_title	= '';
 					$booking_type	= 'group';
 					
-					$displayed_groups[] = $booking->group_id;
+					$displayed_groups[ $booking->group_id ] = true;
 				
 				// Single booking
 				} else {
-					
-					$raw_id		= $booking->id;
-					$tr_class	= $booking->group_id ? 'bookacti-single-booking bookacti-gouped-booking bookacti-booking-group-id-' . $booking->group_id : 'bookacti-single-booking';
-					$id			= $booking->group_id ? $booking->id . '<span class="bookacti-booking-group-id" >' . $booking->group_id . '</span>' : $booking->id;
-					$user_id	= $booking->user_id;
-					$state		= bookacti_format_booking_state( $booking->state, true );
-					$paid		= bookacti_format_payment_status( $booking->payment_status, true );
-					$title		= $booking->event_title;
-					$start		= $booking->event_start;
-					$end		= $booking->event_end;
-					$quantity	= $booking->quantity;
-					$order_id	= $booking->order_id;
-					$actions	= bookacti_get_booking_actions_html( $booking->id, 'admin' );
+					$raw_id			= $booking->id;
+					$tr_class		= $booking->group_id ? 'bookacti-single-booking bookacti-gouped-booking bookacti-booking-group-id-' . $booking->group_id : 'bookacti-single-booking';
+					$id				= $booking->group_id ? $booking->id . '<span class="bookacti-booking-group-id" >' . $booking->group_id . '</span>' : $booking->id;
+					$user_id		= $booking->user_id;
+					$state			= bookacti_format_booking_state( $booking->state, true );
+					$paid			= bookacti_format_payment_status( $booking->payment_status, true );
+					$title			= $booking->event_title;
+					$start			= $booking->event_start;
+					$end			= $booking->event_end;
+					$quantity		= $booking->quantity;
+					$order_id		= $booking->order_id;
+					$actions		= bookacti_get_booking_actions_html( $booking->id, 'admin' );
 					$activity_title	= $booking->activity_title;
 					$booking_type	= 'single';
 				}
@@ -328,19 +325,19 @@ if( ! class_exists( 'Bookings_List_Table' ) ) {
 				// Format customer column
 				if( $user_id && is_numeric( $user_id ) && ! empty( $users[ $user_id ] ) ) {
 					$user = $users[ $user_id ];
-					$customer = '<a '
-								. ' href="' . esc_url( get_admin_url() . 'user-edit.php?user_id=' . $user_id ) . '" '
-								. ' target="_blank" '
-								. ' >'
-									. $user->display_name
-							. ' </a>';
-					$email = ! empty( $user->user_email ) ? $user->user_email : '';
-					$phone = ! empty( $user->phone ) ? $user->phone : '';
+					$customer	= '<a '
+									. ' href="' . esc_url( get_admin_url() . 'user-edit.php?user_id=' . $user_id ) . '" '
+									. ' target="_blank" '
+									. ' >'
+										. $user->display_name
+								. ' </a>';
+					$email		= ! empty( $user->user_email ) ? $user->user_email : '';
+					$phone		= ! empty( $user->phone ) ? $user->phone : '';
 				} else {
-					$user = new stdClass();
-					$customer = esc_html( __( 'Unknown user', BOOKACTI_PLUGIN_NAME ) . ' (' . $user_id . ')' );
-					$email = '';
-					$phone = '';
+					$user		= null;
+					$customer	= esc_html( __( 'Unknown user', BOOKACTI_PLUGIN_NAME ) . ' (' . $user_id . ')' );
+					$email		= '';
+					$phone		= '';
 				}
 				
 				$booking_item = apply_filters( 'bookacti_booking_list_booking_columns', array( 
@@ -364,7 +361,7 @@ if( ! class_exists( 'Bookings_List_Table' ) ) {
 					'order_id'		=> $order_id,
 					'booking_type'	=> $booking_type,
 					'primary_data'	=> array( 
-						'<span class="bookacti-column-id" >(' . _x( 'id', 'An id is a unique identification number', BOOKACTI_PLUGIN_NAME ) . ': ' . $id . ')</span>', 
+						'<span class="bookacti-column-id" >(' . esc_html_x( 'id', 'An id is a unique identification number', BOOKACTI_PLUGIN_NAME ) . ': ' . $id . ')</span>', 
 						$state, 
 						$paid, 
 						'<span class="bookacti-column-quantity" >' . $quantity_separator . $quantity . '</span>',
@@ -598,6 +595,22 @@ if( ! class_exists( 'Bookings_List_Table' ) ) {
 		
 		
 		/**
+		 * Get the number of rows to display per page
+		 * @since 1.6.0
+		 * @return int
+		 */
+		public function get_rows_number_per_page() {
+			$screen			= $this->get_wp_screen();
+			$screen_option	= $screen->get_option( 'per_page', 'option' );
+			$per_page = intval( get_user_meta( get_current_user_id(), $screen_option, true ) );
+			if( empty ( $per_page ) || $per_page < 1 ) {
+				$per_page = $screen->get_option( 'per_page', 'default' );
+			}
+			return $per_page;
+		}
+		
+		
+		/**
 		 * Generate the table navigation above or below the table
 		 * @since 1.6.0
 		 * @param string $which
@@ -630,9 +643,9 @@ if( ! class_exists( 'Bookings_List_Table' ) ) {
 		 * @return array
 		 */
 		protected function get_bulk_actions() {
-			return array(
+			return apply_filters( 'bookacti_booking_list_bulk_actions', array(
 				'export' => esc_html__( 'Export', BOOKACTI_PLUGIN_NAME )
-			);
+			) );
 		}
 		
 		
@@ -647,6 +660,8 @@ if( ! class_exists( 'Bookings_List_Table' ) ) {
 			check_admin_referer( $action );
 			
 			$action = $this->current_action();
+			
+			do_action( 'bookacti_booking_list_process_bulk_action', $action );
 			
 			return;
 		}

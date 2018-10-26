@@ -698,13 +698,17 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			
 			// Get formatted booking filters
 			if( isset( $_POST[ 'booking_filters' ][ 'templates' ] ) && $_POST[ 'booking_filters' ][ 'templates' ][ 0 ] === 'all' ) {
-				unset( $_POST[ 'booking_filters' ][ 'templates' ] );
+				unset( $_POST[ 'booking_filters' ][ 'templates' ][ 0 ] );
+				if( empty( $_POST[ 'booking_filters' ][ 'templates' ] ) ) { $_POST[ 'booking_filters' ][ 'templates' ] = ''; }
 			}
 			$default_fitlers = bookacti_format_booking_filters();
 			$booking_filters = bookacti_format_booking_filters( $_POST[ 'booking_filters' ] );
 			
 			if( isset( $_POST[ 'export_groups' ] ) ) {
 				$booking_filters[ 'group_by' ] = $_POST[ 'export_groups' ] === 'groups' ? 'booking_group' : 'none';
+			}
+			if( isset( $_POST[ 'per_page' ] ) ) {
+				$booking_filters[ 'per_page' ] = is_numeric( $_POST[ 'per_page' ] ) ? intval( $_POST[ 'per_page' ] ) : 20;
 			}
 			
 			// Keep only the required data to keep the URL as short as possible
@@ -717,8 +721,19 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 				}
 			}
 			
+			// Format the columns
+			if( isset( $_POST[ 'columns' ] ) ) {
+				if( ! is_array( $_POST[ 'columns' ] ) ) { $_POST[ 'columns' ] = bookacti_get_bookings_export_default_columns(); }
+				else {
+					$columns = bookacti_get_bookings_export_columns();
+					foreach( $_POST[ 'columns' ] as $i => $column_name ) {
+						if( ! isset( $columns[ $column_name ] ) ) { unset( $_POST[ 'columns' ][ $i ] ); }
+					}
+				}
+			}
+			
 			// Add the required settings to the URL
-			$csv_url = home_url( 'booking-activities-bookings-' . $current_user_id . '.csv?action=export_bookings&key=' . $secret_key . '&lang=' . $lang );
+			$csv_url = home_url( 'booking-activities-bookings-' . $current_user_id . '.csv?action=bookacti_export_bookings&key=' . $secret_key . '&lang=' . $lang );
 			if( $booking_filters ) {
 				$csv_url = add_query_arg( $booking_filters, $csv_url );
 			}
@@ -729,6 +744,65 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			bookacti_send_json( array( 'status' => 'success', 'url' => esc_url_raw( $csv_url ), 'message' => $message ), 'export_bookings_url' ); 
 		}
 		add_action( 'wp_ajax_bookactiExportBookingsUrl', 'bookacti_controller_generate_export_bookings_url' );
+		
+		
+		/**
+		 * Export events of a specifc form
+		 * @since 1.6.0
+		 */
+		function bookacti_export_bookings_page() {
+			if( empty( $_REQUEST[ 'action' ] ) || $_REQUEST[ 'action' ] !== 'bookacti_export_bookings' ) { return; }
+
+			// Check if the secret key exists
+			$key = ! empty( $_REQUEST[ 'key' ] ) ? $_REQUEST[ 'key' ] : '';
+			if( ! $key ) { esc_html_e( 'Missing key.', BOOKACTI_PLUGIN_NAME ); exit; }
+			
+			// Check if the user exists
+			$user_id = intval( substr( $key, 0, strpos( $key, '-' ) ) );
+			$user = get_user_by( 'id', $user_id );
+			if( ! $user ) { esc_html_e( 'Unknown user.', BOOKACTI_PLUGIN_NAME ); exit; }
+			
+			// Check the filename
+			$parsed_url = parse_url( $_SERVER[ 'REQUEST_URI' ] ); 
+			$filename	= 'booking-activities-bookings-' . $user_id . '.csv';
+			if( basename( $parsed_url[ 'path' ] ) !== $filename ) { esc_html_e( 'Invalid filename.', BOOKACTI_PLUGIN_NAME ); exit; }
+
+			// Check if the secret key is correct
+			$secret_key = get_user_meta( $user_id, 'bookacti_secret_key', true );
+			if( $key !== $secret_key ) { esc_html_e( 'Invalid key.', BOOKACTI_PLUGIN_NAME ); exit; }
+			
+			// Format the booking filters
+			if( empty( $_REQUEST[ 'templates' ] ) ) { $_REQUEST[ 'templates' ] = ''; }
+			$filters = bookacti_format_booking_filters( $_REQUEST );
+			if( empty( $_REQUEST[ 'templates' ] ) ) { 
+				$filters[ 'templates' ] = array_keys( bookacti_fetch_templates( array(), false, $user_id ) );
+			}
+			
+			// Format the columns
+			$all_columns = bookacti_get_bookings_export_columns();
+			$columns = array();
+			if( ! empty( $_REQUEST[ 'columns' ] ) && is_array( $_REQUEST[ 'columns' ] ) ) {
+				foreach( $_REQUEST[ 'columns' ] as $column_name ) {
+					if( ! isset( $all_columns[ $column_name ] ) ) { continue; }
+					$columns[] = $column_name;
+				}
+			}
+			if( ! $columns ) {
+				$columns = bookacti_get_bookings_export_default_columns();
+			}
+			
+//			header( 'Content-type: text/csv; charset=utf-8' );
+//			header( 'Content-Disposition: attachment; filename=' . $filename );
+//			header( 'Cache-Control: no-cache, must-revalidate' ); // HTTP/1.1
+//			header( 'Expires: Sat, 26 Jul 1997 05:00:00 GMT' ); // Expired date to force third-party apps to refresh soon
+			
+			echo '<pre>';
+			echo bookacti_convert_bookings_to_csv( $filters, $columns );
+			echo '</pre>';
+			
+			exit;
+		}
+		add_action( 'wp_loaded', 'bookacti_export_bookings_page', 10 );
 
 
 

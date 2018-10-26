@@ -801,6 +801,244 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			return apply_filters( 'bookacti_booking_group_actions_html', $actions_html, $booking_group_id, $admin_or_front );
 		}
 
+	
+	// BOTH SINGLE AND GROUPS
+		/**
+		 * Booking data that can be exported
+		 * @since 1.6.0
+		 * @return array
+		 */
+		function bookacti_get_bookings_export_columns() {
+			return apply_filters( 'bookacti_bookings_export_columns_labels', array(
+				'booking_id'			=> esc_html__( 'Booking ID', BOOKACTI_PLUGIN_NAME ),
+				'booking_type'			=> esc_html__( 'Booking type (single or group)', BOOKACTI_PLUGIN_NAME ),
+				'status'				=> esc_html__( 'Booking status', BOOKACTI_PLUGIN_NAME ),
+				'payment_status'		=> esc_html__( 'Payment status', BOOKACTI_PLUGIN_NAME ),
+				'quantity'				=> esc_html__( 'Quantity', BOOKACTI_PLUGIN_NAME ),
+				'creation_date'			=> esc_html__( 'Creation date', BOOKACTI_PLUGIN_NAME ),
+				'customer_id'			=> esc_html__( 'Customer ID', BOOKACTI_PLUGIN_NAME ),
+				'customer_display_name'	=> esc_html__( 'Customer display name', BOOKACTI_PLUGIN_NAME ),
+				'customer_first_name'	=> esc_html__( 'Customer first name', BOOKACTI_PLUGIN_NAME ),
+				'customer_last_name'	=> esc_html__( 'Customer last name', BOOKACTI_PLUGIN_NAME ),
+				'customer_email'		=> esc_html__( 'Customer Email', BOOKACTI_PLUGIN_NAME ),
+				'customer_phone'		=> esc_html__( 'Customer Phone', BOOKACTI_PLUGIN_NAME ),
+				'event_id'				=> esc_html__( 'Event ID', BOOKACTI_PLUGIN_NAME ),
+				'event_title'			=> esc_html__( 'Event title', BOOKACTI_PLUGIN_NAME ),
+				'start_date'			=> esc_html__( 'Start date', BOOKACTI_PLUGIN_NAME ),
+				'end_date'				=> esc_html__( 'End date', BOOKACTI_PLUGIN_NAME ),
+				'template_id'			=> esc_html__( 'Calendar ID', BOOKACTI_PLUGIN_NAME ),
+				'template_title'		=> esc_html__( 'Calendar title', BOOKACTI_PLUGIN_NAME ),
+				'activity_id'			=> esc_html__( 'Activity / Category ID', BOOKACTI_PLUGIN_NAME ),
+				'activity_title'		=> esc_html__( 'Activity / Category title', BOOKACTI_PLUGIN_NAME ),
+				'order_id'				=> esc_html__( 'Order ID', BOOKACTI_PLUGIN_NAME )
+			) );
+		}
+		
+		
+		/**
+		 * Default booking data to export by default
+		 * @since 1.6.0
+		 * @return array
+		 */
+		function bookacti_get_bookings_export_default_columns() {
+			return apply_filters( 'bookacti_bookings_export_default_columns', array(
+				'booking_id',
+				'booking_type',
+				'status',
+				'payment_status',
+				'quantity',
+				'creation_date',
+				'customer_display_name',
+				'customer_email',
+				'event_title',
+				'start_date',
+				'end_date'
+			) );
+		}
+		
+		
+		/**
+		 * Convert a list of bookings to CSV format
+		 * @since 1.6.0
+		 * @param array $filters
+		 * @param array $columns
+		 * @return string
+		 */
+		function bookacti_convert_bookings_to_csv( $filters, $columns ) {
+			
+			$headers = bookacti_get_bookings_export_columns();
+			$booking_list_items = bookacti_get_bookings_for_export( $filters, $columns );
+			
+			ob_start();
+			
+			// Display headers
+			$count = 0;
+			foreach( $columns as $i => $column_name ) {
+				// Replace formatted ID with raw ID
+				if( $column_name === 'id' ) { $columns[ $i ] = 'raw_id'; }
+				// Remove unknown columns
+				if( ! isset( $headers[ $column_name ] ) ) { unset( $columns[ $i ] ); continue; }
+				// Display comma separated column headers
+				if( $count ) { echo ','; }
+				++$count;
+				echo $headers[ $column_name ];
+			}
+			
+			// Display rows
+			foreach( $booking_list_items as $item ) {
+				echo PHP_EOL;
+				$count = 0;
+				foreach( $columns as $column_name ) {
+					if( $count ) { echo ','; }
+					++$count;
+					if( ! isset( $item[ $column_name ] ) ) { continue; }
+					echo strip_tags( $item[ $column_name ] );
+				}
+			}
+			
+			return ob_get_clean();
+		}
+		
+		
+		/**
+		 * Get an array of bookings data formatted to be exported
+		 * @since 1.6.0
+		 * @param array $filters
+		 * @param array $columns
+		 * @return array
+		 */
+		function bookacti_get_bookings_for_export( $filters, $columns ) {
+			
+			$bookings = bookacti_get_bookings( $filters );
+			
+			// Check if the bookings list can contain groups
+			$may_have_groups = false; 
+			if( $filters[ 'group_by' ] !== 'none' && ( ! $filters[ 'booking_group_id' ] || $filters[ 'group_by' ] === 'booking_group' ) && ! $filters[ 'booking_id' ] ) {
+				$may_have_groups = true;
+				$displayed_groups = array();
+			}
+			
+			// Retrieve the required groups data only
+			if( $may_have_groups ) {
+				$group_ids = array();
+				foreach( $bookings as $booking ) {
+					if( ! in_array( $booking->group_id, $group_ids, true ) ){
+						$group_ids[] = $booking->group_id;
+					}
+				}
+				$group_filters = bookacti_format_booking_filters( array( 'in__booking_group_id' => $group_ids, 'templates' => '' ) );
+				$booking_groups = bookacti_get_booking_groups( $group_filters );
+			}
+			
+			// Check if we will need user data
+			$has_user_data = false;
+			foreach( $columns as $column_name ) {
+				if( $column_name !== 'customer_id' && substr( $column_name, 0, 9 ) === 'customer_' ) { 
+					$has_user_data = true; break; 
+				} 
+			}
+			
+			// Retrieve information about users and stock them into an array sorted by user id
+			if( $has_user_data ) {
+				$user_ids = array();
+				foreach( $bookings as $booking ) {
+					if( ! in_array( $booking->user_id, $user_ids, true ) ){
+						$user_ids[] = $booking->user_id;
+					}
+				}
+				$users = bookacti_get_users_data( array( 'include' => $user_ids ) );
+			}
+			
+			// Check if the column "quantity" is requested
+			$has_quantity = in_array( 'quantity', $columns, true );
+			
+			// Build booking list
+			$booking_items = array();
+			foreach( $bookings as $booking ) {
+				
+				// Display one single row for a booking group, instead of each bookings of the group
+				if( $booking->group_id && $may_have_groups ) {
+					// If the group row has already been displayed, or if it is not found, continue
+					if( isset( $displayed_groups[ $booking->group_id ] ) )	{ continue; }
+					if( empty( $booking_groups[ $booking->group_id ] ) )	{ continue; }
+					
+					$group			= $booking_groups[ $booking->group_id ];
+					$booking_type	= 'group';
+					$id				= $group->id;
+					$user_id		= $group->user_id;
+					$status			= $group->state;
+					$paid			= $group->payment_status;
+					$event_id		= $group->event_group_id;
+					$title			= $group->group_title;
+					$start			= $group->start;
+					$end			= $group->end;
+					$quantity		= $has_quantity ? bookacti_get_booking_group_quantity( $group->id ) : '';
+					$order_id		= $group->order_id;
+					$activity_id	= $group->category_id;
+					$activity_title	= $group->category_title;
+					
+					$displayed_groups[ $booking->group_id ] = true;
+				
+				// Single booking
+				} else {
+					$group			= null;
+					$booking_type	= 'single';
+					$id				= $booking->id;
+					$user_id		= $booking->user_id;
+					$status			= $booking->state;
+					$paid			= $booking->payment_status;
+					$title			= $booking->event_title;
+					$event_id		= $booking->event_id;
+					$start			= $booking->event_start;
+					$end			= $booking->event_end;
+					$quantity		= $booking->quantity;
+					$order_id		= $booking->order_id;
+					$activity_id	= $booking->activity_id;
+					$activity_title	= $booking->activity_title;
+				}
+				
+				$booking_data = array( 
+					'booking_id'			=> $id,
+					'booking_type'			=> $booking_type,
+					'status'				=> $status,
+					'payment_status'		=> $paid,
+					'quantity'				=> $quantity,
+					'creation_date'			=> $booking->creation_date,
+					'event_id'				=> $event_id,
+					'event_title'			=> apply_filters( 'bookacti_translate_text', $title ),
+					'start_date'			=> $start,
+					'end_date'				=> $end,
+					'template_id'			=> $booking->template_id,
+					'template_title'		=> apply_filters( 'bookacti_translate_text', $booking->template_title ),
+					'activity_id'			=> $activity_id,
+					'activity_title'		=> apply_filters( 'bookacti_translate_text', $activity_title ),
+					'order_id'				=> $order_id,
+					'customer_id'			=> $user_id
+				);
+				
+				// Format customer column
+				$user = null;
+				if( $has_user_data ) {
+					if( ! empty( $users[ $user_id ] ) ) {
+						$user = $users[ $user_id ];
+						$booking_data = array_merge( $booking_data, array(
+							'customer_display_name'	=> $user->display_name,
+							'customer_first_name'	=> ! empty( $user->first_name ) ? $user->first_name : '',
+							'customer_last_name'	=> ! empty( $user->last_name ) ? $user->last_name : '',
+							'customer_email'		=> ! empty( $user->user_email ) ? $user->user_email : '',
+							'customer_phone'		=> ! empty( $user->phone ) ? $user->phone : ''
+						));
+					}
+				}
+				
+				$booking_item = apply_filters( 'bookacti_booking_export_columns_content', $booking_data, $booking, $group, $user );
+				
+				$booking_items[] = $booking_item;
+			}
+			
+			return $booking_items;
+		}
+
 
 
 

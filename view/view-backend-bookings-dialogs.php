@@ -117,13 +117,10 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			<div class='bookacti-add-items-container'>
 				<select id='bookacti-add-columns-to-export-selectbox' class='bookacti-add-new-items-select-box' >
 				<?php
-					$columns	= $bookings_list_table->get_columns();
-					$hidden		= get_hidden_columns( $bookings_list_table->get_wp_screen() );
-					$displayed	= array_diff_key( $columns, array_flip( $hidden ) );
-					$unexportable_columns = apply_filters( 'bookacti_unexportable_booking_columns', array( 'cb', 'actions' ) );
+					$columns			= bookacti_get_bookings_export_columns();
+					$selected_columns	= array_intersect_key( $columns, array_flip( bookacti_get_bookings_export_default_columns() ) );
 					foreach( $columns as $column_name => $column_title ) {
-						if( in_array( $column_name, $unexportable_columns, true ) ) { continue; }
-						$disabled = ! in_array( $column_name, $hidden, true ) ? 'disabled style="display:none;"' : '';
+						$disabled = isset( $selected_columns[ $column_name ] ) ? 'disabled style="display:none;"' : '';
 						echo '<option value="' . $column_name . '" ' . $disabled . '>' . $column_title . '</option>';
 					}
 				?>
@@ -133,14 +130,26 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			<div class='bookacti-items-list-container' >
 				<select name='columns[]' id='baaf-columns-to-export-selectbox' class='bookacti-items-select-box' multiple>
 				<?php
-					foreach( $displayed as $column_name => $column_title ) {
-						if( in_array( $column_name, $unexportable_columns, true ) ) { continue; }
+					foreach( $selected_columns as $column_name => $column_title ) {
 						echo '<option value="' . $column_name . '">' . $column_title . '</option>';
 					}
 				?>
 				</select>
 				<button type='button' id='baaf-remove-columns-to-export' class='bookacti-remove-items' ><?php esc_html_e( 'Remove selected', BOOKACTI_PLUGIN_NAME ); ?></button>
 			</div>
+		</div>
+		<div>
+			<label for='bookacti-select-export-limit' ><?php esc_html_e( 'Limit', BOOKACTI_PLUGIN_NAME ); ?></label>
+			<?php
+				$args = array(
+					'type'	=> 'number',
+					'name'	=> 'per_page',
+					'id'	=> 'bookacti-select-export-limit',
+					'value'	=> $bookings_list_table->get_rows_number_per_page(),
+					'tip'	=> esc_html__( 'Maximum number of bookings to export. You may need to increase your PHP max execution time if this number is too high.', BOOKACTI_PLUGIN_NAME )
+				);
+				bookacti_display_field( $args );
+			?>
 		</div>
 		<div id='bookacti-export-bookings-url-container' style='display:none;'>
 			<p><strong><?php esc_html_e( 'Secret address in CSV format', BOOKACTI_PLUGIN_NAME ); ?></strong></p>

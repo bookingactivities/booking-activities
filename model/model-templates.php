@@ -1507,9 +1507,10 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	 * @global wpdb $wpdb
 	 * @param array $template_ids
 	 * @param boolean $ignore_permissions
+	 * @param int $user_id
 	 * @return array
 	 */
-    function bookacti_fetch_templates( $template_ids = array(), $ignore_permissions = false ) {
+    function bookacti_fetch_templates( $template_ids = array(), $ignore_permissions = false, $user_id = 0 ) {
         
 		if( is_numeric( $template_ids ) ) { $template_ids = array( $template_ids ); }
 		
@@ -1531,14 +1532,14 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
         $templates = $wpdb->get_results( $query, ARRAY_A );
 		
 		// Check if we need to check permissions
+		if( ! $user_id ) { $user_id = get_current_user_id(); }
 		if( ! $ignore_permissions ) {
 			$bypass_template_managers_check = apply_filters( 'bookacti_bypass_template_managers_check', false );
-			if( $bypass_template_managers_check || is_super_admin() ) {
+			if( $bypass_template_managers_check || is_super_admin( $user_id ) ) {
 				$ignore_permissions = true;
 			}
 		}
 		
-		$user_id = get_current_user_id();
 		$templates_data = array();
 		foreach( $templates as $template ) {
 			$template_id = $template[ 'id' ];

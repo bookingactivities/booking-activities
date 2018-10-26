@@ -1315,8 +1315,8 @@ add_action( 'wp_ajax_bookactiResetExportEventsUrl', 'bookacti_controller_reset_f
  * Export events of a specifc form
  * @since 1.6.0
  */
-function bookacti_export_form_events() {
-	if( empty( $_REQUEST[ 'action' ] ) || $_REQUEST[ 'action' ] !== 'export_form_events' ) { return; }
+function bookacti_export_form_events_page() {
+	if( empty( $_REQUEST[ 'action' ] ) || $_REQUEST[ 'action' ] !== 'bookacti_export_form_events' ) { return; }
 	
 	// Check if the form is valid
 	$form_id = ! empty( $_REQUEST[ 'form_id' ] ) ? intval( $_REQUEST[ 'form_id' ] ) : 0;
@@ -1374,4 +1374,4 @@ function bookacti_export_form_events() {
 	
 	exit;
 }
-add_action( 'init', 'bookacti_export_form_events', 10 );
+add_action( 'init', 'bookacti_export_form_events_page', 10 );

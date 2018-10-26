@@ -820,7 +820,7 @@ foreach( $fields_data as $field_name => $field_data ) {
 				bookacti_update_metadata( 'form', $form_id, array( 'secret_key' => $secret_key ) );
 			}
 			
-			$ical_url = esc_url( home_url( 'booking-activities-events-form-' . $form_id . '.ics?action=export_form_events&form_id=' . $form_id . '&key=' . $secret_key . '&past_events=auto&lang=' . $lang ) );
+			$ical_url = esc_url( home_url( 'booking-activities-events-form-' . $form_id . '.ics?action=bookacti_export_form_events&form_id=' . $form_id . '&key=' . $secret_key . '&past_events=auto&lang=' . $lang ) );
 		?>
 		<div>
 			<p><strong><?php esc_html_e( 'Secret address in iCal format', BOOKACTI_PLUGIN_NAME ); ?></strong></p>
