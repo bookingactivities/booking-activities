@@ -777,7 +777,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			'selected' => 0, 'name' => 'user_id', 'class' => '', 'id' => '',
 			'include' => array(), 'exclude' => array(),
 			'role' => array(), 'role__in' => array(), 'role__not_in' => array(),
-			'orderby' => 'display_name', 'order' => 'ASC'
+			'orderby' => array( 'display_name' ), 'order' => 'ASC'
 		);
 		
 		$args	= apply_filters( 'bookacti_user_selectbox_args', wp_parse_args( $args, $defaults ), $args );
@@ -970,6 +970,31 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		}
 		return array();
 	}
+	
+	
+	/**
+	 * Convert an array to string recursively
+	 * @since 1.6.0
+	 * @param array $array
+	 * @return array
+	 */
+	function bookacti_format_array_for_export( $array ) {
+		if( ! is_array( $array ) ) { return $array; }
+		if( empty( $array ) ) { return ''; }
+		
+		$i = 0;
+		$string = '[';
+		foreach( $array as $key => $value ) {
+			if( $i !== 0 ) { $string .= ';'; }
+			$value = bookacti_maybe_decode_json( maybe_unserialize( $value ) );
+			if( is_array( $value ) ) { $string_value = bookacti_format_array_for_export( $value ); }
+			else { $string_value = str_replace( array( '[', ']', ';' ), '', $value ); }
+			$string .= $string_value;
+			++$i;
+		}
+		$string .= ']';
+		return $string;
+	}
 
 
 	/**
@@ -1087,13 +1112,23 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	 * @return boolean
 	 */
 	function bookacti_is_json( $string ) {
-
-		if( ! is_string( $string ) ) {
-			return false;
-		}
-
+		if( ! is_string( $string ) ) { return false; }
 		json_decode( $string );
 		return ( json_last_error() == JSON_ERROR_NONE );
+	}
+
+
+	/**
+	 * Decode JSON if it is valid else return self
+	 * @since 1.6.0
+	 * @param string $string
+	 * @return array|$string
+	 */
+	function bookacti_maybe_decode_json( $string ) {
+		if( ! is_string( $string ) ) { return $string; }
+		$decoded = json_decode( $string );
+		if( json_last_error() == JSON_ERROR_NONE ) { return $decoded; }
+		return $string;
 	}
 	
 	
@@ -1211,7 +1246,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	
 	
 // USERS
-
+	
 	/**
 	 * Programmatically logs a user in
 	 * @since 1.5.0

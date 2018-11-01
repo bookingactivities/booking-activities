@@ -1022,22 +1022,6 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 // ORDERS
 	
 	/**
-	 * Check if an id is a WooCommerce Order
-	 * 
-	 * @since 1.1.0
-	 */
-	function bookacti_is_wc_order( $order_id ) {
-		$post_type = get_post_type( $order_id );
-		
-		if( empty( $post_type ) ) {
-			return false;
-		}
-		
-		return $post_type === 'shop_order';
-	}
-	
-	
-	/**
 	 * Turn all bookings of an order to the desired status. 
 	 * Also make sure that bookings are bound to the order and the associated user.
 	 * 
@@ -1311,15 +1295,21 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	
 	/**
 	 * Get woocommerce order item id by booking id
-	 * @version 1.5.0
-	 * @param int $booking_id
+	 * @version 1.6.0
+	 * @param int|object $booking_id
 	 * @return WC_Order_Item|array|false
 	 */
 	function bookacti_get_order_item_by_booking_id( $booking_id ) {
-
+		
 		if( ! $booking_id ) { return false; }
-
-		$order_id = bookacti_get_booking_order_id( $booking_id );
+		
+		if( is_object( $booking_id ) && ! empty( $booking_id->id ) ) {
+			$booking = $booking_id;
+			$booking_id = $booking->id;
+			$order_id = $booking->order_id;
+		} else {
+			$order_id = bookacti_get_booking_order_id( $booking_id );
+		}
 
 		if( ! $order_id ) { return false; }
 
@@ -1331,7 +1321,6 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 		$item = array();
 		foreach( $order_items as $order_item_id => $order_item ) {
-
 			$is_in_item = false;
 			// Check if the item is bound to a the desired booking
 			if( isset( $order_item[ 'bookacti_booking_id' ] ) && $order_item[ 'bookacti_booking_id' ] == $booking_id ) {
@@ -1363,15 +1352,20 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	/**
 	 * Get woocommerce order item id by booking group id
 	 * @since 1.1.0
-	 * @version 1.5.4
-	 * @param int $booking_group_id
+	 * @version 1.6.0
+	 * @param int|object $booking_group_id
 	 * @return array|false
 	 */
 	function bookacti_get_order_item_by_booking_group_id( $booking_group_id ) {
 
 		if( ! $booking_group_id ) { return false; }
-
-		$order_id = bookacti_get_booking_group_order_id( $booking_group_id );
+		
+		if( is_object( $booking_group_id ) && ! empty( $booking_group_id->id ) ) {
+			$booking_group = $booking_group_id;
+			$order_id = $booking_group->order_id;
+		} else {
+			$order_id = bookacti_get_booking_group_order_id( $booking_group_id );
+		}
 		
 		if( ! $order_id ) { return false; }
 
@@ -1398,25 +1392,26 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	
 	
 	/**
-	 * Whether to give the possibility to a user to cancel or reschedule a booking
-	 * Also add woocommerce specifique actions
-	 * 
-	 * @version 1.1.0
-	 * 
+	 * Get booking actions according to its order status
+	 * @since 1.6.0 (replace bookacti_display_actions_buttons_on_items)
 	 * @param array $booking_actions
 	 * @param int $order_id
 	 * @return array
 	 */
-	function bookacti_display_actions_buttons_on_items( $booking_actions, $order_id ) {
+	function bookacti_wc_booking_actions_per_order_id( $booking_actions, $order_id ) {
 		
-		if( ! $order_id || ! is_numeric( $order_id ) || ! bookacti_is_wc_order( $order_id ) ) {
+		if( ! $order_id || ! is_numeric( $order_id ) ) {
 			return $booking_actions;
 		}
 		
 		$order = wc_get_order( $order_id );
 
+		// Check view order
 		if( empty( $order ) ) {
+			if( isset( $booking_actions['view-order'] ) ) { unset( $booking_actions['view-order'] ); } 
 			return $booking_actions;
+		} else {
+			if( isset( $booking_actions['view-order'] ) ) { $booking_actions[ 'view-order' ][ 'link' ] = get_edit_post_link( $order_id ); }
 		}
 
 		// Check cancel / reschedule
@@ -1424,15 +1419,6 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			if( isset( $booking_actions['cancel'] ) )		{ unset( $booking_actions['cancel'] ); } 
 			if( isset( $booking_actions['reschedule'] ) )	{ unset( $booking_actions['reschedule'] ); }
 		}
-
-		// Add woocommerce specifique actions
-		$booking_actions[ 'view-order' ] = array( 
-			'class'			=> 'bookacti-view-booking-order _blank',
-			'label'			=> __( 'View order', BOOKACTI_PLUGIN_NAME ),
-			'description'	=> __( 'Go to the related WooCommerce admin order page.', BOOKACTI_PLUGIN_NAME ),
-			'link'			=> get_edit_post_link( $order_id ),
-			'admin_or_front'=> 'admin' 
-		);
 		
 		return $booking_actions;
 	}
@@ -1819,21 +1805,17 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 	/**
 	 * Check if an order support auto refund
-	 * 
+	 * @version 1.6.0
 	 * @param WC_Order|int $order_id
 	 * @return boolean
 	 */
 	function bookacti_does_order_support_auto_refund( $order_id ) {
 		
-		if( ! is_numeric( $order_id ) || ! bookacti_is_wc_order( $order_id ) ){
-			return false;
-		}
+		if( ! $order_id || ! is_numeric( $order_id ) ) { return false; }
 		
 		$order = wc_get_order( intval( $order_id ) );
 		
-		if( empty( $order ) ) {
-			return false;
-		}
+		if( empty( $order ) ) { return false; }
 		
 		// WOOCOMMERCE 3.0.0 BW compability
 		if( version_compare( WC_VERSION, '3.0.0', '>=' ) ) {

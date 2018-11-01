@@ -1218,7 +1218,7 @@ function bookacti_get_register_fields_default_data() {
 /**
  * Format form filters
  * @since 1.5.0
- * @version 1.5.7
+ * @version 1.6.0
  * @param array $filters 
  * @return array
  */
@@ -1250,7 +1250,7 @@ function bookacti_format_form_filters( $filters = array() ) {
 		if( in_array( $filter, array( 'id' ), true ) ) {
 			if( is_numeric( $current_value ) )	{ $current_value = array( $current_value ); }
 			if( ! is_array( $current_value ) )	{ $current_value = $default_value; }
-			else if( $i = array_search( 'all', $current_value ) !== false ) { unset( $current_value[ $i ] ); }
+			else if( ( $i = array_search( 'all', $current_value ) ) !== false ) { unset( $current_value[ $i ] ); }
 		
 		} else if( in_array( $filter, array( 'title' ), true ) ) {
 			if( ! is_string( $current_value ) ) { $current_value = $default_value; }
@@ -1258,11 +1258,7 @@ function bookacti_format_form_filters( $filters = array() ) {
 		} else if( in_array( $filter, array( 'status' ), true ) ) {
 			if( is_string( $current_value ) )	{ $current_value = array( $current_value ); }
 			if( ! is_array( $current_value ) )	{ $current_value = $default_value; }
-			else { 
-				$i = array_search( 'all', $current_value );
-				if( $i !== false ) { unset( $current_value[ $i ] ); }
-			}
-			
+			else if( ( $i = array_search( 'all', $current_value ) ) !== false ) { unset( $current_value[ $i ] ); }
 			
 		} else if( in_array( $filter, array( 'active' ), true ) ) {
 				 if( in_array( $current_value, array( true, 'true', 1, '1' ), true ) )	{ $current_value = 1; }

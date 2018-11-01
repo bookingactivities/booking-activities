@@ -539,3 +539,85 @@ function bookacti_get_booking_group_expiration_date( $booking_group_id ) {
 	
 	return $expiration_date;
 }
+
+
+/**
+ * Get the order item data corresponding to a booking
+ * @since 1.6.0
+ * @param array $booking_ids
+ * @return array|false
+ */
+function bookacti_get_booking_order_item_data( $booking_ids = array(), $booking_groups_ids = array() ) {
+	// Format inputs into arrays
+	if( is_numeric( $booking_ids ) )				{ $booking_ids = array( $booking_ids ); }
+	if( is_numeric( $booking_groups_ids ) )			{ $booking_groups_ids = array( $booking_groups_ids ); }
+	if( ! is_array( $booking_ids ) )				{ $booking_ids = array(); }
+	if( ! is_array( $booking_groups_ids ) )			{ $booking_groups_ids = array(); }
+	if( ! $booking_ids && ! $booking_groups_ids )	{ return false; }
+	
+	global $wpdb;
+	
+	// This query transform the meta_key / meta_value pair (of usermeta table) into columns / values for each distinct wanted user
+	$wpdb->query( 'SET SESSION group_concat_max_len = 1000000' );
+	$select_postmeta_columns_query	= " SELECT
+										  GROUP_CONCAT( DISTINCT
+											CONCAT(
+											  'MAX( IF ( IM.meta_key = ''',
+											  meta_key,
+											  ''', IM.meta_value, NULL)) AS `',
+											  meta_key, '`'
+											)
+										  ) as select_postmeta
+										FROM " . $wpdb->prefix . "woocommerce_order_itemmeta as IM;";
+	$select_postmeta_columns = $wpdb->get_var( $select_postmeta_columns_query );
+	
+	$query	= 'SELECT OI.*, ' . $select_postmeta_columns
+			. ' FROM ' . $wpdb->prefix . 'woocommerce_order_items as OI, ' . $wpdb->prefix . 'woocommerce_order_itemmeta as IM '
+			. ' WHERE OI.order_item_id = IM.order_item_id '
+			. ' GROUP BY OI.order_item_id '
+			. ' HAVING TRUE '; // We must use HAVING instead of WHERE to filter by a column alias (which is the case for metadata)
+			
+	$variables = array();
+	$booking_ids_query = '';
+	$booking_groups_ids_query = '';
+	
+	// Comma separated booking ids
+	if( $booking_ids ) {
+		$booking_ids_query = ' bookacti_booking_id IN ( %d';
+		$array_count = count( $booking_ids );
+		if( $array_count >= 2 ) {
+			for( $i=1; $i<$array_count; ++$i ) {
+				$booking_ids_query .= ', %d';
+			}
+		}
+		$booking_ids_query .= ' ) ';
+		$variables = array_merge( $variables, $booking_ids );
+	}
+	if( $booking_groups_ids ) {
+		$booking_groups_ids_query = ' bookacti_booking_group_id IN ( %d';
+		$array_count = count( $booking_groups_ids );
+		if( $array_count >= 2 ) {
+			for( $i=1; $i<$array_count; ++$i ) {
+				$booking_groups_ids_query .= ', %d';
+			}
+		}
+		$booking_groups_ids_query .= ' ) ';
+		$variables = array_merge( $variables, $booking_groups_ids );
+	}
+	
+	if( $booking_ids && $booking_groups_ids ) {
+		$query .= ' AND ( ' . $booking_ids_query . ' OR ' . $booking_groups_ids_query . ' ) ';
+	} else if( $booking_ids ) {
+		$query .= ' AND ' . $booking_ids_query;
+	} else if( $booking_groups_ids ) {
+		$query .= ' AND ' . $booking_groups_ids_query;
+	}
+	
+	if( $variables ) {
+		$query = $wpdb->prepare( $query, $variables );
+	}
+	
+	$order_item_data = $wpdb->get_results( $query );
+	
+	return $order_item_data;
+}

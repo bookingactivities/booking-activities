@@ -791,42 +791,13 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 				$columns = bookacti_get_bookings_export_default_columns();
 			}
 			
-//			header( 'Content-type: text/csv; charset=utf-8' );
-//			header( 'Content-Disposition: attachment; filename=' . $filename );
-//			header( 'Cache-Control: no-cache, must-revalidate' ); // HTTP/1.1
-//			header( 'Expires: Sat, 26 Jul 1997 05:00:00 GMT' ); // Expired date to force third-party apps to refresh soon
+			header( 'Content-type: text/csv; charset=utf-8' );
+			header( 'Content-Disposition: attachment; filename=' . $filename );
+			header( 'Cache-Control: no-cache, must-revalidate' ); // HTTP/1.1
+			header( 'Expires: Sat, 26 Jul 1997 05:00:00 GMT' ); // Expired date to force third-party apps to refresh soon
 			
-			echo '<pre>';
 			echo bookacti_convert_bookings_to_csv( $filters, $columns );
-			echo '</pre>';
 			
 			exit;
 		}
 		add_action( 'wp_loaded', 'bookacti_export_bookings_page', 10 );
-
-
-
-
-// BOOKING LIST
-	
-	/**
-	 * Change Customer name in bookings list
-	 * @version 1.5.4
-	 * @param array $booking_item
-	 * @param object $booking
-	 * @param WP_User $user
-	 * @return array
-	 */
-	function bookacti_change_customer_name_in_bookings_list( $booking_item, $booking, $user, $list ) {
-		if( is_numeric( $booking->user_id ) ) {
-			if( isset( $user->first_name ) && $user->last_name ) {
-				$customer = '<a  href="' . esc_url( get_admin_url() . 'user-edit.php?user_id=' . $booking->user_id ) . '" '
-							.  ' target="_blank" >'
-								. esc_html( $user->first_name . ' ' . $user->last_name )
-						.   '</a>';
-				$booking_item[ 'customer' ] = $customer;
-			}
-		}
-		return $booking_item;
-	}
-	add_filter( 'bookacti_booking_list_booking_columns', 'bookacti_change_customer_name_in_bookings_list', 10, 4 );

@@ -322,6 +322,7 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 * Feature - Synchronize your events with third-party apps (e.g.: Google Agenda) (one way: export only)
 * Feature - Export your bookings to CSV files
 * Feature - Synchronize your booking list to third-party apps (e.g.: Google Sheet) (one way: export only)
+* Optimization - Booking list is displayed faster (backend)
 * Fix - Booking form not appearing on WC variable product pages if the default variation was non-activity
 * Fix - Possible PHP error while checking templates, activities and forms permission if they are not set
 
