@@ -354,7 +354,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	 * @param array $bookings
 	 * @param array $booking_groups
 	 * @param array $displayed_groups
-	 * @param WP_User[] $users
+	 * @param array $users
 	 * @param Bookings_List_Table $booking_list
 	 * @return array
 	 */
@@ -441,7 +441,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	 * @param array $bookings
 	 * @param array $booking_groups
 	 * @param array $displayed_groups
-	 * @param WP_User[] $users
+	 * @param array $users
 	 * @param array $filters
 	 * @param array $columns
 	 * @return array

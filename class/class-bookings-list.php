@@ -280,9 +280,8 @@ if( ! class_exists( 'Bookings_List_Table' ) ) {
 				
 				$booking_groups = bookacti_get_booking_groups( $group_filters );
 			}
-			$start_time = microtime(true);
+			
 			$users = bookacti_get_users_data( array( 'include' => $this->user_ids ) );
-			bookacti_log( 'bookacti_get_users_data = ' . ( microtime(true) - $start_time ) );
 			
 			// Get datetime format
 			$datetime_format	= bookacti_get_message( 'date_format_long' );

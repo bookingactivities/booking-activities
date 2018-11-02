@@ -31,6 +31,14 @@ function bookacti_init_form_editor_actions() {
 			bookacti_dialog_export_events( form_id );
 		}
 	});
+	
+	// Init export button
+	$j( '.bookacti_export_button input[type="button"]' ).on( 'click', function() {
+		var url = $j( this ).closest( '.bookacti_export_url' ).find( '.bookacti_export_url_field input' ).val();
+		if( url ) {
+			window.open( url, '_blank' );
+		}
+	});
 }
 
 

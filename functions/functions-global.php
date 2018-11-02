@@ -762,9 +762,8 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	
 	/**
 	 * Create a user selectbox
-	 * 
 	 * @since 1.3.0
-	 * @version 1.5.0
+	 * @version 1.6.0
 	 * @param array $args
 	 * @return string|void
 	 */
@@ -777,11 +776,11 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			'selected' => 0, 'name' => 'user_id', 'class' => '', 'id' => '',
 			'include' => array(), 'exclude' => array(),
 			'role' => array(), 'role__in' => array(), 'role__not_in' => array(),
-			'orderby' => array( 'display_name' ), 'order' => 'ASC'
+			'orderby' => 'display_name', 'order' => 'ASC'
 		);
 		
 		$args	= apply_filters( 'bookacti_user_selectbox_args', wp_parse_args( $args, $defaults ), $args );
-		$users	= bookacti_get_users_data( $args );
+		$users	= get_users( $args );
 		
 		ob_start();
 		?>
@@ -812,8 +811,8 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 					// Build the option label based on the array
 					$label = '';
 					foreach( $args[ 'option_label' ] as $show ) {
-						if( preg_match( '/^[a-zA-Z0-9_]+$/' , $show ) && isset( $user->$show ) ) {
-							$label .= $user->$show;
+						if( isset( $user->{ $show } ) ) {
+							$label .= $user->{ $show };
 						} else {
 							$label .= $show;
 						}
