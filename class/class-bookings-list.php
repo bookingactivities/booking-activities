@@ -224,19 +224,6 @@ if( ! class_exists( 'Bookings_List_Table' ) ) {
 		public function column_default( $item, $column_name ) {
 			return isset( $item[ $column_name ] ) ? $item[ $column_name ] : '';
 		}
-
-		
-		/**
-		 * Fill actions column
-		 * @since 1.6.0
-		 * @access public
-		 * @param array $item
-		 * @return string
-		 */
-		public function column_actions( $item ) {
-			if( empty( $item[ 'actions' ] ) ) { return ''; }
-			return $item[ 'booking_type' ] === 'group' ? bookacti_get_booking_group_actions_html( $item[ 'raw_id' ], 'admin', $item[ 'actions' ] ) : bookacti_get_booking_actions_html( $item[ 'raw_id' ], 'admin', $item[ 'actions' ] );
-		}
 		
 		
 		/**
@@ -270,13 +257,13 @@ if( ! class_exists( 'Bookings_List_Table' ) ) {
 			// Retrieve the required groups data only
 			$booking_groups		= array();
 			$displayed_groups	= array();
-			if( $may_have_groups ) {
+			if( $may_have_groups && $this->group_ids ) {
 				// Get only the groups that will be displayed
 				$group_filters = bookacti_format_booking_filters( array( 'in__booking_group_id' => $this->group_ids, 'templates' => '' ) );
 				
 				// If the booking are grouped by booking groups, 
 				// booking group meta will already be attached to the booking representing its group 
-				if( $this->filters[ 'meta' ] && $this->filters[ 'group_by' ] === 'booking_group' ) { $this->filters[ 'meta' ] = false; }
+				if( $group_filters[ 'meta' ] && $group_filters[ 'group_by' ] === 'booking_group' ) { $group_filters[ 'meta' ] = false; }
 				
 				$booking_groups = bookacti_get_booking_groups( $group_filters );
 			}
@@ -407,7 +394,18 @@ if( ! class_exists( 'Bookings_List_Table' ) ) {
 			 * Third parties can add or change rows and columns, do your best to optimize your process
 			 * @since 1.6.0
 			 */
-			return apply_filters( 'bookacti_booking_list_items', $booking_list_items, $bookings, $booking_groups, $displayed_groups, $users, $this );
+			$booking_list_items = apply_filters( 'bookacti_booking_list_items', $booking_list_items, $bookings, $booking_groups, $displayed_groups, $users, $this );
+		
+			foreach( $booking_list_items as $booking_id => $booking_list_item ) {
+				if( empty( $booking_list_item[ 'actions' ] ) ) { continue; }
+				if( $booking_list_item[ 'booking_type' ] === 'group' ) {
+					$booking_list_items[ $booking_id ][ 'actions' ] = bookacti_get_booking_group_actions_html( $booking_groups[ $booking_list_item[ 'raw_id' ] ], 'admin', $booking_list_item[ 'actions' ] );
+				} else if( $booking_list_item[ 'booking_type' ] === 'single' ) {
+					$booking_list_items[ $booking_id ][ 'actions' ] = bookacti_get_booking_actions_html( $bookings[ $booking_list_item[ 'raw_id' ] ], 'admin', $booking_list_item[ 'actions' ] );
+				}
+			}
+			
+			return $booking_list_items;
 		}
 		
 		

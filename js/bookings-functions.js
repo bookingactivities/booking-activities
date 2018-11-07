@@ -206,7 +206,9 @@ function bookacti_init_booking_actions() {
 	});
 	
 	// Add / remove items in multiple selectbox
-	bookacti_init_add_and_remove_items();
+	if( $j( 'body.booking-activities_page_bookacti_bookings' ).length ) {
+		bookacti_init_add_and_remove_items();
+	}
 }
 
 

@@ -38,7 +38,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	// SINGLE BOOKING
 		/**
 		 * AJAX Controller - Cancel a booking
-		 * @version 1.5.9
+		 * @version 1.6.0
 		 */
 		function bookacti_controller_cancel_booking() {
 
@@ -56,7 +56,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 				bookacti_send_json( array( 'status' => 'failed', 'error' => 'booking_already_cancelled', 'message' => esc_html__( 'The booking is already cancelled.', BOOKACTI_PLUGIN_NAME ) ), 'cancel_booking' );
 			}
 			
-			$can_be_cancelled = bookacti_booking_can_be_cancelled( $booking_id );
+			$can_be_cancelled = bookacti_booking_can_be_cancelled( $booking );
 			if( ! $can_be_cancelled ) {
 				bookacti_send_json( array( 'status' => 'failed', 'error' => 'not_allowed_to_cancel_booking', 'message' => esc_html__( 'The booking cannot be cancelled.', BOOKACTI_PLUGIN_NAME ) ), 'cancel_booking' );
 			}
@@ -68,8 +68,8 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 			do_action( 'bookacti_booking_state_changed', $booking_id, 'cancelled', array( 'is_admin' => false ) );
 
-			$allow_refund	= bookacti_booking_can_be_refunded( $booking_id );
-			$actions_html	= bookacti_get_booking_actions_html( $booking_id, 'front' );
+			$allow_refund	= bookacti_booking_can_be_refunded( $booking );
+			$actions_html	= bookacti_get_booking_actions_html( $booking, 'front' );
 			$formatted_state= bookacti_format_booking_state( 'cancelled', false );
 			
 			bookacti_send_json( array( 'status' => 'success', 'allow_refund' => $allow_refund, 'new_actions_html' => $actions_html, 'formatted_state' => $formatted_state ), 'cancel_booking' );
@@ -80,31 +80,33 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 		/**
 		 * AJAX Controller - Get possible actions to refund a booking
+		 * @version 1.6.0
 		 */
 		function bookacti_controller_get_refund_actions_html() {
 
 			$booking_id = intval( $_POST[ 'booking_id' ] );
 
 			// Check nonce, capabilities and other params
-			$is_nonce_valid	= check_ajax_referer( 'bookacti_get_refund_actions_html', 'nonce', false );
-			$is_allowed		= bookacti_user_can_manage_booking( $booking_id );
-			$can_be_refund	= bookacti_booking_can_be_refunded( $booking_id );
+			if( ! check_ajax_referer( 'bookacti_get_refund_actions_html', 'nonce', false ) ) {
+				bookacti_send_json_invalid_nonce( 'get_refund_actions_html' );
+			}
+			
+			if( ! bookacti_user_can_manage_booking( $booking_id ) ) {
+				bookacti_send_json_not_allowed( 'get_refund_actions_html' );
+			}
+			
+			if( ! bookacti_booking_can_be_refunded( $booking_id ) ) {
+				bookacti_send_json( array( 'status' => 'failed', 'error' => 'cannot_be_refunded' ), 'get_refund_actions_html' );
+			}
+			
+			$refund_actions_array	= bookacti_get_refund_actions_by_booking_id( $booking_id );
+			$refund_actions_html	= bookacti_get_refund_dialog_html_by_booking_id( $booking_id );
 
-			if( $is_nonce_valid && $is_allowed && $can_be_refund ) {
-
-				$refund_actions_array	= bookacti_get_refund_actions_by_booking_id( $booking_id );
-				$refund_actions_html	= bookacti_get_refund_dialog_html_by_booking_id( $booking_id );
-
-				if( ! empty( $refund_actions_html ) ) {
-
-					wp_send_json( array( 'status' => 'success', 'actions_html' => $refund_actions_html, 'actions_array' => $refund_actions_array ) );
-
-				} else {
-					wp_send_json( array( 'status' => 'failed' ) );
-				}
+			if( ! empty( $refund_actions_html ) ) {
+				bookacti_send_json( array( 'status' => 'success', 'actions_html' => $refund_actions_html, 'actions_array' => $refund_actions_array ), 'get_refund_actions_html' );
 
 			} else {
-				wp_send_json( array( 'status' => 'failed', 'error' => 'not_allowed' ) );
+				bookacti_send_json( array( 'status' => 'failed', 'error' => 'cannot_retrieve_actions_html' ), 'get_refund_actions_html' );
 			}
 		}
 		add_action( 'wp_ajax_bookactiGetBookingRefundActionsHTML', 'bookacti_controller_get_refund_actions_html' );
@@ -113,7 +115,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 		/**
 		 * AJAX Controller - Refund a booking
-		 * @version 1.5.8
+		 * @version 1.6.0
 		 */
 		function bookacti_controller_refund_booking() {
 
@@ -123,52 +125,54 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			$refund_action		= array_key_exists( $sanitized_action, bookacti_get_refund_actions_by_booking_id( $booking_id ) ) ? $sanitized_action : 'email';
 
 			// Check nonce, capabilities and other params
-			$is_nonce_valid	= check_ajax_referer( 'bookacti_refund_booking', 'nonce', false );
-			$is_allowed		= bookacti_user_can_manage_booking( $booking_id );
-			$can_be_refund	= bookacti_booking_can_be_refunded( $booking_id, $refund_action );
-
-			if( $is_nonce_valid && $is_allowed && $can_be_refund ) {
-
-				$refund_message	= sanitize_text_field( stripslashes( $_POST[ 'refund_message' ] ) );
-
-				if( $refund_action === 'email' ) {
-					$refunded = bookacti_send_email_refund_request( $booking_id, 'single', $refund_message );
-					if( $refunded ) {
-						$refunded = array( 'status' => 'success', 'new_state' => 'refund_requested' );
-					} else {
-						$refunded = array( 
-							'status'	=> 'failed', 
-							'error'		=> 'cannot_send_email', 
-							'message'	=> esc_html__( 'An error occured while trying to send the email.', BOOKACTI_PLUGIN_NAME ) 
-						);
-					}
-				} else {
-					$refunded = apply_filters( 'bookacti_refund_booking', array( 'status' => 'failed' ), $booking_id, 'single', $refund_action, $refund_message );
-				}
-
-				if( $refunded[ 'status' ] === 'success' ) {
-					$new_state = ! empty( $refunded[ 'new_state' ] ) ? $refunded[ 'new_state' ] : 'refunded';
-					$updated = bookacti_update_booking_state( $booking_id, $new_state );
-
-					// Hook status changes
-					if( $updated ) {
-						do_action( 'bookacti_booking_state_changed', $booking_id, $new_state, array( 'is_admin' => $is_admin, 'refund_action' => $refund_action ) );
-					}
-
-					// Get new booking actions
-					$admin_or_front = $is_admin ? 'admin' : 'front';
-					$actions_html	= bookacti_get_booking_actions_html( $booking_id, $admin_or_front );
-					$refunded[ 'new_actions_html' ] = $actions_html;
-
-					// Get new booking state formatted
-					$refunded[ 'formatted_state' ] = bookacti_format_booking_state( $new_state, $is_admin );
-				}
-
-				bookacti_send_json( $refunded, 'refund_booking' );
-
-			} else {
+			if( ! check_ajax_referer( 'bookacti_refund_booking', 'nonce', false ) ) {
+				bookacti_send_json_invalid_nonce( 'refund_booking' );
+			}
+			
+			if( ! bookacti_user_can_manage_booking( $booking_id ) ) {
 				bookacti_send_json_not_allowed( 'refund_booking' );
 			}
+			
+			if( ! bookacti_booking_can_be_refunded( $booking_id, $refund_action ) ) {
+				bookacti_send_json( 'refund_booking' );
+			}
+
+			$refund_message	= sanitize_text_field( stripslashes( $_POST[ 'refund_message' ] ) );
+
+			if( $refund_action === 'email' ) {
+				$refunded = bookacti_send_email_refund_request( $booking_id, 'single', $refund_message );
+				if( $refunded ) {
+					$refunded = array( 'status' => 'success', 'new_state' => 'refund_requested' );
+				} else {
+					$refunded = array( 
+						'status'	=> 'failed', 
+						'error'		=> 'cannot_send_email', 
+						'message'	=> esc_html__( 'An error occured while trying to send the email.', BOOKACTI_PLUGIN_NAME ) 
+					);
+				}
+			} else {
+				$refunded = apply_filters( 'bookacti_refund_booking', array( 'status' => 'failed' ), $booking_id, 'single', $refund_action, $refund_message );
+			}
+
+			if( $refunded[ 'status' ] === 'success' ) {
+				$new_state = ! empty( $refunded[ 'new_state' ] ) ? $refunded[ 'new_state' ] : 'refunded';
+				$updated = bookacti_update_booking_state( $booking_id, $new_state );
+
+				// Hook status changes
+				if( $updated ) {
+					do_action( 'bookacti_booking_state_changed', $booking_id, $new_state, array( 'is_admin' => $is_admin, 'refund_action' => $refund_action ) );
+				}
+
+				// Get new booking actions
+				$admin_or_front = $is_admin ? 'admin' : 'front';
+				$actions_html	= bookacti_get_booking_actions_html( $booking_id, $admin_or_front );
+				$refunded[ 'new_actions_html' ] = $actions_html;
+
+				// Get new booking state formatted
+				$refunded[ 'formatted_state' ] = bookacti_format_booking_state( $new_state, $is_admin );
+			}
+
+			bookacti_send_json( $refunded, 'refund_booking' );
 		}
 		add_action( 'wp_ajax_bookactiRefundBooking', 'bookacti_controller_refund_booking' );
 		add_action( 'wp_ajax_nopriv_bookactiRefundBooking', 'bookacti_controller_refund_booking' );
@@ -176,7 +180,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 		/**
 		 * AJAX Controller - Change booking state
-		 * @version 1.5.9
+		 * @version 1.6.0
 		 */
 		function bookacti_controller_change_booking_state() {
 
@@ -202,7 +206,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			
 			// Change booking state
 			if( $new_booking_state && $booking->state !== $new_booking_state ) {
-				$state_can_be_changed = bookacti_booking_state_can_be_changed_to( $booking_id, $new_booking_state );
+				$state_can_be_changed = bookacti_booking_state_can_be_changed_to( $booking, $new_booking_state );
 				if( ! $state_can_be_changed ) {
 					bookacti_send_json( array( 'status' => 'failed', 'error' => 'not_allowed_to_update_booking_status', 'message' => esc_html__( 'The booking status cannot be changed.', BOOKACTI_PLUGIN_NAME ) ), 'change_booking_status' );
 				}
@@ -280,14 +284,15 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 				wp_send_json( array( 'status' => 'failed', 'error' => 'not_allowed', 'message' => esc_html__( 'You are not allowed to do that.', BOOKACTI_PLUGIN_NAME ) ) );
 			}
 			
+			$booking = bookacti_get_booking_by_id( $booking_id );
+			
 			// Check if the desired event is eligible according to the current booking
-			$can_be_rescheduled	= bookacti_booking_can_be_rescheduled_to( $booking_id, $event_id, $event_start, $event_end );
+			$can_be_rescheduled	= bookacti_booking_can_be_rescheduled_to( $booking, $event_id, $event_start, $event_end );
 			if( $can_be_rescheduled[ 'status' ] !== 'success' ) {
 				bookacti_send_json( $can_be_rescheduled );
 			}
 			
 			// Validate availability
-			$booking	= bookacti_get_booking_by_id( $booking_id );
 			$form_id	= ! empty( $booking->form_id ) && ! current_user_can( 'bookacti_edit_bookings' ) ? $booking->form_id : 0;
 			$validated	= bookacti_validate_booking_form( 'single', $event_id, $event_start, $event_end, $booking->quantity, $form_id );
 
@@ -396,7 +401,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		/**
 		 * AJAX Controller - Cancel a booking group
 		 * @since 1.1.0
-		 * @version 1.5.9
+		 * @version 1.6.0
 		 */
 		function bookacti_controller_cancel_booking_group() {
 
@@ -414,7 +419,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 				bookacti_send_json( array( 'status' => 'failed', 'error' => 'booking_group_already_cancelled', 'message' => esc_html__( 'The booking group is already cancelled.', BOOKACTI_PLUGIN_NAME ) ), 'cancel_booking_group' );
 			}
 			
-			$can_be_cancelled = bookacti_booking_group_can_be_cancelled( $booking_group_id );
+			$can_be_cancelled = bookacti_booking_group_can_be_cancelled( $booking_group );
 			if( ! $can_be_cancelled ) {
 				bookacti_send_json( array( 'status' => 'failed', 'error' => 'not_allowed_to_cancel_booking_group', 'message' => esc_html__( 'The booking group cannot be cancelled.', BOOKACTI_PLUGIN_NAME ) ), 'cancel_booking_group' );
 			}
@@ -426,8 +431,8 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 			do_action( 'bookacti_booking_group_state_changed', $booking_group_id, 'cancelled', array( 'is_admin' => false ) );
 
-			$allow_refund	= bookacti_booking_group_can_be_refunded( $booking_group_id );
-			$actions_html	= bookacti_get_booking_group_actions_html( $booking_group_id, 'front' );
+			$allow_refund	= bookacti_booking_group_can_be_refunded( $booking_group );
+			$actions_html	= bookacti_get_booking_group_actions_html( $booking_group, 'front' );
 			$formatted_state= bookacti_format_booking_state( 'cancelled', false );
 
 			bookacti_send_json( array( 'status' => 'success', 'allow_refund' => $allow_refund, 'new_actions_html' => $actions_html, 'formatted_state' => $formatted_state ), 'cancel_booking_group' );
@@ -438,33 +443,34 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 		/**
 		 * AJAX Controller - Get possible actions to refund a booking group
-		 * 
 		 * @since 1.1.0
+		 * @version 1.6.0
 		 */
 		function bookacti_controller_get_booking_group_refund_actions_html() {
 
 			$booking_group_id = intval( $_POST[ 'booking_id' ] );
 
 			// Check nonce, capabilities and other params
-			$is_nonce_valid	= check_ajax_referer( 'bookacti_get_refund_actions_html', 'nonce', false );
-			$is_allowed		= bookacti_user_can_manage_booking_group( $booking_group_id );
-			$can_be_refund	= bookacti_booking_group_can_be_refunded( $booking_group_id );
+			if( ! check_ajax_referer( 'bookacti_get_refund_actions_html', 'nonce', false ) ) {
+				bookacti_send_json_invalid_nonce( 'get_refund_actions_html' );
+			}
+			
+			if( ! bookacti_user_can_manage_booking_group( $booking_group_id ) ) {
+				bookacti_send_json_not_allowed( 'get_refund_actions_html' );
+			}
+			
+			if( ! bookacti_booking_group_can_be_refunded( $booking_group_id ) ) {
+				bookacti_send_json( array( 'error' => 'cannot_be_refunded' ), 'get_refund_actions_html' );
+			}
 
-			if( $is_nonce_valid && $is_allowed && $can_be_refund ) {
+			$refund_actions_array	= bookacti_get_refund_actions_by_booking_group_id( $booking_group_id );
+			$refund_actions_html	= bookacti_get_refund_dialog_html_by_booking_group_id( $booking_group_id );
 
-				$refund_actions_array	= bookacti_get_refund_actions_by_booking_group_id( $booking_group_id );
-				$refund_actions_html	= bookacti_get_refund_dialog_html_by_booking_group_id( $booking_group_id );
-
-				if( ! empty( $refund_actions_html ) ) {
-
-					wp_send_json( array( 'status' => 'success', 'actions_html' => $refund_actions_html, 'actions_array' => $refund_actions_array ) );
-
-				} else {
-					wp_send_json( array( 'status' => 'failed' ) );
-				}
+			if( ! empty( $refund_actions_html ) ) {
+				bookacti_send_json( array( 'status' => 'success', 'actions_html' => $refund_actions_html, 'actions_array' => $refund_actions_array ), 'get_refund_actions_html' );
 
 			} else {
-				wp_send_json( array( 'status' => 'failed', 'error' => 'not_allowed' ) );
+				bookacti_send_json( array( 'status' => 'failed', 'error' => 'cannot_retrieve_actions_html' ), 'get_refund_actions_html' );
 			}
 		}
 		add_action( 'wp_ajax_bookactiGetBookingGroupRefundActionsHTML', 'bookacti_controller_get_booking_group_refund_actions_html' );
@@ -473,9 +479,8 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 		/**
 		 * AJAX Controller - Refund a booking group
-		 * 
 		 * @since 1.1.0
-		 * @version 1.3.0
+		 * @version 1.6.0
 		 */
 		function bookacti_controller_refund_booking_group() {
 
@@ -485,60 +490,62 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			$refund_action		= array_key_exists( $sanitized_action, bookacti_get_refund_actions_by_booking_group_id( $booking_group_id ) ) ? $sanitized_action : 'email';
 			
 			// Check nonce, capabilities and other params
-			$is_nonce_valid	= check_ajax_referer( 'bookacti_refund_booking', 'nonce', false );
-			$is_allowed		= bookacti_user_can_manage_booking_group( $booking_group_id );
-			$can_be_refund	= bookacti_booking_group_can_be_refunded( $booking_group_id, $refund_action );
-
-			if( $is_nonce_valid && $is_allowed && $can_be_refund ) {
-
-				$refund_message	= sanitize_text_field( stripslashes( $_POST[ 'refund_message' ] ) );
-
-				if( $refund_action === 'email' ) {
-					$refunded = bookacti_send_email_refund_request( $booking_group_id, 'group', $refund_message );
-					if( $refunded ) {
-						$refunded = array( 'status' => 'success', 'new_state' => 'refund_requested' );
-					} else {
-						$refunded = array( 'status' => 'failed', 'error' => 'cannot_send_email' );
-					}
-				} else {
-					$refunded = apply_filters( 'bookacti_refund_booking', array( 'status' => 'failed' ), $booking_group_id, 'group', $refund_action, $refund_message );
-				}
-				
-				if( $refunded[ 'status' ] === 'success' ) {
-					
-					$new_state	= $refunded[ 'new_state' ] ? $refunded[ 'new_state' ] : 'refunded';
-					$updated	= bookacti_update_booking_group_state( $booking_group_id, $new_state, 'auto', true );
-
-					// Hook status changes
-					if( $updated ) {
-						do_action( 'bookacti_booking_group_state_changed', $booking_group_id, $new_state, array( 'is_admin' => $is_admin, 'refund_action' => $refund_action ) );
-					}
-					
-					// Get new booking actions
-					$admin_or_front = $is_admin ? 'admin' : 'front';
-					$actions_html	= bookacti_get_booking_group_actions_html( $booking_group_id, $admin_or_front );
-					$refunded[ 'new_actions_html' ] = $actions_html;
-
-					// Get new booking state formatted
-					$refunded[ 'formatted_state' ] = bookacti_format_booking_state( $new_state, $is_admin );
-					
-					// Get grouped booking rows if they are displayed and need to be refreshed
-					$rows = '';
-					$reload_grouped_bookings = intval( $_POST[ 'reload_grouped_bookings' ] ) === 1 ? true : false;
-					if( $reload_grouped_bookings ) {
-						$Bookings_List_Table = new Bookings_List_Table();
-						$Bookings_List_Table->prepare_items( array( 'booking_group_id' => $booking_group_id ), true );
-						$rows = $Bookings_List_Table->get_rows_or_placeholder();
-					}
-					
-					$refunded[ 'grouped_booking_rows' ] = $rows;
-				}
-
-				wp_send_json( $refunded );
-
-			} else {
-				wp_send_json( array( 'status' => 'failed', 'error' => 'not_allowed' ) );
+			if( ! check_ajax_referer( 'bookacti_refund_booking', 'nonce', false ) ) {
+				bookacti_send_json_invalid_nonce( 'refund_booking' );
 			}
+			
+			if( ! bookacti_user_can_manage_booking_group( $booking_group_id ) ) {
+				bookacti_send_json_not_allowed( 'refund_booking' );
+			}
+			
+			if( ! bookacti_booking_group_can_be_refunded( $booking_group_id, $refund_action ) ) {
+				bookacti_send_json( array( 'error' => 'cannot_be_refunded' ), 'refund_booking' );
+			}
+			
+			$refund_message	= sanitize_text_field( stripslashes( $_POST[ 'refund_message' ] ) );
+
+			if( $refund_action === 'email' ) {
+				$refunded = bookacti_send_email_refund_request( $booking_group_id, 'group', $refund_message );
+				if( $refunded ) {
+					$refunded = array( 'status' => 'success', 'new_state' => 'refund_requested' );
+				} else {
+					$refunded = array( 'status' => 'failed', 'error' => 'cannot_send_email' );
+				}
+			} else {
+				$refunded = apply_filters( 'bookacti_refund_booking', array( 'status' => 'failed' ), $booking_group_id, 'group', $refund_action, $refund_message );
+			}
+
+			if( $refunded[ 'status' ] === 'success' ) {
+
+				$new_state	= $refunded[ 'new_state' ] ? $refunded[ 'new_state' ] : 'refunded';
+				$updated	= bookacti_update_booking_group_state( $booking_group_id, $new_state, 'auto', true );
+
+				// Hook status changes
+				if( $updated ) {
+					do_action( 'bookacti_booking_group_state_changed', $booking_group_id, $new_state, array( 'is_admin' => $is_admin, 'refund_action' => $refund_action ) );
+				}
+
+				// Get new booking actions
+				$admin_or_front = $is_admin ? 'admin' : 'front';
+				$actions_html	= bookacti_get_booking_group_actions_html( $booking_group_id, $admin_or_front );
+				$refunded[ 'new_actions_html' ] = $actions_html;
+
+				// Get new booking state formatted
+				$refunded[ 'formatted_state' ] = bookacti_format_booking_state( $new_state, $is_admin );
+
+				// Get grouped booking rows if they are displayed and need to be refreshed
+				$rows = '';
+				$reload_grouped_bookings = intval( $_POST[ 'reload_grouped_bookings' ] ) === 1 ? true : false;
+				if( $reload_grouped_bookings ) {
+					$Bookings_List_Table = new Bookings_List_Table();
+					$Bookings_List_Table->prepare_items( array( 'booking_group_id' => $booking_group_id ), true );
+					$rows = $Bookings_List_Table->get_rows_or_placeholder();
+				}
+
+				$refunded[ 'grouped_booking_rows' ] = $rows;
+			}
+
+			wp_send_json( $refunded );
 		}
 		add_action( 'wp_ajax_bookactiRefundBookingGroup', 'bookacti_controller_refund_booking_group' );
 		add_action( 'wp_ajax_nopriv_bookactiRefundBookingGroup', 'bookacti_controller_refund_booking_group' );
@@ -573,7 +580,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			$booking_group	= bookacti_get_booking_group_by_id( $booking_group_id );
 			if( $new_booking_state && $booking_group->state !== $new_booking_state ) {
 				
-				$state_can_be_changed = bookacti_booking_group_state_can_be_changed_to( $booking_group_id, $new_booking_state );
+				$state_can_be_changed = bookacti_booking_group_state_can_be_changed_to( $booking_group, $new_booking_state );
 				if( ! $state_can_be_changed ) {
 					bookacti_send_json( array( 'status' => 'failed', 'error' => 'not_allowed_to_update_booking_group_status', 'message' => esc_html__( 'The booking group status cannot be changed.', BOOKACTI_PLUGIN_NAME ) ), 'change_booking_group_status' );
 				}

@@ -181,10 +181,16 @@ function bookacti_load_template_calendar() {
 				element.data( 'activity-id', activity_id );
 				element.attr( 'data-activity-id', activity_id );
 			}
-
-			if( view.name.indexOf( 'basic' ) > -1 || view.name.indexOf( 'month' ) > -1 ){
-				element.find( 'span.fc-time' ).text( event.start.format( 'HH:mm' ) + ' - ' + event.end.format( 'HH:mm' ) );
+			
+			// Display start and end time in spans
+			var time_format	= 'LT';
+			// Remove trailing AM/PM
+			if( view.name.indexOf( 'agenda' ) > -1 ){
+				time_format = calendar.fullCalendar( 'option', 'noMeridiemTimeFormat' );
+			} else if( view.name.indexOf( 'basic' ) > -1 || view.name === 'month' ) {
+				time_format	= calendar.fullCalendar( 'option', 'smallTimeFormat' );
 			}
+			element.find( '.fc-time' ).html( '<span class="bookacti-event-time-start">' + event.start.format( time_format ) + '</span><span class="bookacti-event-time-separator"> - </span><span class="bookacti-event-time-end">' + event.end.format( time_format ) + '</span>' );
 			
 			// Add availability div
 			if( typeof event_data !== 'undefined' && event_data.availability ) {

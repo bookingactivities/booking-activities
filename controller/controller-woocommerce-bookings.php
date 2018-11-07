@@ -240,8 +240,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	
 	/**
 	 * Turn bookings of a paid order containing non-activity products to booked
-	 * 
-	 * @version 1.5.0
+	 * @version 1.6.0
 	 * @param int $order_id
 	 * @param WC_Order $order
 	 */
@@ -255,7 +254,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		if( version_compare( WC_VERSION, '3.0.0', '>=' ) ) {
 			if( ! $order->get_date_paid( 'edit' ) ) { return false; }
 		} else {
-			if( ! get_post_meta( $order_id, '_paid_date', true ) ) { return false; }
+			if( ! $order->paid_date ) { return false; }
 		}
 		
 		// Retrieve bought items
@@ -306,18 +305,18 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	/**
 	 * Add actions html elements to booking rows
 	 * @version 1.6.0
-	 * @global boolean $is_email
+	 * @global boolean $bookacti_is_email
 	 * @param int $item_id
 	 * @param WC_Order_item $item
 	 * @param WC_Order $order
 	 * @param boolean $plain_text
 	 */
 	function bookacti_add_actions_to_bookings( $item_id, $item, $order, $plain_text = true ) {
-		global $is_email;
+		global $bookacti_is_email;
 		
 		// Don't display booking actions in emails, in plain text and in payment page
-		if( ( isset( $is_email ) && $is_email ) || $plain_text || ( isset( $_GET[ 'pay_for_order' ] ) && $_GET[ 'pay_for_order' ] ) ) { 
-			$GLOBALS[ 'is_email' ] = false; 
+		if( ( isset( $bookacti_is_email ) && $bookacti_is_email ) || $plain_text || ( isset( $_GET[ 'pay_for_order' ] ) && $_GET[ 'pay_for_order' ] ) ) { 
+			$GLOBALS[ 'bookacti_is_email' ] = false; 
 			return;
 		}
 		
@@ -332,13 +331,13 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	
 	/**
 	 * Set a flag before displaying order items to decide whether to display booking actions
-	 * 
 	 * @since 1.4.0
+	 * @version 1.6.0
 	 * @param array $args
 	 * @return array
 	 */
 	function bookacti_order_items_set_email_flag( $args ) {
-		$GLOBALS[ 'is_email' ] = true;
+		$GLOBALS[ 'bookacti_is_email' ] = true;
 		return $args;
 	}
 	add_filter( 'woocommerce_email_order_items_args', 'bookacti_order_items_set_email_flag', 10, 1 );
@@ -590,14 +589,13 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	 * Get booking actions according to the order bound to the booking
 	 * @since 1.6.0 (replace bookacti_display_actions_buttons_on_booking_items)
 	 * @param array $actions
-	 * @param int $booking_id
+	 * @param object $booking
 	 * @param string $admin_or_front Can be "both", "admin", "front. Default "both".
 	 * @return array
 	 */
-	function bookacti_wc_booking_actions_per_booking( $actions, $booking_id, $admin_or_front ) {
-		if( ! $actions || ! $booking_id ) { return $actions; }
-		$order_id = bookacti_get_booking_order_id( $booking_id );
-		return bookacti_wc_booking_actions_per_order_id( $actions, $order_id );;
+	function bookacti_wc_booking_actions_per_booking( $actions, $booking, $admin_or_front ) {
+		if( ! $actions || ! $booking ) { return $actions; }
+		return bookacti_wc_booking_actions_per_order_id( $actions, $booking->order_id );
 	}
 	add_filter( 'bookacti_booking_actions_by_booking', 'bookacti_wc_booking_actions_per_booking', 10, 3 );
 	
@@ -606,16 +604,15 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	 * Get booking group actions according to the order bound to the booking group
 	 * @since 1.6.0 (replace bookacti_display_actions_buttons_on_booking_group_items)
 	 * @param array $actions
-	 * @param int $booking_group_id
+	 * @param object $booking_group
 	 * @param string $admin_or_front Can be "both", "admin", "front. Default "both".
 	 * @return array
 	 */
-	function bookacti_wc_booking_group_actions_per_booking_group( $actions, $booking_group_id, $admin_or_front ) {
-		if( ! $actions || ! $booking_group_id ) { return $actions; }
-		$order_id = bookacti_get_booking_group_order_id( $booking_group_id );
-		return bookacti_wc_booking_actions_per_order_id( $actions, $order_id );;
+	function bookacti_wc_booking_group_actions_per_booking_group( $actions, $booking_group, $admin_or_front ) {
+		if( ! $actions || ! $booking_group ) { return $actions; }
+		return bookacti_wc_booking_actions_per_order_id( $actions, $booking_group->order_id );
 	}
-	add_filter( 'bookacti_booking_actions_by_booking', 'bookacti_wc_booking_group_actions_per_booking_group', 10, 3 );
+	add_filter( 'bookacti_booking_group_actions_by_booking_group', 'bookacti_wc_booking_group_actions_per_booking_group', 10, 3 );
 	
 	
 	/**
@@ -836,25 +833,25 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	
 	/**
 	 * Check if a booking can be refunded
-	 * @version 1.5.8
+	 * @version 1.6.0
 	 * @param boolean $true
-	 * @param int $booking_id
+	 * @param object $booking
 	 * @return boolean
 	 */
-	function bookacti_woocommerce_booking_can_be_refunded( $true, $booking_id ) {
+	function bookacti_woocommerce_booking_can_be_refunded( $true, $booking ) {
 		if( ! $true || current_user_can( 'bookacti_edit_bookings' ) ) { return $true; }
 		
 		// Init var
-		$order_id	= bookacti_get_booking_order_id( $booking_id );
-		$order		= wc_get_order( $order_id );
+		$order = wc_get_order( $booking->order_id );
 		if( ! $order ) { return $true; }
 		if( $order->get_status() === 'pending' ) { return false; }
 		
-		$item = bookacti_get_order_item_by_booking_id( $booking_id );
-		if( ! $item ) { return false; }
-
-		$is_paid = get_post_meta( $order_id, '_paid_date', true );
+		// WOOCOMMERCE 3.0.0 backward compatibility 
+		$is_paid = version_compare( WC_VERSION, '3.0.0', '>=' ) ? $order->get_date_paid( 'edit' ) : $order->paid_date;
 		if( ! $is_paid ) { return false; }
+		
+		$item = bookacti_get_order_item_by_booking_id( $booking->id );
+		if( ! $item ) { return false; }
 		
 		// WOOCOMMERCE 3.0.0 backward compatibility 
 		$total = version_compare( WC_VERSION, '3.0.0', '>=' ) ? $item->get_total() : $item[ 'line_total' ];
@@ -867,24 +864,24 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	
 	/**
 	 * Check if a booking group can be refunded
-	 * @version 1.5.8
+	 * @version 1.6.0
 	 * @param boolean $true
-	 * @param int $booking_group_id
+	 * @param object $booking_group
 	 * @return boolean
 	 */
-	function bookacti_woocommerce_booking_group_can_be_refunded( $true, $booking_group_id ) {
+	function bookacti_woocommerce_booking_group_can_be_refunded( $true, $booking_group ) {
 		if( ! $true || current_user_can( 'bookacti_edit_bookings' ) ) { return $true; }
-			
-		$order_id	= bookacti_get_booking_group_order_id( $booking_group_id );
-		$order		= wc_get_order( $order_id );
+		
+		$order = wc_get_order( $booking_group->order_id );
 		if( ! $order ) { return $true; }
 		if( $order->get_status() === 'pending' ) { $true = false; }
 		
-		$item = bookacti_get_order_item_by_booking_group_id( $booking_group_id );
+		// WOOCOMMERCE 3.0.0 backward compatibility 
+		$is_paid = version_compare( WC_VERSION, '3.0.0', '>=' ) ? $order->get_date_paid( 'edit' ) : $order->paid_date;
+		if( ! $is_paid ) { $true = false; }	
+		
+		$item = bookacti_get_order_item_by_booking_group_id( $booking_group->id );
 		if( ! $item ) { return false; }
-
-		$is_paid = get_post_meta( $order_id, '_paid_date', true );
-		if( ! $is_paid ) { $true = false; }
 		
 		// WOOCOMMERCE 3.0.0 backward compatibility 
 		$total = version_compare( WC_VERSION, '3.0.0', '>=' ) ? $item->get_total() : $item[ 'line_total' ];
@@ -899,14 +896,18 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	 * Check if a booking can be completed
 	 * @version 1.6.0
 	 * @param boolean $true
-	 * @param int $booking_id
+	 * @param object|int $booking_id
 	 * @return boolean
 	 */
-	function bookacti_booking_state_can_be_changed_to_booked( $true, $booking_id, $new_state ) {
+	function bookacti_booking_state_can_be_changed_to_booked( $true, $booking, $new_state ) {
 		
 		if( $true && $new_state === 'booked' && ! current_user_can( 'bookacti_edit_bookings' ) ) {
 			
-			$order_id	= bookacti_get_booking_order_id( $booking_id );
+			if( is_int( $booking ) ) {
+				$order_id = bookacti_get_booking_order_id( $booking );
+			} else {
+				$order_id = $booking->order_id;
+			}
 			
 			if( ! $order_id || ! is_numeric( $order_id ) ) { return $true; }
 			
@@ -927,24 +928,18 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	 * @since 1.1.0
 	 * @version 1.6.0
 	 * @param boolean $true
-	 * @param int $booking_id
+	 * @param object $booking_group
 	 * @return boolean
 	 */
-	function bookacti_booking_group_state_can_be_changed_to_booked( $true, $booking_group_id, $new_state ) {
-		
+	function bookacti_booking_group_state_can_be_changed_to_booked( $true, $booking_group, $new_state ) {
 		if( $true && $new_state === 'booked' && ! current_user_can( 'bookacti_edit_bookings' ) ) {
+			if( ! $booking_group->order_id || ! is_numeric( $booking_group->order_id ) ) { return $true; }
 			
-			$order_id = bookacti_get_booking_group_order_id( $booking_group_id );
-			
-			if( ! $order_id || ! is_numeric( $order_id ) ) { return $true; }
-			
-			$order = wc_get_order( $order_id );
-			
+			$order = wc_get_order( $booking_group->order_id );
 			if( empty( $order ) ) { return false; }
 			
 			if( ! in_array( $order->get_status(), array( 'pending', 'processing', 'on-hold' ), true ) ) { $true = false; }
 		}
-		
 		return $true;
 	}
 	add_filter( 'bookacti_booking_group_state_can_be_changed', 'bookacti_booking_group_state_can_be_changed_to_booked', 10, 3 );

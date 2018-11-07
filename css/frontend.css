@@ -11,3 +11,6 @@
 
 .bookacti-booking-system-calendar-only .bookacti-booking-system-title,
 .bookacti-booking-system-calendar-only .bookacti-picked-events { display: none !important; }
+
+.bookacti-user-booking-list-previous-page	{ margin-right: 10px }
+.bookacti-user-booking-list-next-page		{ margin-left: 10px }
