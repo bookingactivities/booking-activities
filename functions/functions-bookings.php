@@ -142,15 +142,12 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	
 	
 	/**
-	 * Format booking filters
-	 * @since 1.3.0
-	 * @version 1.6.0
-	 * @param array $filters 
+	 * Get Default booking filters
+	 * @since 1.6.0
 	 * @return array
 	 */
-	function bookacti_format_booking_filters( $filters = array() ) {
-
-		$default_filters = apply_filters( 'bookacti_default_booking_filters', array(
+	function bookacti_get_default_booking_filters() {
+		return apply_filters( 'bookacti_default_booking_filters', array(
 			'templates'					=> array(), 
 			'activities'				=> array(), 
 			'booking_id'				=> 0, 
@@ -177,6 +174,19 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			'not_in__user_id'			=> array(),
 			'meta'						=> false
 		));
+	}
+	
+	
+	/**
+	 * Format booking filters
+	 * @since 1.3.0
+	 * @version 1.6.0
+	 * @param array $filters 
+	 * @return array
+	 */
+	function bookacti_format_booking_filters( $filters = array() ) {
+
+		$default_filters = bookacti_get_default_booking_filters();
 		
 		$formatted_filters = array();
 		foreach( $default_filters as $filter => $default_value ) {
@@ -269,7 +279,48 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		
 		return apply_filters( 'bookacti_formatted_booking_filters', $formatted_filters, $filters, $default_filters );
 	}
+	
+	
+	/**
+	 * Format booking filters manually input
+	 * @since 1.6.0
+	 * @param array $filters
+	 * @return array
+	 */
+	function bookacti_format_string_booking_filters( $filters = array() ) {
+		// Format arrays
+		$formatted_arrays = array();
+		$int_arrays = array( 'templates', 'activities', 'in__booking_id', 'in__booking_group_id', 'not_in__booking_id', 'not_in__booking_group_id', 'not_in__user_id' );
+		$str_arrays = array( 'status', 'order_by' );
+		foreach( array_merge( $int_arrays, $str_arrays ) as $att_name ) {
+			if( empty( $filters[ $att_name ] ) || is_array( $filters[ $att_name ] ) ) { continue; }
+			$formatted_arrays[ $att_name ] = explode( ',', preg_replace( array(
+				'/[^\d,]/',    // Matches anything that's not a comma or number.
+				'/(?<=,),+/',  // Matches consecutive commas.
+				'/^,+/',       // Matches leading commas.
+				'/,+$/'        // Matches trailing commas.
+			), '', 	$filters[ $att_name ] ) );
+			if( in_array( $att_name, $int_arrays, true ) ) { $formatted_arrays[ $att_name ] = array_map( 'intval', $formatted_arrays[ $att_name ] ); }
+			if( in_array( $att_name, $str_arrays, true ) ) { $formatted_arrays[ $att_name ] = array_map( 'sanitize_title_with_dashes', $formatted_arrays[ $att_name ] ); }
+		}
 
+		// Format datetime
+		$from = ''; $to = '';
+		if( ! empty( $filters[ 'from' ] ) || ! empty( $filters[ 'to' ] ) !== '' ) { 
+			$timezone = new DateTimeZone( bookacti_get_setting_value( 'bookacti_general_settings', 'timezone' ) );
+			if( ! empty( $filters[ 'from' ] ) && (bool)strtotime( $filters[ 'from' ] ) ) {
+				$from_datetime = new DateTime( $filters[ 'from' ], $timezone );
+				$from = $from_datetime->format( 'Y-m-d' );
+			}
+			if( ! empty( $filters[ 'to' ] ) && (bool)strtotime( $filters[ 'to' ] ) ) {
+				$to_datetime = new DateTime( $filters[ 'to' ], $timezone );
+				$to = $to_datetime->format( 'Y-m-d' );
+			}
+		}
+		
+		return apply_filters( 'bookacti_format_string_booking_filters', array_merge( $filters, array( 'from' => $from, 'to' => $to ), $formatted_arrays ), $filters );
+	}
+	
 
 
 // PERMISSIONS
@@ -1530,7 +1581,8 @@ function bookacti_get_booking_list_rows( $bookings, $columns = array(), $user_id
 		// Booking groups
 		} else if( ! in_array( $booking->group_id, $groups_already_added, true ) ) {
 			
-			$group_bookings = bookacti_get_bookings_by_booking_group_id( $booking->group_id ); 
+			$group_filters = bookacti_format_booking_filters( array( 'in__booking_group_id' => $booking->group_id, 'templates' => '' ) );
+			$group_bookings = bookacti_get_bookings( $group_filters ); 
 
 			$list_items[] = apply_filters( 'bookacti_user_bookings_list_columns_value', array(
 				'id'		=> $booking->group_id,

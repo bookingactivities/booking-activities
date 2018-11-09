@@ -1312,7 +1312,7 @@ add_action( 'wp_ajax_bookactiResetExportEventsUrl', 'bookacti_controller_reset_f
 
 
 /**
- * Export events of a specifc form
+ * Export events of a specific form
  * @since 1.6.0
  */
 function bookacti_export_form_events_page() {
@@ -1323,9 +1323,8 @@ function bookacti_export_form_events_page() {
 	if( ! $form_id ) { esc_html_e( 'Invalid form ID.', BOOKACTI_PLUGIN_NAME ); exit; }
 	
 	// Check the filename
-	$parsed_url = parse_url( $_SERVER[ 'REQUEST_URI' ] ); 
-	$filename	= 'booking-activities-events-form-' . $form_id . '.ics';
-	if( basename( $parsed_url[ 'path' ] ) !== $filename ) { esc_html_e( 'Invalid filename.', BOOKACTI_PLUGIN_NAME ); exit; }
+	$parsed_url = parse_url( $_SERVER[ 'REQUEST_URI' ] );
+	if( substr( basename( $parsed_url[ 'path' ] ), -4 ) !== '.ics' ) { esc_html_e( 'Invalid filename.', BOOKACTI_PLUGIN_NAME ); exit; }
 	
 	// Check if the secret key exists
 	$key = ! empty( $_REQUEST[ 'key' ] ) ? $_REQUEST[ 'key' ] : '';
@@ -1339,28 +1338,9 @@ function bookacti_export_form_events_page() {
 	$calendar_field = bookacti_get_form_field_data_by_name( $form_id, 'calendar' );
 	if( ! $calendar_field ) { esc_html_e( 'Cannot find the calendar field of the requested form.', BOOKACTI_PLUGIN_NAME ); exit; }
 	
-	// Replace the parameters with those in URL
-	if( ! empty( $_REQUEST[ 'past_events' ] ) && $_REQUEST[ 'past_events' ] !== 'auto' ) {
-		$calendar_field[ 'past_events' ]			= $_REQUEST[ 'past_events' ] ? 1 : 0;
-		$calendar_field[ 'past_events_bookable' ]	= $_REQUEST[ 'past_events' ] ? 1 : 0;
-	}
-	
-	// Replace form field booking system attributes with attributes passed through the URL
-	if( ! empty( $_REQUEST[ 'start' ] ) )			{ $_REQUEST[ 'template_data' ][ 'start' ] = $_REQUEST[ 'start' ]; }
-	if( ! empty( $_REQUEST[ 'end' ] ) )				{ $_REQUEST[ 'template_data' ][ 'end' ] = $_REQUEST[ 'end' ]; }
-	if( ! empty( $_REQUEST[ 'availability_period_start' ] ) )	{ $_REQUEST[ 'template_data' ][ 'settings' ][ 'availability_period_start' ] = $_REQUEST[ 'availability_period_start' ]; }
-	if( ! empty( $_REQUEST[ 'availability_period_end' ] ) )		{ $_REQUEST[ 'template_data' ][ 'settings' ][ 'availability_period_end' ] = $_REQUEST[ 'availability_period_end' ]; }
-	$url_atts = bookacti_format_booking_system_attributes( $_REQUEST );
-	if( ! empty( $_REQUEST[ 'calendars' ] ) )		{ $calendar_field[ 'calendars' ] = $url_atts[ 'calendars' ]; }
-	if( ! empty( $_REQUEST[ 'activities' ] ) )		{ $calendar_field[ 'calendars' ] = $url_atts[ 'activities' ]; }
-	if( ! empty( $_REQUEST[ 'groups_only' ] ) )		{ $calendar_field[ 'groups_only' ] = $url_atts[ 'groups_only' ]; }
-	if( ! empty( $_REQUEST[ 'group_categories' ] ) ){ $calendar_field[ 'group_categories' ] = $url_atts[ 'group_categories' ]; }
-	if( ! empty( $_REQUEST[ 'status' ] ) )			{ $calendar_field[ 'status' ] = $url_atts[ 'status' ]; }
-	if( ! empty( $_REQUEST[ 'user_id' ] ) )			{ $calendar_field[ 'user_id' ] = $url_atts[ 'user_id' ]; }
-	if( ! empty( $_REQUEST[ 'start' ] ) )			{ $calendar_field[ 'template_data' ][ 'start' ] = $url_atts[ 'template_data' ][ 'start' ]; }
-	if( ! empty( $_REQUEST[ 'end' ] ) )				{ $calendar_field[ 'template_data' ][ 'end' ] = $url_atts[ 'template_data' ][ 'end' ]; }
-	if( ! empty( $_REQUEST[ 'availability_period_start' ] ) )	{ $calendar_field[ 'template_data' ][ 'settings' ][ 'availability_period_start' ] = $url_atts[ 'template_data' ][ 'settings' ][ 'availability_period_start' ]; }
-	if( ! empty( $_REQUEST[ 'availability_period_end' ] ) )		{ $calendar_field[ 'template_data' ][ 'settings' ][ 'availability_period_end' ] = $url_atts[ 'template_data' ][ 'settings' ][ 'availability_period_end' ]; }
+	$atts = apply_filters( 'bookacti_export_events_attributes', array_merge( bookacti_format_booking_system_url_attributes( $calendar_field ), array(
+		'groups_single_events' => 1
+	)));
 	
 	$form = bookacti_get_form( $form_id );
 	if( $form ) {
@@ -1377,6 +1357,6 @@ function bookacti_export_form_events_page() {
 	$sequence = intval( bookacti_get_metadata( 'form', $form_id, 'ical_sequence', true ) ) + 1;
 	bookacti_update_metadata( 'form', $form_id, array( 'ical_sequence' => $sequence ) );
 	
-	bookacti_export_events_page( $calendar_field, $calname, $caldesc, $sequence );
+	bookacti_export_events_page( $atts, $calname, $caldesc, $sequence );
 }
 add_action( 'init', 'bookacti_export_form_events_page', 10 );

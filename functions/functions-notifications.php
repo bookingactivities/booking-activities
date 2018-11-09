@@ -282,8 +282,8 @@ function bookacti_sanitize_notification_settings( $args, $notification_id = '' )
 
 /**
  * Get notifications tags
- * 
  * @since 1.2.0
+ * @version 1.6.0
  * @param string $notification_id Optional.
  * @return array
  */
@@ -300,7 +300,10 @@ function bookacti_get_notifications_tags( $notification_id = '' ) {
 		'{booking_list}'		=> __( 'Booking summary displayed as a booking list. You should use this tag once in every notification to know what booking (group) it is about.', BOOKACTI_PLUGIN_NAME ),
 		'{user_firstname}'		=> __( 'The user first name', BOOKACTI_PLUGIN_NAME ),
 		'{user_lastname}'		=> __( 'The user last name', BOOKACTI_PLUGIN_NAME ),
-		'{user_email}'			=> __( 'The user email address', BOOKACTI_PLUGIN_NAME )
+		'{user_email}'			=> __( 'The user email address', BOOKACTI_PLUGIN_NAME ),
+		'{user_id}'				=> __( 'The user ID.', BOOKACTI_PLUGIN_NAME ),
+		'{user_ical_url}'		=> __( 'URL to export the user list of bookings in ical format. If the user doesn\'t have an account, only the current booking is exported.', BOOKACTI_PLUGIN_NAME ),
+		'{user_ical_key}'		=> __( 'User ical export secret key. Useful to create a custom ical export URL.', BOOKACTI_PLUGIN_NAME )
 	);
 	
 	if( substr( $notification_id, 0, 6 ) === 'admin_' ) {
@@ -319,7 +322,7 @@ function bookacti_get_notifications_tags( $notification_id = '' ) {
 /**
  * Get notifications tags and values corresponding to given booking
  * @since 1.2.0
- * @version 1.5.4
+ * @version 1.6.0
  * @param int $booking_id
  * @param string $booking_type 'group' or 'single'
  * @param string $notification_id
@@ -366,12 +369,26 @@ function bookacti_get_notifications_tags_values( $booking_id, $booking_type, $no
 		$booking_data[ '{booking_list}' ]			= bookacti_get_formatted_booking_events_list( $bookings, 'show', $locale );
 
 		if( $booking->user_id ) { 
+			$booking_data[ '{user_id}' ] = $booking->user_id;
 			$user = get_user_by( 'id', $booking->user_id );
 			if( $user ) { 
 				$booking_data[ '{user_firstname}' ]	= $user->first_name;
 				$booking_data[ '{user_lastname}' ]	= $user->last_name;
 				$booking_data[ '{user_email}' ]		= $user->user_email;
+				
+				$user_meta = get_user_meta( $booking->user_id );
+				if( ! empty( $user_meta[ 'bookacti_secret_key' ][ 0 ] ) ) {
+					$booking_data[ '{user_ical_key}' ] = $user_meta[ 'bookacti_secret_key' ][ 0 ];
+				} else {
+					$booking_data[ '{user_ical_key}' ] = md5( microtime().rand() );
+					update_user_meta( $booking->user_id, 'bookacti_secret_key', $booking_data[ '{user_ical_key}' ] );
+				}
+				$booking_data[ '{user_ical_url}' ] = esc_url( home_url( 'my-bookings.ics?action=bookacti_export_user_booked_events&key=' . $booking_data[ '{user_ical_key}' ] . '&lang=' . $locale ) );
 			}
+		}
+		if( empty( $booking_data[ '{user_ical_key}' ] ) ) {
+			$booking_id_param_name = $booking_type === 'group' ? 'booking_group_id' : 'booking_id';
+			$booking_data[ '{user_ical_url}' ] = esc_url( home_url( 'my-bookings.ics?action=bookacti_export_booked_events&' . $booking_id_param_name . '=' . $booking_id . '&lang=' . $locale ) );
 		}
 	}
 	

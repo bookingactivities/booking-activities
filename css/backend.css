@@ -72,7 +72,8 @@
 #bookacti-banp-promo				{ max-width: 500px; margin-top: 20px; }
 .bookacti-notifications-tag-promo	{ background: #ffff78; }
 
-.bookacti-notifications-tags-list .bookacti-notifications-tag { margin-bottom: 8px; }
+.bookacti-notifications-tags-list { max-height: 520px; max-width: 220px; overflow: auto; }
+.bookacti-notifications-tags-list .bookacti-notifications-tag { margin-bottom: 8px; white-space: nowrap; }
 .bookacti-notifications-tag code { font-weight: normal; font-size: 0.8em; }
 
 .bookacti-message-setting		{ margin-bottom: 20px; }

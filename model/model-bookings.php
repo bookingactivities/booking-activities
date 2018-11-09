@@ -2141,7 +2141,7 @@ function bookacti_delete_booking( $booking_id ) {
 
 
 	/**
-	 * Get ids of bookings included in a gbooking group
+	 * Get ids of bookings included in a booking group
 	 * 
 	 * @since 1.1.0
 	 * 

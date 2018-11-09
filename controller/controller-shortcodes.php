@@ -122,31 +122,26 @@ function bookacti_shortcode_booking_form( $atts = array(), $content = null, $tag
  * @return string The booking list corresponding to given parameters
  */
 function bookacti_shortcode_bookings_list( $atts = array(), $content = null, $tag = '' ) {
-	
 	// normalize attribute keys, lowercase
     $atts = array_change_key_case( (array) $atts, CASE_LOWER );
 	
-	// override default attributes with user attributes
+	// Backward Compatibility for "user" attribute (instead of "user_id")
 	if( isset( $atts[ 'user' ] ) ) {
-		$atts[ 'user' ] = intval( $atts[ 'user' ] );
+		$atts[ 'user_id' ] = intval( $atts[ 'user' ] );
+		unset( $atts[ 'user' ] );
 	}
-	$default_atts = array(
+	
+	$default_atts = array_merge( bookacti_get_default_booking_filters(), array(
 		'user' => get_current_user_id(),
-		'per_page' => 10
-	);
+		'per_page' => 10,
+		'status' => apply_filters( 'bookacti_booking_list_displayed_status', array( 'booked', 'pending', 'cancelled', 'refunded', 'refund_requested' ) )
+	) );
     $atts = shortcode_atts( $default_atts, $atts, $tag );
 	
-	// If no user, return an empty string
-	if( empty( $atts[ 'user' ] ) ) {
-		return apply_filters( 'bookacti_shortcode_' . $tag . '_output', '', $atts, $content );
-	}
+	$atts = bookacti_format_string_booking_filters( $atts );
 	
 	// Format booking filters
-	$filters = apply_filters( 'bookacti_user_booking_list_booking_filters', bookacti_format_booking_filters( array( 
-		'user_id' => $atts[ 'user' ], 
-		'status' => apply_filters( 'bookacti_booking_list_displayed_status', array( 'booked', 'pending', 'cancelled', 'refunded', 'refund_requested' ) ),
-		'group_by' => 'booking_group'
-	) ), $atts, $content );
+	$filters = apply_filters( 'bookacti_user_booking_list_booking_filters', bookacti_format_booking_filters( $atts ), $atts, $content );
 	
 	$bookings_nb = bookacti_get_number_of_booking_rows( $filters );	
 	

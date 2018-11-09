@@ -421,6 +421,52 @@ function bookacti_format_booking_system_attributes( $atts = array() ) {
 
 
 /**
+ * Format booking system attributes passed via the URL
+ * @since 1.6.0
+ * @param array $atts
+ * @return array
+ */
+function bookacti_format_booking_system_url_attributes( $atts = array() ) {
+	$default_atts = bookacti_get_booking_system_default_attributes();
+	if( ! $atts ) { $atts = bookacti_get_booking_system_default_attributes(); }
+	
+	// Replace the parameters with those in URL
+	if( ! empty( $_REQUEST[ 'past_events' ] ) && $_REQUEST[ 'past_events' ] !== 'auto' ) {
+		$atts[ 'past_events' ]			= $_REQUEST[ 'past_events' ] ? 1 : 0;
+		$atts[ 'past_events_bookable' ]	= $atts[ 'past_events' ];
+	}
+	
+	// Format the URL attributes
+	if( ! empty( $_REQUEST[ 'start' ] ) )	{ $_REQUEST[ 'template_data' ][ 'start' ] = $_REQUEST[ 'start' ]; }
+	if( ! empty( $_REQUEST[ 'end' ] ) )		{ $_REQUEST[ 'template_data' ][ 'end' ] = $_REQUEST[ 'end' ]; }
+	
+	$default_template_settings = bookacti_format_template_settings( array() );
+	foreach( $default_template_settings as $att_name => $att_value ) {
+		if( empty( $_REQUEST[ $att_name ] ) ) { continue; }
+		$_REQUEST[ 'template_data' ][ 'settings' ][ $att_name ] = $_REQUEST[ $att_name ];
+	}
+	
+	$url_atts = bookacti_format_booking_system_attributes( $_REQUEST );
+	
+	// Replace booking system attributes with attributes passed through the URL
+	foreach( $default_atts as $att_name => $att_value ) {
+		if( empty( $_REQUEST[ $att_name ] ) ) { continue; }
+		$atts[ $att_name ] = $url_atts[ $att_name ];
+	}
+	foreach( $url_atts[ 'template_data' ] as $att_name => $att_value ) {
+		if( empty( $_REQUEST[ $att_name ] ) && $att_name !== 'settings' ) { continue; }
+		$atts[ 'template_data' ][ $att_name ] = $att_value;
+	}
+	foreach( $default_template_settings as $att_name => $att_value ) {
+		if( empty( $_REQUEST[ $att_name ] ) ) { continue; }
+		$atts[ 'template_data' ][ 'settings' ][ $att_name ] = $url_atts[ 'template_data' ][ 'settings' ][ $att_name ];
+	}
+	
+	return apply_filters( 'bookacti_format_booking_system_url_attributes', $atts );
+}
+
+
+/**
  * Get booking system fields default data
  * @since 1.5.0
  * @version 1.5.9
@@ -1571,28 +1617,22 @@ function bookacti_get_occurences_of_repeated_event( $event, $past_events = false
 
 /**
  * Build a user-friendly events list
- * 
  * @since 1.1.0
- * @version 1.5.7
- * 
+ * @version 1.6.0
  * @param array $booking_events
  * @param int|string $quantity
  * @param string $locale Optional. Default to site locale.
  * @return string
  */
 function bookacti_get_formatted_booking_events_list( $booking_events, $quantity = 'hide', $locale = 'site' ) {
-	
 	if( ! $booking_events ) { return false; }
 	
 	// Set default locale to site's locale
-	if( $locale === 'site' ) {
-		$locale = bookacti_get_site_locale();
-	}
+	if( $locale === 'site' ) { $locale = bookacti_get_site_locale(); }
 	
 	// Format $events
 	$formatted_events = array();
 	foreach( $booking_events as $booking_event ) {
-		
 		$booking_quantity = '';
 		if( isset( $booking_event->quantity ) ) {
 			$booking_quantity = $booking_event->quantity;
@@ -1602,22 +1642,22 @@ function bookacti_get_formatted_booking_events_list( $booking_events, $quantity 
 		
 		$formatted_events[] = array( 
 			'raw_event' => $booking_event,
-			'title'		=> isset( $booking_event->title )	? $booking_event->title : '',
+			'title'		=> isset( $booking_event->title )	? $booking_event->title : ( isset( $booking_event->event_title ) ? $booking_event->event_title : '' ),
 			'start'		=> isset( $booking_event->start )	? bookacti_sanitize_datetime( $booking_event->start )	: ( isset( $booking_event->event_start ) ? bookacti_sanitize_datetime( $booking_event->event_start ) : '' ),
 			'end'		=> isset( $booking_event->end )		? bookacti_sanitize_datetime( $booking_event->end )		: ( isset( $booking_event->event_end ) ? bookacti_sanitize_datetime( $booking_event->event_end ) : '' ),
 			'quantity'	=> $booking_quantity
 		);
 	}
 	
-	$datetime_format		= bookacti_get_message( 'date_format_long' );
-	$time_format			= bookacti_get_message( 'time_format' );
-	$date_time_separator	= bookacti_get_message( 'date_time_separator' );
-	$dates_separator		= bookacti_get_message( 'dates_separator' );
-	$quantity_separator		= bookacti_get_message( 'quantity_separator' );
+	$messages			= bookacti_get_messages( true );
+	$datetime_format	= isset( $messages[ 'date_format_long' ][ 'value' ] )	? apply_filters( 'bookacti_translate_text', $messages[ 'date_format_long' ][ 'value' ], $locale ) : '';
+	$time_format		= isset( $messages[ 'time_format' ][ 'value' ] )		? apply_filters( 'bookacti_translate_text', $messages[ 'time_format' ][ 'value' ], $locale ) : '';
+	$date_time_separator= isset( $messages[ 'date_time_separator' ][ 'value' ] )? apply_filters( 'bookacti_translate_text', $messages[ 'date_time_separator' ][ 'value' ], $locale ) : '';
+	$dates_separator	= isset( $messages[ 'dates_separator' ][ 'value' ] )	? apply_filters( 'bookacti_translate_text', $messages[ 'dates_separator' ][ 'value' ], $locale ) : '';
+	$quantity_separator = isset( $messages[ 'quantity_separator' ][ 'value' ] )	? apply_filters( 'bookacti_translate_text', $messages[ 'quantity_separator' ][ 'value' ], $locale ) : '';
 	
 	$events_list = '';
 	foreach( $formatted_events as $event ) {
-		
 		// Format the event duration
 		$event[ 'duration' ] = '';
 		if( $event[ 'start' ] && $event[ 'end' ] ) {
@@ -1665,7 +1705,6 @@ function bookacti_get_formatted_booking_events_list( $booking_events, $quantity 
 			$list_element .= '</li>';
 			$events_list .= apply_filters( 'bookacti_formatted_booking_events_list_element', $list_element, $event );
 		}
-		
 	}
 	
 	// Wrap the list only if it is not empty
@@ -1807,6 +1846,10 @@ function bookacti_export_events_page( $atts, $calname = '', $caldesc = '', $sequ
 	} else {
 		$events	= bookacti_fetch_events( $atts[ 'calendars' ], $atts[ 'activities' ], $atts[ 'past_events' ], $events_interval );
 	}
+	
+	// Check the filename
+	$parsed_url = parse_url( $_SERVER[ 'REQUEST_URI' ] ); 
+	$filename	= basename( $parsed_url[ 'path' ] );
 	
 	header( 'Content-type: text/calendar; charset=utf-8' );
 	header( 'Content-Disposition: attachment; filename=' . $filename );
