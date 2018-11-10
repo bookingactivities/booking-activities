@@ -1237,10 +1237,8 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	
 	/**
 	 * Turn the order state if it is composed of inactive / pending / booked bookings only
-	 * 
 	 * @since 1.1.0
-	 * @version 1.5.6
-	 * 
+	 * @version 1.6.0
 	 * @param int $order_id
 	 */
 	function bookacti_change_order_state_based_on_its_bookings_state( $order_id ) {
@@ -1277,7 +1275,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		if( in_array( 'pending', $states, true ) ) {
 			// Turn order status to processing (or let it on on-hold)
 			$new_order_status = $order->get_status() === 'on-hold' ? 'on-hold' : 'processing';
-		} else if( in_array( 'booked', $states, true ) ) {
+		} else if( in_array( 'booked', $states, true ) || in_array( 'delivered', $states, true ) ) {
 			// Turn order status to completed
 			$new_order_status = 'completed';
 		} else if( in_array( 'refunded', $states, true ) && ! in_array( 'refund_requested', $states, true ) ) {

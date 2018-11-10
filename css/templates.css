@@ -94,6 +94,9 @@
 .bookacti-group-category:not(:last-child) .bookacti-groups-of-events-editor-list	{ margin-bottom: 10px; }
 .bookacti-group-of-events.bookacti-selected-group .bookacti-group-of-events-title	{ font-weight: 600; padding-left: 10px; }
 
+#bookacti-template-shortcuts-container ul { font-size: 0.85em; }
+
+
 /***** template content *****/
 /* Template calendar */
 #bookacti-template-content	{ display: table-cell; padding-left: 20px; width: 100%; }

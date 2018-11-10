@@ -331,20 +331,23 @@ register_deactivation_hook( __FILE__, 'bookacti_deactivate' );
 
 /**
  * Uninstall Booking Activities
+ * @version 1.6.0
  */
 function bookacti_uninstall() {
-	//Deregister the hourly reccuring event
+	// Deregister the hourly reccuring event
 	wp_clear_scheduled_hook( 'bookacti_hourly_event' );
-
-	// Delete plugin settings
-	bookacti_delete_settings();
 	
 	// Delete notices acknowledgement
 	bookacti_reset_notices();
 	
-	// Drop tables and every Booking Activities Data
-	delete_option( 'bookacti_version' );
-	bookacti_drop_tables();
+	if( bookacti_get_setting_value( 'bookacti_general_settings', 'delete_data_on_uninstall' ) ) {
+		// Delete plugin settings
+		bookacti_delete_settings();
+
+		// Drop tables and every Booking Activities Data
+		delete_option( 'bookacti_version' );
+		bookacti_drop_tables();
+	}
 	
 	// Unset roles and capabilities
 	bookacti_unset_role_and_cap();

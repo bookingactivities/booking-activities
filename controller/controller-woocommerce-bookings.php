@@ -77,14 +77,14 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	
 	/**
 	 * Add booking states labels related to cart
-	 * 
+	 * @version 1.6.0
 	 * @param array $labels
 	 * @return array
 	 */
 	function bookacti_add_in_cart_state_label( $labels ) {
-		$labels[ 'in_cart' ] =  array( 'display_state' => 'warning',	'label' => __( 'In cart', BOOKACTI_PLUGIN_NAME ) );
-		$labels[ 'expired' ] =  array( 'display_state' => 'bad',		'label' => __( 'Expired', BOOKACTI_PLUGIN_NAME ) );
-		$labels[ 'removed' ] =  array( 'display_state' => 'bad',		'label' => __( 'Removed', BOOKACTI_PLUGIN_NAME ) );
+		$labels[ 'in_cart' ] =  array( 'display_state' => 'warning',	'label' => esc_html__( 'In cart', BOOKACTI_PLUGIN_NAME ) );
+		$labels[ 'expired' ] =  array( 'display_state' => 'bad',		'label' => esc_html__( 'Expired', BOOKACTI_PLUGIN_NAME ) );
+		$labels[ 'removed' ] =  array( 'display_state' => 'bad',		'label' => esc_html__( 'Removed', BOOKACTI_PLUGIN_NAME ) );
 		
 		return $labels;
 	}
@@ -416,6 +416,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 				$booking_id = $order_item_data->bookacti_booking_id;
 			}
 			
+			// Fill product column
 			$product_title = '';
 			if( ! empty( $order_item_data->order_item_name ) ) {
 				$product_title = apply_filters( 'bookacti_translate_text', $order_item_data->order_item_name );
@@ -424,8 +425,17 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 				$product_id = $order_item_data->_product_id;
 				$product_title = '<a href="' . esc_url( $admin_url . 'post.php?action=edit&post=' . $product_id ) . '" target="_blank">' . $product_title . '</a>';
 			}
-
 			$booking_list_items[ $booking_id ][ 'product' ] = $product_title;
+			
+			// Specify refund method in status column
+			if( $bookings[ $booking_id ]->state === 'refunded' && ! empty( $order_item_data->_bookacti_refund_method ) ) {
+				if( $order_item_data->_bookacti_refund_method === 'coupon' ) {
+					$coupon_code = ! empty( $order_item_data->bookacti_refund_coupon ) ? $order_item_data->bookacti_refund_coupon : '';
+					/* translators: %s is the coupon code used for the refund */
+					$coupon_label = sprintf( esc_html__( 'Refunded with coupon %s', BOOKACTI_PLUGIN_NAME ), $coupon_code );
+					$booking_list_items[ $booking_id ][ 'state' ] = '<span class="bookacti-booking-state bookacti-booking-state-bad bookacti-booking-state-refunded bookacti-converted-to-coupon bookacti-tip" data-booking-state="refunded" data-tip="' . $coupon_label . '" ></span><span class="bookacti-refund-coupon-code bookacti-custom-scrollbar">' . $coupon_code . '</span>';
+				}
+			}
 		}
 		
 		return $booking_list_items;

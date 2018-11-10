@@ -78,7 +78,10 @@ $j( document ).ready( function() {
 });
 
 
-// Initialize and display the template calendar
+/**
+ * Initialize and display the template calendar
+ * @version 1.6.0
+ */
 function bookacti_load_template_calendar() {
 	var calendar = $j( '#bookacti-template-calendar' );
 	calendar.fullCalendar( {
@@ -90,7 +93,7 @@ function bookacti_load_template_calendar() {
 		minTime:                '08:00',
 		maxTime:                '20:00',
 		slotDuration:           '00:30',
-		snapDuration:           '00:30',
+		snapDuration:           '00:05',
 		scrollTime:				'08:00',
 		nowIndicator:           0,
 		weekNumbers:	        0,
@@ -350,15 +353,26 @@ function bookacti_load_template_calendar() {
 			bookacti_refresh_selected_events_display();
 		},
 
-
-		// eventReceive : When an extern draggable event is dropped on the calendar. "this" refer to the new created event on the calendar.
+		
+		/**
+		 * When an extern draggable event is dropped on the calendar. "this" refer to the new created event on the calendar.
+		 * @version 1.6.0
+		 * @param {object} event
+		 */
 		eventReceive: function( event ) {
 			
 			var activity_id		= parseInt( event.activity_id );
-			var activity_data	= bookacti.booking_system[ 'bookacti-template-calendar' ][ 'activities_data' ][ activity_id ];
+			var activity_data	= bookacti.booking_system[ 'bookacti-template-calendar' ][ 'activities_data' ][ activity_id ];		
+			var view			= calendar.fullCalendar( 'getView' );
 			
 			// If the activity was not found, return false
 			if( ! activity_data ) { return false; }
+			
+			// If the event is dropped on a non-agenda view, make it begins at the minTime
+			if( view.name.substr( 0, 6 ) !== 'agenda' ) {
+				var minTime	= calendar.fullCalendar( 'option', 'minTime' );
+				event.start.set({ 'hours': minTime.substr( 0, 2 ), 'minutes': minTime.substr( 3, 2 ), 'seconds': 0 });
+			}
 			
 			// Calculate the end datetime thanks to start datetime and duration
 			event.end = event.start.clone();

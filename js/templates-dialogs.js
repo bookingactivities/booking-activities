@@ -156,7 +156,7 @@ function bookacti_dialog_add_new_template() {
     $j( '#bookacti-template-closing' ).val( moment().add( 7, 'days' ).format( 'YYYY-MM-DD' ) );
 	$j( '#bookacti-template-data-minTime' ).val( '08:00' );
 	$j( '#bookacti-template-data-maxTime' ).val( '20:00' );
-	$j( '#bookacti-template-data-snapDuration' ).val( '00:30' );
+	$j( '#bookacti-template-data-snapDuration' ).val( '00:05' );
 	$j( '#bookacti-template-availability-period-start' ).val( -1 );
 	$j( '#bookacti-template-availability-period-end' ).val( -1 );
 	

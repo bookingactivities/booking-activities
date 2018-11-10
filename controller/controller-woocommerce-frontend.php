@@ -1551,7 +1551,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	
 	/**
 	 * Add values in bookings list (refund, price)
-	 * @version 1.5.8
+	 * @version 1.6.0
 	 * @param array $columns_value
 	 * @param object $booking
 	 * @param int $user_id
@@ -1579,16 +1579,28 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 				
 				// WOOCOMMERCE 3.0.0 backward compatibility
 				if( version_compare( WC_VERSION, '3.0.0', '>=' ) ) {
-					$coupon_code = wc_get_order_item_meta( $item->get_id(), 'bookacti_refund_coupon', true );
-				} else {
-					$coupon_code = wc_get_order_item_meta( $item[ 'id' ], 'bookacti_refund_coupon', true );
+					$meta_data = $item->get_formatted_meta_data();
+					if( $meta_data ) {
+						foreach( $meta_data as $meta_id => $meta ) {
+							if( $meta->key === 'bookacti_refund_coupon' && ! empty( $meta->value ) ) {
+								$coupon_code = $meta->value;
+								break;
+							}
+						}
+					}
+				} else if( ! empty( $item[ 'item_meta' ] ) ) {
+					foreach( $item[ 'item_meta' ] as $meta_key => $meta_value ) {
+						if( $meta_key === 'bookacti_refund_coupon' && ! empty( $meta_value ) ) {
+							$coupon_code = $meta_value;
+							break;
+						}
+					}
 				}
 				
 				if( $coupon_code ) {
-					$coupon_value = apply_filters( 'bookacti_user_bookings_list_order_item_coupon', '<br/><strong>' . esc_html__( 'Coupon code' ) . ':</strong> ' . $coupon_code, $coupon_code, $item, $columns_value, $booking, $user_id );
-					if( $coupon_value ) {
-						$columns_value[ 'state' ] .= $coupon_value;
-					}
+					/* translators: %s is the coupon code used for the refund */
+					$coupon_label = sprintf( esc_html__( 'Refunded with coupon %s', BOOKACTI_PLUGIN_NAME ), $coupon_code );
+					$columns_value[ 'state' ] = '<span class="bookacti-booking-state bookacti-booking-state-bad bookacti-booking-state-refunded bookacti-converted-to-coupon bookacti-tip" data-booking-state="refunded">' . $coupon_label . '</span>';
 				}
 			}
 		}

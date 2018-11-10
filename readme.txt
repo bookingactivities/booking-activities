@@ -320,12 +320,19 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 = 1.6.0 =
 * Feature - Export your events to ical (ics) files
 * Feature - Synchronize your events with third-party apps (e.g.: Google Agenda) (one way: export only)
-* Feature - Add a notification tag to let your customers export and synchronize their bookings to their calendar app
+* Feature - Add {user_ical_url} notification tag to let your customers export and synchronize their bookings on their calendar app
 * Feature - Export your bookings to CSV files
 * Feature - Synchronize your booking list to third-party apps (e.g.: Google Sheet) (one way: export only)
 * Feature - Frontend booking lists are paginated
 * Feature - You can use any booking filters as parameters in the bookingactivities_list shortcode
+* Feature - Add a "Delivered" booking status, in order to flag when the customer has attended the booking
+* Feature - Add {price} notification tag to display the WC order item price bound to the booking
 * Optimization - Booking lists are displayed faster (backend and frontend)
+* Tweak - Events dropped on the month view now start at the time set in the "Day begin" option
+* Tweak - Display shortcuts in calendar editor
+* Tweak - Change the "Refunded" label to "Refunded with coupon ..." if it was refunded with a coupon
+* Tweak - Add an option to delete all Booking Activities data on uninstall, in order to avoid accidental data deletion
+* Tweak - Set default snap frequency to 5 minutes instead of 30
 * Fix - Booking form not appearing on WC variable product pages if the default variation was non-activity
 * Fix - Possible PHP error while checking templates, activities and forms permission if they are not set
 

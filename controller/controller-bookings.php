@@ -838,7 +838,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			$atts = apply_filters( 'bookacti_export_events_attributes', array_merge( bookacti_format_booking_system_url_attributes(), array(
 				'bookings_only' => 1,
 				'user_id' => $user->ID,
-				'status' => array( 'booked', 'pending' ),
+				'status' => array( 'delivered', 'booked', 'pending' ),
 				'groups_single_events' => 1,
 				'past_events' => 1,
 				'past_events_bookable' => 1
@@ -872,7 +872,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			if( substr( $filename, -4 ) !== '.csv' ) { esc_html_e( 'Invalid filename.', BOOKACTI_PLUGIN_NAME ); exit; }
 			
 			$atts = apply_filters( 'bookacti_export_events_attributes', array_merge( bookacti_get_booking_system_default_attributes(), array(
-				'status' => array( 'booked', 'pending' ),
+				'status' => array( 'delivered', 'booked', 'pending' ),
 				'past_events' => 1
 			)));
 

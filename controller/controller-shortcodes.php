@@ -134,7 +134,7 @@ function bookacti_shortcode_bookings_list( $atts = array(), $content = null, $ta
 	$default_atts = array_merge( bookacti_get_default_booking_filters(), array(
 		'user' => get_current_user_id(),
 		'per_page' => 10,
-		'status' => apply_filters( 'bookacti_booking_list_displayed_status', array( 'booked', 'pending', 'cancelled', 'refunded', 'refund_requested' ) )
+		'status' => apply_filters( 'bookacti_booking_list_displayed_status', array( 'delivered', 'booked', 'pending', 'cancelled', 'refunded', 'refund_requested' ) )
 	) );
     $atts = shortcode_atts( $default_atts, $atts, $tag );
 	

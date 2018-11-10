@@ -1,7 +1,7 @@
 <?php 
 /**
  * Calendar editor dialogs
- * @version 1.5.0
+ * @version 1.6.0
  */
 
 // Exit if accessed directly
@@ -315,7 +315,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 						_e( 'Snap frequency', BOOKACTI_PLUGIN_NAME );
 						?>
 					</label>
-					<input type="time" name="templateOptions[snapDuration]" id='bookacti-template-data-snapDuration' value='00:30' min='00:01' >
+					<input type="time" name="templateOptions[snapDuration]" id='bookacti-template-data-snapDuration' value='00:05' min='00:01' >
 					<?php
 					$tip = __( "The time interval at which a dragged event will snap to the agenda view time grid. Ex: '00:20', you will be able to drop an event every 20 minutes (at 6:00am, 6:20am, 6:40am...).", BOOKACTI_PLUGIN_NAME );
 					bookacti_help_tip( $tip );

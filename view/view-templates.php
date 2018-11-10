@@ -1,7 +1,7 @@
 <?php
 /**
  * Calendar editor page
- * @version 1.5.0
+ * @version 1.6.0
  */
 
 // Exit if accessed directly
@@ -152,6 +152,18 @@ echo "<h1>" . esc_html__( 'Calendars', BOOKACTI_PLUGIN_NAME ) . "</h1>";
 			}
 			?>
         </div>
+		<div id='bookacti-template-shortcuts-container'>
+			<ul>
+				<li>
+					<strong><?php echo esc_html__( 'Duplicate an event:', BOOKACTI_PLUGIN_NAME ); ?></strong>
+					<em><?php esc_html_e( 'Alt + Drop', BOOKACTI_PLUGIN_NAME ); ?></em>
+				</li>
+				<li>
+					<strong><?php esc_html_e( 'Group events:', BOOKACTI_PLUGIN_NAME ); ?></strong>
+					<em><?php esc_html_e( 'CRTL + G', 'CTRL key', BOOKACTI_PLUGIN_NAME ); ?></em>
+				</li>
+			</ul>
+		</div>
     </div>
 	
 	<div id='bookacti-template-content' >

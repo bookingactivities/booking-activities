@@ -56,6 +56,7 @@
 #bookacti-bookings-list-container tr.is-expanded .row-actions	{ display: block; }
 #bookacti-bookings-list-container .has-row-actions				{ position: relative; }
 
+#bookacti-bookings-list tbody td { vertical-align: middle; }
 #bookacti-bookings-list-container .column-id .sorting-indicator,
 #bookacti-bookings-list-container .column-quantity .sorting-indicator { display: inline-block; vertical-align: top; float: none; }
 #bookacti-bookings-list-container .column-id,
@@ -122,8 +123,10 @@
 .bookacti-payment-status-bad:before,
 .bookacti-booking-state-bad:before		{ content: '\2716  '; }
 .bookacti-payment-status-disabled:before{ content: '\2013  '; }
-.bookacti-booking-state-bad[data-booking-state="refunded"]::before			{ content:'\0041'; font-family: 'booking_activities_icons'; margin-right: 5px; }
-.bookacti-booking-state-bad[data-booking-state="refund_requested"]::before	{ content:'\0042'; font-family: 'booking_activities_icons'; margin-right: 5px; }
+.bookacti-booking-state[data-booking-state="refunded"]::before			{ content:'\0041  '; font-family: 'booking_activities_icons'; }
+.bookacti-booking-state[data-booking-state="refund_requested"]::before	{ content:'\0042  '; font-family: 'booking_activities_icons'; }
+.bookacti-booking-state[data-booking-state="delivered"]::before			{ content:'\2605  '; }
+.bookacti-refund-coupon-code			{ display:block; font-size: 0.8em; font-style: italic; white-space: nowrap; overflow-x: auto; }
 
 .wp-admin a.bookacti-booking-action, 
 .wp-admin a.bookacti-booking-group-action				{ width: 2em; height: 2em; padding: 0; text-align: center; }

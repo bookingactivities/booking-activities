@@ -53,50 +53,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 		return apply_filters( 'bookacti_is_booking_in_delay', $is_in_delay, $booking );
 	}
-	
-	
-	/**
-	 * Compute the booking group state based on its bookings state
-	 * 
-	 * @since 1.1.0
-	 * @version 1.2.0
-	 * 
-	 * @param int $booking_group_id
-	 * @param boolean $update
-	 * @return string|false
-	 */
-	function bookacti_compute_booking_group_state( $booking_group_id ) {
-		
-		$bookings = bookacti_get_bookings_by_booking_group_id( $booking_group_id );
-		
-		if( empty( $bookings ) ) {
-			return false;
-		}
-		
-		// Gether all booking states
-		$states = array();
-		foreach( $bookings as $booking ) {
-			$states[] = $booking->state;
-		}
-		
-		// Default to cancelled
-		$new_state = 'cancelled';
-		
-		// Set the same state as its booking by priority
-		if( in_array( 'in_cart', $states, true ) ) {
-			$new_state = 'in_cart';
-		} else if( in_array( 'pending', $states, true ) ) {
-			$new_state = 'pending';
-		} else if( in_array( 'booked', $states, true ) ) {
-			$new_state = 'booked';
-		}  else if( in_array( 'refund_requested', $states, true ) ) {
-			$new_state = 'refund_requested';
-		} else if( in_array( 'refunded', $states, true ) ) {
-			$new_state = 'refunded';
-		}
-		
-		return apply_filters( 'bookacti_compute_booking_group_state', $new_state, $booking_group_id );
-	}
+
 
 
 
@@ -490,6 +447,8 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			$true = true;
 			if( ! current_user_can( 'bookacti_edit_bookings' ) ) {
 				switch ( $new_state ) {
+					case 'delivered':
+						$true = false;
 					case 'cancelled':
 						$true = bookacti_booking_can_be_cancelled( $booking );
 						break;
@@ -602,12 +561,15 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		 */
 		function bookacti_booking_group_state_can_be_changed_to( $booking_group, $new_state ) {
 			$true = true;
+			$can_edit_bookings = current_user_can( 'bookacti_edit_bookings' );
 			switch ( $new_state ) {
+				case 'delivered':
+					$true = $can_edit_bookings;
 				case 'cancelled':
 					$true = bookacti_booking_group_can_be_cancelled( $booking_group );
 					break;
 				case 'refund_requested':
-					if( ! current_user_can( 'bookacti_edit_bookings' ) ) {
+					if( ! $can_edit_bookings ) {
 						$true = bookacti_booking_group_can_be_refunded( $booking_group );
 					}
 					break;
@@ -1416,13 +1378,15 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	 */
 	function bookacti_get_booking_state_labels() {
 		return apply_filters( 'bookacti_booking_states_labels_array', array(
-			'booked'			=> array( 'display_state' => 'good',	'label' => __( 'Booked', BOOKACTI_PLUGIN_NAME ) ),
-			'pending'			=> array( 'display_state' => 'warning',	'label' => __( 'Pending', BOOKACTI_PLUGIN_NAME ) ),
-			'cancelled'			=> array( 'display_state' => 'bad',		'label' => __( 'Cancelled', BOOKACTI_PLUGIN_NAME ) ),
-			'refunded'			=> array( 'display_state' => 'bad',		'label' => __( 'Refunded', BOOKACTI_PLUGIN_NAME ) ),
-			'refund_requested'	=> array( 'display_state' => 'bad',		'label' => __( 'Refund requested', BOOKACTI_PLUGIN_NAME ) )
+			'delivered'			=> array( 'display_state' => 'good',	'label' => esc_html__( 'Delivered', BOOKACTI_PLUGIN_NAME ) ),
+			'booked'			=> array( 'display_state' => 'good',	'label' => esc_html__( 'Booked', BOOKACTI_PLUGIN_NAME ) ),
+			'pending'			=> array( 'display_state' => 'warning',	'label' => esc_html__( 'Pending', BOOKACTI_PLUGIN_NAME ) ),
+			'cancelled'			=> array( 'display_state' => 'bad',		'label' => esc_html__( 'Cancelled', BOOKACTI_PLUGIN_NAME ) ),
+			'refunded'			=> array( 'display_state' => 'bad',		'label' => esc_html__( 'Refunded', BOOKACTI_PLUGIN_NAME ) ),
+			'refund_requested'	=> array( 'display_state' => 'bad',		'label' => esc_html__( 'Refund requested', BOOKACTI_PLUGIN_NAME ) )
 		) );
 	}
+	
 	
 	/**
 	 * Retrieve payment status labels and display data
@@ -1432,9 +1396,9 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	 */
 	function bookacti_get_payment_status_labels() {
 		return apply_filters( 'bookacti_payment_status_labels_array', array(
-			'none'	=> array( 'display_state' => 'disabled','label' => __( 'No payment required', BOOKACTI_PLUGIN_NAME ) ),
-			'owed'	=> array( 'display_state' => 'warning',	'label' => __( 'Owed', BOOKACTI_PLUGIN_NAME ) ),
-			'paid'	=> array( 'display_state' => 'good',	'label' => __( 'Paid', BOOKACTI_PLUGIN_NAME ) )
+			'none'	=> array( 'display_state' => 'disabled','label' => esc_html__( 'No payment required', BOOKACTI_PLUGIN_NAME ) ),
+			'owed'	=> array( 'display_state' => 'warning',	'label' => esc_html__( 'Owed', BOOKACTI_PLUGIN_NAME ) ),
+			'paid'	=> array( 'display_state' => 'good',	'label' => esc_html__( 'Paid', BOOKACTI_PLUGIN_NAME ) )
 		) );
 	}
 	
@@ -1493,11 +1457,11 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	
 	/**
 	 * Give an array of all ACTIVE booking state, every other booking states will be considered as INACTIVE
-	 * 
+	 * @version 1.6.0
 	 * @return array
 	 */
 	function bookacti_get_active_booking_states() {
-		return apply_filters( 'bookacti_active_booking_states', array( 'booked', 'pending' ) );
+		return apply_filters( 'bookacti_active_booking_states', array( 'delivered', 'booked', 'pending' ) );
 	}	
 
 

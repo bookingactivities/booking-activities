@@ -20,16 +20,11 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		<label for='bookacti-select-booking-state' ><?php esc_html_e( 'Booking state', BOOKACTI_PLUGIN_NAME ); ?></label>
 			<select name='select-booking-state' id='bookacti-select-booking-state' >
 				<?php
-				$selectable_booking_states = apply_filters( 'bookacti_booking_states_you_can_manually_change', array(
-					'booked'			=> __( 'Booked', BOOKACTI_PLUGIN_NAME ),
-					'pending'			=> __( 'Pending', BOOKACTI_PLUGIN_NAME ),
-					'cancelled'			=> __( 'Cancelled', BOOKACTI_PLUGIN_NAME ),
-					'refund_requested'	=> __( 'Refund requested', BOOKACTI_PLUGIN_NAME ),
-					'refunded'			=> __( 'Refunded', BOOKACTI_PLUGIN_NAME )
-				) );
-
-				foreach( $selectable_booking_states as $state_key => $state_label ) {
-					echo '<option value="' . esc_attr( $state_key ) . '" >' . esc_html( $state_label ) . '</option>';
+				$booking_state_labels = bookacti_get_booking_state_labels();
+				$allowed_booking_states = apply_filters( 'bookacti_booking_states_you_can_manually_change', array( 'delivered', 'booked', 'pending', 'cancelled', 'refund_requested', 'refunded' ) );
+				foreach( $allowed_booking_states as $state_key ) {
+					$state_label = ! empty( $booking_state_labels[ $state_key ][ 'label' ] ) ? $booking_state_labels[ $state_key ][ 'label' ] : $state_key;
+					echo '<option value="' . esc_attr( $state_key ) . '" >' . $state_label . '</option>';
 				}
 				?>
 			</select>
@@ -87,9 +82,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	<form id='bookacti-export-bookings-form'>
 		<?php wp_nonce_field( 'bookacti_export_bookings_url', 'nonce_export_bookings_url', false ); ?>
 		<p>
-			<?php
-				esc_html_e( 'This will export all the bookings of the current list (filters applied).', BOOKACTI_PLUGIN_NAME );
-			?>
+			<?php esc_html_e( 'This will export all the bookings of the current list (filters applied).', BOOKACTI_PLUGIN_NAME ); ?>
 		</p>
 		<div>
 			<label for='bookacti-select-export-groups' ><?php esc_html_e( 'How to export the groups?', BOOKACTI_PLUGIN_NAME ); ?></label>

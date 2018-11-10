@@ -127,7 +127,7 @@ if( ! $templates ) {
 					}
 					
 					$default_status = get_user_meta( get_current_user_id(), 'bookacti_status_filter', true );
-					$default_status = is_array( $default_status ) ? $default_status : array( 'booked', 'pending', 'cancelled', 'refunded', 'refund_requested' );
+					$default_status = is_array( $default_status ) ? $default_status : array( 'delivered', 'booked', 'pending', 'cancelled', 'refunded', 'refund_requested' );
 					$statuses = bookacti_get_booking_state_labels();
 					$status_select_options = array();
 					foreach ( $statuses as $status_id => $status ) {

@@ -4,8 +4,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 /**
  * Init Booking Activities settings
- * 
- * @version 1.4.0
+ * @version 1.6.0
  */
 function bookacti_init_settings() { 
 
@@ -103,6 +102,14 @@ function bookacti_init_settings() {
 		'default_calendar_view_threshold', 
 		__( 'Responsive calendar view threshold', BOOKACTI_PLUGIN_NAME ), 
 		'bookacti_settings_field_default_calendar_view_threshold_callback', 
+		'bookacti_general_settings', 
+		'bookacti_settings_section_general' 
+	);
+
+	add_settings_field(  
+		'delete_data_on_uninstall', 
+		esc_html__( 'Delete data on uninstall', BOOKACTI_PLUGIN_NAME ), 
+		'bookacti_settings_field_delete_data_on_uninstall_callback', 
 		'bookacti_general_settings', 
 		'bookacti_settings_section_general' 
 	);
