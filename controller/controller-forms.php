@@ -25,7 +25,7 @@ add_action( 'bookacti_display_form_field_calendar', 'bookacti_display_form_field
 /**
  * Display the form field 'login'
  * @since 1.5.0
- * @version 1.5.4
+ * @version 1.6.0
  * @param string $html
  * @param array $field
  * @param string $instance_id
@@ -43,7 +43,35 @@ function bookacti_display_form_field_login( $html, $field, $instance_id, $contex
 	ob_start();
 	?>
 	<div class='<?php echo $field_class; ?> bookacti-user-is-not-logged-in' id='<?php echo $field_id; ?>' >
-		<div class='bookacti-form-field-login-field-container' id='<?php echo $field_id; ?>-email-container' >
+		<div class='bookacti-form-field-login-field-container bookacti-login-field-login-type' id='<?php echo $field_id; ?>-login-type-container' >
+		<?php
+			$login_types = bookacti_get_login_type_field_default_options();
+			$default_login_type = '';
+			if( $login_types ) {
+				$default_login_type = apply_filters( 'bookacti_default_login_type', key( $login_types ), $field, $instance_id, $context );
+				foreach( $login_types as $login_type_name => $login_type ) {
+					if( empty( $field[ 'displayed_fields' ][ $login_type_name ] ) ) { continue; }
+					?>
+					<div class='bookacti-login-type-container bookacti-custom-radio-button' id='<?php echo $field_id; ?>-login-type-container-<?php echo $login_type_name; ?>'>
+						<input type='radio' name='login_type' value='<?php echo $login_type_name; ?>' id='<?php echo $field_id; ?>-login-type-<?php echo $login_type_name; ?>' required <?php checked( $default_login_type, $login_type_name, true ); ?>/>
+						<label for='<?php echo $field_id; ?>-login-type-<?php echo $login_type_name; ?>' 
+							<?php
+								if( ! empty( $field[ 'tip' ][ $login_type_name ] ) ) {
+									echo 'class="bookacti-tip" data-tip="' . esc_attr( apply_filters( 'bookacti_translate_text', $field[ 'tip' ][ $login_type_name ] ) ) . '"';
+								}
+							?>   
+						>
+						<?php 
+							echo apply_filters( 'bookacti_translate_text', $field[ 'label' ][ $login_type_name ] );
+						?>
+						</label>
+					</div>
+					<?php
+				}
+			}
+		?>
+		</div>
+		<div class='bookacti-form-field-login-field-container  bookacti-login-field-email' id='<?php echo $field_id; ?>-email-container'>
 			<div class='bookacti-form-field-label' >
 				<label for='<?php echo $field_id . '-email'; ?>' >
 				<?php 
@@ -69,7 +97,7 @@ function bookacti_display_form_field_login( $html, $field, $instance_id, $contex
 			?>
 			</div>
 		</div>
-		<div class='bookacti-form-field-login-field-container <?php if( ! empty( $field[ 'generate_password' ] ) ) { echo 'bookacti-generated-password '; } if( ! $field[ 'required_fields' ][ 'password' ] ) { echo 'bookacti-password-not-required'; } ?>' id='<?php echo $field_id; ?>-password-container' >
+		<div class='bookacti-form-field-login-field-container  bookacti-login-field-password <?php if( ! empty( $field[ 'generate_password' ] ) ) { echo 'bookacti-generated-password '; } if( ! $field[ 'required_fields' ][ 'password' ] ) { echo 'bookacti-password-not-required'; } ?>' id='<?php echo $field_id; ?>-password-container' >
 			<div class='bookacti-form-field-label' >
 				<label for='<?php echo $field_id . '-password'; ?>' >
 				<?php 
@@ -139,71 +167,57 @@ function bookacti_display_form_field_login( $html, $field, $instance_id, $contex
 			</div>
 		</div>
 		<?php 
-		if( ! empty( $field[ 'displayed_fields' ][ 'new_account' ] ) ) { 
-			?>
-			<div class='bookacti-form-field-login-field-container' id='<?php echo $field_id; ?>-new_account-container' >
-				<div class='bookacti-form-field-content' >
-					<input type='hidden' name='new_account' value='0' />
-					<input type='checkbox' name='new_account' value='1' id='<?php echo $field_id; ?>-new_account' class='bookacti-form-field bookacti-new_account' />
-					<label for='<?php echo $field_id; ?>-new_account'><?php echo esc_html( apply_filters( 'bookacti_translate_text', $field[ 'label' ][ 'new_account' ] ) ); ?></label>
-					<?php 
-						if( ! empty( $field[ 'tip' ][ 'new_account' ] ) ) {
-							bookacti_help_tip( esc_html( apply_filters( 'bookacti_translate_text', $field[ 'tip' ][ 'new_account' ] ) ) );
-						}
-					?>
-				</div>
-			<?php 
+		if( ! empty( $field[ 'displayed_fields' ][ 'new_account' ] ) || ! empty( $field[ 'displayed_fields' ][ 'no_account' ] ) ) { 
 			// Display registration fields if any
 			$register_fields = bookacti_get_register_fields_default_data();
 			if( in_array( 1, array_values( array_intersect_key( $field[ 'displayed_fields' ], $register_fields ) ) ) ) { ?>
-				<fieldset class='bookacti-register-fields' id='<?php echo $field_id; ?>-register-fields' style='<?php if( $context !== 'edit' ) { echo 'display:none;'; } ?>' >
+				<div class='bookacti-register-fields' id='<?php echo $field_id; ?>-register-fields' style='<?php if( $context !== 'edit' ) { echo 'display:none;'; } ?>' >
 				<?php foreach( $register_fields as $register_field_name => $register_field ) {
-						if( ! empty( $field[ 'displayed_fields' ][ $register_field_name ] ) ) { 
-						?>
-						<div class='bookacti-form-field-login-field-container' id='<?php echo esc_attr( $field_id . '-' . $register_field_name ); ?>-container' >
-							<?php if( $register_field[ 'type' ] !== 'checkbox' ) { ?>
-								<div class='bookacti-form-field-label' >
-									<label for='<?php echo esc_attr( $field_id . '-' . $register_field_name ); ?>' >
-									<?php 
-										echo esc_html( apply_filters( 'bookacti_translate_text', $field[ 'label' ][ $register_field_name ] ) ); 
-										if( $field[ 'required_fields' ][ $register_field_name ] ) {
-											echo '<span class="bookacti-required-field-indicator" title="' . esc_attr__( 'Required field', BOOKACTI_PLUGIN_NAME ) . '"></span>';
-										}
-									?>
-									</label>
-								<?php if( ! empty( $field[ 'tip' ][ $register_field_name ] ) ) { bookacti_help_tip( esc_html( apply_filters( 'bookacti_translate_text', $field[ 'tip' ][ $register_field_name ] ) ) ); } ?>
-								</div>
-							<?php } ?>
-							<div class='bookacti-form-field-content' >
-							<?php 
-								$args = array(
-									'type'			=> $register_field[ 'type' ],
-									'name'			=> esc_attr( $register_field_name ),
-									'id'			=> esc_attr( $field_id . '-' . $register_field_name ),
-									'class'			=> esc_attr( 'bookacti-form-field bookacti-' . $register_field_name ),
-									'required'		=> esc_attr( $field[ 'required_fields' ][ $register_field_name ] ),
-									'placeholder'	=> esc_attr( apply_filters( 'bookacti_translate_text', $field[ 'placeholder' ][ $register_field_name ] ) ),
-									'required'		=> $field[ 'required_fields' ][ $register_field_name ] ? 1 : 0
-								);
-								if( $register_field[ 'type' ] === 'checkbox' ) { 
-									$args[ 'label' ]= esc_html( apply_filters( 'bookacti_translate_text', $field[ 'label' ][ $register_field_name ] ) ); 
-									$args[ 'tip' ]	= esc_html( apply_filters( 'bookacti_translate_text', $field[ 'tip' ][ $register_field_name ] ) ); 
-								}
-								bookacti_display_field( $args );
-							?>
+					if( ! empty( $field[ 'displayed_fields' ][ $register_field_name ] ) ) { 
+					?>
+					<div class='bookacti-form-field-login-field-container bookacti-login-field-<?php echo $register_field_name; ?>' id='<?php echo esc_attr( $field_id . '-' . $register_field_name ); ?>-container' >
+						<?php if( $register_field[ 'type' ] !== 'checkbox' ) { ?>
+							<div class='bookacti-form-field-label' >
+								<label for='<?php echo esc_attr( $field_id . '-' . $register_field_name ); ?>' >
+								<?php 
+									echo esc_html( apply_filters( 'bookacti_translate_text', $field[ 'label' ][ $register_field_name ] ) ); 
+									if( $field[ 'required_fields' ][ $register_field_name ] ) {
+										echo '<span class="bookacti-required-field-indicator" title="' . esc_attr__( 'Required field', BOOKACTI_PLUGIN_NAME ) . '"></span>';
+									}
+								?>
+								</label>
+							<?php if( ! empty( $field[ 'tip' ][ $register_field_name ] ) ) { bookacti_help_tip( esc_html( apply_filters( 'bookacti_translate_text', $field[ 'tip' ][ $register_field_name ] ) ) ); } ?>
 							</div>
+						<?php } ?>
+						<div class='bookacti-form-field-content' >
+						<?php 
+							$args = array(
+								'type'			=> $register_field[ 'type' ],
+								'name'			=> esc_attr( $register_field_name ),
+								'id'			=> esc_attr( $field_id . '-' . $register_field_name ),
+								'class'			=> esc_attr( 'bookacti-form-field bookacti-' . $register_field_name ),
+								'required'		=> esc_attr( $field[ 'required_fields' ][ $register_field_name ] ),
+								'placeholder'	=> esc_attr( apply_filters( 'bookacti_translate_text', $field[ 'placeholder' ][ $register_field_name ] ) ),
+								'required'		=> $field[ 'required_fields' ][ $register_field_name ] ? 1 : 0
+							);
+							if( $register_field[ 'type' ] === 'checkbox' ) { 
+								$args[ 'label' ]= esc_html( apply_filters( 'bookacti_translate_text', $field[ 'label' ][ $register_field_name ] ) ); 
+								$args[ 'tip' ]	= esc_html( apply_filters( 'bookacti_translate_text', $field[ 'tip' ][ $register_field_name ] ) ); 
+							}
+							bookacti_display_field( $args );
+						?>
 						</div>
-					<?php 
-						}
+					</div>
+				<?php 
 					}
+				}
 				?>
-				</fieldset>
+				</div>
 			<?php 
-			} 
+			}
 			?>
-			</div>
 	<?php 
-		} 
+		}
 	?>
 	</div>
 	<?php
@@ -239,7 +253,7 @@ function bookacti_display_form_field_login_when_logged_in( $html, $field, $insta
 	ob_start();
 	?>
 	<div class='<?php echo $field_class; ?> bookacti-user-is-logged-in' id='<?php echo $field_id; ?>' >
-		<div class='bookacti-form-field-login-field-container' id='<?php echo $field_id; ?>-email-container' >
+		<div class='bookacti-form-field-login-field-container bookacti-login-field-log-out' id='<?php echo $field_id; ?>-email-container' >
 				<div class='bookacti-logout-form-field-container'>
 					<span>
 						<?php echo sprintf( esc_html__( 'You are not %s?', BOOKACTI_PLUGIN_NAME ), $user->display_name . ' (' . $user->user_email . ')' ); ?>
@@ -471,7 +485,7 @@ add_action( 'wp_ajax_nopriv_bookactiForgottenPassword', 'bookacti_controller_for
 
 /**
  * Check if booking form is correct and then book the event, or send the error message
- * @version 1.5.4
+ * @version 1.6.0
  */
 function bookacti_controller_validate_booking_form() {
 	
@@ -540,7 +554,7 @@ function bookacti_controller_validate_booking_form() {
 		if( empty( $login_data[ 'required_fields' ][ 'password' ] ) ) { $require_authentication = false; }
 		
 		// Register
-		if( $login_data && ! empty( $_POST[ 'new_account' ] ) ) {
+		if( $login_data && $login_values[ 'login_type' ] === 'new_account' ) {
 			
 			// Register the new user
 			$user = bookacti_register_a_new_user( $login_values, $login_data );

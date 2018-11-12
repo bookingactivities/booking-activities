@@ -145,13 +145,13 @@ function bookacti_init_form_dialogs() {
 /**
  * Display or hide the register fields according to the "New account" checkbox
  * @since 1.5.0
- * @version 1.5.8
+ * @version 1.6.0
  */
 function bookacti_show_hide_register_fields( new_account_checkbox ) {
 	var password_strength			= new_account_checkbox.closest( '.bookacti-form-field-container' ).find( '.bookacti-password-strength' );
 	var generated_password_field	= new_account_checkbox.closest( '.bookacti-form-field-container' ).find( '.bookacti-generated-password' );
 	var not_required_password_field	= new_account_checkbox.closest( '.bookacti-form-field-container' ).find( '.bookacti-password-not-required' );
-	var register_fieldset			= new_account_checkbox.closest( '.bookacti-form-field-login-field-container' ).find( 'fieldset.bookacti-register-fields' );
+	var register_fieldset			= new_account_checkbox.closest( '.bookacti-form-field-login-field-container' ).find( '.bookacti-register-fields' );
 	if( new_account_checkbox.is( ':checked' ) ) { 
 		password_strength.show(); 
 		not_required_password_field.show();
