@@ -93,6 +93,7 @@ body.booking-activities_page_bookacti_forms label[for='bookacti_form_publish-hid
 .bookacti-form-field-login-field-container					{ display: block; margin-bottom: 10px; }
 .bookacti-form-field-login-field-container:last-child		{ margin-bottom: 0; }
 
+.bookacti-login-types-hidden		{ display: none; }
 .bookacti-login-field-login-type	{ margin-bottom: 20px; }
 .bookacti-forgotten-password		{ font-style: italic; font-size: 0.8em; }
 .forgotten-password-email			{ display: block; margin-top: 10px; }
@@ -108,6 +109,8 @@ body.booking-activities_page_bookacti_forms label[for='bookacti_form_publish-hid
 .bookacti-password.bad			{ border-color: #f78b53; }
 .bookacti-password.good			{ border-color: #ffc733; }
 .bookacti-password.strong		{ border-color: #83c373; }
+
+.bookacti-register-fields { margin-top: 10px; }
 
 .bookacti-form-field-checkbox-input,
 .bookacti-form-field-checkbox-label	{ display: table-cell; vertical-align: top; }

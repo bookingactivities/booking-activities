@@ -416,7 +416,7 @@ function bookacti_get_default_form_fields_data( $field_name = '' ) {
 		'login' => array( 
 			'name'			=> 'login',
 			'type'			=> 'login',
-			'title'			=> esc_html__( 'Login / Registration', BOOKACTI_PLUGIN_NAME ),
+			'title'			=> esc_html__( 'User Data (Login / Registration)', BOOKACTI_PLUGIN_NAME ),
 			'default'		=> 1,
 			'label'			=> array_merge( array( 
 								'email'					=> esc_html__( 'Email', BOOKACTI_PLUGIN_NAME ), 
@@ -1202,43 +1202,47 @@ function bookacti_sort_form_fields_array( $form_id, $fields, $remove_unordered_f
 /**
  * Get user meta fields default data
  * @since 1.6.0
+ * @param array $keys
  * @return array
  */
-function bookacti_get_login_type_field_default_options() {
-	$defaults = array(
+function bookacti_get_login_type_field_default_options( $keys = array() ) {
+	$login_types = apply_filters( 'bookacti_login_type_field_default_options', array(
 		'my_account' => array( 
-			'name'			=> 'login_type', 
-			'type'			=> 'radio', 
+			'value'			=> 'my_account', 
+			'title'			=> esc_html__( 'Log in', BOOKACTI_PLUGIN_NAME ), 
 			'label'			=> esc_html__( 'Book with my account', BOOKACTI_PLUGIN_NAME ), 
 			'placeholder'	=> '', 
-			'tip'			=> 'Hello world !', 
-			'value'			=> 'my_account', 
-			'required'		=> 1, 
+			'tip'			=> '', 
 			'displayed'		=> 1
 		),
 		'new_account' => array( 
-			'name'			=> 'login_type', 
-			'type'			=> 'radio', 
-			'label'			=> esc_html__( 'Create a new account', BOOKACTI_PLUGIN_NAME ), 
+			'value'			=> 'new_account', 
+			'title'			=> esc_html__( 'Create an account', BOOKACTI_PLUGIN_NAME ), 
+			'label'			=> esc_html__( 'Create an account', BOOKACTI_PLUGIN_NAME ), 
 			'placeholder'	=> '', 
 			'tip'			=> '', 
-			'value'			=> 'new_account', 
-			'required'		=> 1, 
 			'displayed'		=> 1
 		),
 		'no_account' => array( 
-			'name'			=> 'login_type', 
-			'type'			=> 'radio', 
+			'value'			=> 'no_account', 
+			'title'			=> esc_html__( 'Book without account', BOOKACTI_PLUGIN_NAME ), 
 			'label'			=> esc_html__( 'Book without account', BOOKACTI_PLUGIN_NAME ), 
 			'placeholder'	=> '', 
-			'tip'			=> '', 
-			'value'			=> 'no_account', 
-			'required'		=> 1, 
+			'tip'			=> '',  
 			'displayed'		=> 1
 		)
-	);
+	), $keys );
 	
-	return apply_filters( 'bookacti_login_type_field_default_options', $defaults );
+	// Filter by tab
+	if( $keys || ! is_array( $keys ) ) {
+		foreach( $login_types as $login_type_name => $login_type ) {
+			if( ! in_array( $login_type_name, $keys, true ) ) {
+				unset( $login_types[ $login_type_name ] );
+			}
+		}
+	}
+	
+	return $login_types;
 }
 
 

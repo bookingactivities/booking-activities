@@ -1,4 +1,4 @@
-{ "vendor": { "plugins/booking-activities": "1.5.2" },
+{ "vendor": { "plugins/booking-activities": "1.6.0" },
 	"admin-config":{
 		"bookacti_calendars":{
 			"pages":{ "admin.php":"" },
@@ -94,8 +94,12 @@
 						"bookacti-password-tip":{},
 						"bookacti-forgotten_password-label":{},
 						"bookacti-forgotten_password-tip":{},
+						"bookacti-label-my_account":{},
+						"bookacti-tip-my_account":{},
 						"bookacti-label-new_account":{},
 						"bookacti-tip-new_account":{},
+						"bookacti-label-no_account":{},
+						"bookacti-tip-no_account":{},
 						"bookacti-label-first_name":{},
 						"bookacti-placeholder-first_name":{},
 						"bookacti-tip-first_name":{},

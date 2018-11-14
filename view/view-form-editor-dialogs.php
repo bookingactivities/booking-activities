@@ -286,9 +286,9 @@ foreach( $fields_data as $field_name => $field_data ) {
 		<?php
 		//Fill the array of tabs with their label, callback for content and display order
 		$login_tabs = apply_filters( 'bookacti_form_field_login_dialog_tabs', array (
-			array(	'label'			=> esc_html__( 'User data', BOOKACTI_PLUGIN_NAME ),
-					'id'			=> 'user_data',
-					'callback'		=> 'bookacti_fill_login_dialog_user_data_tab',
+			array(	'label'			=> esc_html__( 'Fields', BOOKACTI_PLUGIN_NAME ),
+					'id'			=> 'fields',
+					'callback'		=> 'bookacti_fill_login_dialog_fields_tab',
 					'parameters'	=> array( 'form' => $form, 'fields' => $form_fields, 'fields_data' => $fields_data ),
 					'order'			=> 10 ),
 			array(	'label'			=> esc_html__( 'Login', BOOKACTI_PLUGIN_NAME ),
@@ -296,11 +296,16 @@ foreach( $fields_data as $field_name => $field_data ) {
 					'callback'		=> 'bookacti_fill_login_dialog_login_tab',
 					'parameters'	=> array( 'form' => $form, 'fields' => $form_fields, 'fields_data' => $fields_data ),
 					'order'			=> 20 ),
-			array(	'label'			=> esc_html__( 'Register', BOOKACTI_PLUGIN_NAME ),
+			array(	'label'			=> esc_html__( 'Registration', BOOKACTI_PLUGIN_NAME ),
 					'id'			=> 'register',
 					'callback'		=> 'bookacti_fill_login_dialog_register_tab',
 					'parameters'	=> array( 'form' => $form, 'fields' => $form_fields, 'fields_data' => $fields_data ),
-					'order'			=> 30 )
+					'order'			=> 30 ),
+			array(	'label'			=> esc_html__( 'No account', BOOKACTI_PLUGIN_NAME ),
+					'id'			=> 'no_account',
+					'callback'		=> 'bookacti_fill_login_dialog_no_account_tab',
+					'parameters'	=> array( 'form' => $form, 'fields' => $form_fields, 'fields_data' => $fields_data ),
+					'order'			=> 40 )
 		) );
 		
 		// Display tabs
@@ -308,12 +313,12 @@ foreach( $fields_data as $field_name => $field_data ) {
 		
 		
 		/**
-		 * Display the content of the "User data" tab of the "Login" dialog
+		 * Display the content of the "Fields" tab of the "Login" dialog
 		 * @since 1.6.0
 		 * @param array $params
 		 */
-		function bookacti_fill_login_dialog_user_data_tab( $params ) {
-			do_action( 'bookacti_login_dialog_user_data_tab_before', $params );
+		function bookacti_fill_login_dialog_fields_tab( $params ) {
+			do_action( 'bookacti_login_dialog_fields_tab_before', $params );
 		?>
 			<fieldset>
 				<legend><?php _e( 'Email address', BOOKACTI_PLUGIN_NAME ); ?></legend>
@@ -348,6 +353,45 @@ foreach( $fields_data as $field_name => $field_data ) {
 							'type'	=> 'text',
 							'name'	=> 'tip[email]',
 							'id'	=> 'bookacti-email-tip',
+							'tip'	=> esc_html__( 'Text displayed in the tooltip next to the field.', BOOKACTI_PLUGIN_NAME )
+						);
+						bookacti_display_field( $args );
+					?>
+				</div>
+			</fieldset>
+			<fieldset>
+				<legend><?php esc_html_e( 'Password', BOOKACTI_PLUGIN_NAME ); ?></legend>
+				<div>
+					<label for='bookacti-password-label'><?php esc_html_e( 'Label', BOOKACTI_PLUGIN_NAME ); ?></label>
+					<?php 
+						$args = array(
+							'type'	=> 'text',
+							'name'	=> 'label[password]',
+							'id'	=> 'bookacti-password-label',
+							'tip'	=> esc_html__( 'Text displayed before the field.', BOOKACTI_PLUGIN_NAME )
+						);
+						bookacti_display_field( $args );
+					?>
+				</div>
+				<div class='bookacti-hidden-field' >
+					<label for='bookacti-password-placeholder'><?php esc_html_e( 'Placeholder', BOOKACTI_PLUGIN_NAME ); ?></label>
+					<?php 
+						$args = array(
+							'type'	=> 'text',
+							'name'	=> 'placeholder[password]',
+							'id'	=> 'bookacti-password-placeholder',
+							'tip'	=> esc_html__( 'Text displayed in transparency in the field when it is empty.', BOOKACTI_PLUGIN_NAME )
+						);
+						bookacti_display_field( $args );
+					?>
+				</div>
+				<div class='bookacti-hidden-field' >
+					<label for='bookacti-password-tip'><?php esc_html_e( 'Tooltip', BOOKACTI_PLUGIN_NAME ); ?></label>
+					<?php 
+						$args = array(
+							'type'	=> 'text',
+							'name'	=> 'tip[password]',
+							'id'	=> 'bookacti-password-tip',
 							'tip'	=> esc_html__( 'Text displayed in the tooltip next to the field.', BOOKACTI_PLUGIN_NAME )
 						);
 						bookacti_display_field( $args );
@@ -411,7 +455,71 @@ foreach( $fields_data as $field_name => $field_data ) {
 				</fieldset>
 			<?php
 			}
-			do_action( 'bookacti_login_dialog_user_data_tab_after', $params );
+			do_action( 'bookacti_login_dialog_fields_tab_after', $params );
+		}
+		
+		
+		/**
+		 * Get the login types edit fields HTML
+		 * @since 1.6.0
+		 * @param array $keys
+		 * @return string
+		 */
+		function bookacti_display_login_type_fields( $keys ) {
+			$login_types = bookacti_get_login_type_field_default_options( $keys );
+			if( ! $login_types ) { return ''; }
+			
+			foreach( $login_types as $login_type_name => $login_type ) {
+			?>
+				<fieldset>
+					<legend>
+					<?php 
+						$login_type_title = ! empty( $login_type[ 'title' ] ) ? $login_type[ 'title' ] : $login_type_name;
+						/* translators: %s is the login option short title (e.g.: "New Account") */
+						echo sprintf( esc_html__( 'Login type: %s', BOOKACTI_PLUGIN_NAME ), $login_type_title ); 
+					?>
+					</legend>
+					<div>
+						<label for='bookacti-displayed_fields-<?php echo $login_type_name; ?>'><?php esc_html_e( 'Allowed', BOOKACTI_PLUGIN_NAME ); ?></label>
+						<?php 
+							$args = array(
+								'type'	=> 'checkbox',
+								'name'	=> 'displayed_fields[' . $login_type_name . ']',
+								'id'	=> 'bookacti-displayed_fields-' . $login_type_name,
+								'value'	=> 1,
+								'tip'	=> esc_html__( 'Whether to allow this login type. If only one login type is allowed, it will be selected by default and the field will be hidden.', BOOKACTI_PLUGIN_NAME )
+							);
+							bookacti_display_field( $args );
+						?>
+					</div>
+					<div>
+						<label for='bookacti-new_account-label'><?php esc_html_e( 'Label', BOOKACTI_PLUGIN_NAME ); ?></label>
+						<?php 
+							$args = array(
+								'type'	=> 'text',
+								'name'	=> 'label[' . $login_type_name . ']',
+								'id'	=> 'bookacti-label-' . $login_type_name,
+								'tip'	=> esc_html__( 'Text displayed before the field.', BOOKACTI_PLUGIN_NAME )
+							);
+							bookacti_display_field( $args );
+						?>
+					</div>
+					<div class='bookacti-hidden-field' >
+						<label for='bookacti-new_account-tip'><?php esc_html_e( 'Tooltip', BOOKACTI_PLUGIN_NAME ); ?></label>
+						<?php 
+							$args = array(
+								'type'	=> 'text',
+								'name'	=> 'tip[' . $login_type_name . ']',
+								'id'	=> 'bookacti-tip-' . $login_type_name,
+								'tip'	=> esc_html__( 'Text displayed in the tooltip next to the field.', BOOKACTI_PLUGIN_NAME )
+							);
+							bookacti_display_field( $args );
+						?>
+					</div>
+					<?php do_action( 'bookacti_' . $login_type_name . '_login_type_fields', $login_type ); ?>
+				</fieldset>
+			<?php
+			}
 		}
 		
 		
@@ -423,46 +531,9 @@ foreach( $fields_data as $field_name => $field_data ) {
 		 */
 		function bookacti_fill_login_dialog_login_tab( $params ) {
 			do_action( 'bookacti_login_dialog_login_tab_before', $params );
+			
+			bookacti_display_login_type_fields( array( 'my_account' ) );
 		?>
-			<fieldset>
-				<legend><?php esc_html_e( 'Password', BOOKACTI_PLUGIN_NAME ); ?></legend>
-				<div>
-					<label for='bookacti-password-label'><?php esc_html_e( 'Label', BOOKACTI_PLUGIN_NAME ); ?></label>
-					<?php 
-						$args = array(
-							'type'	=> 'text',
-							'name'	=> 'label[password]',
-							'id'	=> 'bookacti-password-label',
-							'tip'	=> esc_html__( 'Text displayed before the field.', BOOKACTI_PLUGIN_NAME )
-						);
-						bookacti_display_field( $args );
-					?>
-				</div>
-				<div class='bookacti-hidden-field' >
-					<label for='bookacti-password-placeholder'><?php esc_html_e( 'Placeholder', BOOKACTI_PLUGIN_NAME ); ?></label>
-					<?php 
-						$args = array(
-							'type'	=> 'text',
-							'name'	=> 'placeholder[password]',
-							'id'	=> 'bookacti-password-placeholder',
-							'tip'	=> esc_html__( 'Text displayed in transparency in the field when it is empty.', BOOKACTI_PLUGIN_NAME )
-						);
-						bookacti_display_field( $args );
-					?>
-				</div>
-				<div class='bookacti-hidden-field' >
-					<label for='bookacti-password-tip'><?php esc_html_e( 'Tooltip', BOOKACTI_PLUGIN_NAME ); ?></label>
-					<?php 
-						$args = array(
-							'type'	=> 'text',
-							'name'	=> 'tip[password]',
-							'id'	=> 'bookacti-password-tip',
-							'tip'	=> esc_html__( 'Text displayed in the tooltip next to the field.', BOOKACTI_PLUGIN_NAME )
-						);
-						bookacti_display_field( $args );
-					?>
-				</div>
-			</fieldset>
 			<fieldset>
 				<legend><?php esc_html_e( 'Forgotten password', BOOKACTI_PLUGIN_NAME ); ?></legend>
 				<div>
@@ -505,14 +576,14 @@ foreach( $fields_data as $field_name => $field_data ) {
 				</div>
 			</fieldset>
 			<div>
-				<label for='bookacti-book-without-account'><?php esc_html_e( 'Allow to book without account', BOOKACTI_PLUGIN_NAME ); ?></label>
+				<label for='bookacti-password-required'><?php esc_html_e( 'Password required', BOOKACTI_PLUGIN_NAME ); ?></label>
 				<?php 
 					$args = array(
 						'type'	=> 'checkbox',
-						'name'	=> 'book_without_account',
-						'id'	=> 'bookacti-book-without-account',
-						'value'	=> 0,
-						'tip'	=> esc_html__( 'Allow customers to make a reservation without having to create an account or log in.', BOOKACTI_PLUGIN_NAME )
+						'name'	=> 'required_fields[password]',
+						'id'	=> 'bookacti-required_fields-password',
+						'value'	=> 1,
+						'tip'	=> esc_html__( 'Disable this option to allow your customers to book without password authentication. They will simply have to give their e-mail address for the reservation to be made on their account. Becareful, anyone will be able to book on someone else\'s behalf with his email address only.', BOOKACTI_PLUGIN_NAME )
 					);
 					bookacti_display_field( $args );
 				?>
@@ -526,19 +597,6 @@ foreach( $fields_data as $field_name => $field_data ) {
 						'id'	=> 'bookacti-automatic-login',
 						'value'	=> 1,
 						'tip'	=> esc_html__( 'Whether to automatically log the customer into his account after making a reservation.', BOOKACTI_PLUGIN_NAME )
-					);
-					bookacti_display_field( $args );
-				?>
-			</div>
-			<div>
-				<label for='bookacti-password-required'><?php esc_html_e( 'Password required', BOOKACTI_PLUGIN_NAME ); ?></label>
-				<?php 
-					$args = array(
-						'type'	=> 'checkbox',
-						'name'	=> 'required_fields[password]',
-						'id'	=> 'bookacti-required_fields-password',
-						'value'	=> 1,
-						'tip'	=> esc_html__( 'Disable this option to allow your customers to book without password authentication. They will simply have to give their e-mail address for the reservation to be made on their account. Becareful, anyone will be able to book on someone else\'s behalf with his email address only.', BOOKACTI_PLUGIN_NAME )
 					);
 					bookacti_display_field( $args );
 				?>
@@ -557,47 +615,8 @@ foreach( $fields_data as $field_name => $field_data ) {
 		function bookacti_fill_login_dialog_register_tab( $params ) {
 			do_action( 'bookacti_login_dialog_register_tab_before', $params );
 			
+			bookacti_display_login_type_fields( array( 'new_account' ) );
 			?>
-			<fieldset>
-				<legend><?php esc_html_e( 'Login option: new account', BOOKACTI_PLUGIN_NAME ); ?></legend>
-				<div>
-					<label for='bookacti-displayed_fields-new_account'><?php esc_html_e( 'Displayed', BOOKACTI_PLUGIN_NAME ); ?></label>
-					<?php 
-						$args = array(
-							'type'	=> 'checkbox',
-							'name'	=> 'displayed_fields[new_account]',
-							'id'	=> 'bookacti-displayed_fields-new_account',
-							'value'	=> 1,
-							'tip'	=> esc_html__( 'Whether this field is displayed in the form.', BOOKACTI_PLUGIN_NAME )
-						);
-						bookacti_display_field( $args );
-					?>
-				</div>
-				<div>
-					<label for='bookacti-new_account-label'><?php esc_html_e( 'Label', BOOKACTI_PLUGIN_NAME ); ?></label>
-					<?php 
-						$args = array(
-							'type'	=> 'text',
-							'name'	=> 'label[new_account]',
-							'id'	=> 'bookacti-new_account-label',
-							'tip'	=> esc_html__( 'Text displayed before the field.', BOOKACTI_PLUGIN_NAME )
-						);
-						bookacti_display_field( $args );
-					?>
-				</div>
-				<div class='bookacti-hidden-field' >
-					<label for='bookacti-new_account-tip'><?php esc_html_e( 'Tooltip', BOOKACTI_PLUGIN_NAME ); ?></label>
-					<?php 
-						$args = array(
-							'type'	=> 'text',
-							'name'	=> 'tip[new_account]',
-							'id'	=> 'bookacti-new_account-tip',
-							'tip'	=> esc_html__( 'Text displayed in the tooltip next to the field.', BOOKACTI_PLUGIN_NAME )
-						);
-						bookacti_display_field( $args );
-					?>
-				</div>
-			</fieldset>
 			<div>
 				<label for='bookacti-generate-password'><?php esc_html_e( 'Generate Password', BOOKACTI_PLUGIN_NAME ); ?></label>
 				<?php 
@@ -653,7 +672,7 @@ foreach( $fields_data as $field_name => $field_data ) {
 					$roles = get_editable_roles();
 					$roles_options = array();
 					foreach( $roles as $role_id => $role ) { $roles_options[ $role_id ] = $role[ 'name' ]; }
-				
+
 					$args = array(
 						'type'		=> 'select',
 						'name'		=> 'new_user_role',
@@ -665,9 +684,23 @@ foreach( $fields_data as $field_name => $field_data ) {
 					bookacti_display_field( $args );
 				?>
 			</div>
-		
-		<?php
+			
+			<?php
 			do_action( 'bookacti_login_dialog_register_tab_after', $params );
+		}
+		
+		
+		/**
+		 * Display the content of the "No account" tab of the "Login" dialog
+		 * @since 1.6.0
+		 * @param array $params
+		 */
+		function bookacti_fill_login_dialog_no_account_tab( $params ) {
+			do_action( 'bookacti_login_dialog_no_account_tab_before', $params );
+			
+			bookacti_display_login_type_fields( array( 'no_account' ) );
+			
+			do_action( 'bookacti_login_dialog_no_account_tab_after', $params );
 		}
 		
 		?>

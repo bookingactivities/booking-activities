@@ -23,12 +23,24 @@ $j( document ).ready( function() {
 	});
 	
 	
-	// New account: Show / Hide register fields
-	$j( '.bookacti-new_account' ).each( function(){
+	/**
+	 * Login type: Show / Hide register fields on load
+	 * @since 1.5.0
+	 * @version 1.6.0
+	 */
+	$j( '.bookacti-form-field-container.bookacti-form-field-type-login' ).each( function(){
 		bookacti_show_hide_register_fields( $j( this ) );
 	});
-	$j( 'body' ).on( 'change', '.bookacti-new_account', function( e ){
-		bookacti_show_hide_register_fields( $j( this ) );
+	
+	
+	/**
+	 * Login type: Show / Hide register fields on change
+	 * @since 1.5.0
+	 * @version 1.6.0
+	 */
+	$j( 'body' ).on( 'change', '.bookacti-form-field-container.bookacti-form-field-type-login input[name="login_type"]', function( e ){
+		var login_field_container = $j( this ).closest( '.bookacti-form-field-container.bookacti-form-field-type-login' );
+		bookacti_show_hide_register_fields( login_field_container );
 	});
 	
 	
@@ -143,33 +155,46 @@ function bookacti_init_form_dialogs() {
 
 
 /**
- * Display or hide the register fields according to the "New account" checkbox
+ * Display or hide the register fields according to the login type value
  * @since 1.5.0
  * @version 1.6.0
  */
-function bookacti_show_hide_register_fields( new_account_checkbox ) {
-	var password_strength			= new_account_checkbox.closest( '.bookacti-form-field-container' ).find( '.bookacti-password-strength' );
-	var generated_password_field	= new_account_checkbox.closest( '.bookacti-form-field-container' ).find( '.bookacti-generated-password' );
-	var not_required_password_field	= new_account_checkbox.closest( '.bookacti-form-field-container' ).find( '.bookacti-password-not-required' );
-	var register_fieldset			= new_account_checkbox.closest( '.bookacti-form-field-login-field-container' ).find( '.bookacti-register-fields' );
-	if( new_account_checkbox.is( ':checked' ) ) { 
+function bookacti_show_hide_register_fields( login_field_container ) {
+	var login_type			= login_field_container.find( 'input[name="login_type"]:checked' ).val();
+	console.log( login_type );
+	var password_strength	= login_field_container.find( '.bookacti-password-strength' );
+	var password_forgotten	= login_field_container.find( '.bookacti-forgotten-password' );
+	var password_field		= login_field_container.find( '.bookacti-login-field-password' );
+	var register_fieldset	= login_field_container.find( '.bookacti-register-fields' );
+	if( login_type === 'new_account' ) { 
 		password_strength.show(); 
-		not_required_password_field.show();
-		not_required_password_field.find( '.bookacti-required-field-indicator' ).show();
-		not_required_password_field.find( 'input[name="password"]' ).prop( 'required', true );
-		generated_password_field.hide(); 
-		generated_password_field.find( 'input[name="password"]' ).prop( 'required', false );
+		password_forgotten.hide(); 
+		if( password_field.hasClass( 'bookacti-generated-password' ) ) {
+			password_field.hide(); 
+			password_field.find( 'input[name="password"]' ).prop( 'required', false );
+		} else {
+			password_field.show();
+			password_field.find( 'input[name="password"]' ).prop( 'required', true );
+		}
 		register_fieldset.show(); 
 		register_fieldset.find( '.bookacti-required-field' ).prop( 'required', true );
-	} else { 
+	} else if( login_type === 'my_account' ) { 
 		password_strength.hide(); 
-		generated_password_field.show(); 
-		generated_password_field.find( 'input[name="password"]' ).prop( 'required', true );
-		not_required_password_field.hide();
-		not_required_password_field.find( '.bookacti-required-field-indicator' ).hide();
-		not_required_password_field.find( 'input[name="password"]' ).prop( 'required', false );
+		password_forgotten.show(); 
+		if( password_field.hasClass( 'bookacti-password-not-required' ) ) {
+			password_field.hide();
+			password_field.find( 'input[name="password"]' ).prop( 'required', false );
+		} else {
+			password_field.show();
+			password_field.find( 'input[name="password"]' ).prop( 'required', true );
+		}
 		register_fieldset.hide(); 
 		register_fieldset.find( '.bookacti-required-field' ).prop( 'required', false );
+	} else if( login_type === 'no_account' ) { 
+		password_field.hide();
+		password_field.find( 'input[name="password"]' ).prop( 'required', false );
+		register_fieldset.show(); 
+		register_fieldset.find( '.bookacti-required-field' ).prop( 'required', true );
 	}
 }
 
@@ -227,7 +252,7 @@ function bookacti_check_password_strength( password_field, password_confirm_fiel
 /**
  * Submit booking form
  * @since 1.5.0
- * @version 1.5.1
+ * @version 1.6.0
  * @param html_element form
  * @returns {Boolean}
  */
@@ -254,7 +279,7 @@ function bookacti_sumbit_booking_form( form ) {
 	
 	// Check password strength
 	if( are_login_fields ) {
-		if( form.find( '.bookacti-new_account' ).is( ':checked' ) 
+		if( form.find( '.input[name=login_type"][value="new_account"]' ).is( ':checked' ) 
 		&& ! form.find( '.bookacti-generated-password' ).length
 		&& parseInt( form.find( '.bookacti-password_strength' ).val() ) < parseInt( form.find( '.bookacti-password_strength' ).attr( 'min' ) ) ) {
 			// Display the error message
@@ -362,11 +387,11 @@ function bookacti_sumbit_booking_form( form ) {
 /**
  * Forgotten password dialog
  * @since 1.5.0
+ * @version 1.6.0
  * @param {string} field_id
  */
 function bookacti_dialog_forgotten_password( field_id ) {
 	
-	var link = $j( '.bookacti-forgotten-password-link[data-field-id="' + field_id + '"]' );
 	var dialog = $j( '.bookacti-forgotten-password-dialog[data-field-id="' + field_id + '"]' );
 	if( ! dialog.length ) { dialog = $j( '.bookacti-forgotten-password-dialog:first' ); }
 	
