@@ -1005,7 +1005,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 				
 				// If the booking are grouped by booking groups, 
 				// booking group meta will already be attached to the booking representing its group 
-				if( $group_filters[ 'fetch_meta' ] && $group_filters[ 'group_by' ] === 'booking_group' ) { $group_filters[ 'fetch_meta' ] = false; }
+				$group_filters[ 'fetch_meta' ] = $group_filters[ 'group_by' ] !== 'booking_group';
 				
 				$booking_groups = bookacti_get_booking_groups( $group_filters );
 			}

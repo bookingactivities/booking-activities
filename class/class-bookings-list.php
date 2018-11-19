@@ -238,6 +238,9 @@ if( ! class_exists( 'Bookings_List_Table' ) ) {
 			if( $this->filters[ 'event_id' ] && ! $this->filters[ 'event_group_id' ] ) { $this->filters[ 'booking_group_id' ] = 'none'; }
 			if( ! $this->filters[ 'booking_group_id' ] && $this->filters[ 'group_by' ] !== 'none' ) { $this->filters[ 'group_by' ] = 'booking_group'; }
 			
+			// Force to fetch meta
+			$this->filters[ 'fetch_meta' ] = true;
+			
 			$bookings = bookacti_get_bookings( $this->filters );
 			
 			// Check if the bookings list can contain groups
@@ -263,7 +266,7 @@ if( ! class_exists( 'Bookings_List_Table' ) ) {
 				
 				// If the booking are grouped by booking groups, 
 				// booking group meta will already be attached to the booking representing its group 
-				if( $group_filters[ 'fetch_meta' ] && $group_filters[ 'group_by' ] === 'booking_group' ) { $group_filters[ 'fetch_meta' ] = false; }
+				$group_filters[ 'fetch_meta' ] = $group_filters[ 'group_by' ] !== 'booking_group';
 				
 				$booking_groups = bookacti_get_booking_groups( $group_filters );
 			}
@@ -277,8 +280,6 @@ if( ! class_exists( 'Bookings_List_Table' ) ) {
 			// Booking actions
 			$booking_actions		= bookacti_get_booking_actions( 'admin' );
 			$booking_group_actions	= bookacti_get_booking_group_actions( 'admin' );
-			$refund_actions			= bookacti_get_refund_actions();
-			if( isset( $refund_actions[ 'email' ] ) ) { unset( $refund_actions[ 'email' ] ); }
 			
 			// Build booking list
 			$booking_list_items = array();
@@ -392,7 +393,7 @@ if( ! class_exists( 'Bookings_List_Table' ) ) {
 					/* translators: Datetime format. Must be adapted to each country. Use wp date_i18n documentation to find the appropriated combinaison https://codex.wordpress.org/Formatting_Date_and_Time */
 					'creation_date'	=> bookacti_format_datetime( $booking->creation_date, __( 'F d, Y', BOOKACTI_PLUGIN_NAME ) ),
 					'actions'		=> $actions,
-					'refund_actions'=> $refund_actions,
+					'refund_actions'=> array(),
 					'order_id'		=> $order_id,
 					'primary_data'	=> array( 
 						'<span class="bookacti-column-id" >(' . esc_html_x( 'id', 'An id is a unique identification number', BOOKACTI_PLUGIN_NAME ) . ': ' . $id . ')</span>', 
@@ -477,7 +478,7 @@ if( ! class_exists( 'Bookings_List_Table' ) ) {
 					'group_by'					=> isset( $_REQUEST[ 'group_by' ] )			? $_REQUEST[ 'group_by' ] : '',
 					'order_by'					=> isset( $_REQUEST[ 'orderby' ] )			? $_REQUEST[ 'orderby' ] : array( 'creation_date', 'id' ),
 					'order'						=> isset( $_REQUEST[ 'order' ] )			? $_REQUEST[ 'order' ] : 'DESC',
-					'fetch_meta'				=> isset( $_REQUEST[ 'fetch_meta' ] )		? $_REQUEST[ 'fetch_meta' ] : false
+					'fetch_meta'				=> isset( $_REQUEST[ 'fetch_meta' ] )		? $_REQUEST[ 'fetch_meta' ] : true
 				);
 			}
 			

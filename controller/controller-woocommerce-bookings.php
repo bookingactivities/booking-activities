@@ -360,9 +360,6 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	function bookacti_add_wc_data_to_booking_list_items( $booking_list_items, $bookings, $booking_groups, $displayed_groups, $users, $booking_list ) {
 		if( ! $booking_list_items ) { return $booking_list_items; }
 		
-		// Get WC refund actions
-		$wc_refund_actions = bookacti_add_woocommerce_refund_actions( array() );
-		
 		$admin_url = get_admin_url();
 		
 		$order_ids = array();
@@ -385,12 +382,6 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 				if( isset( $booking_list_item[ 'actions' ][ 'view-order' ] ) ) {
 					unset( $booking_list_items[ $booking_id ][ 'actions' ][ 'view-order' ] );
 				}
-				// Remove WC refund actions
-				foreach( $wc_refund_actions as $wc_refund_action_name => $wc_refund_action ) {
-					if( isset( $booking_list_items[ $booking_id ][ 'refund_actions' ][ $wc_refund_action_name ] ) ) {
-						unset( $booking_list_items[ $booking_id ][ 'refund_actions' ][ $wc_refund_action_name ] );
-					}
-				}
 			}
 			
 			if( empty( $users[ $booking_list_item[ 'user_id' ] ] ) ) { continue; }
@@ -409,7 +400,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			}
 		}
 		
-		// Order item data
+		// Get order item data
 		$order_items_data = bookacti_get_order_items_data_by_bookings( $booking_ids, $booking_group_ids );
 		if( ! $order_items_data ) { return $booking_list_items; }
 		
@@ -420,6 +411,9 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			$orders[ $order->get_id() ] = $order;
 		}
 		
+		// Get WC refund actions
+		$wc_refund_actions = array_keys( bookacti_add_woocommerce_refund_actions( array() ) );
+		
 		// Add order item data to the booking list
 		foreach( $order_items_data as $order_item_data ) {
 			// Booking group
@@ -427,13 +421,14 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 				$booking_group_id = $order_item_data->bookacti_booking_group_id;
 				if( ! isset( $displayed_groups[ $booking_group_id ] ) ) { continue; }
 				$booking_id = $displayed_groups[ $booking_group_id ];
-				if( ! isset( $booking_list_items[ $booking_id ] ) ) { continue; }
 			}
 			
 			// Single booking
 			else if( ! empty( $order_item_data->bookacti_booking_id ) ) {
 				$booking_id = $order_item_data->bookacti_booking_id;
 			}
+			
+			if( ! isset( $booking_list_items[ $booking_id ] ) ) { continue; }
 			
 			// Fill product column
 			$product_title = '';
@@ -457,18 +452,14 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			}
 			
 			// Filter refund actions
-			if( ! empty( $booking_list_items[ $booking_id ][ 'actions' ][ 'refund' ] ) && ! empty( $orders[ $booking_list_items[ $booking_id ][ 'order_id' ] ] ) ) {
-				$order		= $orders[ $booking_list_items[ $booking_id ][ 'order_id' ] ];
+			if( ! empty( $booking_list_items[ $booking_id ][ 'actions' ][ 'refund' ] ) && ! empty( $orders[ $order_item_data->order_id ] ) ) {
+				$order		= $orders[ $order_item_data->order_id ];
 				// WOOCOMMERCE 3.0.0 backward compatibility 
 				$is_paid	= version_compare( WC_VERSION, '3.0.0', '>=' ) ? $order->get_date_paid( 'edit' ) : $order->paid_date;
 				$total		= isset( $order_item_data->_line_total ) ? $order_item_data->_line_total : '';
 				
-				if( $order->get_status() === 'pending' || ! $is_paid || $total <= 0 ) {
-					foreach( $wc_refund_actions as $wc_refund_action_name => $wc_refund_action ) {
-						if( isset( $booking_list_items[ $booking_id ][ 'refund_actions' ][ $wc_refund_action_name ] ) ) {
-							unset( $booking_list_items[ $booking_id ][ 'refund_actions' ][ $wc_refund_action_name ] );
-						}
-					}
+				if( $order->get_status() !== 'pending' && $is_paid && $total > 0 ) {
+					$booking_list_items[ $booking_id ][ 'refund_actions' ] = array_unique( array_merge( $booking_list_items[ $booking_id ][ 'refund_actions' ], $wc_refund_actions ) );
 				}
 			}
 		}
