@@ -116,23 +116,29 @@ function bookacti_shortcode_booking_form( $atts = array(), $content = null, $tag
 /**
  * Display a user related booking list via shortcode
  * @version 1.6.0
- * @param array $atts [user]
+ * @param array $atts [user_id, per_page, status, and any booking filter such as 'from', 'to', 'activities'...]
  * @param string $content
  * @param string $tag Should be "bookingactivities_list"
  * @return string The booking list corresponding to given parameters
  */
 function bookacti_shortcode_bookings_list( $atts = array(), $content = null, $tag = '' ) {
+	if( ! is_user_logged_in() ) { return apply_filters( 'bookacti_shortcode_' . $tag . '_output', '', $atts, $content ); }
+	
 	// normalize attribute keys, lowercase
     $atts = array_change_key_case( (array) $atts, CASE_LOWER );
 	
+	// Format 'user_id' attribute
+	if( isset( $atts[ 'user_id' ] ) ) {
+		$atts[ 'user_id' ] = esc_attr( $atts[ 'user_id' ] );
+		
 	// Backward Compatibility for "user" attribute (instead of "user_id")
-	if( isset( $atts[ 'user' ] ) ) {
-		$atts[ 'user_id' ] = intval( $atts[ 'user' ] );
+	} else if( isset( $atts[ 'user' ] ) ) {
+		$atts[ 'user_id' ] = esc_attr( $atts[ 'user' ] );
 		unset( $atts[ 'user' ] );
 	}
 	
 	$default_atts = array_merge( bookacti_get_default_booking_filters(), array(
-		'user' => get_current_user_id(),
+		'user_id' => get_current_user_id(),
 		'per_page' => 10,
 		'status' => apply_filters( 'bookacti_booking_list_displayed_status', array( 'delivered', 'booked', 'pending', 'cancelled', 'refunded', 'refund_requested' ) )
 	) );
@@ -155,12 +161,12 @@ function bookacti_shortcode_bookings_list( $atts = array(), $content = null, $ta
 	// TABLE OUTPUT
 	ob_start();
 	?>
-	<div id='bookacti-user-bookings-list-<?php echo $atts[ 'user' ]; ?>' class='bookacti-user-bookings-list'>
+	<div id='bookacti-user-bookings-list-<?php echo $filters[ 'user_id' ]; ?>' class='bookacti-user-bookings-list'>
 		<table>
 			<thead>
 				<tr>
 				<?php
-					$columns = bookacti_get_booking_list_columns( $atts[ 'user' ] );
+					$columns = bookacti_get_booking_list_columns( $filters[ 'user_id' ] );
 					foreach( $columns as $column ) {
 					?>
 						<th class='bookacti-column-<?php echo sanitize_title_with_dashes( $column[ 'id' ] ); ?>'>
@@ -176,10 +182,11 @@ function bookacti_shortcode_bookings_list( $atts = array(), $content = null, $ta
 			<tbody>
 			<?php
 				$bookings = bookacti_get_bookings( $filters );
-				echo bookacti_get_booking_list_rows( $bookings, $columns, $atts[ 'user' ] ); 
+				echo bookacti_get_booking_list_rows( $bookings, $columns, $filters[ 'user_id' ] ); 
 			?>
 			</tbody>
 		</table>
+		<?php if( $page_max > 1 ) { ?>
 		<div class='bookacti-user-booking-list-pagination'>
 		<?php
 			if( $page_nb > 1 ) {
@@ -207,6 +214,7 @@ function bookacti_shortcode_bookings_list( $atts = array(), $content = null, $ta
 			}
 		?>
 		</div>
+		<?php } ?>
 	</div>
 	<?php
 	// Include bookings dialogs if they are not already

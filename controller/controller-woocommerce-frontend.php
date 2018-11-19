@@ -1539,7 +1539,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	/**
 	 * Add a column called 'Price' to user bookings list
 	 * @param array $columns
-	 * @param int $user_id
+	 * @param int|string $user_id
 	 * @return array
 	 */
 	function bookacti_add_woocommerce_price_column_to_bookings_list( $columns, $user_id ) {
@@ -1554,7 +1554,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	 * @version 1.6.0
 	 * @param array $columns_value
 	 * @param object $booking
-	 * @param int $user_id
+	 * @param int|string $user_id
 	 * @return array
 	 */
 	function bookacti_add_woocommerce_prices_in_bookings_list( $columns_value, $booking, $user_id ) {

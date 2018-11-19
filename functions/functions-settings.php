@@ -40,8 +40,7 @@ function bookacti_get_default_settings() {
 
 /**
  * Delete settings
- * 
- * @version 1.3.0
+ * @version 1.6.0
  */
 function bookacti_delete_settings() {
 	delete_option( 'bookacti_template_settings' ); // Deprecated
@@ -50,9 +49,6 @@ function bookacti_delete_settings() {
 	delete_option( 'bookacti_cancellation_settings' );
 	delete_option( 'bookacti_notifications_settings' );
 	delete_option( 'bookacti_messages_settings' );
-	
-	bookacti_delete_user_meta( 'bookacti_default_template' );
-	bookacti_delete_user_meta( 'bookacti_status_filter' );
 	
 	do_action( 'bookacti_delete_settings' );
 }

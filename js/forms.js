@@ -161,7 +161,6 @@ function bookacti_init_form_dialogs() {
  */
 function bookacti_show_hide_register_fields( login_field_container ) {
 	var login_type			= login_field_container.find( 'input[name="login_type"]:checked' ).val();
-	console.log( login_type );
 	var password_strength	= login_field_container.find( '.bookacti-password-strength' );
 	var password_forgotten	= login_field_container.find( '.bookacti-forgotten-password' );
 	var password_field		= login_field_container.find( '.bookacti-login-field-password' );
@@ -274,18 +273,22 @@ function bookacti_sumbit_booking_form( form ) {
 		form.find( '> .bookacti-notices' ).empty().append( "<ul class='bookacti-error-list'><li>" + bookacti_localized.error_user_not_logged_in + "</li></ul>" ).show();
 		// Re-enable the submit button
 		form.find( 'input[type="submit"]' ).prop( 'disabled', false );
+		// Scroll to error message
+		bookacti_scroll_to( form.find( '> .bookacti-notices' ), 500, 'middle' );
 		return false; // End script		
 	}
 	
 	// Check password strength
 	if( are_login_fields ) {
-		if( form.find( '.input[name=login_type"][value="new_account"]' ).is( ':checked' ) 
+		if( form.find( 'input[name="login_type"][value="new_account"]' ).is( ':checked' ) 
 		&& ! form.find( '.bookacti-generated-password' ).length
 		&& parseInt( form.find( '.bookacti-password_strength' ).val() ) < parseInt( form.find( '.bookacti-password_strength' ).attr( 'min' ) ) ) {
 			// Display the error message
 			form.find( '> .bookacti-notices' ).empty().append( "<ul class='bookacti-error-list'><li>" + bookacti_localized.error_password_not_strong_enough + "</li></ul>" ).show();
 			// Re-enable the submit button
 			form.find( 'input[type="submit"]' ).prop( 'disabled', false );
+			// Scroll to error message
+			bookacti_scroll_to( form.find( '> .bookacti-notices' ), 500, 'middle' );
 			return false; // End script	
 		}
 	}

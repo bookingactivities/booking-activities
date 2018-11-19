@@ -10,7 +10,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	 * @version 1.5.7
 	 * @param int $product_id
 	 * @param int $variation_id
-	 * @param int $user_id
+	 * @param int|string $user_id
 	 * @param int $event_id
 	 * @param string $event_start
 	 * @param string $event_end
@@ -94,7 +94,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	 * @version 1.5.7
 	 * @param int $product_id
 	 * @param int $variation_id
-	 * @param int $user_id
+	 * @param int|string $user_id
 	 * @param int $event_group_id
 	 * @param int $quantity
 	 * @param int $form_id
@@ -986,9 +986,12 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 				
 				// Check if the product has to be removed
 				if( $allowed_roles && ! apply_filters( 'bookacti_bypass_roles_check', false ) ) {
+					$is_allowed		= false;
 					$current_user	= $user_id ? get_user_by( 'id', $user_id ) : wp_get_current_user();
-					$roles			= $current_user->roles;
-					$is_allowed		= array_intersect( $roles, $allowed_roles );
+					if( $current_user ) {
+						$roles			= $current_user->roles;
+						$is_allowed		= array_intersect( $roles, $allowed_roles );
+					}
 					if( ! $is_allowed ) { 
 						$restricted_quantity = 0;
 						/* translators: %1$s is the event title. This sentence is followed by: 'This event has been automatically removed from your cart.' */
@@ -1773,18 +1776,18 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 	/**
 	 * Filter refund actions by order id
-	 * 
 	 * @since 1.1.0
-	 * 
+	 * @version 1.6.0
 	 * @param array $possible_actions
 	 * @param int $order_id
 	 * @return type
 	 */
 	function bookacti_filter_refund_actions_by_order( $possible_actions, $order_id ) {
-		if( $order_id ) {
+		$order = is_numeric( $order_id ) ? wc_get_order( intval( $order_id ) ) : $order_id;
+		if( is_a( $order, 'WC_Order' ) ) {
 			foreach( $possible_actions as $key => $possible_action ){
 				// Allow auto-refund only if gateway allows it
-				if( $possible_action['id'] === 'auto' && ! bookacti_does_order_support_auto_refund( $order_id ) ){
+				if( $possible_action['id'] === 'auto' && ! bookacti_does_order_support_auto_refund( $order ) ){
 					unset( $possible_actions[ $key ] );
 				}
 			}
@@ -1809,11 +1812,8 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	 */
 	function bookacti_does_order_support_auto_refund( $order_id ) {
 		
-		if( ! $order_id || ! is_numeric( $order_id ) ) { return false; }
-		
-		$order = wc_get_order( intval( $order_id ) );
-		
-		if( empty( $order ) ) { return false; }
+		$order = is_numeric( $order_id ) ? wc_get_order( intval( $order_id ) ) : $order_id;
+		if( ! is_a( $order, 'WC_Order' ) ) { return false; }
 		
 		// WOOCOMMERCE 3.0.0 BW compability
 		if( version_compare( WC_VERSION, '3.0.0', '>=' ) ) {
@@ -1836,7 +1836,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	
 	/**
 	 * Create a coupon to refund a booking
-	 * @version 1.5.8
+	 * @version 1.6.0
 	 * @param int $booking_id
 	 * @param string $booking_type Determine if the given id is a booking id or a booking group. Accepted values are 'single' or 'group'.
 	 * @param string $refund_message
@@ -1859,20 +1859,22 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			$item		= bookacti_get_order_item_by_booking_group_id( $booking_id );
 		}
 		
-		$user_data		= get_userdata( $user_id );
+		$user = is_nueric( $user_id ) ? get_user_by( 'id', $user_id ) : null;
 		
 		$amount				= (float) $item[ 'line_total' ] + (float) $item[ 'line_tax' ];
 		$user_billing_email = get_user_meta( $user_id, 'billing_email', true );
 
 		// Write code description
-		$refund_desc	= __( 'Coupon created as a refund for:', BOOKACTI_PLUGIN_NAME );
-		$refund_desc	.= PHP_EOL . __( 'User', BOOKACTI_PLUGIN_NAME )	. ' ' . $user_data->ID . ' (' . $user_data->user_login . ' / ' . $user_data->user_email . ')';
-		$refund_desc	.= PHP_EOL . __( 'Order', BOOKACTI_PLUGIN_NAME )	. ' ' . $item[ 'order_id' ];
+		$refund_desc	 = esc_html__( 'Coupon created as a refund for:', BOOKACTI_PLUGIN_NAME );
+		if( $user ) {
+			$refund_desc.= PHP_EOL . esc_html__( 'User', BOOKACTI_PLUGIN_NAME )	. ' ' . $user->ID . ' (' . $user->user_login . ' / ' . $user->user_email . ')';
+		}
+		$refund_desc	.= PHP_EOL . esc_html__( 'Order', BOOKACTI_PLUGIN_NAME )	. ' ' . $item[ 'order_id' ];
 		
 		if( $booking_type === 'single' ) {
-			$refund_desc	.= PHP_EOL . __( 'Booking number', BOOKACTI_PLUGIN_NAME )	. ' ' . $booking_id;
+			$refund_desc	.= PHP_EOL . esc_html__( 'Booking number', BOOKACTI_PLUGIN_NAME )	. ' ' . $booking_id;
 		} else if( $booking_type === 'group' ) {
-			$refund_desc	.= PHP_EOL . __( 'Booking group number', BOOKACTI_PLUGIN_NAME )	. ' ' . $booking_id;
+			$refund_desc	.= PHP_EOL . esc_html__( 'Booking group number', BOOKACTI_PLUGIN_NAME )	. ' ' . $booking_id;
 		}
 		
 		$refund_desc	.= PHP_EOL . '     ' . $item[ 'name' ];
@@ -1884,7 +1886,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		}
 		
 		if( ! empty( $refund_message ) ) {
-			$refund_desc .= PHP_EOL . PHP_EOL . __( 'User message:', BOOKACTI_PLUGIN_NAME ) . PHP_EOL . $refund_message;
+			$refund_desc .= PHP_EOL . PHP_EOL . esc_html__( 'User message:', BOOKACTI_PLUGIN_NAME ) . PHP_EOL . $refund_message;
 		}
 		
 		// Sanitize
@@ -1940,17 +1942,18 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		// Generate coupon code and create the coupon
 		$i = 1;
 		$coupon = array();
+		$user_id_int = is_numeric( $user_id ) ? $user_id : ( $booking_type === 'single' ? 'B' . $booking_id : 'G' . $booking_id  );
 		$code_template = apply_filters( 'bookacti_refund_coupon_code_template', 'R{user_id}N{refund_number}' );
 		$code_template = str_replace( '{user_id}', '%1$s', $code_template );
 		$code_template = str_replace( '{refund_number}', '%2$s', $code_template );
-		$data['coupon']['code'] = sprintf( $code_template, $user_id, $i );
+		$data['coupon']['code'] = sprintf( $code_template, $user_id_int, $i );
 		
-		$data = apply_filters( 'bookacti_refund_coupon_data', $data, $user_data, $item );
+		$data = apply_filters( 'bookacti_refund_coupon_data', $data, $user, $item );
 		
 		do {
 			// For the first occurence, try to use the code that may have been changed with 'bookacti_refund_coupon_data' hook
 			if( $i !== 1 ) { 
-				$data['coupon']['code'] = sprintf( $code_template, $user_id, $i ); 
+				$data['coupon']['code'] = sprintf( $code_template, $user_id_int, $i ); 
 			}
 			$coupon = WC()->api->WC_API_Coupons->create_coupon( $data );
 			$i++;
@@ -1960,7 +1963,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		if( ! empty( $coupon ) && ! is_wp_error( $coupon ) ) {
 
 			// Bind coupon to order item
-			$code = apply_filters( 'bookacti_refund_coupon_code', $coupon[ 'coupon' ][ 'code' ], $data, $coupon, $user_data, $item );
+			$code = apply_filters( 'bookacti_refund_coupon_code', $coupon[ 'coupon' ][ 'code' ], $data, $coupon, $user, $item );
 			wc_update_order_item_meta( $order_item_id, 'bookacti_refund_coupon', $code );
 
 			$return_data = array( 'status' => 'success', 'coupon_amount' => wc_price( $data['coupon']['amount'] ), 'coupon_code' => $code, 'new_state' => 'refunded' );
@@ -2258,7 +2261,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 	/**
 	 * Determines if user is shop manager
-	 * 
+	 * @version 1.6.0
 	 * @param int $user_id
 	 * @return boolean
 	 */
@@ -2268,7 +2271,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			$user_id = get_current_user_id();
 		}
 
-		$user = get_userdata( $user_id );
+		$user = get_user_by( 'id', $user_id );
 		if ( isset( $user->roles ) && in_array( 'shop_manager', $user->roles, true ) ) {
 			return true;
 		}

@@ -33,6 +33,30 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	add_action( 'wp_ajax_bookactiGetBookingRows', 'bookacti_controller_get_booking_rows' );
 
 	
+	/**
+	 * Make sure that the selected user (passed as a parameter) is displayed in the booking filters user selectbox
+	 * @since 1.6.0
+	 * @param array $args
+	 * @param array $users
+	 */
+	function bookacti_add_selected_user_in_booking_filters_user_selectbox( $args, $users ) {
+		if( $args[ 'id' ] !== 'bookacti-booking-filter-customer' || empty( $args[ 'selected' ] ) ) { return; }
+		
+		$user_id = $args[ 'selected' ];
+		$user_id_exists = false;
+		foreach( $users as $user ) {
+			if( $user->ID === $user_id ) { $user_id_exists = true; break; }
+		}
+		
+		if( ! $user_id_exists ) {
+			?>
+			<option value='<?php echo $args[ 'selected' ]; ?>' <?php echo selected( $user_id, $args[ 'selected' ], false ) ?> ><?php echo esc_html( $args[ 'selected' ] ); ?></option>
+			<?php
+		}
+	}
+	add_action( 'bookacti_add_user_selectbox_options', 'bookacti_add_selected_user_in_booking_filters_user_selectbox', 10, 2 );
+	
+
 
 // BOOKING ACTIONS
 	// SINGLE BOOKING
@@ -96,7 +120,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			}
 			
 			if( ! bookacti_booking_can_be_refunded( $booking_id ) ) {
-				bookacti_send_json( array( 'status' => 'failed', 'error' => 'cannot_be_refunded' ), 'get_refund_actions_html' );
+				bookacti_send_json( array( 'status' => 'failed', 'error' => 'cannot_be_refunded', 'message' => esc_html__( 'This booking cannot be refunded.', BOOKACTI_PLUGIN_NAME ) ), 'get_refund_actions_html' );
 			}
 			
 			$refund_actions_array	= bookacti_get_refund_actions_by_booking_id( $booking_id );
@@ -460,7 +484,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			}
 			
 			if( ! bookacti_booking_group_can_be_refunded( $booking_group_id ) ) {
-				bookacti_send_json( array( 'error' => 'cannot_be_refunded' ), 'get_refund_actions_html' );
+				bookacti_send_json( array( 'error' => 'cannot_be_refunded', 'message' => esc_html__( 'This booking cannot be refunded.', BOOKACTI_PLUGIN_NAME ) ), 'get_refund_actions_html' );
 			}
 
 			$refund_actions_array	= bookacti_get_refund_actions_by_booking_group_id( $booking_group_id );
@@ -499,7 +523,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			}
 			
 			if( ! bookacti_booking_group_can_be_refunded( $booking_group_id, $refund_action ) ) {
-				bookacti_send_json( array( 'error' => 'cannot_be_refunded' ), 'refund_booking' );
+				bookacti_send_json( array( 'error' => 'cannot_be_refunded', 'message' => esc_html__( 'This booking cannot be refunded.', BOOKACTI_PLUGIN_NAME ) ), 'refund_booking' );
 			}
 			
 			$refund_message	= sanitize_text_field( stripslashes( $_POST[ 'refund_message' ] ) );
@@ -545,7 +569,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 				$refunded[ 'grouped_booking_rows' ] = $rows;
 			}
 
-			wp_send_json( $refunded );
+			bookacti_send_json( $refunded, 'refund_booking' );
 		}
 		add_action( 'wp_ajax_bookactiRefundBookingGroup', 'bookacti_controller_refund_booking_group' );
 		add_action( 'wp_ajax_nopriv_bookactiRefundBookingGroup', 'bookacti_controller_refund_booking_group' );

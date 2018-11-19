@@ -21,13 +21,13 @@ $messages = bookacti_get_messages();
 <div id='bookacti-refund-booking-dialog' 
 	 class='bookacti-backend-dialog bookacti-bookings-dialog' 
 	 style='display:none;' 
-	 title='<?php echo esc_html__( 'Refund confirmation', BOOKACTI_PLUGIN_NAME ); ?>'>
+	 title='<?php echo current_user_can( 'bookacti_edit_bookings' ) ? esc_html_x( 'Refund a booking', 'Dialog title', BOOKACTI_PLUGIN_NAME ) : apply_filters( 'bookacti_translate_text', $messages[ 'refund_dialog_title' ][ 'value' ] ); ?>'>
 </div>
 
 <div id='bookacti-refund-booking-confirm-dialog' 
 	 class='bookacti-backend-dialog bookacti-bookings-dialog' 
 	 style='display:none;' 
-	 title='<?php echo current_user_can( 'bookacti_edit_bookings' ) ? esc_html_x( 'Refund a booking', 'Dialog title', BOOKACTI_PLUGIN_NAME ) : apply_filters( 'bookacti_translate_text', $messages[ 'refund_dialog_title' ][ 'value' ] ); ?>'>
+	 title='<?php echo esc_html__( 'Refund confirmation', BOOKACTI_PLUGIN_NAME ); ?>'>
 </div>
 
 <!-- Frontend and backend - Reschedule booking -->

@@ -250,7 +250,7 @@ if( ! class_exists( 'Bookings_List_Table' ) ) {
 			$this->user_ids = array();
 			$this->group_ids = array();
 			foreach( $bookings as $booking ) {
-				if( $booking->user_id && ! in_array( $booking->user_id, $this->user_ids, true ) ){ $this->user_ids[] = $booking->user_id; }
+				if( $booking->user_id && is_numeric( $booking->user_id ) && ! in_array( $booking->user_id, $this->user_ids, true ) ){ $this->user_ids[] = $booking->user_id; }
 				if( $booking->group_id && ! in_array( $booking->group_id, $this->group_ids, true ) ){ $this->group_ids[] = $booking->group_id; }
 			}
 			
@@ -263,7 +263,7 @@ if( ! class_exists( 'Bookings_List_Table' ) ) {
 				
 				// If the booking are grouped by booking groups, 
 				// booking group meta will already be attached to the booking representing its group 
-				if( $group_filters[ 'meta' ] && $group_filters[ 'group_by' ] === 'booking_group' ) { $group_filters[ 'meta' ] = false; }
+				if( $group_filters[ 'fetch_meta' ] && $group_filters[ 'group_by' ] === 'booking_group' ) { $group_filters[ 'fetch_meta' ] = false; }
 				
 				$booking_groups = bookacti_get_booking_groups( $group_filters );
 			}
@@ -277,6 +277,8 @@ if( ! class_exists( 'Bookings_List_Table' ) ) {
 			// Booking actions
 			$booking_actions		= bookacti_get_booking_actions( 'admin' );
 			$booking_group_actions	= bookacti_get_booking_group_actions( 'admin' );
+			$refund_actions			= bookacti_get_refund_actions();
+			if( isset( $refund_actions[ 'email' ] ) ) { unset( $refund_actions[ 'email' ] ); }
 			
 			// Build booking list
 			$booking_list_items = array();
@@ -291,7 +293,7 @@ if( ! class_exists( 'Bookings_List_Table' ) ) {
 					$group			= $booking_groups[ $booking->group_id ];
 					$raw_id			= $group->id;
 					$tr_class		= 'bookacti-booking-group';
-					$id				= $group->id . '<span class="bookacti-booking-group-indicator">' . _x( 'Group', 'noun', BOOKACTI_PLUGIN_NAME ) . '</span>';
+					$id				= $group->id . '<span class="bookacti-booking-group-indicator">' . esc_html_x( 'Group', 'noun', BOOKACTI_PLUGIN_NAME ) . '</span>';
 					$user_id		= $group->user_id;
 					$state			= bookacti_format_booking_state( $group->state, true );
 					$paid			= bookacti_format_payment_status( $group->payment_status, true );
@@ -305,7 +307,7 @@ if( ! class_exists( 'Bookings_List_Table' ) ) {
 					$booking_type	= 'group';
 					
 					$displayed_groups[ $booking->group_id ] = $booking->id;
-				
+					
 				// Single booking
 				} else {
 					$group			= null;
@@ -325,7 +327,15 @@ if( ! class_exists( 'Bookings_List_Table' ) ) {
 					$booking_type	= 'single';
 				}
 				
+				// Remove refund action if not possible
+				if( ! empty( $actions[ 'refund' ] ) ) {
+					if( $booking->state === 'refunded' || ! empty( $booking->group_id ) ) {
+						unset( $actions[ 'refund' ] );
+					}
+				}
+				
 				// Format customer column
+				// If the customer has an account
 				if( ! empty( $users[ $user_id ] ) ) {
 					$user = $users[ $user_id ];
 					$display_name = ! empty( $user->first_name ) && ! empty( $user->last_name ) ? $user->first_name . ' ' . $user->last_name : $user->display_name;
@@ -337,6 +347,21 @@ if( ! class_exists( 'Bookings_List_Table' ) ) {
 								. ' </a>';
 					$email		= ! empty( $user->user_email ) ? $user->user_email : '';
 					$phone		= ! empty( $user->phone ) ? $user->phone : '';
+					
+				// If the booking has been made without account
+				} else if( ! empty( $booking->user_email ) || ! empty( $group->user_email ) ) {
+					$user		= null;
+					$customer	= ! empty( $user_id ) ? $user_id : '';
+					$booking_meta = ! empty( $group->user_email ) ? $group : $booking;
+					if( ! empty( $booking_meta->user_first_name ) || ! empty( $booking_meta->user_last_name ) ) {
+						$customer = ! empty( $booking_meta->user_first_name ) ? $booking_meta->user_first_name . ' ' : '';
+						$customer .= ! empty( $booking_meta->user_last_name ) ? $booking_meta->user_last_name . ' ' : '';
+						$customer .= '<br/>(' . $user_id . ')';
+					}
+					$email		= ! empty( $booking_meta->user_email ) ? $booking_meta->user_email : '';
+					$phone		= ! empty( $booking_meta->user_phone ) ? $booking_meta->user_phone : '';
+					
+				// Any other cases
 				} else {
 					$user		= null;
 					$customer	= esc_html( __( 'Unknown user', BOOKACTI_PLUGIN_NAME ) . ' (' . $user_id . ')' );
@@ -367,6 +392,7 @@ if( ! class_exists( 'Bookings_List_Table' ) ) {
 					/* translators: Datetime format. Must be adapted to each country. Use wp date_i18n documentation to find the appropriated combinaison https://codex.wordpress.org/Formatting_Date_and_Time */
 					'creation_date'	=> bookacti_format_datetime( $booking->creation_date, __( 'F d, Y', BOOKACTI_PLUGIN_NAME ) ),
 					'actions'		=> $actions,
+					'refund_actions'=> $refund_actions,
 					'order_id'		=> $order_id,
 					'primary_data'	=> array( 
 						'<span class="bookacti-column-id" >(' . esc_html_x( 'id', 'An id is a unique identification number', BOOKACTI_PLUGIN_NAME ) . ': ' . $id . ')</span>', 
@@ -395,8 +421,9 @@ if( ! class_exists( 'Bookings_List_Table' ) ) {
 			 * @since 1.6.0
 			 */
 			$booking_list_items = apply_filters( 'bookacti_booking_list_items', $booking_list_items, $bookings, $booking_groups, $displayed_groups, $users, $this );
-		
+			
 			foreach( $booking_list_items as $booking_id => $booking_list_item ) {
+				if( empty( $booking_list_item[ 'refund_actions' ] ) && isset( $booking_list_item[ 'actions' ][ 'refund' ] ) ) { unset( $booking_list_item[ 'actions' ][ 'refund' ] ); }
 				if( empty( $booking_list_item[ 'actions' ] ) ) { continue; }
 				if( $booking_list_item[ 'booking_type' ] === 'group' ) {
 					$booking_list_items[ $booking_id ][ 'actions' ] = bookacti_get_booking_group_actions_html( $booking_groups[ $booking_list_item[ 'raw_id' ] ], 'admin', $booking_list_item[ 'actions' ] );
@@ -450,7 +477,7 @@ if( ! class_exists( 'Bookings_List_Table' ) ) {
 					'group_by'					=> isset( $_REQUEST[ 'group_by' ] )			? $_REQUEST[ 'group_by' ] : '',
 					'order_by'					=> isset( $_REQUEST[ 'orderby' ] )			? $_REQUEST[ 'orderby' ] : array( 'creation_date', 'id' ),
 					'order'						=> isset( $_REQUEST[ 'order' ] )			? $_REQUEST[ 'order' ] : 'DESC',
-					'meta'						=> isset( $_REQUEST[ 'meta' ] )				? $_REQUEST[ 'meta' ] : false
+					'fetch_meta'				=> isset( $_REQUEST[ 'fetch_meta' ] )		? $_REQUEST[ 'fetch_meta' ] : false
 				);
 			}
 			

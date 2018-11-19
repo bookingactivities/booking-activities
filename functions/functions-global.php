@@ -230,7 +230,6 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	 * Get site locale, and default to site or current locale
 	 * 
 	 * @since 1.2.0
-	 * @param int|WP_User $user_id
 	 * @param string $default 'current' or 'site'
 	 * @param boolean $country_code Whether to return also country code
 	 * @return string
@@ -803,7 +802,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 					?><option value='<?php echo esc_attr( $args[ 'option_current_value' ] ); ?>' <?php echo $_selected ?> ><?php echo $args[ 'show_option_current' ]; ?></option><?php
 				}
 			
-				do_action( 'bookacti_add_user_selectbox_options', $args );
+				do_action( 'bookacti_add_user_selectbox_options', $args, $users );
 
 				foreach( $users as $user ){
 					$_selected = selected( $user->ID, $args[ 'selected' ], false );

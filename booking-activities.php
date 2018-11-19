@@ -343,7 +343,10 @@ function bookacti_uninstall() {
 	if( bookacti_get_setting_value( 'bookacti_general_settings', 'delete_data_on_uninstall' ) ) {
 		// Delete plugin settings
 		bookacti_delete_settings();
-
+		
+		// Delete user meta related to Booking Activities
+		bookacti_delete_user_data();
+		
 		// Drop tables and every Booking Activities Data
 		delete_option( 'bookacti_version' );
 		bookacti_drop_tables();

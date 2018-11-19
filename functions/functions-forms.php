@@ -987,7 +987,7 @@ function bookacti_validate_registration( $login_values, $login_data ) {
 	$return_array = array( 'messages' => array() );
 
 	// Check email
-	if( ! is_email( $login_values[ 'email' ] ) ) { 
+	if( ! is_email( $login_values[ 'email' ] ) || strlen( $login_values[ 'email' ] ) > 64 ) { 
 		$return_array[ 'messages' ][ 'invalid_email' ] = esc_html__( 'Invalid email address.', BOOKACTI_PLUGIN_NAME );
 	}
 	
@@ -1005,8 +1005,9 @@ function bookacti_validate_registration( $login_values, $login_data ) {
 	foreach( $login_data[ 'required_fields' ] as $field_name => $is_required ) {
 		if( $is_required && empty( $login_values[ $field_name ] ) ) {
 			if( $field_name === 'password' && ! empty( $login_values[ 'login_type' ] ) && $login_values[ 'login_type' ] === 'new_account' && $login_data[ 'generate_password' ] ) { continue; }
+			$field_label = ! empty( $login_data[ 'label' ][ $field_name ] ) ? $login_data[ 'label' ][ $field_name ] : $field_name;
 			/* translators: %s is the field name. */
-			$return_array[ 'messages' ][ 'missing_' . $field_name ] = sprintf( __( 'The field "%s" is required.', BOOKACTI_PLUGIN_NAME ), $login_data[ 'label' ][ $field_name ] );
+			$return_array[ 'messages' ][ 'missing_' . $field_name ] = sprintf( esc_html__( 'The field "%s" is required.', BOOKACTI_PLUGIN_NAME ), $field_label );
 		}
 	}
 	

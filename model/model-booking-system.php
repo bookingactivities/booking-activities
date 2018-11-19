@@ -333,7 +333,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	 * @param array $templates
 	 * @param array $activities
 	 * @param array $booking_status
-	 * @param int $user_id
+	 * @param int|string $user_id
 	 * @param boolean $past_events
 	 * @param array $interval array('start' => string: start date, 'end' => string: end date)
 	 * @return array

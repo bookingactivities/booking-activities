@@ -719,7 +719,7 @@ function bookacti_get_booking_system_fields_default_data( $fields = array() ) {
 
 /**
  * Validate booking form (verify the info of the selected event before booking it)
- * @version 1.5.9
+ * @version 1.6.0
  * @param int $group_id
  * @param int $event_id
  * @param string $event_start Start datetime of the event to check (format 2017-12-31T23:59:59)
@@ -764,7 +764,11 @@ function bookacti_validate_booking_form( $group_id, $event_id, $event_start, $ev
 	}
 	
 	// Availability checks
-	$user_id = get_current_user_id();
+	if( ! empty( $_POST[ 'login_type' ] ) && $_POST[ 'login_type' ] === 'no_account' 
+	&&  ! empty( $_POST[ 'email' ] ) && is_email( $_POST[ 'email' ] ) ) { 
+		$user_id = $_POST[ 'email' ]; 
+	}
+	$user_id = apply_filters( 'bookacti_current_user_id', ! empty( $user_id ) ? $user_id : get_current_user_id() );
 	$quantity_already_booked = 0;
 	$number_of_users = 0;
 	$allowed_roles = array();
@@ -1870,7 +1874,7 @@ function bookacti_export_events_page( $atts, $calname = '', $caldesc = '', $sequ
  * Book all events of a group
  * 
  * @version 1.5.4
- * @param int $user_id
+ * @param int|string $user_id
  * @param int $event_group_id
  * @param int $quantity
  * @param string $state

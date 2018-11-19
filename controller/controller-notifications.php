@@ -91,6 +91,7 @@ add_action( 'bookacti_booking_group_state_changed', 'bookacti_send_notification_
  * Send a notification to admin and customer when a booking is rescheduled
  * 
  * @since 1.2.1 (was bookacti_send_email_when_booking_is_rescheduled in 1.2.0)
+ * @version 1.6.0
  * @param int $booking_id
  * @param object $old_booking
  * @param array $args
@@ -110,13 +111,19 @@ function bookacti_send_notification_when_booking_is_rescheduled( $booking_id, $o
 	if( $send_to_both || $args[ 'is_admin' ] ) {
 		$notification_id	= 'customer_rescheduled_booking';
 		$user_id			= bookacti_get_booking_owner( $booking_id );
-		$locale				= bookacti_get_user_locale( $user_id );
+		if( is_numeric( $user_id ) ) {
+			$locale	= bookacti_get_user_locale( $user_id );
+		}
 	}
 	
 	// If $args[ 'is_admin' ] is false, the administrator need to be notified
 	if( $send_to_both || ! $args[ 'is_admin' ] ) {
-		$notification_id	= 'admin_rescheduled_booking';
-		$locale				= bookacti_get_site_locale();
+		$notification_id = 'admin_rescheduled_booking';
+	}
+	
+	// Set default locale
+	if( empty( $locale ) ) { 
+		$locale = bookacti_get_site_locale(); 
 	}
 	
 	// Temporarilly switch locale user default's

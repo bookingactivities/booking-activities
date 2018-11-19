@@ -129,7 +129,7 @@ function bookacti_is_expired_booking( $booking_id ) {
 /**
  * Reset bookings expiration dates that are currently in cart
  * @global wpdb $wpdb
- * @param string $user_id
+ * @param int|string $user_id
  * @param array $booking_id_array
  * @param string $expiration_date
  * @return int|false
@@ -167,7 +167,7 @@ function bookacti_update_in_cart_bookings_expiration_date( $user_id, $booking_id
 /**
  * Get cart expiration of a specified user. Return null if there is no activity in cart
  * @global wpdb $wpdb
- * @param string $user_id
+ * @param int|string $user_id
  * @return string|null
  */
 function bookacti_get_cart_expiration_date_per_user( $user_id ) {
@@ -190,7 +190,7 @@ function bookacti_get_cart_expiration_date_per_user( $user_id ) {
  * 
  * @version 1.5.6
  * @global wpdb $wpdb
- * @param int $user_id
+ * @param int|string $user_id
  * @param int $order_id
  * @param array $booking_id_array
  * @param string $state
@@ -361,8 +361,8 @@ function bookacti_cancel_order_pending_bookings( $order_id, $not_booking_ids = a
  * @since 1.0.0
  * @version 1.4.0
  * @global wpdb $wpdb
- * @param int $user_id
- * @param string $customer_id
+ * @param int|string $user_id
+ * @param int|string $customer_id
  * @return false|int
  */
 function bookacti_update_bookings_user_id( $user_id, $customer_id ) {
@@ -547,7 +547,7 @@ function bookacti_get_booking_group_expiration_date( $booking_group_id ) {
  * @param array $booking_ids
  * @return array|false
  */
-function bookacti_get_booking_order_item_data( $booking_ids = array(), $booking_groups_ids = array() ) {
+function bookacti_get_order_items_data_by_bookings( $booking_ids = array(), $booking_groups_ids = array() ) {
 	// Format inputs into arrays
 	if( is_numeric( $booking_ids ) )				{ $booking_ids = array( $booking_ids ); }
 	if( is_numeric( $booking_groups_ids ) )			{ $booking_groups_ids = array( $booking_groups_ids ); }
@@ -617,7 +617,14 @@ function bookacti_get_booking_order_item_data( $booking_ids = array(), $booking_
 		$query = $wpdb->prepare( $query, $variables );
 	}
 	
-	$order_item_data = $wpdb->get_results( $query );
+	$query = apply_filters( 'bookacti_get_order_items_data_by_bookings_query', $query, $booking_ids, $booking_groups_ids );
 	
-	return $order_item_data;
+	$order_items = $wpdb->get_results( $query );
+	
+	$order_items_array = array();
+	foreach( $order_items as $order_item ) {
+		$order_items_array[ $order_item->order_item_id ] = $order_item;
+	}
+	
+	return apply_filters( 'bookacti_get_order_items_data_by_bookings', $order_items_array, $booking_ids, $booking_groups_ids );
 }

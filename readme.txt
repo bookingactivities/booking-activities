@@ -333,6 +333,7 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 * Tweak - Change the "Refunded" label to "Refunded with coupon ..." if it was refunded with a coupon
 * Tweak - Add an option to delete all Booking Activities data on uninstall, in order to avoid accidental data deletion
 * Tweak - Set default snap frequency to 5 minutes instead of 30
+* Tweak - The calendar appearence on the backend booking list no longer changes according to the selected calendars
 * Fix - Booking form not appearing on WC variable product pages if the default variation was non-activity
 * Fix - Possible PHP error while checking templates, activities and forms permission if they are not set
 

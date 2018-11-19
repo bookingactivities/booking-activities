@@ -167,15 +167,15 @@ if( ! $templates ) {
 			</div>
 			<div id='bookacti-customer-filter-container' class='bookacti-bookings-filter-container' >
 				<div class='bookacti-bookings-filter-title' >
-					<?php echo esc_html__( 'Customer', BOOKACTI_PLUGIN_NAME ); ?>
+					<?php esc_html_e( 'Customer', BOOKACTI_PLUGIN_NAME ); ?>
 				</div>
 				<div class='bookacti-bookings-filter-content' >
 				<?php
-					$selected_user = isset( $_REQUEST[ 'user_id' ] ) ? intval( $_REQUEST[ 'user_id' ] ) : 0;
+					$selected_user = isset( $_REQUEST[ 'user_id' ] ) ? esc_attr( $_REQUEST[ 'user_id' ] ) : 0;
 					$args = apply_filters( 'bookacti_booking_list_user_selectbox_args', array(
 						'name'				=> 'user_id',
 						'id'				=> 'bookacti-booking-filter-customer',
-						'show_option_all'	=> __( 'All', BOOKACTI_PLUGIN_NAME ),
+						'show_option_all'	=> esc_html__( 'All', BOOKACTI_PLUGIN_NAME ),
 						'option_label'		=> array( 'user_login', ' (', 'user_email', ')' ),
 						'selected'			=> $selected_user,
 						'echo'				=> true
@@ -257,11 +257,19 @@ if( ! $templates ) {
 						'method'				=> 'calendar',
 						'id'					=> 'bookacti-booking-system-bookings-page',
 						'class'					=> 'admin-booking-system',
+						'template_data'			=> array(
+							'start'		=> ! empty( $_REQUEST[ 'from' ] ) ? bookacti_sanitize_date( $_REQUEST[ 'from' ] ) : '',
+							'end'		=> ! empty( $_REQUEST[ 'to' ] ) ? bookacti_sanitize_date( $_REQUEST[ 'to' ] ) : '',
+							'settings'	=> bookacti_format_template_settings( array(
+								'minTime' => '00:00',
+								'maxTime' => '24:00'
+							) ),
+						),
 						'past_events'			=> 1,
 						'past_events_bookable'	=> 1,
 						'check_roles'			=> 0,
 						'auto_load'				=> 1 // Force to load on page load
-					);
+					);					
 					bookacti_get_booking_system( $atts, true );
 				?>
 				<script>
@@ -294,7 +302,8 @@ if( ! $templates ) {
 				'to'						=> $to,
 				'group_by'					=> isset( $_REQUEST[ 'group_by' ] )	? $_REQUEST[ 'group_by' ] : '',
 				'order_by'					=> isset( $_REQUEST[ 'orderby' ] )	? $_REQUEST[ 'orderby' ] : array( 'creation_date', 'id' ),
-				'order'						=> isset( $_REQUEST[ 'order' ] )	? $_REQUEST[ 'order' ] : 'DESC'
+				'order'						=> isset( $_REQUEST[ 'order' ] )	? $_REQUEST[ 'order' ] : 'DESC',
+				'fetch_meta'				=> true
 			);
 			
 			$bookings_list_table = new Bookings_List_Table();

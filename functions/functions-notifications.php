@@ -290,29 +290,29 @@ function bookacti_sanitize_notification_settings( $args, $notification_id = '' )
 function bookacti_get_notifications_tags( $notification_id = '' ) {
 	
 	$tags = array( 
-		'{booking_id}'			=> __( 'Booking unique ID (integer). Bookings and booking groups have different set of IDs.', BOOKACTI_PLUGIN_NAME ),
-		'{booking_title}'		=> __( 'The event / group of events title.', BOOKACTI_PLUGIN_NAME ),
-		'{booking_quantity}'	=> __( 'Booking quantity. If bookings of a same group happen to have different quantities, the higher is displayed.', BOOKACTI_PLUGIN_NAME ),
-		'{booking_total_qty}'	=> __( 'For booking groups, this is the bookings sum. For single bookings, this is the same as {booking_quantity}.', BOOKACTI_PLUGIN_NAME ),
-		'{booking_status}'		=> __( 'Current booking status.', BOOKACTI_PLUGIN_NAME ),
-		'{booking_start}'		=> __( 'Booking start date and time displayed in a user-friendly format. Not available for booking groups.', BOOKACTI_PLUGIN_NAME ),
-		'{booking_end}'			=> __( 'Booking end date and time displayed in a user-friendly format. Not available for booking groups.', BOOKACTI_PLUGIN_NAME ),
-		'{booking_list}'		=> __( 'Booking summary displayed as a booking list. You should use this tag once in every notification to know what booking (group) it is about.', BOOKACTI_PLUGIN_NAME ),
-		'{user_firstname}'		=> __( 'The user first name', BOOKACTI_PLUGIN_NAME ),
-		'{user_lastname}'		=> __( 'The user last name', BOOKACTI_PLUGIN_NAME ),
-		'{user_email}'			=> __( 'The user email address', BOOKACTI_PLUGIN_NAME ),
-		'{user_id}'				=> __( 'The user ID.', BOOKACTI_PLUGIN_NAME ),
-		'{user_ical_url}'		=> __( 'URL to export the user list of bookings in ical format. If the user doesn\'t have an account, only the current booking is exported.', BOOKACTI_PLUGIN_NAME ),
-		'{user_ical_key}'		=> __( 'User ical export secret key. Useful to create a custom ical export URL.', BOOKACTI_PLUGIN_NAME )
+		'{booking_id}'			=> esc_html__( 'Booking unique ID (integer). Bookings and booking groups have different set of IDs.', BOOKACTI_PLUGIN_NAME ),
+		'{booking_title}'		=> esc_html__( 'The event / group of events title.', BOOKACTI_PLUGIN_NAME ),
+		'{booking_quantity}'	=> esc_html__( 'Booking quantity. If bookings of a same group happen to have different quantities, the higher is displayed.', BOOKACTI_PLUGIN_NAME ),
+		'{booking_total_qty}'	=> esc_html__( 'For booking groups, this is the bookings sum. For single bookings, this is the same as {booking_quantity}.', BOOKACTI_PLUGIN_NAME ),
+		'{booking_status}'		=> esc_html__( 'Current booking status.', BOOKACTI_PLUGIN_NAME ),
+		'{booking_start}'		=> esc_html__( 'Booking start date and time displayed in a user-friendly format. For booking groups, the first event start date and time is used.', BOOKACTI_PLUGIN_NAME ),
+		'{booking_end}'			=> esc_html__( 'Booking end date and time displayed in a user-friendly format. For booking groups, the last event end date and time is used.', BOOKACTI_PLUGIN_NAME ),
+		'{booking_list}'		=> esc_html__( 'Booking summary displayed as a booking list. You should use this tag once in every notification to know what booking (group) it is about.', BOOKACTI_PLUGIN_NAME ),
+		'{user_firstname}'		=> esc_html__( 'The user first name', BOOKACTI_PLUGIN_NAME ),
+		'{user_lastname}'		=> esc_html__( 'The user last name', BOOKACTI_PLUGIN_NAME ),
+		'{user_email}'			=> esc_html__( 'The user email address', BOOKACTI_PLUGIN_NAME ),
+		'{user_id}'				=> esc_html__( 'The user ID. If the user has booked without account, this will display his email address.', BOOKACTI_PLUGIN_NAME ),
+		'{user_ical_url}'		=> esc_html__( 'URL to export the user list of bookings in ical format. If the user doesn\'t have an account, only the current booking is exported.', BOOKACTI_PLUGIN_NAME ),
+		'{user_ical_key}'		=> esc_html__( 'User ical export secret key. Useful to create a custom ical export URL.', BOOKACTI_PLUGIN_NAME )
 	);
 	
 	if( substr( $notification_id, 0, 6 ) === 'admin_' ) {
-		$tags[ '{booking_admin_url}' ]	= __( 'URL to the booking admin panel. Use this tag only on notifications sent to administrators.', BOOKACTI_PLUGIN_NAME );
+		$tags[ '{booking_admin_url}' ]	= esc_html__( 'URL to the booking admin panel. Use this tag only on notifications sent to administrators.', BOOKACTI_PLUGIN_NAME );
 	}
 	
 	if( $notification_id === 'admin_rescheduled_booking' || $notification_id === 'customer_rescheduled_booking' ) {
-		$tags[ '{booking_old_start}' ]	= __( 'Booking start date and time before reschedule. Displayed in a user-friendly format.', BOOKACTI_PLUGIN_NAME );
-		$tags[ '{booking_old_end}' ]	= __( 'Booking end date and time before reschedule. Displayed in a user-friendly format.', BOOKACTI_PLUGIN_NAME );
+		$tags[ '{booking_old_start}' ]	= esc_html__( 'Booking start date and time before reschedule. Displayed in a user-friendly format.', BOOKACTI_PLUGIN_NAME );
+		$tags[ '{booking_old_end}' ]	= esc_html__( 'Booking end date and time before reschedule. Displayed in a user-friendly format.', BOOKACTI_PLUGIN_NAME );
 	}
 	
 	return apply_filters( 'bookacti_notifications_tags', $tags, $notification_id );
@@ -332,49 +332,54 @@ function bookacti_get_notifications_tags( $notification_id = '' ) {
 function bookacti_get_notifications_tags_values( $booking_id, $booking_type, $notification_id, $locale = 'site' ) {
 	
 	// Set default locale to site's locale
-	if( $locale === 'site' ) {
-		$locale = bookacti_get_site_locale();
-	}
+	if( $locale === 'site' ) { $locale = bookacti_get_site_locale(); }
 	
 	$booking_data = array();
 	
-	$booking = $booking_type === 'group' ? bookacti_get_booking_group_by_id( $booking_id ) : bookacti_get_booking_by_id( $booking_id );
+	$filters = $booking_type === 'group' ? array( 'in__booking_group_id' => array( $booking_id ) ) : array( 'in__booking_id' => array( $booking_id ) );
+	$filters = bookacti_format_booking_filters( array_merge( array( 'templates' => '', 'fetch_meta' => true ), $filters ) );
+	$booking_array = $booking_type === 'group' ? bookacti_get_booking_groups( $filters ) : bookacti_get_bookings( $filters );
+	$booking = ! empty( $booking_array[ $booking_id ] ) ? $booking_array[ $booking_id ] : null;
 	
 	if( $booking ) {
+		$datetime_format = apply_filters( 'bookacti_translate_text', bookacti_get_message( 'date_format_long', true ), $locale );
+		
 		if( $booking_type === 'group' ) {
 			$bookings			= bookacti_get_bookings_by_booking_group_id( $booking_id );
 			$group_of_events	= bookacti_get_group_of_events( $booking->event_group_id );
 
-			$booking_data[ '{booking_quantity}' ]	= bookacti_get_booking_group_quantity( $booking_id );
 			$booking_data[ '{booking_total_qty}' ]	= 0;
 			foreach( $bookings as $grouped_booking ) { $booking_data[ '{booking_total_qty}' ] += intval( $grouped_booking->quantity ); }
 			$booking_data[ '{booking_title}' ]		= $group_of_events ? $group_of_events->title : '';
+			$booking_data[ '{booking_start}' ]		= bookacti_format_datetime( $booking->start, $datetime_format );
+			$booking_data[ '{booking_end}' ]		= bookacti_format_datetime( $booking->end, $datetime_format );
 			$booking_data[ '{booking_admin_url}' ]	= esc_url( admin_url( 'admin.php?page=bookacti_bookings' ) . '&event_group_id=' . $group_of_events->id );
 
 		} else {
 			$bookings	= array( $booking );
 			$event		= bookacti_get_event_by_id( $booking->event_id );
-
-			$booking_data[ '{booking_quantity}' ]	= $booking->quantity;
-			$booking_data[ '{booking_total_qty}' ]	= $booking_data[ '{booking_quantity}' ];
+			
+			$booking_data[ '{booking_total_qty}' ]	= $booking->quantity;
 			$booking_data[ '{booking_title}' ]		= $event ? $event->title : '';
-			$booking_data[ '{booking_start}' ]		= $booking->event_start;
-			$booking_data[ '{booking_end}' ]		= $booking->event_end;
+			$booking_data[ '{booking_start}' ]		= bookacti_format_datetime( $booking->event_start, $datetime_format );
+			$booking_data[ '{booking_end}' ]		= bookacti_format_datetime( $booking->event_end, $datetime_format );
 			$booking_data[ '{booking_admin_url}' ]	= esc_url( admin_url( 'admin.php?page=bookacti_bookings' ) . '&event_id=' . $booking->event_id . '&event_start=' . $booking->event_start . '&event_end=' . $booking->event_end );
 		}
 
-		$booking_data[ '{booking_id}' ]				= $booking_id;
-		$booking_data[ '{booking_title}' ]			= $booking_data[ '{booking_title}' ] ? apply_filters( 'bookacti_translate_text', $booking_data[ '{booking_title}' ], $locale ) : '';
-		$booking_data[ '{booking_status}' ]			= bookacti_format_booking_state( $booking->state );
-		$booking_data[ '{booking_list}' ]			= bookacti_get_formatted_booking_events_list( $bookings, 'show', $locale );
+		$booking_data[ '{booking_id}' ]			= $booking_id;
+		$booking_data[ '{booking_title}' ]		= $booking_data[ '{booking_title}' ] ? apply_filters( 'bookacti_translate_text', $booking_data[ '{booking_title}' ], $locale ) : '';
+		$booking_data[ '{booking_status}' ]		= bookacti_format_booking_state( $booking->state );
+		$booking_data[ '{booking_quantity}' ]	= $booking->quantity;
+		$booking_data[ '{booking_list}' ]		= bookacti_get_formatted_booking_events_list( $bookings, 'show', $locale );
 
 		if( $booking->user_id ) { 
 			$booking_data[ '{user_id}' ] = $booking->user_id;
-			$user = get_user_by( 'id', $booking->user_id );
+			$user = is_numeric( $booking->user_id ) ? get_user_by( 'id', $booking->user_id ) : null;
 			if( $user ) { 
-				$booking_data[ '{user_firstname}' ]	= $user->first_name;
-				$booking_data[ '{user_lastname}' ]	= $user->last_name;
-				$booking_data[ '{user_email}' ]		= $user->user_email;
+				$booking_data[ '{user_firstname}' ]	= ! empty( $user->first_name ) ? $user->first_name : '';
+				$booking_data[ '{user_lastname}' ]	= ! empty( $user->last_name ) ? $user->last_name : ''; 
+				$booking_data[ '{user_email}' ]		= ! empty( $user->user_email ) ? $user->user_email : '';
+				$booking_data[ '{user_phone}' ]		= ! empty( $user->phone ) ? $user->phone : '';
 				
 				$user_meta = get_user_meta( $booking->user_id );
 				if( ! empty( $user_meta[ 'bookacti_secret_key' ][ 0 ] ) ) {
@@ -384,6 +389,11 @@ function bookacti_get_notifications_tags_values( $booking_id, $booking_type, $no
 					update_user_meta( $booking->user_id, 'bookacti_secret_key', $booking_data[ '{user_ical_key}' ] );
 				}
 				$booking_data[ '{user_ical_url}' ] = esc_url( home_url( 'my-bookings.ics?action=bookacti_export_user_booked_events&key=' . $booking_data[ '{user_ical_key}' ] . '&lang=' . $locale ) );
+			} else {
+				$booking_data[ '{user_firstname}' ]	= ! empty( $booking->user_first_name ) ? $booking->user_first_name : '';
+				$booking_data[ '{user_lastname}' ]	= ! empty( $booking->user_last_name ) ? $booking->user_last_name : '';
+				$booking_data[ '{user_email}' ]		= ! empty( $booking->user_email ) ? $booking->user_email : '';
+				$booking_data[ '{user_phone}' ]		= ! empty( $booking->user_phone ) ? $booking->user_phone : '';
 			}
 		}
 		if( empty( $booking_data[ '{user_ical_key}' ] ) ) {
@@ -400,7 +410,7 @@ function bookacti_get_notifications_tags_values( $booking_id, $booking_type, $no
 		$tags[ $default_tag ] = isset( $booking_data[ $default_tag ] ) ? $booking_data[ $default_tag ] : '';
 	}
 	
-	return apply_filters( 'bookacti_notifications_tags_values', $tags, $booking_id, $booking_type, $notification_id, $locale );
+	return apply_filters( 'bookacti_notifications_tags_values', $tags, $booking, $booking_type, $notification_id, $locale );
 }
 
 
@@ -408,7 +418,7 @@ function bookacti_get_notifications_tags_values( $booking_id, $booking_type, $no
  * Send a notification according to its settings
  * 
  * @since 1.2.1 (was bookacti_send_email in 1.2.0)
- * @version 1.5.8
+ * @version 1.6.0
  * @param string $notification_id Must exists in "bookacti_notifications_default_settings"
  * @param int $booking_id
  * @param string $booking_type "single" or "group"
@@ -436,20 +446,34 @@ function bookacti_send_notification( $notification_id, $booking_id, $booking_typ
 	if( ! $notification || ! $notification[ 'active' ] ) { return false; }
 	
 	// Change params according to recipients
+	$locale = '';
 	if( substr( $notification_id, 0, 8 ) === 'customer' ) {
 		
-		$user_id	= $booking_type === 'group' ? bookacti_get_booking_group_owner( $booking_id ) : bookacti_get_booking_owner( $booking_id );
-		$user_data	= get_userdata( $user_id );
+		$user_id = $booking_type === 'group' ? bookacti_get_booking_group_owner( $booking_id ) : bookacti_get_booking_owner( $booking_id );
+		$user = is_numeric( $user_id ) ? get_user_by( 'id', $user_id ) : null;
+		
+		// If the user has an account
+		if( $user ) {
+			$user_data = get_user_by( 'id', $user_id );
+			if( $user_data ) {
+				$user_email = $user->user_email;
+
+				// Use the user locale to translate the email
+				$locale = bookacti_get_user_locale( $user );
+			}
+		} else if( is_email( $user_id ) ) {
+			$user_email = $user_id;
+		} else {
+			$object_type = $booking_type === 'group' ? 'booking_group' : 'booking';
+			$user_email = bookacti_get_metadata( $object_type, $booking_id, 'user_email', true );
+			if( ! is_email( $user_email ) ) { $user_email = ''; }
+		}
 		
 		// Fill the recipients fields
-		$notification[ 'email' ][ 'to' ] = array( $user_data->user_email );
-		
-		// Temporarilly switch locale to user's
-		$locale = bookacti_get_user_locale( $user_id );
-		
-	} else {
-		$locale = bookacti_get_site_locale();
+		$notification[ 'email' ][ 'to' ] = array( $user_email );
 	}
+	
+	if( ! $locale ) { $locale = bookacti_get_site_locale();	}
 	
 	$locale = apply_filters( 'bookacti_notification_locale', $locale, $notification_id, $booking_id, $booking_type, $args );
 	

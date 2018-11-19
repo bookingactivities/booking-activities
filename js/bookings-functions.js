@@ -1,6 +1,9 @@
 // BOOKINGS PAGE
 
-// Init booking filter action
+/**
+ * Init booking filter action
+ * @version 1.6.0
+ */
 function bookacti_init_booking_filters_actions() {
 	
 	// Display or hide activities filter according to selected templates
@@ -17,7 +20,9 @@ function bookacti_init_booking_filters_actions() {
 	});
 	
 	
-	// Display / Hide the calendar
+	/**
+	 * Display / Hide the calendar and reload it if the filters has been changed
+	 */
 	$j( '#bookacti-pick-event-filter' ).on( 'click', function() {
 		var booking_system = $j( '#bookacti-booking-system-bookings-page' );
 		
@@ -27,7 +32,7 @@ function bookacti_init_booking_filters_actions() {
 			var selected_templates	= $j( '#bookacti-booking-filter-templates' ).val() ? $j( '#bookacti-booking-filter-templates' ).val() : [];
 			var selected_status		= $j( '#bookacti-booking-filter-status' ).val() ? $j( '#bookacti-booking-filter-status' ).val() : [];
 			var selected_user		= $j( '#bookacti-booking-filter-customer' ).val() ? $j( '#bookacti-booking-filter-customer' ).val() : 0;
-		
+			
 			if( ! bookacti_compare_arrays( bookacti.booking_system[ booking_system_id ][ 'calendars' ], selected_templates )
 			||  ! bookacti_compare_arrays( bookacti.booking_system[ booking_system_id ][ 'status' ], selected_status )
 			||  bookacti.booking_system[ booking_system_id ][ 'user_id' ] !== selected_user ) {
@@ -67,9 +72,7 @@ function bookacti_init_booking_filters_actions() {
 	
 	// Retrict calendars date according to date filter
 	$j( '#bookacti-booking-filter-dates-from, #bookacti-booking-filter-dates-to' ).on( 'change', function() {
-		var booking_system	= $j( '#bookacti-booking-system-bookings-page' );
-		var calendar		= booking_system.find( '.bookacti-calendar' );
-		bookacti_refresh_calendar_according_to_date_filter( calendar );
+		bookacti_refresh_calendar_according_to_date_filter();
 	});
 }
 
@@ -116,35 +119,50 @@ function bookacti_update_template_related_filters() {
 }
 
 
-// Refresh calendar accoding to dates
-function bookacti_refresh_calendar_according_to_date_filter( calendar ) {
+/**
+ * Refresh booking list calendar accoding to dates
+ * @version 1.6.0
+ */
+function bookacti_refresh_calendar_according_to_date_filter() {
 	if( ! $j( '#bookacti-booking-system-filter-container' ).is( ':visible' ) ) { return false; }
 
-	calendar = $j( '#bookacti-booking-system-bookings-page' ).find( '.bookacti-calendar' );
-	var from	= moment( $j( '#bookacti-booking-filter-dates-from' ).val() );
-	var to		= moment( $j( '#bookacti-booking-filter-dates-to' ).val() );
+	var booking_system		= $j( '#bookacti-booking-system-bookings-page' );
+	var booking_system_id	= $j( '#bookacti-booking-system-bookings-page' ).attr( 'id' );
+	var calendar			= booking_system.find( '.bookacti-calendar' );
+	var from				= moment( $j( '#bookacti-booking-filter-dates-from' ).val() );
+	var to					= moment( $j( '#bookacti-booking-filter-dates-to' ).val() );
 	
 	var interval_filter = {
-		"start": from.isValid() ? from : moment( bookacti.booking_system[ 'bookacti-booking-system-bookings-page' ][ 'template_data' ][ 'start' ] ),
-		"end": to.isValid() ? to.add( 1, 'days' ) : moment( bookacti.booking_system[ 'bookacti-booking-system-bookings-page' ][ 'template_data' ][ 'end' ] ).add( 1, 'days' )
+		"start": from.isValid() ? from : moment( bookacti.booking_system[ booking_system_id ][ 'template_data' ][ 'start' ] ),
+		"end": to.isValid() ? to.add( 1, 'days' ) : moment( bookacti.booking_system[ booking_system_id ][ 'template_data' ][ 'end' ] ).add( 1, 'days' )
 	};
+	
+	bookacti.booking_system[ booking_system_id ][ 'template_data' ][ 'start' ] = interval_filter.start.format( 'YYYY-MM-DD' );
+	bookacti.booking_system[ booking_system_id ][ 'template_data' ][ 'end' ] = interval_filter.end.format( 'YYYY-MM-DD' );
 	
 	calendar.fullCalendar( 'option', 'validRange', interval_filter );
 }
 
 
-// Reload bookings booking system according to filters
+/**
+ * Reload bookings booking system according to filters
+ * @version 1.6.0
+ * @param {dom_element} booking_system
+ */
 function bookacti_reload_booking_system_according_to_filters( booking_system ) {
 	var booking_system_id	= booking_system.attr( 'id' );
 	
 	var selected_templates	= $j( '#bookacti-booking-filter-templates' ).val();
 	var selected_status		= $j( '#bookacti-booking-filter-status' ).val();
 	var selected_user		= $j( '#bookacti-booking-filter-customer' ).val();
+	var selected_from		= $j( '#bookacti-booking-filter-dates-from' ).val();
+	var selected_end		= $j( '#bookacti-booking-filter-dates-end' ).val();
 	
 	bookacti.booking_system[ booking_system_id ][ 'calendars' ] = selected_templates ? selected_templates : [];
 	bookacti.booking_system[ booking_system_id ][ 'status' ]	= selected_status ? selected_status : [];
 	bookacti.booking_system[ booking_system_id ][ 'user_id' ]	= selected_user ? selected_user : 0;
-	bookacti.booking_system[ booking_system_id ][ 'template_data' ] = [];
+	bookacti.booking_system[ booking_system_id ][ 'template_data' ][ 'start' ] = selected_from;
+	bookacti.booking_system[ booking_system_id ][ 'template_data' ][ 'end' ] = selected_end;
 	
 	bookacti_reload_booking_system( booking_system );
 }

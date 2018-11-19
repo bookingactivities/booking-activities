@@ -129,7 +129,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			'not_in__booking_id'		=> array(),
 			'not_in__booking_group_id'	=> array(),
 			'not_in__user_id'			=> array(),
-			'meta'						=> false
+			'fetch_meta'				=> false
 		));
 	}
 	
@@ -175,17 +175,21 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 				}
 				else { $current_value = $default_value; }
 				
-			} else if( in_array( $filter, array( 'activities', 'in__booking_id', 'in__booking_group_id', 'not_in__booking_id', 'not_in__booking_group_id', 'not_in__user_id' ), true ) ) {
+			} else if( in_array( $filter, array( 'activities', 'in__booking_id', 'in__booking_group_id', 'not_in__booking_id', 'not_in__booking_group_id' ), true ) ) {
 				if( is_numeric( $current_value ) )	{ $current_value = array( $current_value ); }
 				if( ! is_array( $current_value ) )	{ $current_value = $default_value; }
 				else if( ( $i = array_search( 'all', $current_value ) ) !== false ) { unset( $current_value[ $i ] ); }
+				
+			} else if( in_array( $filter, array( 'not_in__user_id' ), true ) ) {
+				if( is_numeric( $current_value ) || is_string( $current_value ) )	{ $current_value = array( $current_value ); }
+				if( ! is_array( $current_value ) )	{ $current_value = $default_value; }
 				
 			} else if( in_array( $filter, array( 'status' ), true ) ) {
 				if( is_string( $current_value ) )	{ $current_value = array( $current_value ); }
 				if( ! is_array( $current_value ) )	{ $current_value = $default_value; }
 				else if( ( $i = array_search( 'all', $current_value ) ) !== false ) { unset( $current_value[ $i ] ); }
 				
-			} else if( in_array( $filter, array( 'booking_id', 'booking_group_id', 'event_group_id', 'event_id', 'user_id', 'offset', 'per_page' ), true ) ) {
+			} else if( in_array( $filter, array( 'booking_id', 'booking_group_id', 'event_group_id', 'event_id', 'offset', 'per_page' ), true ) ) {
 				if( ! is_numeric( $current_value ) ){ $current_value = $default_value; }
 			
 			} else if( in_array( $filter, array( 'event_start', 'event_end' ), true ) ) {
@@ -199,7 +203,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 				else if( in_array( $current_value, array( 0, '0' ), true ) ){ $current_value = 0; }
 				if( ! in_array( $current_value, array( 0, 1 ), true ) ) { $current_value = $default_value; }
 				
-			} else if( in_array( $filter, array( 'meta' ), true ) ) {
+			} else if( in_array( $filter, array( 'fetch_meta' ), true ) ) {
 				if( in_array( $current_value, array( true, 'true', 1, '1' ), true ) ) { $current_value = true; }
 				else { $current_value = false; }
 				
@@ -229,6 +233,9 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			
 			} else if( $filter === 'group_by' ) {
 				if( ! in_array( $current_value, array( 'none', 'booking_group' ), true ) ) { $current_value = $default_value; }
+				
+			} else if( $filter === 'user_id' ) {
+				if( ! is_numeric( $filter ) && ! is_string( $filter ) ) { $current_value = $default_value; }
 			}
 			
 			$formatted_filters[ $filter ] = $current_value;
@@ -286,18 +293,21 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 		/**
 		 * Check if user is allowed to manage a booking
-		 * 
+		 * @version 1.6.0
 		 * @param int $booking_id
-		 * @param int $user_id
+		 * @param int|string $user_id
 		 * @return boolean
 		 */
 		function bookacti_user_can_manage_booking( $booking_id, $user_id = false ) {
 
 			$user_can_manage_booking = false;
 			if( ! $user_id ) { $user_id = get_current_user_id(); }
-
+			
+			$owner = bookacti_get_booking_owner( $booking_id );
 			if( user_can( $user_id, 'bookacti_edit_bookings' ) 
-			||  bookacti_get_booking_owner( $booking_id ) == $user_id ) { $user_can_manage_booking = true; }
+			||  ( $owner !== null && $owner == $user_id ) ) { 
+				$user_can_manage_booking = true; 
+			}
 
 			return apply_filters( 'bookacti_user_can_manage_booking', $user_can_manage_booking, $booking_id, $user_id );
 		}
@@ -413,7 +423,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			
 			if( ! $booking ) { return apply_filters( 'bookacti_booking_can_be_refunded', false, $booking ); }
 			
-			$refund_actions	= bookacti_get_refund_actions_by_booking_id( $booking->id );
+			$refund_actions	= bookacti_get_refund_actions_by_booking_id( $booking );
 			$true			= true;
 			
 			// Disallow refund in those cases:
@@ -470,7 +480,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		 * @since 1.1.0
 		 * 
 		 * @param int $booking_group_id
-		 * @param int $user_id
+		 * @param int|string $user_id
 		 * @return boolean
 		 */
 		function bookacti_user_can_manage_booking_group( $booking_group_id, $user_id = false ) {
@@ -501,7 +511,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			$true = true;
 			
 			// Get booking group
-			if( is_int( $booking_group ) ) { $booking_group = bookacti_get_booking_group( $booking_group ); }
+			if( is_int( $booking_group ) ) { $booking_group = bookacti_get_booking_group_by_id( $booking_group ); }
 			
 			if( ! current_user_can( 'bookacti_edit_bookings' ) ) {
 				$filters = bookacti_format_booking_filters( array( 'booking_group_id' => $booking_group->id ) );
@@ -528,10 +538,10 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		 */
 		function bookacti_booking_group_can_be_refunded( $booking_group, $refund_action = false ) {
 			// Get booking group
-			if( is_int( $booking_group ) ) { $booking_group = bookacti_get_booking_group( $booking_group ); }
+			if( is_int( $booking_group ) ) { $booking_group = bookacti_get_booking_group_by_id( $booking_group ); }
 			
 			$true			= true;
-			$refund_actions	= bookacti_get_refund_actions_by_booking_group_id( $booking_group->id );
+			$refund_actions	= bookacti_get_refund_actions_by_booking_group_id( $booking_group );
 			
 			// Disallow refund in those cases:
 			// -> If the booking group is already marked as refunded, 
@@ -782,7 +792,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		 */
 		function bookacti_get_booking_group_actions_by_booking_group( $booking_group, $admin_or_front = 'both' ) {
 			// Get booking group
-			if( is_int( $booking_group ) ) { $booking_group = bookacti_get_booking_group( $booking_group ); }
+			if( is_int( $booking_group ) ) { $booking_group = bookacti_get_booking_group_by_id( $booking_group ); }
 			
 			$actions = bookacti_get_booking_group_actions( $admin_or_front );
 			if( ( isset( $actions[ 'change-state' ] ) || isset( $actions[ 'edit-single' ] ) ) && ! current_user_can( 'bookacti_edit_bookings' ) ) {
@@ -814,7 +824,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		 */
 		function bookacti_get_booking_group_actions_html( $booking_group, $admin_or_front = 'both', $actions = array(), $return_array = false, $with_container = false ) {
 			// Get booking group
-			if( is_int( $booking_group ) ) { $booking_group = bookacti_get_booking_group( $booking_group ); }
+			if( is_int( $booking_group ) ) { $booking_group = bookacti_get_booking_group_by_id( $booking_group ); }
 			
 			if( ! $actions ) {
 				$actions = bookacti_get_booking_group_actions_by_booking_group( $booking_group, $admin_or_front );
@@ -981,7 +991,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 				$group_ids = array();
 				$user_ids = array();
 				foreach( $bookings as $booking ) {
-					if( $booking->user_id && ! in_array( $booking->user_id, $user_ids, true ) )		{ $user_ids[] = $booking->user_id; }
+					if( $booking->user_id && is_numeric( $booking->user_id ) && ! in_array( $booking->user_id, $user_ids, true ) ) { $user_ids[] = $booking->user_id; }
 					if( $booking->group_id && ! in_array( $booking->group_id, $group_ids, true ) )	{ $group_ids[] = $booking->group_id; }
 				}
 			}
@@ -995,7 +1005,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 				
 				// If the booking are grouped by booking groups, 
 				// booking group meta will already be attached to the booking representing its group 
-				if( $group_filters[ 'meta' ] && $group_filters[ 'group_by' ] === 'booking_group' ) { $group_filters[ 'meta' ] = false; }
+				if( $group_filters[ 'fetch_meta' ] && $group_filters[ 'group_by' ] === 'booking_group' ) { $group_filters[ 'fetch_meta' ] = false; }
 				
 				$booking_groups = bookacti_get_booking_groups( $group_filters );
 			}
@@ -1076,6 +1086,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 				// Format customer column
 				$user = null;
 				if( $has_user_data ) {
+					// If the customer has an account
 					if( ! empty( $users[ $user_id ] ) ) {
 						$user = $users[ $user_id ];
 						$booking_data = array_merge( $booking_data, array(
@@ -1085,9 +1096,23 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 							'customer_email'		=> ! empty( $user->user_email ) ? $user->user_email : '',
 							'customer_phone'		=> ! empty( $user->phone ) ? $user->phone : ''
 						));
+						
+					// If the booking has been made without account
+					} else if( ! empty( $booking->user_email ) || ! empty( $group->user_email ) ) {
+						$booking_meta = ! empty( $group->user_email ) ? $group : $booking;
+						$booking_data = array_merge( $booking_data, array(
+							'customer_display_name'	=> '',
+							'customer_first_name'	=> ! empty( $booking_meta->user_first_name ) ? $booking_meta->user_first_name : '',
+							'customer_last_name'	=> ! empty( $booking_meta->user_last_name ) ? $booking_meta->user_last_name : '',
+							'customer_email'		=> ! empty( $booking_meta->user_email ) ? $booking_meta->user_email : '',
+							'customer_phone'		=> ! empty( $booking_meta->user_phone ) ? $booking_meta->user_phone : ''
+						));
+						$booking_data[ 'customer_display_name' ] .= ! empty( $booking_data[ 'customer_first_name' ] ) ? $booking_data[ 'customer_first_name' ] : '';
+						$booking_data[ 'customer_display_name' ] .= empty( $booking_data[ 'customer_first_name' ] ) && ! empty( $booking_data[ 'customer_last_name' ] ) ? ' ' : '';
+						$booking_data[ 'customer_display_name' ] .= ! empty( $booking_data[ 'customer_last_name' ] ) ? $booking_data[ 'customer_last_name' ] : '';
 					}
 				}
-				
+					
 				/**
 				 * Third parties can add or change columns content, but do your best to optimize your process
 				 * @since 1.6.0
@@ -1128,14 +1153,12 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	
 	/**
 	 * Get refund actions for a specific booking
-	 * 
-	 * @version 1.1.0
-	 * 
-	 * @param int $booking_id
+	 * @version 1.6.0
+	 * @param int|object $booking
 	 * @return array
 	 */
-	function bookacti_get_refund_actions_by_booking_id( $booking_id ) {
-		return bookacti_get_refund_actions_by_booking_type( $booking_id, 'single' );
+	function bookacti_get_refund_actions_by_booking_id( $booking ) {
+		return bookacti_get_refund_actions_by_booking_type( $booking, 'single' );
 	}
 	
 	
@@ -1144,24 +1167,22 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	 * 
 	 * @since 1.1.0
 	 * 
-	 * @param int $booking_group_id
+	 * @param int|object $booking_group
 	 * @return array
 	 */
-	function bookacti_get_refund_actions_by_booking_group_id( $booking_group_id ) {
-		return bookacti_get_refund_actions_by_booking_type( $booking_group_id, 'group' );
+	function bookacti_get_refund_actions_by_booking_group_id( $booking_group ) {
+		return bookacti_get_refund_actions_by_booking_type( $booking_group, 'group' );
 	}
 
 	/**
 	 * Get refund actions for a specific booking or booking group
-	 * 
 	 * @since 1.1.0
-	 * @version 1.3.0
-	 * 
-	 * @param int $booking_or_booking_group_id
+	 * @version 1.6.0
+	 * @param int|object $booking
 	 * @param string $booking_type Defined if the given id is a booking id or a booking group id. Accepted values are 'single' and 'group'.
 	 * @return array
 	 */
-	function bookacti_get_refund_actions_by_booking_type( $booking_or_booking_group_id, $booking_type = 'single' ) {
+	function bookacti_get_refund_actions_by_booking_type( $booking, $booking_type = 'single' ) {
 		
 		$possible_actions = bookacti_get_refund_actions();
 		
@@ -1186,9 +1207,9 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		}
 		
 		if( $booking_type === 'single' ) {
-			$possible_actions = apply_filters( 'bookacti_refund_actions_by_booking', $possible_actions, $booking_or_booking_group_id );
+			$possible_actions = apply_filters( 'bookacti_refund_actions_by_booking', $possible_actions, $booking );
 		} else if( $booking_type === 'group' ) {
-			$possible_actions = apply_filters( 'bookacti_refund_actions_by_booking_group', $possible_actions, $booking_or_booking_group_id );
+			$possible_actions = apply_filters( 'bookacti_refund_actions_by_booking_group', $possible_actions, $booking );
 		}
 		
 		return $possible_actions;
@@ -1283,34 +1304,26 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 	/**
 	 * Send a refund request by email for a specific booking
-	 * @version 1.5.4
+	 * @version 1.6.0
 	 * @param int $booking_id
 	 * @param string $booking_type Defined if the given id is a booking id or a booking group id. Accepted values are 'single' and 'group'.
 	 * @param string $user_message
 	 * @return boolean
 	 */
 	function bookacti_send_email_refund_request( $booking_id, $booking_type, $user_message = false ) {
-
-		$user = get_userdata( get_current_user_id() );
 		
 		$to = apply_filters( 'bookacti_refund_request_email_to', array( get_option( 'admin_email' ) ), $booking_id, $booking_type );
 		
 		/* translators: %1$s is the booking id */
-		$subject	= $booking_type === 'group' ? __( 'Refund request for booking group %1$s', BOOKACTI_PLUGIN_NAME ) : __( 'Refund request for booking %1$s', BOOKACTI_PLUGIN_NAME );
+		$subject	= $booking_type === 'group' ? esc_html__( 'Refund request for booking group %1$s', BOOKACTI_PLUGIN_NAME ) : esc_html__( 'Refund request for booking %1$s', BOOKACTI_PLUGIN_NAME );
 		$subject	= apply_filters( 'bookacti_refund_request_email_subject', sprintf( $subject, $booking_id ), $booking_id, $booking_type );
-
+		
 		$data = array();
-
-		$data['user']			= array();
-		$data['user']['name']	= isset( $user->first_name ) && isset( $user->last_name ) ? $user->first_name . ' ' . $user->last_name : $user->user_login;
-		$data['user']['name']	= '<a href="' . esc_url( get_edit_user_link() ) . '">' . esc_html( $data['user']['name'] ) . '</a>';
-		$data['user']['email']	= '<a href="mailto:' . esc_attr( $user->user_email ) . '">' . esc_html( $user->user_email ) . '</a>';
 		
 		// Single booking
 		if( $booking_type === 'single' ) {
 			
 			$booking = bookacti_get_booking_by_id( $booking_id );
-			
 			if( $booking ) {
 				$data['booking']					= array();
 				$data['booking']['calendar_id']		= $booking->template_id;
@@ -1335,6 +1348,28 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			}
 			if( $booking_group ) {
 				$data['booking_group']['status'] = $booking_group->state;
+			}
+		}
+		
+		$user_id = ! empty( $booking_group ) ? $booking_group->user_id : ( ! empty( $booking ) ? $booking->user_id : '' );
+		if( $user_id ) {
+			$data['user'] = array();
+			$user = is_numeric( $user_id ) ? get_user_by( 'id', $user_id ) : null;
+			
+			if( $user ) {
+				$data['user']['name']	= isset( $user->first_name ) && isset( $user->last_name ) ? $user->first_name . ' ' . $user->last_name : $user->user_login;
+				$data['user']['name']	= '<a href="' . esc_url( get_edit_user_link() ) . '">' . esc_html( $data['user']['name'] ) . '</a>';
+				$data['user']['email']	= '<a href="mailto:' . esc_attr( $user->user_email ) . '">' . esc_html( $user->user_email ) . '</a>';
+			} else {
+				$object_type	= $booking_type === 'group' ? 'booking_group' : 'booking';
+				$booking_meta	= bookacti_get_metadata( $object_type, $booking_id );
+				$user_email		= ! empty( $booking_meta[ 'user_email' ] ) ? $booking_meta[ 'user_email' ] : '';
+				
+				$data['user']['name'] = '';
+				$data['user']['name'] .= ! empty( $booking_meta[ 'user_first_name' ] ) ? $booking_meta[ 'user_first_name' ] : '';
+				$data['user']['name'] .= empty( $booking_meta[ 'user_first_name' ] ) && ! empty( $booking_meta[ 'user_last_name' ] ) ? ' ' : '';
+				$data['user']['name'] .= ! empty( $booking_meta[ 'user_last_name' ] ) ? $booking_meta[ 'user_last_name' ] : '';
+				$data['user']['email']	= is_email( $user_email ) ? '<a href="mailto:' . esc_attr( $user_email ) . '">' . esc_html( $user_email ) . '</a>' : $user_email;
 			}
 		}
 		
@@ -1473,7 +1508,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
  * Get booking list columns 
  * 
  * @since 1.3.0
- * @param int $user_id
+ * @param int|string $user_id
  * @return array
  */
 function bookacti_get_booking_list_columns( $user_id = 0 ) {
@@ -1499,7 +1534,7 @@ function bookacti_get_booking_list_columns( $user_id = 0 ) {
  * @version 1.6.0
  * @param array $bookings
  * @param array $columns
- * @param int $user_id
+ * @param int|string $user_id
  * @return string
  */
 function bookacti_get_booking_list_rows( $bookings, $columns = array(), $user_id = 0 ) {
@@ -1523,7 +1558,7 @@ function bookacti_get_booking_list_rows( $bookings, $columns = array(), $user_id
 		
 		// If the booking are grouped by booking groups, 
 		// booking group meta will already be attached to the booking representing its group 
-		if( $group_filters[ 'meta' ] && $group_filters[ 'group_by' ] === 'booking_group' ) { $group_filters[ 'meta' ] = false; }
+		if( $group_filters[ 'fetch_meta' ] && $group_filters[ 'group_by' ] === 'booking_group' ) { $group_filters[ 'fetch_meta' ] = false; }
 
 		$booking_groups = bookacti_get_booking_groups( $group_filters );
 	}
