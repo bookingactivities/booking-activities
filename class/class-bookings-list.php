@@ -330,7 +330,7 @@ if( ! class_exists( 'Bookings_List_Table' ) ) {
 				
 				// Remove refund action if not possible
 				if( ! empty( $actions[ 'refund' ] ) ) {
-					if( $booking->state === 'refunded' || ! empty( $booking->group_id ) ) {
+					if( $booking->state === 'refunded' || ( ! $may_have_groups && ! empty( $booking->group_id ) ) ) {
 						unset( $actions[ 'refund' ] );
 					}
 				}
