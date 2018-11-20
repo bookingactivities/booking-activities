@@ -3,19 +3,6 @@
 if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 /**
- * Add WooCommerce backend translation to be use in JS
- * @since 1.5.0
- * @param array $translation_array
- * @return array
- */
-function bookacti_wc_backend_translation_array( $translation_array ) {
-	$translation_array[ 'nonce_dismiss_guest_checkout_notice' ]	= wp_create_nonce( 'bookacti_dismiss_guest_checkout_notice' );
-	return $translation_array;
-}
-add_filter( 'bookacti_translation_array', 'bookacti_wc_backend_translation_array', 10, 1 );
-
-
-/**
  * Add settings tab
  * @param array $tabs
  * @return array
@@ -213,75 +200,3 @@ function bookacti_wc_default_messages( $messages ) {
 	return array_merge( $messages, $wc_messages );
 }
 add_filter( 'bookacti_default_messages', 'bookacti_wc_default_messages', 10, 1 );
-
-
-/**
- * Display an error admin notice if guest checkout is allowed
- * @since 1.5.0
- * @version 1.5.7
- */
-function bookacti_wc_guest_checkout_not_allowed_notice() {
-	$is_dismissed = get_option( 'bookacti-guest-checkout-notice-dismissed' );
-	if( ! $is_dismissed ) {
-		$guest_checkout_allowed = get_option( 'woocommerce_enable_guest_checkout' );
-		if( ! empty( $guest_checkout_allowed ) && $guest_checkout_allowed === 'yes' ) {
-		?>
-			<div class='notice notice-error bookacti-guest-checkout-notice is-dismissible' >
-				<p>
-				<?php 
-					$guest_checkout_tab = version_compare( WC_VERSION, '3.4.0', '>=' ) ? 'account' : 'checkout';
-					$wc_settings_url = esc_url( get_admin_url() . 'admin.php?page=wc-settings&tab=' . $guest_checkout_tab );
-					echo __( 'Booking Activities doesn\'t support WooCommerce\'s <strong>guest checkout option</strong>. Please deactivate this option.', BOOKACTI_PLUGIN_NAME )
-						. ' ' . '<a href="' . $wc_settings_url . '" >' . __( 'Go to WooCommerce settings.', BOOKACTI_PLUGIN_NAME ) . '</a>'; 
-				?>
-				</p>
-			</div>
-		<?php
-		}
-	}
-}
-add_action( 'all_admin_notices', 'bookacti_wc_guest_checkout_not_allowed_notice' );
-
-
-/**
- * Remove WC Guest Checkout option notice
- * @since 1.5.0
- */
-function bookacti_dismiss_guest_checkout_notice() {
-	
-	// Check nonce, no need to check capabilities
-	$is_nonce_valid = check_ajax_referer( 'bookacti_dismiss_guest_checkout_notice', 'nonce', false );
-	$is_allowed		= current_user_can( 'bookacti_manage_booking_activities' );
-
-	if( $is_nonce_valid && $is_allowed ) {
-	
-		$updated = update_option( 'bookacti-guest-checkout-notice-dismissed', 1 );
-		if( $updated ) {
-			wp_send_json( array( 'status' => 'success' ) );
-		} else {
-			wp_send_json( array( 'status' => 'failed', 'error' => 'not_updated' ) );
-		}
-	} else {
-		wp_send_json( array( 'status' => 'failed', 'error' => 'not_allowed' ) );
-	}
-}
-add_action( 'wp_ajax_bookactiDismissGuestCheckoutNotice', 'bookacti_dismiss_guest_checkout_notice' );
-
-
-/**
- * Restore WC Guest Checkout option notice if the guest checkout box is checked again
- * @since 1.5.0
- * @version 1.5.7
- * @global string $current_tab
- */
-function bookacti_restore_guest_checkout_notice() {
-	global $current_tab;
-	$guest_checkout_tab = version_compare( WC_VERSION, '3.4.0', '>=' ) ? 'account' : 'checkout';
-	if( $current_tab === $guest_checkout_tab ) {
-		$guest_checkout_allowed = get_option( 'woocommerce_enable_guest_checkout' );
-		if( ! empty( $guest_checkout_allowed ) && $guest_checkout_allowed === 'yes' ) {
-			delete_option( 'bookacti-guest-checkout-notice-dismissed' );
-		}
-	}
-}
-add_action( 'woocommerce_settings_saved', 'bookacti_restore_guest_checkout_notice' );

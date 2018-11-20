@@ -1023,6 +1023,67 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 
 // ORDERS
+	/**
+	 * Save the order user data as booking meta
+	 * @since 1.6.0
+	 * @param WC_Order $order
+	 */
+	function bookacti_save_order_data_as_booking_meta( $order ) {
+		// Get user data to save
+		$user_data = apply_filters( 'bookacti_wc_no_account_user_data_to_save_as_booking_meta', array(
+			'email'		=> $order->get_billing_email( 'edit' ),
+			'first_name'=> $order->get_billing_first_name( 'edit' ),
+			'last_name'	=> $order->get_billing_last_name( 'edit' ),
+			'phone'		=> $order->get_billing_phone( 'edit' )
+		), $order );
+
+		// Do not save empty values
+		$user_data = array_filter( $user_data, function( $value ) { return $value !== '' && $value !== array(); } );
+		if( ! $user_data ) { return; }
+
+		// Prefix array keys with 'user_'
+		$user_data = array_combine( array_map( function( $key ) { return 'user_' . $key; }, array_keys( $user_data ) ), $user_data );
+
+		$items = $order->get_items();
+		if( $items ) {
+			foreach( $items as $key => $item ) {
+				// Get item booking id
+				$booking_id = 0;
+				$object_type = 'booking';
+				if( version_compare( WC_VERSION, '3.0.0', '>=' ) ) {
+					if( ! empty( $item[ 'bookacti_booking_id' ] )  ) {
+						$booking_id = $item[ 'bookacti_booking_id' ];
+					} else if( ! empty( $item[ 'bookacti_booking_group_id' ] ) ) {
+						$booking_id = $item[ 'bookacti_booking_group_id' ];
+						$object_type = 'booking_group';
+					}
+				} else {
+					if( ! empty( $item[ 'item_meta' ][ 'bookacti_booking_id' ] ) ) {
+						$booking_id = $item[ 'item_meta' ][ 'bookacti_booking_id' ][ 0 ];
+					} else if( ! empty( $item[ 'item_meta' ][ 'bookacti_booking_group_id' ] ) ) {
+						$booking_id = $item[ 'item_meta' ][ 'bookacti_booking_group_id' ][ 0 ];
+						$object_type = 'booking_group';
+					}
+				}
+				if( ! $booking_id ) { continue; }
+
+				// Change the user id to the user email
+				$user_id = isset( $user_data[ 'user_email' ] ) && is_email( $user_data[ 'user_email' ] ) ? $user_data[ 'user_email' ] : '';
+				if( $user_id ) {
+					if( $object_type === 'booking' ) {
+						bookacti_update_booking_user_id( $booking_id, $user_id );
+						
+					} else if( $object_type === 'booking_group' ) {
+						bookacti_update_booking_group( $booking_id, null, null, $user_id );
+						bookacti_update_booking_group_bookings_user_id( $booking_id, $user_id );
+					}
+				}
+				
+				// Add user data to the booking meta
+				bookacti_update_metadata( $object_type, $booking_id, $user_data );
+			}
+		}
+	}
 	
 	/**
 	 * Turn all bookings of an order to the desired status. 

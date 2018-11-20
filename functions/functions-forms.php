@@ -395,6 +395,15 @@ function bookacti_get_default_form_fields_data( $field_name = '' ) {
 		$register_defaults[ 'tip' ][ $register_field_name ]			= ! empty( $register_field[ 'tip' ] )			? $register_field[ 'tip' ] : '';
 	}
 	
+	// Add login fields default
+	$login_fields = bookacti_get_login_fields_default_data();
+	$login_defaults	= array( 'label' => array(), 'placeholder' => array(), 'tip' => array() );
+	foreach( $login_fields as $login_field_name => $login_field ) {
+		$login_defaults[ 'label' ][ $login_field_name ]			= ! empty( $login_field[ 'label' ] )		? $login_field[ 'label' ] : '';
+		$login_defaults[ 'placeholder' ][ $login_field_name ]	= ! empty( $login_field[ 'placeholder' ] )	? $login_field[ 'placeholder' ] : '';
+		$login_defaults[ 'tip' ][ $login_field_name ]			= ! empty( $login_field[ 'tip' ] )			? $login_field[ 'tip' ] : '';
+	}
+	
 	// Add login type fields default
 	$login_types			= bookacti_get_login_type_field_default_options();
 	$login_type_defaults	= array( 'label' => array(), 'placeholder' => array(), 'tip' => array() );
@@ -418,13 +427,9 @@ function bookacti_get_default_form_fields_data( $field_name = '' ) {
 			'type'			=> 'login',
 			'title'			=> esc_html__( 'User Data (Login / Registration)', BOOKACTI_PLUGIN_NAME ),
 			'default'		=> 1,
-			'label'			=> array_merge( array( 
-								'email'					=> esc_html__( 'Email', BOOKACTI_PLUGIN_NAME ), 
-								'password'				=> esc_html__( 'Password', BOOKACTI_PLUGIN_NAME ), 
-								'forgotten_password'	=> esc_html__( 'Forgot your password?', BOOKACTI_PLUGIN_NAME )
-							), $login_type_defaults[ 'label' ], $register_defaults[ 'label' ] ),
-			'placeholder'	=> array_merge( array( 'email' => '', 'password' => '', 'forgotten_password' => '' ), $login_type_defaults[ 'placeholder' ], $register_defaults[ 'placeholder' ] ),
-			'tip'			=> array_merge( array( 'email' => '', 'password' => '', 'forgotten_password' => '' ), $login_type_defaults[ 'tip' ], $register_defaults[ 'tip' ] )
+			'label'			=> array_merge( $login_defaults[ 'label' ], $login_type_defaults[ 'label' ], $register_defaults[ 'label' ] ),
+			'placeholder'	=> array_merge( $login_defaults[ 'placeholder' ], $login_type_defaults[ 'placeholder' ], $register_defaults[ 'placeholder' ] ),
+			'tip'			=> array_merge( $login_defaults[ 'tip' ], $login_type_defaults[ 'tip' ], $register_defaults[ 'tip' ] )
 		),
 		'free_text' => array( 
 			'name'			=> 'free_text',
@@ -500,6 +505,14 @@ function bookacti_get_default_form_fields_meta( $field_name = '' ) {
 		$register_defaults[ 'required' ][ $register_field_name ]	= ! empty( $register_field[ 'required' ] )	? $register_field[ 'required' ] : 0;
 	}
 	
+	// Add login fields default
+	$login_fields = bookacti_get_login_fields_default_data();
+	$login_defaults	= array( 'label' => array(), 'placeholder' => array(), 'tip' => array() );
+	foreach( $login_fields as $login_field_name => $login_field ) {
+		$login_defaults[ 'displayed' ][ $login_field_name ]	= ! empty( $login_field[ 'displayed' ] )? $login_field[ 'displayed' ] : '';
+		$login_defaults[ 'required' ][ $login_field_name ]	= ! empty( $login_field[ 'required' ] )	? $login_field[ 'required' ] : '';
+	}
+	
 	// Add login type fields default
 	$login_types			= bookacti_get_login_type_field_default_options();
 	$login_type_defaults	= array( 'displayed' => array(), 'required' => array() );
@@ -516,8 +529,8 @@ function bookacti_get_default_form_fields_meta( $field_name = '' ) {
 			'generate_password'			=> 0,
 			'send_new_account_email'	=> 1,
 			'new_user_role'				=> 'subscriber',
-			'displayed_fields'			=> array_merge( array( 'email' => 1, 'password' => 1, 'forgotten_password' => 1 ), $login_type_defaults[ 'displayed' ], $register_defaults[ 'displayed' ] ),
-			'required_fields'			=> array_merge( array( 'email' => 1, 'password' => 1, 'forgotten_password' => 0 ), $login_type_defaults[ 'required' ], $register_defaults[ 'required' ] )
+			'displayed_fields'			=> array_merge( $login_defaults[ 'displayed' ], $login_type_defaults[ 'displayed' ], $register_defaults[ 'displayed' ] ),
+			'required_fields'			=> array_merge( $login_defaults[ 'required' ], $login_type_defaults[ 'required' ], $register_defaults[ 'required' ] )
 		),
 		'free_text'	=> array(),
 		'quantity'	=> array(),
@@ -603,6 +616,7 @@ function bookacti_format_form_field_data( $raw_field_data ) {
 		// Format common values (specific cases)
 		// Format label, placeholder and tip
 		$register_defaults		= bookacti_get_register_fields_default_data();
+		$login_defaults			= bookacti_get_login_fields_default_data();
 		$login_type_defaults	= bookacti_get_login_type_field_default_options();
 		$fields = array( 'label', 'placeholder', 'tip', 'displayed_fields', 'required_fields' );
 		foreach( $fields as $field ) {
@@ -614,6 +628,12 @@ function bookacti_format_form_field_data( $raw_field_data ) {
 					$register_fields[ $register_field_name ] = isset( $raw_field_data[ $field ][ $register_field_name ] ) ? $raw_field_data[ $field ][ $register_field_name ] : ( isset( $register_default[ $field ] ) ? $register_default[ $field ] : $default_data[ $field ][ $register_field_name ] );
 				}
 				
+				// Format login fields
+				$login_fields = array();
+				foreach( $login_defaults as $login_field_name => $login_field_default ) {
+					$login_fields[ $login_field_name ] = isset( $raw_field_data[ $field ][ $login_field_name ] ) ? $raw_field_data[ $field ][ $login_field_name ] : ( isset( $login_field_default[ $field ] ) ? $login_field_default[ $field ] : $default_data[ $field ][ $login_field_name ] );
+				}
+				
 				// Format login type
 				$login_types = array();
 				foreach( $login_type_defaults as $login_type_name => $login_type_default ) {
@@ -621,11 +641,7 @@ function bookacti_format_form_field_data( $raw_field_data ) {
 				}
 				
 				// Merge register fields
-				$field_data[ $field ] = array_merge( array( 
-					'email'				=> isset( $raw_field_data[ $field ][ 'email' ] ) ? $raw_field_data[ $field ][ 'email' ] : $default_data[ $field ][ 'email' ], 
-					'password'			=> isset( $raw_field_data[ $field ][ 'password' ] ) ? $raw_field_data[ $field ][ 'password' ] : $default_data[ $field ][ 'password' ],
-					'forgotten_password'=> isset( $raw_field_data[ $field ][ 'forgotten_password' ] ) ? $raw_field_data[ $field ][ 'forgotten_password' ] : $default_data[ $field ][ 'forgotten_password' ],
-				), $login_types, $register_fields );
+				$field_data[ $field ] = array_merge( $login_fields, $login_types, $register_fields );
 
 			} else {
 				$field_data[ $field ] = $default_data[ $field ];
@@ -731,6 +747,7 @@ function bookacti_sanitize_form_field_data( $raw_field_data ) {
 		// Sanitize common values (specific cases)
 		// Sanitize label, placeholder and tip
 		$register_defaults		= bookacti_get_register_fields_default_data();
+		$login_defaults			= bookacti_get_login_fields_default_data();
 		$login_type_defaults	= bookacti_get_login_type_field_default_options();
 		$fields = array( 'label', 'placeholder', 'tip', 'displayed_fields', 'required_fields' );
 		foreach( $fields as $field ) {
@@ -740,7 +757,13 @@ function bookacti_sanitize_form_field_data( $raw_field_data ) {
 				// Sanitize register fields
 				$register_fields = array();
 				foreach( $register_defaults as $register_field_name => $register_default ) {
-					$register_fields[ $register_field_name ] = isset( $raw_field_data[ $field ][ $register_field_name ] ) ? stripslashes( $raw_field_data[ $field ][ $register_field_name ] ) : ( isset( $register_fields[ $field ] ) ? $register_fields[ $field ] : $default_data[ $field ][ $register_field_name ] );
+					$register_fields[ $register_field_name ] = isset( $raw_field_data[ $field ][ $register_field_name ] ) ? stripslashes( $raw_field_data[ $field ][ $register_field_name ] ) : ( isset( $register_default[ $field ] ) ? $register_default[ $field ] : $default_data[ $field ][ $register_field_name ] );
+				}
+				
+				// Sanitize login fields
+				$login_fields = array();
+				foreach( $login_defaults as $login_field_name => $login_field_default ) {
+					$login_fields[ $login_field_name ] = isset( $raw_field_data[ $field ][ $login_field_name ] ) ? stripslashes( $raw_field_data[ $field ][ $login_field_name ] ) : ( isset( $login_field_default[ $field ] ) ? $login_field_default[ $field ] : $default_data[ $field ][ $login_field_name ] );
 				}
 				
 				// Sanitize login type
@@ -750,11 +773,7 @@ function bookacti_sanitize_form_field_data( $raw_field_data ) {
 				}
 				
 				// Merge register fields
-				$field_data[ $field ] = array_merge( array( 
-					'email'				=> isset( $raw_field_data[ $field ][ 'email' ] ) ? stripslashes( $raw_field_data[ $field ][ 'email' ] ) : $default_data[ $field ][ 'email' ], 
-					'password'			=> isset( $raw_field_data[ $field ][ 'password' ] ) ? stripslashes( $raw_field_data[ $field ][ 'password' ] ) : $default_data[ $field ][ 'password' ],
-					'forgotten_password'=> isset( $raw_field_data[ $field ][ 'forgotten_password' ] ) ? stripslashes( $raw_field_data[ $field ][ 'forgotten_password' ] ) : $default_data[ $field ][ 'forgotten_password' ],
-				), $login_types, $register_fields );
+				$field_data[ $field ] = array_merge( $login_fields, $login_types, $register_fields );
 			} else {
 				$field_data[ $field ] = $default_data[ $field ];
 			}
@@ -1199,6 +1218,49 @@ function bookacti_sort_form_fields_array( $form_id, $fields, $remove_unordered_f
 
 
 // LOGIN / REGISTRATION
+
+/**
+ * Get login fields default data
+ * @since 1.6.0
+ * @return array
+ */
+function bookacti_get_login_fields_default_data() {
+	$defaults = array(
+		'email' => array( 
+			'name'			=> 'email', 
+			'type'			=> 'text', 
+			'label'			=> esc_html__( 'Email', BOOKACTI_PLUGIN_NAME ), 
+			'placeholder'	=> '', 
+			'tip'			=> '', 
+			'value'			=> '', 
+			'required'		=> 1, 
+			'displayed'		=> 1
+		),
+		'password' => array( 
+			'name'			=> 'password', 
+			'type'			=> 'password', 
+			'label'			=> esc_html__( 'Password', BOOKACTI_PLUGIN_NAME ), 
+			'placeholder'	=> '', 
+			'tip'			=> '', 
+			'value'			=> '', 
+			'required'		=> 1, 
+			'displayed'		=> 1
+		),
+		'forgotten_password' => array( 
+			'name'			=> 'forgotten_password', 
+			'type'			=> 'link', 
+			'label'			=> esc_html__( 'Forgot your password?', BOOKACTI_PLUGIN_NAME ), 
+			'placeholder'	=> '', 
+			'tip'			=> '', 
+			'value'			=> '', 
+			'required'		=> 0, 
+			'displayed'		=> 1
+		)
+	);
+	
+	return apply_filters( 'bookacti_login_fields_default_data', $defaults );
+}
+
 
 /**
  * Get user meta fields default data

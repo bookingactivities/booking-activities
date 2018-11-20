@@ -38,6 +38,7 @@ Try this reservation tool live on the [demo website](http://demo.booking-activit
 * ★ **Drag and drop** events directly on the calendar
 * ★ **Group your events** to easily sell bundles, subscriptions, seminars, or events spreading on several days
 * Create **repeated events** (with desired frequency and exceptions dates)
+* **Export** your events and your bookings as iCal feeds and **sync** them on calendar apps (e.g.: Google Calendar)
 * Unlimited calendars, activities, events and bookings.
 
 **Booking forms**
@@ -46,7 +47,7 @@ Try this reservation tool live on the [demo website](http://demo.booking-activit
 * **Shortcodes** to display reservation forms or simple calendars
 * ★ Display events from multiple schedules and activities at once
 * ★ **One-click booking**: just pick the desired event on the calendar and click on "Book"! 
-* ★ **Seamless login / registration**: embedded in the form and processed with the reservation
+* ★ **Seamless login / registration**: embedded in the form and processed with the reservation. You can also **book without account**.
 * 100% responsive: looks great on mobiles, tablets and computers.
 * ★ *Set any custom fields and any booking metadata thanks to [Advanced Forms](https://booking-activities.fr/en/downloads/advanced-forms/?utm_source=wp-plugin-page&utm_medium=wordpress&utm_campaign=advanced-forms&utm_content=readme) add-on*
 
@@ -65,6 +66,7 @@ Try this reservation tool live on the [demo website](http://demo.booking-activit
 * Booking actions: validate, cancel, reschedule, ★ refund...
 * ★ Display your customer's bookings calendar and their booking list with a shortcode
 * ★ Your customers can **cancel** or **reschedule** their bookings and **ask a refund** by themselves
+* **Export** your bookings as CSV feeds and **sync** them on spreadsheet apps (e.g.: Google Sheet)
 * Permission management system: your managers manage only their own calendars and reservations
 
 **Availability options**
@@ -192,8 +194,6 @@ Or read the full [features description](https://booking-activities.fr/en/documen
 5. Past this shortcode in any post or page you like
 6. Go on this post / page frontend, the booking form appears! 
 
-*The user must be logged in to book an event.*
-
 /!\ Reservation forms displayed via shortcode are not bound to WooCommerce at all. If you want to bind a WC product to a calendar, check "Use it with WooCommerce" in this FAQ.
 
 
@@ -302,7 +302,7 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 3. Create daily, weekly or monthly repeated events. You can add exception dates to the repetition.
 4. Grouping your events is simple: just select multiple events and click on 'Add a group'. Or select an existing group and start editing it right away.
 5. Create and customize your booking form. You can combine events and settings of multiple schedules. You can make each form unique.
-6. Use a shortcode to display a booking form (or a calendar alone). Your customer can log in or register seamlessly as they book.
+6. Use a shortcode to display a booking form (or a calendar alone). Your customer can log in or register as they book, they can also book without account.
 7. When a customer clicks on a grouped event, the whole group is selected. If the event is part of several groups, the customer has to choose one from a dialog.
 8. Easily bind a reservation form to a WooCommerce product. You can set a different event calendar to each variation.
 9. A reservation form appears automatically on desired WooCommerce product pages.
@@ -318,6 +318,8 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 == Changelog ==
 
 = 1.6.0 =
+* Feature - Book without account
+* Feature - WooCommerce guest checkout supported
 * Feature - Export your events to ical (ics) files
 * Feature - Synchronize your events with third-party apps (e.g.: Google Agenda) (one way: export only)
 * Feature - Add {user_ical_url} notification tag to let your customers export and synchronize their bookings on their calendar app

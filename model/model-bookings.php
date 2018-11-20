@@ -1310,6 +1310,27 @@ function bookacti_cancel_booking( $booking_id ) {
 
 
 /**
+ * Update booking user id
+ * @since 1.6.0
+ * @global wpdb $wpdb
+ * @param int $booking_id
+ * @param int|string $user_id
+ * @return int|false
+ */
+function bookacti_update_booking_user_id( $booking_id, $user_id ) {
+	global $wpdb;
+	
+	$query		= 'UPDATE ' . BOOKACTI_TABLE_BOOKINGS . ' '
+				. ' SET user_id = %s '
+				. ' WHERE id = %d';
+	$prep		= $wpdb->prepare( $query, $user_id, $booking_id );
+	$updated	= $wpdb->query( $prep );
+	
+	return $updated;
+}
+
+
+/**
  * Update booking state
  * 
  * @global wpdb $wpdb
@@ -1657,6 +1678,37 @@ function bookacti_delete_booking( $booking_id ) {
 		if( ! empty( $where_state ) ) {
 			$query	.= ' AND payment_status = %s ';
 			$variables_array[] = $where_state;
+		}
+
+		$prep		= $wpdb->prepare( $query, $variables_array );
+		$updated	= $wpdb->query( $prep );
+		
+		return $updated;
+	}
+	
+	
+	/**
+	 * Update booking group bookings user id
+	 * @since 1.6.0
+	 * @global wpdb $wpdb
+	 * @param int $booking_group_id
+	 * @param int|string $user_id
+	 * @param string|int|false $where_user_id
+	 * @return int|false
+	 */
+	function bookacti_update_booking_group_bookings_user_id( $booking_group_id, $user_id, $where_user_id = false ) {
+		global $wpdb;
+
+		// Change bundled bookings payment status
+		$query		= 'UPDATE ' . BOOKACTI_TABLE_BOOKINGS 
+					. ' SET user_id = %s '
+					. ' WHERE group_id = %d';
+
+		$variables_array = array( $user_id, $booking_group_id );
+		
+		if( ! empty( $where_user_id ) ) {
+			$query	.= ' AND user_id = %s ';
+			$variables_array[] = $where_user_id;
 		}
 
 		$prep		= $wpdb->prepare( $query, $variables_array );

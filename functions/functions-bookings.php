@@ -324,7 +324,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			
 			if( ! current_user_can( 'bookacti_edit_bookings' ) ) {
 				// Get booking
-				if( is_int( $booking ) ) { $booking = bookacti_get_booking_by_id( $booking ); }
+				if( ! is_object( $booking ) ) { $booking = bookacti_get_booking_by_id( $booking ); }
 				
 				if( ! $booking ) { return apply_filters( 'bookacti_booking_can_be_cancelled', false, $booking ); }
 				
@@ -350,7 +350,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			$is_allowed	= true;
 			
 			// Get booking
-			if( is_int( $booking ) ) { $booking = bookacti_get_booking_by_id( $booking ); }
+			if( ! is_object( $booking ) ) { $booking = bookacti_get_booking_by_id( $booking ); }
 			
 			if( ! current_user_can( 'bookacti_edit_bookings' ) ) {
 				
@@ -386,7 +386,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		 */
 		function bookacti_booking_can_be_rescheduled_to( $booking, $event_id, $event_start, $event_end ) {
 			// Get booking
-			if( is_int( $booking ) ) { $booking = bookacti_get_booking_by_id( $booking ); }
+			if( ! is_object( $booking ) ) { $booking = bookacti_get_booking_by_id( $booking ); }
 			
 			$return_array = array( 'status' => 'success' );
 			$is_allowed = bookacti_booking_can_be_rescheduled( $booking );
@@ -419,7 +419,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		 */
 		function bookacti_booking_can_be_refunded( $booking, $refund_action = false ) {
 			// Get booking
-			if( is_int( $booking ) ) { $booking = bookacti_get_booking_by_id( $booking ); }
+			if( ! is_object( $booking ) ) { $booking = bookacti_get_booking_by_id( $booking ); }
 			
 			if( ! $booking ) { return apply_filters( 'bookacti_booking_can_be_refunded', false, $booking ); }
 			
@@ -511,7 +511,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			$true = true;
 			
 			// Get booking group
-			if( is_int( $booking_group ) ) { $booking_group = bookacti_get_booking_group_by_id( $booking_group ); }
+			if( ! is_object( $booking_group ) ) { $booking_group = bookacti_get_booking_group_by_id( $booking_group ); }
 			
 			if( ! current_user_can( 'bookacti_edit_bookings' ) ) {
 				$filters = bookacti_format_booking_filters( array( 'booking_group_id' => $booking_group->id ) );
@@ -538,7 +538,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		 */
 		function bookacti_booking_group_can_be_refunded( $booking_group, $refund_action = false ) {
 			// Get booking group
-			if( is_int( $booking_group ) ) { $booking_group = bookacti_get_booking_group_by_id( $booking_group ); }
+			if( ! is_object( $booking_group ) ) { $booking_group = bookacti_get_booking_group_by_id( $booking_group ); }
 			
 			$true			= true;
 			$refund_actions	= bookacti_get_refund_actions_by_booking_group_id( $booking_group );
@@ -656,7 +656,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		 */
 		function bookacti_get_booking_actions_by_booking( $booking, $admin_or_front = 'both' ) {
 			// Get booking
-			if( is_int( $booking ) ) { $booking = bookacti_get_booking_by_id( $booking ); }
+			if( ! is_object( $booking ) ) { $booking = bookacti_get_booking_by_id( $booking ); }
 			
 			$actions = bookacti_get_booking_actions( $admin_or_front );
 			if( isset( $actions[ 'change-state' ] ) && ! current_user_can( 'bookacti_edit_bookings' ) ) {
@@ -690,7 +690,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		 */
 		function bookacti_get_booking_actions_html( $booking, $admin_or_front = 'both', $actions = array(), $return_array = false, $with_container = false ) {
 			// Get booking
-			if( is_int( $booking ) ) { $booking = bookacti_get_booking_by_id( $booking ); }
+			if( ! is_object( $booking ) ) { $booking = bookacti_get_booking_by_id( $booking ); }
 			
 			// Get booking actions
 			if( ! $actions ) { $actions = bookacti_get_booking_actions_by_booking( $booking, $admin_or_front ); }
@@ -792,7 +792,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		 */
 		function bookacti_get_booking_group_actions_by_booking_group( $booking_group, $admin_or_front = 'both' ) {
 			// Get booking group
-			if( is_int( $booking_group ) ) { $booking_group = bookacti_get_booking_group_by_id( $booking_group ); }
+			if( ! is_object( $booking_group ) ) { $booking_group = bookacti_get_booking_group_by_id( $booking_group ); }
 			
 			$actions = bookacti_get_booking_group_actions( $admin_or_front );
 			if( ( isset( $actions[ 'change-state' ] ) || isset( $actions[ 'edit-single' ] ) ) && ! current_user_can( 'bookacti_edit_bookings' ) ) {
@@ -824,7 +824,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		 */
 		function bookacti_get_booking_group_actions_html( $booking_group, $admin_or_front = 'both', $actions = array(), $return_array = false, $with_container = false ) {
 			// Get booking group
-			if( is_int( $booking_group ) ) { $booking_group = bookacti_get_booking_group_by_id( $booking_group ); }
+			if( ! is_object( $booking_group ) ) { $booking_group = bookacti_get_booking_group_by_id( $booking_group ); }
 			
 			if( ! $actions ) {
 				$actions = bookacti_get_booking_group_actions_by_booking_group( $booking_group, $admin_or_front );

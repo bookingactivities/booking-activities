@@ -1506,7 +1506,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	 * Change bookings state after user validate checkout
 	 * 
 	 * @since 1.2.2 (was bookacti_delay_expiration_date_for_payment before)
-	 * @version 1.5.0
+	 * @version 1.6.0
 	 * @param int $order_id
 	 * @param array $order_details
 	 * @param WC_Order $order
@@ -1528,6 +1528,12 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		}
 		
 		bookacti_turn_order_bookings_to( $order, $state, $payment_status, $alert_admin, array( 'is_new_order' => true ) );
+		
+		// If the user has no account, bind the user data to the bookings
+		$user_id = $order->get_user_id( 'edit' );
+		if( $user_id && is_int( $user_id ) ) { return; }
+		
+		bookacti_save_order_data_as_booking_meta( $order );
 	}
 	add_action( 'woocommerce_checkout_order_processed', 'bookacti_change_booking_state_after_checkout', 10, 3 );
 	
