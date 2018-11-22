@@ -1068,11 +1068,11 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 				if( ! $booking_id ) { continue; }
 
 				// Change the user id to the user email
-				$user_id = isset( $user_data[ 'user_email' ] ) && is_email( $user_data[ 'user_email' ] ) ? $user_data[ 'user_email' ] : '';
+				$user_id = ! empty( $user_data[ 'user_email' ] ) ? $user_data[ 'user_email' ] : esc_attr( apply_filters( 'bookacti_unknown_user_id', 'unknown_user' ) );
 				if( $user_id ) {
 					if( $object_type === 'booking' ) {
 						bookacti_update_booking_user_id( $booking_id, $user_id );
-						
+					
 					} else if( $object_type === 'booking_group' ) {
 						bookacti_update_booking_group( $booking_id, null, null, $user_id );
 						bookacti_update_booking_group_bookings_user_id( $booking_id, $user_id );

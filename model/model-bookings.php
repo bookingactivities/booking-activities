@@ -300,7 +300,7 @@ function bookacti_get_bookings( $filters ) {
 	
 	if( $filters[ 'in__booking_id' ] ) {
 		$query .= ' AND ';
-		if( $filters[ 'group_by' ] === 'booking_group' ) { $query .= ' ( B.group_id IS NOT NULL OR '; }
+		if( $filters[ 'group_by' ] === 'booking_group' || $filters[ 'group_by' ] === 'none' ) { $query .= ' ( B.group_id IS NOT NULL OR '; }
 		$query .= ' B.id IN ( %d ';
 		$array_count = count( $filters[ 'in__booking_id' ] );
 		if( $array_count >= 2 ) {
@@ -309,7 +309,7 @@ function bookacti_get_bookings( $filters ) {
 			}
 		}
 		$query .= ') ';
-		if( $filters[ 'group_by' ] === 'booking_group' ) { $query .= ') '; }
+		if( $filters[ 'group_by' ] === 'booking_group' || $filters[ 'group_by' ] === 'none' ) { $query .= ') '; }
 		$variables = array_merge( $variables, $filters[ 'in__booking_id' ] );
 	}
 	

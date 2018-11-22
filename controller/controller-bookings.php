@@ -741,7 +741,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 				$booking_filters[ 'group_by' ] = $_POST[ 'export_groups' ] === 'groups' ? 'booking_group' : 'none';
 			}
 			if( isset( $_POST[ 'per_page' ] ) ) {
-				$booking_filters[ 'per_page' ] = is_numeric( $_POST[ 'per_page' ] ) ? intval( $_POST[ 'per_page' ] ) : 20;
+				$booking_filters[ 'per_page' ] = is_numeric( $_POST[ 'per_page' ] ) ? intval( $_POST[ 'per_page' ] ) : ( empty( $_POST[ 'per_page' ] ) ? '' : 20 );
 			}
 			
 			// Keep only the required data to keep the URL as short as possible

@@ -134,11 +134,12 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		<div>
 			<label for='bookacti-select-export-limit' ><?php esc_html_e( 'Limit', BOOKACTI_PLUGIN_NAME ); ?></label>
 			<?php
+				$per_page = intval( get_user_meta( get_current_user_id(), 'bookacti_bookings_per_page', true ) );
 				$args = array(
 					'type'	=> 'number',
 					'name'	=> 'per_page',
 					'id'	=> 'bookacti-select-export-limit',
-					'value'	=> $bookings_list_table->get_rows_number_per_page(),
+					'value'	=> $per_page ? $per_page : $bookings_list_table->get_rows_number_per_page(),
 					'tip'	=> esc_html__( 'Maximum number of bookings to export. You may need to increase your PHP max execution time if this number is too high.', BOOKACTI_PLUGIN_NAME )
 				);
 				bookacti_display_field( $args );
@@ -152,7 +153,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			</div>
 			<p>
 				<small>
-					<?php esc_html_e( 'Visit this address to get a CSV export of your bookings (according to filters and settings above), or use it as a dynamic URL feed to synch with other apps.', BOOKACTI_PLUGIN_NAME ); ?>
+					<?php esc_html_e( 'Visit this address to get a CSV export of your bookings (according to filters and settings above), or use it as a dynamic URL feed to synchronize with other apps.', BOOKACTI_PLUGIN_NAME ); ?>
 				</small>
 			</p>
 			<p class='bookacti-warning'>

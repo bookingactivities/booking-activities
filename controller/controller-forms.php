@@ -283,7 +283,7 @@ function bookacti_display_form_field_login_when_logged_in( $html, $field, $insta
 	<?php
 	return ob_get_clean();
 }
-//add_filter( 'bookacti_html_form_field_login', 'bookacti_display_form_field_login_when_logged_in', 10, 4 );
+add_filter( 'bookacti_html_form_field_login', 'bookacti_display_form_field_login_when_logged_in', 10, 4 );
 
 
 /**
@@ -585,8 +585,6 @@ function bookacti_controller_validate_booking_form() {
 			bookacti_send_json( $return_array, 'submit_booking_form' );
 		}
 		
-		$user = apply_filters( 'bookacti_user_according_to_login_type', null, $login_values, $login_data, $return_array );
-		
 		// Register
 		if( $login_values[ 'login_type' ] === 'new_account' ) {
 			
@@ -614,7 +612,7 @@ function bookacti_controller_validate_booking_form() {
 		} else if( $login_values[ 'login_type' ] === 'no_account' ) {
 			
 			$user = new stdClass();
-			$user->ID = $login_values[ 'email' ];
+			$user->ID = ! empty( $login_values[ 'email' ] ) ? $login_values[ 'email' ] : esc_attr( apply_filters( 'bookacti_unknown_user_id', 'unknown_user' ) );
 			
 			// Check that required register fields are filled
 			$register_fields_errors = array();
@@ -630,11 +628,12 @@ function bookacti_controller_validate_booking_form() {
 			if( ! empty( $register_fields_errors ) ) {
 				$return_array[ 'error' ] = 'invalid_register_field';
 				$return_array[ 'message' ] = implode( '</li><li>', $register_fields_errors );
-				return $return_array;
+				bookacti_send_json( $return_array, 'submit_booking_form' );
 			}
 		}
 		
-		$user_id = $user->ID;
+		$user		= apply_filters( 'bookacti_user_according_to_login_type', $user, $login_values, $login_data, $return_array );
+		$user_id	= isset( $user->ID ) ? $user->ID : '';
 		$return_array[ 'user_id' ] = $user_id;
 		
 		// Log the user in programmatically
@@ -662,17 +661,21 @@ function bookacti_controller_validate_booking_form() {
 		'event_end'			=> bookacti_sanitize_datetime( $_POST[ 'bookacti_event_end' ] ),
 		'quantity'			=> intval( $_POST[ 'quantity' ] ),
 		'default_state'		=> bookacti_get_setting_value( 'bookacti_general_settings', 'default_booking_state' ), 
-		'payment_status'	=> bookacti_get_setting_value( 'bookacti_general_settings', 'default_payment_status' )
-	) );
+		'payment_status'	=> bookacti_get_setting_value( 'bookacti_general_settings', 'default_payment_status' ),
+		'form_id'			=> $form_id
+	), $form_id, $return_array );
 
 	// Check if the booking is correct
-	$response = bookacti_validate_booking_form( $booking_form_values[ 'group_id' ], $booking_form_values[ 'event_id' ], $booking_form_values[ 'event_start' ], $booking_form_values[ 'event_end' ], $booking_form_values[ 'quantity' ], $form_id );
+	$response = bookacti_validate_booking_form( $booking_form_values[ 'group_id' ], $booking_form_values[ 'event_id' ], $booking_form_values[ 'event_start' ], $booking_form_values[ 'event_end' ], $booking_form_values[ 'quantity' ], $booking_form_values[ 'form_id' ] );
 	if( $response[ 'status' ] !== 'success' ) {
 		$return_array[ 'status' ]	= $response[ 'status' ];
 		$return_array[ 'error' ]	= $response[ 'error' ];
 		$return_array[ 'message' ]	= $response[ 'message' ];
 		bookacti_send_json( $return_array, 'submit_booking_form' );
 	}
+	
+	// Let third party plugins change form values before booking
+	$booking_form_values = apply_filters( 'bookacti_booking_form_values_before_booking', $booking_form_values, $form_id, $return_array );
 	
 	// Let third party plugins do their stuff before booking
 	do_action( 'bookacti_booking_form_before_booking', $form_id, $booking_form_values, $return_array );
@@ -688,7 +691,7 @@ function bookacti_controller_validate_booking_form() {
 												$booking_form_values[ 'payment_status' ],
 												null,
 												null,
-												$form_id );
+												$booking_form_values[ 'form_id' ] );
 		if( ! empty( $booking_id ) ) {
 			do_action( 'bookacti_booking_form_validated', $booking_id, $booking_form_values, 'single', $form_id );
 
@@ -712,7 +715,7 @@ function bookacti_controller_validate_booking_form() {
 															$booking_form_values[ 'default_state' ], 
 															$booking_form_values[ 'payment_status' ], 
 															null,
-															$form_id );
+															$booking_form_values[ 'form_id' ] );
 		if( ! empty( $booking_group_id ) ) {
 			do_action( 'bookacti_booking_form_validated', $booking_group_id, $booking_form_values, 'group', $form_id );
 			

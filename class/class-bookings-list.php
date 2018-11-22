@@ -244,8 +244,9 @@ if( ! class_exists( 'Bookings_List_Table' ) ) {
 			$bookings = bookacti_get_bookings( $this->filters );
 			
 			// Check if the bookings list can contain groups
+			$single_only = $filters[ 'group_by' ] === 'none';
 			$may_have_groups = false; 
-			if( $this->filters[ 'group_by' ] !== 'none' && ( ! $this->filters[ 'booking_group_id' ] || $this->filters[ 'group_by' ] === 'booking_group' ) && ! $this->filters[ 'booking_id' ] ) {
+			if( ( ! $this->filters[ 'booking_group_id' ] || in_array( $this->filters[ 'group_by' ], array( 'booking_group', 'none' ), true ) ) && ! $this->filters[ 'booking_id' ] ) {
 				$may_have_groups = true;
 			}
 			
@@ -256,17 +257,18 @@ if( ! class_exists( 'Bookings_List_Table' ) ) {
 				if( $booking->user_id && is_numeric( $booking->user_id ) && ! in_array( $booking->user_id, $this->user_ids, true ) ){ $this->user_ids[] = $booking->user_id; }
 				if( $booking->group_id && ! in_array( $booking->group_id, $this->group_ids, true ) ){ $this->group_ids[] = $booking->group_id; }
 			}
+			$unknown_user_id = esc_attr( apply_filters( 'bookacti_unknown_user_id', 'unknown_user' ) );
 			
 			// Retrieve the required groups data only
 			$booking_groups		= array();
 			$displayed_groups	= array();
-			if( $may_have_groups && $this->group_ids ) {
+			if( ( $may_have_groups || $single_only ) && $this->group_ids ) {
 				// Get only the groups that will be displayed
 				$group_filters = bookacti_format_booking_filters( array( 'in__booking_group_id' => $this->group_ids, 'templates' => '' ) );
 				
-				// If the booking are grouped by booking groups, 
+				// If the bookings are grouped by booking groups, 
 				// booking group meta will already be attached to the booking representing its group 
-				$group_filters[ 'fetch_meta' ] = $group_filters[ 'group_by' ] !== 'booking_group';
+				$group_filters[ 'fetch_meta' ] = $this->filters[ 'group_by' ] !== 'booking_group';
 				
 				$booking_groups = bookacti_get_booking_groups( $group_filters );
 			}
@@ -285,13 +287,14 @@ if( ! class_exists( 'Bookings_List_Table' ) ) {
 			$booking_list_items = array();
 			foreach( $bookings as $booking ) {
 				
+				$group = $booking->group_id && ! empty( $booking_groups[ $booking->group_id ] ) ? $booking_groups[ $booking->group_id ] : null;
+				
 				// Display one single row for a booking group, instead of each bookings of the group
-				if( $booking->group_id && $may_have_groups ) {
+				if( $booking->group_id && $may_have_groups && ! $single_only ) {
 					// If the group row has already been displayed, or if it is not found, continue
 					if( isset( $displayed_groups[ $booking->group_id ] ) 
 					||  empty( $booking_groups[ $booking->group_id ] ) ) { continue; }
 					
-					$group			= $booking_groups[ $booking->group_id ];
 					$raw_id			= $group->id;
 					$tr_class		= 'bookacti-booking-group';
 					$id				= $group->id . '<span class="bookacti-booking-group-indicator">' . esc_html_x( 'Group', 'noun', BOOKACTI_PLUGIN_NAME ) . '</span>';
@@ -311,7 +314,6 @@ if( ! class_exists( 'Bookings_List_Table' ) ) {
 					
 				// Single booking
 				} else {
-					$group			= null;
 					$raw_id			= $booking->id;
 					$tr_class		= $booking->group_id ? 'bookacti-single-booking bookacti-gouped-booking bookacti-booking-group-id-' . $booking->group_id : 'bookacti-single-booking';
 					$id				= $booking->group_id ? $booking->id . '<span class="bookacti-booking-group-id" >' . $booking->group_id . '</span>' : $booking->id;
@@ -349,15 +351,15 @@ if( ! class_exists( 'Bookings_List_Table' ) ) {
 					$email		= ! empty( $user->user_email ) ? $user->user_email : '';
 					$phone		= ! empty( $user->phone ) ? $user->phone : '';
 					
-				// If the booking has been made without account
-				} else if( ! empty( $booking->user_email ) || ! empty( $group->user_email ) ) {
+				// If the booking was made without account
+				} else if( $user_id === $unknown_user_id || is_email( $user_id ) ) {
 					$user		= null;
 					$customer	= ! empty( $user_id ) ? $user_id : '';
-					$booking_meta = ! empty( $group->user_email ) ? $group : $booking;
+					$booking_meta = $group && $this->filters[ 'group_by' ] !== 'booking_group' ? $group : $booking;
 					if( ! empty( $booking_meta->user_first_name ) || ! empty( $booking_meta->user_last_name ) ) {
 						$customer = ! empty( $booking_meta->user_first_name ) ? $booking_meta->user_first_name . ' ' : '';
 						$customer .= ! empty( $booking_meta->user_last_name ) ? $booking_meta->user_last_name . ' ' : '';
-						$customer .= '<br/>(' . $user_id . ')';
+						$customer .= $user_id !== $unknown_user_id ? '<br/>(' . $user_id . ')' : '';
 					}
 					$email		= ! empty( $booking_meta->user_email ) ? $booking_meta->user_email : '';
 					$phone		= ! empty( $booking_meta->user_phone ) ? $booking_meta->user_phone : '';

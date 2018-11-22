@@ -234,24 +234,18 @@ add_filter( 'bookacti_notifications_tags', 'bookacti_wc_notifications_tags', 15,
  * Set WC notifications tags values
  * @since 1.6.0
  * @param array $tags
- * @param int $booking_id
+ * @param object $booking
  * @param string $booking_type
  * @param int $notification_id
  * @param string $locale
  * @return array
  */
-function bookacti_wc_notifications_tags_values( $tags, $booking_id, $booking_type, $notification_id, $locale ) {
+function bookacti_wc_notifications_tags_values( $tags, $booking, $booking_type, $notification_id, $locale ) {
 	
-	$item = array();
-	if( $booking_type === 'group' ) {
-		$booking = bookacti_get_booking_group_by_id( $booking_id );
-		$item = bookacti_get_order_item_by_booking_group_id( $booking );
-	} else {
-		$booking = bookacti_get_booking_by_id( $booking_id );
-		$item = bookacti_get_order_item_by_booking_id( $booking );
-	}
+	$item = $booking_type === 'group' ? bookacti_get_order_item_by_booking_group_id( $booking ) : bookacti_get_order_item_by_booking_id( $booking );
 	if( ! $item ) { return $tags; }
 	
+	// WooCommerce Backward compatibility
 	if( version_compare( WC_VERSION, '3.0.0', '>=' ) ) {
 		$item_id = $item->get_id();
 		$price = $item->get_total();

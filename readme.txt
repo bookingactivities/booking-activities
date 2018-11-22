@@ -38,7 +38,6 @@ Try this reservation tool live on the [demo website](http://demo.booking-activit
 * ★ **Drag and drop** events directly on the calendar
 * ★ **Group your events** to easily sell bundles, subscriptions, seminars, or events spreading on several days
 * Create **repeated events** (with desired frequency and exceptions dates)
-* **Export** your events and your bookings as iCal feeds and **sync** them on calendar apps (e.g.: Google Calendar)
 * Unlimited calendars, activities, events and bookings.
 
 **Booking forms**
@@ -46,6 +45,7 @@ Try this reservation tool live on the [demo website](http://demo.booking-activit
 * **Fully customizable** forms in a WYSIWYG editor
 * **Shortcodes** to display reservation forms or simple calendars
 * ★ Display events from multiple schedules and activities at once
+* **Export** your events and your bookings as iCal feeds and **sync** them on calendar apps (e.g.: Google Calendar)
 * ★ **One-click booking**: just pick the desired event on the calendar and click on "Book"! 
 * ★ **Seamless login / registration**: embedded in the form and processed with the reservation. You can also **book without account**.
 * 100% responsive: looks great on mobiles, tablets and computers.
