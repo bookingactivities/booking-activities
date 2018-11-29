@@ -70,7 +70,11 @@ $j( document ).ready( function() {
 		}
 	});
 	
-	// Update calendar field
+	/**
+	 * Rerender field HTML after settings update
+	 * @since 1.5.0
+	 * @version 1.6.0
+	 */
 	$j( '#bookacti-form-editor' ).on( 'bookacti_field_updated bookacti_field_reset', function( e, field_id, field_name ){
 		if( field_name === 'calendar' ) {
 			var booking_system		= $j( '#bookacti-form-editor-field-' + field_id + ' .bookacti-booking-system' );
@@ -85,6 +89,11 @@ $j( document ).ready( function() {
 			bookacti.booking_system[ booking_system_id ] = $j.extend( true, {}, bookacti.form_editor.fields[ field_id ] ); // Clone field data, else changing booking_system data will change field data
 			
 			bookacti_reload_booking_system( booking_system );
+		}
+		
+		else if( field_name === 'login' ) {
+			var login_field_container = $j( '#bookacti-form-editor .bookacti-form-field-container.bookacti-form-field-type-login' );
+			bookacti_show_hide_register_fields( login_field_container );
 		}
 	});
 	

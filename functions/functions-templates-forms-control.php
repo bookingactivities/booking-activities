@@ -70,9 +70,8 @@ function bookacti_format_template_managers( $template_managers = array() ) {
 
 /**
  * Format template settings
- * 
- * @version 1.5.0
- * @param array $template_settings
+ * @version 1.6.0
+ * @param array $raw_settings
  * @return array
  */
 function bookacti_format_template_settings( $raw_settings ) {
@@ -85,7 +84,7 @@ function bookacti_format_template_settings( $raw_settings ) {
 	$default_settings = apply_filters( 'bookacti_template_default_settings', array(
 		'minTime'					=> '08:00',
 		'maxTime'					=> '20:00',
-		'snapDuration'				=> '00:30',
+		'snapDuration'				=> '00:05',
 		'availability_period_start'	=> '',
 		'availability_period_end'	=> ''
 	) );

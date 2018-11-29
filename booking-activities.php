@@ -3,13 +3,13 @@
  * Plugin Name: Booking Activities
  * Plugin URI: https://booking-activities.fr/en/?utm_source=plugin&utm_medium=plugin&utm_content=header
  * Description: Booking system specialized in activities (sports, cultural, leisure, events...). Works great with WooCommerce.
- * Version: 1.5.9
+ * Version: 1.6.0
  * Author: Booking Activities Team
  * Author URI: https://booking-activities.fr/en/?utm_source=plugin&utm_medium=plugin&utm_content=header
  * Text Domain: booking-activities
  * Domain Path: /languages/
  * WC requires at least: 2.6
- * WC tested up to: 3.4
+ * WC tested up to: 3.5
  * License: GPL3
  * License URI: https://www.gnu.org/licenses/gpl-3.0.html
  * 
@@ -40,7 +40,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 
 // GLOBALS AND CONSTANTS
-if( ! defined( 'BOOKACTI_VERSION' ) )		{ define( 'BOOKACTI_VERSION', '1.5.9' ); }
+if( ! defined( 'BOOKACTI_VERSION' ) )		{ define( 'BOOKACTI_VERSION', '1.6.0' ); }
 if( ! defined( 'BOOKACTI_PLUGIN_NAME' ) )	{ define( 'BOOKACTI_PLUGIN_NAME', 'booking-activities' ); }
 
 
@@ -331,20 +331,26 @@ register_deactivation_hook( __FILE__, 'bookacti_deactivate' );
 
 /**
  * Uninstall Booking Activities
+ * @version 1.6.0
  */
 function bookacti_uninstall() {
-	//Deregister the hourly reccuring event
+	// Deregister the hourly reccuring event
 	wp_clear_scheduled_hook( 'bookacti_hourly_event' );
-
-	// Delete plugin settings
-	bookacti_delete_settings();
 	
 	// Delete notices acknowledgement
 	bookacti_reset_notices();
 	
-	// Drop tables and every Booking Activities Data
-	delete_option( 'bookacti_version' );
-	bookacti_drop_tables();
+	if( bookacti_get_setting_value( 'bookacti_general_settings', 'delete_data_on_uninstall' ) ) {
+		// Delete plugin settings
+		bookacti_delete_settings();
+		
+		// Delete user meta related to Booking Activities
+		bookacti_delete_user_data();
+		
+		// Drop tables and every Booking Activities Data
+		delete_option( 'bookacti_version' );
+		bookacti_drop_tables();
+	}
 	
 	// Unset roles and capabilities
 	bookacti_unset_role_and_cap();

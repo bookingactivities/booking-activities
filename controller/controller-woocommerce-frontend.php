@@ -143,7 +143,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	
 	/**
 	 * Add booking forms to single product page (front-end)
-	 * @version 1.5.2
+	 * @version 1.6.0
 	 * @global WC_Product $product
 	 */
 	function bookacti_add_booking_system_in_single_product_page() {
@@ -215,26 +215,31 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		}
 		else if( $product->is_type( 'variable' ) ) {
 			$default_attributes = bookacti_get_product_default_attributes( $product );
-			// If no default variation are selected, display an empty form fields container
-			if( ! $default_attributes ) { 
-				?><div class='bookacti-form-fields'></div><?php
-				return;
+			if( $default_attributes ) { 
+				$default_variation_id = bookacti_get_product_variation_matching_attributes( $product, $default_attributes );
+				if( $default_variation_id ) { 
+					$form_id = get_post_meta( $default_variation_id, 'bookacti_variable_form', true );
+					if( $form_id ) { 
+						$form_instance_id = 'product-variation-' . $default_variation_id;
+					}	
+				}
 			}
-
-			$default_variation_id = bookacti_get_product_variation_matching_attributes( $product, $default_attributes );
-			if( ! $default_variation_id ) { return; }
-
-			$form_id = get_post_meta( $default_variation_id, 'bookacti_variable_form', true );
-			if( ! $form_id ) { return; }
-
-			$form_instance_id = 'product-variation-' . $default_variation_id;
+			
 		} else if( $product->is_type( 'variation' ) ) {
 			$form_id = get_post_meta( $product->get_id(), 'bookacti_variable_form', true );
-			if( ! $form_id ) { return; }
-
-			$form_instance_id = 'product-variation-' . $default_variation_id;
+			if( $form_id ) { 
+				$form_instance_id = 'product-variation-' . $default_variation_id;
+			}
 		}
-		if( ! $form_instance_id ) { return; }
+		
+		// If no default variation are selected, or if if it's not an activity, or if doesn't have a form bound
+		// display an empty form fields container
+		if( ! $form_instance_id ) { 
+			?>
+				<div class='bookacti-form-fields'></div>
+			<?php
+			return;
+		}
 		
 		?>
 		<div class='bookacti-form-fields' 
@@ -1501,7 +1506,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	 * Change bookings state after user validate checkout
 	 * 
 	 * @since 1.2.2 (was bookacti_delay_expiration_date_for_payment before)
-	 * @version 1.5.0
+	 * @version 1.6.0
 	 * @param int $order_id
 	 * @param array $order_details
 	 * @param WC_Order $order
@@ -1523,6 +1528,12 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		}
 		
 		bookacti_turn_order_bookings_to( $order, $state, $payment_status, $alert_admin, array( 'is_new_order' => true ) );
+		
+		// If the user has no account, bind the user data to the bookings
+		$user_id = $order->get_user_id( 'edit' );
+		if( $user_id && is_int( $user_id ) ) { return; }
+		
+		bookacti_save_order_data_as_booking_meta( $order );
 	}
 	add_action( 'woocommerce_checkout_order_processed', 'bookacti_change_booking_state_after_checkout', 10, 3 );
 	
@@ -1534,7 +1545,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	/**
 	 * Add a column called 'Price' to user bookings list
 	 * @param array $columns
-	 * @param int $user_id
+	 * @param int|string $user_id
 	 * @return array
 	 */
 	function bookacti_add_woocommerce_price_column_to_bookings_list( $columns, $user_id ) {
@@ -1546,10 +1557,10 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	
 	/**
 	 * Add values in bookings list (refund, price)
-	 * @version 1.5.8
+	 * @version 1.6.0
 	 * @param array $columns_value
 	 * @param object $booking
-	 * @param int $user_id
+	 * @param int|string $user_id
 	 * @return array
 	 */
 	function bookacti_add_woocommerce_prices_in_bookings_list( $columns_value, $booking, $user_id ) {
@@ -1574,16 +1585,28 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 				
 				// WOOCOMMERCE 3.0.0 backward compatibility
 				if( version_compare( WC_VERSION, '3.0.0', '>=' ) ) {
-					$coupon_code = wc_get_order_item_meta( $item->get_id(), 'bookacti_refund_coupon', true );
-				} else {
-					$coupon_code = wc_get_order_item_meta( $item[ 'id' ], 'bookacti_refund_coupon', true );
+					$meta_data = $item->get_formatted_meta_data();
+					if( $meta_data ) {
+						foreach( $meta_data as $meta_id => $meta ) {
+							if( $meta->key === 'bookacti_refund_coupon' && ! empty( $meta->value ) ) {
+								$coupon_code = $meta->value;
+								break;
+							}
+						}
+					}
+				} else if( ! empty( $item[ 'item_meta' ] ) ) {
+					foreach( $item[ 'item_meta' ] as $meta_key => $meta_value ) {
+						if( $meta_key === 'bookacti_refund_coupon' && ! empty( $meta_value ) ) {
+							$coupon_code = $meta_value;
+							break;
+						}
+					}
 				}
 				
 				if( $coupon_code ) {
-					$coupon_value = apply_filters( 'bookacti_user_bookings_list_order_item_coupon', '<br/><strong>' . esc_html__( 'Coupon code' ) . ':</strong> ' . $coupon_code, $coupon_code, $item, $columns_value, $booking, $user_id );
-					if( $coupon_value ) {
-						$columns_value[ 'state' ] .= $coupon_value;
-					}
+					/* translators: %s is the coupon code used for the refund */
+					$coupon_label = sprintf( esc_html__( 'Refunded with coupon %s', BOOKACTI_PLUGIN_NAME ), $coupon_code );
+					$columns_value[ 'state' ] = '<span class="bookacti-booking-state bookacti-booking-state-bad bookacti-booking-state-refunded bookacti-converted-to-coupon bookacti-tip" data-booking-state="refunded">' . $coupon_label . '</span>';
 				}
 			}
 		}

@@ -4,8 +4,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 /**
  * Init Booking Activities settings
- * 
- * @version 1.4.0
+ * @version 1.6.0
  */
 function bookacti_init_settings() { 
 
@@ -103,6 +102,14 @@ function bookacti_init_settings() {
 		'default_calendar_view_threshold', 
 		__( 'Responsive calendar view threshold', BOOKACTI_PLUGIN_NAME ), 
 		'bookacti_settings_field_default_calendar_view_threshold_callback', 
+		'bookacti_general_settings', 
+		'bookacti_settings_section_general' 
+	);
+
+	add_settings_field(  
+		'delete_data_on_uninstall', 
+		esc_html__( 'Delete data on uninstall', BOOKACTI_PLUGIN_NAME ), 
+		'bookacti_settings_field_delete_data_on_uninstall_callback', 
 		'bookacti_general_settings', 
 		'bookacti_settings_section_general' 
 	);
@@ -234,9 +241,11 @@ add_action( 'admin_menu', 'bookacti_add_screen_options', 20 );
 /**
  * Add booking page columns screen options
  * @since 1.3.0
+ * @version 1.6.0
  */
 function bookacti_add_booking_page_screen_option() {
-	new Bookings_List_Table();
+	$booking_list = new Bookings_List_Table();
+	$booking_list->process_bulk_action();
 }
 add_action( 'admin_head-booking-activities_page_bookacti_bookings', 'bookacti_add_booking_page_screen_option' );
 

@@ -5,7 +5,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 /**
  * Create Booking Activities database tables
  * 
- * @version 1.5.4
+ * @version 1.6.0
  * @global wpdb $wpdb
  */
 function bookacti_create_tables() {
@@ -108,10 +108,10 @@ function bookacti_create_tables() {
 		active TINYINT(1) NOT NULL DEFAULT 1, 
 		PRIMARY KEY ( id ) ) ' . $collate . ';';
 	
-	// user_id can accept hashes of 32 chars, that is why it is a VARCHAR(32)
+	// user_id can accept hashes of 32 chars and email addresses, that is why it is a VARCHAR(64)
 	$table_bookings_query = 'CREATE TABLE ' . BOOKACTI_TABLE_BOOKINGS . ' ( 
 		id MEDIUMINT(9) UNSIGNED NOT NULL AUTO_INCREMENT, 
-		user_id VARCHAR(32), 
+		user_id VARCHAR(64), 
 		order_id MEDIUMINT(9) UNSIGNED, 
 		form_id MEDIUMINT(9) UNSIGNED, 
 		group_id MEDIUMINT(9) UNSIGNED, 
@@ -129,7 +129,7 @@ function bookacti_create_tables() {
 	$table_booking_groups_query = 'CREATE TABLE ' . BOOKACTI_TABLE_BOOKING_GROUPS . ' ( 
 		id MEDIUMINT(9) UNSIGNED NOT NULL AUTO_INCREMENT, 
 		event_group_id MEDIUMINT(9) UNSIGNED, 
-		user_id VARCHAR(32), 
+		user_id VARCHAR(64), 
 		order_id MEDIUMINT(9) UNSIGNED, 
 		form_id MEDIUMINT(9) UNSIGNED, 
 		state VARCHAR(32) NOT NULL DEFAULT "booked",
@@ -196,4 +196,18 @@ function bookacti_drop_tables() {
 	$wpdb->query( 'DROP TABLE IF EXISTS ' . BOOKACTI_TABLE_BOOKING_GROUPS . '; ' );
 	$wpdb->query( 'DROP TABLE IF EXISTS ' . BOOKACTI_TABLE_META . '; ' );
 	$wpdb->query( 'DROP TABLE IF EXISTS ' . BOOKACTI_TABLE_PERMISSIONS . '; ' );
+}
+
+
+/**
+ * Remove Bookings activities user data
+ * @since 1.6.0
+ * @global wpdb $wpdb
+ */
+function bookacti_delete_user_data() {
+	global $wpdb;
+	$wpdb->hide_errors();
+	
+	$query = 'DELETE FROM ' . $wpdb->usermeta . ' WHERE meta_key LIKE "bookacti_%" ';
+	$wpdb->query( $query );
 }

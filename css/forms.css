@@ -92,10 +92,12 @@ body.booking-activities_page_bookacti_forms label[for='bookacti_form_publish-hid
 
 .bookacti-form-field-login-field-container					{ display: block; margin-bottom: 10px; }
 .bookacti-form-field-login-field-container:last-child		{ margin-bottom: 0; }
-.bookacti-forgotten-password								{ font-style: italic; font-size: 0.8em; }
-.forgotten-password-email									{ display: block; margin-top: 10px; }
-.bookacti-forgotten-password-email							{ min-height: 30px; min-width: 300px; }
-fieldset.bookacti-register-fields							{ border: 1px solid #bbb; -webkit-border-radius: 3px; border-radius: 3px; padding: 10px; margin-top: 10px; }
+
+.bookacti-login-types-hidden		{ display: none; }
+.bookacti-login-field-login-type	{ margin-bottom: 20px; }
+.bookacti-forgotten-password		{ font-style: italic; font-size: 0.8em; }
+.forgotten-password-email			{ display: block; margin-top: 10px; }
+.bookacti-forgotten-password-email	{ min-height: 30px; min-width: 300px; }
 
 .bookacti-password-strength					{ display: inline-block; }
 .bookacti-password-strength-meter			{ background-color: #eee; border: 1px solid #ddd; color: #23282d; margin: -2px 5px 5px 1px; padding: 3px 5px; text-align: center; box-sizing: border-box; opacity: 0; }
@@ -107,6 +109,8 @@ fieldset.bookacti-register-fields							{ border: 1px solid #bbb; -webkit-border
 .bookacti-password.bad			{ border-color: #f78b53; }
 .bookacti-password.good			{ border-color: #ffc733; }
 .bookacti-password.strong		{ border-color: #83c373; }
+
+.bookacti-register-fields { margin-top: 10px; }
 
 .bookacti-form-field-checkbox-input,
 .bookacti-form-field-checkbox-label	{ display: table-cell; vertical-align: top; }

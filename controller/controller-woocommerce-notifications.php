@@ -209,3 +209,58 @@ function bookacti_wc_email_order_item_args( $args ) {
 	return $args;
 }
 add_filter( 'woocommerce_email_order_items_args', 'bookacti_wc_email_order_item_args', 10, 1 );
+
+
+/**
+ * Add WC notifications tags descriptions
+ * @since 1.6.0
+ * @param array $tags
+ * @param int $notification_id
+ * @return array
+ */
+function bookacti_wc_notifications_tags( $tags, $notification_id ) {
+	$tags[ '{price}' ] = esc_html__( 'Booking price, with currency.', BAAF_PLUGIN_NAME );
+	
+	if( strpos( $notification_id, 'refund' ) !== false ) {
+		$tags[ '{refund_coupon_code}' ] = esc_html__( 'The WooCommerce coupon code generated when the booking was refunded.', BAAF_PLUGIN_NAME );
+	}
+	
+	return $tags;
+}
+add_filter( 'bookacti_notifications_tags', 'bookacti_wc_notifications_tags', 15, 2 );
+
+
+/**
+ * Set WC notifications tags values
+ * @since 1.6.0
+ * @param array $tags
+ * @param object $booking
+ * @param string $booking_type
+ * @param int $notification_id
+ * @param string $locale
+ * @return array
+ */
+function bookacti_wc_notifications_tags_values( $tags, $booking, $booking_type, $notification_id, $locale ) {
+	
+	$item = $booking_type === 'group' ? bookacti_get_order_item_by_booking_group_id( $booking ) : bookacti_get_order_item_by_booking_id( $booking );
+	if( ! $item ) { return $tags; }
+	
+	// WooCommerce Backward compatibility
+	if( version_compare( WC_VERSION, '3.0.0', '>=' ) ) {
+		$item_id = $item->get_id();
+		$price = $item->get_total();
+	} else {
+		$item_id = $item[ 'id' ];
+		$price = $item[ 'line_total' ];
+	}
+	
+	$currency = get_post_meta( $booking->order_id, '_order_currency', true );
+	$tags[ '{price}' ]	= $currency ? wc_price( $price, array( 'currency' => $currency ) ) : $price;
+	
+	if( strpos( $notification_id, 'refund' ) !== false ) {
+		$tags[ '{refund_coupon_code}' ]	= wc_get_order_item_meta( $item_id, 'bookacti_refund_coupon', true );
+	}
+	
+	return $tags;
+}
+add_filter( 'bookacti_notifications_tags_values', 'bookacti_wc_notifications_tags_values', 15, 5 );

@@ -6,7 +6,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 // PERMISSIONS
 	/**
 	 * Check if user is allowed to manage template
-	 * 
+	 * @version 1.6.0
 	 * @param int $template_id
 	 * @param int|false $user_id False for current user
 	 * @return boolean
@@ -19,7 +19,9 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		if( is_super_admin() || $bypass_template_managers_check ) { $user_can_manage_template = true; }
 		else {
 			$admins = bookacti_get_template_managers( $template_id );
-			if( in_array( $user_id, $admins, true ) ) { $user_can_manage_template = true; }
+			if( $admins ) {
+				if( in_array( $user_id, $admins, true ) ) { $user_can_manage_template = true; }
+			}
 		}
 
 		return apply_filters( 'bookacti_user_can_manage_template', $user_can_manage_template, $template_id, $user_id );
@@ -28,6 +30,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	
 	/**
 	 * Check if user is allowed to manage activity
+	 * @version 1.6.0
 	 * @param int $activity_id
 	 * @param int|false $user_id False for current user
 	 * @return boolean
@@ -40,7 +43,9 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		if( is_super_admin() || $bypass_activity_managers_check ) { $user_can_manage_activity = true; }
 		else {
 			$admins = bookacti_get_activity_managers( $activity_id );
-			if( in_array( $user_id, $admins, true ) ) { $user_can_manage_activity = true; }
+			if( $admins ) {
+				if( in_array( $user_id, $admins, true ) ) { $user_can_manage_activity = true; }
+			}
 		}
 
 		return apply_filters( 'bookacti_user_can_manage_activity', $user_can_manage_activity, $activity_id, $user_id );

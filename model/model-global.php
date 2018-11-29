@@ -42,8 +42,7 @@ function bookacti_user_id_exists( $user_id ) {
 
 /**
  * Get users metadata
- * 
- * @version 1.4.0
+ * @version 1.6.0
  * @global wpdb $wpdb
  * @param array $args
  * @return array
@@ -58,7 +57,7 @@ function bookacti_get_users_data( $args = array() ) {
 		'role'			=> array(), 
 		'role__in'		=> array(), 
 		'role__not_in'	=> array(),
-		'order_by'		=> array( 'display_name' ),
+		'orderby'		=> array( 'display_name' ),
 		'order'			=> 'ASC'
 	);
 	
@@ -160,12 +159,12 @@ function bookacti_get_users_data( $args = array() ) {
 	}
 	
 	// Order results
-	$order_by_nb = count( $args[ 'order_by' ] );
+	$order_by_nb = count( $args[ 'orderby' ] );
 	if( $order_by_nb ) {
-		$users_info_query .= ' ORDER BY ' . $args[ 'order_by' ][ 0 ];
+		$users_info_query .= ' ORDER BY ' . $args[ 'orderby' ][ 0 ];
 		if( $order_by_nb >= 2 ) {
 			for( $i=1; $i < $order_by_nb; ++$i ) {
-				$users_info_query  .= ', ' . $args[ 'order_by' ][ $i ];
+				$users_info_query  .= ', ' . $args[ 'orderby' ][ $i ];
 			}
 		}
 		if( $args[ 'order' ] ) {

@@ -60,9 +60,6 @@ $j( document ).ready( function() {
 		}
 	});
 	
-	// Dismiss notices
-	$j( '.bookacti-guest-checkout-notice .notice-dismiss' ).on( 'click', function(){ bookacti_dismiss_guest_checkout_notice(); });
-	
 	// Show / Hide WC field in delete booking dialog
 	$j( '.bookacti-user-bookings-list, .bookacti-order-item-activity, #bookacti-bookings-list' ).on( 'click', '.bookacti-booking-action, .bookacti-booking-group-action', function ( e ) {
 		e.preventDefault();
@@ -159,35 +156,6 @@ function bookacti_show_hide_activity_variation_fields( checkbox ) {
 			$j( checkbox ).parents( '.woocommerce_variation' ).find( '.show_if_variation_activity' ).hide();
 		}
 	}
-}
-
-
-// Dismiss guest checkout notice
-function bookacti_dismiss_guest_checkout_notice() {
-	$j( '.bookacti-guest-checkout-notice' ).remove();
-	$j.ajax({
-		url: ajaxurl,
-		type: 'POST',
-		data: { "action": 'bookactiDismissGuestCheckoutNotice',
-				"nonce": bookacti_localized.nonce_dismiss_guest_checkout_notice
-			},
-		dataType: 'json',
-		success: function( response ){
-			if( response.status === 'failed' ) {
-				var message_error = bookacti_localized.error_update_settings;
-				if( response.error === 'not_allowed' ) {
-					message_error += '\n' + bookacti_localized.error_not_allowed;
-				}
-				console.log( message_error );
-				console.log( response );
-			}
-		},
-		error: function( e ){
-			console.log( e );
-		},
-		complete: function() { 
-		}
-	});
 }
 
 

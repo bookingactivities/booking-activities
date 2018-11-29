@@ -2,7 +2,7 @@
 /**
  * Form editor page
  * @since 1.5.0
- * @version 1.5.4
+ * @version 1.6.0
  */
 
 // Exit if accessed directly
@@ -19,7 +19,7 @@ if( ! $form_id ) { exit; }
 // Exit if not allowed to edit current form
 $can_manage_form	= bookacti_user_can_manage_form( $form_id );
 $can_edit_form		= current_user_can( 'bookacti_edit_forms' );
-if ( ! $can_edit_form || ! $can_manage_form ) { echo __( 'You are not allowed to do this.', BOOKACTI_PLUGIN_NAME ); exit; }
+if ( ! $can_edit_form || ! $can_manage_form ) { echo __( 'You are not allowed to do that.', BOOKACTI_PLUGIN_NAME ); exit; }
 
 
 // Get form data by id

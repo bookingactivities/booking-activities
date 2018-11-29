@@ -6,7 +6,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
  * Get default settings values
  * 
  * @since 1.3.0 (was bookacti_define_default_settings_constants)
- * @version 1.4.0
+ * @version 1.6.0
  */
 function bookacti_get_default_settings() {
 	$date = new DateTime(); 
@@ -24,6 +24,7 @@ function bookacti_get_default_settings() {
 		'default_payment_status'				=> 'none',
 		'timezone'								=> $tz,
 		'default_calendar_view_threshold'		=> 640,
+		'delete_data_on_uninstall'				=> 0,
 		'allow_customers_to_cancel'				=> true,
 		'allow_customers_to_reschedule'			=> true,
 		'cancellation_min_delay_before_event'	=> 7,
@@ -39,8 +40,7 @@ function bookacti_get_default_settings() {
 
 /**
  * Delete settings
- * 
- * @version 1.3.0
+ * @version 1.6.0
  */
 function bookacti_delete_settings() {
 	delete_option( 'bookacti_template_settings' ); // Deprecated
@@ -49,9 +49,6 @@ function bookacti_delete_settings() {
 	delete_option( 'bookacti_cancellation_settings' );
 	delete_option( 'bookacti_notifications_settings' );
 	delete_option( 'bookacti_messages_settings' );
-	
-	bookacti_delete_user_meta( 'bookacti_default_template' );
-	bookacti_delete_user_meta( 'bookacti_status_filter' );
 	
 	do_action( 'bookacti_delete_settings' );
 }
@@ -316,18 +313,21 @@ function bookacti_settings_section_bookings_callback() { }
 	
 	/**
 	 * Display "default booking state" setting
-	 * 
-	 * @version 1.2.0
+	 * @version 1.6.0
 	 */
 	function bookacti_settings_field_default_booking_state_callback() {
+		$booking_state_labels = bookacti_get_booking_state_labels();
+		$allowed_booking_states = array( 'pending', 'booked' );
+		$options = array();
+		foreach( $allowed_booking_states as $state_key ) {
+			$options[ $state_key ] = ! empty( $booking_state_labels[ $state_key ][ 'label' ] ) ? $booking_state_labels[ $state_key ][ 'label' ] : $state_key;
+		}
+		
 		$args = array(
 			'type'		=> 'select',
 			'name'		=> 'bookacti_general_settings[default_booking_state]',
 			'id'		=> 'default_booking_state',
-			'options'	=> array( 
-								'pending' => __( 'Pending', BOOKACTI_PLUGIN_NAME ),
-								'booked' => __( 'Booked', BOOKACTI_PLUGIN_NAME )
-							),
+			'options'	=> $options,
 			'value'		=> bookacti_get_setting_value( 'bookacti_general_settings', 'default_booking_state' ),
 			'tip'		=> __( 'Choose what status a booking should have when a customer complete the booking form.', BOOKACTI_PLUGIN_NAME )
 						. '<br/>' . __( 'This option has no effect on bookings made with WooCommerce.', BOOKACTI_PLUGIN_NAME )
@@ -431,6 +431,22 @@ function bookacti_settings_section_bookings_callback() { }
 			'label'		=> esc_html_x( 'px', 'pixel short', BOOKACTI_PLUGIN_NAME ),
 			'tip'		=> esc_html__( 'The day view will be displayed by default if the calendar width is under that threshold when it is loaded. Else, it will be the week view.', BOOKACTI_PLUGIN_NAME )
 						. '<br/>' . sprintf( esc_html__( 'Get more views and granularity with %s add-on!' ), $addon_link )
+		);
+		bookacti_display_field( $args );
+	}
+	
+	
+	/**
+	 * Display "Delete data while uninstalling" setting
+	 * @since 1.6.0
+	 */
+	function bookacti_settings_field_delete_data_on_uninstall_callback() {
+		$args = array(
+			'type'		=> 'checkbox',
+			'name'		=> 'bookacti_general_settings[delete_data_on_uninstall]',
+			'id'		=> 'delete_data_on_uninstall',
+			'value'		=> bookacti_get_setting_value( 'bookacti_general_settings', 'delete_data_on_uninstall' ),
+			'tip'		=> esc_html__( 'Delete all Booking Activities data (calendars, forms, bookings, settings...) when you uninstall Booking Activities.', BOOKACTI_PLUGIN_NAME )
 		);
 		bookacti_display_field( $args );
 	}

@@ -5,7 +5,7 @@ Tags: booking activities, booking sport, booking form, event reservation, reserv
 Requires at least: 3.6
 Tested up to: 4.9
 Requires PHP: 5.3
-Stable tag: 1.5.9
+Stable tag: 1.6.0
 License: GPLv3 or later
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
 
@@ -45,8 +45,9 @@ Try this reservation tool live on the [demo website](http://demo.booking-activit
 * **Fully customizable** forms in a WYSIWYG editor
 * **Shortcodes** to display reservation forms or simple calendars
 * ★ Display events from multiple schedules and activities at once
+* **Export** your events and your bookings as iCal feeds and **sync** them on calendar apps (e.g.: Google Calendar)
 * ★ **One-click booking**: just pick the desired event on the calendar and click on "Book"! 
-* ★ **Seamless login / registration**: embedded in the form and processed with the reservation
+* ★ **Seamless login / registration**: embedded in the form and processed with the reservation. You can also **book without account**.
 * 100% responsive: looks great on mobiles, tablets and computers.
 * ★ *Set any custom fields and any booking metadata thanks to [Advanced Forms](https://booking-activities.fr/en/downloads/advanced-forms/?utm_source=wp-plugin-page&utm_medium=wordpress&utm_campaign=advanced-forms&utm_content=readme) add-on*
 
@@ -65,6 +66,7 @@ Try this reservation tool live on the [demo website](http://demo.booking-activit
 * Booking actions: validate, cancel, reschedule, ★ refund...
 * ★ Display your customer's bookings calendar and their booking list with a shortcode
 * ★ Your customers can **cancel** or **reschedule** their bookings and **ask a refund** by themselves
+* **Export** your bookings as CSV feeds and **sync** them on spreadsheet apps (e.g.: Google Sheet)
 * Permission management system: your managers manage only their own calendars and reservations
 
 **Availability options**
@@ -192,8 +194,6 @@ Or read the full [features description](https://booking-activities.fr/en/documen
 5. Past this shortcode in any post or page you like
 6. Go on this post / page frontend, the booking form appears! 
 
-*The user must be logged in to book an event.*
-
 /!\ Reservation forms displayed via shortcode are not bound to WooCommerce at all. If you want to bind a WC product to a calendar, check "Use it with WooCommerce" in this FAQ.
 
 
@@ -302,7 +302,7 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 3. Create daily, weekly or monthly repeated events. You can add exception dates to the repetition.
 4. Grouping your events is simple: just select multiple events and click on 'Add a group'. Or select an existing group and start editing it right away.
 5. Create and customize your booking form. You can combine events and settings of multiple schedules. You can make each form unique.
-6. Use a shortcode to display a booking form (or a calendar alone). Your customer can log in or register seamlessly as they book.
+6. Use a shortcode to display a booking form (or a calendar alone). Your customer can log in or register as they book, they can also book without account.
 7. When a customer clicks on a grouped event, the whole group is selected. If the event is part of several groups, the customer has to choose one from a dialog.
 8. Easily bind a reservation form to a WooCommerce product. You can set a different event calendar to each variation.
 9. A reservation form appears automatically on desired WooCommerce product pages.
@@ -316,6 +316,29 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 
 
 == Changelog ==
+
+= 1.6.0 - 2018/11/29 =
+**[See the friendly release note](https://booking-activities.fr/en/blog/booking-activities-1-6-export-and-booking-without-account/?utm_source=wp-plugin-page&utm_medium=wordpress&utm_content=readme)**
+* Feature - Book without account
+* Feature - WooCommerce guest checkout supported
+* Feature - Export your events to ical (ics) files
+* Feature - Synchronize your events with third-party apps (e.g.: Google Agenda) (one way: export only)
+* Feature - Add {user_ical_url} notification tag to let your customers export and synchronize their bookings on their calendar app
+* Feature - Export your bookings to CSV files
+* Feature - Synchronize your booking list to third-party apps (e.g.: Google Sheet) (one way: export only)
+* Feature - Frontend booking lists are paginated
+* Feature - You can use any booking filters as parameters in the bookingactivities_list shortcode
+* Feature - Add a "Delivered" booking status, in order to flag when the customer has attended the booking
+* Feature - Add {price} notification tag to display the WC order item price bound to the booking
+* Optimization - Booking lists are displayed faster (backend and frontend)
+* Tweak - Events dropped on the month view now start at the time set in the "Day begin" option
+* Tweak - Display shortcuts in calendar editor
+* Tweak - Change the "Refunded" label to "Refunded with coupon ..." if it was refunded with a coupon
+* Tweak - Add an option to delete all Booking Activities data on uninstall, in order to avoid accidental data deletion
+* Tweak - Set default snap frequency to 5 minutes instead of 30
+* Tweak - The calendar appearence on the backend booking list no longer changes according to the selected calendars
+* Fix - Booking form not appearing on WC variable product pages if the default variation was non-activity
+* Fix - Possible PHP error while checking templates, activities and forms permission if they are not set
 
 = 1.5.9 - 2018/10/11 =
 * Tweak - Availability period is now checked on server side and is compatible with the "Display past events" option
@@ -413,6 +436,7 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 * Fix - Missing JS check on form without login/register field
 
 = 1.5.0 - 2018/05/05 =
+**[See the friendly release note](https://booking-activities.fr/en/blog/booking-activities-1-5-booking-forms/?utm_source=wp-plugin-page&utm_medium=wordpress&utm_content=readme)**
 * Feature - Customizable booking forms !
 * Feature - Log in / Register seamlessly as you book 
 * Feature - You can now delete your bookings and your booking groups from the booking list
@@ -459,6 +483,7 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 * Fix - Error while trying to delete a booked event
 
 = 1.4.0 - 2018/02/24 =
+**[See the friendly release note](https://booking-activities.fr/en/blog/booking-activities-1-4-availability-options/?utm_source=wp-plugin-page&utm_medium=wordpress&utm_content=readme)**
 * Feature - Set the advance booking period: customers can book events from X to Y days from today (global option and calendar option)
 * Feature - Set the minimum booking quantity required per user (activity option and group category option)
 * Feature - Set the maximum booking quantity allowed per user (activity option and group category option)
@@ -511,6 +536,7 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 * Fix - Bookings numbers were not reloaded after booking form was sent
 
 = 1.3.0 - 2018/01/28 =
+**[See the friendly release note](https://booking-activities.fr/en/blog/booking-activities-1-3-improved-booking-management/?utm_source=wp-plugin-page&utm_medium=wordpress&utm_content=readme)**
 * Tweak - Bookings page has been redesigned
 * Feature - Filter your booking list by calendars, activities, status, date, and customers (and also by events like before)
 * Feature - The booking list is now paginated and columns can be hidden (in screen options) and sorted
@@ -572,6 +598,7 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 * Dev - PHP filter Tweak - bookacti_messages have a new $raw parameter
 
 = 1.2.0 - 2017/10/12 =
+**[See the friendly release note](https://booking-activities.fr/en/blog/booking-activities-1-2-email-notifications/?utm_source=wp-plugin-page&utm_medium=wordpress&utm_content=readme)**
 * Feature - Send email notifications to the administrator and the customer when a booking is made, when its status changes and when it is rescheduled
 * Feature - Configure and customize email notifications
 * Feature - Configure some messages displayed on frontend directly through Booking Activities settings
@@ -612,6 +639,7 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 * Fix - Improved readme.txt to provide a better understanding and preview of the plugin
 
 = 1.1.0 - 2017/07/16 =
+**[See the friendly release note](https://booking-activities.fr/en/blog/booking-activities-1-1-grouped-events/?utm_source=wp-plugin-page&utm_medium=wordpress&utm_content=readme)**
 * Feature - Manage groups of events! You can group events and make your customer book a bundle of events instead of a single one.
 * Feature - Bind multiple calendars and activities to one product in WooCommerce!
 * Optimization - Calendars are now loaded faster and on page load (possibility to load after page load in Booking Activities settings)

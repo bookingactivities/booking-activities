@@ -51,14 +51,14 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	/**
 	 * Send a filtered array via json to stop a not allowed an ajax process
 	 * @since 1.5.0
-	 * @version 1.5.3
+	 * @version 1.6.0
 	 * @param string $action Name of the filter to allow third-party modifications
 	 */
 	function bookacti_send_json_not_allowed( $action = '' ) {
 		$return_array = array( 
 			'status'	=> 'failed', 
 			'error'		=> 'not_allowed', 
-			'message'	=> esc_html__( 'You are not allowed to do this.', BOOKACTI_PLUGIN_NAME )
+			'message'	=> esc_html__( 'You are not allowed to do that.', BOOKACTI_PLUGIN_NAME )
 		);
 		bookacti_send_json( $return_array, $action );
 	}
@@ -104,16 +104,16 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 	/**
 	 * Detect current language with Qtranslate X or WPML
-	 * @version 1.5.2
+	 * @version 1.6.0
+	 * @param boolean $with_locale
 	 * @return string 
 	 */
 	function bookacti_get_current_lang_code( $with_locale = false ) {
-		$lang_code = $with_locale ? get_locale() : substr( get_locale(), 0, strpos( get_locale(), '_' ) );
-
-		$is_qtranslate	= bookacti_is_plugin_active( 'qtranslate-x/qtranslate.php' );
-		$is_wpml		= bookacti_is_plugin_active( 'wpml/wpml.php' );
-
-		if ( $is_qtranslate ) {
+		
+		$locale		= get_locale();
+		$lang_code	= $with_locale ? $locale : substr( $locale, 0, strpos( $locale, '_' ) );
+		
+		if( bookacti_is_plugin_active( 'qtranslate-x/qtranslate.php' ) ) {
 			if( function_exists( 'qtranxf_getLanguage' ) ) {
 				$lang_code = qtranxf_getLanguage();
 				if( $with_locale ) {
@@ -123,7 +123,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 					}
 				}
 			}
-		} else if ( $is_wpml ) {
+		} else if ( bookacti_is_plugin_active( 'wpml/wpml.php' ) ) {
 			$lang_code = apply_filters( 'wpml_current_language', NULL );
 			if( $with_locale ) {
 				$languages = apply_filters( 'wpml_active_languages', NULL );
@@ -132,6 +132,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 				}
 			}
 		}
+		
 		return $lang_code;
 	}
 	
@@ -229,7 +230,6 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	 * Get site locale, and default to site or current locale
 	 * 
 	 * @since 1.2.0
-	 * @param int|WP_User $user_id
 	 * @param string $default 'current' or 'site'
 	 * @param boolean $country_code Whether to return also country code
 	 * @return string
@@ -761,9 +761,8 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	
 	/**
 	 * Create a user selectbox
-	 * 
 	 * @since 1.3.0
-	 * @version 1.5.0
+	 * @version 1.6.0
 	 * @param array $args
 	 * @return string|void
 	 */
@@ -780,7 +779,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		);
 		
 		$args	= apply_filters( 'bookacti_user_selectbox_args', wp_parse_args( $args, $defaults ), $args );
-		$users	= bookacti_get_users_data( $args );
+		$users	= get_users( $args );
 		
 		ob_start();
 		?>
@@ -803,7 +802,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 					?><option value='<?php echo esc_attr( $args[ 'option_current_value' ] ); ?>' <?php echo $_selected ?> ><?php echo $args[ 'show_option_current' ]; ?></option><?php
 				}
 			
-				do_action( 'bookacti_add_user_selectbox_options', $args );
+				do_action( 'bookacti_add_user_selectbox_options', $args, $users );
 
 				foreach( $users as $user ){
 					$_selected = selected( $user->ID, $args[ 'selected' ], false );
@@ -811,8 +810,8 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 					// Build the option label based on the array
 					$label = '';
 					foreach( $args[ 'option_label' ] as $show ) {
-						if( preg_match( '/^[a-zA-Z0-9_]+$/' , $show ) && isset( $user->$show ) ) {
-							$label .= $user->$show;
+						if( isset( $user->{ $show } ) ) {
+							$label .= $user->{ $show };
 						} else {
 							$label .= $show;
 						}
@@ -921,6 +920,27 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	
 	
 	/**
+	 * Use mb_substr if available, else use a regex
+	 * @since 1.6.0
+	 * @param string $string
+	 * @param int $offset
+	 * @param int|null $length
+	 * @return string
+	 */
+	function bookacti_substr( $string, $offset = 0, $length = null ) {
+		$substr = '';
+		if( function_exists( 'mb_substr' ) ) {
+			$substr = mb_substr( $string, $offset, $length );
+		} else {
+			$arr = preg_split( '//u', $string );
+			$slice = array_slice( $arr, $offset + 1, $length );
+			$substr = implode( '', $slice );
+		}
+		return $substr;
+	}
+	
+	
+	/**
 	 * Sort array of arrays with a ['order'] index
 	 * 
 	 * @param array $a
@@ -947,6 +967,31 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			}
 		}
 		return array();
+	}
+	
+	
+	/**
+	 * Convert an array to string recursively
+	 * @since 1.6.0
+	 * @param array $array
+	 * @return array
+	 */
+	function bookacti_format_array_for_export( $array ) {
+		if( ! is_array( $array ) ) { return $array; }
+		if( empty( $array ) ) { return ''; }
+		
+		$i = 0;
+		$string = '[';
+		foreach( $array as $key => $value ) {
+			if( $i !== 0 ) { $string .= ';'; }
+			$value = bookacti_maybe_decode_json( maybe_unserialize( $value ) );
+			if( is_array( $value ) ) { $string_value = bookacti_format_array_for_export( $value ); }
+			else { $string_value = str_replace( array( '[', ']', ';' ), '', $value ); }
+			$string .= $string_value;
+			++$i;
+		}
+		$string .= ']';
+		return $string;
 	}
 
 
@@ -1065,13 +1110,23 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	 * @return boolean
 	 */
 	function bookacti_is_json( $string ) {
-
-		if( ! is_string( $string ) ) {
-			return false;
-		}
-
+		if( ! is_string( $string ) ) { return false; }
 		json_decode( $string );
 		return ( json_last_error() == JSON_ERROR_NONE );
+	}
+
+
+	/**
+	 * Decode JSON if it is valid else return self
+	 * @since 1.6.0
+	 * @param string $string
+	 * @return array|$string
+	 */
+	function bookacti_maybe_decode_json( $string ) {
+		if( ! is_string( $string ) ) { return $string; }
+		$decoded = json_decode( $string );
+		if( json_last_error() == JSON_ERROR_NONE ) { return $decoded; }
+		return $string;
 	}
 	
 	
@@ -1144,12 +1199,52 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		
 		return apply_filters( 'bookacti_sanitized_data', $sanitized_data, $default_data, $raw_data, $keys_by_type );
 	}
+	
+	
+	/**
+	 * Escape illegal caracters in ical properties
+	 * @since 1.6.0
+	 * @param string $value
+	 * @param string $property_name
+	 * @return string
+	 */
+	function bookacti_sanitize_ical_property( $value, $property_name = '' ) {
+		$value = trim( $value );									// Remove whitespaces at the start and at the end of the string
+		$value = strip_tags( $value );								// Remove PHP and HTML elements
+		$value = html_entity_decode( $value );						// Decode html entities first because semicolons will be escaped
+		$value = preg_replace( '/([\,;])/', '\\\$1', $value );		// Escape illegal caracters in ical properties
+		$value = preg_replace( '/' . PHP_EOL . '+/', ' ', $value ); // Replace End of lines with a whitespace
+		$value = preg_replace( '/\s{2,}/', ' ', $value );			// Replace multiple whitespaces with a single space
+		$property_name_len = strlen( $property_name ) + 1;			// Add 1 character for the colon (:) after the property name
+		$lines = array();
+		while( strlen( $value ) > ( 75 - $property_name_len ) ) {
+			$space = ( 75 - $property_name_len );
+			$mbcc = $space;
+			while( $mbcc ) {
+				$line = bookacti_substr( $value, 0, $mbcc );
+				$oct = strlen( $line );
+				if ( $oct > $space ) {
+					$mbcc -= $oct - $space;
+				}
+				else {
+					$lines[] = $line;
+					$property_name_len = 0; // The leading space doesn't count
+					$value = bookacti_substr( $value, $mbcc );
+					break;
+				}
+			}
+		}
+		if( ! empty( $value ) ) {
+			$lines[] = $value;
+		}
+		return implode( PHP_EOL . ' ', $lines ); // Line break + leading space
+	}
 
 
-
-
+	
+	
 // USERS
-
+	
 	/**
 	 * Programmatically logs a user in
 	 * @since 1.5.0

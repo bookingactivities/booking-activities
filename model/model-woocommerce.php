@@ -129,7 +129,7 @@ function bookacti_is_expired_booking( $booking_id ) {
 /**
  * Reset bookings expiration dates that are currently in cart
  * @global wpdb $wpdb
- * @param string $user_id
+ * @param int|string $user_id
  * @param array $booking_id_array
  * @param string $expiration_date
  * @return int|false
@@ -167,7 +167,7 @@ function bookacti_update_in_cart_bookings_expiration_date( $user_id, $booking_id
 /**
  * Get cart expiration of a specified user. Return null if there is no activity in cart
  * @global wpdb $wpdb
- * @param string $user_id
+ * @param int|string $user_id
  * @return string|null
  */
 function bookacti_get_cart_expiration_date_per_user( $user_id ) {
@@ -190,7 +190,7 @@ function bookacti_get_cart_expiration_date_per_user( $user_id ) {
  * 
  * @version 1.5.6
  * @global wpdb $wpdb
- * @param int $user_id
+ * @param int|string $user_id
  * @param int $order_id
  * @param array $booking_id_array
  * @param string $state
@@ -361,8 +361,8 @@ function bookacti_cancel_order_pending_bookings( $order_id, $not_booking_ids = a
  * @since 1.0.0
  * @version 1.4.0
  * @global wpdb $wpdb
- * @param int $user_id
- * @param string $customer_id
+ * @param int|string $user_id
+ * @param int|string $customer_id
  * @return false|int
  */
 function bookacti_update_bookings_user_id( $user_id, $customer_id ) {
@@ -538,4 +538,93 @@ function bookacti_get_booking_group_expiration_date( $booking_group_id ) {
 	$expiration_date	= $wpdb->get_var( $query_prep );
 	
 	return $expiration_date;
+}
+
+
+/**
+ * Get the order item data corresponding to a booking
+ * @since 1.6.0
+ * @param array $booking_ids
+ * @return array|false
+ */
+function bookacti_get_order_items_data_by_bookings( $booking_ids = array(), $booking_groups_ids = array() ) {
+	// Format inputs into arrays
+	if( is_numeric( $booking_ids ) )				{ $booking_ids = array( $booking_ids ); }
+	if( is_numeric( $booking_groups_ids ) )			{ $booking_groups_ids = array( $booking_groups_ids ); }
+	if( ! is_array( $booking_ids ) )				{ $booking_ids = array(); }
+	if( ! is_array( $booking_groups_ids ) )			{ $booking_groups_ids = array(); }
+	if( ! $booking_ids && ! $booking_groups_ids )	{ return false; }
+	
+	global $wpdb;
+	
+	// This query transform the meta_key / meta_value pair (of usermeta table) into columns / values for each distinct wanted user
+	$wpdb->query( 'SET SESSION group_concat_max_len = 1000000' );
+	$select_postmeta_columns_query	= " SELECT
+										  GROUP_CONCAT( DISTINCT
+											CONCAT(
+											  'MAX( IF ( IM.meta_key = ''',
+											  meta_key,
+											  ''', IM.meta_value, NULL)) AS `',
+											  meta_key, '`'
+											)
+										  ) as select_postmeta
+										FROM " . $wpdb->prefix . "woocommerce_order_itemmeta as IM;";
+	$select_postmeta_columns = $wpdb->get_var( $select_postmeta_columns_query );
+	
+	$query	= 'SELECT OI.*, ' . $select_postmeta_columns
+			. ' FROM ' . $wpdb->prefix . 'woocommerce_order_items as OI, ' . $wpdb->prefix . 'woocommerce_order_itemmeta as IM '
+			. ' WHERE OI.order_item_id = IM.order_item_id '
+			. ' GROUP BY OI.order_item_id '
+			. ' HAVING TRUE '; // We must use HAVING instead of WHERE to filter by a column alias (which is the case for metadata)
+			
+	$variables = array();
+	$booking_ids_query = '';
+	$booking_groups_ids_query = '';
+	
+	// Comma separated booking ids
+	if( $booking_ids ) {
+		$booking_ids_query = ' bookacti_booking_id IN ( %d';
+		$array_count = count( $booking_ids );
+		if( $array_count >= 2 ) {
+			for( $i=1; $i<$array_count; ++$i ) {
+				$booking_ids_query .= ', %d';
+			}
+		}
+		$booking_ids_query .= ' ) ';
+		$variables = array_merge( $variables, $booking_ids );
+	}
+	if( $booking_groups_ids ) {
+		$booking_groups_ids_query = ' bookacti_booking_group_id IN ( %d';
+		$array_count = count( $booking_groups_ids );
+		if( $array_count >= 2 ) {
+			for( $i=1; $i<$array_count; ++$i ) {
+				$booking_groups_ids_query .= ', %d';
+			}
+		}
+		$booking_groups_ids_query .= ' ) ';
+		$variables = array_merge( $variables, $booking_groups_ids );
+	}
+	
+	if( $booking_ids && $booking_groups_ids ) {
+		$query .= ' AND ( ' . $booking_ids_query . ' OR ' . $booking_groups_ids_query . ' ) ';
+	} else if( $booking_ids ) {
+		$query .= ' AND ' . $booking_ids_query;
+	} else if( $booking_groups_ids ) {
+		$query .= ' AND ' . $booking_groups_ids_query;
+	}
+	
+	if( $variables ) {
+		$query = $wpdb->prepare( $query, $variables );
+	}
+	
+	$query = apply_filters( 'bookacti_get_order_items_data_by_bookings_query', $query, $booking_ids, $booking_groups_ids );
+	
+	$order_items = $wpdb->get_results( $query );
+	
+	$order_items_array = array();
+	foreach( $order_items as $order_item ) {
+		$order_items_array[ $order_item->order_item_id ] = $order_item;
+	}
+	
+	return apply_filters( 'bookacti_get_order_items_data_by_bookings', $order_items_array, $booking_ids, $booking_groups_ids );
 }
