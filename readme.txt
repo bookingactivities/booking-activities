@@ -5,7 +5,7 @@ Tags: booking activities, booking sport, booking form, event reservation, reserv
 Requires at least: 3.6
 Tested up to: 4.9
 Requires PHP: 5.3
-Stable tag: 1.5.9
+Stable tag: 1.6.0
 License: GPLv3 or later
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
 
@@ -317,7 +317,8 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 
 == Changelog ==
 
-= 1.6.0 =
+= 1.6.0 - 2018/11/29 =
+**[See the friendly release note](https://booking-activities.fr/en/blog/booking-activities-1-6-export-and-booking-without-account/?utm_source=wp-plugin-page&utm_medium=wordpress&utm_content=readme)**
 * Feature - Book without account
 * Feature - WooCommerce guest checkout supported
 * Feature - Export your events to ical (ics) files
@@ -435,6 +436,7 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 * Fix - Missing JS check on form without login/register field
 
 = 1.5.0 - 2018/05/05 =
+**[See the friendly release note](https://booking-activities.fr/en/blog/booking-activities-1-5-booking-forms/?utm_source=wp-plugin-page&utm_medium=wordpress&utm_content=readme)**
 * Feature - Customizable booking forms !
 * Feature - Log in / Register seamlessly as you book 
 * Feature - You can now delete your bookings and your booking groups from the booking list
@@ -481,6 +483,7 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 * Fix - Error while trying to delete a booked event
 
 = 1.4.0 - 2018/02/24 =
+**[See the friendly release note](https://booking-activities.fr/en/blog/booking-activities-1-4-availability-options/?utm_source=wp-plugin-page&utm_medium=wordpress&utm_content=readme)**
 * Feature - Set the advance booking period: customers can book events from X to Y days from today (global option and calendar option)
 * Feature - Set the minimum booking quantity required per user (activity option and group category option)
 * Feature - Set the maximum booking quantity allowed per user (activity option and group category option)
@@ -533,6 +536,7 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 * Fix - Bookings numbers were not reloaded after booking form was sent
 
 = 1.3.0 - 2018/01/28 =
+**[See the friendly release note](https://booking-activities.fr/en/blog/booking-activities-1-3-improved-booking-management/?utm_source=wp-plugin-page&utm_medium=wordpress&utm_content=readme)**
 * Tweak - Bookings page has been redesigned
 * Feature - Filter your booking list by calendars, activities, status, date, and customers (and also by events like before)
 * Feature - The booking list is now paginated and columns can be hidden (in screen options) and sorted
@@ -594,6 +598,7 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 * Dev - PHP filter Tweak - bookacti_messages have a new $raw parameter
 
 = 1.2.0 - 2017/10/12 =
+**[See the friendly release note](https://booking-activities.fr/en/blog/booking-activities-1-2-email-notifications/?utm_source=wp-plugin-page&utm_medium=wordpress&utm_content=readme)**
 * Feature - Send email notifications to the administrator and the customer when a booking is made, when its status changes and when it is rescheduled
 * Feature - Configure and customize email notifications
 * Feature - Configure some messages displayed on frontend directly through Booking Activities settings
@@ -634,6 +639,7 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 * Fix - Improved readme.txt to provide a better understanding and preview of the plugin
 
 = 1.1.0 - 2017/07/16 =
+**[See the friendly release note](https://booking-activities.fr/en/blog/booking-activities-1-1-grouped-events/?utm_source=wp-plugin-page&utm_medium=wordpress&utm_content=readme)**
 * Feature - Manage groups of events! You can group events and make your customer book a bundle of events instead of a single one.
 * Feature - Bind multiple calendars and activities to one product in WooCommerce!
 * Optimization - Calendars are now loaded faster and on page load (possibility to load after page load in Booking Activities settings)

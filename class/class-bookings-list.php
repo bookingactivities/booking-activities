@@ -244,7 +244,7 @@ if( ! class_exists( 'Bookings_List_Table' ) ) {
 			$bookings = bookacti_get_bookings( $this->filters );
 			
 			// Check if the bookings list can contain groups
-			$single_only = $filters[ 'group_by' ] === 'none';
+			$single_only = $this->filters[ 'group_by' ] === 'none';
 			$may_have_groups = false; 
 			if( ( ! $this->filters[ 'booking_group_id' ] || in_array( $this->filters[ 'group_by' ], array( 'booking_group', 'none' ), true ) ) && ! $this->filters[ 'booking_id' ] ) {
 				$may_have_groups = true;

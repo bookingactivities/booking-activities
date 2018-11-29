@@ -780,7 +780,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		
 		
 		/**
-		 * Export events of a specifc form
+		 * Export booking list according to filters as CSV
 		 * @since 1.6.0
 		 */
 		function bookacti_export_bookings_page() {
@@ -838,7 +838,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		
 		
 		/**
-		 * Export events of a specific user
+		 * Export booked events of a specific user as ICS
 		 * @since 1.6.0
 		 */
 		function bookacti_export_user_booked_events_page() {
@@ -893,7 +893,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			// Check the filename
 			$parsed_url	= parse_url( $_SERVER[ 'REQUEST_URI' ] );
 			$filename	= basename( $parsed_url[ 'path' ] );
-			if( substr( $filename, -4 ) !== '.csv' ) { esc_html_e( 'Invalid filename.', BOOKACTI_PLUGIN_NAME ); exit; }
+			if( substr( $filename, -4 ) !== '.ics' ) { esc_html_e( 'Invalid filename.', BOOKACTI_PLUGIN_NAME ); exit; }
 			
 			$atts = apply_filters( 'bookacti_export_events_attributes', array_merge( bookacti_get_booking_system_default_attributes(), array(
 				'status' => array( 'delivered', 'booked', 'pending' ),

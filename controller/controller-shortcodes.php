@@ -138,16 +138,22 @@ function bookacti_shortcode_bookings_list( $atts = array(), $content = null, $ta
 	}
 	
 	$default_atts = array_merge( bookacti_get_default_booking_filters(), array(
-		'user_id' => get_current_user_id(),
-		'per_page' => 10,
-		'status' => apply_filters( 'bookacti_booking_list_displayed_status', array( 'delivered', 'booked', 'pending', 'cancelled', 'refunded', 'refund_requested' ) )
+		'user_id'	=> get_current_user_id(),
+		'per_page'	=> 10,
+		'status'	=> apply_filters( 'bookacti_booking_list_displayed_status', array( 'delivered', 'booked', 'pending', 'cancelled', 'refunded', 'refund_requested' ) ),
+		'group_by'	=> 'booking_group'
 	) );
     $atts = shortcode_atts( $default_atts, $atts, $tag );
 	
 	$atts = bookacti_format_string_booking_filters( $atts );
+	$templates = $atts[ 'templates' ];
+	$atts[ 'templates' ] = false;
 	
 	// Format booking filters
-	$filters = apply_filters( 'bookacti_user_booking_list_booking_filters', bookacti_format_booking_filters( $atts ), $atts, $content );
+	$filters = bookacti_format_booking_filters( $atts );
+	// Allow to filter by any template
+	if( ! empty( $templates ) && is_array( $templates ) ) { $filters[ 'templates' ] = $templates; }
+	$filters = apply_filters( 'bookacti_user_booking_list_booking_filters', $filters, $atts, $content );
 	
 	$bookings_nb = bookacti_get_number_of_booking_rows( $filters );	
 	

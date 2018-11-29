@@ -76,9 +76,8 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	
 	/**
 	 * AJAX Controller - Move or resize an event, possibly while duplicating it
-	 * 
 	 * @since 1.2.2 (was bookacti_controller_update_event)
-	 * @version 1.4.4
+	 * @version 1.6.0
 	 */
 	function bookacti_controller_move_or_resize_event() {
 		
@@ -91,7 +90,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 		if( $is_nonce_valid && $is_allowed ) {
 			
-			$is_duplicated  = intval( $_POST[ 'is_duplicated' ] );
+			$is_duplicated  = ! empty( $_POST[ 'is_duplicated' ] ) ? intval( $_POST[ 'is_duplicated' ] ) : 0;
 			$filters = bookacti_format_booking_filters( array( 'event_id' => $event_id, 'active' => 1 ) );
 			$has_bookings = bookacti_get_number_of_bookings( $filters );
 
