@@ -5,7 +5,7 @@ Tags: booking activities, booking sport, booking form, event reservation, reserv
 Requires at least: 3.6
 Tested up to: 4.9
 Requires PHP: 5.3
-Stable tag: 1.6.0
+Stable tag: 1.6.1
 License: GPLv3 or later
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
 
@@ -316,6 +316,11 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 
 
 == Changelog ==
+
+= 1.6.1 - 2018/11/30 =
+* Fix - The booking list was empty if no booking (group) had metadata
+* Fix - Past events were not always exported (according to calendar field settings)
+* Fix - Calendar field settings were not always overriden by URL parameters while exporting events
 
 = 1.6.0 - 2018/11/29 =
 **[See the friendly release note](https://booking-activities.fr/en/blog/booking-activities-1-6-export-and-booking-without-account/?utm_source=wp-plugin-page&utm_medium=wordpress&utm_content=readme)**

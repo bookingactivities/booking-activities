@@ -214,15 +214,16 @@ add_filter( 'woocommerce_email_order_items_args', 'bookacti_wc_email_order_item_
 /**
  * Add WC notifications tags descriptions
  * @since 1.6.0
+ * @version 1.6.1
  * @param array $tags
  * @param int $notification_id
  * @return array
  */
 function bookacti_wc_notifications_tags( $tags, $notification_id ) {
-	$tags[ '{price}' ] = esc_html__( 'Booking price, with currency.', BAAF_PLUGIN_NAME );
+	$tags[ '{price}' ] = esc_html__( 'Booking price, with currency.', BOOKACTI_PLUGIN_NAME );
 	
 	if( strpos( $notification_id, 'refund' ) !== false ) {
-		$tags[ '{refund_coupon_code}' ] = esc_html__( 'The WooCommerce coupon code generated when the booking was refunded.', BAAF_PLUGIN_NAME );
+		$tags[ '{refund_coupon_code}' ] = esc_html__( 'The WooCommerce coupon code generated when the booking was refunded.', BOOKACTI_PLUGIN_NAME );
 	}
 	
 	return $tags;

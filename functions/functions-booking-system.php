@@ -423,42 +423,60 @@ function bookacti_format_booking_system_attributes( $atts = array() ) {
 /**
  * Format booking system attributes passed via the URL
  * @since 1.6.0
+ * @version 1.6.1
  * @param array $atts
  * @return array
  */
 function bookacti_format_booking_system_url_attributes( $atts = array() ) {
 	$default_atts = bookacti_get_booking_system_default_attributes();
-	if( ! $atts ) { $atts = bookacti_get_booking_system_default_attributes(); }
+	if( ! $atts ) { $atts = $default_atts; }
 	
-	// Replace the parameters with those in URL
-	if( ! empty( $_REQUEST[ 'past_events' ] ) && $_REQUEST[ 'past_events' ] !== 'auto' ) {
-		$atts[ 'past_events' ]			= $_REQUEST[ 'past_events' ] ? 1 : 0;
-		$atts[ 'past_events_bookable' ]	= $atts[ 'past_events' ];
+	$url_raw_atts = $_REQUEST;
+	
+	// Bind past_events and past_events_bookable together
+	if( isset( $url_raw_atts[ 'past_events' ] ) ) {
+		// If 'past_events' is set on 'auto', keep the initial value
+		if( $url_raw_atts[ 'past_events' ] === 'auto' && isset( $atts[ 'past_events' ] ) ) {
+			$url_raw_atts[ 'past_events' ] = $atts[ 'past_events' ];
+		}
+		
+		// Make 'past_events_bookable' = 'past_events'
+		$was_past_events					= ! empty( $atts[ 'past_events' ] );
+		$atts[ 'past_events' ]				= ! empty( $url_raw_atts[ 'past_events' ] ) ? 1 : 0;
+		$atts[ 'past_events_bookable' ]		= $atts[ 'past_events' ];
+		$url_raw_atts[ 'past_events_bookable' ]	= $atts[ 'past_events' ];
+		
+		// If the 'past_events' value changed, reset the template dates to compute them again later with bookacti_format_booking_system_attributes
+		if( $atts[ 'past_events' ] && ! $was_past_events ) {
+			$url_raw_atts[ 'template_data' ][ 'start' ] = '';
+			$url_raw_atts[ 'template_data' ][ 'end' ] = '';
+		}
 	}
 	
 	// Format the URL attributes
-	if( ! empty( $_REQUEST[ 'start' ] ) )	{ $_REQUEST[ 'template_data' ][ 'start' ] = $_REQUEST[ 'start' ]; }
-	if( ! empty( $_REQUEST[ 'end' ] ) )		{ $_REQUEST[ 'template_data' ][ 'end' ] = $_REQUEST[ 'end' ]; }
+	if( ! empty( $url_raw_atts[ 'start' ] ) )	{ $url_raw_atts[ 'template_data' ][ 'start' ] = $url_raw_atts[ 'start' ]; }
+	if( ! empty( $url_raw_atts[ 'end' ] ) )		{ $url_raw_atts[ 'template_data' ][ 'end' ] = $url_raw_atts[ 'end' ]; }
 	
 	$default_template_settings = bookacti_format_template_settings( array() );
 	foreach( $default_template_settings as $att_name => $att_value ) {
-		if( empty( $_REQUEST[ $att_name ] ) ) { continue; }
-		$_REQUEST[ 'template_data' ][ 'settings' ][ $att_name ] = $_REQUEST[ $att_name ];
+		if( ! isset( $url_raw_atts[ $att_name ] ) || ( ! $url_raw_atts[ $att_name ] && ! in_array( $url_raw_atts[ $att_name ], array( 0, '0' ), true ) ) ) { continue; }
+		$url_raw_atts[ 'template_data' ][ 'settings' ][ $att_name ] = $url_raw_atts[ $att_name ];
 	}
 	
-	$url_atts = bookacti_format_booking_system_attributes( $_REQUEST );
+	$url_atts = bookacti_format_booking_system_attributes( $url_raw_atts );
 	
 	// Replace booking system attributes with attributes passed through the URL
 	foreach( $default_atts as $att_name => $att_value ) {
-		if( empty( $_REQUEST[ $att_name ] ) ) { continue; }
+		if( ! isset( $url_raw_atts[ $att_name ] ) || ( ! $url_raw_atts[ $att_name ] && ! in_array( $url_raw_atts[ $att_name ], array( 0, '0' ), true ) ) ) { continue; }
+		if( $att_name === 'past_events' && $url_raw_atts[ 'past_events' ] === 'auto' ) { continue; }
 		$atts[ $att_name ] = $url_atts[ $att_name ];
 	}
 	foreach( $url_atts[ 'template_data' ] as $att_name => $att_value ) {
-		if( empty( $_REQUEST[ $att_name ] ) && $att_name !== 'settings' ) { continue; }
+		if( $att_name === 'settings' ) { continue; }
 		$atts[ 'template_data' ][ $att_name ] = $att_value;
 	}
 	foreach( $default_template_settings as $att_name => $att_value ) {
-		if( empty( $_REQUEST[ $att_name ] ) ) { continue; }
+		if( ! isset( $url_raw_atts[ $att_name ] ) || ( ! $url_raw_atts[ $att_name ] && ! in_array( $url_raw_atts[ $att_name ], array( 0, '0' ), true ) ) ) { continue; }
 		$atts[ 'template_data' ][ 'settings' ][ $att_name ] = $url_atts[ 'template_data' ][ 'settings' ][ $att_name ];
 	}
 	
