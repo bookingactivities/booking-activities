@@ -1,7 +1,7 @@
 <?php
 /**
  * Booking list page
- * @version 1.6.0
+ * @version 1.6.2
  */
 
 // Exit if accessed directly
@@ -292,18 +292,32 @@ if( ! $templates ) {
 				'activities'				=> $selected_activities, 
 				'booking_id'				=> isset( $_REQUEST[ 'booking_id' ] )		? intval( $_REQUEST[ 'booking_id' ] ) : 0, 
 				'booking_group_id'			=> isset( $_REQUEST[ 'booking_group_id' ] )	? intval( $_REQUEST[ 'booking_group_id' ] ) : 0, 
+				'group_category_id'			=> isset( $_REQUEST[ 'group_category_id' ] )? intval( $_REQUEST[ 'group_category_id' ] ): 0,
 				'event_group_id'			=> $event_group_id, 
 				'event_id'					=> $event_id, 
 				'event_start'				=> $event_start, 
 				'event_end'					=> $event_end,
 				'status'					=> $selected_status,
 				'user_id'					=> $selected_user,
+				'form_id'					=> isset( $_REQUEST[ 'form_id' ] ) ? $_REQUEST[ 'form_id' ] : 0,
 				'from'						=> $from,
 				'to'						=> $to,
 				'group_by'					=> isset( $_REQUEST[ 'group_by' ] )	? $_REQUEST[ 'group_by' ] : '',
 				'order_by'					=> isset( $_REQUEST[ 'orderby' ] )	? $_REQUEST[ 'orderby' ] : array( 'creation_date', 'id' ),
 				'order'						=> isset( $_REQUEST[ 'order' ] )	? $_REQUEST[ 'order' ] : 'DESC',
-				'fetch_meta'				=> true
+				'fetch_meta'				=> true,
+				'in__booking_id'			=> isset( $_REQUEST[ 'in__booking_id' ] )			? $_REQUEST[ 'in__booking_id' ] : array(), 
+				'in__booking_group_id'		=> isset( $_REQUEST[ 'in__booking_group_id' ] )		? $_REQUEST[ 'in__booking_group_id' ] : array(), 
+				'in__group_category_id'		=> isset( $_REQUEST[ 'in__group_category_id' ] )	? $_REQUEST[ 'in__group_category_id' ] : array(), 
+				'in__event_group_id'		=> isset( $_REQUEST[ 'in__event_group_id' ] )		? $_REQUEST[ 'in__event_group_id' ] : array(), 
+				'in__user_id'				=> isset( $_REQUEST[ 'in__user_id' ] )				? $_REQUEST[ 'in__user_id' ] : array(), 
+				'in__form_id'				=> isset( $_REQUEST[ 'in__form_id' ] )				? $_REQUEST[ 'in__form_id' ] : array(), 
+				'not_in__booking_id'		=> isset( $_REQUEST[ 'not_in__booking_id' ] )		? $_REQUEST[ 'not_in__booking_id' ] : array(), 
+				'not_in__booking_group_id'	=> isset( $_REQUEST[ 'not_in__booking_group_id' ] )	? $_REQUEST[ 'not_in__booking_group_id' ] : array(), 
+				'not_in__group_category_id'	=> isset( $_REQUEST[ 'not_in__group_category_id' ] )? $_REQUEST[ 'not_in__group_category_id' ] : array(),
+				'not_in__event_group_id'	=> isset( $_REQUEST[ 'not_in__event_group_id' ] )	? $_REQUEST[ 'not_in__event_group_id' ] : array(), 
+				'not_in__user_id'			=> isset( $_REQUEST[ 'not_in__user_id' ] )			? $_REQUEST[ 'not_in__user_id' ] : array(), 
+				'not_in__form_id'			=> isset( $_REQUEST[ 'not_in__form_id' ] )			? $_REQUEST[ 'not_in__form_id' ] : array()
 			);
 			
 			$bookings_list_table = new Bookings_List_Table();

@@ -302,7 +302,7 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 3. Create daily, weekly or monthly repeated events. You can add exception dates to the repetition.
 4. Grouping your events is simple: just select multiple events and click on 'Add a group'. Or select an existing group and start editing it right away.
 5. Create and customize your booking form. You can combine events and settings of multiple schedules. You can make each form unique.
-6. Use a shortcode to display a booking form (or a calendar alone). Your customer can log in or register as they book, they can also book without account.
+6. Use a shortcode to display a booking form (or a calendar alone). Your customers can log in or register as they book, they can also book without account.
 7. When a customer clicks on a grouped event, the whole group is selected. If the event is part of several groups, the customer has to choose one from a dialog.
 8. Easily bind a reservation form to a WooCommerce product. You can set a different event calendar to each variation.
 9. A reservation form appears automatically on desired WooCommerce product pages.
@@ -317,13 +317,17 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 
 == Changelog ==
 
+= 1.6.2 =
+* Dev - Use all booking list filters via URL
+* Dev - Filter booking list by multiple form id, user id, group category id, group of events id
+
 = 1.6.1 - 2018/11/30 =
 * Fix - The booking list was empty if no booking (group) had metadata
 * Fix - Past events were not always exported (according to calendar field settings)
 * Fix - Calendar field settings were not always overriden by URL parameters while exporting events
 
 = 1.6.0 - 2018/11/29 =
-**[See the friendly release note](https://booking-activities.fr/en/blog/booking-activities-1-6-export-and-booking-without-account/?utm_source=wp-plugin-page&utm_medium=wordpress&utm_content=readme)**
+* **[See the friendly release note](https://booking-activities.fr/en/blog/booking-activities-1-6-export-and-booking-without-account/?utm_source=wp-plugin-page&utm_medium=wordpress&utm_content=readme)**
 * Feature - Book without account
 * Feature - WooCommerce guest checkout supported
 * Feature - Export your events to ical (ics) files
@@ -441,7 +445,7 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 * Fix - Missing JS check on form without login/register field
 
 = 1.5.0 - 2018/05/05 =
-**[See the friendly release note](https://booking-activities.fr/en/blog/booking-activities-1-5-booking-forms/?utm_source=wp-plugin-page&utm_medium=wordpress&utm_content=readme)**
+* **[See the friendly release note](https://booking-activities.fr/en/blog/booking-activities-1-5-booking-forms/?utm_source=wp-plugin-page&utm_medium=wordpress&utm_content=readme)**
 * Feature - Customizable booking forms !
 * Feature - Log in / Register seamlessly as you book 
 * Feature - You can now delete your bookings and your booking groups from the booking list
@@ -488,7 +492,7 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 * Fix - Error while trying to delete a booked event
 
 = 1.4.0 - 2018/02/24 =
-**[See the friendly release note](https://booking-activities.fr/en/blog/booking-activities-1-4-availability-options/?utm_source=wp-plugin-page&utm_medium=wordpress&utm_content=readme)**
+* **[See the friendly release note](https://booking-activities.fr/en/blog/booking-activities-1-4-availability-options/?utm_source=wp-plugin-page&utm_medium=wordpress&utm_content=readme)**
 * Feature - Set the advance booking period: customers can book events from X to Y days from today (global option and calendar option)
 * Feature - Set the minimum booking quantity required per user (activity option and group category option)
 * Feature - Set the maximum booking quantity allowed per user (activity option and group category option)
@@ -541,7 +545,7 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 * Fix - Bookings numbers were not reloaded after booking form was sent
 
 = 1.3.0 - 2018/01/28 =
-**[See the friendly release note](https://booking-activities.fr/en/blog/booking-activities-1-3-improved-booking-management/?utm_source=wp-plugin-page&utm_medium=wordpress&utm_content=readme)**
+* **[See the friendly release note](https://booking-activities.fr/en/blog/booking-activities-1-3-improved-booking-management/?utm_source=wp-plugin-page&utm_medium=wordpress&utm_content=readme)**
 * Tweak - Bookings page has been redesigned
 * Feature - Filter your booking list by calendars, activities, status, date, and customers (and also by events like before)
 * Feature - The booking list is now paginated and columns can be hidden (in screen options) and sorted
@@ -603,7 +607,7 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 * Dev - PHP filter Tweak - bookacti_messages have a new $raw parameter
 
 = 1.2.0 - 2017/10/12 =
-**[See the friendly release note](https://booking-activities.fr/en/blog/booking-activities-1-2-email-notifications/?utm_source=wp-plugin-page&utm_medium=wordpress&utm_content=readme)**
+* **[See the friendly release note](https://booking-activities.fr/en/blog/booking-activities-1-2-email-notifications/?utm_source=wp-plugin-page&utm_medium=wordpress&utm_content=readme)**
 * Feature - Send email notifications to the administrator and the customer when a booking is made, when its status changes and when it is rescheduled
 * Feature - Configure and customize email notifications
 * Feature - Configure some messages displayed on frontend directly through Booking Activities settings
@@ -644,7 +648,7 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 * Fix - Improved readme.txt to provide a better understanding and preview of the plugin
 
 = 1.1.0 - 2017/07/16 =
-**[See the friendly release note](https://booking-activities.fr/en/blog/booking-activities-1-1-grouped-events/?utm_source=wp-plugin-page&utm_medium=wordpress&utm_content=readme)**
+* **[See the friendly release note](https://booking-activities.fr/en/blog/booking-activities-1-1-grouped-events/?utm_source=wp-plugin-page&utm_medium=wordpress&utm_content=readme)**
 * Feature - Manage groups of events! You can group events and make your customer book a bundle of events instead of a single one.
 * Feature - Bind multiple calendars and activities to one product in WooCommerce!
 * Optimization - Calendars are now loaded faster and on page load (possibility to load after page load in Booking Activities settings)

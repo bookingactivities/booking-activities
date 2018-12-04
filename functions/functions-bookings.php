@@ -101,6 +101,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	/**
 	 * Get Default booking filters
 	 * @since 1.6.0
+	 * @version 1.6.2
 	 * @return array
 	 */
 	function bookacti_get_default_booking_filters() {
@@ -109,6 +110,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			'activities'				=> array(), 
 			'booking_id'				=> 0, 
 			'booking_group_id'			=> 0,
+			'group_category_id'			=> 0, 
 			'event_group_id'			=> 0, 
 			'event_id'					=> 0, 
 			'event_start'				=> '', 
@@ -126,9 +128,16 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			'per_page'					=> 0,
 			'in__booking_id'			=> array(),
 			'in__booking_group_id'		=> array(),
+			'in__group_category_id'		=> array(),
+			'in__event_group_id'		=> array(),
+			'in__user_id'				=> array(),
+			'in__form_id'				=> array(),
 			'not_in__booking_id'		=> array(),
 			'not_in__booking_group_id'	=> array(),
+			'not_in__group_category_id'	=> array(),
+			'not_in__event_group_id'	=> array(),
 			'not_in__user_id'			=> array(),
+			'not_in__form_id'			=> array(),
 			'fetch_meta'				=> false
 		));
 	}
@@ -137,7 +146,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	/**
 	 * Format booking filters
 	 * @since 1.3.0
-	 * @version 1.6.0
+	 * @version 1.6.2
 	 * @param array $filters 
 	 * @return array
 	 */
@@ -175,12 +184,12 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 				}
 				else { $current_value = $default_value; }
 				
-			} else if( in_array( $filter, array( 'activities', 'in__booking_id', 'in__booking_group_id', 'not_in__booking_id', 'not_in__booking_group_id' ), true ) ) {
+			} else if( in_array( $filter, array( 'activities', 'in__booking_id', 'in__booking_group_id', 'in__group_category_id', 'in__event_group_id', 'in__form_id', 'not_in__booking_id', 'not_in__booking_group_id', 'not_in__group_category_id', 'not_in__event_group_id', 'not_in__form_id' ), true ) ) {
 				if( is_numeric( $current_value ) )	{ $current_value = array( $current_value ); }
 				if( ! is_array( $current_value ) )	{ $current_value = $default_value; }
 				else if( ( $i = array_search( 'all', $current_value ) ) !== false ) { unset( $current_value[ $i ] ); }
 				
-			} else if( in_array( $filter, array( 'not_in__user_id' ), true ) ) {
+			} else if( in_array( $filter, array( 'in__user_id', 'not_in__user_id' ), true ) ) {
 				if( is_numeric( $current_value ) || is_string( $current_value ) )	{ $current_value = array( $current_value ); }
 				if( ! is_array( $current_value ) )	{ $current_value = $default_value; }
 				
@@ -189,7 +198,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 				if( ! is_array( $current_value ) )	{ $current_value = $default_value; }
 				else if( ( $i = array_search( 'all', $current_value ) ) !== false ) { unset( $current_value[ $i ] ); }
 				
-			} else if( in_array( $filter, array( 'booking_id', 'booking_group_id', 'event_group_id', 'event_id', 'offset', 'per_page' ), true ) ) {
+			} else if( in_array( $filter, array( 'booking_id', 'booking_group_id', 'group_category_id', 'event_group_id', 'event_id', 'offset', 'per_page' ), true ) ) {
 				if( ! is_numeric( $current_value ) ){ $current_value = $default_value; }
 			
 			} else if( in_array( $filter, array( 'event_start', 'event_end' ), true ) ) {

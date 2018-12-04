@@ -441,7 +441,7 @@ if( ! class_exists( 'Bookings_List_Table' ) ) {
 		
 		/**
 		 * Format filters passed as argument or retrieved via POST or GET
-		 * @version 1.6.0
+		 * @version 1.6.2
 		 * @access public
 		 * @param array $filters
 		 * @return array
@@ -469,18 +469,32 @@ if( ! class_exists( 'Bookings_List_Table' ) ) {
 					'activities'				=> isset( $_REQUEST[ 'activities' ] )		? $_REQUEST[ 'activities' ] : array(), 
 					'booking_id'				=> isset( $_REQUEST[ 'booking_id' ] )		? intval( $_REQUEST[ 'booking_id' ] ): 0, 
 					'booking_group_id'			=> isset( $_REQUEST[ 'booking_group_id' ] )	? intval( $_REQUEST[ 'booking_group_id' ] ): 0,
+					'group_category_id'			=> isset( $_REQUEST[ 'group_category_id' ] )? intval( $_REQUEST[ 'group_category_id' ] ): 0,
 					'event_group_id'			=> $event_group_id, 
 					'event_id'					=> $event_id, 
 					'event_start'				=> $event_start, 
 					'event_end'					=> $event_end,
 					'status'					=> isset( $_REQUEST[ 'status' ] )			? $_REQUEST[ 'status' ] : array(),
 					'user_id'					=> isset( $_REQUEST[ 'user_id' ] )			? $_REQUEST[ 'user_id' ] : 0,
+					'form_id'					=> isset( $_REQUEST[ 'form_id' ] )			? $_REQUEST[ 'form_id' ] : 0,
 					'from'						=> isset( $_REQUEST[ 'from' ] )				? $_REQUEST[ 'from' ] : '',
 					'to'						=> isset( $_REQUEST[ 'to' ] )				? $_REQUEST[ 'to' ] : '',
 					'group_by'					=> isset( $_REQUEST[ 'group_by' ] )			? $_REQUEST[ 'group_by' ] : '',
 					'order_by'					=> isset( $_REQUEST[ 'orderby' ] )			? $_REQUEST[ 'orderby' ] : array( 'creation_date', 'id' ),
 					'order'						=> isset( $_REQUEST[ 'order' ] )			? $_REQUEST[ 'order' ] : 'DESC',
-					'fetch_meta'				=> isset( $_REQUEST[ 'fetch_meta' ] )		? $_REQUEST[ 'fetch_meta' ] : true
+					'fetch_meta'				=> isset( $_REQUEST[ 'fetch_meta' ] )		? $_REQUEST[ 'fetch_meta' ] : true,
+					'in__booking_id'			=> isset( $_REQUEST[ 'in__booking_id' ] )			? $_REQUEST[ 'in__booking_id' ] : array(), 
+					'in__booking_group_id'		=> isset( $_REQUEST[ 'in__booking_group_id' ] )		? $_REQUEST[ 'in__booking_group_id' ] : array(), 
+					'in__group_category_id'		=> isset( $_REQUEST[ 'in__group_category_id' ] )	? $_REQUEST[ 'in__group_category_id' ] : array(), 
+					'in__event_group_id'		=> isset( $_REQUEST[ 'in__event_group_id' ] )		? $_REQUEST[ 'in__event_group_id' ] : array(), 
+					'in__user_id'				=> isset( $_REQUEST[ 'in__user_id' ] )				? $_REQUEST[ 'in__user_id' ] : array(), 
+					'in__form_id'				=> isset( $_REQUEST[ 'in__form_id' ] )				? $_REQUEST[ 'in__form_id' ] : array(), 
+					'not_in__booking_id'		=> isset( $_REQUEST[ 'not_in__booking_id' ] )		? $_REQUEST[ 'not_in__booking_id' ] : array(), 
+					'not_in__booking_group_id'	=> isset( $_REQUEST[ 'not_in__booking_group_id' ] )	? $_REQUEST[ 'not_in__booking_group_id' ] : array(), 
+					'not_in__group_category_id'	=> isset( $_REQUEST[ 'not_in__group_category_id' ] )? $_REQUEST[ 'not_in__group_category_id' ] : array(), 
+					'not_in__event_group_id'	=> isset( $_REQUEST[ 'not_in__event_group_id' ] )	? $_REQUEST[ 'not_in__event_group_id' ] : array(), 
+					'not_in__user_id'			=> isset( $_REQUEST[ 'not_in__user_id' ] )			? $_REQUEST[ 'not_in__user_id' ] : array(), 
+					'not_in__form_id'			=> isset( $_REQUEST[ 'not_in__form_id' ] )			? $_REQUEST[ 'not_in__form_id' ] : array()
 				);
 			}
 			
@@ -695,11 +709,12 @@ if( ! class_exists( 'Bookings_List_Table' ) ) {
 		 * Get an associative array ( option_name => option_title ) with the list
 		 * of bulk actions available on this table.
 		 * @since 1.6.0
+		 * @version 1.6.2
 		 * @return array
 		 */
 		protected function get_bulk_actions() {
 			return apply_filters( 'bookacti_booking_list_bulk_actions', array(
-				'export' => esc_html__( 'Export', BOOKACTI_PLUGIN_NAME )
+				'export' => esc_html_x( 'Export', 'action', BOOKACTI_PLUGIN_NAME )
 			) );
 		}
 		

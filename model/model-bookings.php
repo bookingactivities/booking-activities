@@ -174,7 +174,7 @@ function bookacti_update_booking_quantity( $booking_id, $new_quantity, $expirati
 
 /**
  * Get bookings according to filters
- * @version 1.6.1
+ * @version 1.6.2
  * @global wpdb $wpdb
  * @param array $filters Use bookacti_format_booking_filters() before
  * @return array
@@ -213,8 +213,13 @@ function bookacti_get_bookings( $filters ) {
 			. ' JOIN ' . BOOKACTI_TABLE_ACTIVITIES . ' as A ON E.activity_id = A.id ' 
 			. ' JOIN ' . BOOKACTI_TABLE_TEMPLATES . ' as T ON E.template_id = T.id ';
 	
-	if( $filters[ 'event_group_id' ] ) {
-		$query .= ' JOIN ' . BOOKACTI_TABLE_BOOKING_GROUPS . ' as BG ON B.group_id = BG.id ';
+	if( $filters[ 'event_group_id' ] || $filters[ 'in__event_group_id' ] || $filters[ 'not_in__event_group_id' ]
+	||  $filters[ 'group_category_id' ] || $filters[ 'in__group_category_id' ] || $filters[ 'not_in__group_category_id' ] ) {
+		$query .= ' LEFT JOIN ' . BOOKACTI_TABLE_BOOKING_GROUPS . ' as BG ON B.group_id = BG.id ';
+	}
+	
+	if( $filters[ 'group_category_id' ] || $filters[ 'in__group_category_id' ] || $filters[ 'not_in__group_category_id' ] ) {
+		$query .= ' LEFT JOIN ' . BOOKACTI_TABLE_EVENT_GROUPS . ' as EG ON BG.event_group_id = EG.id ';
 	}
 	
 	if( $filters[ 'fetch_meta' ] ) { 
@@ -348,20 +353,73 @@ function bookacti_get_bookings( $filters ) {
 	}
 	
 	if( $filters[ 'not_in__booking_group_id' ] ) {
-		$query .= ' AND B.group_id NOT IN ( %d ';
+		$query .= ' AND ( B.group_id IS NULL OR B.group_id NOT IN ( %d ';
 		$array_count = count( $filters[ 'not_in__booking_group_id' ] );
 		if( $array_count >= 2 ) {
 			for( $i=1; $i<$array_count; ++$i ) {
 				$query .= ', %d ';
 			}
 		}
-		$query .= ') ';
+		$query .= ') ) ';
 		$variables = array_merge( $variables, $filters[ 'not_in__booking_group_id' ] );
 	}
 	
 	if( $filters[ 'event_group_id' ] ) {
 		$query .= ' AND BG.event_group_id = %d ';
 		$variables[] = $filters[ 'event_group_id' ];
+	}
+	
+	if( $filters[ 'in__event_group_id' ] ) {
+		$query .= ' AND BG.event_group_id IN ( %d ';
+		$array_count = count( $filters[ 'in__event_group_id' ] );
+		if( $array_count >= 2 ) {
+			for( $i=1; $i<$array_count; ++$i ) {
+				$query .= ', %d ';
+			}
+		}
+		$query .= ') ';
+		$variables = array_merge( $variables, $filters[ 'in__event_group_id' ] );
+	}
+	
+	if( $filters[ 'not_in__event_group_id' ] ) {
+		$query .= ' AND ( B.group_id IS NULL OR BG.event_group_id NOT IN ( %d ';
+		$array_count = count( $filters[ 'not_in__event_group_id' ] );
+		if( $array_count >= 2 ) {
+			for( $i=1; $i<$array_count; ++$i ) {
+				$query .= ', %d ';
+			}
+		}
+		$query .= ') ) ';
+		$variables = array_merge( $variables, $filters[ 'not_in__event_group_id' ] );
+	}
+	
+	if( $filters[ 'group_category_id' ] ) {
+		$query .= ' AND EG.category_id = %d ';
+		$variables[] = $filters[ 'group_category_id' ];
+	}
+	
+	if( $filters[ 'in__group_category_id' ] ) {
+		$query .= ' AND EG.category_id IN ( %d ';
+		$array_count = count( $filters[ 'in__group_category_id' ] );
+		if( $array_count >= 2 ) {
+			for( $i=1; $i<$array_count; ++$i ) {
+				$query .= ', %d ';
+			}
+		}
+		$query .= ') ';
+		$variables = array_merge( $variables, $filters[ 'in__group_category_id' ] );
+	}
+	
+	if( $filters[ 'not_in__group_category_id' ] ) {
+		$query .= ' AND ( B.group_id IS NULL OR EG.category_id NOT IN ( %d ';
+		$array_count = count( $filters[ 'not_in__group_category_id' ] );
+		if( $array_count >= 2 ) {
+			for( $i=1; $i<$array_count; ++$i ) {
+				$query .= ', %d ';
+			}
+		}
+		$query .= ') ) ';
+		$variables = array_merge( $variables, $filters[ 'not_in__group_category_id' ] );
 	}
 	
 	if( $filters[ 'event_id' ] ) {
@@ -384,20 +442,56 @@ function bookacti_get_bookings( $filters ) {
 		$variables[] = $filters[ 'form_id' ];
 	}
 
+	if( $filters[ 'in__form_id' ] ) {
+		$query .= ' AND B.form_id IN ( %d ';
+		$array_count = count( $filters[ 'in__form_id' ] );
+		if( $array_count >= 2 ) {
+			for( $i=1; $i<$array_count; ++$i ) {
+				$query .= ', %d ';
+			}
+		}
+		$query .= ') ';
+		$variables = array_merge( $variables, $filters[ 'in__form_id' ] );
+	}
+	
+	if( $filters[ 'not_in__form_id' ] ) {
+		$query .= ' AND ( B.form_id IS NULL OR B.form_id NOT IN ( %d ';
+		$array_count = count( $filters[ 'not_in__form_id' ] );
+		if( $array_count >= 2 ) {
+			for( $i=1; $i<$array_count; ++$i ) {
+				$query .= ', %d ';
+			}
+		}
+		$query .= ') ) ';
+		$variables = array_merge( $variables, $filters[ 'not_in__form_id' ] );
+	}
+	
 	if( $filters[ 'user_id' ] ) {
 		$query .= ' AND B.user_id = %s ';
 		$variables[] = $filters[ 'user_id' ];
 	}
 	
-	if( $filters[ 'not_in__user_id' ] ) {
-		$query .= ' AND B.user_id NOT IN ( %s ';
-		$array_count = count( $filters[ 'not_in__user_id' ] );
+	if( $filters[ 'in__user_id' ] ) {
+		$query .= ' AND B.user_id IN ( %s ';
+		$array_count = count( $filters[ 'in__user_id' ] );
 		if( $array_count >= 2 ) {
 			for( $i=1; $i<$array_count; ++$i ) {
 				$query .= ', %s ';
 			}
 		}
 		$query .= ') ';
+		$variables = array_merge( $variables, $filters[ 'in__user_id' ] );
+	}
+	
+	if( $filters[ 'not_in__user_id' ] ) {
+		$query .= ' AND ( B.user_id IS NULL OR B.user_id NOT IN ( %s ';
+		$array_count = count( $filters[ 'not_in__user_id' ] );
+		if( $array_count >= 2 ) {
+			for( $i=1; $i<$array_count; ++$i ) {
+				$query .= ', %s ';
+			}
+		}
+		$query .= ') ) ';
 		$variables = array_merge( $variables, $filters[ 'not_in__user_id' ] );
 	}
 	
@@ -460,7 +554,7 @@ function bookacti_get_bookings( $filters ) {
  * Get the total amount of booking rows according to filters
  * 
  * @since 1.3.1
- * @version 1.6.0
+ * @version 1.6.2
  * @global wpdb $wpdb
  * @param array $filters Use bookacti_format_booking_filters() before
  * @return int
@@ -469,16 +563,23 @@ function bookacti_get_number_of_booking_rows( $filters ) {
 	global $wpdb;
 	
 	$query	= ' SELECT COUNT( list_items_count ) FROM ( '
-				. ' SELECT COUNT( DISTINCT B.id ) as list_items_count, IF( B.group_id IS NULL, B.id, CONCAT( "G", B.group_id ) ) as unique_group_id ' 
-				. ' FROM ' . BOOKACTI_TABLE_BOOKINGS . ' as B, ' . BOOKACTI_TABLE_EVENTS . ' as E, ' . BOOKACTI_TABLE_ACTIVITIES . ' as A, ' . BOOKACTI_TABLE_TEMPLATES . ' as T ';
+				. ' SELECT COUNT( DISTINCT B.id ) as list_items_count, IF( B.group_id IS NULL, B.id, CONCAT( "G", B.group_id ) ) as unique_group_id ';
 	
-	if( $filters[ 'event_group_id' ] ) {
-		$query .= ', ' . BOOKACTI_TABLE_BOOKING_GROUPS . ' as BG ';
+	$query .= ' FROM ' . BOOKACTI_TABLE_BOOKINGS . ' as B ' 
+			. ' JOIN ' . BOOKACTI_TABLE_EVENTS . ' as E ON B.event_id = E.id ' 
+			. ' JOIN ' . BOOKACTI_TABLE_ACTIVITIES . ' as A ON E.activity_id = A.id ' 
+			. ' JOIN ' . BOOKACTI_TABLE_TEMPLATES . ' as T ON E.template_id = T.id ';
+	
+	if( $filters[ 'event_group_id' ] || $filters[ 'in__event_group_id' ] || $filters[ 'not_in__event_group_id' ] 
+	||  $filters[ 'group_category_id' ] || $filters[ 'in__group_category_id' ] || $filters[ 'not_in__group_category_id' ] ) {
+		$query .= ' LEFT JOIN ' . BOOKACTI_TABLE_BOOKING_GROUPS . ' as BG ON B.group_id = BG.id ';
 	}
 	
-	$query	.= ' WHERE B.event_id = E.id '
-			. ' AND E.activity_id = A.id '
-			. ' AND E.template_id = T.id ';
+	if( $filters[ 'group_category_id' ] || $filters[ 'in__group_category_id' ] || $filters[ 'not_in__group_category_id' ] ) {
+		$query .= ' LEFT JOIN ' . BOOKACTI_TABLE_EVENT_GROUPS . ' as EG ON BG.event_group_id = EG.id ';
+	}
+	
+	$query	.= ' WHERE TRUE ';
 	
 	// Set current datetime
 	$timezone					= new DateTimeZone( bookacti_get_setting_value( 'bookacti_general_settings', 'timezone' ) );
@@ -600,21 +701,73 @@ function bookacti_get_number_of_booking_rows( $filters ) {
 	}
 	
 	if( $filters[ 'not_in__booking_group_id' ] ) {
-		$query .= ' AND B.group_id NOT IN ( %d ';
+		$query .= ' AND ( B.group_id IS NULL OR B.group_id NOT IN ( %d ';
 		$array_count = count( $filters[ 'not_in__booking_group_id' ] );
 		if( $array_count >= 2 ) {
 			for( $i=1; $i<$array_count; ++$i ) {
 				$query .= ', %d ';
 			}
 		}
-		$query .= ') ';
+		$query .= ') ) ';
 		$variables = array_merge( $variables, $filters[ 'not_in__booking_group_id' ] );
 	}
 	
 	if( $filters[ 'event_group_id' ] ) {
-		$query	.= ' AND B.group_id = BG.id '
-				. ' AND BG.event_group_id = %d ';
+		$query .= ' AND BG.event_group_id = %d ';
 		$variables[] = $filters[ 'event_group_id' ];
+	}
+	
+	if( $filters[ 'in__event_group_id' ] ) {
+		$query .= ' AND BG.event_group_id IN ( %d ';
+		$array_count = count( $filters[ 'in__event_group_id' ] );
+		if( $array_count >= 2 ) {
+			for( $i=1; $i<$array_count; ++$i ) {
+				$query .= ', %d ';
+			}
+		}
+		$query .= ') ';
+		$variables = array_merge( $variables, $filters[ 'in__event_group_id' ] );
+	}
+	
+	if( $filters[ 'not_in__event_group_id' ] ) {
+		$query .= ' AND ( B.group_id IS NULL OR BG.event_group_id NOT IN ( %d ';
+		$array_count = count( $filters[ 'not_in__event_group_id' ] );
+		if( $array_count >= 2 ) {
+			for( $i=1; $i<$array_count; ++$i ) {
+				$query .= ', %d ';
+			}
+		}
+		$query .= ') ) ';
+		$variables = array_merge( $variables, $filters[ 'not_in__event_group_id' ] );
+	}
+	
+	if( $filters[ 'group_category_id' ] ) {
+		$query .= ' AND EG.category_id = %d ';
+		$variables[] = $filters[ 'group_category_id' ];
+	}
+	
+	if( $filters[ 'in__group_category_id' ] ) {
+		$query .= ' AND EG.category_id IN ( %d ';
+		$array_count = count( $filters[ 'in__group_category_id' ] );
+		if( $array_count >= 2 ) {
+			for( $i=1; $i<$array_count; ++$i ) {
+				$query .= ', %d ';
+			}
+		}
+		$query .= ') ';
+		$variables = array_merge( $variables, $filters[ 'in__group_category_id' ] );
+	}
+	
+	if( $filters[ 'not_in__group_category_id' ] ) {
+		$query .= ' AND ( B.group_id IS NULL OR EG.category_id NOT IN ( %d ';
+		$array_count = count( $filters[ 'not_in__group_category_id' ] );
+		if( $array_count >= 2 ) {
+			for( $i=1; $i<$array_count; ++$i ) {
+				$query .= ', %d ';
+			}
+		}
+		$query .= ') ) ';
+		$variables = array_merge( $variables, $filters[ 'not_in__group_category_id' ] );
 	}
 	
 	if( $filters[ 'event_id' ] ) {
@@ -637,20 +790,56 @@ function bookacti_get_number_of_booking_rows( $filters ) {
 		$variables[] = $filters[ 'form_id' ];
 	}
 	
+	if( $filters[ 'in__form_id' ] ) {
+		$query .= ' AND B.form_id IN ( %d ';
+		$array_count = count( $filters[ 'in__form_id' ] );
+		if( $array_count >= 2 ) {
+			for( $i=1; $i<$array_count; ++$i ) {
+				$query .= ', %d ';
+			}
+		}
+		$query .= ') ';
+		$variables = array_merge( $variables, $filters[ 'in__form_id' ] );
+	}
+	
+	if( $filters[ 'not_in__form_id' ] ) {
+		$query .= ' AND ( B.form_id IS NULL OR B.form_id NOT IN ( %d ';
+		$array_count = count( $filters[ 'not_in__form_id' ] );
+		if( $array_count >= 2 ) {
+			for( $i=1; $i<$array_count; ++$i ) {
+				$query .= ', %d ';
+			}
+		}
+		$query .= ') ) ';
+		$variables = array_merge( $variables, $filters[ 'not_in__form_id' ] );
+	}
+	
 	if( $filters[ 'user_id' ] ) {
 		$query .= ' AND B.user_id = %s ';
 		$variables[] = $filters[ 'user_id' ];
 	}
-
-	if( $filters[ 'not_in__user_id' ] ) {
-		$query .= ' AND B.user_id NOT IN ( %s ';
-		$array_count = count( $filters[ 'not_in__user_id' ] );
+	
+	if( $filters[ 'in__user_id' ] ) {
+		$query .= ' AND B.user_id IN ( %s ';
+		$array_count = count( $filters[ 'in__user_id' ] );
 		if( $array_count >= 2 ) {
 			for( $i=1; $i<$array_count; ++$i ) {
 				$query .= ', %s ';
 			}
 		}
 		$query .= ') ';
+		$variables = array_merge( $variables, $filters[ 'in__user_id' ] );
+	}
+
+	if( $filters[ 'not_in__user_id' ] ) {
+		$query .= ' AND ( B.user_id IS NULL OR B.user_id NOT IN ( %s ';
+		$array_count = count( $filters[ 'not_in__user_id' ] );
+		if( $array_count >= 2 ) {
+			for( $i=1; $i<$array_count; ++$i ) {
+				$query .= ', %s ';
+			}
+		}
+		$query .= ') ) ';
 		$variables = array_merge( $variables, $filters[ 'not_in__user_id' ] );
 	}
 	
@@ -688,8 +877,7 @@ function bookacti_get_number_of_booking_rows( $filters ) {
 
 /**
  * Get number of booking of a specific event or a specific occurrence
- * 
- * @version 1.6.0
+ * @version 1.6.2
  * @global wpdb $wpdb
  * @param array $filters Use bookacti_format_booking_filters() before
  * @return int
@@ -706,15 +894,21 @@ function bookacti_get_number_of_bookings( $filters ) {
 		$query = ' SELECT SUM( B.quantity ) as quantity ';
 	}
 	
-	$query .= ' FROM ' . BOOKACTI_TABLE_BOOKINGS . ' as B, ' . BOOKACTI_TABLE_EVENTS . ' as E, ' . BOOKACTI_TABLE_ACTIVITIES . ' as A, ' . BOOKACTI_TABLE_TEMPLATES . ' as T ';
+	$query .= ' FROM ' . BOOKACTI_TABLE_BOOKINGS . ' as B ' 
+			. ' JOIN ' . BOOKACTI_TABLE_EVENTS . ' as E ON B.event_id = E.id ' 
+			. ' JOIN ' . BOOKACTI_TABLE_ACTIVITIES . ' as A ON E.activity_id = A.id ' 
+			. ' JOIN ' . BOOKACTI_TABLE_TEMPLATES . ' as T ON E.template_id = T.id ';
 	
-	if( $filters[ 'event_group_id' ] ) {
-		$query .= ', ' . BOOKACTI_TABLE_BOOKING_GROUPS . ' as BG ';
+	if( $filters[ 'event_group_id' ] || $filters[ 'in__event_group_id' ] || $filters[ 'not_in__event_group_id' ] 
+	||  $filters[ 'group_category_id' ] || $filters[ 'in__group_category_id' ] || $filters[ 'not_in__group_category_id' ] ) {
+		$query .= ' LEFT JOIN ' . BOOKACTI_TABLE_BOOKING_GROUPS . ' as BG ON B.group_id = BG.id ';
 	}
 	
-	$query	.= ' WHERE B.event_id = E.id '
-			. ' AND E.activity_id = A.id '
-			. ' AND E.template_id = T.id ';
+	if( $filters[ 'group_category_id' ] || $filters[ 'in__group_category_id' ] || $filters[ 'not_in__group_category_id' ] ) {
+		$query .= ' LEFT JOIN ' . BOOKACTI_TABLE_EVENT_GROUPS . ' as EG ON BG.event_group_id = EG.id ';
+	}
+	
+	$query	.= ' WHERE TRUE ';
 	
 	$variables = array();
 	
@@ -831,21 +1025,73 @@ function bookacti_get_number_of_bookings( $filters ) {
 	}
 	
 	if( $filters[ 'not_in__booking_group_id' ] ) {
-		$query .= ' AND B.group_id NOT IN ( %d ';
+		$query .= ' AND ( B.group_id IS NULL OR B.group_id NOT IN ( %d ';
 		$array_count = count( $filters[ 'not_in__booking_group_id' ] );
 		if( $array_count >= 2 ) {
 			for( $i=1; $i<$array_count; ++$i ) {
 				$query .= ', %d ';
 			}
 		}
-		$query .= ') ';
+		$query .= ') ) ';
 		$variables = array_merge( $variables, $filters[ 'not_in__booking_group_id' ] );
 	}
 	
 	if( $filters[ 'event_group_id' ] ) {
-		$query	.= ' AND B.group_id = BG.id '
-				. ' AND BG.event_group_id = %d ';
+		$query .= ' AND BG.event_group_id = %d ';
 		$variables[] = $filters[ 'event_group_id' ];
+	}
+	
+	if( $filters[ 'in__event_group_id' ] ) {
+		$query .= ' AND BG.event_group_id IN ( %d ';
+		$array_count = count( $filters[ 'in__event_group_id' ] );
+		if( $array_count >= 2 ) {
+			for( $i=1; $i<$array_count; ++$i ) {
+				$query .= ', %d ';
+			}
+		}
+		$query .= ') ';
+		$variables = array_merge( $variables, $filters[ 'in__event_group_id' ] );
+	}
+	
+	if( $filters[ 'not_in__event_group_id' ] ) {
+		$query .= ' AND ( B.group_id IS NULL OR BG.event_group_id NOT IN ( %d ';
+		$array_count = count( $filters[ 'not_in__event_group_id' ] );
+		if( $array_count >= 2 ) {
+			for( $i=1; $i<$array_count; ++$i ) {
+				$query .= ', %d ';
+			}
+		}
+		$query .= ') ) ';
+		$variables = array_merge( $variables, $filters[ 'not_in__event_group_id' ] );
+	}
+	
+	if( $filters[ 'group_category_id' ] ) {
+		$query .= ' AND EG.category_id = %d ';
+		$variables[] = $filters[ 'group_category_id' ];
+	}
+	
+	if( $filters[ 'in__group_category_id' ] ) {
+		$query .= ' AND EG.category_id IN ( %d ';
+		$array_count = count( $filters[ 'in__group_category_id' ] );
+		if( $array_count >= 2 ) {
+			for( $i=1; $i<$array_count; ++$i ) {
+				$query .= ', %d ';
+			}
+		}
+		$query .= ') ';
+		$variables = array_merge( $variables, $filters[ 'in__group_category_id' ] );
+	}
+	
+	if( $filters[ 'not_in__group_category_id' ] ) {
+		$query .= ' AND ( B.group_id IS NULL OR EG.category_id NOT IN ( %d ';
+		$array_count = count( $filters[ 'not_in__group_category_id' ] );
+		if( $array_count >= 2 ) {
+			for( $i=1; $i<$array_count; ++$i ) {
+				$query .= ', %d ';
+			}
+		}
+		$query .= ') ) ';
+		$variables = array_merge( $variables, $filters[ 'not_in__group_category_id' ] );
 	}
 	
 	if( $filters[ 'event_id' ] ) {
@@ -868,20 +1114,56 @@ function bookacti_get_number_of_bookings( $filters ) {
 		$variables[] = $filters[ 'form_id' ];
 	}
 	
+	if( $filters[ 'in__form_id' ] ) {
+		$query .= ' AND B.form_id IN ( %d ';
+		$array_count = count( $filters[ 'in__form_id' ] );
+		if( $array_count >= 2 ) {
+			for( $i=1; $i<$array_count; ++$i ) {
+				$query .= ', %d ';
+			}
+		}
+		$query .= ') ';
+		$variables = array_merge( $variables, $filters[ 'in__form_id' ] );
+	}
+	
+	if( $filters[ 'not_in__form_id' ] ) {
+		$query .= ' AND ( B.form_id IS NULL OR B.form_id NOT IN ( %d ';
+		$array_count = count( $filters[ 'not_in__form_id' ] );
+		if( $array_count >= 2 ) {
+			for( $i=1; $i<$array_count; ++$i ) {
+				$query .= ', %d ';
+			}
+		}
+		$query .= ') ) ';
+		$variables = array_merge( $variables, $filters[ 'not_in__form_id' ] );
+	}
+	
 	if( $filters[ 'user_id' ] ) {
 		$query .= ' AND B.user_id = %s ';
 		$variables[] = $filters[ 'user_id' ];
 	}
 	
-	if( $filters[ 'not_in__user_id' ] ) {
-		$query .= ' AND B.user_id NOT IN ( %s ';
-		$array_count = count( $filters[ 'not_in__user_id' ] );
+	if( $filters[ 'in__user_id' ] ) {
+		$query .= ' AND B.user_id IN ( %s ';
+		$array_count = count( $filters[ 'in__user_id' ] );
 		if( $array_count >= 2 ) {
 			for( $i=1; $i<$array_count; ++$i ) {
 				$query .= ', %s ';
 			}
 		}
 		$query .= ') ';
+		$variables = array_merge( $variables, $filters[ 'in__user_id' ] );
+	}
+	
+	if( $filters[ 'not_in__user_id' ] ) {
+		$query .= ' AND ( B.user_id IS NULL OR B.user_id NOT IN ( %s ';
+		$array_count = count( $filters[ 'not_in__user_id' ] );
+		if( $array_count >= 2 ) {
+			for( $i=1; $i<$array_count; ++$i ) {
+				$query .= ', %s ';
+			}
+		}
+		$query .= ') ) ';
 		$variables = array_merge( $variables, $filters[ 'not_in__user_id' ] );
 	}
 	
@@ -1863,7 +2145,7 @@ function bookacti_delete_booking( $booking_id ) {
 	 * Get booking groups according to filters
 	 * 
 	 * @since 1.3.0 (was bookacti_get_booking_groups_by_group_of_events)
-	 * @version 1.6.1
+	 * @version 1.6.2
 	 * @global wpdb $wpdb
 	 * @param array $filters Use bookacti_format_booking_filters() before
 	 * @return object
@@ -1972,17 +2254,118 @@ function bookacti_delete_booking( $booking_id ) {
 			$query .= ' AND BG.event_group_id = %d ';
 			$variables[] = $filters[ 'event_group_id' ];
 		}
-
-		if( $filters[ 'user_id' ] ) {
-			$query .= ' AND BG.user_id = %s ';
-			$variables[] = $filters[ 'user_id' ];
+		
+		if( $filters[ 'in__event_group_id' ] ) {
+			$query .= ' AND BG.event_group_id IN ( %d ';
+			$array_count = count( $filters[ 'in__event_group_id' ] );
+			if( $array_count >= 2 ) {
+				for( $i=1; $i<$array_count; ++$i ) {
+					$query .= ', %d ';
+				}
+			}
+			$query .= ') ';
+			$variables = array_merge( $variables, $filters[ 'in__event_group_id' ] );
+		}
+		
+		if( $filters[ 'not_in__event_group_id' ] ) {
+			$query .= ' AND ( BG.event_group_id IS NULL OR BG.event_group_id NOT IN ( %d ';
+			$array_count = count( $filters[ 'not_in__event_group_id' ] );
+			if( $array_count >= 2 ) {
+				for( $i=1; $i<$array_count; ++$i ) {
+					$query .= ', %d ';
+				}
+			}
+			$query .= ') ) ';
+			$variables = array_merge( $variables, $filters[ 'not_in__event_group_id' ] );
+		}
+		
+		if( $filters[ 'group_category_id' ] ) {
+			$query .= ' AND EG.category_id = %d ';
+			$variables[] = $filters[ 'group_category_id' ];
 		}
 
+		if( $filters[ 'in__group_category_id' ] ) {
+			$query .= ' AND EG.category_id IN ( %d ';
+			$array_count = count( $filters[ 'in__group_category_id' ] );
+			if( $array_count >= 2 ) {
+				for( $i=1; $i<$array_count; ++$i ) {
+					$query .= ', %d ';
+				}
+			}
+			$query .= ') ';
+			$variables = array_merge( $variables, $filters[ 'in__group_category_id' ] );
+		}
+
+		if( $filters[ 'not_in__group_category_id' ] ) {
+			$query .= ' AND ( EG.category_id IS NULL OR EG.category_id NOT IN ( %d ';
+			$array_count = count( $filters[ 'not_in__group_category_id' ] );
+			if( $array_count >= 2 ) {
+				for( $i=1; $i<$array_count; ++$i ) {
+					$query .= ', %d ';
+				}
+			}
+			$query .= ') ) ';
+			$variables = array_merge( $variables, $filters[ 'not_in__group_category_id' ] );
+		}
+		
 		if( $filters[ 'form_id' ] ) {
 			$query .= ' AND BG.form_id = %d ';
 			$variables[] = $filters[ 'form_id' ];
 		}
+		
+		if( $filters[ 'in__form_id' ] ) {
+			$query .= ' AND BG.form_id IN ( %d ';
+			$array_count = count( $filters[ 'in__form_id' ] );
+			if( $array_count >= 2 ) {
+				for( $i=1; $i<$array_count; ++$i ) {
+					$query .= ', %d ';
+				}
+			}
+			$query .= ') ';
+			$variables = array_merge( $variables, $filters[ 'in__form_id' ] );
+		}
 
+		if( $filters[ 'not_in__form_id' ] ) {
+			$query .= ' AND ( BG.form_id IS NULL OR BG.form_id NOT IN ( %d ';
+			$array_count = count( $filters[ 'not_in__form_id' ] );
+			if( $array_count >= 2 ) {
+				for( $i=1; $i<$array_count; ++$i ) {
+					$query .= ', %d ';
+				}
+			}
+			$query .= ') ) ';
+			$variables = array_merge( $variables, $filters[ 'not_in__form_id' ] );
+		}
+		
+		if( $filters[ 'user_id' ] ) {
+			$query .= ' AND BG.user_id = %s ';
+			$variables[] = $filters[ 'user_id' ];
+		}
+		
+		if( $filters[ 'in__user_id' ] ) {
+			$query .= ' AND BG.user_id IN ( %s ';
+			$array_count = count( $filters[ 'in__user_id' ] );
+			if( $array_count >= 2 ) {
+				for( $i=1; $i<$array_count; ++$i ) {
+					$query .= ', %s ';
+				}
+			}
+			$query .= ') ';
+			$variables = array_merge( $variables, $filters[ 'in__user_id' ] );
+		}
+
+		if( $filters[ 'not_in__user_id' ] ) {
+			$query .= ' AND ( BG.user_id IS NULL OR BG.user_id NOT IN ( %s ';
+			$array_count = count( $filters[ 'not_in__user_id' ] );
+			if( $array_count >= 2 ) {
+				for( $i=1; $i<$array_count; ++$i ) {
+					$query .= ', %s ';
+				}
+			}
+			$query .= ') ) ';
+			$variables = array_merge( $variables, $filters[ 'not_in__user_id' ] );
+		}
+		
 		if( $filters[ 'active' ] !== false ) {
 			$query .= ' AND BG.active = %d ';
 			$variables[] = $filters[ 'active' ];
