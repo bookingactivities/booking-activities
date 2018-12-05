@@ -57,6 +57,21 @@ add_action( 'bookacti_form_editor_description_after', 'bookacti_form_editor_wc_d
 
 
 /**
+ * Set WC field meta default value
+ * @since 1.7.0
+ * @param array $field_meta
+ * @param string $field_name
+ * @return array
+ */
+function bookacti_default_wc_field_meta( $field_meta, $field_name ) {
+	$field_meta[ 'calendar' ][ 'product_by_activity' ]		= array();
+	$field_meta[ 'calendar' ][ 'product_by_group_category' ]= array();
+	return $field_meta;
+}
+add_filter( 'bookacti_default_form_fields_meta', 'bookacti_default_wc_field_meta', 10, 2 );
+
+
+/**
  * Add an icon before WC unsupported form field in form editor
  * @since 1.5.0
  * @param array $field_data
@@ -71,3 +86,161 @@ function bookacti_form_editor_wc_field_title( $field_data, $raw_field_data ) {
 }
 add_filter( 'bookacti_formatted_field_data', 'bookacti_form_editor_wc_field_title', 10, 2 );
 add_filter( 'bookacti_sanitized_field_data', 'bookacti_form_editor_wc_field_title', 10, 2 );
+
+
+/**
+ * Format WC field data 
+ * @since 1.7.0
+ * @param array $field_data
+ * @param array $raw_field_data
+ * @return array
+ */
+function bookacti_format_wc_field_data( $field_data, $raw_field_data ) {
+	if( $raw_field_data[ 'name' ] === 'calendar' ) {
+		$field_data[ 'product_by_activity' ]		= isset( $raw_field_data[ 'product_by_activity' ] ) ? $raw_field_data[ 'product_by_activity' ] : array();
+		$field_data[ 'product_by_group_category' ]	= isset( $raw_field_data[ 'product_by_group_category' ] ) ? $raw_field_data[ 'product_by_group_category' ] : array();
+	}
+	return $field_data;
+}
+add_filter( 'bookacti_formatted_field_data', 'bookacti_format_wc_field_data', 10, 2 );
+
+
+/**
+ * Sanitize WC field data 
+ * @since 1.7.0
+ * @param array $field_data
+ * @param array $raw_field_data
+ * @return array
+ */
+function bookacti_sanitize_wc_field_data( $field_data, $raw_field_data ) {
+	if( $raw_field_data[ 'name' ] === 'calendar' ) {
+		$product_by_activity = array();
+		if( isset( $raw_field_data[ 'product_by_activity' ] ) && is_array( $raw_field_data[ 'product_by_activity' ] ) ) {
+			foreach( $raw_field_data[ 'product_by_activity' ] as $activity_id => $product_id ) {
+				if( ! is_numeric( $activity_id ) || ! is_numeric( $product_id )
+				||  empty( $activity_id ) || empty( $product_id )) { continue; }
+				$product_by_activity[ intval( $activity_id ) ] = intval( $product_id );
+			}
+		}
+		$field_data[ 'product_by_activity' ] = maybe_serialize( $product_by_activity );
+		
+		$product_by_group_category = array();
+		if( isset( $raw_field_data[ 'product_by_group_category' ] ) && is_array( $raw_field_data[ 'product_by_group_category' ] ) ) {
+			foreach( $raw_field_data[ 'product_by_group_category' ] as $group_category_id => $product_id ) {
+				if( ! is_numeric( $group_category_id ) || ! is_numeric( $product_id ) 
+				||  empty( $group_category_id ) || empty( $product_id ) ) { continue; }
+				$product_by_group_category[ intval( $group_category_id ) ] = intval( $product_id );
+			}
+		}
+		$field_data[ 'product_by_group_category' ] = maybe_serialize( $product_by_group_category );
+	}
+	return $field_data;
+}
+add_filter( 'bookacti_sanitized_field_data', 'bookacti_sanitize_wc_field_data', 10, 2 );
+
+
+/**
+ * Add new possible actions when the user clicks an event
+ * @since 1.7.0
+ * @param array $args
+ * @param array $params
+ * @return array
+ */
+function bookacti_add_wc_actions_to_on_event_click_field_options( $args, $params ) {
+	$args[ 'options' ][ 'redirect_to_product_page' ] = esc_html__( 'Redirect to product page', BOOKACTI_PLUGIN_NAME );
+	return $args;
+}
+add_filter( 'bookacti_event_click_actions_field', 'bookacti_add_wc_actions_to_on_event_click_field_options', 10, 2 );
+
+
+/**
+ * Add columns to the activity redirect URL table
+ * @since 1.7.0
+ * @param array $url_array
+ * @param array $params
+ * @return array
+ */
+function bookacti_add_wc_columns_to_activity_redirect_url_table( $url_array, $params = array() ) {
+	$url_array[ 'head' ][ 'product' ] = esc_html__( 'Bound product', BOOKACTI_PLUGIN_NAME );
+	
+	// Get the product selectbox
+	$args = array(
+		'field_name'		=> 'product_by_activity[0]',
+		'selected'			=> '',
+		'show_option_none'	=> esc_html_x( 'None', 'About product', BOOKACTI_PLUGIN_NAME ),
+		'option_none_value'	=> '',
+		'echo'				=> 0
+	);
+	$products = wc_get_products( $args );
+	$default_product_selectbox	= bookacti_display_product_selectbox( $args, $products );
+	
+	$redirect_url_activity_ids	= ! empty( $params[ 'calendar_data' ][ 'redirect_url_by_activity' ] ) && is_array( $params[ 'calendar_data' ][ 'redirect_url_by_activity' ] ) ? array_keys( $params[ 'calendar_data' ][ 'redirect_url_by_activity' ] ) : array();
+	$product_activity_ids		= ! empty( $params[ 'calendar_data' ][ 'product_by_activity' ] ) && is_array( $params[ 'calendar_data' ][ 'product_by_activity' ] ) ? array_keys( $params[ 'calendar_data' ][ 'product_by_activity' ] ) : array();
+	$missing_activities			= array_diff( $product_activity_ids, $redirect_url_activity_ids );
+	$product_by_activity		= ! empty( $params[ 'calendar_data' ][ 'product_by_activity' ] ) && is_array( $params[ 'calendar_data' ][ 'product_by_activity' ] ) ? $params[ 'calendar_data' ][ 'product_by_activity' ] : array();
+	
+	// Add missing rows, those having a product bound but no redirect URL
+	foreach( $product_by_activity as $activity_id => $product_id ) {
+		if( ! in_array( $activity_id, $missing_activities, true ) ) { continue; }
+		$url_array[ 'body' ][] = array( 
+			'activity' => intval( $activity_id ),
+			'redirect_url' => '<input type="text" name="redirect_url_by_activity[ ' . intval( $activity_id ) . ' ]" value="" />'
+		);
+	}
+	
+	// Add the product column content
+	foreach( $url_array[ 'body' ] as $i => $row ) {
+		$activity_id	= ! empty( $row[ 'activity' ] ) ? intval( $row[ 'activity' ] ) : 0;
+		$selected		= ! empty( $product_by_activity[ $activity_id ] ) ? intval( $product_by_activity[ $activity_id ] ) : 0;
+		$url_array[ 'body' ][ $i ][ 'product' ] = $activity_id ? bookacti_display_product_selectbox( array_merge( $args, array( 'field_name' => 'product_by_activity[' . $activity_id . ']', 'selected' => $selected ) ), $products ) : $default_product_selectbox;
+	}
+	
+	return $url_array;
+}
+add_filter( 'bookacti_activity_redirect_url_table', 'bookacti_add_wc_columns_to_activity_redirect_url_table', 10, 2 );
+
+
+/**
+ * Add columns to the group category redirect URL table
+ * @since 1.7.0
+ * @param array $url_array
+ * @param array $params
+ * @return array
+ */
+function bookacti_add_wc_columns_to_group_activity_redirect_url_table( $url_array, $params = array() ) {
+	$url_array[ 'head' ][ 'product' ] = esc_html__( 'Bound product', BOOKACTI_PLUGIN_NAME );
+	
+	$args = array(
+		'field_name'		=> 'product_by_group_category[0]',
+		'selected'			=> '',
+		'show_option_none'	=> esc_html_x( 'None', 'About product', BOOKACTI_PLUGIN_NAME ),
+		'option_none_value'	=> '',
+		'echo'				=> 0
+	);
+	$products = wc_get_products( $args );
+	$default_product_selectbox	= bookacti_display_product_selectbox( $args, $products );
+	
+	$redirect_url_group_category_ids= ! empty( $params[ 'calendar_data' ][ 'redirect_url_by_group_category' ] ) && is_array( $params[ 'calendar_data' ][ 'redirect_url_by_group_category' ] ) ? array_keys( $params[ 'calendar_data' ][ 'redirect_url_by_group_category' ] ) : array();
+	$product_group_category_ids		= ! empty( $params[ 'calendar_data' ][ 'product_by_group_category' ] ) && is_array( $params[ 'calendar_data' ][ 'product_by_group_category' ] ) ? array_keys( $params[ 'calendar_data' ][ 'product_by_group_category' ] ) : array();
+	$missing_group_categories		= array_diff( $product_group_category_ids, $redirect_url_group_category_ids );
+	$product_by_group_category		= ! empty( $params[ 'calendar_data' ][ 'product_by_group_category' ] ) && is_array( $params[ 'calendar_data' ][ 'product_by_group_category' ] ) ? $params[ 'calendar_data' ][ 'product_by_group_category' ] : array();
+	
+	// Add missing rows, those having a product bound but no redirect URL
+	foreach( $product_by_group_category as $group_category_id => $product_id ) {
+		if( ! in_array( $group_category_id, $missing_group_categories, true ) ) { continue; }
+		$url_array[ 'body' ][] = array( 
+			'group_category' => intval( $group_category_id ),
+			'redirect_url' => '<input type="text" name="redirect_url_by_group_category[ ' . intval( $group_category_id ) . ' ]" value="" />'
+		);
+	}
+	
+	// Add the product column content
+	foreach( $url_array[ 'body' ] as $i => $row ) {
+		$group_category_id	= ! empty( $row[ 'group_category' ] ) ? $row[ 'group_category' ] : 0;
+		$selected			= ! empty( $product_by_group_category[ $group_category_id ] ) ? intval( $product_by_group_category[ $group_category_id ] ) : 0;
+		$url_array[ 'body' ][ $i ][ 'product' ] = ! empty( $product_by_group_category[ $group_category_id ] ) ? bookacti_display_product_selectbox( array_merge( $args, array( 'field_name' => 'product_by_group_category[' . $group_category_id . ']', 'selected' => $selected ) ), $products ) : $default_product_selectbox;
+	}
+	
+	return $url_array;
+}
+add_filter( 'bookacti_group_category_redirect_url_table', 'bookacti_add_wc_columns_to_group_activity_redirect_url_table', 10, 2 );

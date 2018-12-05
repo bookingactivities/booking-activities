@@ -242,7 +242,7 @@ function bookacti_fill_fields_from_array( fields, field_prefix, scope ) {
 
 /**
  * Switch a selectbox to multiple
- * @version 1.5.8
+ * @version 1.7.0
  * @param {dom_element} checkbox
  */
 function bookacti_switch_select_to_multiple( checkbox ) {
@@ -271,9 +271,21 @@ function bookacti_switch_select_to_multiple( checkbox ) {
 		$j( 'select#' + select_id ).attr( 'name', select_name.replace( '[]', '' ) ); 
 		$j( checkbox ).closest( '.bookacti-multiple-select-container' ).find( 'label span.dashicons' ).removeClass( 'dashicons-minus' ).addClass( 'dashicons-plus' );
 	}
+	
+	// Select the first available value
+	if( ! is_checked ) {
+		var first_available_value = $j( 'select#' + select_id + ' option:not(:disabled):first' ).length ? $j( 'select#' + select_id + ' option:not(:disabled):first' ).val() : '';
+		$j( 'select#' + select_id ).val( first_available_value ).trigger( 'change' );
+	}
 }
 
-// Show or hide activities depending on the selected template
+
+/**
+ * Show or hide activities depending on the selected template
+ * @version 1.7.0
+ * @param {array} template_ids
+ * @param {dom_element} options
+ */
 function bookacti_show_hide_template_related_options( template_ids, options ) {
 	
 	// Init variables
@@ -282,6 +294,7 @@ function bookacti_show_hide_template_related_options( template_ids, options ) {
 	if( $j.isNumeric( template_ids ) ) { template_ids = [ template_ids ]; }
 	
 	// Show all
+	options.prop( 'disabled', false );
 	options.removeClass( 'bookacti-hide-fields' );
 	
 	// Hide not allowed
@@ -310,6 +323,7 @@ function bookacti_show_hide_template_related_options( template_ids, options ) {
 				change_selected.push( option ); 
 			}
 			option.addClass( 'bookacti-hide-fields' );
+			option.prop( 'disabled', true );
 		}
 	});
 

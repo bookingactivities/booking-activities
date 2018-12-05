@@ -887,8 +887,55 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	}
 	
 	
-	
-	
+	/**
+	 * Display a table from a properly formatted array
+	 * @since 1.7.0
+	 * @param array $array
+	 * @return string
+	 */
+	function bookacti_display_table_from_array( $array ) {
+		if( empty( $array[ 'head' ] ) || empty( $array[ 'body' ] ) ) { return ''; }
+		if( ! is_array( $array[ 'head' ] ) || ! is_array( $array[ 'body' ] ) ) { return ''; }
+		
+		$column_ids = array_keys( $array[ 'head' ] );
+		?>
+		<table class='bookacti-options-table'>
+			<thead>
+				<tr>
+				<?php
+				foreach( $array[ 'head' ] as $column_id => $column_label ) {
+				?>
+					<th class='bookacti-column-<?php echo $column_id; ?>'><?php echo is_string( $column_label ) || is_numeric( $column_label ) ? $column_label : $column_id; ?></th>
+				<?php
+				}
+				?>
+				</tr>
+			</thead>
+			<tbody>
+			<?php
+			foreach( $array[ 'body' ] as $row ) {
+			?>
+				<tr>
+					<?php
+					foreach( $column_ids as $column_id ) {
+						$column_content = isset( $row[ $column_id ] ) && ( is_string( $row[ $column_id ] ) || is_numeric( $row[ $column_id ] ) ) ? $row[ $column_id ] : '';
+					?>
+						<td class='bookacti-column-<?php echo $column_id; ?>'><?php echo $column_content; ?></td>
+					<?php
+					}
+				?>
+				</tr>
+			<?php
+			}
+			?>
+			</tbody>
+		</table>
+		<?php
+	}
+
+
+
+
 // FORMATING AND SANITIZING
 	
 	/**

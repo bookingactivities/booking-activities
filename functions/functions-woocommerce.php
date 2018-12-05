@@ -1663,7 +1663,71 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 
 // PRODUCT
-
+	
+	/**
+	 * Display a products selectbox
+	 * @since 1.7.0
+	 * @param array $args
+	 * @param array $products
+	 * @return string
+	 */
+	function bookacti_display_product_selectbox( $args = array(), $products = array() ) {
+		$defaults = array(
+			'field_name'		=> 'product_id',
+			'selected'			=> '',
+			'class'				=> '',
+			'show_option_none'	=> '', 
+			'option_none_value'	=> 'none',
+			'echo'				=> 1
+		);
+		$r = wp_parse_args( $args, $defaults );
+		
+		if( empty( $products ) ) { $products = wc_get_products( $r ); }
+		
+		ob_start();
+		
+		?>
+		<select name='<?php echo $r[ 'field_name' ]; ?>' class='bookacti-wc-products-selectbox <?php echo $r[ 'class' ]; ?>'>
+		<?php
+			// Display 'none' value
+			if( ! empty( $r[ 'show_option_none' ] ) ) {
+			?>
+				<option value='<?php echo esc_attr( $r[ 'option_none_value' ] ); ?>'><?php echo $r[ 'show_option_none' ]; ?></option>
+			<?php
+			}
+			
+			foreach( $products as $product ) {
+				// Display simple products options
+				if( $product->get_type() !== 'variable' ) {
+				?>
+					<option class='bookacti-wc-product-option' value='<?php echo esc_attr( $product->get_id() ); ?>' <?php selected( $product->get_id(), $r[ 'selected' ] ); ?>><?php echo apply_filters( 'bookacti_translate_text', $product->get_title() ); ?></option>
+				<?php
+				
+				// Display variations options
+				} else {
+					$variations = $product->get_available_variations();
+				?>
+					<optgroup class='bookacti-wc-variable-product-option-group' label='<?php echo esc_attr( apply_filters( 'bookacti_translate_text', $product->get_title() ) ); ?>'>
+					<?php
+						foreach( $variations as $variation ) {
+						?>
+							<option class='bookacti-wc-product-variation-option' value='<?php echo esc_attr( $variation[ 'variation_id' ] ); ?>' <?php selected( $product->get_id(), $r[ 'selected' ] ); ?>><?php echo implode( ' | ', $variation[ 'attributes' ] ); ?></option>
+						<?php
+						}
+					?>
+					</optgroup>
+				<?php
+				}
+			}
+		?>
+		</select>
+		<?php
+		$selectbox = ob_get_clean();
+		if( empty( $r[ 'echo' ] ) ) { return $selectbox; }
+		echo $selectbox;
+	}
+	
+	
 	/**
 	 * Get the product id bound to a booking
 	 * 

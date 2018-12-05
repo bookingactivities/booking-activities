@@ -70,6 +70,123 @@ $j( document ).ready( function() {
 		}
 	});
 	
+	
+	/**
+	 * Add / remove activity row in the "redirect URL" table according to the currently selected activities
+	 * @since 1.7.0
+	 */
+	$j( '#bookacti-form-field-dialog-calendar' ).on( 'change', 'select#bookacti-activities', function( e ){
+		var activities = $j( this ).val();
+		
+		// If no activities, leave as is.
+		if( ! activities || ( ! $j.isArray( activities ) && ! $j.isNumeric( activities ) ) ) { return; }
+		if( ! $j.isArray( activities ) ) { activities = [ activities ]; }
+		
+		var tbody = $j( '.bookacti-activities-actions-options-table tbody' );
+		
+		// Add corresponding rows
+		$j.each( activities, function( i, activity_id ) {
+			var activity_title = $j( 'option#bookacti-activities_' + activity_id ).text();
+			// If the row already exists, leave it as is
+			if( tbody.find( '.bookacti-column-redirect_url input[name="redirect_url_by_activity[' + activity_id + ']"]' ).length ) {
+				var row = tbody.find( '.bookacti-column-redirect_url input[name="redirect_url_by_activity[' + activity_id + ']"]' ).closest( 'tr' );
+				row.data( 'activity_id', activity_id );
+				row.attr( 'data-activity_id', activity_id );
+				row.find( '.bookacti-column-activity' ).text( activity_title ).attr( 'title', activity_title );
+				row.find( ':input' ).prop( 'disabled', false );
+				row.show();
+				return true; // continue
+			// If the row doesn't exists, create it
+			} else {
+				tbody.find( 'tr:first' ).clone().appendTo( tbody );
+				tbody.find( 'tr:last :input' ).each( function() {
+					var field_name_raw	= $j( this ).attr( 'name' );
+					var field_name		= field_name_raw.substring( 0, field_name_raw.lastIndexOf( '[' ) );
+					$j( this ).attr( 'name', field_name + '[' + activity_id + ']' );
+				});
+				tbody.find( 'tr:last td.bookacti-column-activity' ).text( activity_title ).attr( 'title', activity_title );
+				tbody.find( 'tr:last :input' ).val( '' );
+				tbody.find( 'tr:last' ).closest( 'tr' ).data( 'activity_id', activity_id );
+				tbody.find( 'tr:last' ).closest( 'tr' ).attr( 'data-activity_id', activity_id );
+			}
+		});
+		
+		// Remove the other rows
+		tbody.find( 'tr' ).each( function() {
+			var row = $j( this );
+			if( ! row.data( 'activity_id' ) ) { $j( this ).remove(); return true; }
+			var activity_id = row.data( 'activity_id' );
+			if( $j.inArray( activity_id, activities ) === -1 ) {
+				row.find( ':input' ).prop( 'disabled', true );
+				row.hide();
+			}
+		});
+	});
+	
+	
+	/**
+	 * Add / remove group category row in the "redirect URL" table according to the currently selected group categories
+	 * @since 1.7.0
+	 */
+	$j( '#bookacti-form-field-dialog-calendar' ).on( 'change', 'select#bookacti-group_categories', function( e ){
+		var group_categories = $j( this ).val();
+		
+		// If no group category is selected, hide the group categories actions table
+		if( group_categories === 'none' ) {
+			$j( '.bookacti-group-categories-actions-options-table' ).hide();
+			$j( '.bookacti-group-categories-actions-options-table :input' ).prop( 'disabled', true );
+		}
+		
+		// If no group_categories, leave as is.
+		if( ! group_categories || ( ! $j.isArray( group_categories ) && ! $j.isNumeric( group_categories ) ) ) { return; }
+		if( ! $j.isArray( group_categories ) ) { group_categories = [ group_categories ]; }
+		
+		// Display the group categories actions table
+		$j( '.bookacti-group-categories-actions-options-table' ).show();
+		$j( '.bookacti-group-categories-actions-options-table :input' ).prop( 'disabled', false );
+		
+		var tbody = $j( '.bookacti-group-categories-actions-options-table tbody' );
+		
+		// Add corresponding rows
+		$j.each( group_categories, function( i, category_id ) {
+			var group_category_title = $j( 'option#bookacti-group_categories_' + category_id ).text();
+			// If the row already exists, leave it as is
+			if( tbody.find( '.bookacti-column-redirect_url input[name="redirect_url_by_group_category[' + category_id + ']"]' ).length ) {
+				var row = tbody.find( '.bookacti-column-redirect_url input[name="redirect_url_by_group_category[' + category_id + ']"]' ).closest( 'tr' );
+				row.data( 'category_id', category_id );
+				row.attr( 'data-category_id', category_id );
+				row.find( '.bookacti-column-group_category' ).text( group_category_title ).attr( 'title', group_category_title );
+				row.find( ':input' ).prop( 'disabled', false );
+				row.show();
+				return true; // continue
+			// If the row doesn't exists, create it
+			} else {
+				tbody.find( 'tr:first' ).clone().appendTo( tbody );
+				tbody.find( 'tr:last :input' ).each( function() {
+					var field_name_raw	= $j( this ).attr( 'name' );
+					var field_name		= field_name_raw.substring( 0, field_name_raw.lastIndexOf( '[' ) );
+					$j( this ).attr( 'name', field_name + '[' + category_id + ']' );
+				});
+				tbody.find( 'tr:last td.bookacti-column-group_category' ).text( group_category_title ).attr( 'title', group_category_title );
+				tbody.find( 'tr:last :input' ).val( '' );
+				tbody.find( 'tr:last' ).closest( 'tr' ).data( 'category_id', category_id );
+				tbody.find( 'tr:last' ).closest( 'tr' ).attr( 'data-category_id', category_id );
+			}
+		});
+		
+		// Remove the other rows
+		tbody.find( 'tr' ).each( function() {
+			var row = $j( this );
+			if( ! row.data( 'category_id' ) ) { $j( this ).remove(); return true; }
+			var category_id = row.data( 'category_id' );
+			if( $j.inArray( category_id, group_categories ) === -1 ) {
+				row.find( ':input' ).prop( 'disabled', true );
+				row.hide();
+			}
+		});
+	});
+	
+	
 	/**
 	 * Rerender field HTML after settings update
 	 * @since 1.5.0

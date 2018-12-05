@@ -70,6 +70,9 @@ body.booking-activities_page_bookacti_forms label[for='bookacti_form_publish-hid
 
 .bookacti-form-dialog .bookacti-combobox-input	{ min-width: 150px; width: 150px; }
 
+.bookacti-options-table .bookacti-column-activity,
+.bookacti-options-table .bookacti-column-category { width: 60px; max-width: 60px; white-space: nowrap; overflow: hidden; }
+
 
 /* Metaboxes */
 #poststuff #bookacti_form_publish .inside	{ margin: 0; padding: 0; }
