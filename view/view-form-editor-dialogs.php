@@ -211,18 +211,34 @@ foreach( $fields_data as $field_name => $field_data ) {
 			do_action( 'bookacti_calendar_dialog_actions_tab_before', $params );
 		?>
 		<div>
-			<label for='bookacti-email-label'><?php esc_html_e( 'On event click', BOOKACTI_PLUGIN_NAME ); ?></label>
+			<label for='bookacti-form_action'><?php esc_html_e( 'Form action', BOOKACTI_PLUGIN_NAME ); ?></label>
 			<?php 
-				$args = apply_filters( 'bookacti_event_click_actions_field', array(
+				$args = array(
 					'type'		=> 'select',
-					'name'		=> 'event_click_action',
-					'id'		=> 'bookacti-event_click_action',
-					'options'	=> array( 
-						'none' => esc_html__( 'Do nothing', BOOKACTI_PLUGIN_NAME ),
-						'redirect_to_url' => esc_html__( 'Redirect to URL', BOOKACTI_PLUGIN_NAME )
-					),
-					'tip'		=> esc_html__( 'What do you want to do when the user clicks an event? You can also do some of these actions on submit, go to the "Submit button" field settings.', BOOKACTI_PLUGIN_NAME )
-				), $params );
+					'name'		=> 'form_action',
+					'id'		=> 'bookacti-form_action',
+					'options'	=> apply_filters( 'bookacti_form_action_options', array( 
+						'book' => esc_html__( 'Make a reservation', BOOKACTI_PLUGIN_NAME ),
+						'redirect_to_url' => esc_html__( 'Redirect to corresponding URL', BOOKACTI_PLUGIN_NAME )
+					), $params ),
+					'tip'		=> esc_html__( 'What action should this form perform?', BOOKACTI_PLUGIN_NAME )
+				);
+				bookacti_display_field( $args );
+			?>
+		</div>
+		<div>
+			<label for='bookacti-when_perform_form_action'><?php esc_html_e( 'When to perform the action', BOOKACTI_PLUGIN_NAME ); ?></label>
+			<?php 
+				$args = array(
+					'type'		=> 'select',
+					'name'		=> 'when_perform_form_action',
+					'id'		=> 'bookacti-when_perform_form_action',
+					'options'	=> apply_filters( 'bookacti_when_perform_form_action_options', array( 
+						'on_submit' => esc_html__( 'When the form is submitted', BOOKACTI_PLUGIN_NAME ),
+						'on_event_click' => esc_html__( 'When an event is clicked', BOOKACTI_PLUGIN_NAME )
+					), $params ),
+					'tip'		=> esc_html__( 'When do you want to perform the form action?', BOOKACTI_PLUGIN_NAME )
+				);
 				bookacti_display_field( $args );
 			?>
 		</div>
@@ -272,7 +288,7 @@ foreach( $fields_data as $field_name => $field_data ) {
 		</div>
 		<?php
 			do_action( 'bookacti_calendar_dialog_actions_tab_after', $params );
-		}
+		}		
 		
 		/**
 		 * Display the content of the "Display" tab of the "Calendar" dialog

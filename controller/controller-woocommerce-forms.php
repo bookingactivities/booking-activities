@@ -142,15 +142,15 @@ add_filter( 'bookacti_sanitized_field_data', 'bookacti_sanitize_wc_field_data', 
 /**
  * Add new possible actions when the user clicks an event
  * @since 1.7.0
- * @param array $args
+ * @param array $options
  * @param array $params
  * @return array
  */
-function bookacti_add_wc_actions_to_on_event_click_field_options( $args, $params ) {
-	$args[ 'options' ][ 'redirect_to_product_page' ] = esc_html__( 'Redirect to product page', BOOKACTI_PLUGIN_NAME );
-	return $args;
+function bookacti_add_wc_form_action_options( $options, $params ) {
+	$options[ 'redirect_to_product_page' ] = esc_html__( 'Redirect to corresponding product page', BOOKACTI_PLUGIN_NAME );
+	return $options;
 }
-add_filter( 'bookacti_event_click_actions_field', 'bookacti_add_wc_actions_to_on_event_click_field_options', 10, 2 );
+add_filter( 'bookacti_form_action_options', 'bookacti_add_wc_form_action_options', 10, 2 );
 
 
 /**
@@ -169,9 +169,11 @@ function bookacti_add_wc_columns_to_activity_redirect_url_table( $url_array, $pa
 		'selected'			=> '',
 		'show_option_none'	=> esc_html_x( 'None', 'About product', BOOKACTI_PLUGIN_NAME ),
 		'option_none_value'	=> '',
-		'echo'				=> 0
+		'echo'				=> 0,
+		'limit'				=> -1
 	);
 	$products = wc_get_products( $args );
+	
 	$default_product_selectbox	= bookacti_display_product_selectbox( $args, $products );
 	
 	$redirect_url_activity_ids	= ! empty( $params[ 'calendar_data' ][ 'redirect_url_by_activity' ] ) && is_array( $params[ 'calendar_data' ][ 'redirect_url_by_activity' ] ) ? array_keys( $params[ 'calendar_data' ][ 'redirect_url_by_activity' ] ) : array();
