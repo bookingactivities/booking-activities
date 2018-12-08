@@ -480,7 +480,7 @@ function bookacti_get_default_form_fields_data( $field_name = '' ) {
  * Get fields metadata
  * @see bookacti_format_form_field_data to properly format your array
  * @since 1.5.0
- * @version 1.7.0
+ * @version 1.6.0
  * @param string $field_name
  * @return array
  */
@@ -495,14 +495,7 @@ function bookacti_get_default_form_fields_meta( $field_name = '' ) {
 	$template_meta = bookacti_format_template_settings( array() );
 	unset( $template_meta[ 'snapDuration' ] );
 	
-	$actions_meta = array(
-		'form_action' => 'book',
-		'when_perform_form_action' => 'on_submit',
-		'redirect_url_by_activity' => array(),
-		'redirect_url_by_group_category' => array()
-	);
-	
-	$calendar_meta = array_merge( $booking_system_meta, $template_meta, array( 'start' => '', 'end' => '' ), $actions_meta );
+	$calendar_meta = array_merge( $booking_system_meta, $template_meta, array( 'start' => '', 'end' => '' ) );
 	
 	// Add register fields default meta to login field meta
 	$register_fields	= bookacti_get_register_fields_default_data();
@@ -556,7 +549,7 @@ function bookacti_get_default_form_fields_meta( $field_name = '' ) {
 /**
  * Format field data according to its type
  * @since 1.5.0
- * @version 1.7.0
+ * @version 1.6.0
  * @param array|string $raw_field_data
  * @return array|false
  */
@@ -605,12 +598,6 @@ function bookacti_format_form_field_data( $raw_field_data ) {
 		);
 		$field_meta[ 'id' ]		= isset( $raw_field_data[ 'id' ] ) ? sanitize_title_with_dashes( $raw_field_data[ 'id' ] ) : $default_meta[ 'id' ];
 		$field_meta[ 'class' ] 	= isset( $raw_field_data[ 'class' ] ) ? sanitize_text_field( $raw_field_data[ 'class' ] ) : $default_meta[ 'class' ];
-		
-		// Format actions meta
-		$field_meta[ 'form_action' ]					= isset( $raw_field_data[ 'form_action' ] ) ? $raw_field_data[ 'form_action' ] : $default_meta[ 'form_action' ];
-		$field_meta[ 'when_perform_form_action' ]		= isset( $raw_field_data[ 'when_perform_form_action' ] ) ? $raw_field_data[ 'when_perform_form_action' ] : $default_meta[ 'when_perform_form_action' ];
-		$field_meta[ 'redirect_url_by_activity' ]		= isset( $raw_field_data[ 'redirect_url_by_activity' ] ) ? $raw_field_data[ 'redirect_url_by_activity' ] : $default_meta[ 'redirect_url_by_activity' ];
-		$field_meta[ 'redirect_url_by_group_category' ]	= isset( $raw_field_data[ 'redirect_url_by_group_category' ] ) ? $raw_field_data[ 'redirect_url_by_group_category' ] : $default_meta[ 'redirect_url_by_group_category' ];
 		
 	} else if( $raw_field_data[ 'name' ] === 'login' ) {
 		// Format meta values
@@ -743,32 +730,8 @@ function bookacti_sanitize_form_field_data( $raw_field_data ) {
 		$field_meta[ 'class' ]	= isset( $raw_field_data[ 'class' ] ) && $raw_field_data[ 'class' ] !== '' ? sanitize_text_field( $raw_field_data[ 'class' ] ) : $default_meta[ 'class' ];
 		
 		// Format actions meta
-		$possible_form_actions	= array_keys( apply_filters( 'bookacti_form_action_options', array( 'book' => '', 'redirect_to_url' => '' ), array() ) );
-		$possible_form_triggers = array_keys( apply_filters( 'bookacti_when_perform_form_action_options', array( 'on_submit' => '', 'on_event_click' => '' ), array() ) );
-		$field_meta[ 'form_action' ]				= isset( $raw_field_data[ 'form_action' ] ) && in_array( $raw_field_data[ 'form_action' ], $possible_form_actions, true ) ? $raw_field_data[ 'form_action' ] : $default_meta[ 'form_action' ];
-		$field_meta[ 'when_perform_form_action' ]	= isset( $raw_field_data[ 'when_perform_form_action' ] ) && in_array( $raw_field_data[ 'when_perform_form_action' ], $possible_form_triggers, true ) ? $raw_field_data[ 'when_perform_form_action' ] : $default_meta[ 'when_perform_form_action' ];
-		
-		$redirect_url_by_group_activity = $default_meta[ 'redirect_url_by_activity' ];
-		if( isset( $raw_field_data[ 'redirect_url_by_activity' ] ) && is_array( $raw_field_data[ 'redirect_url_by_activity' ] ) ) {
-			foreach( $raw_field_data[ 'redirect_url_by_activity' ] as $activity_id => $redirect_url ) {
-				if( ! is_numeric( $activity_id ) ) { continue; }
-				$formatted_url = esc_url( stripslashes( $redirect_url ) );
-				if( empty( $formatted_url ) ) { continue; }
-				$redirect_url_by_group_activity[ intval( $activity_id ) ] = $formatted_url;
-			}
-		}
-		$field_meta[ 'redirect_url_by_activity' ] = maybe_serialize( $redirect_url_by_group_activity );
-		
-		$redirect_url_by_group_category = $default_meta[ 'redirect_url_by_group_category' ];
-		if( isset( $raw_field_data[ 'redirect_url_by_group_category' ] ) && is_array( $raw_field_data[ 'redirect_url_by_group_category' ] ) ) {
-			foreach( $raw_field_data[ 'redirect_url_by_group_category' ] as $group_category_id => $redirect_url ) {
-				if( ! is_numeric( $group_category_id ) ) { continue; }
-				$formatted_url = esc_url( stripslashes( $redirect_url ) );
-				if( empty( $formatted_url ) ) { continue; }
-				$redirect_url_by_group_category[ intval( $group_category_id ) ] = $formatted_url;
-			}
-		}
-		$field_meta[ 'redirect_url_by_group_category' ] = maybe_serialize( $redirect_url_by_group_category );
+		$field_meta[ 'redirect_url_by_activity' ]		= maybe_serialize( array_map( 'stripslashes', $field_meta[ 'redirect_url_by_activity' ] ) );
+		$field_meta[ 'redirect_url_by_group_category' ] = maybe_serialize( array_map( 'stripslashes', $field_meta[ 'redirect_url_by_group_category' ] ) );
 		
 	} else if( $raw_field_data[ 'name' ] === 'login' ) {
 		// Sanitize meta values

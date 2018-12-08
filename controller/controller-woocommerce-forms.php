@@ -57,18 +57,18 @@ add_action( 'bookacti_form_editor_description_after', 'bookacti_form_editor_wc_d
 
 
 /**
- * Set WC field meta default value
+ * Set WC booking system attributes
  * @since 1.7.0
- * @param array $field_meta
- * @param string $field_name
+ * @param array $atts
  * @return array
  */
-function bookacti_default_wc_field_meta( $field_meta, $field_name ) {
-	$field_meta[ 'calendar' ][ 'product_by_activity' ]		= array();
-	$field_meta[ 'calendar' ][ 'product_by_group_category' ]= array();
-	return $field_meta;
+function bookacti_default_wc_booking_system_attributes( $atts ) {
+	$atts[ 'product_by_activity' ]			= array();
+	$atts[ 'product_by_group_category' ]	= array();
+	$atts[ 'products_page_url' ]			= array();
+	return $atts;
 }
-add_filter( 'bookacti_default_form_fields_meta', 'bookacti_default_wc_field_meta', 10, 2 );
+add_filter( 'bookacti_booking_system_default_attributes', 'bookacti_default_wc_booking_system_attributes', 10, 1 );
 
 
 /**
@@ -89,24 +89,48 @@ add_filter( 'bookacti_sanitized_field_data', 'bookacti_form_editor_wc_field_titl
 
 
 /**
- * Format WC field data 
+ * Format WC booking system attributes
  * @since 1.7.0
- * @param array $field_data
- * @param array $raw_field_data
+ * @param array $atts
  * @return array
  */
-function bookacti_format_wc_field_data( $field_data, $raw_field_data ) {
-	if( $raw_field_data[ 'name' ] === 'calendar' ) {
-		$field_data[ 'product_by_activity' ]		= isset( $raw_field_data[ 'product_by_activity' ] ) ? $raw_field_data[ 'product_by_activity' ] : array();
-		$field_data[ 'product_by_group_category' ]	= isset( $raw_field_data[ 'product_by_group_category' ] ) ? $raw_field_data[ 'product_by_group_category' ] : array();
+function bookacti_format_wc_booking_system_attributes( $atts ) {
+	
+	$product_by_activity = array();
+	if( isset( $atts[ 'product_by_activity' ] ) && is_array( $atts[ 'product_by_activity' ] ) ) {
+		foreach( $atts[ 'product_by_activity' ] as $activity_id => $product_id ) {
+			if( ! is_numeric( $activity_id ) || ! is_numeric( $product_id )
+			||  empty( $activity_id ) || empty( $product_id )) { continue; }
+			$product_by_activity[ intval( $activity_id ) ] = intval( $product_id );
+		}
 	}
-	return $field_data;
+	$atts[ 'product_by_activity' ] = $product_by_activity;
+	
+	$product_by_group_category = array();
+	if( isset( $atts[ 'product_by_group_category' ] ) && is_array( $atts[ 'product_by_group_category' ] ) ) {
+		foreach( $atts[ 'product_by_group_category' ] as $group_category_id => $product_id ) {
+			if( ! is_numeric( $group_category_id ) || ! is_numeric( $product_id ) 
+			||  empty( $group_category_id ) || empty( $product_id ) ) { continue; }
+			$product_by_group_category[ intval( $group_category_id ) ] = intval( $product_id );
+		}
+	}
+	$atts[ 'product_by_group_category' ] = $product_by_group_category;
+	
+	if( $atts[ 'form_action' ] === 'redirect_to_product_page' ) {
+		$products_ids = array_unique( array_merge( $product_by_activity, $product_by_group_category ) );
+		foreach( $products_ids as $product_id ) {
+			$product = wc_get_product( $product_id );
+			$atts[ 'products_page_url' ][ $product_id ] = $product->get_permalink();
+		}
+	}
+	
+	return $atts;
 }
-add_filter( 'bookacti_formatted_field_data', 'bookacti_format_wc_field_data', 10, 2 );
+add_filter( 'bookacti_formatted_booking_system_attributes', 'bookacti_format_wc_booking_system_attributes', 10, 1 );
 
 
 /**
- * Sanitize WC field data 
+ * Sanitize WC booking system attributes 
  * @since 1.7.0
  * @param array $field_data
  * @param array $raw_field_data
@@ -114,25 +138,8 @@ add_filter( 'bookacti_formatted_field_data', 'bookacti_format_wc_field_data', 10
  */
 function bookacti_sanitize_wc_field_data( $field_data, $raw_field_data ) {
 	if( $raw_field_data[ 'name' ] === 'calendar' ) {
-		$product_by_activity = array();
-		if( isset( $raw_field_data[ 'product_by_activity' ] ) && is_array( $raw_field_data[ 'product_by_activity' ] ) ) {
-			foreach( $raw_field_data[ 'product_by_activity' ] as $activity_id => $product_id ) {
-				if( ! is_numeric( $activity_id ) || ! is_numeric( $product_id )
-				||  empty( $activity_id ) || empty( $product_id )) { continue; }
-				$product_by_activity[ intval( $activity_id ) ] = intval( $product_id );
-			}
-		}
-		$field_data[ 'product_by_activity' ] = maybe_serialize( $product_by_activity );
-		
-		$product_by_group_category = array();
-		if( isset( $raw_field_data[ 'product_by_group_category' ] ) && is_array( $raw_field_data[ 'product_by_group_category' ] ) ) {
-			foreach( $raw_field_data[ 'product_by_group_category' ] as $group_category_id => $product_id ) {
-				if( ! is_numeric( $group_category_id ) || ! is_numeric( $product_id ) 
-				||  empty( $group_category_id ) || empty( $product_id ) ) { continue; }
-				$product_by_group_category[ intval( $group_category_id ) ] = intval( $product_id );
-			}
-		}
-		$field_data[ 'product_by_group_category' ] = maybe_serialize( $product_by_group_category );
+		$field_data[ 'product_by_activity' ]		= maybe_serialize( $field_data[ 'product_by_activity' ] );
+		$field_data[ 'product_by_group_category' ]	= maybe_serialize( $field_data[ 'product_by_group_category' ] );
 	}
 	return $field_data;
 }
@@ -147,7 +154,7 @@ add_filter( 'bookacti_sanitized_field_data', 'bookacti_sanitize_wc_field_data', 
  * @return array
  */
 function bookacti_add_wc_form_action_options( $options, $params ) {
-	$options[ 'redirect_to_product_page' ] = esc_html__( 'Redirect to corresponding product page', BOOKACTI_PLUGIN_NAME );
+	$options[ 'redirect_to_product_page' ] = esc_html__( 'Redirect to a product page', BOOKACTI_PLUGIN_NAME );
 	return $options;
 }
 add_filter( 'bookacti_form_action_options', 'bookacti_add_wc_form_action_options', 10, 2 );

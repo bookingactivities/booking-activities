@@ -33,28 +33,9 @@ $j( document ).ready( function() {
 	
 	/**
 	 * Apply some filters after the booking list calendar has set up
-	 * @version 1.6.0
+	 * @version 1.7.0
 	 */
 	booking_system.on( 'bookacti_after_calendar_set_up', function() { 
-		var calendar = booking_system.find( '.bookacti-calendar' );
-		
-		// Fill default inputs, if defualt values are availables
-		var default_inputs = bookacti.booking_system[ 'bookacti-booking-system-bookings-page' ][ 'default_inputs' ];
-		if( ! $j.isEmptyObject( default_inputs ) ) {
-			if( default_inputs.group_id == 0 ) { default_inputs.group_id = 'single'; }
-			booking_system.siblings( '.bookacti-booking-system-inputs' ).find( 'input[name="bookacti_group_id"]' ).val( default_inputs.group_id );
-			booking_system.siblings( '.bookacti-booking-system-inputs' ).find( 'input[name="bookacti_event_id"]' ).val( default_inputs.id );
-			booking_system.siblings( '.bookacti-booking-system-inputs' ).find( 'input[name="bookacti_event_start"]' ).val( default_inputs.start );
-			booking_system.siblings( '.bookacti-booking-system-inputs' ).find( 'input[name="bookacti_event_end"]' ).val( default_inputs.end );
-			delete bookacti.booking_system[ 'bookacti-booking-system-bookings-page' ][ 'default_inputs' ];
-		}
-		
-		// Go to the first picked events
-		var picked_events = bookacti.booking_system[ 'bookacti-booking-system-bookings-page' ][ 'picked_events' ];
-		if( ! $j.isEmptyObject( bookacti.booking_system[ 'bookacti-booking-system-bookings-page' ][ 'picked_events' ] ) ) {
-			calendar.fullCalendar( 'gotoDate', moment( picked_events[ 0 ][ 'start' ] ) );
-		}
-		
 		// Apply date filter
 		bookacti_refresh_calendar_according_to_date_filter();
 	});

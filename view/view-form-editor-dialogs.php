@@ -218,15 +218,15 @@ foreach( $fields_data as $field_name => $field_data ) {
 					'name'		=> 'form_action',
 					'id'		=> 'bookacti-form_action',
 					'options'	=> apply_filters( 'bookacti_form_action_options', array( 
-						'book' => esc_html__( 'Make a reservation', BOOKACTI_PLUGIN_NAME ),
-						'redirect_to_url' => esc_html__( 'Redirect to corresponding URL', BOOKACTI_PLUGIN_NAME )
+						'default' => esc_html__( 'Default behavior', BOOKACTI_PLUGIN_NAME ),
+						'redirect_to_url' => esc_html__( 'Redirect to a URL', BOOKACTI_PLUGIN_NAME )
 					), $params ),
 					'tip'		=> esc_html__( 'What action should this form perform?', BOOKACTI_PLUGIN_NAME )
 				);
 				bookacti_display_field( $args );
 			?>
 		</div>
-		<div>
+		<div class='bookacti-when-perform-form-action-container'>
 			<label for='bookacti-when_perform_form_action'><?php esc_html_e( 'When to perform the action', BOOKACTI_PLUGIN_NAME ); ?></label>
 			<?php 
 				$args = array(

@@ -280,7 +280,13 @@ function bookacti_fill_product_variation_form( form_container, variation, form_h
 }
 
 
-// Switch booking system according to variation /** BACKWARD COMPATIBILITY < 1.5 **/
+/**
+ * Switch booking system according to variation 
+ * Used for BACKWARD COMPATIBILITY < 1.5
+ * @deprecated since 1.5.0
+ * @param {dom_element} booking_system
+ * @param {object} variation
+ */
 function bookacti_switch_booking_system_according_to_variation( booking_system, variation ) {
 	
 	var booking_system_id = booking_system.attr( 'id' );
@@ -288,7 +294,7 @@ function bookacti_switch_booking_system_according_to_variation( booking_system, 
 	booking_system.empty();
 	bookacti_clear_booking_system_displayed_info( booking_system );
 	
-	//Switch booking system if the variation is actually an activity and if it is active, in stock and visible
+	// Switch booking system if the variation is actually an activity and if it is active, in stock and visible
 	if( variation[ 'bookacti_is_activity' ] 
 	&&  variation[ 'is_in_stock' ] 
 	&&  variation[ 'variation_is_active' ] 

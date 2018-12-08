@@ -70,8 +70,17 @@ body.booking-activities_page_bookacti_forms label[for='bookacti_form_publish-hid
 
 .bookacti-form-dialog .bookacti-combobox-input	{ min-width: 150px; width: 150px; }
 
+.bookacti-when-perform-form-action-container,
+.bookacti-activities-actions-options-table,
+.bookacti-group-categories-actions-options-table		{ display: none; }
+.bookacti-activities-actions-options-table h4,
+.bookacti-group-categories-actions-options-table h4		{ text-decoration: underline; margin-bottom: 0.75em; }
+
+.bookacti-options-table									{ border-collapse: collapse; }
+.bookacti-options-table th								{ text-align: left; }
+.bookacti-options-table th, .bookacti-options-table td	{ padding: 2px 5px; }
 .bookacti-options-table .bookacti-column-activity,
-.bookacti-options-table .bookacti-column-category { width: 60px; max-width: 60px; white-space: nowrap; overflow: hidden; }
+.bookacti-options-table .bookacti-column-group_category { width: 130px; max-width: 130px; padding-right: 20px; overflow: hidden; }
 
 
 /* Metaboxes */

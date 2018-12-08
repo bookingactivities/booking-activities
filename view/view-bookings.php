@@ -1,7 +1,7 @@
 <?php
 /**
  * Booking list page
- * @version 1.6.2
+ * @version 1.7.0
  */
 
 // Exit if accessed directly
@@ -202,27 +202,19 @@ if( ! $templates ) {
 						if( isset( $_REQUEST[ 'bookacti_event_end' ] ) )	{ $event_end	= bookacti_sanitize_datetime( $_REQUEST[ 'bookacti_event_end' ] ); }
 						if( isset( $_REQUEST[ 'event_end' ] ) )				{ $event_end	= bookacti_sanitize_datetime( $_REQUEST[ 'event_end' ] ); }
 
-						// Fill picked events array
-						if( $event_group_id === 0 && $event_id !== 0 ) {
-							$picked_events[] = array(
-								'id'	=> $event_id,
-								'start'	=> $event_start,
-								'end'	=> $event_end
-							);
-						} else if( $event_group_id ) {
-							$picked_events = bookacti_get_group_events( $event_group_id );
-						}
-
+						// Check if there is an event picked by default
+						$has_event_picked = ( ! $event_group_id && $event_id ) || $event_group_id;
+						
 						// Fill booking system default inputs
 						$default_inputs = array(
-							'group_id'	=> $event_group_id,
-							'id'		=> $event_id,
-							'start'		=> $event_start,
-							'end'		=> $event_end
+							'group_id'		=> $event_group_id ? $event_group_id : ( $event_id ? 'single' : '' ),
+							'event_id'		=> $event_id,
+							'event_start'	=> $event_start,
+							'event_end'		=> $event_end
 						);
 						
-						$display_calendar		= $picked_events ? 'block' : 'none';
-						$calendar_button_label	= $picked_events ? __( 'Hide calendar', BOOKACTI_PLUGIN_NAME ) : __( 'Pick an event', BOOKACTI_PLUGIN_NAME );
+						$display_calendar		= $has_event_picked ? 'block' : 'none';
+						$calendar_button_label	= $has_event_picked ? esc_html__( 'Hide calendar', BOOKACTI_PLUGIN_NAME ) : esc_html__( 'Pick an event', BOOKACTI_PLUGIN_NAME );
 					?>
 					<a class='button' id='bookacti-pick-event-filter' title='<?php echo $calendar_button_label; ?>' >
 						<?php echo $calendar_button_label; ?>
@@ -268,14 +260,13 @@ if( ! $templates ) {
 						'past_events'			=> 1,
 						'past_events_bookable'	=> 1,
 						'check_roles'			=> 0,
-						'auto_load'				=> 1 // Force to load on page load
-					);					
+						'auto_load'				=> 1, // Force to load on page load
+						'picked_events'			=> $default_inputs
+					);
 					bookacti_get_booking_system( $atts, true );
 				?>
 				<script>
 					bookacti.booking_system[ 'bookacti-booking-system-bookings-page' ][ 'templates_per_activities' ]	= <?php echo json_encode( $activities ); ?>;
-					bookacti.booking_system[ 'bookacti-booking-system-bookings-page' ][ 'picked_events' ]				= <?php echo json_encode( $picked_events ); ?>;
-					bookacti.booking_system[ 'bookacti-booking-system-bookings-page' ][ 'default_inputs' ]				= <?php echo json_encode( $default_inputs ); ?>;
 				</script>
 			</div>
 		</form>

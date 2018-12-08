@@ -117,6 +117,7 @@ $j( document ).ready( function() {
 
 /**
  * Initialize form dialogs
+ * @version 1.7.0
  */
 function bookacti_init_form_dialogs() {
 	//Common param
@@ -124,7 +125,7 @@ function bookacti_init_form_dialogs() {
 		"modal":		true,
 		"autoOpen":		false,
 		"minHeight":	300,
-		"minWidth":		440,
+		"minWidth":		460,
 		"resize":		'auto',
 		"show":			true,
 		"hide":			true,

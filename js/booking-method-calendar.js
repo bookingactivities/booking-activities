@@ -1,4 +1,9 @@
-// Init calendar
+/**
+ * Initialize the calendar
+ * @version 1.7.0
+ * @param {dom_element} booking_system
+ * @param {boolean} reload_events
+ */
 function bookacti_set_calendar_up( booking_system, reload_events ) {
 	
 	reload_events = reload_events ? 1 : 0;
@@ -180,6 +185,12 @@ function bookacti_set_calendar_up( booking_system, reload_events ) {
 	});
 	
 	bookacti.booking_system[ booking_system_id ][ 'load_events' ] = true;
+	
+	// Go to the first picked events
+	var picked_events = bookacti.booking_system[ booking_system_id ][ 'picked_events' ];
+	if( ! $j.isEmptyObject( bookacti.booking_system[ booking_system_id ][ 'picked_events' ] ) ) {
+		calendar.fullCalendar( 'gotoDate', moment( picked_events[ 0 ][ 'start' ] ) );
+	}
 	
 	booking_system.trigger( 'bookacti_after_calendar_set_up' );
 }

@@ -7,6 +7,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 /**
  * Display the form field 'calendar'
  * @since 1.5.0
+ * @version 1.7.0
  * @param array $field
  * @param string $instance_id
  * @param string $context
@@ -15,6 +16,18 @@ function bookacti_display_form_field_calendar( $field, $instance_id, $context ) 
 	// Do not keep ID and class (already used for the container)
 	$field[ 'id' ] = $instance_id; 
 	$field[ 'class' ] = '';
+	
+	// Check if an event / group of events is picked by default
+	if( isset( $_REQUEST[ 'bookacti_group_id' ] )	&& $_REQUEST[ 'bookacti_group_id' ] !== 'single' )	{ $field[ 'picked_events' ][ 'group_id' ] = intval( $_REQUEST[ 'bookacti_group_id' ] ); }
+	if( isset( $_REQUEST[ 'event_group_id' ] )		&& $_REQUEST[ 'event_group_id' ] !== 'single' )		{ $field[ 'picked_events' ][ 'group_id' ] = intval( $_REQUEST[ 'event_group_id' ] ); }
+	if( isset( $_REQUEST[ 'bookacti_event_id' ] ) )		{ $field[ 'picked_events' ][ 'event_id' ]		= intval( $_REQUEST[ 'bookacti_event_id' ] ); }
+	if( isset( $_REQUEST[ 'event_id' ] ) )				{ $field[ 'picked_events' ][ 'event_id' ]		= intval( $_REQUEST[ 'event_id' ] ); }
+	if( isset( $_REQUEST[ 'bookacti_event_start' ] ) )	{ $field[ 'picked_events' ][ 'event_start' ]	= bookacti_sanitize_datetime( $_REQUEST[ 'bookacti_event_start' ] ); }
+	if( isset( $_REQUEST[ 'event_start' ] ) )			{ $field[ 'picked_events' ][ 'event_start' ]	= bookacti_sanitize_datetime( $_REQUEST[ 'event_start' ] ); }
+	if( isset( $_REQUEST[ 'bookacti_event_end' ] ) )	{ $field[ 'picked_events' ][ 'event_end' ]		= bookacti_sanitize_datetime( $_REQUEST[ 'bookacti_event_end' ] ); }
+	if( isset( $_REQUEST[ 'event_end' ] ) )				{ $field[ 'picked_events' ][ 'event_end' ]		= bookacti_sanitize_datetime( $_REQUEST[ 'event_end' ] ); }
+	
+	$atts = apply_filters( 'bookacti_form_field_calendar_attributes', $field, $instance_id, $context );
 	
 	// Display the booking system
 	bookacti_get_booking_system( $field, true );

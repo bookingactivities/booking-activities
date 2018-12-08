@@ -317,6 +317,11 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 
 == Changelog ==
 
+= 1.7.0 =
+* Feature - Alternative form action: redirect to URL
+* Feature - Alternative form action: redirect to a product page
+* Feature - Trigger the form action on event click or on submit
+
 = 1.6.2 =
 * Dev - Use all booking list filters via URL
 * Dev - Filter booking list by multiple form id, user id, group category id, group of events id

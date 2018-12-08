@@ -358,7 +358,13 @@ function bookacti_refresh_list_table_hidden_columns() {
 
 // BOOK AN EVENT
 
-// Check if sent data correspond to displayed data
+/**
+ * Check if sent data correspond to displayed data
+ * @version 1.7.0
+ * @param {dom_element} booking_system
+ * @param {int} quantity
+ * @returns {boolean}
+ */
 function bookacti_validate_picked_events( booking_system, quantity ) {
 	
 	//Get event params
@@ -383,7 +389,7 @@ function bookacti_validate_picked_events( booking_system, quantity ) {
 		send				: false
 	};
 	
-	//Make the tests and change the booleans
+	// Make the tests and change the booleans
 	if( event_id !== '' && event_start !== '' && event_end !== '' ) { valid_form.is_event = true; }
 	
 	// Group is validated if it is 'single' and there is an event, 
@@ -397,7 +403,7 @@ function bookacti_validate_picked_events( booking_system, quantity ) {
 	if( valid_form.is_group && typeof bookacti.booking_system[ booking_system_id ][ 'picked_events' ] !== 'undefined' ) {
 		// Validate single event
 		if( group_id === 'single' && bookacti.booking_system[ booking_system_id ][ 'picked_events' ].length === 1 ) {
-				if( bookacti.booking_system[ booking_system_id ][ 'picked_events' ][0]['id']	=== event_id 
+				if( bookacti.booking_system[ booking_system_id ][ 'picked_events' ][0]['id']	==  event_id 
 				&&  bookacti.booking_system[ booking_system_id ][ 'picked_events' ][0]['start']	=== event_start 
 				&&  bookacti.booking_system[ booking_system_id ][ 'picked_events' ][0]['end']	=== event_end ) {
 

@@ -132,6 +132,7 @@ $j( document ).ready( function() {
 		var group_categories = $j( this ).val();
 		
 		// If no group category is selected, hide the group categories actions table
+		var was_displayed = $j( '.bookacti-group-categories-actions-options-table' ).is( ':visible' );
 		if( group_categories === 'none' ) {
 			$j( '.bookacti-group-categories-actions-options-table' ).hide();
 			$j( '.bookacti-group-categories-actions-options-table :input' ).prop( 'disabled', true );
@@ -142,7 +143,7 @@ $j( document ).ready( function() {
 		if( ! $j.isArray( group_categories ) ) { group_categories = [ group_categories ]; }
 		
 		// Display the group categories actions table
-		$j( '.bookacti-group-categories-actions-options-table' ).show();
+		if( was_displayed ) { $j( '.bookacti-group-categories-actions-options-table' ).show(); }
 		$j( '.bookacti-group-categories-actions-options-table :input' ).prop( 'disabled', false );
 		
 		var tbody = $j( '.bookacti-group-categories-actions-options-table tbody' );
@@ -184,6 +185,30 @@ $j( document ).ready( function() {
 				row.hide();
 			}
 		});
+	});
+	
+	
+	/**
+	 * Toggle the actions fields according to the currently selected form action
+	 * @since 1.7.0
+	 */
+	$j( '#bookacti-form-field-dialog-calendar' ).on( 'change', 'select#bookacti-form_action', function( e ) {
+		// Show / hide when to perform the form action field
+		if( $j( this ).val() === 'default' ) {
+			$j( '.bookacti-when-perform-form-action-container' ).hide();
+		} else {
+			$j( '.bookacti-when-perform-form-action-container' ).show();
+		}
+		
+		// Show / hide the columns displayed in the "redirect URL" tables
+		$j( '.bookacti-activities-actions-options-table, .bookacti-group-categories-actions-options-table' ).show();
+		if( $j( this ).val() === 'default' ) {
+			$j( '.bookacti-activities-actions-options-table, .bookacti-group-categories-actions-options-table' ).hide();
+		} else if( $j( this ).val() === 'redirect_to_url' ) {
+			$j( '.bookacti-activities-actions-options-table .bookacti-column-redirect_url, .bookacti-group-categories-actions-options-table .bookacti-column-redirect_url' ).show();
+		}
+		// Always hide categories table if no categories are selected
+		if( $j( 'select#bookacti-group_categories' ).val() === 'none' ) { $j( '.bookacti-group-categories-actions-options-table' ).hide(); }
 	});
 	
 	

@@ -311,28 +311,22 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	
 	
 	/**
-	 * Display a specific 'calendar' field on product pages
-	 * @since 1.5.0
-	 * @version 1.5.2
-	 * @param array $field
-	 * @param int $form_id
+	 * Change 'calendar' field attributes when it is displayed on product pages
+	 * @since 1.7.0 (was bookacti_display_form_field_calendar_on_wc_product_page before)
+	 * @param array $atts
 	 * @param string $instance_id
 	 * @param string $context
+	 * @return $atts
 	 */
-	function bookacti_display_form_field_calendar_on_wc_product_page( $field, $instance_id, $context ) {
-		if( $context !== 'wc_product_init' && $context !== 'wc_switch_variation' ) { return; }
+	function bookacti_form_field_calendar_attributes_on_wc_product_page( $atts, $instance_id, $context ) {
+		if( $context !== 'wc_product_init' && $context !== 'wc_switch_variation' ) { return $atts; }
 		
-		// Remove default behavior
-		remove_action( 'bookacti_display_form_field_calendar', 'bookacti_display_form_field_calendar', 10 );
+		// Change class
+		$atts[ 'class' ] = 'bookacti-woocommerce-product-booking-system';
 		
-		// Do not keep ID and class (already used for the container)
-		$field[ 'id' ] = $instance_id; 
-		$field[ 'class' ] = 'bookacti-woocommerce-product-booking-system';
-
-		// Display the booking system
-		bookacti_get_booking_system( $field, true );
+		return $atts;
 	}
-	add_action( 'bookacti_display_form_field_calendar', 'bookacti_display_form_field_calendar_on_wc_product_page', 5, 3 );
+	add_action( 'bookacti_form_field_calendar_attributes', 'bookacti_form_field_calendar_attributes_on_wc_product_page', 10, 3 );
 	
 	
 	/**
