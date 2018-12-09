@@ -139,7 +139,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 	
 
-// ADD TO CART (SINGLE PRODUCT PAGE)
+// SINGLE PRODUCT PAGE
 	
 	/**
 	 * Add booking forms to single product page (front-end)
@@ -327,6 +327,24 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		return $atts;
 	}
 	add_action( 'bookacti_form_field_calendar_attributes', 'bookacti_form_field_calendar_attributes_on_wc_product_page', 10, 3 );
+	
+	
+	/**
+	 * Set the WC quantity input value with the URL parameter 'quantity' 
+	 * @since 1.7.0
+	 * @param array $args
+	 * @param WC_Product $product
+	 * @return array
+	 */
+	function bookacti_set_wc_quantity_via_url( $args, $product ) {
+		if( empty( $_GET[ 'quantity' ] ) || ! is_numeric( $_GET[ 'quantity' ] ) ) { return $args; }
+		if( ! bookacti_product_is_activity( $product ) ) { return $args; }
+		
+		$args[ 'input_value' ] = intval( $_GET[ 'quantity' ] );
+		
+		return $args;
+	}
+	add_filter( 'woocommerce_quantity_input_args', 'bookacti_set_wc_quantity_via_url', 10, 2 );
 	
 	
 	/**

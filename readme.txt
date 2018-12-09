@@ -5,7 +5,7 @@ Tags: booking activities, booking sport, booking form, event reservation, reserv
 Requires at least: 3.6
 Tested up to: 4.9
 Requires PHP: 5.3
-Stable tag: 1.6.1
+Stable tag: 1.6.2
 License: GPLv3 or later
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
 
@@ -318,9 +318,9 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 == Changelog ==
 
 = 1.7.0 =
-* Feature - Alternative form action: redirect to URL
-* Feature - Alternative form action: redirect to a product page
-* Feature - Trigger the form action on event click or on submit
+* Feature - Redirect to a URL when you click on an event or when you submit a booking form
+* Feature - Redirect to a product page when you click on an event or when you submit a booking form
+* Dev - Prefill a booking form thanks to URL parameters
 
 = 1.6.2 =
 * Dev - Use all booking list filters via URL

@@ -302,6 +302,7 @@ add_filter( 'bookacti_html_form_field_login', 'bookacti_display_form_field_login
 /**
  * Display the form field 'quantity'
  * @since 1.5.0
+ * @version 1.7.0
  * @param array $field
  * @param string $instance_id
  * @param string $context
@@ -313,7 +314,7 @@ function bookacti_display_form_field_quantity( $field, $instance_id, $context ) 
 		'class'			=> 'bookacti-form-field bookacti-quantity',
 		'placeholder'	=> ! empty( $field[ 'placeholder' ] ) ? esc_attr( apply_filters( 'bookacti_translate_text', $field[ 'placeholder' ] ) ) : '',
 		'options'		=> array( 'min' => 1 ),
-		'value'			=> 1
+		'value'			=> ! empty( $_REQUEST[ 'quantity' ] ) && is_numeric( $_REQUEST[ 'quantity' ] ) ? intval( $_REQUEST[ 'quantity' ] ) : 1
 	);
 	bookacti_display_field( $args );
 }

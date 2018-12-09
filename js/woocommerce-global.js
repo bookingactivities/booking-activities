@@ -71,24 +71,8 @@ $j( document ).ready( function() {
 		var booking_system_id	= booking_system.attr( 'id' );
 		var attributes			= bookacti.booking_system[ booking_system_id ];
 		
-		if( group_id === 'single' && attributes[ 'when_perform_form_action' ] === 'on_event_click' ) {
-			var activity_id = attributes[ 'events_data' ][ event.id ][ 'activity_id' ];
-			if( attributes[ 'form_action' ] === 'redirect_to_product_page' && typeof attributes[ 'product_by_activity' ][ activity_id ] !== 'undefined' ) {
-				var product_id = attributes[ 'product_by_activity' ][ activity_id ];
-				if( typeof attributes[ 'products_page_url' ][ product_id ] === 'undefined' ) { return; }
-				
-				var redirect_url = attributes[ 'products_page_url' ][ product_id ];
-				
-				// Add event parameters to the URL
-				var start	= event.start instanceof moment ? event.start.format( 'YYYY-MM-DD[T]HH:mm:ss' ) : event.start;
-				var end		= event.end instanceof moment ?  event.end.format( 'YYYY-MM-DD[T]HH:mm:ss' ) : event.end;
-				var event_params = 'event_id=' + event.id + '&event_start=' + start + '&event_end=' + end;
-				redirect_url += redirect_url.indexOf( '?' ) >= 0 ? '&' + event_params : '?' + event_params;
-				
-				// Redirect to URL
-				bookacti_start_loading_booking_system( booking_system );
-				window.location.href = redirect_url;
-			}
+		if( group_id === 'single' && attributes[ 'when_perform_form_action' ] === 'on_event_click' && attributes[ 'form_action' ] === 'redirect_to_product_page' ) {
+			bookacti_redirect_to_activity_product_page( booking_system, event );
 		}
 	});
 	
@@ -103,21 +87,60 @@ $j( document ).ready( function() {
 		var booking_system_id	= booking_system.attr( 'id' );
 		var attributes			= bookacti.booking_system[ booking_system_id ];
 		
-		if( attributes[ 'when_perform_form_action' ] === 'on_event_click' ) {
-			var category_id = attributes[ 'groups_data' ][ group_id ][ 'category_id' ];
-			if( attributes[ 'form_action' ] === 'redirect_to_product_page' && typeof attributes[ 'product_by_group_category' ][ category_id ] !== 'undefined' ) {
-				var product_id = attributes[ 'product_by_group_category' ][ category_id ];
-				if( typeof attributes[ 'products_page_url' ][ product_id ] === 'undefined' ) { return; }
-				var redirect_url = attributes[ 'products_page_url' ][ product_id ];
-				
-				// Add event parameters to the URL
-				var event_params = 'event_group_id=' + group_id;
-				redirect_url += redirect_url.indexOf( '?' ) >= 0 ? '&' + event_params : '?' + event_params;
-				
-				// Redirect to URL
-				bookacti_start_loading_booking_system( booking_system );
-				window.location.href = redirect_url;
-			}
+		if( attributes[ 'when_perform_form_action' ] === 'on_event_click' && attributes[ 'form_action' ] === 'redirect_to_product_page' ) {
+			bookacti_redirect_to_group_category_product_page( booking_system, group_id );
 		}
 	});
 });
+
+
+
+
+// REDIRECT
+
+/**
+ * Redirect to activity product page
+ * @since 1.7.0
+ * @param {dom_element} booking_system
+ * @param {object} event
+ */
+function bookacti_redirect_to_activity_product_page( booking_system, event ) {
+	var booking_system_id	= booking_system.attr( 'id' );
+	var attributes			= bookacti.booking_system[ booking_system_id ];
+	
+	if( typeof attributes[ 'events_data' ][ event.id ] === 'undefined' ) { return; }
+	
+	var activity_id = attributes[ 'events_data' ][ event.id ][ 'activity_id' ];
+	if( typeof attributes[ 'product_by_activity' ][ activity_id ] === 'undefined' ) { return; }
+	
+	var product_id = attributes[ 'product_by_activity' ][ activity_id ];
+	if( typeof attributes[ 'products_page_url' ][ product_id ] === 'undefined' ) { return; }
+
+	var redirect_url = attributes[ 'products_page_url' ][ product_id ];
+	
+	bookacti_redirect_booking_system_to_url( booking_system, redirect_url );
+}
+
+
+/**
+ * Redirect to group category product page
+ * @since 1.7.0
+ * @param {dom_element} booking_system
+ * @param {int} group_id
+ */
+function bookacti_redirect_to_group_category_product_page( booking_system, group_id ) {
+	var booking_system_id	= booking_system.attr( 'id' );
+	var attributes			= bookacti.booking_system[ booking_system_id ];
+	
+	if( typeof attributes[ 'groups_data' ][ group_id ] === 'undefined' ) { return; }
+	
+	var category_id = attributes[ 'groups_data' ][ group_id ][ 'category_id' ];
+	if( typeof attributes[ 'product_by_group_category' ][ category_id ] === 'undefined' ) { return; }
+	
+	var product_id = attributes[ 'product_by_group_category' ][ category_id ];
+	if( typeof attributes[ 'products_page_url' ][ product_id ] === 'undefined' ) { return; }
+	
+	var redirect_url = attributes[ 'products_page_url' ][ product_id ];
+	
+	bookacti_redirect_booking_system_to_url( booking_system, redirect_url );
+}

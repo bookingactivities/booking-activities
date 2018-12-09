@@ -1380,3 +1380,77 @@ function bookacti_stop_loading_booking_system( booking_system, force_exit ) {
 		booking_system.trigger( 'bookacti_exit_loading_state', [ booking_method, force_exit ] );
 	}
 }
+
+
+
+
+// REDIRECT
+
+/**
+ * Redirect to activity url
+ * @since 1.7.0
+ * @param {dom_element} booking_system
+ * @param {object} event
+ */
+function bookacti_redirect_to_activity_url( booking_system, event ) {
+	var booking_system_id	= booking_system.attr( 'id' );
+	var attributes			= bookacti.booking_system[ booking_system_id ];
+	
+	if( typeof attributes[ 'events_data' ][ event.id ] === 'undefined' ) { return; }
+	
+	var activity_id = attributes[ 'events_data' ][ event.id ][ 'activity_id' ];
+	if( typeof attributes[ 'redirect_url_by_activity' ][ activity_id ] === 'undefined' ) { return; }
+	
+	var redirect_url = attributes[ 'redirect_url_by_activity' ][ activity_id ];
+	
+	bookacti_redirect_booking_system_to_url( booking_system, redirect_url );
+}
+
+
+/**
+ * Redirect to group category url
+ * @since 1.7.0
+ * @param {dom_element} booking_system
+ * @param {int} group_id
+ */
+function bookacti_redirect_to_group_category_url( booking_system, group_id ) {
+	var booking_system_id	= booking_system.attr( 'id' );
+	var attributes			= bookacti.booking_system[ booking_system_id ];
+	
+	if( typeof attributes[ 'groups_data' ][ group_id ] === 'undefined' ) { return; }
+	
+	var category_id = attributes[ 'groups_data' ][ group_id ][ 'category_id' ];
+	if( typeof attributes[ 'redirect_url_by_group_category' ][ category_id ] === 'undefined' ) { return; }
+	
+	var redirect_url = attributes[ 'redirect_url_by_group_category' ][ category_id ];
+
+	bookacti_redirect_booking_system_to_url( booking_system, redirect_url );
+}
+
+
+/**
+ * Redirect to group category url
+ * @since 1.7.0
+ * @param {dom_element} booking_system
+ * @param {string} redirect_url
+ */
+function bookacti_redirect_booking_system_to_url( booking_system, redirect_url ) {
+	if( ! redirect_url ) { return; }
+	
+	// Add form parameters to the URL
+	var url_params = '';
+	if( ! booking_system.closest( 'form' ).length ) {
+		booking_system.closest( '.bookacti-booking-system-container' ).wrap( '<form id="bookacti-temporary-form"></form>' );
+		url_params	= booking_system.closest( 'form' ).serialize();
+		booking_system.closest( '.bookacti-booking-system-container' ).unwrap( 'form#bookacti-temporary-form' );
+	} else {
+		url_params	= booking_system.closest( 'form' ).serialize();
+	}
+	redirect_url += redirect_url.indexOf( '?' ) >= 0 ? '&' + url_params : '?' + url_params;
+
+	// Redirect to URL
+	bookacti_start_loading_booking_system( booking_system );
+	window.location.href = redirect_url;
+}
+
+

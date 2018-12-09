@@ -154,8 +154,11 @@ $j( document ).ready( function() {
 		}
 
 
-		// Change activity summary on qty change
-		$j( 'body.woocommerce form.cart' ).on( 'keyup mouseup', 'input.qty', function() {
+		/**
+		 * Change activity summary on qty change
+		 * @version 1.7.0
+		 */
+		$j( 'body.woocommerce form.cart' ).on( 'change', 'input.qty', function() {
 			var booking_system = $j( this ).parents( 'form.cart' ).find( '.bookacti-booking-system' );
 			if( booking_system.length ) {
 				bookacti_fill_picked_events_list( booking_system );
@@ -171,7 +174,34 @@ $j( document ).ready( function() {
 				bookacti_set_min_and_max_quantity( booking_system, qty_field, event_summary_data );
 			}
 		});
-	
+		
+		
+		// Redirect to product page after submitting booking form
+		$j( 'body' ).on( 'bookacti_submit_booking_form', '.bookacti-booking-form', function( e, form_action ){
+			if( form_action !== 'redirect_to_product_page' ) { return; }
+			
+			var form			= $j( this );
+			var booking_system	= form.find( '.bookacti-form-field-type-calendar .bookacti-booking-system' );
+			var group_id	= booking_system.siblings( '.bookacti-booking-system-inputs' ).find( 'input[name="bookacti_group_id"]' ).val();
+			var event_id	= booking_system.siblings( '.bookacti-booking-system-inputs' ).find( 'input[name="bookacti_event_id"]' ).val();
+			var event_start	= booking_system.siblings( '.bookacti-booking-system-inputs' ).find( 'input[name="bookacti_event_start"]' ).val();
+			var event_end	= booking_system.siblings( '.bookacti-booking-system-inputs' ).find( 'input[name="bookacti_event_end"]' ).val();
+			
+			// Redirect to activity URL if a single event is selected
+			if( group_id === 'single' && event_id && event_start && event_end ) {
+				var event = {
+					'id': event_id,
+					'start': event_start,
+					'end': event_end
+				};
+				bookacti_redirect_to_activity_product_page( booking_system, event );
+			}
+			
+			// Redirect to activity URL if a single event is selected
+			else if( $j.isNumeric( group_id ) ) {
+				bookacti_redirect_to_group_category_product_page( booking_system, group_id );
+			}
+		});
 	
 	
 	
