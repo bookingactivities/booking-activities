@@ -1089,7 +1089,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	 * Turn all bookings of an order to the desired status. 
 	 * Also make sure that bookings are bound to the order and the associated user.
 	 * 
-	 * @version 1.5.8
+	 * @version 1.6.2
 	 * @param WC_Order $order
 	 * @param string $state
 	 * @param string $payment_status
@@ -1209,7 +1209,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 			$headers		= array( 'Content-Type: text/html; charset=UTF-8' );
 
-			wp_mail( $to, $subject, $message, $headers );
+			bookacti_send_email( $to, $subject, $message, $headers );
 		}
 		
 		if( is_numeric( $response[ 'updated' ] ) && intval( $response[ 'updated' ] ) > 0 ) {

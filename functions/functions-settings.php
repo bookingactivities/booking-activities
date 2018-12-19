@@ -818,14 +818,15 @@ function bookacti_settings_section_bookings_callback() { }
 	
 	/**
 	 * Get all custom messages
-	 * 
 	 * @since 1.2.0
+	 * @version 1.6.2
 	 * @param boolean $raw Whether to retrieve the raw value from database or the option parsed through get_option
 	 * @return array
 	 */
 	function bookacti_get_messages( $raw = false ) {
 		
 		// Get raw value from database
+		$saved_messages = array();
 		if( $raw ) {
 			$alloptions = wp_load_alloptions(); // get_option() calls wp_load_alloptions() itself, so there is no overhead at runtime 
 			if( isset( $alloptions[ 'bookacti_messages_settings' ] ) ) {
@@ -841,7 +842,7 @@ function bookacti_settings_section_bookings_callback() { }
 		$default_messages = bookacti_get_default_messages();
 		$messages = $default_messages;
 		
-		if( $saved_messages ) {
+		if( ! empty( $saved_messages ) ) {
 			foreach( $default_messages as $message_id => $message ) {
 				if( isset( $saved_messages[ $message_id ] ) ) {
 					$messages[ $message_id ][ 'value' ] = $saved_messages[ $message_id ];

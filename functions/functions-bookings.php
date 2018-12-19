@@ -1315,7 +1315,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 	/**
 	 * Send a refund request by email for a specific booking
-	 * @version 1.6.0
+	 * @version 1.6.2
 	 * @param int $booking_id
 	 * @param string $booking_type Defined if the given id is a booking id or a booking group id. Accepted values are 'single' and 'group'.
 	 * @param string $user_message
@@ -1407,7 +1407,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		$message	= apply_filters( 'bookacti_refund_request_email_message', $message, $booking_id, $booking_type, $data, $user_message );
 		$headers	= apply_filters( 'bookacti_refund_request_email_headers', array( 'Content-Type: text/html; charset=UTF-8' ) );
 
-		$sent = wp_mail( $to, $subject, $message, $headers );
+		$sent = bookacti_send_email( $to, $subject, $message, $headers );
 
 		return $sent;
 	}

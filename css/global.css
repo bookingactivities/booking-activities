@@ -98,7 +98,9 @@
 .bookacti-picked-event			{ border-width: 2px; z-index: 3 !important; transition: border 0.2s; }
 
 .bookacti-calendar .fc-basic-view .fc-content > * { display: block; }
-	
+
+.fc-popover .fc-widget-content { max-height: 300px; overflow-y: auto; }
+
 	/* Small events */
 	.bookacti-calendar .fc-agenda-view .bookacti-small-event .fc-title,
 	.bookacti-calendar .fc-agenda-view .bookacti-small-event .fc-time									{ display: inline-block; }

@@ -516,9 +516,8 @@ add_action( 'bookacti_send_async_notification', 'bookacti_send_notification', 10
 
 /**
  * Send an email notification
- * 
  * @since 1.2.0
- * @version 1.2.1
+ * @version 1.6.2
  * @param array $notification
  * @param array $tags
  * @param string $locale
@@ -549,7 +548,7 @@ function bookacti_send_email_notification( $notification, $tags = array(), $loca
 		'message'	=> $message
 	), $notification, $tags, $locale );
 	
-	$sent = wp_mail( $email_data[ 'to' ], $email_data[ 'subject' ], $email_data[ 'message' ], $email_data[ 'headers' ] );
+	$sent = bookacti_send_email( $email_data[ 'to' ], $email_data[ 'subject' ], $email_data[ 'message' ], $email_data[ 'headers' ] );
 	
 	do_action( 'bookacti_email_notification_sent', $sent, $email_data, $notification, $tags, $locale );
 	
@@ -594,4 +593,88 @@ function bookacti_send_new_user_notification( $user_id, $notify = 'both', $async
 // Hook the asynchronous call and send the new user notification
 add_action( 'bookacti_send_async_new_user_notification', 'bookacti_send_new_user_notification', 10, 3 );
 
+}
+
+
+/**
+ * Send an email.
+ * Make sure not to send more emails than allowed in a specific timeframe
+ * @since 1.6.2
+ * @param array $to
+ * @param string $subject
+ * @param string $message
+ * @param array $headers
+ * @return bool
+ */
+function bookacti_send_email( $to, $subject, $message, $headers ) {
+	
+	$recipients				= is_array( $to ) ? $to : explode( ',', $to );
+	$latest_emails_sent		= get_option( 'bookacti_latest_emails_sent' );
+	if( ! $latest_emails_sent ) { $latest_emails_sent = array(); }
+	
+	$current_datetime		= new DateTime( 'now' );
+	$time_formatted			= $current_datetime->format( 'Y-m-d H:i:s' );
+	
+	$user_threshold_minute	= apply_filters( 'bookacti_limit_email_per_minute_per_user', 20 );
+	$user_threshold_hour	= apply_filters( 'bookacti_limit_email_per_hour_per_user', 200 );
+	$user_threshold_day		= apply_filters( 'bookacti_limit_email_per_day_per_user', 2000 );
+	
+	$one_mn_ago_datetime	= clone $current_datetime;
+	$one_hour_ago_datetime	= clone $current_datetime;
+	$one_day_ago_datetime	= clone $current_datetime;
+	$one_mn_ago_datetime->sub( new DateInterval( 'PT1M' ) );
+	$one_hour_ago_datetime->sub( new DateInterval( 'PT1H' ) );
+	$one_day_ago_datetime->sub( new DateInterval( 'P1D' ) );
+	
+	$emails_count_minute_per_user	= array();
+	$emails_count_hour_per_user		= array();
+	$emails_count_day_per_user		= array();
+	
+	// Check per recipient thresholds
+	if( $latest_emails_sent ) {
+		foreach( $recipients as $i => $recipient ) {
+			if( empty( $latest_emails_sent[ $recipient ] ) || ! is_array( $latest_emails_sent[ $recipient ] ) ) { continue; }
+			$emails_count_minute_per_user[ $recipient ] = 0;
+			$emails_count_hour_per_user[ $recipient ] = 0;
+			$emails_count_day_per_user[ $recipient ] = 0;
+			foreach( $latest_emails_sent[ $recipient ] as $j => $email_sent ) {
+				$email_datetime = new DateTime( $email_sent );
+				if( $one_day_ago_datetime < $email_datetime ) {
+					$emails_count_day_per_user[ $recipient ] += 1;
+				} else {
+					// Remove useless values (before day-1) to clean the database
+					unset( $latest_emails_sent[ $j ] );
+					continue;
+				}
+				if( $one_mn_ago_datetime < $email_datetime ) {
+					$emails_count_minute_per_user[ $recipient ] += 1;
+				}
+				if( $one_hour_ago_datetime < $email_datetime ) {
+					$emails_count_hour_per_user[ $recipient ] += 1;
+				}
+			}
+			
+			if( $emails_count_minute_per_user[ $recipient ] >= $user_threshold_minute
+			||  $emails_count_hour_per_user[ $recipient ] >= $user_threshold_hour 
+			||  $emails_count_day_per_user[ $recipient ] >= $user_threshold_day ) {
+				unset( $recipients[ $i ] );
+			}
+		}
+	}
+	
+	$actual_recipients = apply_filters( 'bookacti_send_email_recipients', $recipients, $to, $subject, $message, $headers );
+	
+	if( ! $actual_recipients ) { return false; }
+	
+	$sent = wp_mail( $actual_recipients, $subject, $message, $headers );
+	
+	if( $sent ) {
+		foreach( $actual_recipients as $i => $recipient ) {
+			if( ! isset( $latest_emails_sent[ $recipient ] ) || ! is_array( $latest_emails_sent[ $recipient ] ) ) { $latest_emails_sent[ $recipient ] = array(); }
+			$latest_emails_sent[ $recipient ][] = $time_formatted;
+		}
+		update_option( 'bookacti_latest_emails_sent', $latest_emails_sent );
+	}
+	
+	return $sent;
 }

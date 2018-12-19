@@ -28,7 +28,7 @@ add_action( 'bookacti_booking_form_validated', 'bookacti_send_notification_when_
  * Send a notification to admin and customer when a single booking status changes
  * 
  * @since 1.2.1 (was bookacti_send_email_when_booking_state_changes in 1.2.0)
- * @version 1.5.6
+ * @version 1.6.2
  * @param int $booking_id
  * @param string $status
  * @param array $args
@@ -42,7 +42,7 @@ function bookacti_send_notification_when_booking_state_changes( $booking_id, $st
 	if( isset( $args[ 'booking_group_state_changed' ] ) && $args[ 'booking_group_state_changed' ] ) { return; }
 	
 	// If we cannot know if the action was made by customer or admin, send to both
-	$send_to = apply_filters( 'bookacti_booking_state_change_notification_recipient', isset( $args[ 'is_admin' ] ) ? ( $args[ 'is_admin' ] ? 'customer' : 'admin' ) : 'both', $booking_id, $status, $args );
+	$send_to = apply_filters( 'bookacti_booking_state_change_notification_recipient', ! empty( $args[ 'is_admin' ] ) ? 'customer' : 'both', $booking_id, $status, $args );
 	
 	// If $args[ 'is_admin' ] is true, the customer need to be notified
 	if( $send_to === 'customer' || $send_to === 'both' ) {
@@ -61,7 +61,7 @@ add_action( 'bookacti_booking_state_changed', 'bookacti_send_notification_when_b
  * Send a notification to admin and customer when a booking group status changes
  * 
  * @since 1.2.1 (was bookacti_send_email_when_booking_group_state_changes in 1.2.0)
- * @version 1.5.6
+ * @version 1.6.2
  * @param int $booking_group_id
  * @param string $status
  * @param array $args
@@ -72,7 +72,7 @@ function bookacti_send_notification_when_booking_group_state_changes( $booking_g
 	if( isset( $args[ 'send_notifications' ] ) && ! $args[ 'send_notifications' ] ) { return; }
 	
 	// If we cannot know if the action was made by customer or admin, send to both
-	$send_to = apply_filters( 'bookacti_booking_group_state_change_notification_recipient', isset( $args[ 'is_admin' ] ) ? ( $args[ 'is_admin' ] ? 'customer' : 'admin' ) : 'both', $booking_group_id, $status, $args );
+	$send_to = apply_filters( 'bookacti_booking_group_state_change_notification_recipient', ! empty( $args[ 'is_admin' ] ) ? 'customer' : 'both', $booking_group_id, $status, $args );
 	
 	// If $args[ 'is_admin' ] is true, the customer need to be notified
 	if( $send_to === 'customer' || $send_to === 'both' ) {
@@ -91,52 +91,58 @@ add_action( 'bookacti_booking_group_state_changed', 'bookacti_send_notification_
  * Send a notification to admin and customer when a booking is rescheduled
  * 
  * @since 1.2.1 (was bookacti_send_email_when_booking_is_rescheduled in 1.2.0)
- * @version 1.6.0
- * @param int $booking_id
+ * @version 1.6.2
+ * @param object $booking
  * @param object $old_booking
  * @param array $args
  */
-function bookacti_send_notification_when_booking_is_rescheduled( $booking_id, $old_booking, $args ) {
-
+function bookacti_send_notification_when_booking_is_rescheduled( $booking, $old_booking, $args ) {
+	
 	// Do not send notification if explicitly said
 	if( isset( $args[ 'send_notifications' ] ) && ! $args[ 'send_notifications' ] ) { return; }
 	
 	// If we cannot know if the action was made by customer or admin, send to both
-	$send_to_both = false;
-	if( ! isset( $args[ 'is_admin' ] ) ) { $send_to_both = true; }
+	$send_to = apply_filters( 'bookacti_reschedule_notification_recipient', ! empty( $args[ 'is_admin' ] ) ? 'customer' : 'both', $booking, $old_booking, $args );
 	
-	$notification_args = array(); $notification_args[ 'tags' ] = array();
+	$notification_args = array( 'tags' => array(
+		'booking_old_start_raw' => $old_booking->event_start,
+		'booking_old_end_raw' => $old_booking->event_end
+	));
 	
 	// If $args[ 'is_admin' ] is true, the customer need to be notified
-	if( $send_to_both || $args[ 'is_admin' ] ) {
-		$notification_id	= 'customer_rescheduled_booking';
-		$user_id			= bookacti_get_booking_owner( $booking_id );
-		if( is_numeric( $user_id ) ) {
-			$locale	= bookacti_get_user_locale( $user_id );
-		}
+	if( $send_to === 'both' || $send_to === 'customer' ) {
+		$notification_id = 'customer_rescheduled_booking';
+		
+		// Temporarilly switch locale user default's
+		$locale	= apply_filters( 'bookacti_notification_locale', is_numeric( $booking->user_id ) ? bookacti_get_user_locale( $booking->user_id ) : bookacti_get_site_locale(), $notification_id, $booking->id, 'single', $notification_args );
+		bookacti_switch_locale( $locale );
+
+		// Add reschedule specific tags
+		$notification_args[ 'tags' ][ '{booking_old_start}' ]	= bookacti_format_datetime( $old_booking->event_start );
+		$notification_args[ 'tags' ][ '{booking_old_end}' ]		= bookacti_format_datetime( $old_booking->event_end );
+
+		// Switch locale back to normal
+		bookacti_restore_locale();
+
+		bookacti_send_notification( $notification_id, $booking->id, 'single', $notification_args );
 	}
 	
 	// If $args[ 'is_admin' ] is false, the administrator need to be notified
-	if( $send_to_both || ! $args[ 'is_admin' ] ) {
+	if( $send_to === 'both' || $send_to === 'admin' ) {
 		$notification_id = 'admin_rescheduled_booking';
+		
+		// Temporarilly switch locale user default's
+		$locale = apply_filters( 'bookacti_notification_locale', bookacti_get_site_locale(), $notification_id, $booking->id, 'single', $notification_args );
+		bookacti_switch_locale( $locale );
+
+		// Add reschedule specific tags
+		$notification_args[ 'tags' ][ '{booking_old_start}' ]	= bookacti_format_datetime( $old_booking->event_start );
+		$notification_args[ 'tags' ][ '{booking_old_end}' ]		= bookacti_format_datetime( $old_booking->event_end );
+
+		// Switch locale back to normal
+		bookacti_restore_locale();
+
+		bookacti_send_notification( $notification_id, $booking->id, 'single', $notification_args );
 	}
-	
-	// Set default locale
-	if( empty( $locale ) ) { 
-		$locale = bookacti_get_site_locale(); 
-	}
-	
-	// Temporarilly switch locale user default's
-	$locale = apply_filters( 'bookacti_notification_locale', $locale, $notification_id, $booking_id, 'single', $notification_args );
-	bookacti_switch_locale( $locale );
-
-	// Add reschedule specific tags
-	$notification_args[ 'tags' ][ '{booking_old_start}' ]	= bookacti_format_datetime( $old_booking->event_start );
-	$notification_args[ 'tags' ][ '{booking_old_end}' ]		= bookacti_format_datetime( $old_booking->event_end );
-
-	// Switch locale back to normal
-	bookacti_restore_locale();
-
-	bookacti_send_notification( $notification_id, $booking_id, 'single', $notification_args );
 }
 add_action( 'bookacti_booking_rescheduled', 'bookacti_send_notification_when_booking_is_rescheduled', 10, 3 );

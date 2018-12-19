@@ -70,8 +70,10 @@
 .activity-gear			{ display: table-cell; vertical-align: middle; padding-left: 10px; cursor: pointer; }
 #bookacti-template-activities-container .fc-event { cursor: move; max-height: 16px; padding-left: 5px; width: 100%; }
 
+#bookacti-template-activities-container,
 #bookacti-template-groups-of-events-container	{ padding-right: 6px; }
-#bookacti-group-categories						{ max-height: 400px; overflow-y: auto; padding-right: 4px; }
+#bookacti-template-activity-list,
+#bookacti-group-categories						{ max-height: 200px; overflow-y: auto; padding-right: 4px; }
 .bookacti-group-category-title,
 .bookacti-update-group-category,
 .bookacti-group-of-events-title,

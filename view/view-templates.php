@@ -92,7 +92,7 @@ echo "<h1>" . esc_html__( 'Calendars', BOOKACTI_PLUGIN_NAME ) . "</h1>";
 				$activity_list = bookacti_get_template_activities_list( $default_template ); 
 			}
 			?>
-			<div id='bookacti-template-activity-list' >
+			<div id='bookacti-template-activity-list' class='bookacti-custom-scrollbar'>
 				<?php
 				if( ! empty( $activity_list ) ) {
 					echo $activity_list;
