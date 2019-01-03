@@ -317,7 +317,7 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 
 == Changelog ==
 
-= 1.7.0 =
+= 1.7.0 alpha 1 - 2018/12/09 =
 * Feature - Redirect to a URL when you click on an event or when you submit a booking form
 * Feature - Redirect to a product page when you click on an event or when you submit a booking form
 * Dev - Prefill a booking form thanks to URL parameters
@@ -326,6 +326,7 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 * Fix - Booking row was not properly updated after cancelling a booking (group)
 * Fix - PHP notice when trying to get translated messages
 * Fix - PHP notice when displaying WC products having a deprecated config available
+* Fix - PHP warning when a form with no "User Data (Login / Registration)" field is submitted
 * Tweak - List of activities in calendar editor can now be scrolled
 * Tweak - Notifications are send to the user when he cancels or reschedule a booking from the frontend
 * Tweak - Limit the amount of emails that can be sent to a single user per minute (default: 20), hour (default: 200) and day (default: 2000) (spam protection)
