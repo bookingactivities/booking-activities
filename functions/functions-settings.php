@@ -781,16 +781,23 @@ function bookacti_settings_section_bookings_callback() { }
 				'input_type'	=> 'textarea'
 			),
 			'cancel_dialog_button' => array(
+				'value'			=> esc_html_x( 'Cancel', 'Cancel any action button label. It closes dialogs.', BOOKACTI_PLUGIN_NAME ),
+				'description'	=> esc_html__( 'Cancel any action button label. It closes dialogs.', BOOKACTI_PLUGIN_NAME )
+			),
+			'cancel_booking_open_dialog_button' => array(
 				'value'			=> esc_html_x( 'Cancel', 'Cancel bookings button label. It opens the dialog.', BOOKACTI_PLUGIN_NAME ),
-				'description'	=> esc_html__( 'Cancel bookings button label.', BOOKACTI_PLUGIN_NAME )
+				'description'	=> esc_html__( 'Cancel bookings button label to open the cancel dialog.', BOOKACTI_PLUGIN_NAME )
+			),
+			'cancel_booking_dialog_button' => array(
+				'value'			=> esc_html_x( 'Cancel booking', 'Button label to trigger the cancel action', BOOKACTI_PLUGIN_NAME ),
+				'description'	=> esc_html__( 'Cancel bookings button label to trigger the cancel action.', BOOKACTI_PLUGIN_NAME )
 			),
 			'cancel_dialog_title' => array(
 				'value'			=> esc_html_x( 'Cancel the booking', 'Dialog title', BOOKACTI_PLUGIN_NAME ),
 				'description'	=> esc_html__( 'Cancel bookings dialog title.', BOOKACTI_PLUGIN_NAME )
 			),
 			'cancel_dialog_content' => array(
-				'value'			=> esc_html__( 'Do you really want to cancel this booking?', BOOKACTI_PLUGIN_NAME ) . '
-' . esc_html__( 'If you have already paid, you will be able to request a refund.', BOOKACTI_PLUGIN_NAME ),
+				'value'			=> esc_html__( 'Do you really want to cancel this booking?', BOOKACTI_PLUGIN_NAME ) . '<br/>' . esc_html__( 'If you have already paid, you will be able to request a refund.', BOOKACTI_PLUGIN_NAME ),
 				'description'	=> esc_html__( 'Cancel bookings dialog content.', BOOKACTI_PLUGIN_NAME ),
 				'input_type'	=> 'textarea'
 			),
@@ -828,15 +835,23 @@ function bookacti_settings_section_bookings_callback() { }
 		// Get raw value from database
 		$saved_messages = array();
 		if( $raw ) {
-			$alloptions = wp_load_alloptions(); // get_option() calls wp_load_alloptions() itself, so there is no overhead at runtime 
-			if( isset( $alloptions[ 'bookacti_messages_settings' ] ) ) {
-				$saved_messages	= maybe_unserialize( $alloptions[ 'bookacti_messages_settings' ] );
+			global $bookacti_raw_messages;
+			if( ! isset( $bookacti_raw_messages ) ) {
+				$alloptions = wp_load_alloptions(); // get_option() calls wp_load_alloptions() itself, so there is no overhead at runtime 
+				if( isset( $alloptions[ 'bookacti_messages_settings' ] ) ) {
+					$bookacti_raw_messages = maybe_unserialize( $alloptions[ 'bookacti_messages_settings' ] );
+				}
 			}
+			$saved_messages = $bookacti_raw_messages;
 		} 
 
 		// Else, get message settings through a normal get_option
 		else {
-			$saved_messages	= get_option( 'bookacti_messages_settings' );
+			global $bookacti_messages;
+			if( ! isset( $bookacti_messages ) ) {
+				$bookacti_messages = get_option( 'bookacti_messages_settings' );
+			}
+			$saved_messages = $bookacti_messages;
 		}
 		
 		$default_messages = bookacti_get_default_messages();

@@ -233,13 +233,14 @@ function bookacti_init_booking_actions() {
 /**
  * Init booking bulk actions
  * @since 1.6.0
+ * @version 1.6.2
  */
 function bookacti_init_booking_bulk_actions() {
 	$j( '.bookacti-bookings-bulk-action' ).on( 'submit', function( e ) {
-		if( $j( this ).find( '[name="action"]' ).val() == -1 ) {
+		if( $j( this ).find( '[name="action"]' ).val() == -1 || $j( this ).find( '[name="action2"]' ).val() == -1 ) {
 			e.preventDefault();
 		}
-		else if( $j( this ).find( '[name="action"]' ).val() === 'export' ) {
+		else if( $j( this ).find( '[name="action"]' ).val() === 'export' || $j( this ).find( '[name="action2"]' ).val() === 'export' ) {
 			bookacti_dialog_export_bookings();
 			e.preventDefault();
 		}

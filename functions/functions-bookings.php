@@ -608,6 +608,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		/**
 		 * Get booking actions array
 		 * @since 1.6.0 (replace bookacti_get_booking_actions_array)
+		 * @version 1.6.2
 		 * @param string $admin_or_front Can be "both", "admin", "front. Default "both".
 		 * @return array
 		 */
@@ -621,19 +622,19 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 					'admin_or_front'=> 'admin' ),
 				'cancel' => array( 
 					'class'			=> 'bookacti-cancel-booking',
-					'label'			=> esc_html__( 'Cancel', BOOKACTI_PLUGIN_NAME ),
+					'label'			=> bookacti_get_message( 'cancel_booking_open_dialog_button' ),
 					'description'	=> esc_html__( 'Cancel the booking.', BOOKACTI_PLUGIN_NAME ),
 					'link'			=> '',
 					'admin_or_front'=> 'front' ),
 				'reschedule' => array( 
 					'class'			=> 'bookacti-reschedule-booking',
-					'label'			=> esc_html__( 'Reschedule', BOOKACTI_PLUGIN_NAME ),
+					'label'			=> bookacti_get_message( 'reschedule_dialog_button' ),
 					'description'	=> esc_html__( 'Change the booking dates to any other available time slot for this event.', BOOKACTI_PLUGIN_NAME ),
 					'link'			=> '',
 					'admin_or_front'=> 'both' ),
 				'refund' => array( 
 					'class'			=> 'bookacti-refund-booking',
-					'label'			=> esc_html_x( 'Refund', 'Button label to trigger the refund action', BOOKACTI_PLUGIN_NAME ),
+					'label'			=> $admin_or_front === 'both' || $admin_or_front === 'admin' ? esc_html_x( 'Refund', 'Button label to trigger the refund action', BOOKACTI_PLUGIN_NAME ) : bookacti_get_message( 'refund_dialog_button' ),
 					'description'	=> esc_html__( 'Refund the booking with one of the available refund method.', BOOKACTI_PLUGIN_NAME ),
 					'link'			=> '',
 					'admin_or_front'=> 'both' ),

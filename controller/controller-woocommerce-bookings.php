@@ -682,7 +682,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	
 	/**
 	 * Add price to be refunded in refund dialog
-	 * @version 1.5.4
+	 * @version 1.6.2
 	 * @param string $text
 	 * @param int $booking_id
 	 * @param string $booking_type
@@ -699,9 +699,12 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			// WOOCOMMERCE 3.0.0 backward compatibility 
 			$total	= is_array( $item ) ? $item[ 'line_total' ] : $item->get_total();
 			$tax	= is_array( $item ) ? $item[ 'line_tax' ] : $item->get_total_tax();
+			$price	= (float) $total + (float) $tax;
 			
-			$refund_amount = wc_price( (float) $total + (float) $tax );
-			$text .= '<div id="bookacti-refund-amount">' . esc_html__( 'Refund amount:', BOOKACTI_PLUGIN_NAME ) . ' <strong>' . $refund_amount . '</strong></div>';
+			if( $price ) {
+				$refund_amount = wc_price( $price );
+				$text .= '<div id="bookacti-refund-amount">' . esc_html__( 'Refund amount:', BOOKACTI_PLUGIN_NAME ) . ' <strong>' . $refund_amount . '</strong></div>';
+			}
 		}
 		return $text;
 	}
