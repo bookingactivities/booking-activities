@@ -1701,11 +1701,10 @@ function bookacti_get_occurences_of_repeated_event( $event, $past_events = false
 }
 
 
-
 /**
  * Build a user-friendly events list
  * @since 1.1.0
- * @version 1.6.0
+ * @version 1.6.2
  * @param array $booking_events
  * @param int|string $quantity
  * @param string $locale Optional. Default to site locale.
@@ -1768,7 +1767,7 @@ function bookacti_get_formatted_booking_events_list( $booking_events, $quantity 
 								. '<span class="bookacti-booking-event-end ' . $class . '" >' . $event_end . '</span>';
 		}
 		
-		$event = apply_filters( 'bookacti_formatted_booking_events_list_event_data', $event );
+		$event = apply_filters( 'bookacti_formatted_booking_events_list_event_data', $event, $locale );
 		
 		// Add an element to event list if there is at least a title or a duration
 		if( $event[ 'title' ] || $event[ 'duration' ] ) {
@@ -1790,7 +1789,7 @@ function bookacti_get_formatted_booking_events_list( $booking_events, $quantity 
 			}
 			
 			$list_element .= '</li>';
-			$events_list .= apply_filters( 'bookacti_formatted_booking_events_list_element', $list_element, $event );
+			$events_list .= apply_filters( 'bookacti_formatted_booking_events_list_element', $list_element, $event, $locale );
 		}
 	}
 	
@@ -1800,6 +1799,98 @@ function bookacti_get_formatted_booking_events_list( $booking_events, $quantity 
 	}
 	
 	return apply_filters( 'bookacti_formatted_booking_events_list', $events_list, $booking_events, $quantity, $locale );
+}
+
+
+/**
+ * Build a user-friendly comma separated events list
+ * @since 1.6.2
+ * @param array $booking_events
+ * @param int|string $quantity
+ * @param string $locale Optional. Default to site locale.
+ * @return string
+ */
+function bookacti_get_formatted_booking_events_list_raw( $booking_events, $quantity = 'hide', $locale = 'site' ) {
+	if( ! $booking_events ) { return false; }
+	
+	// Set default locale to site's locale
+	if( $locale === 'site' ) { $locale = bookacti_get_site_locale(); }
+	
+	// Format $events
+	$formatted_events = array();
+	foreach( $booking_events as $booking_event ) {
+		$booking_quantity = '';
+		if( isset( $booking_event->quantity ) ) {
+			$booking_quantity = $booking_event->quantity;
+		} else if( $quantity && is_numeric( $quantity ) ) {
+			$booking_quantity = intval( $quantity );
+		}
+		
+		$formatted_events[] = array( 
+			'raw_event' => $booking_event,
+			'title'		=> isset( $booking_event->title )	? $booking_event->title : ( isset( $booking_event->event_title ) ? $booking_event->event_title : '' ),
+			'start'		=> isset( $booking_event->start )	? bookacti_sanitize_datetime( $booking_event->start )	: ( isset( $booking_event->event_start ) ? bookacti_sanitize_datetime( $booking_event->event_start ) : '' ),
+			'end'		=> isset( $booking_event->end )		? bookacti_sanitize_datetime( $booking_event->end )		: ( isset( $booking_event->event_end ) ? bookacti_sanitize_datetime( $booking_event->event_end ) : '' ),
+			'quantity'	=> $booking_quantity
+		);
+	}
+	
+	$messages			= bookacti_get_messages( true );
+	$datetime_format	= isset( $messages[ 'date_format_short' ][ 'value' ] )	? apply_filters( 'bookacti_translate_text', $messages[ 'date_format_short' ][ 'value' ], $locale ) : '';
+	$time_format		= isset( $messages[ 'time_format' ][ 'value' ] )		? apply_filters( 'bookacti_translate_text', $messages[ 'time_format' ][ 'value' ], $locale ) : '';
+	$date_time_separator= isset( $messages[ 'date_time_separator' ][ 'value' ] )? apply_filters( 'bookacti_translate_text', $messages[ 'date_time_separator' ][ 'value' ], $locale ) : '';
+	$dates_separator	= isset( $messages[ 'dates_separator' ][ 'value' ] )	? apply_filters( 'bookacti_translate_text', $messages[ 'dates_separator' ][ 'value' ], $locale ) : '';
+	$quantity_separator = isset( $messages[ 'quantity_separator' ][ 'value' ] )	? apply_filters( 'bookacti_translate_text', $messages[ 'quantity_separator' ][ 'value' ], $locale ) : '';
+	
+	$events_list = '';
+	$i = 0;
+	foreach( $formatted_events as $event ) {
+		// Format the event duration
+		$event[ 'duration' ] = '';
+		if( $event[ 'start' ] && $event[ 'end' ] ) {
+			
+			$event_start = bookacti_format_datetime( $event[ 'start' ], $datetime_format );
+			
+			// Format differently if the event start and end on the same day
+			$start_and_end_same_day	= substr( $event[ 'start' ], 0, 10 ) === substr( $event[ 'end' ], 0, 10 );
+			if( $start_and_end_same_day ) {
+				$event_end = bookacti_format_datetime( $event[ 'end' ], $time_format );
+			} else {
+				$event_end = bookacti_format_datetime( $event[ 'end' ], $datetime_format );
+			}
+			
+			$separator	= $start_and_end_same_day ? $date_time_separator : $dates_separator;
+			
+			// Place an arrow between start and end
+			$event[ 'duration' ] = $event_start . $separator . $event_end;
+		}
+		
+		$event = apply_filters( 'bookacti_formatted_booking_events_list_raw_event_data', $event, $locale );
+		
+		// Add an element to event list if there is at least a title or a duration
+		if( $event[ 'title' ] || $event[ 'duration' ] ) {
+			$list_element = '';
+			if( $i !== 0 ) { $list_element .= ', '; }
+			if( $event[ 'title' ] ) {
+				$list_element .= apply_filters( 'bookacti_translate_text', $event[ 'title' ], $locale );
+				if( $event[ 'duration' ] ) {
+					$list_element .= ' ';
+				}
+			}
+			if( $event[ 'duration' ] ) {
+				$list_element .= $event[ 'duration' ];
+			}
+			
+			if( $event[ 'quantity' ] && $quantity !== 'hide' ) {
+				$list_element .= $quantity_separator . $event[ 'quantity' ];
+			}
+			
+			$events_list .= apply_filters( 'bookacti_formatted_booking_events_list_raw_element', $list_element, $event, $locale );
+		}
+		++$i;
+	}
+	
+	return apply_filters( 'bookacti_formatted_booking_events_list_raw', $events_list, $booking_events, $quantity, $locale );
 }
 
 

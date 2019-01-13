@@ -329,6 +329,9 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 * Fix - PHP warning when a form with no "User Data (Login / Registration)" field is submitted
 * Fix - The bottom bulk actions selectbox didn't work on Bookings page
 * Fix - The "Cancel" custom label was not applied to the right buttons
+* Fix - The "user_id" parameter of the bookingactivities_list shortcode didn't work while explicitly set to "current"
+* Tweak - Support more parameters in bookingactivities_list shortcode
+* Tweak - Add the {booking_list_raw} notification tag
 * Tweak - List of activities in calendar editor can now be scrolled
 * Tweak - Notifications are send to the user when he cancels or reschedule a booking from the frontend
 * Tweak - Limit the amount of emails that can be sent to a single user per minute (default: 20), hour (default: 200) and day (default: 2000) (spam protection)

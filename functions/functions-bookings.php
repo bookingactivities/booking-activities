@@ -257,15 +257,18 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	/**
 	 * Format booking filters manually input
 	 * @since 1.6.0
+	 * @version 1.6.2
 	 * @param array $filters
 	 * @return array
 	 */
 	function bookacti_format_string_booking_filters( $filters = array() ) {
 		// Format arrays
 		$formatted_arrays = array();
-		$int_arrays = array( 'templates', 'activities', 'in__booking_id', 'in__booking_group_id', 'not_in__booking_id', 'not_in__booking_group_id', 'not_in__user_id' );
+		$int_arrays = array( 'templates', 'activities', 'in__booking_id', 'in__booking_group_id', 'in__group_category_id', 'in__event_group_id', 'in__form_id', 'not_in__booking_id', 'not_in__booking_group_id', 'not_in__group_category_id', 'not_in__event_group_id', 'not_in__form_id' );
 		$str_arrays = array( 'status', 'order_by' );
-		foreach( array_merge( $int_arrays, $str_arrays ) as $att_name ) {
+		$user_id_arrays = array( 'in__user_id', 'not_in__user_id' );
+		
+		foreach( array_merge( $int_arrays, $str_arrays, $user_id_arrays ) as $att_name ) {
 			if( empty( $filters[ $att_name ] ) || is_array( $filters[ $att_name ] ) ) { continue; }
 			$formatted_arrays[ $att_name ] = explode( ',', preg_replace( array(
 				'/[^\d,]/',    // Matches anything that's not a comma or number.
@@ -275,6 +278,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			), '', 	$filters[ $att_name ] ) );
 			if( in_array( $att_name, $int_arrays, true ) ) { $formatted_arrays[ $att_name ] = array_map( 'intval', $formatted_arrays[ $att_name ] ); }
 			if( in_array( $att_name, $str_arrays, true ) ) { $formatted_arrays[ $att_name ] = array_map( 'sanitize_title_with_dashes', $formatted_arrays[ $att_name ] ); }
+			// No need to format user ids because they can be either string or numeric
 		}
 
 		// Format datetime

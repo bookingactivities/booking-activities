@@ -283,7 +283,7 @@ function bookacti_sanitize_notification_settings( $args, $notification_id = '' )
 /**
  * Get notifications tags
  * @since 1.2.0
- * @version 1.6.0
+ * @version 1.6.2
  * @param string $notification_id Optional.
  * @return array
  */
@@ -298,6 +298,7 @@ function bookacti_get_notifications_tags( $notification_id = '' ) {
 		'{booking_start}'		=> esc_html__( 'Booking start date and time displayed in a user-friendly format. For booking groups, the first event start date and time is used.', BOOKACTI_PLUGIN_NAME ),
 		'{booking_end}'			=> esc_html__( 'Booking end date and time displayed in a user-friendly format. For booking groups, the last event end date and time is used.', BOOKACTI_PLUGIN_NAME ),
 		'{booking_list}'		=> esc_html__( 'Booking summary displayed as a booking list. You should use this tag once in every notification to know what booking (group) it is about.', BOOKACTI_PLUGIN_NAME ),
+		'{booking_list_raw}'	=> esc_html__( 'Booking summary displayed as a comma separated booking list, without HTML formatting.', BOOKACTI_PLUGIN_NAME ),
 		'{user_firstname}'		=> esc_html__( 'The user first name', BOOKACTI_PLUGIN_NAME ),
 		'{user_lastname}'		=> esc_html__( 'The user last name', BOOKACTI_PLUGIN_NAME ),
 		'{user_email}'			=> esc_html__( 'The user email address', BOOKACTI_PLUGIN_NAME ),
@@ -322,7 +323,7 @@ function bookacti_get_notifications_tags( $notification_id = '' ) {
 /**
  * Get notifications tags and values corresponding to given booking
  * @since 1.2.0
- * @version 1.6.0
+ * @version 1.6.2
  * @param int $booking_id
  * @param string $booking_type 'group' or 'single'
  * @param string $notification_id
@@ -371,6 +372,7 @@ function bookacti_get_notifications_tags_values( $booking_id, $booking_type, $no
 		$booking_data[ '{booking_status}' ]		= bookacti_format_booking_state( $booking->state );
 		$booking_data[ '{booking_quantity}' ]	= $booking->quantity;
 		$booking_data[ '{booking_list}' ]		= bookacti_get_formatted_booking_events_list( $bookings, 'show', $locale );
+		$booking_data[ '{booking_list_raw}' ]	= bookacti_get_formatted_booking_events_list_raw( $bookings, 'show', $locale );
 
 		if( $booking->user_id ) { 
 			$booking_data[ '{user_id}' ] = $booking->user_id;
