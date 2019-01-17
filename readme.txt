@@ -320,6 +320,7 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 = 1.7.0 alpha 1 - 2018/12/09 =
 * Feature - Redirect to a URL when you click on an event or when you submit a booking form
 * Feature - Redirect to a product page when you click on an event or when you submit a booking form
+* Feature - Backup, archive and restore old bookings and events
 * Dev - Prefill a booking form thanks to URL parameters
 
 = 1.6.2 =
@@ -330,7 +331,8 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 * Fix - The bottom bulk actions selectbox didn't work on Bookings page
 * Fix - The "Cancel" custom label was not applied to the right buttons
 * Fix - The "user_id" parameter of the bookingactivities_list shortcode didn't work while explicitly set to "current"
-* Tweak - Support more parameters in bookingactivities_list shortcode
+* Fix - The "status" and "order_by" parameters of the bookingactivities_list shortcode didn't work
+* Tweak - Support more parameters in bookingactivities_list shortcode (all booking filters)
 * Tweak - Add the {booking_list_raw} notification tag
 * Tweak - List of activities in calendar editor can now be scrolled
 * Tweak - Notifications are send to the user when he cancels or reschedule a booking from the frontend

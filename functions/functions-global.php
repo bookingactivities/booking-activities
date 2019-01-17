@@ -258,11 +258,10 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 	/**
 	 * Switch Booking Activities locale
-	 * 
 	 * @since 1.2.0
 	 */
 	function bookacti_switch_locale( $locale ) {
-		if ( function_exists( 'switch_to_locale' ) ) {
+		if( function_exists( 'switch_to_locale' ) ) {
 			switch_to_locale( $locale );
 			
 			// Filter on plugin_locale so load_plugin_textdomain loads the correct locale.
@@ -277,12 +276,10 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	
 	/**
 	 * Switch Booking Activities locale back to the original
-	 * 
 	 * @since 1.2.0
-	 * @param string $locale
 	 */
 	function bookacti_restore_locale() {
-		if ( function_exists( 'restore_previous_locale' ) ) {
+		if( function_exists( 'restore_previous_locale' ) ) {
 			restore_previous_locale();
 
 			// Filter on plugin_locale so load_plugin_textdomain loads the correct locale.

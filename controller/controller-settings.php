@@ -4,21 +4,21 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 /**
  * Init Booking Activities settings
- * @version 1.6.0
+ * @version 1.7.0
  */
 function bookacti_init_settings() { 
 
 	/* General settings Section */
 	add_settings_section( 
 		'bookacti_settings_section_general',
-		__( 'General settings', BOOKACTI_PLUGIN_NAME ),
+		esc_html__( 'General settings', BOOKACTI_PLUGIN_NAME ),
 		'bookacti_settings_section_general_callback',
 		'bookacti_general_settings'
 	);
 	
 	add_settings_field(  
 		'booking_method', 
-		__( 'Booking method', BOOKACTI_PLUGIN_NAME ), 
+		esc_html__( 'Booking method', BOOKACTI_PLUGIN_NAME ), 
 		'bookacti_settings_field_booking_method_callback', 
 		'bookacti_general_settings', 
 		'bookacti_settings_section_general'
@@ -26,7 +26,7 @@ function bookacti_init_settings() {
 	
 	add_settings_field(  
 		'when_events_load', 
-		__( 'When to load the events?', BOOKACTI_PLUGIN_NAME ), 
+		esc_html__( 'When to load the events?', BOOKACTI_PLUGIN_NAME ), 
 		'bookacti_settings_field_when_events_load_callback', 
 		'bookacti_general_settings', 
 		'bookacti_settings_section_general'
@@ -34,7 +34,7 @@ function bookacti_init_settings() {
 	
 	add_settings_field(  
 		'event_load_interval', 
-		__( 'Load events every', BOOKACTI_PLUGIN_NAME ), 
+		esc_html__( 'Load events every', BOOKACTI_PLUGIN_NAME ), 
 		'bookacti_settings_field_event_load_interval_callback', 
 		'bookacti_general_settings', 
 		'bookacti_settings_section_general'
@@ -42,7 +42,7 @@ function bookacti_init_settings() {
 
 	add_settings_field(  
 		'started_events_bookable', 
-		__( 'Are started events bookable?', BOOKACTI_PLUGIN_NAME ), 
+		esc_html__( 'Are started events bookable?', BOOKACTI_PLUGIN_NAME ), 
 		'bookacti_settings_field_started_events_bookable_callback', 
 		'bookacti_general_settings', 
 		'bookacti_settings_section_general' 
@@ -50,7 +50,7 @@ function bookacti_init_settings() {
 
 	add_settings_field(  
 		'started_groups_bookable', 
-		__( 'Are started groups of events bookable?', BOOKACTI_PLUGIN_NAME ), 
+		esc_html__( 'Are started groups of events bookable?', BOOKACTI_PLUGIN_NAME ), 
 		'bookacti_settings_field_started_groups_bookable_callback', 
 		'bookacti_general_settings', 
 		'bookacti_settings_section_general' 
@@ -59,7 +59,7 @@ function bookacti_init_settings() {
 	add_settings_field(  
 		'availability_period_start', 
 		/* translators: Followed by a field indicating a number of days before the event. E.g.: "Events will be bookable in 2 days from today". */
-		__( 'Events will be bookable in', BOOKACTI_PLUGIN_NAME ), 
+		esc_html__( 'Events will be bookable in', BOOKACTI_PLUGIN_NAME ), 
 		'bookacti_settings_field_availability_period_start_callback', 
 		'bookacti_general_settings', 
 		'bookacti_settings_section_general' 
@@ -68,7 +68,7 @@ function bookacti_init_settings() {
 	add_settings_field(  
 		'availability_period_end', 
 		/* translators: Followed by a field indicating a number of days before the event. E.g.: "Events are bookable for up to 30 days from today". */
-		__( 'Events are bookable for up to', BOOKACTI_PLUGIN_NAME ), 
+		esc_html__( 'Events are bookable for up to', BOOKACTI_PLUGIN_NAME ), 
 		'bookacti_settings_field_availability_period_end_callback', 
 		'bookacti_general_settings', 
 		'bookacti_settings_section_general' 
@@ -76,7 +76,7 @@ function bookacti_init_settings() {
 
 	add_settings_field(  
 		'default_booking_state', 
-		__( 'Default booking state', BOOKACTI_PLUGIN_NAME ), 
+		esc_html__( 'Default booking state', BOOKACTI_PLUGIN_NAME ), 
 		'bookacti_settings_field_default_booking_state_callback', 
 		'bookacti_general_settings', 
 		'bookacti_settings_section_general' 
@@ -84,7 +84,7 @@ function bookacti_init_settings() {
 
 	add_settings_field(  
 		'default_payment_status', 
-		__( 'Default payment status', BOOKACTI_PLUGIN_NAME ), 
+		esc_html__( 'Default payment status', BOOKACTI_PLUGIN_NAME ), 
 		'bookacti_settings_field_default_payment_status_callback', 
 		'bookacti_general_settings', 
 		'bookacti_settings_section_general' 
@@ -92,7 +92,7 @@ function bookacti_init_settings() {
 
 	add_settings_field(  
 		'timezone', 
-		__( 'Calendars timezone', BOOKACTI_PLUGIN_NAME ), 
+		esc_html__( 'Calendars timezone', BOOKACTI_PLUGIN_NAME ), 
 		'bookacti_settings_field_timezone_callback', 
 		'bookacti_general_settings', 
 		'bookacti_settings_section_general' 
@@ -100,7 +100,7 @@ function bookacti_init_settings() {
 
 	add_settings_field(  
 		'default_calendar_view_threshold', 
-		__( 'Responsive calendar view threshold', BOOKACTI_PLUGIN_NAME ), 
+		esc_html__( 'Responsive calendar view threshold', BOOKACTI_PLUGIN_NAME ), 
 		'bookacti_settings_field_default_calendar_view_threshold_callback', 
 		'bookacti_general_settings', 
 		'bookacti_settings_section_general' 
@@ -119,14 +119,14 @@ function bookacti_init_settings() {
 	/* Cancellation settings Section */
 	add_settings_section( 
 		'bookacti_settings_section_cancellation',
-		__( 'Cancellation settings', BOOKACTI_PLUGIN_NAME ),
+		esc_html__( 'Cancellation settings', BOOKACTI_PLUGIN_NAME ),
 		'bookacti_settings_section_cancellation_callback',
 		'bookacti_cancellation_settings'
 	);
 	
 	add_settings_field(  
 		'allow_customers_to_cancel',                      
-		__( 'Allow customers to cancel their bookings', BOOKACTI_PLUGIN_NAME ),               
+		esc_html__( 'Allow customers to cancel their bookings', BOOKACTI_PLUGIN_NAME ),               
 		'bookacti_settings_field_activate_cancel_callback',   
 		'bookacti_cancellation_settings',                     
 		'bookacti_settings_section_cancellation' 
@@ -143,7 +143,7 @@ function bookacti_init_settings() {
 	add_settings_field(  
 		'cancellation_min_delay_before_event', 
 		/* translators: Followed by a field indicating a number of days before the event. E.g.: "Changes permitted up to 2 days before the event". */
-		__( 'Changes permitted up to', BOOKACTI_PLUGIN_NAME ),               
+		esc_html__( 'Changes permitted up to', BOOKACTI_PLUGIN_NAME ),               
 		'bookacti_settings_field_cancellation_delay_callback',   
 		'bookacti_cancellation_settings',                     
 		'bookacti_settings_section_cancellation' 
@@ -151,7 +151,7 @@ function bookacti_init_settings() {
 	
 	add_settings_field(  
 		'refund_actions_after_cancellation',                      
-		__( 'Possible actions customers can take to be refunded', BOOKACTI_PLUGIN_NAME ),               
+		esc_html__( 'Possible actions customers can take to be refunded', BOOKACTI_PLUGIN_NAME ),               
 		'bookacti_settings_field_cancellation_refund_actions_callback',   
 		'bookacti_cancellation_settings',                     
 		'bookacti_settings_section_cancellation' 
@@ -162,14 +162,14 @@ function bookacti_init_settings() {
 	/* Notifications settings Section - 1 - General settings */
 	add_settings_section( 
 		'bookacti_settings_section_notifications_general',
-		__( 'Notifications', BOOKACTI_PLUGIN_NAME ),
+		esc_html__( 'Notifications', BOOKACTI_PLUGIN_NAME ),
 		'bookacti_settings_section_notifications_general_callback',
 		'bookacti_notifications_settings'
 	);
 	
 	add_settings_field( 
 		'notifications_async',
-		__( 'Asynchronous notifications', BOOKACTI_PLUGIN_NAME ),
+		esc_html__( 'Asynchronous notifications', BOOKACTI_PLUGIN_NAME ),
 		'bookacti_settings_field_notifications_async_callback',
 		'bookacti_notifications_settings',
 		'bookacti_settings_section_notifications_general'
@@ -179,14 +179,14 @@ function bookacti_init_settings() {
 	/* Notifications settings Section - 2 - Email settings */
 	add_settings_section( 
 		'bookacti_settings_section_notifications_email',
-		__( 'Email notifications settings', BOOKACTI_PLUGIN_NAME ),
+		esc_html__( 'Email notifications settings', BOOKACTI_PLUGIN_NAME ),
 		'bookacti_settings_section_notifications_email_callback',
 		'bookacti_notifications_settings'
 	);
 		
 	add_settings_field( 
 		'notifications_from_name',
-		__( 'From name', BOOKACTI_PLUGIN_NAME ),
+		esc_html__( 'From name', BOOKACTI_PLUGIN_NAME ),
 		'bookacti_settings_field_notifications_from_name_callback',
 		'bookacti_notifications_settings',
 		'bookacti_settings_section_notifications_email'
@@ -194,7 +194,7 @@ function bookacti_init_settings() {
 	
 	add_settings_field( 
 		'notifications_from_email',
-		__( 'From email', BOOKACTI_PLUGIN_NAME ),
+		esc_html__( 'From email', BOOKACTI_PLUGIN_NAME ),
 		'bookacti_settings_field_notifications_from_email_callback',
 		'bookacti_notifications_settings',
 		'bookacti_settings_section_notifications_email'
@@ -205,9 +205,19 @@ function bookacti_init_settings() {
 	/* Messages settings Section */
 	add_settings_section( 
 		'bookacti_settings_section_messages',
-		__( 'Messages', BOOKACTI_PLUGIN_NAME ),
+		esc_html__( 'Messages', BOOKACTI_PLUGIN_NAME ),
 		'bookacti_settings_section_messages_callback',
 		'bookacti_messages_settings'
+	);
+	
+	
+	
+	/* Messages settings Section */
+	add_settings_section( 
+		'bookacti_settings_section_system',
+		esc_html__( 'System', BOOKACTI_PLUGIN_NAME ),
+		'bookacti_settings_section_system_callback',
+		'bookacti_system_settings'
 	);
 	
 	
@@ -218,6 +228,7 @@ function bookacti_init_settings() {
 	register_setting( 'bookacti_cancellation_settings',		'bookacti_cancellation_settings' );
 	register_setting( 'bookacti_notifications_settings',	'bookacti_notifications_settings' );
 	register_setting( 'bookacti_messages_settings',			'bookacti_messages_settings' );
+	register_setting( 'bookacti_system_settings',			'bookacti_system_settings' );
 }
 add_action( 'admin_init', 'bookacti_init_settings' );
 
@@ -461,65 +472,6 @@ function bookacti_controller_update_notification() {
 add_action( 'wp_ajax_bookactiUpdateNotification', 'bookacti_controller_update_notification' );
 
 
-/**
- * Ensure backward compatibility between 1.2.0 and 1.2.1+
- * 
- * @version 1.4.3
- */
-function bookacti_format_old_notifications_settings( $old_version ) {
-	if( version_compare( $old_version, '1.2.1', '<' ) ) {
-		// get all db options
-		$alloptions = wp_load_alloptions(); // get_option() calls wp_load_alloptions() itself, so there is no overhead at runtime 
-		
-		// Convert async setting format
-		if( isset( $alloptions[ 'bookacti_notifications_settings' ] ) ) {
-			$notifications_settings = maybe_unserialize( $alloptions[ 'bookacti_notifications_settings' ] );
-			if( isset( $notifications_settings[ 'notifications_async_email' ] ) ) {
-				// Put the old value in the new setting
-				$notifications_settings[ 'notifications_async' ] = $notifications_settings[ 'notifications_async_email' ];
-				unset( $notifications_settings[ 'notifications_async_email' ] );
-				
-				// Add new notification settings and delete the old one
-				delete_option( 'bookacti_notifications_settings' );
-				add_option( 'bookacti_notifications_settings', $notifications_settings );
-			}
-		}
-		
-		// Convert notification settings format
-		$notification_ids = array_keys( bookacti_get_notifications_default_settings() );
-		foreach( $notification_ids as $notification_id ) {
-			// If old notifications settings exists, convert it to the new format
-			if( ! isset( $alloptions[ 'bookacti_notifications_settings_email_' . $notification_id ] ) ) { continue; }
-			
-			// Get notifications settings
-			$notification_settings	= maybe_unserialize( $alloptions[ 'bookacti_notifications_settings_email_' . $notification_id ] );
-			$new_settings			= $notification_settings;
-			
-			if( ! $notification_settings ) { continue; }
-			
-			// If the format is already the good one, stop processing
-			if( isset( $notification_settings[ 'email' ] ) ) { continue; }
-			
-			// Transform old notification settings format into the new one
-			$new_settings[ 'id' ] = $notification_id;
-			
-			if( isset( $notification_settings[ 'title' ] ) ) { unset( $new_settings[ 'title' ] ); }
-			
-			$new_settings[ 'email' ] = array();
-			$new_settings[ 'email' ][ 'active' ] = 1;
-			if( isset( $notification_settings[ 'to' ] ) )		{ $new_settings[ 'email' ][ 'to' ] = $notification_settings[ 'to' ]; unset( $new_settings[ 'to' ] ); }
-			if( isset( $notification_settings[ 'subject' ] ) )	{ $new_settings[ 'email' ][ 'subject' ] = $notification_settings[ 'subject' ]; unset( $new_settings[ 'subject' ] ); }
-			if( isset( $notification_settings[ 'message' ] ) )	{ $new_settings[ 'email' ][ 'message' ] = $notification_settings[ 'message' ]; unset( $new_settings[ 'message' ] ); }
-			
-			// Add new notification settings and delete the old one
-			add_option( 'bookacti_notifications_settings_' . $notification_id, $new_settings );
-			delete_option( 'bookacti_notifications_settings_email_' . $notification_id );		
-		}
-	}
-}
-add_action( 'bookacti_updated', 'bookacti_format_old_notifications_settings', 10, 1 );
-
-
 
 
 // MESSAGES
@@ -545,6 +497,151 @@ function bookacti_display_messages_fields() {
 	}
 }
 add_action( 'bookacti_messages_settings', 'bookacti_display_messages_fields' );
+
+
+
+
+// SYSTEM
+/**
+ * Analyse what data can be archive prior to specific date
+ * @since 1.7.0
+ */
+function bookacti_controller_archive_data_analyse() {
+	$date = bookacti_sanitize_date( $_POST[ 'date' ] );
+	$user_can_archive = bookacti_user_can_archive_data( $date , false );
+	if( $user_can_archive !== true ) { bookacti_send_json( $user_can_archive );	}
+	
+	// Get the data prior to the desired date
+	// Get events IDs
+	$events = bookacti_get_events_prior_to( $date );
+	// Get started repeated events
+	$started_repeated_events = bookacti_get_started_repeated_events_as_of( $date );
+	// Get group of events
+	$groups_of_events = bookacti_get_group_of_events_prior_to( $date );
+	// Get bookings
+	$bookings = bookacti_get_bookings_prior_to( $date );
+	// Get booking groups
+	$booking_groups = bookacti_get_booking_groups_prior_to( $date );
+	
+	$ids_per_type = array();
+	if( $events )					{ foreach( $events as $event )						{ $ids_per_type[ esc_html__( 'Events', BOOKACTI_PLUGIN_NAME ) ][] = $event->id; } }
+	if( $started_repeated_events )	{ foreach( $started_repeated_events as $event )		{ $ids_per_type[ esc_html__( 'Repeated events to be truncated', BOOKACTI_PLUGIN_NAME ) ][] = $event->id; } }
+	if( $groups_of_events )			{ foreach( $groups_of_events as $group_of_events )	{ $ids_per_type[ esc_html__( 'Groups of events', BOOKACTI_PLUGIN_NAME ) ][] = $group_of_events->id; } }
+	if( $bookings )					{ foreach( $bookings as $booking )					{ $ids_per_type[ esc_html__( 'Bookings', BOOKACTI_PLUGIN_NAME ) ][] = $booking->id; } }
+	if( $booking_groups )			{ foreach( $booking_groups as $booking_group )		{ $ids_per_type[ esc_html__( 'Booking groups', BOOKACTI_PLUGIN_NAME ) ][] = $booking_group->id; } }
+	
+	if( ! $ids_per_type ) {
+		bookacti_send_json( array( 'status' => 'failed', 'error' => 'no_data_to_archive', 'message' => esc_html__( 'No data to archive.', BOOKACTI_PLUGIN_NAME ) ) );
+	}
+	
+	// Check if an archive already exists
+	$uploads_dir	= wp_upload_dir();
+	$archives_dir	= str_replace( '\\', '/', $uploads_dir[ 'basedir' ] ) . '/' . BOOKACTI_PLUGIN_NAME . '/archives/';
+	$already_exists	= file_exists( $archives_dir . $date . '-booking-activities-archive.zip' );
+	
+	bookacti_send_json( array( 'status' => 'success', 'ids_per_type' => $ids_per_type, 'file_already_exists' => $already_exists, 'message' => esc_html__( 'These data can be archived:', BOOKACTI_PLUGIN_NAME ) ) );
+}
+add_action( 'wp_ajax_bookactiArchiveDataAnalyse', 'bookacti_controller_archive_data_analyse' );
+
+
+/**
+ * Dump bookings and events prior to specific date
+ * @since 1.7.0
+ */
+function bookacti_controller_archive_data_dump() {
+	$date = bookacti_sanitize_date( $_POST[ 'date' ] );
+	$user_can_archive = bookacti_user_can_archive_data( $date , true );
+	if( $user_can_archive !== true ) { bookacti_send_json( $user_can_archive );	}
+	
+	// Dump the data prior to the desired date
+	// Events
+	bookacti_archive_events_prior_to( $date );
+	// Started repeated events
+	bookacti_archive_started_repeated_events_as_of( $date );
+	// Groups of events
+	bookacti_archive_group_of_events_prior_to( $date );
+	// Bookings
+	bookacti_archive_bookings_prior_to( $date );
+	// Booking groups
+	bookacti_archive_booking_groups_prior_to( $date );
+	// Metadata
+	bookacti_archive_metadata_prior_to( $date );
+	
+	// Zip the files into a single one
+	$uploads_dir	= wp_upload_dir();
+	$archives_dir	= str_replace( '\\', '/', $uploads_dir[ 'basedir' ] ) . '/' . BOOKACTI_PLUGIN_NAME . '/archives/';
+	$zip_file		= $archives_dir . $date . '-booking-activities-archive.zip';
+	$zip_file_url	= esc_url( $uploads_dir[ 'baseurl' ] . '/' . BOOKACTI_PLUGIN_NAME . '/archives/' . $date . '-booking-activities-archive.zip' );
+	if( is_dir( $archives_dir ) ) {
+		$archives_handle = opendir( $archives_dir );
+		if( $archives_handle ) {
+			$files = array();
+			while( false !== ( $filename = readdir( $archives_handle ) ) ) {
+				if( substr( $filename, 0, 10 ) !== $date ) { continue; }
+				$files[] = $archives_dir . $filename;
+			}
+			if( $files ) {
+				bookacti_create_zip( $files, $zip_file, true, true );
+			}
+		}
+	}
+	
+	$download_link = '<a href="' . $zip_file_url . '">' . esc_html_x( 'Download', 'verb', BOOKACTI_PLUGIN_NAME ) . '</a>';
+	
+	// Get the archive list table
+	ob_start();
+	bookacti_display_database_archive_list();
+	$archive_list = ob_get_clean();
+	
+	// Feedback message
+	$message = esc_html__( 'Your data has been successfully archived.', BOOKACTI_PLUGIN_NAME ) . '<br/>' 
+			. esc_html__( 'Make sure the data in the backup files are consistent with data reported in step 1:', BOOKACTI_PLUGIN_NAME ) 
+			. ' <strong>' . $download_link . '</strong>';
+	
+	bookacti_send_json( array( 'status' => 'success', 'archive_list' => $archive_list, 'download_link' => $download_link, 'message' => $message ) );
+}
+add_action( 'wp_ajax_bookactiArchiveDataDump', 'bookacti_controller_archive_data_dump' );
+
+
+/**
+ * Delete bookings and events prior to specific date
+ * @since 1.7.0
+ */
+function bookacti_controller_archive_data_delete() {
+	$date = bookacti_sanitize_date( $_POST[ 'date' ] );
+	$user_can_archive = bookacti_user_can_archive_data( $date , true );
+	if( $user_can_archive !== true ) { bookacti_send_json( $user_can_archive );	}
+	
+	// Delete the data prior to the desired date
+	// We must delete bookings before events and groups before single
+	// Booking groups
+	$deleted_booking_groups = bookacti_delete_booking_groups_prior_to( $date );
+	// Bookings
+	$deleted_bookings = bookacti_delete_bookings_prior_to( $date );
+	// Groups of events
+	$deleted_groups_of_events = bookacti_delete_group_of_events_prior_to( $date );
+	// Events
+	$deleted_events = bookacti_delete_events_prior_to( $date );
+	// Started repeated events
+	$truncated_events = bookacti_restrict_started_repeated_events_to( $date );
+	
+	
+	$nb_per_type = array( 
+		esc_html__( 'Events', BOOKACTI_PLUGIN_NAME )					=> $deleted_events === false ? 'false' : $deleted_events,
+		esc_html__( 'Repeated events truncated', BOOKACTI_PLUGIN_NAME ) => $truncated_events === false ? 'false' : $truncated_events,
+		esc_html__( 'Groups of events', BOOKACTI_PLUGIN_NAME )			=> $deleted_groups_of_events === false ? 'false' : $deleted_groups_of_events,
+		esc_html__( 'Bookings', BOOKACTI_PLUGIN_NAME )					=> $deleted_bookings === false ? 'false' : $deleted_bookings,
+		esc_html__( 'Booking groups', BOOKACTI_PLUGIN_NAME )			=> $deleted_booking_groups === false ? 'false' : $deleted_booking_groups
+	);
+	
+	// Feedback message
+	$message = esc_html__( 'Your data has been successfully deleted.', BOOKACTI_PLUGIN_NAME ) . '<br/>' 
+			. esc_html__( 'You can restore your archived data within phpMyAdmin, with the "Import" function.' );
+	
+	bookacti_send_json( array( 'status' => 'success', 'nb_per_type' => $nb_per_type, 'message' => $message ) );
+}
+add_action( 'wp_ajax_bookactiArchiveDataDelete', 'bookacti_controller_archive_data_delete' );
+
 
 
 

@@ -279,7 +279,7 @@ function bookacti_get_booking_system_default_attributes() {
 		'past_events_bookable'	=> 0,
 		'check_roles'			=> 1,
 		'picked_events'			=> array( 'group_id' => '', 'event_id' => '', 'event_start' => '', 'event_end' => '' ),
-		'form_action'					=> 'book',
+		'form_action'					=> 'default',
 		'when_perform_form_action'		=> 'on_submit',
 		'redirect_url_by_activity'		=> array(),
 		'redirect_url_by_group_category'=> array()
@@ -422,7 +422,6 @@ function bookacti_format_booking_system_attributes( $atts = array() ) {
 	// Sanitize booking status
 	if( is_string( $atts[ 'status' ] ) ) {
 		$atts[ 'status' ] = array_map( 'sanitize_title_with_dashes', explode( ',', preg_replace( array(
-			'/[^\d,]/',    // Matches anything that's not a comma or number.
 			'/(?<=,),+/',  // Matches consecutive commas.
 			'/^,+/',       // Matches leading commas.
 			'/,+$/'        // Matches trailing commas.

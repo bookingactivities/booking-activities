@@ -39,4 +39,302 @@ $j( document ).ready( function() {
 		
 	});
 	
+	
+	/**
+	 * Analyse bookings and events data that can be archived
+	 * @since 1.7.0
+	 */
+	$j( '.bookacti-archive-options' ).on( 'click', '#bookacti-archive-button-analyse', function() {
+		var date = $j( '#bookacti-archive-date' ).val();
+		if( ! date ) { return; }
+
+		var r = confirm( bookacti_localized.advice_archive_data.replace( '{date}', date ).replace( /\\n/g, '\n' ));
+		if( r != true ) { return; }
+		
+		// Reset feedbacks
+		$j( '.bookacti-archive-feedbacks-step' ).empty();
+		$j( '.bookacti-archive-feedbacks-step-container' ).hide();
+		$j( '#bookacti-archive-feedbacks-step1-container' ).show();
+		
+		var nonce = $j( '#nonce_archive_data' ).val();
+		var feedbacks_step1 = $j( '#bookacti-archive-feedbacks-step1' );
+		bookacti_archive_analyse( date, nonce, feedbacks_step1, bookacti_display_archive_step2 );
+	});
+	
+	
+	/**
+	 * Dump bookings and events data prior to date
+	 * @since 1.7.0
+	 */
+	$j( '.bookacti-archive-options' ).on( 'click', '#bookacti-archive-button-dump', function() {
+		var file_already_exists = $j( '#bookacti-archive-button-dump' ).data( 'file-already-exists' );
+		var r = true;
+		if( typeof file_already_exists !== 'undefined' ) { 
+			if( file_already_exists ) {
+				r = confirm( bookacti_localized.advice_archive_data_override.replace( /\\n/g, '\n' ));
+			}
+		}
+		
+		if( r != true ) { return; }
+		
+		var date = $j( this ).data( 'date' );
+		if( ! date ) { return; }
+		
+		// Reset feedbacks
+		$j( '.bookacti-archive-feedbacks-step:not(#bookacti-archive-feedbacks-step1)' ).empty();
+		$j( '.bookacti-archive-feedbacks-step-container:not(#bookacti-archive-feedbacks-step1-container)' ).hide();
+		$j( '#bookacti-archive-feedbacks-step2-container' ).show();
+		
+		var nonce = $j( '#nonce_archive_data' ).val();
+		var feedbacks_step2 = $j( '#bookacti-archive-feedbacks-step2' );
+		bookacti_archive_dump( date, nonce, feedbacks_step2, bookacti_display_archive_step3 );
+	});
+	
+	
+	/**
+	 * Delete bookings and events data prior to date
+	 * @since 1.7.0
+	 */
+	$j( '.bookacti-archive-options' ).on( 'click', '#bookacti-archive-button-delete', function() {
+		var date = $j( this ).data( 'date' );
+		if( ! date ) { return; }
+		
+		// Reset feedbacks
+		$j( '#bookacti-archive-feedbacks-step3' ).empty();
+		$j( '#bookacti-archive-feedbacks-step3-container' ).show();
+		
+		var nonce = $j( '#nonce_archive_data' ).val();
+		var feedbacks_step3 = $j( '#bookacti-archive-feedbacks-step3' );
+		bookacti_archive_delete( date, nonce, feedbacks_step3, null );
+	});
+	
+	
+	/**
+	 * Restore bookings and events data from an archive
+	 * @since 1.7.0
+	 */
+	$j( '.bookacti-archive-options' ).on( 'click', '.bookacti-archive-restore-data a', function() {
+		var filename = $j( this ).data( 'filename' );
+		if( ! file ) { return; }
+		
+		var r = confirm( bookacti_localized.advice_archive_restore_data.replace( '{filename}', filename ).replace( /\\n/g, '\n' ));
+		if( r != true ) { return; }
+		
+		// Reset feedbacks
+		$j( '#bookacti-archive-feedbacks-restore-data' ).empty();
+		$j( '#bookacti-archive-feedbacks-restore-data-container' ).show();
+		
+		var nonce = $j( '#nonce_archive_data' ).val();
+		var feedbacks_div = $j( '#bookacti-archive-feedbacks-restore-data' );
+		bookacti_archive_restore_data( filename, nonce, feedbacks_div );
+	});
+	
+	
+	/**
+	 * Toggle data ids to archive
+	 * @since 1.7.0
+	 */
+	$j( '.bookacti-archive-options' ).on( 'click', '.bookacti-show-archive-ids', function(){
+		$j( this ).toggleClass( 'dashicons-visibility dashicons-hidden' );
+		$j( this ).siblings( '.bookacti-archive-ids' ).toggle();
+	});
 });
+
+
+/**
+ * Analyse the data to archive prior to a date
+ * @since 1.7.0
+ * @param {string} date
+ * @param {string} nonce
+ * @param {dom_element} feedback_div
+ * @param {callback} callback
+ */
+function bookacti_archive_analyse( date, nonce, feedback_div, callback ) {
+	
+	// Remove previous feedback_div
+	feedback_div.find( '.bookacti-notices' ).remove();
+	feedback_div.find( '.bookacti-loading-alt' ).remove();
+
+	// Display a loader
+	var loading_div = 
+	'<div class="bookacti-loading-alt">' 
+		+ '<img class="bookacti-loader" src="' + bookacti_localized.plugin_path + '/img/ajax-loader.gif" title="' + bookacti_localized.loading + '" />'
+		+ '<span class="bookacti-loading-alt-text" >' + bookacti_localized.loading + '</span>'
+	+ '</div>';
+	feedback_div.append( loading_div );
+	
+	$j.ajax({
+		url: bookacti_localized.ajaxurl,
+		type: 'POST',
+		data: { 'action': 'bookactiArchiveDataAnalyse', 
+				'date': date,
+				'nonce': nonce
+			},
+		dataType: 'json',
+		success: function( response ){
+			if( response.status === 'success' ) {
+				var list = '<ul>';
+				$j.each( response.ids_per_type, function( type, ids ){
+					list += '<li>' + type + ': ' + ids.length + ' <span class="bookacti-show-archive-ids dashicons dashicons-visibility"></span><div class="bookacti-archive-ids"><code>' + ids.join( ', ' ) + '</code></div></li>'
+				});
+				list += '</ul>';
+				feedback_div.append( '<div class="bookacti-archive-results">' + response.message + list + '</div>' );
+				
+				if( $j.isFunction( callback ) ) {
+					callback( date, response.file_already_exists );
+				}
+				
+			} else if( response.status === 'failed' ) {
+				feedback_div.append( '<div class="bookacti-notices"><ul class="bookacti-error-list"><li>' + response.message + '</li></ul></div>' );
+				console.log( response );
+			}
+		},
+		error: function( e ){
+			console.log( 'AJAX error occured while trying to archive data' );
+			console.log( e );
+		},
+		complete: function() {
+			feedback_div.find( '.bookacti-notices' ).show();
+			feedback_div.find( '.bookacti-loading-alt' ).remove();
+		}
+	});
+}
+
+
+/**
+ * Dump data prior to a date
+ * @since 1.7.0
+ * @param {string} date
+ * @param {string} nonce
+ * @param {dom_element} feedback_div
+ * @param {callback} callback
+ */
+function bookacti_archive_dump( date, nonce, feedback_div, callback ) {
+	
+	// Remove previous feedback_div
+	feedback_div.find( '.bookacti-notices' ).remove();
+	feedback_div.find( '.bookacti-loading-alt' ).remove();
+
+	// Display a loader
+	var loading_div = 
+	'<div class="bookacti-loading-alt">' 
+		+ '<img class="bookacti-loader" src="' + bookacti_localized.plugin_path + '/img/ajax-loader.gif" title="' + bookacti_localized.loading + '" />'
+		+ '<span class="bookacti-loading-alt-text" >' + bookacti_localized.loading + '</span>'
+	+ '</div>';
+	feedback_div.append( loading_div );
+	
+	$j.ajax({
+		url: bookacti_localized.ajaxurl,
+		type: 'POST',
+		data: { 'action': 'bookactiArchiveDataDump', 
+				'date': date,
+				'nonce': nonce
+			},
+		dataType: 'json',
+		success: function( response ){
+			if( response.status === 'success' ) {
+				$j( '#bookacti-database-archives-options' ).replaceWith( response.archive_list );
+				
+				feedback_div.append( '<div class="bookacti-archive-dump-results">' + response.message + '</div>' );
+				
+				if( $j.isFunction( callback ) ) {
+					callback( date );
+				}
+				
+			} else if( response.status === 'failed' ) {
+				feedback_div.append( '<div class="bookacti-notices"><ul class="bookacti-error-list"><li>' + response.message + '</li></ul></div>' );
+				console.log( response );
+			}
+		},
+		error: function( e ){
+			console.log( 'AJAX error occured while trying to archive data' );
+			console.log( e );
+		},
+		complete: function() {
+			feedback_div.find( '.bookacti-notices' ).show();
+			feedback_div.find( '.bookacti-loading-alt' ).remove();
+		}
+	});
+}
+
+
+/**
+ * Delete data prior to a date
+ * @since 1.7.0
+ * @param {string} date
+ * @param {string} nonce
+ * @param {dom_element} feedback_div
+ * @param {callback} callback
+ */
+function bookacti_archive_delete( date, nonce, feedback_div, callback ) {
+	// Remove previous feedback_div
+	feedback_div.find( '.bookacti-notices' ).remove();
+	feedback_div.find( '.bookacti-loading-alt' ).remove();
+
+	// Display a loader
+	var loading_div = 
+	'<div class="bookacti-loading-alt">' 
+		+ '<img class="bookacti-loader" src="' + bookacti_localized.plugin_path + '/img/ajax-loader.gif" title="' + bookacti_localized.loading + '" />'
+		+ '<span class="bookacti-loading-alt-text" >' + bookacti_localized.loading + '</span>'
+	+ '</div>';
+	feedback_div.append( loading_div );
+	
+	$j.ajax({
+		url: bookacti_localized.ajaxurl,
+		type: 'POST',
+		data: { 'action': 'bookactiArchiveDataDelete', 
+				'date': date,
+				'nonce': nonce
+			},
+		dataType: 'json',
+		success: function( response ){
+			if( response.status === 'success' ) {
+				var list = '<ul>';
+				$j.each( response.nb_per_type, function( type, nb ){
+					list += '<li>' + type + ': ' + nb + '</li>'
+				});
+				list += '</ul>';
+				feedback_div.append( '<div class="bookacti-archive-results">' + response.message + list + '</div>' );
+				
+				if( $j.isFunction( callback ) ) {
+					callback( date );
+				}
+				
+			} else if( response.status === 'failed' ) {
+				feedback_div.append( '<div class="bookacti-notices"><ul class="bookacti-error-list"><li>' + response.message + '</li></ul></div>' );
+				console.log( response );
+			}
+		},
+		error: function( e ){
+			console.log( 'AJAX error occured while trying to archive data' );
+			console.log( e );
+		},
+		complete: function() {
+			feedback_div.find( '.bookacti-notices' ).show();
+			feedback_div.find( '.bookacti-loading-alt' ).remove();
+		}
+	});
+}
+
+
+/**
+ * Display the archive data Step 2 after step 1
+ * @since 1.7.0
+ * @param {string} date
+ */
+function bookacti_display_archive_step2( date, file_already_exists ) {
+	$j( '#bookacti-archive-feedbacks-step2-container' ).show();
+	$j( '#bookacti-archive-button-dump' ).attr( 'data-date', date ).data( 'date', date );
+	$j( '#bookacti-archive-button-dump' ).attr( 'data-file-already-exists', file_already_exists ).data( 'file-already-exists', file_already_exists );
+}
+
+
+/**
+ * Display the archive data Step 3 after step 2
+ * @since 1.7.0
+ * @param {string} date
+ */
+function bookacti_display_archive_step3( date ) {
+	$j( '#bookacti-archive-feedbacks-step3-container' ).show();
+	$j( '#bookacti-archive-button-delete' ).attr( 'data-date', date ).data( 'date', date );
+}

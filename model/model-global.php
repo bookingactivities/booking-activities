@@ -22,6 +22,8 @@ if( ! defined( 'BOOKACTI_TABLE_META' ) )			{ define( 'BOOKACTI_TABLE_META',			$d
 if( ! defined( 'BOOKACTI_TABLE_PERMISSIONS' ) )		{ define( 'BOOKACTI_TABLE_PERMISSIONS',		$db_prefix . 'bookacti_permissions' ); }
 
 
+// USERS
+
 /**
  * Check if user id exists
  * 
@@ -219,6 +221,743 @@ function bookacti_delete_user_meta( $meta_key, $user_id = 0, $meta_value = '' ) 
 	
 	$query = $wpdb->prepare( $query, $variables );
 	$deleted = $wpdb->query( $query );
+	
+	return $deleted;
+}
+
+
+
+
+// METADATA
+
+/**
+ * Get metadata
+ * 
+ * @global wpdb $wpdb
+ * @param string $object_type
+ * @param int $object_id
+ * @param string $meta_key
+ * @param boolean $single
+ * @return mixed
+ */
+function bookacti_get_metadata( $object_type, $object_id, $meta_key = '', $single = false ) {
+	global $wpdb;
+
+	if ( ! $object_type || ! is_numeric( $object_id ) ) {
+		return false;
+	}
+
+	$object_id = absint( $object_id );
+	if ( ! $object_id ) {
+		return false;
+	}
+
+	$query_get_meta = 'SELECT meta_key, meta_value FROM ' . BOOKACTI_TABLE_META
+					. ' WHERE object_type = %s'
+					. ' AND object_id = %d';
+
+	$variables_array = array( $object_type, $object_id );
+
+	if( $meta_key !== '' ) {
+		$query_get_meta .= ' AND meta_key = %s';
+		$variables_array[] = $meta_key;
+	}
+
+	$query_prep = $wpdb->prepare( $query_get_meta, $variables_array );
+
+	if( $single ) {
+		$metadata = $wpdb->get_row( $query_prep, OBJECT );
+		return isset( $metadata->meta_value ) ? maybe_unserialize( $metadata->meta_value ) : false;
+	}
+
+	$metadata = $wpdb->get_results( $query_prep, OBJECT );
+
+	if( is_null( $metadata ) ) { 
+		return false; 
+	}
+
+	$metadata_array = array();
+	foreach( $metadata as $metadata_pair ) {
+		$metadata_array[ $metadata_pair->meta_key ] = maybe_unserialize( $metadata_pair->meta_value );
+	}
+
+	return $metadata_array;
+}
+
+
+/**
+ * Update metadata
+ * 
+ * @version 1.3.2
+ * @global wpdb $wpdb
+ * @param string $object_type
+ * @param int $object_id
+ * @param array $metadata_array
+ * @return int|false
+ */
+function bookacti_update_metadata( $object_type, $object_id, $metadata_array ) {
+
+	global $wpdb;
+
+	if ( ! $object_type || ! is_numeric( $object_id ) || ! is_array( $metadata_array ) ) {
+		return false;
+	}
+
+	if ( is_array( $metadata_array ) && empty( $metadata_array ) ) {
+		return 0;
+	}
+
+	$object_id = absint( $object_id );
+	if ( ! $object_id ) {
+		return false;
+	}
+
+	$current_metadata = bookacti_get_metadata( $object_type, $object_id );
+
+	// INSERT NEW METADATA
+	$inserted =  0;
+	$new_metadata = array_diff_key( $metadata_array, $current_metadata );
+	if( ! empty( $new_metadata ) ) {
+		$inserted = bookacti_insert_metadata( $object_type, $object_id, $new_metadata );
+	}
+
+	// UPDATE EXISTING METADATA
+	$updated = 0;
+	$existing_metadata = array_intersect_key( $metadata_array, $current_metadata );
+	if( ! empty( $existing_metadata ) ) {
+		$update_metadata_query		= 'UPDATE ' . BOOKACTI_TABLE_META . ' SET meta_value = ';
+		$update_metadata_query_end	= ' WHERE object_type = %s AND object_id = %d AND meta_key = %s;';
+
+		foreach( $existing_metadata as $meta_key => $meta_value ) {
+
+			$update_metadata_query_n = $update_metadata_query;
+
+			if( is_int( $meta_value ) )			{ $update_metadata_query_n .= '%d'; }
+			else if( is_float( $meta_value ) )	{ $update_metadata_query_n .= '%f'; }
+			else								{ $update_metadata_query_n .= '%s'; }
+
+			$update_metadata_query_n .= $update_metadata_query_end;
+
+			$update_variables_array = array( maybe_serialize( $meta_value ), $object_type, $object_id, $meta_key );
+
+			$update_query_prep = $wpdb->prepare( $update_metadata_query_n, $update_variables_array );
+			$updated_n = $wpdb->query( $update_query_prep );
+
+			if( is_int( $updated_n ) && is_int( $updated ) ) {
+				$updated += $updated_n;
+			} else if( $updated_n === false ) {
+				$updated = false;
+			}
+		}
+	}
+
+	if( is_int( $inserted ) && is_int( $updated ) ) {
+		return $inserted + $updated;
+	}
+
+	return false;
+}
+
+
+/**
+ * Insert metadata
+ * 
+ * @global wpdb $wpdb
+ * @param string $object_type
+ * @param int $object_id
+ * @param array $metadata_array
+ * @return int|boolean
+ */
+function bookacti_insert_metadata( $object_type, $object_id, $metadata_array ) {
+
+	global $wpdb;
+
+	if ( ! $object_type || ! is_numeric( $object_id ) || ! is_array( $metadata_array ) || empty( $metadata_array ) ) {
+		return false;
+	}
+
+	$object_id = absint( $object_id );
+	if ( ! $object_id ) {
+		return false;
+	}
+
+	$insert_metadata_query = 'INSERT INTO ' . BOOKACTI_TABLE_META . ' ( object_type, object_id, meta_key, meta_value ) VALUES ';
+	$insert_variables_array = array();
+	$i = 0;
+	foreach( $metadata_array as $meta_key => $meta_value ) {
+		$insert_metadata_query .= '( %s, %d, %s, ';
+
+		if( is_int( $meta_value ) )			{ $insert_metadata_query .= '%d'; }
+		else if( is_float( $meta_value ) )	{ $insert_metadata_query .= '%f'; }
+		else								{ $insert_metadata_query .= '%s'; }
+
+		if( ++$i === count( $metadata_array ) ) {
+			$insert_metadata_query .= ' );';
+		} else {
+			$insert_metadata_query .= ' ), ';
+		}
+		$insert_variables_array[] = $object_type;
+		$insert_variables_array[] = $object_id;
+		$insert_variables_array[] = $meta_key;
+		$insert_variables_array[] = maybe_serialize( $meta_value );
+	}
+
+	$insert_query_prep = $wpdb->prepare( $insert_metadata_query, $insert_variables_array );
+	$inserted = $wpdb->query( $insert_query_prep );
+
+	return $inserted;
+}
+
+
+/**
+ * Duplicate metadata
+ * 
+ * @global wpdb $wpdb
+ * @param string $object_type
+ * @param int $source_id
+ * @param int $recipient_id
+ * @return int|boolean
+ */
+function bookacti_duplicate_metadata( $object_type, $source_id, $recipient_id ) {
+
+	global $wpdb;
+
+	if ( ! $object_type || ! is_numeric( $source_id ) || ! is_numeric( $recipient_id ) ) {
+		return false;
+	}
+
+	$source_id		= absint( $source_id );
+	$recipient_id	= absint( $recipient_id );
+	if ( ! $source_id || ! $recipient_id ) {
+		return false;
+	}
+
+	$query		= 'INSERT INTO ' . BOOKACTI_TABLE_META . ' ( object_type, object_id, meta_key, meta_value ) '
+				. ' SELECT object_type, %d, meta_key, meta_value '
+				. ' FROM ' . BOOKACTI_TABLE_META
+				. ' WHERE object_type = %s ' 
+				. ' AND object_id = %d';
+	$query_prep	= $wpdb->prepare( $query, $recipient_id, $object_type, $source_id );
+	$inserted	= $wpdb->query( $query_prep );
+
+	return $inserted;
+}
+
+
+/**
+ * Delete metadata
+ * @version 1.5.0
+ * @global wpdb $wpdb
+ * @param string $object_type
+ * @param int $object_id
+ * @param array $metadata_key_array Array of metadata keys to delete. Leave it empty to delete all metadata of the desired object.
+ * @return int|boolean
+ */
+function bookacti_delete_metadata( $object_type, $object_id, $metadata_key_array = array() ) {
+	global $wpdb;
+
+	if( ! $object_type || ! is_numeric( $object_id ) || ! is_array( $metadata_key_array ) ) { return false; }
+
+	$object_id = absint( $object_id );
+	if( ! $object_id ) { return false; }
+
+	$query = 'DELETE FROM ' . BOOKACTI_TABLE_META . ' WHERE object_type = %s AND object_id = %d ';
+
+	$variables = array( $object_type, $object_id );
+
+	if( $metadata_key_array ) {
+		$query .= ' AND meta_key IN( %s';
+		for( $i=1,$len=count($metadata_key_array); $i < $len; ++$i ) {
+			$query .= ', %s';
+		}
+		$query .= ' ) ';
+		$variables = array_merge( $variables, array_values( $metadata_key_array ) );
+	}
+	$query = $wpdb->prepare( $query, $variables );
+	$deleted = $wpdb->query( $query );
+
+	return $deleted;
+}
+
+
+
+
+// DATABASE BACKUP AND ARCHIVE
+// 1. DB BACKUP ANALYSIS
+
+/**
+ * Get mysqldump path
+ * @since 1.7.0
+ * @global type $bookacti_mysqldump_path
+ * @global wpdb $wpdb
+ * @return false|string
+ */
+function bookacti_get_mysql_bin_path() {
+	global $bookacti_mysql_bin_path;
+	if( isset( $bookacti_mysql_bin_path ) ) { return $bookacti_mysql_bin_path; }
+	
+	global $wpdb;
+	
+	$mysql_dir = $wpdb->get_var( 'SELECT @@basedir' );
+	
+	if( ! $mysql_dir ) { 
+		$bookacti_mysql_bin_path = false; 
+		return false;
+	}
+	
+	$bookacti_mysql_bin_path = str_replace( '\\', '/', $mysql_dir );
+	
+	if( substr( $bookacti_mysql_bin_path, -1 ) !== '/' ) {
+		$bookacti_mysql_bin_path .= '/';
+	}
+	
+	$bookacti_mysql_bin_path .= 'bin/';
+	
+	return $bookacti_mysql_bin_path;
+}
+
+
+/**
+ * Get events prior to a date
+ * @since 1.7.0
+ * @global wpdb $wpdb
+ * @param string $date
+ * @return array
+ */
+function bookacti_get_events_prior_to( $date ) {
+	global $wpdb;
+	
+	$query	= ' SELECT E.id, E.start, E.end, E.repeat_freq, E.repeat_from, E.repeat_to FROM ' . BOOKACTI_TABLE_EVENTS . ' as E '
+			. ' WHERE ( ( E.repeat_freq IS NULL OR E.repeat_freq = "none" ) AND E.end < %s ) '
+			. ' OR ( ( E.repeat_freq IS NOT NULL AND E.repeat_freq != "none" ) AND E.repeat_to < %s )'
+			. ' ORDER BY E.id DESC';
+	
+	$variables	= array( $date . ' 00:00:00', $date );
+	$query		= $wpdb->prepare( $query, $variables );
+	$events		= $wpdb->get_results( $query, OBJECT );
+	
+	return $events;
+}
+
+
+/**
+ * Get repeated events that have started as of a specific date
+ * @since 1.7.0
+ * @global wpdb $wpdb
+ * @param string $date
+ * @return array
+ */
+function bookacti_get_started_repeated_events_as_of( $date ) {
+	global $wpdb;
+	
+	$query	= ' SELECT E.id, E.start, E.end, E.repeat_freq, E.repeat_from, E.repeat_to FROM ' . BOOKACTI_TABLE_EVENTS . ' as E '
+			. ' WHERE ( E.repeat_freq IS NOT NULL AND E.repeat_freq != "none" ) '
+			. ' AND E.repeat_to > %s '
+			. ' AND E.repeat_from < %s '
+			. ' ORDER BY E.id DESC';
+	
+	$variables	= array( $date, $date );
+	$query		= $wpdb->prepare( $query, $variables );
+	$events		= $wpdb->get_results( $query, OBJECT );
+	
+	return $events;
+}
+
+
+/**
+ * Get groups of events prior to a date
+ * @since 1.7.0
+ * @global wpdb $wpdb
+ * @param string $date
+ * @return array
+ */
+function bookacti_get_group_of_events_prior_to( $date ) {
+	global $wpdb;
+	
+	$query	= ' SELECT GE.group_id as id, MIN( GE.event_start ) as min_event_start, MAX( GE.event_end ) as max_event_end FROM ' . BOOKACTI_TABLE_GROUPS_EVENTS . ' as GE '
+			. ' GROUP BY GE.group_id '
+			. ' HAVING max_event_end < %s '
+			. ' ORDER BY GE.group_id DESC';
+	
+	$variables	= array( $date . ' 00:00:00' );
+	$query		= $wpdb->prepare( $query, $variables );
+	$groups		= $wpdb->get_results( $query, OBJECT );
+	
+	return $groups;
+}
+
+
+/**
+ * Get bookings prior to a date
+ * @since 1.7.0
+ * @global wpdb $wpdb
+ * @param string $date
+ * @return array
+ */
+function bookacti_get_bookings_prior_to( $date ) {
+	global $wpdb;
+	
+	$query	= ' SELECT B.id, B.event_start, B.event_end, B.group_id FROM ' . BOOKACTI_TABLE_BOOKINGS . ' as B '
+			. ' WHERE B.event_end < %s '
+			. ' ORDER BY B.id DESC';
+	
+	$variables	= array( $date . ' 00:00:00' );
+	$query		= $wpdb->prepare( $query, $variables );
+	$bookings	= $wpdb->get_results( $query, OBJECT );
+	
+	return $bookings;
+}
+
+
+/**
+ * Get booking groups prior to a date
+ * @since 1.7.0
+ * @global wpdb $wpdb
+ * @param string $date
+ * @return array
+ */
+function bookacti_get_booking_groups_prior_to( $date ) {
+	global $wpdb;
+	
+	$query	= ' SELECT B.group_id as id, MIN( event_start ) as min_event_start, MAX( event_end ) as max_event_end FROM ' . BOOKACTI_TABLE_BOOKINGS . ' as B '
+			. ' WHERE B.group_id IS NOT NULL '
+			. ' GROUP BY B.group_id '
+			. ' HAVING max_event_end < %s '
+			. ' ORDER BY B.group_id DESC';
+	
+	$variables	= array( $date . ' 00:00:00' );
+	$query		= $wpdb->prepare( $query, $variables );
+	$booking_groups	= $wpdb->get_results( $query, OBJECT );
+	
+	return $booking_groups;
+}
+
+
+
+
+// 2. DB BACKUP DUMP
+
+/**
+ * Create a .sql file to archive events prior to a date
+ * @since 1.7.0
+ * @param string $date
+ * @return int|false
+ */
+function bookacti_archive_events_prior_to( $date ) {
+	$filename	= $date . '-events.sql';
+	$table		= BOOKACTI_TABLE_EVENTS;
+	$where		= sprintf( "( ( repeat_freq IS NULL OR repeat_freq = 'none' ) AND end < '%s' ) OR ( ( repeat_freq IS NOT NULL AND repeat_freq != 'none' ) AND repeat_to < '%s' )", $date . ' 00:00:00', $date . ' 00:00:00' );
+	return bookacti_archive_database( $filename, $table, $where );
+}
+
+
+/**
+ * Create a .sql file to archive repeated events that have started as of a specific date
+ * @since 1.7.0
+ * @param string $date
+ * @return int|false
+ */
+function bookacti_archive_started_repeated_events_as_of( $date ) {
+	// Create a table to store the old repeat_from values
+	global $wpdb;
+	$wpdb->hide_errors();
+	$collate	= $wpdb->has_cap( 'collation' ) ? $wpdb->get_charset_collate() : '';
+	$temp_table = $wpdb->prefix . 'bookacti_temp_events';
+	$temp_table_events_query = 'CREATE TABLE ' . $temp_table . ' ( 
+		id MEDIUMINT(9) UNSIGNED NOT NULL AUTO_INCREMENT, 
+		repeat_from DATE, 
+		PRIMARY KEY ( id ) ) ' . $collate . ';';
+	
+	if( ! function_exists( 'dbDelta' ) ) {
+		require_once( ABSPATH . 'wp-admin/includes/upgrade.php' );
+	}
+	
+	// Create the table
+	dbDelta( $temp_table_events_query );
+	
+	// Fill the temp table
+	$insert_query	= ' INSERT INTO ' . $temp_table . ' (id, repeat_from) '
+					. ' SELECT E.id, E.repeat_from FROM ' . BOOKACTI_TABLE_EVENTS . ' as E '
+					. ' WHERE ( E.repeat_freq IS NOT NULL AND E.repeat_freq != "none" ) '
+					. ' AND E.repeat_to >= %s '
+					. ' AND E.repeat_from <= %s ';
+	$insert_query		= $wpdb->prepare( $insert_query, array( $date, $date ) );
+	$inserted	= $wpdb->query( $insert_query );
+	
+	if( ! $inserted ) { return $inserted; }
+	
+	// Dump the table
+	$filename = $date . '-started-repeated-events.sql';
+	bookacti_archive_database( $filename, $temp_table, '', false );
+	
+	// Remove the table
+	$delete_query = 'DROP TABLE IF EXISTS ' . $temp_table . '; ';
+	$wpdb->query( $delete_query );
+	
+	// Add the UPDATE and DELETE queries to the backup file
+	$update_query	= 'UPDATE ' . BOOKACTI_TABLE_EVENTS . ' as E '
+					. ' INNER JOIN ' . $temp_table . ' as TE ON E.id = TE.id'
+					. ' SET E.repeat_from = TE.repeat_from'
+					. ' WHERE TE.repeat_from < E.repeat_from;';
+	
+	$uploads_dir= wp_upload_dir();
+	$file		= str_replace( '\\', '/', $uploads_dir[ 'basedir' ] ) . '/' . BOOKACTI_PLUGIN_NAME . '/archives/' . $filename;
+	$handle		= fopen( $file, 'a' );
+	$write		= 0;
+	if( $handle !== false ) {
+		$text	= PHP_EOL . '-- Update `' . BOOKACTI_TABLE_EVENTS . '` repeat_from with the values of the temporary table `' . $temp_table . '`';
+		$text	.= PHP_EOL . $update_query . PHP_EOL;
+		$text	.= PHP_EOL . '-- Delete the temporary table `' . $temp_table . '`';
+		$text	.= PHP_EOL . $delete_query. PHP_EOL;
+		$write	= fwrite( $handle, $text );
+		fclose( $handle );
+	}
+	
+	return $write;
+}
+
+
+/**
+ * Create a .sql file to archive group of events prior to a date
+ * @since 1.7.0
+ * @param string $date
+ * @return int|false
+ */
+function bookacti_archive_group_of_events_prior_to( $date ) {
+	$filename_groups	= $date . '-group-of-events.sql';
+	$table_groups		= BOOKACTI_TABLE_EVENT_GROUPS;
+	$where_groups		= sprintf( "id IN ( SELECT group_id FROM " . BOOKACTI_TABLE_GROUPS_EVENTS . " GROUP BY group_id HAVING MAX( event_end ) < '%s' )", $date . ' 00:00:00' );
+	$archive_groups		= bookacti_archive_database( $filename_groups, $table_groups, $where_groups );
+	
+	$filename_events	= $date . '-groups-events.sql';
+	$table_events		= BOOKACTI_TABLE_GROUPS_EVENTS;
+	$where_events		= sprintf( "TRUE GROUP BY group_id HAVING MAX( event_end ) < '%s'", $date . ' 00:00:00' );
+	$archive_events		= bookacti_archive_database( $filename_events, $table_events, $where_events );
+	
+	if( $archive_groups === false || $archive_events === false ) { return false; }
+	
+	return $archive_groups;
+}
+
+
+/**
+ * Create a .sql file to archive bookings prior to a date
+ * @since 1.7.0
+ * @param string $date
+ * @return int|false
+ */
+function bookacti_archive_bookings_prior_to( $date ) {
+	$filename	= $date . '-bookings.sql';
+	$table		= BOOKACTI_TABLE_BOOKINGS;
+	$where		= sprintf( "event_end < '%s'", $date . ' 00:00:00' );
+	return bookacti_archive_database( $filename, $table, $where );
+}
+
+
+/**
+ * Create a .sql file to archive booking groups prior to a date
+ * @since 1.7.0
+ * @param string $date
+ * @return int|false
+ */
+function bookacti_archive_booking_groups_prior_to( $date ) {
+	$filename	= $date . '-booking-groups.sql';
+	$table		= BOOKACTI_TABLE_BOOKING_GROUPS;
+	$where		= sprintf( "id IN ( SELECT B.group_id FROM " . BOOKACTI_TABLE_BOOKINGS . " as B WHERE B.group_id IS NOT NULL GROUP BY B.group_id HAVING MAX( event_end ) < '%s' )", $date . ' 00:00:00' );
+	return bookacti_archive_database( $filename, $table, $where );
+}
+
+
+/**
+ * Create a .sql file to archive events, group of events, booking and booking groups meta prior to a date
+ * @since 1.7.0
+ * @param string $date
+ * @return int|false
+ */
+function bookacti_archive_metadata_prior_to( $date ) {
+	$filename	= $date . '-metadata.sql';
+	$table		= BOOKACTI_TABLE_META;
+	
+	// Events
+	$where_events			= sprintf( "( ( repeat_freq IS NULL OR repeat_freq = 'none' ) AND end < '%s' ) OR ( ( repeat_freq IS NOT NULL AND repeat_freq != 'none' ) AND repeat_to < '%s' )", $date . ' 00:00:00', $date . ' 00:00:00' );
+	$where_group_of_events	= sprintf( "GROUP BY group_id HAVING MAX( event_end ) < '%s'", $date . ' 00:00:00' );
+	$where_bookings			= sprintf( "event_end < '%s'", $date . ' 00:00:00' );
+	$where_booking_groups	= sprintf( "id IN ( SELECT B.group_id FROM " . BOOKACTI_TABLE_BOOKINGS . " as B WHERE B.group_id IS NOT NULL GROUP BY B.group_id HAVING MAX( event_end ) < '%s' )", $date . ' 00:00:00' );
+	
+	$where	= "( object_type = 'event' AND object_id IN ( SELECT id FROM " . BOOKACTI_TABLE_EVENTS . " WHERE " . $where_events . " ) ) ";
+	$where .= "OR ( object_type = 'group_of_events' AND object_id IN ( SELECT group_id FROM " . BOOKACTI_TABLE_GROUPS_EVENTS . " " . $where_group_of_events . " ) ) ";
+	$where .= "OR ( object_type = 'booking' AND object_id IN ( SELECT id FROM " . BOOKACTI_TABLE_BOOKINGS . " WHERE " . $where_bookings . " ) ) ";
+	$where .= "OR ( object_type = 'booking_group' AND object_id IN ( SELECT id FROM " . BOOKACTI_TABLE_BOOKING_GROUPS . " WHERE " . $where_booking_groups . " ) ) ";
+	
+	return bookacti_archive_database( $filename, $table, $where );
+}
+
+
+
+// 3. DB BACKUP DELETION
+
+/**
+ * Delete events prior to a date
+ * @since 1.7.0
+ * @global wpdb $wpdb
+ * @param string $date
+ * @return array
+ */
+function bookacti_delete_events_prior_to( $date ) {
+	global $wpdb;
+	
+	$variables	= array( $date . ' 00:00:00', $date );
+	
+	// Remove metadata first
+	$delete_meta_query	= ' DELETE FROM ' . BOOKACTI_TABLE_META
+						. ' WHERE object_type = "event" AND object_id IN( '
+							. ' SELECT id FROM ' . BOOKACTI_TABLE_EVENTS . ' as E '
+							. ' WHERE ( ( E.repeat_freq IS NULL OR E.repeat_freq = "none" ) AND E.end < %s ) '
+							. ' OR ( ( E.repeat_freq IS NOT NULL AND E.repeat_freq != "none" ) AND E.repeat_to < %s )'
+						. ' )';
+	
+	$delete_meta_query	= $wpdb->prepare( $delete_meta_query, $variables );
+	$deleted_meta		= $wpdb->query( $delete_meta_query, OBJECT );
+	
+	// Remove events
+	$delete_query	= ' DELETE FROM ' . BOOKACTI_TABLE_EVENTS
+					. ' WHERE ( ( repeat_freq IS NULL OR repeat_freq = "none" ) AND end < %s ) '
+					. ' OR ( ( repeat_freq IS NOT NULL AND repeat_freq != "none" ) AND repeat_to < %s )';
+	
+	$delete_query	= $wpdb->prepare( $delete_query, $variables );
+	$deleted		= $wpdb->query( $delete_query, OBJECT );
+	
+	return $deleted;
+}
+
+
+/**
+ * Retrict repeated events that have started before a specific date
+ * @since 1.7.0
+ * @global wpdb $wpdb
+ * @param string $date
+ * @return array
+ */
+function bookacti_restrict_started_repeated_events_to( $date ) {
+	global $wpdb;
+	
+	$query	= ' UPDATE ' . BOOKACTI_TABLE_EVENTS
+			. ' SET repeat_from = %s '
+			. ' WHERE ( repeat_freq IS NOT NULL AND repeat_freq != "none" ) '
+			. ' AND repeat_to >= %s '
+			. ' AND repeat_from <= %s ';
+	
+	$variables	= array( $date, $date, $date );
+	$query		= $wpdb->prepare( $query, $variables );
+	$updated	= $wpdb->query( $query, OBJECT );
+	
+	return $updated;
+}
+
+
+/**
+ * Delete groups of events prior to a date
+ * @since 1.7.0
+ * @global wpdb $wpdb
+ * @param string $date
+ * @return array
+ */
+function bookacti_delete_group_of_events_prior_to( $date ) {
+	global $wpdb;
+	
+	$select_query	= ' SELECT GE.group_id FROM ' . BOOKACTI_TABLE_GROUPS_EVENTS . ' as GE '
+					. ' GROUP BY GE.group_id '
+					. ' HAVING MAX( GE.event_end ) < %s ';
+	
+	$variables	= array( $date . ' 00:00:00' );
+	
+	// Remove metadata first
+	$delete_meta_query	= ' DELETE FROM ' . BOOKACTI_TABLE_META
+						. ' WHERE object_type = "group_of_events" AND object_id IN( ' . $select_query . ' )';
+	
+	$delete_meta_query	= $wpdb->prepare( $delete_meta_query, $variables );
+	$deleted_meta		= $wpdb->query( $delete_meta_query, OBJECT );
+	
+	// Remove group of events before the events themselves!
+	$delete_query	= ' DELETE FROM ' . BOOKACTI_TABLE_EVENT_GROUPS
+					. ' WHERE id IN( ' . $select_query . ' )';
+	
+	$delete_query	= $wpdb->prepare( $delete_query, $variables );
+	$deleted		= $wpdb->query( $delete_query, OBJECT );
+	
+	// Remove events of groups
+	$delete_events_query	= ' DELETE FROM ' . BOOKACTI_TABLE_GROUPS_EVENTS
+							. ' WHERE group_id IN( '
+								. ' SELECT group_id FROM ( ' . $select_query . ' ) as TEMPTABLE '
+							. ' )';
+	
+	$delete_events_query	= $wpdb->prepare( $delete_events_query, $variables );
+	$deleted_events			= $wpdb->query( $delete_events_query, OBJECT );
+	
+	return $deleted;
+}
+
+
+/**
+ * Delete bookings prior to a date
+ * @since 1.7.0
+ * @global wpdb $wpdb
+ * @param string $date
+ * @return array
+ */
+function bookacti_delete_bookings_prior_to( $date ) {
+	global $wpdb;
+	
+	$variables = array( $date . ' 00:00:00' );
+	
+	// Remove metadata first
+	$delete_meta_query	= ' DELETE FROM ' . BOOKACTI_TABLE_META
+						. ' WHERE object_type = "booking" AND object_id IN( ' . 'SELECT id FROM ' . BOOKACTI_TABLE_BOOKINGS . ' as B WHERE B.event_end < %s )';
+	
+	$delete_meta_query	= $wpdb->prepare( $delete_meta_query, $variables );
+	$deleted_meta		= $wpdb->query( $delete_meta_query, OBJECT );
+	
+	// Remove
+	$delete_query	= ' DELETE FROM ' . BOOKACTI_TABLE_BOOKINGS
+					. ' WHERE event_end < %s';
+	
+	$delete_query	= $wpdb->prepare( $delete_query, $variables );
+	$deleted		= $wpdb->query( $delete_query, OBJECT );
+	
+	return $deleted;
+}
+
+
+/**
+ * Delete booking groups prior to a date
+ * @since 1.7.0
+ * @global wpdb $wpdb
+ * @param string $date
+ * @return array
+ */
+function bookacti_delete_booking_groups_prior_to( $date ) {
+	global $wpdb;
+	
+	$select_query	= ' SELECT B.group_id FROM ' . BOOKACTI_TABLE_BOOKINGS . ' as B '
+					. ' WHERE B.group_id IS NOT NULL '
+					. ' GROUP BY B.group_id '
+					. ' HAVING MAX( B.event_end ) < %s ';
+	
+	$variables	= array( $date . ' 00:00:00' );
+	
+	// Remove metadata first
+	$delete_meta_query	= ' DELETE FROM ' . BOOKACTI_TABLE_META
+						. ' WHERE object_type = "booking_group" AND object_id IN( ' . $select_query . ' )';
+	
+	$delete_meta_query	= $wpdb->prepare( $delete_meta_query, $variables );
+	$deleted_meta		= $wpdb->query( $delete_meta_query, OBJECT );
+	
+	// Remove booking group
+	$delete_query	= ' DELETE FROM ' . BOOKACTI_TABLE_BOOKING_GROUPS
+					. ' WHERE id IN ( ' . $select_query . ' )';
+	
+	$delete_query	= $wpdb->prepare( $delete_query, $variables );
+	$deleted		= $wpdb->query( $delete_query, OBJECT );
 	
 	return $deleted;
 }

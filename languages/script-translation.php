@@ -179,7 +179,10 @@ $bookacti_translation_array = apply_filters( 'bookacti_translation_array', array
 	'advice_switch_to_maintenance'      => esc_html__( 'Please consider switching your website to maintenance mode when working on a published calendar.', BOOKACTI_PLUGIN_NAME ),
 	'advice_booking_refunded'			=> esc_html__( 'Your booking has been successfully refunded.', BOOKACTI_PLUGIN_NAME ),
 	'advice_refund_request_email_sent'	=> esc_html__( 'Your refund request has been sent. We will contact you soon.', BOOKACTI_PLUGIN_NAME ),
-
+	'advice_archive_data'				=> esc_html__( 'The bookings and events data prior to {date} will be saved to a SQL file and deleted from your database. You will be able to restore your data afterwards.', BOOKACTI_PLUGIN_NAME ) . '\n\n/!\\ '  . esc_html__( 'We still strongly advise you to backup your database before proceeding.', BOOKACTI_PLUGIN_NAME ) . '\n\n' . esc_html__( 'Do you want to archive your data now?', BOOKACTI_PLUGIN_NAME ),
+	'advice_archive_data_override'		=> esc_html__( 'An archive already exists for this date. The existing backup files will be removed and replaced with the new ones.', BOOKACTI_PLUGIN_NAME ) . '\n\n' . esc_html__( 'Do you want to archive your data now?', BOOKACTI_PLUGIN_NAME ),
+	'advice_archive_restore_data'		=> esc_html__( 'The data contained in {filename} will be added to your database. You should do this only once.', BOOKACTI_PLUGIN_NAME ) . '\n\n' . esc_html__( 'Do you want to restore these data now?', BOOKACTI_PLUGIN_NAME ),
+	
 
 	// PARTICLES
 	/* translators: In the context, 'Wednesday, March 2, 2016 9:30 AM to Thursday, March 3, 2016 1:30 PM' */

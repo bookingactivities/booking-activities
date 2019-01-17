@@ -233,9 +233,9 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 					if( ! in_array( $current_value, $sortable_columns, true ) ) { $current_value = $default_value; }
 					else { $current_value = array( $current_value ); }
 				}
-				if( ! is_array( $current_value ) )				{ $current_value = $default_value; }
-				if( $current_value[ 0 ] === 'creation_date' )	{ $current_value = array( 'creation_date', 'id', 'event_start' ); }
-				else if( $current_value[ 0 ] === 'id' )			{ $current_value = array( 'id', 'event_start' ); }
+				if( ! is_array( $current_value ) || empty( $current_value[ 0 ] ) )	{ $current_value = $default_value; }
+				if( $current_value[ 0 ] === 'creation_date' )						{ $current_value = array( 'creation_date', 'id', 'event_start' ); }
+				else if( $current_value[ 0 ] === 'id' )								{ $current_value = array( 'id', 'event_start' ); }
 				
 			} else if( $filter === 'order' ) {
 				if( ! in_array( $current_value, array( 'asc', 'desc' ), true ) ) { $current_value = $default_value; }
@@ -270,15 +270,27 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		
 		foreach( array_merge( $int_arrays, $str_arrays, $user_id_arrays ) as $att_name ) {
 			if( empty( $filters[ $att_name ] ) || is_array( $filters[ $att_name ] ) ) { continue; }
-			$formatted_arrays[ $att_name ] = explode( ',', preg_replace( array(
-				'/[^\d,]/',    // Matches anything that's not a comma or number.
+			
+			$formatted_value = preg_replace( array(
 				'/(?<=,),+/',  // Matches consecutive commas.
 				'/^,+/',       // Matches leading commas.
 				'/,+$/'        // Matches trailing commas.
-			), '', 	$filters[ $att_name ] ) );
-			if( in_array( $att_name, $int_arrays, true ) ) { $formatted_arrays[ $att_name ] = array_map( 'intval', $formatted_arrays[ $att_name ] ); }
-			if( in_array( $att_name, $str_arrays, true ) ) { $formatted_arrays[ $att_name ] = array_map( 'sanitize_title_with_dashes', $formatted_arrays[ $att_name ] ); }
-			// No need to format user ids because they can be either string or numeric
+			), '', 	$filters[ $att_name ] );
+			
+			if( in_array( $att_name, $int_arrays, true ) ) { 
+				$formatted_arrays[ $att_name ] = explode( ',', preg_replace( array(
+					'/[^\d,]/',    // Matches anything that's not a comma or number.
+				), '', $formatted_value ) );
+				$formatted_arrays[ $att_name ] = array_map( 'intval', $formatted_arrays[ $att_name ] ); 
+			}
+			if( in_array( $att_name, $str_arrays, true ) ) { 
+				$formatted_arrays[ $att_name ] = explode( ',', $formatted_value );
+				$formatted_arrays[ $att_name ] = array_map( 'sanitize_title_with_dashes', $formatted_arrays[ $att_name ] ); 
+			}
+			if( in_array( $att_name, $user_id_arrays, true ) ) { 
+				// No need to santize user ids because they can be either string or numeric
+				$formatted_arrays[ $att_name ] = explode( ',', $formatted_value );
+			}
 		}
 
 		// Format datetime

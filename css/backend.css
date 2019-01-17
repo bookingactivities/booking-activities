@@ -60,6 +60,21 @@
 .bookacti-settings-table a		{ text-decoration: none; font-weight: bold; }
 .bookacti-settings-table img	{ max-height: 24px; max-width: 24px; }
 
+.bookacti-not-found-row			{ text-align: center; }
+.bookacti-archive-options .bookacti-loading-alt { margin: 0 0 0 12px; display: inline-block; }
+.bookacti-archive-options .bookacti-notices ul	{ margin: 12px 0 0 0; width: fit-content; }
+.bookacti-archive-feedbacks-step { margin-top: 10px; }
+.bookacti-archive-feedbacks-step-container,
+.bookacti-archive-ids		{ display: none; margin-top: 10px; }
+.bookacti-show-archive-ids	{ cursor: pointer; }
+.bookacti-archive-ids code	{ font-size: 0.8em; word-spacing: -2px; }
+.bookacti-archive-results ul				{ padding: 10px; margin: 5px 0; background: rgba( 255,255,255,0.4 ); border: 1px solid #aaa; }
+.bookacti-archive-results ul li:last-child	{ margin-bottom: 0; }
+.bookacti-archive-action + .bookacti-archive-action:before { content: ' | '; color: #ddd; }
+.bookacti-archive-action a				{ font-weight: normal; }
+.bookacti-archive-delete-file a			{ color: #a00; }
+.bookacti-archive-delete-file a:hover	{ color: #dc3232; }
+
 .bookacti-settings-table .dashicons-yes:before	{ color: #3cb371; }
 .bookacti-settings-table .dashicons-no:before	{ color: #cd5c5c; }
 
