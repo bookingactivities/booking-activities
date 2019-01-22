@@ -53,10 +53,11 @@ $bookacti_translation_array = apply_filters( 'bookacti_translation_array', array
 	'dialog_button_cancel_booking'		=> apply_filters( 'bookacti_translate_text', $messages[ 'cancel_booking_dialog_button' ][ 'value' ] ),
 	'dialog_button_reschedule'			=> apply_filters( 'bookacti_translate_text', $messages[ 'reschedule_dialog_button' ][ 'value' ] ),
 	'dialog_button_refund'				=> $can_edit_bookings ? esc_html_x( 'Refund', 'Button label to trigger the refund action', BOOKACTI_PLUGIN_NAME ) : apply_filters( 'bookacti_translate_text', $messages[ 'refund_dialog_button' ][ 'value' ] ),
-	'calendar_button_list_year'			=> esc_html__( 'list year', BOOKACTI_PLUGIN_NAME ),
-	'calendar_button_list_month'		=> esc_html__( 'list month', BOOKACTI_PLUGIN_NAME ),
-	'calendar_button_list_week'			=> esc_html__( 'list week', BOOKACTI_PLUGIN_NAME ),
-	'calendar_button_list_day'			=> esc_html__( 'list day', BOOKACTI_PLUGIN_NAME ),
+	'calendar_button_list_year'			=> '',
+	'calendar_button_list_month'		=> '',
+	'calendar_button_list_week'			=> '',
+	'calendar_button_list_day'			=> '',
+	'calendar_button_flexible_view'		=> '',
 	'booking_form_new_booking_button'	=> apply_filters( 'bookacti_translate_text', $messages[ 'booking_form_new_booking_button' ][ 'value' ] ),
 	'placeholder_select_customer'		=> esc_html__( 'Search for a customer', BOOKACTI_PLUGIN_NAME ),
 	'show_all_customers'				=> esc_html__( 'Show all customers', BOOKACTI_PLUGIN_NAME ),
@@ -182,6 +183,7 @@ $bookacti_translation_array = apply_filters( 'bookacti_translation_array', array
 	'advice_archive_data'				=> esc_html__( 'The bookings and events data prior to {date} will be saved to a SQL file and deleted from your database. You will be able to restore your data afterwards.', BOOKACTI_PLUGIN_NAME ) . '\n\n/!\\ '  . esc_html__( 'We still strongly advise you to backup your database before proceeding.', BOOKACTI_PLUGIN_NAME ) . '\n\n' . esc_html__( 'Do you want to archive your data now?', BOOKACTI_PLUGIN_NAME ),
 	'advice_archive_data_override'		=> esc_html__( 'An archive already exists for this date. The existing backup files will be removed and replaced with the new ones.', BOOKACTI_PLUGIN_NAME ) . '\n\n' . esc_html__( 'Do you want to archive your data now?', BOOKACTI_PLUGIN_NAME ),
 	'advice_archive_restore_data'		=> esc_html__( 'The data contained in {filename} will be added to your database. You should do this only once.', BOOKACTI_PLUGIN_NAME ) . '\n\n' . esc_html__( 'Do you want to restore these data now?', BOOKACTI_PLUGIN_NAME ),
+	'advice_archive_delete_file'		=> esc_html__( 'The backup file {filename} will be permanently deleted. This action cannot be undone.', BOOKACTI_PLUGIN_NAME ) . '\n\n' . esc_html__( 'Do you want to permanently delete this file?', BOOKACTI_PLUGIN_NAME ),
 	
 
 	// PARTICLES
@@ -286,4 +288,4 @@ $bookacti_translation_array = apply_filters( 'bookacti_translation_array', array
 	'nonce_deactivate_activity'			=> wp_create_nonce( 'bookacti_deactivate_activity' ),
 
 	'nonce_dismiss_5stars_rating_notice'=> wp_create_nonce( 'bookacti_dismiss_5stars_rating_notice' ),
-) );
+), $messages );

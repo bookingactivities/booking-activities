@@ -113,20 +113,43 @@ $j( document ).ready( function() {
 	 * Restore bookings and events data from an archive
 	 * @since 1.7.0
 	 */
-	$j( '.bookacti-archive-options' ).on( 'click', '.bookacti-archive-restore-data a', function() {
+	$j( '#bookacti-database-archives-table-container' ).on( 'click', '.bookacti-archive-restore-data a', function( e ) {
+		e.preventDefault();
+		
 		var filename = $j( this ).data( 'filename' );
-		if( ! file ) { return; }
+		if( ! filename ) { return; }
 		
 		var r = confirm( bookacti_localized.advice_archive_restore_data.replace( '{filename}', filename ).replace( /\\n/g, '\n' ));
 		if( r != true ) { return; }
 		
 		// Reset feedbacks
-		$j( '#bookacti-archive-feedbacks-restore-data' ).empty();
-		$j( '#bookacti-archive-feedbacks-restore-data-container' ).show();
+		var feedbacks_div = $j( this ).closest( 'tr' ).find( '.bookacti-archive-feedback' );
+		feedbacks_div.empty().show();
 		
 		var nonce = $j( '#nonce_archive_data' ).val();
-		var feedbacks_div = $j( '#bookacti-archive-feedbacks-restore-data' );
 		bookacti_archive_restore_data( filename, nonce, feedbacks_div );
+	});
+	
+	
+	/**
+	 * Delete a backup file
+	 * @since 1.7.0
+	 */
+	$j( '#bookacti-database-archives-table-container' ).on( 'click', '.bookacti-archive-delete-file a', function( e ) {
+		e.preventDefault();
+		
+		var filename = $j( this ).data( 'filename' );
+		if( ! filename ) { return; }
+		
+		var r = confirm( bookacti_localized.advice_archive_delete_file.replace( '{filename}', filename ).replace( /\\n/g, '\n' ));
+		if( r != true ) { return; }
+		
+		// Reset feedbacks
+		var feedbacks_div = $j( this ).closest( 'tr' ).find( '.bookacti-archive-feedback' );
+		feedbacks_div.empty().show();
+		
+		var nonce = $j( '#nonce_archive_data' ).val();
+		bookacti_archive_delete_file( filename, nonce, feedbacks_div );
 	});
 	
 	
@@ -190,7 +213,9 @@ function bookacti_archive_analyse( date, nonce, feedback_div, callback ) {
 			}
 		},
 		error: function( e ){
-			console.log( 'AJAX error occured while trying to archive data' );
+			var error_message = 'AJAX error occured while trying to analyse data to archive';
+			feedback_div.append( '<div class="bookacti-notices"><ul class="bookacti-error-list"><li>' + error_message + '</li></ul></div>' );
+			console.log( error_message );
 			console.log( e );
 		},
 		complete: function() {
@@ -233,7 +258,7 @@ function bookacti_archive_dump( date, nonce, feedback_div, callback ) {
 		dataType: 'json',
 		success: function( response ){
 			if( response.status === 'success' ) {
-				$j( '#bookacti-database-archives-options' ).replaceWith( response.archive_list );
+				$j( '#bookacti-database-archives-table' ).replaceWith( response.archive_list );
 				
 				feedback_div.append( '<div class="bookacti-archive-dump-results">' + response.message + '</div>' );
 				
@@ -247,7 +272,9 @@ function bookacti_archive_dump( date, nonce, feedback_div, callback ) {
 			}
 		},
 		error: function( e ){
-			console.log( 'AJAX error occured while trying to archive data' );
+			var error_message = 'AJAX error occured while trying to archive data';
+			feedback_div.append( '<div class="bookacti-notices"><ul class="bookacti-error-list"><li>' + error_message + '</li></ul></div>' );
+			console.log( error_message );
 			console.log( e );
 		},
 		complete: function() {
@@ -306,7 +333,111 @@ function bookacti_archive_delete( date, nonce, feedback_div, callback ) {
 			}
 		},
 		error: function( e ){
-			console.log( 'AJAX error occured while trying to archive data' );
+			var error_message = 'AJAX error occured while trying to delete data';
+			feedback_div.append( '<div class="bookacti-notices"><ul class="bookacti-error-list"><li>' + error_message + '</li></ul></div>' );
+			console.log( error_message );
+			console.log( e );
+		},
+		complete: function() {
+			feedback_div.find( '.bookacti-notices' ).show();
+			feedback_div.find( '.bookacti-loading-alt' ).remove();
+		}
+	});
+}
+
+
+/**
+ * Restore data from backup file
+ * @since 1.7.0
+ * @param {string} filename
+ * @param {string} nonce
+ * @param {dom_element} feedback_div
+ */
+function bookacti_archive_restore_data( filename, nonce, feedback_div ) {
+	// Remove previous feedback_div
+	feedback_div.find( '.bookacti-notices' ).remove();
+	feedback_div.find( '.bookacti-loading-alt' ).remove();
+
+	// Display a loader
+	var loading_div = 
+	'<div class="bookacti-loading-alt">' 
+		+ '<img class="bookacti-loader" src="' + bookacti_localized.plugin_path + '/img/ajax-loader.gif" title="' + bookacti_localized.loading + '" />'
+		+ '<span class="bookacti-loading-alt-text" >' + bookacti_localized.loading + '</span>'
+	+ '</div>';
+	feedback_div.append( loading_div );
+	
+	$j.ajax({
+		url: bookacti_localized.ajaxurl,
+		type: 'POST',
+		data: { 'action': 'bookactiArchiveRestoreData', 
+				'filename': filename,
+				'nonce': nonce
+			},
+		dataType: 'json',
+		success: function( response ){
+			if( response.status === 'success' ) {
+				feedback_div.append( '<div class="bookacti-notices"><ul class="bookacti-success-list"><li>' + response.message + '</li></ul></div>' );
+				
+			} else if( response.status === 'failed' ) {
+				feedback_div.append( '<div class="bookacti-notices"><ul class="bookacti-error-list"><li>' + response.message + '</li></ul></div>' );
+				console.log( response );
+			}
+		},
+		error: function( e ){
+			var error_message = 'AJAX error occured while trying to restore backup data';
+			feedback_div.append( '<div class="bookacti-notices"><ul class="bookacti-error-list"><li>' + error_message + '</li></ul></div>' );
+			console.log( error_message );
+			console.log( e );
+		},
+		complete: function() {
+			feedback_div.find( '.bookacti-notices' ).show();
+			feedback_div.find( '.bookacti-loading-alt' ).remove();
+		}
+	});
+}
+
+
+/**
+ * Delete backup file
+ * @since 1.7.0
+ * @param {string} filename
+ * @param {string} nonce
+ * @param {dom_element} feedback_div
+ */
+function bookacti_archive_delete_file( filename, nonce, feedback_div ) {
+	// Remove previous feedback_div
+	feedback_div.find( '.bookacti-notices' ).remove();
+	feedback_div.find( '.bookacti-loading-alt' ).remove();
+
+	// Display a loader
+	var loading_div = 
+	'<div class="bookacti-loading-alt">' 
+		+ '<img class="bookacti-loader" src="' + bookacti_localized.plugin_path + '/img/ajax-loader.gif" title="' + bookacti_localized.loading + '" />'
+		+ '<span class="bookacti-loading-alt-text" >' + bookacti_localized.loading + '</span>'
+	+ '</div>';
+	feedback_div.append( loading_div );
+	
+	$j.ajax({
+		url: bookacti_localized.ajaxurl,
+		type: 'POST',
+		data: { 'action': 'bookactiArchiveDeleteFile', 
+				'filename': filename,
+				'nonce': nonce
+			},
+		dataType: 'json',
+		success: function( response ){
+			if( response.status === 'success' ) {
+				$j( '#bookacti-database-archives-table' ).replaceWith( response.archive_list );
+				
+			} else if( response.status === 'failed' ) {
+				feedback_div.append( '<div class="bookacti-notices"><ul class="bookacti-error-list"><li>' + response.message + '</li></ul></div>' );
+				console.log( response );
+			}
+		},
+		error: function( e ){
+			var error_message = 'AJAX error occured while trying to delete the backup file';
+			feedback_div.append( '<div class="bookacti-notices"><ul class="bookacti-error-list"><li>' + error_message + '</li></ul></div>' );
+			console.log( error_message );
 			console.log( e );
 		},
 		complete: function() {

@@ -486,9 +486,9 @@ function bookacti_delete_metadata( $object_type, $object_id, $metadata_key_array
 // 1. DB BACKUP ANALYSIS
 
 /**
- * Get mysqldump path
+ * Get mysql bin path
  * @since 1.7.0
- * @global type $bookacti_mysqldump_path
+ * @global type $bookacti_mysql_bin_path
  * @global wpdb $wpdb
  * @return false|string
  */
@@ -514,6 +514,36 @@ function bookacti_get_mysql_bin_path() {
 	$bookacti_mysql_bin_path .= 'bin/';
 	
 	return $bookacti_mysql_bin_path;
+}
+
+
+/**
+ * Get mysql temp path
+ * @since 1.7.0
+ * @global type $bookacti_mysql_temp_path
+ * @global wpdb $wpdb
+ * @return false|string
+ */
+function bookacti_get_mysql_temp_path() {
+	global $bookacti_mysql_temp_path;
+	if( isset( $bookacti_mysql_temp_path ) ) { return $bookacti_mysql_temp_path; }
+	
+	global $wpdb;
+	
+	$temp_dir = $wpdb->get_var( 'SELECT @@tmpdir' );
+	
+	if( ! $temp_dir ) { 
+		$bookacti_mysql_temp_path = false; 
+		return false;
+	}
+	
+	$bookacti_mysql_temp_path = str_replace( '\\', '/', $temp_dir );
+	
+	if( substr( $bookacti_mysql_temp_path, -1 ) !== '/' ) {
+		$bookacti_mysql_temp_path .= '/';
+	}
+	
+	return $bookacti_mysql_temp_path;
 }
 
 
@@ -654,25 +684,28 @@ function bookacti_archive_events_prior_to( $date ) {
 /**
  * Create a .sql file to archive repeated events that have started as of a specific date
  * @since 1.7.0
+ * @global wpdb $wpdb
  * @param string $date
  * @return int|false
  */
 function bookacti_archive_started_repeated_events_as_of( $date ) {
-	// Create a table to store the old repeat_from values
 	global $wpdb;
 	$wpdb->hide_errors();
-	$collate	= $wpdb->has_cap( 'collation' ) ? $wpdb->get_charset_collate() : '';
+	
+	// Remove the temporary table if it already exists
 	$temp_table = $wpdb->prefix . 'bookacti_temp_events';
+	$delete_query = 'DROP TABLE IF EXISTS ' . $temp_table . '; ';
+	$wpdb->query( $delete_query );
+	
+	// Create a table to store the old repeat_from values
+	$collate = $wpdb->has_cap( 'collation' ) ? $wpdb->get_charset_collate() : '';
 	$temp_table_events_query = 'CREATE TABLE ' . $temp_table . ' ( 
 		id MEDIUMINT(9) UNSIGNED NOT NULL AUTO_INCREMENT, 
 		repeat_from DATE, 
 		PRIMARY KEY ( id ) ) ' . $collate . ';';
 	
-	if( ! function_exists( 'dbDelta' ) ) {
-		require_once( ABSPATH . 'wp-admin/includes/upgrade.php' );
-	}
+	if( ! function_exists( 'dbDelta' ) ) { require_once( ABSPATH . 'wp-admin/includes/upgrade.php' ); }
 	
-	// Create the table
 	dbDelta( $temp_table_events_query );
 	
 	// Fill the temp table
@@ -688,11 +721,13 @@ function bookacti_archive_started_repeated_events_as_of( $date ) {
 	
 	// Dump the table
 	$filename = $date . '-started-repeated-events.sql';
-	bookacti_archive_database( $filename, $temp_table, '', false );
+	$dumped = bookacti_archive_database( $filename, $temp_table, '', false );
 	
 	// Remove the table
 	$delete_query = 'DROP TABLE IF EXISTS ' . $temp_table . '; ';
 	$wpdb->query( $delete_query );
+	
+	if( $dumped !== true ) { return $dumped; }
 	
 	// Add the UPDATE and DELETE queries to the backup file
 	$update_query	= 'UPDATE ' . BOOKACTI_TABLE_EVENTS . ' as E '
@@ -701,7 +736,7 @@ function bookacti_archive_started_repeated_events_as_of( $date ) {
 					. ' WHERE TE.repeat_from < E.repeat_from;';
 	
 	$uploads_dir= wp_upload_dir();
-	$file		= str_replace( '\\', '/', $uploads_dir[ 'basedir' ] ) . '/' . BOOKACTI_PLUGIN_NAME . '/archives/' . $filename;
+	$file		= trailingslashit( str_replace( '\\', '/', $uploads_dir[ 'basedir' ] ) ) . BOOKACTI_PLUGIN_NAME . '/archives/' . $filename;
 	$handle		= fopen( $file, 'a' );
 	$write		= 0;
 	if( $handle !== false ) {
@@ -713,7 +748,7 @@ function bookacti_archive_started_repeated_events_as_of( $date ) {
 		fclose( $handle );
 	}
 	
-	return $write;
+	return $write ? true : false;
 }
 
 
@@ -721,7 +756,7 @@ function bookacti_archive_started_repeated_events_as_of( $date ) {
  * Create a .sql file to archive group of events prior to a date
  * @since 1.7.0
  * @param string $date
- * @return int|false
+ * @return boolean
  */
 function bookacti_archive_group_of_events_prior_to( $date ) {
 	$filename_groups	= $date . '-group-of-events.sql';
@@ -734,9 +769,7 @@ function bookacti_archive_group_of_events_prior_to( $date ) {
 	$where_events		= sprintf( "TRUE GROUP BY group_id HAVING MAX( event_end ) < '%s'", $date . ' 00:00:00' );
 	$archive_events		= bookacti_archive_database( $filename_events, $table_events, $where_events );
 	
-	if( $archive_groups === false || $archive_events === false ) { return false; }
-	
-	return $archive_groups;
+	return $archive_groups === true && $archive_events === true;
 }
 
 

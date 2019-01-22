@@ -41,16 +41,20 @@ function bookacti_set_calendar_up( booking_system, reload_events ) {
 		minTime:                '08:00',
 		maxTime:                '20:00',
 		
+		dayCount: 3, // the default duration for flexible views
 		views: { 
 			week:		{ eventLimit: false }, 
 			day:		{ eventLimit: false },
 			listDay:	{ buttonText: bookacti_localized.calendar_button_list_day },
 			listWeek:	{ buttonText: bookacti_localized.calendar_button_list_week },
 			listMonth:	{ buttonText: bookacti_localized.calendar_button_list_month },
-			listYear:	{ buttonText: bookacti_localized.calendar_button_list_year } 
+			listYear:	{ buttonText: bookacti_localized.calendar_button_list_year },
+			flexibleAgendaView:	{ type: 'agenda', buttonText: bookacti_localized.calendar_button_flexible },
+			flexibleBasicView:	{ type: 'basic', buttonText: bookacti_localized.calendar_button_flexible },
+			flexibleListView:	{ type: 'list', buttonText: bookacti_localized.calendar_button_flexible }
 		},
 
-		//Load an empty array to allow the callback 'loading' to work
+		// Load an empty array to allow the callback 'loading' to work
 		events: function( start, end, timezone, callback ) {
 			callback( [] );
 		},

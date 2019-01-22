@@ -93,9 +93,11 @@ echo "<div class='wrap'>";
 		}
 		
 		do_action( 'bookacti_settings_tab_content', $active_tab );
-
-		submit_button(); 
-
+		
+		if( $active_tab !== 'system' ) {
+			submit_button(); 
+		}
+		
 	echo '</form>';
 			
 echo '</div>'; 

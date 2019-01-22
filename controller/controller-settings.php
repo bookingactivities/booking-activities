@@ -508,8 +508,8 @@ add_action( 'bookacti_messages_settings', 'bookacti_display_messages_fields' );
  */
 function bookacti_controller_archive_data_analyse() {
 	$date = bookacti_sanitize_date( $_POST[ 'date' ] );
-	$user_can_archive = bookacti_user_can_archive_data( $date , false );
-	if( $user_can_archive !== true ) { bookacti_send_json( $user_can_archive );	}
+	$user_can_archive = bookacti_user_can_archive_data( $date, false, true, false );
+	if( $user_can_archive !== true ) { bookacti_send_json( $user_can_archive, 'archive_analyse_data' );	}
 	
 	// Get the data prior to the desired date
 	// Get events IDs
@@ -531,15 +531,15 @@ function bookacti_controller_archive_data_analyse() {
 	if( $booking_groups )			{ foreach( $booking_groups as $booking_group )		{ $ids_per_type[ esc_html__( 'Booking groups', BOOKACTI_PLUGIN_NAME ) ][] = $booking_group->id; } }
 	
 	if( ! $ids_per_type ) {
-		bookacti_send_json( array( 'status' => 'failed', 'error' => 'no_data_to_archive', 'message' => esc_html__( 'No data to archive.', BOOKACTI_PLUGIN_NAME ) ) );
+		bookacti_send_json( array( 'status' => 'failed', 'error' => 'no_data_to_archive', 'message' => esc_html__( 'No data to archive.', BOOKACTI_PLUGIN_NAME ) ), 'archive_analyse_data' );
 	}
 	
 	// Check if an archive already exists
 	$uploads_dir	= wp_upload_dir();
-	$archives_dir	= str_replace( '\\', '/', $uploads_dir[ 'basedir' ] ) . '/' . BOOKACTI_PLUGIN_NAME . '/archives/';
+	$archives_dir	= trailingslashit( str_replace( '\\', '/', $uploads_dir[ 'basedir' ] ) ) . BOOKACTI_PLUGIN_NAME . '/archives/';
 	$already_exists	= file_exists( $archives_dir . $date . '-booking-activities-archive.zip' );
 	
-	bookacti_send_json( array( 'status' => 'success', 'ids_per_type' => $ids_per_type, 'file_already_exists' => $already_exists, 'message' => esc_html__( 'These data can be archived:', BOOKACTI_PLUGIN_NAME ) ) );
+	bookacti_send_json( array( 'status' => 'success', 'ids_per_type' => $ids_per_type, 'file_already_exists' => $already_exists, 'message' => esc_html__( 'These data can be archived:', BOOKACTI_PLUGIN_NAME ) ), 'archive_analyse_data' );
 }
 add_action( 'wp_ajax_bookactiArchiveDataAnalyse', 'bookacti_controller_archive_data_analyse' );
 
@@ -550,28 +550,33 @@ add_action( 'wp_ajax_bookactiArchiveDataAnalyse', 'bookacti_controller_archive_d
  */
 function bookacti_controller_archive_data_dump() {
 	$date = bookacti_sanitize_date( $_POST[ 'date' ] );
-	$user_can_archive = bookacti_user_can_archive_data( $date , true );
-	if( $user_can_archive !== true ) { bookacti_send_json( $user_can_archive );	}
+	$user_can_archive = bookacti_user_can_archive_data( $date, false, true, true );
+	if( $user_can_archive !== true ) { bookacti_send_json( $user_can_archive, 'archive_dump_data' );	}
 	
 	// Dump the data prior to the desired date
 	// Events
-	bookacti_archive_events_prior_to( $date );
+	$dumped_events = bookacti_archive_events_prior_to( $date );
 	// Started repeated events
-	bookacti_archive_started_repeated_events_as_of( $date );
+	$dumped_repeated_events = bookacti_archive_started_repeated_events_as_of( $date );
 	// Groups of events
-	bookacti_archive_group_of_events_prior_to( $date );
+	$dumped_groups_of_events = bookacti_archive_group_of_events_prior_to( $date );
 	// Bookings
-	bookacti_archive_bookings_prior_to( $date );
+	$dumped_bookings = bookacti_archive_bookings_prior_to( $date );
 	// Booking groups
-	bookacti_archive_booking_groups_prior_to( $date );
+	$dumped_booking_groups = bookacti_archive_booking_groups_prior_to( $date );
 	// Metadata
-	bookacti_archive_metadata_prior_to( $date );
+	$dumped_meta = bookacti_archive_metadata_prior_to( $date );
+	
+	if( $dumped_events !== true || $dumped_repeated_events !== true || $dumped_groups_of_events !== true || $dumped_bookings !== true || $dumped_booking_groups !== true || $dumped_meta !== true ) {
+		bookacti_send_json( array( 'status' => 'failed', 'error' => 'dump_failed', 'message' => esc_html__( 'An error occurred while trying to archive data.', BOOKACTI_PLUGIN_NAME ) ), 'archive_dump_data' );
+	}
 	
 	// Zip the files into a single one
 	$uploads_dir	= wp_upload_dir();
-	$archives_dir	= str_replace( '\\', '/', $uploads_dir[ 'basedir' ] ) . '/' . BOOKACTI_PLUGIN_NAME . '/archives/';
-	$zip_file		= $archives_dir . $date . '-booking-activities-archive.zip';
-	$zip_file_url	= esc_url( $uploads_dir[ 'baseurl' ] . '/' . BOOKACTI_PLUGIN_NAME . '/archives/' . $date . '-booking-activities-archive.zip' );
+	$archives_dir	= trailingslashit( str_replace( '\\', '/', $uploads_dir[ 'basedir' ] ) ) . BOOKACTI_PLUGIN_NAME . '/archives/';
+	$zip_file		= $archives_dir . $date . '-booking-activities-' . BOOKACTI_VERSION . '-archive.zip';
+	$zip_file_url	= esc_url( trailingslashit( $uploads_dir[ 'baseurl' ] ) . BOOKACTI_PLUGIN_NAME . '/archives/' . $date . '-booking-activities-' . BOOKACTI_VERSION . '-archive.zip' );
+	$zip_created	= false;
 	if( is_dir( $archives_dir ) ) {
 		$archives_handle = opendir( $archives_dir );
 		if( $archives_handle ) {
@@ -581,10 +586,16 @@ function bookacti_controller_archive_data_dump() {
 				$files[] = $archives_dir . $filename;
 			}
 			if( $files ) {
-				bookacti_create_zip( $files, $zip_file, true, true );
+				$zip_created = bookacti_create_zip( $files, $zip_file, true, true );
 			}
 		}
 	}
+	
+	if( ! $zip_created ) {
+		bookacti_send_json( array( 'status' => 'failed', 'error' => 'zip_failed', 'message' => esc_html__( 'An error occurred while trying to zip the files.', BOOKACTI_PLUGIN_NAME ) ), 'archive_dump_data' );
+	}
+	
+	chmod( $zip_file , 0600);
 	
 	$download_link = '<a href="' . $zip_file_url . '">' . esc_html_x( 'Download', 'verb', BOOKACTI_PLUGIN_NAME ) . '</a>';
 	
@@ -598,7 +609,7 @@ function bookacti_controller_archive_data_dump() {
 			. esc_html__( 'Make sure the data in the backup files are consistent with data reported in step 1:', BOOKACTI_PLUGIN_NAME ) 
 			. ' <strong>' . $download_link . '</strong>';
 	
-	bookacti_send_json( array( 'status' => 'success', 'archive_list' => $archive_list, 'download_link' => $download_link, 'message' => $message ) );
+	bookacti_send_json( array( 'status' => 'success', 'archive_list' => $archive_list, 'download_link' => $download_link, 'message' => $message ), 'archive_dump_data' );
 }
 add_action( 'wp_ajax_bookactiArchiveDataDump', 'bookacti_controller_archive_data_dump' );
 
@@ -609,8 +620,8 @@ add_action( 'wp_ajax_bookactiArchiveDataDump', 'bookacti_controller_archive_data
  */
 function bookacti_controller_archive_data_delete() {
 	$date = bookacti_sanitize_date( $_POST[ 'date' ] );
-	$user_can_archive = bookacti_user_can_archive_data( $date , true );
-	if( $user_can_archive !== true ) { bookacti_send_json( $user_can_archive );	}
+	$user_can_archive = bookacti_user_can_archive_data( $date, false, true, true );
+	if( $user_can_archive !== true ) { bookacti_send_json( $user_can_archive, 'archive_delete_data' );	}
 	
 	// Delete the data prior to the desired date
 	// We must delete bookings before events and groups before single
@@ -636,11 +647,67 @@ function bookacti_controller_archive_data_delete() {
 	
 	// Feedback message
 	$message = esc_html__( 'Your data has been successfully deleted.', BOOKACTI_PLUGIN_NAME ) . '<br/>' 
-			. esc_html__( 'You can restore your archived data within phpMyAdmin, with the "Import" function.' );
+			. esc_html__( 'You can restore your archived data with the "Restore data" function in the table below, or within phpMyAdmin, with the "Import" function (one .sql file at a time).', BOOKACTI_PLUGIN_NAME );
 	
-	bookacti_send_json( array( 'status' => 'success', 'nb_per_type' => $nb_per_type, 'message' => $message ) );
+	bookacti_send_json( array( 'status' => 'success', 'nb_per_type' => $nb_per_type, 'message' => $message ), 'archive_delete_data' );
 }
 add_action( 'wp_ajax_bookactiArchiveDataDelete', 'bookacti_controller_archive_data_delete' );
+
+
+/**
+ * Restore bookings and events from backup files
+ * @since 1.7.0
+ */
+function bookacti_controller_archive_restore_data() {
+	$filename = sanitize_file_name( $_POST[ 'filename' ] );
+	$user_can_archive = bookacti_user_can_archive_data( false, $filename, true, true );
+	if( $user_can_archive !== true ) { bookacti_send_json( $user_can_archive, 'archive_restore_data' );	}
+	
+	// Import SQL files
+	$uploads_dir	= wp_upload_dir();
+	$archives_dir	= trailingslashit( str_replace( '\\', '/', $uploads_dir[ 'basedir' ] ) ) . BOOKACTI_PLUGIN_NAME . '/archives/';
+	$zip_file		= $archives_dir . $filename;
+	$imported		= bookacti_import_sql( $zip_file );
+	
+	if( $imported !== true ) {
+		bookacti_send_json( array( 'status' => 'failed', 'error' => 'import_failed', 'message' => esc_html__( 'An error occured while trying to restore backup data.', BOOKACTI_PLUGIN_NAME ) ), 'archive_restore_data' );
+	}
+	
+	// Feedback message
+	$message = esc_html__( 'Your data has been successfully restored.', BOOKACTI_PLUGIN_NAME );
+	
+	bookacti_send_json( array( 'status' => 'success', 'message' => $message ), 'archive_restore_data' );
+}
+add_action( 'wp_ajax_bookactiArchiveRestoreData', 'bookacti_controller_archive_restore_data' );
+
+
+/**
+ * Delete backup file
+ * @since 1.7.0
+ */
+function bookacti_controller_archive_delete_file() {
+	$filename = sanitize_file_name( $_POST[ 'filename' ] );
+	$user_can_archive = bookacti_user_can_archive_data( false, $filename, true, true );
+	if( $user_can_archive !== true ) { bookacti_send_json( $user_can_archive, 'archive_delete_file' );	}
+	
+	// Import SQL files
+	$uploads_dir	= wp_upload_dir();
+	$archives_dir	= trailingslashit( str_replace( '\\', '/', $uploads_dir[ 'basedir' ] ) ) . BOOKACTI_PLUGIN_NAME . '/archives/';
+	$zip_file		= $archives_dir . $filename;
+	$deleted		= unlink( $zip_file );
+	
+	if( ! $deleted ) {
+		bookacti_send_json( array( 'status' => 'failed', 'error' => 'unlink_failed', 'message' => esc_html__( 'An error occured while trying to delete the backup file.', BOOKACTI_PLUGIN_NAME ) ), 'archive_delete_file' );
+	}
+	
+	// Get the archive list table
+	ob_start();
+	bookacti_display_database_archive_list();
+	$archive_list = ob_get_clean();
+	
+	bookacti_send_json( array( 'status' => 'success', 'archive_list' => $archive_list ), 'archive_delete_file' );
+}
+add_action( 'wp_ajax_bookactiArchiveDeleteFile', 'bookacti_controller_archive_delete_file' );
 
 
 

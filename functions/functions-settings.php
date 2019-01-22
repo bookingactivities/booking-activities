@@ -898,10 +898,11 @@ function bookacti_settings_section_bookings_callback() { }
 	 * Check if the user can archive data
 	 * @since 1.7.0
 	 * @param string $date
+	 * @param string $filename
 	 * @param boolean $check_nonce
 	 * @param boolean $check_mysqldump
 	 */
-	function bookacti_user_can_archive_data( $date, $check_nonce = false, $check_mysqldump = false ) {
+	function bookacti_user_can_archive_data( $date = false, $filename = false, $check_nonce = false, $check_mysqldump = false ) {
 		// Check nonce
 		if( $check_nonce ) {
 			$is_nonce_valid	= check_ajax_referer( 'bookacti_nonce_archive_data', 'nonce', false );
@@ -913,17 +914,31 @@ function bookacti_settings_section_bookings_callback() { }
 		if( ! $is_allowed ) { return array( 'status' => 'failed', 'error' => 'not_allowed', 'message' => esc_html__( 'You are not allowed to do that.', BOOKACTI_PLUGIN_NAME ) ); }
 
 		// Check the date
-		$date = bookacti_sanitize_date( $date );
-		if( ! $date ) { 
-			return array( 'status' => 'failed', 'error' => 'invalid_date', 'message' => esc_html__( 'Invalid date', BOOKACTI_PLUGIN_NAME ) ); 
-		}
+		if( $date !== false ) {
+			$date = bookacti_sanitize_date( $date );
+			if( ! $date ) { 
+				return array( 'status' => 'failed', 'error' => 'invalid_date', 'message' => esc_html__( 'Invalid date', BOOKACTI_PLUGIN_NAME ) ); 
+			}
 
-		// Check if the date is earlier than today
-		$utc_timezone	= new DateTimeZone( 'UTC' );
-		$datetime		= new DateTime( $date, $utc_timezone );
-		$today			= new DateTime( 'today', $utc_timezone );
-		if( $datetime > $today ) {
-			return array( 'status' => 'failed', 'error' => 'future_date', 'message' => esc_html__( 'The date must be earlier than today.', BOOKACTI_PLUGIN_NAME ) );
+			// Check if the date is earlier than today
+			$utc_timezone	= new DateTimeZone( 'UTC' );
+			$datetime		= new DateTime( $date, $utc_timezone );
+			$today			= new DateTime( 'today', $utc_timezone );
+			if( $datetime > $today ) {
+				return array( 'status' => 'failed', 'error' => 'future_date', 'message' => esc_html__( 'The date must be earlier than today.', BOOKACTI_PLUGIN_NAME ) );
+			}
+		}
+		
+		// Check filename
+		if( $filename !== false ) {
+			$filename		= sanitize_file_name( $filename );
+			$uploads_dir	= wp_upload_dir();
+			$archives_dir	= trailingslashit( str_replace( '\\', '/', $uploads_dir[ 'basedir' ] ) ) . BOOKACTI_PLUGIN_NAME . '/archives/';
+			$zip_file		= $archives_dir . $filename;
+			if( ! file_exists( $zip_file ) ) {
+				$error_message = esc_html__( 'The backup file was not found.', BOOKACTI_PLUGIN_NAME );
+				return array( 'status' => 'failed', 'error' => 'file_not_found', 'message' => implode( '<li>', $error_message ) );
+			}
 		}
 
 		// Check if mysqldump can be executed
@@ -947,12 +962,28 @@ function bookacti_settings_section_bookings_callback() { }
 	 */
 	function bookacti_settings_section_system_callback() {
 		// Option to create an archive
-		$current_date = date( 'Y-m-d' );
+		$current_date	= date( 'Y-m-d' );
 		$can_archive	= true;
 		$error_messages = array();
 		if( ! bookacti_get_mysql_bin_path() )	{ $can_archive = false; $error_messages[] = esc_html__( 'mysqldump path not found.', BOOKACTI_PLUGIN_NAME ); }
 		if( ! bookacti_is_exec_enabled() )		{ $can_archive = false; $error_messages[] = esc_html__( 'PHP exec() function not enabled.', BOOKACTI_PLUGIN_NAME ); }
 		?>
+		<h2><?php esc_html_e( 'Archiving tool', BOOKACTI_PLUGIN_NAME ); ?></h2>
+		<p id='bookacti-archive-disclaimer'>
+			<?php esc_html_e( 'This archiving tool will delete old events and bookings from your database and store them as backup files. You should only use it if you experience slowdowns due to too many bookings and events.', BOOKACTI_PLUGIN_NAME ); ?>
+			<br/><br/>
+			<strong>
+				<?php esc_html_e( 'Booking Activities is not responsible for any data loss due to the use of this archiving tool. It is your responsibility to backup and restore your data independently of this tool.', BOOKACTI_PLUGIN_NAME ); ?>
+			</strong>
+			<br/>
+			<?php 
+			/* translators: %s is a link "Read this documentation" */
+			$doc_link = '<a href="https://booking-activities.fr/en/docs/user-documentation/advanced-use-of-booking-activities/archive-old-events-bookings/" target="_blank">' . esc_html__( 'Read this documentation', BOOKACTI_PLUGIN_NAME ) . '</a>';
+			echo sprintf( esc_html__( '%s to reduce the risk of data loss.', BOOKACTI_PLUGIN_NAME ), $doc_link ); 
+			?>
+			<br/><br/>
+			<?php esc_html_e( 'Moreover, archived data may not be compatible with later versions of Booking Activities.', BOOKACTI_PLUGIN_NAME ); ?>
+		</p>
 		<table class='form-table bookacti-archive-options'>
 			<tr>
 				<th><?php /* translators: followed by a date input */ esc_html_e( 'Archive data prior to', BOOKACTI_PLUGIN_NAME ); ?></th>
@@ -973,7 +1004,7 @@ function bookacti_settings_section_bookings_callback() { }
 								<div class='bookacti-archive-feedbacks-step' id='bookacti-archive-feedbacks-step1'></div>
 							</div>
 							<div class='bookacti-archive-feedbacks-step-container' id='bookacti-archive-feedbacks-step2-container'>
-								<strong><?php esc_html_e( 'Step 2: Dump data to SQL files', BOOKACTI_PLUGIN_NAME ); ?></strong>
+								<strong><?php esc_html_e( 'Step 2: Copy data to backup files', BOOKACTI_PLUGIN_NAME ); ?></strong>
 								<button type='button' id='bookacti-archive-button-dump'><?php echo esc_html_x( 'Archive', 'verb', BOOKACTI_PLUGIN_NAME ); ?></button>
 								<div class='bookacti-archive-feedbacks-step' id='bookacti-archive-feedbacks-step2'></div>
 							</div>
@@ -987,8 +1018,10 @@ function bookacti_settings_section_bookings_callback() { }
 				</td>
 			</tr>
 		</table>
+		<div id='bookacti-database-archives-table-container'>
+			<?php bookacti_display_database_archive_list(); ?>
+		</div>
 		<?php
-		bookacti_display_database_archive_list();
 	}
 
 
@@ -998,69 +1031,78 @@ function bookacti_settings_section_bookings_callback() { }
 	 */
 	function bookacti_display_database_archive_list() {
 		$uploads_dir	= wp_upload_dir();
-		$archives_dir	= str_replace( '\\', '/', $uploads_dir[ 'basedir' ] ) . '/' . BOOKACTI_PLUGIN_NAME . '/archives/';
-		if( is_dir( $archives_dir ) ) {
-			$archives_handle = opendir( $archives_dir );
-			if( $archives_handle ) {
-			?>
-				<div id='bookacti-database-archives-options'>
-					<table class='bookacti-settings-table'>
+		$bookacti_dir	= trailingslashit( str_replace( '\\', '/', $uploads_dir[ 'basedir' ] ) ) . BOOKACTI_PLUGIN_NAME . '/';
+		$archives_dir	= $bookacti_dir. 'archives/';
+		if( ! is_dir( $bookacti_dir ) ) {
+			mkdir( $bookacti_dir, 0755 );
+			$index_handle = fopen( $bookacti_dir . '/index.php', 'w' );
+			fwrite( $index_handle, '' );
+			fclose( $index_handle );
+		}
+		if( ! is_dir( $archives_dir ) ) {
+			mkdir( $archives_dir, 0600 );
+			$index_handle = fopen( $archives_dir . '/index.php', 'w' );
+			fwrite( $index_handle, '' );
+			fclose( $index_handle );
+		}
+		$archives_handle = opendir( $archives_dir );
+		if( $archives_handle ) {
+		?>
+			<table class='bookacti-settings-table' id='bookacti-database-archives-table'>
+				<tr>
+					<th><?php esc_html_e( 'Backup files', BOOKACTI_PLUGIN_NAME ) ?></th>
+					<th><?php esc_html_e( 'Actions', BOOKACTI_PLUGIN_NAME ) ?></th>
+				</tr>
+				<?php
+				$is_empty = true;
+				$filenames = array();
+				while( false !== ( $filename = readdir( $archives_handle ) ) ) {
+					if( $filename == '.' || $filename == '..' || $filename == 'index.php' ) { continue; }
+					$filenames[] = $filename;
+					$is_empty = false;
+				}
+				rsort( $filenames );
+
+				if( ! $is_empty ) {
+					foreach( $filenames as $filename ) {
+						?>
 						<tr>
-							<th><?php esc_html_e( 'Backup files', BOOKACTI_PLUGIN_NAME ) ?></th>
-							<th><?php esc_html_e( 'Actions', BOOKACTI_PLUGIN_NAME ) ?></th>
+							<td class='bookacti-archive-file-name'>
+								<div class='bookacti-archive-file-name'><?php echo $filename; ?></div>
+								<div class='bookacti-archive-feedback'></div>
+							</td>
+							<td class='bookacti-archive-actions'>
+								<span class='bookacti-archive-action bookacti-archive-download'>
+									<a href='<?php echo esc_url( trailingslashit( $uploads_dir[ 'baseurl' ] ) . BOOKACTI_PLUGIN_NAME . '/archives/' . $filename ); ?>'>
+										<?php echo esc_html_x( 'Download', 'verb', BOOKACTI_PLUGIN_NAME ); ?>
+									</a>
+								</span>
+								<span class='bookacti-archive-action bookacti-archive-restore-data'>
+									<a href='#' data-filename='<?php echo $filename; ?>'>
+										<?php esc_html_e( 'Restore data', BOOKACTI_PLUGIN_NAME ); ?>
+									</a>
+								</span>
+								<span class='bookacti-archive-action bookacti-archive-delete-file'>
+									<a href='#' data-filename='<?php echo $filename; ?>'>
+										<?php esc_html_e( 'Delete file', BOOKACTI_PLUGIN_NAME ); ?>
+									</a>
+								</span>
+								<?php do_action( 'bookacti_archive_actions_after', $filename ) ?>
+							</td>
 						</tr>
 						<?php
-						$is_empty = true;
-						$filenames = array();
-						while( false !== ( $filename = readdir( $archives_handle ) ) ) {
-							if( $filename == '.' || $filename == '..' ) { continue; }
-							$filenames[] = $filename;
-							$is_empty = false;
-						}
-						rsort( $filenames );
-
-						if( ! $is_empty ) {
-							foreach( $filenames as $filename ) {
-								?>
-								<tr>
-									<td class='bookacti-archive-file-name'>
-										<?php echo $filename; ?>
-									</td>
-									<td class='bookacti-archive-actions'>
-										<span class='bookacti-archive-action bookacti-archive-download'>
-											<a href='<?php echo esc_url( $uploads_dir[ 'baseurl' ] . '/' . BOOKACTI_PLUGIN_NAME . '/archives/' . $filename ); ?>'>
-												<?php echo esc_html_x( 'Download', 'verb', BOOKACTI_PLUGIN_NAME ); ?>
-											</a>
-										</span>
-										<span class='bookacti-archive-action bookacti-archive-restore-data'>
-											<a href='#' data-filename='<?php echo $filename; ?>'>
-												<?php esc_html_e( 'Restore data', BOOKACTI_PLUGIN_NAME ); ?>
-											</a>
-										</span>
-										<span class='bookacti-archive-action bookacti-archive-delete-file'>
-											<a href='#' data-filename='<?php echo $filename; ?>'>
-												<?php esc_html_e( 'Delete file', BOOKACTI_PLUGIN_NAME ); ?>
-											</a>
-										</span>
-										<?php do_action( 'bookacti_archive_actions_after', $filename ) ?>
-									</td>
-								</tr>
-								<?php
-							}
-						} else {
-							?>
-							<tr>
-								<td colspan='2' class='bookacti-not-found-row'><em><?php esc_html_e( 'No archive found', BOOKACTI_PLUGIN_NAME ); ?></em></td>
-							</tr>
-							<?php
-						}
-						?>
-					</table>
-					<p><?php esc_html_e( 'You can restore your archived data within phpMyAdmin, with the "Import" function.' ) ?></p>
-				</div>
-			<?php
-				closedir( $archives_handle );
-			}
+					}
+				} else {
+					?>
+					<tr>
+						<td colspan='2' class='bookacti-not-found-row'><em><?php esc_html_e( 'No archive found', BOOKACTI_PLUGIN_NAME ); ?></em></td>
+					</tr>
+					<?php
+				}
+				?>
+			</table>
+		<?php
+			closedir( $archives_handle );
 		}
 	}
 
@@ -1071,7 +1113,7 @@ function bookacti_settings_section_bookings_callback() { }
 	 * @param string $filename
 	 * @param string $table
 	 * @param string $where
-	 * @return boolean
+	 * @return boolean|int
 	 */
 	function bookacti_archive_database( $filename = '', $table = '', $where = '', $data_only = true ) {
 		// Check if the server can run mysqldump
@@ -1088,7 +1130,7 @@ function bookacti_settings_section_bookings_callback() { }
 
 		// Set the file directory
 		$uploads_dir= wp_upload_dir();
-		$file		= str_replace( '\\', '/', $uploads_dir[ 'basedir' ] ) . '/' . BOOKACTI_PLUGIN_NAME . '/archives/' . $filename;
+		$file		= trailingslashit( str_replace( '\\', '/', $uploads_dir[ 'basedir' ] ) ) . BOOKACTI_PLUGIN_NAME . '/archives/' . $filename;
 
 		// Build the command line
 		$command = $mysql_bin . 'mysqldump';
@@ -1104,11 +1146,11 @@ function bookacti_settings_section_bookings_callback() { }
 
 		$command .= ' > "' . $file . '"';
 
-		$output		= NULL;
+		$output		= array();
 		$return_var	= NULL;
-		$done		= exec( $command, $output, $return_var );
-
-		return $done;
+		exec( $command, $output, $return_var );
+		
+		return $return_var === 0 ? true : $return_var;
 	}
 
 
@@ -1116,27 +1158,31 @@ function bookacti_settings_section_bookings_callback() { }
 	 * Import archived data in the database
 	 * @since 1.7.0
 	 * @param array|string $files Array of .sql files or .zip file
-	 * @return boolean
+	 * @return boolean|int
 	 */
 	function bookacti_import_sql( $files ) {
 		// Check if the server can run mysqldump
 		$mysql_bin = bookacti_get_mysql_bin_path();
 		if( ! $mysql_bin ) { return false; }
-
+		
 		// Check if the server can use exec()
 		if( ! bookacti_is_exec_enabled() ) { return false; }
-
-		// unzip files or format files array
+		
+		// Unzip files or format files array
 		$is_zip = false;
 		if( is_string( $files ) ) {
-			$filetype = substr( $files, 0, -4 );
+			$filetype = substr( $files, -4 );
 			if( $filetype === '.sql' ) {
 				$files = array( $files );
 
 			} else if( $filetype === '.zip' ) {
 				$is_zip = true;
-				$uploads_dir	= wp_upload_dir();
-				$extract_dir	= str_replace( '\\', '/', $uploads_dir[ 'basedir' ] ) . '/' . BOOKACTI_PLUGIN_NAME . '/archives/' . basename( $files, '.zip' );
+				$tmpdir = bookacti_get_mysql_temp_path();
+				if( ! $tmpdir || ! is_dir( $tmpdir ) ) { 
+					$uploads_dir= wp_upload_dir();
+					$tmpdir		= trailingslashit( str_replace( '\\', '/', $uploads_dir[ 'basedir' ] ) ) . BOOKACTI_PLUGIN_NAME . '/archives/';
+				}
+				$extract_dir = $tmpdir . basename( $files, '.zip' );
 				$zip = new ZipArchive;
 				if( $zip->open( $files ) === true ) {
 					$zip->extractTo( $extract_dir );
@@ -1148,39 +1194,39 @@ function bookacti_settings_section_bookings_callback() { }
 						$files = array();
 						while( false !== ( $filename = readdir( $archives_handle ) ) ) {
 							if( $filename == '.' || $filename == '..' ) { continue; }
-							$files[] = $extract_dir . $filename;
+							$files[] = $extract_dir . '/' . $filename;
 						}
 					}
 				}
 			}
 		}
-
+		
 		// Check the files
 		$valid_files = array();
 		if( is_array( $files ) ) {
-			foreach( $files as $file) {
-				if( file_exists( $file ) && substr( $file, 0, -4 ) === '.sql' ) { $valid_files[] = $file; }
+			foreach( $files as $file ) {
+				if( file_exists( $file ) && substr( $file, -4 ) === '.sql' ) { $valid_files[] = $file; }
 			}
 		}
-
+		
 		if( empty( $valid_files ) ) { return false; }
 
 		// Build the command line
 		$imported = true;
-		$output = NULL; $return_var = NULL;
 		foreach( $valid_files as $file ) {
-			$command = $mysql_bin . 'mysql --skip-lock-tables --user=' . DB_USER . ' --password="' . DB_PASSWORD . '" --host=' . DB_HOST . ' ' . DB_NAME . ' < "' . $file . '"';
-			$done = exec( $command, $output, $return_var );
-			if( $done === false ) { $imported = false; }
+			$output = array(); $return_var = NULL;
+			$command = $mysql_bin . 'mysql --user=' . DB_USER . ' --password="' . DB_PASSWORD . '" --host=' . DB_HOST . ' ' . DB_NAME . ' < "' . $file . '"';
+			exec( $command, $output, $return_var );
+			if( $return_var !== 0 ) { $imported = $return_var; }
 		}
-
+		
 		// Remove extracted files and folder
 		if( $is_zip ) {
 			array_map( 'unlink', glob( "$extract_dir/*.*" ) );
 			rmdir( $extract_dir );
 		}
-
-		return $done;
+		
+		return $imported;
 	}
 
 
