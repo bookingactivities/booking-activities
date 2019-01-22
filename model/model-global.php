@@ -847,18 +847,30 @@ function bookacti_delete_events_prior_to( $date ) {
 							. ' SELECT id FROM ' . BOOKACTI_TABLE_EVENTS . ' as E '
 							. ' WHERE ( ( E.repeat_freq IS NULL OR E.repeat_freq = "none" ) AND E.end < %s ) '
 							. ' OR ( ( E.repeat_freq IS NOT NULL AND E.repeat_freq != "none" ) AND E.repeat_to < %s )'
-						. ' )';
+						. ' )'
+						. ' LIMIT 1000';
 	
 	$delete_meta_query	= $wpdb->prepare( $delete_meta_query, $variables );
-	$deleted_meta		= $wpdb->query( $delete_meta_query, OBJECT );
+	$deleted_meta = 0; $deleted_chunk = true;
+	while( $deleted_chunk !== 0 && $deleted_chunk !== false ) {
+		$deleted_chunk = $wpdb->query( $delete_meta_query, OBJECT );
+		if( is_numeric( $deleted_chunk ) ) { $deleted_meta += $deleted_chunk; }
+		else { $deleted_meta = $deleted_chunk; }
+	}
 	
 	// Remove events
 	$delete_query	= ' DELETE FROM ' . BOOKACTI_TABLE_EVENTS
 					. ' WHERE ( ( repeat_freq IS NULL OR repeat_freq = "none" ) AND end < %s ) '
-					. ' OR ( ( repeat_freq IS NOT NULL AND repeat_freq != "none" ) AND repeat_to < %s )';
+					. ' OR ( ( repeat_freq IS NOT NULL AND repeat_freq != "none" ) AND repeat_to < %s )'
+					. ' LIMIT 1000';
 	
 	$delete_query	= $wpdb->prepare( $delete_query, $variables );
-	$deleted		= $wpdb->query( $delete_query, OBJECT );
+	$deleted = 0; $deleted_chunk = true;
+	while( $deleted_chunk !== 0 && $deleted_chunk !== false ) {
+		$deleted_chunk = $wpdb->query( $delete_query, OBJECT );
+		if( is_numeric( $deleted_chunk ) ) { $deleted += $deleted_chunk; }
+		else { $deleted = $deleted_chunk; }
+	}
 	
 	return $deleted;
 }
@@ -906,26 +918,44 @@ function bookacti_delete_group_of_events_prior_to( $date ) {
 	
 	// Remove metadata first
 	$delete_meta_query	= ' DELETE FROM ' . BOOKACTI_TABLE_META
-						. ' WHERE object_type = "group_of_events" AND object_id IN( ' . $select_query . ' )';
+						. ' WHERE object_type = "group_of_events" AND object_id IN( ' . $select_query . ' )'
+						. ' LIMIT 1000';
 	
 	$delete_meta_query	= $wpdb->prepare( $delete_meta_query, $variables );
-	$deleted_meta		= $wpdb->query( $delete_meta_query, OBJECT );
+	$deleted_meta = 0; $deleted_chunk = true;
+	while( $deleted_chunk !== 0 && $deleted_chunk !== false ) {
+		$deleted_chunk = $wpdb->query( $delete_meta_query, OBJECT );
+		if( is_numeric( $deleted_chunk ) ) { $deleted_meta += $deleted_chunk; }
+		else { $deleted_meta = $deleted_chunk; }
+	}
 	
 	// Remove group of events before the events themselves!
 	$delete_query	= ' DELETE FROM ' . BOOKACTI_TABLE_EVENT_GROUPS
-					. ' WHERE id IN( ' . $select_query . ' )';
+					. ' WHERE id IN( ' . $select_query . ' )'
+					. ' LIMIT 1000';
 	
 	$delete_query	= $wpdb->prepare( $delete_query, $variables );
-	$deleted		= $wpdb->query( $delete_query, OBJECT );
+	$deleted = 0; $deleted_chunk = true;
+	while( $deleted_chunk !== 0 && $deleted_chunk !== false ) {
+		$deleted_chunk = $wpdb->query( $delete_query, OBJECT );
+		if( is_numeric( $deleted_chunk ) ) { $deleted += $deleted_chunk; }
+		else { $deleted = $deleted_chunk; }
+	}
 	
 	// Remove events of groups
 	$delete_events_query	= ' DELETE FROM ' . BOOKACTI_TABLE_GROUPS_EVENTS
 							. ' WHERE group_id IN( '
 								. ' SELECT group_id FROM ( ' . $select_query . ' ) as TEMPTABLE '
-							. ' )';
+							. ' )'
+							. ' LIMIT 1000';
 	
 	$delete_events_query	= $wpdb->prepare( $delete_events_query, $variables );
-	$deleted_events			= $wpdb->query( $delete_events_query, OBJECT );
+	$deleted_events = 0; $deleted_chunk = true;
+	while( $deleted_chunk !== 0 && $deleted_chunk !== false ) {
+		$deleted_chunk = $wpdb->query( $delete_query, OBJECT );
+		if( is_numeric( $deleted_chunk ) ) { $deleted_events += $deleted_chunk; }
+		else { $deleted_events = $deleted_chunk; }
+	}
 	
 	return $deleted;
 }
@@ -945,17 +975,32 @@ function bookacti_delete_bookings_prior_to( $date ) {
 	
 	// Remove metadata first
 	$delete_meta_query	= ' DELETE FROM ' . BOOKACTI_TABLE_META
-						. ' WHERE object_type = "booking" AND object_id IN( ' . 'SELECT id FROM ' . BOOKACTI_TABLE_BOOKINGS . ' as B WHERE B.event_end < %s )';
+						. ' WHERE object_type = "booking" '
+						. ' AND object_id IN( ' 
+							. 'SELECT id FROM ' . BOOKACTI_TABLE_BOOKINGS . ' as B WHERE B.event_end < %s '
+						. ' )'
+						. ' LIMIT 1000';
 	
 	$delete_meta_query	= $wpdb->prepare( $delete_meta_query, $variables );
-	$deleted_meta		= $wpdb->query( $delete_meta_query, OBJECT );
+	$deleted_meta = 0; $deleted_chunk = true;
+	while( $deleted_chunk !== 0 && $deleted_chunk !== false ) {
+		$deleted_chunk = $wpdb->query( $delete_meta_query, OBJECT );
+		if( is_numeric( $deleted_chunk ) ) { $deleted_meta += $deleted_chunk; }
+		else { $deleted_meta = $deleted_chunk; }
+	}
 	
 	// Remove
 	$delete_query	= ' DELETE FROM ' . BOOKACTI_TABLE_BOOKINGS
-					. ' WHERE event_end < %s';
+					. ' WHERE event_end < %s'
+					. ' LIMIT 1000';
 	
 	$delete_query	= $wpdb->prepare( $delete_query, $variables );
-	$deleted		= $wpdb->query( $delete_query, OBJECT );
+	$deleted = 0; $deleted_chunk = true;
+	while( $deleted_chunk !== 0 && $deleted_chunk !== false ) {
+		$deleted_chunk = $wpdb->query( $delete_query, OBJECT );
+		if( is_numeric( $deleted_chunk ) ) { $deleted += $deleted_chunk; }
+		else { $deleted = $deleted_chunk; }
+	}
 	
 	return $deleted;
 }
@@ -980,17 +1025,31 @@ function bookacti_delete_booking_groups_prior_to( $date ) {
 	
 	// Remove metadata first
 	$delete_meta_query	= ' DELETE FROM ' . BOOKACTI_TABLE_META
-						. ' WHERE object_type = "booking_group" AND object_id IN( ' . $select_query . ' )';
+						. ' WHERE object_type = "booking_group" AND object_id IN( ' . $select_query . ' )'
+						. ' LIMIT 1000';
 	
 	$delete_meta_query	= $wpdb->prepare( $delete_meta_query, $variables );
-	$deleted_meta		= $wpdb->query( $delete_meta_query, OBJECT );
+	
+	$deleted_meta = 0; $deleted_chunk = true;
+	while( $deleted_chunk !== 0 && $deleted_chunk !== false ) {
+		$deleted_chunk = $wpdb->query( $delete_meta_query, OBJECT );
+		if( is_numeric( $deleted_chunk ) ) { $deleted_meta += $deleted_chunk; }
+		else { $deleted_meta = $deleted_chunk; }
+	}
 	
 	// Remove booking group
 	$delete_query	= ' DELETE FROM ' . BOOKACTI_TABLE_BOOKING_GROUPS
-					. ' WHERE id IN ( ' . $select_query . ' )';
+					. ' WHERE id IN ( ' . $select_query . ' )'
+					. ' LIMIT 1000';
 	
 	$delete_query	= $wpdb->prepare( $delete_query, $variables );
-	$deleted		= $wpdb->query( $delete_query, OBJECT );
+	
+	$deleted = 0; $deleted_chunk = true;
+	while( $deleted_chunk !== 0 && $deleted_chunk !== false ) {
+		$deleted_chunk = $wpdb->query( $delete_query, OBJECT );
+		if( is_numeric( $deleted_chunk ) ) { $deleted += $deleted_chunk; }
+		else { $deleted = $deleted_chunk; }
+	}
 	
 	return $deleted;
 }

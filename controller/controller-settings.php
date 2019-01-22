@@ -623,6 +623,12 @@ function bookacti_controller_archive_data_delete() {
 	$user_can_archive = bookacti_user_can_archive_data( $date, false, true, true );
 	if( $user_can_archive !== true ) { bookacti_send_json( $user_can_archive, 'archive_delete_data' );	}
 	
+	// If there are a lot of data, this operation can be very long
+	// We need to increase the max_execution_time and the memory_limit
+	ini_set( 'max_execution_time', 600 ); // 600 seconds = 10 minutes
+	ini_set( 'memory_limit', '512M' );
+	set_time_limit( 0 );
+	
 	// Delete the data prior to the desired date
 	// We must delete bookings before events and groups before single
 	// Booking groups
