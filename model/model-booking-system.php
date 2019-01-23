@@ -717,7 +717,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	/**
 	 * Get groups of events data by template ids
 	 * @since 1.4.0 (was bookacti_get_groups_of_events_by_template and bookacti_get_groups_of_events_by_category)
-	 * @version 1.5.9
+	 * @version 1.7.0
 	 * @global wpdb $wpdb
 	 * @param array|int $template_ids
 	 * @param array|int $category_ids
@@ -850,7 +850,16 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			$query .= ' AND G.active = 1 ';
 		}
 		
-		$query .= ' ORDER BY G.category_id ';
+		$order_by = apply_filters( 'bookacti_groups_of_events_list_order_by', array( 'category_id', 'title', 'id' ) );
+		if( $order_by && is_array( $order_by ) ) {
+			$query .= ' ORDER BY ';
+			for( $i=0,$len=count($order_by); $i<$len; ++$i ) {
+				if( $order_by[ $i ] === 'id' ) { $order_by[ $i ] = 'G.id'; }
+				if( $order_by[ $i ] === 'title' ) { $order_by[ $i ] = 'G.title'; }
+				$query .= $order_by[ $i ] . ' ASC';
+				if( $i < $len-1 ) { $query .= ', '; }
+			}
+		}
 		
 		if( $variables ) {
 			$query = $wpdb->prepare( $query, $variables );
@@ -1091,8 +1100,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	 * Retrieve group categories data by id
 	 * 
 	 * @since 1.1.0
-	 * @version 1.5.7
-	 * 
+	 * @version 1.7.0
 	 * @global wpdb $wpdb
 	 * @param array|int $template_ids
 	 * @param array|int $category_ids
@@ -1146,7 +1154,14 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			$query .= ' AND active = 1 ';
 		}
 		
-		$query .= ' ORDER BY C.template_id ';
+		$order_by = apply_filters( 'bookacti_group_categories_list_order_by', array( 'template_id', 'title', 'id' ) );
+		if( $order_by && is_array( $order_by ) ) {
+			$query .= ' ORDER BY ';
+			for( $i=0,$len=count($order_by); $i<$len; ++$i ) {
+				$query .= $order_by[ $i ] . ' ASC';
+				if( $i < $len-1 ) { $query .= ', '; }
+			}
+		}
 		
 		if( $variables ) {
 			$query = $wpdb->prepare( $query, $variables );
@@ -1177,8 +1192,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	 * Retrieve group category ids by template ids
 	 * 
 	 * @since 1.1.0
-	 * @version 1.4.0
-	 * 
+	 * @version 1.7.0
 	 * @global wpdb $wpdb
 	 * @param array|int $template_ids
 	 * @param boolean $fetch_inactive
@@ -1251,6 +1265,16 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		
 		if( ! $fetch_inactive ) {
 			$query .= ' AND C.active = 1 ';
+		}
+		
+		$order_by = apply_filters( 'bookacti_group_categories_list_order_by', array( 'template_id', 'title', 'id' ) );
+		if( $order_by && is_array( $order_by ) ) {
+			$query .= ' ORDER BY ';
+			for( $i=0,$len=count($order_by); $i<$len; ++$i ) {
+				if( $order_by[ $i ] === 'id' ) { $order_by[ $i ] = 'C.id'; }
+				$query .= $order_by[ $i ] . ' ASC';
+				if( $i < $len-1 ) { $query .= ', '; }
+			}
 		}
 		
 		if( $variables ) {

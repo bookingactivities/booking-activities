@@ -1503,7 +1503,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 	/**
 	 * Get templates data
-	 * @version 1.6.0
+	 * @version 1.7.0
 	 * @global wpdb $wpdb
 	 * @param array $template_ids
 	 * @param boolean $ignore_permissions
@@ -1526,6 +1526,18 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 				$query  .= ', %d';
 			}
 			$query  .= ' ) ';
+		}
+		
+		$order_by = apply_filters( 'bookacti_templates_list_order_by', array( 'title', 'id' ) );
+		if( $order_by && is_array( $order_by ) ) {
+			$query .= ' ORDER BY ';
+			for( $i=0,$len=count($order_by); $i<$len; ++$i ) {
+				$query .= $order_by[ $i ] . ' ASC';
+				if( $i < $len-1 ) { $query .= ', '; }
+			}
+		}
+		
+		if( $template_ids ) {
 			$query = $wpdb->prepare( $query, $template_ids );
 		}
 		
@@ -1585,7 +1597,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
     }
 	
 	
-    //CREATE NEW TEMPLATE
+    // CREATE NEW TEMPLATE
     function bookacti_insert_template( $template_title, $template_start, $template_end, $template_managers, $template_meta, $duplicated_template_id = 0 ) { 
        global $wpdb;
         
@@ -1733,7 +1745,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	/**
 	 * Get activities
 	 * 
-	 * @version 1.4.0
+	 * @version 1.7.0
 	 * @global wpdb $wpdb
 	 * @param boolean $allowed_roles_only
 	 * @param OBJECT|ARRAY_A $return_type
@@ -1771,6 +1783,16 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 				$variables = array_merge( $variables, $roles );
 			}
 			$query .= ' ) ';
+		}
+		
+		$order_by = apply_filters( 'bookacti_activities_list_order_by', array( 'title', 'id' ) );
+		if( $order_by && is_array( $order_by ) ) {
+			$query .= ' ORDER BY ';
+			for( $i=0,$len=count($order_by); $i<$len; ++$i ) {
+				if( $order_by[ $i ] === 'id' ) { $order_by[ $i ] = 'A.id'; }
+				$query .= $order_by[ $i ] . ' ASC';
+				if( $i < $len-1 ) { $query .= ', '; }
+			}
 		}
 		
         $activities = $wpdb->get_results( $query, $return_type );
@@ -2023,8 +2045,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	/**
 	 * Get activities by template
 	 * 
-	 * @version 1.3.0
-	 * 
+	 * @version 1.7.0
 	 * @global wpdb $wpdb
 	 * @param array $template_ids
 	 * @param boolean $based_on_events Whether to retrieve activities bound to templates or activities bound to events of templates
@@ -2064,6 +2085,16 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 		$query .= ' )';
 		
+		$order_by = apply_filters( 'bookacti_activities_list_order_by', array( 'title', 'id' ) );
+		if( $order_by && is_array( $order_by ) ) {
+			$query .= ' ORDER BY ';
+			for( $i=0,$len=count($order_by); $i<$len; ++$i ) {
+				if( $order_by[ $i ] === 'id' ) { $order_by[ $i ] = 'A.id'; }
+				$query .= $order_by[ $i ] . ' ASC';
+				if( $i < $len-1 ) { $query .= ', '; }
+			}
+		}
+		
 		if( $template_ids ) {
 			$query = $wpdb->prepare( $query, $template_ids );
 		}
@@ -2094,8 +2125,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	 * Get an array of all activity ids bound to designated templates
 	 * 
 	 * @since 1.1.0
-	 * @version 1.5.0
-	 * 
+	 * @version 1.7.0
 	 * @global wpdb $wpdb
 	 * @param array $template_ids
 	 * @param boolean $based_on_events Whether to retrieve activity ids bound to templates or activity ids bound to events of templates
@@ -2166,7 +2196,15 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			$variables = array_merge( $variables, $template_ids );
 		}
 		
-		$query .= ' ORDER BY unique_activity_id ASC ';
+		$order_by = apply_filters( 'bookacti_activities_list_order_by', array( 'title', 'id' ) );
+		if( $order_by && is_array( $order_by ) ) {
+			$query .= ' ORDER BY ';
+			for( $i=0,$len=count($order_by); $i<$len; ++$i ) {
+				if( $order_by[ $i ] === 'id' ) { $order_by[ $i ] = 'unique_activity_id'; }
+				$query .= $order_by[ $i ] . ' ASC';
+				if( $i < $len-1 ) { $query .= ', '; }
+			}
+		}
 		
 		if( $variables ) {
 			$query = $wpdb->prepare( $query, $variables );
@@ -2186,6 +2224,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	/**
 	 * Get templates by activity
 	 * 
+	 * @version 1.7.0
 	 * @global wpdb $wpdb
 	 * @param array $activity_ids
 	 * @param boolean $id_only
@@ -2211,6 +2250,16 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		
 		$query .= ' )';
         
+		$order_by = apply_filters( 'bookacti_templates_list_order_by', array( 'title', 'id' ) );
+		if( $order_by && is_array( $order_by ) ) {
+			$query .= ' ORDER BY ';
+			for( $i=0,$len=count($order_by); $i<$len; ++$i ) {
+				if( $order_by[ $i ] === 'id' ) { $order_by[ $i ] = 'T.id'; }
+				$query .= $order_by[ $i ] . ' ASC';
+				if( $i < $len-1 ) { $query .= ', '; }
+			}
+		}
+		
 		$prep		= $wpdb->prepare( $query, $activity_id );
         $templates	= $wpdb->get_results( $prep, OBJECT );
 		
@@ -2230,7 +2279,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	/**
 	 * Fetch activities with the list of associated templated
 	 * 
-	 * @version 1.3.0
+	 * @version 1.7.0
 	 * @global wpdb $wpdb
 	 * @param array $template_ids
 	 * @return array [ activity_id ][id, title, color, duration, availability, is_resizable, active, template_ids] where template_ids = [id, id, id, ...]
@@ -2258,6 +2307,19 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 				$query .= ', %d';
 			}
 			$query .= ') ';
+		}
+		
+		$order_by = apply_filters( 'bookacti_activities_list_order_by', array( 'title', 'id' ) );
+		if( $order_by && is_array( $order_by ) ) {
+			$query .= ' ORDER BY ';
+			for( $i=0,$len=count($order_by); $i<$len; ++$i ) {
+				if( $order_by[ $i ] === 'id' ) { $order_by[ $i ] = 'A.id'; }
+				$query .= $order_by[ $i ] . ' ASC';
+				if( $i < $len-1 ) { $query .= ', '; }
+			}
+		}
+		
+		if( $template_ids ) {
 			$query = $wpdb->prepare( $query, $template_ids );
 		}
 		

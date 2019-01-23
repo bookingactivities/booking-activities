@@ -321,6 +321,7 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 * Feature - Redirect to a URL when you click on an event or when you submit a booking form
 * Feature - Redirect to a product page when you click on an event or when you submit a booking form
 * Feature - Backup, archive and restore old bookings and events
+* Tweak - Order calendars, activities, group categories and groups of events by title
 * Dev - Prefill a booking form thanks to URL parameters
 
 = 1.6.2 =
@@ -329,6 +330,7 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 * Fix - PHP notice when displaying WC products having a deprecated config available
 * Fix - PHP warning when a form with no "User Data (Login / Registration)" field is submitted
 * Fix - The bottom bulk actions selectbox didn't work on Bookings page
+* Fix - Wrong quantity displayed in reschedule dialog
 * Fix - The "Cancel" custom label was not applied to the right buttons
 * Fix - The "user_id" parameter of the bookingactivities_list shortcode didn't work while explicitly set to "current"
 * Fix - The "status" and "order_by" parameters of the bookingactivities_list shortcode didn't work

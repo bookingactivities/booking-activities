@@ -1212,12 +1212,13 @@ function bookacti_settings_section_bookings_callback() { }
 		if( empty( $valid_files ) ) { return false; }
 
 		// Build the command line
-		$imported = true;
+		$imported = array( 'status' => 'success', 'results' => array() );
 		foreach( $valid_files as $file ) {
 			$output = array(); $return_var = NULL;
 			$command = $mysql_bin . 'mysql --user=' . DB_USER . ' --password="' . DB_PASSWORD . '" --host=' . DB_HOST . ' ' . DB_NAME . ' < "' . $file . '"';
 			exec( $command, $output, $return_var );
-			if( $return_var !== 0 ) { $imported = $return_var; }
+			$imported[ 'results' ][ basename( $file ) ] = $return_var !== 0 ? esc_html__( 'Error', BOOKACTI_PLUGIN_NAME ) . ' (' . $return_var . ')' : esc_html__( 'OK', BOOKACTI_PLUGIN_NAME );
+			if( $return_var !== 0 ) { $imported[ 'status' ] = 'failed'; }
 		}
 		
 		// Remove extracted files and folder

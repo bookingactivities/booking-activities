@@ -379,7 +379,12 @@ function bookacti_archive_restore_data( filename, nonce, feedback_div ) {
 				feedback_div.append( '<div class="bookacti-notices"><ul class="bookacti-success-list"><li>' + response.message + '</li></ul></div>' );
 				
 			} else if( response.status === 'failed' ) {
-				feedback_div.append( '<div class="bookacti-notices"><ul class="bookacti-error-list"><li>' + response.message + '</li></ul></div>' );
+				var list = '<ul>';
+				$j.each( response.results, function( filename, error_code ){
+					list += '<li>' + filename + ': ' + error_code + '</li>'
+				});
+				list += '</ul>';
+				feedback_div.append( '<div class="bookacti-notices"><ul class="bookacti-error-list"><li>' + response.message + list + '</li></ul></div>' );
 				console.log( response );
 			}
 		},

@@ -1,7 +1,7 @@
 <?php 
 /**
  * Frontend and Backend booking dialogs
- * @version 1.5.0
+ * @version 1.6.2
  */
 
 // Exit if accessed directly
@@ -32,37 +32,38 @@ $messages = bookacti_get_messages();
 
 <!-- Frontend and backend - Reschedule booking -->
 <div id='bookacti-reschedule-booking-dialog' class='bookacti-backend-dialog bookacti-bookings-dialog' title='<?php echo apply_filters( 'bookacti_translate_text', $messages[ 'reschedule_dialog_title' ][ 'value' ] ); ?>'>
-	<div>
-<?php 
-	$reschedule_booking_method = apply_filters( 'bookacti_reschedule_booking_method', 'calendar' );
-	$atts = array( 
-		'method'				=> $reschedule_booking_method,
-		'id'					=> 'bookacti-booking-system-reschedule',
-		'class'					=> is_admin() ? 'admin-booking-system' : '',
-		'past_events'			=> is_admin() ? 1 : 0,
-		'past_events_bookable'	=> is_admin() ? 1 : 0,
-		'auto_load'				=> 0
-	);
-	bookacti_get_booking_system( $atts, true );
-?>
-	</div>
-	<div>
-<?php
-	if( is_admin() ) {
-?>
-		<label for='bookacti-send-notifications-on-reschedule' ><?php esc_html_e( 'Send notifications', BOOKACTI_PLUGIN_NAME ); ?></label>
-<?php 
-		$args = array(
-			'type'	=> 'checkbox',
-			'name'	=> 'send-notifications-on-reschedule',
-			'id'	=> 'bookacti-send-notifications-on-reschedule',
-			'value'	=> 0,
-			'tip'	=> __( 'Whether to notify the customer of the booking reschedule.', BOOKACTI_PLUGIN_NAME )
-		);
-		bookacti_display_field( $args );
-	}
-?>
-	</div>
+	<form class='bookacti-booking-form bookacti-reschedule-booking-form'>
+		<div>
+			<?php 
+				$reschedule_booking_method = apply_filters( 'bookacti_reschedule_booking_method', 'calendar' );
+				$atts = array( 
+					'method'				=> $reschedule_booking_method,
+					'id'					=> 'bookacti-booking-system-reschedule',
+					'class'					=> is_admin() ? 'admin-booking-system' : '',
+					'past_events'			=> is_admin() ? 1 : 0,
+					'past_events_bookable'	=> is_admin() ? 1 : 0,
+					'auto_load'				=> 0
+				);
+				bookacti_get_booking_system( $atts, true );
+			?>
+			<input type='hidden' class='bookacti-quantity' value='1'/>
+		</div>
+		<div>
+			<?php if( is_admin() ) { ?>
+				<label for='bookacti-send-notifications-on-reschedule' ><?php esc_html_e( 'Send notifications', BOOKACTI_PLUGIN_NAME ); ?></label>
+			<?php 
+					$args = array(
+						'type'	=> 'checkbox',
+						'name'	=> 'send-notifications-on-reschedule',
+						'id'	=> 'bookacti-send-notifications-on-reschedule',
+						'value'	=> 0,
+						'tip'	=> __( 'Whether to notify the customer of the booking reschedule.', BOOKACTI_PLUGIN_NAME )
+					);
+					bookacti_display_field( $args );
+				}
+			?>
+		</div>
+	</form>
 </div>
 
 <?php do_action( 'bookacti_bookings_dialogs' );

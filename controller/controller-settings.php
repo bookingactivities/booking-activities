@@ -675,8 +675,8 @@ function bookacti_controller_archive_restore_data() {
 	$zip_file		= $archives_dir . $filename;
 	$imported		= bookacti_import_sql( $zip_file );
 	
-	if( $imported !== true ) {
-		bookacti_send_json( array( 'status' => 'failed', 'error' => 'import_failed', 'message' => esc_html__( 'An error occured while trying to restore backup data.', BOOKACTI_PLUGIN_NAME ) ), 'archive_restore_data' );
+	if( $imported[ 'status' ] !== 'success' ) {
+		bookacti_send_json( array( 'status' => 'failed', 'error' => 'import_failed', 'results' => $imported[ 'results' ], 'message' => esc_html__( 'An error occured while trying to restore backup data.', BOOKACTI_PLUGIN_NAME ) ), 'archive_restore_data' );
 	}
 	
 	// Feedback message
