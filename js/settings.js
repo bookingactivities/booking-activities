@@ -102,10 +102,11 @@ $j( document ).ready( function() {
 		// Reset feedbacks
 		$j( '#bookacti-archive-feedbacks-step3' ).empty();
 		$j( '#bookacti-archive-feedbacks-step3-container' ).show();
+		$j( '#bookacti-archive-delete-data-note' ).show();
 		
 		var nonce = $j( '#nonce_archive_data' ).val();
 		var feedbacks_step3 = $j( '#bookacti-archive-feedbacks-step3' );
-		bookacti_archive_delete( date, nonce, feedbacks_step3, null );
+		bookacti_archive_delete( date, nonce, feedbacks_step3, bookacti_after_data_deletion );
 	});
 	
 	
@@ -198,7 +199,11 @@ function bookacti_archive_analyse( date, nonce, feedback_div, callback ) {
 			if( response.status === 'success' ) {
 				var list = '<ul>';
 				$j.each( response.ids_per_type, function( type, ids ){
-					list += '<li>' + type + ': ' + ids.length + ' <span class="bookacti-show-archive-ids dashicons dashicons-visibility"></span><div class="bookacti-archive-ids"><code>' + ids.join( ', ' ) + '</code></div></li>'
+					list += '<li>' + type + ': ' + ids.length;
+					if( ids.length ) {
+						list += '<span class="bookacti-show-archive-ids dashicons dashicons-visibility"></span><div class="bookacti-archive-ids"><code>' + ids.join( ', ' ) + '</code></div>';
+					}
+					list += '</li>';
 				});
 				list += '</ul>';
 				feedback_div.append( '<div class="bookacti-archive-results">' + response.message + list + '</div>' );
@@ -473,4 +478,14 @@ function bookacti_display_archive_step2( date, file_already_exists ) {
 function bookacti_display_archive_step3( date ) {
 	$j( '#bookacti-archive-feedbacks-step3-container' ).show();
 	$j( '#bookacti-archive-button-delete' ).attr( 'data-date', date ).data( 'date', date );
+}
+
+
+/**
+ * Hide warnings after successful data deletion
+ * @since 1.7.0
+ * @param {string} date
+ */
+function bookacti_after_data_deletion( date ) {
+	$j( '#bookacti-archive-delete-data-note' ).hide();
 }

@@ -523,14 +523,21 @@ function bookacti_controller_archive_data_analyse() {
 	// Get booking groups
 	$booking_groups = bookacti_get_booking_groups_prior_to( $date );
 	
-	$ids_per_type = array();
-	if( $events )					{ foreach( $events as $event )						{ $ids_per_type[ esc_html__( 'Events', BOOKACTI_PLUGIN_NAME ) ][] = $event->id; } }
-	if( $started_repeated_events )	{ foreach( $started_repeated_events as $event )		{ $ids_per_type[ esc_html__( 'Repeated events to be truncated', BOOKACTI_PLUGIN_NAME ) ][] = $event->id; } }
-	if( $groups_of_events )			{ foreach( $groups_of_events as $group_of_events )	{ $ids_per_type[ esc_html__( 'Groups of events', BOOKACTI_PLUGIN_NAME ) ][] = $group_of_events->id; } }
-	if( $bookings )					{ foreach( $bookings as $booking )					{ $ids_per_type[ esc_html__( 'Bookings', BOOKACTI_PLUGIN_NAME ) ][] = $booking->id; } }
-	if( $booking_groups )			{ foreach( $booking_groups as $booking_group )		{ $ids_per_type[ esc_html__( 'Booking groups', BOOKACTI_PLUGIN_NAME ) ][] = $booking_group->id; } }
+	$no_data = true;
+	$ids_per_type = array(
+		esc_html__( 'Events', BOOKACTI_PLUGIN_NAME ) => array(),
+		esc_html__( 'Repeated events to be truncated', BOOKACTI_PLUGIN_NAME ) => array(),
+		esc_html__( 'Groups of events', BOOKACTI_PLUGIN_NAME ) => array(),
+		esc_html__( 'Bookings', BOOKACTI_PLUGIN_NAME ) => array(),
+		esc_html__( 'Booking groups', BOOKACTI_PLUGIN_NAME ) => array(),
+	);
+	if( $events )					{ $no_data = false; foreach( $events as $event )						{ $ids_per_type[ esc_html__( 'Events', BOOKACTI_PLUGIN_NAME ) ][] = $event->id; } }
+	if( $started_repeated_events )	{ $no_data = false; foreach( $started_repeated_events as $event )		{ $ids_per_type[ esc_html__( 'Repeated events to be truncated', BOOKACTI_PLUGIN_NAME ) ][] = $event->id; } }
+	if( $groups_of_events )			{ $no_data = false; foreach( $groups_of_events as $group_of_events )	{ $ids_per_type[ esc_html__( 'Groups of events', BOOKACTI_PLUGIN_NAME ) ][] = $group_of_events->id; } }
+	if( $bookings )					{ $no_data = false; foreach( $bookings as $booking )					{ $ids_per_type[ esc_html__( 'Bookings', BOOKACTI_PLUGIN_NAME ) ][] = $booking->id; } }
+	if( $booking_groups )			{ $no_data = false; foreach( $booking_groups as $booking_group )		{ $ids_per_type[ esc_html__( 'Booking groups', BOOKACTI_PLUGIN_NAME ) ][] = $booking_group->id; } }
 	
-	if( ! $ids_per_type ) {
+	if( $no_data ) {
 		bookacti_send_json( array( 'status' => 'failed', 'error' => 'no_data_to_archive', 'message' => esc_html__( 'No data to archive.', BOOKACTI_PLUGIN_NAME ) ), 'archive_analyse_data' );
 	}
 	
@@ -556,6 +563,8 @@ function bookacti_controller_archive_data_dump() {
 	// Dump the data prior to the desired date
 	// Events
 	$dumped_events = bookacti_archive_events_prior_to( $date );
+	// Repeated events exceptions
+	$dumped_repeated_events_exceptions = bookacti_archive_repeated_events_exceptions_prior_to( $date );
 	// Started repeated events
 	$dumped_repeated_events = bookacti_archive_started_repeated_events_as_of( $date );
 	// Groups of events
@@ -567,7 +576,7 @@ function bookacti_controller_archive_data_dump() {
 	// Metadata
 	$dumped_meta = bookacti_archive_metadata_prior_to( $date );
 	
-	if( $dumped_events !== true || $dumped_repeated_events !== true || $dumped_groups_of_events !== true || $dumped_bookings !== true || $dumped_booking_groups !== true || $dumped_meta !== true ) {
+	if( $dumped_events !== true || $dumped_repeated_events_exceptions !== true || $dumped_repeated_events !== true || $dumped_groups_of_events !== true || $dumped_bookings !== true || $dumped_booking_groups !== true || $dumped_meta !== true ) {
 		bookacti_send_json( array( 'status' => 'failed', 'error' => 'dump_failed', 'message' => esc_html__( 'An error occurred while trying to archive data.', BOOKACTI_PLUGIN_NAME ) ), 'archive_dump_data' );
 	}
 	
@@ -630,25 +639,27 @@ function bookacti_controller_archive_data_delete() {
 	set_time_limit( 0 );
 	
 	// Delete the data prior to the desired date
+	// Delete metadata first
+	bookacti_delete_bookings_and_events_meta_prior_to( $date );
 	// We must delete bookings before events and groups before single
 	// Booking groups
-	$deleted_booking_groups = bookacti_delete_booking_groups_prior_to( $date );
+	$deleted_booking_groups = bookacti_delete_booking_groups_prior_to( $date, false );
 	// Bookings
-	$deleted_bookings = bookacti_delete_bookings_prior_to( $date );
+	$deleted_bookings = bookacti_delete_bookings_prior_to( $date, false );
 	// Groups of events
-	$deleted_groups_of_events = bookacti_delete_group_of_events_prior_to( $date );
+	$deleted_groups_of_events = bookacti_delete_group_of_events_prior_to( $date, false );
 	// Events
-	$deleted_events = bookacti_delete_events_prior_to( $date );
+	$deleted_events = bookacti_delete_events_prior_to( $date, false );
 	// Started repeated events
 	$truncated_events = bookacti_restrict_started_repeated_events_to( $date );
 	
 	
 	$nb_per_type = array( 
-		esc_html__( 'Events', BOOKACTI_PLUGIN_NAME )					=> $deleted_events === false ? 'false' : $deleted_events,
-		esc_html__( 'Repeated events truncated', BOOKACTI_PLUGIN_NAME ) => $truncated_events === false ? 'false' : $truncated_events,
-		esc_html__( 'Groups of events', BOOKACTI_PLUGIN_NAME )			=> $deleted_groups_of_events === false ? 'false' : $deleted_groups_of_events,
-		esc_html__( 'Bookings', BOOKACTI_PLUGIN_NAME )					=> $deleted_bookings === false ? 'false' : $deleted_bookings,
-		esc_html__( 'Booking groups', BOOKACTI_PLUGIN_NAME )			=> $deleted_booking_groups === false ? 'false' : $deleted_booking_groups
+		esc_html__( 'Events', BOOKACTI_PLUGIN_NAME )					=> $deleted_events === false ? esc_html__( 'Error', BOOKACTI_PLUGIN_NAME ) : $deleted_events,
+		esc_html__( 'Repeated events truncated', BOOKACTI_PLUGIN_NAME ) => $truncated_events === false ? esc_html__( 'Error', BOOKACTI_PLUGIN_NAME ) : $truncated_events,
+		esc_html__( 'Groups of events', BOOKACTI_PLUGIN_NAME )			=> $deleted_groups_of_events === false ? esc_html__( 'Error', BOOKACTI_PLUGIN_NAME ) : $deleted_groups_of_events,
+		esc_html__( 'Bookings', BOOKACTI_PLUGIN_NAME )					=> $deleted_bookings === false ? esc_html__( 'Error', BOOKACTI_PLUGIN_NAME ) : $deleted_bookings,
+		esc_html__( 'Booking groups', BOOKACTI_PLUGIN_NAME )			=> $deleted_booking_groups === false ? esc_html__( 'Error', BOOKACTI_PLUGIN_NAME ) : $deleted_booking_groups
 	);
 	
 	// Feedback message

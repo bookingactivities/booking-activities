@@ -1011,6 +1011,11 @@ function bookacti_settings_section_bookings_callback() { }
 							<div class='bookacti-archive-feedbacks-step-container' id='bookacti-archive-feedbacks-step3-container'>
 								<strong><?php esc_html_e( 'Step 3: Delete data from database', BOOKACTI_PLUGIN_NAME ); ?></strong>
 								<button type='button' id='bookacti-archive-button-delete'><?php echo esc_html_x( 'Clean', 'verb', BOOKACTI_PLUGIN_NAME ); ?></button>
+								<div id='bookacti-archive-delete-data-note'>
+									<?php
+										esc_html_e( 'Data deletion is permanent. It can take several minutes.', BOOKACTI_PLUGIN_NAME );
+									?>
+								</div>
 								<div class='bookacti-archive-feedbacks-step' id='bookacti-archive-feedbacks-step3'></div>
 							</div>
 						</div>
