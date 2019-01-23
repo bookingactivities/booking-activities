@@ -40,15 +40,17 @@ function bookacti_get_default_settings() {
 
 /**
  * Delete settings
- * @version 1.6.0
+ * @version 1.7.0
  */
 function bookacti_delete_settings() {
+	delete_option( 'bookacti_version' );
 	delete_option( 'bookacti_template_settings' ); // Deprecated
 	delete_option( 'bookacti_bookings_settings' ); // Deprecated
 	delete_option( 'bookacti_general_settings' );
 	delete_option( 'bookacti_cancellation_settings' );
 	delete_option( 'bookacti_notifications_settings' );
 	delete_option( 'bookacti_messages_settings' );
+	delete_option( 'bookacti_archive_secret_key' );
 	
 	do_action( 'bookacti_delete_settings' );
 }
@@ -1035,20 +1037,37 @@ function bookacti_settings_section_bookings_callback() { }
 	 * @since 1.7.0
 	 */
 	function bookacti_display_database_archive_list() {
+		$secret_key = get_option( 'bookacti_archive_secret_key' );
+		if( ! $secret_key ) { 
+			$secret_key = md5( microtime().rand() );
+			update_option( 'bookacti_archive_secret_key', $secret_key );
+		}
+		
 		$uploads_dir	= wp_upload_dir();
 		$bookacti_dir	= trailingslashit( str_replace( '\\', '/', $uploads_dir[ 'basedir' ] ) ) . BOOKACTI_PLUGIN_NAME . '/';
 		$archives_dir	= $bookacti_dir. 'archives/';
 		if( ! is_dir( $bookacti_dir ) ) {
 			mkdir( $bookacti_dir, 0755 );
+			// Create index.php
 			$index_handle = fopen( $bookacti_dir . '/index.php', 'w' );
 			fwrite( $index_handle, '' );
 			fclose( $index_handle );
 		}
 		if( ! is_dir( $archives_dir ) ) {
 			mkdir( $archives_dir, 0600 );
+			// Create index.php
 			$index_handle = fopen( $archives_dir . '/index.php', 'w' );
 			fwrite( $index_handle, '' );
 			fclose( $index_handle );
+			// Create .htaccess
+			$htaccess_handle = fopen( $archives_dir . '/.htaccess', 'w' );
+			$htaccess_content	= '<IfModule mod_rewrite.c>' . PHP_EOL 
+								. ' RewriteEngine On' . PHP_EOL 
+								. ' RewriteCond %{QUERY_STRING} !key=' . $secret_key . PHP_EOL 
+								. ' RewriteRule (.*) - [F]' . PHP_EOL 
+								. '</IfModule>';
+			fwrite( $htaccess_handle, $htaccess_content );
+			fclose( $htaccess_handle );
 		}
 		$archives_handle = opendir( $archives_dir );
 		if( $archives_handle ) {
@@ -1062,7 +1081,7 @@ function bookacti_settings_section_bookings_callback() { }
 				$is_empty = true;
 				$filenames = array();
 				while( false !== ( $filename = readdir( $archives_handle ) ) ) {
-					if( $filename == '.' || $filename == '..' || $filename == 'index.php' ) { continue; }
+					if( $filename == '.' || $filename == '..' || $filename == 'index.php' || $filename == '.htaccess' ) { continue; }
 					$filenames[] = $filename;
 					$is_empty = false;
 				}
@@ -1078,7 +1097,7 @@ function bookacti_settings_section_bookings_callback() { }
 							</td>
 							<td class='bookacti-archive-actions'>
 								<span class='bookacti-archive-action bookacti-archive-download'>
-									<a href='<?php echo esc_url( trailingslashit( $uploads_dir[ 'baseurl' ] ) . BOOKACTI_PLUGIN_NAME . '/archives/' . $filename ); ?>'>
+									<a href='<?php echo esc_url( trailingslashit( $uploads_dir[ 'baseurl' ] ) . BOOKACTI_PLUGIN_NAME . '/archives/' . $filename . '?key=' . $secret_key ); ?>' target='_blank'>
 										<?php echo esc_html_x( 'Download', 'verb', BOOKACTI_PLUGIN_NAME ); ?>
 									</a>
 								</span>

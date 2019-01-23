@@ -606,7 +606,8 @@ function bookacti_controller_archive_data_dump() {
 	
 	chmod( $zip_file , 0600);
 	
-	$download_link = '<a href="' . $zip_file_url . '">' . esc_html_x( 'Download', 'verb', BOOKACTI_PLUGIN_NAME ) . '</a>';
+	$secret_key		= get_option( 'bookacti_archive_secret_key' );
+	$download_link	= '<a href="' . $zip_file_url . '?key=' . $secret_key . '" target="_blank">' . esc_html_x( 'Download', 'verb', BOOKACTI_PLUGIN_NAME ) . '</a>';
 	
 	// Get the archive list table
 	ob_start();
