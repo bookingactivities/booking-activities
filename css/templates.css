@@ -121,9 +121,6 @@
 
 /***** Template dialogs *****/
 /* General */
-.bookacti-addon-promo			{ border: 2px solid #52b7e9; border-radius: 3px; padding: 10px; text-align: center; }
-.bookacti-addon-promo .button	{ margin-top: 10px; }
-
 .bookacti-promo-events-examples	a.fc-event { display: inline-block; width: 120px; text-align: left; cursor: auto; }
 .bookacti-tabs .bookacti-tab-content .bookacti-promo-events-examples div { margin-bottom: 0; }
 .bookacti-tabs .bookacti-tab-content .bookacti-promo-events-examples { margin: 10px 0 0 0; }

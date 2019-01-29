@@ -272,7 +272,14 @@ function bookacti_archive_dump( date, nonce, feedback_div, callback ) {
 				}
 				
 			} else if( response.status === 'failed' ) {
-				feedback_div.append( '<div class="bookacti-notices"><ul class="bookacti-error-list"><li>' + response.message + '</li></ul></div>' );
+				if( typeof response.results !== 'undefined' ) {
+					var list = '<ul>';
+					$j.each( response.results, function( type, result ){
+						list += '<li>' + type + ': ' + result + '</li>'
+					});
+					list += '</ul>';
+				}
+				feedback_div.append( '<div class="bookacti-notices"><ul class="bookacti-error-list"><li>' + response.message + list + '</li></ul></div>' );
 				console.log( response );
 			}
 		},

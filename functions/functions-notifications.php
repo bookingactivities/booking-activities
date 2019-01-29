@@ -6,6 +6,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
  * Array of configurable notifications
  * 
  * @since 1.2.1 (was bookacti_get_emails_default_settings in 1.2.0)
+ * @version 1.6.2
  * @return array
  */
 function bookacti_get_notifications_default_settings() {
@@ -39,7 +40,7 @@ function bookacti_get_notifications_default_settings() {
 					/* translators: Keep tags as is (this is a tag: {tag}), they will be replaced in code. This is the default email an administrator receive when a booking is cancelled */
 					'message'	=> __( '<p>A customer has cancelled a booking.</p>
 										<p>{booking_list}</p>
-										<p>Contact him: {user_firstname} {user_lastname} ({user_email})</p>
+										<p>Customer info: {user_firstname} {user_lastname} ({user_email})</p>
 										<p><a href="{booking_admin_url}">Click here</a> to edit this booking (ID: {booking_id}).</p>', BOOKACTI_PLUGIN_NAME ) )
 			),
 		'admin_rescheduled_booking' => 
@@ -56,7 +57,7 @@ function bookacti_get_notifications_default_settings() {
 					'message'	=> __( '<p>A customer has rescheduled a booking.</p>
 										<p>Old booking: {booking_old_start} - {booking_old_end}</p>
 										<p>New booking: {booking_list}</p>
-										<p>Contact him: {user_firstname} {user_lastname} ({user_email})</p>
+										<p>Customer info: {user_firstname} {user_lastname} ({user_email})</p>
 										<p><a href="{booking_admin_url}">Click here</a> to edit this booking (ID: {booking_id}).</p>', BOOKACTI_PLUGIN_NAME ) )
 			),
 		

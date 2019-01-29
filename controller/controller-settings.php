@@ -576,8 +576,18 @@ function bookacti_controller_archive_data_dump() {
 	// Metadata
 	$dumped_meta = bookacti_archive_metadata_prior_to( $date );
 	
+	$results = array( 
+		esc_html__( 'Events', BOOKACTI_PLUGIN_NAME )					=> $dumped_events !== true ? esc_html__( 'Error', BOOKACTI_PLUGIN_NAME ) . ' (' . $dumped_events . ')' : esc_html__( 'OK', BOOKACTI_PLUGIN_NAME ),
+		esc_html__( 'Exceptions', BOOKACTI_PLUGIN_NAME )				=> $dumped_repeated_events_exceptions !== true ? esc_html__( 'Error', BOOKACTI_PLUGIN_NAME ) . ' (' . $dumped_repeated_events_exceptions . ')' : esc_html__( 'OK', BOOKACTI_PLUGIN_NAME ),
+		esc_html__( 'Repeated events truncated', BOOKACTI_PLUGIN_NAME ) => $dumped_repeated_events !== true ? esc_html__( 'Error', BOOKACTI_PLUGIN_NAME ) . ' (' . $dumped_repeated_events . ')' : esc_html__( 'OK', BOOKACTI_PLUGIN_NAME ),
+		esc_html__( 'Groups of events', BOOKACTI_PLUGIN_NAME )			=> $dumped_groups_of_events !== true ? esc_html__( 'Error', BOOKACTI_PLUGIN_NAME ) . ' (' . $dumped_groups_of_events . ')' : esc_html__( 'OK', BOOKACTI_PLUGIN_NAME ),
+		esc_html__( 'Bookings', BOOKACTI_PLUGIN_NAME )					=> $dumped_bookings !== true ? esc_html__( 'Error', BOOKACTI_PLUGIN_NAME ) . ' (' . $dumped_bookings . ')' : esc_html__( 'OK', BOOKACTI_PLUGIN_NAME ),
+		esc_html__( 'Booking groups', BOOKACTI_PLUGIN_NAME )			=> $dumped_booking_groups !== true ? esc_html__( 'Error', BOOKACTI_PLUGIN_NAME ) . ' (' . $dumped_booking_groups . ')' : esc_html__( 'OK', BOOKACTI_PLUGIN_NAME ),
+		esc_html__( 'Metadata', BOOKACTI_PLUGIN_NAME )					=> $dumped_meta !== true ? esc_html__( 'Error', BOOKACTI_PLUGIN_NAME ) . ' (' . $dumped_meta . ')' : esc_html__( 'OK', BOOKACTI_PLUGIN_NAME )
+	);
+	
 	if( $dumped_events !== true || $dumped_repeated_events_exceptions !== true || $dumped_repeated_events !== true || $dumped_groups_of_events !== true || $dumped_bookings !== true || $dumped_booking_groups !== true || $dumped_meta !== true ) {
-		bookacti_send_json( array( 'status' => 'failed', 'error' => 'dump_failed', 'message' => esc_html__( 'An error occurred while trying to archive data.', BOOKACTI_PLUGIN_NAME ) ), 'archive_dump_data' );
+		bookacti_send_json( array( 'status' => 'failed', 'error' => 'dump_failed', 'results' => $results, 'message' => esc_html__( 'An error occurred while trying to archive data.', BOOKACTI_PLUGIN_NAME ) ), 'archive_dump_data' );
 	}
 	
 	// Zip the files into a single one

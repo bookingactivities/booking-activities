@@ -322,11 +322,15 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		if( $context !== 'wc_product_init' && $context !== 'wc_switch_variation' ) { return $atts; }
 		
 		// Change class
-		$atts[ 'class' ] = 'bookacti-woocommerce-product-booking-system';
+		if( ! empty( $atts[ 'class' ] ) ) {
+			$atts[ 'class' ] .= ' bookacti-woocommerce-product-booking-system';
+		} else {
+			$atts[ 'class' ] = 'bookacti-woocommerce-product-booking-system';
+		}
 		
 		return $atts;
 	}
-	add_action( 'bookacti_form_field_calendar_attributes', 'bookacti_form_field_calendar_attributes_on_wc_product_page', 10, 3 );
+	add_filter( 'bookacti_form_field_calendar_attributes', 'bookacti_form_field_calendar_attributes_on_wc_product_page', 10, 3 );
 	
 	
 	/**

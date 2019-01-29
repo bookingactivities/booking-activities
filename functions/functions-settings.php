@@ -51,6 +51,8 @@ function bookacti_delete_settings() {
 	delete_option( 'bookacti_notifications_settings' );
 	delete_option( 'bookacti_messages_settings' );
 	delete_option( 'bookacti_archive_secret_key' );
+	delete_option( 'bookacti_mysql_path' );
+	delete_option( 'bookacti_mysqldump_path' );
 	
 	do_action( 'bookacti_delete_settings' );
 }
@@ -947,8 +949,9 @@ function bookacti_settings_section_bookings_callback() { }
 		if( $check_mysqldump ) {
 			$can_archive = true;
 			$error_messages = array();
-			if( ! bookacti_get_mysql_bin_path() )	{ $can_archive = false; $error_messages[] = esc_html__( 'mysqldump path not found.', BOOKACTI_PLUGIN_NAME ); }
 			if( ! bookacti_is_exec_enabled() )		{ $can_archive = false; $error_messages[] = esc_html__( 'PHP exec() function not enabled.', BOOKACTI_PLUGIN_NAME ); }
+			if( ! bookacti_get_mysqldump_path() )	{ $can_archive = false; $error_messages[] = esc_html__( 'mysqldump cannot be executed.', BOOKACTI_PLUGIN_NAME ); }
+			if( ! bookacti_get_mysql_path() )		{ $can_archive = false; $error_messages[] = esc_html__( 'mysql cannot be executed.', BOOKACTI_PLUGIN_NAME ); }
 			if( ! $can_archive ) {
 				return array( 'status' => 'failed', 'error' => 'cannot_execute_mysqldump', 'message' => implode( '<li>', $error_messages ) );
 			}
@@ -956,19 +959,27 @@ function bookacti_settings_section_bookings_callback() { }
 
 		return true;
 	}
-
+	
 
 	/**
 	 * Settings section callback - System (displayed before settings)
 	 * @since 1.7.0
 	 */
 	function bookacti_settings_section_system_callback() {
+		global $wpdb;
 		// Option to create an archive
 		$current_date	= date( 'Y-m-d' );
 		$can_archive	= true;
 		$error_messages = array();
-		if( ! bookacti_get_mysql_bin_path() )	{ $can_archive = false; $error_messages[] = esc_html__( 'mysqldump path not found.', BOOKACTI_PLUGIN_NAME ); }
-		if( ! bookacti_is_exec_enabled() )		{ $can_archive = false; $error_messages[] = esc_html__( 'PHP exec() function not enabled.', BOOKACTI_PLUGIN_NAME ); }
+		if( ! bookacti_is_exec_enabled() )		{ $can_archive = false; $error_messages[] = esc_html__( 'PHP exec() function not enabled.', BOOKACTI_PLUGIN_NAME ) . ' ' . esc_html__( 'Contact your web host to activate this function.', BOOKACTI_PLUGIN_NAME ); }
+		if( ! bookacti_get_mysqldump_path() )	{ $can_archive = false; $error_messages[] = esc_html__( 'mysqldump has not been found.', BOOKACTI_PLUGIN_NAME ). ' ' . sprintf( esc_html__( 'Ask your web host your %s path and set it in "%s" option of the %s table.', BOOKACTI_PLUGIN_NAME ), 'mysqldump', 'bookacti_mysqldump_path', $wpdb->options ); }
+		if( ! bookacti_get_mysql_path() )		{ $can_archive = false; $error_messages[] = esc_html__( 'mysql cannot be executed.', BOOKACTI_PLUGIN_NAME ). ' ' . sprintf( esc_html__( 'Ask your web host your %s path and set it in "%s" option of the %s table.', BOOKACTI_PLUGIN_NAME ), 'mysql', 'bookacti_mysql_path', $wpdb->options ); }
+		
+		$out = array();
+		$rc	 = -1;
+		$cmd = bookacti_get_mysqldump_path() . ' --help';
+		exec( $cmd, $out, $rc );
+		
 		?>
 		<h2><?php esc_html_e( 'Archiving tool', BOOKACTI_PLUGIN_NAME ); ?></h2>
 		<p id='bookacti-archive-disclaimer'>
@@ -1049,18 +1060,18 @@ function bookacti_settings_section_bookings_callback() { }
 		if( ! is_dir( $bookacti_dir ) ) {
 			mkdir( $bookacti_dir, 0755 );
 			// Create index.php
-			$index_handle = fopen( $bookacti_dir . '/index.php', 'w' );
+			$index_handle = fopen( $bookacti_dir . 'index.php', 'w' );
 			fwrite( $index_handle, '' );
 			fclose( $index_handle );
 		}
 		if( ! is_dir( $archives_dir ) ) {
-			mkdir( $archives_dir, 0600 );
+			mkdir( $archives_dir, 0755 );
 			// Create index.php
-			$index_handle = fopen( $archives_dir . '/index.php', 'w' );
+			$index_handle = fopen( $archives_dir . 'index.php', 'w' );
 			fwrite( $index_handle, '' );
 			fclose( $index_handle );
 			// Create .htaccess
-			$htaccess_handle = fopen( $archives_dir . '/.htaccess', 'w' );
+			$htaccess_handle = fopen( $archives_dir . '.htaccess', 'w' );
 			$htaccess_content	= '<IfModule mod_rewrite.c>' . PHP_EOL 
 								. ' RewriteEngine On' . PHP_EOL 
 								. ' RewriteCond %{QUERY_STRING} !key=' . $secret_key . PHP_EOL 
@@ -1141,8 +1152,8 @@ function bookacti_settings_section_bookings_callback() { }
 	 */
 	function bookacti_archive_database( $filename = '', $table = '', $where = '', $data_only = true ) {
 		// Check if the server can run mysqldump
-		$mysql_bin = bookacti_get_mysql_bin_path();
-		if( ! $mysql_bin ) { return false; }
+		$mysqldump_path = bookacti_get_mysqldump_path();
+		if( ! $mysqldump_path ) { return false; }
 
 		// Check if the server can use exec()
 		if( ! bookacti_is_exec_enabled() ) { return false; }
@@ -1157,7 +1168,7 @@ function bookacti_settings_section_bookings_callback() { }
 		$file		= trailingslashit( str_replace( '\\', '/', $uploads_dir[ 'basedir' ] ) ) . BOOKACTI_PLUGIN_NAME . '/archives/' . $filename;
 
 		// Build the command line
-		$command = $mysql_bin . 'mysqldump';
+		$command = $mysqldump_path;
 		if( $data_only ) { $command .= ' --no-create-info'; }
 		$command .= ' --skip-lock-tables --skip-add-locks --user=' . DB_USER . ' --password="' . DB_PASSWORD . '" --host=' . DB_HOST . ' ' . DB_NAME;
 
@@ -1186,8 +1197,8 @@ function bookacti_settings_section_bookings_callback() { }
 	 */
 	function bookacti_import_sql( $files ) {
 		// Check if the server can run mysqldump
-		$mysql_bin = bookacti_get_mysql_bin_path();
-		if( ! $mysql_bin ) { return false; }
+		$mysql_path = bookacti_get_mysql_path();
+		if( ! $mysql_path ) { return false; }
 		
 		// Check if the server can use exec()
 		if( ! bookacti_is_exec_enabled() ) { return false; }
@@ -1239,7 +1250,7 @@ function bookacti_settings_section_bookings_callback() { }
 		$imported = array( 'status' => 'success', 'results' => array() );
 		foreach( $valid_files as $file ) {
 			$output = array(); $return_var = NULL;
-			$command = $mysql_bin . 'mysql --user=' . DB_USER . ' --password="' . DB_PASSWORD . '" --host=' . DB_HOST . ' ' . DB_NAME . ' < "' . $file . '"';
+			$command = $mysql_path . ' --user=' . DB_USER . ' --password="' . DB_PASSWORD . '" --host=' . DB_HOST . ' ' . DB_NAME . ' < "' . $file . '"';
 			exec( $command, $output, $return_var );
 			$imported[ 'results' ][ basename( $file ) ] = $return_var !== 0 ? esc_html__( 'Error', BOOKACTI_PLUGIN_NAME ) . ' (' . $return_var . ')' : esc_html__( 'OK', BOOKACTI_PLUGIN_NAME );
 			if( $return_var !== 0 ) { $imported[ 'status' ] = 'failed'; }
@@ -1308,7 +1319,170 @@ function bookacti_settings_section_bookings_callback() { }
 	 */
 	function bookacti_is_exec_enabled() {
 		$disabled = explode( ',', ini_get( 'disable_functions' ) );
-		return ! in_array('exec', $disabled);
+		return function_exists( 'exec' ) && ! in_array( 'exec', $disabled );
+	}
+	
+	
+	/**
+	 * Get mysqldump path
+	 * @since 1.7.0
+	 * @return string|false
+	 */
+	function bookacti_get_mysqldump_path() {
+		if( defined( 'BOOKACTI_MYSQLDUMP_PATH' ) && ! empty( BOOKACTI_MYSQLDUMP_PATH ) ) { 
+			return BOOKACTI_MYSQLDUMP_PATH; 
+		}
+		
+		$custom_mysqldump_path	 = get_option( 'bookacti_mysqldump_path' );
+		$custom_mysqldump_path	 = $custom_mysqldump_path ? $custom_mysqldump_path : '';
+		
+		$mysqldump_path_from_db	= bookacti_get_mysql_bin_path() . 'mysqldump';
+		
+		// Common Windows Paths
+		if( strtoupper( substr( PHP_OS, 0, 3 ) ) === 'WIN' ) {
+			$paths = array(
+				$custom_mysqldump_path,
+				$mysqldump_path_from_db,
+				bookacti_get_mysqldump_path_for_windows(),
+				'C:/xampp/mysql/bin/mysqldump.exe',
+				'C:/Program Files/xampp/mysql/bin/mysqldump',
+				'C:/Program Files/MySQL/MySQL Server 6.0/bin/mysqldump',
+				'C:/Program Files/MySQL/MySQL Server 5.5/bin/mysqldump',
+				'C:/Program Files/MySQL/MySQL Server 5.4/bin/mysqldump'
+			);
+
+		// Common Linux Paths
+		} else {
+			$path1		 = '';
+			$path2		 = '';
+			$mysqldump	 = `which mysqldump`;
+			if( @is_executable( $mysqldump ) ) {
+				$path1 = ! empty( $mysqldump ) ? $mysqldump : '';
+			}
+
+			$mysqldump = dirname( `which mysql` ). '/mysqldump';
+			if( @is_executable( $mysqldump ) ) {
+				$path2 = ! empty( $mysqldump ) ? $mysqldump : '';
+			}
+
+			$paths = array(
+				$custom_mysqldump_path,
+				$mysqldump_path_from_db,
+				$path1,
+				$path2,
+				'/usr/local/bin/mysqldump',
+				'/usr/local/mysql/bin/mysqldump',
+				'/usr/mysql/bin/mysqldump',
+				'/usr/bin/mysqldump',
+				'/opt/local/lib/mysql6/bin/mysqldump',
+				'/opt/local/lib/mysql5/bin/mysqldump'
+			);
+		}
+
+		// Try to find a path that works.  With open_basedir enabled, the file_exists may not work on some systems
+		// So we fallback and try to use exec as a last resort
+		$exec_available = bookacti_is_exec_enabled();
+		foreach( $paths as $path ) {
+			if( file_exists( $path ) ) {
+				if( @is_executable( $path ) ) {
+					define( 'BOOKACTI_MYSQLDUMP_PATH', $path );
+					return $path;
+				}
+			} else if ( $exec_available ) {
+				$out = array();
+				$rc	 = -1;
+				$cmd = $path . ' --help';
+				exec( $cmd, $out, $rc );
+				if( $rc === 0 ) {
+					define( 'BOOKACTI_MYSQLDUMP_PATH', $path );
+					return $path;
+				}
+			}
+		}
+
+		return false;
+	}
+
+	
+	/**
+	 * Get mysqldump path for Windows
+	 * @since 1.7.0
+	 * @return string|false
+	 */
+	function bookacti_get_mysqldump_path_for_windows() {
+		if( function_exists( 'php_ini_loaded_file' ) ) {
+			$get_php_ini_path = php_ini_loaded_file();
+			if( file_exists( $get_php_ini_path ) ) {
+				$search = array(
+					dirname( dirname( $get_php_ini_path ) ). '/mysql/bin/mysqldump.exe',
+					dirname( dirname( dirname( $get_php_ini_path ) ) ). '/mysql/bin/mysqldump.exe',
+					dirname( dirname( $get_php_ini_path ) ) . '/mysql/bin/mysqldump',
+					dirname( dirname( dirname( $get_php_ini_path ) ) ) . '/mysql/bin/mysqldump',
+				);
+				
+				foreach( $search as $mysqldump ) {
+					if( file_exists( $mysqldump ) ) {
+						return str_replace( '\\', '/', $mysqldump );
+					}
+				}
+			}
+		}
+
+		unset( $search );
+		unset( $get_php_ini_path );
+
+		return false;
+	}
+	
+	
+	/**
+	 * Get mysql path
+	 * @since 1.7.0
+	 * @return string|false
+	 */
+	function bookacti_get_mysql_path() {
+		if( defined( 'BOOKACTI_MYSQL_PATH' ) && ! empty( BOOKACTI_MYSQL_PATH ) ) { 
+			return BOOKACTI_MYSQL_PATH; 
+		}
+		
+		$custom_mysql_path	 = get_option( 'bookacti_mysql_path' );
+		$custom_mysql_path	 = $custom_mysql_path ? $custom_mysql_path : '';
+		
+		$mysql_path_from_db	= bookacti_get_mysql_bin_path() . 'mysql';
+		
+		$mysql_path_from_mysql_dump_path = '';
+		$mysqldump_path = bookacti_get_mysqldump_path();
+		if( ! $mysqldump_path ) { 
+			$mysql_path_from_mysql_dump_path = str_replace( 'dump', '', $mysqldump_path );
+		}
+		
+		
+		$paths = array(
+			$custom_mysql_path,
+			$mysql_path_from_db,
+			$mysql_path_from_mysql_dump_path
+		);
+		
+		$exec_available = bookacti_is_exec_enabled();
+		foreach( $paths as $path ) {
+			if( file_exists( $path ) ) {
+				if( @is_executable( $path ) ) {
+					define( 'BOOKACTI_MYSQL_PATH', $path );
+					return $path;
+				}
+			} else if( $exec_available ) {
+				$out = array();
+				$rc	 = -1;
+				$cmd = $path . ' --help';
+				exec( $cmd, $out, $rc );
+				if( $rc === 0 ) {
+					define( 'BOOKACTI_MYSQL_PATH', $path );
+					return $path;
+				}
+			}
+		}
+		
+		return false;
 	}
 
 

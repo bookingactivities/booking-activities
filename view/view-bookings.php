@@ -260,7 +260,7 @@ if( ! $templates ) {
 						'past_events'			=> 1,
 						'past_events_bookable'	=> 1,
 						'check_roles'			=> 0,
-						'auto_load'				=> 1, // Force to load on page load
+						'auto_load'				=> 0, // Prevent to load on page load to save some performance
 						'picked_events'			=> $default_inputs
 					);
 					bookacti_get_booking_system( $atts, true );

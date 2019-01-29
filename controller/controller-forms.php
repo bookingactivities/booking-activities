@@ -27,7 +27,11 @@ function bookacti_display_form_field_calendar( $field, $instance_id, $context ) 
 	if( isset( $_REQUEST[ 'bookacti_event_end' ] ) )	{ $field[ 'picked_events' ][ 'event_end' ]		= bookacti_sanitize_datetime( $_REQUEST[ 'bookacti_event_end' ] ); }
 	if( isset( $_REQUEST[ 'event_end' ] ) )				{ $field[ 'picked_events' ][ 'event_end' ]		= bookacti_sanitize_datetime( $_REQUEST[ 'event_end' ] ); }
 	
-	$atts = apply_filters( 'bookacti_form_field_calendar_attributes', $field, $instance_id, $context );
+	// Do not auto load on form editor
+	// So that if a JS error occurs, you can still change the calendar settings and try to fix it
+	if( $context === 'edit' ) { $field[ 'auto_load' ] = 0; }
+	
+	$field = apply_filters( 'bookacti_form_field_calendar_attributes', $field, $instance_id, $context );
 	
 	// Display the booking system
 	bookacti_get_booking_system( $field, true );

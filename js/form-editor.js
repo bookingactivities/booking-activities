@@ -244,6 +244,27 @@ $j( document ).ready( function() {
 		if( $j( '#major-publishing-actions' ).data( 'popup' ) ) { return true; } // Confirm before redirect
 		else { e = null; } // Redirect
 	});
+	
+	
+	/**
+	 * If an error occurs, stop loading and allow every interactions
+	 * @since 1.7.0
+	 * @param {string} errorMsg
+	 * @param {string} url
+	 * @param {int} lineNumber
+	 * @param {int} column
+	 * @param {Error} errorObj
+	 */
+	window.onerror = function ( errorMsg, url, lineNumber, column, errorObj ) {
+		$j( '#bookacti-fatal-error' ).show();
+	};
+	$j( '#bookacti-exit-loading' ).on( 'click', function(){
+		bookacti_form_editor_exit_loading_state();
+		var booking_system = $j( '#bookacti-booking-system-form-editor-container .bookacti-booking-system' );
+		if( booking_system.length ) {
+			bookacti_stop_loading_booking_system( booking_system, true );
+		}
+	});
 });
 
 

@@ -115,7 +115,7 @@ function bookacti_add_admin_refunded_booking_notification( $notifications ) {
 				/* translators: Keep tags as is (this is a tag: {tag}), they will be replaced in code. This is the default email an administrator receive when a booking is refunded */
 				'message'	=> __( '<p>A customer has been reimbursed for this booking:</p>
 									<p>{booking_list}</p>
-									<p>Contact him: {user_firstname} {user_lastname} ({user_email})</p>
+									<p>Customer info: {user_firstname} {user_lastname} ({user_email})</p>
 									<p><a href="{booking_admin_url}">Click here</a> to edit this booking (ID: {booking_id}).</p>', BOOKACTI_PLUGIN_NAME ) )
 		);
 	}

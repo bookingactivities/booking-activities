@@ -250,7 +250,7 @@ if( ! class_exists( 'Forms_List_Table' ) ) {
 		
 		/**
 		 * Get form list items. Parameters can be passed in the URL.
-		 * 
+		 * @version 1.7.0
 		 * @access public
 		 * @return array
 		 */
@@ -286,7 +286,7 @@ if( ! class_exists( 'Forms_List_Table' ) ) {
 				
 				// Author name
 				$user_object = get_user_by( 'id', $form->user_id );
-				$author = $user_object->display_name;
+				$author = $user_object ? $user_object->display_name : $form->user_id;
 				
 				$form_item = apply_filters( 'bookacti_form_list_form_columns', array( 
 					'id'			=> $id,
