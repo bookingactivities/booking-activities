@@ -241,8 +241,8 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			reset( $templates_data );
 			$first_key = key( $templates_data );
 			$mixed_data = array( 
-				'start'	=> $templates_data[ $first_key ][ 'start' ],
-				'end'	=> $templates_data[ $first_key ][ 'end' ]
+				'start'	=> ! empty( $templates_data[ $first_key ][ 'start' ] ) ? $templates_data[ $first_key ][ 'start' ] : '',
+				'end'	=> ! empty( $templates_data[ $first_key ][ 'end' ] ) ? $templates_data[ $first_key ][ 'end' ] : ''
 			);
 		}
 		

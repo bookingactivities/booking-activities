@@ -7,38 +7,6 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 // 1. DB BACKUP ANALYSIS
 
 /**
- * Get mysql bin path
- * @since 1.7.0
- * @global type $bookacti_mysql_bin_path
- * @global wpdb $wpdb
- * @return false|string
- */
-function bookacti_get_mysql_bin_path() {
-	global $bookacti_mysql_bin_path;
-	if( isset( $bookacti_mysql_bin_path ) ) { return $bookacti_mysql_bin_path; }
-	
-	global $wpdb;
-	
-	$mysql_dir = $wpdb->get_var( 'SELECT @@basedir' );
-	
-	if( ! $mysql_dir ) { 
-		$bookacti_mysql_bin_path = false; 
-		return false;
-	}
-	
-	$bookacti_mysql_bin_path = str_replace( '\\', '/', $mysql_dir );
-	
-	if( substr( $bookacti_mysql_bin_path, -1 ) !== '/' ) {
-		$bookacti_mysql_bin_path .= '/';
-	}
-	
-	$bookacti_mysql_bin_path .= 'bin/';
-	
-	return $bookacti_mysql_bin_path;
-}
-
-
-/**
  * Get mysql temp path
  * @since 1.7.0
  * @global type $bookacti_mysql_temp_path
@@ -263,6 +231,87 @@ function bookacti_get_metadata_prior_to( $date ) {
 // 2. DB BACKUP DUMP
 
 /**
+ * Dump data of a specific table (with specific conditions) to a sql file with wpdb
+ * @since 1.7.0
+ * @param string $filename
+ * @param string $table
+ * @param string $where
+ * @return boolean|int
+ */
+function bookacti_archive_database( $filename, $table, $where = 'TRUE' ) {
+	global $wpdb;
+
+	// Sanitize the filename
+	$filename = sanitize_file_name( $filename );
+	if( substr( $filename, -4 ) !== '.sql' ) { $filename .= '.sql'; }
+
+	// Set the file directory
+	$uploads_dir	= wp_upload_dir();
+	$file			= trailingslashit( str_replace( '\\', '/', $uploads_dir[ 'basedir' ] ) ) . BOOKACTI_PLUGIN_NAME . '/archives/' . $filename;
+
+	// Select the data to backup
+	$query_select	= " SELECT * FROM " . $table
+					. " WHERE " . $where;
+	$rows = $wpdb->get_results( $query_select, ARRAY_A );
+
+	if( $rows === false )	{ return false; }
+	if( empty( $rows ) )	{ return 0; }
+
+	$inserted_rows_count = count( $rows );
+	$columns_count = count( $rows[0] );
+	$columns_names = array_keys( $rows[0] );
+
+	// Build the backup query
+	$backup_query	= "INSERT INTO `" . $table . "` (`" . implode( '`,`', $columns_names ) . "`) "
+					. "VALUES ";
+
+	$variables = array();
+	$i = 1;
+	foreach( $rows as $row ) {
+		$backup_query .= "(";
+		$j = 1;
+		foreach( $row as $value )  {
+			if( is_numeric( $value ) ) {
+				$backup_query .= "%d";
+				$variables[] = $value;
+			} else if( is_null( $value ) ) {
+				$backup_query .= "NULL";
+			} else {
+				$backup_query .= "%s";
+				$variables[] = $value;
+			}
+			if( $j < $columns_count ) {
+				$backup_query .= ",";
+			}
+			++$j;
+		}
+		$backup_query .= ")";
+		if( $i < $inserted_rows_count ) {
+			$backup_query .= ",";
+		}
+		++$i;
+	}
+	$backup_query .= ';';
+
+	if( $variables ) {
+		$backup_query = $wpdb->prepare( $backup_query, $variables );
+	}
+
+	// Write the backup query in the file
+	$handle	= fopen( $file, 'a' );
+	$write	= 0;
+	if( $handle !== false ) {
+		$write	= fwrite( $handle, $backup_query );
+		fclose( $handle );
+	}
+
+	if( ! $write ) { return false; }
+
+	return $inserted_rows_count;
+}
+
+
+/**
  * Create a .sql file to archive events prior to a date
  * @since 1.7.0
  * @param string $date
@@ -328,37 +377,31 @@ function bookacti_archive_started_repeated_events_as_of( $date ) {
 	
 	if( ! $inserted ) { return $inserted; }
 	
-	
+	// Add the CREATE query to the backup file
 	$filename	= $date . '-truncated-repeated-events.sql';
 	$uploads_dir= wp_upload_dir();
 	$file		= trailingslashit( str_replace( '\\', '/', $uploads_dir[ 'basedir' ] ) ) . BOOKACTI_PLUGIN_NAME . '/archives/' . $filename;
 	
-	$mysqldump_path = bookacti_get_mysqldump_path() ? true : false;
-	$data_only = $mysqldump_path ? false : true;
-	
-	// Manually add the CREATE query to the backup file if mysqldump cannot be executed
-	if( ! $mysqldump_path ) {
-		$handle	= fopen( $file, 'a' );
-		$write	= 0;
-		if( $handle !== false ) {
-			$text	= $delete_query;
-			$text	.= PHP_EOL . PHP_EOL;
-			$text	.= $temp_table_events_query;
-			$text	.= PHP_EOL . PHP_EOL;
-			$write	= fwrite( $handle, $text );
-			fclose( $handle );
-		}
-
-		if( ! $write ) { return false; }
+	$handle	= fopen( $file, 'a' );
+	$write	= 0;
+	if( $handle !== false ) {
+		$text	= $delete_query;
+		$text	.= PHP_EOL . PHP_EOL;
+		$text	.= $temp_table_events_query;
+		$text	.= PHP_EOL . PHP_EOL;
+		$write	= fwrite( $handle, $text );
+		fclose( $handle );
 	}
+
+	if( ! $write ) { return false; }
 	
 	// Dump the table
-	$dumped = bookacti_archive_database( $filename, $temp_table, 'TRUE', $data_only );
+	$dumped = bookacti_archive_database( $filename, $temp_table, 'TRUE' );
 	
 	// Remove the table
 	$wpdb->query( $delete_query );
 	
-	if( ( $mysqldump_path && $dumped !== true ) || ( ! $mysqldump_path && $dumped === false ) ) { return $dumped; }
+	if( $dumped === false ) { return $dumped; }
 	
 	// Add the UPDATE and DELETE queries to the backup file
 	$update_query	= 'UPDATE `' . BOOKACTI_TABLE_EVENTS . '` as E'
@@ -643,7 +686,6 @@ function bookacti_delete_group_of_events_prior_to( $date, $delete_meta = true ) 
 		bookacti_delete_rows_from_table( BOOKACTI_TABLE_META, $where_meta, $variables );
 	}
 	
-	
 	// Remove group of events before the events themselves!
 	// Count the initial amount of rows
 	$count_query	= 'SELECT COUNT(*) FROM ' . BOOKACTI_TABLE_EVENT_GROUPS ;
@@ -754,7 +796,6 @@ function bookacti_delete_booking_groups_prior_to( $date, $delete_meta = true ) {
 		bookacti_delete_rows_from_table( BOOKACTI_TABLE_META, $where_meta, $variables );
 	}
 	
-	
 	// Remove booking groups
 	// Count the initial amount of rows
 	$count_query	= 'SELECT COUNT(*) FROM ' . BOOKACTI_TABLE_BOOKING_GROUPS ;
@@ -811,4 +852,36 @@ function bookacti_delete_bookings_and_events_meta_prior_to( $date ) {
 	$count_after = intval( $wpdb->get_var( $count_query ) );
 	
 	return $count_before - $count_after;
+}
+
+
+
+
+// 4. DB BACKUP RESTORATION
+
+/**
+ * Import archived data in the database
+ * @since 1.7.0
+ * @param array|string $file Full path to a .sql file
+ * @return boolean|int
+ */
+function bookacti_import_sql_file( $file ) {
+	// Check if the file exists
+	if( ! file_exists( $file ) || ! substr( $file, -4 ) === '.sql' ) { return false; }
+
+	global $wpdb;
+	$wpdb->hide_errors();
+
+	$file_content = file_get_contents( $file );
+	$queries = explode( PHP_EOL . PHP_EOL, $file_content );
+	$global_result = true;
+	foreach( $queries as $query ) {
+		$result = $wpdb->query( $query );
+		if( $global_result !== false ) {
+			if( $result === false )					{ $global_result = false; }
+			else if( ! is_int( $global_result ) )	{ $global_result = $result; }
+		}
+	}
+
+	return $global_result;
 }

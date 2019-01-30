@@ -317,7 +317,7 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 
 == Changelog ==
 
-= 1.7.0 alpha 1 - 2018/12/09 =
+= 1.7.0 alpha 2 - 2019/01/30 =
 * Feature - Redirect to a URL when you click on an event or when you submit a booking form
 * Feature - Redirect to a product page when you click on an event or when you submit a booking form
 * Feature - Backup, archive and restore old bookings and events

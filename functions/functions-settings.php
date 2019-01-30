@@ -51,8 +51,6 @@ function bookacti_delete_settings() {
 	delete_option( 'bookacti_notifications_settings' );
 	delete_option( 'bookacti_messages_settings' );
 	delete_option( 'bookacti_archive_secret_key' );
-	delete_option( 'bookacti_mysql_path' );
-	delete_option( 'bookacti_mysqldump_path' );
 	
 	do_action( 'bookacti_delete_settings' );
 }
@@ -898,15 +896,14 @@ function bookacti_settings_section_bookings_callback() { }
 
 
 // SYSTEM SETTINGS
+
 	/**
 	 * Check if the user can archive data
 	 * @since 1.7.0
 	 * @param string $date
-	 * @param string $filename
 	 * @param boolean $check_nonce
-	 * @param boolean $check_mysqldump
 	 */
-	function bookacti_user_can_archive_data( $date = false, $filename = false, $check_nonce = false, $check_mysqldump = false ) {
+	function bookacti_user_can_archive_data( $date, $check_nonce = true ) {
 		// Check nonce
 		if( $check_nonce ) {
 			$is_nonce_valid	= check_ajax_referer( 'bookacti_nonce_archive_data', 'nonce', false );
@@ -918,31 +915,48 @@ function bookacti_settings_section_bookings_callback() { }
 		if( ! $is_allowed ) { return array( 'status' => 'failed', 'error' => 'not_allowed', 'message' => esc_html__( 'You are not allowed to do that.', BOOKACTI_PLUGIN_NAME ) ); }
 
 		// Check the date
-		if( $date !== false ) {
-			$date = bookacti_sanitize_date( $date );
-			if( ! $date ) { 
-				return array( 'status' => 'failed', 'error' => 'invalid_date', 'message' => esc_html__( 'Invalid date', BOOKACTI_PLUGIN_NAME ) ); 
-			}
-
-			// Check if the date is earlier than today
-			$utc_timezone	= new DateTimeZone( 'UTC' );
-			$datetime		= new DateTime( $date, $utc_timezone );
-			$today			= new DateTime( 'today', $utc_timezone );
-			if( $datetime > $today ) {
-				return array( 'status' => 'failed', 'error' => 'future_date', 'message' => esc_html__( 'The date must be earlier than today.', BOOKACTI_PLUGIN_NAME ) );
-			}
+		$date = bookacti_sanitize_date( $date );
+		if( ! $date ) { 
+			return array( 'status' => 'failed', 'error' => 'invalid_date', 'message' => esc_html__( 'Invalid date', BOOKACTI_PLUGIN_NAME ) ); 
 		}
+
+		// Check if the date is earlier than today
+		$utc_timezone	= new DateTimeZone( 'UTC' );
+		$datetime		= new DateTime( $date, $utc_timezone );
+		$today			= new DateTime( 'today', $utc_timezone );
+		if( $datetime > $today ) {
+			return array( 'status' => 'failed', 'error' => 'future_date', 'message' => esc_html__( 'The date must be earlier than today.', BOOKACTI_PLUGIN_NAME ) );
+		}
+
+		return true;
+	}
+	
+	
+	/**
+	 * Check if the user can manage archive file
+	 * @since 1.7.0
+	 * @param string $filename
+	 * @param boolean $check_nonce
+	 */
+	function bookacti_user_can_manage_archive_file( $filename, $check_nonce = true ) {
+		// Check nonce
+		if( $check_nonce ) {
+			$is_nonce_valid	= check_ajax_referer( 'bookacti_nonce_archive_data', 'nonce', false );
+			if( ! $is_nonce_valid ) { bookacti_send_json_invalid_nonce( 'achive_data' ); }
+		}
+
+		// Check permission
+		$is_allowed	 = current_user_can( 'bookacti_manage_booking_activities_settings' );
+		if( ! $is_allowed ) { return array( 'status' => 'failed', 'error' => 'not_allowed', 'message' => esc_html__( 'You are not allowed to do that.', BOOKACTI_PLUGIN_NAME ) ); }
 		
 		// Check filename
-		if( $filename !== false ) {
-			$filename		= sanitize_file_name( $filename );
-			$uploads_dir	= wp_upload_dir();
-			$archives_dir	= trailingslashit( str_replace( '\\', '/', $uploads_dir[ 'basedir' ] ) ) . BOOKACTI_PLUGIN_NAME . '/archives/';
-			$zip_file		= $archives_dir . $filename;
-			if( ! file_exists( $zip_file ) ) {
-				$error_message = esc_html__( 'The backup file was not found.', BOOKACTI_PLUGIN_NAME );
-				return array( 'status' => 'failed', 'error' => 'file_not_found', 'message' => implode( '<li>', $error_message ) );
-			}
+		$filename		= sanitize_file_name( $filename );
+		$uploads_dir	= wp_upload_dir();
+		$archives_dir	= trailingslashit( str_replace( '\\', '/', $uploads_dir[ 'basedir' ] ) ) . BOOKACTI_PLUGIN_NAME . '/archives/';
+		$zip_file		= $archives_dir . $filename;
+		if( ! file_exists( $zip_file ) ) {
+			$error_message = esc_html__( 'The backup file was not found.', BOOKACTI_PLUGIN_NAME );
+			return array( 'status' => 'failed', 'error' => 'file_not_found', 'message' => implode( '<li>', $error_message ) );
 		}
 
 		return true;
@@ -954,42 +968,11 @@ function bookacti_settings_section_bookings_callback() { }
 	 * @since 1.7.0
 	 */
 	function bookacti_settings_section_system_callback() {
-		global $wpdb;
 		// Option to create an archive
 		$current_date = date( 'Y-m-d' );
 		
-		$uploads_dir	= wp_upload_dir();
-		$bookacti_dir	= trailingslashit( str_replace( '\\', '/', $uploads_dir[ 'basedir' ] ) ) . BOOKACTI_PLUGIN_NAME . '/';
-		$archives_dir	= $bookacti_dir. 'archives/';
-		if( ! is_dir( $bookacti_dir ) ) {
-			mkdir( $bookacti_dir, 0755 );
-			// Create index.php
-			$index_handle = fopen( $bookacti_dir . 'index.php', 'w' );
-			fwrite( $index_handle, '' );
-			fclose( $index_handle );
-		}
-		if( ! is_dir( $archives_dir ) ) {
-			mkdir( $archives_dir, 0755 );
-			// Create index.php
-			$index_handle = fopen( $archives_dir . 'index.php', 'w' );
-			fwrite( $index_handle, '' );
-			fclose( $index_handle );
-		}
-		
-		// Create a new secret key and a new .htaccess file at each visit
-		// Renew the secret key
-		$secret_key = md5( microtime().rand() );
-		update_option( 'bookacti_archive_secret_key', $secret_key );
-		// Update the .htaccess
-		$htaccess_handle = fopen( $archives_dir . '.htaccess', 'w' );
-		$htaccess_content	= '<IfModule mod_rewrite.c>' . PHP_EOL 
-							. ' RewriteEngine On' . PHP_EOL 
-							. ' RewriteCond %{QUERY_STRING} !key=' . $secret_key . PHP_EOL 
-							. ' RewriteRule (.*) - [F]' . PHP_EOL 
-							. '</IfModule>';
-		fwrite( $htaccess_handle, $htaccess_content );
-		fclose( $htaccess_handle );
-		
+		// Create the archive directory and regenerate the archive secret key
+		bookacti_create_archive_directory();
 		?>
 		<h2><?php esc_html_e( 'Archiving tool', BOOKACTI_PLUGIN_NAME ); ?></h2>
 		<p id='bookacti-archive-disclaimer'>
@@ -1049,7 +1032,7 @@ function bookacti_settings_section_bookings_callback() { }
 		<?php
 	}
 
-
+	
 	/**
 	 * Display the database archive list
 	 * @since 1.7.0
@@ -1120,154 +1103,44 @@ function bookacti_settings_section_bookings_callback() { }
 		}
 	}
 
-
+	
 	/**
-	 * Dump data of a specific table (with specific conditions) to a sql file
+	 * Create the Booking Activities "Archive" directory to store archive files
+	 * And regenerate the .htaccess and the secret key to download archive files
 	 * @since 1.7.0
-	 * @param string $filename
-	 * @param string $table
-	 * @param string $where
-	 * @param boolean $data_only
-	 * @return boolean|int
 	 */
-	function bookacti_archive_database( $filename = '', $table = '', $where = 'TRUE', $data_only = true ) {
-		// Check if the server can run mysqldump
-		$mysqldump_path = bookacti_get_mysqldump_path();
-		
-		$archived = false;
-		if( $mysqldump_path ) {
-			$archived = bookacti_archive_database_with_mysqldump( $filename, $table, $where, $data_only );
-		} else {
-			$archived = bookacti_archive_database_with_wpdb( $filename, $table, $where );
-		}
-		
-		return $archived;
-	}
-
-
-	/**
-	 * Dump data of a specific table (with specific conditions) to a sql file with mysqldump
-	 * @since 1.7.0
-	 * @param string $filename
-	 * @param string $table
-	 * @param string $where
-	 * @param boolean $data_only
-	 * @return boolean|int
-	 */
-	function bookacti_archive_database_with_mysqldump( $filename = '', $table = '', $where = '', $data_only = true ) {
-		// Check if the server can run mysqldump
-		$mysqldump_path = bookacti_get_mysqldump_path();
-		if( ! $mysqldump_path ) { return false; }
-		
-		// Sanitize the filename
-		if( ! $filename ) { $filename = 'database.sql'; }
-		else { $filename = sanitize_file_name( $filename ); }
-		if( substr( $filename, -4 ) !== '.sql' ) { $filename .= '.sql'; }
-
-		// Set the file directory
-		$uploads_dir= wp_upload_dir();
-		$file		= trailingslashit( str_replace( '\\', '/', $uploads_dir[ 'basedir' ] ) ) . BOOKACTI_PLUGIN_NAME . '/archives/' . $filename;
-
-		// Build the command line
-		$command = $mysqldump_path;
-		if( $data_only ) { $command .= ' --no-create-info'; }
-		$command .= ' --skip-lock-tables --skip-add-locks --user=' . DB_USER . ' --password="' . DB_PASSWORD . '" --host=' . DB_HOST . ' ' . DB_NAME;
-
-		if( $table ) {
-			$command .=  ' ' . $table;
-			if( $where ) {
-				$command .= ' --where="' . $where . '"';
-			}
-		}
-
-		$command .= ' > "' . $file . '"';
-
-		$output		= array();
-		$return_var	= NULL;
-		exec( $command, $output, $return_var );
-		
-		return $return_var === 0 ? true : $return_var;
-	}
-
-
-	/**
-	 * Dump data of a specific table (with specific conditions) to a sql file with wpdb
-	 * @since 1.7.0
-	 * @param string $filename
-	 * @param string $table
-	 * @param string $where
-	 * @return boolean|int
-	 */
-	function bookacti_archive_database_with_wpdb( $filename, $table, $where = 'TRUE' ) {
-		global $wpdb;
-		
-		// Sanitize the filename
-		$filename = sanitize_file_name( $filename );
-		if( substr( $filename, -4 ) !== '.sql' ) { $filename .= '.sql'; }
-		
-		// Set the file directory
+	function bookacti_create_archive_directory() {
 		$uploads_dir	= wp_upload_dir();
-		$file			= trailingslashit( str_replace( '\\', '/', $uploads_dir[ 'basedir' ] ) ) . BOOKACTI_PLUGIN_NAME . '/archives/' . $filename;
-		
-		// Select the data to backup
-		$query_select	= " SELECT * FROM " . $table
-						. " WHERE " . $where;
-		$rows = $wpdb->get_results( $query_select, ARRAY_A );
-		
-		if( $rows === false )	{ return false; }
-		if( empty( $rows ) )	{ return 0; }
-		
-		$inserted_rows_count = count( $rows );
-		$columns_count = count( $rows[0] );
-		$columns_names = array_keys( $rows[0] );
-		
-		// Build the backup query
-		$backup_query	= "INSERT INTO `" . $table . "` (`" . implode( '`,`', $columns_names ) . "`) "
-						. "VALUES ";
-		
-		$variables = array();
-		$i = 1;
-		foreach( $rows as $row ) {
-			$backup_query .= "(";
-			$j = 1;
-			foreach( $row as $value )  {
-				if( is_numeric( $value ) ) {
-					$backup_query .= "%d";
-					$variables[] = $value;
-				} else if( is_null( $value ) ) {
-					$backup_query .= "NULL";
-				} else {
-					$backup_query .= "%s";
-					$variables[] = $value;
-				}
-				if( $j < $columns_count ) {
-					$backup_query .= ",";
-				}
-				++$j;
-			}
-			$backup_query .= ")";
-			if( $i < $inserted_rows_count ) {
-				$backup_query .= ",";
-			}
-			++$i;
+		$bookacti_dir	= trailingslashit( str_replace( '\\', '/', $uploads_dir[ 'basedir' ] ) ) . BOOKACTI_PLUGIN_NAME . '/';
+		$archives_dir	= $bookacti_dir. 'archives/';
+		if( ! is_dir( $bookacti_dir ) ) {
+			mkdir( $bookacti_dir, 0755 );
+			// Create index.php
+			$index_handle = fopen( $bookacti_dir . 'index.php', 'w' );
+			fwrite( $index_handle, '' );
+			fclose( $index_handle );
 		}
-		$backup_query .= ';';
-		
-		if( $variables ) {
-			$backup_query = $wpdb->prepare( $backup_query, $variables );
+		if( ! is_dir( $archives_dir ) ) {
+			mkdir( $archives_dir, 0755 );
+			// Create index.php
+			$index_handle = fopen( $archives_dir . 'index.php', 'w' );
+			fwrite( $index_handle, '' );
+			fclose( $index_handle );
 		}
 		
-		// Write the backup query in the file
-		$handle	= fopen( $file, 'a' );
-		$write	= 0;
-		if( $handle !== false ) {
-			$write	= fwrite( $handle, $backup_query );
-			fclose( $handle );
-		}
-		
-		if( ! $write ) { return false; }
-		
-		return $inserted_rows_count;
+		// Create a new secret key and a new .htaccess file at each visit
+		// Renew the secret key
+		$secret_key = md5( microtime().rand() );
+		update_option( 'bookacti_archive_secret_key', $secret_key );
+		// Update the .htaccess
+		$htaccess_handle = fopen( $archives_dir . '.htaccess', 'w' );
+		$htaccess_content	= '<IfModule mod_rewrite.c>' . PHP_EOL 
+							. ' RewriteEngine On' . PHP_EOL 
+							. ' RewriteCond %{QUERY_STRING} !key=' . $secret_key . PHP_EOL 
+							. ' RewriteRule (.*) - [F]' . PHP_EOL 
+							. '</IfModule>';
+		fwrite( $htaccess_handle, $htaccess_content );
+		fclose( $htaccess_handle );
 	}
 
 
@@ -1277,7 +1150,7 @@ function bookacti_settings_section_bookings_callback() { }
 	 * @param array|string $files Array of .sql files or .zip file
 	 * @return boolean|int
 	 */
-	function bookacti_import_sql( $files ) {
+	function bookacti_import_sql_files( $files ) {
 		// Unzip files or format files array
 		$is_zip = false;
 		if( is_string( $files ) ) {
@@ -1293,21 +1166,8 @@ function bookacti_settings_section_bookings_callback() { }
 					$tmpdir		= trailingslashit( str_replace( '\\', '/', $uploads_dir[ 'basedir' ] ) ) . BOOKACTI_PLUGIN_NAME . '/archives/';
 				}
 				$extract_dir = $tmpdir . basename( $files, '.zip' );
-				$zip = new ZipArchive;
-				if( $zip->open( $files ) === true ) {
-					$zip->extractTo( $extract_dir );
-					$zip->close();
-				}
-				if( is_dir( $extract_dir ) ) {
-					$archives_handle = opendir( $extract_dir );
-					if( $archives_handle ) {
-						$files = array();
-						while( false !== ( $filename = readdir( $archives_handle ) ) ) {
-							if( $filename == '.' || $filename == '..' ) { continue; }
-							$files[] = $extract_dir . '/' . $filename;
-						}
-					}
-				}
+				$files = bookacti_extract_zip( $files, $tmpdir );
+				if( $files === false ) { return false; }
 			}
 		}
 		
@@ -1321,24 +1181,12 @@ function bookacti_settings_section_bookings_callback() { }
 		
 		if( empty( $valid_files ) ) { return false; }
 		
-		// Check if we can use msql cmd
-		$mysql_path = bookacti_get_mysql_path();
-		
 		// Build the command line
 		$imported = array( 'status' => 'success', 'results' => array() );
 		foreach( $valid_files as $file ) {
-			// Try to import with cmd
-			if( $mysql_path ) {
-				$return_var = bookacti_import_sql_file_with_cmd( $file );
-				$imported[ 'results' ][ basename( $file ) ] = $return_var !== 0 ? esc_html__( 'Error', BOOKACTI_PLUGIN_NAME ) . ' (' . $return_var . ')' : esc_html__( 'OK', BOOKACTI_PLUGIN_NAME );
-				if( $return_var !== 0 ) { $imported[ 'status' ] = 'failed'; }
-				
-			// Else, import with $wpdb
-			} else {
-				$return_var = bookacti_import_sql_file_with_wpdb( $file );
-				$imported[ 'results' ][ basename( $file ) ] = $return_var === false ? esc_html__( 'Error', BOOKACTI_PLUGIN_NAME ) : ( is_string( $return_var ) || is_numeric( $return_var ) ? $return_var : esc_html__( 'OK', BOOKACTI_PLUGIN_NAME ) );
-				if( $return_var === false ) { $imported[ 'status' ] = 'failed'; }
-			}
+			$return_var = bookacti_import_sql_file( $file );
+			$imported[ 'results' ][ basename( $file ) ] = $return_var === false ? esc_html__( 'Error', BOOKACTI_PLUGIN_NAME ) : ( is_string( $return_var ) || is_numeric( $return_var ) ? $return_var : esc_html__( 'OK', BOOKACTI_PLUGIN_NAME ) );
+			if( $return_var === false ) { $imported[ 'status' ] = 'failed'; }
 		}
 		
 		// Remove extracted files and folder
@@ -1349,287 +1197,7 @@ function bookacti_settings_section_bookings_callback() { }
 		
 		return $imported;
 	}
-	
-	
-	/**
-	 * Import archived data in the database
-	 * @since 1.7.0
-	 * @param array|string $file Full path to a .sql file
-	 * @return boolean|int
-	 */
-	function bookacti_import_sql_file_with_cmd( $file ) {
-		// Check if the file exists
-		if( ! file_exists( $file ) || ! substr( $file, -4 ) === '.sql' ) { return false; }
-		
-		// Check if the server can run mysql tool
-		$mysql_path = bookacti_get_mysql_path();
-		if( ! $mysql_path ) { return false; }
-		
-		$output = array(); $return_var = NULL;
-		$command = $mysql_path . ' --user=' . DB_USER . ' --password="' . DB_PASSWORD . '" --host=' . DB_HOST . ' ' . DB_NAME . ' < "' . $file . '"';
-		exec( $command, $output, $return_var );
-		
-		return $return_var;
-	}
-	
-	
-	/**
-	 * Import archived data in the database
-	 * @since 1.7.0
-	 * @param array|string $file Full path to a .sql file
-	 * @return boolean|int
-	 */
-	function bookacti_import_sql_file_with_wpdb( $file ) {
-		// Check if the file exists
-		if( ! file_exists( $file ) || ! substr( $file, -4 ) === '.sql' ) { return false; }
-		
-		if( ! function_exists( 'dbDelta' ) ) { require_once( ABSPATH . 'wp-admin/includes/upgrade.php' ); }
-		
-		global $wpdb;
-		$wpdb->hide_errors();
-		
-		$file_content = file_get_contents( $file );
-		$queries = explode( PHP_EOL . PHP_EOL, $file_content );
-		$global_result = true;
-		foreach( $queries as $query ) {
-			$result = $wpdb->query( $query );
-			if( $global_result !== false ) {
-				if( $result === false )					{ $global_result = false; }
-				else if( ! is_int( $global_result ) )	{ $global_result = $result; }
-			}
-		}
-		
-		return $global_result;
-	}
-	
-	
-	/**
-	 * Create a zip
-	 * @param array $files
-	 * @param string $destination
-	 * @param boolean $overwrite
-	 * @param boolean $remove_files
-	 * @return boolean
-	 */
-	function bookacti_create_zip( $files = array(), $destination = '', $overwrite = true, $remove_files = false ) {
-		// If the zip file already exists and overwrite is false, return false
-		if( file_exists( $destination ) ) { 
-			if( ! $overwrite ) { return false; }
-			unlink( $destination );
-		}
 
-		$valid_files = array();
-		// Validate files
-		if( is_array( $files ) ) {
-			foreach( $files as $file) {
-				if( file_exists( $file ) ) { $valid_files[] = $file; }
-			}
-		}
-
-		if( empty( $valid_files ) ) { return false; }
-
-		// Create the archive
-		$zip = new ZipArchive();
-		$opened = $zip->open( $destination, ZIPARCHIVE::CREATE );
-		if( $opened !== true ) { return false; }
-
-		// Add the files
-		foreach( $valid_files as $file ) { $zip->addFile( $file, basename( $file ) ); }
-		$zip->close();
-
-		// Check to make sure the zip file exists
-		$zip_success = file_exists( $destination );
-
-		// Remove the original files
-		if( $zip_success && $remove_files ) {
-			foreach( $valid_files as $file ) { unlink( $file ); }
-		}
-
-		return $zip_success;
-	}
-
-
-	/**
-	 * Check if the server can run the exec() function
-	 * @since 1.7.0
-	 * @return boolean
-	 */
-	function bookacti_is_exec_enabled() {
-		$disabled = explode( ',', ini_get( 'disable_functions' ) );
-		return function_exists( 'exec' ) && ! in_array( 'exec', $disabled );
-	}
-	
-	
-	/**
-	 * Get mysqldump path
-	 * @since 1.7.0
-	 * @return string|false
-	 */
-	function bookacti_get_mysqldump_path() {
-		return false;
-		if( ! bookacti_is_exec_enabled() ) { return false; }
-		
-		if( defined( 'BOOKACTI_MYSQLDUMP_PATH' ) && ! empty( BOOKACTI_MYSQLDUMP_PATH ) ) { 
-			return BOOKACTI_MYSQLDUMP_PATH; 
-		}
-		
-		$custom_mysqldump_path	 = get_option( 'bookacti_mysqldump_path' );
-		$custom_mysqldump_path	 = $custom_mysqldump_path ? $custom_mysqldump_path : '';
-		
-		$mysqldump_path_from_db	= bookacti_get_mysql_bin_path() . 'mysqldump';
-		
-		// Common Windows Paths
-		if( strtoupper( substr( PHP_OS, 0, 3 ) ) === 'WIN' ) {
-			$paths = array(
-				$custom_mysqldump_path,
-				$mysqldump_path_from_db,
-				bookacti_get_mysqldump_path_for_windows(),
-				'C:/xampp/mysql/bin/mysqldump.exe',
-				'C:/Program Files/xampp/mysql/bin/mysqldump',
-				'C:/Program Files/MySQL/MySQL Server 6.0/bin/mysqldump',
-				'C:/Program Files/MySQL/MySQL Server 5.5/bin/mysqldump',
-				'C:/Program Files/MySQL/MySQL Server 5.4/bin/mysqldump'
-			);
-
-		// Common Linux Paths
-		} else {
-			$path1		 = '';
-			$path2		 = '';
-			$mysqldump	 = `which mysqldump`;
-			if( @is_executable( $mysqldump ) ) {
-				$path1 = ! empty( $mysqldump ) ? $mysqldump : '';
-			}
-
-			$mysqldump = dirname( `which mysql` ). '/mysqldump';
-			if( @is_executable( $mysqldump ) ) {
-				$path2 = ! empty( $mysqldump ) ? $mysqldump : '';
-			}
-
-			$paths = array(
-				$custom_mysqldump_path,
-				$mysqldump_path_from_db,
-				$path1,
-				$path2,
-				'/usr/local/bin/mysqldump',
-				'/usr/local/mysql/bin/mysqldump',
-				'/usr/mysql/bin/mysqldump',
-				'/usr/bin/mysqldump',
-				'/opt/local/lib/mysql6/bin/mysqldump',
-				'/opt/local/lib/mysql5/bin/mysqldump'
-			);
-		}
-
-		// Try to find a path that works.  With open_basedir enabled, the file_exists may not work on some systems
-		// So we fallback and try to use exec as a last resort
-		$exec_available = bookacti_is_exec_enabled();
-		foreach( $paths as $path ) {
-			if( file_exists( $path ) ) {
-				if( @is_executable( $path ) ) {
-					define( 'BOOKACTI_MYSQLDUMP_PATH', $path );
-					return $path;
-				}
-			} else if ( $exec_available ) {
-				$out = array();
-				$rc	 = -1;
-				$cmd = $path . ' --help';
-				exec( $cmd, $out, $rc );
-				if( $rc === 0 ) {
-					define( 'BOOKACTI_MYSQLDUMP_PATH', $path );
-					return $path;
-				}
-			}
-		}
-
-		return false;
-	}
-
-	
-	/**
-	 * Get mysqldump path for Windows
-	 * @since 1.7.0
-	 * @return string|false
-	 */
-	function bookacti_get_mysqldump_path_for_windows() {
-		if( ! bookacti_is_exec_enabled() ) { return false; }
-		
-		if( function_exists( 'php_ini_loaded_file' ) ) {
-			$get_php_ini_path = php_ini_loaded_file();
-			if( file_exists( $get_php_ini_path ) ) {
-				$search = array(
-					dirname( dirname( $get_php_ini_path ) ). '/mysql/bin/mysqldump.exe',
-					dirname( dirname( dirname( $get_php_ini_path ) ) ). '/mysql/bin/mysqldump.exe',
-					dirname( dirname( $get_php_ini_path ) ) . '/mysql/bin/mysqldump',
-					dirname( dirname( dirname( $get_php_ini_path ) ) ) . '/mysql/bin/mysqldump',
-				);
-				
-				foreach( $search as $mysqldump ) {
-					if( file_exists( $mysqldump ) ) {
-						return str_replace( '\\', '/', $mysqldump );
-					}
-				}
-			}
-		}
-
-		unset( $search );
-		unset( $get_php_ini_path );
-
-		return false;
-	}
-	
-	
-	/**
-	 * Get mysql path
-	 * @since 1.7.0
-	 * @return string|false
-	 */
-	function bookacti_get_mysql_path() {
-		return false;
-		if( ! bookacti_is_exec_enabled() ) { return false; }
-		
-		if( defined( 'BOOKACTI_MYSQL_PATH' ) && ! empty( BOOKACTI_MYSQL_PATH ) ) { 
-			return BOOKACTI_MYSQL_PATH; 
-		}
-		
-		$custom_mysql_path	 = get_option( 'bookacti_mysql_path' );
-		$custom_mysql_path	 = $custom_mysql_path ? $custom_mysql_path : '';
-		
-		$mysql_path_from_db	= bookacti_get_mysql_bin_path() . 'mysql';
-		
-		$mysql_path_from_mysql_dump_path = '';
-		$mysqldump_path = bookacti_get_mysqldump_path();
-		if( ! $mysqldump_path ) { 
-			$mysql_path_from_mysql_dump_path = str_replace( 'dump', '', $mysqldump_path );
-		}
-		
-		
-		$paths = array(
-			$custom_mysql_path,
-			$mysql_path_from_db,
-			$mysql_path_from_mysql_dump_path
-		);
-		
-		$exec_available = bookacti_is_exec_enabled();
-		foreach( $paths as $path ) {
-			if( file_exists( $path ) ) {
-				if( @is_executable( $path ) ) {
-					define( 'BOOKACTI_MYSQL_PATH', $path );
-					return $path;
-				}
-			} else if( $exec_available ) {
-				$out = array();
-				$rc	 = -1;
-				$cmd = $path . ' --help';
-				exec( $cmd, $out, $rc );
-				if( $rc === 0 ) {
-					define( 'BOOKACTI_MYSQL_PATH', $path );
-					return $path;
-				}
-			}
-		}
-		
-		return false;
-	}
-	
 
 
 
