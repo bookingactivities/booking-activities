@@ -514,28 +514,40 @@ function bookacti_controller_archive_data_analyse() {
 	// Get the data prior to the desired date
 	// Get events IDs
 	$events = bookacti_get_events_prior_to( $date );
+	// Repeated events exceptions
+	$exceptions = bookacti_get_repeated_events_exceptions_prior_to( $date );
 	// Get started repeated events
 	$started_repeated_events = bookacti_get_started_repeated_events_as_of( $date );
 	// Get group of events
 	$groups_of_events = bookacti_get_group_of_events_prior_to( $date );
+	// Get grouped events
+	$grouped_events = bookacti_get_grouped_events_prior_to( $date );
 	// Get bookings
 	$bookings = bookacti_get_bookings_prior_to( $date );
 	// Get booking groups
 	$booking_groups = bookacti_get_booking_groups_prior_to( $date );
+	// Get metadata
+	$metadata = bookacti_get_metadata_prior_to( $date );
 	
 	$no_data = true;
 	$ids_per_type = array(
 		esc_html__( 'Events', BOOKACTI_PLUGIN_NAME ) => array(),
+		esc_html__( 'Repetition exceptions', BOOKACTI_PLUGIN_NAME ) => array(),
 		esc_html__( 'Repeated events to be truncated', BOOKACTI_PLUGIN_NAME ) => array(),
 		esc_html__( 'Groups of events', BOOKACTI_PLUGIN_NAME ) => array(),
+		esc_html__( 'Grouped events', BOOKACTI_PLUGIN_NAME ) => array(),
 		esc_html__( 'Bookings', BOOKACTI_PLUGIN_NAME ) => array(),
 		esc_html__( 'Booking groups', BOOKACTI_PLUGIN_NAME ) => array(),
+		esc_html__( 'Metadata', BOOKACTI_PLUGIN_NAME ) => array()
 	);
 	if( $events )					{ $no_data = false; foreach( $events as $event )						{ $ids_per_type[ esc_html__( 'Events', BOOKACTI_PLUGIN_NAME ) ][] = $event->id; } }
+	if( $exceptions )				{ $no_data = false; foreach( $exceptions as $exception )				{ $ids_per_type[ esc_html__( 'Repetition exceptions', BOOKACTI_PLUGIN_NAME ) ][] = $exception->id; } }
 	if( $started_repeated_events )	{ $no_data = false; foreach( $started_repeated_events as $event )		{ $ids_per_type[ esc_html__( 'Repeated events to be truncated', BOOKACTI_PLUGIN_NAME ) ][] = $event->id; } }
 	if( $groups_of_events )			{ $no_data = false; foreach( $groups_of_events as $group_of_events )	{ $ids_per_type[ esc_html__( 'Groups of events', BOOKACTI_PLUGIN_NAME ) ][] = $group_of_events->id; } }
+	if( $grouped_events )			{ $no_data = false; foreach( $grouped_events as $grouped_event )		{ $ids_per_type[ esc_html__( 'Grouped events', BOOKACTI_PLUGIN_NAME ) ][] = $grouped_event->id; } }
 	if( $bookings )					{ $no_data = false; foreach( $bookings as $booking )					{ $ids_per_type[ esc_html__( 'Bookings', BOOKACTI_PLUGIN_NAME ) ][] = $booking->id; } }
 	if( $booking_groups )			{ $no_data = false; foreach( $booking_groups as $booking_group )		{ $ids_per_type[ esc_html__( 'Booking groups', BOOKACTI_PLUGIN_NAME ) ][] = $booking_group->id; } }
+	if( $metadata )					{ $no_data = false; foreach( $metadata as $meta_row )					{ $ids_per_type[ esc_html__( 'Metadata', BOOKACTI_PLUGIN_NAME ) ][] = $meta_row->id; } }
 	
 	if( $no_data ) {
 		bookacti_send_json( array( 'status' => 'failed', 'error' => 'no_data_to_archive', 'message' => esc_html__( 'No data to archive.', BOOKACTI_PLUGIN_NAME ) ), 'archive_analyse_data' );
@@ -558,7 +570,7 @@ add_action( 'wp_ajax_bookactiArchiveDataAnalyse', 'bookacti_controller_archive_d
 function bookacti_controller_archive_data_dump() {
 	$date = bookacti_sanitize_date( $_POST[ 'date' ] );
 	$user_can_archive = bookacti_user_can_archive_data( $date, false, true, true );
-	if( $user_can_archive !== true ) { bookacti_send_json( $user_can_archive, 'archive_dump_data' );	}
+	if( $user_can_archive !== true ) { bookacti_send_json( $user_can_archive, 'archive_dump_data' ); }
 	
 	// Dump the data prior to the desired date
 	// Events
@@ -569,6 +581,8 @@ function bookacti_controller_archive_data_dump() {
 	$dumped_repeated_events = bookacti_archive_started_repeated_events_as_of( $date );
 	// Groups of events
 	$dumped_groups_of_events = bookacti_archive_group_of_events_prior_to( $date );
+	// Groups of events
+	$dumped_grouped_events = bookacti_archive_grouped_events_prior_to( $date );
 	// Bookings
 	$dumped_bookings = bookacti_archive_bookings_prior_to( $date );
 	// Booking groups
@@ -576,25 +590,48 @@ function bookacti_controller_archive_data_dump() {
 	// Metadata
 	$dumped_meta = bookacti_archive_metadata_prior_to( $date );
 	
-	$results = array( 
-		esc_html__( 'Events', BOOKACTI_PLUGIN_NAME )					=> $dumped_events !== true ? esc_html__( 'Error', BOOKACTI_PLUGIN_NAME ) . ' (' . $dumped_events . ')' : esc_html__( 'OK', BOOKACTI_PLUGIN_NAME ),
-		esc_html__( 'Exceptions', BOOKACTI_PLUGIN_NAME )				=> $dumped_repeated_events_exceptions !== true ? esc_html__( 'Error', BOOKACTI_PLUGIN_NAME ) . ' (' . $dumped_repeated_events_exceptions . ')' : esc_html__( 'OK', BOOKACTI_PLUGIN_NAME ),
-		esc_html__( 'Repeated events truncated', BOOKACTI_PLUGIN_NAME ) => $dumped_repeated_events !== true ? esc_html__( 'Error', BOOKACTI_PLUGIN_NAME ) . ' (' . $dumped_repeated_events . ')' : esc_html__( 'OK', BOOKACTI_PLUGIN_NAME ),
-		esc_html__( 'Groups of events', BOOKACTI_PLUGIN_NAME )			=> $dumped_groups_of_events !== true ? esc_html__( 'Error', BOOKACTI_PLUGIN_NAME ) . ' (' . $dumped_groups_of_events . ')' : esc_html__( 'OK', BOOKACTI_PLUGIN_NAME ),
-		esc_html__( 'Bookings', BOOKACTI_PLUGIN_NAME )					=> $dumped_bookings !== true ? esc_html__( 'Error', BOOKACTI_PLUGIN_NAME ) . ' (' . $dumped_bookings . ')' : esc_html__( 'OK', BOOKACTI_PLUGIN_NAME ),
-		esc_html__( 'Booking groups', BOOKACTI_PLUGIN_NAME )			=> $dumped_booking_groups !== true ? esc_html__( 'Error', BOOKACTI_PLUGIN_NAME ) . ' (' . $dumped_booking_groups . ')' : esc_html__( 'OK', BOOKACTI_PLUGIN_NAME ),
-		esc_html__( 'Metadata', BOOKACTI_PLUGIN_NAME )					=> $dumped_meta !== true ? esc_html__( 'Error', BOOKACTI_PLUGIN_NAME ) . ' (' . $dumped_meta . ')' : esc_html__( 'OK', BOOKACTI_PLUGIN_NAME )
-	);
-	
-	if( $dumped_events !== true || $dumped_repeated_events_exceptions !== true || $dumped_repeated_events !== true || $dumped_groups_of_events !== true || $dumped_bookings !== true || $dumped_booking_groups !== true || $dumped_meta !== true ) {
-		bookacti_send_json( array( 'status' => 'failed', 'error' => 'dump_failed', 'results' => $results, 'message' => esc_html__( 'An error occurred while trying to archive data.', BOOKACTI_PLUGIN_NAME ) ), 'archive_dump_data' );
+	// Check if the server can run mysqldump
+	$mysqldump_path = bookacti_get_mysqldump_path();
+	if( $mysqldump_path ) {
+		$results = array( 
+			esc_html__( 'Events', BOOKACTI_PLUGIN_NAME )					=> $dumped_events !== true ? esc_html__( 'Error', BOOKACTI_PLUGIN_NAME ) . ' (' . $dumped_events . ')' : esc_html__( 'OK', BOOKACTI_PLUGIN_NAME ),
+			esc_html__( 'Repetition exceptions', BOOKACTI_PLUGIN_NAME )		=> $dumped_repeated_events_exceptions !== true ? esc_html__( 'Error', BOOKACTI_PLUGIN_NAME ) . ' (' . $dumped_repeated_events_exceptions . ')' : esc_html__( 'OK', BOOKACTI_PLUGIN_NAME ),
+			esc_html__( 'Truncated repeated events', BOOKACTI_PLUGIN_NAME ) => $dumped_repeated_events === false ? esc_html__( 'Error', BOOKACTI_PLUGIN_NAME ) : esc_html__( 'OK', BOOKACTI_PLUGIN_NAME ),
+			esc_html__( 'Groups of events', BOOKACTI_PLUGIN_NAME )			=> $dumped_groups_of_events !== true ? esc_html__( 'Error', BOOKACTI_PLUGIN_NAME ) . ' (' . $dumped_groups_of_events . ')' : esc_html__( 'OK', BOOKACTI_PLUGIN_NAME ),
+			esc_html__( 'Grouped events', BOOKACTI_PLUGIN_NAME )			=> $dumped_grouped_events !== true ? esc_html__( 'Error', BOOKACTI_PLUGIN_NAME ) . ' (' . $dumped_groups_of_events . ')' : esc_html__( 'OK', BOOKACTI_PLUGIN_NAME ),
+			esc_html__( 'Bookings', BOOKACTI_PLUGIN_NAME )					=> $dumped_bookings !== true ? esc_html__( 'Error', BOOKACTI_PLUGIN_NAME ) . ' (' . $dumped_bookings . ')' : esc_html__( 'OK', BOOKACTI_PLUGIN_NAME ),
+			esc_html__( 'Booking groups', BOOKACTI_PLUGIN_NAME )			=> $dumped_booking_groups !== true ? esc_html__( 'Error', BOOKACTI_PLUGIN_NAME ) . ' (' . $dumped_booking_groups . ')' : esc_html__( 'OK', BOOKACTI_PLUGIN_NAME ),
+			esc_html__( 'Metadata', BOOKACTI_PLUGIN_NAME )					=> $dumped_meta !== true ? esc_html__( 'Error', BOOKACTI_PLUGIN_NAME ) . ' (' . $dumped_meta . ')' : esc_html__( 'OK', BOOKACTI_PLUGIN_NAME )
+		);
+
+		if( $dumped_events !== true || $dumped_repeated_events_exceptions !== true || $dumped_repeated_events === false || $dumped_groups_of_events !== true || $dumped_bookings !== true || $dumped_booking_groups !== true || $dumped_meta !== true ) {
+			bookacti_send_json( array( 'status' => 'failed', 'error' => 'dump_failed', 'results' => $results, 'message' => esc_html__( 'An error occurred while trying to archive data.', BOOKACTI_PLUGIN_NAME ) ), 'archive_dump_data' );
+		}
+		
+	} else {
+		$results = array( 
+			esc_html__( 'Events', BOOKACTI_PLUGIN_NAME )					=> $dumped_events === false ? esc_html__( 'Error', BOOKACTI_PLUGIN_NAME ) : $dumped_events,
+			esc_html__( 'Repetition exceptions', BOOKACTI_PLUGIN_NAME )		=> $dumped_repeated_events_exceptions === false ? esc_html__( 'Error', BOOKACTI_PLUGIN_NAME ) : $dumped_repeated_events_exceptions,
+			esc_html__( 'Truncated repeated events', BOOKACTI_PLUGIN_NAME ) => $dumped_repeated_events === false ? esc_html__( 'Error', BOOKACTI_PLUGIN_NAME ) : $dumped_repeated_events,
+			esc_html__( 'Groups of events', BOOKACTI_PLUGIN_NAME )			=> $dumped_groups_of_events === false ? esc_html__( 'Error', BOOKACTI_PLUGIN_NAME ) : $dumped_groups_of_events,
+			esc_html__( 'Grouped events', BOOKACTI_PLUGIN_NAME )			=> $dumped_grouped_events === false ? esc_html__( 'Error', BOOKACTI_PLUGIN_NAME ) : $dumped_grouped_events,
+			esc_html__( 'Bookings', BOOKACTI_PLUGIN_NAME )					=> $dumped_bookings === false ? esc_html__( 'Error', BOOKACTI_PLUGIN_NAME ) : $dumped_bookings,
+			esc_html__( 'Booking groups', BOOKACTI_PLUGIN_NAME )			=> $dumped_booking_groups === false ? esc_html__( 'Error', BOOKACTI_PLUGIN_NAME ) : $dumped_booking_groups,
+			esc_html__( 'Metadata', BOOKACTI_PLUGIN_NAME )					=> $dumped_meta === false ? esc_html__( 'Error', BOOKACTI_PLUGIN_NAME ) : $dumped_meta
+		);
+		
+		if( $dumped_events === false || $dumped_repeated_events_exceptions === false || $dumped_repeated_events === false || $dumped_groups_of_events === false || $dumped_bookings === false || $dumped_booking_groups === false || $dumped_meta === false ) {
+			bookacti_send_json( array( 'status' => 'failed', 'error' => 'dump_failed', 'results' => $results, 'message' => esc_html__( 'An error occurred while trying to archive data.', BOOKACTI_PLUGIN_NAME ) ), 'archive_dump_data' );
+		}
 	}
 	
 	// Zip the files into a single one
+	$current_date	= date( 'YmdHis' );
 	$uploads_dir	= wp_upload_dir();
 	$archives_dir	= trailingslashit( str_replace( '\\', '/', $uploads_dir[ 'basedir' ] ) ) . BOOKACTI_PLUGIN_NAME . '/archives/';
-	$zip_file		= $archives_dir . $date . '-booking-activities-' . BOOKACTI_VERSION . '-archive.zip';
-	$zip_file_url	= esc_url( trailingslashit( $uploads_dir[ 'baseurl' ] ) . BOOKACTI_PLUGIN_NAME . '/archives/' . $date . '-booking-activities-' . BOOKACTI_VERSION . '-archive.zip' );
+	$zip_filename	= $current_date . '-' . $date  . '-booking-activities-' . BOOKACTI_VERSION . '.zip';
+	$zip_file		= $archives_dir . $zip_filename;
+	$zip_file_url	= esc_url( trailingslashit( $uploads_dir[ 'baseurl' ] ) . BOOKACTI_PLUGIN_NAME . '/archives/' . $zip_filename );
 	$zip_created	= false;
 	if( is_dir( $archives_dir ) ) {
 		$archives_handle = opendir( $archives_dir );
@@ -611,10 +648,8 @@ function bookacti_controller_archive_data_dump() {
 	}
 	
 	if( ! $zip_created ) {
-		bookacti_send_json( array( 'status' => 'failed', 'error' => 'zip_failed', 'message' => esc_html__( 'An error occurred while trying to zip the files.', BOOKACTI_PLUGIN_NAME ) ), 'archive_dump_data' );
+		bookacti_send_json( array( 'status' => 'failed', 'error' => 'zip_failed', 'results' => $results, 'message' => esc_html__( 'An error occurred while trying to zip the files.', BOOKACTI_PLUGIN_NAME ) ), 'archive_dump_data' );
 	}
-	
-	chmod( $zip_file , 0600);
 	
 	$secret_key		= get_option( 'bookacti_archive_secret_key' );
 	$download_link	= '<a href="' . $zip_file_url . '?key=' . $secret_key . '" target="_blank">' . esc_html_x( 'Download', 'verb', BOOKACTI_PLUGIN_NAME ) . '</a>';
@@ -629,7 +664,7 @@ function bookacti_controller_archive_data_dump() {
 			. esc_html__( 'Make sure the data in the backup files are consistent with data reported in step 1:', BOOKACTI_PLUGIN_NAME ) 
 			. ' <strong>' . $download_link . '</strong>';
 	
-	bookacti_send_json( array( 'status' => 'success', 'archive_list' => $archive_list, 'download_link' => $download_link, 'message' => $message ), 'archive_dump_data' );
+	bookacti_send_json( array( 'status' => 'success', 'archive_list' => $archive_list, 'download_link' => $download_link, 'results' => $results, 'message' => $message ), 'archive_dump_data' );
 }
 add_action( 'wp_ajax_bookactiArchiveDataDump', 'bookacti_controller_archive_data_dump' );
 
@@ -651,7 +686,7 @@ function bookacti_controller_archive_data_delete() {
 	
 	// Delete the data prior to the desired date
 	// Delete metadata first
-	bookacti_delete_bookings_and_events_meta_prior_to( $date );
+	$deleted_meta = bookacti_delete_bookings_and_events_meta_prior_to( $date );
 	// We must delete bookings before events and groups before single
 	// Booking groups
 	$deleted_booking_groups = bookacti_delete_booking_groups_prior_to( $date, false );
@@ -659,6 +694,10 @@ function bookacti_controller_archive_data_delete() {
 	$deleted_bookings = bookacti_delete_bookings_prior_to( $date, false );
 	// Groups of events
 	$deleted_groups_of_events = bookacti_delete_group_of_events_prior_to( $date, false );
+	// Grouped events
+	$deleted_grouped_events = bookacti_delete_grouped_events_prior_to( $date, false );
+	// Repeated events exceptions
+	$deleted_repeated_events_exceptions = bookacti_delete_repeated_events_exceptions_prior_to( $date );
 	// Events
 	$deleted_events = bookacti_delete_events_prior_to( $date, false );
 	// Started repeated events
@@ -667,10 +706,13 @@ function bookacti_controller_archive_data_delete() {
 	
 	$nb_per_type = array( 
 		esc_html__( 'Events', BOOKACTI_PLUGIN_NAME )					=> $deleted_events === false ? esc_html__( 'Error', BOOKACTI_PLUGIN_NAME ) : $deleted_events,
-		esc_html__( 'Repeated events truncated', BOOKACTI_PLUGIN_NAME ) => $truncated_events === false ? esc_html__( 'Error', BOOKACTI_PLUGIN_NAME ) : $truncated_events,
+		esc_html__( 'Repetition exceptions', BOOKACTI_PLUGIN_NAME )		=> $deleted_repeated_events_exceptions === false ? esc_html__( 'Error', BOOKACTI_PLUGIN_NAME ) : $deleted_repeated_events_exceptions,
+		esc_html__( 'Truncated repeated events', BOOKACTI_PLUGIN_NAME ) => $truncated_events === false ? esc_html__( 'Error', BOOKACTI_PLUGIN_NAME ) : $truncated_events,
 		esc_html__( 'Groups of events', BOOKACTI_PLUGIN_NAME )			=> $deleted_groups_of_events === false ? esc_html__( 'Error', BOOKACTI_PLUGIN_NAME ) : $deleted_groups_of_events,
+		esc_html__( 'Grouped events', BOOKACTI_PLUGIN_NAME )			=> $deleted_grouped_events === false ? esc_html__( 'Error', BOOKACTI_PLUGIN_NAME ) : $deleted_grouped_events,
 		esc_html__( 'Bookings', BOOKACTI_PLUGIN_NAME )					=> $deleted_bookings === false ? esc_html__( 'Error', BOOKACTI_PLUGIN_NAME ) : $deleted_bookings,
-		esc_html__( 'Booking groups', BOOKACTI_PLUGIN_NAME )			=> $deleted_booking_groups === false ? esc_html__( 'Error', BOOKACTI_PLUGIN_NAME ) : $deleted_booking_groups
+		esc_html__( 'Booking groups', BOOKACTI_PLUGIN_NAME )			=> $deleted_booking_groups === false ? esc_html__( 'Error', BOOKACTI_PLUGIN_NAME ) : $deleted_booking_groups,
+		esc_html__( 'Metadata', BOOKACTI_PLUGIN_NAME )					=> $deleted_meta === false ? esc_html__( 'Error', BOOKACTI_PLUGIN_NAME ) : $deleted_meta
 	);
 	
 	// Feedback message
@@ -704,7 +746,7 @@ function bookacti_controller_archive_restore_data() {
 	// Feedback message
 	$message = esc_html__( 'Your data has been successfully restored.', BOOKACTI_PLUGIN_NAME );
 	
-	bookacti_send_json( array( 'status' => 'success', 'message' => $message ), 'archive_restore_data' );
+	bookacti_send_json( array( 'status' => 'success', 'results' => $imported[ 'results' ], 'message' => $message ), 'archive_restore_data' );
 }
 add_action( 'wp_ajax_bookactiArchiveRestoreData', 'bookacti_controller_archive_restore_data' );
 

@@ -945,18 +945,6 @@ function bookacti_settings_section_bookings_callback() { }
 			}
 		}
 
-		// Check if mysqldump can be executed
-		if( $check_mysqldump ) {
-			$can_archive = true;
-			$error_messages = array();
-			if( ! bookacti_is_exec_enabled() )		{ $can_archive = false; $error_messages[] = esc_html__( 'PHP exec() function not enabled.', BOOKACTI_PLUGIN_NAME ); }
-			if( ! bookacti_get_mysqldump_path() )	{ $can_archive = false; $error_messages[] = esc_html__( 'mysqldump cannot be executed.', BOOKACTI_PLUGIN_NAME ); }
-			if( ! bookacti_get_mysql_path() )		{ $can_archive = false; $error_messages[] = esc_html__( 'mysql cannot be executed.', BOOKACTI_PLUGIN_NAME ); }
-			if( ! $can_archive ) {
-				return array( 'status' => 'failed', 'error' => 'cannot_execute_mysqldump', 'message' => implode( '<li>', $error_messages ) );
-			}
-		}
-
 		return true;
 	}
 	
@@ -968,17 +956,39 @@ function bookacti_settings_section_bookings_callback() { }
 	function bookacti_settings_section_system_callback() {
 		global $wpdb;
 		// Option to create an archive
-		$current_date	= date( 'Y-m-d' );
-		$can_archive	= true;
-		$error_messages = array();
-		if( ! bookacti_is_exec_enabled() )		{ $can_archive = false; $error_messages[] = esc_html__( 'PHP exec() function not enabled.', BOOKACTI_PLUGIN_NAME ) . ' ' . esc_html__( 'Contact your web host to activate this function.', BOOKACTI_PLUGIN_NAME ); }
-		if( ! bookacti_get_mysqldump_path() )	{ $can_archive = false; $error_messages[] = esc_html__( 'mysqldump has not been found.', BOOKACTI_PLUGIN_NAME ). ' ' . sprintf( esc_html__( 'Ask your web host your %s path and set it in "%s" option of the %s table.', BOOKACTI_PLUGIN_NAME ), 'mysqldump', 'bookacti_mysqldump_path', $wpdb->options ); }
-		if( ! bookacti_get_mysql_path() )		{ $can_archive = false; $error_messages[] = esc_html__( 'mysql cannot be executed.', BOOKACTI_PLUGIN_NAME ). ' ' . sprintf( esc_html__( 'Ask your web host your %s path and set it in "%s" option of the %s table.', BOOKACTI_PLUGIN_NAME ), 'mysql', 'bookacti_mysql_path', $wpdb->options ); }
+		$current_date = date( 'Y-m-d' );
 		
-		$out = array();
-		$rc	 = -1;
-		$cmd = bookacti_get_mysqldump_path() . ' --help';
-		exec( $cmd, $out, $rc );
+		$uploads_dir	= wp_upload_dir();
+		$bookacti_dir	= trailingslashit( str_replace( '\\', '/', $uploads_dir[ 'basedir' ] ) ) . BOOKACTI_PLUGIN_NAME . '/';
+		$archives_dir	= $bookacti_dir. 'archives/';
+		if( ! is_dir( $bookacti_dir ) ) {
+			mkdir( $bookacti_dir, 0755 );
+			// Create index.php
+			$index_handle = fopen( $bookacti_dir . 'index.php', 'w' );
+			fwrite( $index_handle, '' );
+			fclose( $index_handle );
+		}
+		if( ! is_dir( $archives_dir ) ) {
+			mkdir( $archives_dir, 0755 );
+			// Create index.php
+			$index_handle = fopen( $archives_dir . 'index.php', 'w' );
+			fwrite( $index_handle, '' );
+			fclose( $index_handle );
+		}
+		
+		// Create a new secret key and a new .htaccess file at each visit
+		// Renew the secret key
+		$secret_key = md5( microtime().rand() );
+		update_option( 'bookacti_archive_secret_key', $secret_key );
+		// Update the .htaccess
+		$htaccess_handle = fopen( $archives_dir . '.htaccess', 'w' );
+		$htaccess_content	= '<IfModule mod_rewrite.c>' . PHP_EOL 
+							. ' RewriteEngine On' . PHP_EOL 
+							. ' RewriteCond %{QUERY_STRING} !key=' . $secret_key . PHP_EOL 
+							. ' RewriteRule (.*) - [F]' . PHP_EOL 
+							. '</IfModule>';
+		fwrite( $htaccess_handle, $htaccess_content );
+		fclose( $htaccess_handle );
 		
 		?>
 		<h2><?php esc_html_e( 'Archiving tool', BOOKACTI_PLUGIN_NAME ); ?></h2>
@@ -1003,13 +1013,10 @@ function bookacti_settings_section_bookings_callback() { }
 				<td>
 					<div id='bookacti-archive-field-container'>
 						<input type='date' id='bookacti-archive-date' max='<?php echo $current_date; ?>' />
-						<button type='button' id='bookacti-archive-button-analyse' <?php echo ! $can_archive ? 'disabled' : ''; ?>><?php echo esc_html_x( 'Archive', 'verb', BOOKACTI_PLUGIN_NAME ); ?></button>
+						<button type='button' id='bookacti-archive-button-analyse'><?php echo esc_html_x( 'Analyse', 'verb', BOOKACTI_PLUGIN_NAME ); ?></button>
 						<?php
 							bookacti_help_tip( esc_html__( 'This will store events and bookings data prior to the selected date in a SQL file and definitively remove them from your database. Always backup your database before doing this.', BOOKACTI_PLUGIN_NAME ) );
 							wp_nonce_field( 'bookacti_nonce_archive_data', 'nonce_archive_data', false, true );
-							if( ! $can_archive ) {
-								echo '<div class="bookacti-notices" style="display:block;"><ul class="bookacti-error-list"><li>' . implode( '<li>', $error_messages ) . '</ul></div>';
-							}
 						?>
 						<div id='bookacti-archive-feedbacks'>
 							<div class='bookacti-archive-feedbacks-step-container' id='bookacti-archive-feedbacks-step1-container'>
@@ -1048,40 +1055,12 @@ function bookacti_settings_section_bookings_callback() { }
 	 * @since 1.7.0
 	 */
 	function bookacti_display_database_archive_list() {
-		$secret_key = get_option( 'bookacti_archive_secret_key' );
-		if( ! $secret_key ) { 
-			$secret_key = md5( microtime().rand() );
-			update_option( 'bookacti_archive_secret_key', $secret_key );
-		}
-		
 		$uploads_dir	= wp_upload_dir();
 		$bookacti_dir	= trailingslashit( str_replace( '\\', '/', $uploads_dir[ 'basedir' ] ) ) . BOOKACTI_PLUGIN_NAME . '/';
 		$archives_dir	= $bookacti_dir. 'archives/';
-		if( ! is_dir( $bookacti_dir ) ) {
-			mkdir( $bookacti_dir, 0755 );
-			// Create index.php
-			$index_handle = fopen( $bookacti_dir . 'index.php', 'w' );
-			fwrite( $index_handle, '' );
-			fclose( $index_handle );
-		}
-		if( ! is_dir( $archives_dir ) ) {
-			mkdir( $archives_dir, 0755 );
-			// Create index.php
-			$index_handle = fopen( $archives_dir . 'index.php', 'w' );
-			fwrite( $index_handle, '' );
-			fclose( $index_handle );
-			// Create .htaccess
-			$htaccess_handle = fopen( $archives_dir . '.htaccess', 'w' );
-			$htaccess_content	= '<IfModule mod_rewrite.c>' . PHP_EOL 
-								. ' RewriteEngine On' . PHP_EOL 
-								. ' RewriteCond %{QUERY_STRING} !key=' . $secret_key . PHP_EOL 
-								. ' RewriteRule (.*) - [F]' . PHP_EOL 
-								. '</IfModule>';
-			fwrite( $htaccess_handle, $htaccess_content );
-			fclose( $htaccess_handle );
-		}
 		$archives_handle = opendir( $archives_dir );
 		if( $archives_handle ) {
+			$secret_key = get_option( 'bookacti_archive_secret_key' );
 		?>
 			<table class='bookacti-settings-table' id='bookacti-database-archives-table'>
 				<tr>
@@ -1148,19 +1127,41 @@ function bookacti_settings_section_bookings_callback() { }
 	 * @param string $filename
 	 * @param string $table
 	 * @param string $where
+	 * @param boolean $data_only
 	 * @return boolean|int
 	 */
-	function bookacti_archive_database( $filename = '', $table = '', $where = '', $data_only = true ) {
+	function bookacti_archive_database( $filename = '', $table = '', $where = 'TRUE', $data_only = true ) {
+		// Check if the server can run mysqldump
+		$mysqldump_path = bookacti_get_mysqldump_path();
+		
+		$archived = false;
+		if( $mysqldump_path ) {
+			$archived = bookacti_archive_database_with_mysqldump( $filename, $table, $where, $data_only );
+		} else {
+			$archived = bookacti_archive_database_with_wpdb( $filename, $table, $where );
+		}
+		
+		return $archived;
+	}
+
+
+	/**
+	 * Dump data of a specific table (with specific conditions) to a sql file with mysqldump
+	 * @since 1.7.0
+	 * @param string $filename
+	 * @param string $table
+	 * @param string $where
+	 * @param boolean $data_only
+	 * @return boolean|int
+	 */
+	function bookacti_archive_database_with_mysqldump( $filename = '', $table = '', $where = '', $data_only = true ) {
 		// Check if the server can run mysqldump
 		$mysqldump_path = bookacti_get_mysqldump_path();
 		if( ! $mysqldump_path ) { return false; }
-
-		// Check if the server can use exec()
-		if( ! bookacti_is_exec_enabled() ) { return false; }
-
+		
 		// Sanitize the filename
 		if( ! $filename ) { $filename = 'database.sql'; }
-		else {$filename = sanitize_file_name( $filename ); }
+		else { $filename = sanitize_file_name( $filename ); }
 		if( substr( $filename, -4 ) !== '.sql' ) { $filename .= '.sql'; }
 
 		// Set the file directory
@@ -1190,19 +1191,93 @@ function bookacti_settings_section_bookings_callback() { }
 
 
 	/**
+	 * Dump data of a specific table (with specific conditions) to a sql file with wpdb
+	 * @since 1.7.0
+	 * @param string $filename
+	 * @param string $table
+	 * @param string $where
+	 * @return boolean|int
+	 */
+	function bookacti_archive_database_with_wpdb( $filename, $table, $where = 'TRUE' ) {
+		global $wpdb;
+		
+		// Sanitize the filename
+		$filename = sanitize_file_name( $filename );
+		if( substr( $filename, -4 ) !== '.sql' ) { $filename .= '.sql'; }
+		
+		// Set the file directory
+		$uploads_dir	= wp_upload_dir();
+		$file			= trailingslashit( str_replace( '\\', '/', $uploads_dir[ 'basedir' ] ) ) . BOOKACTI_PLUGIN_NAME . '/archives/' . $filename;
+		
+		// Select the data to backup
+		$query_select	= " SELECT * FROM " . $table
+						. " WHERE " . $where;
+		$rows = $wpdb->get_results( $query_select, ARRAY_A );
+		
+		if( $rows === false )	{ return false; }
+		if( empty( $rows ) )	{ return 0; }
+		
+		$inserted_rows_count = count( $rows );
+		$columns_count = count( $rows[0] );
+		$columns_names = array_keys( $rows[0] );
+		
+		// Build the backup query
+		$backup_query	= "INSERT INTO `" . $table . "` (`" . implode( '`,`', $columns_names ) . "`) "
+						. "VALUES ";
+		
+		$variables = array();
+		$i = 1;
+		foreach( $rows as $row ) {
+			$backup_query .= "(";
+			$j = 1;
+			foreach( $row as $value )  {
+				if( is_numeric( $value ) ) {
+					$backup_query .= "%d";
+					$variables[] = $value;
+				} else if( is_null( $value ) ) {
+					$backup_query .= "NULL";
+				} else {
+					$backup_query .= "%s";
+					$variables[] = $value;
+				}
+				if( $j < $columns_count ) {
+					$backup_query .= ",";
+				}
+				++$j;
+			}
+			$backup_query .= ")";
+			if( $i < $inserted_rows_count ) {
+				$backup_query .= ",";
+			}
+			++$i;
+		}
+		$backup_query .= ';';
+		
+		if( $variables ) {
+			$backup_query = $wpdb->prepare( $backup_query, $variables );
+		}
+		
+		// Write the backup query in the file
+		$handle	= fopen( $file, 'a' );
+		$write	= 0;
+		if( $handle !== false ) {
+			$write	= fwrite( $handle, $backup_query );
+			fclose( $handle );
+		}
+		
+		if( ! $write ) { return false; }
+		
+		return $inserted_rows_count;
+	}
+
+
+	/**
 	 * Import archived data in the database
 	 * @since 1.7.0
 	 * @param array|string $files Array of .sql files or .zip file
 	 * @return boolean|int
 	 */
 	function bookacti_import_sql( $files ) {
-		// Check if the server can run mysqldump
-		$mysql_path = bookacti_get_mysql_path();
-		if( ! $mysql_path ) { return false; }
-		
-		// Check if the server can use exec()
-		if( ! bookacti_is_exec_enabled() ) { return false; }
-		
 		// Unzip files or format files array
 		$is_zip = false;
 		if( is_string( $files ) ) {
@@ -1245,15 +1320,25 @@ function bookacti_settings_section_bookings_callback() { }
 		}
 		
 		if( empty( $valid_files ) ) { return false; }
-
+		
+		// Check if we can use msql cmd
+		$mysql_path = bookacti_get_mysql_path();
+		
 		// Build the command line
 		$imported = array( 'status' => 'success', 'results' => array() );
 		foreach( $valid_files as $file ) {
-			$output = array(); $return_var = NULL;
-			$command = $mysql_path . ' --user=' . DB_USER . ' --password="' . DB_PASSWORD . '" --host=' . DB_HOST . ' ' . DB_NAME . ' < "' . $file . '"';
-			exec( $command, $output, $return_var );
-			$imported[ 'results' ][ basename( $file ) ] = $return_var !== 0 ? esc_html__( 'Error', BOOKACTI_PLUGIN_NAME ) . ' (' . $return_var . ')' : esc_html__( 'OK', BOOKACTI_PLUGIN_NAME );
-			if( $return_var !== 0 ) { $imported[ 'status' ] = 'failed'; }
+			// Try to import with cmd
+			if( $mysql_path ) {
+				$return_var = bookacti_import_sql_file_with_cmd( $file );
+				$imported[ 'results' ][ basename( $file ) ] = $return_var !== 0 ? esc_html__( 'Error', BOOKACTI_PLUGIN_NAME ) . ' (' . $return_var . ')' : esc_html__( 'OK', BOOKACTI_PLUGIN_NAME );
+				if( $return_var !== 0 ) { $imported[ 'status' ] = 'failed'; }
+				
+			// Else, import with $wpdb
+			} else {
+				$return_var = bookacti_import_sql_file_with_wpdb( $file );
+				$imported[ 'results' ][ basename( $file ) ] = $return_var === false ? esc_html__( 'Error', BOOKACTI_PLUGIN_NAME ) : ( is_string( $return_var ) || is_numeric( $return_var ) ? $return_var : esc_html__( 'OK', BOOKACTI_PLUGIN_NAME ) );
+				if( $return_var === false ) { $imported[ 'status' ] = 'failed'; }
+			}
 		}
 		
 		// Remove extracted files and folder
@@ -1264,8 +1349,60 @@ function bookacti_settings_section_bookings_callback() { }
 		
 		return $imported;
 	}
-
-
+	
+	
+	/**
+	 * Import archived data in the database
+	 * @since 1.7.0
+	 * @param array|string $file Full path to a .sql file
+	 * @return boolean|int
+	 */
+	function bookacti_import_sql_file_with_cmd( $file ) {
+		// Check if the file exists
+		if( ! file_exists( $file ) || ! substr( $file, -4 ) === '.sql' ) { return false; }
+		
+		// Check if the server can run mysql tool
+		$mysql_path = bookacti_get_mysql_path();
+		if( ! $mysql_path ) { return false; }
+		
+		$output = array(); $return_var = NULL;
+		$command = $mysql_path . ' --user=' . DB_USER . ' --password="' . DB_PASSWORD . '" --host=' . DB_HOST . ' ' . DB_NAME . ' < "' . $file . '"';
+		exec( $command, $output, $return_var );
+		
+		return $return_var;
+	}
+	
+	
+	/**
+	 * Import archived data in the database
+	 * @since 1.7.0
+	 * @param array|string $file Full path to a .sql file
+	 * @return boolean|int
+	 */
+	function bookacti_import_sql_file_with_wpdb( $file ) {
+		// Check if the file exists
+		if( ! file_exists( $file ) || ! substr( $file, -4 ) === '.sql' ) { return false; }
+		
+		if( ! function_exists( 'dbDelta' ) ) { require_once( ABSPATH . 'wp-admin/includes/upgrade.php' ); }
+		
+		global $wpdb;
+		$wpdb->hide_errors();
+		
+		$file_content = file_get_contents( $file );
+		$queries = explode( PHP_EOL . PHP_EOL, $file_content );
+		$global_result = true;
+		foreach( $queries as $query ) {
+			$result = $wpdb->query( $query );
+			if( $global_result !== false ) {
+				if( $result === false )					{ $global_result = false; }
+				else if( ! is_int( $global_result ) )	{ $global_result = $result; }
+			}
+		}
+		
+		return $global_result;
+	}
+	
+	
 	/**
 	 * Create a zip
 	 * @param array $files
@@ -1329,6 +1466,9 @@ function bookacti_settings_section_bookings_callback() { }
 	 * @return string|false
 	 */
 	function bookacti_get_mysqldump_path() {
+		return false;
+		if( ! bookacti_is_exec_enabled() ) { return false; }
+		
 		if( defined( 'BOOKACTI_MYSQLDUMP_PATH' ) && ! empty( BOOKACTI_MYSQLDUMP_PATH ) ) { 
 			return BOOKACTI_MYSQLDUMP_PATH; 
 		}
@@ -1410,6 +1550,8 @@ function bookacti_settings_section_bookings_callback() { }
 	 * @return string|false
 	 */
 	function bookacti_get_mysqldump_path_for_windows() {
+		if( ! bookacti_is_exec_enabled() ) { return false; }
+		
 		if( function_exists( 'php_ini_loaded_file' ) ) {
 			$get_php_ini_path = php_ini_loaded_file();
 			if( file_exists( $get_php_ini_path ) ) {
@@ -1441,6 +1583,9 @@ function bookacti_settings_section_bookings_callback() { }
 	 * @return string|false
 	 */
 	function bookacti_get_mysql_path() {
+		return false;
+		if( ! bookacti_is_exec_enabled() ) { return false; }
+		
 		if( defined( 'BOOKACTI_MYSQL_PATH' ) && ! empty( BOOKACTI_MYSQL_PATH ) ) { 
 			return BOOKACTI_MYSQL_PATH; 
 		}
@@ -1484,7 +1629,7 @@ function bookacti_settings_section_bookings_callback() { }
 		
 		return false;
 	}
-
+	
 
 
 

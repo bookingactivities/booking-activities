@@ -262,23 +262,25 @@ function bookacti_archive_dump( date, nonce, feedback_div, callback ) {
 			},
 		dataType: 'json',
 		success: function( response ){
+			var list = '';
+			if( typeof response.results !== 'undefined' ) {
+				list = '<ul>';
+				$j.each( response.results, function( filename, error_code ){
+					list += '<li>' + filename + ': ' + error_code + '</li>'
+				});
+				list += '</ul>';
+			}
+			
 			if( response.status === 'success' ) {
 				$j( '#bookacti-database-archives-table' ).replaceWith( response.archive_list );
 				
-				feedback_div.append( '<div class="bookacti-archive-dump-results">' + response.message + '</div>' );
+				feedback_div.append( '<div class="bookacti-archive-results">' + response.message + list + '</div>' );
 				
 				if( $j.isFunction( callback ) ) {
 					callback( date );
 				}
 				
 			} else if( response.status === 'failed' ) {
-				if( typeof response.results !== 'undefined' ) {
-					var list = '<ul>';
-					$j.each( response.results, function( type, result ){
-						list += '<li>' + type + ': ' + result + '</li>'
-					});
-					list += '</ul>';
-				}
 				feedback_div.append( '<div class="bookacti-notices"><ul class="bookacti-error-list"><li>' + response.message + list + '</li></ul></div>' );
 				console.log( response );
 			}
@@ -387,15 +389,19 @@ function bookacti_archive_restore_data( filename, nonce, feedback_div ) {
 			},
 		dataType: 'json',
 		success: function( response ){
-			if( response.status === 'success' ) {
-				feedback_div.append( '<div class="bookacti-notices"><ul class="bookacti-success-list"><li>' + response.message + '</li></ul></div>' );
-				
-			} else if( response.status === 'failed' ) {
-				var list = '<ul>';
+			var list = '';
+			if( typeof response.results !== 'undefined' ) {
+				list = '<ul>';
 				$j.each( response.results, function( filename, error_code ){
 					list += '<li>' + filename + ': ' + error_code + '</li>'
 				});
 				list += '</ul>';
+			}
+			
+			if( response.status === 'success' ) {
+				feedback_div.append( '<div class="bookacti-notices"><ul class="bookacti-success-list"><li>' + response.message + list + '</li></ul></div>' );
+				
+			} else if( response.status === 'failed' ) {
 				feedback_div.append( '<div class="bookacti-notices"><ul class="bookacti-error-list"><li>' + response.message + list + '</li></ul></div>' );
 				console.log( response );
 			}

@@ -90,6 +90,26 @@ function bookacti_get_events_prior_to( $date ) {
 	return $events;
 }
 
+/**
+ * Get repeated events exceptions prior to a date
+ * @since 1.7.0
+ * @param string $date
+ * @return int|false
+ */
+function bookacti_get_repeated_events_exceptions_prior_to( $date ) {
+	global $wpdb;
+	
+	$query	= ' SELECT id FROM ' . BOOKACTI_TABLE_EXCEPTIONS
+			. ' WHERE exception_type = "date" AND exception_value < %s'
+			. ' ORDER BY id DESC';
+	
+	$variables	= array( $date );
+	$query		= $wpdb->prepare( $query, $variables );
+	$exceptions	= $wpdb->get_results( $query, OBJECT );
+	
+	return $exceptions;
+}
+
 
 /**
  * Get repeated events that have started as of a specific date
@@ -103,7 +123,7 @@ function bookacti_get_started_repeated_events_as_of( $date ) {
 	
 	$query	= ' SELECT E.id, E.start, E.end, E.repeat_freq, E.repeat_from, E.repeat_to FROM ' . BOOKACTI_TABLE_EVENTS . ' as E '
 			. ' WHERE ( E.repeat_freq IS NOT NULL AND E.repeat_freq != "none" ) '
-			. ' AND E.repeat_to > %s '
+			. ' AND E.repeat_to >= %s '
 			. ' AND E.repeat_from < %s '
 			. ' ORDER BY E.id DESC';
 	
@@ -129,6 +149,28 @@ function bookacti_get_group_of_events_prior_to( $date ) {
 			. ' GROUP BY GE.group_id '
 			. ' HAVING max_event_end < %s '
 			. ' ORDER BY GE.group_id DESC';
+	
+	$variables	= array( $date . ' 00:00:00' );
+	$query		= $wpdb->prepare( $query, $variables );
+	$groups		= $wpdb->get_results( $query, OBJECT );
+	
+	return $groups;
+}
+
+
+/**
+ * Get groups events prior to a date
+ * @since 1.7.0
+ * @global wpdb $wpdb
+ * @param string $date
+ * @return array
+ */
+function bookacti_get_grouped_events_prior_to( $date ) {
+	global $wpdb;
+	
+	$query	= ' SELECT id FROM ' . BOOKACTI_TABLE_GROUPS_EVENTS
+			. ' WHERE event_end < %s '
+			. ' ORDER BY id DESC';
 	
 	$variables	= array( $date . ' 00:00:00' );
 	$query		= $wpdb->prepare( $query, $variables );
@@ -184,6 +226,38 @@ function bookacti_get_booking_groups_prior_to( $date ) {
 }
 
 
+/**
+ * Get events, group of events, booking and booking groups meta prior to a date
+ * @since 1.7.0
+ * @param string $date
+ * @return int|false
+ */
+function bookacti_get_metadata_prior_to( $date ) {
+	global $wpdb;
+		
+	// Where clauses
+	$where_events			= '( ( repeat_freq IS NULL OR repeat_freq = "none" ) AND end < %s ) OR ( ( repeat_freq IS NOT NULL AND repeat_freq != "none" ) AND repeat_to < %s )';
+	$where_group_of_events	= 'GROUP BY group_id HAVING MAX( event_end ) < %s';
+	$where_bookings			= 'event_end < %s';
+	$where_booking_groups	= 'id IN ( SELECT B.group_id FROM ' . BOOKACTI_TABLE_BOOKINGS . ' as B WHERE B.group_id IS NOT NULL GROUP BY B.group_id HAVING MAX( event_end ) < %s )';
+	
+	$where	= '( object_type = "event" AND object_id IN ( SELECT id FROM ' . BOOKACTI_TABLE_EVENTS . ' WHERE ' . $where_events . ' ) ) ';
+	$where .= 'OR ( object_type = "group_of_events" AND object_id IN ( SELECT group_id FROM ' . BOOKACTI_TABLE_GROUPS_EVENTS . ' ' . $where_group_of_events . ' ) ) ';
+	$where .= 'OR ( object_type = "booking" AND object_id IN ( SELECT id FROM ' . BOOKACTI_TABLE_BOOKINGS . ' WHERE ' . $where_bookings . ' ) ) ';
+	$where .= 'OR ( object_type = "booking_group" AND object_id IN ( SELECT id FROM ' . BOOKACTI_TABLE_BOOKING_GROUPS . ' WHERE ' . $where_booking_groups . ' ) ) ';
+	
+	$variables = array( $date . ' 00:00:00', $date . ' 00:00:00', $date . ' 00:00:00', $date . ' 00:00:00', $date . ' 00:00:00' );
+	
+	$query	= ' SELECT M.id, M.object_id, M.object_type FROM ' . BOOKACTI_TABLE_META . ' as M '
+			. ' WHERE ' . $where;
+	
+	$query	= $wpdb->prepare( $query, $variables );
+	$meta	= $wpdb->get_results( $query, OBJECT );
+	
+	return $meta;
+}
+
+
 
 
 // 2. DB BACKUP DUMP
@@ -229,15 +303,15 @@ function bookacti_archive_started_repeated_events_as_of( $date ) {
 	
 	// Remove the temporary table if it already exists
 	$temp_table = $wpdb->prefix . 'bookacti_temp_events';
-	$delete_query = 'DROP TABLE IF EXISTS ' . $temp_table . '; ';
+	$delete_query = 'DROP TABLE IF EXISTS `' . $temp_table . '`; ';
 	$wpdb->query( $delete_query );
 	
 	// Create a table to store the old repeat_from values
 	$collate = $wpdb->has_cap( 'collation' ) ? $wpdb->get_charset_collate() : '';
-	$temp_table_events_query = 'CREATE TABLE ' . $temp_table . ' ( 
-		id MEDIUMINT(9) UNSIGNED NOT NULL AUTO_INCREMENT, 
-		repeat_from DATE, 
-		PRIMARY KEY ( id ) ) ' . $collate . ';';
+	$temp_table_events_query	= 'CREATE TABLE `' . $temp_table . '` ( '
+								. '`id` MEDIUMINT(9) UNSIGNED NOT NULL AUTO_INCREMENT, '
+								. '`repeat_from` DATE, '
+								. 'PRIMARY KEY (`id`) ) ' . $collate . ';';
 	
 	if( ! function_exists( 'dbDelta' ) ) { require_once( ABSPATH . 'wp-admin/includes/upgrade.php' ); }
 	
@@ -248,42 +322,62 @@ function bookacti_archive_started_repeated_events_as_of( $date ) {
 					. ' SELECT E.id, E.repeat_from FROM ' . BOOKACTI_TABLE_EVENTS . ' as E '
 					. ' WHERE ( E.repeat_freq IS NOT NULL AND E.repeat_freq != "none" ) '
 					. ' AND E.repeat_to >= %s '
-					. ' AND E.repeat_from <= %s ';
+					. ' AND E.repeat_from < %s ';
 	$insert_query		= $wpdb->prepare( $insert_query, array( $date, $date ) );
 	$inserted	= $wpdb->query( $insert_query );
 	
 	if( ! $inserted ) { return $inserted; }
 	
+	
+	$filename	= $date . '-truncated-repeated-events.sql';
+	$uploads_dir= wp_upload_dir();
+	$file		= trailingslashit( str_replace( '\\', '/', $uploads_dir[ 'basedir' ] ) ) . BOOKACTI_PLUGIN_NAME . '/archives/' . $filename;
+	
+	$mysqldump_path = bookacti_get_mysqldump_path() ? true : false;
+	$data_only = $mysqldump_path ? false : true;
+	
+	// Manually add the CREATE query to the backup file if mysqldump cannot be executed
+	if( ! $mysqldump_path ) {
+		$handle	= fopen( $file, 'a' );
+		$write	= 0;
+		if( $handle !== false ) {
+			$text	= $delete_query;
+			$text	.= PHP_EOL . PHP_EOL;
+			$text	.= $temp_table_events_query;
+			$text	.= PHP_EOL . PHP_EOL;
+			$write	= fwrite( $handle, $text );
+			fclose( $handle );
+		}
+
+		if( ! $write ) { return false; }
+	}
+	
 	// Dump the table
-	$filename = $date . '-started-repeated-events.sql';
-	$dumped = bookacti_archive_database( $filename, $temp_table, '', false );
+	$dumped = bookacti_archive_database( $filename, $temp_table, 'TRUE', $data_only );
 	
 	// Remove the table
-	$delete_query = 'DROP TABLE IF EXISTS ' . $temp_table . '; ';
 	$wpdb->query( $delete_query );
 	
-	if( $dumped !== true ) { return $dumped; }
+	if( ( $mysqldump_path && $dumped !== true ) || ( ! $mysqldump_path && $dumped === false ) ) { return $dumped; }
 	
 	// Add the UPDATE and DELETE queries to the backup file
-	$update_query	= 'UPDATE ' . BOOKACTI_TABLE_EVENTS . ' as E '
-					. ' INNER JOIN ' . $temp_table . ' as TE ON E.id = TE.id'
+	$update_query	= 'UPDATE `' . BOOKACTI_TABLE_EVENTS . '` as E'
+					. ' INNER JOIN `' . $temp_table . '` as TE ON E.id = TE.id'
 					. ' SET E.repeat_from = TE.repeat_from'
 					. ' WHERE TE.repeat_from < E.repeat_from;';
 	
-	$uploads_dir= wp_upload_dir();
-	$file		= trailingslashit( str_replace( '\\', '/', $uploads_dir[ 'basedir' ] ) ) . BOOKACTI_PLUGIN_NAME . '/archives/' . $filename;
-	$handle		= fopen( $file, 'a' );
-	$write		= 0;
+	$handle	= fopen( $file, 'a' );
+	$write	= 0;
 	if( $handle !== false ) {
-		$text	= PHP_EOL . '-- Update `' . BOOKACTI_TABLE_EVENTS . '` repeat_from with the values of the temporary table `' . $temp_table . '`';
-		$text	.= PHP_EOL . $update_query . PHP_EOL;
-		$text	.= PHP_EOL . '-- Delete the temporary table `' . $temp_table . '`';
-		$text	.= PHP_EOL . $delete_query. PHP_EOL;
+		$text	= PHP_EOL . PHP_EOL;
+		$text	.= $update_query;
+		$text	.= PHP_EOL . PHP_EOL;
+		$text	.= $delete_query;
 		$write	= fwrite( $handle, $text );
 		fclose( $handle );
 	}
 	
-	return $write ? true : false;
+	return $write ? $inserted : false;
 }
 
 
@@ -294,17 +388,26 @@ function bookacti_archive_started_repeated_events_as_of( $date ) {
  * @return boolean
  */
 function bookacti_archive_group_of_events_prior_to( $date ) {
-	$filename_groups	= $date . '-group-of-events.sql';
+	$filename_groups	= $date . '-groups-of-events.sql';
 	$table_groups		= BOOKACTI_TABLE_EVENT_GROUPS;
 	$where_groups		= sprintf( "id IN ( SELECT group_id FROM " . BOOKACTI_TABLE_GROUPS_EVENTS . " GROUP BY group_id HAVING MAX( event_end ) < '%s' )", $date . ' 00:00:00' );
 	$archive_groups		= bookacti_archive_database( $filename_groups, $table_groups, $where_groups );
-	
-	$filename_events	= $date . '-groups-events.sql';
+	return $archive_groups;
+}
+
+
+/**
+ * Create a .sql file to archive grouped events prior to a date
+ * @since 1.7.0
+ * @param string $date
+ * @return boolean
+ */
+function bookacti_archive_grouped_events_prior_to( $date ) {
+	$filename_events	= $date . '-grouped-events.sql';
 	$table_events		= BOOKACTI_TABLE_GROUPS_EVENTS;
-	$where_events		= sprintf( "TRUE GROUP BY group_id HAVING MAX( event_end ) < '%s'", $date . ' 00:00:00' );
+	$where_events		= sprintf( "event_end < '%s'", $date . ' 00:00:00' );
 	$archive_events		= bookacti_archive_database( $filename_events, $table_events, $where_events );
-	
-	return $archive_groups === true && $archive_events === true;
+	return $archive_events;
 }
 
 
@@ -426,12 +529,39 @@ function bookacti_delete_rows_from_table( $original_table, $where, $variables ) 
 
 
 /**
+ * Delete repeated event exceptions prior to a date
+ * @since 1.7.0
+ * @global wpdb $wpdb
+ * @param string $date
+ * @return int|false
+ */
+function bookacti_delete_repeated_events_exceptions_prior_to( $date ) {
+	global $wpdb;
+	
+	// Count the initial amount of rows
+	$count_query	= 'SELECT COUNT(*) FROM ' . BOOKACTI_TABLE_EXCEPTIONS ;
+	$count_before	= intval( $wpdb->get_var( $count_query ) );
+	
+	// Remove repetead events exceptions
+	$where_exceptions = 'exception_type = "date" AND exception_value < %s';
+	$deleted = bookacti_delete_rows_from_table( BOOKACTI_TABLE_EXCEPTIONS, $where_exceptions, array( $date ) );
+	
+	if( $deleted === false ) { return false; }
+	
+	// Count the current amount of rows
+	$count_after = intval( $wpdb->get_var( $count_query ) );
+	
+	return $count_before - $count_after;
+}
+
+
+/**
  * Delete events prior to a date
  * @since 1.7.0
  * @global wpdb $wpdb
  * @param string $date
  * @param boolean $delete_meta
- * @return array
+ * @return int|false
  */
 function bookacti_delete_events_prior_to( $date, $delete_meta = true ) {
 	global $wpdb;
@@ -448,13 +578,8 @@ function bookacti_delete_events_prior_to( $date, $delete_meta = true ) {
 		bookacti_delete_rows_from_table( BOOKACTI_TABLE_META, $where_meta, $variables );
 	}
 	
-	
-	// Remove repetead events exceptions
-	$where_exceptions	= 'exception_type = "date" AND exception_value < %s';
-	bookacti_delete_rows_from_table( BOOKACTI_TABLE_EXCEPTIONS, $where_exceptions, array( $date ) );
-	
 	// Count the initial amount of rows
-	$count_query	= 'SELECT COUNT(*) FROM ' . BOOKACTI_TABLE_EVENTS ;
+	$count_query	= 'SELECT COUNT(*) FROM ' . BOOKACTI_TABLE_EVENTS;
 	$count_before	= intval( $wpdb->get_var( $count_query ) );
 	
 	// Remove the rows
@@ -476,7 +601,7 @@ function bookacti_delete_events_prior_to( $date, $delete_meta = true ) {
  * @since 1.7.0
  * @global wpdb $wpdb
  * @param string $date
- * @return array
+ * @return int|false
  */
 function bookacti_restrict_started_repeated_events_to( $date ) {
 	global $wpdb;
@@ -485,7 +610,7 @@ function bookacti_restrict_started_repeated_events_to( $date ) {
 			. ' SET repeat_from = %s '
 			. ' WHERE ( repeat_freq IS NOT NULL AND repeat_freq != "none" ) '
 			. ' AND repeat_to >= %s '
-			. ' AND repeat_from <= %s ';
+			. ' AND repeat_from < %s ';
 	
 	$variables	= array( $date, $date, $date );
 	$query		= $wpdb->prepare( $query, $variables );
@@ -501,7 +626,7 @@ function bookacti_restrict_started_repeated_events_to( $date ) {
  * @global wpdb $wpdb
  * @param string $date
  * @param boolean $delete_meta
- * @return array
+ * @return int|false
  */
 function bookacti_delete_group_of_events_prior_to( $date, $delete_meta = true ) {
 	global $wpdb;
@@ -533,14 +658,33 @@ function bookacti_delete_group_of_events_prior_to( $date, $delete_meta = true ) 
 	// Count the current amount of rows
 	$count_after = intval( $wpdb->get_var( $count_query ) );
 	
+	return $count_before - $count_after;
+}
+
+
+/**
+ * Delete groups of events prior to a date
+ * @since 1.7.0
+ * @global wpdb $wpdb
+ * @param string $date
+ * @return int|false
+ */
+function bookacti_delete_grouped_events_prior_to( $date ) {
+	global $wpdb;
 	
-	// Remove events of groups
-	$where_events_of_groups	= 'group_id IN( '
-								. ' SELECT group_id FROM ( ' . $select_query . ' ) as TEMPTABLE '
-							. ' )';
+	// Remove group of events before the events themselves!
+	// Count the initial amount of rows
+	$count_query	= 'SELECT COUNT(*) FROM ' . BOOKACTI_TABLE_GROUPS_EVENTS ;
+	$count_before	= intval( $wpdb->get_var( $count_query ) );
+	
+	$variables	= array( $date . ' 00:00:00' );
+	$where_events_of_groups	= 'event_end < %s';
 	$deleted_events_of_groups = bookacti_delete_rows_from_table( BOOKACTI_TABLE_GROUPS_EVENTS, $where_events_of_groups, $variables );
 	
 	if( $deleted_events_of_groups === false ) { return false; }
+	
+	// Count the current amount of rows
+	$count_after = intval( $wpdb->get_var( $count_query ) );
 	
 	return $count_before - $count_after;
 }
@@ -552,7 +696,7 @@ function bookacti_delete_group_of_events_prior_to( $date, $delete_meta = true ) 
  * @global wpdb $wpdb
  * @param string $date
  * @param boolean $delete_meta
- * @return array
+ * @return int|false
  */
 function bookacti_delete_bookings_prior_to( $date, $delete_meta = true ) {
 	global $wpdb;
@@ -592,7 +736,7 @@ function bookacti_delete_bookings_prior_to( $date, $delete_meta = true ) {
  * @global wpdb $wpdb
  * @param string $date
  * @param boolean $delete_meta
- * @return array
+ * @return int|false
  */
 function bookacti_delete_booking_groups_prior_to( $date, $delete_meta = true ) {
 	global $wpdb;
@@ -635,7 +779,7 @@ function bookacti_delete_booking_groups_prior_to( $date, $delete_meta = true ) {
  * @global wpdb $wpdb
  * @param string $date
  * @param boolean $delete_meta
- * @return array
+ * @return int|false
  */
 function bookacti_delete_bookings_and_events_meta_prior_to( $date ) {
 	global $wpdb;
