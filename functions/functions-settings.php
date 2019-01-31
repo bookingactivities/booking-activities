@@ -1226,6 +1226,20 @@ function bookacti_settings_section_bookings_callback() { }
 
 		return apply_filters( 'bookacti_screen_ids', $screens );
 	}
+	
+	
+	/**
+	 * Check if the current page is a Booking Activities screen
+	 * @since 1.7.0
+	 * @return boolean
+	 */
+	function bookacti_is_booking_activities_screen() {
+		$current_screen = get_current_screen();
+		if( empty( $current_screen ) ) { return false; }
+		$bookacti_screens = bookacti_get_screen_ids();
+		if( isset( $current_screen->id ) && in_array( $current_screen->id, $bookacti_screens, true ) ) { return true; }
+		return false;
+	}
 
 
 

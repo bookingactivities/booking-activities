@@ -80,6 +80,10 @@ function bookacti_set_calendar_up( booking_system, reload_events ) {
 			element.attr( 'data-activity-id',	bookacti.booking_system[ booking_system_id ][ 'events_data' ][ event.id ][ 'activity_id' ] );
 			event.render = 1;
 			
+			// Allow HTML in titles
+			var title = element.find( '.fc-title' );
+			title.html( title.text() );
+			
 			// Display start and end time in spans
 			var time_format	= 'LT';
 			// Remove trailing AM/PM

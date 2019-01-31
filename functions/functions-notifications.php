@@ -621,6 +621,7 @@ function bookacti_send_email( $to, $subject, $message, $headers ) {
 	$user_threshold_minute	= apply_filters( 'bookacti_limit_email_per_minute_per_user', 20 );
 	$user_threshold_hour	= apply_filters( 'bookacti_limit_email_per_hour_per_user', 200 );
 	$user_threshold_day		= apply_filters( 'bookacti_limit_email_per_day_per_user', 2000 );
+	$user_exceptions		= apply_filters( 'bookacti_limit_email_per_user_exceptions', array() );
 	
 	$one_mn_ago_datetime	= clone $current_datetime;
 	$one_hour_ago_datetime	= clone $current_datetime;
@@ -636,6 +637,7 @@ function bookacti_send_email( $to, $subject, $message, $headers ) {
 	// Check per recipient thresholds
 	if( $latest_emails_sent ) {
 		foreach( $recipients as $i => $recipient ) {
+			if( in_array( $recipient, $user_exceptions, true ) ) { continue; }
 			if( empty( $latest_emails_sent[ $recipient ] ) || ! is_array( $latest_emails_sent[ $recipient ] ) ) { continue; }
 			$emails_count_minute_per_user[ $recipient ] = 0;
 			$emails_count_hour_per_user[ $recipient ] = 0;
@@ -673,6 +675,7 @@ function bookacti_send_email( $to, $subject, $message, $headers ) {
 	
 	if( $sent ) {
 		foreach( $actual_recipients as $i => $recipient ) {
+			if( in_array( $recipient, $user_exceptions, true ) ) { continue; }
 			if( ! isset( $latest_emails_sent[ $recipient ] ) || ! is_array( $latest_emails_sent[ $recipient ] ) ) { $latest_emails_sent[ $recipient ] = array(); }
 			$latest_emails_sent[ $recipient ][] = $time_formatted;
 		}

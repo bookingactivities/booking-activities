@@ -3,7 +3,7 @@ Contributors: bookingactivities
 Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=7EKU434L7NEVC
 Tags: booking activities, booking sport, booking form, event reservation, reservation schedule
 Requires at least: 3.6
-Tested up to: 4.9
+Tested up to: 5.0
 Requires PHP: 5.3
 Stable tag: 1.6.2
 License: GPLv3 or later
@@ -321,10 +321,20 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 * Feature - Redirect to a URL when you click on an event or when you submit a booking form
 * Feature - Redirect to a product page when you click on an event or when you submit a booking form
 * Feature - Backup, archive and restore old bookings and events
+* Feature - Edit users phone number on their profile page
+* Tweak - Allow HTML in the title of events and groups of events
 * Tweak - Order calendars, activities, group categories and groups of events by title
+* Tweak - Backend javascript and css files are loaded only on Booking Activities screens to avoid conflicts
 * Dev - Prefill a booking form thanks to URL parameters
 
 = 1.6.2 =
+* Tweak - List of activities in calendar editor can now be scrolled
+* Tweak - Notifications are send to the user when he cancels or reschedule a booking from the frontend
+* Tweak - Limit the amount of emails that can be sent to a single user per minute (default: 20), hour (default: 200) and day (default: 2000) (spam protection)
+* Tweak - Add the {booking_list_raw} notification tag
+* Tweak - Support more parameters in bookingactivities_list shortcode (all booking filters)
+* Fix - The "user_id" parameter of the bookingactivities_list shortcode didn't work while explicitly set to "current"
+* Fix - The "status" and "order_by" parameters of the bookingactivities_list shortcode didn't work
 * Fix - Booking row was not properly updated after cancelling a booking (group)
 * Fix - PHP notice when trying to get translated messages
 * Fix - PHP notice when displaying WC products having a deprecated config available
@@ -332,13 +342,6 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 * Fix - The bottom bulk actions selectbox didn't work on Bookings page
 * Fix - Wrong quantity displayed in reschedule dialog
 * Fix - The "Cancel" custom label was not applied to the right buttons
-* Fix - The "user_id" parameter of the bookingactivities_list shortcode didn't work while explicitly set to "current"
-* Fix - The "status" and "order_by" parameters of the bookingactivities_list shortcode didn't work
-* Tweak - Support more parameters in bookingactivities_list shortcode (all booking filters)
-* Tweak - Add the {booking_list_raw} notification tag
-* Tweak - List of activities in calendar editor can now be scrolled
-* Tweak - Notifications are send to the user when he cancels or reschedule a booking from the frontend
-* Tweak - Limit the amount of emails that can be sent to a single user per minute (default: 20), hour (default: 200) and day (default: 2000) (spam protection)
 * Dev - Use all booking list filters via URL
 * Dev - Filter booking list by multiple form id, user id, group category id, group of events id
 

@@ -156,7 +156,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	 * AJAX Controller - Update event
 	 * 
 	 * @since 1.2.2 (was bookacti_controller_update_event_data)
-	 * @version 1.4.0
+	 * @version 1.7.0
 	 */
 	function bookacti_controller_update_event() {
 		
@@ -181,7 +181,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 			if( $event_validation['status'] === 'valid' ) {
 				
-				$event_title		= sanitize_text_field( stripslashes( $_POST['event-title'] ) );
+				$event_title		= wp_kses_post( stripslashes( $_POST['event-title'] ) );
 				$event_start		= bookacti_sanitize_datetime( $_POST['event-start'] );
 				$event_end			= bookacti_sanitize_datetime( $_POST['event-end'] );
 				$settings			= isset( $_POST['eventOptions'] ) && is_array( $_POST['eventOptions'] ) ? $_POST['eventOptions'] : array();
@@ -495,7 +495,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	 * Update group of events data with AJAX
 	 * 
 	 * @since 1.1.0
-	 * @version 1.4.0
+	 * @version 1.7.0
 	 */
 	function bookacti_controller_update_group_of_events() {
 		
@@ -512,7 +512,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		
 		$category_id	= intval( $_POST[ 'group-of-events-category' ] );
 		$category_title	= sanitize_text_field( stripslashes( $_POST[ 'group-of-events-category-title' ] ) );
-		$group_title	= sanitize_text_field( stripslashes( $_POST[ 'group-of-events-title' ] ) );
+		$group_title	= wp_kses_post( stripslashes( $_POST[ 'group-of-events-title' ] ) );
 		$events			= json_decode( stripslashes( $_POST['events'] ) );
 		
 		// Validate input data

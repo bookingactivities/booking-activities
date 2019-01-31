@@ -112,18 +112,35 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		// Display tabs
 		bookacti_display_tabs( $event_tabs, 'event' );
 
-
+		
+		/**
+		 * Fill the "event" tab of the Event settings dialog
+		 * @version 1.7.0
+		 * @param array $params
+		 */
 		function bookacti_fill_event_tab_general( $params ) {
 			do_action( 'bookacti_event_tab_general_before', $params );
 		?>
 			<div>
-				<label for='bookacti-event-title' ><?php esc_html_e( 'Title', BOOKACTI_PLUGIN_NAME ); ?></label>
-				<input type='text' name='event-title' id='bookacti-event-title' />
 				<?php
-					$tip = __( 'Give your event a specific title.', BOOKACTI_PLUGIN_NAME );
-					$tip .= ' ' . __( 'It will override the activity setting on this event only.', BOOKACTI_PLUGIN_NAME );
-					bookacti_help_tip( $tip );
+					$tip = esc_html__( 'Give your event a specific title.', BOOKACTI_PLUGIN_NAME ) . ' ' . esc_html__( 'It will override the activity setting on this event only.', BOOKACTI_PLUGIN_NAME );
+					$args = array(
+						'type'			=> 'textarea',
+						'name'			=> 'event-title',
+						'id'			=> 'bookacti-event-title',
+						'placeholder'	=> $tip,
+						'value'			=> ''
+					);
 				?>
+				<div>
+					<label for='<?php echo $args[ 'id' ]; ?>' class='bookacti-fullwidth-label' >
+					<?php 
+						esc_html_e( 'Title', BOOKACTI_PLUGIN_NAME );
+						bookacti_help_tip( $tip );
+					?>
+					</label>
+					<?php bookacti_display_field( $args ); ?>
+				</div>
 			</div>
 			<div>
 				<label for='bookacti-event-availability' ><?php esc_html_e( 'Availability', BOOKACTI_PLUGIN_NAME ); ?></label>
@@ -808,19 +825,32 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			/**
 			 * Fill "General" tab of "Group of Events" dialog
 			 * 
-			 * @version 1.4.0
+			 * @version 1.7.0
 			 * @param array $params
 			 */
 			function bookacti_fill_group_of_events_tab_general( $params = array() ) {
 				do_action( 'bookacti_group_of_events_tab_general_before', $params );
 		?>
 				<div>
-					<label for='bookacti-group-of-events-title-field' ><?php esc_html_e( 'Group title', BOOKACTI_PLUGIN_NAME ); ?></label>
-					<input type='text' name='group-of-events-title' id='bookacti-group-of-events-title-field' />
 					<?php
 						$tip = __( "Name this group of events. Your cutomers may see this name if they have several booking choices (if the event is in two groups, or if you also allow to book the event alone). Choose a short and relevant name.", BOOKACTI_PLUGIN_NAME );
-						bookacti_help_tip( $tip );
+						$args = array(
+							'type'			=> 'textarea',
+							'name'			=> 'group-of-events-title',
+							'id'			=> 'bookacti-group-of-events-title-field',
+							'placeholder'	=> $tip,
+							'value'			=> ''
+						);
 					?>
+					<div>
+						<label for='<?php echo $args[ 'id' ]; ?>' class='bookacti-fullwidth-label' >
+						<?php 
+							esc_html_e( 'Group title', BOOKACTI_PLUGIN_NAME );
+							bookacti_help_tip( $tip );
+						?>
+						</label>
+						<?php bookacti_display_field( $args ); ?>
+					</div>
 				</div>
 				<div>
 					<label for='bookacti-group-of-events-category-selectbox' ><?php esc_html_e( 'Group category', BOOKACTI_PLUGIN_NAME ); ?></label>

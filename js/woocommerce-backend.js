@@ -1,3 +1,5 @@
+if( typeof $j === 'undefined' ) { $j=jQuery.noConflict(); }
+
 $j( document ).ready( function() {
 
 	// Show or hide the activity tab on product page in the backend
@@ -33,7 +35,7 @@ $j( document ).ready( function() {
 			var template_ids = $j( this ).val();
 			if( template_ids === 'parent' ) { template_ids = $j( '#_bookacti_template' ).val() || $j( this ).data( 'parent' ); }
 			var options = $j( '[name$="[' + $j( this ).data( 'loop' ) + ']"] [data-bookacti-show-if-templates], [name$="[' + $j( this ).data( 'loop' ) + '][]"] [data-bookacti-show-if-templates]' );
-			bookacti_show_hide_template_related_options( template_ids, options );
+			bookacti_show_hide_template_related_options_deprecated( template_ids, options );
 		});
 		/** END BACKWARD COMPATIBILITY < 1.5 **/
 	});
@@ -47,7 +49,7 @@ $j( document ).ready( function() {
 		var template_ids = $j( this ).val();
 		if( template_ids === 'parent' ) { template_ids = $j( '#_bookacti_template' ).val() || $j( this ).data( 'parent' ); }
 		var options = $j( '[name$="[' + $j( this ).data( 'loop' ) + ']"] [data-bookacti-show-if-templates], [name$="[' + $j( this ).data( 'loop' ) + '][]"] [data-bookacti-show-if-templates]' );
-		bookacti_show_hide_template_related_options( template_ids, options );
+		bookacti_show_hide_template_related_options_deprecated( template_ids, options );
 	});
 	/** END BACKWARD COMPATIBILITY < 1.5 **/
 	
@@ -242,5 +244,60 @@ function bookacti_migrate_product_activity_settings_to_booking_form( product_id,
 			container.find( '.bookacti-notices' ).show();
 			container.find( '.bookacti-loading-alt' ).remove();
 		}
+	});
+}
+
+
+/**
+ * Show or hide activities depending on the selected template
+ * @since 1.7.0
+ * @param {array} template_ids
+ * @param {dom_element} options
+ */
+function bookacti_show_hide_template_related_options_deprecated( template_ids, options ) {
+	
+	// Init variables
+	var change_selected = [];
+	
+	if( $j.isNumeric( template_ids ) ) { template_ids = [ template_ids ]; }
+	
+	// Show all
+	options.prop( 'disabled', false );
+	options.removeClass( 'bookacti-hide-fields' );
+	
+	// Hide not allowed
+	options.each( function() {
+		
+		var option = $j( this );
+		
+		// Retrieve allowed templates array
+		var allowed_templates = option.data( 'bookacti-show-if-templates' ).toString();
+		if( allowed_templates.indexOf( ',' ) >= 0 ) {
+			allowed_templates = allowed_templates.split( ',' );
+		} else {
+			allowed_templates = [ allowed_templates ];
+		}
+		
+		// Hide not allowed data and flag if one of them was selected
+		var hide = true;
+		$j.each( template_ids, function( i, template_id ) {
+			if( $j.inArray( template_id.toString(), allowed_templates ) >= 0 ) {
+				hide = false;
+			}
+		});
+		
+		if( hide ) {
+			if( option.is( ':selected' ) ) { 
+				change_selected.push( option ); 
+			}
+			option.addClass( 'bookacti-hide-fields' );
+			option.prop( 'disabled', true );
+		}
+	});
+
+	// Change selected activity automatically if it gets hidden
+	$j.each( change_selected, function( i, old_selected_option ) {
+		old_selected_option.removeAttr( 'selected' );
+		old_selected_option.siblings( 'option:not(.bookacti-hide-fields):not(:disabled):first' ).prop( 'selected', true );
 	});
 }

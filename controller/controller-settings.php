@@ -775,6 +775,25 @@ add_action( 'wp_ajax_bookactiArchiveDeleteFile', 'bookacti_controller_archive_de
 
 
 
+// USER PROFILE
+
+/**
+ * Add user contact methods (Add fields to the user profile)
+ * @since 1.7.0
+ * @param array $methods
+ * @param WP_User $user
+ * @return array
+ */
+function bookacti_add_user_contact_methods( $methods, $user ) {
+	if( in_array( 'phone', $methods, true ) ) { return $methods; }
+	$methods[ 'phone' ] = esc_html__( 'Phone', BOOKACTI_PLUGIN_NAME );
+	return $methods;
+}
+add_filter( 'user_contactmethods', 'bookacti_add_user_contact_methods', 100, 2 );
+
+
+
+
 // CUSTOM LINKS
 
 /** 
