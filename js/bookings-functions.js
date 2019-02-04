@@ -233,7 +233,7 @@ function bookacti_init_booking_actions() {
 /**
  * Init booking bulk actions
  * @since 1.6.0
- * @version 1.6.2
+ * @version 1.7.0
  */
 function bookacti_init_booking_bulk_actions() {
 	$j( '.bookacti-bookings-bulk-action' ).on( 'submit', function( e ) {

@@ -6,7 +6,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
  * Array of configurable notifications
  * 
  * @since 1.2.1 (was bookacti_get_emails_default_settings in 1.2.0)
- * @version 1.6.2
+ * @version 1.7.0
  * @return array
  */
 function bookacti_get_notifications_default_settings() {
@@ -284,7 +284,7 @@ function bookacti_sanitize_notification_settings( $args, $notification_id = '' )
 /**
  * Get notifications tags
  * @since 1.2.0
- * @version 1.6.2
+ * @version 1.7.0
  * @param string $notification_id Optional.
  * @return array
  */
@@ -324,7 +324,7 @@ function bookacti_get_notifications_tags( $notification_id = '' ) {
 /**
  * Get notifications tags and values corresponding to given booking
  * @since 1.2.0
- * @version 1.6.2
+ * @version 1.7.0
  * @param int $booking_id
  * @param string $booking_type 'group' or 'single'
  * @param string $notification_id
@@ -520,7 +520,7 @@ add_action( 'bookacti_send_async_notification', 'bookacti_send_notification', 10
 /**
  * Send an email notification
  * @since 1.2.0
- * @version 1.6.2
+ * @version 1.7.0
  * @param array $notification
  * @param array $tags
  * @param string $locale
@@ -602,7 +602,7 @@ add_action( 'bookacti_send_async_new_user_notification', 'bookacti_send_new_user
 /**
  * Send an email.
  * Make sure not to send more emails than allowed in a specific timeframe
- * @since 1.6.2
+ * @since 1.7.0
  * @param array $to
  * @param string $subject
  * @param string $message

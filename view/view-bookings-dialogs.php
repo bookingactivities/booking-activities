@@ -1,7 +1,7 @@
 <?php 
 /**
  * Frontend and Backend booking dialogs
- * @version 1.6.2
+ * @version 1.7.0
  */
 
 // Exit if accessed directly

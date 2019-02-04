@@ -28,7 +28,7 @@ add_action( 'bookacti_booking_form_validated', 'bookacti_send_notification_when_
  * Send a notification to admin and customer when a single booking status changes
  * 
  * @since 1.2.1 (was bookacti_send_email_when_booking_state_changes in 1.2.0)
- * @version 1.6.2
+ * @version 1.7.0
  * @param int $booking_id
  * @param string $status
  * @param array $args
@@ -61,7 +61,7 @@ add_action( 'bookacti_booking_state_changed', 'bookacti_send_notification_when_b
  * Send a notification to admin and customer when a booking group status changes
  * 
  * @since 1.2.1 (was bookacti_send_email_when_booking_group_state_changes in 1.2.0)
- * @version 1.6.2
+ * @version 1.7.0
  * @param int $booking_group_id
  * @param string $status
  * @param array $args
@@ -91,7 +91,7 @@ add_action( 'bookacti_booking_group_state_changed', 'bookacti_send_notification_
  * Send a notification to admin and customer when a booking is rescheduled
  * 
  * @since 1.2.1 (was bookacti_send_email_when_booking_is_rescheduled in 1.2.0)
- * @version 1.6.2
+ * @version 1.7.0
  * @param object $booking
  * @param object $old_booking
  * @param array $args

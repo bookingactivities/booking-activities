@@ -828,7 +828,7 @@ function bookacti_settings_section_bookings_callback() { }
 	/**
 	 * Get all custom messages
 	 * @since 1.2.0
-	 * @version 1.6.2
+	 * @version 1.7.0
 	 * @param boolean $raw Whether to retrieve the raw value from database or the option parsed through get_option
 	 * @return array
 	 */
@@ -1449,3 +1449,306 @@ function bookacti_settings_section_bookings_callback() { }
 			<?php
 		}
 	}
+	
+	
+
+
+// PRIVACY OPTIONS
+
+/**
+ * Export additionnal user metadata with WP privacy export tool
+ * @since 1.7.0
+ * @param string $email_address
+ * @param int $page
+ * @return array
+ */
+function bookacti_privacy_exporter_user_data( $email_address, $page = 1 ) {
+	$user			= get_user_by( 'email', $email_address );
+	$data_to_export = array();
+	
+	if( $user instanceof WP_User ) {
+		$user_meta = get_user_meta( $user->ID );
+		
+		$user_meta_to_export = apply_filters( 'bookacti_privacy_export_user_columns', array(
+			'phone' => esc_html__( 'Phone', BOOKACTI_PLUGIN_NAME )
+		), $user_meta, $email_address, $page );
+		
+		$user_personal_data = array();
+		foreach( $user_meta_to_export as $key => $name ) {
+			if( empty( $user_meta[ $key ] ) ) { continue; }
+			$user_personal_data[] = array(
+				'name'  => $name,
+				'value' => $user_meta[ $key ][0]
+			);
+		}
+		
+		if( ! empty( $user_personal_data ) ) {
+			$data_to_export[] = array(
+				'group_id'    => 'user',
+				'group_label' => __( 'User' ),
+				'item_id'     => 'user-' . $user->ID,
+				'data'        => $user_personal_data,
+			);
+		}
+	}
+	
+	return array(
+		'data' => $data_to_export,
+		'done' => true,
+	);
+}
+
+
+/**
+ * Export bookings user metadata with WP privacy export tool
+ * @since 1.7.0
+ * @param string $email_address
+ * @param int $page
+ * @return array
+ */
+function bookacti_privacy_exporter_bookings_data( $email_address, $page = 1 ) {
+	$user				= get_user_by( 'email', $email_address );
+	$number				= 200; // Limit to avoid timing out
+	$page				= (int) $page;
+	$data_to_export		= array();
+	$bookings			= array(); 
+	$group_by_booking	= array();
+	$bookings_meta		= array();
+	$booking_groups_meta= array();
+	
+	// Get bookings either by email or id if the user is registered
+	$user_ids = array( $email_address );
+	if( $user instanceof WP_User ) {
+		$user_ids[] = $user->ID;
+	}
+	
+	// Count the total number of bookings to know when the exporter is done
+	$filters_count = bookacti_format_booking_filters( array(
+		'in__user_id'	=> $user_ids
+	) );
+	$bookings_count = bookacti_get_number_of_booking_rows( $filters_count );
+	
+	if( $bookings_count ) {
+		// Get the bookings
+		$filters = bookacti_format_booking_filters( array(
+			'in__user_id'	=> $user_ids,
+			'offset'		=> ($page-1)*$number,
+			'per_page'		=> $number
+		) );
+		$bookings = bookacti_get_bookings( $filters );
+
+		if( $bookings ) {
+			// Store booking ids and booking groups ids separatly to retrieve metadata
+			$bookings_ids = array();
+			$booking_groups_ids = array();
+			foreach( $bookings as $booking ) {
+				if( ! empty( $booking->group_id ) ) {
+					$group_by_booking[ $booking->id ] = $booking->group_id;
+					if( ! in_array( $booking->group_id, $booking_groups_ids, true ) ) {
+						$booking_groups_ids[] = $booking->group_id;
+					}
+				}
+				$bookings_ids[] = $booking->id;
+			}
+
+			$bookings_meta			= bookacti_get_metadata( 'booking', $bookings_ids );
+			$booking_groups_meta	= bookacti_get_metadata( 'booking_group', $booking_groups_ids );
+
+			// Allow third party to change the exported data
+			$booking_meta_to_export = apply_filters( 'bookacti_privacy_export_bookings_columns', array(
+				'id'				=> esc_html__( 'ID', BOOKACTI_PLUGIN_NAME ),
+				'group_id'			=> esc_html__( 'Group ID', BOOKACTI_PLUGIN_NAME ),
+				'creation_date'		=> esc_html__( 'Date', BOOKACTI_PLUGIN_NAME ),
+				'event_title'		=> esc_html__( 'Title', BOOKACTI_PLUGIN_NAME ),
+				'event_start'		=> esc_html__( 'Start', BOOKACTI_PLUGIN_NAME ),
+				'event_end'			=> esc_html__( 'End', BOOKACTI_PLUGIN_NAME ),
+				'state'				=> esc_html__( 'Status', BOOKACTI_PLUGIN_NAME ),
+				'user_id'			=> esc_html__( 'User ID', BOOKACTI_PLUGIN_NAME ),
+				'user_email'		=> esc_html__( 'Email', BOOKACTI_PLUGIN_NAME ),
+				'user_first_name'	=> esc_html__( 'First name', BOOKACTI_PLUGIN_NAME ),
+				'user_last_name'	=> esc_html__( 'Last name', BOOKACTI_PLUGIN_NAME ),
+				'user_phone'		=> esc_html__( 'Phone', BOOKACTI_PLUGIN_NAME )
+			), $bookings, $bookings_meta, $booking_groups_meta, $email_address, $page );
+
+			// Set the name / value data to export for each booking
+			$format = bookacti_get_message( 'date_format_long' );
+			$states = bookacti_get_booking_state_labels();
+			foreach( $bookings as $booking ) {
+				$booking_personal_data = array();
+				$booking_meta		= ! empty( $bookings_meta[ $booking->id ] ) ? $bookings_meta[ $booking->id ] : array();
+				$booking_group_meta = ! empty( $booking->group_id ) && ! empty( $booking_groups_meta[ $booking->group_id ] ) ? $booking_groups_meta[ $booking->group_id ] : array();
+				
+				foreach( $booking_meta_to_export as $key => $name ) {
+					$value = '';
+					if( ! empty( $booking->$key ) ) { 
+						switch ( $key ) {
+							case 'user_id':
+								$value = is_numeric( $booking->$key ) ? '' : $booking->$key;
+								break;
+							case 'event_title':
+								$value = apply_filters( 'bookacti_translate_text', $booking->$key );
+								break;
+							case 'creation_date':
+							case 'event_start':
+							case 'event_end':
+								$value = bookacti_format_datetime( $booking->$key, $format );
+								break;
+							case 'state':
+								$value = ! empty( $states[ $booking->$key ][ 'label' ] ) ? $states[ $booking->$key ][ 'label' ] : $booking->$key;
+								break;
+							default:
+								$value = $booking->$key;
+						}
+					}
+					else if( isset( $booking_meta[ $key ] ) ) {
+						$value = $booking_meta[ $key ];
+					}
+					else if( isset( $booking_group_meta[ $key ] ) ) {
+						$value = $booking_group_meta[ $key ];
+					}
+
+					$value = apply_filters( 'bookacti_privacy_export_booking_value', $value, $key, $booking, $booking_meta, $booking_group_meta, $email_address, $page );
+
+					if( $value === '' || ( ! is_string( $value ) && ! is_numeric( $value ) ) ) { continue; }
+
+					$booking_personal_data[] = array(
+						'name'  => $name,
+						'value' => $value
+					);
+				}
+
+				if ( ! empty( $booking_personal_data ) ) {
+					$data_to_export[] = array(
+						'group_id'    => 'bookacti_bookings',
+						'group_label' => esc_html__( 'Bookings', BOOKACTI_PLUGIN_NAME ),
+						'item_id'     => 'bookacti_booking_' . $booking->id,
+						'data'        => apply_filters( 'bookacti_privacy_export_booking_data', $booking_personal_data, $booking, $booking_meta, $booking_group_meta, $email_address, $page )
+					);
+				}
+			}
+		}
+	}
+	
+	return array(
+		'data' => apply_filters( 'bookacti_privacy_export_bookings_data', $data_to_export, $bookings, $group_by_booking, $bookings_meta, $booking_groups_meta, $email_address, $page ),
+		'done' => ($page*$number) >= $bookings_count
+	);
+}
+
+
+/**
+ * Erase additionnal user metadata with WP privacy export tool
+ * @since 1.7.0
+ * @param string $email_address
+ * @param int $page
+ * @return array
+ */
+function bookacti_privacy_eraser_user_data( $email_address, $page = 1 ) {
+	$user		= get_user_by( 'email', $email_address );
+	$response	= array(
+		'items_removed' => false,
+		'items_retained' => false,
+		'messages' => array(),
+		'done' => true
+	);
+	
+	if( $user instanceof WP_User ) {
+		$user_meta = get_user_meta( $user->ID );
+		
+		$user_meta_to_erase = apply_filters( 'bookacti_privacy_erase_user_columns', array(
+			'phone' => esc_html__( 'Phone', BOOKACTI_PLUGIN_NAME )
+		), $user_meta, $email_address, $page );
+		
+		foreach( $user_meta_to_erase as $key => $label ) {
+			if( empty( $user_meta[ $key ] ) ) { continue; }
+			$deleted = delete_user_meta( $user->ID, $key );
+			if( ! $deleted ) {
+				$field_label = $label ? $label : $key;
+				$response[ 'items_retained' ] = true;
+				$response[ 'messages' ][] = sprintf( esc_html__( 'This data couldn\'t be deleted: %s.', BOOKACTI_PLUGIN_NAME ), $field_label );
+			} else { 
+				$response[ 'items_removed' ] = true;
+			}
+		}
+		
+		if( $response[ 'items_removed' ] ) {
+			$response[ 'messages' ][] = esc_html__( 'Personal data saved during bookings has been successfully deleted.', BOOKACTI_PLUGIN_NAME );
+		}
+	}
+	
+	return $response;
+}
+
+
+/**
+ * Erase bookings user metadata with WP privacy erase tool
+ * @since 1.7.0
+ * @param string $email_address
+ * @param int $page
+ * @return array
+ */
+function bookacti_privacy_eraser_bookings_data( $email_address, $page = 1 ) {
+	$user	= get_user_by( 'email', $email_address );
+	$number	= 200; // Limit to avoid timing out
+	$page	= (int) $page;
+	$response = array(
+		'items_removed' => false,
+		'items_retained' => false,
+		'messages' => array(),
+		'done' => true
+	);
+	
+	// Get bookings either by email or id if the user is registered
+	$user_ids = array( $email_address );
+	if( $user instanceof WP_User ) {
+		$user_ids[] = $user->ID;
+	}
+	
+	// Count the total number of bookings to know when the exporter is done
+	$filters_count = bookacti_format_booking_filters( array(
+		'in__user_id'	=> $user_ids
+	) );
+	$bookings_count = bookacti_get_number_of_booking_rows( $filters_count );
+	$response[ 'done' ] = ($page*$number) >= $bookings_count;
+	
+	if( $bookings_count ) {
+		// Get the bookings
+		$filters = bookacti_format_booking_filters( array(
+			'in__user_id'	=> $user_ids,
+			'offset'		=> ($page-1)*$number,
+			'per_page'		=> $number
+		) );
+		$bookings = bookacti_get_bookings( $filters );
+
+		if( $bookings ) {
+			// Store booking ids and booking groups ids separatly to delete metadata
+			$bookings_ids = array();
+			$booking_groups_ids = array();
+			$group_by_booking = array();
+			foreach( $bookings as $booking ) {
+				if( ! empty( $booking->group_id ) ) {
+					$group_by_booking[ $booking->id ] = $booking->group_id;
+					if( ! in_array( $booking->group_id, $booking_groups_ids, true ) ) {
+						$booking_groups_ids[] = $booking->group_id;
+					}
+				}
+				$bookings_ids[] = $booking->id;
+			}
+			
+			$booking_meta_to_erase = apply_filters( 'bookacti_privacy_erase_bookings_columns', array(
+				'user_id'			=> esc_html__( 'User ID', BOOKACTI_PLUGIN_NAME ),
+				'user_email'		=> esc_html__( 'Email', BOOKACTI_PLUGIN_NAME ),
+				'user_first_name'	=> esc_html__( 'First name', BOOKACTI_PLUGIN_NAME ),
+				'user_last_name'	=> esc_html__( 'Last name', BOOKACTI_PLUGIN_NAME ),
+				'user_phone'		=> esc_html__( 'Phone', BOOKACTI_PLUGIN_NAME )
+			), $bookings, $email_address, $page );
+			
+			$deleted_booking_meta = bookacti_delete_metadata( 'booking', $bookings_ids, array_keys( $booking_meta_to_erase ) );
+			if( $booking_groups_ids ) {
+				$deleted_booking_meta = bookacti_delete_metadata( 'booking_group', $booking_groups_ids, array_keys( $booking_meta_to_erase ) );
+			}
+		}
+	}
+	
+	return $response;
+}

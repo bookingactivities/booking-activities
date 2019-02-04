@@ -232,10 +232,10 @@ function bookacti_delete_user_meta( $meta_key, $user_id = 0, $meta_value = '' ) 
 
 /**
  * Get metadata
- * 
+ * @version 1.7.0
  * @global wpdb $wpdb
  * @param string $object_type
- * @param int $object_id
+ * @param int|array $object_id
  * @param string $meta_key
  * @param boolean $single
  * @return mixed
@@ -243,34 +243,52 @@ function bookacti_delete_user_meta( $meta_key, $user_id = 0, $meta_value = '' ) 
 function bookacti_get_metadata( $object_type, $object_id, $meta_key = '', $single = false ) {
 	global $wpdb;
 
-	if ( ! $object_type || ! is_numeric( $object_id ) ) {
+	if( ! $object_type || ( ! is_numeric( $object_id ) && ! is_array( $object_id ) ) ) {
 		return false;
 	}
-
-	$object_id = absint( $object_id );
-	if ( ! $object_id ) {
-		return false;
+	
+	if( is_numeric( $object_id ) ) {
+		$object_id = absint( $object_id );
+	} else if( is_array( $object_id ) ) {
+		$object_id = array_filter( array_map( 'absint', array_unique( $object_id ) ) );
 	}
+	
+	if( ! $object_id ) { return false; }
+	
+	$query	= 'SELECT object_id, meta_key, meta_value FROM ' . BOOKACTI_TABLE_META
+			. ' WHERE object_type = %s';
 
-	$query_get_meta = 'SELECT meta_key, meta_value FROM ' . BOOKACTI_TABLE_META
-					. ' WHERE object_type = %s'
-					. ' AND object_id = %d';
-
-	$variables_array = array( $object_type, $object_id );
-
+	$variables = array( $object_type );
+	
+	if( is_numeric( $object_id ) ) {
+		$query .= ' AND object_id = %d';
+		$variables[] = $object_id;
+		
+	} else if( is_array( $object_id ) ) {
+		$query .= ' AND object_id IN ( %d ';
+		$array_count = count( $object_id );
+		if( $array_count >= 2 ) {
+			for( $i=1; $i<$array_count; ++$i ) {
+				$query .= ', %d ';
+			}
+		}
+		$query .= ') ';
+		$variables = array_merge( $variables, $object_id );
+	}
+	
 	if( $meta_key !== '' ) {
-		$query_get_meta .= ' AND meta_key = %s';
-		$variables_array[] = $meta_key;
+		$query .= ' AND meta_key = %s';
+		$variables[] = $meta_key;
 	}
 
-	$query_prep = $wpdb->prepare( $query_get_meta, $variables_array );
+	$query = $wpdb->prepare( $query, $variables );
 
 	if( $single ) {
-		$metadata = $wpdb->get_row( $query_prep, OBJECT );
+		$metadata = $wpdb->get_row( $query, OBJECT );
 		return isset( $metadata->meta_value ) ? maybe_unserialize( $metadata->meta_value ) : false;
 	}
 
-	$metadata = $wpdb->get_results( $query_prep, OBJECT );
+	$metadata = $wpdb->get_results( $query, OBJECT );
 
 	if( is_null( $metadata ) ) { 
 		return false; 
@@ -278,7 +296,11 @@ function bookacti_get_metadata( $object_type, $object_id, $meta_key = '', $singl
 
 	$metadata_array = array();
 	foreach( $metadata as $metadata_pair ) {
-		$metadata_array[ $metadata_pair->meta_key ] = maybe_unserialize( $metadata_pair->meta_value );
+		if( is_array( $object_id ) ) {
+			$metadata_array[ $metadata_pair->object_id ][ $metadata_pair->meta_key ] = maybe_unserialize( $metadata_pair->meta_value );
+		} else {
+			$metadata_array[ $metadata_pair->meta_key ] = maybe_unserialize( $metadata_pair->meta_value );
+		}
 	}
 
 	return $metadata_array;
@@ -446,25 +468,44 @@ function bookacti_duplicate_metadata( $object_type, $source_id, $recipient_id ) 
 
 /**
  * Delete metadata
- * @version 1.5.0
+ * @version 1.7.0
  * @global wpdb $wpdb
  * @param string $object_type
- * @param int $object_id
+ * @param int|array $object_id
  * @param array $metadata_key_array Array of metadata keys to delete. Leave it empty to delete all metadata of the desired object.
  * @return int|boolean
  */
 function bookacti_delete_metadata( $object_type, $object_id, $metadata_key_array = array() ) {
 	global $wpdb;
+	
+	if( ! $object_type || ( ! is_numeric( $object_id ) && ! is_array( $object_id ) ) ) { return false; }
+	
+	if( is_numeric( $object_id ) ) {
+		$object_id = absint( $object_id );
+	} else if( is_array( $object_id ) ) {
+		$object_id = array_filter( array_map( 'absint', array_unique( $object_id ) ) );
+	}
+	
+	$query = 'DELETE FROM ' . BOOKACTI_TABLE_META . ' WHERE object_type = %s ';
 
-	if( ! $object_type || ! is_numeric( $object_id ) || ! is_array( $metadata_key_array ) ) { return false; }
-
-	$object_id = absint( $object_id );
-	if( ! $object_id ) { return false; }
-
-	$query = 'DELETE FROM ' . BOOKACTI_TABLE_META . ' WHERE object_type = %s AND object_id = %d ';
-
-	$variables = array( $object_type, $object_id );
-
+	$variables = array( $object_type );
+	
+	if( is_numeric( $object_id ) ) {
+		$query .= ' AND object_id = %d';
+		$variables[] = $object_id;
+		
+	} else if( is_array( $object_id ) ) {
+		$query .= ' AND object_id IN ( %d ';
+		$array_count = count( $object_id );
+		if( $array_count >= 2 ) {
+			for( $i=1; $i<$array_count; ++$i ) {
+				$query .= ', %d ';
+			}
+		}
+		$query .= ') ';
+		$variables = array_merge( $variables, $object_id );
+	}
+	
 	if( $metadata_key_array ) {
 		$query .= ' AND meta_key IN( %s';
 		for( $i=1,$len=count($metadata_key_array); $i < $len; ++$i ) {

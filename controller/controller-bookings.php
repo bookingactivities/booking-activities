@@ -62,7 +62,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	// SINGLE BOOKING
 		/**
 		 * AJAX Controller - Cancel a booking
-		 * @version 1.6.2
+		 * @version 1.7.0
 		 */
 		function bookacti_controller_cancel_booking() {
 
@@ -292,7 +292,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 		/**
 		 * AJAX Controller - Reschedule a booking
-		 * @version 1.6.2
+		 * @version 1.7.0
 		 */
 		function bookacti_controller_reschedule_booking() {
 
@@ -426,7 +426,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		/**
 		 * AJAX Controller - Cancel a booking group
 		 * @since 1.1.0
-		 * @version 1.6.2
+		 * @version 1.7.0
 		 */
 		function bookacti_controller_cancel_booking_group() {
 

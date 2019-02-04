@@ -682,7 +682,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	
 	/**
 	 * Add price to be refunded in refund dialog
-	 * @version 1.6.2
+	 * @version 1.7.0
 	 * @param string $text
 	 * @param int $booking_id
 	 * @param string $booking_type
@@ -1072,7 +1072,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	
 	/**
 	 * Update dates after reschedule
-	 * @version 1.6.2
+	 * @version 1.7.0
 	 * @param object $booking
 	 * @param object $old_booking
 	 * @param array $args

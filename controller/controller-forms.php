@@ -762,7 +762,7 @@ add_action( 'wp_ajax_nopriv_bookactiSubmitBookingForm', 'bookacti_controller_val
 /**
  * Save the user data when the customer do not want to create an account, and attach them to the booking
  * @since 1.6.0
- * @version 1.6.2
+ * @version 1.7.0
  * @param int $booking_id
  * @param array $booking_form_values
  * @param string $booking_type

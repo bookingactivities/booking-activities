@@ -239,7 +239,26 @@ $j( document ).ready( function() {
 		}
 	});
 	
-	// Confirm before leaving if the form isn't published
+	
+	/**
+	 * Toggle the WC actions fields according to the currently selected form action
+	 * @since 1.7.0
+	 */
+	$j( '#bookacti-form-field-dialog-calendar' ).on( 'change', 'select#bookacti-form_action', function( e ){
+		// Show / hide the columns displayed in the "redirect URL" tables
+		$j( '.bookacti-activities-actions-options-table .bookacti-column-product, .bookacti-group-categories-actions-options-table .bookacti-column-product' ).hide();
+		if( $j( this ).val() === 'redirect_to_product_page' ) {
+			$j( '.bookacti-activities-actions-options-table .bookacti-column-redirect_url, .bookacti-group-categories-actions-options-table .bookacti-column-redirect_url' ).hide();
+			$j( '.bookacti-activities-actions-options-table .bookacti-column-product, .bookacti-group-categories-actions-options-table .bookacti-column-product' ).show();
+		}
+		// Always hide categories table if no categories are selected
+		if( $j( 'select#bookacti-group_categories' ).val() === 'none' ) { $j( '.bookacti-group-categories-actions-options-table' ).hide(); }
+	});
+	
+	
+	/**
+	 * Confirm before leaving if the form isn't published
+	 */
 	$j( window ).on( 'beforeunload', function( e ){
 		if( $j( '#major-publishing-actions' ).data( 'popup' ) ) { return true; } // Confirm before redirect
 		else { e = null; } // Redirect

@@ -179,7 +179,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	
 	/**
 	 * Change booking quantity and status when a refund is deleted
-	 * @version 1.6.2
+	 * @version 1.7.0
 	 * @param int $refund_id
 	 * @param int $order_id
 	 */
@@ -471,7 +471,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	
 	/**
 	 * Content of the activity tab
-	 * @version 1.6.2
+	 * @version 1.7.0
 	 * @global int $thepostid
 	 */
 	function bookacti_activity_tab_content() {
@@ -874,7 +874,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	
 	/**
 	 * Add custom fields for activity variation product type
-	 * @version 1.6.2
+	 * @version 1.7.0
 	 * @param int $loop
 	 * @param array $variation_data
 	 * @param WP_Post $variation

@@ -441,7 +441,7 @@ if( ! class_exists( 'Bookings_List_Table' ) ) {
 		
 		/**
 		 * Format filters passed as argument or retrieved via POST or GET
-		 * @version 1.6.2
+		 * @version 1.7.0
 		 * @access public
 		 * @param array $filters
 		 * @return array
@@ -709,7 +709,7 @@ if( ! class_exists( 'Bookings_List_Table' ) ) {
 		 * Get an associative array ( option_name => option_title ) with the list
 		 * of bulk actions available on this table.
 		 * @since 1.6.0
-		 * @version 1.6.2
+		 * @version 1.7.0
 		 * @return array
 		 */
 		protected function get_bulk_actions() {

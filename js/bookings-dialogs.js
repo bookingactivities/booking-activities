@@ -585,7 +585,7 @@ function bookacti_dialog_change_booking_state( booking_id, booking_type ) {
 
 /**
  * Reschedule booking dialog
- * @version 1.6.2
+ * @version 1.7.0
  * @param {int} booking_id
  */
 function bookacti_dialog_reschedule_booking( booking_id ) {

@@ -1089,7 +1089,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	 * Turn all bookings of an order to the desired status. 
 	 * Also make sure that bookings are bound to the order and the associated user.
 	 * 
-	 * @version 1.6.2
+	 * @version 1.7.0
 	 * @param WC_Order $order
 	 * @param string $state
 	 * @param string $payment_status

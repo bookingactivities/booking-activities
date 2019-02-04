@@ -101,7 +101,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	/**
 	 * Get Default booking filters
 	 * @since 1.6.0
-	 * @version 1.6.2
+	 * @version 1.7.0
 	 * @return array
 	 */
 	function bookacti_get_default_booking_filters() {
@@ -146,7 +146,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	/**
 	 * Format booking filters
 	 * @since 1.3.0
-	 * @version 1.6.2
+	 * @version 1.7.0
 	 * @param array $filters 
 	 * @return array
 	 */
@@ -257,7 +257,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	/**
 	 * Format booking filters manually input
 	 * @since 1.6.0
-	 * @version 1.6.2
+	 * @version 1.7.0
 	 * @param array $filters
 	 * @return array
 	 */
@@ -624,7 +624,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		/**
 		 * Get booking actions array
 		 * @since 1.6.0 (replace bookacti_get_booking_actions_array)
-		 * @version 1.6.2
+		 * @version 1.7.0
 		 * @param string $admin_or_front Can be "both", "admin", "front. Default "both".
 		 * @return array
 		 */
@@ -1332,7 +1332,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 	/**
 	 * Send a refund request by email for a specific booking
-	 * @version 1.6.2
+	 * @version 1.7.0
 	 * @param int $booking_id
 	 * @param string $booking_type Defined if the given id is a booking id or a booking group id. Accepted values are 'single' and 'group'.
 	 * @param string $user_message

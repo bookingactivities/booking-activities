@@ -919,3 +919,47 @@ function bookacti_admin_footer_text( $footer_text ) {
 	return $footer_text;
 }
 add_filter( 'admin_footer_text', 'bookacti_admin_footer_text', 10, 1 );
+
+
+
+
+// PRIVACY
+
+/**
+ * Register the personal data exporters for privacy
+ * @since 1.7.0
+ * @param array $exporters
+ * @return array
+ */
+function bookacti_register_privacy_exporters( $exporters ) {
+	$exporters[ 'bookacti-user' ] = array(
+		'exporter_friendly_name' => 'Booking Activities user data',
+		'callback' => 'bookacti_privacy_exporter_user_data',
+	);
+	$exporters[ 'bookacti-bookings' ] = array(
+		'exporter_friendly_name' => 'Booking Activities user bookings data',
+		'callback' => 'bookacti_privacy_exporter_bookings_data',
+	);
+	return $exporters;
+}
+add_filter( 'wp_privacy_personal_data_exporters', 'bookacti_register_privacy_exporters', 10 );
+
+
+/**
+ * Register the personal data erasers for privacy
+ * @since 1.7.0
+ * @param array $erasers
+ * @return array
+ */
+function bookacti_register_privacy_erasers( $erasers ) {
+	$erasers[ 'bookacti-user' ] = array(
+		'exporter_friendly_name' => 'Booking Activities user data',
+		'callback' => 'bookacti_privacy_eraser_user_data',
+	);
+	$erasers[ 'bookacti-bookings' ] = array(
+		'exporter_friendly_name' => 'Booking Activities user bookings data',
+		'callback' => 'bookacti_privacy_eraser_bookings_data',
+	);
+	return $erasers;
+}
+add_filter( 'wp_privacy_personal_data_erasers', 'bookacti_register_privacy_erasers', 10 );

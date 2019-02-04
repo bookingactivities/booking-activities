@@ -1703,7 +1703,7 @@ function bookacti_get_occurences_of_repeated_event( $event, $past_events = false
 /**
  * Build a user-friendly events list
  * @since 1.1.0
- * @version 1.6.2
+ * @version 1.7.0
  * @param array $booking_events
  * @param int|string $quantity
  * @param string $locale Optional. Default to site locale.
@@ -1803,7 +1803,7 @@ function bookacti_get_formatted_booking_events_list( $booking_events, $quantity 
 
 /**
  * Build a user-friendly comma separated events list
- * @since 1.6.2
+ * @since 1.7.0
  * @param array $booking_events
  * @param int|string $quantity
  * @param string $locale Optional. Default to site locale.
@@ -1896,6 +1896,7 @@ function bookacti_get_formatted_booking_events_list_raw( $booking_events, $quant
 /**
  * Convert an array of events into ical format
  * @since 1.6.0
+ * @version 1.7.0
  * @param array $events
  * @param string $name
  * @param string $description
@@ -1954,12 +1955,12 @@ function bookacti_convert_events_to_ical( $events, $name = '', $description = ''
 			$event_start	= new DateTime( $event[ 'start' ], $timezone_obj );
 			$event_end		= new DateTime( $event[ 'end' ], $timezone_obj );
 			$current_time	= new DateTime( 'now', $timezone_obj );
-			$now_formatted	= $current_time->format( 'Ymd\THis\Z' );
+			$now_formatted	= $current_time->format( 'Ymd\THis' );
 
 			$vevent_properties = apply_filters( 'bookacti_ical_vevent_properties', array(
 				'UID'			=> $uid,
-				'DTSTART'		=> $event_start->format( 'Ymd\THis\Z' ),
-				'DTEND'			=> $event_end->format( 'Ymd\THis\Z' ),
+				'DTSTART'		=> $event_start->format( 'Ymd\THis' ),
+				'DTEND'			=> $event_end->format( 'Ymd\THis' ),
 				'DTSTAMP'		=> $now_formatted,
 				'CREATED'		=> '',
 				'LAST-MODIFIED' => '',
