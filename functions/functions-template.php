@@ -621,7 +621,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	 * Retrieve template groups of events list
 	 * 
 	 * @since 1.1.0
-	 * @version 1.5.0
+	 * @version 1.7.0
 	 * @param int $template_id
 	 * @return string|boolean
 	 */
@@ -656,7 +656,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			
 			foreach( $groups as $group_id => $group ) {
 				if( $group[ 'category_id' ] === $category[ 'id' ] ) {
-					$group_title		= $group[ 'title' ];
+					$group_title = strip_tags( $group[ 'title' ] );
 					
 					$list	.=	   "<div class='bookacti-group-of-events' data-group-id='" . $group_id . "' >
 										<div class='bookacti-group-of-events-title' title='" . $group_title . "' >

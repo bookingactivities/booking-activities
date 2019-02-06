@@ -428,9 +428,8 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	
 	/**
 	 * Create a group of events with AJAX
-	 * 
 	 * @since 1.1.0
-	 * @version 1.4.0
+	 * @version 1.7.0
 	 */
 	function bookacti_controller_insert_group_of_events() {
 		
@@ -480,10 +479,12 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		$category_data	= bookacti_get_group_category( $category_id );
 		$group_data		= bookacti_get_group_of_events( $group_id );
 		$group_events	= bookacti_get_group_events( $group_id );
+		$group_title_raw= strip_tags( $group_data->title );
 		
 		wp_send_json( array('status' => 'success', 
 							'group_id' => $group_id, 
 							'group' => $group_data, 
+							'group_title_raw' => $group_title_raw, 
 							'group_events' => $group_events, 
 							'category_id' => $category_id, 
 							'category' => $category_data ) );
@@ -493,7 +494,6 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 	/**
 	 * Update group of events data with AJAX
-	 * 
 	 * @since 1.1.0
 	 * @version 1.7.0
 	 */
@@ -550,9 +550,11 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		$category_data	= bookacti_get_group_category( $category_id );
 		$group_data		= bookacti_get_group_of_events( $group_id );
 		$group_events	= bookacti_get_group_events( $group_id );
+		$group_title_raw= strip_tags( $group_data->title );
 		
 		wp_send_json( array('status' => 'success', 
 							'group' => $group_data, 
+							'group_title_raw' => $group_title_raw, 
 							'group_events' => $group_events, 
 							'category_id' => $category_id, 
 							'category' => $category_data ) );

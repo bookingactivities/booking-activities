@@ -6,10 +6,8 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 	/**
 	 * Check if a booking is whithin the athorized delay as of now
-	 * 
 	 * @since 1.1.0
-	 * @version 1.4.0
-	 * 
+	 * @version 1.7.0
 	 * @param object|int $booking
 	 * @return boolean
 	 */
@@ -31,11 +29,15 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			$booking_group	= bookacti_get_booking_group_by_id( $booking->group_id );
 			$event_group	= bookacti_get_group_of_events( $booking_group->event_group_id );
 			$category_data	= bookacti_get_metadata( 'group_category', $event_group->category_id );
-			$delay_specific	= isset( $category_data[ 'booking_changes_deadline' ] ) ? intval( $category_data[ 'booking_changes_deadline' ] ) : false;
+			if( isset( $category_data[ 'booking_changes_deadline' ] ) && strlen( $category_data[ 'booking_changes_deadline' ] ) ) {
+				$delay_specific	= intval( $category_data[ 'booking_changes_deadline' ] );
+			}
 		} else {
 			$event			= bookacti_get_event_by_id( $booking->event_id );
 			$activity_data	= bookacti_get_metadata( 'activity', $event->activity_id );
-			$delay_specific	= isset( $activity_data[ 'booking_changes_deadline' ] ) ? intval( $activity_data[ 'booking_changes_deadline' ] ) : false;
+			if( isset( $activity_data[ 'booking_changes_deadline' ] ) && strlen( $activity_data[ 'booking_changes_deadline' ] ) ) {
+				$delay_specific	= intval( $activity_data[ 'booking_changes_deadline' ] );
+			}
 		}
 		
 		// Sanitize

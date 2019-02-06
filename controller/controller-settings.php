@@ -828,6 +828,7 @@ add_filter( 'plugin_row_meta', 'bookacti_meta_links_in_plugins_table', 10, 2 );
 
 
 
+
 // ADMIN PROMO NOTICES
 
 /** 
@@ -963,3 +964,26 @@ function bookacti_register_privacy_erasers( $erasers ) {
 	return $erasers;
 }
 add_filter( 'wp_privacy_personal_data_erasers', 'bookacti_register_privacy_erasers', 10 );
+
+
+
+
+// PLUGIN EDITOR
+
+/**
+ * Allow to edit Booking Activities log files (for easier debugging process)
+ * @since 1.7.0
+ * @param array $editable_extensions
+ * @param string $plugin
+ * @return array
+ */
+function bookacti_add_editable_extensions( $editable_extensions, $plugin ) {
+	if( $plugin !== BOOKACTI_PLUGIN_NAME . '/' . BOOKACTI_PLUGIN_NAME . '.php' 
+	||  in_array( 'log', $editable_extensions, true ) ) { 
+		return $editable_extensions; 
+	}
+	
+	$editable_extensions[] = 'log';
+	return $editable_extensions;
+}
+add_filter( 'editable_extensions', 'bookacti_add_editable_extensions', 10, 2 );

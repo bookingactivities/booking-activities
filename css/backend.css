@@ -19,7 +19,9 @@
     box-shadow: 0 1px 3px rgba( 0, 0, 0, 0.2 );
 }
 
-.bookacti-disabled { cursor: auto; pointer-events: none; opacity: 0.5; }
+.bookacti-disabled		{ cursor: auto; pointer-events: none; opacity: 0.5; }
+.bookacti-hide-fields	{ display: none; }
+.bookacti-show-fields	{ display: block; }
 
 .bookacti-irreversible-action span			{ display: table-cell; vertical-align: middle; }
 .bookacti-irreversible-action .dashicons	{ font-size: 1.5em; color: #b81c23; padding-right: 10px; }
