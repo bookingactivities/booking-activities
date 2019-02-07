@@ -861,14 +861,16 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	/**
 	 * Create a user selectbox
 	 * @since 1.3.0
-	 * @version 1.6.0
+	 * @version 1.7.0
 	 * @param array $args
 	 * @return string|void
 	 */
 	function bookacti_display_user_selectbox( $args ) {
 		
 		$defaults = array(
-			'show_option_all' => '', 'show_option_none' => '', 'option_none_value' => -1,
+			'show_option_all' => '', 
+			'show_option_none' => '', 'option_none_value' => -1, 
+			'show_option_self' => '', 'option_self_value' => '',
 			'show_option_current' => '', 'option_current_value' => 'current',
 			'option_label' => array( 'display_name' ), 'echo' => 1,
 			'selected' => 0, 'name' => 'user_id', 'class' => '', 'id' => '',
@@ -883,6 +885,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		ob_start();
 		?>
 		
+		<input type='hidden' name='<?php echo $args[ 'name' ]; ?>' value='' />
 		<select <?php if( $args[ 'id' ] ) { echo 'id="' . $args[ 'id' ] . '"'; } ?> name='<?php echo $args[ 'name' ]; ?>' class='bookacti-user-selectbox <?php echo $args[ 'class' ]; ?>' >
 			<option value='' ><?php echo esc_html__( 'Search for a customer', BOOKACTI_PLUGIN_NAME ); ?></option>
 			<?php
@@ -900,10 +903,15 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 					$_selected = selected( $args[ 'option_current_value' ], $args[ 'selected' ], false );
 					?><option value='<?php echo esc_attr( $args[ 'option_current_value' ] ); ?>' <?php echo $_selected ?> ><?php echo $args[ 'show_option_current' ]; ?></option><?php
 				}
-			
+				
+				if( $args[ 'show_option_self' ] ) {
+					$_selected = selected( $args[ 'option_self_value' ], $args[ 'selected' ], false );
+					?><option value='<?php echo esc_attr( $args[ 'option_self_value' ] ); ?>' class='bookacti-variable-value' <?php echo $_selected ?> ><?php echo $args[ 'option_self_value' ] ? $args[ 'option_self_value' ] : $args[ 'show_option_self' ]; ?></option><?php
+				}
+				
 				do_action( 'bookacti_add_user_selectbox_options', $args, $users );
 
-				foreach( $users as $user ){
+				foreach( $users as $user ) {
 					$_selected = selected( $user->ID, $args[ 'selected' ], false );
 					
 					// Build the option label based on the array

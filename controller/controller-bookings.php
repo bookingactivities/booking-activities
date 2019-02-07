@@ -32,30 +32,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	}
 	add_action( 'wp_ajax_bookactiGetBookingRows', 'bookacti_controller_get_booking_rows' );
 
-	
-	/**
-	 * Make sure that the selected user (passed as a parameter) is displayed in the booking filters user selectbox
-	 * @since 1.6.0
-	 * @param array $args
-	 * @param array $users
-	 */
-	function bookacti_add_selected_user_in_booking_filters_user_selectbox( $args, $users ) {
-		if( $args[ 'id' ] !== 'bookacti-booking-filter-customer' || empty( $args[ 'selected' ] ) ) { return; }
-		
-		$user_id = $args[ 'selected' ];
-		$user_id_exists = false;
-		foreach( $users as $user ) {
-			if( $user->ID === $user_id ) { $user_id_exists = true; break; }
-		}
-		
-		if( ! $user_id_exists ) {
-			?>
-			<option value='<?php echo $args[ 'selected' ]; ?>' <?php echo selected( $user_id, $args[ 'selected' ], false ) ?> ><?php echo esc_html( $args[ 'selected' ] ); ?></option>
-			<?php
-		}
-	}
-	add_action( 'bookacti_add_user_selectbox_options', 'bookacti_add_selected_user_in_booking_filters_user_selectbox', 10, 2 );
-	
+
 
 
 // BOOKING ACTIONS

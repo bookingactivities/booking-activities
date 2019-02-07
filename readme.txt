@@ -331,13 +331,15 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 * Tweak - Limit the amount of emails that can be sent to a single user per minute (20), hour (200) and day (2000) (spam protection)
 * Tweak - Add the {booking_list_raw} notification tag
 * Tweak - Support more parameters in bookingactivities_list shortcode (all booking filters)
-* Fix - Cancellation delay were not working properly
+* Tweak - Allow to filter bookings by user ID even if it is not in the list
+* Fix - Cancellation delays were not working properly
 * Fix - The "user_id" parameter of the bookingactivities_list shortcode didn't work while explicitly set to "current"
 * Fix - The "status" and "order_by" parameters of the bookingactivities_list shortcode didn't work
 * Fix - Booking row was not properly updated after cancelling a booking (group)
 * Fix - PHP notice when trying to get translated messages
 * Fix - PHP notice when displaying WC products having a deprecated config available
 * Fix - PHP warning when a form with no "User Data (Login / Registration)" field is submitted
+* Fix - PHP error on booking form list if the booking form author account has been deleted
 * Fix - The bottom bulk actions selectbox didn't work on Bookings page
 * Fix - Wrong quantity displayed in reschedule dialog
 * Fix - The "Cancel" custom label was not applied to the right buttons

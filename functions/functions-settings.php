@@ -1672,11 +1672,11 @@ function bookacti_privacy_eraser_user_data( $email_address, $page = 1 ) {
 		}
 		
 		if( $response[ 'items_removed' ] ) {
-			$response[ 'messages' ][] = esc_html__( 'Personal data saved during bookings has been successfully deleted.', BOOKACTI_PLUGIN_NAME );
+			$response[ 'messages' ][] = esc_html__( 'Personal data attached to the account by Booking Activities have been successfully deleted.', BOOKACTI_PLUGIN_NAME );
 		}
 	}
 	
-	return $response;
+	return apply_filters( 'bookacti_privacy_erase_user_data', $response, $email_address, $page );
 }
 
 
@@ -1691,6 +1691,7 @@ function bookacti_privacy_eraser_bookings_data( $email_address, $page = 1 ) {
 	$user	= get_user_by( 'email', $email_address );
 	$number	= 200; // Limit to avoid timing out
 	$page	= (int) $page;
+	$bookings = array();
 	$response = array(
 		'items_removed' => false,
 		'items_retained' => false,
@@ -1699,9 +1700,11 @@ function bookacti_privacy_eraser_bookings_data( $email_address, $page = 1 ) {
 	);
 	
 	// Get bookings either by email or id if the user is registered
+	$anonymized_user_id = 'anon_' . md5( microtime().rand() );
 	$user_ids = array( $email_address );
 	if( $user instanceof WP_User ) {
 		$user_ids[] = $user->ID;
+		$anonymized_user_id = $user->ID;
 	}
 	
 	// Count the total number of bookings to know when the exporter is done
@@ -1735,18 +1738,55 @@ function bookacti_privacy_eraser_bookings_data( $email_address, $page = 1 ) {
 				$bookings_ids[] = $booking->id;
 			}
 			
+			// Let add-ons add metadata to remove
 			$booking_meta_to_erase = apply_filters( 'bookacti_privacy_erase_bookings_columns', array(
-				'user_id'			=> esc_html__( 'User ID', BOOKACTI_PLUGIN_NAME ),
 				'user_email'		=> esc_html__( 'Email', BOOKACTI_PLUGIN_NAME ),
 				'user_first_name'	=> esc_html__( 'First name', BOOKACTI_PLUGIN_NAME ),
 				'user_last_name'	=> esc_html__( 'Last name', BOOKACTI_PLUGIN_NAME ),
 				'user_phone'		=> esc_html__( 'Phone', BOOKACTI_PLUGIN_NAME )
 			), $bookings, $email_address, $page );
 			
+			// Delete the bookings metadata
 			$deleted_booking_meta = bookacti_delete_metadata( 'booking', $bookings_ids, array_keys( $booking_meta_to_erase ) );
-			if( $booking_groups_ids ) {
-				$deleted_booking_meta = bookacti_delete_metadata( 'booking_group', $booking_groups_ids, array_keys( $booking_meta_to_erase ) );
+			if( $deleted_booking_meta ) { $response[ 'items_removed' ] = true; }
+			else if( $deleted_booking_meta === false ) { 
+				$response[ 'items_retained' ] = true;
+				$response[ 'messages' ][] = esc_html__( 'Some booking personal metadata may have not be deleted.', BOOKACTI_PLUGIN_NAME );
 			}
+			
+			// Delete the booking groups metadata
+			if( $booking_groups_ids ) {
+				$deleted_booking_group_meta = bookacti_delete_metadata( 'booking_group', $booking_groups_ids, array_keys( $booking_meta_to_erase ) );
+				if( $deleted_booking_group_meta ) { $response[ 'items_removed' ] = true; }
+				else if( $deleted_booking_group_meta === false ) { 
+					$response[ 'items_retained' ] = true;
+					$response[ 'messages' ][] = esc_html__( 'Some booking group personal metadata may have not be deleted.', BOOKACTI_PLUGIN_NAME );
+				}
+			}
+			
+			// Feedback the user
+			if( $response[ 'items_removed' ] ) {
+				$response[ 'messages' ][] = esc_html__( 'Personal data attached to the bookings have been successfully deleted.', BOOKACTI_PLUGIN_NAME );
+			}
+		}
+	}
+	
+	$response = apply_filters( 'bookacti_privacy_erase_bookings_data', $response, $bookings, $email_address, $page );
+	
+	// Anonymize the bookings made without account when everything else is finished
+	if( $response[ 'done' ] ) {
+		$anonymized = false;
+		$anonymize_allowed = apply_filters( 'bookacti_privacy_anonymize_bookings_without_account', true, $email_address, $page );
+		if( $anonymize_allowed ) {
+			$anonymized_user_id = apply_filters( 'bookacti_privacy_anonymized_user_id', $anonymized_user_id, $email_address, $page );
+			$anonymized = bookacti_update_bookings_user_id( $anonymized_user_id, $email_address, false );
+			if( $anonymized ) {
+				$response[ 'messages' ][] = esc_html__( 'The bookings made without account have been successfully anonymized.', BOOKACTI_PLUGIN_NAME );
+			}
+		}
+		if( $anonymized === false ) {
+			$response[ 'items_retained' ] = true;
+			$response[ 'messages' ][] = esc_html__( 'The bookings made without account may have not been anonymized.', BOOKACTI_PLUGIN_NAME );
 		}
 	}
 	

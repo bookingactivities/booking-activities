@@ -176,6 +176,8 @@ if( ! $templates ) {
 						'name'				=> 'user_id',
 						'id'				=> 'bookacti-booking-filter-customer',
 						'show_option_all'	=> esc_html__( 'All', BOOKACTI_PLUGIN_NAME ),
+						'show_option_self'	=> esc_html__( 'Your search', BOOKACTI_PLUGIN_NAME ),
+						'option_self_value'	=> $selected_user,
 						'option_label'		=> array( 'user_login', ' (', 'user_email', ')' ),
 						'selected'			=> $selected_user,
 						'echo'				=> true

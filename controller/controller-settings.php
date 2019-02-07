@@ -954,11 +954,11 @@ add_filter( 'wp_privacy_personal_data_exporters', 'bookacti_register_privacy_exp
  */
 function bookacti_register_privacy_erasers( $erasers ) {
 	$erasers[ 'bookacti-user' ] = array(
-		'exporter_friendly_name' => 'Booking Activities user data',
+		'eraser_friendly_name' => 'Booking Activities user data',
 		'callback' => 'bookacti_privacy_eraser_user_data',
 	);
 	$erasers[ 'bookacti-bookings' ] = array(
-		'exporter_friendly_name' => 'Booking Activities user bookings data',
+		'eraser_friendly_name' => 'Booking Activities user bookings data',
 		'callback' => 'bookacti_privacy_eraser_bookings_data',
 	);
 	return $erasers;

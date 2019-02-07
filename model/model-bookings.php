@@ -1612,6 +1612,53 @@ function bookacti_update_booking_user_id( $booking_id, $user_id ) {
 }
 
 
+/** 
+ * Update all bookings of a customer_id with a new user_id
+ * 
+ * When not logged-in people add a booking to cart or go to checkout, their booking and order are associated with their customer id
+ * This changes customer id by user id for all bookings made whithin the 31 past days as they log in which correspond to WC cart cookie
+ * We can't go further because customer ids are generated randomly, regardless of existing ones in database
+ * Limiting to 31 days make it very improbable that two customers with the same id create an account or log in
+ * 
+ * @version 1.7.0
+ * @global wpdb $wpdb
+ * @param int|string $user_id
+ * @param int|string $old_user_id
+ * @param int $expiration_date_delay
+ * @return false|int
+ */
+function bookacti_update_bookings_user_id( $user_id, $old_user_id, $expiration_date_delay = 31 ) {
+	global $wpdb;
+	
+	// Single Bookings
+	$query		= 'UPDATE ' . BOOKACTI_TABLE_BOOKINGS 
+				. ' SET user_id = %s '
+				. ' WHERE user_id = %s ';
+	
+	$variables = array( $user_id, $old_user_id );
+	
+	// Whether to check expiration date
+	if( is_numeric( $expiration_date_delay ) ) {
+		$query .= ' AND expiration_date >= DATE_SUB( UTC_TIMESTAMP(), INTERVAL %d DAY ) ';
+		$variables[] = intval( $expiration_date_delay );
+	}
+	
+	$query		= $wpdb->prepare( $query, $variables );
+	$updated1	= $wpdb->query( $query );
+	
+	// Booking Groups
+	$query		= 'UPDATE ' . BOOKACTI_TABLE_BOOKING_GROUPS 
+				. ' SET user_id = %s '
+				. ' WHERE user_id = %s ';
+	$query		= $wpdb->prepare( $query, $user_id, $old_user_id );
+	$updated2	= $wpdb->query( $query );
+	
+	if( $updated1 === false || $updated2 === false ) { return false; }
+	
+	return $updated1 + $updated2;
+}
+
+
 /**
  * Update booking state
  * 
