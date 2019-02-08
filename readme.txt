@@ -344,6 +344,7 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 * Fix - Wrong quantity displayed in reschedule dialog
 * Fix - The "Cancel" custom label was not applied to the right buttons
 * Fix - The time zone of the exported events was incorrect (UTC instead of yours)
+* Fix - Can't refund booking groups paid with WooCommerce
 * Dev - Prefill a booking form thanks to URL parameters
 * Dev - Use all booking list filters via URL
 * Dev - Filter booking list by multiple form id, user id, group category id, group of events id

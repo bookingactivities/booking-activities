@@ -900,7 +900,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	
 	/**
 	 * Check if a booking group can be refunded
-	 * @version 1.6.0
+	 * @version 1.7.0
 	 * @param boolean $true
 	 * @param object $booking_group
 	 * @return boolean
@@ -916,7 +916,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		$is_paid = version_compare( WC_VERSION, '3.0.0', '>=' ) ? $order->get_date_paid( 'edit' ) : $order->paid_date;
 		if( ! $is_paid ) { $true = false; }	
 		
-		$item = bookacti_get_order_item_by_booking_group_id( $booking_group->id );
+		$item = bookacti_get_order_item_by_booking_group_id( $booking_group );
 		if( ! $item ) { return false; }
 		
 		// WOOCOMMERCE 3.0.0 backward compatibility 

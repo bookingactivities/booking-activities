@@ -1414,7 +1414,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	/**
 	 * Get woocommerce order item id by booking group id
 	 * @since 1.1.0
-	 * @version 1.6.0
+	 * @version 1.7.0
 	 * @param int|object $booking_group_id
 	 * @return array|false
 	 */
@@ -1424,6 +1424,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		
 		if( is_object( $booking_group_id ) && ! empty( $booking_group_id->id ) ) {
 			$booking_group = $booking_group_id;
+			$booking_group_id = $booking_group->id;
 			$order_id = $booking_group->order_id;
 		} else {
 			$order_id = bookacti_get_booking_group_order_id( $booking_group_id );
@@ -1436,7 +1437,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		if( empty( $order ) ) { return false; }
 
 		$order_items = $order->get_items();
-
+		
 		$item = array();
 		foreach( $order_items as $order_item_id => $order_item ) {
 			// Check if the item is bound to a the desired booking
@@ -1961,7 +1962,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	
 	/**
 	 * Create a coupon to refund a booking
-	 * @version 1.6.0
+	 * @version 1.7.0
 	 * @param int $booking_id
 	 * @param string $booking_type Determine if the given id is a booking id or a booking group. Accepted values are 'single' or 'group'.
 	 * @param string $refund_message
@@ -1984,7 +1985,15 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			$item		= bookacti_get_order_item_by_booking_group_id( $booking_id );
 		}
 		
-		$user = is_nueric( $user_id ) ? get_user_by( 'id', $user_id ) : null;
+		if( ! $item ) { 
+			return array( 
+				'status'	=> 'failed', 
+				'error'		=> 'no_order_item_found',
+				'message'	=> esc_html__( 'The order item bound to the booking was not found.', BOOKACTI_PLUGIN_NAME )
+			);
+		}
+		
+		$user = is_numeric( $user_id ) ? get_user_by( 'id', $user_id ) : null;
 		
 		$amount				= (float) $item[ 'line_total' ] + (float) $item[ 'line_tax' ];
 		$user_billing_email = get_user_meta( $user_id, 'billing_email', true );
@@ -2052,8 +2061,12 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		if( $existing_coupon_code ) {
 			$existing_coupon = WC()->api->WC_API_Coupons->get_coupon_by_code( $existing_coupon_code );
 
-			$return_data = array( 'status' => 'success', 'coupon_amount' => wc_price( $existing_coupon['coupon']['amount'] ), 'coupon_code' => $existing_coupon['coupon']['code'], 'new_state' => 'refunded' );
-			return $return_data;
+			return array( 
+				'status' => 'success', 
+				'coupon_amount' => wc_price( $existing_coupon['coupon']['amount'] ), 
+				'coupon_code' => $existing_coupon['coupon']['code'], 
+				'new_state' => 'refunded' 
+			);
 		}
 
 
@@ -2091,10 +2104,19 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			$code = apply_filters( 'bookacti_refund_coupon_code', $coupon[ 'coupon' ][ 'code' ], $data, $coupon, $user, $item );
 			wc_update_order_item_meta( $order_item_id, 'bookacti_refund_coupon', $code );
 
-			$return_data = array( 'status' => 'success', 'coupon_amount' => wc_price( $data['coupon']['amount'] ), 'coupon_code' => $code, 'new_state' => 'refunded' );
+			$return_data = array( 
+				'status' => 'success', 
+				'coupon_amount' => wc_price( $data['coupon']['amount'] ), 
+				'coupon_code' => $code, 
+				'new_state' => 'refunded' 
+			);
 
 		} else if( is_wp_error( $coupon ) ) {
-			$return_data = array( 'status' => 'failed', 'error' => $coupon, 'message' => $coupon->get_error_message() );
+			$return_data = array( 
+				'status' => 'failed', 
+				'error' => $coupon, 
+				'message' => $coupon->get_error_message() 
+			);
 		}
 
 		// Remove user cap to create coupon

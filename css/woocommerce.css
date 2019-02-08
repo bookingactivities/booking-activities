@@ -1,5 +1,5 @@
 /***** BACKEND WOOCOMMERCE *****/
-#woocommerce-product-data .bookacti-loading-alt { display: inline-block; margin: 10px; }
+#woocommerce-product-data .bookacti-loading-alt { display: inline-block; margin: 10px; max-width: 120px; }
 #woocommerce-product-data ul.product_data_tabs li.activity_tab a::before { font-family: dashicons; content:'\f508'; }
 .bookacti-woo-title		{ padding: 1em 0 0.5em 0; }
 
