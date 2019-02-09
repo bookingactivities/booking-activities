@@ -113,6 +113,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	
 	/**
 	 * Create a zip
+	 * @since 1.7.0
 	 * @param array $files
 	 * @param string $destination
 	 * @param boolean $overwrite

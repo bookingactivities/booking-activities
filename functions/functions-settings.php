@@ -1746,6 +1746,8 @@ function bookacti_privacy_eraser_bookings_data( $email_address, $page = 1 ) {
 				'user_phone'		=> esc_html__( 'Phone', BOOKACTI_PLUGIN_NAME )
 			), $bookings, $email_address, $page );
 			
+			$response = apply_filters( 'bookacti_privacy_erase_bookings_data_before', $response, $bookings, $booking_meta_to_erase, $email_address, $page );
+			
 			// Delete the bookings metadata
 			$deleted_booking_meta = bookacti_delete_metadata( 'booking', $bookings_ids, array_keys( $booking_meta_to_erase ) );
 			if( $deleted_booking_meta ) { $response[ 'items_removed' ] = true; }
