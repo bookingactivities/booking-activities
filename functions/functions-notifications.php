@@ -103,7 +103,7 @@ function bookacti_get_notifications_default_settings() {
 					'message'	=> __( "<p>Hello {user_firstname},
 										<p>Your booking has been <strong>cancelled</strong>.</p>
 										<p>{booking_list}</p>
-										<p>If you didn't cancelled this reservation or if you think this is an error, please contact us.</p>", BOOKACTI_PLUGIN_NAME ) )
+										<p>If you haven't cancelled this reservation or if you think this is an error, please contact us.</p>", BOOKACTI_PLUGIN_NAME ) )
 			),
 		'customer_refunded_booking' => 
 			array(
@@ -133,7 +133,7 @@ function bookacti_get_notifications_default_settings() {
 					'message'	=> __( "<p>Hello {user_firstname},
 										<p>Your booking has been <strong>rescheduled</strong> from {booking_old_start} to:</p>
 										<p>{booking_list}</p>
-										<p>If you didn't rescheduled this reservation or if you think this is an error, please contact us.</p>", BOOKACTI_PLUGIN_NAME ) )
+										<p>If you haven't rescheduled this reservation or if you think this is an error, please contact us.</p>", BOOKACTI_PLUGIN_NAME ) )
 			),
 	);
 
@@ -421,7 +421,7 @@ function bookacti_get_notifications_tags_values( $booking_id, $booking_type, $no
  * Send a notification according to its settings
  * 
  * @since 1.2.1 (was bookacti_send_email in 1.2.0)
- * @version 1.6.0
+ * @version 1.7.0
  * @param string $notification_id Must exists in "bookacti_notifications_default_settings"
  * @param int $booking_id
  * @param string $booking_type "single" or "group"
@@ -429,13 +429,24 @@ function bookacti_get_notifications_tags_values( $booking_id, $booking_type, $no
  * @param boolean $async Whether to send the notification asynchronously. 
  * @return array
  */
-function bookacti_send_notification( $notification_id, $booking_id, $booking_type, $args = array(), $async = true ) {
+function bookacti_send_notification( $notification_id, $booking_id, $booking_type, $args = array(), $async = 1 ) {
+	$async = ! empty( $async ) ? 1 : 0;
 	
 	// Send notifications asynchronously
 	$allow_async = apply_filters( 'bookacti_allow_async_notifications', bookacti_get_setting_value( 'bookacti_notifications_settings', 'notifications_async' ) );
 	if( $allow_async && $async ) {
-		wp_schedule_single_event( time(), 'bookacti_send_async_notification', array( $notification_id, $booking_id, $booking_type, $args, false ) );
+		// Delay with few seconds to try to avoid scheduling problems
+		wp_schedule_single_event( time() + 3, 'bookacti_send_async_notification', array( $notification_id, $booking_id, $booking_type, $args, 0 ) );
 		return;
+	}
+	
+	// Make sure not to run the same cron task multiple times
+	if( $allow_async && ! $async ) {
+		// If this notification was already sent in the past few minutes, do not send it again
+		$notification_unique_key = md5( json_encode( array( $notification_id, $booking_id, $booking_type, $args ) ) );
+		$already_sent = get_transient( 'bookacti_notif_' . $notification_unique_key );
+		if( $already_sent ) { return; }
+		set_transient( 'bookacti_notif_' . $notification_unique_key, 1, 3*60 );
 	}
 	
 	// Get notification settings
@@ -565,17 +576,20 @@ if( ! function_exists( 'bookacti_send_new_user_notification' ) ) {
 /**
  * Email login credentials to a newly-registered user in an asynchronous way
  * @since 1.5.0
+ * @version 1.7.0
  * @global string  $wp_version
  * @param  int     $user_id   User ID.
  * @param  string  $notify    Optional. Type of notification that should happen. Accepts 'admin' or an empty
  *                            string (admin only), 'user', or 'both' (admin and user). Default 'both'.
  * @param  boolean $async     Whether to send the notification asynchronously. 
  */
-function bookacti_send_new_user_notification( $user_id, $notify = 'both', $async = true ) {
+function bookacti_send_new_user_notification( $user_id, $notify = 'both', $async = 1 ) {
+	$async = ! empty( $async ) ? 1 : 0;
+	
 	// Send notifications asynchronously
 	$allow_async = apply_filters( 'bookacti_allow_async_notifications', bookacti_get_setting_value( 'bookacti_notifications_settings', 'notifications_async' ) );
 	if( $allow_async && $async ) {
-		wp_schedule_single_event( time(), 'bookacti_send_async_new_user_notification', array( $user_id, $notify, false ) );
+		wp_schedule_single_event( time() + 3, 'bookacti_send_async_new_user_notification', array( $user_id, $notify, 0 ) );
 		return;
 	}	
 	

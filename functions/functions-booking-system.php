@@ -1794,7 +1794,7 @@ function bookacti_get_formatted_booking_events_list( $booking_events, $quantity 
 	
 	// Wrap the list only if it is not empty
 	if( ! empty( $events_list ) ) {
-		$events_list = '<ul class="bookacti-booking-events-list bookacti-custom-scrollbar" >' . $events_list . '</ul>';
+		$events_list = '<ul class="bookacti-booking-events-list bookacti-custom-scrollbar" style="clear:both;" >' . $events_list . '</ul>';
 	}
 	
 	return apply_filters( 'bookacti_formatted_booking_events_list', $events_list, $booking_events, $quantity, $locale );

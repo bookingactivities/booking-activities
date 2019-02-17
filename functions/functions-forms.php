@@ -1039,6 +1039,7 @@ function bookacti_validate_registration( $login_values, $login_data ) {
 /**
  * Register a new user through a booking form
  * @since 1.5.0
+ * @version 1.7.0
  * @param array $login_values
  * @param array $login_data
  * @return WP_User|array
@@ -1098,7 +1099,7 @@ function bookacti_register_a_new_user( $login_values, $login_data ) {
 
 	// Send the welcome email
 	$user_registered_notify = apply_filters( 'bookacti_new_registered_user_notify', empty( $login_data[ 'send_new_account_email' ] ) ? 'admin' : 'both', $user, $login_values );
-	bookacti_send_new_user_notification( $user_id, $user_registered_notify, true );
+	bookacti_send_new_user_notification( $user_id, $user_registered_notify, 1 );
 	
 	return apply_filters( 'bookacti_new_registered_user', $user, $login_values, $login_data );
 }

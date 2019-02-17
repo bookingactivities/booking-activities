@@ -3,7 +3,7 @@ Contributors: bookingactivities
 Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=7EKU434L7NEVC
 Tags: booking activities, booking sport, booking form, event reservation, reservation schedule
 Requires at least: 3.6
-Tested up to: 5.0
+Tested up to: 5.1
 Requires PHP: 5.3
 Stable tag: 1.6.2
 License: GPLv3 or later
@@ -332,6 +332,9 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 * Tweak - Add the {booking_list_raw} notification tag
 * Tweak - Support more parameters in bookingactivities_list shortcode (all booking filters)
 * Tweak - Allow to filter bookings by user ID even if it is not in the list
+* Fix - Notification were sometimes sent twice when used with WooCommerce
+* Fix - Overlapping of the event list in emails
+* Fix - WC order became "refunded" when a reservation was refunded, even if another reservation was still "cancelled"
 * Fix - Cancellation delays were not working properly
 * Fix - The "user_id" parameter of the bookingactivities_list shortcode didn't work while explicitly set to "current"
 * Fix - The "status" and "order_by" parameters of the bookingactivities_list shortcode didn't work

@@ -1224,8 +1224,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	 * Update order item booking status meta to new status
 	 *
 	 * @since 1.2.0
-	 * @version 1.5.6
-	 * 
+	 * @version 1.7.0
 	 * @param int $item
 	 * @param string $new_state
 	 * @param WC_Order $order
@@ -1251,7 +1250,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		
 		// Add refund metadata
 		if( in_array( $new_state, array( 'refunded', 'refund_requested' ), true ) ) {
-			$refund_action = $args[ 'refund_action' ] ? $args[ 'refund_action' ] : 'manual';
+			$refund_action = ! empty( $args[ 'refund_action' ] ) ? $args[ 'refund_action' ] : 'manual';
 			wc_update_order_item_meta( $order_item_id, '_bookacti_refund_method', $refund_action );
 		}
 		
@@ -1302,7 +1301,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	/**
 	 * Turn the order state if it is composed of inactive / pending / booked bookings only
 	 * @since 1.1.0
-	 * @version 1.6.0
+	 * @version 1.7.0
 	 * @param int $order_id
 	 */
 	function bookacti_change_order_state_based_on_its_bookings_state( $order_id ) {
@@ -1312,7 +1311,8 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		
 		if( ! $order ) { return; }
 		
-		if( ! in_array( $order->get_status(), array( 'processing', 'on-hold', 'completed' ), true ) ) { return; }
+		$order_status = $order->get_status();
+		if( ! in_array( $order_status, array( 'processing', 'on-hold', 'completed', 'cancelled' ), true ) ) { return; }
 		
 		$items = $order->get_items();
 		
@@ -1329,27 +1329,33 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			}
 			$states[] = $item[ 'bookacti_state' ];
 		}
+			
+		if( ! $only_activities || empty( $states ) || in_array( 'in_cart', $states, true ) ) { return; }
 		
-		if( ! $only_activities || empty( $states ) || in_array( 'in_cart', $states, true ) ) {
-			return;	
-		}
+		sort( $states );
+		$states_length = count( $states );
 		
-		$new_order_status = 'cancelled';
+		$new_order_status = $order_status;
+		$completed_booking_states = array( 'delivered', 'booked' );
+		$cancelled_booking_states = array( 'cancelled', 'refund_requested', 'expired', 'removed' );
 		
-		if( in_array( 'pending', $states, true ) ) {
+		if( $order_status !== 'cancelled' && in_array( 'pending', $states, true ) ) {
 			// Turn order status to processing (or let it on on-hold)
-			$new_order_status = $order->get_status() === 'on-hold' ? 'on-hold' : 'processing';
-		} else if( in_array( 'booked', $states, true ) || in_array( 'delivered', $states, true ) ) {
+			$new_order_status = $order_status === 'on-hold' ? 'on-hold' : 'processing';
+		} else if( $order_status !== 'cancelled' && ! empty( array_intersect( $states, $completed_booking_states ) ) ) {
 			// Turn order status to completed
 			$new_order_status = 'completed';
-		} else if( in_array( 'refunded', $states, true ) && ! in_array( 'refund_requested', $states, true ) ) {
-			// Turn order status to refunded
+		} else if( ! empty( array_intersect( $states, $cancelled_booking_states ) ) ) {
+			// Turn order status to cancelled
+			$new_order_status = 'cancelled';
+		} else if( $states[ 0 ] === 'refunded' && $states[ $states_length-1 ] === 'refunded' ) {
+			// Turn order status to refunded if all bookings are refunded
 			$new_order_status = 'refunded';
 		}
 		
 		$new_order_status = apply_filters( 'bookacti_woocommerce_order_status_automatically_updated', $new_order_status, $order );
 		
-		if( $new_order_status !== $order->get_status() ) {
+		if( $new_order_status !== $order_status ) {
 			$order->update_status( $new_order_status );
 		}
 	}
