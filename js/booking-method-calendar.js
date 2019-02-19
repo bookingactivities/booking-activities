@@ -119,22 +119,7 @@ function bookacti_set_calendar_up( booking_system, reload_events ) {
 				});
 				element.append( bg_div );
 			}
-			
-			// Check if the event is on an exception
-			var event_repeat_freq = bookacti.booking_system[ booking_system_id ][ 'events_data' ][ event.id ][ 'repeat_freq' ];
-			if( event_repeat_freq ) {
-				if( event_repeat_freq !== 'none' ) {
-					if( bookacti.booking_system[ booking_system_id ][ 'exceptions' ] !== undefined 
-					&&  bookacti.booking_system[ booking_system_id ][ 'exceptions' ][ event.id ] !== undefined ) {
-						$j.each( bookacti.booking_system[ booking_system_id ][ 'exceptions' ][ event.id ], function ( i, excep ) {
-							if( excep.exception_type === 'date' && excep.exception_value === event.start.format( 'YYYY-MM-DD' ) ) {
-								event.render = 0;
-							}
-						});
-					}
-				}
-			}
-			
+						
 			booking_system.trigger( 'bookacti_event_render', [ event, element, view ] );
 			
 			if( ! event.render ) { return false; }
@@ -165,10 +150,11 @@ function bookacti_set_calendar_up( booking_system, reload_events ) {
 	bookacti_update_calendar_settings( booking_system );
 	
 	// Load events on calendar
-	if( ! reload_events && bookacti.booking_system[ booking_system_id ][ 'events' ].length ) {
+	if( ! reload_events && typeof bookacti.booking_system[ booking_system_id ][ 'events' ] !== 'undefined' ) {
 		// Fill calendar with events already fetched
-		bookacti_display_events_on_calendar( booking_system );
-		
+		if( bookacti.booking_system[ booking_system_id ][ 'events' ].length ) {
+			bookacti_display_events_on_calendar( booking_system );
+		}
 	} else if( reload_events ) {
 		// Fetch events from database
 		var view = calendar.fullCalendar( 'getView' );

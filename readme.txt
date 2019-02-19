@@ -339,6 +339,7 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 * Fix - The "user_id" parameter of the bookingactivities_list shortcode didn't work while explicitly set to "current"
 * Fix - The "status" and "order_by" parameters of the bookingactivities_list shortcode didn't work
 * Fix - Booking row was not properly updated after cancelling a booking (group)
+* Fix - Events not loaded when a WC product variation was loaded by default, and events were loaded "After page load"
 * Fix - PHP notice when trying to get translated messages
 * Fix - PHP notice when displaying WC products having a deprecated config available
 * Fix - PHP warning when a form with no "User Data (Login / Registration)" field is submitted
@@ -346,11 +347,13 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 * Fix - The bottom bulk actions selectbox didn't work on Bookings page
 * Fix - Wrong quantity displayed in reschedule dialog
 * Fix - The "Cancel" custom label was not applied to the right buttons
+* Fix - Repeated events on exceptions dates were exported
 * Fix - The time zone of the exported events was incorrect (UTC instead of yours)
 * Fix - Can't refund booking groups paid with WooCommerce
 * Dev - Prefill a booking form thanks to URL parameters
 * Dev - Use all booking list filters via URL
 * Dev - Filter booking list by multiple form id, user id, group category id, group of events id
+* Lib - Update FullCalendar to 3.10.0 and Moment JS to 2.23.0
 
 = 1.6.1 - 2018/11/30 =
 * Fix - The booking list was empty if no booking (group) had metadata

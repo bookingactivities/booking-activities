@@ -49,9 +49,20 @@ $j( document ).ready( function() {
 	
 	
 	// SINGLE PRODUCT
-	
+		
 		// Handle variations
 		if( $j( '.woocommerce form.cart.variations_form' ).length ) { 
+			/**
+			 * Do not init booking system automatically if is supposed to be loaded while switching WC variations
+			 * @since 1.7.0
+			 */
+			$j( 'body.woocommerce' ).on( 'bookacti_init_booking_sytem', 'form.cart.variations_form .bookacti-booking-system', function( e, load, attributes ) {
+				if( load.load === false ) { return; }
+				if( typeof $j( this ).closest( '.bookacti-form-fields' ) !== 'undefined' ) { 
+					if( $j( this ).closest( '.bookacti-form-fields' ).data( 'default-variation-id' ) ) { load.load = false; }
+				}
+			});
+			
 			$j( '.woocommerce form.cart.variations_form' ).each( function() {
 				var wc_form = $j( this );
 				

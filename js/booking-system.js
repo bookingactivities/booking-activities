@@ -18,6 +18,7 @@ $j( document ).ready( function() {
 		}
 	});
 	
+	
 	/**
 	 * Init actions to perfoms when the user picks a group of events
 	 * @version 1.7.0
@@ -32,6 +33,16 @@ $j( document ).ready( function() {
 			bookacti_redirect_to_group_category_url( booking_system, group_id );
 		}
 	});
+	
+	
+	/**
+	 * Do not init reschedule booking system automatically
+	 * @since 1.7.0
+	 */
+	$j( 'body' ).on( 'bookacti_init_booking_sytem', '.bookacti-booking-system#bookacti-booking-system-reschedule', function( e, load, attributes ) {
+		load.load = false;
+	});
+	
 	
 	// Check if booking systems exist before anything
 	if( $j( '.bookacti-booking-system' ).length ) { 
@@ -54,8 +65,11 @@ $j( document ).ready( function() {
 			}
 			
 			// Load the booking system
-			if( booking_system_id !== 'bookacti-booking-system-reschedule' ) {
-				if( attributes.auto_load ) {
+			var load = { 'load': true, 'auto_load': attributes.auto_load ? true : false };
+			booking_system.trigger( 'bookacti_init_booking_sytem', [ load, attributes ] );
+			
+			if( load.load ) {
+				if( load.auto_load ) {
 					bookacti_booking_method_set_up( booking_system, false );
 					
 					// Remove initial loading feedback

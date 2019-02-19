@@ -143,7 +143,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	
 	/**
 	 * Add booking forms to single product page (front-end)
-	 * @version 1.6.0
+	 * @version 1.7.0
 	 * @global WC_Product $product
 	 */
 	function bookacti_add_booking_system_in_single_product_page() {
@@ -208,7 +208,9 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		/** END BACKWARD COMPATIBILITY < 1.5 **/
 		
 		
-		$form_instance_id = '';
+		$form_instance_id		= '';
+		$variation_id			= 0;
+		$default_variation_id	= 0;
 		// Show form on single product page or on variable product with a default value
 		if( $product->is_type( 'simple' ) ) {
 			$form_instance_id = 'product-' . $product->get_id();
@@ -216,7 +218,8 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		else if( $product->is_type( 'variable' ) ) {
 			$default_attributes = bookacti_get_product_default_attributes( $product );
 			if( $default_attributes ) { 
-				$default_variation_id = bookacti_get_product_variation_matching_attributes( $product, $default_attributes );
+				$variation_id = bookacti_get_product_variation_matching_attributes( $product, $default_attributes );
+				$default_variation_id = $variation_id;
 				if( $default_variation_id ) { 
 					$form_id = get_post_meta( $default_variation_id, 'bookacti_variable_form', true );
 					if( $form_id ) { 
@@ -226,9 +229,10 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			}
 			
 		} else if( $product->is_type( 'variation' ) ) {
-			$form_id = get_post_meta( $product->get_id(), 'bookacti_variable_form', true );
+			$variation_id = $product->get_id();
+			$form_id = get_post_meta( $variation_id, 'bookacti_variable_form', true );
 			if( $form_id ) { 
-				$form_instance_id = 'product-variation-' . $default_variation_id;
+				$form_instance_id = 'product-variation-' . $variation_id;
 			}
 		}
 		
@@ -244,12 +248,13 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		?>
 		<div class='bookacti-form-fields' 
 			 data-product-id='<?php echo $product->get_id(); ?>'
-			 data-variation-id='<?php if( ! empty( $default_variation_id ) ) { echo $default_variation_id; } ?>'
+			 data-variation-id='<?php if( ! empty( $variation_id ) ) { echo $variation_id; } ?>'
+			 data-default-variation-id='<?php if( ! empty( $default_variation_id ) ) { echo $default_variation_id; } ?>'
 			 data-form-id='<?php echo $form_id; ?>'>
 			<?php 
 				$form_html = bookacti_display_form( $form_id, $form_instance_id, 'wc_product_init', false ); 
 				echo $form_html;
-				if( ! empty( $default_variation_id ) ) {
+				if( empty( $default_variation_id ) && ! empty( $variation_id ) ) {
 				?>
 					<script>
 						if( typeof bookacti.form_fields === 'undefined' ) { bookacti.form_fields = []; }

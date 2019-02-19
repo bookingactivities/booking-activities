@@ -59,8 +59,7 @@ function bookacti_delete_settings() {
 /**
  * Get setting value
  * 
- * @version 1.3.0
- * 
+ * @version 1.7.0
  * @param string $setting_page
  * @param string $setting_field
  * @param boolean $translate
@@ -88,8 +87,8 @@ function bookacti_get_setting_value( $setting_page, $setting_field, $translate =
 	if( is_string( $settings[ $setting_field ] ) ) {
 		$settings[ $setting_field ] = apply_filters( 'bookacti_translate_text', $settings[ $setting_field ] );
 	}
-		
-	return $settings[ $setting_field ];
+	
+	return apply_filters( 'bookacti_get_setting_value', $settings[ $setting_field ], $setting_page, $setting_field, $translate );
 }
 
 

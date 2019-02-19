@@ -1357,13 +1357,24 @@ function bookacti_seconds_to_explode_time( $seconds ) {
  * Get array of events from raw events from database
  * 
  * @since 1.2.2
+ * @version 1.7.0
  * @param array $events Array of objects events from database
  * @param boolean $past_events
  * @param array $interval array('start'=> start date, 'end'=> end date)
+ * @param boolean $skip_exceptions Whether to retrieve occurence on exceptions
  * @return array
  */
-function bookacti_get_events_array_from_db_events( $events, $past_events, $interval ) {
+function bookacti_get_events_array_from_db_events( $events, $past_events, $interval, $skip_exceptions = true ) {
 	$events_array = array( 'data' => array(), 'events' => array() );
+	
+	// Get event exceptions
+	$exceptions_dates = array();
+	if( $skip_exceptions ) {
+		$event_ids = array();
+		foreach ( $events as $event ) { $event_ids[] = $event->event_id; }
+		$exceptions_dates = bookacti_get_exceptions_dates( array(), $event_ids );
+	}
+	
 	foreach ( $events as $event ) {
 
 		$event_fc_data = array(
@@ -1393,7 +1404,8 @@ function bookacti_get_events_array_from_db_events( $events, $past_events, $inter
 		if( $event->repeat_freq === 'none' ) {
 			$events_array[ 'events' ][] = $event_fc_data;
 		} else {
-			$events_array[ 'events' ] = array_merge( $events_array[ 'events' ], bookacti_get_occurences_of_repeated_event( $event, $past_events, $interval ) );
+			$event_exceptions = $skip_exceptions && ! empty( $exceptions_dates[ $event->event_id ] ) ? $exceptions_dates[ $event->event_id ] : array();
+			$events_array[ 'events' ] = array_merge( $events_array[ 'events' ], bookacti_get_occurences_of_repeated_event( $event, $past_events, $interval, $event_exceptions ) );
 		}
 	}
 
@@ -1551,9 +1563,10 @@ function bookacti_sanitize_events_interval( $interval ) {
  * @param object $event Event data 
  * @param boolean $past_events Whether to compute past events
  * @param array $interval array('start' => string: start date, 'end' => string: end date)
+ * @param array $exceptions_dates Array of dates
  * @return array
  */
-function bookacti_get_occurences_of_repeated_event( $event, $past_events = false, $interval = array() ) {
+function bookacti_get_occurences_of_repeated_event( $event, $past_events = false, $interval = array(), $exceptions_dates = array() ) {
 
 	// Get site settings
 	$timezone			= new DateTimeZone( bookacti_get_setting_value( 'bookacti_general_settings', 'timezone' ) );
@@ -1664,8 +1677,11 @@ function bookacti_get_occurences_of_repeated_event( $event, $past_events = false
 		$occurence_start = new DateTime( $loop->format( 'Y-m-d' ) . ' ' . $event_start_time, $timezone );
 		$occurence_end = clone $occurence_start;
 		$occurence_end->add( $event_duration );
-
-		// Check if the event is in the interval to be rendered
+		
+		// Check if the occurrence is on an exception
+		if( in_array( $occurence_start->format( 'Y-m-d' ), $exceptions_dates, true ) ) { $loop->add( $repeat_interval ); continue; }
+		
+		// Check if the occurrence is in the interval to be rendered
 		if( $interval ) {
 			if( $interval[ 'start' ] && $interval_start > $occurence_start ){ $loop->add( $repeat_interval ); continue; }
 			if( $interval[ 'end' ] && $interval_end < $occurence_start )	{ $loop->add( $repeat_interval ); continue; }
@@ -1676,7 +1692,7 @@ function bookacti_get_occurences_of_repeated_event( $event, $past_events = false
 			'start'	=> $occurence_start->format( 'Y-m-d H:i:s' ),
 			'end'	=> $occurence_end->format( 'Y-m-d H:i:s' )
 		);
-
+		
 		// Add this occurrence to events array
 		$events[] = array_merge( $event_occurence, $shared_properties );
 
@@ -1697,6 +1713,32 @@ function bookacti_get_occurences_of_repeated_event( $event, $past_events = false
 	}
 
 	return $events;
+}
+
+
+/**
+ * Get exceptions dates by event
+ * @since 1.7.0
+ * @param array $template_ids
+ * @param array $event_ids
+ * @return array
+ */
+function bookacti_get_exceptions_dates( $template_ids = array(), $event_ids = array() ) {
+	$exceptions_per_event = bookacti_get_exceptions( $template_ids, $event_ids );
+	
+	if( ! $exceptions_per_event ) { return array(); }
+	
+	$exceptions_dates = array();
+	foreach( $exceptions_per_event as $event_id => $exceptions ) {
+		$exceptions_dates[ $event_id ] = array();
+		foreach( $exceptions as $exception ) {
+			if( $exception[ 'exception_type' ] === 'date' ) {
+				$exceptions_dates[ $event_id ][] = $exception[ 'exception_value' ];
+			}
+		}
+	}
+	
+	return $exceptions_dates;
 }
 
 

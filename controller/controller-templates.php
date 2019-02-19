@@ -77,7 +77,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	/**
 	 * AJAX Controller - Move or resize an event, possibly while duplicating it
 	 * @since 1.2.2 (was bookacti_controller_update_event)
-	 * @version 1.6.0
+	 * @version 1.7.0
 	 */
 	function bookacti_controller_move_or_resize_event() {
 		
@@ -104,7 +104,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 				$event_start    = bookacti_sanitize_datetime( $_POST[ 'event_start' ] );
 				$event_end      = bookacti_sanitize_datetime( $_POST[ 'event_end' ] );
 				$delta_days     = intval( $_POST[ 'delta_days' ] );
-				$interval		= bookacti_sanitize_events_interval( $_POST[ 'interval' ] );
+				$interval		= ! empty( $_POST[ 'interval' ] ) ? bookacti_sanitize_events_interval( $_POST[ 'interval' ] ) : array();
 				
 				// Maybe update grouped events if the event belong to a group
 				if( ! $is_duplicated ) {
@@ -193,8 +193,8 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 				// Update event metadata
 				$updated_event_meta = bookacti_update_metadata( 'event', $event_id, $formatted_settings );
 
-				// Insert new exeption
-				$inserted_excep		= bookacti_insert_exeptions( $event_id, $dates_excep_array );
+				// Insert new exception
+				$inserted_excep		= bookacti_insert_exceptions( $event_id, $dates_excep_array );
 
 				// Remove exceptions that do not longer exist
 				$deleted_excep		= bookacti_remove_exceptions( $event_id, $dates_excep_array );

@@ -11,7 +11,7 @@ $j( document ).ready( function() {
     $j( '#bookacti-activity-data-dialog input[type="color"]'	).off().on( 'change', function() { bookacti_validate_activity_form(); });
     
 	// Event form dynamic check
-	/** EXEPTIONS **/
+	/** EXCEPTIONS **/
 		// Add exception
 		$j( '#bookacti-event-add-exception-button' ).off().on( 'click', function() { 
 			var isFormValid = bookacti_validate_add_exception_form();

@@ -99,7 +99,6 @@ function bookacti_reload_booking_system( booking_system, keep_picked_events ) {
 				bookacti.booking_system[ booking_system_id ][ 'events' ]				= response.events;
 				bookacti.booking_system[ booking_system_id ][ 'events_data' ]			= response.events_data;
 				bookacti.booking_system[ booking_system_id ][ 'events_interval' ]		= response.events_interval;
-				bookacti.booking_system[ booking_system_id ][ 'exceptions' ]			= response.exceptions;
 				bookacti.booking_system[ booking_system_id ][ 'bookings' ]				= response.bookings;
 				bookacti.booking_system[ booking_system_id ][ 'activities_data' ]		= response.activities_data;
 				bookacti.booking_system[ booking_system_id ][ 'groups_events' ]			= response.groups_events;
