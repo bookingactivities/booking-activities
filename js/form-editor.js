@@ -247,7 +247,7 @@ $j( document ).ready( function() {
 	$j( '#bookacti-form-field-dialog-calendar' ).on( 'change', 'select#bookacti-form_action', function( e ){
 		// Show / hide the columns displayed in the "redirect URL" tables
 		$j( '.bookacti-activities-actions-options-table .bookacti-column-product, .bookacti-group-categories-actions-options-table .bookacti-column-product' ).hide();
-		if( $j( this ).val() === 'redirect_to_product_page' ) {
+		if( $j( this ).val() === 'redirect_to_product_page' || $j( this ).val() === 'add_product_to_cart' ) {
 			$j( '.bookacti-activities-actions-options-table .bookacti-column-redirect_url, .bookacti-group-categories-actions-options-table .bookacti-column-redirect_url' ).hide();
 			$j( '.bookacti-activities-actions-options-table .bookacti-column-product, .bookacti-group-categories-actions-options-table .bookacti-column-product' ).show();
 		}

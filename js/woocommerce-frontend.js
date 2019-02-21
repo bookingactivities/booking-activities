@@ -58,16 +58,20 @@ $j( document ).ready( function() {
 			 */
 			$j( 'body.woocommerce' ).on( 'bookacti_init_booking_sytem', 'form.cart.variations_form .bookacti-booking-system', function( e, load, attributes ) {
 				if( load.load === false ) { return; }
-				if( typeof $j( this ).closest( '.bookacti-form-fields' ) !== 'undefined' ) { 
-					if( $j( this ).closest( '.bookacti-form-fields' ).data( 'default-variation-id' ) ) { load.load = false; }
+				if( typeof $j( this ).closest( '.bookacti-wc-form-fields' ) !== 'undefined' ) { 
+					if( $j( this ).closest( '.bookacti-wc-form-fields' ).data( 'default-variation-id' ) ) { load.load = false; }
 				}
 			});
 			
+			/**
+			 * Switch the booking form according to the selected product variation
+			 * @version 1.7.0
+			 */
 			$j( '.woocommerce form.cart.variations_form' ).each( function() {
 				var wc_form = $j( this );
 				
 				/** START BACKWARD COMPATIBILITY < 1.5 **/
-				if( wc_form.find( '.bookacti-booking-system' ).length && ! wc_form.find( '.bookacti-form-fields' ).length ) { 
+				if( wc_form.find( '.bookacti-booking-system' ).length && ! wc_form.find( '.bookacti-wc-form-fields' ).length ) { 
 					var booking_system		= wc_form.find( '.bookacti-booking-system' );
 					var booking_system_id	= booking_system.attr( 'id' );
 
@@ -96,7 +100,7 @@ $j( document ).ready( function() {
 				
 				// Empty the form
 				wc_form.on( 'reset_data', function( e ) { 
-					var form_container = wc_form.find( '.bookacti-form-fields' );
+					var form_container = wc_form.find( '.bookacti-wc-form-fields' );
 					form_container.data( 'form-id', '' );
 					form_container.attr( 'data-form-id', '' );
 					form_container.data( 'variation-id', '' );
@@ -106,7 +110,7 @@ $j( document ).ready( function() {
 				
 				// Switch form
 				wc_form.find( '.single_variation_wrap' ).on( 'show_variation', function( e, variation ) { 
-					var form_container = wc_form.find( '.bookacti-form-fields' );
+					var form_container = wc_form.find( '.bookacti-wc-form-fields' );
 					bookacti_switch_product_variation_form( form_container, variation );
 					
 					// Change Add to cart button label
@@ -187,30 +191,42 @@ $j( document ).ready( function() {
 		});
 		
 		
-		// Redirect to product page after submitting booking form
-		$j( 'body' ).on( 'bookacti_submit_booking_form', '.bookacti-booking-form', function( e, form_action ){
-			if( form_action !== 'redirect_to_product_page' ) { return; }
+		/**
+		 * Init WC actions to perfoms when the user submit booking form
+		 * @since 1.7.0
+		 */
+		$j( 'body' ).on( 'bookacti_submit_booking_form', 'form.bookacti-booking-form', function( e, form_action ){
+			if( form_action !== 'redirect_to_product_page' && form_action !== 'add_product_to_cart' ) { return; }
 			
 			var form			= $j( this );
 			var booking_system	= form.find( '.bookacti-form-field-type-calendar .bookacti-booking-system' );
-			var group_id	= booking_system.siblings( '.bookacti-booking-system-inputs' ).find( 'input[name="bookacti_group_id"]' ).val();
-			var event_id	= booking_system.siblings( '.bookacti-booking-system-inputs' ).find( 'input[name="bookacti_event_id"]' ).val();
-			var event_start	= booking_system.siblings( '.bookacti-booking-system-inputs' ).find( 'input[name="bookacti_event_start"]' ).val();
-			var event_end	= booking_system.siblings( '.bookacti-booking-system-inputs' ).find( 'input[name="bookacti_event_end"]' ).val();
+			var group_id		= booking_system.siblings( '.bookacti-booking-system-inputs' ).find( 'input[name="bookacti_group_id"]' ).val();
+			var event			= {
+				'id': booking_system.siblings( '.bookacti-booking-system-inputs' ).find( 'input[name="bookacti_event_id"]' ).val(),
+				'start': booking_system.siblings( '.bookacti-booking-system-inputs' ).find( 'input[name="bookacti_event_start"]' ).val(),
+				'end': booking_system.siblings( '.bookacti-booking-system-inputs' ).find( 'input[name="bookacti_event_end"]' ).val()
+			};
 			
-			// Redirect to activity URL if a single event is selected
-			if( group_id === 'single' && event_id && event_start && event_end ) {
-				var event = {
-					'id': event_id,
-					'start': event_start,
-					'end': event_end
-				};
-				bookacti_redirect_to_activity_product_page( booking_system, event );
+			// A single event is selected
+			if( group_id === 'single' && event.id && event.start && event.end ) {
+				if( form_action === 'redirect_to_product_page' ) {
+					// Redirect to activity URL if a single event is selected
+					bookacti_redirect_to_activity_product_page( booking_system, event );
+				} else if( form_action === 'add_product_to_cart' ) {
+					// Add the product bound to the activity to cart
+					bookacti_add_activity_product_to_cart( booking_system, event );
+				}
 			}
 			
-			// Redirect to activity URL if a single event is selected
+			// A group of events is selected
 			else if( $j.isNumeric( group_id ) ) {
-				bookacti_redirect_to_group_category_product_page( booking_system, group_id );
+				if( form_action === 'redirect_to_product_page' ) {
+					// Redirect to group category URL if a group of events is selected
+					bookacti_redirect_to_group_category_product_page( booking_system, group_id );
+				} else if( form_action === 'add_product_to_cart' ) {
+					// Add the product bound to the group category to cart
+					bookacti_add_group_category_product_to_cart( booking_system, group_id );
+				}
 			}
 		});
 	

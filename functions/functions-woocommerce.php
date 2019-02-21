@@ -1900,6 +1900,32 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			return $product->get_variation_default_attributes();
 		}
 	}
+	
+	
+	/**
+	 * Get the form ID bound to a product / variation
+	 * @since 1.7.0
+	 * @param int $product_id
+	 * @param boolean $is_variation
+	 * @return string
+	 */
+	function bookacti_get_product_form_id( $product_id, $is_variation = 'check' ) {
+		// Check if the product is simple or a variation
+		if( $is_variation === 'check' ) {
+			$is_variation = false;
+			$product = wc_get_product( $product_id );
+			if( $product ) {
+				$is_variation = $product->get_type() === 'variation';
+			}
+		}
+		
+		if( $is_variation ) {
+			$form_id = get_post_meta( $product_id, 'bookacti_variable_form', true );
+		} else {
+			$form_id = get_post_meta( $product_id, '_bookacti_form', true );
+		}
+		return apply_filters( 'bookacti_product_booking_form_id', $form_id, $product_id, $is_variation );
+	}
 
 
 	

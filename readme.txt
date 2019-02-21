@@ -1,5 +1,5 @@
 === Booking Activities ===
-Contributors: bookingactivities
+Contributors: bookingactivities, yoancutillas
 Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=7EKU434L7NEVC
 Tags: booking activities, booking sport, booking form, event reservation, reservation schedule
 Requires at least: 3.6
@@ -318,20 +318,21 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 == Changelog ==
 
 = 1.7.0 alpha 2 - 2019/01/30 =
+* Feature - Add a WC product to cart when you click on an event or when you submit a booking form
 * Feature - Redirect to a URL when you click on an event or when you submit a booking form
-* Feature - Redirect to a product page when you click on an event or when you submit a booking form
+* Feature - Redirect to a WC product page when you click on an event or when you submit a booking form
 * Feature - Backup, archive and restore old bookings and events
 * Feature - Support WP tools for exporting and erasing personal data
 * Feature - Edit users phone number on their profile page
-* Tweak - Allow HTML in the title of events and groups of events
+* Tweak - Allow HTML in events and groups of events title
+* Tweak - Notifications are send to the user when he cancels or reschedule a booking from the frontend
 * Tweak - Order calendars, activities, group categories and groups of events by title
 * Tweak - Backend javascript and css files are loaded only on Booking Activities screens to avoid conflicts
 * Tweak - List of activities in calendar editor can now be scrolled
-* Tweak - Notifications are send to the user when he cancels or reschedule a booking from the frontend
-* Tweak - Limit the amount of emails that can be sent to a single user per minute (20), hour (200) and day (2000) (spam protection)
 * Tweak - Add the {booking_list_raw} notification tag
 * Tweak - Support more parameters in bookingactivities_list shortcode (all booking filters)
-* Tweak - Allow to filter bookings by user ID even if it is not in the list
+* Tweak - Allow to filter bookings by user even if the user is not in the selectbox
+* Tweak - Limit the amount of emails that can be sent to a single user per minute (20), hour (200) and day (2000) (spam protection)
 * Fix - Notification were sometimes sent twice when used with WooCommerce
 * Fix - Overlapping of the event list in emails
 * Fix - WC order became "refunded" when a reservation was refunded, even if another reservation was still "cancelled"
@@ -339,6 +340,7 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 * Fix - The "user_id" parameter of the bookingactivities_list shortcode didn't work while explicitly set to "current"
 * Fix - The "status" and "order_by" parameters of the bookingactivities_list shortcode didn't work
 * Fix - Booking row was not properly updated after cancelling a booking (group)
+* Fix - Can't refund booking groups paid with WooCommerce
 * Fix - Events not loaded when a WC product variation was loaded by default, and events were loaded "After page load"
 * Fix - PHP notice when trying to get translated messages
 * Fix - PHP notice when displaying WC products having a deprecated config available
@@ -349,7 +351,6 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 * Fix - The "Cancel" custom label was not applied to the right buttons
 * Fix - Repeated events on exceptions dates were exported
 * Fix - The time zone of the exported events was incorrect (UTC instead of yours)
-* Fix - Can't refund booking groups paid with WooCommerce
 * Dev - Prefill a booking form thanks to URL parameters
 * Dev - Use all booking list filters via URL
 * Dev - Filter booking list by multiple form id, user id, group category id, group of events id

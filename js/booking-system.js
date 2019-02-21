@@ -16,6 +16,8 @@ $j( document ).ready( function() {
 		if( group_id === 'single' && attributes[ 'when_perform_form_action' ] === 'on_event_click' && attributes[ 'form_action' ] === 'redirect_to_url' ) {
 			bookacti_redirect_to_activity_url( booking_system, event );
 		}
+		
+		booking_system.trigger( 'bookacti_events_picked_after_form_action', [ group_id, event ] );
 	});
 	
 	
@@ -32,6 +34,8 @@ $j( document ).ready( function() {
 		if( attributes[ 'when_perform_form_action' ] === 'on_event_click' && attributes[ 'form_action' ] === 'redirect_to_url' ) {
 			bookacti_redirect_to_group_category_url( booking_system, group_id );
 		}
+		
+		booking_system.trigger( 'bookacti_group_of_events_chosen_after_form_action', [ group_id, event ] );
 	});
 	
 	

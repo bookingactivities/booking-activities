@@ -279,6 +279,7 @@ function bookacti_get_booking_system_default_attributes() {
 		'past_events_bookable'	=> 0,
 		'check_roles'			=> 1,
 		'picked_events'			=> array( 'group_id' => '', 'event_id' => '', 'event_start' => '', 'event_end' => '' ),
+		'form_id'						=> 0,
 		'form_action'					=> 'default',
 		'when_perform_form_action'		=> 'on_submit',
 		'redirect_url_by_activity'		=> array(),
@@ -456,9 +457,12 @@ function bookacti_format_booking_system_attributes( $atts = array() ) {
 	$atts[ 'picked_events' ][ 'event_end' ]		= bookacti_sanitize_datetime( $atts[ 'picked_events' ][ 'event_end' ] ) ? str_replace( 'T', ' ', $atts[ 'picked_events' ][ 'event_end' ] ) : $defaults[ 'picked_events' ][ 'event_end' ];
 	$atts[ 'picked_events' ][ 'group_id' ]		= $atts[ 'picked_events' ][ 'group_id' ] && is_numeric( $atts[ 'picked_events' ][ 'group_id' ] ) ? intval( $atts[ 'picked_events' ][ 'group_id' ] ) : ( is_numeric( $atts[ 'picked_events' ][ 'event_id' ] ) ? 'single' : '' );
 	
+	// Sanitize form id
+	$atts[ 'form_id' ] = is_numeric( $atts[ 'form_id' ] ) ? intval( $atts[ 'form_id' ] ) : 0;	
+	
 	// Format actions
-	$possible_form_actions	= array_keys( apply_filters( 'bookacti_form_action_options', array( 'default' => '', 'redirect_to_url' => '' ), array() ) );
-	$possible_form_triggers = array_keys( apply_filters( 'bookacti_when_perform_form_action_options', array( 'on_submit' => '', 'on_event_click' => '' ), array() ) );
+	$possible_form_actions	= array_keys( apply_filters( 'bookacti_form_action_options', array( 'default' => '', 'redirect_to_url' => '' ) ) );
+	$possible_form_triggers = array_keys( apply_filters( 'bookacti_when_perform_form_action_options', array( 'on_submit' => '', 'on_event_click' => '' ) ) );
 	$atts[ 'form_action' ]				= in_array( $atts[ 'form_action' ], $possible_form_actions, true ) ? $atts[ 'form_action' ] : $defaults[ 'form_action' ];
 	$atts[ 'when_perform_form_action' ]	= in_array( $atts[ 'when_perform_form_action' ], $possible_form_triggers, true ) ? $atts[ 'when_perform_form_action' ] : $defaults[ 'when_perform_form_action' ];
 	
@@ -1260,7 +1264,7 @@ function bookacti_is_group_of_events_available_on_form( $form_id, $group_id ) {
 	$belongs_to_form	= true;
 	$group				= bookacti_get_group_of_events( $group_id );
 	$category			= bookacti_get_group_category( $group->category_id, ARRAY_A );
-		
+	
 	// If the form calendar doesn't have the group of events' template
 	if( $calendar_data[ 'calendars' ] && ! in_array( $category[ 'template_id' ], $calendar_data[ 'calendars' ] ) ) {
 		$belongs_to_form = false;

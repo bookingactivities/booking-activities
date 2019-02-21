@@ -6,9 +6,6 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 	/**
 	 * Add woocommerce related translations
-	 * 
-	 * @since 1.0.0
-	 * 
 	 * @param type $translation_array
 	 * @return type
 	 */
@@ -155,13 +152,13 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		// Check if the product or one of its available variation is bound to a booking form
 		$form_id = 0;
 		if( $product->is_type( 'simple' ) ) {
-			$form_id = get_post_meta( $product->get_id(), '_bookacti_form', true );
+			$form_id = bookacti_get_product_form_id( $product->get_id(), false );
 		}
 		else if( $product->is_type( 'variable' ) ) {
 			$variations = $product->get_available_variations();
 			foreach( $variations as $variation ) {
 				if( empty( $variation[ 'bookacti_is_activity' ] ) || empty( $variation[ 'bookacti_form_id' ] ) ) { continue; }
-				$form_id = $variation[ 'bookacti_form_id' ];
+				$form_id = apply_filters( 'bookacti_product_booking_form_id', $variation[ 'bookacti_form_id' ], $variation[ 'variation_id' ], true );
 				break;
 			}
 		}
@@ -240,13 +237,14 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		// display an empty form fields container
 		if( ! $form_instance_id ) { 
 			?>
-				<div class='bookacti-form-fields'></div>
+				<div class='bookacti-wc-form-fields'></div>
 			<?php
 			return;
 		}
 		
 		?>
-		<div class='bookacti-form-fields' 
+		<div class='bookacti-wc-form-fields' 
+			 id='<?php echo $form_instance_id; ?>'
 			 data-product-id='<?php echo $product->get_id(); ?>'
 			 data-variation-id='<?php if( ! empty( $variation_id ) ) { echo $variation_id; } ?>'
 			 data-default-variation-id='<?php if( ! empty( $default_variation_id ) ) { echo $default_variation_id; } ?>'
@@ -475,7 +473,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 	/**
 	 * Validate add to cart form and temporarily book the event
-	 * @version 1.5.4
+	 * @version 1.7.0
 	 * @global WooCommerce $woocommerce
 	 * @param boolean $true
 	 * @param int $product_id
@@ -512,9 +510,9 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		// Get product form ID
 		$variation_id = isset( $_POST[ 'variation_id' ] ) ? intval( $_POST[ 'variation_id' ] ) : 0;
 		if( $variation_id ) {
-			$form_id = get_post_meta( $variation_id, 'bookacti_variable_form', true );
+			$form_id = bookacti_get_product_form_id( $variation_id, true );
 		} else {
-			$form_id = get_post_meta( $product_id, '_bookacti_form', true );
+			$form_id = bookacti_get_product_form_id( $product_id, false );
 		}
 		
 		// Sanitize the variables
@@ -1465,7 +1463,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	 * in case that "in_cart" state is not active
 	 * 
 	 * @since  1.3.0
-	 * @version 1.5.0
+	 * @version 1.7.0
 	 * @param  array $posted_data An array of posted data.
 	 * @param  WP_Error $errors
 	 */
@@ -1483,9 +1481,9 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			
 			// Get product form ID
 			if( ! empty( $cart_item[ 'variation_id' ] ) ) {
-				$form_id = get_post_meta( $cart_item[ 'variation_id' ], 'bookacti_variable_form', true );
+				$form_id = bookacti_get_product_form_id( $cart_item[ 'variation_id' ], true );
 			} else if( ! empty( $cart_item[ 'product_id' ] ) ) {
-				$form_id = get_post_meta( $cart_item[ 'product_id' ], '_bookacti_form', true );
+				$form_id = bookacti_get_product_form_id( $cart_item[ 'product_id' ], false );
 			}
 			$form_id = is_numeric( $form_id ) ? intval( $form_id ) : 0;
 			

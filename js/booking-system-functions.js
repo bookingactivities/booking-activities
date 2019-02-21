@@ -1428,7 +1428,7 @@ function bookacti_redirect_to_group_category_url( booking_system, group_id ) {
 
 
 /**
- * Redirect to group category url
+ * Redirect to url with the booking form values as parameters
  * @since 1.7.0
  * @param {dom_element} booking_system
  * @param {string} redirect_url
@@ -1451,5 +1451,3 @@ function bookacti_redirect_booking_system_to_url( booking_system, redirect_url )
 	bookacti_start_loading_booking_system( booking_system );
 	window.location.href = redirect_url;
 }
-
-
