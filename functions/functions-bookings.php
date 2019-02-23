@@ -475,7 +475,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 		/**
 		 * Check if a booking state can be changed to another
-		 * @version 1.6.0
+		 * @version 1.7.0
 		 * @param object|int $booking
 		 * @param string $new_state
 		 * @return boolean
@@ -486,6 +486,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 				switch ( $new_state ) {
 					case 'delivered':
 						$true = false;
+						break;
 					case 'cancelled':
 						$true = bookacti_booking_can_be_cancelled( $booking );
 						break;
@@ -591,7 +592,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		/**
 		 * Check if a booking group state can be changed to another
 		 * @since 1.1.0
-		 * @version 1.6.0
+		 * @version 1.7.0
 		 * @param object $booking_group
 		 * @param string $new_state
 		 * @return boolean
@@ -602,6 +603,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			switch ( $new_state ) {
 				case 'delivered':
 					$true = $can_edit_bookings;
+					break;
 				case 'cancelled':
 					$true = bookacti_booking_group_can_be_cancelled( $booking_group );
 					break;

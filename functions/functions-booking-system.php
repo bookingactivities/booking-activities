@@ -804,7 +804,7 @@ function bookacti_get_booking_system_fields_default_data( $fields = array() ) {
 
 
 /**
- * Validate booking form (verify the info of the selected event before booking it)
+ * Check the selected event / group of events data before booking
  * @version 1.6.0
  * @param int $group_id
  * @param int $event_id

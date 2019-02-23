@@ -1147,6 +1147,44 @@ function bookacti_validate_login( $login_values, $require_authentication = true 
 }
 
 
+/**
+ * Validate form fields according to values received with $_POST
+ * @since 1.7.0
+ * @param int $form_id
+ * @param array $fields_data
+ * @return array
+ */
+function bookacti_validate_form_fields( $form_id, $fields_data = array() ) {
+	// Get form data
+	if( $form_id && ! $fields_data ) { 
+		$fields_data = bookacti_get_form_fields_data( $form_id );
+	}
+	
+	// Make sure that form data exist
+	if( ! $fields_data ) { 
+		$validated[ 'status' ]	= 'failed';
+		$validated[ 'message' ][ 'invalid_form_id' ]	= esc_html__( 'Invalid form ID.', BOOKACTI_PLUGIN_NAME );
+		return apply_filters( 'bookacti_validate_form_fields', $validated, $form_id, $fields_data );
+	}
+	
+	$validated = array( 'status' => 'success' );
+	
+	// Validate terms
+	$has_terms = false;
+	foreach( $fields_data as $field_data ) {
+		if( $field_data[ 'name' ] === 'terms' ) { 
+			$has_terms = true;
+			break;
+		}
+	}
+	if( $has_terms && empty( $_POST[ 'terms' ] ) ) {
+		$validated[ 'status' ]	= 'failed';
+		$validated[ 'message' ][ 'terms_not_agreed' ]	= esc_html__( 'You must agree to the terms and conditions.', BOOKACTI_PLUGIN_NAME );
+	}
+	
+	return apply_filters( 'bookacti_validate_form_fields', $validated, $form_id, $fields_data );
+}
+
 
 
 /* FIELD ORDER */

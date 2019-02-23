@@ -55,7 +55,7 @@
 .bookacti-booking-system-container			{ width: 100%; }
 .bookacti-loading-alt						{ width: fit-content; margin: 30px auto; }
 .bookacti-notices							{ display: none; }
-.bookacti-notices ul						{ margin: 30px 0; padding: 10px 30px; border-left: 4px solid dodgerblue; box-shadow: 0 1px 1px 0 rgba(0,0,0,.1); background-color: rgba(255,255,255,.5); border-radius: 0 5px 5px 0; }
+.bookacti-notices > ul						{ margin: 30px 0; padding: 10px 30px; border-left: 4px solid dodgerblue; box-shadow: 0 1px 1px 0 rgba(0,0,0,.1); background-color: rgba(255,255,255,.5); border-radius: 0 5px 5px 0; }
 .bookacti-notices ul.bookacti-error-list	{ border-left-color: red; }
 .bookacti-notices ul.bookacti-warning-list	{ border-left-color: #ffb900; }
 .bookacti-notices ul.bookacti-success-list	{ border-left-color: green; }
@@ -161,8 +161,11 @@
 	.bookacti-loading-text		{ color: #fff; font-size: 0.8em; }
 	.bookacti-loading-alt-text	{ margin-left: 10px; vertical-align: middle; font-size: 0.9em; }
 
-	
-	
+
+/* BOOKING FORMS */
+.bookacti-success-list.woocommerce a.button { float: right; }
+
+
 /** RESPONSIVE DESIGN **/
 
 /* Smartphone only */

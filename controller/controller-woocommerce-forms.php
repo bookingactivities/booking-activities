@@ -341,7 +341,10 @@ function bookacti_controller_add_bound_product_to_cart() {
 	// If the product is a variation, add the corresponding attributes to $_REQUEST
 	if( $product->get_type() === 'variation' ) {
 		$variation_data = wc_get_product_variation_attributes( $product_id );
-		$_REQUEST = array_merge( $_REQUEST, $variation_data );
+		$_POST		= array_merge( $_POST, $variation_data );
+		$_REQUEST	= array_merge( $_REQUEST, $variation_data );
+		$_POST[ 'variation_id' ]	= $product_id;
+		$_REQUEST[ 'variation_id' ] = $product_id;
 	}
 	
 	// Make sure there is no remaining notices

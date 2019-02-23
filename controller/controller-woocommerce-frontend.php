@@ -521,10 +521,20 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		$event_id		= intval( $_POST[ 'bookacti_event_id' ] );
 		$event_start	= bookacti_sanitize_datetime( $_POST[ 'bookacti_event_start' ] );
 		$event_end		= bookacti_sanitize_datetime( $_POST[ 'bookacti_event_end' ] );
-
+		
+		// Check if the form fields are properly filled
+		if( $form_id ) {
+			$form_fields_validated = bookacti_validate_form_fields( $form_id );
+			if( $form_fields_validated[ 'status' ] !== 'success' ) {
+				$form_fields_validated[ 'message' ] = is_array( $form_fields_validated[ 'message' ] ) ? implode( '</li><li>', $form_fields_validated[ 'message' ] ) : $form_fields_validated[ 'message' ];
+				wc_add_notice( $form_fields_validated[ 'message' ], 'error' );
+				return false;
+			}
+		}
+		
 		// Check if data are correct before booking
 		$response = bookacti_validate_booking_form( $group_id, $event_id, $event_start, $event_end, $quantity, $form_id );
-
+		
 		// Display error message
 		if( $response[ 'status' ] !== 'success' ) {
 			wc_add_notice( $response[ 'message' ], 'error' );

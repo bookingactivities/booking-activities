@@ -520,7 +520,7 @@ add_action( 'wp_ajax_nopriv_bookactiForgottenPassword', 'bookacti_controller_for
 /**
  * Check if booking form is correct and then book the event, or send the error message
  * @since 1.5.0
- * @version 1.6.0
+ * @version 1.7.0
  */
 function bookacti_controller_validate_booking_form() {
 	
@@ -551,24 +551,17 @@ function bookacti_controller_validate_booking_form() {
 	// Retrieve form field data 
 	$form_fields_data = bookacti_get_form_fields_data( $form_id );
 	
+	// Validate the booking form fields
+	$form_fields_validated = bookacti_validate_form_fields( $form_id, $form_fields_data );
+	if( $form_fields_validated[ 'status' ] !== 'success' ) {
+		$form_fields_validated[ 'message' ] = is_array( $form_fields_validated[ 'message' ] ) ? implode( '</li><li>', $form_fields_validated[ 'message' ] ) : $form_fields_validated[ 'message' ];
+		bookacti_send_json( $form_fields_validated, 'submit_booking_form' );
+	}
+	
 	// Let third party plugins validate their own part of the form
 	$return_array = apply_filters( 'bookacti_validate_booking_form_submission', $return_array, $form_id, $form_fields_data );
 	if( $return_array[ 'status' ] === 'failed' || $return_array[ 'error' ] ) {
 		$return_array[ 'message' ] = implode( '</li><li>', $return_array[ 'message' ] );
-		bookacti_send_json( $return_array, 'submit_booking_form' );
-	}
-	
-	// Validate terms
-	$has_terms = false;
-	foreach( $form_fields_data as $form_field_data ) {
-		if( $form_field_data[ 'name' ] === 'terms' ) { 
-			$has_terms = true;
-			break;
-		}
-	}
-	if( $has_terms && empty( $_POST[ 'terms' ] ) ) {
-		$return_array[ 'error' ]	= 'terms_not_agreed';
-		$return_array[ 'message' ]	= esc_html__( 'You must agree to the terms and conditions.', BOOKACTI_PLUGIN_NAME );
 		bookacti_send_json( $return_array, 'submit_booking_form' );
 	}
 	
@@ -1275,7 +1268,7 @@ function bookacti_controller_update_form_field() {
 	// Sanitize data
 	$_POST[ 'name' ] = $field[ 'name' ]; $_POST[ 'type' ] = $field[ 'type' ];
 	$sanitized_data	= bookacti_sanitize_form_field_data( $_POST );
-
+	
 	// Update form field
 	$updated = bookacti_update_form_field( $sanitized_data );
 
@@ -1289,7 +1282,7 @@ function bookacti_controller_update_form_field() {
 	
 	// Extract metadata only
 	$field_meta = array_intersect_key( $sanitized_data, bookacti_get_default_form_fields_meta( $field[ 'name' ] ) );
-
+	
 	if( $field_meta ) {
 		// Unserialize values before preocessing through bookacti_update_metadata
 		foreach( $field_meta as $key => $value ) { $field_meta[ $key ] = maybe_unserialize( $value ); }

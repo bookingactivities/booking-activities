@@ -13,11 +13,20 @@ $j( document ).ready( function() {
 		bookacti_fill_booking_system_fields( booking_system, event, group_id );
 		bookacti_fill_picked_events_list( booking_system );
 		
-		if( group_id === 'single' && attributes[ 'when_perform_form_action' ] === 'on_event_click' && attributes[ 'form_action' ] === 'redirect_to_url' ) {
-			bookacti_redirect_to_activity_url( booking_system, event );
+		var group_ids = bookacti_get_event_group_ids( booking_system, event );
+		var open_dialog = false;
+		if( $j.isArray( group_ids )
+			&&	(	( group_ids.length > 1 )
+				||  ( group_ids.length === 1 && attributes[ 'groups_single_events' ] ) ) ) {
+			open_dialog = true;
+		}
+		if( ! open_dialog ) {
+			if( group_id === 'single' && attributes[ 'when_perform_form_action' ] === 'on_event_click' && attributes[ 'form_action' ] === 'redirect_to_url' ) {
+				bookacti_redirect_to_activity_url( booking_system, event );
+			}
 		}
 		
-		booking_system.trigger( 'bookacti_events_picked_after_form_action', [ group_id, event ] );
+		booking_system.trigger( 'bookacti_events_picked_after', [ group_id, event ] );
 	});
 	
 	
@@ -32,10 +41,14 @@ $j( document ).ready( function() {
 		var attributes			= bookacti.booking_system[ booking_system_id ];
 		
 		if( attributes[ 'when_perform_form_action' ] === 'on_event_click' && attributes[ 'form_action' ] === 'redirect_to_url' ) {
-			bookacti_redirect_to_group_category_url( booking_system, group_id );
+			if( group_id === 'single' ) {
+				bookacti_redirect_to_activity_url( booking_system, event );
+			} else if( $j.isNumeric( group_id ) ) {
+				bookacti_redirect_to_group_category_url( booking_system, group_id );
+			}
 		}
 		
-		booking_system.trigger( 'bookacti_group_of_events_chosen_after_form_action', [ group_id, event ] );
+		booking_system.trigger( 'bookacti_group_of_events_chosen_after', [ group_id, event ] );
 	});
 	
 	
