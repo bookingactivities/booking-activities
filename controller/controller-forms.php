@@ -328,7 +328,7 @@ add_action( 'bookacti_display_form_field_quantity', 'bookacti_display_form_field
 /**
  * Display the form field 'checkbox'
  * @since 1.5.2
- * @version 1.5.4
+ * @version 1.7.0
  * @param string $html
  * @param array $field
  * @param string $instance_id
@@ -343,6 +343,8 @@ function bookacti_display_form_field_checkbox( $html, $field, $instance_id, $con
 	if( ! empty( $field[ 'type' ] ) )		{ $field_class .= ' bookacti-form-field-type-' . sanitize_title_with_dashes( esc_attr( $field[ 'type' ] ) ); } 
 	if( ! empty( $field[ 'field_id' ] ) )	{ $field_class .= ' bookacti-form-field-id-' . esc_attr( $field[ 'field_id' ] ); }
 	if( ! empty( $field[ 'class' ] ) )		{ $field_class .= ' ' . esc_attr( $field[ 'class' ] ); }
+	$is_checked		= ! empty( $_REQUEST[ $field[ 'name' ] ] ) ? 1 : $field[ 'value' ];
+	
 	ob_start();
 	?>
 	<div class='<?php echo $field_class; ?>' id='<?php echo $field_id; ?>' >
@@ -355,7 +357,7 @@ function bookacti_display_form_field_checkbox( $html, $field, $instance_id, $con
 					   class='bookacti-form-field'
 					   value='1'
 					   <?php if( $field[ 'required' ] ) { echo 'required'; } ?>
-					   <?php if( $field[ 'value' ] ) { echo 'checked'; } ?> />
+					   <?php if( $is_checked ) { echo 'checked'; } ?> />
 			</div>
 			<div class='bookacti-form-field-checkbox-label' >
 				<label for='<?php echo $field_id . '-input'; ?>' >

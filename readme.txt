@@ -47,6 +47,7 @@ Try this reservation tool live on the [demo website](http://demo.booking-activit
 * ★ Display events from multiple schedules and activities at once
 * **Export** your events and your bookings as iCal feeds and **sync** them on calendar apps (e.g.: Google Calendar)
 * ★ **One-click booking**: just pick the desired event on the calendar and click on "Book"! 
+* Custom action when you submit the form or when you click an event: make a reservation, ★ **add a product to cart, redirect to a URL**
 * ★ **Seamless login / registration**: embedded in the form and processed with the reservation. You can also **book without account**.
 * 100% responsive: looks great on mobiles, tablets and computers.
 * ★ *Set any custom fields and any booking metadata thanks to [Advanced Forms](https://booking-activities.fr/en/downloads/advanced-forms/?utm_source=wp-plugin-page&utm_medium=wordpress&utm_campaign=advanced-forms&utm_content=readme) add-on*
@@ -94,6 +95,7 @@ Try this reservation tool live on the [demo website](http://demo.booking-activit
 
 * **API for developers** (PHP actions and filters, JS actions). *Documentation coming soon.*
 * Use the latest version of the beautiful and handy **[FullCalendar](https://fullcalendar.io/)**
+* Support WP privacy tools for exporting and erasing your customers personal data
 
 See the whole [features list here](https://booking-activities.fr/en/documentation/features/?utm_source=wp-plugin-page&utm_medium=wordpress&utm_content=readme).
 
