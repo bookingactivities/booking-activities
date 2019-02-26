@@ -143,7 +143,7 @@ $j( document ).ready( function() {
 		if( ! $j.isArray( group_categories ) ) { group_categories = [ group_categories ]; }
 		
 		// Display the group categories actions table
-		if( ! was_displayed ) { $j( '.bookacti-group-categories-actions-options-table' ).show(); }
+		if( ! was_displayed && $j( 'select#bookacti-form_action' ).val() !== 'default' ) { $j( '.bookacti-group-categories-actions-options-table' ).show(); }
 		$j( '.bookacti-group-categories-actions-options-table :input' ).prop( 'disabled', false );
 		
 		var tbody = $j( '.bookacti-group-categories-actions-options-table tbody' );

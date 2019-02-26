@@ -1489,20 +1489,13 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			// Initialize on success for non-activity products
 			$validated = array( 'status' => 'success' );
 			
-			// Get product form ID
-			if( ! empty( $cart_item[ 'variation_id' ] ) ) {
-				$form_id = bookacti_get_product_form_id( $cart_item[ 'variation_id' ], true );
-			} else if( ! empty( $cart_item[ 'product_id' ] ) ) {
-				$form_id = bookacti_get_product_form_id( $cart_item[ 'product_id' ], false );
-			}
-			$form_id = is_numeric( $form_id ) ? intval( $form_id ) : 0;
-			
 			// Single event
 			if( isset( $cart_item['_bookacti_options'] ) && isset( $cart_item['_bookacti_options']['bookacti_booking_id'] ) ) {
 				$booking_id = $cart_item['_bookacti_options']['bookacti_booking_id'];
 				if( ! is_null( $booking_id ) ) {
 					$event		= json_decode( $cart_item['_bookacti_options']['bookacti_booked_events'] );
-					$validated	= bookacti_validate_booking_form( 'single', $event[0]->event_id, $event[0]->event_start, $event[0]->event_end, $cart_item['quantity'], $form_id );
+					$booking	= bookacti_get_booking_by_id( $booking_id );
+					$validated	= bookacti_validate_booking_form( 'single', $event[0]->event_id, $event[0]->event_start, $event[0]->event_end, $cart_item['quantity'], $booking->form_id );
 				}
 
 			// Group of events
@@ -1511,7 +1504,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 				if( ! is_null( $booking_group_id ) ) {
 					$event			= json_decode( $cart_item['_bookacti_options']['bookacti_booked_events'] );
 					$booking_group	= bookacti_get_booking_group_by_id( $booking_group_id );
-					$validated		= bookacti_validate_booking_form( $booking_group->event_group_id, $event[0]->event_id, $event[0]->event_start, $event[0]->event_end, $cart_item['quantity'], $form_id );
+					$validated		= bookacti_validate_booking_form( $booking_group->event_group_id, $event[0]->event_id, $event[0]->event_start, $event[0]->event_end, $cart_item['quantity'], $booking_group->form_id );
 				}
 			}
 			

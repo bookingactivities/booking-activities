@@ -42,7 +42,7 @@ add_action( 'bookacti_display_form_field_calendar', 'bookacti_display_form_field
 /**
  * Display the form field 'login'
  * @since 1.5.0
- * @version 1.6.0
+ * @version 1.7.0
  * @param string $html
  * @param array $field
  * @param string $instance_id
@@ -76,7 +76,7 @@ function bookacti_display_form_field_login( $html, $field, $instance_id, $contex
 			// Set the default login type on the first available by default
 			reset( $login_types );
 			$first_login_type = key( $login_types );
-			$default_login_type = apply_filters( 'bookacti_default_login_type', $first_login_type, $field, $instance_id, $context );
+			$default_login_type = apply_filters( 'bookacti_default_login_type', ! empty( $_REQUEST[ 'login_type' ] ) ? sanitize_title_with_dashes( $_REQUEST[ 'login_type' ] ) : $first_login_type, $field, $instance_id, $context );
 			if( ! in_array( $default_login_type, array_keys( $login_types ), true ) ) { $default_login_type = $first_login_type; }
 
 			foreach( $login_types as $login_type_name => $login_type ) {
@@ -121,6 +121,7 @@ function bookacti_display_form_field_login( $html, $field, $instance_id, $contex
 						$args = array(
 							'type'			=> 'email',
 							'name'			=> 'email',
+							'value'			=> ! empty( $_REQUEST[ 'email' ] ) ? esc_attr( $_REQUEST[ 'email' ] ) : '',
 							'id'			=> $field_id . '-email',
 							'class'			=> 'bookacti-form-field bookacti-email',
 							'placeholder'	=> esc_attr( apply_filters( 'bookacti_translate_text', $field[ 'placeholder' ][ 'email' ] ) ),
@@ -147,6 +148,7 @@ function bookacti_display_form_field_login( $html, $field, $instance_id, $contex
 						$args = array(
 							'type'			=> 'password',
 							'name'			=> 'password',
+							'value'			=> ! empty( $_REQUEST[ 'password' ] ) ? esc_attr( $_REQUEST[ 'password' ] ) : '',
 							'id'			=> $field_id . '-password',
 							'class'			=> 'bookacti-form-field bookacti-password',
 							'placeholder'	=> esc_attr( apply_filters( 'bookacti_translate_text', $field[ 'placeholder' ][ 'password' ] ) ),
@@ -228,6 +230,7 @@ function bookacti_display_form_field_login( $html, $field, $instance_id, $contex
 								$args = array(
 									'type'			=> $register_field[ 'type' ],
 									'name'			=> esc_attr( $register_field_name ),
+									'value'			=> ! empty( $_REQUEST[ $register_field_name ] ) ? esc_attr( $_REQUEST[ $register_field_name ] ) : ( isset( $register_field[ 'value' ] ) ? esc_attr( $register_field[ 'value' ] ) : '' ),
 									'id'			=> esc_attr( $field_id . '-' . $register_field_name ),
 									'class'			=> esc_attr( 'bookacti-form-field bookacti-' . $register_field_name ),
 									'required'		=> esc_attr( $field[ 'required_fields' ][ $register_field_name ] ),
@@ -433,7 +436,7 @@ add_action( 'bookacti_display_form_field_free_text', 'bookacti_display_form_fiel
 /**
  * Add a compulsory quantity input for correct booking form functionning
  * @since 1.5.0
- * @version 1.5.8
+ * @version 1.7.0
  * @param array $fields
  * @param array $form
  * @param string $instance_id
@@ -450,6 +453,7 @@ function bookacti_display_compulsory_quantity_form_field( $fields, $form, $insta
 		$field = bookacti_get_default_form_fields_data( 'quantity' );
 		$field[ 'id' ]		= 'bookacti-compulsory-quantity-field';
 		$field[ 'class' ]	.= ' bookacti-hidden-field';
+		$field[ 'value' ]	= ! empty( $_REQUEST[ 'quantity' ] ) && is_numeric( $_REQUEST[ 'quantity' ] ) ? intval( $_REQUEST[ 'quantity' ] ) : 1;
 		$fields[] = $field;
 	}
 	
