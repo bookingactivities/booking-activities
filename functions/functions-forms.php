@@ -488,7 +488,7 @@ function bookacti_get_default_form_fields_data( $field_name = '' ) {
  * Get fields metadata
  * @see bookacti_format_form_field_data to properly format your array
  * @since 1.5.0
- * @version 1.6.0
+ * @version 1.7.0
  * @param string $field_name
  * @return array
  */
@@ -499,6 +499,8 @@ function bookacti_get_default_form_fields_meta( $field_name = '' ) {
 	unset( $booking_system_meta[ 'template_data' ] );
 	unset( $booking_system_meta[ 'auto_load' ] );
 	unset( $booking_system_meta[ 'check_roles' ] );
+	unset( $booking_system_meta[ 'picked_events' ] );
+	unset( $booking_system_meta[ 'form_id' ] );
 	
 	$template_meta = bookacti_format_template_settings( array() );
 	unset( $template_meta[ 'snapDuration' ] );

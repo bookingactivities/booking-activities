@@ -60,6 +60,8 @@
 .bookacti-notices ul.bookacti-warning-list	{ border-left-color: #ffb900; }
 .bookacti-notices ul.bookacti-success-list	{ border-left-color: green; }
 
+.bookacti-picked-events-list,
+.bookacti-picked-events-list li:last-child { margin-bottom: 0; }
 .bookacti-picked-events-list.bookacti-custom-scrollbar,
 .bookacti-booking-events-list.bookacti-custom-scrollbar { max-height: 200px; overflow: auto; }
 

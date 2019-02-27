@@ -1320,7 +1320,7 @@ function bookacti_controller_reset_form_field() {
 	// Check nonce and capabilities
 	$is_nonce_valid	= check_ajax_referer( 'bookacti_update_form_field', 'nonce', false );
 	$is_allowed		= current_user_can( 'bookacti_edit_forms' ) && bookacti_user_can_manage_form( $form_id );
-	
+		
 	if( $is_nonce_valid && $is_allowed && $form_id ) {
 		
 		// Update form field with default values

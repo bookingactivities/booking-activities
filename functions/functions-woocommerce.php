@@ -1718,7 +1718,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 					<?php
 						foreach( $variations as $variation ) {
 						?>
-							<option class='bookacti-wc-product-variation-option' value='<?php echo esc_attr( $variation[ 'variation_id' ] ); ?>' <?php selected( $product->get_id(), $r[ 'selected' ] ); ?>><?php echo implode( ' | ', $variation[ 'attributes' ] ); ?></option>
+							<option class='bookacti-wc-product-variation-option' value='<?php echo esc_attr( $variation[ 'variation_id' ] ); ?>' <?php selected( $product->get_id(), $r[ 'selected' ] ); ?>><?php echo implode( ' | ', array_map( 'bookacti_translate_text', $variation[ 'attributes' ] ) ); ?></option>
 						<?php
 						}
 					?>

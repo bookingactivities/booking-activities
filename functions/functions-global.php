@@ -259,8 +259,20 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 		return $translation_plugin;
 	}
-
-
+	
+	
+	/**
+	 * Apply bookacti_translate_text filters to a text
+	 * @since 1.7.0
+	 * @param string $text
+	 * @param string $lang
+	 * @return string
+	 */
+	function bookacti_translate_text( $text, $lang = '' ) {
+		return apply_filters( 'bookacti_translate_text', $text, $lang );
+	}
+	
+	
 	// Translate text with QTranslate
 	$is_qtranslate	= bookacti_is_plugin_active( 'qtranslate-x/qtranslate.php' );
 	if( $is_qtranslate ) {
