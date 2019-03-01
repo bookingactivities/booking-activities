@@ -5,7 +5,7 @@ Tags: booking activities, booking sport, booking form, event reservation, reserv
 Requires at least: 3.6
 Tested up to: 5.1
 Requires PHP: 5.3
-Stable tag: 1.6.2
+Stable tag: 1.7.0
 License: GPLv3 or later
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
 
@@ -319,7 +319,7 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 
 == Changelog ==
 
-= 1.7.0 alpha 2 - 2019/01/30 =
+= 1.7.0 - 2019/03/01 =
 * Feature - Add a WC product to cart when you click on an event or when you submit a booking form
 * Feature - Redirect to a URL when you click on an event or when you submit a booking form
 * Feature - Redirect to a WC product page when you click on an event or when you submit a booking form
@@ -329,13 +329,13 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 * Tweak - Allow HTML in events and groups of events title
 * Tweak - Notifications are send to the user when he cancels or reschedule a booking from the frontend
 * Tweak - Order calendars, activities, group categories and groups of events by title
-* Tweak - Backend javascript and css files are loaded only on Booking Activities screens to avoid conflicts
 * Tweak - List of activities in calendar editor can now be scrolled
 * Tweak - Add the {booking_list_raw} notification tag
 * Tweak - Support more parameters in bookingactivities_list shortcode (all booking filters)
 * Tweak - Allow to filter bookings by user even if the user is not in the selectbox
 * Tweak - Limit the amount of emails that can be sent to a single user per minute (20), hour (200) and day (2000) (spam protection)
-* Fix - Notification were sometimes sent twice when used with WooCommerce
+* Tweak - Backend javascript and css files are loaded only on Booking Activities screens to avoid conflicts
+* Fix - Notification were sometimes sent twice when used with WooCommerce in asynchronous mode
 * Fix - Overlapping of the event list in emails
 * Fix - WC order became "refunded" when a reservation was refunded, even if another reservation was still "cancelled"
 * Fix - Cancellation delays were not working properly
