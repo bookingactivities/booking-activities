@@ -6,6 +6,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
  * Array of configurable notifications
  * 
  * @since 1.2.1 (was bookacti_get_emails_default_settings in 1.2.0)
+ * @version 1.7.0
  * @return array
  */
 function bookacti_get_notifications_default_settings() {
@@ -39,7 +40,7 @@ function bookacti_get_notifications_default_settings() {
 					/* translators: Keep tags as is (this is a tag: {tag}), they will be replaced in code. This is the default email an administrator receive when a booking is cancelled */
 					'message'	=> __( '<p>A customer has cancelled a booking.</p>
 										<p>{booking_list}</p>
-										<p>Contact him: {user_firstname} {user_lastname} ({user_email})</p>
+										<p>Customer info: {user_firstname} {user_lastname} ({user_email})</p>
 										<p><a href="{booking_admin_url}">Click here</a> to edit this booking (ID: {booking_id}).</p>', BOOKACTI_PLUGIN_NAME ) )
 			),
 		'admin_rescheduled_booking' => 
@@ -56,7 +57,7 @@ function bookacti_get_notifications_default_settings() {
 					'message'	=> __( '<p>A customer has rescheduled a booking.</p>
 										<p>Old booking: {booking_old_start} - {booking_old_end}</p>
 										<p>New booking: {booking_list}</p>
-										<p>Contact him: {user_firstname} {user_lastname} ({user_email})</p>
+										<p>Customer info: {user_firstname} {user_lastname} ({user_email})</p>
 										<p><a href="{booking_admin_url}">Click here</a> to edit this booking (ID: {booking_id}).</p>', BOOKACTI_PLUGIN_NAME ) )
 			),
 		
@@ -102,7 +103,7 @@ function bookacti_get_notifications_default_settings() {
 					'message'	=> __( "<p>Hello {user_firstname},
 										<p>Your booking has been <strong>cancelled</strong>.</p>
 										<p>{booking_list}</p>
-										<p>If you didn't cancelled this reservation or if you think this is an error, please contact us.</p>", BOOKACTI_PLUGIN_NAME ) )
+										<p>If you haven't cancelled this reservation or if you think this is an error, please contact us.</p>", BOOKACTI_PLUGIN_NAME ) )
 			),
 		'customer_refunded_booking' => 
 			array(
@@ -132,7 +133,7 @@ function bookacti_get_notifications_default_settings() {
 					'message'	=> __( "<p>Hello {user_firstname},
 										<p>Your booking has been <strong>rescheduled</strong> from {booking_old_start} to:</p>
 										<p>{booking_list}</p>
-										<p>If you didn't rescheduled this reservation or if you think this is an error, please contact us.</p>", BOOKACTI_PLUGIN_NAME ) )
+										<p>If you haven't rescheduled this reservation or if you think this is an error, please contact us.</p>", BOOKACTI_PLUGIN_NAME ) )
 			),
 	);
 
@@ -283,7 +284,7 @@ function bookacti_sanitize_notification_settings( $args, $notification_id = '' )
 /**
  * Get notifications tags
  * @since 1.2.0
- * @version 1.6.0
+ * @version 1.7.0
  * @param string $notification_id Optional.
  * @return array
  */
@@ -298,6 +299,7 @@ function bookacti_get_notifications_tags( $notification_id = '' ) {
 		'{booking_start}'		=> esc_html__( 'Booking start date and time displayed in a user-friendly format. For booking groups, the first event start date and time is used.', BOOKACTI_PLUGIN_NAME ),
 		'{booking_end}'			=> esc_html__( 'Booking end date and time displayed in a user-friendly format. For booking groups, the last event end date and time is used.', BOOKACTI_PLUGIN_NAME ),
 		'{booking_list}'		=> esc_html__( 'Booking summary displayed as a booking list. You should use this tag once in every notification to know what booking (group) it is about.', BOOKACTI_PLUGIN_NAME ),
+		'{booking_list_raw}'	=> esc_html__( 'Booking summary displayed as a comma separated booking list, without HTML formatting.', BOOKACTI_PLUGIN_NAME ),
 		'{user_firstname}'		=> esc_html__( 'The user first name', BOOKACTI_PLUGIN_NAME ),
 		'{user_lastname}'		=> esc_html__( 'The user last name', BOOKACTI_PLUGIN_NAME ),
 		'{user_email}'			=> esc_html__( 'The user email address', BOOKACTI_PLUGIN_NAME ),
@@ -322,7 +324,7 @@ function bookacti_get_notifications_tags( $notification_id = '' ) {
 /**
  * Get notifications tags and values corresponding to given booking
  * @since 1.2.0
- * @version 1.6.0
+ * @version 1.7.0
  * @param int $booking_id
  * @param string $booking_type 'group' or 'single'
  * @param string $notification_id
@@ -371,6 +373,7 @@ function bookacti_get_notifications_tags_values( $booking_id, $booking_type, $no
 		$booking_data[ '{booking_status}' ]		= bookacti_format_booking_state( $booking->state );
 		$booking_data[ '{booking_quantity}' ]	= $booking->quantity;
 		$booking_data[ '{booking_list}' ]		= bookacti_get_formatted_booking_events_list( $bookings, 'show', $locale );
+		$booking_data[ '{booking_list_raw}' ]	= bookacti_get_formatted_booking_events_list_raw( $bookings, 'show', $locale );
 
 		if( $booking->user_id ) { 
 			$booking_data[ '{user_id}' ] = $booking->user_id;
@@ -418,7 +421,7 @@ function bookacti_get_notifications_tags_values( $booking_id, $booking_type, $no
  * Send a notification according to its settings
  * 
  * @since 1.2.1 (was bookacti_send_email in 1.2.0)
- * @version 1.6.0
+ * @version 1.7.0
  * @param string $notification_id Must exists in "bookacti_notifications_default_settings"
  * @param int $booking_id
  * @param string $booking_type "single" or "group"
@@ -426,13 +429,24 @@ function bookacti_get_notifications_tags_values( $booking_id, $booking_type, $no
  * @param boolean $async Whether to send the notification asynchronously. 
  * @return array
  */
-function bookacti_send_notification( $notification_id, $booking_id, $booking_type, $args = array(), $async = true ) {
+function bookacti_send_notification( $notification_id, $booking_id, $booking_type, $args = array(), $async = 1 ) {
+	$async = ! empty( $async ) ? 1 : 0;
 	
 	// Send notifications asynchronously
 	$allow_async = apply_filters( 'bookacti_allow_async_notifications', bookacti_get_setting_value( 'bookacti_notifications_settings', 'notifications_async' ) );
 	if( $allow_async && $async ) {
-		wp_schedule_single_event( time(), 'bookacti_send_async_notification', array( $notification_id, $booking_id, $booking_type, $args, false ) );
+		// Delay with few seconds to try to avoid scheduling problems
+		wp_schedule_single_event( time() + 3, 'bookacti_send_async_notification', array( $notification_id, $booking_id, $booking_type, $args, 0 ) );
 		return;
+	}
+	
+	// Make sure not to run the same cron task multiple times
+	if( $allow_async && ! $async ) {
+		// If this notification was already sent in the past few minutes, do not send it again
+		$notification_unique_key = md5( json_encode( array( $notification_id, $booking_id, $booking_type, $args ) ) );
+		$already_sent = get_transient( 'bookacti_notif_' . $notification_unique_key );
+		if( $already_sent ) { return; }
+		set_transient( 'bookacti_notif_' . $notification_unique_key, 1, 3*60 );
 	}
 	
 	// Get notification settings
@@ -516,9 +530,8 @@ add_action( 'bookacti_send_async_notification', 'bookacti_send_notification', 10
 
 /**
  * Send an email notification
- * 
  * @since 1.2.0
- * @version 1.2.1
+ * @version 1.7.0
  * @param array $notification
  * @param array $tags
  * @param string $locale
@@ -549,7 +562,7 @@ function bookacti_send_email_notification( $notification, $tags = array(), $loca
 		'message'	=> $message
 	), $notification, $tags, $locale );
 	
-	$sent = wp_mail( $email_data[ 'to' ], $email_data[ 'subject' ], $email_data[ 'message' ], $email_data[ 'headers' ] );
+	$sent = bookacti_send_email( $email_data[ 'to' ], $email_data[ 'subject' ], $email_data[ 'message' ], $email_data[ 'headers' ] );
 	
 	do_action( 'bookacti_email_notification_sent', $sent, $email_data, $notification, $tags, $locale );
 	
@@ -563,17 +576,20 @@ if( ! function_exists( 'bookacti_send_new_user_notification' ) ) {
 /**
  * Email login credentials to a newly-registered user in an asynchronous way
  * @since 1.5.0
+ * @version 1.7.0
  * @global string  $wp_version
  * @param  int     $user_id   User ID.
  * @param  string  $notify    Optional. Type of notification that should happen. Accepts 'admin' or an empty
  *                            string (admin only), 'user', or 'both' (admin and user). Default 'both'.
  * @param  boolean $async     Whether to send the notification asynchronously. 
  */
-function bookacti_send_new_user_notification( $user_id, $notify = 'both', $async = true ) {
+function bookacti_send_new_user_notification( $user_id, $notify = 'both', $async = 1 ) {
+	$async = ! empty( $async ) ? 1 : 0;
+	
 	// Send notifications asynchronously
 	$allow_async = apply_filters( 'bookacti_allow_async_notifications', bookacti_get_setting_value( 'bookacti_notifications_settings', 'notifications_async' ) );
 	if( $allow_async && $async ) {
-		wp_schedule_single_event( time(), 'bookacti_send_async_new_user_notification', array( $user_id, $notify, false ) );
+		wp_schedule_single_event( time() + 3, 'bookacti_send_async_new_user_notification', array( $user_id, $notify, 0 ) );
 		return;
 	}	
 	
@@ -594,4 +610,91 @@ function bookacti_send_new_user_notification( $user_id, $notify = 'both', $async
 // Hook the asynchronous call and send the new user notification
 add_action( 'bookacti_send_async_new_user_notification', 'bookacti_send_new_user_notification', 10, 3 );
 
+}
+
+
+/**
+ * Send an email.
+ * Make sure not to send more emails than allowed in a specific timeframe
+ * @since 1.7.0
+ * @param array $to
+ * @param string $subject
+ * @param string $message
+ * @param array $headers
+ * @return bool
+ */
+function bookacti_send_email( $to, $subject, $message, $headers ) {
+	
+	$recipients				= is_array( $to ) ? $to : explode( ',', $to );
+	$latest_emails_sent		= get_option( 'bookacti_latest_emails_sent' );
+	if( ! $latest_emails_sent ) { $latest_emails_sent = array(); }
+	
+	$current_datetime		= new DateTime( 'now' );
+	$time_formatted			= $current_datetime->format( 'Y-m-d H:i:s' );
+	
+	$user_threshold_minute	= apply_filters( 'bookacti_limit_email_per_minute_per_user', 20 );
+	$user_threshold_hour	= apply_filters( 'bookacti_limit_email_per_hour_per_user', 200 );
+	$user_threshold_day		= apply_filters( 'bookacti_limit_email_per_day_per_user', 2000 );
+	$user_exceptions		= apply_filters( 'bookacti_limit_email_per_user_exceptions', array() );
+	
+	$one_mn_ago_datetime	= clone $current_datetime;
+	$one_hour_ago_datetime	= clone $current_datetime;
+	$one_day_ago_datetime	= clone $current_datetime;
+	$one_mn_ago_datetime->sub( new DateInterval( 'PT1M' ) );
+	$one_hour_ago_datetime->sub( new DateInterval( 'PT1H' ) );
+	$one_day_ago_datetime->sub( new DateInterval( 'P1D' ) );
+	
+	$emails_count_minute_per_user	= array();
+	$emails_count_hour_per_user		= array();
+	$emails_count_day_per_user		= array();
+	
+	// Check per recipient thresholds
+	if( $latest_emails_sent ) {
+		foreach( $recipients as $i => $recipient ) {
+			if( in_array( $recipient, $user_exceptions, true ) ) { continue; }
+			if( empty( $latest_emails_sent[ $recipient ] ) || ! is_array( $latest_emails_sent[ $recipient ] ) ) { continue; }
+			$emails_count_minute_per_user[ $recipient ] = 0;
+			$emails_count_hour_per_user[ $recipient ] = 0;
+			$emails_count_day_per_user[ $recipient ] = 0;
+			foreach( $latest_emails_sent[ $recipient ] as $j => $email_sent ) {
+				$email_datetime = new DateTime( $email_sent );
+				if( $one_day_ago_datetime < $email_datetime ) {
+					$emails_count_day_per_user[ $recipient ] += 1;
+				} else {
+					// Remove useless values (before day-1) to clean the database
+					unset( $latest_emails_sent[ $j ] );
+					continue;
+				}
+				if( $one_mn_ago_datetime < $email_datetime ) {
+					$emails_count_minute_per_user[ $recipient ] += 1;
+				}
+				if( $one_hour_ago_datetime < $email_datetime ) {
+					$emails_count_hour_per_user[ $recipient ] += 1;
+				}
+			}
+			
+			if( $emails_count_minute_per_user[ $recipient ] >= $user_threshold_minute
+			||  $emails_count_hour_per_user[ $recipient ] >= $user_threshold_hour 
+			||  $emails_count_day_per_user[ $recipient ] >= $user_threshold_day ) {
+				unset( $recipients[ $i ] );
+			}
+		}
+	}
+	
+	$actual_recipients = apply_filters( 'bookacti_send_email_recipients', $recipients, $to, $subject, $message, $headers );
+	
+	if( ! $actual_recipients ) { return false; }
+	
+	$sent = wp_mail( $actual_recipients, $subject, $message, $headers );
+	
+	if( $sent ) {
+		foreach( $actual_recipients as $i => $recipient ) {
+			if( in_array( $recipient, $user_exceptions, true ) ) { continue; }
+			if( ! isset( $latest_emails_sent[ $recipient ] ) || ! is_array( $latest_emails_sent[ $recipient ] ) ) { $latest_emails_sent[ $recipient ] = array(); }
+			$latest_emails_sent[ $recipient ][] = $time_formatted;
+		}
+		update_option( 'bookacti_latest_emails_sent', $latest_emails_sent );
+	}
+	
+	return $sent;
 }

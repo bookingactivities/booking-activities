@@ -6,9 +6,6 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 	/**
 	 * Add woocommerce related translations
-	 * 
-	 * @since 1.0.0
-	 * 
 	 * @param type $translation_array
 	 * @return type
 	 */
@@ -139,11 +136,11 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 	
 
-// ADD TO CART (SINGLE PRODUCT PAGE)
+// SINGLE PRODUCT PAGE
 	
 	/**
 	 * Add booking forms to single product page (front-end)
-	 * @version 1.6.0
+	 * @version 1.7.0
 	 * @global WC_Product $product
 	 */
 	function bookacti_add_booking_system_in_single_product_page() {
@@ -155,13 +152,13 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		// Check if the product or one of its available variation is bound to a booking form
 		$form_id = 0;
 		if( $product->is_type( 'simple' ) ) {
-			$form_id = get_post_meta( $product->get_id(), '_bookacti_form', true );
+			$form_id = bookacti_get_product_form_id( $product->get_id(), false );
 		}
 		else if( $product->is_type( 'variable' ) ) {
 			$variations = $product->get_available_variations();
 			foreach( $variations as $variation ) {
 				if( empty( $variation[ 'bookacti_is_activity' ] ) || empty( $variation[ 'bookacti_form_id' ] ) ) { continue; }
-				$form_id = $variation[ 'bookacti_form_id' ];
+				$form_id = apply_filters( 'bookacti_product_booking_form_id', $variation[ 'bookacti_form_id' ], $variation[ 'variation_id' ], true );
 				break;
 			}
 		}
@@ -208,7 +205,9 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		/** END BACKWARD COMPATIBILITY < 1.5 **/
 		
 		
-		$form_instance_id = '';
+		$form_instance_id		= '';
+		$variation_id			= 0;
+		$default_variation_id	= 0;
 		// Show form on single product page or on variable product with a default value
 		if( $product->is_type( 'simple' ) ) {
 			$form_instance_id = 'product-' . $product->get_id();
@@ -216,7 +215,8 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		else if( $product->is_type( 'variable' ) ) {
 			$default_attributes = bookacti_get_product_default_attributes( $product );
 			if( $default_attributes ) { 
-				$default_variation_id = bookacti_get_product_variation_matching_attributes( $product, $default_attributes );
+				$variation_id = bookacti_get_product_variation_matching_attributes( $product, $default_attributes );
+				$default_variation_id = $variation_id;
 				if( $default_variation_id ) { 
 					$form_id = get_post_meta( $default_variation_id, 'bookacti_variable_form', true );
 					if( $form_id ) { 
@@ -226,9 +226,10 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			}
 			
 		} else if( $product->is_type( 'variation' ) ) {
-			$form_id = get_post_meta( $product->get_id(), 'bookacti_variable_form', true );
+			$variation_id = $product->get_id();
+			$form_id = get_post_meta( $variation_id, 'bookacti_variable_form', true );
 			if( $form_id ) { 
-				$form_instance_id = 'product-variation-' . $default_variation_id;
+				$form_instance_id = 'product-variation-' . $variation_id;
 			}
 		}
 		
@@ -236,20 +237,22 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		// display an empty form fields container
 		if( ! $form_instance_id ) { 
 			?>
-				<div class='bookacti-form-fields'></div>
+				<div class='bookacti-wc-form-fields'></div>
 			<?php
 			return;
 		}
 		
 		?>
-		<div class='bookacti-form-fields' 
+		<div class='bookacti-wc-form-fields' 
+			 id='<?php echo $form_instance_id; ?>'
 			 data-product-id='<?php echo $product->get_id(); ?>'
-			 data-variation-id='<?php if( ! empty( $default_variation_id ) ) { echo $default_variation_id; } ?>'
+			 data-variation-id='<?php if( ! empty( $variation_id ) ) { echo $variation_id; } ?>'
+			 data-default-variation-id='<?php if( ! empty( $default_variation_id ) ) { echo $default_variation_id; } ?>'
 			 data-form-id='<?php echo $form_id; ?>'>
 			<?php 
 				$form_html = bookacti_display_form( $form_id, $form_instance_id, 'wc_product_init', false ); 
 				echo $form_html;
-				if( ! empty( $default_variation_id ) ) {
+				if( empty( $default_variation_id ) && ! empty( $variation_id ) ) {
 				?>
 					<script>
 						if( typeof bookacti.form_fields === 'undefined' ) { bookacti.form_fields = []; }
@@ -311,28 +314,44 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	
 	
 	/**
-	 * Display a specific 'calendar' field on product pages
-	 * @since 1.5.0
-	 * @version 1.5.2
-	 * @param array $field
-	 * @param int $form_id
+	 * Change 'calendar' field attributes when it is displayed on product pages
+	 * @since 1.7.0 (was bookacti_display_form_field_calendar_on_wc_product_page before)
+	 * @param array $atts
 	 * @param string $instance_id
 	 * @param string $context
+	 * @return $atts
 	 */
-	function bookacti_display_form_field_calendar_on_wc_product_page( $field, $instance_id, $context ) {
-		if( $context !== 'wc_product_init' && $context !== 'wc_switch_variation' ) { return; }
+	function bookacti_form_field_calendar_attributes_on_wc_product_page( $atts, $instance_id, $context ) {
+		if( $context !== 'wc_product_init' && $context !== 'wc_switch_variation' ) { return $atts; }
 		
-		// Remove default behavior
-		remove_action( 'bookacti_display_form_field_calendar', 'bookacti_display_form_field_calendar', 10 );
+		// Change class
+		if( ! empty( $atts[ 'class' ] ) ) {
+			$atts[ 'class' ] .= ' bookacti-woocommerce-product-booking-system';
+		} else {
+			$atts[ 'class' ] = 'bookacti-woocommerce-product-booking-system';
+		}
 		
-		// Do not keep ID and class (already used for the container)
-		$field[ 'id' ] = $instance_id; 
-		$field[ 'class' ] = 'bookacti-woocommerce-product-booking-system';
-
-		// Display the booking system
-		bookacti_get_booking_system( $field, true );
+		return $atts;
 	}
-	add_action( 'bookacti_display_form_field_calendar', 'bookacti_display_form_field_calendar_on_wc_product_page', 5, 3 );
+	add_filter( 'bookacti_form_field_calendar_attributes', 'bookacti_form_field_calendar_attributes_on_wc_product_page', 10, 3 );
+	
+	
+	/**
+	 * Set the WC quantity input value with the URL parameter 'quantity' 
+	 * @since 1.7.0
+	 * @param array $args
+	 * @param WC_Product $product
+	 * @return array
+	 */
+	function bookacti_set_wc_quantity_via_url( $args, $product ) {
+		if( empty( $_GET[ 'quantity' ] ) || ! is_numeric( $_GET[ 'quantity' ] ) ) { return $args; }
+		if( ! bookacti_product_is_activity( $product ) ) { return $args; }
+		
+		$args[ 'input_value' ] = intval( $_GET[ 'quantity' ] );
+		
+		return $args;
+	}
+	add_filter( 'woocommerce_quantity_input_args', 'bookacti_set_wc_quantity_via_url', 10, 2 );
 	
 	
 	/**
@@ -454,7 +473,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 	/**
 	 * Validate add to cart form and temporarily book the event
-	 * @version 1.5.4
+	 * @version 1.7.0
 	 * @global WooCommerce $woocommerce
 	 * @param boolean $true
 	 * @param int $product_id
@@ -491,9 +510,9 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		// Get product form ID
 		$variation_id = isset( $_POST[ 'variation_id' ] ) ? intval( $_POST[ 'variation_id' ] ) : 0;
 		if( $variation_id ) {
-			$form_id = get_post_meta( $variation_id, 'bookacti_variable_form', true );
+			$form_id = bookacti_get_product_form_id( $variation_id, true );
 		} else {
-			$form_id = get_post_meta( $product_id, '_bookacti_form', true );
+			$form_id = bookacti_get_product_form_id( $product_id, false );
 		}
 		
 		// Sanitize the variables
@@ -502,10 +521,20 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		$event_id		= intval( $_POST[ 'bookacti_event_id' ] );
 		$event_start	= bookacti_sanitize_datetime( $_POST[ 'bookacti_event_start' ] );
 		$event_end		= bookacti_sanitize_datetime( $_POST[ 'bookacti_event_end' ] );
-
+		
+		// Check if the form fields are properly filled
+		if( $form_id ) {
+			$form_fields_validated = bookacti_validate_form_fields( $form_id );
+			if( $form_fields_validated[ 'status' ] !== 'success' ) {
+				$form_fields_validated[ 'message' ] = is_array( $form_fields_validated[ 'message' ] ) ? implode( '</li><li>', $form_fields_validated[ 'message' ] ) : $form_fields_validated[ 'message' ];
+				wc_add_notice( $form_fields_validated[ 'message' ], 'error' );
+				return false;
+			}
+		}
+		
 		// Check if data are correct before booking
 		$response = bookacti_validate_booking_form( $group_id, $event_id, $event_start, $event_end, $quantity, $form_id );
-
+		
 		// Display error message
 		if( $response[ 'status' ] !== 'success' ) {
 			wc_add_notice( $response[ 'message' ], 'error' );
@@ -1444,7 +1473,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	 * in case that "in_cart" state is not active
 	 * 
 	 * @since  1.3.0
-	 * @version 1.5.0
+	 * @version 1.7.0
 	 * @param  array $posted_data An array of posted data.
 	 * @param  WP_Error $errors
 	 */
@@ -1460,20 +1489,13 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			// Initialize on success for non-activity products
 			$validated = array( 'status' => 'success' );
 			
-			// Get product form ID
-			if( ! empty( $cart_item[ 'variation_id' ] ) ) {
-				$form_id = get_post_meta( $cart_item[ 'variation_id' ], 'bookacti_variable_form', true );
-			} else if( ! empty( $cart_item[ 'product_id' ] ) ) {
-				$form_id = get_post_meta( $cart_item[ 'product_id' ], '_bookacti_form', true );
-			}
-			$form_id = is_numeric( $form_id ) ? intval( $form_id ) : 0;
-			
 			// Single event
 			if( isset( $cart_item['_bookacti_options'] ) && isset( $cart_item['_bookacti_options']['bookacti_booking_id'] ) ) {
 				$booking_id = $cart_item['_bookacti_options']['bookacti_booking_id'];
 				if( ! is_null( $booking_id ) ) {
 					$event		= json_decode( $cart_item['_bookacti_options']['bookacti_booked_events'] );
-					$validated	= bookacti_validate_booking_form( 'single', $event[0]->event_id, $event[0]->event_start, $event[0]->event_end, $cart_item['quantity'], $form_id );
+					$booking	= bookacti_get_booking_by_id( $booking_id );
+					$validated	= bookacti_validate_booking_form( 'single', $event[0]->event_id, $event[0]->event_start, $event[0]->event_end, $cart_item['quantity'], $booking->form_id );
 				}
 
 			// Group of events
@@ -1482,7 +1504,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 				if( ! is_null( $booking_group_id ) ) {
 					$event			= json_decode( $cart_item['_bookacti_options']['bookacti_booked_events'] );
 					$booking_group	= bookacti_get_booking_group_by_id( $booking_group_id );
-					$validated		= bookacti_validate_booking_form( $booking_group->event_group_id, $event[0]->event_id, $event[0]->event_start, $event[0]->event_end, $cart_item['quantity'], $form_id );
+					$validated		= bookacti_validate_booking_form( $booking_group->event_group_id, $event[0]->event_id, $event[0]->event_start, $event[0]->event_end, $cart_item['quantity'], $booking_group->form_id );
 				}
 			}
 			

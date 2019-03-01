@@ -1089,7 +1089,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	 * Turn all bookings of an order to the desired status. 
 	 * Also make sure that bookings are bound to the order and the associated user.
 	 * 
-	 * @version 1.5.8
+	 * @version 1.7.0
 	 * @param WC_Order $order
 	 * @param string $state
 	 * @param string $payment_status
@@ -1209,7 +1209,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 			$headers		= array( 'Content-Type: text/html; charset=UTF-8' );
 
-			wp_mail( $to, $subject, $message, $headers );
+			bookacti_send_email( $to, $subject, $message, $headers );
 		}
 		
 		if( is_numeric( $response[ 'updated' ] ) && intval( $response[ 'updated' ] ) > 0 ) {
@@ -1224,8 +1224,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	 * Update order item booking status meta to new status
 	 *
 	 * @since 1.2.0
-	 * @version 1.5.6
-	 * 
+	 * @version 1.7.0
 	 * @param int $item
 	 * @param string $new_state
 	 * @param WC_Order $order
@@ -1251,7 +1250,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		
 		// Add refund metadata
 		if( in_array( $new_state, array( 'refunded', 'refund_requested' ), true ) ) {
-			$refund_action = $args[ 'refund_action' ] ? $args[ 'refund_action' ] : 'manual';
+			$refund_action = ! empty( $args[ 'refund_action' ] ) ? $args[ 'refund_action' ] : 'manual';
 			wc_update_order_item_meta( $order_item_id, '_bookacti_refund_method', $refund_action );
 		}
 		
@@ -1302,7 +1301,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	/**
 	 * Turn the order state if it is composed of inactive / pending / booked bookings only
 	 * @since 1.1.0
-	 * @version 1.6.0
+	 * @version 1.7.0
 	 * @param int $order_id
 	 */
 	function bookacti_change_order_state_based_on_its_bookings_state( $order_id ) {
@@ -1312,7 +1311,8 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		
 		if( ! $order ) { return; }
 		
-		if( ! in_array( $order->get_status(), array( 'processing', 'on-hold', 'completed' ), true ) ) { return; }
+		$order_status = $order->get_status();
+		if( ! in_array( $order_status, array( 'processing', 'on-hold', 'completed', 'cancelled' ), true ) ) { return; }
 		
 		$items = $order->get_items();
 		
@@ -1329,27 +1329,33 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			}
 			$states[] = $item[ 'bookacti_state' ];
 		}
+			
+		if( ! $only_activities || empty( $states ) || in_array( 'in_cart', $states, true ) ) { return; }
 		
-		if( ! $only_activities || empty( $states ) || in_array( 'in_cart', $states, true ) ) {
-			return;	
-		}
+		sort( $states );
+		$states_length = count( $states );
 		
-		$new_order_status = 'cancelled';
+		$new_order_status = $order_status;
+		$completed_booking_states = array( 'delivered', 'booked' );
+		$cancelled_booking_states = array( 'cancelled', 'refund_requested', 'expired', 'removed' );
 		
-		if( in_array( 'pending', $states, true ) ) {
+		if( $order_status !== 'cancelled' && in_array( 'pending', $states, true ) ) {
 			// Turn order status to processing (or let it on on-hold)
-			$new_order_status = $order->get_status() === 'on-hold' ? 'on-hold' : 'processing';
-		} else if( in_array( 'booked', $states, true ) || in_array( 'delivered', $states, true ) ) {
+			$new_order_status = $order_status === 'on-hold' ? 'on-hold' : 'processing';
+		} else if( $order_status !== 'cancelled' && ! empty( array_intersect( $states, $completed_booking_states ) ) ) {
 			// Turn order status to completed
 			$new_order_status = 'completed';
-		} else if( in_array( 'refunded', $states, true ) && ! in_array( 'refund_requested', $states, true ) ) {
-			// Turn order status to refunded
+		} else if( ! empty( array_intersect( $states, $cancelled_booking_states ) ) ) {
+			// Turn order status to cancelled
+			$new_order_status = 'cancelled';
+		} else if( $states[ 0 ] === 'refunded' && $states[ $states_length-1 ] === 'refunded' ) {
+			// Turn order status to refunded if all bookings are refunded
 			$new_order_status = 'refunded';
 		}
 		
 		$new_order_status = apply_filters( 'bookacti_woocommerce_order_status_automatically_updated', $new_order_status, $order );
 		
-		if( $new_order_status !== $order->get_status() ) {
+		if( $new_order_status !== $order_status ) {
 			$order->update_status( $new_order_status );
 		}
 	}
@@ -1414,7 +1420,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	/**
 	 * Get woocommerce order item id by booking group id
 	 * @since 1.1.0
-	 * @version 1.6.0
+	 * @version 1.7.0
 	 * @param int|object $booking_group_id
 	 * @return array|false
 	 */
@@ -1424,6 +1430,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		
 		if( is_object( $booking_group_id ) && ! empty( $booking_group_id->id ) ) {
 			$booking_group = $booking_group_id;
+			$booking_group_id = $booking_group->id;
 			$order_id = $booking_group->order_id;
 		} else {
 			$order_id = bookacti_get_booking_group_order_id( $booking_group_id );
@@ -1436,7 +1443,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		if( empty( $order ) ) { return false; }
 
 		$order_items = $order->get_items();
-
+		
 		$item = array();
 		foreach( $order_items as $order_item_id => $order_item ) {
 			// Check if the item is bound to a the desired booking
@@ -1663,7 +1670,71 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 
 // PRODUCT
-
+	
+	/**
+	 * Display a products selectbox
+	 * @since 1.7.0
+	 * @param array $args
+	 * @param array $products
+	 * @return string
+	 */
+	function bookacti_display_product_selectbox( $args = array(), $products = array() ) {
+		$defaults = array(
+			'field_name'		=> 'product_id',
+			'selected'			=> '',
+			'class'				=> '',
+			'show_option_none'	=> '', 
+			'option_none_value'	=> 'none',
+			'echo'				=> 1
+		);
+		$r = wp_parse_args( $args, $defaults );
+		
+		if( empty( $products ) ) { $products = wc_get_products( $r ); }
+		
+		ob_start();
+		
+		?>
+		<select name='<?php echo $r[ 'field_name' ]; ?>' class='bookacti-wc-products-selectbox <?php echo $r[ 'class' ]; ?>'>
+		<?php
+			// Display 'none' value
+			if( ! empty( $r[ 'show_option_none' ] ) ) {
+			?>
+				<option value='<?php echo esc_attr( $r[ 'option_none_value' ] ); ?>'><?php echo $r[ 'show_option_none' ]; ?></option>
+			<?php
+			}
+			
+			foreach( $products as $product ) {
+				// Display simple products options
+				if( $product->get_type() !== 'variable' ) {
+				?>
+					<option class='bookacti-wc-product-option' value='<?php echo esc_attr( $product->get_id() ); ?>' <?php selected( $product->get_id(), $r[ 'selected' ] ); ?>><?php echo apply_filters( 'bookacti_translate_text', $product->get_title() ); ?></option>
+				<?php
+				
+				// Display variations options
+				} else {
+					$variations = $product->get_available_variations();
+				?>
+					<optgroup class='bookacti-wc-variable-product-option-group' label='<?php echo esc_attr( apply_filters( 'bookacti_translate_text', $product->get_title() ) ); ?>'>
+					<?php
+						foreach( $variations as $variation ) {
+						?>
+							<option class='bookacti-wc-product-variation-option' value='<?php echo esc_attr( $variation[ 'variation_id' ] ); ?>' <?php selected( $product->get_id(), $r[ 'selected' ] ); ?>><?php echo implode( ' | ', array_map( 'bookacti_translate_text', $variation[ 'attributes' ] ) ); ?></option>
+						<?php
+						}
+					?>
+					</optgroup>
+				<?php
+				}
+			}
+		?>
+		</select>
+		<?php
+		$selectbox = ob_get_clean();
+		if( empty( $r[ 'echo' ] ) ) { return $selectbox; }
+		echo $selectbox;
+	}
+	
+	
 	/**
 	 * Get the product id bound to a booking
 	 * 
@@ -1829,6 +1900,32 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			return $product->get_variation_default_attributes();
 		}
 	}
+	
+	
+	/**
+	 * Get the form ID bound to a product / variation
+	 * @since 1.7.0
+	 * @param int $product_id
+	 * @param boolean $is_variation
+	 * @return string
+	 */
+	function bookacti_get_product_form_id( $product_id, $is_variation = 'check' ) {
+		// Check if the product is simple or a variation
+		if( $is_variation === 'check' ) {
+			$is_variation = false;
+			$product = wc_get_product( $product_id );
+			if( $product ) {
+				$is_variation = $product->get_type() === 'variation';
+			}
+		}
+		
+		if( $is_variation ) {
+			$form_id = get_post_meta( $product_id, 'bookacti_variable_form', true );
+		} else {
+			$form_id = get_post_meta( $product_id, '_bookacti_form', true );
+		}
+		return apply_filters( 'bookacti_product_booking_form_id', $form_id, $product_id, $is_variation );
+	}
 
 
 	
@@ -1897,7 +1994,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	
 	/**
 	 * Create a coupon to refund a booking
-	 * @version 1.6.0
+	 * @version 1.7.0
 	 * @param int $booking_id
 	 * @param string $booking_type Determine if the given id is a booking id or a booking group. Accepted values are 'single' or 'group'.
 	 * @param string $refund_message
@@ -1920,7 +2017,15 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			$item		= bookacti_get_order_item_by_booking_group_id( $booking_id );
 		}
 		
-		$user = is_nueric( $user_id ) ? get_user_by( 'id', $user_id ) : null;
+		if( ! $item ) { 
+			return array( 
+				'status'	=> 'failed', 
+				'error'		=> 'no_order_item_found',
+				'message'	=> esc_html__( 'The order item bound to the booking was not found.', BOOKACTI_PLUGIN_NAME )
+			);
+		}
+		
+		$user = is_numeric( $user_id ) ? get_user_by( 'id', $user_id ) : null;
 		
 		$amount				= (float) $item[ 'line_total' ] + (float) $item[ 'line_tax' ];
 		$user_billing_email = get_user_meta( $user_id, 'billing_email', true );
@@ -1988,8 +2093,12 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		if( $existing_coupon_code ) {
 			$existing_coupon = WC()->api->WC_API_Coupons->get_coupon_by_code( $existing_coupon_code );
 
-			$return_data = array( 'status' => 'success', 'coupon_amount' => wc_price( $existing_coupon['coupon']['amount'] ), 'coupon_code' => $existing_coupon['coupon']['code'], 'new_state' => 'refunded' );
-			return $return_data;
+			return array( 
+				'status' => 'success', 
+				'coupon_amount' => wc_price( $existing_coupon['coupon']['amount'] ), 
+				'coupon_code' => $existing_coupon['coupon']['code'], 
+				'new_state' => 'refunded' 
+			);
 		}
 
 
@@ -2027,10 +2136,19 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			$code = apply_filters( 'bookacti_refund_coupon_code', $coupon[ 'coupon' ][ 'code' ], $data, $coupon, $user, $item );
 			wc_update_order_item_meta( $order_item_id, 'bookacti_refund_coupon', $code );
 
-			$return_data = array( 'status' => 'success', 'coupon_amount' => wc_price( $data['coupon']['amount'] ), 'coupon_code' => $code, 'new_state' => 'refunded' );
+			$return_data = array( 
+				'status' => 'success', 
+				'coupon_amount' => wc_price( $data['coupon']['amount'] ), 
+				'coupon_code' => $code, 
+				'new_state' => 'refunded' 
+			);
 
 		} else if( is_wp_error( $coupon ) ) {
-			$return_data = array( 'status' => 'failed', 'error' => $coupon, 'message' => $coupon->get_error_message() );
+			$return_data = array( 
+				'status' => 'failed', 
+				'error' => $coupon, 
+				'message' => $coupon->get_error_message() 
+			);
 		}
 
 		// Remove user cap to create coupon
@@ -2336,5 +2454,18 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		if ( isset( $user->roles ) && in_array( 'shop_manager', $user->roles, true ) ) {
 			return true;
 		}
+		return false;
+	}
+	
+	
+	/**
+	 * Check if the current page is a WooCommerce screen
+	 * @since 1.7.0
+	 * @return boolean
+	 */
+	function bookacti_is_wc_edit_product_screen() {
+		$current_screen = get_current_screen();
+		if( empty( $current_screen ) ) { return false; }
+		if( isset( $current_screen->id ) && $current_screen->id === 'product' ) { return true; }
 		return false;
 	}

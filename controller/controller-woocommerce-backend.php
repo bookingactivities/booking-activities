@@ -179,8 +179,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	
 	/**
 	 * Change booking quantity and status when a refund is deleted
-	 * @since 1.0.0
-	 * @version 1.5.4
+	 * @version 1.7.0
 	 * @param int $refund_id
 	 * @param int $order_id
 	 */
@@ -270,11 +269,12 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 					// Prepare message
 					if( $response['error'] === 'qty_sup_to_avail' ) {
-						$message =
-						sprintf( __( 'You want to add %1$s bookings to your cart but only %2$s are available on this time slot. '
-								. 'Please choose another event or decrease the quantity. '
-								, BOOKACTI_PLUGIN_NAME ), 
-								$new_qty, $response[ 'availability' ] );
+						$message = /* translators: %1$s is a variable number of bookings. This sentence is followed by two others : 'but only %1$s is available on this time slot.' and 'Please choose another event or decrease the quantity.' */
+								sprintf( _n( 'You want to add %1$s booking to your cart', 'You want to add %1$s bookings to your cart', $new_qty, BOOKACTI_PLUGIN_NAME ), $new_qty )
+								/* translators: %1$s is a variable number of bookings. This sentence is preceded by : 'You want to add %1$s booking to your cart' and followed by 'Please choose another event or decrease the quantity.' */
+						. ' ' . sprintf( _n( 'but only %1$s is available on this time slot.', 'but only %1$s are available on this time slot. ', $response[ 'availability' ], BOOKACTI_PLUGIN_NAME ), $response[ 'availability' ] )
+								/* translators: This sentence is preceded by two others : 'You want to add %1$s booking to your cart' and 'but only %1$s is available on this time slot.' */
+						. ' ' . __( 'Please choose another event or decrease the quantity.', BOOKACTI_PLUGIN_NAME );
 
 					} else if( $response['error'] === 'no_availability' ) {
 						$message = __( 'This event is no longer available. Please choose another event.', BOOKACTI_PLUGIN_NAME );
@@ -471,7 +471,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	
 	/**
 	 * Content of the activity tab
-	 * @version 1.5.0
+	 * @version 1.7.0
 	 * @global int $thepostid
 	 */
 	function bookacti_activity_tab_content() {
@@ -586,11 +586,11 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 					?>
 					</label>
 					<select id="<?php echo $template_field_id; ?>" 
-							name="<?php echo $template_field_id; if( count( $current_templates ) > 1 ) { echo '[]'; } ?>" 
+							name="<?php echo $template_field_id; if( is_array( $current_templates ) && count( $current_templates ) > 1 ) { echo '[]'; } ?>" 
 							class="select short" 
 							<?php 
 							if( count( $templates ) > 1 ) { echo 'style="margin-right:10px;"'; } 
-							if( count( $current_templates ) > 1 ) { echo 'multiple'; } 
+							if( is_array( $current_templates ) && count( $current_templates ) > 1 ) { echo 'multiple'; } 
 							?> >
 					<?php 
 						$templates_options = '';
@@ -611,7 +611,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 								   class='bookacti-multiple-select' 
 								   id='bookacti-multiple-select-<?php echo $template_field_id; ?>' 
 								   data-select-id='<?php echo $template_field_id; ?>' 
-									<?php checked( count( $current_templates ) > 1, true, true ); ?>/>
+									<?php checked( ( is_array( $current_templates ) && count( $current_templates ) > 1 ), true, true ); ?>/>
 							<label for='bookacti-multiple-select-<?php echo $template_field_id; ?>' ><?php _e( 'Multiple selection', BOOKACTI_PLUGIN_NAME ); ?></label>
 						</span>
 					<?php } ?>
@@ -633,11 +633,11 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 					?>
 					</label>
 					<select id="<?php echo $activity_field_id; ?>" 
-							name="<?php echo $activity_field_id; if( count( $current_activities ) > 1 ) { echo '[]'; } ?>" 
+							name="<?php echo $activity_field_id; if( is_array( $current_activities ) && count( $current_activities ) > 1 ) { echo '[]'; } ?>" 
 							class="select short" 
 							<?php 
 							if( count( $activities ) > 1 ) { echo 'style="margin-right:10px;"'; } 
-							if( count( $current_activities ) > 1 ) { echo 'multiple'; } 
+							if( is_array( $current_activities ) && count( $current_activities ) > 1 ) { echo 'multiple'; } 
 							?> >
 					<?php 
 						$activities_options = '';
@@ -659,7 +659,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 								   class='bookacti-multiple-select' 
 								   id='bookacti-multiple-select-<?php echo $activity_field_id; ?>' 
 								   data-select-id='<?php echo $activity_field_id; ?>' 
-									<?php checked( count( $current_activities ) > 1, true, true ); ?>/>
+									<?php checked( ( is_array( $current_activities ) && count( $current_activities ) > 1 ), true, true ); ?>/>
 							<label for='bookacti-multiple-select-<?php echo $activity_field_id; ?>' ><?php _e( 'Multiple selection', BOOKACTI_PLUGIN_NAME ); ?></label>
 						</span>
 					<?php } ?>
@@ -874,7 +874,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	
 	/**
 	 * Add custom fields for activity variation product type
-	 * @version 1.4.0
+	 * @version 1.7.0
 	 * @param int $loop
 	 * @param array $variation_data
 	 * @param WP_Post $variation
@@ -1034,7 +1034,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			
 			<p class='form-row form-row-full bookacti-deprecated-hidden'>
 				<label for='bookacti_variable_template_<?php echo esc_attr( $loop ); ?>' ><?php esc_html_e( 'Calendar', BOOKACTI_PLUGIN_NAME ); ?></label>
-				<select name='bookacti_variable_template[<?php echo esc_attr( $loop ); ?>]<?php if( count( $current_templates ) > 1 ) { echo '[]'; } ?>' 
+				<select name='bookacti_variable_template[<?php echo esc_attr( $loop ); ?>]<?php if( is_array( $current_templates ) && count( $current_templates ) > 1 ) { echo '[]'; } ?>' 
 						id='bookacti_variable_template_<?php echo esc_attr( $loop ); ?>' 
 						class='bookacti_variable_template' 
 						data-loop='<?php echo esc_attr( $loop ); ?>' 
@@ -1070,7 +1070,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 					?>
 				</select>
 				<?php if( count( $templates ) > 1 ) { 
-					$checked = is_array( $current_templates ) ? checked( count( $current_templates ) > 1, true, false ) : '';
+					$checked = is_array( $current_templates ) ? checked( ( is_array( $current_templates ) && count( $current_templates ) > 1 ), true, false ) : '';
 				?>
 					<span class='bookacti-multiple-select-container' >
 						<input type='checkbox' 
@@ -1086,7 +1086,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			
 			<p class='form-row form-row-full bookacti-deprecated-hidden'>
 				<label for='bookacti_variable_activity_<?php echo esc_attr( $loop ); ?>' ><?php esc_html_e( 'Activity', BOOKACTI_PLUGIN_NAME ); ?></label>
-				<select name='bookacti_variable_activity[<?php echo esc_attr( $loop ); ?>]<?php if( count( $current_activities ) > 1 ) { echo '[]'; } ?>' 
+				<select name='bookacti_variable_activity[<?php echo esc_attr( $loop ); ?>]<?php if( is_array( $current_activities ) && count( $current_activities ) > 1 ) { echo '[]'; } ?>' 
 						id='bookacti_variable_activity_<?php echo esc_attr( $loop ); ?>' 
 						class='bookacti_variable_activity' 
 						data-loop='<?php echo esc_attr( $loop ); ?>' 
@@ -1117,7 +1117,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 					?>
 				</select>
 				<?php if( count( $activities ) > 1 ) { 
-					$checked = is_array( $current_activities ) ? checked( count( $current_activities ) > 1, true, false ) : '';
+					$checked = is_array( $current_activities ) ? checked( (is_array( $current_activities ) && count( $current_activities ) > 1 ), true, false ) : '';
 				?>
 					<span class='bookacti-multiple-select-container' >
 						<input type='checkbox' 
@@ -1133,7 +1133,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			
 			<p class='form-row form-row-full bookacti-deprecated-hidden'>
 				<label for='bookacti_variable_group_categories_<?php echo esc_attr( $loop ); ?>' ><?php esc_html_e( 'Group category', BOOKACTI_PLUGIN_NAME ); ?></label>
-				<select name='bookacti_variable_group_categories[<?php echo esc_attr( $loop ); ?>]<?php if( count( $current_group_categories ) > 1 ) { echo '[]'; } ?>' 
+				<select name='bookacti_variable_group_categories[<?php echo esc_attr( $loop ); ?>]<?php if( is_array( $current_group_categories ) && count( $current_group_categories ) > 1 ) { echo '[]'; } ?>' 
 						id='bookacti_variable_group_categories_<?php echo esc_attr( $loop ); ?>' 
 						class='bookacti_variable_group_categories' 
 						data-loop='<?php echo esc_attr( $loop ); ?>' 
@@ -1148,7 +1148,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 							esc_html_e( 'Parent setting', BOOKACTI_PLUGIN_NAME ); 
 						?>
 					</option>
-					<option value='none' <?php selected( true, $current_group_categories === 'none', true ) ?> <?php if( count( $current_group_categories ) > 1 ) { echo 'disabled'; } ?>><?php _ex( 'None', 'About group category', BOOKACTI_PLUGIN_NAME ); ?></option>
+					<option value='none' <?php selected( true, $current_group_categories === 'none', true ) ?> <?php if( is_array( $current_group_categories ) && count( $current_group_categories ) > 1 ) { echo 'disabled'; } ?>><?php _ex( 'None', 'About group category', BOOKACTI_PLUGIN_NAME ); ?></option>
 					<?php
 					$groups_options	= '';
 					foreach( $categories as $category ) {
@@ -1165,7 +1165,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 					?>
 				</select>
 				<?php if( count( $categories ) > 1 ) { 
-					$checked = is_array( $current_group_categories ) ? checked( count( $current_group_categories ) > 1, true, false ) : '';
+					$checked = is_array( $current_group_categories ) ? checked( ( is_array( $current_group_categories ) && count( $current_group_categories ) > 1), true, false ) : '';
 				?>
 					<span class='bookacti-multiple-select-container' >
 						<input type='checkbox' 

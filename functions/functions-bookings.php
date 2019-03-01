@@ -6,10 +6,8 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 	/**
 	 * Check if a booking is whithin the athorized delay as of now
-	 * 
 	 * @since 1.1.0
-	 * @version 1.4.0
-	 * 
+	 * @version 1.7.0
 	 * @param object|int $booking
 	 * @return boolean
 	 */
@@ -31,11 +29,15 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			$booking_group	= bookacti_get_booking_group_by_id( $booking->group_id );
 			$event_group	= bookacti_get_group_of_events( $booking_group->event_group_id );
 			$category_data	= bookacti_get_metadata( 'group_category', $event_group->category_id );
-			$delay_specific	= isset( $category_data[ 'booking_changes_deadline' ] ) ? intval( $category_data[ 'booking_changes_deadline' ] ) : false;
+			if( isset( $category_data[ 'booking_changes_deadline' ] ) && strlen( $category_data[ 'booking_changes_deadline' ] ) ) {
+				$delay_specific	= intval( $category_data[ 'booking_changes_deadline' ] );
+			}
 		} else {
 			$event			= bookacti_get_event_by_id( $booking->event_id );
 			$activity_data	= bookacti_get_metadata( 'activity', $event->activity_id );
-			$delay_specific	= isset( $activity_data[ 'booking_changes_deadline' ] ) ? intval( $activity_data[ 'booking_changes_deadline' ] ) : false;
+			if( isset( $activity_data[ 'booking_changes_deadline' ] ) && strlen( $activity_data[ 'booking_changes_deadline' ] ) ) {
+				$delay_specific	= intval( $activity_data[ 'booking_changes_deadline' ] );
+			}
 		}
 		
 		// Sanitize
@@ -101,6 +103,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	/**
 	 * Get Default booking filters
 	 * @since 1.6.0
+	 * @version 1.7.0
 	 * @return array
 	 */
 	function bookacti_get_default_booking_filters() {
@@ -109,6 +112,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			'activities'				=> array(), 
 			'booking_id'				=> 0, 
 			'booking_group_id'			=> 0,
+			'group_category_id'			=> 0, 
 			'event_group_id'			=> 0, 
 			'event_id'					=> 0, 
 			'event_start'				=> '', 
@@ -126,9 +130,16 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			'per_page'					=> 0,
 			'in__booking_id'			=> array(),
 			'in__booking_group_id'		=> array(),
+			'in__group_category_id'		=> array(),
+			'in__event_group_id'		=> array(),
+			'in__user_id'				=> array(),
+			'in__form_id'				=> array(),
 			'not_in__booking_id'		=> array(),
 			'not_in__booking_group_id'	=> array(),
+			'not_in__group_category_id'	=> array(),
+			'not_in__event_group_id'	=> array(),
 			'not_in__user_id'			=> array(),
+			'not_in__form_id'			=> array(),
 			'fetch_meta'				=> false
 		));
 	}
@@ -137,7 +148,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	/**
 	 * Format booking filters
 	 * @since 1.3.0
-	 * @version 1.6.0
+	 * @version 1.7.0
 	 * @param array $filters 
 	 * @return array
 	 */
@@ -175,12 +186,12 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 				}
 				else { $current_value = $default_value; }
 				
-			} else if( in_array( $filter, array( 'activities', 'in__booking_id', 'in__booking_group_id', 'not_in__booking_id', 'not_in__booking_group_id' ), true ) ) {
+			} else if( in_array( $filter, array( 'activities', 'in__booking_id', 'in__booking_group_id', 'in__group_category_id', 'in__event_group_id', 'in__form_id', 'not_in__booking_id', 'not_in__booking_group_id', 'not_in__group_category_id', 'not_in__event_group_id', 'not_in__form_id' ), true ) ) {
 				if( is_numeric( $current_value ) )	{ $current_value = array( $current_value ); }
 				if( ! is_array( $current_value ) )	{ $current_value = $default_value; }
 				else if( ( $i = array_search( 'all', $current_value ) ) !== false ) { unset( $current_value[ $i ] ); }
 				
-			} else if( in_array( $filter, array( 'not_in__user_id' ), true ) ) {
+			} else if( in_array( $filter, array( 'in__user_id', 'not_in__user_id' ), true ) ) {
 				if( is_numeric( $current_value ) || is_string( $current_value ) )	{ $current_value = array( $current_value ); }
 				if( ! is_array( $current_value ) )	{ $current_value = $default_value; }
 				
@@ -189,7 +200,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 				if( ! is_array( $current_value ) )	{ $current_value = $default_value; }
 				else if( ( $i = array_search( 'all', $current_value ) ) !== false ) { unset( $current_value[ $i ] ); }
 				
-			} else if( in_array( $filter, array( 'booking_id', 'booking_group_id', 'event_group_id', 'event_id', 'offset', 'per_page' ), true ) ) {
+			} else if( in_array( $filter, array( 'booking_id', 'booking_group_id', 'group_category_id', 'event_group_id', 'event_id', 'offset', 'per_page' ), true ) ) {
 				if( ! is_numeric( $current_value ) ){ $current_value = $default_value; }
 			
 			} else if( in_array( $filter, array( 'event_start', 'event_end' ), true ) ) {
@@ -224,9 +235,9 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 					if( ! in_array( $current_value, $sortable_columns, true ) ) { $current_value = $default_value; }
 					else { $current_value = array( $current_value ); }
 				}
-				if( ! is_array( $current_value ) )				{ $current_value = $default_value; }
-				if( $current_value[ 0 ] === 'creation_date' )	{ $current_value = array( 'creation_date', 'id', 'event_start' ); }
-				else if( $current_value[ 0 ] === 'id' )			{ $current_value = array( 'id', 'event_start' ); }
+				if( ! is_array( $current_value ) || empty( $current_value[ 0 ] ) )	{ $current_value = $default_value; }
+				if( $current_value[ 0 ] === 'creation_date' )						{ $current_value = array( 'creation_date', 'id', 'event_start' ); }
+				else if( $current_value[ 0 ] === 'id' )								{ $current_value = array( 'id', 'event_start' ); }
 				
 			} else if( $filter === 'order' ) {
 				if( ! in_array( $current_value, array( 'asc', 'desc' ), true ) ) { $current_value = $default_value; }
@@ -248,24 +259,40 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	/**
 	 * Format booking filters manually input
 	 * @since 1.6.0
+	 * @version 1.7.0
 	 * @param array $filters
 	 * @return array
 	 */
 	function bookacti_format_string_booking_filters( $filters = array() ) {
 		// Format arrays
 		$formatted_arrays = array();
-		$int_arrays = array( 'templates', 'activities', 'in__booking_id', 'in__booking_group_id', 'not_in__booking_id', 'not_in__booking_group_id', 'not_in__user_id' );
+		$int_arrays = array( 'templates', 'activities', 'in__booking_id', 'in__booking_group_id', 'in__group_category_id', 'in__event_group_id', 'in__form_id', 'not_in__booking_id', 'not_in__booking_group_id', 'not_in__group_category_id', 'not_in__event_group_id', 'not_in__form_id' );
 		$str_arrays = array( 'status', 'order_by' );
-		foreach( array_merge( $int_arrays, $str_arrays ) as $att_name ) {
+		$user_id_arrays = array( 'in__user_id', 'not_in__user_id' );
+		
+		foreach( array_merge( $int_arrays, $str_arrays, $user_id_arrays ) as $att_name ) {
 			if( empty( $filters[ $att_name ] ) || is_array( $filters[ $att_name ] ) ) { continue; }
-			$formatted_arrays[ $att_name ] = explode( ',', preg_replace( array(
-				'/[^\d,]/',    // Matches anything that's not a comma or number.
+			
+			$formatted_value = preg_replace( array(
 				'/(?<=,),+/',  // Matches consecutive commas.
 				'/^,+/',       // Matches leading commas.
 				'/,+$/'        // Matches trailing commas.
-			), '', 	$filters[ $att_name ] ) );
-			if( in_array( $att_name, $int_arrays, true ) ) { $formatted_arrays[ $att_name ] = array_map( 'intval', $formatted_arrays[ $att_name ] ); }
-			if( in_array( $att_name, $str_arrays, true ) ) { $formatted_arrays[ $att_name ] = array_map( 'sanitize_title_with_dashes', $formatted_arrays[ $att_name ] ); }
+			), '', 	$filters[ $att_name ] );
+			
+			if( in_array( $att_name, $int_arrays, true ) ) { 
+				$formatted_arrays[ $att_name ] = explode( ',', preg_replace( array(
+					'/[^\d,]/',    // Matches anything that's not a comma or number.
+				), '', $formatted_value ) );
+				$formatted_arrays[ $att_name ] = array_map( 'intval', $formatted_arrays[ $att_name ] ); 
+			}
+			if( in_array( $att_name, $str_arrays, true ) ) { 
+				$formatted_arrays[ $att_name ] = explode( ',', $formatted_value );
+				$formatted_arrays[ $att_name ] = array_map( 'sanitize_title_with_dashes', $formatted_arrays[ $att_name ] ); 
+			}
+			if( in_array( $att_name, $user_id_arrays, true ) ) { 
+				// No need to santize user ids because they can be either string or numeric
+				$formatted_arrays[ $att_name ] = explode( ',', $formatted_value );
+			}
 		}
 
 		// Format datetime
@@ -448,7 +475,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 		/**
 		 * Check if a booking state can be changed to another
-		 * @version 1.6.0
+		 * @version 1.7.0
 		 * @param object|int $booking
 		 * @param string $new_state
 		 * @return boolean
@@ -459,6 +486,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 				switch ( $new_state ) {
 					case 'delivered':
 						$true = false;
+						break;
 					case 'cancelled':
 						$true = bookacti_booking_can_be_cancelled( $booking );
 						break;
@@ -564,7 +592,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		/**
 		 * Check if a booking group state can be changed to another
 		 * @since 1.1.0
-		 * @version 1.6.0
+		 * @version 1.7.0
 		 * @param object $booking_group
 		 * @param string $new_state
 		 * @return boolean
@@ -575,6 +603,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			switch ( $new_state ) {
 				case 'delivered':
 					$true = $can_edit_bookings;
+					break;
 				case 'cancelled':
 					$true = bookacti_booking_group_can_be_cancelled( $booking_group );
 					break;
@@ -599,6 +628,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		/**
 		 * Get booking actions array
 		 * @since 1.6.0 (replace bookacti_get_booking_actions_array)
+		 * @version 1.7.0
 		 * @param string $admin_or_front Can be "both", "admin", "front. Default "both".
 		 * @return array
 		 */
@@ -612,19 +642,19 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 					'admin_or_front'=> 'admin' ),
 				'cancel' => array( 
 					'class'			=> 'bookacti-cancel-booking',
-					'label'			=> esc_html__( 'Cancel', BOOKACTI_PLUGIN_NAME ),
+					'label'			=> bookacti_get_message( 'cancel_booking_open_dialog_button' ),
 					'description'	=> esc_html__( 'Cancel the booking.', BOOKACTI_PLUGIN_NAME ),
 					'link'			=> '',
 					'admin_or_front'=> 'front' ),
 				'reschedule' => array( 
 					'class'			=> 'bookacti-reschedule-booking',
-					'label'			=> esc_html__( 'Reschedule', BOOKACTI_PLUGIN_NAME ),
+					'label'			=> bookacti_get_message( 'reschedule_dialog_button' ),
 					'description'	=> esc_html__( 'Change the booking dates to any other available time slot for this event.', BOOKACTI_PLUGIN_NAME ),
 					'link'			=> '',
 					'admin_or_front'=> 'both' ),
 				'refund' => array( 
 					'class'			=> 'bookacti-refund-booking',
-					'label'			=> esc_html_x( 'Refund', 'Button label to trigger the refund action', BOOKACTI_PLUGIN_NAME ),
+					'label'			=> $admin_or_front === 'both' || $admin_or_front === 'admin' ? esc_html_x( 'Refund', 'Button label to trigger the refund action', BOOKACTI_PLUGIN_NAME ) : bookacti_get_message( 'refund_dialog_button' ),
 					'description'	=> esc_html__( 'Refund the booking with one of the available refund method.', BOOKACTI_PLUGIN_NAME ),
 					'link'			=> '',
 					'admin_or_front'=> 'both' ),
@@ -1306,7 +1336,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 	/**
 	 * Send a refund request by email for a specific booking
-	 * @version 1.6.0
+	 * @version 1.7.0
 	 * @param int $booking_id
 	 * @param string $booking_type Defined if the given id is a booking id or a booking group id. Accepted values are 'single' and 'group'.
 	 * @param string $user_message
@@ -1398,7 +1428,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		$message	= apply_filters( 'bookacti_refund_request_email_message', $message, $booking_id, $booking_type, $data, $user_message );
 		$headers	= apply_filters( 'bookacti_refund_request_email_headers', array( 'Content-Type: text/html; charset=UTF-8' ) );
 
-		$sent = wp_mail( $to, $subject, $message, $headers );
+		$sent = bookacti_send_email( $to, $subject, $message, $headers );
 
 		return $sent;
 	}

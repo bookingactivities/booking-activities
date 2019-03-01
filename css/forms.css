@@ -70,6 +70,18 @@ body.booking-activities_page_bookacti_forms label[for='bookacti_form_publish-hid
 
 .bookacti-form-dialog .bookacti-combobox-input	{ min-width: 150px; width: 150px; }
 
+.bookacti-when-perform-form-action-container,
+.bookacti-activities-actions-options-table,
+.bookacti-group-categories-actions-options-table		{ display: none; }
+.bookacti-activities-actions-options-table h4,
+.bookacti-group-categories-actions-options-table h4		{ text-decoration: underline; margin-bottom: 0.75em; }
+
+.bookacti-options-table									{ border-collapse: collapse; }
+.bookacti-options-table th								{ text-align: left; }
+.bookacti-options-table th, .bookacti-options-table td	{ padding: 2px 5px; }
+.bookacti-options-table .bookacti-column-activity,
+.bookacti-options-table .bookacti-column-group_category { width: 130px; max-width: 130px; padding-right: 20px; overflow: hidden; }
+
 
 /* Metaboxes */
 #poststuff #bookacti_form_publish .inside	{ margin: 0; padding: 0; }
@@ -80,7 +92,8 @@ body.booking-activities_page_bookacti_forms label[for='bookacti_form_publish-hid
 
 /***** FORMS FIELDS FORMATING *****/
 
-.bookacti-form-field-container					{ margin-bottom: 20px; overflow: hidden; }
+.bookacti-form-field-container					{ margin-bottom: 20px; }
+.bookacti-form-field-container:not(.bookacti-form-field-type-calendar) { overflow: hidden; }
 .bookacti-form-field-label,						
 .bookacti-form-field-content					{ display: inline-block; vertical-align: middle; margin: 0; }
 .bookacti-form-field-label						{ width: 160px; padding-right: 10px; }

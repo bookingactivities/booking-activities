@@ -175,12 +175,16 @@ function bookacti_init_activities() {
             zIndex: 1000,
             revert: true, // will cause the event to go back to its original position after the drag
             revertDuration: 100, // (millisecond) interpolation duration between event drop and original position
+			appendTo: 'parent',
+			helper: 'clone',
             start: function( event, ui ) { 
 				bookacti.is_dragging = true; 
+				$j( this ).css( 'visibility', 'hidden' ); 
 				$j( this ).parent().css( 'overflow', 'visible' ); 
 			},
             stop: function( event, ui ) { 
 				bookacti.is_dragging = false;
+				$j( this ).css( 'visibility', 'visible' );
 				$j( this ).parent().css( 'overflow', '' );
             }
         });

@@ -80,7 +80,7 @@ $j( document ).ready( function() {
 
 /**
  * Initialize and display the template calendar
- * @version 1.6.0
+ * @version 1.7.0
  */
 function bookacti_load_template_calendar() {
 	var calendar = $j( '#bookacti-template-calendar' );
@@ -184,6 +184,10 @@ function bookacti_load_template_calendar() {
 				element.data( 'activity-id', activity_id );
 				element.attr( 'data-activity-id', activity_id );
 			}
+			
+			// Allow HTML in titles
+			var title = element.find( '.fc-title' );
+			title.html( title.text() );
 			
 			// Display start and end time in spans
 			var time_format	= 'LT';

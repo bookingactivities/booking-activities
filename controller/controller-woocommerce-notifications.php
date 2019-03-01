@@ -6,7 +6,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
  * Send one notification per booking to admin and customer when an order contining bookings is made or when its status changes
  *
  * @since 1.2.2
- * @version 1.5.4
+ * @version 1.7.0
  * @param WC_Order $order
  * @param string $new_status
  * @param array $args
@@ -40,8 +40,8 @@ function bookacti_send_notification_when_order_status_changes( $order, $new_stat
 	// Do not send notifications at all for transitionnal order status, 
 	// because the booking is still considered as temporary
 	$order_status = $order->get_status();
-	if( $order_status === 'pending' && $new_status === 'pending' 
-	||  $order_status === 'failed' && $new_status === 'cancelled' ) { return; }
+	if( ( $order_status === 'pending' && $new_status === 'pending' )
+	||  ( $order_status === 'failed' && $new_status === 'cancelled' ) ) { return; }
 
 	$order_items = $order->get_items();
 	if( ! $order_items ) { return; }
@@ -115,7 +115,7 @@ function bookacti_add_admin_refunded_booking_notification( $notifications ) {
 				/* translators: Keep tags as is (this is a tag: {tag}), they will be replaced in code. This is the default email an administrator receive when a booking is refunded */
 				'message'	=> __( '<p>A customer has been reimbursed for this booking:</p>
 									<p>{booking_list}</p>
-									<p>Contact him: {user_firstname} {user_lastname} ({user_email})</p>
+									<p>Customer info: {user_firstname} {user_lastname} ({user_email})</p>
 									<p><a href="{booking_admin_url}">Click here</a> to edit this booking (ID: {booking_id}).</p>', BOOKACTI_PLUGIN_NAME ) )
 		);
 	}

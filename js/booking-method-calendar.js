@@ -1,4 +1,9 @@
-// Init calendar
+/**
+ * Initialize the calendar
+ * @version 1.7.0
+ * @param {dom_element} booking_system
+ * @param {boolean} reload_events
+ */
 function bookacti_set_calendar_up( booking_system, reload_events ) {
 	
 	reload_events = reload_events ? 1 : 0;
@@ -36,16 +41,20 @@ function bookacti_set_calendar_up( booking_system, reload_events ) {
 		minTime:                '08:00',
 		maxTime:                '20:00',
 		
+		dayCount: 3, // the default duration for flexible views
 		views: { 
 			week:		{ eventLimit: false }, 
 			day:		{ eventLimit: false },
 			listDay:	{ buttonText: bookacti_localized.calendar_button_list_day },
 			listWeek:	{ buttonText: bookacti_localized.calendar_button_list_week },
 			listMonth:	{ buttonText: bookacti_localized.calendar_button_list_month },
-			listYear:	{ buttonText: bookacti_localized.calendar_button_list_year } 
+			listYear:	{ buttonText: bookacti_localized.calendar_button_list_year },
+			flexibleAgendaView:	{ type: 'agenda', buttonText: bookacti_localized.calendar_button_flexible },
+			flexibleBasicView:	{ type: 'basic', buttonText: bookacti_localized.calendar_button_flexible },
+			flexibleListView:	{ type: 'list', buttonText: bookacti_localized.calendar_button_flexible }
 		},
 
-		//Load an empty array to allow the callback 'loading' to work
+		// Load an empty array to allow the callback 'loading' to work
 		events: function( start, end, timezone, callback ) {
 			callback( [] );
 		},
@@ -70,6 +79,10 @@ function bookacti_set_calendar_up( booking_system, reload_events ) {
 			element.data( 'activity-id',		bookacti.booking_system[ booking_system_id ][ 'events_data' ][ event.id ][ 'activity_id' ] );
 			element.attr( 'data-activity-id',	bookacti.booking_system[ booking_system_id ][ 'events_data' ][ event.id ][ 'activity_id' ] );
 			event.render = 1;
+			
+			// Allow HTML in titles
+			var title = element.find( '.fc-title' );
+			title.html( title.text() );
 			
 			// Display start and end time in spans
 			var time_format	= 'LT';
@@ -106,22 +119,7 @@ function bookacti_set_calendar_up( booking_system, reload_events ) {
 				});
 				element.append( bg_div );
 			}
-			
-			// Check if the event is on an exception
-			var event_repeat_freq = bookacti.booking_system[ booking_system_id ][ 'events_data' ][ event.id ][ 'repeat_freq' ];
-			if( event_repeat_freq ) {
-				if( event_repeat_freq !== 'none' ) {
-					if( bookacti.booking_system[ booking_system_id ][ 'exceptions' ] !== undefined 
-					&&  bookacti.booking_system[ booking_system_id ][ 'exceptions' ][ event.id ] !== undefined ) {
-						$j.each( bookacti.booking_system[ booking_system_id ][ 'exceptions' ][ event.id ], function ( i, excep ) {
-							if( excep.exception_type === 'date' && excep.exception_value === event.start.format( 'YYYY-MM-DD' ) ) {
-								event.render = 0;
-							}
-						});
-					}
-				}
-			}
-			
+						
 			booking_system.trigger( 'bookacti_event_render', [ event, element, view ] );
 			
 			if( ! event.render ) { return false; }
@@ -152,10 +150,11 @@ function bookacti_set_calendar_up( booking_system, reload_events ) {
 	bookacti_update_calendar_settings( booking_system );
 	
 	// Load events on calendar
-	if( ! reload_events && bookacti.booking_system[ booking_system_id ][ 'events' ].length ) {
+	if( ! reload_events && typeof bookacti.booking_system[ booking_system_id ][ 'events' ] !== 'undefined' ) {
 		// Fill calendar with events already fetched
-		bookacti_display_events_on_calendar( booking_system );
-		
+		if( bookacti.booking_system[ booking_system_id ][ 'events' ].length ) {
+			bookacti_display_events_on_calendar( booking_system );
+		}
 	} else if( reload_events ) {
 		// Fetch events from database
 		var view = calendar.fullCalendar( 'getView' );
@@ -180,6 +179,12 @@ function bookacti_set_calendar_up( booking_system, reload_events ) {
 	});
 	
 	bookacti.booking_system[ booking_system_id ][ 'load_events' ] = true;
+	
+	// Go to the first picked events
+	var picked_events = bookacti.booking_system[ booking_system_id ][ 'picked_events' ];
+	if( ! $j.isEmptyObject( bookacti.booking_system[ booking_system_id ][ 'picked_events' ] ) ) {
+		calendar.fullCalendar( 'gotoDate', moment( picked_events[ 0 ][ 'start' ] ) );
+	}
 	
 	booking_system.trigger( 'bookacti_after_calendar_set_up' );
 }

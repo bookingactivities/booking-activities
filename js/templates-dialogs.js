@@ -1483,7 +1483,11 @@ function bookacti_dialog_delete_activity( activity_id ) {
 
 // GROUPS OF EVENTS
 
-// Create a group of events
+/**
+ * Create a group of events
+ * @version 1.7.0
+ * @param {int} category_id
+ */
 function bookacti_dialog_create_group_of_events( category_id ) {
 	
 	category_id = category_id ? category_id : bookacti.selected_category;
@@ -1574,7 +1578,7 @@ function bookacti_dialog_create_group_of_events( category_id ) {
 								}
 								
 								// Add the group row to the category
-								bookacti_add_group_of_events( response.group_id, response.group.title, response.category_id );
+								bookacti_add_group_of_events( response.group_id, response.group_title_raw, response.category_id );
 								
 								// Unselect the events
 								bookacti_unselect_all_events();
@@ -1611,7 +1615,11 @@ function bookacti_dialog_create_group_of_events( category_id ) {
 }
 
 
-// Update a group of events with selected events 
+/**
+ * Update a group of events with selected events 
+ * @version 1.7.0
+ * @param {int} group_id
+ */
 function bookacti_dialog_update_group_of_events( group_id ) {
 	
 	// Change dialog title
@@ -1711,12 +1719,12 @@ function bookacti_dialog_update_group_of_events( group_id ) {
 								if( initial_category_id != selected_category_id ) {
 									// Remove the group from the old categroy and add it to the new one
 									$j( '.bookacti-group-of-events[data-group-id="' + group_id + '"]' ).remove();
-									bookacti_add_group_of_events( group_id, response.group.title, response.category_id );
+									bookacti_add_group_of_events( group_id, response.group_title_raw, response.category_id );
 									
 								} else {
 									// Update group title in groups list
-									var group_short_title = response.group.title.length > 16 ? response.group.title.substr( 0, 16 ) + '&#8230;' : response.group.title;
-									$j( '.bookacti-group-of-events[data-group-id="' + group_id + '"] .bookacti-group-of-events-title' ).attr( 'title', response.group.title );
+									var group_short_title = response.group_title_raw.length > 16 ? response.group_title_raw.substr( 0, 16 ) + '&#8230;' : response.group_title_raw;
+									$j( '.bookacti-group-of-events[data-group-id="' + group_id + '"] .bookacti-group-of-events-title' ).attr( 'title', response.group_title_raw );
 									$j( '.bookacti-group-of-events[data-group-id="' + group_id + '"] .bookacti-group-of-events-title' ).html( group_short_title );
 								}
 								

@@ -1,9 +1,7 @@
 /***** BACKEND WOOCOMMERCE *****/
-#woocommerce-product-data .bookacti-loading-alt { display: inline-block; margin: 10px; }
+#woocommerce-product-data .bookacti-loading-alt { display: inline-block; margin: 10px; max-width: 120px; }
 #woocommerce-product-data ul.product_data_tabs li.activity_tab a::before { font-family: dashicons; content:'\f508'; }
 .bookacti-woo-title		{ padding: 1em 0 0.5em 0; }
-.bookacti-hide-fields	{ display: none; }
-.bookacti-show-fields	{ display: block; }
 
 p.form-field._bookacti_groups_field							{ margin-bottom: 0; }
 .bookacti-groups-options									{ margin-top: 0; }
@@ -27,6 +25,7 @@ table.woocommerce_order_items ul.bookacti-booking-events-list { margin: 0; }
 
 
 /***** FRONTEND WOOCOMMERCE *****/
+
 /* Single product page */
 .woocommerce div.product form.cart table td.fc-axis { padding-left: 4px; }
 

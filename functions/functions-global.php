@@ -98,8 +98,111 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	}
 	
 	
+	/**
+	 * Increase the max_execution_time and the memory_limit, and remove the maximum execution time limit
+	 * @since 1.7.0
+	 * @param int $time
+	 * @param string $memory
+	 */
+	function bookacti_increase_max_execution_time( $time = 600, $memory = '512M' ) {
+		ini_set( 'max_execution_time', $time );
+		ini_set( 'memory_limit', $memory );
+		set_time_limit( 0 );
+	}
 	
 	
+	/**
+	 * Create a zip
+	 * @since 1.7.0
+	 * @param array $files
+	 * @param string $destination
+	 * @param boolean $overwrite
+	 * @param boolean $remove_files
+	 * @return boolean
+	 */
+	function bookacti_create_zip( $files = array(), $destination = '', $overwrite = true, $remove_files = false ) {
+		// If the zip file already exists and overwrite is false, return false
+		if( file_exists( $destination ) ) { 
+			if( ! $overwrite ) { return false; }
+			unlink( $destination );
+		}
+
+		$valid_files = array();
+		// Validate files
+		if( is_array( $files ) ) {
+			foreach( $files as $file) {
+				if( file_exists( $file ) ) { $valid_files[] = $file; }
+			}
+		}
+
+		if( empty( $valid_files ) ) { return false; }
+
+		// Create the archive
+		$zip = new ZipArchive();
+		$opened = $zip->open( $destination, ZIPARCHIVE::CREATE );
+		if( $opened !== true ) { return false; }
+
+		// Add the files
+		foreach( $valid_files as $file ) { $zip->addFile( $file, basename( $file ) ); }
+		$zip->close();
+
+		// Check to make sure the zip file exists
+		$zip_success = file_exists( $destination );
+
+		// Remove the original files
+		if( $zip_success && $remove_files ) {
+			foreach( $valid_files as $file ) { unlink( $file ); }
+		}
+
+		return $zip_success;
+	}
+
+	
+	/**
+	 * Extract a zip file to specific directory
+	 * @since 1.7.0
+	 * @param string $zip_file
+	 * @param string $destination Must be an existing folder
+	 * @return array|false
+	 */
+	function bookacti_extract_zip( $zip_file, $destination = '' ) {
+		// Make sure that the extract directory exists
+		if( ! is_dir( $destination ) ) {
+			$uploads_dir = wp_upload_dir();
+			$destination = str_replace( '\\', '/', $uploads_dir[ 'basedir' ] );
+		}
+		$extract_dir = trailingslashit( $destination ) . basename( $zip_file, '.zip' );
+		
+		// Make sure that the extract directory is empty
+		$base_extract_dir = rtrim( $extract_dir, '/' );
+		while( is_dir( $extract_dir ) && count( scandir( $extract_dir ) ) > 2 ) {
+			$extract_dir = trailingslashit( $base_extract_dir . '-' . md5( microtime().rand() ) );
+		}
+		
+		// Check if the zip file can be opened
+		$zip = new ZipArchive;
+		if( $zip->open( $zip_file ) !== true ) { return false; }
+		
+		// Extract the files
+		$zip->extractTo( $extract_dir );
+		$zip->close();
+		
+		$archives_handle = opendir( $extract_dir );
+		if( ! $archives_handle ) { return false; }
+		
+		// Build an array of extracted file
+		$files = array();
+		while( false !== ( $filename = readdir( $archives_handle ) ) ) {
+			if( $filename == '.' || $filename == '..' ) { continue; }
+			$files[] = trailingslashit( $extract_dir ) . $filename;
+		}
+		
+		return $files;
+	}
+
+
+
+
 // LOCALE
 
 	/**
@@ -156,8 +259,20 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 		return $translation_plugin;
 	}
-
-
+	
+	
+	/**
+	 * Apply bookacti_translate_text filters to a text
+	 * @since 1.7.0
+	 * @param string $text
+	 * @param string $lang
+	 * @return string
+	 */
+	function bookacti_translate_text( $text, $lang = '' ) {
+		return apply_filters( 'bookacti_translate_text', $text, $lang );
+	}
+	
+	
 	// Translate text with QTranslate
 	$is_qtranslate	= bookacti_is_plugin_active( 'qtranslate-x/qtranslate.php' );
 	if( $is_qtranslate ) {
@@ -258,11 +373,10 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 	/**
 	 * Switch Booking Activities locale
-	 * 
 	 * @since 1.2.0
 	 */
 	function bookacti_switch_locale( $locale ) {
-		if ( function_exists( 'switch_to_locale' ) ) {
+		if( function_exists( 'switch_to_locale' ) ) {
 			switch_to_locale( $locale );
 			
 			// Filter on plugin_locale so load_plugin_textdomain loads the correct locale.
@@ -277,12 +391,10 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	
 	/**
 	 * Switch Booking Activities locale back to the original
-	 * 
 	 * @since 1.2.0
-	 * @param string $locale
 	 */
 	function bookacti_restore_locale() {
-		if ( function_exists( 'restore_previous_locale' ) ) {
+		if( function_exists( 'restore_previous_locale' ) ) {
 			restore_previous_locale();
 
 			// Filter on plugin_locale so load_plugin_textdomain loads the correct locale.
@@ -762,14 +874,16 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	/**
 	 * Create a user selectbox
 	 * @since 1.3.0
-	 * @version 1.6.0
+	 * @version 1.7.0
 	 * @param array $args
 	 * @return string|void
 	 */
 	function bookacti_display_user_selectbox( $args ) {
 		
 		$defaults = array(
-			'show_option_all' => '', 'show_option_none' => '', 'option_none_value' => -1,
+			'show_option_all' => '', 
+			'show_option_none' => '', 'option_none_value' => -1, 
+			'show_option_self' => '', 'option_self_value' => '',
 			'show_option_current' => '', 'option_current_value' => 'current',
 			'option_label' => array( 'display_name' ), 'echo' => 1,
 			'selected' => 0, 'name' => 'user_id', 'class' => '', 'id' => '',
@@ -784,6 +898,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		ob_start();
 		?>
 		
+		<input type='hidden' name='<?php echo $args[ 'name' ]; ?>' value='' />
 		<select <?php if( $args[ 'id' ] ) { echo 'id="' . $args[ 'id' ] . '"'; } ?> name='<?php echo $args[ 'name' ]; ?>' class='bookacti-user-selectbox <?php echo $args[ 'class' ]; ?>' >
 			<option value='' ><?php echo esc_html__( 'Search for a customer', BOOKACTI_PLUGIN_NAME ); ?></option>
 			<?php
@@ -801,10 +916,15 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 					$_selected = selected( $args[ 'option_current_value' ], $args[ 'selected' ], false );
 					?><option value='<?php echo esc_attr( $args[ 'option_current_value' ] ); ?>' <?php echo $_selected ?> ><?php echo $args[ 'show_option_current' ]; ?></option><?php
 				}
-			
+				
+				if( $args[ 'show_option_self' ] ) {
+					$_selected = selected( $args[ 'option_self_value' ], $args[ 'selected' ], false );
+					?><option value='<?php echo esc_attr( $args[ 'option_self_value' ] ); ?>' class='bookacti-variable-value' <?php echo $_selected ?> ><?php echo $args[ 'option_self_value' ] ? $args[ 'option_self_value' ] : $args[ 'show_option_self' ]; ?></option><?php
+				}
+				
 				do_action( 'bookacti_add_user_selectbox_options', $args, $users );
 
-				foreach( $users as $user ){
+				foreach( $users as $user ) {
 					$_selected = selected( $user->ID, $args[ 'selected' ], false );
 					
 					// Build the option label based on the array
@@ -887,8 +1007,55 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	}
 	
 	
-	
-	
+	/**
+	 * Display a table from a properly formatted array
+	 * @since 1.7.0
+	 * @param array $array
+	 * @return string
+	 */
+	function bookacti_display_table_from_array( $array ) {
+		if( empty( $array[ 'head' ] ) || empty( $array[ 'body' ] ) ) { return ''; }
+		if( ! is_array( $array[ 'head' ] ) || ! is_array( $array[ 'body' ] ) ) { return ''; }
+		
+		$column_ids = array_keys( $array[ 'head' ] );
+		?>
+		<table class='bookacti-options-table'>
+			<thead>
+				<tr>
+				<?php
+				foreach( $array[ 'head' ] as $column_id => $column_label ) {
+				?>
+					<th class='bookacti-column-<?php echo $column_id; ?>'><?php echo is_string( $column_label ) || is_numeric( $column_label ) ? $column_label : $column_id; ?></th>
+				<?php
+				}
+				?>
+				</tr>
+			</thead>
+			<tbody>
+			<?php
+			foreach( $array[ 'body' ] as $row ) {
+			?>
+				<tr>
+					<?php
+					foreach( $column_ids as $column_id ) {
+						$column_content = isset( $row[ $column_id ] ) && ( is_string( $row[ $column_id ] ) || is_numeric( $row[ $column_id ] ) ) ? $row[ $column_id ] : '';
+					?>
+						<td class='bookacti-column-<?php echo $column_id; ?>'><?php echo $column_content; ?></td>
+					<?php
+					}
+				?>
+				</tr>
+			<?php
+			}
+			?>
+			</tbody>
+		</table>
+		<?php
+	}
+
+
+
+
 // FORMATING AND SANITIZING
 	
 	/**
@@ -1283,3 +1450,42 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	function bookacti_allow_to_log_user_in_programmatically( $user, $username, $password ) {
 		return get_user_by( 'login', $username );
 	}
+
+
+
+
+// FILES AND FOLDERS
+/**
+ * Delete a directory and all its files
+ * @since 1.7.0
+ * @param string $dir_path Initial directory Path
+ * @param boolean $delete_init_dir TRUE = delete content and self. FALSE = delete content only.
+ * @return boolean TRUE if everything is deleted, FALSE if a single file or directory hasn't been deleted
+ */
+function bookacti_delete_files( $dir_path, $delete_init_dir = false ) {
+	if( ! is_dir( $dir_path ) ) { return false; }
+	
+	$iter = new RecursiveIteratorIterator(
+		new RecursiveDirectoryIterator( $dir_path, RecursiveDirectoryIterator::SKIP_DOTS ),
+		RecursiveIteratorIterator::CHILD_FIRST,
+		RecursiveIteratorIterator::CATCH_GET_CHILD // Ignore "Permission denied"
+	);
+
+	$files = array();
+	foreach ( $iter as $path => $dir ) {
+		$files[] = $path;
+	}
+	if( $delete_init_dir ) { $files[] = $dir_path; }
+	
+	$all_deleted = true;
+	foreach( $files as $file ) {
+		if( is_dir( $file ) ){
+			$deleted = rmdir( $file );
+		} elseif( is_file( $file ) ) {
+			$deleted  = unlink( $file );
+		}
+		if( ! $deleted ) { $all_deleted = false; }
+	}
+	
+	return $all_deleted;
+}

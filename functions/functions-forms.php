@@ -185,7 +185,7 @@ function bookacti_sanitize_form_data( $raw_form_data ) {
 
 /**
  * Display a booking form
- * @version 1.5.4
+ * @version 1.7.0
  * @param int $form_id
  * @param string $instance_id
  * @param string $context
@@ -201,9 +201,8 @@ function bookacti_display_form( $form_id, $instance_id = '', $context = 'display
 	if( ! $form ) { return ''; }
 	
 	// Set the form unique CSS selector
-	if( ! $instance_id ) {
-		$instance_id = ! empty( $form[ 'id' ] ) ? esc_attr( $form[ 'id' ] ) : esc_attr( 'form-' . $form[ 'form_id' ] . '-' . rand() );
-	}
+	$form_css_id = ! empty( $form[ 'id' ] ) ? esc_attr( $form[ 'id' ] ) : ( $instance_id ? esc_attr( $instance_id ) : esc_attr( 'form-' . $form[ 'form_id' ] . '-' . rand() ) );
+	if( ! $instance_id ) { $instance_id = $form_css_id; }
 	
 	$fields = bookacti_get_form_fields_data( $form_id );
 	$ordered_form_fields = bookacti_sort_form_fields_array( $form_id, $fields );
@@ -217,41 +216,50 @@ function bookacti_display_form( $form_id, $instance_id = '', $context = 'display
 	
 	ob_start();
 	
+	// Set form attributes
+	$form_attributes = apply_filters( 'bookacti_form_attributes', array(
+		'action'		=> ! empty( $form[ 'redirect_url' ] ) ? apply_filters( 'bookacti_translate_text', esc_url( $form[ 'redirect_url' ] ) ) : '',
+		'id'			=> empty( $form[ 'id' ] ) ? 'bookacti-' . $form_css_id : $form_css_id,
+		'class'			=> 'bookacti-booking-form-' . $form_id . ' ' . $form[ 'class' ],
+		'autocomplete'	=> 'off'
+	), $form_id, $displayed_form_fields );
+	
+	// Add compulsory class
+	$compulsory_class = $is_form ? 'bookacti-booking-form' : 'bookacti-form-fields';
+	$form_attributes[ 'class' ] = $compulsory_class . ( ! empty( $form_attributes[ 'class' ] ) ? ' ' . $form_attributes[ 'class' ] : '' );
+	
+	// Convert $form_attributes array to inline attributes
+	$form_attributes_str = '';
+	foreach( $form_attributes as $form_attribute_key => $form_attribute_value ) {
+		if( $form_attribute_value !== '' ) { $form_attributes_str .= $form_attribute_key . '="' . $form_attribute_value . '" '; }
+	}
+	
 	// Add form container only if there is a "submit" button
-	if( $is_form ) {
-		// Set form attributes
-		$form_attributes = apply_filters( 'bookacti_form_attributes', array(
-			'action'	=> ! empty( $form[ 'redirect_url' ] ) ? apply_filters( 'bookacti_translate_text', esc_url( $form[ 'redirect_url' ] ) ) : '',
-			'id'		=> empty( $form[ 'id' ] ) ? 'bookacti-' . $instance_id : $instance_id,
-			'class'		=> 'bookacti-booking-form bookacti-booking-form-' . $form_id . ' ' . $form[ 'class' ],
-			'autocomplete' => 'off'
-		), $form_id, $displayed_form_fields );
-		$form_attributes_str = '';
-		foreach( $form_attributes as $form_attribute_key => $form_attribute_value ) {
-			if( $form_attribute_value !== '' ) { $form_attributes_str .= $form_attribute_key . '="' . $form_attribute_value . '" '; }
-		}
-	?>
+	if( $is_form ) { ?>
 		<form <?php echo $form_attributes_str; ?>>
 			<input type='hidden' name='action' value='bookactiSubmitBookingForm' />
-			<input type='hidden' name='form_id' value='<?php echo $form_id; ?>' />
 			<input type='hidden' name='nonce_booking_form' value='<?php echo wp_create_nonce( 'bookacti_booking_form' ); ?>' />
-	<?php
-	}
+	<?php } else { ?>
+		<div <?php echo $form_attributes_str; ?>>
+	<?php } ?>
+			<input type='hidden' name='form_id' value='<?php echo $form_id; ?>' />
+		<?php
 			do_action( 'bookacti_form_before', $form, $instance_id, $context );
-			
+
 			foreach( $displayed_form_fields as $field ) {
 				if( ! $field ) { continue; }
 				bookacti_display_form_field( $field, $instance_id, $context, true );
 			}
-			
+
 			do_action( 'bookacti_form_after', $form, $instance_id, $context );
-	
-	if( $is_form ) {
-	?>
+		?>
 			<div class='bookacti-notices' style='display:none;'></div>
-		</form>
 	<?php
-	}
+	if( ! $is_form ) { ?>
+		</div>
+	<?php } else { ?>
+		</form>
+	<?php }
 	
 	$html = apply_filters( 'bookacti_form_html', ob_get_clean(), $form, $instance_id, $context );
 	if( ! $echo ) { return $html; }
@@ -480,7 +488,7 @@ function bookacti_get_default_form_fields_data( $field_name = '' ) {
  * Get fields metadata
  * @see bookacti_format_form_field_data to properly format your array
  * @since 1.5.0
- * @version 1.6.0
+ * @version 1.7.0
  * @param string $field_name
  * @return array
  */
@@ -491,6 +499,8 @@ function bookacti_get_default_form_fields_meta( $field_name = '' ) {
 	unset( $booking_system_meta[ 'template_data' ] );
 	unset( $booking_system_meta[ 'auto_load' ] );
 	unset( $booking_system_meta[ 'check_roles' ] );
+	unset( $booking_system_meta[ 'picked_events' ] );
+	unset( $booking_system_meta[ 'form_id' ] );
 	
 	$template_meta = bookacti_format_template_settings( array() );
 	unset( $template_meta[ 'snapDuration' ] );
@@ -599,7 +609,6 @@ function bookacti_format_form_field_data( $raw_field_data ) {
 		$field_meta[ 'id' ]		= isset( $raw_field_data[ 'id' ] ) ? sanitize_title_with_dashes( $raw_field_data[ 'id' ] ) : $default_meta[ 'id' ];
 		$field_meta[ 'class' ] 	= isset( $raw_field_data[ 'class' ] ) ? sanitize_text_field( $raw_field_data[ 'class' ] ) : $default_meta[ 'class' ];
 		
-		
 	} else if( $raw_field_data[ 'name' ] === 'login' ) {
 		// Format meta values
 		$keys_by_type = array( 
@@ -686,7 +695,7 @@ function bookacti_format_form_field_data( $raw_field_data ) {
 /**
  * Sanitize field data according to its type
  * @since 1.5.0
- * @version 1.6.0
+ * @version 1.7.0
  * @param array|string $raw_field_data
  * @return array|false
  */
@@ -730,6 +739,9 @@ function bookacti_sanitize_form_field_data( $raw_field_data ) {
 		$field_meta[ 'id' ]		= isset( $raw_field_data[ 'id' ] ) && $raw_field_data[ 'id' ] !== '' ? sanitize_title_with_dashes( $raw_field_data[ 'id' ] ) : $default_meta[ 'id' ];
 		$field_meta[ 'class' ]	= isset( $raw_field_data[ 'class' ] ) && $raw_field_data[ 'class' ] !== '' ? sanitize_text_field( $raw_field_data[ 'class' ] ) : $default_meta[ 'class' ];
 		
+		// Format actions meta
+		$field_meta[ 'redirect_url_by_activity' ]		= maybe_serialize( array_map( 'stripslashes', $field_meta[ 'redirect_url_by_activity' ] ) );
+		$field_meta[ 'redirect_url_by_group_category' ] = maybe_serialize( array_map( 'stripslashes', $field_meta[ 'redirect_url_by_group_category' ] ) );
 		
 	} else if( $raw_field_data[ 'name' ] === 'login' ) {
 		// Sanitize meta values
@@ -1037,6 +1049,7 @@ function bookacti_validate_registration( $login_values, $login_data ) {
 /**
  * Register a new user through a booking form
  * @since 1.5.0
+ * @version 1.7.0
  * @param array $login_values
  * @param array $login_data
  * @return WP_User|array
@@ -1096,7 +1109,7 @@ function bookacti_register_a_new_user( $login_values, $login_data ) {
 
 	// Send the welcome email
 	$user_registered_notify = apply_filters( 'bookacti_new_registered_user_notify', empty( $login_data[ 'send_new_account_email' ] ) ? 'admin' : 'both', $user, $login_values );
-	bookacti_send_new_user_notification( $user_id, $user_registered_notify, true );
+	bookacti_send_new_user_notification( $user_id, $user_registered_notify, 1 );
 	
 	return apply_filters( 'bookacti_new_registered_user', $user, $login_values, $login_data );
 }
@@ -1135,6 +1148,44 @@ function bookacti_validate_login( $login_values, $require_authentication = true 
 	return apply_filters( 'bookacti_validate_login_form', $user, $login_values );
 }
 
+
+/**
+ * Validate form fields according to values received with $_POST
+ * @since 1.7.0
+ * @param int $form_id
+ * @param array $fields_data
+ * @return array
+ */
+function bookacti_validate_form_fields( $form_id, $fields_data = array() ) {
+	// Get form data
+	if( $form_id && ! $fields_data ) { 
+		$fields_data = bookacti_get_form_fields_data( $form_id );
+	}
+	
+	// Make sure that form data exist
+	if( ! $fields_data ) { 
+		$validated[ 'status' ]	= 'failed';
+		$validated[ 'message' ][ 'invalid_form_id' ]	= esc_html__( 'Invalid form ID.', BOOKACTI_PLUGIN_NAME );
+		return apply_filters( 'bookacti_validate_form_fields', $validated, $form_id, $fields_data );
+	}
+	
+	$validated = array( 'status' => 'success' );
+	
+	// Validate terms
+	$has_terms = false;
+	foreach( $fields_data as $field_data ) {
+		if( $field_data[ 'name' ] === 'terms' ) { 
+			$has_terms = true;
+			break;
+		}
+	}
+	if( $has_terms && empty( $_POST[ 'terms' ] ) ) {
+		$validated[ 'status' ]	= 'failed';
+		$validated[ 'message' ][ 'terms_not_agreed' ]	= esc_html__( 'You must agree to the terms and conditions.', BOOKACTI_PLUGIN_NAME );
+	}
+	
+	return apply_filters( 'bookacti_validate_form_fields', $validated, $form_id, $fields_data );
+}
 
 
 

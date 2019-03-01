@@ -68,10 +68,12 @@
 .activity-container		{ display: table-cell; width: 100%; vertical-align: middle; overflow: hidden; }
 .activity-show-hide		{ display: table-cell; vertical-align: middle; padding-right: 10px; cursor: pointer; }
 .activity-gear			{ display: table-cell; vertical-align: middle; padding-left: 10px; cursor: pointer; }
-#bookacti-template-activities-container .fc-event { cursor: move; max-height: 16px; padding-left: 5px; width: 100%; }
+#bookacti-template-activities-container .fc-event { cursor: move; max-height: 16px; padding-left: 5px; width: 100%; max-width: 140px; overflow: hidden; }
 
+#bookacti-template-activities-container,
 #bookacti-template-groups-of-events-container	{ padding-right: 6px; }
-#bookacti-group-categories						{ max-height: 400px; overflow-y: auto; padding-right: 4px; }
+#bookacti-template-activity-list,
+#bookacti-group-categories						{ max-height: 200px; overflow-y: auto; padding-right: 4px; }
 .bookacti-group-category-title,
 .bookacti-update-group-category,
 .bookacti-group-of-events-title,
@@ -119,9 +121,6 @@
 
 /***** Template dialogs *****/
 /* General */
-.bookacti-addon-promo			{ border: 2px solid #52b7e9; border-radius: 3px; padding: 10px; text-align: center; }
-.bookacti-addon-promo .button	{ margin-top: 10px; }
-
 .bookacti-promo-events-examples	a.fc-event { display: inline-block; width: 120px; text-align: left; cursor: auto; }
 .bookacti-tabs .bookacti-tab-content .bookacti-promo-events-examples div { margin-bottom: 0; }
 .bookacti-tabs .bookacti-tab-content .bookacti-promo-events-examples { margin: 10px 0 0 0; }

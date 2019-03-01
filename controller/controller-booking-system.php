@@ -59,7 +59,7 @@ add_action( 'wp_ajax_nopriv_bookactiFetchEvents', 'bookacti_controller_fetch_eve
 /**
  * Reload booking system with new attributes via AJAX
  * @since 1.1.0
- * @version 1.5.9
+ * @version 1.7.0
  */
 function bookacti_controller_reload_booking_system() {
 	
@@ -122,7 +122,6 @@ function bookacti_controller_reload_booking_system() {
 	}
 
 	$activities_data	= bookacti_get_activities_by_template( $attributes[ 'calendars' ], true );
-	$exceptions			= bookacti_get_exceptions( $attributes[ 'calendars' ] );
 	$bookings			= bookacti_get_number_of_bookings_by_events( $attributes[ 'calendars' ], array(), $user_ids );
 
 	wp_send_json( array( 
@@ -131,7 +130,6 @@ function bookacti_controller_reload_booking_system() {
 		'events'				=> $events[ 'events' ] ? $events[ 'events' ] : array(), 
 		'events_data'			=> $events[ 'data' ] ? $events[ 'data' ] : array(), 
 		'events_interval'		=> $events_interval, 
-		'exceptions'			=> $exceptions, 
 		'bookings'				=> $bookings, 
 		'activities_data'		=> $activities_data, 
 		'groups_events'			=> $groups_events,

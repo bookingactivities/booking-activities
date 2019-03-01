@@ -32,37 +32,14 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	}
 	add_action( 'wp_ajax_bookactiGetBookingRows', 'bookacti_controller_get_booking_rows' );
 
-	
-	/**
-	 * Make sure that the selected user (passed as a parameter) is displayed in the booking filters user selectbox
-	 * @since 1.6.0
-	 * @param array $args
-	 * @param array $users
-	 */
-	function bookacti_add_selected_user_in_booking_filters_user_selectbox( $args, $users ) {
-		if( $args[ 'id' ] !== 'bookacti-booking-filter-customer' || empty( $args[ 'selected' ] ) ) { return; }
-		
-		$user_id = $args[ 'selected' ];
-		$user_id_exists = false;
-		foreach( $users as $user ) {
-			if( $user->ID === $user_id ) { $user_id_exists = true; break; }
-		}
-		
-		if( ! $user_id_exists ) {
-			?>
-			<option value='<?php echo $args[ 'selected' ]; ?>' <?php echo selected( $user_id, $args[ 'selected' ], false ) ?> ><?php echo esc_html( $args[ 'selected' ] ); ?></option>
-			<?php
-		}
-	}
-	add_action( 'bookacti_add_user_selectbox_options', 'bookacti_add_selected_user_in_booking_filters_user_selectbox', 10, 2 );
-	
+
 
 
 // BOOKING ACTIONS
 	// SINGLE BOOKING
 		/**
 		 * AJAX Controller - Cancel a booking
-		 * @version 1.6.0
+		 * @version 1.7.0
 		 */
 		function bookacti_controller_cancel_booking() {
 
@@ -91,9 +68,10 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			}
 
 			do_action( 'bookacti_booking_state_changed', $booking_id, 'cancelled', array( 'is_admin' => false ) );
-
-			$allow_refund	= bookacti_booking_can_be_refunded( $booking );
-			$actions_html	= bookacti_get_booking_actions_html( $booking, 'front' );
+			
+			$new_booking	= bookacti_get_booking_by_id( $booking_id );
+			$allow_refund	= bookacti_booking_can_be_refunded( $new_booking );
+			$actions_html	= bookacti_get_booking_actions_html( $new_booking, 'front' );
 			$formatted_state= bookacti_format_booking_state( 'cancelled', false );
 			
 			bookacti_send_json( array( 'status' => 'success', 'allow_refund' => $allow_refund, 'new_actions_html' => $actions_html, 'formatted_state' => $formatted_state ), 'cancel_booking' );
@@ -291,7 +269,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 		/**
 		 * AJAX Controller - Reschedule a booking
-		 * @version 1.6.0
+		 * @version 1.7.0
 		 */
 		function bookacti_controller_reschedule_booking() {
 
@@ -337,11 +315,12 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 			$is_bookings_page	= intval( $_POST[ 'is_bookings_page' ] );
 			$send_notifications	= $is_bookings_page ? intval( $_POST[ 'send_notifications' ] ) : 1;
-
-			do_action( 'bookacti_booking_rescheduled', $booking_id, $booking, array( 'is_admin' => $is_bookings_page, 'send_notifications' => $send_notifications ) );
+			$new_booking		= bookacti_get_booking_by_id( $booking_id );
+			
+			do_action( 'bookacti_booking_rescheduled', $new_booking, $booking, array( 'is_admin' => $is_bookings_page, 'send_notifications' => $send_notifications ) );
 
 			$admin_or_front		= $is_bookings_page ? 'admin' : 'front';
-			$actions_html		= bookacti_get_booking_actions_html( $booking_id, $admin_or_front );
+			$actions_html		= bookacti_get_booking_actions_html( $new_booking, $admin_or_front );
 
 			if( $is_bookings_page ) {
 				$Bookings_List_Table = new Bookings_List_Table();
@@ -349,9 +328,8 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 				$row = $Bookings_List_Table->get_rows_or_placeholder();
 			} else {
 				$user_id	= get_current_user_id();
-				$booking	= bookacti_get_booking_by_id( $booking_id );
 				$columns	= bookacti_get_booking_list_columns( $user_id );
-				$row		= bookacti_get_booking_list_rows( array( $booking ), $columns, $user_id );
+				$row		= bookacti_get_booking_list_rows( array( $new_booking ), $columns, $user_id );
 			}
 
 			wp_send_json( array( 'status' => 'success', 'actions_html' => $actions_html, 'row' => $row ) );
@@ -425,7 +403,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		/**
 		 * AJAX Controller - Cancel a booking group
 		 * @since 1.1.0
-		 * @version 1.6.0
+		 * @version 1.7.0
 		 */
 		function bookacti_controller_cancel_booking_group() {
 
@@ -454,10 +432,11 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			}
 
 			do_action( 'bookacti_booking_group_state_changed', $booking_group_id, 'cancelled', array( 'is_admin' => false ) );
-
-			$allow_refund	= bookacti_booking_group_can_be_refunded( $booking_group );
-			$actions_html	= bookacti_get_booking_group_actions_html( $booking_group, 'front' );
-			$formatted_state= bookacti_format_booking_state( 'cancelled', false );
+			
+			$new_booking_group	= bookacti_get_booking_group_by_id( $booking_group_id );
+			$allow_refund		= bookacti_booking_group_can_be_refunded( $new_booking_group );
+			$actions_html		= bookacti_get_booking_group_actions_html( $new_booking_group, 'front' );
+			$formatted_state	= bookacti_format_booking_state( 'cancelled', false );
 
 			bookacti_send_json( array( 'status' => 'success', 'allow_refund' => $allow_refund, 'new_actions_html' => $actions_html, 'formatted_state' => $formatted_state ), 'cancel_booking_group' );
 		}

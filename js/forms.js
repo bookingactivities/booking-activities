@@ -44,12 +44,56 @@ $j( document ).ready( function() {
 	});
 	
 	
-	// Intercept booking form submission
-	$j( '.bookacti-booking-form' ).on( 'submit', function( e ){
+	/**
+	 * Perform the desired action on form submission
+	 * @version 1.7.0
+	 */
+	$j( 'body' ).on( 'submit', '.bookacti-booking-form', function( e ){
 		// Prevent submission
 		e.preventDefault();
-		var form = $j( this );
-		bookacti_sumbit_booking_form( form );
+		
+		// Retrieve the info required to show the desired events
+		var form				= $j( this );
+		var booking_system		= form.find( '.bookacti-form-field-type-calendar .bookacti-booking-system' );
+		var booking_system_id	= booking_system.attr( 'id' );
+		var attributes			= bookacti.booking_system[ booking_system_id ];
+		
+		// Retrieve form action
+		var form_action = typeof attributes[ 'form_action' ] !== 'undefined';
+		if( form_action ) { if( attributes[ 'form_action' ] ) { form_action = attributes[ 'form_action' ]; } }
+		var when_perform_form_action = typeof attributes[ 'when_perform_form_action' ] !== 'undefined';
+		if( when_perform_form_action ) { if( attributes[ 'when_perform_form_action' ] ) { when_perform_form_action = attributes[ 'when_perform_form_action' ]; } }
+		
+		if( ! form_action || form_action === 'default' 
+		||  ! when_perform_form_action || when_perform_form_action !== 'on_submit' ) {
+			bookacti_sumbit_booking_form( form );
+			return;
+		}
+		
+		// Redirect to activity / group category URL
+		if( form_action === 'redirect_to_url' ) {
+			var group_id	= booking_system.siblings( '.bookacti-booking-system-inputs' ).find( 'input[name="bookacti_group_id"]' ).val();
+			var event_id	= booking_system.siblings( '.bookacti-booking-system-inputs' ).find( 'input[name="bookacti_event_id"]' ).val();
+			var event_start	= booking_system.siblings( '.bookacti-booking-system-inputs' ).find( 'input[name="bookacti_event_start"]' ).val();
+			var event_end	= booking_system.siblings( '.bookacti-booking-system-inputs' ).find( 'input[name="bookacti_event_end"]' ).val();
+			
+			// Redirect to activity URL if a single event is selected
+			if( group_id === 'single' && event_id && event_start && event_end ) {
+				var event = {
+					'id': event_id,
+					'start': event_start,
+					'end': event_end
+				};
+				bookacti_redirect_to_activity_url( booking_system, event );
+			}
+			
+			// Redirect to activity URL if a single event is selected
+			else if( $j.isNumeric( group_id ) ) {
+				bookacti_redirect_to_group_category_url( booking_system, group_id );
+			}
+		}
+		
+		$j( this ).trigger( 'bookacti_submit_booking_form', form_action );
 	});
 	
 	
@@ -79,8 +123,11 @@ $j( document ).ready( function() {
 	});
 	
 	
-	// Change activity summary on qty change
-	$j( '.bookacti-booking-form' ).on( 'keyup mouseup', 'input.bookacti-quantity', function() {
+	/**
+	 * Change activity summary on qty change
+	 * @version 1.7.0
+	 */
+	$j( '.bookacti-booking-form' ).on( 'change', 'input.bookacti-quantity', function() {
 		var booking_system = $j( this ).closest( 'form' ).find( '.bookacti-booking-system' );
 		if( booking_system.length ) {
 			bookacti_fill_picked_events_list( booking_system );
@@ -117,6 +164,7 @@ $j( document ).ready( function() {
 
 /**
  * Initialize form dialogs
+ * @version 1.7.0
  */
 function bookacti_init_form_dialogs() {
 	//Common param
@@ -124,7 +172,7 @@ function bookacti_init_form_dialogs() {
 		"modal":		true,
 		"autoOpen":		false,
 		"minHeight":	300,
-		"minWidth":		440,
+		"minWidth":		460,
 		"resize":		'auto',
 		"show":			true,
 		"hide":			true,

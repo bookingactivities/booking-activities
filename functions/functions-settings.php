@@ -40,15 +40,17 @@ function bookacti_get_default_settings() {
 
 /**
  * Delete settings
- * @version 1.6.0
+ * @version 1.7.0
  */
 function bookacti_delete_settings() {
+	delete_option( 'bookacti_version' );
 	delete_option( 'bookacti_template_settings' ); // Deprecated
 	delete_option( 'bookacti_bookings_settings' ); // Deprecated
 	delete_option( 'bookacti_general_settings' );
 	delete_option( 'bookacti_cancellation_settings' );
 	delete_option( 'bookacti_notifications_settings' );
 	delete_option( 'bookacti_messages_settings' );
+	delete_option( 'bookacti_archive_secret_key' );
 	
 	do_action( 'bookacti_delete_settings' );
 }
@@ -57,8 +59,7 @@ function bookacti_delete_settings() {
 /**
  * Get setting value
  * 
- * @version 1.3.0
- * 
+ * @version 1.7.0
  * @param string $setting_page
  * @param string $setting_field
  * @param boolean $translate
@@ -86,8 +87,8 @@ function bookacti_get_setting_value( $setting_page, $setting_field, $translate =
 	if( is_string( $settings[ $setting_field ] ) ) {
 		$settings[ $setting_field ] = apply_filters( 'bookacti_translate_text', $settings[ $setting_field ] );
 	}
-		
-	return $settings[ $setting_field ];
+	
+	return apply_filters( 'bookacti_get_setting_value', $settings[ $setting_field ], $setting_page, $setting_field, $translate );
 }
 
 
@@ -781,16 +782,23 @@ function bookacti_settings_section_bookings_callback() { }
 				'input_type'	=> 'textarea'
 			),
 			'cancel_dialog_button' => array(
+				'value'			=> esc_html_x( 'Cancel', 'Cancel any action button label. It closes dialogs.', BOOKACTI_PLUGIN_NAME ),
+				'description'	=> esc_html__( 'Cancel any action button label. It closes dialogs.', BOOKACTI_PLUGIN_NAME )
+			),
+			'cancel_booking_open_dialog_button' => array(
 				'value'			=> esc_html_x( 'Cancel', 'Cancel bookings button label. It opens the dialog.', BOOKACTI_PLUGIN_NAME ),
-				'description'	=> esc_html__( 'Cancel bookings button label.', BOOKACTI_PLUGIN_NAME )
+				'description'	=> esc_html__( 'Cancel bookings button label to open the cancel dialog.', BOOKACTI_PLUGIN_NAME )
+			),
+			'cancel_booking_dialog_button' => array(
+				'value'			=> esc_html_x( 'Cancel booking', 'Button label to trigger the cancel action', BOOKACTI_PLUGIN_NAME ),
+				'description'	=> esc_html__( 'Cancel bookings button label to trigger the cancel action.', BOOKACTI_PLUGIN_NAME )
 			),
 			'cancel_dialog_title' => array(
 				'value'			=> esc_html_x( 'Cancel the booking', 'Dialog title', BOOKACTI_PLUGIN_NAME ),
 				'description'	=> esc_html__( 'Cancel bookings dialog title.', BOOKACTI_PLUGIN_NAME )
 			),
 			'cancel_dialog_content' => array(
-				'value'			=> esc_html__( 'Do you really want to cancel this booking?', BOOKACTI_PLUGIN_NAME ) . '
-' . esc_html__( 'If you have already paid, you will be able to request a refund.', BOOKACTI_PLUGIN_NAME ),
+				'value'			=> esc_html__( 'Do you really want to cancel this booking?', BOOKACTI_PLUGIN_NAME ) . '<br/>' . esc_html__( 'If you have already paid, you will be able to request a refund.', BOOKACTI_PLUGIN_NAME ),
 				'description'	=> esc_html__( 'Cancel bookings dialog content.', BOOKACTI_PLUGIN_NAME ),
 				'input_type'	=> 'textarea'
 			),
@@ -818,30 +826,39 @@ function bookacti_settings_section_bookings_callback() { }
 	
 	/**
 	 * Get all custom messages
-	 * 
 	 * @since 1.2.0
+	 * @version 1.7.0
 	 * @param boolean $raw Whether to retrieve the raw value from database or the option parsed through get_option
 	 * @return array
 	 */
 	function bookacti_get_messages( $raw = false ) {
 		
 		// Get raw value from database
+		$saved_messages = array();
 		if( $raw ) {
-			$alloptions = wp_load_alloptions(); // get_option() calls wp_load_alloptions() itself, so there is no overhead at runtime 
-			if( isset( $alloptions[ 'bookacti_messages_settings' ] ) ) {
-				$saved_messages	= maybe_unserialize( $alloptions[ 'bookacti_messages_settings' ] );
+			global $bookacti_raw_messages;
+			if( ! isset( $bookacti_raw_messages ) ) {
+				$alloptions = wp_load_alloptions(); // get_option() calls wp_load_alloptions() itself, so there is no overhead at runtime 
+				if( isset( $alloptions[ 'bookacti_messages_settings' ] ) ) {
+					$bookacti_raw_messages = maybe_unserialize( $alloptions[ 'bookacti_messages_settings' ] );
+				}
 			}
+			$saved_messages = $bookacti_raw_messages;
 		} 
 
 		// Else, get message settings through a normal get_option
 		else {
-			$saved_messages	= get_option( 'bookacti_messages_settings' );
+			global $bookacti_messages;
+			if( ! isset( $bookacti_messages ) ) {
+				$bookacti_messages = get_option( 'bookacti_messages_settings' );
+			}
+			$saved_messages = $bookacti_messages;
 		}
 		
 		$default_messages = bookacti_get_default_messages();
 		$messages = $default_messages;
 		
-		if( $saved_messages ) {
+		if( ! empty( $saved_messages ) ) {
 			foreach( $default_messages as $message_id => $message ) {
 				if( isset( $saved_messages[ $message_id ] ) ) {
 					$messages[ $message_id ][ 'value' ] = $saved_messages[ $message_id ];
@@ -876,30 +893,354 @@ function bookacti_settings_section_bookings_callback() { }
 
 
 
-/**
- * Reset notices
- */
-function bookacti_reset_notices() {
-	delete_option( 'bookacti-install-date' );
-	delete_option( 'bookacti-5stars-rating-notice-dismissed' );
-}
 
+// SYSTEM SETTINGS
 
-/**
- * Get Booking Activities admin screen ids
- * @version 1.5.0
- */
-function bookacti_get_screen_ids() {
-	$screens = array(
-		'toplevel_page_booking-activities',
-		'booking-activities_page_bookacti_calendars',
-		'booking-activities_page_bookacti_forms',
-		'booking-activities_page_bookacti_bookings',
-		'booking-activities_page_bookacti_settings'
-	);
+	/**
+	 * Check if the user can archive data
+	 * @since 1.7.0
+	 * @param string $date
+	 * @param boolean $check_nonce
+	 */
+	function bookacti_user_can_archive_data( $date, $check_nonce = true ) {
+		// Check nonce
+		if( $check_nonce ) {
+			$is_nonce_valid	= check_ajax_referer( 'bookacti_nonce_archive_data', 'nonce', false );
+			if( ! $is_nonce_valid ) { bookacti_send_json_invalid_nonce( 'achive_data' ); }
+		}
+
+		// Check permission
+		$is_allowed	 = current_user_can( 'bookacti_manage_booking_activities_settings' );
+		if( ! $is_allowed ) { return array( 'status' => 'failed', 'error' => 'not_allowed', 'message' => esc_html__( 'You are not allowed to do that.', BOOKACTI_PLUGIN_NAME ) ); }
+
+		// Check the date
+		$date = bookacti_sanitize_date( $date );
+		if( ! $date ) { 
+			return array( 'status' => 'failed', 'error' => 'invalid_date', 'message' => esc_html__( 'Invalid date', BOOKACTI_PLUGIN_NAME ) ); 
+		}
+
+		// Check if the date is earlier than today
+		$utc_timezone	= new DateTimeZone( 'UTC' );
+		$datetime		= new DateTime( $date, $utc_timezone );
+		$today			= new DateTime( 'today', $utc_timezone );
+		if( $datetime > $today ) {
+			return array( 'status' => 'failed', 'error' => 'future_date', 'message' => esc_html__( 'The date must be earlier than today.', BOOKACTI_PLUGIN_NAME ) );
+		}
+
+		return true;
+	}
 	
-	return apply_filters( 'bookacti_screen_ids', $screens );
-}
+	
+	/**
+	 * Check if the user can manage archive file
+	 * @since 1.7.0
+	 * @param string $filename
+	 * @param boolean $check_nonce
+	 */
+	function bookacti_user_can_manage_archive_file( $filename, $check_nonce = true ) {
+		// Check nonce
+		if( $check_nonce ) {
+			$is_nonce_valid	= check_ajax_referer( 'bookacti_nonce_archive_data', 'nonce', false );
+			if( ! $is_nonce_valid ) { bookacti_send_json_invalid_nonce( 'achive_data' ); }
+		}
+
+		// Check permission
+		$is_allowed	 = current_user_can( 'bookacti_manage_booking_activities_settings' );
+		if( ! $is_allowed ) { return array( 'status' => 'failed', 'error' => 'not_allowed', 'message' => esc_html__( 'You are not allowed to do that.', BOOKACTI_PLUGIN_NAME ) ); }
+		
+		// Check filename
+		$filename		= sanitize_file_name( $filename );
+		$uploads_dir	= wp_upload_dir();
+		$archives_dir	= trailingslashit( str_replace( '\\', '/', $uploads_dir[ 'basedir' ] ) ) . BOOKACTI_PLUGIN_NAME . '/archives/';
+		$zip_file		= $archives_dir . $filename;
+		if( ! file_exists( $zip_file ) ) {
+			$error_message = esc_html__( 'The backup file was not found.', BOOKACTI_PLUGIN_NAME );
+			return array( 'status' => 'failed', 'error' => 'file_not_found', 'message' => implode( '<li>', $error_message ) );
+		}
+
+		return true;
+	}
+	
+
+	/**
+	 * Settings section callback - System (displayed before settings)
+	 * @since 1.7.0
+	 */
+	function bookacti_settings_section_system_callback() {
+		// Option to create an archive
+		$current_date = date( 'Y-m-d' );
+		
+		// Create the archive directory and regenerate the archive secret key
+		bookacti_create_archive_directory();
+		?>
+		<h2><?php esc_html_e( 'Archiving tool', BOOKACTI_PLUGIN_NAME ); ?></h2>
+		<p id='bookacti-archive-disclaimer'>
+			<?php esc_html_e( 'This archiving tool will delete old events and bookings from your database and store them as backup files. You should only use it if you experience slowdowns due to too many bookings and events.', BOOKACTI_PLUGIN_NAME ); ?>
+			<br/><br/>
+			<strong>
+				<?php esc_html_e( 'Booking Activities is not responsible for any data loss due to the use of this archiving tool. It is your responsibility to backup and restore your data independently of this tool.', BOOKACTI_PLUGIN_NAME ); ?>
+			</strong>
+			<br/>
+			<?php 
+			/* translators: %s is a link "Read this documentation" */
+			$doc_link = '<a href="https://booking-activities.fr/en/docs/user-documentation/advanced-use-of-booking-activities/archive-old-events-bookings/" target="_blank">' . esc_html__( 'Read this documentation', BOOKACTI_PLUGIN_NAME ) . '</a>';
+			echo sprintf( esc_html__( '%s to reduce the risk of data loss.', BOOKACTI_PLUGIN_NAME ), $doc_link ); 
+			?>
+			<br/><br/>
+			<?php esc_html_e( 'Moreover, archived data may not be compatible with later versions of Booking Activities.', BOOKACTI_PLUGIN_NAME ); ?>
+		</p>
+		<table class='form-table bookacti-archive-options'>
+			<tr>
+				<th><?php /* translators: followed by a date input */ esc_html_e( 'Archive data prior to', BOOKACTI_PLUGIN_NAME ); ?></th>
+				<td>
+					<div id='bookacti-archive-field-container'>
+						<input type='date' id='bookacti-archive-date' max='<?php echo $current_date; ?>' />
+						<button type='button' id='bookacti-archive-button-analyse'><?php echo esc_html_x( 'Analyse', 'verb', BOOKACTI_PLUGIN_NAME ); ?></button>
+						<?php
+							bookacti_help_tip( esc_html__( 'This will store events and bookings data prior to the selected date in a SQL file and definitively remove them from your database. Always backup your database before doing this.', BOOKACTI_PLUGIN_NAME ) );
+							wp_nonce_field( 'bookacti_nonce_archive_data', 'nonce_archive_data', false, true );
+						?>
+						<div id='bookacti-archive-feedbacks'>
+							<div class='bookacti-archive-feedbacks-step-container' id='bookacti-archive-feedbacks-step1-container'>
+								<strong><?php esc_html_e( 'Step 1: Analyse data to archive', BOOKACTI_PLUGIN_NAME ); ?></strong>
+								<div class='bookacti-archive-feedbacks-step' id='bookacti-archive-feedbacks-step1'></div>
+							</div>
+							<div class='bookacti-archive-feedbacks-step-container' id='bookacti-archive-feedbacks-step2-container'>
+								<strong><?php esc_html_e( 'Step 2: Copy data to backup files', BOOKACTI_PLUGIN_NAME ); ?></strong>
+								<button type='button' id='bookacti-archive-button-dump'><?php echo esc_html_x( 'Archive', 'verb', BOOKACTI_PLUGIN_NAME ); ?></button>
+								<div class='bookacti-archive-feedbacks-step' id='bookacti-archive-feedbacks-step2'></div>
+							</div>
+							<div class='bookacti-archive-feedbacks-step-container' id='bookacti-archive-feedbacks-step3-container'>
+								<strong><?php esc_html_e( 'Step 3: Delete data from database', BOOKACTI_PLUGIN_NAME ); ?></strong>
+								<button type='button' id='bookacti-archive-button-delete'><?php echo esc_html_x( 'Clean', 'verb', BOOKACTI_PLUGIN_NAME ); ?></button>
+								<div id='bookacti-archive-delete-data-note'>
+									<?php
+										esc_html_e( 'Data deletion is permanent. It can take several minutes.', BOOKACTI_PLUGIN_NAME );
+									?>
+								</div>
+								<div class='bookacti-archive-feedbacks-step' id='bookacti-archive-feedbacks-step3'></div>
+							</div>
+						</div>
+					</div>
+				</td>
+			</tr>
+		</table>
+		<div id='bookacti-database-archives-table-container'>
+			<?php bookacti_display_database_archive_list(); ?>
+		</div>
+		<?php
+	}
+
+	
+	/**
+	 * Display the database archive list
+	 * @since 1.7.0
+	 */
+	function bookacti_display_database_archive_list() {
+		$uploads_dir	= wp_upload_dir();
+		$bookacti_dir	= trailingslashit( str_replace( '\\', '/', $uploads_dir[ 'basedir' ] ) ) . BOOKACTI_PLUGIN_NAME . '/';
+		$archives_dir	= $bookacti_dir. 'archives/';
+		$archives_handle = opendir( $archives_dir );
+		if( $archives_handle ) {
+			$secret_key = get_option( 'bookacti_archive_secret_key' );
+		?>
+			<table class='bookacti-settings-table' id='bookacti-database-archives-table'>
+				<tr>
+					<th><?php esc_html_e( 'Backup files', BOOKACTI_PLUGIN_NAME ) ?></th>
+					<th><?php esc_html_e( 'Actions', BOOKACTI_PLUGIN_NAME ) ?></th>
+				</tr>
+				<?php
+				$is_empty = true;
+				$filenames = array();
+				while( false !== ( $filename = readdir( $archives_handle ) ) ) {
+					if( $filename == '.' || $filename == '..' || $filename == 'index.php' || $filename == '.htaccess' ) { continue; }
+					$filenames[] = $filename;
+					$is_empty = false;
+				}
+				rsort( $filenames );
+
+				if( ! $is_empty ) {
+					foreach( $filenames as $filename ) {
+						?>
+						<tr>
+							<td class='bookacti-archive-file-name'>
+								<div class='bookacti-archive-file-name'><?php echo $filename; ?></div>
+								<div class='bookacti-archive-feedback'></div>
+							</td>
+							<td class='bookacti-archive-actions'>
+								<span class='bookacti-archive-action bookacti-archive-download'>
+									<a href='<?php echo esc_url( trailingslashit( $uploads_dir[ 'baseurl' ] ) . BOOKACTI_PLUGIN_NAME . '/archives/' . $filename . '?key=' . $secret_key ); ?>' target='_blank'>
+										<?php echo esc_html_x( 'Download', 'verb', BOOKACTI_PLUGIN_NAME ); ?>
+									</a>
+								</span>
+								<span class='bookacti-archive-action bookacti-archive-restore-data'>
+									<a href='#' data-filename='<?php echo $filename; ?>'>
+										<?php esc_html_e( 'Restore data', BOOKACTI_PLUGIN_NAME ); ?>
+									</a>
+								</span>
+								<span class='bookacti-archive-action bookacti-archive-delete-file'>
+									<a href='#' data-filename='<?php echo $filename; ?>'>
+										<?php esc_html_e( 'Delete file', BOOKACTI_PLUGIN_NAME ); ?>
+									</a>
+								</span>
+								<?php do_action( 'bookacti_archive_actions_after', $filename ) ?>
+							</td>
+						</tr>
+						<?php
+					}
+				} else {
+					?>
+					<tr>
+						<td colspan='2' class='bookacti-not-found-row'><em><?php esc_html_e( 'No archive found', BOOKACTI_PLUGIN_NAME ); ?></em></td>
+					</tr>
+					<?php
+				}
+				?>
+			</table>
+		<?php
+			closedir( $archives_handle );
+		}
+	}
+
+	
+	/**
+	 * Create the Booking Activities "Archive" directory to store archive files
+	 * And regenerate the .htaccess and the secret key to download archive files
+	 * @since 1.7.0
+	 */
+	function bookacti_create_archive_directory() {
+		$uploads_dir	= wp_upload_dir();
+		$bookacti_dir	= trailingslashit( str_replace( '\\', '/', $uploads_dir[ 'basedir' ] ) ) . BOOKACTI_PLUGIN_NAME . '/';
+		$archives_dir	= $bookacti_dir. 'archives/';
+		if( ! is_dir( $bookacti_dir ) ) {
+			mkdir( $bookacti_dir, 0755 );
+			// Create index.php
+			$index_handle = fopen( $bookacti_dir . 'index.php', 'w' );
+			fwrite( $index_handle, '' );
+			fclose( $index_handle );
+		}
+		if( ! is_dir( $archives_dir ) ) {
+			mkdir( $archives_dir, 0755 );
+			// Create index.php
+			$index_handle = fopen( $archives_dir . 'index.php', 'w' );
+			fwrite( $index_handle, '' );
+			fclose( $index_handle );
+		}
+		
+		// Create a new secret key and a new .htaccess file at each visit
+		// Renew the secret key
+		$secret_key = md5( microtime().rand() );
+		update_option( 'bookacti_archive_secret_key', $secret_key );
+		// Update the .htaccess
+		$htaccess_handle = fopen( $archives_dir . '.htaccess', 'w' );
+		$htaccess_content	= '<IfModule mod_rewrite.c>' . PHP_EOL 
+							. ' RewriteEngine On' . PHP_EOL 
+							. ' RewriteCond %{QUERY_STRING} !key=' . $secret_key . PHP_EOL 
+							. ' RewriteRule (.*) - [F]' . PHP_EOL 
+							. '</IfModule>';
+		fwrite( $htaccess_handle, $htaccess_content );
+		fclose( $htaccess_handle );
+	}
+
+
+	/**
+	 * Import archived data in the database
+	 * @since 1.7.0
+	 * @param array|string $files Array of .sql files or .zip file
+	 * @return boolean|int
+	 */
+	function bookacti_import_sql_files( $files ) {
+		// Unzip files or format files array
+		$is_zip = false;
+		if( is_string( $files ) ) {
+			$filetype = substr( $files, -4 );
+			if( $filetype === '.sql' ) {
+				$files = array( $files );
+
+			} else if( $filetype === '.zip' ) {
+				$is_zip = true;
+				$tmpdir = bookacti_get_mysql_temp_path();
+				if( ! $tmpdir || ! is_dir( $tmpdir ) ) { 
+					$uploads_dir= wp_upload_dir();
+					$tmpdir		= trailingslashit( str_replace( '\\', '/', $uploads_dir[ 'basedir' ] ) ) . BOOKACTI_PLUGIN_NAME . '/archives/';
+				}
+				$extract_dir = $tmpdir . basename( $files, '.zip' );
+				$files = bookacti_extract_zip( $files, $tmpdir );
+				if( $files === false ) { return false; }
+			}
+		}
+		
+		// Check the files
+		$valid_files = array();
+		if( is_array( $files ) ) {
+			foreach( $files as $file ) {
+				if( file_exists( $file ) && substr( $file, -4 ) === '.sql' ) { $valid_files[] = $file; }
+			}
+		}
+		
+		if( empty( $valid_files ) ) { return false; }
+		
+		// Build the command line
+		$imported = array( 'status' => 'success', 'results' => array() );
+		foreach( $valid_files as $file ) {
+			$return_var = bookacti_import_sql_file( $file );
+			$imported[ 'results' ][ basename( $file ) ] = $return_var === false ? esc_html__( 'Error', BOOKACTI_PLUGIN_NAME ) : ( is_string( $return_var ) || is_numeric( $return_var ) ? $return_var : esc_html__( 'OK', BOOKACTI_PLUGIN_NAME ) );
+			if( $return_var === false ) { $imported[ 'status' ] = 'failed'; }
+		}
+		
+		// Remove extracted files and folder
+		if( $is_zip ) {
+			array_map( 'unlink', glob( "$extract_dir/*.*" ) );
+			rmdir( $extract_dir );
+		}
+		
+		return $imported;
+	}
+
+
+
+
+// MISC
+	/**
+	 * Reset notices
+	 */
+	function bookacti_reset_notices() {
+		delete_option( 'bookacti-install-date' );
+		delete_option( 'bookacti-5stars-rating-notice-dismissed' );
+	}
+
+
+	/**
+	 * Get Booking Activities admin screen ids
+	 * @version 1.5.0
+	 */
+	function bookacti_get_screen_ids() {
+		$screens = array(
+			'toplevel_page_booking-activities',
+			'booking-activities_page_bookacti_calendars',
+			'booking-activities_page_bookacti_forms',
+			'booking-activities_page_bookacti_bookings',
+			'booking-activities_page_bookacti_settings'
+		);
+
+		return apply_filters( 'bookacti_screen_ids', $screens );
+	}
+	
+	
+	/**
+	 * Check if the current page is a Booking Activities screen
+	 * @since 1.7.0
+	 * @return boolean
+	 */
+	function bookacti_is_booking_activities_screen() {
+		$current_screen = get_current_screen();
+		if( empty( $current_screen ) ) { return false; }
+		$bookacti_screens = bookacti_get_screen_ids();
+		if( isset( $current_screen->id ) && in_array( $current_screen->id, $bookacti_screens, true ) ) { return true; }
+		return false;
+	}
+
+
 
 
 // ROLES AND CAPABILITIES
@@ -1107,3 +1448,348 @@ function bookacti_get_screen_ids() {
 			<?php
 		}
 	}
+	
+	
+
+
+// PRIVACY OPTIONS
+
+/**
+ * Export additionnal user metadata with WP privacy export tool
+ * @since 1.7.0
+ * @param string $email_address
+ * @param int $page
+ * @return array
+ */
+function bookacti_privacy_exporter_user_data( $email_address, $page = 1 ) {
+	$user			= get_user_by( 'email', $email_address );
+	$data_to_export = array();
+	
+	if( $user instanceof WP_User ) {
+		$user_meta = get_user_meta( $user->ID );
+		
+		$user_meta_to_export = apply_filters( 'bookacti_privacy_export_user_columns', array(
+			'phone' => esc_html__( 'Phone', BOOKACTI_PLUGIN_NAME )
+		), $user_meta, $email_address, $page );
+		
+		$user_personal_data = array();
+		foreach( $user_meta_to_export as $key => $name ) {
+			if( empty( $user_meta[ $key ] ) ) { continue; }
+			$user_personal_data[] = array(
+				'name'  => $name,
+				'value' => $user_meta[ $key ][0]
+			);
+		}
+		
+		if( ! empty( $user_personal_data ) ) {
+			$data_to_export[] = array(
+				'group_id'    => 'user',
+				'group_label' => __( 'User' ),
+				'item_id'     => 'user-' . $user->ID,
+				'data'        => $user_personal_data,
+			);
+		}
+	}
+	
+	return array(
+		'data' => $data_to_export,
+		'done' => true,
+	);
+}
+
+
+/**
+ * Export bookings user metadata with WP privacy export tool
+ * @since 1.7.0
+ * @param string $email_address
+ * @param int $page
+ * @return array
+ */
+function bookacti_privacy_exporter_bookings_data( $email_address, $page = 1 ) {
+	$user				= get_user_by( 'email', $email_address );
+	$number				= 200; // Limit to avoid timing out
+	$page				= (int) $page;
+	$data_to_export		= array();
+	$bookings			= array(); 
+	$group_by_booking	= array();
+	$bookings_meta		= array();
+	$booking_groups_meta= array();
+	
+	// Get bookings either by email or id if the user is registered
+	$user_ids = array( $email_address );
+	if( $user instanceof WP_User ) {
+		$user_ids[] = $user->ID;
+	}
+	
+	// Count the total number of bookings to know when the exporter is done
+	$filters_count = bookacti_format_booking_filters( array(
+		'in__user_id'	=> $user_ids
+	) );
+	$bookings_count = bookacti_get_number_of_booking_rows( $filters_count );
+	
+	if( $bookings_count ) {
+		// Get the bookings
+		$filters = bookacti_format_booking_filters( array(
+			'in__user_id'	=> $user_ids,
+			'offset'		=> ($page-1)*$number,
+			'per_page'		=> $number
+		) );
+		$bookings = bookacti_get_bookings( $filters );
+
+		if( $bookings ) {
+			// Store booking ids and booking groups ids separatly to retrieve metadata
+			$bookings_ids = array();
+			$booking_groups_ids = array();
+			foreach( $bookings as $booking ) {
+				if( ! empty( $booking->group_id ) ) {
+					$group_by_booking[ $booking->id ] = $booking->group_id;
+					if( ! in_array( $booking->group_id, $booking_groups_ids, true ) ) {
+						$booking_groups_ids[] = $booking->group_id;
+					}
+				}
+				$bookings_ids[] = $booking->id;
+			}
+
+			$bookings_meta			= bookacti_get_metadata( 'booking', $bookings_ids );
+			$booking_groups_meta	= bookacti_get_metadata( 'booking_group', $booking_groups_ids );
+
+			// Allow third party to change the exported data
+			$booking_meta_to_export = apply_filters( 'bookacti_privacy_export_bookings_columns', array(
+				'id'				=> esc_html__( 'ID', BOOKACTI_PLUGIN_NAME ),
+				'group_id'			=> esc_html__( 'Group ID', BOOKACTI_PLUGIN_NAME ),
+				'creation_date'		=> esc_html__( 'Date', BOOKACTI_PLUGIN_NAME ),
+				'event_title'		=> esc_html__( 'Title', BOOKACTI_PLUGIN_NAME ),
+				'event_start'		=> esc_html__( 'Start', BOOKACTI_PLUGIN_NAME ),
+				'event_end'			=> esc_html__( 'End', BOOKACTI_PLUGIN_NAME ),
+				'state'				=> esc_html__( 'Status', BOOKACTI_PLUGIN_NAME ),
+				'user_id'			=> esc_html__( 'User ID', BOOKACTI_PLUGIN_NAME ),
+				'user_email'		=> esc_html__( 'Email', BOOKACTI_PLUGIN_NAME ),
+				'user_first_name'	=> esc_html__( 'First name', BOOKACTI_PLUGIN_NAME ),
+				'user_last_name'	=> esc_html__( 'Last name', BOOKACTI_PLUGIN_NAME ),
+				'user_phone'		=> esc_html__( 'Phone', BOOKACTI_PLUGIN_NAME )
+			), $bookings, $bookings_meta, $booking_groups_meta, $email_address, $page );
+
+			// Set the name / value data to export for each booking
+			$format = bookacti_get_message( 'date_format_long' );
+			$states = bookacti_get_booking_state_labels();
+			foreach( $bookings as $booking ) {
+				$booking_personal_data = array();
+				$booking_meta		= ! empty( $bookings_meta[ $booking->id ] ) ? $bookings_meta[ $booking->id ] : array();
+				$booking_group_meta = ! empty( $booking->group_id ) && ! empty( $booking_groups_meta[ $booking->group_id ] ) ? $booking_groups_meta[ $booking->group_id ] : array();
+				
+				foreach( $booking_meta_to_export as $key => $name ) {
+					$value = '';
+					if( ! empty( $booking->$key ) ) { 
+						switch ( $key ) {
+							case 'user_id':
+								$value = is_numeric( $booking->$key ) ? '' : $booking->$key;
+								break;
+							case 'event_title':
+								$value = apply_filters( 'bookacti_translate_text', $booking->$key );
+								break;
+							case 'creation_date':
+							case 'event_start':
+							case 'event_end':
+								$value = bookacti_format_datetime( $booking->$key, $format );
+								break;
+							case 'state':
+								$value = ! empty( $states[ $booking->$key ][ 'label' ] ) ? $states[ $booking->$key ][ 'label' ] : $booking->$key;
+								break;
+							default:
+								$value = $booking->$key;
+						}
+					}
+					else if( isset( $booking_meta[ $key ] ) ) {
+						$value = $booking_meta[ $key ];
+					}
+					else if( isset( $booking_group_meta[ $key ] ) ) {
+						$value = $booking_group_meta[ $key ];
+					}
+
+					$value = apply_filters( 'bookacti_privacy_export_booking_value', $value, $key, $booking, $booking_meta, $booking_group_meta, $email_address, $page );
+
+					if( $value === '' || ( ! is_string( $value ) && ! is_numeric( $value ) ) ) { continue; }
+
+					$booking_personal_data[] = array(
+						'name'  => $name,
+						'value' => $value
+					);
+				}
+
+				if ( ! empty( $booking_personal_data ) ) {
+					$data_to_export[] = array(
+						'group_id'    => 'bookacti_bookings',
+						'group_label' => esc_html__( 'Bookings', BOOKACTI_PLUGIN_NAME ),
+						'item_id'     => 'bookacti_booking_' . $booking->id,
+						'data'        => apply_filters( 'bookacti_privacy_export_booking_data', $booking_personal_data, $booking, $booking_meta, $booking_group_meta, $email_address, $page )
+					);
+				}
+			}
+		}
+	}
+	
+	return array(
+		'data' => apply_filters( 'bookacti_privacy_export_bookings_data', $data_to_export, $bookings, $group_by_booking, $bookings_meta, $booking_groups_meta, $email_address, $page ),
+		'done' => ($page*$number) >= $bookings_count
+	);
+}
+
+
+/**
+ * Erase additionnal user metadata with WP privacy export tool
+ * @since 1.7.0
+ * @param string $email_address
+ * @param int $page
+ * @return array
+ */
+function bookacti_privacy_eraser_user_data( $email_address, $page = 1 ) {
+	$user		= get_user_by( 'email', $email_address );
+	$response	= array(
+		'items_removed' => false,
+		'items_retained' => false,
+		'messages' => array(),
+		'done' => true
+	);
+	
+	if( $user instanceof WP_User ) {
+		$user_meta = get_user_meta( $user->ID );
+		
+		$user_meta_to_erase = apply_filters( 'bookacti_privacy_erase_user_columns', array(
+			'phone' => esc_html__( 'Phone', BOOKACTI_PLUGIN_NAME )
+		), $user_meta, $email_address, $page );
+		
+		foreach( $user_meta_to_erase as $key => $label ) {
+			if( empty( $user_meta[ $key ] ) ) { continue; }
+			$deleted = delete_user_meta( $user->ID, $key );
+			if( ! $deleted ) {
+				$field_label = $label ? $label : $key;
+				$response[ 'items_retained' ] = true;
+				$response[ 'messages' ][] = sprintf( esc_html__( 'This data couldn\'t be deleted: %s.', BOOKACTI_PLUGIN_NAME ), $field_label );
+			} else { 
+				$response[ 'items_removed' ] = true;
+			}
+		}
+		
+		if( $response[ 'items_removed' ] ) {
+			$response[ 'messages' ][] = esc_html__( 'Personal data attached to the account by Booking Activities have been successfully deleted.', BOOKACTI_PLUGIN_NAME );
+		}
+	}
+	
+	return apply_filters( 'bookacti_privacy_erase_user_data', $response, $email_address, $page );
+}
+
+
+/**
+ * Erase bookings user metadata with WP privacy erase tool
+ * @since 1.7.0
+ * @param string $email_address
+ * @param int $page
+ * @return array
+ */
+function bookacti_privacy_eraser_bookings_data( $email_address, $page = 1 ) {
+	$user	= get_user_by( 'email', $email_address );
+	$number	= 200; // Limit to avoid timing out
+	$page	= (int) $page;
+	$bookings = array();
+	$response = array(
+		'items_removed' => false,
+		'items_retained' => false,
+		'messages' => array(),
+		'done' => true
+	);
+	
+	// Get bookings either by email or id if the user is registered
+	$anonymized_user_id = 'anon_' . md5( microtime().rand() );
+	$user_ids = array( $email_address );
+	if( $user instanceof WP_User ) {
+		$user_ids[] = $user->ID;
+		$anonymized_user_id = $user->ID;
+	}
+	
+	// Count the total number of bookings to know when the exporter is done
+	$filters_count = bookacti_format_booking_filters( array(
+		'in__user_id'	=> $user_ids
+	) );
+	$bookings_count = bookacti_get_number_of_booking_rows( $filters_count );
+	$response[ 'done' ] = ($page*$number) >= $bookings_count;
+	
+	if( $bookings_count ) {
+		// Get the bookings
+		$filters = bookacti_format_booking_filters( array(
+			'in__user_id'	=> $user_ids,
+			'offset'		=> ($page-1)*$number,
+			'per_page'		=> $number
+		) );
+		$bookings = bookacti_get_bookings( $filters );
+
+		if( $bookings ) {
+			// Store booking ids and booking groups ids separatly to delete metadata
+			$bookings_ids = array();
+			$booking_groups_ids = array();
+			$group_by_booking = array();
+			foreach( $bookings as $booking ) {
+				if( ! empty( $booking->group_id ) ) {
+					$group_by_booking[ $booking->id ] = $booking->group_id;
+					if( ! in_array( $booking->group_id, $booking_groups_ids, true ) ) {
+						$booking_groups_ids[] = $booking->group_id;
+					}
+				}
+				$bookings_ids[] = $booking->id;
+			}
+			
+			// Let add-ons add metadata to remove
+			$booking_meta_to_erase = apply_filters( 'bookacti_privacy_erase_bookings_columns', array(
+				'user_email'		=> esc_html__( 'Email', BOOKACTI_PLUGIN_NAME ),
+				'user_first_name'	=> esc_html__( 'First name', BOOKACTI_PLUGIN_NAME ),
+				'user_last_name'	=> esc_html__( 'Last name', BOOKACTI_PLUGIN_NAME ),
+				'user_phone'		=> esc_html__( 'Phone', BOOKACTI_PLUGIN_NAME )
+			), $bookings, $email_address, $page );
+			
+			$response = apply_filters( 'bookacti_privacy_erase_bookings_data_before', $response, $bookings, $booking_meta_to_erase, $email_address, $page );
+			
+			// Delete the bookings metadata
+			$deleted_booking_meta = bookacti_delete_metadata( 'booking', $bookings_ids, array_keys( $booking_meta_to_erase ) );
+			if( $deleted_booking_meta ) { $response[ 'items_removed' ] = true; }
+			else if( $deleted_booking_meta === false ) { 
+				$response[ 'items_retained' ] = true;
+				$response[ 'messages' ][] = esc_html__( 'Some booking personal metadata may have not be deleted.', BOOKACTI_PLUGIN_NAME );
+			}
+			
+			// Delete the booking groups metadata
+			if( $booking_groups_ids ) {
+				$deleted_booking_group_meta = bookacti_delete_metadata( 'booking_group', $booking_groups_ids, array_keys( $booking_meta_to_erase ) );
+				if( $deleted_booking_group_meta ) { $response[ 'items_removed' ] = true; }
+				else if( $deleted_booking_group_meta === false ) { 
+					$response[ 'items_retained' ] = true;
+					$response[ 'messages' ][] = esc_html__( 'Some booking group personal metadata may have not be deleted.', BOOKACTI_PLUGIN_NAME );
+				}
+			}
+			
+			// Feedback the user
+			if( $response[ 'items_removed' ] ) {
+				$response[ 'messages' ][] = esc_html__( 'Personal data attached to the bookings have been successfully deleted.', BOOKACTI_PLUGIN_NAME );
+			}
+		}
+	}
+	
+	$response = apply_filters( 'bookacti_privacy_erase_bookings_data', $response, $bookings, $email_address, $page );
+	
+	// Anonymize the bookings made without account when everything else is finished
+	if( $response[ 'done' ] ) {
+		$anonymized = false;
+		$anonymize_allowed = apply_filters( 'bookacti_privacy_anonymize_bookings_without_account', true, $email_address, $page );
+		if( $anonymize_allowed ) {
+			$anonymized_user_id = apply_filters( 'bookacti_privacy_anonymized_user_id', $anonymized_user_id, $email_address, $page );
+			$anonymized = bookacti_update_bookings_user_id( $anonymized_user_id, $email_address, false );
+			if( $anonymized ) {
+				$response[ 'messages' ][] = esc_html__( 'The bookings made without account have been successfully anonymized.', BOOKACTI_PLUGIN_NAME );
+			}
+		}
+		if( $anonymized === false ) {
+			$response[ 'items_retained' ] = true;
+			$response[ 'messages' ][] = esc_html__( 'The bookings made without account may have not been anonymized.', BOOKACTI_PLUGIN_NAME );
+		}
+	}
+	
+	return $response;
+}

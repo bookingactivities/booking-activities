@@ -6,8 +6,8 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 /***** BOOKING SYSTEM *****/
 /**
  * Get a booking system based on given parameters
- * @version 1.5.9
- * @param array $atts [id, classes, calendars, activities, groups, method]
+ * @version 1.7.0
+ * @param array $atts (see bookacti_format_booking_system_attributes())
  * @param boolean $echo Wether to return or directly echo the booking system
  * @return string
  */
@@ -28,7 +28,7 @@ function bookacti_get_booking_system( $atts, $echo = false ) {
 			
 			bookacti.booking_system[ '<?php echo $atts[ 'id' ]; ?>' ] = <?php echo json_encode( $atts ); ?>;
 		
-			<?php 
+			<?php
 			// Events related data
 			if( $atts[ 'auto_load' ] ) { 
 				
@@ -76,14 +76,44 @@ function bookacti_get_booking_system( $atts, $echo = false ) {
 				bookacti.booking_system[ '<?php echo $atts[ 'id' ]; ?>' ][ 'groups_data' ]				= <?php echo json_encode( $groups_data ); ?>;	
 				bookacti.booking_system[ '<?php echo $atts[ 'id' ]; ?>' ][ 'group_categories_data' ]	= <?php echo json_encode( $categories_data ); ?>;	
 				bookacti.booking_system[ '<?php echo $atts[ 'id' ]; ?>' ][ 'template_data' ]			= <?php echo json_encode( $atts[ 'template_data' ] ); ?>;	
-			<?php } ?>
+			<?php 
+			}
+			
+			// Events picked by default
+			$picked_events = array();
+			if( $atts[ 'picked_events' ][ 'group_id' ] === 'single' && $atts[ 'picked_events' ][ 'event_id' ] ) {
+				$event_id = $atts[ 'picked_events' ][ 'event_id' ];
+				$event = ! empty( $events[ 'data' ][ $event_id ] ) ? $events[ 'data' ][ $event_id ] : (array) bookacti_get_event_by_id( $event_id );
+				$picked_events[] = array(
+					'id'	=> $event_id,
+					'start'	=> $atts[ 'picked_events' ][ 'event_start' ],
+					'end'	=> $atts[ 'picked_events' ][ 'event_end' ],
+					'title'	=> apply_filters( 'bookacti_translate_text', $event[ 'title' ] )
+				);
+			} else if( is_numeric( $atts[ 'picked_events' ][ 'group_id' ] ) ) {
+				if( isset( $groups_events[ $atts[ 'picked_events' ][ 'group_id' ] ] ) ) {
+					$picked_events = $groups_events[ $atts[ 'picked_events' ][ 'group_id' ] ];
+				} else {
+					$group_events = bookacti_get_group_events( $atts[ 'picked_events' ][ 'group_id' ] );
+					foreach( $group_events as $grouped_event ) {
+						$picked_events[] = array(
+							'id'	=> $grouped_event[ 'id' ],
+							'start'	=> $grouped_event[ 'start' ],
+							'end'	=> $grouped_event[ 'end' ],
+							'title'	=> $grouped_event[ 'title' ]
+						);
+					}
+				}
+			}
+			?>	
+			bookacti.booking_system[ '<?php echo $atts[ 'id' ]; ?>' ][ 'picked_events' ] = <?php echo json_encode( $picked_events ); ?>;
 		</script>
 				
 		<div class='bookacti-booking-system-inputs'>
-			<input type='hidden' name='bookacti_group_id' value='' />
-			<input type='hidden' name='bookacti_event_id' value='' />
-			<input type='hidden' name='bookacti_event_start' value='' />
-			<input type='hidden' name='bookacti_event_end' value='' />
+			<input type='hidden' name='bookacti_group_id' value='<?php echo $atts[ 'picked_events' ][ 'group_id' ]; ?>' />
+			<input type='hidden' name='bookacti_event_id' value='<?php echo $picked_events ? $picked_events[ 0 ][ 'id' ] : ''; ?>' />
+			<input type='hidden' name='bookacti_event_start' value='<?php echo $picked_events ? $picked_events[ 0 ][ 'start' ] : ''; ?>' />
+			<input type='hidden' name='bookacti_event_end' value='<?php echo $picked_events ? $picked_events[ 0 ][ 'end' ] : ''; ?>' />
 			<?php do_action( 'bookacti_booking_system_inputs', $atts ); ?>
 		</div>
 		
@@ -227,6 +257,7 @@ function bookacti_retrieve_calendar_elements( $booking_system_atts ) {
 /**
  * Get default booking system attributes
  * @since 1.5.0
+ * @version 1.7.0
  * @return array
  */
 function bookacti_get_booking_system_default_attributes() {
@@ -246,16 +277,20 @@ function bookacti_get_booking_system_default_attributes() {
 		'auto_load'				=> bookacti_get_setting_value( 'bookacti_general_settings', 'when_events_load' ) === 'on_page_load' ? 1 : 0,
 		'past_events'			=> 0,
 		'past_events_bookable'	=> 0,
-		'check_roles'			=> 1
+		'check_roles'			=> 1,
+		'picked_events'			=> array( 'group_id' => '', 'event_id' => '', 'event_start' => '', 'event_end' => '' ),
+		'form_id'						=> 0,
+		'form_action'					=> 'default',
+		'when_perform_form_action'		=> 'on_submit',
+		'redirect_url_by_activity'		=> array(),
+		'redirect_url_by_group_category'=> array()
     ) );
 }
 
 
 /**
  * Check booking system attributes and format them to be correct
- * 
- * @version 1.5.0
- * 
+ * @version 1.7.0
  * @param array $atts 
  * @return type
  */
@@ -388,7 +423,6 @@ function bookacti_format_booking_system_attributes( $atts = array() ) {
 	// Sanitize booking status
 	if( is_string( $atts[ 'status' ] ) ) {
 		$atts[ 'status' ] = array_map( 'sanitize_title_with_dashes', explode( ',', preg_replace( array(
-			'/[^\d,]/',    // Matches anything that's not a comma or number.
 			'/(?<=,),+/',  // Matches consecutive commas.
 			'/^,+/',       // Matches leading commas.
 			'/,+$/'        // Matches trailing commas.
@@ -415,6 +449,40 @@ function bookacti_format_booking_system_attributes( $atts = array() ) {
 	
 	// Format classes
 	$atts[ 'class' ] = ! empty( $atts[ 'class' ] )	? esc_attr( $atts[ 'class' ] ) : '';
+	
+	// Format picked events
+	$atts[ 'picked_events' ]					= shortcode_atts( $defaults[ 'picked_events' ], $atts[ 'picked_events' ] );
+	$atts[ 'picked_events' ][ 'event_id' ]		= $atts[ 'picked_events' ][ 'event_id' ] && is_numeric( $atts[ 'picked_events' ][ 'event_id' ] ) ? intval( $atts[ 'picked_events' ][ 'event_id' ] ) : '';
+	$atts[ 'picked_events' ][ 'event_start' ]	= bookacti_sanitize_datetime( $atts[ 'picked_events' ][ 'event_start' ] ) ? str_replace( 'T', ' ', $atts[ 'picked_events' ][ 'event_start' ] ) : $defaults[ 'picked_events' ][ 'event_start' ];
+	$atts[ 'picked_events' ][ 'event_end' ]		= bookacti_sanitize_datetime( $atts[ 'picked_events' ][ 'event_end' ] ) ? str_replace( 'T', ' ', $atts[ 'picked_events' ][ 'event_end' ] ) : $defaults[ 'picked_events' ][ 'event_end' ];
+	$atts[ 'picked_events' ][ 'group_id' ]		= $atts[ 'picked_events' ][ 'group_id' ] && is_numeric( $atts[ 'picked_events' ][ 'group_id' ] ) ? intval( $atts[ 'picked_events' ][ 'group_id' ] ) : ( is_numeric( $atts[ 'picked_events' ][ 'event_id' ] ) ? 'single' : '' );
+	
+	// Sanitize form id
+	$atts[ 'form_id' ] = is_numeric( $atts[ 'form_id' ] ) ? intval( $atts[ 'form_id' ] ) : 0;	
+	
+	// Format actions
+	$possible_form_actions	= array_keys( apply_filters( 'bookacti_form_action_options', array( 'default' => '', 'redirect_to_url' => '' ) ) );
+	$possible_form_triggers = array_keys( apply_filters( 'bookacti_when_perform_form_action_options', array( 'on_submit' => '', 'on_event_click' => '' ) ) );
+	$atts[ 'form_action' ]				= in_array( $atts[ 'form_action' ], $possible_form_actions, true ) ? $atts[ 'form_action' ] : $defaults[ 'form_action' ];
+	$atts[ 'when_perform_form_action' ]	= in_array( $atts[ 'when_perform_form_action' ], $possible_form_triggers, true ) ? $atts[ 'when_perform_form_action' ] : $defaults[ 'when_perform_form_action' ];
+	
+	$redirect_url_by_group_activity = $defaults[ 'redirect_url_by_activity' ];
+	if( isset( $atts[ 'redirect_url_by_activity' ] ) && is_array( $atts[ 'redirect_url_by_activity' ] ) ) {
+		foreach( $atts[ 'redirect_url_by_activity' ] as $activity_id => $redirect_url ) {
+			if( ! is_numeric( $activity_id ) || empty( $redirect_url ) ) { continue; }
+			$redirect_url_by_group_activity[ intval( $activity_id ) ] = esc_url_raw( $redirect_url );
+		}
+	}
+	$atts[ 'redirect_url_by_activity' ] = $redirect_url_by_group_activity;
+
+	$redirect_url_by_group_category = $defaults[ 'redirect_url_by_group_category' ];
+	if( isset( $atts[ 'redirect_url_by_group_category' ] ) && is_array( $atts[ 'redirect_url_by_group_category' ] ) ) {
+		foreach( $atts[ 'redirect_url_by_group_category' ] as $group_category_id => $redirect_url ) {
+			if( ! is_numeric( $group_category_id ) || empty( $redirect_url ) ) { continue; }
+			$redirect_url_by_group_category[ intval( $group_category_id ) ] = esc_url_raw( $redirect_url );
+		}
+	}
+	$atts[ 'redirect_url_by_group_category' ] = $redirect_url_by_group_category;
 	
 	return apply_filters( 'bookacti_formatted_booking_system_attributes', $atts );
 }
@@ -736,7 +804,7 @@ function bookacti_get_booking_system_fields_default_data( $fields = array() ) {
 
 
 /**
- * Validate booking form (verify the info of the selected event before booking it)
+ * Check the selected event / group of events data before booking
  * @version 1.6.0
  * @param int $group_id
  * @param int $event_id
@@ -1196,7 +1264,7 @@ function bookacti_is_group_of_events_available_on_form( $form_id, $group_id ) {
 	$belongs_to_form	= true;
 	$group				= bookacti_get_group_of_events( $group_id );
 	$category			= bookacti_get_group_category( $group->category_id, ARRAY_A );
-		
+	
 	// If the form calendar doesn't have the group of events' template
 	if( $calendar_data[ 'calendars' ] && ! in_array( $category[ 'template_id' ], $calendar_data[ 'calendars' ] ) ) {
 		$belongs_to_form = false;
@@ -1293,13 +1361,24 @@ function bookacti_seconds_to_explode_time( $seconds ) {
  * Get array of events from raw events from database
  * 
  * @since 1.2.2
+ * @version 1.7.0
  * @param array $events Array of objects events from database
  * @param boolean $past_events
  * @param array $interval array('start'=> start date, 'end'=> end date)
+ * @param boolean $skip_exceptions Whether to retrieve occurence on exceptions
  * @return array
  */
-function bookacti_get_events_array_from_db_events( $events, $past_events, $interval ) {
+function bookacti_get_events_array_from_db_events( $events, $past_events, $interval, $skip_exceptions = true ) {
 	$events_array = array( 'data' => array(), 'events' => array() );
+	
+	// Get event exceptions
+	$exceptions_dates = array();
+	if( $skip_exceptions ) {
+		$event_ids = array();
+		foreach ( $events as $event ) { $event_ids[] = $event->event_id; }
+		$exceptions_dates = bookacti_get_exceptions_dates( array(), $event_ids );
+	}
+	
 	foreach ( $events as $event ) {
 
 		$event_fc_data = array(
@@ -1329,7 +1408,8 @@ function bookacti_get_events_array_from_db_events( $events, $past_events, $inter
 		if( $event->repeat_freq === 'none' ) {
 			$events_array[ 'events' ][] = $event_fc_data;
 		} else {
-			$events_array[ 'events' ] = array_merge( $events_array[ 'events' ], bookacti_get_occurences_of_repeated_event( $event, $past_events, $interval ) );
+			$event_exceptions = $skip_exceptions && ! empty( $exceptions_dates[ $event->event_id ] ) ? $exceptions_dates[ $event->event_id ] : array();
+			$events_array[ 'events' ] = array_merge( $events_array[ 'events' ], bookacti_get_occurences_of_repeated_event( $event, $past_events, $interval, $event_exceptions ) );
 		}
 	}
 
@@ -1487,9 +1567,10 @@ function bookacti_sanitize_events_interval( $interval ) {
  * @param object $event Event data 
  * @param boolean $past_events Whether to compute past events
  * @param array $interval array('start' => string: start date, 'end' => string: end date)
+ * @param array $exceptions_dates Array of dates
  * @return array
  */
-function bookacti_get_occurences_of_repeated_event( $event, $past_events = false, $interval = array() ) {
+function bookacti_get_occurences_of_repeated_event( $event, $past_events = false, $interval = array(), $exceptions_dates = array() ) {
 
 	// Get site settings
 	$timezone			= new DateTimeZone( bookacti_get_setting_value( 'bookacti_general_settings', 'timezone' ) );
@@ -1600,8 +1681,11 @@ function bookacti_get_occurences_of_repeated_event( $event, $past_events = false
 		$occurence_start = new DateTime( $loop->format( 'Y-m-d' ) . ' ' . $event_start_time, $timezone );
 		$occurence_end = clone $occurence_start;
 		$occurence_end->add( $event_duration );
-
-		// Check if the event is in the interval to be rendered
+		
+		// Check if the occurrence is on an exception
+		if( in_array( $occurence_start->format( 'Y-m-d' ), $exceptions_dates, true ) ) { $loop->add( $repeat_interval ); continue; }
+		
+		// Check if the occurrence is in the interval to be rendered
 		if( $interval ) {
 			if( $interval[ 'start' ] && $interval_start > $occurence_start ){ $loop->add( $repeat_interval ); continue; }
 			if( $interval[ 'end' ] && $interval_end < $occurence_start )	{ $loop->add( $repeat_interval ); continue; }
@@ -1612,7 +1696,7 @@ function bookacti_get_occurences_of_repeated_event( $event, $past_events = false
 			'start'	=> $occurence_start->format( 'Y-m-d H:i:s' ),
 			'end'	=> $occurence_end->format( 'Y-m-d H:i:s' )
 		);
-
+		
 		// Add this occurrence to events array
 		$events[] = array_merge( $event_occurence, $shared_properties );
 
@@ -1636,11 +1720,36 @@ function bookacti_get_occurences_of_repeated_event( $event, $past_events = false
 }
 
 
+/**
+ * Get exceptions dates by event
+ * @since 1.7.0
+ * @param array $template_ids
+ * @param array $event_ids
+ * @return array
+ */
+function bookacti_get_exceptions_dates( $template_ids = array(), $event_ids = array() ) {
+	$exceptions_per_event = bookacti_get_exceptions( $template_ids, $event_ids );
+	
+	if( ! $exceptions_per_event ) { return array(); }
+	
+	$exceptions_dates = array();
+	foreach( $exceptions_per_event as $event_id => $exceptions ) {
+		$exceptions_dates[ $event_id ] = array();
+		foreach( $exceptions as $exception ) {
+			if( $exception[ 'exception_type' ] === 'date' ) {
+				$exceptions_dates[ $event_id ][] = $exception[ 'exception_value' ];
+			}
+		}
+	}
+	
+	return $exceptions_dates;
+}
+
 
 /**
  * Build a user-friendly events list
  * @since 1.1.0
- * @version 1.6.0
+ * @version 1.7.0
  * @param array $booking_events
  * @param int|string $quantity
  * @param string $locale Optional. Default to site locale.
@@ -1703,7 +1812,7 @@ function bookacti_get_formatted_booking_events_list( $booking_events, $quantity 
 								. '<span class="bookacti-booking-event-end ' . $class . '" >' . $event_end . '</span>';
 		}
 		
-		$event = apply_filters( 'bookacti_formatted_booking_events_list_event_data', $event );
+		$event = apply_filters( 'bookacti_formatted_booking_events_list_event_data', $event, $locale );
 		
 		// Add an element to event list if there is at least a title or a duration
 		if( $event[ 'title' ] || $event[ 'duration' ] ) {
@@ -1725,13 +1834,13 @@ function bookacti_get_formatted_booking_events_list( $booking_events, $quantity 
 			}
 			
 			$list_element .= '</li>';
-			$events_list .= apply_filters( 'bookacti_formatted_booking_events_list_element', $list_element, $event );
+			$events_list .= apply_filters( 'bookacti_formatted_booking_events_list_element', $list_element, $event, $locale );
 		}
 	}
 	
 	// Wrap the list only if it is not empty
 	if( ! empty( $events_list ) ) {
-		$events_list = '<ul class="bookacti-booking-events-list bookacti-custom-scrollbar" >' . $events_list . '</ul>';
+		$events_list = '<ul class="bookacti-booking-events-list bookacti-custom-scrollbar" style="clear:both;" >' . $events_list . '</ul>';
 	}
 	
 	return apply_filters( 'bookacti_formatted_booking_events_list', $events_list, $booking_events, $quantity, $locale );
@@ -1739,8 +1848,101 @@ function bookacti_get_formatted_booking_events_list( $booking_events, $quantity 
 
 
 /**
+ * Build a user-friendly comma separated events list
+ * @since 1.7.0
+ * @param array $booking_events
+ * @param int|string $quantity
+ * @param string $locale Optional. Default to site locale.
+ * @return string
+ */
+function bookacti_get_formatted_booking_events_list_raw( $booking_events, $quantity = 'hide', $locale = 'site' ) {
+	if( ! $booking_events ) { return false; }
+	
+	// Set default locale to site's locale
+	if( $locale === 'site' ) { $locale = bookacti_get_site_locale(); }
+	
+	// Format $events
+	$formatted_events = array();
+	foreach( $booking_events as $booking_event ) {
+		$booking_quantity = '';
+		if( isset( $booking_event->quantity ) ) {
+			$booking_quantity = $booking_event->quantity;
+		} else if( $quantity && is_numeric( $quantity ) ) {
+			$booking_quantity = intval( $quantity );
+		}
+		
+		$formatted_events[] = array( 
+			'raw_event' => $booking_event,
+			'title'		=> isset( $booking_event->title )	? $booking_event->title : ( isset( $booking_event->event_title ) ? $booking_event->event_title : '' ),
+			'start'		=> isset( $booking_event->start )	? bookacti_sanitize_datetime( $booking_event->start )	: ( isset( $booking_event->event_start ) ? bookacti_sanitize_datetime( $booking_event->event_start ) : '' ),
+			'end'		=> isset( $booking_event->end )		? bookacti_sanitize_datetime( $booking_event->end )		: ( isset( $booking_event->event_end ) ? bookacti_sanitize_datetime( $booking_event->event_end ) : '' ),
+			'quantity'	=> $booking_quantity
+		);
+	}
+	
+	$messages			= bookacti_get_messages( true );
+	$datetime_format	= isset( $messages[ 'date_format_short' ][ 'value' ] )	? apply_filters( 'bookacti_translate_text', $messages[ 'date_format_short' ][ 'value' ], $locale ) : '';
+	$time_format		= isset( $messages[ 'time_format' ][ 'value' ] )		? apply_filters( 'bookacti_translate_text', $messages[ 'time_format' ][ 'value' ], $locale ) : '';
+	$date_time_separator= isset( $messages[ 'date_time_separator' ][ 'value' ] )? apply_filters( 'bookacti_translate_text', $messages[ 'date_time_separator' ][ 'value' ], $locale ) : '';
+	$dates_separator	= isset( $messages[ 'dates_separator' ][ 'value' ] )	? apply_filters( 'bookacti_translate_text', $messages[ 'dates_separator' ][ 'value' ], $locale ) : '';
+	$quantity_separator = isset( $messages[ 'quantity_separator' ][ 'value' ] )	? apply_filters( 'bookacti_translate_text', $messages[ 'quantity_separator' ][ 'value' ], $locale ) : '';
+	
+	$events_list = '';
+	$i = 0;
+	foreach( $formatted_events as $event ) {
+		// Format the event duration
+		$event[ 'duration' ] = '';
+		if( $event[ 'start' ] && $event[ 'end' ] ) {
+			
+			$event_start = bookacti_format_datetime( $event[ 'start' ], $datetime_format );
+			
+			// Format differently if the event start and end on the same day
+			$start_and_end_same_day	= substr( $event[ 'start' ], 0, 10 ) === substr( $event[ 'end' ], 0, 10 );
+			if( $start_and_end_same_day ) {
+				$event_end = bookacti_format_datetime( $event[ 'end' ], $time_format );
+			} else {
+				$event_end = bookacti_format_datetime( $event[ 'end' ], $datetime_format );
+			}
+			
+			$separator	= $start_and_end_same_day ? $date_time_separator : $dates_separator;
+			
+			// Place an arrow between start and end
+			$event[ 'duration' ] = $event_start . $separator . $event_end;
+		}
+		
+		$event = apply_filters( 'bookacti_formatted_booking_events_list_raw_event_data', $event, $locale );
+		
+		// Add an element to event list if there is at least a title or a duration
+		if( $event[ 'title' ] || $event[ 'duration' ] ) {
+			$list_element = '';
+			if( $i !== 0 ) { $list_element .= ', '; }
+			if( $event[ 'title' ] ) {
+				$list_element .= apply_filters( 'bookacti_translate_text', $event[ 'title' ], $locale );
+				if( $event[ 'duration' ] ) {
+					$list_element .= ' ';
+				}
+			}
+			if( $event[ 'duration' ] ) {
+				$list_element .= $event[ 'duration' ];
+			}
+			
+			if( $event[ 'quantity' ] && $quantity !== 'hide' ) {
+				$list_element .= $quantity_separator . $event[ 'quantity' ];
+			}
+			
+			$events_list .= apply_filters( 'bookacti_formatted_booking_events_list_raw_element', $list_element, $event, $locale );
+		}
+		++$i;
+	}
+	
+	return apply_filters( 'bookacti_formatted_booking_events_list_raw', $events_list, $booking_events, $quantity, $locale );
+}
+
+
+/**
  * Convert an array of events into ical format
  * @since 1.6.0
+ * @version 1.7.0
  * @param array $events
  * @param string $name
  * @param string $description
@@ -1799,12 +2001,12 @@ function bookacti_convert_events_to_ical( $events, $name = '', $description = ''
 			$event_start	= new DateTime( $event[ 'start' ], $timezone_obj );
 			$event_end		= new DateTime( $event[ 'end' ], $timezone_obj );
 			$current_time	= new DateTime( 'now', $timezone_obj );
-			$now_formatted	= $current_time->format( 'Ymd\THis\Z' );
+			$now_formatted	= $current_time->format( 'Ymd\THis' );
 
 			$vevent_properties = apply_filters( 'bookacti_ical_vevent_properties', array(
 				'UID'			=> $uid,
-				'DTSTART'		=> $event_start->format( 'Ymd\THis\Z' ),
-				'DTEND'			=> $event_end->format( 'Ymd\THis\Z' ),
+				'DTSTART'		=> $event_start->format( 'Ymd\THis' ),
+				'DTEND'			=> $event_end->format( 'Ymd\THis' ),
 				'DTSTAMP'		=> $now_formatted,
 				'CREATED'		=> '',
 				'LAST-MODIFIED' => '',

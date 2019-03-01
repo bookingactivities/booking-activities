@@ -682,7 +682,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	
 	/**
 	 * Add price to be refunded in refund dialog
-	 * @version 1.5.4
+	 * @version 1.7.0
 	 * @param string $text
 	 * @param int $booking_id
 	 * @param string $booking_type
@@ -699,9 +699,12 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			// WOOCOMMERCE 3.0.0 backward compatibility 
 			$total	= is_array( $item ) ? $item[ 'line_total' ] : $item->get_total();
 			$tax	= is_array( $item ) ? $item[ 'line_tax' ] : $item->get_total_tax();
+			$price	= (float) $total + (float) $tax;
 			
-			$refund_amount = wc_price( (float) $total + (float) $tax );
-			$text .= '<div id="bookacti-refund-amount">' . esc_html__( 'Refund amount:', BOOKACTI_PLUGIN_NAME ) . ' <strong>' . $refund_amount . '</strong></div>';
+			if( $price ) {
+				$refund_amount = wc_price( $price );
+				$text .= '<div id="bookacti-refund-amount">' . esc_html__( 'Refund amount:', BOOKACTI_PLUGIN_NAME ) . ' <strong>' . $refund_amount . '</strong></div>';
+			}
 		}
 		return $text;
 	}
@@ -897,7 +900,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	
 	/**
 	 * Check if a booking group can be refunded
-	 * @version 1.6.0
+	 * @version 1.7.0
 	 * @param boolean $true
 	 * @param object $booking_group
 	 * @return boolean
@@ -913,7 +916,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		$is_paid = version_compare( WC_VERSION, '3.0.0', '>=' ) ? $order->get_date_paid( 'edit' ) : $order->paid_date;
 		if( ! $is_paid ) { $true = false; }	
 		
-		$item = bookacti_get_order_item_by_booking_group_id( $booking_group->id );
+		$item = bookacti_get_order_item_by_booking_group_id( $booking_group );
 		if( ! $item ) { return false; }
 		
 		// WOOCOMMERCE 3.0.0 backward compatibility 
@@ -1069,15 +1072,16 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	
 	/**
 	 * Update dates after reschedule
-	 * @version 1.5.4
-	 * @param int $booking_id
+	 * @version 1.7.0
+	 * @param object $booking
 	 * @param object $old_booking
 	 * @param array $args
 	 * @return void
 	 */
-	function bookacti_woocommerce_update_booking_dates( $booking_id, $old_booking, $args ) {
+	function bookacti_woocommerce_update_booking_dates( $booking, $old_booking, $args ) {
+		if( ! $booking ) { return; }
 		
-		$item = bookacti_get_order_item_by_booking_id( $booking_id );
+		$item = bookacti_get_order_item_by_booking_id( $booking );
 			
 		if( ! $item ) { return; }
 		
@@ -1091,18 +1095,13 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			$booked_events = (array) json_decode( $booked_events );
 			
 			foreach( $booked_events as $i => $booked_event ) {
-				if( intval( $booked_event->id ) === intval( $booking_id ) ) {
+				if( intval( $booked_event->id ) === intval( $booking->id ) ) {
 					$key = $i;
 					break;
 				}
 			}
 			
 			if( ! isset( $key ) ) { return;	}
-			
-			// Update only start and end of the desired booking
-			$booking = bookacti_get_booking_by_id( $booking_id );
-			
-			if( ! $booking ) { return; }
 			
 			$booked_events[ $key ]->event_start	= $booking->event_start;
 			$booked_events[ $key ]->event_end	= $booking->event_end;
@@ -1116,7 +1115,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			wc_delete_order_item_meta( $order_item_id, 'bookacti_event_end' );
 			
 			// Insert new booking data
-			$event = bookacti_get_booking_event_data( $booking_id );
+			$event = bookacti_get_booking_event_data( $booking->id );
 			wc_add_order_item_meta( $order_item_id, 'bookacti_booked_events', json_encode( array( $event ) ) );
 		}
 	}

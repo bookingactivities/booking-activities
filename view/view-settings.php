@@ -1,4 +1,9 @@
 <?php
+/**
+ * Booking Activities settings page
+ * @version 1.7.0
+ */
+
 // Exit if accessed directly
 if ( ! defined( 'ABSPATH' ) ) { exit; }
 
@@ -13,16 +18,17 @@ echo "<div class='wrap'>";
 		$active_tab = sanitize_title_with_dashes( $_GET[ 'tab' ] ); 
 	}
 
-	//Define the tabs here: 'tab slug' => 'tab title'
+	// Define the tabs here: 'tab slug' => 'tab title'
 	$tabs = apply_filters( 'bookacti_settings_tabs', array ( 
 		/* translators: Used for a category of parameters */
-		'general'		=> __( 'General', BOOKACTI_PLUGIN_NAME ),
-		'cancellation'	=> __( 'Cancellation', BOOKACTI_PLUGIN_NAME ),
-		'notifications'	=> __( 'Notifications', BOOKACTI_PLUGIN_NAME ),
-		'messages'		=> __( 'Messages', BOOKACTI_PLUGIN_NAME )
+		'general'		=> esc_html__( 'General', BOOKACTI_PLUGIN_NAME ),
+		'cancellation'	=> esc_html__( 'Cancellation', BOOKACTI_PLUGIN_NAME ),
+		'notifications'	=> esc_html__( 'Notifications', BOOKACTI_PLUGIN_NAME ),
+		'messages'		=> esc_html__( 'Messages', BOOKACTI_PLUGIN_NAME ),
+		'system'		=> esc_html__( 'System', BOOKACTI_PLUGIN_NAME )
 	) );
 
-	//Display the tabs
+	// Display the tabs
 	echo '<h2 class="nav-tab-wrapper bookacti-nav-tab-wrapper">';
 	foreach ( $tabs as $tab_id => $tab_title ) {
 
@@ -76,13 +82,22 @@ echo "<div class='wrap'>";
 			do_settings_sections( 'bookacti_messages_settings' ); 
 			
 			do_action( 'bookacti_messages_settings' );
+			
+		} else if( $active_tab === 'system' ) {
+
+			settings_fields( 'bookacti_system_settings' );
+			do_settings_sections( 'bookacti_system_settings' ); 
+			
+			do_action( 'bookacti_system_settings' );
 
 		}
 		
 		do_action( 'bookacti_settings_tab_content', $active_tab );
-
-		submit_button(); 
-
+		
+		if( $active_tab !== 'system' ) {
+			submit_button(); 
+		}
+		
 	echo '</form>';
 			
 echo '</div>'; 

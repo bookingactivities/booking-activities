@@ -2,7 +2,7 @@
 /**
  * Form editor dialogs
  * @since 1.5.0
- * @version 1.6.0
+ * @version 1.7.0
  */
 
 // Exit if accessed directly
@@ -142,21 +142,26 @@ foreach( $fields_data as $field_name => $field_data ) {
 					'callback'		=> 'bookacti_fill_calendar_dialog_filters_tab',
 					'parameters'	=> array( 'form' => $form, 'calendar_data' => $form_fields[ $calendar_field_id ], 'fields_data' => $fields_data ),
 					'order'			=> 10 ),
+			array(	'label'			=> esc_html__( 'Actions', BOOKACTI_PLUGIN_NAME ),
+					'id'			=> 'actions',
+					'callback'		=> 'bookacti_fill_calendar_dialog_actions_tab',
+					'parameters'	=> array( 'form' => $form, 'calendar_data' => $form_fields[ $calendar_field_id ], 'fields_data' => $fields_data ),
+					'order'			=> 20 ),
 			array(	'label'			=> esc_html__( 'Display', BOOKACTI_PLUGIN_NAME ),
 					'id'			=> 'display',
 					'callback'		=> 'bookacti_fill_calendar_dialog_display_tab',
 					'parameters'	=> array( 'form' => $form, 'calendar_data' => $form_fields[ $calendar_field_id ], 'fields_data' => $fields_data ),
-					'order'			=> 20 ),
+					'order'			=> 30 ),
 			array(	'label'			=> esc_html__( 'Availability', BOOKACTI_PLUGIN_NAME ),
 					'id'			=> 'availability',
 					'callback'		=> 'bookacti_fill_calendar_dialog_availability_tab',
 					'parameters'	=> array( 'form' => $form, 'calendar_data' => $form_fields[ $calendar_field_id ], 'fields_data' => $fields_data ),
-					'order'			=> 30 ),
+					'order'			=> 40 ),
 			array(	'label'			=> esc_html__( 'Calendar', BOOKACTI_PLUGIN_NAME ),
 					'id'			=> 'calendar',
 					'callback'		=> 'bookacti_fill_calendar_dialog_calendar_tab',
 					'parameters'	=> array( 'form' => $form, 'calendar_data' => $form_fields[ $calendar_field_id ], 'fields_data' => $fields_data ),
-					'order'			=> 40 )
+					'order'			=> 50 )
 		) );
 		
 		// Display tabs
@@ -198,6 +203,94 @@ foreach( $fields_data as $field_name => $field_data ) {
 		}
 		
 		/**
+		 * Display the content of the "Actions" tab of the "Calendar" dialog
+		 * @since 1.7.0
+		 * @param array $params
+		 */
+		function bookacti_fill_calendar_dialog_actions_tab( $params ) {
+			do_action( 'bookacti_calendar_dialog_actions_tab_before', $params );
+		?>
+		<div>
+			<label for='bookacti-form_action'><?php esc_html_e( 'Form action', BOOKACTI_PLUGIN_NAME ); ?></label>
+			<?php 
+				$args = array(
+					'type'		=> 'select',
+					'name'		=> 'form_action',
+					'id'		=> 'bookacti-form_action',
+					'options'	=> apply_filters( 'bookacti_form_action_options', array( 
+						'default' => esc_html__( 'Default behavior', BOOKACTI_PLUGIN_NAME ),
+						'redirect_to_url' => esc_html__( 'Redirect to a URL', BOOKACTI_PLUGIN_NAME )
+					), $params ),
+					'tip'		=> esc_html__( 'What action should this form perform?', BOOKACTI_PLUGIN_NAME )
+				);
+				bookacti_display_field( $args );
+			?>
+		</div>
+		<div class='bookacti-when-perform-form-action-container'>
+			<label for='bookacti-when_perform_form_action'><?php esc_html_e( 'When to perform the action', BOOKACTI_PLUGIN_NAME ); ?></label>
+			<?php 
+				$args = array(
+					'type'		=> 'select',
+					'name'		=> 'when_perform_form_action',
+					'id'		=> 'bookacti-when_perform_form_action',
+					'options'	=> apply_filters( 'bookacti_when_perform_form_action_options', array( 
+						'on_submit' => esc_html__( 'When the form is submitted', BOOKACTI_PLUGIN_NAME ),
+						'on_event_click' => esc_html__( 'When an event is clicked', BOOKACTI_PLUGIN_NAME )
+					), $params ),
+					'tip'		=> esc_html__( 'When do you want to perform the form action?', BOOKACTI_PLUGIN_NAME )
+				);
+				bookacti_display_field( $args );
+			?>
+		</div>
+		<div class='bookacti-activities-actions-options-table'>
+			<h4><?php esc_html_e( 'Activities', BOOKACTI_PLUGIN_NAME ); ?></h4>
+			<?php
+				$activities_url_rows = array();
+				$redirect_url_by_activity = ! empty( $params[ 'calendar_data' ][ 'redirect_url_by_activity' ] ) && is_array( $params[ 'calendar_data' ][ 'redirect_url_by_activity' ] ) ? $params[ 'calendar_data' ][ 'redirect_url_by_activity' ] : array( 0 => '' );
+				foreach( $redirect_url_by_activity as $activity_id => $redirect_url ) {
+					$activities_url_rows[] = array( 
+						'activity' => intval( $activity_id ),
+						'redirect_url' => '<input type="text" name="redirect_url_by_activity[ ' . intval( $activity_id ) . ' ]" value="' . esc_url( $redirect_url ) . '" />'
+					);
+				}
+				
+				$activities_url_array = apply_filters( 'bookacti_activity_redirect_url_table', array(
+					'head' => array( 
+						'activity' => esc_html__( 'Activity', BOOKACTI_PLUGIN_NAME ),
+						'redirect_url' => esc_html__( 'Redirect URL', BOOKACTI_PLUGIN_NAME )
+					),
+					'body' => $activities_url_rows,
+				), $params );
+				bookacti_display_table_from_array( $activities_url_array );
+			?>
+		</div>
+		<div class='bookacti-group-categories-actions-options-table'>
+			<h4><?php esc_html_e( 'Group categories', BOOKACTI_PLUGIN_NAME ); ?></h4>
+			<?php 
+				$group_categories_url_rows = array();
+				$redirect_url_by_group_category = ! empty( $params[ 'calendar_data' ][ 'redirect_url_by_group_category' ] ) && is_array( $params[ 'calendar_data' ][ 'redirect_url_by_group_category' ] ) ? $params[ 'calendar_data' ][ 'redirect_url_by_group_category' ] : array( 0 => '' );
+				foreach( $redirect_url_by_group_category as $group_category_id => $redirect_url ) {
+					$group_categories_url_rows[] = array( 
+						'group_category' => intval( $group_category_id ),
+						'redirect_url' => '<input type="text" name="redirect_url_by_group_category[ ' . intval( $group_category_id ) . ' ]" value="' . esc_url( $redirect_url ) . '" />'
+					);
+				}
+				
+				$categories_url_array = apply_filters( 'bookacti_group_category_redirect_url_table', array(
+					'head' => array( 
+						'group_category' => esc_html__( 'Category', BOOKACTI_PLUGIN_NAME ),
+						'redirect_url' => esc_html__( 'Redirect URL', BOOKACTI_PLUGIN_NAME )
+					),
+					'body' => $group_categories_url_rows,
+				), $params );
+				bookacti_display_table_from_array( $categories_url_array );
+			?>
+		</div>
+		<?php
+			do_action( 'bookacti_calendar_dialog_actions_tab_after', $params );
+		}		
+		
+		/**
 		 * Display the content of the "Display" tab of the "Calendar" dialog
 		 * @since 1.5.0
 		 * @param array $params
@@ -219,6 +312,7 @@ foreach( $fields_data as $field_name => $field_data ) {
 		/**
 		 * Display the content of the "Availability" tab of the "Calendar" dialog
 		 * @since 1.5.0
+		 * @version 1.7.0
 		 * @param array $params
 		 */
 		function bookacti_fill_calendar_dialog_availability_tab( $params ) {
@@ -228,7 +322,7 @@ foreach( $fields_data as $field_name => $field_data ) {
 			<legend><?php esc_html_e( 'Availability period', BOOKACTI_PLUGIN_NAME ); ?></legend>
 			<?php 
 				$fields = bookacti_get_booking_system_fields_default_data( array( 'availability_period_start', 'availability_period_end', 'start', 'end' ) );
-				bookacti_display_fields( $fields, array( 'hidden' => array( 'start', 'end' ) ) );
+				bookacti_display_fields( $fields );
 			?>
 		</fieldset>
 		

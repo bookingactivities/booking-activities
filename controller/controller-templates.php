@@ -77,7 +77,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	/**
 	 * AJAX Controller - Move or resize an event, possibly while duplicating it
 	 * @since 1.2.2 (was bookacti_controller_update_event)
-	 * @version 1.6.0
+	 * @version 1.7.0
 	 */
 	function bookacti_controller_move_or_resize_event() {
 		
@@ -104,7 +104,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 				$event_start    = bookacti_sanitize_datetime( $_POST[ 'event_start' ] );
 				$event_end      = bookacti_sanitize_datetime( $_POST[ 'event_end' ] );
 				$delta_days     = intval( $_POST[ 'delta_days' ] );
-				$interval		= bookacti_sanitize_events_interval( $_POST[ 'interval' ] );
+				$interval		= ! empty( $_POST[ 'interval' ] ) ? bookacti_sanitize_events_interval( $_POST[ 'interval' ] ) : array();
 				
 				// Maybe update grouped events if the event belong to a group
 				if( ! $is_duplicated ) {
@@ -156,7 +156,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	 * AJAX Controller - Update event
 	 * 
 	 * @since 1.2.2 (was bookacti_controller_update_event_data)
-	 * @version 1.4.0
+	 * @version 1.7.0
 	 */
 	function bookacti_controller_update_event() {
 		
@@ -181,7 +181,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 			if( $event_validation['status'] === 'valid' ) {
 				
-				$event_title		= sanitize_text_field( stripslashes( $_POST['event-title'] ) );
+				$event_title		= wp_kses_post( stripslashes( $_POST['event-title'] ) );
 				$event_start		= bookacti_sanitize_datetime( $_POST['event-start'] );
 				$event_end			= bookacti_sanitize_datetime( $_POST['event-end'] );
 				$settings			= isset( $_POST['eventOptions'] ) && is_array( $_POST['eventOptions'] ) ? $_POST['eventOptions'] : array();
@@ -193,8 +193,8 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 				// Update event metadata
 				$updated_event_meta = bookacti_update_metadata( 'event', $event_id, $formatted_settings );
 
-				// Insert new exeption
-				$inserted_excep		= bookacti_insert_exeptions( $event_id, $dates_excep_array );
+				// Insert new exception
+				$inserted_excep		= bookacti_insert_exceptions( $event_id, $dates_excep_array );
 
 				// Remove exceptions that do not longer exist
 				$deleted_excep		= bookacti_remove_exceptions( $event_id, $dates_excep_array );
@@ -428,9 +428,8 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	
 	/**
 	 * Create a group of events with AJAX
-	 * 
 	 * @since 1.1.0
-	 * @version 1.4.0
+	 * @version 1.7.0
 	 */
 	function bookacti_controller_insert_group_of_events() {
 		
@@ -480,10 +479,12 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		$category_data	= bookacti_get_group_category( $category_id );
 		$group_data		= bookacti_get_group_of_events( $group_id );
 		$group_events	= bookacti_get_group_events( $group_id );
+		$group_title_raw= strip_tags( $group_data->title );
 		
 		wp_send_json( array('status' => 'success', 
 							'group_id' => $group_id, 
 							'group' => $group_data, 
+							'group_title_raw' => $group_title_raw, 
 							'group_events' => $group_events, 
 							'category_id' => $category_id, 
 							'category' => $category_data ) );
@@ -493,9 +494,8 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 	/**
 	 * Update group of events data with AJAX
-	 * 
 	 * @since 1.1.0
-	 * @version 1.4.0
+	 * @version 1.7.0
 	 */
 	function bookacti_controller_update_group_of_events() {
 		
@@ -512,7 +512,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		
 		$category_id	= intval( $_POST[ 'group-of-events-category' ] );
 		$category_title	= sanitize_text_field( stripslashes( $_POST[ 'group-of-events-category-title' ] ) );
-		$group_title	= sanitize_text_field( stripslashes( $_POST[ 'group-of-events-title' ] ) );
+		$group_title	= wp_kses_post( stripslashes( $_POST[ 'group-of-events-title' ] ) );
 		$events			= json_decode( stripslashes( $_POST['events'] ) );
 		
 		// Validate input data
@@ -550,9 +550,11 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		$category_data	= bookacti_get_group_category( $category_id );
 		$group_data		= bookacti_get_group_of_events( $group_id );
 		$group_events	= bookacti_get_group_events( $group_id );
+		$group_title_raw= strip_tags( $group_data->title );
 		
 		wp_send_json( array('status' => 'success', 
 							'group' => $group_data, 
+							'group_title_raw' => $group_title_raw, 
 							'group_events' => $group_events, 
 							'category_id' => $category_id, 
 							'category' => $category_data ) );

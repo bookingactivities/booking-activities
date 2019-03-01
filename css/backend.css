@@ -19,11 +19,18 @@
     box-shadow: 0 1px 3px rgba( 0, 0, 0, 0.2 );
 }
 
-.bookacti-disabled { cursor: auto; pointer-events: none; opacity: 0.5; }
+.bookacti-disabled		{ cursor: auto; pointer-events: none; opacity: 0.5; }
+.bookacti-hide-fields	{ display: none; }
+.bookacti-show-fields	{ display: block; }
 
 .bookacti-irreversible-action span			{ display: table-cell; vertical-align: middle; }
 .bookacti-irreversible-action .dashicons	{ font-size: 1.5em; color: #b81c23; padding-right: 10px; }
 .bookacti-warning .dashicons				{ font-size: 1.5em; color: #f89b2f; padding-right: 10px; }
+
+.bookacti-addon-promo			{ border: 2px solid #52b7e9; border-radius: 3px; padding: 10px; text-align: center; }
+.bookacti-addon-promo .button	{ margin-top: 10px; }
+
+#bookacti-fatal-error			{ margin: 1em; }
 
 
 /***** CALENDAR *****/
@@ -59,6 +66,23 @@
 .bookacti-settings-table tbody tr:nth-child( 2n+1 )	{ background-color: #f9f9f9; }
 .bookacti-settings-table a		{ text-decoration: none; font-weight: bold; }
 .bookacti-settings-table img	{ max-height: 24px; max-width: 24px; }
+
+.bookacti-not-found-row			{ text-align: center; }
+#bookacti-archive-disclaimer	{ max-width: 600px; color: #a00; }
+#bookacti-archive-delete-data-note	{ margin-top: 10px; color: #a00; }
+.bookacti-archive-options .bookacti-loading-alt { margin: 0 0 0 12px; display: inline-block; }
+.bookacti-archive-options .bookacti-notices ul	{ margin: 12px 0 0 0; width: fit-content; }
+.bookacti-archive-feedbacks-step { margin-top: 10px; }
+.bookacti-archive-feedbacks-step-container,
+.bookacti-archive-ids		{ display: none; margin-top: 10px; }
+.bookacti-show-archive-ids	{ cursor: pointer; margin-left: 6px; vertical-align: text-bottom; }
+.bookacti-archive-ids code	{ font-size: 0.8em; word-spacing: -2px; }
+.bookacti-archive-results ul				{ padding: 10px; margin: 5px 0; background: rgba( 255,255,255,0.4 ); border: 1px solid #aaa; }
+.bookacti-archive-results ul li:last-child	{ margin-bottom: 0; }
+.bookacti-archive-action + .bookacti-archive-action:before { content: ' | '; color: #ddd; }
+.bookacti-archive-action a				{ font-weight: normal; }
+.bookacti-archive-delete-file a			{ color: #a00; }
+.bookacti-archive-delete-file a:hover	{ color: #dc3232; }
 
 .bookacti-settings-table .dashicons-yes:before	{ color: #3cb371; }
 .bookacti-settings-table .dashicons-no:before	{ color: #cd5c5c; }

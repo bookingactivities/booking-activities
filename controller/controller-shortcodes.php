@@ -115,7 +115,7 @@ function bookacti_shortcode_booking_form( $atts = array(), $content = null, $tag
 
 /**
  * Display a user related booking list via shortcode
- * @version 1.6.0
+ * @version 1.7.0
  * @param array $atts [user_id, per_page, status, and any booking filter such as 'from', 'to', 'activities'...]
  * @param string $content
  * @param string $tag Should be "bookingactivities_list"
@@ -146,6 +146,7 @@ function bookacti_shortcode_bookings_list( $atts = array(), $content = null, $ta
     $atts = shortcode_atts( $default_atts, $atts, $tag );
 	
 	$atts = bookacti_format_string_booking_filters( $atts );
+	if( $atts[ 'user_id' ] === 'current' ) { $atts[ 'user_id' ] = $default_atts[ 'user_id' ]; }
 	$templates = $atts[ 'templates' ];
 	$atts[ 'templates' ] = false;
 	

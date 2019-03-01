@@ -1,7 +1,7 @@
 <?php
 /**
  * Booking list page
- * @version 1.6.0
+ * @version 1.7.0
  */
 
 // Exit if accessed directly
@@ -176,6 +176,8 @@ if( ! $templates ) {
 						'name'				=> 'user_id',
 						'id'				=> 'bookacti-booking-filter-customer',
 						'show_option_all'	=> esc_html__( 'All', BOOKACTI_PLUGIN_NAME ),
+						'show_option_self'	=> esc_html__( 'Your search', BOOKACTI_PLUGIN_NAME ),
+						'option_self_value'	=> $selected_user,
 						'option_label'		=> array( 'user_login', ' (', 'user_email', ')' ),
 						'selected'			=> $selected_user,
 						'echo'				=> true
@@ -202,27 +204,19 @@ if( ! $templates ) {
 						if( isset( $_REQUEST[ 'bookacti_event_end' ] ) )	{ $event_end	= bookacti_sanitize_datetime( $_REQUEST[ 'bookacti_event_end' ] ); }
 						if( isset( $_REQUEST[ 'event_end' ] ) )				{ $event_end	= bookacti_sanitize_datetime( $_REQUEST[ 'event_end' ] ); }
 
-						// Fill picked events array
-						if( $event_group_id === 0 && $event_id !== 0 ) {
-							$picked_events[] = array(
-								'id'	=> $event_id,
-								'start'	=> $event_start,
-								'end'	=> $event_end
-							);
-						} else if( $event_group_id ) {
-							$picked_events = bookacti_get_group_events( $event_group_id );
-						}
-
+						// Check if there is an event picked by default
+						$has_event_picked = ( ! $event_group_id && $event_id ) || $event_group_id;
+						
 						// Fill booking system default inputs
 						$default_inputs = array(
-							'group_id'	=> $event_group_id,
-							'id'		=> $event_id,
-							'start'		=> $event_start,
-							'end'		=> $event_end
+							'group_id'		=> $event_group_id ? $event_group_id : ( $event_id ? 'single' : '' ),
+							'event_id'		=> $event_id,
+							'event_start'	=> $event_start,
+							'event_end'		=> $event_end
 						);
 						
-						$display_calendar		= $picked_events ? 'block' : 'none';
-						$calendar_button_label	= $picked_events ? __( 'Hide calendar', BOOKACTI_PLUGIN_NAME ) : __( 'Pick an event', BOOKACTI_PLUGIN_NAME );
+						$display_calendar		= $has_event_picked ? 'block' : 'none';
+						$calendar_button_label	= $has_event_picked ? esc_html__( 'Hide calendar', BOOKACTI_PLUGIN_NAME ) : esc_html__( 'Pick an event', BOOKACTI_PLUGIN_NAME );
 					?>
 					<a class='button' id='bookacti-pick-event-filter' title='<?php echo $calendar_button_label; ?>' >
 						<?php echo $calendar_button_label; ?>
@@ -268,14 +262,13 @@ if( ! $templates ) {
 						'past_events'			=> 1,
 						'past_events_bookable'	=> 1,
 						'check_roles'			=> 0,
-						'auto_load'				=> 1 // Force to load on page load
-					);					
+						'auto_load'				=> 0, // Prevent to load on page load to save some performance
+						'picked_events'			=> $default_inputs
+					);
 					bookacti_get_booking_system( $atts, true );
 				?>
 				<script>
 					bookacti.booking_system[ 'bookacti-booking-system-bookings-page' ][ 'templates_per_activities' ]	= <?php echo json_encode( $activities ); ?>;
-					bookacti.booking_system[ 'bookacti-booking-system-bookings-page' ][ 'picked_events' ]				= <?php echo json_encode( $picked_events ); ?>;
-					bookacti.booking_system[ 'bookacti-booking-system-bookings-page' ][ 'default_inputs' ]				= <?php echo json_encode( $default_inputs ); ?>;
 				</script>
 			</div>
 		</form>
@@ -292,18 +285,32 @@ if( ! $templates ) {
 				'activities'				=> $selected_activities, 
 				'booking_id'				=> isset( $_REQUEST[ 'booking_id' ] )		? intval( $_REQUEST[ 'booking_id' ] ) : 0, 
 				'booking_group_id'			=> isset( $_REQUEST[ 'booking_group_id' ] )	? intval( $_REQUEST[ 'booking_group_id' ] ) : 0, 
+				'group_category_id'			=> isset( $_REQUEST[ 'group_category_id' ] )? intval( $_REQUEST[ 'group_category_id' ] ): 0,
 				'event_group_id'			=> $event_group_id, 
 				'event_id'					=> $event_id, 
 				'event_start'				=> $event_start, 
 				'event_end'					=> $event_end,
 				'status'					=> $selected_status,
 				'user_id'					=> $selected_user,
+				'form_id'					=> isset( $_REQUEST[ 'form_id' ] ) ? $_REQUEST[ 'form_id' ] : 0,
 				'from'						=> $from,
 				'to'						=> $to,
 				'group_by'					=> isset( $_REQUEST[ 'group_by' ] )	? $_REQUEST[ 'group_by' ] : '',
 				'order_by'					=> isset( $_REQUEST[ 'orderby' ] )	? $_REQUEST[ 'orderby' ] : array( 'creation_date', 'id' ),
 				'order'						=> isset( $_REQUEST[ 'order' ] )	? $_REQUEST[ 'order' ] : 'DESC',
-				'fetch_meta'				=> true
+				'fetch_meta'				=> true,
+				'in__booking_id'			=> isset( $_REQUEST[ 'in__booking_id' ] )			? $_REQUEST[ 'in__booking_id' ] : array(), 
+				'in__booking_group_id'		=> isset( $_REQUEST[ 'in__booking_group_id' ] )		? $_REQUEST[ 'in__booking_group_id' ] : array(), 
+				'in__group_category_id'		=> isset( $_REQUEST[ 'in__group_category_id' ] )	? $_REQUEST[ 'in__group_category_id' ] : array(), 
+				'in__event_group_id'		=> isset( $_REQUEST[ 'in__event_group_id' ] )		? $_REQUEST[ 'in__event_group_id' ] : array(), 
+				'in__user_id'				=> isset( $_REQUEST[ 'in__user_id' ] )				? $_REQUEST[ 'in__user_id' ] : array(), 
+				'in__form_id'				=> isset( $_REQUEST[ 'in__form_id' ] )				? $_REQUEST[ 'in__form_id' ] : array(), 
+				'not_in__booking_id'		=> isset( $_REQUEST[ 'not_in__booking_id' ] )		? $_REQUEST[ 'not_in__booking_id' ] : array(), 
+				'not_in__booking_group_id'	=> isset( $_REQUEST[ 'not_in__booking_group_id' ] )	? $_REQUEST[ 'not_in__booking_group_id' ] : array(), 
+				'not_in__group_category_id'	=> isset( $_REQUEST[ 'not_in__group_category_id' ] )? $_REQUEST[ 'not_in__group_category_id' ] : array(),
+				'not_in__event_group_id'	=> isset( $_REQUEST[ 'not_in__event_group_id' ] )	? $_REQUEST[ 'not_in__event_group_id' ] : array(), 
+				'not_in__user_id'			=> isset( $_REQUEST[ 'not_in__user_id' ] )			? $_REQUEST[ 'not_in__user_id' ] : array(), 
+				'not_in__form_id'			=> isset( $_REQUEST[ 'not_in__form_id' ] )			? $_REQUEST[ 'not_in__form_id' ] : array()
 			);
 			
 			$bookings_list_table = new Bookings_List_Table();

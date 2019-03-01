@@ -7,6 +7,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 /**
  * Display the form field 'calendar'
  * @since 1.5.0
+ * @version 1.7.0
  * @param array $field
  * @param string $instance_id
  * @param string $context
@@ -15,6 +16,22 @@ function bookacti_display_form_field_calendar( $field, $instance_id, $context ) 
 	// Do not keep ID and class (already used for the container)
 	$field[ 'id' ] = $instance_id; 
 	$field[ 'class' ] = '';
+	
+	// Check if an event / group of events is picked by default
+	if( isset( $_REQUEST[ 'bookacti_group_id' ] )	&& $_REQUEST[ 'bookacti_group_id' ] !== 'single' )	{ $field[ 'picked_events' ][ 'group_id' ] = intval( $_REQUEST[ 'bookacti_group_id' ] ); }
+	if( isset( $_REQUEST[ 'event_group_id' ] )		&& $_REQUEST[ 'event_group_id' ] !== 'single' )		{ $field[ 'picked_events' ][ 'group_id' ] = intval( $_REQUEST[ 'event_group_id' ] ); }
+	if( isset( $_REQUEST[ 'bookacti_event_id' ] ) )		{ $field[ 'picked_events' ][ 'event_id' ]		= intval( $_REQUEST[ 'bookacti_event_id' ] ); }
+	if( isset( $_REQUEST[ 'event_id' ] ) )				{ $field[ 'picked_events' ][ 'event_id' ]		= intval( $_REQUEST[ 'event_id' ] ); }
+	if( isset( $_REQUEST[ 'bookacti_event_start' ] ) )	{ $field[ 'picked_events' ][ 'event_start' ]	= bookacti_sanitize_datetime( $_REQUEST[ 'bookacti_event_start' ] ); }
+	if( isset( $_REQUEST[ 'event_start' ] ) )			{ $field[ 'picked_events' ][ 'event_start' ]	= bookacti_sanitize_datetime( $_REQUEST[ 'event_start' ] ); }
+	if( isset( $_REQUEST[ 'bookacti_event_end' ] ) )	{ $field[ 'picked_events' ][ 'event_end' ]		= bookacti_sanitize_datetime( $_REQUEST[ 'bookacti_event_end' ] ); }
+	if( isset( $_REQUEST[ 'event_end' ] ) )				{ $field[ 'picked_events' ][ 'event_end' ]		= bookacti_sanitize_datetime( $_REQUEST[ 'event_end' ] ); }
+	
+	// Do not auto load on form editor
+	// So that if a JS error occurs, you can still change the calendar settings and try to fix it
+	if( $context === 'edit' ) { $field[ 'auto_load' ] = 0; }
+	
+	$field = apply_filters( 'bookacti_form_field_calendar_attributes', $field, $instance_id, $context );
 	
 	// Display the booking system
 	bookacti_get_booking_system( $field, true );
@@ -25,7 +42,7 @@ add_action( 'bookacti_display_form_field_calendar', 'bookacti_display_form_field
 /**
  * Display the form field 'login'
  * @since 1.5.0
- * @version 1.6.0
+ * @version 1.7.0
  * @param string $html
  * @param array $field
  * @param string $instance_id
@@ -59,7 +76,7 @@ function bookacti_display_form_field_login( $html, $field, $instance_id, $contex
 			// Set the default login type on the first available by default
 			reset( $login_types );
 			$first_login_type = key( $login_types );
-			$default_login_type = apply_filters( 'bookacti_default_login_type', $first_login_type, $field, $instance_id, $context );
+			$default_login_type = apply_filters( 'bookacti_default_login_type', ! empty( $_REQUEST[ 'login_type' ] ) ? sanitize_title_with_dashes( $_REQUEST[ 'login_type' ] ) : $first_login_type, $field, $instance_id, $context );
 			if( ! in_array( $default_login_type, array_keys( $login_types ), true ) ) { $default_login_type = $first_login_type; }
 
 			foreach( $login_types as $login_type_name => $login_type ) {
@@ -104,6 +121,7 @@ function bookacti_display_form_field_login( $html, $field, $instance_id, $contex
 						$args = array(
 							'type'			=> 'email',
 							'name'			=> 'email',
+							'value'			=> ! empty( $_REQUEST[ 'email' ] ) ? esc_attr( $_REQUEST[ 'email' ] ) : '',
 							'id'			=> $field_id . '-email',
 							'class'			=> 'bookacti-form-field bookacti-email',
 							'placeholder'	=> esc_attr( apply_filters( 'bookacti_translate_text', $field[ 'placeholder' ][ 'email' ] ) ),
@@ -130,6 +148,7 @@ function bookacti_display_form_field_login( $html, $field, $instance_id, $contex
 						$args = array(
 							'type'			=> 'password',
 							'name'			=> 'password',
+							'value'			=> ! empty( $_REQUEST[ 'password' ] ) ? esc_attr( $_REQUEST[ 'password' ] ) : '',
 							'id'			=> $field_id . '-password',
 							'class'			=> 'bookacti-form-field bookacti-password',
 							'placeholder'	=> esc_attr( apply_filters( 'bookacti_translate_text', $field[ 'placeholder' ][ 'password' ] ) ),
@@ -211,6 +230,7 @@ function bookacti_display_form_field_login( $html, $field, $instance_id, $contex
 								$args = array(
 									'type'			=> $register_field[ 'type' ],
 									'name'			=> esc_attr( $register_field_name ),
+									'value'			=> ! empty( $_REQUEST[ $register_field_name ] ) ? esc_attr( $_REQUEST[ $register_field_name ] ) : ( isset( $register_field[ 'value' ] ) ? esc_attr( $register_field[ 'value' ] ) : '' ),
 									'id'			=> esc_attr( $field_id . '-' . $register_field_name ),
 									'class'			=> esc_attr( 'bookacti-form-field bookacti-' . $register_field_name ),
 									'required'		=> esc_attr( $field[ 'required_fields' ][ $register_field_name ] ),
@@ -289,6 +309,7 @@ add_filter( 'bookacti_html_form_field_login', 'bookacti_display_form_field_login
 /**
  * Display the form field 'quantity'
  * @since 1.5.0
+ * @version 1.7.0
  * @param array $field
  * @param string $instance_id
  * @param string $context
@@ -300,7 +321,7 @@ function bookacti_display_form_field_quantity( $field, $instance_id, $context ) 
 		'class'			=> 'bookacti-form-field bookacti-quantity',
 		'placeholder'	=> ! empty( $field[ 'placeholder' ] ) ? esc_attr( apply_filters( 'bookacti_translate_text', $field[ 'placeholder' ] ) ) : '',
 		'options'		=> array( 'min' => 1 ),
-		'value'			=> 1
+		'value'			=> ! empty( $_REQUEST[ 'quantity' ] ) && is_numeric( $_REQUEST[ 'quantity' ] ) ? intval( $_REQUEST[ 'quantity' ] ) : 1
 	);
 	bookacti_display_field( $args );
 }
@@ -310,7 +331,7 @@ add_action( 'bookacti_display_form_field_quantity', 'bookacti_display_form_field
 /**
  * Display the form field 'checkbox'
  * @since 1.5.2
- * @version 1.5.4
+ * @version 1.7.0
  * @param string $html
  * @param array $field
  * @param string $instance_id
@@ -325,6 +346,8 @@ function bookacti_display_form_field_checkbox( $html, $field, $instance_id, $con
 	if( ! empty( $field[ 'type' ] ) )		{ $field_class .= ' bookacti-form-field-type-' . sanitize_title_with_dashes( esc_attr( $field[ 'type' ] ) ); } 
 	if( ! empty( $field[ 'field_id' ] ) )	{ $field_class .= ' bookacti-form-field-id-' . esc_attr( $field[ 'field_id' ] ); }
 	if( ! empty( $field[ 'class' ] ) )		{ $field_class .= ' ' . esc_attr( $field[ 'class' ] ); }
+	$is_checked		= ! empty( $_REQUEST[ $field[ 'name' ] ] ) ? 1 : $field[ 'value' ];
+	
 	ob_start();
 	?>
 	<div class='<?php echo $field_class; ?>' id='<?php echo $field_id; ?>' >
@@ -337,7 +360,7 @@ function bookacti_display_form_field_checkbox( $html, $field, $instance_id, $con
 					   class='bookacti-form-field'
 					   value='1'
 					   <?php if( $field[ 'required' ] ) { echo 'required'; } ?>
-					   <?php if( $field[ 'value' ] ) { echo 'checked'; } ?> />
+					   <?php if( $is_checked ) { echo 'checked'; } ?> />
 			</div>
 			<div class='bookacti-form-field-checkbox-label' >
 				<label for='<?php echo $field_id . '-input'; ?>' >
@@ -413,7 +436,7 @@ add_action( 'bookacti_display_form_field_free_text', 'bookacti_display_form_fiel
 /**
  * Add a compulsory quantity input for correct booking form functionning
  * @since 1.5.0
- * @version 1.5.8
+ * @version 1.7.0
  * @param array $fields
  * @param array $form
  * @param string $instance_id
@@ -430,6 +453,7 @@ function bookacti_display_compulsory_quantity_form_field( $fields, $form, $insta
 		$field = bookacti_get_default_form_fields_data( 'quantity' );
 		$field[ 'id' ]		= 'bookacti-compulsory-quantity-field';
 		$field[ 'class' ]	.= ' bookacti-hidden-field';
+		$field[ 'value' ]	= ! empty( $_REQUEST[ 'quantity' ] ) && is_numeric( $_REQUEST[ 'quantity' ] ) ? intval( $_REQUEST[ 'quantity' ] ) : 1;
 		$fields[] = $field;
 	}
 	
@@ -502,7 +526,7 @@ add_action( 'wp_ajax_nopriv_bookactiForgottenPassword', 'bookacti_controller_for
 /**
  * Check if booking form is correct and then book the event, or send the error message
  * @since 1.5.0
- * @version 1.6.0
+ * @version 1.7.0
  */
 function bookacti_controller_validate_booking_form() {
 	
@@ -533,24 +557,17 @@ function bookacti_controller_validate_booking_form() {
 	// Retrieve form field data 
 	$form_fields_data = bookacti_get_form_fields_data( $form_id );
 	
+	// Validate the booking form fields
+	$form_fields_validated = bookacti_validate_form_fields( $form_id, $form_fields_data );
+	if( $form_fields_validated[ 'status' ] !== 'success' ) {
+		$form_fields_validated[ 'message' ] = is_array( $form_fields_validated[ 'message' ] ) ? implode( '</li><li>', $form_fields_validated[ 'message' ] ) : $form_fields_validated[ 'message' ];
+		bookacti_send_json( $form_fields_validated, 'submit_booking_form' );
+	}
+	
 	// Let third party plugins validate their own part of the form
 	$return_array = apply_filters( 'bookacti_validate_booking_form_submission', $return_array, $form_id, $form_fields_data );
 	if( $return_array[ 'status' ] === 'failed' || $return_array[ 'error' ] ) {
 		$return_array[ 'message' ] = implode( '</li><li>', $return_array[ 'message' ] );
-		bookacti_send_json( $return_array, 'submit_booking_form' );
-	}
-	
-	// Validate terms
-	$has_terms = false;
-	foreach( $form_fields_data as $form_field_data ) {
-		if( $form_field_data[ 'name' ] === 'terms' ) { 
-			$has_terms = true;
-			break;
-		}
-	}
-	if( $has_terms && empty( $_POST[ 'terms' ] ) ) {
-		$return_array[ 'error' ]	= 'terms_not_agreed';
-		$return_array[ 'message' ]	= esc_html__( 'You must agree to the terms and conditions.', BOOKACTI_PLUGIN_NAME );
 		bookacti_send_json( $return_array, 'submit_booking_form' );
 	}
 	
@@ -744,13 +761,14 @@ add_action( 'wp_ajax_nopriv_bookactiSubmitBookingForm', 'bookacti_controller_val
 /**
  * Save the user data when the customer do not want to create an account, and attach them to the booking
  * @since 1.6.0
+ * @version 1.7.0
  * @param int $booking_id
  * @param array $booking_form_values
  * @param string $booking_type
  * @param int $form_id
  */
 function bookacti_save_no_account_user_data( $booking_id, $booking_form_values, $booking_type, $form_id ) {
-	if( $_POST[ 'login_type' ] !== 'no_account' ) { return; }
+	if( empty( $_POST[ 'login_type' ] ) || $_POST[ 'login_type' ] !== 'no_account' ) { return; }
 	
 	// Retrieve login data
 	$login_values		= bookacti_sanitize_form_field_values( $_POST, 'login' );
@@ -1256,7 +1274,7 @@ function bookacti_controller_update_form_field() {
 	// Sanitize data
 	$_POST[ 'name' ] = $field[ 'name' ]; $_POST[ 'type' ] = $field[ 'type' ];
 	$sanitized_data	= bookacti_sanitize_form_field_data( $_POST );
-
+	
 	// Update form field
 	$updated = bookacti_update_form_field( $sanitized_data );
 
@@ -1270,7 +1288,7 @@ function bookacti_controller_update_form_field() {
 	
 	// Extract metadata only
 	$field_meta = array_intersect_key( $sanitized_data, bookacti_get_default_form_fields_meta( $field[ 'name' ] ) );
-
+	
 	if( $field_meta ) {
 		// Unserialize values before preocessing through bookacti_update_metadata
 		foreach( $field_meta as $key => $value ) { $field_meta[ $key ] = maybe_unserialize( $value ); }
@@ -1302,7 +1320,7 @@ function bookacti_controller_reset_form_field() {
 	// Check nonce and capabilities
 	$is_nonce_valid	= check_ajax_referer( 'bookacti_update_form_field', 'nonce', false );
 	$is_allowed		= current_user_can( 'bookacti_edit_forms' ) && bookacti_user_can_manage_form( $form_id );
-	
+		
 	if( $is_nonce_valid && $is_allowed && $form_id ) {
 		
 		// Update form field with default values

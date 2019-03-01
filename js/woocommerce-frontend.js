@@ -49,14 +49,29 @@ $j( document ).ready( function() {
 	
 	
 	// SINGLE PRODUCT
-	
+		
 		// Handle variations
 		if( $j( '.woocommerce form.cart.variations_form' ).length ) { 
+			/**
+			 * Do not init booking system automatically if is supposed to be loaded while switching WC variations
+			 * @since 1.7.0
+			 */
+			$j( 'body.woocommerce' ).on( 'bookacti_init_booking_sytem', 'form.cart.variations_form .bookacti-booking-system', function( e, load, attributes ) {
+				if( load.load === false ) { return; }
+				if( typeof $j( this ).closest( '.bookacti-wc-form-fields' ) !== 'undefined' ) { 
+					if( $j( this ).closest( '.bookacti-wc-form-fields' ).data( 'default-variation-id' ) ) { load.load = false; }
+				}
+			});
+			
+			/**
+			 * Switch the booking form according to the selected product variation
+			 * @version 1.7.0
+			 */
 			$j( '.woocommerce form.cart.variations_form' ).each( function() {
 				var wc_form = $j( this );
 				
 				/** START BACKWARD COMPATIBILITY < 1.5 **/
-				if( wc_form.find( '.bookacti-booking-system' ).length && ! wc_form.find( '.bookacti-form-fields' ).length ) { 
+				if( wc_form.find( '.bookacti-booking-system' ).length && ! wc_form.find( '.bookacti-wc-form-fields' ).length ) { 
 					var booking_system		= wc_form.find( '.bookacti-booking-system' );
 					var booking_system_id	= booking_system.attr( 'id' );
 
@@ -85,7 +100,7 @@ $j( document ).ready( function() {
 				
 				// Empty the form
 				wc_form.on( 'reset_data', function( e ) { 
-					var form_container = wc_form.find( '.bookacti-form-fields' );
+					var form_container = wc_form.find( '.bookacti-wc-form-fields' );
 					form_container.data( 'form-id', '' );
 					form_container.attr( 'data-form-id', '' );
 					form_container.data( 'variation-id', '' );
@@ -95,7 +110,7 @@ $j( document ).ready( function() {
 				
 				// Switch form
 				wc_form.find( '.single_variation_wrap' ).on( 'show_variation', function( e, variation ) { 
-					var form_container = wc_form.find( '.bookacti-form-fields' );
+					var form_container = wc_form.find( '.bookacti-wc-form-fields' );
 					bookacti_switch_product_variation_form( form_container, variation );
 					
 					// Change Add to cart button label
@@ -154,8 +169,11 @@ $j( document ).ready( function() {
 		}
 
 
-		// Change activity summary on qty change
-		$j( 'body.woocommerce form.cart' ).on( 'keyup mouseup', 'input.qty', function() {
+		/**
+		 * Change activity summary on qty change
+		 * @version 1.7.0
+		 */
+		$j( 'body.woocommerce form.cart' ).on( 'change', 'input.qty', function() {
 			var booking_system = $j( this ).parents( 'form.cart' ).find( '.bookacti-booking-system' );
 			if( booking_system.length ) {
 				bookacti_fill_picked_events_list( booking_system );
@@ -171,7 +189,46 @@ $j( document ).ready( function() {
 				bookacti_set_min_and_max_quantity( booking_system, qty_field, event_summary_data );
 			}
 		});
-	
+		
+		
+		/**
+		 * Init WC actions to perfoms when the user submit booking form
+		 * @since 1.7.0
+		 */
+		$j( 'body' ).on( 'bookacti_submit_booking_form', 'form.bookacti-booking-form', function( e, form_action ){
+			if( form_action !== 'redirect_to_product_page' && form_action !== 'add_product_to_cart' ) { return; }
+			
+			var form			= $j( this );
+			var booking_system	= form.find( '.bookacti-form-field-type-calendar .bookacti-booking-system' );
+			var group_id		= booking_system.siblings( '.bookacti-booking-system-inputs' ).find( 'input[name="bookacti_group_id"]' ).val();
+			var event			= {
+				'id': booking_system.siblings( '.bookacti-booking-system-inputs' ).find( 'input[name="bookacti_event_id"]' ).val(),
+				'start': booking_system.siblings( '.bookacti-booking-system-inputs' ).find( 'input[name="bookacti_event_start"]' ).val(),
+				'end': booking_system.siblings( '.bookacti-booking-system-inputs' ).find( 'input[name="bookacti_event_end"]' ).val()
+			};
+			
+			// A single event is selected
+			if( group_id === 'single' && event.id && event.start && event.end ) {
+				if( form_action === 'redirect_to_product_page' ) {
+					// Redirect to activity URL if a single event is selected
+					bookacti_redirect_to_activity_product_page( booking_system, event );
+				} else if( form_action === 'add_product_to_cart' ) {
+					// Add the product bound to the activity to cart
+					bookacti_add_activity_product_to_cart( booking_system, event );
+				}
+			}
+			
+			// A group of events is selected
+			else if( $j.isNumeric( group_id ) ) {
+				if( form_action === 'redirect_to_product_page' ) {
+					// Redirect to group category URL if a group of events is selected
+					bookacti_redirect_to_group_category_product_page( booking_system, group_id );
+				} else if( form_action === 'add_product_to_cart' ) {
+					// Add the product bound to the group category to cart
+					bookacti_add_group_category_product_to_cart( booking_system, group_id );
+				}
+			}
+		});
 	
 	
 	
@@ -280,7 +337,13 @@ function bookacti_fill_product_variation_form( form_container, variation, form_h
 }
 
 
-// Switch booking system according to variation /** BACKWARD COMPATIBILITY < 1.5 **/
+/**
+ * Switch booking system according to variation 
+ * Used for BACKWARD COMPATIBILITY < 1.5
+ * @deprecated since 1.5.0
+ * @param {dom_element} booking_system
+ * @param {object} variation
+ */
 function bookacti_switch_booking_system_according_to_variation( booking_system, variation ) {
 	
 	var booking_system_id = booking_system.attr( 'id' );
@@ -288,7 +351,7 @@ function bookacti_switch_booking_system_according_to_variation( booking_system, 
 	booking_system.empty();
 	bookacti_clear_booking_system_displayed_info( booking_system );
 	
-	//Switch booking system if the variation is actually an activity and if it is active, in stock and visible
+	// Switch booking system if the variation is actually an activity and if it is active, in stock and visible
 	if( variation[ 'bookacti_is_activity' ] 
 	&&  variation[ 'is_in_stock' ] 
 	&&  variation[ 'variation_is_active' ] 

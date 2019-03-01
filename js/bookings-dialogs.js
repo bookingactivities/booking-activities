@@ -26,6 +26,7 @@ $j( document ).ready( function() {
 
 /**
  * Initialize bookings dialogs
+ * @version 1.7.0
  */
 function bookacti_init_bookings_dialogs() {
 	// Common param
@@ -33,7 +34,7 @@ function bookacti_init_bookings_dialogs() {
 		"modal":		true,
 		"autoOpen":		false,
 		"minHeight":	300,
-		"minWidth":		440,
+		"minWidth":		460,
 		"resize":		'auto',
 		"show":			true,
 		"hide":			true,
@@ -584,7 +585,7 @@ function bookacti_dialog_change_booking_state( booking_id, booking_type ) {
 
 /**
  * Reschedule booking dialog
- * @version 1.5.9
+ * @version 1.7.0
  * @param {int} booking_id
  */
 function bookacti_dialog_reschedule_booking( booking_id ) {
@@ -597,6 +598,9 @@ function bookacti_dialog_reschedule_booking( booking_id ) {
 	if( is_bookings_page ) {
 		$j( '#bookacti-send-notifications-on-reschedule' ).prop( 'checked', false ); 
 	}
+	
+	// Clear old booking system info
+	bookacti_clear_booking_system_displayed_info( booking_system );
 	
 	// Display a loader
 	bookacti_booking_row_enter_loading_state( row );
@@ -620,6 +624,8 @@ function bookacti_dialog_reschedule_booking( booking_id ) {
 				var booking_system_id	= booking_system.attr( 'id' );
 				var activity_id			= response.booking_data.activity_id;
 				booking_quantity		= response.booking_data.quantity;
+				
+				booking_system.closest( 'form' ).find( 'input.bookacti-quantity' ).val( booking_quantity );
 				
 				// Replace the reschedule booking system data with the booking system data used for the booking
 				$j.each( bookacti.booking_system[ booking_system_id ], function( key, value ) {

@@ -9,8 +9,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	 * Fetch all events of a template or an event
 	 * 
 	 * @since 1.1.0 (replace bookacti_fetch_events from 1.0.0)
-	 * @version 1.2.2
-	 * 
+	 * @version 1.7.0
 	 * @global wpdb $wpdb
 	 * @param int $template_id
 	 * @param int $event_id
@@ -112,13 +111,23 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		$events = $wpdb->get_results( $prep_query, OBJECT );
 
 		// Transform raw events from database to array of individual events
-		$events_array = bookacti_get_events_array_from_db_events( $events, true, $interval );
+		$events_array = bookacti_get_events_array_from_db_events( $events, true, $interval, false );
 
 		return $events_array;
 	}
 	
 	
-    //INSERT AN EVENT
+	/**
+	 * Insert an event
+	 * @global wpdb $wpdb
+	 * @param int $template_id
+	 * @param int $activity_id
+	 * @param string $event_title
+	 * @param string $event_start
+	 * @param string $event_end
+	 * @param int $availability
+	 * @return int
+	 */
     function bookacti_insert_event( $template_id, $activity_id, $event_title, $event_start, $event_end, $availability = 0 ) {
         global $wpdb;
 
@@ -340,7 +349,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	/**
 	 * Unbind selected occurence of an event
 	 * 
-	 * @version 1.4.4
+	 * @version 1.7.0
 	 * @global wpdb $wpdb
 	 * @param int $event_id
 	 * @param string $event_start
@@ -367,7 +376,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		
 		// Create an exception on the day of the occurence
         $dates_excep_array = array ( substr( $event_start, 0, 10 ) );
-        $insert_excep = bookacti_insert_exeptions( $event_id, $dates_excep_array );
+        $insert_excep = bookacti_insert_exceptions( $event_id, $dates_excep_array );
 		
 		// If the event was booked, move its bookings to the new single event
 		$bookings_moved = $wpdb->update( 
@@ -391,8 +400,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	/**
 	 * Unbind booked occurences of an event
 	 * 
-	 * @version 1.2.2
-	 * 
+	 * @version 1.7.0
 	 * @global wpdb $wpdb
 	 * @param int $event_id
 	 * @return int
@@ -425,7 +433,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 			// Create an exception on the day of the occurence
 			$dates_excep_array = array ( substr( $event_to_unbind->event_start, 0, 10 ) );
-			bookacti_insert_exeptions( $duplicated_event_id, $dates_excep_array );
+			bookacti_insert_exceptions( $duplicated_event_id, $dates_excep_array );
 		}
 
 		// Set the smallest repeat period possible to the original event
@@ -458,13 +466,18 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			$date_timestamp = strtotime( '+1 day', $date_timestamp );
 			$date = date( 'Y-m-d', $date_timestamp );
 		}
-		bookacti_insert_exeptions( $event_id, $dates_excep_array );
+		bookacti_insert_exceptions( $event_id, $dates_excep_array );
 
 		return $duplicated_event_id;
     }
     
 	
-    //Duplicate an event and its exceptions and return its ID
+	/**
+	 * Duplicate an event and its exceptions and return its ID
+	 * @global wpdb $wpdb
+	 * @param int $event_id
+	 * @return int|false
+	 */
     function bookacti_duplicate_event( $event_id ) {
         global $wpdb;
 
@@ -587,8 +600,16 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	
 	
 // EXCEPTIONS
-    //INSERT EXCEPTIONS
-    function bookacti_insert_exeptions( $event_id, $dates_excep_array ) {
+	
+	/**
+	 * Insert exceptions for a given recurring event
+	 * @since 1.7.0 (was bookacti_insert_exeptions before)
+	 * @global wpdb $wpdb
+	 * @param int $event_id
+	 * @param array $dates_excep_array
+	 * @return boolean
+	 */
+    function bookacti_insert_exceptions( $event_id, $dates_excep_array ) {
         global $wpdb;
 
         //Check if the exception already exists
@@ -625,7 +646,13 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
     }
 	
 	
-	// DUPLICATE EXCEPTIONS
+	/**
+	 * Duplicate exceptions
+	 * @global wpdb $wpdb
+	 * @param int $old_event_id
+	 * @param int $new_event_id
+	 * @return int|false
+	 */
 	function bookacti_duplicate_exceptions( $old_event_id, $new_event_id ) {
 		global $wpdb;
 
@@ -641,7 +668,13 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	}
 	
     
-    // REMOVE EXCEPTIONS
+	/**
+	 * Remove exceptions of a given recurring event
+	 * @global wpdb $wpdb
+	 * @param int $event_id
+	 * @param array $dates_excep_array
+	 * @return int|false
+	 */
     function bookacti_remove_exceptions( $event_id, $dates_excep_array = array() ) {
         global $wpdb;
         
@@ -1503,7 +1536,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 	/**
 	 * Get templates data
-	 * @version 1.6.0
+	 * @version 1.7.0
 	 * @global wpdb $wpdb
 	 * @param array $template_ids
 	 * @param boolean $ignore_permissions
@@ -1526,6 +1559,18 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 				$query  .= ', %d';
 			}
 			$query  .= ' ) ';
+		}
+		
+		$order_by = apply_filters( 'bookacti_templates_list_order_by', array( 'title', 'id' ) );
+		if( $order_by && is_array( $order_by ) ) {
+			$query .= ' ORDER BY ';
+			for( $i=0,$len=count($order_by); $i<$len; ++$i ) {
+				$query .= $order_by[ $i ] . ' ASC';
+				if( $i < $len-1 ) { $query .= ', '; }
+			}
+		}
+		
+		if( $template_ids ) {
 			$query = $wpdb->prepare( $query, $template_ids );
 		}
 		
@@ -1561,7 +1606,13 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
     }
 	
 	
-    // GET TEMPLATE
+	/**
+	 * Get template data, metadata and managers
+	 * @global wpdb $wpdb
+	 * @param int $template_id
+	 * @param OBJECT|ARRAY_A $return_type
+	 * @return object|array
+	 */
     function bookacti_get_template( $template_id, $return_type = OBJECT ) {
         
 		$return_type = $return_type === OBJECT ? OBJECT : ARRAY_A;
@@ -1585,7 +1636,17 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
     }
 	
 	
-    //CREATE NEW TEMPLATE
+	/**
+	 * Create a new template
+	 * @global wpdb $wpdb
+	 * @param string $template_title
+	 * @param string $template_start
+	 * @param string $template_end
+	 * @param array $template_managers
+	 * @param array $template_meta
+	 * @param int $duplicated_template_id
+	 * @return int
+	 */
     function bookacti_insert_template( $template_title, $template_start, $template_end, $template_managers, $template_meta, $duplicated_template_id = 0 ) { 
        global $wpdb;
         
@@ -1617,14 +1678,19 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
     }
 	
 	
-	// DUPLICATE TEMPLATE
+	/**
+	 * Duplicate a template
+	 * @global wpdb $wpdb
+	 * @param int $duplicated_template_id
+	 * @param int $new_template_id
+	 */
 	function bookacti_duplicate_template( $duplicated_template_id, $new_template_id ) {
 		
 		global $wpdb;
 		
 		if( $duplicated_template_id && $new_template_id ) {
 			
-			//Duplicate events without exceptions and their metadata
+			// Duplicate events without exceptions and their metadata
 			$query_event_wo_excep	= ' SELECT id FROM ' . BOOKACTI_TABLE_EVENTS
 									. ' WHERE id NOT IN ( SELECT event_id FROM ' . BOOKACTI_TABLE_EXCEPTIONS . ' ) ' 
 									. ' AND template_id = %d ';
@@ -1646,7 +1712,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 				bookacti_duplicate_metadata( 'event', $old_event_id, $new_event_id);
 			}
 			
-			//Duplicate events with exceptions, their exceptions and their metadata
+			// Duplicate events with exceptions, their exceptions and their metadata
 			$query_event_w_excep= ' SELECT id FROM ' . BOOKACTI_TABLE_EVENTS
 								. ' WHERE id IN ( SELECT event_id FROM ' . BOOKACTI_TABLE_EXCEPTIONS . ' ) ' 
 								. ' AND template_id = %d ';
@@ -1679,11 +1745,15 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	}
     
 	
-    //DEACTIVATE TEMPLATE
+	/**
+	 * Deactivate a template
+	 * @global wpdb $wpdb
+	 * @param int $template_id
+	 * @return int|false
+	 */
     function bookacti_deactivate_template( $template_id ) {
         global $wpdb;
         
-		//Deactivate the template
         $deactivated = $wpdb->update( 
             BOOKACTI_TABLE_TEMPLATES, 
             array( 
@@ -1733,7 +1803,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	/**
 	 * Get activities
 	 * 
-	 * @version 1.4.0
+	 * @version 1.7.0
 	 * @global wpdb $wpdb
 	 * @param boolean $allowed_roles_only
 	 * @param OBJECT|ARRAY_A $return_type
@@ -1771,6 +1841,16 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 				$variables = array_merge( $variables, $roles );
 			}
 			$query .= ' ) ';
+		}
+		
+		$order_by = apply_filters( 'bookacti_activities_list_order_by', array( 'title', 'id' ) );
+		if( $order_by && is_array( $order_by ) ) {
+			$query .= ' ORDER BY ';
+			for( $i=0,$len=count($order_by); $i<$len; ++$i ) {
+				if( $order_by[ $i ] === 'id' ) { $order_by[ $i ] = 'A.id'; }
+				$query .= $order_by[ $i ] . ' ASC';
+				if( $i < $len-1 ) { $query .= ', '; }
+			}
 		}
 		
         $activities = $wpdb->get_results( $query, $return_type );
@@ -1909,11 +1989,15 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
     }
     
 	
-    //DEACTIVATE ACIVITY
+	/**
+	 * Deactivate an activity
+	 * @global wpdb $wpdb
+	 * @param int $activity_id
+	 * @return int|false
+	 */
     function bookacti_deactivate_activity( $activity_id ) {
         global $wpdb;
-
-        //Deactivate the activity
+		
         $deactivated = $wpdb->update( 
             BOOKACTI_TABLE_ACTIVITIES, 
             array( 
@@ -1928,7 +2012,13 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
     }
 	
 	
-	// DEACTIVATE AN EVENT
+	/**
+	 * Deactivate all events of a specific activity from a specific template
+	 * @global wpdb $wpdb
+	 * @param int $activity_id
+	 * @param int $template_id
+	 * @return int|false
+	 */
     function bookacti_deactivate_activity_events( $activity_id, $template_id ) {
         global $wpdb;
         
@@ -1953,7 +2043,14 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	
 
 // TEMPLATES X ACTIVITIES ASSOCIATION
-	// INSERT A TEMPLATE X ACTIVITY ASSOCIATION
+	
+	/**
+	 * Insert a template x activity association
+	 * @global wpdb $wpdb
+	 * @param array $template_ids
+	 * @param array $activity_ids
+	 * @return int|false
+	 */
 	function bookacti_insert_templates_x_activities( $template_ids, $activity_ids ) {
 		
 		if( ! is_array( $template_ids ) || empty( $template_ids )
@@ -1984,7 +2081,13 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	}
 	
 	
-	// DELETE A TEMPLATE X ACTIVITY ASSOCIATION
+	/**
+	 * Delete a template x activity association
+	 * @global wpdb $wpdb
+	 * @param array $template_ids
+	 * @param array $activity_ids
+	 * @return int|false
+	 */
 	function bookacti_delete_templates_x_activities( $template_ids, $activity_ids ) {
 		
 		if( ! is_array( $template_ids ) || empty( $template_ids )
@@ -2023,8 +2126,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	/**
 	 * Get activities by template
 	 * 
-	 * @version 1.3.0
-	 * 
+	 * @version 1.7.0
 	 * @global wpdb $wpdb
 	 * @param array $template_ids
 	 * @param boolean $based_on_events Whether to retrieve activities bound to templates or activities bound to events of templates
@@ -2064,6 +2166,16 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 		$query .= ' )';
 		
+		$order_by = apply_filters( 'bookacti_activities_list_order_by', array( 'title', 'id' ) );
+		if( $order_by && is_array( $order_by ) ) {
+			$query .= ' ORDER BY ';
+			for( $i=0,$len=count($order_by); $i<$len; ++$i ) {
+				if( $order_by[ $i ] === 'id' ) { $order_by[ $i ] = 'A.id'; }
+				$query .= $order_by[ $i ] . ' ASC';
+				if( $i < $len-1 ) { $query .= ', '; }
+			}
+		}
+		
 		if( $template_ids ) {
 			$query = $wpdb->prepare( $query, $template_ids );
 		}
@@ -2094,8 +2206,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	 * Get an array of all activity ids bound to designated templates
 	 * 
 	 * @since 1.1.0
-	 * @version 1.5.0
-	 * 
+	 * @version 1.7.0
 	 * @global wpdb $wpdb
 	 * @param array $template_ids
 	 * @param boolean $based_on_events Whether to retrieve activity ids bound to templates or activity ids bound to events of templates
@@ -2166,7 +2277,15 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			$variables = array_merge( $variables, $template_ids );
 		}
 		
-		$query .= ' ORDER BY unique_activity_id ASC ';
+		$order_by = apply_filters( 'bookacti_activities_list_order_by', array( 'title', 'id' ) );
+		if( $order_by && is_array( $order_by ) ) {
+			$query .= ' ORDER BY ';
+			for( $i=0,$len=count($order_by); $i<$len; ++$i ) {
+				if( $order_by[ $i ] === 'id' ) { $order_by[ $i ] = 'unique_activity_id'; }
+				$query .= $order_by[ $i ] . ' ASC';
+				if( $i < $len-1 ) { $query .= ', '; }
+			}
+		}
 		
 		if( $variables ) {
 			$query = $wpdb->prepare( $query, $variables );
@@ -2186,6 +2305,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	/**
 	 * Get templates by activity
 	 * 
+	 * @version 1.7.0
 	 * @global wpdb $wpdb
 	 * @param array $activity_ids
 	 * @param boolean $id_only
@@ -2211,6 +2331,16 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		
 		$query .= ' )';
         
+		$order_by = apply_filters( 'bookacti_templates_list_order_by', array( 'title', 'id' ) );
+		if( $order_by && is_array( $order_by ) ) {
+			$query .= ' ORDER BY ';
+			for( $i=0,$len=count($order_by); $i<$len; ++$i ) {
+				if( $order_by[ $i ] === 'id' ) { $order_by[ $i ] = 'T.id'; }
+				$query .= $order_by[ $i ] . ' ASC';
+				if( $i < $len-1 ) { $query .= ', '; }
+			}
+		}
+		
 		$prep		= $wpdb->prepare( $query, $activity_id );
         $templates	= $wpdb->get_results( $prep, OBJECT );
 		
@@ -2230,7 +2360,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	/**
 	 * Fetch activities with the list of associated templated
 	 * 
-	 * @version 1.3.0
+	 * @version 1.7.0
 	 * @global wpdb $wpdb
 	 * @param array $template_ids
 	 * @return array [ activity_id ][id, title, color, duration, availability, is_resizable, active, template_ids] where template_ids = [id, id, id, ...]
@@ -2258,6 +2388,19 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 				$query .= ', %d';
 			}
 			$query .= ') ';
+		}
+		
+		$order_by = apply_filters( 'bookacti_activities_list_order_by', array( 'title', 'id' ) );
+		if( $order_by && is_array( $order_by ) ) {
+			$query .= ' ORDER BY ';
+			for( $i=0,$len=count($order_by); $i<$len; ++$i ) {
+				if( $order_by[ $i ] === 'id' ) { $order_by[ $i ] = 'A.id'; }
+				$query .= $order_by[ $i ] . ' ASC';
+				if( $i < $len-1 ) { $query .= ', '; }
+			}
+		}
+		
+		if( $template_ids ) {
 			$query = $wpdb->prepare( $query, $template_ids );
 		}
 		
