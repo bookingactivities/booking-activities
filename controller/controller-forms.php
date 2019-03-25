@@ -526,7 +526,7 @@ add_action( 'wp_ajax_nopriv_bookactiForgottenPassword', 'bookacti_controller_for
 /**
  * Check if booking form is correct and then book the event, or send the error message
  * @since 1.5.0
- * @version 1.7.0
+ * @version 1.7.1
  */
 function bookacti_controller_validate_booking_form() {
 	
@@ -595,7 +595,7 @@ function bookacti_controller_validate_booking_form() {
 		}
 		
 		// Check email address
-		if( ( $login_data[ 'required_fields' ][ 'email' ] || $login_values[ 'login_type' ] === 'no_account' ) 
+		if( $login_data[ 'required_fields' ][ 'email' ]
 		&&  ( empty( $login_values[ 'email' ] ) || strlen( $login_values[ 'email' ] ) > 64 ) ) {
 			$return_array[ 'error' ]	= 'invalid_email';
 			$return_array[ 'message' ]	= esc_html__( 'Your email address is not valid.', BOOKACTI_PLUGIN_NAME );
@@ -1320,7 +1320,7 @@ function bookacti_controller_reset_form_field() {
 	// Check nonce and capabilities
 	$is_nonce_valid	= check_ajax_referer( 'bookacti_update_form_field', 'nonce', false );
 	$is_allowed		= current_user_can( 'bookacti_edit_forms' ) && bookacti_user_can_manage_form( $form_id );
-		
+	
 	if( $is_nonce_valid && $is_allowed && $form_id ) {
 		
 		// Update form field with default values

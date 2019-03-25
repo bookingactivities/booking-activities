@@ -1,7 +1,7 @@
 <?php
 /**
  * Booking list page
- * @version 1.7.0
+ * @version 1.7.1
  */
 
 // Exit if accessed directly
@@ -159,10 +159,18 @@ if( ! $templates ) {
 				<div class='bookacti-bookings-filter-content' >
 					<?php
 					$from	= isset( $_REQUEST[ 'from' ] ) ? bookacti_sanitize_date( $_REQUEST[ 'from' ] ) : ''; 
-					$to		= isset( $_REQUEST[ 'to' ] ) ? bookacti_sanitize_date( $_REQUEST[ 'to' ] ) : ''; 
+					$to		= isset( $_REQUEST[ 'to' ] ) ? bookacti_sanitize_date( $_REQUEST[ 'to' ] ) : '';
+					
+					// If Internet Explorer is used, do not change field type dynamically
+					$user_agent = ! empty( $_SERVER[ 'HTTP_USER_AGENT' ] ) ? $_SERVER[ 'HTTP_USER_AGENT' ] : '';
+					if( strpos( $user_agent, 'MSIE' ) || strpos( $user_agent, 'Trident/7' ) ) {
 					?>
-					<div><input type='text' onfocus="(this.type='date')" onblur="(this.type='text')" name='from' id='bookacti-booking-filter-dates-from' placeholder='<?php _e( 'From', BOOKACTI_PLUGIN_NAME ); ?>' value='<?php echo $from; ?>' ></div>
-					<div><input type='text' onfocus="(this.type='date')" onblur="(this.type='text')" name='to'  id='bookacti-booking-filter-dates-to' placeholder='<?php _e( 'To', BOOKACTI_PLUGIN_NAME ); ?>' value='<?php echo $to; ?>' ></div>
+						<div><label for='bookacti-booking-filter-dates-from'><?php echo esc_html__( 'From', BOOKACTI_PLUGIN_NAME ) . ' '; ?></label><input type='date' name='from' id='bookacti-booking-filter-dates-from' value='<?php echo $from; ?>' ></div>
+						<div><label for='bookacti-booking-filter-dates-to'><?php echo esc_html__( 'To', BOOKACTI_PLUGIN_NAME ) . ' '; ?></label><input type='date' name='to'  id='bookacti-booking-filter-dates-to' value='<?php echo $to; ?>' ></div>
+					<?php } else { ?>
+						<div><input type='text' onfocus="(this.type='date')" onblur="(this.type='text')" name='from' id='bookacti-booking-filter-dates-from' placeholder='<?php esc_html_e( 'From', BOOKACTI_PLUGIN_NAME ); ?>' value='<?php echo $from; ?>' ></div>
+						<div><input type='text' onfocus="(this.type='date')" onblur="(this.type='text')" name='to'  id='bookacti-booking-filter-dates-to' placeholder='<?php esc_html_e( 'To', BOOKACTI_PLUGIN_NAME ); ?>' value='<?php echo $to; ?>' ></div>
+					<?php } ?>
 				</div>
 			</div>
 			<div id='bookacti-customer-filter-container' class='bookacti-bookings-filter-container' >

@@ -1301,7 +1301,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	/**
 	 * Turn the order state if it is composed of inactive / pending / booked bookings only
 	 * @since 1.1.0
-	 * @version 1.7.0
+	 * @version 1.7.1
 	 * @param int $order_id
 	 */
 	function bookacti_change_order_state_based_on_its_bookings_state( $order_id ) {
@@ -1338,14 +1338,16 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		$new_order_status = $order_status;
 		$completed_booking_states = array( 'delivered', 'booked' );
 		$cancelled_booking_states = array( 'cancelled', 'refund_requested', 'expired', 'removed' );
+		$has_completed_booking_states = array_intersect( $states, $completed_booking_states );
+		$has_cancelled_booking_states = array_intersect( $states, $cancelled_booking_states );
 		
 		if( $order_status !== 'cancelled' && in_array( 'pending', $states, true ) ) {
 			// Turn order status to processing (or let it on on-hold)
 			$new_order_status = $order_status === 'on-hold' ? 'on-hold' : 'processing';
-		} else if( $order_status !== 'cancelled' && ! empty( array_intersect( $states, $completed_booking_states ) ) ) {
+		} else if( $order_status !== 'cancelled' && ! empty( $has_completed_booking_states ) ) {
 			// Turn order status to completed
 			$new_order_status = 'completed';
-		} else if( ! empty( array_intersect( $states, $cancelled_booking_states ) ) ) {
+		} else if( ! empty( $has_cancelled_booking_states ) ) {
 			// Turn order status to cancelled
 			$new_order_status = 'cancelled';
 		} else if( $states[ 0 ] === 'refunded' && $states[ $states_length-1 ] === 'refunded' ) {

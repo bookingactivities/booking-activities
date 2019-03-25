@@ -40,7 +40,7 @@ function bookacti_get_default_settings() {
 
 /**
  * Delete settings
- * @version 1.7.0
+ * @version 1.7.1
  */
 function bookacti_delete_settings() {
 	delete_option( 'bookacti_version' );
@@ -51,6 +51,7 @@ function bookacti_delete_settings() {
 	delete_option( 'bookacti_notifications_settings' );
 	delete_option( 'bookacti_messages_settings' );
 	delete_option( 'bookacti_archive_secret_key' );
+	delete_option( 'bookacti_latest_emails_sent' );
 	
 	do_action( 'bookacti_delete_settings' );
 }
@@ -965,6 +966,7 @@ function bookacti_settings_section_bookings_callback() { }
 	/**
 	 * Settings section callback - System (displayed before settings)
 	 * @since 1.7.0
+	 * @version 1.7.1
 	 */
 	function bookacti_settings_section_system_callback() {
 		// Option to create an archive
@@ -981,9 +983,9 @@ function bookacti_settings_section_bookings_callback() { }
 				<?php esc_html_e( 'Booking Activities is not responsible for any data loss due to the use of this archiving tool. It is your responsibility to backup and restore your data independently of this tool.', BOOKACTI_PLUGIN_NAME ); ?>
 			</strong>
 			<br/>
-			<?php 
-			/* translators: %s is a link "Read this documentation" */
+			<?php
 			$doc_link = '<a href="https://booking-activities.fr/en/docs/user-documentation/advanced-use-of-booking-activities/archive-old-events-bookings/" target="_blank">' . esc_html__( 'Read this documentation', BOOKACTI_PLUGIN_NAME ) . '</a>';
+			/* translators: %s is a link "Read this documentation" */
 			echo sprintf( esc_html__( '%s to reduce the risk of data loss.', BOOKACTI_PLUGIN_NAME ), $doc_link ); 
 			?>
 			<br/><br/>

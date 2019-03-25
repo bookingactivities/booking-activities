@@ -87,6 +87,7 @@
 .bookacti-calendar { width: 100%; }
 .bookacti-calendar .fc-unthemed td.fc-today	{ background: rgba( 220, 193, 6, 0.1 ); }
 .bookacti-calendar table { margin: 0; }
+.bookacti-calendar .fc-axis.fc-time { text-transform: lowercase; }
 
 /* Header */
 .bookacti-calendar .fc-toolbar { margin-bottom: 0; }
@@ -97,7 +98,7 @@
 .bookacti-calendar .fc-event	{ cursor: pointer; overflow: hidden; }
 .bookacti-event-unavailable		{ opacity: 0.5; cursor: default; pointer-events: none; z-index: -1 !important; }
 .bookacti-picked-event .fc-bg	{ opacity: 0.5; transition: opacity 0.2s; }
-.bookacti-picked-event			{ border-width: 2px; z-index: 3 !important; transition: border 0.2s; }
+.bookacti-picked-event			{ border-width: 2px; z-index: 15 !important; transition: border 0.2s; }
 
 .bookacti-calendar .fc-basic-view .fc-content > * { display: block; }
 

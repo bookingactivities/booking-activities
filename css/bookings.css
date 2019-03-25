@@ -23,6 +23,11 @@
 .bookacti-submit-filter-centered		{ display: block; margin: 20px auto; }
 .bookacti-submit-filter-centered .bookacti-bookings-filter-title { display: none; }
 
+label[for="bookacti-booking-filter-dates-from"],
+label[for="bookacti-booking-filter-dates-to"] { display: inline-block; width: 40px; max-width: 40px; }
+label[for="bookacti-booking-filter-dates-from"] + input#bookacti-booking-filter-dates-from,
+label[for="bookacti-booking-filter-dates-to"] + input#bookacti-booking-filter-dates-to { display: inline-block; width: 108px; max-width:108px; }
+
 
 /** BOOKING SYSTEM **/
 #bookacti-booking-system-filter-container									{ margin-top: 20px; }

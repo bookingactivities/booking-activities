@@ -80,7 +80,7 @@ $j( document ).ready( function() {
 
 /**
  * Initialize and display the template calendar
- * @version 1.7.0
+ * @version 1.7.1
  */
 function bookacti_load_template_calendar() {
 	var calendar = $j( '#bookacti-template-calendar' );
@@ -92,6 +92,7 @@ function bookacti_load_template_calendar() {
 		defaultView:            'agendaWeek',
 		minTime:                '08:00',
 		maxTime:                '20:00',
+		slotLabelFormat:		'LT',
 		slotDuration:           '00:30',
 		snapDuration:           '00:05',
 		scrollTime:				'08:00',

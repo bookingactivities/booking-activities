@@ -681,6 +681,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		/**
 		 * Generate the export bookings URL according to current filters and export settings
 		 * @since 1.6.0
+		 * @version 1.7.1
 		 */
 		function bookacti_controller_generate_export_bookings_url() {
 						
@@ -713,6 +714,14 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 				unset( $_POST[ 'booking_filters' ][ 'templates' ][ 0 ] );
 				if( empty( $_POST[ 'booking_filters' ][ 'templates' ] ) ) { $_POST[ 'booking_filters' ][ 'templates' ] = ''; }
 			}
+			// Accepts two different parameter names for booking system related parameters
+			if( ! isset( $_POST[ 'booking_filters' ][ 'event_group_id' ] ) && isset( $_POST[ 'booking_filters' ][ 'bookacti_group_id' ] ) && $_POST[ 'booking_filters' ][ 'bookacti_group_id' ] !== 'single' )	{ $_POST[ 'booking_filters' ][ 'event_group_id' ] = intval( $_POST[ 'booking_filters' ][ 'bookacti_group_id' ] ); }
+			if( empty( $_POST[ 'booking_filters' ][ 'event_group_id' ] ) ) {
+				if( ! isset( $_POST[ 'booking_filters' ][ 'event_id' ] ) && isset( $_POST[ 'booking_filters' ][ 'bookacti_event_id' ] ) )		{ $_POST[ 'booking_filters' ][ 'event_id' ] = intval( $_POST[ 'booking_filters' ][ 'bookacti_event_id' ] ); }
+				if( ! isset( $_POST[ 'booking_filters' ][ 'event_start' ] ) && isset( $_POST[ 'booking_filters' ][ 'bookacti_event_start' ] ) )	{ $_POST[ 'booking_filters' ][ 'event_start' ] = bookacti_sanitize_datetime( $_POST[ 'booking_filters' ][ 'bookacti_event_start' ] ); }
+				if( ! isset( $_POST[ 'booking_filters' ][ 'event_end' ] ) && isset( $_POST[ 'booking_filters' ][ 'bookacti_event_end' ] ) )		{ $_POST[ 'booking_filters' ][ 'event_end' ] = bookacti_sanitize_datetime( $_POST[ 'booking_filters' ][ 'bookacti_event_end' ] ); }
+			}
+			
 			$default_fitlers = bookacti_format_booking_filters();
 			$booking_filters = bookacti_format_booking_filters( $_POST[ 'booking_filters' ] );
 			
@@ -744,10 +753,13 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 				}
 			}
 			
+			// Let third party plugins change the booking filters
+			$booking_atts = apply_filters( 'bookacti_export_bookings_url_attributes', $booking_filters );
+			
 			// Add the required settings to the URL
 			$csv_url = home_url( 'booking-activities-bookings.csv?action=bookacti_export_bookings&key=' . $secret_key . '&lang=' . $lang );
-			if( $booking_filters ) {
-				$csv_url = add_query_arg( $booking_filters, $csv_url );
+			if( $booking_atts ) {
+				$csv_url = add_query_arg( $booking_atts, $csv_url );
 			}
 			if( ! empty( $_POST[ 'columns' ] ) ) {
 				$csv_url = add_query_arg( array( 'columns' => $_POST[ 'columns' ] ), $csv_url );
@@ -761,6 +773,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		/**
 		 * Export booking list according to filters as CSV
 		 * @since 1.6.0
+		 * @version 1.7.1
 		 */
 		function bookacti_export_bookings_page() {
 			if( empty( $_REQUEST[ 'action' ] ) || $_REQUEST[ 'action' ] !== 'bookacti_export_bookings' ) { return; }
@@ -787,7 +800,8 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			$allowed_templates = array_keys( bookacti_fetch_templates( array(), false, $user->ID ) );
 			$filters[ 'templates' ] = empty( $_REQUEST[ 'templates' ] ) ? $allowed_templates : array_intersect( $allowed_templates, $_REQUEST[ 'templates' ] );
 			
-			$filters = apply_filters( 'bookacti_export_bookings_filters', $filters );
+			// Let third party plugins change the booking filters
+			$filters = apply_filters( 'bookacti_export_bookings_attributes', $filters );
 			
 			// Format the columns
 			$all_columns = bookacti_get_bookings_export_columns();

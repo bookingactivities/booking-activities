@@ -319,7 +319,18 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 
 == Changelog ==
 
+= 1.7.1 =
+* Tweak - The time format in the calendar vertical axis has been changed (according to your locale)
+* Optimization - Clean the option to track emails sent everyday to keep it as small as possible in the database
+* Optimization - Change the way metadata are retrieved for a better scalability
+* Fix - Cannot type more than 2 digits in the event repetition settings
+* Fix - The booking filter "Pick an event" didn't work while exporting the events
+* Fix - The booking filter "Date" didn't work on Internet Explorer
+* Fix - Events were not brought on the foreground when they were selected if more than two events overlapped
+* Fix - PHP error if your version of PHP was below 5.5
+
 = 1.7.0 - 2019/03/01 =
+* **[See the friendly release note](https://booking-activities.fr/en/blog/booking-activities-1-7-form-actions-and-sytem-tools/?utm_source=wp-plugin-page&utm_medium=wordpress&utm_content=readme)**
 * Feature - Add a WC product to cart when you click on an event or when you submit a booking form
 * Feature - Redirect to a URL when you click on an event or when you submit a booking form
 * Feature - Redirect to a WC product page when you click on an event or when you submit a booking form
