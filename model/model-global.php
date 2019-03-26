@@ -83,7 +83,7 @@ function bookacti_delete_user_meta( $meta_key, $user_id = 0, $meta_value = '' ) 
 
 /**
  * Get metadata
- * @version 1.7.0
+ * @version 1.7.1
  * @global wpdb $wpdb
  * @param string $object_type
  * @param int|array $object_id
@@ -135,19 +135,18 @@ function bookacti_get_metadata( $object_type, $object_id, $meta_key = '', $singl
 	$query = $wpdb->prepare( $query, $variables );
 
 	if( $single ) {
-		$metadata = $wpdb->get_row( $query, OBJECT );
+		$metadata = $wpdb->get_row( $query );
 		return isset( $metadata->meta_value ) ? maybe_unserialize( $metadata->meta_value ) : false;
 	}
 
-	$metadata = $wpdb->get_results( $query, OBJECT );
+	$metadata = $wpdb->get_results( $query );
 
-	if( is_null( $metadata ) ) { 
-		return false; 
-	}
+	if( is_null( $metadata ) ) { return false; }
 
 	$metadata_array = array();
 	foreach( $metadata as $metadata_pair ) {
 		if( is_array( $object_id ) ) {
+			if( ! isset( $metadata_array[ $metadata_pair->object_id ] ) ) { $metadata_array[ $metadata_pair->object_id ] = array(); }
 			$metadata_array[ $metadata_pair->object_id ][ $metadata_pair->meta_key ] = maybe_unserialize( $metadata_pair->meta_value );
 		} else {
 			$metadata_array[ $metadata_pair->meta_key ] = maybe_unserialize( $metadata_pair->meta_value );

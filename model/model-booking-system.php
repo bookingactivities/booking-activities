@@ -1139,7 +1139,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	 * Retrieve group categories data by id
 	 * 
 	 * @since 1.1.0
-	 * @version 1.7.0
+	 * @version 1.7.1
 	 * @global wpdb $wpdb
 	 * @param array|int $template_ids
 	 * @param array|int $category_ids
@@ -1208,6 +1208,13 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
         
         $categories = $wpdb->get_results( $query, ARRAY_A );
 		
+		$retrieved_category_ids = array();
+		foreach( $categories as $category ) {
+			$retrieved_category_ids[] = $category[ 'id' ];
+		}
+		
+		$categories_meta = bookacti_get_metadata( 'group_category', $retrieved_category_ids );
+		
 		$categories_data = array();
 		foreach( $categories as $category ) {
 			
@@ -1218,7 +1225,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			$category[ 'title' ]				= apply_filters( 'bookacti_translate_text', $category[ 'title' ] );
 			
 			// Add metadata
-			$category[ 'settings' ] = bookacti_get_metadata( 'group_category', $category_id );
+			$category[ 'settings' ] = isset( $categories_meta[ $category_id ] ) ? $categories_meta[ $category_id ] : array();
 			
 			$categories_data[ $category_id ] = $category;
 		}
@@ -1384,34 +1391,61 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 // PERMISSIONS
 	/**
 	 * Get managers
-	 * 
+	 * @version 1.7.1
 	 * @global wpdb $wpdb
 	 * @param string $object_type
-	 * @param int $object_id
+	 * @param int|array $object_id
 	 * @return array
 	 */
 	function bookacti_get_managers( $object_type, $object_id ) {
 		global $wpdb;
 		
-		if ( ! $object_type || ! is_numeric( $object_id ) ) {
+		if( ! $object_type || ( ! is_numeric( $object_id ) && ! is_array( $object_id ) ) ) {
 			return false;
 		}
 		
-		$object_id = absint( $object_id );
-		if ( ! $object_id ) {
-			return false;
+		if( is_numeric( $object_id ) ) {
+			$object_id = absint( $object_id );
+		} else if( is_array( $object_id ) ) {
+			$object_id = array_filter( array_map( 'absint', array_unique( $object_id ) ) );
 		}
 		
-		$query_get_managers = 'SELECT user_id FROM ' . BOOKACTI_TABLE_PERMISSIONS
-							. ' WHERE object_type = %s'
-							. ' AND object_id = %d';
+		if( ! $object_id ) { return false; }
 		
-		$query_prep	= $wpdb->prepare( $query_get_managers, $object_type, $object_id );
-		$managers = $wpdb->get_results( $query_prep, OBJECT );
+		$query	= 'SELECT object_id, user_id FROM ' . BOOKACTI_TABLE_PERMISSIONS
+				. ' WHERE object_type = %s';
+		
+		$variables = array( $object_type );
+		
+		if( is_numeric( $object_id ) ) {
+			$query .= ' AND object_id = %d';
+			$variables[] = $object_id;
+
+		} else if( is_array( $object_id ) ) {
+			$query .= ' AND object_id IN ( %d ';
+			$array_count = count( $object_id );
+			if( $array_count >= 2 ) {
+				for( $i=1; $i<$array_count; ++$i ) {
+					$query .= ', %d ';
+				}
+			}
+			$query .= ') ';
+			$variables = array_merge( $variables, $object_id );
+		}
+		
+		$query		= $wpdb->prepare( $query, $variables );
+		$managers	= $wpdb->get_results( $query, OBJECT );
+		
+		if( is_null( $managers ) ) { return false; }
 		
 		$managers_array = array();
 		foreach( $managers as $manager ) {
-			$managers_array[] = intval( $manager->user_id );
+			if( is_array( $object_id ) ) {
+				if( ! isset( $managers_array[ $manager->object_id ] ) ) { $managers_array[ $manager->object_id ] = array();	}
+				$managers_array[ $manager->object_id ][] = intval( $manager->user_id );
+			} else {
+				$managers_array[] = intval( $manager->user_id );
+			}
 		}
 		
 		return $managers_array;

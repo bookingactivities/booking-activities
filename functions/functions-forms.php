@@ -274,6 +274,7 @@ function bookacti_display_form( $form_id, $instance_id = '', $context = 'display
 /**
  * Get form fields array
  * @since 1.5.4
+ * @version 1.7.1
  * @param int $form_id
  * @param boolean $active_only Whether to fetch only active fields. Default "true".
  * @return array
@@ -284,12 +285,19 @@ function bookacti_get_form_fields_data( $form_id, $active_only = true ) {
 	
 	if( ! $fields ) { return array(); }
 	
+	$field_ids = array();
+	foreach( $fields as $field ) { $field_ids[] = $field[ 'field_id' ]; }
+	
+	// Get fields meta
+	$fields_meta = bookacti_get_metadata( 'form_field', $field_ids );
+	
 	// Add form field metadata and 
 	// Format form fields
 	$fields_data = array();
 	foreach( $fields as $i => $field ) {
+		$field_id = $field[ 'field_id' ];
 		// Add field-specific data
-		$field_metadata = bookacti_get_metadata( 'form_field', $field[ 'field_id' ] );
+		$field_metadata = isset( $fields_meta[ $field_id ] ) ? $fields_meta[ $field_id ] : array();
 		if( is_array( $field_metadata ) ) { 
 			$field = array_merge( $field, $field_metadata );
 		}

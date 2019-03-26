@@ -321,8 +321,9 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 
 = 1.7.1 =
 * Tweak - The time format in the calendar vertical axis has been changed (according to your locale)
-* Optimization - Clean the option to track emails sent everyday to keep it as small as possible in the database
+* Optimization - Significantly reduced loading time (calendars and booking lists) 
 * Optimization - Change the way metadata are retrieved for a better scalability
+* Optimization - Clean the option to track emails sent everyday to keep it as small as possible in the database
 * Fix - Cannot type more than 2 digits in the event repetition settings
 * Fix - The booking filter "Pick an event" didn't work while exporting the events
 * Fix - The booking filter "Date" didn't work on Internet Explorer
