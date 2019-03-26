@@ -508,11 +508,12 @@ if( ! class_exists( 'Bookings_List_Table' ) ) {
 		 * Get the total amount of bookings according to filters
 		 * 
 		 * @since 1.3.0
-		 * @version 1.6.0
+		 * @version 1.7.1
 		 * @access public
 		 * @return int
 		 */
 		public function get_total_items_count() {
+			if( $this->filters[ 'event_id' ] && ! $this->filters[ 'event_group_id' ] ) { $this->filters[ 'booking_group_id' ] = 'none'; }
 			if( ! $this->filters[ 'booking_group_id' ] && $this->filters[ 'group_by' ] !== 'none' ) { $this->filters[ 'group_by' ] = 'booking_group'; }
 			return bookacti_get_number_of_booking_rows( $this->filters );
 		}
