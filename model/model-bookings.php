@@ -1344,7 +1344,7 @@ function bookacti_get_number_of_bookings_per_user_by_group_of_events( $group_of_
 			. ' WHERE BG.id = B.group_id '
 			. ' AND BG.event_group_id IN ( %d';
 	
-	$array_count = count( $group_of_events_ids );
+	$array_count = count( $variables );
 	if( $array_count >= 2 ) {
 		for( $i=1; $i<$array_count; ++$i ) {
 			$query .= ', %d';

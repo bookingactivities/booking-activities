@@ -269,7 +269,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 		/**
 		 * AJAX Controller - Reschedule a booking
-		 * @version 1.7.0
+		 * @version 1.7.1
 		 */
 		function bookacti_controller_reschedule_booking() {
 
@@ -327,9 +327,8 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 				$Bookings_List_Table->prepare_items( array( 'booking_id' => $booking_id ), true );
 				$row = $Bookings_List_Table->get_rows_or_placeholder();
 			} else {
-				$user_id	= get_current_user_id();
-				$columns	= bookacti_get_booking_list_columns( $user_id );
-				$row		= bookacti_get_booking_list_rows( array( $new_booking ), $columns, $user_id );
+				$filters	= bookacti_format_booking_filters( array( 'booking_id' => $new_booking->id ) );
+				$row		= bookacti_get_booking_list_rows( $filters );
 			}
 
 			wp_send_json( array( 'status' => 'success', 'actions_html' => $actions_html, 'row' => $row ) );

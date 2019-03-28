@@ -1401,7 +1401,7 @@ function bookacti_get_events_array_from_db_events( $events, $past_events, $inter
 			'repeat_freq'		=> $event->repeat_freq,
 			'repeat_from'		=> $event->repeat_from,
 			'repeat_to'			=> $event->repeat_to,
-			'settings'			=> isset( $events_meta[ $event->event_id ] ) ? isset( $events_meta[ $event->event_id ] ) : array()
+			'settings'			=> isset( $events_meta[ $event->event_id ] ) ? $events_meta[ $event->event_id ] : array()
 		);
 		
 		// Build events data array

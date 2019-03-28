@@ -1538,12 +1538,12 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 /**
  * Get booking list columns 
- * 
  * @since 1.3.0
- * @param int|string $user_id
+ * @version 1.7.1
+ * @param array $filters
  * @return array
  */
-function bookacti_get_booking_list_columns( $user_id = 0 ) {
+function bookacti_get_booking_list_columns( $filters = array() ) {
 	
 	// Set up booking list columns
 	$columns = apply_filters( 'bookacti_user_bookings_list_columns_titles', array(
@@ -1552,7 +1552,7 @@ function bookacti_get_booking_list_columns( $user_id = 0 ) {
 		40	=> array( 'id' => 'quantity',	'title' => esc_html__( 'Quantity', BOOKACTI_PLUGIN_NAME ) ),
 		50	=> array( 'id' => 'state',		'title' => esc_html_x( 'State', 'State of a booking', BOOKACTI_PLUGIN_NAME ) ),
 		100 => array( 'id' => 'actions',	'title' => esc_html__( 'Actions', BOOKACTI_PLUGIN_NAME ) )
-	), $user_id );
+	), $filters );
 	
 	// Order columns
 	ksort( $columns );
@@ -1563,20 +1563,22 @@ function bookacti_get_booking_list_columns( $user_id = 0 ) {
 /**
  * Get booking list rows
  * @since 1.3.0
- * @version 1.6.0
- * @param array $bookings
+ * @version 1.7.1
+ * @param array $filters
  * @param array $columns
- * @param int|string $user_id
  * @return string
  */
-function bookacti_get_booking_list_rows( $bookings, $columns = array(), $user_id = 0 ) {
+function bookacti_get_booking_list_rows( $filters, $columns = array() ) {
 	
-	if( ! $columns ) { $columns = bookacti_get_booking_list_columns( $user_id ); }
+	if( ! $columns ) { $columns = bookacti_get_booking_list_columns( $filters ); }
 	
 	$list_items				= array();
 	$groups_already_added	= array();
 	$group_ids				= array();
 	$booking_groups			= array();
+	
+	// Get bookings
+	$bookings = bookacti_get_bookings( $filters );
 	
 	// Get required booking groups
 	foreach( $bookings as $booking ) {
@@ -1586,20 +1588,20 @@ function bookacti_get_booking_list_rows( $bookings, $columns = array(), $user_id
 	}
 	
 	if( $group_ids ) {
-		$group_filters = bookacti_format_booking_filters( array( 'in__booking_group_id' => $group_ids, 'templates' => '' ) );
-		
-		// If the booking are grouped by booking groups, 
-		// booking group meta will already be attached to the booking representing its group 
-		if( $group_filters[ 'fetch_meta' ] && $group_filters[ 'group_by' ] === 'booking_group' ) { $group_filters[ 'fetch_meta' ] = false; }
-
-		$booking_groups = bookacti_get_booking_groups( $group_filters );
+		$group_filters		= bookacti_format_booking_filters( array( 'in__booking_group_id' => $group_ids, 'templates' => '', 'fetch_meta' => $filters[ 'fetch_meta' ] ) );
+		$booking_groups		= bookacti_get_booking_groups( $group_filters );
+		$groups_bookings	= bookacti_get_bookings( $group_filters );
+		$bookings_per_group	= array();
+		foreach( $groups_bookings as $booking ) {
+			if( ! isset( $bookings_per_group[ $booking->group_id ] ) ) { $bookings_per_group[ $booking->group_id ] = array(); }
+			$bookings_per_group[ $booking->group_id ][] = $booking;
+		}
 	}
 	
 	// Build an array of bookings rows
 	foreach( $bookings as $booking ) {
 		// Single Bookings
 		if( empty( $booking->group_id ) ) {
-
 			$list_items[] = apply_filters( 'bookacti_user_bookings_list_columns_value', array(
 				'id'		=> $booking->id,
 				'activity'	=> bookacti_get_formatted_booking_events_list( array( $booking ) ),
@@ -1607,22 +1609,18 @@ function bookacti_get_booking_list_rows( $bookings, $columns = array(), $user_id
 				'state'		=> bookacti_format_booking_state( $booking->state ),
 				'actions'	=> bookacti_get_booking_actions_html( $booking, 'front' ),
 				'type'		=> 'single'
-			), $booking, $user_id );
+			), $filters, $booking );
 
 		// Booking groups
 		} else if( ! in_array( $booking->group_id, $groups_already_added, true ) ) {
-			
-			$group_filters = bookacti_format_booking_filters( array( 'in__booking_group_id' => $booking->group_id, 'templates' => '' ) );
-			$group_bookings = bookacti_get_bookings( $group_filters ); 
-
 			$list_items[] = apply_filters( 'bookacti_user_bookings_list_columns_value', array(
 				'id'		=> $booking->group_id,
-				'activity'	=> bookacti_get_formatted_booking_events_list( $group_bookings ),
+				'activity'	=> bookacti_get_formatted_booking_events_list( $bookings_per_group[ $booking->group_id ] ),
 				'quantity'	=> $booking_groups[ $booking->group_id ]->quantity,
 				'state'		=> bookacti_format_booking_state( $booking_groups[ $booking->group_id ]->state ),
 				'actions'	=> bookacti_get_booking_group_actions_html( $booking_groups[ $booking->group_id ], 'front' ),
 				'type'		=> 'group'
-			), $booking, $user_id );
+			), $filters, $booking, $booking_groups[ $booking->group_id ], $bookings_per_group[ $booking->group_id ] );
 
 			// Flag the group as 'already added' to make it appears only once in the list
 			$groups_already_added[] = $booking->group_id;

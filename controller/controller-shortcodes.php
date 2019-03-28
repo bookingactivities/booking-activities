@@ -115,7 +115,7 @@ function bookacti_shortcode_booking_form( $atts = array(), $content = null, $tag
 
 /**
  * Display a user related booking list via shortcode
- * @version 1.7.0
+ * @version 1.7.1
  * @param array $atts [user_id, per_page, status, and any booking filter such as 'from', 'to', 'activities'...]
  * @param string $content
  * @param string $tag Should be "bookingactivities_list"
@@ -154,6 +154,7 @@ function bookacti_shortcode_bookings_list( $atts = array(), $content = null, $ta
 	$filters = bookacti_format_booking_filters( $atts );
 	// Allow to filter by any template
 	if( ! empty( $templates ) && is_array( $templates ) ) { $filters[ 'templates' ] = $templates; }
+	// Let third party change the filters
 	$filters = apply_filters( 'bookacti_user_booking_list_booking_filters', $filters, $atts, $content );
 	
 	$bookings_nb = bookacti_get_number_of_booking_rows( $filters );	
@@ -173,7 +174,7 @@ function bookacti_shortcode_bookings_list( $atts = array(), $content = null, $ta
 			<thead>
 				<tr>
 				<?php
-					$columns = bookacti_get_booking_list_columns( $filters[ 'user_id' ] );
+					$columns = bookacti_get_booking_list_columns( $filters );
 					foreach( $columns as $column ) {
 					?>
 						<th class='bookacti-column-<?php echo sanitize_title_with_dashes( $column[ 'id' ] ); ?>'>
@@ -188,8 +189,7 @@ function bookacti_shortcode_bookings_list( $atts = array(), $content = null, $ta
 			</thead>
 			<tbody>
 			<?php
-				$bookings = bookacti_get_bookings( $filters );
-				echo bookacti_get_booking_list_rows( $bookings, $columns, $filters[ 'user_id' ] ); 
+				echo bookacti_get_booking_list_rows( $filters, $columns );
 			?>
 			</tbody>
 		</table>

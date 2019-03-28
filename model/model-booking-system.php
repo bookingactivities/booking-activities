@@ -929,7 +929,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 				. ' WHERE GE.event_id = E.id '
 				. ' AND GE.group_id IN ( %d';
 		
-		$array_count = count( $group_of_events_ids );
+		$array_count = count( $variables );
 		if( $array_count >= 2 ) {
 			for( $i=1; $i<$array_count; ++$i ) {
 				$query .= ', %d';

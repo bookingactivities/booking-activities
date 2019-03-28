@@ -585,7 +585,7 @@ function bookacti_dialog_change_booking_state( booking_id, booking_type ) {
 
 /**
  * Reschedule booking dialog
- * @version 1.7.0
+ * @version 1.7.1
  * @param {int} booking_id
  */
 function bookacti_dialog_reschedule_booking( booking_id ) {
@@ -637,6 +637,8 @@ function bookacti_dialog_reschedule_booking( booking_id ) {
 				
 				// Load only the events from the same activity of the same calendar as the booked event
 				bookacti.booking_system[ booking_system_id ][ 'activities' ] = activity_id ? [ activity_id ] : [ 0 ];
+				bookacti.booking_system[ booking_system_id ][ 'form_action' ] = 'default';
+				bookacti.booking_system[ booking_system_id ][ 'when_perform_form_action' ] = 'on_submit';
 				
 				// On the admin booking page, display past events and grouped events, from all calendars, and make them all bookable
 				if( is_bookings_page ) {

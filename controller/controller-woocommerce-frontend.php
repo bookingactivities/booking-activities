@@ -1566,26 +1566,26 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	
 	/**
 	 * Add a column called 'Price' to user bookings list
+	 * @version 1.7.1
 	 * @param array $columns
-	 * @param int|string $user_id
 	 * @return array
 	 */
-	function bookacti_add_woocommerce_price_column_to_bookings_list( $columns, $user_id ) {
+	function bookacti_add_woocommerce_price_column_to_bookings_list( $columns ) {
 		$columns[ 60 ] = array( 'id' => 'price', 'title' => __( 'Price', BOOKACTI_PLUGIN_NAME ) );
 		return $columns;
 	}
-	add_filter( 'bookacti_user_bookings_list_columns_titles', 'bookacti_add_woocommerce_price_column_to_bookings_list', 10, 2 );
+	add_filter( 'bookacti_user_bookings_list_columns_titles', 'bookacti_add_woocommerce_price_column_to_bookings_list', 10, 1 );
 	
 	
 	/**
 	 * Add values in bookings list (refund, price)
-	 * @version 1.6.0
+	 * @version 1.7.1
 	 * @param array $columns_value
+	 * @param array $filters
 	 * @param object $booking
-	 * @param int|string $user_id
 	 * @return array
 	 */
-	function bookacti_add_woocommerce_prices_in_bookings_list( $columns_value, $booking, $user_id ) {
+	function bookacti_add_woocommerce_prices_in_bookings_list( $columns_value, $filters, $booking ) {
 		$item = bookacti_get_order_item_by_booking_id( $booking->id );
 		if( ! empty( $item ) ) {
 			// Add Price column value
@@ -1598,7 +1598,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 				$tax	= $item[ 'line_tax' ];
 			}
 			
-			$price_value = apply_filters( 'bookacti_user_bookings_list_order_item_price', wc_price( (float) $total + (float) $tax ), $item, $columns_value, $booking, $user_id );
+			$price_value = apply_filters( 'bookacti_user_bookings_list_order_item_price', wc_price( (float) $total + (float) $tax ), $item, $columns_value, $booking, $filters );
 			$columns_value[ 'price' ] = $price_value ? $price_value : '/';
 			
 			// Add refund coupon code in "Status" column

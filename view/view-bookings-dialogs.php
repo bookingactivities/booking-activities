@@ -1,7 +1,7 @@
 <?php 
 /**
  * Frontend and Backend booking dialogs
- * @version 1.7.0
+ * @version 1.7.1
  */
 
 // Exit if accessed directly
@@ -37,12 +37,14 @@ $messages = bookacti_get_messages();
 			<?php 
 				$reschedule_booking_method = apply_filters( 'bookacti_reschedule_booking_method', 'calendar' );
 				$atts = array( 
-					'method'				=> $reschedule_booking_method,
-					'id'					=> 'bookacti-booking-system-reschedule',
-					'class'					=> is_admin() ? 'admin-booking-system' : '',
-					'past_events'			=> is_admin() ? 1 : 0,
-					'past_events_bookable'	=> is_admin() ? 1 : 0,
-					'auto_load'				=> 0
+					'method'					=> $reschedule_booking_method,
+					'id'						=> 'bookacti-booking-system-reschedule',
+					'class'						=> is_admin() ? 'admin-booking-system' : '',
+					'form_action'				=> 'default',
+					'when_perform_form_action'	=> 'on_submit',
+					'past_events'				=> is_admin() ? 1 : 0,
+					'past_events_bookable'		=> is_admin() ? 1 : 0,
+					'auto_load'					=> 0
 				);
 				bookacti_get_booking_system( $atts, true );
 			?>
