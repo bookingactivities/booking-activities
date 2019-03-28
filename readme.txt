@@ -5,7 +5,7 @@ Tags: booking activities, booking sport, booking form, event reservation, reserv
 Requires at least: 3.6
 Tested up to: 5.1
 Requires PHP: 5.3
-Stable tag: 1.7.0
+Stable tag: 1.7.1
 License: GPLv3 or later
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
 
@@ -319,7 +319,24 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 
 == Changelog ==
 
+= 1.7.1 - 2019/03/28 =
+* Optimization - Significantly improved loading time for calendars and booking lists containing a lot of events / bookings
+* Optimization - Change the way metadata are retrieved for a better scalability
+* Optimization - Clean the option to track emails sent everyday to keep it as small as possible in the database
+* Dev - Compatibility with most cache plugins confirmed
+* Tweak - The time format in the calendar vertical axis has been changed (according to your locale)
+* Fix - Events spreading over two loading intervals were not displayed
+* Fix - Groups couldn't be selected in the calendar editor if all their events were not displayed
+* Fix - Cannot type more than 2 digits in the event repetition settings
+* Fix - The booking filter "Pick an event" didn't work while exporting the events
+* Fix - The booking filter "Date" didn't work on Internet Explorer
+* Fix - Events were not brought on the foreground when they were selected if more than two events overlapped
+* Fix - PHP error if your version of PHP was below 5.5
+* Fix - Number of bookings may be wrong if the list was filtered by a single event that was also part a group
+* Fix - Made sure that the reschedule booking form action is set to "default" 
+
 = 1.7.0 - 2019/03/01 =
+* **[See the friendly release note](https://booking-activities.fr/en/blog/booking-activities-1-7-form-actions-and-sytem-tools/?utm_source=wp-plugin-page&utm_medium=wordpress&utm_content=readme)**
 * Feature - Add a WC product to cart when you click on an event or when you submit a booking form
 * Feature - Redirect to a URL when you click on an event or when you submit a booking form
 * Feature - Redirect to a WC product page when you click on an event or when you submit a booking form

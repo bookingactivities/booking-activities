@@ -6,36 +6,39 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 // GENERAL
 	
 	/**
-	 * Register an hourly reccuring event (used to clean expired bookings)
+	 * Register an hourly event to clean expired bookings
+	 * @since 1.7.1 (was bookacti_register_houly_clean_expired_bookings)
 	 */
-	function bookacti_register_houly_clean_expired_bookings() {
+	function bookacti_register_cron_event_to_clean_expired_bookings() {
 		if( ! wp_next_scheduled ( 'bookacti_hourly_event' ) ) {
 			wp_schedule_event( time(), 'hourly', 'bookacti_hourly_event' );
 		}
 	}
-	add_action( 'woocommerce_installed', 'bookacti_register_houly_clean_expired_bookings' );
-	add_action( 'bookacti_activate', 'bookacti_register_houly_clean_expired_bookings' );
+	add_action( 'woocommerce_installed', 'bookacti_register_cron_event_to_clean_expired_bookings' );
+	add_action( 'bookacti_activate', 'bookacti_register_cron_event_to_clean_expired_bookings' );
 
 	
 	/**
-	 * Deregister the hourly reccuring event (to be called on wp_roles_init)
+	 * Deregister the hourly event to clean expired bookings when WooCommerce is uninstalled (to be called on wp_roles_init)
+	 * @since 1.7.1 (was bookacti_clear_houly_clean_expired_bookings_on_woocommerce_uninstall)
 	 */
-	function bookacti_clear_houly_clean_expired_bookings_on_woocommerce_uninstall() {
+	function bookacti_clear_cron_event_to_clean_expired_bookings_on_woocommerce_uninstall() {
 		if( defined( 'WP_UNINSTALL_PLUGIN' ) && WP_UNINSTALL_PLUGIN === 'woocommerce/woocommerce.php' ) {
 			bookacti_cancel_in_cart_bookings();
-			bookacti_clear_houly_clean_expired_bookings();
+			bookacti_clear_cron_event_to_clean_expired_bookings();
 		}
 	}
-	add_action( 'wp_roles_init', 'bookacti_clear_houly_clean_expired_bookings_on_woocommerce_uninstall' );
+	add_action( 'wp_roles_init', 'bookacti_clear_cron_event_to_clean_expired_bookings_on_woocommerce_uninstall' );
 	
 	
 	/**
-	 * Deregister the hourly reccuring event
+	 * Deregister the hourly event to clean expired bookings
+	 * @since 1.7.1 (was bookacti_clear_houly_clean_expired_bookings)
 	 */
-	function bookacti_clear_houly_clean_expired_bookings() {
+	function bookacti_clear_cron_event_to_clean_expired_bookings() {
 		wp_clear_scheduled_hook( 'bookacti_hourly_event' );
 	}
-	add_action( 'bookacti_deactivate', 'bookacti_clear_houly_clean_expired_bookings' );
+	add_action( 'bookacti_deactivate', 'bookacti_clear_cron_event_to_clean_expired_bookings' );
 	
 	
 	/**

@@ -363,24 +363,34 @@ function bookacti_select_events_of_group( group_id ) {
 }
 
 
-// Select an event
-function bookacti_select_event( event ) {
+/**
+ * Select an event
+ * @version 1.7.1
+ */
+function bookacti_select_event( raw_event ) {
 	
 	// Return false if we don't have both event id and event start
-	if( ( typeof event !== 'object' )
-	||  ( typeof event === 'object' && ( typeof event.id === 'undefined' || typeof event.start === 'undefined' ) )
-	||  ( typeof bookacti.booking_system[ 'bookacti-template-calendar' ][ 'events_data' ][ event.id ] === 'undefined' ) ) {
+	if( ( typeof raw_event !== 'object' )
+	||  ( typeof raw_event === 'object' && ( typeof raw_event.id === 'undefined' || typeof raw_event.start === 'undefined' ) ) ) {
 		return false;
 	}
 	
-	var activity_id = bookacti.booking_system[ 'bookacti-template-calendar' ][ 'events_data' ][ event.id ][ 'activity_id' ];
+	var activity_title = '';
+	if( ! raw_event.title && typeof bookacti.booking_system[ 'bookacti-template-calendar' ][ 'events_data' ][ raw_event.id ] !== 'undefined' ) {
+		var activity_data = bookacti.booking_system[ 'bookacti-template-calendar' ][ 'events_data' ][ raw_event.id ];
+		if( activity_data.title ) {
+			activity_title = activity_data.title;
+		} else if( $j( '.activity-row .fc-event[data-activity-id="' + activity_data.activity_id + '"]' ).length ) {
+			activity_title = $j( '.activity-row .fc-event[data-activity-id="' + activity_id + '"]' ).text();
+		}
+	}
 	
 	// Format event object
-	event = {
-		'id': event.id,
-		'title': event.title ? event.title : $j( '.activity-row .fc-event[data-activity-id="' + activity_id + '"]' ).text(),
-		'start': moment( event.start ),
-		'end': moment( event.end )
+	var event = {
+		'id': raw_event.id,
+		'title': raw_event.title ? raw_event.title : activity_title,
+		'start': moment( raw_event.start ),
+		'end': moment( raw_event.end )
 	};
 	
 	// Because of popover and long events (spreading on multiple days), 
@@ -388,11 +398,12 @@ function bookacti_select_event( event ) {
 	var elements = $j( '.fc-event[data-event-id="' + event.id + '"][data-event-start="' + event.start.format( 'YYYY-MM-DD HH:mm:ss' ) + '"]' );
 	
 	// Format the selected event (because of popover, the same event can appears twice)
-	elements.addClass( 'bookacti-selected-event' );
-	
-	elements.find( '.bookacti-event-action-select-checkbox' ).prop( 'checked', true );
-	elements.find( '.bookacti-event-actions' ).show();
-	elements.find( '.bookacti-event-action-select' ).show();
+	if( elements.length ) {
+		elements.addClass( 'bookacti-selected-event' );
+		elements.find( '.bookacti-event-action-select-checkbox' ).prop( 'checked', true );
+		elements.find( '.bookacti-event-actions' ).show();
+		elements.find( '.bookacti-event-action-select' ).show();
+	}
 
 	// Keep picked events in memory 
 	bookacti.booking_system[ 'bookacti-template-calendar' ][ 'selected_events' ].push({ 
@@ -408,43 +419,43 @@ function bookacti_select_event( event ) {
 }
 
 
-// Unselect an event
-function bookacti_unselect_event( event, start, all ) {
-	
+/**
+ * Unselect an event
+ * @version 1.7.1
+ * @param {object} event
+ * @param {boolean} all
+ * @returns {boolean}
+ */
+function bookacti_unselect_event( event, all ) {
 	// Determine if all event should be unselected
 	all = all ? true : false;
 	
 	// Return false if we don't have both event id and event start
 	if( ( typeof event !== 'object' && ! $j.isNumeric( event ) )
 	||  ( typeof event === 'object' && ( typeof event.id === 'undefined' || typeof event.start === 'undefined' ) )
-	||  ( $j.isNumeric( event ) && ! all && typeof start === 'undefined' ) ) {
+	||  ( $j.isNumeric( event ) && ! all ) ) {
 		return false;
 	}
 	
+	// Format start values to object
 	if( typeof event !== 'object' ) {
-		// Format start values to object
 		var event_id = event;
-		start	= start instanceof moment ? start : moment( start ).isValid() ? moment( start ) : false;
-		event	= {
-			'id': event_id,
-			'start': start
-		};
+		event = { 'id': event_id };
 	}
 	
 	// Because of popover and long events (spreading on multiple days), 
 	// the same event can appears twice, so we need to apply changes on each
 	var elements = $j( '.fc-event[data-event-id="' + event.id + '"]' );
-	if( ! all && event.start ) {
-		elements = $j( '.fc-event[data-event-id="' + event.id + '"][data-event-start="' + event.start.format( 'YYYY-MM-DD HH:mm:ss' ) + '"]' );
+	
+	if( elements.length ) {
+		// Format the selected event(s)
+		elements.removeClass( 'bookacti-selected-event' );
+
+		// Specific treatment for calendar editor
+		elements.find( '.bookacti-event-action-select-checkbox' ).prop( 'checked', false );
+		elements.find( '.bookacti-event-action-select' ).hide();
 	}
-	
-	// Format the selected event(s)
-	elements.removeClass( 'bookacti-selected-event' );
-	
-	// Specific treatment for calendar editor
-	elements.find( '.bookacti-event-action-select-checkbox' ).prop( 'checked', false );
-	elements.find( '.bookacti-event-action-select' ).hide();
-	
+
 	// Remove selected event(s) from memory 
 	var selected_events = $j.grep( bookacti.booking_system[ 'bookacti-template-calendar' ][ 'selected_events' ], function( selected_event ){
 		if( selected_event.id == event.id 
@@ -461,6 +472,8 @@ function bookacti_unselect_event( event, start, all ) {
 	bookacti.booking_system[ 'bookacti-template-calendar' ][ 'selected_events' ] = selected_events;
 	
 	$j( '#bookacti-template-calendar' ).trigger( 'bookacti_unselect_event', [ event, all ] );
+	
+	return true;
 }
 
 
@@ -760,7 +773,12 @@ function bookacti_is_locked_event( event_id ) {
 }
 
 
-// Unbind occurences of a booked event
+/**
+ * Unbind occurences of a booked event
+ * @version 1.7.1
+ * @param {object} event
+ * @param {string} occurences
+ */
 function bookacti_unbind_occurrences( event, occurences ) {
 	
     bookacti_start_template_loading();
@@ -784,7 +802,7 @@ function bookacti_unbind_occurrences( event, occurences ) {
 				var new_event_id = response.new_event_id;
 				
 				// Unselect the event or occurences of the event
-				bookacti_unselect_event( event, undefined, true );
+				bookacti_unselect_event( event, true );
 				
 				// Update affected calendar data
 				bookacti.booking_system[ 'bookacti-template-calendar' ][ 'exceptions' ]						= response.exceptions;

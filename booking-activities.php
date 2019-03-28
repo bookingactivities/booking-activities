@@ -3,13 +3,13 @@
  * Plugin Name: Booking Activities
  * Plugin URI: https://booking-activities.fr/en/?utm_source=plugin&utm_medium=plugin&utm_content=header
  * Description: Booking system specialized in activities (sports, cultural, leisure, events...). Works great with WooCommerce.
- * Version: 1.7.0
+ * Version: 1.7.1
  * Author: Booking Activities Team
  * Author URI: https://booking-activities.fr/en/?utm_source=plugin&utm_medium=plugin&utm_content=header
  * Text Domain: booking-activities
  * Domain Path: /languages/
  * WC requires at least: 2.6
- * WC tested up to: 3.5
+ * WC tested up to: 3.6
  * License: GPL3
  * License URI: https://www.gnu.org/licenses/gpl-3.0.html
  * 
@@ -40,7 +40,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 
 // GLOBALS AND CONSTANTS
-if( ! defined( 'BOOKACTI_VERSION' ) )		{ define( 'BOOKACTI_VERSION', '1.7.0' ); }
+if( ! defined( 'BOOKACTI_VERSION' ) )		{ define( 'BOOKACTI_VERSION', '1.7.1' ); }
 if( ! defined( 'BOOKACTI_PLUGIN_NAME' ) )	{ define( 'BOOKACTI_PLUGIN_NAME', 'booking-activities' ); }
 
 
@@ -302,7 +302,7 @@ add_action( 'admin_enqueue_scripts', 'bookacti_enqueue_backend_scripts', 30 );
  * @global array $bookacti_translation_array
  */
 function bookacti_enqueue_frontend_scripts() {
-	// INCLUDE STYLESHEETS
+	// Include stylesheets
 	wp_enqueue_style ( 'bookacti-css-frontend', plugins_url( 'css/frontend.min.css', __FILE__ ), array(), BOOKACTI_VERSION );
 }
 add_action( 'wp_enqueue_scripts', 'bookacti_enqueue_frontend_scripts', 30 );
@@ -314,9 +314,9 @@ add_action( 'wp_enqueue_scripts', 'bookacti_enqueue_frontend_scripts', 30 );
 
 /**
  * Activate Booking Activities
+ * @version 1.7.1
  */
 function bookacti_activate() {
-	
 	// Allow users to manage Bookings
 	bookacti_set_role_and_cap();
 
@@ -329,7 +329,7 @@ function bookacti_activate() {
 		update_option( 'bookacti-install-date', date( 'Y-m-d H:i:s' ) );
 	}
 	
-	// Check if the plugin if being updated
+	// Check if the plugin is being updated
 	bookacti_check_version( true );
 	
 	// Update current version
@@ -346,9 +346,9 @@ register_activation_hook( __FILE__, 'bookacti_activate' );
 
 /**
  * Deactivate Booking Activities
+ * @version 1.7.1
  */
 function bookacti_deactivate() {
-	
 	do_action( 'bookacti_deactivate' );
 }
 register_deactivation_hook( __FILE__, 'bookacti_deactivate' );
@@ -356,11 +356,12 @@ register_deactivation_hook( __FILE__, 'bookacti_deactivate' );
 
 /**
  * Uninstall Booking Activities
- * @version 1.7.0
+ * @version 1.7.1
  */
 function bookacti_uninstall() {
-	// Deregister the hourly reccuring event
+	// Deregister the cron events
 	wp_clear_scheduled_hook( 'bookacti_hourly_event' );
+	wp_clear_scheduled_hook( 'bookacti_daily_event' );
 	
 	// Delete notices acknowledgement
 	bookacti_reset_notices();

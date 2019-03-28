@@ -525,7 +525,11 @@ function bookacti_dialog_deactivate_template( template_id ) {
 
 // EVENTS
 
-// Dialog Update Event
+/**
+ * Dialog Update Event
+ * @version 1.7.1
+ * @param {object} event
+ */
 function bookacti_dialog_update_event( event ) {
     
 	// Fill the form with known param
@@ -641,7 +645,7 @@ function bookacti_dialog_update_event( event ) {
 							var event_id = event.id;
 
 							// Unselect the event or occurences of the event
-							bookacti_unselect_event( event, undefined, true );
+							bookacti_unselect_event( event, true );
 
 							// Update event data
 							bookacti.booking_system[ 'bookacti-template-calendar' ][ 'events_data' ][ event_id ] = response.events_data[ event_id ];

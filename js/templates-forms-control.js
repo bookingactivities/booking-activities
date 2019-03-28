@@ -309,6 +309,12 @@ function bookacti_validate_event_general_data() {
 }
 
 
+/**
+ * Check if the event repetition fields are properly filled
+ * @version 1.7.1
+ * @param {object} event
+ * @returns {boolean}
+ */
 function bookacti_validate_event_repetition_data( event ) {
 	
 	// After calling it once, call it everytime a field change
@@ -377,8 +383,10 @@ function bookacti_validate_event_repetition_data( event ) {
 
 	// Disable all
 	$j( '#bookacti-event-data-dialog #bookacti-event-repeat-freq option' ).prop( 'disabled', true );
-	$j( '#bookacti-event-data-dialog #bookacti-event-repeat-from' ).prop( 'disabled', true );
-	$j( '#bookacti-event-data-dialog #bookacti-event-repeat-to' ).prop( 'disabled', true );
+	if( ! valid_form.isRepeated ) {
+		$j( '#bookacti-event-data-dialog #bookacti-event-repeat-from' ).prop( 'disabled', true );
+		$j( '#bookacti-event-data-dialog #bookacti-event-repeat-to' ).prop( 'disabled', true );
+	}
 	$j( '#bookacti-event-data-dialog #bookacti-event-exception-date-picker' ).prop( 'disabled', true );
 	$j( '#bookacti-event-data-dialog #bookacti-event-add-exception-button' ).prop( 'disabled', true );
 	$j( '#bookacti-event-data-dialog #bookacti-event-exceptions-selectbox' ).prop( 'disabled', true );

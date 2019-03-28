@@ -491,7 +491,7 @@ function bookacti_send_notification( $notification_id, $booking_id, $booking_typ
 	
 	$locale = apply_filters( 'bookacti_notification_locale', $locale, $notification_id, $booking_id, $booking_type, $args );
 	
-	// Temporarilly switch locale to site or user default's
+	// Temporarily switch locale to site or user default's
 	bookacti_switch_locale( $locale );
 	
 	// Replace tags in message and replace linebreaks with html tags

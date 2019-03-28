@@ -505,10 +505,61 @@ function bookacti_get_booking_group_expiration_date( $booking_group_id ) {
 /**
  * Get the order item data corresponding to a booking
  * @since 1.6.0
+ * @version 1.7.1
  * @param array $booking_ids
+ * @param array $booking_groups_ids
  * @return array|false
  */
 function bookacti_get_order_items_data_by_bookings( $booking_ids = array(), $booking_groups_ids = array() ) {
+	$order_items_ids = bookacti_get_order_items_ids_by_bookings( $booking_ids, $booking_groups_ids );
+	if( ! $order_items_ids ) { return false; }
+	
+	global $wpdb;
+	
+	$query	= 'SELECT OI.*, IM.meta_key, IM.meta_value '
+			. ' FROM ' . $wpdb->prefix . 'woocommerce_order_items as OI, ' . $wpdb->prefix . 'woocommerce_order_itemmeta as IM '
+			. ' WHERE OI.order_item_id = IM.order_item_id '
+			. ' AND OI.order_item_id IN ( %d';
+	
+	$array_count = count( $order_items_ids );
+	if( $array_count >= 2 ) {
+		for( $i=1; $i<$array_count; ++$i ) {
+			$query .= ', %d';
+		}
+	}
+	$query .= ' )';
+	
+	$query .= ' ORDER BY OI.order_item_id ASC';
+	
+	$variables = $order_items_ids;
+	$query = apply_filters( 'bookacti_get_order_items_data_by_bookings_query', $wpdb->prepare( $query, $variables ), $order_items_ids, $booking_ids, $booking_groups_ids );
+	
+	$order_items_data = $wpdb->get_results( $query );
+	if( ! $order_items_data ) { return false; }
+	
+	$order_items_array = array();
+	foreach( $order_items_data as $order_item_data ) {
+		if( ! isset( $order_items_array[ $order_item_data->order_item_id ] ) ) {
+			$order_items_array[ $order_item_data->order_item_id ] = clone $order_item_data;
+			unset( $order_items_array[ $order_item_data->order_item_id ]->meta_key );
+			unset( $order_items_array[ $order_item_data->order_item_id ]->meta_value );
+		}
+		$order_items_array[ $order_item_data->order_item_id ]->{$order_item_data->meta_key} = $order_item_data->meta_value;
+	}
+	
+	return apply_filters( 'bookacti_get_order_items_data_by_bookings', $order_items_array, $booking_ids, $booking_groups_ids );
+}
+
+
+/**
+ * Get the order item ids corresponding to a booking or a booking group
+ * @since 1.7.1
+ * @global wpdb $wpdb
+ * @param array $booking_ids
+ * @param array $booking_groups_ids
+ * @return array|false
+ */
+function bookacti_get_order_items_ids_by_bookings( $booking_ids = array(), $booking_groups_ids = array() ) {
 	// Format inputs into arrays
 	if( is_numeric( $booking_ids ) )				{ $booking_ids = array( $booking_ids ); }
 	if( is_numeric( $booking_groups_ids ) )			{ $booking_groups_ids = array( $booking_groups_ids ); }
@@ -518,51 +569,34 @@ function bookacti_get_order_items_data_by_bookings( $booking_ids = array(), $boo
 	
 	global $wpdb;
 	
-	// This query transform the meta_key / meta_value pair (of usermeta table) into columns / values for each distinct wanted user
-	$wpdb->query( 'SET SESSION group_concat_max_len = 1000000' );
-	$select_postmeta_columns_query	= " SELECT
-										  GROUP_CONCAT( DISTINCT
-											CONCAT(
-											  'MAX( IF ( IM.meta_key = ''',
-											  meta_key,
-											  ''', IM.meta_value, NULL)) AS `',
-											  meta_key, '`'
-											)
-										  ) as select_postmeta
-										FROM " . $wpdb->prefix . "woocommerce_order_itemmeta as IM;";
-	$select_postmeta_columns = $wpdb->get_var( $select_postmeta_columns_query );
+	$query	= 'SELECT IM.* '
+			. ' FROM ' . $wpdb->prefix . 'woocommerce_order_itemmeta as IM '
+			. ' WHERE true ';
 	
-	$query	= 'SELECT OI.*, ' . $select_postmeta_columns
-			. ' FROM ' . $wpdb->prefix . 'woocommerce_order_items as OI, ' . $wpdb->prefix . 'woocommerce_order_itemmeta as IM '
-			. ' WHERE OI.order_item_id = IM.order_item_id '
-			. ' GROUP BY OI.order_item_id '
-			. ' HAVING TRUE '; // We must use HAVING instead of WHERE to filter by a column alias (which is the case for metadata)
-			
 	$variables = array();
 	$booking_ids_query = '';
 	$booking_groups_ids_query = '';
 	
-	// Comma separated booking ids
 	if( $booking_ids ) {
-		$booking_ids_query = ' bookacti_booking_id IN ( %d';
+		$booking_ids_query = '( IM.meta_key = "bookacti_booking_id" AND IM.meta_value IN ( %d';
 		$array_count = count( $booking_ids );
 		if( $array_count >= 2 ) {
 			for( $i=1; $i<$array_count; ++$i ) {
 				$booking_ids_query .= ', %d';
 			}
 		}
-		$booking_ids_query .= ' ) ';
+		$booking_ids_query .= ' ) )';
 		$variables = array_merge( $variables, $booking_ids );
 	}
 	if( $booking_groups_ids ) {
-		$booking_groups_ids_query = ' bookacti_booking_group_id IN ( %d';
+		$booking_groups_ids_query = '( IM.meta_key = "bookacti_booking_group_id" AND IM.meta_value IN ( %d';
 		$array_count = count( $booking_groups_ids );
 		if( $array_count >= 2 ) {
 			for( $i=1; $i<$array_count; ++$i ) {
 				$booking_groups_ids_query .= ', %d';
 			}
 		}
-		$booking_groups_ids_query .= ' ) ';
+		$booking_groups_ids_query .= ' ) )';
 		$variables = array_merge( $variables, $booking_groups_ids );
 	}
 	
@@ -574,18 +608,23 @@ function bookacti_get_order_items_data_by_bookings( $booking_ids = array(), $boo
 		$query .= ' AND ' . $booking_groups_ids_query;
 	}
 	
+	$query .= ' GROUP BY IM.order_item_id'
+			. ' ORDER BY IM.order_item_id ASC';
+	
 	if( $variables ) {
 		$query = $wpdb->prepare( $query, $variables );
 	}
 	
-	$query = apply_filters( 'bookacti_get_order_items_data_by_bookings_query', $query, $booking_ids, $booking_groups_ids );
+	$query = apply_filters( 'bookacti_get_order_items_ids_by_bookings_query', $query, $booking_ids, $booking_groups_ids );
 	
-	$order_items = $wpdb->get_results( $query );
+	$order_items_booking_ids = $wpdb->get_results( $query );
 	
-	$order_items_array = array();
-	foreach( $order_items as $order_item ) {
-		$order_items_array[ $order_item->order_item_id ] = $order_item;
+	if( ! $order_items_booking_ids ) { return false; }
+	
+	$order_items_ids = array();
+	foreach( $order_items_booking_ids as $order_items_booking_id ) {
+		$order_items_ids[] = $order_items_booking_id->order_item_id;
 	}
 	
-	return apply_filters( 'bookacti_get_order_items_data_by_bookings', $order_items_array, $booking_ids, $booking_groups_ids );
+	return apply_filters( 'bookacti_get_order_items_ids_by_bookings', $order_items_ids, $booking_ids, $booking_groups_ids );
 }

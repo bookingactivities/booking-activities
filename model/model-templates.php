@@ -1536,7 +1536,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 	/**
 	 * Get templates data
-	 * @version 1.7.0
+	 * @version 1.7.1
 	 * @global wpdb $wpdb
 	 * @param array $template_ids
 	 * @param boolean $ignore_permissions
@@ -1585,10 +1585,18 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			}
 		}
 		
+		$retrieved_template_ids = array();
+		foreach( $templates as $template ) {
+			$retrieved_template_ids[] = $template[ 'id' ];
+		}
+		
+		$templates_meta		= bookacti_get_metadata( 'template', $retrieved_template_ids );
+		$templates_managers	= bookacti_get_managers( 'template', $retrieved_template_ids );
+		
 		$templates_data = array();
 		foreach( $templates as $template ) {
 			$template_id = $template[ 'id' ];
-			$template[ 'admin' ] = bookacti_get_managers( 'template', $template_id );
+			$template[ 'admin' ] = isset( $templates_managers[ $template_id ] ) ? $templates_managers[ $template_id ] : array();
 			
 			// Check permission
 			if( ! $ignore_permissions ) {
@@ -1597,7 +1605,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 				}
 			}
 			
-			$template[ 'settings' ] = bookacti_get_metadata( 'template', $template_id );
+			$template[ 'settings' ] = isset( $templates_meta[ $template_id ] ) ? $templates_meta[ $template_id ] : array();
 			
 			$templates_data[ $template_id ] = $template;
 		}
@@ -2126,7 +2134,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	/**
 	 * Get activities by template
 	 * 
-	 * @version 1.7.0
+	 * @version 1.7.1
 	 * @global wpdb $wpdb
 	 * @param array $template_ids
 	 * @param boolean $based_on_events Whether to retrieve activities bound to templates or activities bound to events of templates
@@ -2181,11 +2189,19 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		}
 		
 		$activities = $wpdb->get_results( $query, OBJECT );
-
+		
+		$activity_ids = array();
+		foreach( $activities as $activity ) {
+			$activity_ids[] = $activity->id;
+		}
+		
+		$activities_managers	= bookacti_get_managers( 'activity', $activity_ids );
+		$activities_meta		= bookacti_get_metadata( 'activity', $activity_ids );
+		
 		$activities_array = array();
 		foreach( $activities as $activity ) {
-			$activity->admin	= bookacti_get_managers( 'activity', $activity->id );
-			$activity->settings = bookacti_get_metadata( 'activity', $activity->id );
+			$activity->admin	= isset( $activities_managers[ $activity->id ] ) ? $activities_managers[ $activity->id ] : array();
+			$activity->settings = isset( $activities_meta[ $activity->id ] ) ? $activities_meta[ $activity->id ] : array();
 			$activity->multilingual_title = $activity->title;
 			$activity->title	= apply_filters( 'bookacti_translate_text', $activity->title );
 

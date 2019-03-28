@@ -3,6 +3,59 @@
 if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 /**
+ * Register a daily cron event to clean notification logs
+ * @since 1.7.1
+ */
+function bookacti_register_cron_event_to_clean_latest_notifications() {
+	if( ! wp_next_scheduled ( 'bookacti_clean_latest_notifications' ) ) {
+		wp_schedule_event( time(), 'daily', 'bookacti_clean_latest_notifications' );
+	}
+}
+add_action( 'bookacti_activate', 'bookacti_register_cron_event_to_clean_latest_notifications' );
+
+
+/**
+ * Deregister the daily cron event to clean notification logs
+ * @since 1.7.1 (was bookacti_clear_houly_clean_expired_bookings)
+ */
+function bookacti_deregister_cron_event_to_clean_latest_notifications() {
+	wp_clear_scheduled_hook( 'bookacti_clean_latest_notifications' );
+}
+add_action( 'bookacti_deactivate', 'bookacti_deregister_cron_event_to_clean_latest_notifications' );
+
+
+/**
+ * Clean the latest emails logs
+ * @since 1.7.1
+ */
+function bookacti_clean_latest_emails_log() {
+	$latest_emails_sent = get_option( 'bookacti_latest_emails_sent' );
+	if( ! $latest_emails_sent ) { return; }
+	
+	$current_datetime	= new DateTime( 'now' );
+	$yesterday_datetime	= clone $current_datetime;
+	$yesterday_datetime->sub( new DateInterval( 'P1D' ) );
+	
+	foreach( $latest_emails_sent as $recipient => $emails_sent ) {
+		// Remove values before yesterday
+		foreach( $emails_sent as $i => $email_sent ) {
+			$email_datetime = new DateTime( $email_sent );
+			if( $email_datetime < $yesterday_datetime ) {
+				unset( $latest_emails_sent[ $recipient ][ $i ] );
+			}
+		}
+		// Remove the whole recipient array if no emails have been sent to him since yesterday
+		if( empty( $latest_emails_sent[ $recipient ] ) ) {
+			unset( $latest_emails_sent[ $recipient ] );
+		}
+	}
+	
+	update_option( 'bookacti_latest_emails_sent', $latest_emails_sent );
+}
+add_action( 'bookacti_clean_latest_notifications', 'bookacti_clean_latest_emails_log' );
+
+
+/**
  * Send a notification to admin and customer when a new booking is made
  * 
  * @since 1.2.2 (was bookacti_send_notification_admin_new_booking in 1.2.1)

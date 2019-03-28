@@ -1359,9 +1359,8 @@ function bookacti_seconds_to_explode_time( $seconds ) {
 
 /**
  * Get array of events from raw events from database
- * 
  * @since 1.2.2
- * @version 1.7.0
+ * @version 1.7.1
  * @param array $events Array of objects events from database
  * @param boolean $past_events
  * @param array $interval array('start'=> start date, 'end'=> end date)
@@ -1371,16 +1370,20 @@ function bookacti_seconds_to_explode_time( $seconds ) {
 function bookacti_get_events_array_from_db_events( $events, $past_events, $interval, $skip_exceptions = true ) {
 	$events_array = array( 'data' => array(), 'events' => array() );
 	
+	// Get event ids
+	$event_ids = array();
+	foreach ( $events as $event ) { $event_ids[] = $event->event_id; }
+	
 	// Get event exceptions
 	$exceptions_dates = array();
 	if( $skip_exceptions ) {
-		$event_ids = array();
-		foreach ( $events as $event ) { $event_ids[] = $event->event_id; }
 		$exceptions_dates = bookacti_get_exceptions_dates( array(), $event_ids );
 	}
 	
-	foreach ( $events as $event ) {
-
+	// Get event meta
+	$events_meta = bookacti_get_metadata( 'event', $event_ids );
+	
+	foreach( $events as $event ) {
 		$event_fc_data = array(
 			'id'				=> $event->event_id,
 			'title'				=> apply_filters( 'bookacti_translate_text', $event->title ),
@@ -1398,9 +1401,9 @@ function bookacti_get_events_array_from_db_events( $events, $past_events, $inter
 			'repeat_freq'		=> $event->repeat_freq,
 			'repeat_from'		=> $event->repeat_from,
 			'repeat_to'			=> $event->repeat_to,
-			'settings'			=> bookacti_get_metadata( 'event', $event->event_id )
+			'settings'			=> isset( $events_meta[ $event->event_id ] ) ? $events_meta[ $event->event_id ] : array()
 		);
-
+		
 		// Build events data array
 		$events_array[ 'data' ][ $event->event_id ] = array_merge( $event_fc_data, $event_bookacti_data );
 
@@ -1560,7 +1563,7 @@ function bookacti_sanitize_events_interval( $interval ) {
 
 
 /**
- * get occurences of repeated events
+ * Get occurences of repeated events
  * 
  * @since 1.2.2 (replace bookacti_create_repeated_events)
  * @version 1.5.7

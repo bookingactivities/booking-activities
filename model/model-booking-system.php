@@ -7,8 +7,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	/**
 	 * Fetch events by templates and / or activities
 	 *
-	 * @version 1.5.3
-	 * 
+	 * @version 1.7.1
 	 * @param array $templates
 	 * @param array $activities
 	 * @param boolean $past_events
@@ -66,16 +65,13 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			$variables[] = $user_timestamp_offset;
 		}
 		
-		// Do not fetch events out of the desired interval
+		// Do not fetch events totally out of the desired interval
 		if( $interval ) {
 			$query  .= ' 
 			AND (
 					( 	NULLIF( E.repeat_freq, "none" ) IS NULL 
 						AND (	UNIX_TIMESTAMP( CONVERT_TZ( E.start, %s, @@global.time_zone ) ) >= 
 								UNIX_TIMESTAMP( CONVERT_TZ( %s, %s, @@global.time_zone ) ) 
-							AND
-								UNIX_TIMESTAMP( CONVERT_TZ( E.end, %s, @@global.time_zone ) ) <= 
-								UNIX_TIMESTAMP( CONVERT_TZ( ( %s + INTERVAL 24 HOUR ), %s, @@global.time_zone ) ) 
 							) 
 					) 
 					OR
@@ -97,9 +93,6 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			
 			$variables[] = $user_timestamp_offset;
 			$variables[] = $interval[ 'start' ];
-			$variables[] = $user_timestamp_offset;
-			$variables[] = $user_timestamp_offset;
-			$variables[] = $interval[ 'end' ];
 			$variables[] = $user_timestamp_offset;
 			$variables[] = $user_timestamp_offset;
 			$variables[] = $interval[ 'start' ];
@@ -717,7 +710,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	/**
 	 * Get groups of events data by template ids
 	 * @since 1.4.0 (was bookacti_get_groups_of_events_by_template and bookacti_get_groups_of_events_by_category)
-	 * @version 1.7.0
+	 * @version 1.7.1
 	 * @global wpdb $wpdb
 	 * @param array|int $template_ids
 	 * @param array|int $category_ids
@@ -868,6 +861,17 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
         $groups	= $wpdb->get_results( $query, ARRAY_A );
 		
 		$current_user_id = apply_filters( 'bookacti_current_user_id', get_current_user_id() );
+		
+		$group_ids = array();
+		foreach( $groups as $group ) {
+			$group_ids[] = $group[ 'id' ];
+		};
+		
+		// Retrieve metadata with as few queries as possible
+		$groups_meta		= bookacti_get_metadata( 'group_of_events', $group_ids );
+		$groups_avail		= bookacti_get_group_of_events_availability( $group_ids );
+		$groups_qty_per_user= bookacti_get_number_of_bookings_per_user_by_group_of_events( $group_ids );
+		
 		$groups_data = array();
 		foreach( $groups as $group ) {
 			
@@ -878,13 +882,13 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			$group[ 'title' ]				= apply_filters( 'bookacti_translate_text', $group[ 'title' ] );
 			
 			// Add metadata
-			$group[ 'settings' ] = bookacti_get_metadata( 'group_of_events', $group_id );
+			$group[ 'settings' ] = isset( $groups_meta[ $group_id ] ) ? $groups_meta[ $group_id ] : array();
 			
 			// Add info about booking per users
-			$quantity_per_user = bookacti_get_number_of_bookings_per_user_by_group_of_events( $group_id );
+			$quantity_per_user					= isset( $groups_qty_per_user[ $group_id ] ) ? $groups_qty_per_user[ $group_id ] : array();
 			$group[ 'distinct_users' ]			= count( $quantity_per_user );
 			$group[ 'current_user_bookings' ]	= $current_user_id && isset( $quantity_per_user[ $current_user_id ] ) ? $quantity_per_user[ $current_user_id ] : 0;
-			$group[ 'availability' ]			= bookacti_get_group_of_events_availability( $group_id );
+			$group[ 'availability' ]			= isset( $groups_avail[ $group_id ] ) ? $groups_avail[ $group_id ] : 0;
 			
 			$groups_data[ $group_id ] = $group;
 		}
@@ -898,32 +902,60 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	 * 
 	 * @global wpdb $wpdb
 	 * @since 1.1.0
-	 * @version 1.4.0
-	 * @param int $event_group_id
-	 * @return false|int
+	 * @version 1.7.1
+	 * @param int|array $group_of_events_ids
+	 * @return false|int|array
 	 */
-	function bookacti_get_group_of_events_availability( $event_group_id ) {
+	function bookacti_get_group_of_events_availability( $group_of_events_ids ) {
+		// Sanitize the array of group of events ID
+		if( ! is_array( $group_of_events_ids ) ) {
+			$variables = array( intval( $group_of_events_ids ) );
+		} else {
+			$variables = array_filter( array_map( 'intval', $group_of_events_ids ) );
+		}
+		
+		if( ! $variables ) { return false; }
 		
 		global $wpdb;
 		
-		$query = 'SELECT MIN( E.availability - IFNULL( B.quantity_booked, 0 ) ) as availability '
+		$query = 'SELECT GE.group_id, MIN( E.availability - IFNULL( B.quantity_booked, 0 ) ) as availability '
 				. ' FROM ' . BOOKACTI_TABLE_GROUPS_EVENTS . ' as GE '
 				. ' JOIN ' . BOOKACTI_TABLE_EVENTS . ' as E '
 				. ' LEFT JOIN ( '
 					. ' SELECT event_id, event_start, event_end, SUM( quantity ) as quantity_booked FROM ' . BOOKACTI_TABLE_BOOKINGS 
 					. ' WHERE active = 1 '
 					. ' GROUP BY CONCAT( event_id, event_start, event_end ) '
-				. ' ) as B ON B.event_id = GE.event_id AND B.event_start = GE.event_start AND B.event_end = GE.event_end '
-				. ' WHERE GE.group_id = %d '
-				. ' AND GE.event_id = E.id ';
+				. ' ) as B ON ( B.event_id = GE.event_id AND B.event_start = GE.event_start AND B.event_end = GE.event_end ) '
+				. ' WHERE GE.event_id = E.id '
+				. ' AND GE.group_id IN ( %d';
 		
-		$query = $wpdb->prepare( $query, $event_group_id );
-		$availability = $wpdb->get_var( $query );
+		$array_count = count( $variables );
+		if( $array_count >= 2 ) {
+			for( $i=1; $i<$array_count; ++$i ) {
+				$query .= ', %d';
+			}
+		}
 		
-		return $availability;
+		$query .= ' )'
+				. ' GROUP BY GE.group_id;';
+		
+		$query		= $wpdb->prepare( $query, $variables );
+		$results	= $wpdb->get_results( $query );
+		
+		$group_availabilities = array();
+		foreach( $results as $result ) {
+			$group_availabilities[ $result->group_id ] = $result->availability;
+		}
+		
+		// Return the single value if only one group was given
+		if( ! is_array( $group_of_events_ids ) ) {
+			return isset( $group_availabilities[ $group_of_events_ids ] ) ? $group_availabilities[ $group_of_events_ids ] : 0;
+		}
+		
+		return $group_availabilities;
 	}
-	
-	
+
+
 
 
 // GROUPS X EVENTS
@@ -1100,7 +1132,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	 * Retrieve group categories data by id
 	 * 
 	 * @since 1.1.0
-	 * @version 1.7.0
+	 * @version 1.7.1
 	 * @global wpdb $wpdb
 	 * @param array|int $template_ids
 	 * @param array|int $category_ids
@@ -1169,6 +1201,13 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
         
         $categories = $wpdb->get_results( $query, ARRAY_A );
 		
+		$retrieved_category_ids = array();
+		foreach( $categories as $category ) {
+			$retrieved_category_ids[] = $category[ 'id' ];
+		}
+		
+		$categories_meta = bookacti_get_metadata( 'group_category', $retrieved_category_ids );
+		
 		$categories_data = array();
 		foreach( $categories as $category ) {
 			
@@ -1179,7 +1218,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			$category[ 'title' ]				= apply_filters( 'bookacti_translate_text', $category[ 'title' ] );
 			
 			// Add metadata
-			$category[ 'settings' ] = bookacti_get_metadata( 'group_category', $category_id );
+			$category[ 'settings' ] = isset( $categories_meta[ $category_id ] ) ? $categories_meta[ $category_id ] : array();
 			
 			$categories_data[ $category_id ] = $category;
 		}
@@ -1345,34 +1384,61 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 // PERMISSIONS
 	/**
 	 * Get managers
-	 * 
+	 * @version 1.7.1
 	 * @global wpdb $wpdb
 	 * @param string $object_type
-	 * @param int $object_id
+	 * @param int|array $object_id
 	 * @return array
 	 */
 	function bookacti_get_managers( $object_type, $object_id ) {
 		global $wpdb;
 		
-		if ( ! $object_type || ! is_numeric( $object_id ) ) {
+		if( ! $object_type || ( ! is_numeric( $object_id ) && ! is_array( $object_id ) ) ) {
 			return false;
 		}
 		
-		$object_id = absint( $object_id );
-		if ( ! $object_id ) {
-			return false;
+		if( is_numeric( $object_id ) ) {
+			$object_id = absint( $object_id );
+		} else if( is_array( $object_id ) ) {
+			$object_id = array_filter( array_map( 'absint', array_unique( $object_id ) ) );
 		}
 		
-		$query_get_managers = 'SELECT user_id FROM ' . BOOKACTI_TABLE_PERMISSIONS
-							. ' WHERE object_type = %s'
-							. ' AND object_id = %d';
+		if( ! $object_id ) { return false; }
 		
-		$query_prep	= $wpdb->prepare( $query_get_managers, $object_type, $object_id );
-		$managers = $wpdb->get_results( $query_prep, OBJECT );
+		$query	= 'SELECT object_id, user_id FROM ' . BOOKACTI_TABLE_PERMISSIONS
+				. ' WHERE object_type = %s';
+		
+		$variables = array( $object_type );
+		
+		if( is_numeric( $object_id ) ) {
+			$query .= ' AND object_id = %d';
+			$variables[] = $object_id;
+
+		} else if( is_array( $object_id ) ) {
+			$query .= ' AND object_id IN ( %d ';
+			$array_count = count( $object_id );
+			if( $array_count >= 2 ) {
+				for( $i=1; $i<$array_count; ++$i ) {
+					$query .= ', %d ';
+				}
+			}
+			$query .= ') ';
+			$variables = array_merge( $variables, $object_id );
+		}
+		
+		$query		= $wpdb->prepare( $query, $variables );
+		$managers	= $wpdb->get_results( $query, OBJECT );
+		
+		if( is_null( $managers ) ) { return false; }
 		
 		$managers_array = array();
 		foreach( $managers as $manager ) {
-			$managers_array[] = intval( $manager->user_id );
+			if( is_array( $object_id ) ) {
+				if( ! isset( $managers_array[ $manager->object_id ] ) ) { $managers_array[ $manager->object_id ] = array();	}
+				$managers_array[ $manager->object_id ][] = intval( $manager->user_id );
+			} else {
+				$managers_array[] = intval( $manager->user_id );
+			}
 		}
 		
 		return $managers_array;

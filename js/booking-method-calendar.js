@@ -1,6 +1,6 @@
 /**
  * Initialize the calendar
- * @version 1.7.0
+ * @version 1.7.1
  * @param {dom_element} booking_system
  * @param {boolean} reload_events
  */
@@ -37,6 +37,7 @@ function bookacti_set_calendar_up( booking_system, reload_events ) {
 		eventLimit:             2,
 		eventLimitClick:        'popover',
 		dragRevertDuration:     0,
+		slotLabelFormat:		'LT',
 		slotDuration:           '00:30',
 		minTime:                '08:00',
 		maxTime:                '20:00',

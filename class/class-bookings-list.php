@@ -10,13 +10,14 @@ if( ! class_exists( 'Bookings_List_Table' ) ) {
 	
 	/**
 	 * Bookings WP_List_Table
-	 * @version 1.6.0
+	 * @version 1.7.1
 	 */
 	class Bookings_List_Table extends WP_List_Table {
 		
 		public $items;
 		public $filters;
 		public $user_ids;
+		public $booking_ids;
 		public $group_ids;
 		public $screen;
 		
@@ -228,7 +229,7 @@ if( ! class_exists( 'Bookings_List_Table' ) ) {
 		
 		/**
 		 * Get booking list items. Parameters can be passed in the URL.
-		 * @version 1.6.0
+		 * @version 1.7.1
 		 * @access public
 		 * @return array
 		 */
@@ -250,11 +251,13 @@ if( ! class_exists( 'Bookings_List_Table' ) ) {
 				$may_have_groups = true;
 			}
 			
-			// Retrieve information about users and stock them into an array sorted by user id
+			// Gether all IDs in arrays
 			$this->user_ids = array();
+			$this->booking_ids = array();
 			$this->group_ids = array();
 			foreach( $bookings as $booking ) {
 				if( $booking->user_id && is_numeric( $booking->user_id ) && ! in_array( $booking->user_id, $this->user_ids, true ) ){ $this->user_ids[] = $booking->user_id; }
+				if( $booking->id && ! in_array( $booking->id, $this->booking_ids, true ) ){ $this->booking_ids[] = $booking->id; }
 				if( $booking->group_id && ! in_array( $booking->group_id, $this->group_ids, true ) ){ $this->group_ids[] = $booking->group_id; }
 			}
 			$unknown_user_id = esc_attr( apply_filters( 'bookacti_unknown_user_id', 'unknown_user' ) );
@@ -264,15 +267,11 @@ if( ! class_exists( 'Bookings_List_Table' ) ) {
 			$displayed_groups	= array();
 			if( ( $may_have_groups || $single_only ) && $this->group_ids ) {
 				// Get only the groups that will be displayed
-				$group_filters = bookacti_format_booking_filters( array( 'in__booking_group_id' => $this->group_ids, 'templates' => '' ) );
-				
-				// If the bookings are grouped by booking groups, 
-				// booking group meta will already be attached to the booking representing its group 
-				$group_filters[ 'fetch_meta' ] = $this->filters[ 'group_by' ] !== 'booking_group';
-				
+				$group_filters = bookacti_format_booking_filters( array( 'in__booking_group_id' => $this->group_ids, 'templates' => '', 'fetch_meta' => true ) );
 				$booking_groups = bookacti_get_booking_groups( $group_filters );
 			}
 			
+			// Retrieve information about users and stock them into an array sorted by user id
 			$users = bookacti_get_users_data( array( 'include' => $this->user_ids ) );
 			
 			// Get datetime format
@@ -451,7 +450,7 @@ if( ! class_exists( 'Bookings_List_Table' ) ) {
 			// Get filters from URL if no filter was directly passed
 			if( ! $filters ) {
 				
-				// Accepts two different parameter names for booking system related paramters
+				// Accepts two different parameter names for booking system related parameters
 				$event_group_id = 0; $event_id = 0; $event_start = ''; $event_end = '';
 				if( isset( $_REQUEST[ 'bookacti_group_id' ] )	&& $_REQUEST[ 'bookacti_group_id' ] !== 'single' )	{ $event_group_id = intval( $_REQUEST[ 'bookacti_group_id' ] ); }
 				if( isset( $_REQUEST[ 'event_group_id' ] )		&& $_REQUEST[ 'event_group_id' ] !== 'single' )		{ $event_group_id = intval( $_REQUEST[ 'event_group_id' ] ); }
@@ -509,11 +508,12 @@ if( ! class_exists( 'Bookings_List_Table' ) ) {
 		 * Get the total amount of bookings according to filters
 		 * 
 		 * @since 1.3.0
-		 * @version 1.6.0
+		 * @version 1.7.1
 		 * @access public
 		 * @return int
 		 */
 		public function get_total_items_count() {
+			if( $this->filters[ 'event_id' ] && ! $this->filters[ 'event_group_id' ] ) { $this->filters[ 'booking_group_id' ] = 'none'; }
 			if( ! $this->filters[ 'booking_group_id' ] && $this->filters[ 'group_by' ] !== 'none' ) { $this->filters[ 'group_by' ] = 'booking_group'; }
 			return bookacti_get_number_of_booking_rows( $this->filters );
 		}

@@ -874,7 +874,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	/**
 	 * Create a user selectbox
 	 * @since 1.3.0
-	 * @version 1.7.0
+	 * @version 1.7.1
 	 * @param array $args
 	 * @return string|void
 	 */
@@ -893,7 +893,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		);
 		
 		$args	= apply_filters( 'bookacti_user_selectbox_args', wp_parse_args( $args, $defaults ), $args );
-		$users	= get_users( $args );
+		$users	= bookacti_get_users_data( $args );
 		
 		ob_start();
 		?>
@@ -1411,6 +1411,39 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	
 	
 // USERS
+	
+	/**
+	 * Get users metadata
+	 * @version 1.7.1
+	 * @param array $args
+	 * @return array
+	 */
+	function bookacti_get_users_data( $args = array() ) {
+		$defaults = array(
+			'blog_id' => $GLOBALS['blog_id'],
+			'include' => array(), 'exclude' => array(),
+			'role' => '', 'role__in' => array(), 'role__not_in' => array(), 'who' => '',
+			'meta_key' => '', 'meta_value' => '', 'meta_compare' => '', 'meta_query' => array(),
+			'date_query' => array(),
+			'orderby' => 'login', 'order' => 'ASC', 'offset' => '',
+			'number' => '', 'paged' => '', 'count_total' => false,
+			'search' => '', 'fields' => 'all'
+		 ); 
+		
+		$args = apply_filters( 'bookacti_users_data_args', wp_parse_args( $args, $defaults ), $args );
+		
+		$users = get_users( $args );
+		if( ! $users ) { return $users; }
+
+		// Index the array by user ID
+		$sorted_users = array();
+		foreach( $users as $user ) {
+			$sorted_users[ $user->ID ] = $user;
+		}
+
+		return $sorted_users;
+	}
+	
 	
 	/**
 	 * Programmatically logs a user in

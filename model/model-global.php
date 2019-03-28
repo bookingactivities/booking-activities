@@ -43,155 +43,6 @@ function bookacti_user_id_exists( $user_id ) {
 
 
 /**
- * Get users metadata
- * @version 1.6.0
- * @global wpdb $wpdb
- * @param array $args
- * @return array
- */
-function bookacti_get_users_data( $args = array() ) {
-
-	global $wpdb;
-	
-	$defaults = array(
-		'include'		=> array(), 
-		'exclude'		=> array(),
-		'role'			=> array(), 
-		'role__in'		=> array(), 
-		'role__not_in'	=> array(),
-		'orderby'		=> array( 'display_name' ),
-		'order'			=> 'ASC'
-	);
-	
-	$args = wp_parse_args( $args, $defaults );
-	
-	// This query transform the meta_key / meta_value pair (of usermeta table) into columns / values for each distinct wanted user
-	$wpdb->query( 'SET SESSION group_concat_max_len = 1000000' );
-	$select_usermeta_columns_query	= " SELECT
-										  GROUP_CONCAT( DISTINCT
-											CONCAT(
-											  'MAX( IF ( M.meta_key = ''',
-											  meta_key,
-											  ''', M.meta_value, NULL)) AS `',
-											  meta_key, '`'
-											)
-										  ) as select_usermeta
-										FROM " . $wpdb->usermeta . " as M;";
-	$select_usermeta_columns = $wpdb->get_var( $select_usermeta_columns_query );
-
-	$users_info_query	= ' SELECT U.*, ' . $select_usermeta_columns 
-						. ' FROM ' . $wpdb->users . ' as U, ' . $wpdb->usermeta . ' as M '
-						. ' WHERE U.id = M.user_id ';
-	
-	$variables = array();
-	
-	// Included user ids
-	$include_nb = count( $args[ 'include' ] );
-	if( $include_nb ) {
-		$users_info_query .= ' AND U.id IN ( %d ';
-		if( $include_nb >= 2 )  {
-			for( $i=1; $i < $include_nb; ++$i ) {
-				$users_info_query  .= ', %d ';
-			}
-		}
-		$users_info_query .= ' ) ';
-		$variables = array_merge( $variables, $args[ 'include' ] );
-	}
-	
-	// Excluded user ids
-	$exclude_nb = count( $args[ 'exclude' ] );
-	if( $exclude_nb ) {
-		$users_info_query .= ' AND U.id NOT IN ( %d ';
-		if( $exclude_nb >= 2 ) {
-			for( $i=1; $i < $exclude_nb; ++$i ) {
-				$users_info_query  .= ', %d ';
-			}
-		}
-		$users_info_query .= ' ) ';
-		$variables = array_merge( $variables, $args[ 'exclude' ] );
-	}
-	
-	// Group by id to avoid duplicated entries
-	$users_info_query .= ' GROUP BY U.id ';
-	
-	// We must use HAVING instead of WHERE to filter by a column alias (which is the case for roles)
-	$users_info_query .= ' HAVING true ';
-	
-	// Match roles exactly (all)
-	$roles_nb = count( $args[ 'role' ] );
-	if( $roles_nb ) {
-		for( $i=0; $i < $roles_nb; ++$i ) {
-			$users_info_query .= ' AND ' . $wpdb->prefix . 'capabilities LIKE %s ';
-		}
-		// Prefix and suffix each element of the array
-		foreach( $args[ 'role' ] as $i => $role ) {
-			$args[ 'role' ][ $i ] = '%' . $wpdb->esc_like( $role ) . '%';
-		}
-		$variables = array_merge( $variables, $args[ 'role' ] );
-	}
-	
-	// Match at least one of the role
-	$roles_in_nb = count( $args[ 'role__in' ] );
-	if( $roles_in_nb ) {
-		$users_info_query .= ' AND ( ' . $wpdb->prefix . 'capabilities LIKE %s ';
-		if( $roles_in_nb >= 2 ) {
-			for( $i=1; $i < $roles_in_nb; ++$i ) {
-				$users_info_query .= ' OR ' . $wpdb->prefix . 'capabilities LIKE %s ';
-			}
-		}
-		$users_info_query .= ' ) ';
-		// Prefix and suffix each element of the array
-		foreach( $args[ 'role__in' ] as $i => $role ) {
-			$args[ 'role__in' ][ $i ] = '%' . $wpdb->esc_like( $role ) . '%';
-		}
-		$variables = array_merge( $variables, $args[ 'role__in' ] );
-	}
-	
-	// Exclude roles
-	$roles_not_in_nb = count( $args[ 'role__not_in' ] );
-	if( $roles_not_in_nb ) {
-		for( $i=0; $i < $roles_not_in_nb; ++$i ) {
-			$users_info_query .= ' AND ' . $wpdb->prefix . 'capabilities NOT LIKE %s ';
-		}
-		// Prefix and suffix each element of the array
-		foreach( $args[ 'role__not_in' ] as $i => $role ) {
-			$args[ 'role__not_in' ][ $i ] = '%' . $wpdb->esc_like( $role ) . '%';
-		}
-		$variables = array_merge( $variables, $args[ 'role__not_in' ] );
-	}
-	
-	// Order results
-	$order_by_nb = count( $args[ 'orderby' ] );
-	if( $order_by_nb ) {
-		$users_info_query .= ' ORDER BY ' . $args[ 'orderby' ][ 0 ];
-		if( $order_by_nb >= 2 ) {
-			for( $i=1; $i < $order_by_nb; ++$i ) {
-				$users_info_query  .= ', ' . $args[ 'orderby' ][ $i ];
-			}
-		}
-		if( $args[ 'order' ] ) {
-			$users_info_query  .= ' ' . $args[ 'order' ];
-		}
-	}
-	
-	// Prepare the query
-	if( $variables ) {
-		$users_info_query = $wpdb->prepare( $users_info_query, $variables );
-	}
-	
-	// Get users data
-	$users_data = $wpdb->get_results( $users_info_query, OBJECT );
-
-	$return_array = array();
-	foreach( $users_data as $user_data ) {
-		$return_array[ $user_data->ID ] = apply_filters( 'bookacti_user_data', $user_data );
-	}
-
-	return $return_array;
-}
-
-
-/**
  * Delete a user meta for all users
  * 
  * @since 1.3.0
@@ -232,7 +83,7 @@ function bookacti_delete_user_meta( $meta_key, $user_id = 0, $meta_value = '' ) 
 
 /**
  * Get metadata
- * @version 1.7.0
+ * @version 1.7.1
  * @global wpdb $wpdb
  * @param string $object_type
  * @param int|array $object_id
@@ -284,19 +135,18 @@ function bookacti_get_metadata( $object_type, $object_id, $meta_key = '', $singl
 	$query = $wpdb->prepare( $query, $variables );
 
 	if( $single ) {
-		$metadata = $wpdb->get_row( $query, OBJECT );
+		$metadata = $wpdb->get_row( $query );
 		return isset( $metadata->meta_value ) ? maybe_unserialize( $metadata->meta_value ) : false;
 	}
 
-	$metadata = $wpdb->get_results( $query, OBJECT );
+	$metadata = $wpdb->get_results( $query );
 
-	if( is_null( $metadata ) ) { 
-		return false; 
-	}
+	if( is_null( $metadata ) ) { return false; }
 
 	$metadata_array = array();
 	foreach( $metadata as $metadata_pair ) {
 		if( is_array( $object_id ) ) {
+			if( ! isset( $metadata_array[ $metadata_pair->object_id ] ) ) { $metadata_array[ $metadata_pair->object_id ] = array(); }
 			$metadata_array[ $metadata_pair->object_id ][ $metadata_pair->meta_key ] = maybe_unserialize( $metadata_pair->meta_value );
 		} else {
 			$metadata_array[ $metadata_pair->meta_key ] = maybe_unserialize( $metadata_pair->meta_value );
