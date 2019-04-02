@@ -7,7 +7,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	/**
 	 * Fetch events by templates and / or activities
 	 *
-	 * @version 1.7.1
+	 * @version 1.7.2
 	 * @param array $templates
 	 * @param array $activities
 	 * @param boolean $past_events
@@ -72,6 +72,9 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 					( 	NULLIF( E.repeat_freq, "none" ) IS NULL 
 						AND (	UNIX_TIMESTAMP( CONVERT_TZ( E.start, %s, @@global.time_zone ) ) >= 
 								UNIX_TIMESTAMP( CONVERT_TZ( %s, %s, @@global.time_zone ) ) 
+							AND
+								UNIX_TIMESTAMP( CONVERT_TZ( E.start, %s, @@global.time_zone ) ) <= 
+								UNIX_TIMESTAMP( CONVERT_TZ( ( %s + INTERVAL 24 HOUR ), %s, @@global.time_zone ) ) 
 							) 
 					) 
 					OR
@@ -93,6 +96,9 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			
 			$variables[] = $user_timestamp_offset;
 			$variables[] = $interval[ 'start' ];
+			$variables[] = $user_timestamp_offset;
+			$variables[] = $user_timestamp_offset;
+			$variables[] = $interval[ 'end' ];
 			$variables[] = $user_timestamp_offset;
 			$variables[] = $user_timestamp_offset;
 			$variables[] = $interval[ 'start' ];

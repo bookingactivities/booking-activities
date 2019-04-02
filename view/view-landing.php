@@ -1,7 +1,7 @@
 <?php
 /**
  * Booking Activities landing page
- * @version 1.7.0
+ * @version 1.7.2
  */
 
 // Exit if accessed directly
@@ -22,11 +22,11 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		
 		<div id='bookacti-add-ons-container' >
 		<?php
-			$promo = '-10€';
-			$promo_price_29 = '29.00€';
-			$promo_price_39 = '39.00€';
-			$promo_price_49 = '49.00€';
-			$promo_price_59 = '59.00€';
+			$promo = '';
+			$promo_price_29 = '';
+			$promo_price_39 = '';
+			$promo_price_49 = '';
+			$promo_price_59 = '';
 			
 			$add_ons = array(
 				'prices-and-credits' => array( 

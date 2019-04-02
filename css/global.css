@@ -87,7 +87,7 @@
 .bookacti-calendar { width: 100%; }
 .bookacti-calendar .fc-unthemed td.fc-today	{ background: rgba( 220, 193, 6, 0.1 ); }
 .bookacti-calendar table { margin: 0; }
-.bookacti-calendar .fc-axis.fc-time { text-transform: lowercase; }
+.bookacti-calendar .fc-time { text-transform: lowercase; }
 
 /* Header */
 .bookacti-calendar .fc-toolbar { margin-bottom: 0; }

@@ -77,7 +77,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	/**
 	 * Retrieve template activities list
 	 * 
-	 * @version 1.5.0
+	 * @version 1.7.2
 	 * @param int $template_id
 	 * @return boolean|string 
 	 */
@@ -103,6 +103,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 							data-event='{"title": "<?php echo esc_attr( $title ) ?>", "activity_id": "<?php echo esc_attr( $activity->id ) ?>", "color": "<?php echo esc_attr( $activity->color ) ?>", "stick":"true"}' 
 							data-activity-id='<?php echo esc_attr( $activity->id ) ?>'
 							data-duration='<?php echo esc_attr( $activity->duration ) ?>'
+							title='<?php esc_attr_e( $title ); ?>'
 							style='border-color:<?php echo esc_attr( $activity->color ) ?>; background-color:<?php echo esc_attr( $activity->color ) ?>'
 							>
 							<?php echo $title; ?>

@@ -5,7 +5,7 @@ Tags: booking activities, booking sport, booking form, event reservation, reserv
 Requires at least: 3.6
 Tested up to: 5.1
 Requires PHP: 5.3
-Stable tag: 1.7.1
+Stable tag: 1.7.2
 License: GPLv3 or later
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
 
@@ -318,6 +318,11 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 
 
 == Changelog ==
+
+= 1.7.2 - 2019/04/02 =
+* Tweak - Calendar editor sidebar can be resized (except on IE and Edge)
+* Tweak - The time format on the events has been changed (according to your locale)
+* Fix - Events may appear twice
 
 = 1.7.1 - 2019/03/28 =
 * Optimization - Significantly improved loading time for calendars and booking lists containing a lot of events / bookings
