@@ -1,6 +1,6 @@
 /**
  * Initialize the calendar
- * @version 1.7.1
+ * @version 1.7.2
  * @param {dom_element} booking_system
  * @param {boolean} reload_events
  */
@@ -87,12 +87,6 @@ function bookacti_set_calendar_up( booking_system, reload_events ) {
 			
 			// Display start and end time in spans
 			var time_format	= 'LT';
-			// Remove trailing AM/PM
-			if( view.name.indexOf( 'agenda' ) > -1 ){
-				time_format = calendar.fullCalendar( 'option', 'noMeridiemTimeFormat' );
-			} else if( view.name.indexOf( 'basic' ) > -1 || view.name === 'month' ) {
-				time_format	= calendar.fullCalendar( 'option', 'smallTimeFormat' );
-			}
 			element.find( '.fc-time' ).html( '<span class="bookacti-event-time-start">' + event.start.format( time_format ) + '</span><span class="bookacti-event-time-separator"> - </span><span class="bookacti-event-time-end">' + event.end.format( time_format ) + '</span>' );
 			
 			// Add availability div

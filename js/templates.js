@@ -66,6 +66,14 @@ $j( document ).ready( function() {
 			bookacti_switch_template( bookacti.selected_template );
 		}
 		
+		/**
+		 * Resize draggable external events helper to the original event size
+		 * @version 1.7.2
+		 */
+		$j( '#bookacti-template-activities-container' ).on( 'dragstart', '.fc-event', function( event, ui ) {
+			ui.helper.css( 'maxWidth', $j( this ).width() );
+		});
+		
 		// If an error occurs, stop loading and allow every interactions
 		window.onerror = function ( errorMsg, url, lineNumber, column, errorObj ) {
 			$j( '#bookacti-fatal-error' ).show();
@@ -192,12 +200,6 @@ function bookacti_load_template_calendar() {
 			
 			// Display start and end time in spans
 			var time_format	= 'LT';
-			// Remove trailing AM/PM
-			if( view.name.indexOf( 'agenda' ) > -1 ){
-				time_format = calendar.fullCalendar( 'option', 'noMeridiemTimeFormat' );
-			} else if( view.name.indexOf( 'basic' ) > -1 || view.name === 'month' ) {
-				time_format	= calendar.fullCalendar( 'option', 'smallTimeFormat' );
-			}
 			element.find( '.fc-time' ).html( '<span class="bookacti-event-time-start">' + event.start.format( time_format ) + '</span><span class="bookacti-event-time-separator"> - </span><span class="bookacti-event-time-end">' + event.end.format( time_format ) + '</span>' );
 			
 			// Add availability div
