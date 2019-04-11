@@ -805,7 +805,7 @@ function bookacti_get_booking_system_fields_default_data( $fields = array() ) {
 
 /**
  * Check the selected event / group of events data before booking
- * @version 1.6.0
+ * @version 1.7.3
  * @param int $group_id
  * @param int $event_id
  * @param string $event_start Start datetime of the event to check (format 2017-12-31T23:59:59)
@@ -962,59 +962,64 @@ function bookacti_validate_booking_form( $group_id, $event_id, $event_start, $ev
 		$validated['status'] = 'failed';
 		if( ! $is_event ) {
 			$validated['error'] = 'no_event_selected';
-			$validated['message'] = __( 'You haven\'t picked any event. Please pick an event first.', BOOKACTI_PLUGIN_NAME );
+			$validated['message'] = esc_html__( 'You haven\'t picked any event. Please pick an event first.', BOOKACTI_PLUGIN_NAME );
 		} else if( ! $is_qty_sup_to_0 ) {
 			$validated['error'] = 'qty_inf_to_0';
-			$validated['message'] = __( 'The amount of desired bookings is less than or equal to 0. Please increase the quantity.', BOOKACTI_PLUGIN_NAME );
+			$validated['message'] = esc_html__( 'The amount of desired bookings is less than or equal to 0. Please increase the quantity.', BOOKACTI_PLUGIN_NAME );
 		} else if( ! $is_qty_sup_to_min ) {
 			$validated['error'] = 'qty_inf_to_min';
 			/* translators: %1$s is a variable number of bookings, %2$s is the event title. This sentence is followed by two others : 'but the minimum number of reservations required per user is %1$s.' and 'Please choose another event or increase the quantity.' */
-			$validated['message'] = sprintf( _n( 'You want to make %1$s booking of "%2$s"', 'You want to make %1$s bookings of "%2$s"', $quantity, BOOKACTI_PLUGIN_NAME ), $quantity, $title );
+			$validated['message'] = sprintf( esc_html( _n( 'You want to make %1$s booking of "%2$s"', 'You want to make %1$s bookings of "%2$s"', $quantity, BOOKACTI_PLUGIN_NAME ) ), $quantity, $title );
 			if( $quantity_already_booked ) {
 				/* translators: %1$s and %2$s are variable numbers of bookings, always >= 1. This sentence is preceded by : 'You want to make %1$s booking of "%2$s"' and followed by 'Please choose another event or increase the quantity.' */
-				$validated['message'] .= ' ' . sprintf( _n( 'and you have already booked %1$s place, but the minimum number of reservations required per user is %2$s.', 'and you have already booked %1$s places, but the minimum number of reservations required per user is %2$s.', $quantity_already_booked, BOOKACTI_PLUGIN_NAME ), $quantity_already_booked, $min_quantity );
+				$validated['message'] .= ' ' . sprintf( esc_html( _n( 'and you have already booked %1$s place, but the minimum number of reservations required per user is %2$s.', 'and you have already booked %1$s places, but the minimum number of reservations required per user is %2$s.', $quantity_already_booked, BOOKACTI_PLUGIN_NAME ) ), $quantity_already_booked, $min_quantity );
 			} else {
 				/* translators: %1$s is a variable number of bookings. This sentence is preceded by : 'You want to make %1$s booking of "%2$s"' and followed by 'Please choose another event or increase the quantity.' */
-				$validated['message'] .= ' ' . sprintf( __( 'but the minimum number of reservations required per user is %1$s.', BOOKACTI_PLUGIN_NAME ), $min_quantity );
+				$validated['message'] .= ' ' . sprintf( esc_html__( 'but the minimum number of reservations required per user is %1$s.', BOOKACTI_PLUGIN_NAME ), $min_quantity );
 			}	
 			/* translators: %1$s is a variable quantity. This sentence is preceded by two others : 'You want to make %1$s booking of "%2$s"' and 'but the minimum number of reservations required per user is %1$s.' */
-			$validated['message'] .= $min_quantity - $quantity_already_booked > 0 ? ' ' . sprintf( __( 'Please choose another event or increase the quantity to %1$s.', BOOKACTI_PLUGIN_NAME ), $min_quantity - $quantity_already_booked ) : ' ' . __( 'Please choose another event', BOOKACTI_PLUGIN_NAME );
+			$validated['message'] .= $min_quantity - $quantity_already_booked > 0 ? ' ' . sprintf( esc_html__( 'Please choose another event or increase the quantity to %1$s.', BOOKACTI_PLUGIN_NAME ), $min_quantity - $quantity_already_booked ) : ' ' . esc_html__( 'Please choose another event', BOOKACTI_PLUGIN_NAME );
 		} else if( ! $is_qty_inf_to_max ) {
 			$validated['error'] = 'qty_sup_to_max';
 			/* translators: %1$s is a variable number of bookings, %2$s is the event title. This sentence is followed by two others : 'but the maximum number of reservations allowed per user is %1$s.' and 'Please choose another event or decrease the quantity.' */
-			$validated['message'] = sprintf( _n( 'You want to make %1$s booking of "%2$s"', 'You want to make %1$s bookings of "%2$s"', $quantity, BOOKACTI_PLUGIN_NAME ), $quantity, $title );
+			$validated['message'] = sprintf( esc_html( _n( 'You want to make %1$s booking of "%2$s"', 'You want to make %1$s bookings of "%2$s"', $quantity, BOOKACTI_PLUGIN_NAME ) ), $quantity, $title );
 			if( $quantity_already_booked ) {
 				/* translators: %1$s and %2$s are variable numbers of bookings, always >= 1. This sentence is preceded by : 'You want to make %1$s booking of "%2$s"' and followed by 'Please choose another event or decrease the quantity.' */
-				$validated['message'] .= ' ' . sprintf( _n( 'but you have already booked %1$s place and the maximum number of reservations allowed per user is %2$s.', 'but you have already booked %1$s places and the maximum number of reservations allowed per user is %2$s.', $quantity_already_booked, BOOKACTI_PLUGIN_NAME ), $quantity_already_booked, $max_quantity );
+				$validated['message'] .= ' ' . sprintf( esc_html( _n( 'but you have already booked %1$s place and the maximum number of reservations allowed per user is %2$s.', 'but you have already booked %1$s places and the maximum number of reservations allowed per user is %2$s.', $quantity_already_booked, BOOKACTI_PLUGIN_NAME ) ), $quantity_already_booked, $max_quantity );
 			} else {
 				/* translators: %1$s is a variable number of bookings. This sentence is preceded by : 'You want to make %1$s booking of "%2$s"' and followed by 'Please choose another event or decrease the quantity.' */
-				$validated['message'] .= ' ' . sprintf( __( 'but the maximum number of reservations allowed per user is %1$s.', BOOKACTI_PLUGIN_NAME ), $max_quantity );
+				$validated['message'] .= ' ' . sprintf( esc_html__( 'but the maximum number of reservations allowed per user is %1$s.', BOOKACTI_PLUGIN_NAME ), $max_quantity );
 			}
 			/* translators: %1$s is a variable quantity. This sentence is preceded by two others : 'You want to make %1$s booking of "%2$s"' and 'but the maximum number of reservations allowed per user is %1$s.' */
-			$validated['message'] .= $max_quantity - $quantity_already_booked > 0  ? ' ' . sprintf( __( 'Please choose another event or decrease the quantity to %1$s.', BOOKACTI_PLUGIN_NAME ), $max_quantity - $quantity_already_booked ) : ' ' . __( 'Please choose another event', BOOKACTI_PLUGIN_NAME );
+			$validated['message'] .= $max_quantity - $quantity_already_booked > 0  ? ' ' . sprintf( esc_html__( 'Please choose another event or decrease the quantity to %1$s.', BOOKACTI_PLUGIN_NAME ), $max_quantity - $quantity_already_booked ) : ' ' . esc_html__( 'Please choose another event', BOOKACTI_PLUGIN_NAME );
 		} else if( ! $is_users_inf_to_max ) {
 			$validated['error'] = 'users_sup_to_max';
-			$validated['message'] = __( 'This event has reached the maximum number of users allowed. Bookings from other users are no longer accepted. Please choose another event.', BOOKACTI_PLUGIN_NAME );
+			$validated['message'] = esc_html__( 'This event has reached the maximum number of users allowed. Bookings from other users are no longer accepted. Please choose another event.', BOOKACTI_PLUGIN_NAME );
 		} else if( $availability === 0 ) {
 			$validated['error'] = 'no_availability';
 			$validated['availability'] = $availability;
 			/* translators: %1$s is the event title. */
-			$validated['message'] = sprintf( __( 'The event "%1$s" is no longer available on this time slot. Please choose another event.', BOOKACTI_PLUGIN_NAME ), $title );
+			$validated['message'] = sprintf( esc_html__( 'The event "%1$s" is no longer available on this time slot. Please choose another event.', BOOKACTI_PLUGIN_NAME ), $title );
 		} else if( ! $is_qty_inf_to_avail ) {
 			$validated['error'] = 'qty_sup_to_avail';
 			$validated['availability'] = $availability;
 			$validated['message'] = /* translators: %1$s is a variable number of bookings, %2$s is the event title. This sentence is followed by two others : 'but only %1$s is available on this time slot.' and 'Please choose another event or decrease the quantity.' */
-									sprintf( _n( 'You want to make %1$s booking of "%2$s"', 'You want to make %1$s bookings of "%2$s"', $quantity, BOOKACTI_PLUGIN_NAME ), $quantity, $title )
+									sprintf( esc_html( _n( 'You want to make %1$s booking of "%2$s"', 'You want to make %1$s bookings of "%2$s"', $quantity, BOOKACTI_PLUGIN_NAME ) ), $quantity, $title )
 									/* translators: %1$s is a variable number of bookings. This sentence is preceded by : 'You want to make %1$s booking of "%2$s"' and followed by 'Please choose another event or decrease the quantity.' */
-							. ' ' . sprintf( _n( 'but only %1$s is available on this time slot.', 'but only %1$s are available on this time slot. ', $availability, BOOKACTI_PLUGIN_NAME ), $availability )
+							. ' ' . sprintf( esc_html( _n( 'but only %1$s is available on this time slot.', 'but only %1$s are available on this time slot. ', $availability, BOOKACTI_PLUGIN_NAME ) ), $availability )
 									/* translators: This sentence is preceded by two others : 'You want to make %1$s booking of "%2$s"' and 'but only %1$s is available on this time slot.' */
-							. ' ' . __( 'Please choose another event or decrease the quantity.', BOOKACTI_PLUGIN_NAME );
+							. ' ' . esc_html__( 'Please choose another event or decrease the quantity.', BOOKACTI_PLUGIN_NAME );
 		} else if( ! $has_allowed_roles ) {
 			$validated['error'] = 'role_not_allowed';
-			$validated['message'] = __( 'This event is not available in your user category. Please choose another event.', BOOKACTI_PLUGIN_NAME );
+			if( is_user_logged_in() ) {
+				$validated['message'] = esc_html__( 'This event is not available in your user category. Please choose another event.', BOOKACTI_PLUGIN_NAME );
+			} else {
+				$validated['message'] = esc_html__( 'This event is restricted to certain categories of users. Please log in first.', BOOKACTI_PLUGIN_NAME );
+			}
+				
 		} else {
 			$validated['error'] = 'failed';
-			$validated['message'] = __( 'An error occurred, please try again.', BOOKACTI_PLUGIN_NAME );
+			$validated['message'] = esc_html__( 'An error occurred, please try again.', BOOKACTI_PLUGIN_NAME );
 		}
 	}
 	

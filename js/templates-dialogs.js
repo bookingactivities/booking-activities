@@ -527,7 +527,7 @@ function bookacti_dialog_deactivate_template( template_id ) {
 
 /**
  * Dialog Update Event
- * @version 1.7.1
+ * @version 1.7.3
  * @param {object} event
  */
 function bookacti_dialog_update_event( event ) {
@@ -588,7 +588,9 @@ function bookacti_dialog_update_event( event ) {
 	if( typeof event_data.settings !== 'undefined' ) {
 		bookacti_fill_fields_from_array( event_data.settings, 'eventOptions' );
 	}
-
+	
+	$j( '#bookacti-event-data-dialog' ).trigger( 'bookacti_event_update_dialog', [ event ] );
+	
 	// Refresh qtranslate fields to make a correct display of multilingual fields
 	if( bookacti_localized.is_qtranslate ) {
 		$j( '#bookacti-event-data-dialog .qtranxs-translatable' ).each( function() { 
@@ -1230,7 +1232,11 @@ function bookacti_dialog_create_activity() {
 }
 
 
-// Dialog Update Activity
+/**
+ * Open a dialog to update an activity
+ * @version 1.7.3
+ * @param {int} activity_id
+ */
 function bookacti_dialog_update_activity( activity_id ) {
 
 	if( ! bookacti.selected_template || ! activity_id ) { return false; }
@@ -1275,7 +1281,9 @@ function bookacti_dialog_update_activity( activity_id ) {
 	if( activity_data.settings ) {
 		bookacti_fill_fields_from_array( activity_data.settings, 'activityOptions' );
 	}
-
+	
+	$j( '#bookacti-activity-data-dialog' ).trigger( 'bookacti_activity_update_dialog', [ activity_id ] );
+	
 	// Refresh qtranslate fields to make a correct display of multilingual fields
 	if( bookacti_localized.is_qtranslate ) {
 		$j( '#bookacti-activity-data-dialog .qtranxs-translatable' ).each( function() { 
@@ -1621,7 +1629,7 @@ function bookacti_dialog_create_group_of_events( category_id ) {
 
 /**
  * Update a group of events with selected events 
- * @version 1.7.0
+ * @version 1.7.3
  * @param {int} group_id
  */
 function bookacti_dialog_update_group_of_events( group_id ) {
@@ -1663,6 +1671,8 @@ function bookacti_dialog_update_group_of_events( group_id ) {
 	if( group_data.settings ) {
 		bookacti_fill_fields_from_array( group_data.settings, 'groupOfEventsOptions' );
 	}
+	
+	$j( '#bookacti-group-of-events-dialog' ).trigger( 'bookacti_group_of_events_update_dialog', [ group_id ] );
 
 	// Refresh qtranslate fields to make a correct display of multilingual fields
 	if( bookacti_localized.is_qtranslate ) {
@@ -1727,9 +1737,8 @@ function bookacti_dialog_update_group_of_events( group_id ) {
 									
 								} else {
 									// Update group title in groups list
-									var group_short_title = response.group_title_raw.length > 16 ? response.group_title_raw.substr( 0, 16 ) + '&#8230;' : response.group_title_raw;
 									$j( '.bookacti-group-of-events[data-group-id="' + group_id + '"] .bookacti-group-of-events-title' ).attr( 'title', response.group_title_raw );
-									$j( '.bookacti-group-of-events[data-group-id="' + group_id + '"] .bookacti-group-of-events-title' ).html( group_short_title );
+									$j( '.bookacti-group-of-events[data-group-id="' + group_id + '"] .bookacti-group-of-events-title' ).html( response.group_title_raw );
 								}
 								
 								// Unselect the events
@@ -1860,7 +1869,11 @@ function bookacti_dialog_delete_group_of_events( group_id ) {
 
 // GROUP CATEGORIES
 
-// Update a group category
+/**
+ * Update a group category
+ * @version 1.7.3
+ * @param {int} category_id
+ */
 function bookacti_dialog_update_group_category( category_id ) {
 	
 	var category_data = bookacti.booking_system[ 'bookacti-template-calendar' ][ 'group_categories_data' ][ category_id ];
@@ -1872,7 +1885,9 @@ function bookacti_dialog_update_group_category( category_id ) {
 	if( category_data.settings ) {
 		bookacti_fill_fields_from_array( category_data.settings, 'groupCategoryOptions' );
 	}
-
+	
+	$j( '#bookacti-group-category-dialog' ).trigger( 'bookacti_group_category_update_dialog', [ category_id ] );
+	
 	// Refresh qtranslate fields to make a correct display of multilingual fields
 	if( bookacti_localized.is_qtranslate ) {
 		$j( '#bookacti-group-category-dialog .qtranxs-translatable' ).each( function() { 

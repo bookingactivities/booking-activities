@@ -47,6 +47,7 @@ function bookacti_init_form_editor_actions() {
 /**
  * Update Form Meta
  * @since 1.5.0
+ * @version 1.7.3
  */
 function bookacti_dialog_update_form_meta() {
 	
@@ -58,6 +59,8 @@ function bookacti_dialog_update_form_meta() {
 	
 	// Fill the fields with current data
 	bookacti_fill_fields_from_array( bookacti.form_editor.form, '', 'form#bookacti-update-form-meta-form' );
+	
+	$j( '#bookacti-form-meta-dialog' ).trigger( 'bookacti_form_meta_update_dialog', [ form_id ] );
 	
 	// Refresh qtranslate fields to make a correct display of multilingual fields
 	if( bookacti_localized.is_qtranslate ) {

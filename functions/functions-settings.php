@@ -1359,6 +1359,7 @@ function bookacti_settings_section_bookings_callback() { }
 	/**
 	 * Display a promotional area for Notification Pack add-on
 	 * @since 1.2.0
+	 * @version 1.7.3
 	 */
 	function bookacti_display_banp_promo() {
 		$is_plugin_active	= bookacti_is_plugin_active( 'ba-notification-pack/ba-notification-pack.php' );
@@ -1377,7 +1378,7 @@ function bookacti_settings_section_bookings_callback() { }
 					<?php esc_html_e( "It seems you didn't activate your license yet. Please follow these instructions to activate your license:", BOOKACTI_PLUGIN_NAME ); ?>
 				</p><p>
 					<strong>
-						<a href='https://booking-activities.fr/en/docs/user-documentation/notification-pack/prerequisite-installation-license-activation-notification-pack-add-on/?utm_source=plugin&utm_medium=plugin&utm_content=encart-promo-settings' target='_blank' >
+						<a href='https://booking-activities.fr/en/docs/user-documentation/get-started-with-notification-pack-add-on/prerequisite-installation-license-activation-notification-pack-add-on/?utm_source=plugin&utm_medium=plugin&utm_content=encart-promo-settings' target='_blank' >
 							<?php 
 							/* translators: %s = add-on name */
 								echo sprintf( __( 'How to activate %s license?', BOOKACTI_PLUGIN_NAME ), 'Notification Pack' ); 

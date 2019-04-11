@@ -319,6 +319,10 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 
 == Changelog ==
 
+= 1.7.3 =
+* Tweak - Add {user_phone} tag to display the user phone number in notifications
+* Tweak - Change the error message for non logged in users trying to book a restricted event
+
 = 1.7.2 - 2019/04/02 =
 * Tweak - Calendar editor sidebar can be resized (except on IE and Edge)
 * Tweak - The time format on the events has been changed (according to your locale)

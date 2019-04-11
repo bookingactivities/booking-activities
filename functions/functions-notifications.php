@@ -284,7 +284,7 @@ function bookacti_sanitize_notification_settings( $args, $notification_id = '' )
 /**
  * Get notifications tags
  * @since 1.2.0
- * @version 1.7.0
+ * @version 1.7.3
  * @param string $notification_id Optional.
  * @return array
  */
@@ -303,6 +303,7 @@ function bookacti_get_notifications_tags( $notification_id = '' ) {
 		'{user_firstname}'		=> esc_html__( 'The user first name', BOOKACTI_PLUGIN_NAME ),
 		'{user_lastname}'		=> esc_html__( 'The user last name', BOOKACTI_PLUGIN_NAME ),
 		'{user_email}'			=> esc_html__( 'The user email address', BOOKACTI_PLUGIN_NAME ),
+		'{user_phone}'			=> esc_html__( 'The user phone number', BOOKACTI_PLUGIN_NAME ),
 		'{user_id}'				=> esc_html__( 'The user ID. If the user has booked without account, this will display his email address.', BOOKACTI_PLUGIN_NAME ),
 		'{user_ical_url}'		=> esc_html__( 'URL to export the user list of bookings in ical format. If the user doesn\'t have an account, only the current booking is exported.', BOOKACTI_PLUGIN_NAME ),
 		'{user_ical_key}'		=> esc_html__( 'User ical export secret key. Useful to create a custom ical export URL.', BOOKACTI_PLUGIN_NAME )

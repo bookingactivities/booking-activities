@@ -1,7 +1,7 @@
 <?php 
 /**
  * Calendar editor dialogs
- * @version 1.6.0
+ * @version 1.7.3
  */
 
 // Exit if accessed directly
@@ -453,7 +453,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 					array(	'label'			=> __( 'Availability', BOOKACTI_PLUGIN_NAME ),
 							'callback'		=> 'bookacti_fill_activity_tab_availability',
 							'parameters'	=> array(),
-							'order'			=> 10 ),
+							'order'			=> 20 ),
 					array(	'label'			=> __( 'Terminology', BOOKACTI_PLUGIN_NAME ),
 							'callback'		=> 'bookacti_fill_activity_tab_terminology',
 							'parameters'	=> array(),
@@ -1067,3 +1067,6 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		?>
 	</form>
 </div>
+
+<?php
+do_action( 'bookacti_calendar_editor_dialogs', $templates );

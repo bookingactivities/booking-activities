@@ -141,10 +141,11 @@
 .bookacti-backend-dialog .bookacti_export_button	{ display: table-cell; vertical-align: middle; padding-left: 10px; }
 .bookacti-backend-dialog .bookacti_export_url_field input:not([type='submit']):not([type='checkbox']):not([type='file']):not([type='radio']):not([type='button']):not([type='time']):not([type='number']):not([type='color']):not(.button) { padding: 10px; max-width: none; width: 100%; }
 
+.bookacti-backend-dialog div > label:not(.bookacti-onoffswitch-label)	{ display: inline-block; width: 150px; font-weight: bold; }
+.bookacti-backend-dialog div > label.bookacti-fullwidth-label			{ display: block; width: 100%; cursor: auto; }
+.bookacti-backend-dialog div > input:not([type="hidden"]) + label:not(.bookacti-onoffswitch-label) { display: inline; width: auto; font-weight: normal; }
+
 /* Tabs */
-.bookacti-tabs .bookacti-tab-content div > label:not(.bookacti-onoffswitch-label)	{ display: inline-block; width: 150px; font-weight: bold; }
-.bookacti-tabs .bookacti-tab-content div > label.bookacti-fullwidth-label			{ display: block; width: 100%; cursor: auto; }
-.bookacti-tabs .bookacti-tab-content div > input:not([type="hidden"]) + label:not(.bookacti-onoffswitch-label) { display: inline; width: auto; font-weight: normal; }
 .bookacti-tabs .bookacti-tab-content > div { margin-bottom: 10px; }
 .bookacti-tabs .bookacti-tab-content > div:last-child { margin-bottom: 0; }
 .bookacti-tabs .bookacti-tab-content .bookacti-display-inline-block { display: inline-block; }
