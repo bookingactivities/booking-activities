@@ -125,9 +125,9 @@ $j( document ).ready( function() {
 	
 	/**
 	 * Change activity summary on qty change
-	 * @version 1.7.0
+	 * @version 1.7.3
 	 */
-	$j( '.bookacti-booking-form' ).on( 'change', 'input.bookacti-quantity', function() {
+	$j( '.bookacti-booking-form' ).on( 'keyup mouseup change', 'input.bookacti-quantity', function() {
 		var booking_system = $j( this ).closest( 'form' ).find( '.bookacti-booking-system' );
 		if( booking_system.length ) {
 			bookacti_fill_picked_events_list( booking_system );
@@ -300,7 +300,7 @@ function bookacti_check_password_strength( password_field, password_confirm_fiel
  * Submit booking form
  * @since 1.5.0
  * @version 1.6.0
- * @param html_element form
+ * @param {html_element} form
  * @returns {Boolean}
  */
 function bookacti_sumbit_booking_form( form ) {

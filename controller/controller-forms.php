@@ -42,7 +42,7 @@ add_action( 'bookacti_display_form_field_calendar', 'bookacti_display_form_field
 /**
  * Display the form field 'login'
  * @since 1.5.0
- * @version 1.7.0
+ * @version 1.7.3
  * @param string $html
  * @param array $field
  * @param string $instance_id
@@ -97,7 +97,10 @@ function bookacti_display_form_field_login( $html, $field, $instance_id, $contex
 					</label>
 				</div>
 				<?php
-			} ?>
+			}
+			
+			do_action( 'bookacti_login_field_after_login_type', $field, $instance_id, $context );
+			?>
 			</div>
 		<?php
 		}
@@ -130,6 +133,7 @@ function bookacti_display_form_field_login( $html, $field, $instance_id, $contex
 						bookacti_display_field( $args );
 					?>
 					</div>
+					<?php do_action( 'bookacti_login_field_after_email', $field, $instance_id, $context ); ?>
 				</div>
 				<div class='bookacti-form-field-login-field-container bookacti-login-field-password <?php if( ! empty( $field[ 'generate_password' ] ) ) { echo 'bookacti-generated-password '; } if( ! $field[ 'required_fields' ][ 'password' ] ) { echo 'bookacti-password-not-required'; } ?>' id='<?php echo $field_id; ?>-password-container' >
 					<div class='bookacti-form-field-label' >
@@ -200,6 +204,7 @@ function bookacti_display_form_field_login( $html, $field, $instance_id, $contex
 						}
 						?>
 					</div>
+					<?php do_action( 'bookacti_login_field_after_password', $field, $instance_id, $context ); ?>
 				</div>
 			</div>
 			<?php 
@@ -244,6 +249,7 @@ function bookacti_display_form_field_login( $html, $field, $instance_id, $contex
 								bookacti_display_field( $args );
 							?>
 							</div>
+							<?php do_action( 'bookacti_register_field_after_' . $register_field_name, $register_field, $field, $instance_id, $context ); ?>
 						</div>
 					<?php 
 						}
@@ -265,7 +271,7 @@ add_filter( 'bookacti_html_form_field_login', 'bookacti_display_form_field_login
 /**
  * Display the form field "Login / Registration" when the user is already logged in
  * @since 1.5.0
- * @version 1.5.4
+ * @version 1.7.3
  * @param string $html
  * @param array $field
  * @param string $instance_id
@@ -290,14 +296,15 @@ function bookacti_display_form_field_login_when_logged_in( $html, $field, $insta
 	?>
 	<div class='<?php echo $field_class; ?> bookacti-user-is-logged-in' id='<?php echo $field_id; ?>' >
 		<div class='bookacti-form-field-login-field-container bookacti-login-field-log-out' id='<?php echo $field_id; ?>-email-container' >
-				<div class='bookacti-logout-form-field-container'>
-					<span>
-						<?php echo sprintf( esc_html__( 'You are not %s?', BOOKACTI_PLUGIN_NAME ), $user->display_name . ' (' . $user->user_email . ')' ); ?>
-					</span>
-					<a href='<?php echo wp_logout_url( get_permalink() ); ?>' class='bookacti-logout-link'>
-						<?php esc_html_e( 'Click here to log out.', BOOKACTI_PLUGIN_NAME ); ?>
-					</a>
-				</div>
+			<div class='bookacti-logout-form-field-container'>
+				<span>
+					<?php echo sprintf( esc_html__( 'You are not %s?', BOOKACTI_PLUGIN_NAME ), $user->display_name . ' (' . $user->user_email . ')' ); ?>
+				</span>
+				<a href='<?php echo wp_logout_url( get_permalink() ); ?>' class='bookacti-logout-link'>
+					<?php esc_html_e( 'Click here to log out.', BOOKACTI_PLUGIN_NAME ); ?>
+				</a>
+			</div>
+			<?php do_action( 'bookacti_login_field_after_log_out', $field, $instance_id, $context ); ?>
 		</div>
 	</div>
 	<?php
