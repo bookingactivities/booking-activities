@@ -66,7 +66,7 @@ function bookacti_fetch_events( booking_system, interval ) {
 
 /**
  * Reload a booking system
- * @version 1.7.0
+ * @version 1.7.3
  * @param {dom_element} booking_system
  * @param {boolean} keep_picked_events
  */
@@ -108,6 +108,9 @@ function bookacti_reload_booking_system( booking_system, keep_picked_events ) {
 				
 				// Fill the booking method elements
 				booking_system.append( response.html_elements );
+				
+				// Trigger action for plugins
+				booking_system.trigger( 'bookacti_booking_system_reloaded' );
 				
 				// Load the booking method
 				bookacti_booking_method_set_up( booking_system );

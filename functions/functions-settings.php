@@ -6,7 +6,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
  * Get default settings values
  * 
  * @since 1.3.0 (was bookacti_define_default_settings_constants)
- * @version 1.6.0
+ * @version 1.7.3
  */
 function bookacti_get_default_settings() {
 	$date = new DateTime(); 
@@ -14,7 +14,7 @@ function bookacti_get_default_settings() {
 	
 	$default = array(
 		'booking_method'						=> 'calendar',
-		'when_events_load'						=> 'on_page_load',
+		'when_events_load'						=> 'after_page_load',
 		'event_load_interval'					=> 92,
 		'started_events_bookable'				=> false,
 		'started_groups_bookable'				=> false,

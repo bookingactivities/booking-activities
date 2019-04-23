@@ -426,7 +426,7 @@ function bookacti_select_event( raw_event ) {
 
 /**
  * Unselect an event
- * @version 1.7.1
+ * @version 1.7.3
  * @param {object} event
  * @param {boolean} all
  * @returns {boolean}
@@ -450,7 +450,8 @@ function bookacti_unselect_event( event, all ) {
 	
 	// Because of popover and long events (spreading on multiple days), 
 	// the same event can appears twice, so we need to apply changes on each
-	var elements = $j( '.fc-event[data-event-id="' + event.id + '"]' );
+	var event_start = event.start instanceof moment ? event.start.format( 'YYYY-MM-DD HH:mm:ss' ) : event.start;
+	var elements = $j( '.fc-event[data-event-id="' + event.id + '"][data-event-start="' + event_start + '"]' );
 	
 	if( elements.length ) {
 		// Format the selected event(s)

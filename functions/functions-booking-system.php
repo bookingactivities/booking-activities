@@ -290,7 +290,7 @@ function bookacti_get_booking_system_default_attributes() {
 
 /**
  * Check booking system attributes and format them to be correct
- * @version 1.7.0
+ * @version 1.7.3
  * @param array $atts 
  * @return type
  */
@@ -351,22 +351,18 @@ function bookacti_format_booking_system_attributes( $atts = array() ) {
 	$atts[ 'calendars' ]	= array_unique( $atts[ 'calendars' ] );
 	$atts[ 'activities' ]	= array_unique( $atts[ 'activities' ] );
 	
-	// Check if desired templates exist
+	// Check if the desired templates are active and allowed
 	$available_template_ids = array_keys( bookacti_fetch_templates( array(), true ) );
-	foreach( $atts[ 'calendars' ] as $i => $template_id ) {
-		$is_existing = false;
-		foreach( $available_template_ids as $available_template_id ) {
-			if( $available_template_id == intval( $template_id ) ) {
-				$is_existing = true;
-				break;
-			}
+	if( empty( $atts[ 'calendars' ] ) ) {
+		$bypass_template_managers_check = apply_filters( 'bookacti_bypass_template_managers_check', false );
+		if( ! $bypass_template_managers_check && ! is_super_admin() ) {
+			$atts[ 'calendars' ] = $available_template_ids;
 		}
-		if( ! $is_existing ) {
-			unset( $atts[ 'calendars' ][ $i ] );
-		}
+	} else { 
+		$atts[ 'calendars' ] = array_intersect( $atts[ 'calendars' ], $available_template_ids );
 	}
 	
-	// Check if desired activities exist and are allowed according to current user role
+	// Check if desired activities are active and allowed according to current user role
 	$available_activity_ids = bookacti_get_activity_ids_by_template( $atts[ 'calendars' ], false, $atts[ 'check_roles' ] );
 	foreach( $atts[ 'activities' ] as $i => $activity_id ) {
 		if( ! in_array( intval( $activity_id ), $available_activity_ids, true ) ) {
