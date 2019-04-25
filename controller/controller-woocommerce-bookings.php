@@ -39,6 +39,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		wp_clear_scheduled_hook( 'bookacti_hourly_event' );
 	}
 	add_action( 'bookacti_deactivate', 'bookacti_clear_cron_event_to_clean_expired_bookings' );
+	add_action( 'bookacti_uninstall', 'bookacti_clear_cron_event_to_clean_expired_bookings' );
 	
 	
 	/**

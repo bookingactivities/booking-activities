@@ -356,13 +356,9 @@ register_deactivation_hook( __FILE__, 'bookacti_deactivate' );
 
 /**
  * Uninstall Booking Activities
- * @version 1.7.1
+ * @version 1.7.3
  */
 function bookacti_uninstall() {
-	// Deregister the cron events
-	wp_clear_scheduled_hook( 'bookacti_hourly_event' );
-	wp_clear_scheduled_hook( 'bookacti_daily_event' );
-	
 	// Delete notices acknowledgement
 	bookacti_reset_notices();
 	

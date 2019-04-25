@@ -9,7 +9,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	 * Fetch all events of a template or an event
 	 * 
 	 * @since 1.1.0 (replace bookacti_fetch_events from 1.0.0)
-	 * @version 1.7.0
+	 * @version 1.7.3
 	 * @global wpdb $wpdb
 	 * @param int $template_id
 	 * @param int $event_id
@@ -62,7 +62,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 						AND (	UNIX_TIMESTAMP( CONVERT_TZ( E.start, %s, @@global.time_zone ) ) >= 
 								UNIX_TIMESTAMP( CONVERT_TZ( %s, %s, @@global.time_zone ) ) 
 							AND
-								UNIX_TIMESTAMP( CONVERT_TZ( E.end, %s, @@global.time_zone ) ) <= 
+								UNIX_TIMESTAMP( CONVERT_TZ( E.start, %s, @@global.time_zone ) ) <= 
 								UNIX_TIMESTAMP( CONVERT_TZ( ( %s + INTERVAL 24 HOUR ), %s, @@global.time_zone ) ) 
 							) 
 					) 
