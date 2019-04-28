@@ -342,7 +342,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 		/**
 		 * Check if a booking can be cancelled
-		 * @version 1.6.0
+		 * @version 1.7.3
 		 * @param object|int $booking_id
 		 * @return boolean
 		 */
@@ -360,8 +360,9 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 				$is_in_delay		= apply_filters( 'bookacti_bypass_delay', false, $booking ) ? true : bookacti_is_booking_in_delay( $booking );
 				
 				// Final check and return the actions array without invalid entries
-				if( ! $is_cancel_allowed || ! $booking->active || ! $is_in_delay || $is_grouped ) { $is_allowed = false; }
+				if( ! $is_cancel_allowed || $is_grouped || ! $is_in_delay ) { $is_allowed = false; }
 			}
+			if( ! $booking->active ) { $is_allowed = false; }
 			
 			return apply_filters( 'bookacti_booking_can_be_cancelled', $is_allowed, $booking );
 		}
@@ -531,7 +532,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		/**
 		 * Check if a booking group can be cancelled
 		 * @since 1.1.0
-		 * @version 1.6.0
+		 * @version 1.7.3
 		 * @param object $booking_group
 		 * @return boolean
 		 */
@@ -552,6 +553,8 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 					}
 				}
 			}
+			if( ! $booking_group->active ) { $true = false; }
+			
 			return apply_filters( 'bookacti_booking_group_can_be_cancelled', $true, $booking_group );
 		}
 

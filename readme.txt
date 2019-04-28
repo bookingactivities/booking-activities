@@ -3,7 +3,7 @@ Contributors: bookingactivities, yoancutillas
 Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=7EKU434L7NEVC
 Tags: booking activities, booking sport, booking form, event reservation, reservation schedule
 Requires at least: 3.6
-Tested up to: 5.1
+Tested up to: 5.2
 Requires PHP: 5.3
 Stable tag: 1.7.2
 License: GPLv3 or later
@@ -94,7 +94,7 @@ Try this reservation tool live on the [demo website](http://demo.booking-activit
 **The best inside**
 
 * **API for developers** (PHP actions and filters, JS actions). *Documentation coming soon.*
-* Use the latest version of the beautiful and handy **[FullCalendar](https://fullcalendar.io/)**
+* Use the beautiful and handy **[FullCalendar](https://fullcalendar.io/)**
 * Support WP privacy tools for exporting and erasing your customers personal data
 
 See the whole [features list here](https://booking-activities.fr/en/documentation/features/?utm_source=wp-plugin-page&utm_medium=wordpress&utm_content=readme).
@@ -104,7 +104,7 @@ See the whole [features list here](https://booking-activities.fr/en/documentatio
 
 * **[Advanced Forms](https://booking-activities.fr/en/downloads/advanced-forms/?utm_source=wp-plugin-page&utm_medium=wordpress&utm_campaign=advanced-forms&utm_content=readme)**: Add any custom fields to your booking forms
 * **[Display Pack](https://booking-activities.fr/en/downloads/display-pack/?utm_source=wp-plugin-page&utm_medium=wordpress&utm_campaign=display-pack&utm_content=readme)**: Customize your calendars or set alternative display (datepicker)
-* **[Prices and Credits](https://booking-activities.fr/en/downloads/prices-and-credits/?utm_source=wp-plugin-page&utm_medium=wordpress&utm_campaign=prices-and-credits&utm_content=readme)**: Set event-specific prices and pay with credits
+* **[Prices and Credits](https://booking-activities.fr/en/downloads/prices-and-credits/?utm_source=wp-plugin-page&utm_medium=wordpress&utm_campaign=prices-and-credits&utm_content=readme)**: Set per event prices, decreasing prices, price categories (adults, children, etc.), pay with credits
 * **[Notification Pack](https://booking-activities.fr/en/downloads/notification-pack/?utm_source=wp-plugin-page&utm_medium=wordpress&utm_campaign=notification-pack&utm_content=readme)**: Send notifications and booking reminders by email, SMS and Push
 * **[Order for Customers](https://booking-activities.fr/en/downloads/order-for-customers/?utm_source=wp-plugin-page&utm_medium=wordpress&utm_campaign=order-for-customers&utm_content=readme)**: You can book / place an order in the name of your customers
 * **[Points of Sale](https://booking-activities.fr/en/downloads/points-of-sale/?utm_source=wp-plugin-page&utm_medium=wordpress&utm_campaign=points-of-sale&utm_content=readme)**: Each POS manager manage his own products, calendars and bookings

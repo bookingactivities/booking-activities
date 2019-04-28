@@ -1140,10 +1140,12 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	/**
 	 * Convert an array to string recursively
 	 * @since 1.6.0
+	 * @version 1.7.3
 	 * @param array $array
-	 * @return array
+	 * @param boolean $display_keys
+	 * @return string
 	 */
-	function bookacti_format_array_for_export( $array ) {
+	function bookacti_format_array_for_export( $array, $display_keys = false ) {
 		if( ! is_array( $array ) ) { return $array; }
 		if( empty( $array ) ) { return ''; }
 		
@@ -1152,13 +1154,17 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		foreach( $array as $key => $value ) {
 			if( $i !== 0 ) { $string .= ';'; }
 			$value = bookacti_maybe_decode_json( maybe_unserialize( $value ) );
-			if( is_array( $value ) ) { $string_value = bookacti_format_array_for_export( $value ); }
-			else { $string_value = str_replace( array( '[', ']', ';' ), '', $value ); }
+			if( is_array( $value ) ) { $string_value = bookacti_format_array_for_export( $value, $display_keys ); }
+			else { 
+				if( $display_keys ) { $value = $key . ': ' . $value; }
+				$string_value = str_replace( array( '[', ']', ';' ), '', $value );
+			}
 			$string .= $string_value;
 			++$i;
 		}
 		$string .= ']';
-		return $string;
+		
+		return apply_filters( 'bookacti_format_array_for_export', $string, $array, $display_keys );
 	}
 
 
