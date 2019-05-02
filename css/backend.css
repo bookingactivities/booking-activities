@@ -103,7 +103,7 @@
 .bookacti-message-setting		{ margin-bottom: 20px; }
 .bookacti-message-setting input	{ margin-top: 6px; }
 
-.bookacti_checkbox	{ display: inline-block; margin-right: 20px; min-width: 100px; max-width: 100px; box-sizing: border-box; overflow: hidden; white-space: nowrap; }
+.bookacti_checkbox	{ display: inline-block; margin-right: 20px; line-height: 1.5em; min-width: 100px; max-width: 100px; box-sizing: border-box; overflow: hidden; white-space: nowrap; }
 #bookacti_refund_actions .bookacti_checkbox { max-width: none; overflow: visible; }
 
 /** DIALOGS **/

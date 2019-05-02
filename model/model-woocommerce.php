@@ -352,68 +352,72 @@ function bookacti_cancel_order_pending_bookings( $order_id, $not_booking_ids = a
 
 /**
  * Deactivate expired bookings
- * @version	1.5.8
+ * @version	1.7.3
  * @global type $wpdb
- * @return array|0|false
+ * @return array|false
  */
 function bookacti_deactivate_expired_bookings() {
 	global $wpdb;
 	
-	$query_expired_ids	= 'SELECT id, group_id '
-						. ' FROM ' . BOOKACTI_TABLE_BOOKINGS . ' '
-						. ' WHERE expiration_date <= UTC_TIMESTAMP() '
-						. ' AND state = "in_cart" '
-						. ' AND active = 1';
-	$deactivated_bookings = $wpdb->get_results( $query_expired_ids, OBJECT );
+	// Get expired in cart bookings
+	$query	= 'SELECT B.id, B.group_id '
+			. ' FROM ' . BOOKACTI_TABLE_BOOKINGS . ' as B '
+			. ' LEFT JOIN ' . $wpdb->prefix . 'woocommerce_sessions as S ON B.user_id = S.session_key '
+			. ' WHERE B.state = "in_cart" ';
+	// Expired with Booking Activities expiration system
+	$query	.= ' AND ( ( B.expiration_date <= UTC_TIMESTAMP() AND B.active = 1 )';
+	// Expired with WC session expiration system
+	$query	.= ' OR ( S.session_expiry IS NULL OR S.session_expiry <= UNIX_TIMESTAMP( UTC_TIMESTAMP() ) ) )';
+	
+	$expired_bookings = $wpdb->get_results( $query );
 	
 	// Check if expired bookings belong to groups
+	$expired_ids = array();
 	$expired_group_ids = array();
-	foreach( $deactivated_bookings as $deactivated_booking ) {
-		if( ! in_array( $deactivated_booking->group_id, $expired_group_ids, true ) ) {
-			$expired_group_ids[] = $deactivated_booking->group_id;
+	foreach( $expired_bookings as $expired_booking ) {
+		$expired_ids[] = $expired_booking->id;
+		if( ! in_array( $expired_booking->group_id, $expired_group_ids, true ) ) {
+			$expired_group_ids[] = $expired_booking->group_id;
 		}
 	}
+	
+	$return = $expired_ids;
 	
 	// Turn bookings state to 'expired'
-	$query_deactivate_expired_bookings	= 'UPDATE ' . BOOKACTI_TABLE_BOOKINGS . ' '
-										. ' SET active = 0, state = "expired" '
-										. ' WHERE expiration_date <= UTC_TIMESTAMP() '
-										. ' AND state = "in_cart" '
-										. ' AND active = 1';
-	$deactivated = $wpdb->query( $query_deactivate_expired_bookings );
-	
-	// Turn booking groups state to 'expired'
-	if( ! empty( $expired_group_ids ) ) {
-		$query_deactivate_expired_groups	= 'UPDATE ' . BOOKACTI_TABLE_BOOKING_GROUPS . ' '
-											. ' SET active = 0, state = "expired" '
-											. ' WHERE state = "in_cart" '
-											. ' AND active = 1'
-											. ' AND id IN ( ';
-		
-		$i = 1;
-		foreach( $expired_group_ids as $expired_group_id ) {
-			$query_deactivate_expired_groups .= '%d';
-			if( $i < count( $expired_group_ids ) ) { 
-				$query_deactivate_expired_groups .= ','; 
-			}
-			$i++;
+	if( $expired_ids ) {
+		$query	= 'UPDATE ' . BOOKACTI_TABLE_BOOKINGS . ' '
+				. ' SET active = 0, state = "expired" '
+				. ' WHERE id IN ( %d';
+		for( $i=1,$len=count($expired_ids); $i < $len; ++$i ) {
+			$query .= ', %d';
 		}
+		$query .= ' ) ';
+		$query	= $wpdb->prepare( $query, $expired_ids );
+		$deactivated = $wpdb->query( $query );
 		
-		$query_deactivate_expired_groups	.= ' ) ';
+		if( $deactivated === false ) { $return = false; }
 		
-		$prep_deactivate_expired_groups	= $wpdb->prepare( $query_deactivate_expired_groups, $expired_group_ids );
-		$wpdb->query( $prep_deactivate_expired_groups );
+		foreach( $expired_bookings as $expired_booking ) {
+			if( ! $expired_booking->group_id ) {
+				do_action( 'bookacti_booking_expired', $expired_booking->id );
+			}
+		}
 	}
 	
-	$return = $deactivated;
-	if( $deactivated ){
-		$return = array();
-		foreach( $deactivated_bookings as $deactivated_booking ) {
-			$return[] = $deactivated_booking->id;
-			if( ! $deactivated_booking->group_id ) {
-				do_action( 'bookacti_booking_expired', $deactivated_booking->id );
-			}
+	// Turn booking groups state to 'expired'
+	if( $return !== false && $expired_group_ids ) {
+		$query	= 'UPDATE ' . BOOKACTI_TABLE_BOOKING_GROUPS . ' '
+				. ' SET active = 0, state = "expired" '
+				. ' WHERE id IN ( %d';
+		for( $i=1,$len=count($expired_group_ids); $i < $len; ++$i ) {
+			$query .= ', %d';
 		}
+		$query .= ' ) ';
+		$query	= $wpdb->prepare( $query, $expired_group_ids );
+		$deactivated = $wpdb->query( $query );
+		
+		if( $deactivated === false ) { $return = false; }
+		
 		foreach( $expired_group_ids as $expired_group_id ) {
 			do_action( 'bookacti_booking_group_expired', $expired_group_id );
 		}
@@ -424,17 +428,93 @@ function bookacti_deactivate_expired_bookings() {
 
 
 /**
- * Cancel all 'in_cart' bookings
+ * Delete expired bookings few days after their expiration date
+ * @since 1.7.3
+ * @global wpdb $wpdb
+ * @param int $delay
+ * @return array|false
+ */
+function bookacti_delete_expired_bookings( $delay = 10 ) {
+	global $wpdb;
+	
+	// Get expired booking and booking groups ids
+	$query	= 'SELECT id, group_id '
+			. ' FROM ' . BOOKACTI_TABLE_BOOKINGS
+			. ' WHERE expiration_date <= DATE_SUB( UTC_TIMESTAMP(), INTERVAL %d DAY ) '
+			. ' AND state IN ( "expired", "removed" ) '
+			. ' AND active = 0 ';
+	$query	= $wpdb->prepare( $query, $delay );
+	$expired_bookings = $wpdb->get_results( $query );
+	
+	$expired_ids = array();
+	$expired_group_ids = array();
+	foreach( $expired_bookings as $expired_booking ) {
+		$expired_ids[] = $expired_booking->id;
+		if( ! in_array( $expired_booking->group_id, $expired_group_ids, true ) ) {
+			$expired_group_ids[] = $expired_booking->group_id;
+		}
+	}
+		
+	// Bookings
+	$expired_ids = apply_filters( 'bookacti_expired_bookings_to_delete', $expired_ids );
+	$return = $expired_ids;
+	if( $expired_ids ) {
+		$ids_placeholder_list = '%d';
+		for( $i=1,$len=count($expired_ids); $i < $len; ++$i ) {
+			$ids_placeholder_list .= ', %d';
+		}
+		
+		// Delete expired bookings
+		$query= 'DELETE FROM ' . BOOKACTI_TABLE_BOOKINGS . ' WHERE id IN( ' . $ids_placeholder_list . ' );';
+		$query = $wpdb->prepare( $query, $expired_ids );
+		$deleted = $wpdb->query( $query );
+		
+		if( $deleted === false ) { $return = false; }
+		
+		// Delete bookings meta
+		bookacti_delete_metadata( 'booking', $expired_ids );
+
+		do_action( 'bookacti_expired_bookings_deleted', $expired_ids );
+	}
+	
+	// Booking groups
+	$expired_group_ids = apply_filters( 'bookacti_expired_booking_groups_to_delete', $expired_group_ids );
+	if( $return !== false && $expired_group_ids ) {
+		$ids_placeholder_list = '%d';
+		for( $i=1,$len=count($expired_group_ids); $i < $len; ++$i ) {
+			$ids_placeholder_list .= ', %d';
+		}
+		
+		// Delete expired booking groups
+		$query = 'DELETE FROM ' . BOOKACTI_TABLE_BOOKING_GROUPS . ' WHERE id IN ( ' . $ids_placeholder_list . ' );';
+		$query = $wpdb->prepare( $query, $expired_group_ids );
+		$deleted = $wpdb->query( $query );
+		
+		if( $deleted === false ) { $return = false; }
+
+		// Delete booking groups meta
+		bookacti_delete_metadata( 'booking_group', $expired_group_ids );
+		
+		do_action( 'bookacti_expired_booking_groups_deleted', $expired_group_ids );
+	}
+	
+	return $return;
+}
+
+
+/**
+ * Turn 'in_cart' bookings to 'removed'
+ * @since 1.7.3 (was bookacti_cancel_in_cart_bookings)
  * @global wpdb $wpdb
  * @return int|false
  */
-function bookacti_cancel_in_cart_bookings() {
+function bookacti_turn_in_cart_bookings_to_removed() {
 	global $wpdb;
 
-	$query_cancel_in_cart = 'UPDATE ' . BOOKACTI_TABLE_BOOKINGS . ' SET active = 0, state = "cancelled" WHERE state = "in_cart" AND active = 1';
-	$cancelled = $wpdb->query( $query_cancel_in_cart );
+	$query = 'UPDATE ' . BOOKACTI_TABLE_BOOKINGS . ' SET active = 0, state = "removed" WHERE state = "in_cart";';
+	$updated = $wpdb->query( $query );
 
-	return $cancelled;
+	return $updated;
 }
 
 

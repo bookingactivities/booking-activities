@@ -190,7 +190,7 @@ function bookacti_settings_section_bookings_callback() { }
 	 * Display "When to load the events?" setting
 	 * 
 	 * @since 1.1.0
-	 * @version 1.2.0
+	 * @version 1.7.3
 	 */
 	function bookacti_settings_field_when_events_load_callback() {
 		$args = array(
@@ -198,11 +198,11 @@ function bookacti_settings_section_bookings_callback() { }
 			'name'		=> 'bookacti_general_settings[when_events_load]',
 			'id'		=> 'when_events_load',
 			'options'	=> array( 
-								'on_page_load' => __( 'On page load', BOOKACTI_PLUGIN_NAME ),
-								'after_page_load' => __( 'After page load', BOOKACTI_PLUGIN_NAME )
+								'on_page_load' => esc_html__( 'On page load', BOOKACTI_PLUGIN_NAME ),
+								'after_page_load' => esc_html__( 'After page load', BOOKACTI_PLUGIN_NAME )
 							),
 			'value'		=> bookacti_get_setting_value( 'bookacti_general_settings', 'when_events_load' ),
-			'tip'		=> apply_filters( 'bookacti_when_events_load_tip', __( 'Choose whether you want to load events when the page is loaded (faster) or after.', BOOKACTI_PLUGIN_NAME ) )
+			'tip'		=> apply_filters( 'bookacti_when_events_load_tip', esc_html__( 'Choose whether you want to load events when the page is loaded or after. You must choose "After page load" if you are using a caching plugin or a CDN.', BOOKACTI_PLUGIN_NAME ) )
 		);
 		bookacti_display_field( $args );
 	}

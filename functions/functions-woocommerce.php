@@ -2482,3 +2482,17 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		if( isset( $current_screen->id ) && in_array( $current_screen->id, $screen_ids, true ) ) { return true; }
 		return false;
 	}
+	
+	
+	/**
+	 * Check if the current page is a WooCommerce screen
+	 * @since 1.7.0
+	 * @deprecated since 1.7.3 (use bookacti_is_wc_screen instead)
+	 * @return boolean
+	 */
+	function bookacti_is_wc_edit_product_screen() {
+		$current_screen = get_current_screen();
+		if( empty( $current_screen ) ) { return false; }
+		if( isset( $current_screen->id ) && $current_screen->id === 'product' ) { return true; }
+		return false;
+	}

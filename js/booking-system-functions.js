@@ -821,7 +821,14 @@ function bookacti_format_event_duration( start, end ) {
 }
 
 
-// Get activity unit value
+/**
+ * Get activity unit value
+ * @version 1.7.3
+ * @param {html_element} booking_system
+ * @param {int} activity_id
+ * @param {int} qty
+ * @returns {string}
+ */
 function bookacti_get_activity_unit( booking_system, activity_id, qty ) {
 	
 	var booking_system_id = booking_system.attr( 'id' );
@@ -843,19 +850,19 @@ function bookacti_get_activity_unit( booking_system, activity_id, qty ) {
 				if( activity_data[ 'settings' ][ 'unit_name_plural' ] !== ''
 				&&  activity_data[ 'settings' ][ 'unit_name_singular' ] !== '' ) { 
 					activity_val += qty + ' ';
-					if( qty > 1 ) {
-						activity_val += activity_data[ 'settings' ][ 'unit_name_plural' ];
-					} else {
+					if( qty === 1 ) {
 						activity_val += activity_data[ 'settings' ][ 'unit_name_singular' ];
+					} else {
+						activity_val += activity_data[ 'settings' ][ 'unit_name_plural' ];
 					}
 				}
 				if( activity_data[ 'settings' ][ 'places_number' ] !== '' 
 				&&  parseInt( activity_data[ 'settings' ][ 'places_number' ] ) > 0 )
 				{
-					if( parseInt( activity_data[ 'settings' ][ 'places_number' ] ) > 1 ) {
-						activity_val += ' ' + bookacti_localized.n_persons_per_booking.replace( '%1$s', activity_data[ 'settings' ][ 'places_number' ] );
-					} else {
+					if( parseInt( activity_data[ 'settings' ][ 'places_number' ] ) === 1 ) {
 						activity_val += ' ' + bookacti_localized.one_person_per_booking;
+					} else {
+						activity_val += ' ' + bookacti_localized.n_persons_per_booking.replace( '%1$s', activity_data[ 'settings' ][ 'places_number' ] );
 					}
 				}
 
@@ -1136,10 +1143,10 @@ function bookacti_get_event_availability_div( booking_system, event ) {
 				&&  activity_data[ 'settings' ][ 'unit_name_singular' ] !== undefined 
 				&&  activity_data[ 'settings' ][ 'show_unit_in_availability' ] !== undefined ) {
 					if( parseInt( activity_data[ 'settings' ][ 'show_unit_in_availability' ] ) ) {
-						if( available_places > 1 ) {
-							unit_name = activity_data[ 'settings' ][ 'unit_name_plural' ];
-						} else {
+						if( available_places === 1 ) {
 							unit_name = activity_data[ 'settings' ][ 'unit_name_singular' ];
+						} else {
+							unit_name = activity_data[ 'settings' ][ 'unit_name_plural' ];
 						}
 					}
 				}

@@ -320,11 +320,14 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 == Changelog ==
 
 = 1.7.3 =
+* **Breaking change** - Optimization - "Expired" and "Removed" bookings will be permanently deleted 10 days after their expiration date
 * Tweak - Add {user_phone} tag to display the user phone number in notifications
 * Tweak - Change the error message for non logged in users trying to book a restricted event
 * Fix - Events spreading over two loading intervals were not displayed (calendar editor, booked events, grouped events)
 * Fix - Unselecting an occurence of a repeated event in calendar editor was unselecting all occurences
 * Fix - Don't display bookings made on deleted calendars
+* Fix - Incorrect custom actions buttons labels (cancel and refund) for booking groups
+* Fix - 0 should be plural
 
 = 1.7.2 - 2019/04/02 =
 * Tweak - Calendar editor sidebar can be resized (except on IE and Edge)

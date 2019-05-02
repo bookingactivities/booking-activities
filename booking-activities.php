@@ -66,7 +66,7 @@ add_action( 'plugins_loaded', 'bookacti_load_textdomain' );
 // INCLUDE PHP FUNCTIONS
 include_once( 'functions/functions-global.php' ); 
 include_once( 'functions/functions-booking-system.php' ); 
-include_once( 'functions/functions-template.php' );
+include_once( 'functions/functions-templates.php' );
 include_once( 'functions/functions-templates-forms-control.php' );
 include_once( 'functions/functions-bookings.php' );
 include_once( 'functions/functions-forms.php' );

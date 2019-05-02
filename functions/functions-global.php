@@ -1306,6 +1306,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	/**
 	 * Sanitize the values of an array
 	 * @since 1.5.0
+	 * @version 1.7.3
 	 * @param array $default_data
 	 * @param array $raw_data
 	 * @param array $keys_by_type
@@ -1314,7 +1315,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	 */
 	function bookacti_sanitize_values( $default_data, $raw_data, $keys_by_type, $sanitized_data = array() ) {
 		// Sanitize the keys-by-type array
-		$allowed_types = array( 'int', 'bool', 'str', 'str_id', 'array', 'datetime' );
+		$allowed_types = array( 'int', 'bool', 'str', 'str_id', 'str_html', 'array', 'datetime' );
 		foreach( $allowed_types as $allowed_type ) {
 			if( ! isset( $keys_by_type[ $allowed_type ] ) ) { $keys_by_type[ $allowed_type ] = array(); }
 		}
@@ -1351,6 +1352,11 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			// Sanitize text
 			else if( in_array( $key, $keys_by_type[ 'str' ], true ) ) { 
 				$sanitized_data[ $key ] = is_string( $raw_data[ $key ] ) ? sanitize_text_field( stripslashes( $raw_data[ $key ] ) ) : $default_value;
+			}
+
+			// Sanitize text with html
+			else if( in_array( $key, $keys_by_type[ 'str_html' ], true ) ) { 
+				$sanitized_data[ $key ] = is_string( $raw_data[ $key ] ) ? wp_kses_post( stripslashes( $raw_data[ $key ] ) ) : $default_value;
 			}
 
 			// Sanitize array
