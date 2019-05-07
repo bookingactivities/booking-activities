@@ -100,7 +100,7 @@ function bookacti_init_settings() {
 
 	add_settings_field(  
 		'default_calendar_view_threshold', 
-		esc_html__( 'Responsive calendar view threshold', BOOKACTI_PLUGIN_NAME ), 
+		esc_html__( 'Load the "Day" view if the calendar width is less than', BOOKACTI_PLUGIN_NAME ), 
 		'bookacti_settings_field_default_calendar_view_threshold_callback', 
 		'bookacti_general_settings', 
 		'bookacti_settings_section_general' 

@@ -659,7 +659,11 @@ function bookacti_unpick_all_events( booking_system ) {
 }
 
 
-// Display a list of picked events
+/**
+ * Display a list of picked events
+ * @version 1.7.3
+ * @param {html_element} booking_system
+ */
 function bookacti_fill_picked_events_list( booking_system ) {
 	
 	var booking_system_id	= booking_system.attr( 'id' );
@@ -692,14 +696,7 @@ function bookacti_fill_picked_events_list( booking_system ) {
 				booking_system.trigger( 'bookacti_picked_events_list_data', [ event_data, event ] );
 				
 				var activity_id = 0;
-				if( event.group_id && typeof bookacti.booking_system[ booking_system_id ][ 'groups_events' ][ event.group_id ] !== 'undefined' ) {
-					$j.each( bookacti.booking_system[ booking_system_id ][ 'groups_events' ][ event.group_id ], function( i, grouped_event ) {
-						if( grouped_event.id === event.id ) {
-							activity_id = grouped_event.activity_id;
-							return false; // Break the loop
-						}
-					});
-				} else if( typeof bookacti.booking_system[ booking_system_id ][ 'events_data' ][ event.id ] !== 'undefined' ) {
+				if( typeof bookacti.booking_system[ booking_system_id ][ 'events_data' ][ event.id ] !== 'undefined' ) {
 					activity_id = bookacti.booking_system[ booking_system_id ][ 'events_data' ][ event.id ][ 'activity_id' ];
 				}
 				
