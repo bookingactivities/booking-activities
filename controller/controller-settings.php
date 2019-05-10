@@ -833,9 +833,10 @@ add_filter( 'plugin_row_meta', 'bookacti_meta_links_in_plugins_table', 10, 2 );
 
 /** 
  * Ask to rate the plugin 5 stars
- * @version 1.5.7
+ * @version 1.7.3
  */
 function bookacti_5stars_rating_notice() {
+	if( ! bookacti_is_booking_activities_screen() ) { return; }
 	$dismissed = get_option( 'bookacti-5stars-rating-notice-dismissed' );
 	if( ! $dismissed ) {
 		if( current_user_can( 'bookacti_manage_booking_activities' ) ) {

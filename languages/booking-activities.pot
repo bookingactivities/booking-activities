@@ -2,10 +2,10 @@
 # This file is distributed under the same license as the Booking Activities package.
 msgid ""
 msgstr ""
-"Project-Id-Version: Booking Activities 1.7.2\n"
+"Project-Id-Version: Booking Activities 1.7.3\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/booking-"
 "activities\n"
-"POT-Creation-Date: 2019-05-07 14:08:47+00:00\n"
+"POT-Creation-Date: 2019-05-10 13:00:40+00:00\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -13,7 +13,7 @@ msgstr ""
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 
-#. #-#-#-#-#  booking-activities.pot (Booking Activities 1.7.2)  #-#-#-#-#
+#. #-#-#-#-#  booking-activities.pot (Booking Activities 1.7.3)  #-#-#-#-#
 #. Description of the plugin/theme
 #: booking-activities.php:48
 msgid ""
@@ -862,29 +862,29 @@ msgstr ""
 msgid "Contact us"
 msgstr ""
 
-#: controller/controller-settings.php:852
+#: controller/controller-settings.php:853
 msgid ""
 "<strong>Booking Activities</strong> has been helping you for three months "
 "now."
 msgstr ""
 
 #. translators: %s: five stars
-#: controller/controller-settings.php:855
+#: controller/controller-settings.php:856
 msgid ""
 "Would you help it back leaving us a %s rating? We need you now to make it "
 "last!"
 msgstr ""
 
-#: controller/controller-settings.php:860
+#: controller/controller-settings.php:861
 msgid "Ok, I'll rate you five stars!"
 msgstr ""
 
-#: controller/controller-settings.php:861
+#: controller/controller-settings.php:862
 msgid "I already rated you, hide this message"
 msgstr ""
 
 #. translators: %s: five stars
-#: controller/controller-settings.php:916
+#: controller/controller-settings.php:917
 msgid ""
 "If <strong>Booking Activities</strong> helps you, help it back leaving us a "
 "%s rating. We need you now to make it last!"
@@ -5648,9 +5648,9 @@ msgstr ""
 msgid "Booking Activities"
 msgstr ""
 
-#. #-#-#-#-#  booking-activities.pot (Booking Activities 1.7.2)  #-#-#-#-#
+#. #-#-#-#-#  booking-activities.pot (Booking Activities 1.7.3)  #-#-#-#-#
 #. Plugin URI of the plugin/theme
-#. #-#-#-#-#  booking-activities.pot (Booking Activities 1.7.2)  #-#-#-#-#
+#. #-#-#-#-#  booking-activities.pot (Booking Activities 1.7.3)  #-#-#-#-#
 #. Author URI of the plugin/theme
 msgid ""
 "https://booking-activities.fr/en/?"

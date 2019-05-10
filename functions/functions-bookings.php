@@ -7,12 +7,11 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	/**
 	 * Check if a booking is whithin the athorized delay as of now
 	 * @since 1.1.0
-	 * @version 1.7.0
+	 * @version 1.7.3
 	 * @param object|int $booking
 	 * @return boolean
 	 */
 	function bookacti_is_booking_in_delay( $booking ) {
-
 		if( is_numeric( $booking ) ) {
 			$booking = bookacti_get_booking_by_id( $booking );
 		}
@@ -47,10 +46,11 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		// Choose the most specific defined value
 		$delay = $delay_specific !== false ? $delay_specific : $delay_global;
 		
-		$event_datetime		= DateTime::createFromFormat( 'Y-m-d H:i:s', $booking->event_start );
-		$delay_datetime		= $event_datetime->sub( new DateInterval( 'P' . $delay . 'D' ) );
+		$date_interval		= apply_filters( 'bookacti_booking_changes_deadline_date_interval', 'P' . $delay . 'D', $booking, $delay );
+		$delay_datetime		= DateTime::createFromFormat( 'Y-m-d H:i:s', $booking->event_start, new DateTimeZone( $timezone ) );
+		$delay_datetime->sub( new DateInterval( $date_interval ) );
 		$current_datetime	= new DateTime( 'now', new DateTimeZone( $timezone ) );
-
+		
 		if( $current_datetime < $delay_datetime ) { $is_in_delay = true; }
 
 		return apply_filters( 'bookacti_is_booking_in_delay', $is_in_delay, $booking );

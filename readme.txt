@@ -5,7 +5,7 @@ Tags: booking activities, booking sport, booking form, event reservation, reserv
 Requires at least: 3.6
 Tested up to: 5.2
 Requires PHP: 5.3
-Stable tag: 1.7.2
+Stable tag: 1.7.3
 License: GPLv3 or later
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
 
@@ -319,13 +319,13 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 
 == Changelog ==
 
-= 1.7.3 =
+= 1.7.3 - 2019/05/10 =
 * **Breaking change** - Optimization - "Expired" and "Removed" bookings will be permanently deleted 10 days after their expiration date
 * Tweak - Add {user_phone} tag to display the user phone number in notifications
 * Tweak - Change the error message for non logged in users trying to book a restricted event
 * Fix - Events spreading over two loading intervals were not displayed (calendar editor, booked events, grouped events)
 * Fix - Unselecting an occurence of a repeated event in calendar editor was unselecting all occurences
-* Fix - Don't display bookings made on deleted calendars
+* Fix - Don't display bookings made on events belonging to a deleted calendars
 * Fix - Incorrect custom actions buttons labels (cancel and refund) for booking groups
 * Fix - 0 should be plural
 
