@@ -88,7 +88,7 @@ $j( document ).ready( function() {
 
 /**
  * Initialize and display the template calendar
- * @version 1.7.1
+ * @version 1.7.3
  */
 function bookacti_load_template_calendar() {
 	var calendar = $j( '#bookacti-template-calendar' );
@@ -200,6 +200,10 @@ function bookacti_load_template_calendar() {
 			
 			// Display start and end time in spans
 			var time_format	= 'LT';
+			// Remove trailing AM/PM in agenda views
+			if( view.name.indexOf( 'agenda' ) > -1 ){
+				time_format = calendar.fullCalendar( 'option', 'noMeridiemTimeFormat' );
+			}
 			element.find( '.fc-time' ).html( '<span class="bookacti-event-time-start">' + event.start.format( time_format ) + '</span><span class="bookacti-event-time-separator"> - </span><span class="bookacti-event-time-end">' + event.end.format( time_format ) + '</span>' );
 			
 			// Add availability div

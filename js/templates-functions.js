@@ -306,7 +306,13 @@ function bookacti_add_group_category( id, title ) {
 }
 
 
-// Add a group of events to a category list
+/**
+ * Add a group of events to a category list
+ * @version 1.7.3
+ * @param {int} id
+ * @param {string} title
+ * @param {int} category_id
+ */
 function bookacti_add_group_of_events( id, title, category_id ) {
 	
 	// If the category id is not found, add a category
@@ -315,11 +321,10 @@ function bookacti_add_group_of_events( id, title, category_id ) {
 	}
 	
 	// Add the group row to the category
-	var group_short_title = title.length > 16 ? title.substr( 0, 16 ) + '&#8230;' : title;
 	$j( '.bookacti-group-category[data-group-category-id="' + category_id + '"] .bookacti-groups-of-events-editor-list' ).append(
 		"<div class='bookacti-group-of-events' data-group-id='" + id + "' >"
 	+		"<div class='bookacti-group-of-events-title' title='" + title + "'>"
-	+			group_short_title
+	+			title
 	+		"</div>"
 	+		"<div class='bookacti-update-group-of-events dashicons dashicons-admin-generic' ></div>"
 	+	"</div>"
@@ -421,7 +426,7 @@ function bookacti_select_event( raw_event ) {
 
 /**
  * Unselect an event
- * @version 1.7.1
+ * @version 1.7.3
  * @param {object} event
  * @param {boolean} all
  * @returns {boolean}
@@ -445,7 +450,8 @@ function bookacti_unselect_event( event, all ) {
 	
 	// Because of popover and long events (spreading on multiple days), 
 	// the same event can appears twice, so we need to apply changes on each
-	var elements = $j( '.fc-event[data-event-id="' + event.id + '"]' );
+	var event_start = event.start instanceof moment ? event.start.format( 'YYYY-MM-DD HH:mm:ss' ) : event.start;
+	var elements = $j( '.fc-event[data-event-id="' + event.id + '"][data-event-start="' + event_start + '"]' );
 	
 	if( elements.length ) {
 		// Format the selected event(s)

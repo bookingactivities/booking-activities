@@ -3,9 +3,9 @@ Contributors: bookingactivities, yoancutillas
 Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=7EKU434L7NEVC
 Tags: booking activities, booking sport, booking form, event reservation, reservation schedule
 Requires at least: 3.6
-Tested up to: 5.1
+Tested up to: 5.2
 Requires PHP: 5.3
-Stable tag: 1.7.2
+Stable tag: 1.7.3
 License: GPLv3 or later
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
 
@@ -94,7 +94,7 @@ Try this reservation tool live on the [demo website](http://demo.booking-activit
 **The best inside**
 
 * **API for developers** (PHP actions and filters, JS actions). *Documentation coming soon.*
-* Use the latest version of the beautiful and handy **[FullCalendar](https://fullcalendar.io/)**
+* Use the beautiful and handy **[FullCalendar](https://fullcalendar.io/)**
 * Support WP privacy tools for exporting and erasing your customers personal data
 
 See the whole [features list here](https://booking-activities.fr/en/documentation/features/?utm_source=wp-plugin-page&utm_medium=wordpress&utm_content=readme).
@@ -104,7 +104,7 @@ See the whole [features list here](https://booking-activities.fr/en/documentatio
 
 * **[Advanced Forms](https://booking-activities.fr/en/downloads/advanced-forms/?utm_source=wp-plugin-page&utm_medium=wordpress&utm_campaign=advanced-forms&utm_content=readme)**: Add any custom fields to your booking forms
 * **[Display Pack](https://booking-activities.fr/en/downloads/display-pack/?utm_source=wp-plugin-page&utm_medium=wordpress&utm_campaign=display-pack&utm_content=readme)**: Customize your calendars or set alternative display (datepicker)
-* **[Prices and Credits](https://booking-activities.fr/en/downloads/prices-and-credits/?utm_source=wp-plugin-page&utm_medium=wordpress&utm_campaign=prices-and-credits&utm_content=readme)**: Set event-specific prices and pay with credits
+* **[Prices and Credits](https://booking-activities.fr/en/downloads/prices-and-credits/?utm_source=wp-plugin-page&utm_medium=wordpress&utm_campaign=prices-and-credits&utm_content=readme)**: Set per event prices, decreasing prices, price categories (adults, children, etc.), pay with credits
 * **[Notification Pack](https://booking-activities.fr/en/downloads/notification-pack/?utm_source=wp-plugin-page&utm_medium=wordpress&utm_campaign=notification-pack&utm_content=readme)**: Send notifications and booking reminders by email, SMS and Push
 * **[Order for Customers](https://booking-activities.fr/en/downloads/order-for-customers/?utm_source=wp-plugin-page&utm_medium=wordpress&utm_campaign=order-for-customers&utm_content=readme)**: You can book / place an order in the name of your customers
 * **[Points of Sale](https://booking-activities.fr/en/downloads/points-of-sale/?utm_source=wp-plugin-page&utm_medium=wordpress&utm_campaign=points-of-sale&utm_content=readme)**: Each POS manager manage his own products, calendars and bookings
@@ -318,6 +318,16 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 
 
 == Changelog ==
+
+= 1.7.3 - 2019/05/10 =
+* **Breaking change** - Optimization - "Expired" and "Removed" bookings will be permanently deleted 10 days after their expiration date
+* Tweak - Add {user_phone} tag to display the user phone number in notifications
+* Tweak - Change the error message for non logged in users trying to book a restricted event
+* Fix - Events spreading over two loading intervals were not displayed (calendar editor, booked events, grouped events)
+* Fix - Unselecting an occurence of a repeated event in calendar editor was unselecting all occurences
+* Fix - Don't display bookings made on events belonging to a deleted calendars
+* Fix - Incorrect custom actions buttons labels (cancel and refund) for booking groups
+* Fix - 0 should be plural
 
 = 1.7.2 - 2019/04/02 =
 * Tweak - Calendar editor sidebar can be resized (except on IE and Edge)

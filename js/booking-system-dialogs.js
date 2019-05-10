@@ -54,7 +54,7 @@ function bookacti_init_booking_system_dialogs() {
 
 /**
  * Choose a group of events dialog
- * @version 1.5.9
+ * @version 1.7.3
  * @param {dom_element} booking_system
  * @param {array} group_ids
  * @param {object} event
@@ -84,11 +84,11 @@ function bookacti_dialog_choose_group_of_events( booking_system, group_ids, even
 		var avail_html = '';
 		if( bookings_only ) {
 			var bookings = bookacti_get_bookings_number_for_a_single_grouped_event( booking_system, event, group_ids );
-			var booking_html = bookings > 1 ? bookacti_localized.bookings : bookacti_localized.booking;
+			var booking_html = bookings === 1 ? bookacti_localized.booking : bookacti_localized.bookings;
 			avail_html = bookings + ' ' + booking_html;
 		} else {
 			var availability	= bookacti_get_event_availability( booking_system, event );
-			var avail			= availability > 1 ? bookacti_localized.avails : bookacti_localized.avail;
+			var avail			= availability === 1 ? bookacti_localized.avail : bookacti_localized.avails;
 			avail_html = availability + ' ' + avail;
 		}
 		
@@ -156,11 +156,15 @@ function bookacti_dialog_choose_group_of_events( booking_system, group_ids, even
 			'disabled': ! bookings_only && ! is_available,
 		});
 		
-		var label = $j( '<label />', {
+		var single_label = {
 			'html': bookacti_localized.single_event + ' <span class="bookacti-group-availability" >(' + avail_html + ')</span>',
 			'for': 'bookacti-group-of-events-' + group_id
-		});
-
+		};
+		
+		// Allow third party to edit single label
+		booking_system.trigger( 'bookacti_choose_group_dialog_group_label', [ single_label, 'single', event ] );
+		var label = $j( '<label />', single_label );
+		
 		var event_list = $j( '<ul />', {
 			'class': 'bookacti-group-of-events-list bookacti-custom-scrollbar',
 			'data-group-id': group_id
@@ -273,10 +277,10 @@ function bookacti_dialog_choose_group_of_events( booking_system, group_ids, even
 						bookings = grouped_event.group_bookings;
 					}
 				});
-				var booking_html = bookings > 1 ? bookacti_localized.bookings : bookacti_localized.booking;;
+				var booking_html = bookings === 1 ? bookacti_localized.booking : bookacti_localized.bookings;
 				avail_html = bookings + ' ' + booking_html;
 			} else {
-				var avail = availability > 1 ? bookacti_localized.avails : bookacti_localized.avail;
+				var avail = availability === 1 ? bookacti_localized.avail : bookacti_localized.avails;
 				avail_html = availability + ' ' + avail;
 			}
 			

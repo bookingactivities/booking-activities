@@ -1140,10 +1140,12 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	/**
 	 * Convert an array to string recursively
 	 * @since 1.6.0
+	 * @version 1.7.3
 	 * @param array $array
-	 * @return array
+	 * @param boolean $display_keys
+	 * @return string
 	 */
-	function bookacti_format_array_for_export( $array ) {
+	function bookacti_format_array_for_export( $array, $display_keys = false ) {
 		if( ! is_array( $array ) ) { return $array; }
 		if( empty( $array ) ) { return ''; }
 		
@@ -1152,13 +1154,17 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		foreach( $array as $key => $value ) {
 			if( $i !== 0 ) { $string .= ';'; }
 			$value = bookacti_maybe_decode_json( maybe_unserialize( $value ) );
-			if( is_array( $value ) ) { $string_value = bookacti_format_array_for_export( $value ); }
-			else { $string_value = str_replace( array( '[', ']', ';' ), '', $value ); }
+			if( is_array( $value ) ) { $string_value = bookacti_format_array_for_export( $value, $display_keys ); }
+			else { 
+				if( $display_keys ) { $value = $key . ': ' . $value; }
+				$string_value = str_replace( array( '[', ']', ';' ), '', $value );
+			}
 			$string .= $string_value;
 			++$i;
 		}
 		$string .= ']';
-		return $string;
+		
+		return apply_filters( 'bookacti_format_array_for_export', $string, $array, $display_keys );
 	}
 
 
@@ -1300,6 +1306,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	/**
 	 * Sanitize the values of an array
 	 * @since 1.5.0
+	 * @version 1.7.3
 	 * @param array $default_data
 	 * @param array $raw_data
 	 * @param array $keys_by_type
@@ -1308,7 +1315,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	 */
 	function bookacti_sanitize_values( $default_data, $raw_data, $keys_by_type, $sanitized_data = array() ) {
 		// Sanitize the keys-by-type array
-		$allowed_types = array( 'int', 'bool', 'str', 'str_id', 'array', 'datetime' );
+		$allowed_types = array( 'int', 'bool', 'str', 'str_id', 'str_html', 'array', 'datetime' );
 		foreach( $allowed_types as $allowed_type ) {
 			if( ! isset( $keys_by_type[ $allowed_type ] ) ) { $keys_by_type[ $allowed_type ] = array(); }
 		}
@@ -1345,6 +1352,11 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			// Sanitize text
 			else if( in_array( $key, $keys_by_type[ 'str' ], true ) ) { 
 				$sanitized_data[ $key ] = is_string( $raw_data[ $key ] ) ? sanitize_text_field( stripslashes( $raw_data[ $key ] ) ) : $default_value;
+			}
+
+			// Sanitize text with html
+			else if( in_array( $key, $keys_by_type[ 'str_html' ], true ) ) { 
+				$sanitized_data[ $key ] = is_string( $raw_data[ $key ] ) ? wp_kses_post( stripslashes( $raw_data[ $key ] ) ) : $default_value;
 			}
 
 			// Sanitize array

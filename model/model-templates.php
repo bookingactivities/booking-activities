@@ -9,7 +9,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	 * Fetch all events of a template or an event
 	 * 
 	 * @since 1.1.0 (replace bookacti_fetch_events from 1.0.0)
-	 * @version 1.7.0
+	 * @version 1.7.3
 	 * @global wpdb $wpdb
 	 * @param int $template_id
 	 * @param int $event_id
@@ -62,7 +62,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 						AND (	UNIX_TIMESTAMP( CONVERT_TZ( E.start, %s, @@global.time_zone ) ) >= 
 								UNIX_TIMESTAMP( CONVERT_TZ( %s, %s, @@global.time_zone ) ) 
 							AND
-								UNIX_TIMESTAMP( CONVERT_TZ( E.end, %s, @@global.time_zone ) ) <= 
+								UNIX_TIMESTAMP( CONVERT_TZ( E.start, %s, @@global.time_zone ) ) <= 
 								UNIX_TIMESTAMP( CONVERT_TZ( ( %s + INTERVAL 24 HOUR ), %s, @@global.time_zone ) ) 
 							) 
 					) 
@@ -1533,10 +1533,10 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 
 // TEMPLATES
-
+	
 	/**
-	 * Get templates data
-	 * @version 1.7.1
+	 * Get templates
+	 * @version 1.7.3
 	 * @global wpdb $wpdb
 	 * @param array $template_ids
 	 * @param boolean $ignore_permissions
@@ -1544,38 +1544,8 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	 * @return array
 	 */
     function bookacti_fetch_templates( $template_ids = array(), $ignore_permissions = false, $user_id = 0 ) {
-        
 		if( is_numeric( $template_ids ) ) { $template_ids = array( $template_ids ); }
-		
-		global $wpdb;
-		
-        $query  = 'SELECT id, title, start_date as start, end_date as end, active '
-				. ' FROM ' . BOOKACTI_TABLE_TEMPLATES 
-				. ' WHERE active = 1';
-		
-		if( $template_ids ) {
-			$query  .= ' AND id IN ( %d';
-			for( $i=1,$len=count($template_ids); $i<$len; ++$i ) {
-				$query  .= ', %d';
-			}
-			$query  .= ' ) ';
-		}
-		
-		$order_by = apply_filters( 'bookacti_templates_list_order_by', array( 'title', 'id' ) );
-		if( $order_by && is_array( $order_by ) ) {
-			$query .= ' ORDER BY ';
-			for( $i=0,$len=count($order_by); $i<$len; ++$i ) {
-				$query .= $order_by[ $i ] . ' ASC';
-				if( $i < $len-1 ) { $query .= ', '; }
-			}
-		}
-		
-		if( $template_ids ) {
-			$query = $wpdb->prepare( $query, $template_ids );
-		}
-		
-        $templates = $wpdb->get_results( $query, ARRAY_A );
-		
+
 		// Check if we need to check permissions
 		if( ! $user_id ) { $user_id = get_current_user_id(); }
 		if( ! $ignore_permissions ) {
@@ -1584,33 +1554,54 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 				$ignore_permissions = true;
 			}
 		}
-		
-		$retrieved_template_ids = array();
-		foreach( $templates as $template ) {
-			$retrieved_template_ids[] = $template[ 'id' ];
+
+		global $wpdb;
+		$variables = array();
+
+		if( $ignore_permissions ) {
+			$query = 'SELECT T.id, T.title, T.start_date as start, T.end_date as end, T.active '
+				. ' FROM ' . BOOKACTI_TABLE_TEMPLATES . ' as T '
+				. ' WHERE T.active = 1 ';
+		} else {
+			$query = 'SELECT T.id, T.title, T.start_date as start, T.end_date as end, T.active '
+				. ' FROM ' . BOOKACTI_TABLE_TEMPLATES . ' as T, ' . BOOKACTI_TABLE_PERMISSIONS . ' as P '
+				. ' WHERE T.active = 1 '
+				. ' AND T.id = P.object_id '
+				. ' AND P.object_type = "template" '
+				. ' AND P.user_id = %d ';
+			$variables[] = $user_id;
 		}
-		
-		$templates_meta		= bookacti_get_metadata( 'template', $retrieved_template_ids );
-		$templates_managers	= bookacti_get_managers( 'template', $retrieved_template_ids );
-		
-		$templates_data = array();
-		foreach( $templates as $template ) {
-			$template_id = $template[ 'id' ];
-			$template[ 'admin' ] = isset( $templates_managers[ $template_id ] ) ? $templates_managers[ $template_id ] : array();
-			
-			// Check permission
-			if( ! $ignore_permissions ) {
-				if( empty( $template[ 'admin' ] ) || ! in_array( $user_id, $template[ 'admin' ], true ) ) {
-					continue;
-				}
+
+		if( $template_ids ) {
+			$query  .= ' AND T.id IN ( %d';
+			for( $i=1,$len=count($template_ids); $i<$len; ++$i ) {
+				$query  .= ', %d';
 			}
-			
-			$template[ 'settings' ] = isset( $templates_meta[ $template_id ] ) ? $templates_meta[ $template_id ] : array();
-			
-			$templates_data[ $template_id ] = $template;
+			$query  .= ' ) ';
+			$variables = array_merge( $variables, $template_ids );
 		}
-		
-        return $templates_data;
+
+		$order_by = apply_filters( 'bookacti_templates_list_order_by', array( 'T.title', 'T.id' ) );
+		if( $order_by && is_array( $order_by ) ) {
+			$query .= ' ORDER BY ';
+			for( $i=0,$len=count($order_by); $i<$len; ++$i ) {
+				$query .= $order_by[ $i ] . ' ASC';
+				if( $i < $len-1 ) { $query .= ', '; }
+			}
+		}
+
+		if( $variables ) {
+			$query = $wpdb->prepare( $query, $variables );
+		}
+
+		$templates = $wpdb->get_results( $query, ARRAY_A );
+
+		$templates_by_id = array();
+		foreach( $templates as $template ) {
+			$templates_by_id[ $template[ 'id' ] ] = $template;
+		}
+
+		return $templates_by_id;
     }
 	
 	

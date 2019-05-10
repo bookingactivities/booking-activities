@@ -357,7 +357,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	/**
 	 * Add cart item data (all sent in one array)
 	 * 
-	 * @version 1.5.4
+	 * @version 1.7.3
 	 * @param array $cart_item_data
 	 * @param int $product_id
 	 * @param int $variation_id
@@ -366,24 +366,24 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	function bookacti_add_item_data( $cart_item_data, $product_id, $variation_id ) {
 		if( ! isset( $_POST[ 'bookacti_booking_id' ] ) && ! isset( $_POST[ 'bookacti_booking_group_id' ] ) ) { return $cart_item_data; }
 			
-		$new_value = array();
+		if( ! isset( $cart_item_data[ '_bookacti_options' ] ) ) { $cart_item_data[ '_bookacti_options' ] = array(); }
 
 		// Single event
 		if( isset( $_POST[ 'bookacti_booking_id' ] ) ) {
 			$booking_id	= intval( $_POST[ 'bookacti_booking_id' ] );
 			$event = bookacti_get_booking_event_data( $booking_id );
-			$new_value[ '_bookacti_options' ][ 'bookacti_booking_id' ]		= $booking_id;
-			$new_value[ '_bookacti_options' ][ 'bookacti_booked_events' ]	= json_encode( array( $event ) );
+			$cart_item_data[ '_bookacti_options' ][ 'bookacti_booking_id' ]		= $booking_id;
+			$cart_item_data[ '_bookacti_options' ][ 'bookacti_booked_events' ]	= json_encode( array( $event ) );
 
 		// Group of events
 		} else {
 			$booking_group_id = intval( $_POST[ 'bookacti_booking_group_id' ] );
 			$events = bookacti_get_booking_group_events_data( $booking_group_id );
-			$new_value[ '_bookacti_options' ][ 'bookacti_booking_group_id' ]= $booking_group_id;
-			$new_value[ '_bookacti_options' ][ 'bookacti_booked_events' ]	= json_encode( $events );
+			$cart_item_data[ '_bookacti_options' ][ 'bookacti_booking_group_id' ]= $booking_group_id;
+			$cart_item_data[ '_bookacti_options' ][ 'bookacti_booked_events' ]	= json_encode( $events );
 		}
 		
-		return array_merge( $cart_item_data, $new_value );
+		return $cart_item_data;
 	}
 	add_filter( 'woocommerce_add_cart_item_data', 'bookacti_add_item_data', 10, 3 );
 

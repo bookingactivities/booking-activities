@@ -178,7 +178,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	
 	/**
 	 * Fetch events by groups and / or categories of groups
-	 * @version 1.5.3
+	 * @version 1.7.3
 	 * @global wpdb $wpdb
 	 * @param array $templates
 	 * @param array $activities
@@ -274,7 +274,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			$query .= ' AND (	UNIX_TIMESTAMP( CONVERT_TZ( GE.event_start, %s, @@global.time_zone ) ) >= 
 								UNIX_TIMESTAMP( CONVERT_TZ( %s, %s, @@global.time_zone ) ) 
 								AND 
-								UNIX_TIMESTAMP( CONVERT_TZ( GE.event_end, %s, @@global.time_zone ) ) <= 
+								UNIX_TIMESTAMP( CONVERT_TZ( GE.event_start, %s, @@global.time_zone ) ) <= 
 								UNIX_TIMESTAMP( CONVERT_TZ( ( %s + INTERVAL 24 HOUR ), %s, @@global.time_zone ) ) 
 							)';
 			
@@ -327,7 +327,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	/**
 	 * Fetch booked events only
 	 * @since 1.2.2
-	 * @version 1.5.3
+	 * @version 1.7.3
 	 * @global wpdb $wpdb
 	 * @param array $templates
 	 * @param array $activities
@@ -398,7 +398,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			$query .= ' AND (	UNIX_TIMESTAMP( CONVERT_TZ( B.event_start, %s, @@global.time_zone ) ) >= 
 								UNIX_TIMESTAMP( CONVERT_TZ( %s, %s, @@global.time_zone ) ) 
 								AND 
-								UNIX_TIMESTAMP( CONVERT_TZ( B.event_end, %s, @@global.time_zone ) ) <= 
+								UNIX_TIMESTAMP( CONVERT_TZ( B.event_start, %s, @@global.time_zone ) ) <= 
 								UNIX_TIMESTAMP( CONVERT_TZ( ( %s + INTERVAL 24 HOUR ), %s, @@global.time_zone ) ) 
 							)';
 			

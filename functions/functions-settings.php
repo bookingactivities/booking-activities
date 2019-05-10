@@ -6,7 +6,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
  * Get default settings values
  * 
  * @since 1.3.0 (was bookacti_define_default_settings_constants)
- * @version 1.6.0
+ * @version 1.7.3
  */
 function bookacti_get_default_settings() {
 	$date = new DateTime(); 
@@ -14,7 +14,7 @@ function bookacti_get_default_settings() {
 	
 	$default = array(
 		'booking_method'						=> 'calendar',
-		'when_events_load'						=> 'on_page_load',
+		'when_events_load'						=> 'after_page_load',
 		'event_load_interval'					=> 92,
 		'started_events_bookable'				=> false,
 		'started_groups_bookable'				=> false,
@@ -190,7 +190,7 @@ function bookacti_settings_section_bookings_callback() { }
 	 * Display "When to load the events?" setting
 	 * 
 	 * @since 1.1.0
-	 * @version 1.2.0
+	 * @version 1.7.3
 	 */
 	function bookacti_settings_field_when_events_load_callback() {
 		$args = array(
@@ -198,11 +198,11 @@ function bookacti_settings_section_bookings_callback() { }
 			'name'		=> 'bookacti_general_settings[when_events_load]',
 			'id'		=> 'when_events_load',
 			'options'	=> array( 
-								'on_page_load' => __( 'On page load', BOOKACTI_PLUGIN_NAME ),
-								'after_page_load' => __( 'After page load', BOOKACTI_PLUGIN_NAME )
+								'on_page_load' => esc_html__( 'On page load', BOOKACTI_PLUGIN_NAME ),
+								'after_page_load' => esc_html__( 'After page load', BOOKACTI_PLUGIN_NAME )
 							),
 			'value'		=> bookacti_get_setting_value( 'bookacti_general_settings', 'when_events_load' ),
-			'tip'		=> apply_filters( 'bookacti_when_events_load_tip', __( 'Choose whether you want to load events when the page is loaded (faster) or after.', BOOKACTI_PLUGIN_NAME ) )
+			'tip'		=> apply_filters( 'bookacti_when_events_load_tip', esc_html__( 'Choose whether you want to load events when the page is loaded or after. You must choose "After page load" if you are using a caching plugin or a CDN.', BOOKACTI_PLUGIN_NAME ) )
 		);
 		bookacti_display_field( $args );
 	}
@@ -1359,6 +1359,7 @@ function bookacti_settings_section_bookings_callback() { }
 	/**
 	 * Display a promotional area for Notification Pack add-on
 	 * @since 1.2.0
+	 * @version 1.7.3
 	 */
 	function bookacti_display_banp_promo() {
 		$is_plugin_active	= bookacti_is_plugin_active( 'ba-notification-pack/ba-notification-pack.php' );
@@ -1377,7 +1378,7 @@ function bookacti_settings_section_bookings_callback() { }
 					<?php esc_html_e( "It seems you didn't activate your license yet. Please follow these instructions to activate your license:", BOOKACTI_PLUGIN_NAME ); ?>
 				</p><p>
 					<strong>
-						<a href='https://booking-activities.fr/en/docs/user-documentation/notification-pack/prerequisite-installation-license-activation-notification-pack-add-on/?utm_source=plugin&utm_medium=plugin&utm_content=encart-promo-settings' target='_blank' >
+						<a href='https://booking-activities.fr/en/docs/user-documentation/get-started-with-notification-pack-add-on/prerequisite-installation-license-activation-notification-pack-add-on/?utm_source=plugin&utm_medium=plugin&utm_content=encart-promo-settings' target='_blank' >
 							<?php 
 							/* translators: %s = add-on name */
 								echo sprintf( __( 'How to activate %s license?', BOOKACTI_PLUGIN_NAME ), 'Notification Pack' ); 

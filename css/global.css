@@ -134,7 +134,7 @@
 		position: absolute;
 		bottom: 0;
 		right: -2px;
-		z-index: 2;
+		z-index: 5;
 		overflow: hidden;
 	}
 	.bookacti-availability-container .bookacti-available-places { 

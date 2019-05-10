@@ -7,12 +7,11 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	/**
 	 * Check if a booking is whithin the athorized delay as of now
 	 * @since 1.1.0
-	 * @version 1.7.0
+	 * @version 1.7.3
 	 * @param object|int $booking
 	 * @return boolean
 	 */
 	function bookacti_is_booking_in_delay( $booking ) {
-
 		if( is_numeric( $booking ) ) {
 			$booking = bookacti_get_booking_by_id( $booking );
 		}
@@ -47,10 +46,11 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		// Choose the most specific defined value
 		$delay = $delay_specific !== false ? $delay_specific : $delay_global;
 		
-		$event_datetime		= DateTime::createFromFormat( 'Y-m-d H:i:s', $booking->event_start );
-		$delay_datetime		= $event_datetime->sub( new DateInterval( 'P' . $delay . 'D' ) );
+		$date_interval		= apply_filters( 'bookacti_booking_changes_deadline_date_interval', 'P' . $delay . 'D', $booking, $delay );
+		$delay_datetime		= DateTime::createFromFormat( 'Y-m-d H:i:s', $booking->event_start, new DateTimeZone( $timezone ) );
+		$delay_datetime->sub( new DateInterval( $date_interval ) );
 		$current_datetime	= new DateTime( 'now', new DateTimeZone( $timezone ) );
-
+		
 		if( $current_datetime < $delay_datetime ) { $is_in_delay = true; }
 
 		return apply_filters( 'bookacti_is_booking_in_delay', $is_in_delay, $booking );
@@ -342,7 +342,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 		/**
 		 * Check if a booking can be cancelled
-		 * @version 1.6.0
+		 * @version 1.7.3
 		 * @param object|int $booking_id
 		 * @return boolean
 		 */
@@ -360,8 +360,9 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 				$is_in_delay		= apply_filters( 'bookacti_bypass_delay', false, $booking ) ? true : bookacti_is_booking_in_delay( $booking );
 				
 				// Final check and return the actions array without invalid entries
-				if( ! $is_cancel_allowed || ! $booking->active || ! $is_in_delay || $is_grouped ) { $is_allowed = false; }
+				if( ! $is_cancel_allowed || $is_grouped || ! $is_in_delay ) { $is_allowed = false; }
 			}
+			if( ! $booking->active ) { $is_allowed = false; }
 			
 			return apply_filters( 'bookacti_booking_can_be_cancelled', $is_allowed, $booking );
 		}
@@ -531,7 +532,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		/**
 		 * Check if a booking group can be cancelled
 		 * @since 1.1.0
-		 * @version 1.6.0
+		 * @version 1.7.3
 		 * @param object $booking_group
 		 * @return boolean
 		 */
@@ -552,6 +553,8 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 					}
 				}
 			}
+			if( ! $booking_group->active ) { $true = false; }
+			
 			return apply_filters( 'bookacti_booking_group_can_be_cancelled', $true, $booking_group );
 		}
 
@@ -765,6 +768,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		/**
 		 * Get booking group actions array
 		 * @since 1.6.0 (replace bookacti_get_booking_group_actions_array)
+		 * @version 1.7.3
 		 * @param string $admin_or_front Can be "both", "admin", "front. Default "both".
 		 * @return array
 		 */
@@ -784,13 +788,13 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 					'admin_or_front'=> 'admin' ),
 				'cancel' => array( 
 					'class'			=> 'bookacti-cancel-booking-group',
-					'label'			=> esc_html__( 'Cancel', BOOKACTI_PLUGIN_NAME ),
+					'label'			=> bookacti_get_message( 'cancel_booking_open_dialog_button' ),
 					'description'	=> esc_html__( 'Cancel the booking group.', BOOKACTI_PLUGIN_NAME ),
 					'link'			=> '',
 					'admin_or_front'=> 'front' ),
 				'refund' => array( 
 					'class'			=> 'bookacti-refund-booking-group',
-					'label'			=> esc_html_x( 'Refund', 'Button label to trigger the refund action', BOOKACTI_PLUGIN_NAME ),
+					'label'			=> $admin_or_front === 'both' || $admin_or_front === 'admin' ? esc_html_x( 'Refund', 'Button label to trigger the refund action', BOOKACTI_PLUGIN_NAME ) : bookacti_get_message( 'refund_dialog_button' ),
 					'description'	=> esc_html__( 'Refund the booking group with one of the available refund method.', BOOKACTI_PLUGIN_NAME ),
 					'link'			=> '',
 					'admin_or_front'=> 'both' ),

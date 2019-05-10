@@ -163,8 +163,8 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 
 	/**
-	 * Update quantity, control the results ans display feedback accordingly
-	 * @version 1.5.7
+	 * Update quantity, control the results and display feedback accordingly
+	 * @version 1.7.3
 	 * @global woocommerce $woocommerce
 	 * @param int $booking_id
 	 * @param int $new_quantity
@@ -308,8 +308,11 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 						/* translators: %1$s is a variable number of bookings. This sentence is preceded by : 'You want to make %1$s booking of "%2$s"' and followed by 'Please choose another event or decrease the quantity.' */
 						$message .= ' ' . sprintf( __( 'but the maximum number of reservations allowed per user is %1$s.', BOOKACTI_PLUGIN_NAME ), $max_quantity );
 					}
-					/* translators: %1$s is a variable quantity. This sentence is preceded by two others : 'You want to make %1$s booking of "%2$s"' and 'but the maximum number of reservations allowed per user is %1$s.' */
-					$message .= $max_quantity - $current_quantity > 0 ? ' ' . sprintf( __( 'Please choose another event or decrease the quantity to %1$s.', BOOKACTI_PLUGIN_NAME ), $max_quantity - $current_quantity ) : ' ' . __( 'Please choose another event', BOOKACTI_PLUGIN_NAME );
+					if( empty( $_POST[ 'update_cart' ] ) ) {
+						/* translators: %1$s is a variable quantity. This sentence is preceded by two others : 'You want to make %1$s booking of "%2$s"' and 'but the maximum number of reservations allowed per user is %1$s.' */
+						$message .= $max_quantity - $current_quantity > 0 ? ' ' . sprintf( __( 'Please choose another event or decrease the quantity to %1$s.', BOOKACTI_PLUGIN_NAME ), $max_quantity - $current_quantity ) : ' ' . __( 'Please choose another event', BOOKACTI_PLUGIN_NAME );
+					}
+					
 				} else if( $response[ 'error' ] === 'users_sup_to_max' ) {
 					$message = __( 'This event has reached the maximum number of users allowed. Bookings from other users are no longer accepted. Please choose another event.', BOOKACTI_PLUGIN_NAME );
 
@@ -331,9 +334,9 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 
 	/**
-	 * Update booking group quantity, control the results ans display feedback accordingly
+	 * Update booking group quantity, control the results and display feedback accordingly
 	 * @since 1.1.0
-	 * @version 1.5.8
+	 * @version 1.7.3
 	 * @param int $booking_group_id
 	 * @param int $quantity
 	 * @param boolean $add_quantity
@@ -341,7 +344,6 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	 * @return boolean
 	 */
 	function bookacti_controller_update_booking_group_quantity( $booking_group_id, $quantity, $add_quantity = false, $context = 'frontend' ) {
-		
 		// Sanitize
 		$quantity		= intval( $quantity );
 		$add_quantity	= $add_quantity ? true : false;
@@ -447,8 +449,10 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 					/* translators: %1$s is a variable number of bookings. This sentence is preceded by : 'You want to make %1$s booking of "%2$s"' and followed by 'Please choose another event or decrease the quantity.' */
 					$message .= ' ' . sprintf( __( 'but the maximum number of reservations allowed per user is %1$s.', BOOKACTI_PLUGIN_NAME ), $max_quantity );
 				}
-				/* translators: %1$s is a variable quantity. This sentence is preceded by two others : 'You want to make %1$s booking of "%2$s"' and 'but the maximum number of reservations allowed per user is %1$s.' */
-				$message .= $max_quantity - $quantity_already_booked > 0 ? ' ' . sprintf( __( 'Please choose another event or decrease the quantity to %1$s.', BOOKACTI_PLUGIN_NAME ), $max_quantity - $quantity_already_booked ) : ' ' . __( 'Please choose another event', BOOKACTI_PLUGIN_NAME );
+				if( empty( $_POST[ 'update_cart' ] ) ) {
+					/* translators: %1$s is a variable quantity. This sentence is preceded by two others : 'You want to make %1$s booking of "%2$s"' and 'but the maximum number of reservations allowed per user is %1$s.' */
+					$message .= $max_quantity - $quantity_already_booked > 0 ? ' ' . sprintf( __( 'Please choose another event or decrease the quantity to %1$s.', BOOKACTI_PLUGIN_NAME ), $max_quantity - $quantity_already_booked ) : ' ' . __( 'Please choose another event', BOOKACTI_PLUGIN_NAME );
+				}
 			}
 			
 			if( $max_users !== 0 && $current_quantity === 0 && $number_of_users >= $max_users ) { 
@@ -865,12 +869,12 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	 * Change cart item quantity to make them respect the booking restrictions (min booking per user, max...)
 	 * 
 	 * @since 1.4.0
+	 * @version 1.7.3
 	 * @global woocommerce $woocommerce
 	 * @param int $user_id
 	 * @return void|int
 	 */
 	function bookacti_update_cart_item_quantity_according_to_booking_restrictions( $user_id = 0 ) {
-		
 		global $woocommerce;
 		if( ! $woocommerce ) { return; }
 		if( ! $woocommerce->cart ) { return; }
@@ -956,32 +960,32 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 					$restricted_quantity = $min_quantity - $quantity_already_booked;
 					
 					/* translators: %1$s is a variable number of bookings, %2$s is the event title. This sentence is followed by two others : 'but the minimum number of reservations required per user is %1$s.' and 'The quantity has been automatically increased to %1$s.' */
-					$message = sprintf( _n( 'You want to make %1$s booking of "%2$s"', 'You want to make %1$s bookings of "%2$s"', $quantity, BOOKACTI_PLUGIN_NAME ), $quantity, $title );
+					$message = sprintf( esc_html( _n( 'You want to make %1$s booking of "%2$s"', 'You want to make %1$s bookings of "%2$s"', $quantity, BOOKACTI_PLUGIN_NAME ) ), $quantity, $title );
 					if( $quantity_already_booked ) {
 						/* translators: %1$s and %2$s are variable numbers of bookings, always >= 1. This sentence is preceded by : 'You want to make %1$s bookings of "%2$s"' and followed by 'The quantity has been automatically increased to %1$s.' */
-						$message .= ' ' . sprintf( _n( 'and you have already booked %1$s place, but the minimum number of reservations required per user is %2$s.', 'and you have already booked %1$s places, but the minimum number of reservations required per user is %2$s.', $quantity_already_booked, BOOKACTI_PLUGIN_NAME ), $quantity_already_booked, $min_quantity );
+						$message .= ' ' . sprintf( esc_html( _n( 'and you have already booked %1$s place, but the minimum number of reservations required per user is %2$s.', 'and you have already booked %1$s places, but the minimum number of reservations required per user is %2$s.', $quantity_already_booked, BOOKACTI_PLUGIN_NAME ) ), $quantity_already_booked, $min_quantity );
 					} else {
 						/* translators: %1$s is a variable number of bookings. This sentence is preceded by : 'You want to make %1$s bookings of "%2$s"' and followed by 'The quantity has been automatically increased to %1$s.' */
-						$message .= ' ' . sprintf( __( 'but the minimum number of reservations required per user is %1$s.', BOOKACTI_PLUGIN_NAME ), $min_quantity );
+						$message .= ' ' . sprintf( esc_html__( 'but the minimum number of reservations required per user is %1$s.', BOOKACTI_PLUGIN_NAME ), $min_quantity );
 					}
 					/* translators: %1$s is a variable number of bookings. This sentence is preceded by two others : 'You want to make %1$s bookings of "%2$s"' and 'but the minimum number of reservations required per user is %1$s.' */
-					$message .= ' ' . sprintf( __( 'The quantity has been automatically increased to %1$s.', BOOKACTI_PLUGIN_NAME ), $restricted_quantity );
+					$message .= ' ' . sprintf( esc_html__( 'The quantity has been automatically increased to %1$s.', BOOKACTI_PLUGIN_NAME ), $restricted_quantity );
 				}
 				
 				if( $max_quantity !== 0 && $quantity > ( $max_quantity - $quantity_already_booked ) ) { 
 					$restricted_quantity = $max_quantity - $quantity_already_booked;
 					
 					/* translators: %1$s is a variable number of bookings, %2$s is the event title. This sentence is followed by two others : 'but the maximum number of reservations allowed per user is %1$s.' and 'The quantity has been automatically decreased to %1$s.' */
-					$message = sprintf( _n( 'You want to make %1$s booking of "%2$s"', 'You want to make %1$s bookings of "%2$s"', $quantity, BOOKACTI_PLUGIN_NAME ), $quantity, $title );
+					$message = sprintf( esc_html( _n( 'You want to make %1$s booking of "%2$s"', 'You want to make %1$s bookings of "%2$s"', $quantity, BOOKACTI_PLUGIN_NAME ) ), $quantity, $title );
 					if( $quantity_already_booked ) {
 						/* translators: %1$s and %2$s are variable numbers of bookings, always >= 1. This sentence is preceded by : 'You want to make %1$s bookings of "%2$s"' and followed by 'The quantity has been automatically decreased to %1$s.' */
-						$message .= ' ' . sprintf( _n( 'but you have already booked %1$s place and the maximum number of reservations allowed per user is %2$s.', 'but you have already booked %1$s places and the maximum number of reservations allowed per user is %2$s.', $quantity_already_booked, BOOKACTI_PLUGIN_NAME ), $quantity_already_booked, $max_quantity );
+						$message .= ' ' . sprintf( esc_html( _n( 'but you have already booked %1$s place and the maximum number of reservations allowed per user is %2$s.', 'but you have already booked %1$s places and the maximum number of reservations allowed per user is %2$s.', $quantity_already_booked, BOOKACTI_PLUGIN_NAME ) ), $quantity_already_booked, $max_quantity );
 					} else {
 						/* translators: %1$s is a variable number of bookings. This sentence is preceded by : 'You want to make %1$s bookings of "%2$s"' and followed by 'The quantity has been automatically decreased to %1$s.' */
-						$message .= ' ' . sprintf( __( 'but the maximum number of reservations allowed per user is %1$s.', BOOKACTI_PLUGIN_NAME ), $max_quantity );
+						$message .= ' ' . sprintf( esc_html__( 'but the maximum number of reservations allowed per user is %1$s.', BOOKACTI_PLUGIN_NAME ), $max_quantity );
 					}
 					/* translators: %1$s is a variable quantity of bookings. This sentence is preceded by two others : 'You want to make %1$s bookings of "%2$s"' and 'but the maximum number of reservations allowed per user is %1$s.' */
-					$message .= ' ' . sprintf( __( 'The quantity has been automatically decreased to %1$s.', BOOKACTI_PLUGIN_NAME ), $restricted_quantity );
+					$message .= ' ' . sprintf( esc_html__( 'The quantity has been automatically decreased to %1$s.', BOOKACTI_PLUGIN_NAME ), $restricted_quantity );
 				}
 				
 				// Check if the product has to be removed
@@ -994,9 +998,15 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 					}
 					if( ! $is_allowed ) { 
 						$restricted_quantity = 0;
-						/* translators: %1$s is the event title. This sentence is followed by: 'This event has been automatically removed from your cart.' */
-						$message = ' ' . sprintf( __( 'The event "%1$s" is not available in your user category.', BOOKACTI_PLUGIN_NAME ), $title );
-						$message .= ' ' . __( 'This event has been automatically removed from your cart.', BOOKACTI_PLUGIN_NAME );
+						$message = '';
+						if( is_user_logged_in() ) {
+							/* translators: %1$s is the event title. This sentence is followed by: 'This event has been automatically removed from your cart.' */
+							$message .= ' ' . sprintf( esc_html__( 'The event "%1$s" is not available in your user category.', BOOKACTI_PLUGIN_NAME ), $title );
+						} else {
+							/* translators: %1$s is the event title. This sentence is followed by: 'This event has been automatically removed from your cart.' */
+							$message .= ' ' . sprintf( esc_html__( 'The event "%1$s" is restricted to certain categories of users. Please log in first.', BOOKACTI_PLUGIN_NAME ), $title );
+						}
+						$message .= ' ' . esc_html__( 'This event has been automatically removed from your cart.', BOOKACTI_PLUGIN_NAME );
 					}
 				}
 				
@@ -2462,7 +2472,22 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	
 	/**
 	 * Check if the current page is a WooCommerce screen
+	 * @since 1.7.3 (was bookacti_is_wc_edit_product_screen)
+	 * @return boolean
+	 */
+	function bookacti_is_wc_screen( $screen_ids = array() ) {
+		$current_screen = get_current_screen();
+		if( empty( $current_screen ) ) { return false; }
+		if( ! $screen_ids || ! is_array( $screen_ids ) ) { $screen_ids = wc_get_screen_ids(); }
+		if( isset( $current_screen->id ) && in_array( $current_screen->id, $screen_ids, true ) ) { return true; }
+		return false;
+	}
+	
+	
+	/**
+	 * Check if the current page is a WooCommerce screen
 	 * @since 1.7.0
+	 * @deprecated since 1.7.3 (use bookacti_is_wc_screen instead)
 	 * @return boolean
 	 */
 	function bookacti_is_wc_edit_product_screen() {

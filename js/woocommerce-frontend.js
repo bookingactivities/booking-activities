@@ -171,9 +171,9 @@ $j( document ).ready( function() {
 
 		/**
 		 * Change activity summary on qty change
-		 * @version 1.7.0
+		 * @version 1.7.3
 		 */
-		$j( 'body.woocommerce form.cart' ).on( 'change', 'input.qty', function() {
+		$j( 'body.woocommerce form.cart' ).on( 'keyup mouseup change', 'input.qty', function() {
 			var booking_system = $j( this ).parents( 'form.cart' ).find( '.bookacti-booking-system' );
 			if( booking_system.length ) {
 				bookacti_fill_picked_events_list( booking_system );

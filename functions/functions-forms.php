@@ -1498,6 +1498,7 @@ function bookacti_format_form_filters( $filters = array() ) {
 /**
  * Display 'managers' metabox content for forms
  * @since 1.5.0
+ * @version 1.7.3
  */
 function bookacti_display_form_managers_meta_box( $form ) {
 	
@@ -1520,7 +1521,7 @@ function bookacti_display_form_managers_meta_box( $form ) {
 	
 	// Get available form managers option list
 	$in_roles		= apply_filters( 'bookacti_managers_roles', array() );
-	$not_in_roles	= apply_filters( 'bookacti_managers_roles_exceptions', array( 'administrator' ) );
+	$not_in_roles	= apply_filters( 'bookacti_managers_roles_exceptions', is_multisite() ? array() : array( 'administrator' ) );
 	$user_query		= new WP_User_Query( array( 'role__in' => $in_roles, 'role__not_in' => $not_in_roles ) );
 	$users			= $user_query->get_results();
 	$available_managers_options_list = '';

@@ -759,8 +759,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	
 	/**
 	 * AJAX Controller - Update template
-	 * 
-	 * @version	1.4.0
+	 * @version	1.7.3
 	 */
 	function bookacti_controller_update_template() {
 		
@@ -797,7 +796,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 				}
 				
 				if( $updated_template > 0 || intval( $updated_managers ) > 0 || intval( $updated_metadata ) > 0 ) {
-					$templates_data = bookacti_fetch_templates( $template_id, true );
+					$templates_data = bookacti_get_templates_data( $template_id, true );
 					wp_send_json( array( 'status' => 'success', 'template_data' => $templates_data[ $template_id ] ) );
 				} else if( $updated_template === 0 && ! $updated_managers && ! $updated_metadata ) { 
 					wp_send_json( array( 'status' => 'nochanges' ) );
@@ -844,8 +843,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	
 	/**
 	 * AJAX Controller - Change default template
-	 *
-	 * @version	1.4.0
+	 * @version	1.7.3
 	 */
 	function bookacti_controller_switch_template() {
 
@@ -867,7 +865,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			$groups_data		= bookacti_get_groups_of_events( $template_id, array(), true );
 			$categories_data	= bookacti_get_group_categories( $template_id );
 			$exceptions			= bookacti_get_exceptions( $template_id );
-			$templates_data		= bookacti_fetch_templates( $template_id, true );
+			$templates_data		= bookacti_get_templates_data( $template_id, true );
 			
 			$events_interval	= bookacti_get_new_interval_of_events( $templates_data[ $template_id ], array(), false, true );
 			$events				= $events_interval ? bookacti_fetch_events_for_calendar_editor( $template_id, null, $events_interval ) : array();

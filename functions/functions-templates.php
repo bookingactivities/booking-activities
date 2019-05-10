@@ -129,6 +129,32 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 // TEMPLATE SETTINGS
 	
 	/**
+	 * Get templates data
+	 * @since 1.7.3 (was bookacti_fetch_templates)
+	 * @global wpdb $wpdb
+	 * @param array $template_ids
+	 * @param boolean $ignore_permissions
+	 * @param int $user_id
+	 * @return array
+	 */
+	function bookacti_get_templates_data( $template_ids = array(), $ignore_permissions = false, $user_id = 0 ) {
+		$templates = bookacti_fetch_templates( $template_ids, $ignore_permissions, $user_id );
+		
+		$retrieved_template_ids = array_keys( $templates );
+		
+		$templates_meta		= bookacti_get_metadata( 'template', $retrieved_template_ids );
+		$templates_managers	= bookacti_get_managers( 'template', $retrieved_template_ids );
+		
+		foreach( $templates as $template_id => $template ) {
+			$templates[ $template_id ][ 'settings' ]	= isset( $templates_meta[ $template_id ] ) ? $templates_meta[ $template_id ] : array();
+			$templates[ $template_id ][ 'admin' ]	= isset( $templates_managers[ $template_id ] ) ? $templates_managers[ $template_id ] : array();
+		}
+		
+		return $templates;
+	}
+	
+	
+	/**
 	 * Get additionnal calendar fields default data
 	 * @since 1.5.0
 	 * @param array $fields
@@ -170,14 +196,14 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	 * Get a unique template setting made from a combination of multiple template settings
 	 * 
 	 * @since	1.2.2 (was bookacti_get_mixed_template_settings)
-	 * @version 1.5.0
+	 * @version 1.7.3
 	 * @param	array|int $template_ids Array of template ids or single template id
 	 * @param	boolean $past_events Whether to allow past events
 	 * @return	array
 	 */
 	function bookacti_get_mixed_template_data( $template_ids, $past_events = false ) {
 		
-		$templates_data = bookacti_fetch_templates( $template_ids, true );
+		$templates_data = bookacti_get_templates_data( $template_ids, true );
 		
 		$mixed_settings	= array();
 		
