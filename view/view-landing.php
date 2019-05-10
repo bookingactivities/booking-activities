@@ -37,7 +37,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 					'screenshot' => true,
 					'light_color' => '#91d2f2',
 					'dark_color' => '#263740',
-					'excerpt' => esc_html__( 'Put a price in cash or in credits on your events, sell booking passes and redeem them on your forms.', BOOKACTI_PLUGIN_NAME ),
+					'excerpt' => esc_html__( 'Set per event prices, volume discounts and price categories (children, adults...). Sell booking passes and redeem them on your forms.', BOOKACTI_PLUGIN_NAME ),
 					'price' => '69.00€',
 					'promo' => $promo,
 					'promo_price' => $promo_price_59

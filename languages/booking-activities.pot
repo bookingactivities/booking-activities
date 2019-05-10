@@ -5,7 +5,7 @@ msgstr ""
 "Project-Id-Version: Booking Activities 1.7.3\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/booking-"
 "activities\n"
-"POT-Creation-Date: 2019-05-10 13:00:40+00:00\n"
+"POT-Creation-Date: 2019-05-10 13:49:43+00:00\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -4949,8 +4949,8 @@ msgstr ""
 
 #: view/view-landing.php:40
 msgid ""
-"Put a price in cash or in credits on your events, sell booking passes and "
-"redeem them on your forms."
+"Set per event prices, volume discounts and price categories (children, "
+"adults...). Sell booking passes and redeem them on your forms."
 msgstr ""
 
 #: view/view-landing.php:53
