@@ -57,7 +57,6 @@ $bookacti_translation_array = apply_filters( 'bookacti_translation_array', array
 	'calendar_button_list_month'		=> '',
 	'calendar_button_list_week'			=> '',
 	'calendar_button_list_day'			=> '',
-	'calendar_button_flexible_view'		=> '',
 	'booking_form_new_booking_button'	=> apply_filters( 'bookacti_translate_text', $messages[ 'booking_form_new_booking_button' ][ 'value' ] ),
 	'placeholder_select_customer'		=> esc_html__( 'Search for a customer', BOOKACTI_PLUGIN_NAME ),
 	'show_all_customers'				=> esc_html__( 'Show all customers', BOOKACTI_PLUGIN_NAME ),

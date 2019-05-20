@@ -1,6 +1,6 @@
 /**
  * Initialize the calendar
- * @version 1.7.2
+ * @version 1.7.4
  * @param {dom_element} booking_system
  * @param {boolean} reload_events
  */
@@ -42,7 +42,6 @@ function bookacti_set_calendar_up( booking_system, reload_events ) {
 		minTime:                '08:00',
 		maxTime:                '20:00',
 		
-		dayCount: 3, // the default duration for flexible views
 		views: { 
 			week:		{ eventLimit: false }, 
 			day:		{ eventLimit: false },
@@ -50,9 +49,9 @@ function bookacti_set_calendar_up( booking_system, reload_events ) {
 			listWeek:	{ buttonText: bookacti_localized.calendar_button_list_week },
 			listMonth:	{ buttonText: bookacti_localized.calendar_button_list_month },
 			listYear:	{ buttonText: bookacti_localized.calendar_button_list_year },
-			flexibleAgendaView:	{ type: 'agenda', buttonText: bookacti_localized.calendar_button_flexible },
-			flexibleBasicView:	{ type: 'basic', buttonText: bookacti_localized.calendar_button_flexible },
-			flexibleListView:	{ type: 'list', buttonText: bookacti_localized.calendar_button_flexible }
+			agendaFlexible:	{ type: 'agenda', buttonText: bookacti_localized.calendar_button_flexible },
+			basicFlexible:	{ type: 'basic', buttonText: bookacti_localized.calendar_button_flexible },
+			listFlexible:	{ type: 'list', buttonText: bookacti_localized.calendar_button_flexible }
 		},
 
 		// Load an empty array to allow the callback 'loading' to work

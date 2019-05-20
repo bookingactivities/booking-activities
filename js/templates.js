@@ -88,7 +88,7 @@ $j( document ).ready( function() {
 
 /**
  * Initialize and display the template calendar
- * @version 1.7.3
+ * @version 1.7.4
  */
 function bookacti_load_template_calendar() {
 	var calendar = $j( '#bookacti-template-calendar' );
@@ -132,7 +132,10 @@ function bookacti_load_template_calendar() {
 			listDay:	{ buttonText: bookacti_localized.calendar_button_list_day },
 			listWeek:	{ buttonText: bookacti_localized.calendar_button_list_week },
 			listMonth:	{ buttonText: bookacti_localized.calendar_button_list_month },
-			listYear:	{ buttonText: bookacti_localized.calendar_button_list_year } 
+			listYear:	{ buttonText: bookacti_localized.calendar_button_list_year },
+			agendaFlexible:	{ type: 'agenda', buttonText: bookacti_localized.calendar_button_flexible },
+			basicFlexible:	{ type: 'basic', buttonText: bookacti_localized.calendar_button_flexible },
+			listFlexible:	{ type: 'list', buttonText: bookacti_localized.calendar_button_flexible }
 		},
 
 		// Header : Functionnality to Display above the calendar

@@ -464,6 +464,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	/**
 	 * Display fields
 	 * @since 1.5.0
+	 * @version 1.7.4
 	 * @param array $args
 	 */
 	function bookacti_display_fields( $fields, $args = array() ) {
@@ -494,7 +495,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			// Display field title
 			if( ! empty( $field[ 'title' ] ) ) { 
 			?>
-				<label for='<?php echo $field[ 'id' ]; ?>' class='<?php if( $field[ 'type' ] === 'checkboxes' ) { echo 'bookacti-fullwidth-label'; } ?>' >
+				<label for='<?php echo esc_attr( sanitize_title_with_dashes( $field[ 'id' ] ) ); ?>' class='<?php if( $field[ 'type' ] === 'checkboxes' ) { echo 'bookacti-fullwidth-label'; } ?>' >
 				<?php 
 					echo $field[ 'title' ];
 					if( $field[ 'type' ] === 'checkboxes' ) { bookacti_help_tip( $field[ 'tip' ] ); unset( $field[ 'tip' ] ); }
