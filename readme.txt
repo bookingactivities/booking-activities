@@ -323,6 +323,7 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 * Fix - PHP warning when deleting expired booking groups
 * Fix - Label "for" and field "id" attributes sometimes mismatched
 * Fix - Couldn't translate cancel dialog button
+* Fix - Events not loaded if "Load events every" option < number of days in the calendar view
 
 = 1.7.3 - 2019/05/10 =
 * **Breaking change** - Optimization - "Expired" and "Removed" bookings will be permanently deleted 10 days after their expiration date
