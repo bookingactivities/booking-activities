@@ -21,7 +21,7 @@ add_shortcode( 'bookingactivities_list', 'bookacti_shortcode_bookings_list' );
  *									groups_single_events='0'		// Allow to book grouped events as single events
  *									method='calendar' ]			// Display method
  * 
- * @version 1.1.0
+ * @version 1.7.4
  * @deprecated since 1.5.0
  * @param array $atts [id, classes, calendars, activities, groups, method]
  * @param string $content
@@ -29,9 +29,11 @@ add_shortcode( 'bookingactivities_list', 'bookacti_shortcode_bookings_list' );
  * @return string The calendar corresponding to given parameters
  */
 function bookacti_shortcode_calendar( $atts = array(), $content = null, $tag = '' ) {
-	
-	// normalize attribute keys, lowercase
+	// Normalize attribute keys, lowercase
     $atts = array_change_key_case( (array) $atts, CASE_LOWER );
+	
+	// Format booking system attributes
+	$atts = bookacti_format_booking_system_attributes( $atts );
 	
 	$output = '<div class="bookacti-booking-system-calendar-only" >'
 			.		bookacti_get_booking_system( $atts )

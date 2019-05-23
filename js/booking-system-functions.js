@@ -66,7 +66,7 @@ function bookacti_fetch_events( booking_system, interval ) {
 
 /**
  * Reload a booking system
- * @version 1.7.3
+ * @version 1.7.4
  * @param {dom_element} booking_system
  * @param {boolean} keep_picked_events
  */
@@ -96,15 +96,7 @@ function bookacti_reload_booking_system( booking_system, keep_picked_events ) {
 				bookacti_clear_booking_system_displayed_info( booking_system, keep_picked_events );
 				
 				// Update events and settings
-				bookacti.booking_system[ booking_system_id ][ 'events' ]				= response.events;
-				bookacti.booking_system[ booking_system_id ][ 'events_data' ]			= response.events_data;
-				bookacti.booking_system[ booking_system_id ][ 'events_interval' ]		= response.events_interval;
-				bookacti.booking_system[ booking_system_id ][ 'bookings' ]				= response.bookings;
-				bookacti.booking_system[ booking_system_id ][ 'activities_data' ]		= response.activities_data;
-				bookacti.booking_system[ booking_system_id ][ 'groups_events' ]			= response.groups_events;
-				bookacti.booking_system[ booking_system_id ][ 'groups_data' ]			= response.groups_data;
-				bookacti.booking_system[ booking_system_id ][ 'group_categories_data' ]	= response.group_categories_data;
-				bookacti.booking_system[ booking_system_id ][ 'template_data' ]			= response.template_data;
+				bookacti.booking_system[ booking_system_id ] = response.booking_system_data;
 				
 				// Fill the booking method elements
 				booking_system.append( response.html_elements );
@@ -726,7 +718,13 @@ function bookacti_fill_picked_events_list( booking_system ) {
 }
 
 
-// Set min and max quantity
+/**
+ * Set min and max quantity on the quantity field
+ * @version 1.7.4
+ * @param {dom_element} booking_system
+ * @param {dom_element} qty_field
+ * @param {object} event_summary_data
+ */
 function bookacti_set_min_and_max_quantity( booking_system, qty_field, event_summary_data ) {
 	var booking_system_id	= booking_system.attr( 'id' );
 	var quantity			= parseInt( qty_field.val() );
@@ -739,35 +737,43 @@ function bookacti_set_min_and_max_quantity( booking_system, qty_field, event_sum
 	// Groups of events
 	if( $j.isNumeric( booking_system.siblings( '.bookacti-booking-system-inputs' ).find( 'input[name="bookacti_group_id"]' ).val() ) ) {
 		var group_id		= booking_system.siblings( '.bookacti-booking-system-inputs' ).find( 'input[name="bookacti_group_id"]' ).val();
-		var category_id		= parseInt( bookacti.booking_system[ booking_system_id ][ 'groups_data' ][ group_id ][ 'category_id' ] );
-		var category_data	= bookacti.booking_system[ booking_system_id ][ 'group_categories_data' ][ category_id ][ 'settings' ];
-		min_quantity		= typeof category_data[ 'min_bookings_per_user' ] === 'undefined' ? 1 : ( category_data[ 'min_bookings_per_user' ] ? parseInt( category_data[ 'min_bookings_per_user' ] ) : 1 );
-		max_quantity		= typeof category_data[ 'max_bookings_per_user' ] === 'undefined' ? false : ( category_data[ 'max_bookings_per_user' ] ? parseInt( category_data[ 'max_bookings_per_user' ] ) : false );
-		available_places	= bookacti.booking_system[ booking_system_id ][ 'groups_data' ][ group_id ][ 'availability' ];
-	
-		if( ( min_quantity || max_quantity ) && typeof bookacti.booking_system[ booking_system_id ][ 'groups_data' ][ group_id ] !== 'undefined' ) {
-			quantity_booked = parseInt( bookacti.booking_system[ booking_system_id ][ 'groups_data' ][ group_id ][ 'current_user_bookings' ] );
+		if( typeof bookacti.booking_system[ booking_system_id ][ 'groups_data' ][ group_id ] !== 'undefined' ) {
+			var category_id		= parseInt( bookacti.booking_system[ booking_system_id ][ 'groups_data' ][ group_id ][ 'category_id' ] );
+			if( typeof bookacti.booking_system[ booking_system_id ][ 'group_categories_data' ][ category_id ] !== 'undefined' ) {
+				var category_data	= bookacti.booking_system[ booking_system_id ][ 'group_categories_data' ][ category_id ][ 'settings' ];
+				min_quantity		= typeof category_data[ 'min_bookings_per_user' ] === 'undefined' ? 1 : ( category_data[ 'min_bookings_per_user' ] ? parseInt( category_data[ 'min_bookings_per_user' ] ) : 1 );
+				max_quantity		= typeof category_data[ 'max_bookings_per_user' ] === 'undefined' ? false : ( category_data[ 'max_bookings_per_user' ] ? parseInt( category_data[ 'max_bookings_per_user' ] ) : false );
+				available_places	= bookacti.booking_system[ booking_system_id ][ 'groups_data' ][ group_id ][ 'availability' ];
+
+				if( ( min_quantity || max_quantity ) && typeof bookacti.booking_system[ booking_system_id ][ 'groups_data' ][ group_id ] !== 'undefined' ) {
+					quantity_booked = parseInt( bookacti.booking_system[ booking_system_id ][ 'groups_data' ][ group_id ][ 'current_user_bookings' ] );
+				}
+			}
 		}
 		
 	// Single events
 	} else {
-		var event			= bookacti.booking_system[ booking_system_id ][ 'picked_events' ][ 0 ];
-		var event_id		= parseInt( event.id );
-		var activity_id		= parseInt( bookacti.booking_system[ booking_system_id ][ 'events_data' ][ event_id ][ 'activity_id' ] );
-		var activity_data	= bookacti.booking_system[ booking_system_id ][ 'activities_data' ][ activity_id ][ 'settings' ];
-		min_quantity		= typeof activity_data[ 'min_bookings_per_user' ] === 'undefined' ? 1 : ( activity_data[ 'min_bookings_per_user' ] ? parseInt( activity_data[ 'min_bookings_per_user' ] ) : 1 );
-		max_quantity		= typeof activity_data[ 'max_bookings_per_user' ] === 'undefined' ? false : ( activity_data[ 'max_bookings_per_user' ] ? parseInt( activity_data[ 'max_bookings_per_user' ] ) : false );
-		available_places	= bookacti_get_event_availability( booking_system, bookacti.booking_system[ booking_system_id ][ 'picked_events' ][ 0 ] );
-	
-		if( ( min_quantity || max_quantity ) && typeof bookacti.booking_system[ booking_system_id ][ 'bookings' ][ event.id ] !== 'undefined' ) {
-			var event_start	= event.start instanceof moment ? event.start.format( 'YYYY-MM-DD HH:mm:ss' ) : event.start;
-			var event_end	= event.end instanceof moment ? event.end.format( 'YYYY-MM-DD HH:mm:ss' ) : event.end;
-			$j.each( bookacti.booking_system[ booking_system_id ][ 'bookings' ][ event.id ], function( i, occurence ){
-				if( event_start === occurence[ 'event_start' ] && event_end === occurence[ 'event_end' ] ) {
-					quantity_booked = parseInt( occurence[ 'current_user_bookings' ] );
-					return false; // Break the loop
+		var event	= bookacti.booking_system[ booking_system_id ][ 'picked_events' ][ 0 ];
+		var event_id= parseInt( event.id );
+		if( typeof bookacti.booking_system[ booking_system_id ][ 'events_data' ][ event_id ] !== 'undefined' ) {
+			var activity_id		= parseInt( bookacti.booking_system[ booking_system_id ][ 'events_data' ][ event_id ][ 'activity_id' ] );
+			if( typeof bookacti.booking_system[ booking_system_id ][ 'activities_data' ][ activity_id ] !== 'undefined' ) {
+				var activity_data	= bookacti.booking_system[ booking_system_id ][ 'activities_data' ][ activity_id ][ 'settings' ];
+				min_quantity		= typeof activity_data[ 'min_bookings_per_user' ] === 'undefined' ? 1 : ( activity_data[ 'min_bookings_per_user' ] ? parseInt( activity_data[ 'min_bookings_per_user' ] ) : 1 );
+				max_quantity		= typeof activity_data[ 'max_bookings_per_user' ] === 'undefined' ? false : ( activity_data[ 'max_bookings_per_user' ] ? parseInt( activity_data[ 'max_bookings_per_user' ] ) : false );
+				available_places	= bookacti_get_event_availability( booking_system, event );
+				
+				if( ( min_quantity || max_quantity ) && typeof bookacti.booking_system[ booking_system_id ][ 'bookings' ][ event.id ] !== 'undefined' ) {
+					var event_start	= event.start instanceof moment ? event.start.format( 'YYYY-MM-DD HH:mm:ss' ) : event.start;
+					var event_end	= event.end instanceof moment ? event.end.format( 'YYYY-MM-DD HH:mm:ss' ) : event.end;
+					$j.each( bookacti.booking_system[ booking_system_id ][ 'bookings' ][ event.id ], function( i, occurence ){
+						if( event_start === occurence[ 'event_start' ] && event_end === occurence[ 'event_end' ] ) {
+							quantity_booked = parseInt( occurence[ 'current_user_bookings' ] );
+							return false; // Break the loop
+						}
+					});
 				}
-			});
+			}
 		}
 	}
 	

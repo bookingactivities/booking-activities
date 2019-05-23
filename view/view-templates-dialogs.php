@@ -1,7 +1,7 @@
 <?php 
 /**
  * Calendar editor dialogs
- * @version 1.7.3
+ * @version 1.7.4
  */
 
 // Exit if accessed directly
@@ -454,8 +454,8 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 							'callback'		=> 'bookacti_fill_activity_tab_availability',
 							'parameters'	=> array(),
 							'order'			=> 20 ),
-					array(	'label'			=> __( 'Terminology', BOOKACTI_PLUGIN_NAME ),
-							'callback'		=> 'bookacti_fill_activity_tab_terminology',
+					array(	'label'			=> __( 'Text', BOOKACTI_PLUGIN_NAME ),
+							'callback'		=> 'bookacti_fill_activity_tab_text',
 							'parameters'	=> array(),
 							'order'			=> 30 ),
 					array(	'label'			=> __( 'Permissions', BOOKACTI_PLUGIN_NAME ),
@@ -617,8 +617,13 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			}
 			
 			
-			function bookacti_fill_activity_tab_terminology( $params = array() ) {
-				do_action( 'bookacti_activity_tab_terminology_before', $params );
+			/**
+			 * Display the fields in the "Text" tab of the Activity dialog
+			 * @since 1.7.4 (was bookacti_fill_activity_tab_terminology)
+			 * @param array $params
+			 */
+			function bookacti_fill_activity_tab_text( $params = array() ) {
+				do_action( 'bookacti_activity_tab_text_before', $params );
 			?>
 				<div>
 					<label for='bookacti-activity-unit-name-singular' ><?php esc_html_e( 'Unit name (singular)', BOOKACTI_PLUGIN_NAME ); ?></label>
@@ -657,7 +662,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 					?>
 				</div>
 			<?php
-				do_action( 'bookacti_activity_tab_terminology_after', $params );
+				do_action( 'bookacti_activity_tab_text_after', $params );
 			}
 			
 			/**

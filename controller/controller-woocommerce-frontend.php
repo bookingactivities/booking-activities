@@ -140,7 +140,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	
 	/**
 	 * Add booking forms to single product page (front-end)
-	 * @version 1.7.0
+	 * @version 1.7.4
 	 * @global WC_Product $product
 	 */
 	function bookacti_add_booking_system_in_single_product_page() {
@@ -199,6 +199,10 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 				'id'					=> 'bookacti-booking-system-product-' . $product->get_id(),
 				'class'					=> 'bookacti-frontend-booking-system bookacti-woocommerce-product-booking-system'
 			);
+			
+			// Format booking system attributes
+			$atts = bookacti_format_booking_system_attributes( $atts );
+			
 			bookacti_get_booking_system( $atts, true );
 			return;
 		} 

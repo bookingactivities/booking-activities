@@ -1,7 +1,7 @@
 <?php 
 /**
  * Frontend and Backend booking dialogs
- * @version 1.7.1
+ * @version 1.7.4
  */
 
 // Exit if accessed directly
@@ -46,6 +46,10 @@ $messages = bookacti_get_messages();
 					'past_events_bookable'		=> is_admin() ? 1 : 0,
 					'auto_load'					=> 0
 				);
+				
+				// Format booking system attributes
+				$atts = bookacti_format_booking_system_attributes( $atts );
+				
 				bookacti_get_booking_system( $atts, true );
 			?>
 			<input type='hidden' class='bookacti-quantity' value='1'/>
