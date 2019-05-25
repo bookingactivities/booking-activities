@@ -63,26 +63,25 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 	/**
 	 * Return the HTML code to display activities by templates in the bookings page
-	 * 
+	 * @version 1.7.4
 	 * @param array $template_ids
 	 * @param array $activity_ids
 	 * @return string
 	 */
 	function bookacti_get_activities_html_for_booking_page( $template_ids, $activity_ids = array() ) {
-
 		$activities = bookacti_get_activities_by_template( $template_ids, false );
 		$j = 0;
 		$html = '';
 		foreach ( $activities as $activity ) {	
-			if( ( empty( $activity_ids )  && $j === 0 ) || in_array( $activity->id, $activity_ids ) ) { $selected = 'selected'; } else { $selected = ''; }
-
+			if( ( empty( $activity_ids )  && $j === 0 ) || in_array( $activity[ 'id' ], $activity_ids ) ) { $selected = 'selected'; } else { $selected = ''; }
+			
 			// Retrieve activity title
-			$title = apply_filters( 'bookacti_translate_text', $activity->title );
-
+			$title = apply_filters( 'bookacti_translate_text', $activity[ 'title' ] );
+			
 			// Display activity
 			$html.=	"<div class='bookacti-bookings-filter-activity bookacti-bookings-filter' "
-				.		"data-activity-id='" . esc_attr( $activity->id ) . "' "
-				.		"style='background-color: " . esc_attr( $activity->color ) . "; border-color: " . esc_attr( $activity->color ) . "' " 
+				.		"data-activity-id='" . esc_attr( $activity[ 'id' ] ) . "' "
+				.		"style='background-color: " . esc_attr( $activity[ 'color' ] ) . "; border-color: " . esc_attr( $activity[ 'color' ] ) . "' " 
 				.		esc_attr( $selected )
 				.	" >"
 				.		"<div class='bookacti-bookings-filter-content' >"
@@ -95,7 +94,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 			$j++;
 		}
-
+		
 		return apply_filters( 'bookacti_activities_html_by_templates', $html, $template_ids, $activity_ids );
 	}
 	

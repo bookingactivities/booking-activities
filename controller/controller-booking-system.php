@@ -5,7 +5,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 /**
  * AJAX Controller - Fetch events in order to display them
- * @version	1.5.2
+ * @version	1.7.4
  */
 function bookacti_controller_fetch_events() {
 	// Check nonce
@@ -45,12 +45,14 @@ function bookacti_controller_fetch_events() {
 	} else {
 		$events	= bookacti_fetch_events( $attributes[ 'calendars' ], $attributes[ 'activities' ], $attributes[ 'past_events' ], $events_interval );	
 	}
-
-	wp_send_json( array( 
+	
+	$events = apply_filters( 'bookacti_events_data_from_interval', $events, $events_interval, $attributes );
+	
+	bookacti_send_json( array( 
 		'status'		=> 'success', 
 		'events'		=> $events[ 'events' ] ? $events[ 'events' ] : array(), 
 		'events_data'	=> $events[ 'data' ] ? $events[ 'data' ] : array()
-	) );
+	), 'fetch_events' );
 }
 add_action( 'wp_ajax_bookactiFetchEvents', 'bookacti_controller_fetch_events' );
 add_action( 'wp_ajax_nopriv_bookactiFetchEvents', 'bookacti_controller_fetch_events' );
@@ -62,8 +64,7 @@ add_action( 'wp_ajax_nopriv_bookactiFetchEvents', 'bookacti_controller_fetch_eve
  * @version 1.7.4
  */
 function bookacti_controller_reload_booking_system() {
-	
-	$is_admin	= intval( $_POST[ 'is_admin' ] );
+	$is_admin = intval( $_POST[ 'is_admin' ] );
 	$atts = bookacti_format_booking_system_attributes( json_decode( stripslashes( $_POST[ 'attributes' ] ), true ) );
 	
 	// On admin side only, check capabilities
@@ -90,11 +91,11 @@ function bookacti_controller_reload_booking_system() {
 	// Get HTML elements used by the booking method
 	$html_elements = bookacti_get_booking_method_html( $booking_system_data[ 'method' ], $booking_system_data );
 	
-	wp_send_json( array( 
+	bookacti_send_json( array( 
 		'status'				=> 'success', 
 		'html_elements'			=> $html_elements, 
 		'booking_system_data'	=> $booking_system_data
-	) );
+	), 'reload_booking_system' );
 }
 add_action( 'wp_ajax_bookactiReloadBookingSystem', 'bookacti_controller_reload_booking_system' );
 add_action( 'wp_ajax_nopriv_bookactiReloadBookingSystem', 'bookacti_controller_reload_booking_system' );

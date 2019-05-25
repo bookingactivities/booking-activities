@@ -326,7 +326,10 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 * Fix - Events not loaded if "Load events every" option < number of days in the calendar view
 * Fix - The event specified in URL was not selected by default on WC product variation page
 * Fix - JS error if the event specified in URL was not on the calendar
+* Fix - Some {user_...} notification tags didn't work with WC orders
+* Fix - Display WC user data only if the booking was made with WC or if these are the only available data
 * Optimization - Make sure booking system attributes are formatted only once
+* Dev - Hook for booking system data
 
 = 1.7.3 - 2019/05/10 =
 * **Breaking change** - Optimization - "Expired" and "Removed" bookings will be permanently deleted 10 days after their expiration date

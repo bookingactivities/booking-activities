@@ -13,7 +13,7 @@ $j( document ).ready( function() {
 		bookacti.load_events		= false;
 		
 		// Init globals
-		bookacti.booking_system[ 'bookacti-template-calendar' ]								= [];
+		bookacti.booking_system[ 'bookacti-template-calendar' ]								= {};
 		bookacti.booking_system[ 'bookacti-template-calendar' ][ 'calendars' ]				= bookacti.selected_template ? [ bookacti.selected_template ] : [];
 		bookacti.booking_system[ 'bookacti-template-calendar' ][ 'bookings' ]				= [];
 		bookacti.booking_system[ 'bookacti-template-calendar' ][ 'exceptions' ]				= [];

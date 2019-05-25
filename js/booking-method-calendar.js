@@ -142,8 +142,19 @@ function bookacti_set_calendar_up( booking_system, reload_events ) {
 		// eventClick : When an event is clicked
 		eventClick: function( event, jsEvent, view ) {
 			bookacti_event_click( booking_system, event );
+		},
+		
+		// eventMouseover : When your mouse get over an event
+		eventMouseover: function( event, jsEvent, view ) { 
+			var element = $j( this );
+			booking_system.trigger( 'bookacti_event_mouse_over', [ event, element ] );
+		},
+		
+		// eventMouseover : When your mouse move out an event
+		eventMouseout: function( event, jsEvent, view ) { 
+			var element = $j( this );
+			booking_system.trigger( 'bookacti_event_mouse_out', [ event, element ] );
 		}
-
 	}); 
 	
 	// Update calendar settings

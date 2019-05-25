@@ -234,6 +234,7 @@ add_filter( 'bookacti_notifications_tags', 'bookacti_wc_notifications_tags', 15,
 /**
  * Set WC notifications tags values
  * @since 1.6.0
+ * @version 1.7.4
  * @param array $tags
  * @param object $booking
  * @param string $booking_type
@@ -244,6 +245,16 @@ add_filter( 'bookacti_notifications_tags', 'bookacti_wc_notifications_tags', 15,
 function bookacti_wc_notifications_tags_values( $tags, $booking, $booking_type, $notification_id, $locale ) {
 	
 	$item = $booking_type === 'group' ? bookacti_get_order_item_by_booking_group_id( $booking ) : bookacti_get_order_item_by_booking_id( $booking );
+	
+	// Use WC user data if the booking was made with WC, or if we only have these data
+	$user = is_numeric( $booking->user_id ) ? get_user_by( 'id', $booking->user_id ) : null;
+	if( $user ) {
+		if( ! empty( $user->billing_first_name ) && ( $item || empty( $tags[ '{user_firstname}' ] ) ) )	{ $tags[ '{user_firstname}' ]	= $user->billing_first_name; }
+		if( ! empty( $user->billing_last_name ) && ( $item || empty( $tags[ '{user_lastname}' ] ) ) )	{ $tags[ '{user_lastname}' ]	= $user->billing_last_name; }
+		if( ! empty( $user->billing_email ) && ( $item || empty( $tags[ '{user_email}' ] ) ) )			{ $tags[ '{user_email}' ]		= $user->billing_email; }
+		if( ! empty( $user->billing_phone ) && ( $item || empty( $tags[ '{user_phone}' ] ) ) )			{ $tags[ '{user_phone}' ]		= $user->billing_phone; }
+	}
+	
 	if( ! $item ) { return $tags; }
 	
 	// WooCommerce Backward compatibility

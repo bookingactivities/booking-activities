@@ -112,7 +112,7 @@ function bookacti_get_booking_system_data( $atts ) {
 
 			foreach( $groups_data as $group_id => $group_data ) { $groups_ids[] = $group_id; }
 
-			$groups_events		= ! $groups_ids ? array() : bookacti_get_groups_events( $atts[ 'calendars' ], $atts[ 'group_categories' ], $groups_ids );
+			$groups_events = ! $groups_ids ? array() : bookacti_get_groups_events( $atts[ 'calendars' ], $atts[ 'group_categories' ], $groups_ids );
 		} 
 
 		if( $atts[ 'groups_only' ] ) {
