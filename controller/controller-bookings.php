@@ -269,15 +269,15 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 		/**
 		 * AJAX Controller - Reschedule a booking
-		 * @version 1.7.1
+		 * @version 1.7.4
 		 */
 		function bookacti_controller_reschedule_booking() {
-
-			$booking_id			= intval( $_POST[ 'booking_id' ] );
-			$event_id			= intval( $_POST[ 'event_id' ] );
-			$event_start		= bookacti_sanitize_datetime( $_POST[ 'event_start' ] );
-			$event_end			= bookacti_sanitize_datetime( $_POST[ 'event_end' ] );
-
+			$booking_id		= intval( $_POST[ 'booking_id' ] );
+			$event_id		= intval( $_POST[ 'event_id' ] );
+			$event_start	= bookacti_sanitize_datetime( $_POST[ 'event_start' ] );
+			$event_end		= bookacti_sanitize_datetime( $_POST[ 'event_end' ] );
+			$columns		= is_array( $_POST[ 'columns' ] ) ? array_map( 'sanitize_title_with_dashes', $_POST[ 'columns' ] ) : array();
+			
 			// Check nonce, capabilities and other params
 			$is_nonce_valid		= check_ajax_referer( 'bookacti_reschedule_booking', 'nonce', false );
 			$is_allowed			= bookacti_user_can_manage_booking( $booking_id );
@@ -328,7 +328,8 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 				$row = $Bookings_List_Table->get_rows_or_placeholder();
 			} else {
 				$filters	= bookacti_format_booking_filters( array( 'booking_id' => $new_booking->id ) );
-				$row		= bookacti_get_booking_list_rows( $filters );
+				$list_items = bookacti_get_booking_list_items( $filters, $columns );
+				$row		= bookacti_get_booking_list_rows( $list_items, $columns );
 			}
 
 			wp_send_json( array( 'status' => 'success', 'actions_html' => $actions_html, 'row' => $row ) );

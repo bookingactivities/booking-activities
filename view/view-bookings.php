@@ -286,11 +286,11 @@ if( ! $templates ) {
 		</form>
 	</div>
 	
-	<div id='bookacti-bookings-list-container' >
+	<div id='bookacti-booking-list-container' >
 		<?php
 			do_action( 'bookacti_before_booking_list' );
 		?>
-		<div id='bookacti-bookings-list' >
+		<div id='bookacti-booking-list' >
 		<?php
 			$filters = array(
 				'templates'					=> $selected_templates, 

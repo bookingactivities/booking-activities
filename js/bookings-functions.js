@@ -173,9 +173,10 @@ function bookacti_reload_booking_system_according_to_filters( booking_system ) {
 
 /**
  * Init booking actions
+ * @version 1.7.4
  */
 function bookacti_init_booking_actions() {
-	$j( '.bookacti-user-bookings-list, .bookacti-order-item-activity, #bookacti-bookings-list' ).on( 'click', '.bookacti-booking-action, .bookacti-booking-group-action', function ( e ) {
+	$j( '.bookacti-user-booking-list, .bookacti-order-item-activity, #bookacti-booking-list' ).on( 'click', '.bookacti-booking-action, .bookacti-booking-group-action', function ( e ) {
 		e.preventDefault();
 		
 		// Single Bookings
@@ -248,7 +249,13 @@ function bookacti_init_booking_bulk_actions() {
 }
 
 
-// Show bookings of a group
+/**
+ * Show bookings of a group
+ * @version 1.7.4
+ * @param {dom_element} booking_system
+ * @param {int} booking_group_id
+ * @returns {false|null}
+ */
 function bookacti_display_grouped_bookings( booking_system, booking_group_id ) {
 	
 	booking_group_id = typeof booking_group_id !== 'undefined' && $j.isNumeric( booking_group_id ) ? booking_group_id : false;
@@ -291,21 +298,21 @@ function bookacti_display_grouped_bookings( booking_system, booking_group_id ) {
 			if( response.status === 'success' ) {
 				
 				// Update the booking list
-				$j( '#bookacti-bookings-list-container #the-list tr.no-items' ).remove();
+				$j( '#bookacti-booking-list-container #the-list tr.no-items' ).remove();
 				group_row.after( response.rows );
 				bookacti_refresh_list_table_hidden_columns();
 				
 				/**
 				 * Trigger after the booking list has been filled.
 				 */
-				$j( '#bookacti-bookings-list' ).trigger( 'bookacti_grouped_bookings_displayed' );
+				$j( '#bookacti-booking-list' ).trigger( 'bookacti_grouped_bookings_displayed' );
 
 			} else if( response.status === 'failed' ) {
 				var message_error = bookacti_localized.error_retrieve_bookings;
 				if( response.error === 'not_allowed' ) {
 					message_error += '\n' + bookacti_localized.error_not_allowed;
 				}
-				var no_bookings_entry = '<tr class="no-items" ><td class="colspanchange" colspan="' + $j( '#bookacti-bookings-list table tr th' ).length + '" >' + message_error + '</td></tr>';
+				var no_bookings_entry = '<tr class="no-items" ><td class="colspanchange" colspan="' + $j( '#bookacti-booking-list table tr th' ).length + '" >' + message_error + '</td></tr>';
 				group_row.after( no_bookings_entry );
 
 			}

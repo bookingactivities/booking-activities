@@ -177,7 +177,7 @@ function bookacti_dialog_cancel_booking( booking_id, booking_type ) {
 
 /**
  * Refund a cancelled booking
- * @version 1.6.0
+ * @version 1.7.4
  * @param {int} booking_id
  * @param {string} booking_type
  */
@@ -247,7 +247,7 @@ function bookacti_dialog_refund_booking( booking_id, booking_type ) {
 								actions_container = $j( '.bookacti-refund-booking-group[data-booking-group-id="' + booking_id + '"]' ).parents( '.bookacti-booking-group-actions' );
 							}
 							
-							var is_bookings_page = row.parents( '#bookacti-bookings-list' ).length ? 1 : 0;
+							var is_bookings_page = row.parents( '#bookacti-booking-list' ).length ? 1 : 0;
 
 							// Booking page specific data
 							var reload_grouped_bookings = 0;
@@ -429,7 +429,7 @@ function bookacti_dialog_refund_confirmation( message ) {
 
 /**
  * Change Booking State
- * @version 1.5.9
+ * @version 1.7.4
  * @param {int} booking_id
  * @param {string} booking_type
  */
@@ -449,7 +449,7 @@ function bookacti_dialog_change_booking_state( booking_id, booking_type ) {
 		actions_container = $j( '.bookacti-change-booking-group-state[data-booking-group-id="' + booking_id + '"]' ).parents( '.bookacti-booking-group-actions' );
 	}
 	
-	var is_bookings_page = row.parents( '#bookacti-bookings-list' ).length ? 1 : 0;
+	var is_bookings_page = row.parents( '#bookacti-booking-list' ).length ? 1 : 0;
 	
 	// Booking page specific data
 	var reload_grouped_bookings = 0;
@@ -585,7 +585,7 @@ function bookacti_dialog_change_booking_state( booking_id, booking_type ) {
 
 /**
  * Reschedule booking dialog
- * @version 1.7.1
+ * @version 1.7.4
  * @param {int} booking_id
  */
 function bookacti_dialog_reschedule_booking( booking_id ) {
@@ -701,6 +701,13 @@ function bookacti_dialog_reschedule_booking( booking_id ) {
 						send_notifications	= $j( '#bookacti-send-notifications-on-reschedule' ).prop( 'checked' ) ? 1 : 0; 
 					}
 					
+					// Columns to display
+					var columns = [];
+					row.find( 'td' ).each( function() {
+						var column_id = $j( this ).data( 'column-id' );
+						if( column_id ) { columns.push( column_id ); }
+					});
+										
 					// Display a loader
 					bookacti_booking_row_enter_loading_state( row );
 
@@ -712,6 +719,7 @@ function bookacti_dialog_reschedule_booking( booking_id ) {
 								'event_id': event_id,
 								'event_start': event_start,
 								'event_end': event_end,
+								'columns': columns,
 								'is_bookings_page': is_bookings_page,
 								'send_notifications': send_notifications,
 								'nonce': bookacti_localized.nonce_reschedule_booking
@@ -725,7 +733,7 @@ function bookacti_dialog_reschedule_booking( booking_id ) {
 								$j( '#bookacti-reschedule-booking-dialog' ).dialog( 'close' );
 								
 								// If the action has been triggered from admin booking list or frontend shortcode
-								if( row.parents( '#bookacti-bookings-list, .bookacti-user-bookings-list' ).length > 0 ) {
+								if( row.parents( '#bookacti-booking-list, .bookacti-user-booking-list' ).length > 0 ) {
 									row.after( response.row );
 									row.remove();
 									bookacti_refresh_list_table_hidden_columns();

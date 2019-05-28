@@ -589,7 +589,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	
 	
 	/**
-	 * Add columns to bookings list
+	 * Add columns to booking list
 	 * @version 1.5.0
 	 * @param array $columns
 	 * @return array
@@ -1323,7 +1323,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		$item_id	= is_array( $item ) ? $item[ 'id' ] : $item->get_id();
 		$order_id	= is_array( $item ) ? $item[ 'order_id' ] : $item->get_order_id();
 		
-		// Get the bookings list
+		// Get the booking list
 		$grouped_bookings = wc_get_order_item_meta( $item_id, 'bookacti_booked_events', true );
 		if( ! bookacti_is_json( $grouped_bookings ) ) { return; }
 		

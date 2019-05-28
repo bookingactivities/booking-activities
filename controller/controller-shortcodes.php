@@ -7,7 +7,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
  */
 add_shortcode( 'bookingactivities_calendar', 'bookacti_shortcode_calendar' );
 add_shortcode( 'bookingactivities_form', 'bookacti_shortcode_booking_form' );
-add_shortcode( 'bookingactivities_list', 'bookacti_shortcode_bookings_list' );
+add_shortcode( 'bookingactivities_list', 'bookacti_shortcode_booking_list' );
 
 
 /**
@@ -117,16 +117,14 @@ function bookacti_shortcode_booking_form( $atts = array(), $content = null, $tag
 
 /**
  * Display a user related booking list via shortcode
- * @version 1.7.1
+ * @since 1.7.4 (was bookacti_shortcode_booking_list)
  * @param array $atts [user_id, per_page, status, and any booking filter such as 'from', 'to', 'activities'...]
  * @param string $content
  * @param string $tag Should be "bookingactivities_list"
  * @return string The booking list corresponding to given parameters
  */
-function bookacti_shortcode_bookings_list( $atts = array(), $content = null, $tag = '' ) {
-	if( ! is_user_logged_in() ) { return apply_filters( 'bookacti_shortcode_' . $tag . '_output', '', $atts, $content ); }
-	
-	// normalize attribute keys, lowercase
+function bookacti_shortcode_booking_list( $atts = array(), $content = null, $tag = '' ) {
+	// Normalize attribute keys, lowercase
     $atts = array_change_key_case( (array) $atts, CASE_LOWER );
 	
 	// Format 'user_id' attribute
@@ -139,18 +137,31 @@ function bookacti_shortcode_bookings_list( $atts = array(), $content = null, $ta
 		unset( $atts[ 'user' ] );
 	}
 	
+	// Set default values
 	$default_atts = array_merge( bookacti_get_default_booking_filters(), array(
 		'user_id'	=> get_current_user_id(),
 		'per_page'	=> 10,
 		'status'	=> apply_filters( 'bookacti_booking_list_displayed_status', array( 'delivered', 'booked', 'pending', 'cancelled', 'refunded', 'refund_requested' ) ),
-		'group_by'	=> 'booking_group'
+		'group_by'	=> 'booking_group',
+		'columns'	=> bookacti_get_booking_list_default_columns()
 	) );
     $atts = shortcode_atts( $default_atts, $atts, $tag );
 	
+	// Format values
 	$atts = bookacti_format_string_booking_filters( $atts );
-	if( $atts[ 'user_id' ] === 'current' ) { $atts[ 'user_id' ] = $default_atts[ 'user_id' ]; }
+	if( empty( $atts[ 'user_id' ] ) 
+	||  $atts[ 'user_id' ] === 'current' )		{ $atts[ 'user_id' ] = $default_atts[ 'user_id' ]; }
+	if( $atts[ 'user_id' ] === 'all'
+	|| ! empty( $atts[ 'in__user_id' ] )
+	|| ! empty( $atts[ 'not_in__user_id' ] ) )	{ $atts[ 'user_id' ] = ''; }
+	if( empty( $atts[ 'columns' ] ) )			{ $atts[ 'columns' ] = $default_atts[ 'columns' ]; }
 	$templates = $atts[ 'templates' ];
 	$atts[ 'templates' ] = false;
+	
+	// If the user ID is not specified
+	if( empty( $atts[ 'user_id' ] ) && ! is_user_logged_in() ) {
+		return apply_filters( 'bookacti_shortcode_' . $tag . '_output', '', $atts, $content );
+	}
 	
 	// Format booking filters
 	$filters = bookacti_format_booking_filters( $atts );
@@ -159,77 +170,9 @@ function bookacti_shortcode_bookings_list( $atts = array(), $content = null, $ta
 	// Let third party change the filters
 	$filters = apply_filters( 'bookacti_user_booking_list_booking_filters', $filters, $atts, $content );
 	
-	$bookings_nb = bookacti_get_number_of_booking_rows( $filters );	
+	$booking_list = bookacti_display_booking_list( $filters, $atts[ 'columns' ], $atts[ 'per_page' ] );
 	
-	// Pagination
-	$page_nb				= ! empty( $_GET[ 'bookacti_booking_list_paged' ] ) ? intval( $_GET[ 'bookacti_booking_list_paged' ] ) : 1;
-	$per_page				= intval( $atts[ 'per_page' ] );
-	$page_max				= ceil( $bookings_nb / $per_page );
-	$filters[ 'per_page' ]	= $per_page;
-	$filters[ 'offset' ]	= ( $page_nb - 1 ) * $filters[ 'per_page' ];
-	
-	// TABLE OUTPUT
-	ob_start();
-	?>
-	<div id='bookacti-user-bookings-list-<?php echo $filters[ 'user_id' ]; ?>' class='bookacti-user-bookings-list'>
-		<table>
-			<thead>
-				<tr>
-				<?php
-					$columns = bookacti_get_booking_list_columns( $filters );
-					foreach( $columns as $column ) {
-					?>
-						<th class='bookacti-column-<?php echo sanitize_title_with_dashes( $column[ 'id' ] ); ?>'>
-							<div class='bookacti-booking-<?php echo $column[ 'id' ]; ?>-title' >
-								<?php echo $column[ 'title' ]; ?>
-							</div>
-						</th>
-					<?php
-					} 
-				?>
-				</tr>
-			</thead>
-			<tbody>
-			<?php
-				echo bookacti_get_booking_list_rows( $filters, $columns );
-			?>
-			</tbody>
-		</table>
-		<?php if( $page_max > 1 ) { ?>
-		<div class='bookacti-user-booking-list-pagination'>
-		<?php
-			if( $page_nb > 1 ) {
-			?>
-				<span class='bookacti-user-booking-list-previous-page'>
-					<a href='<?php echo esc_url( add_query_arg( 'bookacti_booking_list_paged', ( $page_nb - 1 ) ) ); ?>' class='button'>
-						<?php esc_html_e( 'Previous', BOOKACTI_PLUGIN_NAME ); ?>
-					</a>
-				</span>
-			<?php
-			}
-			?>
-			<span class='bookacti-user-booking-list-current-page'>
-				<strong><?php echo $page_nb; ?></strong> / <em><?php echo $page_max; ?></em>
-			</span>
-			<?php
-			if( $page_nb < $page_max ) {
-			?>
-				<span class='bookacti-user-booking-list-next-page'>
-					<a href='<?php echo esc_url( add_query_arg( 'bookacti_booking_list_paged', ( $page_nb + 1 ) ) ); ?>' class='button'>
-						<?php esc_html_e( 'Next', BOOKACTI_PLUGIN_NAME ); ?>
-					</a>
-				</span>
-			<?php
-			}
-		?>
-		</div>
-		<?php } ?>
-	</div>
-	<?php
-	// Include bookings dialogs if they are not already
-	include_once( WP_PLUGIN_DIR . '/' . BOOKACTI_PLUGIN_NAME . '/view/view-bookings-dialogs.php' );
-	
-	return apply_filters( 'bookacti_shortcode_' . $tag . '_output', ob_get_clean(), $atts, $content );
+	return apply_filters( 'bookacti_shortcode_' . $tag . '_output', $booking_list, $atts, $content );
 }
 
 

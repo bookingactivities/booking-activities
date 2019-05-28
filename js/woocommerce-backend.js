@@ -63,7 +63,7 @@ $j( document ).ready( function() {
 	});
 	
 	// Show / Hide WC field in delete booking dialog
-	$j( '.bookacti-user-bookings-list, .bookacti-order-item-activity, #bookacti-bookings-list' ).on( 'click', '.bookacti-booking-action, .bookacti-booking-group-action', function ( e ) {
+	$j( '.bookacti-user-booking-list, .bookacti-order-item-activity, #bookacti-booking-list' ).on( 'click', '.bookacti-booking-action, .bookacti-booking-group-action', function ( e ) {
 		e.preventDefault();
 		// Reset WC fields
 		if( $j( this ).hasClass( 'bookacti-delete-booking' ) || $j( this ).hasClass( 'bookacti-delete-booking-group' ) ) {
