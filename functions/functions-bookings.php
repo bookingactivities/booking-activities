@@ -1550,8 +1550,8 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
  * @since 1.7.4
  * @return array
  */
-function bookacti_get_booking_list_columns_labels() {
-	return apply_filters( 'bookacti_booking_list_columns_labels', array(
+function bookacti_get_user_booking_list_columns_labels() {
+	return apply_filters( 'bookacti_user_booking_list_columns_labels', array(
 		'booking_id'			=> _x( 'id', 'An id is a unique identification number', BOOKACTI_PLUGIN_NAME ),
 		'booking_type'			=> esc_html_x( 'Type', 'Booking type (single or group)', BOOKACTI_PLUGIN_NAME ),
 		'status'				=> esc_html_x( 'Status', 'Booking status', BOOKACTI_PLUGIN_NAME ),
@@ -1564,7 +1564,7 @@ function bookacti_get_booking_list_columns_labels() {
 		'customer_last_name'	=> esc_html__( 'Last name', BOOKACTI_PLUGIN_NAME ),
 		'customer_email'		=> esc_html__( 'Email', BOOKACTI_PLUGIN_NAME ),
 		'customer_phone'		=> esc_html__( 'Phone', BOOKACTI_PLUGIN_NAME ),
-		'event_list'			=> esc_html__( 'Events', BOOKACTI_PLUGIN_NAME ),
+		'events'				=> esc_html__( 'Events', BOOKACTI_PLUGIN_NAME ),
 		'event_id'				=> esc_html__( 'Event ID', BOOKACTI_PLUGIN_NAME ),
 		'event_title'			=> esc_html__( 'Title', BOOKACTI_PLUGIN_NAME ),
 		'start_date'			=> esc_html__( 'Start', BOOKACTI_PLUGIN_NAME ),
@@ -1585,10 +1585,10 @@ function bookacti_get_booking_list_columns_labels() {
  * @since 1.7.4
  * @return array
  */
-function bookacti_get_booking_list_default_columns() {
-	$columns = apply_filters( 'bookacti_booking_list_default_columns', array(
+function bookacti_get_user_booking_list_default_columns() {
+	$columns = apply_filters( 'bookacti_user_booking_list_default_columns', array(
 		10	=> 'booking_id',
-		20	=> 'event_list',
+		20	=> 'events',
 		30	=> 'quantity',
 		40	=> 'status',
 		100 => 'actions'
@@ -1608,8 +1608,8 @@ function bookacti_get_booking_list_default_columns() {
  * @param array $columns
  * @return string
  */
-function bookacti_get_booking_list_items( $filters, $columns = array() ) {
-	if( ! $columns ) { $columns = bookacti_get_booking_list_default_columns(); }
+function bookacti_get_user_booking_list_items( $filters, $columns = array() ) {
+	if( ! $columns ) { $columns = bookacti_get_user_booking_list_default_columns(); }
 	
 	$booking_list_items = array();
 	
@@ -1754,7 +1754,7 @@ function bookacti_get_booking_list_items( $filters, $columns = array() ) {
 		/**
 		 * Third parties can add or change columns content, do your best to optimize your process
 		 */
-		$booking_item = apply_filters( 'bookacti_user_booking_list_columns_value', array( 
+		$booking_item = apply_filters( 'bookacti_user_booking_list_item', array( 
 			'tr_class'				=> $tr_class,
 			'booking_id_raw'		=> $raw_id,
 			'booking_id'			=> $id,
@@ -1770,7 +1770,7 @@ function bookacti_get_booking_list_items( $filters, $columns = array() ) {
 			'customer_last_name'	=> $last_name,
 			'customer_email'		=> $email,
 			'customer_phone'		=> $phone,
-			'event_list'			=> in_array( 'event_list', $columns, true ) ? bookacti_get_formatted_booking_events_list( $grouped_bookings ) : '',
+			'events'				=> in_array( 'events', $columns, true ) ? bookacti_get_formatted_booking_events_list( $grouped_bookings ) : '',
 			'event_id'				=> $event_id,
 			'event_title'			=> apply_filters( 'bookacti_translate_text', $title ),
 			'start_date'			=> bookacti_format_datetime( $start, $datetime_format ),
@@ -1790,13 +1790,11 @@ function bookacti_get_booking_list_items( $filters, $columns = array() ) {
 	
 	/**
 	 * Third parties can add or change rows and columns, do your best to optimize your process
-	 * @since 1.7.4
 	 */
 	$booking_list_items = apply_filters( 'bookacti_user_booking_list_items', $booking_list_items, $bookings, $booking_groups, $bookings_per_group, $displayed_groups, $users, $filters, $columns );
 
 	foreach( $booking_list_items as $booking_id => $booking_list_item ) {
 		if( empty( $booking_list_item[ 'refund_actions' ] ) && isset( $booking_list_item[ 'actions' ][ 'refund' ] ) ) { unset( $booking_list_item[ 'actions' ][ 'refund' ] ); }
-		if( empty( $booking_list_item[ 'actions' ] ) ) { continue; }
 		if( $booking_list_item[ 'booking_type' ] === 'group' ) {
 			$booking_list_items[ $booking_id ][ 'actions' ] = ! empty( $booking_list_item[ 'actions' ] ) ? bookacti_get_booking_group_actions_html( $booking_groups[ $booking_list_item[ 'booking_id_raw' ] ], 'front', $booking_list_item[ 'actions' ] ) : '';
 		} else if( $booking_list_item[ 'booking_type' ] === 'single' ) {
@@ -1816,8 +1814,8 @@ function bookacti_get_booking_list_items( $filters, $columns = array() ) {
  * @param int $per_page
  * @return string
  */
-function bookacti_display_booking_list( $filters, $columns = array(), $per_page = 10 ) {
-	if( ! $columns ) { $columns = bookacti_get_booking_list_default_columns(); }
+function bookacti_get_user_booking_list( $filters, $columns = array(), $per_page = 10 ) {
+	if( ! $columns ) { $columns = bookacti_get_user_booking_list_default_columns(); }
 	
 	// Set a counter of bookings list displayed on the same page
 	if( empty( $GLOBALS[ 'bookacti_booking_list_count' ] ) ) { $GLOBALS[ 'bookacti_booking_list_count' ] = 0; }
@@ -1840,7 +1838,7 @@ function bookacti_display_booking_list( $filters, $columns = array(), $per_page 
 			<thead>
 				<tr>
 				<?php
-					$columns_labels = bookacti_get_booking_list_columns_labels();
+					$columns_labels = bookacti_get_user_booking_list_columns_labels();
 					foreach( $columns as $column_id ) {
 					?>
 						<th class='bookacti-column-<?php echo sanitize_title_with_dashes( $column_id ); ?>' >
@@ -1855,8 +1853,8 @@ function bookacti_display_booking_list( $filters, $columns = array(), $per_page 
 			</thead>
 			<tbody>
 			<?php
-				$booking_list_items = bookacti_get_booking_list_items( $filters, $columns );
-				echo bookacti_get_booking_list_rows( $booking_list_items, $columns );
+				$booking_list_items = bookacti_get_user_booking_list_items( $filters, $columns );
+				echo bookacti_get_user_booking_list_rows( $booking_list_items, $columns );
 			?>
 			</tbody>
 		</table>
@@ -1909,8 +1907,8 @@ function bookacti_display_booking_list( $filters, $columns = array(), $per_page 
  * @param array $columns
  * @return string
  */
-function bookacti_get_booking_list_rows( $booking_list_items, $columns = array() ) {
-	if( ! $columns ) { $columns = bookacti_get_booking_list_default_columns(); }
+function bookacti_get_user_booking_list_rows( $booking_list_items, $columns = array() ) {
+	if( ! $columns ) { $columns = bookacti_get_user_booking_list_default_columns(); }
 	
 	ob_start();
 	
@@ -1929,16 +1927,16 @@ function bookacti_get_booking_list_rows( $booking_list_items, $columns = array()
 	else {
 		foreach( $booking_list_items as $list_item ) {
 		?>
-			<tr>
+			<tr class='<?php echo ! empty( $list_item[ 'tr_class' ] ) ? $list_item[ 'tr_class' ] : ''; ?>'>
 			<?php
 				foreach( $columns as $column_id ) {
-					$value			= isset( $list_item[ $column_id ] ) ? $list_item[ $column_id ] : '';
+					$value			= isset( $list_item[ $column_id ] ) && is_string( $list_item[ $column_id ] ) ? $list_item[ $column_id ] : '';
 					$class_empty	= empty( $value ) ? 'bookacti-empty-column' : '';
 					$class_group	= $list_item[ 'booking_type' ] === 'group' ? 'bookacti-booking-group-' . $column_id : '';
 				?>
 					<td data-column-id='<?php echo esc_attr( $column_id ); ?>' class='bookacti-column-<?php echo $column_id . ' ' . $class_empty; ?>' >
 						<div class='bookacti-booking-<?php echo $column_id . ' ' . $class_group; ?>' >
-								<?php echo $value; ?>
+							<?php echo $value; ?>
 						</div>
 					</td>
 				<?php

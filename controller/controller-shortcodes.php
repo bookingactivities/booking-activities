@@ -143,7 +143,7 @@ function bookacti_shortcode_booking_list( $atts = array(), $content = null, $tag
 		'per_page'	=> 10,
 		'status'	=> apply_filters( 'bookacti_booking_list_displayed_status', array( 'delivered', 'booked', 'pending', 'cancelled', 'refunded', 'refund_requested' ) ),
 		'group_by'	=> 'booking_group',
-		'columns'	=> bookacti_get_booking_list_default_columns()
+		'columns'	=> bookacti_get_user_booking_list_default_columns()
 	) );
     $atts = shortcode_atts( $default_atts, $atts, $tag );
 	
@@ -170,7 +170,7 @@ function bookacti_shortcode_booking_list( $atts = array(), $content = null, $tag
 	// Let third party change the filters
 	$filters = apply_filters( 'bookacti_user_booking_list_booking_filters', $filters, $atts, $content );
 	
-	$booking_list = bookacti_display_booking_list( $filters, $atts[ 'columns' ], $atts[ 'per_page' ] );
+	$booking_list = bookacti_get_user_booking_list( $filters, $atts[ 'columns' ], $atts[ 'per_page' ] );
 	
 	return apply_filters( 'bookacti_shortcode_' . $tag . '_output', $booking_list, $atts, $content );
 }

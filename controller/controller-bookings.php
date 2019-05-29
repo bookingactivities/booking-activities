@@ -328,8 +328,8 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 				$row = $Bookings_List_Table->get_rows_or_placeholder();
 			} else {
 				$filters	= bookacti_format_booking_filters( array( 'booking_id' => $new_booking->id ) );
-				$list_items = bookacti_get_booking_list_items( $filters, $columns );
-				$row		= bookacti_get_booking_list_rows( $list_items, $columns );
+				$list_items = bookacti_get_user_booking_list_items( $filters, $columns );
+				$row		= bookacti_get_user_booking_list_rows( $list_items, $columns );
 			}
 
 			wp_send_json( array( 'status' => 'success', 'actions_html' => $actions_html, 'row' => $row ) );

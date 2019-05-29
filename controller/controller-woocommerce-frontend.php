@@ -1574,11 +1574,11 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	 * @param array $columns
 	 * @return array
 	 */
-	function bookacti_add_woocommerce_price_column_to_booking_list( $columns ) {
+	function bookacti_add_woocommerce_price_column_to_user_booking_list( $columns ) {
 		$columns[ 'price' ] = esc_html__( 'Price', BOOKACTI_PLUGIN_NAME );
 		return $columns;
 	}
-	add_filter( 'bookacti_booking_list_columns_labels', 'bookacti_add_woocommerce_price_column_to_booking_list', 10, 1 );
+	add_filter( 'bookacti_user_booking_list_columns_labels', 'bookacti_add_woocommerce_price_column_to_user_booking_list', 10, 1 );
 	
 	
 	/**
@@ -1587,12 +1587,12 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	 * @param array $columns
 	 * @return array
 	 */
-	function bookacti_reorder_woocommerce_price_column_in_booking_list( $columns ) {
+	function bookacti_reorder_woocommerce_price_column_in_user_booking_list( $columns ) {
 		if( in_array( 'price', $columns, true ) ) { return $columns; }
 		$columns[ 45 ] = 'price';
 		return $columns;
 	}
-	add_filter( 'bookacti_booking_list_default_columns', 'bookacti_reorder_woocommerce_price_column_in_booking_list', 10, 1 );
+	add_filter( 'bookacti_user_booking_list_default_columns', 'bookacti_reorder_woocommerce_price_column_in_user_booking_list', 10, 1 );
 	
 	
 	/**
@@ -1607,7 +1607,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	 * @param array $columns
 	 * @return array
 	 */
-	function bookacti_add_woocommerce_prices_in_booking_list( $columns_value, $booking, $group, $grouped_bookings, $user, $filters, $columns ) {
+	function bookacti_fill_wc_price_column_in_booking_list( $columns_value, $booking, $group, $grouped_bookings, $user, $filters, $columns ) {
 		if( ! in_array( 'status', $columns, true ) && ! in_array( 'price', $columns, true ) ) { return $columns_value; }
 		
 		$item = bookacti_get_order_item_by_booking_id( $booking->id );
@@ -1659,4 +1659,4 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 		return $columns_value;
 	}
-	add_filter( 'bookacti_user_booking_list_columns_value', 'bookacti_add_woocommerce_prices_in_booking_list', 20, 7 );
+	add_filter( 'bookacti_user_booking_list_item', 'bookacti_fill_wc_price_column_in_booking_list', 20, 7 );
