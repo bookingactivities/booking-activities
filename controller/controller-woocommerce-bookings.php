@@ -626,6 +626,42 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		return $hidden_columns;
 	}
 	add_filter( 'bookacti_booking_list_default_hidden_columns', 'bookacti_woocommerce_booking_list_hidden_columns', 10, 1 );
+	
+	
+	/**
+	 * Controller - Get WC order items rows
+	 * @since 1.7.4
+	 * @param string $rows
+	 * @param string $context
+	 * @param array $filters
+	 * @param array $columns
+	 * @return string
+	 */
+	function bookacti_controller_get_order_items_rows( $rows, $context, $filters, $columns ) {
+		if( $context !== 'wc_order_items' ) { return $rows; }
+		
+		$order_items = array();
+		if( ! empty( $filters[ 'booking_id' ] ) ) {
+			$order_items[] = bookacti_get_order_item_by_booking_id( $filters[ 'booking_id' ] );
+		}
+		if( ! empty( $filters[ 'in__booking_id' ] ) ) {
+			foreach( $filters[ 'in__booking_id' ] as $booking_id ) {
+				$order_items[] = bookacti_get_order_item_by_booking_id( $booking_id );
+			}
+		}
+		if( ! empty( $filters[ 'booking_group_id' ] ) ) {
+			$order_items[] = bookacti_get_order_item_by_booking_group_id( $filters[ 'booking_group_id' ] );
+		}
+		if( ! empty( $filters[ 'in__booking_group_id' ] ) ) {
+			foreach( $filters[ 'in__booking_group_id' ] as $booking_group_id ) {
+				$order_items[] = bookacti_get_order_item_by_booking_group_id( $booking_group_id );
+			}
+		}
+		
+		return bookacti_get_order_items_rows( $order_items );
+	}
+	add_filter( 'booking_list_rows_according_to_context', 'bookacti_controller_get_order_items_rows', 10, 4 );
+
 
 
 

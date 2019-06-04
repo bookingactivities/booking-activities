@@ -5,7 +5,7 @@ Tags: booking activities, booking sport, booking form, event reservation, reserv
 Requires at least: 3.6
 Tested up to: 5.2
 Requires PHP: 5.3
-Stable tag: 1.7.3
+Stable tag: 1.7.4
 License: GPLv3 or later
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
 
@@ -334,6 +334,7 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 * Optimization - Make sure booking system attributes are formatted only once
 * Dev - Hook for booking system data
 * Dev - Changed the way the customer booking list is generated (more hooks and possibilities)
+* Dev - Always refresh the whole row after a booking action
 
 = 1.7.3 - 2019/05/10 =
 * **Breaking change** - Optimization - "Expired" and "Removed" bookings will be permanently deleted 10 days after their expiration date

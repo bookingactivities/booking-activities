@@ -62,8 +62,12 @@ $j( document ).ready( function() {
 		}
 	});
 	
-	// Show / Hide WC field in delete booking dialog
-	$j( '.bookacti-user-booking-list, .bookacti-order-item-activity, #bookacti-booking-list' ).on( 'click', '.bookacti-booking-action, .bookacti-booking-group-action', function ( e ) {
+	
+	/**
+	 * Show / Hide WC field in delete booking dialog
+	 * @version 1.7.4
+	 */
+	$j( '.bookacti-user-booking-list, .woocommerce-table, #bookacti-booking-list' ).on( 'click', '.bookacti-booking-action, .bookacti-booking-group-action', function ( e ) {
 		e.preventDefault();
 		// Reset WC fields
 		if( $j( this ).hasClass( 'bookacti-delete-booking' ) || $j( this ).hasClass( 'bookacti-delete-booking-group' ) ) {

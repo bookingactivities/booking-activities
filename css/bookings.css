@@ -51,7 +51,7 @@ label[for="bookacti-booking-filter-dates-to"] + input#bookacti-booking-filter-da
 #bookacti-booking-list-container th.sorted a					{ overflow: visible; white-space: nowrap; }
 #bookacti-booking-list-container th.sortable a span, 
 #bookacti-booking-list-container th.sorted a span				{ float: none; display: inline-block; vertical-align: top; }
-#bookacti-booking-list-container .sorting-indicator			{ display: none !important; }
+#bookacti-booking-list-container .sorting-indicator				{ display: none !important; }
 #bookacti-booking-list-container th.asc a:focus span.sorting-indicator, 
 #bookacti-booking-list-container th.asc:hover span.sorting-indicator, 
 #bookacti-booking-list-container th.desc a:focus span.sorting-indicator, 
@@ -158,7 +158,7 @@ a.bookacti-booking-action					{ display: inline-block; word-spacing: 0; margin: 
 .wp-core-ui .button.bookacti-booking-action	{ margin: 5px 0; vertical-align: middle; }
 
 /* Shortcode Booking list */
-.bookacti-user-booking-list		{ width: 100%; margin-bottom: 20px; }
+.bookacti-user-booking-list			{ width: 100%; margin-bottom: 20px; }
 .bookacti-user-booking-list table	{ width: 100%; background-color: rgba( 255,255,255,0.5 ); border: 1px solid rgba(0,0,0,.1); border-collapse: separate; border-radius: 5px; }
 .bookacti-user-booking-list thead	{ background-color: rgba( 255,255,255,0.5 ); }
 .bookacti-user-booking-list th,
@@ -168,7 +168,12 @@ a.bookacti-booking-action					{ display: inline-block; word-spacing: 0; margin: 
 
 .bookacti-user-booking-list .bookacti-booking-events-list						{ margin: 0; }
 .bookacti-user-booking-list .bookacti-booking-events-list li:only-of-type		{ list-style-type: none; }
-.bookacti-user-booking-list .bookacti-booking-events-list li:not(:only-of-type){ margin-left: 18px; }
+.bookacti-user-booking-list .bookacti-booking-events-list li:not(:only-of-type)	{ margin-left: 18px; }
+
+tr.bookacti-booking-list-selected-row								{ background-color: rgba( 65, 143, 182, 0.1 ); }
+.striped>tbody>:nth-child(odd).bookacti-booking-list-selected-row	{ background-color: rgba( 65, 143, 182, 0.12 ); }
+
+.bookacti-user-booking-list .bookacti_empty_row { display: none; }
 
 
 /** DIALOGS **/
@@ -223,15 +228,18 @@ a.bookacti-booking-action					{ display: inline-block; word-spacing: 0; margin: 
 	#bookacti-refund-option-title, 
 	.bookacti-refund-option							{ margin-bottom: 15px; }
 	.bookacti-refund-option-radio, 
-	.bookacti-refund-option-label-and-description	{ display: table-cell; vertical-align: middle; }
-	.bookacti-refund-option-label-and-description	{ padding-left: 15px; }
-	.bookacti-refund-option-label					{ margin-right: 2px; }
-	.bookacti-refund-option-description				{ font-size: 0.8em; font-style: italic; }
+	.bookacti-refund-option-text					{ display: table-cell; vertical-align: middle; }
+	.bookacti-refund-option-text					{ padding-left: 15px; }
+	.bookacti-refund-option-label					{ font-weight: bold; margin-right: 2px; }
+	.bookacti-refund-option-label::after			{ content: ': '; }
+	.bookacti-refund-option-description				{ font-size: 0.85em; font-style: italic; }
+	.bookacti-refund-option-label,
+	.bookacti-refund-option-description				{ display: block; }
 	#bookacti-refund-message textarea				{ display: block; width: 100%; }
 	
 	#bookacti-reschedule-booking-dialog label:not(.bookacti-onoffswitch-label),
-	.bookacti-backend-dialog.bookacti-bookings-dialog label:not(.bookacti-onoffswitch-label):not(.bookacti-refund-option-label-and-description) { display: inline-block; width: 150px; font-family: Arial,Helvetica,sans-serif; font-weight: bold; }
-	.bookacti-backend-dialog.bookacti-bookings-dialog label.bookacti-fullwidth-label:not(.bookacti-onoffswitch-label):not(.bookacti-refund-option-label-and-description) { width: 100%; }
+	.bookacti-backend-dialog.bookacti-bookings-dialog label:not(.bookacti-onoffswitch-label):not(.bookacti-refund-option-label) { display: inline-block; width: 150px; font-family: Arial,Helvetica,sans-serif; font-weight: bold; }
+	.bookacti-backend-dialog.bookacti-bookings-dialog label.bookacti-fullwidth-label:not(.bookacti-onoffswitch-label):not(.bookacti-refund-option-label) { width: 100%; }
 	.bookacti-backend-dialog.bookacti-bookings-dialog form > div			{ margin-bottom: 10px; }
 	.bookacti-backend-dialog.bookacti-bookings-dialog form > div:last-child	{ margin-bottom: 0; }
 	

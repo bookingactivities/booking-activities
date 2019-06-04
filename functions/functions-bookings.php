@@ -1285,9 +1285,8 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	
 	/**
 	 * Get dialog refund text for a specific booking
-	 * 
 	 * @since 1.1.0
-	 * 
+	 * @version 1.7.4
 	 * @param int $booking_or_booking_group_id
 	 * @param string $booking_type Defined if the given id is a booking id or a booking group id. Accepted values are 'single' and 'group'.
 	 * @return string
@@ -1299,7 +1298,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		$actions_list = '';
 		foreach( $possible_actions as $possible_action ){
 			$actions_list .= '<div class="bookacti-refund-option" >'
-								. '<span class="bookacti-refund-option-radio" >'
+								. '<div class="bookacti-refund-option-radio" >'
 									. '<input '
 										. ' type="radio" '
 										. ' name="refund-action" '
@@ -1307,11 +1306,11 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 										. ' id="bookacti-refund-action-' . esc_attr( $possible_action['id'] ) . '" '
 										. ' class="bookacti-refund-action" '
 									. '/>'
-								. '</span>'
-								. '<label for="bookacti-refund-action-' . esc_attr( $possible_action['id'] ) . '" class="bookacti-refund-option-label-and-description" >'
-									. '<strong class="bookacti-refund-option-label" >' . esc_html( $possible_action['label'] ). ':</strong> '
+								. '</div>'
+								. '<div for="bookacti-refund-action-' . esc_attr( $possible_action['id'] ) . '" class="bookacti-refund-option-text" >'
+									. '<label class="bookacti-refund-option-label" >' . esc_html( $possible_action['label'] ). '</label> '
 									. '<span class="bookacti-refund-option-description" >' . esc_html( $possible_action['description'] ) . '</span>'
-								. '</label>'
+								. '</div>'
 							. '</div>';
 		}
 
@@ -1792,13 +1791,32 @@ function bookacti_get_user_booking_list_items( $filters, $columns = array() ) {
 	 * Third parties can add or change rows and columns, do your best to optimize your process
 	 */
 	$booking_list_items = apply_filters( 'bookacti_user_booking_list_items', $booking_list_items, $bookings, $booking_groups, $bookings_per_group, $displayed_groups, $users, $filters, $columns );
-
+	
+	$get_empty_items = apply_filters( 'bookacti_user_booking_list_empty_items', false, $booking_list_items, $bookings, $booking_groups, $bookings_per_group, $displayed_groups, $users, $filters, $columns );
 	foreach( $booking_list_items as $booking_id => $booking_list_item ) {
+		// Turn the action array to HTML
 		if( empty( $booking_list_item[ 'refund_actions' ] ) && isset( $booking_list_item[ 'actions' ][ 'refund' ] ) ) { unset( $booking_list_item[ 'actions' ][ 'refund' ] ); }
 		if( $booking_list_item[ 'booking_type' ] === 'group' ) {
 			$booking_list_items[ $booking_id ][ 'actions' ] = ! empty( $booking_list_item[ 'actions' ] ) ? bookacti_get_booking_group_actions_html( $booking_groups[ $booking_list_item[ 'booking_id_raw' ] ], 'front', $booking_list_item[ 'actions' ] ) : '';
 		} else if( $booking_list_item[ 'booking_type' ] === 'single' ) {
 			$booking_list_items[ $booking_id ][ 'actions' ] = ! empty( $booking_list_item[ 'actions' ] ) ? bookacti_get_booking_actions_html( $bookings[ $booking_list_item[ 'booking_id_raw' ] ], 'front', $booking_list_item[ 'actions' ] ) : '';
+		}
+		
+		// Remove the booking item if all the desired columns are empty
+		$empty_row = true;
+		foreach( $columns as $column ) {
+			if( ! empty( $booking_list_item[ $column ] ) || ( isset( $booking_list_item[ $column ] ) && in_array( $booking_list_item[ $column ], array( '0', 0 ), true ) ) ) {
+				$empty_row = false;
+				break;
+			}
+		}
+		if( $empty_row ) { 
+			if( ! $get_empty_items ) {
+				unset( $booking_list_items[ $booking_id ] );
+			} else {
+				if( empty( $booking_list_items[ $booking_id ][ 'tr_class' ] ) ) { $booking_list_items[ $booking_id ][ 'tr_class' ] = ''; }
+				$booking_list_items[ $booking_id ][ 'tr_class' ] .= ' bookacti_empty_row';
+			}
 		}
 	}
 	
@@ -1948,4 +1966,28 @@ function bookacti_get_user_booking_list_rows( $booking_list_items, $columns = ar
 	}
 	
 	return ob_get_clean();
+}
+
+
+/**
+ * Get some booking list rows according to filters
+ * @since 1.7.4
+ * @param string $context
+ * @param array $filters
+ * @param array $columns
+ * @return string
+ */
+function bookacti_get_booking_list_rows_according_to_context( $context = 'user_booking_list', $filters = array(), $columns = array() ) {
+	$rows = '';
+	if( $context === 'admin_booking_list' ) {
+		$Bookings_List_Table = new Bookings_List_Table();
+		$Bookings_List_Table->prepare_items( $filters, true );
+		$rows = $Bookings_List_Table->get_rows_or_placeholder();
+	} else if( $context === 'user_booking_list' ) {
+		if( ! $columns ) { $columns = bookacti_get_user_booking_list_default_columns(); }
+		$filters	= bookacti_format_booking_filters( $filters );
+		$list_items = bookacti_get_user_booking_list_items( $filters, $columns );
+		$rows		= bookacti_get_user_booking_list_rows( $list_items, $columns );
+	}
+	return apply_filters( 'booking_list_rows_according_to_context', $rows, $context, $filters, $columns );
 }

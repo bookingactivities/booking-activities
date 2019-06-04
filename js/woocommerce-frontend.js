@@ -1,53 +1,18 @@
 $j( document ).ready( function() {
 	
-	// BOOKING LIST
-
-		// Update booking row after frontend rechedule
-		$j( 'body' ).on( 'bookacti_booking_rescheduled', function( e, booking_id, start, end, response ){
-			var row	= $j( '.bookacti-booking-action[data-booking-id="' + booking_id + '"]' ).parents( 'tr' );
-			
-			if( ! row.hasClass( 'bookacti-order-item-activity' ) ) { return false; }
-			
-			// Update available actions
-			row.find( '.bookacti-booking-actions' ).html( response.actions_html );
-			
-			// Update duration
-			var event_list = row.find( 'ul.bookacti-booking-events-list' );
-			if( event_list.length ) {
-				
-				// Delete old duration
-				event_list.find( '.bookacti-booking-event-start, .bookacti-booking-event-date-separator, .bookacti-booking-event-end' ).remove();
-				
-				// Get new duration
-				var event_duration_formatted = bookacti_format_event_duration( start, end );
-				
-				// Display new duration
-				event_list.find( 'li' ).append( event_duration_formatted );
-			
-			
-			// Backward compatibility - For bookings made before Booking Activities 1.1.0
-			} else {
-				
-				var event_start = moment( start ).locale( bookacti_localized.current_lang_code );
-				var event_end = moment( end ).locale( bookacti_localized.current_lang_code );
-				
-				// Update start and end dates 
-				if( $j( '.wc-item-meta-bookacti_event_start.wc-item-meta-value' ).length ) {
-					row.find( '.wc-item-meta-bookacti_event_start.wc-item-meta-value' ).html( event_start.formatPHP( bookacti_localized.date_format_long ) );
-					row.find( '.wc-item-meta-bookacti_event_end.wc-item-meta-value' ).html( event_end.formatPHP( bookacti_localized.date_format_long ) );
-
-				}
-				// WOOCOMMERCE 3.0.0 backward compatibility
-				if( $j( 'dd.variation-bookacti_event_start p' ).length ) {
-					row.find( 'dd.variation-bookacti_event_start p' ).html( event_start.formatPHP( bookacti_localized.date_format_long ) );
-					row.find( 'dd.variation-bookacti_event_end p' ).html( event_end.formatPHP( bookacti_localized.date_format_long ) );
-				}
-			}
+	// ORDER DETAILS
+	
+		/**
+		 * Add data to booking actions
+		 * @since 1.0.12
+		 */
+		$j( '.woocommerce-table' ).on( 'bookacti_booking_action_data', 'tr.order_item', function( e, data, booking_id, booking_type, action ) {
+			data.context = 'wc_order_items';
 		});
-	
-	
-	
-	
+
+
+
+
 	// SINGLE PRODUCT
 		
 		// Handle variations
@@ -55,8 +20,9 @@ $j( document ).ready( function() {
 			/**
 			 * Do not init booking system automatically if is supposed to be loaded while switching WC variations
 			 * @since 1.7.0
+			 * @version 1.7.4
 			 */
-			$j( 'body.woocommerce' ).on( 'bookacti_init_booking_sytem', 'form.cart.variations_form .bookacti-booking-system', function( e, load, attributes ) {
+			$j( '.woocommerce' ).on( 'bookacti_init_booking_sytem', 'form.cart.variations_form .bookacti-booking-system', function( e, load, attributes ) {
 				if( load.load === false ) { return; }
 				if( typeof $j( this ).closest( '.bookacti-wc-form-fields' ) !== 'undefined' ) { 
 					if( $j( this ).closest( '.bookacti-wc-form-fields' ).data( 'default-variation-id' ) ) { load.load = false; }
@@ -119,24 +85,34 @@ $j( document ).ready( function() {
 				});
 			});
 		}
-	
-		// Enable add-to-cart button
-		$j( 'body.woocommerce form.cart' ).on( 'bookacti_view_refreshed bookacti_displayed_info_cleared', '.bookacti-booking-system', function( e ) {
+		
+		
+		/**
+		 * Enable add-to-cart button
+		 * @version 1.7.4
+		 */
+		$j( '.woocommerce form.cart' ).on( 'bookacti_view_refreshed bookacti_displayed_info_cleared', '.bookacti-booking-system', function( e ) {
 			$j( this ).parents( 'form' ).find( 'input[name="quantity"]' ).attr( 'disabled', false );
 			$j( this ).parents( 'form' ).find( 'button[type="submit"]' ).attr( 'disabled', false );
 		});
 
-
-		// Disable add-to-cart button
-		$j( 'body.woocommerce form.cart' ).on( 'bookacti_error_displayed', '.bookacti-booking-system', function( e ) {
+		
+		/**
+		 * Disable add-to-cart button
+		 * @version 1.7.4
+		 */
+		$j( '.woocommerce form.cart' ).on( 'bookacti_error_displayed', '.bookacti-booking-system', function( e ) {
 			$j( this ).parents( 'form' ).find( 'input[name="quantity"]' ).attr( 'disabled', true );
 			$j( this ).parents( 'form' ).find( 'button[type="submit"]' ).attr( 'disabled', true );
 		});
 
-
-		// Add to cart dynamic check
-		if( $j( 'body.woocommerce form.cart .single_add_to_cart_button' ).length ) {		
-			$j( 'body.woocommerce form.cart' ).on( 'submit', function( e ) { 
+		
+		if( $j( '.woocommerce form.cart .single_add_to_cart_button' ).length ) {
+			/**
+			 * Add to cart dynamic check
+			 * @version 1.7.4
+			 */
+			$j( '.woocommerce form.cart' ).on( 'submit', function( e ) { 
 				var form = $j( this );
 
 				var proceed_to_validation = false;
@@ -171,18 +147,21 @@ $j( document ).ready( function() {
 
 		/**
 		 * Change activity summary on qty change
-		 * @version 1.7.3
+		 * @version 1.7.4
 		 */
-		$j( 'body.woocommerce form.cart' ).on( 'keyup mouseup change', 'input.qty', function() {
+		$j( '.woocommerce form.cart' ).on( 'keyup mouseup change', 'input.qty', function() {
 			var booking_system = $j( this ).parents( 'form.cart' ).find( '.bookacti-booking-system' );
 			if( booking_system.length ) {
 				bookacti_fill_picked_events_list( booking_system );
 			}
 		});
 
-
-		// Set quantity on eventClick
-		$j( 'body.woocommerce form.cart' ).on( 'bookacti_picked_events_list_data', '.bookacti-booking-system', function( e, event_summary_data, event ) {
+		
+		/**
+		 * Set quantity on eventClick
+		 * @version 1.7.4
+		 */
+		$j( '.woocommerce form.cart' ).on( 'bookacti_picked_events_list_data', '.bookacti-booking-system', function( e, event_summary_data, event ) {
 			var booking_system = $j( this );
 			var qty_field = booking_system.parents( 'form' ).find( '.quantity .qty' );
 			if( qty_field.length ) {
