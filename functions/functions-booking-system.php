@@ -34,13 +34,7 @@ function bookacti_get_booking_system( $atts, $echo = false ) {
 			<?php do_action( 'bookacti_booking_system_inputs', $atts, $booking_system_data ); ?>
 		</div>
 		
-		<?php do_action( 'bookacti_before_booking_system_title', $atts, $booking_system_data ); ?>
-		
-		<div class='bookacti-booking-system-global-title' >
-			<?php echo apply_filters( 'bookacti_booking_system_title', '', $atts, $booking_system_data ); ?>
-		</div>
-		
-		<?php do_action( 'bookacti_before_booking_system', $atts, $booking_system_data ); ?>
+		<?php do_action( 'bookacti_booking_system_container_before', $atts, $booking_system_data ); ?>
 		
 		<div id='<?php echo esc_attr( $atts[ 'id' ] ); ?>' class='bookacti-booking-system <?php echo esc_attr( $atts[ 'class' ] ); ?>' >
 			<?php echo bookacti_get_booking_method_html( $atts[ 'method' ], $atts ); 
@@ -62,13 +56,11 @@ function bookacti_get_booking_system( $atts, $echo = false ) {
 			</ul>
 		</div>
 		
-		<?php do_action( 'bookacti_after_picked_events_list', $atts, $booking_system_data ); ?>
-		
 		<div class='bookacti-notices' style='display:none;' >
 			<?php do_action( 'bookacti_booking_system_errors', $atts, $booking_system_data ); ?>
 		</div>
 		
-		<?php do_action( 'bookacti_after_booking_system_errors', $atts, $booking_system_data ); ?>
+		<?php do_action( 'bookacti_booking_system_container_after', $atts, $booking_system_data ); ?>
 	</div>
 	<div id='<?php echo $atts[ 'id' ] . '-dialogs'; ?>' class='bookacti-booking-system-dialogs' >
 		<?php
@@ -274,18 +266,18 @@ function bookacti_retrieve_calendar_elements( $booking_system_atts ) {
  */
 function bookacti_get_booking_system_default_attributes() {
 	return apply_filters( 'bookacti_booking_system_default_attributes', array(
-        'id'					=> '',
-        'class'					=> '',
+		'id'					=> '',
+		'class'					=> '',
 		'template_data'			=> array(),
-        'calendars'				=> array(),
-        'activities'			=> array(),
-        'group_categories'		=> false,
-        'groups_only'			=> 0,
-        'groups_single_events'	=> 0,
-        'bookings_only'			=> 0,
-        'status'				=> array(),
-        'user_id'				=> 0,
-        'method'				=> 'calendar',
+		'calendars'				=> array(),
+		'activities'			=> array(),
+		'group_categories'		=> false,
+		'groups_only'			=> 0,
+		'groups_single_events'	=> 0,
+		'bookings_only'			=> 0,
+		'status'				=> array(),
+		'user_id'				=> 0,
+		'method'				=> 'calendar',
 		'auto_load'				=> bookacti_get_setting_value( 'bookacti_general_settings', 'when_events_load' ) === 'on_page_load' ? 1 : 0,
 		'past_events'			=> 0,
 		'past_events_bookable'	=> 0,
@@ -296,7 +288,7 @@ function bookacti_get_booking_system_default_attributes() {
 		'when_perform_form_action'		=> 'on_submit',
 		'redirect_url_by_activity'		=> array(),
 		'redirect_url_by_group_category'=> array()
-    ) );
+	) );
 }
 
 

@@ -331,6 +331,7 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 * Fix - JS error if the event specified in URL was not on the calendar
 * Fix - Some {user_...} notification tags didn't work with WC orders
 * Fix - Display WC user data only if the booking was made with WC or if these are the only available data
+* Fix - Filtering bookings by in__booking_id or in__booking_group_id was not always accurate
 * Optimization - Make sure booking system attributes are formatted only once
 * Dev - Hook for booking system data
 * Dev - Changed the way the customer booking list is generated (more hooks and possibilities)

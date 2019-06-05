@@ -95,12 +95,14 @@
 .bookacti-picked-events-list-title	{ font-weight: bolder; }
 
 /* Events */
-.bookacti-calendar .fc-event	{ cursor: pointer; overflow: hidden; }
-.bookacti-event-unavailable		{ opacity: 0.5; cursor: default; pointer-events: none; z-index: -1 !important; }
+.bookacti-calendar .fc-event	{ overflow: hidden; }
+.bookacti-calendar .fc-event:not(.bookacti-event-unavailable) { cursor: pointer; }
+.bookacti-event-unavailable		{ opacity: 0.5; pointer-events: none; z-index: -1 !important; }
 .bookacti-picked-event .fc-bg	{ opacity: 0.5; transition: opacity 0.2s; }
 .bookacti-picked-event			{ border-width: 2px; z-index: 15 !important; transition: border 0.2s; }
 
 .bookacti-calendar .fc-basic-view .fc-content > * { display: block; }
+.bookacti-calendar .fc-basic-view .fc-content-skeleton tr { background-color: transparent !important; }
 
 .fc-popover .fc-widget-content { max-height: 300px; overflow-y: auto; }
 
