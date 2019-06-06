@@ -69,6 +69,7 @@ $messages = bookacti_get_messages();
 				}
 			?>
 		</div>
+		<?php do_action( 'bookacti_reschedule_booking_dialog_after' ); ?>
 	</form>
 </div>
 

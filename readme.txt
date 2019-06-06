@@ -319,7 +319,7 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 
 == Changelog ==
 
-= 1.7.4 =
+= 1.7.4 - 2019/06/06 =
 * Tweak - You can choose the columns to display in the customer booking list ([bookingactivities_list columns="..."], [see the docs](https://booking-activities.fr/en/docs/user-documentation/get-started-with-booking-activities/display-customers-bookings-list-on-the-frontend/))
 * Tweak - You can display other's bookings in the customer booking list ([bookingactivities_list user_id="all"], [see the docs](https://booking-activities.fr/en/docs/user-documentation/get-started-with-booking-activities/display-customers-bookings-list-on-the-frontend/))
 * Fix - Pagination error if multiple customer booking lists were displayed on the same page
