@@ -843,56 +843,30 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	
 	/**
 	 * AJAX Controller - Change default template
-	 * @version	1.7.3
+	 * @version	1.7.4
 	 */
 	function bookacti_controller_switch_template() {
-
 		$template_id = intval( $_POST[ 'template_id' ] );
 		
 		// Check nonce and capabilities
 		$is_nonce_valid	= check_ajax_referer( 'bookacti_switch_template', 'nonce', false );
 		$is_allowed		= current_user_can( 'bookacti_edit_templates' ) && bookacti_user_can_manage_template( $template_id );
-
-		if( $is_nonce_valid && $is_allowed ) {
-
-			$updated			= update_user_meta( get_current_user_id(), 'bookacti_default_template', $template_id );
-			$activities_list	= bookacti_get_template_activities_list( $template_id );
-			$groups_list		= bookacti_get_template_groups_of_events_list( $template_id );
-			
-			$bookings			= bookacti_get_number_of_bookings_by_events( $template_id );
-			$activities_data	= bookacti_get_activities_by_template( $template_id, false );
-			$groups_events		= bookacti_get_groups_events( $template_id );
-			$groups_data		= bookacti_get_groups_of_events( $template_id, array(), true );
-			$categories_data	= bookacti_get_group_categories( $template_id );
-			$exceptions			= bookacti_get_exceptions( $template_id );
-			$templates_data		= bookacti_get_templates_data( $template_id, true );
-			
-			$events_interval	= bookacti_get_new_interval_of_events( $templates_data[ $template_id ], array(), false, true );
-			$events				= $events_interval ? bookacti_fetch_events_for_calendar_editor( $template_id, null, $events_interval ) : array();
-			
-			wp_send_json( array(
-				'status'				=> 'success', 
-				
-				'activities_list'		=> $activities_list, 
-				'groups_list'			=> $groups_list, 
-				'exceptions'			=> $exceptions, 
-				
-				'events'				=> $events[ 'events' ] ? $events[ 'events' ] : array(),
-				'events_data'			=> $events[ 'data' ] ? $events[ 'data' ] : array(),
-				'events_interval'		=> $events_interval,
-				'bookings'				=> $bookings,
-				'activities_data'		=> $activities_data, 
-				'groups_events'			=> $groups_events, 
-				'groups_data'			=> $groups_data, 
-				'group_categories_data'	=> $categories_data, 
-				'template_data'			=> $templates_data[ $template_id ], 
-				
-				'user_default_template_updated'	=> $updated 
-			) );
-
-		} else {
-			wp_send_json( array( 'status' => 'failed', 'error' => 'not_allowed' ) );
-		}
+		
+		if( ! $is_nonce_valid || ! $is_allowed ) { bookacti_send_json_not_allowed( 'switch_template' ); }
+		
+		$updated			= update_user_meta( get_current_user_id(), 'bookacti_default_template', $template_id );
+		$activities_list	= bookacti_get_template_activities_list( $template_id );
+		$groups_list		= bookacti_get_template_groups_of_events_list( $template_id );
+		
+		$atts = json_decode( stripslashes( $_POST[ 'attributes' ] ), true );
+		$booking_system_data = bookacti_get_editor_booking_system_data( $atts, $template_id );
+		
+		bookacti_send_json( array(
+			'status'				=> 'success',
+			'activities_list'		=> $activities_list, 
+			'groups_list'			=> $groups_list,
+			'booking_system_data'	=> $booking_system_data
+		), 'switch_template' );
 	}
 	add_action( 'wp_ajax_bookactiSwitchTemplate', 'bookacti_controller_switch_template' );
 
@@ -1102,6 +1076,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 	/**
 	 * AJAX Controller - Get activities by template
+	 * @version 1.7.4
 	 */
 	function bookacti_controller_get_activities_by_template() {
 
@@ -1112,38 +1087,31 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		$is_nonce_valid	= check_ajax_referer( 'bookacti_get_activities_by_template', 'nonce', false );
 		$is_allowed		= current_user_can( 'bookacti_edit_activities' ) && current_user_can( 'bookacti_read_templates' ) && bookacti_user_can_manage_template( $selected_template_id );
 
-		if( $is_nonce_valid && $is_allowed ) {
+		if( ! $is_nonce_valid || ! $is_allowed ) { bookacti_send_json_not_allowed( 'get_activities_by_template' ); }
 
-			if( $selected_template_id !== $current_template_id ) {
+		if( $selected_template_id === $current_template_id ) { bookacti_send_json( array( 'status' => 'failed', 'error' => 'no_change' ), 'get_activities_by_template' ); }
 
-				$new_activities		= bookacti_get_activities_by_template( $selected_template_id, false );
-				$current_activities	= bookacti_get_activity_ids_by_template( $current_template_id, false );
+		$new_activities		= bookacti_get_activities_by_template( $selected_template_id, false );
+		$current_activities	= bookacti_get_activity_ids_by_template( $current_template_id, false );
 
-				// Check activity permissions, and remove not allowed activity ids
-				foreach( $new_activities as $new_activity_id => $new_activity ) {
-					if( ! in_array( $new_activity_id, $current_activities ) ) {
-						$is_allowed = bookacti_user_can_manage_activity( $new_activity_id );
-						if( ! $is_allowed || ! $new_activity->active ) {
-							unset( $new_activities[ $new_activity_id ] );
-						}
-					} else {
-						unset( $new_activities[ $new_activity_id ] );
-					}
-				}
-
-				if( is_array( $new_activities ) && ! empty( $new_activities ) ) {
-					wp_send_json( array( 'status' => 'success', 'activities' => $new_activities ) );
-				} else if( is_array( $new_activities ) && empty( $new_activities )  ) {
-					wp_send_json( array( 'status' => 'no_activity' ) );
-				} else {
-					wp_send_json( array( 'status' => 'failed', 'activities' => $new_activities ) );
+		// Check activity permissions, and remove not allowed activity ids
+		foreach( $new_activities as $new_activity_id => $new_activity ) {
+			if( ! in_array( $new_activity_id, $current_activities ) ) {
+				$is_allowed = bookacti_user_can_manage_activity( $new_activity_id );
+				if( ! $is_allowed || ! $new_activity[ 'active' ] ) {
+					unset( $new_activities[ $new_activity_id ] );
 				}
 			} else {
-				wp_send_json( array( 'status' => 'failed', 'error' => 'no_change' ) );
+				unset( $new_activities[ $new_activity_id ] );
 			}
-
-		} else {
-			wp_send_json( array( 'status' => 'failed', 'error' => 'not_allowed' ) );
 		}
+
+		if( is_array( $new_activities ) && ! empty( $new_activities ) ) {
+			bookacti_send_json( array( 'status' => 'success', 'activities' => $new_activities ), 'get_activities_by_template' );
+		} else if( is_array( $new_activities ) && empty( $new_activities )  ) {
+			bookacti_send_json( array( 'status' => 'no_activity' ), 'get_activities_by_template' );
+		}
+		
+		bookacti_send_json( array( 'status' => 'failed', 'activities' => $new_activities ), 'get_activities_by_template' );
 	}
 	add_action( 'wp_ajax_bookactiGetActivitiesByTemplate', 'bookacti_controller_get_activities_by_template' );

@@ -1,7 +1,7 @@
 <?php 
 /**
  * Backend booking dialogs
- * @version 1.6.0
+ * @version 1.7.4
  */
 
 // Exit if accessed directly
@@ -84,22 +84,6 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		<p>
 			<?php esc_html_e( 'This will export all the bookings of the current list (filters applied).', BOOKACTI_PLUGIN_NAME ); ?>
 		</p>
-		<div>
-			<label for='bookacti-select-export-groups' ><?php esc_html_e( 'How to export the groups?', BOOKACTI_PLUGIN_NAME ); ?></label>
-			<?php
-				$args = array(
-					'type'		=> 'select',
-					'name'		=> 'export_groups',
-					'id'		=> 'bookacti-select-export-groups',
-					'options'	=> array(
-						'groups' => esc_html__( 'One single row per group', BOOKACTI_PLUGIN_NAME ),
-						'bookings' => esc_html__( 'One row for each booking of the group', BOOKACTI_PLUGIN_NAME )
-					),
-					'tip'		=> esc_html__( 'Choose how to export the grouped bookings. Do you want to export all the bookings of the group, or only the group as a single row?', BOOKACTI_PLUGIN_NAME )
-				);
-				bookacti_display_field( $args );
-			?>
-		</div>
 		<div id='bookacti-columns-to-export-container' class='bookacti-items-container' data-type='columns-to-export'>
 			<label for='bookacti-select-columns-to-export' class='bookacti-fullwidth-label' class='bookacti-items-container' data-type='participants-fields' >
 				<?php 
@@ -131,20 +115,31 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 				<button type='button' id='baaf-remove-columns-to-export' class='bookacti-remove-items' ><?php esc_html_e( 'Remove selected', BOOKACTI_PLUGIN_NAME ); ?></button>
 			</div>
 		</div>
-		<div>
-			<label for='bookacti-select-export-limit' ><?php esc_html_e( 'Limit', BOOKACTI_PLUGIN_NAME ); ?></label>
-			<?php
-				$per_page = intval( get_user_meta( get_current_user_id(), 'bookacti_bookings_per_page', true ) );
-				$args = array(
+		<?php
+			$per_page = intval( get_user_meta( get_current_user_id(), 'bookacti_bookings_per_page', true ) );
+			$fields = apply_filters( 'bookacti_export_bookings_dialog_fields', array(
+				'per_page' => array(
 					'type'	=> 'number',
 					'name'	=> 'per_page',
+					'title'	=> esc_html__( 'Limit', BOOKACTI_PLUGIN_NAME ),
 					'id'	=> 'bookacti-select-export-limit',
 					'value'	=> $per_page ? $per_page : $bookings_list_table->get_rows_number_per_page(),
 					'tip'	=> esc_html__( 'Maximum number of bookings to export. You may need to increase your PHP max execution time if this number is too high.', BOOKACTI_PLUGIN_NAME )
-				);
-				bookacti_display_field( $args );
-			?>
-		</div>
+				),
+				'export_groups' => array(
+					'type'		=> 'select',
+					'name'		=> 'export_groups',
+					'title'		=> esc_html__( 'How to export the groups?', BOOKACTI_PLUGIN_NAME ),
+					'id'		=> 'bookacti-select-export-groups',
+					'options'	=> array(
+						'groups' => esc_html__( 'One single row per group', BOOKACTI_PLUGIN_NAME ),
+						'bookings' => esc_html__( 'One row for each booking of the group', BOOKACTI_PLUGIN_NAME )
+					),
+					'tip'		=> esc_html__( 'Choose how to export the grouped bookings. Do you want to export all the bookings of the group, or only the group as a single row?', BOOKACTI_PLUGIN_NAME )
+				)
+			));
+			bookacti_display_fields( $fields );
+		?>
 		<div id='bookacti-export-bookings-url-container' style='display:none;'>
 			<p><strong><?php esc_html_e( 'Secret address in CSV format', BOOKACTI_PLUGIN_NAME ); ?></strong></p>
 			<div class='bookacti_export_url'>

@@ -1,12 +1,15 @@
 // TEMPLATE
 
-// Change default template on change in the select box
+/**
+ * Change default template on change in the select box
+ * @version 1.7.4
+ * @param {int} selected_template_id
+ */
 function bookacti_switch_template( selected_template_id ) {
-	
 	if( selected_template_id ) {
-		
 		// Prevent events to be loaded while templates are switched
 		bookacti.load_events = false;
+		var attributes = bookacti.booking_system[ 'bookacti-template-calendar' ];
 		
 		bookacti_start_template_loading();
 		
@@ -15,29 +18,20 @@ function bookacti_switch_template( selected_template_id ) {
 			url: ajaxurl,
 			data: { 'action': 'bookactiSwitchTemplate', 
 					'template_id': selected_template_id,
+					'attributes': JSON.stringify( attributes ),
 					'nonce': bookacti_localized.nonce_switch_template
 				},
 			type: 'POST',
 			dataType: 'json',
-			success: function( response ){
-				
+			success: function( response ) {
 				if( response.status === 'success' ) {
-					
 					// Change the global var
 					var is_first_template		= bookacti.selected_template ? false : true;
 					bookacti.selected_template	= parseInt( selected_template_id );
 					bookacti.hidden_activities	= [];
 					
 					// Update data array
-					bookacti.booking_system[ 'bookacti-template-calendar' ][ 'calendars' ]				= [ bookacti.selected_template ];
-					bookacti.booking_system[ 'bookacti-template-calendar' ][ 'bookings' ]				= response.bookings;
-					bookacti.booking_system[ 'bookacti-template-calendar' ][ 'exceptions' ]				= response.exceptions;
-					bookacti.booking_system[ 'bookacti-template-calendar' ][ 'activities_data' ]		= response.activities_data;
-					bookacti.booking_system[ 'bookacti-template-calendar' ][ 'groups_events' ]			= response.groups_events;
-					bookacti.booking_system[ 'bookacti-template-calendar' ][ 'groups_data' ]			= response.groups_data;
-					bookacti.booking_system[ 'bookacti-template-calendar' ][ 'group_categories_data' ]	= response.group_categories_data;
-					bookacti.booking_system[ 'bookacti-template-calendar' ][ 'template_data' ]			= response.template_data;
-					
+					bookacti.booking_system[ 'bookacti-template-calendar' ]	= response.booking_system_data;
 					
 					// Unlock dialogs triggering after first template is created and selected
 					if( is_first_template ) { 

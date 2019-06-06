@@ -376,6 +376,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	/**
 	 * Add WC data to the booking list
 	 * @since 1.6.0 (was bookacti_woocommerce_fill_booking_list_custom_columns before)
+	 * @version 1.7.4
 	 * @param array $booking_list_items
 	 * @param array $bookings
 	 * @param array $booking_groups
@@ -413,17 +414,21 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			
 			if( empty( $users[ $booking_list_item[ 'user_id' ] ] ) ) { continue; }
 			$user = $users[ $booking_list_item[ 'user_id' ] ];
-			if( ! empty( $user->billing_first_name ) && ! empty( $user->billing_last_name ) ) {
-				$customer = '<a '
-							. ' href="' . esc_url( $admin_url . 'user-edit.php?user_id=' . $booking_list_item[ 'user_id' ] ) . '" '
-							. ' target="_blank" '
-							. ' >'
-								. esc_html( $user->billing_first_name . ' ' . $user->billing_last_name )
-						. ' </a>';
-
-				$booking_list_items[ $booking_id ][ 'customer' ]= $customer;
-				$booking_list_items[ $booking_id ][ 'email' ]	= ! empty( $user->billing_email ) ? $user->billing_email : $booking_list_items[ $booking_id ][ 'email' ];
-				$booking_list_items[ $booking_id ][ 'phone' ]	= ! empty( $user->billing_phone ) ? $user->billing_phone : $booking_list_items[ $booking_id ][ 'phone' ];
+			if( $user ) {
+				if( $booking_list_item[ 'order_id' ] || empty( $booking_list_item[ 'customer' ] ) ) {
+					$display_name	= ! empty( $user->first_name ) && ! empty( $user->last_name ) ? $user->first_name . ' ' . $user->last_name : $user->display_name;
+					$customer_name	= ! empty( $user->billing_first_name ) && ! empty( $user->billing_last_name ) ? $user->billing_first_name . ' ' . $user->billing_last_name : $display_name;
+					$customer = '<a '
+								. ' href="' . esc_url( $admin_url . 'user-edit.php?user_id=' . $booking_list_item[ 'user_id' ] ) . '" '
+								. ' target="_blank" '
+								. ' >'
+									. esc_html( $customer_name )
+							. ' </a>';
+					$booking_list_items[ $booking_id ][ 'customer' ] = $customer;
+				}
+				
+				if( ! empty( $user->billing_email ) && ( $booking_list_item[ 'order_id' ] || empty( $booking_list_item[ 'email' ] ) ) )	{ $booking_list_items[ $booking_id ][ 'email' ]	= $user->billing_email; }
+				if( ! empty( $user->billing_phone ) && ( $booking_list_item[ 'order_id' ] || empty( $booking_list_item[ 'phone' ] ) ) )	{ $booking_list_items[ $booking_id ][ 'phone' ]	= $user->billing_phone; }
 			}
 		}
 		
@@ -499,6 +504,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	/**
 	 * Fill WC bookings export columns
 	 * @since 1.6.0
+	 * @version 1.7.4
 	 * @param array $booking_items
 	 * @param array $bookings
 	 * @param array $booking_groups
@@ -523,11 +529,11 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 				if( empty( $users[ $booking_item[ 'customer_id' ] ] ) ) { continue; }
 				$user = $users[ $booking_item[ 'customer_id' ] ];
-				if( ! empty( $user ) ) {
-					if( ! empty( $user->billing_first_name ) )	{ $booking_items[ $booking_id ][ 'customer_first_name' ] = $user->billing_first_name; }
-					if( ! empty( $user->billing_last_name ) )	{ $booking_items[ $booking_id ][ 'customer_last_name' ] = $user->billing_last_name; }
-					if( ! empty( $user->billing_email ) )		{ $booking_items[ $booking_id ][ 'customer_email' ] = $user->billing_email; }
-					if( ! empty( $user->billing_phone ) )		{ $booking_items[ $booking_id ][ 'customer_phone' ] = $user->billing_phone; }
+				if( $user ) {
+					if( ! empty( $user->billing_first_name ) && ( $booking_item[ 'order_id' ] || empty( $booking_item[ 'customer_first_name' ] ) ) ){ $booking_items[ $booking_id ][ 'customer_first_name' ] = $user->billing_first_name; }
+					if( ! empty( $user->billing_last_name ) && ( $booking_item[ 'order_id' ] || empty( $booking_item[ 'customer_last_name' ] ) ) )	{ $booking_items[ $booking_id ][ 'customer_last_name' ] = $user->billing_last_name; }
+					if( ! empty( $user->billing_email ) && ( $booking_item[ 'order_id' ] || empty( $booking_item[ 'customer_email' ] ) ) )			{ $booking_items[ $booking_id ][ 'customer_email' ] = $user->billing_email; }
+					if( ! empty( $user->billing_phone ) && ( $booking_item[ 'order_id' ] || empty( $booking_item[ 'customer_phone' ] ) ) )			{ $booking_items[ $booking_id ][ 'customer_phone' ] = $user->billing_phone; }
 				}
 			}
 		}
@@ -583,7 +589,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	
 	
 	/**
-	 * Add columns to bookings list
+	 * Add columns to booking list
 	 * @version 1.5.0
 	 * @param array $columns
 	 * @return array
@@ -620,6 +626,42 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		return $hidden_columns;
 	}
 	add_filter( 'bookacti_booking_list_default_hidden_columns', 'bookacti_woocommerce_booking_list_hidden_columns', 10, 1 );
+	
+	
+	/**
+	 * Controller - Get WC order items rows
+	 * @since 1.7.4
+	 * @param string $rows
+	 * @param string $context
+	 * @param array $filters
+	 * @param array $columns
+	 * @return string
+	 */
+	function bookacti_controller_get_order_items_rows( $rows, $context, $filters, $columns ) {
+		if( $context !== 'wc_order_items' ) { return $rows; }
+		
+		$order_items = array();
+		if( ! empty( $filters[ 'booking_id' ] ) ) {
+			$order_items[] = bookacti_get_order_item_by_booking_id( $filters[ 'booking_id' ] );
+		}
+		if( ! empty( $filters[ 'in__booking_id' ] ) ) {
+			foreach( $filters[ 'in__booking_id' ] as $booking_id ) {
+				$order_items[] = bookacti_get_order_item_by_booking_id( $booking_id );
+			}
+		}
+		if( ! empty( $filters[ 'booking_group_id' ] ) ) {
+			$order_items[] = bookacti_get_order_item_by_booking_group_id( $filters[ 'booking_group_id' ] );
+		}
+		if( ! empty( $filters[ 'in__booking_group_id' ] ) ) {
+			foreach( $filters[ 'in__booking_group_id' ] as $booking_group_id ) {
+				$order_items[] = bookacti_get_order_item_by_booking_group_id( $booking_group_id );
+			}
+		}
+		
+		return bookacti_get_order_items_rows( $order_items );
+	}
+	add_filter( 'booking_list_rows_according_to_context', 'bookacti_controller_get_order_items_rows', 10, 4 );
+
 
 
 
@@ -1317,7 +1359,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		$item_id	= is_array( $item ) ? $item[ 'id' ] : $item->get_id();
 		$order_id	= is_array( $item ) ? $item[ 'order_id' ] : $item->get_order_id();
 		
-		// Get the bookings list
+		// Get the booking list
 		$grouped_bookings = wc_get_order_item_meta( $item_id, 'bookacti_booked_events', true );
 		if( ! bookacti_is_json( $grouped_bookings ) ) { return; }
 		

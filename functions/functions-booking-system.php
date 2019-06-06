@@ -2,128 +2,39 @@
 // Exit if accessed directly
 if ( ! defined( 'ABSPATH' ) ) { exit; }
 
-
 /***** BOOKING SYSTEM *****/
+
 /**
  * Get a booking system based on given parameters
- * @version 1.7.0
+ * @version 1.7.4
  * @param array $atts (see bookacti_format_booking_system_attributes())
  * @param boolean $echo Wether to return or directly echo the booking system
  * @return string
  */
 function bookacti_get_booking_system( $atts, $echo = false ) {
-
-	// Format booking system attributes
-	$atts = bookacti_format_booking_system_attributes( $atts );
-
+	// Get booking system data
+	$booking_system_data = bookacti_get_booking_system_data( $atts );
+	
 	if( ! $echo ) { ob_start(); }
-	
-	do_action( 'bookacti_before_booking_form', $atts );
-?>
+	do_action( 'bookacti_before_booking_system_container', $atts, $booking_system_data );
+	?>
+
 	<div class='bookacti-booking-system-container' id='<?php echo esc_attr( $atts[ 'id' ] . '-container' ); ?>' >
-	
 		<script>
 			// Compatibility with Optimization plugins
 			if( typeof bookacti === 'undefined' ) { var bookacti = { booking_system:[] }; }
-			
-			bookacti.booking_system[ '<?php echo $atts[ 'id' ]; ?>' ] = <?php echo json_encode( $atts ); ?>;
-		
-			<?php
-			// Events related data
-			if( $atts[ 'auto_load' ] ) { 
-				
-				if( empty( $atts[ 'template_data' ] ) ) {
-					$atts[ 'template_data' ] = bookacti_get_mixed_template_data( $atts[ 'calendars' ], $atts[ 'past_events' ] );
-				}
-				
-				$events_interval	= bookacti_get_new_interval_of_events( $atts[ 'template_data' ], array(), false, $atts[ 'past_events' ] );
-				
-				$user_ids			= array();
-				$groups_ids			= array();
-				$groups_data		= array();
-				$categories_data	= array();
-				$groups_events		= array();
-				$events				= array( 'events' => array(), 'data' => array() );
-				
-				if( $atts[ 'group_categories' ] !== false ) {
-					$groups_data		= bookacti_get_groups_of_events( $atts[ 'calendars' ], $atts[ 'group_categories' ], $atts[ 'past_events_bookable' ], true, false, $atts[ 'template_data' ] );
-					$categories_data	= bookacti_get_group_categories( $atts[ 'calendars' ], $atts[ 'group_categories' ] );
-				
-					foreach( $groups_data as $group_id => $group_data ) { $groups_ids[] = $group_id; }
-					
-					$groups_events		= ! $groups_ids ? array() : bookacti_get_groups_events( $atts[ 'calendars' ], $atts[ 'group_categories' ], $groups_ids );
-				} 
-				
-				if( $atts[ 'groups_only' ] ) {
-					if( $groups_ids ) { 
-						$events	= bookacti_fetch_grouped_events( $atts[ 'calendars' ], $atts[ 'activities' ], $groups_ids, $atts[ 'group_categories' ], $atts[ 'past_events' ], $events_interval );
-					}
-				} else if( $atts[ 'bookings_only' ] ) {
-					$events		= bookacti_fetch_booked_events( $atts[ 'calendars' ], $atts[ 'activities' ], $atts[ 'status' ], $atts[ 'user_id' ], $atts[ 'past_events' ], $events_interval );
-					$user_ids	= $atts[ 'user_id' ];
-				} else {
-					$events		= bookacti_fetch_events( $atts[ 'calendars' ], $atts[ 'activities' ], $atts[ 'past_events' ], $events_interval );
-				}
-				
-			?>
-				bookacti.booking_system[ '<?php echo $atts[ 'id' ]; ?>' ][ 'events' ]					= <?php echo json_encode( $events[ 'events' ] ? $events[ 'events' ] : array() ); ?>;
-				bookacti.booking_system[ '<?php echo $atts[ 'id' ]; ?>' ][ 'events_data' ]				= <?php echo json_encode( $events[ 'data' ] ? $events[ 'data' ] : array() ); ?>;
-				bookacti.booking_system[ '<?php echo $atts[ 'id' ]; ?>' ][ 'events_interval' ]			= <?php echo json_encode( $events_interval ); ?>;
-				bookacti.booking_system[ '<?php echo $atts[ 'id' ]; ?>' ][ 'exceptions' ]				= <?php echo json_encode( bookacti_get_exceptions( $atts[ 'calendars' ] ) ); ?>;
-				bookacti.booking_system[ '<?php echo $atts[ 'id' ]; ?>' ][ 'bookings' ]					= <?php echo json_encode( bookacti_get_number_of_bookings_by_events( $atts[ 'calendars' ], array(), $user_ids ) ); ?>;
-				bookacti.booking_system[ '<?php echo $atts[ 'id' ]; ?>' ][ 'activities_data' ]			= <?php echo json_encode( bookacti_get_activities_by_template( $atts[ 'calendars' ], true ) ); ?>;
-				bookacti.booking_system[ '<?php echo $atts[ 'id' ]; ?>' ][ 'groups_events' ]			= <?php echo json_encode( $groups_events ); ?>;	
-				bookacti.booking_system[ '<?php echo $atts[ 'id' ]; ?>' ][ 'groups_data' ]				= <?php echo json_encode( $groups_data ); ?>;	
-				bookacti.booking_system[ '<?php echo $atts[ 'id' ]; ?>' ][ 'group_categories_data' ]	= <?php echo json_encode( $categories_data ); ?>;	
-				bookacti.booking_system[ '<?php echo $atts[ 'id' ]; ?>' ][ 'template_data' ]			= <?php echo json_encode( $atts[ 'template_data' ] ); ?>;	
-			<?php 
-			}
-			
-			// Events picked by default
-			$picked_events = array();
-			if( $atts[ 'picked_events' ][ 'group_id' ] === 'single' && $atts[ 'picked_events' ][ 'event_id' ] ) {
-				$event_id = $atts[ 'picked_events' ][ 'event_id' ];
-				$event = ! empty( $events[ 'data' ][ $event_id ] ) ? $events[ 'data' ][ $event_id ] : (array) bookacti_get_event_by_id( $event_id );
-				$picked_events[] = array(
-					'id'	=> $event_id,
-					'start'	=> $atts[ 'picked_events' ][ 'event_start' ],
-					'end'	=> $atts[ 'picked_events' ][ 'event_end' ],
-					'title'	=> apply_filters( 'bookacti_translate_text', $event[ 'title' ] )
-				);
-			} else if( is_numeric( $atts[ 'picked_events' ][ 'group_id' ] ) ) {
-				if( isset( $groups_events[ $atts[ 'picked_events' ][ 'group_id' ] ] ) ) {
-					$picked_events = $groups_events[ $atts[ 'picked_events' ][ 'group_id' ] ];
-				} else {
-					$group_events = bookacti_get_group_events( $atts[ 'picked_events' ][ 'group_id' ] );
-					foreach( $group_events as $grouped_event ) {
-						$picked_events[] = array(
-							'id'	=> $grouped_event[ 'id' ],
-							'start'	=> $grouped_event[ 'start' ],
-							'end'	=> $grouped_event[ 'end' ],
-							'title'	=> $grouped_event[ 'title' ]
-						);
-					}
-				}
-			}
-			?>	
-			bookacti.booking_system[ '<?php echo $atts[ 'id' ]; ?>' ][ 'picked_events' ] = <?php echo json_encode( $picked_events ); ?>;
+			bookacti.booking_system[ '<?php echo $atts[ 'id' ]; ?>' ] = <?php echo json_encode( $booking_system_data ); ?>;
 		</script>
 				
 		<div class='bookacti-booking-system-inputs'>
 			<input type='hidden' name='bookacti_group_id' value='<?php echo $atts[ 'picked_events' ][ 'group_id' ]; ?>' />
-			<input type='hidden' name='bookacti_event_id' value='<?php echo $picked_events ? $picked_events[ 0 ][ 'id' ] : ''; ?>' />
-			<input type='hidden' name='bookacti_event_start' value='<?php echo $picked_events ? $picked_events[ 0 ][ 'start' ] : ''; ?>' />
-			<input type='hidden' name='bookacti_event_end' value='<?php echo $picked_events ? $picked_events[ 0 ][ 'end' ] : ''; ?>' />
-			<?php do_action( 'bookacti_booking_system_inputs', $atts ); ?>
+			<input type='hidden' name='bookacti_event_id' value='<?php echo $booking_system_data[ 'picked_events' ] ? $booking_system_data[ 'picked_events' ][ 0 ][ 'id' ] : ''; ?>' />
+			<input type='hidden' name='bookacti_event_start' value='<?php echo $booking_system_data[ 'picked_events' ] ? $booking_system_data[ 'picked_events' ][ 0 ][ 'start' ] : ''; ?>' />
+			<input type='hidden' name='bookacti_event_end' value='<?php echo $booking_system_data[ 'picked_events' ] ? $booking_system_data[ 'picked_events' ][ 0 ][ 'end' ] : ''; ?>' />
+			<?php do_action( 'bookacti_booking_system_inputs', $atts, $booking_system_data ); ?>
 		</div>
 		
-		<?php do_action( 'bookacti_before_booking_system_title', $atts ); ?>
-		
-		<div class='bookacti-booking-system-global-title' >
-			<?php echo apply_filters( 'bookacti_booking_system_title', '', $atts ); ?>
-		</div>
-		
-		<?php do_action( 'bookacti_before_booking_system', $atts ); ?>
+		<?php do_action( 'bookacti_booking_system_container_before', $atts, $booking_system_data ); ?>
 		
 		<div id='<?php echo esc_attr( $atts[ 'id' ] ); ?>' class='bookacti-booking-system <?php echo esc_attr( $atts[ 'class' ] ); ?>' >
 			<?php echo bookacti_get_booking_method_html( $atts[ 'method' ], $atts ); 
@@ -136,32 +47,125 @@ function bookacti_get_booking_system( $atts, $echo = false ) {
 			<?php } ?>
 		</div>
 		
-		<?php do_action( 'bookacti_after_booking_system', $atts ); ?>
+		<?php do_action( 'bookacti_after_booking_system', $atts, $booking_system_data ); ?>
 		
 		<div class='bookacti-picked-events' style='display:none;' >
 			<div class='bookacti-picked-events-list-title' ></div>
 			<ul class='bookacti-picked-events-list bookacti-custom-scrollbar' >
-				<?php do_action( 'bookacti_picked_events_list', $atts ); ?>
+				<?php do_action( 'bookacti_picked_events_list', $atts, $booking_system_data ); ?>
 			</ul>
 		</div>
 		
-		<?php do_action( 'bookacti_after_picked_events_list', $atts ); ?>
-		
 		<div class='bookacti-notices' style='display:none;' >
-			<?php do_action( 'bookacti_booking_system_errors', $atts ); ?>
+			<?php do_action( 'bookacti_booking_system_errors', $atts, $booking_system_data ); ?>
 		</div>
 		
-		<?php do_action( 'bookacti_after_booking_system_errors', $atts ); ?>
+		<?php do_action( 'bookacti_booking_system_container_after', $atts, $booking_system_data ); ?>
 	</div>
 	<div id='<?php echo $atts[ 'id' ] . '-dialogs'; ?>' class='bookacti-booking-system-dialogs' >
 		<?php
 			bookacti_display_booking_system_dialogs( $atts[ 'id' ] );
 		?>
 	</div>
-<?php
-	do_action( 'bookacti_after_booking_form', $atts );
+	<?php
+	do_action( 'bookacti_after_booking_system_container', $atts, $booking_system_data );
 	
 	if( ! $echo ) { return ob_get_clean(); }
+}
+
+
+/**
+ * Get booking system data
+ * @since 1.7.4
+ * @param array $atts (see bookacti_format_booking_system_attributes())
+ * @return array
+ */
+function bookacti_get_booking_system_data( $atts ) {
+	$booking_system_data = $atts;
+
+	// Events related data
+	if( $atts[ 'auto_load' ] ) { 
+		if( empty( $atts[ 'template_data' ] ) ) {
+			$atts[ 'template_data' ] = bookacti_get_mixed_template_data( $atts[ 'calendars' ], $atts[ 'past_events' ] );
+		}
+
+		$events_interval	= bookacti_get_new_interval_of_events( $atts[ 'template_data' ], array(), false, $atts[ 'past_events' ] );
+
+		$user_ids			= array();
+		$groups_ids			= array();
+		$groups_data		= array();
+		$categories_data	= array();
+		$groups_events		= array();
+		$events				= array( 'events' => array(), 'data' => array() );
+
+		if( $atts[ 'group_categories' ] !== false ) {
+			$groups_data		= bookacti_get_groups_of_events( $atts[ 'calendars' ], $atts[ 'group_categories' ], $atts[ 'past_events_bookable' ], true, false, $atts[ 'template_data' ] );
+			$categories_data	= bookacti_get_group_categories( $atts[ 'calendars' ], $atts[ 'group_categories' ] );
+
+			foreach( $groups_data as $group_id => $group_data ) { $groups_ids[] = $group_id; }
+
+			$groups_events = ! $groups_ids ? array() : bookacti_get_groups_events( $atts[ 'calendars' ], $atts[ 'group_categories' ], $groups_ids );
+		} 
+
+		if( $atts[ 'groups_only' ] ) {
+			if( $groups_ids ) { 
+				$events	= bookacti_fetch_grouped_events( $atts[ 'calendars' ], $atts[ 'activities' ], $groups_ids, $atts[ 'group_categories' ], $atts[ 'past_events' ], $events_interval );
+			}
+		} else if( $atts[ 'bookings_only' ] ) {
+			$events		= bookacti_fetch_booked_events( $atts[ 'calendars' ], $atts[ 'activities' ], $atts[ 'status' ], $atts[ 'user_id' ], $atts[ 'past_events' ], $events_interval );
+			$user_ids	= $atts[ 'user_id' ];
+		} else {
+			$events		= bookacti_fetch_events( $atts[ 'calendars' ], $atts[ 'activities' ], $atts[ 'past_events' ], $events_interval );
+		}
+
+		$booking_system_data[ 'events' ]				= $events[ 'events' ] ? $events[ 'events' ] : array();
+		$booking_system_data[ 'events_data' ]			= $events[ 'data' ] ? $events[ 'data' ] : array();
+		$booking_system_data[ 'events_interval' ]		= $events_interval;
+		$booking_system_data[ 'bookings' ]				= bookacti_get_number_of_bookings_by_events( $atts[ 'calendars' ], array(), $user_ids );
+		$booking_system_data[ 'activities_data' ]		= bookacti_get_activities_by_template( $atts[ 'calendars' ], true );
+		$booking_system_data[ 'groups_events' ]			= $groups_events;
+		$booking_system_data[ 'groups_data' ]			= $groups_data;
+		$booking_system_data[ 'group_categories_data' ]	= $categories_data;
+		$booking_system_data[ 'template_data' ]			= $atts[ 'template_data' ];
+	}
+
+	// Events picked by default
+	$picked_events = array();
+	if( $atts[ 'picked_events' ][ 'group_id' ] === 'single' && $atts[ 'picked_events' ][ 'event_id' ] ) {
+		$event_id = $atts[ 'picked_events' ][ 'event_id' ];
+		$event = ! empty( $events[ 'data' ][ $event_id ] ) ? $events[ 'data' ][ $event_id ] : (array) bookacti_get_event_by_id( $event_id );
+		if( $event 
+		&& ! empty( $booking_system_data[ 'activities_data' ][ $event[ 'activity_id' ] ] )
+		&& in_array( intval( $event[ 'template_id' ] ), $atts[ 'calendars' ], true ) ) { 
+			$picked_events[] = array(
+				'id'	=> $event_id,
+				'start'	=> $atts[ 'picked_events' ][ 'event_start' ],
+				'end'	=> $atts[ 'picked_events' ][ 'event_end' ],
+				'title'	=> apply_filters( 'bookacti_translate_text', $event[ 'title' ] )
+			);
+		}
+	} else if( is_numeric( $atts[ 'picked_events' ][ 'group_id' ] ) ) {
+		if( isset( $groups_events[ $atts[ 'picked_events' ][ 'group_id' ] ] ) ) {
+			$picked_events = $groups_events[ $atts[ 'picked_events' ][ 'group_id' ] ];
+		} else {
+			$group_events = bookacti_get_group_events( $atts[ 'picked_events' ][ 'group_id' ] );
+			$category_id  = ! empty( $group_events[ 0 ][ 'category_id' ] ) ? intval( $group_events[ 0 ][ 'category_id' ] ) : 0;
+			if( $category_id && ! empty( $booking_system_data[ 'group_categories_data' ][ $category_id ] ) ) {
+				foreach( $group_events as $grouped_event ) {
+					$picked_events[] = array(
+						'id'	=> $grouped_event[ 'id' ],
+						'start'	=> $grouped_event[ 'start' ],
+						'end'	=> $grouped_event[ 'end' ],
+						'title'	=> $grouped_event[ 'title' ]
+					);
+				}
+			}
+		}
+	}
+	
+	$booking_system_data[ 'picked_events' ] = $picked_events;
+	
+	return apply_filters( 'bookacti_booking_system_data', $booking_system_data, $atts );
 }
 
 
@@ -262,18 +266,18 @@ function bookacti_retrieve_calendar_elements( $booking_system_atts ) {
  */
 function bookacti_get_booking_system_default_attributes() {
 	return apply_filters( 'bookacti_booking_system_default_attributes', array(
-        'id'					=> '',
-        'class'					=> '',
+		'id'					=> '',
+		'class'					=> '',
 		'template_data'			=> array(),
-        'calendars'				=> array(),
-        'activities'			=> array(),
-        'group_categories'		=> false,
-        'groups_only'			=> 0,
-        'groups_single_events'	=> 0,
-        'bookings_only'			=> 0,
-        'status'				=> array(),
-        'user_id'				=> 0,
-        'method'				=> 'calendar',
+		'calendars'				=> array(),
+		'activities'			=> array(),
+		'group_categories'		=> false,
+		'groups_only'			=> 0,
+		'groups_single_events'	=> 0,
+		'bookings_only'			=> 0,
+		'status'				=> array(),
+		'user_id'				=> 0,
+		'method'				=> 'calendar',
 		'auto_load'				=> bookacti_get_setting_value( 'bookacti_general_settings', 'when_events_load' ) === 'on_page_load' ? 1 : 0,
 		'past_events'			=> 0,
 		'past_events_bookable'	=> 0,
@@ -284,7 +288,7 @@ function bookacti_get_booking_system_default_attributes() {
 		'when_perform_form_action'		=> 'on_submit',
 		'redirect_url_by_activity'		=> array(),
 		'redirect_url_by_group_category'=> array()
-    ) );
+	) );
 }
 
 

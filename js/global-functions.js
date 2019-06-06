@@ -381,3 +381,23 @@ function bookacti_init_moment_format_from_php_date_format() {
 		};
 	}(moment));
 }
+
+
+/**
+ * Get URL parameter value
+ * @since 1.7.4
+ * @param {string} desired_param
+ * @returns {string|null}
+ */
+function bookacti_get_url_parameter( desired_param ) {
+	var url = window.location.search.substring( 1 );
+	var url_variables = url.split( '&' );
+	
+	for( var i = 0; i < url_variables.length; i++ ) {
+		var param_name = url_variables[ i ].split( '=' );
+		if( param_name[ 0 ] == desired_param ) {
+			return decode​URIComponent( param_name[ 1 ].replace( /\+/g, '%20' ) );
+		}
+	}
+	return null;
+}

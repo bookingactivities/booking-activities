@@ -5,7 +5,7 @@ Tags: booking activities, booking sport, booking form, event reservation, reserv
 Requires at least: 3.6
 Tested up to: 5.2
 Requires PHP: 5.3
-Stable tag: 1.7.3
+Stable tag: 1.7.4
 License: GPLv3 or later
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
 
@@ -210,11 +210,11 @@ Or read the full [features description](https://booking-activities.fr/en/documen
 6. Go on this post / page frontend, the calendar appears alone! 
 
 
-= Display user's bookings list = 
+= Display user's booking list = 
 *Make sure the user has bookings and he is logged in, otherwise it will not show anything* 
 
 1. Past this shortcode in any post or page you like: `[bookingactivities_list]`
-2. Go on this post / page frontend, the bookings list appears!
+2. Go on this post / page frontend, the booking list appears!
 
 *Depending on BA settings and bookings dates, actions like cancel or reschedule may appear. Try them!* 
 
@@ -272,7 +272,7 @@ Else, they will be cancelled later, with the others in that case.
 
 
 = My events appear to be booked, but no bookings appear in the list =
-Temporary bookings (such as In cart events) take active slots but may not appear in the bookings list.
+Temporary bookings (such as In cart events) take active slots but may not appear in the booking list.
 Go to the "Bookings" page, under the "States" filter select "Booked", "Pending" and "In cart" (use CTRL+Click to select multiple row).
 Then, just click on "Apply Filters". Now you can see all kind of active bookings.
 
@@ -310,7 +310,7 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 9. A reservation form appears automatically on desired WooCommerce product pages.
 10. WooCommerce cart expiration system: when time is up, bookings are cancelled and cart emptied. You can also disable it.
 11. Your bookings are displayed on a calendar and in a list that you can filter, sort and customize. Manage your bookings: change state (cancel, validate), reschedule, refund...
-12. Customers also have their bookings list and calendar thanks to a shortcode. They can cancel, reschedule or ask a refund by their own (if you allow them).
+12. Customers also have their booking list and calendar thanks to a shortcode. They can cancel, reschedule or ask a refund by their own (if you allow them).
 13. Your customers can manage their bookings from their WooCommerce orders as well.
 14. Orders status are bound to their bookings status. If bookings are cancelled / booked / refunded, so do the order (and vice-versa).
 15. Email notifications are automatically sent to the customer or the administrator when they need to be informed of a change.
@@ -318,6 +318,24 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 
 
 == Changelog ==
+
+= 1.7.4 - 2019/06/06 =
+* Tweak - You can choose the columns to display in the customer booking list ([bookingactivities_list columns="..."], [see the docs](https://booking-activities.fr/en/docs/user-documentation/get-started-with-booking-activities/display-customers-bookings-list-on-the-frontend/))
+* Tweak - You can display other's bookings in the customer booking list ([bookingactivities_list user_id="all"], [see the docs](https://booking-activities.fr/en/docs/user-documentation/get-started-with-booking-activities/display-customers-bookings-list-on-the-frontend/))
+* Fix - Pagination error if multiple customer booking lists were displayed on the same page
+* Fix - PHP warning when deleting expired booking groups
+* Fix - Label "for" and field "id" attributes sometimes mismatched
+* Fix - Couldn't translate cancel dialog button
+* Fix - Events not loaded if "Load events every" option < number of days in the calendar view
+* Fix - The event specified in URL was not selected by default on WC product variation page
+* Fix - JS error if the event specified in URL was not on the calendar
+* Fix - Some {user_...} notification tags didn't work with WC orders
+* Fix - Display WC user data only if the booking was made with WC or if these are the only available data
+* Fix - Filtering bookings by in__booking_id or in__booking_group_id was not always accurate
+* Optimization - Make sure booking system attributes are formatted only once
+* Dev - Hook for booking system data
+* Dev - Changed the way the customer booking list is generated (more hooks and possibilities)
+* Dev - Always refresh the whole row after a booking action
 
 = 1.7.3 - 2019/05/10 =
 * **Breaking change** - Optimization - "Expired" and "Removed" bookings will be permanently deleted 10 days after their expiration date
@@ -684,7 +702,7 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 * Fix - Wrong locale was loaded on multilingual site (depending on site and users settings)
 * Fix - Dialogs looked glitchy on Chrome
 * Fix - Booking quantity was incorrect if multiple partial refunds were deleted at once in a WooCommerce order
-* Fix - Booking quantity wasn't correctly displayed on bookings list
+* Fix - Booking quantity wasn't correctly displayed on booking list
 * Fix - Min delay before event is no longer limited to a minimum of 1 day. Minimum is now 0 (no delay)
 * Fix - Do not display booking actions on "Pay for orders" pages
 * Lib - Updated FullCalendar to 3.6.0 and Moment JS to 2.19.0
@@ -777,7 +795,7 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 * Fix - Replaced 'eventRender' JS action triggered on FullCalendar eventRender in calendar editor by 'bookacti_event_render'
 * Fix - Fixed activity list not filtered by calendar on load in admin product page
 * Tweak - Merged WC and BA confirmation notices when you add a product to cart to display only one
-* Tweak - Hid in-cart, expired and removed bookings from users' bookings list (can be filtered with 'bookacti_bookings_list_hidden_states' filter)
+* Tweak - Hid in-cart, expired and removed bookings from users' booking list (can be filtered with 'bookacti_bookings_list_hidden_states' filter)
 * Add - Added 'bookacti_validate_selected_event' JS action
 * Add - Added 'bookacti_temporary_book_message' filter to allow you to change the confirmation text when an activity has been added to cart through WooCommerce
 * Add - Added 'bookacti_refund_coupon_code_template' filter to change the template of WC generated coupon code (with refund by coupon method)
@@ -801,7 +819,7 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 * Feature - One-click reservation system
 * Feature - Woocommerce support for reservation online payments
 * Feature - Woocommerce cart expiration system
-* Feature - Backend reservation manager and frontend user's bookings list so that both can manage reservation
+* Feature - Backend reservation manager and frontend user's booking list so that both can manage reservation
 
 
 

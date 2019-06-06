@@ -53,17 +53,19 @@ $bookacti_translation_array = apply_filters( 'bookacti_translation_array', array
 	'dialog_button_cancel_booking'		=> apply_filters( 'bookacti_translate_text', $messages[ 'cancel_booking_dialog_button' ][ 'value' ] ),
 	'dialog_button_reschedule'			=> apply_filters( 'bookacti_translate_text', $messages[ 'reschedule_dialog_button' ][ 'value' ] ),
 	'dialog_button_refund'				=> $can_edit_bookings ? esc_html_x( 'Refund', 'Button label to trigger the refund action', BOOKACTI_PLUGIN_NAME ) : apply_filters( 'bookacti_translate_text', $messages[ 'refund_dialog_button' ][ 'value' ] ),
-	'calendar_button_list_year'			=> '',
-	'calendar_button_list_month'		=> '',
-	'calendar_button_list_week'			=> '',
-	'calendar_button_list_day'			=> '',
-	'calendar_button_flexible_view'		=> '',
 	'booking_form_new_booking_button'	=> apply_filters( 'bookacti_translate_text', $messages[ 'booking_form_new_booking_button' ][ 'value' ] ),
 	'placeholder_select_customer'		=> esc_html__( 'Search for a customer', BOOKACTI_PLUGIN_NAME ),
 	'show_all_customers'				=> esc_html__( 'Show all customers', BOOKACTI_PLUGIN_NAME ),
 	'pick_an_event'						=> esc_html__( 'Pick an event', BOOKACTI_PLUGIN_NAME ),
 	'hide_calendar'						=> esc_html__( 'Hide calendar', BOOKACTI_PLUGIN_NAME ),
-
+	'calendar_button_list_year'			=> '',
+	'calendar_button_list_month'		=> '',
+	'calendar_button_list_week'			=> '',
+	'calendar_button_list_day'			=> '',
+	'calendar_button_flexible'			=> '',
+	'calendar_button_multiple_months'	=> '',
+	'multiple_months_view_duration'		=> 1,
+	
 	// ERRORS
 	'error_retrieve_event_data'			=> esc_html__( 'Error occurs when trying to retrieve event parameters.', BOOKACTI_PLUGIN_NAME ),
 	'error_retrieve_booking_numbers'	=> esc_html__( 'Error occurs when trying to retrieve booking numbers.', BOOKACTI_PLUGIN_NAME ),
@@ -233,7 +235,7 @@ $bookacti_translation_array = apply_filters( 'bookacti_translation_array', array
 	'current_lang_code'					=> bookacti_get_current_lang_code(),
 	
 	'available_booking_methods'			=> array_keys( bookacti_get_available_booking_methods() ),
-
+	
 	'event_tiny_height'					=> apply_filters( 'bookacti_event_tiny_height', 30 ),
 	'event_small_height'				=> apply_filters( 'bookacti_event_small_height', 75 ),
 	'event_narrow_width'				=> apply_filters( 'bookacti_event_narrow_width', 70 ),

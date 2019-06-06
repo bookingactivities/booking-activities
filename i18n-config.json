@@ -1,4 +1,4 @@
-{ "vendor": { "plugins/booking-activities": "1.7.0" },
+{ "vendor": { "plugins/booking-activities": "1.7.4" },
 	"admin-config":{
 		"bookacti_calendars":{
 			"pages":{ "admin.php":"" },
@@ -45,6 +45,7 @@
 						"bookacti_messages_settings_booking_form_new_booking_button":{},
 						"bookacti_messages_settings_choose_group_dialog_title":{},
 						"bookacti_messages_settings_choose_group_dialog_content":{},
+						"bookacti_messages_settings_cancel_dialog_button":{},
 						"bookacti_messages_settings_cancel_booking_open_dialog_button":{},
 						"bookacti_messages_settings_cancel_booking_dialog_button":{},
 						"bookacti_messages_settings_cancel_dialog_title":{},

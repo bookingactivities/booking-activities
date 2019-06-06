@@ -140,7 +140,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	
 	/**
 	 * Add booking forms to single product page (front-end)
-	 * @version 1.7.0
+	 * @version 1.7.4
 	 * @global WC_Product $product
 	 */
 	function bookacti_add_booking_system_in_single_product_page() {
@@ -199,6 +199,10 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 				'id'					=> 'bookacti-booking-system-product-' . $product->get_id(),
 				'class'					=> 'bookacti-frontend-booking-system bookacti-woocommerce-product-booking-system'
 			);
+			
+			// Format booking system attributes
+			$atts = bookacti_format_booking_system_attributes( $atts );
+			
 			bookacti_get_booking_system( $atts, true );
 			return;
 		} 
@@ -1562,30 +1566,50 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	
 	
 	
-// BOOKINGS LIST
+// BOOKING LIST
 	
 	/**
-	 * Add a column called 'Price' to user bookings list
-	 * @version 1.7.1
+	 * Add a column called 'Price' to user booking list
+	 * @since 1.7.4 (was bookacti_add_woocommerce_price_column_to_bookings_list)
 	 * @param array $columns
 	 * @return array
 	 */
-	function bookacti_add_woocommerce_price_column_to_bookings_list( $columns ) {
-		$columns[ 60 ] = array( 'id' => 'price', 'title' => __( 'Price', BOOKACTI_PLUGIN_NAME ) );
+	function bookacti_add_woocommerce_price_column_to_user_booking_list( $columns ) {
+		$columns[ 'price' ] = esc_html__( 'Price', BOOKACTI_PLUGIN_NAME );
 		return $columns;
 	}
-	add_filter( 'bookacti_user_bookings_list_columns_titles', 'bookacti_add_woocommerce_price_column_to_bookings_list', 10, 1 );
+	add_filter( 'bookacti_user_booking_list_columns_labels', 'bookacti_add_woocommerce_price_column_to_user_booking_list', 10, 1 );
 	
 	
 	/**
-	 * Add values in bookings list (refund, price)
-	 * @version 1.7.1
-	 * @param array $columns_value
-	 * @param array $filters
-	 * @param object $booking
+	 * Reorder the 'Price' column in user booking list
+	 * @since 1.7.4
+	 * @param array $columns
 	 * @return array
 	 */
-	function bookacti_add_woocommerce_prices_in_bookings_list( $columns_value, $filters, $booking ) {
+	function bookacti_reorder_woocommerce_price_column_in_user_booking_list( $columns ) {
+		if( in_array( 'price', $columns, true ) ) { return $columns; }
+		$columns[ 45 ] = 'price';
+		return $columns;
+	}
+	add_filter( 'bookacti_user_booking_list_default_columns', 'bookacti_reorder_woocommerce_price_column_in_user_booking_list', 10, 1 );
+	
+	
+	/**
+	 * Add values in booking list (refund, price)
+	 * @since 1.7.4 (was bookacti_add_woocommerce_prices_in_bookings_list)
+	 * @param array $columns_value
+	 * @param object $booking
+	 * @param object $group
+	 * @param array $grouped_bookings
+	 * @param object $user
+	 * @param array $filters
+	 * @param array $columns
+	 * @return array
+	 */
+	function bookacti_fill_wc_price_column_in_booking_list( $columns_value, $booking, $group, $grouped_bookings, $user, $filters, $columns ) {
+		if( ! in_array( 'status', $columns, true ) && ! in_array( 'price', $columns, true ) ) { return $columns_value; }
+		
 		$item = bookacti_get_order_item_by_booking_id( $booking->id );
 		if( ! empty( $item ) ) {
 			// Add Price column value
@@ -1598,7 +1622,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 				$tax	= $item[ 'line_tax' ];
 			}
 			
-			$price_value = apply_filters( 'bookacti_user_bookings_list_order_item_price', wc_price( (float) $total + (float) $tax ), $item, $columns_value, $booking, $filters );
+			$price_value = apply_filters( 'bookacti_user_booking_list_order_item_price', wc_price( (float) $total + (float) $tax ), $item, $columns_value, $booking, $filters );
 			$columns_value[ 'price' ] = $price_value ? $price_value : '/';
 			
 			// Add refund coupon code in "Status" column
@@ -1628,11 +1652,11 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 				if( $coupon_code ) {
 					/* translators: %s is the coupon code used for the refund */
 					$coupon_label = sprintf( esc_html__( 'Refunded with coupon %s', BOOKACTI_PLUGIN_NAME ), $coupon_code );
-					$columns_value[ 'state' ] = '<span class="bookacti-booking-state bookacti-booking-state-bad bookacti-booking-state-refunded bookacti-converted-to-coupon bookacti-tip" data-booking-state="refunded">' . $coupon_label . '</span>';
+					$columns_value[ 'status' ] = '<span class="bookacti-booking-state bookacti-booking-state-bad bookacti-booking-state-refunded bookacti-converted-to-coupon bookacti-tip" data-booking-state="refunded">' . $coupon_label . '</span>';
 				}
 			}
 		}
 
 		return $columns_value;
 	}
-	add_filter( 'bookacti_user_bookings_list_columns_value', 'bookacti_add_woocommerce_prices_in_bookings_list', 20, 3 );
+	add_filter( 'bookacti_user_booking_list_item', 'bookacti_fill_wc_price_column_in_booking_list', 20, 7 );

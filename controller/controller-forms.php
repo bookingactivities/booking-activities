@@ -7,7 +7,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 /**
  * Display the form field 'calendar'
  * @since 1.5.0
- * @version 1.7.0
+ * @version 1.7.4
  * @param array $field
  * @param string $instance_id
  * @param string $context
@@ -18,14 +18,15 @@ function bookacti_display_form_field_calendar( $field, $instance_id, $context ) 
 	$field[ 'class' ] = '';
 	
 	// Check if an event / group of events is picked by default
-	if( isset( $_REQUEST[ 'bookacti_group_id' ] )	&& $_REQUEST[ 'bookacti_group_id' ] !== 'single' )	{ $field[ 'picked_events' ][ 'group_id' ] = intval( $_REQUEST[ 'bookacti_group_id' ] ); }
-	if( isset( $_REQUEST[ 'event_group_id' ] )		&& $_REQUEST[ 'event_group_id' ] !== 'single' )		{ $field[ 'picked_events' ][ 'group_id' ] = intval( $_REQUEST[ 'event_group_id' ] ); }
-	if( isset( $_REQUEST[ 'bookacti_event_id' ] ) )		{ $field[ 'picked_events' ][ 'event_id' ]		= intval( $_REQUEST[ 'bookacti_event_id' ] ); }
-	if( isset( $_REQUEST[ 'event_id' ] ) )				{ $field[ 'picked_events' ][ 'event_id' ]		= intval( $_REQUEST[ 'event_id' ] ); }
-	if( isset( $_REQUEST[ 'bookacti_event_start' ] ) )	{ $field[ 'picked_events' ][ 'event_start' ]	= bookacti_sanitize_datetime( $_REQUEST[ 'bookacti_event_start' ] ); }
-	if( isset( $_REQUEST[ 'event_start' ] ) )			{ $field[ 'picked_events' ][ 'event_start' ]	= bookacti_sanitize_datetime( $_REQUEST[ 'event_start' ] ); }
-	if( isset( $_REQUEST[ 'bookacti_event_end' ] ) )	{ $field[ 'picked_events' ][ 'event_end' ]		= bookacti_sanitize_datetime( $_REQUEST[ 'bookacti_event_end' ] ); }
-	if( isset( $_REQUEST[ 'event_end' ] ) )				{ $field[ 'picked_events' ][ 'event_end' ]		= bookacti_sanitize_datetime( $_REQUEST[ 'event_end' ] ); }
+	if( isset( $_REQUEST[ 'bookacti_event_id' ] ) )		{ $field[ 'picked_events' ][ 'event_id' ]		= is_numeric( $_REQUEST[ 'bookacti_event_id' ] ) ? intval( $_REQUEST[ 'bookacti_event_id' ] ) : ''; }
+	if( isset( $_REQUEST[ 'event_id' ] ) )				{ $field[ 'picked_events' ][ 'event_id' ]		= is_numeric( $_REQUEST[ 'event_id' ] ) ? intval( $_REQUEST[ 'event_id' ] ) : ''; }
+	if( isset( $_REQUEST[ 'bookacti_event_start' ] ) )	{ $field[ 'picked_events' ][ 'event_start' ]	= bookacti_sanitize_datetime( $_REQUEST[ 'bookacti_event_start' ] ) ? str_replace( 'T', ' ', $_REQUEST[ 'bookacti_event_start' ] ) : ''; }
+	if( isset( $_REQUEST[ 'event_start' ] ) )			{ $field[ 'picked_events' ][ 'event_start' ]	= bookacti_sanitize_datetime( $_REQUEST[ 'event_start' ] ) ? str_replace( 'T', ' ', $_REQUEST[ 'event_start' ] ) : ''; }
+	if( isset( $_REQUEST[ 'bookacti_event_end' ] ) )	{ $field[ 'picked_events' ][ 'event_end' ]		= bookacti_sanitize_datetime( $_REQUEST[ 'bookacti_event_end' ] ) ? str_replace( 'T', ' ', $_REQUEST[ 'bookacti_event_end' ] ) : ''; }
+	if( isset( $_REQUEST[ 'event_end' ] ) )				{ $field[ 'picked_events' ][ 'event_end' ]		= bookacti_sanitize_datetime( $_REQUEST[ 'event_end' ] ) ? str_replace( 'T', ' ', $_REQUEST[ 'event_end' ] ) : ''; }
+	if( isset( $_REQUEST[ 'bookacti_group_id' ] ) )  	{ $field[ 'picked_events' ][ 'group_id' ]		= is_numeric( $_REQUEST[ 'bookacti_group_id' ] ) ? intval( $_REQUEST[ 'bookacti_group_id' ] ) : ''; }
+	if( isset( $_REQUEST[ 'event_group_id' ] ) )		{ $field[ 'picked_events' ][ 'group_id' ]		= is_numeric( $_REQUEST[ 'event_group_id' ] ) ? intval( $_REQUEST[ 'event_group_id' ] ) : ''; }
+	if( is_numeric( $field[ 'picked_events' ][ 'event_id' ] ) ) { $field[ 'picked_events' ][ 'group_id' ] = 'single'; }
 	
 	// Do not auto load on form editor
 	// So that if a JS error occurs, you can still change the calendar settings and try to fix it

@@ -1,7 +1,7 @@
 <?php
 /**
  * Booking list page
- * @version 1.7.1
+ * @version 1.7.4
  */
 
 // Exit if accessed directly
@@ -273,6 +273,10 @@ if( ! $templates ) {
 						'auto_load'				=> 0, // Prevent to load on page load to save some performance
 						'picked_events'			=> $default_inputs
 					);
+					
+					// Format booking system attributes
+					$atts = bookacti_format_booking_system_attributes( $atts );
+					
 					bookacti_get_booking_system( $atts, true );
 				?>
 				<script>
@@ -282,11 +286,11 @@ if( ! $templates ) {
 		</form>
 	</div>
 	
-	<div id='bookacti-bookings-list-container' >
+	<div id='bookacti-booking-list-container' >
 		<?php
 			do_action( 'bookacti_before_booking_list' );
 		?>
-		<div id='bookacti-bookings-list' >
+		<div id='bookacti-booking-list' >
 		<?php
 			$filters = array(
 				'templates'					=> $selected_templates, 

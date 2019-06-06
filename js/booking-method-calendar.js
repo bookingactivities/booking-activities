@@ -1,6 +1,6 @@
 /**
  * Initialize the calendar
- * @version 1.7.2
+ * @version 1.7.4
  * @param {dom_element} booking_system
  * @param {boolean} reload_events
  */
@@ -42,7 +42,6 @@ function bookacti_set_calendar_up( booking_system, reload_events ) {
 		minTime:                '08:00',
 		maxTime:                '20:00',
 		
-		dayCount: 3, // the default duration for flexible views
 		views: { 
 			week:		{ eventLimit: false }, 
 			day:		{ eventLimit: false },
@@ -50,9 +49,11 @@ function bookacti_set_calendar_up( booking_system, reload_events ) {
 			listWeek:	{ buttonText: bookacti_localized.calendar_button_list_week },
 			listMonth:	{ buttonText: bookacti_localized.calendar_button_list_month },
 			listYear:	{ buttonText: bookacti_localized.calendar_button_list_year },
-			flexibleAgendaView:	{ type: 'agenda', buttonText: bookacti_localized.calendar_button_flexible },
-			flexibleBasicView:	{ type: 'basic', buttonText: bookacti_localized.calendar_button_flexible },
-			flexibleListView:	{ type: 'list', buttonText: bookacti_localized.calendar_button_flexible }
+			agendaFlexible:		{ type: 'agenda', buttonText: bookacti_localized.calendar_button_flexible },
+			basicFlexible:		{ type: 'basic', buttonText: bookacti_localized.calendar_button_flexible },
+			listFlexible:		{ type: 'list', buttonText: bookacti_localized.calendar_button_flexible },
+			basicMonthMultiple:	{ type: 'basic', duration: { months: bookacti_localized.multiple_months_view_duration }, fixedWeekCount: false, buttonText: bookacti_localized.calendar_button_multiple_months.replace( '{months}', bookacti_localized.multiple_months_view_duration ) },
+			listMonthMultiple:	{ type: 'list', duration: { months: bookacti_localized.multiple_months_view_duration }, fixedWeekCount: false, buttonText: bookacti_localized.calendar_button_multiple_months.replace( '{months}', bookacti_localized.multiple_months_view_duration ) }
 		},
 
 		// Load an empty array to allow the callback 'loading' to work
@@ -141,23 +142,45 @@ function bookacti_set_calendar_up( booking_system, reload_events ) {
 		// eventClick : When an event is clicked
 		eventClick: function( event, jsEvent, view ) {
 			bookacti_event_click( booking_system, event );
+		},
+		
+		// eventMouseover : When your mouse get over an event
+		eventMouseover: function( event, jsEvent, view ) { 
+			var element = $j( this );
+			booking_system.trigger( 'bookacti_event_mouse_over', [ event, element ] );
+		},
+		
+		// eventMouseover : When your mouse move out an event
+		eventMouseout: function( event, jsEvent, view ) { 
+			var element = $j( this );
+			booking_system.trigger( 'bookacti_event_mouse_out', [ event, element ] );
 		}
-
 	}); 
 	
 	// Update calendar settings
 	bookacti_update_calendar_settings( booking_system );
 	
+	// Make sure the event interval fit the view
+	var view = calendar.fullCalendar( 'getView' );
+	var interval = { 'start': moment.utc( view.start ), 'end': moment.utc( view.end ).subtract( 1, 'days' ) };
+	var is_view_larger_than_interval = false;
+	if( typeof bookacti.booking_system[ booking_system_id ][ 'events_interval' ] !== 'undefined' ) {
+		var event_interval_start= moment.utc( bookacti.booking_system[ booking_system_id ][ 'events_interval' ][ 'start' ] );
+		var event_interval_end	= moment.utc( bookacti.booking_system[ booking_system_id ][ 'events_interval' ][ 'end' ] );
+		if( event_interval_start.isAfter( interval.start ) || event_interval_end.isBefore( interval.end ) ) {
+			is_view_larger_than_interval = true;
+		}
+	}
+	
 	// Load events on calendar
-	if( ! reload_events && typeof bookacti.booking_system[ booking_system_id ][ 'events' ] !== 'undefined' ) {
+	if( ( ! reload_events || is_view_larger_than_interval ) && typeof bookacti.booking_system[ booking_system_id ][ 'events' ] !== 'undefined' ) {
 		// Fill calendar with events already fetched
 		if( bookacti.booking_system[ booking_system_id ][ 'events' ].length ) {
 			bookacti_display_events_on_calendar( booking_system );
 		}
-	} else if( reload_events ) {
+	}
+	if( reload_events || is_view_larger_than_interval ) {
 		// Fetch events from database
-		var view = calendar.fullCalendar( 'getView' );
-		var interval = { 'start': moment.utc( view.intervalStart ), 'end': moment.utc( view.intervalEnd ).subtract( 1, 'days' ) };
 		bookacti_fetch_events_from_interval( booking_system, interval );
 	}
 	

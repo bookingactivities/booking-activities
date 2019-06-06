@@ -10,7 +10,7 @@ if( ! class_exists( 'Bookings_List_Table' ) ) {
 	
 	/**
 	 * Bookings WP_List_Table
-	 * @version 1.7.1
+	 * @version 1.7.4
 	 */
 	class Bookings_List_Table extends WP_List_Table {
 		
@@ -229,7 +229,7 @@ if( ! class_exists( 'Bookings_List_Table' ) ) {
 		
 		/**
 		 * Get booking list items. Parameters can be passed in the URL.
-		 * @version 1.7.1
+		 * @version 1.7.4
 		 * @access public
 		 * @return array
 		 */
@@ -244,7 +244,7 @@ if( ! class_exists( 'Bookings_List_Table' ) ) {
 			
 			$bookings = bookacti_get_bookings( $this->filters );
 			
-			// Check if the bookings list can contain groups
+			// Check if the booking list can contain groups
 			$single_only = $this->filters[ 'group_by' ] === 'none';
 			$may_have_groups = false; 
 			if( ( ! $this->filters[ 'booking_group_id' ] || in_array( $this->filters[ 'group_by' ], array( 'booking_group', 'none' ), true ) ) && ! $this->filters[ 'booking_id' ] ) {
@@ -306,7 +306,7 @@ if( ! class_exists( 'Bookings_List_Table' ) ) {
 					$quantity		= $group->quantity;
 					$order_id		= $group->order_id;
 					$actions		= $booking_group_actions;
-					$activity_title	= '';
+					$activity_title	= $group->category_title;
 					$booking_type	= 'group';
 					
 					$displayed_groups[ $booking->group_id ] = $booking->id;

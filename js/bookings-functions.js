@@ -1,3 +1,15 @@
+$j( document ).ready( function() {
+	/**
+	 * Highlight the selected row in booking lists
+	 * @since 1.7.4
+	 */
+	$j( '#bookacti-booking-list, .bookacti-user-booking-list' ).on( 'click', 'tbody tr', function() {
+		$j( '.bookacti-booking-list-selected-row' ).removeClass( 'bookacti-booking-list-selected-row' );
+		$j( this ).addClass( 'bookacti-booking-list-selected-row' );
+	});
+});
+
+
 // BOOKINGS PAGE
 
 /**
@@ -173,9 +185,10 @@ function bookacti_reload_booking_system_according_to_filters( booking_system ) {
 
 /**
  * Init booking actions
+ * @version 1.7.4
  */
 function bookacti_init_booking_actions() {
-	$j( '.bookacti-user-bookings-list, .bookacti-order-item-activity, #bookacti-bookings-list' ).on( 'click', '.bookacti-booking-action, .bookacti-booking-group-action', function ( e ) {
+	$j( '.bookacti-user-booking-list, .woocommerce-table, #bookacti-booking-list' ).on( 'click', '.bookacti-booking-action, .bookacti-booking-group-action', function ( e ) {
 		e.preventDefault();
 		
 		// Single Bookings
@@ -248,14 +261,20 @@ function bookacti_init_booking_bulk_actions() {
 }
 
 
-// Show bookings of a group
+/**
+ * Show bookings of a group
+ * @version 1.7.4
+ * @param {dom_element} booking_system
+ * @param {int} booking_group_id
+ * @returns {false|null}
+ */
 function bookacti_display_grouped_bookings( booking_system, booking_group_id ) {
 	
 	booking_group_id = typeof booking_group_id !== 'undefined' && $j.isNumeric( booking_group_id ) ? booking_group_id : false;
 	
 	if( ! booking_group_id ) { return false; }
 	
-	var group_row = $j( '.bookacti-show-booking-group-bookings[data-booking-group-id="' + booking_group_id + '"]' ).closest( 'tr' );
+	var group_row = $j( '.bookacti-show-booking-group-bookings[data-booking-group-id="' + booking_group_id + '"]:focus' ).closest( 'tr' );
 	
 	group_row.find( '.bookacti-show-booking-group-bookings' ).toggleClass( 'active' );
 	
@@ -273,11 +292,22 @@ function bookacti_display_grouped_bookings( booking_system, booking_group_id ) {
 		return false; 
 	}
 	
+	// Columns to display
+	var columns = [];
+	group_row.find( 'td' ).each( function() {
+		var column_id = $j( this ).data( 'column-id' );
+		if( column_id ) { columns.push( column_id ); }
+	});
+	
 	var data = { 
-		'action': 'bookactiGetBookingRows',
+		'action': 'bookactiGetGroupedBookingsRows',
 		'booking_group_id': booking_group_id,
+		'is_admin': bookacti_localized.is_admin,
+		'context': bookacti_localized.is_admin ? 'admin_booking_list' : 'user_booking_list',
+		'columns': columns,
 		'nonce': bookacti_localized.nonce_get_booking_rows
 	};
+	group_row.trigger( 'bookacti_booking_action_data', [ data, booking_group_id, 'group', 'display_grouped_bookings' ] );
 	
 	bookacti_booking_row_enter_loading_state( group_row );
 	
@@ -286,26 +316,24 @@ function bookacti_display_grouped_bookings( booking_system, booking_group_id ) {
 		type: 'POST',
 		data: data,
 		dataType: 'json',
-		success: function( response ){
-			
+		success: function( response ) {
 			if( response.status === 'success' ) {
-				
 				// Update the booking list
-				$j( '#bookacti-bookings-list-container #the-list tr.no-items' ).remove();
+				$j( '#bookacti-booking-list-container #the-list tr.no-items' ).remove();
 				group_row.after( response.rows );
 				bookacti_refresh_list_table_hidden_columns();
 				
 				/**
 				 * Trigger after the booking list has been filled.
 				 */
-				$j( '#bookacti-bookings-list' ).trigger( 'bookacti_grouped_bookings_displayed' );
+				$j( '#bookacti-booking-list' ).trigger( 'bookacti_grouped_bookings_displayed' );
 
 			} else if( response.status === 'failed' ) {
 				var message_error = bookacti_localized.error_retrieve_bookings;
 				if( response.error === 'not_allowed' ) {
 					message_error += '\n' + bookacti_localized.error_not_allowed;
 				}
-				var no_bookings_entry = '<tr class="no-items" ><td class="colspanchange" colspan="' + $j( '#bookacti-bookings-list table tr th' ).length + '" >' + message_error + '</td></tr>';
+				var no_bookings_entry = '<tr class="no-items" ><td class="colspanchange" colspan="' + $j( '#bookacti-booking-list table tr th' ).length + '" >' + message_error + '</td></tr>';
 				group_row.after( no_bookings_entry );
 
 			}
