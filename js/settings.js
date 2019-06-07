@@ -1,14 +1,19 @@
 $j( document ).ready( function() {
 	
-	// Intercept settings form submission
+	/**
+	 * Intercept settings form submission
+	 * @version 1.7.5
+	 */
 	$j( 'form#bookacti-settings.bookacti_save_settings_with_ajax' ).on( 'submit', function( e ) {
 		
 		// Prevent submission
 		e.preventDefault();
 		
 		// Save tineMCE editor content 
-		if( tinyMCE ) { tinyMCE.triggerSave(); }
-		
+		if( typeof tinyMCE !== 'undefined' ) { 
+			if( tinyMCE ) { tinyMCE.triggerSave(); }
+		}
+	
 		var form		= $j( this );
 		var form_data	= form.serializeObject(); // Need to use the homemade serializeObject to support multidimentionnal array
 		

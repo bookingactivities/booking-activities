@@ -2,7 +2,7 @@
 
 /**
  * Change default template on change in the select box
- * @version 1.7.4
+ * @version 1.7.5
  * @param {int} selected_template_id
  */
 function bookacti_switch_template( selected_template_id ) {
@@ -27,11 +27,19 @@ function bookacti_switch_template( selected_template_id ) {
 				if( response.status === 'success' ) {
 					// Change the global var
 					var is_first_template		= bookacti.selected_template ? false : true;
+					var loading_number_temp		= bookacti.booking_system[ 'bookacti-template-calendar' ][ 'loading_number' ];
 					bookacti.selected_template	= parseInt( selected_template_id );
 					bookacti.hidden_activities	= [];
 					
 					// Update data array
 					bookacti.booking_system[ 'bookacti-template-calendar' ]	= response.booking_system_data;
+					
+					bookacti.booking_system[ 'bookacti-template-calendar' ][ 'selected_events' ]		= [];
+					bookacti.booking_system[ 'bookacti-template-calendar' ][ 'picked_events' ]			= [];
+					bookacti.booking_system[ 'bookacti-template-calendar' ][ 'loading_number' ]			= loading_number_temp;
+					bookacti.booking_system[ 'bookacti-template-calendar' ][ 'method' ]					= 'calendar';
+					bookacti.booking_system[ 'bookacti-template-calendar' ][ 'past_events' ]			= true;
+					bookacti.booking_system[ 'bookacti-template-calendar' ][ 'past_events_bookable' ]	= true;
 					
 					// Unlock dialogs triggering after first template is created and selected
 					if( is_first_template ) { 

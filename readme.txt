@@ -5,7 +5,7 @@ Tags: booking activities, booking sport, booking form, event reservation, reserv
 Requires at least: 3.6
 Tested up to: 5.2
 Requires PHP: 5.3
-Stable tag: 1.7.4
+Stable tag: 1.7.5
 License: GPLv3 or later
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
 
@@ -318,6 +318,10 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 
 
 == Changelog ==
+
+= 1.7.5 - 2019/06/07 =
+* Fix - JS fatal error when trying to validate a dialog in calendar editor
+* Fix - Infinite loading when creating a calendar (must refresh page)
 
 = 1.7.4 - 2019/06/06 =
 * Tweak - You can choose the columns to display in the customer booking list ([bookingactivities_list columns="..."], [see the docs](https://booking-activities.fr/en/docs/user-documentation/get-started-with-booking-activities/display-customers-bookings-list-on-the-frontend/))
