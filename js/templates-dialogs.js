@@ -143,7 +143,7 @@ function bookacti_init_template_dialogs() {
 
 /**
  * Dialog Create Template
- * @version 1.7.4
+ * @version 1.7.5
  */
 function bookacti_dialog_add_new_template() {
 	// Set the dialog title
@@ -208,7 +208,9 @@ function bookacti_dialog_add_new_template() {
 				var start	= moment( $j( '#bookacti-template-opening' ).val(), [ 'MM-DD-YYYY', 'DD-MM-YYYY', 'YYYY-MM-DD' ] ).format( 'YYYY-MM-DD' );
 				var end		= moment( $j( '#bookacti-template-closing' ).val(), [ 'MM-DD-YYYY', 'DD-MM-YYYY', 'YYYY-MM-DD' ] ).format( 'YYYY-MM-DD' );
 				
-				if( tinyMCE ) { tinyMCE.triggerSave(); }
+				if( typeof tinyMCE !== 'undefined' ) { 
+					if( tinyMCE ) { tinyMCE.triggerSave(); }
+				}
 				
 				var isFormValid = bookacti_validate_template_form();
 
@@ -301,7 +303,7 @@ function bookacti_dialog_add_new_template() {
 
 /**
  * Dialog Update Template
- * @version 1.7.4
+ * @version 1.7.5
  * @param {int} template_id
  */
 function bookacti_dialog_update_template( template_id ) {
@@ -356,8 +358,10 @@ function bookacti_dialog_update_template( template_id ) {
 				$j( '#bookacti-template-data-form-action' ).val( 'bookactiUpdateTemplate' );
 				$j( '#bookacti-template-data-form select[multiple].bookacti-items-select-box option' ).prop( 'selected', true );
 				
-				if( tinyMCE ) { tinyMCE.triggerSave(); }
-				
+				if( typeof tinyMCE !== 'undefined' ) { 
+					if( tinyMCE ) { tinyMCE.triggerSave(); }
+				}
+			
 				var isFormValid = bookacti_validate_template_form();
 
 				if( isFormValid ) {
@@ -533,7 +537,7 @@ function bookacti_dialog_deactivate_template( template_id ) {
 
 /**
  * Dialog Update Event
- * @version 1.7.4
+ * @version 1.7.5
  * @param {object} event
  */
 function bookacti_dialog_update_event( event ) {
@@ -630,7 +634,9 @@ function bookacti_dialog_update_event( event ) {
 			// Store new exceptions list
 			var new_exceptions = $j( '#bookacti-event-exceptions-selectbox' ).val() ? $j( '#bookacti-event-exceptions-selectbox' ).val() : [];
 			
-			if( tinyMCE ) { tinyMCE.triggerSave(); }
+			if( typeof tinyMCE !== 'undefined' ) { 
+				if( tinyMCE ) { tinyMCE.triggerSave(); }
+			}
 			
 			var isFormValid = bookacti_validate_event_form( event );
 			
@@ -1150,7 +1156,7 @@ function bookacti_dialog_import_activity() {
 
 /**
  * Dialog Create Activity
- * @version 1.7.4
+ * @version 1.7.5
  * @returns {false}
  */
 function bookacti_dialog_create_activity() {
@@ -1190,7 +1196,9 @@ function bookacti_dialog_create_activity() {
 
 				$j( '#bookacti-activity-duration' ).val( duration );
 				
-				if( tinyMCE ) { tinyMCE.triggerSave(); }
+				if( typeof tinyMCE !== 'undefined' ) { 
+					if( tinyMCE ) { tinyMCE.triggerSave(); }
+				}
 				
 				var is_form_valid = bookacti_validate_activity_form();
 
@@ -1263,7 +1271,7 @@ function bookacti_dialog_create_activity() {
 
 /**
  * Open a dialog to update an activity
- * @version 1.7.4
+ * @version 1.7.5
  * @param {int} activity_id
  */
 function bookacti_dialog_update_activity( activity_id ) {
@@ -1345,14 +1353,14 @@ function bookacti_dialog_update_activity( activity_id ) {
 				
 				$j( '#bookacti-activity-duration' ).val( duration );
 				
-				if( tinyMCE ) { tinyMCE.triggerSave(); }
+				if( typeof tinyMCE !== 'undefined' ) { 
+					if( tinyMCE ) { tinyMCE.triggerSave(); }
+				}
 				
 				var is_form_valid = bookacti_validate_activity_form();
 
 				if( is_form_valid ) {
 					var data = $j( '#bookacti-activity-data-form' ).serialize();
-					
-					console.log( $j( '#bookacti-activity-data-form' ).serializeObject() );
 					
 					bookacti_start_template_loading();
 
@@ -1531,7 +1539,7 @@ function bookacti_dialog_delete_activity( activity_id ) {
 
 /**
  * Create a group of events
- * @version 1.7.4
+ * @version 1.7.5
  * @param {int} category_id
  */
 function bookacti_dialog_create_group_of_events( category_id ) {
@@ -1590,7 +1598,9 @@ function bookacti_dialog_create_group_of_events( category_id ) {
 				var selected_category_id	= $j( '#bookacti-group-of-events-category-selectbox' ).val();
 				bookacti.selected_category	= selected_category_id;
 				
-				if( tinyMCE ) { tinyMCE.triggerSave(); }
+				if( typeof tinyMCE !== 'undefined' ) { 
+					if( tinyMCE ) { tinyMCE.triggerSave(); }
+				}
 				
 				var is_form_valid = bookacti_validate_group_of_events_form();
 				
@@ -1665,7 +1675,7 @@ function bookacti_dialog_create_group_of_events( category_id ) {
 
 /**
  * Update a group of events with selected events 
- * @version 1.7.4
+ * @version 1.7.5
  * @param {int} group_id
  */
 function bookacti_dialog_update_group_of_events( group_id ) {
@@ -1734,7 +1744,9 @@ function bookacti_dialog_update_group_of_events( group_id ) {
 				var selected_category_id	= $j( '#bookacti-group-of-events-category-selectbox' ).val();
 				bookacti.selected_category	= selected_category_id;
 				
-				if( tinyMCE ) { tinyMCE.triggerSave(); }
+				if( typeof tinyMCE !== 'undefined' ) { 
+					if( tinyMCE ) { tinyMCE.triggerSave(); }
+				}
 				
 				var is_form_valid = bookacti_validate_group_of_events_form();
 				
@@ -1912,7 +1924,7 @@ function bookacti_dialog_delete_group_of_events( group_id ) {
 
 /**
  * Update a group category
- * @version 1.7.4
+ * @version 1.7.5
  * @param {int} category_id
  */
 function bookacti_dialog_update_group_category( category_id ) {
@@ -1949,7 +1961,9 @@ function bookacti_dialog_update_group_category( category_id ) {
 				$j( '#bookacti-group-category-action' ).val( 'bookactiUpdateGroupCategory' );
 				$j( '#bookacti-group-category-form select[multiple].bookacti-items-select-box option' ).prop( 'selected', true );
 				
-				if( tinyMCE ) { tinyMCE.triggerSave(); }
+				if( typeof tinyMCE !== 'undefined' ) { 
+					if( tinyMCE ) { tinyMCE.triggerSave(); }
+				}
 				
 				var is_form_valid = bookacti_validate_group_category_form();
 

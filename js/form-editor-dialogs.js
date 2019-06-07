@@ -47,7 +47,7 @@ function bookacti_init_form_editor_actions() {
 /**
  * Update Form Meta
  * @since 1.5.0
- * @version 1.7.3
+ * @version 1.7.5
  */
 function bookacti_dialog_update_form_meta() {
 	
@@ -80,7 +80,9 @@ function bookacti_dialog_update_form_meta() {
 			'click': function() { 
 				
 				// Save tineMCE editors content 
-				if( tinyMCE ) { tinyMCE.triggerSave(); }
+				if( typeof tinyMCE !== 'undefined' ) { 
+					if( tinyMCE ) { tinyMCE.triggerSave(); }
+				}
 				
 				var data = $j( 'form#bookacti-update-form-meta-form' ).serializeObject();
 				
@@ -291,6 +293,7 @@ function bookacti_dialog_remove_form_field( field_id, field_name ) {
 /**
  * Update Form Field
  * @since 1.5.0
+ * @version 1.7.5
  * @param {int} field_id
  * @param {string} field_name
  */
@@ -342,7 +345,9 @@ function bookacti_dialog_update_form_field( field_id, field_name ) {
 				$j( '#bookacti-form-field-dialog-' + field_name ).find( '.bookacti-loading-alt,.bookacti-notices' ).remove();
 				
 				// Save tineMCE editors content 
-				if( tinyMCE ) { tinyMCE.triggerSave(); }
+				if( typeof tinyMCE !== 'undefined' ) { 
+					if( tinyMCE ) { tinyMCE.triggerSave(); }
+				}
 				
 				// Prepare the fields
 				$j( 'form#bookacti-form-field-form-' + field_name + ' select[multiple].bookacti-items-select-box option' ).prop( 'selected', true );
@@ -412,7 +417,9 @@ function bookacti_dialog_update_form_field( field_id, field_name ) {
 			'click': function() {
 				
 				// Save tineMCE editors content 
-				if( tinyMCE ) { tinyMCE.triggerSave(); }
+				if( typeof tinyMCE !== 'undefined' ) { 
+					if( tinyMCE ) { tinyMCE.triggerSave(); }
+				}
 				
 				$j( 'form#bookacti-form-field-form-' + field_name + ' input[name="action"]' ).val( 'bookactiResetFormField' );
 				var data = $j( 'form#bookacti-form-field-form-' + field_name ).serializeObject();
