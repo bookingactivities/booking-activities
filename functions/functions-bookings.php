@@ -1826,7 +1826,7 @@ function bookacti_get_user_booking_list_items( $filters, $columns = array() ) {
 
 /**
  * Display a booking list
- * @since 1.7.4
+ * @since 1.7.6
  * @param array $filters
  * @param array $columns
  * @param int $per_page
@@ -1914,13 +1914,13 @@ function bookacti_get_user_booking_list( $filters, $columns = array(), $per_page
 		include_once( WP_PLUGIN_DIR . '/' . BOOKACTI_PLUGIN_NAME . '/view/view-bookings-dialogs.php' );
 	}
 	
-	return ob_get_clean();
+	return apply_filters( 'bookacti_user_booking_list_html', ob_get_clean(), $booking_list_items, $columns, $filters, $per_page, $bookings_nb );
 }
 
 
 /**
  * Display booking list rows
- * @since 1.7.4
+ * @since 1.7.6
  * @param array $booking_list_items
  * @param array $columns
  * @return string
@@ -1965,7 +1965,7 @@ function bookacti_get_user_booking_list_rows( $booking_list_items, $columns = ar
 		}
 	}
 	
-	return ob_get_clean();
+	return apply_filters( 'bookacti_user_booking_list_rows_html', ob_get_clean(), $booking_list_items, $columns );
 }
 
 
