@@ -233,6 +233,7 @@ $bookacti_translation_array = apply_filters( 'bookacti_translation_array', array
 	'is_qtranslate'						=> bookacti_get_translation_plugin() === 'qtranslate',
 	'fullcalendar_locale'				=> bookacti_convert_wp_locale_to_fc_locale( bookacti_get_current_lang_code( true ) ),
 	'current_lang_code'					=> bookacti_get_current_lang_code(),
+	'current_locale'					=> bookacti_get_current_lang_code( true ),
 	
 	'available_booking_methods'			=> array_keys( bookacti_get_available_booking_methods() ),
 	

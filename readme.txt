@@ -319,6 +319,9 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 
 == Changelog ==
 
+= 1.7.6 =
+* Fix - Booking row not translated after perfoming an action (on multilang site)
+
 = 1.7.5 - 2019/06/07 =
 * Fix - JS fatal error when trying to validate a dialog in calendar editor
 * Fix - Infinite loading when creating a calendar (must refresh page)

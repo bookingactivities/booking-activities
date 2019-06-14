@@ -7,6 +7,19 @@ $j( document ).ready( function() {
 		$j( '.bookacti-booking-list-selected-row' ).removeClass( 'bookacti-booking-list-selected-row' );
 		$j( this ).addClass( 'bookacti-booking-list-selected-row' );
 	});
+	
+	
+	/**
+	 * Add data to booking actions
+	 * @since 1.7.6
+	 */
+	$j( '#bookacti-booking-list, .bookacti-user-booking-list' ).on( 'bookacti_booking_action_data', 'tr.bookacti-single-booking, tr.bookacti-booking-group', function( e, data ) {
+		if( data instanceof FormData ) { 
+			data.append( 'locale', bookacti_localized.current_locale );
+		} else {
+			data.locale = bookacti_localized.current_locale;
+		}
+	});
 });
 
 

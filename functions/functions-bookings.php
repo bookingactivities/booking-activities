@@ -1972,12 +1972,16 @@ function bookacti_get_user_booking_list_rows( $booking_list_items, $columns = ar
 /**
  * Get some booking list rows according to filters
  * @since 1.7.4
+ * @version 1.7.6
  * @param string $context
  * @param array $filters
  * @param array $columns
  * @return string
  */
 function bookacti_get_booking_list_rows_according_to_context( $context = 'user_booking_list', $filters = array(), $columns = array() ) {
+	// Switch language
+	if( ! empty( $_REQUEST[ 'locale' ] ) ) { bookacti_switch_locale( $_REQUEST[ 'locale' ] ); }
+	
 	$rows = '';
 	if( $context === 'admin_booking_list' ) {
 		$Bookings_List_Table = new Bookings_List_Table();
@@ -1989,5 +1993,11 @@ function bookacti_get_booking_list_rows_according_to_context( $context = 'user_b
 		$list_items = bookacti_get_user_booking_list_items( $filters, $columns );
 		$rows		= bookacti_get_user_booking_list_rows( $list_items, $columns );
 	}
-	return apply_filters( 'booking_list_rows_according_to_context', $rows, $context, $filters, $columns );
+	
+	$rows = apply_filters( 'booking_list_rows_according_to_context', $rows, $context, $filters, $columns );
+	
+	// Restore language
+	if( ! empty( $_REQUEST[ 'locale' ] ) ) { bookacti_restore_locale();	}
+	
+	return $rows;
 }
