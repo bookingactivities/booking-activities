@@ -1,7 +1,7 @@
 <?php
 /**
  * Calendar editor page
- * @version 1.7.0
+ * @version 1.7.6
  */
 
 // Exit if accessed directly
@@ -14,7 +14,9 @@ $default_template = false;
 ?>
 
 <div class='wrap'>
-<h1><?php esc_html_e( 'Calendars', BOOKACTI_PLUGIN_NAME ); ?></h1>
+<h1 class='wp-heading-inline'><?php esc_html_e( 'Calendars', BOOKACTI_PLUGIN_NAME ); ?></h1>
+<?php do_action( 'bookacti_calendar_editor_page_header' ); ?>
+<hr class='wp-header-end'>
 
 <div id='bookacti-fatal-error' class='bookacti-notices' style='display:none;'>
 	<ul class='bookacti-error-list'>

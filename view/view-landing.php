@@ -1,7 +1,7 @@
 <?php
 /**
  * Booking Activities landing page
- * @version 1.7.2
+ * @version 1.7.6
  */
 
 // Exit if accessed directly
@@ -9,7 +9,8 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 ?>
 
 <div class='wrap'>
-<h1>Booking Activities</h1>
+<h1 class='wp-heading-inline'>Booking Activities</h1>
+<hr class='wp-header-end' />
 
 <div id='bookacti-landing-container'>
 	

@@ -10,7 +10,7 @@ if( ! class_exists( 'Bookings_List_Table' ) ) {
 	
 	/**
 	 * Bookings WP_List_Table
-	 * @version 1.7.4
+	 * @version 1.7.6
 	 */
 	class Bookings_List_Table extends WP_List_Table {
 		
@@ -440,13 +440,12 @@ if( ! class_exists( 'Bookings_List_Table' ) ) {
 		
 		/**
 		 * Format filters passed as argument or retrieved via POST or GET
-		 * @version 1.7.0
+		 * @version 1.7.6
 		 * @access public
 		 * @param array $filters
 		 * @return array
 		 */
 		public function format_filters( $filters = array() ) {
-			
 			// Get filters from URL if no filter was directly passed
 			if( ! $filters ) {
 				
@@ -474,6 +473,7 @@ if( ! class_exists( 'Bookings_List_Table' ) ) {
 					'event_start'				=> $event_start, 
 					'event_end'					=> $event_end,
 					'status'					=> isset( $_REQUEST[ 'status' ] )			? $_REQUEST[ 'status' ] : array(),
+					'payment_status'			=> isset( $_REQUEST[ 'payment_status' ] )	? $_REQUEST[ 'payment_status' ] : array(),
 					'user_id'					=> isset( $_REQUEST[ 'user_id' ] )			? $_REQUEST[ 'user_id' ] : 0,
 					'form_id'					=> isset( $_REQUEST[ 'form_id' ] )			? $_REQUEST[ 'form_id' ] : 0,
 					'from'						=> isset( $_REQUEST[ 'from' ] )				? $_REQUEST[ 'from' ] : '',

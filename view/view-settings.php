@@ -1,7 +1,7 @@
 <?php
 /**
  * Booking Activities settings page
- * @version 1.7.0
+ * @version 1.7.6
  */
 
 // Exit if accessed directly
@@ -9,10 +9,12 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 echo "<div class='wrap'>";
 	
-	echo "<h1>" . esc_html__( 'Settings', BOOKACTI_PLUGIN_NAME ) . "</h1>";
-
+	echo "<h1 class='wp-heading-inline'>" . esc_html__( 'Settings', BOOKACTI_PLUGIN_NAME ) . "</h1>";
+	do_action( 'bookacti_settings_page_header' );
+	echo "<hr class='wp-header-end'>";
+	
 	settings_errors();
-
+	
 	$active_tab = 'general';
 	if( isset( $_GET[ 'tab' ] ) ) { 
 		$active_tab = sanitize_title_with_dashes( $_GET[ 'tab' ] ); 

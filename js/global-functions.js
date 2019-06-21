@@ -150,7 +150,7 @@ $j.fn.serializeObject = function() {
 
 /**
  * Init Find-As-You-Type user selectbox
- * @version 1.7.0
+ * @version 1.7.6
  */
 function bookacti_init_user_selectbox() {
 	// Jquery UI Autocomplete
@@ -193,7 +193,7 @@ function bookacti_init_user_selectbox() {
 						
 						// Trigger action and pass selected option
 						$j( this.element ).trigger( 'bookacti_customers_selectbox_changed', [ ui.item.option ] );
-
+						
 					},
 
 					autocompletesearch: function( event, ui ) {
@@ -279,13 +279,12 @@ function bookacti_init_user_selectbox() {
 				if( valid ) { return; }
 				
 				// Remove invalid value
-				this.input
-					.val( '' )
-					.attr( 'title', '"' + value + '" ' + bookacti_localized.error_no_results )
-					.tooltip( 'open' );
+				this.input.val( '' ).attr( 'title', '"' + value + '" ' + bookacti_localized.error_no_results );
+				if( this.input.data( 'ui-tooltip' ) ) { this.input.tooltip( 'open' ); }
 				this.element.val( '' );
 				this._delay( function() {
-					this.input.tooltip( 'close' ).attr( 'title', '' );
+					this.input.attr( 'title', '' );
+					if( this.input.data( 'ui-tooltip' ) ) { this.input.tooltip( 'close' ); }
 				}, 2500 );
 				this.input.autocomplete( 'instance' ).term = '';
 			},
@@ -396,7 +395,7 @@ function bookacti_get_url_parameter( desired_param ) {
 	for( var i = 0; i < url_variables.length; i++ ) {
 		var param_name = url_variables[ i ].split( '=' );
 		if( param_name[ 0 ] == desired_param ) {
-			return decode​URIComponent( param_name[ 1 ].replace( /\+/g, '%20' ) );
+			return decodeURIComponent( param_name[ 1 ].replace( /\+/g, '%20' ) );
 		}
 	}
 	return null;

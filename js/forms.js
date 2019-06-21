@@ -5,8 +5,11 @@ $j( document ).ready( function() {
 	// Init tooltip on frontend booking forms
 	bookacti_init_tooltip();
 	
-	// Check password strength
-	$j( 'body' ).on( 'keyup', '.bookacti-booking-form input[name=password]', function( e ) {
+	/**
+	 * Check password strength
+	 * @version 1.7.6
+	 */
+	$j( 'body' ).on( 'keyup mouseup change', '.bookacti-booking-form input[name=password], .bookacti-form-fields input[name=password]', function( e ) {
 		var password_field			= $j( this );
 		var password_confirm_field	= null;
 		var password_strength_meter	= $j( this ).closest( '.bookacti-form-field-container' ).find( '.bookacti-password-strength-meter' );
@@ -46,7 +49,7 @@ $j( document ).ready( function() {
 	
 	/**
 	 * Perform the desired action on form submission
-	 * @version 1.7.0
+	 * @version 1.7.6
 	 */
 	$j( 'body' ).on( 'submit', '.bookacti-booking-form', function( e ){
 		// Prevent submission
@@ -66,7 +69,7 @@ $j( document ).ready( function() {
 		
 		if( ! form_action || form_action === 'default' 
 		||  ! when_perform_form_action || when_perform_form_action !== 'on_submit' ) {
-			bookacti_sumbit_booking_form( form );
+			bookacti_submit_booking_form( form );
 			return;
 		}
 		
@@ -97,8 +100,11 @@ $j( document ).ready( function() {
 	});
 	
 	
-	// Display booking system fields and submit button if the user want to make a new booking
-	$j( '.bookacti-booking-form' ).on( 'click', '.bookacti-new-booking-button', function() {
+	/**
+	 * Display booking system fields and submit button if the user want to make a new booking
+	 * @version 1.7.6
+	 */
+	$j( 'body' ).on( 'click', '.bookacti-booking-form .bookacti-new-booking-button', function() {
 		// Reload page if necessary
 		if( $j( this ).hasClass( 'bookacti-reload-page' ) ) { 
 			window.location.reload( true ); 
@@ -125,37 +131,46 @@ $j( document ).ready( function() {
 	
 	/**
 	 * Change activity summary on qty change
-	 * @version 1.7.3
+	 * @version 1.7.6
 	 */
-	$j( '.bookacti-booking-form' ).on( 'keyup mouseup change', 'input.bookacti-quantity', function() {
-		var booking_system = $j( this ).closest( 'form' ).find( '.bookacti-booking-system' );
+	$j( 'body' ).on( 'keyup mouseup change', '.bookacti-booking-form input.bookacti-quantity, .bookacti-form-fields input.bookacti-quantity', function() {
+		var booking_system = $j( this ).closest( '.bookacti-booking-form, .bookacti-form-fields' ).find( '.bookacti-booking-system' );
 		if( booking_system.length ) {
 			bookacti_fill_picked_events_list( booking_system );
 		}
 	});
 	
 	
-	// Set quantity on eventClick
-	$j( '.bookacti-booking-form' ).on( 'bookacti_picked_events_list_data', '.bookacti-booking-system', function( e, event_summary_data, event ) {
+	/**
+	 * Set quantity on eventClick
+	 * @version 1.7.6
+	 */
+	$j( 'body' ).on( 'bookacti_picked_events_list_data', '.bookacti-booking-form .bookacti-booking-system, .bookacti-form-fields .bookacti-booking-system', function( e, event_summary_data, event ) {
 		var booking_system = $j( this );
-		var qty_field = booking_system.closest( 'form' ).find( 'input.bookacti-quantity' );
+		var qty_field = booking_system.closest( '.bookacti-booking-form, .bookacti-form-fields' ).find( 'input.bookacti-quantity' );
 		if( qty_field.length ) {
 			bookacti_set_min_and_max_quantity( booking_system, qty_field, event_summary_data );
 		}
 	});
 	
 	
-	// Enable submit booking button
-	$j( '.bookacti-booking-form .bookacti-booking-system' ).on( 'bookacti_view_refreshed bookacti_displayed_info_cleared', function( e ) {
-		var booking_form = $j( this ).closest( 'form' );
+	/**
+	 * Enable submit booking button
+	 * @version 1.7.6
+	 */
+	$j( 'body' ).on( 'bookacti_view_refreshed bookacti_displayed_info_cleared', '.bookacti-booking-form .bookacti-booking-system, .bookacti-form-fields .bookacti-booking-system', function( e ) {
+		var booking_form = $j( this ).closest( '.bookacti-booking-form, .bookacti-form-fields' );
 		booking_form.find( 'input[name="quantity"]' ).attr( 'disabled', false );
 		booking_form.find( 'button[type="submit"]' ).attr( 'disabled', false );
 	});
 
 
-	// Disable submit booking button
-	$j( '.bookacti-booking-form .bookacti-booking-system' ).on( 'bookacti_error_displayed', function( e ) {
-		var booking_form = $j( this ).closest( 'form' );
+	/**
+	 * Disable submit booking button
+	 * @version 1.7.6
+	 */
+	$j( 'body' ).on( 'bookacti_error_displayed', '.bookacti-booking-form .bookacti-booking-system, .bookacti-form-fields .bookacti-booking-system', function( e ) {
+		var booking_form = $j( this ).closest( '.bookacti-booking-form, .bookacti-form-fields' );
 		booking_form.find( 'input[name="quantity"]' ).attr( 'disabled', true );
 		booking_form.find( 'button[type="submit"]' ).attr( 'disabled', true );
 	});
@@ -298,12 +313,11 @@ function bookacti_check_password_strength( password_field, password_confirm_fiel
 
 /**
  * Submit booking form
- * @since 1.5.0
- * @version 1.6.0
+ * @since 1.7.6 (was bookacti_sumbit_booking_form)
  * @param {html_element} form
  * @returns {Boolean}
  */
-function bookacti_sumbit_booking_form( form ) {
+function bookacti_submit_booking_form( form ) {
 	var booking_system	= form.find( '.bookacti-booking-system' );
 	
 	// Disable the submit button to avoid multiple booking
@@ -354,7 +368,7 @@ function bookacti_sumbit_booking_form( form ) {
 	var data = new FormData( form.get(0) );
 	
 	// Trigger action before sending form
-	form.trigger( 'bookacti_before_submit_booking_form', data );
+	form.trigger( 'bookacti_before_submit_booking_form', [ data ] );
 
 	bookacti_start_loading_booking_system( booking_system );
 

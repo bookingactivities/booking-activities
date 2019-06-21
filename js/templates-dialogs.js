@@ -1,5 +1,9 @@
 // INITIALIZATION
 
+/**
+ * Initialize calendar editor dialogs
+ * @version 1.7.6
+ */
 function bookacti_init_template_dialogs() {
     // Common param
     $j( '.bookacti-template-dialogs' ).dialog({ 
@@ -124,7 +128,7 @@ function bookacti_init_template_dialogs() {
     });
 	
 	// Prevent sending form
-	$j( '.bookacti-backend-dialog form' ).on( 'submit', function( e ){
+	$j( '.bookacti-template-dialog form' ).on( 'submit', function( e ){
 		e.preventDefault();
 	});
 	

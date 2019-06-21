@@ -102,7 +102,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	/**
 	 * Get Default booking filters
 	 * @since 1.6.0
-	 * @version 1.7.0
+	 * @version 1.7.6
 	 * @return array
 	 */
 	function bookacti_get_default_booking_filters() {
@@ -117,6 +117,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			'event_start'				=> '', 
 			'event_end'					=> '', 
 			'status'					=> array(), 
+			'payment_status'			=> array(), 
 			'user_id'					=> 0,
 			'form_id'					=> 0,
 			'from'						=> '',
@@ -147,7 +148,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	/**
 	 * Format booking filters
 	 * @since 1.3.0
-	 * @version 1.7.0
+	 * @version 1.7.6
 	 * @param array $filters 
 	 * @return array
 	 */
@@ -194,7 +195,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 				if( is_numeric( $current_value ) || is_string( $current_value ) )	{ $current_value = array( $current_value ); }
 				if( ! is_array( $current_value ) )	{ $current_value = $default_value; }
 				
-			} else if( in_array( $filter, array( 'status' ), true ) ) {
+			} else if( in_array( $filter, array( 'status', 'payment_status' ), true ) ) {
 				if( is_string( $current_value ) )	{ $current_value = array( $current_value ); }
 				if( ! is_array( $current_value ) )	{ $current_value = $default_value; }
 				else if( ( $i = array_search( 'all', $current_value ) ) !== false ) { unset( $current_value[ $i ] ); }
@@ -225,6 +226,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 					'event_start', 
 					'event_end', 
 					'state', 
+					'payment_status', 
 					'quantity', 
 					'template_id', 
 					'activity_id', 
@@ -258,7 +260,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	/**
 	 * Format booking filters manually input
 	 * @since 1.6.0
-	 * @version 1.7.4
+	 * @version 1.7.6
 	 * @param array $filters
 	 * @return array
 	 */
@@ -266,7 +268,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		// Format arrays
 		$formatted_arrays = array();
 		$int_arrays = array( 'templates', 'activities', 'in__booking_id', 'in__booking_group_id', 'in__group_category_id', 'in__event_group_id', 'in__form_id', 'not_in__booking_id', 'not_in__booking_group_id', 'not_in__group_category_id', 'not_in__event_group_id', 'not_in__form_id' );
-		$str_arrays = array( 'status', 'order_by', 'columns' );
+		$str_arrays = array( 'status', 'payment_status', 'order_by', 'columns' );
 		$user_id_arrays = array( 'in__user_id', 'not_in__user_id' );
 		
 		foreach( array_merge( $int_arrays, $str_arrays, $user_id_arrays ) as $att_name ) {

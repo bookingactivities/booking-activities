@@ -1233,12 +1233,11 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	/**
 	 * AJAX Controller - Delete an order item (or only its metadata)
 	 * @since 1.5.0
-	 * @version 1.5.4
+	 * @version 1.7.6
 	 * @param WC_Order_Item $item
 	 * @param string $action "delete_meta" to delete only Booking Activities data from the item. "delete_item" to delete the whole item.
 	 */
 	function bookacti_controller_delete_order_item( $item, $action ) {
-		
 		if( ! $action ) { 
 			$array = array(
 				'status'	=> 'failed',
@@ -1259,12 +1258,17 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		
 		// Remove all metadata related to Booking Activities from the order item
 		if( $action === 'delete_meta' ) {
-			wc_delete_order_item_meta( $item_id, 'bookacti_booking_id' );
-			wc_delete_order_item_meta( $item_id, 'bookacti_booking_group_id' );
-			wc_delete_order_item_meta( $item_id, 'bookacti_booked_events' );
-			wc_delete_order_item_meta( $item_id, 'bookacti_state' );
-			wc_delete_order_item_meta( $item_id, '_bookacti_refund_method' );
-			wc_delete_order_item_meta( $item_id, 'bookacti_refund_coupon' );
+			$deleted = bookacti_delete_order_item_booking_meta( $item_id );
+			
+			if( $deleted === false ) {
+				$array = array(
+					'status'	=> 'failed',
+					'error'		=> 'not_deleted',
+					'message'	=> esc_html__( 'An error occurred while trying to delete the booking meta from the order item.', BOOKACTI_PLUGIN_NAME ) 
+								   . ' ' . '<a href="' . get_edit_post_link( $order_id ) . '">' . esc_html__( 'Please proceed manually.', BOOKACTI_PLUGIN_NAME ) . '</a>'
+				);
+				bookacti_send_json( $array, 'delete_order_item_booking_meta' );
+			}
 			
 			if( $order ) { 
 				/* translators: %s is the item id. */
@@ -1291,15 +1295,6 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 				$message = sprintf( esc_html__( 'The order item %s has been deleted while deleting the corresponding booking.', BOOKACTI_PLUGIN_NAME ), $item_id );
 				$order->add_order_note( $message, 0, 0 );
 			}
-			
-		// Unknown action
-		} else {
-			$array = array(
-				'status'	=> 'failed',
-				'error'		=> 'unknown_action',
-				'message'	=> esc_html__( 'The action to take on the order item is unknown.', BOOKACTI_PLUGIN_NAME )
-			);
-			bookacti_send_json( $array, 'delete_order_item' );
 		}
 	}
 	

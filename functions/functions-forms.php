@@ -372,18 +372,18 @@ function bookacti_get_default_form_field_common_data() {
 		'field_id' => 0,		// Field ID
 		'form_id' => 0,			// Form ID
 		'name' => '',			// Text identifier of the field
-		'type' => '',			// Field type [calendar, quantity, submit, login, free_text, or you custom types]
-		'title' => '',			// Field title display in form editor
-		'label' => '',			// Text displayed for the field in frontend
-		'id' => '',				// Field's id
-		'class' => '',			// Field's classes
+		'type' => '',			// Field type [calendar, quantity, submit, login, free_text, or your custom types]
+		'title' => '',			// Field title displayed in form editor
+		'label' => '',			// Text displayed for the field on the frontend
+		'id' => '',				// Field CSS id
+		'class' => '',			// Field CSS classes
 		'options' => array(),	// Array of allowed values
 		'value' => '',			// Default value among the allowed values
 		'placeholder' => '',	// Text displayed in transparency when the field is empty
 		'tip' => '',			// Help text displayed in a tooltip next to the field
 		'required' => 0,		// Whether the customer is forced to fill this field when it is displayed
-		'compulsory' => 0,		// Whether the field cannot be deleted
-		'default' => 0,			// Whether the field is set by default (if compulsory, it is by default too)
+		'compulsory' => 0,		// Whether the field can be deleted
+		'default' => 0,			// Whether the field is part of the form by default (if compulsory, it is by default too)
 		'unique' => 1			// Whether the user can add multiple occurence of this field in the form
 	));
 }

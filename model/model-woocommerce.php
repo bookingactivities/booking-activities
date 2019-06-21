@@ -708,3 +708,26 @@ function bookacti_get_order_items_ids_by_bookings( $booking_ids = array(), $book
 	
 	return apply_filters( 'bookacti_get_order_items_ids_by_bookings', $order_items_ids, $booking_ids, $booking_groups_ids );
 }
+
+
+/**
+ * Delete all booking meta from a WC order item
+ * @since 1.7.6
+ * @global wpdb $wpdb
+ * @param int $item_id
+ * @return int|false
+ */
+function bookacti_delete_order_item_booking_meta( $item_id ) {
+	global $wpdb;
+	
+	$query	= 'DELETE FROM ' . $wpdb->prefix . 'woocommerce_order_itemmeta '
+			. 'WHERE order_item_id = %d '
+			. 'AND meta_key LIKE %s';
+	
+	$variables = array( $item_id, '%' . $wpdb->esc_like( 'bookacti' ) . '%' );
+	
+	$query = $wpdb->prepare( $query, $variables );
+	$deleted = $wpdb->query( $query );
+	
+	return apply_filters( 'bookacti_delete_wc_order_item_booking_meta', $deleted, $item_id );
+}

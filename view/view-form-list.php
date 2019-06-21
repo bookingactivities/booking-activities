@@ -2,13 +2,14 @@
 /**
  * Form list page
  * @since 1.5.0
+ * @version 1.7.6
  */
 
 // Exit if accessed directly
 if ( ! defined( 'ABSPATH' ) ) { exit; }
 ?>
 <div class='wrap'>
-	<h1 class='wp-heading-inline' ><?php echo esc_html__( 'Booking Forms', BOOKACTI_PLUGIN_NAME ); ?></h1>
+	<h1 class='wp-heading-inline'><?php echo esc_html__( 'Booking Forms', BOOKACTI_PLUGIN_NAME ); ?></h1>
 	
 	<?php 
 	$can_create_form = current_user_can( 'bookacti_create_forms' );
@@ -19,6 +20,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		</a>
 		<?php
 	}
+	do_action( 'bookacti_form_list_page_header' );
 	?>
 	
 	<hr class='wp-header-end' />
