@@ -323,6 +323,7 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 * Tweak - Allow to filter the booking lists by "payment_status"
 * Fix - Booking row not translated after perfoming an action (on multilang site)
 * Fix - Option to delete the WC order item bound to a booking (or only its metadata) didn't appear when deleting a booking
+* Fix - The height of the Month view rows now adjust to the content
 * Dev - Changed the way calendar settings are updated (new JS hooks: 'bookacti_calendar_init_data' or 'bookacti_calendar_editor_init_data')
 
 = 1.7.5 - 2019/06/07 =

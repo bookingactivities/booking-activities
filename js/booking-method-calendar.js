@@ -30,7 +30,7 @@ function bookacti_set_calendar_up( booking_system, reload_events ) {
 		allDaySlot:             false,
 		allDayDefault:          false,
 		fixedWeekCount:         false,
-		contentHeight:			'auto',
+		aspectRatio:			'auto',
 		editable:               false,
 		droppable:              false,
 		eventDurationEditable:  false,

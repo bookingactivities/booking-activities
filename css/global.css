@@ -102,8 +102,8 @@
 .bookacti-picked-event			{ border-width: 2px; z-index: 15 !important; transition: border 0.2s; }
 
 .bookacti-calendar .fc-basicWeek-view .fc-event .fc-time,
-.bookacti-calendar .fc-basicDay-view .fc-event .fc-time { display: block; }
-.bookacti-calendar .fc-basic-view .fc-content-skeleton tr { background-color: transparent !important; }
+.bookacti-calendar .fc-basicDay-view .fc-event .fc-time		{ display: block; }
+.bookacti-calendar .fc-basic-view .fc-content-skeleton tr	{ background-color: transparent !important; }
 
 .fc-popover .fc-widget-content { max-height: 300px; overflow-y: auto; }
 

@@ -112,6 +112,7 @@ function bookacti_load_template_calendar( calendar ) {
 		slotDuration:           '00:30',
 		snapDuration:           snap_duration,
 		scrollTime:				'00:00',
+		aspectRatio:			'auto',
 		
 		validRange: {
             start: moment( availability_period.start ),
