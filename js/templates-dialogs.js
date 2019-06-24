@@ -147,7 +147,7 @@ function bookacti_init_template_dialogs() {
 
 /**
  * Dialog Create Template
- * @version 1.7.5
+ * @version 1.7.6
  */
 function bookacti_dialog_add_new_template() {
 	// Set the dialog title
@@ -158,8 +158,8 @@ function bookacti_dialog_add_new_template() {
 	// Set default values
 	$j( '#bookacti-template-opening' ).val( moment().format( 'YYYY-MM-DD' ) );
 	$j( '#bookacti-template-closing' ).val( moment().add( 7, 'days' ).format( 'YYYY-MM-DD' ) );
-	$j( '#bookacti-template-data-minTime' ).val( '08:00' );
-	$j( '#bookacti-template-data-maxTime' ).val( '20:00' );
+	$j( '#bookacti-template-data-minTime' ).val( '00:00' );
+	$j( '#bookacti-template-data-maxTime' ).val( '00:00' );
 	$j( '#bookacti-template-data-snapDuration' ).val( '00:05' );
 	$j( '#bookacti-template-availability-period-start' ).val( -1 );
 	$j( '#bookacti-template-availability-period-end' ).val( -1 );
@@ -242,7 +242,7 @@ function bookacti_dialog_add_new_template() {
 									$j( '#bookacti-first-template-container' ).before( $j( '<div id="bookacti-template-calendar" ></div>' ) );
 									$j( '#bookacti-first-template-container' ).remove();
 									$j( '.bookacti-no-template' ).removeClass( 'bookacti-no-template' );
-									bookacti_load_template_calendar();
+									bookacti_load_template_calendar( $j( '#bookacti-template-calendar' ) );
 									bookacti_start_template_loading();
 								}
 
@@ -307,7 +307,7 @@ function bookacti_dialog_add_new_template() {
 
 /**
  * Dialog Update Template
- * @version 1.7.5
+ * @version 1.7.6
  * @param {int} template_id
  */
 function bookacti_dialog_update_template( template_id ) {
@@ -394,7 +394,8 @@ function bookacti_dialog_update_template( template_id ) {
 								$j( '#bookacti-template-picker option[value=' + template_id + ']' ).attr( 'data-template-end', response.template_data.end );
 								
 								// Dynamically update template settings
-								bookacti_update_calendar_settings( $j( '#bookacti-template-calendar' ) );
+								$j( '#bookacti-template-calendar' ).replaceWith( '<div id="bookacti-template-calendar" class="bookacti-calendar"></div>' );
+								bookacti_load_template_calendar( $j( '#bookacti-template-calendar' ) );
 
 							// If no changes
 							} else if ( response.status === 'nochanges' ) {

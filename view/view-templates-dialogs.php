@@ -296,6 +296,11 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			} 
 			
 			
+			/**
+			 * Fill the "Agenda" tab in calendar settings
+			 * @version 1.7.6
+			 * @param array $params
+			 */
 			function bookacti_fill_template_tab_agenda( $params = array() ) {
 				do_action( 'bookacti_template_tab_agenda_before', $params );
 			?>
@@ -306,7 +311,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 						_e( 'Day begin', BOOKACTI_PLUGIN_NAME );
 						?>
 					</label>
-					<input type="time" name="templateOptions[minTime]" id='bookacti-template-data-minTime' value='08:00'>
+					<input type='time' name='templateOptions[minTime]' id='bookacti-template-data-minTime' value='00:00'>
 					<?php
 					$tip = __( "Set when you want the days to begin on the calendar. Ex: '06:00' Days will begin at 06:00am.", BOOKACTI_PLUGIN_NAME );
 					bookacti_help_tip( $tip );
@@ -319,7 +324,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 						_e( 'Day end', BOOKACTI_PLUGIN_NAME );  
 						?>
 					</label>
-					<input type="time" name="templateOptions[maxTime]" id='bookacti-template-data-maxTime' value='20:00' >
+					<input type='time' name='templateOptions[maxTime]' id='bookacti-template-data-maxTime' value='00:00' >
 					<?php
 					$tip = __( "Set when you want the days to end on the calendar. Ex: '18:00' Days will end at 06:00pm.", BOOKACTI_PLUGIN_NAME );
 					bookacti_help_tip( $tip );
@@ -332,7 +337,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 						_e( 'Snap frequency', BOOKACTI_PLUGIN_NAME );
 						?>
 					</label>
-					<input type="time" name="templateOptions[snapDuration]" id='bookacti-template-data-snapDuration' value='00:05' min='00:01' >
+					<input type='time' name='templateOptions[snapDuration]' id='bookacti-template-data-snapDuration' value='00:05' min='00:01' >
 					<?php
 					$tip = __( "The time interval at which a dragged event will snap to the agenda view time grid. Ex: '00:20', you will be able to drop an event every 20 minutes (at 6:00am, 6:20am, 6:40am...).", BOOKACTI_PLUGIN_NAME );
 					bookacti_help_tip( $tip );

@@ -1265,19 +1265,6 @@ function bookacti_booking_method_display_events( booking_system, events, booking
 }
 
 
-// Update the calendar settings according to booking method
-function bookacti_booking_method_update_template_data( booking_system, template_data, booking_method ) {
-	var booking_system_id	= booking_system.attr( 'id' );
-	booking_method			= booking_method || bookacti.booking_system[ booking_system_id ][ 'method' ];
-	template_data			= template_data || bookacti.booking_system[ booking_system_id ][ 'template_data' ];
-	if( booking_method === 'calendar' || $j.inArray( booking_method, bookacti_localized.available_booking_methods ) === -1 ) {
-		bookacti_update_calendar_settings( booking_system );
-	} else {
-		booking_system.trigger( 'bookacti_update_template_data', [ booking_method, template_data ] );
-	}
-}
-
-
 // Refetch events according to booking method
 function bookacti_booking_method_refetch_events( booking_system, booking_method ) {
 	var booking_system_id = booking_system.attr( 'id' );
