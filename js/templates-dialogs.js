@@ -237,7 +237,7 @@ function bookacti_dialog_add_new_template() {
 							//If success
 							if( response.status === 'success' ) {
 
-								//If it is the first template, change the bookacti-first-template-container div to bookacti-template-calendar div
+								// If it is the first template, change the bookacti-first-template-container div to bookacti-template-calendar div
 								if( $j( '#bookacti-first-template-container' ).length ) {
 									$j( '#bookacti-first-template-container' ).before( $j( '<div id="bookacti-template-calendar" ></div>' ) );
 									$j( '#bookacti-first-template-container' ).remove();
@@ -379,9 +379,8 @@ function bookacti_dialog_update_template( template_id ) {
 						data: data,
 						type: 'POST',
 						dataType: 'json',
-						success: function( response ){
-
-							//If success
+						success: function( response ) {
+							// If success
 							if( response.status === 'success' ) {
 								
 								bookacti.booking_system[ 'bookacti-template-calendar' ][ 'template_data' ] = response.template_data;
@@ -394,9 +393,11 @@ function bookacti_dialog_update_template( template_id ) {
 								$j( '#bookacti-template-picker option[value=' + template_id + ']' ).attr( 'data-template-end', response.template_data.end );
 								
 								// Dynamically update template settings
+								var events = $j( '#bookacti-template-calendar' ).fullCalendar( 'clientEvents' );
 								$j( '#bookacti-template-calendar' ).replaceWith( '<div id="bookacti-template-calendar" class="bookacti-calendar"></div>' );
 								bookacti_load_template_calendar( $j( '#bookacti-template-calendar' ) );
-
+								$j( '#bookacti-template-calendar' ).fullCalendar( 'addEventSource', events );
+								
 							// If no changes
 							} else if ( response.status === 'nochanges' ) {
 

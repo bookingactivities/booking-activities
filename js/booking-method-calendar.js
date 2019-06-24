@@ -35,7 +35,7 @@ function bookacti_set_calendar_up( booking_system, reload_events ) {
 		droppable:              false,
 		eventDurationEditable:  false,
 		showNonCurrentDates:	false,
-		eventLimit:             2,
+		eventLimit:             false,
 		eventLimitClick:        'popover',
 		dragRevertDuration:     0,
 		slotLabelFormat:		'LT',
@@ -101,7 +101,7 @@ function bookacti_set_calendar_up( booking_system, reload_events ) {
 			}
 			
 			// Add background to basic views
-			if( view.name === 'month' || view.name === 'basicWeek' || view.name === 'basicDay' ) {
+			if( view.hasOwnProperty( 'dayGrid' ) ) {
 				var bg_div = $j( '<div />', {
 					'class': 'fc-bg'
 				});

@@ -124,7 +124,7 @@ function bookacti_load_template_calendar( calendar ) {
 		navLinks:		        0,
 
 		slotEventOverlap:		0,
-		eventLimit:				2,
+		eventLimit:				false,
 		eventLimitClick:		'popover',
 		showNonCurrentDates:	0,
 
@@ -160,13 +160,6 @@ function bookacti_load_template_calendar( calendar ) {
 			if( bookacti.load_events === true ) { 
 				var interval = { 'start': moment.utc( view.intervalStart ), 'end': moment.utc( view.intervalEnd ).subtract( 1, 'days' ) };
 				bookacti_fetch_events_from_interval( $j( '#bookacti-template-calendar' ), interval );
-			}
-			
-			// Change the height of the calendar to match the available hours in agenda views
-			if( view.name === 'agendaWeek' || view.name === 'agendaDay' ) {
-				calendar.fullCalendar( 'option', 'contentHeight', 'auto' );
-			} else { 
-				calendar.fullCalendar( 'option', 'contentHeight', null ); 
 			}
 		},
 
@@ -816,12 +809,4 @@ function bookacti_load_template_calendar( calendar ) {
 	
 	// Load the calendar
 	calendar.fullCalendar( init_data );
-	
-	// Load events on calendar
-	if( typeof bookacti.booking_system[ 'bookacti-template-calendar' ][ 'events' ] !== 'undefined' ) {
-		// Fill calendar with events already fetched
-		if( bookacti.booking_system[ 'bookacti-template-calendar' ][ 'events' ].length ) {
-			calendar.fullCalendar( 'addEventSource', bookacti.booking_system[ 'bookacti-template-calendar' ][ 'events' ] );
-		}
-	}
 }
