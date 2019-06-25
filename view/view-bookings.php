@@ -1,14 +1,16 @@
 <?php
 /**
  * Booking list page
- * @version 1.7.4
+ * @version 1.7.6
  */
 
 // Exit if accessed directly
 if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 echo "<div class='wrap'>";
-echo "<h1>" . esc_html__( 'Bookings', BOOKACTI_PLUGIN_NAME ) . "</h1>";
+echo "<h1 class='wp-heading-inline'>" . esc_html__( 'Bookings', BOOKACTI_PLUGIN_NAME ) . "</h1>";
+do_action( 'bookacti_booking_list_page_header' );
+echo "<hr class='wp-header-end'>";
 
 $templates = bookacti_fetch_templates();
 
@@ -252,6 +254,7 @@ if( ! $templates ) {
 						'bookings_only'			=> 1,
 						'calendars'				=> $selected_templates,
 						'status'				=> $selected_status,
+						'payment_status'		=> isset( $_REQUEST[ 'payment_status' ] ) ? $_REQUEST[ 'payment_status' ] : array(),
 						'user_id'				=> $selected_user,
 						'group_categories'		=> array(),
 						'groups_only'			=> 0,
@@ -303,6 +306,7 @@ if( ! $templates ) {
 				'event_start'				=> $event_start, 
 				'event_end'					=> $event_end,
 				'status'					=> $selected_status,
+				'payment_status'			=> isset( $_REQUEST[ 'payment_status' ] ) ? $_REQUEST[ 'payment_status' ] : array(),
 				'user_id'					=> $selected_user,
 				'form_id'					=> isset( $_REQUEST[ 'form_id' ] ) ? $_REQUEST[ 'form_id' ] : 0,
 				'from'						=> $from,

@@ -2,7 +2,7 @@
 /**
  * Form editor page
  * @since 1.5.0
- * @version 1.7.0
+ * @version 1.7.6
  */
 
 // Exit if accessed directly
@@ -29,7 +29,8 @@ if( ! $form ) { exit; }
 
 ?>
 <div class='wrap'>
-	<h1><?php esc_html_e( 'Edit Booking Form', BOOKACTI_PLUGIN_NAME ); ?></h1>
+	<h1 class='wp-heading-inline'><?php esc_html_e( 'Edit Booking Form', BOOKACTI_PLUGIN_NAME ); ?></h1>
+	<?php do_action( 'bookacti_form_editor_page_header' ); ?>
 	<hr class='wp-header-end' />
 	
 	<?php

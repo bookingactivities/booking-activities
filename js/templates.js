@@ -1,7 +1,6 @@
-$j( document ).ready( function() {    
-	
+$j( document ).ready( function() { 
 	// Check if the calendar exist before anything
-	if ( $j( '#bookacti-template-calendar' ).length || $j( '#bookacti-first-template-container' ).length ) { 
+	if( $j( '#bookacti-template-calendar' ).length || $j( '#bookacti-first-template-container' ).length ) { 
 		
 		// Init calendar editor specific globals
 		bookacti.selected_template	= parseInt( $j( '#bookacti-template-picker' ).val() ) || 0;
@@ -52,13 +51,13 @@ $j( document ).ready( function() {
 		bookacti_bind_template_dialogs();
 
 		// Change default template on change in the select box
-		$j( '#bookacti-template-picker' ).on( 'change', function(){
+		$j( 'body' ).on( 'change', '#bookacti-template-picker', function(){
 			bookacti_switch_template( $j( this ).val() );
 		});
 		
 		// Load Template calendar
 		if ( $j( '#bookacti-template-calendar' ).length ) {
-			bookacti_load_template_calendar();
+			bookacti_load_template_calendar( $j( '#bookacti-template-calendar' ) );
 		}
 		
 		// Load the template
@@ -68,17 +67,21 @@ $j( document ).ready( function() {
 		
 		/**
 		 * Resize draggable external events helper to the original event size
-		 * @version 1.7.2
+		 * @version 1.7.6
 		 */
-		$j( '#bookacti-template-activities-container' ).on( 'dragstart', '.fc-event', function( event, ui ) {
+		$j( 'body' ).on( 'dragstart', '#bookacti-template-activities-container .fc-event', function( event, ui ) {
 			ui.helper.css( 'maxWidth', $j( this ).width() );
 		});
 		
-		// If an error occurs, stop loading and allow every interactions
+		
+		/**
+		 * If an error occurs, stop loading and allow every interactions
+		 * @version 1.7.6
+		 */
 		window.onerror = function ( errorMsg, url, lineNumber, column, errorObj ) {
 			$j( '#bookacti-fatal-error' ).show();
 		};
-		$j( '#bookacti-exit-loading' ).on( 'click', function(){
+		$j( 'body' ).on( 'click', '#bookacti-exit-loading', function(){
 			bookacti_exit_template_loading_state( true );
 			bookacti.load_events = true;
 		});
@@ -88,29 +91,45 @@ $j( document ).ready( function() {
 
 /**
  * Initialize and display the template calendar
- * @version 1.7.4
+ * @version 1.7.6
+ * @param {dom_element} calendar
  */
-function bookacti_load_template_calendar() {
-	var calendar = $j( '#bookacti-template-calendar' );
-	calendar.fullCalendar( {
-
+function bookacti_load_template_calendar( calendar ) {
+	calendar = calendar || $j( '#bookacti-template-calendar' );
+	
+	// Get calendar settings
+	var availability_period	= bookacti_get_availability_period( calendar, true );
+	var settings			= typeof bookacti.booking_system[ 'bookacti-template-calendar' ][ 'template_data' ][ 'settings' ] !== 'undefined' ? bookacti.booking_system[ 'bookacti-template-calendar' ][ 'template_data' ][ 'settings' ] : {};
+	var min_time			= typeof settings.minTime !== 'undefined' ? settings.minTime : '00:00';
+	var max_time			= typeof settings.maxTime !== 'undefined' ? ( settings.maxTime === '00:00' ? '24:00' : settings.maxTime ) : '24:00';
+	var snap_duration		= typeof settings.snapDuration !== 'undefined' ? settings.snapDuration : '00:05';
+	
+	// See https://fullcalendar.io/docs/
+	var init_data = {
 		// OPTIONS
 		locale:					bookacti_localized.fullcalendar_locale,
 
 		defaultView:            'agendaWeek',
-		minTime:                '08:00',
-		maxTime:                '20:00',
+		minTime:                min_time,
+		maxTime:                max_time,
 		slotLabelFormat:		'LT',
 		slotDuration:           '00:30',
-		snapDuration:           '00:05',
-		scrollTime:				'08:00',
+		snapDuration:           snap_duration,
+		scrollTime:				'00:00',
+		aspectRatio:			'auto',
+		
+		validRange: {
+            start: availability_period.start ? moment( availability_period.start ) : moment( $j( '#bookacti-template-picker :selected' ).data( 'template-start' ) ),
+            end: availability_period.end ? moment( availability_period.end ).add( 1, 'days' ) : moment( $j( '#bookacti-template-picker :selected' ).data( 'template-end' ) ).add( 1, 'days' )
+        },
+		
 		nowIndicator:           0,
 		weekNumbers:	        0,
 		weekNumbersWithinDays:	1,
 		navLinks:		        0,
 
 		slotEventOverlap:		0,
-		eventLimit:				2,
+		eventLimit:				false,
 		eventLimitClick:		'popover',
 		showNonCurrentDates:	0,
 
@@ -126,18 +145,7 @@ function bookacti_load_template_calendar() {
 		eventDurationEditable:  false,
 		dragRevertDuration:     0,
 		
-		views: { 
-			week:		{ eventLimit: false }, 
-			day:		{ eventLimit: false }, 
-			listDay:	{ buttonText: bookacti_localized.calendar_button_list_day },
-			listWeek:	{ buttonText: bookacti_localized.calendar_button_list_week },
-			listMonth:	{ buttonText: bookacti_localized.calendar_button_list_month },
-			listYear:	{ buttonText: bookacti_localized.calendar_button_list_year },
-			agendaFlexible:	{ type: 'agenda', buttonText: bookacti_localized.calendar_button_flexible },
-			basicFlexible:	{ type: 'basic', buttonText: bookacti_localized.calendar_button_flexible },
-			listFlexible:	{ type: 'list', buttonText: bookacti_localized.calendar_button_flexible }
-		},
-
+		
 		// Header : Functionnality to Display above the calendar
 		header: {
 			left: 'prev,next today',
@@ -146,13 +154,6 @@ function bookacti_load_template_calendar() {
 		},
 
 		
-		// Prevent user from navigating, dropping or resizing events, out of template period
-		validRange: {
-			start: moment( $j( '#bookacti-template-picker :selected' ).data( 'template-start' ) ),
-			end: moment( $j( '#bookacti-template-picker :selected' ).data( 'template-end' ) ).add( 1, 'days' )
-		},
-
-
 		// Always call "callback" for proper operations, even with an empty array of events
 		events: function( start, end, timezone, callback ) {
 			callback( [] );
@@ -164,13 +165,6 @@ function bookacti_load_template_calendar() {
 			if( bookacti.load_events === true ) { 
 				var interval = { 'start': moment.utc( view.intervalStart ), 'end': moment.utc( view.intervalEnd ).subtract( 1, 'days' ) };
 				bookacti_fetch_events_from_interval( $j( '#bookacti-template-calendar' ), interval );
-			}
-			
-			// Change the height of the calendar to match the available hours in agenda views
-			if( view.name === 'agendaWeek' || view.name === 'agendaDay' ) {
-				calendar.fullCalendar( 'option', 'contentHeight', 'auto' );
-			} else { 
-				calendar.fullCalendar( 'option', 'contentHeight', null ); 
 			}
 		},
 
@@ -813,5 +807,11 @@ function bookacti_load_template_calendar() {
 				});
 			}
 		}
-	}); 
+	};
+	
+	// Let third-party plugin change initial calendar data
+	calendar.trigger( 'bookacti_calendar_editor_init_data', [ init_data ] );
+	
+	// Load the calendar
+	calendar.fullCalendar( init_data );
 }

@@ -1,5 +1,9 @@
 // INITIALIZATION
 
+/**
+ * Initialize calendar editor dialogs
+ * @version 1.7.6
+ */
 function bookacti_init_template_dialogs() {
     // Common param
     $j( '.bookacti-template-dialogs' ).dialog({ 
@@ -124,7 +128,7 @@ function bookacti_init_template_dialogs() {
     });
 	
 	// Prevent sending form
-	$j( '.bookacti-backend-dialog form' ).on( 'submit', function( e ){
+	$j( '.bookacti-template-dialog form' ).on( 'submit', function( e ){
 		e.preventDefault();
 	});
 	
@@ -143,7 +147,7 @@ function bookacti_init_template_dialogs() {
 
 /**
  * Dialog Create Template
- * @version 1.7.5
+ * @version 1.7.6
  */
 function bookacti_dialog_add_new_template() {
 	// Set the dialog title
@@ -154,8 +158,8 @@ function bookacti_dialog_add_new_template() {
 	// Set default values
 	$j( '#bookacti-template-opening' ).val( moment().format( 'YYYY-MM-DD' ) );
 	$j( '#bookacti-template-closing' ).val( moment().add( 7, 'days' ).format( 'YYYY-MM-DD' ) );
-	$j( '#bookacti-template-data-minTime' ).val( '08:00' );
-	$j( '#bookacti-template-data-maxTime' ).val( '20:00' );
+	$j( '#bookacti-template-data-minTime' ).val( '00:00' );
+	$j( '#bookacti-template-data-maxTime' ).val( '00:00' );
 	$j( '#bookacti-template-data-snapDuration' ).val( '00:05' );
 	$j( '#bookacti-template-availability-period-start' ).val( -1 );
 	$j( '#bookacti-template-availability-period-end' ).val( -1 );
@@ -233,12 +237,12 @@ function bookacti_dialog_add_new_template() {
 							//If success
 							if( response.status === 'success' ) {
 
-								//If it is the first template, change the bookacti-first-template-container div to bookacti-template-calendar div
+								// If it is the first template, change the bookacti-first-template-container div to bookacti-template-calendar div
 								if( $j( '#bookacti-first-template-container' ).length ) {
 									$j( '#bookacti-first-template-container' ).before( $j( '<div id="bookacti-template-calendar" ></div>' ) );
 									$j( '#bookacti-first-template-container' ).remove();
 									$j( '.bookacti-no-template' ).removeClass( 'bookacti-no-template' );
-									bookacti_load_template_calendar();
+									bookacti_load_template_calendar( $j( '#bookacti-template-calendar' ) );
 									bookacti_start_template_loading();
 								}
 
@@ -303,7 +307,7 @@ function bookacti_dialog_add_new_template() {
 
 /**
  * Dialog Update Template
- * @version 1.7.5
+ * @version 1.7.6
  * @param {int} template_id
  */
 function bookacti_dialog_update_template( template_id ) {
@@ -375,9 +379,8 @@ function bookacti_dialog_update_template( template_id ) {
 						data: data,
 						type: 'POST',
 						dataType: 'json',
-						success: function( response ){
-
-							//If success
+						success: function( response ) {
+							// If success
 							if( response.status === 'success' ) {
 								
 								bookacti.booking_system[ 'bookacti-template-calendar' ][ 'template_data' ] = response.template_data;
@@ -390,8 +393,11 @@ function bookacti_dialog_update_template( template_id ) {
 								$j( '#bookacti-template-picker option[value=' + template_id + ']' ).attr( 'data-template-end', response.template_data.end );
 								
 								// Dynamically update template settings
-								bookacti_update_calendar_settings( $j( '#bookacti-template-calendar' ) );
-
+								var events = $j( '#bookacti-template-calendar' ).fullCalendar( 'clientEvents' );
+								$j( '#bookacti-template-calendar' ).replaceWith( '<div id="bookacti-template-calendar" class="bookacti-calendar"></div>' );
+								bookacti_load_template_calendar( $j( '#bookacti-template-calendar' ) );
+								$j( '#bookacti-template-calendar' ).fullCalendar( 'addEventSource', events );
+								
 							// If no changes
 							} else if ( response.status === 'nochanges' ) {
 

@@ -1,8 +1,4 @@
 /***** FRONT END *****/
-.bookacti-booking-system > div,
-.bookacti-notices,
-.bookacti-booking-system	{ margin-bottom: 20px; }
-
 .bookacti-frontend-dialog { display: none; }
 .bookacti-picked-events { display: none; }
 

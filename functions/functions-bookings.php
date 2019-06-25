@@ -102,7 +102,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	/**
 	 * Get Default booking filters
 	 * @since 1.6.0
-	 * @version 1.7.0
+	 * @version 1.7.6
 	 * @return array
 	 */
 	function bookacti_get_default_booking_filters() {
@@ -117,6 +117,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			'event_start'				=> '', 
 			'event_end'					=> '', 
 			'status'					=> array(), 
+			'payment_status'			=> array(), 
 			'user_id'					=> 0,
 			'form_id'					=> 0,
 			'from'						=> '',
@@ -147,7 +148,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	/**
 	 * Format booking filters
 	 * @since 1.3.0
-	 * @version 1.7.0
+	 * @version 1.7.6
 	 * @param array $filters 
 	 * @return array
 	 */
@@ -194,7 +195,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 				if( is_numeric( $current_value ) || is_string( $current_value ) )	{ $current_value = array( $current_value ); }
 				if( ! is_array( $current_value ) )	{ $current_value = $default_value; }
 				
-			} else if( in_array( $filter, array( 'status' ), true ) ) {
+			} else if( in_array( $filter, array( 'status', 'payment_status' ), true ) ) {
 				if( is_string( $current_value ) )	{ $current_value = array( $current_value ); }
 				if( ! is_array( $current_value ) )	{ $current_value = $default_value; }
 				else if( ( $i = array_search( 'all', $current_value ) ) !== false ) { unset( $current_value[ $i ] ); }
@@ -225,6 +226,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 					'event_start', 
 					'event_end', 
 					'state', 
+					'payment_status', 
 					'quantity', 
 					'template_id', 
 					'activity_id', 
@@ -258,7 +260,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	/**
 	 * Format booking filters manually input
 	 * @since 1.6.0
-	 * @version 1.7.4
+	 * @version 1.7.6
 	 * @param array $filters
 	 * @return array
 	 */
@@ -266,7 +268,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		// Format arrays
 		$formatted_arrays = array();
 		$int_arrays = array( 'templates', 'activities', 'in__booking_id', 'in__booking_group_id', 'in__group_category_id', 'in__event_group_id', 'in__form_id', 'not_in__booking_id', 'not_in__booking_group_id', 'not_in__group_category_id', 'not_in__event_group_id', 'not_in__form_id' );
-		$str_arrays = array( 'status', 'order_by', 'columns' );
+		$str_arrays = array( 'status', 'payment_status', 'order_by', 'columns' );
 		$user_id_arrays = array( 'in__user_id', 'not_in__user_id' );
 		
 		foreach( array_merge( $int_arrays, $str_arrays, $user_id_arrays ) as $att_name ) {
@@ -1826,7 +1828,7 @@ function bookacti_get_user_booking_list_items( $filters, $columns = array() ) {
 
 /**
  * Display a booking list
- * @since 1.7.4
+ * @since 1.7.6
  * @param array $filters
  * @param array $columns
  * @param int $per_page
@@ -1914,13 +1916,13 @@ function bookacti_get_user_booking_list( $filters, $columns = array(), $per_page
 		include_once( WP_PLUGIN_DIR . '/' . BOOKACTI_PLUGIN_NAME . '/view/view-bookings-dialogs.php' );
 	}
 	
-	return ob_get_clean();
+	return apply_filters( 'bookacti_user_booking_list_html', ob_get_clean(), $booking_list_items, $columns, $filters, $per_page, $bookings_nb );
 }
 
 
 /**
  * Display booking list rows
- * @since 1.7.4
+ * @since 1.7.6
  * @param array $booking_list_items
  * @param array $columns
  * @return string
@@ -1965,19 +1967,23 @@ function bookacti_get_user_booking_list_rows( $booking_list_items, $columns = ar
 		}
 	}
 	
-	return ob_get_clean();
+	return apply_filters( 'bookacti_user_booking_list_rows_html', ob_get_clean(), $booking_list_items, $columns );
 }
 
 
 /**
  * Get some booking list rows according to filters
  * @since 1.7.4
+ * @version 1.7.6
  * @param string $context
  * @param array $filters
  * @param array $columns
  * @return string
  */
 function bookacti_get_booking_list_rows_according_to_context( $context = 'user_booking_list', $filters = array(), $columns = array() ) {
+	// Switch language
+	if( ! empty( $_REQUEST[ 'locale' ] ) ) { bookacti_switch_locale( $_REQUEST[ 'locale' ] ); }
+	
 	$rows = '';
 	if( $context === 'admin_booking_list' ) {
 		$Bookings_List_Table = new Bookings_List_Table();
@@ -1989,5 +1995,11 @@ function bookacti_get_booking_list_rows_according_to_context( $context = 'user_b
 		$list_items = bookacti_get_user_booking_list_items( $filters, $columns );
 		$rows		= bookacti_get_user_booking_list_rows( $list_items, $columns );
 	}
-	return apply_filters( 'booking_list_rows_according_to_context', $rows, $context, $filters, $columns );
+	
+	$rows = apply_filters( 'booking_list_rows_according_to_context', $rows, $context, $filters, $columns );
+	
+	// Restore language
+	if( ! empty( $_REQUEST[ 'locale' ] ) ) { bookacti_restore_locale();	}
+	
+	return $rows;
 }

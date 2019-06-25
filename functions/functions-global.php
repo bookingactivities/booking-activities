@@ -66,12 +66,12 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	
 	/**
 	 * Write logs to log files
-	 * 
+	 * @version 1.7.6
 	 * @param string $message
 	 * @param string $filename
 	 * @return int
 	 */
-	function bookacti_log( $message, $filename = 'debug' ) {
+	function bookacti_log( $message = '', $filename = 'debug' ) {
 
 		if( is_array( $message ) || is_object( $message ) ) {
 			$message = print_r( $message, true );

@@ -1,62 +1,52 @@
 /**
  * Initialize the calendar
- * @version 1.7.4
+ * @version 1.7.6
  * @param {dom_element} booking_system
  * @param {boolean} reload_events
  */
 function bookacti_set_calendar_up( booking_system, reload_events ) {
-	
-	reload_events = reload_events ? 1 : 0;
-	
+	reload_events			= reload_events ? 1 : 0;
 	var booking_system_id	= booking_system.attr( 'id' );
 	var calendar			= booking_system.find( '.bookacti-calendar:first' );
 	bookacti.booking_system[ booking_system_id ][ 'load_events' ] = false;
 	
-	calendar.fullCalendar({
-
-		// Header : Functionnality to Display above the calendar
+	// Get calendar settings
+	var availability_period	= bookacti_get_availability_period( booking_system );
+	var settings			= typeof bookacti.booking_system[ booking_system_id ][ 'template_data' ][ 'settings' ] !== 'undefined' ? bookacti.booking_system[ booking_system_id ][ 'template_data' ][ 'settings' ] : {};
+	var min_time			= typeof settings.minTime !== 'undefined' ? settings.minTime : '00:00';
+	var max_time			= typeof settings.maxTime !== 'undefined' ? ( settings.maxTime === '00:00' ? '24:00' : settings.maxTime ) : '24:00';
+	
+	// See https://fullcalendar.io/docs/
+	var init_data = {
 		header: {
 			left: 'prev,next today',
 			center: 'title',
 			right: 'month,agendaWeek,agendaDay'
 		},
-
-		// OPTIONS
-		locale:					bookacti_localized.fullcalendar_locale,
 		
+		locale:					bookacti_localized.fullcalendar_locale,
 		defaultView:            calendar.width() < bookacti_localized.default_view_threshold ? 'agendaDay' : 'agendaWeek',
 		weekNumbersWithinDays:	1,
 		allDaySlot:             false,
 		allDayDefault:          false,
 		fixedWeekCount:         false,
-		contentHeight:			'auto',
+		aspectRatio:			'auto',
 		editable:               false,
 		droppable:              false,
 		eventDurationEditable:  false,
 		showNonCurrentDates:	false,
-		eventLimit:             2,
+		eventLimit:             false,
 		eventLimitClick:        'popover',
 		dragRevertDuration:     0,
 		slotLabelFormat:		'LT',
 		slotDuration:           '00:30',
-		minTime:                '08:00',
-		maxTime:                '20:00',
+		minTime:                min_time,
+		maxTime:                max_time,
+		validRange: {
+            start: moment( availability_period.start ),
+            end: moment( availability_period.end ).add( 1, 'days' )
+        },
 		
-		views: { 
-			week:		{ eventLimit: false }, 
-			day:		{ eventLimit: false },
-			listDay:	{ buttonText: bookacti_localized.calendar_button_list_day },
-			listWeek:	{ buttonText: bookacti_localized.calendar_button_list_week },
-			listMonth:	{ buttonText: bookacti_localized.calendar_button_list_month },
-			listYear:	{ buttonText: bookacti_localized.calendar_button_list_year },
-			agendaFlexible:		{ type: 'agenda', buttonText: bookacti_localized.calendar_button_flexible },
-			basicFlexible:		{ type: 'basic', buttonText: bookacti_localized.calendar_button_flexible },
-			listFlexible:		{ type: 'list', buttonText: bookacti_localized.calendar_button_flexible },
-			basicMonthMultiple:	{ type: 'basic', duration: { months: bookacti_localized.multiple_months_view_duration }, fixedWeekCount: false, buttonText: bookacti_localized.calendar_button_multiple_months.replace( '{months}', bookacti_localized.multiple_months_view_duration ) },
-			listMonthMultiple:	{ type: 'list', duration: { months: bookacti_localized.multiple_months_view_duration }, fixedWeekCount: false, buttonText: bookacti_localized.calendar_button_multiple_months.replace( '{months}', bookacti_localized.multiple_months_view_duration ) }
-		},
-
-		// Load an empty array to allow the callback 'loading' to work
 		events: function( start, end, timezone, callback ) {
 			callback( [] );
 		},
@@ -67,10 +57,8 @@ function bookacti_set_calendar_up( booking_system, reload_events ) {
 				bookacti_fetch_events_from_interval( booking_system, interval );
 			}
 		},
-
-		// When an event is rendered
+		
 		eventRender: function( event, element, view ) { 
-
 			// Add some info to the event
 			element.data( 'event-id',			event.id );
 			element.attr( 'data-event-id',		event.id );
@@ -113,7 +101,7 @@ function bookacti_set_calendar_up( booking_system, reload_events ) {
 			}
 			
 			// Add background to basic views
-			if( view.name === 'month' || view.name === 'basicWeek' || view.name === 'basicDay' ) {
+			if( view.hasOwnProperty( 'dayGrid' ) ) {
 				var bg_div = $j( '<div />', {
 					'class': 'fc-bg'
 				});
@@ -129,7 +117,6 @@ function bookacti_set_calendar_up( booking_system, reload_events ) {
 			bookacti_add_class_according_to_event_size( element );
 		},
 		
-
 		eventAfterAllRender: function( view ) {
 			//Display element as picked or selected if they actually are
 			$j.each( bookacti.booking_system[ booking_system_id ][ 'picked_events' ], function( i, picked_event ) {
@@ -138,27 +125,27 @@ function bookacti_set_calendar_up( booking_system, reload_events ) {
 			
 			bookacti_refresh_picked_events_on_calendar( booking_system );
 		},
-
-		// eventClick : When an event is clicked
+		
 		eventClick: function( event, jsEvent, view ) {
 			bookacti_event_click( booking_system, event );
 		},
 		
-		// eventMouseover : When your mouse get over an event
 		eventMouseover: function( event, jsEvent, view ) { 
 			var element = $j( this );
 			booking_system.trigger( 'bookacti_event_mouse_over', [ event, element ] );
 		},
 		
-		// eventMouseover : When your mouse move out an event
 		eventMouseout: function( event, jsEvent, view ) { 
 			var element = $j( this );
 			booking_system.trigger( 'bookacti_event_mouse_out', [ event, element ] );
 		}
-	}); 
+	};
 	
-	// Update calendar settings
-	bookacti_update_calendar_settings( booking_system );
+	// Let third-party plugin change initial calendar data
+	booking_system.trigger( 'bookacti_calendar_init_data', [ init_data ] );
+	
+	// Generate the calendar
+	calendar.fullCalendar( init_data ); 
 	
 	// Make sure the event interval fit the view
 	var view = calendar.fullCalendar( 'getView' );
@@ -362,40 +349,6 @@ function bookacti_add_class_according_to_event_size( element ) {
 	if( $j( element ).innerHeight() < custom_size.small_height ){ element.addClass( 'bookacti-small-event' ).removeClass( 'bookacti-tiny-event' ); }
 	if( $j( element ).innerWidth() < custom_size.narrow_width )	{ element.addClass( 'bookacti-narrow-event' ).removeClass( 'bookacti-wide-event' ); }
 	if( $j( element ).innerWidth() > custom_size.wide_width )	{ element.addClass( 'bookacti-wide-event' ).removeClass( 'bookacti-narrow-event' ); element.removeClass( 'fc-short' ); }
-}
-
-
-// Dynamically update calendar settings
-function bookacti_update_calendar_settings( booking_system ) {
-	
-	var calendar			= booking_system.find( '.fc' ).addBack( '.fc' ).first();
-	if( ! calendar.data( 'fullCalendar' ) ) { return false; }
-	
-	var settings_to_update	= {};
-	var booking_system_id	= booking_system.attr( 'id' );
-	var template_data		= bookacti.booking_system[ booking_system_id ][ 'template_data' ];
-	var settings			= $j.extend( true, {}, template_data.settings ); // Clone template data settings to prevent third party to affect the original data
-	
-	var availability_period	= bookacti_get_availability_period( booking_system );
-	
-	if( template_data.start && template_data.end ) {
-		settings_to_update.validRange = {
-            "start": moment( availability_period.start ),
-            "end": moment( availability_period.end ).add( 1, 'days' )
-        };
-	}
-	
-	if( settings.minTime )		{ settings_to_update.minTime		= settings.minTime; }
-	if( settings.maxTime )		{ settings_to_update.maxTime		= settings.maxTime === '00:00' ? '24:00' : settings.maxTime; }
-	if( settings.snapDuration ) { settings_to_update.snapDuration	= settings.snapDuration; }
-	
-	calendar.trigger( 'bookacti_before_update_calendar_settings', [ settings_to_update, settings ] );
-	
-	if( ! $j.isEmptyObject( settings_to_update ) ) {
-		calendar.fullCalendar( 'option', settings_to_update );
-	}
-	
-	calendar.trigger( 'bookacti_calendar_settings_updated', [ settings_to_update, settings ] );
 }
 
 

@@ -58,13 +58,6 @@ $bookacti_translation_array = apply_filters( 'bookacti_translation_array', array
 	'show_all_customers'				=> esc_html__( 'Show all customers', BOOKACTI_PLUGIN_NAME ),
 	'pick_an_event'						=> esc_html__( 'Pick an event', BOOKACTI_PLUGIN_NAME ),
 	'hide_calendar'						=> esc_html__( 'Hide calendar', BOOKACTI_PLUGIN_NAME ),
-	'calendar_button_list_year'			=> '',
-	'calendar_button_list_month'		=> '',
-	'calendar_button_list_week'			=> '',
-	'calendar_button_list_day'			=> '',
-	'calendar_button_flexible'			=> '',
-	'calendar_button_multiple_months'	=> '',
-	'multiple_months_view_duration'		=> 1,
 	
 	// ERRORS
 	'error_retrieve_event_data'			=> esc_html__( 'Error occurs when trying to retrieve event parameters.', BOOKACTI_PLUGIN_NAME ),
@@ -233,6 +226,7 @@ $bookacti_translation_array = apply_filters( 'bookacti_translation_array', array
 	'is_qtranslate'						=> bookacti_get_translation_plugin() === 'qtranslate',
 	'fullcalendar_locale'				=> bookacti_convert_wp_locale_to_fc_locale( bookacti_get_current_lang_code( true ) ),
 	'current_lang_code'					=> bookacti_get_current_lang_code(),
+	'current_locale'					=> bookacti_get_current_lang_code( true ),
 	
 	'available_booking_methods'			=> array_keys( bookacti_get_available_booking_methods() ),
 	
