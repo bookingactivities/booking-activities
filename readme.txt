@@ -5,7 +5,7 @@ Tags: booking activities, booking sport, booking form, event reservation, reserv
 Requires at least: 3.6
 Tested up to: 5.2
 Requires PHP: 5.3
-Stable tag: 1.7.5
+Stable tag: 1.7.6
 License: GPLv3 or later
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
 
@@ -319,7 +319,7 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 
 == Changelog ==
 
-= 1.7.6 =
+= 1.7.6 - 2019/06/25 =
 * Tweak - Allow to filter the booking lists by "payment_status"
 * Fix - Booking row not translated after perfoming an action (on multilang site)
 * Fix - Option to delete the WC order item bound to a booking (or only its metadata) didn't appear when deleting a booking
