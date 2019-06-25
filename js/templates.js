@@ -1,6 +1,6 @@
 $j( document ).ready( function() { 
 	// Check if the calendar exist before anything
-	if ( $j( '#bookacti-template-calendar' ).length || $j( '#bookacti-first-template-container' ).length ) { 
+	if( $j( '#bookacti-template-calendar' ).length || $j( '#bookacti-first-template-container' ).length ) { 
 		
 		// Init calendar editor specific globals
 		bookacti.selected_template	= parseInt( $j( '#bookacti-template-picker' ).val() ) || 0;
@@ -51,7 +51,7 @@ $j( document ).ready( function() {
 		bookacti_bind_template_dialogs();
 
 		// Change default template on change in the select box
-		$j( '#bookacti-template-picker' ).on( 'change', function(){
+		$j( 'body' ).on( 'change', '#bookacti-template-picker', function(){
 			bookacti_switch_template( $j( this ).val() );
 		});
 		
@@ -67,17 +67,21 @@ $j( document ).ready( function() {
 		
 		/**
 		 * Resize draggable external events helper to the original event size
-		 * @version 1.7.2
+		 * @version 1.7.6
 		 */
-		$j( '#bookacti-template-activities-container' ).on( 'dragstart', '.fc-event', function( event, ui ) {
+		$j( 'body' ).on( 'dragstart', '#bookacti-template-activities-container .fc-event', function( event, ui ) {
 			ui.helper.css( 'maxWidth', $j( this ).width() );
 		});
 		
-		// If an error occurs, stop loading and allow every interactions
+		
+		/**
+		 * If an error occurs, stop loading and allow every interactions
+		 * @version 1.7.6
+		 */
 		window.onerror = function ( errorMsg, url, lineNumber, column, errorObj ) {
 			$j( '#bookacti-fatal-error' ).show();
 		};
-		$j( '#bookacti-exit-loading' ).on( 'click', function(){
+		$j( 'body' ).on( 'click', '#bookacti-exit-loading', function(){
 			bookacti_exit_template_loading_state( true );
 			bookacti.load_events = true;
 		});
@@ -115,8 +119,8 @@ function bookacti_load_template_calendar( calendar ) {
 		aspectRatio:			'auto',
 		
 		validRange: {
-            start: moment( availability_period.start ),
-            end: moment( availability_period.end ).add( 1, 'days' )
+            start: availability_period.start ? moment( availability_period.start ) : moment( $j( '#bookacti-template-picker :selected' ).data( 'template-start' ) ),
+            end: availability_period.end ? moment( availability_period.end ).add( 1, 'days' ) : moment( $j( '#bookacti-template-picker :selected' ).data( 'template-end' ) ).add( 1, 'days' )
         },
 		
 		nowIndicator:           0,
