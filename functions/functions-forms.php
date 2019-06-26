@@ -185,7 +185,7 @@ function bookacti_sanitize_form_data( $raw_form_data ) {
 
 /**
  * Display a booking form
- * @version 1.7.0
+ * @version 1.7.7
  * @param int $form_id
  * @param string $instance_id
  * @param string $context
@@ -218,7 +218,7 @@ function bookacti_display_form( $form_id, $instance_id = '', $context = 'display
 	
 	// Set form attributes
 	$form_attributes = apply_filters( 'bookacti_form_attributes', array(
-		'action'		=> ! empty( $form[ 'redirect_url' ] ) ? apply_filters( 'bookacti_translate_text', esc_url( $form[ 'redirect_url' ] ) ) : '',
+		'action'		=> ! empty( $form[ 'redirect_url' ] ) ? esc_url( apply_filters( 'bookacti_translate_text', $form[ 'redirect_url' ] ) ) : '',
 		'id'			=> empty( $form[ 'id' ] ) ? 'bookacti-' . $form_css_id : $form_css_id,
 		'class'			=> 'bookacti-booking-form-' . $form_id . ' ' . $form[ 'class' ],
 		'autocomplete'	=> 'off'

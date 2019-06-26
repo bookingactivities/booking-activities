@@ -27,6 +27,10 @@ table.woocommerce_order_items ul.bookacti-booking-events-list { margin: 0; }
 
 /***** FRONTEND WOOCOMMERCE *****/
 
+/* Booking forms */
+.bookacti-success-list.woocommerce a.button,
+.woocommerce div.product form.cart .bookacti-success-list.woocommerce .button { float: right; }
+
 /* Single product page */
 .woocommerce div.product form.cart table td.fc-axis { padding-left: 4px; }
 

@@ -319,6 +319,9 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 
 == Changelog ==
 
+= 1.7.7 =
+* Fix - Add to cart on event click didn't work on WC product pages
+
 = 1.7.6 - 2019/06/25 =
 * Tweak - Allow to filter the booking lists by "payment_status"
 * Fix - Booking row not translated after perfoming an action (on multilang site)
