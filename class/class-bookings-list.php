@@ -10,7 +10,7 @@ if( ! class_exists( 'Bookings_List_Table' ) ) {
 	
 	/**
 	 * Bookings WP_List_Table
-	 * @version 1.7.6
+	 * @version 1.7.7
 	 */
 	class Bookings_List_Table extends WP_List_Table {
 		
@@ -216,25 +216,32 @@ if( ! class_exists( 'Bookings_List_Table' ) ) {
 		
 		/**
 		 * Fill columns
-		 * @version 1.3.0
+		 * @version 1.7.7
 		 * @access public
 		 * @param array $item
 		 * @param string $column_name
 		 * @return string
 		 */
 		public function column_default( $item, $column_name ) {
-			return isset( $item[ $column_name ] ) ? $item[ $column_name ] : '';
+			$column_content = isset( $item[ $column_name ] ) ? $item[ $column_name ] : '';
+			
+			// Add primary data for responsive views
+			$primary_column_name = $this->get_primary_column();
+			if( $column_name === $primary_column_name && ! empty( $item[ 'primary_data_html' ] ) ) {
+				$column_content .= $item[ 'primary_data_html' ];
+			}
+			
+			return $column_content;
 		}
 		
 		
 		/**
 		 * Get booking list items. Parameters can be passed in the URL.
-		 * @version 1.7.4
+		 * @version 1.7.7
 		 * @access public
 		 * @return array
 		 */
 		public function get_booking_list_items() {
-			
 			// Request bookings corresponding to filters
 			if( $this->filters[ 'event_id' ] && ! $this->filters[ 'event_group_id' ] ) { $this->filters[ 'booking_group_id' ] = 'none'; }
 			if( ! $this->filters[ 'booking_group_id' ] && $this->filters[ 'group_by' ] !== 'none' ) { $this->filters[ 'group_by' ] = 'booking_group'; }
@@ -371,6 +378,22 @@ if( ! class_exists( 'Bookings_List_Table' ) ) {
 					$phone		= '';
 				}
 				
+				// Add info on the primary column to make them directly visible in responsive view
+				$primary_data = array( 
+					'<span class="bookacti-column-id" >(' . esc_html_x( 'id', 'An id is a unique identification number', BOOKACTI_PLUGIN_NAME ) . ': ' . $id . ')</span>', 
+					$state, 
+					$paid, 
+					'<span class="bookacti-column-quantity" >' . $quantity_separator . $quantity . '</span>',
+				);
+				$primary_data_html = '';
+				if( $primary_data ) {
+					$primary_data_html = '<div class="bookacti-booking-primary-data-container">';
+					foreach( $primary_data as $single_primary_data ) {
+						$primary_data_html .= '<span class="bookacti-booking-primary-data">' . $single_primary_data . '</span>';
+					}
+					$primary_data_html .= '</div>';
+				}
+				
 				/**
 				 * Third parties can add or change columns content, do your best to optimize your process
 				 */
@@ -396,25 +419,10 @@ if( ! class_exists( 'Bookings_List_Table' ) ) {
 					'actions'		=> $actions,
 					'refund_actions'=> array(),
 					'order_id'		=> $order_id,
-					'primary_data'	=> array( 
-						'<span class="bookacti-column-id" >(' . esc_html_x( 'id', 'An id is a unique identification number', BOOKACTI_PLUGIN_NAME ) . ': ' . $id . ')</span>', 
-						$state, 
-						$paid, 
-						'<span class="bookacti-column-quantity" >' . $quantity_separator . $quantity . '</span>',
-					)
+					'primary_data'	=> $primary_data,
+					'primary_data_html'	=> $primary_data_html
 				), $booking, $group, $user, $this );
 				
-				// Add info on the primary column to make them directly visible in responsive view
-				if( $booking_item[ 'primary_data' ] ) {
-					$primary_column_name = $this->get_primary_column();
-					$primary_data = '<div class="bookacti-booking-primary-data-container">';
-					foreach( $booking_item[ 'primary_data' ] as $single_primary_data ) {
-						$primary_data .= '<span class="bookacti-booking-primary-data">' . $single_primary_data . '</span>';
-					}
-					$primary_data .= '</div>';
-					$booking_item[ $primary_column_name ] .= $primary_data;
-				}
-
 				$booking_list_items[ $booking->id ] = $booking_item;
 			}
 			

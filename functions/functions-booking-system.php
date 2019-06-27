@@ -135,8 +135,9 @@ function bookacti_get_booking_system_data( $atts ) {
 		$event_id = $atts[ 'picked_events' ][ 'event_id' ];
 		$event = ! empty( $events[ 'data' ][ $event_id ] ) ? $events[ 'data' ][ $event_id ] : (array) bookacti_get_event_by_id( $event_id );
 		if( $event 
-		&& ! empty( $booking_system_data[ 'activities_data' ][ $event[ 'activity_id' ] ] )
-		&& in_array( intval( $event[ 'template_id' ] ), $atts[ 'calendars' ], true ) ) { 
+		&& ( in_array( intval( $event[ 'template_id' ] ), $atts[ 'calendars' ], true ) 
+			|| ( empty( $atts[ 'calendars' ] ) && ( is_super_admin() || ! $atts[ 'auto_load' ] ) ) )
+		&& ( ! empty( $booking_system_data[ 'activities_data' ][ $event[ 'activity_id' ] ] ) || ! $atts[ 'auto_load' ] ) ) { 
 			$picked_events[] = array(
 				'id'	=> $event_id,
 				'start'	=> $atts[ 'picked_events' ][ 'event_start' ],
@@ -150,7 +151,8 @@ function bookacti_get_booking_system_data( $atts ) {
 		} else {
 			$group_events = bookacti_get_group_events( $atts[ 'picked_events' ][ 'group_id' ] );
 			$category_id  = ! empty( $group_events[ 0 ][ 'category_id' ] ) ? intval( $group_events[ 0 ][ 'category_id' ] ) : 0;
-			if( $category_id && ! empty( $booking_system_data[ 'group_categories_data' ][ $category_id ] ) ) {
+			if( $category_id 
+			&& ( ! empty( $booking_system_data[ 'group_categories_data' ][ $category_id ] ) || ! $atts[ 'auto_load' ] ) ) {
 				foreach( $group_events as $grouped_event ) {
 					$picked_events[] = array(
 						'id'	=> $grouped_event[ 'id' ],

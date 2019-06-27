@@ -321,6 +321,8 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 
 = 1.7.7 =
 * Fix - Add to cart on event click didn't work on WC product pages
+* Fix - The event specified in URL was not selected by default on admin Bookings page
+* Fix - Primary data were not displayed in booking list (on responsive views) for bookings made with WC
 
 = 1.7.6 - 2019/06/25 =
 * Tweak - Allow to filter the booking lists by "payment_status"
