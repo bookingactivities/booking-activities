@@ -1390,7 +1390,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		} else {
 			$order_id = bookacti_get_booking_order_id( $booking_id );
 		}
-
+		
 		if( ! $order_id ) { return false; }
 
 		$order = wc_get_order( $order_id );

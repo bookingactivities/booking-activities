@@ -1006,11 +1006,20 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		/**
 		 * Get an array of bookings data formatted to be exported
 		 * @since 1.6.0
+		 * @version 1.7.7
 		 * @param array $filters
 		 * @param array $columns
 		 * @return array
 		 */
 		function bookacti_get_bookings_for_export( $filters, $columns ) {
+			// Check if we will need user data
+			$has_user_data = false;
+			foreach( $columns as $column_name ) {
+				if( $column_name !== 'customer_id' && substr( $column_name, 0, 9 ) === 'customer_' ) { 
+					$has_user_data = true; break; 
+				}
+			}
+			if( $has_user_data ) { $filters[ 'fetch_meta' ] = true; }
 			
 			$bookings = bookacti_get_bookings( $filters );
 			
@@ -1021,17 +1030,10 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 				$may_have_groups = true;
 			}
 			
-			// Check if we will need user data
-			$has_user_data = false;
-			foreach( $columns as $column_name ) {
-				if( $column_name !== 'customer_id' && substr( $column_name, 0, 9 ) === 'customer_' ) { 
-					$has_user_data = true; break; 
-				} 
-			}
-			
+			// Gether all IDs in arrays
+			$user_ids = array();
+			$group_ids = array();
 			if( ( $may_have_groups || $single_only ) || $has_user_data ) {
-				$group_ids = array();
-				$user_ids = array();
 				foreach( $bookings as $booking ) {
 					if( $booking->user_id && is_numeric( $booking->user_id ) && ! in_array( $booking->user_id, $user_ids, true ) ) { $user_ids[] = $booking->user_id; }
 					if( $booking->group_id && ! in_array( $booking->group_id, $group_ids, true ) )	{ $group_ids[] = $booking->group_id; }
@@ -1605,6 +1607,7 @@ function bookacti_get_user_booking_list_default_columns() {
 /**
  * Get booking list items
  * @since 1.7.4
+ * @version 1.7.7
  * @param array $filters
  * @param array $columns
  * @return string
@@ -1613,6 +1616,15 @@ function bookacti_get_user_booking_list_items( $filters, $columns = array() ) {
 	if( ! $columns ) { $columns = bookacti_get_user_booking_list_default_columns(); }
 	
 	$booking_list_items = array();
+	
+	// Check if we will need user data
+	$has_user_data = false;
+	foreach( $columns as $column_name ) {
+		if( $column_name !== 'customer_id' && substr( $column_name, 0, 9 ) === 'customer_' ) { 
+			$has_user_data = true; break; 
+		}
+	}
+	if( $has_user_data ) { $filters[ 'fetch_meta' ] = true; }
 	
 	// Get bookings
 	$bookings = bookacti_get_bookings( $filters );
@@ -1626,23 +1638,12 @@ function bookacti_get_user_booking_list_items( $filters, $columns = array() ) {
 	
 	// Gether all IDs in arrays
 	$user_ids = array();
-	$booking_ids = array();
 	$group_ids = array();
 	foreach( $bookings as $booking ) {
 		if( $booking->user_id && is_numeric( $booking->user_id ) && ! in_array( $booking->user_id, $user_ids, true ) ){ $user_ids[] = $booking->user_id; }
-		if( $booking->id && ! in_array( $booking->id, $booking_ids, true ) ){ $booking_ids[] = $booking->id; }
 		if( $booking->group_id && ! in_array( $booking->group_id, $group_ids, true ) ){ $group_ids[] = $booking->group_id; }
 	}
-	$unknown_user_id = esc_attr( apply_filters( 'bookacti_unknown_user_id', 'unknown_user' ) );
 	
-	// Retrieve the required groups data only
-	
-	if( ( $may_have_groups || $single_only ) && $group_ids ) {
-		// Get only the groups that will be displayed
-		$group_filters = bookacti_format_booking_filters( array( 'in__booking_group_id' => $group_ids, 'templates' => '', 'fetch_meta' => true ) );
-		$booking_groups = bookacti_get_booking_groups( $group_filters );
-	}
-
 	// Retrieve the required groups data only
 	$booking_groups		= array();
 	$displayed_groups	= array();
@@ -1651,7 +1652,6 @@ function bookacti_get_user_booking_list_items( $filters, $columns = array() ) {
 		$group_filters		= bookacti_format_booking_filters( array( 'in__booking_group_id' => $group_ids, 'templates' => '', 'fetch_meta' => $filters[ 'fetch_meta' ] ) );
 		$booking_groups		= bookacti_get_booking_groups( $group_filters );
 		$groups_bookings	= bookacti_get_bookings( $group_filters );
-		$bookings_per_group	= array();
 		foreach( $groups_bookings as $booking ) {
 			if( ! isset( $bookings_per_group[ $booking->group_id ] ) ) { $bookings_per_group[ $booking->group_id ] = array(); }
 			$bookings_per_group[ $booking->group_id ][] = $booking;
@@ -1659,7 +1659,11 @@ function bookacti_get_user_booking_list_items( $filters, $columns = array() ) {
 	}
 
 	// Retrieve information about users and stock them into an array sorted by user id
-	$users = bookacti_get_users_data( array( 'include' => $user_ids ) );
+	$users = array();
+	if( $has_user_data ) {
+		$users = bookacti_get_users_data( array( 'include' => $user_ids ) );
+	}
+	$unknown_user_id = esc_attr( apply_filters( 'bookacti_unknown_user_id', 'unknown_user' ) );
 	
 	// Get datetime format
 	$datetime_format	= bookacti_get_message( 'date_format_long' );
