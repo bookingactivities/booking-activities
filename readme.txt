@@ -319,7 +319,7 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 
 == Changelog ==
 
-= 1.7.7 =
+= 1.7.7 - 2019/07/02 =
 * Fix - Add to cart on event click didn't work on WC product pages
 * Fix - The event specified in URL was not selected by default on admin Bookings page
 * Fix - Primary data were not displayed in booking list (on responsive views) for bookings made with WC
