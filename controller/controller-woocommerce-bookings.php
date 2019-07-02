@@ -193,12 +193,12 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	
 	/**
 	 * Cancel the temporary booking if it failed
-	 * 
-	 * @version 1.5.6
+	 * @version 1.7.7
 	 * @param int $order_id
 	 * @param WC_Order $order
 	 */
-	function bookacti_cancelled_order( $order_id, $order = null ) {
+	function bookacti_cancelled_order( $order_id, $old_status, $new_status, $order = null ) {
+		if( ! in_array( $new_status, array( 'cancelled', 'failed' ), true ) ) { return; }
 		if( ! $order ) { $order = wc_get_order( $order_id ); }
 		
 		// Change state of all bookings of the order to 'cancelled' and free the bookings
@@ -207,8 +207,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		// It is possible that 'pending' bookings remain if the user has changed his cart before payment, we must cancel them
 		bookacti_cancel_order_pending_bookings( $order_id );
 	}
-	add_action( 'woocommerce_order_status_cancelled', 'bookacti_cancelled_order', 5, 2 );
-	add_action( 'woocommerce_order_status_failed', 'bookacti_cancelled_order', 5, 2 );
+	add_action( 'woocommerce_order_status_changed', 'bookacti_cancelled_order', 5, 4 );
 	
 	
 	/**

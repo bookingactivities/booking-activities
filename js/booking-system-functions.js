@@ -66,7 +66,7 @@ function bookacti_fetch_events( booking_system, interval ) {
 
 /**
  * Reload a booking system
- * @version 1.7.4
+ * @version 1.7.7
  * @param {dom_element} booking_system
  * @param {boolean} keep_picked_events
  */
@@ -75,6 +75,7 @@ function bookacti_reload_booking_system( booking_system, keep_picked_events ) {
 	
 	var booking_system_id	= booking_system.attr( 'id' );
 	var attributes			= bookacti.booking_system[ booking_system_id ];
+	var picked_events		= keep_picked_events ? attributes.picked_events : [];
 	
 	bookacti_start_loading_booking_system( booking_system );
 	
@@ -97,6 +98,7 @@ function bookacti_reload_booking_system( booking_system, keep_picked_events ) {
 				
 				// Update events and settings
 				bookacti.booking_system[ booking_system_id ] = response.booking_system_data;
+				bookacti.booking_system[ booking_system_id ][ 'picked_events' ] = picked_events;
 				
 				// Fill the booking method elements
 				booking_system.append( response.html_elements );

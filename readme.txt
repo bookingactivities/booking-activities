@@ -5,7 +5,7 @@ Tags: booking activities, booking sport, booking form, event reservation, reserv
 Requires at least: 3.6
 Tested up to: 5.2
 Requires PHP: 5.3
-Stable tag: 1.7.6
+Stable tag: 1.7.7
 License: GPLv3 or later
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
 
@@ -318,6 +318,12 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 
 
 == Changelog ==
+
+= 1.7.7 - 2019/07/02 =
+* Fix - Add to cart on event click didn't work on WC product pages
+* Fix - The event specified in URL was not selected by default on admin Bookings page
+* Fix - Primary data were not displayed in booking list (on responsive views) for bookings made with WC
+* Fix - Customer data w/o account were not retrieved in booking export and user booking list
 
 = 1.7.6 - 2019/06/25 =
 * Tweak - Allow to filter the booking lists by "payment_status"

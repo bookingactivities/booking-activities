@@ -1598,6 +1598,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	/**
 	 * Add values in booking list (refund, price)
 	 * @since 1.7.4 (was bookacti_add_woocommerce_prices_in_bookings_list)
+	 * @version 1.7.7
 	 * @param array $columns_value
 	 * @param object $booking
 	 * @param object $group
@@ -1641,11 +1642,8 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 						}
 					}
 				} else if( ! empty( $item[ 'item_meta' ] ) ) {
-					foreach( $item[ 'item_meta' ] as $meta_key => $meta_value ) {
-						if( $meta_key === 'bookacti_refund_coupon' && ! empty( $meta_value ) ) {
-							$coupon_code = $meta_value;
-							break;
-						}
+					if( ! empty( $item[ 'item_meta' ][ 'bookacti_refund_coupon' ] ) ) {
+						$coupon_code = $item[ 'item_meta' ][ 'bookacti_refund_coupon' ];
 					}
 				}
 				

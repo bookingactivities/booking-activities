@@ -53,7 +53,7 @@
 
 /* Booking System */
 .bookacti-booking-system-container			{ width: 100%; }
-.bookacti-loading-alt						{ width: fit-content; margin: 30px auto; }
+
 .bookacti-notices							{ display: none; }
 .bookacti-notices > ul						{ margin: 30px 0; padding: 10px 30px; border-left: 4px solid dodgerblue; box-shadow: 0 1px 1px 0 rgba(0,0,0,.1); background-color: rgba(255,255,255,.5); border-radius: 0 5px 5px 0; }
 .bookacti-notices ul.bookacti-error-list	{ border-left-color: red; }
@@ -129,46 +129,45 @@
 	.bookacti-narrow-event .bookacti-available-places-avail-particle { display: none; }
 	
 	
-	/* Availability */
-	.bookacti-availability-container  { 
-		white-space: nowrap;
-		display: block;
-		position: absolute;
-		bottom: 0;
-		right: -2px;
-		z-index: 5;
-		overflow: hidden;
-	}
-	.bookacti-availability-container .bookacti-available-places { 
-		padding: 2px 3px;
-		background-color: #000;
-		color: #fff;
-		text-align: right;
-		font-size: 0.85em;
-	}
-	.bookacti-availability-container span								{ -webkit-border-radius: 3px 0 0 3px; border-radius: 3px 0 0 3px; }
-	.bookacti-availability-container .bookacti-bookings					{ padding: 1px 0 1px 1px; }
-	.bookacti-availability-container .bookacti-total-availability		{ padding: 1px 1px 1px 0; }
-	.bookacti-availability-container .bookacti-active-bookings-number,
-	.bookacti-availability-container .bookacti-available-places-number	{ font-weight: bold; font-size: larger; }
+/* Availability */
+.bookacti-availability-container  { 
+	white-space: nowrap;
+	display: block;
+	position: absolute;
+	bottom: 0;
+	right: -2px;
+	z-index: 5;
+	overflow: hidden;
+}
+.bookacti-availability-container .bookacti-available-places { 
+	padding: 2px 3px;
+	background-color: #000;
+	color: #fff;
+	text-align: right;
+	font-size: 0.85em;
+}
+.bookacti-availability-container span								{ -webkit-border-radius: 3px 0 0 3px; border-radius: 3px 0 0 3px; }
+.bookacti-availability-container .bookacti-bookings					{ padding: 1px 0 1px 1px; }
+.bookacti-availability-container .bookacti-total-availability		{ padding: 1px 1px 1px 0; }
+.bookacti-availability-container .bookacti-active-bookings-number,
+.bookacti-availability-container .bookacti-available-places-number	{ font-weight: bold; font-size: larger; }
 
-	.bookacti-available-places.bookacti-booked, 
-	.bookacti-available-places.bookacti-not-booked		{ background-color: rgba(0, 0, 0, 0.4); }
-	.bookacti-available-places.bookacti-full, 
-	.bookacti-available-places.bookacti-no-availability	{ background-color: rgba(255, 0, 0, 0.4); }
+.bookacti-available-places.bookacti-booked, 
+.bookacti-available-places.bookacti-not-booked		{ background-color: rgba(0, 0, 0, 0.4); }
+.bookacti-available-places.bookacti-full, 
+.bookacti-available-places.bookacti-no-availability	{ background-color: rgba(255, 0, 0, 0.4); }
 
-	/* Loading */
-	.bookacti-loading-overlay	{ position: absolute; width: 100%; height: 100%; top: 0; left: 0; background: rgba( 0, 0, 0, 0.6 ); z-index: 10; overflow: hidden; }
-	.bookacti-loading-content	{ position: relative; top: 50%; left: 50%; margin: -60px 0 0 -60px; z-index: 10; }
-	.bookacti-loading-box		{ -webkit-border-radius: 6px; border-radius: 6px; width: 120px; height: 120px; background: rgba( 0, 0, 0, 0.6 ); text-align: center; }
-	.bookacti-loading-image		{ box-sizing: border-box; padding: 25px 0 20px 0; width: 100%; }
-	.bookacti-loader			{ width: 32px; height: 32px; vertical-align: middle; }
-	.bookacti-loading-text		{ color: #fff; font-size: 0.8em; }
-	.bookacti-loading-alt-text	{ margin-left: 10px; vertical-align: middle; font-size: 0.9em; }
+/* Loading */
+.bookacti-loading-overlay	{ position: absolute; width: 100%; height: 100%; top: 0; left: 0; background: rgba( 0, 0, 0, 0.6 ); z-index: 10; overflow: hidden; }
+.bookacti-loading-content	{ position: relative; top: 50%; left: 50%; margin: -60px 0 0 -60px; z-index: 10; }
+.bookacti-loading-box		{ -webkit-border-radius: 6px; border-radius: 6px; width: 120px; height: 120px; background: rgba( 0, 0, 0, 0.6 ); text-align: center; }
+.bookacti-loading-image		{ box-sizing: border-box; padding: 25px 0 20px 0; width: 100%; }
+.bookacti-loader			{ width: 32px; height: 32px; vertical-align: middle; }
+.bookacti-loading-text		{ color: #fff; font-size: 0.8em; }
+.bookacti-loading-alt		{ width: fit-content; margin: 30px auto; }
+.bookacti-loading-alt-text	{ margin-left: 10px; vertical-align: middle; font-size: 0.9em; }
 
 
-/* BOOKING FORMS */
-.bookacti-success-list.woocommerce a.button { float: right; }
 
 
 /** RESPONSIVE DESIGN **/

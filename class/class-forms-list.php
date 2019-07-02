@@ -11,6 +11,7 @@ if( ! class_exists( 'Forms_List_Table' ) ) {
 	/**
 	 * Forms WP_List_Table
 	 * @since 1.5.0
+	 * @version 1.7.7
 	 */
 	class Forms_List_Table extends WP_List_Table {
 		
@@ -188,24 +189,33 @@ if( ! class_exists( 'Forms_List_Table' ) ) {
 		
 		/**
 		 * Fill columns
+		 * @version 1.7.7
 		 * @access public
 		 * @param array $item
 		 * @param string $column_name
 		 * @return string
 		 */
 		public function column_default( $item, $column_name ) {
-			return isset( $item[ $column_name ] ) ? $item[ $column_name ] : '';
+			$column_content = isset( $item[ $column_name ] ) ? $item[ $column_name ] : '';
+			
+			// Add primary data for responsive views
+			$primary_column_name = $this->get_primary_column();
+			if( $column_name === $primary_column_name && ! empty( $item[ 'primary_data_html' ] ) ) {
+				$column_content .= $item[ 'primary_data_html' ];
+			}
+			
+			return $column_content;
 		}
 		
 		
 		/**
 		 * Fill "Title" column and add action buttons
+		 * @version 1.7.7
 		 * @access public
 		 * @param array $item
 		 * @return string
 		 */
 		public function column_title( $item ) {
-			
 			$form_id	= $item[ 'id' ];
 			$actions	= array();
 			
@@ -237,20 +247,26 @@ if( ! class_exists( 'Forms_List_Table' ) ) {
 				}
 			}
 			
-			$actions = apply_filters( 'bookacti_form_list_row_actions', $actions, $item );
-		
+			// Add primary data for responsive views
+			$primary_column_name = $this->get_primary_column();
+			$primary_data_html = '';
+			if( $primary_column_name === 'title' && ! empty( $item[ 'primary_data_html' ] ) ) {
+				$primary_data_html = $item[ 'primary_data_html' ];
+			}
+			
 			// Add a span and a class to each action
+			$actions = apply_filters( 'bookacti_form_list_row_actions', $actions, $item );
 			foreach( $actions as $action_id => $link ) {
 				$actions[ $action_id ] = '<span class="' . $action_id . '">' . $link . '</span>';
 			}
 			
-			return sprintf( '%1$s %2$s', $item[ 'title' ], $this->row_actions( $actions, false ) );
+			return sprintf( '%1$s%2$s %3$s', $item[ 'title' ], $primary_data_html, $this->row_actions( $actions, false ) );
 		}
 		
 		
 		/**
 		 * Get form list items. Parameters can be passed in the URL.
-		 * @version 1.7.0
+		 * @version 1.7.7
 		 * @access public
 		 * @return array
 		 */
@@ -288,6 +304,19 @@ if( ! class_exists( 'Forms_List_Table' ) ) {
 				$user_object = get_user_by( 'id', $form->user_id );
 				$author = $user_object ? $user_object->display_name : $form->user_id;
 				
+				// Add info on the primary column to make them directly visible in responsive view
+				$primary_data = array( 
+					'<span class="bookacti-column-id" >(' . esc_html_x( 'id', 'An id is a unique identification number', BOOKACTI_PLUGIN_NAME ) . ': ' . $id . ')</span>'
+				);
+				$primary_data_html = '';
+				if( $primary_data ) {
+					$primary_data_html = '<div class="bookacti-form-primary-data-container">';
+					foreach( $primary_data as $single_primary_data ) {
+						$primary_data_html .= '<span class="bookacti-form-primary-data">' . $single_primary_data . '</span>';
+					}
+					$primary_data_html .= '</div>';
+				}
+				
 				$form_item = apply_filters( 'bookacti_form_list_form_columns', array( 
 					'id'			=> $id,
 					'title'			=> $title,
@@ -297,20 +326,10 @@ if( ! class_exists( 'Forms_List_Table' ) ) {
 					'status'		=> $form->status,
 					'active'		=> $active,
 					'active_raw'	=> $form->active,
-					'primary_data'	=> array()
+					'primary_data'	=> $primary_data,
+					'primary_data_html'	=> $primary_data_html
 				), $form );
 				
-				// Add info on the primary column to make them directly visible in responsive view
-				if( $form_item[ 'primary_data' ] ) {
-					$primary_column_name = $this->get_primary_column();
-					$primary_data = '<div class="bookacti-form-primary-data-container">';
-					foreach( $form_item[ 'primary_data' ] as $single_primary_data ) {
-						$primary_data .= '<span class="bookacti-form-primary-data">' . $single_primary_data . '</span>';
-					}
-					$primary_data .= '</div>';
-					$form_item[ $primary_column_name ] .= $primary_data;
-				}
-
 				$form_list_items[] = $form_item;
 			}
 			

@@ -259,6 +259,8 @@ add_filter( 'bookacti_group_category_redirect_url_table', 'bookacti_add_wc_colum
 
 /**
  * Add the product bound to the selected event to cart
+ * @since 1.7.0
+ * @version 1.7.7
  */
 function bookacti_controller_add_bound_product_to_cart() {
 	
@@ -367,7 +369,7 @@ function bookacti_controller_add_bound_product_to_cart() {
 	// Get redirect URL
 	$cart_url = get_option( 'woocommerce_cart_redirect_after_add' ) === 'yes' ? esc_url( wc_get_page_permalink( 'cart' ) ) : '';
 	$form_url = bookacti_get_metadata( 'form', $form_id, 'redirect_url', true );
-	$redirect_url = $form_url ? esc_url( $form_url ) : $cart_url;
+	$redirect_url = $form_url ? esc_url( apply_filters( 'bookacti_translate_text', $form_url ) ) : $cart_url;
 	
 	if( ! empty( $wc_notices[ 'error' ] ) ) {
 		$response = array( 'status' => 'failed', 'messages' => implode( '</li><li>', $wc_notices[ 'error' ] ) );

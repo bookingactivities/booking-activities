@@ -1,4 +1,4 @@
-{ "vendor": { "plugins/booking-activities": "1.7.4" },
+{ "vendor": { "plugins/booking-activities": "1.7.7" },
 	"admin-config":{
 		"bookacti_calendars":{
 			"pages":{ "admin.php":"" },
@@ -84,6 +84,11 @@
 				"bookacti-form-editor-page-form":{
 					"fields":{
 						"title":{}
+					}
+				},
+				"bookacti-update-form-meta-form":{
+					"fields":{
+						"bookacti-form-meta-redirect_url":{}
 					}
 				},
 				"bookacti-form-field-form-login":{
