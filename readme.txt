@@ -319,6 +319,10 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 
 == Changelog ==
 
+= 1.7.8 =
+* Fix - Numeric values were not displayed in user booking list
+* Dev - Add hooks to allow to set other product types as "Activity"
+
 = 1.7.7 - 2019/07/02 =
 * Fix - Add to cart on event click didn't work on WC product pages
 * Fix - The event specified in URL was not selected by default on admin Bookings page

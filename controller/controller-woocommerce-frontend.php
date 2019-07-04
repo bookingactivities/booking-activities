@@ -140,7 +140,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	
 	/**
 	 * Add booking forms to single product page (front-end)
-	 * @version 1.7.4
+	 * @version 1.7.8
 	 * @global WC_Product $product
 	 */
 	function bookacti_add_booking_system_in_single_product_page() {
@@ -150,11 +150,8 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		if( ! $is_activity ) { return; }
 		
 		// Check if the product or one of its available variation is bound to a booking form
-		$form_id = 0;
-		if( $product->is_type( 'simple' ) ) {
-			$form_id = bookacti_get_product_form_id( $product->get_id(), false );
-		}
-		else if( $product->is_type( 'variable' ) ) {
+		$form_id = bookacti_get_product_form_id( $product->get_id() );
+		if( $product->is_type( 'variable' ) ) {
 			$variations = $product->get_available_variations();
 			foreach( $variations as $variation ) {
 				if( empty( $variation[ 'bookacti_is_activity' ] ) || empty( $variation[ 'bookacti_form_id' ] ) ) { continue; }
@@ -212,6 +209,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		$form_instance_id		= '';
 		$variation_id			= 0;
 		$default_variation_id	= 0;
+		
 		// Show form on single product page or on variable product with a default value
 		if( $product->is_type( 'simple' ) ) {
 			$form_instance_id = 'product-' . $product->get_id();
@@ -237,26 +235,36 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			}
 		}
 		
-		// If no default variation are selected, or if if it's not an activity, or if doesn't have a form bound
+		$form_atts = apply_filters( 'bookacti_product_form_attributes', array(
+			'id' => $form_instance_id,
+			'data-default-variation-id' => ! empty( $default_variation_id ) ? $default_variation_id : '',
+			'data-variation-id' => ! empty( $variation_id ) ? $variation_id : '',
+			'data-product-id' => $product->get_id(),
+			'data-form-id' => $form_id
+		), $product );
+		
+		// Add compulsory class
+		$form_atts[ 'class' ] = 'bookacti-wc-form-fields' . ( ! empty( $form_atts[ 'class' ] ) ? ' ' . $form_atts[ 'class' ] : '' );
+		
+		// Convert $form_atts array to inline attributes
+		$form_attributes_str = '';
+		foreach( $form_atts as $form_attribute_key => $form_attribute_value ) {
+			if( $form_attribute_value !== '' ) { $form_attributes_str .= $form_attribute_key . '="' . $form_attribute_value . '" '; }
+		}
+		
+		// If no default variation are selected, or if it's not an activity, or if doesn't have a form bound
 		// display an empty form fields container
-		if( ! $form_instance_id ) { 
-			?>
-				<div class='bookacti-wc-form-fields'></div>
-			<?php
+		if( ! $form_atts[ 'id' ] ) { 
+			?><div class='bookacti-wc-form-fields'></div><?php
 			return;
 		}
 		
 		?>
-		<div class='bookacti-wc-form-fields' 
-			 id='<?php echo $form_instance_id; ?>'
-			 data-product-id='<?php echo $product->get_id(); ?>'
-			 data-variation-id='<?php if( ! empty( $variation_id ) ) { echo $variation_id; } ?>'
-			 data-default-variation-id='<?php if( ! empty( $default_variation_id ) ) { echo $default_variation_id; } ?>'
-			 data-form-id='<?php echo $form_id; ?>'>
+		<div <?php echo $form_attributes_str; ?>>
 			<?php 
-				$form_html = bookacti_display_form( $form_id, $form_instance_id, 'wc_product_init', false ); 
+				$form_html = bookacti_display_form( $form_id, $form_atts[ 'id' ], 'wc_product_init', false ); 
 				echo $form_html;
-				if( empty( $default_variation_id ) && ! empty( $variation_id ) ) {
+				if( empty( $form_atts[ 'data-default-variation-id' ] ) && ! empty( $form_atts[ 'data-variation-id' ] ) ) {
 				?>
 					<script>
 						if( typeof bookacti.form_fields === 'undefined' ) { bookacti.form_fields = []; }

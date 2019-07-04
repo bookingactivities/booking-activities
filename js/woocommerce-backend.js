@@ -126,14 +126,15 @@ $j( document ).ready( function() {
 });
 
 
-// Show or hide the activity tab on product page in the backend
+/**
+ * Show or hide the activity tab on product page in the backend
+ * @version 1.7.8
+ */
 function bookacti_show_hide_activity_tab() {
-	
 	$j( '.bookacti_show_if_activity' ).hide();
 	
 	if( $j( '#_bookacti_is_activity' ).is( ':checked' ) ) {
-		
-		if( ( $j( '#product-type' ).val() === 'simple' || $j( '#product-type' ).val() === 'variable' ) ) {
+		if( $j( 'label[for="_bookacti_is_activity"]' ).is( ':visible' ) ) {
 			$j( '.bookacti_show_if_activity' ).show();
 			
 			if( ! $j( '#_virtual' ).is( ':checked' ) ) {
@@ -143,7 +144,6 @@ function bookacti_show_hide_activity_tab() {
 		$j( '.bookacti_hide_if_activity' ).hide();
 		
 	} else {
-		
 		$j( '.bookacti_hide_if_activity' ).show();
 		
 		if( $j( '#_virtual' ).is( ':checked' ) ) {
@@ -153,7 +153,10 @@ function bookacti_show_hide_activity_tab() {
 }
 
 
-// Show or hide activity fields on variation page in the backend
+/**
+ * Show or hide activity fields on variation page in the backend
+ * @param {dom_element} checkbox
+ */
 function bookacti_show_hide_activity_variation_fields( checkbox ) {
 	
 	checkbox = checkbox || undefined;

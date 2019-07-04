@@ -2,11 +2,10 @@
 // Exit if accessed directly
 if ( ! defined( 'ABSPATH' ) ) { exit; }
 
-
 /**
  * Add a description how to embbed calendars to woocommerce products
  * @since 1.5.0
- * @param string $step2
+ * @param string $step
  * @param int $template_id
  */
 function bookacti_display_wc_calendar_integration_description( $step, $template_id ) {

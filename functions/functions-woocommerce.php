@@ -1862,12 +1862,11 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	
 	/**
 	 * Tell if the product is activity or has variations that are activities
-	 * @version 1.5.2
+	 * @version 1.7.8
 	 * @param WC_Product|int $product
 	 * @return boolean
 	 */
 	function bookacti_product_is_activity( $product ) {
-		
 		// Get product or variation from ID
 		if( ! is_object( $product ) ) {
 			$product_id	= intval( $product );
@@ -1894,8 +1893,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			}
 		}
 		
-		if( $is_activity ) { return true; }
-		return false;
+		return apply_filters( 'bookacti_product_is_activity', $is_activity ? true : false, $product );
 	}
 	
 	

@@ -1927,6 +1927,7 @@ function bookacti_get_user_booking_list( $filters, $columns = array(), $per_page
 /**
  * Display booking list rows
  * @since 1.7.6
+ * @version 1.7.8
  * @param array $booking_list_items
  * @param array $columns
  * @return string
@@ -1954,7 +1955,7 @@ function bookacti_get_user_booking_list_rows( $booking_list_items, $columns = ar
 			<tr class='<?php echo ! empty( $list_item[ 'tr_class' ] ) ? $list_item[ 'tr_class' ] : ''; ?>'>
 			<?php
 				foreach( $columns as $column_id ) {
-					$value			= isset( $list_item[ $column_id ] ) && is_string( $list_item[ $column_id ] ) ? $list_item[ $column_id ] : '';
+					$value			= isset( $list_item[ $column_id ] ) && ( is_string( $list_item[ $column_id ] ) || is_numeric( $list_item[ $column_id ] ) ) ? $list_item[ $column_id ] : '';
 					$class_empty	= empty( $value ) ? 'bookacti-empty-column' : '';
 					$class_group	= $list_item[ 'booking_type' ] === 'group' ? 'bookacti-booking-group-' . $column_id : '';
 				?>
