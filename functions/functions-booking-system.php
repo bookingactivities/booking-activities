@@ -228,35 +228,32 @@ function bookacti_get_booking_method_html( $method, $booking_system_attributes )
 
 /**
  * Retrieve Calendar booking system HTML to include in the booking system
- * 
  * @since 1.0.0
- * @version 1.2.0
- * 
+ * @version 1.7.8
  * @param array $booking_system_atts
  * @return string
  */
 function bookacti_retrieve_calendar_elements( $booking_system_atts ) {
-	
 	$default_calendar_title	= esc_html( bookacti_get_message( 'calendar_title' ) );
 	$calendar_title			= apply_filters( 'bookacti_calendar_title', $default_calendar_title, $booking_system_atts );
 	
-	$before_calendar_title	= apply_filters( 'bookacti_before_calendar_title', '', $booking_system_atts );
-	$before_calendar		= apply_filters( 'bookacti_before_calendar', '', $booking_system_atts );
-	$after_calendar			= apply_filters( 'bookacti_after_calendar', '', $booking_system_atts );
+	ob_start();
 	
-	return
+	do_action( 'bookacti_before_calendar_title', $booking_system_atts );
+	?>
 	
-	$before_calendar_title
+	<div class='bookacti-calendar-title bookacti-booking-system-title'>
+		<?php echo $calendar_title; ?>
+	</div>
+	
+	<?php do_action( 'bookacti_before_calendar', $booking_system_atts ); ?>
+	
+	<div class='bookacti-calendar'></div>
 			
-	. "<div class='bookacti-calendar-title bookacti-booking-system-title' >"
-	.	$calendar_title
-	. "</div>"
+	<?php 
+	do_action( 'bookacti_after_calendar', $booking_system_atts );
 	
-	. $before_calendar
-	
-	. "<div class='bookacti-calendar' ></div>"
-			
-	. $after_calendar;
+	return ob_get_clean();
 }
 
 
