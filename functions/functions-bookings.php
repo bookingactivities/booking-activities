@@ -1006,7 +1006,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		/**
 		 * Get an array of bookings data formatted to be exported
 		 * @since 1.6.0
-		 * @version 1.7.7
+		 * @version 1.7.8
 		 * @param array $filters
 		 * @param array $columns
 		 * @return array
@@ -1019,7 +1019,8 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 					$has_user_data = true; break; 
 				}
 			}
-			if( $has_user_data ) { $filters[ 'fetch_meta' ] = true; }
+			$get_user_data = apply_filters( 'bookacti_bookings_export_get_users_data', false, $filters, $columns );
+			if( $get_user_data ) { $filters[ 'fetch_meta' ] = true; }
 			
 			$bookings = bookacti_get_bookings( $filters );
 			
@@ -1033,7 +1034,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			// Gether all IDs in arrays
 			$user_ids = array();
 			$group_ids = array();
-			if( ( $may_have_groups || $single_only ) || $has_user_data ) {
+			if( ( $may_have_groups || $single_only ) || $get_user_data ) {
 				foreach( $bookings as $booking ) {
 					if( $booking->user_id && is_numeric( $booking->user_id ) && ! in_array( $booking->user_id, $user_ids, true ) ) { $user_ids[] = $booking->user_id; }
 					if( $booking->group_id && ! in_array( $booking->group_id, $group_ids, true ) )	{ $group_ids[] = $booking->group_id; }
@@ -1056,7 +1057,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			
 			// Retrieve information about users and stock them into an array sorted by user id
 			$users = array();
-			if( $has_user_data ) {
+			if( $get_user_data ) {
 				$users = bookacti_get_users_data( array( 'include' => $user_ids ) );
 			}
 			$unknown_user_id = esc_attr( apply_filters( 'bookacti_unknown_user_id', 'unknown_user' ) );
@@ -1130,7 +1131,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 				
 				// Format customer column
 				$user = null;
-				if( $has_user_data ) {
+				if( $get_user_data ) {
 					// If the customer has an account
 					if( ! empty( $users[ $user_id ] ) ) {
 						$user = $users[ $user_id ];
@@ -1767,7 +1768,7 @@ function bookacti_get_user_booking_list_items( $filters, $columns = array() ) {
 			'status'				=> $status,
 			'payment_status'		=> $paid,
 			'quantity'				=> $quantity,
-			/* translators: Datetime format. Must be adapted to each country. Use wp date_i18n documentation to find the appropriated combinaison https://codex.wordpress.org/Formatting_Date_and_Time */
+			/* translators: Datetime format. Must be adapted to each country. Use wp date_i18n documentation to find the appropriated combinaison https://wordpress.org/support/article/formatting-date-and-time/ */
 			'creation_date'			=> bookacti_format_datetime( $booking->creation_date, esc_html__( 'F d, Y', BOOKACTI_PLUGIN_NAME ) ),
 			'customer_id'			=> $user_id,
 			'customer_display_name'	=> $customer,

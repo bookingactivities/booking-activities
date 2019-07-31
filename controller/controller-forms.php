@@ -43,7 +43,7 @@ add_action( 'bookacti_display_form_field_calendar', 'bookacti_display_form_field
 /**
  * Display the form field 'login'
  * @since 1.5.0
- * @version 1.7.3
+ * @version 1.7.8
  * @param string $html
  * @param array $field
  * @param string $instance_id
@@ -214,47 +214,50 @@ function bookacti_display_form_field_login( $html, $field, $instance_id, $contex
 				$register_fields = bookacti_get_register_fields_default_data();
 				if( in_array( 1, array_values( array_intersect_key( $field[ 'displayed_fields' ], $register_fields ) ) ) ) { ?>
 					<div class='bookacti-register-fields' id='<?php echo $field_id; ?>-register-fields' style='<?php if( $context !== 'edit' ) { echo 'display:none;'; } ?>' >
-					<?php foreach( $register_fields as $register_field_name => $register_field ) {
-						if( ! empty( $field[ 'displayed_fields' ][ $register_field_name ] ) ) { 
-						?>
-						<div class='bookacti-form-field-login-field-container bookacti-login-field-<?php echo $register_field_name; ?>' id='<?php echo esc_attr( $field_id . '-' . $register_field_name ); ?>-container' >
-							<?php if( $register_field[ 'type' ] !== 'checkbox' ) { ?>
-								<div class='bookacti-form-field-label' >
-									<label for='<?php echo esc_attr( $field_id . '-' . $register_field_name ); ?>' >
+						<?php 
+						do_action( 'bookacti_register_fields_before', $field, $instance_id, $context );
+
+						foreach( $register_fields as $register_field_name => $register_field ) {
+							if( ! empty( $field[ 'displayed_fields' ][ $register_field_name ] ) ) { ?>
+								<div class='bookacti-form-field-login-field-container bookacti-login-field-<?php echo $register_field_name; ?>' id='<?php echo esc_attr( $field_id . '-' . $register_field_name ); ?>-container' >
+									<?php if( $register_field[ 'type' ] !== 'checkbox' ) { ?>
+										<div class='bookacti-form-field-label' >
+											<label for='<?php echo esc_attr( $field_id . '-' . $register_field_name ); ?>' >
+											<?php 
+												echo esc_html( apply_filters( 'bookacti_translate_text', $field[ 'label' ][ $register_field_name ] ) ); 
+												if( $field[ 'required_fields' ][ $register_field_name ] ) {
+													echo '<span class="bookacti-required-field-indicator" title="' . esc_attr__( 'Required field', BOOKACTI_PLUGIN_NAME ) . '"></span>';
+												}
+											?>
+											</label>
+										<?php if( ! empty( $field[ 'tip' ][ $register_field_name ] ) ) { bookacti_help_tip( esc_html( apply_filters( 'bookacti_translate_text', $field[ 'tip' ][ $register_field_name ] ) ) ); } ?>
+										</div>
+									<?php } ?>
+									<div class='bookacti-form-field-content' >
 									<?php 
-										echo esc_html( apply_filters( 'bookacti_translate_text', $field[ 'label' ][ $register_field_name ] ) ); 
-										if( $field[ 'required_fields' ][ $register_field_name ] ) {
-											echo '<span class="bookacti-required-field-indicator" title="' . esc_attr__( 'Required field', BOOKACTI_PLUGIN_NAME ) . '"></span>';
+										$args = array(
+											'type'			=> $register_field[ 'type' ],
+											'name'			=> esc_attr( $register_field_name ),
+											'value'			=> ! empty( $_REQUEST[ $register_field_name ] ) ? esc_attr( $_REQUEST[ $register_field_name ] ) : ( isset( $register_field[ 'value' ] ) ? esc_attr( $register_field[ 'value' ] ) : '' ),
+											'id'			=> esc_attr( $field_id . '-' . $register_field_name ),
+											'class'			=> esc_attr( 'bookacti-form-field bookacti-' . $register_field_name ),
+											'required'		=> esc_attr( $field[ 'required_fields' ][ $register_field_name ] ),
+											'placeholder'	=> esc_attr( apply_filters( 'bookacti_translate_text', $field[ 'placeholder' ][ $register_field_name ] ) ),
+											'required'		=> $field[ 'required_fields' ][ $register_field_name ] ? 1 : 0
+										);
+										if( $register_field[ 'type' ] === 'checkbox' ) { 
+											$args[ 'label' ]= esc_html( apply_filters( 'bookacti_translate_text', $field[ 'label' ][ $register_field_name ] ) ); 
+											$args[ 'tip' ]	= esc_html( apply_filters( 'bookacti_translate_text', $field[ 'tip' ][ $register_field_name ] ) ); 
 										}
+										bookacti_display_field( $args );
 									?>
-									</label>
-								<?php if( ! empty( $field[ 'tip' ][ $register_field_name ] ) ) { bookacti_help_tip( esc_html( apply_filters( 'bookacti_translate_text', $field[ 'tip' ][ $register_field_name ] ) ) ); } ?>
+									</div>
+									<?php do_action( 'bookacti_register_field_after_' . $register_field_name, $register_field, $field, $instance_id, $context ); ?>
 								</div>
-							<?php } ?>
-							<div class='bookacti-form-field-content' >
-							<?php 
-								$args = array(
-									'type'			=> $register_field[ 'type' ],
-									'name'			=> esc_attr( $register_field_name ),
-									'value'			=> ! empty( $_REQUEST[ $register_field_name ] ) ? esc_attr( $_REQUEST[ $register_field_name ] ) : ( isset( $register_field[ 'value' ] ) ? esc_attr( $register_field[ 'value' ] ) : '' ),
-									'id'			=> esc_attr( $field_id . '-' . $register_field_name ),
-									'class'			=> esc_attr( 'bookacti-form-field bookacti-' . $register_field_name ),
-									'required'		=> esc_attr( $field[ 'required_fields' ][ $register_field_name ] ),
-									'placeholder'	=> esc_attr( apply_filters( 'bookacti_translate_text', $field[ 'placeholder' ][ $register_field_name ] ) ),
-									'required'		=> $field[ 'required_fields' ][ $register_field_name ] ? 1 : 0
-								);
-								if( $register_field[ 'type' ] === 'checkbox' ) { 
-									$args[ 'label' ]= esc_html( apply_filters( 'bookacti_translate_text', $field[ 'label' ][ $register_field_name ] ) ); 
-									$args[ 'tip' ]	= esc_html( apply_filters( 'bookacti_translate_text', $field[ 'tip' ][ $register_field_name ] ) ); 
-								}
-								bookacti_display_field( $args );
-							?>
-							</div>
-							<?php do_action( 'bookacti_register_field_after_' . $register_field_name, $register_field, $field, $instance_id, $context ); ?>
-						</div>
-					<?php 
+							<?php }
 						}
-					}
+						
+						do_action( 'bookacti_register_fields_after', $field, $instance_id, $context );
 					?>
 					</div>
 				<?php 

@@ -414,7 +414,7 @@ if( ! class_exists( 'Bookings_List_Table' ) ) {
 					'end_date'		=> bookacti_format_datetime( $end, $datetime_format ),
 					'template_title'=> apply_filters( 'bookacti_translate_text', $booking->template_title ),
 					'activity_title'=> apply_filters( 'bookacti_translate_text', $activity_title ),
-					/* translators: Datetime format. Must be adapted to each country. Use wp date_i18n documentation to find the appropriated combinaison https://codex.wordpress.org/Formatting_Date_and_Time */
+					/* translators: Datetime format. Must be adapted to each country. Use wp date_i18n documentation to find the appropriated combinaison https://wordpress.org/support/article/formatting-date-and-time/ */
 					'creation_date'	=> bookacti_format_datetime( $booking->creation_date, __( 'F d, Y', BOOKACTI_PLUGIN_NAME ) ),
 					'actions'		=> $actions,
 					'refund_actions'=> array(),
