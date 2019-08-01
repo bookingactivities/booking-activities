@@ -422,7 +422,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			if( ! $is_allowed ) {
 				$return_array[ 'status' ] = 'failed';
 				$return_array[ 'error' ] = 'reschedule_not_allowed';
-				$return_array[ 'message' ] = esc_html__( 'You are not allowed to reschedule this event.', BOOKACTI_PLUGIN_NAME );
+				$return_array[ 'message' ] = esc_html__( 'You are not allowed to reschedule this event.', 'booking-activities' );
 				return apply_filters( 'bookacti_booking_can_be_rescheduled_to', $return_array, $booking, $event_id, $event_start, $event_end );
 			}
 			
@@ -432,7 +432,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			if( $from_event->activity_id !== $to_event->activity_id ) {
 				$return_array[ 'status' ] = 'failed';
 				$return_array[ 'error' ] = 'reschedule_to_different_activity';
-				$return_array[ 'message' ] = esc_html__( 'The desired event haven\'t the same activity as the booked event.', BOOKACTI_PLUGIN_NAME );
+				$return_array[ 'message' ] = esc_html__( 'The desired event haven\'t the same activity as the booked event.', 'booking-activities' );
 			}
 			
 			return apply_filters( 'bookacti_booking_can_be_rescheduled_to', $return_array, $booking, $event_id, $event_start, $event_end );
@@ -640,32 +640,32 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			$actions = apply_filters( 'bookacti_booking_actions', array(
 				'change-state' => array( 
 					'class'			=> 'bookacti-change-booking-state',
-					'label'			=> esc_html__( 'Change booking state',  BOOKACTI_PLUGIN_NAME ),
-					'description'	=> esc_html__( 'Change the booking state to any available state.', BOOKACTI_PLUGIN_NAME ),
+					'label'			=> esc_html__( 'Change booking state',  'booking-activities' ),
+					'description'	=> esc_html__( 'Change the booking state to any available state.', 'booking-activities' ),
 					'link'			=> '',
 					'admin_or_front'=> 'admin' ),
 				'cancel' => array( 
 					'class'			=> 'bookacti-cancel-booking',
 					'label'			=> bookacti_get_message( 'cancel_booking_open_dialog_button' ),
-					'description'	=> esc_html__( 'Cancel the booking.', BOOKACTI_PLUGIN_NAME ),
+					'description'	=> esc_html__( 'Cancel the booking.', 'booking-activities' ),
 					'link'			=> '',
 					'admin_or_front'=> 'front' ),
 				'reschedule' => array( 
 					'class'			=> 'bookacti-reschedule-booking',
 					'label'			=> bookacti_get_message( 'reschedule_dialog_button' ),
-					'description'	=> esc_html__( 'Change the booking dates to any other available time slot for this event.', BOOKACTI_PLUGIN_NAME ),
+					'description'	=> esc_html__( 'Change the booking dates to any other available time slot for this event.', 'booking-activities' ),
 					'link'			=> '',
 					'admin_or_front'=> 'both' ),
 				'refund' => array( 
 					'class'			=> 'bookacti-refund-booking',
-					'label'			=> $admin_or_front === 'both' || $admin_or_front === 'admin' ? esc_html_x( 'Refund', 'Button label to trigger the refund action', BOOKACTI_PLUGIN_NAME ) : bookacti_get_message( 'refund_dialog_button' ),
-					'description'	=> esc_html__( 'Refund the booking with one of the available refund method.', BOOKACTI_PLUGIN_NAME ),
+					'label'			=> $admin_or_front === 'both' || $admin_or_front === 'admin' ? esc_html_x( 'Refund', 'Button label to trigger the refund action', 'booking-activities' ) : bookacti_get_message( 'refund_dialog_button' ),
+					'description'	=> esc_html__( 'Refund the booking with one of the available refund method.', 'booking-activities' ),
 					'link'			=> '',
 					'admin_or_front'=> 'both' ),
 				'delete' => array( 
 					'class'			=> 'bookacti-delete-booking',
-					'label'			=> esc_html__( 'Delete',  BOOKACTI_PLUGIN_NAME ),
-					'description'	=> esc_html__( 'Delete permanently the booking.', BOOKACTI_PLUGIN_NAME ),
+					'label'			=> esc_html__( 'Delete',  'booking-activities' ),
+					'description'	=> esc_html__( 'Delete permanently the booking.', 'booking-activities' ),
 					'link'			=> '',
 					'admin_or_front'=> 'admin' )
 			), $admin_or_front );
@@ -777,32 +777,32 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			$actions = apply_filters( 'bookacti_booking_group_actions', array(
 				'change-state' => array( 
 					'class'			=> 'bookacti-change-booking-group-state',
-					'label'			=> esc_html__( 'Change booking state',  BOOKACTI_PLUGIN_NAME ),
-					'description'	=> esc_html__( 'Change the booking group state to any available state.', BOOKACTI_PLUGIN_NAME ),
+					'label'			=> esc_html__( 'Change booking state',  'booking-activities' ),
+					'description'	=> esc_html__( 'Change the booking group state to any available state.', 'booking-activities' ),
 					'link'			=> '',
 					'admin_or_front'=> 'admin' ),
 				'edit-single' => array( 
 					'class'			=> 'bookacti-show-booking-group-bookings',
-					'label'			=> esc_html__( 'Edit bookings',  BOOKACTI_PLUGIN_NAME ),
-					'description'	=> esc_html__( 'Edit each booking of the group separately.', BOOKACTI_PLUGIN_NAME ),
+					'label'			=> esc_html__( 'Edit bookings',  'booking-activities' ),
+					'description'	=> esc_html__( 'Edit each booking of the group separately.', 'booking-activities' ),
 					'link'			=> '',
 					'admin_or_front'=> 'admin' ),
 				'cancel' => array( 
 					'class'			=> 'bookacti-cancel-booking-group',
 					'label'			=> bookacti_get_message( 'cancel_booking_open_dialog_button' ),
-					'description'	=> esc_html__( 'Cancel the booking group.', BOOKACTI_PLUGIN_NAME ),
+					'description'	=> esc_html__( 'Cancel the booking group.', 'booking-activities' ),
 					'link'			=> '',
 					'admin_or_front'=> 'front' ),
 				'refund' => array( 
 					'class'			=> 'bookacti-refund-booking-group',
-					'label'			=> $admin_or_front === 'both' || $admin_or_front === 'admin' ? esc_html_x( 'Refund', 'Button label to trigger the refund action', BOOKACTI_PLUGIN_NAME ) : bookacti_get_message( 'refund_dialog_button' ),
-					'description'	=> esc_html__( 'Refund the booking group with one of the available refund method.', BOOKACTI_PLUGIN_NAME ),
+					'label'			=> $admin_or_front === 'both' || $admin_or_front === 'admin' ? esc_html_x( 'Refund', 'Button label to trigger the refund action', 'booking-activities' ) : bookacti_get_message( 'refund_dialog_button' ),
+					'description'	=> esc_html__( 'Refund the booking group with one of the available refund method.', 'booking-activities' ),
 					'link'			=> '',
 					'admin_or_front'=> 'both' ),
 				'delete' => array( 
 					'class'			=> 'bookacti-delete-booking-group',
-					'label'			=> esc_html__( 'Delete', BOOKACTI_PLUGIN_NAME ),
-					'description'	=> esc_html__( 'Delete permanently the booking group.', BOOKACTI_PLUGIN_NAME ),
+					'label'			=> esc_html__( 'Delete', 'booking-activities' ),
+					'description'	=> esc_html__( 'Delete permanently the booking group.', 'booking-activities' ),
 					'link'			=> '',
 					'admin_or_front'=> 'admin' )
 			), $admin_or_front );
@@ -908,28 +908,28 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		 */
 		function bookacti_get_bookings_export_columns() {
 			return apply_filters( 'bookacti_bookings_export_columns_labels', array(
-				'booking_id'			=> esc_html__( 'Booking ID', BOOKACTI_PLUGIN_NAME ),
-				'booking_type'			=> esc_html__( 'Booking type (single or group)', BOOKACTI_PLUGIN_NAME ),
-				'status'				=> esc_html__( 'Booking status', BOOKACTI_PLUGIN_NAME ),
-				'payment_status'		=> esc_html__( 'Payment status', BOOKACTI_PLUGIN_NAME ),
-				'quantity'				=> esc_html__( 'Quantity', BOOKACTI_PLUGIN_NAME ),
-				'creation_date'			=> esc_html__( 'Creation date', BOOKACTI_PLUGIN_NAME ),
-				'customer_id'			=> esc_html__( 'Customer ID', BOOKACTI_PLUGIN_NAME ),
-				'customer_display_name'	=> esc_html__( 'Customer display name', BOOKACTI_PLUGIN_NAME ),
-				'customer_first_name'	=> esc_html__( 'Customer first name', BOOKACTI_PLUGIN_NAME ),
-				'customer_last_name'	=> esc_html__( 'Customer last name', BOOKACTI_PLUGIN_NAME ),
-				'customer_email'		=> esc_html__( 'Customer Email', BOOKACTI_PLUGIN_NAME ),
-				'customer_phone'		=> esc_html__( 'Customer Phone', BOOKACTI_PLUGIN_NAME ),
-				'event_id'				=> esc_html__( 'Event ID', BOOKACTI_PLUGIN_NAME ),
-				'event_title'			=> esc_html__( 'Event title', BOOKACTI_PLUGIN_NAME ),
-				'start_date'			=> esc_html__( 'Start date', BOOKACTI_PLUGIN_NAME ),
-				'end_date'				=> esc_html__( 'End date', BOOKACTI_PLUGIN_NAME ),
-				'template_id'			=> esc_html__( 'Calendar ID', BOOKACTI_PLUGIN_NAME ),
-				'template_title'		=> esc_html__( 'Calendar title', BOOKACTI_PLUGIN_NAME ),
-				'activity_id'			=> esc_html__( 'Activity / Category ID', BOOKACTI_PLUGIN_NAME ),
-				'activity_title'		=> esc_html__( 'Activity / Category title', BOOKACTI_PLUGIN_NAME ),
-				'form_id'				=> esc_html__( 'Form ID', BOOKACTI_PLUGIN_NAME ),
-				'order_id'				=> esc_html__( 'Order ID', BOOKACTI_PLUGIN_NAME )
+				'booking_id'			=> esc_html__( 'Booking ID', 'booking-activities' ),
+				'booking_type'			=> esc_html__( 'Booking type (single or group)', 'booking-activities' ),
+				'status'				=> esc_html__( 'Booking status', 'booking-activities' ),
+				'payment_status'		=> esc_html__( 'Payment status', 'booking-activities' ),
+				'quantity'				=> esc_html__( 'Quantity', 'booking-activities' ),
+				'creation_date'			=> esc_html__( 'Creation date', 'booking-activities' ),
+				'customer_id'			=> esc_html__( 'Customer ID', 'booking-activities' ),
+				'customer_display_name'	=> esc_html__( 'Customer display name', 'booking-activities' ),
+				'customer_first_name'	=> esc_html__( 'Customer first name', 'booking-activities' ),
+				'customer_last_name'	=> esc_html__( 'Customer last name', 'booking-activities' ),
+				'customer_email'		=> esc_html__( 'Customer Email', 'booking-activities' ),
+				'customer_phone'		=> esc_html__( 'Customer Phone', 'booking-activities' ),
+				'event_id'				=> esc_html__( 'Event ID', 'booking-activities' ),
+				'event_title'			=> esc_html__( 'Event title', 'booking-activities' ),
+				'start_date'			=> esc_html__( 'Start date', 'booking-activities' ),
+				'end_date'				=> esc_html__( 'End date', 'booking-activities' ),
+				'template_id'			=> esc_html__( 'Calendar ID', 'booking-activities' ),
+				'template_title'		=> esc_html__( 'Calendar title', 'booking-activities' ),
+				'activity_id'			=> esc_html__( 'Activity / Category ID', 'booking-activities' ),
+				'activity_title'		=> esc_html__( 'Activity / Category title', 'booking-activities' ),
+				'form_id'				=> esc_html__( 'Form ID', 'booking-activities' ),
+				'order_id'				=> esc_html__( 'Order ID', 'booking-activities' )
 			) );
 		}
 		
@@ -1189,8 +1189,8 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		$possible_actions_array = array(
 			'email' => array( 
 				'id'			=> 'email',
-				'label'			=> __( 'Email', BOOKACTI_PLUGIN_NAME ),
-				'description'	=> __( 'Send a refund request by email to the administrator.', BOOKACTI_PLUGIN_NAME ) )
+				'label'			=> __( 'Email', 'booking-activities' ),
+				'description'	=> __( 'Send a refund request by email to the administrator.', 'booking-activities' ) )
 		);
 
 		return apply_filters( 'bookacti_refund_actions', $possible_actions_array );
@@ -1323,7 +1323,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		$html_to_return		= '';
 		if( empty( $possible_actions ) ) {
 			$html_to_return .= '<div id="bookacti-no-refund-option" >';
-			$html_to_return .= esc_html__( 'Sorry, no available refund option were found. Please contact the administrator.', BOOKACTI_PLUGIN_NAME );
+			$html_to_return .= esc_html__( 'Sorry, no available refund option were found. Please contact the administrator.', 'booking-activities' );
 			$html_to_return .= '</div>';
 		} else {
 
@@ -1331,9 +1331,9 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 			$html_to_return .= '<div id="bookacti-refund-option-title" >';
 			if( count( $possible_actions ) === 1 ) {
-				$html_to_return .= esc_html__( 'There is only one available refund option:', BOOKACTI_PLUGIN_NAME );
+				$html_to_return .= esc_html__( 'There is only one available refund option:', 'booking-activities' );
 			} else {
-				$html_to_return .= esc_html__( 'Pick a refund option:', BOOKACTI_PLUGIN_NAME );
+				$html_to_return .= esc_html__( 'Pick a refund option:', 'booking-activities' );
 			}
 			$html_to_return .= '</div>';
 
@@ -1360,7 +1360,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		$to = apply_filters( 'bookacti_refund_request_email_to', array( get_option( 'admin_email' ) ), $booking_id, $booking_type );
 		
 		/* translators: %1$s is the booking id */
-		$subject	= $booking_type === 'group' ? esc_html__( 'Refund request for booking group %1$s', BOOKACTI_PLUGIN_NAME ) : esc_html__( 'Refund request for booking %1$s', BOOKACTI_PLUGIN_NAME );
+		$subject	= $booking_type === 'group' ? esc_html__( 'Refund request for booking group %1$s', 'booking-activities' ) : esc_html__( 'Refund request for booking %1$s', 'booking-activities' );
 		$subject	= apply_filters( 'bookacti_refund_request_email_subject', sprintf( $subject, $booking_id ), $booking_id, $booking_type );
 		
 		$data = array();
@@ -1422,7 +1422,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		$data = apply_filters( 'bookacti_refund_request_email_data', $data, $booking_id, $booking_type );
 
 		/* translators: %1$s is a user name and %2$s is the booking ID. */
-		$message = '<h3>' . sprintf( esc_html__( '%1$s wants to be refunded for booking %2$s', BOOKACTI_PLUGIN_NAME ), $data['user']['name'], $booking_id ) . '</h3>';
+		$message = '<h3>' . sprintf( esc_html__( '%1$s wants to be refunded for booking %2$s', 'booking-activities' ), $data['user']['name'], $booking_id ) . '</h3>';
 		foreach( $data as $category_name => $category_data ) {
 			$message .= '<h4>' . esc_html( ucfirst ( str_replace( '_', ' ', $category_name ) ) ) . '</h4>';
 			$message .= '<table style="border: none;" >';
@@ -1434,7 +1434,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 		/* translators: Message left by the user */
 		if( $user_message ) {
-			$message	.= '<h4>' . esc_html__( 'User message', BOOKACTI_PLUGIN_NAME ). '</h4>';
+			$message	.= '<h4>' . esc_html__( 'User message', 'booking-activities' ). '</h4>';
 			$message	.= '<em>' . esc_html( $user_message ) . '</em><br/>';
 		}
 
@@ -1458,12 +1458,12 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	 */
 	function bookacti_get_booking_state_labels() {
 		return apply_filters( 'bookacti_booking_states_labels_array', array(
-			'delivered'			=> array( 'display_state' => 'good',	'label' => esc_html__( 'Delivered', BOOKACTI_PLUGIN_NAME ) ),
-			'booked'			=> array( 'display_state' => 'good',	'label' => esc_html__( 'Booked', BOOKACTI_PLUGIN_NAME ) ),
-			'pending'			=> array( 'display_state' => 'warning',	'label' => esc_html__( 'Pending', BOOKACTI_PLUGIN_NAME ) ),
-			'cancelled'			=> array( 'display_state' => 'bad',		'label' => esc_html__( 'Cancelled', BOOKACTI_PLUGIN_NAME ) ),
-			'refunded'			=> array( 'display_state' => 'bad',		'label' => esc_html__( 'Refunded', BOOKACTI_PLUGIN_NAME ) ),
-			'refund_requested'	=> array( 'display_state' => 'bad',		'label' => esc_html__( 'Refund requested', BOOKACTI_PLUGIN_NAME ) )
+			'delivered'			=> array( 'display_state' => 'good',	'label' => esc_html__( 'Delivered', 'booking-activities' ) ),
+			'booked'			=> array( 'display_state' => 'good',	'label' => esc_html__( 'Booked', 'booking-activities' ) ),
+			'pending'			=> array( 'display_state' => 'warning',	'label' => esc_html__( 'Pending', 'booking-activities' ) ),
+			'cancelled'			=> array( 'display_state' => 'bad',		'label' => esc_html__( 'Cancelled', 'booking-activities' ) ),
+			'refunded'			=> array( 'display_state' => 'bad',		'label' => esc_html__( 'Refunded', 'booking-activities' ) ),
+			'refund_requested'	=> array( 'display_state' => 'bad',		'label' => esc_html__( 'Refund requested', 'booking-activities' ) )
 		) );
 	}
 	
@@ -1476,9 +1476,9 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	 */
 	function bookacti_get_payment_status_labels() {
 		return apply_filters( 'bookacti_payment_status_labels_array', array(
-			'none'	=> array( 'display_state' => 'disabled','label' => esc_html__( 'No payment required', BOOKACTI_PLUGIN_NAME ) ),
-			'owed'	=> array( 'display_state' => 'warning',	'label' => esc_html__( 'Owed', BOOKACTI_PLUGIN_NAME ) ),
-			'paid'	=> array( 'display_state' => 'good',	'label' => esc_html__( 'Paid', BOOKACTI_PLUGIN_NAME ) )
+			'none'	=> array( 'display_state' => 'disabled','label' => esc_html__( 'No payment required', 'booking-activities' ) ),
+			'owed'	=> array( 'display_state' => 'warning',	'label' => esc_html__( 'Owed', 'booking-activities' ) ),
+			'paid'	=> array( 'display_state' => 'good',	'label' => esc_html__( 'Paid', 'booking-activities' ) )
 		) );
 	}
 	
@@ -1502,7 +1502,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 				$formatted_value = '<span class="bookacti-booking-state bookacti-booking-state-' . esc_attr( $booking_states_labels[ $state ][ 'display_state' ] ) . '" data-booking-state="' . esc_attr( $state ) . '" >' . esc_html( $booking_states_labels[ $state ][ 'label' ] ) . '</span>';
 			}
 		} else if( $state ) {
-			$formatted_value = '<span class="bookacti-booking-state" data-booking-state="' . esc_attr( $state ) . '" >' . esc_html__( $state, BOOKACTI_PLUGIN_NAME ) . '</span>';
+			$formatted_value = '<span class="bookacti-booking-state" data-booking-state="' . esc_attr( $state ) . '" >' . esc_html__( $state, 'booking-activities' ) . '</span>';
 		}
 
 		return apply_filters( 'bookacti_booking_states_display', $formatted_value, $state, $icon_only );
@@ -1528,7 +1528,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 				$formatted_value = '<span class="bookacti-payment-status bookacti-payment-status-' . esc_attr( $payment_status_labels[ $status ][ 'display_state' ] ) . '" data-payment-status="' . esc_attr( $status ) . '" >' . esc_html( $payment_status_labels[ $status ][ 'label' ] ) . '</span>';
 			}
 		} else if( $status ) {
-			$formatted_value = '<span class="bookacti-payment-status" data-payment-status="' . esc_attr( $status ) . '" >' . esc_html__( $status, BOOKACTI_PLUGIN_NAME ) . '</span>';
+			$formatted_value = '<span class="bookacti-payment-status" data-payment-status="' . esc_attr( $status ) . '" >' . esc_html__( $status, 'booking-activities' ) . '</span>';
 		}
 
 		return apply_filters( 'bookacti_payment_status_display', $formatted_value, $status, $icon_only );
@@ -1556,30 +1556,30 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
  */
 function bookacti_get_user_booking_list_columns_labels() {
 	return apply_filters( 'bookacti_user_booking_list_columns_labels', array(
-		'booking_id'			=> _x( 'id', 'An id is a unique identification number', BOOKACTI_PLUGIN_NAME ),
-		'booking_type'			=> esc_html_x( 'Type', 'Booking type (single or group)', BOOKACTI_PLUGIN_NAME ),
-		'status'				=> esc_html_x( 'Status', 'Booking status', BOOKACTI_PLUGIN_NAME ),
-		'payment_status'		=> esc_html_x( 'Paid', 'Payment status column name', BOOKACTI_PLUGIN_NAME ),
-		'quantity'				=> esc_html_x( 'Qty', 'Short for "Quantity"', BOOKACTI_PLUGIN_NAME ),
-		'creation_date'			=> esc_html__( 'Date', BOOKACTI_PLUGIN_NAME ),
-		'customer_id'			=> esc_html__( 'Customer ID', BOOKACTI_PLUGIN_NAME ),
-		'customer_display_name'	=> esc_html__( 'Customer', BOOKACTI_PLUGIN_NAME ),
-		'customer_first_name'	=> esc_html__( 'First name', BOOKACTI_PLUGIN_NAME ),
-		'customer_last_name'	=> esc_html__( 'Last name', BOOKACTI_PLUGIN_NAME ),
-		'customer_email'		=> esc_html__( 'Email', BOOKACTI_PLUGIN_NAME ),
-		'customer_phone'		=> esc_html__( 'Phone', BOOKACTI_PLUGIN_NAME ),
-		'events'				=> esc_html__( 'Events', BOOKACTI_PLUGIN_NAME ),
-		'event_id'				=> esc_html__( 'Event ID', BOOKACTI_PLUGIN_NAME ),
-		'event_title'			=> esc_html__( 'Title', BOOKACTI_PLUGIN_NAME ),
-		'start_date'			=> esc_html__( 'Start', BOOKACTI_PLUGIN_NAME ),
-		'end_date'				=> esc_html__( 'End', BOOKACTI_PLUGIN_NAME ),
-		'template_id'			=> esc_html__( 'Calendar ID', BOOKACTI_PLUGIN_NAME ),
-		'template_title'		=> esc_html__( 'Calendar', BOOKACTI_PLUGIN_NAME ),
-		'activity_id'			=> esc_html__( 'Activity ID', BOOKACTI_PLUGIN_NAME ),
-		'activity_title'		=> esc_html__( 'Activity', BOOKACTI_PLUGIN_NAME ),
-		'form_id'				=> esc_html__( 'Form ID', BOOKACTI_PLUGIN_NAME ),
-		'order_id'				=> esc_html__( 'Order ID', BOOKACTI_PLUGIN_NAME ),
-		'actions'				=> esc_html__( 'Actions', BOOKACTI_PLUGIN_NAME )
+		'booking_id'			=> _x( 'id', 'An id is a unique identification number', 'booking-activities' ),
+		'booking_type'			=> esc_html_x( 'Type', 'Booking type (single or group)', 'booking-activities' ),
+		'status'				=> esc_html_x( 'Status', 'Booking status', 'booking-activities' ),
+		'payment_status'		=> esc_html_x( 'Paid', 'Payment status column name', 'booking-activities' ),
+		'quantity'				=> esc_html_x( 'Qty', 'Short for "Quantity"', 'booking-activities' ),
+		'creation_date'			=> esc_html__( 'Date', 'booking-activities' ),
+		'customer_id'			=> esc_html__( 'Customer ID', 'booking-activities' ),
+		'customer_display_name'	=> esc_html__( 'Customer', 'booking-activities' ),
+		'customer_first_name'	=> esc_html__( 'First name', 'booking-activities' ),
+		'customer_last_name'	=> esc_html__( 'Last name', 'booking-activities' ),
+		'customer_email'		=> esc_html__( 'Email', 'booking-activities' ),
+		'customer_phone'		=> esc_html__( 'Phone', 'booking-activities' ),
+		'events'				=> esc_html__( 'Events', 'booking-activities' ),
+		'event_id'				=> esc_html__( 'Event ID', 'booking-activities' ),
+		'event_title'			=> esc_html__( 'Title', 'booking-activities' ),
+		'start_date'			=> esc_html__( 'Start', 'booking-activities' ),
+		'end_date'				=> esc_html__( 'End', 'booking-activities' ),
+		'template_id'			=> esc_html__( 'Calendar ID', 'booking-activities' ),
+		'template_title'		=> esc_html__( 'Calendar', 'booking-activities' ),
+		'activity_id'			=> esc_html__( 'Activity ID', 'booking-activities' ),
+		'activity_title'		=> esc_html__( 'Activity', 'booking-activities' ),
+		'form_id'				=> esc_html__( 'Form ID', 'booking-activities' ),
+		'order_id'				=> esc_html__( 'Order ID', 'booking-activities' ),
+		'actions'				=> esc_html__( 'Actions', 'booking-activities' )
 	) );
 }
 
@@ -1683,7 +1683,7 @@ function bookacti_get_user_booking_list_items( $filters, $columns = array() ) {
 
 			$raw_id			= $group->id;
 			$tr_class		= 'bookacti-booking-group';
-			$id				= $group->id . '<span class="bookacti-booking-group-indicator">' . esc_html_x( 'Group', 'noun', BOOKACTI_PLUGIN_NAME ) . '</span>';
+			$id				= $group->id . '<span class="bookacti-booking-group-indicator">' . esc_html_x( 'Group', 'noun', 'booking-activities' ) . '</span>';
 			$user_id		= $group->user_id;
 			$status			= bookacti_format_booking_state( $group->state );
 			$paid			= bookacti_format_payment_status( $group->payment_status );
@@ -1750,7 +1750,7 @@ function bookacti_get_user_booking_list_items( $filters, $columns = array() ) {
 		// Any other cases
 		} else {
 			$user		= null;
-			$customer	= esc_html( __( 'Unknown user', BOOKACTI_PLUGIN_NAME ) . ' (' . $user_id . ')' );
+			$customer	= esc_html( __( 'Unknown user', 'booking-activities' ) . ' (' . $user_id . ')' );
 			$first_name	= '';
 			$last_name	= '';
 			$email		= '';
@@ -1769,7 +1769,7 @@ function bookacti_get_user_booking_list_items( $filters, $columns = array() ) {
 			'payment_status'		=> $paid,
 			'quantity'				=> $quantity,
 			/* translators: Datetime format. Must be adapted to each country. Use wp date_i18n documentation to find the appropriated combinaison https://wordpress.org/support/article/formatting-date-and-time/ */
-			'creation_date'			=> bookacti_format_datetime( $booking->creation_date, esc_html__( 'F d, Y', BOOKACTI_PLUGIN_NAME ) ),
+			'creation_date'			=> bookacti_format_datetime( $booking->creation_date, esc_html__( 'F d, Y', 'booking-activities' ) ),
 			'customer_id'			=> $user_id,
 			'customer_display_name'	=> $customer,
 			'customer_first_name'	=> $first_name,
@@ -1891,7 +1891,7 @@ function bookacti_get_user_booking_list( $filters, $columns = array(), $per_page
 			?>
 				<span class='bookacti-user-booking-list-previous-page'>
 					<a href='<?php echo esc_url( add_query_arg( 'bookacti_booking_list_paged_' . $bookacti_booking_list_count, ( $page_nb - 1 ) ) ); ?>' class='button'>
-						<?php esc_html_e( 'Previous', BOOKACTI_PLUGIN_NAME ); ?>
+						<?php esc_html_e( 'Previous', 'booking-activities' ); ?>
 					</a>
 				</span>
 			<?php
@@ -1905,7 +1905,7 @@ function bookacti_get_user_booking_list( $filters, $columns = array(), $per_page
 			?>
 				<span class='bookacti-user-booking-list-next-page'>
 					<a href='<?php echo esc_url( add_query_arg( 'bookacti_booking_list_paged_' . $bookacti_booking_list_count, ( $page_nb + 1 ) ) ); ?>' class='button'>
-						<?php esc_html_e( 'Next', BOOKACTI_PLUGIN_NAME ); ?>
+						<?php esc_html_e( 'Next', 'booking-activities' ); ?>
 					</a>
 				</span>
 			<?php
@@ -1943,7 +1943,7 @@ function bookacti_get_user_booking_list_rows( $booking_list_items, $columns = ar
 	?>
 		<tr>
 			<td colspan='<?php echo esc_attr( count( $columns ) ); ?>'>
-				<?php esc_html_e( 'You don\'t have any bookings.', BOOKACTI_PLUGIN_NAME ); ?>
+				<?php esc_html_e( 'You don\'t have any bookings.', 'booking-activities' ); ?>
 			</td>
 		</tr>
 	<?php

@@ -434,14 +434,14 @@ function bookacti_get_default_form_fields_data( $field_name = '' ) {
 		'calendar' => array( 
 			'name'			=> 'calendar',
 			'type'			=> 'calendar',
-			'title'			=> esc_html__( 'Calendar', BOOKACTI_PLUGIN_NAME ),
+			'title'			=> esc_html__( 'Calendar', 'booking-activities' ),
 			'compulsory'	=> 1,
 			'default'		=> 1
 		),
 		'login' => array( 
 			'name'			=> 'login',
 			'type'			=> 'login',
-			'title'			=> esc_html__( 'User Data (Login / Registration)', BOOKACTI_PLUGIN_NAME ),
+			'title'			=> esc_html__( 'User Data (Login / Registration)', 'booking-activities' ),
 			'default'		=> 1,
 			'label'			=> array_merge( $login_defaults[ 'label' ], $login_type_defaults[ 'label' ], $register_defaults[ 'label' ] ),
 			'placeholder'	=> array_merge( $login_defaults[ 'placeholder' ], $login_type_defaults[ 'placeholder' ], $register_defaults[ 'placeholder' ] ),
@@ -450,29 +450,29 @@ function bookacti_get_default_form_fields_data( $field_name = '' ) {
 		'free_text' => array( 
 			'name'			=> 'free_text',
 			'type'			=> 'free_text',
-			'title'			=> esc_html__( 'Free text', BOOKACTI_PLUGIN_NAME ),
+			'title'			=> esc_html__( 'Free text', 'booking-activities' ),
 			'unique' 		=> 0
 		),
 		'quantity' => array( 
 			'name'		=> 'quantity',
 			'type'		=> 'quantity',
-			'title'		=> esc_html__( 'Quantity', BOOKACTI_PLUGIN_NAME ),
-			'label'		=> esc_html__( 'Quantity', BOOKACTI_PLUGIN_NAME ),
+			'title'		=> esc_html__( 'Quantity', 'booking-activities' ),
+			'label'		=> esc_html__( 'Quantity', 'booking-activities' ),
 			'required'	=> 1,
 			'default'	=> 1
 		),
 		'terms' => array( 
 			'name'		=> 'terms',
 			'type'		=> 'checkbox',
-			'title'		=> esc_html__( 'Terms', BOOKACTI_PLUGIN_NAME ),
-			'label'		=> esc_html__( 'I have read and agree to the terms and conditions', BOOKACTI_PLUGIN_NAME ),
+			'title'		=> esc_html__( 'Terms', 'booking-activities' ),
+			'label'		=> esc_html__( 'I have read and agree to the terms and conditions', 'booking-activities' ),
 			'required'	=> 1
 		),
 		'submit' => array( 
 			'name'		=> 'submit',
 			'type'		=> 'submit',
-			'title'		=> esc_html__( 'Submit button', BOOKACTI_PLUGIN_NAME ),
-			'value'		=> esc_html__( 'Book', BOOKACTI_PLUGIN_NAME ),
+			'title'		=> esc_html__( 'Submit button', 'booking-activities' ),
+			'value'		=> esc_html__( 'Book', 'booking-activities' ),
 			'default'	=> 1
 		)
 	);
@@ -945,7 +945,7 @@ function bookacti_display_form_field( $field, $instance_id = '', $context = 'dis
 			<?php 
 				echo apply_filters( 'bookacti_translate_text', $field[ 'label' ] ); 
 				if( $field[ 'required' ] ) {
-					echo '<span class="bookacti-required-field-indicator" title="' . esc_attr__( 'Required field', BOOKACTI_PLUGIN_NAME ) . '"></span>';
+					echo '<span class="bookacti-required-field-indicator" title="' . esc_attr__( 'Required field', 'booking-activities' ) . '"></span>';
 				}
 			?>
 			</label>
@@ -993,13 +993,13 @@ function bookacti_display_form_field_for_editor( $field, $echo = true ) {
 			<?php 
 				do_action( 'bookacti_form_editor_field_actions_before', $field );
 			?>
-				<div class='bookacti-form-editor-field-action bookacti-edit-form-field dashicons dashicons-admin-generic' title='<?php esc_attr_e( 'Change field settings', BOOKACTI_PLUGIN_NAME ); ?>'></div>
+				<div class='bookacti-form-editor-field-action bookacti-edit-form-field dashicons dashicons-admin-generic' title='<?php esc_attr_e( 'Change field settings', 'booking-activities' ); ?>'></div>
 			<?php if( ! $field[ 'compulsory' ] ) { ?>
-				<div class='bookacti-form-editor-field-action bookacti-remove-form-field dashicons dashicons-trash' title='<?php esc_attr_e( 'Remove this field', BOOKACTI_PLUGIN_NAME ); ?>'></div>
+				<div class='bookacti-form-editor-field-action bookacti-remove-form-field dashicons dashicons-trash' title='<?php esc_attr_e( 'Remove this field', 'booking-activities' ); ?>'></div>
 			<?php }
 				do_action( 'bookacti_form_editor_field_actions_after', $field ); 
 			?>
-				<div class='bookacti-field-toggle dashicons <?php echo $field_name === 'calendar' ? 'dashicons-arrow-up' :'dashicons-arrow-down'; ?>' title='<?php esc_attr_e( 'Show / Hide', BOOKACTI_PLUGIN_NAME ); ?>'></div>
+				<div class='bookacti-field-toggle dashicons <?php echo $field_name === 'calendar' ? 'dashicons-arrow-up' :'dashicons-arrow-down'; ?>' title='<?php esc_attr_e( 'Show / Hide', 'booking-activities' ); ?>'></div>
 			</div>
 		</div>
 		<div class='bookacti-form-editor-field-body' style='<?php echo $field_name === 'calendar' ? '' : 'display:none;'; ?>' >
@@ -1027,17 +1027,17 @@ function bookacti_validate_registration( $login_values, $login_data ) {
 
 	// Check email
 	if( ! is_email( $login_values[ 'email' ] ) || strlen( $login_values[ 'email' ] ) > 64 ) { 
-		$return_array[ 'messages' ][ 'invalid_email' ] = esc_html__( 'Invalid email address.', BOOKACTI_PLUGIN_NAME );
+		$return_array[ 'messages' ][ 'invalid_email' ] = esc_html__( 'Invalid email address.', 'booking-activities' );
 	}
 	
 	// Check if password exists
 	if( ! $login_values[ 'password' ] && ! $login_data[ 'generate_password' ] ) {
-		$return_array[ 'messages' ][ 'invalid_password' ] = esc_html__( 'Invalid password.', BOOKACTI_PLUGIN_NAME );
+		$return_array[ 'messages' ][ 'invalid_password' ] = esc_html__( 'Invalid password.', 'booking-activities' );
 	}
 	
 	// Check password strength
 	if( $login_values[ 'password_strength' ] < $login_data[ 'min_password_strength' ] && ! $login_data[ 'generate_password' ] ) {
-		$return_array[ 'messages' ][ 'invalid_password_strength' ] = esc_html__( 'Your password is not strong enough.', BOOKACTI_PLUGIN_NAME );
+		$return_array[ 'messages' ][ 'invalid_password_strength' ] = esc_html__( 'Your password is not strong enough.', 'booking-activities' );
 	}
 	
 	// Check that required register fields are filled
@@ -1046,7 +1046,7 @@ function bookacti_validate_registration( $login_values, $login_data ) {
 			if( $field_name === 'password' && ! empty( $login_values[ 'login_type' ] ) && $login_values[ 'login_type' ] === 'new_account' && $login_data[ 'generate_password' ] ) { continue; }
 			$field_label = ! empty( $login_data[ 'label' ][ $field_name ] ) ? $login_data[ 'label' ][ $field_name ] : $field_name;
 			/* translators: %s is the field name. */
-			$return_array[ 'messages' ][ 'missing_' . $field_name ] = sprintf( esc_html__( 'The field "%s" is required.', BOOKACTI_PLUGIN_NAME ), $field_label );
+			$return_array[ 'messages' ][ 'missing_' . $field_name ] = sprintf( esc_html__( 'The field "%s" is required.', 'booking-activities' ), $field_label );
 		}
 	}
 	
@@ -1139,7 +1139,7 @@ function bookacti_validate_login( $login_values, $require_authentication = true 
 	$user = get_user_by( 'email', $login_values[ 'email' ] );
 	if( ! $user ) { 
 		$return_array[ 'error' ]	= 'user_not_found';
-		$return_array[ 'message' ]	= esc_html__( 'This email address doesn\'t match any account.', BOOKACTI_PLUGIN_NAME );
+		$return_array[ 'message' ]	= esc_html__( 'This email address doesn\'t match any account.', 'booking-activities' );
 		return $return_array;
 	}
 
@@ -1148,7 +1148,7 @@ function bookacti_validate_login( $login_values, $require_authentication = true 
 		$user = wp_authenticate( $user->user_email, $login_values[ 'password' ] );
 		if( ! is_a( $user, 'WP_User' ) ) { 
 			$return_array[ 'error' ]	= 'wrong_password';
-			$return_array[ 'message' ]	= esc_html__( 'The password is incorrect. Try again.', BOOKACTI_PLUGIN_NAME );
+			$return_array[ 'message' ]	= esc_html__( 'The password is incorrect. Try again.', 'booking-activities' );
 			return $return_array;
 		}
 	}
@@ -1173,7 +1173,7 @@ function bookacti_validate_form_fields( $form_id, $fields_data = array() ) {
 	// Make sure that form data exist
 	if( ! $fields_data ) { 
 		$validated[ 'status' ]	= 'failed';
-		$validated[ 'message' ][ 'invalid_form_id' ]	= esc_html__( 'Invalid form ID.', BOOKACTI_PLUGIN_NAME );
+		$validated[ 'message' ][ 'invalid_form_id' ]	= esc_html__( 'Invalid form ID.', 'booking-activities' );
 		return apply_filters( 'bookacti_validate_form_fields', $validated, $form_id, $fields_data );
 	}
 	
@@ -1189,7 +1189,7 @@ function bookacti_validate_form_fields( $form_id, $fields_data = array() ) {
 	}
 	if( $has_terms && empty( $_POST[ 'terms' ] ) ) {
 		$validated[ 'status' ]	= 'failed';
-		$validated[ 'message' ][ 'terms_not_agreed' ]	= esc_html__( 'You must agree to the terms and conditions.', BOOKACTI_PLUGIN_NAME );
+		$validated[ 'message' ][ 'terms_not_agreed' ]	= esc_html__( 'You must agree to the terms and conditions.', 'booking-activities' );
 	}
 	
 	return apply_filters( 'bookacti_validate_form_fields', $validated, $form_id, $fields_data );
@@ -1288,7 +1288,7 @@ function bookacti_get_login_fields_default_data() {
 		'email' => array( 
 			'name'			=> 'email', 
 			'type'			=> 'text', 
-			'label'			=> esc_html__( 'Email', BOOKACTI_PLUGIN_NAME ), 
+			'label'			=> esc_html__( 'Email', 'booking-activities' ), 
 			'placeholder'	=> '', 
 			'tip'			=> '', 
 			'value'			=> '', 
@@ -1298,7 +1298,7 @@ function bookacti_get_login_fields_default_data() {
 		'password' => array( 
 			'name'			=> 'password', 
 			'type'			=> 'password', 
-			'label'			=> esc_html__( 'Password', BOOKACTI_PLUGIN_NAME ), 
+			'label'			=> esc_html__( 'Password', 'booking-activities' ), 
 			'placeholder'	=> '', 
 			'tip'			=> '', 
 			'value'			=> '', 
@@ -1308,7 +1308,7 @@ function bookacti_get_login_fields_default_data() {
 		'forgotten_password' => array( 
 			'name'			=> 'forgotten_password', 
 			'type'			=> 'link', 
-			'label'			=> esc_html__( 'Forgot your password?', BOOKACTI_PLUGIN_NAME ), 
+			'label'			=> esc_html__( 'Forgot your password?', 'booking-activities' ), 
 			'placeholder'	=> '', 
 			'tip'			=> '', 
 			'value'			=> '', 
@@ -1331,24 +1331,24 @@ function bookacti_get_login_type_field_default_options( $keys = array() ) {
 	$login_types = apply_filters( 'bookacti_login_type_field_default_options', array(
 		'my_account' => array( 
 			'value'			=> 'my_account', 
-			'title'			=> esc_html__( 'Log in', BOOKACTI_PLUGIN_NAME ), 
-			'label'			=> esc_html__( 'Book with my account', BOOKACTI_PLUGIN_NAME ), 
+			'title'			=> esc_html__( 'Log in', 'booking-activities' ), 
+			'label'			=> esc_html__( 'Book with my account', 'booking-activities' ), 
 			'placeholder'	=> '', 
 			'tip'			=> '', 
 			'displayed'		=> 1
 		),
 		'new_account' => array( 
 			'value'			=> 'new_account', 
-			'title'			=> esc_html__( 'Create an account', BOOKACTI_PLUGIN_NAME ), 
-			'label'			=> esc_html__( 'Create an account', BOOKACTI_PLUGIN_NAME ), 
+			'title'			=> esc_html__( 'Create an account', 'booking-activities' ), 
+			'label'			=> esc_html__( 'Create an account', 'booking-activities' ), 
 			'placeholder'	=> '', 
 			'tip'			=> '', 
 			'displayed'		=> 1
 		),
 		'no_account' => array( 
 			'value'			=> 'no_account', 
-			'title'			=> esc_html__( 'Book without account', BOOKACTI_PLUGIN_NAME ), 
-			'label'			=> esc_html__( 'Book without account', BOOKACTI_PLUGIN_NAME ), 
+			'title'			=> esc_html__( 'Book without account', 'booking-activities' ), 
+			'label'			=> esc_html__( 'Book without account', 'booking-activities' ), 
 			'placeholder'	=> '', 
 			'tip'			=> '',  
 			'displayed'		=> 1
@@ -1378,7 +1378,7 @@ function bookacti_get_register_fields_default_data() {
 		'first_name' => array( 
 			'name'			=> 'first_name', 
 			'type'			=> 'text', 
-			'label'			=> esc_html__( 'First name', BOOKACTI_PLUGIN_NAME ), 
+			'label'			=> esc_html__( 'First name', 'booking-activities' ), 
 			'placeholder'	=> '', 
 			'tip'			=> '', 
 			'value'			=> '', 
@@ -1388,7 +1388,7 @@ function bookacti_get_register_fields_default_data() {
 		'last_name' => array( 
 			'name'			=> 'last_name', 
 			'type'			=> 'text', 
-			'label'			=> esc_html__( 'Last name', BOOKACTI_PLUGIN_NAME ), 
+			'label'			=> esc_html__( 'Last name', 'booking-activities' ), 
 			'placeholder'	=> '', 
 			'tip'			=> '', 
 			'value'			=> '', 
@@ -1398,7 +1398,7 @@ function bookacti_get_register_fields_default_data() {
 		'phone' => array( 
 			'name'			=> 'phone', 
 			'type'			=> 'text', 
-			'label'			=> esc_html__( 'Phone number', BOOKACTI_PLUGIN_NAME ), 
+			'label'			=> esc_html__( 'Phone number', 'booking-activities' ), 
 			'placeholder'	=> '', 
 			'tip'			=> '', 
 			'value'			=> '', 
@@ -1498,7 +1498,7 @@ function bookacti_format_form_filters( $filters = array() ) {
 /**
  * Display 'managers' metabox content for forms
  * @since 1.5.0
- * @version 1.7.3
+ * @version 1.7.8
  */
 function bookacti_display_form_managers_meta_box( $form ) {
 	
@@ -1545,13 +1545,13 @@ function bookacti_display_form_managers_meta_box( $form ) {
 	<div id='bookacti-form-managers-container' class='bookacti-items-container' data-type='users' >
 		<label id='bookacti-form-managers-title' class='bookacti-fullwidth-label' for='bookacti-add-new-form-managers-select-box' >
 		<?php 
-			esc_html_e( 'Who can manage this form?', BOOKACTI_PLUGIN_NAME );
-			$tip  = __( 'Choose who is allowed to access this form.', BOOKACTI_PLUGIN_NAME );
+			esc_html_e( 'Who can manage this form?', 'booking-activities' );
+			$tip  = __( 'Choose who is allowed to access this form.', 'booking-activities' );
 			/* translators: %s = capabilities name */
-			$tip .= ' ' . sprintf( __( 'All administrators already have this privilege. If the selectbox is empty, it means that no users have capabilities such as %s.', BOOKACTI_PLUGIN_NAME ), '"bookacti_edit_forms"' );
-			/* translators: %1$s = Points of sale add-on link. %2$s = User role editor plugin name. */
+			$tip .= ' ' . sprintf( __( 'All administrators already have this privilege. If the selectbox is empty, it means that no users have capabilities such as %s.', 'booking-activities' ), '"bookacti_edit_forms"' );
 			$tip .= '<br/>' 
-				 .  sprintf( __( 'Point of sale managers from %1$s add-on have these capabilities. If you want to grant a user these capabilities, use a plugin such as %2$s.', BOOKACTI_PLUGIN_NAME ), 
+				/* translators: %1$s = Points of sale add-on link. %2$s = User role editor plugin name. */
+				 .  sprintf( __( 'Point of sale managers from %1$s add-on have these capabilities. If you want to grant a user these capabilities, use a plugin such as %2$s.', 'booking-activities' ), 
 						'<a href="https://booking-activities.fr/en/downloads/points-of-sale/?utm_source=plugin&utm_medium=plugin&utm_campaign=points-of-sale&utm_content=infobulle-permission" target="_blank" >Points of Sale</a>',
 						'<a href="https://wordpress.org/plugins/user-role-editor/" target="_blank" >User Role Editor</a>'
 					);
@@ -1562,13 +1562,13 @@ function bookacti_display_form_managers_meta_box( $form ) {
 			<select id='bookacti-add-new-form-managers-select-box' class='bookacti-add-new-items-select-box' >
 			<?php echo $available_managers_options_list; ?>
 			</select>
-			<button type='button' id='bookacti-add-form-managers' class='bookacti-add-items' ><?php esc_html_e( 'Add manager', BOOKACTI_PLUGIN_NAME ); ?></button>
+			<button type='button' id='bookacti-add-form-managers' class='bookacti-add-items' ><?php esc_html_e( 'Add manager', 'booking-activities' ); ?></button>
 		</div>
 		<div id='bookacti-form-managers-list-container' class='bookacti-items-list-container' >
 			<select name='form-managers[]' id='bookacti-form-managers-select-box' class='bookacti-items-select-box' multiple >
 			<?php echo $current_managers_options_list; ?>
 			</select>
-			<button type='button' id='bookacti-remove-form-managers' class='bookacti-remove-items' ><?php esc_html_e( 'Remove selected', BOOKACTI_PLUGIN_NAME ); ?></button>
+			<button type='button' id='bookacti-remove-form-managers' class='bookacti-remove-items' ><?php esc_html_e( 'Remove selected', 'booking-activities' ); ?></button>
 		</div>
 	</div>
 	<?php
@@ -1589,11 +1589,11 @@ function bookacti_display_form_publish_meta_box( $form ) {
 				if ( current_user_can( 'bookacti_delete_forms' ) ) {
 					if( ! $form[ 'active' ] ) {
 						echo '<a href="' . esc_url( wp_nonce_url( get_admin_url() . 'admin.php?page=bookacti_forms', 'delete-form_' . $form[ 'form_id' ] ) . '&action=delete&form_id=' . $form[ 'form_id' ] ) . '" class="submitdelete deletion" >'
-								. esc_html_x( 'Delete Permanently', 'forms', BOOKACTI_PLUGIN_NAME )
+								. esc_html_x( 'Delete Permanently', 'forms', 'booking-activities' )
 							. '</a>';
 					} else {
 						echo '<a href="' . esc_url( wp_nonce_url( get_admin_url() . 'admin.php?page=bookacti_forms', 'trash-form_' . $form[ 'form_id' ] ) . '&status=trash&action=trash&form_id=' . $form[ 'form_id' ] ) . '" class="submitdelete deletion" >'
-								. esc_html_x( 'Move to trash', 'forms', BOOKACTI_PLUGIN_NAME )
+								. esc_html_x( 'Move to trash', 'forms', 'booking-activities' )
 							. '</a>';
 					}
 				}
@@ -1607,7 +1607,7 @@ function bookacti_display_form_publish_meta_box( $form ) {
 					   type='submit' 
 					   class='button button-primary button-large' 
 					   id='publish' 
-					   value='<?php echo $form[ 'active' ] ? esc_attr_x( 'Update', 'forms', BOOKACTI_PLUGIN_NAME ) : ( $form[ 'status' ] === 'auto-draft' ? esc_attr_x( 'Publish', 'forms', BOOKACTI_PLUGIN_NAME ) : esc_attr_x( 'Restore', 'forms', BOOKACTI_PLUGIN_NAME ) ); ?>' 
+					   value='<?php echo $form[ 'active' ] ? esc_attr_x( 'Update', 'forms', 'booking-activities' ) : ( $form[ 'status' ] === 'auto-draft' ? esc_attr_x( 'Publish', 'forms', 'booking-activities' ) : esc_attr_x( 'Restore', 'forms', 'booking-activities' ) ); ?>' 
 				/>
 			</div>
 			<div class='clear'></div>
@@ -1625,9 +1625,9 @@ function bookacti_display_form_publish_meta_box( $form ) {
 function bookacti_display_form_integration_tuto_meta_box( $form ) {
 	$shortcode = '[bookingactivities_form form="' . $form[ 'form_id' ] . '"]';
 ?>
-	<h4><?php _e( 'Integrate in a post, page, or text widget', BOOKACTI_PLUGIN_NAME ) ?></h4>
+	<h4><?php _e( 'Integrate in a post, page, or text widget', 'booking-activities' ) ?></h4>
 	<div>
-		<p><em><label for='bookacti-form-shortcode'><?php esc_html_e( 'Copy this shortcode and paste it into your post, page, or text widget content:', BOOKACTI_PLUGIN_NAME ); ?></label></em></p>
+		<p><em><label for='bookacti-form-shortcode'><?php esc_html_e( 'Copy this shortcode and paste it into your post, page, or text widget content:', 'booking-activities' ); ?></label></em></p>
 		<p class='shortcode wp-ui-highlight'>
 			<input type='text' id='bookacti-form-shortcode' onfocus='this.select();' readonly='readonly' class='large-text code' value='<?php echo esc_attr( $shortcode ); ?>' />
 		</p>

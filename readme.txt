@@ -5,7 +5,7 @@ Tags: booking activities, booking sport, booking form, event reservation, reserv
 Requires at least: 3.6
 Tested up to: 5.2
 Requires PHP: 5.3
-Stable tag: 1.7.7
+Stable tag: 1.7.8
 License: GPLv3 or later
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
 
@@ -319,9 +319,10 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 
 == Changelog ==
 
-= 1.7.8 =
+= 1.7.8 - 2019/08/01 =
 * Fix - Numeric values were not displayed in user booking list
 * Dev - Add hooks to allow to set other product types as "Activity"
+* Dev - Replace PHP constant in text domain by a raw string
 
 = 1.7.7 - 2019/07/02 =
 * Fix - Add to cart on event click didn't work on WC product pages

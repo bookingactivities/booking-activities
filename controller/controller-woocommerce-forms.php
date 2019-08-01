@@ -10,9 +10,9 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
  */
 function bookacti_display_wc_calendar_integration_description( $step, $template_id ) {
 	$description = '<ul><li>';
-	$description .= '<strong>' . esc_html__( 'Without WooCommerce:', BOOKACTI_PLUGIN_NAME ) . '</strong> ' . $step;
+	$description .= '<strong>' . esc_html__( 'Without WooCommerce:', 'booking-activities' ) . '</strong> ' . $step;
 	$description .= '</li><li>';
-	$description .= '<strong>' . esc_html__( 'With WooCommerce:', BOOKACTI_PLUGIN_NAME ) . '</strong> ' . esc_html__( 'Bind the booking form to the desired product in the product data', BOOKACTI_PLUGIN_NAME );
+	$description .= '<strong>' . esc_html__( 'With WooCommerce:', 'booking-activities' ) . '</strong> ' . esc_html__( 'Bind the booking form to the desired product in the product data', 'booking-activities' );
 	$description .= '</li></ul>';
 	return $description;
 }
@@ -27,15 +27,15 @@ add_filter( 'bookacti_calendar_integration_tuto', 'bookacti_display_wc_calendar_
 function bookacti_display_wc_form_integration_description( $form ) {
 	$img_link = esc_url( plugins_url() . '/' . BOOKACTI_PLUGIN_NAME . '/img/wc-integration.png' );
 ?>
-	<h4><?php _e( 'Integrate with a WooCommerce product', BOOKACTI_PLUGIN_NAME ) ?></h4>
+	<h4><?php _e( 'Integrate with a WooCommerce product', 'booking-activities' ) ?></h4>
 	<div>
-		<p><em><?php esc_html_e( 'Select this form in your product data, in the "Activity" tab.', BOOKACTI_PLUGIN_NAME ); ?></em></p>
+		<p><em><?php esc_html_e( 'Select this form in your product data, in the "Activity" tab.', 'booking-activities' ); ?></em></p>
 		<p id='bookacti-form-wc-integration-tuto' >
 			<a href='<?php echo $img_link; ?>' target='_blank' style='display:block;'>
 				<img src='<?php echo $img_link; ?>'/>
 			</a>
 		</p>
-		<p><em><?php esc_html_e( 'For variable products, you can set a different form for each variation.', BOOKACTI_PLUGIN_NAME ); ?></em></p>
+		<p><em><?php esc_html_e( 'For variable products, you can set a different form for each variation.', 'booking-activities' ); ?></em></p>
 	</div>
 <?php
 }
@@ -45,11 +45,13 @@ add_action( 'bookacti_after_form_integration_tuto', 'bookacti_display_wc_form_in
 /**
  * Add a WooCommerce-related description to the form editor
  * @since 1.5.0
+ * @version 1.7.8
  * @param array $form
  */
 function bookacti_form_editor_wc_description( $form ) {
-	echo '<p>' . sprintf( __( 'The fields with this icon %1$s will NOT appear on WooCommerce product pages.', BOOKACTI_PLUGIN_NAME ), '<span class="bookacti-wc-icon-not-supported"></span>' );
-	bookacti_help_tip( __( 'These fields already exist in WooCommerce. E.g.: Quantity and Submit are already part of product pages. Login and register fields are already asked on checkout page.', BOOKACTI_PLUGIN_NAME ) );
+	/* translators: %1$s is replaced with an image */
+	echo '<p>' . sprintf( __( 'The fields with this icon %1$s will NOT appear on WooCommerce product pages.', 'booking-activities' ), '<span class="bookacti-wc-icon-not-supported"></span>' );
+	bookacti_help_tip( __( 'These fields already exist in WooCommerce. E.g.: Quantity and Submit are already part of product pages. Login and register fields are already asked on checkout page.', 'booking-activities' ) );
 	echo '</p>';
 }
 add_action( 'bookacti_form_editor_description_after', 'bookacti_form_editor_wc_description', 20, 1 );
@@ -153,8 +155,8 @@ add_filter( 'bookacti_sanitized_field_data', 'bookacti_sanitize_wc_field_data', 
  * @return array
  */
 function bookacti_add_wc_form_action_options( $options ) {
-	$options[ 'redirect_to_product_page' ] = esc_html__( 'Redirect to a product page', BOOKACTI_PLUGIN_NAME );
-	$options[ 'add_product_to_cart' ] = esc_html__( 'Add a product to cart', BOOKACTI_PLUGIN_NAME );
+	$options[ 'redirect_to_product_page' ] = esc_html__( 'Redirect to a product page', 'booking-activities' );
+	$options[ 'add_product_to_cart' ] = esc_html__( 'Add a product to cart', 'booking-activities' );
 	return $options;
 }
 add_filter( 'bookacti_form_action_options', 'bookacti_add_wc_form_action_options', 10, 1 );
@@ -168,13 +170,13 @@ add_filter( 'bookacti_form_action_options', 'bookacti_add_wc_form_action_options
  * @return array
  */
 function bookacti_add_wc_columns_to_activity_redirect_url_table( $url_array, $params = array() ) {
-	$url_array[ 'head' ][ 'product' ] = esc_html__( 'Bound product', BOOKACTI_PLUGIN_NAME );
+	$url_array[ 'head' ][ 'product' ] = esc_html__( 'Bound product', 'booking-activities' );
 	
 	// Get the product selectbox
 	$args = array(
 		'field_name'		=> 'product_by_activity[0]',
 		'selected'			=> '',
-		'show_option_none'	=> esc_html_x( 'None', 'About product', BOOKACTI_PLUGIN_NAME ),
+		'show_option_none'	=> esc_html_x( 'None', 'About product', 'booking-activities' ),
 		'option_none_value'	=> '',
 		'echo'				=> 0,
 		'limit'				=> -1
@@ -217,12 +219,12 @@ add_filter( 'bookacti_activity_redirect_url_table', 'bookacti_add_wc_columns_to_
  * @return array
  */
 function bookacti_add_wc_columns_to_group_activity_redirect_url_table( $url_array, $params = array() ) {
-	$url_array[ 'head' ][ 'product' ] = esc_html__( 'Bound product', BOOKACTI_PLUGIN_NAME );
+	$url_array[ 'head' ][ 'product' ] = esc_html__( 'Bound product', 'booking-activities' );
 	
 	$args = array(
 		'field_name'		=> 'product_by_group_category[0]',
 		'selected'			=> '',
-		'show_option_none'	=> esc_html_x( 'None', 'About product', BOOKACTI_PLUGIN_NAME ),
+		'show_option_none'	=> esc_html_x( 'None', 'About product', 'booking-activities' ),
 		'option_none_value'	=> '',
 		'echo'				=> 0,
 		'limit'				=> -1
@@ -270,18 +272,18 @@ function bookacti_controller_add_bound_product_to_cart() {
 	$event_end		= ! empty( $_POST[ 'bookacti_event_end' ] ) ? bookacti_sanitize_datetime( $_POST[ 'bookacti_event_end' ] ) : '';
 	$product_id		= 0;
 	
-	$unknown_event_response = array( 'status' => 'failed', 'error' => 'unknown_event', 'messages' => esc_html__( 'The selected event couldn\'t be found.', BOOKACTI_PLUGIN_NAME ) );
+	$unknown_event_response = array( 'status' => 'failed', 'error' => 'unknown_event', 'messages' => esc_html__( 'The selected event couldn\'t be found.', 'booking-activities' ) );
 	
 	// Get the form; field data
 	$field = bookacti_get_form_field_data_by_name( $form_id, 'calendar' );
 	if( ! $field ) { 
-		$no_field_response = array( 'status' => 'failed', 'error' => 'unknown_field', 'messages' => esc_html__( 'The calendar field data couldn\'t be retrieved.', BOOKACTI_PLUGIN_NAME ) );
+		$no_field_response = array( 'status' => 'failed', 'error' => 'unknown_field', 'messages' => esc_html__( 'The calendar field data couldn\'t be retrieved.', 'booking-activities' ) );
 		bookacti_send_json( $no_field_response, 'add_bound_product_to_cart' );
 	}
 	
 	// Check if the form action is "add_product_to_cart"
 	if( $field[ 'form_action' ] !== 'add_product_to_cart' ) { 
-		$incorrect_form_action_response = array( 'status' => 'failed', 'error' => 'incorrect_form_action', 'messages' => esc_html__( 'You cannot add a product to cart with this form.', BOOKACTI_PLUGIN_NAME ) );
+		$incorrect_form_action_response = array( 'status' => 'failed', 'error' => 'incorrect_form_action', 'messages' => esc_html__( 'You cannot add a product to cart with this form.', 'booking-activities' ) );
 		bookacti_send_json( $incorrect_form_action_response, 'add_bound_product_to_cart' );
 	}
 	
@@ -328,14 +330,14 @@ function bookacti_controller_add_bound_product_to_cart() {
 	
 	// Check if the event is bound to a product
 	if( ! $product_id ) {
-		$no_product_bound_response = array( 'status' => 'failed', 'error' => 'no_product_bound', 'messages' => esc_html__( 'No product is bound to this event.', BOOKACTI_PLUGIN_NAME ) );
+		$no_product_bound_response = array( 'status' => 'failed', 'error' => 'no_product_bound', 'messages' => esc_html__( 'No product is bound to this event.', 'booking-activities' ) );
 		bookacti_send_json( $no_product_bound_response, 'add_bound_product_to_cart' );
 	}
 
 	// Check if the product still exists
 	$product = wc_get_product( $product_id );
 	if( ! $product ) {
-		$product_unavailable_response = array( 'status' => 'failed', 'error' => 'product_not_found', 'messages' => esc_html__( 'The desired product cannot be found.', BOOKACTI_PLUGIN_NAME ) );
+		$product_unavailable_response = array( 'status' => 'failed', 'error' => 'product_not_found', 'messages' => esc_html__( 'The desired product cannot be found.', 'booking-activities' ) );
 		bookacti_send_json( $product_unavailable_response, 'add_bound_product_to_cart' );
 	}
 	
@@ -375,7 +377,7 @@ function bookacti_controller_add_bound_product_to_cart() {
 	} else if( ! empty( $wc_notices[ 'success' ] ) ) {
 		$response = array( 'status' => 'success', 'messages' => implode( '</li><li>', $wc_notices[ 'success' ] ), 'redirect_url' => $redirect_url );
 	} else {
-		$response = array( 'status' => 'failed', 'error' => 'unknown_error', 'messages' => esc_html__( 'An error occured while trying to add the product to cart.', BOOKACTI_PLUGIN_NAME ) );
+		$response = array( 'status' => 'failed', 'error' => 'unknown_error', 'messages' => esc_html__( 'An error occured while trying to add the product to cart.', 'booking-activities' ) );
 	}
 	
 	// If the user is not redirected, clear the notices to display them only once in the booking form

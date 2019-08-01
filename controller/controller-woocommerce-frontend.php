@@ -13,18 +13,18 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		
 		$site_booking_method = bookacti_get_setting_value( 'bookacti_general_settings',	'booking_method' );
 		
-		$translation_array[ 'expired_min' ]						= esc_html__( 'expired', BOOKACTI_PLUGIN_NAME );
-		$translation_array[ 'expired' ]							= esc_html__( 'Expired', BOOKACTI_PLUGIN_NAME );
-		$translation_array[ 'in_cart' ]							= esc_html__( 'In cart', BOOKACTI_PLUGIN_NAME );
-		$translation_array[ 'days' ]							= esc_html__( 'days', BOOKACTI_PLUGIN_NAME );
-		$translation_array[ 'day' ]								= esc_html_x( 'day', 'singular of days',BOOKACTI_PLUGIN_NAME );
-		$translation_array[ 'error_remove_expired_cart_item' ]	= esc_html__(  'Error occurs while trying to remove expired cart item.', BOOKACTI_PLUGIN_NAME );
-		$translation_array[ 'error_cart_expired' ]				= esc_html__( 'Your cart has expired.', BOOKACTI_PLUGIN_NAME );
-		$translation_array[ 'coupon_code' ]						= esc_html__( 'Coupon', BOOKACTI_PLUGIN_NAME );
+		$translation_array[ 'expired_min' ]						= esc_html__( 'expired', 'booking-activities' );
+		$translation_array[ 'expired' ]							= esc_html__( 'Expired', 'booking-activities' );
+		$translation_array[ 'in_cart' ]							= esc_html__( 'In cart', 'booking-activities' );
+		$translation_array[ 'days' ]							= esc_html__( 'days', 'booking-activities' );
+		$translation_array[ 'day' ]								= esc_html_x( 'day', 'singular of days','booking-activities' );
+		$translation_array[ 'error_remove_expired_cart_item' ]	= esc_html__(  'Error occurs while trying to remove expired cart item.', 'booking-activities' );
+		$translation_array[ 'error_cart_expired' ]				= esc_html__( 'Your cart has expired.', 'booking-activities' );
+		$translation_array[ 'coupon_code' ]						= esc_html__( 'Coupon', 'booking-activities' );
 		/* translators: %1$s is the coupon code. Ex: AAB12. */
-		$translation_array[ 'advice_coupon_code' ]				= esc_html__( 'The coupon code is %1$s. Use it on your next cart!', BOOKACTI_PLUGIN_NAME );
+		$translation_array[ 'advice_coupon_code' ]				= esc_html__( 'The coupon code is %1$s. Use it on your next cart!', 'booking-activities' );
 		/* translators: %1$s is the amount of the coupon. Ex: $10. */
-		$translation_array[ 'advice_coupon_created' ]			= esc_html__( 'A %1$s coupon has been created. You can use it once for any order at any time.', BOOKACTI_PLUGIN_NAME );
+		$translation_array[ 'advice_coupon_created' ]			= esc_html__( 'A %1$s coupon has been created. You can use it once for any order at any time.', 'booking-activities' );
 		$translation_array[ 'add_product_to_cart_button_text' ]	= esc_html__( 'Add to cart', 'woocommerce' );
 		$translation_array[ 'add_booking_to_cart_button_text' ]	= bookacti_get_message( 'booking_form_submit_button' );
 		$translation_array[ 'site_booking_method' ]				= $site_booking_method;
@@ -510,7 +510,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 				&& (empty( $_POST[ 'bookacti_event_id' ] )
 				||	empty( $_POST[ 'bookacti_event_start' ] ) 
 				||	empty( $_POST[ 'bookacti_event_end' ] ) ) ) ) {
-			wc_add_notice(  __( 'You haven\'t picked any event. Please pick an event first.', BOOKACTI_PLUGIN_NAME ), 'error' ); 
+			wc_add_notice(  __( 'You haven\'t picked any event. Please pick an event first.', 'booking-activities' ), 'error' ); 
 			return false;
 		}
 
@@ -1035,7 +1035,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			$message = sprintf( _n(	'%d product has expired and has been automatically removed from cart.', 
 									'%d products have expired and have been automatically removed from cart.', 
 									$nb_deleted_cart_item, 
-									BOOKACTI_PLUGIN_NAME ), $nb_deleted_cart_item );
+									'booking-activities' ), $nb_deleted_cart_item );
 
 			// display feedback
 			wc_add_notice( $message, 'error' );
@@ -1119,7 +1119,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		// If the product is not "in_cart", it means that the order in already in process (maybe waiting for payment)
 		if( ! $is_in_cart ) {
 			$new_quantity = $old_quantity;
-			wc_add_notice( __( "You can't update quantity since this product is temporarily booked on an order pending payment. Please, first cancel the order or remove this product from cart.", BOOKACTI_PLUGIN_NAME ), 'error' );
+			wc_add_notice( __( "You can't update quantity since this product is temporarily booked on an order pending payment. Please, first cancel the order or remove this product from cart.", 'booking-activities' ), 'error' );
 		}
 		
 		return $new_quantity;
@@ -1270,7 +1270,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 				$events_list = bookacti_get_formatted_booking_events_list( $events );
 				
 				$item_data[] = array( 
-					'key' => _n( 'Booked event', 'Booked events', count( $events ), BOOKACTI_PLUGIN_NAME ), 
+					'key' => _n( 'Booked event', 'Booked events', count( $events ), 'booking-activities' ), 
 					'value' => $events_list );
 			}
 		}
@@ -1290,18 +1290,18 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	function bookacti_define_label_of_item_data( $label, $name ) {
 		
 		if( $label === '_bookacti_booking_id' 
-		||  $label === 'bookacti_booking_id' )			{ $label = __( 'Booking number', BOOKACTI_PLUGIN_NAME ); }
+		||  $label === 'bookacti_booking_id' )			{ $label = __( 'Booking number', 'booking-activities' ); }
 		if( $label === '_bookacti_booking_group_id' 
-		||  $label === 'bookacti_booking_group_id' )	{ $label = __( 'Booking group number', BOOKACTI_PLUGIN_NAME ); }
-		if( $label === 'bookacti_booked_events' )		{ $label = __( 'Booked events', BOOKACTI_PLUGIN_NAME ); }
-		if( $label === 'bookacti_state' )				{ $label = __( 'Status', BOOKACTI_PLUGIN_NAME ); }
-		if( $label === '_bookacti_refund_method' )		{ $label = __( 'Refund method', BOOKACTI_PLUGIN_NAME ); }
-		if( $label === 'bookacti_refund_coupon' )		{ $label = __( 'Coupon code', BOOKACTI_PLUGIN_NAME ); }
+		||  $label === 'bookacti_booking_group_id' )	{ $label = __( 'Booking group number', 'booking-activities' ); }
+		if( $label === 'bookacti_booked_events' )		{ $label = __( 'Booked events', 'booking-activities' ); }
+		if( $label === 'bookacti_state' )				{ $label = __( 'Status', 'booking-activities' ); }
+		if( $label === '_bookacti_refund_method' )		{ $label = __( 'Refund method', 'booking-activities' ); }
+		if( $label === 'bookacti_refund_coupon' )		{ $label = __( 'Coupon code', 'booking-activities' ); }
 		
 		// Deprecated data
-		if( $label === '_bookacti_event_id' )			{ $label = __( 'Event ID', BOOKACTI_PLUGIN_NAME ); }
-		if( $label === 'bookacti_event_start' )			{ $label = __( 'Start', BOOKACTI_PLUGIN_NAME ); }
-		if( $label === 'bookacti_event_end' )			{ $label = __( 'End', BOOKACTI_PLUGIN_NAME ); }
+		if( $label === '_bookacti_event_id' )			{ $label = __( 'Event ID', 'booking-activities' ); }
+		if( $label === 'bookacti_event_start' )			{ $label = __( 'Start', 'booking-activities' ); }
+		if( $label === 'bookacti_event_end' )			{ $label = __( 'End', 'booking-activities' ); }
 		
 		return $label;
 	}
@@ -1370,7 +1370,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			// Format event list
 			else if( $meta->key === 'bookacti_booked_events' ) {
 				$events	= json_decode( $meta->value );
-				$meta->display_key = _n( 'Booked event', 'Booked events', count( $events ), BOOKACTI_PLUGIN_NAME );
+				$meta->display_key = _n( 'Booked event', 'Booked events', count( $events ), 'booking-activities' );
 				$meta->display_value = bookacti_get_formatted_booking_events_list( $events );
 			}
 			
@@ -1583,7 +1583,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	 * @return array
 	 */
 	function bookacti_add_woocommerce_price_column_to_user_booking_list( $columns ) {
-		$columns[ 'price' ] = esc_html__( 'Price', BOOKACTI_PLUGIN_NAME );
+		$columns[ 'price' ] = esc_html__( 'Price', 'booking-activities' );
 		return $columns;
 	}
 	add_filter( 'bookacti_user_booking_list_columns_labels', 'bookacti_add_woocommerce_price_column_to_user_booking_list', 10, 1 );
@@ -1657,7 +1657,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 				
 				if( $coupon_code ) {
 					/* translators: %s is the coupon code used for the refund */
-					$coupon_label = sprintf( esc_html__( 'Refunded with coupon %s', BOOKACTI_PLUGIN_NAME ), $coupon_code );
+					$coupon_label = sprintf( esc_html__( 'Refunded with coupon %s', 'booking-activities' ), $coupon_code );
 					$columns_value[ 'status' ] = '<span class="bookacti-booking-state bookacti-booking-state-bad bookacti-booking-state-refunded bookacti-converted-to-coupon bookacti-tip" data-booking-state="refunded">' . $coupon_label . '</span>';
 				}
 			}

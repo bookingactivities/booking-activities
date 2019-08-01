@@ -41,8 +41,8 @@ function bookacti_get_booking_system( $atts, $echo = false ) {
 			if( $atts[ 'auto_load' ] ) { 
 			?>
 			<div class='bookacti-loading-alt'> 
-				<img class='bookacti-loader' src='<?php echo plugins_url() . '/' . BOOKACTI_PLUGIN_NAME; ?>/img/ajax-loader.gif' title='<?php esc_html_e( 'Loading', BOOKACTI_PLUGIN_NAME ); ?>' />
-				<span class='bookacti-loading-alt-text' ><?php esc_html_e( 'Loading', BOOKACTI_PLUGIN_NAME ); ?></span>
+				<img class='bookacti-loader' src='<?php echo plugins_url() . '/' . BOOKACTI_PLUGIN_NAME; ?>/img/ajax-loader.gif' title='<?php esc_html_e( 'Loading', 'booking-activities' ); ?>' />
+				<span class='bookacti-loading-alt-text' ><?php esc_html_e( 'Loading', 'booking-activities' ); ?></span>
 			</div>
 			<?php } ?>
 		</div>
@@ -198,7 +198,7 @@ function bookacti_display_booking_system_dialogs( $booking_system_id ) {
  */
 function bookacti_get_available_booking_methods(){
 	$available_booking_methods = array(
-		'calendar'	=> __( 'Calendar', BOOKACTI_PLUGIN_NAME )
+		'calendar'	=> __( 'Calendar', 'booking-activities' )
 	);
 	return apply_filters( 'bookacti_available_booking_methods', $available_booking_methods );
 }
@@ -554,7 +554,7 @@ function bookacti_format_booking_system_url_attributes( $atts = array() ) {
 /**
  * Get booking system fields default data
  * @since 1.5.0
- * @version 1.5.9
+ * @version 1.7.8
  * @param array $fields
  * @return array
  */
@@ -579,8 +579,8 @@ function bookacti_get_booking_system_fields_default_data( $fields = array() ) {
 			'multiple'	=> 'maybe',
 			'options'	=> $templates_options,
 			'value'		=> '', 
-			'title'		=> esc_html__( 'Calendar', BOOKACTI_PLUGIN_NAME ),
-			'tip'		=> esc_html__( 'Retrieve events from the selected calendars only.', BOOKACTI_PLUGIN_NAME )
+			'title'		=> esc_html__( 'Calendar', 'booking-activities' ),
+			'tip'		=> esc_html__( 'Retrieve events from the selected calendars only.', 'booking-activities' )
 		);
 	}
 	
@@ -602,8 +602,8 @@ function bookacti_get_booking_system_fields_default_data( $fields = array() ) {
 			'options'		=> $activities_options,
 			'attr'			=> $activities_options_attr,
 			'value'			=> '', 
-			'title'			=> esc_html__( 'Activity', BOOKACTI_PLUGIN_NAME ),
-			'tip'			=> esc_html__( 'Retrieve events from the selected activities only.', BOOKACTI_PLUGIN_NAME )
+			'title'			=> esc_html__( 'Activity', 'booking-activities' ),
+			'tip'			=> esc_html__( 'Retrieve events from the selected activities only.', 'booking-activities' )
 		);
 	}
 	
@@ -611,7 +611,7 @@ function bookacti_get_booking_system_fields_default_data( $fields = array() ) {
 	if( ! $fields || in_array( 'group_categories', $fields, true ) ) {
 		// Format group category options array
 		$categories = bookacti_get_group_categories();
-		$category_options		= array( 'none' => _x( 'None', 'About group category', BOOKACTI_PLUGIN_NAME ) );
+		$category_options		= array( 'none' => _x( 'None', 'About group category', 'booking-activities' ) );
 		$category_options_attr	= array();
 		foreach( $categories as $category ) {
 			$category_options[ $category[ 'id' ] ]		=  apply_filters( 'bookacti_translate_text', $category[ 'title' ] );
@@ -625,8 +625,8 @@ function bookacti_get_booking_system_fields_default_data( $fields = array() ) {
 			'options'		=> $category_options,
 			'attr'			=> $category_options_attr,
 			'value'			=> '', 
-			'title'			=> esc_html__( 'Group category', BOOKACTI_PLUGIN_NAME ),
-			'tip'			=> esc_html__( 'Retrieve groups of events from the selected group categories only.', BOOKACTI_PLUGIN_NAME )
+			'title'			=> esc_html__( 'Group category', 'booking-activities' ),
+			'tip'			=> esc_html__( 'Retrieve groups of events from the selected group categories only.', 'booking-activities' )
 		);
 	}
 	
@@ -637,8 +637,8 @@ function bookacti_get_booking_system_fields_default_data( $fields = array() ) {
 			'name'			=> 'groups_only',
 			'id'			=> '_bookacti_groups_only',
 			'value'			=> 0,
-			'title'			=> esc_html__( 'Groups only', BOOKACTI_PLUGIN_NAME ),
-			'tip'			=> esc_html__( 'Display only groups of events if checked. Else, also display the other single events (if any).', BOOKACTI_PLUGIN_NAME )
+			'title'			=> esc_html__( 'Groups only', 'booking-activities' ),
+			'tip'			=> esc_html__( 'Display only groups of events if checked. Else, also display the other single events (if any).', 'booking-activities' )
 		);
 	}
 	
@@ -648,8 +648,8 @@ function bookacti_get_booking_system_fields_default_data( $fields = array() ) {
 			'type'			=> 'checkbox',
 			'name'			=> 'groups_single_events',
 			'value'			=> 0,
-			'title'			=> esc_html__( 'Book grouped events alone', BOOKACTI_PLUGIN_NAME ),
-			'tip'			=> esc_html__( 'When a customer picks an event belonging to a group, let him choose between the group or the event alone.', BOOKACTI_PLUGIN_NAME )
+			'title'			=> esc_html__( 'Book grouped events alone', 'booking-activities' ),
+			'tip'			=> esc_html__( 'When a customer picks an event belonging to a group, let him choose between the group or the event alone.', 'booking-activities' )
 		);
 	}
 	
@@ -659,8 +659,8 @@ function bookacti_get_booking_system_fields_default_data( $fields = array() ) {
 			'type'			=> 'checkbox',
 			'name'			=> 'bookings_only',
 			'value'			=> 0,
-			'title'			=> esc_html__( 'Booked only', BOOKACTI_PLUGIN_NAME ),
-			'tip'			=> esc_html__( 'Display only events that has been booked.', BOOKACTI_PLUGIN_NAME )
+			'title'			=> esc_html__( 'Booked only', 'booking-activities' ),
+			'tip'			=> esc_html__( 'Display only events that has been booked.', 'booking-activities' )
 		);
 	}
 	
@@ -668,7 +668,7 @@ function bookacti_get_booking_system_fields_default_data( $fields = array() ) {
 	if( ! $fields || in_array( 'status', $fields, true ) ) {
 		// Format status array
 		$statuses = bookacti_get_booking_state_labels();
-		$status_options = array( 'none' => _x( 'None', 'About booking status', BOOKACTI_PLUGIN_NAME ) );
+		$status_options = array( 'none' => _x( 'None', 'About booking status', 'booking-activities' ) );
 		foreach ( $statuses as $status_id => $status ) { 
 			$status_options[ $status_id ] = esc_html( $status[ 'label' ] );
 		}
@@ -678,8 +678,8 @@ function bookacti_get_booking_system_fields_default_data( $fields = array() ) {
 			'multiple'		=> 'maybe',
 			'options'		=> $status_options,
 			'value'			=> '', 
-			'title'			=> esc_html__( 'Bookings status', BOOKACTI_PLUGIN_NAME ),
-			'tip'			=> esc_html__( 'Retrieve booked events with the selected booking status only.', BOOKACTI_PLUGIN_NAME ) . ' ' . esc_html__( '"Booked only" option must be activated.', BOOKACTI_PLUGIN_NAME )
+			'title'			=> esc_html__( 'Bookings status', 'booking-activities' ),
+			'tip'			=> esc_html__( 'Retrieve booked events with the selected booking status only.', 'booking-activities' ) . ' ' . esc_html__( '"Booked only" option must be activated.', 'booking-activities' )
 		);
 	}
 	
@@ -691,14 +691,14 @@ function bookacti_get_booking_system_fields_default_data( $fields = array() ) {
 			'options'		=> array(
 				'name'					=> 'user_id',
 				'id'					=> 'user_id',
-				'show_option_all'		=> __( 'None', BOOKACTI_PLUGIN_NAME ),
-				'show_option_current'	=> __( 'Current user', BOOKACTI_PLUGIN_NAME ),
+				'show_option_all'		=> __( 'None', 'booking-activities' ),
+				'show_option_current'	=> __( 'Current user', 'booking-activities' ),
 				'option_label'			=> array( 'user_login', ' (', 'user_email', ')' ),
 				'selected'				=> 0,
 				'echo'					=> true
 			),
-			'title'			=> esc_html__( 'Customer', BOOKACTI_PLUGIN_NAME ),
-			'tip'			=> esc_html__( 'Retrieve events booked by the selected user only.', BOOKACTI_PLUGIN_NAME ) . ' ' . esc_html__( '"Booked only" option must be activated.', BOOKACTI_PLUGIN_NAME )
+			'title'			=> esc_html__( 'Customer', 'booking-activities' ),
+			'tip'			=> esc_html__( 'Retrieve events booked by the selected user only.', 'booking-activities' ) . ' ' . esc_html__( '"Booked only" option must be activated.', 'booking-activities' )
 		);
 	}
 	
@@ -707,8 +707,8 @@ function bookacti_get_booking_system_fields_default_data( $fields = array() ) {
 		$defaults[ 'id' ] = array(
 			'type'			=> 'text',
 			'name'			=> 'id',
-			'title'			=> esc_html__( 'ID', BOOKACTI_PLUGIN_NAME ),
-			'tip'			=> esc_html__( 'Set the booking system CSS id. Leave this empty if you display more than one occurence of this form on the same page.', BOOKACTI_PLUGIN_NAME )
+			'title'			=> esc_html__( 'ID', 'booking-activities' ),
+			'tip'			=> esc_html__( 'Set the booking system CSS id. Leave this empty if you display more than one occurence of this form on the same page.', 'booking-activities' )
 		);
 	}
 	
@@ -717,41 +717,40 @@ function bookacti_get_booking_system_fields_default_data( $fields = array() ) {
 		$defaults[ 'class' ] = array(
 			'type'			=> 'text',
 			'name'			=> 'class',
-			'title'			=> esc_html__( 'Class', BOOKACTI_PLUGIN_NAME ),
-			'tip'			=> esc_html__( 'Set the booking system CSS classes. Leave an empty space between each class.', BOOKACTI_PLUGIN_NAME )
+			'title'			=> esc_html__( 'Class', 'booking-activities' ),
+			'tip'			=> esc_html__( 'Set the booking system CSS classes. Leave an empty space between each class.', 'booking-activities' )
 		);
 	}
 	
 	// Availability Period Start
 	if( ! $fields || in_array( 'availability_period_start', $fields, true ) ) {
-		$tip = esc_html__( 'Set the beginning of the availability period. E.g.: "2", your customers may book events starting in 2 days at the earliest. They are no longer allowed to book events starting earlier (like today or tomorrow).', BOOKACTI_PLUGIN_NAME );
-		$tip .= '<br/>' . esc_html__( 'Set it to "-1" to use the global value.', BOOKACTI_PLUGIN_NAME );
+		$tip = esc_html__( 'Set the beginning of the availability period. E.g.: "2", your customers may book events starting in 2 days at the earliest. They are no longer allowed to book events starting earlier (like today or tomorrow).', 'booking-activities' );
+		$tip .= '<br/>' . esc_html__( 'Set it to "-1" to use the global value.', 'booking-activities' );
 		
 		$defaults[ 'availability_period_start' ] = array(
 			'type'			=> 'number',
 			'name'			=> 'availability_period_start',
 			'options'		=> array( 'min' => -1, 'step' => 1 ),
 			/* translators: Followed by a field indicating a number of days before the event. E.g.: "Events will be bookable in 2 days from today". */
-			'title'			=> esc_html__( 'Events will be bookable in', BOOKACTI_PLUGIN_NAME ),
+			'title'			=> esc_html__( 'Events will be bookable in', 'booking-activities' ),
 			/* translators: Arrives after a field indicating a number of days before the event. E.g.: "Events will be bookable in 2 days from today". */
-			'label'			=> esc_html__( 'days from today', BOOKACTI_PLUGIN_NAME ),
+			'label'			=> esc_html__( 'days from today', 'booking-activities' ),
 			'tip'			=> $tip
 		);
 	}
 	
 	// Availability Period End
 	if( ! $fields || in_array( 'availability_period_end', $fields, true ) ) {
-		$tip = esc_html__( 'Set the end of the availability period. E.g.: "30", your customers may book events starting within 30 days at the latest. They are not allowed yet to book events starting later.', BOOKACTI_PLUGIN_NAME );
-		$tip .= '<br/>' . esc_html__( 'Set it to "-1" to use the global value.', BOOKACTI_PLUGIN_NAME );
+		$tip = esc_html__( 'Set the end of the availability period. E.g.: "30", your customers may book events starting within 30 days at the latest. They are not allowed yet to book events starting later.', 'booking-activities' );
+		$tip .= '<br/>' . esc_html__( 'Set it to "-1" to use the global value.', 'booking-activities' );
 		
 		$defaults[ 'availability_period_end' ] = array(
 			'type'			=> 'number',
 			'name'			=> 'availability_period_end',
 			'options'		=> array( 'min' => -1, 'step' => 1 ),
 			/* translators: Followed by a field indicating a number of days before the event. E.g.: "Events are bookable for up to 30 days from today". */
-			'title'			=>  esc_html__( 'Events are bookable for up to', BOOKACTI_PLUGIN_NAME ),
-			/* translators: Arrives after a field indicating a number of days before the event. E.g.: "Events will be bookable in 2 days from today". */
-			'label'			=> esc_html__( 'days from today', BOOKACTI_PLUGIN_NAME ),
+			'title'			=>  esc_html__( 'Events are bookable for up to', 'booking-activities' ),
+			'label'			=> esc_html__( 'days from today', 'booking-activities' ),
 			'tip'			=> $tip
 		);
 	}
@@ -761,8 +760,8 @@ function bookacti_get_booking_system_fields_default_data( $fields = array() ) {
 		$defaults[ 'start' ] = array(
 			'type'			=> 'date',
 			'name'			=> 'start',
-			'title'			=> esc_html__( 'Opening', BOOKACTI_PLUGIN_NAME ),
-			'tip'			=> esc_html__( 'The calendar will start at this date.', BOOKACTI_PLUGIN_NAME )
+			'title'			=> esc_html__( 'Opening', 'booking-activities' ),
+			'tip'			=> esc_html__( 'The calendar will start at this date.', 'booking-activities' )
 		);
 	}
 	
@@ -771,8 +770,8 @@ function bookacti_get_booking_system_fields_default_data( $fields = array() ) {
 		$defaults[ 'end' ] = array(
 			'type'			=> 'date',
 			'name'			=> 'end',
-			'title'			=> esc_html__( 'Closing', BOOKACTI_PLUGIN_NAME ),
-			'tip'			=> esc_html__( 'The calendar will end at this date.', BOOKACTI_PLUGIN_NAME )
+			'title'			=> esc_html__( 'Closing', 'booking-activities' ),
+			'tip'			=> esc_html__( 'The calendar will end at this date.', 'booking-activities' )
 		);
 	}
 	
@@ -782,8 +781,8 @@ function bookacti_get_booking_system_fields_default_data( $fields = array() ) {
 			'type'			=> 'checkbox',
 			'name'			=> 'past_events',
 			'value'			=> 0,
-			'title'			=> esc_html__( 'Display past events', BOOKACTI_PLUGIN_NAME ),
-			'tip'			=> esc_html__( 'Display events out of the availability period. If they cannot be booked, they will be grayed out.', BOOKACTI_PLUGIN_NAME )
+			'title'			=> esc_html__( 'Display past events', 'booking-activities' ),
+			'tip'			=> esc_html__( 'Display events out of the availability period. If they cannot be booked, they will be grayed out.', 'booking-activities' )
 		);
 	}
 	
@@ -793,8 +792,8 @@ function bookacti_get_booking_system_fields_default_data( $fields = array() ) {
 			'type'			=> 'checkbox',
 			'name'			=> 'past_events_bookable',
 			'value'			=> 0,
-			'title'			=> esc_html__( 'Make past events bookable', BOOKACTI_PLUGIN_NAME ),
-			'tip'			=> esc_html__( 'Allow customers to select events out of the availability period and book them.', BOOKACTI_PLUGIN_NAME )
+			'title'			=> esc_html__( 'Make past events bookable', 'booking-activities' ),
+			'tip'			=> esc_html__( 'Allow customers to select events out of the availability period and book them.', 'booking-activities' )
 		);
 	}
 	
@@ -804,7 +803,7 @@ function bookacti_get_booking_system_fields_default_data( $fields = array() ) {
 
 /**
  * Check the selected event / group of events data before booking
- * @version 1.7.3
+ * @version 1.7.8
  * @param int $group_id
  * @param int $event_id
  * @param string $event_start Start datetime of the event to check (format 2017-12-31T23:59:59)
@@ -828,7 +827,7 @@ function bookacti_validate_booking_form( $group_id, $event_id, $event_start, $ev
 	}
 	if( ! $exists ) {
 		$validated['error'] = 'do_not_exist';
-		$validated['message'] = $group_id === 'single' ? __( "The event doesn't exist, please pick an event and try again.", BOOKACTI_PLUGIN_NAME ) : __( "The group of events doesn't exist, please pick an event and try again.", BOOKACTI_PLUGIN_NAME );
+		$validated['message'] = $group_id === 'single' ? __( "The event doesn't exist, please pick an event and try again.", 'booking-activities' ) : __( "The group of events doesn't exist, please pick an event and try again.", 'booking-activities' );
 		return apply_filters( 'bookacti_validate_booking_form', $validated, $group_id, $event_id, $event_start, $event_end, $quantity, $form_id );
 	}
 	
@@ -961,64 +960,60 @@ function bookacti_validate_booking_form( $group_id, $event_id, $event_start, $ev
 		$validated['status'] = 'failed';
 		if( ! $is_event ) {
 			$validated['error'] = 'no_event_selected';
-			$validated['message'] = esc_html__( 'You haven\'t picked any event. Please pick an event first.', BOOKACTI_PLUGIN_NAME );
+			$validated['message'] = esc_html__( 'You haven\'t picked any event. Please pick an event first.', 'booking-activities' );
 		} else if( ! $is_qty_sup_to_0 ) {
 			$validated['error'] = 'qty_inf_to_0';
-			$validated['message'] = esc_html__( 'The amount of desired bookings is less than or equal to 0. Please increase the quantity.', BOOKACTI_PLUGIN_NAME );
+			$validated['message'] = esc_html__( 'The amount of desired bookings is less than or equal to 0. Please increase the quantity.', 'booking-activities' );
 		} else if( ! $is_qty_sup_to_min ) {
 			$validated['error'] = 'qty_inf_to_min';
-			/* translators: %1$s is a variable number of bookings, %2$s is the event title. This sentence is followed by two others : 'but the minimum number of reservations required per user is %1$s.' and 'Please choose another event or increase the quantity.' */
-			$validated['message'] = sprintf( esc_html( _n( 'You want to make %1$s booking of "%2$s"', 'You want to make %1$s bookings of "%2$s"', $quantity, BOOKACTI_PLUGIN_NAME ) ), $quantity, $title );
+			/* translators: %1$s is a variable number of bookings, %2$s is the event title. */
+			$validated['message'] = sprintf( esc_html( _n( 'You want to make %1$s booking of "%2$s"', 'You want to make %1$s bookings of "%2$s"', $quantity, 'booking-activities' ) ), $quantity, $title );
 			if( $quantity_already_booked ) {
 				/* translators: %1$s and %2$s are variable numbers of bookings, always >= 1. This sentence is preceded by : 'You want to make %1$s booking of "%2$s"' and followed by 'Please choose another event or increase the quantity.' */
-				$validated['message'] .= ' ' . sprintf( esc_html( _n( 'and you have already booked %1$s place, but the minimum number of reservations required per user is %2$s.', 'and you have already booked %1$s places, but the minimum number of reservations required per user is %2$s.', $quantity_already_booked, BOOKACTI_PLUGIN_NAME ) ), $quantity_already_booked, $min_quantity );
+				$validated['message'] .= ' ' . sprintf( esc_html( _n( 'and you have already booked %1$s place, but the minimum number of reservations required per user is %2$s.', 'and you have already booked %1$s places, but the minimum number of reservations required per user is %2$s.', $quantity_already_booked, 'booking-activities' ) ), $quantity_already_booked, $min_quantity );
 			} else {
 				/* translators: %1$s is a variable number of bookings. This sentence is preceded by : 'You want to make %1$s booking of "%2$s"' and followed by 'Please choose another event or increase the quantity.' */
-				$validated['message'] .= ' ' . sprintf( esc_html__( 'but the minimum number of reservations required per user is %1$s.', BOOKACTI_PLUGIN_NAME ), $min_quantity );
+				$validated['message'] .= ' ' . sprintf( esc_html__( 'but the minimum number of reservations required per user is %1$s.', 'booking-activities' ), $min_quantity );
 			}	
-			/* translators: %1$s is a variable quantity. This sentence is preceded by two others : 'You want to make %1$s booking of "%2$s"' and 'but the minimum number of reservations required per user is %1$s.' */
-			$validated['message'] .= $min_quantity - $quantity_already_booked > 0 ? ' ' . sprintf( esc_html__( 'Please choose another event or increase the quantity to %1$s.', BOOKACTI_PLUGIN_NAME ), $min_quantity - $quantity_already_booked ) : ' ' . esc_html__( 'Please choose another event', BOOKACTI_PLUGIN_NAME );
+			/* translators: %1$s is a variable quantity. */
+			$validated['message'] .= $min_quantity - $quantity_already_booked > 0 ? ' ' . sprintf( esc_html__( 'Please choose another event or increase the quantity to %1$s.', 'booking-activities' ), $min_quantity - $quantity_already_booked ) : ' ' . esc_html__( 'Please choose another event', 'booking-activities' );
 		} else if( ! $is_qty_inf_to_max ) {
 			$validated['error'] = 'qty_sup_to_max';
-			/* translators: %1$s is a variable number of bookings, %2$s is the event title. This sentence is followed by two others : 'but the maximum number of reservations allowed per user is %1$s.' and 'Please choose another event or decrease the quantity.' */
-			$validated['message'] = sprintf( esc_html( _n( 'You want to make %1$s booking of "%2$s"', 'You want to make %1$s bookings of "%2$s"', $quantity, BOOKACTI_PLUGIN_NAME ) ), $quantity, $title );
+			$validated['message'] = sprintf( esc_html( _n( 'You want to make %1$s booking of "%2$s"', 'You want to make %1$s bookings of "%2$s"', $quantity, 'booking-activities' ) ), $quantity, $title );
 			if( $quantity_already_booked ) {
 				/* translators: %1$s and %2$s are variable numbers of bookings, always >= 1. This sentence is preceded by : 'You want to make %1$s booking of "%2$s"' and followed by 'Please choose another event or decrease the quantity.' */
-				$validated['message'] .= ' ' . sprintf( esc_html( _n( 'but you have already booked %1$s place and the maximum number of reservations allowed per user is %2$s.', 'but you have already booked %1$s places and the maximum number of reservations allowed per user is %2$s.', $quantity_already_booked, BOOKACTI_PLUGIN_NAME ) ), $quantity_already_booked, $max_quantity );
+				$validated['message'] .= ' ' . sprintf( esc_html( _n( 'but you have already booked %1$s place and the maximum number of reservations allowed per user is %2$s.', 'but you have already booked %1$s places and the maximum number of reservations allowed per user is %2$s.', $quantity_already_booked, 'booking-activities' ) ), $quantity_already_booked, $max_quantity );
 			} else {
 				/* translators: %1$s is a variable number of bookings. This sentence is preceded by : 'You want to make %1$s booking of "%2$s"' and followed by 'Please choose another event or decrease the quantity.' */
-				$validated['message'] .= ' ' . sprintf( esc_html__( 'but the maximum number of reservations allowed per user is %1$s.', BOOKACTI_PLUGIN_NAME ), $max_quantity );
+				$validated['message'] .= ' ' . sprintf( esc_html__( 'but the maximum number of reservations allowed per user is %1$s.', 'booking-activities' ), $max_quantity );
 			}
-			/* translators: %1$s is a variable quantity. This sentence is preceded by two others : 'You want to make %1$s booking of "%2$s"' and 'but the maximum number of reservations allowed per user is %1$s.' */
-			$validated['message'] .= $max_quantity - $quantity_already_booked > 0  ? ' ' . sprintf( esc_html__( 'Please choose another event or decrease the quantity to %1$s.', BOOKACTI_PLUGIN_NAME ), $max_quantity - $quantity_already_booked ) : ' ' . esc_html__( 'Please choose another event', BOOKACTI_PLUGIN_NAME );
+			/* translators: %1$s is a variable quantity. */
+			$validated['message'] .= $max_quantity - $quantity_already_booked > 0  ? ' ' . sprintf( esc_html__( 'Please choose another event or decrease the quantity to %1$s.', 'booking-activities' ), $max_quantity - $quantity_already_booked ) : ' ' . esc_html__( 'Please choose another event', 'booking-activities' );
 		} else if( ! $is_users_inf_to_max ) {
 			$validated['error'] = 'users_sup_to_max';
-			$validated['message'] = esc_html__( 'This event has reached the maximum number of users allowed. Bookings from other users are no longer accepted. Please choose another event.', BOOKACTI_PLUGIN_NAME );
+			$validated['message'] = esc_html__( 'This event has reached the maximum number of users allowed. Bookings from other users are no longer accepted. Please choose another event.', 'booking-activities' );
 		} else if( $availability === 0 ) {
 			$validated['error'] = 'no_availability';
 			$validated['availability'] = $availability;
 			/* translators: %1$s is the event title. */
-			$validated['message'] = sprintf( esc_html__( 'The event "%1$s" is no longer available on this time slot. Please choose another event.', BOOKACTI_PLUGIN_NAME ), $title );
+			$validated['message'] = sprintf( esc_html__( 'The event "%1$s" is no longer available on this time slot. Please choose another event.', 'booking-activities' ), $title );
 		} else if( ! $is_qty_inf_to_avail ) {
 			$validated['error'] = 'qty_sup_to_avail';
 			$validated['availability'] = $availability;
-			$validated['message'] = /* translators: %1$s is a variable number of bookings, %2$s is the event title. This sentence is followed by two others : 'but only %1$s is available on this time slot.' and 'Please choose another event or decrease the quantity.' */
-									sprintf( esc_html( _n( 'You want to make %1$s booking of "%2$s"', 'You want to make %1$s bookings of "%2$s"', $quantity, BOOKACTI_PLUGIN_NAME ) ), $quantity, $title )
-									/* translators: %1$s is a variable number of bookings. This sentence is preceded by : 'You want to make %1$s booking of "%2$s"' and followed by 'Please choose another event or decrease the quantity.' */
-							. ' ' . sprintf( esc_html( _n( 'but only %1$s is available on this time slot.', 'but only %1$s are available on this time slot. ', $availability, BOOKACTI_PLUGIN_NAME ) ), $availability )
-									/* translators: This sentence is preceded by two others : 'You want to make %1$s booking of "%2$s"' and 'but only %1$s is available on this time slot.' */
-							. ' ' . esc_html__( 'Please choose another event or decrease the quantity.', BOOKACTI_PLUGIN_NAME );
+			$validated['message'] = sprintf( esc_html( _n( 'You want to make %1$s booking of "%2$s"', 'You want to make %1$s bookings of "%2$s"', $quantity, 'booking-activities' ) ), $quantity, $title )
+							. ' ' . sprintf( esc_html( _n( 'but only %1$s is available on this time slot.', 'but only %1$s are available on this time slot. ', $availability, 'booking-activities' ) ), $availability )
+							. ' ' . esc_html__( 'Please choose another event or decrease the quantity.', 'booking-activities' );
 		} else if( ! $has_allowed_roles ) {
 			$validated['error'] = 'role_not_allowed';
 			if( is_user_logged_in() ) {
-				$validated['message'] = esc_html__( 'This event is not available in your user category. Please choose another event.', BOOKACTI_PLUGIN_NAME );
+				$validated['message'] = esc_html__( 'This event is not available in your user category. Please choose another event.', 'booking-activities' );
 			} else {
-				$validated['message'] = esc_html__( 'This event is restricted to certain categories of users. Please log in first.', BOOKACTI_PLUGIN_NAME );
+				$validated['message'] = esc_html__( 'This event is restricted to certain categories of users. Please log in first.', 'booking-activities' );
 			}
 				
 		} else {
 			$validated['error'] = 'failed';
-			$validated['message'] = esc_html__( 'An error occurred, please try again.', BOOKACTI_PLUGIN_NAME );
+			$validated['message'] = esc_html__( 'An error occurred, please try again.', 'booking-activities' );
 		}
 	}
 	
@@ -1136,7 +1131,7 @@ function bookacti_is_existing_group_of_events( $group ) {
 /**
  * Check if an event can be book with the given form
  * @since 1.5.0
- * @version 1.5.9
+ * @version 1.7.8
  * @param int $form_id
  * @param int $event_id
  * @param string $event_start
@@ -1144,7 +1139,6 @@ function bookacti_is_existing_group_of_events( $group ) {
  * @return array
  */
 function bookacti_is_event_available_on_form( $form_id, $event_id, $event_start, $event_end ) {
-	
 	$validated		= array( 'status' => 'failed' );
 	$calendar_data	= bookacti_get_form_field_data_by_name( $form_id, 'calendar' );
 
@@ -1152,7 +1146,7 @@ function bookacti_is_event_available_on_form( $form_id, $event_id, $event_start,
 	$form_exists = ! empty( $calendar_data );
 	if( ! $form_exists ) {
 		$validated['error'] = 'invalid_form';
-		$validated['message'] = __( 'Failed to retrieve the requested form data.', BOOKACTI_PLUGIN_NAME );
+		$validated['message'] = __( 'Failed to retrieve the requested form data.', 'booking-activities' );
 		return $validated;
 	}
 	
@@ -1165,14 +1159,14 @@ function bookacti_is_event_available_on_form( $form_id, $event_id, $event_start,
 	if( ( $calendar_data[ 'calendars' ] && ! in_array( $event->template_id, $calendar_data[ 'calendars' ] ) )
 	||  ( $calendar_data[ 'activities' ] && ! in_array( $event->activity_id, $calendar_data[ 'activities' ] ) ) ) {
 		$belongs_to_form = false;
-		$validated['message'] = __( 'The selected event is not supposed to be available on this form.', BOOKACTI_PLUGIN_NAME );
+		$validated['message'] = __( 'The selected event is not supposed to be available on this form.', 'booking-activities' );
 	}
 
 	// If the form calendar have groups, with no possibility to book a single event
 	if( $belongs_to_form && $calendar_data[ 'group_categories' ] !== false && ! $calendar_data[ 'groups_single_events' ] ) {
 		if( $calendar_data[ 'groups_only' ] ) {
 			$belongs_to_form = false;
-			$validated['message'] = __( 'You cannot book single events with this form, you must select a group of events.', BOOKACTI_PLUGIN_NAME );
+			$validated['message'] = __( 'You cannot book single events with this form, you must select a group of events.', 'booking-activities' );
 		} else {
 			// Check if the event belong to a group
 			$event_groups = bookacti_get_event_groups( $event->event_id, $event_start, $event_end );
@@ -1191,7 +1185,7 @@ function bookacti_is_event_available_on_form( $form_id, $event_id, $event_start,
 			// Check if the event belong to a group available on the calendar
 			if( array_intersect( $event_categories, $calendar_data[ 'group_categories' ] ) ) {
 				$belongs_to_form = false;
-				$validated['message'] = __( 'The selected event is part of a group and cannot be booked alone.', BOOKACTI_PLUGIN_NAME );
+				$validated['message'] = __( 'The selected event is part of a group and cannot be booked alone.', 'booking-activities' );
 			}
 		}
 	}
@@ -1213,7 +1207,7 @@ function bookacti_is_event_available_on_form( $form_id, $event_id, $event_start,
 		if( ( $event_start_obj < $current_time )
 		&& ! ( $started_events_bookable && $event_end_obj > $current_time ) ) {
 			$validated['error'] = 'past_event';
-			$validated['message'] = esc_html__( 'You cannot book a past event.', BOOKACTI_PLUGIN_NAME );
+			$validated['message'] = esc_html__( 'You cannot book a past event.', 'booking-activities' );
 			return $validated;
 		}
 	
@@ -1221,17 +1215,19 @@ function bookacti_is_event_available_on_form( $form_id, $event_id, $event_start,
 		$availability_period = bookacti_get_availability_period( $calendar_data[ 'template_data' ], $past_events_bookable );
 		$calendar_start	= new DateTime( $availability_period[ 'start' ] . ' 00:00:00', $timezone );
 		$calendar_end	= new DateTime( $availability_period[ 'end' ] . ' 23:59:59', $timezone );
-
+			
 		if( $event_start_obj < $calendar_start ) {
 			$validated['error'] = 'event_starts_before_availability_period';
+			$datetime_formatted = bookacti_format_datetime( $calendar_start->format( 'Y-m-d H:i:s' ), esc_html__( 'F d, Y', 'booking-activities' ) );
 			/* translators: %s is a formatted date (e.g.: "January 20, 2018") */
-			$validated['message'] = sprintf( esc_html__( 'You cannot book an event that starts before %s.', BOOKACTI_PLUGIN_NAME ), bookacti_format_datetime( $calendar_start->format( 'Y-m-d H:i:s' ), esc_html__( 'F d, Y', BOOKACTI_PLUGIN_NAME ) ) );
+			$validated['message'] = sprintf( esc_html__( 'You cannot book an event that starts before %s.', 'booking-activities' ), $datetime_formatted );
 			return $validated;
 		}
 		if( $event_end_obj > $calendar_end ) {
 			$validated['error'] = 'event_ends_after_availability_period';
+			$datetime_formatted = bookacti_format_datetime( $calendar_end->format( 'Y-m-d H:i:s' ), esc_html__( 'F d, Y', 'booking-activities' ) );
 			/* translators: %s is a formatted date (e.g.: "January 20, 2018") */
-			$validated['message'] = sprintf( esc_html__( 'You cannot book an event that takes place after %s.', BOOKACTI_PLUGIN_NAME ), bookacti_format_datetime( $calendar_end->format( 'Y-m-d H:i:s' ), esc_html__( 'F d, Y', BOOKACTI_PLUGIN_NAME ) ) );
+			$validated['message'] = sprintf( esc_html__( 'You cannot book an event that takes place after %s.', 'booking-activities' ), $datetime_formatted );
 			return $validated;
 		}
 	}
@@ -1245,13 +1241,12 @@ function bookacti_is_event_available_on_form( $form_id, $event_id, $event_start,
 /**
  * Check if a group of events can be book with the given form
  * @since 1.5.0
- * @version 1.5.9
+ * @version 1.7.8
  * @param int $form_id
  * @param int $group_id
  * @return array
  */
 function bookacti_is_group_of_events_available_on_form( $form_id, $group_id ) {
-	
 	$validated		= array( 'status' => 'failed' );
 	$calendar_data	= bookacti_get_form_field_data_by_name( $form_id, 'calendar' );;
 	
@@ -1259,7 +1254,7 @@ function bookacti_is_group_of_events_available_on_form( $form_id, $group_id ) {
 	$form_exists = ! empty( $calendar_data );
 	if( ! $form_exists ) {
 		$validated['error'] = 'invalid_form';
-		$validated['message'] = __( 'Failed to retrieve the requested form data.', BOOKACTI_PLUGIN_NAME );
+		$validated['message'] = __( 'Failed to retrieve the requested form data.', 'booking-activities' );
 		return $validated;
 	}
 	
@@ -1272,13 +1267,13 @@ function bookacti_is_group_of_events_available_on_form( $form_id, $group_id ) {
 	// If the form calendar doesn't have the group of events' template
 	if( $calendar_data[ 'calendars' ] && ! in_array( $category[ 'template_id' ], $calendar_data[ 'calendars' ] ) ) {
 		$belongs_to_form = false;
-		$validated['message'] = __( 'The selected events are not supposed to be available on this form.', BOOKACTI_PLUGIN_NAME );
+		$validated['message'] = __( 'The selected events are not supposed to be available on this form.', 'booking-activities' );
 	}
 	
 	// If the form calendar doesn't have groups
 	if( $belongs_to_form && $calendar_data[ 'group_categories' ] === false ) {
 		$belongs_to_form = false;
-		$validated['message'] = __( 'You cannot book groups of events with this form, you must select a single event.', BOOKACTI_PLUGIN_NAME );
+		$validated['message'] = __( 'You cannot book groups of events with this form, you must select a single event.', 'booking-activities' );
 	}
 
 	// If the form calendar have groups
@@ -1291,7 +1286,7 @@ function bookacti_is_group_of_events_available_on_form( $form_id, $group_id ) {
 		// Check if the group of event category is available on this form
 		if( ! in_array( $group->category_id, $calendar_data[ 'group_categories' ] ) ) {
 			$belongs_to_form = false;
-			$validated['message'] = __( 'The selected goup of events is not supposed to be available on this form.', BOOKACTI_PLUGIN_NAME );
+			$validated['message'] = __( 'The selected goup of events is not supposed to be available on this form.', 'booking-activities' );
 		}
 	}
 	
@@ -1312,7 +1307,7 @@ function bookacti_is_group_of_events_available_on_form( $form_id, $group_id ) {
 		if( ( $group_start < $current_time )
 		&& ! ( $started_groups_bookable && $group_end > $current_time ) ) {
 			$validated['error'] = 'past_group_of_events';
-			$validated['message'] = esc_html__( 'You cannot book a group of events if any of its events is past.', BOOKACTI_PLUGIN_NAME );
+			$validated['message'] = esc_html__( 'You cannot book a group of events if any of its events is past.', 'booking-activities' );
 			return $validated;
 		}
 	
@@ -1320,17 +1315,19 @@ function bookacti_is_group_of_events_available_on_form( $form_id, $group_id ) {
 		$availability_period = bookacti_get_availability_period( $calendar_data[ 'template_data' ], $past_events_bookable );
 		$calendar_start	= new DateTime( $availability_period[ 'start' ] . ' 00:00:00', $timezone );
 		$calendar_end	= new DateTime( $availability_period[ 'end' ] . ' 23:59:59', $timezone );
-
+		
 		if( $group_start < $calendar_start ) {
 			$validated['error'] = 'group_of_events_starts_before_availability_period';
+			$datetime_formatted = bookacti_format_datetime( $calendar_start->format( 'Y-m-d H:i:s' ), esc_html__( 'F d, Y', 'booking-activities' ) );
 			/* translators: %s is a formatted date (e.g.: "January 20, 2018") */
-			$validated['message'] = sprintf( esc_html__( 'You cannot book a group if any of its events starts before %s.', BOOKACTI_PLUGIN_NAME ), bookacti_format_datetime( $calendar_start->format( 'Y-m-d H:i:s' ), esc_html__( 'F d, Y', BOOKACTI_PLUGIN_NAME ) ) );
+			$validated['message'] = sprintf( esc_html__( 'You cannot book a group if any of its events starts before %s.', 'booking-activities' ), $datetime_formatted );
 			return $validated;
 		}
 		if( $group_end > $calendar_end ) {
 			$validated['error'] = 'group_of_events_ends_after_availability_period';
+			$datetime_formatted = bookacti_format_datetime( $calendar_end->format( 'Y-m-d H:i:s' ), esc_html__( 'F d, Y', 'booking-activities' ) );
 			/* translators: %s is a formatted date (e.g.: "January 20, 2018") */
-			$validated['message'] = sprintf( esc_html__( 'You cannot book a group if any of its events takes place after %s.', BOOKACTI_PLUGIN_NAME ), bookacti_format_datetime( $calendar_end->format( 'Y-m-d H:i:s' ), esc_html__( 'F d, Y', BOOKACTI_PLUGIN_NAME ) ) );
+			$validated['message'] = sprintf( esc_html__( 'You cannot book a group if any of its events takes place after %s.', 'booking-activities' ), $datetime_formatted );
 			return $validated;
 		}
 	}	

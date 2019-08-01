@@ -20,17 +20,17 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			
 			$booking = bookacti_get_booking_by_id( $booking_id );
 			if( $booking->state === 'cancelled' ) {
-				bookacti_send_json( array( 'status' => 'failed', 'error' => 'booking_already_cancelled', 'message' => esc_html__( 'The booking is already cancelled.', BOOKACTI_PLUGIN_NAME ) ), 'cancel_booking' );
+				bookacti_send_json( array( 'status' => 'failed', 'error' => 'booking_already_cancelled', 'message' => esc_html__( 'The booking is already cancelled.', 'booking-activities' ) ), 'cancel_booking' );
 			}
 			
 			$can_be_cancelled = bookacti_booking_can_be_cancelled( $booking );
 			if( ! $can_be_cancelled ) {
-				bookacti_send_json( array( 'status' => 'failed', 'error' => 'not_allowed_to_cancel_booking', 'message' => esc_html__( 'The booking cannot be cancelled.', BOOKACTI_PLUGIN_NAME ) ), 'cancel_booking' );
+				bookacti_send_json( array( 'status' => 'failed', 'error' => 'not_allowed_to_cancel_booking', 'message' => esc_html__( 'The booking cannot be cancelled.', 'booking-activities' ) ), 'cancel_booking' );
 			}
 
 			$cancelled = bookacti_cancel_booking( $booking_id );
 			if( ! $cancelled ) {
-				bookacti_send_json( array( 'status' => 'failed', 'error' => 'error_cancel_booking', 'message' => esc_html__( 'An error occured while trying to cancel the booking.', BOOKACTI_PLUGIN_NAME ) ), 'cancel_booking' );
+				bookacti_send_json( array( 'status' => 'failed', 'error' => 'error_cancel_booking', 'message' => esc_html__( 'An error occured while trying to cancel the booking.', 'booking-activities' ) ), 'cancel_booking' );
 			}
 
 			do_action( 'bookacti_booking_state_changed', $booking_id, 'cancelled', array( 'is_admin' => false ) );
@@ -67,7 +67,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			}
 			
 			if( ! bookacti_booking_can_be_refunded( $booking_id ) ) {
-				bookacti_send_json( array( 'status' => 'failed', 'error' => 'cannot_be_refunded', 'message' => esc_html__( 'This booking cannot be refunded.', BOOKACTI_PLUGIN_NAME ) ), 'get_refund_actions_html' );
+				bookacti_send_json( array( 'status' => 'failed', 'error' => 'cannot_be_refunded', 'message' => esc_html__( 'This booking cannot be refunded.', 'booking-activities' ) ), 'get_refund_actions_html' );
 			}
 			
 			$refund_actions_array	= bookacti_get_refund_actions_by_booking_id( $booking_id );
@@ -117,7 +117,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 					$refunded = array( 
 						'status'	=> 'failed', 
 						'error'		=> 'cannot_send_email', 
-						'message'	=> esc_html__( 'An error occured while trying to send the email.', BOOKACTI_PLUGIN_NAME ) 
+						'message'	=> esc_html__( 'An error occured while trying to send the email.', 'booking-activities' ) 
 					);
 				}
 			} else {
@@ -178,7 +178,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			if( $new_booking_state && $booking->state !== $new_booking_state ) {
 				$state_can_be_changed = bookacti_booking_state_can_be_changed_to( $booking, $new_booking_state );
 				if( ! $state_can_be_changed ) {
-					bookacti_send_json( array( 'status' => 'failed', 'error' => 'not_allowed_to_update_booking_status', 'message' => esc_html__( 'The booking status cannot be changed.', BOOKACTI_PLUGIN_NAME ) ), 'change_booking_status' );
+					bookacti_send_json( array( 'status' => 'failed', 'error' => 'not_allowed_to_update_booking_status', 'message' => esc_html__( 'The booking status cannot be changed.', 'booking-activities' ) ), 'change_booking_status' );
 				}
 				
 				$was_active	= bookacti_is_booking_active( $booking_id ) ? 1 : 0;
@@ -187,7 +187,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 				
 				$updated = bookacti_update_booking_state( $booking_id, $new_booking_state, $active );
 				if( $updated === false ) { 
-					bookacti_send_json( array( 'status' => 'failed', 'error' => 'error_update_booking_status', 'message' => esc_html__( 'An error occured while trying to change the booking status.', BOOKACTI_PLUGIN_NAME ) ), 'change_booking_status' );
+					bookacti_send_json( array( 'status' => 'failed', 'error' => 'error_update_booking_status', 'message' => esc_html__( 'An error occured while trying to change the booking status.', 'booking-activities' ) ), 'change_booking_status' );
 				}
 				
 				do_action( 'bookacti_booking_state_changed', $booking_id, $new_booking_state, array( 'is_admin' => $is_admin, 'active' => $active, 'send_notifications' => $send_notifications ) );
@@ -197,7 +197,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			if( $new_payment_status && $booking->payment_status !== $new_payment_status ) {
 				$updated = bookacti_update_booking_payment_status( $booking_id, $new_payment_status );
 				if( $updated === false ) { 
-					bookacti_send_json( array( 'status' => 'failed', 'error' => 'error_update_booking_payment_status', 'message' => esc_html__( 'An error occured while trying to change the booking payment status.', BOOKACTI_PLUGIN_NAME ) ), 'change_booking_status' );
+					bookacti_send_json( array( 'status' => 'failed', 'error' => 'error_update_booking_payment_status', 'message' => esc_html__( 'An error occured while trying to change the booking payment status.', 'booking-activities' ) ), 'change_booking_status' );
 				}
 				
 				do_action( 'bookacti_booking_payment_status_changed', $booking_id, $new_payment_status, array( 'is_admin' => $is_admin ) );
@@ -275,7 +275,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			$rescheduled = bookacti_reschedule_booking( $booking_id, $event_id, $event_start, $event_end );
 			
 			if( $rescheduled === 0 ) {
-				$message = __( 'You must select a different time slot than the current one.', BOOKACTI_PLUGIN_NAME );
+				$message = __( 'You must select a different time slot than the current one.', 'booking-activities' );
 				bookacti_send_json( array( 'status' => 'no_changes', 'error' => 'no_changes', 'message' => $message ), 'reschedule_booking' );
 			}
 			
@@ -327,7 +327,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 				$return_array = array( 
 					'status'	=> 'failed', 
 					'error'		=> 'not_deleted', 
-					'message'	=> esc_html__( 'An error occurred while trying to delete the booking.', BOOKACTI_PLUGIN_NAME )
+					'message'	=> esc_html__( 'An error occurred while trying to delete the booking.', 'booking-activities' )
 				);
 				bookacti_send_json( $return_array, 'delete_booking' );
 			}
@@ -402,17 +402,17 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			
 			$booking_group = bookacti_get_booking_group_by_id( $booking_group_id );
 			if( $booking_group->state === 'cancelled' ) {
-				bookacti_send_json( array( 'status' => 'failed', 'error' => 'booking_group_already_cancelled', 'message' => esc_html__( 'The booking group is already cancelled.', BOOKACTI_PLUGIN_NAME ) ), 'cancel_booking_group' );
+				bookacti_send_json( array( 'status' => 'failed', 'error' => 'booking_group_already_cancelled', 'message' => esc_html__( 'The booking group is already cancelled.', 'booking-activities' ) ), 'cancel_booking_group' );
 			}
 			
 			$can_be_cancelled = bookacti_booking_group_can_be_cancelled( $booking_group );
 			if( ! $can_be_cancelled ) {
-				bookacti_send_json( array( 'status' => 'failed', 'error' => 'not_allowed_to_cancel_booking_group', 'message' => esc_html__( 'The booking group cannot be cancelled.', BOOKACTI_PLUGIN_NAME ) ), 'cancel_booking_group' );
+				bookacti_send_json( array( 'status' => 'failed', 'error' => 'not_allowed_to_cancel_booking_group', 'message' => esc_html__( 'The booking group cannot be cancelled.', 'booking-activities' ) ), 'cancel_booking_group' );
 			}
 
 			$cancelled = bookacti_update_booking_group_state( $booking_group_id, 'cancelled', 'auto', true );
 			if( ! $cancelled ) {
-				bookacti_send_json( array( 'status' => 'failed', 'error' => 'error_cancel_booking_group', 'message' => esc_html__( 'An error occured while trying to cancel the booking group.', BOOKACTI_PLUGIN_NAME ) ), 'cancel_booking_group' );
+				bookacti_send_json( array( 'status' => 'failed', 'error' => 'error_cancel_booking_group', 'message' => esc_html__( 'An error occured while trying to cancel the booking group.', 'booking-activities' ) ), 'cancel_booking_group' );
 			}
 
 			do_action( 'bookacti_booking_group_state_changed', $booking_group_id, 'cancelled', array( 'is_admin' => false ) );
@@ -450,7 +450,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			}
 			
 			if( ! bookacti_booking_group_can_be_refunded( $booking_group_id ) ) {
-				bookacti_send_json( array( 'error' => 'cannot_be_refunded', 'message' => esc_html__( 'This booking cannot be refunded.', BOOKACTI_PLUGIN_NAME ) ), 'get_refund_actions_html' );
+				bookacti_send_json( array( 'error' => 'cannot_be_refunded', 'message' => esc_html__( 'This booking cannot be refunded.', 'booking-activities' ) ), 'get_refund_actions_html' );
 			}
 
 			$refund_actions_array	= bookacti_get_refund_actions_by_booking_group_id( $booking_group_id );
@@ -488,7 +488,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			}
 			
 			if( ! bookacti_booking_group_can_be_refunded( $booking_group_id, $refund_action ) ) {
-				bookacti_send_json( array( 'error' => 'cannot_be_refunded', 'message' => esc_html__( 'This booking cannot be refunded.', BOOKACTI_PLUGIN_NAME ) ), 'refund_booking_group' );
+				bookacti_send_json( array( 'error' => 'cannot_be_refunded', 'message' => esc_html__( 'This booking cannot be refunded.', 'booking-activities' ) ), 'refund_booking_group' );
 			}
 			
 			$refund_message	= sanitize_text_field( stripslashes( $_POST[ 'refund_message' ] ) );
@@ -564,7 +564,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 				
 				$state_can_be_changed = bookacti_booking_group_state_can_be_changed_to( $booking_group, $new_booking_state );
 				if( ! $state_can_be_changed ) {
-					bookacti_send_json( array( 'status' => 'failed', 'error' => 'not_allowed_to_update_booking_group_status', 'message' => esc_html__( 'The booking group status cannot be changed.', BOOKACTI_PLUGIN_NAME ) ), 'change_booking_group_status' );
+					bookacti_send_json( array( 'status' => 'failed', 'error' => 'not_allowed_to_update_booking_group_status', 'message' => esc_html__( 'The booking group status cannot be changed.', 'booking-activities' ) ), 'change_booking_group_status' );
 				}
 					
 				$was_active	= $booking_group->active ? 1 : 0;
@@ -573,7 +573,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 				
 				$updated = bookacti_update_booking_group_state( $booking_group_id, $new_booking_state, $active, true, true );
 				if( ! $updated ) { 
-					bookacti_send_json( array( 'status' => 'failed', 'error' => 'error_update_booking_group_status', 'message' => esc_html__( 'An error occured while trying to change the booking group status.', BOOKACTI_PLUGIN_NAME ) ), 'change_booking_group_status' );
+					bookacti_send_json( array( 'status' => 'failed', 'error' => 'error_update_booking_group_status', 'message' => esc_html__( 'An error occured while trying to change the booking group status.', 'booking-activities' ) ), 'change_booking_group_status' );
 				}
 
 				do_action( 'bookacti_booking_group_state_changed', $booking_group_id, $new_booking_state, array( 'is_admin' => $is_admin, 'active' => $active, 'send_notifications' => $send_notifications ) );
@@ -583,7 +583,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			if( $new_payment_status && $booking_group->payment_status !== $new_payment_status ) {
 				$updated = bookacti_update_booking_group_payment_status( $booking_group_id, $new_payment_status, true, true );
 				if( $updated === false ) { 
-					bookacti_send_json( array( 'status' => 'failed', 'error' => 'error_update_booking_group_payment_status', 'message' => esc_html__( 'An error occured while trying to change the booking group payment status.', BOOKACTI_PLUGIN_NAME ) ), 'change_booking_group_status' );
+					bookacti_send_json( array( 'status' => 'failed', 'error' => 'error_update_booking_group_payment_status', 'message' => esc_html__( 'An error occured while trying to change the booking group payment status.', 'booking-activities' ) ), 'change_booking_group_status' );
 				}
 				
 				do_action( 'bookacti_booking_group_payment_status_changed', $booking_group_id, $new_payment_status, array( 'is_admin' => $is_admin ) );
@@ -629,7 +629,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 				$return_array = array( 
 					'status'	=> 'failed', 
 					'error'		=> 'grouped_bookings_not_deleted', 
-					'message'	=> esc_html__( 'An error occurred while trying to delete the bookings of the group.', BOOKACTI_PLUGIN_NAME )
+					'message'	=> esc_html__( 'An error occurred while trying to delete the bookings of the group.', 'booking-activities' )
 				);
 				bookacti_send_json( $return_array, 'delete_booking_group' );
 			}
@@ -640,7 +640,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 				$return_array = array( 
 					'status'	=> 'failed', 
 					'error'		=> 'not_deleted', 
-					'message'	=> esc_html__( 'An error occurred while trying to delete the booking group.', BOOKACTI_PLUGIN_NAME )
+					'message'	=> esc_html__( 'An error occurred while trying to delete the booking group.', 'booking-activities' )
 				);
 				bookacti_send_json( $return_array, 'delete_booking_group' );
 			}
@@ -674,7 +674,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			}
 			
 			$lang = bookacti_get_current_lang_code();
-			$message = esc_html__( 'The link has been correctly generated. Use the link above to export your bookings.', BOOKACTI_PLUGIN_NAME );
+			$message = esc_html__( 'The link has been correctly generated. Use the link above to export your bookings.', 'booking-activities' );
 			
 			// Get or generate current user export secret key
 			$current_user_id = get_current_user_id();
@@ -683,7 +683,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 				$secret_key = md5( microtime().rand() );
 				update_user_meta( $current_user_id, 'bookacti_secret_key', $secret_key );
 				if( ! empty( $_POST[ 'reset_key' ] ) ) {
-					$message .= '<br/><em>' . esc_html__( 'Your secret key has been changed. The old links that you have generated won\'t work anymore.', BOOKACTI_PLUGIN_NAME ) . '</em>';
+					$message .= '<br/><em>' . esc_html__( 'Your secret key has been changed. The old links that you have generated won\'t work anymore.', 'booking-activities' ) . '</em>';
 				}
 			}
 			
@@ -759,15 +759,15 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			// Check the filename
 			$parsed_url	= parse_url( $_SERVER[ 'REQUEST_URI' ] );
 			$filename	= basename( $parsed_url[ 'path' ] );
-			if( substr( $filename, -4 ) !== '.csv' ) { esc_html_e( 'Invalid filename.', BOOKACTI_PLUGIN_NAME ); exit; }
+			if( substr( $filename, -4 ) !== '.csv' ) { esc_html_e( 'Invalid filename.', 'booking-activities' ); exit; }
 			
 			// Check if the secret key exists
 			$key = ! empty( $_REQUEST[ 'key' ] ) ? $_REQUEST[ 'key' ] : '';
-			if( ! $key ) { esc_html_e( 'Missing key.', BOOKACTI_PLUGIN_NAME ); exit; }
+			if( ! $key ) { esc_html_e( 'Missing key.', 'booking-activities' ); exit; }
 			
 			// Check if the user exists
 			$users = get_users( array( 'meta_key' => 'bookacti_secret_key', 'meta_value' => $key ) );
-			if( ! $users ) { esc_html_e( 'Invalid key.', BOOKACTI_PLUGIN_NAME ); exit; }
+			if( ! $users ) { esc_html_e( 'Invalid key.', 'booking-activities' ); exit; }
 			$user = $users[ 0 ];
 			
 			// Format the booking filters
@@ -818,15 +818,15 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			// Check the filename
 			$parsed_url	= parse_url( $_SERVER[ 'REQUEST_URI' ] );
 			$filename	= basename( $parsed_url[ 'path' ] );
-			if( substr( $filename, -4 ) !== '.ics' ) { esc_html_e( 'Invalid filename.', BOOKACTI_PLUGIN_NAME ); exit; }
+			if( substr( $filename, -4 ) !== '.ics' ) { esc_html_e( 'Invalid filename.', 'booking-activities' ); exit; }
 			
 			// Check if the secret key exists
 			$key = ! empty( $_REQUEST[ 'key' ] ) ? $_REQUEST[ 'key' ] : '';
-			if( ! $key ) { esc_html_e( 'Missing key.', BOOKACTI_PLUGIN_NAME ); exit; }
+			if( ! $key ) { esc_html_e( 'Missing key.', 'booking-activities' ); exit; }
 			
 			// Check if the user exists
 			$users = get_users( array( 'meta_key' => 'bookacti_secret_key', 'meta_value' => $key ) );
-			if( ! $users ) { esc_html_e( 'Invalid key.', BOOKACTI_PLUGIN_NAME ); exit; }
+			if( ! $users ) { esc_html_e( 'Invalid key.', 'booking-activities' ); exit; }
 			
 			$user = $users[ 0 ];
 			
@@ -839,7 +839,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 				'past_events_bookable' => 1
 			)));
 
-			$calname = esc_html__( 'My bookings', BOOKACTI_PLUGIN_NAME );
+			$calname = esc_html__( 'My bookings', 'booking-activities' );
 			$caldesc = $calname . '.';
 
 			// Increment the sequence number each time to make sure that the events will be updated
@@ -859,12 +859,12 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			if( empty( $_REQUEST[ 'action' ] ) || $_REQUEST[ 'action' ] !== 'bookacti_export_booked_events' ) { return; }
 			
 			// Check if a booking ID was given
-			if( empty( $_REQUEST[ 'booking_id' ] ) && empty( $_REQUEST[ 'booking_group_id' ] ) ) { esc_html_e( 'Invalid booking ID.', BOOKACTI_PLUGIN_NAME ); exit; }
+			if( empty( $_REQUEST[ 'booking_id' ] ) && empty( $_REQUEST[ 'booking_group_id' ] ) ) { esc_html_e( 'Invalid booking ID.', 'booking-activities' ); exit; }
 			
 			// Check the filename
 			$parsed_url	= parse_url( $_SERVER[ 'REQUEST_URI' ] );
 			$filename	= basename( $parsed_url[ 'path' ] );
-			if( substr( $filename, -4 ) !== '.ics' ) { esc_html_e( 'Invalid filename.', BOOKACTI_PLUGIN_NAME ); exit; }
+			if( substr( $filename, -4 ) !== '.ics' ) { esc_html_e( 'Invalid filename.', 'booking-activities' ); exit; }
 			
 			$atts = apply_filters( 'bookacti_export_events_attributes', array_merge( bookacti_get_booking_system_default_attributes(), array(
 				'status' => array( 'delivered', 'booked', 'pending' ),
@@ -875,8 +875,8 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			if( ! empty( $_REQUEST[ 'booking_id' ] ) ) {
 				$booking_id = intval( $_REQUEST[ 'booking_id' ] );
 				$booking = bookacti_get_booking_by_id( $booking_id );
-				if( ! $booking ) { esc_html_e( 'Invalid booking ID.', BOOKACTI_PLUGIN_NAME ); exit; }
-				if( ! in_array( $booking->state, $atts[ 'status' ], true ) ) { esc_html_e( 'No events found.', BOOKACTI_PLUGIN_NAME ); exit; }
+				if( ! $booking ) { esc_html_e( 'Invalid booking ID.', 'booking-activities' ); exit; }
+				if( ! in_array( $booking->state, $atts[ 'status' ], true ) ) { esc_html_e( 'No events found.', 'booking-activities' ); exit; }
 
 				$event = bookacti_get_event_by_id( $booking->event_id );
 
@@ -885,7 +885,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 					$timezone		= new DateTimeZone( bookacti_get_setting_value( 'bookacti_general_settings', 'timezone' ) );
 					$current_time	= new DateTime( 'now', $timezone );
 					$start_datetime = new DateTime( $event->start, $timezone );
-					if( $start_datetime < $current_time ) { esc_html_e( 'No events found.', BOOKACTI_PLUGIN_NAME ); exit; }
+					if( $start_datetime < $current_time ) { esc_html_e( 'No events found.', 'booking-activities' ); exit; }
 				}
 
 				$interval = array( 'start' => substr( $booking->event_start, 0, 10 ), 'end' => substr( $booking->event_end, 0, 10 ) );
@@ -895,7 +895,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 				$booking_group_id = intval( $_REQUEST[ 'booking_group_id' ] );
 				$booking_group = bookacti_get_booking_group_by_id( $booking_group_id );
 				$bookings = bookacti_get_bookings_by_booking_group_id( $booking_group_id );
-				if( ! $booking_group || ! $bookings ) { esc_html_e( 'Invalid booking ID.', BOOKACTI_PLUGIN_NAME ); exit; }
+				if( ! $booking_group || ! $bookings ) { esc_html_e( 'Invalid booking ID.', 'booking-activities' ); exit; }
 
 				$events = bookacti_fetch_grouped_events( array(), array(), array( $booking_group->event_group_id ), array(), $atts[ 'past_events' ] );
 				
@@ -917,9 +917,9 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 				}
 			}
 
-			if( ! $events[ 'events' ] ) { esc_html_e( 'Events not found.', BOOKACTI_PLUGIN_NAME ); exit; }
+			if( ! $events[ 'events' ] ) { esc_html_e( 'Events not found.', 'booking-activities' ); exit; }
 
-			$calname = esc_html__( 'My bookings', BOOKACTI_PLUGIN_NAME );
+			$calname = esc_html__( 'My bookings', 'booking-activities' );
 			$caldesc = $calname . '.';
 
 			header( 'Content-type: text/calendar; charset=utf-8' );

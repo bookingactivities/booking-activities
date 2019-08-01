@@ -21,13 +21,13 @@ $messages = bookacti_get_messages();
 <div id='bookacti-refund-booking-dialog' 
 	 class='bookacti-backend-dialog bookacti-bookings-dialog' 
 	 style='display:none;' 
-	 title='<?php echo current_user_can( 'bookacti_edit_bookings' ) ? esc_html_x( 'Refund a booking', 'Dialog title', BOOKACTI_PLUGIN_NAME ) : apply_filters( 'bookacti_translate_text', $messages[ 'refund_dialog_title' ][ 'value' ] ); ?>'>
+	 title='<?php echo current_user_can( 'bookacti_edit_bookings' ) ? esc_html_x( 'Refund a booking', 'Dialog title', 'booking-activities' ) : apply_filters( 'bookacti_translate_text', $messages[ 'refund_dialog_title' ][ 'value' ] ); ?>'>
 </div>
 
 <div id='bookacti-refund-booking-confirm-dialog' 
 	 class='bookacti-backend-dialog bookacti-bookings-dialog' 
 	 style='display:none;' 
-	 title='<?php echo esc_html__( 'Refund confirmation', BOOKACTI_PLUGIN_NAME ); ?>'>
+	 title='<?php echo esc_html__( 'Refund confirmation', 'booking-activities' ); ?>'>
 </div>
 
 <!-- Frontend and backend - Reschedule booking -->
@@ -56,14 +56,14 @@ $messages = bookacti_get_messages();
 		</div>
 		<div>
 			<?php if( is_admin() ) { ?>
-				<label for='bookacti-send-notifications-on-reschedule' ><?php esc_html_e( 'Send notifications', BOOKACTI_PLUGIN_NAME ); ?></label>
+				<label for='bookacti-send-notifications-on-reschedule' ><?php esc_html_e( 'Send notifications', 'booking-activities' ); ?></label>
 			<?php 
 					$args = array(
 						'type'	=> 'checkbox',
 						'name'	=> 'send-notifications-on-reschedule',
 						'id'	=> 'bookacti-send-notifications-on-reschedule',
 						'value'	=> 0,
-						'tip'	=> __( 'Whether to notify the customer of the booking reschedule.', BOOKACTI_PLUGIN_NAME )
+						'tip'	=> __( 'Whether to notify the customer of the booking reschedule.', 'booking-activities' )
 					);
 					bookacti_display_field( $args );
 				}

@@ -1,14 +1,14 @@
 <?php
 /**
  * Booking list page
- * @version 1.7.6
+ * @version 1.7.8
  */
 
 // Exit if accessed directly
 if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 echo "<div class='wrap'>";
-echo "<h1 class='wp-heading-inline'>" . esc_html__( 'Bookings', BOOKACTI_PLUGIN_NAME ) . "</h1>";
+echo "<h1 class='wp-heading-inline'>" . esc_html__( 'Bookings', 'booking-activities' ) . "</h1>";
 do_action( 'bookacti_booking_list_page_header' );
 echo "<hr class='wp-header-end'>";
 
@@ -22,10 +22,7 @@ if( ! $templates ) {
 		<h2>
 			<?php
 			/* translators: %1$s and %2$s delimit the link to Calendar Editor page. */
-			echo sprintf(	
-					esc_html__( 'Welcome! It seems you don\'t have any calendar yet. Go to %1$sCalendar Editor%2$s to create your first calendar.', BOOKACTI_PLUGIN_NAME ),
-					'<a href="' . esc_url( $editor_url ) . '" >', 
-					'</a>' );
+			echo sprintf( esc_html__( 'Welcome! It seems you don\'t have any calendar yet. Go to %1$sCalendar Editor%2$s to create your first calendar.', 'booking-activities' ), '<a href="' . esc_url( $editor_url ) . '" >', '</a>' );
 			?>
 		</h2>
 	</div>
@@ -47,7 +44,7 @@ if( ! $templates ) {
 			?>
 			<div id='bookacti-templates-filter-container' class='bookacti-bookings-filter-container' >
 				<div id='bookacti-templates-filter-title' class='bookacti-bookings-filter-title' >
-					<?php echo esc_html__( 'Calendars', BOOKACTI_PLUGIN_NAME ); ?>
+					<?php echo esc_html__( 'Calendars', 'booking-activities' ); ?>
 				</div>
 				<div id='bookacti-templates-filter-content'  class='bookacti-bookings-filter-content' >
 					<input type='hidden' name='templates[]' value='all' />
@@ -80,7 +77,7 @@ if( ! $templates ) {
 			</div>
 			<div id='bookacti-activities-filter-container' class='bookacti-bookings-filter-container' >
 				<div class='bookacti-bookings-filter-title' >
-					<?php echo esc_html__( 'Activities', BOOKACTI_PLUGIN_NAME ); ?>
+					<?php echo esc_html__( 'Activities', 'booking-activities' ); ?>
 				</div>
 				<div class='bookacti-bookings-filter-content' >
 					<input type='hidden' name='activities[]' value='all' />
@@ -114,7 +111,7 @@ if( ! $templates ) {
 			</div>
 			<div id='bookacti-status-filter-container' class='bookacti-bookings-filter-container' >
 				<div class='bookacti-bookings-filter-title' >
-					<?php echo esc_html_x( 'Status', 'Booking status', BOOKACTI_PLUGIN_NAME ); ?>
+					<?php echo esc_html_x( 'Status', 'Booking status', 'booking-activities' ); ?>
 				</div>
 				<div class='bookacti-bookings-filter-content' >
 					<input type='hidden' name='status[]' value='all' />
@@ -156,7 +153,7 @@ if( ! $templates ) {
 			</div>
 			<div id='bookacti-dates-filter-container' class='bookacti-bookings-filter-container' >
 				<div class='bookacti-bookings-filter-title' >
-					<?php echo esc_html__( 'Date', BOOKACTI_PLUGIN_NAME ); ?>
+					<?php echo esc_html__( 'Date', 'booking-activities' ); ?>
 				</div>
 				<div class='bookacti-bookings-filter-content' >
 					<?php
@@ -167,17 +164,17 @@ if( ! $templates ) {
 					$user_agent = ! empty( $_SERVER[ 'HTTP_USER_AGENT' ] ) ? $_SERVER[ 'HTTP_USER_AGENT' ] : '';
 					if( strpos( $user_agent, 'MSIE' ) || strpos( $user_agent, 'Trident/7' ) ) {
 					?>
-						<div><label for='bookacti-booking-filter-dates-from'><?php echo esc_html__( 'From', BOOKACTI_PLUGIN_NAME ) . ' '; ?></label><input type='date' name='from' id='bookacti-booking-filter-dates-from' value='<?php echo $from; ?>' ></div>
-						<div><label for='bookacti-booking-filter-dates-to'><?php echo esc_html__( 'To', BOOKACTI_PLUGIN_NAME ) . ' '; ?></label><input type='date' name='to'  id='bookacti-booking-filter-dates-to' value='<?php echo $to; ?>' ></div>
+						<div><label for='bookacti-booking-filter-dates-from'><?php echo esc_html__( 'From', 'booking-activities' ) . ' '; ?></label><input type='date' name='from' id='bookacti-booking-filter-dates-from' value='<?php echo $from; ?>' ></div>
+						<div><label for='bookacti-booking-filter-dates-to'><?php echo esc_html__( 'To', 'booking-activities' ) . ' '; ?></label><input type='date' name='to'  id='bookacti-booking-filter-dates-to' value='<?php echo $to; ?>' ></div>
 					<?php } else { ?>
-						<div><input type='text' onfocus="(this.type='date')" onblur="(this.type='text')" name='from' id='bookacti-booking-filter-dates-from' placeholder='<?php esc_html_e( 'From', BOOKACTI_PLUGIN_NAME ); ?>' value='<?php echo $from; ?>' ></div>
-						<div><input type='text' onfocus="(this.type='date')" onblur="(this.type='text')" name='to'  id='bookacti-booking-filter-dates-to' placeholder='<?php esc_html_e( 'To', BOOKACTI_PLUGIN_NAME ); ?>' value='<?php echo $to; ?>' ></div>
+						<div><input type='text' onfocus="(this.type='date')" onblur="(this.type='text')" name='from' id='bookacti-booking-filter-dates-from' placeholder='<?php esc_html_e( 'From', 'booking-activities' ); ?>' value='<?php echo $from; ?>' ></div>
+						<div><input type='text' onfocus="(this.type='date')" onblur="(this.type='text')" name='to'  id='bookacti-booking-filter-dates-to' placeholder='<?php esc_html_e( 'To', 'booking-activities' ); ?>' value='<?php echo $to; ?>' ></div>
 					<?php } ?>
 				</div>
 			</div>
 			<div id='bookacti-customer-filter-container' class='bookacti-bookings-filter-container' >
 				<div class='bookacti-bookings-filter-title' >
-					<?php esc_html_e( 'Customer', BOOKACTI_PLUGIN_NAME ); ?>
+					<?php esc_html_e( 'Customer', 'booking-activities' ); ?>
 				</div>
 				<div class='bookacti-bookings-filter-content' >
 				<?php
@@ -185,8 +182,8 @@ if( ! $templates ) {
 					$args = apply_filters( 'bookacti_booking_list_user_selectbox_args', array(
 						'name'				=> 'user_id',
 						'id'				=> 'bookacti-booking-filter-customer',
-						'show_option_all'	=> esc_html__( 'All', BOOKACTI_PLUGIN_NAME ),
-						'show_option_self'	=> esc_html__( 'Your search', BOOKACTI_PLUGIN_NAME ),
+						'show_option_all'	=> esc_html__( 'All', 'booking-activities' ),
+						'show_option_self'	=> esc_html__( 'Your search', 'booking-activities' ),
 						'option_self_value'	=> $selected_user,
 						'option_label'		=> array( 'user_login', ' (', 'user_email', ')' ),
 						'selected'			=> $selected_user,
@@ -198,7 +195,7 @@ if( ! $templates ) {
 			</div>
 			<div id='bookacti-event-filter-container' class='bookacti-bookings-filter-container' >
 				<div class='bookacti-bookings-filter-title' >
-					<?php echo esc_html__( 'Event', BOOKACTI_PLUGIN_NAME ); ?>
+					<?php echo esc_html__( 'Event', 'booking-activities' ); ?>
 				</div>
 				<div class='bookacti-bookings-filter-content' >
 					<?php
@@ -226,13 +223,13 @@ if( ! $templates ) {
 						);
 						
 						$display_calendar		= $has_event_picked ? 'block' : 'none';
-						$calendar_button_label	= $has_event_picked ? esc_html__( 'Hide calendar', BOOKACTI_PLUGIN_NAME ) : esc_html__( 'Pick an event', BOOKACTI_PLUGIN_NAME );
+						$calendar_button_label	= $has_event_picked ? esc_html__( 'Hide calendar', 'booking-activities' ) : esc_html__( 'Pick an event', 'booking-activities' );
 					?>
 					<a class='button' id='bookacti-pick-event-filter' title='<?php echo $calendar_button_label; ?>' >
 						<?php echo $calendar_button_label; ?>
 					</a>
-					<a class='button' id='bookacti-unpick-events-filter' title='<?php _e( 'Unpick events', BOOKACTI_PLUGIN_NAME ); ?>' style='display:<?php echo $display_calendar; ?>' >
-						<?php _e( 'Unpick events', BOOKACTI_PLUGIN_NAME ); ?>
+					<a class='button' id='bookacti-unpick-events-filter' title='<?php _e( 'Unpick events', 'booking-activities' ); ?>' style='display:<?php echo $display_calendar; ?>' >
+						<?php _e( 'Unpick events', 'booking-activities' ); ?>
 					</a>
 				</div>
 			</div>
@@ -241,10 +238,10 @@ if( ! $templates ) {
 			?>
 			<div id='bookacti-submit-filter-container' class='bookacti-bookings-filter-container' >
 				<div class='bookacti-bookings-filter-title' >
-					<?php echo esc_html_x( 'Filter', 'verb', BOOKACTI_PLUGIN_NAME ); ?>
+					<?php echo esc_html_x( 'Filter', 'verb', 'booking-activities' ); ?>
 				</div>
 				<div class='bookacti-bookings-filter-content' >
-					<input type='submit' class='button button-primary button-large' value='<?php _e( 'Apply filters', BOOKACTI_PLUGIN_NAME ); ?>' title='<?php _e( 'Apply filters', BOOKACTI_PLUGIN_NAME ); ?>' />
+					<input type='submit' class='button button-primary button-large' value='<?php _e( 'Apply filters', 'booking-activities' ); ?>' title='<?php _e( 'Apply filters', 'booking-activities' ); ?>' />
 				</div>
 			</div>
 			<div id='bookacti-booking-system-filter-container' style='display:<?php echo $display_calendar; ?>'>

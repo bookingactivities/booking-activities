@@ -9,7 +9,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 echo "<div class='wrap'>";
 	
-	echo "<h1 class='wp-heading-inline'>" . esc_html__( 'Settings', BOOKACTI_PLUGIN_NAME ) . "</h1>";
+	echo "<h1 class='wp-heading-inline'>" . esc_html__( 'Settings', 'booking-activities' ) . "</h1>";
 	do_action( 'bookacti_settings_page_header' );
 	echo "<hr class='wp-header-end'>";
 	
@@ -23,11 +23,11 @@ echo "<div class='wrap'>";
 	// Define the tabs here: 'tab slug' => 'tab title'
 	$tabs = apply_filters( 'bookacti_settings_tabs', array ( 
 		/* translators: Used for a category of parameters */
-		'general'		=> esc_html__( 'General', BOOKACTI_PLUGIN_NAME ),
-		'cancellation'	=> esc_html__( 'Cancellation', BOOKACTI_PLUGIN_NAME ),
-		'notifications'	=> esc_html__( 'Notifications', BOOKACTI_PLUGIN_NAME ),
-		'messages'		=> esc_html__( 'Messages', BOOKACTI_PLUGIN_NAME ),
-		'system'		=> esc_html__( 'System', BOOKACTI_PLUGIN_NAME )
+		'general'		=> esc_html__( 'General', 'booking-activities' ),
+		'cancellation'	=> esc_html__( 'Cancellation', 'booking-activities' ),
+		'notifications'	=> esc_html__( 'Notifications', 'booking-activities' ),
+		'messages'		=> esc_html__( 'Messages', 'booking-activities' ),
+		'system'		=> esc_html__( 'System', 'booking-activities' )
 	) );
 
 	// Display the tabs

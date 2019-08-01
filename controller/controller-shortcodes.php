@@ -91,7 +91,7 @@ function bookacti_shortcode_booking_form( $atts = array(), $content = null, $tag
 
 				  "<div class='bookacti-form-field-container' >
 					  <label for='bookacti-quantity-booking-form-" . $atts[ 'id' ] . "' class='bookacti-form-field-label' >"
-						  . __( 'Quantity', BOOKACTI_PLUGIN_NAME ) .
+						  . __( 'Quantity', 'booking-activities' ) .
 					  "</label>
 					  <input name='quantity'
 							 id='bookacti-quantity-booking-form-" . $atts[ 'id' ] . "'
@@ -209,7 +209,7 @@ function bookacti_deprecated_controller_validate_booking_form() {
 		
 		if( $booking_form_values[ 'user_id' ] != get_current_user_id() && ! current_user_can( 'bookacti_edit_bookings' ) ) {
 			$response[ 'status' ] = 'failed';
-			$response[ 'message' ] = __( "You can't make a booking for someone else.", BOOKACTI_PLUGIN_NAME );
+			$response[ 'message' ] = __( "You can't make a booking for someone else.", 'booking-activities' );
 		}
 		
 		if( $response[ 'status' ] === 'success' ) {
@@ -250,21 +250,21 @@ function bookacti_deprecated_controller_validate_booking_form() {
 
 					do_action( 'bookacti_booking_form_validated', $booking_group_id, $booking_form_values, 'group', 0 );
 					
-					$message = __( 'Your events have been booked successfully!', BOOKACTI_PLUGIN_NAME );
+					$message = __( 'Your events have been booked successfully!', 'booking-activities' );
 					wp_send_json( array( 'status' => 'success', 'message' => esc_html( $message ), 'booking_group_id' => $booking_group_id ) );
 				}
 			}
 			
-			$message = __( 'An error occurred, please try again.', BOOKACTI_PLUGIN_NAME );
+			$message = __( 'An error occurred, please try again.', 'booking-activities' );
 			
 		} else {
 			$message = $response[ 'message' ];
 		}
 		
 	} else {
-		$message = __( 'You are not allowed to do that.', BOOKACTI_PLUGIN_NAME );
+		$message = __( 'You are not allowed to do that.', 'booking-activities' );
 		if( ! $is_allowed ) {
-			$message = __( 'You are not logged in. Please create an account and log in first.', BOOKACTI_PLUGIN_NAME );
+			$message = __( 'You are not logged in. Please create an account and log in first.', 'booking-activities' );
 		}
 		
 		$response = array( 'status' => 'failed', 'error' => 'not_allowed', 'message' => $message );

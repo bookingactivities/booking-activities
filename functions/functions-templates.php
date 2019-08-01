@@ -204,8 +204,8 @@ function bookacti_get_editor_booking_system_data( $atts, $template_id ) {
 				'name'			=> 'minTime',
 				'value'			=> '08:00',
 				/* translators: Refers to the first hour displayed on calendar. More information: http://fullcalendar.io/docs/agenda/minTime/ */
-				'title'			=> esc_html__( 'Day begin', BOOKACTI_PLUGIN_NAME ),
-				'tip'			=> esc_html__( 'Set when you want the days to begin on the calendar. Ex: "06:00" Days will begin at 06:00am.', BOOKACTI_PLUGIN_NAME )
+				'title'			=> esc_html__( 'Day begin', 'booking-activities' ),
+				'tip'			=> esc_html__( 'Set when you want the days to begin on the calendar. Ex: "06:00" Days will begin at 06:00am.', 'booking-activities' )
 			);
 		}
 
@@ -215,9 +215,9 @@ function bookacti_get_editor_booking_system_data( $atts, $template_id ) {
 				'type'			=> 'time',
 				'name'			=> 'maxTime',
 				'value'			=> '20:00',
-				/* translators: Refers to the first hour displayed on calendar. More information: http://fullcalendar.io/docs/agenda/minTime/ */
-				'title'			=> esc_html__( 'Day end', BOOKACTI_PLUGIN_NAME ),
-				'tip'			=> esc_html__( 'Set when you want the days to end on the calendar. Ex: "18:00" Days will end at 06:00pm.', BOOKACTI_PLUGIN_NAME )
+				/* translators: Refers to the last hour displayed on calendar. More information: http://fullcalendar.io/docs/agenda/maxTime/ */
+				'title'			=> esc_html__( 'Day end', 'booking-activities' ),
+				'tip'			=> esc_html__( 'Set when you want the days to end on the calendar. Ex: "18:00" Days will end at 06:00pm.', 'booking-activities' )
 			);
 		}
 		
@@ -389,6 +389,11 @@ function bookacti_get_editor_booking_system_data( $atts, $template_id ) {
 
 	
 // EVENTS
+	/**
+	 * Display a promo area of Prices and Credits add-on
+	 * @version 1.7.8
+	 * @param string $type
+	 */
 	function bookacti_promo_for_bapap_addon( $type = 'event' ) {
 		
 		$is_plugin_active = bookacti_is_plugin_active( 'ba-prices-and-credits/ba-prices-and-credits.php' );
@@ -402,17 +407,17 @@ function bookacti_get_editor_booking_system_data( $atts, $template_id ) {
 				<p>
 				<?php 
 					/* translators: %s = add-on name */
-					echo sprintf( __( 'Thank you for purchasing %s add-on!', BOOKACTI_PLUGIN_NAME ), 
+					echo sprintf( __( 'Thank you for purchasing %s add-on!', 'booking-activities' ), 
 								 '<strong>Prices and Credits</strong>' ); 
 				?>
 				</p><p>
-					<?php esc_html_e( "It seems you didn't activate your license yet. Please follow these instructions to activate your license:", BOOKACTI_PLUGIN_NAME ); ?>
+					<?php esc_html_e( "It seems you didn't activate your license yet. Please follow these instructions to activate your license:", 'booking-activities' ); ?>
 				</p><p>
 					<strong>
 						<a href='https://booking-activities.fr/en/docs/user-documentation/get-started-with-prices-and-credits-add-on/prerequisite-installation-license-activation-of-prices-and-credits-add-on/?utm_source=plugin&utm_medium=plugin&utm_content=encart-promo-<?php echo $type; ?>' target='_blank' >
 							<?php 
 							/* translators: %s = add-on name */
-								echo sprintf( __( 'How to activate %s license?', BOOKACTI_PLUGIN_NAME ), 'Prices and Credits' ); 
+								echo sprintf( __( 'How to activate %s license?', 'booking-activities' ), 'Prices and Credits' ); 
 							?>
 						</a>
 					</strong>
@@ -430,12 +435,12 @@ function bookacti_get_editor_booking_system_data( $atts, $template_id ) {
 				$event_name = '';
 				if( $type === 'group-of-events' ) {
 					/* translators: %s is the placeholder for Prices and Credits add-on link */
-					$message = esc_html( __( 'Set a price or a promotion in cash or in credits on your groups of events with %s add-on !', BOOKACTI_PLUGIN_NAME ) );
-					$event_name = __( 'My grouped event', BOOKACTI_PLUGIN_NAME );
+					$message = esc_html( __( 'Set a price or a promotion in cash or in credits on your groups of events with %s add-on !', 'booking-activities' ) );
+					$event_name = __( 'My grouped event', 'booking-activities' );
 				} else {
 					/* translators: %s is the placeholder for Prices and Credits add-on link */
-					$message = esc_html( __( 'Set a price or a promotion in cash or in credits on your events with %s add-on !', BOOKACTI_PLUGIN_NAME ) );
-					$event_name = __( 'My event', BOOKACTI_PLUGIN_NAME );
+					$message = esc_html( __( 'Set a price or a promotion in cash or in credits on your events with %s add-on !', 'booking-activities' ) );
+					$event_name = __( 'My event', 'booking-activities' );
 				}
 				echo sprintf( $message, $addon_link ); 
 				?>
@@ -452,7 +457,7 @@ function bookacti_get_editor_booking_system_data( $atts, $template_id ) {
 							<span class="bookacti-available-places bookacti-not-booked ">
 								<span class="bookacti-available-places-number">50</span>
 								<span class="bookacti-available-places-unit-name"> </span>
-								<span class="bookacti-available-places-avail-particle"> <?php _ex( 'avail.', 'Short for availabilities [plural noun]', BOOKACTI_PLUGIN_NAME ); ?></span>
+								<span class="bookacti-available-places-avail-particle"> <?php _ex( 'avail.', 'Short for availabilities [plural noun]', 'booking-activities' ); ?></span>
 							</span>
 						</div>
 						<div class="bookacti-price-container">
@@ -471,7 +476,7 @@ function bookacti_get_editor_booking_system_data( $atts, $template_id ) {
 							<span class="bookacti-available-places bookacti-not-booked ">
 								<span class="bookacti-available-places-number">50</span>
 								<span class="bookacti-available-places-unit-name"> </span>
-								<span class="bookacti-available-places-avail-particle"> <?php _ex( 'avail.', 'Short for availabilities [plural noun]', BOOKACTI_PLUGIN_NAME ); ?></span>
+								<span class="bookacti-available-places-avail-particle"> <?php _ex( 'avail.', 'Short for availabilities [plural noun]', 'booking-activities' ); ?></span>
 							</span>
 						</div>
 						<div class="bookacti-price-container">
@@ -490,17 +495,21 @@ function bookacti_get_editor_booking_system_data( $atts, $template_id ) {
 							<span class="bookacti-available-places bookacti-not-booked ">
 								<span class="bookacti-available-places-number">50</span>
 								<span class="bookacti-available-places-unit-name"> </span>
-								<span class="bookacti-available-places-avail-particle"> <?php _ex( 'avail.', 'Short for availabilities [plural noun]', BOOKACTI_PLUGIN_NAME ); ?></span>
+								<span class="bookacti-available-places-avail-particle"> <?php _ex( 'avail.', 'Short for availabilities [plural noun]', 'booking-activities' ); ?></span>
 							</span>
 						</div>
 						<div class="bookacti-price-container">
 							<span class="bookacti-price bookacti-promo" style="display: block; width: fit-content; white-space: nowrap; margin: 4px auto; padding: 5px; font-weight: bolder; font-size: 1.2em; border: 1px solid #fff; -webkit-border-radius: 3px;  border-radius: 3px;  background-color: rgba(0,0,0,0.3); color: #fff;">
-								<?php $amount = 12; echo sprintf( _n( '%d credit', '%d credits', $amount ), $amount ); ?>
+								<?php 
+								$amount = 12;
+								/* translators: %d is an integer (an amount of credits) */
+								echo sprintf( _n( '%d credit', '%d credits', $amount ), $amount ); 
+								?>
 							</span>
 						</div>
 					</a>
 				</div>
-				<div><a href='https://booking-activities.fr/en/downloads/prices-and-credits/?utm_source=plugin&utm_medium=plugin&utm_medium=plugin&utm_campaign=prices-and-credits&utm_content=encart-promo-<?php echo $type; ?>' class='button' target='_blank' ><?php esc_html_e( 'Learn more', BOOKACTI_PLUGIN_NAME ); ?></a></div>
+				<div><a href='https://booking-activities.fr/en/downloads/prices-and-credits/?utm_source=plugin&utm_medium=plugin&utm_medium=plugin&utm_campaign=prices-and-credits&utm_content=encart-promo-<?php echo $type; ?>' class='button' target='_blank' ><?php esc_html_e( 'Learn more', 'booking-activities' ); ?></a></div>
 			</div>
 			<?php
 		}

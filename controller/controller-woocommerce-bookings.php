@@ -93,9 +93,9 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	 * @return array
 	 */
 	function bookacti_add_in_cart_state_label( $labels ) {
-		$labels[ 'in_cart' ] =  array( 'display_state' => 'warning',	'label' => esc_html__( 'In cart', BOOKACTI_PLUGIN_NAME ) );
-		$labels[ 'expired' ] =  array( 'display_state' => 'bad',		'label' => esc_html__( 'Expired', BOOKACTI_PLUGIN_NAME ) );
-		$labels[ 'removed' ] =  array( 'display_state' => 'bad',		'label' => esc_html__( 'Removed', BOOKACTI_PLUGIN_NAME ) );
+		$labels[ 'in_cart' ] =  array( 'display_state' => 'warning',	'label' => esc_html__( 'In cart', 'booking-activities' ) );
+		$labels[ 'expired' ] =  array( 'display_state' => 'bad',		'label' => esc_html__( 'Expired', 'booking-activities' ) );
+		$labels[ 'removed' ] =  array( 'display_state' => 'bad',		'label' => esc_html__( 'Removed', 'booking-activities' ) );
 		
 		return $labels;
 	}
@@ -113,7 +113,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 		if( $deactivated_ids === false ) { 
 			/* translators: 'cron' is a robot that execute scripts every X hours. Don't try to translate it. */
-			$log = esc_html__( 'The expired bookings were not correctly deactivated by cron.', BOOKACTI_PLUGIN_NAME );
+			$log = esc_html__( 'The expired bookings were not correctly deactivated by cron.', 'booking-activities' );
 			bookacti_log( $log, 'error' );
 		}
 	}
@@ -130,7 +130,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		
 		if( $deleted_ids === false ) { 
 			/* translators: 'cron' is a robot that execute scripts every X days. Don't try to translate it. */
-			$log = esc_html__( 'The expired bookings were not correctly deleted by cron.', BOOKACTI_PLUGIN_NAME );
+			$log = esc_html__( 'The expired bookings were not correctly deleted by cron.', 'booking-activities' );
 			bookacti_log( $log, 'error' );
 		}
 	}
@@ -477,7 +477,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 				if( $order_item_data->_bookacti_refund_method === 'coupon' ) {
 					$coupon_code = ! empty( $order_item_data->bookacti_refund_coupon ) ? $order_item_data->bookacti_refund_coupon : '';
 					/* translators: %s is the coupon code used for the refund */
-					$coupon_label = sprintf( esc_html__( 'Refunded with coupon %s', BOOKACTI_PLUGIN_NAME ), $coupon_code );
+					$coupon_label = sprintf( esc_html__( 'Refunded with coupon %s', 'booking-activities' ), $coupon_code );
 					$booking_list_items[ $booking_id ][ 'state' ] = '<span class="bookacti-booking-state bookacti-booking-state-bad bookacti-booking-state-refunded bookacti-converted-to-coupon bookacti-tip" data-booking-state="refunded" data-tip="' . $coupon_label . '" ></span><span class="bookacti-refund-coupon-code bookacti-custom-scrollbar">' . $coupon_code . '</span>';
 				}
 			}
@@ -577,11 +577,11 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	 * @return array
 	 */
 	function bookacti_wc_bookings_export_columns( $columns_labels ) {
-		$columns_labels[ 'product_id' ]			= esc_html__( 'Product ID', BOOKACTI_PLUGIN_NAME );
-		$columns_labels[ 'variation_id' ]		= esc_html__( 'Product variation ID', BOOKACTI_PLUGIN_NAME );
-		$columns_labels[ 'order_item_title' ]	= esc_html__( 'Product title', BOOKACTI_PLUGIN_NAME );
-		$columns_labels[ 'order_item_price' ]	= esc_html__( 'Product price', BOOKACTI_PLUGIN_NAME );
-		$columns_labels[ 'order_item_tax' ]		= esc_html__( 'Product tax', BOOKACTI_PLUGIN_NAME );
+		$columns_labels[ 'product_id' ]			= esc_html__( 'Product ID', 'booking-activities' );
+		$columns_labels[ 'variation_id' ]		= esc_html__( 'Product variation ID', 'booking-activities' );
+		$columns_labels[ 'order_item_title' ]	= esc_html__( 'Product title', 'booking-activities' );
+		$columns_labels[ 'order_item_price' ]	= esc_html__( 'Product price', 'booking-activities' );
+		$columns_labels[ 'order_item_tax' ]		= esc_html__( 'Product tax', 'booking-activities' );
 		return $columns_labels;
 	}
 	add_filter( 'bookacti_bookings_export_columns_labels', 'bookacti_wc_bookings_export_columns', 10, 1 );
@@ -594,7 +594,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	 * @return array
 	 */
 	function bookacti_woocommerce_add_booking_list_custom_columns( $columns ) {
-		$columns[ 'product' ] = __( 'Product', BOOKACTI_PLUGIN_NAME );
+		$columns[ 'product' ] = __( 'Product', 'booking-activities' );
 		return $columns;
 	}
 	add_filter( 'bookacti_booking_list_columns', 'bookacti_woocommerce_add_booking_list_custom_columns', 10, 1 );
@@ -677,8 +677,8 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		if( in_array( $admin_or_front, array( 'admin', 'both' ), true ) && ! isset( $actions[ 'view-order' ] ) ) {
 			$actions[ 'view-order' ] = array( 
 				'class'			=> 'bookacti-view-booking-order _blank',
-				'label'			=> __( 'View order', BOOKACTI_PLUGIN_NAME ),
-				'description'	=> __( 'Go to the related WooCommerce admin order page.', BOOKACTI_PLUGIN_NAME ),
+				'label'			=> __( 'View order', 'booking-activities' ),
+				'description'	=> __( 'Go to the related WooCommerce admin order page.', 'booking-activities' ),
 				'link'			=> '',
 				'admin_or_front'=> 'admin' 
 			);
@@ -771,7 +771,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			
 			if( $price ) {
 				$refund_amount = wc_price( $price );
-				$text .= '<div id="bookacti-refund-amount">' . esc_html__( 'Refund amount:', BOOKACTI_PLUGIN_NAME ) . ' <strong>' . $refund_amount . '</strong></div>';
+				$text .= '<div id="bookacti-refund-amount">' . esc_html__( 'Refund amount:', 'booking-activities' ) . ' <strong>' . $refund_amount . '</strong></div>';
 			}
 		}
 		return $text;
@@ -789,13 +789,13 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 		$possible_actions_array[ 'coupon' ] = array(
 				'id'			=> 'coupon',
-				'label'			=> __( 'Coupon', BOOKACTI_PLUGIN_NAME ),
-				'description'	=> __( 'Create a coupon worth the price paid. The coupon can be used once for any orders at any time. ', BOOKACTI_PLUGIN_NAME )
+				'label'			=> __( 'Coupon', 'booking-activities' ),
+				'description'	=> __( 'Create a coupon worth the price paid. The coupon can be used once for any orders at any time. ', 'booking-activities' )
 			);
 		$possible_actions_array[ 'auto' ] = array(
 				'id'			=> 'auto',
-				'label'			=> __( 'Auto refund', BOOKACTI_PLUGIN_NAME ),
-				'description'	=> __( 'Refund automatically via the gateway used for payment.', BOOKACTI_PLUGIN_NAME )
+				'label'			=> __( 'Auto refund', 'booking-activities' ),
+				'description'	=> __( 'Refund automatically via the gateway used for payment.', 'booking-activities' )
 			);
 
 		return $possible_actions_array;
@@ -1127,9 +1127,9 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		if( ! $order_id ) { return $message; } 
 		
 		$go_to_order =	'<div style="background-color: #f5faff; padding: 10px; border: 1px solid #abc; margin-bottom: 30px;" >' 
-							. esc_html__( 'Click here to go to the order page and process the refund:', BOOKACTI_PLUGIN_NAME ) 
+							. esc_html__( 'Click here to go to the order page and process the refund:', 'booking-activities' ) 
 							. ' <a href="' . admin_url( 'post.php?post=' . absint( $order_id ) . '&action=edit' ) . '" target="_blank" >' 
-								. esc_html__( 'Go to refund page', BOOKACTI_PLUGIN_NAME ) 
+								. esc_html__( 'Go to refund page', 'booking-activities' ) 
 							. '</a>'
 						. '</div>';
 		
@@ -1201,7 +1201,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			<p class='bookacti-irreversible-action bookacti-delete-wc-order-item-description'>
 				<span class='dashicons dashicons-warning'></span>
 				<span>
-					<?php esc_html_e( 'This booking is bound to an item in a WooCommerce order. Do you want to remove the booking data from this item as well?', BOOKACTI_PLUGIN_NAME ); ?>
+					<?php esc_html_e( 'This booking is bound to an item in a WooCommerce order. Do you want to remove the booking data from this item as well?', 'booking-activities' ); ?>
 				</span>
 			</p>
 			<?php
@@ -1210,16 +1210,16 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 					'name' => 'order-item-action',
 					'value' => 'none',
 					'options' => array(
-						'none' => esc_html__( 'Do nothing', BOOKACTI_PLUGIN_NAME ),
-						'delete_meta' => esc_html__( 'Delete the booking metadata', BOOKACTI_PLUGIN_NAME ),
-						'delete_item' => esc_html__( 'Delete the whole item', BOOKACTI_PLUGIN_NAME )
+						'none' => esc_html__( 'Do nothing', 'booking-activities' ),
+						'delete_meta' => esc_html__( 'Delete the booking metadata', 'booking-activities' ),
+						'delete_item' => esc_html__( 'Delete the whole item', 'booking-activities' )
 					),
 					/* translators: %s is the option name corresponding to this description */
-					'tip' => sprintf( esc_html__( '%s: The WooCommerce order item will be kept as is.', BOOKACTI_PLUGIN_NAME ), '<strong>' . esc_html__( 'Do nothing', BOOKACTI_PLUGIN_NAME ) . '</strong>' )
+					'tip' => sprintf( esc_html__( '%s: The WooCommerce order item will be kept as is.', 'booking-activities' ), '<strong>' . esc_html__( 'Do nothing', 'booking-activities' ) . '</strong>' )
 					/* translators: %s is the option name corresponding to this description */
-					. '<br/>' . sprintf( esc_html__( '%s: The order item will be kept as a normal product. All its metadata concerning the booking will be removed.', BOOKACTI_PLUGIN_NAME ), '<strong>' . esc_html__( 'Delete the booking metadata', BOOKACTI_PLUGIN_NAME ) . '</strong>' )
+					. '<br/>' . sprintf( esc_html__( '%s: The order item will be kept as a normal product. All its metadata concerning the booking will be removed.', 'booking-activities' ), '<strong>' . esc_html__( 'Delete the booking metadata', 'booking-activities' ) . '</strong>' )
 					/* translators: %s is the option name corresponding to this description */
-					. '<br/>' . sprintf( esc_html__( '%s: The item will be totally removed from the order.', BOOKACTI_PLUGIN_NAME ), '<strong>' . esc_html__( 'Delete the whole item', BOOKACTI_PLUGIN_NAME ) . '</strong>' )
+					. '<br/>' . sprintf( esc_html__( '%s: The item will be totally removed from the order.', 'booking-activities' ), '<strong>' . esc_html__( 'Delete the whole item', 'booking-activities' ) . '</strong>' )
 				);
 				bookacti_display_field( $args );
 			?>
@@ -1241,7 +1241,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			$array = array(
 				'status'	=> 'failed',
 				'error'		=> 'no_action',
-				'message'	=> esc_html__( 'The booking is bound to an item in a WooCommerce Order, but no action has been set about it.', BOOKACTI_PLUGIN_NAME )
+				'message'	=> esc_html__( 'The booking is bound to an item in a WooCommerce Order, but no action has been set about it.', 'booking-activities' )
 			);
 			bookacti_send_json( $array, 'delete_order_item' );
 		}
@@ -1263,15 +1263,15 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 				$array = array(
 					'status'	=> 'failed',
 					'error'		=> 'not_deleted',
-					'message'	=> esc_html__( 'An error occurred while trying to delete the booking meta from the order item.', BOOKACTI_PLUGIN_NAME ) 
-								   . ' ' . '<a href="' . get_edit_post_link( $order_id ) . '">' . esc_html__( 'Please proceed manually.', BOOKACTI_PLUGIN_NAME ) . '</a>'
+					'message'	=> esc_html__( 'An error occurred while trying to delete the booking meta from the order item.', 'booking-activities' ) 
+								   . ' ' . '<a href="' . get_edit_post_link( $order_id ) . '">' . esc_html__( 'Please proceed manually.', 'booking-activities' ) . '</a>'
 				);
 				bookacti_send_json( $array, 'delete_order_item_booking_meta' );
 			}
 			
 			if( $order ) { 
 				/* translators: %s is the item id. */
-				$message = sprintf( esc_html__( 'The order item %s booking metadata have been deleted while deleting the corresponding booking.', BOOKACTI_PLUGIN_NAME ), $item_id );
+				$message = sprintf( esc_html__( 'The order item %s booking metadata have been deleted while deleting the corresponding booking.', 'booking-activities' ), $item_id );
 				$order->add_order_note( $message, 0, 0 );
 			}
 			
@@ -1283,15 +1283,15 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 				$array = array(
 					'status'	=> 'failed',
 					'error'		=> 'not_deleted',
-					'message'	=> esc_html__( 'An error occurred while trying to delete the order item.', BOOKACTI_PLUGIN_NAME ) 
-								   . ' ' . '<a href="' . get_edit_post_link( $order_id ) . '">' . esc_html__( 'Please proceed manually.', BOOKACTI_PLUGIN_NAME ) . '</a>'
+					'message'	=> esc_html__( 'An error occurred while trying to delete the order item.', 'booking-activities' ) 
+								   . ' ' . '<a href="' . get_edit_post_link( $order_id ) . '">' . esc_html__( 'Please proceed manually.', 'booking-activities' ) . '</a>'
 				);
 				bookacti_send_json( $array, 'delete_order_item' );
 			}
 			
 			if( $order ) { 
 				/* translators: %s is the item id. */
-				$message = sprintf( esc_html__( 'The order item %s has been deleted while deleting the corresponding booking.', BOOKACTI_PLUGIN_NAME ), $item_id );
+				$message = sprintf( esc_html__( 'The order item %s has been deleted while deleting the corresponding booking.', 'booking-activities' ), $item_id );
 				$order->add_order_note( $message, 0, 0 );
 			}
 		}
@@ -1379,7 +1379,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			$order = wc_get_order( $order_id );
 			if( $order ) { 
 				/* translators: %s is the item id. */
-				$message = sprintf( esc_html__( 'The order item %s booking metadata have been updated after one of its booking was deleted.', BOOKACTI_PLUGIN_NAME ), $item_id );
+				$message = sprintf( esc_html__( 'The order item %s booking metadata have been updated after one of its booking was deleted.', 'booking-activities' ), $item_id );
 				$order->add_order_note( $message, 0, 0 );
 			}
 		}

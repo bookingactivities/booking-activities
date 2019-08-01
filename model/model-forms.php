@@ -210,7 +210,7 @@ function bookacti_insert_form( $title = '', $status = 'publish', $active = 1 ) {
 	// Set a default title if empty
 	if( ! $title ) { 
 		/* translators: %d is the form id */
-		$title = sprintf( __( 'Form #%d', BOOKACTI_PLUGIN_NAME ), $form_id ); 
+		$title = sprintf( __( 'Form #%d', 'booking-activities' ), $form_id ); 
 		bookacti_update_form( $form_id, $title );
 	}
 	
