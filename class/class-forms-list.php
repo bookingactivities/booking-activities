@@ -50,13 +50,13 @@ if( ! class_exists( 'Forms_List_Table' ) ) {
 			// Set the columns
 			$columns = array(
 				'cb'		=> '<input type="checkbox" />',
-				'id'		=> _x( 'id', 'An id is a unique identification number', BOOKACTI_PLUGIN_NAME ),
-				'title'		=> __( 'Title', BOOKACTI_PLUGIN_NAME ),
-				'author'	=> __( 'Author', BOOKACTI_PLUGIN_NAME ),
-				'date'		=> __( 'Date', BOOKACTI_PLUGIN_NAME ),
-				'status'	=> _x( 'Status', 'Form status', BOOKACTI_PLUGIN_NAME ),
-				'shortcode'	=> __( 'Shortcode', BOOKACTI_PLUGIN_NAME ),
-				'active'	=> __( 'Active', BOOKACTI_PLUGIN_NAME )
+				'id'		=> _x( 'id', 'An id is a unique identification number', 'booking-activities' ),
+				'title'		=> __( 'Title', 'booking-activities' ),
+				'author'	=> __( 'Author', 'booking-activities' ),
+				'date'		=> __( 'Date', 'booking-activities' ),
+				'status'	=> _x( 'Status', 'Form status', 'booking-activities' ),
+				'shortcode'	=> __( 'Shortcode', 'booking-activities' ),
+				'active'	=> __( 'Active', 'booking-activities' )
 			);
 
 			/**
@@ -224,7 +224,7 @@ if( ! class_exists( 'Forms_List_Table' ) ) {
 				// Add the 'edit' action
 				if( $item[ 'active_raw' ] ) {
 					$actions[ 'edit' ]	= '<a href="' . esc_url( get_admin_url() . 'admin.php?page=bookacti_forms&action=edit&form_id=' . $form_id ) . '" >'
-											. esc_html_x( 'Edit', 'forms', BOOKACTI_PLUGIN_NAME )
+											. esc_html_x( 'Edit', 'forms', 'booking-activities' )
 										. '</a>';
 				}
 				
@@ -232,16 +232,16 @@ if( ! class_exists( 'Forms_List_Table' ) ) {
 					if( $item[ 'active_raw' ] ) {
 						// Add the 'trash' action
 						$actions[ 'trash' ] = '<a href="' . esc_url( wp_nonce_url( get_admin_url() . 'admin.php?page=bookacti_forms', 'trash-form_' . $form_id ) . '&action=trash&form_id=' . $form_id ) . '" >'
-												. esc_html_x( 'Trash', 'forms action', BOOKACTI_PLUGIN_NAME )
+												. esc_html_x( 'Trash', 'forms action', 'booking-activities' )
 											. '</a>';
 					} else {
 						// Add the 'restore' action
 						$actions[ 'restore' ] = '<a href="' . esc_url( wp_nonce_url( get_admin_url() . 'admin.php?page=bookacti_forms', 'restore-form_' . $form_id ) . '&action=restore&form_id=' . $form_id ) . '" >'
-												. esc_html_x( 'Restore', 'forms', BOOKACTI_PLUGIN_NAME )
+												. esc_html_x( 'Restore', 'forms', 'booking-activities' )
 											. '</a>';
 						// Add the 'delete' action
 						$actions[ 'delete' ] = '<a href="' . esc_url( wp_nonce_url( get_admin_url() . 'admin.php?page=bookacti_forms', 'delete-form_' . $form_id ) . '&status=trash&action=delete&form_id=' . $form_id ) . '" >'
-												. esc_html_x( 'Delete Permanently', 'forms', BOOKACTI_PLUGIN_NAME )
+												. esc_html_x( 'Delete Permanently', 'forms', 'booking-activities' )
 											. '</a>';
 					}
 				}
@@ -285,8 +285,8 @@ if( ! class_exists( 'Forms_List_Table' ) ) {
 				if( ! bookacti_user_can_manage_form( $form->id ) ) { continue; }
 				
 				$id			= $form->id;
-				$title		= ! empty( $form->title ) ? $form->title : __( 'Untitled', BOOKACTI_PLUGIN_NAME );
-				$active		= $form->active ? __( 'Yes', BOOKACTI_PLUGIN_NAME ) : __( 'No', BOOKACTI_PLUGIN_NAME );
+				$title		= ! empty( $form->title ) ? $form->title : __( 'Untitled', 'booking-activities' );
+				$active		= $form->active ? __( 'Yes', 'booking-activities' ) : __( 'No', 'booking-activities' );
 				
 				// Format title column
 				$title = esc_html( apply_filters( 'bookacti_translate_text', $title ) );
@@ -306,7 +306,7 @@ if( ! class_exists( 'Forms_List_Table' ) ) {
 				
 				// Add info on the primary column to make them directly visible in responsive view
 				$primary_data = array( 
-					'<span class="bookacti-column-id" >(' . esc_html_x( 'id', 'An id is a unique identification number', BOOKACTI_PLUGIN_NAME ) . ': ' . $id . ')</span>'
+					'<span class="bookacti-column-id" >(' . esc_html_x( 'id', 'An id is a unique identification number', 'booking-activities' ) . ': ' . $id . ')</span>'
 				);
 				$primary_data_html = '';
 				if( $primary_data ) {
@@ -322,7 +322,7 @@ if( ! class_exists( 'Forms_List_Table' ) ) {
 					'title'			=> $title,
 					'shortcode'		=> $shortcode,
 					'author'		=> $author,
-					'date'			=> bookacti_format_datetime( $form->creation_date, __( 'F d, Y', BOOKACTI_PLUGIN_NAME ) ),
+					'date'			=> bookacti_format_datetime( $form->creation_date, __( 'F d, Y', 'booking-activities' ) ),
 					'status'		=> $form->status,
 					'active'		=> $active,
 					'active_raw'	=> $form->active,
@@ -389,7 +389,7 @@ if( ! class_exists( 'Forms_List_Table' ) ) {
 			if ( $this->has_items() ) {
 				return $this->get_rows();
 			} else {
-				return '<tr class="no-items"><td class="colspanchange" colspan="' . esc_attr( $this->get_column_count() ) . '">' . esc_html__( 'No items found.', BOOKACTI_PLUGIN_NAME ) . '</td></tr>';
+				return '<tr class="no-items"><td class="colspanchange" colspan="' . esc_attr( $this->get_column_count() ) . '">' . esc_html__( 'No items found.', 'booking-activities' ) . '</td></tr>';
 			}
 		}
 		
@@ -511,8 +511,8 @@ if( ! class_exists( 'Forms_List_Table' ) ) {
 			$trash_count		= bookacti_get_number_of_form_rows( $trash_filter );
 			
 			return array(
-				'published'	=> '<a href="' . esc_url( get_admin_url() . 'admin.php?page=bookacti_forms' ) . '" class="' . $published_current . '" >' . esc_html_x( 'Published', 'forms status', BOOKACTI_PLUGIN_NAME ) . ' <span class="count">(' . $published_count . ')</span></a>',
-				'trash'		=> '<a href="' . esc_url( get_admin_url() . 'admin.php?page=bookacti_forms&status=trash' ) . '" class="' . $trash_current . '" >' . esc_html_x( 'Trash', 'forms status', BOOKACTI_PLUGIN_NAME ) . ' <span class="count">(' . $trash_count . ')</span></a>'
+				'published'	=> '<a href="' . esc_url( get_admin_url() . 'admin.php?page=bookacti_forms' ) . '" class="' . $published_current . '" >' . esc_html_x( 'Published', 'forms status', 'booking-activities' ) . ' <span class="count">(' . $published_count . ')</span></a>',
+				'trash'		=> '<a href="' . esc_url( get_admin_url() . 'admin.php?page=bookacti_forms&status=trash' ) . '" class="' . $trash_current . '" >' . esc_html_x( 'Trash', 'forms status', 'booking-activities' ) . ' <span class="count">(' . $trash_count . ')</span></a>'
 			);
 		}
 		

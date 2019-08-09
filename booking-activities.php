@@ -3,7 +3,7 @@
  * Plugin Name: Booking Activities
  * Plugin URI: https://booking-activities.fr/en/?utm_source=plugin&utm_medium=plugin&utm_content=header
  * Description: Booking system specialized in activities (sports, cultural, leisure, events...). Works great with WooCommerce.
- * Version: 1.7.7
+ * Version: 1.7.8
  * Author: Booking Activities Team
  * Author URI: https://booking-activities.fr/en/?utm_source=plugin&utm_medium=plugin&utm_content=header
  * Text Domain: booking-activities
@@ -40,23 +40,26 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 
 // GLOBALS AND CONSTANTS
-if( ! defined( 'BOOKACTI_VERSION' ) )		{ define( 'BOOKACTI_VERSION', '1.7.7' ); }
+if( ! defined( 'BOOKACTI_VERSION' ) )		{ define( 'BOOKACTI_VERSION', '1.7.8' ); }
 if( ! defined( 'BOOKACTI_PLUGIN_NAME' ) )	{ define( 'BOOKACTI_PLUGIN_NAME', 'booking-activities' ); }
 
 
 // HEADER STRINGS (For translation)
-__( 'Booking system specialized in activities (sports, cultural, leisure, events...). Works great with WooCommerce.', BOOKACTI_PLUGIN_NAME );
+__( 'Booking system specialized in activities (sports, cultural, leisure, events...). Works great with WooCommerce.', 'booking-activities' );
 
 
 // INCLUDE LANGUAGES FILES
+/**
+ * Load or reload Booking Activities translations
+ * @version 1.7.8
+ */
 function bookacti_load_textdomain() { 
-	
 	$locale = is_admin() && function_exists( 'get_user_locale' ) ? get_user_locale() : get_locale();
-	$locale = apply_filters( 'plugin_locale', $locale, BOOKACTI_PLUGIN_NAME );
+	$locale = apply_filters( 'plugin_locale', $locale, 'booking-activities' );
 	
-	unload_textdomain( BOOKACTI_PLUGIN_NAME );
-	load_textdomain( BOOKACTI_PLUGIN_NAME, WP_LANG_DIR . '/' . BOOKACTI_PLUGIN_NAME . '/' . BOOKACTI_PLUGIN_NAME . '-' . $locale . '.mo' );
-	load_plugin_textdomain( BOOKACTI_PLUGIN_NAME, false, plugin_basename( dirname( __FILE__ ) ) . '/languages/' ); 
+	unload_textdomain( 'booking-activities' );
+	load_textdomain( 'booking-activities', WP_LANG_DIR . '/' . BOOKACTI_PLUGIN_NAME . '/' . BOOKACTI_PLUGIN_NAME . '-' . $locale . '.mo' );
+	load_plugin_textdomain( 'booking-activities', false, plugin_basename( dirname( __FILE__ ) ) . '/languages/' ); 
 }
 add_action( 'plugins_loaded', 'bookacti_load_textdomain' );
 
@@ -417,14 +420,14 @@ function bookacti_create_menu() {
     // Add a menu and submenus
     $icon_url = 'dashicons-calendar-alt';
     add_menu_page( 'Booking Activities', 'Booking Activities', 'bookacti_manage_booking_activities', 'booking-activities', null, $icon_url, '56.5' );
-    add_submenu_page( 'booking-activities',	'Booking Activities',							_x( 'Home', 'Landing page tab name', BOOKACTI_PLUGIN_NAME ),'bookacti_manage_booking_activities',			'booking-activities',	'bookacti_landing_page' );
-	add_submenu_page( 'booking-activities',	__( 'Calendar editor', BOOKACTI_PLUGIN_NAME ),	__( 'Calendar editor', BOOKACTI_PLUGIN_NAME ),				'bookacti_manage_templates',					'bookacti_calendars',	'bookacti_templates_page' );
-	add_submenu_page( 'booking-activities',	__( 'Booking forms', BOOKACTI_PLUGIN_NAME ),	__( 'Booking forms', BOOKACTI_PLUGIN_NAME ),				'bookacti_manage_forms',						'bookacti_forms',		'bookacti_forms_page' );
-	add_submenu_page( 'booking-activities',	__( 'Bookings', BOOKACTI_PLUGIN_NAME ),			__( 'Bookings', BOOKACTI_PLUGIN_NAME ),						'bookacti_manage_bookings',						'bookacti_bookings',	'bookacti_bookings_page' );
+    add_submenu_page( 'booking-activities',	'Booking Activities',							_x( 'Home', 'Landing page tab name', 'booking-activities' ),'bookacti_manage_booking_activities',			'booking-activities',	'bookacti_landing_page' );
+	add_submenu_page( 'booking-activities',	__( 'Calendar editor', 'booking-activities' ),	__( 'Calendar editor', 'booking-activities' ),				'bookacti_manage_templates',					'bookacti_calendars',	'bookacti_templates_page' );
+	add_submenu_page( 'booking-activities',	__( 'Booking forms', 'booking-activities' ),	__( 'Booking forms', 'booking-activities' ),				'bookacti_manage_forms',						'bookacti_forms',		'bookacti_forms_page' );
+	add_submenu_page( 'booking-activities',	__( 'Bookings', 'booking-activities' ),			__( 'Bookings', 'booking-activities' ),						'bookacti_manage_bookings',						'bookacti_bookings',	'bookacti_bookings_page' );
     
 	do_action( 'bookacti_admin_menu' );
 	
-	add_submenu_page( 'booking-activities',	__( 'Settings', BOOKACTI_PLUGIN_NAME ),			__( 'Settings', BOOKACTI_PLUGIN_NAME ),						'bookacti_manage_booking_activities_settings',	'bookacti_settings',	'bookacti_settings_page' );
+	add_submenu_page( 'booking-activities',	__( 'Settings', 'booking-activities' ),			__( 'Settings', 'booking-activities' ),						'bookacti_manage_booking_activities_settings',	'bookacti_settings',	'bookacti_settings_page' );
 }
 add_action( 'admin_menu', 'bookacti_create_menu' );
 

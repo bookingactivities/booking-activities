@@ -11,14 +11,14 @@ function bookacti_init_settings() {
 	/* General settings Section */
 	add_settings_section( 
 		'bookacti_settings_section_general',
-		esc_html__( 'General settings', BOOKACTI_PLUGIN_NAME ),
+		esc_html__( 'General settings', 'booking-activities' ),
 		'bookacti_settings_section_general_callback',
 		'bookacti_general_settings'
 	);
 	
 	add_settings_field(  
 		'booking_method', 
-		esc_html__( 'Booking method', BOOKACTI_PLUGIN_NAME ), 
+		esc_html__( 'Booking method', 'booking-activities' ), 
 		'bookacti_settings_field_booking_method_callback', 
 		'bookacti_general_settings', 
 		'bookacti_settings_section_general'
@@ -26,7 +26,7 @@ function bookacti_init_settings() {
 	
 	add_settings_field(  
 		'when_events_load', 
-		esc_html__( 'When to load the events?', BOOKACTI_PLUGIN_NAME ), 
+		esc_html__( 'When to load the events?', 'booking-activities' ), 
 		'bookacti_settings_field_when_events_load_callback', 
 		'bookacti_general_settings', 
 		'bookacti_settings_section_general'
@@ -34,7 +34,7 @@ function bookacti_init_settings() {
 	
 	add_settings_field(  
 		'event_load_interval', 
-		esc_html__( 'Load events every', BOOKACTI_PLUGIN_NAME ), 
+		esc_html__( 'Load events every', 'booking-activities' ), 
 		'bookacti_settings_field_event_load_interval_callback', 
 		'bookacti_general_settings', 
 		'bookacti_settings_section_general'
@@ -42,7 +42,7 @@ function bookacti_init_settings() {
 
 	add_settings_field(  
 		'started_events_bookable', 
-		esc_html__( 'Are started events bookable?', BOOKACTI_PLUGIN_NAME ), 
+		esc_html__( 'Are started events bookable?', 'booking-activities' ), 
 		'bookacti_settings_field_started_events_bookable_callback', 
 		'bookacti_general_settings', 
 		'bookacti_settings_section_general' 
@@ -50,7 +50,7 @@ function bookacti_init_settings() {
 
 	add_settings_field(  
 		'started_groups_bookable', 
-		esc_html__( 'Are started groups of events bookable?', BOOKACTI_PLUGIN_NAME ), 
+		esc_html__( 'Are started groups of events bookable?', 'booking-activities' ), 
 		'bookacti_settings_field_started_groups_bookable_callback', 
 		'bookacti_general_settings', 
 		'bookacti_settings_section_general' 
@@ -59,7 +59,7 @@ function bookacti_init_settings() {
 	add_settings_field(  
 		'availability_period_start', 
 		/* translators: Followed by a field indicating a number of days before the event. E.g.: "Events will be bookable in 2 days from today". */
-		esc_html__( 'Events will be bookable in', BOOKACTI_PLUGIN_NAME ), 
+		esc_html__( 'Events will be bookable in', 'booking-activities' ), 
 		'bookacti_settings_field_availability_period_start_callback', 
 		'bookacti_general_settings', 
 		'bookacti_settings_section_general' 
@@ -68,7 +68,7 @@ function bookacti_init_settings() {
 	add_settings_field(  
 		'availability_period_end', 
 		/* translators: Followed by a field indicating a number of days before the event. E.g.: "Events are bookable for up to 30 days from today". */
-		esc_html__( 'Events are bookable for up to', BOOKACTI_PLUGIN_NAME ), 
+		esc_html__( 'Events are bookable for up to', 'booking-activities' ), 
 		'bookacti_settings_field_availability_period_end_callback', 
 		'bookacti_general_settings', 
 		'bookacti_settings_section_general' 
@@ -76,7 +76,7 @@ function bookacti_init_settings() {
 
 	add_settings_field(  
 		'default_booking_state', 
-		esc_html__( 'Default booking state', BOOKACTI_PLUGIN_NAME ), 
+		esc_html__( 'Default booking state', 'booking-activities' ), 
 		'bookacti_settings_field_default_booking_state_callback', 
 		'bookacti_general_settings', 
 		'bookacti_settings_section_general' 
@@ -84,7 +84,7 @@ function bookacti_init_settings() {
 
 	add_settings_field(  
 		'default_payment_status', 
-		esc_html__( 'Default payment status', BOOKACTI_PLUGIN_NAME ), 
+		esc_html__( 'Default payment status', 'booking-activities' ), 
 		'bookacti_settings_field_default_payment_status_callback', 
 		'bookacti_general_settings', 
 		'bookacti_settings_section_general' 
@@ -92,7 +92,7 @@ function bookacti_init_settings() {
 
 	add_settings_field(  
 		'timezone', 
-		esc_html__( 'Calendars timezone', BOOKACTI_PLUGIN_NAME ), 
+		esc_html__( 'Calendars timezone', 'booking-activities' ), 
 		'bookacti_settings_field_timezone_callback', 
 		'bookacti_general_settings', 
 		'bookacti_settings_section_general' 
@@ -100,7 +100,7 @@ function bookacti_init_settings() {
 
 	add_settings_field(  
 		'default_calendar_view_threshold', 
-		esc_html__( 'Load the "Day" view if the calendar width is less than', BOOKACTI_PLUGIN_NAME ), 
+		esc_html__( 'Load the "Day" view if the calendar width is less than', 'booking-activities' ), 
 		'bookacti_settings_field_default_calendar_view_threshold_callback', 
 		'bookacti_general_settings', 
 		'bookacti_settings_section_general' 
@@ -108,7 +108,7 @@ function bookacti_init_settings() {
 
 	add_settings_field(  
 		'delete_data_on_uninstall', 
-		esc_html__( 'Delete data on uninstall', BOOKACTI_PLUGIN_NAME ), 
+		esc_html__( 'Delete data on uninstall', 'booking-activities' ), 
 		'bookacti_settings_field_delete_data_on_uninstall_callback', 
 		'bookacti_general_settings', 
 		'bookacti_settings_section_general' 
@@ -119,14 +119,14 @@ function bookacti_init_settings() {
 	/* Cancellation settings Section */
 	add_settings_section( 
 		'bookacti_settings_section_cancellation',
-		esc_html__( 'Cancellation settings', BOOKACTI_PLUGIN_NAME ),
+		esc_html__( 'Cancellation settings', 'booking-activities' ),
 		'bookacti_settings_section_cancellation_callback',
 		'bookacti_cancellation_settings'
 	);
 	
 	add_settings_field(  
 		'allow_customers_to_cancel',                      
-		esc_html__( 'Allow customers to cancel their bookings', BOOKACTI_PLUGIN_NAME ),               
+		esc_html__( 'Allow customers to cancel their bookings', 'booking-activities' ),               
 		'bookacti_settings_field_activate_cancel_callback',   
 		'bookacti_cancellation_settings',                     
 		'bookacti_settings_section_cancellation' 
@@ -134,7 +134,7 @@ function bookacti_init_settings() {
 	
 	add_settings_field(  
 		'allow_customers_to_reschedule',                      
-		__( 'Allow customers to reschedule their bookings', BOOKACTI_PLUGIN_NAME ),               
+		__( 'Allow customers to reschedule their bookings', 'booking-activities' ),               
 		'bookacti_settings_field_activate_reschedule_callback',   
 		'bookacti_cancellation_settings',                     
 		'bookacti_settings_section_cancellation' 
@@ -143,7 +143,7 @@ function bookacti_init_settings() {
 	add_settings_field(  
 		'cancellation_min_delay_before_event', 
 		/* translators: Followed by a field indicating a number of days before the event. E.g.: "Changes permitted up to 2 days before the event". */
-		esc_html__( 'Changes permitted up to', BOOKACTI_PLUGIN_NAME ),               
+		esc_html__( 'Changes permitted up to', 'booking-activities' ),               
 		'bookacti_settings_field_cancellation_delay_callback',   
 		'bookacti_cancellation_settings',                     
 		'bookacti_settings_section_cancellation' 
@@ -151,7 +151,7 @@ function bookacti_init_settings() {
 	
 	add_settings_field(  
 		'refund_actions_after_cancellation',                      
-		esc_html__( 'Possible actions customers can take to be refunded', BOOKACTI_PLUGIN_NAME ),               
+		esc_html__( 'Possible actions customers can take to be refunded', 'booking-activities' ),               
 		'bookacti_settings_field_cancellation_refund_actions_callback',   
 		'bookacti_cancellation_settings',                     
 		'bookacti_settings_section_cancellation' 
@@ -162,14 +162,14 @@ function bookacti_init_settings() {
 	/* Notifications settings Section - 1 - General settings */
 	add_settings_section( 
 		'bookacti_settings_section_notifications_general',
-		esc_html__( 'Notifications', BOOKACTI_PLUGIN_NAME ),
+		esc_html__( 'Notifications', 'booking-activities' ),
 		'bookacti_settings_section_notifications_general_callback',
 		'bookacti_notifications_settings'
 	);
 	
 	add_settings_field( 
 		'notifications_async',
-		esc_html__( 'Asynchronous notifications', BOOKACTI_PLUGIN_NAME ),
+		esc_html__( 'Asynchronous notifications', 'booking-activities' ),
 		'bookacti_settings_field_notifications_async_callback',
 		'bookacti_notifications_settings',
 		'bookacti_settings_section_notifications_general'
@@ -179,14 +179,14 @@ function bookacti_init_settings() {
 	/* Notifications settings Section - 2 - Email settings */
 	add_settings_section( 
 		'bookacti_settings_section_notifications_email',
-		esc_html__( 'Email notifications settings', BOOKACTI_PLUGIN_NAME ),
+		esc_html__( 'Email notifications settings', 'booking-activities' ),
 		'bookacti_settings_section_notifications_email_callback',
 		'bookacti_notifications_settings'
 	);
 		
 	add_settings_field( 
 		'notifications_from_name',
-		esc_html__( 'From name', BOOKACTI_PLUGIN_NAME ),
+		esc_html__( 'From name', 'booking-activities' ),
 		'bookacti_settings_field_notifications_from_name_callback',
 		'bookacti_notifications_settings',
 		'bookacti_settings_section_notifications_email'
@@ -194,7 +194,7 @@ function bookacti_init_settings() {
 	
 	add_settings_field( 
 		'notifications_from_email',
-		esc_html__( 'From email', BOOKACTI_PLUGIN_NAME ),
+		esc_html__( 'From email', 'booking-activities' ),
 		'bookacti_settings_field_notifications_from_email_callback',
 		'bookacti_notifications_settings',
 		'bookacti_settings_section_notifications_email'
@@ -205,7 +205,7 @@ function bookacti_init_settings() {
 	/* Messages settings Section */
 	add_settings_section( 
 		'bookacti_settings_section_messages',
-		esc_html__( 'Messages', BOOKACTI_PLUGIN_NAME ),
+		esc_html__( 'Messages', 'booking-activities' ),
 		'bookacti_settings_section_messages_callback',
 		'bookacti_messages_settings'
 	);
@@ -215,7 +215,7 @@ function bookacti_init_settings() {
 	/* Messages settings Section */
 	add_settings_section( 
 		'bookacti_settings_section_system',
-		esc_html__( 'System', BOOKACTI_PLUGIN_NAME ),
+		esc_html__( 'System', 'booking-activities' ),
 		'bookacti_settings_section_system_callback',
 		'bookacti_system_settings'
 	);
@@ -302,11 +302,11 @@ function bookacti_fill_notification_settings_page( $notification_id ) {
 	$notification_settings = bookacti_get_notification_settings( $notification_id );
 	?>
 
-		<h2><?php echo __( 'Notification', BOOKACTI_PLUGIN_NAME ) . ' - ' . $notification_settings[ 'title' ]; ?></h2>
+		<h2><?php echo __( 'Notification', 'booking-activities' ) . ' - ' . $notification_settings[ 'title' ]; ?></h2>
 
 		<p>
 			<a href='<?php echo esc_url( '?page=bookacti_settings&tab=notifications' ); ?>' >
-				<?php _e( 'Go back to notifications settings', BOOKACTI_PLUGIN_NAME ); ?>
+				<?php _e( 'Go back to notifications settings', 'booking-activities' ); ?>
 			</a>
 		</p>
 
@@ -314,11 +314,11 @@ function bookacti_fill_notification_settings_page( $notification_id ) {
 
 		<?php do_action( 'bookacti_notification_settings_page_before', $notification_settings, $notification_id ); ?>
 
-		<h3><?php _e( 'Global notifications settings', BOOKACTI_PLUGIN_NAME ); ?></h3>
+		<h3><?php _e( 'Global notifications settings', 'booking-activities' ); ?></h3>
 		<table class='form-table' id='bookacti-notification-global-settings' >
 			<tbody>
 				<tr>
-					<th scope='row' ><?php _e( 'Enable', BOOKACTI_PLUGIN_NAME ); ?></th>
+					<th scope='row' ><?php _e( 'Enable', 'booking-activities' ); ?></th>
 					<td>
 						<?php 
 						$args = array(
@@ -326,7 +326,7 @@ function bookacti_fill_notification_settings_page( $notification_id ) {
 							'name'	=> 'bookacti_notification[active]',
 							'id'	=> 'bookacti_notification_' . $notification_id . 'active',
 							'value'	=> $notification_settings[ 'active' ] ? $notification_settings[ 'active' ] : 0,
-							'tip'	=> __( 'Enable or disable this automatic notification.', BOOKACTI_PLUGIN_NAME )
+							'tip'	=> __( 'Enable or disable this automatic notification.', 'booking-activities' )
 						);
 						bookacti_display_field( $args );
 						?>
@@ -336,7 +336,7 @@ function bookacti_fill_notification_settings_page( $notification_id ) {
 			</tbody>
 		</table>
 
-		<h3><?php _e( 'Email notifications settings', BOOKACTI_PLUGIN_NAME ); ?></h3>
+		<h3><?php _e( 'Email notifications settings', 'booking-activities' ); ?></h3>
 		<table class='form-table' id='bookacti-notification-email-settings' >
 			<tbody>
 				<?php 
@@ -345,7 +345,7 @@ function bookacti_fill_notification_settings_page( $notification_id ) {
 
 				if( substr( $notification_id, 0, 8 ) !== 'customer' ) { ?>
 				<tr>
-					<th scope='row' ><?php _e( 'Recipient(s)', BOOKACTI_PLUGIN_NAME ); ?></th>
+					<th scope='row' ><?php _e( 'Recipient(s)', 'booking-activities' ); ?></th>
 					<td>
 						<?php
 						$args = array(
@@ -353,7 +353,7 @@ function bookacti_fill_notification_settings_page( $notification_id ) {
 							'name'	=> 'bookacti_notification[email][to]',
 							'id'	=> 'bookacti_notification_' . $notification_id . '_email_to',
 							'value'	=> is_array( $notification_settings[ 'email' ][ 'to' ] ) ? implode( ',', $notification_settings[ 'email' ][ 'to' ] ) : strval( $notification_settings[ 'email' ][ 'to' ] ),
-							'tip'	=> __( 'Recipient(s) email address(es) (comma separated).', BOOKACTI_PLUGIN_NAME )
+							'tip'	=> __( 'Recipient(s) email address(es) (comma separated).', 'booking-activities' )
 						);
 						bookacti_display_field( $args );
 						?>
@@ -361,7 +361,7 @@ function bookacti_fill_notification_settings_page( $notification_id ) {
 				</tr>
 				<?php } ?>
 				<tr>
-					<th scope='row' ><?php _ex( 'Subject', 'email subject', BOOKACTI_PLUGIN_NAME ); ?></th>
+					<th scope='row' ><?php _ex( 'Subject', 'email subject', 'booking-activities' ); ?></th>
 					<td>
 						<?php 
 						$args = array(
@@ -369,7 +369,7 @@ function bookacti_fill_notification_settings_page( $notification_id ) {
 							'name'	=> 'bookacti_notification[email][subject]',
 							'id'	=> 'bookacti_notification_' . $notification_id . '_email_subject',
 							'value'	=> $notification_settings[ 'email' ][ 'subject' ] ? $notification_settings[ 'email' ][ 'subject' ] : '',
-							'tip'	=> __( 'The email subject.', BOOKACTI_PLUGIN_NAME )
+							'tip'	=> __( 'The email subject.', 'booking-activities' )
 						);
 						bookacti_display_field( $args );
 						?>
@@ -378,12 +378,12 @@ function bookacti_fill_notification_settings_page( $notification_id ) {
 				<tr>
 					<th scope='row' >
 					<?php 
-						_ex( 'Email content', 'email message', BOOKACTI_PLUGIN_NAME ); 
+						_ex( 'Email content', 'email message', 'booking-activities' ); 
 						$tags = bookacti_get_notifications_tags( $notification_id );
 						if( $tags ) {
 					?>
 						<div class='bookacti-notifications-tags-list' >
-							<p><?php _e( 'Use these tags:', BOOKACTI_PLUGIN_NAME ); ?></p>
+							<p><?php _e( 'Use these tags:', 'booking-activities' ); ?></p>
 					<?php
 							foreach( $tags as $tag => $tip ) {
 					?>
@@ -399,7 +399,7 @@ function bookacti_fill_notification_settings_page( $notification_id ) {
 							if( ! $is_plugin_active ) {
 								$addon_link  = '<a href="https://booking-activities.fr/en/downloads/notification-pack/?utm_source=plugin&utm_medium=plugin&utm_campaign=notification-pack&utm_content=settings-notification-list" target="_blank" >Notification Pack</a>';
 								/* translators: %1$s is the placeholder for Notification Pack add-on link */
-								$tip = sprintf( esc_html__( 'You can set a specific message on events, activities, groups of events and group categories and use it in your notifications thanks to %1$s add-on.', BOOKACTI_PLUGIN_NAME ), $addon_link );
+								$tip = sprintf( esc_html__( 'You can set a specific message on events, activities, groups of events and group categories and use it in your notifications thanks to %1$s add-on.', 'booking-activities' ), $addon_link );
 								?>
 								<div class='bookacti-notifications-tag' >
 									<code class='bookacti-notifications-tag-promo' >{specific_message}</code>
@@ -537,26 +537,26 @@ function bookacti_controller_archive_data_analyse() {
 	// Format the results to feedback the user
 	$no_data = true;
 	$ids_per_type = array(
-		esc_html__( 'Events', BOOKACTI_PLUGIN_NAME ) => array(),
-		esc_html__( 'Repetition exceptions', BOOKACTI_PLUGIN_NAME ) => array(),
-		esc_html__( 'Repeated events to be truncated', BOOKACTI_PLUGIN_NAME ) => array(),
-		esc_html__( 'Groups of events', BOOKACTI_PLUGIN_NAME ) => array(),
-		esc_html__( 'Grouped events', BOOKACTI_PLUGIN_NAME ) => array(),
-		esc_html__( 'Bookings', BOOKACTI_PLUGIN_NAME ) => array(),
-		esc_html__( 'Booking groups', BOOKACTI_PLUGIN_NAME ) => array(),
-		esc_html__( 'Metadata', BOOKACTI_PLUGIN_NAME ) => array()
+		esc_html__( 'Events', 'booking-activities' ) => array(),
+		esc_html__( 'Repetition exceptions', 'booking-activities' ) => array(),
+		esc_html__( 'Repeated events to be truncated', 'booking-activities' ) => array(),
+		esc_html__( 'Groups of events', 'booking-activities' ) => array(),
+		esc_html__( 'Grouped events', 'booking-activities' ) => array(),
+		esc_html__( 'Bookings', 'booking-activities' ) => array(),
+		esc_html__( 'Booking groups', 'booking-activities' ) => array(),
+		esc_html__( 'Metadata', 'booking-activities' ) => array()
 	);
-	if( $events )					{ $no_data = false; foreach( $events as $event )						{ $ids_per_type[ esc_html__( 'Events', BOOKACTI_PLUGIN_NAME ) ][] = $event->id; } }
-	if( $exceptions )				{ $no_data = false; foreach( $exceptions as $exception )				{ $ids_per_type[ esc_html__( 'Repetition exceptions', BOOKACTI_PLUGIN_NAME ) ][] = $exception->id; } }
-	if( $started_repeated_events )	{ $no_data = false; foreach( $started_repeated_events as $event )		{ $ids_per_type[ esc_html__( 'Repeated events to be truncated', BOOKACTI_PLUGIN_NAME ) ][] = $event->id; } }
-	if( $groups_of_events )			{ $no_data = false; foreach( $groups_of_events as $group_of_events )	{ $ids_per_type[ esc_html__( 'Groups of events', BOOKACTI_PLUGIN_NAME ) ][] = $group_of_events->id; } }
-	if( $grouped_events )			{ $no_data = false; foreach( $grouped_events as $grouped_event )		{ $ids_per_type[ esc_html__( 'Grouped events', BOOKACTI_PLUGIN_NAME ) ][] = $grouped_event->id; } }
-	if( $bookings )					{ $no_data = false; foreach( $bookings as $booking )					{ $ids_per_type[ esc_html__( 'Bookings', BOOKACTI_PLUGIN_NAME ) ][] = $booking->id; } }
-	if( $booking_groups )			{ $no_data = false; foreach( $booking_groups as $booking_group )		{ $ids_per_type[ esc_html__( 'Booking groups', BOOKACTI_PLUGIN_NAME ) ][] = $booking_group->id; } }
-	if( $metadata )					{ $no_data = false; foreach( $metadata as $meta_row )					{ $ids_per_type[ esc_html__( 'Metadata', BOOKACTI_PLUGIN_NAME ) ][] = $meta_row->id; } }
+	if( $events )					{ $no_data = false; foreach( $events as $event )						{ $ids_per_type[ esc_html__( 'Events', 'booking-activities' ) ][] = $event->id; } }
+	if( $exceptions )				{ $no_data = false; foreach( $exceptions as $exception )				{ $ids_per_type[ esc_html__( 'Repetition exceptions', 'booking-activities' ) ][] = $exception->id; } }
+	if( $started_repeated_events )	{ $no_data = false; foreach( $started_repeated_events as $event )		{ $ids_per_type[ esc_html__( 'Repeated events to be truncated', 'booking-activities' ) ][] = $event->id; } }
+	if( $groups_of_events )			{ $no_data = false; foreach( $groups_of_events as $group_of_events )	{ $ids_per_type[ esc_html__( 'Groups of events', 'booking-activities' ) ][] = $group_of_events->id; } }
+	if( $grouped_events )			{ $no_data = false; foreach( $grouped_events as $grouped_event )		{ $ids_per_type[ esc_html__( 'Grouped events', 'booking-activities' ) ][] = $grouped_event->id; } }
+	if( $bookings )					{ $no_data = false; foreach( $bookings as $booking )					{ $ids_per_type[ esc_html__( 'Bookings', 'booking-activities' ) ][] = $booking->id; } }
+	if( $booking_groups )			{ $no_data = false; foreach( $booking_groups as $booking_group )		{ $ids_per_type[ esc_html__( 'Booking groups', 'booking-activities' ) ][] = $booking_group->id; } }
+	if( $metadata )					{ $no_data = false; foreach( $metadata as $meta_row )					{ $ids_per_type[ esc_html__( 'Metadata', 'booking-activities' ) ][] = $meta_row->id; } }
 	
 	if( $no_data ) {
-		bookacti_send_json( array( 'status' => 'failed', 'error' => 'no_data_to_archive', 'message' => esc_html__( 'No data to archive.', BOOKACTI_PLUGIN_NAME ) ), 'archive_analyse_data' );
+		bookacti_send_json( array( 'status' => 'failed', 'error' => 'no_data_to_archive', 'message' => esc_html__( 'No data to archive.', 'booking-activities' ) ), 'archive_analyse_data' );
 	}
 	
 	// Check if an archive already exists
@@ -564,7 +564,7 @@ function bookacti_controller_archive_data_analyse() {
 	$archives_dir	= trailingslashit( str_replace( '\\', '/', $uploads_dir[ 'basedir' ] ) ) . BOOKACTI_PLUGIN_NAME . '/archives/';
 	$already_exists	= file_exists( $archives_dir . $date . '-booking-activities-archive.zip' );
 	
-	bookacti_send_json( array( 'status' => 'success', 'ids_per_type' => $ids_per_type, 'file_already_exists' => $already_exists, 'message' => esc_html__( 'These data can be archived:', BOOKACTI_PLUGIN_NAME ) ), 'archive_analyse_data' );
+	bookacti_send_json( array( 'status' => 'success', 'ids_per_type' => $ids_per_type, 'file_already_exists' => $already_exists, 'message' => esc_html__( 'These data can be archived:', 'booking-activities' ) ), 'archive_analyse_data' );
 }
 add_action( 'wp_ajax_bookactiArchiveDataAnalyse', 'bookacti_controller_archive_data_analyse' );
 
@@ -602,18 +602,18 @@ function bookacti_controller_archive_data_dump() {
 	
 	// Format the results to feedback the user
 	$results = array( 
-		esc_html__( 'Events', BOOKACTI_PLUGIN_NAME )					=> $dumped_events === false ? esc_html__( 'Error', BOOKACTI_PLUGIN_NAME ) : $dumped_events,
-		esc_html__( 'Repetition exceptions', BOOKACTI_PLUGIN_NAME )		=> $dumped_repeated_events_exceptions === false ? esc_html__( 'Error', BOOKACTI_PLUGIN_NAME ) : $dumped_repeated_events_exceptions,
-		esc_html__( 'Truncated repeated events', BOOKACTI_PLUGIN_NAME ) => $dumped_repeated_events === false ? esc_html__( 'Error', BOOKACTI_PLUGIN_NAME ) : $dumped_repeated_events,
-		esc_html__( 'Groups of events', BOOKACTI_PLUGIN_NAME )			=> $dumped_groups_of_events === false ? esc_html__( 'Error', BOOKACTI_PLUGIN_NAME ) : $dumped_groups_of_events,
-		esc_html__( 'Grouped events', BOOKACTI_PLUGIN_NAME )			=> $dumped_grouped_events === false ? esc_html__( 'Error', BOOKACTI_PLUGIN_NAME ) : $dumped_grouped_events,
-		esc_html__( 'Bookings', BOOKACTI_PLUGIN_NAME )					=> $dumped_bookings === false ? esc_html__( 'Error', BOOKACTI_PLUGIN_NAME ) : $dumped_bookings,
-		esc_html__( 'Booking groups', BOOKACTI_PLUGIN_NAME )			=> $dumped_booking_groups === false ? esc_html__( 'Error', BOOKACTI_PLUGIN_NAME ) : $dumped_booking_groups,
-		esc_html__( 'Metadata', BOOKACTI_PLUGIN_NAME )					=> $dumped_meta === false ? esc_html__( 'Error', BOOKACTI_PLUGIN_NAME ) : $dumped_meta
+		esc_html__( 'Events', 'booking-activities' )					=> $dumped_events === false ? esc_html__( 'Error', 'booking-activities' ) : $dumped_events,
+		esc_html__( 'Repetition exceptions', 'booking-activities' )		=> $dumped_repeated_events_exceptions === false ? esc_html__( 'Error', 'booking-activities' ) : $dumped_repeated_events_exceptions,
+		esc_html__( 'Truncated repeated events', 'booking-activities' ) => $dumped_repeated_events === false ? esc_html__( 'Error', 'booking-activities' ) : $dumped_repeated_events,
+		esc_html__( 'Groups of events', 'booking-activities' )			=> $dumped_groups_of_events === false ? esc_html__( 'Error', 'booking-activities' ) : $dumped_groups_of_events,
+		esc_html__( 'Grouped events', 'booking-activities' )			=> $dumped_grouped_events === false ? esc_html__( 'Error', 'booking-activities' ) : $dumped_grouped_events,
+		esc_html__( 'Bookings', 'booking-activities' )					=> $dumped_bookings === false ? esc_html__( 'Error', 'booking-activities' ) : $dumped_bookings,
+		esc_html__( 'Booking groups', 'booking-activities' )			=> $dumped_booking_groups === false ? esc_html__( 'Error', 'booking-activities' ) : $dumped_booking_groups,
+		esc_html__( 'Metadata', 'booking-activities' )					=> $dumped_meta === false ? esc_html__( 'Error', 'booking-activities' ) : $dumped_meta
 	);
 
 	if( $dumped_events === false || $dumped_repeated_events_exceptions === false || $dumped_repeated_events === false || $dumped_groups_of_events === false || $dumped_bookings === false || $dumped_booking_groups === false || $dumped_meta === false ) {
-		bookacti_send_json( array( 'status' => 'failed', 'error' => 'dump_failed', 'results' => $results, 'message' => esc_html__( 'An error occurred while trying to archive data.', BOOKACTI_PLUGIN_NAME ) ), 'archive_dump_data' );
+		bookacti_send_json( array( 'status' => 'failed', 'error' => 'dump_failed', 'results' => $results, 'message' => esc_html__( 'An error occurred while trying to archive data.', 'booking-activities' ) ), 'archive_dump_data' );
 	}
 	
 	// Zip the files into a single one
@@ -639,11 +639,11 @@ function bookacti_controller_archive_data_dump() {
 	}
 	
 	if( ! $zip_created ) {
-		bookacti_send_json( array( 'status' => 'failed', 'error' => 'zip_failed', 'results' => $results, 'message' => esc_html__( 'An error occurred while trying to zip the files.', BOOKACTI_PLUGIN_NAME ) ), 'archive_dump_data' );
+		bookacti_send_json( array( 'status' => 'failed', 'error' => 'zip_failed', 'results' => $results, 'message' => esc_html__( 'An error occurred while trying to zip the files.', 'booking-activities' ) ), 'archive_dump_data' );
 	}
 	
 	$secret_key		= get_option( 'bookacti_archive_secret_key' );
-	$download_link	= '<a href="' . $zip_file_url . '?key=' . $secret_key . '" target="_blank">' . esc_html_x( 'Download', 'verb', BOOKACTI_PLUGIN_NAME ) . '</a>';
+	$download_link	= '<a href="' . $zip_file_url . '?key=' . $secret_key . '" target="_blank">' . esc_html_x( 'Download', 'verb', 'booking-activities' ) . '</a>';
 	
 	// Get the archive list table
 	ob_start();
@@ -651,8 +651,8 @@ function bookacti_controller_archive_data_dump() {
 	$archive_list = ob_get_clean();
 	
 	// Feedback message
-	$message = esc_html__( 'Your data has been successfully archived.', BOOKACTI_PLUGIN_NAME ) . '<br/>' 
-			. esc_html__( 'Make sure the data in the backup files are consistent with data reported in step 1:', BOOKACTI_PLUGIN_NAME ) 
+	$message = esc_html__( 'Your data has been successfully archived.', 'booking-activities' ) . '<br/>' 
+			. esc_html__( 'Make sure the data in the backup files are consistent with data reported in step 1:', 'booking-activities' ) 
 			. ' <strong>' . $download_link . '</strong>';
 	
 	bookacti_send_json( array( 'status' => 'success', 'archive_list' => $archive_list, 'download_link' => $download_link, 'results' => $results, 'message' => $message ), 'archive_dump_data' );
@@ -663,6 +663,7 @@ add_action( 'wp_ajax_bookactiArchiveDataDump', 'bookacti_controller_archive_data
 /**
  * Delete bookings and events prior to specific date
  * @since 1.7.0
+ * @version 1.7.8
  */
 function bookacti_controller_archive_data_delete() {
 	$date = bookacti_sanitize_date( $_POST[ 'date' ] );
@@ -694,19 +695,20 @@ function bookacti_controller_archive_data_delete() {
 	
 	// Format the results to feedback the user
 	$nb_per_type = array( 
-		esc_html__( 'Events', BOOKACTI_PLUGIN_NAME )					=> $deleted_events === false ? esc_html__( 'Error', BOOKACTI_PLUGIN_NAME ) : $deleted_events,
-		esc_html__( 'Repetition exceptions', BOOKACTI_PLUGIN_NAME )		=> $deleted_repeated_events_exceptions === false ? esc_html__( 'Error', BOOKACTI_PLUGIN_NAME ) : $deleted_repeated_events_exceptions,
-		esc_html__( 'Truncated repeated events', BOOKACTI_PLUGIN_NAME ) => $truncated_events === false ? esc_html__( 'Error', BOOKACTI_PLUGIN_NAME ) : $truncated_events,
-		esc_html__( 'Groups of events', BOOKACTI_PLUGIN_NAME )			=> $deleted_groups_of_events === false ? esc_html__( 'Error', BOOKACTI_PLUGIN_NAME ) : $deleted_groups_of_events,
-		esc_html__( 'Grouped events', BOOKACTI_PLUGIN_NAME )			=> $deleted_grouped_events === false ? esc_html__( 'Error', BOOKACTI_PLUGIN_NAME ) : $deleted_grouped_events,
-		esc_html__( 'Bookings', BOOKACTI_PLUGIN_NAME )					=> $deleted_bookings === false ? esc_html__( 'Error', BOOKACTI_PLUGIN_NAME ) : $deleted_bookings,
-		esc_html__( 'Booking groups', BOOKACTI_PLUGIN_NAME )			=> $deleted_booking_groups === false ? esc_html__( 'Error', BOOKACTI_PLUGIN_NAME ) : $deleted_booking_groups,
-		esc_html__( 'Metadata', BOOKACTI_PLUGIN_NAME )					=> $deleted_meta === false ? esc_html__( 'Error', BOOKACTI_PLUGIN_NAME ) : $deleted_meta
+		esc_html__( 'Events', 'booking-activities' )					=> $deleted_events === false ? esc_html__( 'Error', 'booking-activities' ) : $deleted_events,
+		esc_html__( 'Repetition exceptions', 'booking-activities' )		=> $deleted_repeated_events_exceptions === false ? esc_html__( 'Error', 'booking-activities' ) : $deleted_repeated_events_exceptions,
+		esc_html__( 'Truncated repeated events', 'booking-activities' ) => $truncated_events === false ? esc_html__( 'Error', 'booking-activities' ) : $truncated_events,
+		esc_html__( 'Groups of events', 'booking-activities' )			=> $deleted_groups_of_events === false ? esc_html__( 'Error', 'booking-activities' ) : $deleted_groups_of_events,
+		esc_html__( 'Grouped events', 'booking-activities' )			=> $deleted_grouped_events === false ? esc_html__( 'Error', 'booking-activities' ) : $deleted_grouped_events,
+		esc_html__( 'Bookings', 'booking-activities' )					=> $deleted_bookings === false ? esc_html__( 'Error', 'booking-activities' ) : $deleted_bookings,
+		esc_html__( 'Booking groups', 'booking-activities' )			=> $deleted_booking_groups === false ? esc_html__( 'Error', 'booking-activities' ) : $deleted_booking_groups,
+		esc_html__( 'Metadata', 'booking-activities' )					=> $deleted_meta === false ? esc_html__( 'Error', 'booking-activities' ) : $deleted_meta
 	);
 	
 	// Feedback message
-	$message = esc_html__( 'Your data has been successfully deleted.', BOOKACTI_PLUGIN_NAME ) . '<br/>' 
-			. sprintf( esc_html__( 'You can restore your archived data with the "%s" function in the table below, or within phpMyAdmin, with the "Import" function.', BOOKACTI_PLUGIN_NAME ), esc_html__( 'Restore data', BOOKACTI_PLUGIN_NAME ) );
+	$message = esc_html__( 'Your data has been successfully deleted.', 'booking-activities' ) . '<br/>' 
+			/* translators: %s is the label of the "Restore data" button */
+			. sprintf( esc_html__( 'You can restore your archived data with the "%s" function in the table below, or within phpMyAdmin, with the "Import" function.', 'booking-activities' ), esc_html__( 'Restore data', 'booking-activities' ) );
 	
 	bookacti_send_json( array( 'status' => 'success', 'nb_per_type' => $nb_per_type, 'message' => $message ), 'archive_delete_data' );
 }
@@ -733,11 +735,11 @@ function bookacti_controller_archive_restore_data() {
 	$imported		= bookacti_import_sql_files( $zip_file );
 	
 	if( $imported[ 'status' ] !== 'success' ) {
-		bookacti_send_json( array( 'status' => 'failed', 'error' => 'import_failed', 'results' => $imported[ 'results' ], 'message' => esc_html__( 'An error occured while trying to restore backup data.', BOOKACTI_PLUGIN_NAME ) ), 'archive_restore_data' );
+		bookacti_send_json( array( 'status' => 'failed', 'error' => 'import_failed', 'results' => $imported[ 'results' ], 'message' => esc_html__( 'An error occured while trying to restore backup data.', 'booking-activities' ) ), 'archive_restore_data' );
 	}
 	
 	// Feedback message
-	$message = esc_html__( 'Your data has been successfully restored.', BOOKACTI_PLUGIN_NAME );
+	$message = esc_html__( 'Your data has been successfully restored.', 'booking-activities' );
 	
 	bookacti_send_json( array( 'status' => 'success', 'results' => $imported[ 'results' ], 'message' => $message ), 'archive_restore_data' );
 }
@@ -760,7 +762,7 @@ function bookacti_controller_archive_delete_file() {
 	$deleted		= unlink( $zip_file );
 	
 	if( ! $deleted ) {
-		bookacti_send_json( array( 'status' => 'failed', 'error' => 'unlink_failed', 'message' => esc_html__( 'An error occured while trying to delete the backup file.', BOOKACTI_PLUGIN_NAME ) ), 'archive_delete_file' );
+		bookacti_send_json( array( 'status' => 'failed', 'error' => 'unlink_failed', 'message' => esc_html__( 'An error occured while trying to delete the backup file.', 'booking-activities' ) ), 'archive_delete_file' );
 	}
 	
 	// Get the archive list table
@@ -786,7 +788,7 @@ add_action( 'wp_ajax_bookactiArchiveDeleteFile', 'bookacti_controller_archive_de
  */
 function bookacti_add_user_contact_methods( $methods, $user ) {
 	if( in_array( 'phone', $methods, true ) ) { return $methods; }
-	$methods[ 'phone' ] = esc_html__( 'Phone', BOOKACTI_PLUGIN_NAME );
+	$methods[ 'phone' ] = esc_html__( 'Phone', 'booking-activities' );
 	return $methods;
 }
 add_filter( 'user_contactmethods', 'bookacti_add_user_contact_methods', 100, 2 );
@@ -803,7 +805,7 @@ add_filter( 'user_contactmethods', 'bookacti_add_user_contact_methods', 100, 2 )
  * @return array
  */
 function bookacti_action_links_in_plugins_table( $links ) {
-   $links = array( 'settings' => '<a href="' . admin_url( 'admin.php?page=bookacti_settings' ) . '" title="' . esc_attr( __( 'Manage Booking Activities Settings', BOOKACTI_PLUGIN_NAME ) ) . '">' . __( 'Settings', BOOKACTI_PLUGIN_NAME ) . '</a>' ) + $links;
+   $links = array( 'settings' => '<a href="' . admin_url( 'admin.php?page=bookacti_settings' ) . '" title="' . esc_attr( __( 'Manage Booking Activities Settings', 'booking-activities' ) ) . '">' . __( 'Settings', 'booking-activities' ) . '</a>' ) + $links;
    return $links;
 }
 add_filter( 'plugin_action_links_' . BOOKACTI_PLUGIN_NAME . '/' . BOOKACTI_PLUGIN_NAME . '.php', 'bookacti_action_links_in_plugins_table', 10, 1 );
@@ -818,9 +820,9 @@ add_filter( 'plugin_action_links_' . BOOKACTI_PLUGIN_NAME . '/' . BOOKACTI_PLUGI
  */
 function bookacti_meta_links_in_plugins_table( $links, $file ) {
    if ( $file == BOOKACTI_PLUGIN_NAME . '/' . BOOKACTI_PLUGIN_NAME . '.php' ) {
-		$links[ 'docs' ]	= '<a href="' . esc_url( 'https://booking-activities.fr/en/documentation/user-documentation/?utm_source=plugin&utm_medium=plugin&utm_content=plugin-list' ) . '" title="' . esc_attr( __( 'View Booking Activities Documentation', BOOKACTI_PLUGIN_NAME ) ) . '" target="_blank" >' . esc_html__( 'Docs', BOOKACTI_PLUGIN_NAME ) . '</a>';
-		$links[ 'report' ]	= '<a href="' . esc_url( 'https://github.com/bookingactivities/booking-activities/issues/' ) . '" title="' . esc_attr( __( 'Report a bug or request a feature', BOOKACTI_PLUGIN_NAME ) ) . '" target="_blank" >' . esc_html__( 'Report & Request', BOOKACTI_PLUGIN_NAME ) . '</a>';
-		$links[ 'contact' ]	= '<a href="' . esc_url( 'https://booking-activities.fr/en/?utm_source=plugin&utm_medium=plugin&utm_content=plugin-list#contact' ) . '" title="' . esc_attr( __( 'Contact us directly', BOOKACTI_PLUGIN_NAME ) ) . '" target="_blank" >' . esc_html__( 'Contact us', BOOKACTI_PLUGIN_NAME ) . '</a>';
+		$links[ 'docs' ]	= '<a href="' . esc_url( 'https://booking-activities.fr/en/documentation/user-documentation/?utm_source=plugin&utm_medium=plugin&utm_content=plugin-list' ) . '" title="' . esc_attr( __( 'View Booking Activities Documentation', 'booking-activities' ) ) . '" target="_blank" >' . esc_html__( 'Docs', 'booking-activities' ) . '</a>';
+		$links[ 'report' ]	= '<a href="' . esc_url( 'https://github.com/bookingactivities/booking-activities/issues/' ) . '" title="' . esc_attr( __( 'Report a bug or request a feature', 'booking-activities' ) ) . '" target="_blank" >' . esc_html__( 'Report & Request', 'booking-activities' ) . '</a>';
+		$links[ 'contact' ]	= '<a href="' . esc_url( 'https://booking-activities.fr/en/?utm_source=plugin&utm_medium=plugin&utm_content=plugin-list#contact' ) . '" title="' . esc_attr( __( 'Contact us directly', 'booking-activities' ) ) . '" target="_blank" >' . esc_html__( 'Contact us', 'booking-activities' ) . '</a>';
 	}
 	return $links;
 }
@@ -833,7 +835,7 @@ add_filter( 'plugin_row_meta', 'bookacti_meta_links_in_plugins_table', 10, 2 );
 
 /** 
  * Ask to rate the plugin 5 stars
- * @version 1.7.3
+ * @version 1.7.8
  */
 function bookacti_5stars_rating_notice() {
 	if( ! bookacti_is_booking_activities_screen() ) { return; }
@@ -850,16 +852,16 @@ function bookacti_5stars_rating_notice() {
 					<div class='notice notice-info bookacti-5stars-rating-notice is-dismissible' >
 						<p>
 							<?php 
-							_e( '<strong>Booking Activities</strong> has been helping you for three months now.', BOOKACTI_PLUGIN_NAME );
-							/* translators: %s: five stars */
+							_e( '<strong>Booking Activities</strong> has been helping you for three months now.', 'booking-activities' );
 							echo '<br/>' 
-								. sprintf( esc_html__( 'Would you help it back leaving us a %s rating? We need you now to make it last!', BOOKACTI_PLUGIN_NAME ), 
+								/* translators: %s: five stars */
+								. sprintf( esc_html__( 'Would you help it back leaving us a %s rating? We need you now to make it last!', 'booking-activities' ), 
 								  '<a href="https://wordpress.org/support/plugin/booking-activities/reviews?rate=5#new-post" target="_blank" >&#9733;&#9733;&#9733;&#9733;&#9733;</a>' );
 							?>
 						</p>
 						<p>
-							<a class='button' href='<?php echo esc_url( 'https://wordpress.org/support/plugin/booking-activities/reviews?rate=5#new-post' ); ?>' target='_blank' ><?php esc_html_e( "Ok, I'll rate you five stars!", BOOKACTI_PLUGIN_NAME ); ?></a>
-							<span class='button' id='bookacti-dismiss-5stars-rating' ><?php esc_html_e( "I already rated you, hide this message", BOOKACTI_PLUGIN_NAME ); ?></span>
+							<a class='button' href='<?php echo esc_url( 'https://wordpress.org/support/plugin/booking-activities/reviews?rate=5#new-post' ); ?>' target='_blank' ><?php esc_html_e( "Ok, I'll rate you five stars!", 'booking-activities' ); ?></a>
+							<span class='button' id='bookacti-dismiss-5stars-rating' ><?php esc_html_e( "I already rated you, hide this message", 'booking-activities' ); ?></span>
 						</p>
 					</div>
 					<?php
@@ -914,7 +916,7 @@ function bookacti_admin_footer_text( $footer_text ) {
 		// Change the footer text
 		if ( ! get_option( 'woocommerce_admin_footer_text_rated' ) ) {
 			/* translators: %s: five stars */
-			$footer_text = sprintf( __( 'If <strong>Booking Activities</strong> helps you, help it back leaving us a %s rating. We need you now to make it last!', BOOKACTI_PLUGIN_NAME ), '<a href="https://wordpress.org/support/plugin/booking-activities/reviews?rate=5#new-post" target="_blank" >&#9733;&#9733;&#9733;&#9733;&#9733;</a>' );
+			$footer_text = sprintf( __( 'If <strong>Booking Activities</strong> helps you, help it back leaving us a %s rating. We need you now to make it last!', 'booking-activities' ), '<a href="https://wordpress.org/support/plugin/booking-activities/reviews?rate=5#new-post" target="_blank" >&#9733;&#9733;&#9733;&#9733;&#9733;</a>' );
 		}
 	}
 

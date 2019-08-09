@@ -15,125 +15,125 @@ function bookacti_get_notifications_default_settings() {
 			array(
 				'id'		=> 'admin_new_booking',
 				'active'	=> 1,
-				'title'		=> __( 'Customer has made a booking', BOOKACTI_PLUGIN_NAME ),
-				'description'	=> __( 'This notification is sent to the administrator when a new booking is registered.', BOOKACTI_PLUGIN_NAME ),
+				'title'		=> __( 'Customer has made a booking', 'booking-activities' ),
+				'description'	=> __( 'This notification is sent to the administrator when a new booking is registered.', 'booking-activities' ),
 				'email'			=> array(
 					'active'	=> 1,
 					'to'		=> array( get_bloginfo( 'admin_email' ) ),
-					'subject'	=> __( 'New booking!', BOOKACTI_PLUGIN_NAME ),
+					'subject'	=> __( 'New booking!', 'booking-activities' ),
 					/* translators: Keep tags as is (this is a tag: {tag}), they will be replaced in code. This is the default email an administrator receive when a booking is made */
 					'message'	=> __( '<p>You have {booking_total_qty} new booking(s) from {user_firstname} {user_lastname} ({user_email})!</p>
 										<p>{booking_list}</p>
 										<p>Booking status: <strong>{booking_status}</strong>.</p>
-										<p><a href="{booking_admin_url}">Click here</a> to edit this booking (ID: {booking_id}).</p>', BOOKACTI_PLUGIN_NAME ) )
+										<p><a href="{booking_admin_url}">Click here</a> to edit this booking (ID: {booking_id}).</p>', 'booking-activities' ) )
 			),
 		'admin_cancelled_booking' => 
 			array(
 				'id'		=> 'admin_cancelled_booking',
 				'active'	=> 1,
-				'title'		=> __( 'Customer has cancelled a booking', BOOKACTI_PLUGIN_NAME ),
-				'description'	=> __( 'This notification is sent to the administrator when a customer cancel a booking.', BOOKACTI_PLUGIN_NAME ),
+				'title'		=> __( 'Customer has cancelled a booking', 'booking-activities' ),
+				'description'	=> __( 'This notification is sent to the administrator when a customer cancel a booking.', 'booking-activities' ),
 				'email'			=> array(
 					'active'	=> 1,
 					'to'		=> array( get_bloginfo( 'admin_email' ) ),
-					'subject'	=> __( 'Booking cancelled', BOOKACTI_PLUGIN_NAME ),
+					'subject'	=> __( 'Booking cancelled', 'booking-activities' ),
 					/* translators: Keep tags as is (this is a tag: {tag}), they will be replaced in code. This is the default email an administrator receive when a booking is cancelled */
 					'message'	=> __( '<p>A customer has cancelled a booking.</p>
 										<p>{booking_list}</p>
 										<p>Customer info: {user_firstname} {user_lastname} ({user_email})</p>
-										<p><a href="{booking_admin_url}">Click here</a> to edit this booking (ID: {booking_id}).</p>', BOOKACTI_PLUGIN_NAME ) )
+										<p><a href="{booking_admin_url}">Click here</a> to edit this booking (ID: {booking_id}).</p>', 'booking-activities' ) )
 			),
 		'admin_rescheduled_booking' => 
 			array(
 				'id'		=> 'admin_rescheduled_booking',
 				'active'	=> 1,
-				'title'		=> __( 'Customer has rescheduled a booking', BOOKACTI_PLUGIN_NAME ),
-				'description'	=> __( 'This notification is sent to the administrator when a customer reschedule a booking.', BOOKACTI_PLUGIN_NAME ),
+				'title'		=> __( 'Customer has rescheduled a booking', 'booking-activities' ),
+				'description'	=> __( 'This notification is sent to the administrator when a customer reschedule a booking.', 'booking-activities' ),
 				'email'			=> array(
 					'active'	=> 1,
 					'to'		=> array( get_bloginfo( 'admin_email' ) ),
-					'subject'		=> __( 'Booking rescheduled', BOOKACTI_PLUGIN_NAME ),
+					'subject'		=> __( 'Booking rescheduled', 'booking-activities' ),
 					/* translators: Keep tags as is (this is a tag: {tag}), they will be replaced in code. This is the default email an administrator receive when a booking is rescheduled */
 					'message'	=> __( '<p>A customer has rescheduled a booking.</p>
 										<p>Old booking: {booking_old_start} - {booking_old_end}</p>
 										<p>New booking: {booking_list}</p>
 										<p>Customer info: {user_firstname} {user_lastname} ({user_email})</p>
-										<p><a href="{booking_admin_url}">Click here</a> to edit this booking (ID: {booking_id}).</p>', BOOKACTI_PLUGIN_NAME ) )
+										<p><a href="{booking_admin_url}">Click here</a> to edit this booking (ID: {booking_id}).</p>', 'booking-activities' ) )
 			),
 		
 		'customer_pending_booking' => 
 			array(
 				'id'		=> 'customer_pending_booking',
 				'active'	=> 1,
-				'title'		=> __( 'Booking status turns to "Pending"', BOOKACTI_PLUGIN_NAME ),
-				'description'	=> __( 'This notification is sent to the customer when one of his bookings becomes "Pending". If you set the "Default booking state" option to "Pending", this notification will be sent right after the booking is made.', BOOKACTI_PLUGIN_NAME ),
+				'title'		=> __( 'Booking status turns to "Pending"', 'booking-activities' ),
+				'description'	=> __( 'This notification is sent to the customer when one of his bookings becomes "Pending". If you set the "Default booking state" option to "Pending", this notification will be sent right after the booking is made.', 'booking-activities' ),
 				'email'			=> array(
 					'active'	=> 1,
-					'subject'	=> __( 'Your booking is pending', BOOKACTI_PLUGIN_NAME ) . ' - ' . apply_filters( 'bookacti_translate_text', get_bloginfo( 'name' ) ),
+					'subject'	=> __( 'Your booking is pending', 'booking-activities' ) . ' - ' . apply_filters( 'bookacti_translate_text', get_bloginfo( 'name' ) ),
 					/* translators: Keep tags as is (this is a tag: {tag}), they will be replaced in code. This is the default email a customer receive when a booking is made, but is still Pending */
 					'message'	=> __( '<p>Thank you for your booking request {user_firstname}!</p>
 										<p>{booking_list}</p>
 										<p>Your reservation is <strong>pending</strong>.</p>
-										<p>We will process your request and contact you as soon as possible.</p>', BOOKACTI_PLUGIN_NAME ) )
+										<p>We will process your request and contact you as soon as possible.</p>', 'booking-activities' ) )
 			),
 		'customer_booked_booking' => 
 			array(
 				'id'			=> 'customer_booked_booking',
 				'active'		=> 1,
-				'title'			=> __( 'Booking status turns to "Booked"', BOOKACTI_PLUGIN_NAME ),
-				'description'	=> __( 'This notification is sent to the customer when one of his bookings becomes "Booked". If you set the "Default booking state" option to "Booked", this notification will be sent right after the booking is made.', BOOKACTI_PLUGIN_NAME ),
+				'title'			=> __( 'Booking status turns to "Booked"', 'booking-activities' ),
+				'description'	=> __( 'This notification is sent to the customer when one of his bookings becomes "Booked". If you set the "Default booking state" option to "Booked", this notification will be sent right after the booking is made.', 'booking-activities' ),
 				'email'			=> array(
 					'active'	=> 1,
-					'subject'	=> __( 'Your booking is complete! Thank you', BOOKACTI_PLUGIN_NAME ) . ' - ' . apply_filters( 'bookacti_translate_text', get_bloginfo( 'name' ) ),
+					'subject'	=> __( 'Your booking is complete! Thank you', 'booking-activities' ) . ' - ' . apply_filters( 'bookacti_translate_text', get_bloginfo( 'name' ) ),
 					/* translators: Keep tags as is (this is a tag: {tag}), they will be replaced in code. This is the default email a customer receive when a booking is made and Complete */
 					'message'	=> __( '<p>Thank you for your booking {user_firstname}!</p>
 										<p>{booking_list}</p>
-										<p>We confirm that your reservation is now <strong>complete</strong>.</p>', BOOKACTI_PLUGIN_NAME ) )
+										<p>We confirm that your reservation is now <strong>complete</strong>.</p>', 'booking-activities' ) )
 			),
 		'customer_cancelled_booking' => 
 			array(
 				'id'			=> 'customer_cancelled_booking',
 				'active'		=> 1,
-				'title'			=> __( 'Booking status turns to "Cancelled"', BOOKACTI_PLUGIN_NAME ),
-				'description'	=> __( 'This notification is sent to the customer when one of his bookings becomes "Cancelled".', BOOKACTI_PLUGIN_NAME ),
+				'title'			=> __( 'Booking status turns to "Cancelled"', 'booking-activities' ),
+				'description'	=> __( 'This notification is sent to the customer when one of his bookings becomes "Cancelled".', 'booking-activities' ),
 				'email'			=> array(
 					'active'	=> 1,
-					'subject'	=> __( 'Your booking has been cancelled', BOOKACTI_PLUGIN_NAME ) . ' - ' . apply_filters( 'bookacti_translate_text', get_bloginfo( 'name' ) ),
+					'subject'	=> __( 'Your booking has been cancelled', 'booking-activities' ) . ' - ' . apply_filters( 'bookacti_translate_text', get_bloginfo( 'name' ) ),
 					/* translators: Keep tags as is (this is a tag: {tag}), they will be replaced in code. This is the default email a customer receive when a booking is cancelled */
 					'message'	=> __( "<p>Hello {user_firstname},
 										<p>Your booking has been <strong>cancelled</strong>.</p>
 										<p>{booking_list}</p>
-										<p>If you haven't cancelled this reservation or if you think this is an error, please contact us.</p>", BOOKACTI_PLUGIN_NAME ) )
+										<p>If you haven't cancelled this reservation or if you think this is an error, please contact us.</p>", 'booking-activities' ) )
 			),
 		'customer_refunded_booking' => 
 			array(
 				'id'			=> 'customer_refunded_booking',
 				'active'		=> 1,
-				'title'			=> __( 'Booking status turns to "Refunded"', BOOKACTI_PLUGIN_NAME ),
-				'description'	=> __( 'This notification is sent to the customer when one of his bookings becomes "Refunded".', BOOKACTI_PLUGIN_NAME ),
+				'title'			=> __( 'Booking status turns to "Refunded"', 'booking-activities' ),
+				'description'	=> __( 'This notification is sent to the customer when one of his bookings becomes "Refunded".', 'booking-activities' ),
 				'email'			=> array(
 					'active'	=> 1,
-					'subject'	=> __( 'Your booking has been refunded', BOOKACTI_PLUGIN_NAME ) . ' - ' . apply_filters( 'bookacti_translate_text', get_bloginfo( 'name' ) ),
+					'subject'	=> __( 'Your booking has been refunded', 'booking-activities' ) . ' - ' . apply_filters( 'bookacti_translate_text', get_bloginfo( 'name' ) ),
 					/* translators: Keep tags as is (this is a tag: {tag}), they will be replaced in code. This is the default email a customer receive when he is reimbursed for a booking */
 					'message'	=> __( '<p>Hello {user_firstname},
 										<p>Your booking has been <strong>refunded</strong>.</p>
 										<p>{booking_list}</p>
-										<p>We are sorry for the inconvenience and hope to see you soon.</p>', BOOKACTI_PLUGIN_NAME ) )
+										<p>We are sorry for the inconvenience and hope to see you soon.</p>', 'booking-activities' ) )
 			),
 		'customer_rescheduled_booking' => 
 			array(
 				'id'			=> 'customer_rescheduled_booking',
 				'active'		=> 1,
-				'title'			=> __( 'Booking is rescheduled', BOOKACTI_PLUGIN_NAME ),
-				'description'	=> __( 'This notification is sent to the customer when one of his bookings is rescheduled.', BOOKACTI_PLUGIN_NAME ),
+				'title'			=> __( 'Booking is rescheduled', 'booking-activities' ),
+				'description'	=> __( 'This notification is sent to the customer when one of his bookings is rescheduled.', 'booking-activities' ),
 				'email'			=> array(
 					'active'	=> 1,
-					'subject'	=> __( 'Your booking has been rescheduled', BOOKACTI_PLUGIN_NAME ) . ' - ' . apply_filters( 'bookacti_translate_text', get_bloginfo( 'name' ) ),
+					'subject'	=> __( 'Your booking has been rescheduled', 'booking-activities' ) . ' - ' . apply_filters( 'bookacti_translate_text', get_bloginfo( 'name' ) ),
 					/* translators: Keep tags as is (this is a tag: {tag}), they will be replaced in code. This is the default email a customer receive when a booking is rescheduled */
 					'message'	=> __( "<p>Hello {user_firstname},
 										<p>Your booking has been <strong>rescheduled</strong> from {booking_old_start} to:</p>
 										<p>{booking_list}</p>
-										<p>If you haven't rescheduled this reservation or if you think this is an error, please contact us.</p>", BOOKACTI_PLUGIN_NAME ) )
+										<p>If you haven't rescheduled this reservation or if you think this is an error, please contact us.</p>", 'booking-activities' ) )
 			),
 	);
 
@@ -291,31 +291,31 @@ function bookacti_sanitize_notification_settings( $args, $notification_id = '' )
 function bookacti_get_notifications_tags( $notification_id = '' ) {
 	
 	$tags = array( 
-		'{booking_id}'			=> esc_html__( 'Booking unique ID (integer). Bookings and booking groups have different set of IDs.', BOOKACTI_PLUGIN_NAME ),
-		'{booking_title}'		=> esc_html__( 'The event / group of events title.', BOOKACTI_PLUGIN_NAME ),
-		'{booking_quantity}'	=> esc_html__( 'Booking quantity. If bookings of a same group happen to have different quantities, the higher is displayed.', BOOKACTI_PLUGIN_NAME ),
-		'{booking_total_qty}'	=> esc_html__( 'For booking groups, this is the bookings sum. For single bookings, this is the same as {booking_quantity}.', BOOKACTI_PLUGIN_NAME ),
-		'{booking_status}'		=> esc_html__( 'Current booking status.', BOOKACTI_PLUGIN_NAME ),
-		'{booking_start}'		=> esc_html__( 'Booking start date and time displayed in a user-friendly format. For booking groups, the first event start date and time is used.', BOOKACTI_PLUGIN_NAME ),
-		'{booking_end}'			=> esc_html__( 'Booking end date and time displayed in a user-friendly format. For booking groups, the last event end date and time is used.', BOOKACTI_PLUGIN_NAME ),
-		'{booking_list}'		=> esc_html__( 'Booking summary displayed as a booking list. You should use this tag once in every notification to know what booking (group) it is about.', BOOKACTI_PLUGIN_NAME ),
-		'{booking_list_raw}'	=> esc_html__( 'Booking summary displayed as a comma separated booking list, without HTML formatting.', BOOKACTI_PLUGIN_NAME ),
-		'{user_firstname}'		=> esc_html__( 'The user first name', BOOKACTI_PLUGIN_NAME ),
-		'{user_lastname}'		=> esc_html__( 'The user last name', BOOKACTI_PLUGIN_NAME ),
-		'{user_email}'			=> esc_html__( 'The user email address', BOOKACTI_PLUGIN_NAME ),
-		'{user_phone}'			=> esc_html__( 'The user phone number', BOOKACTI_PLUGIN_NAME ),
-		'{user_id}'				=> esc_html__( 'The user ID. If the user has booked without account, this will display his email address.', BOOKACTI_PLUGIN_NAME ),
-		'{user_ical_url}'		=> esc_html__( 'URL to export the user list of bookings in ical format. If the user doesn\'t have an account, only the current booking is exported.', BOOKACTI_PLUGIN_NAME ),
-		'{user_ical_key}'		=> esc_html__( 'User ical export secret key. Useful to create a custom ical export URL.', BOOKACTI_PLUGIN_NAME )
+		'{booking_id}'			=> esc_html__( 'Booking unique ID (integer). Bookings and booking groups have different set of IDs.', 'booking-activities' ),
+		'{booking_title}'		=> esc_html__( 'The event / group of events title.', 'booking-activities' ),
+		'{booking_quantity}'	=> esc_html__( 'Booking quantity. If bookings of a same group happen to have different quantities, the higher is displayed.', 'booking-activities' ),
+		'{booking_total_qty}'	=> esc_html__( 'For booking groups, this is the bookings sum. For single bookings, this is the same as {booking_quantity}.', 'booking-activities' ),
+		'{booking_status}'		=> esc_html__( 'Current booking status.', 'booking-activities' ),
+		'{booking_start}'		=> esc_html__( 'Booking start date and time displayed in a user-friendly format. For booking groups, the first event start date and time is used.', 'booking-activities' ),
+		'{booking_end}'			=> esc_html__( 'Booking end date and time displayed in a user-friendly format. For booking groups, the last event end date and time is used.', 'booking-activities' ),
+		'{booking_list}'		=> esc_html__( 'Booking summary displayed as a booking list. You should use this tag once in every notification to know what booking (group) it is about.', 'booking-activities' ),
+		'{booking_list_raw}'	=> esc_html__( 'Booking summary displayed as a comma separated booking list, without HTML formatting.', 'booking-activities' ),
+		'{user_firstname}'		=> esc_html__( 'The user first name', 'booking-activities' ),
+		'{user_lastname}'		=> esc_html__( 'The user last name', 'booking-activities' ),
+		'{user_email}'			=> esc_html__( 'The user email address', 'booking-activities' ),
+		'{user_phone}'			=> esc_html__( 'The user phone number', 'booking-activities' ),
+		'{user_id}'				=> esc_html__( 'The user ID. If the user has booked without account, this will display his email address.', 'booking-activities' ),
+		'{user_ical_url}'		=> esc_html__( 'URL to export the user list of bookings in ical format. If the user doesn\'t have an account, only the current booking is exported.', 'booking-activities' ),
+		'{user_ical_key}'		=> esc_html__( 'User ical export secret key. Useful to create a custom ical export URL.', 'booking-activities' )
 	);
 	
 	if( substr( $notification_id, 0, 6 ) === 'admin_' ) {
-		$tags[ '{booking_admin_url}' ]	= esc_html__( 'URL to the booking admin panel. Use this tag only on notifications sent to administrators.', BOOKACTI_PLUGIN_NAME );
+		$tags[ '{booking_admin_url}' ]	= esc_html__( 'URL to the booking admin panel. Use this tag only on notifications sent to administrators.', 'booking-activities' );
 	}
 	
 	if( $notification_id === 'admin_rescheduled_booking' || $notification_id === 'customer_rescheduled_booking' ) {
-		$tags[ '{booking_old_start}' ]	= esc_html__( 'Booking start date and time before reschedule. Displayed in a user-friendly format.', BOOKACTI_PLUGIN_NAME );
-		$tags[ '{booking_old_end}' ]	= esc_html__( 'Booking end date and time before reschedule. Displayed in a user-friendly format.', BOOKACTI_PLUGIN_NAME );
+		$tags[ '{booking_old_start}' ]	= esc_html__( 'Booking start date and time before reschedule. Displayed in a user-friendly format.', 'booking-activities' );
+		$tags[ '{booking_old_end}' ]	= esc_html__( 'Booking end date and time before reschedule. Displayed in a user-friendly format.', 'booking-activities' );
 	}
 	
 	return apply_filters( 'bookacti_notifications_tags', $tags, $notification_id );

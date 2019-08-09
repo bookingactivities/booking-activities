@@ -54,20 +54,20 @@ if( ! class_exists( 'Bookings_List_Table' ) ) {
 			// SET THE COLUMNS
 			$columns = array(
 				'cb'			=> '<input type="checkbox" />',
-				'id'			=> _x( 'id', 'An id is a unique identification number', BOOKACTI_PLUGIN_NAME ),
-				'customer'		=> __( 'Customer', BOOKACTI_PLUGIN_NAME ),
-				'email'			=> __( 'Email', BOOKACTI_PLUGIN_NAME ),
-				'phone'			=> __( 'Phone', BOOKACTI_PLUGIN_NAME ),
-				'state'			=> _x( 'Status', 'Booking status', BOOKACTI_PLUGIN_NAME ),
-				'payment_status'=> _x( 'Paid', 'Payment status column name', BOOKACTI_PLUGIN_NAME ),
-				'quantity'		=> _x( 'Qty', 'Short for "Quantity"', BOOKACTI_PLUGIN_NAME ),
-				'event_title'	=> __( 'Title', BOOKACTI_PLUGIN_NAME ),
-				'start_date'	=> __( 'Start', BOOKACTI_PLUGIN_NAME ),
-				'end_date'		=> __( 'End', BOOKACTI_PLUGIN_NAME ),
-				'template_title'=> __( 'Calendar', BOOKACTI_PLUGIN_NAME ),
-				'activity_title'=> __( 'Activity', BOOKACTI_PLUGIN_NAME ),
-				'creation_date'	=> __( 'Date', BOOKACTI_PLUGIN_NAME ),
-				'actions'		=> __( 'Actions', BOOKACTI_PLUGIN_NAME )
+				'id'			=> _x( 'id', 'An id is a unique identification number', 'booking-activities' ),
+				'customer'		=> __( 'Customer', 'booking-activities' ),
+				'email'			=> __( 'Email', 'booking-activities' ),
+				'phone'			=> __( 'Phone', 'booking-activities' ),
+				'state'			=> _x( 'Status', 'Booking status', 'booking-activities' ),
+				'payment_status'=> _x( 'Paid', 'Payment status column name', 'booking-activities' ),
+				'quantity'		=> _x( 'Qty', 'Short for "Quantity"', 'booking-activities' ),
+				'event_title'	=> __( 'Title', 'booking-activities' ),
+				'start_date'	=> __( 'Start', 'booking-activities' ),
+				'end_date'		=> __( 'End', 'booking-activities' ),
+				'template_title'=> __( 'Calendar', 'booking-activities' ),
+				'activity_title'=> __( 'Activity', 'booking-activities' ),
+				'creation_date'	=> __( 'Date', 'booking-activities' ),
+				'actions'		=> __( 'Actions', 'booking-activities' )
 			);
 
 			/**
@@ -237,7 +237,7 @@ if( ! class_exists( 'Bookings_List_Table' ) ) {
 		
 		/**
 		 * Get booking list items. Parameters can be passed in the URL.
-		 * @version 1.7.7
+		 * @version 1.7.8
 		 * @access public
 		 * @return array
 		 */
@@ -303,7 +303,7 @@ if( ! class_exists( 'Bookings_List_Table' ) ) {
 					
 					$raw_id			= $group->id;
 					$tr_class		= 'bookacti-booking-group';
-					$id				= $group->id . '<span class="bookacti-booking-group-indicator">' . esc_html_x( 'Group', 'noun', BOOKACTI_PLUGIN_NAME ) . '</span>';
+					$id				= $group->id . '<span class="bookacti-booking-group-indicator">' . esc_html_x( 'Group', 'noun', 'booking-activities' ) . '</span>';
 					$user_id		= $group->user_id;
 					$state			= bookacti_format_booking_state( $group->state, true );
 					$paid			= bookacti_format_payment_status( $group->payment_status, true );
@@ -373,14 +373,14 @@ if( ! class_exists( 'Bookings_List_Table' ) ) {
 				// Any other cases
 				} else {
 					$user		= null;
-					$customer	= esc_html( __( 'Unknown user', BOOKACTI_PLUGIN_NAME ) . ' (' . $user_id . ')' );
+					$customer	= esc_html( __( 'Unknown user', 'booking-activities' ) . ' (' . $user_id . ')' );
 					$email		= '';
 					$phone		= '';
 				}
 				
 				// Add info on the primary column to make them directly visible in responsive view
 				$primary_data = array( 
-					'<span class="bookacti-column-id" >(' . esc_html_x( 'id', 'An id is a unique identification number', BOOKACTI_PLUGIN_NAME ) . ': ' . $id . ')</span>', 
+					'<span class="bookacti-column-id" >(' . esc_html_x( 'id', 'An id is a unique identification number', 'booking-activities' ) . ': ' . $id . ')</span>', 
 					$state, 
 					$paid, 
 					'<span class="bookacti-column-quantity" >' . $quantity_separator . $quantity . '</span>',
@@ -414,7 +414,7 @@ if( ! class_exists( 'Bookings_List_Table' ) ) {
 					'end_date'		=> bookacti_format_datetime( $end, $datetime_format ),
 					'template_title'=> apply_filters( 'bookacti_translate_text', $booking->template_title ),
 					'activity_title'=> apply_filters( 'bookacti_translate_text', $activity_title ),
-					/* translators: Datetime format. Must be adapted to each country. Use wp date_i18n documentation to find the appropriated combinaison https://codex.wordpress.org/Formatting_Date_and_Time */
+					/* translators: Datetime format. Must be adapted to each country. Use wp date_i18n documentation to find the appropriated combinaison https://wordpress.org/support/article/formatting-date-and-time/ */
 					'creation_date'	=> bookacti_format_datetime( $booking->creation_date, __( 'F d, Y', BOOKACTI_PLUGIN_NAME ) ),
 					'actions'		=> $actions,
 					'refund_actions'=> array(),
@@ -536,7 +536,7 @@ if( ! class_exists( 'Bookings_List_Table' ) ) {
 			if ( $this->has_items() ) {
 				return $this->get_rows();
 			} else {
-				return '<tr class="no-items"><td class="colspanchange" colspan="' . esc_attr( $this->get_column_count() ) . '">' . esc_html__( 'No items found.', BOOKACTI_PLUGIN_NAME ) . '</td></tr>';
+				return '<tr class="no-items"><td class="colspanchange" colspan="' . esc_attr( $this->get_column_count() ) . '">' . esc_html__( 'No items found.', 'booking-activities' ) . '</td></tr>';
 			}
 		}
 		
@@ -722,7 +722,7 @@ if( ! class_exists( 'Bookings_List_Table' ) ) {
 		 */
 		protected function get_bulk_actions() {
 			return apply_filters( 'bookacti_booking_list_bulk_actions', array(
-				'export' => esc_html_x( 'Export', 'action', BOOKACTI_PLUGIN_NAME )
+				'export' => esc_html_x( 'Export', 'action', 'booking-activities' )
 			) );
 		}
 		

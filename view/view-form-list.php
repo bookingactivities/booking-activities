@@ -9,14 +9,14 @@
 if ( ! defined( 'ABSPATH' ) ) { exit; }
 ?>
 <div class='wrap'>
-	<h1 class='wp-heading-inline'><?php echo esc_html__( 'Booking Forms', BOOKACTI_PLUGIN_NAME ); ?></h1>
+	<h1 class='wp-heading-inline'><?php echo esc_html__( 'Booking Forms', 'booking-activities' ); ?></h1>
 	
 	<?php 
 	$can_create_form = current_user_can( 'bookacti_create_forms' );
 	if( $can_create_form ) { 
 		?>
 		<a href='<?php echo esc_url( get_admin_url() . 'admin.php?page=bookacti_forms&action=new' ); ?>' class='page-title-action' >
-			<?php echo esc_html_x( 'Add New', 'form', BOOKACTI_PLUGIN_NAME ); ?>
+			<?php echo esc_html_x( 'Add New', 'form', 'booking-activities' ); ?>
 		</a>
 		<?php
 	}

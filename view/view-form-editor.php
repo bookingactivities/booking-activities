@@ -19,7 +19,7 @@ if( ! $form_id ) { exit; }
 // Exit if not allowed to edit current form
 $can_manage_form	= bookacti_user_can_manage_form( $form_id );
 $can_edit_form		= current_user_can( 'bookacti_edit_forms' );
-if ( ! $can_edit_form || ! $can_manage_form ) { echo __( 'You are not allowed to do that.', BOOKACTI_PLUGIN_NAME ); exit; }
+if ( ! $can_edit_form || ! $can_manage_form ) { echo __( 'You are not allowed to do that.', 'booking-activities' ); exit; }
 
 
 // Get form data by id
@@ -29,7 +29,7 @@ if( ! $form ) { exit; }
 
 ?>
 <div class='wrap'>
-	<h1 class='wp-heading-inline'><?php esc_html_e( 'Edit Booking Form', BOOKACTI_PLUGIN_NAME ); ?></h1>
+	<h1 class='wp-heading-inline'><?php esc_html_e( 'Edit Booking Form', 'booking-activities' ); ?></h1>
 	<?php do_action( 'bookacti_form_editor_page_header' ); ?>
 	<hr class='wp-header-end' />
 	
@@ -40,8 +40,8 @@ if( ! $form ) { exit; }
 		<div class='notice notice-success is-dismissible bookacti-form-notice' >
 			<p>
 			<?php 
-				if( $_REQUEST[ 'notice' ] === 'published' ) { _e( 'The booking form is published.', BOOKACTI_PLUGIN_NAME ); }
-				else if( $_REQUEST[ 'notice' ] === 'updated' ) { _e( 'The booking form has been updated.', BOOKACTI_PLUGIN_NAME ); } 
+				if( $_REQUEST[ 'notice' ] === 'published' ) { _e( 'The booking form is published.', 'booking-activities' ); }
+				else if( $_REQUEST[ 'notice' ] === 'updated' ) { _e( 'The booking form has been updated.', 'booking-activities' ); } 
 			?>
 			</p>
 		</div>
@@ -51,7 +51,7 @@ if( ! $form ) { exit; }
 	?>
 		<div class='notice notice-warning is-dismissible bookacti-form-notice' >
 			<p>
-			<?php esc_attr_e( 'This booking form is not published yet. You need to publish it to make it available and permanent.', BOOKACTI_PLUGIN_NAME ); ?>
+			<?php esc_attr_e( 'This booking form is not published yet. You need to publish it to make it available and permanent.', 'booking-activities' ); ?>
 			</p>
 		</div>
 	<?php
@@ -81,7 +81,7 @@ if( ! $form ) { exit; }
 					<div id='post-body-content'>
 						<div id='titlediv'>
 							<div id='titlewrap'>
-								<?php $title_placeholder = __( 'Enter form title here', BOOKACTI_PLUGIN_NAME ); ?>
+								<?php $title_placeholder = __( 'Enter form title here', 'booking-activities' ); ?>
 								<label class='screen-reader-text' id='title-prompt-text' for='title'><?php echo $title_placeholder; ?></label>
 								<input type='text' name='form_title' size='30' value='<?php echo esc_attr( $form[ 'title' ] ); ?>' id='title' spellcheck='true' autocomplete='off' placeholder='<?php echo $title_placeholder; ?>' required />
 							</div>
@@ -93,7 +93,7 @@ if( ! $form ) { exit; }
 							$error_message = '';
 							// Check if the form is published
 							if( empty( $form_id ) || ! is_numeric( $form_id ) ) {
-								$error_message = esc_html__( 'Please set a title and publish your form first.', BOOKACTI_PLUGIN_NAME );
+								$error_message = esc_html__( 'Please set a title and publish your form first.', 'booking-activities' );
 							
 							// Check if the user has available calendars
 							} else {
@@ -102,7 +102,7 @@ if( ! $form ) { exit; }
 								if( ! $templates ) {
 									$editor_path	= 'admin.php?page=bookacti_calendars';
 									$editor_url		= admin_url( $editor_path );
-									$error_message	= sprintf( esc_html__( 'Welcome! It seems you don\'t have any calendar yet. Go to %1$sCalendar Editor%2$s to create your first calendar.', BOOKACTI_PLUGIN_NAME ),
+									$error_message	= sprintf( esc_html__( 'Welcome! It seems you don\'t have any calendar yet. Go to %1$sCalendar Editor%2$s to create your first calendar.', 'booking-activities' ),
 														'<a href="' . esc_url( $editor_url ) . '" >', 
 														'</a>' 
 													);
@@ -137,12 +137,12 @@ if( ! $form ) { exit; }
 								<div id='bookacti-form-editor-container' >
 									<div id='bookacti-form-editor-header' >
 										<div id='bookacti-form-editor-title' >
-											<h2><?php _e( 'Form editor', BOOKACTI_PLUGIN_NAME ) ?></h2>
+											<h2><?php _e( 'Form editor', 'booking-activities' ) ?></h2>
 										</div>
 										<div id='bookacti-form-editor-actions' >
 											<?php do_action( 'bookacti_form_editor_actions_before', $form ); ?>
-											<div id='bookacti-update-form-meta' class='bookacti-form-editor-action dashicons dashicons-admin-generic' title='<?php _e( 'Change form settings', BOOKACTI_PLUGIN_NAME ); ?>'></div>
-											<div id='bookacti-insert-form-field' class='bookacti-form-editor-action dashicons dashicons-plus-alt' title='<?php _e( 'Add a new field to your form', BOOKACTI_PLUGIN_NAME ); ?>'></div>
+											<div id='bookacti-update-form-meta' class='bookacti-form-editor-action dashicons dashicons-admin-generic' title='<?php _e( 'Change form settings', 'booking-activities' ); ?>'></div>
+											<div id='bookacti-insert-form-field' class='bookacti-form-editor-action dashicons dashicons-plus-alt' title='<?php _e( 'Add a new field to your form', 'booking-activities' ); ?>'></div>
 											<?php do_action( 'bookacti_form_editor_actions_after', $form ); ?>
 										</div>
 									</div>
@@ -150,7 +150,7 @@ if( ! $form ) { exit; }
 										<p>
 										<?php 
 											/* translators: the placeholders are icons related to the action */
-											echo sprintf( __( 'Click on %1$s to add, %2$s to edit, %3$s to remove and %4$s to preview your form fields.<br/>Drag and drop fields to switch their positions.', BOOKACTI_PLUGIN_NAME ),
+											echo sprintf( __( 'Click on %1$s to add, %2$s to edit, %3$s to remove and %4$s to preview your form fields.<br/>Drag and drop fields to switch their positions.', 'booking-activities' ),
 												'<span class="dashicons dashicons-plus-alt"></span>',
 												'<span class="dashicons dashicons-admin-generic"></span>',
 												'<span class="dashicons dashicons-trash"></span>',
@@ -161,9 +161,9 @@ if( ! $form ) { exit; }
 									</div>
 									<div id='bookacti-fatal-error' class='bookacti-notices' style='display:none;'>
 										<ul class='bookacti-error-list'>
-											<li><strong><?php esc_html_e( 'A fatal error occurred. Please try to refresh the page. If the error persists, contact the support.', BOOKACTI_PLUGIN_NAME ); ?></strong>
-											<li><em><?php esc_html_e( 'Advanced users, you can stop loading and free the fields to try to solve your problem:', BOOKACTI_PLUGIN_NAME ); ?></em>
-												<input type='button' id='bookacti-exit-loading' value='<?php esc_attr_e( 'Stop loading and free fields', BOOKACTI_PLUGIN_NAME ) ?>' />
+											<li><strong><?php esc_html_e( 'A fatal error occurred. Please try to refresh the page. If the error persists, contact the support.', 'booking-activities' ); ?></strong>
+											<li><em><?php esc_html_e( 'Advanced users, you can stop loading and free the fields to try to solve your problem:', 'booking-activities' ); ?></em>
+												<input type='button' id='bookacti-exit-loading' value='<?php esc_attr_e( 'Stop loading and free fields', 'booking-activities' ) ?>' />
 										</ul>
 									</div>
 									<div id='bookacti-form-editor' >
@@ -189,25 +189,25 @@ if( ! $form ) { exit; }
 												<p>
 												<?php 
 													/* translators: %1$s is the placeholder for Advanced Forms add-on link */
-													echo sprintf( esc_html__( 'Add any custom fields to your booking form thanks to the %1$s add-on:', BOOKACTI_PLUGIN_NAME ), $addon_link ); 
+													echo sprintf( esc_html__( 'Add any custom fields to your booking form thanks to the %1$s add-on:', 'booking-activities' ), $addon_link ); 
 												?>
 												</p>
 												<div id='bookacti-form-editor-promo-field-height' class='bookacti-form-editor-field bookacti-form-editor-promo-field'>
 													<div class='bookacti-form-editor-field-header' >
 														<div class='bookacti-form-editor-field-title' >
-															<h3><?php echo esc_html__( 'Example:', BOOKACTI_PLUGIN_NAME ) . ' ' . esc_html__( 'Height', BOOKACTI_PLUGIN_NAME ); ?></h3>
+															<h3><?php echo esc_html__( 'Example:', 'booking-activities' ) . ' ' . esc_html__( 'Height', 'booking-activities' ); ?></h3>
 														</div>
 														<div class='bookacti-form-editor-field-actions' >
-															<div class='bookacti-field-toggle dashicons dashicons-arrow-down' title='<?php esc_attr_e( 'Show / Hide', BOOKACTI_PLUGIN_NAME ); ?>'></div>
+															<div class='bookacti-field-toggle dashicons dashicons-arrow-down' title='<?php esc_attr_e( 'Show / Hide', 'booking-activities' ); ?>'></div>
 														</div>
 													</div>
 													<div class='bookacti-form-editor-field-body' style='display:none;'>
 														<div>
 															<div class='bookacti-form-field-label' >
-																<label><?php esc_html_e( 'Your height:', BOOKACTI_PLUGIN_NAME ); ?></label>
+																<label><?php esc_html_e( 'Your height:', 'booking-activities' ); ?></label>
 																<?php 
 																	/* translators: %1$s is the placeholder for Advanced Forms add-on link */
-																	$tip = sprintf( esc_html__( 'In this example, a number field has been added to the form in order to ask the customer\'s height. Thanks to the %1$s add-on, you can add any kind of field and ask any information to your customers.', BOOKACTI_PLUGIN_NAME ), $addon_link );
+																	$tip = sprintf( esc_html__( 'In this example, a number field has been added to the form in order to ask the customer\'s height. Thanks to the %1$s add-on, you can add any kind of field and ask any information to your customers.', 'booking-activities' ), $addon_link );
 																	bookacti_help_tip( $tip ); 
 																?>
 															</div>
@@ -220,7 +220,7 @@ if( ! $form ) { exit; }
 																	);
 																	bookacti_display_field( $args );
 																?>
-																<span><?php echo esc_html_x( 'cm', 'short for centimeters', BOOKACTI_PLUGIN_NAME ); ?></span>
+																<span><?php echo esc_html_x( 'cm', 'short for centimeters', 'booking-activities' ); ?></span>
 															</div>
 														</div>
 													</div>
@@ -228,18 +228,18 @@ if( ! $form ) { exit; }
 												<div id='bookacti-form-editor-promo-field-file' class='bookacti-form-editor-field bookacti-form-editor-promo-field'>
 													<div class='bookacti-form-editor-field-header' >
 														<div class='bookacti-form-editor-field-title' >
-															<h3><?php echo esc_html__( 'Example:', BOOKACTI_PLUGIN_NAME ) . ' ' . esc_html__( 'Document(s)', BOOKACTI_PLUGIN_NAME ); ?></h3>
+															<h3><?php echo esc_html__( 'Example:', 'booking-activities' ) . ' ' . esc_html__( 'Document(s)', 'booking-activities' ); ?></h3>
 														</div>
 														<div class='bookacti-form-editor-field-actions' >
-															<div class='bookacti-field-toggle dashicons dashicons-arrow-down' title='<?php esc_attr_e( 'Show / Hide', BOOKACTI_PLUGIN_NAME ); ?>'></div>
+															<div class='bookacti-field-toggle dashicons dashicons-arrow-down' title='<?php esc_attr_e( 'Show / Hide', 'booking-activities' ); ?>'></div>
 														</div>
 													</div>
 													<div class='bookacti-form-editor-field-body' style='display:none;'>
 														<div>
 															<div class='bookacti-form-field-label' >
-																<label><?php esc_html_e( 'Any document(s):', BOOKACTI_PLUGIN_NAME ); ?></label>
+																<label><?php esc_html_e( 'Any document(s):', 'booking-activities' ); ?></label>
 																<?php 
-																	$tip = esc_html__( 'You can even ask your customers for digital files.', BOOKACTI_PLUGIN_NAME );
+																	$tip = esc_html__( 'You can even ask your customers for digital files.', 'booking-activities' );
 																	bookacti_help_tip( $tip ); 
 																?>
 															</div>
@@ -259,18 +259,18 @@ if( ! $form ) { exit; }
 												<div id='bookacti-form-editor-promo-field-participants' class='bookacti-form-editor-field bookacti-form-editor-promo-field'>
 													<div class='bookacti-form-editor-field-header' >
 														<div class='bookacti-form-editor-field-title' >
-															<h3><?php echo esc_html__( 'Example:', BOOKACTI_PLUGIN_NAME ) . ' ' . esc_html__( 'Fields for each participants', BOOKACTI_PLUGIN_NAME ); ?></h3>
+															<h3><?php echo esc_html__( 'Example:', 'booking-activities' ) . ' ' . esc_html__( 'Fields for each participants', 'booking-activities' ); ?></h3>
 														</div>
 														<div class='bookacti-form-editor-field-actions' >
-															<div class='bookacti-field-toggle dashicons dashicons-arrow-down' title='<?php esc_attr_e( 'Show / Hide', BOOKACTI_PLUGIN_NAME ); ?>'></div>
+															<div class='bookacti-field-toggle dashicons dashicons-arrow-down' title='<?php esc_attr_e( 'Show / Hide', 'booking-activities' ); ?>'></div>
 														</div>
 													</div>
 													<div class='bookacti-form-editor-field-body' style='display:none;'>
 														<fieldset style='border: 1px solid #bbb;margin-bottom:20px;padding:10px;'>
-															<legend style='margin:auto;padding:0 10px;font-weight:bold;'><?php esc_html_e( 'Participant #1', BOOKACTI_PLUGIN_NAME ); ?></legend>
+															<legend style='margin:auto;padding:0 10px;font-weight:bold;'><?php esc_html_e( 'Participant #1', 'booking-activities' ); ?></legend>
 															<div>
 																<div class='bookacti-form-field-label' >
-																	<label><?php esc_html_e( 'Your height:', BOOKACTI_PLUGIN_NAME ); ?></label>
+																	<label><?php esc_html_e( 'Your height:', 'booking-activities' ); ?></label>
 																</div>
 																<div class='bookacti-form-field-content' >
 																	<?php
@@ -281,12 +281,12 @@ if( ! $form ) { exit; }
 																		);
 																		bookacti_display_field( $args );
 																	?>
-																	<span><?php echo esc_html_x( 'cm', 'short for centimeters', BOOKACTI_PLUGIN_NAME ); ?></span>
+																	<span><?php echo esc_html_x( 'cm', 'short for centimeters', 'booking-activities' ); ?></span>
 																</div>
 															</div>
 															<div>
 																<div class='bookacti-form-field-label' >
-																	<label><?php esc_html_e( 'Any document(s):', BOOKACTI_PLUGIN_NAME ); ?></label>
+																	<label><?php esc_html_e( 'Any document(s):', 'booking-activities' ); ?></label>
 																</div>
 																<div class='bookacti-form-field-content' >
 																	<?php
@@ -301,7 +301,7 @@ if( ! $form ) { exit; }
 															</div>
 															<div>
 																<div class='bookacti-form-field-label' >
-																	<label><?php esc_html_e( 'Any other field:', BOOKACTI_PLUGIN_NAME ); ?></label>
+																	<label><?php esc_html_e( 'Any other field:', 'booking-activities' ); ?></label>
 																</div>
 																<div class='bookacti-form-field-content' >
 																	<?php
@@ -309,8 +309,8 @@ if( ! $form ) { exit; }
 																			'type'		=> 'select',
 																			'name'		=> 'promo_select1',
 																			'options'	=> array( 
-																				'value1' => esc_html__( 'Any value', BOOKACTI_PLUGIN_NAME ),
-																				'value2' => esc_html__( 'Fully customizable', BOOKACTI_PLUGIN_NAME ),
+																				'value1' => esc_html__( 'Any value', 'booking-activities' ),
+																				'value2' => esc_html__( 'Fully customizable', 'booking-activities' ),
 																				'value3' => '...'
 																			)
 																		);
@@ -321,10 +321,10 @@ if( ! $form ) { exit; }
 															<div><span>...</span></div>
 														</fieldset>
 														<fieldset style='border: 1px solid #bbb;margin-bottom:20px;padding:10px;'>
-															<legend style='margin:auto;padding:0 10px;font-weight:bold;'><?php esc_html_e( 'Participant #2', BOOKACTI_PLUGIN_NAME ); ?></legend>
+															<legend style='margin:auto;padding:0 10px;font-weight:bold;'><?php esc_html_e( 'Participant #2', 'booking-activities' ); ?></legend>
 															<div>
 																<div class='bookacti-form-field-label' >
-																	<label><?php /* translators: asking a human for his height */ esc_html_e( 'Your height:', BOOKACTI_PLUGIN_NAME ); ?></label>
+																	<label><?php /* translators: asking a human for his height */ esc_html_e( 'Your height:', 'booking-activities' ); ?></label>
 																</div>
 																<div class='bookacti-form-field-content' >
 																	<?php
@@ -335,12 +335,12 @@ if( ! $form ) { exit; }
 																		);
 																		bookacti_display_field( $args );
 																	?>
-																	<span><?php echo esc_html_x( 'cm', 'short for centimeters', BOOKACTI_PLUGIN_NAME ); ?></span>
+																	<span><?php echo esc_html_x( 'cm', 'short for centimeters', 'booking-activities' ); ?></span>
 																</div>
 															</div>
 															<div>
 																<div class='bookacti-form-field-label' >
-																	<label><?php esc_html_e( 'Any document(s):', BOOKACTI_PLUGIN_NAME ); ?></label>
+																	<label><?php esc_html_e( 'Any document(s):', 'booking-activities' ); ?></label>
 																</div>
 																<div class='bookacti-form-field-content' >
 																	<?php
@@ -355,7 +355,7 @@ if( ! $form ) { exit; }
 															</div>
 															<div>
 																<div class='bookacti-form-field-label' >
-																	<label><?php esc_html_e( 'Any other field:', BOOKACTI_PLUGIN_NAME ); ?></label>
+																	<label><?php esc_html_e( 'Any other field:', 'booking-activities' ); ?></label>
 																</div>
 																<div class='bookacti-form-field-content' >
 																	<?php
@@ -363,8 +363,8 @@ if( ! $form ) { exit; }
 																			'type'		=> 'select',
 																			'name'		=> 'promo_select2',
 																			'options'	=> array( 
-																				'value1' => esc_html__( 'Any value', BOOKACTI_PLUGIN_NAME ),
-																				'value2' => esc_html__( 'Fully customizable', BOOKACTI_PLUGIN_NAME ),
+																				'value1' => esc_html__( 'Any value', 'booking-activities' ),
+																				'value2' => esc_html__( 'Fully customizable', 'booking-activities' ),
 																				'value3' => '...'
 																			)
 																		);
@@ -376,12 +376,12 @@ if( ! $form ) { exit; }
 														</fieldset>
 														<div>
 															<?php
-																esc_html_e( 'You can request data from each participant. The number of participants is proportional to the quantity reserved.', BOOKACTI_PLUGIN_NAME );
+																esc_html_e( 'You can request data from each participant. The number of participants is proportional to the quantity reserved.', 'booking-activities' );
 															?>
 														</div>
 													</div>
 												</div>
-												<div style='text-align:center;'><a href='https://booking-activities.fr/en/downloads/advanced-forms/?utm_source=plugin&utm_medium=plugin&utm_campaign=advanced-forms&utm_content=form-editor-fields' class='button' target='_blank' ><?php esc_html_e( 'Learn more', BOOKACTI_PLUGIN_NAME ); ?></a></div>
+												<div style='text-align:center;'><a href='https://booking-activities.fr/en/downloads/advanced-forms/?utm_source=plugin&utm_medium=plugin&utm_campaign=advanced-forms&utm_content=form-editor-fields' class='button' target='_blank' ><?php esc_html_e( 'Learn more', 'booking-activities' ); ?></a></div>
 											</div>
 											<?php
 										} // END OF ADVANCED FORMS ADD-ON PROMO

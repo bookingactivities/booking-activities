@@ -106,17 +106,17 @@ function bookacti_add_admin_refunded_booking_notification( $notifications ) {
 		$notifications[ 'admin_refunded_booking' ] = array(
 			'id'			=> 'admin_refunded_booking',
 			'active'		=> 1,
-			'title'			=> __( 'Customer has been refunded', BOOKACTI_PLUGIN_NAME ),
-			'description'	=> __( 'This notification is sent to the administrator when a customer is successfully reimbursed for a booking.', BOOKACTI_PLUGIN_NAME ),
+			'title'			=> __( 'Customer has been refunded', 'booking-activities' ),
+			'description'	=> __( 'This notification is sent to the administrator when a customer is successfully reimbursed for a booking.', 'booking-activities' ),
 			'email'			=> array(
 				'active'	=> 1,
 				'to'		=> array( get_bloginfo( 'admin_email' ) ),
-				'subject'	=> __( 'Booking refunded', BOOKACTI_PLUGIN_NAME ),
+				'subject'	=> __( 'Booking refunded', 'booking-activities' ),
 				/* translators: Keep tags as is (this is a tag: {tag}), they will be replaced in code. This is the default email an administrator receive when a booking is refunded */
 				'message'	=> __( '<p>A customer has been reimbursed for this booking:</p>
 									<p>{booking_list}</p>
 									<p>Customer info: {user_firstname} {user_lastname} ({user_email})</p>
-									<p><a href="{booking_admin_url}">Click here</a> to edit this booking (ID: {booking_id}).</p>', BOOKACTI_PLUGIN_NAME ) )
+									<p><a href="{booking_admin_url}">Click here</a> to edit this booking (ID: {booking_id}).</p>', 'booking-activities' ) )
 		);
 	}
 	
@@ -220,10 +220,10 @@ add_filter( 'woocommerce_email_order_items_args', 'bookacti_wc_email_order_item_
  * @return array
  */
 function bookacti_wc_notifications_tags( $tags, $notification_id ) {
-	$tags[ '{price}' ] = esc_html__( 'Booking price, with currency.', BOOKACTI_PLUGIN_NAME );
+	$tags[ '{price}' ] = esc_html__( 'Booking price, with currency.', 'booking-activities' );
 	
 	if( strpos( $notification_id, 'refund' ) !== false ) {
-		$tags[ '{refund_coupon_code}' ] = esc_html__( 'The WooCommerce coupon code generated when the booking was refunded.', BOOKACTI_PLUGIN_NAME );
+		$tags[ '{refund_coupon_code}' ] = esc_html__( 'The WooCommerce coupon code generated when the booking was refunded.', 'booking-activities' );
 	}
 	
 	return $tags;

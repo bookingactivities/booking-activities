@@ -13,18 +13,18 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		
 		$site_booking_method = bookacti_get_setting_value( 'bookacti_general_settings',	'booking_method' );
 		
-		$translation_array[ 'expired_min' ]						= esc_html__( 'expired', BOOKACTI_PLUGIN_NAME );
-		$translation_array[ 'expired' ]							= esc_html__( 'Expired', BOOKACTI_PLUGIN_NAME );
-		$translation_array[ 'in_cart' ]							= esc_html__( 'In cart', BOOKACTI_PLUGIN_NAME );
-		$translation_array[ 'days' ]							= esc_html__( 'days', BOOKACTI_PLUGIN_NAME );
-		$translation_array[ 'day' ]								= esc_html_x( 'day', 'singular of days',BOOKACTI_PLUGIN_NAME );
-		$translation_array[ 'error_remove_expired_cart_item' ]	= esc_html__(  'Error occurs while trying to remove expired cart item.', BOOKACTI_PLUGIN_NAME );
-		$translation_array[ 'error_cart_expired' ]				= esc_html__( 'Your cart has expired.', BOOKACTI_PLUGIN_NAME );
-		$translation_array[ 'coupon_code' ]						= esc_html__( 'Coupon', BOOKACTI_PLUGIN_NAME );
+		$translation_array[ 'expired_min' ]						= esc_html__( 'expired', 'booking-activities' );
+		$translation_array[ 'expired' ]							= esc_html__( 'Expired', 'booking-activities' );
+		$translation_array[ 'in_cart' ]							= esc_html__( 'In cart', 'booking-activities' );
+		$translation_array[ 'days' ]							= esc_html__( 'days', 'booking-activities' );
+		$translation_array[ 'day' ]								= esc_html_x( 'day', 'singular of days','booking-activities' );
+		$translation_array[ 'error_remove_expired_cart_item' ]	= esc_html__(  'Error occurs while trying to remove expired cart item.', 'booking-activities' );
+		$translation_array[ 'error_cart_expired' ]				= esc_html__( 'Your cart has expired.', 'booking-activities' );
+		$translation_array[ 'coupon_code' ]						= esc_html__( 'Coupon', 'booking-activities' );
 		/* translators: %1$s is the coupon code. Ex: AAB12. */
-		$translation_array[ 'advice_coupon_code' ]				= esc_html__( 'The coupon code is %1$s. Use it on your next cart!', BOOKACTI_PLUGIN_NAME );
+		$translation_array[ 'advice_coupon_code' ]				= esc_html__( 'The coupon code is %1$s. Use it on your next cart!', 'booking-activities' );
 		/* translators: %1$s is the amount of the coupon. Ex: $10. */
-		$translation_array[ 'advice_coupon_created' ]			= esc_html__( 'A %1$s coupon has been created. You can use it once for any order at any time.', BOOKACTI_PLUGIN_NAME );
+		$translation_array[ 'advice_coupon_created' ]			= esc_html__( 'A %1$s coupon has been created. You can use it once for any order at any time.', 'booking-activities' );
 		$translation_array[ 'add_product_to_cart_button_text' ]	= esc_html__( 'Add to cart', 'woocommerce' );
 		$translation_array[ 'add_booking_to_cart_button_text' ]	= bookacti_get_message( 'booking_form_submit_button' );
 		$translation_array[ 'site_booking_method' ]				= $site_booking_method;
@@ -140,7 +140,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	
 	/**
 	 * Add booking forms to single product page (front-end)
-	 * @version 1.7.4
+	 * @version 1.7.8
 	 * @global WC_Product $product
 	 */
 	function bookacti_add_booking_system_in_single_product_page() {
@@ -150,11 +150,8 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		if( ! $is_activity ) { return; }
 		
 		// Check if the product or one of its available variation is bound to a booking form
-		$form_id = 0;
-		if( $product->is_type( 'simple' ) ) {
-			$form_id = bookacti_get_product_form_id( $product->get_id(), false );
-		}
-		else if( $product->is_type( 'variable' ) ) {
+		$form_id = bookacti_get_product_form_id( $product->get_id() );
+		if( $product->is_type( 'variable' ) ) {
 			$variations = $product->get_available_variations();
 			foreach( $variations as $variation ) {
 				if( empty( $variation[ 'bookacti_is_activity' ] ) || empty( $variation[ 'bookacti_form_id' ] ) ) { continue; }
@@ -212,6 +209,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		$form_instance_id		= '';
 		$variation_id			= 0;
 		$default_variation_id	= 0;
+		
 		// Show form on single product page or on variable product with a default value
 		if( $product->is_type( 'simple' ) ) {
 			$form_instance_id = 'product-' . $product->get_id();
@@ -237,26 +235,36 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			}
 		}
 		
-		// If no default variation are selected, or if if it's not an activity, or if doesn't have a form bound
+		$form_atts = apply_filters( 'bookacti_product_form_attributes', array(
+			'id' => $form_instance_id,
+			'data-default-variation-id' => ! empty( $default_variation_id ) ? $default_variation_id : '',
+			'data-variation-id' => ! empty( $variation_id ) ? $variation_id : '',
+			'data-product-id' => $product->get_id(),
+			'data-form-id' => $form_id
+		), $product );
+		
+		// Add compulsory class
+		$form_atts[ 'class' ] = 'bookacti-wc-form-fields' . ( ! empty( $form_atts[ 'class' ] ) ? ' ' . $form_atts[ 'class' ] : '' );
+		
+		// Convert $form_atts array to inline attributes
+		$form_attributes_str = '';
+		foreach( $form_atts as $form_attribute_key => $form_attribute_value ) {
+			if( $form_attribute_value !== '' ) { $form_attributes_str .= $form_attribute_key . '="' . $form_attribute_value . '" '; }
+		}
+		
+		// If no default variation are selected, or if it's not an activity, or if doesn't have a form bound
 		// display an empty form fields container
-		if( ! $form_instance_id ) { 
-			?>
-				<div class='bookacti-wc-form-fields'></div>
-			<?php
+		if( ! $form_atts[ 'id' ] ) { 
+			?><div class='bookacti-wc-form-fields'></div><?php
 			return;
 		}
 		
 		?>
-		<div class='bookacti-wc-form-fields' 
-			 id='<?php echo $form_instance_id; ?>'
-			 data-product-id='<?php echo $product->get_id(); ?>'
-			 data-variation-id='<?php if( ! empty( $variation_id ) ) { echo $variation_id; } ?>'
-			 data-default-variation-id='<?php if( ! empty( $default_variation_id ) ) { echo $default_variation_id; } ?>'
-			 data-form-id='<?php echo $form_id; ?>'>
+		<div <?php echo $form_attributes_str; ?>>
 			<?php 
-				$form_html = bookacti_display_form( $form_id, $form_instance_id, 'wc_product_init', false ); 
+				$form_html = bookacti_display_form( $form_id, $form_atts[ 'id' ], 'wc_product_init', false ); 
 				echo $form_html;
-				if( empty( $default_variation_id ) && ! empty( $variation_id ) ) {
+				if( empty( $form_atts[ 'data-default-variation-id' ] ) && ! empty( $form_atts[ 'data-variation-id' ] ) ) {
 				?>
 					<script>
 						if( typeof bookacti.form_fields === 'undefined' ) { bookacti.form_fields = []; }
@@ -502,7 +510,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 				&& (empty( $_POST[ 'bookacti_event_id' ] )
 				||	empty( $_POST[ 'bookacti_event_start' ] ) 
 				||	empty( $_POST[ 'bookacti_event_end' ] ) ) ) ) {
-			wc_add_notice(  __( 'You haven\'t picked any event. Please pick an event first.', BOOKACTI_PLUGIN_NAME ), 'error' ); 
+			wc_add_notice(  __( 'You haven\'t picked any event. Please pick an event first.', 'booking-activities' ), 'error' ); 
 			return false;
 		}
 
@@ -1027,7 +1035,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			$message = sprintf( _n(	'%d product has expired and has been automatically removed from cart.', 
 									'%d products have expired and have been automatically removed from cart.', 
 									$nb_deleted_cart_item, 
-									BOOKACTI_PLUGIN_NAME ), $nb_deleted_cart_item );
+									'booking-activities' ), $nb_deleted_cart_item );
 
 			// display feedback
 			wc_add_notice( $message, 'error' );
@@ -1111,7 +1119,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		// If the product is not "in_cart", it means that the order in already in process (maybe waiting for payment)
 		if( ! $is_in_cart ) {
 			$new_quantity = $old_quantity;
-			wc_add_notice( __( "You can't update quantity since this product is temporarily booked on an order pending payment. Please, first cancel the order or remove this product from cart.", BOOKACTI_PLUGIN_NAME ), 'error' );
+			wc_add_notice( __( "You can't update quantity since this product is temporarily booked on an order pending payment. Please, first cancel the order or remove this product from cart.", 'booking-activities' ), 'error' );
 		}
 		
 		return $new_quantity;
@@ -1262,7 +1270,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 				$events_list = bookacti_get_formatted_booking_events_list( $events );
 				
 				$item_data[] = array( 
-					'key' => _n( 'Booked event', 'Booked events', count( $events ), BOOKACTI_PLUGIN_NAME ), 
+					'key' => _n( 'Booked event', 'Booked events', count( $events ), 'booking-activities' ), 
 					'value' => $events_list );
 			}
 		}
@@ -1282,18 +1290,18 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	function bookacti_define_label_of_item_data( $label, $name ) {
 		
 		if( $label === '_bookacti_booking_id' 
-		||  $label === 'bookacti_booking_id' )			{ $label = __( 'Booking number', BOOKACTI_PLUGIN_NAME ); }
+		||  $label === 'bookacti_booking_id' )			{ $label = __( 'Booking number', 'booking-activities' ); }
 		if( $label === '_bookacti_booking_group_id' 
-		||  $label === 'bookacti_booking_group_id' )	{ $label = __( 'Booking group number', BOOKACTI_PLUGIN_NAME ); }
-		if( $label === 'bookacti_booked_events' )		{ $label = __( 'Booked events', BOOKACTI_PLUGIN_NAME ); }
-		if( $label === 'bookacti_state' )				{ $label = __( 'Status', BOOKACTI_PLUGIN_NAME ); }
-		if( $label === '_bookacti_refund_method' )		{ $label = __( 'Refund method', BOOKACTI_PLUGIN_NAME ); }
-		if( $label === 'bookacti_refund_coupon' )		{ $label = __( 'Coupon code', BOOKACTI_PLUGIN_NAME ); }
+		||  $label === 'bookacti_booking_group_id' )	{ $label = __( 'Booking group number', 'booking-activities' ); }
+		if( $label === 'bookacti_booked_events' )		{ $label = __( 'Booked events', 'booking-activities' ); }
+		if( $label === 'bookacti_state' )				{ $label = __( 'Status', 'booking-activities' ); }
+		if( $label === '_bookacti_refund_method' )		{ $label = __( 'Refund method', 'booking-activities' ); }
+		if( $label === 'bookacti_refund_coupon' )		{ $label = __( 'Coupon code', 'booking-activities' ); }
 		
 		// Deprecated data
-		if( $label === '_bookacti_event_id' )			{ $label = __( 'Event ID', BOOKACTI_PLUGIN_NAME ); }
-		if( $label === 'bookacti_event_start' )			{ $label = __( 'Start', BOOKACTI_PLUGIN_NAME ); }
-		if( $label === 'bookacti_event_end' )			{ $label = __( 'End', BOOKACTI_PLUGIN_NAME ); }
+		if( $label === '_bookacti_event_id' )			{ $label = __( 'Event ID', 'booking-activities' ); }
+		if( $label === 'bookacti_event_start' )			{ $label = __( 'Start', 'booking-activities' ); }
+		if( $label === 'bookacti_event_end' )			{ $label = __( 'End', 'booking-activities' ); }
 		
 		return $label;
 	}
@@ -1362,7 +1370,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			// Format event list
 			else if( $meta->key === 'bookacti_booked_events' ) {
 				$events	= json_decode( $meta->value );
-				$meta->display_key = _n( 'Booked event', 'Booked events', count( $events ), BOOKACTI_PLUGIN_NAME );
+				$meta->display_key = _n( 'Booked event', 'Booked events', count( $events ), 'booking-activities' );
 				$meta->display_value = bookacti_get_formatted_booking_events_list( $events );
 			}
 			
@@ -1575,7 +1583,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	 * @return array
 	 */
 	function bookacti_add_woocommerce_price_column_to_user_booking_list( $columns ) {
-		$columns[ 'price' ] = esc_html__( 'Price', BOOKACTI_PLUGIN_NAME );
+		$columns[ 'price' ] = esc_html__( 'Price', 'booking-activities' );
 		return $columns;
 	}
 	add_filter( 'bookacti_user_booking_list_columns_labels', 'bookacti_add_woocommerce_price_column_to_user_booking_list', 10, 1 );
@@ -1649,7 +1657,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 				
 				if( $coupon_code ) {
 					/* translators: %s is the coupon code used for the refund */
-					$coupon_label = sprintf( esc_html__( 'Refunded with coupon %s', BOOKACTI_PLUGIN_NAME ), $coupon_code );
+					$coupon_label = sprintf( esc_html__( 'Refunded with coupon %s', 'booking-activities' ), $coupon_code );
 					$columns_value[ 'status' ] = '<span class="bookacti-booking-state bookacti-booking-state-bad bookacti-booking-state-refunded bookacti-converted-to-coupon bookacti-tip" data-booking-state="refunded">' . $coupon_label . '</span>';
 				}
 			}

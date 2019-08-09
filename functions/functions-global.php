@@ -42,7 +42,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		$return_array = array( 
 			'status'	=> 'failed', 
 			'error'		=> 'invalid_nonce', 
-			'message'	=> esc_html__( 'Invalid nonce.', BOOKACTI_PLUGIN_NAME ) . ' ' . __( 'Please reload the page and try again.', BOOKACTI_PLUGIN_NAME )
+			'message'	=> esc_html__( 'Invalid nonce.', 'booking-activities' ) . ' ' . __( 'Please reload the page and try again.', 'booking-activities' )
 		);
 		bookacti_send_json( $return_array, $action );
 	}
@@ -58,7 +58,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		$return_array = array( 
 			'status'	=> 'failed', 
 			'error'		=> 'not_allowed', 
-			'message'	=> esc_html__( 'You are not allowed to do that.', BOOKACTI_PLUGIN_NAME )
+			'message'	=> esc_html__( 'You are not allowed to do that.', 'booking-activities' )
 		);
 		bookacti_send_json( $return_array, $action );
 	}
@@ -671,7 +671,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		<?php 
 			if( $args[ 'multiple' ] === 'maybe' && count( $args[ 'options' ] ) > 1 ) { ?>
 				<span class='bookacti-multiple-select-container' >
-					<label for='bookacti-multiple-select-<?php echo esc_attr( $args[ 'id' ] ); ?>' ><span class='dashicons dashicons-plus' title='<?php esc_attr_e( 'Multiple selection', BOOKACTI_PLUGIN_NAME ); ?>'></span></label>
+					<label for='bookacti-multiple-select-<?php echo esc_attr( $args[ 'id' ] ); ?>' ><span class='dashicons dashicons-plus' title='<?php esc_attr_e( 'Multiple selection', 'booking-activities' ); ?>'></span></label>
 					<input type='checkbox' 
 						   class='bookacti-multiple-select' 
 						   id='bookacti-multiple-select-<?php echo esc_attr( $args[ 'id' ] ); ?>' 
@@ -682,7 +682,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 				// Add select multiple values instructions
 				if( $args[ 'tip' ] ) {
 					/* translators: %s is the "+" icon to click on. */
-					$args[ 'tip' ] .= '<br/>' . sprintf( esc_html__( 'To select multiple values, click on %s and use CTRL+Click to pick or unpick a value.', BOOKACTI_PLUGIN_NAME ), '<span class="dashicons dashicons-plus"></span>' );
+					$args[ 'tip' ] .= '<br/>' . sprintf( esc_html__( 'To select multiple values, click on %s and use CTRL+Click to pick or unpick a value.', 'booking-activities' ), '<span class="dashicons dashicons-plus"></span>' );
 				}
 			} 
 			if( $args[ 'label' ] ) { ?>
@@ -901,7 +901,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		
 		<input type='hidden' name='<?php echo $args[ 'name' ]; ?>' value='' />
 		<select <?php if( $args[ 'id' ] ) { echo 'id="' . $args[ 'id' ] . '"'; } ?> name='<?php echo $args[ 'name' ]; ?>' class='bookacti-user-selectbox <?php echo $args[ 'class' ]; ?>' >
-			<option value='' ><?php echo esc_html__( 'Search for a customer', BOOKACTI_PLUGIN_NAME ); ?></option>
+			<option value='' ><?php echo esc_html__( 'Search for a customer', 'booking-activities' ); ?></option>
 			<?php
 				if( $args[ 'show_option_all' ] ) {
 					$_selected = selected( 0, $args[ 'selected' ], false );
