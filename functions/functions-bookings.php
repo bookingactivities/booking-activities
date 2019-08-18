@@ -1006,7 +1006,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		/**
 		 * Get an array of bookings data formatted to be exported
 		 * @since 1.6.0
-		 * @version 1.7.8
+		 * @version 1.7.9
 		 * @param array $filters
 		 * @param array $columns
 		 * @return array
@@ -1019,7 +1019,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 					$has_user_data = true; break; 
 				}
 			}
-			$get_user_data = apply_filters( 'bookacti_bookings_export_get_users_data', false, $filters, $columns );
+			$get_user_data = apply_filters( 'bookacti_bookings_export_get_users_data', $has_user_data, $filters, $columns );
 			if( $get_user_data ) { $filters[ 'fetch_meta' ] = true; }
 			
 			$bookings = bookacti_get_bookings( $filters );
@@ -1608,7 +1608,7 @@ function bookacti_get_user_booking_list_default_columns() {
 /**
  * Get booking list items
  * @since 1.7.4
- * @version 1.7.7
+ * @version 1.7.9
  * @param array $filters
  * @param array $columns
  * @return string
@@ -1625,7 +1625,8 @@ function bookacti_get_user_booking_list_items( $filters, $columns = array() ) {
 			$has_user_data = true; break; 
 		}
 	}
-	if( $has_user_data ) { $filters[ 'fetch_meta' ] = true; }
+	$get_user_data = apply_filters( 'bookacti_user_booking_list_get_users_data', $has_user_data, $filters, $columns );
+	if( $get_user_data ) { $filters[ 'fetch_meta' ] = true; }
 	
 	// Get bookings
 	$bookings = bookacti_get_bookings( $filters );
@@ -1661,7 +1662,7 @@ function bookacti_get_user_booking_list_items( $filters, $columns = array() ) {
 
 	// Retrieve information about users and stock them into an array sorted by user id
 	$users = array();
-	if( $has_user_data ) {
+	if( $get_user_data ) {
 		$users = bookacti_get_users_data( array( 'include' => $user_ids ) );
 	}
 	$unknown_user_id = esc_attr( apply_filters( 'bookacti_unknown_user_id', 'unknown_user' ) );

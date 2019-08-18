@@ -877,7 +877,7 @@ function bookacti_get_number_of_booking_rows( $filters ) {
 
 /**
  * Get number of booking of a specific event or a specific occurrence
- * @version 1.7.6
+ * @version 1.7.9
  * @global wpdb $wpdb
  * @param array $filters Use bookacti_format_booking_filters() before
  * @return int
@@ -891,7 +891,8 @@ function bookacti_get_number_of_bookings( $filters ) {
 		$query	= ' SELECT SUM( quantity ) FROM ( '
 					. ' SELECT MAX( B.quantity ) as quantity, IF( B.group_id IS NULL, B.id, CONCAT( "G", B.group_id ) ) as unique_group_id ';
 	} else {
-		$query = ' SELECT SUM( B.quantity ) as quantity ';
+		$query = ' SELECT SUM( quantity ) FROM ( '
+					. ' SELECT SUM( B.quantity ) as quantity ';
 	}
 	
 	$query .= ' FROM ' . BOOKACTI_TABLE_BOOKINGS . ' as B ' 
@@ -913,6 +914,13 @@ function bookacti_get_number_of_bookings( $filters ) {
 	$variables = array();
 	
 	// Do not fetch events out of the desired interval
+	if( $filters[ 'from' ] || $filters[ 'to' ] ) {
+		// Set current datetime
+		$timezone					= new DateTimeZone( bookacti_get_setting_value( 'bookacti_general_settings', 'timezone' ) );
+		$current_datetime_object	= new DateTime( 'now', $timezone );
+		$user_timestamp_offset		= $current_datetime_object->format( 'P' );
+	}
+	
 	if( $filters[ 'from' ] ) {
 		$query .= ' 
 		AND (	UNIX_TIMESTAMP( CONVERT_TZ( B.event_start, %s, @@global.time_zone ) ) >= 
@@ -1183,10 +1191,11 @@ function bookacti_get_number_of_bookings( $filters ) {
 	// Whether to count bookings of the same groups as one item
 	if( $filters[ 'group_by' ] === 'booking_group' ) {
 		$query .= ' GROUP BY unique_group_id ';
-		$query .= ' ) as C '; // Close the first SELECT FROM
 	} else {
 		$query .= ' GROUP BY B.id ';
 	}
+	
+	$query .= ' ) as Q'; // Close the first SELECT FROM
 	
 	$query = $wpdb->prepare( $query, $variables );
 	

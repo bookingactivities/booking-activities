@@ -3,7 +3,7 @@
  * Plugin Name: Booking Activities
  * Plugin URI: https://booking-activities.fr/en/?utm_source=plugin&utm_medium=plugin&utm_content=header
  * Description: Booking system specialized in activities (sports, cultural, leisure, events...). Works great with WooCommerce.
- * Version: 1.7.8
+ * Version: 1.7.9
  * Author: Booking Activities Team
  * Author URI: https://booking-activities.fr/en/?utm_source=plugin&utm_medium=plugin&utm_content=header
  * Text Domain: booking-activities
@@ -40,7 +40,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 
 // GLOBALS AND CONSTANTS
-if( ! defined( 'BOOKACTI_VERSION' ) )		{ define( 'BOOKACTI_VERSION', '1.7.8' ); }
+if( ! defined( 'BOOKACTI_VERSION' ) )		{ define( 'BOOKACTI_VERSION', '1.7.9' ); }
 if( ! defined( 'BOOKACTI_PLUGIN_NAME' ) )	{ define( 'BOOKACTI_PLUGIN_NAME', 'booking-activities' ); }
 
 
@@ -158,7 +158,7 @@ add_action( 'wp_enqueue_scripts',	'bookacti_enqueue_high_priority_global_scripts
 
 /**
  * Enqueue normal priority scripts
- * @version 1.7.3
+ * @version 1.7.9
  * @global array $bookacti_translation_array
  */
 function bookacti_enqueue_global_scripts() {
@@ -167,7 +167,7 @@ function bookacti_enqueue_global_scripts() {
 	
 	// Include WooCommerce style and scripts
 	if( bookacti_is_plugin_active( 'woocommerce/woocommerce.php' ) ) {
-		if( ! is_admin() || bookacti_is_wc_screen( array( 'product', 'shop_order' ) ) ) {
+		if( ! is_admin() || bookacti_is_wc_screen( array( 'product', 'product_variation', 'shop_order' ) ) ) {
 			wp_enqueue_style ( 'bookacti-css-woocommerce',	plugins_url( 'css/woocommerce.min.css', __FILE__ ), array(), BOOKACTI_VERSION );
 		}
 		if( ! is_admin() ) {
@@ -244,7 +244,7 @@ add_action( 'admin_enqueue_scripts','bookacti_enqueue_high_priority_backend_scri
 
 /**
  * Enqueue low priority scripts in backend only
- * @version 1.7.6
+ * @version 1.7.9
  * @global array $bookacti_translation_array
  */
 function bookacti_enqueue_backend_scripts() {
@@ -253,7 +253,7 @@ function bookacti_enqueue_backend_scripts() {
 	
 	// Include WooCommerce scripts
 	if( bookacti_is_plugin_active( 'woocommerce/woocommerce.php' ) ) {
-		if( bookacti_is_wc_screen( array( 'product' ) ) || bookacti_is_booking_activities_screen() ) {
+		if( bookacti_is_wc_screen( array( 'product', 'product_variation' ) ) || bookacti_is_booking_activities_screen() ) {
 			wp_register_script( 'bookacti-js-woocommerce-backend', plugins_url( 'js/woocommerce-backend.min.js', __FILE__ ), array( 'jquery' ), BOOKACTI_VERSION, true );
 			wp_localize_script( 'bookacti-js-woocommerce-backend', 'bookacti_localized', $bookacti_translation_array );
 			wp_enqueue_script ( 'bookacti-js-woocommerce-backend' );
