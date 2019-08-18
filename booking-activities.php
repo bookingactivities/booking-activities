@@ -158,7 +158,7 @@ add_action( 'wp_enqueue_scripts',	'bookacti_enqueue_high_priority_global_scripts
 
 /**
  * Enqueue normal priority scripts
- * @version 1.7.3
+ * @version 1.7.9
  * @global array $bookacti_translation_array
  */
 function bookacti_enqueue_global_scripts() {
@@ -167,7 +167,7 @@ function bookacti_enqueue_global_scripts() {
 	
 	// Include WooCommerce style and scripts
 	if( bookacti_is_plugin_active( 'woocommerce/woocommerce.php' ) ) {
-		if( ! is_admin() || bookacti_is_wc_screen( array( 'product', 'shop_order' ) ) ) {
+		if( ! is_admin() || bookacti_is_wc_screen( array( 'product', 'product_variation', 'shop_order' ) ) ) {
 			wp_enqueue_style ( 'bookacti-css-woocommerce',	plugins_url( 'css/woocommerce.min.css', __FILE__ ), array(), BOOKACTI_VERSION );
 		}
 		if( ! is_admin() ) {
@@ -244,7 +244,7 @@ add_action( 'admin_enqueue_scripts','bookacti_enqueue_high_priority_backend_scri
 
 /**
  * Enqueue low priority scripts in backend only
- * @version 1.7.6
+ * @version 1.7.9
  * @global array $bookacti_translation_array
  */
 function bookacti_enqueue_backend_scripts() {
@@ -253,7 +253,7 @@ function bookacti_enqueue_backend_scripts() {
 	
 	// Include WooCommerce scripts
 	if( bookacti_is_plugin_active( 'woocommerce/woocommerce.php' ) ) {
-		if( bookacti_is_wc_screen( array( 'product' ) ) || bookacti_is_booking_activities_screen() ) {
+		if( bookacti_is_wc_screen( array( 'product', 'product_variation' ) ) || bookacti_is_booking_activities_screen() ) {
 			wp_register_script( 'bookacti-js-woocommerce-backend', plugins_url( 'js/woocommerce-backend.min.js', __FILE__ ), array( 'jquery' ), BOOKACTI_VERSION, true );
 			wp_localize_script( 'bookacti-js-woocommerce-backend', 'bookacti_localized', $bookacti_translation_array );
 			wp_enqueue_script ( 'bookacti-js-woocommerce-backend' );

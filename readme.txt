@@ -319,6 +319,9 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 
 == Changelog ==
 
+= 1.7.9 =
+* Fix - User data were not exported
+
 = 1.7.8 - 2019/08/09 =
 * Fix - Numeric values were not displayed in user booking list
 * Dev - Add hooks to allow to set other product types as "Activity"
