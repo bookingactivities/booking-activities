@@ -319,6 +319,10 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 
 == Changelog ==
 
+= 1.7.10 =
+* Tweak - Allow shortcodes in notifications thanks to a new tag 
+* Dev - Add hooks in calendar editor controllers
+
 = 1.7.9 - 2019/08/18 =
 * Fix - User data were not exported
 * Fix - bookacti_get_number_of_bookings function didn't work if not filtered by event / group of events

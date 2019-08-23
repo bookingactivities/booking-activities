@@ -199,7 +199,27 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		
 		return $files;
 	}
-
+	
+	
+	/**
+	 * Get a substring between two specific strings
+	 * @since 1.7.10
+	 * @param string $string
+	 * @param string $start
+	 * @param string $end
+	 * @return string
+	 */
+	function bookacti_get_string_between( $string, $start, $end ) {
+		$string	= ' ' . $string;
+		$ini	= strpos( $string, $start );
+		
+		if( $ini == 0 ) { return ''; }
+		
+		$ini += strlen( $start );
+		$len = strpos( $string, $end, $ini ) - $ini;
+		
+		return substr( $string, $ini, $len );
+	}
 
 
 
@@ -1307,7 +1327,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	/**
 	 * Sanitize the values of an array
 	 * @since 1.5.0
-	 * @version 1.7.3
+	 * @version 1.7.10
 	 * @param array $default_data
 	 * @param array $raw_data
 	 * @param array $keys_by_type
@@ -1316,7 +1336,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	 */
 	function bookacti_sanitize_values( $default_data, $raw_data, $keys_by_type, $sanitized_data = array() ) {
 		// Sanitize the keys-by-type array
-		$allowed_types = array( 'int', 'bool', 'str', 'str_id', 'str_html', 'array', 'datetime' );
+		$allowed_types = array( 'int', 'numeric', 'bool', 'str', 'str_id', 'str_html', 'array', 'datetime' );
 		foreach( $allowed_types as $allowed_type ) {
 			if( ! isset( $keys_by_type[ $allowed_type ] ) ) { $keys_by_type[ $allowed_type ] = array(); }
 		}
@@ -1343,6 +1363,11 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			// Sanitize integers
 			if( in_array( $key, $keys_by_type[ 'int' ], true ) ) { 
 				$sanitized_data[ $key ] = is_numeric( $raw_data[ $key ] ) ? intval( $raw_data[ $key ] ) : $default_value;
+			}
+
+			// Sanitize numeric
+			if( in_array( $key, $keys_by_type[ 'numeric' ], true ) ) { 
+				$sanitized_data[ $key ] = is_numeric( $raw_data[ $key ] ) ? $raw_data[ $key ] : $default_value;
 			}
 
 			// Sanitize string identifiers
