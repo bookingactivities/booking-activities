@@ -533,9 +533,8 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	
 	/**
 	 * Display various fields
-	 * 
 	 * @since 1.2.0
-	 * @version 1.5.8
+	 * @version 1.7.10
 	 * @param array $args ['type', 'name', 'label', 'id', 'class', 'placeholder', 'options', 'attr', 'value', 'tip', 'required']
 	 */
 	function bookacti_display_field( $args ) {
@@ -608,9 +607,11 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 					type='hidden' 
 					value='none' />
 			<?php
+			$count = count( $args[ 'options' ] );
+			$i = 1;
 			foreach( $args[ 'options' ] as $option ) {
 			?>
-				<div class='bookacti_checkbox'>
+				<div class='bookacti_checkbox <?php if( $i === $count ) { echo 'bookacti_checkbox_last'; } ?>'>
 					<input	name='<?php echo esc_attr( $args[ 'name' ] ) . '[]'; ?>' 
 							id='<?php echo esc_attr( $args[ 'id' ] ) . '_' . esc_attr( $option[ 'id' ] ); ?>' 
 							class='bookacti-input <?php echo esc_attr( $args[ 'class' ] ); ?>' 
@@ -633,14 +634,17 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 				?>
 				</div>
 			<?php
+				++$i;
 			}
 		}
 
 		// RADIO
 		else if( $args[ 'type' ] === 'radio' ) {
+			$count = count( $args[ 'options' ] );
+			$i = 1;
 			foreach( $args[ 'options' ] as $option ) {
 			?>
-				<div class='bookacti_radio'>
+				<div class='bookacti_radio <?php if( $i === $count ) { echo 'bookacti_radio_last'; } ?>'>
 					<input	name='<?php echo esc_attr( $args[ 'name' ] ); ?>' 
 							id='<?php echo esc_attr( $args[ 'id' ] ) . '_' . esc_attr( $option[ 'id' ] ); ?>' 
 							class='bookacti-input <?php echo esc_attr( $args[ 'class' ] ); ?>' 
@@ -664,6 +668,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 				?>
 				</div>
 			<?php
+				++$i;
 			}
 		}
 
