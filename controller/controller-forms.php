@@ -345,7 +345,7 @@ add_action( 'bookacti_display_form_field_quantity', 'bookacti_display_form_field
 /**
  * Display the form field 'checkbox'
  * @since 1.5.2
- * @version 1.7.0
+ * @version 1.7.10
  * @param string $html
  * @param array $field
  * @param string $instance_id
@@ -353,7 +353,6 @@ add_action( 'bookacti_display_form_field_quantity', 'bookacti_display_form_field
  * @return string
  */
 function bookacti_display_form_field_checkbox( $html, $field, $instance_id, $context ) {
-	
 	$field_id		= ! empty( $field[ 'id' ] ) ? esc_attr( $field[ 'id' ] ) : esc_attr( 'bookacti-form-field-' . $field[ 'type' ] . '-' . $field[ 'field_id' ] . '-' . $instance_id );
 	$field_class	= 'bookacti-form-field-container';
 	if( ! empty( $field[ 'name' ] ) )		{ $field_class .= ' bookacti-form-field-name-' . sanitize_title_with_dashes( esc_attr( $field[ 'name' ] ) ); } 
@@ -362,31 +361,43 @@ function bookacti_display_form_field_checkbox( $html, $field, $instance_id, $con
 	if( ! empty( $field[ 'class' ] ) )		{ $field_class .= ' ' . esc_attr( $field[ 'class' ] ); }
 	$is_checked		= ! empty( $_REQUEST[ $field[ 'name' ] ] ) ? 1 : $field[ 'value' ];
 	
+	$args = apply_filters( 'bookacti_form_field_checkbox_args', array(
+		'type'			=> $field[ 'type' ],
+		'name'			=> $field[ 'name' ],
+		'id'			=> $field_id . '-input',
+		'class'			=> 'bookacti-form-field ' . $field[ 'class' ] ,
+		'value'			=> $is_checked,
+		'attr'			=> '',
+		'required'		=> $field[ 'required' ]
+	), $field, $instance_id, $context );
+	
 	ob_start();
 	?>
 	<div class='<?php echo $field_class; ?>' id='<?php echo $field_id; ?>' >
-		<div class='bookacti-form-field-checkbox-field-container' >
+		<div class='bookacti-form-field-checkbox-field-container bookacti-form-field-content' >
 			<div class='bookacti-form-field-checkbox-input' >
-				<input type='hidden' name='<?php echo esc_attr( $field[ 'name' ] ); ?>' value='0'/>
-				<input type='checkbox' 
-					   name='<?php echo esc_attr( $field[ 'name' ] ); ?>'
-					   id='<?php echo $field_id . '-input'; ?>'
-					   class='bookacti-form-field'
+				<input type='hidden' name='<?php echo esc_attr( $args[ 'name' ] ); ?>' value='0'/>
+				<input type='<?php echo esc_attr( $args[ 'type' ] ); ?>' 
+					   name='<?php echo esc_attr( $args[ 'name' ] ); ?>'
+					   id='<?php echo esc_attr( $args[ 'id' ] ); ?>'
+					   class='<?php echo esc_attr( $args[ 'class' ] ); ?>'
 					   value='1'
-					   <?php if( $field[ 'required' ] ) { echo 'required'; } ?>
-					   <?php if( $is_checked ) { echo 'checked'; } ?> />
+					   <?php if( $args[ 'attr' ] )			{ echo $args[ 'attr' ]; } ?>
+					   <?php if( $args[ 'required' ] )		{ echo 'required'; } ?>
+					   <?php if( $args[ 'value' ] === 1 )	{ echo 'checked'; } ?> />
 			</div>
 			<div class='bookacti-form-field-checkbox-label' >
-				<label for='<?php echo $field_id . '-input'; ?>' >
+				<label for='<?php echo esc_attr( $args[ 'id' ] ); ?>' >
 				<?php 
 					echo apply_filters( 'bookacti_translate_text', $field[ 'label' ] ); 
-					if( $field[ 'required' ] ) {
+					if( $args[ 'required' ] ) {
 						echo '<span class="bookacti-required-field-indicator" title="' . esc_attr__( 'Required field', 'booking-activities' ) . '"></span>';
 					}
 				?>
 				</label>
 			<?php if( ! empty( $field[ 'tip' ] ) ) { bookacti_help_tip( esc_html( apply_filters( 'bookacti_translate_text', $field[ 'tip' ] ) ) ); } ?>
 			</div>
+			<?php do_action( 'bookacti_form_field_checkbox_after', $field, $instance_id, $context, $args ); ?>
 		</div>
 	</div>
 	<?php
