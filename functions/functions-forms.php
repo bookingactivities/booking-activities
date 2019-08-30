@@ -274,28 +274,23 @@ function bookacti_display_form( $form_id, $instance_id = '', $context = 'display
 /**
  * Get form fields array
  * @since 1.5.4
- * @version 1.7.1
+ * @version 1.7.10
  * @param int $form_id
  * @param boolean $active_only Whether to fetch only active fields. Default "true".
+ * @param boolean Whether to index by name. Else, indexed by field id.
  * @return array
  */
-function bookacti_get_form_fields_data( $form_id, $active_only = true ) {
-	
+function bookacti_get_form_fields_data( $form_id, $active_only = true, $index_by_name = false ) {
 	$fields = bookacti_get_form_fields( $form_id, $active_only );
-	
 	if( ! $fields ) { return array(); }
 	
-	$field_ids = array();
-	foreach( $fields as $field ) { $field_ids[] = $field[ 'field_id' ]; }
-	
 	// Get fields meta
-	$fields_meta = bookacti_get_metadata( 'form_field', $field_ids );
+	$fields_meta = bookacti_get_metadata( 'form_field', array_keys( $fields ) );
 	
 	// Add form field metadata and 
 	// Format form fields
 	$fields_data = array();
-	foreach( $fields as $i => $field ) {
-		$field_id = $field[ 'field_id' ];
+	foreach( $fields as $field_id => $field ) {
 		// Add field-specific data
 		$field_metadata = isset( $fields_meta[ $field_id ] ) ? $fields_meta[ $field_id ] : array();
 		if( is_array( $field_metadata ) ) { 
@@ -305,7 +300,8 @@ function bookacti_get_form_fields_data( $form_id, $active_only = true ) {
 		// Format data
 		$formatted_data = bookacti_format_form_field_data( $field );
 		if( $formatted_data ) {
-			$fields_data[ $i ] = $formatted_data;
+			$index = $index_by_name ? $field[ 'name' ] : $field_id;
+			$fields_data[ $index ] = $formatted_data;
 		}
 	}
 	
