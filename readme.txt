@@ -321,6 +321,7 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 
 = 1.7.10 =
 * Tweak - Allow shortcodes in notifications thanks to a new tag 
+* Fix - Error when adding a product to cart on click on the event
 * Dev - Add hooks in calendar editor controllers
 
 = 1.7.9 - 2019/08/18 =

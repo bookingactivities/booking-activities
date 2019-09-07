@@ -230,7 +230,7 @@ function bookacti_add_group_category_product_to_cart( booking_system, group_id )
 /**
  * Add a product to cart from a booking form
  * @since 1.7.0
- * @version 1.7.7
+ * @version 1.7.10
  * @param {dom_element} booking_system
  * @param {int} product_id
  */
@@ -249,9 +249,9 @@ function bookacti_add_product_to_cart_via_booking_system( booking_system, produc
 	// Add form parameters to the URL
 	var data = [];
 	if( ! booking_system.closest( 'form' ).length ) {
-		booking_system.closest( '.bookacti-booking-system-container' ).wrap( '<form id="bookacti-temporary-form"></form>' );
+		booking_system.closest( '.bookacti-form-fields' ).wrap( '<form id="bookacti-temporary-form"></form>' );
 		data = new FormData( booking_system.closest( 'form' ).get(0) );
-		booking_system.closest( '.bookacti-booking-system-container' ).unwrap( 'form#bookacti-temporary-form' );
+		booking_system.closest( '.bookacti-form-fields' ).unwrap( 'form#bookacti-temporary-form' );
 	} else {
 		data = new FormData( booking_system.closest( 'form' ).get(0) );
 	}
@@ -262,7 +262,6 @@ function bookacti_add_product_to_cart_via_booking_system( booking_system, produc
 	} else {
 		return;
 	}
-	
 	
 	bookacti_start_loading_booking_system( booking_system );
 	
@@ -275,7 +274,6 @@ function bookacti_add_product_to_cart_via_booking_system( booking_system, produc
         contentType: false,
         processData: false,
 		success: function( response ){
-			
 			if( response.status === 'success' ) {
 				// Reload booking numbers if we are not redirected
 				if( ! response.redirect_url ) {
