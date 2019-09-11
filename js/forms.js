@@ -314,6 +314,7 @@ function bookacti_check_password_strength( password_field, password_confirm_fiel
 /**
  * Submit booking form
  * @since 1.7.6 (was bookacti_sumbit_booking_form)
+ * @version 1.7.10
  * @param {html_element} form
  * @returns {Boolean}
  */
@@ -369,7 +370,14 @@ function bookacti_submit_booking_form( form ) {
 	
 	// Trigger action before sending form
 	form.trigger( 'bookacti_before_submit_booking_form', [ data ] );
-
+	
+	// Display a loader
+	var loading_div = '<div class="bookacti-loading-alt">' 
+						+ '<img class="bookacti-loader" src="' + bookacti_localized.plugin_path + '/img/ajax-loader.gif" title="' + bookacti_localized.loading + '" />'
+						+ '<span class="bookacti-loading-alt-text" >' + bookacti_localized.loading + '</span>'
+					+ '</div>';
+	form.find( 'input[type="submit"]' ).after( loading_div );
+	
 	bookacti_start_loading_booking_system( booking_system );
 
 	$j.ajax({
@@ -380,8 +388,7 @@ function bookacti_submit_booking_form( form ) {
 		cache: false,
         contentType: false,
         processData: false,
-		success: function( response ){
-			
+		success: function( response ) {
 			var redirect_url = form.attr( 'action' );
 			if( typeof redirect_url !== 'undefined' ) {
 				if( redirect_url === false || ! redirect_url ) { redirect_url = ''; }
@@ -440,6 +447,7 @@ function bookacti_submit_booking_form( form ) {
 			console.log( e );
 		},
 		complete: function() { 
+			form.find( 'input[type="submit"]' ).next( '.bookacti-loading-alt' ).remove();
 			bookacti_stop_loading_booking_system( booking_system );
 			
 			// Re-enable the submit button

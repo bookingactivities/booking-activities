@@ -321,6 +321,8 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 
 = 1.7.10 =
 * Tweak - Allow shortcodes in notifications thanks to a new tag 
+* Tweak - Notification tags: user_locale added, user_ical_key removed
+* Tweak - Allow to use relative time format along user_ical_url notification tag. E.g: &start=today&end=10+days
 * Fix - Error when adding a product to cart on click on the event
 * Dev - Add hooks in calendar editor controllers
 
