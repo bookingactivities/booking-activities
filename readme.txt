@@ -323,6 +323,8 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 * Tweak - Allow shortcodes in notifications thanks to a new tag 
 * Tweak - Notification tags: user_locale added, user_ical_key removed
 * Tweak - Allow to use relative time format along user_ical_url notification tag. E.g: &start=today&end=10+days
+* Tweak - Allow to perform the default form action on event click instead of on submit
+* Tweak - Do not perform form actions on form editor
 * Fix - Error when adding a product to cart on click on the event
 * Dev - Add hooks in calendar editor controllers
 
