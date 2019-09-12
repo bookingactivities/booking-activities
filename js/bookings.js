@@ -53,8 +53,11 @@ $j( document ).ready( function() {
 		bookacti_refresh_booking_numbers( booking_system );
 	});
 	
-	// Refresh bookings number when a booking state has changed from active to inactive and vice versa
-	$j( 'body' ).on( 'bookacti_booking_state_changed', function( e, booking_id, booking_type, new_state, old_state, is_bookings_page, active_changed ){
+	/**
+	 * Refresh bookings number when a booking state or payment status has changed
+	 * @version 1.7.10
+	 */
+	$j( 'body' ).on( 'bookacti_booking_state_changed bookacti_payment_status_changed', function( e, booking_id, booking_type, new_state, old_state, is_bookings_page, active_changed ){
 		bookacti_init_tooltip();
 		
 		if( ! active_changed ) { return false; }
