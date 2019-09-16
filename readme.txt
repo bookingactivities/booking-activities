@@ -326,7 +326,7 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 * Tweak - Allow to perform the default form action on event click instead of on submit
 * Tweak - Do not perform form actions on form editor
 * Fix - Error when adding a product to cart on click on the event
-* Dev - Add hooks in calendar editor controllers
+* Dev - Add PHP and JS hooks in calendar editor
 
 = 1.7.9 - 2019/08/18 =
 * Fix - User data were not exported

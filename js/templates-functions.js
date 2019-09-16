@@ -805,35 +805,37 @@ function bookacti_is_locked_event( event_id ) {
 
 /**
  * Unbind occurences of a booked event
- * @version 1.7.1
+ * @version 1.7.10
  * @param {object} event
  * @param {string} occurences
  */
 function bookacti_unbind_occurrences( event, occurences ) {
-	
-    bookacti_start_template_loading();
-    
-    $j.ajax({
-        url: ajaxurl, 
-        data: { 'action': 'bookactiUnbindOccurences', 
-                'unbind': occurences,
-                'event_id': event.id,
-                'event_start': event.start.format( 'YYYY-MM-DD HH:mm:ss' ),
-                'event_end': event.end.format( 'YYYY-MM-DD HH:mm:ss' ),
-				'interval': bookacti.booking_system[ 'bookacti-template-calendar' ][ 'events_interval' ],
-				'nonce': bookacti_localized.nonce_unbind_occurences
-            },
-        type: 'POST',
-        dataType: 'json',
-        success: function( response ){
-			
-			if( response.status === 'success' ){
-				
+	var data = { 
+		'action': 'bookactiUnbindOccurences', 
+		'unbind': occurences,
+		'event_id': event.id,
+		'event_start': event.start.format( 'YYYY-MM-DD HH:mm:ss' ),
+		'event_end': event.end.format( 'YYYY-MM-DD HH:mm:ss' ),
+		'interval': bookacti.booking_system[ 'bookacti-template-calendar' ][ 'events_interval' ],
+		'nonce': bookacti_localized.nonce_unbind_occurences
+	};
+
+	$j( '#bookacti-template-container' ).trigger( 'bookacti_unbind_occurences_before', [ data, event, occurences ] );
+
+	bookacti_start_template_loading();
+
+	$j.ajax({
+		url: ajaxurl, 
+		data: data,
+		type: 'POST',
+		dataType: 'json',
+		success: function( response ){
+			if( response.status === 'success' ) {
 				var new_event_id = response.new_event_id;
-				
+
 				// Unselect the event or occurences of the event
 				bookacti_unselect_event( event, true );
-				
+
 				// Update affected calendar data
 				bookacti.booking_system[ 'bookacti-template-calendar' ][ 'exceptions' ]						= response.exceptions;
 				bookacti.booking_system[ 'bookacti-template-calendar' ][ 'groups_events' ]					= response.groups_events;
@@ -841,36 +843,38 @@ function bookacti_unbind_occurrences( event, occurences ) {
 				if( typeof response.events_data[ event.id ] !== 'undefined' ) {
 					bookacti.booking_system[ 'bookacti-template-calendar' ][ 'events_data' ][ event.id ]	= response.events_data[ event.id ];
 				}
-				
+
 				// If we unbound all booked occurences, we need to replace the old events by the new ones
 				if( occurences === 'booked' ) {
 					$j( '#bookacti-template-calendar' ).fullCalendar( 'removeEvents', event.id );
 				}
-				
+
 				// Load new events on calendar
 				$j( '#bookacti-template-calendar' ).fullCalendar( 'addEventSource', response.events );
-				
+
 				// Calling addEventSource will rerender events and then new exceptions will be taken into account
 				
-            } else {
+				$j( '#bookacti-template-container' ).trigger( 'bookacti_occurences_unbound', [ response, data, event, occurences ] );
+				
+			} else {
 				var message_error = bookacti_localized.error_unbind_occurences;
 				if( response.error === 'not_allowed' ) {
 					message_error += '\n' + bookacti_localized.error_not_allowed;
 				}
 				alert( message_error );
-            }
-        },
-        error: function( e ){
-            alert( 'AJAX ' + bookacti_localized.error_unbind_occurences );
-            console.log( e );
-        },
-        complete: function() { 
-            bookacti_stop_template_loading();
-        }
-    });
+			}
+		},
+		error: function( e ){
+			alert( 'AJAX ' + bookacti_localized.error_unbind_occurences );
+			console.log( e );
+		},
+		complete: function() { 
+			bookacti_stop_template_loading();
+		}
+	});
 
-    //Close the modal dialog
-    $j( '#bookacti-unbind-booked-event-dialog' ).dialog( 'close' );
+	// Close the modal dialog
+	$j( '#bookacti-unbind-booked-event-dialog' ).dialog( 'close' );
 }
 
 

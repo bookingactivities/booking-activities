@@ -428,8 +428,18 @@ function bookacti_submit_booking_form( form ) {
 				bookacti_scroll_to( form.find( '> .bookacti-notices' ), 500, 'middle' );
 			}
 			
+			// Make form data readable
+			var form_data_object = {};
+			if( typeof data.forEach === 'function' ) { 
+				data.forEach( function( value, key ){
+					form_data_object[ key ] = value;
+				});
+			} else {
+				form_data_object = form.serializeObject();
+			}
+			
 			// Trigger action after sending form
-			form.trigger( 'bookacti_booking_form_submitted', [ response, data ] );
+			form.trigger( 'bookacti_booking_form_submitted', [ response, form_data_object ] );
 			
 			// Redirect
 			if( response.status === 'success' && redirect_url ) {
