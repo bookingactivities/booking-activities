@@ -60,55 +60,6 @@ function bookacti_insert_booking( $user_id, $event_id, $event_start, $event_end,
 
 
 /**
- * Check if a booking exists and return its id
- * 
- * @version 1.5.4
- * @global wpdb $wpdb
- * @param int|string $user_id
- * @param int $event_id
- * @param string $event_start
- * @param string $event_end
- * @param string $state
- * @param int $booking_group_id
- * @return array
- */
-function bookacti_booking_exists( $user_id, $event_id, $event_start, $event_end, $state, $booking_group_id = NULL ) {
-	global $wpdb;
-	
-	$query = 'SELECT id FROM ' . BOOKACTI_TABLE_BOOKINGS 
-			. ' WHERE user_id = %s '
-			. ' AND event_id = %d '
-			. ' AND event_start = %s '
-			. ' AND event_end = %s '
-			. ' AND state = %s '
-			. ' AND ( expiration_date IS NULL OR expiration_date > UTC_TIMESTAMP() ) ';
-	
-	$variables = array( $user_id, $event_id, $event_start, $event_end, $state );
-	
-	if( $booking_group_id !== NULL ) {
-		if( $booking_group_id === 0 ) {
-			$query .= ' AND group_id IS NULL ';
-		} else if( is_int( $booking_group_id ) && $booking_group_id > 0 ) {
-			$query .= ' AND group_id = %d ';
-			$variables[] = $booking_group_id;
-		}
-	}
-	
-	$query = $wpdb->prepare( $query, $variables );
-	$existing_bookings = $wpdb->get_results( $query, OBJECT );
-	
-	$booking_ids = array();
-	if( $existing_bookings ) {
-		foreach( $existing_bookings as $existing_booking ) {
-			$booking_ids[] = intval( $existing_booking->id );
-		}
-	}
-	
-	return $booking_ids;
-}
-
-
-/**
  * Update booking quantity
  * 
  * @version 1.4.0
@@ -2585,45 +2536,6 @@ function bookacti_delete_booking( $booking_id ) {
 		$active	= $wpdb->get_var( $prep );
 
 		return $active;
-	}
-
-	
-	/**
-	 * Check if a booking group exists and return its id
-	 * 
-	 * @since 1.1.0
-	 * @version 1.5.4
-	 * @global wpdb $wpdb
-	 * @param int|string $user_id
-	 * @param int $event_group_id
-	 * @param string $state
-	 * @return array
-	 */
-	function bookacti_booking_group_exists( $user_id, $event_group_id, $state = NULL ) {
-		global $wpdb;
-
-		$query	= 'SELECT id FROM ' . BOOKACTI_TABLE_BOOKING_GROUPS 
-				. ' WHERE user_id = %s'
-				. ' AND event_group_id = %d';
-
-		$variables = array( $user_id, $event_group_id );
-
-		if( ! empty( $state ) ) {
-			$query .= ' AND state = %s';
-			$variables[] = $state;
-		}
-
-		$query = $wpdb->prepare( $query, $variables );
-		$existing_booking_groups = $wpdb->get_results( $query, OBJECT );
-	
-		$booking_group_ids = array();
-		if( $existing_booking_groups ) {
-			foreach( $existing_booking_groups as $existing_booking_group ) {
-				$booking_group_ids[] = intval( $existing_booking_group->id );
-			}
-		}
-
-		return $booking_group_ids;
 	}
 
 

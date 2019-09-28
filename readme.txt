@@ -327,6 +327,10 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 * Tweak - Do not perform form actions on form editor
 * Fix - Error when adding a product to cart on click on the event
 * Dev - Add PHP and JS hooks in calendar editor
+* Dev - Replace WC set_quantity with remove_cart_item function when qty = 0 for easier backward compatibility
+* Dev - Ensure that cart item with bookings are merged via Booking Activities process, and not simply increased qty
+* Dev - Check only once if a cart item should be merged, during add-to-cart validation
+* Dev - Add hooks in the WC cart processes (cart item expired, restored, failed to restore)
 
 = 1.7.9 - 2019/08/18 =
 * Fix - User data were not exported

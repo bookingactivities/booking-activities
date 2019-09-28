@@ -5,9 +5,9 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 // BOOKINGS
 
 	/**
-	 * Check if a booking is whithin the athorized delay as of now
+	 * Check if a booking is whithin the authorized delay as of now
 	 * @since 1.1.0
-	 * @version 1.7.3
+	 * @version 1.7.10
 	 * @param object|int $booking
 	 * @return boolean
 	 */
@@ -53,7 +53,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		
 		if( $current_datetime < $delay_datetime ) { $is_in_delay = true; }
 
-		return apply_filters( 'bookacti_is_booking_in_delay', $is_in_delay, $booking );
+		return apply_filters( 'bookacti_is_booking_in_delay', $is_in_delay, $booking, $delay );
 	}
 
 

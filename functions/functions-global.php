@@ -222,6 +222,27 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	}
 
 
+	/**
+	 * Recursively remove values in an associative array by keys
+	 * @since 1.7.10
+	 * @param array $array
+	 * @param array $recursive_keys
+	 * @return array
+	 */
+	function bookacti_recursive_unset( $array, $recursive_keys ) {
+		foreach( $recursive_keys as $key => $value ) {
+			if( is_array( $value ) && isset( $array[ $key ] ) && is_array( $array[ $key ] ) ) {
+				$array[ $key ] = bookacti_recursive_unset( $array[ $key ], $value );
+			}
+			else if( is_string( $value ) && isset( $array[ $value ] ) ) {
+				unset( $array[ $value ] );
+			}
+		}
+		return $array;
+	}
+
+
+
 
 // LOCALE
 

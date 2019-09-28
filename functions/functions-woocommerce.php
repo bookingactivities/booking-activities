@@ -7,7 +7,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	/**
 	 * Insert or update a booking in cart
 	 * @since 1.1.0 (replace bookacti_insert_booking_in_cart)
-	 * @version 1.5.7
+	 * @version 1.7.10
 	 * @param int $product_id
 	 * @param int $variation_id
 	 * @param int|string $user_id
@@ -19,11 +19,10 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	 * @return array
 	 */
 	function bookacti_add_booking_to_cart( $product_id, $variation_id, $user_id, $event_id, $event_start, $event_end, $quantity, $form_id = NULL ) {
-
 		$return_array = array( 'status' => 'failed' );
 
 		// Check if the booking already exists 
-		$booking_ids = bookacti_booking_exists( $user_id, $event_id, $event_start, $event_end, 'in_cart' );
+		$booking_ids = bookacti_get_in_cart_bookings_ids( $user_id, $event_id, $event_start, $event_end );
 		
 		// If booking already exist in cart, just update its quantity and expiration date
 		$booking_id = 0;
@@ -31,7 +30,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			// Find the booking id
 			global $woocommerce;
 			$cart_contents = $woocommerce->cart->get_cart();
-			foreach( $cart_contents as $cart_item_id => $cart_item ) {
+			foreach( $cart_contents as $cart_item_key => $cart_item ) {
 				// Same product
 				if( $product_id !== $cart_item[ 'product_id' ] ) { continue; }
 				// Same variation
@@ -43,6 +42,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 				if( ! apply_filters( 'bookacti_merge_cart_item', true, $cart_item, $product_id, $variation_id, $quantity ) ) { continue; }
 				
 				$booking_id = $cart_item[ '_bookacti_options' ][ 'bookacti_booking_id' ];
+				$return_array[ 'merged_cart_item_key' ] = $cart_item_key;
 				break;
 			}
 		}
@@ -89,9 +89,8 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 	/**
 	 * Insert or update a booking group in cart
-	 * 
 	 * @since 1.1.0
-	 * @version 1.5.7
+	 * @version 1.7.10
 	 * @param int $product_id
 	 * @param int $variation_id
 	 * @param int|string $user_id
@@ -101,11 +100,10 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	 * @return array
 	 */
 	function bookacti_add_booking_group_to_cart( $product_id, $variation_id, $user_id, $event_group_id, $quantity, $form_id = NULL ) {
-
 		$return_array = array( 'status' => 'failed' );
 
 		// Check if the booking already exists 
-		$booking_group_ids = bookacti_booking_group_exists( $user_id, $event_group_id, 'in_cart' );
+		$booking_group_ids = bookacti_get_in_cart_booking_groups_ids( $user_id, $event_group_id );
 
 		// If booking group already exist in cart, just update its bookings quantity and expiration date
 		$booking_group_id = 0;
@@ -113,7 +111,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			// Find the booking id
 			global $woocommerce;
 			$cart_contents = $woocommerce->cart->get_cart();
-			foreach( $cart_contents as $cart_item ) {
+			foreach( $cart_contents as $cart_item_key => $cart_item ) {
 				// Same product
 				if( $product_id !== $cart_item[ 'product_id' ] ) { continue; }
 				// Same variation
@@ -125,6 +123,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 				if( ! apply_filters( 'bookacti_merge_cart_item', true, $cart_item, $product_id, $variation_id, $quantity ) ) { continue; }
 				
 				$booking_group_id = $cart_item[ '_bookacti_options' ][ 'bookacti_booking_group_id' ];
+				$return_array[ 'merged_cart_item_key' ] = $cart_item_key;
 				break;
 			}
 		}
@@ -721,7 +720,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	 * @version 1.1.0
 	 * 
 	 * @global woocommerce $woocommerce
-	 * @param type $cart_item_key
+	 * @param string $cart_item_key
 	 * @return string
 	 */
 	function bookacti_get_cart_item_timeout( $cart_item_key ) {
