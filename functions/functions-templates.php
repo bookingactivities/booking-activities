@@ -109,8 +109,7 @@ function bookacti_get_editor_booking_system_data( $atts, $template_id ) {
 // TEMPLATE X ACTIVITIES
 	/**
 	 * Retrieve template activities list
-	 * 
-	 * @version 1.7.2
+	 * @version 1.7.10
 	 * @param int $template_id
 	 * @return boolean|string 
 	 */
@@ -133,11 +132,11 @@ function bookacti_get_editor_booking_system_data( $atts, $template_id ) {
 					<div class='activity-container'>
 						<div
 							class='fc-event ui-draggable ui-draggable-handle'
-							data-event='{"title": "<?php echo esc_attr( $title ) ?>", "activity_id": "<?php echo esc_attr( $activity->id ) ?>", "color": "<?php echo esc_attr( $activity->color ) ?>", "stick":"true"}' 
-							data-activity-id='<?php echo esc_attr( $activity->id ) ?>'
-							data-duration='<?php echo esc_attr( $activity->duration ) ?>'
+							data-event='{"title": "<?php echo htmlentities( esc_attr( $title ), ENT_QUOTES ); ?>", "activity_id": "<?php echo esc_attr( $activity->id ); ?>", "color": "<?php echo esc_attr( $activity->color ); ?>", "stick":"true"}' 
+							data-activity-id='<?php echo esc_attr( $activity->id ); ?>'
+							data-duration='<?php echo esc_attr( $activity->duration ); ?>'
 							title='<?php esc_attr_e( $title ); ?>'
-							style='border-color:<?php echo esc_attr( $activity->color ) ?>; background-color:<?php echo esc_attr( $activity->color ) ?>'
+							style='border-color:<?php echo esc_attr( $activity->color ); ?>; background-color:<?php echo esc_attr( $activity->color ); ?>'
 							>
 							<?php echo $title; ?>
 						</div>

@@ -326,6 +326,7 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 * Tweak - Allow to perform the default form action on event click instead of on submit
 * Tweak - Do not perform form actions on form editor
 * Fix - Error when adding a product to cart on click on the event
+* Fix - Error when inserting event if the activity title had quotes
 * Dev - Add PHP and JS hooks in calendar editor
 * Dev - Replace WC set_quantity with remove_cart_item function when qty = 0 for easier backward compatibility
 * Dev - Ensure that cart item with bookings are merged via Booking Activities process, and not simply increased qty

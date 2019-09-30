@@ -91,7 +91,7 @@ $j( document ).ready( function() {
 
 /**
  * Initialize and display the template calendar
- * @version 1.7.6
+ * @version 1.7.10
  * @param {dom_element} calendar
  */
 function bookacti_load_template_calendar( calendar ) {
@@ -131,7 +131,6 @@ function bookacti_load_template_calendar( calendar ) {
 		slotEventOverlap:		0,
 		eventLimit:				false,
 		eventLimitClick:		'popover',
-		showNonCurrentDates:	0,
 
 		allDaySlot:             false,
 		allDayDefault:          false,
