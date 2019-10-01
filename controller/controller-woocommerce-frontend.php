@@ -1052,8 +1052,10 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 									$nb_deleted_cart_item, 
 									'booking-activities' ), $nb_deleted_cart_item );
 
-			// display feedback
-			wc_add_notice( $message, 'error' );
+			// Display feedback
+			if( ! wc_has_notice( $message, 'error' ) ) {
+				wc_add_notice( $message, 'error' );
+			}
 		}
 	}
 	add_action( 'wp_loaded', 'bookacti_remove_expired_product_from_cart', 100, 0 );
