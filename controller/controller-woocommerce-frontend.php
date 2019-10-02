@@ -3,6 +3,12 @@
 if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 // GENERAL
+	/**
+	 * Define a global for internal use
+	 * @since 1.7.10
+	 */
+	if( ! isset( $GLOBALS[ 'global_bookacti_wc' ] ) ) { $GLOBALS[ 'global_bookacti_wc' ] = array(); }
+
 
 	/**
 	 * Add woocommerce related translations
@@ -369,6 +375,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	/**
 	 * Add cart item data (all sent in one array)
 	 * @version 1.7.10
+	 * @global array $global_bookacti_wc
 	 * @param array $cart_item_data
 	 * @param int $product_id
 	 * @param int $variation_id
@@ -397,8 +404,9 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		// Add the cart item key to be merged to the cart item data for two reasons: 
 		// - identify the cart item to be merged later, 
 		// - prevent the WC default merging which consist in increasing the existing cart item quantity
-		if( ! empty( $_POST[ 'bookacti_merged_cart_item_key' ] ) ) {
-			$cart_item_data[ '_bookacti_options' ][ 'bookacti_merged_cart_item_key' ] = sanitize_title_with_dashes( $_POST[ 'bookacti_merged_cart_item_key' ] );
+		global $global_bookacti_wc;
+		if( ! empty( $global_bookacti_wc[ 'bookacti_merged_cart_item_key' ] ) ) {
+			$cart_item_data[ '_bookacti_options' ][ 'bookacti_merged_cart_item_key' ] = sanitize_title_with_dashes( $global_bookacti_wc[ 'bookacti_merged_cart_item_key' ] );
 		}
 		
 		return $cart_item_data;
@@ -493,6 +501,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	 * Validate add to cart form and temporarily book the event
 	 * @version 1.7.10
 	 * @global WooCommerce $woocommerce
+	 * @global array $global_bookacti_wc
 	 * @param boolean $true
 	 * @param int $product_id
 	 * @param int $quantity
@@ -559,6 +568,8 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			return false;
 		}
 		
+		global $global_bookacti_wc;
+		
 		// Book a single event temporarily
 		if( $group_id === 'single' ) {
 			
@@ -568,7 +579,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			// If the event is booked, add the booking ID to the corresponding hidden field
 			if( $response[ 'status' ] === 'success' ) {
 				$_POST[ 'bookacti_booking_id' ] = intval( $response[ 'id' ] );
-				$_POST[ 'bookacti_merged_cart_item_key' ] = ! empty( $response[ 'merged_cart_item_key' ] ) ? $response[ 'merged_cart_item_key' ] : 0;
+				$global_bookacti_wc[ 'bookacti_merged_cart_item_key' ] = ! empty( $response[ 'merged_cart_item_key' ] ) ? $response[ 'merged_cart_item_key' ] : '';
 				return true;
 			}
 
@@ -581,7 +592,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			// If the events are booked, add the booking group ID to the corresponding hidden field
 			if( $response[ 'status' ] === 'success' ) {
 				$_POST[ 'bookacti_booking_group_id' ] = intval( $response[ 'id' ] );
-				$_POST[ 'bookacti_merged_cart_item_key' ] = ! empty( $response[ 'merged_cart_item_key' ] ) ? $response[ 'merged_cart_item_key' ] : 0;
+				$global_bookacti_wc[ 'bookacti_merged_cart_item_key' ] = ! empty( $response[ 'merged_cart_item_key' ] ) ? $response[ 'merged_cart_item_key' ] : '';
 				return true;
 			}
 		}
@@ -1584,17 +1595,17 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	/**
 	 * Add values in booking list (refund, price)
 	 * @since 1.7.4 (was bookacti_add_woocommerce_prices_in_bookings_list)
-	 * @version 1.7.7
+	 * @version 1.7.10
 	 * @param array $columns_value
 	 * @param object $booking
-	 * @param object $group
+	 * @param object $booking_group
 	 * @param array $grouped_bookings
 	 * @param object $user
 	 * @param array $filters
 	 * @param array $columns
 	 * @return array
 	 */
-	function bookacti_fill_wc_price_column_in_booking_list( $columns_value, $booking, $group, $grouped_bookings, $user, $filters, $columns ) {
+	function bookacti_fill_wc_price_column_in_booking_list( $columns_value, $booking, $booking_group, $grouped_bookings, $user, $filters, $columns ) {
 		if( ! in_array( 'status', $columns, true ) && ! in_array( 'price', $columns, true ) ) { return $columns_value; }
 		
 		$item = bookacti_get_order_item_by_booking_id( $booking->id );
@@ -1609,7 +1620,8 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 				$tax	= $item[ 'line_tax' ];
 			}
 			
-			$price_value = apply_filters( 'bookacti_user_booking_list_order_item_price', wc_price( (float) $total + (float) $tax ), $item, $columns_value, $booking, $filters );
+			$booking_meta = $booking_group ? (array) $booking_group : (array) $booking;
+			$price_value = apply_filters( 'bookacti_user_booking_list_order_item_price', wc_price( (float) $total + (float) $tax ), $item, $columns_value, $booking_meta, $filters );
 			$columns_value[ 'price' ] = $price_value ? $price_value : '/';
 			
 			// Add refund coupon code in "Status" column

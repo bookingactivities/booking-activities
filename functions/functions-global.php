@@ -1187,7 +1187,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	/**
 	 * Convert an array to string recursively
 	 * @since 1.6.0
-	 * @version 1.7.3
+	 * @version 1.7.10
 	 * @param array $array
 	 * @param boolean $display_keys
 	 * @return string
@@ -1203,9 +1203,9 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			$value = bookacti_maybe_decode_json( maybe_unserialize( $value ) );
 			if( is_array( $value ) ) { $string_value = bookacti_format_array_for_export( $value, $display_keys ); }
 			else { 
-				if( $display_keys ) { $value = $key . ': ' . $value; }
 				$string_value = str_replace( array( '[', ']', ';' ), '', $value );
 			}
+			if( $display_keys ) { $string .= $key . ': '; }
 			$string .= $string_value;
 			++$i;
 		}
