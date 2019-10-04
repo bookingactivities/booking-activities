@@ -2,7 +2,7 @@
 /**
  * Form editor page
  * @since 1.5.0
- * @version 1.7.6
+ * @version 1.7.10
  */
 
 // Exit if accessed directly
@@ -161,7 +161,7 @@ if( ! $form ) { exit; }
 									</div>
 									<div id='bookacti-fatal-error' class='bookacti-notices' style='display:none;'>
 										<ul class='bookacti-error-list'>
-											<li><strong><?php esc_html_e( 'A fatal error occurred. Please try to refresh the page. If the error persists, contact the support.', 'booking-activities' ); ?></strong>
+											<li><strong><?php echo sprintf( esc_html__( 'A fatal error occurred. Please try to refresh the page. If the error persists, follow the process under "Booking Activities doesn’t work as it should" here: %s.', 'booking-activities' ), '<a href="https://booking-activities.fr/en/documentation/faq">' . esc_html( 'FAQ', 'booking-activities' ) . '</a>' ); ?></strong>
 											<li><em><?php esc_html_e( 'Advanced users, you can stop loading and free the fields to try to solve your problem:', 'booking-activities' ); ?></em>
 												<input type='button' id='bookacti-exit-loading' value='<?php esc_attr_e( 'Stop loading and free fields', 'booking-activities' ) ?>' />
 										</ul>

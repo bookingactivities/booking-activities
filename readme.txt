@@ -5,7 +5,7 @@ Tags: booking activities, booking sport, booking form, event reservation, reserv
 Requires at least: 3.6
 Tested up to: 5.2
 Requires PHP: 5.3
-Stable tag: 1.7.9
+Stable tag: 1.7.10
 License: GPLv3 or later
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
 
@@ -331,7 +331,7 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 * Fix - Expired cart item notice may appear twice
 * Dev - Add PHP and JS hooks in calendar editor
 * Dev - Replace WC set_quantity with remove_cart_item function when qty = 0 for easier backward compatibility
-* Dev - Ensure that cart item with bookings are merged via Booking Activities process, and not simply increased qty
+* Dev - Ensure that cart item with bookings are merged via Booking Activities process, and not simply increased quantity
 * Dev - Check only once if a cart item should be merged, during add-to-cart validation
 * Dev - Add hooks in the WC cart processes (cart item expired, restored, failed to restore)
 
