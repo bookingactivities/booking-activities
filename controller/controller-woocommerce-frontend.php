@@ -1568,11 +1568,14 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	/**
 	 * Add a column called 'Price' to user booking list
 	 * @since 1.7.4 (was bookacti_add_woocommerce_price_column_to_bookings_list)
+	 * @version 1.7.10
 	 * @param array $columns
 	 * @return array
 	 */
 	function bookacti_add_woocommerce_price_column_to_user_booking_list( $columns ) {
-		$columns[ 'price' ] = esc_html__( 'Price', 'booking-activities' );
+		if( ! isset( $columns[ 'price' ] ) ) { 
+			$columns[ 'price' ] = esc_html__( 'Price', 'booking-activities' );
+		}
 		return $columns;
 	}
 	add_filter( 'bookacti_user_booking_list_columns_labels', 'bookacti_add_woocommerce_price_column_to_user_booking_list', 10, 1 );
