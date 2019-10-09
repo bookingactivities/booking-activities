@@ -375,7 +375,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	/**
 	 * Add WC data to the booking list
 	 * @since 1.6.0 (was bookacti_woocommerce_fill_booking_list_custom_columns before)
-	 * @version 1.7.4
+	 * @version 1.7.10
 	 * @param array $booking_list_items
 	 * @param array $bookings
 	 * @param array $booking_groups
@@ -439,7 +439,8 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		$orders = array();
 		$orders_array = wc_get_orders( array( 'post__in' => $order_ids ) );
 		foreach( $orders_array as $order ) {
-			$orders[ $order->get_id() ] = $order;
+			$order_id = version_compare( WC_VERSION, '3.0.0', '>=' ) ? $order->get_id() : $order->id;
+			$orders[ $order_id ] = $order;
 		}
 		
 		// Get WC refund actions

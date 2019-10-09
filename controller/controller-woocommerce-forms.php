@@ -165,6 +165,7 @@ add_filter( 'bookacti_form_action_options', 'bookacti_add_wc_form_action_options
 /**
  * Add columns to the activity redirect URL table
  * @since 1.7.0
+ * @version 1.7.10
  * @param array $url_array
  * @param array $params
  * @return array
@@ -178,10 +179,9 @@ function bookacti_add_wc_columns_to_activity_redirect_url_table( $url_array, $pa
 		'selected'			=> '',
 		'show_option_none'	=> esc_html_x( 'None', 'About product', 'booking-activities' ),
 		'option_none_value'	=> '',
-		'echo'				=> 0,
-		'limit'				=> -1
+		'echo'				=> 0
 	);
-	$products = wc_get_products( $args );
+	$products = bookacti_get_products( array( 'limit' => -1 ) );
 	
 	$default_product_selectbox	= bookacti_display_product_selectbox( $args, $products );
 	
@@ -214,6 +214,7 @@ add_filter( 'bookacti_activity_redirect_url_table', 'bookacti_add_wc_columns_to_
 /**
  * Add columns to the group category redirect URL table
  * @since 1.7.0
+ * @version 1.7.10
  * @param array $url_array
  * @param array $params
  * @return array
@@ -229,7 +230,7 @@ function bookacti_add_wc_columns_to_group_activity_redirect_url_table( $url_arra
 		'echo'				=> 0,
 		'limit'				=> -1
 	);
-	$products = wc_get_products( $args );
+	$products = bookacti_get_products( array( 'limit' => -1 ) );
 	$default_product_selectbox	= bookacti_display_product_selectbox( $args, $products );
 	
 	$redirect_url_group_category_ids= ! empty( $params[ 'calendar_data' ][ 'redirect_url_by_group_category' ] ) && is_array( $params[ 'calendar_data' ][ 'redirect_url_by_group_category' ] ) ? array_keys( $params[ 'calendar_data' ][ 'redirect_url_by_group_category' ] ) : array();

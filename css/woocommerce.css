@@ -36,7 +36,7 @@ table.woocommerce_order_items ul.bookacti-booking-events-list { margin: 0; }
 
 /* Cart, Checkout */
 .bookacti-order-item-activity td.product-name .wc-item-meta .wc-item-meta-bookacti_booked_events,
-.bookacti-cart-item-activity td.product-name dl.variation dt { float: none; }
+.bookacti-cart-item-activity td.product-name dl.variation dt { float: none; display: block; }
 
 
 /* My Account */

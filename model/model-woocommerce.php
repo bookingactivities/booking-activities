@@ -42,9 +42,7 @@ function bookacti_fetch_woo_products() {
 
 /**
  * Get booking event data to store in order item meta
- * 
  * @since 1.1.0
- * 
  * @global wpdb $wpdb
  * @param int $booking_id
  * @return object
@@ -562,9 +560,7 @@ function bookacti_turn_in_cart_bookings_to_removed() {
 
 /**
  * Get booking group events data to store in order item meta
- * 
  * @since 1.1.0
- * 
  * @global wpdb $wpdb
  * @param int $booking_group_id
  * @return array of object
@@ -580,7 +576,7 @@ function bookacti_get_booking_group_events_data( $booking_group_id ) {
 				. ' ORDER BY B.event_start, B.event_id, E.activity_id DESC';
 	$prep		= $wpdb->prepare( $query, $booking_group_id );
 	$bookings	= $wpdb->get_results( $prep, OBJECT );
-
+	
 	return $bookings;
 }
 

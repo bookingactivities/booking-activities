@@ -1694,8 +1694,32 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 // PRODUCT
 	
 	/**
+	 * Get all products with backward compatibility WC < 2.6
+	 * @since 1.7.10
+	 * @param array $args
+	 */
+	function bookacti_get_products( $args ) {
+		if( version_compare( WC_VERSION, '3.0.0', '>=' ) ) {
+			return wc_get_products( $args );
+		}
+		
+		$products = array();
+		$product_ids = array();
+		$products_posts = get_posts( array_merge( array( 'post_type' => 'product', 'post_status' => 'publish', 'posts_per_page' => -1 ), $args ) );
+		foreach( $products_posts as $product_post ) {
+			$product_ids[] = $product_post->ID;
+			$product = wc_get_product( $product_post->ID );
+			if( $product ) { $products[] = $product; }
+		}
+		
+		return $products;
+	}
+	
+	
+	/**
 	 * Display a products selectbox
 	 * @since 1.7.0
+	 * @version 1.7.10
 	 * @param array $args
 	 * @param array $products
 	 * @return string
@@ -1711,7 +1735,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		);
 		$r = wp_parse_args( $args, $defaults );
 		
-		if( empty( $products ) ) { $products = wc_get_products( $r ); }
+		if( empty( $products ) ) { $products = bookacti_get_products( array( 'limit' => -1 ) ); }
 		
 		ob_start();
 		
