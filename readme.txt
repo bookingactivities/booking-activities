@@ -319,7 +319,7 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 
 == Changelog ==
 
-= 1.7.10 =
+= 1.7.10 - 2019/10/14 =
 * Tweak - Allow shortcodes in notifications thanks to a new tag 
 * Tweak - Notification tags: user_locale added, user_ical_key removed
 * Tweak - Allow to use relative time format along user_ical_url notification tag. E.g: &start=today&end=10+days
@@ -329,6 +329,7 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 * Fix - Error when inserting event if the activity title had quotes
 * Fix - Groups of events may not be automatically selected according to POST or GET parameters
 * Fix - Expired cart item notice may appear twice
+* Fix - Backward compatibility with WooCommerce 2.6
 * Dev - Add PHP and JS hooks in calendar editor
 * Dev - Replace WC set_quantity with remove_cart_item function when qty = 0 for easier backward compatibility
 * Dev - Ensure that cart item with bookings are merged via Booking Activities process, and not simply increased quantity
