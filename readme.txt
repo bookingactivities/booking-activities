@@ -5,7 +5,7 @@ Tags: booking activities, booking sport, booking form, event reservation, reserv
 Requires at least: 3.6
 Tested up to: 5.2
 Requires PHP: 5.3
-Stable tag: 1.7.9
+Stable tag: 1.7.10
 License: GPLv3 or later
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
 
@@ -318,6 +318,23 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 
 
 == Changelog ==
+
+= 1.7.10 - 2019/10/14 =
+* Tweak - Allow shortcodes in notifications thanks to a new tag 
+* Tweak - Notification tags: user_locale added, user_ical_key removed
+* Tweak - Allow to use relative time format along user_ical_url notification tag. E.g: &start=today&end=10+days
+* Tweak - Allow to perform the default form action on event click instead of on submit
+* Tweak - Do not perform form actions on form editor
+* Fix - Error when adding a product to cart on click on the event
+* Fix - Error when inserting event if the activity title had quotes
+* Fix - Groups of events may not be automatically selected according to POST or GET parameters
+* Fix - Expired cart item notice may appear twice
+* Fix - Backward compatibility with WooCommerce 2.6
+* Dev - Add PHP and JS hooks in calendar editor
+* Dev - Replace WC set_quantity with remove_cart_item function when qty = 0 for easier backward compatibility
+* Dev - Ensure that cart item with bookings are merged via Booking Activities process, and not simply increased quantity
+* Dev - Check only once if a cart item should be merged, during add-to-cart validation
+* Dev - Add hooks in the WC cart processes (cart item expired, restored, failed to restore)
 
 = 1.7.9 - 2019/08/18 =
 * Fix - User data were not exported

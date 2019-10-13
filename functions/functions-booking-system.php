@@ -490,7 +490,7 @@ function bookacti_format_booking_system_attributes( $atts = array() ) {
 /**
  * Format booking system attributes passed via the URL
  * @since 1.6.0
- * @version 1.6.1
+ * @version 1.7.10
  * @param array $atts
  * @return array
  */
@@ -521,8 +521,17 @@ function bookacti_format_booking_system_url_attributes( $atts = array() ) {
 	}
 	
 	// Format the URL attributes
-	if( ! empty( $url_raw_atts[ 'start' ] ) )	{ $url_raw_atts[ 'template_data' ][ 'start' ] = $url_raw_atts[ 'start' ]; }
-	if( ! empty( $url_raw_atts[ 'end' ] ) )		{ $url_raw_atts[ 'template_data' ][ 'end' ] = $url_raw_atts[ 'end' ]; }
+	if( ! empty( $url_raw_atts[ 'start' ] ) || ! empty( $url_raw_atts[ 'end' ] ) ) { 
+		$timezone = new DateTimeZone( bookacti_get_setting_value( 'bookacti_general_settings', 'timezone' ) );
+		if( ! empty( $url_raw_atts[ 'start' ] ) && (bool)strtotime( $url_raw_atts[ 'start' ] ) ) {
+			$from_datetime = new DateTime( $url_raw_atts[ 'start' ], $timezone );
+			$url_raw_atts[ 'template_data' ][ 'start' ] = $from_datetime->format( 'Y-m-d' );
+		}
+		if( ! empty( $url_raw_atts[ 'end' ] ) && (bool)strtotime( $url_raw_atts[ 'end' ] ) ) {
+			$to_datetime = new DateTime( $url_raw_atts[ 'end' ], $timezone );
+			$url_raw_atts[ 'template_data' ][ 'end' ] = $to_datetime->format( 'Y-m-d' );
+		}
+	}
 	
 	$default_template_settings = bookacti_format_template_settings( array() );
 	foreach( $default_template_settings as $att_name => $att_value ) {

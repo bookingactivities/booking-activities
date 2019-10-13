@@ -199,6 +199,47 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		
 		return $files;
 	}
+	
+	
+	/**
+	 * Get a substring between two specific strings
+	 * @since 1.7.10
+	 * @param string $string
+	 * @param string $start
+	 * @param string $end
+	 * @return string
+	 */
+	function bookacti_get_string_between( $string, $start, $end ) {
+		$string	= ' ' . $string;
+		$ini	= strpos( $string, $start );
+		
+		if( $ini == 0 ) { return ''; }
+		
+		$ini += strlen( $start );
+		$len = strpos( $string, $end, $ini ) - $ini;
+		
+		return substr( $string, $ini, $len );
+	}
+
+
+	/**
+	 * Recursively remove values in an associative array by keys
+	 * @since 1.7.10
+	 * @param array $array
+	 * @param array $recursive_keys
+	 * @return array
+	 */
+	function bookacti_recursive_unset( $array, $recursive_keys ) {
+		foreach( $recursive_keys as $key => $value ) {
+			if( is_array( $value ) && isset( $array[ $key ] ) && is_array( $array[ $key ] ) ) {
+				$array[ $key ] = bookacti_recursive_unset( $array[ $key ], $value );
+			}
+			else if( is_string( $value ) && isset( $array[ $value ] ) ) {
+				unset( $array[ $value ] );
+			}
+		}
+		return $array;
+	}
 
 
 
@@ -513,9 +554,8 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	
 	/**
 	 * Display various fields
-	 * 
 	 * @since 1.2.0
-	 * @version 1.5.8
+	 * @version 1.7.10
 	 * @param array $args ['type', 'name', 'label', 'id', 'class', 'placeholder', 'options', 'attr', 'value', 'tip', 'required']
 	 */
 	function bookacti_display_field( $args ) {
@@ -588,9 +628,11 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 					type='hidden' 
 					value='none' />
 			<?php
+			$count = count( $args[ 'options' ] );
+			$i = 1;
 			foreach( $args[ 'options' ] as $option ) {
 			?>
-				<div class='bookacti_checkbox'>
+				<div class='bookacti_checkbox <?php if( $i === $count ) { echo 'bookacti_checkbox_last'; } ?>'>
 					<input	name='<?php echo esc_attr( $args[ 'name' ] ) . '[]'; ?>' 
 							id='<?php echo esc_attr( $args[ 'id' ] ) . '_' . esc_attr( $option[ 'id' ] ); ?>' 
 							class='bookacti-input <?php echo esc_attr( $args[ 'class' ] ); ?>' 
@@ -613,14 +655,17 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 				?>
 				</div>
 			<?php
+				++$i;
 			}
 		}
 
 		// RADIO
 		else if( $args[ 'type' ] === 'radio' ) {
+			$count = count( $args[ 'options' ] );
+			$i = 1;
 			foreach( $args[ 'options' ] as $option ) {
 			?>
-				<div class='bookacti_radio'>
+				<div class='bookacti_radio <?php if( $i === $count ) { echo 'bookacti_radio_last'; } ?>'>
 					<input	name='<?php echo esc_attr( $args[ 'name' ] ); ?>' 
 							id='<?php echo esc_attr( $args[ 'id' ] ) . '_' . esc_attr( $option[ 'id' ] ); ?>' 
 							class='bookacti-input <?php echo esc_attr( $args[ 'class' ] ); ?>' 
@@ -644,6 +689,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 				?>
 				</div>
 			<?php
+				++$i;
 			}
 		}
 
@@ -1141,7 +1187,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	/**
 	 * Convert an array to string recursively
 	 * @since 1.6.0
-	 * @version 1.7.3
+	 * @version 1.7.10
 	 * @param array $array
 	 * @param boolean $display_keys
 	 * @return string
@@ -1157,9 +1203,9 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			$value = bookacti_maybe_decode_json( maybe_unserialize( $value ) );
 			if( is_array( $value ) ) { $string_value = bookacti_format_array_for_export( $value, $display_keys ); }
 			else { 
-				if( $display_keys ) { $value = $key . ': ' . $value; }
 				$string_value = str_replace( array( '[', ']', ';' ), '', $value );
 			}
+			if( $display_keys ) { $string .= $key . ': '; }
 			$string .= $string_value;
 			++$i;
 		}
@@ -1307,7 +1353,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	/**
 	 * Sanitize the values of an array
 	 * @since 1.5.0
-	 * @version 1.7.3
+	 * @version 1.7.10
 	 * @param array $default_data
 	 * @param array $raw_data
 	 * @param array $keys_by_type
@@ -1316,7 +1362,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	 */
 	function bookacti_sanitize_values( $default_data, $raw_data, $keys_by_type, $sanitized_data = array() ) {
 		// Sanitize the keys-by-type array
-		$allowed_types = array( 'int', 'bool', 'str', 'str_id', 'str_html', 'array', 'datetime' );
+		$allowed_types = array( 'int', 'numeric', 'bool', 'str', 'str_id', 'str_html', 'array', 'datetime' );
 		foreach( $allowed_types as $allowed_type ) {
 			if( ! isset( $keys_by_type[ $allowed_type ] ) ) { $keys_by_type[ $allowed_type ] = array(); }
 		}
@@ -1343,6 +1389,11 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			// Sanitize integers
 			if( in_array( $key, $keys_by_type[ 'int' ], true ) ) { 
 				$sanitized_data[ $key ] = is_numeric( $raw_data[ $key ] ) ? intval( $raw_data[ $key ] ) : $default_value;
+			}
+
+			// Sanitize numeric
+			if( in_array( $key, $keys_by_type[ 'numeric' ], true ) ) { 
+				$sanitized_data[ $key ] = is_numeric( $raw_data[ $key ] ) ? $raw_data[ $key ] : $default_value;
 			}
 
 			// Sanitize string identifiers

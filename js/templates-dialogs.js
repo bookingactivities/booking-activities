@@ -5,8 +5,8 @@
  * @version 1.7.6
  */
 function bookacti_init_template_dialogs() {
-    // Common param
-    $j( '.bookacti-template-dialogs' ).dialog({ 
+	// Common param
+	$j( '.bookacti-template-dialogs' ).dialog({ 
 		"modal":		true,
 		"autoOpen":		false,
 		"minHeight":	300,
@@ -22,13 +22,13 @@ function bookacti_init_template_dialogs() {
 			if( dialog_id ) { scope = '#' + dialog_id; }
 			bookacti_empty_all_dialog_forms( scope ); 
 		}
-    });
-	
+	});
+
 	// Make dialogs close when the user click outside
 	$j( 'body' ).on( 'click', '.ui-widget-overlay', function (){
 		$j( 'div:ui-dialog:visible' ).dialog( 'close' );
 	});
-	
+
 	// Press ENTER to bring focus on OK button
 	$j( '.bookacti-template-dialogs' ).on( 'keydown', function( e ) {
 		if( ! $j( 'textarea' ).is( ':focus' ) && e.keyCode == $j.ui.keyCode.ENTER ) {
@@ -36,8 +36,8 @@ function bookacti_init_template_dialogs() {
 			return false; 
 		}
 	});	
-	
-    //Individual param
+
+	// Individual param
 	$j( '#bookacti-activity-create-method-dialog' ).dialog({ 
 		title: bookacti_localized.dialog_choice_activity_title
 	});
@@ -75,31 +75,31 @@ function bookacti_init_template_dialogs() {
 	$j( '#bookacti-delete-group-category-dialog' ).dialog({ 
 		title: bookacti_localized.dialog_delete_group_category_title
 	});
-	
+
 	// Add and remove items in managers and templates select boxes
 	bookacti_init_add_and_remove_items();
-	
+
 	// Load activities bound to selected template
 	$j( 'select#template-import-bound-activities' ).on( 'change', function(){
 		bookacti_load_activities_bound_to_template( $j( 'select#template-import-bound-activities' ).val() );
 	});
-	
+
 	// Init new template dialog
 	$j( '#bookacti-template-container' ).on( 'click', '#bookacti-insert-template, #bookacti-add-first-template-button', function() { 
-        bookacti_dialog_add_new_template(); 
-    });
-	
+		bookacti_dialog_add_new_template(); 
+	});
+
 	// Init update activity dialog
 	$j( '#bookacti-template-activity-list' ).on( 'click', '.activity-gear', function() {
-        var activity_id = $j( this ).data( 'activity-id' );
-        bookacti_dialog_update_activity( activity_id ); 
-    });
-	
+		var activity_id = $j( this ).data( 'activity-id' );
+		bookacti_dialog_update_activity( activity_id ); 
+	});
+
 	// Init create group of events dialog
 	$j( '#bookacti-template-groups-of-events-container' ).on( 'click', '#bookacti-template-add-first-group-of-events-button, #bookacti-insert-group-of-events', function() {
 		bookacti_dialog_create_group_of_events();
-    });
-	
+	});
+
 	// Init CTRL+G shortcut to display "create group of events" dialog
 	$j( document ).on( 'keydown', function( e ) {
 		if( e.ctrlKey && e.keyCode == 71 ) {
@@ -109,7 +109,7 @@ function bookacti_init_template_dialogs() {
 			}
 		}
 	});
-	
+
 	// Init update group of events dialog
 	$j( '#bookacti-template-groups-of-events-container' ).on( 'click', '.bookacti-update-group-of-events', function() {
 		var group_id	= $j( this ).parents( '.bookacti-group-of-events' ).data( 'group-id' );
@@ -119,19 +119,19 @@ function bookacti_init_template_dialogs() {
 			are_selected = bookacti_select_events_of_group( group_id );
 		}
 		if( are_selected ) { bookacti_dialog_update_group_of_events( group_id ) };
-    });
-	
+	});
+
 	// Init update group category dialog
 	$j( '#bookacti-group-categories' ).on( 'click', '.bookacti-update-group-category', function() {
-        var category_id = $j( this ).parents( '.bookacti-group-category' ).data( 'group-category-id' );
-        bookacti_dialog_update_group_category( category_id ); 
-    });
-	
+		var category_id = $j( this ).parents( '.bookacti-group-category' ).data( 'group-category-id' );
+		bookacti_dialog_update_group_category( category_id ); 
+	});
+
 	// Prevent sending form
 	$j( '.bookacti-template-dialog form' ).on( 'submit', function( e ){
 		e.preventDefault();
 	});
-	
+
 	// Display or hide new group category title field
 	$j( '#bookacti-group-of-events-category-selectbox' ).on( 'change blur', function() {
 		if( $j( this ).val() === 'new' ){
@@ -147,7 +147,7 @@ function bookacti_init_template_dialogs() {
 
 /**
  * Dialog Create Template
- * @version 1.7.6
+ * @version 1.7.10
  */
 function bookacti_dialog_add_new_template() {
 	// Set the dialog title
@@ -201,7 +201,7 @@ function bookacti_dialog_add_new_template() {
 		[{
 			text: bookacti_localized.dialog_button_ok,
 
-			//On click on the OK Button, new values are send to a script that update the database
+			// On click on the OK Button, new values are send to a script that update the database
 			click: function() {
 				// Prepare fields
 				$j( '#bookacti-template-data-form-action' ).val( 'bookactiInsertTemplate' );
@@ -211,15 +211,15 @@ function bookacti_dialog_add_new_template() {
 				var title	= $j( '#bookacti-template-title' ).val();
 				var start	= moment( $j( '#bookacti-template-opening' ).val(), [ 'MM-DD-YYYY', 'DD-MM-YYYY', 'YYYY-MM-DD' ] ).format( 'YYYY-MM-DD' );
 				var end		= moment( $j( '#bookacti-template-closing' ).val(), [ 'MM-DD-YYYY', 'DD-MM-YYYY', 'YYYY-MM-DD' ] ).format( 'YYYY-MM-DD' );
-				
+
 				if( typeof tinyMCE !== 'undefined' ) { 
 					if( tinyMCE ) { tinyMCE.triggerSave(); }
 				}
-				
+
 				var isFormValid = bookacti_validate_template_form();
 
 				if( isFormValid ) {
-					var data = $j( '#bookacti-template-data-form' ).serialize();
+					var data = $j( '#bookacti-template-data-form' ).serializeObject();
 
 					if( $j( '#bookacti-template-calendar' ).length ) {
 						bookacti_start_template_loading();
@@ -227,7 +227,9 @@ function bookacti_dialog_add_new_template() {
 						$j( '#bookacti-add-first-template-button' ).removeClass( 'dashicons dashicons-plus-alt' ).addClass( 'spinner' );
 					}
 
-					//Save the new template in database
+					$j( '#bookacti-template-data-dialog' ).trigger( 'bookacti_insert_template_before', [ data ] );
+
+					// Save the new template in database
 					$j.ajax({
 						url: ajaxurl, 
 						data: data, 
@@ -269,10 +271,13 @@ function bookacti_dialog_add_new_template() {
 									bookacti_bind_template_dialogs();
 								}
 
-								// Switch template the new created one
-								$j( '#bookacti-template-picker' ).val( response.template_id ).trigger( 'change' );
+								$j( '#bookacti-template-data-dialog' ).trigger( 'bookacti_template_inserted', [ response, data ] );
 
-							//If error
+								// Switch template the new created one
+								bookacti_switch_template( response.template_id );
+
+
+							// If error
 							} else if( response.status === 'failed' ) {
 								var error_message = bookacti_localized.error_create_template;
 								if( response.error === 'not_allowed' ) {
@@ -296,7 +301,7 @@ function bookacti_dialog_add_new_template() {
 						}
 					});
 
-					//Close the modal dialog
+					// Close the modal dialog
 					$j( this ).dialog( 'close' );
 				}
 			}
@@ -307,13 +312,12 @@ function bookacti_dialog_add_new_template() {
 
 /**
  * Dialog Update Template
- * @version 1.7.6
+ * @version 1.7.10
  * @param {int} template_id
  */
 function bookacti_dialog_update_template( template_id ) {
-	
 	if( ! template_id ) { return false; }
-	
+
 	// Set the dialog title
 	$j( '#bookacti-template-data-dialog' ).dialog({ 
 		title: bookacti_localized.dialog_update_template_title
@@ -322,9 +326,9 @@ function bookacti_dialog_update_template( template_id ) {
 	// Hide and deactivate duplicate fields
 	$j( '#bookacti-duplicate-template-fields' ).hide();
 	$j( '#bookacti-template-duplicated-template-id' ).attr( 'disabled', true );
-	
+
 	var template_data = bookacti.booking_system[ 'bookacti-template-calendar' ][ 'template_data' ];
-	
+
 	// General tab
 	$j( '#bookacti-template-title' ).val( template_data.title );
 	$j( '#bookacti-template-opening' ).val( template_data.start );
@@ -350,7 +354,7 @@ function bookacti_dialog_update_template( template_id ) {
 
 	// Add buttons
 	$j( '#bookacti-template-data-dialog' ).dialog( 'option', 'buttons',
-		//Add the 'OK' button
+		// Add the 'OK' button
 		[{
 			text: bookacti_localized.dialog_button_ok, 
 
@@ -361,16 +365,18 @@ function bookacti_dialog_update_template( template_id ) {
 				$j( '#bookacti-template-data-form-template-id' ).val( template_id );
 				$j( '#bookacti-template-data-form-action' ).val( 'bookactiUpdateTemplate' );
 				$j( '#bookacti-template-data-form select[multiple].bookacti-items-select-box option' ).prop( 'selected', true );
-				
+
 				if( typeof tinyMCE !== 'undefined' ) { 
 					if( tinyMCE ) { tinyMCE.triggerSave(); }
 				}
-			
+
 				var isFormValid = bookacti_validate_template_form();
 
 				if( isFormValid ) {
 					var data = $j( '#bookacti-template-data-form' ).serializeObject();
-					
+
+					$j( '#bookacti-template-data-dialog' ).trigger( 'bookacti_update_template_before', [ data ] );
+
 					bookacti_start_template_loading();
 
 					// Save changes in database
@@ -382,22 +388,24 @@ function bookacti_dialog_update_template( template_id ) {
 						success: function( response ) {
 							// If success
 							if( response.status === 'success' ) {
-								
+
 								bookacti.booking_system[ 'bookacti-template-calendar' ][ 'template_data' ] = response.template_data;
-								
+
 								// Change template metas in the select box
 								$j( '#bookacti-template-picker option[value=' + template_id + ']' ).html( response.template_data.title );
 								$j( '#bookacti-template-picker option[value=' + template_id + ']' ).data( 'template-start', response.template_data.start );
 								$j( '#bookacti-template-picker option[value=' + template_id + ']' ).data( 'template-end', response.template_data.end );
 								$j( '#bookacti-template-picker option[value=' + template_id + ']' ).attr( 'data-template-start', response.template_data.start );
 								$j( '#bookacti-template-picker option[value=' + template_id + ']' ).attr( 'data-template-end', response.template_data.end );
-								
+
 								// Dynamically update template settings
 								var events = $j( '#bookacti-template-calendar' ).fullCalendar( 'clientEvents' );
 								$j( '#bookacti-template-calendar' ).replaceWith( '<div id="bookacti-template-calendar" class="bookacti-calendar"></div>' );
 								bookacti_load_template_calendar( $j( '#bookacti-template-calendar' ) );
 								$j( '#bookacti-template-calendar' ).fullCalendar( 'addEventSource', events );
-								
+
+								$j( '#bookacti-template-data-dialog' ).trigger( 'bookacti_template_updated', [ response, data ] );
+
 							// If no changes
 							} else if ( response.status === 'nochanges' ) {
 
@@ -428,7 +436,7 @@ function bookacti_dialog_update_template( template_id ) {
 						}
 					});
 
-					//Close the dialog
+					// Close the dialog
 					$j( this ).dialog( 'close' );
 				}
 			}
@@ -439,13 +447,13 @@ function bookacti_dialog_update_template( template_id ) {
 			text: bookacti_localized.dialog_button_delete,
 			'class': 'bookacti-dialog-delete-button bookacti-dialog-left-button',
 
-			//On click on the OK Button, new values are send to a script that update the database
+			// On click on the OK Button, new values are send to a script that update the database
 			click: function() {
 				bookacti_dialog_deactivate_template( template_id );
 			}
 		}]
 	);
-	
+
 	// Open the modal dialog
 	$j( '#bookacti-template-data-dialog' ).dialog( 'open' );
 }
@@ -453,15 +461,13 @@ function bookacti_dialog_update_template( template_id ) {
 
 /**
  * Dialog Deactivate Template
+ * @version 1.7.10
  * @param {int} template_id
  * @returns {false}
  */
 function bookacti_dialog_deactivate_template( template_id ) {
-    
-	if( ! template_id ) {
-		return false;
-	}
-	
+	if( ! template_id ) { return false; }
+
 	// Open the modal dialog
 	$j( '#bookacti-delete-template-dialog' ).dialog( 'open' );
 
@@ -473,14 +479,19 @@ function bookacti_dialog_deactivate_template( template_id ) {
 
 			// On click on the OK Button, new values are send to a script that update the database
 			click: function() {
+				var data = { 
+					'action': 'bookactiDeactivateTemplate', 
+					'template_id': template_id,
+					'nonce': bookacti_localized.nonce_deactivate_template
+				};
+
+				$j( '#bookacti-delete-template-dialog' ).trigger( 'bookacti_deactivate_template_before', [ data ] );
+
 				bookacti_start_template_loading();
 
 				$j.ajax({
 					url: ajaxurl, 
-					data: { 'action': 'bookactiDeactivateTemplate', 
-							'template_id': template_id,
-							'nonce': bookacti_localized.nonce_deactivate_template
-						},
+					data: data,
 					type: 'POST',
 					dataType: 'json',
 					success: function( response ) {
@@ -497,6 +508,8 @@ function bookacti_dialog_deactivate_template( template_id ) {
 							if( $j( '#bookacti-template-picker option' ).length === 1 ) {
 								bookacti_bind_template_dialogs();
 							}
+
+							$j( '#bookacti-delete-template-dialog' ).trigger( 'bookacti_template_deactivated', [ response, data ] );
 
 							// Switch template to the first one in the select box
 							bookacti_switch_template( new_template_id );
@@ -543,15 +556,14 @@ function bookacti_dialog_deactivate_template( template_id ) {
 
 /**
  * Dialog Update Event
- * @version 1.7.5
+ * @version 1.7.10
  * @param {object} event
  */
 function bookacti_dialog_update_event( event ) {
-    
 	// Fill the form with known param
-    $j( '#bookacti-event-data-dialog' ).data( 'event-id', event.id );
-    $j( '#bookacti-event-data-dialog' ).attr( 'data-event-id', event.id );
-	
+	$j( '#bookacti-event-data-dialog' ).data( 'event-id', event.id );
+	$j( '#bookacti-event-data-dialog' ).attr( 'data-event-id', event.id );
+
 	// Usefull var
 	var event_data		= bookacti.booking_system[ 'bookacti-template-calendar' ][ 'events_data' ][ event.id ];
 	var event_bookings	= bookacti.booking_system[ 'bookacti-template-calendar' ][ 'bookings' ][ event.id ];
@@ -560,15 +572,15 @@ function bookacti_dialog_update_event( event ) {
 
 	var template_start  = bookacti.booking_system[ 'bookacti-template-calendar' ][ 'template_data' ][ 'start' ];
 	var template_end    = bookacti.booking_system[ 'bookacti-template-calendar' ][ 'template_data' ][ 'end' ];
-	
+
 	var event_day		= event.start;
 	var event_28_days	= moment( event_day ).add( 28, 'd' );
 	var repeat_from     = event_day.format( 'YYYY-MM-DD' );
 	var repeat_to       = event_28_days.isBefore( moment( template_end ) ) ? event_28_days.format( 'YYYY-MM-DD' ) : template_end;
-	
+
 	if( event_data.repeat_from && event_data.repeat_from !== '0000-00-00' )	{ repeat_from = event_data.repeat_from; };
 	if( event_data.repeat_to   && event_data.repeat_to   !== '0000-00-00' )	{ repeat_to = event_data.repeat_to; };
-	
+
 	// Fill the form with database param
 	$j( '#bookacti-event-title' ).val( event_data.multilingual_title );
 	$j( '#bookacti-event-availability' ).val( event_data.availability );
@@ -604,9 +616,9 @@ function bookacti_dialog_update_event( event ) {
 	if( typeof event_data.settings !== 'undefined' ) {
 		bookacti_fill_fields_from_array( event_data.settings, 'eventOptions' );
 	}
-	
+
 	$j( '#bookacti-event-data-dialog' ).trigger( 'bookacti_event_update_dialog', [ event ] );
-	
+
 	// Refresh qtranslate fields to make a correct display of multilingual fields
 	if( bookacti_localized.is_qtranslate ) {
 		$j( '#bookacti-event-data-dialog .qtranxs-translatable' ).each( function() { 
@@ -636,19 +648,21 @@ function bookacti_dialog_update_event( event ) {
 			$j( '#bookacti-event-data-form-event-end' ).val( event.end.format( 'YYYY-MM-DD HH:mm:ss' ) );
 			$j( '#bookacti-event-data-form-action' ).val( 'bookactiUpdateEvent' );
 			$j( '#bookacti-event-data-form select[multiple]#bookacti-event-exceptions-selectbox option' ).prop( 'selected', true );
-			
+
 			// Store new exceptions list
 			var new_exceptions = $j( '#bookacti-event-exceptions-selectbox' ).val() ? $j( '#bookacti-event-exceptions-selectbox' ).val() : [];
-			
+
 			if( typeof tinyMCE !== 'undefined' ) { 
 				if( tinyMCE ) { tinyMCE.triggerSave(); }
 			}
-			
+
 			var isFormValid = bookacti_validate_event_form( event );
-			
+
 			if( isFormValid ) {
 				var data = $j( '#bookacti-event-data-form' ).serializeObject();
-				data[ 'interval' ] = bookacti.booking_system[ 'bookacti-template-calendar' ][ 'events_interval' ];
+				data.interval = bookacti.booking_system[ 'bookacti-template-calendar' ][ 'events_interval' ];
+				
+				$j( '#bookacti-event-data-dialog' ).trigger( 'bookacti_update_event_before', [ event, data ] );
 				
 				bookacti_start_template_loading();
 
@@ -658,8 +672,7 @@ function bookacti_dialog_update_event( event ) {
 					data: data,
 					type: 'POST',
 					dataType: 'json',
-					success: function( response ){
-
+					success: function( response ) {
 						// If success
 						if( response.status === 'success' ) {
 
@@ -688,7 +701,9 @@ function bookacti_dialog_update_event( event ) {
 							$j( '#bookacti-template-calendar' ).fullCalendar( 'addEventSource', response.events );
 
 							// addEventSource will rerender events, new exceptions will then be taken into account
-
+							
+							$j( '#bookacti-event-data-dialog' ).trigger( 'bookacti_event_updated', [ event, response, data ] );
+							
 						// If no changes
 						} else if ( response.status === 'nochanges' ) {
 
@@ -777,7 +792,7 @@ function bookacti_dialog_update_event( event ) {
 
 	// Add dialog buttons
 	$j( '#bookacti-event-data-dialog' ).dialog( 'option', 'buttons', buttons );
-	
+
 	// Open the modal dialog
 	$j( '#bookacti-event-data-dialog' ).dialog( 'open' );
 }
@@ -785,54 +800,61 @@ function bookacti_dialog_update_event( event ) {
 
 /**
  * Dialog Delete Event
+ * @version 1.7.10
  * @param {object} event
  */
 function bookacti_dialog_delete_event( event ) {
-    // Open the modal dialog
-    $j( '#bookacti-delete-event-dialog' ).dialog( 'open' );
-    
-    // Add the 'OK' button
-    $j( '#bookacti-delete-event-dialog' ).dialog( 'option', 'buttons',
-        [{
-            text: bookacti_localized.dialog_button_delete,
+	// Open the modal dialog
+	$j( '#bookacti-delete-event-dialog' ).dialog( 'open' );
+
+	// Add the 'OK' button
+	$j( '#bookacti-delete-event-dialog' ).dialog( 'option', 'buttons',
+		[{
+			text: bookacti_localized.dialog_button_delete,
 			'class': 'bookacti-dialog-delete-button',
-			
-            // On click on the OK Button, new values are send to a script that update the database
-            click: function() {
-                
+
+			// On click on the OK Button, new values are send to a script that update the database
+			click: function() {
+				var data = { 
+					'action': 'bookactiDeleteEvent', 
+					'event_id': event.id,
+					'nonce': bookacti_localized.nonce_delete_event
+				}
+
+				$j( '#bookacti-delete-event-dialog' ).trigger( 'bookacti_deactivate_event_before', [ event, data ] );
+
 				bookacti_start_template_loading();
 
-                $j.ajax({
-                    url: ajaxurl, 
-                    data: { 'action': 'bookactiDeleteEvent', 
-                            'event_id': event.id,
-							'nonce': bookacti_localized.nonce_delete_event
-						},
-                    type: 'POST',
-                    dataType: 'json',
-                    success: function( response ) {
-                        if( response.status === 'success' ) {
-							
+				$j.ajax({
+					url: ajaxurl, 
+					data: data,
+					type: 'POST',
+					dataType: 'json',
+					success: function( response ) {
+						if( response.status === 'success' ) {
+
 							bookacti_delete_event( event );
-                            
-                        } else {
+
+							$j( '#bookacti-delete-event-dialog' ).trigger( 'bookacti_event_deactivated', [ event, response, data ] );
+
+						} else {
 							if( response.error === 'has_bookings' ) {
 								// If the event's booking number is not up to date, refresh it
 								if( ! bookacti_get_event_number_of_bookings( $j( '#bookacti-template-calendar' ), event ) ) {
 									bookacti_refresh_booking_numbers( $j( '#bookacti-template-calendar' ), event.id );
 								}
-								
+
 								// If the event is repeated, display unbind dialog
 								var repeat_freq = bookacti.booking_system[ 'bookacti-template-calendar' ][ 'events_data' ][ event.id ][ 'repeat_freq' ];
 								if( repeat_freq !== 'none' ) {
 									bookacti_dialog_unbind_occurences( event, [ 'delete' ] );
 								} 
-								
+
 								// If the event is single, diplay confirmation box to 
 								else {
 									bookacti_dialog_delete_booked_event( event );
 								}
-								
+
 							} else {
 								var error_message = bookacti_localized.error_delete_event;
 								if( response.error === 'not_allowed' ) {
@@ -841,113 +863,121 @@ function bookacti_dialog_delete_event( event ) {
 								alert( error_message );
 								console.log( response );
 							}
-                        }
-                    },
-                    error: function( e ){
-                        alert( 'AJAX ' + bookacti_localized.error_delete_event );
-                        console.log( e );
-                    },
-                    complete: function() { 
+						}
+					},
+					error: function( e ){
+						alert( 'AJAX ' + bookacti_localized.error_delete_event );
+						console.log( e );
+					},
+					complete: function() { 
 						bookacti_stop_template_loading(); 
 					}
-                });
+				});
 
-                // Close the modal dialog
-                $j( this ).dialog( 'close' );
+				// Close the modal dialog
+				$j( this ).dialog( 'close' );
 				$j( '#bookacti-event-data-dialog' ).dialog( 'close' );
-            }
-        },
-        {
-            text: bookacti_localized.dialog_button_cancel,
-            
-            click: function() {
-                // Close the modal dialog
-                $j( this ).dialog( 'close' );
-            }
-        }]
-    );
+			}
+		},
+		{
+			text: bookacti_localized.dialog_button_cancel,
+
+			click: function() {
+				// Close the modal dialog
+				$j( this ).dialog( 'close' );
+			}
+		}]
+	);
 }
 
 
 /**
  * Dialog Delete a booked Event
+ * @version 1.7.10
  * @param {object} event
  */
 function bookacti_dialog_delete_booked_event( event ) {
-    // Open the modal dialog
-    $j( '#bookacti-delete-booked-event-dialog' ).dialog( 'open' );
-    
-    // Add the 'OK' button
-    $j( '#bookacti-delete-booked-event-dialog' ).dialog( 'option', 'buttons',
-        [{
-            text: bookacti_localized.dialog_button_delete,
+	// Open the modal dialog
+	$j( '#bookacti-delete-booked-event-dialog' ).dialog( 'open' );
+
+	// Add the 'OK' button
+	$j( '#bookacti-delete-booked-event-dialog' ).dialog( 'option', 'buttons',
+		[{
+			text: bookacti_localized.dialog_button_delete,
 			'class': 'bookacti-dialog-delete-button',
-			
-            // On click on the OK Button, new values are send to a script that update the database
-            click: function() {
-                
+
+			// On click on the OK Button, new values are send to a script that update the database
+			click: function() {
+				var data = { 
+					'action': 'bookactiDeleteEventForced', 
+					'event_id': event.id,
+					'nonce': bookacti_localized.nonce_delete_event_forced
+				};
+
+				$j( '#bookacti-delete-booked-event-dialog' ).trigger( 'bookacti_deactivate_event_before', [ event, data ] );
+
 				bookacti_start_template_loading();
 
-                $j.ajax({
-                    url: ajaxurl, 
-                    data: { 'action': 'bookactiDeleteEventForced', 
-                            'event_id': event.id,
-							'nonce': bookacti_localized.nonce_delete_event_forced
-						},
-                    type: 'POST',
-                    dataType: 'json',
-                    success: function( response ) {
-                        if( response.status === 'success' ) {
-							
+				$j.ajax({
+					url: ajaxurl, 
+					data: data,
+					type: 'POST',
+					dataType: 'json',
+					success: function( response ) {
+						if( response.status === 'success' ) {
+
 							bookacti_delete_event( event );
-                            
-                        } else {
+
+							$j( '#bookacti-delete-booked-event-dialog' ).trigger( 'bookacti_event_deactivated', [ event, response, data ] );
+
+						} else {
 							var error_message = bookacti_localized.error_delete_event;
 							if( response.error === 'not_allowed' ) {
 								error_message += '\n' + bookacti_localized.error_not_allowed;
 							}
 							alert( error_message );
 							console.log( response );
-                        }
-                    },
-                    error: function( e ){
-                        alert( 'AJAX ' + bookacti_localized.error_delete_event );
-                        console.log( e );
-                    },
-                    complete: function() { 
+						}
+					},
+					error: function( e ){
+						alert( 'AJAX ' + bookacti_localized.error_delete_event );
+						console.log( e );
+					},
+					complete: function() { 
 						bookacti_stop_template_loading(); 
 					}
-                });
+				});
 
-                // Close the modal dialog
-                $j( this ).dialog( 'close' );
+				// Close the modal dialog
+				$j( this ).dialog( 'close' );
 				$j( '#bookacti-event-data-dialog' ).dialog( 'close' );
-            }
-        },
-        {
-            text: bookacti_localized.dialog_button_cancel,
-            
-            click: function() {
-                // Close the modal dialog
-                $j( this ).dialog( 'close' );
-            }
-        }]
-    );
+			}
+		},
+		{
+			text: bookacti_localized.dialog_button_cancel,
+
+			click: function() {
+				// Close the modal dialog
+				$j( this ).dialog( 'close' );
+			}
+		}]
+	);
 }
 
 
 /**
  * Dialog Unbind occurence of a locked repeating event
+ * @version 1.7.10
  * @param {object} event
  * @param {array} errors
  */
 function bookacti_dialog_unbind_occurences( event, errors ) {
-    errors = errors || [];
-	
+	errors = errors || [];
+
 	// Open the modal dialog
-    $j( '#bookacti-unbind-booked-event-dialog' ).dialog( 'open' );
-    
-    // Fill the errors so that the user understand what triggered the dialog
+	$j( '#bookacti-unbind-booked-event-dialog' ).dialog( 'open' );
+
+	// Fill the errors so that the user understand what triggered the dialog
 	if( errors.length > 0 ) {
 		$j( '#bookacti-unbind-booked-event-error-list-container ul' ).empty();
 		$j.each( errors, function( i, error ){ 
@@ -959,8 +989,8 @@ function bookacti_dialog_unbind_occurences( event, errors ) {
 	} else {
 		$j( '#bookacti-unbind-booked-event-error-list-container' ).hide();
 	}
-    
-    // Add buttons
+
+	// Add buttons
 	var unbind_selected_button = {
 		text: bookacti_localized.dialog_button_unbind_selected,
 		'class': 'bookacti-dialog-delete-button',
@@ -986,10 +1016,10 @@ function bookacti_dialog_unbind_occurences( event, errors ) {
 			$j( this ).dialog( 'close' );
 		}
 	};
-	
+
 	var buttons = [ unbind_selected_button, unbind_booked_button, cancel_button ];
-	
-    $j( '#bookacti-unbind-booked-event-dialog' ).dialog( 'option', 'buttons', buttons );
+
+	$j( '#bookacti-unbind-booked-event-dialog' ).dialog( 'option', 'buttons', buttons );
 }
 
 
@@ -999,13 +1029,10 @@ function bookacti_dialog_unbind_occurences( event, errors ) {
 
 /**
  * Dialog Choose between creating a brand new activity or binding an existing activity to current template
- * @returns {Boolean}
+ * @version 1.7.10
  */
 function bookacti_dialog_choose_activity_creation_type() {
-	
-	if( ! bookacti.selected_template ) {
-		return false;
-	}
+	if( ! bookacti.selected_template ) { return; }
 	
 	// Add buttons
 	var create_activity_button = {
@@ -1050,13 +1077,10 @@ function bookacti_dialog_choose_activity_creation_type() {
 
 /**
  * Dialog Import Activity
- * @returns {false}
+ * @version 1.7.10
  */
 function bookacti_dialog_import_activity() {
-	
-	if( ! bookacti.selected_template ) {
-		return false;
-	}
+	if( ! bookacti.selected_template ) { return; }
 	
 	// Open the modal dialog
 	$j( '#bookacti-activity-import-dialog' ).dialog( 'open' );
@@ -1083,21 +1107,24 @@ function bookacti_dialog_import_activity() {
 				var activity_ids = $j( 'select#activities-to-import' ).val();
 
 				if( ! $j.isEmptyObject( activity_ids ) ) {
-
+					var data = { 
+						'action': 'bookactiImportActivities', 
+						'activity_ids': activity_ids,
+						'template_id': bookacti.selected_template,
+						'nonce': bookacti_localized.nonce_import_activity
+					};
+					
+					$j( '#bookacti-activity-import-dialog' ).trigger( 'bookacti_import_activities_before', [ data ] );
+					
 					bookacti_start_template_loading();
 
 					$j.ajax({
 						url: ajaxurl, 
-						data: { 'action': 'bookactiImportActivities', 
-								'activity_ids': activity_ids,
-								'template_id': bookacti.selected_template,
-								'nonce': bookacti_localized.nonce_import_activity
-							},
+						data: data,
 						type: 'POST',
 						dataType: 'json',
 						success: function(response) {
 							if( response.status === 'success' ) {
-								
 								// Update activities data array
 								bookacti.booking_system[ 'bookacti-template-calendar' ][ 'activities_data' ] = response.activities_data;
 								
@@ -1116,7 +1143,9 @@ function bookacti_dialog_import_activity() {
 
 								// Update create form link
 								bookacti_add_activities_to_create_form_link( activity_ids );
-
+								
+								$j( '#bookacti-activity-import-dialog' ).trigger( 'bookacti_activities_imported', [ response, data ] );
+								
 								// Close the modal dialogs
 								$j( '#bookacti-activity-import-dialog' ).dialog( 'close' );
 								$j( '#bookacti-activity-create-method-dialog' ).dialog( 'close' );
@@ -1162,12 +1191,10 @@ function bookacti_dialog_import_activity() {
 
 /**
  * Dialog Create Activity
- * @version 1.7.5
- * @returns {false}
+ * @version 1.7.10
  */
 function bookacti_dialog_create_activity() {
-	
-	if( ! bookacti.selected_template ) { return false; }
+	if( ! bookacti.selected_template ) { return; }
 	
 	// Set the dialog title
 	$j( '#bookacti-activity-data-dialog' ).dialog({ 
@@ -1209,7 +1236,9 @@ function bookacti_dialog_create_activity() {
 				var is_form_valid = bookacti_validate_activity_form();
 
 				if( is_form_valid ) {
-					var data = $j( '#bookacti-activity-data-form' ).serialize();
+					var data = $j( '#bookacti-activity-data-form' ).serializeObject();
+					
+					$j( '#bookacti-activity-data-dialog' ).trigger( 'bookacti_insert_activity_before', [ data ] );
 					
 					bookacti_start_template_loading();
 
@@ -1219,13 +1248,9 @@ function bookacti_dialog_create_activity() {
 						data: data,
 						type: 'POST',
 						dataType: 'json',
-						success: function( response ){
-							
+						success: function( response ) {
 							// Retrieve plugin path to display the gear
-							var plugin_path = bookacti_localized.plugin_path;
-
 							if( response.status === 'success' ) {
-								
 								// Update activities data array
 								bookacti.booking_system[ 'bookacti-template-calendar' ][ 'activities_data' ][ response.activity_id ] = response.activity_data;
 								
@@ -1239,7 +1264,8 @@ function bookacti_dialog_create_activity() {
 
 								// Update create form link
 								bookacti_add_activities_to_create_form_link( response.activity_id );
-
+								
+								$j( '#bookacti-activity-data-dialog' ).trigger( 'bookacti_activity_inserted', [ response, data ] );
 
 							// If error
 							} else if( response.status === 'failed' ) {
@@ -1277,12 +1303,10 @@ function bookacti_dialog_create_activity() {
 
 /**
  * Open a dialog to update an activity
- * @version 1.7.5
- * @param {int} activity_id
+ * @version 1.7.10
  */
 function bookacti_dialog_update_activity( activity_id ) {
-
-	if( ! bookacti.selected_template || ! activity_id ) { return false; }
+	if( ! bookacti.selected_template || ! activity_id ) { return; }
 	
 	// Set the dialog title
 	$j( '#bookacti-activity-data-dialog' ).dialog({ 
@@ -1366,7 +1390,9 @@ function bookacti_dialog_update_activity( activity_id ) {
 				var is_form_valid = bookacti_validate_activity_form();
 
 				if( is_form_valid ) {
-					var data = $j( '#bookacti-activity-data-form' ).serialize();
+					var data = $j( '#bookacti-activity-data-form' ).serializeObject();
+					
+					$j( '#bookacti-activity-data-dialog' ).trigger( 'bookacti_update_activity_before', [ data ] );
 					
 					bookacti_start_template_loading();
 
@@ -1376,8 +1402,7 @@ function bookacti_dialog_update_activity( activity_id ) {
 						data: data,
 						type: 'POST',
 						dataType: 'json',
-						success: function( response ){
-							
+						success: function( response ) {
 							// If success
 							if( response.status === 'success' ) {
 								// Update activities data array
@@ -1393,17 +1418,19 @@ function bookacti_dialog_update_activity( activity_id ) {
 
 								// Clear the calendar and refetch events
 								bookacti_refetch_events_on_template();
-
+								
+								$j( '#bookacti-activity-data-dialog' ).trigger( 'bookacti_activity_updated', [ response, data ] );
+								
 							// If error
-							} else if (response.status === 'failed_update_activity' ) {
+							} else if ( response.status === 'failed_update_activity' ) {
 								alert( bookacti_localized.error_update_activity );
 								console.log( response );
 
-							} else if (response.status === 'failed_update_bound_events' ) {
+							} else if ( response.status === 'failed_update_bound_events' ) {
 								alert( bookacti_localized.error_update_bound_events );
 								console.log( response );
 
-							} else if (response.status === 'no_changes' ) {
+							} else if ( response.status === 'no_changes' ) {
 
 							} else if ( response.status === 'failed' ) {
 								var error_message = bookacti_localized.error_update_activity;
@@ -1449,93 +1476,98 @@ function bookacti_dialog_update_activity( activity_id ) {
 
 /**
  * Dialog Delete Activity
+ * @version 1.7.10
  * @param {int} activity_id
  */
 function bookacti_dialog_delete_activity( activity_id ) {
-	if( activity_id ) {
-		
-		// Check default option
-		$j( '#bookacti-delete-activity-events' ).prop( 'checked', false );
-		
-		// Open the modal dialog
-		$j( '#bookacti-delete-activity-dialog' ).dialog( 'open' );
+	if( ! activity_id ) { return; }
 
-		// Add the 'OK' button
-		$j( '#bookacti-delete-activity-dialog' ).dialog( 'option', 'buttons',
-			[{
-				text: bookacti_localized.dialog_button_delete,
-				'class': 'bookacti-dialog-delete-button',
+	// Check default option
+	$j( '#bookacti-delete-activity-events' ).prop( 'checked', false );
 
-				//On click on the OK Button, new values are send to a script that update the database
-				click: function() {
-					
-					// Check if events must be deleted too
-					var delete_events = $j( '#bookacti-delete-activity-events' ).is( ':checked' ) ? 1 : 0;
-					
-					bookacti_start_template_loading();
+	// Open the modal dialog
+	$j( '#bookacti-delete-activity-dialog' ).dialog( 'open' );
 
-					$j.ajax({
-						url: ajaxurl, 
-						data: { 'action': 'bookactiDeactivateActivity', 
-								'activity_id': activity_id,
-								'template_id': bookacti.selected_template,
-								'delete_events': delete_events,
-								'nonce': bookacti_localized.nonce_deactivate_activity
-							},
-						type: 'POST',
-						dataType: 'json',
-						success: function(response) {
-							if( response.status === 'success' ) {
-								// Update activities data array
-								delete bookacti.booking_system[ 'bookacti-template-calendar' ][ 'activities_data' ][ activity_id ];
-								
-								$j( '.fc-event[data-activity-id="' + activity_id + '"]' ).parents( '.activity-row' ).remove();
-								
-								// refresh events if user chose to deleted them
-								if( delete_events ) {
-									bookacti_refetch_events_on_template();
-								}
-								
-								// Display tuto if there is no more activities available
-								bookacti_display_activity_tuto_if_no_activity_available();
-								
-								// Update create form link
-								bookacti_remove_activities_from_create_form_link( activity_id );
-								
-							} else {
-								var error_message = bookacti_localized.error_delete_activity;
-								if( response.error === 'not_allowed' ) {
-									error_message += '\n' + bookacti_localized.error_not_allowed;
-								}
-								alert( error_message );
-								console.log( response );
+	// Add the 'OK' button
+	$j( '#bookacti-delete-activity-dialog' ).dialog( 'option', 'buttons',
+		[{
+			text: bookacti_localized.dialog_button_delete,
+			'class': 'bookacti-dialog-delete-button',
+
+			//On click on the OK Button, new values are send to a script that update the database
+			click: function() {
+				// Check if events must be deleted too
+				var delete_events = $j( '#bookacti-delete-activity-events' ).is( ':checked' ) ? 1 : 0;
+				var data = { 
+					'action': 'bookactiDeactivateActivity', 
+					'activity_id': activity_id,
+					'template_id': bookacti.selected_template,
+					'delete_events': delete_events,
+					'nonce': bookacti_localized.nonce_deactivate_activity
+				};
+				
+				$j( '#bookacti-delete-activity-dialog' ).trigger( 'bookacti_deactivate_activity_before', [ data ] );
+				
+				bookacti_start_template_loading();
+
+				$j.ajax({
+					url: ajaxurl, 
+					data: data,
+					type: 'POST',
+					dataType: 'json',
+					success: function(response) {
+						if( response.status === 'success' ) {
+							// Update activities data array
+							delete bookacti.booking_system[ 'bookacti-template-calendar' ][ 'activities_data' ][ activity_id ];
+
+							$j( '.fc-event[data-activity-id="' + activity_id + '"]' ).parents( '.activity-row' ).remove();
+
+							// refresh events if user chose to deleted them
+							if( delete_events ) {
+								bookacti_refetch_events_on_template();
 							}
-						},
-						error: function( e ){
-							alert( 'AJAX ' + bookacti_localized.error_delete_activity );
-							console.log( e );
-						},
-						complete: function() { 
-							bookacti_stop_template_loading(); 
+
+							// Display tuto if there is no more activities available
+							bookacti_display_activity_tuto_if_no_activity_available();
+
+							// Update create form link
+							bookacti_remove_activities_from_create_form_link( activity_id );
+							
+							$j( '#bookacti-delete-activity-dialog' ).trigger( 'bookacti_activity_deactivated', [ response, data ] );
+							
+						} else {
+							var error_message = bookacti_localized.error_delete_activity;
+							if( response.error === 'not_allowed' ) {
+								error_message += '\n' + bookacti_localized.error_not_allowed;
+							}
+							alert( error_message );
+							console.log( response );
 						}
-					});
+					},
+					error: function( e ){
+						alert( 'AJAX ' + bookacti_localized.error_delete_activity );
+						console.log( e );
+					},
+					complete: function() { 
+						bookacti_stop_template_loading(); 
+					}
+				});
 
-					//Close the modal dialog
-					$j( this ).dialog( 'close' );
-					$j( '#bookacti-activity-data-dialog' ).dialog( 'close' );
-					$j( '#bookacti-activity-create-method-dialog' ).dialog( 'close' );
-				}
-			},
-			{
-				text: bookacti_localized.dialog_button_cancel,
+				// Close the modal dialog
+				$j( this ).dialog( 'close' );
+				$j( '#bookacti-activity-data-dialog' ).dialog( 'close' );
+				$j( '#bookacti-activity-create-method-dialog' ).dialog( 'close' );
+			}
+		},
+		{
+			text: bookacti_localized.dialog_button_cancel,
 
-				click: function() {
-					//Close the modal dialog
-					$j( this ).dialog( 'close' );
-				}
-			}]
-		);
-	}
+			click: function() {
+				//Close the modal dialog
+				$j( this ).dialog( 'close' );
+			}
+		}]
+	);
 }
 
 
@@ -1545,11 +1577,10 @@ function bookacti_dialog_delete_activity( activity_id ) {
 
 /**
  * Create a group of events
- * @version 1.7.5
+ * @version 1.7.10
  * @param {int} category_id
  */
 function bookacti_dialog_create_group_of_events( category_id ) {
-	
 	category_id = category_id ? category_id : bookacti.selected_category;
 	
 	// Change dialog title
@@ -1595,7 +1626,6 @@ function bookacti_dialog_create_group_of_events( category_id ) {
 
 			// On click on the OK Button, new values are send to a script that update the database
 			click: function() {
-				
 				// Prepare fields
 				$j( '#bookacti-group-of-events-action' ).val( 'bookactiInsertGroupOfEvents' );
 				$j( '#bookacti-group-of-events-form select[multiple].bookacti-items-select-box option' ).prop( 'selected', true );
@@ -1611,9 +1641,11 @@ function bookacti_dialog_create_group_of_events( category_id ) {
 				var is_form_valid = bookacti_validate_group_of_events_form();
 				
 				if( is_form_valid ) {
-					var data = $j( '#bookacti-group-of-events-form' ).serializeArray();
-					data.push( { name: 'template_id', value: bookacti.selected_template } );
-					data.push( { name: 'events', value: JSON.stringify( bookacti.booking_system[ 'bookacti-template-calendar' ][ 'selected_events' ] ) } );
+					var data = $j( '#bookacti-group-of-events-form' ).serializeObject();
+					data.template_id = bookacti.selected_template;
+					data.events = JSON.stringify( bookacti.booking_system[ 'bookacti-template-calendar' ][ 'selected_events' ] );
+					
+					$j( '#bookacti-group-of-events-dialog' ).trigger( 'bookacti_insert_group_of_events_before', [ data ] );
 					
 					bookacti_start_template_loading();
 					
@@ -1623,8 +1655,7 @@ function bookacti_dialog_create_group_of_events( category_id ) {
 						data: data,
 						type: 'POST',
 						dataType: 'json',
-						success: function( response ){
-							
+						success: function( response ) {
 							// If success
 							if( response.status === 'success' ) {
 								// Store the events of the groups and update group and category data
@@ -1650,8 +1681,9 @@ function bookacti_dialog_create_group_of_events( category_id ) {
 								// Refresh events
 								$j( '#bookacti-template-calendar' ).fullCalendar( 'rerenderEvents' );
 								
+								$j( '#bookacti-group-of-events-dialog' ).trigger( 'bookacti_group_of_events_inserted', [ response, data ] );
 								
-							//If error
+							// If error
 							} else {
 								var error_message = bookacti_localized.error_create_group_of_events;
 								if( response.error === 'not_allowed' ) {
@@ -1670,7 +1702,7 @@ function bookacti_dialog_create_group_of_events( category_id ) {
 						}
 					});
 
-					//Close the modal dialogs
+					// Close the modal dialogs
 					$j( '#bookacti-group-of-events-dialog' ).dialog( 'close' );
 				}
 			}
@@ -1681,11 +1713,10 @@ function bookacti_dialog_create_group_of_events( category_id ) {
 
 /**
  * Update a group of events with selected events 
- * @version 1.7.5
+ * @version 1.7.10
  * @param {int} group_id
  */
 function bookacti_dialog_update_group_of_events( group_id ) {
-	
 	// Change dialog title
 	$j( '#bookacti-group-of-events-dialog' ).dialog({ 
 		title: bookacti_localized.dialog_update_group_of_events_title
@@ -1732,7 +1763,6 @@ function bookacti_dialog_update_group_of_events( group_id ) {
 			bookacti_refresh_qtx_field( this ); 
 		});
 	}
-
 	
 	// Add the 'OK' button
 	$j( '#bookacti-group-of-events-dialog' ).dialog( 'option', 'buttons',
@@ -1741,7 +1771,6 @@ function bookacti_dialog_update_group_of_events( group_id ) {
 
 			//On click on the OK Button, new values are send to a script that update the database
 			click: function() {
-				
 				// Prepare fields
 				$j( '#bookacti-group-of-events-action' ).val( 'bookactiUpdateGroupOfEvents' );
 				$j( '#bookacti-group-of-events-form select[multiple].bookacti-items-select-box option' ).prop( 'selected', true );
@@ -1757,9 +1786,11 @@ function bookacti_dialog_update_group_of_events( group_id ) {
 				var is_form_valid = bookacti_validate_group_of_events_form();
 				
 				if( is_form_valid ) {
-					var data = $j( '#bookacti-group-of-events-form' ).serializeArray();
-					data.push( { name: 'group_id', value: group_id } );
-					data.push( { name: 'events', value: JSON.stringify( bookacti.booking_system[ 'bookacti-template-calendar' ][ 'selected_events' ] ) } );
+					var data = $j( '#bookacti-group-of-events-form' ).serializeObject();
+					data.group_id = group_id;
+					data.events = JSON.stringify( bookacti.booking_system[ 'bookacti-template-calendar' ][ 'selected_events' ] );
+					
+					$j( '#bookacti-group-of-events-dialog' ).trigger( 'bookacti_update_group_of_events_before', [ data ] );
 					
 					bookacti_start_template_loading();
 					
@@ -1770,10 +1801,8 @@ function bookacti_dialog_update_group_of_events( group_id ) {
 						type: 'POST',
 						dataType: 'json',
 						success: function( response ){
-							
 							// If success
 							if( response.status === 'success' ) {
-								
 								// Update the events of the groups and the group and category data
 								bookacti.booking_system[ 'bookacti-template-calendar' ][ 'groups_events' ][ group_id ]						= response.group_events;
 								bookacti.booking_system[ 'bookacti-template-calendar' ][ 'groups_data' ][ group_id ]						= response.group;
@@ -1803,6 +1832,7 @@ function bookacti_dialog_update_group_of_events( group_id ) {
 								// Refresh events
 								$j( '#bookacti-template-calendar' ).fullCalendar( 'rerenderEvents' );
 								
+								$j( '#bookacti-group-of-events-dialog' ).trigger( 'bookacti_group_of_events_updated', [ response, data ] );
 								
 							// If error
 							} else {
@@ -1825,7 +1855,7 @@ function bookacti_dialog_update_group_of_events( group_id ) {
 						}
 					});
 
-					//Close the modal dialogs
+					// Close the modal dialogs
 					$j( '#bookacti-group-of-events-dialog' ).dialog( 'close' );
 				}
 			}
@@ -1849,34 +1879,38 @@ function bookacti_dialog_update_group_of_events( group_id ) {
 
 /**
  * Dialog Delete a group of events
+ * @version 1.7.10
  * @param {int} group_id
  */
 function bookacti_dialog_delete_group_of_events( group_id ) {
-	//Open the modal dialog
+	// Open the modal dialog
 	$j( '#bookacti-delete-group-of-events-dialog' ).dialog( 'open' );
 
-	//Add the 'OK' button
+	// Add the 'OK' button
 	$j( '#bookacti-delete-group-of-events-dialog' ).dialog( 'option', 'buttons',
 		[{
 			text: bookacti_localized.dialog_button_delete,
 			'class': 'bookacti-dialog-delete-button',
 
-			//On click on the OK Button, new values are send to a script that update the database
+			// On click on the OK Button, new values are send to a script that update the database
 			click: function() {
-
+				var data = { 
+					'action': 'bookactiDeleteGroupOfEvents', 
+					'group_id': group_id,
+					'nonce': bookacti_localized.nonce_delete_group_of_events
+				};
+				
+				$j( '#bookacti-delete-group-of-events-dialog' ).trigger( 'bookacti_deactivate_group_of_events_before', [ data ] );
+				
 				bookacti_start_template_loading();
 
 				$j.ajax({
 					url: ajaxurl, 
-					data: { 'action': 'bookactiDeleteGroupOfEvents', 
-							'group_id': group_id,
-							'nonce': bookacti_localized.nonce_delete_group_of_events
-						},
+					data: data,
 					type: 'POST',
 					dataType: 'json',
 					success: function( response ) {
 						if( response.status === 'success' ) {
-							
 							// Update global
 							delete bookacti.booking_system[ 'bookacti-template-calendar' ][ 'groups_data' ][ group_id ];
 							delete bookacti.booking_system[ 'bookacti-template-calendar' ][ 'groups_events' ][ group_id ];
@@ -1889,6 +1923,7 @@ function bookacti_dialog_delete_group_of_events( group_id ) {
 							$j( '#bookacti-template-calendar' ).fullCalendar( 'rerenderEvents' );
 							$j( '#bookacti-insert-group-of-events' ).css( 'visibility', 'hidden' );
 							
+							$j( '#bookacti-delete-group-of-events-dialog' ).trigger( 'bookacti_group_of_events_deactivated', [ response, data ] );
 							
 						} else {
 							var error_message = bookacti_localized.error_delete_group_of_events;
@@ -1908,7 +1943,7 @@ function bookacti_dialog_delete_group_of_events( group_id ) {
 					}
 				});
 
-				//Close the modal dialog
+				// Close the modal dialog
 				$j( this ).dialog( 'close' );
 				$j( '#bookacti-group-of-events-dialog' ).dialog( 'close' );
 			}
@@ -1917,7 +1952,7 @@ function bookacti_dialog_delete_group_of_events( group_id ) {
 			text: bookacti_localized.dialog_button_cancel,
 
 			click: function() {
-				//Close the modal dialog
+				// Close the modal dialog
 				$j( this ).dialog( 'close' );
 			}
 		}]
@@ -1930,11 +1965,10 @@ function bookacti_dialog_delete_group_of_events( group_id ) {
 
 /**
  * Update a group category
- * @version 1.7.5
+ * @version 1.7.10
  * @param {int} category_id
  */
 function bookacti_dialog_update_group_category( category_id ) {
-	
 	var category_data = bookacti.booking_system[ 'bookacti-template-calendar' ][ 'group_categories_data' ][ category_id ];
 	
 	// General tab
@@ -1953,14 +1987,13 @@ function bookacti_dialog_update_group_category( category_id ) {
 			bookacti_refresh_qtx_field( this ); 
 		});
 	}
-
-
+	
 	// Add the 'OK' button
 	$j( '#bookacti-group-category-dialog' ).dialog( 'option', 'buttons',
 		[{
 			text: bookacti_localized.dialog_button_ok,
 
-			//On click on the OK Button, new values are send to a script that update the database
+			// On click on the OK Button, new values are send to a script that update the database
 			click: function() {
 
 				// Prepare fields
@@ -1974,22 +2007,22 @@ function bookacti_dialog_update_group_category( category_id ) {
 				var is_form_valid = bookacti_validate_group_category_form();
 
 				if( is_form_valid ) {
-					var data = $j( '#bookacti-group-category-form' ).serializeArray();
-					data.push( { name: 'category_id', value: category_id } );
+					var data = $j( '#bookacti-group-category-form' ).serializeObject();
+					data.category_id = category_id;
+					
+					$j( '#bookacti-group-category-dialog' ).trigger( 'bookacti_update_group_category_before', [ data ] );
 					
 					bookacti_start_template_loading();
 
-					//Save the new activity in database
+					// Save the new activity in database
 					$j.ajax({
 						url: ajaxurl, 
 						data: data,
 						type: 'POST',
 						dataType: 'json',
-						success: function( response ){
-							
+						success: function( response ) {
 							// If success
 							if( response.status === 'success' ) {
-								
 								// Update global
 								bookacti.booking_system[ 'bookacti-template-calendar' ][ 'group_categories_data' ][ category_id ] = response.category;
 								
@@ -2001,8 +2034,9 @@ function bookacti_dialog_update_group_category( category_id ) {
 								// Update category title in selectbox
 								$j( '#bookacti-group-of-events-category-selectbox option[value="' + category_id + '"]' ).html( response.category.title );
 								
+								$j( '#bookacti-group-category-dialog' ).trigger( 'bookacti_group_category_updated', [ response, data ] );
 								
-							//If error
+							// If error
 							} else if( response.status === 'failed' ) {
 								var error_message = bookacti_localized.error_update_group_category;
 								if( response.error === 'not_allowed' ) {
@@ -2021,7 +2055,7 @@ function bookacti_dialog_update_group_category( category_id ) {
 						}
 					});
 
-					//Close the modal dialogs
+					// Close the modal dialogs
 					$j( '#bookacti-group-category-dialog' ).dialog( 'close' );
 				}
 			}
@@ -2031,7 +2065,7 @@ function bookacti_dialog_update_group_category( category_id ) {
 			text: bookacti_localized.dialog_button_delete,
 			'class': 'bookacti-dialog-delete-button bookacti-dialog-left-button',
 			
-			//On click on the OK Button, new values are send to a script that update the database
+			// On click on the OK Button, new values are send to a script that update the database
 			click: function() {
 				bookacti_dialog_delete_group_category( category_id );
 			}
@@ -2045,6 +2079,7 @@ function bookacti_dialog_update_group_category( category_id ) {
 
 /**
  * Delete a group category
+ * @version 1.7.10
  * @param {int} category_id
  */
 function bookacti_dialog_delete_group_category( category_id ) {
@@ -2059,20 +2094,23 @@ function bookacti_dialog_delete_group_category( category_id ) {
 
 			// On click on the OK Button, new values are send to a script that update the database
 			click: function() {
-
+				var data = { 
+					'action': 'bookactiDeleteGroupCategory', 
+					'category_id': category_id,
+					'nonce': bookacti_localized.nonce_delete_group_category
+				};
+				
+				$j( '#bookacti-delete-group-category-dialog' ).trigger( 'bookacti_deactivate_group_category_before', [ data ] );
+				
 				bookacti_start_template_loading();
 
 				$j.ajax({
 					url: ajaxurl, 
-					data: { 'action': 'bookactiDeleteGroupCategory', 
-							'category_id': category_id,
-							'nonce': bookacti_localized.nonce_delete_group_category
-						},
+					data: data,
 					type: 'POST',
 					dataType: 'json',
 					success: function( response ) {
 						if( response.status === 'success' ) {
-							
 							// Update global
 							delete bookacti.booking_system[ 'bookacti-template-calendar' ][ 'group_categories_data' ][ category_id ];
 							bookacti.booking_system[ 'bookacti-template-calendar' ][ 'selected_events' ] = [];
@@ -2103,6 +2141,7 @@ function bookacti_dialog_delete_group_category( category_id ) {
 								$j( '#bookacti-template-add-group-of-events-tuto-select-events' ).show();
 							}
 							
+							$j( '#bookacti-delete-group-category-dialog' ).trigger( 'bookacti_group_category_deactivated', [ response, data ] );
 							
 						} else {
 							var error_message = bookacti_localized.error_delete_group_category;
@@ -2122,7 +2161,7 @@ function bookacti_dialog_delete_group_category( category_id ) {
 					}
 				});
 
-				//Close the modal dialog
+				// Close the modal dialog
 				$j( this ).dialog( 'close' );
 				$j( '#bookacti-group-category-dialog' ).dialog( 'close' );
 			}
@@ -2131,7 +2170,7 @@ function bookacti_dialog_delete_group_category( category_id ) {
 			text: bookacti_localized.dialog_button_cancel,
 
 			click: function() {
-				//Close the modal dialog
+				// Close the modal dialog
 				$j( this ).dialog( 'close' );
 			}
 		}]

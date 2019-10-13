@@ -440,7 +440,7 @@ function bookacti_dialog_refund_confirmation( message ) {
 
 /**
  * Change Booking State
- * @version 1.7.4
+ * @version 1.7.10
  * @param {int} booking_id
  * @param {string} booking_type
  */
@@ -552,7 +552,7 @@ function bookacti_dialog_change_booking_state( booking_id, booking_type ) {
 								
 								// Update payment status
 								if( payment_status !== new_payment_status ) {
-									$j( 'body' ).trigger( 'bookacti_payment_status_changed', [ booking_id, booking_type, new_payment_status, payment_status ] );
+									$j( 'body' ).trigger( 'bookacti_payment_status_changed', [ booking_id, booking_type, new_payment_status, payment_status, is_bookings_page, response.active_changed ] );
 								}
 								
 							} else if( response.status === 'failed' ) {

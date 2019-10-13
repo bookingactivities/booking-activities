@@ -61,7 +61,8 @@ label[for="bookacti-booking-filter-dates-to"] + input#bookacti-booking-filter-da
 #bookacti-booking-list-container tr.is-expanded .row-actions	{ display: block; }
 #bookacti-booking-list-container .has-row-actions				{ position: relative; }
 
-#bookacti-booking-list tbody td { vertical-align: middle; }
+#bookacti-booking-list .wp-list-table.widefat			{ border-collapse: collapse; }
+#bookacti-booking-list tbody td							{ vertical-align: middle; }
 #bookacti-booking-list-container .column-id .sorting-indicator,
 #bookacti-booking-list-container .column-quantity .sorting-indicator { display: inline-block; vertical-align: top; float: none; }
 #bookacti-booking-list-container .column-id,

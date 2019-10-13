@@ -42,9 +42,7 @@ function bookacti_fetch_woo_products() {
 
 /**
  * Get booking event data to store in order item meta
- * 
  * @since 1.1.0
- * 
  * @global wpdb $wpdb
  * @param int $booking_id
  * @return object
@@ -95,6 +93,48 @@ function bookacti_get_booking_expiration_date( $booking_id ) {
 	$expiration_date	= $wpdb->get_var( $query_prep );
 
 	return $expiration_date;
+}
+
+
+
+/**
+ * Check if a booking is currently in cart and return its id(s)
+ * @since 1.7.10 (was bookacti_booking_exists)
+ * @global wpdb $wpdb
+ * @param string $user_id
+ * @param int $event_id
+ * @param string $event_start
+ * @param string $event_end
+ * @param boolean $check_expired
+ * @return array
+ */
+function bookacti_get_in_cart_bookings_ids( $user_id, $event_id, $event_start, $event_end, $check_expired = false ) {
+	global $wpdb;
+	
+	$query = 'SELECT id FROM ' . BOOKACTI_TABLE_BOOKINGS 
+			. ' WHERE user_id = %s '
+			. ' AND event_id = %d '
+			. ' AND event_start = %s '
+			. ' AND event_end = %s '
+			. ' AND state = "in_cart" ';
+	
+	if( ! $check_expired ) {
+		$query .= ' AND ( expiration_date IS NULL OR expiration_date > UTC_TIMESTAMP() ) ';
+	}
+	
+	$variables = array( $user_id, $event_id, $event_start, $event_end );
+	
+	$query = $wpdb->prepare( $query, $variables );
+	$existing_bookings = $wpdb->get_results( $query, OBJECT );
+	
+	$booking_ids = array();
+	if( $existing_bookings ) {
+		foreach( $existing_bookings as $existing_booking ) {
+			$booking_ids[] = intval( $existing_booking->id );
+		}
+	}
+	
+	return $booking_ids;
 }
 
 
@@ -520,9 +560,7 @@ function bookacti_turn_in_cart_bookings_to_removed() {
 
 /**
  * Get booking group events data to store in order item meta
- * 
  * @since 1.1.0
- * 
  * @global wpdb $wpdb
  * @param int $booking_group_id
  * @return array of object
@@ -538,7 +576,7 @@ function bookacti_get_booking_group_events_data( $booking_group_id ) {
 				. ' ORDER BY B.event_start, B.event_id, E.activity_id DESC';
 	$prep		= $wpdb->prepare( $query, $booking_group_id );
 	$bookings	= $wpdb->get_results( $prep, OBJECT );
-
+	
 	return $bookings;
 }
 
@@ -579,6 +617,38 @@ function bookacti_get_booking_group_expiration_date( $booking_group_id ) {
 	$expiration_date	= $wpdb->get_var( $query_prep );
 	
 	return $expiration_date;
+}
+
+
+/**
+ * Check if a booking group exists and return its id
+ * @since 1.7.10 (was bookacti_booking_group_exists)
+ * @global wpdb $wpdb
+ * @param string $user_id
+ * @param int $event_group_id
+ * @return array
+ */
+function bookacti_get_in_cart_booking_groups_ids( $user_id, $event_group_id ) {
+	global $wpdb;
+
+	$query	= 'SELECT id FROM ' . BOOKACTI_TABLE_BOOKING_GROUPS 
+			. ' WHERE user_id = %s'
+			. ' AND event_group_id = %d'
+			. ' AND state = "in_cart"';
+
+	$variables = array( $user_id, $event_group_id );
+
+	$query = $wpdb->prepare( $query, $variables );
+	$existing_booking_groups = $wpdb->get_results( $query, OBJECT );
+
+	$booking_group_ids = array();
+	if( $existing_booking_groups ) {
+		foreach( $existing_booking_groups as $existing_booking_group ) {
+			$booking_group_ids[] = intval( $existing_booking_group->id );
+		}
+	}
+
+	return $booking_group_ids;
 }
 
 

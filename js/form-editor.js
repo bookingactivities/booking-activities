@@ -191,15 +191,9 @@ $j( document ).ready( function() {
 	/**
 	 * Toggle the actions fields according to the currently selected form action
 	 * @since 1.7.0
+	 * @version 1.7.10
 	 */
 	$j( '#bookacti-form-field-dialog-calendar' ).on( 'change', 'select#bookacti-form_action', function( e ) {
-		// Show / hide when to perform the form action field
-		if( $j( this ).val() === 'default' ) {
-			$j( '.bookacti-when-perform-form-action-container' ).hide();
-		} else {
-			$j( '.bookacti-when-perform-form-action-container' ).show();
-		}
-		
 		// Show / hide the columns displayed in the "redirect URL" tables
 		$j( '.bookacti-activities-actions-options-table, .bookacti-group-categories-actions-options-table' ).show();
 		if( $j( this ).val() === 'default' ) {
@@ -241,7 +235,7 @@ $j( document ).ready( function() {
 	
 	
 	/**
-	 * Toggle the WC actions fields according to the currently selected form action
+	 * Toggle the redirect URL tables according to the currently selected form action
 	 * @since 1.7.0
 	 */
 	$j( '#bookacti-form-field-dialog-calendar' ).on( 'change', 'select#bookacti-form_action', function( e ){

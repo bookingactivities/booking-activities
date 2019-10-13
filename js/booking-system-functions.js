@@ -1431,7 +1431,7 @@ function bookacti_redirect_to_group_category_url( booking_system, group_id ) {
 
 /**
  * Redirect to url with the booking form values as parameters
- * @since 1.7.0
+ * @since 1.7.10
  * @param {dom_element} booking_system
  * @param {string} redirect_url
  */
@@ -1441,9 +1441,9 @@ function bookacti_redirect_booking_system_to_url( booking_system, redirect_url )
 	// Add form parameters to the URL
 	var url_params = '';
 	if( ! booking_system.closest( 'form' ).length ) {
-		booking_system.closest( '.bookacti-booking-system-container' ).wrap( '<form id="bookacti-temporary-form"></form>' );
+		booking_system.closest( '.bookacti-form-fields' ).wrap( '<form id="bookacti-temporary-form"></form>' );
 		url_params	= booking_system.closest( 'form' ).serialize();
-		booking_system.closest( '.bookacti-booking-system-container' ).unwrap( 'form#bookacti-temporary-form' );
+		booking_system.closest( '.bookacti-form-fields' ).unwrap( 'form#bookacti-temporary-form' );
 	} else {
 		url_params	= booking_system.closest( 'form' ).serialize();
 	}

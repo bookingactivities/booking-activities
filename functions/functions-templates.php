@@ -109,8 +109,7 @@ function bookacti_get_editor_booking_system_data( $atts, $template_id ) {
 // TEMPLATE X ACTIVITIES
 	/**
 	 * Retrieve template activities list
-	 * 
-	 * @version 1.7.2
+	 * @version 1.7.10
 	 * @param int $template_id
 	 * @return boolean|string 
 	 */
@@ -133,11 +132,11 @@ function bookacti_get_editor_booking_system_data( $atts, $template_id ) {
 					<div class='activity-container'>
 						<div
 							class='fc-event ui-draggable ui-draggable-handle'
-							data-event='{"title": "<?php echo esc_attr( $title ) ?>", "activity_id": "<?php echo esc_attr( $activity->id ) ?>", "color": "<?php echo esc_attr( $activity->color ) ?>", "stick":"true"}' 
-							data-activity-id='<?php echo esc_attr( $activity->id ) ?>'
-							data-duration='<?php echo esc_attr( $activity->duration ) ?>'
+							data-event='{"title": "<?php echo htmlentities( esc_attr( $title ), ENT_QUOTES ); ?>", "activity_id": "<?php echo esc_attr( $activity->id ); ?>", "color": "<?php echo esc_attr( $activity->color ); ?>", "stick":"true"}' 
+							data-activity-id='<?php echo esc_attr( $activity->id ); ?>'
+							data-duration='<?php echo esc_attr( $activity->duration ); ?>'
 							title='<?php esc_attr_e( $title ); ?>'
-							style='border-color:<?php echo esc_attr( $activity->color ) ?>; background-color:<?php echo esc_attr( $activity->color ) ?>'
+							style='border-color:<?php echo esc_attr( $activity->color ); ?>; background-color:<?php echo esc_attr( $activity->color ); ?>'
 							>
 							<?php echo $title; ?>
 						</div>
@@ -391,13 +390,11 @@ function bookacti_get_editor_booking_system_data( $atts, $template_id ) {
 // EVENTS
 	/**
 	 * Display a promo area of Prices and Credits add-on
-	 * @version 1.7.8
+	 * @version 1.7.10
 	 * @param string $type
 	 */
 	function bookacti_promo_for_bapap_addon( $type = 'event' ) {
-		
 		$is_plugin_active = bookacti_is_plugin_active( 'ba-prices-and-credits/ba-prices-and-credits.php' );
-		
 		$license_status = get_option( 'bapap_license_status' );
 		
 		// If the plugin is activated but the license is not active yet
@@ -442,7 +439,8 @@ function bookacti_get_editor_booking_system_data( $atts, $template_id ) {
 					$message = esc_html( __( 'Set a price or a promotion in cash or in credits on your events with %s add-on !', 'booking-activities' ) );
 					$event_name = __( 'My event', 'booking-activities' );
 				}
-				echo sprintf( $message, $addon_link ); 
+				echo sprintf( $message, $addon_link );
+				$price_div_style = 'display: block; width: fit-content; white-space: nowrap; margin: 4px auto; padding: 5px; font-weight: bolder; font-size: 1.2em; border: 1px solid #fff; -webkit-border-radius: 3px;  border-radius: 3px;  background-color: rgba(0,0,0,0.3); color: #fff;';
 				?>
 				<div class='bookacti-promo-events-examples'>
 					<a class="fc-time-grid-event fc-v-event fc-event fc-start fc-end bookacti-event-has-price bookacti-narrow-event" >
@@ -460,8 +458,8 @@ function bookacti_get_editor_booking_system_data( $atts, $template_id ) {
 								<span class="bookacti-available-places-avail-particle"> <?php _ex( 'avail.', 'Short for availabilities [plural noun]', 'booking-activities' ); ?></span>
 							</span>
 						</div>
-						<div class="bookacti-price-container">
-							<span class="bookacti-price bookacti-promo" style="display: block; width: fit-content; white-space: nowrap; margin: 4px auto; padding: 5px; font-weight: bolder; font-size: 1.2em; border: 1px solid #fff; -webkit-border-radius: 3px;  border-radius: 3px;  background-color: rgba(0,0,0,0.3); color: #fff;">$30</span>
+						<div class="bookacti-price-container" style="<?php echo $price_div_style; ?>">
+							<span class="bookacti-price bookacti-promo">$30</span>
 						</div>
 					</a>
 					<a class="fc-time-grid-event fc-v-event fc-event fc-start fc-end bookacti-event-has-price bookacti-narrow-event" >
@@ -479,8 +477,8 @@ function bookacti_get_editor_booking_system_data( $atts, $template_id ) {
 								<span class="bookacti-available-places-avail-particle"> <?php _ex( 'avail.', 'Short for availabilities [plural noun]', 'booking-activities' ); ?></span>
 							</span>
 						</div>
-						<div class="bookacti-price-container">
-							<span class="bookacti-price bookacti-promo" style="display: block; width: fit-content; white-space: nowrap; margin: 4px auto; padding: 5px; font-weight: bolder; font-size: 1.2em; border: 1px solid #fff; -webkit-border-radius: 3px;  border-radius: 3px;  background-color: rgba(0,0,0,0.3); color: #fff;">- 20%</span>
+						<div class="bookacti-price-container" style="<?php echo $price_div_style; ?>">
+							<span class="bookacti-price bookacti-promo">- 20%</span>
 						</div>
 					</a>
 					<a class="fc-time-grid-event fc-v-event fc-event fc-start fc-end bookacti-event-has-price bookacti-narrow-event" >
@@ -498,8 +496,8 @@ function bookacti_get_editor_booking_system_data( $atts, $template_id ) {
 								<span class="bookacti-available-places-avail-particle"> <?php _ex( 'avail.', 'Short for availabilities [plural noun]', 'booking-activities' ); ?></span>
 							</span>
 						</div>
-						<div class="bookacti-price-container">
-							<span class="bookacti-price bookacti-promo" style="display: block; width: fit-content; white-space: nowrap; margin: 4px auto; padding: 5px; font-weight: bolder; font-size: 1.2em; border: 1px solid #fff; -webkit-border-radius: 3px;  border-radius: 3px;  background-color: rgba(0,0,0,0.3); color: #fff;">
+						<div class="bookacti-price-container" style="<?php echo $price_div_style; ?>">
+							<span class="bookacti-price bookacti-promo">
 								<?php 
 								$amount = 12;
 								/* translators: %d is an integer (an amount of credits) */

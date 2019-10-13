@@ -167,6 +167,8 @@
 .bookacti-loading-alt		{ width: fit-content; margin: 30px auto; }
 .bookacti-loading-alt-text	{ margin-left: 10px; vertical-align: middle; font-size: 0.9em; }
 
+.bookacti-form-field-name-submit .bookacti-loading-alt { margin-bottom: 0; }
+
 
 
 
