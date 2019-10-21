@@ -705,7 +705,10 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			>
 			<?php foreach( $args[ 'options' ] as $option_id => $option_value ) { ?>
 				<option value='<?php echo esc_attr( $option_id ); ?>'
-						id='<?php echo esc_attr( $args[ 'id' ] ) . '_' . esc_attr( $option_id ); ?>'
+						id='<?php echo esc_attr( $args[ 'id' ] ) . '_' . esc_attr( $option_id ); ?>' 
+						<?php if( $args[ 'multiple' ] ) { ?> 
+						title='<?php echo esc_html( $option_value ); ?>' 
+						<?php } ?>
 						<?php if( ! empty( $args[ 'attr' ][ $option_id ] ) ) { echo $args[ 'attr' ][ $option_id ]; } ?>
 						<?php	if( $args[ 'multiple' ] ) { selected( true, in_array( $option_id, $args[ 'value' ], true ) ); }
 								else { selected( $args[ 'value' ], $option_id ); }?>

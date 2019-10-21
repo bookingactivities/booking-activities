@@ -61,8 +61,7 @@ function bookacti_insert_booking( $user_id, $event_id, $event_start, $event_end,
 
 /**
  * Update booking quantity
- * 
- * @version 1.4.0
+ * @version 1.7.10
  * @global wpdb $wpdb
  * @param int $booking_id
  * @param int $new_quantity
@@ -78,6 +77,7 @@ function bookacti_update_booking_quantity( $booking_id, $new_quantity, $expirati
 	$old_quantity	= intval( $booking->quantity );
 	$new_quantity	= intval( $new_quantity );
 	$return_array	= array( 'status' => '' );
+	$is_admin		= $context === 'admin' ? true : false;
 
 	// Prepare variables
 	$data = apply_filters( 'bookacti_update_booking_quantity_data', array( 
@@ -102,13 +102,12 @@ function bookacti_update_booking_quantity( $booking_id, $new_quantity, $expirati
 
 		// If state has changed
 		if( ! $booking->group_id && $data[ 'state' ] && is_string( $data[ 'state' ] ) && $old_state !== $data[ 'state' ] ) {
-			$is_admin = $context === 'admin' ? true : false;
 			do_action( 'bookacti_booking_state_changed', $booking_id, $data[ 'state' ], array( 'is_admin' => $is_admin ) );
 		}
 
 		// If quantity has changed
 		if( intval( $data[ 'quantity' ] ) > 0 && intval( $data[ 'quantity' ] ) !== $old_quantity ) {
-			do_action( 'bookacti_booking_quantity_updated', $booking_id, intval( $data[ 'quantity' ] ), $old_quantity );
+			do_action( 'bookacti_booking_quantity_updated', $booking_id, intval( $data[ 'quantity' ] ), $old_quantity, array( 'is_admin' => $is_admin ) );
 		}
 
 		$return_array['status'] = 'success';
@@ -1689,20 +1688,17 @@ function bookacti_update_booking_payment_status( $booking_id, $status ) {
 
 /**
  * Forced update of booking quantity (do not check availability)
- * 
+ * @version 1.7.10
  * @global wpdb $wpdb
  * @param int $booking_id
  * @param int $quantity
  * @return int|false
  */
 function bookacti_force_update_booking_quantity( $booking_id, $quantity ) {
-	
 	global $wpdb;
-	
 	$query		= 'UPDATE ' . BOOKACTI_TABLE_BOOKINGS . ' SET quantity = %d WHERE id = %d';
 	$prep		= $wpdb->prepare( $query, $quantity, $booking_id );
 	$updated	= $wpdb->query( $prep );
-	
 	return $updated;
 }
 

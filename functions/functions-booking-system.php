@@ -77,6 +77,7 @@ function bookacti_get_booking_system( $atts, $echo = false ) {
 /**
  * Get booking system data
  * @since 1.7.4
+ * @version 1.7.10
  * @param array $atts (see bookacti_format_booking_system_attributes())
  * @return array
  */
@@ -134,10 +135,11 @@ function bookacti_get_booking_system_data( $atts ) {
 	if( $atts[ 'picked_events' ][ 'group_id' ] === 'single' && $atts[ 'picked_events' ][ 'event_id' ] ) {
 		$event_id = $atts[ 'picked_events' ][ 'event_id' ];
 		$event = ! empty( $events[ 'data' ][ $event_id ] ) ? $events[ 'data' ][ $event_id ] : (array) bookacti_get_event_by_id( $event_id );
+		
 		if( $event 
-		&& ( in_array( intval( $event[ 'template_id' ] ), $atts[ 'calendars' ], true ) 
-			|| ( empty( $atts[ 'calendars' ] ) && ( is_super_admin() || ! $atts[ 'auto_load' ] ) ) )
-		&& ( ! empty( $booking_system_data[ 'activities_data' ][ $event[ 'activity_id' ] ] ) || ! $atts[ 'auto_load' ] ) ) { 
+		&& ( ! $atts[ 'auto_load' ] 
+		|| ( ( in_array( intval( $event[ 'template_id' ] ), $atts[ 'calendars' ], true ) || ( empty( $atts[ 'calendars' ] ) && is_super_admin() ) )
+			&&  ! empty( $booking_system_data[ 'activities_data' ][ $event[ 'activity_id' ] ] ) ) ) ) { 
 			$picked_events[] = array(
 				'id'	=> $event_id,
 				'start'	=> $atts[ 'picked_events' ][ 'event_start' ],
@@ -152,7 +154,8 @@ function bookacti_get_booking_system_data( $atts ) {
 			$group_events = bookacti_get_group_events( $atts[ 'picked_events' ][ 'group_id' ] );
 			$category_id  = ! empty( $group_events[ 0 ][ 'category_id' ] ) ? intval( $group_events[ 0 ][ 'category_id' ] ) : 0;
 			if( $category_id 
-			&& ( ! empty( $booking_system_data[ 'group_categories_data' ][ $category_id ] ) || ! $atts[ 'auto_load' ] ) ) {
+			&& ( ! $atts[ 'auto_load' ] 
+			|| ! empty( $booking_system_data[ 'group_categories_data' ][ $category_id ] ) ) ) {
 				foreach( $group_events as $grouped_event ) {
 					$picked_events[] = array(
 						'id'	=> $grouped_event[ 'id' ],
@@ -1574,9 +1577,8 @@ function bookacti_sanitize_events_interval( $interval ) {
 
 /**
  * Get occurences of repeated events
- * 
  * @since 1.2.2 (replace bookacti_create_repeated_events)
- * @version 1.5.7
+ * @version 1.7.10
  * @param object $event Event data 
  * @param boolean $past_events Whether to compute past events
  * @param array $interval array('start' => string: start date, 'end' => string: end date)
@@ -1599,7 +1601,7 @@ function bookacti_get_occurences_of_repeated_event( $event, $past_events = false
 
 	$repeat_from		= new DateTime( $event->repeat_from . ' 00:00:00', $timezone );
 	$repeat_to			= new DateTime( $event->repeat_to . ' 23:59:59', $timezone );
-	$repeat_interval	= array();
+	$repeat_interval	= new DateInterval( 'P1D' ); // Default to daily to avoid unexpected behavior such as infinite loop
 
 	$current_time		= new DateTime( 'now', $timezone );
 
@@ -1671,7 +1673,7 @@ function bookacti_get_occurences_of_repeated_event( $event, $past_events = false
 			// The repeat_interval will be computed directly in the loop
 			break;
 		default:
-			$repeat_interval = new DateInterval( 'P1D' ); // Default to daily to avoid unexpected behavior such as infinite loop
+			break;
 	}
 	
 	$repeat_interval = apply_filters( 'bookacti_event_repeat_interval', $repeat_interval, $event, $past_events, $interval, $repeat_from, $repeat_to );

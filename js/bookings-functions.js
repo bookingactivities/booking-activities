@@ -198,7 +198,7 @@ function bookacti_reload_booking_system_according_to_filters( booking_system ) {
 
 /**
  * Init booking actions
- * @version 1.7.4
+ * @version 1.7.10
  */
 function bookacti_init_booking_actions() {
 	$j( '.bookacti-user-booking-list, .woocommerce-table, #bookacti-booking-list' ).on( 'click', '.bookacti-booking-action, .bookacti-booking-group-action', function ( e ) {
@@ -216,6 +216,8 @@ function bookacti_init_booking_actions() {
 				bookacti_dialog_refund_booking( booking_id, 'single' );
 			} else if( $j( this ).hasClass( 'bookacti-change-booking-state' ) ){
 				bookacti_dialog_change_booking_state( booking_id, 'single' );
+			} else if( $j( this ).hasClass( 'bookacti-change-booking-quantity' ) ){
+				bookacti_dialog_change_booking_quantity( booking_id, 'single' );
 			} else if( $j( this ).hasClass( 'bookacti-delete-booking' ) ){
 				bookacti_dialog_delete_booking( booking_id, 'single' );
 			}
@@ -230,6 +232,8 @@ function bookacti_init_booking_actions() {
 				bookacti_dialog_refund_booking( booking_group_id, 'group' );
 			} else if( $j( this ).hasClass( 'bookacti-change-booking-group-state' ) ){
 				bookacti_dialog_change_booking_state( booking_group_id, 'group' );
+			} else if( $j( this ).hasClass( 'bookacti-change-booking-group-quantity' ) ){
+				bookacti_dialog_change_booking_quantity( booking_group_id, 'group' );
 			} else if( $j( this ).hasClass( 'bookacti-show-booking-group-bookings' ) ){
 				bookacti_display_grouped_bookings( $j( '#bookacti-booking-system-bookings-page' ), booking_group_id );
 			} else if( $j( this ).hasClass( 'bookacti-delete-booking-group' ) ){

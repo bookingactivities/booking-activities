@@ -1,7 +1,7 @@
 <?php 
 /**
  * Backend booking dialogs
- * @version 1.7.4
+ * @version 1.7.10
  */
 
 // Exit if accessed directly
@@ -17,7 +17,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		
 		<p class='bookacti-dialog-intro' ><?php esc_html_e( 'Pick the desired booking state:', 'booking-activities' ); ?></p>
 		<div>
-		<label for='bookacti-select-booking-state' ><?php esc_html_e( 'Booking state', 'booking-activities' ); ?></label>
+			<label for='bookacti-select-booking-state' ><?php esc_html_e( 'Booking state', 'booking-activities' ); ?></label>
 			<select name='select-booking-state' id='bookacti-select-booking-state' >
 				<?php
 				$booking_state_labels = bookacti_get_booking_state_labels();
@@ -53,6 +53,37 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 				?>
 			</select>
 		</div>
+	</form>
+</div>
+
+
+<div id='bookacti-change-booking-quantity-dialog' class='bookacti-backend-dialog bookacti-bookings-dialog' style='display:none;' title='<?php echo esc_html__( 'Change booking quantity', 'booking-activities' ); ?>'>
+	<form id='bookacti-change-booking-quantity-form'>
+		<?php
+		// Display nonce field
+		wp_nonce_field( 'bookacti_change_booking_quantity', 'nonce_change_booking_quantity' );
+		?>
+		
+		<p class='bookacti-dialog-intro' ><?php esc_html_e( 'Input the desired booking quantity:', 'booking-activities' ); ?></p>
+		<p class='bookacti-irreversible-action'>
+			<span class='dashicons dashicons-warning'></span>
+			<span><?php esc_html_e( 'The new quantity will be enforced. No checks and no further actions will be performed.', 'booking-activities' ); ?></span>
+		</p>
+		<?php
+			$booking_qty_fields = apply_filters( 'bookacti_change_booking_quantity_dialog_fields', array(
+				'quantity' => array(
+					'type'	=> 'number',
+					'name'	=> 'quantity',
+					'title'	=> esc_html__( 'Quantity', 'booking-activities' ),
+					'id'	=> 'bookacti-new-quantity',
+					'value'	=> 1,
+					'tip'	=> esc_html__( 'New total quantity. In case of booking groups, the quantity of all the bookings of the group will be updated.', 'booking-activities' )
+				)
+			));
+			bookacti_display_fields( $booking_qty_fields );
+			
+			do_action( 'bookacti_change_booking_quantity_dialog_after' );
+		?>
 	</form>
 </div>
 
@@ -98,7 +129,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 					$selected_columns	= array_intersect_key( $columns, array_flip( bookacti_get_bookings_export_default_columns() ) );
 					foreach( $columns as $column_name => $column_title ) {
 						$disabled = isset( $selected_columns[ $column_name ] ) ? 'disabled style="display:none;"' : '';
-						echo '<option value="' . $column_name . '" ' . $disabled . '>' . $column_title . '</option>';
+						echo '<option value="' . $column_name . '" title="' . htmlentities( esc_attr( $column_title ), ENT_QUOTES ) . '" ' . $disabled . '>' . $column_title . '</option>';
 					}
 				?>
 				</select>
@@ -108,7 +139,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 				<select name='columns[]' id='baaf-columns-to-export-selectbox' class='bookacti-items-select-box' multiple>
 				<?php
 					foreach( $selected_columns as $column_name => $column_title ) {
-						echo '<option value="' . $column_name . '">' . $column_title . '</option>';
+						echo '<option value="' . $column_name . '" title="' . htmlentities( esc_attr( $column_title ), ENT_QUOTES ) . '">' . $column_title . '</option>';
 					}
 				?>
 				</select>
@@ -117,7 +148,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		</div>
 		<?php
 			$per_page = intval( get_user_meta( get_current_user_id(), 'bookacti_bookings_per_page', true ) );
-			$fields = apply_filters( 'bookacti_export_bookings_dialog_fields', array(
+			$export_fields = apply_filters( 'bookacti_export_bookings_dialog_fields', array(
 				'per_page' => array(
 					'type'	=> 'number',
 					'name'	=> 'per_page',
@@ -138,7 +169,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 					'tip'		=> esc_html__( 'Choose how to export the grouped bookings. Do you want to export all the bookings of the group, or only the group as a single row?', 'booking-activities' )
 				)
 			));
-			bookacti_display_fields( $fields );
+			bookacti_display_fields( $export_fields );
 		?>
 		<div id='bookacti-export-bookings-url-container' style='display:none;'>
 			<p><strong><?php esc_html_e( 'Secret address in CSV format', 'booking-activities' ); ?></strong></p>

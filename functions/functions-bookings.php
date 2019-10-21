@@ -632,7 +632,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		/**
 		 * Get booking actions array
 		 * @since 1.6.0 (replace bookacti_get_booking_actions_array)
-		 * @version 1.7.0
+		 * @version 1.7.10
 		 * @param string $admin_or_front Can be "both", "admin", "front. Default "both".
 		 * @return array
 		 */
@@ -642,6 +642,12 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 					'class'			=> 'bookacti-change-booking-state',
 					'label'			=> esc_html__( 'Change booking state',  'booking-activities' ),
 					'description'	=> esc_html__( 'Change the booking state to any available state.', 'booking-activities' ),
+					'link'			=> '',
+					'admin_or_front'=> 'admin' ),
+				'change-quantity' => array( 
+					'class'			=> 'bookacti-change-booking-quantity',
+					'label'			=> esc_html__( 'Change booking quantity',  'booking-activities' ),
+					'description'	=> esc_html__( 'Change the quantity to any number.', 'booking-activities' ),
 					'link'			=> '',
 					'admin_or_front'=> 'admin' ),
 				'cancel' => array( 
@@ -664,7 +670,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 					'admin_or_front'=> 'both' ),
 				'delete' => array( 
 					'class'			=> 'bookacti-delete-booking',
-					'label'			=> esc_html__( 'Delete',  'booking-activities' ),
+					'label'			=> esc_html__( 'Delete', 'booking-activities' ),
 					'description'	=> esc_html__( 'Delete permanently the booking.', 'booking-activities' ),
 					'link'			=> '',
 					'admin_or_front'=> 'admin' )
@@ -684,6 +690,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		/**
 		 * Get booking actions according to booking id
 		 * @since 1.6.0 (replace bookacti_get_booking_actions_array)
+		 * @version 1.7.10
 		 * @param object|int $booking
 		 * @param string $admin_or_front Can be "both", "admin", "front. Default "both".
 		 * @return array
@@ -693,8 +700,9 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			if( ! is_object( $booking ) ) { $booking = bookacti_get_booking_by_id( $booking ); }
 			
 			$actions = bookacti_get_booking_actions( $admin_or_front );
-			if( isset( $actions[ 'change-state' ] ) && ! current_user_can( 'bookacti_edit_bookings' ) ) {
-				unset( $actions[ 'change-state' ] );
+			if( ! current_user_can( 'bookacti_edit_bookings' ) ) {
+				if( isset( $actions[ 'change-state' ] ) )	{ unset( $actions[ 'change-state' ] ); }
+				if( isset( $actions[ 'change-quantity' ] ) ){ unset( $actions[ 'change-quantity' ] ); }
 			}
 			if( isset( $actions[ 'cancel' ] ) && ! bookacti_booking_can_be_cancelled( $booking ) ) {
 				unset( $actions[ 'cancel' ] );
@@ -769,7 +777,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		/**
 		 * Get booking group actions array
 		 * @since 1.6.0 (replace bookacti_get_booking_group_actions_array)
-		 * @version 1.7.3
+		 * @version 1.7.10
 		 * @param string $admin_or_front Can be "both", "admin", "front. Default "both".
 		 * @return array
 		 */
@@ -779,6 +787,12 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 					'class'			=> 'bookacti-change-booking-group-state',
 					'label'			=> esc_html__( 'Change booking state',  'booking-activities' ),
 					'description'	=> esc_html__( 'Change the booking group state to any available state.', 'booking-activities' ),
+					'link'			=> '',
+					'admin_or_front'=> 'admin' ),
+				'change-quantity' => array( 
+					'class'			=> 'bookacti-change-booking-group-quantity',
+					'label'			=> esc_html__( 'Change booking quantity',  'booking-activities' ),
+					'description'	=> esc_html__( 'Change the quantity to any number.', 'booking-activities' ),
 					'link'			=> '',
 					'admin_or_front'=> 'admin' ),
 				'edit-single' => array( 
@@ -821,6 +835,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		/**
 		 * Get booking actions according to booking id
 		 * @since 1.6.0 (replace bookacti_get_booking_actions_array)
+		 * @version 1.7.10
 		 * @param object|int $booking_group
 		 * @param string $admin_or_front Can be "both", "admin", "front. Default "both".
 		 * @return array
@@ -830,9 +845,10 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			if( ! is_object( $booking_group ) ) { $booking_group = bookacti_get_booking_group_by_id( $booking_group ); }
 			
 			$actions = bookacti_get_booking_group_actions( $admin_or_front );
-			if( ( isset( $actions[ 'change-state' ] ) || isset( $actions[ 'edit-single' ] ) ) && ! current_user_can( 'bookacti_edit_bookings' ) ) {
-				if( isset( $actions[ 'change-state' ] ) ) { unset( $actions[ 'change-state' ] ); }
-				if( isset( $actions[ 'edit-single' ] ) ) { unset( $actions[ 'edit-single' ] ); }
+			if( ! current_user_can( 'bookacti_edit_bookings' ) ) {
+				if( isset( $actions[ 'change-state' ] ) )	{ unset( $actions[ 'change-state' ] ); }
+				if( isset( $actions[ 'change-quantity' ] ) ){ unset( $actions[ 'change-quantity' ] ); }
+				if( isset( $actions[ 'edit-single' ] ) )	{ unset( $actions[ 'edit-single' ] ); }
 			}
 			if( isset( $actions[ 'cancel' ] ) && ! bookacti_booking_group_can_be_cancelled( $booking_group ) ) {
 				unset( $actions[ 'cancel' ] );
