@@ -224,25 +224,27 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			$new_quantity	= intval( $_POST[ 'new_quantity' ] );
 			$is_admin		= intval( $_POST[ 'is_admin' ] ) === 1 ? true : false;
 			
-			// Check nonce, capabilities and other params
-			$is_nonce_valid	= check_ajax_referer( 'bookacti_change_booking_quantity', 'nonce', false );
+			// Check nonce and capabilities
+			$is_nonce_valid	= check_ajax_referer( 'bookacti_change_booking_quantity', 'nonce_change_booking_quantity', false );
 			$is_allowed		= current_user_can( 'bookacti_edit_bookings' );		
 			
-			if( ! $is_nonce_valid || ! $is_allowed || ! $new_quantity ) {
+			if( ! $is_nonce_valid || ! $is_allowed ) {
 				bookacti_send_json_not_allowed( 'change_booking_quantity' );
 			}
 			
-			$old_booking = bookacti_get_booking_by_id( $booking_id );
-			if( intval( $old_booking->quantity ) === $new_quantity ) {
-				bookacti_send_json( array( 'status' => 'no_change' ), 'change_booking_quantity' );
+			// Check if the quantity is valid
+			if( ! $new_quantity ) {
+				bookacti_send_json( array( 'status' => 'failed', 'error' => 'invalid_new_quantity', 'message' => esc_html__( 'The new quantity is not valid.', 'booking-activities' ) ), 'change_booking_quantity' );
 			}
 			
+			$old_booking = bookacti_get_booking_by_id( $booking_id );
+						
 			// Update booking quantity
 			$updated = bookacti_force_update_booking_quantity( $booking_id, $new_quantity );
 			if( $updated === false ) { 
 				bookacti_send_json( array( 'status' => 'failed', 'error' => 'error_update_booking_quantity', 'message' => esc_html__( 'An error occured while trying to change the booking quantity.', 'booking-activities' ) ), 'change_booking_quantity' );
 			}
-
+			
 			do_action( 'bookacti_booking_quantity_updated', $booking_id, $new_quantity, $old_booking->quantity, array( 'is_admin' => $is_admin ) );
 			
 			$new_booking = bookacti_get_booking_by_id( $booking_id );
@@ -655,25 +657,27 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			$is_admin		= intval( $_POST[ 'is_admin' ] ) === 1 ? true : false;
 			$reload_grouped_bookings = intval( $_POST[ 'reload_grouped_bookings' ] ) === 1 ? true : false;
 			
-			// Check nonce, capabilities and other params
-			$is_nonce_valid	= check_ajax_referer( 'bookacti_change_booking_quantity', 'nonce', false );
+			// Check nonce and capabilities
+			$is_nonce_valid	= check_ajax_referer( 'bookacti_change_booking_quantity', 'nonce_change_booking_quantity', false );
 			$is_allowed		= current_user_can( 'bookacti_edit_bookings' );		
 			
-			if( ! $is_nonce_valid || ! $is_allowed || ! $new_quantity ) {
+			if( ! $is_nonce_valid || ! $is_allowed  ) {
 				bookacti_send_json_not_allowed( 'change_booking_group_quantity' );
 			}
 			
-			$old_quantity = bookacti_get_booking_group_quantity( $booking_group_id );
-			if( intval( $old_quantity ) === $new_quantity ) {
-				bookacti_send_json( array( 'status' => 'no_change' ), 'change_booking_group_quantity' );
+			// Check if the quantity is valid
+			if( ! $new_quantity ) {
+				bookacti_send_json( array( 'status' => 'failed', 'error' => 'invalid_new_quantity', 'message' => esc_html__( 'The new quantity is not valid.', 'booking-activities' ) ), 'change_booking_group_quantity' );
 			}
+			
+			$old_quantity = bookacti_get_booking_group_quantity( $booking_group_id );
 			
 			// Update booking quantity
 			$updated = bookacti_force_update_booking_group_bookings_quantity( $booking_group_id, $new_quantity );
 			if( $updated === false ) { 
 				bookacti_send_json( array( 'status' => 'failed', 'error' => 'error_update_booking_group_quantity', 'message' => esc_html__( 'An error occured while trying to change the booking quantity.', 'booking-activities' ) ), 'change_booking_group_quantity' );
 			}
-
+			
 			do_action( 'bookacti_booking_group_quantity_updated', $booking_group_id, $new_quantity, $old_quantity, array( 'is_admin' => $is_admin ) );
 			
 			$new_booking_group = bookacti_get_booking_group_by_id( $booking_group_id );

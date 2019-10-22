@@ -602,14 +602,13 @@ function bookacti_dialog_change_booking_state( booking_id, booking_type ) {
 
 /**
  * Change Booking quantity
- * @version 1.7.10
+ * @since 1.7.10
  * @param {int} booking_id
  * @param {string} booking_type
  */
 function bookacti_dialog_change_booking_quantity( booking_id, booking_type ) {
 	// Sanitize booking_type
 	booking_type= booking_type === 'group' ? 'group' : 'single';
-	var action	= booking_type === 'group' ? 'bookactiChangeBookingGroupQuantity' : 'bookactiChangeBookingQuantity';
 	
 	// Get current row and actions container
 	var row;
@@ -629,20 +628,18 @@ function bookacti_dialog_change_booking_quantity( booking_id, booking_type ) {
 	// Reset error notices
 	$j( '#bookacti-change-booking-quantity-dialog .bookacti-notices' ).remove();
 	
+	row.first().trigger( 'bookacti_booking_action_dialog_opened', [ booking_id, booking_type, 'change_quantity' ] );
+	
 	// Add the buttons
     $j( '#bookacti-change-booking-quantity-dialog' ).dialog( 'option', 'buttons',
 		[
 		// Change booking quantity button
 		{
 			text: bookacti_localized.dialog_button_ok,
-			
-			click: function() { 
+			click: function() {
+				var new_quantity= parseInt( $j( '#bookacti-new-quantity' ).val() );
 				
-				var new_quantity= parseInt( $j( '#bookacti-new-quantity' ).val() ); 
-				var nonce		= $j( '#bookacti-change-booking-quantity-dialog #nonce_change_booking_quantity' ).val(); 
-				
-				if( new_quantity && new_quantity !== current_quantity ) {
-					
+				if( new_quantity ) {
 					// Reset error notices
 					$j( '#bookacti-change-booking-quantity-dialog .bookacti-notices' ).remove();
 					
@@ -653,17 +650,15 @@ function bookacti_dialog_change_booking_quantity( booking_id, booking_type ) {
 						if( column_id ) { columns.push( column_id ); }
 					});
 					
-					var data = { 
-						'action': action, 
-						'booking_id': booking_id,
-						'new_quantity': new_quantity,
-						'is_bookings_page': is_bookings_page,
-						'is_admin': bookacti_localized.is_admin ? 1 : 0,
-						'context': bookacti_localized.is_admin ? 'admin_booking_list' : 'user_booking_list',
-						'columns': columns,
-						'reload_grouped_bookings': reload_grouped_bookings,
-						'nonce': nonce
-					};
+					var data = $j( '#bookacti-change-booking-quantity-form' ).serializeObject();
+					data.action = booking_type === 'group' ? 'bookactiChangeBookingGroupQuantity' : 'bookactiChangeBookingQuantity';
+					data.booking_id = booking_id;
+					data.is_bookings_page = is_bookings_page;
+					data.is_admin = bookacti_localized.is_admin ? 1 : 0;
+					data.context = bookacti_localized.is_admin ? 'admin_booking_list' : 'user_booking_list';
+					data.columns = columns;
+					data.reload_grouped_bookings = reload_grouped_bookings;
+					
 					row.first().trigger( 'bookacti_booking_action_data', [ data, booking_id, booking_type, 'change_quantity' ] );
 					
 					// Display a loader

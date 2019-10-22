@@ -12,7 +12,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	<form id='bookacti-change-booking-state-form'>
 		<?php
 		// Display nonce field
-		wp_nonce_field( 'bookacti_change_booking_state', 'nonce_change_booking_state' );
+		wp_nonce_field( 'bookacti_change_booking_state', 'nonce_change_booking_state', false );
 		?>
 		
 		<p class='bookacti-dialog-intro' ><?php esc_html_e( 'Pick the desired booking state:', 'booking-activities' ); ?></p>
@@ -61,19 +61,14 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	<form id='bookacti-change-booking-quantity-form'>
 		<?php
 		// Display nonce field
-		wp_nonce_field( 'bookacti_change_booking_quantity', 'nonce_change_booking_quantity' );
+		wp_nonce_field( 'bookacti_change_booking_quantity', 'nonce_change_booking_quantity', false );
 		?>
-		
 		<p class='bookacti-dialog-intro' ><?php esc_html_e( 'Input the desired booking quantity:', 'booking-activities' ); ?></p>
-		<p class='bookacti-irreversible-action'>
-			<span class='dashicons dashicons-warning'></span>
-			<span><?php esc_html_e( 'The new quantity will be enforced. No checks and no further actions will be performed.', 'booking-activities' ); ?></span>
-		</p>
 		<?php
 			$booking_qty_fields = apply_filters( 'bookacti_change_booking_quantity_dialog_fields', array(
 				'quantity' => array(
 					'type'	=> 'number',
-					'name'	=> 'quantity',
+					'name'	=> 'new_quantity',
 					'title'	=> esc_html__( 'Quantity', 'booking-activities' ),
 					'id'	=> 'bookacti-new-quantity',
 					'value'	=> 1,
@@ -81,9 +76,11 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 				)
 			));
 			bookacti_display_fields( $booking_qty_fields );
-			
-			do_action( 'bookacti_change_booking_quantity_dialog_after' );
 		?>
+		<p class='bookacti-irreversible-action'>
+			<span class='dashicons dashicons-warning'></span>
+			<span><?php esc_html_e( 'The new quantity will be enforced. No checks and no further actions will be performed.', 'booking-activities' ); ?></span>
+		</p>
 	</form>
 </div>
 

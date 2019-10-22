@@ -1444,7 +1444,7 @@ function bookacti_get_booking_by_id( $booking_id ) {
 
 /**
  * Get booking data
- * @version 1.7.3
+ * @version 1.7.10
  * @global wpdb $wpdb
  * @param int $booking_id
  * @return array
@@ -1467,7 +1467,7 @@ function bookacti_get_booking_data( $booking_id ) {
 	$booking_data[ 'activity_settings' ]		= ! empty( $booking_data[ 'activity_id' ] ) ? bookacti_get_metadata( 'activity', $booking_data[ 'activity_id' ] ) : bookacti_format_activity_settings(); 
 	$booking_data[ 'form_calendar_settings' ]	= ! empty( $booking_data[ 'form_id' ] ) ? bookacti_get_form_field_data_by_name( $booking_data[ 'form_id' ], 'calendar' ) : bookacti_get_default_form_fields_data( 'calendar' );
 	
-	return apply_filters( 'bookacti_reschedule_booking_data', $booking_data, $booking_id );
+	return apply_filters( 'bookacti_booking_data', $booking_data, $booking_id );
 }
 
 
