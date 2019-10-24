@@ -2,6 +2,24 @@ if( typeof $j === 'undefined' ) { $j=jQuery.noConflict(); }
 
 $j( document ).ready( function() {
 	/**
+	 * Show the bind / unbind order item booking button on mouseover
+	 * @since 1.7.10
+	 */
+	$j( 'body' ).on( 'mouseover', '#woocommerce-order-items tr.item', function( e ) {
+		$j( this ).find( '.bookacti-order-item-action-buttons' ).show();
+	});
+	
+	
+	/**
+	 * Hide the bind / unbind order item booking button on mouseout
+	 * @since 1.7.10
+	 */
+	$j( 'body' ).on( 'mouseout', '#woocommerce-order-items tr.item', function( e ) {
+		$j( this ).find( '.bookacti-order-item-action-buttons' ).hide();
+	});
+	
+	
+	/**
 	 * Show or hide the activity tab on product page in the backend
 	 */
 	$j( '.type_box select, .type_box input' ).on( 'change', function(){ 

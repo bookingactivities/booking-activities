@@ -10,7 +10,7 @@ if( ! class_exists( 'Bookings_List_Table' ) ) {
 	
 	/**
 	 * Bookings WP_List_Table
-	 * @version 1.7.7
+	 * @version 1.7.10
 	 */
 	class Bookings_List_Table extends WP_List_Table {
 		
@@ -45,14 +45,21 @@ if( ! class_exists( 'Bookings_List_Table' ) ) {
 		
 		/**
 		 * Get booking list table columns
-		 * @version 1.5.4
+		 * @version 1.7.10
 		 * @access public
 		 * @return array
 		 */
-		public function get_columns(){
-
+		public function get_columns() {
 			// SET THE COLUMNS
-			$columns = array(
+			/**
+			 * Columns of the booking list
+			 * You must use 'bookacti_booking_list_columns_order' php filter to order your custom columns.
+			 * You must use 'bookacti_booking_list_default_hidden_columns' php filter to hide your custom columns by default.
+			 * You must use 'bookacti_booking_list_booking_columns' php filter to fill your custom columns.
+			 * 
+			 * @param array $columns
+			 */
+			$columns = apply_filters( 'bookacti_booking_list_columns', array(
 				'cb'			=> '<input type="checkbox" />',
 				'id'			=> _x( 'id', 'An id is a unique identification number', 'booking-activities' ),
 				'customer'		=> __( 'Customer', 'booking-activities' ),
@@ -67,22 +74,19 @@ if( ! class_exists( 'Bookings_List_Table' ) ) {
 				'template_title'=> __( 'Calendar', 'booking-activities' ),
 				'activity_title'=> __( 'Activity', 'booking-activities' ),
 				'creation_date'	=> __( 'Date', 'booking-activities' ),
+				'price_details'	=> __( 'Price details', 'booking-activities' ),
 				'actions'		=> __( 'Actions', 'booking-activities' )
-			);
-
-			/**
-			 * Columns of the booking list
-			 * You must use 'bookacti_booking_list_columns_order' php filter to order your custom columns.
-			 * You must use 'bookacti_booking_list_default_hidden_columns' php filter to hide your custom columns by default.
-			 * You must use 'bookacti_booking_list_booking_columns' php filter to fill your custom columns.
-			 * 
-			 * @param array $columns
-			 */
-			$columns = apply_filters( 'bookacti_booking_list_columns', $columns );
+			));
 
 
 			// SORT THE COLUMNS
-			$columns_order = array(
+			/**
+			 * Columns order of the booking list
+			 * Order the columns given by the filter 'bookacti_booking_list_columns'
+			 * 
+			 * @param array $columns
+			 */
+			$columns_order = apply_filters( 'bookacti_booking_list_columns_order', array(
 				10 => 'cb',
 				20 => 'id',
 				30 => 'state',
@@ -97,16 +101,9 @@ if( ! class_exists( 'Bookings_List_Table' ) ) {
 				100 => 'template_title',
 				110 => 'activity_title',
 				120 => 'creation_date',
+				130 => 'price_details',
 				1000 => 'actions'
-			);
-
-			/**
-			 * Columns order of the booking list
-			 * Order the columns given by the filter 'bookacti_booking_list_columns'
-			 * 
-			 * @param array $columns
-			 */
-			$columns_order = apply_filters( 'bookacti_booking_list_columns_order', $columns_order );
+			));
 
 			ksort( $columns_order );
 
@@ -114,8 +111,7 @@ if( ! class_exists( 'Bookings_List_Table' ) ) {
 			foreach( $columns_order as $column_id ) {
 				$displayed_columns[ $column_id ] = $columns[ $column_id ];
 			}
-
-			// RETURN THE COLUMNS
+			
 			return $displayed_columns;
 		}
 		
@@ -123,6 +119,7 @@ if( ! class_exists( 'Bookings_List_Table' ) ) {
 		/**
 		 * Get default hidden columns
 		 * @since 1.3.0
+		 * @version 1.7.10
 		 * @access public
 		 * @param array $hidden
 		 * @param WP_Screen $screen
@@ -135,7 +132,8 @@ if( ! class_exists( 'Bookings_List_Table' ) ) {
 					'phone',
 					'end_date',
 					'template_title',
-					'activity_title'
+					'activity_title',
+					'price_details'
 				));
 			}
 			return $hidden;
@@ -237,7 +235,7 @@ if( ! class_exists( 'Bookings_List_Table' ) ) {
 		
 		/**
 		 * Get booking list items. Parameters can be passed in the URL.
-		 * @version 1.7.8
+		 * @version 1.7.10
 		 * @access public
 		 * @return array
 		 */
@@ -409,6 +407,7 @@ if( ! class_exists( 'Bookings_List_Table' ) ) {
 					'state'			=> $state,
 					'payment_status'=> $paid,
 					'quantity'		=> $quantity,
+					'price_details'	=> array(),
 					'event_title'	=> apply_filters( 'bookacti_translate_text', $title ),
 					'start_date'	=> bookacti_format_datetime( $start, $datetime_format ),
 					'end_date'		=> bookacti_format_datetime( $end, $datetime_format ),
@@ -433,12 +432,18 @@ if( ! class_exists( 'Bookings_List_Table' ) ) {
 			$booking_list_items = apply_filters( 'bookacti_booking_list_items', $booking_list_items, $bookings, $booking_groups, $displayed_groups, $users, $this );
 			
 			foreach( $booking_list_items as $booking_id => $booking_list_item ) {
+				$booking = $booking_list_item[ 'booking_type' ] === 'group' ? $booking_groups[ $booking_list_item[ 'raw_id' ] ] : $bookings[ $booking_list_item[ 'raw_id' ] ];
+				
+				// Format prices
+				$booking_list_items[ $booking_id ][ 'price_details' ] = bookacti_get_booking_price_details_html( $booking_list_item[ 'price_details' ], $booking );
+				
+				// Format refund actions
 				if( empty( $booking_list_item[ 'refund_actions' ] ) && isset( $booking_list_item[ 'actions' ][ 'refund' ] ) ) { unset( $booking_list_item[ 'actions' ][ 'refund' ] ); }
 				if( empty( $booking_list_item[ 'actions' ] ) ) { continue; }
 				if( $booking_list_item[ 'booking_type' ] === 'group' ) {
-					$booking_list_items[ $booking_id ][ 'actions' ] = bookacti_get_booking_group_actions_html( $booking_groups[ $booking_list_item[ 'raw_id' ] ], 'admin', $booking_list_item[ 'actions' ] );
+					$booking_list_items[ $booking_id ][ 'actions' ] = bookacti_get_booking_group_actions_html( $booking, 'admin', $booking_list_item[ 'actions' ] );
 				} else if( $booking_list_item[ 'booking_type' ] === 'single' ) {
-					$booking_list_items[ $booking_id ][ 'actions' ] = bookacti_get_booking_actions_html( $bookings[ $booking_list_item[ 'raw_id' ] ], 'admin', $booking_list_item[ 'actions' ] );
+					$booking_list_items[ $booking_id ][ 'actions' ] = bookacti_get_booking_actions_html( $booking, 'admin', $booking_list_item[ 'actions' ] );
 				}
 			}
 			

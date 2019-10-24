@@ -770,6 +770,29 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 			return apply_filters( 'bookacti_booking_actions_html', $actions_html, $booking, $admin_or_front );
 		}
+		
+
+		/**
+		 * Get booking price details html
+		 * @version 1.7.10
+		 * @param array $prices_array
+		 * @param object|int $booking
+		 * @return string
+		 */
+		function bookacti_get_booking_price_details_html( $prices_array, $booking ) {
+			$prices_html = '<div class="bookacti-booking-price-details" data-booking-id="' . esc_attr( $booking->id ) . '" >';
+			foreach( $prices_array as $price_id => $price ) {
+				if( ! is_array( $price ) )			{ continue; }
+				if( ! isset( $price[ 'value' ] ) )	{ continue; }
+				if( ! isset( $price[ 'title' ] ) )			{ $price[ 'title' ] = $price_id; }
+				if( ! isset( $price[ 'display_value' ] ) )	{ $price[ 'display_value' ] = $price[ 'value' ]; }
+				
+				$prices_html .= '<div class="bookacti-price-details bookacti-price-details-' . esc_attr( $price_id ) . '" data-price="' . $price[ 'value' ] . '"><span class="bookacti-booking-price-details-title">' . $price[ 'title' ] . ': </span><span class="bookacti-booking-price-details-value">' . $price[ 'display_value' ] . '</span></div>';
+			}
+			$prices_html .= '</div>';
+			
+			return apply_filters( 'bookacti_booking_price_details_html', $prices_html, $prices_array, $booking );
+		}
 	
 	
 	

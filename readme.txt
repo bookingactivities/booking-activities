@@ -319,8 +319,10 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 
 == Changelog ==
 
-= 1.7.10 - 2019/10/24 =
+= 1.7.10 - 2019/10/25 =
 * Feature - Change booking quantity from the backend booking list (forced change only)
+* Tweak - Add a price details column in the backend booking list
+* Tweak - Add a button in WC order item to see and edit the attached booking
 * Tweak - Allow shortcodes in notifications thanks to a new tag 
 * Tweak - Notification tags: user_locale added, user_ical_key removed
 * Tweak - Allow to use relative time format along user_ical_url notification tag. E.g: &start=today&end=10+days

@@ -393,8 +393,63 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	add_filter( 'woocommerce_order_item_display_meta_value', 'bookacti_format_order_item_meta_values', 10, 1 );
 	
 	
-	
-	
+	/**
+	 * Display order item meta action buttons
+	 * @since 1.7.10
+	 * @param int $item_id
+	 * @param WC_Order_Item $item
+	 * @param WC_Product $product
+	 */
+	function bookacti_display_order_item_meta_action_buttons( $item_id, $item, $product ) {
+		$booking_id = 0;
+		$booking_type = '';
+
+		// WOOCOMMERCE 3.0.0 backward compatibility
+		if( version_compare( WC_VERSION, '3.0.0', '>=' ) ) {
+			$meta_data = $item->get_formatted_meta_data();
+			if( $meta_data ) {
+				foreach( $meta_data as $meta_id => $meta ) {
+					if( $meta->key === 'bookacti_booking_id'
+					||  $meta->key === 'bookacti_booking_group_id' ) {
+						$booking_id = $meta->value;
+						$booking_type = $meta->key === 'bookacti_booking_group_id' ? 'group' : 'single';
+						break;
+					}
+				}
+			}
+		} else if( ! empty( $item[ 'item_meta' ] ) ) {
+			if( ! empty( $item[ 'item_meta' ][ 'bookacti_booking_id' ] ) 
+			||  ! empty( $item[ 'item_meta' ][ 'bookacti_booking_group_id' ] ) ) { 
+				$booking_id = ! empty( $item[ 'item_meta' ][ 'bookacti_booking_group_id' ] ) ? $item[ 'item_meta' ][ 'bookacti_booking_group_id' ] : $item[ 'item_meta' ][ 'bookacti_booking_id' ];
+				$booking_type = ! empty( $item[ 'item_meta' ][ 'bookacti_booking_group_id' ] ) ? 'group' : 'single';
+			}
+		}
+	?>
+		<div class='bookacti-order-item-action-buttons' style='display: none;'>
+			<?php if( $booking_id ) { ?>
+			<div class='bookacti-order-item-go-to-booking-button'>
+				<?php
+					$link_to_booking = admin_url( 'admin.php?page=bookacti_bookings&status%5B0%5D=all&keep_default_status=1' );
+					if( $booking_type === 'group' ) {
+						$link_to_booking .= '&booking_group_id=' . $booking_id . '&group_by=booking_group';
+					} else if( $booking_type === 'single' ) {
+						$link_to_booking .= '&booking_id=' . $booking_id;
+					}
+				?>
+				<a href='<?php echo esc_url( $link_to_booking ); ?>' target='_blank' class='edit_booking button'><?php esc_html_e( 'Edit the booking', 'booking-activities' ); ?></a>
+			</div>
+			<?php }
+			
+			do_action( 'bookacti_order_item_meta_booking_action_buttons', $item_id, $item, $product, $booking_id, $booking_type ); 
+			?>
+		</div>
+	<?php
+	}
+	add_action( 'woocommerce_after_order_itemmeta', 'bookacti_display_order_item_meta_action_buttons', 10, 3 );
+
+
+
+
 // TEMPLATES
 
 	/**

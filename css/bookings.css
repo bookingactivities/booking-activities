@@ -32,6 +32,8 @@ label[for="bookacti-booking-filter-dates-to"] { display: inline-block; width: 40
 label[for="bookacti-booking-filter-dates-from"] + input#bookacti-booking-filter-dates-from,
 label[for="bookacti-booking-filter-dates-to"] + input#bookacti-booking-filter-dates-to { display: inline-block; width: 108px; max-width:108px; }
 
+.bookacti-booking-price-details-title { font-weight: 600; }
+
 
 /** BOOKING SYSTEM **/
 #bookacti-booking-system-filter-container									{ margin-top: 20px; }

@@ -473,6 +473,13 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			}
 			$booking_list_items[ $booking_id ][ 'product' ] = $product_title;
 			
+			// Fill price column
+			$booking_list_items[ $booking_id ][ 'price_details' ][ 'order_item' ] = array(
+				'title' => esc_html__( 'WC item', 'booking-activities' ),
+				'value' => $order_item_data->_line_total,
+				'display_value' => wc_price( $order_item_data->_line_total )
+			);
+			
 			// Specify refund method in status column
 			if( $bookings[ $booking_id ]->state === 'refunded' && ! empty( $order_item_data->_bookacti_refund_method ) ) {
 				if( $order_item_data->_bookacti_refund_method === 'coupon' ) {
