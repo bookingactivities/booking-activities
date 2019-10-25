@@ -305,7 +305,7 @@ function bookacti_get_form_fields_data( $form_id, $active_only = true, $index_by
 		}
 	}
 	
-	return apply_filters( 'bookacti_form_fields_data', $fields_data, $form_id );
+	return apply_filters( 'bookacti_form_fields_data', $fields_data, $form_id, $active_only, $index_by_name );
 }
 
 
