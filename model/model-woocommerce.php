@@ -4,31 +4,33 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 
 /**
- * Get woocommerce products
+ * Get array of woocommerce products and product variations titles ordered by ids
+ * @since 1.7.10
  * @global wpdb $wpdb
  * @return array
  */
-function bookacti_fetch_woo_products() {
+function bookacti_get_products_titles() {
 	global $wpdb;
-
-	$table_posts	= $wpdb->prefix . 'posts';
-	$query_products = 'SELECT ID, post_title FROM ' . $table_posts . ' WHERE post_type = "product" AND post_status = "publish" ';
-	$woo_products	= $wpdb->get_results( $query_products, OBJECT );
+	
+	$query	= 'SELECT ID as id, post_title as title, post_type as type, post_parent as parent FROM ' . $wpdb->posts 
+			. ' WHERE ( post_type = "product" OR post_type = "product_variation" )'
+			. ' AND post_status = "publish";';
+	$products	= $wpdb->get_results( $query, OBJECT );
 
 	$products_array = array();
-	if( $woo_products ) {
-		foreach( $woo_products as $woo_product ) {
-			$is_activity = get_post_meta( $woo_product->ID, '_bookacti_is_activity', true );
-			if( $is_activity === 'yes' ) {
-				$thumb_id  = get_post_thumbnail_id( $woo_product->ID );
-				$thumb_url = wp_get_attachment_image_src( $thumb_id, 'thumbnail', true );
-
-				$product_array = array();
-				$product_array['id']	= $woo_product->ID;
-				$product_array['title'] = $woo_product->post_title;
-				$product_array['image'] = $thumb_url[0];
-
-				array_push( $products_array, $product_array );
+	if( $products ) {
+		foreach( $products as $product ) {
+			if( $product->type === 'product' ){
+				if( ! isset( $products_array[ $product->id ] ) ) { 
+					$products_array[ $product->id ] = array();
+				}
+				$products_array[ $product->id ][ 'title' ] = $product->title;
+			}
+			else if( $product->type === 'product_variation' ) {
+				if( ! isset( $products_array[ $product->parent ][ 'variations' ] ) ) { 
+					$products_array[ $product->parent ][ 'variations' ] = array();
+				}
+				$products_array[ $product->parent ][ 'variations' ][ $product->id ][ 'title' ] = $product->title;
 			}
 		}
 	}

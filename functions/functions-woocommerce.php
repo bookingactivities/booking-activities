@@ -1694,37 +1694,14 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 // PRODUCT
 	
 	/**
-	 * Get all products with backward compatibility WC < 2.6
-	 * @since 1.7.10
-	 * @param array $args
-	 */
-	function bookacti_get_products( $args ) {
-		if( version_compare( WC_VERSION, '3.0.0', '>=' ) ) {
-			return wc_get_products( $args );
-		}
-		
-		$products = array();
-		$product_ids = array();
-		$products_posts = get_posts( array_merge( array( 'post_type' => 'product', 'post_status' => 'publish', 'posts_per_page' => -1 ), $args ) );
-		foreach( $products_posts as $product_post ) {
-			$product_ids[] = $product_post->ID;
-			$product = wc_get_product( $product_post->ID );
-			if( $product ) { $products[] = $product; }
-		}
-		
-		return $products;
-	}
-	
-	
-	/**
 	 * Display a products selectbox
 	 * @since 1.7.0
 	 * @version 1.7.10
 	 * @param array $args
-	 * @param array $products
+	 * @param array $products_titles
 	 * @return string
 	 */
-	function bookacti_display_product_selectbox( $args = array(), $products = array() ) {
+	function bookacti_display_product_selectbox( $args = array(), $products_titles = array() ) {
 		$defaults = array(
 			'field_name'		=> 'product_id',
 			'selected'			=> '',
@@ -1735,7 +1712,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		);
 		$r = wp_parse_args( $args, $defaults );
 		
-		if( empty( $products ) ) { $products = bookacti_get_products( array( 'limit' => -1 ) ); }
+		if( ! $products_titles ) { $products_titles = bookacti_get_products_titles(); }
 		
 		ob_start();
 		
@@ -1749,22 +1726,24 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			<?php
 			}
 			
-			foreach( $products as $product ) {
+			foreach( $products_titles as $product_id => $product ) {
 				// Display simple products options
-				if( $product->get_type() !== 'variable' ) {
+				if( empty( $product[ 'variations' ] ) ) {
 				?>
-					<option class='bookacti-wc-product-option' value='<?php echo esc_attr( $product->get_id() ); ?>' <?php selected( $product->get_id(), $r[ 'selected' ] ); ?>><?php echo apply_filters( 'bookacti_translate_text', $product->get_title() ); ?></option>
+					<option class='bookacti-wc-product-option' value='<?php echo esc_attr( $product_id ); ?>' <?php selected( $product_id, $r[ 'selected' ] ); ?>><?php echo apply_filters( 'bookacti_translate_text', $product[ 'title' ] ); ?></option>
 				<?php
 				
 				// Display variations options
 				} else {
-					$variations = $product->get_available_variations();
 				?>
-					<optgroup class='bookacti-wc-variable-product-option-group' label='<?php echo esc_attr( apply_filters( 'bookacti_translate_text', $product->get_title() ) ); ?>'>
+					<optgroup class='bookacti-wc-variable-product-option-group' label='<?php echo esc_attr( apply_filters( 'bookacti_translate_text', $product[ 'title' ] ) ); ?>'>
 					<?php
-						foreach( $variations as $variation ) {
+						foreach( $product[ 'variations' ] as $variation_id => $variation ) {
+							$variation_title = apply_filters( 'bookacti_translate_text', $variation[ 'title' ] );
+							$strpos = strpos( $variation_title, ' - ' );
+							if( $strpos !== false ) { $strpos += 3; } else { $strpos = 0; }
 						?>
-							<option class='bookacti-wc-product-variation-option' value='<?php echo esc_attr( $variation[ 'variation_id' ] ); ?>' <?php selected( $product->get_id(), $r[ 'selected' ] ); ?>><?php echo implode( ' | ', array_map( 'bookacti_translate_text', $variation[ 'attributes' ] ) ); ?></option>
+							<option class='bookacti-wc-product-variation-option' value='<?php echo esc_attr( $variation_id ); ?>' <?php selected( $variation_id, $r[ 'selected' ] ); ?>><?php echo substr( $variation_title, $strpos ); ?></option>
 						<?php
 						}
 					?>

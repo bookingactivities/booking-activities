@@ -319,17 +319,23 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 
 == Changelog ==
 
-= 1.7.10 - 2019/10/14 =
+= 1.7.10 - 2019/10/25 =
+* Feature - Change booking quantity from the backend booking list (forced change only)
+* Tweak - Add a price details column in the backend booking list
+* Tweak - Add a button in WC order item to see and edit the attached booking
 * Tweak - Allow shortcodes in notifications thanks to a new tag 
 * Tweak - Notification tags: user_locale added, user_ical_key removed
 * Tweak - Allow to use relative time format along user_ical_url notification tag. E.g: &start=today&end=10+days
 * Tweak - Allow to perform the default form action on event click instead of on submit
 * Tweak - Do not perform form actions on form editor
+* Tweak - Resize time inputs, and make multiple selectboxes resizable
 * Fix - Error when adding a product to cart on click on the event
 * Fix - Error when inserting event if the activity title had quotes
 * Fix - Groups of events may not be automatically selected according to POST or GET parameters
 * Fix - Expired cart item notice may appear twice
 * Fix - Backward compatibility with WooCommerce 2.6
+* Fix - Event no longer selected after page reload in backend booking list
+* Fix - Possible memory error in form editor if you have a lot of WooCommerce products
 * Dev - Add PHP and JS hooks in calendar editor
 * Dev - Replace WC set_quantity with remove_cart_item function when qty = 0 for easier backward compatibility
 * Dev - Ensure that cart item with bookings are merged via Booking Activities process, and not simply increased quantity

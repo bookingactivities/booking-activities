@@ -216,6 +216,50 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 
 		/**
+		 * AJAX Controller - Change booking quantity
+		 * @since 1.7.10
+		 */
+		function bookacti_controller_change_booking_quantity() {
+			$booking_id		= intval( $_POST[ 'booking_id' ] );
+			$new_quantity	= intval( $_POST[ 'new_quantity' ] );
+			$is_admin		= intval( $_POST[ 'is_admin' ] ) === 1 ? true : false;
+			
+			// Check nonce and capabilities
+			$is_nonce_valid	= check_ajax_referer( 'bookacti_change_booking_quantity', 'nonce_change_booking_quantity', false );
+			$is_allowed		= current_user_can( 'bookacti_edit_bookings' );		
+			
+			if( ! $is_nonce_valid || ! $is_allowed ) {
+				bookacti_send_json_not_allowed( 'change_booking_quantity' );
+			}
+			
+			// Check if the quantity is valid
+			if( ! $new_quantity ) {
+				bookacti_send_json( array( 'status' => 'failed', 'error' => 'invalid_new_quantity', 'message' => esc_html__( 'The new quantity is not valid.', 'booking-activities' ) ), 'change_booking_quantity' );
+			}
+			
+			$old_booking = bookacti_get_booking_by_id( $booking_id );
+						
+			// Update booking quantity
+			$updated = bookacti_force_update_booking_quantity( $booking_id, $new_quantity );
+			if( $updated === false ) { 
+				bookacti_send_json( array( 'status' => 'failed', 'error' => 'error_update_booking_quantity', 'message' => esc_html__( 'An error occured while trying to change the booking quantity.', 'booking-activities' ) ), 'change_booking_quantity' );
+			}
+			
+			do_action( 'bookacti_booking_quantity_updated', $booking_id, $new_quantity, $old_booking->quantity, array( 'is_admin' => $is_admin ) );
+			
+			$new_booking = bookacti_get_booking_by_id( $booking_id );
+			
+			$context	= ! empty( $_POST[ 'context' ] ) ? sanitize_title_with_dashes( $_POST[ 'context' ] ) : '';
+			$columns	= ! empty( $_POST[ 'columns' ] ) && is_array( $_POST[ 'columns' ] ) ? array_map( 'sanitize_title_with_dashes', $_POST[ 'columns' ] ) : array();
+			$filters	= apply_filters( 'bookacti_booking_action_row_filters', array( 'booking_id' => $new_booking->id ), $new_booking, 'change_booking_quantity', $context );
+			$row		= bookacti_get_booking_list_rows_according_to_context( $context, $filters, $columns );
+			
+			bookacti_send_json( array( 'status' => 'success', 'row' => $row ), 'change_booking_quantity' );
+		}
+		add_action( 'wp_ajax_bookactiChangeBookingQuantity', 'bookacti_controller_change_booking_quantity' );
+
+
+		/**
 		 * AJAX Controller - Get booking system data by booking ID
 		 * @version 1.7.4
 		 */
@@ -604,6 +648,53 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		
 		
 		/**
+		 * AJAX Controller - Change booking group quantity
+		 * @since 1.7.10
+		 */
+		function bookacti_controller_change_booking_group_quantity() {
+			$booking_group_id		= intval( $_POST[ 'booking_id' ] );
+			$new_quantity	= intval( $_POST[ 'new_quantity' ] );
+			$is_admin		= intval( $_POST[ 'is_admin' ] ) === 1 ? true : false;
+			$reload_grouped_bookings = intval( $_POST[ 'reload_grouped_bookings' ] ) === 1 ? true : false;
+			
+			// Check nonce and capabilities
+			$is_nonce_valid	= check_ajax_referer( 'bookacti_change_booking_quantity', 'nonce_change_booking_quantity', false );
+			$is_allowed		= current_user_can( 'bookacti_edit_bookings' );		
+			
+			if( ! $is_nonce_valid || ! $is_allowed  ) {
+				bookacti_send_json_not_allowed( 'change_booking_group_quantity' );
+			}
+			
+			// Check if the quantity is valid
+			if( ! $new_quantity ) {
+				bookacti_send_json( array( 'status' => 'failed', 'error' => 'invalid_new_quantity', 'message' => esc_html__( 'The new quantity is not valid.', 'booking-activities' ) ), 'change_booking_group_quantity' );
+			}
+			
+			$old_quantity = bookacti_get_booking_group_quantity( $booking_group_id );
+			
+			// Update booking quantity
+			$updated = bookacti_force_update_booking_group_bookings_quantity( $booking_group_id, $new_quantity );
+			if( $updated === false ) { 
+				bookacti_send_json( array( 'status' => 'failed', 'error' => 'error_update_booking_group_quantity', 'message' => esc_html__( 'An error occured while trying to change the booking quantity.', 'booking-activities' ) ), 'change_booking_group_quantity' );
+			}
+			
+			do_action( 'bookacti_booking_group_quantity_updated', $booking_group_id, $new_quantity, $old_quantity, array( 'is_admin' => $is_admin ) );
+			
+			$new_booking_group = bookacti_get_booking_group_by_id( $booking_group_id );
+			
+			$context	= ! empty( $_POST[ 'context' ] ) ? sanitize_title_with_dashes( $_POST[ 'context' ] ) : '';
+			$columns	= ! empty( $_POST[ 'columns' ] ) && is_array( $_POST[ 'columns' ] ) ? array_map( 'sanitize_title_with_dashes', $_POST[ 'columns' ] ) : array();
+			$filters	= apply_filters( 'bookacti_booking_action_row_filters', array( 'booking_group_id' => $booking_group_id, 'group_by' => 'booking_group' ), $new_booking_group, 'change_booking_group_quantity', $context );
+			$row		= bookacti_get_booking_list_rows_according_to_context( $context, $filters, $columns );
+			
+			$rows = $reload_grouped_bookings ? bookacti_get_booking_list_rows_according_to_context( $context, array( 'booking_group_id' => $booking_group_id ), $columns ) : '';
+			
+			bookacti_send_json( array( 'status' => 'success', 'row' => $row, 'grouped_booking_rows' => $rows ), 'change_booking_group_quantity' );
+		}
+		add_action( 'wp_ajax_bookactiChangeBookingGroupQuantity', 'bookacti_controller_change_booking_group_quantity' );
+		
+		
+		/**
 		 * AJAX Controller - Delete a booking group
 		 * @since 1.5.0
 		 */
@@ -751,7 +842,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		/**
 		 * Export booking list according to filters as CSV
 		 * @since 1.6.0
-		 * @version 1.7.1
+		 * @version 1.7.10
 		 */
 		function bookacti_export_bookings_page() {
 			if( empty( $_REQUEST[ 'action' ] ) || $_REQUEST[ 'action' ] !== 'bookacti_export_bookings' ) { return; }
@@ -773,6 +864,11 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			// Format the booking filters
 			if( empty( $_REQUEST[ 'templates' ] ) ) { $_REQUEST[ 'templates' ] = ''; }
 			$filters = bookacti_format_booking_filters( bookacti_format_string_booking_filters( $_REQUEST ) );
+			
+			// If an event has been selected, do not retrieve groups of events containing this event
+			if( $filters[ 'event_id' ] && ! $filters[ 'booking_group_id' ] ) {
+				$filters[ 'booking_group_id' ] = 'none';
+			}
 			
 			// Restrict to allowed templates
 			$allowed_templates = array_keys( bookacti_fetch_templates( array(), false, $user->ID ) );

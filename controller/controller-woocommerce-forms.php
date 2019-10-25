@@ -181,9 +181,7 @@ function bookacti_add_wc_columns_to_activity_redirect_url_table( $url_array, $pa
 		'option_none_value'	=> '',
 		'echo'				=> 0
 	);
-	$products = bookacti_get_products( array( 'limit' => -1 ) );
-	
-	$default_product_selectbox	= bookacti_display_product_selectbox( $args, $products );
+	$default_product_selectbox	= bookacti_display_product_selectbox( $args );
 	
 	$redirect_url_activity_ids	= ! empty( $params[ 'calendar_data' ][ 'redirect_url_by_activity' ] ) && is_array( $params[ 'calendar_data' ][ 'redirect_url_by_activity' ] ) ? array_keys( $params[ 'calendar_data' ][ 'redirect_url_by_activity' ] ) : array();
 	$product_activity_ids		= ! empty( $params[ 'calendar_data' ][ 'product_by_activity' ] ) && is_array( $params[ 'calendar_data' ][ 'product_by_activity' ] ) ? array_keys( $params[ 'calendar_data' ][ 'product_by_activity' ] ) : array();
@@ -203,7 +201,7 @@ function bookacti_add_wc_columns_to_activity_redirect_url_table( $url_array, $pa
 	foreach( $url_array[ 'body' ] as $i => $row ) {
 		$activity_id	= ! empty( $row[ 'activity' ] ) ? intval( $row[ 'activity' ] ) : 0;
 		$selected		= ! empty( $product_by_activity[ $activity_id ] ) ? intval( $product_by_activity[ $activity_id ] ) : 0;
-		$url_array[ 'body' ][ $i ][ 'product' ] = $activity_id ? bookacti_display_product_selectbox( array_merge( $args, array( 'field_name' => 'product_by_activity[' . $activity_id . ']', 'selected' => $selected ) ), $products ) : $default_product_selectbox;
+		$url_array[ 'body' ][ $i ][ 'product' ] = $activity_id ? bookacti_display_product_selectbox( array_merge( $args, array( 'field_name' => 'product_by_activity[' . $activity_id . ']', 'selected' => $selected ) ) ) : $default_product_selectbox;
 	}
 	
 	return $url_array;
@@ -230,8 +228,7 @@ function bookacti_add_wc_columns_to_group_activity_redirect_url_table( $url_arra
 		'echo'				=> 0,
 		'limit'				=> -1
 	);
-	$products = bookacti_get_products( array( 'limit' => -1 ) );
-	$default_product_selectbox	= bookacti_display_product_selectbox( $args, $products );
+	$default_product_selectbox	= bookacti_display_product_selectbox( $args );
 	
 	$redirect_url_group_category_ids= ! empty( $params[ 'calendar_data' ][ 'redirect_url_by_group_category' ] ) && is_array( $params[ 'calendar_data' ][ 'redirect_url_by_group_category' ] ) ? array_keys( $params[ 'calendar_data' ][ 'redirect_url_by_group_category' ] ) : array();
 	$product_group_category_ids		= ! empty( $params[ 'calendar_data' ][ 'product_by_group_category' ] ) && is_array( $params[ 'calendar_data' ][ 'product_by_group_category' ] ) ? array_keys( $params[ 'calendar_data' ][ 'product_by_group_category' ] ) : array();
@@ -251,7 +248,7 @@ function bookacti_add_wc_columns_to_group_activity_redirect_url_table( $url_arra
 	foreach( $url_array[ 'body' ] as $i => $row ) {
 		$group_category_id	= ! empty( $row[ 'group_category' ] ) ? $row[ 'group_category' ] : 0;
 		$selected			= ! empty( $product_by_group_category[ $group_category_id ] ) ? intval( $product_by_group_category[ $group_category_id ] ) : 0;
-		$url_array[ 'body' ][ $i ][ 'product' ] = ! empty( $product_by_group_category[ $group_category_id ] ) ? bookacti_display_product_selectbox( array_merge( $args, array( 'field_name' => 'product_by_group_category[' . $group_category_id . ']', 'selected' => $selected ) ), $products ) : $default_product_selectbox;
+		$url_array[ 'body' ][ $i ][ 'product' ] = ! empty( $product_by_group_category[ $group_category_id ] ) ? bookacti_display_product_selectbox( array_merge( $args, array( 'field_name' => 'product_by_group_category[' . $group_category_id . ']', 'selected' => $selected ) ) ) : $default_product_selectbox;
 	}
 	
 	return $url_array;

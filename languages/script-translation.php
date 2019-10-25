@@ -134,6 +134,7 @@ $bookacti_translation_array = apply_filters( 'bookacti_translation_array', array
 	'error_reschedule_booking'			=> esc_html__( 'Error occurs while trying to reschedule booking.', 'booking-activities' ),
 	'error_delete_booking'				=> esc_html__( 'An error occurred while trying to delete the booking.', 'booking-activities' ),
 	'error_change_booking_state'		=> esc_html__( 'Error occurs while trying to change booking state.', 'booking-activities' ),
+	'error_change_booking_quantity'		=> esc_html__( 'Error occurs while trying to change booking quantity.', 'booking-activities' ),
 	'error_get_refund_booking_actions'	=> esc_html__( 'Error occurs while trying to request available refund actions.  Please contact the administrator.', 'booking-activities' ),
 	'error_refund_booking'				=> esc_html__( 'Error occurs while trying to request a refund. Please contact the administrator.', 'booking-activities' ),
 	'error_user_not_logged_in'			=> esc_html__( 'You are not logged in. Please create an account and log in first.', 'booking-activities' ),

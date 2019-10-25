@@ -24,6 +24,10 @@ table.woocommerce_order_items ul.bookacti-booking-events-list { margin: 0; }
 
 .woocommerce_order_items .display_meta .bookacti-booking-events-list { margin: 0; }
 
+.bookacti-order-item-action-buttons > div					{ display: inline-block; vertical-align: middle; }
+.bookacti-order-item-action-buttons > div:after				{ content: ' | '; vertical-align: middle; }
+.bookacti-order-item-action-buttons > div:last-child:after	{ content: ''; }
+
 
 /***** FRONTEND WOOCOMMERCE *****/
 

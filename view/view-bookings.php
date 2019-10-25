@@ -1,7 +1,7 @@
 <?php
 /**
  * Booking list page
- * @version 1.7.8
+ * @version 1.7.10
  */
 
 // Exit if accessed directly
@@ -145,7 +145,7 @@ if( ! $templates ) {
 					bookacti_display_field( $args );
 					
 					// Update user default status filter
-					if( $selected_status != $default_status ) {
+					if( $selected_status != $default_status && empty( $_REQUEST[ 'keep_default_status' ] ) ) {
 						update_user_meta( get_current_user_id(), 'bookacti_status_filter', $selected_status );
 					}
 				?>

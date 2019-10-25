@@ -1,7 +1,7 @@
 <?php
 /**
  * Booking Activities landing page
- * @version 1.7.6
+ * @version 1.7.10
  */
 
 // Exit if accessed directly
@@ -51,7 +51,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 					'screenshot' => true,
 					'light_color' => '#f291c2',
 					'dark_color' => '#402633',
-					'excerpt' => esc_html__( 'Add any kind of fields to your booking forms. Collect data from each participant. View, edit and filter the values in your booking list.', 'booking-activities' ),
+					'excerpt' => esc_html__( 'Add any kind of fields to your booking forms. Offer paid options. Collect data from each participant. View, edit and filter the values in your booking list.', 'booking-activities' ),
 					'price' => '59.00€',
 					'promo' => $promo,
 					'promo_price' => $promo_price_49

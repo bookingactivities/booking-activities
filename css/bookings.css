@@ -1,19 +1,23 @@
 /***** BOOKINGS PAGE *****/
 
 /** FILTERS **/
-.bookacti-bookings-filter-container	{ display: inline-block;  vertical-align: top; width: 150px; margin-right: 10px; }
-.bookacti-bookings-filter-title		{ font-weight: bold; line-height: 2.5em; }
+.bookacti-bookings-filter-container							{ display: inline-block; vertical-align: top; margin-right: 10px; }
+#bookacti-event-filter-container,
+.bookacti-bookings-filter-container input,
+.bookacti-bookings-filter-container select,
+.bookacti-bookings-filter-container .bookacti-combobox,
+.bookacti-bookings-filter-container button,
+.bookacti-bookings-filter-container .button,
+.bookacti-bookings-filter-container textarea				{ width: 150px; }
+.bookacti-bookings-filter-title								{ font-weight: bold; line-height: 2.5em; }
 .bookacti-bookings-filter-content select[multiple]			{ height: 60px; box-sizing: border-box; padding: 0; margin: 0; }
 .bookacti-bookings-filter-content select[multiple] option	{ height: 22px; box-sizing: border-box; padding: 2px 4px; margin: 0; }
-.bookacti-bookings-filter-content select, 
-.bookacti-bookings-filter-content input, 
-.bookacti-bookings-filter-content a			{ width: 150px; }
 
 #bookacti-event-filter-container a	{ text-align: center; overflow: hidden; text-overflow: ellipsis; }
 #bookacti-pick-event-filter::before	{ font-family: 'dashicons'; content: "\f508"; margin-right: 4px; font-size: 1.2em; vertical-align: bottom; }
 #bookacti-unpick-events-filter		{ margin-top: 4px; }
 
-#bookacti-customer-filter-container .bookacti-combobox					{ min-height: 28px; width: 100%; }
+#bookacti-customer-filter-container .bookacti-combobox					{ min-height: 28px; }
 #bookacti-customer-filter-container .bookacti-combobox > *				{ background-color: #fff; border-color: #ddd; box-shadow: inset 0 1px 0 rgba(0,0,0,.07); }
 #bookacti-customer-filter-container .ui-button.bookacti-combobox-toggle	{ width: 20px; min-height: 28px; border-left: none; }
 #bookacti-customer-filter-container .bookacti-combobox-input			{ padding: 2px 6px; min-width: 0; max-width: 132px; min-height: 28px; border-right: none; border-bottom-right-radius: 0; border-top-right-radius: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
@@ -27,6 +31,8 @@ label[for="bookacti-booking-filter-dates-from"],
 label[for="bookacti-booking-filter-dates-to"] { display: inline-block; width: 40px; max-width: 40px; }
 label[for="bookacti-booking-filter-dates-from"] + input#bookacti-booking-filter-dates-from,
 label[for="bookacti-booking-filter-dates-to"] + input#bookacti-booking-filter-dates-to { display: inline-block; width: 108px; max-width:108px; }
+
+.bookacti-booking-price-details-title { font-weight: 600; }
 
 
 /** BOOKING SYSTEM **/
@@ -78,7 +84,7 @@ label[for="bookacti-booking-filter-dates-to"] + input#bookacti-booking-filter-da
 #bookacti-booking-list-container .column-start_date,
 #bookacti-booking-list-container .column-end_date,
 #bookacti-booking-list-container .column-creation_date	{ width: 12%; }
-#bookacti-booking-list-container .column-actions		{ width: 172px; }
+#bookacti-booking-list-container .column-actions		{ width: 210px; }
 
 #bookacti-booking-list-container .column-id									{ padding: 8px 0; }
 #bookacti-booking-list-container .column-id .bookacti-booking-group-id::before	{ content: '\0021AA  '; }
@@ -142,6 +148,8 @@ label[for="bookacti-booking-filter-dates-to"] + input#bookacti-booking-filter-da
 .wp-admin a.bookacti-booking-group-action:after			{ font-family: 'dashicons'; }
 .wp-admin a.bookacti-change-booking-state:after,
 .wp-admin a.bookacti-change-booking-group-state:after	{ content: '\f464'; }
+.wp-admin a.bookacti-change-booking-quantity:after,
+.wp-admin a.bookacti-change-booking-group-quantity:after{ content: '\f156'; }
 .wp-admin a.bookacti-refund-booking:after,
 .wp-admin a.bookacti-refund-booking-group:after			{ content: '\f526'; }
 .wp-admin a.bookacti-delete-booking:after,
