@@ -311,9 +311,10 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		}
 	}
 	add_action( 'woocommerce_order_status_pending_to_processing', 'bookacti_turn_non_activity_order_bookings_to_permanent', 5, 2 );
-	
-	
-	
+
+
+
+
 // MY ACCOUNT
 	
 	/**
@@ -330,7 +331,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	
 	/**
 	 * Add actions html elements to booking rows
-	 * @version 1.6.0
+	 * @version 1.7.11
 	 * @global boolean $bookacti_is_email
 	 * @param int $item_id
 	 * @param WC_Order_item $item
@@ -342,7 +343,6 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		
 		// Don't display booking actions in emails, in plain text and in payment page
 		if( ( isset( $bookacti_is_email ) && $bookacti_is_email ) || $plain_text || ( isset( $_GET[ 'pay_for_order' ] ) && $_GET[ 'pay_for_order' ] ) ) { 
-			$GLOBALS[ 'bookacti_is_email' ] = false; 
 			return;
 		}
 		
@@ -358,18 +358,44 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	/**
 	 * Set a flag before displaying order items to decide whether to display booking actions
 	 * @since 1.4.0
-	 * @version 1.6.0
+	 * @version 1.7.11
+	 * global boolean $bookacti_is_email
 	 * @param array $args
 	 * @return array
 	 */
 	function bookacti_order_items_set_email_flag( $args ) {
-		$GLOBALS[ 'bookacti_is_email' ] = true;
+		if( defined( 'bookacti_is_email' ) ) {
+			global $bookacti_is_email;
+			$bookacti_is_email = true;
+		} else {
+			$GLOBALS[ 'bookacti_is_email' ] = true;
+		}
 		return $args;
 	}
 	add_filter( 'woocommerce_email_order_items_args', 'bookacti_order_items_set_email_flag', 10, 1 );
 	
 	
-	
+	/**
+	 * Set a flag before displaying order items to decide whether to display booking actions
+	 * @since 1.7.11
+	 * @param string $html
+	 * @param WC_Order $order
+	 * @return string
+	 */
+	function bookacti_order_items_unset_email_flag( $html, $order ) {
+		if( defined( 'bookacti_is_email' ) ) {
+			global $bookacti_is_email;
+			$bookacti_is_email = false;
+		} else {
+			$GLOBALS[ 'bookacti_is_email' ] = false;
+		}
+		return $html;
+	}
+	add_filter( 'woocommerce_email_order_items_table', 'bookacti_order_items_unset_email_flag', 10, 2 );
+
+
+
+
 // BOOKING LIST
 	
 	/**

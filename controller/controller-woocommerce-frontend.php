@@ -146,7 +146,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	
 	/**
 	 * Add booking forms to single product page (front-end)
-	 * @version 1.7.8
+	 * @version 1.7.11
 	 * @global WC_Product $product
 	 */
 	function bookacti_add_booking_system_in_single_product_page() {
@@ -243,6 +243,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		
 		$form_atts = apply_filters( 'bookacti_product_form_attributes', array(
 			'id' => $form_instance_id,
+			'class' => '',
 			'data-default-variation-id' => ! empty( $default_variation_id ) ? $default_variation_id : '',
 			'data-variation-id' => ! empty( $variation_id ) ? $variation_id : '',
 			'data-product-id' => $product->get_id(),
@@ -250,7 +251,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		), $product );
 		
 		// Add compulsory class
-		$form_atts[ 'class' ] = 'bookacti-wc-form-fields' . ( ! empty( $form_atts[ 'class' ] ) ? ' ' . $form_atts[ 'class' ] : '' );
+		$form_atts[ 'class' ] .= ' bookacti-wc-form-fields';
 		
 		// Convert $form_atts array to inline attributes
 		$form_attributes_str = '';
@@ -1082,7 +1083,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 	/**
 	 * If quantity changes in cart, temporarily book the extra quantity if possible
-	 * @version 1.7.10
+	 * @version 1.7.11
 	 * @param int $new_quantity
 	 * @param string $cart_item_key
 	 */
@@ -1091,11 +1092,10 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		$item = $woocommerce->cart->get_cart_item( $cart_item_key );
 		$old_quantity = $item[ 'quantity' ];
 		
-		if( ! isset( $item['_bookacti_options'] ) || $new_quantity === $old_quantity ) { return $old_quantity; }
+		if( ! isset( $item['_bookacti_options'] ) || $new_quantity === $old_quantity ) { return $new_quantity; }
 		
 		$is_in_cart = false;
 		$restore_qty = false;
-		$init_new_quantity = $new_quantity;
 		
 		// Single event
 		if( ! empty( $item['_bookacti_options']['bookacti_booking_id'] ) ) {
