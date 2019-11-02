@@ -319,7 +319,7 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 
 == Changelog ==
 
-= 1.7.11 =
+= 1.7.11 - 2019/11/02 =
 * Fix - Cannot update WC cart item quantity for non-activity items
 * Fix - Hide booking actions in WC emails (undesired display when more than 1 item)
 
