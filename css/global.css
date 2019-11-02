@@ -108,7 +108,7 @@
 
 	/* Small events */
 	.bookacti-calendar .fc-agenda-view .bookacti-small-event .fc-title,
-	.bookacti-calendar .fc-agenda-view .bookacti-small-event .fc-time									{ display: inline-block; }
+	.bookacti-calendar .fc-agenda-view .bookacti-small-event .fc-time									{ display: inline; }
 	.bookacti-calendar .fc-agenda-view .bookacti-small-event:not(.bookacti-wide-event) .fc-time span	{ display: none; }
 	.bookacti-calendar .fc-agenda-view .bookacti-small-event:not(.bookacti-wide-event) .fc-time:before { content: attr(data-start); }
 	.bookacti-calendar .fc-agenda-view .bookacti-small-event:not(.bookacti-wide-event) .fc-time:after	{ content: "\000A0-\000A0"; }

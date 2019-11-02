@@ -1,11 +1,11 @@
 === Booking Activities ===
 Contributors: bookingactivities, yoancutillas
 Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=7EKU434L7NEVC
-Tags: booking activities, booking sport, booking form, event reservation, reservation schedule
+Tags: booking, reservation, booking form, booking calendar, booking events
 Requires at least: 3.6
-Tested up to: 5.2
+Tested up to: 5.3
 Requires PHP: 5.3
-Stable tag: 1.7.10
+Stable tag: 1.7.11
 License: GPLv3 or later
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
 
@@ -102,7 +102,7 @@ See the whole [features list here](https://booking-activities.fr/en/documentatio
 
 = Extend these features with add-ons: =
 
-* **[Advanced Forms](https://booking-activities.fr/en/downloads/advanced-forms/?utm_source=wp-plugin-page&utm_medium=wordpress&utm_campaign=advanced-forms&utm_content=readme)**: Add any custom fields to your booking forms
+* **[Advanced Forms](https://booking-activities.fr/en/downloads/advanced-forms/?utm_source=wp-plugin-page&utm_medium=wordpress&utm_campaign=advanced-forms&utm_content=readme)**: Add any (paid) custom fields to your booking forms
 * **[Display Pack](https://booking-activities.fr/en/downloads/display-pack/?utm_source=wp-plugin-page&utm_medium=wordpress&utm_campaign=display-pack&utm_content=readme)**: Customize your calendars or set alternative display (datepicker)
 * **[Prices and Credits](https://booking-activities.fr/en/downloads/prices-and-credits/?utm_source=wp-plugin-page&utm_medium=wordpress&utm_campaign=prices-and-credits&utm_content=readme)**: Set per event prices, decreasing prices, price categories (adults, children, etc.), pay with credits
 * **[Notification Pack](https://booking-activities.fr/en/downloads/notification-pack/?utm_source=wp-plugin-page&utm_medium=wordpress&utm_campaign=notification-pack&utm_content=readme)**: Send notifications and booking reminders by email, SMS and Push
@@ -318,6 +318,10 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 
 
 == Changelog ==
+
+= 1.7.11 =
+* Fix - Cannot update WC cart item quantity for non-activity items
+* Fix - Hide booking actions in WC emails (undesired display when more than 1 item)
 
 = 1.7.10 - 2019/10/25 =
 * Feature - Change booking quantity from the backend booking list (forced change only)
