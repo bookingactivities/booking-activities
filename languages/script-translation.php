@@ -251,7 +251,7 @@ $bookacti_translation_array = apply_filters( 'bookacti_translation_array', array
 
 	'plugin_path'						=> plugins_url() . '/' . BOOKACTI_PLUGIN_NAME,
 	'site_url'							=> get_site_url(),
-	'admin_url'							=> get_admin_url(),
+	'admin_url'							=> admin_url(),
 	'current_user_id'					=> get_current_user_id(),
 	'is_admin'							=> is_admin(),
 	'current_time'						=> $current_datetime_object->format( 'Y-m-d H:i:s' ),

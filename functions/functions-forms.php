@@ -1574,6 +1574,7 @@ function bookacti_display_form_managers_meta_box( $form ) {
 /**
  * Display 'publish' metabox content for forms
  * @since 1.5.0
+ * @version 1.7.12
  * @param array $form
  */
 function bookacti_display_form_publish_meta_box( $form ) {
@@ -1584,11 +1585,11 @@ function bookacti_display_form_publish_meta_box( $form ) {
 			<?php
 				if ( current_user_can( 'bookacti_delete_forms' ) ) {
 					if( ! $form[ 'active' ] ) {
-						echo '<a href="' . esc_url( wp_nonce_url( get_admin_url() . 'admin.php?page=bookacti_forms', 'delete-form_' . $form[ 'form_id' ] ) . '&action=delete&form_id=' . $form[ 'form_id' ] ) . '" class="submitdelete deletion" >'
+						echo '<a href="' . esc_url( wp_nonce_url( admin_url( 'admin.php?page=bookacti_forms&action=delete&form_id=' . $form[ 'form_id' ] ), 'delete-form_' . $form[ 'form_id' ] ) ) . '" class="submitdelete deletion" >'
 								. esc_html_x( 'Delete Permanently', 'forms', 'booking-activities' )
 							. '</a>';
 					} else {
-						echo '<a href="' . esc_url( wp_nonce_url( get_admin_url() . 'admin.php?page=bookacti_forms', 'trash-form_' . $form[ 'form_id' ] ) . '&status=trash&action=trash&form_id=' . $form[ 'form_id' ] ) . '" class="submitdelete deletion" >'
+						echo '<a href="' . esc_url( wp_nonce_url( admin_url( 'admin.php?page=bookacti_forms&status=trash&action=trash&form_id=' . $form[ 'form_id' ] ), 'trash-form_' . $form[ 'form_id' ] ) ) . '" class="submitdelete deletion" >'
 								. esc_html_x( 'Move to trash', 'forms', 'booking-activities' )
 							. '</a>';
 					}

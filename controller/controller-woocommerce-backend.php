@@ -524,7 +524,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	
 	/**
 	 * Content of the activity tab
-	 * @version 1.7.0
+	 * @version 1.7.12
 	 * @global int $thepostid
 	 */
 	function bookacti_activity_tab_content() {
@@ -578,11 +578,11 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 					<?php 
 						if( $can_edit_forms ) {
 							if( $forms_nb ) {
-								echo '<a href="' . esc_url( get_admin_url() . 'admin.php?page=bookacti_forms&action=edit&form_id=' . $current_form ) . '" target="_blank">' 
+								echo '<a href="' . esc_url( admin_url( 'admin.php?page=bookacti_forms&action=edit&form_id=' . $current_form ) ) . '" target="_blank">' 
 										. __( 'Edit this form', 'booking-activities' ) 
 									. '</a>';
 							} else {
-								echo '<a href="' . esc_url( get_admin_url() . 'admin.php?page=bookacti_forms&action=new' ) . '" target="_blank">' 
+								echo '<a href="' . esc_url( admin_url( 'admin.php?page=bookacti_forms&action=new' ) ) . '" target="_blank">' 
 										. __( 'Create a form', 'booking-activities' ) 
 									. '</a>';
 							}
@@ -602,7 +602,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 					<?php 
 						/* translators: %1$s and %2$s are <a> and </a> tags to go to the admin booking forms page. */
 						echo sprintf( esc_html__( 'As of Booking Activities 1.5, calendar settings have been moved to %1$sbooking forms%2$s.', 'booking-activities' ),
-									  '<a href="' . esc_url( get_admin_url() . 'admin.php?page=bookacti_forms' ) . '" target="_blank">',
+									  '<a href="' . esc_url( admin_url( 'admin.php?page=bookacti_forms' ) ) . '" target="_blank">',
 									  '</a>' );
 						if( ! $current_form ) {
 							echo '<br/>' . esc_html__( 'Please manually migrate your settings as soon as possible or click on this button to do it automatically:', 'booking-activities' )
@@ -927,7 +927,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	
 	/**
 	 * Add custom fields for activity variation product type
-	 * @version 1.7.0
+	 * @version 1.7.12
 	 * @param int $loop
 	 * @param array $variation_data
 	 * @param WP_Post $variation
@@ -1023,11 +1023,11 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 				<?php 
 					if( $can_edit_forms ) {
 						if( $forms_nb ) {
-							echo '<a href="' . esc_url( get_admin_url() . 'admin.php?page=bookacti_forms&action=edit&form_id=' . $current_form ) . '" target="_blank">' 
+							echo '<a href="' . esc_url( admin_url( 'admin.php?page=bookacti_forms&action=edit&form_id=' . $current_form ) ) . '" target="_blank">' 
 									. __( 'Edit this form', 'booking-activities' ) 
 								. '</a>';
 						} else {
-							echo '<a href="' . esc_url( get_admin_url() . 'admin.php?page=bookacti_forms&action=new' ) . '" target="_blank">' 
+							echo '<a href="' . esc_url( admin_url( 'admin.php?page=bookacti_forms&action=new' ) ) . '" target="_blank">' 
 									. __( 'Create a form', 'booking-activities' ) 
 								. '</a>';
 						}
@@ -1047,7 +1047,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 				<?php 
 				/* translators: %1$s and %2$s are <a> and </a> tags to go to the admin booking forms page. */
 					echo sprintf( esc_html__( 'As of Booking Activities 1.5, calendar settings have been moved to %1$sbooking forms%2$s.', 'booking-activities' ),
-								  '<a href="' . esc_url( get_admin_url() . 'admin.php?page=bookacti_forms' ) . '" target="_blank">',
+								  '<a href="' . esc_url( admin_url( 'admin.php?page=bookacti_forms' ) ) . '" target="_blank">',
 								  '</a>' );
 					if( ! $current_form ) {
 						echo '<br/>' . esc_html__( 'Please manually migrate your settings as soon as possible or click on this button to do it automatically:', 'booking-activities' )
@@ -1431,6 +1431,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	/**
 	 * AJAX Controller - Migrate product or variation settings to a new booking form
 	 * @since 1.5.0
+	 * @version 1.7.12
 	 */
 	function bookacti_controller_migrate_product_settings_to_booking_form() {
 		$json_action = 'migrate_product_settings';
@@ -1543,7 +1544,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			'message'		=> array()
 		);
 		
-		$edit_form_link = ' <a href="' . esc_url( get_admin_url() . 'admin.php?page=bookacti_forms&action=edit&form_id=' . $form_id ) . '" target="_blank">' 
+		$edit_form_link = ' <a href="' . esc_url( admin_url( 'admin.php?page=bookacti_forms&action=edit&form_id=' . $form_id ) ) . '" target="_blank">' 
 							. esc_html__( 'Edit the form', 'booking-activities' ) 
 						. '</a>';
 		

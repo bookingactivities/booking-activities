@@ -10,7 +10,7 @@ if( ! class_exists( 'Bookings_List_Table' ) ) {
 	
 	/**
 	 * Bookings WP_List_Table
-	 * @version 1.7.10
+	 * @version 1.7.12
 	 */
 	class Bookings_List_Table extends WP_List_Table {
 		
@@ -235,7 +235,7 @@ if( ! class_exists( 'Bookings_List_Table' ) ) {
 		
 		/**
 		 * Get booking list items. Parameters can be passed in the URL.
-		 * @version 1.7.10
+		 * @version 1.7.12
 		 * @access public
 		 * @return array
 		 */
@@ -347,7 +347,7 @@ if( ! class_exists( 'Bookings_List_Table' ) ) {
 					$user = $users[ $user_id ];
 					$display_name = ! empty( $user->first_name ) && ! empty( $user->last_name ) ? $user->first_name . ' ' . $user->last_name : $user->display_name;
 					$customer	= '<a '
-									. ' href="' . esc_url( get_admin_url() . 'user-edit.php?user_id=' . $user_id ) . '" '
+									. ' href="' . esc_url( admin_url( 'user-edit.php?user_id=' . $user_id ) ) . '" '
 									. ' target="_blank" '
 									. ' >'
 										. $display_name

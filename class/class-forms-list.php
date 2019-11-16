@@ -11,7 +11,7 @@ if( ! class_exists( 'Forms_List_Table' ) ) {
 	/**
 	 * Forms WP_List_Table
 	 * @since 1.5.0
-	 * @version 1.7.7
+	 * @version 1.7.12
 	 */
 	class Forms_List_Table extends WP_List_Table {
 		
@@ -210,7 +210,7 @@ if( ! class_exists( 'Forms_List_Table' ) ) {
 		
 		/**
 		 * Fill "Title" column and add action buttons
-		 * @version 1.7.7
+		 * @version 1.7.12
 		 * @access public
 		 * @param array $item
 		 * @return string
@@ -223,7 +223,7 @@ if( ! class_exists( 'Forms_List_Table' ) ) {
 				
 				// Add the 'edit' action
 				if( $item[ 'active_raw' ] ) {
-					$actions[ 'edit' ]	= '<a href="' . esc_url( get_admin_url() . 'admin.php?page=bookacti_forms&action=edit&form_id=' . $form_id ) . '" >'
+					$actions[ 'edit' ]	= '<a href="' . esc_url( admin_url( 'admin.php?page=bookacti_forms&action=edit&form_id=' . $form_id ) ) . '" >'
 											. esc_html_x( 'Edit', 'forms', 'booking-activities' )
 										. '</a>';
 				}
@@ -231,16 +231,16 @@ if( ! class_exists( 'Forms_List_Table' ) ) {
 				if( current_user_can( 'bookacti_delete_forms' ) ) {
 					if( $item[ 'active_raw' ] ) {
 						// Add the 'trash' action
-						$actions[ 'trash' ] = '<a href="' . esc_url( wp_nonce_url( get_admin_url() . 'admin.php?page=bookacti_forms', 'trash-form_' . $form_id ) . '&action=trash&form_id=' . $form_id ) . '" >'
+						$actions[ 'trash' ] = '<a href="' . esc_url( wp_nonce_url( admin_url( 'admin.php?page=bookacti_forms&action=trash&form_id=' . $form_id ), 'trash-form_' . $form_id ) ) . '" >'
 												. esc_html_x( 'Trash', 'forms action', 'booking-activities' )
 											. '</a>';
 					} else {
 						// Add the 'restore' action
-						$actions[ 'restore' ] = '<a href="' . esc_url( wp_nonce_url( get_admin_url() . 'admin.php?page=bookacti_forms', 'restore-form_' . $form_id ) . '&action=restore&form_id=' . $form_id ) . '" >'
+						$actions[ 'restore' ] = '<a href="' . esc_url( wp_nonce_url( admin_url( 'admin.php?page=bookacti_forms&action=restore&form_id=' . $form_id ), 'restore-form_' . $form_id ) ) . '" >'
 												. esc_html_x( 'Restore', 'forms', 'booking-activities' )
 											. '</a>';
 						// Add the 'delete' action
-						$actions[ 'delete' ] = '<a href="' . esc_url( wp_nonce_url( get_admin_url() . 'admin.php?page=bookacti_forms', 'delete-form_' . $form_id ) . '&status=trash&action=delete&form_id=' . $form_id ) . '" >'
+						$actions[ 'delete' ] = '<a href="' . esc_url( wp_nonce_url( admin_url( 'admin.php?page=bookacti_forms&status=trash&action=delete&form_id=' . $form_id ), 'delete-form_' . $form_id ) ) . '" >'
 												. esc_html_x( 'Delete Permanently', 'forms', 'booking-activities' )
 											. '</a>';
 					}
@@ -266,7 +266,7 @@ if( ! class_exists( 'Forms_List_Table' ) ) {
 		
 		/**
 		 * Get form list items. Parameters can be passed in the URL.
-		 * @version 1.7.7
+		 * @version 1.7.12
 		 * @access public
 		 * @return array
 		 */
@@ -291,7 +291,7 @@ if( ! class_exists( 'Forms_List_Table' ) ) {
 				// Format title column
 				$title = esc_html( apply_filters( 'bookacti_translate_text', $title ) );
 				if( $can_edit_forms ) {
-					$title	= '<a href="' . esc_url( get_admin_url() . 'admin.php?page=bookacti_forms&action=edit&form_id=' . $id ) . '" >'
+					$title	= '<a href="' . esc_url( admin_url( 'admin.php?page=bookacti_forms&action=edit&form_id=' . $id ) ) . '" >'
 								. $title
 							. '</a>';
 				}
@@ -493,6 +493,7 @@ if( ! class_exists( 'Forms_List_Table' ) ) {
 		
 		/**
 		 * Get an associative array ( id => link ) with the list of views available on this table
+		 * @version 1.7.12
 		 * @return array
 		 */
 		protected function get_views() {
@@ -511,8 +512,8 @@ if( ! class_exists( 'Forms_List_Table' ) ) {
 			$trash_count		= bookacti_get_number_of_form_rows( $trash_filter );
 			
 			return array(
-				'published'	=> '<a href="' . esc_url( get_admin_url() . 'admin.php?page=bookacti_forms' ) . '" class="' . $published_current . '" >' . esc_html_x( 'Published', 'forms status', 'booking-activities' ) . ' <span class="count">(' . $published_count . ')</span></a>',
-				'trash'		=> '<a href="' . esc_url( get_admin_url() . 'admin.php?page=bookacti_forms&status=trash' ) . '" class="' . $trash_current . '" >' . esc_html_x( 'Trash', 'forms status', 'booking-activities' ) . ' <span class="count">(' . $trash_count . ')</span></a>'
+				'published'	=> '<a href="' . esc_url( admin_url( 'admin.php?page=bookacti_forms' ) ) . '" class="' . $published_current . '" >' . esc_html_x( 'Published', 'forms status', 'booking-activities' ) . ' <span class="count">(' . $published_count . ')</span></a>',
+				'trash'		=> '<a href="' . esc_url( admin_url( 'admin.php?page=bookacti_forms&status=trash' ) ) . '" class="' . $trash_current . '" >' . esc_html_x( 'Trash', 'forms status', 'booking-activities' ) . ' <span class="count">(' . $trash_count . ')</span></a>'
 			);
 		}
 		

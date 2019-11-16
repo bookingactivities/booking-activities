@@ -1596,66 +1596,92 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	
 	
 	/**
-	 * Add values in booking list (refund, price)
-	 * @since 1.7.4 (was bookacti_add_woocommerce_prices_in_bookings_list)
-	 * @version 1.7.10
-	 * @param array $columns_value
-	 * @param object $booking
-	 * @param object $booking_group
-	 * @param array $grouped_bookings
-	 * @param object $user
+	 * Add WC data to the user booking list
+	 * @since 1.7.12 (was bookacti_fill_wc_price_column_in_booking_list)
+	 * @param array $booking_list_items
+	 * @param array $bookings
+	 * @param array $booking_groups
+	 * @param array $bookings_per_group
+	 * @param array $displayed_groups
+	 * @param array $users
 	 * @param array $filters
 	 * @param array $columns
 	 * @return array
 	 */
-	function bookacti_fill_wc_price_column_in_booking_list( $columns_value, $booking, $booking_group, $grouped_bookings, $user, $filters, $columns ) {
-		if( ! in_array( 'status', $columns, true ) && ! in_array( 'price', $columns, true ) ) { return $columns_value; }
+	function bookacti_add_wc_data_to_user_booking_list_items( $booking_list_items, $bookings, $booking_groups, $bookings_per_group, $displayed_groups, $users, $filters, $columns ) {
+		if( ! $booking_list_items ) { return $booking_list_items; }
 		
-		$item = bookacti_get_order_item_by_booking_id( $booking->id );
-		if( ! empty( $item ) ) {
-			// Add Price column value
-			// WOOCOMMERCE 3.0.0 backward compatibility
-			if( version_compare( WC_VERSION, '3.0.0', '>=' ) ) {
-				$total	= $item->get_total();
-				$tax	= $item->get_total_tax();
-			} else {
-				$total	= $item[ 'line_total' ];
-				$tax	= $item[ 'line_tax' ];
+		$order_ids = array();
+		$booking_ids = array();
+		$booking_group_ids = array();
+		foreach( $booking_list_items as $booking_id => $booking_list_item ) {
+			// Get booking which are part of an order
+			if( $booking_list_item[ 'order_id' ] ) {
+				if( ! in_array( $booking_list_item[ 'order_id' ], $order_ids, true ) ) { $order_ids[] = $booking_list_item[ 'order_id' ]; }
+			
+				if( $booking_list_item[ 'booking_type' ] === 'group' ) { $booking_group_ids[] = $booking_list_item[ 'booking_id_raw' ]; }
+				else { $booking_ids[] = $booking_list_item[ 'booking_id_raw' ]; }
 			}
 			
-			$booking_meta = $booking_group ? (array) $booking_group : (array) $booking;
-			$price_value = apply_filters( 'bookacti_user_booking_list_order_item_price', wc_price( (float) $total + (float) $tax ), $item, $columns_value, $booking_meta, $filters );
-			$columns_value[ 'price' ] = $price_value ? $price_value : '/';
+			if( empty( $users[ $booking_list_item[ 'customer_id' ] ] ) ) { continue; }
+			$user = $users[ $booking_list_item[ 'customer_id' ] ];
+			if( $user ) {
+				if( ! empty( $user->billing_first_name ) && ( $booking_list_item[ 'order_id' ] || empty( $booking_list_item[ 'customer_first_name' ] ) ) )	{ $booking_list_items[ $booking_id ][ 'customer_first_name' ] = $user->billing_first_name; }
+				if( ! empty( $user->billing_last_name ) && ( $booking_list_item[ 'order_id' ] || empty( $booking_list_item[ 'customer_last_name' ] ) ) )	{ $booking_list_items[ $booking_id ][ 'customer_last_name' ] = $user->billing_last_name; }
+				if( ! empty( $user->billing_email ) && ( $booking_list_item[ 'order_id' ] || empty( $booking_list_item[ 'customer_email' ] ) ) )			{ $booking_list_items[ $booking_id ][ 'customer_email' ] = $user->billing_email; }
+				if( ! empty( $user->billing_phone ) && ( $booking_list_item[ 'order_id' ] || empty( $booking_list_item[ 'customer_phone' ] ) ) )			{ $booking_list_items[ $booking_id ][ 'customer_phone' ] = $user->billing_phone; }
+			}
+		}
+		
+		// Get order item data
+		$order_items_data = bookacti_get_order_items_data_by_bookings( $booking_ids, $booking_group_ids );
+		if( ! $order_items_data ) { return $booking_list_items; }
+		
+		// Get WC orders by order item id
+		$orders = array();
+		$orders_array = wc_get_orders( array( 'post__in' => $order_ids ) );
+		foreach( $orders_array as $order ) {
+			$order_id = version_compare( WC_VERSION, '3.0.0', '>=' ) ? $order->get_id() : $order->id;
+			$orders[ $order_id ] = $order;
+		}
+		
+		// Add order item data to the booking list
+		foreach( $order_items_data as $order_item_data ) {
+			$booking_meta = array();
+			// Booking group
+			if( ! empty( $order_item_data->bookacti_booking_group_id ) ) {
+				$booking_group_id = $order_item_data->bookacti_booking_group_id;
+				if( ! isset( $displayed_groups[ $booking_group_id ] ) ) { continue; }
+				$booking_id = $displayed_groups[ $booking_group_id ];
+				if( ! empty( $booking_groups[ $booking_group_id ] ) ) { $booking_meta = (array) $booking_groups[ $booking_group_id ]; }
+			}
 			
-			// Add refund coupon code in "Status" column
-			if( $booking->state === 'refunded' ) {
-				$coupon_code = '';
-				
-				// WOOCOMMERCE 3.0.0 backward compatibility
-				if( version_compare( WC_VERSION, '3.0.0', '>=' ) ) {
-					$meta_data = $item->get_formatted_meta_data();
-					if( $meta_data ) {
-						foreach( $meta_data as $meta_id => $meta ) {
-							if( $meta->key === 'bookacti_refund_coupon' && ! empty( $meta->value ) ) {
-								$coupon_code = $meta->value;
-								break;
-							}
-						}
-					}
-				} else if( ! empty( $item[ 'item_meta' ] ) ) {
-					if( ! empty( $item[ 'item_meta' ][ 'bookacti_refund_coupon' ] ) ) {
-						$coupon_code = $item[ 'item_meta' ][ 'bookacti_refund_coupon' ];
-					}
-				}
-				
-				if( $coupon_code ) {
+			// Single booking
+			else if( ! empty( $order_item_data->bookacti_booking_id ) ) {
+				$booking_id = $order_item_data->bookacti_booking_id;
+				if( ! empty( $bookings[ $booking_id ] ) ) { $booking_meta = (array) $bookings[ $booking_id ]; }
+			}
+			
+			if( ! isset( $booking_list_items[ $booking_id ] ) ) { continue; }
+			
+			// Fill product column
+			$booking_list_items[ $booking_id ][ 'product_id' ]		= ! empty( $order_item_data->_product_id ) ? intval( $order_item_data->_product_id ) : '';
+			$booking_list_items[ $booking_id ][ 'product_title' ]	= ! empty( $order_item_data->order_item_name ) ? apply_filters( 'bookacti_translate_text', $order_item_data->order_item_name ) : '';
+			
+			// Fill price column
+			$booking_list_items[ $booking_id ][ 'price' ] = apply_filters( 'bookacti_user_booking_list_order_item_price', wc_price( $order_item_data->_line_total + $order_item_data->_line_tax ), $order_item_data, $booking_list_items[ $booking_id ], $booking_meta, $filters );
+			
+			// Specify refund method in status column
+			if( $bookings[ $booking_id ]->state === 'refunded' && ! empty( $order_item_data->_bookacti_refund_method ) && in_array( 'status', $columns, true ) ) {
+				if( $order_item_data->_bookacti_refund_method === 'coupon' ) {
+					$coupon_code = ! empty( $order_item_data->bookacti_refund_coupon ) ? $order_item_data->bookacti_refund_coupon : '';
 					/* translators: %s is the coupon code used for the refund */
 					$coupon_label = sprintf( esc_html__( 'Refunded with coupon %s', 'booking-activities' ), $coupon_code );
-					$columns_value[ 'status' ] = '<span class="bookacti-booking-state bookacti-booking-state-bad bookacti-booking-state-refunded bookacti-converted-to-coupon bookacti-tip" data-booking-state="refunded">' . $coupon_label . '</span>';
+					$booking_list_items[ $booking_id ][ 'status' ] = '<span class="bookacti-booking-state bookacti-booking-state-bad bookacti-booking-state-refunded bookacti-converted-to-coupon bookacti-tip" data-booking-state="refunded" data-tip="' . $coupon_label . '" ></span><span class="bookacti-refund-coupon-code bookacti-custom-scrollbar">' . $coupon_code . '</span>';
 				}
 			}
 		}
-
-		return $columns_value;
+		
+		return apply_filters( 'bookacti_user_booking_list_items_with_wc_data', $booking_list_items, $bookings, $booking_groups, $displayed_groups, $users, $filters, $columns, $orders, $order_items_data );
 	}
-	add_filter( 'bookacti_user_booking_list_item', 'bookacti_fill_wc_price_column_in_booking_list', 20, 7 );
+	add_filter( 'bookacti_user_booking_list_items', 'bookacti_add_wc_data_to_user_booking_list_items', 10, 8 );
