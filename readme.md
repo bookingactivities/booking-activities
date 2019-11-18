@@ -12,6 +12,20 @@ Booking plugin for Wordpress specialized in activities: sports, leisure, courses
 
 You need a [WordPress](https://wordpress.org/download/) website.
 
+## Documentation
+
+See the [user documentation here](https://booking-activities.fr/en/documentation/user-documentation/).
+
+## FAQ and Troubleshoot
+
+See the [FAQ and troobleshoot instructions here](https://booking-activities.fr/en/documentation/faq/).
+
+## Changelog
+
+* See the complete [changelog here](https://booking-activities.fr/en/documentation/changelog/).
+* See the [release notes here](https://booking-activities.fr/en/blog/).
+* Stay informed thanks to the [newsletter](https://booking-activities.fr/en/#mc-embedded-subscribe-form)
+
 ## Authors
 
 * **Yoan Cutillas** - [yoancutillas](https://github.com/yoancutillas)
