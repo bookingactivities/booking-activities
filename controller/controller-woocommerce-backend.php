@@ -501,7 +501,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		
 		return $options_array; 
 	}
-	add_filter( 'product_type_options', 'bookacti_add_product_type_option', 10, 1 ); 
+	add_filter( 'product_type_options', 'bookacti_add_product_type_option', 100, 1 ); 
 	
 	
 	/**
@@ -1580,7 +1580,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 	/**
 	 * Set Booking Activities roles and capabilities related to WooCommerce
-	 * @version 1.5.0
+	 * @version 1.7.12
 	 */
 	function bookacti_set_role_and_cap_for_woocommerce() {
 		$shop_manager = get_role( 'shop_manager' );
@@ -1595,7 +1595,6 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		$shop_manager->add_cap( 'bookacti_create_activities' );
 		$shop_manager->add_cap( 'bookacti_edit_activities' );
 		$shop_manager->add_cap( 'bookacti_delete_activities' );
-		$shop_manager->add_cap( 'bookacti_create_bookings' );
 		$shop_manager->add_cap( 'bookacti_edit_bookings' );
 		$shop_manager->add_cap( 'bookacti_delete_bookings' );
 	}
@@ -1616,7 +1615,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	
 	/**
 	 * Unset Booking Activities roles and capabilities related to WooCommerce
-	 * @version 1.5.0
+	 * @version 1.7.12
 	 */
 	function bookacti_unset_role_and_cap_for_woocommerce() {
 		$shop_manager = get_role( 'shop_manager' );
@@ -1631,7 +1630,6 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		$shop_manager->remove_cap( 'bookacti_create_activities' );
 		$shop_manager->remove_cap( 'bookacti_edit_activities' );
 		$shop_manager->remove_cap( 'bookacti_delete_activities' );
-		$shop_manager->remove_cap( 'bookacti_create_bookings' );
 		$shop_manager->remove_cap( 'bookacti_edit_bookings' );
 		$shop_manager->remove_cap( 'bookacti_delete_bookings' );
 	}

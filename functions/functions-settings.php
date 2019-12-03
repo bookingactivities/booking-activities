@@ -1248,7 +1248,7 @@ function bookacti_settings_section_bookings_callback() { }
 // ROLES AND CAPABILITIES
 	/**
 	 * Add roles and capabilities
-	 * @version 1.5.0
+	 * @version 1.7.12
 	 */
 	function bookacti_set_role_and_cap() {
 		$administrator = get_role( 'administrator' );
@@ -1264,7 +1264,6 @@ function bookacti_settings_section_bookings_callback() { }
 		$administrator->add_cap( 'bookacti_create_activities' );
 		$administrator->add_cap( 'bookacti_edit_activities' );
 		$administrator->add_cap( 'bookacti_delete_activities' );
-		$administrator->add_cap( 'bookacti_create_bookings' );
 		$administrator->add_cap( 'bookacti_edit_bookings' );
 		$administrator->add_cap( 'bookacti_delete_bookings' );
 		$administrator->add_cap( 'bookacti_create_forms' );
@@ -1277,7 +1276,7 @@ function bookacti_settings_section_bookings_callback() { }
 	
 	/**
 	 * Remove roles and capabilities
-	 * @version 1.5.0
+	 * @version 1.7.12
 	 */
 	function bookacti_unset_role_and_cap() {
 		$administrator	= get_role( 'administrator' );
@@ -1293,7 +1292,6 @@ function bookacti_settings_section_bookings_callback() { }
 		$administrator->remove_cap( 'bookacti_create_activities' );
 		$administrator->remove_cap( 'bookacti_edit_activities' );
 		$administrator->remove_cap( 'bookacti_delete_activities' );
-		$administrator->remove_cap( 'bookacti_create_bookings' );
 		$administrator->remove_cap( 'bookacti_edit_bookings' );
 		$administrator->remove_cap( 'bookacti_delete_bookings' );
 		$administrator->remove_cap( 'bookacti_create_forms' );

@@ -1,7 +1,7 @@
 <?php 
 /**
  * Calendar editor dialogs
- * @version 1.7.4
+ * @version 1.7.12
  */
 
 // Exit if accessed directly
@@ -18,7 +18,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	// Users options list
 	$in_roles		= apply_filters( 'bookacti_managers_roles', array() );
 	$not_in_roles	= apply_filters( 'bookacti_managers_roles_exceptions', is_multisite() ? array() : array( 'administrator' ) );
-	$user_query		= new WP_User_Query( array( 'role__in' => $in_roles, 'role__not_in' => $not_in_roles ) );
+	$user_query		= new WP_User_Query( array( 'blog_id' => is_multisite() ? 0 : get_current_blog_id(), 'role__in' => $in_roles, 'role__not_in' => $not_in_roles ) );
 	$users			= $user_query->get_results();
 	$users_options_for_activities	= '';
 	$users_options_for_templates	= '';

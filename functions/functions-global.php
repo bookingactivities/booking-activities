@@ -871,15 +871,12 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 	/**
 	 * Display help toolbox
-	 * 
-	 * @version 1.5.0
+	 * @version 1.7.12
 	 * @param string $tip
 	 */
 	function bookacti_help_tip( $tip, $echo = true ){
-		$tip = "<span class='dashicons dashicons-editor-help bookacti-tip' data-tip='" . esc_attr( $tip ) . "'></span>";
-		
+		$tip = "<span class='bookacti-tip-icon bookacti-tip' data-tip='" . esc_attr( $tip ) . "'></span>";
 		if( $echo ) { echo $tip; }
-		
 		return $tip;
 	}
 

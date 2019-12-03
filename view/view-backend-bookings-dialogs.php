@@ -1,7 +1,7 @@
 <?php 
 /**
  * Backend booking dialogs
- * @version 1.7.10
+ * @version 1.7.12
  */
 
 // Exit if accessed directly
@@ -123,7 +123,8 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 				<select id='bookacti-add-columns-to-export-selectbox' class='bookacti-add-new-items-select-box' >
 				<?php
 					$columns			= bookacti_get_bookings_export_columns();
-					$selected_columns	= array_intersect_key( $columns, array_flip( bookacti_get_bookings_export_default_columns() ) );
+					$default_columns	= bookacti_get_bookings_export_default_columns();
+					$selected_columns	= array_flip( $default_columns );
 					foreach( $columns as $column_name => $column_title ) {
 						$disabled = isset( $selected_columns[ $column_name ] ) ? 'disabled style="display:none;"' : '';
 						echo '<option value="' . $column_name . '" title="' . htmlentities( esc_attr( $column_title ), ENT_QUOTES ) . '" ' . $disabled . '>' . $column_title . '</option>';
@@ -135,7 +136,8 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			<div class='bookacti-items-list-container' >
 				<select name='columns[]' id='baaf-columns-to-export-selectbox' class='bookacti-items-select-box' multiple>
 				<?php
-					foreach( $selected_columns as $column_name => $column_title ) {
+					foreach( $default_columns as $column_name ) {
+						$column_title = ! empty( $columns[ $column_name ] ) ? $columns[ $column_name ] : $column_name;
 						echo '<option value="' . $column_name . '" title="' . htmlentities( esc_attr( $column_title ), ENT_QUOTES ) . '">' . $column_title . '</option>';
 					}
 				?>
