@@ -14,7 +14,7 @@
 .bookacti-bookings-filter-content select[multiple] option	{ height: 22px; box-sizing: border-box; padding: 2px 4px; margin: 0; }
 
 #bookacti-event-filter-container a	{ text-align: center; overflow: hidden; text-overflow: ellipsis; }
-#bookacti-pick-event-filter::before	{ font-family: 'dashicons'; content: "\f508"; margin-right: 4px; font-size: 1.2em; vertical-align: bottom; }
+#bookacti-pick-event-filter::before	{ font-family: 'dashicons'; content: "\f508"; margin-right: 4px; font-size: 1.2em; vertical-align: middle; }
 #bookacti-unpick-events-filter		{ margin-top: 4px; }
 
 #bookacti-customer-filter-container .bookacti-combobox					{ min-height: 28px; }
