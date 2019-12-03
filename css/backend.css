@@ -2,12 +2,6 @@
 
 .bookacti-nav-tab-wrapper { margin-bottom: 16px !important; }
 .bookacti-tip.dashicons-editor-help:before { color: #565d61; }
-.bookacti-tip {
-	position: relative;
-	vertical-align: middle;
-	padding-left: 5px;
-	cursor: help;
-}
 #tiptip_content {
     color: #fff;
     font-size: .9em;
@@ -22,6 +16,11 @@
 .bookacti-disabled		{ cursor: auto; pointer-events: none; opacity: 0.5; }
 .bookacti-hide-fields	{ display: none; }
 .bookacti-show-fields	{ display: block; }
+
+.wp-admin select.bookacti-select[multiple]:hover,
+.wp-admin select.bookacti-items-select-box[multiple]:hover { color: initial; }
+.wp-admin select.bookacti-select[multiple] option:hover,
+.wp-admin select.bookacti-items-select-box[multiple] option:hover { color: #007cba; }
 
 .bookacti-irreversible-action span			{ display: table-cell; vertical-align: middle; }
 .bookacti-irreversible-action .dashicons	{ font-size: 1.5em; color: #b81c23; padding-right: 10px; }

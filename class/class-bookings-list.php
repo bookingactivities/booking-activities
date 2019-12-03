@@ -10,7 +10,7 @@ if( ! class_exists( 'Bookings_List_Table' ) ) {
 	
 	/**
 	 * Bookings WP_List_Table
-	 * @version 1.7.10
+	 * @version 1.7.12
 	 */
 	class Bookings_List_Table extends WP_List_Table {
 		
@@ -235,7 +235,7 @@ if( ! class_exists( 'Bookings_List_Table' ) ) {
 		
 		/**
 		 * Get booking list items. Parameters can be passed in the URL.
-		 * @version 1.7.10
+		 * @version 1.7.12
 		 * @access public
 		 * @return array
 		 */
@@ -347,7 +347,7 @@ if( ! class_exists( 'Bookings_List_Table' ) ) {
 					$user = $users[ $user_id ];
 					$display_name = ! empty( $user->first_name ) && ! empty( $user->last_name ) ? $user->first_name . ' ' . $user->last_name : $user->display_name;
 					$customer	= '<a '
-									. ' href="' . esc_url( get_admin_url() . 'user-edit.php?user_id=' . $user_id ) . '" '
+									. ' href="' . esc_url( admin_url( 'user-edit.php?user_id=' . $user_id ) ) . '" '
 									. ' target="_blank" '
 									. ' >'
 										. $display_name
@@ -453,7 +453,7 @@ if( ! class_exists( 'Bookings_List_Table' ) ) {
 		
 		/**
 		 * Format filters passed as argument or retrieved via POST or GET
-		 * @version 1.7.6
+		 * @version 1.7.12
 		 * @access public
 		 * @param array $filters
 		 * @return array
@@ -492,7 +492,7 @@ if( ! class_exists( 'Bookings_List_Table' ) ) {
 					'from'						=> isset( $_REQUEST[ 'from' ] )				? $_REQUEST[ 'from' ] : '',
 					'to'						=> isset( $_REQUEST[ 'to' ] )				? $_REQUEST[ 'to' ] : '',
 					'group_by'					=> isset( $_REQUEST[ 'group_by' ] )			? $_REQUEST[ 'group_by' ] : '',
-					'order_by'					=> isset( $_REQUEST[ 'orderby' ] )			? $_REQUEST[ 'orderby' ] : array( 'creation_date', 'id' ),
+					'order_by'					=> isset( $_REQUEST[ 'order_by' ] )			? $_REQUEST[ 'order_by' ] : ( isset( $_REQUEST[ 'orderby' ] ) ? $_REQUEST[ 'orderby' ] : array( 'creation_date', 'id' ) ),
 					'order'						=> isset( $_REQUEST[ 'order' ] )			? $_REQUEST[ 'order' ] : 'DESC',
 					'fetch_meta'				=> isset( $_REQUEST[ 'fetch_meta' ] )		? $_REQUEST[ 'fetch_meta' ] : true,
 					'in__booking_id'			=> isset( $_REQUEST[ 'in__booking_id' ] )			? $_REQUEST[ 'in__booking_id' ] : array(), 

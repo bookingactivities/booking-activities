@@ -1,7 +1,7 @@
 <?php
 /**
  * Calendar editor page
- * @version 1.7.10
+ * @version 1.7.12
  */
 
 // Exit if accessed directly
@@ -206,7 +206,7 @@ $default_template = false;
 			$template_id	= $default_template;
 			$activity_ids	= bookacti_get_activity_ids_by_template( array( $template_id ), false );
 		}
-		$new_form_basic_url = esc_url( get_admin_url() . 'admin.php' );
+		$new_form_basic_url = esc_url( admin_url( 'admin.php' ) );
 		$initial_parameters = http_build_query( array( 
 			'page' => 'bookacti_forms',
 			'action' => 'new',

@@ -7,11 +7,12 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	/**
 	 * Check if a booking is whithin the authorized delay as of now
 	 * @since 1.1.0
-	 * @version 1.7.10
+	 * @version 1.7.12
 	 * @param object|int $booking
+	 * @param string $context
 	 * @return boolean
 	 */
-	function bookacti_is_booking_in_delay( $booking ) {
+	function bookacti_is_booking_in_delay( $booking, $context = '' ) {
 		if( is_numeric( $booking ) ) {
 			$booking = bookacti_get_booking_by_id( $booking );
 		}
@@ -46,14 +47,14 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		// Choose the most specific defined value
 		$delay = $delay_specific !== false ? $delay_specific : $delay_global;
 		
-		$date_interval		= apply_filters( 'bookacti_booking_changes_deadline_date_interval', 'P' . $delay . 'D', $booking, $delay );
+		$date_interval		= apply_filters( 'bookacti_booking_changes_deadline_date_interval', 'P' . $delay . 'D', $booking, $delay, $context );
 		$delay_datetime		= DateTime::createFromFormat( 'Y-m-d H:i:s', $booking->event_start, new DateTimeZone( $timezone ) );
 		$delay_datetime->sub( new DateInterval( $date_interval ) );
 		$current_datetime	= new DateTime( 'now', new DateTimeZone( $timezone ) );
 		
 		if( $current_datetime < $delay_datetime ) { $is_in_delay = true; }
 
-		return apply_filters( 'bookacti_is_booking_in_delay', $is_in_delay, $booking, $delay );
+		return apply_filters( 'bookacti_is_booking_in_delay', $is_in_delay, $booking, $delay, $context );
 	}
 
 
@@ -343,7 +344,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 		/**
 		 * Check if a booking can be cancelled
-		 * @version 1.7.3
+		 * @version 1.7.12
 		 * @param object|int $booking_id
 		 * @return boolean
 		 */
@@ -358,7 +359,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 				
 				$is_cancel_allowed	= bookacti_get_setting_value( 'bookacti_cancellation_settings', 'allow_customers_to_cancel' );
 				$is_grouped			= $bypass_group_check ? false : ! empty( $booking->group_id );
-				$is_in_delay		= apply_filters( 'bookacti_bypass_delay', false, $booking ) ? true : bookacti_is_booking_in_delay( $booking );
+				$is_in_delay		= apply_filters( 'bookacti_bypass_delay', false, $booking ) ? true : bookacti_is_booking_in_delay( $booking, 'cancel' );
 				
 				// Final check and return the actions array without invalid entries
 				if( ! $is_cancel_allowed || $is_grouped || ! $is_in_delay ) { $is_allowed = false; }
@@ -390,7 +391,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 				if( $is_allowed ) {
 					// Init variable
 					$is_reschedule_allowed	= bookacti_get_setting_value( 'bookacti_cancellation_settings', 'allow_customers_to_reschedule' );
-					$is_in_delay			= apply_filters( 'bookacti_bypass_delay', false, $booking ) ? true : bookacti_is_booking_in_delay( $booking );
+					$is_in_delay			= apply_filters( 'bookacti_bypass_delay', false, $booking ) ? true : bookacti_is_booking_in_delay( $booking, 'reschedule' );
 
 					if( ! $is_reschedule_allowed || ! $booking->active || ! $is_in_delay ) { $is_allowed = false; }
 				}

@@ -401,7 +401,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	/**
 	 * Add WC data to the booking list
 	 * @since 1.6.0 (was bookacti_woocommerce_fill_booking_list_custom_columns before)
-	 * @version 1.7.10
+	 * @version 1.7.12
 	 * @param array $booking_list_items
 	 * @param array $bookings
 	 * @param array $booking_groups
@@ -413,7 +413,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	function bookacti_add_wc_data_to_booking_list_items( $booking_list_items, $bookings, $booking_groups, $displayed_groups, $users, $booking_list ) {
 		if( ! $booking_list_items ) { return $booking_list_items; }
 		
-		$admin_url = get_admin_url();
+		$admin_url = admin_url();
 		
 		$order_ids = array();
 		$booking_ids = array();
@@ -502,8 +502,8 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			// Fill price column
 			$booking_list_items[ $booking_id ][ 'price_details' ][ 'order_item' ] = array(
 				'title' => esc_html__( 'WC item', 'booking-activities' ),
-				'value' => $order_item_data->_line_total,
-				'display_value' => wc_price( $order_item_data->_line_total )
+				'value' => $order_item_data->_line_total + $order_item_data->_line_tax,
+				'display_value' => wc_price( $order_item_data->_line_total + $order_item_data->_line_tax )
 			);
 			
 			// Specify refund method in status column
@@ -521,7 +521,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 				$order		= $orders[ $order_item_data->order_id ];
 				// WOOCOMMERCE 3.0.0 backward compatibility 
 				$is_paid	= version_compare( WC_VERSION, '3.0.0', '>=' ) ? $order->get_date_paid( 'edit' ) : $order->paid_date;
-				$total		= isset( $order_item_data->_line_total ) ? $order_item_data->_line_total : '';
+				$total		= isset( $order_item_data->_line_total ) ? $order_item_data->_line_total + $order_item_data->_line_tax : '';
 				
 				if( $order->get_status() !== 'pending' && $is_paid && $total > 0 ) {
 					$booking_list_items[ $booking_id ][ 'refund_actions' ] = array_unique( array_merge( $booking_list_items[ $booking_id ][ 'refund_actions' ], $wc_refund_actions ) );

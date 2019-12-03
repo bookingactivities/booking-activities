@@ -5,7 +5,7 @@ Tags: booking, reservation, booking form, booking calendar, booking events
 Requires at least: 3.6
 Tested up to: 5.3
 Requires PHP: 5.3
-Stable tag: 1.7.11
+Stable tag: 1.7.12
 License: GPLv3 or later
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
 
@@ -318,6 +318,14 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 
 
 == Changelog ==
+
+= 1.7.12 - 2019/12/03 =
+* Tweak - Exported and filtered bookings now keep the current column sorting
+* Fix - Display prices including VAT in bookings lists for bookings made with WooCommerce
+* Fix - Replace get_admin_url() with admin_url() for multisite
+* Fix - List network users too in calendars, activities and booking forms admins selectboxes for multisite
+* Fix - Help tip icon not displayed on frontend
+* Fix - The order of the default columns was not respected for bookings export
 
 = 1.7.11 - 2019/11/02 =
 * Fix - Cannot update WC cart item quantity for non-activity items

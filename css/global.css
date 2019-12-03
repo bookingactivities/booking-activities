@@ -45,6 +45,12 @@
 .bookacti-custom-radio-button::before				{ content: attr(data-separator); margin-right: 0.5em; }
 .bookacti-custom-radio-button:first-child::before	{ content: none; }
 
+/* Tooltip */
+.bookacti-form-field-label label,
+.bookacti-tip-icon			{ display: inline-block; vertical-align: middle; margin: 0; }
+.bookacti-tip-icon			{ padding-left: 5px; }
+.bookacti-tip-icon:before	{ content:'\0043'; font-family: 'booking_activities_icons'; color: #565d61; font-weight: normal; font-size: 14px; cursor: help; vertical-align: middle; }
+
 /* Custom Scrollbar */
 .bookacti-custom-scrollbar::-webkit-scrollbar				{ width: 4px; height: 4px; }
 .bookacti-custom-scrollbar::-webkit-scrollbar-track 		{ background: #f1f1f1; border-radius: 5px; }

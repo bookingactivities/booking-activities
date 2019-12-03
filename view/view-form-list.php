@@ -2,7 +2,7 @@
 /**
  * Form list page
  * @since 1.5.0
- * @version 1.7.6
+ * @version 1.7.12
  */
 
 // Exit if accessed directly
@@ -15,7 +15,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	$can_create_form = current_user_can( 'bookacti_create_forms' );
 	if( $can_create_form ) { 
 		?>
-		<a href='<?php echo esc_url( get_admin_url() . 'admin.php?page=bookacti_forms&action=new' ); ?>' class='page-title-action' >
+		<a href='<?php echo esc_url( admin_url( 'admin.php?page=bookacti_forms&action=new' ) ); ?>' class='page-title-action' >
 			<?php echo esc_html_x( 'Add New', 'form', 'booking-activities' ); ?>
 		</a>
 		<?php

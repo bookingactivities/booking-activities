@@ -1,7 +1,7 @@
 <?php
 /**
  * Booking list page
- * @version 1.7.10
+ * @version 1.7.12
  */
 
 // Exit if accessed directly
@@ -37,6 +37,25 @@ if( ! $templates ) {
 		<form id='bookacti-booking-list-filters-form' action=''>
 			<input type='hidden' name='page' value='bookacti_bookings' />
 			<?php
+				// Display sorting data
+				if( ! empty( $_GET[ 'orderby' ] ) || ! empty( $_GET[ 'order_by' ] ) ) {
+					$order_by = ! empty( $_GET[ 'order_by' ] ) ? $_GET[ 'order_by' ] : $_GET[ 'orderby' ];
+					if( ! is_array( $order_by ) ) {
+						$order_by = array( $order_by );
+					}
+					$i=0;
+					foreach( $order_by as $column_name ) {
+						if( $i === 0 ) {
+							echo '<input type="hidden" name="orderby" value="' . esc_attr( $column_name ) . '" />';
+						}
+						echo '<input type="hidden" name="order_by[' . $i . ']" value="' . esc_attr( $column_name ) . '" />';
+						++$i;
+					}
+				}
+				if( ! empty( $_GET[ 'order' ] ) ) {
+					echo '<input type="hidden" name="order" value="' . esc_attr( $_GET[ 'order' ] ) . '" />';
+				}
+				
 				// Display nonce field
 				wp_nonce_field( 'bookacti_filter_booking_list', 'nonce_filter_booking_list', false );
 		
@@ -309,7 +328,7 @@ if( ! $templates ) {
 				'from'						=> $from,
 				'to'						=> $to,
 				'group_by'					=> isset( $_REQUEST[ 'group_by' ] )	? $_REQUEST[ 'group_by' ] : '',
-				'order_by'					=> isset( $_REQUEST[ 'orderby' ] )	? $_REQUEST[ 'orderby' ] : array( 'creation_date', 'id' ),
+				'order_by'					=> isset( $_REQUEST[ 'order_by' ] )	? $_REQUEST[ 'order_by' ] : ( isset( $_REQUEST[ 'orderby' ] ) ? $_REQUEST[ 'orderby' ] : array( 'creation_date', 'id' ) ),
 				'order'						=> isset( $_REQUEST[ 'order' ] )	? $_REQUEST[ 'order' ] : 'DESC',
 				'fetch_meta'				=> true,
 				'in__booking_id'			=> isset( $_REQUEST[ 'in__booking_id' ] )			? $_REQUEST[ 'in__booking_id' ] : array(), 
