@@ -192,22 +192,48 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	
 	
 	/**
-	 * Cancel the temporary booking if it failed
-	 * @version 1.7.7
+	 * Turn failed order bookings to complete when the order states changes
+	 * @since 1.8.0
+	 * @param int $order_id
+	 * @param string $old_status
+	 * @param string $new_status
+	 * @param WC_order $order
+	 */
+	function bookacti_turn_failed_order_bookings_status_to_complete( $order_id, $old_status, $new_status, $order = null ) {
+		if( $old_status !== 'failed' || ! in_array( $new_status, array( 'completed', 'pending', 'on-hold', 'processing' ), true ) ) { return; }
+		if( ! $order ) { $order = wc_get_order( $order_id ); }
+		
+		if( $order->get_date_paid() ) {
+			$booking_status = 'booked';
+			$payment_status = 'paid';
+		} else {
+			$booking_status = 'pending';
+			$payment_status = 'owed';
+		}
+		
+		// Change state of all bookings of the order from 'pending' to 'booked'
+		$updated = bookacti_turn_order_bookings_to( $order, $booking_status, $payment_status, true, array( 'states_in' => array( 'pending', 'in_cart', 'cancelled' ) ) );
+	}
+	add_action( 'woocommerce_order_status_changed', 'bookacti_turn_failed_order_bookings_status_to_complete', 5, 4 );
+	
+	
+	/**
+	 * Cancel the order bookings if the order is cancelled or if it fails
+	 * @version 1.8.0
 	 * @param int $order_id
 	 * @param WC_Order $order
 	 */
-	function bookacti_cancelled_order( $order_id, $old_status, $new_status, $order = null ) {
-		if( ! in_array( $new_status, array( 'cancelled', 'failed' ), true ) ) { return; }
+	function bookacti_cancelled_order( $order_id, $order = null ) {
 		if( ! $order ) { $order = wc_get_order( $order_id ); }
 		
 		// Change state of all bookings of the order to 'cancelled' and free the bookings
-		bookacti_turn_order_bookings_to( $order, 'cancelled', NULL, false, array( 'states_in' => array( 'booked', 'pending', 'in_cart' ) ) );
+		$response = bookacti_turn_order_bookings_to( $order, 'cancelled', NULL, false, array( 'states_in' => array( 'booked', 'pending', 'in_cart' ) ) );
 		
 		// It is possible that 'pending' bookings remain if the user has changed his cart before payment, we must cancel them
 		bookacti_cancel_order_pending_bookings( $order_id );
 	}
-	add_action( 'woocommerce_order_status_changed', 'bookacti_cancelled_order', 5, 4 );
+	add_action( 'woocommerce_order_status_cancelled', 'bookacti_cancelled_order', 5, 4 );
+	add_action( 'woocommerce_order_status_failed', 'bookacti_cancelled_order', 5, 4 );
 	
 	
 	/**

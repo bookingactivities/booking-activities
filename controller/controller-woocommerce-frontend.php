@@ -1526,8 +1526,64 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	
 	
 	/**
-	 * Change bookings state after user validate checkout
-	 * 
+	 * Check availability before paying for a failed order
+	 * @since 1.8.0
+	 * @param WC_Order $order
+	 */
+	function bookacti_availability_check_before_pay_action( $order ) {
+		$active_states = bookacti_get_active_booking_states();
+		$error_nb = 0;
+		
+		$order_items = $order->get_items();
+		foreach( $order_items as $order_item ) {
+			// Initialize on success for non-activity products
+			$validated = array( 'status' => 'success' );
+			
+			// Single event
+			if( isset( $order_item[ 'bookacti_booking_id' ] ) ) {
+				$booking_id = $order_item[ 'bookacti_booking_id' ];
+				if( ! is_null( $booking_id ) ) {
+					$event		= json_decode( $order_item[ 'bookacti_booked_events' ] );
+					$booking	= bookacti_get_booking_by_id( $booking_id );
+					if( ! in_array( $booking->state, $active_states, true ) ) {
+						$validated	= bookacti_validate_booking_form( 'single', $event[0]->event_id, $event[0]->event_start, $event[0]->event_end, $order_item['quantity'], $booking->form_id );
+					}
+				}
+
+			// Group of events
+			} else if( isset( $order_item[ 'bookacti_booking_group_id' ] ) ) {
+				$booking_group_id = $order_item[ 'bookacti_booking_group_id' ];
+				if( ! is_null( $booking_group_id ) ) {
+					$event			= json_decode( $order_item[ 'bookacti_booked_events' ] );
+					$booking_group	= bookacti_get_booking_group_by_id( $booking_group_id );
+					if( ! in_array( $booking_group->state, $active_states, true ) ) {
+						$validated	= bookacti_validate_booking_form( $booking_group->event_group_id, $event[0]->event_id, $event[0]->event_start, $event[0]->event_end, $order_item['quantity'], $booking_group->form_id );
+					}
+				}
+			}
+			
+			// Display the error and stop checkout processing
+			if( $validated[ 'status' ] !== 'success' ) {
+				if( isset( $validated[ 'message' ] ) ) {
+					wc_add_notice( $validated[ 'message' ], 'error' );
+				}
+				++$error_nb;
+			}
+		}
+		
+		// If the events are no longer available, prevent submission and feedback user
+		if( $error_nb ) {
+			wc_add_notice( __( 'Sorry, this order is invalid and cannot be paid for.', 'woocommerce' ), 'error' );
+			$checkout_url = $order->get_checkout_payment_url();
+			wp_redirect( $checkout_url );
+			exit;
+		}
+	}
+	add_action( 'woocommerce_before_pay_action', 'bookacti_availability_check_before_pay_action', 10, 1 );
+	
+	
+	/**
+	 * Change order bookings states after the customer validates checkout
 	 * @since 1.2.2 (was bookacti_delay_expiration_date_for_payment before)
 	 * @version 1.6.0
 	 * @param int $order_id
@@ -1559,7 +1615,6 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		bookacti_save_order_data_as_booking_meta( $order );
 	}
 	add_action( 'woocommerce_checkout_order_processed', 'bookacti_change_booking_state_after_checkout', 10, 3 );
-	
 	
 	
 	
