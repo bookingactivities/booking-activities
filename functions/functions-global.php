@@ -1217,15 +1217,14 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 	/**
 	 * Format datetime to be displayed in a human comprehensible way
-	 * 
-	 * @version 1.5.7
-	 * @param string $datetime Date format "YYYY-MM-DD HH:mm:ss" is expected
+	 * @version 1.8.0
+	 * @param string $datetime Date format "Y-m-d H:i:s" is expected
 	 * @param string $format 
 	 * @return string
 	 */
 	function bookacti_format_datetime( $datetime, $format = '' ) {
-		if( preg_match( '/\d{4}-[01]\d-[0-3]\dT[0-2]\d:[0-5]\d:[0-5]\d/', $datetime ) 
-		||  preg_match( '/\d{4}-[01]\d-[0-3]\d [0-2]\d:[0-5]\d:[0-5]\d/', $datetime ) ) {
+		$datetime = bookacti_sanitize_datetime( $datetime );
+		if( $datetime ) {
 			if( ! $format ) {
 				$format = bookacti_get_message( 'date_format_long' );
 			}
@@ -1238,30 +1237,46 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 	/**
 	 * Check if a string is in a correct datetime format
-	 * 
-	 * @param string $datetime Date format "YYYY-MM-DD HH:mm:ss" is expected
+	 * @version 1.8.0
+	 * @param string $datetime Date format "Y-m-d H:i:s" is expected
 	 * @return string|false
 	 */
 	function bookacti_sanitize_datetime( $datetime ) {
 		if( preg_match( '/\d{4}-[01]\d-[0-3]\dT[0-2]\d:[0-5]\d:[0-5]\d/', $datetime ) 
 		||  preg_match( '/\d{4}-[01]\d-[0-3]\d [0-2]\d:[0-5]\d:[0-5]\d/', $datetime ) ) {
-			return $datetime;
+			$datetime_object = new DateTime( $datetime );
+			
+			// Do not allow to set a date after 2037 because of the year 2038 problem
+			$datetime_2038 = new DateTime( '2038-01-01' );
+			if( $datetime_object > $datetime_2038 ) {
+				return '2037-12-31 ' . $datetime_object->format( 'H:i:s' );
+			}
+			
+			return $datetime_object->format( 'Y-m-d H:i:s' );
 		}
-		return false;
+		return '';
 	}
 
 
 	/**
 	 * Check if a string is in a correct date format
-	 * 
-	 * @param string $date Date format YYYY-MM-DD is expected
+	 * @version 1.8.0
+	 * @param string $date Date format Y-m-d is expected
 	 * @return string|false 
 	 */
 	function bookacti_sanitize_date( $date ) {
 		if( preg_match( '/\d{4}-[01]\d-[0-3]\d/', $date ) ) {
-			return $date;
+			$datetime_object = new DateTime( $date );
+			
+			// Do not allow to set a date after 2037 because of the year 2038 problem
+			$datetime_2038 = new DateTime( '2038-01-01' );
+			if( $datetime_object > $datetime_2038 ) {
+				return '2037-12-31';
+			}
+			
+			return $datetime_object->format( 'Y-m-d' );
 		}
-		return false;
+		return '';
 	}
 
 
@@ -1299,9 +1314,9 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	
 	/**
 	 * Sanitize array of dates
-	 * 
 	 * @since 1.2.0 (replace bookacti_sanitize_exceptions)
-	 * @param array|string $exceptions Date array expected (format "YYYY-MM-DD")
+	 * @version 1.8.0
+	 * @param array|string $exceptions Date array expected (format "Y-m-d")
 	 * @return array
 	 */
 	function bookacti_sanitize_date_array( $exceptions ) {
@@ -1309,13 +1324,15 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			if( is_array( $exceptions ) ) {
 				// Remove entries that do not correspond to a date
 				foreach( $exceptions as $i => $exception ) {
-					if( ! preg_match( '/\d{4}-[01]\d-[0-3]\d/', $exception ) ) {
-						unset( $exceptions[ $i ] );
-					}
+					$exceptions[ $i ] = bookacti_sanitize_date( $exception );
+					if( ! $exceptions[ $i ] ) { unset( $exceptions[ $i ] ); }
 				}
 				return $exceptions;
-			} else if( preg_match( '/\d{4}-[01]\d-[0-3]\d/', $exceptions ) ) {
-				return array( $exceptions );
+			} else {
+				$exceptions = bookacti_sanitize_date( $exceptions );
+				if( $exceptions ) {
+					return array( $exceptions );
+				}
 			}
 		}
 		return array();

@@ -358,13 +358,11 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	
 	/**
 	 * Format order item mata values in order pages in admin panel
-	 * 
 	 * Must be used since WC 3.0.0
-	 * 
 	 * @since 1.0.4
+	 * @version 1.8.0
 	 */
 	function bookacti_format_order_item_meta_values( $meta_value ) {
-		
 		if( version_compare( WC_VERSION, '3.0.0', '>=' ) ) {
 			// Format booking state
 			$available_states = bookacti_get_booking_state_labels();
@@ -382,12 +380,10 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			
 			// Deprecated data
 			// Format datetime
-			else if( preg_match( '/\d{4}-[01]\d-[0-3]\dT[0-2]\d:[0-5]\d:[0-5]\d/', $meta_value ) 
-			||  preg_match( '/\d{4}-[01]\d-[0-3]\d [0-2]\d:[0-5]\d:[0-5]\d/', $meta_value ) ) {
+			else if( bookacti_sanitize_datetime( $meta_value ) ) {
 				return bookacti_format_datetime( $meta_value );
 			}
 		}
-		
 		return $meta_value;
 	}
 	add_filter( 'woocommerce_order_item_display_meta_value', 'bookacti_format_order_item_meta_values', 10, 1 );

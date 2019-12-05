@@ -322,6 +322,7 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 = 1.8.0 =
 * Fix - Bookings of failed WC order were not cancelled when the order status changed from backend
 * Fix - Bookings of failed WC order were not turned to pending / booked when the order was paid
+* Fix - Prevent to set a date after 2037 on server side too, to avoid year 2038 bug
 
 = 1.7.12 - 2019/12/03 =
 * Tweak - Exported and filtered bookings now keep the current column sorting

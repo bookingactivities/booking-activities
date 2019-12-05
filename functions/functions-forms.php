@@ -563,7 +563,7 @@ function bookacti_get_default_form_fields_meta( $field_name = '' ) {
 /**
  * Format field data according to its type
  * @since 1.5.0
- * @version 1.6.0
+ * @version 1.8.0
  * @param array|string $raw_field_data
  * @return array|false
  */
@@ -584,8 +584,8 @@ function bookacti_format_form_field_data( $raw_field_data ) {
 	if( $raw_field_data[ 'name' ] === 'calendar' ) {
 		// Build template_data array
 		$raw_field_data[ 'template_data' ] = array(
-			'start'		=> isset( $raw_field_data[ 'start' ] ) ? $raw_field_data[ 'start' ] : $default_meta[ 'start' ],
-			'end'		=> isset( $raw_field_data[ 'end' ] ) ? $raw_field_data[ 'end' ] : $default_meta[ 'end' ],
+			'start'		=> ! empty( $raw_field_data[ 'start' ] ) && bookacti_sanitize_date( $raw_field_data[ 'start' ] ) ? bookacti_sanitize_date( $raw_field_data[ 'start' ] ) : $default_meta[ 'start' ],
+			'end'		=> ! empty( $raw_field_data[ 'end' ] ) && bookacti_sanitize_date( $raw_field_data[ 'end' ] ) ? bookacti_sanitize_date( $raw_field_data[ 'end' ] ) : $default_meta[ 'end' ],
 			'settings'	=> array_intersect_key( $raw_field_data, bookacti_format_template_settings( array() ) )
 		);
 		
@@ -604,8 +604,8 @@ function bookacti_format_form_field_data( $raw_field_data ) {
 		
 		// Keep some meta unformatted
 		$field_meta[ 'raw' ] = array(
-			'start'				=> isset( $raw_field_data[ 'start' ] ) ? $raw_field_data[ 'start' ] : $default_meta[ 'start' ],
-			'end'				=> isset( $raw_field_data[ 'end' ] ) ? $raw_field_data[ 'end' ] : $default_meta[ 'end' ],
+			'start'				=> ! empty( $raw_field_data[ 'start' ] ) && bookacti_sanitize_date( $raw_field_data[ 'start' ] ) ? bookacti_sanitize_date( $raw_field_data[ 'start' ] ) : $default_meta[ 'start' ],
+			'end'				=> ! empty( $raw_field_data[ 'end' ] ) && bookacti_sanitize_date( $raw_field_data[ 'end' ] ) ? bookacti_sanitize_date( $raw_field_data[ 'end' ] ) : $default_meta[ 'end' ],
 			'method'			=> isset( $raw_field_data[ 'method' ] ) ? $raw_field_data[ 'method' ] : $default_meta[ 'method' ],
 			'group_categories'	=> isset( $raw_field_data[ 'group_categories' ] ) ? $raw_field_data[ 'group_categories' ] : $default_meta[ 'group_categories' ],
 			'user_id'			=> isset( $raw_field_data[ 'user_id' ] ) ? $raw_field_data[ 'user_id' ] : $default_meta[ 'user_id' ],
@@ -699,12 +699,11 @@ function bookacti_format_form_field_data( $raw_field_data ) {
 /**
  * Sanitize field data according to its type
  * @since 1.5.0
- * @version 1.7.0
+ * @version 1.8.0
  * @param array|string $raw_field_data
  * @return array|false
  */
 function bookacti_sanitize_form_field_data( $raw_field_data ) {
-	
 	// Check if name and type are set
 	if( ! is_array( $raw_field_data ) || empty( $raw_field_data[ 'name' ] ) || empty( $raw_field_data[ 'type' ] ) ) { return false; }
 	
@@ -720,8 +719,8 @@ function bookacti_sanitize_form_field_data( $raw_field_data ) {
 	if( $raw_field_data[ 'name' ] === 'calendar' ) {
 		// Build template_data array
 		$raw_field_data[ 'template_data' ] = array(
-			'start'		=> isset( $raw_field_data[ 'start' ] ) ? $raw_field_data[ 'start' ] : $default_meta[ 'start' ],
-			'end'		=> isset( $raw_field_data[ 'end' ] ) ? $raw_field_data[ 'end' ] : $default_meta[ 'end' ],
+			'start'		=> ! empty( $raw_field_data[ 'start' ] ) && bookacti_sanitize_date( $raw_field_data[ 'start' ] ) ? bookacti_sanitize_date( $raw_field_data[ 'start' ] ) : $default_meta[ 'start' ],
+			'end'		=> ! empty( $raw_field_data[ 'end' ] ) && bookacti_sanitize_date( $raw_field_data[ 'end' ] ) ? bookacti_sanitize_date( $raw_field_data[ 'end' ] ) : $default_meta[ 'end' ],
 			'settings'	=> array_intersect_key( $raw_field_data, bookacti_format_template_settings( array() ) ) 
 		);
 		
@@ -729,8 +728,8 @@ function bookacti_sanitize_form_field_data( $raw_field_data ) {
 		$field_meta = bookacti_format_booking_system_attributes( $raw_field_data );
 		
 		// Deconstruct template_data
-		$field_meta[ 'start' ]	= isset( $raw_field_data[ 'start' ] ) && $raw_field_data[ 'start' ] !== '' ? $field_meta[ 'template_data' ][ 'start' ] : $default_meta[ 'start' ];
-		$field_meta[ 'end' ]	= isset( $raw_field_data[ 'end' ] ) && $raw_field_data[ 'end' ] !== '' ? $field_meta[ 'template_data' ][ 'end' ] : $default_meta[ 'end' ];
+		$field_meta[ 'start' ]	= ! empty( $raw_field_data[ 'start' ] ) && bookacti_sanitize_date( $raw_field_data[ 'start' ] ) ? bookacti_sanitize_date( $field_meta[ 'template_data' ][ 'start' ] ) : $default_meta[ 'start' ];
+		$field_meta[ 'end' ]	= ! empty( $raw_field_data[ 'end' ] ) && bookacti_sanitize_date( $raw_field_data[ 'end' ] ) ? bookacti_sanitize_date( $field_meta[ 'template_data' ][ 'end' ] ) : $default_meta[ 'end' ];
 		foreach( $field_meta[ 'template_data' ][ 'settings' ] as $key => $value ) {
 			if( ! isset( $default_meta[ $key ] ) ) { continue; }
 			$field_meta[ $key ] = isset( $raw_field_data[ $key ] ) && $raw_field_data[ $key ] !== '' ? $value : $default_meta[ $key ];
