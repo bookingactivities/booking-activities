@@ -153,6 +153,7 @@ $bookacti_translation_array = apply_filters( 'bookacti_translation_array', array
 	'error_days_sup_to_365'             => esc_html__( 'The number of days should be between 0 and 365.', 'booking-activities' ),
 	'error_hours_sup_to_23'             => esc_html__( 'The number of hours should be between 0 and 23.', 'booking-activities' ),
 	'error_minutes_sup_to_59'           => esc_html__( 'The number of minutes should be between 0 and 59.', 'booking-activities' ),
+	'error_time_format'			        => esc_html__( 'The time format should be HH:mm where "HH" represents hours and "mm" minutes.', 'booking-activities' ),
 	'error_activity_duration_is_null'	=> esc_html__( 'The activity duration should not be null.', 'booking-activities' ),
 	'error_availability_inf_to_0'       => esc_html__( 'The number of available bookings should be higher than or equal to 0.', 'booking-activities' ),
 	'error_less_avail_than_bookings'    => esc_html__( "You can't set less available bookings than it has already on one of the occurrence of this event.", 'booking-activities' ),

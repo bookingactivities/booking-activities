@@ -70,15 +70,12 @@ function bookacti_format_template_managers( $template_managers = array() ) {
 
 /**
  * Format template settings
- * @version 1.7.6
+ * @version 1.8.0
  * @param array $raw_settings
  * @return array
  */
 function bookacti_format_template_settings( $raw_settings ) {
-	
-	if( empty( $raw_settings ) ) {
-		$raw_settings = array();
-	}
+	if( empty( $raw_settings ) ) { $raw_settings = array(); }
 	
 	// Default settings
 	$default_settings = apply_filters( 'bookacti_template_default_settings', array(
@@ -96,7 +93,26 @@ function bookacti_format_template_settings( $raw_settings ) {
 		if( isset( $raw_settings[ $setting_key ] ) && is_string( $raw_settings[ $setting_key ] ) ){ $raw_settings[ $setting_key ] = stripslashes( $raw_settings[ $setting_key ] ); }
 		$settings[ $setting_key ] = isset( $raw_settings[ $setting_key ] ) && $raw_settings[ $setting_key ] !== null ? $raw_settings[ $setting_key ] : $setting_default_value;
 	}
-
+	
+	// Format 24-h times: minTime, maxTime, snapDuration
+	if( ! preg_match( '/^([0-1][0-9]|2[0-3]):([0-5][0-9])$/', $settings[ 'minTime' ] ) )		{ $settings[ 'minTime' ] = $default_settings[ 'minTime' ]; }
+	if( ! preg_match( '/^([0-1][0-9]|2[0-3]):([0-5][0-9])$/', $settings[ 'maxTime' ] ) )		{ $settings[ 'maxTime' ] = $default_settings[ 'maxTime' ]; }
+	if( ! preg_match( '/^([0-1][0-9]|2[0-3]):([0-5][0-9])$/', $settings[ 'snapDuration' ] ) )	{ $settings[ 'snapDuration' ] = $default_settings[ 'snapDuration' ]; }
+	
+	// availability_period_start
+	if( ! is_numeric( $settings[ 'availability_period_start' ] ) 
+	|| ( is_numeric( $settings[ 'availability_period_start' ] ) 
+			&& ( intval( $settings[ 'availability_period_start' ] ) < -1 ) ) ) {
+		$settings[ 'availability_period_start' ] = $default_settings[ 'minTime' ];
+	}
+	
+	// availability_period_end
+	if( ! is_numeric( $settings[ 'availability_period_end' ] ) 
+	|| ( is_numeric( $settings[ 'availability_period_end' ] ) 
+			&& ( intval( $settings[ 'availability_period_end' ] ) < -1 ) ) ) {
+		$settings[ 'availability_period_end' ] = $default_settings[ 'minTime' ];
+	}
+	
 	// Make sure minTime is before maxTime
 	// If maxTime is 00:xx change it to 24:xx
 	if( $settings[ 'maxTime' ] === '00:00' ) { $settings[ 'maxTime' ] = '24:00'; }
@@ -110,7 +126,7 @@ function bookacti_format_template_settings( $raw_settings ) {
 	// Make sure snapDuration is not null
 	if( $settings[ 'snapDuration' ] === '00:00' ) { $settings[ 'snapDuration' ] = '00:01'; }
 	
-	return apply_filters( 'bookacti_template_settings_formatted', $settings, $raw_settings );
+	return apply_filters( 'bookacti_template_settings_formatted', $settings, $raw_settings, $default_settings );
 }
 
 
@@ -146,16 +162,12 @@ function bookacti_format_activity_managers( $activity_managers = array() ) {
 
 /**
  * Format activity settings
- * 
- * @version 1.4.0
+ * @version 1.8.0
  * @param array $activity_settings
  * @return array
  */
 function bookacti_format_activity_settings( $activity_settings ) {
-	
-	if( empty( $activity_settings ) ) {
-		$activity_settings = array();
-	}
+	if( empty( $activity_settings ) ) { $activity_settings = array(); }
 	
 	// Default settings
 	$default_settings = apply_filters( 'bookacti_activity_default_settings', array(
@@ -176,22 +188,27 @@ function bookacti_format_activity_settings( $activity_settings ) {
 		$settings[ $setting_key ] = isset( $activity_settings[ $setting_key ] ) && $activity_settings[ $setting_key ] !== null ? $activity_settings[ $setting_key ] : $setting_default_value;
 	}
 	
-	return apply_filters( 'bookacti_activity_settings', $settings );
+	// Sanitize by type
+	$keys_by_type = array( 
+		'str'	=> array( 'unit_name_singular', 'unit_name_plural' ),
+		'bool'	=> array( 'show_unit_in_availability' ),
+		'int'	=> array( 'places_number', 'min_bookings_per_user', 'max_bookings_per_user', 'max_users_per_event', 'booking_changes_deadline' ),
+		'array'	=> array( 'allowed_roles' )
+	);
+	$settings = bookacti_sanitize_values( $default_settings, $settings, $keys_by_type );
+	
+	return apply_filters( 'bookacti_activity_settings', $settings, $activity_settings, $default_settings );
 }
 
 
 /**
  * Format event settings
- * 
- * @version 1.4.0
+ * @version 1.8.0
  * @param array $event_settings
  * @return array
  */
 function bookacti_format_event_settings( $event_settings ) {
-	
-	if( empty( $event_settings ) ) {
-		$event_settings = array();
-	}
+	if( empty( $event_settings ) ) { $event_settings = array(); }
 	
 	// Default settings
 	$default_settings = apply_filters( 'bookacti_event_default_settings', array() );
@@ -202,7 +219,7 @@ function bookacti_format_event_settings( $event_settings ) {
 		$settings[ $setting_key ] = isset( $event_settings[ $setting_key ] ) && $event_settings[ $setting_key ] !== null ? $event_settings[ $setting_key ] : $setting_default_value;
 	}
 	
-	return apply_filters( 'bookacti_event_settings', $settings );
+	return apply_filters( 'bookacti_event_settings', $settings, $event_settings, $default_settings );
 }
 
 
@@ -316,15 +333,12 @@ function bookacti_validate_group_of_events_data( $group_title, $category_id, $ca
  * Format group of events data or apply default value
  * 
  * @since 1.1.0
- * @version 1.4.0
+ * @version 1.8.0
  * @param array $group_settings
  * @return array
  */
 function bookacti_format_group_of_events_settings( $group_settings ) {
-	
-	if( empty( $group_settings ) ) {
-		$group_settings = array();
-	}
+	if( empty( $group_settings ) ) { $group_settings = array(); }
 	
 	// Default settings
 	$default_settings = apply_filters( 'bookacti_group_of_events_default_settings', array() );
@@ -337,7 +351,7 @@ function bookacti_format_group_of_events_settings( $group_settings ) {
 		$settings[ $setting_key ] = isset( $group_settings[ $setting_key ] ) && $group_settings[ $setting_key ] !== null ? $group_settings[ $setting_key ] : $setting_default_value;
 	}
 	
-	return apply_filters( 'bookacti_group_of_events_settings', $settings );
+	return apply_filters( 'bookacti_group_of_events_settings', $settings, $group_settings, $default_settings );
 }
 
 
@@ -377,15 +391,12 @@ function bookacti_validate_group_category_data( $title ) {
  * Format group category data or apply default value
  * 
  * @since 1.1.0
- * @version 1.4.0
+ * @version 1.8.0
  * @param array $category_settings
  * @return array
  */
 function bookacti_format_group_category_settings( $category_settings ) {
-	
-	if( empty( $category_settings ) ) {
-		$category_settings = array();
-	}
+	if( empty( $category_settings ) ) { $category_settings = array(); }
 	
 	// Default settings
 	$default_settings = apply_filters( 'bookacti_group_category_default_settings', array( 
@@ -405,5 +416,15 @@ function bookacti_format_group_category_settings( $category_settings ) {
 		$settings[ $setting_key ] = isset( $category_settings[ $setting_key ] ) && $category_settings[ $setting_key ] !== null ? $category_settings[ $setting_key ] : $setting_default_value;
 	}
 	
-	return apply_filters( 'bookacti_group_category_settings', $settings );
+	// Sanitize by type
+	$keys_by_type = array( 
+		'int'	=> array( 'min_bookings_per_user', 'max_bookings_per_user', 'max_users_per_event', 'booking_changes_deadline', 'started_groups_bookable' ),
+		'array'	=> array( 'allowed_roles' )
+	);
+	$settings = bookacti_sanitize_values( $default_settings, $settings, $keys_by_type );
+	
+	// started_groups_bookable
+	if( $settings[ 'started_groups_bookable' ] > 1 || $settings[ 'started_groups_bookable' ] < -1 ) { $settings[ 'started_groups_bookable' ] = $default_settings[ 'started_groups_bookable' ]; }
+	
+	return apply_filters( 'bookacti_group_category_settings', $settings, $category_settings, $default_settings );
 }

@@ -45,7 +45,11 @@ $j( document ).ready( function() {
 
 // TEMPLATES
 
-// Check template form
+/**
+ * Check template form
+ * @version 1.8.0
+ * @returns {Boolean}
+ */
 function bookacti_validate_template_form() {
     // Get template params
     var title       = $j( '#bookacti-template-title' ).val();
@@ -54,6 +58,7 @@ function bookacti_validate_template_form() {
     var duplicate_id= $j( '#bookacti-template-duplicated-template-id' ).val();
     var day_start	= moment( '1970-01-01T' + $j( '#bookacti-template-data-minTime' ).val() + ':00' );
 	var day_end		= $j( '#bookacti-template-data-maxTime' ).val().substr( 0, 2 ) === '00' ? moment( '1970-01-02T' + $j( '#bookacti-template-data-maxTime' ).val() + ':00' ) : moment( '1970-01-01T' + $j( '#bookacti-template-data-maxTime' ).val() + ':00' );
+	var snap_freq	= $j( '#bookacti-template-data-snapDuration' ).val();
 	
     // Init boolean test variables
 	var valid_form = {
@@ -62,6 +67,7 @@ function bookacti_validate_template_form() {
 		'isEnd'					: false,
 		'isStartBeforeEnd'		: false,
 		'isDayStartBeforeEnd'	: false,
+		'isSnapFreqFormatted'	: false,
 		'isDuplicateIdPositive'	: false,
 		'send'					: false
 	};
@@ -74,11 +80,13 @@ function bookacti_validate_template_form() {
     if( valid_form.isStart && valid_form.isEnd && ( start < end ) )								{ valid_form.isStartBeforeEnd = true; }
 	if( duplicate_id !== '' && $j.isNumeric( duplicate_id ) && parseInt( duplicate_id ) >= 0 )	{ valid_form.isDuplicateIdPositive = true; }
 	if( day_start.isBefore( day_end ) )															{ valid_form.isDayStartBeforeEnd = true; }
+	if( /^([0-1][0-9]|2[0-3]):([0-5][0-9])$/.test( snap_freq ) )								{ valid_form.isSnapFreqFormatted = true; }
 	
 	if( valid_form.isTitle 
 	&&  valid_form.isDuplicateIdPositive 
 	&&  valid_form.isStartBeforeEnd 
-	&&  valid_form.isDayStartBeforeEnd )	{ valid_form.send = true; }
+	&&  valid_form.isDayStartBeforeEnd
+	&&  valid_form.isSnapFreqFormatted )	{ valid_form.send = true; }
     
     // Clean the feedbacks before displaying new feedbacks
     $j( '#bookacti-template-data-dialog .bookacti-form-error' ).remove();
@@ -114,6 +122,11 @@ function bookacti_validate_template_form() {
 		$j( '#bookacti-template-data-minTime' ).addClass( 'bookacti-input-error' );
 		$j( '#bookacti-template-data-maxTime' ).addClass( 'bookacti-input-error' );
 		$j( '#bookacti-template-data-maxTime' ).parent().append( "<div class='bookacti-form-error'>" + bookacti_localized.error_day_end_before_begin + "</div>" );
+	}
+	if( ! valid_form.isSnapFreqFormatted ){ 
+		$j( '#bookacti-template-data-snapDuration' ).addClass( 'bookacti-input-error' );
+		$j( '#bookacti-template-data-snapDuration' ).addClass( 'bookacti-input-error' );
+		$j( '#bookacti-template-data-snapDuration' ).parent().append( "<div class='bookacti-form-error'>" + bookacti_localized.error_time_format + "</div>" );
 	}
 	
     return valid_form.send;

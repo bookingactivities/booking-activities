@@ -586,7 +586,7 @@ function bookacti_format_form_field_data( $raw_field_data ) {
 		$raw_field_data[ 'template_data' ] = array(
 			'start'		=> ! empty( $raw_field_data[ 'start' ] ) && bookacti_sanitize_date( $raw_field_data[ 'start' ] ) ? bookacti_sanitize_date( $raw_field_data[ 'start' ] ) : $default_meta[ 'start' ],
 			'end'		=> ! empty( $raw_field_data[ 'end' ] ) && bookacti_sanitize_date( $raw_field_data[ 'end' ] ) ? bookacti_sanitize_date( $raw_field_data[ 'end' ] ) : $default_meta[ 'end' ],
-			'settings'	=> array_intersect_key( $raw_field_data, bookacti_format_template_settings( array() ) )
+			'settings'	=> bookacti_format_template_settings( $raw_field_data )
 		);
 		
 		// Format booking system data
@@ -721,7 +721,7 @@ function bookacti_sanitize_form_field_data( $raw_field_data ) {
 		$raw_field_data[ 'template_data' ] = array(
 			'start'		=> ! empty( $raw_field_data[ 'start' ] ) && bookacti_sanitize_date( $raw_field_data[ 'start' ] ) ? bookacti_sanitize_date( $raw_field_data[ 'start' ] ) : $default_meta[ 'start' ],
 			'end'		=> ! empty( $raw_field_data[ 'end' ] ) && bookacti_sanitize_date( $raw_field_data[ 'end' ] ) ? bookacti_sanitize_date( $raw_field_data[ 'end' ] ) : $default_meta[ 'end' ],
-			'settings'	=> array_intersect_key( $raw_field_data, bookacti_format_template_settings( array() ) ) 
+			'settings'	=> bookacti_format_template_settings( $raw_field_data )
 		);
 		
 		// Sanitize booking system data
