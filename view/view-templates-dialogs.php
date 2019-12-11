@@ -298,7 +298,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			
 			/**
 			 * Fill the "Agenda" tab in calendar settings
-			 * @version 1.8.0
+			 * @version 1.7.13
 			 * @param array $params
 			 */
 			function bookacti_fill_template_tab_agenda( $params = array() ) {

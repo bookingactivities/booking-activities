@@ -563,7 +563,7 @@ function bookacti_get_default_form_fields_meta( $field_name = '' ) {
 /**
  * Format field data according to its type
  * @since 1.5.0
- * @version 1.8.0
+ * @version 1.7.13
  * @param array|string $raw_field_data
  * @return array|false
  */
@@ -699,7 +699,7 @@ function bookacti_format_form_field_data( $raw_field_data ) {
 /**
  * Sanitize field data according to its type
  * @since 1.5.0
- * @version 1.8.0
+ * @version 1.7.13
  * @param array|string $raw_field_data
  * @return array|false
  */

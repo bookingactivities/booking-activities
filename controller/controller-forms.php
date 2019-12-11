@@ -7,7 +7,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 /**
  * Display the form field 'calendar'
  * @since 1.5.0
- * @version 1.8.0
+ * @version 1.7.13
  * @param array $field
  * @param string $instance_id
  * @param string $context
@@ -1459,7 +1459,7 @@ add_action( 'wp_ajax_bookactiResetExportEventsUrl', 'bookacti_controller_reset_f
 /**
  * Export events of a specific form
  * @since 1.6.0
- * @version 1.7.8
+ * @version 1.7.13
  */
 function bookacti_export_form_events_page() {
 	if( empty( $_REQUEST[ 'action' ] ) || $_REQUEST[ 'action' ] !== 'bookacti_export_form_events' ) { return; }
@@ -1467,10 +1467,6 @@ function bookacti_export_form_events_page() {
 	// Check if the form is valid
 	$form_id = ! empty( $_REQUEST[ 'form_id' ] ) ? intval( $_REQUEST[ 'form_id' ] ) : 0;
 	if( ! $form_id ) { esc_html_e( 'Invalid form ID.', 'booking-activities' ); exit; }
-	
-	// Check the filename
-	$parsed_url = parse_url( $_SERVER[ 'REQUEST_URI' ] );
-	if( substr( basename( $parsed_url[ 'path' ] ), -4 ) !== '.ics' ) { esc_html_e( 'Invalid filename.', 'booking-activities' ); exit; }
 	
 	// Check if the secret key exists
 	$key = ! empty( $_REQUEST[ 'key' ] ) ? $_REQUEST[ 'key' ] : '';
@@ -1487,6 +1483,12 @@ function bookacti_export_form_events_page() {
 	$atts = apply_filters( 'bookacti_export_events_attributes', array_merge( bookacti_format_booking_system_url_attributes( $calendar_field ), array(
 		'groups_single_events' => 1
 	)));
+	
+	// Check the filename
+	$filename = ! empty( $_REQUEST[ 'filename' ] ) ? sanitize_title_with_dashes( $_REQUEST[ 'filename' ] ) : ( ! empty( $atts[ 'filename' ] ) ? sanitize_title_with_dashes( $atts[ 'filename' ] ) : 'booking-activities-events-form-' . $form_id );
+	if( ! $filename ) { esc_html_e( 'Invalid filename.', 'booking-activities' ); exit; }
+	$atts[ 'filename' ] = $filename;
+	if( substr( $filename, -4 ) !== '.ics' ) { $filename .= '.ics'; }
 	
 	$form = bookacti_get_form( $form_id );
 	if( $form ) {

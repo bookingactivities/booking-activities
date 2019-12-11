@@ -193,7 +193,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	
 	/**
 	 * Turn failed order bookings to complete when the order states changes
-	 * @since 1.8.0
+	 * @since 1.7.13
 	 * @param int $order_id
 	 * @param string $old_status
 	 * @param string $new_status
@@ -219,7 +219,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	
 	/**
 	 * Cancel the order bookings if the order is cancelled or if it fails
-	 * @version 1.8.0
+	 * @version 1.7.13
 	 * @param int $order_id
 	 * @param WC_Order $order
 	 */

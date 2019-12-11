@@ -750,7 +750,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		/**
 		 * Generate the export bookings URL according to current filters and export settings
 		 * @since 1.6.0
-		 * @version 1.7.1
+		 * @version 1.7.13
 		 */
 		function bookacti_controller_generate_export_bookings_url() {
 						
@@ -825,8 +825,17 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			// Let third party plugins change the booking filters
 			$booking_atts = apply_filters( 'bookacti_export_bookings_url_attributes', $booking_filters );
 			
+			// Define a filename
+			$filename = 'booking-activities-bookings';
+			if( ! empty( $booking_atts[ 'filename' ] ) ) {
+				$sanitized_filename = sanitize_title_with_dashes( $booking_atts[ 'filename' ] );
+				if( $sanitized_filename ) { 
+					$filename = $sanitized_filename;
+				}
+			}
+			
 			// Add the required settings to the URL
-			$csv_url = home_url( 'booking-activities-bookings.csv?action=bookacti_export_bookings&key=' . $secret_key . '&lang=' . $lang );
+			$csv_url = home_url( '?action=bookacti_export_bookings&filename=' . $filename . '&key=' . $secret_key . '&lang=' . $lang );
 			if( $booking_atts ) {
 				$csv_url = add_query_arg( $booking_atts, $csv_url );
 			}
@@ -842,15 +851,15 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		/**
 		 * Export booking list according to filters as CSV
 		 * @since 1.6.0
-		 * @version 1.7.10
+		 * @version 1.7.13
 		 */
 		function bookacti_export_bookings_page() {
 			if( empty( $_REQUEST[ 'action' ] ) || $_REQUEST[ 'action' ] !== 'bookacti_export_bookings' ) { return; }
 			
 			// Check the filename
-			$parsed_url	= parse_url( $_SERVER[ 'REQUEST_URI' ] );
-			$filename	= basename( $parsed_url[ 'path' ] );
-			if( substr( $filename, -4 ) !== '.csv' ) { esc_html_e( 'Invalid filename.', 'booking-activities' ); exit; }
+			$filename = ! empty( $_REQUEST[ 'filename' ] ) ? sanitize_title_with_dashes( $_REQUEST[ 'filename' ] ) : 'booking-activities-bookings';
+			if( ! $filename ) { esc_html_e( 'Invalid filename.', 'booking-activities' ); exit; }
+			if( substr( $filename, -4 ) !== '.csv' ) { $filename .= '.csv'; }
 			
 			// Check if the secret key exists
 			$key = ! empty( $_REQUEST[ 'key' ] ) ? $_REQUEST[ 'key' ] : '';
@@ -907,14 +916,10 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		/**
 		 * Export booked events of a specific user as ICS
 		 * @since 1.6.0
+		 * @version 1.7.13
 		 */
 		function bookacti_export_user_booked_events_page() {
 			if( empty( $_REQUEST[ 'action' ] ) || $_REQUEST[ 'action' ] !== 'bookacti_export_user_booked_events' ) { return; }
-
-			// Check the filename
-			$parsed_url	= parse_url( $_SERVER[ 'REQUEST_URI' ] );
-			$filename	= basename( $parsed_url[ 'path' ] );
-			if( substr( $filename, -4 ) !== '.ics' ) { esc_html_e( 'Invalid filename.', 'booking-activities' ); exit; }
 			
 			// Check if the secret key exists
 			$key = ! empty( $_REQUEST[ 'key' ] ) ? $_REQUEST[ 'key' ] : '';
@@ -934,7 +939,13 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 				'past_events' => 1,
 				'past_events_bookable' => 1
 			)));
-
+			
+			// Check the filename
+			$filename = ! empty( $_REQUEST[ 'filename' ] ) ? sanitize_title_with_dashes( $_REQUEST[ 'filename' ] ) : ( ! empty( $atts[ 'filename' ] ) ? sanitize_title_with_dashes( $atts[ 'filename' ] ) : 'my-bookings' );
+			if( ! $filename ) { esc_html_e( 'Invalid filename.', 'booking-activities' ); exit; }
+			$atts[ 'filename' ] = $filename;
+			if( substr( $filename, -4 ) !== '.ics' ) { $filename .= '.ics'; }
+			
 			$calname = esc_html__( 'My bookings', 'booking-activities' );
 			$caldesc = $calname . '.';
 
@@ -950,6 +961,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		/**
 		 * Export events of a specific booking (group)
 		 * @since 1.6.0
+		 * @version 1.7.13
 		 */
 		function bookacti_export_booked_events_page() {
 			if( empty( $_REQUEST[ 'action' ] ) || $_REQUEST[ 'action' ] !== 'bookacti_export_booked_events' ) { return; }
@@ -957,16 +969,16 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			// Check if a booking ID was given
 			if( empty( $_REQUEST[ 'booking_id' ] ) && empty( $_REQUEST[ 'booking_group_id' ] ) ) { esc_html_e( 'Invalid booking ID.', 'booking-activities' ); exit; }
 			
-			// Check the filename
-			$parsed_url	= parse_url( $_SERVER[ 'REQUEST_URI' ] );
-			$filename	= basename( $parsed_url[ 'path' ] );
-			if( substr( $filename, -4 ) !== '.ics' ) { esc_html_e( 'Invalid filename.', 'booking-activities' ); exit; }
-			
 			$atts = apply_filters( 'bookacti_export_events_attributes', array_merge( bookacti_get_booking_system_default_attributes(), array(
 				'status' => array( 'delivered', 'booked', 'pending' ),
 				'past_events' => 1
 			)));
-
+			
+			// Check the filename
+			$filename = ! empty( $_REQUEST[ 'filename' ] ) ? sanitize_title_with_dashes( $_REQUEST[ 'filename' ] ) : ( ! empty( $atts[ 'filename' ] ) ? sanitize_title_with_dashes( $atts[ 'filename' ] ) : 'my-bookings' );
+			if( ! $filename ) { esc_html_e( 'Invalid filename.', 'booking-activities' ); exit; }
+			if( substr( $filename, -4 ) !== '.ics' ) { $filename .= '.ics'; }
+			
 			$events = array( 'events' => array() );
 			if( ! empty( $_REQUEST[ 'booking_id' ] ) ) {
 				$booking_id = intval( $_REQUEST[ 'booking_id' ] );

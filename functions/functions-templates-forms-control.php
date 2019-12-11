@@ -70,7 +70,7 @@ function bookacti_format_template_managers( $template_managers = array() ) {
 
 /**
  * Format template settings
- * @version 1.8.0
+ * @version 1.7.13
  * @param array $raw_settings
  * @return array
  */
@@ -162,7 +162,7 @@ function bookacti_format_activity_managers( $activity_managers = array() ) {
 
 /**
  * Format activity settings
- * @version 1.8.0
+ * @version 1.7.13
  * @param array $activity_settings
  * @return array
  */
@@ -203,7 +203,7 @@ function bookacti_format_activity_settings( $activity_settings ) {
 
 /**
  * Format event settings
- * @version 1.8.0
+ * @version 1.7.13
  * @param array $event_settings
  * @return array
  */
@@ -333,7 +333,7 @@ function bookacti_validate_group_of_events_data( $group_title, $category_id, $ca
  * Format group of events data or apply default value
  * 
  * @since 1.1.0
- * @version 1.8.0
+ * @version 1.7.13
  * @param array $group_settings
  * @return array
  */
@@ -391,7 +391,7 @@ function bookacti_validate_group_category_data( $title ) {
  * Format group category data or apply default value
  * 
  * @since 1.1.0
- * @version 1.8.0
+ * @version 1.7.13
  * @param array $category_settings
  * @return array
  */

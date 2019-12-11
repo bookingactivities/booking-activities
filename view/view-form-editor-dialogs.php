@@ -2,7 +2,7 @@
 /**
  * Form editor dialogs
  * @since 1.5.0
- * @version 1.7.0
+ * @version 1.7.13
  */
 
 // Exit if accessed directly
@@ -987,7 +987,7 @@ foreach( $fields_data as $field_name => $field_data ) {
 				bookacti_update_metadata( 'form', $form_id, array( 'secret_key' => $secret_key ) );
 			}
 			
-			$ical_url = esc_url( home_url( 'booking-activities-events-form-' . $form_id . '.ics?action=bookacti_export_form_events&form_id=' . $form_id . '&key=' . $secret_key . '&past_events=auto&lang=' . $lang ) );
+			$ical_url = esc_url( home_url( '?action=bookacti_export_form_events&filename=booking-activities-events-form-' . $form_id . '&form_id=' . $form_id . '&key=' . $secret_key . '&past_events=auto&lang=' . $lang ) );
 		?>
 		<div>
 			<p><strong><?php esc_html_e( 'Secret address in iCal format', 'booking-activities' ); ?></strong></p>

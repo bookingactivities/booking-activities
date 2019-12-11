@@ -296,7 +296,7 @@ function bookacti_get_booking_system_default_attributes() {
 
 /**
  * Check booking system attributes and format them to be correct
- * @version 1.8.0
+ * @version 1.7.13
  * @param array $atts 
  * @return type
  */
@@ -2060,6 +2060,7 @@ function bookacti_convert_events_to_ical( $events, $name = '', $description = ''
 /**
  * Generate a ICAL file of events according to booking system attributes
  * @since 1.6.0
+ * @version 1.7.13
  * @param array $atts
  * @param string $calname
  * @param string $caldesc
@@ -2087,8 +2088,23 @@ function bookacti_export_events_page( $atts, $calname = '', $caldesc = '', $sequ
 	}
 	
 	// Check the filename
-	$parsed_url = parse_url( $_SERVER[ 'REQUEST_URI' ] ); 
-	$filename	= basename( $parsed_url[ 'path' ] );
+	$filename = ! empty( $_REQUEST[ 'filename' ] ) ? sanitize_title_with_dashes( $_REQUEST[ 'filename' ] ) : ( ! empty( $atts[ 'filename' ] ) ? sanitize_title_with_dashes( $atts[ 'filename' ] ) : '' );
+	if( ! $filename ) { 
+		$action = ! empty( $_REQUEST[ 'action' ] ) ? sanitize_title_with_dashes( $_REQUEST[ 'action' ] ) : '';
+		switch( $action ) {
+			case 'bookacti_export_user_booked_events':
+			case 'bookacti_export_booked_events':
+				$filename = 'my-bookings';
+				break;
+			case 'bookacti_export_form_events':
+				$filename = ! empty( $_REQUEST[ 'form_id' ] ) ? 'booking-activities-events-form-' . $_REQUEST[ 'form_id' ] : 'booking-activities-events-form-unknown';
+				break;
+			default:
+				$filename = 'my-events';
+				break;
+		}
+	}
+	if( substr( $filename, -4 ) !== '.ics' ) { $filename .= '.ics'; }
 	
 	header( 'Content-type: text/calendar; charset=utf-8' );
 	header( 'Content-Disposition: attachment; filename=' . $filename );

@@ -360,7 +360,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	 * Format order item mata values in order pages in admin panel
 	 * Must be used since WC 3.0.0
 	 * @since 1.0.4
-	 * @version 1.8.0
+	 * @version 1.7.13
 	 */
 	function bookacti_format_order_item_meta_values( $meta_value ) {
 		if( version_compare( WC_VERSION, '3.0.0', '>=' ) ) {

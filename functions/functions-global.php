@@ -1217,7 +1217,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 	/**
 	 * Format datetime to be displayed in a human comprehensible way
-	 * @version 1.8.0
+	 * @version 1.7.13
 	 * @param string $datetime Date format "Y-m-d H:i:s" is expected
 	 * @param string $format 
 	 * @return string
@@ -1237,7 +1237,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 	/**
 	 * Check if a string is in a correct datetime format
-	 * @version 1.8.0
+	 * @version 1.7.13
 	 * @param string $datetime Date format "Y-m-d H:i:s" is expected
 	 * @return string|false
 	 */
@@ -1260,7 +1260,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 	/**
 	 * Check if a string is in a correct date format
-	 * @version 1.8.0
+	 * @version 1.7.13
 	 * @param string $date Date format Y-m-d is expected
 	 * @return string|false 
 	 */
@@ -1315,7 +1315,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	/**
 	 * Sanitize array of dates
 	 * @since 1.2.0 (replace bookacti_sanitize_exceptions)
-	 * @version 1.8.0
+	 * @version 1.7.13
 	 * @param array|string $exceptions Date array expected (format "Y-m-d")
 	 * @return array
 	 */

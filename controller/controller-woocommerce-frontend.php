@@ -1527,7 +1527,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	
 	/**
 	 * Check availability before paying for a failed order
-	 * @since 1.8.0
+	 * @since 1.7.13
 	 * @param WC_Order $order
 	 */
 	function bookacti_availability_check_before_pay_action( $order ) {

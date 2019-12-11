@@ -47,7 +47,7 @@ $j( document ).ready( function() {
 
 /**
  * Check template form
- * @version 1.8.0
+ * @version 1.7.13
  * @returns {Boolean}
  */
 function bookacti_validate_template_form() {
