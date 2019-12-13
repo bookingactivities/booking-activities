@@ -329,7 +329,7 @@ function bookacti_get_notifications_tags( $notification_id = '' ) {
 /**
  * Get notifications tags and values corresponding to given booking
  * @since 1.2.0
- * @version 1.7.10
+ * @version 1.7.13
  * @param int $booking_id
  * @param string $booking_type 'group' or 'single'
  * @param string $notification_id
@@ -403,7 +403,7 @@ function bookacti_get_notifications_tags_values( $booking_id, $booking_type, $no
 					$user_ical_key = md5( microtime().rand() );
 					update_user_meta( $booking->user_id, 'bookacti_secret_key', $user_ical_key );
 				}
-				$booking_data[ '{user_ical_url}' ] = esc_url( home_url( 'my-bookings.ics?action=bookacti_export_user_booked_events&key=' . $user_ical_key . '&lang=' . $locale ) );
+				$booking_data[ '{user_ical_url}' ] = esc_url( home_url( '?action=bookacti_export_user_booked_events&filename=my-bookings&key=' . $user_ical_key . '&lang=' . $locale ) );
 			} else {
 				$booking_data[ '{user_firstname}' ]	= ! empty( $booking->user_first_name ) ? $booking->user_first_name : '';
 				$booking_data[ '{user_lastname}' ]	= ! empty( $booking->user_last_name ) ? $booking->user_last_name : '';
@@ -413,7 +413,7 @@ function bookacti_get_notifications_tags_values( $booking_id, $booking_type, $no
 		}
 		if( ! $user_ical_key ) {
 			$booking_id_param_name = $booking_type === 'group' ? 'booking_group_id' : 'booking_id';
-			$booking_data[ '{user_ical_url}' ] = esc_url( home_url( 'my-bookings.ics?action=bookacti_export_booked_events&' . $booking_id_param_name . '=' . $booking_id . '&lang=' . $locale ) );
+			$booking_data[ '{user_ical_url}' ] = esc_url( home_url( '?action=bookacti_export_booked_events&filename=my-bookings&' . $booking_id_param_name . '=' . $booking_id . '&lang=' . $locale ) );
 		}
 	}
 	

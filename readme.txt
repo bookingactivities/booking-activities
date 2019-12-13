@@ -1,11 +1,11 @@
 === Booking Activities ===
 Contributors: bookingactivities, yoancutillas
 Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=7EKU434L7NEVC
-Tags: booking, reservation, booking form, booking calendar, booking events
+Tags: booking, reservation, booking form, woocommerce booking, booking events
 Requires at least: 3.6
 Tested up to: 5.3
 Requires PHP: 5.3
-Stable tag: 1.7.12
+Stable tag: 1.7.13
 License: GPLv3 or later
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
 
@@ -54,12 +54,12 @@ Try this reservation tool live on the [demo website](http://demo.booking-activit
 
 **Online payments with WooCommerce**
 
-* Calendars are automatically integrated to product pages
-* ★ Attach multiple calendars and activities to one product
+* Calendars are automatically integrated to WooCommerce product pages
+* ★ Attach multiple calendars and activities to one WC product
 * ★ **Cart expiration system**: bookings in the shopping cart are temporary
 * Auto-validation when payment is completed
-* ★ Order status and its bookings status are smartly bound
-* ★ Automatic refunds by coupon or via the gateway (if allowed)
+* ★ WooCommerce order status and its bookings status are smartly bound
+* ★ Automatic refunds by WC coupon or via the gateway (if allowed)
 
 **Manage reservations**
 
@@ -318,6 +318,18 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 
 
 == Changelog ==
+
+= 1.7.13 - 2019/12/13 =
+* Tweak - Changed export URLs to avoid 404 errors
+* Fix - Bookings of failed WC order were not cancelled when the order status changed from backend
+* Fix - Bookings of failed WC order were not turned to pending / booked when the order was paid
+* Fix - Prevent to set a date after 2037 on server side too, to avoid year 2038 bug
+* Fix - Snap frequency field was not correctly displayed in browser displaying a 12-h time format
+* Fix - Add server checks to sanitize calendars and group categories data
+* Fix - The request a refund appeared to admins after cancelling a booking via the frontend booking list when it should not
+* Fix - Coupon code not displayed in booking list when the booking was refunded with it
+* Fix - Frontend booking list columns titles not displayed on small screens
+* Fix - Force UTC timezone while displaying dates to avoid undesired offsets
 
 = 1.7.12 - 2019/12/03 =
 * Tweak - Exported and filtered bookings now keep the current column sorting

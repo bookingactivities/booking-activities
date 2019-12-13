@@ -298,7 +298,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			
 			/**
 			 * Fill the "Agenda" tab in calendar settings
-			 * @version 1.7.8
+			 * @version 1.7.13
 			 * @param array $params
 			 */
 			function bookacti_fill_template_tab_agenda( $params = array() ) {
@@ -335,7 +335,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 						_e( 'Snap frequency', 'booking-activities' );
 						?>
 					</label>
-					<input type='time' name='templateOptions[snapDuration]' id='bookacti-template-data-snapDuration' value='00:05' min='00:01' >
+					<input type='text' name='templateOptions[snapDuration]' id='bookacti-template-data-snapDuration' class='bookacti-time-field' placeholder='23:59' value='00:05' >
 					<?php
 					$tip = __( "The time interval at which a dragged event will snap to the agenda view time grid. Ex: '00:20', you will be able to drop an event every 20 minutes (at 6:00am, 6:20am, 6:40am...).", 'booking-activities' );
 					bookacti_help_tip( $tip );
@@ -493,7 +493,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 					<input type='number' 
 						   name='activity-availability' 
 						   id='bookacti-activity-availability' 
-						   min='0' step='1' value='0' 
+						   min='0' step='1' value='1' 
 						   onkeypress='return event.charCode >= 48 && event.charCode <= 57' />
 					<?php
 						$tip = __( 'The default amount of bookings that can be made on each event of this activity. This can be overriden on each event independantly.', 'booking-activities' );

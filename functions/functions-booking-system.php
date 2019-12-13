@@ -296,7 +296,7 @@ function bookacti_get_booking_system_default_attributes() {
 
 /**
  * Check booking system attributes and format them to be correct
- * @version 1.7.3
+ * @version 1.7.13
  * @param array $atts 
  * @return type
  */
@@ -401,8 +401,8 @@ function bookacti_format_booking_system_attributes( $atts = array() ) {
 	// Format template data
 	if( ! empty( $atts[ 'template_data' ] ) && is_array( $atts[ 'template_data' ] ) ) {
 		$templates_data = bookacti_get_mixed_template_data( $atts[ 'calendars' ], $atts[ 'past_events' ] );
-		$atts[ 'template_data' ][ 'start' ]		= ! empty( $atts[ 'template_data' ][ 'start' ] ) && bookacti_sanitize_date( $atts[ 'template_data' ][ 'start' ] ) ? bookacti_sanitize_date( $atts[ 'template_data' ][ 'start' ] ) : $templates_data[ 'start' ];
-		$atts[ 'template_data' ][ 'end' ]		= ! empty( $atts[ 'template_data' ][ 'end' ] ) && bookacti_sanitize_date( $atts[ 'template_data' ][ 'end' ] ) ? bookacti_sanitize_date( $atts[ 'template_data' ][ 'end' ] ) : $templates_data[ 'end' ];
+		$atts[ 'template_data' ][ 'start' ]		= ! empty( $atts[ 'template_data' ][ 'start' ] ) && bookacti_sanitize_date( $atts[ 'template_data' ][ 'start' ] ) ? bookacti_sanitize_date( $atts[ 'template_data' ][ 'start' ] ) : bookacti_sanitize_date( $templates_data[ 'start' ] );
+		$atts[ 'template_data' ][ 'end' ]		= ! empty( $atts[ 'template_data' ][ 'end' ] ) && bookacti_sanitize_date( $atts[ 'template_data' ][ 'end' ] ) ? bookacti_sanitize_date( $atts[ 'template_data' ][ 'end' ] ) : bookacti_sanitize_date( $templates_data[ 'end' ] );
 		$atts[ 'template_data' ][ 'settings' ]	= ! empty( $atts[ 'template_data' ][ 'settings' ] ) ? bookacti_format_template_settings( $atts[ 'template_data' ][ 'settings' ] ) : $templates_data[ 'settings' ];
 	}
 	
@@ -455,8 +455,8 @@ function bookacti_format_booking_system_attributes( $atts = array() ) {
 	// Format picked events
 	$atts[ 'picked_events' ]					= shortcode_atts( $defaults[ 'picked_events' ], $atts[ 'picked_events' ] );
 	$atts[ 'picked_events' ][ 'event_id' ]		= $atts[ 'picked_events' ][ 'event_id' ] && is_numeric( $atts[ 'picked_events' ][ 'event_id' ] ) ? intval( $atts[ 'picked_events' ][ 'event_id' ] ) : '';
-	$atts[ 'picked_events' ][ 'event_start' ]	= bookacti_sanitize_datetime( $atts[ 'picked_events' ][ 'event_start' ] ) ? str_replace( 'T', ' ', $atts[ 'picked_events' ][ 'event_start' ] ) : $defaults[ 'picked_events' ][ 'event_start' ];
-	$atts[ 'picked_events' ][ 'event_end' ]		= bookacti_sanitize_datetime( $atts[ 'picked_events' ][ 'event_end' ] ) ? str_replace( 'T', ' ', $atts[ 'picked_events' ][ 'event_end' ] ) : $defaults[ 'picked_events' ][ 'event_end' ];
+	$atts[ 'picked_events' ][ 'event_start' ]	= bookacti_sanitize_datetime( $atts[ 'picked_events' ][ 'event_start' ] ) ? bookacti_sanitize_datetime( $atts[ 'picked_events' ][ 'event_start' ] ) : $defaults[ 'picked_events' ][ 'event_start' ];
+	$atts[ 'picked_events' ][ 'event_end' ]		= bookacti_sanitize_datetime( $atts[ 'picked_events' ][ 'event_end' ] ) ? bookacti_sanitize_datetime( $atts[ 'picked_events' ][ 'event_end' ] ) : $defaults[ 'picked_events' ][ 'event_end' ];
 	$atts[ 'picked_events' ][ 'group_id' ]		= $atts[ 'picked_events' ][ 'group_id' ] && is_numeric( $atts[ 'picked_events' ][ 'group_id' ] ) ? intval( $atts[ 'picked_events' ][ 'group_id' ] ) : ( is_numeric( $atts[ 'picked_events' ][ 'event_id' ] ) ? 'single' : '' );
 	
 	// Sanitize form id
@@ -2060,6 +2060,7 @@ function bookacti_convert_events_to_ical( $events, $name = '', $description = ''
 /**
  * Generate a ICAL file of events according to booking system attributes
  * @since 1.6.0
+ * @version 1.7.13
  * @param array $atts
  * @param string $calname
  * @param string $caldesc
@@ -2087,8 +2088,23 @@ function bookacti_export_events_page( $atts, $calname = '', $caldesc = '', $sequ
 	}
 	
 	// Check the filename
-	$parsed_url = parse_url( $_SERVER[ 'REQUEST_URI' ] ); 
-	$filename	= basename( $parsed_url[ 'path' ] );
+	$filename = ! empty( $_REQUEST[ 'filename' ] ) ? sanitize_title_with_dashes( $_REQUEST[ 'filename' ] ) : ( ! empty( $atts[ 'filename' ] ) ? sanitize_title_with_dashes( $atts[ 'filename' ] ) : '' );
+	if( ! $filename ) { 
+		$action = ! empty( $_REQUEST[ 'action' ] ) ? sanitize_title_with_dashes( $_REQUEST[ 'action' ] ) : '';
+		switch( $action ) {
+			case 'bookacti_export_user_booked_events':
+			case 'bookacti_export_booked_events':
+				$filename = 'my-bookings';
+				break;
+			case 'bookacti_export_form_events':
+				$filename = ! empty( $_REQUEST[ 'form_id' ] ) ? 'booking-activities-events-form-' . $_REQUEST[ 'form_id' ] : 'booking-activities-events-form-unknown';
+				break;
+			default:
+				$filename = 'my-events';
+				break;
+		}
+	}
+	if( substr( $filename, -4 ) !== '.ics' ) { $filename .= '.ics'; }
 	
 	header( 'Content-type: text/calendar; charset=utf-8' );
 	header( 'Content-Disposition: attachment; filename=' . $filename );

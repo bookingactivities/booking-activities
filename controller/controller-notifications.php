@@ -144,7 +144,7 @@ add_action( 'bookacti_booking_group_state_changed', 'bookacti_send_notification_
  * Send a notification to admin and customer when a booking is rescheduled
  * 
  * @since 1.2.1 (was bookacti_send_email_when_booking_is_rescheduled in 1.2.0)
- * @version 1.7.0
+ * @version 1.7.13
  * @param object $booking
  * @param object $old_booking
  * @param array $args
@@ -162,6 +162,8 @@ function bookacti_send_notification_when_booking_is_rescheduled( $booking, $old_
 		'booking_old_end_raw' => $old_booking->event_end
 	));
 	
+	$datetime_format = bookacti_get_message( 'date_format_long' );
+	
 	// If $args[ 'is_admin' ] is true, the customer need to be notified
 	if( $send_to === 'both' || $send_to === 'customer' ) {
 		$notification_id = 'customer_rescheduled_booking';
@@ -171,8 +173,8 @@ function bookacti_send_notification_when_booking_is_rescheduled( $booking, $old_
 		bookacti_switch_locale( $locale );
 
 		// Add reschedule specific tags
-		$notification_args[ 'tags' ][ '{booking_old_start}' ]	= bookacti_format_datetime( $old_booking->event_start );
-		$notification_args[ 'tags' ][ '{booking_old_end}' ]		= bookacti_format_datetime( $old_booking->event_end );
+		$notification_args[ 'tags' ][ '{booking_old_start}' ]	= bookacti_format_datetime( $old_booking->event_start, $datetime_format );
+		$notification_args[ 'tags' ][ '{booking_old_end}' ]		= bookacti_format_datetime( $old_booking->event_end, $datetime_format );
 
 		// Switch locale back to normal
 		bookacti_restore_locale();
@@ -189,8 +191,8 @@ function bookacti_send_notification_when_booking_is_rescheduled( $booking, $old_
 		bookacti_switch_locale( $locale );
 
 		// Add reschedule specific tags
-		$notification_args[ 'tags' ][ '{booking_old_start}' ]	= bookacti_format_datetime( $old_booking->event_start );
-		$notification_args[ 'tags' ][ '{booking_old_end}' ]		= bookacti_format_datetime( $old_booking->event_end );
+		$notification_args[ 'tags' ][ '{booking_old_start}' ]	= bookacti_format_datetime( $old_booking->event_start, $datetime_format );
+		$notification_args[ 'tags' ][ '{booking_old_end}' ]		= bookacti_format_datetime( $old_booking->event_end, $datetime_format );
 
 		// Switch locale back to normal
 		bookacti_restore_locale();
