@@ -427,7 +427,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	/**
 	 * Add WC data to the booking list
 	 * @since 1.6.0 (was bookacti_woocommerce_fill_booking_list_custom_columns before)
-	 * @version 1.7.12
+	 * @version 1.7.13
 	 * @param array $booking_list_items
 	 * @param array $bookings
 	 * @param array $booking_groups
@@ -533,13 +533,11 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			);
 			
 			// Specify refund method in status column
-			if( $bookings[ $booking_id ]->state === 'refunded' && ! empty( $order_item_data->_bookacti_refund_method ) ) {
-				if( $order_item_data->_bookacti_refund_method === 'coupon' ) {
-					$coupon_code = ! empty( $order_item_data->bookacti_refund_coupon ) ? $order_item_data->bookacti_refund_coupon : '';
-					/* translators: %s is the coupon code used for the refund */
-					$coupon_label = sprintf( esc_html__( 'Refunded with coupon %s', 'booking-activities' ), $coupon_code );
-					$booking_list_items[ $booking_id ][ 'state' ] = '<span class="bookacti-booking-state bookacti-booking-state-bad bookacti-booking-state-refunded bookacti-converted-to-coupon bookacti-tip" data-booking-state="refunded" data-tip="' . $coupon_label . '" ></span><span class="bookacti-refund-coupon-code bookacti-custom-scrollbar">' . $coupon_code . '</span>';
-				}
+			if( $bookings[ $booking_id ]->state === 'refunded' && ! empty( $order_item_data->bookacti_refund_coupon ) ) {
+				$coupon_code = $order_item_data->bookacti_refund_coupon;
+				/* translators: %s is the coupon code used for the refund */
+				$coupon_label = sprintf( esc_html__( 'Refunded with coupon %s', 'booking-activities' ), $coupon_code );
+				$booking_list_items[ $booking_id ][ 'state' ] = '<span class="bookacti-booking-state bookacti-booking-state-bad bookacti-booking-state-refunded bookacti-converted-to-coupon bookacti-tip" data-booking-state="refunded" data-tip="' . $coupon_label . '" ></span><span class="bookacti-refund-coupon-code bookacti-custom-scrollbar">' . $coupon_code . '</span>';
 			}
 			
 			// Filter refund actions
@@ -998,15 +996,17 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	/**
 	 * Check if a booking can be refunded
 	 * @version 1.6.0
+	 * @version 1.7.13
 	 * @param boolean $true
 	 * @param object $booking
 	 * @return boolean
 	 */
 	function bookacti_woocommerce_booking_can_be_refunded( $true, $booking ) {
-		if( ! $true || current_user_can( 'bookacti_edit_bookings' ) ) { return $true; }
+		if( ! $true ) { return $true; }
 		
 		// Init var
 		$order = wc_get_order( $booking->order_id );
+		
 		if( ! $order ) { return $true; }
 		if( $order->get_status() === 'pending' ) { return false; }
 		
@@ -1018,7 +1018,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		if( ! $item ) { return false; }
 		
 		// WOOCOMMERCE 3.0.0 backward compatibility 
-		$total = version_compare( WC_VERSION, '3.0.0', '>=' ) ? $item->get_total() : $item[ 'line_total' ];
+		$total = version_compare( WC_VERSION, '3.0.0', '>=' ) ? $item->get_total() : $item[ 'line_total' ] + $item[ 'line_tax' ];
 		if( $total <= 0 ) { return false; }
 		
 		return apply_filters( 'bookacti_woocommerce_booking_can_be_refunded', $true, $booking, $order, $item );

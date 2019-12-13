@@ -1653,6 +1653,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	/**
 	 * Add WC data to the user booking list
 	 * @since 1.7.12 (was bookacti_fill_wc_price_column_in_booking_list)
+	 * @version 1.7.13
 	 * @param array $booking_list_items
 	 * @param array $bookings
 	 * @param array $booking_groups
@@ -1700,6 +1701,9 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			$orders[ $order_id ] = $order;
 		}
 		
+		// Get WC refund actions
+		$wc_refund_actions = array_keys( bookacti_add_woocommerce_refund_actions( array() ) );
+		
 		// Add order item data to the booking list
 		foreach( $order_items_data as $order_item_data ) {
 			$booking_meta = array();
@@ -1727,12 +1731,22 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			$booking_list_items[ $booking_id ][ 'price' ] = apply_filters( 'bookacti_user_booking_list_order_item_price', wc_price( $order_item_data->_line_total + $order_item_data->_line_tax ), $order_item_data, $booking_list_items[ $booking_id ], $booking_meta, $filters );
 			
 			// Specify refund method in status column
-			if( $bookings[ $booking_id ]->state === 'refunded' && ! empty( $order_item_data->_bookacti_refund_method ) && in_array( 'status', $columns, true ) ) {
-				if( $order_item_data->_bookacti_refund_method === 'coupon' ) {
-					$coupon_code = ! empty( $order_item_data->bookacti_refund_coupon ) ? $order_item_data->bookacti_refund_coupon : '';
-					/* translators: %s is the coupon code used for the refund */
-					$coupon_label = sprintf( esc_html__( 'Refunded with coupon %s', 'booking-activities' ), $coupon_code );
-					$booking_list_items[ $booking_id ][ 'status' ] = '<span class="bookacti-booking-state bookacti-booking-state-bad bookacti-booking-state-refunded bookacti-converted-to-coupon bookacti-tip" data-booking-state="refunded" data-tip="' . $coupon_label . '" ></span><span class="bookacti-refund-coupon-code bookacti-custom-scrollbar">' . $coupon_code . '</span>';
+			if( $bookings[ $booking_id ]->state === 'refunded' && ! empty( $order_item_data->bookacti_refund_coupon ) && in_array( 'status', $columns, true ) ) {
+				$coupon_code = $order_item_data->bookacti_refund_coupon;
+				/* translators: %s is the coupon code used for the refund */
+				$coupon_label = sprintf( esc_html__( 'Refunded with coupon %s', 'booking-activities' ), $coupon_code );
+				$booking_list_items[ $booking_id ][ 'status' ] = '<span class="bookacti-booking-state bookacti-booking-state-bad bookacti-booking-state-refunded bookacti-converted-to-coupon bookacti-tip" data-booking-state="refunded" data-tip="' . $coupon_label . '" >' . $coupon_label . '</span>';
+			}
+			
+			// Filter refund actions
+			if( ! empty( $booking_list_items[ $booking_id ][ 'actions' ][ 'refund' ] ) && ! empty( $orders[ $order_item_data->order_id ] ) ) {
+				$order		= $orders[ $order_item_data->order_id ];
+				// WOOCOMMERCE 3.0.0 backward compatibility 
+				$is_paid	= version_compare( WC_VERSION, '3.0.0', '>=' ) ? $order->get_date_paid( 'edit' ) : $order->paid_date;
+				$total		= isset( $order_item_data->_line_total ) ? $order_item_data->_line_total + $order_item_data->_line_tax : '';
+				
+				if( $order->get_status() !== 'pending' && $is_paid && $total > 0 ) {
+					$booking_list_items[ $booking_id ][ 'refund_actions' ] = array_unique( array_merge( $booking_list_items[ $booking_id ][ 'refund_actions' ], $wc_refund_actions ) );
 				}
 			}
 		}

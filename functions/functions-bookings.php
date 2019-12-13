@@ -1969,13 +1969,15 @@ function bookacti_get_user_booking_list( $filters, $columns = array(), $per_page
 /**
  * Display booking list rows
  * @since 1.7.6
- * @version 1.7.8
+ * @version 1.7.13
  * @param array $booking_list_items
  * @param array $columns
  * @return string
  */
 function bookacti_get_user_booking_list_rows( $booking_list_items, $columns = array() ) {
 	if( ! $columns ) { $columns = bookacti_get_user_booking_list_default_columns(); }
+	
+	$columns_labels = bookacti_get_user_booking_list_columns_labels();
 	
 	ob_start();
 	
@@ -2000,8 +2002,9 @@ function bookacti_get_user_booking_list_rows( $booking_list_items, $columns = ar
 					$value			= isset( $list_item[ $column_id ] ) && ( is_string( $list_item[ $column_id ] ) || is_numeric( $list_item[ $column_id ] ) ) ? $list_item[ $column_id ] : '';
 					$class_empty	= empty( $value ) ? 'bookacti-empty-column' : '';
 					$class_group	= $list_item[ 'booking_type' ] === 'group' ? 'bookacti-booking-group-' . $column_id : '';
+					$column_label	= ! empty( $columns_labels[ $column_id ] ) ? $columns_labels[ $column_id ] : $column_id;
 				?>
-					<td data-column-id='<?php echo esc_attr( $column_id ); ?>' class='bookacti-column-<?php echo $column_id . ' ' . $class_empty; ?>' >
+					<td data-column-id='<?php echo esc_attr( $column_id ); ?>' data-column-label='<?php echo esc_attr( $column_label ); ?>' class='bookacti-column-<?php echo $column_id . ' ' . $class_empty; ?>' >
 						<div class='bookacti-booking-<?php echo $column_id . ' ' . $class_group; ?>' >
 							<?php echo $value; ?>
 						</div>

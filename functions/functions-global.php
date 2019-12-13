@@ -1225,11 +1225,13 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	function bookacti_format_datetime( $datetime, $format = '' ) {
 		$datetime = bookacti_sanitize_datetime( $datetime );
 		if( $datetime ) {
-			if( ! $format ) {
-				$format = bookacti_get_message( 'date_format_long' );
-			}
-			$datetime = date_i18n( $format, strtotime( $datetime ) );
-			$datetime = ! bookacti_is_utf8( $datetime ) ? utf8_encode( $datetime ) : $datetime;
+			if( ! $format ) { $format = bookacti_get_message( 'date_format_long' ); }
+			
+			// Force timezone to UTC to avoid offsets because datetimes should be displayed regarless of timezones
+			$datetime = date_i18n( $format, strtotime( $datetime . ' UTC' ) );
+			
+			// Encode to UTF8 to avoid any bad display of special chars
+			if( ! bookacti_is_utf8( $datetime ) ) { $datetime = utf8_encode( $datetime ); }
 		}
 		return $datetime;
 	}
