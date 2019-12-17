@@ -1,4 +1,4 @@
-{ "vendor": { "plugins/booking-activities": "1.7.7" },
+{ "vendor": { "plugins/booking-activities": "1.7.14" },
 	"admin-config":{
 		"bookacti_calendars":{
 			"pages":{ "admin.php":"" },
@@ -40,6 +40,10 @@
 						"bookacti_messages_settings_date_time_separator":{},
 						"bookacti_messages_settings_quantity_separator":{},
 						"bookacti_messages_settings_calendar_title":{},
+						"bookacti_messages_settings_selected_event":{},
+						"bookacti_messages_settings_selected_events":{},
+						"bookacti_messages_settings_avail":{},
+						"bookacti_messages_settings_avails":{},
 						"bookacti_messages_settings_booking_success":{},
 						"bookacti_messages_settings_booking_form_submit_button":{},
 						"bookacti_messages_settings_booking_form_new_booking_button":{},

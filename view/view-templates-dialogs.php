@@ -1,7 +1,7 @@
 <?php 
 /**
  * Calendar editor dialogs
- * @version 1.7.12
+ * @version 1.7.14
  */
 
 // Exit if accessed directly
@@ -673,8 +673,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			
 			/**
 			 * Display the fields in the "Permissions" tab of the Activity dialog
-			 * 
-			 * @version 1.7.8
+			 * @version 1.7.14
 			 * @param array $params
 			 */
 			function bookacti_fill_activity_tab_permissions( $params = array() ) {
@@ -691,13 +690,14 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 					?>
 					</label>
 					<div>
-						<select name='activityOptions[allowed_roles][]'  id='bookacti-activity-roles' multiple >
+						<select name='activityOptions[allowed_roles][]'  id='bookacti-activity-roles' class='bookacti-select' multiple>
 						<?php 
 							$roles = get_editable_roles();
 							foreach( $roles as $role_id => $role ) {
 								echo '<option value="' . esc_attr( $role_id ) . '" >' . esc_html( $role[ 'name' ] ) . '</option>'; 
 							}
 						?>
+							<option value='no_role' ><?php esc_html_e( 'Users without roles', 'booking-activities' ); ?></option>
 						</select>
 					</div>
 				</div>
@@ -1043,8 +1043,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			
 			/**
 			 * Display the fields in the "Permissions" tab of the Group Category dialog
-			 * 
-			 * @version 1.4.0
+			 * @version 1.7.14
 			 * @param array $params
 			 */
 			function bookacti_fill_group_category_tab_permissions( $params = array() ) {
@@ -1061,13 +1060,14 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 					?>
 					</label>
 					<div>
-						<select name='groupCategoryOptions[allowed_roles][]'  id='bookacti-group-category-roles' multiple >
+						<select name='groupCategoryOptions[allowed_roles][]' id='bookacti-group-category-roles' class='bookacti-select' multiple>
 						<?php 
 							$roles = get_editable_roles();
 							foreach( $roles as $role_id => $role ) {
 								echo '<option value="' . esc_attr( $role_id ) . '" >' . esc_html( $role[ 'name' ] ) . '</option>'; 
 							}
 						?>
+							<option value='no_role' ><?php esc_html_e( 'Users without roles', 'booking-activities' ); ?></option>
 						</select>
 					</div>
 				</div>

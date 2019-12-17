@@ -4,7 +4,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 /**
  * Init Booking Activities settings
- * @version 1.7.0
+ * @version 1.7.14
  */
 function bookacti_init_settings() { 
 
@@ -221,6 +221,16 @@ function bookacti_init_settings() {
 	);
 	
 	
+	
+	/* Licenses settings Section */
+	add_settings_section( 
+		'bookacti_settings_section_licenses',
+		esc_html__( 'Licenses settings', 'booking-activities' ),
+		'bookacti_settings_section_licenses_callback',
+		'bookacti_licenses_settings'
+	);
+	
+	
 	do_action( 'bookacti_add_settings' );
 	
 	
@@ -229,6 +239,7 @@ function bookacti_init_settings() {
 	register_setting( 'bookacti_notifications_settings',	'bookacti_notifications_settings' );
 	register_setting( 'bookacti_messages_settings',			'bookacti_messages_settings' );
 	register_setting( 'bookacti_system_settings',			'bookacti_system_settings' );
+	register_setting( 'bookacti_licenses_settings',			'bookacti_licenses_settings' );
 }
 add_action( 'admin_init', 'bookacti_init_settings' );
 
@@ -773,6 +784,55 @@ function bookacti_controller_archive_delete_file() {
 	bookacti_send_json( array( 'status' => 'success', 'archive_list' => $archive_list ), 'archive_delete_file' );
 }
 add_action( 'wp_ajax_bookactiArchiveDeleteFile', 'bookacti_controller_archive_delete_file' );
+
+
+
+
+// LICENSES
+
+/**
+ * Display a description in the Licenses settings tab
+ * @since 1.7.14
+ */
+function bookacti_display_licenses_settings_description() {
+	$active_add_ons = bookacti_get_active_add_ons();
+	if( ! $active_add_ons ) { 
+		?>
+		<div class='bookacti-licenses-settings-description'>
+			<p><?php esc_html_e( 'Here you will be able to activate your add-ons license keys.', 'booking-activities' ); ?></p>
+			<h3>
+				<?php 
+				/* translators: %s is a link to "Booking Activities add-ons" (link label) shop */
+				echo sprintf( esc_html__( 'Purchase %s now!', 'booking-activities' ), ' <a href="https://booking-activities.fr/en/add-ons/" target="_blank">' . esc_html__( 'Booking Activities add-ons', 'booking-activities' ) . '</a>' );
+				?>
+			</h3>
+		</div>
+		<?php 
+	}
+	
+	if( bookacti_is_plugin_active( 'ba-licenses-and-updates/ba-licenses-and-updates.php' ) ) { return; }
+	
+	if( $active_add_ons ) {
+		$active_add_ons_titles = array();
+		foreach( $active_add_ons as $prefix => $add_on_data ) {
+			$active_add_ons_titles[] = $add_on_data[ 'title' ];
+		}
+		?>
+		<div class='bookacti-licenses-settings-description'>
+			<p>
+				<em><?php esc_html_e( 'The following add-ons are installed on your site:', 'booking-activities' ); ?></em>
+				<strong><?php echo implode( '</strong>, <strong>', $active_add_ons_titles ); ?></strong>
+			</p>
+			<h3>
+				<?php 
+				/* translators: %s is a link to download "Licenses and Updates" (link label) add-on */
+				echo sprintf( esc_html__( 'Please install the "%s" add-on in order to activate your license keys.', 'booking-activities' ), '<a href="https://booking-activities.fr/wp-content/uploads/downloads/public/ba-licenses-and-updates.zip">Licenses and Updates</a>' ); ?>
+			</h3>
+		</div>
+		<?php
+	}
+}
+add_action( 'bookacti_licenses_settings', 'bookacti_display_licenses_settings_description', 10, 0 );
 
 
 

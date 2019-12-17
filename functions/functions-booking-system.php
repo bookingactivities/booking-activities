@@ -815,7 +815,7 @@ function bookacti_get_booking_system_fields_default_data( $fields = array() ) {
 
 /**
  * Check the selected event / group of events data before booking
- * @version 1.7.8
+ * @version 1.7.14
  * @param int $group_id
  * @param int $event_id
  * @param string $event_start Start datetime of the event to check (format 2017-12-31T23:59:59)
@@ -958,9 +958,15 @@ function bookacti_validate_booking_form( $group_id, $event_id, $event_start, $ev
 	if( $max_users === 0 || $quantity_already_booked || $number_of_users < $max_users )		{ $is_users_inf_to_max = true; }
 	if( ! $allowed_roles || apply_filters( 'bookacti_bypass_roles_check', false ) )			{ $has_allowed_roles = true; }
 	else { 
+		$is_allowed		= false;
 		$current_user	= wp_get_current_user();
-		$roles			= $current_user->roles;
-		$is_allowed		= array_intersect( $roles, $allowed_roles );
+		
+		if( ! $current_user ) {
+			$is_allowed = in_array( 'no_role', $allowed_roles, true );
+		} else {
+			$is_allowed = ! empty( $current_user->roles ) ? array_intersect( $current_user->roles, $allowed_roles ) : in_array( 'no_role', $allowed_roles, true );
+		}
+		
 		if( $is_allowed ) { $has_allowed_roles = true; }
 	}
 	

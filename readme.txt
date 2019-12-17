@@ -319,6 +319,12 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 
 == Changelog ==
 
+= 1.7.14 =
+* Tweak - Add customizable messages in settings: avail. and Selected Events
+* Tweak - Add a no_role value in permission selectboxes to permit misunderstanding errors (reminder: allow everybody = do not select any roles)
+* Tweak - Display a notice when the WC product / variation price is empty to inform that the booking form won't appear
+* Tweak - Display the Licenses tab in settings and instructions for new customers
+
 = 1.7.13 - 2019/12/13 =
 * Tweak - Changed export URLs to avoid 404 errors
 * Fix - Bookings of failed WC order were not cancelled when the order status changed from backend

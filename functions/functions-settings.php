@@ -100,6 +100,7 @@ function bookacti_settings_section_general_callback() { }
 function bookacti_settings_section_cancellation_callback() { }
 function bookacti_settings_section_template_callback() { }
 function bookacti_settings_section_bookings_callback() { }
+function bookacti_settings_section_licenses_callback() { }
 
 
 // BOOKINGS SETTINGS
@@ -721,7 +722,7 @@ function bookacti_settings_section_bookings_callback() { }
 	/**
 	 * Get all default messages
 	 * @since 1.2.0
-	 * @version 1.7.8
+	 * @version 1.7.14
 	 */
 	function bookacti_get_default_messages() {
 		$wp_date_format_link = '<a href="https://wordpress.org/support/article/formatting-date-and-time/" target="_blank" >' .  esc_html__( 'Formatting Date and Time', 'booking-activities' ) . '</a>';
@@ -760,6 +761,26 @@ function bookacti_settings_section_bookings_callback() { }
 			'calendar_title' => array(
 				'value'			=> esc_html__( 'Pick an event on the calendar:', 'booking-activities' ),
 				'description'	=> esc_html__( 'Instructions displayed before the calendar.', 'booking-activities' )
+			),
+			'selected_event' => array(
+				'value'			=> esc_html__( 'Selected event', 'booking-activities' ),
+				/* translators: %s can be either "singular" or "plural" */
+				'description'	=> sprintf( esc_html__( 'Title displayed before the selected events list (%s).', 'booking-activities' ), esc_html__( 'singular', 'booking-activities' ) )
+			),
+			'selected_events' => array(
+				'value'			=> esc_html__( 'Selected events', 'booking-activities' ),
+				'description'	=> sprintf( esc_html__( 'Title displayed before the selected events list (%s).', 'booking-activities' ), esc_html__( 'plural', 'booking-activities' ) )
+			),
+			'avail' => array(
+				/* translators: This particle is used right after the quantity of available bookings. Put the singular here. Ex: 1 avail. . */
+				'value'			=> esc_html_x( 'avail.', 'Short for availability [singular noun]', 'booking-activities' ),
+				/* translators: %s can be either "singular" or "plural" */
+				'description'	=> sprintf( esc_html__( 'Particle displayed after the number of available places onto the events (%s).', 'booking-activities' ), esc_html__( 'singular', 'booking-activities' ) )
+			),
+			'avails' => array(
+				/* translators: This particle is used right after the quantity of available bookings. Put the plural here. Ex: 2 avail. . */
+				'value'			=> esc_html_x( 'avail.', 'Short for availabilities [plural noun]', 'booking-activities' ),
+				'description'	=> sprintf( esc_html__( 'Particle displayed after the number of available places onto the events (%s).', 'booking-activities' ), esc_html__( 'plural', 'booking-activities' ) )
 			),
 			'booking_success' => array(
 				'value'			=> esc_html__( 'Your reservation has been processed!', 'booking-activities' ),
