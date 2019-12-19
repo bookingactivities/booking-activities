@@ -296,12 +296,11 @@ function bookacti_get_booking_system_default_attributes() {
 
 /**
  * Check booking system attributes and format them to be correct
- * @version 1.7.13
+ * @version 1.7.14
  * @param array $atts 
  * @return type
  */
 function bookacti_format_booking_system_attributes( $atts = array() ) {
-	
 	// Set default value
 	$defaults = bookacti_get_booking_system_default_attributes();
 	
@@ -342,7 +341,6 @@ function bookacti_format_booking_system_attributes( $atts = array() ) {
 	} else if( in_array( $atts[ 'group_categories' ], array( false, 'none', 'false', 'no' ), true )
 	|| ( empty( $atts[ 'group_categories' ] ) && ! is_array( $atts[ 'group_categories' ] ) ) ) { 
 		$atts[ 'group_categories' ] = false;
-	
 		
 	} else if( is_string( $atts[ 'group_categories' ] ) || is_numeric( $atts[ 'group_categories' ] ) ) {
 		$atts[ 'group_categories' ] = array_map( 'intval', explode( ',', preg_replace( array(
@@ -352,6 +350,7 @@ function bookacti_format_booking_system_attributes( $atts = array() ) {
 			'/,+$/'        // Matches trailing commas.
 		), '', 	$atts[ 'group_categories' ] ) ) );
 	}
+	if( ! is_array( $atts[ 'group_categories' ] ) ) { $atts[ 'group_categories' ] = false; }
 	
 	// Remove duplicated values
 	$atts[ 'calendars' ]	= array_unique( $atts[ 'calendars' ] );
@@ -362,20 +361,22 @@ function bookacti_format_booking_system_attributes( $atts = array() ) {
 	if( empty( $atts[ 'calendars' ] ) ) {
 		$bypass_template_managers_check = apply_filters( 'bookacti_bypass_template_managers_check', false );
 		if( ! $bypass_template_managers_check && ! is_super_admin() ) {
-			$atts[ 'calendars' ] = $available_template_ids;
+			$atts[ 'calendars' ] = ! empty( $available_template_ids ) ? $available_template_ids : array( 'none' );
 		}
 	} else { 
-		$atts[ 'calendars' ] = array_intersect( $atts[ 'calendars' ], $available_template_ids );
+		$allowed_templates = array_intersect( $atts[ 'calendars' ], $available_template_ids );
+		$atts[ 'calendars' ] = ! empty( $allowed_templates ) ? $allowed_templates : array( 'none' );
 	}
 	
 	// Check if desired activities are active and allowed according to current user role
 	$available_activity_ids = bookacti_get_activity_ids_by_template( $atts[ 'calendars' ], false, $atts[ 'check_roles' ] );
+	$had_activities = ! empty( $atts[ 'activities' ] );
 	foreach( $atts[ 'activities' ] as $i => $activity_id ) {
 		if( ! in_array( intval( $activity_id ), $available_activity_ids, true ) ) {
 			unset( $atts[ 'activities' ][ $i ] );
 		}
 	}
-	if( ! $atts[ 'activities' ] ) { $atts[ 'activities' ] = $available_activity_ids; }
+	if( ! $atts[ 'activities' ] ) { $atts[ 'activities' ] = ! $had_activities ? $available_activity_ids : array( 'none' ); }
 	
 	// Check if desired group categories exist and are allowed according to current user role
 	$available_category_ids = bookacti_get_group_category_ids_by_template( $atts[ 'calendars' ], false, $atts[ 'check_roles' ] );
@@ -383,19 +384,9 @@ function bookacti_format_booking_system_attributes( $atts = array() ) {
 		// Remove duplicated values
 		$atts[ 'group_categories' ] = array_unique( $atts[ 'group_categories' ] ); 
 		
-		foreach( $atts[ 'group_categories' ] as $i => $category_id ) {
-			$is_existing = false;
-			foreach( $available_category_ids as $available_category_id ) {
-				if( $available_category_id == intval( $category_id ) ) {
-					$is_existing = true;
-					break;
-				}
-			}
-			if( ! $is_existing ) {
-				unset( $atts[ 'group_categories' ][ $i ] );
-			}
-		}
-		if( ! $atts[ 'group_categories' ] ) { $atts[ 'group_categories' ] = $available_category_ids; }
+		// Remove unauthorized values
+		$allowed_group_categories = array_intersect( $atts[ 'group_categories' ], array_map( 'intval', $available_category_ids ) );
+		$atts[ 'group_categories' ] = ! empty( $allowed_group_categories ) ? $allowed_group_categories : false;
 	}
 	
 	// Format template data
@@ -956,15 +947,15 @@ function bookacti_validate_booking_form( $group_id, $event_id, $event_start, $ev
 	if( $min_quantity === 0 || ( $quantity + $quantity_already_booked ) >= $min_quantity )	{ $is_qty_sup_to_min = true; }
 	if( $max_quantity === 0 || $quantity <= ( $max_quantity - $quantity_already_booked ) )	{ $is_qty_inf_to_max = true; }
 	if( $max_users === 0 || $quantity_already_booked || $number_of_users < $max_users )		{ $is_users_inf_to_max = true; }
-	if( ! $allowed_roles || apply_filters( 'bookacti_bypass_roles_check', false ) )			{ $has_allowed_roles = true; }
+	if( ! $allowed_roles 
+		|| in_array( 'all', $allowed_roles, true ) 
+		|| apply_filters( 'bookacti_bypass_roles_check', false ) )							{ $has_allowed_roles = true; }
 	else { 
 		$is_allowed		= false;
 		$current_user	= wp_get_current_user();
 		
-		if( ! $current_user ) {
-			$is_allowed = in_array( 'no_role', $allowed_roles, true );
-		} else {
-			$is_allowed = ! empty( $current_user->roles ) ? array_intersect( $current_user->roles, $allowed_roles ) : in_array( 'no_role', $allowed_roles, true );
+		if( $current_user && ! empty( $current_user->roles ) ) {
+			$is_allowed = array_intersect( $current_user->roles, $allowed_roles );
 		}
 		
 		if( $is_allowed ) { $has_allowed_roles = true; }

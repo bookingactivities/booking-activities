@@ -697,7 +697,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 								echo '<option value="' . esc_attr( $role_id ) . '" >' . esc_html( $role[ 'name' ] ) . '</option>'; 
 							}
 						?>
-							<option value='no_role' ><?php esc_html_e( 'Users without roles', 'booking-activities' ); ?></option>
+							<option value='all' ><?php esc_html_e( 'Everybody', 'booking-activities' ); ?></option>
 						</select>
 					</div>
 				</div>
@@ -1067,7 +1067,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 								echo '<option value="' . esc_attr( $role_id ) . '" >' . esc_html( $role[ 'name' ] ) . '</option>'; 
 							}
 						?>
-							<option value='no_role' ><?php esc_html_e( 'Users without roles', 'booking-activities' ); ?></option>
+							<option value='all' ><?php esc_html_e( 'Everybody', 'booking-activities' ); ?></option>
 						</select>
 					</div>
 				</div>

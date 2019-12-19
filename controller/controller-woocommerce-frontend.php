@@ -146,11 +146,12 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	
 	/**
 	 * Add booking forms to single product page (front-end)
-	 * @version 1.7.11
+	 * @version 1.7.14
 	 * @global WC_Product $product
 	 */
 	function bookacti_add_booking_system_in_single_product_page() {
 		global $product;
+		if( ! $product ) { return; }
 		
 		$is_activity = bookacti_product_is_activity( $product );
 		if( ! $is_activity ) { return; }

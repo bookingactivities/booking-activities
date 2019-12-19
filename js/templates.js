@@ -8,6 +8,7 @@ $j( document ).ready( function() {
 		bookacti.selected_category	= 'new';
 		bookacti.is_dragging		= false;
 		bookacti.is_resizing		= false;
+		bookacti.is_hovering		= false;
 		bookacti.blocked_events		= false;
 		bookacti.load_events		= false;
 		
@@ -35,13 +36,15 @@ $j( document ).ready( function() {
 		bookacti.booking_system[ 'bookacti-template-calendar' ][ 'past_events' ]			= true;
 		bookacti.booking_system[ 'bookacti-template-calendar' ][ 'past_events_bookable' ]	= true;
 		
-		
-		// initialize activities and groups
+		// Initialize activities and groups
 		bookacti_init_activities();
 		bookacti_init_groups_of_events();
 
 		// Show and Hide activities
 		bookacti_init_show_hide_activities_switch();
+		
+		// Duplicate events feedbacks
+		bookacti_init_event_duplication_feedbacks();
 		
 		// DIALOGS
 		// Init the Dialogs
@@ -576,7 +579,7 @@ function bookacti_load_template_calendar( calendar ) {
 
 			if( is_alt_key_pressed ) {
 				revertFunc();
-				
+			
 			} else {
 				// Do not allow to edit a booked event
 				var origin_event = {
@@ -723,16 +726,39 @@ function bookacti_load_template_calendar( calendar ) {
 				}
 			});
 		},
-
-		// When the user drag an event
+		
+		
+		/**
+		 * When the user drag an event
+		 * @since 1.7.14
+		 * @param {object} event
+		 * @param {object} jsEvent
+		 * @param {object} ui - deprecated
+		 * @param {object} view
+		 */
 		eventDragStart: function ( event, jsEvent, ui, view ) {
 			bookacti.is_dragging = true;
+			
+			// Add a class to all events having this ID
+			var elements = $j( '.fc-event[data-event-id="' + event.id + '"]' );
+			elements.addClass( 'bookacti-event-dragged' );
 		},
 
-
-		// When the user drop an event, even if it is not on the calendar or if there is no change of date / hour
+		
+		/**
+		 * When the user drop an event, even if it is not on the calendar or if there is no change of date / hour
+		 * @since 1.7.14
+		 * @param {object} event
+		 * @param {object} jsEvent
+		 * @param {object} ui - deprecated
+		 * @param {object} view
+		 */
 		eventDragStop: function ( event, jsEvent, ui, view ) {
 			bookacti.is_dragging = false;
+			
+			// Add a class to all events having this ID
+			var elements = $j( '.fc-event[data-event-id="' + event.id + '"]' );
+			elements.removeClass( 'bookacti-event-dragged' );
 		},
 
 		// When the user resize an event
@@ -805,18 +831,36 @@ function bookacti_load_template_calendar( calendar ) {
 			calendar.trigger( 'bookacti_pick_event', [ event, jsEvent, view ] );
 		},
 		
-		// eventMouseover : When your mouse get over an event
+		
+		/**
+		 * eventMouseover : When your mouse get over an event
+		 * @version 1.7.14
+		 * @param {object} event
+		 * @param {object} jsEvent
+		 * @param {object} view
+		 */
 		eventMouseover: function( event, jsEvent, view ) { 
 			// Add the "over" class
 			var element = $j( this );
 			bookacti_show_event_actions( element );
+			
+			bookacti.is_hovering = true;
 		},
 		
-		// eventMouseover : When your mouse move out an event
+		
+		/**
+		 * eventMouseover : When your mouse move out an event
+		 * @version 1.7.14
+		 * @param {object} event
+		 * @param {object} jsEvent
+		 * @param {object} view
+		 */
 		eventMouseout: function( event, jsEvent, view ) { 
 			// Remove the "over" class
 			var element = $j( this );
 			bookacti_hide_event_actions( element, event );
+			
+			bookacti.is_hovering = false;
 		},
 		
 		

@@ -172,7 +172,7 @@ function bookacti_switch_template( selected_template_id ) {
 
 /**
  * Initialize draggable activities
- * @version 1.7.6
+ * @version 1.7.14
  */
 function bookacti_init_activities() {
     $j( '#bookacti-template-activities-container .fc-event' ).each( function() {
@@ -198,6 +198,13 @@ function bookacti_init_activities() {
 	if( bookacti.blocked_events === true ) {
 		$j( '#bookacti-template-activities-container .dashicons' ).addClass( 'bookacti-disabled' );
 		$j( '#bookacti-template-activities-container .fc-event' ).addClass( 'bookacti-event-unavailable' );
+	}
+	
+	// Set a max height
+	if( $j( '#bookacti-template-activity-list' ).outerHeight() > 200 ) {
+		$j( '#bookacti-template-activity-list' ).css( 'height', 200 );
+	} else {
+		$j( '#bookacti-template-activity-list' ).css( 'height', 'auto' );
 	}
 	
 	// Display tuto if there is no more activities available
@@ -544,7 +551,7 @@ function bookacti_refresh_selected_events_display() {
 
 
 
-// Create form link
+// CREATE FORM
 
 // Update create form link template_id
 function bookacti_update_create_form_link_template_id( new_template_id ) {
@@ -703,6 +710,7 @@ function bookacti_delete_event( event ) {
 	$j( '#bookacti-template-calendar' ).fullCalendar( 'removeEvents', event.id );
 	$j( '#bookacti-template-calendar' ).fullCalendar( 'refetchEvents' );
 }
+
 
 
 
@@ -983,7 +991,13 @@ function bookacti_maybe_display_add_group_of_events_button() {
 }
 
 
-// Expand or Collapse groups of events
+/**
+ * Expand or Collapse groups of events
+ * @version 1.7.14
+ * @param {int} category_id
+ * @param {string} force_to
+ * @param {boolean} one_by_one
+ */
 function bookacti_expand_collapse_groups_of_events( category_id, force_to, one_by_one ) {
 	one_by_one	= one_by_one ? true : false;
 	force_to	= $j.inArray( force_to, [ 'expand', 'collapse' ] ) >= 0 ? force_to : false;
@@ -992,7 +1006,9 @@ function bookacti_expand_collapse_groups_of_events( category_id, force_to, one_b
 	if( ( is_shown || force_to === 'collapse' ) && force_to !== 'expand' ) {
 		$j( '.bookacti-group-category[data-group-category-id="' + category_id + '"]' ).attr( 'data-show-groups', 0 );
 		$j( '.bookacti-group-category[data-group-category-id="' + category_id + '"]' ).data( 'show-groups', 0 );
-		$j( '.bookacti-group-category[data-group-category-id="' + category_id + '"] .bookacti-groups-of-events-editor-list' ).slideUp( 200 );
+		$j( '.bookacti-group-category[data-group-category-id="' + category_id + '"] .bookacti-groups-of-events-editor-list' ).slideUp( 200, function() {
+			bookacti_set_editor_group_of_events_max_height( category_id );
+		});
 	} else if( ( ! is_shown || force_to === 'expand' ) && force_to !== 'collapse' ) {
 		
 		// Collapse the others if one_by_one is set to true
@@ -1000,7 +1016,32 @@ function bookacti_expand_collapse_groups_of_events( category_id, force_to, one_b
 		
 		$j( '.bookacti-group-category[data-group-category-id="' + category_id + '"]' ).attr( 'data-show-groups', 1 );
 		$j( '.bookacti-group-category[data-group-category-id="' + category_id + '"]' ).data( 'show-groups', 1 );
-		$j( '.bookacti-group-category[data-group-category-id="' + category_id + '"] .bookacti-groups-of-events-editor-list' ).slideDown( 200 );
+		$j( '.bookacti-group-category[data-group-category-id="' + category_id + '"] .bookacti-groups-of-events-editor-list' ).slideDown( 200, function() {
+			bookacti_set_editor_group_of_events_max_height( category_id );
+		});
+	}
+}
+
+
+/**
+ * Set the category list max height and the events groups max height dynamically
+ * @since 1.7.14
+ * @param {int} category_id
+ */
+function bookacti_set_editor_group_of_events_max_height( category_id ) {
+	// Set a max height to the group list
+	console.log( 'outerHeight',  $j( '.bookacti-group-category[data-group-category-id="' + category_id + '"] .bookacti-groups-of-events-editor-list' ).outerHeight() );
+	if( $j( '.bookacti-group-category[data-group-category-id="' + category_id + '"] .bookacti-groups-of-events-editor-list' ).outerHeight() >= 150 ) {
+		$j( '.bookacti-group-category[data-group-category-id="' + category_id + '"] .bookacti-groups-of-events-editor-list' ).css( 'height', 150 );
+	} else {
+		$j( '.bookacti-group-category[data-group-category-id="' + category_id + '"] .bookacti-groups-of-events-editor-list' ).css( 'height', 'auto' );
+	}
+	
+	// Set a max height to the category list
+	if( $j( '#bookacti-group-categories' ).outerHeight() > 200 ) {
+		$j( '#bookacti-group-categories' ).css( 'height', 200 );
+	} else {
+		$j( '#bookacti-group-categories' ).css( 'height', 'auto' );
 	}
 }
 
@@ -1125,4 +1166,32 @@ function bookacti_hide_event_actions( element, event ) {
 	} else {
 		element.find( '.bookacti-event-action-select' ).hide();
 	}
+}
+
+
+/**
+ * Initialize visual feedbacks when an event is duplicated
+ * @since 1.7.14
+ */
+function bookacti_init_event_duplication_feedbacks() {
+	$j( document ).on( 'keydown', function( e ) {
+		if( e.altKey ) {
+			console.log( 'keydown' );
+			alt_key_down = true;
+			if( bookacti.is_hovering || bookacti.is_dragging ) {
+				console.log( 'bookacti.is_hovering || bookacti.is_dragging' );
+				$j( '#bookacti-template-container .bookacti-event-dragged, #bookacti-template-container .bookacti-event-over, #bookacti-template-container .fc-helper' ).addClass( 'bookacti-duplicate-event' );
+			}
+			e.stopPropagation();
+			e.preventDefault();
+		}
+	});
+	$j( document ).on( 'keyup', function( e ) {
+		if( e.keyCode == 18 ) {
+			console.log( 'keyup' );
+			$j( '#bookacti-template-container .bookacti-duplicate-event' ).removeClass( 'bookacti-duplicate-event' );
+			e.stopPropagation();
+			e.preventDefault();
+		}
+	});
 }

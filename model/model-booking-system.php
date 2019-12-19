@@ -1281,11 +1281,10 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		// Filter by roles
 		if( $allowed_roles_only ) {
 			$current_user = wp_get_current_user();
+			$roles = array( 'all' );
 			
-			if( ! $current_user ) {
-				$roles = array( 'no_role' );
-			} else {
-				$roles = ! empty( $current_user->roles ) ? $current_user->roles : array( 'no_role' );
+			if( $current_user && ! empty( $current_user->roles ) ) {
+				$roles = $current_user->roles;
 			}
 			
 			$query .= ' AND ( ( M.roles = "a:0:{}" OR M.roles IS NULL OR M.roles = "" ) ';
