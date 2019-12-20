@@ -846,7 +846,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	 * Change cart item quantity to make them respect the booking restrictions (min booking per user, max...)
 	 * 
 	 * @since 1.4.0
-	 * @version 1.7.8
+	 * @version 1.7.14
 	 * @global woocommerce $woocommerce
 	 * @param int $user_id
 	 * @return void|int
@@ -960,13 +960,14 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 				}
 				
 				// Check if the product has to be removed
-				if( $allowed_roles && ! apply_filters( 'bookacti_bypass_roles_check', false ) ) {
+				if( $allowed_roles && ! in_array( 'all', $allowed_roles, true ) && ! apply_filters( 'bookacti_bypass_roles_check', false ) ) {
 					$is_allowed		= false;
 					$current_user	= $user_id ? get_user_by( 'id', $user_id ) : wp_get_current_user();
-					if( $current_user ) {
-						$roles			= $current_user->roles;
-						$is_allowed		= array_intersect( $roles, $allowed_roles );
+					
+					if( $current_user && ! empty( $current_user->roles ) ) {
+						$is_allowed = array_intersect( $current_user->roles, $allowed_roles );
 					}
+					
 					if( ! $is_allowed ) { 
 						$restricted_quantity = 0;
 						$message = '';

@@ -244,6 +244,87 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 
 
+// ADD-ONS
+
+	/**
+	 * Get the active Booking Activities add-ons
+	 * @since 1.7.14
+	 */
+	function bookacti_get_active_add_ons() {
+		$add_ons_data = bookacti_get_add_ons_data();
+		
+		$active_add_ons = array();
+		foreach( $add_ons_data as $prefix => $add_on_data ) {
+			$add_on_path = $add_on_data[ 'plugin_name' ] . '/' . $add_on_data[ 'plugin_name' ] . '.php';
+			if( bookacti_is_plugin_active( $add_on_path ) ) {
+				$active_add_ons[ $prefix ] = $add_on_data;
+			}
+		}
+		
+		return $active_add_ons;
+	}
+	
+	
+	/**
+	 * Get add-on data by prefix
+	 * @since 1.7.14
+	 * @param string $prefix
+	 * @return string|array
+	 */
+	function bookacti_get_add_ons_data( $prefix = '' ) {
+		$addons_data = array( 
+			'badp'	=> array( 
+				'title'			=> 'Display Pack', 
+				'slug'			=> 'display-pack', 
+				'plugin_name'	=> 'ba-display-pack', 
+				'download_id'	=> 482
+			),
+			'banp'	=> array( 
+				'title'			=> 'Notification Pack', 
+				'slug'			=> 'notification-pack', 
+				'plugin_name'	=> 'ba-notification-pack', 
+				'download_id'	=> 1393
+			),
+			'bapap' => array( 
+				'title'			=> 'Prices and Credits', 
+				'slug'			=> 'prices-and-credits', 
+				'plugin_name'	=> 'ba-prices-and-credits', 
+				'download_id'	=> 438
+			),
+			'baaf' => array( 
+				'title'			=> 'Advanced Forms', 
+				'slug'			=> 'advanced-forms', 
+				'plugin_name'	=> 'ba-advanced-forms', 
+				'download_id'	=> 2705
+			),
+			'baofc'	=> array( 
+				'title'			=> 'Order for Customers', 
+				'slug'			=> 'order-for-customers', 
+				'plugin_name'	=> 'ba-order-for-customers', 
+				'download_id'	=> 436
+			),
+			'bapos' => array( 
+				'title'			=> 'Points of Sale', 
+				'slug'			=> 'points-of-sale', 
+				'plugin_name'	=> 'ba-points-of-sale', 
+				'download_id'	=> 416
+			),
+			'batest' => array( 
+				'title'			=> 'Test add-on', 
+				'slug'			=> 'test', 
+				'plugin_name'	=> 'ba-test', 
+				'download_id'	=> 3011
+			)
+		);
+
+		if( ! $prefix ) { return $addons_data; }
+
+		return isset( $addons_data[ $prefix ] ) ? $addons_data[ $prefix ] : '';
+	}
+
+
+
+
 // LOCALE
 
 	/**

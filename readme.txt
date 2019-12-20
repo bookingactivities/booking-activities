@@ -5,7 +5,7 @@ Tags: booking, reservation, booking form, woocommerce booking, booking events
 Requires at least: 3.6
 Tested up to: 5.3
 Requires PHP: 5.3
-Stable tag: 1.7.13
+Stable tag: 1.7.14
 License: GPLv3 or later
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
 
@@ -318,6 +318,18 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 
 
 == Changelog ==
+
+= 1.7.14 - 2019/12/20 =
+* Tweak - Add customizable messages in settings: avail. and Selected Events
+* Tweak - Add an option in permission selectboxes to permit misunderstanding errors (reminder: allow everybody = do not select any roles)
+* Tweak - Display a notice when the WC product / variation price is empty to inform that the booking form won't appear
+* Tweak - Display the Licenses tab in settings and instructions for new customers
+* Tweak - Administrators now have the same restrictions as users while performing a booking action from the frontend
+* Tweak - Improve visual feedback when duplicating an event
+* Tweak - Allow to resize the activities and the groups of events areas in calendar editor
+* Fix - Error when deleting a product bound to an activity in the booking form calendar actions settings
+* Fix - No longer display events from all calendars, activities and group categories if none are allowed
+* Fix - Add-ons activity and group category settings were not saved
 
 = 1.7.13 - 2019/12/13 =
 * Tweak - Changed export URLs to avoid 404 errors

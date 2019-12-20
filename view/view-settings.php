@@ -1,7 +1,7 @@
 <?php
 /**
  * Booking Activities settings page
- * @version 1.7.6
+ * @version 1.7.14
  */
 
 // Exit if accessed directly
@@ -27,7 +27,8 @@ echo "<div class='wrap'>";
 		'cancellation'	=> esc_html__( 'Cancellation', 'booking-activities' ),
 		'notifications'	=> esc_html__( 'Notifications', 'booking-activities' ),
 		'messages'		=> esc_html__( 'Messages', 'booking-activities' ),
-		'system'		=> esc_html__( 'System', 'booking-activities' )
+		'system'		=> esc_html__( 'System', 'booking-activities' ),
+		'licenses'		=> esc_html__( 'Licenses', 'booking-activities' )
 	) );
 
 	// Display the tabs
@@ -92,6 +93,12 @@ echo "<div class='wrap'>";
 			
 			do_action( 'bookacti_system_settings' );
 
+		} else if( $active_tab === 'licenses' ) {
+			
+			settings_fields( 'bookacti_licenses_settings' );
+			do_settings_sections( 'bookacti_licenses_settings' ); 
+			
+			do_action( 'bookacti_licenses_settings' );
 		}
 		
 		do_action( 'bookacti_settings_tab_content', $active_tab );

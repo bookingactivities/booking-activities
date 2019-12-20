@@ -893,7 +893,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 	/**
 	 * Add custom variation product type option
-	 * @version 1.5.0
+	 * @version 1.7.14
 	 * @param int $loop
 	 * @param array $variation_data
 	 * @param WP_Post $variation
@@ -904,7 +904,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			<input type='hidden' name='bookacti_variable_is_activity[<?php echo $loop; ?>]' value='no' />
 			<input 
 				type='checkbox' 
-				id='bookacti_variable_is_activity[<?php echo esc_attr( $loop ); ?>]' 
+				id='bookacti_variable_is_activity_<?php echo esc_attr( $loop ); ?>' 
 				class='checkbox bookacti_variable_is_activity' 
 				name='bookacti_variable_is_activity[<?php echo esc_attr( $loop ); ?>]' 
 				value='yes'

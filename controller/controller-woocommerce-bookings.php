@@ -779,31 +779,33 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	
 	/**
 	 * Filter refund actions by booking
-	 * @version 1.6.0
+	 * @version 1.7.14
 	 * @param array $possible_actions
 	 * @param int|object $booking
+	 * @param string $context
 	 * @return array
 	 */
-	function bookacti_filter_refund_actions_by_booking( $possible_actions, $booking ) {
+	function bookacti_filter_refund_actions_by_booking( $possible_actions, $booking, $context = '' ) {
 		$order_id = is_numeric( $booking ) ? bookacti_get_booking_order_id( $booking ) : $booking->order_id;
 		return bookacti_filter_refund_actions_by_order( $possible_actions, $order_id );
 	}
-	add_filter( 'bookacti_refund_actions_by_booking', 'bookacti_filter_refund_actions_by_booking', 10, 2 );
+	add_filter( 'bookacti_refund_actions_by_booking', 'bookacti_filter_refund_actions_by_booking', 10, 3 );
 	
 	
 	/**
 	 * Filter refund actions by booking group
 	 * @since 1.1.0
-	 * @version 1.6.0
+	 * @version 1.7.14
 	 * @param array $possible_actions
 	 * @param int|object $booking_group
+	 * @param string $context
 	 * @return array
 	 */
-	function bookacti_filter_refund_actions_by_booking_group( $possible_actions, $booking_group ) {
+	function bookacti_filter_refund_actions_by_booking_group( $possible_actions, $booking_group, $context = '' ) {
 		$order_id = is_numeric( $booking_group ) ? bookacti_get_booking_group_order_id( $booking_group ) : $booking_group->order_id;
 		return bookacti_filter_refund_actions_by_order( $possible_actions, $order_id );
 	}
-	add_filter( 'bookacti_refund_actions_by_booking_group', 'bookacti_filter_refund_actions_by_booking_group', 10, 2 );
+	add_filter( 'bookacti_refund_actions_by_booking_group', 'bookacti_filter_refund_actions_by_booking_group', 10, 3 );
 	
 	
 	/**
@@ -961,23 +963,22 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	
 	/**
 	 * Trigger WooCommerce refund process according to the refund action
-	 * 
-	 * @version 1.1.0
-	 * 
+	 * @version 1.7.14
 	 * @param array $return_array
 	 * @param int $booking_id
 	 * @param string $refund_action
 	 * @param string $refund_message
+	 * @param string $context
 	 * @return array
 	 */
-	function bookacti_woocommerce_refund_booking( $return_array, $booking_id, $booking_type, $refund_action, $refund_message ) {
+	function bookacti_woocommerce_refund_booking( $return_array, $booking_id, $booking_type, $refund_action, $refund_message, $context = '' ) {
 		
 		if( $booking_type === 'single' ) {
 			$order_id = bookacti_get_booking_order_id( $booking_id );
-			$possibles_actions = array_keys( bookacti_get_refund_actions_by_booking_id( $booking_id ) );
+			$possibles_actions = array_keys( bookacti_get_refund_actions_by_booking_id( $booking_id, $context ) );
 		} else if( $booking_type === 'group' ) {
 			$order_id = bookacti_get_booking_group_order_id( $booking_id );
-			$possibles_actions = array_keys( bookacti_get_refund_actions_by_booking_group_id( $booking_id ) );
+			$possibles_actions = array_keys( bookacti_get_refund_actions_by_booking_group_id( $booking_id, $context ) );
 		}
 		
 		if( in_array( $refund_action, $possibles_actions, true ) ) {
@@ -990,7 +991,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		
 		return $return_array;
 	}
-	add_filter( 'bookacti_refund_booking', 'bookacti_woocommerce_refund_booking', 10 , 5 );
+	add_filter( 'bookacti_refund_booking', 'bookacti_woocommerce_refund_booking', 10, 6 );
 	
 	
 	/**

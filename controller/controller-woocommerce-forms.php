@@ -92,6 +92,7 @@ add_filter( 'bookacti_sanitized_field_data', 'bookacti_form_editor_wc_field_titl
 /**
  * Format WC booking system attributes
  * @since 1.7.0
+ * @version 1.7.14
  * @param array $atts
  * @return array
  */
@@ -121,6 +122,7 @@ function bookacti_format_wc_booking_system_attributes( $atts ) {
 		$products_ids = array_unique( array_merge( $product_by_activity, $product_by_group_category ) );
 		foreach( $products_ids as $product_id ) {
 			$product = wc_get_product( $product_id );
+			if( ! $product ) { continue; }
 			$atts[ 'products_page_url' ][ $product_id ] = $product->get_permalink();
 		}
 	}

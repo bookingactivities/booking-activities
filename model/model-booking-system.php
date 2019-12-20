@@ -1237,7 +1237,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	 * Retrieve group category ids by template ids
 	 * 
 	 * @since 1.1.0
-	 * @version 1.7.0
+	 * @version 1.7.14
 	 * @global wpdb $wpdb
 	 * @param array|int $template_ids
 	 * @param boolean $fetch_inactive
@@ -1280,8 +1280,12 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		
 		// Filter by roles
 		if( $allowed_roles_only ) {
-			$current_user	= wp_get_current_user();
-			$roles			= $current_user->roles;
+			$current_user = wp_get_current_user();
+			$roles = array( 'all' );
+			
+			if( $current_user && ! empty( $current_user->roles ) ) {
+				$roles = $current_user->roles;
+			}
 			
 			$query .= ' AND ( ( M.roles = "a:0:{}" OR M.roles IS NULL OR M.roles = "" ) ';
 			if( $roles ) {

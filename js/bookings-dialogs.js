@@ -184,7 +184,7 @@ function bookacti_dialog_cancel_booking( booking_id, booking_type ) {
 
 /**
  * Refund a cancelled booking
- * @version 1.7.4
+ * @version 1.7.14
  * @param {int} booking_id
  * @param {string} booking_type
  */
@@ -203,6 +203,7 @@ function bookacti_dialog_refund_booking( booking_id, booking_type ) {
 		type: 'POST',
 		data: { 'action': action_html, 
 				'booking_id': booking_id,
+				'is_admin': bookacti_localized.is_admin ? 1 : 0,
 				'nonce': bookacti_localized.nonce_get_refund_actions_html
 			},
 		dataType: 'json',
@@ -284,7 +285,7 @@ function bookacti_dialog_refund_booking( booking_id, booking_type ) {
 								'refund_action': refund_action,
 								'refund_message': refund_message,
 								'reload_grouped_bookings': reload_grouped_bookings,
-								'is_admin': bookacti_localized.is_admin,
+								'is_admin': bookacti_localized.is_admin ? 1 : 0,
 								'context': bookacti_localized.is_admin ? 'admin_booking_list' : 'user_booking_list',
 								'columns': columns,
 								'nonce': nonce

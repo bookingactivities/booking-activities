@@ -141,6 +141,70 @@ $j( document ).ready( function() {
 		if( has_wc_order ) { $j( '.bookacti-delete-wc-order-item-container' ).show(); } 
 		else { $j( '.bookacti-delete-wc-order-item-container' ).hide(); }
 	});
+	
+	
+	
+	
+	// Empty price notice
+	
+	/**
+	 * Show or hide a notice if the price is empty when changing the product price
+	 * @since 1.7.14
+	 */
+	$j( '#woocommerce-product-data' ).on( 'keyup mouseup change', '#_regular_price', function( e ) {
+		bookacti_show_hide_empty_price_notice();
+	});
+	
+	/**
+	 * Show or hide a notice if the price is empty when changing the variation price
+	 * @since 1.7.14
+	 */
+	$j( '#woocommerce-product-data' ).on( 'keyup mouseup change', '.woocommerce_variation .wc_input_price[id^="variable_regular_price_"]', function( e ) {
+		var variation_menu_order = $j( this ).closest( '.woocommerce_variation' ).find( '.variation_menu_order' ).length ? $j( this ).closest( '.woocommerce_variation' ).find( '.variation_menu_order' ).val() : 0;
+		bookacti_show_hide_empty_price_notice( variation_menu_order );
+	});
+	
+	/**
+	 * Show or hide a notice if the price is empty when changing product type
+	 * @since 1.7.14
+	 */
+	$j( '#woocommerce-product-data' ).on( 'change', '#product-type', function( e ) {
+		bookacti_show_hide_empty_price_notice();
+	});
+	
+	/**
+	 * Show or hide a notice if the price is empty when the product is flagged as "Activity"
+	 * @since 1.7.14
+	 */
+	$j( '#woocommerce-product-data' ).on( 'change', '#_bookacti_is_activity', function( e ) {
+		bookacti_show_hide_empty_price_notice();
+	});
+	
+	/**
+	 * Show or hide a notice if the price is empty when the variation is flagged as "Activity"
+	 * @since 1.7.14
+	 */
+	$j( '#woocommerce-product-data' ).on( 'change', '.woocommerce_variation .bookacti_variable_is_activity', function( e ) {
+		var variation_menu_order = $j( this ).closest( '.woocommerce_variation' ).find( '.variation_menu_order' ).length ? $j( this ).closest( '.woocommerce_variation' ).find( '.variation_menu_order' ).val() : 0;
+		bookacti_show_hide_empty_price_notice( variation_menu_order );
+	});
+	
+	/**
+	 * Show or hide a notice if the price is empty when the product edit page is loaded
+	 * @since 1.7.14
+	 */
+	bookacti_show_hide_empty_price_notice();
+	
+	/**
+	 * Show or hide a notice if the price is empty when the variations are loaded
+	 * @since 1.7.14
+	 */
+	$j( '#woocommerce-product-data' ).on( 'woocommerce_variations_loaded', function() {
+		$j( '#woocommerce-product-data .woocommerce_variation' ).each( function() {
+			var variation_menu_order = $j( this ).find( '.variation_menu_order' ).length ? $j( this ).find( '.variation_menu_order' ).val() : 0;
+			bookacti_show_hide_empty_price_notice( variation_menu_order );
+		});
+	});
 });
 
 
@@ -200,6 +264,34 @@ function bookacti_show_hide_activity_variation_fields( checkbox ) {
 			
 		} else {
 			$j( checkbox ).parents( '.woocommerce_variation' ).find( '.show_if_variation_activity' ).hide();
+		}
+	}
+}
+
+/**
+ * Show or hide a notice when the product price is not set
+ * @since 1.7.14
+ * @param {int} variation_menu_order
+ */
+function bookacti_show_hide_empty_price_notice( variation_menu_order ) {
+	variation_menu_order = parseInt( variation_menu_order ) || 'product';
+	
+	// Remove notices
+	$j( '#woocommerce-product-data .bookacti-empty-product-price-notice' ).remove();
+	
+	var notice_div = '<div class="bookacti-empty-product-price-notice">' + 'You must set a price for your product, otherwise the booking form won’t appear on the product page.' + '</div>';
+	
+	// Display notice if the price is empty and if the product / variation is an activity
+	if( variation_menu_order === 'product' ) {
+		var product_price = $j.isNumeric( $j( '#_regular_price' ).val() ) ? parseFloat( $j( '#_regular_price' ).val() ) : '';
+		if( ! product_price && product_price !== 0 && product_price !== '0' && $j( '#_bookacti_is_activity' ).is( ':checked' ) ) {
+			$j( '#_regular_price, #_bookacti_form' ).after( notice_div );
+		}
+	} else if( variation_menu_order ) {
+		var var_nb = variation_menu_order - 1;
+		var variation_price = $j.isNumeric( $j( '#variable_regular_price_' + var_nb ).val() ) ? parseFloat( $j( '#variable_regular_price_' + var_nb ).val() ) : '';
+		if( ! variation_price && variation_price !== 0 && variation_price !== '0' && $j( '#bookacti_variable_is_activity_' + var_nb ).is( ':checked' ) ) {
+			$j( '#variable_regular_price_' + var_nb + ', #bookacti_variable_form_' + var_nb ).after( notice_div );
 		}
 	}
 }

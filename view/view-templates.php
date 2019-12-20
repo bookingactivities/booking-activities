@@ -1,7 +1,7 @@
 <?php
 /**
  * Calendar editor page
- * @version 1.7.12
+ * @version 1.7.14
  */
 
 // Exit if accessed directly
@@ -160,7 +160,7 @@ $default_template = false;
 			<ul>
 				<li>
 					<strong><?php echo esc_html__( 'Duplicate an event:', 'booking-activities' ); ?></strong>
-					<em><?php esc_html_e( 'Alt + Drop', 'booking-activities' ); ?></em>
+					<em><?php esc_html_e( 'Hold the "Alt" key while moving the event', 'booking-activities' ); ?></em>
 				</li>
 				<li>
 					<strong><?php esc_html_e( 'Group events:', 'booking-activities' ); ?></strong>

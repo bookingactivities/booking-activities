@@ -9,7 +9,10 @@ $can_edit_bookings = current_user_can( 'bookacti_edit_bookings' );
 
 $messages = bookacti_get_messages();
 
-// Fill the translation array to use it in js 
+/**
+ * Fill the translation array to use it in js 
+ * @version 1.7.14
+ */
 $bookacti_translation_array = apply_filters( 'bookacti_translation_array', array(
 
 	// DIALOGS
@@ -198,10 +201,8 @@ $bookacti_translation_array = apply_filters( 'bookacti_translation_array', array
 	'refunded'							=> esc_html__( 'Refunded', 'booking-activities' ),
 	'refund_requested'					=> esc_html__( 'Refund requested', 'booking-activities' ),
 	'coupon_code'						=> esc_html__( 'Coupon code', 'booking-activities' ),
-	/* translators: This particle is used right after the quantity of available bookings. Put the singular here. Ex: 1 avail. . */
-	'avail'								=> esc_html_x( 'avail.', 'Short for availability [singular noun]', 'booking-activities' ),
-	/* translators: This particle is used right after the quantity of available bookings. Put the plural here. Ex: 2 avail. . */
-	'avails'							=> esc_html_x( 'avail.', 'Short for availabilities [plural noun]', 'booking-activities' ),
+	'avail'								=> apply_filters( 'bookacti_translate_text', $messages[ 'avail' ][ 'value' ] ),
+	'avails'							=> apply_filters( 'bookacti_translate_text', $messages[ 'avails' ][ 'value' ] ),
 	/* translators: This particle is used right after the quantity of bookings. Put the singular here. Ex: 1 booking . */
 	'booking'							=> esc_html__( 'booking', 'booking-activities' ),
 	/* translators: This particle is used right after the quantity of bookings. Put the plural here. Ex: 2 bookings . . */
@@ -218,8 +219,8 @@ $bookacti_translation_array = apply_filters( 'bookacti_translation_array', array
 	'create_first_activity'				=> esc_html__( 'Create your first activity', 'booking-activities' ),
 	/* translators: When the user is asked whether to pick the single event or the whole group it is part of */
 	'single_event'						=> esc_html__( 'Single event', 'booking-activities' ),
-	'selected_event'					=> esc_html__( 'Selected event', 'booking-activities' ),
-	'selected_events'					=> esc_html__( 'Selected events', 'booking-activities' ),
+	'selected_event'					=> apply_filters( 'bookacti_translate_text', $messages[ 'selected_event' ][ 'value' ] ),
+	'selected_events'					=> apply_filters( 'bookacti_translate_text', $messages[ 'selected_events' ][ 'value' ] ),
 
 
 	// VARIABLES
