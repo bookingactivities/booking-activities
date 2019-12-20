@@ -1030,7 +1030,6 @@ function bookacti_expand_collapse_groups_of_events( category_id, force_to, one_b
  */
 function bookacti_set_editor_group_of_events_max_height( category_id ) {
 	// Set a max height to the group list
-	console.log( 'outerHeight',  $j( '.bookacti-group-category[data-group-category-id="' + category_id + '"] .bookacti-groups-of-events-editor-list' ).outerHeight() );
 	if( $j( '.bookacti-group-category[data-group-category-id="' + category_id + '"] .bookacti-groups-of-events-editor-list' ).outerHeight() >= 150 ) {
 		$j( '.bookacti-group-category[data-group-category-id="' + category_id + '"] .bookacti-groups-of-events-editor-list' ).css( 'height', 150 );
 	} else {

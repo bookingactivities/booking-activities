@@ -329,6 +329,7 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 * Tweak - Allow to resize the activities and the groups of events areas in calendar editor
 * Fix - Error when deleting a product bound to an activity in the booking form calendar actions settings
 * Fix - No longer display events from all calendars, activities and group categories if none are allowed
+* Fix - Add-ons activity and group category settings were not saved
 
 = 1.7.13 - 2019/12/13 =
 * Tweak - Changed export URLs to avoid 404 errors
