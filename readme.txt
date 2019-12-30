@@ -319,6 +319,11 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 
 == Changelog ==
 
+= 1.7.15 =
+* Tweak - Display IDs in calendar and form editor dialogs (useful for CSS)
+* Tweak - Do not take into account the form action for calendars automatically displayed on WC product pages
+* Fix - Activities may not be saved / displayed if roles were set in permission tab
+
 = 1.7.14 - 2019/12/20 =
 * Tweak - Add customizable messages in settings: avail. and Selected Events
 * Tweak - Add an option in permission selectboxes to permit misunderstanding errors (reminder: allow everybody = do not select any roles)

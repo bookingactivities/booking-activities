@@ -1171,14 +1171,13 @@ function bookacti_hide_event_actions( element, event ) {
 /**
  * Initialize visual feedbacks when an event is duplicated
  * @since 1.7.14
+ * @version 1.7.15
  */
 function bookacti_init_event_duplication_feedbacks() {
 	$j( document ).on( 'keydown', function( e ) {
 		if( e.altKey ) {
-			console.log( 'keydown' );
 			alt_key_down = true;
 			if( bookacti.is_hovering || bookacti.is_dragging ) {
-				console.log( 'bookacti.is_hovering || bookacti.is_dragging' );
 				$j( '#bookacti-template-container .bookacti-event-dragged, #bookacti-template-container .bookacti-event-over, #bookacti-template-container .fc-helper' ).addClass( 'bookacti-duplicate-event' );
 			}
 			e.stopPropagation();
@@ -1187,7 +1186,6 @@ function bookacti_init_event_duplication_feedbacks() {
 	});
 	$j( document ).on( 'keyup', function( e ) {
 		if( e.keyCode == 18 ) {
-			console.log( 'keyup' );
 			$j( '#bookacti-template-container .bookacti-duplicate-event' ).removeClass( 'bookacti-duplicate-event' );
 			e.stopPropagation();
 			e.preventDefault();

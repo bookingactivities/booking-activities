@@ -1668,7 +1668,7 @@ function bookacti_get_user_booking_list_default_columns() {
 /**
  * Get booking list items
  * @since 1.7.4
- * @version 1.7.9
+ * @version 1.7.15
  * @param array $filters
  * @param array $columns
  * @return string
@@ -1797,7 +1797,7 @@ function bookacti_get_user_booking_list_items( $filters, $columns = array() ) {
 		} else if( $user_id === $unknown_user_id || is_email( $user_id ) ) {
 			$user		= null;
 			$customer	= ! empty( $user_id ) ? $user_id : '';
-			$booking_meta = $group && $this->filters[ 'group_by' ] !== 'booking_group' ? $group : $booking;
+			$booking_meta = $group && $filters[ 'group_by' ] !== 'booking_group' ? $group : $booking;
 			if( ! empty( $booking_meta->user_first_name ) || ! empty( $booking_meta->user_last_name ) ) {
 				$customer = ! empty( $booking_meta->user_first_name ) ? $booking_meta->user_first_name . ' ' : '';
 				$customer .= ! empty( $booking_meta->user_last_name ) ? $booking_meta->user_last_name . ' ' : '';

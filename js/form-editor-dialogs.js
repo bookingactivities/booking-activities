@@ -47,11 +47,16 @@ function bookacti_init_form_editor_actions() {
 /**
  * Update Form Meta
  * @since 1.5.0
- * @version 1.7.5
+ * @version 1.7.15
  */
 function bookacti_dialog_update_form_meta() {
-	
 	var form_id	= $j( '#bookacti-form-id' ).val();
+	
+	// Set the dialog title
+	var dialog_title_raw = $j.trim( $j( '#bookacti-form-meta-dialog' ).dialog( 'option', 'title' ).replace( /\(.*?\)/, '' ) );
+	$j( '#bookacti-form-meta-dialog' ).dialog({ 
+		title: dialog_title_raw + ' (' + bookacti_localized.edit_id + ': ' + form_id + ')'
+	});
 	
 	// Fill field id
 	$j( 'form#bookacti-update-form-meta-form input[name="action"]' ).val( 'bookactiUpdateFormMeta' );
@@ -219,10 +224,16 @@ function bookacti_dialog_insert_form_field() {
 /**
  * Remove form field
  * @since 1.5.0
+ * @version 1.7.15
  * @param {int} field_id
  * @param {string} field_name
  */
 function bookacti_dialog_remove_form_field( field_id, field_name ) {
+	// Set the dialog title
+	var dialog_title_raw = $j.trim( $j( '#bookacti-remove-form-field-dialog' ).dialog( 'option', 'title' ).replace( /\(.*?\)/, '' ) );
+	$j( '#bookacti-remove-form-field-dialog' ).dialog({ 
+		title: dialog_title_raw + ' (' + bookacti_localized.edit_id + ': ' + field_id + ')'
+	});
 	
 	// Open the modal dialog
     $j( '#bookacti-remove-form-field-dialog' ).dialog( 'open' );
@@ -293,11 +304,21 @@ function bookacti_dialog_remove_form_field( field_id, field_name ) {
 /**
  * Update Form Field
  * @since 1.5.0
- * @version 1.7.5
+ * @version 1.7.15
  * @param {int} field_id
  * @param {string} field_name
  */
 function bookacti_dialog_update_form_field( field_id, field_name ) {
+	// Set the dialog title
+	if( $j( '#bookacti-form-field-dialog-' + field_name ).length ) {
+		var dialog_title_current = $j( '#bookacti-form-field-dialog-' + field_name ).dialog( 'option', 'title' );
+		var dialog_title_raw = $j.type( dialog_title_current ) === 'string' ? $j.trim( dialog_title_current.replace( /\(.*?\)/, '' ) ) : '';
+		if( dialog_title_raw ) {
+			$j( '#bookacti-form-field-dialog-' + field_name ).dialog({ 
+				title: dialog_title_raw + ' (' + bookacti_localized.edit_id + ': ' + field_id + ')'
+			});
+		}
+	}
 	
 	// Fill field id
 	$j( 'form#bookacti-form-field-form-' + field_name + ' input[name="action"]' ).val( 'bookactiUpdateFormField' );

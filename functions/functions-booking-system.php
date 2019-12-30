@@ -296,9 +296,9 @@ function bookacti_get_booking_system_default_attributes() {
 
 /**
  * Check booking system attributes and format them to be correct
- * @version 1.7.14
+ * @version 1.7.15
  * @param array $atts 
- * @return type
+ * @return array
  */
 function bookacti_format_booking_system_attributes( $atts = array() ) {
 	// Set default value
@@ -351,10 +351,11 @@ function bookacti_format_booking_system_attributes( $atts = array() ) {
 		), '', 	$atts[ 'group_categories' ] ) ) );
 	}
 	if( ! is_array( $atts[ 'group_categories' ] ) ) { $atts[ 'group_categories' ] = false; }
+	else { $atts[ 'group_categories' ]	= array_values( array_unique( $atts[ 'group_categories' ] ) ); }
 	
 	// Remove duplicated values
-	$atts[ 'calendars' ]	= array_unique( $atts[ 'calendars' ] );
-	$atts[ 'activities' ]	= array_unique( $atts[ 'activities' ] );
+	$atts[ 'calendars' ]	= array_values( array_unique( $atts[ 'calendars' ] ) );
+	$atts[ 'activities' ]	= array_values( array_unique( $atts[ 'activities' ] ) );
 	
 	// Check if the desired templates are active and allowed
 	$available_template_ids = array_keys( bookacti_fetch_templates( array(), true ) );
@@ -364,7 +365,7 @@ function bookacti_format_booking_system_attributes( $atts = array() ) {
 			$atts[ 'calendars' ] = ! empty( $available_template_ids ) ? $available_template_ids : array( 'none' );
 		}
 	} else { 
-		$allowed_templates = array_intersect( $atts[ 'calendars' ], $available_template_ids );
+		$allowed_templates = array_values( array_intersect( $atts[ 'calendars' ], $available_template_ids ) );
 		$atts[ 'calendars' ] = ! empty( $allowed_templates ) ? $allowed_templates : array( 'none' );
 	}
 	
@@ -377,6 +378,7 @@ function bookacti_format_booking_system_attributes( $atts = array() ) {
 		}
 	}
 	if( ! $atts[ 'activities' ] ) { $atts[ 'activities' ] = ! $had_activities ? $available_activity_ids : array( 'none' ); }
+	else { $atts[ 'activities' ] = array_values( $atts[ 'activities' ] ); }
 	
 	// Check if desired group categories exist and are allowed according to current user role
 	$available_category_ids = bookacti_get_group_category_ids_by_template( $atts[ 'calendars' ], false, $atts[ 'check_roles' ] );
@@ -385,7 +387,7 @@ function bookacti_format_booking_system_attributes( $atts = array() ) {
 		$atts[ 'group_categories' ] = array_unique( $atts[ 'group_categories' ] ); 
 		
 		// Remove unauthorized values
-		$allowed_group_categories = array_intersect( $atts[ 'group_categories' ], array_map( 'intval', $available_category_ids ) );
+		$allowed_group_categories = array_values( array_intersect( $atts[ 'group_categories' ], array_map( 'intval', $available_category_ids ) ) );
 		$atts[ 'group_categories' ] = ! empty( $allowed_group_categories ) ? $allowed_group_categories : false;
 	}
 	

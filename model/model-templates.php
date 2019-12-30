@@ -1801,7 +1801,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 // ACTIVITIES
 	/**
 	 * Get activities
-	 * @version 1.7.14
+	 * @version 1.7.15
 	 * @global wpdb $wpdb
 	 * @param boolean $allowed_roles_only
 	 * @param OBJECT|ARRAY_A $return_type
@@ -1829,7 +1829,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			$current_user = wp_get_current_user();
 			$roles = array( 'all' );
 			
-			if( ! $current_user && ! empty( $current_user->roles ) ) {
+			if( $current_user && ! empty( $current_user->roles ) ) {
 				$roles = $current_user->roles;
 			}
 			
@@ -2214,7 +2214,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	/**
 	 * Get an array of all activity ids bound to designated templates
 	 * @since 1.1.0
-	 * @version 1.7.14
+	 * @version 1.7.15
 	 * @global wpdb $wpdb
 	 * @param array $template_ids
 	 * @param boolean $based_on_events Whether to retrieve activity ids bound to templates or activity ids bound to events of templates
@@ -2222,7 +2222,6 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	 * @return array
 	 */
 	function bookacti_get_activity_ids_by_template( $template_ids = array(), $based_on_events = false, $allowed_roles_only = false ) {
-		
 		global $wpdb;
 		
 		// Convert numeric to array
@@ -2260,7 +2259,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			$current_user = wp_get_current_user();
 			$roles = array( 'all' );
 			
-			if( ! $current_user && ! empty( $current_user->roles ) ) {
+			if( $current_user && ! empty( $current_user->roles ) ) {
 				$roles = $current_user->roles;
 			}
 			

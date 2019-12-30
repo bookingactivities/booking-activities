@@ -1,7 +1,7 @@
 <?php 
 /**
  * Calendar editor dialogs
- * @version 1.7.14
+ * @version 1.7.15
  */
 
 // Exit if accessed directly
@@ -45,22 +45,22 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 ?>
 
 <!-- Delete event -->
-<div id='bookacti-delete-event-dialog' class='bookacti-backend-dialog bookacti-template-dialogs' style='display:none;' >
+<div id='bookacti-delete-event-dialog' class='bookacti-backend-dialog bookacti-template-dialogs' title='<?php esc_html_e( 'Delete event', 'booking-activities' ); ?>' style='display:none;' >
     <div><?php esc_html_e( 'Are you sure to delete this event permanently?', 'booking-activities' ); ?></div>
 </div>
 
 <!-- Delete booked event -->
-<div id='bookacti-delete-booked-event-dialog' class='bookacti-backend-dialog bookacti-template-dialogs' style='display:none;' >
+<div id='bookacti-delete-booked-event-dialog' class='bookacti-backend-dialog bookacti-template-dialogs' title='<?php esc_html_e( 'Delete booked event', 'booking-activities' ); ?>' style='display:none;' >
     <div><?php esc_html_e( 'This event is booked. Do you still want to delete it?', 'booking-activities' ); ?></div>
 </div>
 
 <!-- Delete template -->
-<div id='bookacti-delete-template-dialog' class='bookacti-backend-dialog bookacti-template-dialogs' style='display:none;' >
+<div id='bookacti-delete-template-dialog' class='bookacti-backend-dialog bookacti-template-dialogs' title='<?php esc_html_e( 'Delete calendar', 'booking-activities' ); ?>' style='display:none;' >
     <div><?php esc_html_e( 'Are you sure to delete this calendar?', 'booking-activities' ); ?></div>
 </div>
 
 <!-- Delete activity -->
-<div id='bookacti-delete-activity-dialog' class='bookacti-backend-dialog bookacti-template-dialogs' style='display:none;' >
+<div id='bookacti-delete-activity-dialog' class='bookacti-backend-dialog bookacti-template-dialogs' title='<?php esc_html_e( 'Delete activity', 'booking-activities' ); ?>' style='display:none;' >
 	<div>
 		<?php esc_html_e( 'Are you sure to delete this activity permanently?', 'booking-activities' ); ?><br/>
 		<em><?php esc_html_e( 'You won\'t be able to place new events from this activity anymore.', 'booking-activities' ); ?></em>
@@ -72,19 +72,19 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 </div>
 
 <!-- Delete group of events -->
-<div id='bookacti-delete-group-of-events-dialog' class='bookacti-backend-dialog bookacti-template-dialogs' style='display:none;' >
+<div id='bookacti-delete-group-of-events-dialog' class='bookacti-backend-dialog bookacti-template-dialogs' title='<?php esc_html_e( 'Delete a group of events', 'booking-activities' ); ?>' style='display:none;' >
     <div><p><?php esc_html_e( 'Are you sure to delete this group of events permanently?', 'booking-activities' ); ?></p></div>
     <div><p><em><?php esc_html_e( 'Events will NOT be deleted.', 'booking-activities' ); ?></em></p></div>
 </div>
 
 <!-- Delete group category -->
-<div id='bookacti-delete-group-category-dialog' class='bookacti-backend-dialog bookacti-template-dialogs' style='display:none;' >
+<div id='bookacti-delete-group-category-dialog' class='bookacti-backend-dialog bookacti-template-dialogs' title='<?php esc_html_e( 'Delete a group category', 'booking-activities' ); ?>' style='display:none;' >
     <div><?php esc_html_e( 'Are you sure to delete this category and all its groups of events permanently?', 'booking-activities' ); ?></div>
 	<div><p><em><?php esc_html_e( 'Events will NOT be deleted.', 'booking-activities' ); ?></em></p></div>
 </div>
 
 <!-- Edit event dialog -->
-<div id='bookacti-event-data-dialog' class='bookacti-backend-dialog bookacti-template-dialogs' data-event-id='0' style='display:none;' >
+<div id='bookacti-event-data-dialog' class='bookacti-backend-dialog bookacti-template-dialogs' data-event-id='0' title='<?php esc_html_e( 'Event parameters', 'booking-activities' ); ?>' style='display:none;' >
 	<form id='bookacti-event-data-form' >
 		<?php wp_nonce_field( 'bookacti_update_event_data', 'nonce_update_event_data' ); ?>
 		<input type='hidden' name='event-id'	id='bookacti-event-data-form-event-id'		value='' />
@@ -220,7 +220,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 
 <!-- Template params -->
-<div id='bookacti-template-data-dialog' class='bookacti-backend-dialog bookacti-template-dialogs tabs' style='display:none;' >
+<div id='bookacti-template-data-dialog' class='bookacti-backend-dialog bookacti-template-dialogs tabs' title='<?php esc_html_e( 'Calendar parameters', 'booking-activities' ); ?>' style='display:none;' >
 	<form id='bookacti-template-data-form' >
 		<?php wp_nonce_field( 'bookacti_insert_or_update_template', 'nonce_insert_or_update_template' ); ?>
 		<input type='hidden' name='template-id'	id='bookacti-template-data-form-template-id'	value='' />
@@ -440,7 +440,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 
 <!-- Activity param -->
-<div id='bookacti-activity-data-dialog' class='bookacti-backend-dialog bookacti-template-dialogs' style='display:none;' >
+<div id='bookacti-activity-data-dialog' class='bookacti-backend-dialog bookacti-template-dialogs' title='<?php esc_html_e( 'Activity parameters', 'booking-activities' ); ?>' style='display:none;' >
 	<form id='bookacti-activity-data-form' >
 		<?php wp_nonce_field( 'bookacti_insert_or_update_activity', 'nonce_insert_or_update_activity' ); ?>
 		<input type='hidden' name='activity-id' id='bookacti-activity-activity-id' />
@@ -737,7 +737,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 </div>
 
 <!-- Locked event error -->
-<div id='bookacti-unbind-booked-event-dialog' class='bookacti-backend-dialog bookacti-template-dialogs' style='display:none;' >
+<div id='bookacti-unbind-booked-event-dialog' class='bookacti-backend-dialog bookacti-template-dialogs' title='<?php esc_html_e( 'Locked event', 'booking-activities' ); ?>' style='display:none;' >
     <div id='bookacti-unbind-booked-event-error-list-container' >
         <?php 
 			/* translators: This is followed by "You can't:", and then a list of bans. */
@@ -770,7 +770,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 
 <!-- Choose between creating a brand new activity or import an existing one -->
-<div id='bookacti-activity-create-method-dialog' class='bookacti-backend-dialog bookacti-template-dialogs' style='display:none;' >
+<div id='bookacti-activity-create-method-dialog' class='bookacti-backend-dialog bookacti-template-dialogs' title='<?php esc_html_e( 'Create a new activity or use an existing activity ?', 'booking-activities' ); ?>'  style='display:none;'>
     <div id='bookacti-activity-create-method-container' >
         <?php 
 			/* translators: This is followed by "You can't:", and then a list of bans. */
@@ -781,7 +781,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 
 <!-- Import an existing activity -->
-<div id='bookacti-activity-import-dialog' class='bookacti-backend-dialog bookacti-template-dialogs' style='display:none;' >
+<div id='bookacti-activity-import-dialog' class='bookacti-backend-dialog bookacti-template-dialogs' title='<?php esc_html_e( 'Import existing activity', 'booking-activities' ); ?>' style='display:none;' >
     <div id='bookacti-activity-import-container' >
 		<div>
 			<?php esc_html_e( 'Import an activity that you have already created on an other calendar:', 'booking-activities' ); ?>
@@ -812,7 +812,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 
 <!-- Group of events -->
-<div id='bookacti-group-of-events-dialog' class='bookacti-backend-dialog bookacti-template-dialogs' style='display:none;' >
+<div id='bookacti-group-of-events-dialog' class='bookacti-backend-dialog bookacti-template-dialogs' title='<?php esc_html_e( 'Group of events parameters', 'booking-activities' ); ?>' style='display:none;' >
 	<form id='bookacti-group-of-events-form' >
 		<input type='hidden' name='action' id='bookacti-group-of-events-action' />
 		<?php wp_nonce_field( 'bookacti_insert_or_update_group_of_events', 'nonce_insert_or_update_group_of_events' ); ?>
@@ -908,7 +908,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 
 <!-- Group category -->
-<div id='bookacti-group-category-dialog' class='bookacti-backend-dialog bookacti-template-dialogs' style='display:none;' >
+<div id='bookacti-group-category-dialog' class='bookacti-backend-dialog bookacti-template-dialogs' title='<?php esc_html_e( 'Group category parameters', 'booking-activities' ); ?>' style='display:none;' >
 	<form id='bookacti-group-category-form' >
 		<input type='hidden' name='action' id='bookacti-group-category-action' />
 		<?php wp_nonce_field( 'bookacti_insert_or_update_group_category', 'nonce_insert_or_update_group_category' ); ?>
