@@ -5,7 +5,7 @@ Tags: booking, reservation, booking form, woocommerce booking, booking events
 Requires at least: 3.6
 Tested up to: 5.3
 Requires PHP: 5.3
-Stable tag: 1.7.14
+Stable tag: 1.7.15
 License: GPLv3 or later
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
 
@@ -318,6 +318,12 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 
 
 == Changelog ==
+
+= 1.7.15 - 2020/01/04 =
+* Tweak - Display IDs in calendar and form editor dialogs (useful for CSS)
+* Tweak - Do not take into account the form action for calendars automatically displayed on WC product pages
+* Fix - Activities may not be saved / displayed if roles were set in permission tab
+* Dev - Add hook bookacti_public_booking_system_data before sending booking system data to javascript
 
 = 1.7.14 - 2019/12/20 =
 * Tweak - Add customizable messages in settings: avail. and Selected Events

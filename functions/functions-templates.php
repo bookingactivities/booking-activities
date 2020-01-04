@@ -7,6 +7,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 /**
  * Get booking system data
  * @since 1.7.4
+ * @version 1.7.15
  * @param array $atts (see bookacti_format_booking_system_attributes())
  * @param int $template_id
  * @return array
@@ -24,7 +25,7 @@ function bookacti_get_editor_booking_system_data( $atts, $template_id ) {
 	$booking_system_data[ 'events_interval' ]		= $events_interval;
 	$booking_system_data[ 'bookings' ]				= bookacti_get_number_of_bookings_by_events( $template_id );
 	$booking_system_data[ 'exceptions' ]			= bookacti_get_exceptions( $template_id );
-	$booking_system_data[ 'activities_data' ]		= bookacti_get_activities_by_template( $template_id, false );
+	$booking_system_data[ 'activities_data' ]		= bookacti_get_activities_by_template( $template_id, false, true );
 	$booking_system_data[ 'groups_events' ]			= bookacti_get_groups_events( $template_id );
 	$booking_system_data[ 'groups_data' ]			= bookacti_get_groups_of_events( $template_id, array(), true );
 	$booking_system_data[ 'group_categories_data' ]	= bookacti_get_group_categories( $template_id );

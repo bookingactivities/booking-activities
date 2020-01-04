@@ -241,6 +241,61 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		return $array;
 	}
 
+	
+	/**
+	 * Encrypt a string
+	 * @since 1.7.15
+	 * @param string $string
+	 * @return string
+	 */
+	function bookacti_encrypt( $string ) {
+		$secret_key = get_option( 'bookacti_secret_key' );
+		$secret_iv = get_option( 'bookacti_secret_iv' );
+		
+		if( ! $secret_key ) { update_option( 'bookacti_secret_key', md5( microtime().rand() ) ); }
+		if( ! $secret_iv )	{ update_option( 'bookacti_secret_iv', md5( microtime().rand() ) ); }
+		
+		$output = $string;
+		$encrypt_method = 'AES-256-CBC';
+		$key = hash( 'sha256', $secret_key );
+		$iv = substr( hash( 'sha256', $secret_iv ), 0, 16 );
+		
+		if( function_exists( 'openssl_encrypt' ) && version_compare( phpversion(), '5.3.3', '>=' ) ) {
+			$output = base64_encode( openssl_encrypt( $string, $encrypt_method, $key, 0, $iv ) );
+		}
+		
+		if( ! $output ) { return $string; }
+		
+		return $output;
+	}
+	
+	
+	/**
+	 * Dencrypt a string
+	 * @since 1.7.15
+	 * @param string $string
+	 * @return string
+	 */
+	function bookacti_decrypt( $string ) {
+		$secret_key = get_option( 'bookacti_secret_key' );
+		$secret_iv = get_option( 'bookacti_secret_iv' );
+		
+		if( ! $secret_key || ! $secret_iv ) { return $string; }
+		
+		$output = $string;
+		$encrypt_method = 'AES-256-CBC';
+		$key = hash( 'sha256', $secret_key );
+		$iv = substr( hash( 'sha256', $secret_iv ), 0, 16 );
+		
+		if( function_exists( 'openssl_decrypt' ) && version_compare( phpversion(), '5.3.3', '>=' ) ) {
+			$output = openssl_decrypt( base64_decode( $string ), $encrypt_method, $key, 0, $iv );
+		}
+		
+		if( ! $output ) { return $string; }
+		
+		return $output;
+	}
+
 
 
 
@@ -1652,6 +1707,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 
 // FILES AND FOLDERS
+
 /**
  * Delete a directory and all its files
  * @since 1.7.0

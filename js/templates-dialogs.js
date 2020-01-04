@@ -2,7 +2,7 @@
 
 /**
  * Initialize calendar editor dialogs
- * @version 1.7.6
+ * @version 1.7.15
  */
 function bookacti_init_template_dialogs() {
 	// Common param
@@ -38,42 +38,8 @@ function bookacti_init_template_dialogs() {
 	});	
 
 	// Individual param
-	$j( '#bookacti-activity-create-method-dialog' ).dialog({ 
-		title: bookacti_localized.dialog_choice_activity_title
-	});
-	$j( '#bookacti-activity-import-dialog' ).dialog({ 
-		title: bookacti_localized.dialog_import_activity_title
-	});
-	$j( '#bookacti-delete-event-dialog' ).dialog({ 
-		title: bookacti_localized.dialog_delete_event_title
-	});
-	$j( '#bookacti-delete-booked-event-dialog' ).dialog({ 
-		title: bookacti_localized.dialog_delete_booked_event_title
-	});
-	$j( '#bookacti-event-data-dialog' ).dialog({ 
-		title: bookacti_localized.dialog_update_event_title
-	});
-	$j( '#bookacti-delete-template-dialog' ).dialog({ 
-		title: bookacti_localized.dialog_delete_template_title
-	});
-	$j( '#bookacti-delete-activity-dialog' ).dialog({ 
-		title: bookacti_localized.dialog_delete_activity_title
-	});
-	$j( '#bookacti-unbind-booked-event-dialog' ).dialog({ 
-		title: bookacti_localized.dialog_locked_event,
+	$j( '#bookacti-unbind-booked-event-dialog' ).dialog({
 		beforeClose: function(){}
-	});
-	$j( '#bookacti-group-of-events-dialog' ).dialog({ 
-		title: bookacti_localized.dialog_create_group_of_events_title
-	});
-	$j( '#bookacti-delete-group-of-events-dialog' ).dialog({ 
-		title: bookacti_localized.dialog_delete_group_of_events_title
-	});
-	$j( '#bookacti-group-category-dialog' ).dialog({ 
-		title: bookacti_localized.dialog_update_group_category_title
-	});
-	$j( '#bookacti-delete-group-category-dialog' ).dialog({ 
-		title: bookacti_localized.dialog_delete_group_category_title
 	});
 
 	// Add and remove items in managers and templates select boxes
@@ -147,12 +113,13 @@ function bookacti_init_template_dialogs() {
 
 /**
  * Dialog Create Template
- * @version 1.7.10
+ * @version 1.7.15
  */
 function bookacti_dialog_add_new_template() {
 	// Set the dialog title
+	var dialog_title_raw = $j.trim( $j( '#bookacti-template-data-dialog' ).dialog( 'option', 'title' ).replace( /\(.*?\)/, '' ) );
 	$j( '#bookacti-template-data-dialog' ).dialog({ 
-		title: bookacti_localized.dialog_create_template_title
+		title: dialog_title_raw + ' (' + bookacti_localized.create_new + ')'
 	});
 
 	// Set default values
@@ -312,15 +279,16 @@ function bookacti_dialog_add_new_template() {
 
 /**
  * Dialog Update Template
- * @version 1.7.10
+ * @version 1.7.15
  * @param {int} template_id
  */
 function bookacti_dialog_update_template( template_id ) {
 	if( ! template_id ) { return false; }
 
 	// Set the dialog title
+	var dialog_title_raw = $j.trim( $j( '#bookacti-template-data-dialog' ).dialog( 'option', 'title' ).replace( /\(.*?\)/, '' ) );
 	$j( '#bookacti-template-data-dialog' ).dialog({ 
-		title: bookacti_localized.dialog_update_template_title
+		title: dialog_title_raw + ' (' + bookacti_localized.edit_id + ': ' + template_id + ')'
 	});
 
 	// Hide and deactivate duplicate fields
@@ -556,10 +524,16 @@ function bookacti_dialog_deactivate_template( template_id ) {
 
 /**
  * Dialog Update Event
- * @version 1.7.10
+ * @version 1.7.15
  * @param {object} event
  */
 function bookacti_dialog_update_event( event ) {
+	// Set the dialog title
+	var dialog_title_raw = $j.trim( $j( '#bookacti-event-data-dialog' ).dialog( 'option', 'title' ).replace( /\(.*?\)/, '' ) );
+	$j( '#bookacti-event-data-dialog' ).dialog({ 
+		title: dialog_title_raw + ' (' + bookacti_localized.edit_id + ': ' + event.id + ')'
+	});
+	
 	// Fill the form with known param
 	$j( '#bookacti-event-data-dialog' ).data( 'event-id', event.id );
 	$j( '#bookacti-event-data-dialog' ).attr( 'data-event-id', event.id );
@@ -1191,14 +1165,15 @@ function bookacti_dialog_import_activity() {
 
 /**
  * Dialog Create Activity
- * @version 1.7.10
+ * @version 1.7.15
  */
 function bookacti_dialog_create_activity() {
 	if( ! bookacti.selected_template ) { return; }
 	
 	// Set the dialog title
+	var dialog_title_raw = $j.trim( $j( '#bookacti-activity-data-dialog' ).dialog( 'option', 'title' ).replace( /\(.*?\)/, '' ) );
 	$j( '#bookacti-activity-data-dialog' ).dialog({ 
-		title: bookacti_localized.dialog_create_activity_title
+		title: dialog_title_raw + ' (' + bookacti_localized.create_new + ')'
 	});
 
 	// Set init value
@@ -1303,14 +1278,15 @@ function bookacti_dialog_create_activity() {
 
 /**
  * Open a dialog to update an activity
- * @version 1.7.10
+ * @version 1.7.15
  */
 function bookacti_dialog_update_activity( activity_id ) {
 	if( ! bookacti.selected_template || ! activity_id ) { return; }
 	
 	// Set the dialog title
+	var dialog_title_raw = $j.trim( $j( '#bookacti-activity-data-dialog' ).dialog( 'option', 'title' ).replace( /\(.*?\)/, '' ) );
 	$j( '#bookacti-activity-data-dialog' ).dialog({ 
-		title: bookacti_localized.dialog_update_activity_title
+		title: dialog_title_raw + ' (' + bookacti_localized.edit_id + ': ' + activity_id + ')'
 	});
 
 	var activity_data = bookacti.booking_system[ 'bookacti-template-calendar' ][ 'activities_data' ][ activity_id ];
@@ -1577,15 +1553,16 @@ function bookacti_dialog_delete_activity( activity_id ) {
 
 /**
  * Create a group of events
- * @version 1.7.10
+ * @version 1.7.15
  * @param {int} category_id
  */
 function bookacti_dialog_create_group_of_events( category_id ) {
 	category_id = category_id ? category_id : bookacti.selected_category;
 	
 	// Change dialog title
+	var dialog_title_raw = $j.trim( $j( '#bookacti-group-of-events-dialog' ).dialog( 'option', 'title' ).replace( /\(.*?\)/, '' ) );
 	$j( '#bookacti-group-of-events-dialog' ).dialog({ 
-		title: bookacti_localized.dialog_create_group_of_events_title
+		title: dialog_title_raw + ' (' + bookacti_localized.create_new + ')'
 	});
 	
 	// Disable the "New category title" field if a category as been chosen
@@ -1713,13 +1690,14 @@ function bookacti_dialog_create_group_of_events( category_id ) {
 
 /**
  * Update a group of events with selected events 
- * @version 1.7.10
+ * @version 1.7.15
  * @param {int} group_id
  */
 function bookacti_dialog_update_group_of_events( group_id ) {
 	// Change dialog title
+	var dialog_title_raw = $j.trim( $j( '#bookacti-group-of-events-dialog' ).dialog( 'option', 'title' ).replace( /\(.*?\)/, '' ) );
 	$j( '#bookacti-group-of-events-dialog' ).dialog({ 
-		title: bookacti_localized.dialog_update_group_of_events_title
+		title: dialog_title_raw + ' (' + bookacti_localized.edit_id + ': ' + group_id + ')'
 	});
 	
 	// Select the group category
@@ -1965,10 +1943,16 @@ function bookacti_dialog_delete_group_of_events( group_id ) {
 
 /**
  * Update a group category
- * @version 1.7.10
+ * @version 1.7.15
  * @param {int} category_id
  */
 function bookacti_dialog_update_group_category( category_id ) {
+	// Change dialog title
+	var dialog_title_raw = $j.trim( $j( '#bookacti-group-category-dialog' ).dialog( 'option', 'title' ).replace( /\(.*?\)/, '' ) );
+	$j( '#bookacti-group-category-dialog' ).dialog({ 
+		title: dialog_title_raw + ' (' + bookacti_localized.edit_id + ': ' + category_id + ')'
+	});
+	
 	var category_data = bookacti.booking_system[ 'bookacti-template-calendar' ][ 'group_categories_data' ][ category_id ];
 	
 	// General tab

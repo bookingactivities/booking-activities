@@ -55,6 +55,9 @@ body.booking-activities_page_bookacti_forms label[for='bookacti_form_publish-hid
 .bookacti-form-editor-field-header .bookacti-wc-icon-not-supported	{ display: inline-block; vertical-align: middle; margin-right: 20px; font-weight: normal; }
 #bookacti-form-editor .bookacti-addon-promo			{ text-align: left; }
 
+.bookacti-form-action-wc-notice			{ color: #f89b2f; }
+.bookacti-form-action-wc-notice:before	{ content: '\26A0  '; }
+
 
 /* Dialogs */
 .bookacti-form-dialog form div > fieldset > label:not(.bookacti-onoffswitch-label),

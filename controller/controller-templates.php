@@ -976,7 +976,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	
 	/**
 	 * AJAX Controller - Create an association between existing activities (on various templates) and current template
-	 * @version 1.7.10
+	 * @version 1.7.15
 	 */
 	function bookacti_controller_import_activities() {
 		$template_id = intval( $_POST[ 'template_id' ] );
@@ -1007,7 +1007,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		}
 
 		if( $inserted ) {
-			$activities_data	= bookacti_get_activities_by_template( $template_id, false );
+			$activities_data	= bookacti_get_activities_by_template( $template_id, false, true );
 			$activity_list		= bookacti_get_template_activities_list( $template_id );
 			
 			do_action( 'bookacti_activities_imported', $template_id, $activity_ids, $activities_data );
@@ -1077,7 +1077,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 	/**
 	 * AJAX Controller - Get activities by template
-	 * @version 1.7.4
+	 * @version 1.7.15
 	 */
 	function bookacti_controller_get_activities_by_template() {
 
@@ -1092,7 +1092,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 		if( $selected_template_id === $current_template_id ) { bookacti_send_json( array( 'status' => 'failed', 'error' => 'no_change' ), 'get_activities_by_template' ); }
 
-		$new_activities		= bookacti_get_activities_by_template( $selected_template_id, false );
+		$new_activities		= bookacti_get_activities_by_template( $selected_template_id, false, true );
 		$current_activities	= bookacti_get_activity_ids_by_template( $current_template_id, false );
 
 		// Check activity permissions, and remove not allowed activity ids

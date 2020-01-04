@@ -6,7 +6,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 /**
  * Get a booking system based on given parameters
- * @version 1.7.4
+ * @version 1.7.15
  * @param array $atts (see bookacti_format_booking_system_attributes())
  * @param boolean $echo Wether to return or directly echo the booking system
  * @return string
@@ -17,13 +17,20 @@ function bookacti_get_booking_system( $atts, $echo = false ) {
 	
 	if( ! $echo ) { ob_start(); }
 	do_action( 'bookacti_before_booking_system_container', $atts, $booking_system_data );
+	
+	// Encrypt user_id
+	$public_user_id = ! empty( $atts[ 'user_id' ] ) ? $atts[ 'user_id' ] : 0;
+	if( $public_user_id && ( ( is_numeric( $public_user_id ) && strlen( (string) $public_user_id ) < 16 ) || is_email( $public_user_id ) ) ) { $public_user_id = bookacti_encrypt( $public_user_id ); }
+	
+	// Let plugins define what data should be passed to JS
+	$public_booking_system_data = apply_filters( 'bookacti_public_booking_system_data', array_merge( $booking_system_data, array( 'user_id' => $public_user_id ) ), $atts );
 	?>
 
 	<div class='bookacti-booking-system-container' id='<?php echo esc_attr( $atts[ 'id' ] . '-container' ); ?>' >
 		<script>
 			// Compatibility with Optimization plugins
 			if( typeof bookacti === 'undefined' ) { var bookacti = { booking_system:[] }; }
-			bookacti.booking_system[ '<?php echo $atts[ 'id' ]; ?>' ] = <?php echo json_encode( $booking_system_data ); ?>;
+			bookacti.booking_system[ '<?php echo $atts[ 'id' ]; ?>' ] = <?php echo json_encode( $public_booking_system_data ); ?>;
 		</script>
 				
 		<div class='bookacti-booking-system-inputs'>
@@ -296,9 +303,9 @@ function bookacti_get_booking_system_default_attributes() {
 
 /**
  * Check booking system attributes and format them to be correct
- * @version 1.7.14
+ * @version 1.7.15
  * @param array $atts 
- * @return type
+ * @return array
  */
 function bookacti_format_booking_system_attributes( $atts = array() ) {
 	// Set default value
@@ -351,10 +358,11 @@ function bookacti_format_booking_system_attributes( $atts = array() ) {
 		), '', 	$atts[ 'group_categories' ] ) ) );
 	}
 	if( ! is_array( $atts[ 'group_categories' ] ) ) { $atts[ 'group_categories' ] = false; }
+	else { $atts[ 'group_categories' ]	= array_values( array_unique( $atts[ 'group_categories' ] ) ); }
 	
 	// Remove duplicated values
-	$atts[ 'calendars' ]	= array_unique( $atts[ 'calendars' ] );
-	$atts[ 'activities' ]	= array_unique( $atts[ 'activities' ] );
+	$atts[ 'calendars' ]	= array_values( array_unique( $atts[ 'calendars' ] ) );
+	$atts[ 'activities' ]	= array_values( array_unique( $atts[ 'activities' ] ) );
 	
 	// Check if the desired templates are active and allowed
 	$available_template_ids = array_keys( bookacti_fetch_templates( array(), true ) );
@@ -364,7 +372,7 @@ function bookacti_format_booking_system_attributes( $atts = array() ) {
 			$atts[ 'calendars' ] = ! empty( $available_template_ids ) ? $available_template_ids : array( 'none' );
 		}
 	} else { 
-		$allowed_templates = array_intersect( $atts[ 'calendars' ], $available_template_ids );
+		$allowed_templates = array_values( array_intersect( $atts[ 'calendars' ], $available_template_ids ) );
 		$atts[ 'calendars' ] = ! empty( $allowed_templates ) ? $allowed_templates : array( 'none' );
 	}
 	
@@ -377,6 +385,7 @@ function bookacti_format_booking_system_attributes( $atts = array() ) {
 		}
 	}
 	if( ! $atts[ 'activities' ] ) { $atts[ 'activities' ] = ! $had_activities ? $available_activity_ids : array( 'none' ); }
+	else { $atts[ 'activities' ] = array_values( $atts[ 'activities' ] ); }
 	
 	// Check if desired group categories exist and are allowed according to current user role
 	$available_category_ids = bookacti_get_group_category_ids_by_template( $atts[ 'calendars' ], false, $atts[ 'check_roles' ] );
@@ -385,7 +394,7 @@ function bookacti_format_booking_system_attributes( $atts = array() ) {
 		$atts[ 'group_categories' ] = array_unique( $atts[ 'group_categories' ] ); 
 		
 		// Remove unauthorized values
-		$allowed_group_categories = array_intersect( $atts[ 'group_categories' ], array_map( 'intval', $available_category_ids ) );
+		$allowed_group_categories = array_values( array_intersect( $atts[ 'group_categories' ], array_map( 'intval', $available_category_ids ) ) );
 		$atts[ 'group_categories' ] = ! empty( $allowed_group_categories ) ? $allowed_group_categories : false;
 	}
 	
@@ -412,6 +421,7 @@ function bookacti_format_booking_system_attributes( $atts = array() ) {
 	// Sanitize user id
 	$atts[ 'user_id' ] = is_numeric( $atts[ 'user_id' ] ) ? intval( $atts[ 'user_id' ] ) : esc_attr( $atts[ 'user_id' ] );
 	if( $atts[ 'user_id' ] === 'current' ) { $atts[ 'user_id' ] = get_current_user_id(); }
+	if( $atts[ 'user_id' ] && ! is_email( $atts[ 'user_id' ] ) && ( ! is_numeric( $atts[ 'user_id' ] ) || ( is_numeric( $atts[ 'user_id' ] ) && strlen( (string) $atts[ 'user_id' ] ) ) >= 16 ) ) { $atts[ 'user_id' ] = bookacti_decrypt( $atts[ 'user_id' ] ); }
 	
 	// Sanitize booking status
 	if( is_string( $atts[ 'status' ] ) ) {

@@ -11,30 +11,9 @@ $messages = bookacti_get_messages();
 
 /**
  * Fill the translation array to use it in js 
- * @version 1.7.14
+ * @version 1.7.15
  */
 $bookacti_translation_array = apply_filters( 'bookacti_translation_array', array(
-
-	// DIALOGS
-	'dialog_update_event_title'				=> esc_html__( 'Update event parameters', 'booking-activities' ),
-	'dialog_create_template_title'			=> esc_html__( 'Create new calendar', 'booking-activities' ),
-	'dialog_update_template_title'			=> esc_html__( 'Update calendar parameters', 'booking-activities' ),
-	'dialog_delete_template_title'			=> esc_html__( 'Delete calendar', 'booking-activities' ),
-	'dialog_delete_event_title'			    => esc_html__( 'Delete event', 'booking-activities' ),
-	'dialog_delete_booked_event_title'		=> esc_html__( 'Delete booked event', 'booking-activities' ),
-	'dialog_delete_activity_title'			=> esc_html__( 'Delete activity', 'booking-activities' ),
-	'dialog_choice_activity_title'			=> esc_html__( 'Create a new activity or use an existing activity ?', 'booking-activities' ),
-	'dialog_import_activity_title'			=> esc_html__( 'Import existing activity', 'booking-activities' ),
-	'dialog_create_activity_title'			=> esc_html__( 'Create new activity', 'booking-activities' ),
-	'dialog_update_activity_title'			=> esc_html__( 'Update activity parameters', 'booking-activities' ),
-	'dialog_create_group_of_events_title'	=> esc_html__( 'Create a group of events', 'booking-activities' ),
-	'dialog_update_group_of_events_title'	=> esc_html__( 'Update a group of events', 'booking-activities' ),
-	'dialog_delete_group_of_events_title'	=> esc_html__( 'Delete a group of events', 'booking-activities' ),
-	'dialog_create_group_category_title'	=> esc_html__( 'Create a group category', 'booking-activities' ),
-	'dialog_update_group_category_title'	=> esc_html__( 'Update a group category', 'booking-activities' ),
-	'dialog_delete_group_category_title'	=> esc_html__( 'Delete a group category', 'booking-activities' ),
-	'dialog_locked_event'					=> esc_html__( 'Locked event', 'booking-activities' ),
-
 	// BUTTONS
 	'dialog_button_ok'                  => esc_html__( 'OK', 'booking-activities' ),
 	'dialog_button_yes'					=> esc_html__( 'Yes', 'booking-activities' ),
@@ -207,7 +186,8 @@ $bookacti_translation_array = apply_filters( 'bookacti_translation_array', array
 	'booking'							=> esc_html__( 'booking', 'booking-activities' ),
 	/* translators: This particle is used right after the quantity of bookings. Put the plural here. Ex: 2 bookings . . */
 	'bookings'							=> esc_html__( 'bookings', 'booking-activities' ),
-
+	'edit_id'							=> esc_html_x( 'id', 'An id is a unique identification number', 'booking-activities' ),
+	'create_new'						=> esc_html__( 'Create new', 'booking-activities' ),
 
 	// OTHERS
 	'ask_for_reasons'					=> esc_html__( 'Tell us why? (Details, reasons, comments...)', 'booking-activities' ),

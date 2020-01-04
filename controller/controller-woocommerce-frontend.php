@@ -290,7 +290,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	/**
 	 * Remove WC unsupported fields on product pages
 	 * @since 1.5.0
-	 * @version 1.5.2
+	 * @version 1.7.15
 	 * @param array $fields
 	 * @param array $form
 	 * @param string $instance_id
@@ -302,6 +302,9 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		
 		$unsupported_fields = bookacti_get_wc_unsupported_form_fields();
 		foreach( $fields as $i => $field ) {
+			if( $field[ 'type' ] === 'calendar' ) {
+				$fields[ $i ][ 'form_action' ] = 'default';
+			}
 			if( in_array( $field[ 'type' ], $unsupported_fields, true ) ) {
 				unset( $fields[ $i ] );
 			}
