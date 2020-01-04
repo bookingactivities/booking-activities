@@ -6,7 +6,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 /**
  * Get a booking system based on given parameters
- * @version 1.7.4
+ * @version 1.7.15
  * @param array $atts (see bookacti_format_booking_system_attributes())
  * @param boolean $echo Wether to return or directly echo the booking system
  * @return string
@@ -17,13 +17,20 @@ function bookacti_get_booking_system( $atts, $echo = false ) {
 	
 	if( ! $echo ) { ob_start(); }
 	do_action( 'bookacti_before_booking_system_container', $atts, $booking_system_data );
+	
+	// Encrypt user_id
+	$public_user_id = ! empty( $atts[ 'user_id' ] ) ? $atts[ 'user_id' ] : 0;
+	if( $public_user_id && ( ( is_numeric( $public_user_id ) && strlen( (string) $public_user_id ) < 16 ) || is_email( $public_user_id ) ) ) { $public_user_id = bookacti_encrypt( $public_user_id ); }
+	
+	// Let plugins define what data should be passed to JS
+	$public_booking_system_data = apply_filters( 'bookacti_public_booking_system_data', array_merge( $booking_system_data, array( 'user_id' => $public_user_id ) ), $atts );
 	?>
 
 	<div class='bookacti-booking-system-container' id='<?php echo esc_attr( $atts[ 'id' ] . '-container' ); ?>' >
 		<script>
 			// Compatibility with Optimization plugins
 			if( typeof bookacti === 'undefined' ) { var bookacti = { booking_system:[] }; }
-			bookacti.booking_system[ '<?php echo $atts[ 'id' ]; ?>' ] = <?php echo json_encode( $booking_system_data ); ?>;
+			bookacti.booking_system[ '<?php echo $atts[ 'id' ]; ?>' ] = <?php echo json_encode( $public_booking_system_data ); ?>;
 		</script>
 				
 		<div class='bookacti-booking-system-inputs'>
@@ -414,6 +421,7 @@ function bookacti_format_booking_system_attributes( $atts = array() ) {
 	// Sanitize user id
 	$atts[ 'user_id' ] = is_numeric( $atts[ 'user_id' ] ) ? intval( $atts[ 'user_id' ] ) : esc_attr( $atts[ 'user_id' ] );
 	if( $atts[ 'user_id' ] === 'current' ) { $atts[ 'user_id' ] = get_current_user_id(); }
+	if( $atts[ 'user_id' ] && ! is_email( $atts[ 'user_id' ] ) && ( ! is_numeric( $atts[ 'user_id' ] ) || ( is_numeric( $atts[ 'user_id' ] ) && strlen( (string) $atts[ 'user_id' ] ) ) >= 16 ) ) { $atts[ 'user_id' ] = bookacti_decrypt( $atts[ 'user_id' ] ); }
 	
 	// Sanitize booking status
 	if( is_string( $atts[ 'status' ] ) ) {

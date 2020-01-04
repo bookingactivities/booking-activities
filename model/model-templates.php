@@ -2127,13 +2127,14 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	
 	/**
 	 * Get activities by template
-	 * @version 1.7.4
+	 * @version 1.7.15
 	 * @global wpdb $wpdb
 	 * @param array $template_ids
 	 * @param boolean $based_on_events Whether to retrieve activities bound to templates or activities bound to events of templates
+	 * @param boolean $get_managers Whether to retrieve the managers
 	 * @return array
 	 */
-	function bookacti_get_activities_by_template( $template_ids = array(), $based_on_events = false ) {
+	function bookacti_get_activities_by_template( $template_ids = array(), $based_on_events = false, $retrieve_managers = false ) {
 		global $wpdb;
 		
 		// If empty, take them all
@@ -2188,12 +2189,14 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			$activity_ids[] = $activity[ 'id' ];
 		}
 		
-		$activities_managers	= bookacti_get_managers( 'activity', $activity_ids );
-		$activities_meta		= bookacti_get_metadata( 'activity', $activity_ids );
+		$activities_meta = bookacti_get_metadata( 'activity', $activity_ids );
+		
+		if( $retrieve_managers ) {
+			$activities_managers = bookacti_get_managers( 'activity', $activity_ids );
+		}
 		
 		$activities_array = array();
 		foreach( $activities as $activity ) {
-			$activity[ 'admin' ]	= isset( $activities_managers[ $activity[ 'id' ] ] ) ? $activities_managers[ $activity[ 'id' ] ] : array();
 			$activity[ 'settings' ] = isset( $activities_meta[ $activity[ 'id' ] ] ) ? $activities_meta[ $activity[ 'id' ] ] : array();
 			$activity[ 'multilingual_title' ] = $activity[ 'title' ];
 			$activity[ 'title' ]	= apply_filters( 'bookacti_translate_text', $activity[ 'title' ] );
@@ -2203,7 +2206,11 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 			$activity[ 'settings' ][ 'unit_name_singular' ] = apply_filters( 'bookacti_translate_text', $unit_name_singular );
 			$activity[ 'settings' ][ 'unit_name_plural' ]	= apply_filters( 'bookacti_translate_text', $unit_name_plural );
-
+			
+			if( $retrieve_managers ) { 
+				$activity[ 'admin' ] = isset( $activities_managers[ $activity[ 'id' ] ] ) ? $activities_managers[ $activity[ 'id' ] ] : array();
+			}
+			
 			$activities_array[ $activity[ 'id' ] ] = $activity;
 		}
 

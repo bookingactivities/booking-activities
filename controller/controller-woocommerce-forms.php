@@ -65,7 +65,7 @@ add_action( 'bookacti_form_editor_description_after', 'bookacti_form_editor_wc_d
 function bookacti_form_action_wc_notice( $params ) {
 	?>
 	<div class='bookacti-form-action-wc-notice'>
-		<?php esc_html_e( 'The form action is not taken into account for the calendars automatically displayed on WooCommerce product pages.', 'booking-activities' ); ?>
+		<?php esc_html_e( 'The form action is not taken into account on WooCommerce product pages.', 'booking-activities' ); ?>
 	</div>
 	<?php
 }

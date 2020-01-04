@@ -304,7 +304,6 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		foreach( $fields as $i => $field ) {
 			if( $field[ 'type' ] === 'calendar' ) {
 				$fields[ $i ][ 'form_action' ] = 'default';
-				$fields[ $i ][ 'when_perform_form_action' ] = 'on_submit';
 			}
 			if( in_array( $field[ 'type' ], $unsupported_fields, true ) ) {
 				unset( $fields[ $i ] );
