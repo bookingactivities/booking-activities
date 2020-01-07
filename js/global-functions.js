@@ -383,6 +383,58 @@ function bookacti_init_moment_format_from_php_date_format() {
 
 
 /**
+ * Convert a PHP datetime format to moment JS format
+ * @since 1.7.16
+ * @param {string} php_format
+ * @returns {string}
+ */
+function bookacti_convert_php_datetime_format_to_moment_js( php_format ) {
+	var format_map = {
+		d: 'DD',
+		D: 'ddd',
+		j: 'D',
+		l: 'dddd',
+		N: 'E',
+		w: 'd',
+		W: 'W',
+		F: 'MMMM',
+		m: 'MM',
+		M: 'MMM',
+		n: 'M',
+		o: 'GGGG',
+		Y: 'YYYY',
+		y: 'YY',
+		a: 'a',
+		A: 'A',
+		g: 'h',
+		G: 'H',
+		h: 'hh',
+		H: 'HH',
+		i: 'mm',
+		s: 'ss',
+		u: '[u]', // not sure if moment has this
+		e: '[e]', // moment does not have this
+		O: 'ZZ',
+		P: 'Z',
+		T: '[T]', // deprecated in moment
+		c: 'YYYY-MM-DD[T]HH:mm:ssZ',
+		r: 'ddd, DD MMM YYYY HH:mm:ss ZZ',
+		U: 'X'
+	};
+	
+	window.has_backslash = false;
+	var moment_js_format = php_format.replace( /[dDjlNSwzWFmMntLoYyaABgGhHisueIOPTZcrU\\]/g, function ( php_str ) {
+		if( php_str === '\\' ) { window.has_backslash = true; return ''; }
+		moment_js_str = window.has_backslash ? '[' + php_str + ']' : format_map[ php_str ];
+		window.has_backslash = false;
+		return moment_js_str;
+	});
+	
+	return moment_js_format;
+}
+
+
+/**
  * Get URL parameter value
  * @since 1.7.4
  * @param {string} desired_param

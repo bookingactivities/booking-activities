@@ -1799,71 +1799,6 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	
 	
 // ACTIVITIES
-	/**
-	 * Get activities
-	 * @version 1.7.15
-	 * @global wpdb $wpdb
-	 * @param boolean $allowed_roles_only
-	 * @param OBJECT|ARRAY_A $return_type
-	 * @return array|false
-	 */
-    function bookacti_fetch_activities( $allowed_roles_only = false, $return_type = OBJECT ) {
-        global $wpdb;
-
-        $query = 'SELECT * FROM ' . BOOKACTI_TABLE_ACTIVITIES . ' as A ';
-		
-		// Join the meta table to filter by roles
-		if( $allowed_roles_only ) {
-			$query .= ' LEFT JOIN ( 
-							SELECT meta_value as roles, object_id as activity_id 
-							FROM ' . BOOKACTI_TABLE_META . ' 
-							WHERE object_type = "activity" 
-							AND meta_key = "allowed_roles" 
-						) as M ON M.activity_id = A.id ';
-		}
-
-		$query .= ' WHERE active = 1';
-		
-		// Filter by roles
-		if( $allowed_roles_only ) {
-			$current_user = wp_get_current_user();
-			$roles = array( 'all' );
-			
-			if( $current_user && ! empty( $current_user->roles ) ) {
-				$roles = $current_user->roles;
-			}
-			
-			$query .= ' AND ( ( M.roles = "a:0:{}" OR M.roles IS NULL OR M.roles = "" ) ';
-			if( $roles ) {
-				foreach( $roles as $i => $role ) {
-					$query .= ' OR M.roles LIKE %s ';
-					// Prefix and suffix each element of the array
-					$roles[ $i ] = '%' . $wpdb->esc_like( $role ) . '%';
-				}
-				$variables = array_merge( $variables, $roles );
-			}
-			$query .= ' ) ';
-		}
-		
-		$order_by = apply_filters( 'bookacti_activities_list_order_by', array( 'title', 'id' ) );
-		if( $order_by && is_array( $order_by ) ) {
-			$query .= ' ORDER BY ';
-			for( $i=0,$len=count($order_by); $i<$len; ++$i ) {
-				if( $order_by[ $i ] === 'id' ) { $order_by[ $i ] = 'A.id'; }
-				$query .= $order_by[ $i ] . ' ASC';
-				if( $i < $len-1 ) { $query .= ', '; }
-			}
-		}
-		
-        $activities = $wpdb->get_results( $query, $return_type );
-		
-		if( $activities === false ) { return false; }
-		if( ! is_array( $activities ) ) { return array(); }
-		
-        return $activities;
-    }
-	
-	
     /**
 	 * Get activity data
 	 * 
@@ -2213,7 +2148,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			
 			$activities_array[ $activity[ 'id' ] ] = $activity;
 		}
-
+		
 		return $activities_array;
 	}
 	
@@ -2221,7 +2156,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	/**
 	 * Get an array of all activity ids bound to designated templates
 	 * @since 1.1.0
-	 * @version 1.7.15
+	 * @version 1.7.16
 	 * @global wpdb $wpdb
 	 * @param array $template_ids
 	 * @param boolean $based_on_events Whether to retrieve activity ids bound to templates or activity ids bound to events of templates
@@ -2249,7 +2184,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		}
 		
 		// Join the meta table to filter by roles
-		if( $allowed_roles_only ) {
+		if( $allowed_roles_only && ! is_super_admin() ) {
 			$query .= ' LEFT JOIN ( 
 							SELECT meta_value as roles, object_id as activity_id 
 							FROM ' . BOOKACTI_TABLE_META . ' 
@@ -2257,18 +2192,23 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 							AND meta_key = "allowed_roles" 
 						) as M ';
 			$query .= $based_on_events ? ' ON M.activity_id = E.activity_id ' : ' ON M.activity_id = A.id ';
+			$query .= ' LEFT JOIN ( 
+							SELECT user_id as manager_id, object_id as activity_id
+							FROM ' . BOOKACTI_TABLE_PERMISSIONS . ' 
+							WHERE object_type = "activity"
+						) as P ';
+			$query .= $based_on_events ? ' ON P.activity_id = E.activity_id ' : ' ON P.activity_id = A.id ';
 		}
 		
 		$query .= $based_on_events ? ' WHERE TRUE ' : ' WHERE A.id = TA.activity_id ';
 		
 		// Filter by roles
-		if( $allowed_roles_only ) {
+		if( $allowed_roles_only && ! is_super_admin() ) {
 			$current_user = wp_get_current_user();
-			$roles = array( 'all' );
+			$roles = $current_user && ! empty( $current_user->roles ) ? $current_user->roles : array();
 			
-			if( $current_user && ! empty( $current_user->roles ) ) {
-				$roles = $current_user->roles;
-			}
+			// If the "all" role is selected, allow everybody
+			$roles[] = 'all';
 			
 			$query .= ' AND ( ( M.roles = "a:0:{}" OR M.roles IS NULL OR M.roles = "" ) ';
 			if( $roles ) {
@@ -2278,6 +2218,10 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 					$roles[ $i ] = '%' . $wpdb->esc_like( $role ) . '%';
 				}
 				$variables = array_merge( $variables, $roles );
+			}
+			if( $current_user && isset( $current_user->ID ) ) {
+				$query .= ' OR P.manager_id = %d ';
+				$variables[] = $current_user->ID;
 			}
 			$query .= ' ) ';
 		}
@@ -2310,7 +2254,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		}
 		
 		$activities = $wpdb->get_results( $query, OBJECT );
-
+		
 		$activities_ids = array();
 		foreach( $activities as $activity ) {
 			$activities_ids[] = intval( $activity->unique_activity_id );

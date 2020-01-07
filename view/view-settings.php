@@ -1,7 +1,7 @@
 <?php
 /**
  * Booking Activities settings page
- * @version 1.7.14
+ * @version 1.7.16
  */
 
 // Exit if accessed directly
@@ -44,7 +44,7 @@ echo "<div class='wrap'>";
 	$save_with_ajax	= isset( $_GET[ 'notification_id' ] ) ? 'bookacti_save_settings_with_ajax' : '';
 	$action			= $save_with_ajax ? '' : 'options.php';
 	
-	echo "<form method='post' action='" . $action . "' id='bookacti-settings' class='" . $save_with_ajax . "' >";
+	echo "<form method='post' action='" . $action . "' id='bookacti-settings' class='bookati-settings-tab-" . $active_tab . ' ' . $save_with_ajax . "' >";
 	
 		// Display the tabs content
 		if( $active_tab === 'general' ) {  

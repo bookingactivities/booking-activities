@@ -44,7 +44,7 @@ add_action( 'bookacti_display_form_field_calendar', 'bookacti_display_form_field
 /**
  * Display the form field 'login'
  * @since 1.5.0
- * @version 1.7.8
+ * @version 1.7.16
  * @param string $html
  * @param array $field
  * @param string $instance_id
@@ -161,12 +161,17 @@ function bookacti_display_form_field_login( $html, $field, $instance_id, $contex
 							'required'		=> $field[ 'required_fields' ][ 'password' ] ? 1 : 0
 						);
 						bookacti_display_field( $args );
-						?>
-						<div class='bookacti-password-strength' style='display:none;'>
-							<span class='bookacti-password-strength-meter'></span>
-							<input type='hidden' name='password_strength' class='bookacti-password_strength' value='0' min='<?php echo $field[ 'min_password_strength' ]; ?>' />
-						</div>
-						<?php
+						
+						if( empty( $field[ 'generate_password' ] ) && $field[ 'min_password_strength' ] > 1 ) {
+							wp_enqueue_script( 'password-strength-meter' );
+							?>
+							<div class='bookacti-password-strength' style='display:none;'>
+								<span class='bookacti-password-strength-meter'></span>
+								<input type='hidden' name='password_strength' class='bookacti-password_strength' value='0' min='<?php echo $field[ 'min_password_strength' ]; ?>' />
+							</div>
+							<?php
+						}
+						
 						if( ! empty( $field[ 'displayed_fields' ][ 'forgotten_password' ] ) ) { 
 						?>
 							<div class='bookacti-forgotten-password' >

@@ -6,7 +6,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
  * Get default settings values
  * 
  * @since 1.3.0 (was bookacti_define_default_settings_constants)
- * @version 1.7.3
+ * @version 1.7.16
  */
 function bookacti_get_default_settings() {
 	$date = new DateTime(); 
@@ -31,7 +31,8 @@ function bookacti_get_default_settings() {
 		'refund_actions_after_cancellation'		=> array(),
 		'notifications_from_name'				=> get_bloginfo( 'name' ),
 		'notifications_from_email'				=> get_bloginfo( 'admin_email' ),
-		'notifications_async'					=> true
+		'notifications_async'					=> true,
+		'calendar_localization'					=> 'default'
 	);
 	
 	return apply_filters( 'bookacti_default_settings', $default );
@@ -716,6 +717,37 @@ function bookacti_settings_section_licenses_callback() { }
 			<?php _e( 'Edit messages used in the following situations.', 'booking-activities' ); ?>
 		</p>
 	<?php
+	}
+	
+	
+	/**
+	 * Display "Calendar localization" setting
+	 * @since 1.7.16
+	 */
+	function bookacti_settings_field_calendar_localization_callback() {
+	?>
+		<em>
+			<?php 
+			esc_html_e( 'Calendar localization', 'booking-activities' ); 
+			echo '. ';
+			/* translators: %s is the path to WP general settings (with a link) */
+			echo sprintf( esc_html__( 'The calendar is localized according to your Site Language, you can change it in %s.', 'booking-activities' ), '<a href="' . admin_url( 'options-general.php' ) . '">' . esc_html__( 'WordPress Settings > General', 'booking-activities' ) . '</a>' );
+			?>
+		</em><br/>
+	<?php
+		$args = array(
+			'type'		=> 'select',
+			'name'		=> 'bookacti_messages_settings[calendar_localization]',
+			'id'		=> 'calendar_localization',
+			'options'	=> array( 
+								'default' => esc_html__( 'Based on the Site Language only (default)', 'booking-activities' ),
+								/* translators: %s is a comma separated list of option name */
+								'wp_settings' => sprintf( esc_html__( 'Based on more WP settings (%s)', 'booking-activities' ), implode( ', ', array( __( 'Site Language' ), __( 'Time Format' ), __( 'Week Starts On' ) ) ) )
+							),
+			'value'		=> bookacti_get_setting_value( 'bookacti_messages_settings', 'calendar_localization' ),
+			'tip'		=> esc_html__( 'Many elements of the calendar are localized according to your Site Language: time format (12 or 24-hour), date format, first day of the week, text in buttons, names of the days and the months, and RTL display.' )
+		);
+		bookacti_display_field( $args );
 	}
 	
 	

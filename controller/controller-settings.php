@@ -4,7 +4,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 /**
  * Init Booking Activities settings
- * @version 1.7.14
+ * @version 1.7.16
  */
 function bookacti_init_settings() { 
 
@@ -210,9 +210,16 @@ function bookacti_init_settings() {
 		'bookacti_messages_settings'
 	);
 	
+	add_settings_field( 
+		'calendar_localization',
+		esc_html__( 'Calendar localization', 'booking-activities' ),
+		'bookacti_settings_field_calendar_localization_callback',
+		'bookacti_messages_settings',
+		'bookacti_settings_section_messages'
+	);
 	
 	
-	/* Messages settings Section */
+	/* System settings Section */
 	add_settings_section( 
 		'bookacti_settings_section_system',
 		esc_html__( 'System', 'booking-activities' ),
@@ -895,7 +902,7 @@ add_filter( 'plugin_row_meta', 'bookacti_meta_links_in_plugins_table', 10, 2 );
 
 /** 
  * Ask to rate the plugin 5 stars
- * @version 1.7.8
+ * @version 1.7.16
  */
 function bookacti_5stars_rating_notice() {
 	if( ! bookacti_is_booking_activities_screen() ) { return; }
@@ -907,15 +914,15 @@ function bookacti_5stars_rating_notice() {
 				$install_datetime	= DateTime::createFromFormat( 'Y-m-d H:i:s', $install_date );
 				$current_datetime	= new DateTime();
 				$nb_days			= floor( $install_datetime->diff( $current_datetime )->days );
-				if( $nb_days >= 92 ) {
+				if( $nb_days >= 61 ) {
 					?>
 					<div class='notice notice-info bookacti-5stars-rating-notice is-dismissible' >
 						<p>
 							<?php 
-							_e( '<strong>Booking Activities</strong> has been helping you for three months now.', 'booking-activities' );
+							_e( '<strong>Booking Activities</strong> has been helping you for two months now.', 'booking-activities' );
 							echo '<br/>' 
 								/* translators: %s: five stars */
-								. sprintf( esc_html__( 'Would you help it back leaving us a %s rating? We need you now to make it last!', 'booking-activities' ), 
+								. sprintf( esc_html__( 'Would you help us back leaving a %s rating? We need you too.', 'booking-activities' ), 
 								  '<a href="https://wordpress.org/support/plugin/booking-activities/reviews?rate=5#new-post" target="_blank" >&#9733;&#9733;&#9733;&#9733;&#9733;</a>' );
 							?>
 						</p>
@@ -959,7 +966,7 @@ add_action( 'wp_ajax_bookactiDismiss5StarsRatingNotice', 'bookacti_dismiss_5star
 
 /**
  * Display a custom message in the footer
- * 
+ * @version 1.7.16
  * @param string $footer_text
  * @return string
  */
@@ -976,7 +983,7 @@ function bookacti_admin_footer_text( $footer_text ) {
 		// Change the footer text
 		if ( ! get_option( 'woocommerce_admin_footer_text_rated' ) ) {
 			/* translators: %s: five stars */
-			$footer_text = sprintf( __( 'If <strong>Booking Activities</strong> helps you, help it back leaving us a %s rating. We need you now to make it last!', 'booking-activities' ), '<a href="https://wordpress.org/support/plugin/booking-activities/reviews?rate=5#new-post" target="_blank" >&#9733;&#9733;&#9733;&#9733;&#9733;</a>' );
+			$footer_text = sprintf( __( 'Does <strong>Booking Activities</strong> help you? Help us back leaving a %s rating. We need you too.', 'booking-activities' ), '<a href="https://wordpress.org/support/plugin/booking-activities/reviews?rate=5#new-post" target="_blank" >&#9733;&#9733;&#9733;&#9733;&#9733;</a>' );
 		}
 	}
 

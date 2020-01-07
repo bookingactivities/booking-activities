@@ -1235,9 +1235,8 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	
 	/**
 	 * Retrieve group category ids by template ids
-	 * 
 	 * @since 1.1.0
-	 * @version 1.7.14
+	 * @version 1.7.16
 	 * @global wpdb $wpdb
 	 * @param array|int $template_ids
 	 * @param boolean $fetch_inactive
@@ -1245,7 +1244,6 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	 * @return array|boolean
 	 */
 	function bookacti_get_group_category_ids_by_template( $template_ids = array(), $fetch_inactive = false, $allowed_roles_only = false ) {
-		
 		// If empty, take them all
 		if( ! $template_ids ) {
 			$template_ids = array_keys( bookacti_fetch_templates( array(), true ) );
@@ -1264,28 +1262,32 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		
 		global $wpdb;
 		
-        $query	= 'SELECT id FROM ' . BOOKACTI_TABLE_GROUP_CATEGORIES . ' as C ';
+        $query	= 'SELECT DISTINCT C.id FROM ' . BOOKACTI_TABLE_GROUP_CATEGORIES . ' as C ';
 		
 		// Join the meta table to filter by roles
-		if( $allowed_roles_only ) {
+		if( $allowed_roles_only && ! is_super_admin() ) {
 			$query .= ' LEFT JOIN ( 
 							SELECT meta_value as roles, object_id as group_category_id 
 							FROM ' . BOOKACTI_TABLE_META . ' 
 							WHERE object_type = "group_category" 
 							AND meta_key = "allowed_roles" 
 						) as M ON M.group_category_id = C.id ';
+			$query .= ' LEFT JOIN ( 
+							SELECT user_id as manager_id, object_id as group_category_id
+							FROM ' . BOOKACTI_TABLE_PERMISSIONS . ' 
+							WHERE object_type = "group_category"
+						) as P ON P.group_category_id = C.id ';
 		}
 		
 		$query .= ' WHERE TRUE ';
 		
 		// Filter by roles
-		if( $allowed_roles_only ) {
+		if( $allowed_roles_only && ! is_super_admin() ) {
 			$current_user = wp_get_current_user();
-			$roles = array( 'all' );
+			$roles = $current_user && ! empty( $current_user->roles ) ? $current_user->roles : array();
 			
-			if( $current_user && ! empty( $current_user->roles ) ) {
-				$roles = $current_user->roles;
-			}
+			// If the "all" role is selected, allow everybody
+			$roles[] = 'all';
 			
 			$query .= ' AND ( ( M.roles = "a:0:{}" OR M.roles IS NULL OR M.roles = "" ) ';
 			if( $roles ) {
@@ -1295,6 +1297,10 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 					$roles[ $i ] = '%' . $wpdb->esc_like( $role ) . '%';
 				}
 				$variables = array_merge( $variables, $roles );
+			}
+			if( $current_user && isset( $current_user->ID ) ) {
+				$query .= ' OR P.manager_id = %d ';
+				$variables[] = $current_user->ID;
 			}
 			$query .= ' ) ';
 		}

@@ -11,7 +11,7 @@ $messages = bookacti_get_messages();
 
 /**
  * Fill the translation array to use it in js 
- * @version 1.7.15
+ * @version 1.7.16
  */
 $bookacti_translation_array = apply_filters( 'bookacti_translation_array', array(
 	// BUTTONS
@@ -237,7 +237,12 @@ $bookacti_translation_array = apply_filters( 'bookacti_translation_array', array
 	'current_user_id'					=> get_current_user_id(),
 	'is_admin'							=> is_admin(),
 	'current_time'						=> $current_datetime_object->format( 'Y-m-d H:i:s' ),
+	
+	'calendar_localization'				=> bookacti_get_setting_value( 'bookacti_messages_settings', 'calendar_localization' ),
+	'wp_time_format'					=> get_option( 'time_format' ),
+	'wp_start_of_week'					=> get_option( 'start_of_week' ),
 
+	
 	// NONCES
 	'nonce_selected_template_filter'	=> wp_create_nonce( 'bookacti_selected_template_filter' ),
 	'nonce_get_booking_rows'			=> wp_create_nonce( 'bookacti_get_booking_rows' ),
