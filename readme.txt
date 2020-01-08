@@ -321,6 +321,8 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 
 = 1.7.16 =
 * Tweak - Add an option to use more WP settings to localize the calendar, in Settings > Messages tab
+* Tweak - Add an option to display the calendar in full width on WC product pages, in Settings > WooCommerce tab
+* Tweak - Add an option to display your customers' booking list in WC My Account page, in Settings > WooCommerce tab
 * Fix - Activities may not be saved / displayed if only the Administrator role was not selected in permission tab
 * Optimization - Load js password strength meter only when required
 

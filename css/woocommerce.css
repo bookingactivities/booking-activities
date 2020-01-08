@@ -40,6 +40,7 @@ table.woocommerce_order_items ul.bookacti-booking-events-list { margin: 0; }
 
 /* Single product page */
 .woocommerce div.product form.cart table td.fc-axis { padding-left: 4px; }
+.woocommerce.single.single-product div.product.bookacti-activity form.cart { width: 100%; }
 
 /* Cart, Checkout */
 .bookacti-order-item-activity td.product-name .wc-item-meta .wc-item-meta-bookacti_booked_events,

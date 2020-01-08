@@ -745,7 +745,7 @@ function bookacti_settings_section_licenses_callback() { }
 								'wp_settings' => sprintf( esc_html__( 'Based on more WP settings (%s)', 'booking-activities' ), implode( ', ', array( __( 'Site Language' ), __( 'Time Format' ), __( 'Week Starts On' ) ) ) )
 							),
 			'value'		=> bookacti_get_setting_value( 'bookacti_messages_settings', 'calendar_localization' ),
-			'tip'		=> esc_html__( 'Many elements of the calendar are localized according to your Site Language: time format (12 or 24-hour), date format, first day of the week, text in buttons, names of the days and the months, and RTL display.' )
+			'tip'		=> esc_html__( 'Many elements of the calendar are localized according to your Site Language: time format (12 or 24-hour), date format, first day of the week, text in buttons, names of the days and the months, and RTL display.', 'booking-activities' )
 		);
 		bookacti_display_field( $args );
 	}

@@ -2377,84 +2377,167 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 
 // SETTINGS
+	// WOOCOMMERCE PRODUCTS SETTINGS
 	
+	/**
+	 * Display WC products settings section
+	 * @since 1.7.16
+	 */
+	function bookacti_settings_section_wc_products_callback() {}
+	
+	
+	/**
+	 * Setting for: Booking form location on product pages
+	 * @since 1.7.16
+	 */
+	function bookacti_settings_wc_product_pages_booking_form_location_callback() {
+		$args = array(
+			'type'		=> 'select',
+			'name'		=> 'bookacti_products_settings[wc_product_pages_booking_form_location]',
+			'id'		=> 'wc_product_pages_booking_form_location',
+			'options'	=> array( 
+								'default' => esc_html__( 'Inline (original layout)', 'booking-activities' ),
+								'form_below' => esc_html__( 'Full width', 'booking-activities' ),
+							),
+			'value'		=> bookacti_get_setting_value( 'bookacti_products_settings', 'wc_product_pages_booking_form_location' ),
+						/* translators: %s is the name of the described option: "Inline (original layout)" */
+			'tip'		=> sprintf( esc_html__( '%s: display the booking form before the add to cart button, without changing your theme layout.', 'booking-activities' ), '<strong>' . esc_html__( 'Inline (original layout)', 'booking-activities' ) . '</strong>' )
+						. '<br/>'
+						/* translators: %s is the name of the described option: "Full width (default)" */
+						. sprintf( esc_html__( '%s: move the add to cart form below the product summary. This option may not work properly with certain themes.', 'booking-activities' ), '<strong>' . esc_html__( 'Full width', 'booking-activities' ) . '</strong>' )
+		);
+		bookacti_display_field( $args );
+	}
+	
+	
+	
+	
+	// WOOCOMMERCE ACCOUNT SETTINGS
+	
+	/**
+	 * Display WC account settings section
+	 * @since 1.7.16
+	 */
+	function bookacti_settings_section_wc_account_callback() {}
+	
+	
+	/**
+	 * Setting for: Bookings page in My Account
+	 * @since 1.7.16
+	 */
+	function bookacti_settings_wc_my_account_bookings_page_id_callback() {
+		wp_enqueue_script( 'wc-enhanced-select' );
+		wp_enqueue_style( 'woocommerce_admin_styles' );
+		$args = array(
+			'name'					=> 'bookacti_account_settings[wc_my_account_bookings_page_id]',
+			'id'					=> 'wc_my_account_bookings_page_id',
+			'type'					=> 'single_select_page',
+			'default'				=> '',
+			'class'					=> 'wc-enhanced-select-nostd',
+			'sort_column'			=> 'menu_order',
+			'sort_order'			=> 'ASC',
+			'show_option_no_change'	=> esc_html__( 'Disabled' ),
+			'show_option_none'		=> esc_html__( 'Default booking list', 'booking-activities' ),
+			'option_none_value'		=> 0,
+			'selected'				=> bookacti_get_setting_value( 'bookacti_account_settings', 'wc_my_account_bookings_page_id' ),
+		);
+		wp_dropdown_pages( $args );
+		bookacti_help_tip( esc_html__( 'Select the page to display in the "Bookings" tab of the "My account" area. You can also display the default booking list, or completely disable this tab.', 'booking-activities' ) );
+	}
+	
+	
+	/**
+	 * Select the default value when no page is selected in "Bookings page in My Account" setting
+	 * This function is necessary since wp_dropdown_pages ignore the "selected" parameter for both "no_changes" and "none" options
+	 * @since 1.7.16
+	 * @param string $output
+	 * @param array $parsed_args
+	 * @param array $pages
+	 * @return string
+	 */
+	function bookacti_settings_wc_my_account_bookings_page_id_select_default_value( $output, $parsed_args, $pages ) {
+		if( $parsed_args[ 'id' ] !== 'wc_my_account_bookings_page_id' ) { return $output; }
+		if( intval( $parsed_args[ 'selected' ] ) > 0 ) { return $output; }
+		
+		$search	= '<option value="' . intval( $parsed_args[ 'selected' ] ) . '"';
+		$replace= $search . ' selected';
+		
+		return str_replace( $search, $replace, $output );
+	}
+	add_filter( 'wp_dropdown_pages', 'bookacti_settings_wc_my_account_bookings_page_id_select_default_value', 10, 3 );
+	
+	
+	
+	
+	// WOOCOMMERCE CART SETTINGS
+	
+	/**
+	 * Display WC cart settings section
+	 */
 	function bookacti_settings_section_cart_callback() {}
 	
 	/**
 	 * Setting for: Activate cart expiration
+	 * @version 1.7.16
 	 */
 	function bookacti_settings_field_activate_cart_expiration_callback() {
-		
-		$is_active = bookacti_get_setting_value( 'bookacti_cart_settings', 'is_cart_expiration_active' );
-		
-		// Display the field
-		$name	= 'bookacti_cart_settings[is_cart_expiration_active]';
-		$id		= 'is_cart_expiration_active';
-		bookacti_onoffswitch( $name, $is_active, $id );
-		
-		// Display the tip
-		$tip = __( "If cart expiration is off, the booking is made at the end of the checkout process. It means that an event available at the moment you add it to cart can be no longer available at the moment you wish to complete the order. With cart expiration on, the booking is made when it is added to cart and remains temporary until the end of the checkout process.", 'booking-activities' );
-		bookacti_help_tip( $tip );
+		$args = array(
+			'type'	=> 'checkbox',
+			'name'	=> 'bookacti_cart_settings[is_cart_expiration_active]',
+			'id'	=> 'is_cart_expiration_active',
+			'value'	=> bookacti_get_setting_value( 'bookacti_cart_settings', 'is_cart_expiration_active' ),
+			'tip'	=> esc_html__( "If cart expiration is off, the booking is made at the end of the checkout process. It means that an event available at the moment you add it to cart can be no longer available at the moment you wish to complete the order. With cart expiration on, the booking is made when it is added to cart and remains temporary until the end of the checkout process.", 'booking-activities' )
+		);
+		bookacti_display_field( $args );
 	}
 	
 	
 	/**
 	 * Setting for: Activate per product expiration
+	 * @version 1.7.16
 	 */
 	function bookacti_settings_field_per_product_expiration_callback() {
-		
-		$is_active = bookacti_get_setting_value( 'bookacti_cart_settings', 'is_cart_expiration_per_product' );
-		
-		//Display the field
-		$name	= 'bookacti_cart_settings[is_cart_expiration_per_product]';
-		$id		= 'is_cart_expiration_per_product';
-		
-		bookacti_onoffswitch( $name, $is_active, $id );
-		
-		//Display the tip
-		$tip = __( "The expiration time will be set for each product independantly, each with their own countdown before being removed from cart.", 'booking-activities' );
-		bookacti_help_tip( $tip );
+		$args = array(
+			'type'	=> 'checkbox',
+			'name'	=> 'bookacti_cart_settings[is_cart_expiration_per_product]',
+			'id'	=> 'is_cart_expiration_per_product',
+			'value'	=> bookacti_get_setting_value( 'bookacti_cart_settings', 'is_cart_expiration_per_product' ),
+			'tip'	=> esc_html__( 'The expiration time will be set for each product independantly, each with their own countdown before being removed from cart.', 'booking-activities' )
+		);
+		bookacti_display_field( $args );
 	}
 	
 	
 	/**
 	 * Setting for: Set amount of time before expiration
+	 * @version 1.7.16
 	 */
 	function bookacti_settings_field_cart_timeout_callback() { 
-		
-		$timeout = bookacti_get_setting_value( 'bookacti_cart_settings', 'cart_timeout' );
-		
-		//Display the field
-		?>
-		<input name='bookacti_cart_settings[cart_timeout]' 
-			   id='cart_expiration_time' 
-			   type='number' 
-			   min='1'
-			   value='<?php echo $timeout; ?>' />
-		<?php
-		
-		//Display the tip
-		$tip = __( 'Define the amount of time a user has before his cart gets empty.', 'booking-activities' );
-		bookacti_help_tip( $tip );
+		$args = array(
+			'type'		=> 'number',
+			'name'		=> 'bookacti_cart_settings[cart_timeout]',
+			'id'		=> 'cart_expiration_time',
+			'options'	=> array( 'min' => 1, 'step' => 1 ),
+			'value'		=> bookacti_get_setting_value( 'bookacti_cart_settings', 'cart_timeout' ),
+			'tip'		=> esc_html__( 'Define the amount of time a user has before his cart gets empty.', 'booking-activities' )
+		);
+		bookacti_display_field( $args );
 	}
 
 	
 	/**
 	 * Setting for: Reset the countdown each time a change occur to cart
+	 * @version 1.7.16
 	 */
 	function bookacti_settings_field_reset_cart_timeout_on_change_callback() {
-		
-		$is_active = bookacti_get_setting_value( 'bookacti_cart_settings', 'reset_cart_timeout_on_change' );
-		
-		//Display the field
-		$name	= 'bookacti_cart_settings[reset_cart_timeout_on_change]';
-		$id		= 'reset_cart_timeout_on_change';
-		
-		bookacti_onoffswitch( $name, $is_active, $id );
-		
-		//Display the tip
-		$tip = __( 'The countdown will be reset each time a product is added, or when a product quantity is changed.', 'booking-activities' );
-		bookacti_help_tip( $tip );
+		$args = array(
+			'type'	=> 'checkbox',
+			'name'	=> 'bookacti_cart_settings[reset_cart_timeout_on_change]',
+			'id'	=> 'reset_cart_timeout_on_change',
+			'value'	=> bookacti_get_setting_value( 'bookacti_cart_settings', 'reset_cart_timeout_on_change' ),
+			'tip'	=> esc_html__( 'The countdown will be reset each time a product is added, or when a product quantity is changed.', 'booking-activities' )
+		);
+		bookacti_display_field( $args );
 	}
 
 
