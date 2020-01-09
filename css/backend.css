@@ -102,6 +102,10 @@
 .bookacti-notifications-tags-list .bookacti-notifications-tag { margin-bottom: 8px; white-space: nowrap; }
 .bookacti-notifications-tag code { font-weight: normal; font-size: 0.8em; }
 
+.bookati-settings-tab-messages .form-table th			{ display: none; }
+.bookati-settings-tab-messages .form-table td			{ padding: 0 0 20px 0; font-size: 13px; }
+.bookati-settings-tab-messages #calendar_localization	{ margin-top: 6px; }
+
 .bookacti-message-setting		{ margin-bottom: 20px; }
 .bookacti-message-setting input	{ margin-top: 6px; }
 

@@ -1077,7 +1077,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 	/**
 	 * AJAX Controller - Get activities by template
-	 * @version 1.7.15
+	 * @version 1.7.16
 	 */
 	function bookacti_controller_get_activities_by_template() {
 
@@ -1096,9 +1096,10 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		$current_activities	= bookacti_get_activity_ids_by_template( $current_template_id, false );
 
 		// Check activity permissions, and remove not allowed activity ids
+		$user_id = get_current_user_id();
 		foreach( $new_activities as $new_activity_id => $new_activity ) {
 			if( ! in_array( $new_activity_id, $current_activities ) ) {
-				$is_allowed = bookacti_user_can_manage_activity( $new_activity_id );
+				$is_allowed = bookacti_user_can_manage_activity( $new_activity_id, $user_id, $new_activity[ 'admin' ] );
 				if( ! $is_allowed || ! $new_activity[ 'active' ] ) {
 					unset( $new_activities[ $new_activity_id ] );
 				}

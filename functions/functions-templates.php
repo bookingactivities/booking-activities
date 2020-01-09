@@ -64,19 +64,20 @@ function bookacti_get_editor_booking_system_data( $atts, $template_id ) {
 	
 	/**
 	 * Check if user is allowed to manage activity
-	 * @version 1.6.0
+	 * @version 1.7.16
 	 * @param int $activity_id
 	 * @param int|false $user_id False for current user
+	 * @param array|false $admins False to retrieve the activity managers
 	 * @return boolean
 	 */
-	function bookacti_user_can_manage_activity( $activity_id, $user_id = false ) {
+	function bookacti_user_can_manage_activity( $activity_id, $user_id = false, $admins = false ) {
 
 		$user_can_manage_activity = false;
 		$bypass_activity_managers_check = apply_filters( 'bookacti_bypass_activity_managers_check', false );
 		if( ! $user_id ) { $user_id = get_current_user_id(); }
 		if( is_super_admin() || $bypass_activity_managers_check ) { $user_can_manage_activity = true; }
 		else {
-			$admins = bookacti_get_activity_managers( $activity_id );
+			$admins = $admins === false ? bookacti_get_activity_managers( $activity_id ) : $admins;
 			if( $admins ) {
 				if( in_array( $user_id, $admins, true ) ) { $user_can_manage_activity = true; }
 			}
@@ -110,50 +111,43 @@ function bookacti_get_editor_booking_system_data( $atts, $template_id ) {
 // TEMPLATE X ACTIVITIES
 	/**
 	 * Retrieve template activities list
-	 * @version 1.7.10
+	 * @version 1.7.16
 	 * @param int $template_id
 	 * @return boolean|string 
 	 */
 	function bookacti_get_template_activities_list( $template_id ) {
+		if( ! $template_id ) { return false; }
 		
-		if( ! $template_id ) {
-			return false;
-		}
-		
-		$activities = bookacti_fetch_activities();
-		$template_activities = bookacti_get_activity_ids_by_template( $template_id, false );
+		$activities = bookacti_get_activities_by_template( array( $template_id ) );
 		
 		ob_start();
 		foreach ( $activities as $activity ) {
-			if( in_array( $activity->id, $template_activities ) ) {
-				$title = apply_filters( 'bookacti_translate_text', $activity->title );
-				?>
-				<div class='activity-row'>
-					<div class='activity-show-hide dashicons dashicons-visibility' data-activity-id='<?php echo esc_attr( $activity->id ); ?>' data-activity-visible='1' ></div>
-					<div class='activity-container'>
-						<div
-							class='fc-event ui-draggable ui-draggable-handle'
-							data-event='{"title": "<?php echo htmlentities( esc_attr( $title ), ENT_QUOTES ); ?>", "activity_id": "<?php echo esc_attr( $activity->id ); ?>", "color": "<?php echo esc_attr( $activity->color ); ?>", "stick":"true"}' 
-							data-activity-id='<?php echo esc_attr( $activity->id ); ?>'
-							data-duration='<?php echo esc_attr( $activity->duration ); ?>'
-							title='<?php esc_attr_e( $title ); ?>'
-							style='border-color:<?php echo esc_attr( $activity->color ); ?>; background-color:<?php echo esc_attr( $activity->color ); ?>'
-							>
-							<?php echo $title; ?>
-						</div>
+			$title = apply_filters( 'bookacti_translate_text', $activity[ 'title' ] );
+			?>
+			<div class='activity-row'>
+				<div class='activity-show-hide dashicons dashicons-visibility' data-activity-id='<?php echo esc_attr( $activity[ 'id' ] ); ?>' data-activity-visible='1' ></div>
+				<div class='activity-container'>
+					<div
+						class='fc-event ui-draggable ui-draggable-handle'
+						data-event='{"title": "<?php echo htmlentities( esc_attr( $title ), ENT_QUOTES ); ?>", "activity_id": "<?php echo esc_attr( $activity[ 'id' ] ); ?>", "color": "<?php echo esc_attr( $activity[ 'color' ] ); ?>", "stick":"true"}' 
+						data-activity-id='<?php echo esc_attr( $activity[ 'id' ] ); ?>'
+						data-duration='<?php echo esc_attr( $activity[ 'duration' ] ); ?>'
+						title='<?php esc_attr_e( $title ); ?>'
+						style='border-color:<?php echo esc_attr( $activity[ 'color' ] ); ?>; background-color:<?php echo esc_attr( $activity[ 'color' ] ); ?>'
+						>
+						<?php echo $title; ?>
 					</div>
-				<?php
-				if( current_user_can( 'bookacti_edit_activities' ) && bookacti_user_can_manage_activity( $activity->id ) ) {
-				?>
-					<div class='activity-gear dashicons dashicons-admin-generic' data-activity-id='<?php echo esc_attr( $activity->id ); ?>' ></div>
-				<?php
-				}
-				?>
 				</div>
-				<?php
+			<?php
+			if( current_user_can( 'bookacti_edit_activities' ) && bookacti_user_can_manage_activity( $activity[ 'id' ] ) ) {
+			?>
+				<div class='activity-gear dashicons dashicons-admin-generic' data-activity-id='<?php echo esc_attr( $activity[ 'id' ] ); ?>' ></div>
+			<?php
 			}
+			?>
+			</div>
+			<?php
 		}
-
 		return ob_get_clean();
 	}
 
@@ -229,7 +223,7 @@ function bookacti_get_editor_booking_system_data( $atts, $template_id ) {
 	 * Get a unique template setting made from a combination of multiple template settings
 	 * 
 	 * @since	1.2.2 (was bookacti_get_mixed_template_settings)
-	 * @version 1.7.3
+	 * @version 1.7.16
 	 * @param	array|int $template_ids Array of template ids or single template id
 	 * @param	boolean $past_events Whether to allow past events
 	 * @return	array
@@ -266,7 +260,7 @@ function bookacti_get_editor_booking_system_data( $atts, $template_id ) {
 					$mixed_settings[ 'snapDuration' ] = $settings[ 'snapDuration' ];
 				} 
 			}
-			if( ! $past_events && isset( $settings[ 'availability_period_start' ] ) && $settings[ 'availability_period_start' ] != -1 ) {
+			if( ! $past_events && isset( $settings[ 'availability_period_start' ] ) ) {
 				// Keep the higher value
 				if(  ! isset( $mixed_settings[ 'availability_period_start' ] ) 
 					|| isset( $mixed_settings[ 'availability_period_start' ] ) && $settings[ 'availability_period_start' ] > $mixed_settings[ 'availability_period_start' ] ) {
@@ -274,7 +268,7 @@ function bookacti_get_editor_booking_system_data( $atts, $template_id ) {
 					$mixed_settings[ 'availability_period_start' ] = $settings[ 'availability_period_start' ];
 				} 
 			}
-			if( ! $past_events && isset( $settings[ 'availability_period_end' ] ) && $settings[ 'availability_period_end' ] != -1 ) {
+			if( ! $past_events && isset( $settings[ 'availability_period_end' ] ) ) {
 				// Keep the lower value
 				if(  ! isset( $mixed_settings[ 'availability_period_end' ] ) 
 					|| isset( $mixed_settings[ 'availability_period_end' ] ) && $settings[ 'availability_period_end' ] < $mixed_settings[ 'availability_period_end' ] ) {
@@ -285,11 +279,11 @@ function bookacti_get_editor_booking_system_data( $atts, $template_id ) {
 		}
 		
 		// Take default availability period if not set
-		if( ! isset( $mixed_settings[ 'availability_period_start' ] ) || $mixed_settings[ 'availability_period_start' ] === '' ) {
-			$mixed_settings[ 'availability_period_start' ] = $past_events ? 0 : bookacti_get_setting_value( 'bookacti_general_settings', 'availability_period_start' );
+		if( ! isset( $mixed_settings[ 'availability_period_start' ] ) || ( isset( $mixed_settings[ 'availability_period_start' ] ) && ! is_numeric( $mixed_settings[ 'availability_period_start' ] ) ) ) {
+			$mixed_settings[ 'availability_period_start' ] = 0;
 		}
-		if( ! isset( $mixed_settings[ 'availability_period_end' ] ) || $mixed_settings[ 'availability_period_end' ] === '' ) {
-			$mixed_settings[ 'availability_period_end' ] = $past_events ? 0 : bookacti_get_setting_value( 'bookacti_general_settings', 'availability_period_end' );
+		if( ! isset( $mixed_settings[ 'availability_period_end' ] ) || ( isset( $mixed_settings[ 'availability_period_end' ] ) && ! is_numeric( $mixed_settings[ 'availability_period_end' ] ) ) ) {
+			$mixed_settings[ 'availability_period_end' ] = 0;
 		}
 		
 		$mixed_data = array();

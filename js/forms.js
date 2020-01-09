@@ -7,15 +7,21 @@ $j( document ).ready( function() {
 	
 	/**
 	 * Check password strength
-	 * @version 1.7.6
+	 * @version 1.7.16
 	 */
 	$j( 'body' ).on( 'keyup mouseup change', '.bookacti-booking-form input[name=password], .bookacti-form-fields input[name=password]', function( e ) {
 		var password_field			= $j( this );
 		var password_confirm_field	= null;
 		var password_strength_meter	= $j( this ).closest( '.bookacti-form-field-container' ).find( '.bookacti-password-strength-meter' );
 		var blacklisted_words		= [];
-		var pwd_strength = bookacti_check_password_strength( password_field, password_confirm_field, password_strength_meter, blacklisted_words );
-		$j( this ).closest( '.bookacti-form-field-container' ).find( 'input[name=password_strength]' ).val( pwd_strength );
+		var login_type				= password_field.closest( '.bookacti-booking-form, .bookacti-form-fields' ).find( 'input[name="login_type"]:checked' ).val();
+		
+		if( password_strength_meter.length && login_type === 'new_account' ) {
+			var pwd_strength = bookacti_check_password_strength( password_field, password_confirm_field, password_strength_meter, blacklisted_words );
+			$j( this ).closest( '.bookacti-form-field-container' ).find( 'input[name=password_strength]' ).val( pwd_strength );
+		} else {
+			password_field.removeClass( 'short bad good strong' );
+		}
 	});
 	
 	// Forgotten password dialog
@@ -264,6 +270,7 @@ function bookacti_show_hide_register_fields( login_field_container ) {
 /**
  * Get password strength and display a password strength meter
  * @since 1.5.0
+ * @since 1.7.16
  * @param {html_element} password_field
  * @param {html_element} password_confirm_field
  * @param {html_element} password_strength_meter
@@ -271,6 +278,8 @@ function bookacti_show_hide_register_fields( login_field_container ) {
  * @returns {int}
  */
 function bookacti_check_password_strength( password_field, password_confirm_field, password_strength_meter, blacklisted_words ) {
+	if( typeof window.zxcvbn === 'undefined' || typeof wp.passwordStrength === 'undefined' || typeof pwsL10n === 'undefined' ) { return 4; }
+	
 	var pwd = password_field.val();
 	var confirm_pwd = password_confirm_field != null ? password_confirm_field.val() : pwd;
 	

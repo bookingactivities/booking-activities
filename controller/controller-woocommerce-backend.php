@@ -520,7 +520,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	
 	/**
 	 * Content of the activity tab
-	 * @version 1.7.12
+	 * @version 1.7.16
 	 * @global int $thepostid
 	 */
 	function bookacti_activity_tab_content() {
@@ -612,7 +612,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			</div>
 			<div class='options_group bookacti-deprecated-hidden'>
 			<?php
-				$booking_methods_array = array_merge( array( 'site' => __( 'Site setting', 'booking-activities' ) ), bookacti_get_available_booking_methods() );
+				$booking_methods_array = bookacti_get_available_booking_methods();
 		
 				woocommerce_wp_select( 
 					array( 
@@ -923,7 +923,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	
 	/**
 	 * Add custom fields for activity variation product type
-	 * @version 1.7.12
+	 * @version 1.7.16
 	 * @param int $loop
 	 * @param array $variation_data
 	 * @param WP_Post $variation
@@ -1062,12 +1062,6 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 				<select name='bookacti_variable_booking_method[<?php echo esc_attr( $loop ); ?>]' id='bookacti_variable_booking_method_<?php echo esc_attr( $loop ); ?>' class='bookacti_variable_booking_method' data-loop='<?php echo esc_attr( $loop ); ?>' >
 					<option value='parent' <?php selected( true, $is_default_booking_method, true ); ?> >
 						<?php esc_html_e( 'Parent setting', 'booking-activities' ); ?>
-					</option>
-					<option value='site' <?php selected( 'site', esc_attr( $current_booking_method ), true ); ?> >
-						<?php 
-							/* translators: This is an option in a select box that means 'Use the setting of the whole website' */
-							esc_html_e( 'Site setting', 'booking-activities' ); 
-						?>
 					</option>
 					<?php
 					$available_booking_methods = bookacti_get_available_booking_methods();
@@ -1288,7 +1282,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 	/**
 	 * Save custom variation product
-	 * @version 1.5.0
+	 * @version 1.7.16
 	 * @param int $post_id
 	 */
 	function bookacti_save_variation_option( $post_id ) {
@@ -1325,8 +1319,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 					// Build array of available booking methods
 					$avail_booking_methods = array_keys( bookacti_get_available_booking_methods() );
 					$avail_booking_methods[] = 'parent';
-					$avail_booking_methods[] = 'site';
-
+					
 					// Check selected booking methods against available ones
 					$sanitized_booking_method	= sanitize_title_with_dashes( $_POST[ 'bookacti_variable_booking_method' ][ $key ] );
 					$variable_booking_method	= in_array( $sanitized_booking_method, $avail_booking_methods, true ) ? $sanitized_booking_method : 'parent';
@@ -1427,7 +1420,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	/**
 	 * AJAX Controller - Migrate product or variation settings to a new booking form
 	 * @since 1.5.0
-	 * @version 1.7.12
+	 * @version 1.7.16
 	 */
 	function bookacti_controller_migrate_product_settings_to_booking_form() {
 		$json_action = 'migrate_product_settings';
@@ -1456,7 +1449,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		$group_categories	= get_post_meta( $product_id, '_bookacti_group_categories', true );
 		if( ! $group_categories ) { $group_categories = false; }
 		$product_booking_system_meta = array(
-			'method'				=> $booking_method !== 'site' ? $booking_method : bookacti_get_setting_value( 'bookacti_general_settings', 'booking_method' ),
+			'method'				=> $booking_method,
 			'calendars'				=> get_post_meta( $product_id, '_bookacti_template', true ),
 			'activities'			=> get_post_meta( $product_id, '_bookacti_activity', true ),
 			'group_categories'		=> $group_categories,
@@ -1478,7 +1471,6 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			
 			// Format variation meta
 			$booking_method		= get_post_meta( $variation_id, 'bookacti_variable_booking_method', true );
-			if( $booking_method === 'site' ) { $booking_method = bookacti_get_setting_value( 'bookacti_general_settings', 'booking_method' ); }
 			$calendars			= get_post_meta( $variation_id, 'bookacti_variable_template', true );
 			$activities			= get_post_meta( $variation_id, 'bookacti_variable_activity', true );
 			$group_categories	= get_post_meta( $variation_id, 'bookacti_variable_group_categories', true );

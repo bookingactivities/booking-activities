@@ -94,7 +94,7 @@ $j( document ).ready( function() {
 
 /**
  * Initialize and display the template calendar
- * @version 1.7.10
+ * @version 1.7.16
  * @param {dom_element} calendar
  */
 function bookacti_load_template_calendar( calendar ) {
@@ -170,8 +170,15 @@ function bookacti_load_template_calendar( calendar ) {
 			}
 		},
 
-
-		// When an event is rendered
+		
+		/**
+		 * When an event is rendered
+		 * @version 1.7.16
+		 * @param {object} event
+		 * @param {dom_element} element
+		 * @param {object} view
+		 * @returns {Boolean}
+		 */
 		eventRender: function( event, element, view ) { 
 			// Directly return true if the event is resizing or dragging to avoid overload
 			if( bookacti.is_dragging || bookacti.is_resizing ) { return true; }
@@ -202,6 +209,9 @@ function bookacti_load_template_calendar( calendar ) {
 			// Remove trailing AM/PM in agenda views
 			if( view.name.indexOf( 'agenda' ) > -1 ){
 				time_format = calendar.fullCalendar( 'option', 'noMeridiemTimeFormat' );
+			}
+			if( bookacti_localized.calendar_localization === 'wp_settings' ){
+				time_format = bookacti_convert_php_datetime_format_to_moment_js( bookacti_localized.wp_time_format );
 			}
 			element.find( '.fc-time' ).html( '<span class="bookacti-event-time-start">' + event.start.format( time_format ) + '</span><span class="bookacti-event-time-separator"> - </span><span class="bookacti-event-time-end">' + event.end.format( time_format ) + '</span>' );
 			
@@ -876,6 +886,12 @@ function bookacti_load_template_calendar( calendar ) {
 			}
 		}
 	};
+	
+	if( bookacti_localized.calendar_localization === 'wp_settings' ) {
+		init_data.firstDay			= bookacti_localized.wp_start_of_week;
+		init_data.slotLabelFormat	= bookacti_convert_php_datetime_format_to_moment_js( bookacti_localized.wp_time_format );
+		init_data.timeFormat		= bookacti_convert_php_datetime_format_to_moment_js( bookacti_localized.wp_time_format );
+	}
 	
 	// Let third-party plugin change initial calendar data
 	calendar.trigger( 'bookacti_calendar_editor_init_data', [ init_data ] );

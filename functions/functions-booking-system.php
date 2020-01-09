@@ -303,7 +303,7 @@ function bookacti_get_booking_system_default_attributes() {
 
 /**
  * Check booking system attributes and format them to be correct
- * @version 1.7.15
+ * @version 1.7.16
  * @param array $atts 
  * @return array
  */
@@ -406,16 +406,11 @@ function bookacti_format_booking_system_attributes( $atts = array() ) {
 		$atts[ 'template_data' ][ 'settings' ]	= ! empty( $atts[ 'template_data' ][ 'settings' ] ) ? bookacti_format_template_settings( $atts[ 'template_data' ][ 'settings' ] ) : $templates_data[ 'settings' ];
 	}
 	
-	// If booking method is set to 'site', get the site default
-	$atts[ 'method' ] = esc_attr( $atts[ 'method' ] );
-	if( $atts[ 'method' ] === 'site' ) {
-		$atts[ 'method' ] = bookacti_get_setting_value( 'bookacti_general_settings', 'booking_method' );
-	}
-	
 	// Check if desired booking method is registered
-	$available_booking_methods = bookacti_get_available_booking_methods();
-	if( ! in_array( $atts[ 'method' ], array_keys( $available_booking_methods ), true ) ) {
-		$atts[ 'method' ] = 'calendar';
+	$atts[ 'method' ] = esc_attr( $atts[ 'method' ] );
+	$available_booking_methods = array_keys( bookacti_get_available_booking_methods() );
+	if( ! in_array( $atts[ 'method' ], $available_booking_methods, true ) ) {
+		$atts[ 'method' ] = in_array( $defaults[ 'method' ], $available_booking_methods, true ) ? $defaults[ 'method' ] : 'calendar';
 	}
 	
 	// Sanitize user id
@@ -567,7 +562,7 @@ function bookacti_format_booking_system_url_attributes( $atts = array() ) {
 /**
  * Get booking system fields default data
  * @since 1.5.0
- * @version 1.7.8
+ * @version 1.7.16
  * @param array $fields
  * @return array
  */
@@ -737,34 +732,28 @@ function bookacti_get_booking_system_fields_default_data( $fields = array() ) {
 	
 	// Availability Period Start
 	if( ! $fields || in_array( 'availability_period_start', $fields, true ) ) {
-		$tip = esc_html__( 'Set the beginning of the availability period. E.g.: "2", your customers may book events starting in 2 days at the earliest. They are no longer allowed to book events starting earlier (like today or tomorrow).', 'booking-activities' );
-		$tip .= '<br/>' . esc_html__( 'Set it to "-1" to use the global value.', 'booking-activities' );
-		
 		$defaults[ 'availability_period_start' ] = array(
 			'type'			=> 'number',
 			'name'			=> 'availability_period_start',
-			'options'		=> array( 'min' => -1, 'step' => 1 ),
+			'options'		=> array( 'min' => 0, 'step' => 1 ),
 			/* translators: Followed by a field indicating a number of days before the event. E.g.: "Events will be bookable in 2 days from today". */
 			'title'			=> esc_html__( 'Events will be bookable in', 'booking-activities' ),
 			/* translators: Arrives after a field indicating a number of days before the event. E.g.: "Events will be bookable in 2 days from today". */
 			'label'			=> esc_html__( 'days from today', 'booking-activities' ),
-			'tip'			=> $tip
+			'tip'			=> esc_html__( 'Set the beginning of the availability period. E.g.: "2", your customers may book events starting in 2 days at the earliest. They are no longer allowed to book events starting earlier (like today or tomorrow).', 'booking-activities' )
 		);
 	}
 	
 	// Availability Period End
 	if( ! $fields || in_array( 'availability_period_end', $fields, true ) ) {
-		$tip = esc_html__( 'Set the end of the availability period. E.g.: "30", your customers may book events starting within 30 days at the latest. They are not allowed yet to book events starting later.', 'booking-activities' );
-		$tip .= '<br/>' . esc_html__( 'Set it to "-1" to use the global value.', 'booking-activities' );
-		
 		$defaults[ 'availability_period_end' ] = array(
 			'type'			=> 'number',
 			'name'			=> 'availability_period_end',
-			'options'		=> array( 'min' => -1, 'step' => 1 ),
+			'options'		=> array( 'min' => 0, 'step' => 1 ),
 			/* translators: Followed by a field indicating a number of days before the event. E.g.: "Events are bookable for up to 30 days from today". */
 			'title'			=>  esc_html__( 'Events are bookable for up to', 'booking-activities' ),
 			'label'			=> esc_html__( 'days from today', 'booking-activities' ),
-			'tip'			=> $tip
+			'tip'			=> esc_html__( 'Set the end of the availability period. E.g.: "30", your customers may book events starting within 30 days at the latest. They are not allowed yet to book events starting later.', 'booking-activities' )
 		);
 	}
 	
@@ -1444,7 +1433,7 @@ function bookacti_get_events_array_from_db_events( $events, $past_events, $inter
  * Get a new interval of events to load. Computed from the compulsory interval, or now's date and template interval.
  * 
  * @since 1.2.2
- * @version 1.5.9
+ * @version 1.7.16
  * @param array $template_interval array( 'start'=>Calendar start, 'end'=> Calendar end, 'settings'=> array( 'availability_period_start'=> Relative start from today, 'availability_period_end'=> Relative end from today) ) 
  * @param array $min_interval array( 'start'=> Calendar start, 'end'=> Calendar end)
  * @param int $interval_duration Number of days of the interval
@@ -1452,12 +1441,11 @@ function bookacti_get_events_array_from_db_events( $events, $past_events, $inter
  * @return array
  */
 function bookacti_get_new_interval_of_events( $template_interval, $min_interval = array(), $interval_duration = false, $past_events = false ) {
-	
 	if( ! isset( $template_interval[ 'start' ] ) || ! isset( $template_interval[ 'end' ] ) ) { return array(); }
 	
 	// Take default availability period if not set
-	if( ! isset( $template_interval[ 'settings' ][ 'availability_period_start' ] ) || $template_interval[ 'settings' ][ 'availability_period_start' ] == -1 ){ $template_interval[ 'settings' ][ 'availability_period_start' ]	= bookacti_get_setting_value( 'bookacti_general_settings', 'availability_period_start' ); }
-	if( ! isset( $template_interval[ 'settings' ][ 'availability_period_end' ] ) || $template_interval[ 'settings' ][ 'availability_period_end' ] == -1 )	{ $template_interval[ 'settings' ][ 'availability_period_end' ]		= bookacti_get_setting_value( 'bookacti_general_settings', 'availability_period_end' ); }
+	if( ! isset( $template_interval[ 'settings' ][ 'availability_period_start' ] ) ){ $template_interval[ 'settings' ][ 'availability_period_start' ]	= 0; }
+	if( ! isset( $template_interval[ 'settings' ][ 'availability_period_end' ] ) )	{ $template_interval[ 'settings' ][ 'availability_period_end' ]		= 0; }
 	
 	$timezone		= new DateTimeZone( bookacti_get_setting_value( 'bookacti_general_settings', 'timezone' ) );
 	$current_time	= new DateTime( 'now', $timezone );
@@ -1520,7 +1508,7 @@ function bookacti_get_new_interval_of_events( $template_interval, $min_interval 
 
 /**
  * Get availability period according to relative and absolute dates
- * @since 1.5.9
+ * @since 1.7.16
  * @param array $template_data
  * @param boolean $bypass_relative_period
  * @return array
@@ -1532,8 +1520,8 @@ function bookacti_get_availability_period( $template_data, $bypass_relative_peri
 	
 	if( ! $bypass_relative_period ) { 
 		// Take default availability period if not set
-		$availability_period_start	= isset( $template_data[ 'settings' ][ 'availability_period_start' ] ) && $template_data[ 'settings' ][ 'availability_period_start' ] != -1 ? intval( $template_data[ 'settings' ][ 'availability_period_start' ] ) : intval( bookacti_get_setting_value( 'bookacti_general_settings', 'availability_period_start' ) );
-		$availability_period_end	= isset( $template_data[ 'settings' ][ 'availability_period_end' ] ) && $template_data[ 'settings' ][ 'availability_period_end' ] != -1 ? intval( $template_data[ 'settings' ][ 'availability_period_end' ] ) : intval( bookacti_get_setting_value( 'bookacti_general_settings', 'availability_period_end' ) ); 
+		$availability_period_start	= isset( $template_data[ 'settings' ][ 'availability_period_start' ] ) ? intval( $template_data[ 'settings' ][ 'availability_period_start' ] ) : 0;
+		$availability_period_end	= isset( $template_data[ 'settings' ][ 'availability_period_end' ] ) ? intval( $template_data[ 'settings' ][ 'availability_period_end' ] ) : 0; 
 		$timezone					= new DateTimeZone( bookacti_get_setting_value( 'bookacti_general_settings', 'timezone' ) );
 		$current_time				= new DateTime( 'now', $timezone );
 

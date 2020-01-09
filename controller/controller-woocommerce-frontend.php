@@ -12,13 +12,11 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 	/**
 	 * Add woocommerce related translations
-	 * @param type $translation_array
-	 * @return type
+	 * @version 1.7.16
+	 * @param array $translation_array
+	 * @return array
 	 */
 	function bookacti_woocommerce_translation_array( $translation_array ) {
-		
-		$site_booking_method = bookacti_get_setting_value( 'bookacti_general_settings',	'booking_method' );
-		
 		$translation_array[ 'expired_min' ]						= esc_html__( 'expired', 'booking-activities' );
 		$translation_array[ 'expired' ]							= esc_html__( 'Expired', 'booking-activities' );
 		$translation_array[ 'in_cart' ]							= esc_html__( 'In cart', 'booking-activities' );
@@ -33,7 +31,6 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		$translation_array[ 'advice_coupon_created' ]			= esc_html__( 'A %1$s coupon has been created. You can use it once for any order at any time.', 'booking-activities' );
 		$translation_array[ 'add_product_to_cart_button_text' ]	= esc_html__( 'Add to cart', 'woocommerce' );
 		$translation_array[ 'add_booking_to_cart_button_text' ]	= bookacti_get_message( 'booking_form_submit_button' );
-		$translation_array[ 'site_booking_method' ]				= $site_booking_method;
 		
 		return $translation_array;
 	}
@@ -145,8 +142,24 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 // SINGLE PRODUCT PAGE
 	
 	/**
+	 * Move the add-to-cart form below the product summary
+	 * @since 1.7.16
+	 */
+	function bookacti_move_add_to_cart_form_below_product_summary() {
+		$priority = has_action( 'woocommerce_single_product_summary', 'woocommerce_template_single_add_to_cart' );
+		if( $priority && ! has_action( 'woocommerce_after_single_product_summary', 'woocommerce_template_single_add_to_cart' ) ) {
+			if( bookacti_get_setting_value( 'bookacti_products_settings', 'wc_product_pages_booking_form_location' ) === 'form_below' ) {
+				remove_action( 'woocommerce_single_product_summary', 'woocommerce_template_single_add_to_cart', $priority );
+				add_action( 'woocommerce_after_single_product_summary', 'woocommerce_template_single_add_to_cart', 5 );
+			}
+		}
+	}
+	add_action( 'after_setup_theme', 'bookacti_move_add_to_cart_form_below_product_summary', 10 );
+	
+	
+	/**
 	 * Add booking forms to single product page (front-end)
-	 * @version 1.7.14
+	 * @version 1.7.16
 	 * @global WC_Product $product
 	 */
 	function bookacti_add_booking_system_in_single_product_page() {
@@ -175,23 +188,13 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			$group_categories		= get_post_meta( $product->get_id(), '_bookacti_group_categories', true );
 			$groups_only			= get_post_meta( $product->get_id(), '_bookacti_groups_only', true );
 			$groups_single_events	= get_post_meta( $product->get_id(), '_bookacti_groups_single_events', true );
-
-			// Convert 'site' booking methods to actual booking method
-			// And make sure the resulting booking method exists
+			
+			// Make sure the booking method exists
 			$available_booking_methods = bookacti_get_available_booking_methods();
 			if( ! in_array( $booking_method, array_keys( $available_booking_methods ), true ) ) {
-				if( $booking_method === 'site' ) {
-					$site_booking_method = bookacti_get_setting_value( 'bookacti_general_settings', 'booking_method' );
-					if( in_array( $site_booking_method, array_keys( $available_booking_methods ), true ) ) {
-						$booking_method = $site_booking_method;
-					} else {
-						$booking_method = 'calendar';
-					}
-				} else {
-					$booking_method = 'calendar';
-				}
+				$booking_method = 'calendar';
 			}
-
+			
 			$atts = array( 
 				'calendars'				=> is_numeric( $template_id ) ? array( $template_id ) : $template_id,
 				'activities'			=> is_numeric( $activity_id ) ? array( $activity_id ) : $activity_id,
@@ -1619,9 +1622,10 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		bookacti_save_order_data_as_booking_meta( $order );
 	}
 	add_action( 'woocommerce_checkout_order_processed', 'bookacti_change_booking_state_after_checkout', 10, 3 );
-	
-	
-	
+
+
+
+
 // BOOKING LIST
 	
 	/**
@@ -1758,3 +1762,73 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		return apply_filters( 'bookacti_user_booking_list_items_with_wc_data', $booking_list_items, $bookings, $booking_groups, $displayed_groups, $users, $filters, $columns, $orders, $order_items_data );
 	}
 	add_filter( 'bookacti_user_booking_list_items', 'bookacti_add_wc_data_to_user_booking_list_items', 10, 8 );
+
+
+
+
+// MY ACCOUNT
+
+	/**
+	 * Register the "Bookings" endpoint to use it on My Account
+	 * @since 1.7.16
+	 */
+	function bookacti_add_bookings_endpoint() {
+		add_rewrite_endpoint( 'bookings', EP_ROOT | EP_PAGES );
+	}
+	add_action( 'init', 'bookacti_add_bookings_endpoint', 10 );
+	
+	
+	/**
+	 * Add the "Bookings" tab to the My Account menu
+	 * @since 1.7.16
+	 * @param array $tabs
+	 * @return array
+	 */
+	function bookacti_add_bookings_tab_to_my_account_menu( $tabs ) {
+		$page_id = intval( bookacti_get_setting_value( 'bookacti_account_settings', 'wc_my_account_bookings_page_id' ) );
+		if( $page_id < 0 ) { return $tabs; }
+		
+		$inserted = false;
+		$new_tabs = array();
+		foreach( $tabs as $tab_key => $tab_title ) {
+			// Insert the "Bookings" tab before the "Logout" tab
+			if( $tab_key === 'customer-logout' && ! $inserted ) {
+				$new_tabs[ 'bookings' ] = esc_html__( 'Bookings', 'booking-activities' );
+				$inserted = true;
+			}
+			
+			$new_tabs[ $tab_key ] = $tab_title;
+			
+			// Insert the "Bookings" tab after the "Orders" tab
+			if( $tab_key === 'orders' && ! $inserted ) {
+				$new_tabs[ 'bookings' ] = esc_html__( 'Bookings', 'booking-activities' );
+				$inserted = true;
+			}
+		}
+		
+		// Insert the "Bookings" tab at the end if it hasn't been yet
+		if( ! $inserted ) {
+			$new_tabs[ 'bookings' ] = esc_html__( 'Bookings', 'booking-activities' );
+		}
+		
+		return $new_tabs;
+	}
+	add_filter( 'woocommerce_account_menu_items', 'bookacti_add_bookings_tab_to_my_account_menu', 50 );
+	
+	
+	/**
+	 * Display the content of the "Bookings" tab in My Account
+	 * @since 1.7.16
+	 */
+	function bookacti_display_my_account_bookings_tab_content() {
+		$page_id = intval( bookacti_get_setting_value( 'bookacti_account_settings', 'wc_my_account_bookings_page_id' ) );
+		if( $page_id === 0 ) {
+			echo do_shortcode( '[bookingactivities_list]' );
+		} else if( $page_id > 0 ) {
+			$page = get_page( $page_id );
+			if( $page && isset( $page->post_content ) ) {
+				echo apply_filters( 'the_content', $page->post_content );
+			}
+		}
+	}
+	add_action( 'woocommerce_account_bookings_endpoint', 'bookacti_display_my_account_bookings_tab_content', 10 );

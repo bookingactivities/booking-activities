@@ -4,7 +4,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 /**
  * Init Booking Activities settings
- * @version 1.7.14
+ * @version 1.7.16
  */
 function bookacti_init_settings() { 
 
@@ -17,11 +17,19 @@ function bookacti_init_settings() {
 	);
 	
 	add_settings_field(  
-		'booking_method', 
-		esc_html__( 'Booking method', 'booking-activities' ), 
-		'bookacti_settings_field_booking_method_callback', 
+		'timezone', 
+		esc_html__( 'Calendars timezone', 'booking-activities' ), 
+		'bookacti_settings_field_timezone_callback', 
 		'bookacti_general_settings', 
-		'bookacti_settings_section_general'
+		'bookacti_settings_section_general' 
+	);
+
+	add_settings_field(  
+		'default_calendar_view_threshold', 
+		esc_html__( 'Load the "Day" view if the calendar width is less than', 'booking-activities' ), 
+		'bookacti_settings_field_default_calendar_view_threshold_callback', 
+		'bookacti_general_settings', 
+		'bookacti_settings_section_general' 
 	);
 	
 	add_settings_field(  
@@ -55,25 +63,7 @@ function bookacti_init_settings() {
 		'bookacti_general_settings', 
 		'bookacti_settings_section_general' 
 	);
-
-	add_settings_field(  
-		'availability_period_start', 
-		/* translators: Followed by a field indicating a number of days before the event. E.g.: "Events will be bookable in 2 days from today". */
-		esc_html__( 'Events will be bookable in', 'booking-activities' ), 
-		'bookacti_settings_field_availability_period_start_callback', 
-		'bookacti_general_settings', 
-		'bookacti_settings_section_general' 
-	);
-
-	add_settings_field(  
-		'availability_period_end', 
-		/* translators: Followed by a field indicating a number of days before the event. E.g.: "Events are bookable for up to 30 days from today". */
-		esc_html__( 'Events are bookable for up to', 'booking-activities' ), 
-		'bookacti_settings_field_availability_period_end_callback', 
-		'bookacti_general_settings', 
-		'bookacti_settings_section_general' 
-	);
-
+	
 	add_settings_field(  
 		'default_booking_state', 
 		esc_html__( 'Default booking state', 'booking-activities' ), 
@@ -89,23 +79,7 @@ function bookacti_init_settings() {
 		'bookacti_general_settings', 
 		'bookacti_settings_section_general' 
 	);
-
-	add_settings_field(  
-		'timezone', 
-		esc_html__( 'Calendars timezone', 'booking-activities' ), 
-		'bookacti_settings_field_timezone_callback', 
-		'bookacti_general_settings', 
-		'bookacti_settings_section_general' 
-	);
-
-	add_settings_field(  
-		'default_calendar_view_threshold', 
-		esc_html__( 'Load the "Day" view if the calendar width is less than', 'booking-activities' ), 
-		'bookacti_settings_field_default_calendar_view_threshold_callback', 
-		'bookacti_general_settings', 
-		'bookacti_settings_section_general' 
-	);
-
+	
 	add_settings_field(  
 		'delete_data_on_uninstall', 
 		esc_html__( 'Delete data on uninstall', 'booking-activities' ), 
@@ -210,9 +184,16 @@ function bookacti_init_settings() {
 		'bookacti_messages_settings'
 	);
 	
+	add_settings_field( 
+		'calendar_localization',
+		esc_html__( 'Calendar localization', 'booking-activities' ),
+		'bookacti_settings_field_calendar_localization_callback',
+		'bookacti_messages_settings',
+		'bookacti_settings_section_messages'
+	);
 	
 	
-	/* Messages settings Section */
+	/* System settings Section */
 	add_settings_section( 
 		'bookacti_settings_section_system',
 		esc_html__( 'System', 'booking-activities' ),
@@ -895,7 +876,7 @@ add_filter( 'plugin_row_meta', 'bookacti_meta_links_in_plugins_table', 10, 2 );
 
 /** 
  * Ask to rate the plugin 5 stars
- * @version 1.7.8
+ * @version 1.7.16
  */
 function bookacti_5stars_rating_notice() {
 	if( ! bookacti_is_booking_activities_screen() ) { return; }
@@ -907,21 +888,21 @@ function bookacti_5stars_rating_notice() {
 				$install_datetime	= DateTime::createFromFormat( 'Y-m-d H:i:s', $install_date );
 				$current_datetime	= new DateTime();
 				$nb_days			= floor( $install_datetime->diff( $current_datetime )->days );
-				if( $nb_days >= 92 ) {
+				if( $nb_days >= 61 ) {
 					?>
 					<div class='notice notice-info bookacti-5stars-rating-notice is-dismissible' >
 						<p>
 							<?php 
-							_e( '<strong>Booking Activities</strong> has been helping you for three months now.', 'booking-activities' );
+							_e( '<strong>Booking Activities</strong> has been helping you for two months now.', 'booking-activities' );
 							echo '<br/>' 
 								/* translators: %s: five stars */
-								. sprintf( esc_html__( 'Would you help it back leaving us a %s rating? We need you now to make it last!', 'booking-activities' ), 
+								. sprintf( esc_html__( 'Would you help us back leaving a %s rating? We need you too.', 'booking-activities' ), 
 								  '<a href="https://wordpress.org/support/plugin/booking-activities/reviews?rate=5#new-post" target="_blank" >&#9733;&#9733;&#9733;&#9733;&#9733;</a>' );
 							?>
 						</p>
 						<p>
-							<a class='button' href='<?php echo esc_url( 'https://wordpress.org/support/plugin/booking-activities/reviews?rate=5#new-post' ); ?>' target='_blank' ><?php esc_html_e( "Ok, I'll rate you five stars!", 'booking-activities' ); ?></a>
-							<span class='button' id='bookacti-dismiss-5stars-rating' ><?php esc_html_e( "I already rated you, hide this message", 'booking-activities' ); ?></span>
+							<a class='button' href='<?php echo esc_url( 'https://wordpress.org/support/plugin/booking-activities/reviews?rate=5#new-post' ); ?>' target='_blank' ><?php esc_html_e( 'Ok, I\'ll rate you five stars!', 'booking-activities' ); ?></a>
+							<span class='button' id='bookacti-dismiss-5stars-rating' ><?php esc_html_e( 'I already rated you, hide this message', 'booking-activities' ); ?></span>
 						</p>
 					</div>
 					<?php
@@ -959,7 +940,7 @@ add_action( 'wp_ajax_bookactiDismiss5StarsRatingNotice', 'bookacti_dismiss_5star
 
 /**
  * Display a custom message in the footer
- * 
+ * @version 1.7.16
  * @param string $footer_text
  * @return string
  */
@@ -976,7 +957,7 @@ function bookacti_admin_footer_text( $footer_text ) {
 		// Change the footer text
 		if ( ! get_option( 'woocommerce_admin_footer_text_rated' ) ) {
 			/* translators: %s: five stars */
-			$footer_text = sprintf( __( 'If <strong>Booking Activities</strong> helps you, help it back leaving us a %s rating. We need you now to make it last!', 'booking-activities' ), '<a href="https://wordpress.org/support/plugin/booking-activities/reviews?rate=5#new-post" target="_blank" >&#9733;&#9733;&#9733;&#9733;&#9733;</a>' );
+			$footer_text = sprintf( __( 'Does <strong>Booking Activities</strong> help you? Help us back leaving a %s rating. We need you too.', 'booking-activities' ), '<a href="https://wordpress.org/support/plugin/booking-activities/reviews?rate=5#new-post" target="_blank" >&#9733;&#9733;&#9733;&#9733;&#9733;</a>' );
 		}
 	}
 

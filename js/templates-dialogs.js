@@ -113,7 +113,7 @@ function bookacti_init_template_dialogs() {
 
 /**
  * Dialog Create Template
- * @version 1.7.15
+ * @version 1.7.16
  */
 function bookacti_dialog_add_new_template() {
 	// Set the dialog title
@@ -128,8 +128,8 @@ function bookacti_dialog_add_new_template() {
 	$j( '#bookacti-template-data-minTime' ).val( '00:00' );
 	$j( '#bookacti-template-data-maxTime' ).val( '00:00' );
 	$j( '#bookacti-template-data-snapDuration' ).val( '00:05' );
-	$j( '#bookacti-template-availability-period-start' ).val( -1 );
-	$j( '#bookacti-template-availability-period-end' ).val( -1 );
+	$j( '#bookacti-template-availability-period-start' ).val( 0 );
+	$j( '#bookacti-template-availability-period-end' ).val( 0 );
 
 	$j( '#bookacti-template-data-dialog' ).trigger( 'bookacti_default_template_settings' );
 

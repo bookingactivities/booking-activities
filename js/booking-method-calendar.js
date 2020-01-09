@@ -1,6 +1,6 @@
 /**
  * Initialize the calendar
- * @version 1.7.6
+ * @version 1.7.16
  * @param {dom_element} booking_system
  * @param {boolean} reload_events
  */
@@ -80,6 +80,9 @@ function bookacti_set_calendar_up( booking_system, reload_events ) {
 			if( view.name.indexOf( 'agenda' ) > -1 ){
 				time_format = calendar.fullCalendar( 'option', 'noMeridiemTimeFormat' );
 			}
+			if( bookacti_localized.calendar_localization === 'wp_settings' ){
+				time_format = bookacti_convert_php_datetime_format_to_moment_js( bookacti_localized.wp_time_format );
+			}
 			element.find( '.fc-time' ).html( '<span class="bookacti-event-time-start">' + event.start.format( time_format ) + '</span><span class="bookacti-event-time-separator"> - </span><span class="bookacti-event-time-end">' + event.end.format( time_format ) + '</span>' );
 			
 			// Add availability div
@@ -140,6 +143,12 @@ function bookacti_set_calendar_up( booking_system, reload_events ) {
 			booking_system.trigger( 'bookacti_event_mouse_out', [ event, element ] );
 		}
 	};
+	
+	if( bookacti_localized.calendar_localization === 'wp_settings' ) {
+		init_data.firstDay			= bookacti_localized.wp_start_of_week;
+		init_data.slotLabelFormat	= bookacti_convert_php_datetime_format_to_moment_js( bookacti_localized.wp_time_format );
+		init_data.timeFormat		= bookacti_convert_php_datetime_format_to_moment_js( bookacti_localized.wp_time_format );
+	}
 	
 	// Let third-party plugin change initial calendar data
 	booking_system.trigger( 'bookacti_calendar_init_data', [ init_data ] );

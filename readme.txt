@@ -5,7 +5,7 @@ Tags: booking, reservation, booking form, woocommerce booking, booking events
 Requires at least: 3.6
 Tested up to: 5.3
 Requires PHP: 5.3
-Stable tag: 1.7.15
+Stable tag: 1.7.16
 License: GPLv3 or later
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
 
@@ -318,6 +318,14 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 
 
 == Changelog ==
+
+= 1.7.16 - 2020/01/09 =
+* Tweak - Remove some global settings: Booking method, availability period start and end. Set them for each booking form, in the Calendar field settings.
+* Tweak - Add an option to use more WP settings to localize the calendar, in Settings > Messages tab
+* Tweak - Add an option to display the calendar in full width on WC product pages, in Settings > WooCommerce tab
+* Tweak - Add an option to display your customers' booking list in WC My Account page, in Settings > WooCommerce tab
+* Fix - Activities may not be saved / displayed if only the Administrator role was not selected in permission tab
+* Optimization - Load js password strength meter only when required
 
 = 1.7.15 - 2020/01/04 =
 * Tweak - Display IDs in calendar and form editor dialogs (useful for CSS)

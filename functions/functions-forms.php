@@ -699,7 +699,7 @@ function bookacti_format_form_field_data( $raw_field_data ) {
 /**
  * Sanitize field data according to its type
  * @since 1.5.0
- * @version 1.7.13
+ * @version 1.7.16
  * @param array|string $raw_field_data
  * @return array|false
  */
@@ -736,7 +736,6 @@ function bookacti_sanitize_form_field_data( $raw_field_data ) {
 		}
 		
 		// Keep some meta unformatted
-		if( isset( $raw_field_data[ 'method' ] ) && $raw_field_data[ 'method' ] === 'site' )					{ $field_meta[ 'method' ] = 'site'; }
 		if( isset( $raw_field_data[ 'group_categories' ] ) && $raw_field_data[ 'group_categories' ] === 'none' ){ $field_meta[ 'group_categories' ] = 'none'; }
 		if( isset( $raw_field_data[ 'user_id' ] ) && $raw_field_data[ 'user_id' ] === 'current' )				{ $field_meta[ 'user_id' ] = 'current'; }
 		$field_meta[ 'id' ]		= isset( $raw_field_data[ 'id' ] ) && $raw_field_data[ 'id' ] !== '' ? sanitize_title_with_dashes( $raw_field_data[ 'id' ] ) : $default_meta[ 'id' ];
@@ -875,7 +874,7 @@ function bookacti_update_form_field_meta( $meta, $field_id_or_name, $form_id = 0
 /**
  * Sanitize the values entered by the user in the form fields
  * @since 1.5.0
- * @version 1.6.0
+ * @version 1.7.16
  * @param array $values
  * @param string $field_type
  * @return array
@@ -890,7 +889,7 @@ function bookacti_sanitize_form_field_values( $values, $field_type = '' ) {
 	if( $field_type === 'login' ) {
 		$sanitized_values[ 'email' ]	= ! empty( $values[ 'email' ] ) ? sanitize_email( stripslashes( $values[ 'email' ] ) ) : '';
 		$sanitized_values[ 'password' ]	= ! empty( $values[ 'password' ] ) ? trim( stripslashes( $values[ 'password' ] ) ) : '';
-		$sanitized_values[ 'password_strength' ] = ! empty( $values[ 'password_strength' ] ) ? intval( $values[ 'password_strength' ] ) : 0;
+		$sanitized_values[ 'password_strength' ] = ! empty( $values[ 'password_strength' ] ) ? intval( $values[ 'password_strength' ] ) : 1;
 		
 		$login_types = bookacti_get_login_type_field_default_options();
 		$sanitized_values[ 'login_type' ] = ! empty( $values[ 'login_type' ] ) && in_array( $values[ 'login_type' ], array_keys( $login_types ), true ) ? $values[ 'login_type' ] : '';
