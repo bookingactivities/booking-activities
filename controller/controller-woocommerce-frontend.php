@@ -12,13 +12,11 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 	/**
 	 * Add woocommerce related translations
-	 * @param type $translation_array
-	 * @return type
+	 * @version 1.7.16
+	 * @param array $translation_array
+	 * @return array
 	 */
 	function bookacti_woocommerce_translation_array( $translation_array ) {
-		
-		$site_booking_method = bookacti_get_setting_value( 'bookacti_general_settings',	'booking_method' );
-		
 		$translation_array[ 'expired_min' ]						= esc_html__( 'expired', 'booking-activities' );
 		$translation_array[ 'expired' ]							= esc_html__( 'Expired', 'booking-activities' );
 		$translation_array[ 'in_cart' ]							= esc_html__( 'In cart', 'booking-activities' );
@@ -33,7 +31,6 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		$translation_array[ 'advice_coupon_created' ]			= esc_html__( 'A %1$s coupon has been created. You can use it once for any order at any time.', 'booking-activities' );
 		$translation_array[ 'add_product_to_cart_button_text' ]	= esc_html__( 'Add to cart', 'woocommerce' );
 		$translation_array[ 'add_booking_to_cart_button_text' ]	= bookacti_get_message( 'booking_form_submit_button' );
-		$translation_array[ 'site_booking_method' ]				= $site_booking_method;
 		
 		return $translation_array;
 	}
@@ -162,7 +159,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	
 	/**
 	 * Add booking forms to single product page (front-end)
-	 * @version 1.7.14
+	 * @version 1.7.16
 	 * @global WC_Product $product
 	 */
 	function bookacti_add_booking_system_in_single_product_page() {
@@ -191,23 +188,13 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			$group_categories		= get_post_meta( $product->get_id(), '_bookacti_group_categories', true );
 			$groups_only			= get_post_meta( $product->get_id(), '_bookacti_groups_only', true );
 			$groups_single_events	= get_post_meta( $product->get_id(), '_bookacti_groups_single_events', true );
-
-			// Convert 'site' booking methods to actual booking method
-			// And make sure the resulting booking method exists
+			
+			// Make sure the booking method exists
 			$available_booking_methods = bookacti_get_available_booking_methods();
 			if( ! in_array( $booking_method, array_keys( $available_booking_methods ), true ) ) {
-				if( $booking_method === 'site' ) {
-					$site_booking_method = bookacti_get_setting_value( 'bookacti_general_settings', 'booking_method' );
-					if( in_array( $site_booking_method, array_keys( $available_booking_methods ), true ) ) {
-						$booking_method = $site_booking_method;
-					} else {
-						$booking_method = 'calendar';
-					}
-				} else {
-					$booking_method = 'calendar';
-				}
+				$booking_method = 'calendar';
 			}
-
+			
 			$atts = array( 
 				'calendars'				=> is_numeric( $template_id ) ? array( $template_id ) : $template_id,
 				'activities'			=> is_numeric( $activity_id ) ? array( $activity_id ) : $activity_id,

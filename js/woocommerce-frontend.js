@@ -347,6 +347,7 @@ function bookacti_fill_product_variation_form( form_container, variation, form_h
  * Switch booking system according to variation 
  * Used for BACKWARD COMPATIBILITY < 1.5
  * @deprecated since 1.5.0
+ * @version 1.7.16
  * @param {dom_element} booking_system
  * @param {object} variation
  */
@@ -380,8 +381,7 @@ function bookacti_switch_booking_system_according_to_variation( booking_system, 
 		if( group_categories[0]	=== 'none' )		{ group_categories	= false; }
 		else if( group_categories[0] === 'parent' )	{ group_categories	= bookacti.parent_booking_system[ booking_system_id ].group_categories; }
 		if( booking_method	=== 'parent' )			{ booking_method	= bookacti.parent_booking_system[ booking_system_id ].method; }
-		else if( booking_method	=== 'site' )		{ booking_method	= bookacti_localized.site_booking_method; }
-
+		
 		bookacti.booking_system[ booking_system_id ][ 'method' ]				= booking_method;
 		bookacti.booking_system[ booking_system_id ][ 'calendars' ]				= template_id;
 		bookacti.booking_system[ booking_system_id ][ 'activities' ]			= activity_id;

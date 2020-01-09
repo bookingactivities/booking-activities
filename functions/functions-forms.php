@@ -699,7 +699,7 @@ function bookacti_format_form_field_data( $raw_field_data ) {
 /**
  * Sanitize field data according to its type
  * @since 1.5.0
- * @version 1.7.13
+ * @version 1.7.16
  * @param array|string $raw_field_data
  * @return array|false
  */
@@ -736,7 +736,6 @@ function bookacti_sanitize_form_field_data( $raw_field_data ) {
 		}
 		
 		// Keep some meta unformatted
-		if( isset( $raw_field_data[ 'method' ] ) && $raw_field_data[ 'method' ] === 'site' )					{ $field_meta[ 'method' ] = 'site'; }
 		if( isset( $raw_field_data[ 'group_categories' ] ) && $raw_field_data[ 'group_categories' ] === 'none' ){ $field_meta[ 'group_categories' ] = 'none'; }
 		if( isset( $raw_field_data[ 'user_id' ] ) && $raw_field_data[ 'user_id' ] === 'current' )				{ $field_meta[ 'user_id' ] = 'current'; }
 		$field_meta[ 'id' ]		= isset( $raw_field_data[ 'id' ] ) && $raw_field_data[ 'id' ] !== '' ? sanitize_title_with_dashes( $raw_field_data[ 'id' ] ) : $default_meta[ 'id' ];

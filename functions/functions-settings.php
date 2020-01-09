@@ -13,13 +13,10 @@ function bookacti_get_default_settings() {
 	$tz = $date->getTimezone()->getName();
 	
 	$default = array(
-		'booking_method'						=> 'calendar',
 		'when_events_load'						=> 'after_page_load',
 		'event_load_interval'					=> 92,
 		'started_events_bookable'				=> false,
 		'started_groups_bookable'				=> false,
-		'availability_period_start'				=> 0,
-		'availability_period_end'				=> 0,
 		'default_booking_state'					=> 'pending',
 		'default_payment_status'				=> 'none',
 		'timezone'								=> $tz,
@@ -60,37 +57,31 @@ function bookacti_delete_settings() {
 
 /**
  * Get setting value
- * 
- * @version 1.7.0
- * @param string $setting_page
- * @param string $setting_field
+ * @version 1.7.16
+ * @param string $setting_group
+ * @param string $setting_name
  * @param boolean $translate
  * @return mixed
  */
-function bookacti_get_setting_value( $setting_page, $setting_field, $translate = true ) {
-	
-	$settings = get_option( $setting_page );
+function bookacti_get_setting_value( $setting_group, $setting_name, $translate = true ) {
+	$settings = get_option( $setting_group );
 	
 	if( ! is_array( $settings ) ) { $settings = array(); }
 	
-	if( ! isset( $settings[ $setting_field ] ) ) {
+	if( ! isset( $settings[ $setting_name ] ) ) {
 		$default = bookacti_get_default_settings();
-		if( isset( $default[ $setting_field ] ) ) {
-			$settings[ $setting_field ] = $default[ $setting_field ];
+		if( isset( $default[ $setting_name ] ) ) {
+			$settings[ $setting_name ] = $default[ $setting_name ];
 		} else {
-			$settings[ $setting_field ] = false;
+			$settings[ $setting_name ] = false;
 		}
 	}
 	
-	if( ! $translate ) {
-		return $settings[ $setting_field ];
+	if( $translate && is_string( $settings[ $setting_name ] ) ) {
+		$settings[ $setting_name ] = apply_filters( 'bookacti_translate_text', $settings[ $setting_name ] );
 	}
 	
-	if( is_string( $settings[ $setting_field ] ) ) {
-		$settings[ $setting_field ] = apply_filters( 'bookacti_translate_text', $settings[ $setting_field ] );
-	}
-	
-	return apply_filters( 'bookacti_get_setting_value', $settings[ $setting_field ], $setting_page, $setting_field, $translate );
+	return apply_filters( 'bookacti_get_setting_value', $settings[ $setting_name ], $setting_group, $setting_name, $translate );
 }
 
 
@@ -157,35 +148,6 @@ function bookacti_settings_section_licenses_callback() { }
 	
 
 // GENERAL SETTINGS 
-
-	/**
-	 * Display "Booking method" setting
-	 * @version 1.7.8
-	 */
-	function bookacti_settings_field_booking_method_callback() {
-		/* translators: The word 'Calendar' refers to a booking method you have to translate too. Make sure you use the same word for both translation. */
-		$tip  = apply_filters( 'bookacti_booking_methods_tip', __( "'Calendar': The user will have to pick the event directly on a calendar.", 'booking-activities' ) );
-		
-		$license_status = get_option( 'badp_license_status' );
-		if( ! $license_status || $license_status !== 'valid' ) {
-			$tip .= '<br/>';
-			/* translators: %s is the add-on name */
-			$tip .= sprintf( __( 'Get more display methods with the %s add-on!', 'booking-activities' ),
-							'<a href="https://booking-activities.fr/en/downloads/display-pack/?utm_source=plugin&utm_medium=plugin&utm_campaign=display-pack&utm_content=settings" target="_blank" >Display Pack</a>');
-		}
-		
-		$args = array(
-			'type'		=> 'select',
-			'name'		=> 'bookacti_general_settings[booking_method]',
-			'id'		=> 'booking_method',
-			'options'	=> bookacti_get_available_booking_methods(),
-			'value'		=> bookacti_get_setting_value( 'bookacti_general_settings', 'booking_method' ),
-			'tip'		=> $tip
-		);
-		bookacti_display_field( $args );
-	}
-
-	
 	/**
 	 * Display "When to load the events?" setting
 	 * 
@@ -259,53 +221,6 @@ function bookacti_settings_section_licenses_callback() { }
 			'id'	=> 'started_groups_bookable',
 			'value'	=> bookacti_get_setting_value( 'bookacti_general_settings', 'started_groups_bookable' ),
 			'tip'	=> $tip
-		);
-		bookacti_display_field( $args );
-	}
-	
-	
-	/**
-	 * Display event availability period start setting
-	 * @since 1.4.0
-	 * @version 1.7.8
-	 */
-	function bookacti_settings_field_availability_period_start_callback() {
-		
-		$tip = __( 'Set the beginning of the availability period. E.g.: "2", your customers may book events starting in 2 days at the earliest. They are no longer allowed to book events starting earlier (like today or tomorrow).', 'booking-activities' );
-		$tip .= '<br/>' . __( 'This parameter applies to all events. An calendar-specific parameter is available in calendar settings, in the calendar editor.', 'booking-activities' );
-		
-		$args = array(
-			'type'		=> 'number',
-			'name'		=> 'bookacti_general_settings[availability_period_start]',
-			'id'		=> 'availability_period_start',
-			'options'	=> array( 'min' => 0 ),
-			'label'		=> ' ' . esc_html__( 'days from today', 'booking-activities' ),
-			'value'		=> bookacti_get_setting_value( 'bookacti_general_settings', 'availability_period_start' ),
-			'tip'		=> $tip
-		);
-		bookacti_display_field( $args );
-	}
-	
-	
-	/**
-	 * Display event availability period end setting
-	 * @since 1.4.0
-	 * @version 1.7.8
-	 */
-	function bookacti_settings_field_availability_period_end_callback() {
-		
-		$tip = __( 'Set the end of the availability period. E.g.: "30", your customers may book events starting within 30 days at the latest. They are not allowed yet to book events starting later.', 'booking-activities' );
-		$tip .= '<br/>' . __( 'Set it to "0" to ignore this parameter.', 'booking-activities' );
-		$tip .= '<br/>' . __( 'This parameter applies to all events. An calendar-specific parameter is available in calendar settings.', 'booking-activities' );
-		
-		$args = array(
-			'type'		=> 'number',
-			'name'		=> 'bookacti_general_settings[availability_period_end]',
-			'id'		=> 'availability_period_end',
-			'options'	=> array( 'min' => 0 ),
-			'label'		=> ' ' . esc_html__( 'days from today', 'booking-activities' ),
-			'value'		=> bookacti_get_setting_value( 'bookacti_general_settings', 'availability_period_end' ),
-			'tip'		=> $tip
 		);
 		bookacti_display_field( $args );
 	}

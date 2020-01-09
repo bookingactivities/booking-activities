@@ -221,8 +221,6 @@ $bookacti_translation_array = apply_filters( 'bookacti_translation_array', array
 	'started_events_bookable'			=> bookacti_get_setting_value( 'bookacti_general_settings',	'started_events_bookable' ) ? true : false,
 	'started_groups_bookable'			=> bookacti_get_setting_value( 'bookacti_general_settings',	'started_groups_bookable' ) ? true : false,
 	'event_load_interval'				=> bookacti_get_setting_value( 'bookacti_general_settings', 'event_load_interval' ),
-	'availability_period_start'			=> bookacti_get_setting_value( 'bookacti_general_settings', 'availability_period_start' ),
-	'availability_period_end'			=> bookacti_get_setting_value( 'bookacti_general_settings', 'availability_period_end' ),
 	'default_view_threshold'			=> bookacti_get_setting_value( 'bookacti_general_settings', 'default_calendar_view_threshold' ),
 	
 	'date_format'						=> apply_filters( 'bookacti_translate_text', $messages[ 'date_format_short' ][ 'value' ] ),

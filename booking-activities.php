@@ -3,7 +3,7 @@
  * Plugin Name: Booking Activities
  * Plugin URI: https://booking-activities.fr/en/?utm_source=plugin&utm_medium=plugin&utm_content=header
  * Description: Booking system specialized in activities (sports, cultural, leisure, events...). Works great with WooCommerce.
- * Version: 1.7.15
+ * Version: 1.7.16
  * Author: Booking Activities Team
  * Author URI: https://booking-activities.fr/en/?utm_source=plugin&utm_medium=plugin&utm_content=header
  * Text Domain: booking-activities
@@ -40,7 +40,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 
 // GLOBALS AND CONSTANTS
-if( ! defined( 'BOOKACTI_VERSION' ) )		{ define( 'BOOKACTI_VERSION', '1.7.15' ); }
+if( ! defined( 'BOOKACTI_VERSION' ) )		{ define( 'BOOKACTI_VERSION', '1.7.16' ); }
 if( ! defined( 'BOOKACTI_PLUGIN_NAME' ) )	{ define( 'BOOKACTI_PLUGIN_NAME', 'booking-activities' ); }
 
 
@@ -406,6 +406,68 @@ function bookacti_check_version( $from_activate = false ) {
 	}
 }
 add_action( 'init', 'bookacti_check_version', 5 );
+
+
+/**
+ * Update the form settings and the template settings that relies on global settings removed in 1.7.16
+ * This function is temporary
+ * @since 1.7.16
+ * @global wpdb $wpdb
+ * @param string $old_version
+ */
+function bookacti_update_removed_global_settings_in_1_7_16( $old_version ) {
+	// Do it only once, when Booking Activities is updated for the first time after 1.7.16
+	if( version_compare( $old_version, '1.7.16', '<' ) ) {
+		// Get the global values
+		$global_booking_method				= bookacti_get_setting_value( 'bookacti_general_settings', 'booking_method' );
+		$global_availability_period_start	= bookacti_get_setting_value( 'bookacti_general_settings', 'availability_period_start' );
+		$global_availability_period_end		= bookacti_get_setting_value( 'bookacti_general_settings', 'availability_period_end' );
+		
+		global $wpdb;
+		
+		// Update the "Booking method" setting (Calendar form fields)
+		$booking_method_updated = $wpdb->update( 
+			BOOKACTI_TABLE_META, 
+			array( 'meta_value' => $global_booking_method ? $global_booking_method : 'calendar' ),
+			array( 'meta_key' => 'method', 'meta_value' => 'site' ),
+			array( '%s' ),
+			array( '%s', '%s' )
+		);
+		$wc_product_booking_method_updated = $wpdb->update( 
+			$wpdb->postmeta, 
+			array( 'meta_value' => $global_booking_method ? $global_booking_method : 'calendar' ),
+			array( 'meta_key' => '_bookacti_booking_method', 'meta_value' => 'site' ),
+			array( '%s' ),
+			array( '%s', '%s' )
+		);
+		$wc_variation_booking_method_updated = $wpdb->update( 
+			$wpdb->postmeta, 
+			array( 'meta_value' => $global_booking_method ? $global_booking_method : 'calendar' ),
+			array( 'meta_key' => 'bookacti_variable_booking_method', 'meta_value' => 'site' ),
+			array( '%s' ),
+			array( '%s', '%s' )
+		);
+		
+		// Update the "Events will be bookable in" setting (Templates, Calendar form fields)
+		$availability_period_start_updated = $wpdb->update( 
+			BOOKACTI_TABLE_META, 
+			array( 'meta_value' => $global_availability_period_start ? $global_availability_period_start : 0 ),
+			array( 'meta_key' => 'availability_period_start', 'meta_value' => -1 ),
+			array( '%d' ),
+			array( '%s', '%d' )
+		);
+		
+		// Update the "Events will be bookable in" setting (Templates, Calendar form fields)
+		$availability_period_end_updated = $wpdb->update( 
+			BOOKACTI_TABLE_META, 
+			array( 'meta_value' => $global_availability_period_end ? $global_availability_period_end : 0 ),
+			array( 'meta_key' => 'availability_period_end', 'meta_value' => -1 ),
+			array( '%d' ),
+			array( '%s', '%d' )
+		);
+	}
+}
+add_action( 'bookacti_updated', 'bookacti_update_removed_global_settings_in_1_7_16' );
 
 
 

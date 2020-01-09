@@ -17,11 +17,19 @@ function bookacti_init_settings() {
 	);
 	
 	add_settings_field(  
-		'booking_method', 
-		esc_html__( 'Booking method', 'booking-activities' ), 
-		'bookacti_settings_field_booking_method_callback', 
+		'timezone', 
+		esc_html__( 'Calendars timezone', 'booking-activities' ), 
+		'bookacti_settings_field_timezone_callback', 
 		'bookacti_general_settings', 
-		'bookacti_settings_section_general'
+		'bookacti_settings_section_general' 
+	);
+
+	add_settings_field(  
+		'default_calendar_view_threshold', 
+		esc_html__( 'Load the "Day" view if the calendar width is less than', 'booking-activities' ), 
+		'bookacti_settings_field_default_calendar_view_threshold_callback', 
+		'bookacti_general_settings', 
+		'bookacti_settings_section_general' 
 	);
 	
 	add_settings_field(  
@@ -55,25 +63,7 @@ function bookacti_init_settings() {
 		'bookacti_general_settings', 
 		'bookacti_settings_section_general' 
 	);
-
-	add_settings_field(  
-		'availability_period_start', 
-		/* translators: Followed by a field indicating a number of days before the event. E.g.: "Events will be bookable in 2 days from today". */
-		esc_html__( 'Events will be bookable in', 'booking-activities' ), 
-		'bookacti_settings_field_availability_period_start_callback', 
-		'bookacti_general_settings', 
-		'bookacti_settings_section_general' 
-	);
-
-	add_settings_field(  
-		'availability_period_end', 
-		/* translators: Followed by a field indicating a number of days before the event. E.g.: "Events are bookable for up to 30 days from today". */
-		esc_html__( 'Events are bookable for up to', 'booking-activities' ), 
-		'bookacti_settings_field_availability_period_end_callback', 
-		'bookacti_general_settings', 
-		'bookacti_settings_section_general' 
-	);
-
+	
 	add_settings_field(  
 		'default_booking_state', 
 		esc_html__( 'Default booking state', 'booking-activities' ), 
@@ -89,23 +79,7 @@ function bookacti_init_settings() {
 		'bookacti_general_settings', 
 		'bookacti_settings_section_general' 
 	);
-
-	add_settings_field(  
-		'timezone', 
-		esc_html__( 'Calendars timezone', 'booking-activities' ), 
-		'bookacti_settings_field_timezone_callback', 
-		'bookacti_general_settings', 
-		'bookacti_settings_section_general' 
-	);
-
-	add_settings_field(  
-		'default_calendar_view_threshold', 
-		esc_html__( 'Load the "Day" view if the calendar width is less than', 'booking-activities' ), 
-		'bookacti_settings_field_default_calendar_view_threshold_callback', 
-		'bookacti_general_settings', 
-		'bookacti_settings_section_general' 
-	);
-
+	
 	add_settings_field(  
 		'delete_data_on_uninstall', 
 		esc_html__( 'Delete data on uninstall', 'booking-activities' ), 

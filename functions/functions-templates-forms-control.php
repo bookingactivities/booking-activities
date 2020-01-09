@@ -70,7 +70,7 @@ function bookacti_format_template_managers( $template_managers = array() ) {
 
 /**
  * Format template settings
- * @version 1.7.13
+ * @version 1.7.16
  * @param array $raw_settings
  * @return array
  */
@@ -82,8 +82,8 @@ function bookacti_format_template_settings( $raw_settings ) {
 		'minTime'					=> '00:00',
 		'maxTime'					=> '00:00',
 		'snapDuration'				=> '00:05',
-		'availability_period_start'	=> '',
-		'availability_period_end'	=> ''
+		'availability_period_start'	=> 0,
+		'availability_period_end'	=> 0
 	) );
 	
 	$settings = array();
@@ -101,15 +101,13 @@ function bookacti_format_template_settings( $raw_settings ) {
 	
 	// availability_period_start
 	if( ! is_numeric( $settings[ 'availability_period_start' ] ) 
-	|| ( is_numeric( $settings[ 'availability_period_start' ] ) 
-			&& ( intval( $settings[ 'availability_period_start' ] ) < -1 ) ) ) {
+	|| ( is_numeric( $settings[ 'availability_period_start' ] ) && ( intval( $settings[ 'availability_period_start' ] ) < 0 ) ) ) {
 		$settings[ 'availability_period_start' ] = $default_settings[ 'minTime' ];
 	}
 	
 	// availability_period_end
 	if( ! is_numeric( $settings[ 'availability_period_end' ] ) 
-	|| ( is_numeric( $settings[ 'availability_period_end' ] ) 
-			&& ( intval( $settings[ 'availability_period_end' ] ) < -1 ) ) ) {
+	|| ( is_numeric( $settings[ 'availability_period_end' ] ) && ( intval( $settings[ 'availability_period_end' ] ) < 0 ) ) ) {
 		$settings[ 'availability_period_end' ] = $default_settings[ 'minTime' ];
 	}
 	

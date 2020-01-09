@@ -333,7 +333,7 @@ function bookacti_get_extended_events_interval( booking_system, interval ) {
 
 /**
  * Get availability period according to relative and absolute dates
- * @version 1.5.9
+ * @version 1.7.16
  * @param {dom_element} booking_system
  * @param {boolean} bypass_relative_period Whether to bypass availability_period_start and availability_period_end (keep only absolute opening and closing dates)
  * @returns {object}
@@ -349,22 +349,15 @@ function bookacti_get_availability_period( booking_system, bypass_relative_perio
 	var calendar_end_date	= template_data.end;
 	
 	if( ! bypass_relative_period ) {
-		// Take default availability period if not set
-		var availability_period_start	= $j.isNumeric( bookacti_localized.availability_period_start ) ? parseInt( bookacti_localized.availability_period_start ) : 0;
-		var availability_period_end		= $j.isNumeric( bookacti_localized.availability_period_end ) ? parseInt( bookacti_localized.availability_period_end ) : 0;
+		var availability_period_start	= 0;
+		var availability_period_end		= 0;
 		if( typeof template_data.settings.availability_period_start !== 'undefined' ) {
-			if( ! template_data.settings.availability_period_start ) {
-				availability_period_start = 0;
-			} else if( $j.isNumeric( template_data.settings.availability_period_start )
-					&& parseInt( template_data.settings.availability_period_start ) !== -1 ) {
+			if( $j.isNumeric( template_data.settings.availability_period_start ) ) {
 				availability_period_start = parseInt( template_data.settings.availability_period_start );
 			}
 		}
 		if( typeof template_data.settings.availability_period_end !== 'undefined' ) {
-			if( ! template_data.settings.availability_period_end ) {
-				availability_period_end = 0;
-			} else if( $j.isNumeric( template_data.settings.availability_period_end )
-			&&  parseInt( template_data.settings.availability_period_end ) !== -1 ) {
+			if( $j.isNumeric( template_data.settings.availability_period_end ) ) {
 				availability_period_end = parseInt( template_data.settings.availability_period_end );
 			}
 		}
