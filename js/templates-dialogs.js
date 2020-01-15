@@ -1051,7 +1051,7 @@ function bookacti_dialog_choose_activity_creation_type() {
 
 /**
  * Dialog Import Activity
- * @version 1.7.10
+ * @version 1.7.17
  */
 function bookacti_dialog_import_activity() {
 	if( ! bookacti.selected_template ) { return; }
@@ -1114,9 +1114,6 @@ function bookacti_dialog_import_activity() {
 								
 								// Reinitialize the activities to apply changes
 								bookacti_init_activities();
-
-								// Update create form link
-								bookacti_add_activities_to_create_form_link( activity_ids );
 								
 								$j( '#bookacti-activity-import-dialog' ).trigger( 'bookacti_activities_imported', [ response, data ] );
 								
@@ -1165,7 +1162,7 @@ function bookacti_dialog_import_activity() {
 
 /**
  * Dialog Create Activity
- * @version 1.7.15
+ * @version 1.7.17
  */
 function bookacti_dialog_create_activity() {
 	if( ! bookacti.selected_template ) { return; }
@@ -1236,9 +1233,6 @@ function bookacti_dialog_create_activity() {
 
 								// Reinitialize the activities to apply changes
 								bookacti_init_activities();
-
-								// Update create form link
-								bookacti_add_activities_to_create_form_link( response.activity_id );
 								
 								$j( '#bookacti-activity-data-dialog' ).trigger( 'bookacti_activity_inserted', [ response, data ] );
 
@@ -1452,7 +1446,7 @@ function bookacti_dialog_update_activity( activity_id ) {
 
 /**
  * Dialog Delete Activity
- * @version 1.7.10
+ * @version 1.7.17
  * @param {int} activity_id
  */
 function bookacti_dialog_delete_activity( activity_id ) {
@@ -1505,9 +1499,6 @@ function bookacti_dialog_delete_activity( activity_id ) {
 
 							// Display tuto if there is no more activities available
 							bookacti_display_activity_tuto_if_no_activity_available();
-
-							// Update create form link
-							bookacti_remove_activities_from_create_form_link( activity_id );
 							
 							$j( '#bookacti-delete-activity-dialog' ).trigger( 'bookacti_activity_deactivated', [ response, data ] );
 							

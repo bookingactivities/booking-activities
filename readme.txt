@@ -319,6 +319,11 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 
 == Changelog ==
 
+= 1.7.17 =
+* Tweak - Add a "All" option in activities and group categories selectboxes in Calendar fields settings
+* Fix - Check if the (groups of) event(s) is in its calendar range before booking
+* Fix - Keep the first selected option when switching a selectbox from multiple to simple
+
 = 1.7.16 - 2020/01/09 =
 * Tweak - Remove some global settings: Booking method, availability period start and end. Set them for each booking form, in the Calendar field settings.
 * Tweak - Add an option to use more WP settings to localize the calendar, in Settings > Messages tab

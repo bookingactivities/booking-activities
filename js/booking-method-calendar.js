@@ -1,6 +1,6 @@
 /**
  * Initialize the calendar
- * @version 1.7.16
+ * @version 1.7.17
  * @param {dom_element} booking_system
  * @param {boolean} reload_events
  */
@@ -43,8 +43,8 @@ function bookacti_set_calendar_up( booking_system, reload_events ) {
 		minTime:                min_time,
 		maxTime:                max_time,
 		validRange: {
-            start: moment( availability_period.start ),
-            end: moment( availability_period.end ).add( 1, 'days' )
+            start: availability_period.start ? moment( availability_period.start ) : '',
+            end: availability_period.end ? moment( availability_period.end ).add( 1, 'days' ) : ''
         },
 		
 		events: function( start, end, timezone, callback ) {
@@ -110,7 +110,7 @@ function bookacti_set_calendar_up( booking_system, reload_events ) {
 				});
 				element.append( bg_div );
 			}
-						
+			
 			booking_system.trigger( 'bookacti_event_render', [ event, element, view ] );
 			
 			if( ! event.render ) { return false; }

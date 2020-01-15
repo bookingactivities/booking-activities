@@ -270,7 +270,7 @@ function bookacti_retrieve_calendar_elements( $booking_system_atts ) {
 /**
  * Get default booking system attributes
  * @since 1.5.0
- * @version 1.7.0
+ * @version 1.7.17
  * @return array
  */
 function bookacti_get_booking_system_default_attributes() {
@@ -279,7 +279,7 @@ function bookacti_get_booking_system_default_attributes() {
 		'class'					=> '',
 		'template_data'			=> array(),
 		'calendars'				=> array(),
-		'activities'			=> array(),
+		'activities'			=> 'all',
 		'group_categories'		=> false,
 		'groups_only'			=> 0,
 		'groups_single_events'	=> 0,
@@ -303,7 +303,7 @@ function bookacti_get_booking_system_default_attributes() {
 
 /**
  * Check booking system attributes and format them to be correct
- * @version 1.7.16
+ * @version 1.7.17
  * @param array $atts 
  * @return array
  */
@@ -366,36 +366,26 @@ function bookacti_format_booking_system_attributes( $atts = array() ) {
 	
 	// Check if the desired templates are active and allowed
 	$available_template_ids = array_keys( bookacti_fetch_templates( array(), true ) );
-	if( empty( $atts[ 'calendars' ] ) ) {
-		$bypass_template_managers_check = apply_filters( 'bookacti_bypass_template_managers_check', false );
-		if( ! $bypass_template_managers_check && ! is_super_admin() ) {
-			$atts[ 'calendars' ] = ! empty( $available_template_ids ) ? $available_template_ids : array( 'none' );
-		}
-	} else { 
-		$allowed_templates = array_values( array_intersect( $atts[ 'calendars' ], $available_template_ids ) );
-		$atts[ 'calendars' ] = ! empty( $allowed_templates ) ? $allowed_templates : array( 'none' );
-	}
+	$had_templates = ! empty( $atts[ 'calendars' ] );
+	// Remove unauthorized templates
+	$bypass_template_managers_check = apply_filters( 'bookacti_bypass_template_managers_check', false );
+	$allowed_templates = ! $bypass_template_managers_check && ! is_super_admin() ? array_values( array_intersect( $atts[ 'calendars' ], $available_template_ids ) ) : $atts[ 'calendars' ];
+	$atts[ 'calendars' ] = ! empty( $allowed_templates ) ? $allowed_templates : ( ! $had_templates && $available_template_ids ? $available_template_ids : array( 'none' ) );
 	
 	// Check if desired activities are active and allowed according to current user role
 	$available_activity_ids = bookacti_get_activity_ids_by_template( $atts[ 'calendars' ], false, $atts[ 'check_roles' ] );
 	$had_activities = ! empty( $atts[ 'activities' ] );
-	foreach( $atts[ 'activities' ] as $i => $activity_id ) {
-		if( ! in_array( intval( $activity_id ), $available_activity_ids, true ) ) {
-			unset( $atts[ 'activities' ][ $i ] );
-		}
-	}
-	if( ! $atts[ 'activities' ] ) { $atts[ 'activities' ] = ! $had_activities ? $available_activity_ids : array( 'none' ); }
-	else { $atts[ 'activities' ] = array_values( $atts[ 'activities' ] ); }
+	// Remove unauthorized activities
+	$allowed_activities = array_values( array_intersect( $atts[ 'activities' ], array_map( 'intval', $available_activity_ids ) ) );
+	$atts[ 'activities' ] = ! empty( $allowed_activities ) ? $allowed_activities : ( ! $had_activities && $available_activity_ids ? $available_activity_ids : array( 'none' ) );
 	
 	// Check if desired group categories exist and are allowed according to current user role
 	$available_category_ids = bookacti_get_group_category_ids_by_template( $atts[ 'calendars' ], false, $atts[ 'check_roles' ] );
+	$had_group_categories = ! empty( $atts[ 'group_categories' ] );
 	if( is_array( $atts[ 'group_categories' ] ) ) { 
-		// Remove duplicated values
-		$atts[ 'group_categories' ] = array_unique( $atts[ 'group_categories' ] ); 
-		
-		// Remove unauthorized values
+		// Remove unauthorized group categories
 		$allowed_group_categories = array_values( array_intersect( $atts[ 'group_categories' ], array_map( 'intval', $available_category_ids ) ) );
-		$atts[ 'group_categories' ] = ! empty( $allowed_group_categories ) ? $allowed_group_categories : false;
+		$atts[ 'group_categories' ] = ! empty( $allowed_group_categories ) ? $allowed_group_categories : ( ! $had_group_categories && $available_category_ids ? $available_category_ids : false );
 	}
 	
 	// Format template data
@@ -562,12 +552,11 @@ function bookacti_format_booking_system_url_attributes( $atts = array() ) {
 /**
  * Get booking system fields default data
  * @since 1.5.0
- * @version 1.7.16
+ * @version 1.7.17
  * @param array $fields
  * @return array
  */
 function bookacti_get_booking_system_fields_default_data( $fields = array() ) {
-	
 	if( ! is_array( $fields ) ) { $fields = array(); }
 	$defaults = array();
 	
@@ -596,7 +585,7 @@ function bookacti_get_booking_system_fields_default_data( $fields = array() ) {
 	if( ! $fields || in_array( 'activities', $fields, true ) ) {
 		// Format activity options array
 		$activities = bookacti_fetch_activities_with_templates_association();
-		$activities_options			= array();
+		$activities_options			= array( 'all' => esc_html__( 'All', 'booking-activities' ) );
 		$activities_options_attr	= array();
 		foreach( $activities as $activity ) {
 			$activities_options[ $activity[ 'id' ] ]		=  apply_filters( 'bookacti_translate_text', $activity[ 'title' ] );
@@ -619,7 +608,7 @@ function bookacti_get_booking_system_fields_default_data( $fields = array() ) {
 	if( ! $fields || in_array( 'group_categories', $fields, true ) ) {
 		// Format group category options array
 		$categories = bookacti_get_group_categories();
-		$category_options		= array( 'none' => _x( 'None', 'About group category', 'booking-activities' ) );
+		$category_options		= array( 'none' => _x( 'None', 'About group category', 'booking-activities' ), 'all' => esc_html__( 'All', 'booking-activities' ) );
 		$category_options_attr	= array();
 		foreach( $categories as $category ) {
 			$category_options[ $category[ 'id' ] ]		=  apply_filters( 'bookacti_translate_text', $category[ 'title' ] );
@@ -1139,7 +1128,7 @@ function bookacti_is_existing_group_of_events( $group ) {
 /**
  * Check if an event can be book with the given form
  * @since 1.5.0
- * @version 1.7.8
+ * @version 1.7.17
  * @param int $form_id
  * @param int $event_id
  * @param string $event_start
@@ -1153,8 +1142,8 @@ function bookacti_is_event_available_on_form( $form_id, $event_id, $event_start,
 	// Check if the form exists and if it has a calendar field (compulsory)
 	$form_exists = ! empty( $calendar_data );
 	if( ! $form_exists ) {
-		$validated['error'] = 'invalid_form';
-		$validated['message'] = __( 'Failed to retrieve the requested form data.', 'booking-activities' );
+		$validated[ 'error' ] = 'invalid_form';
+		$validated[ 'message' ] = esc_html__( 'Failed to retrieve the requested form data.', 'booking-activities' );
 		return $validated;
 	}
 	
@@ -1167,14 +1156,14 @@ function bookacti_is_event_available_on_form( $form_id, $event_id, $event_start,
 	if( ( $calendar_data[ 'calendars' ] && ! in_array( $event->template_id, $calendar_data[ 'calendars' ] ) )
 	||  ( $calendar_data[ 'activities' ] && ! in_array( $event->activity_id, $calendar_data[ 'activities' ] ) ) ) {
 		$belongs_to_form = false;
-		$validated['message'] = __( 'The selected event is not supposed to be available on this form.', 'booking-activities' );
+		$validated[ 'message' ] = esc_html__( 'The selected event is not supposed to be available on this form.', 'booking-activities' );
 	}
 
 	// If the form calendar have groups, with no possibility to book a single event
 	if( $belongs_to_form && $calendar_data[ 'group_categories' ] !== false && ! $calendar_data[ 'groups_single_events' ] ) {
 		if( $calendar_data[ 'groups_only' ] ) {
 			$belongs_to_form = false;
-			$validated['message'] = __( 'You cannot book single events with this form, you must select a group of events.', 'booking-activities' );
+			$validated[ 'message' ] = esc_html__( 'You cannot book single events with this form, you must select a group of events.', 'booking-activities' );
 		} else {
 			// Check if the event belong to a group
 			$event_groups = bookacti_get_event_groups( $event->event_id, $event_start, $event_end );
@@ -1193,13 +1182,32 @@ function bookacti_is_event_available_on_form( $form_id, $event_id, $event_start,
 			// Check if the event belong to a group available on the calendar
 			if( array_intersect( $event_categories, $calendar_data[ 'group_categories' ] ) ) {
 				$belongs_to_form = false;
-				$validated['message'] = __( 'The selected event is part of a group and cannot be booked alone.', 'booking-activities' );
+				$validated[ 'message' ] = esc_html__( 'The selected event is part of a group and cannot be booked alone.', 'booking-activities' );
 			}
 		}
 	}
 	
+	// Check if the groups of events is in its template range
+	if( $belongs_to_form ) {
+		$in_template_range = false;
+		$template_range = bookacti_get_mixed_template_range( $event->template_id );
+		if( $template_range ) {
+			$event_start_dt		= DateTime::createFromFormat( 'Y-m-d H:i:s', $event_start );
+			$event_end_dt		= DateTime::createFromFormat( 'Y-m-d H:i:s', $event_end );
+			$template_start_dt	= DateTime::createFromFormat( 'Y-m-d H:i:s', $template_range[ 'start' ] . ' 00:00:00' );
+			$template_end_dt	= DateTime::createFromFormat( 'Y-m-d H:i:s', $template_range[ 'end' ] . ' 23:59:59' );
+			if( $event_start_dt >= $template_start_dt && $event_end_dt <= $template_end_dt ) {
+				$in_template_range = true;
+			}
+		}
+		if( ! $in_template_range ) {
+			$belongs_to_form = false;
+			$validated[ 'message' ] = esc_html__( 'The event is out of its calendar range, please pick another event and try again.', 'booking-activities' );
+		}
+	}
+	
 	if( ! $belongs_to_form ) {
-		$validated['error'] = 'event_not_in_form';
+		$validated[ 'error' ] = 'event_not_in_form';
 		return $validated;
 	}
 	
@@ -1214,8 +1222,8 @@ function bookacti_is_event_available_on_form( $form_id, $event_id, $event_start,
 		$current_time				= new DateTime( 'now', $timezone );
 		if( ( $event_start_obj < $current_time )
 		&& ! ( $started_events_bookable && $event_end_obj > $current_time ) ) {
-			$validated['error'] = 'past_event';
-			$validated['message'] = esc_html__( 'You cannot book a past event.', 'booking-activities' );
+			$validated[ 'error' ] = 'past_event';
+			$validated[ 'message' ] = esc_html__( 'You cannot book a past event.', 'booking-activities' );
 			return $validated;
 		}
 	
@@ -1225,17 +1233,17 @@ function bookacti_is_event_available_on_form( $form_id, $event_id, $event_start,
 		$calendar_end	= new DateTime( $availability_period[ 'end' ] . ' 23:59:59', $timezone );
 			
 		if( $event_start_obj < $calendar_start ) {
-			$validated['error'] = 'event_starts_before_availability_period';
+			$validated[ 'error' ] = 'event_starts_before_availability_period';
 			$datetime_formatted = bookacti_format_datetime( $calendar_start->format( 'Y-m-d H:i:s' ), esc_html__( 'F d, Y', 'booking-activities' ) );
 			/* translators: %s is a formatted date (e.g.: "January 20, 2018") */
-			$validated['message'] = sprintf( esc_html__( 'You cannot book an event that starts before %s.', 'booking-activities' ), $datetime_formatted );
+			$validated[ 'message' ] = sprintf( esc_html__( 'You cannot book an event that starts before %s.', 'booking-activities' ), $datetime_formatted );
 			return $validated;
 		}
 		if( $event_end_obj > $calendar_end ) {
-			$validated['error'] = 'event_ends_after_availability_period';
+			$validated[ 'error' ] = 'event_ends_after_availability_period';
 			$datetime_formatted = bookacti_format_datetime( $calendar_end->format( 'Y-m-d H:i:s' ), esc_html__( 'F d, Y', 'booking-activities' ) );
 			/* translators: %s is a formatted date (e.g.: "January 20, 2018") */
-			$validated['message'] = sprintf( esc_html__( 'You cannot book an event that takes place after %s.', 'booking-activities' ), $datetime_formatted );
+			$validated[ 'message' ] = sprintf( esc_html__( 'You cannot book an event that takes place after %s.', 'booking-activities' ), $datetime_formatted );
 			return $validated;
 		}
 	}
@@ -1249,7 +1257,7 @@ function bookacti_is_event_available_on_form( $form_id, $event_id, $event_start,
 /**
  * Check if a group of events can be book with the given form
  * @since 1.5.0
- * @version 1.7.8
+ * @version 1.7.17
  * @param int $form_id
  * @param int $group_id
  * @return array
@@ -1261,8 +1269,8 @@ function bookacti_is_group_of_events_available_on_form( $form_id, $group_id ) {
 	// Check if the form exists and if it has a calendar field (compulsory)
 	$form_exists = ! empty( $calendar_data );
 	if( ! $form_exists ) {
-		$validated['error'] = 'invalid_form';
-		$validated['message'] = __( 'Failed to retrieve the requested form data.', 'booking-activities' );
+		$validated[ 'error' ] = 'invalid_form';
+		$validated[ 'message' ] = esc_html__( 'Failed to retrieve the requested form data.', 'booking-activities' );
 		return $validated;
 	}
 	
@@ -1275,13 +1283,13 @@ function bookacti_is_group_of_events_available_on_form( $form_id, $group_id ) {
 	// If the form calendar doesn't have the group of events' template
 	if( $calendar_data[ 'calendars' ] && ! in_array( $category[ 'template_id' ], $calendar_data[ 'calendars' ] ) ) {
 		$belongs_to_form = false;
-		$validated['message'] = __( 'The selected events are not supposed to be available on this form.', 'booking-activities' );
+		$validated[ 'message' ] = esc_html__( 'The selected events are not supposed to be available on this form.', 'booking-activities' );
 	}
 	
 	// If the form calendar doesn't have groups
 	if( $belongs_to_form && $calendar_data[ 'group_categories' ] === false ) {
 		$belongs_to_form = false;
-		$validated['message'] = __( 'You cannot book groups of events with this form, you must select a single event.', 'booking-activities' );
+		$validated[ 'message' ] = esc_html__( 'You cannot book groups of events with this form, you must select a single event.', 'booking-activities' );
 	}
 
 	// If the form calendar have groups
@@ -1294,12 +1302,31 @@ function bookacti_is_group_of_events_available_on_form( $form_id, $group_id ) {
 		// Check if the group of event category is available on this form
 		if( ! in_array( $group->category_id, $calendar_data[ 'group_categories' ] ) ) {
 			$belongs_to_form = false;
-			$validated['message'] = __( 'The selected goup of events is not supposed to be available on this form.', 'booking-activities' );
+			$validated[ 'message' ] = esc_html__( 'The selected goup of events is not supposed to be available on this form.', 'booking-activities' );
+		}
+	}
+	
+	// Check if the groups of events is in its template range
+	if( $belongs_to_form ) {
+		$in_template_range = false;
+		$template_range = bookacti_get_mixed_template_range( $category[ 'template_id' ] );
+		if( $template_range ) {
+			$event_start_dt		= DateTime::createFromFormat( 'Y-m-d H:i:s', $group->start );
+			$event_end_dt		= DateTime::createFromFormat( 'Y-m-d H:i:s', $group->end );
+			$template_start_dt	= DateTime::createFromFormat( 'Y-m-d H:i:s', $template_range[ 'start' ] . ' 00:00:00' );
+			$template_end_dt	= DateTime::createFromFormat( 'Y-m-d H:i:s', $template_range[ 'end' ] . ' 23:59:59' );
+			if( $event_start_dt >= $template_start_dt && $event_end_dt <= $template_end_dt ) {
+				$in_template_range = true;
+			}
+		}
+		if( ! $in_template_range ) {
+			$belongs_to_form = false;
+			$validated[ 'message' ] = esc_html__( 'The group of events is out of its calendar range, please pick another event and try again.', 'booking-activities' );
 		}
 	}
 	
 	if( ! $belongs_to_form ) {
-		$validated['error'] = 'event_not_in_form';
+		$validated[ 'error' ] = 'event_not_in_form';
 		return $validated;
 	}
 	
@@ -1314,8 +1341,8 @@ function bookacti_is_group_of_events_available_on_form( $form_id, $group_id ) {
 		$current_time				= new DateTime( 'now', $timezone );
 		if( ( $group_start < $current_time )
 		&& ! ( $started_groups_bookable && $group_end > $current_time ) ) {
-			$validated['error'] = 'past_group_of_events';
-			$validated['message'] = esc_html__( 'You cannot book a group of events if any of its events is past.', 'booking-activities' );
+			$validated[ 'error' ] = 'past_group_of_events';
+			$validated[ 'message' ] = esc_html__( 'You cannot book a group of events if any of its events is past.', 'booking-activities' );
 			return $validated;
 		}
 	
@@ -1325,17 +1352,17 @@ function bookacti_is_group_of_events_available_on_form( $form_id, $group_id ) {
 		$calendar_end	= new DateTime( $availability_period[ 'end' ] . ' 23:59:59', $timezone );
 		
 		if( $group_start < $calendar_start ) {
-			$validated['error'] = 'group_of_events_starts_before_availability_period';
+			$validated[ 'error' ] = 'group_of_events_starts_before_availability_period';
 			$datetime_formatted = bookacti_format_datetime( $calendar_start->format( 'Y-m-d H:i:s' ), esc_html__( 'F d, Y', 'booking-activities' ) );
 			/* translators: %s is a formatted date (e.g.: "January 20, 2018") */
-			$validated['message'] = sprintf( esc_html__( 'You cannot book a group if any of its events starts before %s.', 'booking-activities' ), $datetime_formatted );
+			$validated[ 'message' ] = sprintf( esc_html__( 'You cannot book a group if any of its events starts before %s.', 'booking-activities' ), $datetime_formatted );
 			return $validated;
 		}
 		if( $group_end > $calendar_end ) {
-			$validated['error'] = 'group_of_events_ends_after_availability_period';
+			$validated[ 'error' ] = 'group_of_events_ends_after_availability_period';
 			$datetime_formatted = bookacti_format_datetime( $calendar_end->format( 'Y-m-d H:i:s' ), esc_html__( 'F d, Y', 'booking-activities' ) );
 			/* translators: %s is a formatted date (e.g.: "January 20, 2018") */
-			$validated['message'] = sprintf( esc_html__( 'You cannot book a group if any of its events takes place after %s.', 'booking-activities' ), $datetime_formatted );
+			$validated[ 'message' ] = sprintf( esc_html__( 'You cannot book a group if any of its events takes place after %s.', 'booking-activities' ), $datetime_formatted );
 			return $validated;
 		}
 	}	

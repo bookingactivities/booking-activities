@@ -887,7 +887,7 @@ add_action( 'admin_footer-booking-activities_page_bookacti_forms', 'bookacti_pri
 /**
  * Create a booking form from REQUEST parameters
  * @since 1.5.0
- * @version 1.6.0
+ * @version 1.7.17
  */
 function bookacti_controller_create_form() {
 	if( empty( $_REQUEST[ 'action' ] ) || $_REQUEST[ 'action' ] !== 'new' ) { return; }
@@ -902,16 +902,17 @@ function bookacti_controller_create_form() {
 	if( ! $form_id ) { esc_html_e( 'Error occurs when trying to create the form.', 'booking-activities' ); exit; }
 	
 	// Insert calendar data (if any)
-	if( ! empty( $_REQUEST[ 'calendar_field' ] ) ) {
+	if( ! empty( $_REQUEST[ 'calendar_field' ] ) && is_array( $_REQUEST[ 'calendar_field' ] ) ) {
 		$default_calendar_meta = array();
-		if( isset( $_REQUEST[ 'calendar_field' ][ 'calendars' ] ) ) {
-			$template_data = bookacti_get_mixed_template_data( $_REQUEST[ 'calendar_field' ][ 'calendars' ], false );
-			$default_calendar_meta				= $template_data[ 'settings' ];
-			$default_calendar_meta[ 'start' ]	= $template_data[ 'start' ];
-			$default_calendar_meta[ 'end' ]		= $template_data[ 'end' ];
+		if( ! empty( $_REQUEST[ 'calendar_field' ][ 'calendars' ] ) ) {
+			$calendar_ids = bookacti_ids_to_array( $_REQUEST[ 'calendar_field' ][ 'calendars' ] );
+			$template_data = bookacti_get_mixed_template_data( $calendar_ids, false );
+			$default_calendar_meta = $template_data[ 'settings' ];
 		}
-		$raw_calendar_meta		= array_merge( array( 'start' => 'default', 'end' => 'default' ), $default_calendar_meta, $_REQUEST[ 'calendar_field' ] );
-		bookacti_update_form_field_meta( $raw_calendar_meta, 'calendar', $form_id );
+		$raw_calendar_meta = array_merge( $default_calendar_meta, $_REQUEST[ 'calendar_field' ] );
+		if( $raw_calendar_meta ) {
+			bookacti_update_form_field_meta( $raw_calendar_meta, 'calendar', $form_id );
+		}
 	}
 	
 	// Change current url to the edit url

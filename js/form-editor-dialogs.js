@@ -304,7 +304,7 @@ function bookacti_dialog_remove_form_field( field_id, field_name ) {
 /**
  * Update Form Field
  * @since 1.5.0
- * @version 1.7.15
+ * @version 1.7.17
  * @param {int} field_id
  * @param {string} field_name
  */
@@ -323,24 +323,7 @@ function bookacti_dialog_update_form_field( field_id, field_name ) {
 	// Fill field id
 	$j( 'form#bookacti-form-field-form-' + field_name + ' input[name="action"]' ).val( 'bookactiUpdateFormField' );
 	$j( 'form#bookacti-form-field-form-' + field_name + ' input[name="field_id"]' ).val( field_id );
-	
-	// Transform multiple select
-	if( $j( 'form#bookacti-form-field-form-' + field_name + ' .bookacti-multiple-select' ).length ) {
-		$j( 'form#bookacti-form-field-form-' + field_name + ' .bookacti-multiple-select' ).each( function(){
-			var select_id = $j( this ).data( 'select-id' );
-			var select_name = $j( '#' + select_id ).attr( 'name' );
-			if( ! ( select_name in bookacti.form_editor.fields[ field_id ] ) ) { return; }
-			if( $j.isPlainObject( bookacti.form_editor.fields[ field_id ][ select_name ] )
-			 || (  $j.isArray( bookacti.form_editor.fields[ field_id ][ select_name ] ) 
-				&& bookacti.form_editor.fields[ field_id ][ select_name ].length > 1 ) ) {
-				$j( this ).prop( 'checked', true );
-			} else {
-				$j( this ).prop( 'checked', false );
-			}
-			bookacti_switch_select_to_multiple( this );
-		});
-	}
-	
+		
 	// Fill the fields with current data
 	bookacti_fill_fields_from_array( bookacti.form_editor.fields[ field_id ], '', 'form#bookacti-form-field-form-' + field_name );
 	

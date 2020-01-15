@@ -563,7 +563,7 @@ function bookacti_get_default_form_fields_meta( $field_name = '' ) {
 /**
  * Format field data according to its type
  * @since 1.5.0
- * @version 1.7.13
+ * @version 1.7.17
  * @param array|string $raw_field_data
  * @return array|false
  */
@@ -607,6 +607,7 @@ function bookacti_format_form_field_data( $raw_field_data ) {
 			'start'				=> ! empty( $raw_field_data[ 'start' ] ) && bookacti_sanitize_date( $raw_field_data[ 'start' ] ) ? bookacti_sanitize_date( $raw_field_data[ 'start' ] ) : $default_meta[ 'start' ],
 			'end'				=> ! empty( $raw_field_data[ 'end' ] ) && bookacti_sanitize_date( $raw_field_data[ 'end' ] ) ? bookacti_sanitize_date( $raw_field_data[ 'end' ] ) : $default_meta[ 'end' ],
 			'method'			=> isset( $raw_field_data[ 'method' ] ) ? $raw_field_data[ 'method' ] : $default_meta[ 'method' ],
+			'activities'		=> isset( $raw_field_data[ 'activities' ] ) ? $raw_field_data[ 'activities' ] : $default_meta[ 'activities' ],
 			'group_categories'	=> isset( $raw_field_data[ 'group_categories' ] ) ? $raw_field_data[ 'group_categories' ] : $default_meta[ 'group_categories' ],
 			'user_id'			=> isset( $raw_field_data[ 'user_id' ] ) ? $raw_field_data[ 'user_id' ] : $default_meta[ 'user_id' ],
 		);
@@ -699,7 +700,7 @@ function bookacti_format_form_field_data( $raw_field_data ) {
 /**
  * Sanitize field data according to its type
  * @since 1.5.0
- * @version 1.7.16
+ * @version 1.7.17
  * @param array|string $raw_field_data
  * @return array|false
  */
@@ -736,8 +737,11 @@ function bookacti_sanitize_form_field_data( $raw_field_data ) {
 		}
 		
 		// Keep some meta unformatted
-		if( isset( $raw_field_data[ 'group_categories' ] ) && $raw_field_data[ 'group_categories' ] === 'none' ){ $field_meta[ 'group_categories' ] = 'none'; }
-		if( isset( $raw_field_data[ 'user_id' ] ) && $raw_field_data[ 'user_id' ] === 'current' )				{ $field_meta[ 'user_id' ] = 'current'; }
+		if( isset( $raw_field_data[ 'user_id' ] ) && $raw_field_data[ 'user_id' ] === 'current' )	{ $field_meta[ 'user_id' ] = 'current'; }
+		if( isset( $raw_field_data[ 'activities' ] ) && $raw_field_data[ 'activities' ] === 'all' ) { $field_meta[ 'activities' ] = 'all'; }
+		if( isset( $raw_field_data[ 'group_categories' ] ) ) {
+			if( in_array( $raw_field_data[ 'group_categories' ], array( 'all', 'none' ), true ) )	{ $field_meta[ 'group_categories' ] = $raw_field_data[ 'group_categories' ]; }
+		}
 		$field_meta[ 'id' ]		= isset( $raw_field_data[ 'id' ] ) && $raw_field_data[ 'id' ] !== '' ? sanitize_title_with_dashes( $raw_field_data[ 'id' ] ) : $default_meta[ 'id' ];
 		$field_meta[ 'class' ]	= isset( $raw_field_data[ 'class' ] ) && $raw_field_data[ 'class' ] !== '' ? sanitize_text_field( $raw_field_data[ 'class' ] ) : $default_meta[ 'class' ];
 		
