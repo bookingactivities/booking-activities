@@ -492,25 +492,11 @@ function bookacti_get_default_form_fields_data( $field_name = '' ) {
  * Get fields metadata
  * @see bookacti_format_form_field_data to properly format your array
  * @since 1.5.0
- * @version 1.7.0
+ * @version 1.7.17
  * @param string $field_name
  * @return array
  */
 function bookacti_get_default_form_fields_meta( $field_name = '' ) {
-	
-	// Calendar default meta
-	$booking_system_meta = bookacti_get_booking_system_default_attributes();
-	unset( $booking_system_meta[ 'template_data' ] );
-	unset( $booking_system_meta[ 'auto_load' ] );
-	unset( $booking_system_meta[ 'check_roles' ] );
-	unset( $booking_system_meta[ 'picked_events' ] );
-	unset( $booking_system_meta[ 'form_id' ] );
-	
-	$template_meta = bookacti_format_template_settings( array() );
-	unset( $template_meta[ 'snapDuration' ] );
-	
-	$calendar_meta = array_merge( $booking_system_meta, $template_meta, array( 'start' => '', 'end' => '' ) );
-	
 	// Add register fields default meta to login field meta
 	$register_fields	= bookacti_get_register_fields_default_data();
 	$register_defaults	= array( 'displayed' => array(), 'required' => array() );
@@ -536,7 +522,31 @@ function bookacti_get_default_form_fields_meta( $field_name = '' ) {
 	}
 	
 	$fields_meta = apply_filters( 'bookacti_default_form_fields_meta', array(
-		'calendar'	=> $calendar_meta,
+		'calendar'	=> array(
+			'id'							=> '',
+			'class'							=> '',
+			'calendars'						=> array(),
+			'activities'					=> array(),
+			'group_categories'				=> array( 'none' ),
+			'groups_only'					=> 0,
+			'groups_single_events'			=> 0,
+			'bookings_only'					=> 0,
+			'status'						=> array(),
+			'user_id'						=> 0,
+			'method'						=> 'calendar',
+			'start'							=> '',
+			'end'							=> '',
+			'availability_period_start'		=> 0,
+			'availability_period_end'		=> 0,
+			'past_events'					=> 0,
+			'past_events_bookable'			=> 0,
+			'form_action'					=> 'default',
+			'when_perform_form_action'		=> 'on_submit',
+			'redirect_url_by_activity'		=> array(),
+			'redirect_url_by_group_category'=> array(),
+			'minTime'						=> '00:00',
+			'maxTime'						=> '00:00'
+		),
 		'login'		=> array(
 			'automatic_login'			=> 1,
 			'min_password_strength'		=> 4,
@@ -561,6 +571,32 @@ function bookacti_get_default_form_fields_meta( $field_name = '' ) {
 
 
 /**
+ * Get available form actions
+ * @since 1.7.17
+ * @return array
+ */
+function bookacti_get_available_form_actions() {
+	return apply_filters( 'bookacti_form_action_options', array( 
+		'default' => '', 
+		'redirect_to_url' => ''
+	));
+}
+
+
+/**
+ * Get available form submit triggers
+ * @since 1.7.17
+ * @return array
+ */
+function bookacti_get_available_form_action_triggers() {
+	return apply_filters( 'bookacti_when_perform_form_action_options', array( 
+		'on_submit' => '', 
+		'on_event_click' => ''
+	));
+}
+
+
+/**
  * Format field data according to its type
  * @since 1.5.0
  * @version 1.7.17
@@ -568,7 +604,6 @@ function bookacti_get_default_form_fields_meta( $field_name = '' ) {
  * @return array|false
  */
 function bookacti_format_form_field_data( $raw_field_data ) {
-
 	// Check if name and type are set
 	if( ! is_array( $raw_field_data ) || empty( $raw_field_data[ 'name' ] ) || empty( $raw_field_data[ 'type' ] ) ) { return false; }
 	
@@ -582,37 +617,46 @@ function bookacti_format_form_field_data( $raw_field_data ) {
 	
 	// Format field-specific data and metadata
 	if( $raw_field_data[ 'name' ] === 'calendar' ) {
-		// Build template_data array
-		$raw_field_data[ 'template_data' ] = array(
-			'start'		=> ! empty( $raw_field_data[ 'start' ] ) && bookacti_sanitize_date( $raw_field_data[ 'start' ] ) ? bookacti_sanitize_date( $raw_field_data[ 'start' ] ) : $default_meta[ 'start' ],
-			'end'		=> ! empty( $raw_field_data[ 'end' ] ) && bookacti_sanitize_date( $raw_field_data[ 'end' ] ) ? bookacti_sanitize_date( $raw_field_data[ 'end' ] ) : $default_meta[ 'end' ],
-			'settings'	=> bookacti_format_template_settings( $raw_field_data )
-		);
-		
-		// Format booking system data
-		$field_meta = bookacti_format_booking_system_attributes( $raw_field_data );
-		
-		// Deconstruct template_data
-		foreach( $default_meta as $default_meta_key => $default_meta_value ) {
-			if( isset( $field_meta[ 'template_data' ][ 'settings' ][ $default_meta_key ] ) ) {
-				$field_meta[ $default_meta_key ] = $field_meta[ 'template_data' ][ 'settings' ][ $default_meta_key ];
-			}
-			else if( $default_meta_key !== 'settings' && isset( $field_meta[ 'template_data' ][ $default_meta_key ] ) ) {
-				$field_meta[ $default_meta_key ] = $field_meta[ 'template_data' ][ $default_meta_key ];
-			}
+		$booleans_to_check = array( 'groups_only', 'groups_single_events', 'bookings_only', 'past_events', 'past_events_bookable' );
+		foreach( $booleans_to_check as $key ) {
+			$field_meta[ $key ] = in_array( $raw_field_data[ $key ], array( 1, '1', true, 'true', 'yes', 'ok' ), true ) ? 1 : 0;
 		}
 		
-		// Keep some meta unformatted
-		$field_meta[ 'raw' ] = array(
-			'start'				=> ! empty( $raw_field_data[ 'start' ] ) && bookacti_sanitize_date( $raw_field_data[ 'start' ] ) ? bookacti_sanitize_date( $raw_field_data[ 'start' ] ) : $default_meta[ 'start' ],
-			'end'				=> ! empty( $raw_field_data[ 'end' ] ) && bookacti_sanitize_date( $raw_field_data[ 'end' ] ) ? bookacti_sanitize_date( $raw_field_data[ 'end' ] ) : $default_meta[ 'end' ],
-			'method'			=> isset( $raw_field_data[ 'method' ] ) ? $raw_field_data[ 'method' ] : $default_meta[ 'method' ],
-			'activities'		=> isset( $raw_field_data[ 'activities' ] ) ? $raw_field_data[ 'activities' ] : $default_meta[ 'activities' ],
-			'group_categories'	=> isset( $raw_field_data[ 'group_categories' ] ) ? $raw_field_data[ 'group_categories' ] : $default_meta[ 'group_categories' ],
-			'user_id'			=> isset( $raw_field_data[ 'user_id' ] ) ? $raw_field_data[ 'user_id' ] : $default_meta[ 'user_id' ],
-		);
 		$field_meta[ 'id' ]		= isset( $raw_field_data[ 'id' ] ) ? sanitize_title_with_dashes( $raw_field_data[ 'id' ] ) : $default_meta[ 'id' ];
-		$field_meta[ 'class' ] 	= isset( $raw_field_data[ 'class' ] ) ? sanitize_text_field( $raw_field_data[ 'class' ] ) : $default_meta[ 'class' ];
+		$field_meta[ 'class' ]	= isset( $raw_field_data[ 'class' ] ) ? sanitize_text_field( $raw_field_data[ 'class' ] ) : $default_meta[ 'class' ];
+		
+		$field_meta[ 'calendars' ]	= isset( $raw_field_data[ 'calendars' ] ) ? bookacti_ids_to_array( $raw_field_data[ 'calendars' ] ) : $default_meta[ 'calendars' ];
+		
+		$had_activities				= ! empty( $raw_field_data[ 'activities' ] );
+		$activities					= isset( $raw_field_data[ 'activities' ] ) ? bookacti_ids_to_array( $raw_field_data[ 'activities' ] ) : $default_meta[ 'activities' ];
+		$field_meta[ 'activities' ]	= $activities && is_array( $activities ) ? $activities : ( $had_activities ? array( 'none' ) : array() );
+		
+		$had_group_categories				= ! empty( $raw_field_data[ 'group_categories' ] );
+		$group_categories					= isset( $raw_field_data[ 'group_categories' ] ) ? bookacti_ids_to_array( $raw_field_data[ 'group_categories' ] ) : $default_meta[ 'group_categories' ];
+		$field_meta[ 'group_categories' ]	= $group_categories && is_array( $group_categories ) ? $group_categories : ( $had_group_categories ? array( 'none' ) : array() );
+		
+		$field_meta[ 'status' ]		= isset( $raw_field_data[ 'status' ] ) && is_array( $raw_field_data[ 'status' ] ) ? array_intersect( $raw_field_data[ 'status' ], array_keys( bookacti_get_booking_state_labels() ) ) : $default_meta[ 'status' ];
+		$field_meta[ 'user_id' ]	= isset( $raw_field_data[ 'user_id' ] ) && is_numeric( $raw_field_data[ 'user_id' ] ) ? intval( $raw_field_data[ 'user_id' ] ) : ( in_array( $raw_field_data[ 'user_id' ], array( 0, '0', 'current' ), true ) ? $raw_field_data[ 'user_id' ] : $default_meta[ 'user_id' ] );
+		
+		$field_meta[ 'method' ]	= isset( $raw_field_data[ 'method' ] ) && in_array( $raw_field_data[ 'method' ], array_keys( bookacti_get_available_booking_methods() ), true ) ? $raw_field_data[ 'method' ] : $default_meta[ 'method' ];
+		
+		$field_meta[ 'start' ]	= isset( $raw_field_data[ 'start' ] ) && bookacti_sanitize_date( $raw_field_data[ 'start' ] ) ? bookacti_sanitize_date( $raw_field_data[ 'start' ] ) : $default_meta[ 'start' ];
+		$field_meta[ 'end' ]	= isset( $raw_field_data[ 'end' ] ) && bookacti_sanitize_date( $raw_field_data[ 'end' ] ) ? bookacti_sanitize_date( $raw_field_data[ 'end' ] ) : $default_meta[ 'end' ];
+		$field_meta[ 'availability_period_start' ]	= isset( $raw_field_data[ 'availability_period_start' ] ) && is_numeric( $raw_field_data[ 'availability_period_start' ] ) ? intval( $raw_field_data[ 'availability_period_start' ] ) : $default_meta[ 'availability_period_start' ];
+		$field_meta[ 'availability_period_end' ]	= isset( $raw_field_data[ 'availability_period_end' ] ) && is_numeric( $raw_field_data[ 'availability_period_end' ] ) ? intval( $raw_field_data[ 'availability_period_end' ] ) : $default_meta[ 'availability_period_end' ];
+		
+		$field_meta[ 'form_action' ]					= isset( $raw_field_data[ 'form_action' ] ) && in_array( $raw_field_data[ 'form_action' ], array_keys( bookacti_get_available_form_actions() ), true ) ? $raw_field_data[ 'form_action' ] : $default_meta[ 'form_action' ];
+		$field_meta[ 'when_perform_form_action' ]		= isset( $raw_field_data[ 'when_perform_form_action' ] ) && in_array( $raw_field_data[ 'when_perform_form_action' ], array_keys( bookacti_get_available_form_action_triggers() ), true ) ? $raw_field_data[ 'when_perform_form_action' ] : $default_meta[ 'when_perform_form_action' ];
+		$field_meta[ 'redirect_url_by_activity' ]		= isset( $raw_field_data[ 'redirect_url_by_activity' ] ) && is_array( $raw_field_data[ 'redirect_url_by_activity' ] ) ? array_map( 'esc_url', $raw_field_data[ 'redirect_url_by_activity' ] ) : $default_meta[ 'redirect_url_by_activity' ];
+		$field_meta[ 'redirect_url_by_group_category' ] = isset( $raw_field_data[ 'redirect_url_by_group_category' ] ) && is_array( $raw_field_data[ 'redirect_url_by_group_category' ] ) ? array_map( 'esc_url', $raw_field_data[ 'redirect_url_by_group_category' ] ) : $default_meta[ 'redirect_url_by_group_category' ];
+		
+		// The Calendar field display data are the same as the booking system's, we can safely use bookacti_format_booking_system_display_data
+		$display_data = bookacti_format_booking_system_display_data( $raw_field_data );
+		foreach( $default_meta as $default_meta_key => $default_meta_value ) {
+			if( isset( $display_data[ $default_meta_key ] ) ) {
+				$field_meta[ $default_meta_key ] = $display_data[ $default_meta_key ];
+			}
+		}
 		
 	} else if( $raw_field_data[ 'name' ] === 'login' ) {
 		// Format meta values
@@ -683,17 +727,17 @@ function bookacti_format_form_field_data( $raw_field_data ) {
 		'array'		=> array( 'options' ),
 		'bool'		=> array( 'compulsory', 'default', 'unique', 'required' )
 	);
-	$field_data = bookacti_sanitize_values( $default_data, $raw_field_data, $keys_by_type, $field_data );
+	$formatted_field_data = bookacti_sanitize_values( $default_data, $raw_field_data, $keys_by_type, $field_data );
 	
-	if( ! $field_data[ 'title' ] ) { $field_data[ 'title' ] = $default_data[ 'title' ]; }
+	if( ! $formatted_field_data[ 'title' ] ) { $formatted_field_data[ 'title' ] = $default_data[ 'title' ]; }
 	
 	// Keep only meta declared in default meta
-	$field_meta = wp_parse_args( $field_meta, $default_meta );
-	
-	// Merge common data and metadata
-	$field_data = array_merge( $field_data, $field_meta );
-	
-	return apply_filters( 'bookacti_formatted_field_data', $field_data, $raw_field_data );
+	foreach( $default_meta as $name => $default ) {
+		if( ! isset( $field_meta[ $name ] ) ) { $field_meta[ $name ] = $default; }
+	}
+	$formatted_field_meta = array_intersect_key( $field_meta, $default_meta );
+		
+	return apply_filters( 'bookacti_formatted_field_data', array_merge( $formatted_field_data, $formatted_field_meta ), $raw_field_data );
 }
 
 
@@ -718,36 +762,48 @@ function bookacti_sanitize_form_field_data( $raw_field_data ) {
 	
 	// Sanitize field-specific data and metadata
 	if( $raw_field_data[ 'name' ] === 'calendar' ) {
-		// Build template_data array
-		$raw_field_data[ 'template_data' ] = array(
-			'start'		=> ! empty( $raw_field_data[ 'start' ] ) && bookacti_sanitize_date( $raw_field_data[ 'start' ] ) ? bookacti_sanitize_date( $raw_field_data[ 'start' ] ) : $default_meta[ 'start' ],
-			'end'		=> ! empty( $raw_field_data[ 'end' ] ) && bookacti_sanitize_date( $raw_field_data[ 'end' ] ) ? bookacti_sanitize_date( $raw_field_data[ 'end' ] ) : $default_meta[ 'end' ],
-			'settings'	=> bookacti_format_template_settings( $raw_field_data )
-		);
-		
-		// Sanitize booking system data
-		$field_meta = bookacti_format_booking_system_attributes( $raw_field_data );
-		
-		// Deconstruct template_data
-		$field_meta[ 'start' ]	= ! empty( $raw_field_data[ 'start' ] ) && bookacti_sanitize_date( $raw_field_data[ 'start' ] ) ? bookacti_sanitize_date( $field_meta[ 'template_data' ][ 'start' ] ) : $default_meta[ 'start' ];
-		$field_meta[ 'end' ]	= ! empty( $raw_field_data[ 'end' ] ) && bookacti_sanitize_date( $raw_field_data[ 'end' ] ) ? bookacti_sanitize_date( $field_meta[ 'template_data' ][ 'end' ] ) : $default_meta[ 'end' ];
-		foreach( $field_meta[ 'template_data' ][ 'settings' ] as $key => $value ) {
-			if( ! isset( $default_meta[ $key ] ) ) { continue; }
-			$field_meta[ $key ] = isset( $raw_field_data[ $key ] ) && $raw_field_data[ $key ] !== '' ? $value : $default_meta[ $key ];
+		$booleans_to_check = array( 'groups_only', 'groups_single_events', 'bookings_only', 'past_events', 'past_events_bookable' );
+		foreach( $booleans_to_check as $key ) {
+			$field_meta[ $key ] = in_array( $raw_field_data[ $key ], array( 1, '1', true, 'true', 'yes', 'ok' ), true ) ? 1 : 0;
 		}
 		
-		// Keep some meta unformatted
-		if( isset( $raw_field_data[ 'user_id' ] ) && $raw_field_data[ 'user_id' ] === 'current' )	{ $field_meta[ 'user_id' ] = 'current'; }
-		if( isset( $raw_field_data[ 'activities' ] ) && $raw_field_data[ 'activities' ] === 'all' ) { $field_meta[ 'activities' ] = 'all'; }
-		if( isset( $raw_field_data[ 'group_categories' ] ) ) {
-			if( in_array( $raw_field_data[ 'group_categories' ], array( 'all', 'none' ), true ) )	{ $field_meta[ 'group_categories' ] = $raw_field_data[ 'group_categories' ]; }
-		}
 		$field_meta[ 'id' ]		= isset( $raw_field_data[ 'id' ] ) && $raw_field_data[ 'id' ] !== '' ? sanitize_title_with_dashes( $raw_field_data[ 'id' ] ) : $default_meta[ 'id' ];
 		$field_meta[ 'class' ]	= isset( $raw_field_data[ 'class' ] ) && $raw_field_data[ 'class' ] !== '' ? sanitize_text_field( $raw_field_data[ 'class' ] ) : $default_meta[ 'class' ];
 		
-		// Format actions meta
-		$field_meta[ 'redirect_url_by_activity' ]		= maybe_serialize( array_map( 'stripslashes', $field_meta[ 'redirect_url_by_activity' ] ) );
-		$field_meta[ 'redirect_url_by_group_category' ] = maybe_serialize( array_map( 'stripslashes', $field_meta[ 'redirect_url_by_group_category' ] ) );
+		$field_meta[ 'calendars' ]	= isset( $raw_field_data[ 'calendars' ] ) ? bookacti_ids_to_array( $raw_field_data[ 'calendars' ] ) : $default_meta[ 'calendars' ];
+		
+		$had_activities				= ! empty( $raw_field_data[ 'activities' ] );
+		if( isset( $raw_field_data[ 'activities' ] ) && ( $raw_field_data[ 'activities' ] === 'all' || ( is_array( $raw_field_data[ 'activities' ] ) && in_array( 'all', $raw_field_data[ 'activities' ], true ) ) ) ) { $had_activities = false; }
+		$activities					= isset( $raw_field_data[ 'activities' ] ) ? bookacti_ids_to_array( $raw_field_data[ 'activities' ] ) : $default_meta[ 'activities' ];
+		$field_meta[ 'activities' ]	= $activities && is_array( $activities ) ? $activities : ( $had_activities ? array( 'none' ) : array() );
+		
+		$had_group_categories				= ! empty( $raw_field_data[ 'group_categories' ] );
+		if( isset( $raw_field_data[ 'group_categories' ] ) && ( $raw_field_data[ 'group_categories' ] === 'all' || ( is_array( $raw_field_data[ 'group_categories' ] ) && in_array( 'all', $raw_field_data[ 'group_categories' ], true ) ) ) ) { $had_group_categories = false; }
+		$group_categories					= isset( $raw_field_data[ 'group_categories' ] ) ? bookacti_ids_to_array( $raw_field_data[ 'group_categories' ] ) : $default_meta[ 'group_categories' ];
+		$field_meta[ 'group_categories' ]	= $group_categories && is_array( $group_categories ) ? $group_categories : ( $had_group_categories ? array( 'none' ) : array() );
+		
+		$field_meta[ 'status' ]		= isset( $raw_field_data[ 'status' ] ) && is_array( $raw_field_data[ 'status' ] ) ? array_intersect( $raw_field_data[ 'status' ], array_keys( bookacti_get_booking_state_labels() ) ) : $default_meta[ 'status' ];
+		$field_meta[ 'user_id' ]	= isset( $raw_field_data[ 'user_id' ] ) && is_numeric( $raw_field_data[ 'user_id' ] ) ? intval( $raw_field_data[ 'user_id' ] ) : ( in_array( $raw_field_data[ 'user_id' ], array( 0, '0', 'current' ), true ) ? $raw_field_data[ 'user_id' ] : $default_meta[ 'user_id' ] );
+		
+		$field_meta[ 'method' ]	= isset( $raw_field_data[ 'method' ] ) && in_array( $raw_field_data[ 'method' ], array_keys( bookacti_get_available_booking_methods() ), true ) ? $raw_field_data[ 'method' ] : $default_meta[ 'method' ];
+		
+		$field_meta[ 'start' ]	= isset( $raw_field_data[ 'start' ] ) && bookacti_sanitize_date( $raw_field_data[ 'start' ] ) ? bookacti_sanitize_date( $raw_field_data[ 'start' ] ) : $default_meta[ 'start' ];
+		$field_meta[ 'end' ]	= isset( $raw_field_data[ 'end' ] ) && bookacti_sanitize_date( $raw_field_data[ 'end' ] ) ? bookacti_sanitize_date( $raw_field_data[ 'end' ] ) : $default_meta[ 'end' ];
+		$field_meta[ 'availability_period_start' ]	= isset( $raw_field_data[ 'availability_period_start' ] ) && is_numeric( $raw_field_data[ 'availability_period_start' ] ) ? intval( $raw_field_data[ 'availability_period_start' ] ) : $default_meta[ 'availability_period_start' ];
+		$field_meta[ 'availability_period_end' ]	= isset( $raw_field_data[ 'availability_period_end' ] ) && is_numeric( $raw_field_data[ 'availability_period_end' ] ) ? intval( $raw_field_data[ 'availability_period_end' ] ) : $default_meta[ 'availability_period_end' ];
+		
+		$field_meta[ 'form_action' ]					= isset( $raw_field_data[ 'form_action' ] ) && in_array( $raw_field_data[ 'form_action' ], array_keys( bookacti_get_available_form_actions() ), true ) ? $raw_field_data[ 'form_action' ] : $default_meta[ 'form_action' ];
+		$field_meta[ 'when_perform_form_action' ]		= isset( $raw_field_data[ 'when_perform_form_action' ] ) && in_array( $raw_field_data[ 'when_perform_form_action' ], array_keys( bookacti_get_available_form_action_triggers() ), true ) ? $raw_field_data[ 'when_perform_form_action' ] : $default_meta[ 'when_perform_form_action' ];
+		$field_meta[ 'redirect_url_by_activity' ]		= isset( $raw_field_data[ 'redirect_url_by_activity' ] ) && is_array( $raw_field_data[ 'redirect_url_by_activity' ] ) ? array_map( 'stripslashes', array_map( 'esc_url_raw', $raw_field_data[ 'redirect_url_by_activity' ] ) ) : $default_meta[ 'redirect_url_by_activity' ];
+		$field_meta[ 'redirect_url_by_group_category' ] = isset( $raw_field_data[ 'redirect_url_by_group_category' ] ) && is_array( $raw_field_data[ 'redirect_url_by_group_category' ] ) ? array_map( 'stripslashes', array_map( 'esc_url_raw', $raw_field_data[ 'redirect_url_by_group_category' ] ) ) : $default_meta[ 'redirect_url_by_group_category' ];
+		
+		// The Calendar field display data are the same as the booking system's, we can safely use bookacti_sanitize_booking_system_display_data
+		$display_data = bookacti_sanitize_booking_system_display_data( $raw_field_data );
+		foreach( $default_meta as $default_meta_key => $default_meta_value ) {
+			if( isset( $display_data[ $default_meta_key ] ) ) {
+				$field_meta[ $default_meta_key ] = $display_data[ $default_meta_key ];
+			}
+		}
 		
 	} else if( $raw_field_data[ 'name' ] === 'login' ) {
 		// Sanitize meta values
@@ -795,7 +851,6 @@ function bookacti_sanitize_form_field_data( $raw_field_data ) {
 			} else {
 				$field_data[ $field ] = $default_data[ $field ];
 			}
-			$field_data[ $field ] = maybe_serialize( $field_data[ $field ] );
 		}
 		
 	} else if( $raw_field_data[ 'name' ] === 'quantity' ) {
@@ -822,18 +877,20 @@ function bookacti_sanitize_form_field_data( $raw_field_data ) {
 		'array'		=> array( 'options' ),
 		'bool'		=> array( 'compulsory', 'default', 'unique', 'required' )
 	);
-	$field_data = bookacti_sanitize_values( $default_data, $raw_field_data, $keys_by_type, $field_data );
-	
-	$field_data[ 'options' ] = maybe_serialize( $field_data[ 'options' ] );
+	$sanitized_raw_field_data = bookacti_sanitize_values( $default_data, $raw_field_data, $keys_by_type, $field_data );
 	
 	// Keep only allowed data and metadata
-	$field_data = array_intersect_key( $field_data, $default_data );
-	$field_meta = array_intersect_key( $field_meta, $default_meta );
+	$sanitized_field_data = array_intersect_key( $sanitized_raw_field_data, $default_data );
+	$sanitized_field_meta = array_intersect_key( $field_meta, $default_meta );
 	
-	// Merge common data and metadata
-	$field_data = array_merge( $field_data, $field_meta );
+	$sanitized_data = apply_filters( 'bookacti_sanitized_field_data', array_merge( $sanitized_field_data, $sanitized_field_meta ), $raw_field_data );
 	
-	return apply_filters( 'bookacti_sanitized_field_data', $field_data, $raw_field_data );
+	// We must serialize arrays in addition to sanitizing them
+	foreach( $sanitized_data as $key => $value ) {
+		if( is_array( $value ) ) { $sanitized_data[ $key ] = maybe_serialize( $value ); }
+	}
+	
+	return $sanitized_data;
 }
 
 
@@ -1643,17 +1700,16 @@ function bookacti_display_form_integration_tuto_meta_box( $form ) {
 /**
  * Check if user is allowed to manage form
  * @since 1.5.0
- * @version 1.6.0
+ * @version 1.7.17
  * @param int $form_id
  * @param int $user_id
  * @return boolean
  */
 function bookacti_user_can_manage_form( $form_id, $user_id = false ) {
-
 	$user_can_manage_form = false;
-	$bypass_form_managers_check = apply_filters( 'bookacti_bypass_form_managers_check', false );
+	$bypass_form_managers_check = apply_filters( 'bookacti_bypass_form_managers_check', false, $user_id );
 	if( ! $user_id ) { $user_id = get_current_user_id(); }
-	if( is_super_admin() || $bypass_form_managers_check ) { $user_can_manage_form = true; }
+	if( is_super_admin( $user_id ) || $bypass_form_managers_check ) { $user_can_manage_form = true; }
 	else {
 		$admins = bookacti_get_form_managers( $form_id );
 		if( $admins ) {

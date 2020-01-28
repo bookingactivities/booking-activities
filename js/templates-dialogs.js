@@ -279,7 +279,7 @@ function bookacti_dialog_add_new_template() {
 
 /**
  * Dialog Update Template
- * @version 1.7.15
+ * @version 1.7.17
  * @param {int} template_id
  */
 function bookacti_dialog_update_template( template_id ) {
@@ -357,7 +357,10 @@ function bookacti_dialog_update_template( template_id ) {
 							// If success
 							if( response.status === 'success' ) {
 
-								bookacti.booking_system[ 'bookacti-template-calendar' ][ 'template_data' ] = response.template_data;
+								bookacti.booking_system[ 'bookacti-template-calendar' ][ 'template_data' ]	= response.template_data;
+								bookacti.booking_system[ 'bookacti-template-calendar' ][ 'start' ]			= response.template_data.start;
+								bookacti.booking_system[ 'bookacti-template-calendar' ][ 'end' ]			= response.template_data.end;
+								bookacti.booking_system[ 'bookacti-template-calendar' ][ 'display_data' ]	= response.template_data.settings;
 
 								// Change template metas in the select box
 								$j( '#bookacti-template-picker option[value=' + template_id + ']' ).html( response.template_data.title );
@@ -524,7 +527,7 @@ function bookacti_dialog_deactivate_template( template_id ) {
 
 /**
  * Dialog Update Event
- * @version 1.7.15
+ * @version 1.7.17
  * @param {object} event
  */
 function bookacti_dialog_update_event( event ) {
@@ -544,8 +547,8 @@ function bookacti_dialog_update_event( event ) {
 	var event_exceptions= bookacti.booking_system[ 'bookacti-template-calendar' ][ 'exceptions' ][ event.id ];
 	var bookings_number	= bookacti_get_event_number_of_bookings( $j( '#bookacti-template-calendar' ), event );
 
-	var template_start  = bookacti.booking_system[ 'bookacti-template-calendar' ][ 'template_data' ][ 'start' ];
-	var template_end    = bookacti.booking_system[ 'bookacti-template-calendar' ][ 'template_data' ][ 'end' ];
+	var template_start  = bookacti.booking_system[ 'bookacti-template-calendar' ][ 'start' ];
+	var template_end    = bookacti.booking_system[ 'bookacti-template-calendar' ][ 'end' ];
 
 	var event_day		= event.start;
 	var event_28_days	= moment( event_day ).add( 28, 'd' );
@@ -1272,7 +1275,7 @@ function bookacti_dialog_create_activity() {
 
 /**
  * Open a dialog to update an activity
- * @version 1.7.15
+ * @version 1.7.17
  */
 function bookacti_dialog_update_activity( activity_id ) {
 	if( ! bookacti.selected_template || ! activity_id ) { return; }
@@ -1296,9 +1299,11 @@ function bookacti_dialog_update_activity( activity_id ) {
 	$j( '#bookacti-activity-title' ).val( activity_data.multilingual_title ); 
 	$j( '#bookacti-activity-color' ).val( activity_data.color );
 	$j( '#bookacti-activity-availability' ).val( activity_data.availability );
-	$j( '#bookacti-activity-duration-days' ).val( activity_data.duration.substr( 0, 3 ) );
-	$j( '#bookacti-activity-duration-hours' ).val( activity_data.duration.substr( 4, 2 ) );
-	$j( '#bookacti-activity-duration-minutes' ).val( activity_data.duration.substr( 7, 2 ) );
+	
+	var activity_duration = activity_data.duration ? activity_data.duration : '000.01:00:00';
+	$j( '#bookacti-activity-duration-days' ).val( activity_duration.substr( 0, 3 ) );
+	$j( '#bookacti-activity-duration-hours' ).val( activity_duration.substr( 4, 2 ) );
+	$j( '#bookacti-activity-duration-minutes' ).val( activity_duration.substr( 7, 2 ) );
 	
 	if( activity_data.is_resizable == 1 ) { $j( '#bookacti-activity-resizable' ).prop( 'checked', true ); }
 	else { $j( '#bookacti-activity-resizable' ).prop( 'checked', false ); }

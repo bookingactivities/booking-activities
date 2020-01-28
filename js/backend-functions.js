@@ -181,21 +181,24 @@ function bookacti_fill_fields_from_array( fields, field_prefix, scope ) {
 			return true; // Jump to next field
 		}
 		
-		// Switch select multiple
-		if( $j( scope + 'select[name="' + field_name + '[]"]' ).length && ( ! $j.isArray( value ) || ( $j.isArray( value ) && value.length === 1 ) ) ) {
+		// Switch select multiple to simple
+		if( $j( scope + 'select[name="' + field_name + '[]"]' ).length && ( ! $j.isArray( value ) || ( $j.isArray( value ) && value.length <= 1 ) ) ) {
 			var field_id = $j( scope + 'select[name="' + field_name + '[]"]' ).attr( 'id' );
 			if( $j( scope + 'input.bookacti-multiple-select[data-select-id="' + field_id + '"]' ).length ) {
 				$j( scope + 'input.bookacti-multiple-select[data-select-id="' + field_id + '"]' ).prop( 'checked', false );
 				bookacti_switch_select_to_multiple( scope + 'input.bookacti-multiple-select[data-select-id="' + field_id + '"]' );
+				$j( scope + 'select[name="' + field_name + '"] option' ).prop( 'selected', false );
 			}
 		}
-		if( $j( scope + 'select[name="' + field_name + '"]' ).length && $j.isArray( value ) ) {
+		// Switch simple select to multiple
+		if( $j( scope + 'select[name="' + field_name + '"]' ).length && $j.isArray( value ) && value.length > 1 ) {
 			if( value.length === 1 ) { value = value[0]; }
 			else {
 				var field_id = $j( scope + 'select[name="' + field_name + '"]' ).attr( 'id' );
 				if( $j( scope + 'input.bookacti-multiple-select[data-select-id="' + field_id + '"]' ).length ) {
 					$j( scope + 'input.bookacti-multiple-select[data-select-id="' + field_id + '"]' ).prop( 'checked', true );
 					bookacti_switch_select_to_multiple( scope + 'input.bookacti-multiple-select[data-select-id="' + field_id + '"]' );
+					$j( scope + 'select[name="' + field_name + '[]"] option' ).prop( 'selected', false );
 				}
 			}
 		}

@@ -543,14 +543,13 @@ add_action( 'bookacti_send_async_notification', 'bookacti_send_notification', 10
 /**
  * Send an email notification
  * @since 1.2.0
- * @version 1.7.10
+ * @version 1.7.17
  * @param array $notification
  * @param array $tags
  * @param string $locale
  * @return boolean
  */
 function bookacti_send_email_notification( $notification, $tags = array(), $locale = 'site' ) {
-	
 	// Do not send email notification if it is deactivated or if there are no recipients
 	if( ! $notification[ 'active' ] || ! $notification[ 'email' ][ 'active' ] || ! $notification[ 'email' ][ 'to' ] ) { return false; }
 	
@@ -560,7 +559,7 @@ function bookacti_send_email_notification( $notification, $tags = array(), $loca
 	}
 	
 	$to			= $notification[ 'email' ][ 'to' ];
-	$subject	= apply_filters( 'bookacti_translate_text', $notification[ 'email' ][ 'subject' ], $locale );
+	$subject	= str_replace( array_keys( $tags ), array_values( $tags ), apply_filters( 'bookacti_translate_text', $notification[ 'email' ][ 'subject' ], $locale ) );
 	$message	= wpautop( str_replace( array_keys( $tags ), array_values( $tags ), apply_filters( 'bookacti_translate_text', $notification[ 'email' ][ 'message' ], $locale ) ) );
 	
 	// Do shortcodes

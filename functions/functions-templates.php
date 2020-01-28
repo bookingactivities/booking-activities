@@ -7,7 +7,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 /**
  * Get booking system data
  * @since 1.7.4
- * @version 1.7.15
+ * @version 1.7.17
  * @param array $atts (see bookacti_format_booking_system_attributes())
  * @param int $template_id
  * @return array
@@ -16,7 +16,8 @@ function bookacti_get_editor_booking_system_data( $atts, $template_id ) {
 	$booking_system_data = $atts;
 	
 	$templates_data		= bookacti_get_templates_data( $template_id, true );
-	$events_interval	= bookacti_get_new_interval_of_events( $templates_data[ $template_id ], array(), false, true );
+	$availability_period= array( 'start' => $templates_data[ $template_id ][ 'start' ], 'end' => $templates_data[ $template_id ][ 'end' ] );
+	$events_interval	= bookacti_get_new_interval_of_events( $availability_period, array(), false, true );
 	$events				= $events_interval ? bookacti_fetch_events_for_calendar_editor( $template_id, null, $events_interval ) : array();
 	
 	$booking_system_data[ 'calendars' ]				= array( $template_id );
@@ -27,8 +28,11 @@ function bookacti_get_editor_booking_system_data( $atts, $template_id ) {
 	$booking_system_data[ 'exceptions' ]			= bookacti_get_exceptions( $template_id );
 	$booking_system_data[ 'activities_data' ]		= bookacti_get_activities_by_template( $template_id, false, true );
 	$booking_system_data[ 'groups_events' ]			= bookacti_get_groups_events( $template_id );
-	$booking_system_data[ 'groups_data' ]			= bookacti_get_groups_of_events( $template_id, array(), true );
+	$booking_system_data[ 'groups_data' ]			= bookacti_get_groups_of_events( $template_id, array() );
 	$booking_system_data[ 'group_categories_data' ]	= bookacti_get_group_categories( $template_id );
+	$booking_system_data[ 'start' ]					= $availability_period[ 'start' ];
+	$booking_system_data[ 'end' ]					= $availability_period[ 'end' ];
+	$booking_system_data[ 'display_data' ]			= $templates_data[ $template_id ][ 'settings' ];
 	$booking_system_data[ 'template_data' ]			= $templates_data[ $template_id ];
 
 	return apply_filters( 'bookacti_editor_booking_system_data', $booking_system_data, $atts );
@@ -40,17 +44,16 @@ function bookacti_get_editor_booking_system_data( $atts, $template_id ) {
 // PERMISSIONS
 	/**
 	 * Check if user is allowed to manage template
-	 * @version 1.6.0
+	 * @version 1.7.17
 	 * @param int $template_id
 	 * @param int|false $user_id False for current user
 	 * @return boolean
 	 */
 	function bookacti_user_can_manage_template( $template_id, $user_id = false ) {
-
 		$user_can_manage_template = false;
-		$bypass_template_managers_check = apply_filters( 'bookacti_bypass_template_managers_check', false );
+		$bypass_template_managers_check = apply_filters( 'bookacti_bypass_template_managers_check', false, $user_id );
 		if( ! $user_id ) { $user_id = get_current_user_id(); }
-		if( is_super_admin() || $bypass_template_managers_check ) { $user_can_manage_template = true; }
+		if( is_super_admin( $user_id ) || $bypass_template_managers_check ) { $user_can_manage_template = true; }
 		else {
 			$admins = bookacti_get_template_managers( $template_id );
 			if( $admins ) {
@@ -64,18 +67,17 @@ function bookacti_get_editor_booking_system_data( $atts, $template_id ) {
 	
 	/**
 	 * Check if user is allowed to manage activity
-	 * @version 1.7.16
+	 * @version 1.7.17
 	 * @param int $activity_id
 	 * @param int|false $user_id False for current user
 	 * @param array|false $admins False to retrieve the activity managers
 	 * @return boolean
 	 */
 	function bookacti_user_can_manage_activity( $activity_id, $user_id = false, $admins = false ) {
-
 		$user_can_manage_activity = false;
-		$bypass_activity_managers_check = apply_filters( 'bookacti_bypass_activity_managers_check', false );
+		$bypass_activity_managers_check = apply_filters( 'bookacti_bypass_activity_managers_check', false, $user_id );
 		if( ! $user_id ) { $user_id = get_current_user_id(); }
-		if( is_super_admin() || $bypass_activity_managers_check ) { $user_can_manage_activity = true; }
+		if( is_super_admin( $user_id ) || $bypass_activity_managers_check ) { $user_can_manage_activity = true; }
 		else {
 			$admins = $admins === false ? bookacti_get_activity_managers( $activity_id ) : $admins;
 			if( $admins ) {
@@ -111,7 +113,7 @@ function bookacti_get_editor_booking_system_data( $atts, $template_id ) {
 // TEMPLATE X ACTIVITIES
 	/**
 	 * Retrieve template activities list
-	 * @version 1.7.16
+	 * @version 1.7.17
 	 * @param int $template_id
 	 * @return boolean|string 
 	 */
@@ -131,7 +133,7 @@ function bookacti_get_editor_booking_system_data( $atts, $template_id ) {
 						class='fc-event ui-draggable ui-draggable-handle'
 						data-event='{"title": "<?php echo htmlentities( esc_attr( $title ), ENT_QUOTES ); ?>", "activity_id": "<?php echo esc_attr( $activity[ 'id' ] ); ?>", "color": "<?php echo esc_attr( $activity[ 'color' ] ); ?>", "stick":"true"}' 
 						data-activity-id='<?php echo esc_attr( $activity[ 'id' ] ); ?>'
-						data-duration='<?php echo esc_attr( $activity[ 'duration' ] ); ?>'
+						data-duration='<?php echo esc_attr( $activity[ 'duration' ] ? $activity[ 'duration' ] : '000.01:00:00' ); ?>'
 						title='<?php esc_attr_e( $title ); ?>'
 						style='border-color:<?php echo esc_attr( $activity[ 'color' ] ); ?>; background-color:<?php echo esc_attr( $activity[ 'color' ] ); ?>'
 						>
@@ -221,21 +223,35 @@ function bookacti_get_editor_booking_system_data( $atts, $template_id ) {
 	
 	/**
 	 * Get a unique template setting made from a combination of multiple template settings
-	 * 
 	 * @since	1.2.2 (was bookacti_get_mixed_template_settings)
-	 * @version 1.7.16
+	 * @version 1.7.17
 	 * @param	array|int $template_ids Array of template ids or single template id
 	 * @param	boolean $past_events Whether to allow past events
 	 * @return	array
 	 */
 	function bookacti_get_mixed_template_data( $template_ids, $past_events = false ) {
-		
 		$templates_data = bookacti_get_templates_data( $template_ids, true );
-		
+		$mixed_data = array();
 		$mixed_settings	= array();
 		
 		foreach( $templates_data as $template_data ){
 			$settings = $template_data[ 'settings' ];
+			if( isset( $template_data[ 'start' ] ) ) {
+				// Keep the lower value
+				if(  ! isset( $mixed_data[ 'start' ] ) 
+					|| isset( $mixed_data[ 'start' ] ) && strtotime( $template_data[ 'start' ] ) < strtotime( $mixed_data[ 'start' ] ) ) {
+
+					$mixed_data[ 'start' ] = $template_data[ 'start' ];
+				} 
+			}
+			if( isset( $template_data[ 'end' ] ) ) {
+				// Keep the higher value
+				if(  ! isset( $mixed_data[ 'end' ] ) 
+					|| isset( $mixed_data[ 'end' ] ) && strtotime( $template_data[ 'end' ] ) < strtotime( $mixed_data[ 'end' ] ) ) {
+
+					$mixed_data[ 'end' ] = $template_data[ 'end' ];
+				} 
+			}
 			if( isset( $settings[ 'minTime' ] ) ) {
 				// Keep the lower value
 				if(  ! isset( $mixed_settings[ 'minTime' ] ) 
@@ -260,46 +276,8 @@ function bookacti_get_editor_booking_system_data( $atts, $template_id ) {
 					$mixed_settings[ 'snapDuration' ] = $settings[ 'snapDuration' ];
 				} 
 			}
-			if( ! $past_events && isset( $settings[ 'availability_period_start' ] ) ) {
-				// Keep the higher value
-				if(  ! isset( $mixed_settings[ 'availability_period_start' ] ) 
-					|| isset( $mixed_settings[ 'availability_period_start' ] ) && $settings[ 'availability_period_start' ] > $mixed_settings[ 'availability_period_start' ] ) {
-
-					$mixed_settings[ 'availability_period_start' ] = $settings[ 'availability_period_start' ];
-				} 
-			}
-			if( ! $past_events && isset( $settings[ 'availability_period_end' ] ) ) {
-				// Keep the lower value
-				if(  ! isset( $mixed_settings[ 'availability_period_end' ] ) 
-					|| isset( $mixed_settings[ 'availability_period_end' ] ) && $settings[ 'availability_period_end' ] < $mixed_settings[ 'availability_period_end' ] ) {
-
-					$mixed_settings[ 'availability_period_end' ] = $settings[ 'availability_period_end' ];
-				} 
-			}
 		}
-		
-		// Take default availability period if not set
-		if( ! isset( $mixed_settings[ 'availability_period_start' ] ) || ( isset( $mixed_settings[ 'availability_period_start' ] ) && ! is_numeric( $mixed_settings[ 'availability_period_start' ] ) ) ) {
-			$mixed_settings[ 'availability_period_start' ] = 0;
-		}
-		if( ! isset( $mixed_settings[ 'availability_period_end' ] ) || ( isset( $mixed_settings[ 'availability_period_end' ] ) && ! is_numeric( $mixed_settings[ 'availability_period_end' ] ) ) ) {
-			$mixed_settings[ 'availability_period_end' ] = 0;
-		}
-		
-		$mixed_data = array();
-		
-		// Get mixed template range
-		if( count( $templates_data ) > 1 ) {
-			$mixed_data	= bookacti_get_mixed_template_range( $template_ids );
-		} else {
-			reset( $templates_data );
-			$first_key = key( $templates_data );
-			$mixed_data = array( 
-				'start'	=> ! empty( $templates_data[ $first_key ][ 'start' ] ) ? $templates_data[ $first_key ][ 'start' ] : '',
-				'end'	=> ! empty( $templates_data[ $first_key ][ 'end' ] ) ? $templates_data[ $first_key ][ 'end' ] : ''
-			);
-		}
-		
+				
 		// Limit the template range to future events
 		if( ! $past_events ) {
 			$timezone			= new DateTimeZone( bookacti_get_setting_value( 'bookacti_general_settings', 'timezone' ) );
@@ -681,9 +659,8 @@ function bookacti_get_editor_booking_system_data( $atts, $template_id ) {
 	
 	/**
 	 * Retrieve template groups of events list
-	 * 
 	 * @since 1.1.0
-	 * @version 1.7.0
+	 * @version 1.7.17
 	 * @param int $template_id
 	 * @return string|boolean
 	 */
@@ -697,7 +674,7 @@ function bookacti_get_editor_booking_system_data( $atts, $template_id ) {
 		
 		// Retrieve groups by categories
 		$categories	= bookacti_get_group_categories( $template_id );
-		$groups		= bookacti_get_groups_of_events( $template_id, array(), true );
+		$groups		= bookacti_get_groups_of_events( $template_id, array() );
 		foreach( $categories as $category ) {
 			
 			$category_title			= $category[ 'title' ];

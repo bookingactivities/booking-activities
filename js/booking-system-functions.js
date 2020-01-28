@@ -141,13 +141,16 @@ function bookacti_reload_booking_system( booking_system, keep_picked_events ) {
 }
 
 
-// Display events of a specific interval
+/**
+ * Display events of a specific interval
+ * @version 1.7.17
+ * @param {dom_element} booking_system
+ * @param {object} desired_interval
+ * @returns {undefined}
+ */
 function bookacti_fetch_events_from_interval( booking_system, desired_interval ) {
-	
 	var booking_system_id	= booking_system.attr( 'id' );
-	
 	var current_interval	= bookacti.booking_system[ booking_system_id ][ 'events_interval' ];
-	
 	var availability_period	= bookacti_get_availability_period( booking_system );
 	
 	var calendar_start	= moment.utc( availability_period.start );
@@ -171,12 +174,10 @@ function bookacti_fetch_events_from_interval( booking_system, desired_interval )
 
 	// Else, check if the desired_interval contain unloaded days, and if so, load events for this new interval
 	else { 
-
 		var current_interval_start	= moment.utc( current_interval.start );
 		var current_interval_end	= moment.utc( current_interval.end );
 
 		if( desired_interval_start.isBefore( current_interval_start ) || desired_interval_end.isAfter( current_interval_end ) ) {
-			
 			var new_interval_start	= current_interval_start.clone();
 			var new_interval_end	= current_interval_end.clone();
 			
@@ -242,11 +243,17 @@ function bookacti_fetch_events_from_interval( booking_system, desired_interval )
 }
 
 
-// Get the first events interval
+/**
+ * Get the first events interval
+ * @version 1.7.17
+ * @param {dom_element} booking_system
+ * @param {object} min_interval
+ * @param {int} interval_duration
+ * @returns {object}
+ */
 function bookacti_get_new_interval_of_events( booking_system, min_interval, interval_duration ) {
-	
 	var booking_system_id = booking_system.attr( 'id' );
-	var template_interval = bookacti.booking_system[ booking_system_id ][ 'template_data' ];
+	var template_interval = bookacti_get_availability_period( booking_system );
 	
 	if( typeof template_interval.start === 'undefined' || typeof template_interval.end === 'undefined' ) { return {}; }
 	
@@ -254,11 +261,8 @@ function bookacti_get_new_interval_of_events( booking_system, min_interval, inte
 	var current_time	= moment.utc( bookacti_localized.current_time );
 	var current_date	= current_time.format( 'YYYY-MM-DD' );
 	
-	// Restrict template interval if an availability period is set
-	var availability_period = bookacti_get_availability_period( booking_system );
-
-	var calendar_start	= moment.utc( availability_period.start );
-	var calendar_end	= moment.utc( availability_period.end ).add( 1, 'days' );
+	var calendar_start	= moment.utc( template_interval.start );
+	var calendar_end	= moment.utc( template_interval.end ).add( 1, 'days' );
 	
 	if( ! past_events && calendar_end.isBefore( current_time ) ) { return []; }
 	
@@ -333,55 +337,14 @@ function bookacti_get_extended_events_interval( booking_system, interval ) {
 
 /**
  * Get availability period according to relative and absolute dates
- * @version 1.7.16
+ * @version 1.7.17
  * @param {dom_element} booking_system
- * @param {boolean} bypass_relative_period Whether to bypass availability_period_start and availability_period_end (keep only absolute opening and closing dates)
  * @returns {object}
  */
-function bookacti_get_availability_period( booking_system, bypass_relative_period ) {
-	
+function bookacti_get_availability_period( booking_system ) {
 	var booking_system_id	= booking_system.attr( 'id' );
-	var template_data		= bookacti.booking_system[ booking_system_id ][ 'template_data' ];
-	bypass_relative_period	= typeof bypass_relative_period === 'undefined' ? ( bookacti.booking_system[ booking_system_id ][ 'past_events' ] ? 1 : 0 ) : bypass_relative_period;
-	
-	// Default availability period is the calendar absolute opening and closing dates
-	var calendar_start_date	= template_data.start;
-	var calendar_end_date	= template_data.end;
-	
-	if( ! bypass_relative_period ) {
-		var availability_period_start	= 0;
-		var availability_period_end		= 0;
-		if( typeof template_data.settings.availability_period_start !== 'undefined' ) {
-			if( $j.isNumeric( template_data.settings.availability_period_start ) ) {
-				availability_period_start = parseInt( template_data.settings.availability_period_start );
-			}
-		}
-		if( typeof template_data.settings.availability_period_end !== 'undefined' ) {
-			if( $j.isNumeric( template_data.settings.availability_period_end ) ) {
-				availability_period_end = parseInt( template_data.settings.availability_period_end );
-			}
-		}
-
-		var current_time = moment.utc( bookacti_localized.current_time );
-
-		// Restrict template interval if an availability period is set
-		if( availability_period_start > 0 ) {
-			var availability_start		= current_time.clone().add( availability_period_start, 'days' );
-			var availability_start_date	= moment.utc( availability_start.format( 'YYYY-MM-DD' ) );
-			if( availability_start_date.isAfter( moment.utc( calendar_start_date ) ) ) {
-				calendar_start_date = availability_start_date.format( 'YYYY-MM-DD' );
-			}
-		}
-		if( availability_period_end > 0 ) {
-			var availability_end		= current_time.clone().add( availability_period_end, 'days' );
-			var availability_end_date	= moment.utc( availability_end.format( 'YYYY-MM-DD' ) );
-			if( availability_end_date.isBefore( moment.utc( calendar_end_date ) ) ) {
-				calendar_end_date = availability_end_date.format( 'YYYY-MM-DD' );
-			}
-		}
-	}
-	
-	return { "start": calendar_start_date, "end": calendar_end_date };
+	var booking_system_data	= bookacti.booking_system[ booking_system_id ];
+	return { "start": booking_system_data.start, "end": booking_system_data.end };
 }
 
 
@@ -958,20 +921,19 @@ function bookacti_get_event_availability( booking_system, event ) {
 
 /**
  * Check if an event is event available
- * @verion 1.5.9
+ * @verion 1.7.17
  * @param {dom_element} booking_system
  * @param {object} event
  * @returns {boolean}
  */
 function bookacti_is_event_available( booking_system, event ) {
-	
 	var booking_system_id	= booking_system.attr( 'id' );
 	var past_events			= bookacti.booking_system[ booking_system_id ][ 'past_events' ];
 	var past_events_bookable= bookacti.booking_system[ booking_system_id ][ 'past_events_bookable' ];
 	var current_time		= moment.utc( bookacti_localized.current_time );
 	
 	var availability		= bookacti_get_event_availability( booking_system, event );
-	var availability_period	= bookacti_get_availability_period( booking_system, false );
+	var availability_period	= bookacti_get_availability_period( booking_system );
 	var is_available		= false;
 	
 	if( availability <= 0 ) { return false; }
@@ -1436,6 +1398,7 @@ function bookacti_redirect_to_group_category_url( booking_system, group_id ) {
 /**
  * Redirect to url with the booking form values as parameters
  * @since 1.7.10
+ * @since 1.7.17
  * @param {dom_element} booking_system
  * @param {string} redirect_url
  */
@@ -1451,9 +1414,14 @@ function bookacti_redirect_booking_system_to_url( booking_system, redirect_url )
 	} else {
 		url_params	= booking_system.closest( 'form' ).serialize();
 	}
-	redirect_url += redirect_url.indexOf( '?' ) >= 0 ? '&' + url_params : '?' + url_params;
-
+	
+	var redirect = { 'url': redirect_url, 'params': url_params };
+	redirect.url += redirect.url.indexOf( '?' ) >= 0 ? '&' + url_params : '?' + url_params;
+	
+	booking_system.trigger( 'bookacti_before_redirect', [ redirect ] );
+	
 	// Redirect to URL
 	bookacti_start_loading_booking_system( booking_system );
-	window.location.href = redirect_url;
+	window.location.href = redirect.url;
+	bookacti_stop_loading_booking_system( booking_system );
 }

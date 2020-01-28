@@ -146,7 +146,7 @@ function bookacti_update_template_related_filters() {
 
 /**
  * Refresh booking list calendar accoding to dates
- * @version 1.6.0
+ * @version 1.7.17
  */
 function bookacti_refresh_calendar_according_to_date_filter() {
 	if( ! $j( '#bookacti-booking-system-filter-container' ).is( ':visible' ) ) { return false; }
@@ -158,12 +158,12 @@ function bookacti_refresh_calendar_according_to_date_filter() {
 	var to					= moment( $j( '#bookacti-booking-filter-dates-to' ).val() );
 	
 	var interval_filter = {
-		"start": from.isValid() ? from : moment( bookacti.booking_system[ booking_system_id ][ 'template_data' ][ 'start' ] ),
-		"end": to.isValid() ? to.add( 1, 'days' ) : moment( bookacti.booking_system[ booking_system_id ][ 'template_data' ][ 'end' ] ).add( 1, 'days' )
+		"start": from.isValid() ? from : moment( bookacti.booking_system[ booking_system_id ][ 'start' ] ),
+		"end": to.isValid() ? to.add( 1, 'days' ) : moment( bookacti.booking_system[ booking_system_id ][ 'end' ] ).add( 1, 'days' )
 	};
 	
-	bookacti.booking_system[ booking_system_id ][ 'template_data' ][ 'start' ] = interval_filter.start.format( 'YYYY-MM-DD' );
-	bookacti.booking_system[ booking_system_id ][ 'template_data' ][ 'end' ] = interval_filter.end.format( 'YYYY-MM-DD' );
+	bookacti.booking_system[ booking_system_id ][ 'start' ] = interval_filter.start.format( 'YYYY-MM-DD' );
+	bookacti.booking_system[ booking_system_id ][ 'end' ] = interval_filter.end.format( 'YYYY-MM-DD' );
 	
 	calendar.fullCalendar( 'option', 'validRange', interval_filter );
 }
@@ -171,7 +171,7 @@ function bookacti_refresh_calendar_according_to_date_filter() {
 
 /**
  * Reload bookings booking system according to filters
- * @version 1.6.0
+ * @version 1.7.17
  * @param {dom_element} booking_system
  */
 function bookacti_reload_booking_system_according_to_filters( booking_system ) {
@@ -186,8 +186,8 @@ function bookacti_reload_booking_system_according_to_filters( booking_system ) {
 	bookacti.booking_system[ booking_system_id ][ 'calendars' ] = selected_templates ? selected_templates : [];
 	bookacti.booking_system[ booking_system_id ][ 'status' ]	= selected_status ? selected_status : [];
 	bookacti.booking_system[ booking_system_id ][ 'user_id' ]	= selected_user ? selected_user : 0;
-	bookacti.booking_system[ booking_system_id ][ 'template_data' ][ 'start' ] = selected_from;
-	bookacti.booking_system[ booking_system_id ][ 'template_data' ][ 'end' ] = selected_end;
+	bookacti.booking_system[ booking_system_id ][ 'start' ]		= selected_from;
+	bookacti.booking_system[ booking_system_id ][ 'end' ]		= selected_end;
 	
 	bookacti_reload_booking_system( booking_system );
 }

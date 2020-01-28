@@ -157,7 +157,7 @@ function bookacti_get_metadata( $object_type, $object_id, $meta_key = '', $singl
 
 /**
  * Update metadata
- * @version 1.7.4
+ * @version 1.7.17
  * @global wpdb $wpdb
  * @param string $object_type
  * @param int $object_id
@@ -191,16 +191,17 @@ function bookacti_update_metadata( $object_type, $object_id, $metadata_array ) {
 		$update_metadata_query_end	= ' WHERE object_type = %s AND object_id = %d AND meta_key = %s;';
 
 		foreach( $existing_metadata as $meta_key => $meta_value ) {
-
 			$update_metadata_query_n = $update_metadata_query;
 
 			if( is_int( $meta_value ) )			{ $update_metadata_query_n .= '%d'; }
 			else if( is_float( $meta_value ) )	{ $update_metadata_query_n .= '%f'; }
 			else								{ $update_metadata_query_n .= '%s'; }
-
+			
+			if( is_array( $meta_value ) || is_object( $meta_value ) ) { $meta_value = maybe_serialize( $meta_value ); }
+			
 			$update_metadata_query_n .= $update_metadata_query_end;
 
-			$update_variables_array = array( maybe_serialize( $meta_value ), $object_type, $object_id, $meta_key );
+			$update_variables_array = array( $meta_value, $object_type, $object_id, $meta_key );
 
 			$update_query_prep = $wpdb->prepare( $update_metadata_query_n, $update_variables_array );
 			$updated_n = $wpdb->query( $update_query_prep );
@@ -223,7 +224,7 @@ function bookacti_update_metadata( $object_type, $object_id, $metadata_array ) {
 
 /**
  * Insert metadata
- * @version 1.7.4
+ * @version 1.7.17
  * @global wpdb $wpdb
  * @param string $object_type
  * @param int $object_id
@@ -256,7 +257,7 @@ function bookacti_insert_metadata( $object_type, $object_id, $metadata_array ) {
 		$insert_variables_array[] = $object_type;
 		$insert_variables_array[] = $object_id;
 		$insert_variables_array[] = $meta_key;
-		$insert_variables_array[] = maybe_serialize( $meta_value );
+		$insert_variables_array[] = is_array( $meta_value ) || is_object( $meta_value ) ? maybe_serialize( $meta_value ) : $meta_value;
 	}
 
 	$insert_query_prep = $wpdb->prepare( $insert_metadata_query, $insert_variables_array );

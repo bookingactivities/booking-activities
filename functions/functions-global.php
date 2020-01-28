@@ -1304,13 +1304,13 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 	/**
 	 * Sanitize templates ids or activities ids to array
-	 * 
+	 * @version 1.7.17
 	 * @param array|int $ids
 	 * @return array 
 	 */
 	function bookacti_ids_to_array( $ids ) {
 		if( is_array( $ids ) ){
-			return $ids;
+			return array_filter( array_unique( array_map( 'intval', $ids ) ) );
 		} else if( ! empty( $ids ) ){
 			if( is_numeric( $ids ) ) {
 				return array( intval( $ids ) );
@@ -1400,7 +1400,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	 * Check if a string is in a correct date format
 	 * @version 1.7.13
 	 * @param string $date Date format Y-m-d is expected
-	 * @return string|false 
+	 * @return string 
 	 */
 	function bookacti_sanitize_date( $date ) {
 		if( preg_match( '/\d{4}-[01]\d-[0-3]\d/', $date ) ) {
@@ -1420,15 +1420,15 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 	/**
 	 * Check if a string is in a correct duration format
-	 * 
+	 * @version 1.7.17
 	 * @param string $duration Duration format "DDD.HH:mm:ss" is expected
-	 * @return string|false
+	 * @return string
 	 */
 	function bookacti_sanitize_duration( $duration ) {
 		if( preg_match( '/\d{3}\.[0-2]\d:[0-5]\d:[0-5]\d/', $duration ) ) {
 			return $duration;
 		}
-		return false;
+		return '';
 	}
 	
 	

@@ -44,18 +44,6 @@ $j( document ).ready( function() {
 	});
 	
 	
-	/*
-	 * Field-specific actions when a user open its dialog
-	 * @version 1.7.17
-	 */
-	$j( '#bookacti-form-editor' ).on( 'bookacti_field_update_dialog', function( e, field_id, field_name ){
-		if( field_name === 'calendar' ) {
-			bookacti_fill_fields_from_array( bookacti.form_editor.fields[ field_id ].template_data.settings, '', 'form#bookacti-form-field-form-' + field_name );
-			bookacti_fill_fields_from_array( bookacti.form_editor.fields[ field_id ].raw, '', 'form#bookacti-form-field-form-' + field_name );
-		}
-	});
-	
-	
 	/**
 	 * Add / remove activity row in the "redirect URL" table according to the currently selected activities
 	 * @since 1.7.0
@@ -222,9 +210,9 @@ $j( document ).ready( function() {
 	/**
 	 * Rerender field HTML after settings update
 	 * @since 1.5.0
-	 * @version 1.6.0
+	 * @version 1.7.17
 	 */
-	$j( '#bookacti-form-editor' ).on( 'bookacti_field_updated bookacti_field_reset', function( e, field_id, field_name ){
+	$j( '#bookacti-form-editor' ).on( 'bookacti_field_updated bookacti_field_reset', function( e, field_id, field_name, response ){
 		if( field_name === 'calendar' ) {
 			var booking_system		= $j( '#bookacti-form-editor-field-' + field_id + ' .bookacti-booking-system' );
 			var booking_system_id	= booking_system.attr( 'id' );
@@ -234,8 +222,7 @@ $j( document ).ready( function() {
 			bookacti_clear_booking_system_displayed_info( booking_system );
 
 			// Reload booking system
-			bookacti.booking_system[ booking_system_id ] = [];
-			bookacti.booking_system[ booking_system_id ] = $j.extend( true, {}, bookacti.form_editor.fields[ field_id ] ); // Clone field data, else changing booking_system data will change field data
+			bookacti.booking_system[ booking_system_id ] = response.booking_system_attributes ? response.booking_system_attributes : [];
 			
 			bookacti_reload_booking_system( booking_system );
 		}

@@ -1875,7 +1875,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	/**
 	 * Find matching product variation
 	 * @since 1.5.0
-	 * @version 1.5.8
+	 * @version 1.7.17
 	 * @param WC_Product $product
 	 * @param array $attributes
 	 * @return int Matching variation ID or 0.
@@ -1889,25 +1889,38 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			foreach( $product_attributes as $product_attribute_key => $product_attribute ) {
 				if( $key !== apply_filters( 'bookacti_translate_text', $product_attribute_key ) 
 				&&  $key !== $product_attribute_key ) { continue; }
-				$options = version_compare( WC_VERSION, '3.0.0', '>=' ) ? $product_attribute->get_options() : array_map( 'trim', explode( '|', $product_attribute[ 'value' ] ) );
-				foreach( $options as $option_value ) {
-					if( $value !== apply_filters( 'bookacti_translate_text', $option_value ) 
-					&&  $value !== $option_value ) { continue; }
-					$value = $option_value;
+				
+				// WOOCOMMERCE 3.0.0 backward compatibility 
+				$options = version_compare( WC_VERSION, '3.0.0', '>=' ) ? $product_attribute->get_options() : ( ! empty( $product_attribute[ 'value' ] ) ? array_map( 'trim', explode( '|', $product_attribute[ 'value' ] ) ) : array() );
+				// If it failed, try to retrieve it from database (doesn't work with custom attributes)
+				if( ! $options ) { $options = wc_get_product_terms( $product->get_id(), $product_attribute_key, array( 'fields' => 'slugs' ) ); }
+				
+				if( is_array( $options ) ) {
+					foreach( $options as $option_value ) {
+						if( $value !== apply_filters( 'bookacti_translate_text', $option_value ) 
+						&&  $value !== $option_value ) { continue; }
+						$value = $option_value;
+					}
 				}
 			}
 			
+			// Make sure the attributes array is properly formatted (key begins with attribute_ and values matches)
 			if( strpos( $key, 'attribute_' ) === 0 && $attributes[ $key ] === $value ) { continue; }
 			unset( $attributes[ $key ] );
-			$attributes[ sprintf( 'attribute_%s', $key ) ] = $value;
+			$attributes[ 'attribute_' . $key ] = $value;
 		}
+		
 		// Find matching variation
-		if( class_exists( 'WC_Data_Store' ) ) {
+		$variation_id = 0;
+		// WOOCOMMERCE 3.0.0 backward compatibility 
+		if( version_compare( WC_VERSION, '3.0.0', '>=' ) ) {
 			$data_store = WC_Data_Store::load( 'product' );
-			return $data_store->find_matching_product_variation( $product, $attributes );
+			$variation_id = $data_store->find_matching_product_variation( $product, $attributes );
 		} else {
-			return $product->get_matching_variation( $attributes );
+			$variation_id = $product->get_matching_variation( $attributes );
 		}
+		
+		return $variation_id;
 	}
 	
 	

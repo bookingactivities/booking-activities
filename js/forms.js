@@ -323,7 +323,7 @@ function bookacti_check_password_strength( password_field, password_confirm_fiel
 /**
  * Submit booking form
  * @since 1.7.6 (was bookacti_sumbit_booking_form)
- * @version 1.7.10
+ * @version 1.7.17
  * @param {html_element} form
  * @returns {Boolean}
  */
@@ -452,7 +452,9 @@ function bookacti_submit_booking_form( form ) {
 			
 			// Redirect
 			if( response.status === 'success' && redirect_url ) {
+				bookacti_start_loading_booking_system( booking_system );
 				window.location.replace( redirect_url );
+				bookacti_stop_loading_booking_system( booking_system );
 			}
 			
 		},

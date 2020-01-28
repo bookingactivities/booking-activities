@@ -23,10 +23,13 @@ $j( document ).ready( function() {
 		bookacti.booking_system[ 'bookacti-template-calendar' ][ 'events_data' ]			= [];
 		bookacti.booking_system[ 'bookacti-template-calendar' ][ 'events_interval' ]		= [];
 		bookacti.booking_system[ 'bookacti-template-calendar' ][ 'group_categories_data' ]	= [];
-		bookacti.booking_system[ 'bookacti-template-calendar' ][ 'template_data' ]			= []; 
+		bookacti.booking_system[ 'bookacti-template-calendar' ][ 'start' ]					= $j( '#bookacti-template-picker option[value="' + bookacti.selected_template + '"]' ).data( 'template-start' ) || false; 
+		bookacti.booking_system[ 'bookacti-template-calendar' ][ 'end' ]					= $j( '#bookacti-template-picker option[value="' + bookacti.selected_template + '"]' ).data( 'template-end' ) || false;
+		bookacti.booking_system[ 'bookacti-template-calendar' ][ 'display_data' ]			= [];
+		bookacti.booking_system[ 'bookacti-template-calendar' ][ 'template_data' ]			= [];
 		bookacti.booking_system[ 'bookacti-template-calendar' ][ 'template_data' ]			= { 
-			'start' : $j( '#bookacti-template-picker option[value="' + bookacti.selected_template + '"]' ).data( 'template-start' ) || false, 
-			'end' : $j( '#bookacti-template-picker option[value="' + bookacti.selected_template + '"]' ).data( 'template-end' ) || false 
+			'start' : bookacti.booking_system[ 'bookacti-template-calendar' ][ 'start' ], 
+			'end' : bookacti.booking_system[ 'bookacti-template-calendar' ][ 'end' ] 
 		};
 		
 		bookacti.booking_system[ 'bookacti-template-calendar' ][ 'selected_events' ]		= [];
@@ -94,18 +97,18 @@ $j( document ).ready( function() {
 
 /**
  * Initialize and display the template calendar
- * @version 1.7.16
+ * @version 1.7.17
  * @param {dom_element} calendar
  */
 function bookacti_load_template_calendar( calendar ) {
 	calendar = calendar || $j( '#bookacti-template-calendar' );
 	
 	// Get calendar settings
-	var availability_period	= bookacti_get_availability_period( calendar, true );
-	var settings			= typeof bookacti.booking_system[ 'bookacti-template-calendar' ][ 'template_data' ][ 'settings' ] !== 'undefined' ? bookacti.booking_system[ 'bookacti-template-calendar' ][ 'template_data' ][ 'settings' ] : {};
-	var min_time			= typeof settings.minTime !== 'undefined' ? settings.minTime : '00:00';
-	var max_time			= typeof settings.maxTime !== 'undefined' ? ( settings.maxTime === '00:00' ? '24:00' : settings.maxTime ) : '24:00';
-	var snap_duration		= typeof settings.snapDuration !== 'undefined' ? settings.snapDuration : '00:05';
+	var availability_period	= bookacti_get_availability_period( calendar );
+	var display_data		= typeof bookacti.booking_system[ 'bookacti-template-calendar' ][ 'display_data' ] !== 'undefined' ? bookacti.booking_system[ 'bookacti-template-calendar' ][ 'display_data' ] : {};
+	var min_time			= typeof display_data.minTime !== 'undefined' ? display_data.minTime : '00:00';
+	var max_time			= typeof display_data.maxTime !== 'undefined' ? ( display_data.maxTime === '00:00' ? '24:00' : display_data.maxTime ) : '24:00';
+	var snap_duration		= typeof display_data.snapDuration !== 'undefined' ? display_data.snapDuration : '00:05';
 	
 	// See https://fullcalendar.io/docs/
 	var init_data = {
@@ -180,6 +183,9 @@ function bookacti_load_template_calendar( calendar ) {
 		 * @returns {Boolean}
 		 */
 		eventRender: function( event, element, view ) { 
+			// Do not render the event if it has no start or no end or no duration
+			if( ! event.start || ! event.end || event.start === event.end ) { return false; }
+			
 			// Directly return true if the event is resizing or dragging to avoid overload
 			if( bookacti.is_dragging || bookacti.is_resizing ) { return true; }
 			
@@ -376,7 +382,7 @@ function bookacti_load_template_calendar( calendar ) {
 		
 		/**
 		 * When an extern draggable event is dropped on the calendar. "this" refer to the new created event on the calendar.
-		 * @version 1.7.10
+		 * @version 1.7.17
 		 * @param {object} event
 		 */
 		eventReceive: function( event ) {
@@ -394,8 +400,9 @@ function bookacti_load_template_calendar( calendar ) {
 			}
 			
 			// Calculate the end datetime thanks to start datetime and duration
+			var activity_duration = activity_data.duration ? activity_data.duration : '000.01:00:00';
 			event.end = event.start.clone();
-			event.end.add( moment.duration( activity_data[ 'duration' ] ) );
+			event.end.add( moment.duration( activity_duration ) );
 			
 			// Whether the event is resizable 
 			if( parseInt( activity_data[ 'is_resizable' ] ) === 1 ) { event.durationEditable = true; }

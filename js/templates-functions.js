@@ -87,15 +87,7 @@ function bookacti_switch_template( selected_template_id ) {
 					// SHORTCODE GENERATOR
 						// Update create form link template id
 						bookacti_update_create_form_link_template_id( bookacti.selected_template );
-						
-						// Update create form link activities
-						var activity_ids = [];
-						$j( '#bookacti-template-activity-list .activity-row .activity-show-hide' ).each( function(){
-							if( $j( this ).data( 'activity-visible' ) == 1 ) {
-								activity_ids.push( $j( this ).data( 'activity-id' ) );
-							}
-						});
-						
+												
 
 					// TEMPLATE SETTINGS
 						// Update calendar settings
@@ -170,7 +162,7 @@ function bookacti_switch_template( selected_template_id ) {
 
 /**
  * Initialize draggable activities
- * @version 1.7.14
+ * @version 1.7.17
  */
 function bookacti_init_activities() {
     $j( '#bookacti-template-activities-container .fc-event' ).each( function() {
@@ -207,6 +199,9 @@ function bookacti_init_activities() {
 	
 	// Display tuto if there is no more activities available
 	bookacti_display_activity_tuto_if_no_activity_available();
+	
+	// Update the show / hide icons
+	bookacti_refresh_show_hide_activities_icons();
 }
 
 
@@ -235,6 +230,31 @@ function bookacti_init_show_hide_activities_switch() {
 		}
 
 		$j( '#bookacti-template-calendar' ).fullCalendar( 'rerenderEvents' );
+	});
+}
+
+
+/**
+ * Update the show / hide icon next to the activity to reflect its current state
+ * @since 1.7.17
+ */
+function bookacti_refresh_show_hide_activities_icons() {
+	// Make all icons "visible"
+	var icons = $j( '#bookacti-template-activity-list .activity-show-hide' );
+	icons.addClass( 'dashicons-visibility' );
+	icons.removeClass( 'dashicons-hidden' );
+	icons.data( 'activity-visible', 1 );
+	icons.attr( 'data-activity-visible', 1 );
+	
+	// Set the hidden activities icons to "hidden"
+	$j.each( bookacti.hidden_activities, function( i, activity_id ) { 
+		if( $j( '#bookacti-template-activity-list .activity-show-hide[data-activity-id="' + activity_id + '"]' ).length ) {
+			var icon = $j( '#bookacti-template-activity-list .activity-show-hide[data-activity-id="' + activity_id + '"]' );
+			icon.removeClass( 'dashicons-visibility' );
+			icon.addClass( 'dashicons-hidden' );
+			icon.data( 'activity-visible', 0 );
+			icon.attr( 'data-activity-visible', 0 );
+		}
 	});
 }
 

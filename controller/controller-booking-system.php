@@ -5,7 +5,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 /**
  * AJAX Controller - Fetch events in order to display them
- * @version	1.7.4
+ * @version	1.7.17
  */
 function bookacti_controller_fetch_events() {
 	// Check nonce
@@ -37,7 +37,7 @@ function bookacti_controller_fetch_events() {
 	if( $attributes[ 'groups_only' ] ) {
 		$groups_data	= isset( $raw_attributes[ 'groups_data' ] ) ? (array) $raw_attributes[ 'groups_data' ] : array();
 		$groups_ids		= $groups_data ? array_keys( $groups_data ) : array();
-		if( $groups_ids ) {
+		if( $groups_ids && ! in_array( 'none', $attributes[ 'group_categories' ], true ) ) {
 			$events	= bookacti_fetch_grouped_events( $attributes[ 'calendars' ], $attributes[ 'activities' ], $groups_ids, $attributes[ 'group_categories' ], $attributes[ 'past_events' ], $events_interval );
 		}
 	} else if( $attributes[ 'bookings_only' ] ) {

@@ -7,7 +7,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 /**
  * Display the form field 'calendar'
  * @since 1.5.0
- * @version 1.7.13
+ * @version 1.7.17
  * @param array $field
  * @param string $instance_id
  * @param string $context
@@ -35,8 +35,10 @@ function bookacti_display_form_field_calendar( $field, $instance_id, $context ) 
 	
 	$field = apply_filters( 'bookacti_form_field_calendar_attributes', $field, $instance_id, $context );
 	
+	$booking_system_atts = bookacti_get_calendar_field_booking_system_attributes( $field );
+	
 	// Display the booking system
-	bookacti_get_booking_system( $field, true );
+	bookacti_get_booking_system( $booking_system_atts, true );
 }
 add_action( 'bookacti_display_form_field_calendar', 'bookacti_display_form_field_calendar', 10, 3 );
 
@@ -911,6 +913,7 @@ function bookacti_controller_create_form() {
 		}
 		$raw_calendar_meta = array_merge( $default_calendar_meta, $_REQUEST[ 'calendar_field' ] );
 		if( $raw_calendar_meta ) {
+			// $raw_calendar_meta will be sanitized in bookacti_update_form_field_meta
 			bookacti_update_form_field_meta( $raw_calendar_meta, 'calendar', $form_id );
 		}
 	}
@@ -1287,7 +1290,7 @@ add_action( 'wp_ajax_bookactiSaveFormFieldOrder', 'bookacti_controller_save_form
 /**
  * AJAX Controller - Update a field
  * @since 1.5.0
- * @version 1.5.4
+ * @version 1.7.17
  */
 function bookacti_controller_update_form_field() {
 	// Check nonce
@@ -1322,10 +1325,8 @@ function bookacti_controller_update_form_field() {
 	// Extract metadata only
 	$field_meta = array_intersect_key( $sanitized_data, bookacti_get_default_form_fields_meta( $field[ 'name' ] ) );
 	
+	// Update field metadata
 	if( $field_meta ) {
-		// Unserialize values before preocessing through bookacti_update_metadata
-		foreach( $field_meta as $key => $value ) { $field_meta[ $key ] = maybe_unserialize( $value ); }
-		// Update field metadata
 		bookacti_update_metadata( 'form_field', $field_id, $field_meta );
 	}
 
@@ -1334,7 +1335,7 @@ function bookacti_controller_update_form_field() {
 	// Get field data and HTML for editor
 	$field_data	= bookacti_get_form_field_data( $field_id );
 	$field_html = bookacti_display_form_field_for_editor( $field_data, false );
-
+	
 	bookacti_send_json( array( 'status' => 'success', 'field_data' => $field_data, 'field_html' => $field_html ), 'update_form_field' );
 }
 add_action( 'wp_ajax_bookactiUpdateFormField', 'bookacti_controller_update_form_field', 10 );
@@ -1343,9 +1344,9 @@ add_action( 'wp_ajax_bookactiUpdateFormField', 'bookacti_controller_update_form_
 /**
  * AJAX Controller - Reset form meta
  * @since 1.5.0
+ * @version 1.7.17
  */
 function bookacti_controller_reset_form_field() {
-	
 	$field_id	= intval( $_POST[ 'field_id' ] );
 	$field		= bookacti_get_form_field_data( $field_id );
 	$form_id	= $field[ 'form_id' ];
@@ -1362,7 +1363,6 @@ function bookacti_controller_reset_form_field() {
 		$updated		= bookacti_update_form_field( $defaults_data );
 		
 		if( $updated !== false ) {
-			
 			// Delete all metadata to apply default
 			$defaults_meta = bookacti_get_default_form_fields_meta( $field[ 'name' ] );
 			if( $defaults_meta ) {
@@ -1375,13 +1375,13 @@ function bookacti_controller_reset_form_field() {
 			$field_data	= bookacti_get_form_field_data( $field_id );
 			$field_html = bookacti_display_form_field_for_editor( $field_data, false );
 			
-			wp_send_json( array( 'status' => 'success', 'field_data' => $field_data, 'field_html' => $field_html ) );
+			bookacti_send_json( array( 'status' => 'success', 'field_data' => $field_data, 'field_html' => $field_html ), 'reset_form_field' );
 		} else {
-			wp_send_json( array( 'status' => 'failed', 'error' => 'not_updated' ) );
+			bookacti_send_json( array( 'status' => 'failed', 'error' => 'not_updated' ), 'reset_form_field' );
 		}
 		
 	} else {
-		wp_send_json( array( 'status' => 'failed', 'error' => 'not_allowed' ) );
+		bookacti_send_json( array( 'status' => 'failed', 'error' => 'not_allowed' ), 'reset_form_field' );
 	}
 }
 add_action( 'wp_ajax_bookactiResetFormField', 'bookacti_controller_reset_form_field', 10 );
@@ -1407,6 +1407,22 @@ function bookacti_reset_calendar_form_field_exceptions( $field_data ) {
 	}
 }
 add_action( 'bookacti_form_field_reset', 'bookacti_reset_calendar_form_field_exceptions', 10, 1 );
+
+
+/**
+ * Add booking system data to calendar field data after updating the field data
+ * @since 1.7.17
+ * @param array $response
+ * @return array
+ */
+function bookacti_send_booking_system_attributes_to_js_after_calendar_field_update( $response ) {
+	if( $response[ 'status' ] === 'success' ) {
+		$response[ 'booking_system_attributes' ] = ! empty( $response[ 'field_data' ] ) ? bookacti_get_calendar_field_booking_system_attributes( $response[ 'field_data' ] ) : array();
+	}
+	return $response;
+}
+add_filter( 'bookacti_send_json_update_form_field', 'bookacti_send_booking_system_attributes_to_js_after_calendar_field_update', 10, 1 );
+add_filter( 'bookacti_send_json_reset_form_field', 'bookacti_send_booking_system_attributes_to_js_after_calendar_field_update', 10, 1 );
 
 
 /**

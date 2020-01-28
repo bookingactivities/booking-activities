@@ -9,7 +9,7 @@
  * Text Domain: booking-activities
  * Domain Path: /languages/
  * WC requires at least: 2.6
- * WC tested up to: 3.8
+ * WC tested up to: 3.9
  * License: GPL3
  * License URI: https://www.gnu.org/licenses/gpl-3.0.html
  * 
@@ -468,6 +468,42 @@ function bookacti_update_removed_global_settings_in_1_7_16( $old_version ) {
 	}
 }
 add_action( 'bookacti_updated', 'bookacti_update_removed_global_settings_in_1_7_16' );
+
+
+/**
+ * Update the form settings and the template settings that relies on global settings removed in 1.7.16
+ * This function is temporary
+ * @since 1.7.17
+ * @global wpdb $wpdb
+ * @param string $old_version
+ */
+function bookacti_delete_removed_template_settings_in_1_7_17( $old_version ) {
+	// Do it only once, when Booking Activities is updated for the first time after 1.7.17
+	if( version_compare( $old_version, '1.7.17', '<' ) ) {
+		global $wpdb;
+		
+		// Delete templates availability_period_start
+		$availability_period_start_deleted = $wpdb->delete( 
+			BOOKACTI_TABLE_META, 
+			array( 
+				'object_type' => 'template',
+				'meta_key' => 'availability_period_start'
+			), 
+			array( '%s', '%s' ) 
+		);
+		
+		// Delete templates availability_period_end
+		$availability_period_end_deleted = $wpdb->delete( 
+			BOOKACTI_TABLE_META, 
+			array( 
+				'object_type' => 'template',
+				'meta_key' => 'availability_period_end'
+			), 
+			array( '%s', '%s' ) 
+		);
+	}
+}
+add_action( 'bookacti_updated', 'bookacti_delete_removed_template_settings_in_1_7_17' );
 
 
 
