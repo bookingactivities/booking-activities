@@ -1,7 +1,7 @@
 <?php
 /**
  * Calendar editor page
- * @version 1.7.14
+ * @version 1.7.17
  */
 
 // Exit if accessed directly
@@ -202,27 +202,21 @@ $default_template = false;
 	<?php 
 		$template_id = '';
 		$activity_ids = array();
-		if( ! empty( $default_template ) ) {
-			$template_id	= $default_template;
-			$activity_ids	= bookacti_get_activity_ids_by_template( array( $template_id ), false );
-		}
 		$new_form_basic_url = esc_url( admin_url( 'admin.php' ) );
 		$initial_parameters = http_build_query( array( 
 			'page' => 'bookacti_forms',
 			'action' => 'new',
 			'calendars' => $template_id,
-			'activities' => $activity_ids,
+			'activities' => 'all',
 			'group_categories' => 'all',
 		));
 		$new_form_initial_url = $new_form_basic_url . '?' . $initial_parameters;
 	?>
 	<input type='hidden' name='page' value='bookacti_forms'/>
 	<input type='hidden' name='action' value='new'/>
-	<input type='hidden' name='calendar_field[calendars][]' value='<?php echo $template_id; ?>'/>
-	<?php foreach( $activity_ids as $activity_id ) { ?>
-		<input type='hidden' name='calendar_field[activities][]' value='<?php echo $activity_id; ?>'/>
-	<?php } ?>
-	<input type='hidden' name='calendar_field[group_categories][]' value='all'/>
+	<input type='hidden' name='calendar_field[calendars]' value='<?php echo $template_id; ?>'/>
+	<input type='hidden' name='calendar_field[activities]' value='all'/>
+	<input type='hidden' name='calendar_field[group_categories]' value='all'/>
 	<h3><?php esc_html_e( 'Integrate this calendar to your site', 'booking-activities' ); ?></h3>
 	<ol>
 		<li>

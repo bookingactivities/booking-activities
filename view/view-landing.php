@@ -1,7 +1,7 @@
 <?php
 /**
  * Booking Activities landing page
- * @version 1.7.10
+ * @version 1.7.17
  */
 
 // Exit if accessed directly
@@ -13,8 +13,6 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 <hr class='wp-header-end' />
 
 <div id='bookacti-landing-container'>
-	
-	
 	<div id='bookacti-add-ons'>	
 		<div id='bookacti-add-ons-intro' >
 			<h3><?php esc_html_e( 'Make the most of Booking Activities', 'booking-activities' ); ?></h3>
@@ -207,7 +205,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 				<div class='bookacti-add-ons-guarantee' >
 					<div class='bookacti-add-ons-guarantee-picto' ><span class="dashicons dashicons-lock"></span></div>
 					<h4><?php esc_html_e( 'Secure Payments', 'booking-activities' ); ?></h4>
-					<div class='bookacti-add-ons-guarantee-description' ><?php esc_html_e( 'Online payments are secured by PayPal', 'booking-activities' ); ?></div>
+					<div class='bookacti-add-ons-guarantee-description' ><?php esc_html_e( 'Online payments are secured by PayPal and Stripe', 'booking-activities' ); ?></div>
 				</div>
 				<div class='bookacti-add-ons-guarantee' >
 					<div class='bookacti-add-ons-guarantee-picto' ><span class="dashicons dashicons-money"></span></div>

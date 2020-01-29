@@ -716,28 +716,19 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	/**
 	 * Get groups of events data by template ids
 	 * @since 1.4.0 (was bookacti_get_groups_of_events_by_template and bookacti_get_groups_of_events_by_category)
-	 * @version 1.7.1
+	 * @version 1.7.17
 	 * @global wpdb $wpdb
 	 * @param array|int $template_ids
 	 * @param array|int $category_ids
-	 * @param boolean $bypass_avail_period
+	 * @param array $availability_period array( 'start' => 'Y-m-d', 'end' => 'Y-m-d' )
 	 * @param boolean|"bookable_only" $fetch_started_groups
 	 * @param boolean $fetch_inactive_groups
-	 * @param array $templates_data
 	 * @return array
 	 */
-	function bookacti_get_groups_of_events( $template_ids = array(), $category_ids = array(), $bypass_avail_period = false, $fetch_started_groups = 'bookable_only', $fetch_inactive_groups = false, $templates_data = array() ) {
-		
-		// If empty, take them all
-		if( ! $template_ids ) { $template_ids = array(); }
-		if( ! $category_ids ) { $category_ids = array(); }
-		
-		// Convert numeric to array
-		if( is_numeric( $template_ids ) )	{ $template_ids = array( intval( $template_ids ) ); }
-		if( ! is_array( $template_ids ) )	{ $template_ids = array(); }
-		if( is_numeric( $category_ids ) )	{ $category_ids = array( intval( $category_ids ) ); }
-		if( ! is_array( $category_ids ) )	{ $category_ids = array(); }
-		if( ! $templates_data )				{ $templates_data = bookacti_get_mixed_template_data( $template_ids, $bypass_avail_period ); }
+	function bookacti_get_groups_of_events( $template_ids = array(), $category_ids = array(), $availability_period = array(), $fetch_started_groups = 'bookable_only', $fetch_inactive_groups = false ) {
+		// Sanitize ids arrays
+		$template_ids = bookacti_ids_to_array( $template_ids );
+		$category_ids = bookacti_ids_to_array( $category_ids );
 		
 		$started_groups_bookable	= bookacti_get_setting_value( 'bookacti_general_settings', 'started_groups_bookable' );
 		$timezone					= new DateTimeZone( bookacti_get_setting_value( 'bookacti_general_settings', 'timezone' ) );
@@ -806,9 +797,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		
 		// Make sure that the groups begin after availability period start and end before availability period end
 		// except if we want past groups or started groups (it also applies to future events out of the availability period)
-		if( ! $bypass_avail_period ) {
-			
-			$availability_period = bookacti_get_availability_period( $templates_data, $bypass_avail_period );
+		if( $availability_period && is_array( $availability_period ) ) {
 			$start_after	= ' ( CAST( GE.start AS DATE ) >= %s ) ';
 			$end_before		= ' ( CAST( GE.end AS DATE ) <= %s ) ';
 			
@@ -871,7 +860,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		$group_ids = array();
 		foreach( $groups as $group ) {
 			$group_ids[] = $group[ 'id' ];
-		};
+		}
 		
 		// Retrieve metadata with as few queries as possible
 		$groups_meta		= bookacti_get_metadata( 'group_of_events', $group_ids );
@@ -880,7 +869,6 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		
 		$groups_data = array();
 		foreach( $groups as $group ) {
-			
 			$group_id = $group[ 'id' ];
 			
 			// Translate title
@@ -1350,47 +1338,35 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	
 // TEMPLATES
 	/**
-	 * Get the mixed range (start and end dates) of a group of template
-	 *
-	 * @since  1.0.6
-	 * @version  1.3.0
-	 * @param  array $template_ids Array of template ids
+	 * Get the lower opening date and the higher closing date from multiple templates
+	 * @since 1.0.6
+	 * @version 1.7.17
+	 * @param int|array $template_ids Array of template ids
 	 * @return array (start, end)
 	 */
 	function bookacti_get_mixed_template_range( $template_ids = array() ) {
-		
-		if( is_numeric( $template_ids ) ) {
-			$template_ids = array( $template_ids );
-		}
-		
-		if( ! is_array( $template_ids ) ) {
-			return false;
-		}
+		$template_ids = bookacti_ids_to_array( $template_ids );
 		
 		global $wpdb;
 		
-		$range_query = 'SELECT MIN( start_date ) as start, MAX( end_date ) as end '
-					 . ' FROM ' . BOOKACTI_TABLE_TEMPLATES
-					 . ' WHERE active = 1 ';
+		$query	= 'SELECT MIN( start_date ) as start, MAX( end_date ) as end '
+				. ' FROM ' . BOOKACTI_TABLE_TEMPLATES
+				. ' WHERE active = 1 ';
 		
-		$variables = array();
-		
-		// If templates ids were given, search only in those templates
 		if( $template_ids ) {
-			$range_query .= ' AND id IN ( %d';
-			for( $i=1, $len=count($template_ids); $i < $len; ++$i ) {
-				$range_query  .= ', %d';
+			$len = count( $template_ids );
+			$query .= ' AND id IN ( %d';
+			for( $i=1; $i < $len; ++$i ) {
+				$query .= ', %d';
 			}
-			$range_query .= ')';
+			$query .= ')';
 			
-			$variables = $template_ids;
+			$query = $wpdb->prepare( $query, $template_ids );
 		}
 		
-		if( $template_ids ) {
-			$range_query = $wpdb->prepare( $range_query, $template_ids );
-		}
+		$range = $wpdb->get_row( $query, ARRAY_A );
 		
-		$range = $wpdb->get_row( $range_query, ARRAY_A );
+		if( ! $range ) { $range = array(); }
 		
 		return $range;
 	}

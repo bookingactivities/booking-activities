@@ -1,7 +1,7 @@
 <?php 
 /**
  * Calendar editor dialogs
- * @version 1.7.15
+ * @version 1.7.17
  */
 
 // Exit if accessed directly
@@ -238,10 +238,6 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 						'callback'		=> 'bookacti_fill_template_tab_agenda',
 						'parameters'	=> array(),
 						'order'			=> 40 ),
-				array(	'label'			=> __( 'Events', 'booking-activities' ),
-						'callback'		=> 'bookacti_fill_template_tab_events',
-						'parameters'	=> array(),
-						'order'			=> 50 ),
 				array(	'label'			=> __( 'Permissions', 'booking-activities' ),
 						'callback'		=> 'bookacti_fill_template_tab_permissions',
 						'parameters'	=> array( 'users_options_for_templates' => $users_options_for_templates ),
@@ -343,49 +339,6 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 				</div>
 			<?php
 				do_action( 'bookacti_template_tab_agenda_after', $params );
-				
-				bookacti_display_badp_promo();
-			}
-			
-			/** 
-			 * Tab content for "Events" tab
-			 * @since 1.4.0
-			 * @version 1.7.16
-			 * @param array $params
-			 */
-			function bookacti_fill_template_tab_events( $params = array() ) {
-				do_action( 'bookacti_template_tab_events_before', $params );
-			?>
-				<div>
-					<label for='bookacti-template-availability-period-start' ><?php /* translators: Followed by a field indicating a number of days before the event. E.g.: "Events will be bookable in 2 days from today". */ esc_html_e( 'Events will be bookable in', 'booking-activities' ); ?></label>
-					<input	type='number' 
-							name='templateOptions[availability_period_start]' 
-							id='bookacti-template-availability-period-start' 
-							min='0' step='1' 
-							onkeypress='return event.charCode >= 48 && event.charCode <= 57' />
-					<?php
-						/* translators: Arrives after a field indicating a number of days before the event. E.g.: "Events will be bookable in 2 days from today". */
-						_e( 'days from today', 'booking-activities' );
-						$tip = __( 'Set the beginning of the availability period. E.g.: "2", your customers may book events starting in 2 days at the earliest. They are no longer allowed to book events starting earlier (like today or tomorrow).', 'booking-activities' );
-						bookacti_help_tip( $tip );
-					?>
-				</div>
-				<div>
-					<label for='bookacti-template-availability-period-end' ><?php /* translators: Followed by a field indicating a number of days before the event. E.g.: "Events are bookable for up to 30 days from today". */ esc_html_e( 'Events are bookable for up to', 'booking-activities' ); ?></label>
-					<input	type='number' 
-							name='templateOptions[availability_period_end]' 
-							id='bookacti-template-availability-period-end' 
-							min='0' step='1'
-							onkeypress='return event.charCode >= 48 && event.charCode <= 57' />
-					<?php
-						/* translators: Arrives after a field indicating a number of days before the event. E.g.: "Events will be bookable in 2 days from today". */
-						_e( 'days from today', 'booking-activities' );
-						$tip = __( 'Set the end of the availability period. E.g.: "30", your customers may book events starting within 30 days at the latest. They are not allowed yet to book events starting later.', 'booking-activities' );
-						bookacti_help_tip( $tip );
-					?>
-				</div>
-			<?php
-				do_action( 'bookacti_template_tab_events_after', $params );
 				
 				bookacti_display_badp_promo();
 			}

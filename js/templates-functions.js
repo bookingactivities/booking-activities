@@ -2,7 +2,7 @@
 
 /**
  * Change default template on change in the select box
- * @version 1.7.6
+ * @version 1.7.17
  * @param {int} selected_template_id
  */
 function bookacti_switch_template( selected_template_id ) {
@@ -87,17 +87,7 @@ function bookacti_switch_template( selected_template_id ) {
 					// SHORTCODE GENERATOR
 						// Update create form link template id
 						bookacti_update_create_form_link_template_id( bookacti.selected_template );
-						
-						// Update create form link activities
-						var activity_ids = [];
-						$j( '#bookacti-template-activity-list .activity-row .activity-show-hide' ).each( function(){
-							if( $j( this ).data( 'activity-visible' ) == 1 ) {
-								activity_ids.push( $j( this ).data( 'activity-id' ) );
-							}
-						});
-						bookacti_remove_activities_from_create_form_link( 'all' );
-						bookacti_add_activities_to_create_form_link( activity_ids );
-
+												
 
 					// TEMPLATE SETTINGS
 						// Update calendar settings
@@ -172,7 +162,7 @@ function bookacti_switch_template( selected_template_id ) {
 
 /**
  * Initialize draggable activities
- * @version 1.7.14
+ * @version 1.7.17
  */
 function bookacti_init_activities() {
     $j( '#bookacti-template-activities-container .fc-event' ).each( function() {
@@ -209,16 +199,18 @@ function bookacti_init_activities() {
 	
 	// Display tuto if there is no more activities available
 	bookacti_display_activity_tuto_if_no_activity_available();
+	
+	// Update the show / hide icons
+	bookacti_refresh_show_hide_activities_icons();
 }
 
 
 /**
  * Show / hide events when clicking the icon next to the activity
- * @version 1.7.6
+ * @version 1.7.17
  */
 function bookacti_init_show_hide_activities_switch() {
 	$j( 'body' ).on( 'click', '#bookacti-template-activity-list .activity-show-hide', function() { 
-
 		var activity_id = $j( this ).data( 'activity-id' );
 		var idx = $j.inArray( activity_id, bookacti.hidden_activities );
 
@@ -238,13 +230,30 @@ function bookacti_init_show_hide_activities_switch() {
 		}
 
 		$j( '#bookacti-template-calendar' ).fullCalendar( 'rerenderEvents' );
+	});
+}
 
-		// Update create form link
-		var is_visible = $j( this ).data( 'activity-visible' );
-		if( is_visible ) {
-			bookacti_add_activities_to_create_form_link( activity_id );
-		} else {
-			bookacti_remove_activities_from_create_form_link( activity_id );
+
+/**
+ * Update the show / hide icon next to the activity to reflect its current state
+ * @since 1.7.17
+ */
+function bookacti_refresh_show_hide_activities_icons() {
+	// Make all icons "visible"
+	var icons = $j( '#bookacti-template-activity-list .activity-show-hide' );
+	icons.addClass( 'dashicons-visibility' );
+	icons.removeClass( 'dashicons-hidden' );
+	icons.data( 'activity-visible', 1 );
+	icons.attr( 'data-activity-visible', 1 );
+	
+	// Set the hidden activities icons to "hidden"
+	$j.each( bookacti.hidden_activities, function( i, activity_id ) { 
+		if( $j( '#bookacti-template-activity-list .activity-show-hide[data-activity-id="' + activity_id + '"]' ).length ) {
+			var icon = $j( '#bookacti-template-activity-list .activity-show-hide[data-activity-id="' + activity_id + '"]' );
+			icon.removeClass( 'dashicons-visibility' );
+			icon.addClass( 'dashicons-hidden' );
+			icon.data( 'activity-visible', 0 );
+			icon.attr( 'data-activity-visible', 0 );
 		}
 	});
 }
@@ -553,45 +562,21 @@ function bookacti_refresh_selected_events_display() {
 
 // CREATE FORM
 
-// Update create form link template_id
+/**
+ * Update the template_id parameter of the URL to create a booking form
+ * @version 1.7.17
+ * @param {int} new_template_id
+ */
 function bookacti_update_create_form_link_template_id( new_template_id ) {
 	// Replace the old template id with the new one
-	$j( '#bookacti-calendar-integration-tuto-container input[name="calendar_field[calendars][]"]' ).val( new_template_id );
+	$j( '#bookacti-calendar-integration-tuto-container input[name="calendar_field[calendars]"]' ).val( new_template_id );
 	bookacti_update_create_form_link_url();
 }
 
-
-// Add activities to the create form link parameters
-function bookacti_add_activities_to_create_form_link( activity_ids ) {
-	if( $j.isNumeric( activity_ids ) ) { activity_ids = [ activity_ids ]; }
-	// Add activity ids
-	$j.each( activity_ids, function( i, activity_id ){
-		var field = "<input type='hidden' name='calendar_field[activities][]' value='" + activity_id + "'/>";
-		$j( '#bookacti-calendar-integration-tuto-container' ).prepend( field );
-	});
-	bookacti_update_create_form_link_url();
-}
-
-
-// Remove activities to the create form link parameters
-function bookacti_remove_activities_from_create_form_link( activity_ids ) {
-	// Remove all activity ids
-	if( activity_ids === 'all' ) {
-		$j( '#bookacti-calendar-integration-tuto-container input[name="calendar_field[activities][]"]' ).remove();
-	} 
-	
-	// Remove specific activity ids
-	else {
-		if( $j.isNumeric( activity_ids ) ) { activity_ids = [ activity_ids ]; }
-		$j.each( activity_ids, function( i, activity_id ){
-			$j( '#bookacti-calendar-integration-tuto-container input[name="calendar_field[activities][]"][value="' + activity_id + '"]' ).remove();
-		});
-	}
-	bookacti_update_create_form_link_url();
-}
-
-
-// Update the URL of the create form link according to the hidden inputs
+/**
+ * Update the URL of the create a booking form according to the hidden inputs
+ * @version 1.7.17
+ */
 function bookacti_update_create_form_link_url() {
 	var base_url	= $j( '#bookacti-create-form-link' ).data( 'base-url' );
 	var parameters	= $j( '#bookacti-calendar-integration-tuto-container input' ).serialize();

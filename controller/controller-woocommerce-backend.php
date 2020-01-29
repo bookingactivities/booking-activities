@@ -1420,7 +1420,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	/**
 	 * AJAX Controller - Migrate product or variation settings to a new booking form
 	 * @since 1.5.0
-	 * @version 1.7.16
+	 * @version 1.7.17
 	 */
 	function bookacti_controller_migrate_product_settings_to_booking_form() {
 		$json_action = 'migrate_product_settings';
@@ -1447,7 +1447,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		// Format product meta
 		$booking_method		= get_post_meta( $product_id, '_bookacti_booking_method', true );
 		$group_categories	= get_post_meta( $product_id, '_bookacti_group_categories', true );
-		if( ! $group_categories ) { $group_categories = false; }
+		if( ! $group_categories ) { $group_categories = array( 'none' ); }
 		$product_booking_system_meta = array(
 			'method'				=> $booking_method,
 			'calendars'				=> get_post_meta( $product_id, '_bookacti_template', true ),
@@ -1519,9 +1519,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		
 		// Insert calendar metadata
 		$template_data = bookacti_get_mixed_template_data( $booking_system_meta[ 'calendars' ], false );
-		$default_calendar_meta				= $template_data[ 'settings' ];
-		$default_calendar_meta[ 'start' ]	= $template_data[ 'start' ];
-		$default_calendar_meta[ 'end' ]		= $template_data[ 'end' ];
+		$default_calendar_meta = $template_data[ 'settings' ];
 		$raw_calendar_field_meta = array_merge( $default_calendar_meta, $booking_system_meta );
 		$meta_updated = bookacti_update_form_field_meta( $raw_calendar_field_meta, 'calendar', $form_id );
 		

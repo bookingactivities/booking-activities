@@ -43,43 +43,30 @@ $j( document ).ready( function() {
 		bookacti_save_form();
 	});
 	
-	// Field-specific actions when a user open its dialog
-	$j( '#bookacti-form-editor' ).on( 'bookacti_field_update_dialog', function( e, field_id, field_name ){
-		if( field_name === 'calendar' ) {
-			// Fill fields with raw values
-			//bookacti_fill_fields_from_array( bookacti.form_editor.fields[ field_id ].template_data, '', 'form#bookacti-form-field-form-' + field_name );
-			bookacti_fill_fields_from_array( bookacti.form_editor.fields[ field_id ].template_data.settings, '', 'form#bookacti-form-field-form-' + field_name );
-			bookacti_fill_fields_from_array( bookacti.form_editor.fields[ field_id ].raw, '', 'form#bookacti-form-field-form-' + field_name );
-			
-			// Calendars and Activities array: if empty, select all
-			if( bookacti.form_editor.fields[ field_id ].calendars.length === 0 ) {
-				if( $j( '#bookacti-multiple-select-_bookacti_template' ).length ) {
-					$j( '#bookacti-multiple-select-_bookacti_template' ).prop( 'checked', true );
-					bookacti_switch_select_to_multiple( '#bookacti-multiple-select-_bookacti_template' );
-				}
-				$j( '#_bookacti_template option' ).prop( 'selected', true );
-				$j( '#_bookacti_template' ).trigger( 'change' );
-			}
-			if( bookacti.form_editor.fields[ field_id ].activities.length === 0 ) {
-				if( $j( '#bookacti-multiple-select-activities' ).length ) {
-					$j( '#bookacti-multiple-select-activities' ).prop( 'checked', true );
-					bookacti_switch_select_to_multiple( '#bookacti-multiple-select-activities' );
-				}
-				$j( '#activities option' ).prop( 'selected', true );
-			}
-		}
-	});
-	
 	
 	/**
 	 * Add / remove activity row in the "redirect URL" table according to the currently selected activities
 	 * @since 1.7.0
+	 * @version 1.7.17
 	 */
 	$j( '#bookacti-form-field-dialog-calendar' ).on( 'change', 'select#bookacti-activities', function( e ){
 		var activities = $j( this ).val();
 		
+		// If all activities, take them all
+		if( activities === 'all' ) {
+			activities = [];
+			$j( this ).find( 'option:not(:disabled)' ).each( function() {
+				var activity_id = $j( this ).attr( 'value' );
+				if( $j.isNumeric( activity_id ) ) {
+					activities.push( activity_id );
+				}
+			});
+		}
+		
 		// If no activities, leave as is.
 		if( ! activities || ( ! $j.isArray( activities ) && ! $j.isNumeric( activities ) ) ) { return; }
+		
+		// If single activity
 		if( ! $j.isArray( activities ) ) { activities = [ activities ]; }
 		
 		var tbody = $j( '.bookacti-activities-actions-options-table tbody' );
@@ -127,6 +114,7 @@ $j( document ).ready( function() {
 	/**
 	 * Add / remove group category row in the "redirect URL" table according to the currently selected group categories
 	 * @since 1.7.0
+	 * @version 1.7.17
 	 */
 	$j( '#bookacti-form-field-dialog-calendar' ).on( 'change', 'select#bookacti-group_categories', function( e ){
 		var group_categories = $j( this ).val();
@@ -138,8 +126,21 @@ $j( document ).ready( function() {
 			$j( '.bookacti-group-categories-actions-options-table :input' ).prop( 'disabled', true );
 		}
 		
-		// If no group_categories, leave as is.
+		// If all group categories, take them all
+		if( group_categories === 'all' ) {
+			group_categories = [];
+			$j( this ).find( 'option:not(:disabled)' ).each( function() {
+				var group_category_id = $j( this ).attr( 'value' );
+				if( $j.isNumeric( group_category_id ) ) {
+					group_categories.push( group_category_id );
+				}
+			});
+		}
+		
+		// If no group categories, leave as is.
 		if( ! group_categories || ( ! $j.isArray( group_categories ) && ! $j.isNumeric( group_categories ) ) ) { return; }
+		
+		// If single group category
 		if( ! $j.isArray( group_categories ) ) { group_categories = [ group_categories ]; }
 		
 		// Display the group categories actions table
@@ -209,9 +210,9 @@ $j( document ).ready( function() {
 	/**
 	 * Rerender field HTML after settings update
 	 * @since 1.5.0
-	 * @version 1.6.0
+	 * @version 1.7.17
 	 */
-	$j( '#bookacti-form-editor' ).on( 'bookacti_field_updated bookacti_field_reset', function( e, field_id, field_name ){
+	$j( '#bookacti-form-editor' ).on( 'bookacti_field_updated bookacti_field_reset', function( e, field_id, field_name, response ){
 		if( field_name === 'calendar' ) {
 			var booking_system		= $j( '#bookacti-form-editor-field-' + field_id + ' .bookacti-booking-system' );
 			var booking_system_id	= booking_system.attr( 'id' );
@@ -221,8 +222,7 @@ $j( document ).ready( function() {
 			bookacti_clear_booking_system_displayed_info( booking_system );
 
 			// Reload booking system
-			bookacti.booking_system[ booking_system_id ] = [];
-			bookacti.booking_system[ booking_system_id ] = $j.extend( true, {}, bookacti.form_editor.fields[ field_id ] ); // Clone field data, else changing booking_system data will change field data
+			bookacti.booking_system[ booking_system_id ] = response.booking_system_attributes ? response.booking_system_attributes : [];
 			
 			bookacti_reload_booking_system( booking_system );
 		}

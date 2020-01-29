@@ -347,12 +347,11 @@ function bookacti_fill_product_variation_form( form_container, variation, form_h
  * Switch booking system according to variation 
  * Used for BACKWARD COMPATIBILITY < 1.5
  * @deprecated since 1.5.0
- * @version 1.7.16
+ * @version 1.7.17
  * @param {dom_element} booking_system
  * @param {object} variation
  */
 function bookacti_switch_booking_system_according_to_variation( booking_system, variation ) {
-	
 	var booking_system_id = booking_system.attr( 'id' );
 	
 	booking_system.empty();
@@ -378,8 +377,7 @@ function bookacti_switch_booking_system_according_to_variation( booking_system, 
 
 		if( template_id[0]	=== 'parent' )			{ template_id		= bookacti.parent_booking_system[ booking_system_id ].calendars; }
 		if( activity_id[0]	=== 'parent' )			{ activity_id		= bookacti.parent_booking_system[ booking_system_id ].activities; }
-		if( group_categories[0]	=== 'none' )		{ group_categories	= false; }
-		else if( group_categories[0] === 'parent' )	{ group_categories	= bookacti.parent_booking_system[ booking_system_id ].group_categories; }
+		if( group_categories[0] === 'parent' )		{ group_categories	= bookacti.parent_booking_system[ booking_system_id ].group_categories; }
 		if( booking_method	=== 'parent' )			{ booking_method	= bookacti.parent_booking_system[ booking_system_id ].method; }
 		
 		bookacti.booking_system[ booking_system_id ][ 'method' ]				= booking_method;
@@ -388,7 +386,9 @@ function bookacti_switch_booking_system_according_to_variation( booking_system, 
 		bookacti.booking_system[ booking_system_id ][ 'group_categories' ]		= group_categories;
 		bookacti.booking_system[ booking_system_id ][ 'groups_only' ]			= groups_only;
 		bookacti.booking_system[ booking_system_id ][ 'groups_single_events' ]	= groups_single_events;
-		bookacti.booking_system[ booking_system_id ][ 'template_data' ]			= [];
+		bookacti.booking_system[ booking_system_id ][ 'start' ]					= '';
+		bookacti.booking_system[ booking_system_id ][ 'end' ]					= '';
+		bookacti.booking_system[ booking_system_id ][ 'display_data' ]			= [];
 
 		bookacti_reload_booking_system( booking_system );
 

@@ -46,9 +46,7 @@ function bookacti_shortcode_calendar( $atts = array(), $content = null, $tag = '
 /**
  * Display a booking form via shortcode
  * Eg: [bookingactivities_form form="Your form ID" id="Your form instance CSS ID"]
- * 
- * @version 1.5.0
- * 
+ * @version 1.7.17
  * @param array $atts [form, id]
  * @param string $content
  * @param string $tag Should be "bookingactivities_form"
@@ -76,10 +74,12 @@ function bookacti_shortcode_booking_form( $atts = array(), $content = null, $tag
 	
 	// Format form attributes
 	$atts = array();
-	$atts[ 'url' ]		= ! empty( $atts[ 'url' ] ) ? esc_url( $atts[ 'url' ] ) : '';
-	$atts[ 'button' ]	= ! empty( $atts[ 'button' ] ) ? esc_html( sanitize_text_field( $atts[ 'button' ] ) ) : bookacti_get_message( 'booking_form_submit_button' );
-	$atts[ 'id' ]		= ! empty( $atts[ 'id' ] ) ? esc_attr( $atts[ 'id' ] ) : rand();
-	$atts = array_merge( $bs_atts, $atts );
+	$new_atts = array(
+		'url' => ! empty( $atts[ 'url' ] ) ? esc_url( $atts[ 'url' ] ) : '',
+		'button' => ! empty( $atts[ 'button' ] ) ? esc_html( sanitize_text_field( $atts[ 'button' ] ) ) : bookacti_get_message( 'booking_form_submit_button' ),
+		'id' => ! empty( $atts[ 'id' ] ) ? esc_attr( $atts[ 'id' ] ) : rand()
+	);
+	$atts = array_merge( $bs_atts, $new_atts );
 	
 	$output = "<form action='" . $atts[ 'url' ] . "' 
 					class='bookacti-booking-form' 

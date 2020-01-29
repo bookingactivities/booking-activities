@@ -238,7 +238,7 @@ function bookacti_add_group_category_product_to_cart( booking_system, group_id )
 /**
  * Add a product to cart from a booking form
  * @since 1.7.0
- * @version 1.7.10
+ * @version 1.7.17
  * @param {dom_element} booking_system
  * @param {int} product_id
  */
@@ -287,9 +287,14 @@ function bookacti_add_product_to_cart_via_booking_system( booking_system, produc
 				if( ! response.redirect_url ) {
 					bookacti_refresh_booking_numbers( booking_system );
 				}
+				
+				booking_system.trigger( 'bookacti_product_added_to_cart', [ response, data, product_id ] );
+				
 				// Redirect to the desired page or to cart
-				else {
+				if( response.redirect_url ) {
+					bookacti_start_loading_booking_system( booking_system );
 					window.location.replace( response.redirect_url );
+					bookacti_stop_loading_booking_system( booking_system );
 				}
 				
 			} else {

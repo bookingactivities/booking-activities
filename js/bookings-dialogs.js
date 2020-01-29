@@ -746,7 +746,7 @@ function bookacti_dialog_change_booking_quantity( booking_id, booking_type ) {
 
 /**
  * Reschedule booking dialog
- * @version 1.7.4
+ * @version 1.7.17
  * @param {int} booking_id
  */
 function bookacti_dialog_reschedule_booking( booking_id ) {
@@ -804,7 +804,9 @@ function bookacti_dialog_reschedule_booking( booking_id ) {
 					bookacti.booking_system[ booking_system_id ][ 'groups_single_events' ]	= 1;
 					bookacti.booking_system[ booking_system_id ][ 'past_events' ]			= 1;
 					bookacti.booking_system[ booking_system_id ][ 'past_events_bookable' ]	= 1;
-					bookacti.booking_system[ booking_system_id ][ 'template_data' ]			= [];
+					bookacti.booking_system[ booking_system_id ][ 'start' ]					= '';
+					bookacti.booking_system[ booking_system_id ][ 'end' ]					= '';
+					bookacti.booking_system[ booking_system_id ][ 'display_data' ]			= [];
 				}
 				
 				booking_system.trigger( 'bookacti_before_reschedule_booking_system_loads', [ response.booking_data ] );

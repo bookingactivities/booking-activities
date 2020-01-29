@@ -5,7 +5,7 @@ Tags: booking, reservation, booking form, woocommerce booking, booking events
 Requires at least: 3.6
 Tested up to: 5.3
 Requires PHP: 5.3
-Stable tag: 1.7.16
+Stable tag: 1.7.17
 License: GPLv3 or later
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
 
@@ -318,6 +318,22 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 
 
 == Changelog ==
+
+= 1.7.17 - 2020/01/29 =
+* Tweak - Add a "All" option in activities and group categories selectboxes in Calendar fields settings
+* Tweak - Remove the availability period settings from calendar editor. Set them in form editor, in the Calendar field settings.
+* Tweak - You can use tags in email notifications titles
+* Fix - Calendar managers were not removed if none were selected
+* Fix - Check if the (groups of) event(s) is in its calendar range before booking
+* Fix - Keep the first selected option when switching a selectbox from multiple to simple
+* Fix - Avoid serialization problems while updating metadata
+* Fix - Infinite calendar loading if the booking form redirects to an anchor
+* Fix - Couldn't select groups of events in Bookings filters
+* Fix - Feedback messages not displayed after adding a product to cart with a booking form with WooCommerce >= 3.9
+* Fix - Inconsistent show / hide icon after updating the activity list in calendar editor
+* Fix - Javascript error due to null activity duration or null event duration
+* Dev - Refactor the Calendar field data and the booking system data to make them independent and more consistent
+* Dev - Add JS hooks before booking form redirect and after add to cart
 
 = 1.7.16 - 2020/01/09 =
 * Tweak - Remove some global settings: Booking method, availability period start and end. Set them for each booking form, in the Calendar field settings.

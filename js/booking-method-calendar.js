@@ -1,6 +1,6 @@
 /**
  * Initialize the calendar
- * @version 1.7.16
+ * @version 1.7.17
  * @param {dom_element} booking_system
  * @param {boolean} reload_events
  */
@@ -10,11 +10,11 @@ function bookacti_set_calendar_up( booking_system, reload_events ) {
 	var calendar			= booking_system.find( '.bookacti-calendar:first' );
 	bookacti.booking_system[ booking_system_id ][ 'load_events' ] = false;
 	
-	// Get calendar settings
+	// Get calendar display_data
 	var availability_period	= bookacti_get_availability_period( booking_system );
-	var settings			= typeof bookacti.booking_system[ booking_system_id ][ 'template_data' ][ 'settings' ] !== 'undefined' ? bookacti.booking_system[ booking_system_id ][ 'template_data' ][ 'settings' ] : {};
-	var min_time			= typeof settings.minTime !== 'undefined' ? settings.minTime : '00:00';
-	var max_time			= typeof settings.maxTime !== 'undefined' ? ( settings.maxTime === '00:00' ? '24:00' : settings.maxTime ) : '24:00';
+	var display_data		= typeof bookacti.booking_system[ booking_system_id ][ 'display_data' ] !== 'undefined' ? bookacti.booking_system[ booking_system_id ][ 'display_data' ] : {};
+	var min_time			= typeof display_data.minTime !== 'undefined' ? display_data.minTime : '00:00';
+	var max_time			= typeof display_data.maxTime !== 'undefined' ? ( display_data.maxTime === '00:00' ? '24:00' : display_data.maxTime ) : '24:00';
 	
 	// See https://fullcalendar.io/docs/
 	var init_data = {
@@ -43,8 +43,8 @@ function bookacti_set_calendar_up( booking_system, reload_events ) {
 		minTime:                min_time,
 		maxTime:                max_time,
 		validRange: {
-            start: moment( availability_period.start ),
-            end: moment( availability_period.end ).add( 1, 'days' )
+            start: availability_period.start ? moment( availability_period.start ) : '',
+            end: availability_period.end ? moment( availability_period.end ).add( 1, 'days' ) : ''
         },
 		
 		events: function( start, end, timezone, callback ) {
@@ -59,6 +59,9 @@ function bookacti_set_calendar_up( booking_system, reload_events ) {
 		},
 		
 		eventRender: function( event, element, view ) { 
+			// Do not render the event if it has no start or no end or no duration
+			if( ! event.start || ! event.end || event.start === event.end ) { return false; }
+			
 			// Add some info to the event
 			element.data( 'event-id',			event.id );
 			element.attr( 'data-event-id',		event.id );
@@ -110,7 +113,7 @@ function bookacti_set_calendar_up( booking_system, reload_events ) {
 				});
 				element.append( bg_div );
 			}
-						
+			
 			booking_system.trigger( 'bookacti_event_render', [ event, element, view ] );
 			
 			if( ! event.render ) { return false; }

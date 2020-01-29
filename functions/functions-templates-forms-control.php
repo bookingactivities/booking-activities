@@ -70,7 +70,7 @@ function bookacti_format_template_managers( $template_managers = array() ) {
 
 /**
  * Format template settings
- * @version 1.7.16
+ * @version 1.7.17
  * @param array $raw_settings
  * @return array
  */
@@ -81,9 +81,7 @@ function bookacti_format_template_settings( $raw_settings ) {
 	$default_settings = apply_filters( 'bookacti_template_default_settings', array(
 		'minTime'					=> '00:00',
 		'maxTime'					=> '00:00',
-		'snapDuration'				=> '00:05',
-		'availability_period_start'	=> 0,
-		'availability_period_end'	=> 0
+		'snapDuration'				=> '00:05'
 	) );
 	
 	$settings = array();
@@ -91,25 +89,13 @@ function bookacti_format_template_settings( $raw_settings ) {
 	// Check if all templates settings are filled
 	foreach( $default_settings as $setting_key => $setting_default_value ){
 		if( isset( $raw_settings[ $setting_key ] ) && is_string( $raw_settings[ $setting_key ] ) ){ $raw_settings[ $setting_key ] = stripslashes( $raw_settings[ $setting_key ] ); }
-		$settings[ $setting_key ] = isset( $raw_settings[ $setting_key ] ) && $raw_settings[ $setting_key ] !== null ? $raw_settings[ $setting_key ] : $setting_default_value;
+		$settings[ $setting_key ] = isset( $raw_settings[ $setting_key ] ) ? $raw_settings[ $setting_key ] : $setting_default_value;
 	}
 	
 	// Format 24-h times: minTime, maxTime, snapDuration
 	if( ! preg_match( '/^([0-1][0-9]|2[0-3]):([0-5][0-9])$/', $settings[ 'minTime' ] ) )		{ $settings[ 'minTime' ] = $default_settings[ 'minTime' ]; }
 	if( ! preg_match( '/^([0-1][0-9]|2[0-3]):([0-5][0-9])$/', $settings[ 'maxTime' ] ) )		{ $settings[ 'maxTime' ] = $default_settings[ 'maxTime' ]; }
 	if( ! preg_match( '/^([0-1][0-9]|2[0-3]):([0-5][0-9])$/', $settings[ 'snapDuration' ] ) )	{ $settings[ 'snapDuration' ] = $default_settings[ 'snapDuration' ]; }
-	
-	// availability_period_start
-	if( ! is_numeric( $settings[ 'availability_period_start' ] ) 
-	|| ( is_numeric( $settings[ 'availability_period_start' ] ) && ( intval( $settings[ 'availability_period_start' ] ) < 0 ) ) ) {
-		$settings[ 'availability_period_start' ] = $default_settings[ 'minTime' ];
-	}
-	
-	// availability_period_end
-	if( ! is_numeric( $settings[ 'availability_period_end' ] ) 
-	|| ( is_numeric( $settings[ 'availability_period_end' ] ) && ( intval( $settings[ 'availability_period_end' ] ) < 0 ) ) ) {
-		$settings[ 'availability_period_end' ] = $default_settings[ 'minTime' ];
-	}
 	
 	// Make sure minTime is before maxTime
 	// If maxTime is 00:xx change it to 24:xx
@@ -160,7 +146,7 @@ function bookacti_format_activity_managers( $activity_managers = array() ) {
 
 /**
  * Format activity settings
- * @version 1.7.14
+ * @version 1.7.17
  * @param array $activity_settings
  * @return array
  */
@@ -184,7 +170,7 @@ function bookacti_format_activity_settings( $activity_settings ) {
 	$settings = array();
 	foreach( $default_settings as $setting_key => $setting_default_value ){
 		if( isset( $activity_settings[ $setting_key ] ) && is_string( $activity_settings[ $setting_key ] ) ){ $activity_settings[ $setting_key ] = stripslashes( $activity_settings[ $setting_key ] ); }
-		$settings[ $setting_key ] = isset( $activity_settings[ $setting_key ] ) && $activity_settings[ $setting_key ] !== null ? $activity_settings[ $setting_key ] : $setting_default_value;
+		$settings[ $setting_key ] = isset( $activity_settings[ $setting_key ] ) ? $activity_settings[ $setting_key ] : $setting_default_value;
 	}
 	
 	// Sanitize by type
@@ -202,7 +188,7 @@ function bookacti_format_activity_settings( $activity_settings ) {
 
 /**
  * Format event settings
- * @version 1.7.13
+ * @version 1.7.17
  * @param array $event_settings
  * @return array
  */
@@ -215,7 +201,7 @@ function bookacti_format_event_settings( $event_settings ) {
 	$settings = array();
 	foreach( $default_settings as $setting_key => $setting_default_value ){
 		if( isset( $event_settings[ $setting_key ] ) && is_string( $event_settings[ $setting_key ] ) ){ $event_settings[ $setting_key ] = stripslashes( $event_settings[ $setting_key ] ); }
-		$settings[ $setting_key ] = isset( $event_settings[ $setting_key ] ) && $event_settings[ $setting_key ] !== null ? $event_settings[ $setting_key ] : $setting_default_value;
+		$settings[ $setting_key ] = isset( $event_settings[ $setting_key ] ) ? $event_settings[ $setting_key ] : $setting_default_value;
 	}
 	
 	return apply_filters( 'bookacti_event_settings', $settings, $event_settings, $default_settings );
@@ -332,7 +318,7 @@ function bookacti_validate_group_of_events_data( $group_title, $category_id, $ca
  * Format group of events data or apply default value
  * 
  * @since 1.1.0
- * @version 1.7.13
+ * @version 1.7.17
  * @param array $group_settings
  * @return array
  */
@@ -347,7 +333,7 @@ function bookacti_format_group_of_events_settings( $group_settings ) {
 	// Check if all templates settings are filled
 	foreach( $default_settings as $setting_key => $setting_default_value ){
 		if( isset( $group_settings[ $setting_key ] ) && is_string( $group_settings[ $setting_key ] ) ){ $group_settings[ $setting_key ] = stripslashes( $group_settings[ $setting_key ] ); }
-		$settings[ $setting_key ] = isset( $group_settings[ $setting_key ] ) && $group_settings[ $setting_key ] !== null ? $group_settings[ $setting_key ] : $setting_default_value;
+		$settings[ $setting_key ] = isset( $group_settings[ $setting_key ] ) ? $group_settings[ $setting_key ] : $setting_default_value;
 	}
 	
 	return apply_filters( 'bookacti_group_of_events_settings', $settings, $group_settings, $default_settings );
@@ -389,7 +375,7 @@ function bookacti_validate_group_category_data( $title ) {
 /**
  * Format group category data or apply default value
  * @since 1.1.0
- * @version 1.7.14
+ * @version 1.7.17
  * @param array $category_settings
  * @return array
  */
@@ -412,7 +398,7 @@ function bookacti_format_group_category_settings( $category_settings ) {
 	// Check if all templates settings are filled
 	foreach( $default_settings as $setting_key => $setting_default_value ){
 		if( isset( $category_settings[ $setting_key ] ) && is_string( $category_settings[ $setting_key ] ) ){ $category_settings[ $setting_key ] = stripslashes( $category_settings[ $setting_key ] ); }
-		$settings[ $setting_key ] = isset( $category_settings[ $setting_key ] ) && $category_settings[ $setting_key ] !== null ? $category_settings[ $setting_key ] : $setting_default_value;
+		$settings[ $setting_key ] = isset( $category_settings[ $setting_key ] ) ? $category_settings[ $setting_key ] : $setting_default_value;
 	}
 	
 	// Sanitize by type

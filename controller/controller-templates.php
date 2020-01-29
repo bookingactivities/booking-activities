@@ -749,7 +749,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	
 	/**
 	 * AJAX Controller - Update template
-	 * @version	1.7.10
+	 * @version	1.7.17
 	 */
 	function bookacti_controller_update_template() {
 		$template_id	= intval( $_POST['template-id'] );
@@ -780,13 +780,10 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			$template_settings	= bookacti_format_template_settings( $_POST['templateOptions'] );
 			$updated_metadata	= bookacti_update_metadata( 'template', $template_id, $template_settings );
 		}
-
-		$updated_managers = 0;
-		if( isset( $_POST['template-managers'] ) ) {
-			$managers_array		= bookacti_ids_to_array( $_POST['template-managers'] );
-			$template_managers	= bookacti_format_template_managers( $managers_array );
-			$updated_managers	= bookacti_update_managers( 'template', $template_id, $template_managers );
-		}
+		
+		$managers_array		= isset( $_POST[ 'template-managers' ] ) ? bookacti_ids_to_array( $_POST[ 'template-managers' ] ) : array();
+		$template_managers	= bookacti_format_template_managers( $managers_array );
+		$updated_managers	= bookacti_update_managers( 'template', $template_id, $template_managers );
 
 		if( $updated_template > 0 || intval( $updated_managers ) > 0 || intval( $updated_metadata ) > 0 ) {
 			$templates_data = bookacti_get_templates_data( $template_id, true );
@@ -868,7 +865,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 	/**
 	 * AJAX Controller - Create a new activity
-	 * @version 1.7.10
+	 * @version 1.7.17
 	 */
 	function bookacti_controller_insert_activity() {
 		// Check nonce and capabilities
@@ -883,7 +880,8 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		$activity_title			= sanitize_text_field( stripslashes( $_POST['activity-title'] ) );
 		$activity_color			= function_exists( 'sanitize_hex_color' ) ? sanitize_hex_color( $_POST['activity-color'] ) : stripslashes( $_POST['activity-color'] );
 		$activity_availability	= intval( $_POST['activity-availability'] );
-		$activity_duration		= bookacti_sanitize_duration( $_POST['activity-duration'] );
+		$sanitized_duration		= bookacti_sanitize_duration( $_POST['activity-duration'] );
+		$activity_duration		= $sanitized_duration ? $sanitized_duration : '000.01:00:00';
 		$activity_resizable		= intval( $_POST['activity-resizable'] );
 		$managers_array			= isset( $_POST['activity-managers'] ) ? bookacti_ids_to_array( $_POST['activity-managers'] ) : array();
 		$options_array			= isset( $_POST['activityOptions'] ) && is_array( $_POST['activityOptions'] ) ? $_POST['activityOptions'] : array();
@@ -921,7 +919,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	
     /**
 	 * AJAX Controller - Update an activity
-	 * @version 1.7.10
+	 * @version 1.7.17
 	 */
 	function bookacti_controller_update_activity() {
 		$activity_id	= intval( $_POST['activity-id'] );
@@ -939,7 +937,8 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		$activity_old_title		= sanitize_text_field( stripslashes( $_POST['activity-old-title'] ) );
 		$activity_color			= function_exists( 'sanitize_hex_color' ) ? sanitize_hex_color( $_POST['activity-color'] ) : stripslashes( $_POST['activity-color'] );
 		$activity_availability	= intval( $_POST['activity-availability'] );
-		$activity_duration		= bookacti_sanitize_duration( $_POST['activity-duration'] );
+		$sanitized_duration		= bookacti_sanitize_duration( $_POST['activity-duration'] );
+		$activity_duration		= $sanitized_duration ? $sanitized_duration : '000.01:00:00';
 		$activity_resizable		= intval( $_POST['activity-resizable'] );
 		$managers_array			= isset( $_POST['activity-managers'] ) ? bookacti_ids_to_array( $_POST['activity-managers'] ) : array();
 		$options_array			= isset( $_POST['activityOptions'] ) && is_array( $_POST['activityOptions'] ) ? $_POST['activityOptions'] : array();

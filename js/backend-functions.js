@@ -163,7 +163,7 @@ function bookacti_empty_all_dialog_forms( scope ) {
 
 /**
  * Fill custom settings fields in a form
- * @version 1.5.4
+ * @version 1.7.17
  * @param {array} fields
  * @param {string} field_prefix
  * @param {qtring} scope
@@ -180,7 +180,29 @@ function bookacti_fill_fields_from_array( fields, field_prefix, scope ) {
 			bookacti_fill_fields_from_array( value, field_name, scope );
 			return true; // Jump to next field
 		}
-
+		
+		// Switch select multiple to simple
+		if( $j( scope + 'select[name="' + field_name + '[]"]' ).length && ( ! $j.isArray( value ) || ( $j.isArray( value ) && value.length <= 1 ) ) ) {
+			var field_id = $j( scope + 'select[name="' + field_name + '[]"]' ).attr( 'id' );
+			if( $j( scope + 'input.bookacti-multiple-select[data-select-id="' + field_id + '"]' ).length ) {
+				$j( scope + 'input.bookacti-multiple-select[data-select-id="' + field_id + '"]' ).prop( 'checked', false );
+				bookacti_switch_select_to_multiple( scope + 'input.bookacti-multiple-select[data-select-id="' + field_id + '"]' );
+				$j( scope + 'select[name="' + field_name + '"] option' ).prop( 'selected', false );
+			}
+		}
+		// Switch simple select to multiple
+		if( $j( scope + 'select[name="' + field_name + '"]' ).length && $j.isArray( value ) && value.length > 1 ) {
+			if( value.length === 1 ) { value = value[0]; }
+			else {
+				var field_id = $j( scope + 'select[name="' + field_name + '"]' ).attr( 'id' );
+				if( $j( scope + 'input.bookacti-multiple-select[data-select-id="' + field_id + '"]' ).length ) {
+					$j( scope + 'input.bookacti-multiple-select[data-select-id="' + field_id + '"]' ).prop( 'checked', true );
+					bookacti_switch_select_to_multiple( scope + 'input.bookacti-multiple-select[data-select-id="' + field_id + '"]' );
+					$j( scope + 'select[name="' + field_name + '[]"] option' ).prop( 'selected', false );
+				}
+			}
+		}
+		
 		// Checkbox
 		if( $j( scope + 'input[type="checkbox"][name="' + field_name + '[]"]' ).length 
 		||  $j( scope + 'input[type="checkbox"][name="' + field_name + '"]' ).length ) {
@@ -242,16 +264,18 @@ function bookacti_fill_fields_from_array( fields, field_prefix, scope ) {
 
 /**
  * Switch a selectbox to multiple
- * @version 1.7.0
+ * @version 1.7.17
  * @param {dom_element} checkbox
  */
 function bookacti_switch_select_to_multiple( checkbox ) {
-	
 	if( ! $j( checkbox ).length ) { return; }
 	
 	var select_id	= $j( checkbox ).data( 'select-id' );
 	var select_name	= $j( 'select#' + select_id ).attr( 'name' );;
 	var is_checked	= $j( checkbox ).is( ':checked' );
+	
+	// Get the currently selected values
+	var values = $j( 'select#' + select_id ).val();
 	
 	$j( 'select#' + select_id ).prop( 'multiple', is_checked );
 	
@@ -261,7 +285,6 @@ function bookacti_switch_select_to_multiple( checkbox ) {
 	$j( 'select#' + select_id + ' option[value="parent"]' ).prop( 'disabled', is_checked );
 	$j( 'select#' + select_id + ' option[value="site"]' ).prop( 'disabled', is_checked );
 	$j( 'select#' + select_id + ' option:disabled:selected' ).prop( 'selected', false );
-	$j( 'select#' + select_id + ' option:not(:visible):selected' ).prop( 'selected', false );
 	
 	// Add the [] at the end of the select name
 	if( is_checked && select_name.indexOf( '[]' ) < 0 ) { 
@@ -275,6 +298,18 @@ function bookacti_switch_select_to_multiple( checkbox ) {
 	// Select the first available value
 	if( ! is_checked ) {
 		var first_available_value = $j( 'select#' + select_id + ' option:not(:disabled):first' ).length ? $j( 'select#' + select_id + ' option:not(:disabled):first' ).val() : '';
+		if( values ) {
+			if( ! $j.isArray( values ) ) { values = [ values ]; }
+			$j.each( values, function( i, value ) {
+				var option = $j( 'select#' + select_id + ' option[value="' + value + '"]' );
+				if( option.length ) {
+					if( ! option.is( ':disabled' ) ) {
+						first_available_value = option.attr( 'value' );
+						return false;
+					}
+				}
+			});
+		}
 		$j( 'select#' + select_id ).val( first_available_value ).trigger( 'change' );
 	}
 }
