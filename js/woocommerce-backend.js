@@ -158,8 +158,9 @@ $j( document ).ready( function() {
 	/**
 	 * Show or hide a notice if the price is empty when changing the variation price
 	 * @since 1.7.14
+	 * @version 1.7.17
 	 */
-	$j( '#woocommerce-product-data' ).on( 'keyup mouseup change', '.woocommerce_variation .wc_input_price[id^="variable_regular_price_"]', function( e ) {
+	$j( '#woocommerce-product-data' ).on( 'keyup mouseup change', '.woocommerce_variation .wc_input_price[name^="variable_regular_price["]', function( e ) {
 		var variation_menu_order = $j( this ).closest( '.woocommerce_variation' ).find( '.variation_menu_order' ).length ? $j( this ).closest( '.woocommerce_variation' ).find( '.variation_menu_order' ).val() : 0;
 		bookacti_show_hide_empty_price_notice( variation_menu_order );
 	});
@@ -271,6 +272,7 @@ function bookacti_show_hide_activity_variation_fields( checkbox ) {
 /**
  * Show or hide a notice when the product price is not set
  * @since 1.7.14
+ * @version 1.7.17
  * @param {int} variation_menu_order
  */
 function bookacti_show_hide_empty_price_notice( variation_menu_order ) {
@@ -289,9 +291,9 @@ function bookacti_show_hide_empty_price_notice( variation_menu_order ) {
 		}
 	} else if( variation_menu_order ) {
 		var var_nb = variation_menu_order - 1;
-		var variation_price = $j.isNumeric( $j( '#variable_regular_price_' + var_nb ).val() ) ? parseFloat( $j( '#variable_regular_price_' + var_nb ).val() ) : '';
+		var variation_price = $j.isNumeric( $j( 'input[name="variable_regular_price[' + var_nb + ']"]' ).val() ) ? parseFloat( $j( 'input[name="variable_regular_price[' + var_nb + ']"]' ).val() ) : '';
 		if( ! variation_price && variation_price !== 0 && variation_price !== '0' && $j( '#bookacti_variable_is_activity_' + var_nb ).is( ':checked' ) ) {
-			$j( '#variable_regular_price_' + var_nb + ', #bookacti_variable_form_' + var_nb ).after( notice_div );
+			$j( 'input[name="variable_regular_price[' + var_nb + ']"], #bookacti_variable_form_' + var_nb ).after( notice_div );
 		}
 	}
 }

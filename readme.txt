@@ -5,7 +5,7 @@ Tags: booking, reservation, booking form, woocommerce booking, booking events
 Requires at least: 3.6
 Tested up to: 5.3
 Requires PHP: 5.3
-Stable tag: 1.7.16
+Stable tag: 1.7.17
 License: GPLv3 or later
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
 
@@ -319,7 +319,7 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 
 == Changelog ==
 
-= 1.7.17 =
+= 1.7.17 - 2020/01/29 =
 * Tweak - Add a "All" option in activities and group categories selectboxes in Calendar fields settings
 * Tweak - Remove the availability period settings from calendar editor. Set them in form editor, in the Calendar field settings.
 * Tweak - You can use tags in email notifications titles
