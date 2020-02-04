@@ -47,7 +47,7 @@ $j( document ).ready( function() {
 
 /**
  * Check template form
- * @version 1.7.13
+ * @version 1.7.18
  * @returns {Boolean}
  */
 function bookacti_validate_template_form() {
@@ -124,7 +124,6 @@ function bookacti_validate_template_form() {
 		$j( '#bookacti-template-data-maxTime' ).parent().append( "<div class='bookacti-form-error'>" + bookacti_localized.error_day_end_before_begin + "</div>" );
 	}
 	if( ! valid_form.isSnapFreqFormatted ){ 
-		$j( '#bookacti-template-data-snapDuration' ).addClass( 'bookacti-input-error' );
 		$j( '#bookacti-template-data-snapDuration' ).addClass( 'bookacti-input-error' );
 		$j( '#bookacti-template-data-snapDuration' ).parent().append( "<div class='bookacti-form-error'>" + bookacti_localized.error_time_format + "</div>" );
 	}

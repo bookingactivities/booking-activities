@@ -1427,13 +1427,13 @@ add_filter( 'bookacti_send_json_reset_form_field', 'bookacti_send_booking_system
 
 /**
  * Add the "Export" action to the "Calendar" field in form editor
- * @version 1.6.0
+ * @version 1.7.18
  * @param array $field
  */
 function bookacti_add_export_action_to_calendar_field( $field ) {
 	if( $field[ 'name' ] !== 'calendar' ) { return; }
 	?>
-	<div class='bookacti-form-editor-field-action bookacti-export-events dashicons dashicons-external' title='<?php esc_attr_e( 'Export events', 'booking-activities' ); ?>'></div>
+	<div id='bookacti-export-events-form-field-<?php echo esc_attr( $field[ 'field_id' ] ); ?>' class='bookacti-form-editor-field-action bookacti-export-events dashicons dashicons-external' title='<?php esc_attr_e( 'Export events', 'booking-activities' ); ?>'></div>
 	<?php
 }
 add_action( 'bookacti_form_editor_field_actions_after', 'bookacti_add_export_action_to_calendar_field', 10, 1 );

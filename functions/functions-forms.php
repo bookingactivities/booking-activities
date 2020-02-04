@@ -1023,7 +1023,7 @@ function bookacti_display_form_field( $field, $instance_id = '', $context = 'dis
 /**
  * Display a form field for the form editor
  * @since 1.5.0
- * @version 1.5.4
+ * @version 1.7.18
  * @param array $field
  * @param boolean $echo
  * @return string|void
@@ -1048,13 +1048,13 @@ function bookacti_display_form_field_for_editor( $field, $echo = true ) {
 			<?php 
 				do_action( 'bookacti_form_editor_field_actions_before', $field );
 			?>
-				<div class='bookacti-form-editor-field-action bookacti-edit-form-field dashicons dashicons-admin-generic' title='<?php esc_attr_e( 'Change field settings', 'booking-activities' ); ?>'></div>
+				<div id='bookacti-edit-form-field-<?php echo esc_attr( $field[ 'field_id' ] ); ?>' class='bookacti-form-editor-field-action bookacti-edit-form-field <?php echo $field_name === 'calendar' ? 'button button-secondary' : 'dashicons dashicons-admin-generic'; ?>' title='<?php esc_attr_e( 'Change field settings', 'booking-activities' ); ?>'><?php if( $field_name === 'calendar' ) { esc_attr_e( 'Calendar settings', 'booking-activities' ); } ?></div>
 			<?php if( ! $field[ 'compulsory' ] ) { ?>
-				<div class='bookacti-form-editor-field-action bookacti-remove-form-field dashicons dashicons-trash' title='<?php esc_attr_e( 'Remove this field', 'booking-activities' ); ?>'></div>
+				<div id='bookacti-remove-form-field-<?php echo esc_attr( $field[ 'field_id' ] ); ?>' class='bookacti-form-editor-field-action bookacti-remove-form-field dashicons dashicons-trash' title='<?php esc_attr_e( 'Remove this field', 'booking-activities' ); ?>'></div>
 			<?php }
 				do_action( 'bookacti_form_editor_field_actions_after', $field ); 
 			?>
-				<div class='bookacti-field-toggle dashicons <?php echo $field_name === 'calendar' ? 'dashicons-arrow-up' :'dashicons-arrow-down'; ?>' title='<?php esc_attr_e( 'Show / Hide', 'booking-activities' ); ?>'></div>
+				<div id='bookacti-toggle-form-field-<?php echo esc_attr( $field[ 'field_id' ] ); ?>' class='bookacti-field-toggle dashicons <?php echo $field_name === 'calendar' ? 'dashicons-arrow-up' :'dashicons-arrow-down'; ?>' title='<?php esc_attr_e( 'Show / Hide', 'booking-activities' ); ?>'></div>
 			</div>
 		</div>
 		<div class='bookacti-form-editor-field-body' style='<?php echo $field_name === 'calendar' ? '' : 'display:none;'; ?>' >

@@ -892,7 +892,11 @@ function bookacti_stop_template_loading() {
 	}
 }
 
-// Enter loading state and prevent user from doing anything else
+
+/**
+ * Enter loading state and prevent user from doing anything else
+ * @version 1.7.18
+ */
 function bookacti_enter_template_loading_state() {
 	
 	var loading_div =	'<div class="bookacti-loading-alt">' 
@@ -916,12 +920,17 @@ function bookacti_enter_template_loading_state() {
 	
 	bookacti.blocked_events = true;
 	$j( '#bookacti-template-sidebar .dashicons' ).addClass( 'bookacti-disabled' );
-	$j( '.bookacti-template-dialogs' ).find( 'input, select, button' ).attr( 'disabled', true );
+	$j( '.bookacti-template-dialog' ).find( 'input, select, button' ).attr( 'disabled', true );
 	$j( '#bookacti-template-picker' ).attr( 'disabled', true );
 	$j( '#bookacti-template-calendar' ).fullCalendar( 'rerenderEvents' );
 }
 
-// Exit loading state and allow user to keep editing templates
+
+/**
+ * Exit loading state and allow user to continue editing templates
+ * @version 1.7.18
+ * @param {boolean} force_exit
+ */
 function bookacti_exit_template_loading_state( force_exit ) {
 	
 	force_exit = force_exit || false;
@@ -933,7 +942,7 @@ function bookacti_exit_template_loading_state( force_exit ) {
 	
 	bookacti.blocked_events = false;
 	$j( '#bookacti-template-sidebar .dashicons' ).removeClass( 'bookacti-disabled' );
-	$j( '.bookacti-template-dialogs' ).find( 'input, select, button' ).attr( 'disabled', false );
+	$j( '.bookacti-template-dialog' ).find( 'input, select, button' ).attr( 'disabled', false );
 	$j( '#bookacti-template-picker' ).attr( 'disabled', false );
 	$j( '#bookacti-template-calendar' ).fullCalendar( 'rerenderEvents' );
 }

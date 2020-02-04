@@ -2,11 +2,11 @@
 
 /**
  * Initialize calendar editor dialogs
- * @version 1.7.15
+ * @version 1.7.18
  */
 function bookacti_init_template_dialogs() {
 	// Common param
-	$j( '.bookacti-template-dialogs' ).dialog({ 
+	$j( '.bookacti-template-dialog' ).dialog({ 
 		"modal":		true,
 		"autoOpen":		false,
 		"minHeight":	300,
@@ -17,7 +17,7 @@ function bookacti_init_template_dialogs() {
 		"dialogClass":	'bookacti-dialog',
 		"closeText":	'&#10006;',
 		"beforeClose":	function() { 
-			var scope = '.bookacti-template-dialogs';
+			var scope = '.bookacti-template-dialog';
 			var dialog_id = $j( this ).attr( 'id' );
 			if( dialog_id ) { scope = '#' + dialog_id; }
 			bookacti_empty_all_dialog_forms( scope ); 
@@ -30,7 +30,7 @@ function bookacti_init_template_dialogs() {
 	});
 
 	// Press ENTER to bring focus on OK button
-	$j( '.bookacti-template-dialogs' ).on( 'keydown', function( e ) {
+	$j( '.bookacti-template-dialog' ).on( 'keydown', function( e ) {
 		if( ! $j( 'textarea' ).is( ':focus' ) && e.keyCode == $j.ui.keyCode.ENTER ) {
 			$j( this ).parent().find( '.ui-dialog-buttonpane button:first' ).focus(); 
 			return false; 
@@ -527,7 +527,7 @@ function bookacti_dialog_deactivate_template( template_id ) {
 
 /**
  * Dialog Update Event
- * @version 1.7.17
+ * @version 1.7.18
  * @param {object} event
  */
 function bookacti_dialog_update_event( event ) {
@@ -563,8 +563,6 @@ function bookacti_dialog_update_event( event ) {
 	$j( '#bookacti-event-availability' ).val( event_data.availability );
 	$j( '#bookacti-event-availability' ).attr( 'min', bookings_number );
 	$j( '#bookacti-event-repeat-freq option[value="' + event_data.repeat_freq + '"]' ).prop( 'selected', true );
-	$j( '#bookacti-event-repeat-freq' ).data( 'initial-freq', event_data.repeat_freq );
-	$j( '#bookacti-event-repeat-freq' ).attr( 'data-initial-freq', event_data.repeat_freq );
 	$j( '#bookacti-event-repeat-from, #bookacti-event-repeat-to' ).attr( 'min', template_start );
 	$j( '#bookacti-event-repeat-from, #bookacti-event-repeat-to' ).attr( 'max', template_end );
 	$j( '#bookacti-event-repeat-from' ).val( repeat_from );

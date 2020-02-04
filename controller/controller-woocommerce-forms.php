@@ -469,3 +469,28 @@ function bookacti_change_product_form_id_if_added_to_cart_via_booking_form( $for
 	return $form_id;
 }
 add_filter( 'bookacti_product_booking_form_id', 'bookacti_change_product_form_id_if_added_to_cart_via_booking_form', 10, 3 );
+
+
+/**
+ * Display WC user meta corresponding to the desired meta if it is empty
+ * @since 1.7.18
+ * @param array $args
+ * @param array $raw_args
+ * @return array
+ */
+function bookacti_display_wc_user_meta_in_user_selectbox( $args, $raw_args ) {
+	$wc_additional_option_labels = array( 
+		'user_email'=> 'billing_email', 
+		'first_name'=> 'billing_first_name||shipping_first_name', 
+		'last_name'	=> 'billing_last_name||shipping_last_name', 
+		'phone'		=> 'billing_phone'
+	);
+	$wc_additional_option_labels_keys = array_keys( $wc_additional_option_labels );
+	foreach( $args[ 'option_label' ] as $i => $show ) {
+		if( in_array( $show, $wc_additional_option_labels_keys, true ) ) {
+			$args[ 'option_label' ][ $i ] .= '||' . $wc_additional_option_labels[ $show ];
+		}
+	}
+	return $args;
+}
+add_filter( 'bookacti_user_selectbox_args', 'bookacti_display_wc_user_meta_in_user_selectbox', 10, 2 );

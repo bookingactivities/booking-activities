@@ -1057,12 +1057,11 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	/**
 	 * Create a user selectbox
 	 * @since 1.3.0
-	 * @version 1.7.1
-	 * @param array $args
+	 * @version 1.7.18
+	 * @param array $raw_args
 	 * @return string|void
 	 */
-	function bookacti_display_user_selectbox( $args ) {
-		
+	function bookacti_display_user_selectbox( $raw_args ) {
 		$defaults = array(
 			'show_option_all' => '', 
 			'show_option_none' => '', 'option_none_value' => -1, 
@@ -1075,7 +1074,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			'orderby' => 'display_name', 'order' => 'ASC'
 		);
 		
-		$args	= apply_filters( 'bookacti_user_selectbox_args', wp_parse_args( $args, $defaults ), $args );
+		$args	= apply_filters( 'bookacti_user_selectbox_args', wp_parse_args( $raw_args, $defaults ), $raw_args );
 		$users	= bookacti_get_users_data( $args );
 		
 		ob_start();
@@ -1113,6 +1112,16 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 					// Build the option label based on the array
 					$label = '';
 					foreach( $args[ 'option_label' ] as $show ) {
+						// If the key contain "||" display the first not empty value
+						if( strpos( $show, '||' ) !== false ) {
+							$keys = explode( '||', $show );
+							$show = $keys[ 0 ];
+							foreach( $keys as $key ) {
+								if( ! empty( $user->{ $key } ) ) { $show = $key; break; }
+							}
+						}
+						
+						// Display the value if the key exists, else display the key as is, as a separator
 						if( isset( $user->{ $show } ) ) {
 							$label .= $user->{ $show };
 						} else {

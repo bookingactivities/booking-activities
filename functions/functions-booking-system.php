@@ -198,12 +198,12 @@ function bookacti_display_booking_system_dialogs( $booking_system_id ) {
 
 /**
  * Get available booking methods
- * 
+ * @version 1.7.18
  * @return string
  */
 function bookacti_get_available_booking_methods(){
 	$available_booking_methods = array(
-		'calendar'	=> __( 'Calendar', 'booking-activities' )
+		'calendar'	=> esc_html__( 'Calendar', 'booking-activities' )
 	);
 	return apply_filters( 'bookacti_available_booking_methods', $available_booking_methods );
 }
@@ -211,9 +211,7 @@ function bookacti_get_available_booking_methods(){
 
 /**
  * Get booking method HTML elemnts
- * 
  * @since 1.1.0
- * 
  * @param string $method
  * @param array $booking_system_attributes
  * @return string $html_elements

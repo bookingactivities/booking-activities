@@ -319,6 +319,12 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 
 == Changelog ==
 
+= 1.7.18 =
+* Tweak - Disambiguation in calendar editor's calendar settings dialog
+* Tweak - Highlight "Calendar field settings" button, and "Add new field" button in form editor
+* Tweak - Display user names in user selectbox as a fallback (in backend booking list filter)
+* Tweak - Fallback to WooCommerce user data to display in user selectbox (in backend booking list filter)
+
 = 1.7.17 - 2020/01/29 =
 * Tweak - Add a "All" option in activities and group categories selectboxes in Calendar fields settings
 * Tweak - Remove the availability period settings from calendar editor. Set them in form editor, in the Calendar field settings.

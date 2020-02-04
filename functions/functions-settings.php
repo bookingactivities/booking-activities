@@ -253,28 +253,24 @@ function bookacti_settings_section_licenses_callback() { }
 	
 	/**
 	 * Display "default payment status" setting
-	 * 
 	 * @since 1.3.0
+	 * @version 1.7.18
 	 */
 	function bookacti_settings_field_default_payment_status_callback() {
-		
 		$payment_status = bookacti_get_payment_status_labels();
 		$payment_status_array = array();
 		foreach( $payment_status as $payment_status_id => $payment_status_data ) {
 			$payment_status_array[ esc_attr( $payment_status_id ) ] = esc_html( $payment_status_data[ 'label' ] );
 		}
-		
-		$args = array(
+		bookacti_display_field( array(
 			'type'		=> 'select',
 			'name'		=> 'bookacti_general_settings[default_payment_status]',
 			'id'		=> 'default_payment_status',
 			'options'	=> $payment_status_array,
 			'value'		=> bookacti_get_setting_value( 'bookacti_general_settings', 'default_payment_status' ),
-			/* translators: The word 'Calendar' refers to a booking method you have to translate too. Make sure you use the same word for both translation. */
-			'tip'		=> __( 'Choose what payment status a booking should have when a customer complete the booking form.', 'booking-activities' )
-						. '<br/>' . __( 'This option has no effect on bookings made with WooCommerce.', 'booking-activities' )
-			);
-		bookacti_display_field( $args );
+			'tip'		=> esc_html__( 'Choose what payment status a booking should have when a customer complete the booking form.', 'booking-activities' )
+						. '<br/>' . esc_html__( 'This option has no effect on bookings made with WooCommerce.', 'booking-activities' )
+		));
 	}
 	
 	

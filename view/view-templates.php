@@ -1,7 +1,7 @@
 <?php
 /**
  * Calendar editor page
- * @version 1.7.17
+ * @version 1.7.18
  */
 
 // Exit if accessed directly
@@ -14,7 +14,7 @@ $default_template = false;
 ?>
 
 <div class='wrap'>
-<h1 class='wp-heading-inline'><?php esc_html_e( 'Calendars', 'booking-activities' ); ?></h1>
+<h1 class='wp-heading-inline'><?php esc_html_e( 'Calendar editor', 'booking-activities' ); ?></h1>
 <?php do_action( 'bookacti_calendar_editor_page_header' ); ?>
 <hr class='wp-header-end'>
 

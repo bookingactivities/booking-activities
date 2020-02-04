@@ -156,20 +156,6 @@ add_action( 'bookacti_delete_settings', 'bookacti_delete_woocommerce_settings' )
 
 
 /**
- * Add a mention to booking method tip
- * 
- * @param string $tip
- * @return string
- */
-function bookacti_add_wc_mention_to_booking_method_tip( $tip ) {
-	$tip .= '<br/>';
-	$tip .= esc_html__( 'This parameter can be overriden by products settings in woocommerce.', 'booking-activities' );
-	return $tip;
-}
-add_filter( 'bookacti_booking_methods_tip', 'bookacti_add_wc_mention_to_booking_method_tip', 20, 1 );
-
-
-/**
  * Add notification global settings
  * 
  * @since 1.2.2

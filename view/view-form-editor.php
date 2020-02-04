@@ -2,7 +2,7 @@
 /**
  * Form editor page
  * @since 1.5.0
- * @version 1.7.10
+ * @version 1.7.18
  */
 
 // Exit if accessed directly
@@ -142,7 +142,7 @@ if( ! $form ) { exit; }
 										<div id='bookacti-form-editor-actions' >
 											<?php do_action( 'bookacti_form_editor_actions_before', $form ); ?>
 											<div id='bookacti-update-form-meta' class='bookacti-form-editor-action dashicons dashicons-admin-generic' title='<?php _e( 'Change form settings', 'booking-activities' ); ?>'></div>
-											<div id='bookacti-insert-form-field' class='bookacti-form-editor-action dashicons dashicons-plus-alt' title='<?php _e( 'Add a new field to your form', 'booking-activities' ); ?>'></div>
+											<div id='bookacti-insert-form-field' class='bookacti-form-editor-action button button-secondary' title='<?php esc_html_e( 'Add a new field to your form', 'booking-activities' ); ?>'><?php esc_html_e( 'Add a field', 'booking-activities' ); ?></div>
 											<?php do_action( 'bookacti_form_editor_actions_after', $form ); ?>
 										</div>
 									</div>

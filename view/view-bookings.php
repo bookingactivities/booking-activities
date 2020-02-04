@@ -1,7 +1,7 @@
 <?php
 /**
  * Booking list page
- * @version 1.7.17
+ * @version 1.7.18
  */
 
 // Exit if accessed directly
@@ -204,7 +204,7 @@ if( ! $templates ) {
 						'show_option_all'	=> esc_html__( 'All', 'booking-activities' ),
 						'show_option_self'	=> esc_html__( 'Your search', 'booking-activities' ),
 						'option_self_value'	=> $selected_user,
-						'option_label'		=> array( 'user_login', ' (', 'user_email', ')' ),
+						'option_label'		=> array( 'first_name', ' ', 'last_name', ' (', 'user_login', ' / ', 'user_email', ')' ),
 						'selected'			=> $selected_user,
 						'echo'				=> true
 					));
