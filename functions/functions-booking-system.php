@@ -481,12 +481,25 @@ function bookacti_format_booking_system_attributes( $raw_atts = array() ) {
 /**
  * Get booking system attributes from calendar field data
  * @since 1.7.17
+ * @version 1.7.18
  * @param array|int $calendar_field
  * @return array
  */
 function bookacti_get_calendar_field_booking_system_attributes( $calendar_field ) {
 	if( is_numeric( $calendar_field ) ) { $calendar_field = bookacti_get_form_field_data( $calendar_field ); }
 	if( ! is_array( $calendar_field ) ) { $calendar_field = array(); }
+	
+	// Check if an event / group of events is picked by default
+	$picked_events = array( 'group_id' => '', 'event_id' => '', 'event_start' => '', 'event_end' => '' );
+	if( isset( $_REQUEST[ 'bookacti_event_id' ] ) )		{ $picked_events[ 'event_id' ]		= is_numeric( $_REQUEST[ 'bookacti_event_id' ] ) ? intval( $_REQUEST[ 'bookacti_event_id' ] ) : ''; }
+	if( isset( $_REQUEST[ 'event_id' ] ) )				{ $picked_events[ 'event_id' ]		= is_numeric( $_REQUEST[ 'event_id' ] ) ? intval( $_REQUEST[ 'event_id' ] ) : ''; }
+	if( isset( $_REQUEST[ 'bookacti_event_start' ] ) )	{ $picked_events[ 'event_start' ]	= bookacti_sanitize_datetime( $_REQUEST[ 'bookacti_event_start' ] ); }
+	if( isset( $_REQUEST[ 'event_start' ] ) )			{ $picked_events[ 'event_start' ]	= bookacti_sanitize_datetime( $_REQUEST[ 'event_start' ] ); }
+	if( isset( $_REQUEST[ 'bookacti_event_end' ] ) )	{ $picked_events[ 'event_end' ]		= bookacti_sanitize_datetime( $_REQUEST[ 'bookacti_event_end' ] ); }
+	if( isset( $_REQUEST[ 'event_end' ] ) )				{ $picked_events[ 'event_end' ]		= bookacti_sanitize_datetime( $_REQUEST[ 'event_end' ] ); }
+	if( isset( $_REQUEST[ 'bookacti_group_id' ] ) )  	{ $picked_events[ 'group_id' ]		= is_numeric( $_REQUEST[ 'bookacti_group_id' ] ) ? intval( $_REQUEST[ 'bookacti_group_id' ] ) : ''; }
+	if( isset( $_REQUEST[ 'event_group_id' ] ) )		{ $picked_events[ 'group_id' ]		= is_numeric( $_REQUEST[ 'event_group_id' ] ) ? intval( $_REQUEST[ 'event_group_id' ] ) : ''; }
+	if( is_numeric( $picked_events[ 'event_id' ] ) && ! is_numeric( $picked_events[ 'group_id' ] ) ) { $picked_events[ 'group_id' ] = 'single'; }
 	
 	// Compute availability period 
 	$availability_period = bookacti_get_calendar_field_availability_period( $calendar_field );
@@ -495,7 +508,7 @@ function bookacti_get_calendar_field_booking_system_attributes( $calendar_field 
 	$display_data = array_intersect_key( $calendar_field, bookacti_get_booking_system_default_display_data() );
 	
 	// Transform the Calendar field settings to Booking system attributes
-	$booking_system_atts_raw= array_merge( $calendar_field, $availability_period, array( 'display_data' => $display_data ) );
+	$booking_system_atts_raw= array_merge( $calendar_field, $availability_period, array( 'picked_events' => $picked_events, 'display_data' => $display_data ) );
 	$booking_system_atts	= bookacti_format_booking_system_attributes( $booking_system_atts_raw );
 	
 	return apply_filters( 'bookacti_calendar_field_booking_system_attributes', $booking_system_atts, $calendar_field );

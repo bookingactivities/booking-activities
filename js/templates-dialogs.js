@@ -54,7 +54,43 @@ function bookacti_init_template_dialogs() {
 	$j( '#bookacti-template-container' ).on( 'click', '#bookacti-insert-template, #bookacti-add-first-template-button', function() { 
 		bookacti_dialog_add_new_template(); 
 	});
+	
+	
+	/**
+	 * Fill template settings by default while duplicating a template (if current template is duplicated)
+	 * @since 1.7.18
+	 */
+	$j( '#bookacti-template-duplicated-template-id' ).on( 'change', function() {
+		var duplicated_template_id = parseInt( $j( this ).val() );
+		if( ! duplicated_template_id ) { return; }
+		
+		var current_template_id = parseInt( $j( '#bookacti-template-picker' ).val() );
+		var template_data = bookacti.booking_system[ 'bookacti-template-calendar' ][ 'template_data' ];
+		
+		// Fill opening and closing
+		var opening = $j( '#bookacti-template-picker option[value="' + duplicated_template_id + '"]' ).data( 'template-start' );
+		var closing = $j( '#bookacti-template-picker option[value="' + duplicated_template_id + '"]' ).data( 'template-end' );
+		if( opening ) { $j( '#bookacti-template-opening' ).val( opening ); }
+		if( closing ) { $j( '#bookacti-template-closing' ).val( closing ); }
+		
+		if( ! $j.isEmptyObject( template_data.settings ) && current_template_id === duplicated_template_id ) {
+			// Fill template settings
+			bookacti_fill_fields_from_array( template_data.settings, 'templateOptions' );
+		} else {
+			// Set default values
+			$j( '#bookacti-template-opening' ).val( moment().format( 'YYYY-MM-DD' ) );
+			$j( '#bookacti-template-closing' ).val( moment().add( 7, 'days' ).format( 'YYYY-MM-DD' ) );
+			$j( '#bookacti-template-data-minTime' ).val( '00:00' );
+			$j( '#bookacti-template-data-maxTime' ).val( '00:00' );
+			$j( '#bookacti-template-data-snapDuration' ).val( '00:05' );
+			$j( '#bookacti-template-availability-period-start' ).val( 0 );
+			$j( '#bookacti-template-availability-period-end' ).val( 0 );
 
+			$j( '#bookacti-template-data-dialog' ).trigger( 'bookacti_default_template_settings' );
+		}
+	});
+	
+	
 	// Init update activity dialog
 	$j( '#bookacti-template-activity-list' ).on( 'click', '.activity-gear', function() {
 		var activity_id = $j( this ).data( 'activity-id' );
@@ -113,7 +149,7 @@ function bookacti_init_template_dialogs() {
 
 /**
  * Dialog Create Template
- * @version 1.7.16
+ * @version 1.7.18
  */
 function bookacti_dialog_add_new_template() {
 	// Set the dialog title
@@ -124,7 +160,7 @@ function bookacti_dialog_add_new_template() {
 
 	// Set default values
 	$j( '#bookacti-template-opening' ).val( moment().format( 'YYYY-MM-DD' ) );
-	$j( '#bookacti-template-closing' ).val( moment().add( 7, 'days' ).format( 'YYYY-MM-DD' ) );
+	$j( '#bookacti-template-closing' ).val( moment().add( 1, 'year' ).format( 'YYYY-MM-DD' ) );
 	$j( '#bookacti-template-data-minTime' ).val( '00:00' );
 	$j( '#bookacti-template-data-maxTime' ).val( '00:00' );
 	$j( '#bookacti-template-data-snapDuration' ).val( '00:05' );
@@ -137,22 +173,6 @@ function bookacti_dialog_add_new_template() {
 	if( $j( '#bookacti-template-duplicated-template-id option' ).length > 1 ) {
 		$j( '#bookacti-duplicate-template-fields' ).show();
 		$j( '#bookacti-template-duplicated-template-id' ).attr( 'disabled', false );
-
-		// Change the opening and closing date to those of the template to duplicate
-		$j( '#bookacti-template-duplicated-template-id' ).off().on( 'change blur', function() {
-
-			var duplicated_template_id = $j( '#bookacti-template-duplicated-template-id' ).val();
-			if( duplicated_template_id ) {
-				var opening = $j( '#bookacti-template-picker option[value="' + duplicated_template_id + '"]' ).data( 'template-start' );
-				var closing = $j( '#bookacti-template-picker option[value="' + duplicated_template_id + '"]' ).data( 'template-end' );
-				if( opening && closing ) {
-					if( opening.length && closing.length ) {
-						$j( '#bookacti-template-opening' ).val( opening );
-						$j( '#bookacti-template-closing' ).val( closing );
-					}
-				}
-			}
-		});
 	} else {
 		$j( '#bookacti-duplicate-template-fields' ).hide();
 		$j( '#bookacti-template-duplicated-template-id' ).attr( 'disabled', true );
@@ -176,9 +196,9 @@ function bookacti_dialog_add_new_template() {
 
 				// Get the data to save
 				var title	= $j( '#bookacti-template-title' ).val();
-				var start	= moment( $j( '#bookacti-template-opening' ).val(), [ 'MM-DD-YYYY', 'DD-MM-YYYY', 'YYYY-MM-DD' ] ).format( 'YYYY-MM-DD' );
-				var end		= moment( $j( '#bookacti-template-closing' ).val(), [ 'MM-DD-YYYY', 'DD-MM-YYYY', 'YYYY-MM-DD' ] ).format( 'YYYY-MM-DD' );
-
+				var start	= $j( '#bookacti-template-opening' ).val() ? moment( $j( '#bookacti-template-opening' ).val(), [ 'MM-DD-YYYY', 'DD-MM-YYYY', 'YYYY-MM-DD' ] ).format( 'YYYY-MM-DD' ) : moment().format( 'YYYY-MM-DD' );
+				var end		= $j( '#bookacti-template-closing' ).val() ? moment( $j( '#bookacti-template-closing' ).val(), [ 'MM-DD-YYYY', 'DD-MM-YYYY', 'YYYY-MM-DD' ] ).format( 'YYYY-MM-DD' ) : '2037-12-31';
+				
 				if( typeof tinyMCE !== 'undefined' ) { 
 					if( tinyMCE ) { tinyMCE.triggerSave(); }
 				}

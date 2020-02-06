@@ -705,7 +705,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 	/**
 	 * AJAX Controller - Create a new template
-	 * @version	1.7.10
+	 * @version	1.7.18
 	 */
 	function bookacti_controller_insert_template() {
 		// Check nonce and capabilities
@@ -716,10 +716,10 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			bookacti_send_json_not_allowed( 'insert_template' );
 		}
 			
-		$template_title	= sanitize_text_field( stripslashes( $_POST['template-title'] ) );
-		$template_start	= bookacti_sanitize_date( $_POST['template-opening'] );
-		$template_end	= bookacti_sanitize_date( $_POST['template-closing'] );
-
+		$template_title	= sanitize_text_field( stripslashes( $_POST[ 'template-title' ] ) );
+		$template_start	= bookacti_sanitize_date( $_POST[ 'template-opening' ] ) ? bookacti_sanitize_date( $_POST[ 'template-opening' ] ) : date( 'Y-m-d' );
+		$template_end	= bookacti_sanitize_date( $_POST[ 'template-closing' ] ) ? bookacti_sanitize_date( $_POST[ 'template-closing' ] ) : '2037-12-31';
+		
 		$is_template_valid = bookacti_validate_template_data( $template_title, $template_start, $template_end );
 
 		// Create template only if its data are consistent
@@ -727,9 +727,9 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			bookacti_send_json( array( 'status' => 'failed' ), 'insert_template' );
 		}
 
-		$duplicated_template_id	= intval( $_POST['duplicated-template-id'] );
-		$managers_array			= isset( $_POST['template-managers'] ) ? bookacti_ids_to_array( $_POST['template-managers'] ) : array();
-		$options_array			= isset( $_POST['templateOptions'] ) && is_array( $_POST['templateOptions'] ) ? $_POST['templateOptions'] : array();
+		$duplicated_template_id	= intval( $_POST[ 'duplicated-template-id' ] );
+		$managers_array			= isset( $_POST[ 'template-managers' ] ) ? bookacti_ids_to_array( $_POST[ 'template-managers' ] ) : array();
+		$options_array			= isset( $_POST[ 'templateOptions' ] ) && is_array( $_POST[ 'templateOptions' ] ) ? $_POST[ 'templateOptions' ] : array();
 
 		$template_managers		= bookacti_format_template_managers( $managers_array );
 		$template_settings		= bookacti_format_template_settings( $options_array );
@@ -749,7 +749,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	
 	/**
 	 * AJAX Controller - Update template
-	 * @version	1.7.17
+	 * @version	1.7.18
 	 */
 	function bookacti_controller_update_template() {
 		$template_id	= intval( $_POST['template-id'] );
@@ -762,10 +762,10 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			bookacti_send_json_not_allowed( 'update_template' );
 		}
 			
-		$template_title	= sanitize_text_field( stripslashes( $_POST['template-title'] ) );
-		$template_start	= bookacti_sanitize_date( $_POST['template-opening'] );
-		$template_end	= bookacti_sanitize_date( $_POST['template-closing'] );
-
+		$template_title	= sanitize_text_field( stripslashes( $_POST[ 'template-title' ] ) );
+		$template_start	= bookacti_sanitize_date( $_POST[ 'template-opening' ] ) ? bookacti_sanitize_date( $_POST[ 'template-opening' ] ) : date( 'Y-m-d' );
+		$template_end	= bookacti_sanitize_date( $_POST[ 'template-closing' ] ) ? bookacti_sanitize_date( $_POST[ 'template-closing' ] ) : '2037-12-31';
+		
 		$is_template_valid = bookacti_validate_template_data( $template_title, $template_start, $template_end );
 
 		// Update template only if its data are consistent
@@ -776,8 +776,8 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		$updated_template	= bookacti_update_template( $template_id, $template_title, $template_start, $template_end );
 
 		$updated_metadata = 0;
-		if( isset( $_POST['templateOptions'] ) ) {
-			$template_settings	= bookacti_format_template_settings( $_POST['templateOptions'] );
+		if( isset( $_POST[ 'templateOptions' ] ) ) {
+			$template_settings	= bookacti_format_template_settings( $_POST[ 'templateOptions' ] );
 			$updated_metadata	= bookacti_update_metadata( 'template', $template_id, $template_settings );
 		}
 		

@@ -263,7 +263,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 		/**
 		 * AJAX Controller - Get booking system data by booking ID
-		 * @version 1.7.4
+		 * @version 1.7.18
 		 */
 		function bookacti_controller_get_booking_data() {
 			// Check nonce, no need to check capabilities
@@ -273,9 +273,11 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 			$booking_id	= intval( $_POST[ 'booking_id' ] );
 			$booking_data = bookacti_get_booking_data( $booking_id );
-
+			
 			if( ! empty( $booking_data ) && is_array( $booking_data ) ) {
-				bookacti_send_json( array( 'status' => 'success', 'booking_data' => $booking_data ), 'get_booking_data' );
+				$calendar_field_data = ! empty( $booking_data[ 'form_id' ] ) ? bookacti_get_form_field_data_by_name( $booking_data[ 'form_id' ], 'calendar' ) : bookacti_get_default_form_fields_data( 'calendar' );
+				
+				bookacti_send_json( array( 'status' => 'success', 'booking_data' => $booking_data, 'calendar_field_data' => $calendar_field_data ), 'get_booking_data' );
 			} else {
 				bookacti_send_json( array( 'status' => 'failed', 'error' => 'empty_data' ), 'get_booking_data' );
 			}

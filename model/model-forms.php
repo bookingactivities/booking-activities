@@ -413,30 +413,32 @@ function bookacti_insert_default_form_fields( $form_id, $to_insert = array() ) {
 /**
  * Insert a form field
  * @since 1.5.0
- * @version 1.5.3
+ * @version 1.7.18
  * @global wpdb $wpdb
  * @param int $form_id
- * @param string $field_name
+ * @param string $field_data
  * @return int|false
  */
-function bookacti_insert_form_field( $form_id, $field_name ) {
+function bookacti_insert_form_field( $form_id, $field_data ) {
 	global $wpdb;
 	
-	$default_field = bookacti_sanitize_form_field_data( bookacti_get_default_form_fields_data( $field_name ) );
+	if( ! is_array( $field_data ) ) {
+		$field_data = bookacti_sanitize_form_field_data( bookacti_get_default_form_fields_data( $field_data ) );
+	}
 	
 	// Insert the form field
 	$created = $wpdb->insert( 
 		BOOKACTI_TABLE_FORM_FIELDS, 
 		array( 
 			'form_id'		=> $form_id,
-			'name'			=> $default_field[ 'name' ],
-			'type'			=> $default_field[ 'type' ],
-			'label'			=> $default_field[ 'label' ],
-			'options'		=> $default_field[ 'options' ],
-			'value'			=> $default_field[ 'value' ],
-			'placeholder'	=> $default_field[ 'placeholder' ],
-			'tip'			=> $default_field[ 'tip' ],
-			'required'		=> $default_field[ 'required' ],
+			'name'			=> $field_data[ 'name' ],
+			'type'			=> $field_data[ 'type' ],
+			'label'			=> $field_data[ 'label' ],
+			'options'		=> $field_data[ 'options' ],
+			'value'			=> $field_data[ 'value' ],
+			'placeholder'	=> $field_data[ 'placeholder' ],
+			'tip'			=> $field_data[ 'tip' ],
+			'required'		=> $field_data[ 'required' ],
 			'active'		=> 1
 		),
 		array( '%d', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%d', '%d' )

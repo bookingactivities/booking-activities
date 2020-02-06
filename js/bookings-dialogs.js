@@ -746,7 +746,7 @@ function bookacti_dialog_change_booking_quantity( booking_id, booking_type ) {
 
 /**
  * Reschedule booking dialog
- * @version 1.7.17
+ * @version 1.7.18
  * @param {int} booking_id
  */
 function bookacti_dialog_reschedule_booking( booking_id ) {
@@ -788,9 +788,9 @@ function bookacti_dialog_reschedule_booking( booking_id ) {
 				// Replace the reschedule booking system data with the booking system data used for the booking
 				$j.each( bookacti.booking_system[ booking_system_id ], function( key, value ) {
 					// Skip certain properties
-					if( ! response.booking_data.form_calendar_settings.hasOwnProperty( key ) ) { return true; }
+					if( ! response.calendar_field_data.hasOwnProperty( key ) ) { return true; }
 					if( $j.inArray( key, [ 'auto_load', 'class', 'id', 'method' ] ) >= 0 ) { return true; }
-					bookacti.booking_system[ booking_system_id ][ key ]	= response.booking_data.form_calendar_settings[ key ];
+					bookacti.booking_system[ booking_system_id ][ key ]	= response.calendar_field_data[ key ];
 				});
 				
 				// Load only the events from the same activity of the same calendar as the booked event
@@ -809,7 +809,9 @@ function bookacti_dialog_reschedule_booking( booking_id ) {
 					bookacti.booking_system[ booking_system_id ][ 'display_data' ]			= [];
 				}
 				
-				booking_system.trigger( 'bookacti_before_reschedule_booking_system_loads', [ response.booking_data ] );
+				bookacti.booking_system[ booking_system_id ][ 'rescheduled_booking_data' ]	= response.booking_data;
+				
+				booking_system.trigger( 'bookacti_before_reschedule_booking_system_loads', [ response ] );
 				
 				// Load booking system with new data
 				bookacti_reload_booking_system( booking_system );

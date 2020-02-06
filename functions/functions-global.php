@@ -19,6 +19,22 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	
 	
 	/**
+	 * Display an admin notice
+	 * @since 1.7.18
+	 * @param array $array composed of a type and a message
+	 * @param string $action Name of the filter to allow third-party modifications
+	 */
+	function bookacti_display_admin_notice( $array, $action = '' ) {
+		if( empty( $array[ 'type' ] ) )		{ $array[ 'type' ] = 'error'; }
+		if( empty( $array[ 'message' ] ) )	{ $array[ 'message' ] = esc_html__( 'An error occurred, please try again.', 'booking-activities' ); }
+		$notice = apply_filters( 'bookacti_display_admin_notice_' . $action, $array );
+		?>
+			<div class='notice is-dismissible bookacti-form-notice notice-<?php echo $notice[ 'type' ]; ?>' ><p><?php echo $notice[ 'message' ]; ?></p></div>
+		<?php
+	}
+	
+	
+	/**
 	 * Send a filtered array via json during an ajax process
 	 * @since 1.5.0
 	 * @version 1.5.3

@@ -65,8 +65,12 @@ $j( document ).ready( function() {
 		bookacti_refresh_booking_numbers( booking_system );
 	});
 	
-	// Refresh bookings number when a booking is refunded
-	$j( 'body' ).on( 'bookacti_booking_refunded', function(){
+	
+	/**
+	 * Refresh bookings number when a booking is refunded or when its quantity changed
+	 * @version 1.7.18
+	 */
+	$j( 'body' ).on( 'bookacti_booking_refunded bookacti_booking_quantity_changed', function(){
 		bookacti_init_tooltip();
 		
 		var booking_system = $j( '#bookacti-booking-system-bookings-page' );

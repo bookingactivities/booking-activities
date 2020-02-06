@@ -84,7 +84,7 @@ function bookacti_validate_template_form() {
 	
 	if( valid_form.isTitle 
 	&&  valid_form.isDuplicateIdPositive 
-	&&  valid_form.isStartBeforeEnd 
+	&&  ( ! valid_form.isStart || ! valid_form.isEnd || valid_form.isStartBeforeEnd )
 	&&  valid_form.isDayStartBeforeEnd
 	&&  valid_form.isSnapFreqFormatted )	{ valid_form.send = true; }
     
@@ -105,14 +105,6 @@ function bookacti_validate_template_form() {
     if( ! valid_form.isStartBeforeEnd && valid_form.isStart && valid_form.isEnd ) { 
         $j( '#bookacti-template-closing' ).addClass( 'bookacti-input-error' );
         $j( '#bookacti-template-closing' ).parent().append( "<div class='bookacti-form-error'>" + bookacti_localized.error_template_end_before_begin + "</div>" );
-    }
-    if( ! valid_form.isStart ){ 
-        $j( '#bookacti-template-opening' ).addClass( 'bookacti-input-error' );
-        $j( '#bookacti-template-opening' ).parent().append( "<div class='bookacti-form-error'>" + bookacti_localized.error_fill_field + "</div>" );
-    }
-    if( ! valid_form.isEnd ){ 
-        $j( '#bookacti-template-closing' ).addClass( 'bookacti-input-error' );
-        $j( '#bookacti-template-closing' ).parent().append( "<div class='bookacti-form-error'>" + bookacti_localized.error_fill_field + "</div>" );
     }
     if( ! valid_form.isDuplicateIdPositive ){ 
         $j( '#bookacti-template-duplicated-template-id' ).addClass( 'bookacti-input-error' );

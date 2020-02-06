@@ -36,11 +36,15 @@ table.woocommerce_order_items ul.bookacti-booking-events-list { margin: 0; }
 
 /* Booking forms */
 .bookacti-success-list.woocommerce a.button,
-.woocommerce div.product form.cart .bookacti-success-list.woocommerce .button { float: right; }
+.woocommerce div.product.bookacti-activity form.cart .bookacti-success-list.woocommerce .button { float: right; }
 
 /* Single product page */
-.woocommerce div.product form.cart table td.fc-axis { padding-left: 4px; }
-.woocommerce.single.single-product div.product.bookacti-activity form.cart { width: 100%; }
+.woocommerce div.product.bookacti-activity form.cart table td.fc-axis		{ padding-left: 4px; }
+.woocommerce.single.single-product div.product.bookacti-activity form.cart	{ width: 100%; }
+
+	/* Elementor support */
+	.woocommerce div.product.bookacti-activity.elementor form.cart.variations_form .woocommerce-variation-add-to-cart, 
+	.woocommerce div.product.bookacti-activity.elementor form.cart:not(.grouped_form):not(.variations_form) { display: block; }
 
 /* Cart, Checkout */
 .bookacti-order-item-activity td.product-name .wc-item-meta .wc-item-meta-bookacti_booked_events,

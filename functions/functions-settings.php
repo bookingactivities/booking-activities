@@ -1420,7 +1420,7 @@ function bookacti_settings_section_licenses_callback() { }
 // PRIVACY OPTIONS
 
 /**
- * Export additionnal user metadata with WP privacy export tool
+ * Export additional user metadata with WP privacy export tool
  * @since 1.7.0
  * @version 1.7.8
  * @param string $email_address
@@ -1602,7 +1602,7 @@ function bookacti_privacy_exporter_bookings_data( $email_address, $page = 1 ) {
 
 
 /**
- * Erase additionnal user metadata with WP privacy export tool
+ * Erase additional user metadata with WP privacy export tool
  * @since 1.7.0
  * @version 1.7.8
  * @param string $email_address

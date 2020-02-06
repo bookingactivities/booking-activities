@@ -300,7 +300,7 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 == Screenshots ==
 
 1. Drag and drop to edit. Click to book. Works both with a shortcode and WooCommerce.
-2. WYSIWYG calendar editor. Simply drag and drop events. Click on events for additionnal settings (availability, repetition...).
+2. WYSIWYG calendar editor. Simply drag and drop events. Click on events for additional settings (availability, repetition...).
 3. Create daily, weekly or monthly repeated events. You can add exception dates to the repetition.
 4. Grouping your events is simple: just select multiple events and click on 'Add a group'. Or select an existing group and start editing it right away.
 5. Create and customize your booking form. You can combine events and settings of multiple schedules. You can make each form unique.
@@ -320,10 +320,18 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 == Changelog ==
 
 = 1.7.18 =
+* Tweak - Add an option to duplicate booking forms
+* Tweak - Reschedule: display events as unavailable if their availability is insufficient
+* Tweak - Calendar editor: Automatically fill the calendar settings if the duplicated calendar is the current one
 * Tweak - Disambiguation in calendar editor's calendar settings dialog
 * Tweak - Highlight "Calendar field settings" button, and "Add new field" button in form editor
 * Tweak - Display user names in user selectbox as a fallback (in backend booking list filter)
 * Tweak - Fallback to WooCommerce user data to display in user selectbox (in backend booking list filter)
+* Tweak - Display WC cart form as block instead of flex with Elementor
+* Fix - Booking numbers not updated on events after changing booking quantity (needed a page reload)
+* Fix - Tooltip disappeared after updating a booking
+* Fix - Couldn't bind the same product to different activities in Calendar field, Action tab
+* Fix - PHP notice Undefined index: picked_events
 
 = 1.7.17 - 2020/01/29 =
 * Tweak - Add a "All" option in activities and group categories selectboxes in Calendar fields settings

@@ -2,11 +2,13 @@
 
 /**
  * Change default template on change in the select box
- * @version 1.7.17
+ * @version 1.7.18
  * @param {int} selected_template_id
  */
 function bookacti_switch_template( selected_template_id ) {
 	if( selected_template_id ) {
+		$j( '#bookacti-template-picker' ).val( selected_template_id );
+		
 		// Prevent events to be loaded while templates are switched
 		bookacti.load_events = false;
 		var attributes = bookacti.booking_system[ 'bookacti-template-calendar' ];

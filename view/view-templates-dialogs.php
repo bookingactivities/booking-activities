@@ -235,7 +235,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		<div id='bookacti-template-dialog-lang-switcher' class='bookacti-lang-switcher' ></div>
 		
 		<?php 
-			//Fill the array of tabs with their label, callback for content and display order
+			// Fill the array of tabs with their label, callback for content and display order
 			$template_tabs = apply_filters( 'bookacti_template_dialog_tabs', array (
 				array(	'label'			=> esc_html__( 'General', 'booking-activities' ),
 						'callback'		=> 'bookacti_fill_template_tab_general',
@@ -253,7 +253,8 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			
 			// Display tabs
 			bookacti_display_tabs( $template_tabs, 'template' );
-
+			
+			
 			/**
 			 * Display the 'General' tab content of template settings
 			 * @version 1.7.18
@@ -273,7 +274,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 				<div id='bookacti-duplicate-template-fields'>
 					<label for='bookacti-template-duplicated-template-id' ><?php esc_html_e( 'Duplicate from', 'booking-activities' ); ?></label>
 					<select name='duplicated-template-id' id='bookacti-template-duplicated-template-id' class='bookacti-template-select-box' >
-						<option value='0' ><?php esc_html_e( "Don't duplicate", 'booking-activities' ); ?></option>
+						<option value='0' ><?php esc_html_e( 'Don\'t duplicate', 'booking-activities' ); ?></option>
 						<?php echo $templates_options; ?>
 					</select>
 					<?php
@@ -298,7 +299,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 					?>
 				</div>
 			<?php 
-					do_action( 'bookacti_template_tab_general_after', $params );
+				do_action( 'bookacti_template_tab_general_after', $params );
 			} 
 			
 			

@@ -210,7 +210,7 @@ if( ! class_exists( 'Forms_List_Table' ) ) {
 		
 		/**
 		 * Fill "Title" column and add action buttons
-		 * @version 1.7.12
+		 * @version 1.7.18
 		 * @access public
 		 * @param array $item
 		 * @return string
@@ -221,11 +221,14 @@ if( ! class_exists( 'Forms_List_Table' ) ) {
 			
 			if( current_user_can( 'bookacti_edit_forms' ) ) {
 				
-				// Add the 'edit' action
+				// Add the 'edit' and the 'duplicate' actions
 				if( $item[ 'active_raw' ] ) {
 					$actions[ 'edit' ]	= '<a href="' . esc_url( admin_url( 'admin.php?page=bookacti_forms&action=edit&form_id=' . $form_id ) ) . '" >'
 											. esc_html_x( 'Edit', 'forms', 'booking-activities' )
 										. '</a>';
+					$actions[ 'duplicate' ]	= '<a href="' . esc_url( wp_nonce_url( admin_url( 'admin.php?page=bookacti_forms&action=duplicate&form_id=' . $form_id ), 'duplicate-form_' . $form_id ) ) . '" >'
+												. esc_html_x( 'duplicate', 'forms', 'booking-activities' )
+											. '</a>';
 				}
 				
 				if( current_user_can( 'bookacti_delete_forms' ) ) {

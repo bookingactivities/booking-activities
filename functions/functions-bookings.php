@@ -1895,6 +1895,7 @@ function bookacti_get_user_booking_list_items( $filters, $columns = array() ) {
 /**
  * Display a booking list
  * @since 1.7.6
+ * @version 1.7.18
  * @param array $filters
  * @param array $columns
  * @param int $per_page
@@ -1959,7 +1960,8 @@ function bookacti_get_user_booking_list( $filters, $columns = array(), $per_page
 			}
 			?>
 			<span class='bookacti-user-booking-list-current-page'>
-				<strong><?php echo $page_nb; ?></strong> / <em><?php echo $page_max; ?></em>
+				<span class='bookacti-user-booking-list-page-counter'><strong><?php echo $page_nb; ?></strong><span> / </span><em><?php echo $page_max; ?></em></span>
+				<span class='bookacti-user-booking-list-total-bookings'><?php /* translators: %s is the number of bookings */ echo esc_html( sprintf( _n( '%s booking', '%s bookings', $bookings_nb ), $bookings_nb ) ); ?></span>
 			</span>
 			<?php
 			if( $page_nb < $page_max ) {
