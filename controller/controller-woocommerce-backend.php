@@ -829,17 +829,13 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	/**
 	 * Save custom activity product type and activity tab content
 	 * @version 1.5.0
+	 * @version 1.7.18
 	 * @param int $post_id
 	 */
 	function bookacti_save_custom_product_type_and_tab_content( $post_id ) { 
 		
 		if( ! empty( $_POST['_bookacti_is_activity'] ) ) {
 			update_post_meta( $post_id, '_bookacti_is_activity', sanitize_text_field( 'yes' ) );
-			
-			//Force the product to be flagged as virtual if it is an activity
-			if( empty( $_POST['_virtual'] ) ) {
-				update_post_meta( $post_id, '_virtual', wc_clean( 'yes' ) );
-			}
 		} else {
 			update_post_meta( $post_id, '_bookacti_is_activity', sanitize_text_field( 'no' ) );
 		}
@@ -1282,7 +1278,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 	/**
 	 * Save custom variation product
-	 * @version 1.7.16
+	 * @version 1.7.18
 	 * @param int $post_id
 	 */
 	function bookacti_save_variation_option( $post_id ) {
@@ -1298,11 +1294,6 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 				if ( isset( $_POST[ 'bookacti_variable_is_activity' ][ $key ] ) ) {
 					$variable_is_activity = $_POST[ 'bookacti_variable_is_activity' ][ $key ] === 'yes' ? 'yes' : 'no';
 					update_post_meta( $variation_id, 'bookacti_variable_is_activity', $variable_is_activity );
-
-					// Force the variation to be flagged as virtual if it is an activity
-					if( $variable_is_activity === 'yes' ) {
-						update_post_meta( $variation_id, '_virtual', 'yes' );
-					}
 				}
 				
 				// Save form

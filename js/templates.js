@@ -97,7 +97,7 @@ $j( document ).ready( function() {
 
 /**
  * Initialize and display the template calendar
- * @version 1.7.17
+ * @version 1.7.18
  * @param {dom_element} calendar
  */
 function bookacti_load_template_calendar( calendar ) {
@@ -132,7 +132,7 @@ function bookacti_load_template_calendar( calendar ) {
 		nowIndicator:           0,
 		weekNumbers:	        0,
 		weekNumbersWithinDays:	1,
-		navLinks:		        0,
+		navLinks:		        1,
 
 		slotEventOverlap:		0,
 		eventLimit:				false,

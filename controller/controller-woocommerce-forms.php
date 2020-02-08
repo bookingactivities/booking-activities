@@ -168,6 +168,7 @@ add_filter( 'bookacti_formatted_booking_system_attributes', 'bookacti_format_wc_
 /**
  * Sanitize WC booking system attributes 
  * @since 1.7.17
+ * @version 1.7.18
  * @param array $field_data
  * @param array $raw_field_data
  * @return array
@@ -175,8 +176,8 @@ add_filter( 'bookacti_formatted_booking_system_attributes', 'bookacti_format_wc_
 function bookacti_format_wc_field_data( $field_data, $raw_field_data ) {
 	if( $raw_field_data[ 'name' ] === 'calendar' ) {
 		$default_meta = bookacti_default_wc_calendar_form_field_meta( array() );
-		$field_data[ 'product_by_activity' ]		= isset( $raw_field_data[ 'product_by_activity' ] ) && is_array( $raw_field_data[ 'product_by_activity' ] ) ? bookacti_ids_to_array( $raw_field_data[ 'product_by_activity' ] ) : $default_meta[ 'product_by_activity' ];
-		$field_data[ 'product_by_group_category' ]	= isset( $raw_field_data[ 'product_by_group_category' ] ) && is_array( $raw_field_data[ 'product_by_group_category' ] ) ? bookacti_ids_to_array( $raw_field_data[ 'product_by_group_category' ] ) : $default_meta[ 'product_by_group_category' ];
+		$field_data[ 'product_by_activity' ]		= isset( $raw_field_data[ 'product_by_activity' ] ) && is_array( $raw_field_data[ 'product_by_activity' ] ) ? array_filter( array_map( 'intval', $raw_field_data[ 'product_by_activity' ] ) ) : $default_meta[ 'product_by_activity' ];
+		$field_data[ 'product_by_group_category' ]	= isset( $raw_field_data[ 'product_by_group_category' ] ) && is_array( $raw_field_data[ 'product_by_group_category' ] ) ? array_filter( array_map( 'intval', $raw_field_data[ 'product_by_group_category' ] ) ) : $default_meta[ 'product_by_group_category' ];
 	}
 	return $field_data;
 }
@@ -186,7 +187,7 @@ add_filter( 'bookacti_formatted_field_data', 'bookacti_format_wc_field_data', 10
 /**
  * Sanitize WC booking system attributes 
  * @since 1.7.0
- * @version 1.7.17
+ * @version 1.7.18
  * @param array $field_data
  * @param array $raw_field_data
  * @return array
@@ -194,8 +195,8 @@ add_filter( 'bookacti_formatted_field_data', 'bookacti_format_wc_field_data', 10
 function bookacti_sanitize_wc_field_data( $field_data, $raw_field_data ) {
 	if( $raw_field_data[ 'name' ] === 'calendar' ) {
 		$default_meta = bookacti_default_wc_calendar_form_field_meta( array() );
-		$field_data[ 'product_by_activity' ]		= isset( $raw_field_data[ 'product_by_activity' ] ) && is_array( $raw_field_data[ 'product_by_activity' ] ) ? bookacti_ids_to_array( $raw_field_data[ 'product_by_activity' ] ) : $default_meta[ 'product_by_activity' ];
-		$field_data[ 'product_by_group_category' ]	= isset( $raw_field_data[ 'product_by_group_category' ] ) && is_array( $raw_field_data[ 'product_by_group_category' ] ) ? bookacti_ids_to_array( $raw_field_data[ 'product_by_group_category' ] ) : $default_meta[ 'product_by_group_category' ];
+		$field_data[ 'product_by_activity' ]		= isset( $raw_field_data[ 'product_by_activity' ] ) && is_array( $raw_field_data[ 'product_by_activity' ] ) ? array_filter( array_map( 'intval', $raw_field_data[ 'product_by_activity' ] ) ) : $default_meta[ 'product_by_activity' ];
+		$field_data[ 'product_by_group_category' ]	= isset( $raw_field_data[ 'product_by_group_category' ] ) && is_array( $raw_field_data[ 'product_by_group_category' ] ) ? array_filter( array_map( 'intval', $raw_field_data[ 'product_by_group_category' ] ) ) : $default_meta[ 'product_by_group_category' ];
 	}
 	return $field_data;
 }
@@ -469,3 +470,28 @@ function bookacti_change_product_form_id_if_added_to_cart_via_booking_form( $for
 	return $form_id;
 }
 add_filter( 'bookacti_product_booking_form_id', 'bookacti_change_product_form_id_if_added_to_cart_via_booking_form', 10, 3 );
+
+
+/**
+ * Display WC user meta corresponding to the desired meta if it is empty
+ * @since 1.7.18
+ * @param array $args
+ * @param array $raw_args
+ * @return array
+ */
+function bookacti_display_wc_user_meta_in_user_selectbox( $args, $raw_args ) {
+	$wc_additional_option_labels = array( 
+		'user_email'=> 'billing_email', 
+		'first_name'=> 'billing_first_name||shipping_first_name', 
+		'last_name'	=> 'billing_last_name||shipping_last_name', 
+		'phone'		=> 'billing_phone'
+	);
+	$wc_additional_option_labels_keys = array_keys( $wc_additional_option_labels );
+	foreach( $args[ 'option_label' ] as $i => $show ) {
+		if( in_array( $show, $wc_additional_option_labels_keys, true ) ) {
+			$args[ 'option_label' ][ $i ] .= '||' . $wc_additional_option_labels[ $show ];
+		}
+	}
+	return $args;
+}
+add_filter( 'bookacti_user_selectbox_args', 'bookacti_display_wc_user_meta_in_user_selectbox', 10, 2 );

@@ -1070,8 +1070,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	/**
 	 * Turn all bookings of an order to the desired status. 
 	 * Also make sure that bookings are bound to the order and the associated user.
-	 * 
-	 * @version 1.7.0
+	 * @version 1.7.18
 	 * @param WC_Order $order
 	 * @param string $state
 	 * @param string $payment_status
@@ -1080,12 +1079,8 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	 * @return int|false
 	 */
 	function bookacti_turn_order_bookings_to( $order, $state = 'booked', $payment_status = NULL, $alert_if_fails = false, $args = array() ) {
-
 		// Retrieve order data
-		if( is_numeric( $order ) ) {
-			$order = wc_get_order( $order );
-		}		
-		
+		if( is_numeric( $order ) ) { $order = wc_get_order( $order ); }
 		if( ! $order ) { return false; }
 		
 		$states_in = ! empty( $args[ 'states_in' ] ) ? $args[ 'states_in' ] : array();
@@ -1093,15 +1088,13 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		// Retrieve bought items and user id
 		$items		= $order->get_items();
 		$user_id	= $order->get_user_id();
-		if( version_compare( WC_VERSION, '3.0.0', '>=' ) ) {
-			$order_id	= $order->get_id();
-		} else {
-			$order_id	= $order->id;
-		}
+		$order_id	= version_compare( WC_VERSION, '3.0.0', '>=' ) ? $order->get_id() : $order->id;
 		
 		// Create an array with order booking ids
 		$booking_id_array		= array();
 		$booking_group_id_array = array();
+		$in__booking_id			= ! empty( $args[ 'in__booking_id' ] ) ? $args[ 'in__booking_id' ] : array();
+		$in__booking_group_id	= ! empty( $args[ 'in__booking_group_id' ] ) ? $args[ 'in__booking_group_id' ] : array();
 		foreach( $items as $key => $item ) {
 			// Reset item booking id
 			$booking_id = 0;
@@ -1122,12 +1115,12 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			}
 			
 			// Single event
-			if( ! empty( $booking_id ) ) {				
+			if( $booking_id && ( ! $in__booking_id || in_array( $booking_id, $in__booking_id ) ) ) {				
 				// Add the booking id to the bookings array to change state
-				array_push( $booking_id_array, $booking_id );
+				$booking_id_array[] = $booking_id;
 
 			// Group of events
-			} else if( ! empty( $booking_group_id ) ) {
+			} else if( $booking_group_id && ( ! $in__booking_group_id || in_array( $booking_group_id, $in__booking_group_id ) ) ) {
 				// Add the group booking ids to the bookings array to change state
 				$booking_group_id_array[] = $booking_group_id;
 				
@@ -1154,14 +1147,14 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		
 		$updated = bookacti_change_order_bookings_state( $user_id, $order_id, $booking_id_array, $state, $payment_status, $states_in );
 
-		$response[ 'status' ]		= 'success';
-		$response[ 'errors' ]		= array();
-		$response[ 'updated' ]		= $updated;
+		$response[ 'status' ]	= 'success';
+		$response[ 'errors' ]	= array();
+		$response[ 'updated' ]	= $updated;
 		
 		// Check if an error occured during booking state update
 		if( $updated === false ) {
 			$response[ 'status' ] = 'failed';
-			array_push( $response[ 'errors' ], 'update_failed' );
+			$response[ 'errors' ][] = 'update_failed';
 		}
 		
 		// If bookings have not updated correctly, send an e-mail to alert the administrator
@@ -1195,7 +1188,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		}
 		
 		if( is_numeric( $response[ 'updated' ] ) && intval( $response[ 'updated' ] ) > 0 ) {
-			do_action( 'bookacti_order_bookings_state_changed', $order, $state, $args );
+			do_action( 'bookacti_order_bookings_state_changed', $order, $state, array_merge( $args, $response ) );
 		}
 		
 		return $response;
@@ -1204,16 +1197,14 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	
 	/**
 	 * Update order item booking status meta to new status
-	 *
 	 * @since 1.2.0
-	 * @version 1.7.0
+	 * @version 1.7.18
 	 * @param int $item
 	 * @param string $new_state
 	 * @param WC_Order $order
 	 * @param array $args
 	 */
 	function bookacti_update_order_item_booking_status( $item, $new_state, $order, $args ) {
-		
 		if( ! $item || ( ! isset( $item[ 'bookacti_booking_id' ] ) && ! isset( $item[ 'bookacti_booking_group_id' ] ) ) ) { return; }
 		
 		// WOOCOMMERCE 3.0.0 backward compatibility 
@@ -1223,9 +1214,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		$old_state = wc_get_order_item_meta( $order_item_id, 'bookacti_state', true );
 		$states_in = ! empty( $args[ 'states_in' ] ) ? $args[ 'states_in' ] : array();
 		
-		if( $states_in ) {
-			if( ! in_array( $old_state, $states_in, true ) ) { return; }
-		}
+		if( $states_in && ! in_array( $old_state, $states_in, true ) ) { return; }
 		
 		// Turn meta state to new state
 		wc_update_order_item_meta( $order_item_id, 'bookacti_state', $new_state );
@@ -1236,27 +1225,24 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			wc_update_order_item_meta( $order_item_id, '_bookacti_refund_method', $refund_action );
 		}
 		
-		if( is_numeric( $order ) ) {
-			$order = wc_get_order( $order );
-		}
-		
+		if( is_numeric( $order ) ) { $order = wc_get_order( $order ); }
 		if( ! $order ) { return; }
 		
 		// Log booking state change
 		if( $old_state !== $new_state ) {
-			
 			// Single event
 			if( isset( $item[ 'bookacti_booking_id' ] ) && $item[ 'bookacti_booking_id' ] ) {				
 				$booking_id		= $item[ 'bookacti_booking_id' ];
 				$booking_owner	= bookacti_get_booking_owner( $booking_id );
 				/* translators: %1$s is booking id, %2$s is old state, %3$s is new state */
-				$message		= __( 'Booking #%1$s state has been updated from %2$s to %3$s.', 'booking-activities' );
+				$message		= esc_html__( 'Booking #%1$s state has been updated from %2$s to %3$s.', 'booking-activities' );
+				
 			// Group of events
 			} else if( isset( $item[ 'bookacti_booking_group_id' ] ) && $item[ 'bookacti_booking_group_id' ] ) {
 				$booking_id		= $item[ 'bookacti_booking_group_id' ];
 				$booking_owner	= bookacti_get_booking_group_owner( $booking_id );
 				/* translators: %1$s is booking group id, %2$s is old state, %3$s is new state */
-				$message		= __( 'Booking group #%1$s state has been updated from %2$s to %3$s.', 'booking-activities' );
+				$message		= esc_html__( 'Booking group #%1$s state has been updated from %2$s to %3$s.', 'booking-activities' );
 			}
 			
 			$status_labels		= bookacti_get_booking_state_labels();
@@ -1274,7 +1260,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		}
 		
 		// Turn the order state if it is composed of inactive / pending / booked bookings only
-		if( ! isset( $args[ 'update_order_status' ] ) || $args[ 'update_order_status' ] ) {
+		if( ! empty( $args[ 'update_order_status' ] ) ) {
 			bookacti_change_order_state_based_on_its_bookings_state( $order->get_id() );
 		}
 	}
@@ -1283,11 +1269,10 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	/**
 	 * Turn the order state if it is composed of inactive / pending / booked bookings only
 	 * @since 1.1.0
-	 * @version 1.7.1
+	 * @version 1.7.18
 	 * @param int $order_id
 	 */
 	function bookacti_change_order_state_based_on_its_bookings_state( $order_id ) {
-		
 		// Get a fresh instance of WC_Order because some of its items may have changed
 		$order = wc_get_order( $order_id );
 		
@@ -1304,14 +1289,22 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		// Determine if the order is only composed of activities
 		$states = array();
 		$only_activities = true;
+		$only_virtual_activities = true;
 		foreach( $items as $item ) {
+			// Is activity
 			if( ! isset( $item[ 'bookacti_booking_id' ] ) && ! isset( $item[ 'bookacti_booking_group_id' ] ) ) { 
-				$only_activities = false; 
-				break;
+				$only_activities = false; break;
 			}
+			
+			// Is virtual
+			$product = $item[ 'variation_id' ] ? wc_get_product( $item[ 'variation_id' ] ) : wc_get_product( $item[ 'product_id' ] );
+			if( $product && ! $product->is_virtual() ) {
+				$only_virtual_activities = false;
+			}
+			
 			$states[] = $item[ 'bookacti_state' ];
 		}
-			
+		
 		if( ! $only_activities || empty( $states ) || in_array( 'in_cart', $states, true ) ) { return; }
 		
 		sort( $states );
@@ -1326,9 +1319,10 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		if( $order_status !== 'cancelled' && in_array( 'pending', $states, true ) ) {
 			// Turn order status to processing (or let it on on-hold)
 			$new_order_status = $order_status === 'on-hold' ? 'on-hold' : 'processing';
-		} else if( $order_status !== 'cancelled' && ! empty( $has_completed_booking_states ) ) {
+		} else if( $order_status !== 'cancelled' && $order_status !== 'completed' && ! empty( $has_completed_booking_states ) ) {
 			// Turn order status to completed
-			$new_order_status = 'completed';
+			$non_virtual_bookings_order_status = apply_filters( 'bookacti_completed_non_virtual_bookings_order_status', 'processing' );
+			$new_order_status = $only_virtual_activities ? 'completed' : $non_virtual_bookings_order_status;
 		} else if( ! empty( $has_cancelled_booking_states ) ) {
 			// Turn order status to cancelled
 			$new_order_status = 'cancelled';

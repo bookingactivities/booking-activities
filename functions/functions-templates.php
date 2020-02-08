@@ -184,7 +184,7 @@ function bookacti_get_editor_booking_system_data( $atts, $template_id ) {
 	
 	
 	/**
-	 * Get additionnal calendar fields default data
+	 * Get additional calendar fields default data
 	 * @since 1.5.0
 	 * @param array $fields
 	 * @return array

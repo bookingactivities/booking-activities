@@ -7,7 +7,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 /**
  * Display the form field 'calendar'
  * @since 1.5.0
- * @version 1.7.17
+ * @version 1.7.18
  * @param array $field
  * @param string $instance_id
  * @param string $context
@@ -16,18 +16,6 @@ function bookacti_display_form_field_calendar( $field, $instance_id, $context ) 
 	// Do not keep ID and class (already used for the container)
 	$field[ 'id' ] = $instance_id; 
 	$field[ 'class' ] = '';
-	
-	// Check if an event / group of events is picked by default
-	if( isset( $_REQUEST[ 'bookacti_event_id' ] ) )		{ $field[ 'picked_events' ][ 'event_id' ]		= is_numeric( $_REQUEST[ 'bookacti_event_id' ] ) ? intval( $_REQUEST[ 'bookacti_event_id' ] ) : ''; }
-	if( isset( $_REQUEST[ 'event_id' ] ) )				{ $field[ 'picked_events' ][ 'event_id' ]		= is_numeric( $_REQUEST[ 'event_id' ] ) ? intval( $_REQUEST[ 'event_id' ] ) : ''; }
-	if( isset( $_REQUEST[ 'bookacti_event_start' ] ) )	{ $field[ 'picked_events' ][ 'event_start' ]	= bookacti_sanitize_datetime( $_REQUEST[ 'bookacti_event_start' ] ); }
-	if( isset( $_REQUEST[ 'event_start' ] ) )			{ $field[ 'picked_events' ][ 'event_start' ]	= bookacti_sanitize_datetime( $_REQUEST[ 'event_start' ] ); }
-	if( isset( $_REQUEST[ 'bookacti_event_end' ] ) )	{ $field[ 'picked_events' ][ 'event_end' ]		= bookacti_sanitize_datetime( $_REQUEST[ 'bookacti_event_end' ] ); }
-	if( isset( $_REQUEST[ 'event_end' ] ) )				{ $field[ 'picked_events' ][ 'event_end' ]		= bookacti_sanitize_datetime( $_REQUEST[ 'event_end' ] ); }
-	if( isset( $_REQUEST[ 'bookacti_group_id' ] ) )  	{ $field[ 'picked_events' ][ 'group_id' ]		= is_numeric( $_REQUEST[ 'bookacti_group_id' ] ) ? intval( $_REQUEST[ 'bookacti_group_id' ] ) : ''; }
-	if( isset( $_REQUEST[ 'event_group_id' ] ) )		{ $field[ 'picked_events' ][ 'group_id' ]		= is_numeric( $_REQUEST[ 'event_group_id' ] ) ? intval( $_REQUEST[ 'event_group_id' ] ) : ''; }
-	if(  is_numeric( $field[ 'picked_events' ][ 'event_id' ] ) 
-	&& ! is_numeric( $field[ 'picked_events' ][ 'group_id' ] ) ) { $field[ 'picked_events' ][ 'group_id' ] = 'single'; }
 	
 	// Do not auto load on form editor
 	// So that if a JS error occurs, you can still change the calendar settings and try to fix it
@@ -963,8 +951,95 @@ add_action( 'wp_ajax_bookactiUpdateForm', 'bookacti_controller_update_form' );
 
 
 /**
+ * Duplicate a booking form
+ * @since 1.7.18
+ */
+function bookacti_controller_duplicate_form() {
+	if( empty( $_REQUEST[ 'form_id' ] ) || empty( $_REQUEST[ 'action' ] ) || empty( $_REQUEST[ 'page' ] ) 
+		|| $_REQUEST[ 'page' ] !== 'bookacti_forms' 
+		|| ! is_numeric( $_REQUEST[ 'form_id' ] )
+		|| $_REQUEST[ 'action' ] !== 'duplicate' ) { return; }
+	
+	$notice = array( 'type' => 'error', 'message' => '' );
+	$original_form_id = intval( $_REQUEST[ 'form_id' ] );
+	
+	// Check nonces
+	if( ! wp_verify_nonce( $_REQUEST[ '_wpnonce' ], 'duplicate-form_' . $original_form_id ) ) {
+		$notice[ 'message' ] = esc_html__( 'You are not allowed to do that.', 'booking-activities' );
+		bookacti_display_admin_notice( $notice, 'duplicate_form' );
+		return;
+	}
+	
+	// Check permissions
+	if( ! current_user_can( 'bookacti_create_forms' ) || ! current_user_can( 'bookacti_edit_forms' ) || ! bookacti_user_can_manage_form( $original_form_id ) ) {
+		$notice[ 'message' ] = esc_html__( 'You are not allowed to do that.', 'booking-activities' );
+		bookacti_display_admin_notice( $notice, 'duplicate_form' );
+		return;
+	}
+	
+	// Gget original form data
+	$original_form_data = bookacti_get_form_data( $original_form_id );
+	if( ! $original_form_data ) {
+		$notice[ 'message' ] = esc_html__( 'An error occured while trying to duplicate a booking form.', 'booking-activities' );
+		bookacti_display_admin_notice( $notice, 'duplicate_form' );
+		return;
+	}
+	
+	// Duplicate the form
+	/* translators: %s is the original title */
+	$form_title = sprintf( esc_html__( '%s - Copy', 'booking-activities' ), $original_form_data[ 'title' ] );
+	$form_id = bookacti_create_form( $form_title, 'publish', 1, array( 'none' ) );
+	if( ! $form_id ) {
+		$notice[ 'message' ] = esc_html__( 'Error occurs when trying to create the form.', 'booking-activities' );
+		bookacti_display_admin_notice( $notice, 'duplicate_form' );
+		return;
+	}
+	
+	// Update form managers
+	$original_form_managers = bookacti_get_managers( 'form', $original_form_id );
+	bookacti_update_managers( 'form', $form_id, $original_form_managers );
+	
+	// Duplicate the fields
+	$field_order = array();
+	$original_fields = bookacti_get_form_fields_data( $original_form_id );
+	$default_form_fields_meta = bookacti_get_default_form_fields_meta();
+	if( $original_fields ) {
+		$original_fields_ordered = bookacti_sort_form_fields_array( $original_form_id, $original_fields );
+		foreach( $original_fields_ordered as $original_field ) {
+			// Duplicate field
+			$sanitized_data	= bookacti_sanitize_form_field_data( $original_field );
+			$field_id = bookacti_insert_form_field( $form_id, $sanitized_data );
+			if( ! $field_id ) { continue; }
+			$field_order[] = $field_id;
+					
+			// Duplicate field meta
+			$field_meta		= ! empty( $default_form_fields_meta[ $original_field[ 'name' ] ] ) ? array_intersect_key( $sanitized_data, $default_form_fields_meta[ $original_field[ 'name' ] ] ) : array();
+			if( ! $field_meta ) { continue; }
+			bookacti_update_metadata( 'form_field', $field_id, $field_meta );
+		}
+	}
+	
+	// Duplicate form meta
+	$sanitized_data	= bookacti_sanitize_form_data( $original_form_data );
+	$form_meta		= array_intersect_key( $sanitized_data, bookacti_get_default_form_meta() );
+	if( $field_order ) { $form_meta[ 'field_order' ] = $field_order; }
+	bookacti_update_metadata( 'form', $form_id, $form_meta );
+	
+	// Allow plugins to hook here
+	do_action( 'bookacti_form_duplicated', $form_id, $original_form_id );
+	
+	// Feedback success
+	$notice[ 'type' ] = 'success';
+	$notice[ 'message' ] = esc_html__( 'The booking form has been duplicated.', 'booking-activities' );
+	bookacti_display_admin_notice( $notice, 'duplicate_form' );
+}
+add_action( 'all_admin_notices', 'bookacti_controller_duplicate_form', 10 );
+
+
+/**
  * Trash / Remove / Restore a booking form according to URL parameters and display an admin notice to feedback
  * @since 1.5.0
+ * @version 1.7.18
  */
 function bookacti_controller_remove_form() {
 	if( empty( $_REQUEST[ 'form_id' ] ) || empty( $_REQUEST[ 'action' ] ) || empty( $_REQUEST[ 'page' ] ) 
@@ -972,33 +1047,24 @@ function bookacti_controller_remove_form() {
 		|| ! is_numeric( $_REQUEST[ 'form_id' ] )
 		|| ! in_array( $_REQUEST[ 'action' ], array( 'trash', 'restore', 'delete' ), true ) ) { return; }
 	
+	$notice = array( 'type' => 'error', 'message' => '' );
 	$form_id = intval( $_REQUEST[ 'form_id' ] );
+	$action = $_REQUEST[ 'action' ] . '_form';
 	
 	// Check nonces
 	if( ! wp_verify_nonce( $_REQUEST[ '_wpnonce' ], $_REQUEST[ 'action' ] . '-form_' . $form_id ) ) {
-	?>
-		<div class='notice notice-error is-dismissible bookacti-form-notice' >
-			<p>
-				<?php _e( 'You are not allowed to do that.', 'booking-activities' ); ?>
-			</p>
-		</div>
-	<?php
+		$notice[ 'message' ] = esc_html__( 'You are not allowed to do that.', 'booking-activities' );
+		bookacti_display_admin_notice( $notice, $action );
 		return;
 	}
 	
 	// Remove a booking form
 	if( $_REQUEST[ 'action' ] === 'trash' || $_REQUEST[ 'action' ] === 'delete' ) {
-		
 		// Check if current user is allowed to remove the booking form
 		$can_delete_form = current_user_can( 'bookacti_delete_forms' ) && bookacti_user_can_manage_form( $form_id );
 		if( ! $can_delete_form ) {
-		?>
-			<div class='notice notice-error is-dismissible bookacti-form-notice' >
-				<p>
-					<?php _e( 'You are not allowed to remove a booking form.', 'booking-activities' ); ?>
-				</p>
-			</div>
-		<?php
+			$notice[ 'message' ] = esc_html__( 'You are not allowed to remove a booking form.', 'booking-activities' );
+			bookacti_display_admin_notice( $notice, $action );
 			return;
 		}
 		
@@ -1011,69 +1077,41 @@ function bookacti_controller_remove_form() {
 			$removed = bookacti_delete_form( $form_id );
 		}
 		
-		// Feedback success
 		if( $removed ) {
 			do_action( 'bookacti_form_removed', $form_id );
-		?>
-			<div class='notice notice-success is-dismissible bookacti-form-notice' >
-				<p>
-					<?php _e( 'The booking form has been removed.', 'booking-activities' ); ?>
-				</p>
-			</div>
-		<?php
-		
-		// Feedback failure
+			
+			$notice[ 'type' ] = 'success';
+			$notice[ 'message' ] = esc_html__( 'The booking form has been removed.', 'booking-activities' );
 		} else {
-		?>
-			<div class='notice notice-error is-dismissible bookacti-form-notice' >
-				<p>
-					<?php _e( 'An error occured while trying to delete a booking form.', 'booking-activities' ); ?>
-				</p>
-			</div>
-		<?php
+			$notice[ 'message' ] = esc_html__( 'An error occured while trying to delete a booking form.', 'booking-activities' );
 		}
 	}
 	
 	// Restore a booking form
 	else if( $_REQUEST[ 'action' ] === 'restore' ) {
-		
 		// Check if current user is allowed to restore the booking form
 		$can_edit_form = current_user_can( 'bookacti_edit_forms' );
 		if( ! $can_edit_form ) {
-		?>
-			<div class='notice notice-error is-dismissible bookacti-form-notice' >
-				<p>
-					<?php _e( 'You are not allowed to restore a booking form.', 'booking-activities' ); ?>
-				</p>
-			</div>
-		<?php
+			$notice[ 'message' ] = esc_html__( 'You are not allowed to restore a booking form.', 'booking-activities' );
+			bookacti_display_admin_notice( $notice, $action );
 			return;
 		}
 		
 		$restored = bookacti_activate_form( $form_id );
 		
-		// Feedback success
 		if( $restored ) {
 			do_action( 'bookacti_form_restored', $form_id );
-		?>
-			<div class='notice notice-success is-dismissible bookacti-form-notice' >
-				<p>
-					<?php _e( 'The booking form has been restored.', 'booking-activities' ); ?>
-				</p>
-			</div>
-		<?php
+			
+			$notice[ 'type' ] = 'success';
+			$notice[ 'message' ] = esc_html__( 'The booking form has been restored.', 'booking-activities' );
 		
-		// Feedback failure
 		} else {
-		?>
-			<div class='notice notice-error is-dismissible bookacti-form-notice' >
-				<p>
-					<?php _e( 'An error occured while trying to restore a booking form.', 'booking-activities' ); ?>
-				</p>
-			</div>
-		<?php
+			$notice[ 'message' ] = esc_html__( 'An error occured while trying to restore a booking form.', 'booking-activities' );
 		}
 	}
+	
+	// Feedback
+	bookacti_display_admin_notice( $notice, $action );
 }
 add_action( 'all_admin_notices', 'bookacti_controller_remove_form', 10 );
 
@@ -1427,13 +1465,13 @@ add_filter( 'bookacti_send_json_reset_form_field', 'bookacti_send_booking_system
 
 /**
  * Add the "Export" action to the "Calendar" field in form editor
- * @version 1.6.0
+ * @version 1.7.18
  * @param array $field
  */
 function bookacti_add_export_action_to_calendar_field( $field ) {
 	if( $field[ 'name' ] !== 'calendar' ) { return; }
 	?>
-	<div class='bookacti-form-editor-field-action bookacti-export-events dashicons dashicons-external' title='<?php esc_attr_e( 'Export events', 'booking-activities' ); ?>'></div>
+	<div id='bookacti-export-events-form-field-<?php echo esc_attr( $field[ 'field_id' ] ); ?>' class='bookacti-form-editor-field-action bookacti-export-events dashicons dashicons-external' title='<?php esc_attr_e( 'Export events', 'booking-activities' ); ?>'></div>
 	<?php
 }
 add_action( 'bookacti_form_editor_field_actions_after', 'bookacti_add_export_action_to_calendar_field', 10, 1 );

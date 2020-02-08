@@ -66,16 +66,18 @@ function bookacti_fetch_events( booking_system, interval ) {
 
 /**
  * Reload a booking system
- * @version 1.7.14
+ * @version 1.7.18
  * @param {dom_element} booking_system
  * @param {boolean} keep_picked_events
  */
 function bookacti_reload_booking_system( booking_system, keep_picked_events ) {
 	keep_picked_events = keep_picked_events || false;
 	
-	var booking_system_id	= booking_system.attr( 'id' );
-	var attributes			= $j.extend( true, {}, bookacti.booking_system[ booking_system_id ] );
-	var picked_events		= keep_picked_events ? attributes.picked_events : [];
+	var booking_system_id		= booking_system.attr( 'id' );
+	var original_attributes		= $j.extend( true, {}, bookacti.booking_system[ booking_system_id ] );
+	var attributes				= $j.extend( true, {}, bookacti.booking_system[ booking_system_id ] );
+	var picked_events			= keep_picked_events ? attributes.picked_events : [];
+	var rescheduled_booking_data= typeof attributes.rescheduled_booking_data !== 'undefined' ? attributes.rescheduled_booking_data : [];
 	
 	// Do not send useless data
 	delete attributes[ 'events' ];
@@ -87,6 +89,7 @@ function bookacti_reload_booking_system( booking_system, keep_picked_events ) {
 	delete attributes[ 'groups_data' ];
 	delete attributes[ 'group_categories_data' ];
 	delete attributes[ 'picked_events' ];
+	delete attributes[ 'rescheduled_booking_data' ];
 	
 	bookacti_start_loading_booking_system( booking_system );
 	
@@ -99,10 +102,8 @@ function bookacti_reload_booking_system( booking_system, keep_picked_events ) {
 			'is_admin': bookacti_localized.is_admin
 		},
         dataType: 'json',
-        success: function( response ){
-			
+        success: function( response ) {
 			if( response.status === 'success' ) {
-				
 				// Clear booking system
 				booking_system.empty();
 				bookacti_clear_booking_system_displayed_info( booking_system, keep_picked_events );
@@ -110,16 +111,18 @@ function bookacti_reload_booking_system( booking_system, keep_picked_events ) {
 				// Update events and settings
 				bookacti.booking_system[ booking_system_id ] = response.booking_system_data;
 				bookacti.booking_system[ booking_system_id ][ 'picked_events' ] = picked_events;
+				if( rescheduled_booking_data ) {
+					bookacti.booking_system[ booking_system_id ][ 'rescheduled_booking_data' ] = rescheduled_booking_data;
+				}
 				
 				// Fill the booking method elements
 				booking_system.append( response.html_elements );
 				
 				// Trigger action for plugins
-				booking_system.trigger( 'bookacti_booking_system_reloaded' );
+				booking_system.trigger( 'bookacti_booking_system_reloaded', original_attributes );
 				
 				// Load the booking method
 				bookacti_booking_method_set_up( booking_system );
-				
 				
 			} else {
 				var error_message = bookacti_localized.error_reload_booking_system;
@@ -921,7 +924,7 @@ function bookacti_get_event_availability( booking_system, event ) {
 
 /**
  * Check if an event is event available
- * @verion 1.7.17
+ * @version 1.7.18
  * @param {dom_element} booking_system
  * @param {object} event
  * @returns {boolean}
@@ -930,7 +933,10 @@ function bookacti_is_event_available( booking_system, event ) {
 	var booking_system_id	= booking_system.attr( 'id' );
 	var past_events			= bookacti.booking_system[ booking_system_id ][ 'past_events' ];
 	var past_events_bookable= bookacti.booking_system[ booking_system_id ][ 'past_events_bookable' ];
-	var current_time		= moment.utc( bookacti_localized.current_time );
+	
+	var current_time	= moment.utc( bookacti_localized.current_time );
+	var event_start		= moment.utc( event.start ).clone();
+	var event_end		= moment.utc( event.end ).clone();
 	
 	var availability		= bookacti_get_event_availability( booking_system, event );
 	var availability_period	= bookacti_get_availability_period( booking_system );
@@ -943,9 +949,26 @@ function bookacti_is_event_available( booking_system, event ) {
 	var is_in_group				= $j.isArray( group_ids ) && group_ids.length > 0;
 	var groups_single_events	= bookacti.booking_system[ booking_system_id ][ 'groups_single_events' ];
 	
-	// If the event is part of a group (and not bookable alone) on the reschedule calendar, it cannot be available
-	if( booking_system_id === 'bookacti-booking-system-reschedule' && is_in_group && ! groups_single_events ) {
-		return false;
+	// On the reschedule calendar
+	if( booking_system_id === 'bookacti-booking-system-reschedule' ) {
+		// If the event is part of a group (and not bookable alone), it cannot be available
+		if( is_in_group && ! groups_single_events ) { return false; }
+		
+		var rescheduled_booking_data = typeof bookacti.booking_system[ booking_system_id ][ 'rescheduled_booking_data' ] !== 'undefined' ? bookacti.booking_system[ booking_system_id ][ 'rescheduled_booking_data' ] : [];
+		
+		// Don't display self event
+		if( typeof rescheduled_booking_data.event_id !== 'undefined'
+		&&  typeof rescheduled_booking_data.event_start !== 'undefined'
+		&&  typeof rescheduled_booking_data.event_end !== 'undefined' ) {
+			if( rescheduled_booking_data.event_id == event.id
+			&&  rescheduled_booking_data.event_start === event_start.format( 'YYYY-MM-DD HH:mm:ss' )
+			&&  rescheduled_booking_data.event_end === event_end.format( 'YYYY-MM-DD HH:mm:ss' ) ) { return false; }
+		}
+
+		// Don't display event if it hasn't enough availability
+		if( typeof rescheduled_booking_data.quantity !== 'undefined' ) {
+			if( parseInt( rescheduled_booking_data.quantity ) > availability ) { return false; }
+		}
 	}
 	
 	// Single events
@@ -955,8 +978,6 @@ function bookacti_is_event_available( booking_system, event ) {
 		var is_past = false;
 		if( past_events ) {
 			// Check if the event is past
-			var event_start	= moment.utc( event.start ).clone();
-			var event_end	= moment.utc( event.end ).clone();
 			if( ! past_events_bookable && event_start.isBefore( current_time ) 
 			&& ! ( bookacti_localized.started_events_bookable && event_end.isAfter( current_time ) ) ) {
 				is_past = true;

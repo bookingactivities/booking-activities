@@ -41,22 +41,25 @@ body.booking-activities_page_bookacti_forms label[for='bookacti_form_publish-hid
 .bookacti-form-editor-field-header		{ display: flex; justify-content: space-between; border-bottom: 1px solid #e5e5e5; transition: max-height 0.2s; }
 .bookacti-form-editor-field-title		{ cursor: move; margin: 1em; margin-right: 0; width: 100%; text-align: left; }
 .bookacti-form-editor-field-header h3	{ display: inline-block; vertical-align: middle; margin: 0; padding: 0; }
-.bookacti-form-editor-field-actions		{ margin: 1em; white-space: nowrap; }
+.bookacti-form-editor-field-actions		{ margin: 1em; white-space: nowrap; position: relative; }
 .bookacti-form-editor-field-body		{ padding: 1em; }
 .bookacti-form-editor-field-placeholder { display: block; min-height: 47px; width: 100%; border: 1px dashed #b4b9be; margin: 1em 0; }
 #bookacti-form-editor-actions > *,
 .bookacti-form-editor-field-actions > *				{ display: inline-block; vertical-align: middle; color: #565d61; cursor: pointer; }
-#bookacti-form-editor-actions > *:hover,
-.bookacti-form-editor-field-actions > *:hover,
-#bookacti-form-editor-container .dashicons-plus-alt	{ color: #418fb6; }
-#bookacti-form-editor-container .dashicons-plus-alt	{ transition: all 0.2s; }
-#bookacti-insert-form-field:hover					{ font-size: 32px; height: 32px; width: 32px; margin-right: -6px; transition: all 0.2s; }
+#bookacti-form-editor-actions > .button,
+.bookacti-form-editor-field-actions > .button		{ vertical-align: middle; }
+#bookacti-form-editor-actions > .button-secondary,
+.bookacti-form-editor-field-actions > .button-secondary	{ color: #0071a1; }
 
 .bookacti-form-editor-field-header .bookacti-wc-icon-not-supported	{ display: inline-block; vertical-align: middle; margin-right: 20px; font-weight: normal; }
 #bookacti-form-editor .bookacti-addon-promo			{ text-align: left; }
 
 .bookacti-form-action-wc-notice			{ color: #f89b2f; }
 .bookacti-form-action-wc-notice:before	{ content: '\26A0  '; }
+
+#bookacti-insert-form-field			{ padding-left: 6px; }
+#bookacti-insert-form-field:before	{ content: '\f132'; font: 400 20px dashicons; margin-right: 4px; vertical-align: middle; }
+.bookacti-form-field-name-calendar .bookacti-edit-form-field:before	{ content: '\f111'; font: 400 20px dashicons; margin-right: 4px; vertical-align: sub; }
 
 
 /* Dialogs */

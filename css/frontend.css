@@ -7,5 +7,13 @@
 .bookacti-booking-system-calendar-only .bookacti-booking-system-title,
 .bookacti-booking-system-calendar-only .bookacti-picked-events { display: none !important; }
 
-.bookacti-user-booking-list-previous-page	{ margin-right: 10px }
-.bookacti-user-booking-list-next-page		{ margin-left: 10px }
+.bookacti-user-booking-list-previous-page,
+.bookacti-user-booking-list-current-page,
+.bookacti-user-booking-list-next-page				{ display: inline-block; vertical-align: middle; line-height: 1em; }
+.bookacti-user-booking-list-previous-page			{ margin-right: 10px; }
+.bookacti-user-booking-list-next-page				{ margin-left: 10px; }
+.bookacti-user-booking-list-page-counter,
+.bookacti-user-booking-list-total-bookings			{ display: block; text-align: center; }
+.bookacti-user-booking-list-total-bookings			{ font-size: 0.7em; margin-top: 3px; }
+.bookacti-user-booking-list-total-bookings:before	{ content: '('; }
+.bookacti-user-booking-list-total-bookings:after	{ content: ')'; }

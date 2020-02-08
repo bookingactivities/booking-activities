@@ -11,7 +11,7 @@ $messages = bookacti_get_messages();
 
 /**
  * Fill the translation array to use it in js 
- * @version 1.7.16
+ * @version 1.7.18
  */
 $bookacti_translation_array = apply_filters( 'bookacti_translation_array', array(
 	// BUTTONS
@@ -108,7 +108,6 @@ $bookacti_translation_array = apply_filters( 'bookacti_translation_array', array
 	/* translators: It is the message displayed to users if no bookings were found for a given event. */
 	'error_no_bookings'					=> esc_html__( 'No bookings.', 'booking-activities' ),
 	'error_retrieve_booking_system'		=> esc_html__( 'Error occurs while trying to retrieve booking system.', 'booking-activities' ),
-	'error_switch_booking_method'		=> esc_html__( 'Error occurs while trying to switch booking method.', 'booking-activities' ),
 	'error_reload_booking_system'		=> esc_html__( 'Error occurs while trying to reload booking system.', 'booking-activities' ),
 	'error_update_settings'				=> esc_html__( 'Error occurs while trying to update settings.', 'booking-activities' ),
 	'error_not_allowed'					=> esc_html__( 'You are not allowed to do that.', 'booking-activities' ),

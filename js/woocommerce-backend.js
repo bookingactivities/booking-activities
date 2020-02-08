@@ -21,9 +21,13 @@ $j( document ).ready( function() {
 	
 	/**
 	 * Show or hide the activity tab on product page in the backend
+	 * @version 1.7.18
 	 */
-	$j( '.type_box select, .type_box input' ).on( 'change', function(){ 
+	$j( '#product-type, ._bookacti_is_activity' ).on( 'change', function() {
 		bookacti_show_hide_activity_tab();
+		if( $j( '#_bookacti_is_activity' ).is( ':checked' ) && ! $j( '#_virtual' ).is( ':checked' ) ) {
+			$j( '#_virtual' ).prop( 'checked', true ).trigger( 'change' );
+		}
 	});
 	bookacti_show_hide_activity_tab();
 	
@@ -70,10 +74,16 @@ $j( document ).ready( function() {
 	
 	/**
 	 * Show or hide activity fields on variation page in the backend on change
+	 * @version 1.7.18
 	 */
 	$j( '#woocommerce-product-data' ).on( 'change', '.bookacti_variable_is_activity', function(){ 
 		bookacti_show_hide_activity_variation_fields( this );
+		var virtual_cb = $j( this ).closest( '.options' ).find( '.variable_is_virtual' );
+		if( $j( this ).is( ':checked' ) && ! virtual_cb.is( ':checked' ) ) {
+			virtual_cb.prop( 'checked', true ).trigger( 'change' );
+		}
 	});
+	
 	
 	/** START BACKWARD COMPATIBILITY < 1.5 **/
 	$j( '#woocommerce-product-data' ).on( 'change', '.bookacti_variable_template', function(){ 
@@ -83,18 +93,6 @@ $j( document ).ready( function() {
 		bookacti_show_hide_template_related_options_deprecated( template_ids, options );
 	});
 	/** END BACKWARD COMPATIBILITY < 1.5 **/
-	
-	
-	/**
-	 * Force virtual on activities variations
-	 */
-	$j( '#woocommerce-product-data' ).on( 'change', '.variable_is_virtual', function(){ 
-		if( $j( this ).parents( '.options' ).find( '.bookacti_variable_is_activity' ).is( ':checked' ) ) {
-			if( ! $j( this ).is( ':checked' ) ) {
-				$j( this ).prop( 'checked', true ).trigger( 'change' );
-			}
-		}
-	});
 	
 	
 	/**
@@ -211,7 +209,7 @@ $j( document ).ready( function() {
 
 /**
  * Show or hide the activity tab on product page in the backend
- * @version 1.7.8
+ * @version 1.7.18
  */
 function bookacti_show_hide_activity_tab() {
 	$j( '.bookacti_show_if_activity' ).hide();
@@ -219,16 +217,11 @@ function bookacti_show_hide_activity_tab() {
 	if( $j( '#_bookacti_is_activity' ).is( ':checked' ) ) {
 		if( $j( 'label[for="_bookacti_is_activity"]' ).is( ':visible' ) ) {
 			$j( '.bookacti_show_if_activity' ).show();
-			
-			if( ! $j( '#_virtual' ).is( ':checked' ) ) {
-				$j( '#_virtual' ).prop( 'checked', true ).trigger( 'change' );
-			}
 		}
 		$j( '.bookacti_hide_if_activity' ).hide();
 		
 	} else {
 		$j( '.bookacti_hide_if_activity' ).show();
-		
 		if( $j( '#_virtual' ).is( ':checked' ) ) {
 			$j( '.bookacti_hide_if_activity.hide_if_virtual' ).hide();
 		}
@@ -238,33 +231,25 @@ function bookacti_show_hide_activity_tab() {
 
 /**
  * Show or hide activity fields on variation page in the backend
+ * @version 1.7.18
  * @param {dom_element} checkbox
  */
 function bookacti_show_hide_activity_variation_fields( checkbox ) {
+	checkbox = checkbox || null;
 	
-	checkbox = checkbox || undefined;
-	
-	if( checkbox === undefined ) {
-		
+	if( ! checkbox ) {
 		$j( '.show_if_variation_activity' ).hide();
-		
 		$j( '.bookacti_variable_is_activity' ).each( function() {
 			if( $j( this ).is( ':checked' ) ) {
-				$j( this ).parents( '.woocommerce_variation' ).find( '.show_if_variation_activity' ).show();
+				$j( this ).closest( '.woocommerce_variation' ).find( '.show_if_variation_activity' ).show();
 			} 
 		});
 		
 	} else {
-		
 		if( $j( checkbox ).is( ':checked' ) ) {
-			$j( checkbox ).parents( '.woocommerce_variation' ).find( '.show_if_variation_activity' ).show();
-			
-			if( ! $j( checkbox ).parents( '.options' ).find( '.variable_is_virtual' ).is( 'checked' ) ) {
-				$j( checkbox ).parents( '.options' ).find( '.variable_is_virtual' ).prop( 'checked', true ).trigger( 'change' );
-			}
-			
+			$j( checkbox ).closest( '.woocommerce_variation' ).find( '.show_if_variation_activity' ).show();
 		} else {
-			$j( checkbox ).parents( '.woocommerce_variation' ).find( '.show_if_variation_activity' ).hide();
+			$j( checkbox ).closest( '.woocommerce_variation' ).find( '.show_if_variation_activity' ).hide();
 		}
 	}
 }
