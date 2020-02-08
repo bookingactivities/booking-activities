@@ -4,19 +4,14 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 /**
  * Send one notification per booking to admin and customer when an order contining bookings is made or when its status changes
- *
  * @since 1.2.2
- * @version 1.7.0
+ * @version 1.7.18
  * @param WC_Order $order
  * @param string $new_status
  * @param array $args
  */
 function bookacti_send_notification_when_order_status_changes( $order, $new_status, $args = array() ) {
-
-	if( is_numeric( $order ) ) {
-		$order = wc_get_order( $order );
-	}
-	
+	if( is_numeric( $order ) ) { $order = wc_get_order( $order ); }
 	if( ! $order ) { return; }
 	
 	$action = isset( $_REQUEST[ 'action' ] ) ? $_REQUEST[ 'action' ] : '';
@@ -42,28 +37,29 @@ function bookacti_send_notification_when_order_status_changes( $order, $new_stat
 	$order_status = $order->get_status();
 	if( ( $order_status === 'pending' && $new_status === 'pending' )
 	||  ( $order_status === 'failed' && $new_status === 'cancelled' ) ) { return; }
-
+	
 	$order_items = $order->get_items();
 	if( ! $order_items ) { return; }
-
+	
+	$in__booking_id			= ! empty( $args[ 'booking_ids' ] ) ? $args[ 'booking_ids' ] : array();
+	$in__booking_group_id	= ! empty( $args[ 'booking_group_ids' ] ) ? $args[ 'booking_group_ids' ] : array();
+	
 	foreach( $order_items as $order_item_id => $item ) {
-		
 		// Check if the order item is a booking, or skip it
 		if( ! $item || ( ! isset( $item[ 'bookacti_booking_id' ] ) && ! isset( $item[ 'bookacti_booking_group_id' ] ) ) ) { continue; }
+		
+		// Make sure the booking is part of those updated
+		if( isset( $item[ 'bookacti_booking_id' ] ) && ( $in__booking_id || $in__booking_group_id ) && ! in_array( $item[ 'bookacti_booking_id' ], $in__booking_id ) ) { continue; }
+		if( isset( $item[ 'bookacti_booking_group_id' ] ) && ( $in__booking_id || $in__booking_group_id ) && ! in_array( $item[ 'bookacti_booking_group_id' ], $in__booking_group_id ) ) { continue; }
 		
 		// If the state hasn't changed, do not send the notifications, unless it is a new order
 		$old_status = isset( $args[ 'old_status' ] ) && $args[ 'old_status' ] ? $args[ 'old_status' ] : wc_get_order_item_meta( $order_item_id, 'bookacti_state', true );
 		if( $old_status === $new_status && empty( $args[ 'is_new_order' ] ) ) { continue; }
 		
 		// Get booking ID and booking type ('single' or 'group')
-		if( isset( $item[ 'bookacti_booking_id' ] ) ) {
-			$booking_id		= $item[ 'bookacti_booking_id' ];
-			$booking_type	= 'single';
-		}
-		else if( isset( $item[ 'bookacti_booking_group_id' ] ) ) {
-			$booking_id		= $item[ 'bookacti_booking_group_id' ];
-			$booking_type	= 'group';
-		}
+		$booking_id		= isset( $item[ 'bookacti_booking_id' ] ) ? $item[ 'bookacti_booking_id' ] : ( isset( $item[ 'bookacti_booking_group_id' ] ) ? $item[ 'bookacti_booking_group_id' ] : 0 );
+		$booking_type	= isset( $item[ 'bookacti_booking_id' ] ) ? 'single' : ( isset( $item[ 'bookacti_booking_group_id' ] ) ? 'group' : '' );
+		if( ! $booking_id || ! $booking_type ) { continue; }
 		
 		// Send a booking confirmation to the customer
 		if( $notify_customer ) {
@@ -77,20 +73,6 @@ function bookacti_send_notification_when_order_status_changes( $order, $new_stat
 	}
 }
 add_action( 'bookacti_order_bookings_state_changed', 'bookacti_send_notification_when_order_status_changes', 10, 3 );
-
-
-/**
- * Send notifications when a new order is made but stays in a pending state
- * 
- * @since 1.2.2
- * @param int $order_id
- * @param WC_Order $order
- */
-function bookacti_send_notification_when_new_order_is_pending( $order_id, $order = null ) {
-	bookacti_send_notification_when_order_status_changes( $order_id, 'pending', array( 'is_new_order' => true ) );
-}
-add_action( 'woocommerce_order_status_pending_to_processing', 'bookacti_send_notification_when_new_order_is_pending', 20, 2 );
-add_action( 'woocommerce_order_status_pending_to_on-hold', 'bookacti_send_notification_when_new_order_is_pending', 20, 2 );
 
 
 /**

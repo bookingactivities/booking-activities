@@ -5,7 +5,7 @@ Tags: booking, reservation, booking form, woocommerce booking, booking events
 Requires at least: 3.6
 Tested up to: 5.3
 Requires PHP: 5.3
-Stable tag: 1.7.17
+Stable tag: 1.7.18
 License: GPLv3 or later
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
 
@@ -319,8 +319,9 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 
 == Changelog ==
 
-= 1.7.18 =
+= 1.7.18 - 2020/02/08 =
 * Tweak - Add an option to duplicate booking forms
+* Tweak - Activity WooCommerce products are no longer forced to virtual
 * Tweak - Reschedule: display events as unavailable if their availability is insufficient
 * Tweak - Calendar editor: Automatically fill the calendar settings if the duplicated calendar is the current one
 * Tweak - Disambiguation in calendar editor's calendar settings dialog
@@ -328,6 +329,7 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 * Tweak - Display user names in user selectbox as a fallback (in backend booking list filter)
 * Tweak - Fallback to WooCommerce user data to display in user selectbox (in backend booking list filter)
 * Tweak - Display WC cart form as block instead of flex with Elementor
+* Tweak - Display Pack tooltip is now displayed on unavailable events on mouseover
 * Fix - Booking numbers not updated on events after changing booking quantity (needed a page reload)
 * Fix - Tooltip disappeared after updating a booking
 * Fix - Couldn't bind the same product to different activities in Calendar field, Action tab

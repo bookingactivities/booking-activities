@@ -103,7 +103,7 @@
 /* Events */
 .bookacti-calendar .fc-event	{ overflow: hidden; }
 .bookacti-calendar .fc-event:not(.bookacti-event-unavailable) { cursor: pointer; }
-.bookacti-event-unavailable		{ opacity: 0.5; pointer-events: none; z-index: -1 !important; }
+.bookacti-event-unavailable		{ opacity: 0.5; z-index: -1 !important; }
 .bookacti-picked-event .fc-bg	{ opacity: 0.5; transition: opacity 0.2s; }
 .bookacti-picked-event			{ border-width: 2px; z-index: 15 !important; transition: border 0.2s; }
 

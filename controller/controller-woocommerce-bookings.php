@@ -237,16 +237,14 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	
 	
 	/**
-	 * Turn paid order status to complete if the order has only activities
-	 * 
-	 * @version 1.5.8
+	 * Turn paid order status to complete if the order has only virtual activities
+	 * @version 1.7.18
 	 * @param string $order_status
 	 * @param int $order_id
 	 * @return string
 	 */
 	function bookacti_set_order_status_to_completed_after_payment( $order_status, $order_id ) {
-		
-		if( ! in_array( $order_status, array( 'processing', 'pending' ), true ) ) { return $order_status; }
+		if( ! in_array( $order_status, array( 'completed', 'processing', 'pending' ), true ) ) { return $order_status; }
 
 		$order = wc_get_order( $order_id );
 		if( empty( $order ) ) { return $order_status; }
@@ -262,21 +260,33 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 				break;
 			}
 		}
-
-		// Check if the order is only composed of activities
+		
+		// Check if the order is only composed of (virtual) activities
 		$are_activities = true;
+		$are_virtual_activities = true;
 		foreach( $items as $item ) {
+			// Is activity
 			if( ! isset( $item[ 'bookacti_booking_id' ] ) && ! isset( $item[ 'bookacti_booking_group_id' ] )  ) {
 				$are_activities = false;
-				break;
+			}
+			
+			// Is virtual
+			$product = $item[ 'variation_id' ] ? wc_get_product( $item[ 'variation_id' ] ) : wc_get_product( $item[ 'product_id' ] );
+			if( $product && ! $product->is_virtual() ) {
+				$are_virtual_activities = false;
 			}
 		}
-
-		// If there are only activities, mark the order as 'completed' and 
+		
+		// If there are only virtual activities, mark the order as 'completed' and 
 		// a function hooked to woocommerce_order_status_completed will mark the activities as 'booked'
-		if( $are_activities ) {
+		if( $are_activities && $are_virtual_activities ) {
 			$order_status = 'completed';
-
+		
+		// If there are only virtual activities, but not virtuals, mark the order as 'processing' and 
+		// mark the activities as 'booked'
+		} else if( $are_activities ) {
+			$order_status = 'processing';
+			
 		// If there are at least one activity in the middle of other products, 
 		// we won't mark the order as 'completed', but we still need to mark the bookings as 'pending' and 'owed'
 		// until the order changes state. At that time the bookings state will be redefined by other hooks
@@ -291,13 +301,12 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	
 	
 	/**
-	 * Turn bookings of a paid order containing non-activity products to booked
-	 * @version 1.6.0
+	 * Turn the bookings bound to order items of a paid order to booked
+	 * @since 1.7.18 (was bookacti_turn_non_activity_order_bookings_to_permanent)
 	 * @param int $order_id
 	 * @param WC_Order $order
 	 */
-	function bookacti_turn_non_activity_order_bookings_to_permanent( $order_id, $order = null ) {
-		
+	function bookacti_turn_paid_order_item_bookings_to_permanent( $order_id, $order = null ) {
 		if( ! $order ) { $order = wc_get_order( $order_id ); }
 		if( ! $order ) { return false; }
 		
@@ -312,31 +321,59 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		// Retrieve bought items
 		$items = $order->get_items();
 		
-		// Check if the order has at least 1 activity
-		$has_activities = false;
+		// Get virtual order item booking ids
+		$virtual_item_booking_ids		= array();
+		$virtual_item_booking_group_ids	= array();
+		$non_virtual_item_booking_ids		= array();
+		$non_virtual_item_booking_group_ids	= array();
 		foreach( $items as $item ) {
-			if( isset( $item[ 'bookacti_booking_id' ] ) || isset( $item[ 'bookacti_booking_group_id' ] ) ) {
-				$has_activities = true;
-				break;
+			// Is activity
+			if( ! isset( $item[ 'bookacti_booking_id' ] ) && ! isset( $item[ 'bookacti_booking_group_id' ] )  ) { continue; }
+			
+			// Is virtual
+			$product = $item[ 'variation_id' ] ? wc_get_product( $item[ 'variation_id' ] ) : wc_get_product( $item[ 'product_id' ] );
+			if( ! $product ) { continue; }
+			if( $product->is_virtual() ) {
+				if( isset( $item[ 'bookacti_booking_id' ] ) )		{ $virtual_item_booking_ids[] = $item[ 'bookacti_booking_id' ]; }
+				if( isset( $item[ 'bookacti_booking_group_id' ] ) ) { $virtual_item_booking_group_ids[] = $item[ 'bookacti_booking_group_id' ]; }
+			} else {
+				if( isset( $item[ 'bookacti_booking_id' ] ) )		{ $non_virtual_item_booking_ids[] = $item[ 'bookacti_booking_id' ]; }
+				if( isset( $item[ 'bookacti_booking_group_id' ] ) ) { $non_virtual_item_booking_group_ids[] = $item[ 'bookacti_booking_group_id' ]; }	
 			}
 		}
 		
-		// Check if the order is only composed of activities
-		$are_activities = true;
-		foreach( $items as $item ) {
-			if( ! isset( $item[ 'bookacti_booking_id' ] ) && ! isset( $item[ 'bookacti_booking_group_id' ] )  ) {
-				$are_activities = false;
-				break;
-			}
-		}
-		
-		// If there are at least one activity in the middle of other products, 
-		// mark the bookings as 'booked' and 'paid'
-		if( ! $are_activities && $has_activities ) {
+		// Allow plugins to change the default booking status of paid non virtual bookings
+		$non_virtual_booking_status = apply_filters( 'bookacti_paid_non_virtual_booking_status', 'booked' );
+		// Turn all order bookings to booked
+		if( $non_virtual_booking_status === 'booked' ) {
 			bookacti_turn_temporary_booking_to_permanent( $order_id, $order, 'booked', 'paid' );
+		
+		} else {
+			$updated_bookings = array( 'booking_ids' => array(), 'booking_group_ids' => array() );
+			// Turn non virtual activities to their permanent booking status
+			if( $non_virtual_item_booking_ids || $non_virtual_item_booking_group_ids ) {
+				$updated_bookings = bookacti_turn_order_bookings_to( $order, $non_virtual_booking_status, 'paid', true, array( 'states_in' => array( 'in_cart', 'pending' ), 'in__booking_id' => $non_virtual_item_booking_ids, 'in__booking_group_id' => $non_virtual_item_booking_group_ids, 'is_new_order' => true ) );
+				if( $updated_bookings && is_numeric( $updated_bookings[ 'updated' ] ) && intval( $updated_bookings[ 'updated' ] ) === 0 ) {
+					$notification_args = array_merge( $updated_bookings, array( 'is_new_order' => true ) );
+					bookacti_send_notification_when_order_status_changes( $order_id, $non_virtual_booking_status, $notification_args );
+				}
+			}
+			
+			// Turn virtual activities to booked in any case
+			if( $virtual_item_booking_ids || $virtual_item_booking_group_ids ) {
+				$updated_virtual_bookings = bookacti_turn_order_bookings_to( $order, 'booked', 'paid', true, array( 'states_in' => array( 'in_cart', 'pending' ), 'in__booking_id' => $virtual_item_booking_ids, 'in__booking_group_id' => $virtual_item_booking_group_ids ) );
+				if( $updated_virtual_bookings ) {
+					$updated_bookings[ 'booking_ids' ]		= array_merge( $updated_bookings[ 'booking_ids' ], $updated_virtual_bookings[ 'booking_ids' ] );
+					$updated_bookings[ 'booking_group_ids' ]= array_merge( $updated_bookings[ 'booking_group_ids' ], $updated_virtual_bookings[ 'booking_group_ids' ] );
+				}
+			}
+			
+			// Remove remaining undesired bookings
+			bookacti_cancel_order_pending_bookings( $order_id, $updated_bookings[ 'booking_ids' ], $updated_bookings[ 'booking_group_ids' ] );
 		}
 	}
-	add_action( 'woocommerce_order_status_pending_to_processing', 'bookacti_turn_non_activity_order_bookings_to_permanent', 5, 2 );
+	add_action( 'woocommerce_order_status_pending_to_processing', 'bookacti_turn_paid_order_item_bookings_to_permanent', 5, 2 );
+	add_action( 'woocommerce_order_status_pending_to_on-hold', 'bookacti_turn_paid_order_item_bookings_to_permanent', 5, 2 );
 
 
 
@@ -925,31 +962,32 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	
 	/**
 	 * Turn order items booking status meta to new status
-	 *
 	 * @since 1.2.0
-	 * @version 1.5.6
-	 * 
+	 * @version 1.7.18
 	 * @param WC_Order $order
 	 * @param string $new_state
 	 * @param array $args
 	 */
 	function bookacti_update_order_items_booking_status_by_order_id( $order, $new_state, $args ) {
-		
-		if( is_numeric( $order ) ) {
-			$order = wc_get_order( $order );
-		}
-		
+		if( is_numeric( $order ) ) { $order = wc_get_order( $order ); }
 		if( ! $order ) { return; }
 		
 		$order_items = $order->get_items();
 		
 		if( ! $order_items ) { return; }
 		
-		foreach( $order_items as $order_item_id => $order_item ) {
-			$item = $order_item;
-			if( version_compare( WC_VERSION, '3.0.0', '<' ) ) {
-				$item[ 'id' ] = $order_item_id;
-			}
+		$in__booking_id			= ! empty( $args[ 'booking_ids' ] ) ? $args[ 'booking_ids' ] : array();
+		$in__booking_group_id	= ! empty( $args[ 'booking_group_ids' ] ) ? $args[ 'booking_group_ids' ] : array();
+		
+		foreach( $order_items as $item_id => $item ) {
+			// Make sure the order item has a booking
+			if( ! isset( $item[ 'bookacti_booking_id' ] ) && ! isset( $item[ 'bookacti_booking_group_id' ] ) ) { continue; }
+			
+			// Make sure the booking is part of those updated
+			if( isset( $item[ 'bookacti_booking_id' ] ) && ( $in__booking_id || $in__booking_group_id ) && ! in_array( $item[ 'bookacti_booking_id' ], $in__booking_id ) ) { continue; }
+			if( isset( $item[ 'bookacti_booking_group_id' ] ) && ( $in__booking_id || $in__booking_group_id ) && ! in_array( $item[ 'bookacti_booking_group_id' ], $in__booking_group_id ) ) { continue; }
+			
+			if( version_compare( WC_VERSION, '3.0.0', '<' ) ) { $item[ 'id' ] = $item_id; }
 			
 			// Do not allow to update order status based on new bookings status 
 			// because this function is actually triggered after order status changed

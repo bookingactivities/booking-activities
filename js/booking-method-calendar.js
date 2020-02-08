@@ -1,6 +1,6 @@
 /**
  * Initialize the calendar
- * @version 1.7.17
+ * @version 1.7.18
  * @param {dom_element} booking_system
  * @param {boolean} reload_events
  */
@@ -133,7 +133,11 @@ function bookacti_set_calendar_up( booking_system, reload_events ) {
 		},
 		
 		eventClick: function( event, jsEvent, view ) {
-			bookacti_event_click( booking_system, event );
+			// Don't pick the event if it is not available
+			var is_available = bookacti_is_event_available( booking_system, event );
+			if( is_available ) { 
+				bookacti_event_click( booking_system, event );
+			}
 		},
 		
 		eventMouseover: function( event, jsEvent, view ) { 
