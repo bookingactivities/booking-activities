@@ -311,7 +311,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			function bookacti_fill_template_tab_editor( $params = array() ) {
 			?>
 				<div class='bookacti-editor-settings-only-notice'>
-					<?php echo sprintf( esc_html__( 'These settings are used for the editor only. For your frontend calendars, use the "Calendar" field settings in the desired %s.', 'booking-activities' ), '<a href="' . admin_url( 'admin.php?page=bookacti_forms' ) . '">' . esc_html__( 'booking form editor', 'booking-activities' ) . '</a>' ); ?>
+					<?php /* translators: %s is a link to the "booking form editor". */ echo sprintf( esc_html__( 'These settings are used for the editor only. For your frontend calendars, use the "Calendar" field settings in the desired %s.', 'booking-activities' ), '<a href="' . admin_url( 'admin.php?page=bookacti_forms' ) . '">' . esc_html__( 'booking form editor', 'booking-activities' ) . '</a>' ); ?>
 				</div>
 			<?php
 				do_action( 'bookacti_template_tab_editor_before', $params );
@@ -591,8 +591,9 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 					<label for='bookacti-activity-unit-name-singular' ><?php esc_html_e( 'Unit name (singular)', 'booking-activities' ); ?></label>
 					<input type='text' name='activityOptions[unit_name_singular]' id='bookacti-activity-unit-name-singular' />
 					<?php
+						$unit = '<strong><em>' . esc_html( _n( 'unit', 'units', 1, 'booking-activities' ) ) . '</em></strong>';
 						/* translators: %s is the singular for "unit" */
-						$tip = sprintf( esc_html__( 'Name of the unit the customers will actually book for this activity. Set the singular here. Leave blank to hide this piece of information. Ex: "You have booked 1 %s".', 'booking-activities' ), '<strong><em>' . esc_html( _n( 'unit', 'units', 1, 'booking-activities' ) ) . '</em></strong>' );
+						$tip = sprintf( esc_html__( 'Name of the unit the customers will actually book for this activity. Set the singular here. Leave blank to hide this piece of information. Ex: "You have booked 1 %s".', 'booking-activities' ), $unit );
 						bookacti_help_tip( $tip );
 					?>
 				</div>
@@ -600,8 +601,9 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 					<label for='bookacti-activity-unit-name-plural' ><?php esc_html_e( 'Unit name (plural)', 'booking-activities' ); ?></label>
 					<input type='text' name='activityOptions[unit_name_plural]' id='bookacti-activity-unit-name-plural' />
 					<?php
+						$units = '<strong><em>' . esc_html( _n( 'unit', 'units', 2, 'booking-activities' ) ) . '</em></strong>';
 						/* translators: %s is the plural for "units" */
-						$tip = sprintf( esc_html__( 'Name of the unit the customers will actually book for this activity. Set the plural here. Leave blank to hide this piece of information. Ex: "You have booked 2 %s".', 'booking-activities' ), '<strong><em>' . esc_html( _n( 'unit', 'units', 2, 'booking-activities' ) ) . '</em></strong>' );
+						$tip = sprintf( esc_html__( 'Name of the unit the customers will actually book for this activity. Set the plural here. Leave blank to hide this piece of information. Ex: "You have booked 2 %s".', 'booking-activities' ), $units );
 						bookacti_help_tip( $tip );
 					?>
 				</div>
