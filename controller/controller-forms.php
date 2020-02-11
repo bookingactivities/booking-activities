@@ -877,7 +877,7 @@ add_action( 'admin_footer-booking-activities_page_bookacti_forms', 'bookacti_pri
 /**
  * Create a booking form from REQUEST parameters
  * @since 1.5.0
- * @version 1.7.17
+ * @version 1.7.19
  */
 function bookacti_controller_create_form() {
 	if( empty( $_REQUEST[ 'action' ] ) || $_REQUEST[ 'action' ] !== 'new' ) { return; }
@@ -907,7 +907,7 @@ function bookacti_controller_create_form() {
 	}
 	
 	// Change current url to the edit url
-	$form_url = is_multisite() ? network_admin_url( 'admin.php?page=bookacti_forms&action=edit&form_id=' . $form_id ) : admin_url( 'admin.php?page=bookacti_forms&action=edit&form_id=' . $form_id );
+	$form_url = admin_url( 'admin.php?page=bookacti_forms&action=edit&form_id=' . $form_id );
 	header( 'Location: ' . $form_url );
 }
 add_action( 'load-booking-activities_page_bookacti_forms', 'bookacti_controller_create_form', 5 );

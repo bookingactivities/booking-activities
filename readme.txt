@@ -319,6 +319,12 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 
 == Changelog ==
 
+= 1.7.19 =
+* Fix - Multisite: Wrong redirect after creating a booking form
+* Fix - Bypass form manager checks for shop managers
+* Fix - PHP Notice when creating a calendar or a booking form
+* Fix - PHP Error when a user logs in and WC session doesn't exist
+
 = 1.7.18 - 2020/02/08 =
 * Tweak - Add an option to duplicate booking forms
 * Tweak - Activity WooCommerce products are no longer forced to virtual

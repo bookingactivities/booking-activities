@@ -705,7 +705,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 	/**
 	 * AJAX Controller - Create a new template
-	 * @version	1.7.18
+	 * @version	1.7.19
 	 */
 	function bookacti_controller_insert_template() {
 		// Check nonce and capabilities
@@ -727,7 +727,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			bookacti_send_json( array( 'status' => 'failed' ), 'insert_template' );
 		}
 
-		$duplicated_template_id	= intval( $_POST[ 'duplicated-template-id' ] );
+		$duplicated_template_id	= ! empty( $_POST[ 'duplicated-template-id' ] ) ? intval( $_POST[ 'duplicated-template-id' ] ) : 0;
 		$managers_array			= isset( $_POST[ 'template-managers' ] ) ? bookacti_ids_to_array( $_POST[ 'template-managers' ] ) : array();
 		$options_array			= isset( $_POST[ 'templateOptions' ] ) && is_array( $_POST[ 'templateOptions' ] ) ? $_POST[ 'templateOptions' ] : array();
 
