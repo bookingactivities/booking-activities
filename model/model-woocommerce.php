@@ -6,16 +6,37 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 /**
  * Get array of woocommerce products and product variations titles ordered by ids
  * @since 1.7.10
+ * @version 1.7.19
  * @global wpdb $wpdb
+ * @param string $product_search
  * @return array
  */
-function bookacti_get_products_titles() {
+function bookacti_get_products_titles( $search = '' ) {
 	global $wpdb;
 	
-	$query	= 'SELECT ID as id, post_title as title, post_type as type, post_parent as parent FROM ' . $wpdb->posts 
+	$cache_products_array = wp_cache_get( 'products_titles', 'bookacti_wc' );
+	$search_product_id = is_numeric( $search ) ? intval( $search ) : 0;
+	if( $cache_products_array ) { 
+		if( ! $search_product_id ) { return $cache_products_array; }
+		else {
+			foreach( $cache_products_array as $product_id => $product ) {
+				if( $product_id === $search_product_id ) { return array( $product_id => $product ); }
+				if( ! empty( $product[ 'variations' ][ $search_product_id ] ) ) { return array( $product_id => array( 'variations' => array( $search_product_id => $product[ 'variations' ][ $search_product_id ] ) ) ); }
+			}
+		}
+	}
+	
+	$query	= 'SELECT ID as id, post_title as title, post_excerpt as variations_title, post_type as type, post_parent as parent FROM ' . $wpdb->posts 
 			. ' WHERE ( post_type = "product" OR post_type = "product_variation" )'
-			. ' AND post_status = "publish";';
-	$products	= $wpdb->get_results( $query, OBJECT );
+			. ' AND post_status = "publish"';
+	
+	if( $search ) {
+		$query .= $search_product_id ? ' AND ( ID = %d OR post_parent = %d )' : ' AND ( post_title LIKE %s OR post_excerpt LIKE %s )';
+		$sanitized_search = $search_product_id ? $search_product_id : '%' . $wpdb->esc_like( $search ) . '%';
+		$query = $wpdb->prepare( $query, $sanitized_search, $sanitized_search );
+	}
+	
+	$products = $wpdb->get_results( $query, OBJECT );
 
 	$products_array = array();
 	if( $products ) {
@@ -30,13 +51,16 @@ function bookacti_get_products_titles() {
 				if( ! isset( $products_array[ $product->parent ][ 'variations' ] ) ) { 
 					$products_array[ $product->parent ][ 'variations' ] = array();
 				}
-				$products_array[ $product->parent ][ 'variations' ][ $product->id ][ 'title' ] = $product->title;
+				$products_array[ $product->parent ][ 'variations' ][ $product->id ][ 'title' ] = $product->variations_title;
 			}
 		}
 	}
-
+	
+	wp_cache_set( 'products_titles', $products_array, 'bookacti_wc' );
+	
 	return $products_array;
 }
+
 
 
 

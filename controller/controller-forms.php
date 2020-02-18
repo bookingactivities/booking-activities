@@ -34,7 +34,7 @@ add_action( 'bookacti_display_form_field_calendar', 'bookacti_display_form_field
 /**
  * Display the form field 'login'
  * @since 1.5.0
- * @version 1.7.16
+ * @version 1.7.19
  * @param string $html
  * @param array $field
  * @param string $instance_id
@@ -42,13 +42,14 @@ add_action( 'bookacti_display_form_field_calendar', 'bookacti_display_form_field
  * @return string
  */
 function bookacti_display_form_field_login( $html, $field, $instance_id, $context ) {
-	
 	$field_id		= ! empty( $field[ 'id' ] ) ? esc_attr( $field[ 'id' ] ) : esc_attr( 'bookacti-form-field-' . $field[ 'type' ] . '-' . $field[ 'field_id' ] . '-' . $instance_id );
 	$field_class	= 'bookacti-form-field-container';
+	
 	if( ! empty( $field[ 'name' ] ) )		{ $field_class .= ' bookacti-form-field-name-' . sanitize_title_with_dashes( esc_attr( $field[ 'name' ] ) ); } 
 	if( ! empty( $field[ 'type' ] ) )		{ $field_class .= ' bookacti-form-field-type-' . sanitize_title_with_dashes( esc_attr( $field[ 'type' ] ) ); } 
 	if( ! empty( $field[ 'field_id' ] ) )	{ $field_class .= ' bookacti-form-field-id-' . esc_attr( $field[ 'field_id' ] ); }
 	if( ! empty( $field[ 'class' ] ) )		{ $field_class .= ' ' . esc_attr( $field[ 'class' ] ); }
+	
 	ob_start();
 	?>
 	<div class='<?php echo $field_class; ?> bookacti-user-is-not-logged-in' id='<?php echo $field_id; ?>' >
@@ -153,7 +154,7 @@ function bookacti_display_form_field_login( $html, $field, $instance_id, $contex
 						bookacti_display_field( $args );
 						
 						if( empty( $field[ 'generate_password' ] ) && $field[ 'min_password_strength' ] > 1 ) {
-							wp_enqueue_script( 'password-strength-meter' );
+							if( wp_script_is( 'password-strength-meter', 'registered' ) ) { wp_enqueue_script( 'password-strength-meter' ); }
 							?>
 							<div class='bookacti-password-strength' style='display:none;'>
 								<span class='bookacti-password-strength-meter'></span>
@@ -836,9 +837,9 @@ add_action( 'add_meta_boxes_booking-activities_page_bookacti_forms', 'bookacti_f
 /*
  * Allow metaboxes on for editor
  * @since 1.5.0
+ * @version 1.7.19
  */
 function bookacti_allow_meta_boxes_in_form_editor() {
-	
 	if( empty( $_REQUEST[ 'action' ] ) || ! in_array( $_REQUEST[ 'action' ], array( 'edit', 'new' ), true ) ) { return; }
 	
     /* Trigger the add_meta_boxes hooks to allow meta boxes to be added */
@@ -846,7 +847,7 @@ function bookacti_allow_meta_boxes_in_form_editor() {
     do_action( 'add_meta_boxes', 'booking-activities_page_bookacti_forms', null );
 	
 	/* Enqueue WordPress' script for handling the meta boxes */
-	wp_enqueue_script( 'postbox' );
+	if( wp_script_is( 'postbox', 'registered' ) ) { wp_enqueue_script( 'postbox' ); }
 }
 add_action( 'load-booking-activities_page_bookacti_forms', 'bookacti_allow_meta_boxes_in_form_editor' );
  

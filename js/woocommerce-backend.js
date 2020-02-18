@@ -254,10 +254,11 @@ function bookacti_show_hide_activity_variation_fields( checkbox ) {
 	}
 }
 
+
 /**
  * Show or hide a notice when the product price is not set
  * @since 1.7.14
- * @version 1.7.17
+ * @version 1.7.19
  * @param {int} variation_menu_order
  */
 function bookacti_show_hide_empty_price_notice( variation_menu_order ) {
@@ -266,7 +267,7 @@ function bookacti_show_hide_empty_price_notice( variation_menu_order ) {
 	// Remove notices
 	$j( '#woocommerce-product-data .bookacti-empty-product-price-notice' ).remove();
 	
-	var notice_div = '<div class="bookacti-empty-product-price-notice">' + 'You must set a price for your product, otherwise the booking form won’t appear on the product page.' + '</div>';
+	var notice_div = '<div class="bookacti-empty-product-price-notice">' + bookacti_localized.empty_product_price + '</div>';
 	
 	// Display notice if the price is empty and if the product / variation is an activity
 	if( variation_menu_order === 'product' ) {

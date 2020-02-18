@@ -12,11 +12,12 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 	/**
 	 * Add woocommerce related translations
-	 * @version 1.7.16
+	 * @version 1.7.19
 	 * @param array $translation_array
 	 * @return array
 	 */
 	function bookacti_woocommerce_translation_array( $translation_array ) {
+		$translation_array[ 'empty_product_price' ]				= esc_html__( 'You must set a price for your product, otherwise the booking form won’t appear on the product page.', 'booking-activities' );
 		$translation_array[ 'expired_min' ]						= esc_html__( 'expired', 'booking-activities' );
 		$translation_array[ 'expired' ]							= esc_html__( 'Expired', 'booking-activities' );
 		$translation_array[ 'in_cart' ]							= esc_html__( 'In cart', 'booking-activities' );

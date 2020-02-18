@@ -310,7 +310,7 @@ function bookacti_settings_section_licenses_callback() { }
 		$selected_timezone = bookacti_get_setting_value( 'bookacti_general_settings', 'timezone' );
 		
 		// Display selectbox
-		echo '<select name="bookacti_general_settings[timezone]" >';
+		echo '<select name="bookacti_general_settings[timezone]" class="bookacti-select2-no-ajax">';
 		foreach( $timezones as $region => $list ) {
 			echo '<optgroup label="' . $region . '" >';
 			foreach( $list as $timezone => $name ) {

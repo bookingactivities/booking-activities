@@ -640,7 +640,7 @@ function bookacti_format_booking_system_url_attributes( $atts = array() ) {
 /**
  * Get booking system fields default data
  * @since 1.5.0
- * @version 1.7.17
+ * @version 1.7.19
  * @param array $fields
  * @return array
  */
@@ -660,7 +660,6 @@ function bookacti_get_booking_system_fields_default_data( $fields = array() ) {
 		$defaults[ 'calendars' ] = array( 
 			'name'		=> 'calendars',
 			'type'		=> 'select',
-			'id'		=> '_bookacti_template',
 			'multiple'	=> 'maybe',
 			'options'	=> $templates_options,
 			'value'		=> '', 
@@ -720,7 +719,6 @@ function bookacti_get_booking_system_fields_default_data( $fields = array() ) {
 		$defaults[ 'groups_only' ] = array(
 			'type'			=> 'checkbox',
 			'name'			=> 'groups_only',
-			'id'			=> '_bookacti_groups_only',
 			'value'			=> 0,
 			'title'			=> esc_html__( 'Groups only', 'booking-activities' ),
 			'tip'			=> esc_html__( 'Display only groups of events if checked. Else, also display the other single events (if any).', 'booking-activities' )
@@ -775,12 +773,10 @@ function bookacti_get_booking_system_fields_default_data( $fields = array() ) {
 			'name'			=> 'user_id',
 			'options'		=> array(
 				'name'					=> 'user_id',
-				'id'					=> 'user_id',
-				'show_option_all'		=> esc_html__( 'All', 'booking-activities' ),
-				'show_option_current'	=> esc_html__( 'Current user', 'booking-activities' ),
 				'option_label'			=> array( 'user_login', ' (', 'user_email', ')' ),
 				'selected'				=> 0,
-				'echo'					=> true
+				'allow_current'			=> 1,
+				'echo'					=> 1
 			),
 			'title'			=> esc_html__( 'Customer', 'booking-activities' ),
 			'tip'			=> esc_html__( 'Retrieve events booked by the selected user only.', 'booking-activities' ) . ' ' . esc_html__( '"Booked only" option must be activated.', 'booking-activities' )

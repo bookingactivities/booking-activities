@@ -1031,3 +1031,77 @@ function bookacti_add_editable_extensions( $editable_extensions, $plugin ) {
 	return $editable_extensions;
 }
 add_filter( 'editable_extensions', 'bookacti_add_editable_extensions', 10, 2 );
+
+
+
+
+// AJAX SELECTBOXES
+
+/**
+ * Search users for AJAX selectbox
+ * @since 1.7.19
+ */
+function bookacti_controller_search_select2_users() {
+	// Check nonce
+	$is_nonce_valid	= check_ajax_referer( 'bookacti_query_select2_options', 'nonce', false );
+	if( ! $is_nonce_valid ) { bookacti_send_json_not_allowed( 'search_select2_users' ); }
+	
+	// Check query
+	$term = isset( $_REQUEST[ 'term' ] ) ? sanitize_text_field( stripslashes( $_REQUEST[ 'term' ] ) ) : '';
+	if( ! $term ) { bookacti_send_json( array( 'status' => 'failed', 'error' => 'empty_query' ), 'search_select2_users' ); }
+	
+	$defaults = array(
+		'name' => isset( $_REQUEST[ 'name' ] ) ? sanitize_title_with_dashes( stripslashes( $_REQUEST[ 'name' ] ) ) : '',
+		'id' => isset( $_REQUEST[ 'id' ] ) ? sanitize_title_with_dashes( stripslashes( $_REQUEST[ 'id' ] ) ) : '',
+		'search' => '*' . esc_attr( $term ) . '*',
+		'search_columns' => array( 'user_login', 'user_url', 'user_email', 'user_nicename', 'display_name' ),
+		'option_label' => array( 'first_name', ' ', 'last_name', ' (', 'user_login', ' / ', 'user_email', ')' ),
+		'allow_current' => 0,
+		'include' => array(), 'exclude' => array(),
+		'role' => array(), 'role__in' => array(), 'role__not_in' => array(),
+		'orderby' => 'display_name', 'order' => 'ASC'
+	);
+	$args = apply_filters( 'bookacti_ajax_select2_users_args', $defaults );
+	
+	$users = bookacti_get_users_data( $args );
+	$options = array();
+	
+	// Add "Current user" option
+	if( ! empty( $_REQUEST[ 'allow_current' ] ) ) {
+		$options[] = array( 'id' => 'current', 'text' => esc_html__( 'Current user', 'booking-activities' ) );
+	}
+	
+	// Add user options
+	foreach( $users as $user ) {
+		// Build the option label based on the array
+		$label = '';
+		foreach( $args[ 'option_label' ] as $show ) {
+			// If the key contain "||" display the first not empty value
+			if( strpos( $show, '||' ) !== false ) {
+				$keys = explode( '||', $show );
+				$show = $keys[ 0 ];
+				foreach( $keys as $key ) {
+					if( ! empty( $user->{ $key } ) ) { $show = $key; break; }
+				}
+			}
+
+			// Display the value if the key exists, else display the key as is, as a separator
+			if( isset( $user->{ $show } ) ) {
+				$label .= $user->{ $show };
+			} else {
+				$label .= $show;
+			}
+		}
+		$options[] = array( 'id' => $user->ID, 'text' => esc_html( $label ) );
+	}
+	
+	// Allow plugins to add their values
+	$select2_options = apply_filters( 'bookacti_ajax_select2_users_options', $options, $args );
+	
+	if( ! $select2_options ) {
+		bookacti_send_json( array( 'status' => 'failed', 'error' => 'no_results' ), 'search_select2_users' );
+	}
+	
+	bookacti_send_json( array( 'status' => 'success', 'options' => $select2_options ), 'search_select2_users' );
+}
+add_action( 'wp_ajax_bookactiSelect2Query_users', 'bookacti_controller_search_select2_users' );

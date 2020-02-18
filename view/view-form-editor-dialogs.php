@@ -205,6 +205,7 @@ foreach( $fields_data as $field_name => $field_data ) {
 		/**
 		 * Display the content of the "Actions" tab of the "Calendar" dialog
 		 * @since 1.7.0
+		 * @version 1.7.19
 		 * @param array $params
 		 */
 		function bookacti_fill_calendar_dialog_actions_tab( $params ) {
@@ -250,7 +251,7 @@ foreach( $fields_data as $field_name => $field_data ) {
 				foreach( $redirect_url_by_activity as $activity_id => $redirect_url ) {
 					$activities_url_rows[] = array( 
 						'activity' => intval( $activity_id ),
-						'redirect_url' => '<input type="text" name="redirect_url_by_activity[ ' . intval( $activity_id ) . ' ]" value="' . esc_url( $redirect_url ) . '" />'
+						'redirect_url' => '<input type="text" name="redirect_url_by_activity[' . intval( $activity_id ) . ']" value="' . esc_url( $redirect_url ) . '" />'
 					);
 				}
 				

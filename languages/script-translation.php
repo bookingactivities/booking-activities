@@ -11,7 +11,7 @@ $messages = bookacti_get_messages();
 
 /**
  * Fill the translation array to use it in js 
- * @version 1.7.18
+ * @version 1.7.19
  */
 $bookacti_translation_array = apply_filters( 'bookacti_translation_array', array(
 	// BUTTONS
@@ -267,6 +267,8 @@ $bookacti_translation_array = apply_filters( 'bookacti_translation_array', array
 	'nonce_get_activities_by_template'	=> wp_create_nonce( 'bookacti_get_activities_by_template' ),
 	'nonce_import_activity'				=> wp_create_nonce( 'bookacti_import_activity' ),
 	'nonce_deactivate_activity'			=> wp_create_nonce( 'bookacti_deactivate_activity' ),
+	
+	'nonce_query_select2_options'		=> wp_create_nonce( 'bookacti_query_select2_options' ),
 
 	'nonce_dismiss_5stars_rating_notice'=> wp_create_nonce( 'bookacti_dismiss_5stars_rating_notice' ),
 ), $messages );

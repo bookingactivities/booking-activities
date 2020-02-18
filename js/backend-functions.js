@@ -1,5 +1,4 @@
 $j( document ).ready( function() { 
-	
 	// Update multilangual fields with Qtranslate X
 	$j( '.qtranxs-translatable' ).on( 'keyup', function() {
 		bookacti_update_qtx_field( this );
@@ -18,19 +17,6 @@ $j( document ).ready( function() {
 		bookacti_switch_select_to_multiple( this );
 	});
 	
-	//Show or hide activities depending on the selected template
-	// On load
-	if( $j( '#_bookacti_template' ).length ) { 
-		var template_ids	= $j( '#_bookacti_template' ).val();
-		var options			= $j( '[data-bookacti-show-if-templates]' );
-		bookacti_show_hide_template_related_options( template_ids, options ); 
-	}
-	// On change
-	$j( '#_bookacti_template' ).on( 'change', function(){ 
-		var template_ids	= $j( this ).val();
-		var options			= $j( '[data-bookacti-show-if-templates]' );
-		bookacti_show_hide_template_related_options( template_ids, options );
-	});
 	
 	// Tooltip
 	bookacti_init_tooltip();
@@ -46,6 +32,38 @@ $j( document ).ready( function() {
 		window.location.replace( url );
 	});
 	
+	
+	/**
+	 * Init select2
+	 * @since 1.7.19
+	 */
+	bookacti_select2_init();
+	
+	
+	/**
+	 * Allow select2 to work in a jquery-ui dialog
+	 * @since 1.7.19
+	 */
+	$j( '.bookacti-backend-dialog' ).dialog({
+		autoOpen: false,
+		open: function() {
+			if( $j.ui && $j.ui.dialog && ! $j.ui.dialog.prototype._allowInteractionRemapped && $j( this ).closest( '.ui-dialog' ).length ) {
+				if( $j.ui.dialog.prototype._allowInteraction ) {
+					$j.ui.dialog.prototype._allowInteraction = function( e ) {
+						if( $j( e.target ).closest( '.select2-drop' ).length ) { return true; }
+						if( typeof ui_dialog_interaction === 'undefined' ) { return true; }
+						return ui_dialog_interaction.apply( this, arguments );
+					};
+					$j.ui.dialog.prototype._allowInteractionRemapped = true;
+				} else {
+					$j.error( 'You must upgrade jQuery UI or else.' );
+				}
+			}
+		},
+		_allowInteraction: function( event ) {
+			return ! ( ( ! $j( event.target ).is( '.select2-input' ) ) || this._super( event ) );
+		}
+	});
 });
 
 
@@ -163,7 +181,7 @@ function bookacti_empty_all_dialog_forms( scope ) {
 
 /**
  * Fill custom settings fields in a form
- * @version 1.7.17
+ * @version 1.7.19
  * @param {array} fields
  * @param {string} field_prefix
  * @param {qtring} scope
@@ -226,11 +244,6 @@ function bookacti_fill_fields_from_array( fields, field_prefix, scope ) {
 		} else if( $j( scope + 'select[name="' + field_name + '"]' ).length ) {
 			$j( scope + 'select[name="' + field_name + '"] option[value="' + value + '"]' ).prop( 'selected', true );
 			$j( scope + 'select[name="' + field_name + '"]' ).trigger( 'change' );
-			// Update user-selectbox
-			if( $j( scope + 'select[name="' + field_name + '"].bookacti-user-selectbox' ).length ) {
-				var new_value = $j( scope + 'select[name="' + field_name + '"].bookacti-user-selectbox option:selected' ).html();
-				$j( scope + 'select[name="' + field_name + '"].bookacti-user-selectbox' ).siblings( '.bookacti-combobox' ).find( '.bookacti-combobox-input' ).val( new_value );
-			}
 
 		// Select multiple
 		} else if( $j( scope + 'select[name="' + field_name + '[]"]' ).length ) {
