@@ -322,6 +322,11 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 = 1.7.19 =
 * Optimization - Dynamic user selectbox in booking list filters
 * Optimization - Dynamic product selectbox in Calendar field settings, actions tab
+* Tweak - Allow to perform the form action on event click even if there is no Submit button and if the calendar is not in a form
+* Tweak - Error messages related to the picked event are removed when a new event is picked
+* Fix - The "Events are bookable for up to" option didn't work
+* Fix - WC product edit page: Activity tab didn't appear when Activity box was checked
+* Fix - WC product edit page: Price warning didn't take the decimal separator into account
 * Fix - Multisite: Wrong redirect after creating a booking form
 * Fix - Bypass form manager checks for shop managers
 * Fix - PHP Notice when creating a calendar or a booking form

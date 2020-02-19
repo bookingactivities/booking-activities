@@ -1742,7 +1742,8 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 								$_selected = selected( $variation_id, $args[ 'selected' ] );
 								if( $_selected ) { $is_selected = true; }
 								$variation_title = esc_html( apply_filters( 'bookacti_translate_text', $variation[ 'title' ] ) );
-								?><option class='bookacti-wc-product-variation-option' value='<?php echo esc_attr( $variation_id ); ?>' <?php echo $_selected; ?>><?php echo $variation_title; ?></option><?php
+								$formatted_variation_title = trim( preg_replace( '/,[\s\S]+?:/', ',', ',' . $variation_title ), ', ' );
+								?><option class='bookacti-wc-product-variation-option' value='<?php echo esc_attr( $variation_id ); ?>' <?php echo $_selected; ?>><?php echo $formatted_variation_title; ?></option><?php
 							}
 						?>
 						</optgroup>

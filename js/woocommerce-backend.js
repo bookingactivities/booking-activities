@@ -21,9 +21,9 @@ $j( document ).ready( function() {
 	
 	/**
 	 * Show or hide the activity tab on product page in the backend
-	 * @version 1.7.18
+	 * @version 1.7.19
 	 */
-	$j( '#product-type, ._bookacti_is_activity' ).on( 'change', function() {
+	$j( '#product-type, #_bookacti_is_activity' ).on( 'change', function() {
 		bookacti_show_hide_activity_tab();
 		if( $j( '#_bookacti_is_activity' ).is( ':checked' ) && ! $j( '#_virtual' ).is( ':checked' ) ) {
 			$j( '#_virtual' ).prop( 'checked', true ).trigger( 'change' );
@@ -269,15 +269,24 @@ function bookacti_show_hide_empty_price_notice( variation_menu_order ) {
 	
 	var notice_div = '<div class="bookacti-empty-product-price-notice">' + bookacti_localized.empty_product_price + '</div>';
 	
+	var wc_decimal_point = ',';
+	if( typeof woocommerce_admin !== 'undefined' ) {
+		if( typeof woocommerce_admin.mon_decimal_point !== 'undefined' ) {
+			wc_decimal_point = woocommerce_admin.mon_decimal_point;
+		}
+	}
+	
 	// Display notice if the price is empty and if the product / variation is an activity
 	if( variation_menu_order === 'product' ) {
-		var product_price = $j.isNumeric( $j( '#_regular_price' ).val() ) ? parseFloat( $j( '#_regular_price' ).val() ) : '';
+		var price_val = $j( '#_regular_price' ).length ? $j( '#_regular_price' ).val().replace( wc_decimal_point, '.' ) : '';
+		var product_price = $j.isNumeric( price_val ) ? parseFloat( price_val ) : '';
 		if( ! product_price && product_price !== 0 && product_price !== '0' && $j( '#_bookacti_is_activity' ).is( ':checked' ) ) {
 			$j( '#_regular_price, #_bookacti_form' ).after( notice_div );
 		}
 	} else if( variation_menu_order ) {
 		var var_nb = variation_menu_order - 1;
-		var variation_price = $j.isNumeric( $j( 'input[name="variable_regular_price[' + var_nb + ']"]' ).val() ) ? parseFloat( $j( 'input[name="variable_regular_price[' + var_nb + ']"]' ).val() ) : '';
+		var price_val = $j( 'input[name="variable_regular_price[' + var_nb + ']"]' ).length ? $j( 'input[name="variable_regular_price[' + var_nb + ']"]' ).val().replace( wc_decimal_point, '.' ) : '';
+		var variation_price = $j.isNumeric( price_val ) ? parseFloat( price_val ) : '';
 		if( ! variation_price && variation_price !== 0 && variation_price !== '0' && $j( '#bookacti_variable_is_activity_' + var_nb ).is( ':checked' ) ) {
 			$j( 'input[name="variable_regular_price[' + var_nb + ']"], #bookacti_variable_form_' + var_nb ).after( notice_div );
 		}

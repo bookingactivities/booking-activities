@@ -1,8 +1,18 @@
 $j( document ).ready( function() {
+	/**
+	 * Remove error messages after pciking new events
+	 * @since 1.7.19
+	 */
+	$j( 'body' ).on( 'bookacti_events_picked', '.bookacti-booking-system', function( e, group_id, event ) {
+		if( $j( this ).siblings( '.bookacti-notices' ).length ) {
+			$j( this ).siblings( '.bookacti-notices' ).empty();
+		}
+	});
+	
 	
 	/**
 	 * Init actions to perfoms when the user picks an event
-	 * @version 1.7.10
+	 * @version 1.7.19
 	 */
 	$j( 'body' ).on( 'bookacti_events_picked', '.bookacti-booking-system', function( e, group_id, event ){
 		// Retrieve the info required to show the desired events
@@ -26,8 +36,14 @@ $j( document ).ready( function() {
 				if( group_id === 'single' && attributes[ 'when_perform_form_action' ] === 'on_event_click' ) {
 					if( attributes[ 'form_action' ] === 'redirect_to_url' ) {
 						bookacti_redirect_to_activity_url( booking_system, event );
-					} else if( attributes[ 'form_action' ] === 'default' && $j( this ).closest( 'form' ).length ) {
-						$j( this ).closest( 'form' ).find( '[type="submit"]' ).trigger( 'click' );
+					} else if( attributes[ 'form_action' ] === 'default' ) {
+						if( ! booking_system.closest( 'form' ).length && booking_system.closest( '.bookacti-form-fields' ).length ) {
+							booking_system.closest( '.bookacti-form-fields' ).wrap( '<form id="bookacti-temporary-form"></form>' );
+						}
+						if( booking_system.closest( 'form' ).length ) {
+							bookacti_submit_booking_form( booking_system.closest( 'form' ) );
+							return;
+						}
 					}
 				}
 			}
@@ -39,7 +55,7 @@ $j( document ).ready( function() {
 	
 	/**
 	 * Init actions to perfoms when the user picks a group of events
-	 * @version 1.7.10
+	 * @version 1.7.19
 	 */
 	$j( 'body' ).on( 'bookacti_group_of_events_chosen', '.bookacti-booking-system', function( e, group_id, event ) {
 		// Retrieve the info required to show the desired events
@@ -56,13 +72,32 @@ $j( document ).ready( function() {
 					} else if( $j.isNumeric( group_id ) ) {
 						bookacti_redirect_to_group_category_url( booking_system, group_id );
 					}
-				} else if( attributes[ 'form_action' ] === 'default' && $j( this ).closest( 'form' ).length ) {
-					$j( this ).closest( 'form' ).find( '[type="submit"]' ).trigger( 'click' );
+				} else if( attributes[ 'form_action' ] === 'default' ) {
+					if( ! booking_system.closest( 'form' ).length && booking_system.closest( '.bookacti-form-fields' ).length ) {
+						booking_system.closest( '.bookacti-form-fields' ).wrap( '<form id="bookacti-temporary-form"></form>' );
+					}
+					if( booking_system.closest( 'form' ).length ) {
+						bookacti_submit_booking_form( booking_system.closest( 'form' ) );
+						return;
+					}
 				}
 			}
 		}
 		
 		booking_system.trigger( 'bookacti_group_of_events_chosen_after', [ group_id, event ] );
+	});
+	
+	
+	/**
+	 * Remove temporary form after submit
+	 * @since 1.7.19
+	 * @param {object} response
+	 * @param {object} form_data_object
+	 */
+	$j( 'body' ).on( 'bookacti_booking_form_submitted', 'form#bookacti-temporary-form', function( e, response, form_data_object ) {
+		if( $j( this ).find( '.bookacti-form-fields' ).length ) {
+			$j( this ).find( '.bookacti-form-fields' ).unwrap( 'form#bookacti-temporary-form' );
+		}
 	});
 	
 	

@@ -55,7 +55,7 @@ $j( document ).ready( function() {
 	
 	/**
 	 * Perform the desired action on form submission
-	 * @version 1.7.6
+	 * @version 1.7.19
 	 */
 	$j( 'body' ).on( 'submit', '.bookacti-booking-form', function( e ){
 		// Prevent submission
@@ -65,9 +65,10 @@ $j( document ).ready( function() {
 		var form				= $j( this );
 		var booking_system		= form.find( '.bookacti-form-field-type-calendar .bookacti-booking-system' );
 		var booking_system_id	= booking_system.attr( 'id' );
-		var attributes			= bookacti.booking_system[ booking_system_id ];
+		if( typeof bookacti.booking_system[ booking_system_id ] === 'undefined' ) { return; }
 		
 		// Retrieve form action
+		var attributes	= bookacti.booking_system[ booking_system_id ];
 		var form_action = typeof attributes[ 'form_action' ] !== 'undefined';
 		if( form_action ) { if( attributes[ 'form_action' ] ) { form_action = attributes[ 'form_action' ]; } }
 		var when_perform_form_action = typeof attributes[ 'when_perform_form_action' ] !== 'undefined';
@@ -102,13 +103,13 @@ $j( document ).ready( function() {
 			}
 		}
 		
-		$j( this ).trigger( 'bookacti_submit_booking_form', form_action );
+		$j( this ).trigger( 'bookacti_submit_booking_form' );
 	});
 	
 	
 	/**
 	 * Display booking system fields and submit button if the user want to make a new booking
-	 * @version 1.7.6
+	 * @version 1.7.19
 	 */
 	$j( 'body' ).on( 'click', '.bookacti-booking-form .bookacti-new-booking-button', function() {
 		// Reload page if necessary
@@ -125,7 +126,8 @@ $j( document ).ready( function() {
 		bookacti_clear_booking_system_displayed_info( booking_system );
 		
 		// Clear form feedback messages
-		form.find( '> .bookacti-notices' ).empty();
+		var error_div = form.find( '> .bookacti-notices' ).length ? form.find( '> .bookacti-notices' ) : booking_system.siblings( '.bookacti-notices' );
+		error_div.empty();
 		
 		// Display form fields and submit button, and then, delete the "Make a new booking" button
 		form.find( '.bookacti-form-field-container:not(.bookacti-hidden-field), input[type="submit"]' ).show();
@@ -323,15 +325,19 @@ function bookacti_check_password_strength( password_field, password_confirm_fiel
 /**
  * Submit booking form
  * @since 1.7.6 (was bookacti_sumbit_booking_form)
- * @version 1.7.17
+ * @version 1.7.19
  * @param {html_element} form
  * @returns {Boolean}
  */
 function bookacti_submit_booking_form( form ) {
-	var booking_system	= form.find( '.bookacti-booking-system' );
+	var booking_system = form.find( '.bookacti-booking-system' );
+	
+	// Use the error div of the booking system by default, or if possible, the error div of the form
+	var error_div = form.find( '> .bookacti-notices' ).length ? form.find( '> .bookacti-notices' ) : booking_system.siblings( '.bookacti-notices' );
 	
 	// Disable the submit button to avoid multiple booking
-	form.find( 'input[type="submit"]' ).prop( 'disabled', true );
+	var submit_button = form.find( 'input[type="submit"]' ).length ? form.find( 'input[type="submit"]' ) : null;
+	if( submit_button ) { submit_button.prop( 'disabled', true ); }
 
 	// Check if user is logged in
 	var is_logged_in = false;
@@ -342,11 +348,11 @@ function bookacti_submit_booking_form( form ) {
 	
 	if( ! is_logged_in && ! are_login_fields ) {
 		// Display the error message
-		form.find( '> .bookacti-notices' ).empty().append( "<ul class='bookacti-error-list'><li>" + bookacti_localized.error_user_not_logged_in + "</li></ul>" ).show();
+		error_div.empty().append( "<ul class='bookacti-error-list'><li>" + bookacti_localized.error_user_not_logged_in + "</li></ul>" ).show();
 		// Re-enable the submit button
-		form.find( 'input[type="submit"]' ).prop( 'disabled', false );
+		if( submit_button ) { submit_button.prop( 'disabled', false ); }
 		// Scroll to error message
-		bookacti_scroll_to( form.find( '> .bookacti-notices' ), 500, 'middle' );
+		bookacti_scroll_to( error_div, 500, 'middle' );
 		return false; // End script		
 	}
 	
@@ -356,11 +362,11 @@ function bookacti_submit_booking_form( form ) {
 		&& ! form.find( '.bookacti-generated-password' ).length
 		&& parseInt( form.find( '.bookacti-password_strength' ).val() ) < parseInt( form.find( '.bookacti-password_strength' ).attr( 'min' ) ) ) {
 			// Display the error message
-			form.find( '> .bookacti-notices' ).empty().append( "<ul class='bookacti-error-list'><li>" + bookacti_localized.error_password_not_strong_enough + "</li></ul>" ).show();
+			error_div.empty().append( "<ul class='bookacti-error-list'><li>" + bookacti_localized.error_password_not_strong_enough + "</li></ul>" ).show();
 			// Re-enable the submit button
-			form.find( 'input[type="submit"]' ).prop( 'disabled', false );
+			if( submit_button ) { submit_button.prop( 'disabled', false ); }
 			// Scroll to error message
-			bookacti_scroll_to( form.find( '> .bookacti-notices' ), 500, 'middle' );
+			bookacti_scroll_to( error_div, 500, 'middle' );
 			return false; // End script	
 		}
 	}
@@ -371,7 +377,7 @@ function bookacti_submit_booking_form( form ) {
 		// Scroll to error message
 		bookacti_scroll_to( booking_system.siblings( '.bookacti-notices' ), 500, 'middle' );
 		// Re-enable the submit button
-		form.find( 'input[type="submit"]' ).prop( 'disabled', false );
+		if( submit_button ) { submit_button.prop( 'disabled', false ); }
 		return false; // End script
 	}
 
@@ -380,12 +386,21 @@ function bookacti_submit_booking_form( form ) {
 	// Trigger action before sending form
 	form.trigger( 'bookacti_before_submit_booking_form', [ data ] );
 	
-	// Display a loader
-	var loading_div = '<div class="bookacti-loading-alt">' 
+	// Set the form action
+	if( data instanceof FormData ) {
+		data.set( 'action', 'bookactiAddBoundProductToCart' );
+	} else {
+		return;
+	}
+	
+	// Display a loader after the submit button too
+	if( submit_button ) { 
+		var loading_div = '<div class="bookacti-loading-alt">' 
 						+ '<img class="bookacti-loader" src="' + bookacti_localized.plugin_path + '/img/ajax-loader.gif" title="' + bookacti_localized.loading + '" />'
 						+ '<span class="bookacti-loading-alt-text" >' + bookacti_localized.loading + '</span>'
 					+ '</div>';
-	form.find( 'input[type="submit"]' ).after( loading_div );
+		submit_button.after( loading_div );
+	}
 	
 	bookacti_start_loading_booking_system( booking_system );
 
@@ -432,9 +447,9 @@ function bookacti_submit_booking_form( form ) {
 			// Display feedback message
 			if( message ) {
 				// Fill error message
-				form.find( '> .bookacti-notices' ).empty().append( message ).show();
+				error_div.empty().append( message ).show();
 				// Scroll to error message
-				bookacti_scroll_to( form.find( '> .bookacti-notices' ), 500, 'middle' );
+				bookacti_scroll_to( error_div, 500, 'middle' );
 			}
 			
 			// Make form data readable
@@ -461,18 +476,19 @@ function bookacti_submit_booking_form( form ) {
 		error: function( e ){
 			// Fill error message
 			var message = "<ul class='bookacti-error-list'><li>AJAX " + bookacti_localized.error_book + "</li></ul>";
-			form.find( '> .bookacti-notices' ).empty().append( message ).show();
+			error_div.empty().append( message ).show();
 			// Scroll to error message
-			bookacti_scroll_to( form.find( '> .bookacti-notices' ), 500, 'middle' );
+			bookacti_scroll_to( error_div, 500, 'middle' );
 			console.log( 'AJAX ' + bookacti_localized.error_book );
 			console.log( e );
 		},
 		complete: function() { 
-			form.find( 'input[type="submit"]' ).next( '.bookacti-loading-alt' ).remove();
+			if( submit_button ) { 
+				submit_button.next( '.bookacti-loading-alt' ).remove();
+				// Re-enable the submit button
+				submit_button.prop( 'disabled', false );
+			}
 			bookacti_stop_loading_booking_system( booking_system );
-			
-			// Re-enable the submit button
-			form.find( 'input[type="submit"]' ).prop( 'disabled', false );
 		}
 	});	
 }

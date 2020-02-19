@@ -266,13 +266,12 @@ add_filter( 'bookacti_activity_redirect_url_table', 'bookacti_add_wc_columns_to_
 
 /**
  * Add columns to the group category redirect URL table
- * @since 1.7.0
- * @version 1.7.19
+ * @since 1.7.19 (was bookacti_add_wc_columns_to_group_activity_redirect_url_table)
  * @param array $url_array
  * @param array $params
  * @return array
  */
-function bookacti_add_wc_columns_to_group_activity_redirect_url_table( $url_array, $params = array() ) {
+function bookacti_add_wc_columns_to_group_category_redirect_url_table( $url_array, $params = array() ) {
 	$url_array[ 'head' ][ 'product' ] = esc_html__( 'Bound product', 'booking-activities' );
 	
 	$args = array(
@@ -306,7 +305,7 @@ function bookacti_add_wc_columns_to_group_activity_redirect_url_table( $url_arra
 	
 	return $url_array;
 }
-add_filter( 'bookacti_group_category_redirect_url_table', 'bookacti_add_wc_columns_to_group_activity_redirect_url_table', 10, 2 );
+add_filter( 'bookacti_group_category_redirect_url_table', 'bookacti_add_wc_columns_to_group_category_redirect_url_table', 10, 2 );
 
 
 /**
@@ -332,15 +331,16 @@ function bookacti_controller_search_select2_products() {
 	$options = array();
 	
 	// Add products options
-	foreach( $products_titles as $product ) {
+	foreach( $products_titles as $product_id => $product ) {
 		$product_title = esc_html( apply_filters( 'bookacti_translate_text', $product[ 'title' ] ) );
 		if( empty( $product[ 'variations' ] ) ) {
-			$options[] = array( 'id' => $product[ 'id' ], 'text' => $product_title );
+			$options[] = array( 'id' => $product_id, 'text' => $product_title );
 		} else {
 			$children_options = array();
 			foreach( $product[ 'variations' ] as $variation_id => $variation ) {
 				$variation_title = esc_html( apply_filters( 'bookacti_translate_text', $variation[ 'title' ] ) );
-				$children_options[] = array( 'id' => $variation_id, 'text' => $variation_title );
+				$formatted_variation_title = trim( preg_replace( '/,[\s\S]+?:/', ',', ',' . $variation_title ), ', ' );
+				$children_options[] = array( 'id' => $variation_id, 'text' => $formatted_variation_title );
 			}
 			$options[] = array( 'children' => $children_options, 'text' => $product_title );
 		}
@@ -361,9 +361,13 @@ add_action( 'wp_ajax_bookactiSelect2Query_products', 'bookacti_controller_search
 /**
  * Add the product bound to the selected event to cart
  * @since 1.7.0
- * @version 1.7.17
+ * @version 1.7.19
  */
 function bookacti_controller_add_bound_product_to_cart() {
+	// Check nonce
+	if( ! check_ajax_referer( 'bookacti_booking_form', 'nonce_booking_form', false ) ) {
+		bookacti_send_json_invalid_nonce( 'add_bound_product_to_cart' );
+	}
 	
 	$form_id		= intval( $_POST[ 'form_id' ] );
 	$group_id		= $_POST[ 'bookacti_group_id' ] === 'single' ? 'single' : intval( $_POST[ 'bookacti_group_id' ] );

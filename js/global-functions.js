@@ -41,7 +41,7 @@ function bookacti_init_tooltip() {
 
 /**
  * Scroll to element or to position
- * @version 1.5.4
+ * @version 1.7.19
  * @param {DOM_Element} or {number} element
  * @param {int} speed
  * @param {string} position Either "middle" or "top"
@@ -50,10 +50,10 @@ function bookacti_scroll_to( element, speed, position ) {
 	speed	= $j.isNumeric( speed ) ? parseInt( speed ) : 500;
 	position= position !== 'middle' ? 'top' : 'middle';
 	
-	var elOffset = typeof element === 'number' ? element : element.offset().top;
+	var elOffset = typeof element === 'number' ? element : ( element.length ? element.offset().top : $j( document ).scrollTop() );
 	var offset = elOffset;
 	
-	if( position === 'middle' && typeof element !== 'number' ) {	
+	if( position === 'middle' && typeof element !== 'number' && element.length ) {	
 		var elHeight = element.height();
 		var windowHeight = $j( window ).height();
 
@@ -161,6 +161,7 @@ function bookacti_select2_init() {
 		minimumResultsForSearch: 10,
 		width: 'element',
 		dropdownAutoWidth: true,
+		containerCssClass : 'bookacti-select2-container',
 		dropdownCssClass : 'bookacti-select2-dropdown',
 		dropdownParent: $j( this ).closest( '.bookacti-backend-dialog' ).length ? $j( this ).closest( '.bookacti-backend-dialog' ) : $j( 'body' ),
 		escapeMarkup: function( text ) { return text; }
@@ -172,6 +173,7 @@ function bookacti_select2_init() {
 		minimumInputLength: 3,
 		width: 'element',
 		dropdownAutoWidth: true,
+		containerCssClass : 'bookacti-select2-container',
 		dropdownCssClass : 'bookacti-select2-dropdown',
 		dropdownParent: $j( this ).closest( '.bookacti-backend-dialog' ).length ? $j( this ).closest( '.bookacti-backend-dialog' ) : $j( 'body' ),
   		escapeMarkup: function( text ) { return text; },

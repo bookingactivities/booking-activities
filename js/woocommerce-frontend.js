@@ -168,49 +168,10 @@ $j( document ).ready( function() {
 				bookacti_set_min_and_max_quantity( booking_system, qty_field, event_summary_data );
 			}
 		});
-		
-		
-		/**
-		 * Init WC actions to perfoms when the user submit booking form
-		 * @since 1.7.0
-		 */
-		$j( 'body' ).on( 'bookacti_submit_booking_form', 'form.bookacti-booking-form', function( e, form_action ){
-			if( form_action !== 'redirect_to_product_page' && form_action !== 'add_product_to_cart' ) { return; }
-			
-			var form			= $j( this );
-			var booking_system	= form.find( '.bookacti-form-field-type-calendar .bookacti-booking-system' );
-			var group_id		= booking_system.siblings( '.bookacti-booking-system-inputs' ).find( 'input[name="bookacti_group_id"]' ).val();
-			var event			= {
-				'id': booking_system.siblings( '.bookacti-booking-system-inputs' ).find( 'input[name="bookacti_event_id"]' ).val(),
-				'start': booking_system.siblings( '.bookacti-booking-system-inputs' ).find( 'input[name="bookacti_event_start"]' ).val(),
-				'end': booking_system.siblings( '.bookacti-booking-system-inputs' ).find( 'input[name="bookacti_event_end"]' ).val()
-			};
-			
-			// A single event is selected
-			if( group_id === 'single' && event.id && event.start && event.end ) {
-				if( form_action === 'redirect_to_product_page' ) {
-					// Redirect to activity URL if a single event is selected
-					bookacti_redirect_to_activity_product_page( booking_system, event );
-				} else if( form_action === 'add_product_to_cart' ) {
-					// Add the product bound to the activity to cart
-					bookacti_add_activity_product_to_cart( booking_system, event );
-				}
-			}
-			
-			// A group of events is selected
-			else if( $j.isNumeric( group_id ) ) {
-				if( form_action === 'redirect_to_product_page' ) {
-					// Redirect to group category URL if a group of events is selected
-					bookacti_redirect_to_group_category_product_page( booking_system, group_id );
-				} else if( form_action === 'add_product_to_cart' ) {
-					// Add the product bound to the group category to cart
-					bookacti_add_group_category_product_to_cart( booking_system, group_id );
-				}
-			}
-		});
+
 	
-	
-	
+
+
 	// CART
 		// Create a countdown on cart
 		if( $j( '.bookacti-countdown' ).length ) {

@@ -273,7 +273,7 @@ foreach( $fields_data as $field_name => $field_data ) {
 				foreach( $redirect_url_by_group_category as $group_category_id => $redirect_url ) {
 					$group_categories_url_rows[] = array( 
 						'group_category' => intval( $group_category_id ),
-						'redirect_url' => '<input type="text" name="redirect_url_by_group_category[ ' . intval( $group_category_id ) . ' ]" value="' . esc_url( $redirect_url ) . '" />'
+						'redirect_url' => '<input type="text" name="redirect_url_by_group_category[' . intval( $group_category_id ) . ']" value="' . esc_url( $redirect_url ) . '" />'
 					);
 				}
 				

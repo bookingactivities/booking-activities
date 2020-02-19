@@ -14,14 +14,21 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 function bookacti_get_products_titles( $search = '' ) {
 	global $wpdb;
 	
-	$cache_products_array = wp_cache_get( 'products_titles', 'bookacti_wc' );
 	$search_product_id = is_numeric( $search ) ? intval( $search ) : 0;
+	
+	// Try to retrieve the array from cache
+	$cache_products_array = ! $search || $search_product_id ? wp_cache_get( 'products_titles', 'bookacti_wc' ) : array();
 	if( $cache_products_array ) { 
 		if( ! $search_product_id ) { return $cache_products_array; }
 		else {
 			foreach( $cache_products_array as $product_id => $product ) {
 				if( $product_id === $search_product_id ) { return array( $product_id => $product ); }
-				if( ! empty( $product[ 'variations' ][ $search_product_id ] ) ) { return array( $product_id => array( 'variations' => array( $search_product_id => $product[ 'variations' ][ $search_product_id ] ) ) ); }
+				if( ! empty( $product[ 'variations' ][ $search_product_id ] ) ) { 
+					return array( $product_id => array( 
+						'text' => ! empty( $product[ 'title' ] ) ? $product[ 'title' ] : '',
+						'variations' => array( $search_product_id => $product[ 'variations' ][ $search_product_id ] )
+					));
+				}
 			}
 		}
 	}
@@ -31,9 +38,17 @@ function bookacti_get_products_titles( $search = '' ) {
 			. ' AND post_status = "publish"';
 	
 	if( $search ) {
-		$query .= $search_product_id ? ' AND ( ID = %d OR post_parent = %d )' : ' AND ( post_title LIKE %s OR post_excerpt LIKE %s )';
+		$search_conditions = $search_product_id ? 'ID = %d' : 'post_title LIKE %s OR ( post_type = "product_variation" AND post_excerpt LIKE %s )';
+		
+		// Include the variations' parents so the user knows to what product it belongs
+		$parent_ids_query = 'SELECT post_parent FROM ' . $wpdb->posts . ' WHERE post_type = "product_variation" AND post_status = "publish" AND ' . $search_conditions;
+		
+		$query .= ' AND ( ' . $search_conditions . ' OR ID IN ( ' . $parent_ids_query . ' ) )';
+		
 		$sanitized_search = $search_product_id ? $search_product_id : '%' . $wpdb->esc_like( $search ) . '%';
-		$query = $wpdb->prepare( $query, $sanitized_search, $sanitized_search );
+		$variables = $search_product_id ? array( $sanitized_search, $sanitized_search ) : array( $sanitized_search, $sanitized_search, $sanitized_search, $sanitized_search );
+		
+		$query = $wpdb->prepare( $query, $variables );
 	}
 	
 	$products = $wpdb->get_results( $query, OBJECT );
@@ -56,7 +71,7 @@ function bookacti_get_products_titles( $search = '' ) {
 		}
 	}
 	
-	wp_cache_set( 'products_titles', $products_array, 'bookacti_wc' );
+	if( ! $search ) { wp_cache_set( 'products_titles', $products_array, 'bookacti_wc' ); }
 	
 	return $products_array;
 }

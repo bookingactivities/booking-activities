@@ -185,7 +185,7 @@ function bookacti_sanitize_form_data( $raw_form_data ) {
 
 /**
  * Display a booking form
- * @version 1.7.7
+ * @version 1.7.19
  * @param int $form_id
  * @param string $instance_id
  * @param string $context
@@ -237,12 +237,12 @@ function bookacti_display_form( $form_id, $instance_id = '', $context = 'display
 	// Add form container only if there is a "submit" button
 	if( $is_form ) { ?>
 		<form <?php echo $form_attributes_str; ?>>
-			<input type='hidden' name='action' value='bookactiSubmitBookingForm' />
-			<input type='hidden' name='nonce_booking_form' value='<?php echo wp_create_nonce( 'bookacti_booking_form' ); ?>' />
 	<?php } else { ?>
 		<div <?php echo $form_attributes_str; ?>>
 	<?php } ?>
 			<input type='hidden' name='form_id' value='<?php echo $form_id; ?>' />
+			<input type='hidden' name='action' value='bookactiSubmitBookingForm' />
+			<input type='hidden' name='nonce_booking_form' value='<?php echo wp_create_nonce( 'bookacti_booking_form' ); ?>' />
 		<?php
 			do_action( 'bookacti_form_before', $form, $instance_id, $context );
 
