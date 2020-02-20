@@ -1,7 +1,7 @@
 <?php
 /**
  * Booking list page
- * @version 1.7.18
+ * @version 1.7.19
  */
 
 // Exit if accessed directly
@@ -197,16 +197,16 @@ if( ! $templates ) {
 				</div>
 				<div class='bookacti-bookings-filter-content' >
 				<?php
-					$selected_user = isset( $_REQUEST[ 'user_id' ] ) ? esc_attr( $_REQUEST[ 'user_id' ] ) : 0;
+					$selected_user = isset( $_REQUEST[ 'user_id' ] ) ? esc_attr( $_REQUEST[ 'user_id' ] ) : '';
 					$args = apply_filters( 'bookacti_booking_list_user_selectbox_args', array(
 						'name'				=> 'user_id',
 						'id'				=> 'bookacti-booking-filter-customer',
 						'show_option_all'	=> esc_html__( 'All', 'booking-activities' ),
-						'show_option_self'	=> esc_html__( 'Your search', 'booking-activities' ),
-						'option_self_value'	=> $selected_user,
 						'option_label'		=> array( 'first_name', ' ', 'last_name', ' (', 'user_login', ' / ', 'user_email', ')' ),
 						'selected'			=> $selected_user,
-						'echo'				=> true
+						'allow_clear'		=> 1,
+						'allow_tags'		=> 1,
+						'echo'				=> 1
 					));
 					bookacti_display_user_selectbox( $args );
 				?>

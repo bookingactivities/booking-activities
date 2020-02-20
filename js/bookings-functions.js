@@ -27,13 +27,13 @@ $j( document ).ready( function() {
 
 /**
  * Init booking filter action
- * @version 1.6.0
+ * @version 1.7.19
  */
 function bookacti_init_booking_filters_actions() {
 	
 	// Display or hide activities filter according to selected templates
 	bookacti_update_template_related_filters();
-	$j( '#bookacti-booking-filter-templates, #bookacti-booking-filter-status, #bookacti-booking-filter-customer' ).on( 'change bookacti_customers_selectbox_changed', function() {
+	$j( '#bookacti-booking-filter-templates, #bookacti-booking-filter-status, #bookacti-booking-filter-customer' ).on( 'change', function() {
 		// Show / Hide activities filter
 		bookacti_update_template_related_filters();
 		

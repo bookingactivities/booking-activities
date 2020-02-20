@@ -509,9 +509,14 @@ function bookacti_fill_booking_system_fields( booking_system, event, group_id ) 
 }
 
 
-// Pick all events of a group onto the calendar
+/**
+ * Pick all events of a group onto the calendar
+ * @version 1.7.19
+ * @param {dom_element} booking_system
+ * @param {int|string} group_id
+ * @param {object} event
+ */
 function bookacti_pick_events_of_group( booking_system, group_id, event ) {
-	
 	group_id = $j.isArray( group_id ) && group_id.length === 1 ? group_id[ 0 ] : group_id;
 	group_id = $j.isNumeric( group_id ) || group_id === 'single' ? group_id : false;
 	
@@ -525,7 +530,7 @@ function bookacti_pick_events_of_group( booking_system, group_id, event ) {
 	// Empty the picked events and refresh them
 	bookacti_unpick_all_events( booking_system );
 	
-	// Pick a single event or the whol group
+	// Pick a single event or the whole group
 	if( group_id === 'single' ) {
 		bookacti_pick_event( booking_system, event );
 	} else {

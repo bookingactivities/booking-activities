@@ -1073,91 +1073,89 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	/**
 	 * Create a user selectbox
 	 * @since 1.3.0
-	 * @version 1.7.18
+	 * @version 1.7.19
 	 * @param array $raw_args
 	 * @return string|void
 	 */
 	function bookacti_display_user_selectbox( $raw_args ) {
 		$defaults = array(
-			'show_option_all' => '', 
-			'show_option_none' => '', 'option_none_value' => -1, 
-			'show_option_self' => '', 'option_self_value' => '',
-			'show_option_current' => '', 'option_current_value' => 'current',
-			'option_label' => array( 'display_name' ), 'echo' => 1,
+			'allow_tags' => 0, 'allow_clear' => 1, 'allow_current' => 0,
+			'option_label' => array( 'display_name' ), 'ajax' => 1, 'echo' => 1,
 			'selected' => 0, 'name' => 'user_id', 'class' => '', 'id' => '',
 			'include' => array(), 'exclude' => array(),
 			'role' => array(), 'role__in' => array(), 'role__not_in' => array(),
 			'orderby' => 'display_name', 'order' => 'ASC'
 		);
 		
-		$args	= apply_filters( 'bookacti_user_selectbox_args', wp_parse_args( $raw_args, $defaults ), $raw_args );
-		$users	= bookacti_get_users_data( $args );
+		$args = apply_filters( 'bookacti_user_selectbox_args', wp_parse_args( $raw_args, $defaults ), $raw_args );
+		
+		$users = ! $args[ 'ajax' ] ? bookacti_get_users_data( $args ) : array();
+		$args[ 'class' ] = $args[ 'ajax' ] ? 'bookacti-select2-ajax ' . trim( $args[ 'class' ] ) : 'bookacti-select2-no-ajax ' . trim( $args[ 'class' ] );
+		
+		if( $args[ 'ajax' ] && $args[ 'selected' ] ) {
+			$user = get_user_by( 'id', $args[ 'selected' ] );
+			if( $user ) { $users[] = $user; }
+		}
 		
 		ob_start();
 		?>
-		
 		<input type='hidden' name='<?php echo $args[ 'name' ]; ?>' value='' />
-		<select <?php if( $args[ 'id' ] ) { echo 'id="' . $args[ 'id' ] . '"'; } ?> name='<?php echo $args[ 'name' ]; ?>' class='bookacti-user-selectbox <?php echo $args[ 'class' ]; ?>' >
-			<option value='' ><?php echo esc_html__( 'Search for a customer', 'booking-activities' ); ?></option>
+		<select <?php if( $args[ 'id' ] ) { echo 'id="' . $args[ 'id' ] . '"'; } ?> 
+			name='<?php echo $args[ 'name' ]; ?>' 
+			class='bookacti-user-selectbox <?php echo $args[ 'class' ]; ?>'
+			data-tags='<?php echo ! empty( $args[ 'allow_tags' ] ) ? 1 : 0; ?>'
+			data-allow-clear='<?php echo ! empty( $args[ 'allow_clear' ] ) ? 1 : 0; ?>'
+			data-placeholder='<?php esc_html_e( 'Search for a customer', 'booking-activities' ); ?>'
+			data-type='users' >
+			<option><!-- Used for the placeholder --></option>
 			<?php
-				if( $args[ 'show_option_all' ] ) {
-					$_selected = selected( 0, $args[ 'selected' ], false );
-					?><option value='0' <?php echo $_selected ?> ><?php echo $args[ 'show_option_all' ]; ?></option><?php
+				if( $args[ 'allow_current' ] ) {
+					$_selected = selected( 'current', $args[ 'selected' ], false );
+					?><option value='current' <?php echo $_selected ?> ><?php esc_html_e( 'Current user', 'booking-activities' ); ?></option><?php
 				}
 
-				if( $args[ 'show_option_none' ] ) {
-					$_selected = selected( $args[ 'option_none_value' ], $args[ 'selected' ], false );
-					?><option value='<?php echo esc_attr( $args[ 'option_none_value' ] ); ?>' <?php echo $_selected ?> ><?php echo $args[ 'show_option_none' ]; ?></option><?php
-				}
-
-				if( $args[ 'show_option_current' ] ) {
-					$_selected = selected( $args[ 'option_current_value' ], $args[ 'selected' ], false );
-					?><option value='<?php echo esc_attr( $args[ 'option_current_value' ] ); ?>' <?php echo $_selected ?> ><?php echo $args[ 'show_option_current' ]; ?></option><?php
-				}
-				
-				if( $args[ 'show_option_self' ] ) {
-					$_selected = selected( $args[ 'option_self_value' ], $args[ 'selected' ], false );
-					?><option value='<?php echo esc_attr( $args[ 'option_self_value' ] ); ?>' class='bookacti-variable-value' <?php echo $_selected ?> ><?php echo $args[ 'option_self_value' ] ? $args[ 'option_self_value' ] : $args[ 'show_option_self' ]; ?></option><?php
-				}
-				
 				do_action( 'bookacti_add_user_selectbox_options', $args, $users );
+				
+				$is_selected = false;
+				if( $users ) {
+					foreach( $users as $user ) {
+						$_selected = selected( $user->ID, $args[ 'selected' ], false );
+						if( $_selected ) { $is_selected = true; }
+						
+						// Build the option label based on the array
+						$label = '';
+						foreach( $args[ 'option_label' ] as $show ) {
+							// If the key contain "||" display the first not empty value
+							if( strpos( $show, '||' ) !== false ) {
+								$keys = explode( '||', $show );
+								$show = $keys[ 0 ];
+								foreach( $keys as $key ) {
+									if( ! empty( $user->{ $key } ) ) { $show = $key; break; }
+								}
+							}
 
-				foreach( $users as $user ) {
-					$_selected = selected( $user->ID, $args[ 'selected' ], false );
-					
-					// Build the option label based on the array
-					$label = '';
-					foreach( $args[ 'option_label' ] as $show ) {
-						// If the key contain "||" display the first not empty value
-						if( strpos( $show, '||' ) !== false ) {
-							$keys = explode( '||', $show );
-							$show = $keys[ 0 ];
-							foreach( $keys as $key ) {
-								if( ! empty( $user->{ $key } ) ) { $show = $key; break; }
+							// Display the value if the key exists, else display the key as is, as a separator
+							if( isset( $user->{ $show } ) ) {
+								$label .= $user->{ $show };
+							} else {
+								$label .= $show;
 							}
 						}
-						
-						// Display the value if the key exists, else display the key as is, as a separator
-						if( isset( $user->{ $show } ) ) {
-							$label .= $user->{ $show };
-						} else {
-							$label .= $show;
-						}
+					?>
+						<option value='<?php echo $user->ID; ?>' <?php echo $_selected ?> ><?php echo esc_html( $label ); ?></option>
+					<?php
 					}
-			?>
-					<option value='<?php echo $user->ID; ?>' <?php echo $_selected ?> ><?php echo esc_html( $label ); ?></option>
-			<?php
+				}
+				
+				if( $args[ 'allow_tags' ] && $args[ 'selected' ] !== '' && ! $is_selected ) {
+					?><option value='<?php echo esc_attr( $args[ 'selected' ] ); ?>' selected="selected"><?php echo esc_html( $args[ 'selected' ] ); ?></option><?php
 				}
 			?>
 		</select>
-
 		<?php
 		$output = ob_get_clean();
 		
-		// Return the output...
 		if( ! $args[ 'echo' ] ) { return $output; }
-		
-		// ...or echo
 		echo $output;
 	}
 
@@ -1658,7 +1656,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	
 	/**
 	 * Get users metadata
-	 * @version 1.7.1
+	 * @version 1.7.19
 	 * @param array $args
 	 * @return array
 	 */
@@ -1671,7 +1669,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			'date_query' => array(),
 			'orderby' => 'login', 'order' => 'ASC', 'offset' => '',
 			'number' => '', 'paged' => '', 'count_total' => false,
-			'search' => '', 'fields' => 'all'
+			'search' => '', 'search_columns' => array(), 'fields' => 'all'
 		 ); 
 		
 		$args = apply_filters( 'bookacti_users_data_args', wp_parse_args( $args, $defaults ), $args );

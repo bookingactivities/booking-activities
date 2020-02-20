@@ -5,7 +5,7 @@ Tags: booking, reservation, booking form, woocommerce booking, booking events
 Requires at least: 3.6
 Tested up to: 5.3
 Requires PHP: 5.3
-Stable tag: 1.7.18
+Stable tag: 1.7.19
 License: GPLv3 or later
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
 
@@ -318,6 +318,21 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 
 
 == Changelog ==
+
+= 1.7.19 - 2020/02/20 =
+* Optimization - Dynamic user selectbox in booking list filters
+* Optimization - Dynamic product selectbox in Calendar field settings, actions tab
+* Tweak - Allow to perform the form action on event click even if there is no Submit button and if the calendar is not in a form
+* Tweak - Error messages related to the picked event are removed when a new event is picked
+* Fix - The "Events are bookable for up to" option didn't work
+* Fix - WC product edit page: Activity tab didn't appear when Activity box was checked
+* Fix - WC product edit page: Price warning didn't take the decimal separator into account
+* Fix - Multisite: Wrong redirect after creating a booking form
+* Fix - Bypass form manager checks for shop managers
+* Fix - PHP Notice when creating a calendar or a booking form
+* Fix - PHP Error when a user logs in and WC session doesn't exist
+* Fix - Display Pack tooltip not displayed on unavailable events on mouseover
+* Fix - Form action list didn't changed when calendars changed
 
 = 1.7.18 - 2020/02/08 =
 * Tweak - Add an option to duplicate booking forms

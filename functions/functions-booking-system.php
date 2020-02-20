@@ -510,7 +510,7 @@ function bookacti_get_calendar_field_booking_system_attributes( $calendar_field 
 	// Transform the Calendar field settings to Booking system attributes
 	$booking_system_atts_raw= array_merge( $calendar_field, $availability_period, array( 'picked_events' => $picked_events, 'display_data' => $display_data ) );
 	$booking_system_atts	= bookacti_format_booking_system_attributes( $booking_system_atts_raw );
-	
+		
 	return apply_filters( 'bookacti_calendar_field_booking_system_attributes', $booking_system_atts, $calendar_field );
 }
 
@@ -640,7 +640,7 @@ function bookacti_format_booking_system_url_attributes( $atts = array() ) {
 /**
  * Get booking system fields default data
  * @since 1.5.0
- * @version 1.7.17
+ * @version 1.7.19
  * @param array $fields
  * @return array
  */
@@ -660,7 +660,6 @@ function bookacti_get_booking_system_fields_default_data( $fields = array() ) {
 		$defaults[ 'calendars' ] = array( 
 			'name'		=> 'calendars',
 			'type'		=> 'select',
-			'id'		=> '_bookacti_template',
 			'multiple'	=> 'maybe',
 			'options'	=> $templates_options,
 			'value'		=> '', 
@@ -720,7 +719,6 @@ function bookacti_get_booking_system_fields_default_data( $fields = array() ) {
 		$defaults[ 'groups_only' ] = array(
 			'type'			=> 'checkbox',
 			'name'			=> 'groups_only',
-			'id'			=> '_bookacti_groups_only',
 			'value'			=> 0,
 			'title'			=> esc_html__( 'Groups only', 'booking-activities' ),
 			'tip'			=> esc_html__( 'Display only groups of events if checked. Else, also display the other single events (if any).', 'booking-activities' )
@@ -775,12 +773,10 @@ function bookacti_get_booking_system_fields_default_data( $fields = array() ) {
 			'name'			=> 'user_id',
 			'options'		=> array(
 				'name'					=> 'user_id',
-				'id'					=> 'user_id',
-				'show_option_all'		=> esc_html__( 'All', 'booking-activities' ),
-				'show_option_current'	=> esc_html__( 'Current user', 'booking-activities' ),
 				'option_label'			=> array( 'user_login', ' (', 'user_email', ')' ),
 				'selected'				=> 0,
-				'echo'					=> true
+				'allow_current'			=> 1,
+				'echo'					=> 1
 			),
 			'title'			=> esc_html__( 'Customer', 'booking-activities' ),
 			'tip'			=> esc_html__( 'Retrieve events booked by the selected user only.', 'booking-activities' ) . ' ' . esc_html__( '"Booked only" option must be activated.', 'booking-activities' )
@@ -1640,7 +1636,7 @@ function bookacti_get_calendar_field_availability_period( $calendar_field ) {
 /**
  * Get availability period according to relative and absolute dates
  * @since 1.5.9
- * @version 1.7.17
+ * @version 1.7.19
  * @param array $absolute_period
  * @param array $relative_period
  * @param boolean $bypass_relative_period
@@ -1663,7 +1659,7 @@ function bookacti_get_availability_period( $absolute_period = array(), $relative
 			$relative_start_time = clone $current_time;
 			$relative_start_time->add( new DateInterval( 'P' . $relative_period_start . 'D' ) );
 			$relative_start_date = $relative_start_time->format( 'Y-m-d' );
-			if( strtotime( $relative_start_date ) > strtotime( $absolute_period[ 'start' ] ) ) {
+			if( strtotime( $relative_start_date ) > strtotime( $calendar_start_date ) ) {
 				$calendar_start_date = $relative_start_date;
 			}
 		}
@@ -1671,14 +1667,14 @@ function bookacti_get_availability_period( $absolute_period = array(), $relative
 			$relative_end_time = clone $current_time;
 			$relative_end_time->add( new DateInterval( 'P' . $relative_period_end . 'D' ) );
 			$relative_end_date = $relative_end_time->format( 'Y-m-d' );
-			if( strtotime( $relative_end_date ) < strtotime( $absolute_period[ 'end' ] ) ) {
+			if( strtotime( $relative_end_date ) < strtotime( $calendar_end_date ) ) {
 				$calendar_end_date = $relative_end_date;
 			}
 		}
 	}
 	
 	$availability_period = array( 'start' => $calendar_start_date, 'end' => $calendar_end_date );
-
+	
 	return apply_filters( 'bookacti_availability_period', $availability_period, $absolute_period, $relative_period );
 }
 

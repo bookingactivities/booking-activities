@@ -1691,67 +1691,77 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	/**
 	 * Display a products selectbox
 	 * @since 1.7.0
-	 * @version 1.7.10
-	 * @param array $args
-	 * @param array $products_titles
+	 * @version 1.7.19
+	 * @param array $raw_args
 	 * @return string
 	 */
-	function bookacti_display_product_selectbox( $args = array(), $products_titles = array() ) {
+	function bookacti_display_product_selectbox( $raw_args = array() ) {
 		$defaults = array(
 			'field_name'		=> 'product_id',
 			'selected'			=> '',
+			'id'				=> '',
 			'class'				=> '',
-			'show_option_none'	=> '', 
-			'option_none_value'	=> 'none',
+			'allow_tags'		=> 0,
+			'allow_clear'		=> 1,
+			'ajax'				=> 1,
 			'echo'				=> 1
 		);
-		$r = wp_parse_args( $args, $defaults );
+		$args = apply_filters( 'bookacti_product_selectbox_args', wp_parse_args( $raw_args, $defaults ), $raw_args );
 		
-		if( ! $products_titles ) { $products_titles = bookacti_get_products_titles(); }
+		$products_titles = ! $args[ 'ajax' ] ? bookacti_get_products_titles() : ( $args[ 'selected' ] ? bookacti_get_products_titles( $args[ 'selected' ] ) : array() );
+		$args[ 'class' ] = $args[ 'ajax' ] ? 'bookacti-select2-ajax ' . trim( $args[ 'class' ] ) : 'bookacti-select2-no-ajax ' . trim( $args[ 'class' ] );
 		
 		ob_start();
-		
 		?>
-		<select name='<?php echo $r[ 'field_name' ]; ?>' class='bookacti-wc-products-selectbox <?php echo $r[ 'class' ]; ?>'>
+		<select <?php if( $args[ 'id' ] ) { echo 'id="' . $args[ 'id' ] . '"'; } ?> 
+			name='<?php echo $args[ 'field_name' ]; ?>' 
+			class='bookacti-wc-products-selectbox <?php echo $args[ 'class' ]; ?>'
+			data-tags='<?php echo ! empty( $args[ 'allow_tags' ] ) ? 1 : 0; ?>'
+			data-allow-clear='<?php echo ! empty( $args[ 'allow_clear' ] ) ? 1 : 0; ?>'
+			data-placeholder='<?php esc_html_e( 'Search for a product', 'booking-activities' ); ?>'
+			data-type='products' >
+			<option><!-- Used for the placeholder --></option>
 		<?php
-			// Display 'none' value
-			if( ! empty( $r[ 'show_option_none' ] ) ) {
-			?>
-				<option value='<?php echo esc_attr( $r[ 'option_none_value' ] ); ?>'><?php echo $r[ 'show_option_none' ]; ?></option>
-			<?php
+			do_action( 'bookacti_add_product_selectbox_options', $args, $products_titles );
+			
+			$is_selected = false;
+			if( $products_titles ) {
+				foreach( $products_titles as $product_id => $product ) {
+					// Display simple products options
+					if( empty( $product[ 'variations' ] ) ) {
+						$_selected = selected( $product_id, $args[ 'selected' ] );
+						if( $_selected ) { $is_selected = true; }
+						?><option class='bookacti-wc-product-option' value='<?php echo esc_attr( $product_id ); ?>' <?php echo $_selected; ?>><?php echo esc_html( apply_filters( 'bookacti_translate_text', $product[ 'title' ] ) ); ?></option><?php
+
+					// Display variations options
+					} else {
+					?>
+						<optgroup class='bookacti-wc-variable-product-option-group' label='<?php echo esc_attr( apply_filters( 'bookacti_translate_text', $product[ 'title' ] ) ); ?>'>
+						<?php
+							foreach( $product[ 'variations' ] as $variation_id => $variation ) {
+								$_selected = selected( $variation_id, $args[ 'selected' ] );
+								if( $_selected ) { $is_selected = true; }
+								$variation_title = esc_html( apply_filters( 'bookacti_translate_text', $variation[ 'title' ] ) );
+								$formatted_variation_title = trim( preg_replace( '/,[\s\S]+?:/', ',', ',' . $variation_title ), ', ' );
+								?><option class='bookacti-wc-product-variation-option' value='<?php echo esc_attr( $variation_id ); ?>' <?php echo $_selected; ?>><?php echo $formatted_variation_title; ?></option><?php
+							}
+						?>
+						</optgroup>
+					<?php
+					}
+				}
 			}
 			
-			foreach( $products_titles as $product_id => $product ) {
-				// Display simple products options
-				if( empty( $product[ 'variations' ] ) ) {
-				?>
-					<option class='bookacti-wc-product-option' value='<?php echo esc_attr( $product_id ); ?>' <?php selected( $product_id, $r[ 'selected' ] ); ?>><?php echo apply_filters( 'bookacti_translate_text', $product[ 'title' ] ); ?></option>
-				<?php
-				
-				// Display variations options
-				} else {
-				?>
-					<optgroup class='bookacti-wc-variable-product-option-group' label='<?php echo esc_attr( apply_filters( 'bookacti_translate_text', $product[ 'title' ] ) ); ?>'>
-					<?php
-						foreach( $product[ 'variations' ] as $variation_id => $variation ) {
-							$variation_title = apply_filters( 'bookacti_translate_text', $variation[ 'title' ] );
-							$strpos = strpos( $variation_title, ' - ' );
-							if( $strpos !== false ) { $strpos += 3; } else { $strpos = 0; }
-						?>
-							<option class='bookacti-wc-product-variation-option' value='<?php echo esc_attr( $variation_id ); ?>' <?php selected( $variation_id, $r[ 'selected' ] ); ?>><?php echo substr( $variation_title, $strpos ); ?></option>
-						<?php
-						}
-					?>
-					</optgroup>
-				<?php
-				}
+			if( $args[ 'allow_tags' ] && $args[ 'selected' ] !== '' && ! $is_selected ) {
+				?><option value='<?php echo esc_attr( $args[ 'selected' ] ); ?>' selected="selected"><?php echo esc_html( $args[ 'selected' ] ); ?></option><?php
 			}
 		?>
 		</select>
 		<?php
-		$selectbox = ob_get_clean();
-		if( empty( $r[ 'echo' ] ) ) { return $selectbox; }
-		echo $selectbox;
+		$output = ob_get_clean();
+		
+		if( empty( $args[ 'echo' ] ) ) { return $output; }
+		echo $output;
 	}
 	
 	
@@ -2431,47 +2441,29 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	/**
 	 * Setting for: Bookings page in My Account
 	 * @since 1.7.16
+	 * @version 1.7.19
 	 */
 	function bookacti_settings_wc_my_account_bookings_page_id_callback() {
-		wp_enqueue_script( 'wc-enhanced-select' );
-		wp_enqueue_style( 'woocommerce_admin_styles' );
-		$args = array(
-			'name'					=> 'bookacti_account_settings[wc_my_account_bookings_page_id]',
-			'id'					=> 'wc_my_account_bookings_page_id',
-			'type'					=> 'single_select_page',
-			'default'				=> '',
-			'class'					=> 'wc-enhanced-select-nostd',
-			'sort_column'			=> 'menu_order',
-			'sort_order'			=> 'ASC',
-			'show_option_no_change'	=> esc_html__( 'Disabled' ),
-			'show_option_none'		=> esc_html__( 'Default booking list', 'booking-activities' ),
-			'option_none_value'		=> 0,
-			'selected'				=> bookacti_get_setting_value( 'bookacti_account_settings', 'wc_my_account_bookings_page_id' ),
+		$options = array(
+			'-1' => esc_html__( 'Disabled' ),
+			'0' => esc_html__( 'Default booking list', 'booking-activities' ),
 		);
-		wp_dropdown_pages( $args );
-		bookacti_help_tip( esc_html__( 'Select the page to display in the "Bookings" tab of the "My account" area. You can also display the default booking list, or completely disable this tab.', 'booking-activities' ) );
-	}
-	
-	
-	/**
-	 * Select the default value when no page is selected in "Bookings page in My Account" setting
-	 * This function is necessary since wp_dropdown_pages ignore the "selected" parameter for both "no_changes" and "none" options
-	 * @since 1.7.16
-	 * @param string $output
-	 * @param array $parsed_args
-	 * @param array $pages
-	 * @return string
-	 */
-	function bookacti_settings_wc_my_account_bookings_page_id_select_default_value( $output, $parsed_args, $pages ) {
-		if( $parsed_args[ 'id' ] !== 'wc_my_account_bookings_page_id' ) { return $output; }
-		if( intval( $parsed_args[ 'selected' ] ) > 0 ) { return $output; }
+		$pages = get_pages( array( 'sort_column' => 'menu_order', 'sort_order' => 'ASC' ) );
+		foreach( $pages as $page ) {
+			$options[ $page->ID ] = apply_filters( 'bookacti_translate_text', $page->post_title );
+		}
 		
-		$search	= '<option value="' . intval( $parsed_args[ 'selected' ] ) . '"';
-		$replace= $search . ' selected';
-		
-		return str_replace( $search, $replace, $output );
+		$args = array(
+			'type'		=> 'select',
+			'name'		=> 'bookacti_account_settings[wc_my_account_bookings_page_id]',
+			'id'		=> 'wc_my_account_bookings_page_id',
+			'class'		=> 'bookacti-select2-no-ajax',
+			'options'	=> $options,
+			'value'		=> bookacti_get_setting_value( 'bookacti_account_settings', 'wc_my_account_bookings_page_id' ),
+			'tip'		=> esc_html__( 'Select the page to display in the "Bookings" tab of the "My account" area. You can also display the default booking list, or completely disable this tab.', 'booking-activities' )
+		);
+		bookacti_display_field( $args );
 	}
-	add_filter( 'wp_dropdown_pages', 'bookacti_settings_wc_my_account_bookings_page_id_select_default_value', 10, 3 );
 	
 	
 	

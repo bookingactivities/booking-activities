@@ -463,7 +463,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	
 	/**
 	 * Bypass template manager check for shop managers
-	 * 
+	 * @version 1.7.19
 	 * @param boolean $allowed
 	 * @return boolean
 	 */
@@ -472,10 +472,11 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	}
 	add_filter( 'bookacti_bypass_template_managers_check', 'bookacti_bypass_checks_for_shop_managers', 10, 1 );
 	add_filter( 'bookacti_bypass_activity_managers_check', 'bookacti_bypass_checks_for_shop_managers', 10, 1 );
-	
-	
-	
-	
+	add_filter( 'bookacti_bypass_form_managers_check', 'bookacti_bypass_checks_for_shop_managers', 10, 1 );
+
+
+
+
 // CUSTOM PRODUCTS OPTIONS
 
 	/**

@@ -1,5 +1,5 @@
 $j( document ).ready( function() {
-	bookacti_init_user_selectbox();
+	bookacti_select2_init();
 	bookacti_init_moment_format_from_php_date_format();
 });
 
@@ -41,7 +41,7 @@ function bookacti_init_tooltip() {
 
 /**
  * Scroll to element or to position
- * @version 1.5.4
+ * @version 1.7.19
  * @param {DOM_Element} or {number} element
  * @param {int} speed
  * @param {string} position Either "middle" or "top"
@@ -50,10 +50,10 @@ function bookacti_scroll_to( element, speed, position ) {
 	speed	= $j.isNumeric( speed ) ? parseInt( speed ) : 500;
 	position= position !== 'middle' ? 'top' : 'middle';
 	
-	var elOffset = typeof element === 'number' ? element : element.offset().top;
+	var elOffset = typeof element === 'number' ? element : ( element.length ? element.offset().top : $j( document ).scrollTop() );
 	var offset = elOffset;
 	
-	if( position === 'middle' && typeof element !== 'number' ) {	
+	if( position === 'middle' && typeof element !== 'number' && element.length ) {	
 		var elHeight = element.height();
 		var windowHeight = $j( window ).height();
 
@@ -149,155 +149,67 @@ $j.fn.serializeObject = function() {
 
 
 /**
- * Init Find-As-You-Type user selectbox
- * @version 1.7.6
+ * Init selectbox with AJAX search
+ * @since 1.7.19
  */
-function bookacti_init_user_selectbox() {
-	// Jquery UI Autocomplete
-	( function( $j ) {
-		$j.widget( 'custom.bookacti_combobox', {
-			_create: function() {
-				this.wrapper = $j( '<span>' )
-					.addClass( 'bookacti-combobox' )
-					.insertAfter( this.element );
-
-				this.element.hide();
-				this._createAutocomplete();
-				this._createShowAllButton();
-			},
-
-			_createAutocomplete: function() {
-				var selected = this.element.children( ':selected' ),
-				value = selected.val() ? selected.text() : '';
-
-				this.input = $j( '<input>' )
-					.appendTo( this.wrapper )
-					.val( value )
-					.attr( 'placeholder', bookacti_localized.placeholder_select_customer )
-					.addClass( 'bookacti-combobox-input ui-widget ui-widget-content ui-state-default ui-corner-left' )
-					.autocomplete({
-						delay: 0,
-						minLength: 0,
-						source: $j.proxy( this, '_source' )
-					})
-					.tooltip({
-						tooltipClass: 'ui-state-highlight'
-					});
-
-				this._on( this.input, {
-					autocompleteselect: function( event, ui ) {
-						ui.item.option.selected = true;
-						this._trigger( 'select', event, {
-							item: ui.item.option
-						});
-						
-						// Trigger action and pass selected option
-						$j( this.element ).trigger( 'bookacti_customers_selectbox_changed', [ ui.item.option ] );
-						
-					},
-
-					autocompletesearch: function( event, ui ) {
-						// Add self (add the searched string as an option)
-						var variable_option = this.element.children( 'option.bookacti-variable-value' );
-						if( variable_option.length ) {
-							variable_option.val( this.input.val() );
-							variable_option.html( this.input.val() );
-							variable_option.selected = true;
-						}
-					},
-					
-					autocompletechange: function( event, ui ) {
-						this._removeIfInvalid( event, ui );
-					}
-				});
+function bookacti_select2_init() {
+	if( ! $j.fn.select2 ) { return; }
+		
+	// Without AJAX search
+	$j( '.bookacti-select2-no-ajax:not(.select2-hidden-accessible)' ).select2({
+		language: bookacti_localized.fullcalendar_locale,
+		minimumResultsForSearch: 10,
+		width: 'element',
+		dropdownAutoWidth: true,
+		containerCssClass : 'bookacti-select2-container',
+		dropdownCssClass : 'bookacti-select2-dropdown',
+		dropdownParent: $j( this ).closest( '.bookacti-backend-dialog' ).length ? $j( this ).closest( '.bookacti-backend-dialog' ) : $j( 'body' ),
+		escapeMarkup: function( text ) { return text; }
+	});
+	
+	// With AJAX search
+	$j( '.bookacti-select2-ajax:not(.select2-hidden-accessible)' ).select2({
+		language: bookacti_localized.fullcalendar_locale,
+		minimumInputLength: 3,
+		width: 'element',
+		dropdownAutoWidth: true,
+		containerCssClass : 'bookacti-select2-container',
+		dropdownCssClass : 'bookacti-select2-dropdown',
+		dropdownParent: $j( this ).closest( '.bookacti-backend-dialog' ).length ? $j( this ).closest( '.bookacti-backend-dialog' ) : $j( 'body' ),
+  		escapeMarkup: function( text ) { return text; },
+		ajax: {
+			url: bookacti_localized.ajaxurl,
+			dataType: 'json',
+			delay: 1000,
+			data: function( params ) {
+				var data_type = $j( this ).data( 'type' ) ? $j( this ).data( 'type' ).trim() : '';
+				var data = {
+					term: params.term,
+					action: data_type ? 'bookactiSelect2Query_' + data_type : 'bookactiSelect2Query',
+					name: $j( this ).attr( 'name' ) ? $j( this ).attr( 'name' ) : '',
+					id: $j( this ).attr( 'id' ) ? $j( this ).attr( 'id' ) : '',
+					allow_current: $j( this ).find( 'option[value="current"]' ).length ? 1 : 0,
+					nonce: bookacti_localized.nonce_query_select2_options
+				};
 				
-				this.input.autocomplete( 'widget' ).addClass( 'bookacti-combobox-list bookacti-custom-scrollbar' );
-			},
-
-			_createShowAllButton: function() {
-				var input = this.input,
-				wasOpen = false;
-
-				$j( '<a>' )
-					.attr( 'tabIndex', -1 )
-					.attr( 'title', bookacti_localized.show_all_customers )
-					.tooltip()
-					.appendTo( this.wrapper )
-					.button({
-						icons: {
-							primary: 'ui-icon-triangle-1-s'
-						},
-						text: false
-					})
-					.removeClass( 'ui-corner-all' )
-					.addClass( 'bookacti-combobox-toggle ui-corner-right' )
-					.mousedown( function() {
-						wasOpen = input.autocomplete( 'widget' ).is( ':visible' );
-					})
-					.click( function() {
-						input.focus();
-
-						// Close if already visible
-						if ( wasOpen ) {
-							return;
-						}
-
-						// Pass empty string as value to search for, displaying all results
-						input.autocomplete( 'search', '' );
-					});
-			},
-
-			_source: function( request, response ) {
-				var matcher = new RegExp( $j.ui.autocomplete.escapeRegex(request.term), 'i' );
-				response( this.element.children( 'option' ).map( function() {
-					var text = $j( this ).text();
-					if( this.value && ( !request.term || matcher.test(text) ) )
-						return {
-							label: text,
-							value: text,
-							option: this
-						};
-					}));
-			},
-			
-			_removeIfInvalid: function( event, ui ) {
-				// Selected an item, nothing to do
-				if( ui.item ) { return; }
-								
-				// Search for a match (case-insensitive)
-				var value = this.input.val(),
-					valueLowerCase = value.toLowerCase(),
-					valid = false;
-				this.element.children( 'option' ).each( function() {
-					if( $j( this ).text().toLowerCase() === valueLowerCase ) {
-						this.selected = valid = true;
-						return false;
-					}
-				});
+				$j( this ).trigger( 'bookacti_select2_query_data', [ data ] );
 				
-				// Found a match, nothing to do
-				if( valid ) { return; }
-				
-				// Remove invalid value
-				this.input.val( '' ).attr( 'title', '"' + value + '" ' + bookacti_localized.error_no_results );
-				if( this.input.data( 'ui-tooltip' ) ) { this.input.tooltip( 'open' ); }
-				this.element.val( '' );
-				this._delay( function() {
-					this.input.attr( 'title', '' );
-					if( this.input.data( 'ui-tooltip' ) ) { this.input.tooltip( 'close' ); }
-				}, 2500 );
-				this.input.autocomplete( 'instance' ).term = '';
+				return data;
 			},
-
-			_destroy: function() {
-				this.wrapper.remove();
-				this.element.show();
-			}
-		});
-	})( jQuery );
-
-	$j( function() {
-		$j( '.bookacti-user-selectbox' ).bookacti_combobox();
+			processResults: function( data ) {
+				var options = [];
+				if( typeof data.options !== 'undefined' ) {
+					options = data.options;
+				}
+				
+				var results = { results: options };
+				
+				$j( this ).trigger( 'bookacti_select2_query_results', [ results, data ] );
+				
+				return results;
+			},
+			cache: true
+		}
 	});
 }
 

@@ -62,9 +62,20 @@ $j( document ).ready( function() {
 	
 	
 	/**
+	 * Init WC actions to perfoms when the user submit booking form
+	 * @since 1.7.0
+	 * @version 1.7.19
+	 */
+	$j( 'body' ).on( 'bookacti_submit_booking_form', '.bookacti-booking-form', function() {
+		var booking_system = $j( this ).find( '.bookacti-booking-system' );
+		bookacti_wc_perform_form_action( booking_system );
+	});
+	
+	
+	/**
 	 * Init WC actions to perfoms when the user picks an event
 	 * @since 1.7.0
-	 * @version 1.7.10
+	 * @version 1.7.19
 	 */
 	$j( 'body' ).on( 'bookacti_events_picked_after', '.bookacti-booking-system', function( e, group_id, event ){
 		// Retrieve the info required to show the desired events
@@ -72,8 +83,8 @@ $j( document ).ready( function() {
 		var booking_system_id	= booking_system.attr( 'id' );
 		var attributes			= bookacti.booking_system[ booking_system_id ];
 		
-		// Do not perform form actions on form editor
-		if( ! $j( this ).closest( '#bookacti-form-editor-page-form' ).length ) {
+		// Perform form action, but not on form editor
+		if( ! booking_system.closest( '#bookacti-form-editor-page-form' ).length ) {
 			if( group_id === 'single' && attributes[ 'when_perform_form_action' ] === 'on_event_click' ) {
 				var group_ids = bookacti_get_event_group_ids( booking_system, event );
 				var open_dialog = false;
@@ -83,11 +94,7 @@ $j( document ).ready( function() {
 					open_dialog = true;
 				}
 				if( ! open_dialog ) {
-					if( attributes[ 'form_action' ] === 'redirect_to_product_page' ) {
-						bookacti_redirect_to_activity_product_page( booking_system, event );
-					} else if( attributes[ 'form_action' ] === 'add_product_to_cart' ) {
-						bookacti_add_activity_product_to_cart( booking_system, event );
-					}
+					bookacti_wc_perform_form_action( booking_system );
 				}
 			}
 		}
@@ -99,7 +106,7 @@ $j( document ).ready( function() {
 	/**
 	 * Init WC actions to perfoms when the user picks a group of events
 	 * @since 1.7.0
-	 * @version 1.7.10
+	 * @version 1.7.19
 	 */
 	$j( 'body' ).on( 'bookacti_group_of_events_chosen_after', '.bookacti-booking-system', function( e, group_id, event ) {
 		// Retrieve the info required to show the desired events
@@ -107,28 +114,61 @@ $j( document ).ready( function() {
 		var booking_system_id	= booking_system.attr( 'id' );
 		var attributes			= bookacti.booking_system[ booking_system_id ];
 		
-		// Do not perform form actions on form editor
-		if( ! $j( this ).closest( '#bookacti-form-editor-page-form' ).length ) {
+		// Perform form action, but not on form editor
+		if( ! booking_system.closest( '#bookacti-form-editor-page-form' ).length ) {
 			if( attributes[ 'when_perform_form_action' ] === 'on_event_click' ) {
-				if( attributes[ 'form_action' ] === 'redirect_to_product_page' ) {
-					if( group_id === 'single' ) { 
-						bookacti_redirect_to_activity_product_page( booking_system, event );
-					} else if( $j.isNumeric( group_id ) ) {
-						bookacti_redirect_to_group_category_product_page( booking_system, group_id );
-					}
-				} else if( attributes[ 'form_action' ] === 'add_product_to_cart' ) {
-					if( group_id === 'single' ) { 
-						bookacti_add_activity_product_to_cart( booking_system, event );
-					} else if( $j.isNumeric( group_id ) ) {
-						bookacti_add_group_category_product_to_cart( booking_system, group_id );
-					}
-				}
+				bookacti_wc_perform_form_action( booking_system );
 			}
 		}
 		
 		booking_system.trigger( 'bookacti_group_of_events_chosen_after_wc', [ group_id, event ] );
 	});
 });
+
+
+/**
+ * Perform WC form action
+ * @since 1.7.19
+ * @param {string} form_action
+ */
+function bookacti_wc_perform_form_action( booking_system ) {
+	var booking_system_id = booking_system.attr( 'id' );
+	if( typeof bookacti.booking_system[ booking_system_id ] === 'undefined' ) { return; }
+	
+	var attributes	= bookacti.booking_system[ booking_system_id ];
+	var form_action	= typeof attributes[ 'form_action' ] !== 'undefined';
+	if( form_action ) { if( attributes[ 'form_action' ] ) { form_action = attributes[ 'form_action' ]; } }
+	if( form_action !== 'redirect_to_product_page' && form_action !== 'add_product_to_cart' ) { return; }
+	
+	var group_id= booking_system.siblings( '.bookacti-booking-system-inputs' ).find( 'input[name="bookacti_group_id"]' ).val();
+	var event = {
+		'id': booking_system.siblings( '.bookacti-booking-system-inputs' ).find( 'input[name="bookacti_event_id"]' ).val(),
+		'start': booking_system.siblings( '.bookacti-booking-system-inputs' ).find( 'input[name="bookacti_event_start"]' ).val(),
+		'end': booking_system.siblings( '.bookacti-booking-system-inputs' ).find( 'input[name="bookacti_event_end"]' ).val()
+	};
+	
+	// A single event is selected
+	if( group_id === 'single' && event.id && event.start && event.end ) {
+		if( form_action === 'redirect_to_product_page' ) {
+			// Redirect to activity URL if a single event is selected
+			bookacti_redirect_to_activity_product_page( booking_system, event );
+		} else if( form_action === 'add_product_to_cart' ) {
+			// Add the product bound to the activity to cart
+			bookacti_add_activity_product_to_cart( booking_system, event );
+		}
+	}
+
+	// A group of events is selected
+	else if( $j.isNumeric( group_id ) ) {
+		if( form_action === 'redirect_to_product_page' ) {
+			// Redirect to group category URL if a group of events is selected
+			bookacti_redirect_to_group_category_product_page( booking_system, group_id );
+		} else if( form_action === 'add_product_to_cart' ) {
+			// Add the product bound to the group category to cart
+			bookacti_add_group_category_product_to_cart( booking_system, group_id );
+		}
+	}
+}
 
 
 
@@ -206,7 +246,7 @@ function bookacti_add_activity_product_to_cart( booking_system, event ) {
 	var activity_id = attributes[ 'events_data' ][ event.id ][ 'activity_id' ];
 	if( typeof attributes[ 'product_by_activity' ] === 'undefined' ) { return; }
 	if( typeof attributes[ 'product_by_activity' ][ activity_id ] === 'undefined' ) { return; }
-	
+
 	var product_id = attributes[ 'product_by_activity' ][ activity_id ];
 	
 	bookacti_add_product_to_cart_via_booking_system( booking_system, product_id );
@@ -238,12 +278,12 @@ function bookacti_add_group_category_product_to_cart( booking_system, group_id )
 /**
  * Add a product to cart from a booking form
  * @since 1.7.0
- * @version 1.7.17
+ * @version 1.7.19
  * @param {dom_element} booking_system
  * @param {int} product_id
  */
 function bookacti_add_product_to_cart_via_booking_system( booking_system, product_id ) {
-	// Use the error div of he booking system by default, or if possible, the error div of the form
+	// Use the error div of the booking system by default, or if possible, the error div of the form
 	var error_div = booking_system.siblings( '.bookacti-notices' );
 	if( booking_system.closest( 'form' ).length ) {
 		if( booking_system.closest( 'form' ).find( '> .bookacti-notices' ).length ) {
@@ -263,6 +303,9 @@ function bookacti_add_product_to_cart_via_booking_system( booking_system, produc
 	} else {
 		data = new FormData( booking_system.closest( 'form' ).get(0) );
 	}
+	
+	// Trigger action before sending form
+	booking_system.trigger( 'bookacti_before_add_product_to_cart', [ data ] );
 	
 	// Set the form action
 	if( data instanceof FormData ) {

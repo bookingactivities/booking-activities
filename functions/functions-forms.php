@@ -185,7 +185,7 @@ function bookacti_sanitize_form_data( $raw_form_data ) {
 
 /**
  * Display a booking form
- * @version 1.7.7
+ * @version 1.7.19
  * @param int $form_id
  * @param string $instance_id
  * @param string $context
@@ -237,12 +237,12 @@ function bookacti_display_form( $form_id, $instance_id = '', $context = 'display
 	// Add form container only if there is a "submit" button
 	if( $is_form ) { ?>
 		<form <?php echo $form_attributes_str; ?>>
-			<input type='hidden' name='action' value='bookactiSubmitBookingForm' />
-			<input type='hidden' name='nonce_booking_form' value='<?php echo wp_create_nonce( 'bookacti_booking_form' ); ?>' />
 	<?php } else { ?>
 		<div <?php echo $form_attributes_str; ?>>
 	<?php } ?>
 			<input type='hidden' name='form_id' value='<?php echo $form_id; ?>' />
+			<input type='hidden' name='action' value='bookactiSubmitBookingForm' />
+			<input type='hidden' name='nonce_booking_form' value='<?php echo wp_create_nonce( 'bookacti_booking_form' ); ?>' />
 		<?php
 			do_action( 'bookacti_form_before', $form, $instance_id, $context );
 
@@ -744,7 +744,7 @@ function bookacti_format_form_field_data( $raw_field_data ) {
 /**
  * Sanitize field data according to its type
  * @since 1.5.0
- * @version 1.7.17
+ * @version 1.7.19
  * @param array|string $raw_field_data
  * @return array|false
  */
@@ -764,6 +764,7 @@ function bookacti_sanitize_form_field_data( $raw_field_data ) {
 	if( $raw_field_data[ 'name' ] === 'calendar' ) {
 		$booleans_to_check = array( 'groups_only', 'groups_single_events', 'bookings_only', 'past_events', 'past_events_bookable' );
 		foreach( $booleans_to_check as $key ) {
+			if( ! isset( $raw_field_data[ $key ] ) ) { $field_meta[ $key ] = $default_meta[ $key ]; continue; }
 			$field_meta[ $key ] = in_array( $raw_field_data[ $key ], array( 1, '1', true, 'true', 'yes', 'ok' ), true ) ? 1 : 0;
 		}
 		
@@ -783,7 +784,7 @@ function bookacti_sanitize_form_field_data( $raw_field_data ) {
 		$field_meta[ 'group_categories' ]	= $group_categories && is_array( $group_categories ) ? $group_categories : ( $had_group_categories ? array( 'none' ) : array() );
 		
 		$field_meta[ 'status' ]		= isset( $raw_field_data[ 'status' ] ) && is_array( $raw_field_data[ 'status' ] ) ? array_intersect( $raw_field_data[ 'status' ], array_keys( bookacti_get_booking_state_labels() ) ) : $default_meta[ 'status' ];
-		$field_meta[ 'user_id' ]	= isset( $raw_field_data[ 'user_id' ] ) && is_numeric( $raw_field_data[ 'user_id' ] ) ? intval( $raw_field_data[ 'user_id' ] ) : ( in_array( $raw_field_data[ 'user_id' ], array( 0, '0', 'current' ), true ) ? $raw_field_data[ 'user_id' ] : $default_meta[ 'user_id' ] );
+		$field_meta[ 'user_id' ]	= isset( $raw_field_data[ 'user_id' ] ) && is_numeric( $raw_field_data[ 'user_id' ] ) ? intval( $raw_field_data[ 'user_id' ] ) : ( isset( $raw_field_data[ 'user_id' ] ) && in_array( $raw_field_data[ 'user_id' ], array( 0, '0', 'current' ), true ) ? $raw_field_data[ 'user_id' ] : $default_meta[ 'user_id' ] );
 		
 		$field_meta[ 'method' ]	= isset( $raw_field_data[ 'method' ] ) && in_array( $raw_field_data[ 'method' ], array_keys( bookacti_get_available_booking_methods() ), true ) ? $raw_field_data[ 'method' ] : $default_meta[ 'method' ];
 		
@@ -1553,10 +1554,9 @@ function bookacti_format_form_filters( $filters = array() ) {
 /**
  * Display 'managers' metabox content for forms
  * @since 1.5.0
- * @version 1.7.12
+ * @version 1.7.19
  */
 function bookacti_display_form_managers_meta_box( $form ) {
-	
 	// Get current form managers option list
 	$managers_already_added = array();
 	$manager_ids = bookacti_get_form_managers( $form[ 'form_id' ] );
@@ -1576,8 +1576,8 @@ function bookacti_display_form_managers_meta_box( $form ) {
 	
 	// Get available form managers option list
 	$in_roles		= apply_filters( 'bookacti_managers_roles', array() );
-	$not_in_roles	= apply_filters( 'bookacti_managers_roles_exceptions', is_multisite() ? array() : array( 'administrator' ) );
-	$user_query		= new WP_User_Query( array( 'blog_id' => is_multisite() ? 0 : get_current_blog_id(), 'role__in' => $in_roles, 'role__not_in' => $not_in_roles ) );
+	$not_in_roles	= apply_filters( 'bookacti_managers_roles_exceptions', array( 'administrator' ) );
+	$user_query		= new WP_User_Query( array( 'role__in' => $in_roles, 'role__not_in' => $not_in_roles ) );
 	$users			= $user_query->get_results();
 	$available_managers_options_list = '';
 	if ( ! empty( $users ) ) {

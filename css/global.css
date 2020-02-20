@@ -2,12 +2,9 @@
 
 /** GLOBAL **/
 
-/* Combobox */
+/* Select2 */
 .bookacti-user-selectbox			{ width: 100%; }
-.bookacti-combobox					{ position: relative; display: inline-block; vertical-align: middle; width: auto; min-height: 40px; }
-.ui-button.bookacti-combobox-toggle	{ position: absolute; display: inline-block; top: 0; right: -1px; padding: 0; margin: 0; width: 32px; min-height: 40px; box-sizing: border-box; border-bottom-right-radius: 3px; border-top-right-radius: 3px; }
-.bookacti-combobox-input			{ margin: 0; margin-right: -1px; padding: 5px 10px; min-width: 200px; min-height: 40px; width: auto; border-radius: 3px; }
-.bookacti-combobox-list				{ max-height: 200px; max-width: 480px; overflow-y: auto; overflow-x: hidden; }
+.bookacti-select2-dropdown			{ z-index: 10001; }
 
 /* Radio box */
 .bookacti-custom-radio-button		{ display: inline-block; margin: 0 0.5em 0.5em 0; }
@@ -103,7 +100,7 @@
 /* Events */
 .bookacti-calendar .fc-event	{ overflow: hidden; }
 .bookacti-calendar .fc-event:not(.bookacti-event-unavailable) { cursor: pointer; }
-.bookacti-event-unavailable		{ opacity: 0.5; z-index: -1 !important; }
+.bookacti-event-unavailable		{ opacity: 0.5; }
 .bookacti-picked-event .fc-bg	{ opacity: 0.5; transition: opacity 0.2s; }
 .bookacti-picked-event			{ border-width: 2px; z-index: 15 !important; transition: border 0.2s; }
 

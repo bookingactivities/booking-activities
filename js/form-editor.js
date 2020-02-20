@@ -45,17 +45,32 @@ $j( document ).ready( function() {
 	
 	
 	/**
+	 * Show or hide activities depending on the selected template - On load
+	 * @version 1.7.19
+	 */
+	if( $j( '#bookacti-calendars' ).length ) { 
+		var template_ids	= $j( '#bookacti-calendars' ).val();
+		var options			= $j( '[data-bookacti-show-if-templates]' );
+		bookacti_show_hide_template_related_options( template_ids, options ); 
+	}
+	
+	
+	/**
 	 * Add / remove activity row in the "redirect URL" table according to the currently selected activities
 	 * @since 1.7.0
-	 * @version 1.7.17
+	 * @version 1.7.19
 	 */
-	$j( '#bookacti-form-field-dialog-calendar' ).on( 'change', 'select#bookacti-activities', function( e ){
-		var activities = $j( this ).val();
+	$j( '#bookacti-form-field-dialog-calendar' ).on( 'change', 'select#bookacti-calendars, select#bookacti-activities', function( e ){
+		var template_ids	= $j( '#bookacti-calendars' ).val();
+		var options			= $j( '[data-bookacti-show-if-templates]' );
+		bookacti_show_hide_template_related_options( template_ids, options ); 
+		
+		var activities = $j( 'select#bookacti-activities' ).val();
 		
 		// If all activities, take them all
 		if( activities === 'all' ) {
 			activities = [];
-			$j( this ).find( 'option:not(:disabled)' ).each( function() {
+			$j( 'select#bookacti-activities' ).find( 'option:not(:disabled)' ).each( function() {
 				var activity_id = $j( this ).attr( 'value' );
 				if( $j.isNumeric( activity_id ) ) {
 					activities.push( activity_id );
@@ -83,18 +98,22 @@ $j( document ).ready( function() {
 				row.find( ':input' ).prop( 'disabled', false );
 				row.show();
 				return true; // continue
-			// If the row doesn't exists, create it
+			// If the row doesn't exist, create it
 			} else {
 				tbody.find( 'tr:first' ).clone().appendTo( tbody );
+				tbody.find( 'tr:last .select2' ).remove();
 				tbody.find( 'tr:last :input' ).each( function() {
 					var field_name_raw	= $j( this ).attr( 'name' );
 					var field_name		= field_name_raw.substring( 0, field_name_raw.lastIndexOf( '[' ) );
 					$j( this ).attr( 'name', field_name + '[' + activity_id + ']' );
+					$j( this ).removeClass( 'select2-hidden-accessible' );
 				});
 				tbody.find( 'tr:last td.bookacti-column-activity' ).text( activity_title ).attr( 'title', activity_title );
-				tbody.find( 'tr:last :input' ).val( '' );
+				tbody.find( 'tr:last :input' ).val( '' ).prop( 'disabled', false );
 				tbody.find( 'tr:last' ).closest( 'tr' ).data( 'activity_id', activity_id );
 				tbody.find( 'tr:last' ).closest( 'tr' ).attr( 'data-activity_id', activity_id );
+				bookacti_select2_init();
+				tbody.find( 'tr:last' ).show();
 			}
 		});
 		
@@ -114,10 +133,10 @@ $j( document ).ready( function() {
 	/**
 	 * Add / remove group category row in the "redirect URL" table according to the currently selected group categories
 	 * @since 1.7.0
-	 * @version 1.7.17
+	 * @version 1.7.19
 	 */
 	$j( '#bookacti-form-field-dialog-calendar' ).on( 'change', 'select#bookacti-group_categories', function( e ){
-		var group_categories = $j( this ).val();
+		var group_categories = $j( '#bookacti-group_categories' ).val();
 		
 		// If no group category is selected, hide the group categories actions table
 		var was_displayed = $j( '.bookacti-group-categories-actions-options-table' ).is( ':visible' );
@@ -129,7 +148,7 @@ $j( document ).ready( function() {
 		// If all group categories, take them all
 		if( group_categories === 'all' ) {
 			group_categories = [];
-			$j( this ).find( 'option:not(:disabled)' ).each( function() {
+			$j( '#bookacti-group_categories' ).find( 'option:not(:disabled)' ).each( function() {
 				var group_category_id = $j( this ).attr( 'value' );
 				if( $j.isNumeric( group_category_id ) ) {
 					group_categories.push( group_category_id );
@@ -164,15 +183,19 @@ $j( document ).ready( function() {
 			// If the row doesn't exists, create it
 			} else {
 				tbody.find( 'tr:first' ).clone().appendTo( tbody );
+				tbody.find( 'tr:last .select2' ).remove();
 				tbody.find( 'tr:last :input' ).each( function() {
 					var field_name_raw	= $j( this ).attr( 'name' );
 					var field_name		= field_name_raw.substring( 0, field_name_raw.lastIndexOf( '[' ) );
 					$j( this ).attr( 'name', field_name + '[' + category_id + ']' );
+					$j( this ).removeClass( 'select2-hidden-accessible' );
 				});
 				tbody.find( 'tr:last td.bookacti-column-group_category' ).text( group_category_title ).attr( 'title', group_category_title );
-				tbody.find( 'tr:last :input' ).val( '' );
+				tbody.find( 'tr:last :input' ).val( '' ).prop( 'disabled', false );
 				tbody.find( 'tr:last' ).closest( 'tr' ).data( 'category_id', category_id );
 				tbody.find( 'tr:last' ).closest( 'tr' ).attr( 'data-category_id', category_id );
+				bookacti_select2_init();
+				tbody.find( 'tr:last' ).show();
 			}
 		});
 		

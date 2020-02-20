@@ -12,11 +12,12 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 	/**
 	 * Add woocommerce related translations
-	 * @version 1.7.16
+	 * @version 1.7.19
 	 * @param array $translation_array
 	 * @return array
 	 */
 	function bookacti_woocommerce_translation_array( $translation_array ) {
+		$translation_array[ 'empty_product_price' ]				= esc_html__( 'You must set a price for your product, otherwise the booking form won’t appear on the product page.', 'booking-activities' );
 		$translation_array[ 'expired_min' ]						= esc_html__( 'expired', 'booking-activities' );
 		$translation_array[ 'expired' ]							= esc_html__( 'Expired', 'booking-activities' );
 		$translation_array[ 'in_cart' ]							= esc_html__( 'In cart', 'booking-activities' );
@@ -39,24 +40,24 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	
 	/**
 	 * Change 'user_id' of bookings from customer id to user id when he logs in
-	 * 
-	 * @since 1.0.0
-	 * @version 1.4.0
+	 * @version 1.7.19
 	 * @global WooCommerce $woocommerce
 	 * @param string $user_login
 	 * @param WP_User $user
 	 */
 	function bookacti_change_customer_id_to_user_id( $user_login, $user ) {
-		
 		global $woocommerce;
-		$customer_id = $woocommerce->session->get_customer_id();
 		
-		// Make sure the customer was not logged in (it could be a user switching between two accounts)
-		if( ! bookacti_user_id_exists( $customer_id ) ) {
-			// update customer id to user id
-			bookacti_update_bookings_user_id( $user->ID, $customer_id );
+		// Replace bookings customer ID with user ID
+		if( ! empty( $woocommerce->session ) && is_object( $woocommerce->session ) && method_exists( $woocommerce->session, 'get_customer_id' ) ) {
+			$customer_id = $woocommerce->session->get_customer_id();
+			
+			// Make sure the customer was not logged in (it could be a user switching between two accounts)
+			if( ! bookacti_user_id_exists( $customer_id ) ) {
+				bookacti_update_bookings_user_id( $user->ID, $customer_id );
+			}
 		}
-					
+		
 		// Update the cart expiration date if the user is logged in
 		$is_per_product_expiration	= bookacti_get_setting_value( 'bookacti_cart_settings', 'is_cart_expiration_per_product' );
 		if( ! $is_per_product_expiration ) {

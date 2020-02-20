@@ -221,7 +221,7 @@ add_filter( 'bookacti_form_action_options', 'bookacti_add_wc_form_action_options
 /**
  * Add columns to the activity redirect URL table
  * @since 1.7.0
- * @version 1.7.10
+ * @version 1.7.19
  * @param array $url_array
  * @param array $params
  * @return array
@@ -232,9 +232,8 @@ function bookacti_add_wc_columns_to_activity_redirect_url_table( $url_array, $pa
 	// Get the product selectbox
 	$args = array(
 		'field_name'		=> 'product_by_activity[0]',
-		'selected'			=> '',
-		'show_option_none'	=> esc_html_x( 'None', 'About product', 'booking-activities' ),
-		'option_none_value'	=> '',
+		'allow_tags'		=> 0,
+		'allow_clear'		=> 1,
 		'echo'				=> 0
 	);
 	$default_product_selectbox	= bookacti_display_product_selectbox( $args );
@@ -267,22 +266,19 @@ add_filter( 'bookacti_activity_redirect_url_table', 'bookacti_add_wc_columns_to_
 
 /**
  * Add columns to the group category redirect URL table
- * @since 1.7.0
- * @version 1.7.10
+ * @since 1.7.19 (was bookacti_add_wc_columns_to_group_activity_redirect_url_table)
  * @param array $url_array
  * @param array $params
  * @return array
  */
-function bookacti_add_wc_columns_to_group_activity_redirect_url_table( $url_array, $params = array() ) {
+function bookacti_add_wc_columns_to_group_category_redirect_url_table( $url_array, $params = array() ) {
 	$url_array[ 'head' ][ 'product' ] = esc_html__( 'Bound product', 'booking-activities' );
 	
 	$args = array(
 		'field_name'		=> 'product_by_group_category[0]',
-		'selected'			=> '',
-		'show_option_none'	=> esc_html_x( 'None', 'About product', 'booking-activities' ),
-		'option_none_value'	=> '',
-		'echo'				=> 0,
-		'limit'				=> -1
+		'allow_tags'		=> 0,
+		'allow_clear'		=> 1,
+		'echo'				=> 0
 	);
 	$default_product_selectbox	= bookacti_display_product_selectbox( $args );
 	
@@ -309,15 +305,69 @@ function bookacti_add_wc_columns_to_group_activity_redirect_url_table( $url_arra
 	
 	return $url_array;
 }
-add_filter( 'bookacti_group_category_redirect_url_table', 'bookacti_add_wc_columns_to_group_activity_redirect_url_table', 10, 2 );
+add_filter( 'bookacti_group_category_redirect_url_table', 'bookacti_add_wc_columns_to_group_category_redirect_url_table', 10, 2 );
+
+
+/**
+ * Search products for AJAX selectbox
+ * @since 1.7.19
+ */
+function bookacti_controller_search_select2_products() {
+	// Check nonce
+	$is_nonce_valid	= check_ajax_referer( 'bookacti_query_select2_options', 'nonce', false );
+	if( ! $is_nonce_valid ) { bookacti_send_json_not_allowed( 'search_select2_products' ); }
+	
+	// Check query
+	$term = isset( $_REQUEST[ 'term' ] ) ? sanitize_text_field( stripslashes( $_REQUEST[ 'term' ] ) ) : '';
+	if( ! $term ) { bookacti_send_json( array( 'status' => 'failed', 'error' => 'empty_query' ), 'search_select2_products' ); }
+	
+	$defaults = array(
+		'name' => isset( $_REQUEST[ 'name' ] ) ? sanitize_title_with_dashes( stripslashes( $_REQUEST[ 'name' ] ) ) : '',
+		'id' => isset( $_REQUEST[ 'id' ] ) ? sanitize_title_with_dashes( stripslashes( $_REQUEST[ 'id' ] ) ) : ''
+	);
+	$args = apply_filters( 'bookacti_ajax_select2_products_args', $defaults );
+	
+	$products_titles = bookacti_get_products_titles( $term );
+	$options = array();
+	
+	// Add products options
+	foreach( $products_titles as $product_id => $product ) {
+		$product_title = esc_html( apply_filters( 'bookacti_translate_text', $product[ 'title' ] ) );
+		if( empty( $product[ 'variations' ] ) ) {
+			$options[] = array( 'id' => $product_id, 'text' => $product_title );
+		} else {
+			$children_options = array();
+			foreach( $product[ 'variations' ] as $variation_id => $variation ) {
+				$variation_title = esc_html( apply_filters( 'bookacti_translate_text', $variation[ 'title' ] ) );
+				$formatted_variation_title = trim( preg_replace( '/,[\s\S]+?:/', ',', ',' . $variation_title ), ', ' );
+				$children_options[] = array( 'id' => $variation_id, 'text' => $formatted_variation_title );
+			}
+			$options[] = array( 'children' => $children_options, 'text' => $product_title );
+		}
+	}
+	
+	// Allow plugins to add their values
+	$select2_options = apply_filters( 'bookacti_ajax_select2_products_options', $options, $args );
+	
+	if( ! $select2_options ) {
+		bookacti_send_json( array( 'status' => 'failed', 'error' => 'no_results' ), 'search_select2_products' );
+	}
+	
+	bookacti_send_json( array( 'status' => 'success', 'options' => $select2_options ), 'search_select2_products' );
+}
+add_action( 'wp_ajax_bookactiSelect2Query_products', 'bookacti_controller_search_select2_products' );
 
 
 /**
  * Add the product bound to the selected event to cart
  * @since 1.7.0
- * @version 1.7.17
+ * @version 1.7.19
  */
 function bookacti_controller_add_bound_product_to_cart() {
+	// Check nonce
+	if( ! check_ajax_referer( 'bookacti_booking_form', 'nonce_booking_form', false ) ) {
+		bookacti_send_json_invalid_nonce( 'add_bound_product_to_cart' );
+	}
 	
 	$form_id		= intval( $_POST[ 'form_id' ] );
 	$group_id		= $_POST[ 'bookacti_group_id' ] === 'single' ? 'single' : intval( $_POST[ 'bookacti_group_id' ] );
@@ -475,11 +525,14 @@ add_filter( 'bookacti_product_booking_form_id', 'bookacti_change_product_form_id
 /**
  * Display WC user meta corresponding to the desired meta if it is empty
  * @since 1.7.18
+ * @version 1.7.19
  * @param array $args
  * @param array $raw_args
  * @return array
  */
-function bookacti_display_wc_user_meta_in_user_selectbox( $args, $raw_args ) {
+function bookacti_display_wc_user_meta_in_user_selectbox( $args, $raw_args = array() ) {
+	if( empty( $args[ 'option_label' ] ) ) { return $args; }
+	
 	$wc_additional_option_labels = array( 
 		'user_email'=> 'billing_email', 
 		'first_name'=> 'billing_first_name||shipping_first_name', 
@@ -495,3 +548,4 @@ function bookacti_display_wc_user_meta_in_user_selectbox( $args, $raw_args ) {
 	return $args;
 }
 add_filter( 'bookacti_user_selectbox_args', 'bookacti_display_wc_user_meta_in_user_selectbox', 10, 2 );
+add_filter( 'bookacti_ajax_select2_users_args', 'bookacti_display_wc_user_meta_in_user_selectbox', 10, 1 );
