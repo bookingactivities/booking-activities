@@ -186,6 +186,7 @@ function bookacti_get_editor_booking_system_data( $atts, $template_id ) {
 	/**
 	 * Get additional calendar fields default data
 	 * @since 1.5.0
+	 * @version 1.7.20
 	 * @param array $fields
 	 * @return array
 	 */
@@ -201,7 +202,7 @@ function bookacti_get_editor_booking_system_data( $atts, $template_id ) {
 				'value'			=> '08:00',
 				/* translators: Refers to the first hour displayed on calendar. More information: http://fullcalendar.io/docs/agenda/minTime/ */
 				'title'			=> esc_html__( 'Day begin', 'booking-activities' ),
-				'tip'			=> esc_html__( 'Set when you want the days to begin on the calendar. Ex: "06:00" Days will begin at 06:00am.', 'booking-activities' )
+				'tip'			=> esc_html__( 'Set when you want the days to begin on the calendar. E.g.: "06:00" Days will begin at 06:00am.', 'booking-activities' )
 			);
 		}
 
@@ -213,7 +214,7 @@ function bookacti_get_editor_booking_system_data( $atts, $template_id ) {
 				'value'			=> '20:00',
 				/* translators: Refers to the last hour displayed on calendar. More information: http://fullcalendar.io/docs/agenda/maxTime/ */
 				'title'			=> esc_html__( 'Day end', 'booking-activities' ),
-				'tip'			=> esc_html__( 'Set when you want the days to end on the calendar. Ex: "18:00" Days will end at 06:00pm.', 'booking-activities' )
+				'tip'			=> esc_html__( 'Set when you want the days to end on the calendar. E.g.: "18:00" Days will end at 06:00pm.', 'booking-activities' )
 			);
 		}
 		

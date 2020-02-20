@@ -1,7 +1,7 @@
 <?php 
 /**
  * Calendar editor dialogs
- * @version 1.7.18
+ * @version 1.7.20
  */
 
 // Exit if accessed directly
@@ -307,6 +307,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			/**
 			 * Fill the "Editor" tab in calendar settings
 			 * @since 1.7.18 (was bookacti_fill_template_tab_agenda)
+			 * @version 1.7.20
 			 * @param array $params
 			 */
 			function bookacti_fill_template_tab_editor( $params = array() ) {
@@ -323,7 +324,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 					</label>
 					<input type='time' name='templateOptions[minTime]' id='bookacti-template-data-minTime' value='00:00'>
 					<?php
-						bookacti_help_tip( esc_html__( 'Set when you want the days to begin on the calendar. Ex: "06:00" Days will begin at 06:00am.', 'booking-activities' ) );
+						bookacti_help_tip( esc_html__( 'Set when you want the days to begin on the calendar. E.g.: "06:00" Days will begin at 06:00am.', 'booking-activities' ) );
 					?>
 				</div>
 				<div>
@@ -332,19 +333,19 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 					</label>
 					<input type='time' name='templateOptions[maxTime]' id='bookacti-template-data-maxTime' value='00:00' >
 					<?php
-						bookacti_help_tip( esc_html__( 'Set when you want the days to end on the calendar. Ex: "18:00" Days will end at 06:00pm.', 'booking-activities' ) );
+						bookacti_help_tip( esc_html__( 'Set when you want the days to end on the calendar. E.g.: "18:00" Days will end at 06:00pm.', 'booking-activities' ) );
 					?>
 				</div>
 				<div>
 					<label for='bookacti-template-data-snapDuration' >
 					<?php 
-						/* translators: Refers to the time interval at which a dragged event will snap to the agenda view time grid. Ex: 00:20', you will be able to drop an event every 20 minutes (at 6:00am, 6:20am, 6:40am...). More information: http://fullcalendar.io/docs/agenda/snapDuration/ */
+						/* translators: Refers to the time interval at which a dragged event will snap to the agenda view time grid. E.g.: 00:20', you will be able to drop an event every 20 minutes (at 6:00am, 6:20am, 6:40am...). More information: http://fullcalendar.io/docs/agenda/snapDuration/ */
 						esc_html_e( 'Snap frequency', 'booking-activities' );
 					?>
 					</label>
 					<input type='text' name='templateOptions[snapDuration]' id='bookacti-template-data-snapDuration' class='bookacti-time-field' placeholder='23:59' value='00:05' >
 					<?php
-						bookacti_help_tip( esc_html__( 'The time interval at which a dragged event will snap to the agenda view time grid. Ex: "00:20", you will be able to drop an event every 20 minutes (at 6:00am, 6:20am, 6:40am...).', 'booking-activities' ) );
+						bookacti_help_tip( esc_html__( 'The time interval at which a dragged event will snap to the agenda view time grid. E.g.: "00:20", you will be able to drop an event every 20 minutes (at 6:00am, 6:20am, 6:40am...).', 'booking-activities' ) );
 					?>
 				</div>
 			<?php
@@ -582,7 +583,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			/**
 			 * Display the fields in the "Text" tab of the Activity dialog
 			 * @since 1.7.4 (was bookacti_fill_activity_tab_terminology)
-			 * @version 1.7.18
+			 * @version 1.7.20
 			 * @param array $params
 			 */
 			function bookacti_fill_activity_tab_text( $params = array() ) {
@@ -594,7 +595,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 					<?php
 						$unit = '<strong><em>' . esc_html( _n( 'unit', 'units', 1, 'booking-activities' ) ) . '</em></strong>';
 						/* translators: %s is the singular for "unit" */
-						$tip = sprintf( esc_html__( 'Name of the unit the customers will actually book for this activity. Set the singular here. Leave blank to hide this piece of information. Ex: "You have booked 1 %s".', 'booking-activities' ), $unit );
+						$tip = sprintf( esc_html__( 'Name of the unit the customers will actually book for this activity. Set the singular here. Leave blank to hide this piece of information. E.g.: "You have booked 1 %s".', 'booking-activities' ), $unit );
 						bookacti_help_tip( $tip );
 					?>
 				</div>
@@ -604,17 +605,17 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 					<?php
 						$units = '<strong><em>' . esc_html( _n( 'unit', 'units', 2, 'booking-activities' ) ) . '</em></strong>';
 						/* translators: %s is the plural for "units" */
-						$tip = sprintf( esc_html__( 'Name of the unit the customers will actually book for this activity. Set the plural here. Leave blank to hide this piece of information. Ex: "You have booked 2 %s".', 'booking-activities' ), $units );
+						$tip = sprintf( esc_html__( 'Name of the unit the customers will actually book for this activity. Set the plural here. Leave blank to hide this piece of information. E.g.: "You have booked 2 %s".', 'booking-activities' ), $units );
 						bookacti_help_tip( $tip );
 					?>
 				</div>
 				<div>
-					<?php /* translators: We are asking here if the user want to display the unit next to the total availability on the event. Ex: '14 units' instead of '14' */ ?>
+					<?php /* translators: We are asking here if the user want to display the unit next to the total availability on the event. E.g.: '14 units' instead of '14' */ ?>
 					<label for='bookacti-activity-show-unit-in-availability' ><?php esc_html_e( 'Show unit in availability', 'booking-activities' ); ?></label>
 					<?php
 						bookacti_onoffswitch( 'activityOptions[show_unit_in_availability]', 0, 'bookacti-activity-show-unit-in-availability' );
 						/* translators: %s is the plural for "units" */
-						$tip = sprintf( esc_html__( 'Show the unit in the availability boxes. Ex: "2 %s available" instead of "2".', 'booking-activities' ), '<strong><em>' . esc_html( _n( 'unit', 'units', 2, 'booking-activities' ) ) . '</em></strong>' );
+						$tip = sprintf( esc_html__( 'Show the unit in the availability boxes. E.g.: "2 %s available" instead of "2".', 'booking-activities' ), '<strong><em>' . esc_html( _n( 'unit', 'units', 2, 'booking-activities' ) ) . '</em></strong>' );
 						bookacti_help_tip( $tip );
 					?>
 				</div>
@@ -623,7 +624,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 					<input type='number' name='activityOptions[places_number]' id='bookacti-activity-places-number' min='0' />
 					<?php
 						/* translators: %s is a number superior than or equal to 2. E.g.: 2. */
-						$tip = sprintf( esc_html__( 'The number of persons who can do the activity with 1 booking. Set 0 to hide this piece of information. Ex: "You have booked 1 unit for %s persons".', 'booking-activities' ), '<strong><em>2</em></strong>' );
+						$tip = sprintf( esc_html__( 'The number of people who can do the activity with 1 booking. Set 0 to hide this piece of information. E.g.: "You have booked 1 unit for %s people".', 'booking-activities' ), '<strong><em>2</em></strong>' );
 						bookacti_help_tip( $tip );
 					?>
 				</div>

@@ -803,7 +803,7 @@ function bookacti_format_event_duration( start, end ) {
 
 /**
  * Get activity unit value
- * @version 1.7.3
+ * @version 1.7.20
  * @param {html_element} booking_system
  * @param {int} activity_id
  * @param {int} qty
@@ -842,7 +842,7 @@ function bookacti_get_activity_unit( booking_system, activity_id, qty ) {
 					if( parseInt( activity_data[ 'settings' ][ 'places_number' ] ) === 1 ) {
 						activity_val += ' ' + bookacti_localized.one_person_per_booking;
 					} else {
-						activity_val += ' ' + bookacti_localized.n_persons_per_booking.replace( '%1$s', activity_data[ 'settings' ][ 'places_number' ] );
+						activity_val += ' ' + bookacti_localized.n_people_per_booking.replace( '%1$s', activity_data[ 'settings' ][ 'places_number' ] );
 					}
 				}
 
