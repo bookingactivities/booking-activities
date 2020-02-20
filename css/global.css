@@ -3,8 +3,8 @@
 /** GLOBAL **/
 
 /* Select2 */
-.bookacti-user-selectbox			{ width: 100%; }
-.bookacti-select2-dropdown			{ z-index: 10001; }
+.bookacti-user-selectbox	{ width: 100%; }
+.select2-dropdown			{ z-index: 10001; }
 
 /* Radio box */
 .bookacti-custom-radio-button		{ display: inline-block; margin: 0 0.5em 0.5em 0; }

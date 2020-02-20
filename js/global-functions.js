@@ -161,8 +161,6 @@ function bookacti_select2_init() {
 		minimumResultsForSearch: 10,
 		width: 'element',
 		dropdownAutoWidth: true,
-		containerCssClass : 'bookacti-select2-container',
-		dropdownCssClass : 'bookacti-select2-dropdown',
 		dropdownParent: $j( this ).closest( '.bookacti-backend-dialog' ).length ? $j( this ).closest( '.bookacti-backend-dialog' ) : $j( 'body' ),
 		escapeMarkup: function( text ) { return text; }
 	});
@@ -173,8 +171,6 @@ function bookacti_select2_init() {
 		minimumInputLength: 3,
 		width: 'element',
 		dropdownAutoWidth: true,
-		containerCssClass : 'bookacti-select2-container',
-		dropdownCssClass : 'bookacti-select2-dropdown',
 		dropdownParent: $j( this ).closest( '.bookacti-backend-dialog' ).length ? $j( this ).closest( '.bookacti-backend-dialog' ) : $j( 'body' ),
   		escapeMarkup: function( text ) { return text; },
 		ajax: {
