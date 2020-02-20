@@ -5,7 +5,7 @@ Tags: booking, reservation, booking form, woocommerce booking, booking events
 Requires at least: 3.6
 Tested up to: 5.3
 Requires PHP: 5.3
-Stable tag: 1.7.18
+Stable tag: 1.7.19
 License: GPLv3 or later
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
 
@@ -319,7 +319,7 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 
 == Changelog ==
 
-= 1.7.19 =
+= 1.7.19 - 2020/02/20 =
 * Optimization - Dynamic user selectbox in booking list filters
 * Optimization - Dynamic product selectbox in Calendar field settings, actions tab
 * Tweak - Allow to perform the form action on event click even if there is no Submit button and if the calendar is not in a form
