@@ -301,7 +301,7 @@ function bookacti_get_booking_system_default_attributes() {
 
 /**
  * Check booking system attributes and format them to be correct
- * @version 1.7.17
+ * @version 1.7.20
  * @param array $raw_atts 
  * @return array
  */
@@ -401,7 +401,7 @@ function bookacti_format_booking_system_attributes( $raw_atts = array() ) {
 	// Format Start and End
 	$sanitized_start	= bookacti_sanitize_date( $atts[ 'start' ] );
 	$sanitized_end		= bookacti_sanitize_date( $atts[ 'end' ] );
-	$formatted_atts[ 'start' ]	= $sanitized_start ? $sanitized_start : $defaults[ 'start' ];
+	$formatted_atts[ 'start' ]	= $sanitized_start ? $sanitized_start : ( $atts[ 'past_events' ] ? '1970-01-01' : $defaults[ 'start' ] );
 	$formatted_atts[ 'end' ]	= $sanitized_end ? $sanitized_end : $defaults[ 'end' ];
 	
 	// Format display data

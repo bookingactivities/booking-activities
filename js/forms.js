@@ -325,7 +325,7 @@ function bookacti_check_password_strength( password_field, password_confirm_fiel
 /**
  * Submit booking form
  * @since 1.7.6 (was bookacti_sumbit_booking_form)
- * @version 1.7.19
+ * @version 1.7.20
  * @param {html_element} form
  * @returns {Boolean}
  */
@@ -388,7 +388,7 @@ function bookacti_submit_booking_form( form ) {
 	
 	// Set the form action
 	if( data instanceof FormData ) {
-		data.set( 'action', 'bookactiAddBoundProductToCart' );
+		data.set( 'action', 'bookactiSubmitBookingForm' );
 	} else {
 		return;
 	}
