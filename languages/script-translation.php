@@ -11,7 +11,7 @@ $messages = bookacti_get_messages();
 
 /**
  * Fill the translation array to use it in js 
- * @version 1.7.19
+ * @version 1.7.20
  */
 $bookacti_translation_array = apply_filters( 'bookacti_translation_array', array(
 	// BUTTONS
@@ -181,9 +181,9 @@ $bookacti_translation_array = apply_filters( 'bookacti_translation_array', array
 	'coupon_code'						=> esc_html__( 'Coupon code', 'booking-activities' ),
 	'avail'								=> apply_filters( 'bookacti_translate_text', $messages[ 'avail' ][ 'value' ] ),
 	'avails'							=> apply_filters( 'bookacti_translate_text', $messages[ 'avails' ][ 'value' ] ),
-	/* translators: This particle is used right after the quantity of bookings. Put the singular here. Ex: 1 booking . */
+	/* translators: This particle is used right after the quantity of bookings. Put the singular here. E.g.: 1 booking . */
 	'booking'							=> esc_html__( 'booking', 'booking-activities' ),
-	/* translators: This particle is used right after the quantity of bookings. Put the plural here. Ex: 2 bookings . . */
+	/* translators: This particle is used right after the quantity of bookings. Put the plural here. E.g.: 2 bookings . . */
 	'bookings'							=> esc_html__( 'bookings', 'booking-activities' ),
 	'edit_id'							=> esc_html_x( 'id', 'An id is a unique identification number', 'booking-activities' ),
 	'create_new'						=> esc_html__( 'Create new', 'booking-activities' ),
@@ -191,8 +191,8 @@ $bookacti_translation_array = apply_filters( 'bookacti_translation_array', array
 	// OTHERS
 	'ask_for_reasons'					=> esc_html__( 'Tell us why? (Details, reasons, comments...)', 'booking-activities' ),
 	'one_person_per_booking'			=> esc_html__( 'for one person', 'booking-activities' ),
-	/* translators: %1$s is the number of persons who can enjoy the activity with one booking */
-	'n_persons_per_booking'				=> esc_html__( 'for %1$s persons', 'booking-activities' ),
+	/* translators: %1$s is the number of people who can enjoy the activity with one booking */
+	'n_people_per_booking'				=> esc_html__( 'for %1$s people', 'booking-activities' ),
 	'product_price'						=> esc_html__( 'Product price', 'booking-activities' ),
 	'create_first_calendar'				=> esc_html__( 'Create your first calendar', 'booking-activities' ),
 	'create_first_activity'				=> esc_html__( 'Create your first activity', 'booking-activities' ),

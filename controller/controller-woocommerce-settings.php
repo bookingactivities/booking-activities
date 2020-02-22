@@ -217,7 +217,7 @@ function bookacti_wc_default_messages( $messages ) {
 	
 	$wc_messages = array( 
 		'temporary_booking_success' => array(
-			/* translators: {time} tag is a variable standing for an amount of days, hours and minutes. Ex: {time}' can be '1 day, 6 hours, 30 minutes'. */
+			/* translators: {time} tag is a variable standing for an amount of days, hours and minutes. E.g.: {time}' can be '1 day, 6 hours, 30 minutes'. */
 			'value'			=> esc_html__( 'Your activity is temporarily booked for {time}. Please proceed to checkout.', 'booking-activities' ),
 			'description'	=> esc_html__( 'When a temporary booking is added to cart. Use the {time} tag to display the remaining time before expiration.', 'booking-activities' )
 		),

@@ -5,7 +5,7 @@ Tags: booking, reservation, booking form, woocommerce booking, booking events
 Requires at least: 3.6
 Tested up to: 5.3
 Requires PHP: 5.3
-Stable tag: 1.7.19
+Stable tag: 1.7.20
 License: GPLv3 or later
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
 
@@ -95,6 +95,7 @@ Try this reservation tool live on the [demo website](http://demo.booking-activit
 
 * **API for developers** (PHP actions and filters, JS actions). *Documentation coming soon.*
 * Use the beautiful and handy **[FullCalendar](https://fullcalendar.io/)**
+* Support WP Multisite
 * Support WP privacy tools for exporting and erasing your customers personal data
 
 See the whole [features list here](https://booking-activities.fr/en/documentation/features/?utm_source=wp-plugin-page&utm_medium=wordpress&utm_content=readme).
@@ -318,6 +319,10 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 
 
 == Changelog ==
+
+= 1.7.20 - 2020/02/22 =
+* Fix - Error while booking whithout WooCommerce
+* Fix - Cannot reschedule to a past event from admin
 
 = 1.7.19 - 2020/02/20 =
 * Optimization - Dynamic user selectbox in booking list filters

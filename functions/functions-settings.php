@@ -715,13 +715,13 @@ function bookacti_settings_section_licenses_callback() { }
 				'description'	=> sprintf( esc_html__( 'Title displayed before the selected events list (%s).', 'booking-activities' ), esc_html__( 'plural', 'booking-activities' ) )
 			),
 			'avail' => array(
-				/* translators: This particle is used right after the quantity of available bookings. Put the singular here. Ex: 1 avail. . */
+				/* translators: This particle is used right after the quantity of available bookings. Put the singular here. E.g.: 1 avail. . */
 				'value'			=> esc_html_x( 'avail.', 'Short for availability [singular noun]', 'booking-activities' ),
 				/* translators: %s can be either "singular" or "plural" */
 				'description'	=> sprintf( esc_html__( 'Particle displayed after the number of available places onto the events (%s).', 'booking-activities' ), esc_html__( 'singular', 'booking-activities' ) )
 			),
 			'avails' => array(
-				/* translators: This particle is used right after the quantity of available bookings. Put the plural here. Ex: 2 avail. . */
+				/* translators: This particle is used right after the quantity of available bookings. Put the plural here. E.g.: 2 avail. . */
 				'value'			=> esc_html_x( 'avail.', 'Short for availabilities [plural noun]', 'booking-activities' ),
 				'description'	=> sprintf( esc_html__( 'Particle displayed after the number of available places onto the events (%s).', 'booking-activities' ), esc_html__( 'plural', 'booking-activities' ) )
 			),
