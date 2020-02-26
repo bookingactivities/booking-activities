@@ -301,7 +301,7 @@ function bookacti_get_booking_system_default_attributes() {
 
 /**
  * Check booking system attributes and format them to be correct
- * @version 1.7.20
+ * @version 1.8.0
  * @param array $raw_atts 
  * @return array
  */
@@ -369,8 +369,8 @@ function bookacti_format_booking_system_attributes( $raw_atts = array() ) {
 	}
 	
 	// Remove duplicated values
-	$calendars	= array_values( array_unique( $calendars ) );
-	$activities	= array_values( array_unique( $activities ) );
+	$calendars	= is_array( $calendars ) ? array_values( array_unique( $calendars ) ) : $defaults[ 'calendars' ];
+	$activities	= is_array( $activities ) ? array_values( array_unique( $activities ) ) : $defaults[ 'activities' ];
 	
 	// Check if the desired templates are active and allowed
 	$available_template_ids = array_keys( bookacti_fetch_templates( array(), true ) );

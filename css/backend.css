@@ -22,9 +22,13 @@
 .wp-admin select.bookacti-select[multiple] option:hover,
 .wp-admin select.bookacti-items-select-box[multiple] option:hover { color: #007cba; }
 
-.bookacti-irreversible-action span			{ display: table-cell; vertical-align: middle; }
-.bookacti-irreversible-action .dashicons	{ font-size: 1.5em; color: #b81c23; padding-right: 10px; }
-.bookacti-warning .dashicons				{ font-size: 1.5em; color: #f89b2f; padding-right: 10px; }
+.bookacti-error span, .bookacti-warning span, .bookacti-info span					{ display: table-cell; vertical-align: middle; }
+.bookacti-error .dashicons,.bookacti-warning .dashicons, .bookacti-info .dashicons	{ font-size: 1.5em; padding-right: 10px; }
+.bookacti-error a, .bookacti-warning a, .bookacti-info a					{ color: #0073aa; text-decoration: none; }
+.bookacti-error a:hover, .bookacti-warning a:hover, .bookacti-info a:hover	{ color: #00a0d2; }
+.bookacti-error .dashicons		{ color: #b81c23; }
+.bookacti-warning .dashicons	{ color: #f89b2f; }
+.bookacti-info .dashicons		{ color: #00a0d2; }
 
 .bookacti-addon-promo			{ border: 2px solid #52b7e9; border-radius: 3px; padding: 10px; text-align: center; }
 .bookacti-addon-promo .button	{ margin-top: 10px; }

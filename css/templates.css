@@ -128,11 +128,6 @@
 .bookacti-tabs .bookacti-tab-content .bookacti-promo-events-examples div { margin-bottom: 0; }
 .bookacti-tabs .bookacti-tab-content .bookacti-promo-events-examples { margin: 10px 0 0 0; }
 
-/* Calendar dialog */
-.bookacti-editor-settings-only-notice			{ color: #f89b2f; }
-.bookacti-editor-settings-only-notice a			{ color: #d47408; }
-.bookacti-editor-settings-only-notice:before	{ content: '\26A0  '; }
-
 /* Activity dialog */
 #bookacti-activity-import-dialog label			{ display: inline-block; width: 150px; font-weight: bold; }
 #bookacti-activity-import-dialog div			{ margin-bottom: 10px; }

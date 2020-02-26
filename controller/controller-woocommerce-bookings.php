@@ -1292,12 +1292,13 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	/**
 	 * Add WC fields to delete booking form
 	 * @since 1.5.0
+	 * @version 1.8.0
 	 */
 	function bookacti_add_wc_fields_to_delete_booking_form() {
 	?>
 		<div class='bookacti-delete-wc-order-item-container' style='display:none;'>
 			<hr/>
-			<p class='bookacti-irreversible-action bookacti-delete-wc-order-item-description'>
+			<p class='bookacti-error bookacti-delete-wc-order-item-description'>
 				<span class='dashicons dashicons-warning'></span>
 				<span>
 					<?php esc_html_e( 'This booking is bound to an item in a WooCommerce order. Do you want to remove the booking data from this item as well?', 'booking-activities' ); ?>

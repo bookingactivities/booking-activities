@@ -78,6 +78,16 @@
 .bookacti-group-of-events-list .bookacti-booking-event-duration	{ font-size: smaller; font-style: italic; }
 .bookacti-group-of-events-list .bookacti-booking-event-title	{ font-weight: 600; }
 
+@media screen and ( max-width: 400px ) {
+	.ui-dialog.ui-widget.bookacti-dialog { max-width: 360px; }
+	.ui-dialog.bookacti-dialog .ui-dialog-content.ui-widget-content	{ padding: .5em; }
+	.ui-dialog.bookacti-dialog .ui-dialog-titlebar.ui-widget-header	{ padding: .4em; }
+	.ui-dialog.bookacti-dialog .ui-dialog-titlebar .ui-dialog-title	{ white-space: normal; }
+	.bookacti-group-of-events-list { margin: 5px 0px 10px 5px; }
+}
+@media screen and ( max-width: 320px ) {
+	.ui-dialog.ui-widget.bookacti-dialog { max-width: 320px; }
+}
 
 
 

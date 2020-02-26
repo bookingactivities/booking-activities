@@ -258,7 +258,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			
 			/**
 			 * Display the 'General' tab content of template settings
-			 * @version 1.7.18
+			 * @version 1.8.0
 			 * @param array $params
 			 */
 			function bookacti_fill_template_tab_general( $params = array() ) {
@@ -282,9 +282,6 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 						bookacti_help_tip( esc_html__( 'If you want to duplicate a calendar, select it in the list. It will copy its events, activities list, and its settings but not the bookings made on it.', 'booking-activities' ) );
 					?>
 				</div>
-				<div class='bookacti-calendar-opening-closing-notice'>
-					<?php esc_html_e( 'Events prior to the opening date, or subsequent to the closing date won\'t be displayed on your booking forms.', 'booking-activities' ); ?>
-				</div>
 				<div>
 					<label for='bookacti-template-opening' ><?php esc_html_e( 'Opening', 'booking-activities' ); ?></label>
 					<input type='date' name='template-opening' id='bookacti-template-opening' max='2037-12-31' >
@@ -299,6 +296,10 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 						bookacti_help_tip( esc_html__( 'The ending date of your calendar. Basically it should be the date of your last event.', 'booking-activities' ) );
 					?>
 				</div>
+				<div class='bookacti-calendar-opening-closing-notice bookacti-info'>
+					<span class='dashicons dashicons-info'></span>
+					<span><?php esc_html_e( 'Events prior to the opening date, or subsequent to the closing date won\'t be displayed on your booking forms.', 'booking-activities' ); ?></span>
+				</div>
 			<?php 
 				do_action( 'bookacti_template_tab_general_after', $params );
 			} 
@@ -312,8 +313,14 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			 */
 			function bookacti_fill_template_tab_editor( $params = array() ) {
 			?>
-				<div class='bookacti-editor-settings-only-notice'>
-					<?php /* translators: %s is a link to the "booking form editor". */ echo sprintf( esc_html__( 'These settings are used for the editor only. For your frontend calendars, use the "Calendar" field settings in the desired %s.', 'booking-activities' ), '<a href="' . admin_url( 'admin.php?page=bookacti_forms' ) . '">' . esc_html__( 'booking form editor', 'booking-activities' ) . '</a>' ); ?>
+				<div class='bookacti-editor-settings-only-notice bookacti-warning'>
+					<span class='dashicons dashicons-warning'></span>
+					<span>
+					<?php
+						/* translators: %s is a link to the "booking form editor". */
+						echo sprintf( esc_html__( 'These settings are used for the editor only. For your frontend calendars, use the "Calendar" field settings in the desired %s.', 'booking-activities' ), '<a href="' . admin_url( 'admin.php?page=bookacti_forms' ) . '">' . esc_html__( 'booking form editor', 'booking-activities' ) . '</a>' );
+					?>
+					</span>
 				</div>
 			<?php
 				do_action( 'bookacti_template_tab_editor_before', $params );

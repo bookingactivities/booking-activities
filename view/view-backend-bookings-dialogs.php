@@ -1,7 +1,7 @@
 <?php 
 /**
  * Backend booking dialogs
- * @version 1.7.12
+ * @version 1.8.0
  */
 
 // Exit if accessed directly
@@ -77,7 +77,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			));
 			bookacti_display_fields( $booking_qty_fields );
 		?>
-		<p class='bookacti-irreversible-action'>
+		<p class='bookacti-error'>
 			<span class='dashicons dashicons-warning'></span>
 			<span><?php esc_html_e( 'The new quantity will be enforced. No checks and no further actions will be performed.', 'booking-activities' ); ?></span>
 		</p>
@@ -94,7 +94,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		<p class='bookacti-dialog-intro bookacti-delete-single-booking-description' >
 			<?php esc_html_e( 'Are you sure to delete this booking permanently?', 'booking-activities' ); ?>
 		</p>
-		<p class='bookacti-irreversible-action'>
+		<p class='bookacti-error'>
 			<span class='dashicons dashicons-warning'></span>
 			<span><?php esc_html_e( 'This action cannot be undone.', 'booking-activities' ); ?></span>
 		</p>
