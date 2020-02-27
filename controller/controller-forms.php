@@ -458,7 +458,7 @@ add_action( 'bookacti_display_form_field_free_text', 'bookacti_display_form_fiel
 /**
  * Add a compulsory quantity input for correct booking form functionning
  * @since 1.5.0
- * @version 1.7.0
+ * @version 1.8.0
  * @param array $fields
  * @param array $form
  * @param string $instance_id
@@ -468,10 +468,20 @@ add_action( 'bookacti_display_form_field_free_text', 'bookacti_display_form_fiel
 function bookacti_display_compulsory_quantity_form_field( $fields, $form, $instance_id, $context ) {
 	if( $context !== 'display' ) { return $fields; }
 	
-	// If there is no "quantity" input, add a default hidden quantity input
+	// Get the fields types and the calendar form action trigger
 	$fields_types = array();
-	foreach( $fields as $field ) { if( ! empty( $field[ 'type' ] ) ) { $fields_types[] = $field[ 'type' ]; } }
-	if( in_array( 'submit', $fields_types, true ) && ! in_array( 'quantity', $fields_types, true ) ) {
+	$form_action_trigger = 'on_submit';
+	foreach( $fields as $field ) { 
+		if( ! empty( $field[ 'type' ] ) ) { 
+			$fields_types[] = $field[ 'type' ];
+			if( $field[ 'type' ] === 'calendar' && ! empty( $field[ 'when_perform_form_action' ] ) ) {
+				$form_action_trigger = $field[ 'when_perform_form_action' ];
+			}
+		}
+	}
+	
+	// If there is no "quantity" input, add a default hidden quantity input
+	if( ! in_array( 'quantity', $fields_types, true ) && ( in_array( 'submit', $fields_types, true ) || $form_action_trigger = 'on_event_click' ) ) {
 		$field = bookacti_get_default_form_fields_data( 'quantity' );
 		$field[ 'id' ]		= 'bookacti-compulsory-quantity-field';
 		$field[ 'class' ]	.= ' bookacti-hidden-field';
@@ -549,10 +559,9 @@ add_action( 'wp_ajax_nopriv_bookactiForgottenPassword', 'bookacti_controller_for
 /**
  * Check if booking form is correct and then book the event, or send the error message
  * @since 1.5.0
- * @version 1.7.1
+ * @version 1.8.0
  */
 function bookacti_controller_validate_booking_form() {
-	
 	// Check nonce
 	if( ! check_ajax_referer( 'bookacti_booking_form', 'nonce_booking_form', false ) ) {
 		bookacti_send_json_invalid_nonce( 'submit_booking_form' );
@@ -569,13 +578,17 @@ function bookacti_controller_validate_booking_form() {
 		'booking_group_id'	=> 0,
 	);
 	
-	// Check form id
-	$form_id = intval( $_POST[ 'form_id' ] );
-	if( ! $form_id ) {
+	// Check form
+	$form_id = ! empty( $_POST[ 'form_id' ] ) ? intval( $_POST[ 'form_id' ] ) : 0;
+	$form = $form_id ? bookacti_get_form_data( $form_id ) : array();
+	if( ! $form_id || ! $form ) {
 		$return_array[ 'error' ]	= 'invalid_form_id';
 		$return_array[ 'message' ]	= esc_html__( 'Invalid form ID.', 'booking-activities' ) . ' ' . esc_html__( 'Please reload the page and try again.', 'booking-activities' );
 		bookacti_send_json( $return_array, 'submit_booking_form' );
 	}
+	
+	// Send the redirect URL
+	$return_array[ 'redirect_url' ] = apply_filters( 'bookacti_translate_text', $form[ 'redirect_url' ] );
 	
 	// Retrieve form field data 
 	$form_fields_data = bookacti_get_form_fields_data( $form_id );

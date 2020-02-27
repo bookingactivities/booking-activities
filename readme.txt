@@ -323,6 +323,9 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 = 1.8.0 =
 * Breaking change - Drop backward compatibility and support with Booking Activities < 1.5 (shortcodes and WC integration)
 * Breaking change - Drop backward compatibility and support with WooCommerce < 3.0
+* Fix - Redirect URL when booking on event click didn't work
+* Fix - Add compulsory hidden quantity field when booking on event click
+* Fix - All grouped bookings were displayed in each rows of the frontend booking list when group_by = none
 
 = 1.7.20 - 2020/02/22 =
 * Fix - Error while booking whithout WooCommerce

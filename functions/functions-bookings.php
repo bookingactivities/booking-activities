@@ -374,7 +374,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 		/**
 		 * Check if a booking is allowed to be rescheduled
-		 * @version 1.7.14
+		 * @version 1.8.0
 		 * @param object|int $booking
 		 * @param string $context
 		 * @return boolean
@@ -388,8 +388,8 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			else {
 				if( ! current_user_can( 'bookacti_edit_bookings' ) || $context === 'front' ) {
 					// First check if the booking is part of a group
-					$is_group = empty( $booking->group_id );
-					if( $is_group ) {
+					$is_grouped = ! empty( $booking->group_id );
+					if( ! $is_grouped ) {
 						// Init variable
 						$is_reschedule_allowed	= bookacti_get_setting_value( 'bookacti_cancellation_settings', 'allow_customers_to_reschedule' );
 						$is_in_delay			= apply_filters( 'bookacti_bypass_delay', false, $booking ) ? true : bookacti_is_booking_in_delay( $booking, 'reschedule' );
@@ -1668,7 +1668,7 @@ function bookacti_get_user_booking_list_default_columns() {
 /**
  * Get booking list items
  * @since 1.7.4
- * @version 1.7.15
+ * @version 1.8.0
  * @param array $filters
  * @param array $columns
  * @return string
@@ -1734,7 +1734,7 @@ function bookacti_get_user_booking_list_items( $filters, $columns = array() ) {
 	// Build an array of bookings rows
 	foreach( $bookings as $booking ) {
 		$group				= $booking->group_id && ! empty( $booking_groups[ $booking->group_id ] ) ? $booking_groups[ $booking->group_id ] : null;
-		$grouped_bookings	= $booking->group_id && ! empty( $bookings_per_group[ $booking->group_id ] ) ? $bookings_per_group[ $booking->group_id ] : array( $booking );
+		$grouped_bookings	= $booking->group_id && ! empty( $bookings_per_group[ $booking->group_id ] ) && ! $single_only ? $bookings_per_group[ $booking->group_id ] : array( $booking );
 		
 		// Display one single row for a booking group, instead of each bookings of the group
 		if( $booking->group_id && $may_have_groups && ! $single_only ) {

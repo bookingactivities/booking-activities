@@ -261,7 +261,7 @@ function bookacti_add_group_category_product_to_cart( booking_system, group_id )
 /**
  * Add a product to cart from a booking form
  * @since 1.7.0
- * @version 1.7.19
+ * @version 1.8.0
  * @param {dom_element} booking_system
  * @param {int} product_id
  */
@@ -307,19 +307,20 @@ function bookacti_add_product_to_cart_via_booking_system( booking_system, produc
 		cache: false,
         contentType: false,
         processData: false,
-		success: function( response ){
+		success: function( response ) {
+			var redirect_url = typeof response.redirect_url !== 'undefined' ? response.redirect_url : '';
 			if( response.status === 'success' ) {
-				// Reload booking numbers if we are not redirected
-				if( ! response.redirect_url ) {
+				// Reload booking numbers if page is not reloaded
+				if( redirect_url.indexOf( '://' ) < 0 ) {
 					bookacti_refresh_booking_numbers( booking_system );
 				}
 				
 				booking_system.trigger( 'bookacti_product_added_to_cart', [ response, data, product_id ] );
 				
 				// Redirect to the desired page or to cart
-				if( response.redirect_url ) {
+				if( redirect_url ) {
 					bookacti_start_loading_booking_system( booking_system );
-					window.location.replace( response.redirect_url );
+					window.location.replace( redirect_url );
 					bookacti_stop_loading_booking_system( booking_system );
 				}
 				
@@ -334,7 +335,7 @@ function bookacti_add_product_to_cart_via_booking_system( booking_system, produc
 				// Fill error message
 				error_div.empty().append( message ).show();
 				// Scroll to error message
-				if( response.status !== 'success' || ! response.redirect_url ) {
+				if( ! redirect_url ) {
 					bookacti_scroll_to( error_div, 500, 'middle' );
 				}
 			}

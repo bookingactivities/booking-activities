@@ -325,7 +325,7 @@ function bookacti_check_password_strength( password_field, password_confirm_fiel
 /**
  * Submit booking form
  * @since 1.7.6 (was bookacti_sumbit_booking_form)
- * @version 1.7.20
+ * @version 1.8.0
  * @param {html_element} form
  * @returns {Boolean}
  */
@@ -413,10 +413,7 @@ function bookacti_submit_booking_form( form ) {
         contentType: false,
         processData: false,
 		success: function( response ) {
-			var redirect_url = form.attr( 'action' );
-			if( typeof redirect_url !== 'undefined' ) {
-				if( redirect_url === false || ! redirect_url ) { redirect_url = ''; }
-			}
+			var redirect_url = typeof response.redirect_url !== 'undefined' ? response.redirect_url : '';
 			
 			var message = '';
 			if( response.status !== 'success' ) {
@@ -433,8 +430,8 @@ function bookacti_submit_booking_form( form ) {
 
 				message = "<ul class='bookacti-success-list bookacti-persistent-notice'><li>" + response.message + "</li></ul>";
 
-				if( ! redirect_url ) {
-					// Reload booking numbers
+				// Reload booking numbers if page is not reloaded
+				if( redirect_url.indexOf( '://' ) < 0 ) {
 					bookacti_refresh_booking_numbers( booking_system );
 				}
 			}
@@ -448,8 +445,10 @@ function bookacti_submit_booking_form( form ) {
 			if( message ) {
 				// Fill error message
 				error_div.empty().append( message ).show();
-				// Scroll to error message
-				bookacti_scroll_to( error_div, 500, 'middle' );
+				if( ! redirect_url ) {
+					// Scroll to error message
+					bookacti_scroll_to( error_div, 500, 'middle' );
+				}
 			}
 			
 			// Make form data readable
