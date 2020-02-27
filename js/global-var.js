@@ -13,7 +13,6 @@ if( typeof bookacti === 'undefined' ) {
 		'is_touch_device': false,
 
 		// Woocommerce
-		'parent_booking_system': [], /** BACKWARD COMPATIBILITY < 1.5 **/
 		'is_variation_activity': []
 	};
 
@@ -29,6 +28,5 @@ if( typeof bookacti === 'undefined' ) {
 		};
 	}
 	if( typeof bookacti.is_touch_device === 'undefined' )		{ bookacti.is_touch_device = false; }
-	if( typeof bookacti.parent_booking_system === 'undefined' )	{ bookacti.parent_booking_system = []; } /** BACKWARD COMPATIBILITY < 1.5 **/
 	if( typeof bookacti.is_variation_activity === 'undefined' )	{ bookacti.is_variation_activity = []; }
 }

@@ -303,6 +303,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	/**
 	 * Turn the bookings bound to order items of a paid order to booked
 	 * @since 1.7.18 (was bookacti_turn_non_activity_order_bookings_to_permanent)
+	 * @version 1.8.0
 	 * @param int $order_id
 	 * @param WC_Order $order
 	 */
@@ -311,12 +312,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		if( ! $order ) { return false; }
 		
 		// If the order hasn't been paid, return
-		// WOOCOMMERCE 3.0.0 backward compatibility 
-		if( version_compare( WC_VERSION, '3.0.0', '>=' ) ) {
-			if( ! $order->get_date_paid( 'edit' ) ) { return false; }
-		} else {
-			if( ! $order->paid_date ) { return false; }
-		}
+		if( ! $order->get_date_paid( 'edit' ) ) { return false; }
 		
 		// Retrieve bought items
 		$items = $order->get_items();
@@ -464,7 +460,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	/**
 	 * Add WC data to the booking list
 	 * @since 1.6.0 (was bookacti_woocommerce_fill_booking_list_custom_columns before)
-	 * @version 1.7.13
+	 * @version 1.8.0
 	 * @param array $booking_list_items
 	 * @param array $bookings
 	 * @param array $booking_groups
@@ -528,7 +524,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		$orders = array();
 		$orders_array = wc_get_orders( array( 'post__in' => $order_ids ) );
 		foreach( $orders_array as $order ) {
-			$order_id = version_compare( WC_VERSION, '3.0.0', '>=' ) ? $order->get_id() : $order->id;
+			$order_id = $order->get_id();
 			$orders[ $order_id ] = $order;
 		}
 		
@@ -580,8 +576,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			// Filter refund actions
 			if( ! empty( $booking_list_items[ $booking_id ][ 'actions' ][ 'refund' ] ) && ! empty( $orders[ $order_item_data->order_id ] ) ) {
 				$order		= $orders[ $order_item_data->order_id ];
-				// WOOCOMMERCE 3.0.0 backward compatibility 
-				$is_paid	= version_compare( WC_VERSION, '3.0.0', '>=' ) ? $order->get_date_paid( 'edit' ) : $order->paid_date;
+				$is_paid	= $order->get_date_paid( 'edit' );
 				$total		= isset( $order_item_data->_line_total ) ? $order_item_data->_line_total + $order_item_data->_line_tax : '';
 				
 				if( $order->get_status() !== 'pending' && $is_paid && $total > 0 ) {
@@ -847,7 +842,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	
 	/**
 	 * Add price to be refunded in refund dialog
-	 * @version 1.7.0
+	 * @version 1.8.0
 	 * @param string $text
 	 * @param int $booking_id
 	 * @param string $booking_type
@@ -861,9 +856,8 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		}
 		
 		if( $item ) {
-			// WOOCOMMERCE 3.0.0 backward compatibility 
-			$total	= is_array( $item ) ? $item[ 'line_total' ] : $item->get_total();
-			$tax	= is_array( $item ) ? $item[ 'line_tax' ] : $item->get_total_tax();
+			$total	= $item->get_total();
+			$tax	= $item->get_total_tax();
 			$price	= (float) $total + (float) $tax;
 			
 			if( $price ) {
@@ -963,7 +957,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	/**
 	 * Turn order items booking status meta to new status
 	 * @since 1.2.0
-	 * @version 1.7.18
+	 * @version 1.8.0
 	 * @param WC_Order $order
 	 * @param string $new_state
 	 * @param array $args
@@ -986,8 +980,6 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			// Make sure the booking is part of those updated
 			if( isset( $item[ 'bookacti_booking_id' ] ) && ( $in__booking_id || $in__booking_group_id ) && ! in_array( $item[ 'bookacti_booking_id' ], $in__booking_id ) ) { continue; }
 			if( isset( $item[ 'bookacti_booking_group_id' ] ) && ( $in__booking_id || $in__booking_group_id ) && ! in_array( $item[ 'bookacti_booking_group_id' ], $in__booking_group_id ) ) { continue; }
-			
-			if( version_compare( WC_VERSION, '3.0.0', '<' ) ) { $item[ 'id' ] = $item_id; }
 			
 			// Do not allow to update order status based on new bookings status 
 			// because this function is actually triggered after order status changed
@@ -1034,8 +1026,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	
 	/**
 	 * Check if a booking can be refunded
-	 * @version 1.6.0
-	 * @version 1.7.13
+	 * @version 1.8.0
 	 * @param boolean $true
 	 * @param object $booking
 	 * @return boolean
@@ -1049,15 +1040,13 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		if( ! $order ) { return $true; }
 		if( $order->get_status() === 'pending' ) { return false; }
 		
-		// WOOCOMMERCE 3.0.0 backward compatibility 
-		$is_paid = version_compare( WC_VERSION, '3.0.0', '>=' ) ? $order->get_date_paid( 'edit' ) : $order->paid_date;
+		$is_paid = $order->get_date_paid( 'edit' );
 		if( ! $is_paid ) { return false; }
 		
 		$item = bookacti_get_order_item_by_booking_id( $booking->id );
 		if( ! $item ) { return false; }
 		
-		// WOOCOMMERCE 3.0.0 backward compatibility 
-		$total = version_compare( WC_VERSION, '3.0.0', '>=' ) ? $item->get_total() : $item[ 'line_total' ] + $item[ 'line_tax' ];
+		$total = $item->get_total();
 		if( $total <= 0 ) { return false; }
 		
 		return apply_filters( 'bookacti_woocommerce_booking_can_be_refunded', $true, $booking, $order, $item );
@@ -1067,7 +1056,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	
 	/**
 	 * Check if a booking group can be refunded
-	 * @version 1.7.0
+	 * @version 1.8.0
 	 * @param boolean $true
 	 * @param object $booking_group
 	 * @return boolean
@@ -1079,15 +1068,13 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		if( ! $order ) { return $true; }
 		if( $order->get_status() === 'pending' ) { $true = false; }
 		
-		// WOOCOMMERCE 3.0.0 backward compatibility 
-		$is_paid = version_compare( WC_VERSION, '3.0.0', '>=' ) ? $order->get_date_paid( 'edit' ) : $order->paid_date;
+		$is_paid = $order->get_date_paid( 'edit' );
 		if( ! $is_paid ) { $true = false; }	
 		
 		$item = bookacti_get_order_item_by_booking_group_id( $booking_group );
 		if( ! $item ) { return false; }
 		
-		// WOOCOMMERCE 3.0.0 backward compatibility 
-		$total = version_compare( WC_VERSION, '3.0.0', '>=' ) ? $item->get_total() : $item[ 'line_total' ];
+		$total = $item->get_total();
 		if( $total <= 0 ) { $true = false; }
 			
 		return $true;
@@ -1167,7 +1154,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	
 	/**
 	 * Refund request email data
-	 * @version 1.5.4
+	 * @version 1.8.0
 	 * @param array $data
 	 * @param int $booking_id
 	 * @param string $booking_type
@@ -1183,11 +1170,10 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		
 		if( empty( $item ) ) { return $data; }
 		
-		// WOOCOMMERCE 3.0.0 backward compatibility 
-		$item_name		= is_array( $item ) ? $item['name'] : $item->get_name();
-		$total			= is_array( $item ) ? $item['line_total'] : $item->get_total();
-		$tax			= is_array( $item ) ? $item['line_tax'] : $item->get_total_tax();
-		$variation_id	= is_array( $item ) ? $item['variation_id'] : $item->get_variation_id();
+		$item_name		= $item->get_name();
+		$total			= $item->get_total();
+		$tax			= $item->get_total_tax();
+		$variation_id	= $item->get_variation_id();
 		
 		$data['product']			= array();
 		$data['product']['name']	= apply_filters( 'bookacti_translate_text', $item_name );
@@ -1239,7 +1225,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	
 	/**
 	 * Update dates after reschedule
-	 * @version 1.7.0
+	 * @version 1.8.0
 	 * @param object $booking
 	 * @param object $old_booking
 	 * @param array $args
@@ -1249,11 +1235,9 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		if( ! $booking ) { return; }
 		
 		$item = bookacti_get_order_item_by_booking_id( $booking );
-			
 		if( ! $item ) { return; }
 		
-		// WOOCOMMERCE 3.0.0 backward compatibility 
-		$order_item_id = is_array( $item ) ? $item[ 'id' ] : $item->get_id();
+		$order_item_id = $item->get_id();
 		
 		$booked_events = wc_get_order_item_meta( $order_item_id, 'bookacti_booked_events' );
 		
@@ -1332,7 +1316,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	/**
 	 * AJAX Controller - Delete an order item (or only its metadata)
 	 * @since 1.5.0
-	 * @version 1.7.6
+	 * @version 1.8.0
 	 * @param WC_Order_Item $item
 	 * @param string $action "delete_meta" to delete only Booking Activities data from the item. "delete_item" to delete the whole item.
 	 */
@@ -1349,9 +1333,8 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		if( $action === 'none' ) { return; }
 		
 		// Get item id and order id
-		// WOOCOMMERCE 3.0.0 backward compatibility 
-		$item_id	= is_array( $item ) ? $item[ 'id' ] : $item->get_id();
-		$order_id	= is_array( $item ) ? $item[ 'order_id' ] : $item->get_order_id();
+		$item_id	= $item->get_id();
+		$order_id	= $item->get_order_id();
 		
 		$order = wc_get_order( $order_id );
 		
@@ -1436,7 +1419,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	/**
 	 * Remove a grouped booking from order item metadata
 	 * @since 1.5.0
-	 * @version 1.5.4
+	 * @version 1.8.0
 	 * @param int $booking_id
 	 */
 	function bookacti_remove_grouped_booking_from_order_item( $booking_id ) {
@@ -1449,16 +1432,15 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		if( ! $item ) { return; }
 		
 		// Get item id
-		// WOOCOMMERCE 3.0.0 backward compatibility 
-		$item_id	= is_array( $item ) ? $item[ 'id' ] : $item->get_id();
-		$order_id	= is_array( $item ) ? $item[ 'order_id' ] : $item->get_order_id();
+		$item_id	= $item->get_id();
+		$order_id	= $item->get_order_id();
 		
 		// Get the booking list
-		$grouped_bookings = wc_get_order_item_meta( $item_id, 'bookacti_booked_events', true );
-		if( ! bookacti_is_json( $grouped_bookings ) ) { return; }
+		$grouped_bookings_raw = wc_get_order_item_meta( $item_id, 'bookacti_booked_events', true );
+		if( ! bookacti_is_json( $grouped_bookings_raw ) ) { return; }
 		
 		// Format booking list as an array of objects
-		$grouped_bookings = json_decode( $grouped_bookings );
+		$grouped_bookings = json_decode( $grouped_bookings_raw );
 		if( ! $grouped_bookings ) { return; }
 		
 		// Remove the desired booking from the list

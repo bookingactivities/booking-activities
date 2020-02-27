@@ -8,7 +8,7 @@
  * Author URI: https://booking-activities.fr/en/?utm_source=plugin&utm_medium=plugin&utm_content=header
  * Text Domain: booking-activities
  * Domain Path: /languages/
- * WC requires at least: 2.6
+ * WC requires at least: 3.0
  * WC tested up to: 3.9
  * License: GPL3
  * License URI: https://www.gnu.org/licenses/gpl-3.0.html

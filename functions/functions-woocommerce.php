@@ -1008,6 +1008,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	/**
 	 * Save the order user data as booking meta
 	 * @since 1.6.0
+	 * @version 1.8.0
 	 * @param WC_Order $order
 	 */
 	function bookacti_save_order_data_as_booking_meta( $order ) {
@@ -1032,20 +1033,11 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 				// Get item booking id
 				$booking_id = 0;
 				$object_type = 'booking';
-				if( version_compare( WC_VERSION, '3.0.0', '>=' ) ) {
-					if( ! empty( $item[ 'bookacti_booking_id' ] )  ) {
-						$booking_id = $item[ 'bookacti_booking_id' ];
-					} else if( ! empty( $item[ 'bookacti_booking_group_id' ] ) ) {
-						$booking_id = $item[ 'bookacti_booking_group_id' ];
-						$object_type = 'booking_group';
-					}
-				} else {
-					if( ! empty( $item[ 'item_meta' ][ 'bookacti_booking_id' ] ) ) {
-						$booking_id = $item[ 'item_meta' ][ 'bookacti_booking_id' ][ 0 ];
-					} else if( ! empty( $item[ 'item_meta' ][ 'bookacti_booking_group_id' ] ) ) {
-						$booking_id = $item[ 'item_meta' ][ 'bookacti_booking_group_id' ][ 0 ];
-						$object_type = 'booking_group';
-					}
+				if( ! empty( $item[ 'bookacti_booking_id' ] )  ) {
+					$booking_id = $item[ 'bookacti_booking_id' ];
+				} else if( ! empty( $item[ 'bookacti_booking_group_id' ] ) ) {
+					$booking_id = $item[ 'bookacti_booking_group_id' ];
+					$object_type = 'booking_group';
 				}
 				if( ! $booking_id ) { continue; }
 
@@ -1070,7 +1062,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	/**
 	 * Turn all bookings of an order to the desired status. 
 	 * Also make sure that bookings are bound to the order and the associated user.
-	 * @version 1.7.18
+	 * @version 1.8.0
 	 * @param WC_Order $order
 	 * @param string $state
 	 * @param string $payment_status
@@ -1088,7 +1080,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		// Retrieve bought items and user id
 		$items		= $order->get_items();
 		$user_id	= $order->get_user_id();
-		$order_id	= version_compare( WC_VERSION, '3.0.0', '>=' ) ? $order->get_id() : $order->id;
+		$order_id	= $order->get_id();
 		
 		// Create an array with order booking ids
 		$booking_id_array		= array();
@@ -1099,19 +1091,10 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			// Reset item booking id
 			$booking_id = 0;
 			$booking_group_id = 0;
-			
-			if( version_compare( WC_VERSION, '3.0.0', '>=' ) ) {
-				if( ! empty( $item[ 'bookacti_booking_id' ] )  ) {
-					$booking_id = $item[ 'bookacti_booking_id' ];
-				} else if( ! empty( $item[ 'bookacti_booking_group_id' ] ) ) {
-					$booking_group_id = $item[ 'bookacti_booking_group_id' ];
-				}
-			} else {
-				if( ! empty( $item[ 'item_meta' ][ 'bookacti_booking_id' ] ) ) {
-					$booking_id = $item[ 'item_meta' ][ 'bookacti_booking_id' ][ 0 ];
-				} else if( ! empty( $item[ 'item_meta' ][ 'bookacti_booking_group_id' ] ) ) {
-					$booking_group_id = $item[ 'item_meta' ][ 'bookacti_booking_group_id' ][ 0 ];
-				}
+			if( ! empty( $item[ 'bookacti_booking_id' ] )  ) {
+				$booking_id = $item[ 'bookacti_booking_id' ];
+			} else if( ! empty( $item[ 'bookacti_booking_group_id' ] ) ) {
+				$booking_group_id = $item[ 'bookacti_booking_group_id' ];
 			}
 			
 			// Single event
@@ -1198,7 +1181,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	/**
 	 * Update order item booking status meta to new status
 	 * @since 1.2.0
-	 * @version 1.7.18
+	 * @version 1.8.0
 	 * @param int $item
 	 * @param string $new_state
 	 * @param WC_Order $order
@@ -1207,8 +1190,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	function bookacti_update_order_item_booking_status( $item, $new_state, $order, $args ) {
 		if( ! $item || ( ! isset( $item[ 'bookacti_booking_id' ] ) && ! isset( $item[ 'bookacti_booking_group_id' ] ) ) ) { return; }
 		
-		// WOOCOMMERCE 3.0.0 backward compatibility 
-		$order_item_id = is_array( $item ) ? $item[ 'id' ] : $item->get_id();
+		$order_item_id = $item->get_id();
 		
 		// Get old state
 		$old_state = wc_get_order_item_meta( $order_item_id, 'bookacti_state', true );
@@ -1766,80 +1748,6 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	
 	
 	/**
-	 * Get the product id bound to a booking
-	 * 
-	 * @since 1.0.4
-	 * 
-	 * @param type $booking_id
-	 * @return int
-	 */
-	function bookacti_get_booking_product_id( $booking_id ) {
-
-		$item = bookacti_get_order_item_by_booking_id( $booking_id );
-
-		if( empty( $item ) ) { return false; }
-
-		// WOOCOMMERCE 3.0.0 backward compatibility
-		if( version_compare( WC_VERSION, '3.0.0', '>=' ) ) {
-			$product_id = $item->get_product_id();
-		} else {
-			$order_id = bookacti_get_booking_order_id( $booking_id );
-
-			if( ! $order_id ) { return false; }
-
-			$order = wc_get_order( $order_id );
-			
-			if( empty( $order ) ) { return false; }
-			
-			$_product  = $order->get_product_from_item( $item );
-
-			if( empty( $_product ) ) { return false; }
-
-			$product_id = absint( $_product->id );
-		}
-
-		return $product_id;
-	}
-	
-	
-	/**
-	 * Get the product id bound to a booking group
-	 * 
-	 * @since 1.1.0
-	 * 
-	 * @param type $booking_group_id
-	 * @return int|false
-	 */
-	function bookacti_get_booking_group_product_id( $booking_group_id ) {
-
-		$item = bookacti_get_order_item_by_booking_group_id( $booking_group_id );
-		
-		if( empty( $item ) ) { return false; }
-
-		// WOOCOMMERCE 3.0.0 backward compatibility
-		if( version_compare( WC_VERSION, '3.0.0', '>=' ) ) {
-			$product_id = $item->get_product_id();
-		} else {
-			$order_id = bookacti_get_booking_group_order_id( $booking_group_id );
-			
-			if( ! $order_id ) { return false; }
-
-			$order = wc_get_order( $order_id );
-			
-			if( empty( $order ) ) { return false; }
-			
-			$_product  = $order->get_product_from_item( $item );
-
-			if( empty( $_product ) ) { return false; }
-
-			$product_id = absint( $_product->id );
-		}
-
-		return $product_id;
-	}
-	
-	
-	/**
 	 * Tell if the product is activity or has variations that are activities
 	 * @version 1.7.8
 	 * @param WC_Product|int $product
@@ -1879,7 +1787,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	/**
 	 * Find matching product variation
 	 * @since 1.5.0
-	 * @version 1.7.17
+	 * @version 1.8.0
 	 * @param WC_Product $product
 	 * @param array $attributes
 	 * @return int Matching variation ID or 0.
@@ -1894,8 +1802,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 				if( $key !== apply_filters( 'bookacti_translate_text', $product_attribute_key ) 
 				&&  $key !== $product_attribute_key ) { continue; }
 				
-				// WOOCOMMERCE 3.0.0 backward compatibility 
-				$options = version_compare( WC_VERSION, '3.0.0', '>=' ) ? $product_attribute->get_options() : ( ! empty( $product_attribute[ 'value' ] ) ? array_map( 'trim', explode( '|', $product_attribute[ 'value' ] ) ) : array() );
+				$options = $product_attribute->get_options();
 				// If it failed, try to retrieve it from database (doesn't work with custom attributes)
 				if( ! $options ) { $options = wc_get_product_terms( $product->get_id(), $product_attribute_key, array( 'fields' => 'slugs' ) ); }
 				
@@ -1915,14 +1822,8 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		}
 		
 		// Find matching variation
-		$variation_id = 0;
-		// WOOCOMMERCE 3.0.0 backward compatibility 
-		if( version_compare( WC_VERSION, '3.0.0', '>=' ) ) {
-			$data_store = WC_Data_Store::load( 'product' );
-			$variation_id = $data_store->find_matching_product_variation( $product, $attributes );
-		} else {
-			$variation_id = $product->get_matching_variation( $attributes );
-		}
+		$data_store = WC_Data_Store::load( 'product' );
+		$variation_id = $data_store->find_matching_product_variation( $product, $attributes );
 		
 		return $variation_id;
 	}
@@ -2005,21 +1906,15 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 	/**
 	 * Check if an order support auto refund
-	 * @version 1.6.0
+	 * @version 1.8.0
 	 * @param WC_Order|int $order_id
 	 * @return boolean
 	 */
 	function bookacti_does_order_support_auto_refund( $order_id ) {
-		
 		$order = is_numeric( $order_id ) ? wc_get_order( intval( $order_id ) ) : $order_id;
 		if( ! is_a( $order, 'WC_Order' ) ) { return false; }
 		
-		// WOOCOMMERCE 3.0.0 BW compability
-		if( version_compare( WC_VERSION, '3.0.0', '>=' ) ) {
-			$payment_method = $order->get_payment_method();
-		} else {
-			$payment_method = $order->payment_method;
-		}
+		$payment_method = $order->get_payment_method();
 		
 		$allow_auto_refund = false;
 		if ( WC()->payment_gateways() ) {
@@ -2202,17 +2097,13 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	
 	/**
 	 * Auto refund (for supported gateway)
-	 * @version 1.5.8
+	 * @version 1.8.0
 	 * @param int $booking_id
 	 * @param string $booking_type Determine if the given id is a booking id or a booking group id. Accepted values are 'single' or 'group'.
 	 * @param string $refund_message
 	 * @return array
 	 */
 	function bookacti_auto_refund_booking( $booking_id, $booking_type, $refund_message ) {
-		if( version_compare( WC_VERSION, '3.0.0', '<' ) ) {
-			return bookacti_deprecated_auto_refund_booking( $booking_id, $booking_type, $refund_message );
-		}	
-		
 		// Get variables
 		if( $booking_type === 'single' ) {
 			$order_id	= bookacti_get_booking_order_id( $booking_id );
@@ -2261,106 +2152,10 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		
 		return array( 'status' => 'success', 'new_state' => 'refunded', 'refund' => $refund );
 	}
-
-	
-	/**
-	 * Deprecated Auto refund function (for supported gateway)
-	 * To be used with WooCommerce < 3.0
-	 * @since 1.5.8 (was bookacti_auto_refund_booking)
-	 * @param array $data
-	 * @return array
-	 */
-	function bookacti_deprecated_auto_refund_booking( $booking_id, $booking_type, $refund_message ) {
-		// Include & load API classes
-		if( ! class_exists( 'WC_API_Orders' ) ) {
-			WC()->api->includes();
-			WC()->api->register_resources( new WC_API_Server( '/' ) );
-		}
-
-		// Get variables
-		if( $booking_type === 'single' ) {
-			$order_id	= bookacti_get_booking_order_id( $booking_id );
-			$item		= bookacti_get_order_item_by_booking_id( $booking_id );
-		} else if( $booking_type === 'group' ) {
-			$order_id	= bookacti_get_booking_group_order_id( $booking_id );
-			$item		= bookacti_get_order_item_by_booking_group_id( $booking_id );
-		}
-		
-		if( ! $item ) {
-			return array( 
-				'status'	=> 'failed', 
-				'error'		=> 'no_order_item_found',
-				'message'	=> esc_html__( 'The order item bound to the booking was not found.', 'booking-activities' )
-			);
-		}
-		
-		$order_item_id = is_array( $item ) ? $item[ 'id' ] : $item->get_id();
-		$amount = (float) $item[ 'line_total' ] + (float) $item[ 'line_tax' ];
-
-		$reason = __( 'Auto refund proceeded by user.', 'booking-activities' );
-		if( $refund_message !== '' ) {
-			$reason	.= PHP_EOL . __( 'User message:', 'booking-activities' ) . PHP_EOL . $refund_message;
-		}
-
-		$line_items	= array();
-		$line_items[ $order_item_id ] = array(
-			'qty'			=> $item[ 'qty' ],
-			'refund_total'	=> $item[ 'line_total' ],
-			'refund_tax'	=> $item[ 'line_tax' ]
-		);
-
-		$data = array();
-		$data['order_refund'] = array(
-			'amount'     => $amount,
-			'reason'     => $reason,
-			'order_id'   => $order_id,
-			'line_items' => $line_items,
-		);
-
-		// Grant user cap to process refund
-		$current_user		= wp_get_current_user();
-		$user_basically_can = current_user_can( 'publish_shop_orders' );
-		if( ! $user_basically_can ) {
-			$current_user->add_cap( 'publish_shop_orders' );
-		}
-
-		// Process refund
-		$refund = WC()->api->WC_API_Orders->create_order_refund( $order_id, $data, true );
-
-		// Remove user cap to create coupon
-		if( ! $user_basically_can ) { $current_user->remove_cap( 'publish_shop_orders' ); }
-
-		if( is_wp_error( $refund ) ) {
-			// Delete order refund
-			$order_refunds = WC()->api->WC_API_Orders->get_order_refunds( $order_id );
-			if( ! empty( $order_refunds['order_refunds'] ) ) {
-				foreach( $order_refunds['order_refunds'] as $order_refund ) {
-					if( $order_refund['line_items'][0]['refunded_item_id'] === $item['id'] ) {
-						WC()->api->WC_API_Orders->delete_order_refund( $order_id, $order_refund['id'] );
-					}
-				}
-			}
-			return array( 'status' => 'failed', 'error' => $refund->get_error_code(), 'message' => $refund->get_error_message() );
-		}
-		
-		// Trigger notifications and status changes
-		$order = wc_get_order( $order_id );
-		if ( $order->get_remaining_refund_amount() > 0 || ( $order->has_free_item() && $order->get_remaining_refund_items() > 0 ) ) {
-			do_action( 'woocommerce_order_partially_refunded', $order_id, $refund->id, $refund->id );
-		} else {
-			do_action( 'woocommerce_order_fully_refunded', $order_id, $refund->id );
-			$order->update_status( apply_filters( 'woocommerce_order_fully_refunded_status', 'refunded', $order_id, $refund->id ) );
-		}
-
-		do_action( 'woocommerce_order_refunded', $order_id, $refund->id );
-
-		return array( 'status' => 'success', 'new_state' => 'refunded' );
-	}
 	
 	
 	/**
 	 * Delete a refund and die
-	 * 
 	 * @param type $refund_id
 	 */
 	function bookacti_delete_refund_and_die( $refund_id ) {
@@ -2574,19 +2369,5 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		if( empty( $current_screen ) ) { return false; }
 		if( ! $screen_ids || ! is_array( $screen_ids ) ) { $screen_ids = wc_get_screen_ids(); }
 		if( isset( $current_screen->id ) && in_array( $current_screen->id, $screen_ids, true ) ) { return true; }
-		return false;
-	}
-	
-	
-	/**
-	 * Check if the current page is a WooCommerce screen
-	 * @since 1.7.0
-	 * @deprecated since 1.7.3 (use bookacti_is_wc_screen instead)
-	 * @return boolean
-	 */
-	function bookacti_is_wc_edit_product_screen() {
-		$current_screen = get_current_screen();
-		if( empty( $current_screen ) ) { return false; }
-		if( isset( $current_screen->id ) && $current_screen->id === 'product' ) { return true; }
 		return false;
 	}

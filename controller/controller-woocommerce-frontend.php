@@ -160,7 +160,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	
 	/**
 	 * Add booking forms to single product page (front-end)
-	 * @version 1.7.16
+	 * @version 1.8.0
 	 * @global WC_Product $product
 	 */
 	function bookacti_add_booking_system_in_single_product_page() {
@@ -180,42 +180,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 				break;
 			}
 		}
-		
-		/** BACKWARD COMPATIBILITY < 1.5 **/
-		if( ! $form_id ) {
-			$booking_method			= get_post_meta( $product->get_id(), '_bookacti_booking_method', true );
-			$template_id			= get_post_meta( $product->get_id(), '_bookacti_template', true );
-			$activity_id			= get_post_meta( $product->get_id(), '_bookacti_activity', true );
-			$group_categories		= get_post_meta( $product->get_id(), '_bookacti_group_categories', true );
-			$groups_only			= get_post_meta( $product->get_id(), '_bookacti_groups_only', true );
-			$groups_single_events	= get_post_meta( $product->get_id(), '_bookacti_groups_single_events', true );
-			
-			// Make sure the booking method exists
-			$available_booking_methods = bookacti_get_available_booking_methods();
-			if( ! in_array( $booking_method, array_keys( $available_booking_methods ), true ) ) {
-				$booking_method = 'calendar';
-			}
-			
-			$atts = array( 
-				'calendars'				=> is_numeric( $template_id ) ? array( $template_id ) : $template_id,
-				'activities'			=> is_numeric( $activity_id ) ? array( $activity_id ) : $activity_id,
-				'group_categories'		=> is_numeric( $group_categories ) ? array( $group_categories ) : $group_categories,
-				'groups_only'			=> $groups_only === 'yes' ? 1 : 0,
-				'groups_single_events'	=> $groups_single_events === 'yes' ? 1 : 0,
-				'method'				=> $booking_method,
-				'auto_load'				=> $product->is_type( 'variable' ) ? 0 : 1,
-				'id'					=> 'bookacti-booking-system-product-' . $product->get_id(),
-				'class'					=> 'bookacti-frontend-booking-system bookacti-woocommerce-product-booking-system'
-			);
-			
-			// Format booking system attributes
-			$atts = bookacti_format_booking_system_attributes( $atts );
-			
-			bookacti_get_booking_system( $atts, true );
-			return;
-		} 
-		/** END BACKWARD COMPATIBILITY < 1.5 **/
-		
+		if( ! $form_id ) { return; }
 		
 		$form_instance_id		= '';
 		$variation_id			= 0;
@@ -442,41 +407,9 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	/**
 	 * Add the information as meta data so that it can be seen as part of the order 
 	 * (to hide any meta data from the customer just start it with an underscore)
-	 * To be used before WC 3.0 only, on woocommerce_add_order_item_meta hook
-	 * 
-	 * @version 1.5.4
-	 * @param int $item_id
-	 * @param array $values
-	 */
-	function bookacti_add_values_to_order_item_meta( $item_id, $values ) {
-		if( ! array_key_exists( '_bookacti_options', $values ) ) { return; }
-			
-		// Single event data
-		if( isset( $values['_bookacti_options']['bookacti_booking_id'] ) ) {
-
-			$state = bookacti_get_booking_state( $values['_bookacti_options']['bookacti_booking_id'] );
-			wc_add_order_item_meta( $item_id, 'bookacti_booking_id', intval( $values['_bookacti_options']['bookacti_booking_id'] ) );
-
-		// Group of events data
-		} else if( isset( $values['_bookacti_options']['bookacti_booking_group_id'] ) ) {
-
-			$state	= bookacti_get_booking_group_state( $values['_bookacti_options']['bookacti_booking_group_id'] );
-			wc_add_order_item_meta( $item_id, 'bookacti_booking_group_id', intval( $values['_bookacti_options']['bookacti_booking_group_id'] ) );
-		}
-
-		// Common data
-		wc_add_order_item_meta( $item_id, 'bookacti_booked_events', $values['_bookacti_options']['bookacti_booked_events'] );
-		wc_add_order_item_meta( $item_id, 'bookacti_state', sanitize_title_with_dashes( $state ) );
-	}
-	
-	/**
-	 * Add the information as meta data so that it can be seen as part of the order 
-	 * (to hide any meta data from the customer just start it with an underscore)
-	 * To be used since WC 3.0 instead of bookacti_add_values_to_order_item_meta, on woocommerce_checkout_create_order_line_item hook
-	 * 
+	 * To be used since WC 3.0 on woocommerce_checkout_create_order_line_item hook
 	 * @since 1.1.0
 	 * @version 1.4.3
-	 * 
 	 * @param WC_Order_Item_Product $item
 	 * @param string $cart_item_key
 	 * @param array $values
@@ -504,6 +437,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		$item->add_meta_data( 'bookacti_booked_events', $values['_bookacti_options']['bookacti_booked_events'], true );
 		$item->add_meta_data( 'bookacti_state', sanitize_title_with_dashes( $state ), true );
 	}
+	add_action( 'woocommerce_checkout_create_order_line_item', 'bookacti_save_order_item_metadata', 10, 4 );
 	
 
 	/**
@@ -737,27 +671,6 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	
 	
 	/**
-	 * Load filters depending on WC version
-	 * Used for WOOCOMMERCE 3.0.0 backward compatibility
-	 * 
-	 * @since 1.0.4
-	 * @version 1.1.0
-	 */
-	function bookacti_load_filters_with_backward_compatibility() {
-		if( version_compare( WC_VERSION, '3.0.0', '>=' ) ) {
-			add_filter( 'woocommerce_get_stock_html', 'bookacti_dont_display_instock_in_variation', 10, 2 );
-			add_filter( 'wc_add_to_cart_message_html', 'bookacti_add_to_cart_message_html', 10, 2 );
-			add_action( 'woocommerce_checkout_create_order_line_item', 'bookacti_save_order_item_metadata', 10, 4 );
-		} else {
-			add_filter( 'woocommerce_stock_html', 'bookacti_deprecated_dont_display_instock_in_variation', 10, 3 );
-			add_filter( 'wc_add_to_cart_message', 'bookacti_deprecated_add_to_cart_message_html', 10, 2 );
-			add_action( 'woocommerce_add_order_item_meta', 'bookacti_add_values_to_order_item_meta', 10, 2 );
-		}
-	}
-	add_action( 'woocommerce_loaded', 'bookacti_load_filters_with_backward_compatibility' );
-	
-	
-	/**
 	 * Notice the user that his activity has been reserved and will expire, along with the add to cart confirmation
 	 * @since 1.0.4
 	 * @version 1.5.2
@@ -818,73 +731,31 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		
 		return $message;
 	}
-	
-	
-	/**
-	 * Notice the user that an activity has been reserved and will expire, along with the add to cart confirmation
-	 *
-	 * Only use it for WOOCOMMERCE 3.0.0 backward compatibility 
-	 * 
-	 * @since 1.0.4
-	 * 
-	 * @param string $message
-	 * @param int $product_id
-	 * @return string
-	 */
-	function bookacti_deprecated_add_to_cart_message_html( $message, $product_id ) {
-		$products = array( $product_id => 1 );
-		return bookacti_add_to_cart_message_html( $message, $products );
-	}
+	add_filter( 'wc_add_to_cart_message_html', 'bookacti_add_to_cart_message_html', 10, 2 );
 	
 	
 	/**
 	 * Do not display "In stock" for activities in variable product pages
-	 * 
-	 * Only use it for WOOCOMMERCE 3.0.0 backward compatibility 
-	 * 
 	 * @since 1.0.4
-	 * 
+	 * @version 1.8.0
 	 * @param string $availability_html
-	 * @param string $availability
 	 * @param WC_Product $variation
 	 * @return string
 	 */
-	function bookacti_deprecated_dont_display_instock_in_variation( $availability_html, $availability, $variation ) {
-		if( $variation->stock_status === 'instock' ) {
-			$is_activity = get_post_meta( $variation->variation_id, 'bookacti_variable_is_activity', true ) === 'yes';
+	function bookacti_dont_display_instock_in_variation( $availability_html, $variation ) {
+		if( $variation->get_stock_status() === 'instock' ) {
+			$is_activity = get_post_meta( $variation->get_id(), 'bookacti_variable_is_activity', true ) === 'yes';
 			if( $is_activity ) {
 				$availability_html = '';
 			}
 		}
 		return $availability_html;
 	}
-	
-	
-	/**
-	 * Do not display "In stock" for activities in variable product pages
-	 *
-	 * @since 1.0.4
-	 * 
-	 * @param string $availability_html
-	 * @param WC_Product $variation
-	 * @return string
-	 */
-	function bookacti_dont_display_instock_in_variation( $availability_html, $variation ) {
-		if( version_compare( WC_VERSION, '3.0.0', '>=' ) ) {
-			if( $variation->get_stock_status() === 'instock' ) {
-				$is_activity = get_post_meta( $variation->get_id(), 'bookacti_variable_is_activity', true ) === 'yes';
-				if( $is_activity ) {
-					$availability_html = '';
-				}
-			}
-			return $availability_html;
-		} else {
-			return bookacti_deprecated_dont_display_instock_in_variation( $availability_html, null, $variation );
-		}
-	}
-			
+	add_filter( 'woocommerce_get_stock_html', 'bookacti_dont_display_instock_in_variation', 10, 2 );
 
-	
+
+
+
 // CART & CHECKOUT
 
 	/**
@@ -1414,34 +1285,19 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	/**
 	 * Add class to activity order item to identify them on order received page
 	 * @since 1.1.0
-	 * @version 1.5.8
+	 * @version 1.8.0
 	 * @param string $classes
 	 * @param WC_Order_Item $item
 	 * @param WC_Order $order
 	 * @return string
 	 */
 	function bookacti_add_class_to_activity_order_item( $classes, $item, $order ) {
-		
-		if( version_compare( WC_VERSION, '3.0.0', '>=' ) ) {
-			$booking_id = wc_get_order_item_meta( $item->get_id(), 'bookacti_booking_id', true );
-			if( $booking_id ) {
-				$classes .= ' bookacti-order-item-activity bookacti-single-booking';
-			} else if( wc_get_order_item_meta( $item->get_id(), 'bookacti_booking_group_id', true ) ) {
-				$classes .= ' bookacti-order-item-activity bookacti-booking-group';
-			}
-		} else {
-			foreach ( $item[ 'item_meta' ] as $meta_key => $meta_array ) {
-				// Single booking
-				if( $meta_key === 'bookacti_booking_id' ) {
-					$classes .= ' bookacti-order-item-activity bookacti-single-booking';
-
-				// Group of bookings
-				} else if( $meta_key === 'bookacti_booking_group_id' ) {
-					$classes .= ' bookacti-order-item-activity bookacti-booking-group';
-				}
-			}
+		$booking_id = wc_get_order_item_meta( $item->get_id(), 'bookacti_booking_id', true );
+		if( $booking_id ) {
+			$classes .= ' bookacti-order-item-activity bookacti-single-booking';
+		} else if( wc_get_order_item_meta( $item->get_id(), 'bookacti_booking_group_id', true ) ) {
+			$classes .= ' bookacti-order-item-activity bookacti-booking-group';
 		}
-		
 		return $classes;
 	}
 	add_filter( 'woocommerce_order_item_class', 'bookacti_add_class_to_activity_order_item', 10, 3 );
@@ -1478,13 +1334,11 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	
 	
 	/**
-	 * Check bookings availability before validating checkout 
-	 * in case that "in_cart" state is not active
-	 * 
-	 * @since  1.3.0
-	 * @version 1.7.0
-	 * @param  array $posted_data An array of posted data.
-	 * @param  WP_Error $errors
+	 * Check bookings availability before validating checkout in case that "in_cart" state is not active
+	 * @since 1.3.0
+	 * @version 1.8.0
+	 * @param array $posted_data An array of posted data.
+	 * @param WP_Error $errors
 	 */
 	function bookacti_availability_check_before_checkout( $posted_data, $errors = null ) {
 		// Do not make this check if "in_cart" bookings are active, because they already hold their own booking quantity 
@@ -1519,14 +1373,8 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			
 			// Display the error and stop checkout processing
 			if( $validated[ 'status' ] !== 'success' && isset( $validated[ 'message' ] ) ) {
-				if( version_compare( WC_VERSION, '3.0.0', '>=' ) ) {
-					if( ! isset( $validated[ 'error' ] ) ) { $validated[ 'error' ] = 'unknown_error'; }
-					$errors->add( $validated[ 'error' ], $validated[ 'message' ] );
-
-				// WOOCOMMERCE 3.0.0 backward compatibility
-				} else {
-					wc_add_notice( $validated[ 'message' ], 'error' );
-				}
+				if( ! isset( $validated[ 'error' ] ) ) { $validated[ 'error' ] = 'unknown_error'; }
+				$errors->add( $validated[ 'error' ], $validated[ 'message' ] );
 			}
 		}
 	}
@@ -1662,7 +1510,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	/**
 	 * Add WC data to the user booking list
 	 * @since 1.7.12 (was bookacti_fill_wc_price_column_in_booking_list)
-	 * @version 1.7.13
+	 * @version 1.8.0
 	 * @param array $booking_list_items
 	 * @param array $bookings
 	 * @param array $booking_groups
@@ -1706,7 +1554,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		$orders = array();
 		$orders_array = wc_get_orders( array( 'post__in' => $order_ids ) );
 		foreach( $orders_array as $order ) {
-			$order_id = version_compare( WC_VERSION, '3.0.0', '>=' ) ? $order->get_id() : $order->id;
+			$order_id = $order->get_id();
 			$orders[ $order_id ] = $order;
 		}
 		
@@ -1750,8 +1598,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			// Filter refund actions
 			if( ! empty( $booking_list_items[ $booking_id ][ 'actions' ][ 'refund' ] ) && ! empty( $orders[ $order_item_data->order_id ] ) ) {
 				$order		= $orders[ $order_item_data->order_id ];
-				// WOOCOMMERCE 3.0.0 backward compatibility 
-				$is_paid	= version_compare( WC_VERSION, '3.0.0', '>=' ) ? $order->get_date_paid( 'edit' ) : $order->paid_date;
+				$is_paid	= $order->get_date_paid( 'edit' );
 				$total		= isset( $order_item_data->_line_total ) ? $order_item_data->_line_total + $order_item_data->_line_tax : '';
 				
 				if( $order->get_status() !== 'pending' && $is_paid && $total > 0 ) {

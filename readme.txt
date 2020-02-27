@@ -320,6 +320,10 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 
 == Changelog ==
 
+= 1.8.0 =
+* Breaking change - Drop backward compatibility and support with Booking Activities < 1.5 (shortcodes and WC integration)
+* Breaking change - Drop backward compatibility and support with WooCommerce < 3.0
+
 = 1.7.20 - 2020/02/22 =
 * Fix - Error while booking whithout WooCommerce
 * Fix - Cannot reschedule to a past event from admin
@@ -950,7 +954,7 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 * Add - Added 'bookacti_validate_selected_event' JS action
 * Add - Added 'bookacti_temporary_book_message' filter to allow you to change the confirmation text when an activity has been added to cart through WooCommerce
 * Add - Added 'bookacti_refund_coupon_code_template' filter to change the template of WC generated coupon code (with refund by coupon method)
-* Add - Added 'bookacti_get_booking_product_id' function to retreive product id by booking id, if the reservation was made with WC
+* Add - Added 'bookacti_get_booking_product_id' function to retrieve product id by booking id, if the reservation was made with WC
 
 = 1.0.3 - 2017/03/29 =
 * Feature - Added possibility to change calendar day start / end hours
