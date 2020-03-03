@@ -1073,14 +1073,14 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	/**
 	 * Create a user selectbox
 	 * @since 1.3.0
-	 * @version 1.7.19
+	 * @version 1.8.0
 	 * @param array $raw_args
 	 * @return string|void
 	 */
 	function bookacti_display_user_selectbox( $raw_args ) {
 		$defaults = array(
-			'allow_tags' => 0, 'allow_clear' => 1, 'allow_current' => 0,
-			'option_label' => array( 'display_name' ), 'ajax' => 1, 'echo' => 1,
+			'allow_tags' => 0, 'allow_clear' => 1, 'allow_current' => 0, 
+			'option_label' => array( 'display_name' ), 'ajax' => 1, 'select2' => 1, 'echo' => 1,
 			'selected' => 0, 'name' => 'user_id', 'class' => '', 'id' => '',
 			'include' => array(), 'exclude' => array(),
 			'role' => array(), 'role__in' => array(), 'role__not_in' => array(),
@@ -1090,7 +1090,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		$args = apply_filters( 'bookacti_user_selectbox_args', wp_parse_args( $raw_args, $defaults ), $raw_args );
 		
 		$users = ! $args[ 'ajax' ] ? bookacti_get_users_data( $args ) : array();
-		$args[ 'class' ] = $args[ 'ajax' ] ? 'bookacti-select2-ajax ' . trim( $args[ 'class' ] ) : 'bookacti-select2-no-ajax ' . trim( $args[ 'class' ] );
+		$args[ 'class' ] = $args[ 'ajax' ] ? 'bookacti-select2-ajax ' . trim( $args[ 'class' ] ) : ( $args[ 'select2' ] ? 'bookacti-select2-no-ajax ' . trim( $args[ 'class' ] ) : trim( $args[ 'class' ] ) );
 		
 		if( $args[ 'ajax' ] && $args[ 'selected' ] ) {
 			$user = get_user_by( 'id', $args[ 'selected' ] );

@@ -968,7 +968,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		/**
 		 * Export events of a specific booking (group)
 		 * @since 1.6.0
-		 * @version 1.7.13
+		 * @version 1.8.0
 		 */
 		function bookacti_export_booked_events_page() {
 			if( empty( $_REQUEST[ 'action' ] ) || $_REQUEST[ 'action' ] !== 'bookacti_export_booked_events' ) { return; }
@@ -1002,17 +1002,20 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 					$start_datetime = new DateTime( $event->start, $timezone );
 					if( $start_datetime < $current_time ) { esc_html_e( 'No events found.', 'booking-activities' ); exit; }
 				}
-
-				$interval = array( 'start' => substr( $booking->event_start, 0, 10 ), 'end' => substr( $booking->event_end, 0, 10 ) );
-				$events = bookacti_get_events_array_from_db_events( array( $event ), true, $interval );
+				
+				$events_args = array(
+					'past_events' => true,
+					'interval' => array( 'start' => substr( $booking->event_start, 0, 10 ), 'end' => substr( $booking->event_end, 0, 10 ) ),
+				);
+				$events = bookacti_get_events_array_from_db_events( array( $event ), $events_args );
 
 			} else if( ! empty( $_REQUEST[ 'booking_group_id' ] ) ) {
 				$booking_group_id = intval( $_REQUEST[ 'booking_group_id' ] );
 				$booking_group = bookacti_get_booking_group_by_id( $booking_group_id );
 				$bookings = bookacti_get_bookings_by_booking_group_id( $booking_group_id );
 				if( ! $booking_group || ! $bookings ) { esc_html_e( 'Invalid booking ID.', 'booking-activities' ); exit; }
-
-				$events = bookacti_fetch_grouped_events( array(), array(), array( $booking_group->event_group_id ), array(), $atts[ 'past_events' ] );
+				
+				$events = bookacti_fetch_grouped_events( array( 'groups' => array( $booking_group->event_group_id ), 'past_events' => $atts[ 'past_events' ] ) );
 				
 				// Remove events of the group which are no longer booked
 				if( $events[ 'events' ] ) { 

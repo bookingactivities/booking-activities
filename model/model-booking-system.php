@@ -6,15 +6,27 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 // EVENTS
 	/**
 	 * Fetch events by templates and / or activities
-	 *
-	 * @version 1.7.2
-	 * @param array $templates
-	 * @param array $activities
-	 * @param boolean $past_events
-	 * @param array $interval array('start' => string: start date, 'end' => string: end date)
+	 * @version 1.8.0
+	 * @param array $raw_args {
+	 *  @type array $templates Array of template IDs
+	 *  @type array $activities Array of activity IDs
+	 *  @type array $interval array('start' => string: start date, 'end' => string: end date)
+	 *  @type boolean $skip_exceptions Whether to retrieve occurence on exceptions
+	 *  @type boolean $past_events Whether to compute past events
+	 *  @type boolean $bounding_events_only Whether to retrieve the first and the last events only
+	 * }
 	 * @return array $events_array Array of events
 	 */
-    function bookacti_fetch_events( $templates = array(), $activities = array(), $past_events = false, $interval = array() ) {
+    function bookacti_fetch_events( $raw_args = array() ) {
+		$default_args = array(
+			'templates' => array(),
+			'activities' => array(),
+			'interval' => array(),
+			'skip_exceptions' => true,
+			'past_events' => false,
+			'bounding_events_only' => false
+		);
+		$args = wp_parse_args( $raw_args, $default_args );
 		
 		global $wpdb;
 		
@@ -66,7 +78,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		}
 		
 		// Do not fetch events totally out of the desired interval
-		if( $interval ) {
+		if( $args[ 'interval' ] ) {
 			$query  .= ' 
 			AND (
 					( 	NULLIF( E.repeat_freq, "none" ) IS NULL 
@@ -93,29 +105,29 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 								)
 					) 
 				)';
-			
+
 			$variables[] = $user_timestamp_offset;
-			$variables[] = $interval[ 'start' ];
-			$variables[] = $user_timestamp_offset;
-			$variables[] = $user_timestamp_offset;
-			$variables[] = $interval[ 'end' ];
+			$variables[] = $args[ 'interval' ][ 'start' ];
 			$variables[] = $user_timestamp_offset;
 			$variables[] = $user_timestamp_offset;
-			$variables[] = $interval[ 'start' ];
+			$variables[] = $args[ 'interval' ][ 'end' ];
 			$variables[] = $user_timestamp_offset;
 			$variables[] = $user_timestamp_offset;
-			$variables[] = $interval[ 'start' ];
+			$variables[] = $args[ 'interval' ][ 'start' ];
 			$variables[] = $user_timestamp_offset;
 			$variables[] = $user_timestamp_offset;
-			$variables[] = $interval[ 'end' ];
+			$variables[] = $args[ 'interval' ][ 'start' ];
 			$variables[] = $user_timestamp_offset;
 			$variables[] = $user_timestamp_offset;
-			$variables[] = $interval[ 'end' ];
+			$variables[] = $args[ 'interval' ][ 'end' ];
+			$variables[] = $user_timestamp_offset;
+			$variables[] = $user_timestamp_offset;
+			$variables[] = $args[ 'interval' ][ 'end' ];
 			$variables[] = $user_timestamp_offset;
 		}
 
 		// Whether to fetch past events
-		if( ! $past_events ) {
+		if( ! $args[ 'past_events' ] ) {
 
 			$started_events_bookable = bookacti_get_setting_value( 'bookacti_general_settings', 'started_events_bookable' );
 			
@@ -141,54 +153,66 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		}
 		
 		// Get events from desired templates only
-		if( $templates ) {
+		if( $args[ 'templates' ] ) {
 			$query  .= ' AND E.template_id IN ( %d';
-			for( $i=1,$len=count($templates); $i < $len; ++$i ) {
+			for( $i=1,$len=count( $args[ 'templates' ] ); $i < $len; ++$i ) {
 				$query  .= ', %d';
 			}
 			$query  .= ' ) ';
-			$variables = array_merge( $variables, $templates );
+			$variables = array_merge( $variables, $args[ 'templates' ] );
 		}
 		
 		// Get events from desired activities only
-		if( $activities ) {
+		if( $args[ 'activities' ] ) {
 			$query  .= ' AND A.id IN ( %d';
-			for( $i=1,$len=count($activities); $i < $len; ++$i ) {
+			for( $i=1,$len=count( $args[ 'activities' ] ); $i < $len; ++$i ) {
 				$query  .= ', %d';
 			}
 			$query  .= ' ) ';
-			$variables = array_merge( $variables, $activities );
+			$variables = array_merge( $variables, $args[ 'activities' ] );
 		}
 		
 		$query  .= ' ORDER BY E.start ASC ';
 		
-		
-		// Apply variables to the query
-		$query = apply_filters( 'bookacti_get_events_query', $wpdb->prepare( $query, $variables ), $templates, $activities, $past_events, $interval );
+		// Allow plugins to change the query
+		$query = apply_filters( 'bookacti_get_events_query', $wpdb->prepare( $query, $variables ), $args );
 		
 		// Get events complying with parameters
 		$events = $wpdb->get_results( $query, OBJECT );
 		
 		// Transform raw events from database to array of individual events
-		$events_array = bookacti_get_events_array_from_db_events( $events, $past_events, $interval );
+		$events_array = bookacti_get_events_array_from_db_events( $events, $args );
 		
-		return apply_filters( 'bookacti_get_events', $events_array, $templates, $activities, $past_events, $interval, $query );
+		return apply_filters( 'bookacti_get_events', $events_array, $query, $args );
     }
 	
 	
 	/**
-	 * Fetch events by groups and / or categories of groups
-	 * @version 1.7.3
+	 * Fetch events by groups and / or group categories
+	 * @version 1.8.0
 	 * @global wpdb $wpdb
-	 * @param array $templates
-	 * @param array $activities
-	 * @param array $groups
-	 * @param array $categories
-	 * @param boolean $past_events
-	 * @param array $interval array('start' => string: start date, 'end' => string: end date)
+	 * @param array $raw_args {
+	 *  @type array $templates Array of template IDs
+	 *  @type array $activities Array of activity IDs
+	 *  @type array groups Array of groups of events IDs
+	 *  @type array group_categories Array of group categories IDs
+	 *  @type array $interval array('start' => string: start date, 'end' => string: end date)
+	 *  @type boolean $past_events Whether to compute past events
+	 *  @type boolean $bounding_events_only Whether to retrieve the first and the last events only
+	 * }
 	 * @return array
 	 */
-	function bookacti_fetch_grouped_events( $templates = array(), $activities = array(), $groups = array(), $categories = array(), $past_events = false, $interval = array() ) {
+	function bookacti_fetch_grouped_events( $raw_args = array() ) {
+		$default_args = array(
+			'templates' => array(),
+			'activities' => array(),
+			'groups' => array(),
+			'group_categories' => array(),
+			'interval' => array(),
+			'past_events' => false,
+			'bounding_events_only' => false
+		);
+		$args = wp_parse_args( $raw_args, $default_args );
 		
 		global $wpdb;
 		
@@ -215,45 +239,45 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 				. ' AND C.active = 1 ';
 		
 		// Get events from desired templates only
-		if( $templates ) {
+		if( $args[ 'templates' ] ) {
 			$query  .= ' AND E.template_id IN ( %d';
-			for( $i=1,$len=count($templates); $i < $len; ++$i ) {
+			for( $i=1,$len=count( $args[ 'templates' ] ); $i < $len; ++$i ) {
 				$query  .= ', %d';
 			}
 			$query  .= ' ) ';
-			$variables = array_merge( $variables, $templates );
+			$variables = array_merge( $variables, $args[ 'templates' ] );
 		}
 		
 		// Get events from desired activities only
-		if( $activities ) {
+		if( $args[ 'activities' ] ) {
 			$query  .= ' AND A.id IN ( %d';
-			for( $i=1,$len=count($activities); $i < $len; ++$i ) {
+			for( $i=1,$len=count( $args[ 'activities' ] ); $i < $len; ++$i ) {
 				$query  .= ', %d';
 			}
 			$query  .= ' ) ';
-			$variables = array_merge( $variables, $activities );
+			$variables = array_merge( $variables, $args[ 'activities' ] );
 		}
 		
 		// Fetch events from desired groups only
-		if( $groups ) {
+		if( $args[ 'groups' ] ) {
 			// Get the event only if it belongs to a group of the allowed categories
 			$query .= ' AND GE.group_id IN ( %d';
-			for( $i=1, $len=count($groups); $i < $len; ++$i ) {
+			for( $i=1, $len=count( $args[ 'groups' ] ); $i < $len; ++$i ) {
 				$query .= ', %d';
 			}
 			$query .= ' ) ';
-			$variables = array_merge( $variables, $groups );
+			$variables = array_merge( $variables, $args[ 'groups' ] );
 		}
 		
 		// Fetch events from desired categories only
-		if( $categories ) {
+		if( $args[ 'group_categories' ] ) {
 			// Get the event only if it belongs to a group of the allowed categories
 			$query .= ' AND G.category_id IN ( %d';
-			for( $i=1, $len=count($categories); $i < $len; ++$i ) {
+			for( $i=1, $len=count( $args[ 'group_categories' ] ); $i < $len; ++$i ) {
 				$query .= ', %d';
 			}
 			$query .= ' ) ';
-			$variables = array_merge( $variables, $categories );
+			$variables = array_merge( $variables, $args[ 'group_categories' ] );
 		}
 		
 		// Do not fetch events out of their respective template limits
@@ -270,7 +294,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		$variables[] = $user_timestamp_offset;
 		
 		// Do not fetch events out of the desired interval
-		if( $interval ) {
+		if( $args[ 'interval' ] ) {
 			$query .= ' AND (	UNIX_TIMESTAMP( CONVERT_TZ( GE.event_start, %s, @@global.time_zone ) ) >= 
 								UNIX_TIMESTAMP( CONVERT_TZ( %s, %s, @@global.time_zone ) ) 
 								AND 
@@ -279,15 +303,15 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 							)';
 			
 			$variables[] = $user_timestamp_offset;
-			$variables[] = $interval[ 'start' ];
+			$variables[] = $args[ 'interval' ][ 'start' ];
 			$variables[] = $user_timestamp_offset;
 			$variables[] = $user_timestamp_offset;
-			$variables[] = $interval[ 'end' ];
+			$variables[] = $args[ 'interval' ][ 'end' ];
 			$variables[] = $user_timestamp_offset;
 		}
 
 		// Whether to fetch past events
-		if( ! $past_events ) {
+		if( ! $args[ 'past_events' ] ) {
 
 			$started_events_bookable = bookacti_get_setting_value( 'bookacti_general_settings', 'started_events_bookable' );
 			
@@ -309,35 +333,48 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			$query .= ' ) ';
 		}
 		
-		$query  .= ' ORDER BY GE.event_start ASC ';
+		$query .= ' ORDER BY GE.event_start ASC ';
 		
 		// Apply variables to the query
-		$query = apply_filters( 'bookacti_get_grouped_events_query', $wpdb->prepare( $query, $variables ), $templates, $activities, $groups, $categories, $past_events, $interval );
+		$query = apply_filters( 'bookacti_get_grouped_events_query', $wpdb->prepare( $query, $variables ), $args );
 		
 		// Get events complying with parameters
 		$events = $wpdb->get_results( $query, OBJECT );
 
 		// Transform raw events from database to array of individual events
-		$events_array = bookacti_get_events_array_from_db_events( $events, $past_events, $interval );
+		$events_array = bookacti_get_events_array_from_db_events( $events, $args );
 		
-		return apply_filters( 'bookacti_get_grouped_events', $events_array, $templates, $activities, $groups, $categories, $past_events, $interval, $query );
+		return apply_filters( 'bookacti_get_grouped_events', $events_array, $query, $args );
 	}
 	
 	
 	/**
 	 * Fetch booked events only
 	 * @since 1.2.2
-	 * @version 1.7.3
+	 * @version 1.8.0
 	 * @global wpdb $wpdb
-	 * @param array $templates
-	 * @param array $activities
-	 * @param array $booking_status
-	 * @param int|string $user_id
-	 * @param boolean $past_events
-	 * @param array $interval array('start' => string: start date, 'end' => string: end date)
+	 * @param array $raw_args {
+	 *  @type array $templates Array of template IDs
+	 *  @type array $activities Array of activity IDs
+	 *  @type array $status Array of groups of events IDs
+	 *  @type array $interval array('start' => string: start date, 'end' => string: end date)
+	 *  @type int|string $users Array of user IDs
+	 *  @type boolean $past_events Whether to compute past events
+	 *  @type boolean $bounding_events_only Whether to retrieve the first and the last events only
+	 * }
 	 * @return array
 	 */
-	function bookacti_fetch_booked_events( $templates = array(), $activities = array(), $booking_status = array(), $user_id = 0, $past_events = false, $interval = array() ) {
+	function bookacti_fetch_booked_events( $raw_args = array() ) {
+		$default_args = array(
+			'templates' => array(),
+			'activities' => array(),
+			'status' => array(),
+			'users' => array(),
+			'interval' => array(),
+			'past_events' => false,
+			'bounding_events_only' => false
+		);
+		$args = wp_parse_args( $raw_args, $default_args );
 		
 		global $wpdb;
 		
@@ -357,44 +394,47 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 				. ' AND E.template_id = T.id ';
 		
 		// Get events from desired templates only
-		if( $templates ) {
+		if( $args[ 'templates' ] ) {
 			$query  .= ' AND E.template_id IN ( %d';
-			for( $i=1,$len=count($templates); $i < $len; ++$i ) {
+			for( $i=1,$len=count( $args[ 'templates' ] ); $i < $len; ++$i ) {
 				$query  .= ', %d';
 			}
 			$query  .= ' ) ';
-			$variables = array_merge( $variables, $templates );
+			$variables = array_merge( $variables, $args[ 'templates' ] );
 		}
 		
 		// Get events from desired activities only
-		if( $activities ) {
+		if( $args[ 'activities' ] ) {
 			$query  .= ' AND A.id IN ( %d';
-			for( $i=1,$len=count($activities); $i < $len; ++$i ) {
+			for( $i=1,$len=count( $args[ 'activities' ] ); $i < $len; ++$i ) {
 				$query  .= ', %d';
 			}
 			$query  .= ' ) ';
-			$variables = array_merge( $variables, $activities );
+			$variables = array_merge( $variables, $args[ 'activities' ] );
 		}
 		
 		// Fetch events from desired booking status only
-		if( $booking_status ) {
-			// Get the event only if it belongs to a group of the allowed categories
+		if( $args[ 'status' ] ) {
 			$query .= ' AND B.state IN ( %s';
-			for( $i=1, $len=count($booking_status); $i < $len; ++$i ) {
+			for( $i=1, $len=count( $args[ 'status' ] ); $i < $len; ++$i ) {
 				$query .= ', %s';
 			}
 			$query .= ' ) ';
-			$variables = array_merge( $variables, $booking_status );
+			$variables = array_merge( $variables, $args[ 'status' ] );
 		}
 		
 		// Filter bookings by user
-		if( $user_id ) {
-			$query .= ' AND B.user_id = %s ';
-			$variables[] = $user_id ;
+		if( $args[ 'users' ] ) {
+			$query .= ' AND B.user_id IN ( %s';
+			for( $i=1, $len=count( $args[ 'users' ] ); $i < $len; ++$i ) {
+				$query .= ', %s';
+			}
+			$query .= ' ) ';
+			$variables = array_merge( $variables, $args[ 'users' ] );
 		}
 		
 		// Do not fetch events out of the desired interval
-		if( $interval ) {
+		if( $args[ 'interval' ] ) {
 			$query .= ' AND (	UNIX_TIMESTAMP( CONVERT_TZ( B.event_start, %s, @@global.time_zone ) ) >= 
 								UNIX_TIMESTAMP( CONVERT_TZ( %s, %s, @@global.time_zone ) ) 
 								AND 
@@ -403,15 +443,15 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 							)';
 			
 			$variables[] = $user_timestamp_offset;
-			$variables[] = $interval[ 'start' ];
+			$variables[] = $args[ 'interval' ][ 'start' ];
 			$variables[] = $user_timestamp_offset;
 			$variables[] = $user_timestamp_offset;
-			$variables[] = $interval[ 'end' ];
+			$variables[] = $args[ 'interval' ][ 'end' ];
 			$variables[] = $user_timestamp_offset;
 		}
 
 		// Whether to fetch past events
-		if( ! $past_events ) {
+		if( ! $args[ 'past_events' ] ) {
 			$query .= ' AND ( UNIX_TIMESTAMP( CONVERT_TZ( B.event_start, %s, @@global.time_zone ) ) >= %d ) ';
 			
 			$variables[] = $user_timestamp_offset;
@@ -424,15 +464,15 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		if( $variables ) {
 			$query = $wpdb->prepare( $query, $variables );
 		}
-		$query = apply_filters( 'bookacti_get_booked_events_query', $query, $templates, $activities, $booking_status, $user_id, $past_events, $interval );
+		$query = apply_filters( 'bookacti_get_booked_events_query', $query, $args );
 		
 		// Get events complying with parameters
 		$events = $wpdb->get_results( $query, OBJECT );
 
 		// Transform raw events from database to array of individual events
-		$events_array = bookacti_get_events_array_from_db_events( $events, $past_events, $interval );
+		$events_array = bookacti_get_events_array_from_db_events( $events, $args );
 
-		return apply_filters( 'bookacti_get_booked_events', $events_array, $templates, $activities, $booking_status, $user_id, $past_events, $interval, $query );
+		return apply_filters( 'bookacti_get_booked_events', $events_array, $query, $args );
 	}
 	
 	

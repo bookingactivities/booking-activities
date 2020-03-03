@@ -5,11 +5,10 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 // EVENTS
 	/**
 	 * AJAX Controller - Fetch events in order to display them
-	 * @version 1.7.10
+	 * @version 1.8.0
 	 */
 	function bookacti_controller_fetch_template_events() {
-		
-		$template_id = intval( $_POST['template_id'] );
+		$template_id = intval( $_POST[ 'template_id' ] );
 		
 		// Check nonce and capabilities
 		$is_nonce_valid	= check_ajax_referer( 'bookacti_fetch_template_events', 'nonce', false );
@@ -22,8 +21,9 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		$event_id	= intval( $_POST[ 'event_id' ] );
 		$interval	= bookacti_sanitize_events_interval( $_POST[ 'interval' ] );
 		$interval[ 'past_events' ] = true;
-
-		$events	= bookacti_fetch_events_for_calendar_editor( $template_id, $event_id, $interval );
+		
+		$events_args = array( 'templates' => array( $template_id ), 'events' => $event_id ? array( $event_id ) : array(), 'interval' => $interval );
+		$events	= bookacti_fetch_events_for_calendar_editor( $events_args );
 		bookacti_send_json( array( 
 			'status' => 'success', 
 			'events' => $events[ 'events' ] ? $events[ 'events' ] : array(),
@@ -35,7 +35,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	
 	/**
 	 * AJAX Controller - Add new event on calendar
-	 * @version 1.7.10
+	 * @version 1.8.0
 	 */
 	function bookacti_controller_insert_event() {
 		$template_id = intval( $_POST['template_id'] );
@@ -60,7 +60,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			bookacti_send_json( array( 'status' => 'failed', 'error' => 'not_inserted' ), 'insert_event' );
 		}
 		
-		$events = bookacti_fetch_events_for_calendar_editor( null, $event_id );
+		$events = bookacti_fetch_events_for_calendar_editor( array( 'events' => array( $event_id ) ) );
 
 		do_action( 'bookacti_event_inserted', $event_id, $events );
 
@@ -76,7 +76,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	/**
 	 * AJAX Controller - Move or resize an event, possibly while duplicating it
 	 * @since 1.2.2 (was bookacti_controller_update_event)
-	 * @version 1.7.10
+	 * @version 1.8.0
 	 */
 	function bookacti_controller_move_or_resize_event() {
 		$event_id       = intval( $_POST[ 'event_id' ] );
@@ -118,7 +118,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 				bookacti_send_json( array( 'status' => 'failed', 'error' => 'not_updated' ), 'move_or_resize_event' ); 
 			}
 			
-			$events		= bookacti_fetch_events_for_calendar_editor( null, $new_event_id, $interval );
+			$events		= bookacti_fetch_events_for_calendar_editor( array( 'events' => array( $new_event_id ), 'interval' => $interval ) );
 			$exceptions	= bookacti_get_exceptions( null, $new_event_id );
 
 			do_action( 'bookacti_event_duplicated', $event_id, $new_event_id, $events );
@@ -133,7 +133,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			
 		} else {
 			if( $updated ){
-				$events = bookacti_fetch_events_for_calendar_editor( null, $event_id, $interval );
+				$events = bookacti_fetch_events_for_calendar_editor( array( 'events' => array( $event_id ), 'interval' => $interval ) );
 
 				do_action( 'bookacti_event_moved_or_resized', $event_id, $events );
 
@@ -156,11 +156,11 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	/**
 	 * AJAX Controller - Update event
 	 * @since 1.2.2 (was bookacti_controller_update_event_data)
-	 * @version 1.7.10
+	 * @version 1.8.0
 	 */
 	function bookacti_controller_update_event() {
-		$event_id			= intval( $_POST['event-id'] );
-		$template_id		= bookacti_get_event_template_id( $event_id );
+		$event_id	= intval( $_POST['event-id'] );
+		$template_id= bookacti_get_event_template_id( $event_id );
 		
 		// Check nonce and capabilities
 		$is_allowed			= current_user_can( 'bookacti_edit_templates' ) && bookacti_user_can_manage_template( $template_id );
@@ -211,7 +211,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 			// Retrieve new events
 			$interval	= bookacti_sanitize_events_interval( $_POST[ 'interval' ] );
-			$events		= bookacti_fetch_events_for_calendar_editor( null, $event_id, $interval );
+			$events		= bookacti_fetch_events_for_calendar_editor( array( 'events' => array( $event_id ), 'interval' => $interval ) );
 
 			// Retrieve groups of events
 			$groups_events = bookacti_get_groups_events( $template_id );
@@ -367,7 +367,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	
 	/**
 	 * AJAX Controller - Unbind occurences of an event
-	 * @version 1.7.10
+	 * @version 1.8.0
 	 */
 	function bookacti_controller_unbind_occurrences() {
 		$event_id		= intval( $_POST[ 'event_id' ] );
@@ -389,11 +389,11 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			$event_start	= bookacti_sanitize_datetime( $_POST[ 'event_start' ] );
 			$event_end		= bookacti_sanitize_datetime( $_POST[ 'event_end' ] );
 			$new_event_id	= bookacti_unbind_selected_occurrence( $event_id, $event_start, $event_end );
-			$events			= bookacti_fetch_events_for_calendar_editor( null, $new_event_id, $interval );
+			$events			= bookacti_fetch_events_for_calendar_editor( array( 'events' => array( $new_event_id ), 'interval' => $interval ) );
 
 		} else if( $unbind === 'booked' ) {
 			$new_event_id	= bookacti_unbind_booked_occurrences( $event_id );
-			$events			= bookacti_fetch_events_for_calendar_editor( null, array( $event_id, $new_event_id ), $interval );
+			$events			= bookacti_fetch_events_for_calendar_editor( array( 'events' => array( $event_id, $new_event_id ), 'interval' => $interval ) );
 		}
 
 		// Retrieve affected data

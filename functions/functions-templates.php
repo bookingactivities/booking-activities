@@ -7,7 +7,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 /**
  * Get booking system data
  * @since 1.7.4
- * @version 1.7.17
+ * @version 1.8.0
  * @param array $atts (see bookacti_format_booking_system_attributes())
  * @param int $template_id
  * @return array
@@ -18,7 +18,8 @@ function bookacti_get_editor_booking_system_data( $atts, $template_id ) {
 	$templates_data		= bookacti_get_templates_data( $template_id, true );
 	$availability_period= array( 'start' => $templates_data[ $template_id ][ 'start' ], 'end' => $templates_data[ $template_id ][ 'end' ] );
 	$events_interval	= bookacti_get_new_interval_of_events( $availability_period, array(), false, true );
-	$events				= $events_interval ? bookacti_fetch_events_for_calendar_editor( $template_id, null, $events_interval ) : array();
+	$events_args		= array( 'templates' => array( $template_id ), 'interval' => $events_interval );
+	$events				= $events_interval ? bookacti_fetch_events_for_calendar_editor( $events_args ) : array();
 	
 	$booking_system_data[ 'calendars' ]				= array( $template_id );
 	$booking_system_data[ 'events' ]				= $events[ 'events' ] ? $events[ 'events' ] : array();

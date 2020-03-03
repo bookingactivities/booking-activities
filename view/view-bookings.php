@@ -1,7 +1,7 @@
 <?php
 /**
  * Booking list page
- * @version 1.7.19
+ * @version 1.8.0
  */
 
 // Exit if accessed directly
@@ -280,6 +280,7 @@ if( ! $templates ) {
 						'class'					=> 'admin-booking-system',
 						'start'					=> ! empty( $_REQUEST[ 'from' ] ) ? bookacti_sanitize_date( $_REQUEST[ 'from' ] ) : '',
 						'end'					=> ! empty( $_REQUEST[ 'to' ] ) ? bookacti_sanitize_date( $_REQUEST[ 'to' ] ) : '',
+						'trim'					=> 1,
 						'past_events'			=> 1,
 						'past_events_bookable'	=> 1,
 						'check_roles'			=> 0,

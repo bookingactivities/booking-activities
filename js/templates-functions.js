@@ -401,10 +401,9 @@ function bookacti_select_events_of_group( group_id ) {
 
 /**
  * Select an event
- * @version 1.7.1
+ * @version 1.8.0
  */
 function bookacti_select_event( raw_event ) {
-	
 	// Return false if we don't have both event id and event start
 	if( ( typeof raw_event !== 'object' )
 	||  ( typeof raw_event === 'object' && ( typeof raw_event.id === 'undefined' || typeof raw_event.start === 'undefined' ) ) ) {
@@ -413,11 +412,11 @@ function bookacti_select_event( raw_event ) {
 	
 	var activity_title = '';
 	if( ! raw_event.title && typeof bookacti.booking_system[ 'bookacti-template-calendar' ][ 'events_data' ][ raw_event.id ] !== 'undefined' ) {
-		var activity_data = bookacti.booking_system[ 'bookacti-template-calendar' ][ 'events_data' ][ raw_event.id ];
-		if( activity_data.title ) {
-			activity_title = activity_data.title;
-		} else if( $j( '.activity-row .fc-event[data-activity-id="' + activity_data.activity_id + '"]' ).length ) {
-			activity_title = $j( '.activity-row .fc-event[data-activity-id="' + activity_id + '"]' ).text();
+		var event_data = bookacti.booking_system[ 'bookacti-template-calendar' ][ 'events_data' ][ raw_event.id ];
+		if( event_data.title ) {
+			activity_title = event_data.title;
+		} else if( $j( '.activity-row .fc-event[data-activity-id="' + event_data.activity_id + '"]' ).length ) {
+			activity_title = $j( '.activity-row .fc-event[data-activity-id="' + event_data.activity_id + '"]' ).text();
 		}
 	}
 	

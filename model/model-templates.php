@@ -6,17 +6,31 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 // EVENTS
 
 	/**
-	 * Fetch all events of a template or an event
-	 * 
+	 * Fetch events to display on calendar editor
 	 * @since 1.1.0 (replace bookacti_fetch_events from 1.0.0)
-	 * @version 1.7.3
+	 * @version 1.8.0
 	 * @global wpdb $wpdb
-	 * @param int $template_id
-	 * @param int $event_id
-	 * @param array $interval ['start' => string: start date, 'end' => string: end date]
+	 * @param array $raw_args {
+	 *  @type array $templates Array of template IDs
+	 *  @type array events Array of event IDs
+	 *  @type array $interval array('start' => string: start date, 'end' => string: end date)
+	 *  @type boolean $skip_exceptions Whether to retrieve occurence on exceptions
+	 *  @type boolean $past_events Whether to compute past events
+	 *  @type boolean $bounding_events_only Whether to retrieve the first and the last events only
+	 * }
 	 * @return array
 	 */
-	function bookacti_fetch_events_for_calendar_editor( $template_id = NULL, $event_id = NULL, $interval = array() ) {
+	function bookacti_fetch_events_for_calendar_editor( $raw_args = array() ) {
+		$default_args = array(
+			'templates' => array(),
+			'events' => array(),
+			'interval' => array(),
+			'skip_exceptions' => false,
+			'past_events' => true,
+			'bounding_events_only' => false
+		);
+		$args = wp_parse_args( $raw_args, $default_args );
+		
 		global $wpdb;
 		
 		// Set current datetime
@@ -24,39 +38,37 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		$current_datetime_object	= new DateTime( 'now', $timezone );
 		$user_timestamp_offset		= $current_datetime_object->format( 'P' );
 		
-		// Get all events
+		// Select events
 		$query  = 'SELECT E.id as event_id, E.template_id, E.title, E.start, E.end, E.repeat_freq, E.repeat_from, E.repeat_to, E.availability, A.color, A.is_resizable, A.id as activity_id ' 
-					. ' FROM ' . BOOKACTI_TABLE_EVENTS . ' as E, ' . BOOKACTI_TABLE_ACTIVITIES . ' as A '
-					. ' WHERE E.activity_id = A.id '
-					. ' AND E.active = 1 ';
+				. ' FROM ' . BOOKACTI_TABLE_EVENTS . ' as E, ' . BOOKACTI_TABLE_ACTIVITIES . ' as A '
+				. ' WHERE E.activity_id = A.id '
+				. ' AND E.active = 1 ';
 		
 		$variables = array();
 		
-		// If we know the event id, we only get this event
-		if( $event_id ) {
-
-			$query  .= ' AND E.id IN ( %d';
-			
-			if( is_array( $event_id ) && count( $event_id ) > 1 ) {
-				for( $i=1, $len=count($event_id); $i < $len; ++$i ) {
-					$query  .= ', %d ';
-				}
+		// Filter by event ids
+		if( $args[ 'events' ] ) {
+			$query .= ' AND E.id IN ( %d';
+			for( $i=1, $len=count( $args[ 'events' ] ); $i < $len; ++$i ) {
+				$query .= ', %d ';
 			}
-			
-			$query  .= ' ) ';
-			
-			$variables[] = $event_id;
-
-		// If we know the template id, we get all events of this template
-		} else if ( $template_id ) {
-
-			$query  .= ' AND E.template_id = %d';
-			$variables[] = $template_id;
+			$query .= ' ) ';
+			$variables = array_merge( $variables, $args[ 'events' ] );
+		}
+		
+		// Filter by template ids
+		if( $args[ 'templates' ] ) {
+			$query .= ' AND E.template_id IN ( %d';
+			for( $i=1, $len=count( $args[ 'templates' ] ); $i < $len; ++$i ) {
+				$query .= ', %d ';
+			}
+			$query .= ' ) ';
+			$variables = array_merge( $variables, $args[ 'templates' ] );
 		}
 		
 		// Do not fetch events out of the desired interval
-		if( $interval ) {
-			$query  .= ' 
+		if( $args[ 'interval' ] ) {
+			$query .= ' 
 			AND (
 					( 	NULLIF( E.repeat_freq, "none" ) IS NULL 
 						AND (	UNIX_TIMESTAMP( CONVERT_TZ( E.start, %s, @@global.time_zone ) ) >= 
@@ -83,37 +95,39 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 					) 
 				)';
 			$variables[] = $user_timestamp_offset;
-			$variables[] = $interval[ 'start' ];
+			$variables[] = $args[ 'interval' ][ 'start' ];
 			$variables[] = $user_timestamp_offset;
 			$variables[] = $user_timestamp_offset;
-			$variables[] = $interval[ 'end' ];
+			$variables[] = $args[ 'interval' ][ 'end' ];
 			$variables[] = $user_timestamp_offset;
 			$variables[] = $user_timestamp_offset;
-			$variables[] = $interval[ 'start' ];
+			$variables[] = $args[ 'interval' ][ 'start' ];
 			$variables[] = $user_timestamp_offset;
 			$variables[] = $user_timestamp_offset;
-			$variables[] = $interval[ 'start' ];
+			$variables[] = $args[ 'interval' ][ 'start' ];
 			$variables[] = $user_timestamp_offset;
 			$variables[] = $user_timestamp_offset;
-			$variables[] = $interval[ 'end' ];
+			$variables[] = $args[ 'interval' ][ 'end' ];
 			$variables[] = $user_timestamp_offset;
 			$variables[] = $user_timestamp_offset;
-			$variables[] = $interval[ 'end' ];
+			$variables[] = $args[ 'interval' ][ 'end' ];
 			$variables[] = $user_timestamp_offset;
 		}
 		
 		// Safely apply variables to the query
-		$prep_query = $query;
 		if( $variables ) {
-			$prep_query = $wpdb->prepare( $query, $variables );
+			$query = $wpdb->prepare( $query, $variables );
 		}
 		
-		$events = $wpdb->get_results( $prep_query, OBJECT );
+		// Allow plugins to change the query
+		$query = apply_filters( 'bookacti_get_events_for_editor_query', $query, $args );
+		
+		$events = $wpdb->get_results( $query, OBJECT );
 
 		// Transform raw events from database to array of individual events
-		$events_array = bookacti_get_events_array_from_db_events( $events, true, $interval, false );
+		$events_array = bookacti_get_events_array_from_db_events( $events, $args );
 
-		return $events_array;
+		return apply_filters( 'bookacti_get_events_for_editor', $events_array, $query, $args ) ;
 	}
 	
 	

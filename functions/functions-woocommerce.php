@@ -1673,7 +1673,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	/**
 	 * Display a products selectbox
 	 * @since 1.7.0
-	 * @version 1.7.19
+	 * @version 1.8.0
 	 * @param array $raw_args
 	 * @return string
 	 */
@@ -1686,12 +1686,13 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			'allow_tags'		=> 0,
 			'allow_clear'		=> 1,
 			'ajax'				=> 1,
+			'select2'			=> 1, 
 			'echo'				=> 1
 		);
 		$args = apply_filters( 'bookacti_product_selectbox_args', wp_parse_args( $raw_args, $defaults ), $raw_args );
 		
 		$products_titles = ! $args[ 'ajax' ] ? bookacti_get_products_titles() : ( $args[ 'selected' ] ? bookacti_get_products_titles( $args[ 'selected' ] ) : array() );
-		$args[ 'class' ] = $args[ 'ajax' ] ? 'bookacti-select2-ajax ' . trim( $args[ 'class' ] ) : 'bookacti-select2-no-ajax ' . trim( $args[ 'class' ] );
+		$args[ 'class' ] = $args[ 'ajax' ] ? 'bookacti-select2-ajax ' . trim( $args[ 'class' ] ) : ( $args[ 'select2' ] ? 'bookacti-select2-no-ajax ' . trim( $args[ 'class' ] ) : trim( $args[ 'class' ] ) );
 		
 		ob_start();
 		?>
