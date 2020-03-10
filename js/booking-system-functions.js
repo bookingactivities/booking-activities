@@ -66,7 +66,7 @@ function bookacti_fetch_events( booking_system, interval ) {
 
 /**
  * Reload a booking system
- * @version 1.7.18
+ * @version 1.8.0
  * @param {dom_element} booking_system
  * @param {boolean} keep_picked_events
  */
@@ -77,7 +77,10 @@ function bookacti_reload_booking_system( booking_system, keep_picked_events ) {
 	var original_attributes		= $j.extend( true, {}, bookacti.booking_system[ booking_system_id ] );
 	var attributes				= $j.extend( true, {}, bookacti.booking_system[ booking_system_id ] );
 	var picked_events			= keep_picked_events ? attributes.picked_events : [];
+	
+	// Specific data
 	var rescheduled_booking_data= typeof attributes.rescheduled_booking_data !== 'undefined' ? attributes.rescheduled_booking_data : [];
+	var templates_per_activities= typeof attributes.templates_per_activities !== 'undefined' ? attributes.templates_per_activities : [];
 	
 	// Do not send useless data
 	delete attributes[ 'events' ];
@@ -90,6 +93,7 @@ function bookacti_reload_booking_system( booking_system, keep_picked_events ) {
 	delete attributes[ 'group_categories_data' ];
 	delete attributes[ 'picked_events' ];
 	delete attributes[ 'rescheduled_booking_data' ];
+	delete attributes[ 'templates_per_activities' ];
 	
 	bookacti_start_loading_booking_system( booking_system );
 	
@@ -111,9 +115,10 @@ function bookacti_reload_booking_system( booking_system, keep_picked_events ) {
 				// Update events and settings
 				bookacti.booking_system[ booking_system_id ] = response.booking_system_data;
 				bookacti.booking_system[ booking_system_id ][ 'picked_events' ] = picked_events;
-				if( rescheduled_booking_data ) {
-					bookacti.booking_system[ booking_system_id ][ 'rescheduled_booking_data' ] = rescheduled_booking_data;
-				}
+				
+				// Specific data
+				if( rescheduled_booking_data ) { bookacti.booking_system[ booking_system_id ][ 'rescheduled_booking_data' ] = rescheduled_booking_data; }
+				if( templates_per_activities ) { bookacti.booking_system[ booking_system_id ][ 'templates_per_activities' ] = templates_per_activities; }
 				
 				// Fill the booking method elements
 				booking_system.append( response.html_elements );

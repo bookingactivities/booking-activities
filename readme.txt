@@ -3,7 +3,7 @@ Contributors: bookingactivities, yoancutillas
 Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=7EKU434L7NEVC
 Tags: booking, reservation, booking form, woocommerce booking, booking events
 Requires at least: 3.6
-Tested up to: 5.3
+Tested up to: 5.4
 Requires PHP: 5.3
 Stable tag: 1.7.20
 License: GPLv3 or later
@@ -324,9 +324,17 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 * Breaking change - Drop backward compatibility and support with Booking Activities < 1.5 (shortcodes and WC integration)
 * Breaking change - Drop backward compatibility and support with WooCommerce < 3.0
 * Feature - Add an option to make the calendar start on the first displayed event, and end on the last one (in Calendar fields settings)
+* Tweak - Allow to change the bookings page calendar settings
+* Tweak - Exported bookings columns are now saved per user
 * Fix - Redirect URL when booking on event click didn't work
 * Fix - Add compulsory hidden quantity field when booking on event click
 * Fix - All grouped bookings were displayed in each rows of the frontend booking list when group_by = none
+* Fix - Check if moment and fullcalendar libraries are already included to avoid conflicts
+* Fix - Notification not sent along WooCommerce's order notification for unpaid processing orders
+* Fix - WC order status not changed after booking status change
+* Fix - Activities were not hidden according to the selected calendars in bookings page filters
+* Fix - Error with qTranslate-XT if the language was not changed
+* Dev - Make sure that the repeated events' occurences and exceptions are included in the repeat period when updated
 
 = 1.7.20 - 2020/02/22 =
 * Fix - Error while booking whithout WooCommerce

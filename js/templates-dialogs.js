@@ -59,6 +59,7 @@ function bookacti_init_template_dialogs() {
 	/**
 	 * Fill template settings by default while duplicating a template (if current template is duplicated)
 	 * @since 1.7.18
+	 * @version 1.8.0
 	 */
 	$j( '#bookacti-template-duplicated-template-id' ).on( 'change', function() {
 		var duplicated_template_id = parseInt( $j( this ).val() );
@@ -80,9 +81,9 @@ function bookacti_init_template_dialogs() {
 			// Set default values
 			$j( '#bookacti-template-opening' ).val( moment().format( 'YYYY-MM-DD' ) );
 			$j( '#bookacti-template-closing' ).val( moment().add( 7, 'days' ).format( 'YYYY-MM-DD' ) );
-			$j( '#bookacti-template-data-minTime' ).val( '00:00' );
-			$j( '#bookacti-template-data-maxTime' ).val( '00:00' );
-			$j( '#bookacti-template-data-snapDuration' ).val( '00:05' );
+			$j( '#bookacti-mintime' ).val( '00:00' );
+			$j( '#bookacti-maxtime' ).val( '00:00' );
+			$j( '#bookacti-snapduration' ).val( '00:05' );
 			$j( '#bookacti-template-availability-period-start' ).val( 0 );
 			$j( '#bookacti-template-availability-period-end' ).val( 0 );
 
@@ -149,7 +150,7 @@ function bookacti_init_template_dialogs() {
 
 /**
  * Dialog Create Template
- * @version 1.7.18
+ * @version 1.8.0
  */
 function bookacti_dialog_add_new_template() {
 	// Set the dialog title
@@ -161,9 +162,9 @@ function bookacti_dialog_add_new_template() {
 	// Set default values
 	$j( '#bookacti-template-opening' ).val( moment().format( 'YYYY-MM-DD' ) );
 	$j( '#bookacti-template-closing' ).val( moment().add( 1, 'year' ).format( 'YYYY-MM-DD' ) );
-	$j( '#bookacti-template-data-minTime' ).val( '00:00' );
-	$j( '#bookacti-template-data-maxTime' ).val( '00:00' );
-	$j( '#bookacti-template-data-snapDuration' ).val( '00:05' );
+	$j( '#bookacti-mintime' ).val( '00:00' );
+	$j( '#bookacti-maxtime' ).val( '00:00' );
+	$j( '#bookacti-snapduration' ).val( '00:05' );
 	$j( '#bookacti-template-availability-period-start' ).val( 0 );
 	$j( '#bookacti-template-availability-period-end' ).val( 0 );
 
@@ -547,7 +548,7 @@ function bookacti_dialog_deactivate_template( template_id ) {
 
 /**
  * Dialog Update Event
- * @version 1.7.18
+ * @version 1.8.0
  * @param {object} event
  */
 function bookacti_dialog_update_event( event ) {
@@ -577,7 +578,12 @@ function bookacti_dialog_update_event( event ) {
 
 	if( event_data.repeat_from && event_data.repeat_from !== '0000-00-00' )	{ repeat_from = event_data.repeat_from; };
 	if( event_data.repeat_to   && event_data.repeat_to   !== '0000-00-00' )	{ repeat_to = event_data.repeat_to; };
-
+	
+	var exceptions_disabled = false;
+	var exceptions_min = moment( repeat_from ).add( 1, 'd' ).format( 'YYYY-MM-DD' );
+	var exceptions_max = moment( repeat_to ).subtract( 1, 'd' ).format( 'YYYY-MM-DD' );
+	if( moment( exceptions_min ).isAfter( exceptions_max ) ) { exceptions_disabled = true; };
+	
 	// Fill the form with database param
 	$j( '#bookacti-event-title' ).val( event_data.multilingual_title );
 	$j( '#bookacti-event-availability' ).val( event_data.availability );
@@ -588,9 +594,14 @@ function bookacti_dialog_update_event( event ) {
 	$j( '#bookacti-event-repeat-from' ).val( repeat_from );
 	$j( '#bookacti-event-repeat-to' ).val( repeat_to );
 	$j( '#bookacti-event-exception-date-picker' ).val( repeat_from );
-	$j( '#bookacti-event-exception-date-picker' ).attr( 'min', repeat_from );
-	$j( '#bookacti-event-exception-date-picker' ).attr( 'max', repeat_to );
-
+	if( ! exceptions_disabled ) {
+		$j( '#bookacti-event-exception-date-picker' ).attr( 'disabled', false );
+		$j( '#bookacti-event-exception-date-picker' ).attr( 'min', exceptions_min );
+		$j( '#bookacti-event-exception-date-picker' ).attr( 'max', exceptions_max );
+	} else {
+		$j( '#bookacti-event-exception-date-picker' ).attr( 'disabled', true );
+	}
+	
 	if( typeof event_bookings !== 'undefined' ) {
 		event_bookings = bookacti_sort_events_array_by_dates( event_bookings, false, false, { 'start': 'event_start', 'end': 'event_end' } );
 		$j( '#bookacti-event-repeat-from' ).attr( 'max', event_bookings[ 0 ][ 'event_start' ].substr( 0, 10 ) );
@@ -644,12 +655,7 @@ function bookacti_dialog_update_event( event ) {
 			$j( '#bookacti-event-data-form-action' ).val( 'bookactiUpdateEvent' );
 			$j( '#bookacti-event-data-form select[multiple]#bookacti-event-exceptions-selectbox option' ).prop( 'selected', true );
 
-			// Store new exceptions list
-			var new_exceptions = $j( '#bookacti-event-exceptions-selectbox' ).val() ? $j( '#bookacti-event-exceptions-selectbox' ).val() : [];
-
-			if( typeof tinyMCE !== 'undefined' ) { 
-				if( tinyMCE ) { tinyMCE.triggerSave(); }
-			}
+			if( typeof tinyMCE !== 'undefined' ) { if( tinyMCE ) { tinyMCE.triggerSave(); } }
 
 			var isFormValid = bookacti_validate_event_form( event );
 
@@ -684,7 +690,7 @@ function bookacti_dialog_update_event( event ) {
 
 							// Update the exceptions list
 							bookacti.booking_system[ 'bookacti-template-calendar' ][ 'exceptions' ][ event_id ] = [];
-							$j.each( new_exceptions, function( i, new_exception ) {
+							$j.each( response.exceptions_dates, function( i, new_exception ) {
 								bookacti.booking_system[ 'bookacti-template-calendar' ][ 'exceptions' ][ event_id ].push( { 'exception_type': 'date', 'exception_value': new_exception } );
 							});
 
@@ -704,14 +710,11 @@ function bookacti_dialog_update_event( event ) {
 
 						// If error
 						} else if ( response.status === 'failed' )  {
-
 							alert( bookacti_localized.error_update_event_param ); 
-							var error_message = '';
-							error_message += 'Status : '			+ response.status + '\n';
-							error_message += 'Update event : '		+ response.updated_event + '\n';
-							error_message += 'Update event meta : '	+ response.updated_event_meta + '\n';
-							error_message += 'Insert excep : '		+ response.inserted_excep + '\n';
-							error_message += 'Delete excep : '		+ response.deleted_excep;
+							var error_message = 'Status : ' + response.status + '\n';
+							error_message += 'Updated event : ' + response.updated_event + '\n';
+							error_message += 'Updated event meta : ' + response.updated_event_meta + '\n';
+							error_message += 'Updated exceptions : ' + response.updated_excep + '\n';
 							console.log( error_message );
 							console.log( response );
 

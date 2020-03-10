@@ -119,7 +119,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			}
 			
 			$events		= bookacti_fetch_events_for_calendar_editor( array( 'events' => array( $new_event_id ), 'interval' => $interval ) );
-			$exceptions	= bookacti_get_exceptions( null, $new_event_id );
+			$exceptions	= bookacti_get_exceptions_by_event( array( 'events' => array( $new_event_id ) ) );
 
 			do_action( 'bookacti_event_duplicated', $event_id, $new_event_id, $events );
 
@@ -160,135 +160,131 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	 */
 	function bookacti_controller_update_event() {
 		$event_id	= intval( $_POST['event-id'] );
-		$template_id= bookacti_get_event_template_id( $event_id );
+		$old_event	= bookacti_get_event_by_id( $event_id );
+		if( ! $old_event ) { bookacti_send_json_not_allowed( 'update_event' ); }
 		
 		// Check nonce and capabilities
-		$is_allowed			= current_user_can( 'bookacti_edit_templates' ) && bookacti_user_can_manage_template( $template_id );
-		$is_nonce_valid		= check_ajax_referer( 'bookacti_update_event_data', 'nonce_update_event_data', false );
+		$is_allowed		= current_user_can( 'bookacti_edit_templates' ) && bookacti_user_can_manage_template( $old_event->template_id );
+		$is_nonce_valid	= check_ajax_referer( 'bookacti_update_event_data', 'nonce_update_event_data', false );
+		if( ! $is_nonce_valid || ! $is_allowed ) { bookacti_send_json_not_allowed( 'update_event' ); }
 		
-		if( ! $is_nonce_valid || ! $is_allowed ) {
-			bookacti_send_json_not_allowed( 'update_event' );
-		}
-			
+		$event_start		= $old_event->start;
+		$event_end			= $old_event->end;
+		$event_title		= wp_kses_post( stripslashes( $_POST['event-title'] ) );
 		$event_availability	= intval( $_POST['event-availability'] );
 		$sanitized_freq		= sanitize_title_with_dashes( $_POST['event-repeat-freq'] );
 		$event_repeat_freq	= in_array( $sanitized_freq, array( 'none', 'daily', 'weekly', 'monthly' ), true ) ? $sanitized_freq : 'none';
 		$event_repeat_from	= isset( $_POST['event-repeat-from'] ) ? bookacti_sanitize_date( $_POST['event-repeat-from'] ) : '';
 		$event_repeat_to	= isset( $_POST['event-repeat-to'] ) ? bookacti_sanitize_date( $_POST['event-repeat-to'] ) : '';
-		$dates_excep_array	= isset( $_POST['event-repeat-excep'] ) ? bookacti_sanitize_date_array( $_POST['event-repeat-excep'] ) : array();
-
-		// Check if input data are complete and consistent 
-		$event_validation	= bookacti_validate_event( $event_id, $event_availability, $event_repeat_freq, $event_repeat_from, $event_repeat_to );
-
-		if( $event_validation['status'] !== 'valid' ) {
-			bookacti_send_json( $event_validation, 'update_event' );
-		}
+		$exceptions_dates	= isset( $_POST['event-repeat-excep'] ) ? bookacti_sanitize_date_array( $_POST['event-repeat-excep'] ) : array();
+		
+		// Make the repetition period fit the events occurences
+		if( $event_repeat_freq !== 'none' && $event_repeat_from && $event_repeat_to ) {
+			$dummy_event = $old_event;
+			$dummy_event->repeat_freq = $event_repeat_freq;
+			$dummy_event->repeat_from = $event_repeat_from;
+			$dummy_event->repeat_to = $event_repeat_to;
+			
+			$occurences = bookacti_get_occurences_of_repeated_event( $dummy_event, array( 'exceptions_dates' => $exceptions_dates, 'past_events' => true ) );
+			$bounding_events = bookacti_get_bounding_events_from_events_array( array( 'events' => $occurences ) );
+			
+			// Compute bounding dates
+			if( ! empty( $bounding_events[ 'events' ] ) ) {
+				// Replace repeat period with events bounding dates
+				$bounding_dates = array( 
+					'start' => substr( $bounding_events[ 'events' ][ 0 ][ 'start' ], 0, 10 ), 
+					'end' => substr( $bounding_events[ 'events' ][ array_key_last( $bounding_events[ 'events' ] ) ][ 'end' ], 0, 10 )
+				);
+				if( strtotime( $bounding_dates[ 'start' ] ) > strtotime( $event_repeat_from ) )	{ $event_repeat_from = $bounding_dates[ 'start' ]; }
+				if( strtotime( $bounding_dates[ 'end' ] ) < strtotime( $event_repeat_to ) )		{ $event_repeat_to = $bounding_dates[ 'end' ]; }
+				$repeat_from_datetime = DateTime::createFromFormat( 'Y-m-d H:i:s', $event_repeat_from . ' 00:00:00' );
+				$repeat_to_datetime = DateTime::createFromFormat( 'Y-m-d H:i:s', $event_repeat_to . ' 23:59:59' );
+				if( $repeat_from_datetime > $repeat_to_datetime ) { $event_repeat_from = $event_repeat_to; $repeat_from_datetime = $repeat_to_datetime; }
 				
-		$event_title		= wp_kses_post( stripslashes( $_POST['event-title'] ) );
-		$event_start		= bookacti_sanitize_datetime( $_POST['event-start'] );
-		$event_end			= bookacti_sanitize_datetime( $_POST['event-end'] );
-		$settings			= isset( $_POST['eventOptions'] ) && is_array( $_POST['eventOptions'] ) ? $_POST['eventOptions'] : array();
-		$formatted_settings = bookacti_format_event_settings( $settings );
+				// Remove exceptions out of the repeat period
+				if( $exceptions_dates ) {
+					foreach( $exceptions_dates as $i => $excep_date ) {
+						$excep_datetime = DateTime::createFromFormat( 'Y-m-d H:i:s', $excep_date . ' 00:00:00' );
+						if( $excep_datetime < $repeat_from_datetime || $excep_datetime > $repeat_to_datetime ) {
+							unset( $exceptions_dates[ $i ] );
+						}
+					}
+				}
+				
+				// Make sure the event is included in the repeat period
+				$event_start_datetime = DateTime::createFromFormat( 'Y-m-d H:i:s', $event_start );
+				if( $event_start_datetime < $repeat_from_datetime ) { 
+					$event_start = $repeat_from_datetime->format( 'Y-m-d' ) . substr( $event_start, 10 );
+					$event_end = $repeat_from_datetime->format( 'Y-m-d' ) . substr( $event_end, 10 );
+				}
+				if( $event_start_datetime > $repeat_to_datetime ) {
+					$event_start = $repeat_to_datetime->format( 'Y-m-d' ) . substr( $event_start, 10 );
+					$event_end = $repeat_to_datetime->format( 'Y-m-d' ) . substr( $event_end, 10 );
+				}
+			}
+		}
+		
+		// Check if input data are complete and consistent 
+		$event_validation = bookacti_validate_event( $event_id, $event_availability, $event_repeat_freq, $event_repeat_from, $event_repeat_to );
 
+		if( $event_validation[ 'status' ] !== 'valid' ) { bookacti_send_json( $event_validation, 'update_event' ); }
+		
 		// Update event data
-		$updated_event		= bookacti_update_event( $event_id, $event_title, $event_availability, $event_start, $event_end, $event_repeat_freq, $event_repeat_from, $event_repeat_to );
+		$updated_event = bookacti_update_event( $event_id, $event_title, $event_availability, $event_start, $event_end, $event_repeat_freq, $event_repeat_from, $event_repeat_to );
 
 		// Update event metadata
+		$settings = isset( $_POST['eventOptions'] ) && is_array( $_POST['eventOptions'] ) ? $_POST['eventOptions'] : array();
+		$formatted_settings = bookacti_format_event_settings( $settings );
 		$updated_event_meta = bookacti_update_metadata( 'event', $event_id, $formatted_settings );
 
-		// Insert new exception
-		$inserted_excep		= bookacti_insert_exceptions( $event_id, $dates_excep_array );
-
-		// Remove exceptions that do not longer exist
-		$deleted_excep		= bookacti_remove_exceptions( $event_id, $dates_excep_array );
-
-
+		// Update exceptions
+		$updated_excep = bookacti_update_exceptions( $event_id, $exceptions_dates );
+		
 		// if one of the elements has been updated, consider as success
 		if(	( is_numeric( $updated_event )		&& $updated_event > 0 )
 		||  ( is_numeric( $updated_event_meta )	&& $updated_event_meta > 0 )
-		||  ( is_numeric( $inserted_excep )		&& $inserted_excep > 0 )
-		||  ( is_numeric( $deleted_excep )		&& $deleted_excep > 0 ) ){
+		||  ( is_numeric( $updated_excep )		&& $updated_excep > 0 ) ){
 
 			// Retrieve new events
 			$interval	= bookacti_sanitize_events_interval( $_POST[ 'interval' ] );
 			$events		= bookacti_fetch_events_for_calendar_editor( array( 'events' => array( $event_id ), 'interval' => $interval ) );
 
 			// Retrieve groups of events
-			$groups_events = bookacti_get_groups_events( $template_id );
+			$groups_events = bookacti_get_groups_events( $old_event->template_id );
 
 			do_action( 'bookacti_event_updated', $event_id, $events );
 
 			bookacti_send_json( array( 
-				'status'		=> 'success', 
-				'events'		=> $events[ 'events' ] ? $events[ 'events' ] : array(),
-				'events_data'	=> $events[ 'data' ] ? $events[ 'data' ] : array(),
-				'groups_events'	=> $groups_events,
-				'results'		=> array( 
+				'status'			=> 'success', 
+				'events'			=> $events[ 'events' ] ? $events[ 'events' ] : array(),
+				'events_data'		=> $events[ 'data' ] ? $events[ 'data' ] : array(),
+				'groups_events'		=> $groups_events,
+				'exceptions_dates'	=> $exceptions_dates,
+				'results'			=> array( 
 					'updated_event'		=> $updated_event, 
 					'updated_event_meta'=> $updated_event_meta, 
-					'inserted_excep'	=> $inserted_excep, 
-					'deleted_excep'		=> $deleted_excep ) 
+					'updated_excep'		=> $updated_excep ) 
 				), 'update_event' ); 
 
-		} else if( $updated_event === 0 
-				&& ! $updated_event_meta 
-				&& $inserted_excep === 0 
-				&& $deleted_excep === 0 ) { 
-
+		} else if( $updated_event === 0 && $updated_event_meta === 0 && $updated_excep === 0 ) { 
 			bookacti_send_json( array( 'status' => 'nochanges' ), 'update_event' );
 
-		} else if( $updated_event === false 
-				|| $updated_event_meta === false 
-				|| $inserted_excep === false 
-				|| $deleted_excep === false ) { 
-
+		} else if( $updated_event === false || $updated_event_meta === false || $updated_excep === false ) { 
 			bookacti_send_json( array( 
-				'status' => 'failed', 
+				'status'			=> 'failed', 
 				'updated_event'		=> $updated_event, 
 				'updated_event_meta'=> $updated_event_meta, 
-				'inserted_excep'	=> $inserted_excep, 
-				'deleted_excep'		=> $deleted_excep ), 'update_event' ); 
-		} else { 
-
-			bookacti_send_json( array( 
-				'status' => 'failed', 
-				'status' => 'unknown_error', 
-				'updated_event'		=> $updated_event, 
-				'updated_event_meta'=> $updated_event_meta, 
-				'inserted_excep'	=> $inserted_excep, 
-				'deleted_excep'		=> $deleted_excep ), 'update_event' ); 
+				'updated_excep'		=> $updated_excep ), 'update_event' ); 
 		}
+		
+		bookacti_send_json( array( 
+			'status'			=> 'failed', 
+			'error'				=> 'unknown_error', 
+			'updated_event'		=> $updated_event, 
+			'updated_event_meta'=> $updated_event_meta, 
+			'updated_excep'		=> $updated_excep ), 'update_event' ); 
 	}
 	add_action( 'wp_ajax_bookactiUpdateEvent', 'bookacti_controller_update_event' );
-	
-	
-	/**
-	 * AJAX Controller - Get all exceptions for a given template and / or event
-	 * @version 1.7.10
-	 */
-	function bookacti_controller_get_exceptions() {
-		$template_id	= intval( $_POST['template_id'] );
-		$event_id		= intval( $_POST['event_id'] );
-		
-		// Check nonce and capabilities
-		$is_nonce_valid	= check_ajax_referer( 'bookacti_get_exceptions', 'nonce', false );
-		$is_allowed		= current_user_can( 'bookacti_read_templates' ) && bookacti_user_can_manage_template( $template_id );
-		
-		if( ! $is_nonce_valid || ! $is_allowed ) {
-			bookacti_send_json_not_allowed( 'get_event_repetition_exceptions' );
-		}
-		
-		$exceptions = bookacti_get_exceptions( $template_id, $event_id );
-
-		if( count( $exceptions ) > 0 ) {
-			bookacti_send_json( array( 'status' => 'success', 'exceptions' => $exceptions ), 'get_event_repetition_exceptions' );
-		} else if( count( $exceptions ) === 0 ) {
-			bookacti_send_json( array( 'status' => 'no_exception' ), 'get_event_repetition_exceptions' );
-		} else {
-			bookacti_send_json( array( 'status' => 'failed', 'error' => 'unknown' ), 'get_event_repetition_exceptions' );
-		}
-	}
-	add_action( 'wp_ajax_bookactiGetExceptions', 'bookacti_controller_get_exceptions' );
 	
 	
 	/**
@@ -397,7 +393,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		}
 
 		// Retrieve affected data
-		$exceptions		= bookacti_get_exceptions( $template_id );
+		$exceptions		= bookacti_get_exceptions_by_event( array( 'templates' => array( $template_id ) ) );
 		$groups_events	= bookacti_get_groups_events( $template_id );
 		
 		do_action( 'bookacti_event_occurences_unbound', $event_id, $new_event_id, $events );

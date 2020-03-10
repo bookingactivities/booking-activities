@@ -657,7 +657,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	/**
 	 * Display fields
 	 * @since 1.5.0
-	 * @version 1.7.4
+	 * @version 1.8.0
 	 * @param array $args
 	 */
 	function bookacti_display_fields( $fields, $args = array() ) {
@@ -671,6 +671,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		foreach( $fields as $field_name => $field ) {
 			if( empty( $field[ 'type' ] ) ) { continue; }
 			
+			if( is_numeric( $field_name ) && ! empty( $field[ 'name' ] ) ) { $field_name = $field[ 'name' ]; }
 			if( empty( $field[ 'name' ] ) ) { $field[ 'name' ] = $field_name; }
 			$field[ 'name' ]	= ! empty( $args[ 'prefix' ] ) ? $args[ 'prefix' ] . '[' . $field_name . ']' : $field[ 'name' ];
 			$field[ 'id' ]		= empty( $field[ 'id' ] ) ? 'bookacti-' . $field_name : $field[ 'id' ];

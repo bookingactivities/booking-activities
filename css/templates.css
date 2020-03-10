@@ -129,9 +129,7 @@
 .bookacti-tabs .bookacti-tab-content .bookacti-promo-events-examples { margin: 10px 0 0 0; }
 
 /* Activity dialog */
-#bookacti-activity-import-dialog label			{ display: inline-block; width: 150px; font-weight: bold; }
-#bookacti-activity-import-dialog div			{ margin-bottom: 10px; }
-#bookacti-activity-import-dialog div:last-child	{ margin-bottom: 0; }
+#bookacti-activity-import-dialog label { display: inline-block; width: 150px; font-weight: bold; }
 
 #bookacti-activity-duration-days,
 #bookacti-activity-duration-hours,

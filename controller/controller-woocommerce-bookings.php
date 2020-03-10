@@ -170,18 +170,18 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	
 	/**
 	 * Turn a temporary booking to permanent if order gets complete
-	 * 
-	 * @version 1.5.6
+	 * @version 1.8.0
 	 * @param int $order_id
 	 * @param WC_Order $order
 	 * @param string $booking_status
 	 * @param string $payment_status
+	 * @param boolean $is_new_order
 	 */
-	function bookacti_turn_temporary_booking_to_permanent( $order_id, $order = null, $booking_status = 'booked', $payment_status = 'paid' ) {
+	function bookacti_turn_temporary_booking_to_permanent( $order_id, $order = null, $booking_status = 'booked', $payment_status = 'paid', $is_new_order = false ) {
 		if( ! $order ) { $order = wc_get_order( $order_id ); }
 		
 		// Change state of all bookings of the order from 'pending' to 'booked'
-		$updated = bookacti_turn_order_bookings_to( $order, $booking_status, $payment_status, true, array( 'states_in' => array( 'pending', 'in_cart' ) ) );
+		$updated = bookacti_turn_order_bookings_to( $order, $booking_status, $payment_status, true, array( 'states_in' => array( 'pending', 'in_cart' ), 'is_new_order' => $is_new_order ) );
 		
 		// It is possible that pending bookings remain bound to the order if the user change his mind after he placed the order, but before he paid it.
 		// He then changed his cart, placed a new order, paid it, and only part of the old order is booked (or even nothing), the rest is still 'pending'
@@ -309,10 +309,13 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	 */
 	function bookacti_turn_paid_order_item_bookings_to_permanent( $order_id, $order = null ) {
 		if( ! $order ) { $order = wc_get_order( $order_id ); }
-		if( ! $order ) { return false; }
+		if( ! $order ) { return; }
 		
-		// If the order hasn't been paid, return
-		if( ! $order->get_date_paid( 'edit' ) ) { return false; }
+		// If the order hasn't been paid, the bookings are "pending" (virtual or not), we need to send the "pending" notification here
+		if( ! $order->get_date_paid( 'edit' ) ) { 
+			bookacti_send_notification_when_order_status_changes( $order_id, 'pending', array( 'is_new_order' => true ) );
+			return;
+		}
 		
 		// Retrieve bought items
 		$items = $order->get_items();
@@ -982,8 +985,8 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			if( isset( $item[ 'bookacti_booking_group_id' ] ) && ( $in__booking_id || $in__booking_group_id ) && ! in_array( $item[ 'bookacti_booking_group_id' ], $in__booking_group_id ) ) { continue; }
 			
 			// Do not allow to update order status based on new bookings status 
-			// because this function is actually triggered after order status changed
-			$args[ 'update_order_status' ] = 0;
+			// because this current function was already triggered by an order status change
+			$args[ 'keep_order_status' ] = 1;
 			
 			bookacti_update_order_item_booking_status( $item, $new_state, $order, $args );
 		}

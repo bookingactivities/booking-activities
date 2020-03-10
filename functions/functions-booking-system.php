@@ -434,7 +434,7 @@ function bookacti_format_booking_system_attributes( $raw_atts = array() ) {
 	$formatted_atts[ 'end' ]	= $sanitized_end ? $sanitized_end : $defaults[ 'end' ];
 	
 	// Format display data
-	$formatted_atts[ 'display_data' ] = is_array( $atts[ 'display_data' ] ) ? bookacti_format_booking_system_display_data( $atts[ 'display_data' ] ) : array();
+	$formatted_atts[ 'display_data' ] = is_array( $atts[ 'display_data' ] ) ? bookacti_format_booking_system_display_data( $atts[ 'display_data' ] ) : $defaults[ 'display_data' ];
 	
 	// Check if desired booking method is registered
 	$available_booking_methods = array_keys( bookacti_get_available_booking_methods() );
@@ -1548,7 +1548,7 @@ function bookacti_get_events_array_from_db_events( $events, $raw_args = array() 
 	// Get event exceptions
 	$exceptions_dates = array();
 	if( $args[ 'skip_exceptions' ] ) {
-		$exceptions_dates = bookacti_get_exceptions_dates( array(), $event_ids );
+		$exceptions_dates = bookacti_get_exceptions_by_event( array( 'events' => $event_ids ) );
 	}
 	
 	// Keep only events having the min start / repeat from, and the max end / repeat end
@@ -1690,7 +1690,7 @@ function bookacti_get_bounding_events_from_events_array( $events_array ) {
  * @return array
  */
 function bookacti_get_occurences_of_repeated_event( $event, $raw_args = array() ) {
-	if( ! $event || empty( $event->event_id ) ) { return array(); }
+	if( ! $event || ( empty( $event->event_id ) && empty( $event->id ) ) ) { return array(); }
 	
 	$default_args = array(
 		'interval' => array(),
@@ -1792,10 +1792,10 @@ function bookacti_get_occurences_of_repeated_event( $event, $raw_args = array() 
 	
 	// Common properties
 	$shared_properties = array(
-		'id'				=> $event->event_id,
-		'title'				=> apply_filters( 'bookacti_translate_text', $event->title ),
-		'color'				=> $event->color,
-		'durationEditable'	=> $event->is_resizable === '1' ? true : false
+		'id'				=> ! empty( $event->event_id ) ? $event->event_id : ( ! empty( $event->id ) ? $event->id : 0 ),
+		'title'				=> ! empty( $event->title ) ? apply_filters( 'bookacti_translate_text', $event->title ) : '',
+		'color'				=> ! empty( $event->color ) ? $event->color : '',
+		'durationEditable'	=> ! empty( $event->is_resizable ) ? true : false
 	);
 
 	// Compute occurences
@@ -1840,7 +1840,7 @@ function bookacti_get_occurences_of_repeated_event( $event, $raw_args = array() 
 		);
 		
 		// Add this occurrence to events array
-		$events[] = array_merge( $event_occurence, $shared_properties );
+		$events[] = array_merge( $shared_properties, $event_occurence );
 	}
 
 	return $events;
@@ -2010,26 +2010,38 @@ function bookacti_sanitize_events_interval( $interval ) {
 /**
  * Get exceptions dates by event
  * @since 1.7.0
- * @param array $template_ids
- * @param array $event_ids
+ * @version 1.8.0
+ * @param array $raw_args {
+ *  @type array $templates
+ *  @type array $events
+ *  @type array $types
+ * }
  * @return array
  */
-function bookacti_get_exceptions_dates( $template_ids = array(), $event_ids = array() ) {
-	$exceptions_per_event = bookacti_get_exceptions( $template_ids, $event_ids );
+function bookacti_get_exceptions_by_event( $raw_args = array() ) {
+	$default_args = array(
+		'templates' => array(),
+		'events' => array(),
+		'types'	=> array( 'date' )
+	);
+	$args = wp_parse_args( $raw_args, $default_args );
 	
-	if( ! $exceptions_per_event ) { return array(); }
+	$exceptions = bookacti_get_exceptions( $raw_args );
 	
-	$exceptions_dates = array();
-	foreach( $exceptions_per_event as $event_id => $exceptions ) {
-		$exceptions_dates[ $event_id ] = array();
+	if( ! $exceptions ) { return array(); }
+	
+	// Order exceptions by event id
+	$exceptions_by_event = array();
+	if( $exceptions ) {
 		foreach( $exceptions as $exception ) {
-			if( $exception[ 'exception_type' ] === 'date' ) {
-				$exceptions_dates[ $event_id ][] = $exception[ 'exception_value' ];
-			}
+			$event_id = $exception[ 'event_id' ];
+			unset( $exception[ 'event_id' ] );
+			if( ! isset( $exceptions_by_event[ $event_id ] ) ) { $exceptions_by_event[ $event_id ] = array(); }
+			$exceptions_by_event[ $event_id ][] = $exception;
 		}
 	}
 	
-	return $exceptions_dates;
+	return $exceptions_by_event;
 }
 
 

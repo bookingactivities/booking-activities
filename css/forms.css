@@ -69,10 +69,10 @@ body.booking-activities_page_bookacti_forms label[for='bookacti_form_publish-hid
 .bookacti-form-dialog form div > input[type='checkbox'] + label,
 .bookacti-form-dialog form div > fieldset > input[type='checkbox'] + label,
 .bookacti-form-dialog form div > label.bookacti-fullwidth-label						{ display: block; width: auto; max-width: none; }
-.bookacti-form-dialog form fieldset > div,
-.bookacti-form-dialog form > div			{ margin-bottom: 10px; }
-.bookacti-form-dialog form fieldset > div:last-child,
-.bookacti-form-dialog form > div:last-child	{ margin-bottom: 0; }
+.bookacti-form-dialog form > div,
+.bookacti-form-dialog form fieldset > div			{ margin-bottom: 10px; }
+.bookacti-form-dialog form > div:last-child,
+.bookacti-form-dialog form fieldset > div:last-child{ margin-bottom: 0; }
 
 .bookacti-activities-actions-options-table,
 .bookacti-group-categories-actions-options-table		{ display: none; }

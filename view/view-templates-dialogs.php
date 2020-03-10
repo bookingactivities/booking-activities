@@ -1,48 +1,48 @@
 <?php 
 /**
  * Calendar editor dialogs
- * @version 1.7.20
+ * @version 1.8.0
  */
 
 // Exit if accessed directly
 if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 // INIT VARIABLES
-	// Templates options list
-	$templates = bookacti_fetch_templates();
-	$templates_options = '';
-	foreach( $templates as $template ) {
-		$templates_options .= '<option value="' . esc_attr( $template[ 'id' ] ) . '" >' . esc_html( $template[ 'title' ] ) . '</option>';
-	}
+// Templates options list
+$templates = bookacti_fetch_templates();
+$templates_options = '';
+foreach( $templates as $template ) {
+	$templates_options .= '<option value="' . esc_attr( $template[ 'id' ] ) . '" >' . esc_html( $template[ 'title' ] ) . '</option>';
+}
 
-	// Users options list
-	$in_roles		= apply_filters( 'bookacti_managers_roles', array() );
-	$not_in_roles	= apply_filters( 'bookacti_managers_roles_exceptions', array( 'administrator' ) );
-	$user_query		= new WP_User_Query( array( 'role__in' => $in_roles, 'role__not_in' => $not_in_roles ) );
-	$users			= $user_query->get_results();
-	
-	$users_options_for_activities	= '';
-	$users_options_for_templates	= '';
-	if ( ! empty( $users ) ) {
-		foreach( $users as $user ) {
-			if( $user->has_cap( 'bookacti_edit_activities' ) || $user->has_cap( 'bookacti_edit_templates' ) || $user->has_cap( 'bookacti_read_templates' ) ) {
-				$user_info = get_userdata( $user->ID );
-				$default_display_name = $user_info->user_login;
-				if( $user_info->first_name && $user_info->last_name ){
-					$default_display_name = $user_info->first_name  . ' ' . $user_info->last_name . ' (' . $user_info->user_login . ')';
-				}
-				$display_name = apply_filters( 'bookacti_managers_name_display', $default_display_name, $user_info );
-				
-				if( $user->has_cap( 'bookacti_edit_activities' ) ) {
-					$users_options_for_activities .= '<option value="' . esc_attr( $user->ID ) . '" >' . esc_html( $display_name ) . '</option>';
-				}
-				
-				if( $user->has_cap( 'bookacti_edit_templates' ) || $user->has_cap( 'bookacti_read_templates' ) ) {
-					$users_options_for_templates .= '<option value="' . esc_attr( $user->ID ) . '" >' . esc_html( $display_name ) . '</option>';
-				}
+// Users options list
+$in_roles		= apply_filters( 'bookacti_managers_roles', array() );
+$not_in_roles	= apply_filters( 'bookacti_managers_roles_exceptions', array( 'administrator' ) );
+$user_query		= new WP_User_Query( array( 'role__in' => $in_roles, 'role__not_in' => $not_in_roles ) );
+$users			= $user_query->get_results();
+
+$users_options_for_activities	= '';
+$users_options_for_templates	= '';
+if ( ! empty( $users ) ) {
+	foreach( $users as $user ) {
+		if( $user->has_cap( 'bookacti_edit_activities' ) || $user->has_cap( 'bookacti_edit_templates' ) || $user->has_cap( 'bookacti_read_templates' ) ) {
+			$user_info = get_userdata( $user->ID );
+			$default_display_name = $user_info->user_login;
+			if( $user_info->first_name && $user_info->last_name ){
+				$default_display_name = $user_info->first_name  . ' ' . $user_info->last_name . ' (' . $user_info->user_login . ')';
+			}
+			$display_name = apply_filters( 'bookacti_managers_name_display', $default_display_name, $user_info );
+
+			if( $user->has_cap( 'bookacti_edit_activities' ) ) {
+				$users_options_for_activities .= '<option value="' . esc_attr( $user->ID ) . '" >' . esc_html( $display_name ) . '</option>';
+			}
+
+			if( $user->has_cap( 'bookacti_edit_templates' ) || $user->has_cap( 'bookacti_read_templates' ) ) {
+				$users_options_for_templates .= '<option value="' . esc_attr( $user->ID ) . '" >' . esc_html( $display_name ) . '</option>';
 			}
 		}
 	}
+}
 ?>
 
 <!-- Delete event -->
@@ -308,53 +308,31 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			/**
 			 * Fill the "Editor" tab in calendar settings
 			 * @since 1.7.18 (was bookacti_fill_template_tab_agenda)
-			 * @version 1.7.20
+			 * @version 1.8.0
 			 * @param array $params
 			 */
 			function bookacti_fill_template_tab_editor( $params = array() ) {
 			?>
-				<div class='bookacti-editor-settings-only-notice bookacti-warning'>
+				<div class='bookacti-backend-settings-only-notice bookacti-warning'>
 					<span class='dashicons dashicons-warning'></span>
 					<span>
 					<?php
 						/* translators: %s is a link to the "booking form editor". */
-						echo sprintf( esc_html__( 'These settings are used for the editor only. For your frontend calendars, use the "Calendar" field settings in the desired %s.', 'booking-activities' ), '<a href="' . admin_url( 'admin.php?page=bookacti_forms' ) . '">' . esc_html__( 'booking form editor', 'booking-activities' ) . '</a>' );
+						echo sprintf( esc_html__( 'These settings are used for the editor only.', 'booking-activities' ) . ' ' .  esc_html__( 'For your frontend calendars, use the "Calendar" field settings in the desired %s.', 'booking-activities' ), '<a href="' . admin_url( 'admin.php?page=bookacti_forms' ) . '">' . esc_html__( 'booking form editor', 'booking-activities' ) . '</a>' );
 					?>
 					</span>
 				</div>
 			<?php
 				do_action( 'bookacti_template_tab_editor_before', $params );
 			?>
-				<div>
-					<label for='bookacti-template-data-minTime' >
-						<?php esc_html_e( 'Day begin', 'booking-activities' ); ?>
-					</label>
-					<input type='time' name='templateOptions[minTime]' id='bookacti-template-data-minTime' value='00:00'>
+				<fieldset>
+					<legend><?php esc_html_e( 'Agenda views', 'booking-activities' ); ?></legend>
 					<?php
-						bookacti_help_tip( esc_html__( 'Set when you want the days to begin on the calendar. E.g.: "06:00" Days will begin at 06:00am.', 'booking-activities' ) );
+						$agenda_fields = array( 'minTime', 'maxTime', 'snapDuration' );
+						$fields = apply_filters( 'bookacti_template_tab_editor_agenda_fields', bookacti_get_calendar_fields_default_data( $agenda_fields ) );
+						bookacti_display_fields( $fields, array( 'prefix' => 'templateOptions' ) );
 					?>
-				</div>
-				<div>
-					<label for='bookacti-template-data-maxTime' >
-						<?php esc_html_e( 'Day end', 'booking-activities' ); ?>
-					</label>
-					<input type='time' name='templateOptions[maxTime]' id='bookacti-template-data-maxTime' value='00:00' >
-					<?php
-						bookacti_help_tip( esc_html__( 'Set when you want the days to end on the calendar. E.g.: "18:00" Days will end at 06:00pm.', 'booking-activities' ) );
-					?>
-				</div>
-				<div>
-					<label for='bookacti-template-data-snapDuration' >
-					<?php 
-						/* translators: Refers to the time interval at which a dragged event will snap to the agenda view time grid. E.g.: 00:20', you will be able to drop an event every 20 minutes (at 6:00am, 6:20am, 6:40am...). More information: http://fullcalendar.io/docs/agenda/snapDuration/ */
-						esc_html_e( 'Snap frequency', 'booking-activities' );
-					?>
-					</label>
-					<input type='text' name='templateOptions[snapDuration]' id='bookacti-template-data-snapDuration' class='bookacti-time-field' placeholder='23:59' value='00:05' >
-					<?php
-						bookacti_help_tip( esc_html__( 'The time interval at which a dragged event will snap to the agenda view time grid. E.g.: "00:20", you will be able to drop an event every 20 minutes (at 6:00am, 6:20am, 6:40am...).', 'booking-activities' ) );
-					?>
-				</div>
+				</fieldset>
 			<?php
 				do_action( 'bookacti_template_tab_editor_after', $params );
 				

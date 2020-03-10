@@ -726,64 +726,6 @@ function bookacti_bind_template_dialogs() {
 }
 
 
-// Update Exception
-function bookacti_update_exceptions( excep_template_id, event ) {
-    excep_template_id = excep_template_id || bookacti.selected_template;
-	event = event || null;
-    
-    var event_id= null;
-    if( event !== null ) { event_id = event.id; }
-
-    bookacti_start_template_loading();
-    
-    $j.ajax({
-        url: ajaxurl,
-        type: 'POST',
-        data: { 'action': 'bookactiGetExceptions', 
-                'template_id': excep_template_id, 
-                'event_id': event_id,
-				'nonce': bookacti_localized.nonce_get_exceptions
-			},
-        dataType: 'json',
-        success: function( response ){
-            
-            if( response.status === 'success' ) {
-                if( event === null ) {
-                    bookacti.booking_system[ 'bookacti-template-calendar' ][ 'exceptions' ] = response.exceptions;
-                } else {
-                    bookacti.booking_system[ 'bookacti-template-calendar' ][ 'exceptions' ][ event_id ] = response.exceptions[ event_id ];
-                }
-                
-            } else if( response.status === 'no_exception' ) {
-                if( event === null ) {
-                    bookacti.booking_system[ 'bookacti-template-calendar' ][ 'exceptions' ] = [];
-                } else {
-                    bookacti.booking_system[ 'bookacti-template-calendar' ][ 'exceptions' ][ event_id ] = [];
-                }
-                
-            } else {
-				var message_error = bookacti_localized.error_retrieve_exceptions;
-				if( response.error === 'not_allowed' ) {
-					message_error += '\n' + bookacti_localized.error_not_allowed;
-				}
-				console.log( response );
-				alert( message_error );
-            }
-			
-			// Refresh events to take new exceptions into account
-			$j( '#bookacti-template-calendar' ).fullCalendar( 'rerenderEvents' );
-        },
-        error: function( e ){
-            alert( 'AJAX ' + bookacti_localized.error_retrieve_exceptions );
-            console.log( e );
-        },
-        complete: function() { 
-            bookacti_stop_template_loading();
-        }
-    });
-}
-
-
 // Determine if event is locked or not
 function bookacti_is_locked_event( event_id ) {
     var is_locked = false;

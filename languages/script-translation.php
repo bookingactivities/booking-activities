@@ -11,7 +11,7 @@ $messages = bookacti_get_messages();
 
 /**
  * Fill the translation array to use it in js 
- * @version 1.7.20
+ * @version 1.8.0
  */
 $bookacti_translation_array = apply_filters( 'bookacti_translation_array', array(
 	// BUTTONS
@@ -38,7 +38,7 @@ $bookacti_translation_array = apply_filters( 'bookacti_translation_array', array
 	'booking_form_new_booking_button'	=> apply_filters( 'bookacti_translate_text', $messages[ 'booking_form_new_booking_button' ][ 'value' ] ),
 	'placeholder_select_customer'		=> esc_html__( 'Search for a customer', 'booking-activities' ),
 	'show_all_customers'				=> esc_html__( 'Show all customers', 'booking-activities' ),
-	'pick_an_event'						=> esc_html__( 'Pick an event', 'booking-activities' ),
+	'pick_an_event'						=> esc_html__( 'Filter by event', 'booking-activities' ),
 	'hide_calendar'						=> esc_html__( 'Hide calendar', 'booking-activities' ),
 	
 	// ERRORS

@@ -8,13 +8,69 @@
 if ( ! defined( 'ABSPATH' ) ) { exit; }
 ?>
 
-<div id='bookacti-change-booking-state-dialog' class='bookacti-backend-dialog bookacti-bookings-dialog' style='display:none;' title='<?php echo esc_html__( 'Change booking state', 'booking-activities' ); ?>'>
+<div id='bookacti-bookings-calendar-settings-dialog' class='bookacti-backend-dialog bookacti-bookings-dialog' style='display:none;' title='<?php esc_html_e( 'Bookings page calendar settings', 'booking-activities' ); ?>'>
+	<form id='bookacti-bookings-calendar-settings-form'>
+		<input type='hidden' name='action' value='bookactiUpdateBookingsCalendarSettings'/>
+		<?php
+			wp_nonce_field( 'bookacti_update_bookings_calendar_settings', 'nonce_update_bookings_calendar_settings', false );
+		?>
+		<div class='bookacti-backend-settings-only-notice bookacti-warning'>
+			<span class='dashicons dashicons-warning'></span>
+			<span>
+			<?php
+				/* translators: %s is a link to the "booking form editor". */
+				echo sprintf( esc_html__( 'These settings are used for the bookings page calendar only.', 'booking-activities' ) . ' ' .  esc_html__( 'For your frontend calendars, use the "Calendar" field settings in the desired %s.', 'booking-activities' ), '<a href="' . admin_url( 'admin.php?page=bookacti_forms' ) . '">' . esc_html__( 'booking form editor', 'booking-activities' ) . '</a>' );
+			?>
+			</span>
+		</div>
+		<?php
+			$user_calendar_settings	= bookacti_format_bookings_calendar_settings( get_user_meta( get_current_user_id(), 'bookacti_bookings_calendar_settings', true ) );
+		
+			do_action( 'bookacti_bookings_calendar_settings_dialog_before', $user_calendar_settings );
+		?>
+		<fieldset>
+			<legend><?php esc_html_e( 'Display', 'booking-activities' ); ?></legend>
+			<?php
+				$display_fields = apply_filters( 'bookacti_bookings_calendar_display_fields', array( 
+					'show' => array( 
+						'name'		=> 'show',
+						'type'		=> 'checkbox',
+						'title'		=> esc_html__( 'Display the calendar by default', 'booking-activities' ),
+						'value'		=> $user_calendar_settings[ 'show' ], 
+						'tip'		=> esc_html__( 'Whether to display the calendar by default on the bookings page.', 'booking-activities' )
+					) 
+				), $user_calendar_settings );
+				bookacti_display_fields( $display_fields );
+			?>
+		</fieldset>
+		<fieldset>
+			<legend><?php esc_html_e( 'Working time', 'booking-activities' ); ?></legend>
+			<?php 
+				$agenda_fields = bookacti_get_calendar_fields_default_data( array( 'minTime', 'maxTime' ) );
+				$agenda_fields[ 'minTime' ][ 'value' ] = $user_calendar_settings[ 'minTime' ];
+				$agenda_fields[ 'maxTime' ][ 'value' ] = $user_calendar_settings[ 'maxTime' ] !== '24:00' ? $user_calendar_settings[ 'maxTime' ] : '00:00';
+				bookacti_display_fields( $agenda_fields );
+			?>
+		</fieldset>
+		<?php
+			do_action( 'bookacti_bookings_calendar_settings_dialog_after', $user_calendar_settings );
+		?>
+		<div class='bookacti-hidden-field'>
+			<?php bookacti_display_badp_promo(); ?>
+		</div>
+		<div class='bookacti-show-hide-advanced-options bookacti-show-advanced-options' 
+			 data-show-title='<?php esc_html_e( 'Show advanced options', 'booking-activities' ); ?>'
+			 data-hide-title='<?php esc_html_e( 'Hide advanced options', 'booking-activities' ); ?>'>
+			<?php esc_html_e( 'Show advanced options', 'booking-activities' ); ?>
+	   </div>
+	</form>
+</div>
+
+<div id='bookacti-change-booking-state-dialog' class='bookacti-backend-dialog bookacti-bookings-dialog' style='display:none;' title='<?php esc_html_e( 'Change booking state', 'booking-activities' ); ?>'>
 	<form id='bookacti-change-booking-state-form'>
 		<?php
-		// Display nonce field
-		wp_nonce_field( 'bookacti_change_booking_state', 'nonce_change_booking_state', false );
+			wp_nonce_field( 'bookacti_change_booking_state', 'nonce_change_booking_state', false );
 		?>
-		
 		<p class='bookacti-dialog-intro' ><?php esc_html_e( 'Pick the desired booking state:', 'booking-activities' ); ?></p>
 		<div>
 			<label for='bookacti-select-booking-state' ><?php esc_html_e( 'Booking state', 'booking-activities' ); ?></label>
@@ -57,11 +113,10 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 </div>
 
 
-<div id='bookacti-change-booking-quantity-dialog' class='bookacti-backend-dialog bookacti-bookings-dialog' style='display:none;' title='<?php echo esc_html__( 'Change booking quantity', 'booking-activities' ); ?>'>
+<div id='bookacti-change-booking-quantity-dialog' class='bookacti-backend-dialog bookacti-bookings-dialog' style='display:none;' title='<?php esc_html_e( 'Change booking quantity', 'booking-activities' ); ?>'>
 	<form id='bookacti-change-booking-quantity-form'>
 		<?php
-		// Display nonce field
-		wp_nonce_field( 'bookacti_change_booking_quantity', 'nonce_change_booking_quantity', false );
+			wp_nonce_field( 'bookacti_change_booking_quantity', 'nonce_change_booking_quantity', false );
 		?>
 		<p class='bookacti-dialog-intro' ><?php esc_html_e( 'Input the desired booking quantity:', 'booking-activities' ); ?></p>
 		<?php
@@ -85,7 +140,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 </div>
 
 
-<div id='bookacti-delete-booking-dialog' class='bookacti-backend-dialog bookacti-bookings-dialog' style='display:none;' title='<?php echo esc_html__( 'Delete a booking', 'booking-activities' ); ?>'>
+<div id='bookacti-delete-booking-dialog' class='bookacti-backend-dialog bookacti-bookings-dialog' style='display:none;' title='<?php esc_html_e( 'Delete a booking', 'booking-activities' ); ?>'>
 	<form id='bookacti-delete-booking-dialog-content'>
 		<input type='hidden' name='action' value='bookactiDeleteBooking'/>
 		<input type='hidden' name='booking_id' value='0'/>
@@ -134,7 +189,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 				<button type='button' id='bookacti-add-columns-to-export' class='bookacti-add-items' ><?php esc_html_e( 'Add', 'booking-activities' ); ?></button>
 			</div>
 			<div class='bookacti-items-list-container' >
-				<select name='columns[]' id='baaf-columns-to-export-selectbox' class='bookacti-items-select-box' multiple>
+				<select name='columns[]' id='bookacti-columns-to-export-selectbox' class='bookacti-items-select-box' multiple>
 				<?php
 					foreach( $default_columns as $column_name ) {
 						$column_title = ! empty( $columns[ $column_name ] ) ? $columns[ $column_name ] : $column_name;
@@ -142,7 +197,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 					}
 				?>
 				</select>
-				<button type='button' id='baaf-remove-columns-to-export' class='bookacti-remove-items' ><?php esc_html_e( 'Remove selected', 'booking-activities' ); ?></button>
+				<button type='button' id='bookacti-remove-columns-to-export' class='bookacti-remove-items' ><?php esc_html_e( 'Remove selected', 'booking-activities' ); ?></button>
 			</div>
 		</div>
 		<?php

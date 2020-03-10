@@ -47,7 +47,7 @@ $j( document ).ready( function() {
 
 /**
  * Check template form
- * @version 1.7.18
+ * @version 1.8.0
  * @returns {Boolean}
  */
 function bookacti_validate_template_form() {
@@ -56,9 +56,9 @@ function bookacti_validate_template_form() {
     var start       = moment( $j( '#bookacti-template-opening' ).val() );
     var end         = moment( $j( '#bookacti-template-closing' ).val() );
     var duplicate_id= $j( '#bookacti-template-duplicated-template-id' ).val();
-    var day_start	= moment( '1970-01-01T' + $j( '#bookacti-template-data-minTime' ).val() + ':00' );
-	var day_end		= $j( '#bookacti-template-data-maxTime' ).val().substr( 0, 2 ) === '00' ? moment( '1970-01-02T' + $j( '#bookacti-template-data-maxTime' ).val() + ':00' ) : moment( '1970-01-01T' + $j( '#bookacti-template-data-maxTime' ).val() + ':00' );
-	var snap_freq	= $j( '#bookacti-template-data-snapDuration' ).val();
+    var day_start	= moment( '1970-01-01T' + $j( '#bookacti-mintime' ).val() + ':00' );
+	var day_end		= $j( '#bookacti-maxtime' ).val().substr( 0, 2 ) === '00' ? moment( '1970-01-02T' + $j( '#bookacti-maxtime' ).val() + ':00' ) : moment( '1970-01-01T' + $j( '#bookacti-maxtime' ).val() + ':00' );
+	var snap_freq	= $j( '#bookacti-snapduration' ).val();
 	
     // Init boolean test variables
 	var valid_form = {
@@ -111,13 +111,13 @@ function bookacti_validate_template_form() {
         $j( '#bookacti-template-duplicated-template-id' ).parent().append( "<div class='bookacti-form-error'>" + bookacti_localized.error_invalid_value + "</div>" );
     }
 	if( ! valid_form.isDayStartBeforeEnd ){ 
-		$j( '#bookacti-template-data-minTime' ).addClass( 'bookacti-input-error' );
-		$j( '#bookacti-template-data-maxTime' ).addClass( 'bookacti-input-error' );
-		$j( '#bookacti-template-data-maxTime' ).parent().append( "<div class='bookacti-form-error'>" + bookacti_localized.error_day_end_before_begin + "</div>" );
+		$j( '#bookacti-mintime' ).addClass( 'bookacti-input-error' );
+		$j( '#bookacti-maxtime' ).addClass( 'bookacti-input-error' );
+		$j( '#bookacti-maxtime' ).parent().append( "<div class='bookacti-form-error'>" + bookacti_localized.error_day_end_before_begin + "</div>" );
 	}
 	if( ! valid_form.isSnapFreqFormatted ){ 
-		$j( '#bookacti-template-data-snapDuration' ).addClass( 'bookacti-input-error' );
-		$j( '#bookacti-template-data-snapDuration' ).parent().append( "<div class='bookacti-form-error'>" + bookacti_localized.error_time_format + "</div>" );
+		$j( '#bookacti-snapduration' ).addClass( 'bookacti-input-error' );
+		$j( '#bookacti-snapduration' ).parent().append( "<div class='bookacti-form-error'>" + bookacti_localized.error_time_format + "</div>" );
 	}
 	
     return valid_form.send;
@@ -315,7 +315,7 @@ function bookacti_validate_event_general_data() {
 
 /**
  * Check if the event repetition fields are properly filled
- * @version 1.7.1
+ * @version 1.8.0
  * @param {object} event
  * @returns {boolean}
  */
@@ -396,9 +396,17 @@ function bookacti_validate_event_repetition_data( event ) {
 	$j( '#bookacti-event-data-dialog #bookacti-event-exceptions-selectbox' ).prop( 'disabled', true );
 	$j( '#bookacti-event-data-dialog #bookacti-event-repeat-period-container' ).hide();
 	$j( '#bookacti-event-data-dialog #bookacti-event-exceptions-container' ).hide();
-	if( valid_form.isRepeatFrom )	{ $j( '#bookacti-event-exception-date-picker' ).attr( 'min', repeat_from.format( 'YYYY-MM-DD' ) ); }
-	if( valid_form.isRepeatTo )		{ $j( '#bookacti-event-exception-date-picker' ).attr( 'max', repeat_to.format( 'YYYY-MM-DD' ) ); }
-
+	
+	var exceptions_disabled = false;
+	var exceptions_min = moment( repeat_from ).add( 1, 'd' ).format( 'YYYY-MM-DD' );
+	var exceptions_max = moment( repeat_to ).subtract( 1, 'd' ).format( 'YYYY-MM-DD' );
+	if( moment( exceptions_min ).isAfter( exceptions_max ) ) { exceptions_disabled = true; };
+	
+	if( ! exceptions_disabled ) {
+		if( valid_form.isRepeatFrom )	{ $j( '#bookacti-event-exception-date-picker' ).attr( 'min', exceptions_min ); }
+		if( valid_form.isRepeatTo )		{ $j( '#bookacti-event-exception-date-picker' ).attr( 'max', exceptions_max ); }
+	}
+	
 	// When the repetition period change, detect out-of-the-repeat-period existing exceptions and alert user
 	$j( '#bookacti-event-data-dialog .exception' ).removeClass( 'bookacti-error-exception out-of-period-exception' );
 	$j( '#bookacti-event-data-dialog .exception' ).each( function() {
@@ -453,7 +461,7 @@ function bookacti_validate_event_repetition_data( event ) {
 
 		if( valid_form.isFromBeforeTo && valid_form.isEventBetweenFromAndTo ) {
 			// Enable the exception fields
-			$j( '#bookacti-event-data-dialog #bookacti-event-exception-date-picker' ).prop( 'disabled', false );
+			$j( '#bookacti-event-data-dialog #bookacti-event-exception-date-picker' ).prop( 'disabled', exceptions_disabled );
 			$j( '#bookacti-event-data-dialog #bookacti-event-add-exception-button' ).prop( 'disabled', false );
 			$j( '#bookacti-event-data-dialog #bookacti-event-exceptions-selectbox' ).prop( 'disabled', false );
 			$j( '#bookacti-event-data-dialog #bookacti-event-exceptions-container' ).show();

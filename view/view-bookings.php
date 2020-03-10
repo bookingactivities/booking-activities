@@ -63,7 +63,7 @@ if( ! $templates ) {
 			?>
 			<div id='bookacti-templates-filter-container' class='bookacti-bookings-filter-container' >
 				<div id='bookacti-templates-filter-title' class='bookacti-bookings-filter-title' >
-					<?php echo esc_html__( 'Calendars', 'booking-activities' ); ?>
+					<?php esc_html_e( 'Calendars', 'booking-activities' ); ?>
 				</div>
 				<div id='bookacti-templates-filter-content'  class='bookacti-bookings-filter-content' >
 					<input type='hidden' name='templates[]' value='all' />
@@ -96,7 +96,7 @@ if( ! $templates ) {
 			</div>
 			<div id='bookacti-activities-filter-container' class='bookacti-bookings-filter-container' >
 				<div class='bookacti-bookings-filter-title' >
-					<?php echo esc_html__( 'Activities', 'booking-activities' ); ?>
+					<?php esc_html_e( 'Activities', 'booking-activities' ); ?>
 				</div>
 				<div class='bookacti-bookings-filter-content' >
 					<input type='hidden' name='activities[]' value='all' />
@@ -172,7 +172,7 @@ if( ! $templates ) {
 			</div>
 			<div id='bookacti-dates-filter-container' class='bookacti-bookings-filter-container' >
 				<div class='bookacti-bookings-filter-title' >
-					<?php echo esc_html__( 'Date', 'booking-activities' ); ?>
+					<?php esc_html_e( 'Date', 'booking-activities' ); ?>
 				</div>
 				<div class='bookacti-bookings-filter-content' >
 					<?php
@@ -212,11 +212,24 @@ if( ! $templates ) {
 				?>
 				</div>
 			</div>
-			<div id='bookacti-event-filter-container' class='bookacti-bookings-filter-container' >
+			<?php
+				do_action( 'bookacti_after_booking_filters' );
+				$user_calendar_settings	= bookacti_format_bookings_calendar_settings( get_user_meta( get_current_user_id(), 'bookacti_bookings_calendar_settings', true ) );
+			?>
+			<div id='bookacti-submit-filter-container' class='bookacti-bookings-filter-container' >
 				<div class='bookacti-bookings-filter-title' >
-					<?php echo esc_html__( 'Event', 'booking-activities' ); ?>
+					<?php echo esc_html_x( 'Filter', 'verb', 'booking-activities' ); ?>
 				</div>
 				<div class='bookacti-bookings-filter-content' >
+					<input type='submit' class='button button-primary button-large' value='<?php esc_html_e( 'Apply filters', 'booking-activities' ); ?>' title='<?php esc_html_e( 'Apply filters', 'booking-activities' ); ?>' />
+				</div>
+			</div>
+			<div id='bookacti-event-filter-container'>
+				<div class='bookacti-bookings-filter-title'>
+					<span><?php esc_html_e( 'Booking calendar', 'booking-activities' ); ?></span>
+					<span id='bookacti-bookings-calendar-settings' class='dashicons dashicons-admin-generic'></span>
+				</div>
+				<div class='bookacti-bookings-filter-content'>
 					<?php
 						// Get selected (group of) event(s) data (if any)
 						// Accepts two different parameter name
@@ -241,32 +254,28 @@ if( ! $templates ) {
 							'event_end'		=> $event_end
 						);
 						
-						$display_calendar		= $has_event_picked ? 'block' : 'none';
-						$calendar_button_label	= $has_event_picked ? esc_html__( 'Hide calendar', 'booking-activities' ) : esc_html__( 'Pick an event', 'booking-activities' );
+						$calendar_button_label = $has_event_picked || $user_calendar_settings[ 'show' ] ? esc_html__( 'Hide calendar', 'booking-activities' ) : esc_html__( 'Filter by event', 'booking-activities' );
 					?>
 					<a class='button' id='bookacti-pick-event-filter' title='<?php echo $calendar_button_label; ?>' >
 						<?php echo $calendar_button_label; ?>
 					</a>
-					<a class='button' id='bookacti-unpick-events-filter' title='<?php _e( 'Unpick events', 'booking-activities' ); ?>' style='display:<?php echo $display_calendar; ?>' >
-						<?php _e( 'Unpick events', 'booking-activities' ); ?>
+					<a class='button' id='bookacti-unpick-events-filter' title='<?php esc_html_e( 'Unpick events', 'booking-activities' ); ?>' <?php if( ! $has_event_picked ) { echo 'style="display:none;"'; } ?>>
+						<?php esc_html_e( 'Unpick events', 'booking-activities' ); ?>
 					</a>
+					<input type='submit' id='bookacti-picked-events-filter-submit' class='button button-primary button-large' value='<?php echo esc_html_x( 'Filter', 'verb', 'booking-activities' ); ?>' title='<?php echo esc_html_x( 'Filter', 'verb', 'booking-activities' ); ?>' <?php if( ! $has_event_picked ) { echo 'style="display:none;"'; } ?>/>
 				</div>
 			</div>
-			<?php
-				do_action( 'bookacti_after_booking_filters' );
-			?>
-			<div id='bookacti-submit-filter-container' class='bookacti-bookings-filter-container' >
-				<div class='bookacti-bookings-filter-title' >
-					<?php echo esc_html_x( 'Filter', 'verb', 'booking-activities' ); ?>
-				</div>
-				<div class='bookacti-bookings-filter-content' >
-					<input type='submit' class='button button-primary button-large' value='<?php _e( 'Apply filters', 'booking-activities' ); ?>' title='<?php _e( 'Apply filters', 'booking-activities' ); ?>' />
-				</div>
-			</div>
-			<div id='bookacti-booking-system-filter-container' style='display:<?php echo $display_calendar; ?>'>
+			<div id='bookacti-booking-system-filter-container' <?php if( ! $has_event_picked && ! $user_calendar_settings[ 'show' ] ) { echo 'style="display:none;"'; } ?>>
 				<?php
+					// Display data
+					$display_data = array();
+					$default_display_data = bookacti_get_booking_system_default_display_data();
+					foreach( $default_display_data as $name => $default_value ) {
+						$display_data[ $name ] = ! empty( $user_calendar_settings[ $name ] ) ? $user_calendar_settings[ $name ] : $default_value;
+					}
+				
 					// Display the booking system
-					$atts = array( 
+					$atts = apply_filters( 'bookacti_bookings_calendar_data', array( 
 						'bookings_only'			=> 1,
 						'calendars'				=> $selected_templates,
 						'status'				=> $selected_status,
@@ -285,8 +294,9 @@ if( ! $templates ) {
 						'past_events_bookable'	=> 1,
 						'check_roles'			=> 0,
 						'auto_load'				=> 0, // Prevent to load on page load to save some performance
-						'picked_events'			=> $default_inputs
-					);
+						'picked_events'			=> $default_inputs,
+						'display_data'			=> $display_data
+					), $user_calendar_settings );
 					
 					// Format booking system attributes
 					$atts = bookacti_format_booking_system_attributes( $atts );

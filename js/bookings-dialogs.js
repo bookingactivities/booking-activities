@@ -61,6 +61,97 @@ function bookacti_init_bookings_dialogs() {
 // DIALOGS
 
 /**
+ * Bookings calendar settings
+ * @since 1.8.0
+ */
+function bookacti_dialog_update_bookings_calendar_settings() {	
+	// Reset error notices
+	$j( '#bookacti-bookings-calendar-settings-dialog .bookacti-notices' ).remove();
+	
+	// Add the buttons
+    $j( '#bookacti-bookings-calendar-settings-dialog' ).dialog( 'option', 'buttons',
+		// OK button
+		[{
+			text: bookacti_localized.dialog_button_ok,
+			click: function() { 
+				// Reset error notices
+				$j( '#bookacti-bookings-calendar-settings-dialog .bookacti-notices' ).remove();
+				
+				var data = $j( '#bookacti-bookings-calendar-settings-form' ).serializeObject();
+				
+				$j( 'body' ).trigger( 'bookacti_bookings_calendar_settings_data', [ data ] );
+				
+				// Display a loader
+				var loading_div = '<div class="bookacti-loading-alt">' 
+									+ '<img class="bookacti-loader" src="' + bookacti_localized.plugin_path + '/img/ajax-loader.gif" title="' + bookacti_localized.loading + '" />'
+									+ '<span class="bookacti-loading-alt-text" >' + bookacti_localized.loading + '</span>'
+								+ '</div>';
+				$j( '#bookacti-bookings-calendar-settings-dialog' ).append( loading_div );
+				
+				$j.ajax({
+					url: bookacti_localized.ajaxurl,
+					type: 'POST',
+					data: data,
+					dataType: 'json',
+					success: function( response ) {
+						if( response.status === 'success' ) {
+							// Update booking system data
+							var booking_system_id = 'bookacti-booking-system-bookings-page';
+							bookacti.booking_system[ booking_system_id ][ 'display_data' ] = response.display_data;
+							
+							$j( 'body' ).trigger( 'bookacti_bookings_calendar_settings_updated', [ data, response ] );
+							
+							// Reload the calendar
+							var booking_system = $j( '#bookacti-booking-system-bookings-page' );
+							bookacti_reload_booking_system( booking_system, true );
+							
+							// Close the modal dialog
+							$j( '#bookacti-bookings-calendar-settings-dialog' ).dialog( 'close' );
+							
+						} else if( response.status === 'failed' ) {
+							var error_message = typeof response.message !== 'undefined' ? response.message : '';
+							if( ! error_message ) {
+								error_message += 'Error while trying to update calendar settings';
+								var error_code = typeof response.error !== 'undefined' ? response.error : '';
+								if( error_code ) {
+									error_message += ' (' + error_code + ')';
+								}
+							}
+
+							$j( '#bookacti-bookings-calendar-settings-dialog' ).append( '<div class="bookacti-notices"><ul class="bookacti-error-list"><li>' + error_message + '</li></ul></div>' );
+
+							console.log( error_message );
+							console.log( response );
+						}
+						
+					},
+					error: function( e ){
+						$j( '#bookacti-bookings-calendar-settings-dialog' ).append( '<div class="bookacti-notices"><ul class="bookacti-error-list"><li>AJAX error while trying to update calendar settings</li></ul></div>' );
+						console.log( 'AJAX error while trying to update calendar settings' );
+						console.log( e );
+					},
+					complete: function() {
+						$j( '#bookacti-bookings-calendar-settings-dialog .bookacti-notices' ).show();
+						$j( '#bookacti-bookings-calendar-settings-dialog .bookacti-loading-alt' ).remove();
+					}
+				});
+			}
+		},
+		// Cancel button 
+		{
+			text: bookacti_localized.dialog_button_cancel,
+			click: function() {
+				$j( this ).dialog( 'close' );
+			}
+		}]
+	);
+	
+	// Open the modal dialog
+    $j( '#bookacti-bookings-calendar-settings-dialog' ).dialog( 'open' );
+}
+
+
+/**
  * Cancel booking dialog
  * @version 1.7.4
  * @param {int} booking_id

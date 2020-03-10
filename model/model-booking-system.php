@@ -574,89 +574,78 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 // EXCEPTIONS
 	/**
 	 * Get event repetition exceptions by templates or by events
-	 * 
-	 * @version 1.3.0
+	 * @version 1.8.0
 	 * @global wpdb $wpdb
-	 * @param array $template_ids
-	 * @param array $event_ids
+	 * @param array $raw_args {
+	 *  @type array $templates
+	 *  @type array $events
+	 *  @type array $types
+	 * }
 	 * @return array
 	 */
-    function bookacti_get_exceptions( $template_ids = array(), $event_ids = array() ) {
+    function bookacti_get_exceptions( $raw_args = array() ) {
 		global $wpdb;
 		
-		// Convert numeric to array
-		if( ! is_array( $template_ids ) ){
-			$template_id = intval( $template_ids );
-			$template_ids = array();
-			if( $template_id ) { $template_ids[] = $template_id; }
-		}
-		if( ! is_array( $event_ids ) ){
-			$event_id = intval( $event_ids );
-			$event_ids = array();
-			if( $event_id ) { $event_ids[] = $event_id; }
-		}
+		$default_args = array(
+			'templates' => array(),
+			'events' => array(),
+			'types'	=> array( 'date' )
+		);
+		$args = wp_parse_args( $raw_args, $default_args );
+		
+		$variables = array();
 		
 		// No no template id and event id are given, retrieve all exceptions
-		$variables = array();
-		if( ! $template_ids && ! $event_ids ) {
-			$excep_query = 'SELECT event_id, exception_type, exception_value FROM ' . BOOKACTI_TABLE_EXCEPTIONS . ' ORDER BY exception_value ASC ';
+		if( ! $args[ 'templates' ] && ! $args[ 'events' ] ) {
+			$query = 'SELECT event_id, exception_type, exception_value FROM ' . BOOKACTI_TABLE_EXCEPTIONS . 'WHERE true ';
 		
 		// If event ids are given, retrieve exceptions for these events, regardless of template ids
-		} else if ( $event_ids ) {
-			$excep_query = 'SELECT event_id, exception_type, exception_value FROM ' . BOOKACTI_TABLE_EXCEPTIONS 
-						. ' WHERE event_id IN ( ';
-			
+		} else if( $args[ 'events' ] ) {
+			$query = 'SELECT event_id, exception_type, exception_value FROM ' . BOOKACTI_TABLE_EXCEPTIONS . ' WHERE event_id IN ( ';
 			$i = 1;
-			foreach( $event_ids as $event_id ){
-				$excep_query .= ' %d';
-				if( $i < count( $event_ids ) ) { $excep_query .= ','; }
+			foreach( $args[ 'events' ] as $event_id ){
+				$query .= ' %d';
+				if( $i < count( $args[ 'events' ] ) ) { $query .= ','; }
 				++$i;
 			}
-			
-			$excep_query .= ' ) ORDER BY exception_value ASC ';
-			
-			$variables = $event_ids;
+			$query .= ' )';
+			$variables = $args[ 'events' ];
 			
 		// If template ids are given, retrieve event exceptions from these templates
-		} else if ( $template_ids ) {
-			$excep_query = 'SELECT X.event_id, X.exception_type, X.exception_value '
-						. ' FROM '  . BOOKACTI_TABLE_EXCEPTIONS . ' as X, '
-									. BOOKACTI_TABLE_EVENTS . ' as E '
-						. ' WHERE X.event_id = E.id '
-						. ' AND E.template_id IN ( ';
-			
+		} else if( $args[ 'templates' ] ) {
+			$query = 'SELECT X.event_id, X.exception_type, X.exception_value '
+					. ' FROM ' . BOOKACTI_TABLE_EXCEPTIONS . ' as X, ' . BOOKACTI_TABLE_EVENTS . ' as E '
+					. ' WHERE X.event_id = E.id '
+					. ' AND E.template_id IN ( ';
 			$i = 1;
-			foreach( $template_ids as $template_id ){
-				$excep_query .= ' %d';
-				if( $i < count( $template_ids ) ) { $excep_query .= ','; }
+			foreach( $args[ 'templates' ] as $template_id ){
+				$query .= ' %d';
+				if( $i < count( $args[ 'templates' ] ) ) { $query .= ','; }
 				++$i;
 			}
-			
-			$excep_query .= ' ) ORDER BY exception_value ASC ';
-			
-			$variables = $template_ids;
+			$query .= ' )';
+			$variables = $args[ 'templates' ];
 		}
 		
-		if( $variables ) {
-			$excep_query = $wpdb->prepare( $excep_query, $variables );
-		}
-		
-		$exceptions = $wpdb->get_results( $excep_query, ARRAY_A );
-		
-		// Order exceptions by event id
-		$exceptions_array = array();
-		if( $exceptions ) {
-			foreach( $exceptions as $exception ) {
-				$event_id = $exception[ 'event_id' ];
-				unset( $exception[ 'event_id' ] );
-				if( ! isset( $exceptions_array[ $event_id ] ) ) {
-					$exceptions_array[ $event_id ] = array();
-				}
-				$exceptions_array[ $event_id ][] = $exception;
+		// Filter by exception types
+		if( $args[ 'types' ] ) {
+			$query .= ' AND exception_type IN (';
+			$i = 1;
+			foreach( $args[ 'types' ] as $type ){
+				$query .= ' %s';
+				if( $i < count( $args[ 'templates' ] ) ) { $query .= ','; }
+				++$i;
+				$variables[] = $type;
 			}
+			$query .= ' )';
 		}
 		
-		return $exceptions_array;
+		$query .= ' ORDER BY exception_value ASC';
+		
+		if( $variables ) { $query = $wpdb->prepare( $query, $variables ); }
+		$exceptions = $wpdb->get_results( $query, ARRAY_A );
+		
+		return $exceptions;
     }
 
 

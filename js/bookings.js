@@ -1,5 +1,4 @@
 $j( document ).ready( function() {
-	
 	var booking_system		= $j( '#bookacti-booking-system-bookings-page' );
 	var booking_system_id	= booking_system.attr( 'id' );
 	
@@ -8,10 +7,9 @@ $j( document ).ready( function() {
 // FILTERS
 	// Init filter actions
 	bookacti_init_booking_filters_actions();
-
+	
 	// Hide filtered events
 	booking_system.on( 'bookacti_event_render', function( e, event, element, view ) { 
-
 		element = element || undefined;
 
 		// Check if the event is hidden
@@ -27,7 +25,15 @@ $j( document ).ready( function() {
 			element.find( '.bookacti-availability-container .bookacti-available-places' ).append( ' / <span class="bookacti-total-places-number">' + availability + '</span>' );
 		}
 	});
-
+	
+	/**
+	 * Open the bookings page calendar settings dialog
+	 * @since 1.8.0
+	 */
+	$j( '#bookacti-bookings-calendar-settings' ).on( 'click', function() {
+		bookacti_dialog_update_bookings_calendar_settings();
+	});
+	
 
 // BOOKING LIST
 	
