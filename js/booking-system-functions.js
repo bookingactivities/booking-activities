@@ -1,6 +1,10 @@
-// Retrieve the events to show and fill the the booking system
+/**
+ * Retrieve the events to display on the booking system
+ * @version 1.8.0
+ * @param {dom_element} booking_system
+ * @param {object} interval
+ */
 function bookacti_fetch_events( booking_system, interval ) {
-	
 	var booking_system_id	= booking_system.attr( 'id' );
 	var attributes			= bookacti.booking_system[ booking_system_id ];
 	
@@ -22,9 +26,7 @@ function bookacti_fetch_events( booking_system, interval ) {
 		},
         dataType: 'json',
         success: function( response ){
-			
 			if( response.status === 'success' ) {
-				
 				// Extend or replace the events array if it was empty
 				if( $j.isEmptyObject( bookacti.booking_system[ booking_system_id ][ 'events' ] ) ) {
 					bookacti.booking_system[ booking_system_id ][ 'events' ] = response.events;
@@ -45,16 +47,13 @@ function bookacti_fetch_events( booking_system, interval ) {
 				}
 				
 			} else {
-				var error_message = bookacti_localized.error_display_event;
-				if( response.error === 'not_allowed' ) {
-					error_message += '\n' + bookacti_localized.error_not_allowed;
-				}
+				var error_message = typeof response.message !== 'undefined' ? response.message : bookacti_localized.error;
 				console.log( error_message );
 				console.log( response );
 			}
         },
         error: function( e ){
-            console.log( 'AJAX ' + bookacti_localized.error_display_event );
+            console.log( 'AJAX ' + bookacti_localized.error );
             console.log( e );
         },
         complete: function() { 
@@ -130,16 +129,13 @@ function bookacti_reload_booking_system( booking_system, keep_picked_events ) {
 				bookacti_booking_method_set_up( booking_system );
 				
 			} else {
-				var error_message = bookacti_localized.error_reload_booking_system;
-				if( response.error === 'not_allowed' ) {
-					error_message += '\n' + bookacti_localized.error_not_allowed;
-				}
+				var error_message = typeof response.message !== 'undefined' ? response.message : bookacti_localized.error;
 				console.log( error_message );
 				console.log( response );
 			}
         },
         error: function( e ){
-            console.log( 'AJAX ' + bookacti_localized.error_reload_booking_system );
+            console.log( 'AJAX ' + bookacti_localized.error );
             console.log( e );
         },
         complete: function() { 
@@ -356,10 +352,14 @@ function bookacti_get_availability_period( booking_system ) {
 }
 
 
-// Refresh booking numbers
+/**
+ * Refresh booking numbers
+ * @version 1.8.0
+ * @param {dom_element} booking_system
+ * @param {array} event_ids
+ */
 function bookacti_refresh_booking_numbers( booking_system, event_ids ) {
 	event_ids = event_ids || null;
-	
 	if( event_ids && ! $j.isArray( event_ids ) ) { event_ids = [ event_ids ]; }
 	
 	var booking_system_id	= booking_system.attr( 'id' );
@@ -374,14 +374,14 @@ function bookacti_refresh_booking_numbers( booking_system, event_ids ) {
     $j.ajax({
         url: bookacti_localized.ajaxurl,
         type: 'POST',
-        data: { 'action': 'bookactiGetBookingNumbers', 
-                'template_id': template_ids, 
-				'event_id': event_ids
-			},
+        data: { 
+			'action': 'bookactiGetBookingNumbers', 
+			'template_id': template_ids, 
+			'event_id': event_ids
+		},
         dataType: 'json',
         success: function( response ){
 			if( response.status === 'success' ) {
-				
 				if( event_ids != null ) {
 					$j.each( event_ids, function( i, event_id ) {
 						if( bookacti.booking_system[ booking_system_id ][ 'bookings' ][ event_id ] ) {
@@ -394,15 +394,10 @@ function bookacti_refresh_booking_numbers( booking_system, event_ids ) {
 				}
 				
 				bookacti_booking_method_rerender_events( booking_system );
-				
-			} else if( response.error === 'not_allowed' ) {
-				
-				alert( bookacti_localized.error_retrieve_booking_numbers + '\n' + bookacti_localized.error_not_allowed );
-				console.log( response );
 			}
         },
         error: function( e ){
-            alert ( 'AJAX ' + bookacti_localized.error_retrieve_booking_numbers );
+            alert ( 'AJAX ' + bookacti_localized.error );
             console.log( e );
         },
         complete: function() { 

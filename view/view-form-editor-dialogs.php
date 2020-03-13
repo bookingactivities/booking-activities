@@ -2,7 +2,7 @@
 /**
  * Form editor dialogs
  * @since 1.5.0
- * @version 1.7.13
+ * @version 1.8.0
  */
 
 // Exit if accessed directly
@@ -15,7 +15,6 @@ foreach( $fields_data as $field_name => $field_data ) {
 }
 ?>
 
-
 <!-- Add a new field dialog -->
 <div id='bookacti-insert-form-field-dialog' class='bookacti-backend-dialog bookacti-form-dialog' style='display:none;' title='<?php esc_html_e( 'Add a field to the form', 'booking-activities' ); ?>' >
 	<form id='bookacti-insert-form-field-form' >
@@ -24,7 +23,7 @@ foreach( $fields_data as $field_name => $field_data ) {
 			wp_nonce_field( 'bookacti_insert_form_field', 'nonce_insert_form_field', false ); 
 			do_action( 'bookacti_insert_form_field_dialog_before', $form, $form_fields );
 		?>
-		<div>
+		<div id='bookacti-insert-form-field-selectbox-container'>
 			<p class='bookacti-dialog-intro'><?php esc_html_e( 'Pick the field to add to your form:', 'booking-activities' ); ?></p>
 			<label for='bookacti-field-to-insert'><?php esc_html_e( 'Field to insert', 'booking-activities' ); ?></label>
 			<select name='field_to_insert' id='bookacti-field-to-insert' >
@@ -46,7 +45,6 @@ foreach( $fields_data as $field_name => $field_data ) {
 		</div>
 		<?php 
 			do_action( 'bookacti_insert_form_field_dialog_after', $form, $form_fields );
-			
 			bookacti_display_baaf_promo();
 		?>
 	</form>

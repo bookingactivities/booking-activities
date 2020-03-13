@@ -307,6 +307,7 @@ $j( document ).ready( function() {
 /**
  * Save form data
  * @since 1.5.0
+ * @version 1.8.0
  */
 function bookacti_save_form() {
 	// Select all form managers
@@ -333,13 +334,11 @@ function bookacti_save_form() {
 		data: data, 
 		type: 'POST',
 		dataType: 'json',
-		success: function( response ){
-
+		success: function( response ) {
 			// Remove current notices about the form
 			$j( '.bookacti-form-notice' ).remove();
 
 			if( response.status === 'success' ) {
-				
 				$j( 'body' ).trigger( 'bookacti_form_updated' );
 				
 				// If the form was inactive, redirect
@@ -352,23 +351,16 @@ function bookacti_save_form() {
 				else { $j( '#bookacti-form-editor-page-container' ).before( '<div class="notice notice-success is-dismissible bookacti-form-notice" ><p>' + response.message + '</p></div>' ); }
 				
 			} else if( response.status === 'failed' ) {
-				var error_message = bookacti_localized.error_update_form;
-				if( response.error === 'not_allowed' ) {
-					error_message += '\n' + bookacti_localized.error_not_allowed;
-				}
-
-				// Display feedback
+				var error_message = typeof response.message !== 'undefined' ? response.message : bookacti_localized.error;
 				$j( '#bookacti-form-editor-page-container' ).before( '<div class="notice notice-error is-dismissible bookacti-form-notice" ><p>' + error_message + '</p></div>' );
-
+				console.log( error_message );
 				console.log( response );
 			}
 		},
 		error: function( e ){
-			var error_message = 'AJAX ' + bookacti_localized.error_update_form;
-
-			// Display feedback
+			var error_message = 'AJAX ' + bookacti_localized.error;
 			$j( '#bookacti-form-editor-page-container' ).before( '<div class="notice notice-error is-dismissible bookacti-form-notice" ><p>' + error_message + '</p></div>' );
-
+			console.log( error_message );
 			console.log( e );
 		},
 		complete: function() { 
@@ -383,6 +375,7 @@ function bookacti_save_form() {
 /**
  * Save field order
  * @since 1.5.0
+ * @version 1.8.0
  */
 function bookacti_save_form_field_order() {
 	var form_id = $j( '#bookacti-form-id' ).val();
@@ -399,11 +392,11 @@ function bookacti_save_form_field_order() {
 	
 	var nonce = $j( '#bookacti_nonce_form_field_order' ).val();
 	var data = {
-			'action': 'bookactiSaveFormFieldOrder',
-			'form_id': form_id,
-			'field_order': field_order,
-			'nonce': nonce
-		};
+		'action': 'bookactiSaveFormFieldOrder',
+		'form_id': form_id,
+		'field_order': field_order,
+		'nonce': nonce
+	};
 	
 	bookacti_form_editor_enter_loading_state();
 	
@@ -413,24 +406,20 @@ function bookacti_save_form_field_order() {
 		data: data, 
 		type: 'POST',
 		dataType: 'json',
-		success: function( response ){
-			
+		success: function( response ) {
 			if( response.status === 'success' ) {
 				bookacti.form_editor.form.field_order = response.field_order;
 				
 				$j( '#bookacti-form-editor' ).trigger( 'bookacti_form_field_order_updated' );
 				
 			} else if( response.status === 'failed' ) {
-				var error_message = bookacti_localized.error_order_form_fields;
-				if( response.error === 'not_allowed' ) {
-					error_message += '\n' + bookacti_localized.error_not_allowed;
-				}
+				var error_message = typeof response.message !== 'undefined' ? response.message : bookacti_localized.error;
 				console.log( error_message );
 				console.log( response );
 			}
 		},
 		error: function( e ){
-			var error_message = 'AJAX ' + bookacti_localized.error_order_form_fields;
+			var error_message = 'AJAX ' + bookacti_localized.error;
 
 			console.log( error_message );
 			console.log( e );
@@ -440,11 +429,17 @@ function bookacti_save_form_field_order() {
 }
 
 
+/**
+ * Disable the field actions when loading
+ */
 function bookacti_form_editor_enter_loading_state() {
 	$j( '.bookacti-form-editor-action, .bookacti-form-editor-field-action' ).addClass( 'bookacti-disabled' );
 }
 
 
+/**
+ * Allow the field actions after loading
+ */
 function bookacti_form_editor_exit_loading_state() {
 	$j( '.bookacti-form-editor-action, .bookacti-form-editor-field-action' ).removeClass( 'bookacti-disabled' );
 }

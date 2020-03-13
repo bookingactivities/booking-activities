@@ -1,7 +1,7 @@
 <?php 
 /**
  * Frontend and Backend booking dialogs
- * @version 1.7.4
+ * @version 1.8.0
  */
 
 // Exit if accessed directly
@@ -22,6 +22,28 @@ $messages = bookacti_get_messages();
 	 class='bookacti-backend-dialog bookacti-bookings-dialog' 
 	 style='display:none;' 
 	 title='<?php echo current_user_can( 'bookacti_edit_bookings' ) ? esc_html_x( 'Refund a booking', 'Dialog title', 'booking-activities' ) : apply_filters( 'bookacti_translate_text', $messages[ 'refund_dialog_title' ][ 'value' ] ); ?>'>
+	<form id='bookacti-refund-booking-form'>
+		<?php
+			wp_nonce_field( 'bookacti_refund_booking', 'nonce_refund_booking', false );
+		?>
+		<div id='bookacti-no-refund-option' style='display:none;'>
+			<?php esc_html_e( 'Sorry, no available refund option were found. Please contact the administrator.', 'booking-activities' ); ?>
+		</div>
+		<div id='bookacti-refund-options-container' style='display:none;'>
+			<div id='bookacti-refund-amount-container'>
+				<span><?php esc_html_e( 'Refund amount:', 'booking-activities' ); ?></span>
+				<strong id='bookacti-refund-amount'></strong>
+			</div>
+			<div id='bookacti-refund-options-title'>
+				<?php esc_html_e( 'Pick a refund option:', 'booking-activities' ); ?>
+			</div>
+			<div id='bookacti-refund-options'></div>
+			<div id='bookacti-refund-message'>
+				<strong><?php echo bookacti_get_message( 'refund_request_dialog_content' ); ?></strong>
+				<textarea name='refund-message'></textarea>
+			</div>
+		</div>
+	</form>
 </div>
 
 <div id='bookacti-refund-booking-confirm-dialog' 
@@ -33,6 +55,10 @@ $messages = bookacti_get_messages();
 <!-- Frontend and backend - Reschedule booking -->
 <div id='bookacti-reschedule-booking-dialog' class='bookacti-backend-dialog bookacti-bookings-dialog' title='<?php echo apply_filters( 'bookacti_translate_text', $messages[ 'reschedule_dialog_title' ][ 'value' ] ); ?>'>
 	<form class='bookacti-booking-form bookacti-reschedule-booking-form'>
+		<?php
+			wp_nonce_field( 'bookacti_get_booking_data', 'nonce_get_booking_data', false );
+			wp_nonce_field( 'bookacti_reschedule_booking', 'nonce_reschedule_booking', false );
+		?>
 		<div>
 			<?php 
 				$reschedule_booking_method = apply_filters( 'bookacti_reschedule_booking_method', 'calendar' );

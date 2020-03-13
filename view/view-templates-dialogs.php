@@ -47,21 +47,24 @@ if ( ! empty( $users ) ) {
 
 <!-- Delete event -->
 <div id='bookacti-delete-event-dialog' class='bookacti-backend-dialog bookacti-template-dialog' title='<?php esc_html_e( 'Delete event', 'booking-activities' ); ?>' style='display:none;' >
-    <div><?php esc_html_e( 'Are you sure to delete this event permanently?', 'booking-activities' ); ?></div>
+	<?php wp_nonce_field( 'bookacti_delete_event', 'nonce_delete_event', false ); ?>
+	<div><?php esc_html_e( 'Are you sure to delete this event permanently?', 'booking-activities' ); ?></div>
 </div>
 
 <!-- Delete booked event -->
 <div id='bookacti-delete-booked-event-dialog' class='bookacti-backend-dialog bookacti-template-dialog' title='<?php esc_html_e( 'Delete booked event', 'booking-activities' ); ?>' style='display:none;' >
-    <div><?php esc_html_e( 'This event is booked. Do you still want to delete it?', 'booking-activities' ); ?></div>
+	<?php wp_nonce_field( 'bookacti_delete_event_forced', 'nonce_delete_event_forced', false ); ?>
+	<div><?php esc_html_e( 'This event is booked. Do you still want to delete it?', 'booking-activities' ); ?></div>
 </div>
 
 <!-- Delete template -->
 <div id='bookacti-delete-template-dialog' class='bookacti-backend-dialog bookacti-template-dialog' title='<?php esc_html_e( 'Delete calendar', 'booking-activities' ); ?>' style='display:none;' >
-    <div><?php esc_html_e( 'Are you sure to delete this calendar?', 'booking-activities' ); ?></div>
+	<div><?php esc_html_e( 'Are you sure to delete this calendar?', 'booking-activities' ); ?></div>
 </div>
 
 <!-- Delete activity -->
 <div id='bookacti-delete-activity-dialog' class='bookacti-backend-dialog bookacti-template-dialog' title='<?php esc_html_e( 'Delete activity', 'booking-activities' ); ?>' style='display:none;' >
+	<?php wp_nonce_field( 'bookacti_deactivate_activity', 'nonce_deactivate_activity', false ); ?>
 	<div>
 		<?php esc_html_e( 'Are you sure to delete this activity permanently?', 'booking-activities' ); ?><br/>
 		<em><?php esc_html_e( 'You won\'t be able to place new events from this activity anymore.', 'booking-activities' ); ?></em>
@@ -74,13 +77,15 @@ if ( ! empty( $users ) ) {
 
 <!-- Delete group of events -->
 <div id='bookacti-delete-group-of-events-dialog' class='bookacti-backend-dialog bookacti-template-dialog' title='<?php esc_html_e( 'Delete a group of events', 'booking-activities' ); ?>' style='display:none;' >
-    <div><p><?php esc_html_e( 'Are you sure to delete this group of events permanently?', 'booking-activities' ); ?></p></div>
-    <div><p><em><?php esc_html_e( 'Events will NOT be deleted.', 'booking-activities' ); ?></em></p></div>
+	<?php wp_nonce_field( 'bookacti_delete_group_of_events', 'nonce_delete_group_of_events', false ); ?>
+	<div><p><?php esc_html_e( 'Are you sure to delete this group of events permanently?', 'booking-activities' ); ?></p></div>
+	<div><p><em><?php esc_html_e( 'Events will NOT be deleted.', 'booking-activities' ); ?></em></p></div>
 </div>
 
 <!-- Delete group category -->
 <div id='bookacti-delete-group-category-dialog' class='bookacti-backend-dialog bookacti-template-dialog' title='<?php esc_html_e( 'Delete a group category', 'booking-activities' ); ?>' style='display:none;' >
-    <div><?php esc_html_e( 'Are you sure to delete this category and all its groups of events permanently?', 'booking-activities' ); ?></div>
+	<?php wp_nonce_field( 'bookacti_delete_group_category', 'nonce_delete_group_category', false ); ?>
+	<div><?php esc_html_e( 'Are you sure to delete this category and all its groups of events permanently?', 'booking-activities' ); ?></div>
 	<div><p><em><?php esc_html_e( 'Events will NOT be deleted.', 'booking-activities' ); ?></em></p></div>
 </div>
 
@@ -683,49 +688,62 @@ if ( ! empty( $users ) ) {
 
 <!-- Locked event error -->
 <div id='bookacti-unbind-booked-event-dialog' class='bookacti-backend-dialog bookacti-template-dialog' title='<?php esc_html_e( 'Locked event', 'booking-activities' ); ?>' style='display:none;' >
-    <div id='bookacti-unbind-booked-event-error-list-container' >
-        <?php 
+	<?php wp_nonce_field( 'bookacti_unbind_occurences', 'nonce_unbind_occurences', false ); ?>
+	<div id='bookacti-unbind-booked-event-error-list-container' >
+		<?php 
 			/* translators: This is followed by "You can't:", and then a list of bans. */
 			esc_html_e( 'There are bookings on at least one of the occurence of this event.', 'booking-activities' ); 
 			/* translators: This is preceded by 'There are bookings on at least one of the occurence of this event.', and flollowed by a list of bans. */
 			echo '<br/><b>' . esc_html__( "You can't:", 'booking-activities' ) . '</b>'; 
 		?>
-        <ul></ul>
-    </div>
-    <div>
-        <?php 
+		<ul>
+			<li id='bookacti-unbind-booked-event-error-move'><?php /* translators: In the context, it is one of the message following 'There are bookings on at least one of the occurence of this event. You can't: ' */
+				esc_html_e( 'Move this occurence because it will affect the complete event.', 'booking-activities' ); ?>
+			</li>
+			<li id='bookacti-unbind-booked-event-error-resize'><?php /* translators: In the context, it is one of the message following 'There are bookings on at least one of the occurence of this event. You can't: ' */
+				esc_html_e( 'Resize this occurence because it will affect the complete event.', 'booking-activities' ); ?>
+			</li>
+			<li id='bookacti-unbind-booked-event-error-delete'>
+				<?php /* translators: In the context, it is one of the message following 'There are bookings on at least one of the occurence of this event. You can't: ' */
+				esc_html_e( 'Delete this occurence because it will affect the complete event.', 'booking-activities' ); ?>
+			</li>
+		</ul>
+	</div>
+	<div>
+		<?php 
 			/* translators: This is preceded by 'There are bookings on at least one of the occurence of this event. You can't: <list of bans>' and followed by "You can:", and then a list of capabilities. */
 			esc_html_e( 'If you want to edit independantly the occurences of the event that are not booked:', 'booking-activities' );
 			/* translators: This is preceded by 'There are bookings on at least one of the occurence of this event.', and flollowed by a list of capabilities. */
 			echo '<br/><b>' . esc_html__( 'You can:', 'booking-activities' ) . '</b><br/>';
 		?>
-        <ul>
-            <?php 
+		<ul>
+			<?php 
 						/* translators: This is one of the capabilities following the text 'There are bookings on at least one of the occurence of this event. You can:'. */
 				echo  '<li>' . esc_html__( 'Unbind the selected occurence only.', 'booking-activities' ) . '</li>'
 						/* translators: This is one of the capabilities following the text 'There are bookings on at least one of the occurence of this event. You can:'. */
 					. '<li>' . esc_html__( 'Unbind all the booked occurences.', 'booking-activities' ) . '</li>';
 			?>
-        </ul>
-        <b><?php esc_html_e( 'Warning: These actions will be irreversibles after the first booking.', 'booking-activities' ); ?></b>
-    </div>
+		</ul>
+		<b><?php esc_html_e( 'Warning: These actions will be irreversibles after the first booking.', 'booking-activities' ); ?></b>
+	</div>
 </div>
 
 
 <!-- Choose between creating a brand new activity or import an existing one -->
 <div id='bookacti-activity-create-method-dialog' class='bookacti-backend-dialog bookacti-template-dialog' title='<?php esc_html_e( 'Create a new activity or use an existing activity ?', 'booking-activities' ); ?>'  style='display:none;'>
-    <div id='bookacti-activity-create-method-container' >
-        <?php 
+	<div id='bookacti-activity-create-method-container' >
+		<?php 
 			/* translators: This is followed by "You can't:", and then a list of bans. */
 			esc_html_e( 'Do you want to create a brand new activity or use on that calendar an activity you already created on an other calendar ?', 'booking-activities' ); 
 		?>
-    </div>
+	</div>
 </div>
 
 
 <!-- Import an existing activity -->
 <div id='bookacti-activity-import-dialog' class='bookacti-backend-dialog bookacti-template-dialog' title='<?php esc_html_e( 'Import existing activity', 'booking-activities' ); ?>' style='display:none;' >
     <div id='bookacti-activity-import-container' >
+		<?php wp_nonce_field( 'bookacti_import_activity', 'nonce_import_activity', false ); ?>
 		<div>
 			<?php esc_html_e( 'Import an activity that you have already created on an other calendar:', 'booking-activities' ); ?>
 		</div>

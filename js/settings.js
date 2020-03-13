@@ -1,11 +1,9 @@
 $j( document ).ready( function() {
-	
 	/**
 	 * Intercept settings form submission
-	 * @version 1.7.5
+	 * @version 1.8.0
 	 */
 	$j( 'form#bookacti-settings.bookacti_save_settings_with_ajax' ).on( 'submit', function( e ) {
-		
 		// Prevent submission
 		e.preventDefault();
 		
@@ -23,20 +21,19 @@ $j( document ).ready( function() {
 			data: form_data,
 			dataType: 'json',
 			success: function( response ){
-				
-				if( response.status !== 'success' ) {
-					console.log( bookacti_localized.error_update_settings );
-					console.log( response );
-				} else {
+				if( response.status === 'success' ) {
 					if( form.attr( 'action' ) ) {
 						window.location.replace( form.attr( 'action' ) );
 					} else {
 						window.location.reload( true ); 
 					}
+				} else {
+					console.log( bookacti_localized.error );
+					console.log( response );
 				}
 			},
 			error: function( e ){
-				console.log( 'AJAX ' + bookacti_localized.error_update_settings );
+				console.log( 'AJAX ' + bookacti_localized.error );
 				console.log( e );
 			},
 			complete: function() {}
@@ -48,12 +45,13 @@ $j( document ).ready( function() {
 	/**
 	 * Analyse bookings and events data that can be archived
 	 * @since 1.7.0
+	 * @version 1.8.0
 	 */
 	$j( '.bookacti-archive-options' ).on( 'click', '#bookacti-archive-button-analyse', function() {
 		var date = $j( '#bookacti-archive-date' ).val();
 		if( ! date ) { return; }
 
-		var r = confirm( bookacti_localized.advice_archive_data.replace( '{date}', date ).replace( /\\n/g, '\n' ));
+		var r = confirm( $j( '#booakcti-archive-alert-analyse' ).text().replace( '{date}', date ).replace( /\\n/g, '\n' ));
 		if( r != true ) { return; }
 		
 		// Reset feedbacks
@@ -70,13 +68,14 @@ $j( document ).ready( function() {
 	/**
 	 * Dump bookings and events data prior to date
 	 * @since 1.7.0
+	 * @version 1.8.0
 	 */
 	$j( '.bookacti-archive-options' ).on( 'click', '#bookacti-archive-button-dump', function() {
 		var file_already_exists = $j( '#bookacti-archive-button-dump' ).data( 'file-already-exists' );
 		var r = true;
 		if( typeof file_already_exists !== 'undefined' ) { 
 			if( file_already_exists ) {
-				r = confirm( bookacti_localized.advice_archive_data_override.replace( /\\n/g, '\n' ));
+				r = confirm( $j( '#booakcti-archive-alert-override' ).text().replace( /\\n/g, '\n' ));
 			}
 		}
 		
@@ -118,6 +117,7 @@ $j( document ).ready( function() {
 	/**
 	 * Restore bookings and events data from an archive
 	 * @since 1.7.0
+	 * @version 1.8.0
 	 */
 	$j( '#bookacti-database-archives-table-container' ).on( 'click', '.bookacti-archive-restore-data a', function( e ) {
 		e.preventDefault();
@@ -125,7 +125,7 @@ $j( document ).ready( function() {
 		var filename = $j( this ).data( 'filename' );
 		if( ! filename ) { return; }
 		
-		var r = confirm( bookacti_localized.advice_archive_restore_data.replace( '{filename}', filename ).replace( /\\n/g, '\n' ));
+		var r = confirm( $j( '#booakcti-archive-alert-restore' ).text().replace( '{filename}', filename ).replace( /\\n/g, '\n' ));
 		if( r != true ) { return; }
 		
 		// Reset feedbacks
@@ -140,6 +140,7 @@ $j( document ).ready( function() {
 	/**
 	 * Delete a backup file
 	 * @since 1.7.0
+	 * @version 1.8.0
 	 */
 	$j( '#bookacti-database-archives-table-container' ).on( 'click', '.bookacti-archive-delete-file a', function( e ) {
 		e.preventDefault();
@@ -147,7 +148,7 @@ $j( document ).ready( function() {
 		var filename = $j( this ).data( 'filename' );
 		if( ! filename ) { return; }
 		
-		var r = confirm( bookacti_localized.advice_archive_delete_file.replace( '{filename}', filename ).replace( /\\n/g, '\n' ));
+		var r = confirm( $j( '#booakcti-archive-alert-delete-file' ).text().replace( '{filename}', filename ).replace( /\\n/g, '\n' ));
 		if( r != true ) { return; }
 		
 		// Reset feedbacks

@@ -254,9 +254,11 @@ if( ! $templates ) {
 							'event_end'		=> $event_end
 						);
 						
-						$calendar_button_label = $has_event_picked || $user_calendar_settings[ 'show' ] ? esc_html__( 'Hide calendar', 'booking-activities' ) : esc_html__( 'Filter by event', 'booking-activities' );
+						$calendar_button_label_show = esc_html__( 'Filter by event', 'booking-activities' );
+						$calendar_button_label_hide = esc_html__( 'Hide calendar', 'booking-activities' );
+						$calendar_button_label = $has_event_picked || $user_calendar_settings[ 'show' ] ? $calendar_button_label_hide : $calendar_button_label_show;
 					?>
-					<a class='button' id='bookacti-pick-event-filter' title='<?php echo $calendar_button_label; ?>' >
+					<a class='button' id='bookacti-pick-event-filter' title='<?php echo $calendar_button_label; ?>' data-label-hide='<?php echo $calendar_button_label_hide; ?>' data-label-show='<?php echo $calendar_button_label_show; ?>'>
 						<?php echo $calendar_button_label; ?>
 					</a>
 					<a class='button' id='bookacti-unpick-events-filter' title='<?php esc_html_e( 'Unpick events', 'booking-activities' ); ?>' <?php if( ! $has_event_picked ) { echo 'style="display:none;"'; } ?>>

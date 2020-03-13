@@ -47,7 +47,7 @@ function bookacti_init_form_editor_actions() {
 /**
  * Update Form Meta
  * @since 1.5.0
- * @version 1.7.15
+ * @version 1.8.0
  */
 function bookacti_dialog_update_form_meta() {
 	var form_id	= $j( '#bookacti-form-id' ).val();
@@ -74,9 +74,6 @@ function bookacti_dialog_update_form_meta() {
 		});
 	}
 	
-	// Open the modal dialog
-    $j( '#bookacti-form-meta-dialog' ).dialog( 'open' );
-	
 	// Add the buttons
     $j( '#bookacti-form-meta-dialog' ).dialog( 'option', 'buttons',
 		// OK button
@@ -99,26 +96,20 @@ function bookacti_dialog_update_form_meta() {
 					type: 'POST',
 					data: data,
 					dataType: 'json',
-					success: function( response ){
-						
+					success: function( response ) {
 						if( response.status === 'success' ) {
-							
 							bookacti.form_editor.form = response.form_data;
 							
 							$j( '#bookacti-form-editor' ).trigger( 'bookacti_form_meta_updated', [ form_id ] );
 							
 						} else if( response.status === 'failed' ) {
-							var message_error = bookacti_localized.error_update_form;
-							if( response.error === 'not_allowed' ) {
-								message_error += '\n' + bookacti_localized.error_not_allowed;
-							}
-							console.log( message_error );
+							var error_message = typeof response.message !== 'undefined' ? response.message : bookacti_localized.error;
+							console.log( error_message );
 							console.log( response );
 						}
-						
 					},
-					error: function( e ){
-						console.log( 'AJAX ' + bookacti_localized.error_update_form );
+					error: function( e ) {
+						console.log( 'AJAX ' + bookacti_localized.error );
 						console.log( e );
 					},
 					complete: function() {
@@ -131,26 +122,24 @@ function bookacti_dialog_update_form_meta() {
 			}
 		}]
     );
+	
+	// Open the modal dialog
+    $j( '#bookacti-form-meta-dialog' ).dialog( 'open' );
 }
 
 
 /**
  * Insert form field
  * @since 1.5.0
- * @version 1.5.3
+ * @version 1.8.0
  */
 function bookacti_dialog_insert_form_field() {
-	
-	// Open the modal dialog
-    $j( '#bookacti-insert-form-field-dialog' ).dialog( 'open' );
-	
 	// Add the buttons
     $j( '#bookacti-insert-form-field-dialog' ).dialog( 'option', 'buttons',
 		// OK button
 		[{
 			text: bookacti_localized.dialog_button_ok,			
 			click: function() { 
-				
 				var form_id		= $j( '#bookacti-form-id' ).val();
 				var field_name	= $j( '#bookacti-field-to-insert' ).val();
 				var nonce		= $j( '#nonce_insert_form_field' ).val();
@@ -170,14 +159,14 @@ function bookacti_dialog_insert_form_field() {
 				$j.ajax({
 					url: ajaxurl,
 					type: 'POST',
-					data: { 'action': 'bookactiInsertFormField', 
-							'form_id': form_id,
-							'field_name': field_name,
-							'nonce': nonce
-						},
+					data: { 
+						'action': 'bookactiInsertFormField', 
+						'form_id': form_id,
+						'field_name': field_name,
+						'nonce': nonce
+					},
 					dataType: 'json',
-					success: function( response ){
-						
+					success: function( response ) {
 						if( response.status === 'success' ) {
 							// Insert the field
 							$j( '#bookacti-form-editor > .bookacti-form-editor-field:last' ).after( response.field_html );
@@ -199,14 +188,16 @@ function bookacti_dialog_insert_form_field() {
 							$j( '#bookacti-insert-form-field-dialog' ).dialog( 'close' );
 							
 						} else if( response.status === 'failed' ) {
-							$j( '#bookacti-insert-form-field-dialog' ).append( '<div class="bookacti-notices"><ul class="bookacti-error-list"><li>' + response.message + '</li></ul></div>' );
+							var error_message = typeof response.message !== 'undefined' ? response.message : bookacti_localized.error;
+							$j( '#bookacti-insert-form-field-dialog' ).append( '<div class="bookacti-notices"><ul class="bookacti-error-list"><li>' + error_message + '</li></ul></div>' );
+							console.log( error_message );
 							console.log( response );
 						}
 						
 					},
-					error: function( e ){
-						$j( '#bookacti-insert-form-field-dialog' ).append( '<div class="bookacti-notices"><ul class="bookacti-error-list"><li>AJAX ' + bookacti_localized.error_insert_form_field + '</li></ul></div>' );
-						console.log( 'AJAX ' + bookacti_localized.error_insert_form_field );
+					error: function( e ) {
+						$j( '#bookacti-insert-form-field-dialog' ).append( '<div class="bookacti-notices"><ul class="bookacti-error-list"><li>AJAX ' + bookacti_localized.error + '</li></ul></div>' );
+						console.log( 'AJAX ' + bookacti_localized.error );
 						console.log( e );
 					},
 					complete: function() {
@@ -218,13 +209,16 @@ function bookacti_dialog_insert_form_field() {
 			}
 		}]
     );
+	
+	// Open the modal dialog
+    $j( '#bookacti-insert-form-field-dialog' ).dialog( 'open' );
 }
 
 
 /**
  * Remove form field
  * @since 1.5.0
- * @version 1.7.15
+ * @version 1.8.0
  * @param {int} field_id
  * @param {string} field_name
  */
@@ -234,9 +228,6 @@ function bookacti_dialog_remove_form_field( field_id, field_name ) {
 	$j( '#bookacti-remove-form-field-dialog' ).dialog({ 
 		title: dialog_title_raw + ' (' + bookacti_localized.edit_id + ': ' + field_id + ')'
 	});
-	
-	// Open the modal dialog
-    $j( '#bookacti-remove-form-field-dialog' ).dialog( 'open' );
 	
 	// Add the buttons
     $j( '#bookacti-remove-form-field-dialog' ).dialog( 'option', 'buttons',
@@ -254,13 +245,13 @@ function bookacti_dialog_remove_form_field( field_id, field_name ) {
 				$j.ajax({
 					url: ajaxurl,
 					type: 'POST',
-					data: { 'action': 'bookactiRemoveFormField', 
-							'field_id': field_id,
-							'nonce': nonce
-						},
+					data: { 
+						'action': 'bookactiRemoveFormField', 
+						'field_id': field_id,
+						'nonce': nonce
+					},
 					dataType: 'json',
-					success: function( response ){
-						
+					success: function( response ) {
 						if( response.status === 'success' ) {
 							// Remove the field form the form
 							$j( '#bookacti-form-editor-field-' + field_id ).remove();
@@ -275,17 +266,13 @@ function bookacti_dialog_remove_form_field( field_id, field_name ) {
 							$j( '#bookacti-form-editor' ).trigger( 'bookacti_field_removed', [ field_id, field_name ] );
 							
 						} else if( response.status === 'failed' ) {
-							var message_error = bookacti_localized.error_remove_form_field;
-							if( response.error === 'not_allowed' ) {
-								message_error += '\n' + bookacti_localized.error_not_allowed;
-							}
-							console.log( message_error );
+							var error_message = typeof response.message !== 'undefined' ? response.message : bookacti_localized.error;
+							console.log( error_message );
 							console.log( response );
 						}
-						
 					},
-					error: function( e ){
-						console.log( 'AJAX ' + bookacti_localized.error_remove_form_field );
+					error: function( e ) {
+						console.log( 'AJAX ' + bookacti_localized.error );
 						console.log( e );
 					},
 					complete: function() {
@@ -298,13 +285,16 @@ function bookacti_dialog_remove_form_field( field_id, field_name ) {
 			}
 		}]
     );
+	
+	// Open the modal dialog
+    $j( '#bookacti-remove-form-field-dialog' ).dialog( 'open' );
 }
 
 
 /**
  * Update Form Field
  * @since 1.5.0
- * @version 1.7.17
+ * @version 1.8.0
  * @param {int} field_id
  * @param {string} field_name
  */
@@ -335,9 +325,6 @@ function bookacti_dialog_update_form_field( field_id, field_name ) {
 			bookacti_refresh_qtx_field( this ); 
 		});
 	}
-	
-	// Open the modal dialog
-    $j( '#bookacti-form-field-dialog-' + field_name ).dialog( 'open' );
 	
 	// Add the buttons
     $j( '#bookacti-form-field-dialog-' + field_name ).dialog( 'option', 'buttons',
@@ -373,9 +360,7 @@ function bookacti_dialog_update_form_field( field_id, field_name ) {
 					data: data,
 					dataType: 'json',
 					success: function( response ){
-						
 						if( response.status === 'success' ) {
-							
 							// Update the field content
 							if( field_name !== 'calendar' ) {
 								$j( '#bookacti-form-editor-field-' + field_id ).replaceWith( response.field_html );
@@ -396,14 +381,16 @@ function bookacti_dialog_update_form_field( field_id, field_name ) {
 							$j( '#bookacti-form-field-dialog-' + field_name ).dialog( 'close' );
 							
 						} else if( response.status === 'failed' ) {
-							$j( '#bookacti-form-field-dialog-' + field_name ).append( '<div class="bookacti-notices"><ul class="bookacti-error-list"><li>' + response.message + '</li></ul></div>' );
+							var error_message = typeof response.message !== 'undefined' ? response.message : bookacti_localized.error;
+							$j( '#bookacti-form-field-dialog-' + field_name ).append( '<div class="bookacti-notices"><ul class="bookacti-error-list"><li>' + error_message + '</li></ul></div>' );
+							console.log( error_message );
 							console.log( response );
 						}
 						
 					},
-					error: function( e ){
-						$j( '#bookacti-insert-form-field-dialog' ).append( '<div class="bookacti-notices"><ul class="bookacti-error-list"><li>AJAX ' + bookacti_localized.error_update_form_field + '</li></ul></div>' );
-						console.log( 'AJAX ' + bookacti_localized.error_update_form_field );
+					error: function( e ) {
+						$j( '#bookacti-insert-form-field-dialog' ).append( '<div class="bookacti-notices"><ul class="bookacti-error-list"><li>AJAX ' + bookacti_localized.error + '</li></ul></div>' );
+						console.log( 'AJAX ' + bookacti_localized.error );
 						console.log( e );
 					},
 					complete: function() {
@@ -419,7 +406,6 @@ function bookacti_dialog_update_form_field( field_id, field_name ) {
 			'text': bookacti_localized.dialog_button_reset,
 			'class': 'bookacti-dialog-delete-button bookacti-dialog-left-button',
 			'click': function() {
-				
 				// Save tineMCE editors content 
 				if( typeof tinyMCE !== 'undefined' ) { 
 					if( tinyMCE ) { tinyMCE.triggerSave(); }
@@ -437,10 +423,8 @@ function bookacti_dialog_update_form_field( field_id, field_name ) {
 					type: 'POST',
 					data: data,
 					dataType: 'json',
-					success: function( response ){
-						
+					success: function( response ) {
 						if( response.status === 'success' ) {
-							
 							// Update the field content
 							if( field_name !== 'calendar' ) {
 								$j( '#bookacti-form-editor-field-' + field_id ).replaceWith( response.field_html );
@@ -458,17 +442,14 @@ function bookacti_dialog_update_form_field( field_id, field_name ) {
 							$j( '#bookacti-form-editor' ).trigger( 'bookacti_field_reset', [ field_id, field_name, response ] );
 							
 						} else if( response.status === 'failed' ) {
-							var message_error = bookacti_localized.error_reset_form;
-							if( response.error === 'not_allowed' ) {
-								message_error += '\n' + bookacti_localized.error_not_allowed;
-							}
-							console.log( message_error );
+							var error_message = typeof response.message !== 'undefined' ? response.message : bookacti_localized.error;
+							console.log( error_message );
 							console.log( response );
 						}
 						
 					},
-					error: function( e ){
-						console.log( 'AJAX ' + bookacti_localized.error_reset_form );
+					error: function( e ) {
+						console.log( 'AJAX ' + bookacti_localized.error );
 						console.log( e );
 					},
 					complete: function() {
@@ -479,27 +460,26 @@ function bookacti_dialog_update_form_field( field_id, field_name ) {
 				// Close the modal dialog
 				$j( this ).dialog( 'close' );
 			}
-		}
-		]
+		}]
     );
+	
+	// Open the modal dialog
+    $j( '#bookacti-form-field-dialog-' + field_name ).dialog( 'open' );
 }
 
 
 /**
  * Export events
  * @since 1.6.0
+ * @version 1.8.0
  * @param {int} field_id
  */
 function bookacti_dialog_export_events( form_id ) {
-	
 	// Reset error notices
 	$j( '#bookacti-export-events-dialog .bookacti-notices' ).remove();
 	
 	// Fill the field
 	$j( '#bookacti_export_events_url_secret' ).val( $j( '#bookacti_export_events_url_secret' ).data( 'value' ) );
-	
-	// Open the modal dialog
-    $j( '#bookacti-export-events-dialog' ).dialog( 'open' );
 	
 	// Add the buttons
     $j( '#bookacti-export-events-dialog' ).dialog( 'option', 'buttons',
@@ -538,10 +518,8 @@ function bookacti_dialog_export_events( form_id ) {
 							'nonce': nonce
 						},
 					dataType: 'json',
-					success: function( response ){
-						
+					success: function( response ) {
 						if( response.status === 'success' ) {
-							
 							var new_export_events_url = $j( '#bookacti_export_events_url_secret' ).data( 'value' ).replace( response.old_secret_key, response.new_secret_key );
 							$j( '#bookacti_export_events_url_secret' ).data( 'value', new_export_events_url );
 							$j( '#bookacti_export_events_url_secret' ).attr( 'data-value', new_export_events_url );
@@ -552,15 +530,7 @@ function bookacti_dialog_export_events( form_id ) {
 							$j( '#bookacti-form-editor' ).trigger( 'bookacti_export_events_url_reset', [ form_id, response ] );
 							
 						} else if( response.status === 'failed' ) {
-							
-							var error_message = typeof response.message !== 'undefined' ? response.message : '';
-							if( ! error_message ) {
-								error_message += bookacti_localized.error_reset_export_events_url;
-								var error_code = typeof response.error !== 'undefined' ? response.error : '';
-								if( error_code ) {
-									error_message += ' (' + error_code + ')';
-								}
-							}
+							var error_message = typeof response.message !== 'undefined' ? response.message : bookacti_localized.error;
 							$j( '#bookacti-export-events-dialog' ).append( '<div class="bookacti-notices"><ul class="bookacti-error-list"><li>' + error_message + '</li></ul></div>' ).show();
 							console.log( error_message );
 							console.log( response );
@@ -568,8 +538,8 @@ function bookacti_dialog_export_events( form_id ) {
 						
 					},
 					error: function( e ){
-						$j( '#bookacti-export-events-dialog' ).append( '<div class="bookacti-notices"><ul class="bookacti-error-list"><li>' + 'AJAX ' + bookacti_localized.error_reset_export_events_url + '</li></ul></div>' ).show();
-						console.log( 'AJAX ' + bookacti_localized.error_reset_export_events_url );
+						$j( '#bookacti-export-events-dialog' ).append( '<div class="bookacti-notices"><ul class="bookacti-error-list"><li>' + 'AJAX ' + bookacti_localized.error + '</li></ul></div>' ).show();
+						console.log( 'AJAX ' + bookacti_localized.error );
 						console.log( e );
 					},
 					complete: function() {
@@ -578,7 +548,9 @@ function bookacti_dialog_export_events( form_id ) {
 					}
 				});
 			}
-		}
-		]
+		}]
     );
+	
+	// Open the modal dialog
+    $j( '#bookacti-export-events-dialog' ).dialog( 'open' );
 }

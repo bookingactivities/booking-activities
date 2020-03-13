@@ -1,50 +1,5 @@
 $j( document ).ready( function() {
 	/**
-	 * Update booking row after coupon refund
-	 * @version 1.8.0
-	 */
-	$j( 'body' ).on( 'bookacti_booking_refunded', function( e, booking_id, booking_type, refund_action, refund_message, refund_data, response ){
-		if( refund_action === 'auto' ) {
-			// Set a message to feedback refunds
-			refund_data.message += bookacti_localized.advice_booking_refunded;
-		
-		} else if( refund_action === 'coupon' ) {
-			// Set a message to feedback refunds
-			refund_data.message += bookacti_localized.advice_booking_refunded;
-			refund_data.message += '<br/>' + bookacti_localized.advice_coupon_created.replace( '%1$s', '<strong>' + response.coupon_amount + '</strong>' );
-			refund_data.message += '<br/>' + bookacti_localized.advice_coupon_code.replace( '%1$s', '<strong>' + response.coupon_code + '</strong>' );
-			
-			// Update booking row on frontend only
-			if( ! bookacti_localized.is_admin ) {
-				if( booking_type === 'single' ) {
-					var row = $j( '.bookacti-booking-actions[data-booking-id="' + booking_id + '"]' ).parents( 'tr' );
-				} else {
-					var row = $j( '.bookacti-booking-group-actions[data-booking-group-id="' + booking_id + '"]' ).parents( 'tr' );
-				}
-				
-				// Add coupon code on order details
-				if( row.length && response.coupon_code ) {
-					var meta_list = row.find( 'ul.wc-item-meta' );
-					if( meta_list.length ) {
-						if( meta_list.find( '.wc-item-meta-value.wc-item-meta-bookacti_refund_coupon' ).length ) {
-							meta_list.find( '.wc-item-meta-value.wc-item-meta-bookacti_refund_coupon' ).html( response.coupon_code );
-						} else {
-							var coupon_code_meta = 
-								'<li>'
-							+		'<strong class="wc-item-meta-label wc-item-meta-bookacti_refund_coupon">' + bookacti_localized.coupon_code + ':</strong>'
-							+		'<span class="wc-item-meta-value wc-item-meta-bookacti_refund_coupon" >' + response.coupon_code + '</span>'
-							+	'</li>';
-							meta_list.append( coupon_code_meta );
-						}
-					}
-				}
-			}
-			
-		}
-	});
-	
-	
-	/**
 	 * Init WC actions to perfoms when the user submit booking form
 	 * @since 1.7.0
 	 * @version 1.7.19

@@ -160,12 +160,11 @@ $j( document ).ready( function() {
 
 /**
  * Switch form according to variation
- * @version 1.7.4
+ * @version 1.8.0
  * @param {dom_element} form_container
  * @param {object} variation
  */
 function bookacti_switch_product_variation_form( form_container, variation ) {
-	
 	// Remove current form
 	form_container.empty();
 	
@@ -178,7 +177,6 @@ function bookacti_switch_product_variation_form( form_container, variation ) {
 	bookacti.is_variation_activity[ variation[ 'variation_id' ] ] = true;
 	
 	var form_id = parseInt( variation[ 'bookacti_form_id' ] );
-	
 	if( ! form_id ) { return; }
 	
 	// Check if the form has already been loaded earlier
@@ -233,16 +231,13 @@ function bookacti_switch_product_variation_form( form_container, variation ) {
 				bookacti_fill_product_variation_form( form_container, variation, response.form_html );
 				
 			} else {
-				var error_message = bookacti_localized.error_load_form;
-				if( response.error === 'not_allowed' ) {
-					error_message += '\n' + bookacti_localized.error_not_allowed;
-				}
+				var error_message = typeof response.message !== 'undefined' ? response.message : bookacti_localized.error;
 				console.log( error_message );
 				console.log( response );
 			}
         },
         error: function( e ){
-            console.log( 'AJAX ' + bookacti_localized.error_load_form );
+            console.log( 'AJAX ' + bookacti_localized.error );
             console.log( e );
         },
         complete: function() { form_container.find( '.bookacti-loading-alt' ).remove(); }
@@ -288,140 +283,121 @@ function bookacti_fill_product_variation_form( form_container, variation, form_h
 
 /**
  * Create a countdown on cart items
+ * @version 1.8.0
  */
 function bookacti_countdown() {
-	
 	$j( '.bookacti-countdown' ).each( function() {
-		
-		if( ! $j( this ).hasClass( 'bookacti-expired' ) ) {
-
-			var expiration_date = $j( this ).data( 'expiration-date' );
-
-			if( expiration_date ) {
-				expiration_date = moment.utc( expiration_date );
-				var current_date = moment.utc();
-
-				var current_time = expiration_date.diff( current_date, 'seconds' );
-				
-				// calculate (and subtract) whole days
-				var days = Math.max( Math.floor(current_time / 86400), 0 );
-				current_time -= days * 86400;
-
-				// calculate (and subtract) whole hours
-				var hours = Math.max( Math.floor(current_time / 3600) % 24, 0 );
-				current_time -= hours * 3600;
-
-				// calculate (and subtract) whole minutes
-				var minutes = Math.max( Math.floor(current_time / 60) % 60, 0 );
-				current_time -= minutes * 60;
-
-				// what's left is seconds
-				var seconds = Math.max( current_time % 60, 0 );
-
-				//Format
-				var countdown = '';
-				if( days > 0 ) {
-					var days_word = bookacti_localized.days;
-					if( days === 1 ) { days_word = bookacti_localized.day; }
-					countdown += days + ' ' + days_word  + ' ';
-				}
-				if( hours > 0 || days > 0 ) {
-					countdown += hours + ':' ;
-				}
-
-				countdown += bookacti_pad( minutes, 2 ) + ':' + bookacti_pad( seconds, 2 );
-
-				if( days === 0 && hours === 0 && minutes === 0 && seconds === 0 ) {
-					
-					countdown = bookacti_localized.expired_min;
-					$j( this ).addClass( 'bookacti-expired' );
-					
-					var countdown = this;
-					setTimeout( function(){ bookacti_refresh_cart_after_expiration( countdown ); }, 2000 );
-				}
-
-				$j( this ).html( countdown );
-			}
+		if( $j( this ).hasClass( 'bookacti-expired' ) ) { $j( this ).html( bookacti_localized.expired ); return true; } // continue
 			
-		} else {
+		var expiration_date = $j( this ).data( 'expiration-date' );
+		if( ! expiration_date ) { return true; } // continue
+		
+		expiration_date = moment.utc( expiration_date );
+		var current_date = moment.utc();
 
-			$j( this ).html( bookacti_localized.expired_min );
+		var current_time = expiration_date.diff( current_date, 'seconds' );
+
+		// Calculate (and subtract) whole days
+		var days = Math.max( Math.floor(current_time / 86400), 0 );
+		current_time -= days * 86400;
+
+		// Calculate (and subtract) whole hours
+		var hours = Math.max( Math.floor(current_time / 3600) % 24, 0 );
+		current_time -= hours * 3600;
+
+		// Calculate (and subtract) whole minutes
+		var minutes = Math.max( Math.floor(current_time / 60) % 60, 0 );
+		current_time -= minutes * 60;
+
+		// What's left is seconds
+		var seconds = Math.max( current_time % 60, 0 );
+
+		// Format
+		var countdown = '';
+		if( days > 0 ) {
+			var days_word = bookacti_localized.days;
+			if( days === 1 ) { days_word = bookacti_localized.day; }
+			countdown += days + ' ' + days_word  + ' ';
 		}
+		if( hours > 0 || days > 0 ) {
+			countdown += hours + ':' ;
+		}
+
+		countdown += bookacti_pad( minutes, 2 ) + ':' + bookacti_pad( seconds, 2 );
+
+		if( days === 0 && hours === 0 && minutes === 0 && seconds === 0 ) {
+			countdown = bookacti_localized.expired;
+			$j( this ).addClass( 'bookacti-expired' );
+			var countdown_div = this;
+			setTimeout( function() { bookacti_refresh_cart_after_expiration( countdown_div ); }, 2000 );
+		}
+
+		$j( this ).html( countdown );
 	});
 }
 
 
 /**
  * Refresh cart after expiration
+ * @version 1.8.0
  * @param {dom_element} countdown
  */
 function bookacti_refresh_cart_after_expiration( countdown ) {
-	var is_checkout	= $j( countdown ).parents( '.checkout' ).length;
-	var woodiv		= $j( countdown ).parents( '.woocommerce' );
-	var url			= woodiv.find( 'form' ).attr( 'action' );
+	var is_checkout = $j( countdown ).closest( '.checkout' ).length;
+	var woodiv = $j( countdown ).closest( '.woocommerce' );
+	var url = woodiv.find( 'form' ).attr( 'action' );
 	
-	if( $j( countdown ).parents( '.bookacti-cart-expiration-container' ).length ) {
-		$j( countdown ).parents( '.bookacti-cart-expiration-container' ).html( bookacti_localized.error_cart_expired );
+	if( $j( countdown ).closest( '.bookacti-cart-expiration-container' ).length ) {
+		$j( countdown ).closest( '.bookacti-cart-expiration-container' ).html( bookacti_localized.error_cart_expired );
 	}
 	
 	if( ! is_checkout ) {
-
 		if( $j( countdown ).hasClass( 'bookacti-cart-expiration' ) ) {
-			woodiv.find( '.bookacti-cart-item-expires-with-cart' ).parents( '.cart_item' ).empty();
+			woodiv.find( '.bookacti-cart-item-expires-with-cart' ).closest( '.cart_item' ).empty();
 		} else {
-			$j( countdown ).parents( '.cart_item' ).empty();
+			$j( countdown ).closest( '.cart_item' ).empty();
 		}
-
-		woodiv.find( '.cart-subtotal .amount'	).empty();
-		woodiv.find( '.shipping .amount'		).empty();
-		woodiv.find( '.order-total .amount'		).empty();
-		woodiv.find( '.includes_tax .amount'	).empty();
+		woodiv.find( '.cart-subtotal .amount, .shipping .amount, .order-total .amount, .includes_tax .amount' ).empty();
 	}
 
 	$j.ajax({
 		url: url,
 		type: 'POST',
-		data: { },
+		data: {},
 		dataType: 'html',
-		success: function( response ){
-			
-			if( ! is_checkout ) {
-
-				//If cart doesn't contains items anymore, update the whole woocommerce div 
-				if( $j( response ).find( '.woocommerce form' ).length <= 0 ) {
-
-					woodiv.html( $j( response ).find( '.woocommerce' ).html() );
-
-				} else {
-
-					//Copy error messages
-					if( $j( response ).find( '.woocommerce-error' ).length ) {
-						if( woodiv.find( '.woocommerce-error' ).length ){
-							$j( response ).find( '.woocommerce-error li' ).clone().appendTo( woodiv.find( '.woocommerce-error' ) );
-						} else {
-							$j( response ).find( '.woocommerce-error' ).clone().prependTo( woodiv );
-						}
-					}
-
-					//Replace totals amounts
-					woodiv.find( '.cart-subtotal .amount'	).html( $j( response ).find( '.cart-subtotal .amount'	).html() );
-					woodiv.find( '.shipping .amount'		).html( $j( response ).find( '.shipping .amount'		).html() );
-					woodiv.find( '.order-total .amount'		).html( $j( response ).find( '.order-total .amount'		).html() );
-					woodiv.find( '.includes_tax .amount'	).html( $j( response ).find( '.includes_tax .amount'	).html() );
-				}
-
-			} else {
-				// Tell woocommerce to update checkout
+		success: function( response ) {
+			// Tell woocommerce to update checkout
+			if( is_checkout ) {
 				$j( 'body' ).trigger( 'update_checkout' );
+				return;
 			}
+			
+			// If cart doesn't contains items anymore, update the whole woocommerce div 
+			if( $j( response ).find( '.woocommerce form' ).length <= 0 ) {
+				woodiv.html( $j( response ).find( '.woocommerce' ).html() );
+				return;
+			}
+			
+			// Copy error messages
+			if( $j( response ).find( '.woocommerce-error' ).length ) {
+				if( woodiv.find( '.woocommerce-error' ).length ){
+					$j( response ).find( '.woocommerce-error li' ).clone().appendTo( woodiv.find( '.woocommerce-error' ) );
+				} else {
+					$j( response ).find( '.woocommerce-error' ).clone().prependTo( woodiv );
+				}
+			}
+
+			// Replace totals amounts
+			woodiv.find( '.cart-subtotal .amount' ).html( $j( response ).find( '.cart-subtotal .amount' ).html() );
+			woodiv.find( '.shipping .amount' ).html( $j( response ).find( '.shipping .amount' ).html() );
+			woodiv.find( '.order-total .amount' ).html( $j( response ).find( '.order-total .amount' ).html() );
+			woodiv.find( '.includes_tax .amount' ).html( $j( response ).find( '.includes_tax .amount' ).html() );
 		},
-		error: function( e ){
-			console.log( 'AJAX ' + bookacti_localized.error_remove_expired_cart_item );
+		error: function( e ) {
+			console.log( 'AJAX ' + bookacti_localized.error );
 			console.log( e );
 		},
-		complete: function() { 
-
-		}
+		complete: function() {}
 	});
 }
 

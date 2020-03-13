@@ -1080,9 +1080,9 @@ function bookacti_turn_order_bookings_to( $order, $state = 'booked', $payment_st
 
 	// Retrieve bought items and user id
 	$items		= $order->get_items();
-	$user_id	= $order->get_user_id();
+	$new_user_id= ! empty( $args[ 'change_user_id' ] ) ? $order->get_user_id() : 0;
 	$order_id	= $order->get_id();
-
+	
 	// Create an array with order booking ids
 	$booking_id_array		= array();
 	$booking_group_id_array = array();
@@ -1113,7 +1113,7 @@ function bookacti_turn_order_bookings_to( $order, $state = 'booked', $payment_st
 
 			// Change the booking group state accordingly
 			// Also change its user_id and order_id to make sure it is up to date
-			bookacti_update_booking_group( $booking_group_id, $state, $payment_status, $user_id, $order_id, NULL, 'auto', $states_in );
+			bookacti_update_booking_group( $booking_group_id, $state, $payment_status, $new_user_id, $order_id, NULL, 'auto', $states_in );
 		}
 	}
 
@@ -1129,7 +1129,7 @@ function bookacti_turn_order_bookings_to( $order, $state = 'booked', $payment_st
 		return $response;
 	}
 
-	$updated = bookacti_change_order_bookings_state( $user_id, $order_id, $booking_id_array, $state, $payment_status, $states_in );
+	$updated = bookacti_change_order_bookings_state( $new_user_id, $order_id, $booking_id_array, $state, $payment_status, $states_in );
 
 	$response[ 'status' ]	= 'success';
 	$response[ 'errors' ]	= array();
@@ -1932,14 +1932,13 @@ function bookacti_does_order_support_auto_refund( $order_id ) {
 
 /**
  * Create a coupon to refund a booking
- * @version 1.7.0
+ * @version 1.8.0
  * @param int $booking_id
  * @param string $booking_type Determine if the given id is a booking id or a booking group. Accepted values are 'single' or 'group'.
  * @param string $refund_message
  * @return array
  */
 function bookacti_refund_booking_with_coupon( $booking_id, $booking_type, $refund_message ) {
-
 	// Include & load API classes
 	if( ! class_exists( 'WC_API_Coupons' ) ) {
 		WC()->api->includes();
@@ -1965,7 +1964,7 @@ function bookacti_refund_booking_with_coupon( $booking_id, $booking_type, $refun
 
 	$user = is_numeric( $user_id ) ? get_user_by( 'id', $user_id ) : null;
 
-	$amount				= (float) $item[ 'line_total' ] + (float) $item[ 'line_tax' ];
+	$amount				= round( (float) $item[ 'line_total' ] + (float) $item[ 'line_tax' ], wc_get_price_decimals() );
 	$user_billing_email = get_user_meta( $user_id, 'billing_email', true );
 
 	// Write code description

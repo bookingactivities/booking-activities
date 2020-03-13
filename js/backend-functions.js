@@ -418,31 +418,32 @@ function bookacti_refresh_qtx_field( field ){
 }
 
 
-// Dismiss 5Stars rating notice
+/**
+ * Dismiss 5Stars rating notice
+ * @version 1.8.0
+ */
 function bookacti_dismiss_5stars_rating_notice() {
 	$j( '.bookacti-5stars-rating-notice' ).remove();
 	$j.ajax({
 		url: ajaxurl,
 		type: 'POST',
-		data: { 'action': 'bookactiDismiss5StarsRatingNotice',
-				'nonce': bookacti_localized.nonce_dismiss_5stars_rating_notice
-			},
+		data: { 
+			'action': 'bookactiDismiss5StarsRatingNotice',
+			'nonce': bookacti_localized.nonce_dismiss_5stars_rating_notice
+		},
 		dataType: 'json',
 		success: function( response ){
 			if( response.status === 'failed' ) {
-				var message_error = bookacti_localized.error_update_settings;
-				if( response.error === 'not_allowed' ) {
-					message_error += '\n' + bookacti_localized.error_not_allowed;
-				}
-				console.log( message_error );
+				var error_message = typeof response.message !== 'undefined' ? response.message : bookacti_localized.error;
+				console.log( error_message );
 				console.log( response );
 			}
 		},
-		error: function( e ){
+		error: function( e ) {
+			console.log( 'AJAX ' + bookacti_localized.error );
 			console.log( e );
 		},
-		complete: function() { 
-		}
+		complete: function() {}
 	});
 }
 

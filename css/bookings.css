@@ -226,12 +226,14 @@ tr.bookacti-booking-list-selected-row								{ background-color: rgba( 65, 143, 
 	
 	
 	/* BOOKING ACTIONS DIALOGS */
-	#bookacti-refund-amount,
-	#bookacti-refund-option-title, 
+	#bookacti-refund-amount-container,
+	#bookacti-refund-options-title, 
 	.bookacti-refund-option							{ margin-bottom: 15px; }
+	.bookacti-refund-options						{ display: table; }
+	.bookacti-refund-option							{ display: table-row; }
 	.bookacti-refund-option-radio, 
 	.bookacti-refund-option-text					{ display: table-cell; vertical-align: middle; }
-	.bookacti-refund-option-text					{ padding-left: 15px; }
+	.bookacti-refund-option-text					{ padding: 0 0 15px 15px; }
 	.bookacti-refund-option-label					{ font-weight: bold; margin-right: 2px; }
 	.bookacti-refund-option-label::after			{ content: ': '; }
 	.bookacti-refund-option-description				{ font-size: 0.85em; font-style: italic; }

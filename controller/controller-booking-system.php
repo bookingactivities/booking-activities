@@ -2,7 +2,6 @@
 // Exit if accessed directly
 if ( ! defined( 'ABSPATH' ) ) { exit; }
 
-
 /**
  * AJAX Controller - Fetch events in order to display them
  * @version	1.8.0
@@ -110,23 +109,16 @@ add_action( 'wp_ajax_nopriv_bookactiReloadBookingSystem', 'bookacti_controller_r
 
 /**
  * AJAX Controller - Get booking numbers for a given template and / or event
- * 
- * @version 1.5.0
+ * @version 1.8.0
  */
 function bookacti_controller_get_booking_numbers() {
-
-	$template_ids	= isset( $_POST['template_ids'] ) ? intval( $_POST['template_ids'] ) : array();
-	$event_ids		= isset( $_POST['event_ids'] ) ? intval( $_POST['event_ids'] ) : array();
+	$template_ids	= isset( $_POST[ 'template_ids' ] ) ? intval( $_POST[ 'template_ids' ] ) : array();
+	$event_ids		= isset( $_POST[ 'event_ids' ] ) ? intval( $_POST[ 'event_ids' ] ) : array();
 
 	$booking_numbers = bookacti_get_number_of_bookings_by_events( $template_ids, $event_ids );
-
-	if( count( $booking_numbers ) > 0 ) {
-		wp_send_json( array( 'status' => 'success', 'bookings' => $booking_numbers ) );
-	} else if( count( $booking_numbers ) === 0 ) {
-		wp_send_json( array( 'status' => 'no_bookings' ) );
-	} else {
-		wp_send_json( array( 'status' => 'failed', 'error' => 'unknown' ) );
-	}
+	if( ! $booking_numbers ) { bookacti_send_json( array( 'status' => 'no_bookings' ), 'get_booking_numbers' ); }
+	
+	bookacti_send_json( array( 'status' => 'success', 'bookings' => $booking_numbers ), 'get_booking_numbers' );
 }
 add_action( 'wp_ajax_bookactiGetBookingNumbers', 'bookacti_controller_get_booking_numbers' );
 add_action( 'wp_ajax_nopriv_bookactiGetBookingNumbers', 'bookacti_controller_get_booking_numbers' );

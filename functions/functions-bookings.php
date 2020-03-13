@@ -485,7 +485,7 @@ function bookacti_booking_can_be_rescheduled_to( $booking, $event_id, $event_sta
 
 /**
  * Check if a booking can be refunded
- * @version 1.7.14
+ * @version 1.8.0
  * @param int $booking
  * @param string $refund_action
  * @param string $context
@@ -498,7 +498,7 @@ function bookacti_booking_can_be_refunded( $booking, $refund_action = false, $co
 	if( is_numeric( $booking ) ) { $booking = bookacti_get_booking_by_id( $booking ); }
 	if( ! $booking ) { $true = false; }
 	else {
-		$refund_actions = bookacti_get_refund_actions_by_booking_id( $booking, $context );
+		$refund_actions = bookacti_get_booking_refund_actions( $booking, 'single', $context );
 
 		// Disallow refund in those cases:
 		// -> If the booking is already marked as refunded, 
@@ -612,7 +612,7 @@ function bookacti_booking_group_can_be_cancelled( $booking_group, $context = '' 
 /**
  * Check if a booking group can be refunded
  * @since 1.1.0
- * @version 1.7.14
+ * @version 1.8.0
  * @param object|int $booking_group
  * @param string $refund_action
  * @param string $context
@@ -625,7 +625,7 @@ function bookacti_booking_group_can_be_refunded( $booking_group, $refund_action 
 	if( is_numeric( $booking_group ) ) { $booking_group = bookacti_get_booking_group_by_id( $booking_group ); }
 	if( ! $booking_group ) { $true = false; }
 	else {
-		$refund_actions	= bookacti_get_refund_actions_by_booking_group_id( $booking_group, $context );
+		$refund_actions	= bookacti_get_booking_refund_actions( $booking_group, 'group', $context );
 
 		// Disallow refund in those cases:
 		// -> If the booking group is already marked as refunded, 
@@ -1287,7 +1287,6 @@ function bookacti_get_bookings_for_export( $filters, $columns ) {
 
 /**
  * Get available actions user can take to be refunded 
- * 
  * @return array
  */
 function bookacti_get_refund_actions(){
@@ -1303,39 +1302,14 @@ function bookacti_get_refund_actions(){
 
 
 /**
- * Get refund actions for a specific booking
- * @version 1.7.14
- * @param int|object $booking
- * @param string $context
- * @return array
- */
-function bookacti_get_refund_actions_by_booking_id( $booking, $context = '' ) {
-	return bookacti_get_refund_actions_by_booking_type( $booking, 'single', $context );
-}
-
-
-/**
- * Get refund actions for a specific booking group
- * @since 1.1.0
- * @version 1.7.14
- * @param int|object $booking_group
- * @param string $context
- * @return array
- */
-function bookacti_get_refund_actions_by_booking_group_id( $booking_group, $context = '' ) {
-	return bookacti_get_refund_actions_by_booking_type( $booking_group, 'group', $context );
-}
-
-/**
  * Get refund actions for a specific booking or booking group
- * @since 1.1.0
- * @version 1.7.14
+ * @since 1.8.0 (was bookacti_get_refund_actions_by_booking_type)
  * @param int|object $booking
  * @param string $booking_type Defined if the given id is a booking id or a booking group id. Accepted values are 'single' and 'group'.
  * @param string $context
  * @return array
  */
-function bookacti_get_refund_actions_by_booking_type( $booking, $booking_type = 'single', $context = '' ) {
+function bookacti_get_booking_refund_actions( $booking, $booking_type = 'single', $context = '' ) {
 	$possible_actions = bookacti_get_refund_actions();
 
 	// If current user is a customer
@@ -1370,84 +1344,47 @@ function bookacti_get_refund_actions_by_booking_type( $booking, $booking_type = 
 
 /**
  * Get dialog refund text for a specific booking
- * @version 1.7.14
+ * @since 1.8.0 (was bookacti_get_refund_dialog_html_by_booking_type)
  * @param int $booking_id
- * @param string $context
- * @return string
- */
-function bookacti_get_refund_dialog_html_by_booking_id( $booking_id, $context = '' ) {
-	return bookacti_get_refund_dialog_html_by_booking_type( $booking_id, 'single', $context );
-}
-
-
-/**
- * Get dialog refund text for a specific booking
- * @version 1.7.14
- * @param int $booking_group_id
- * @param string $context
- * @return string
- */
-function bookacti_get_refund_dialog_html_by_booking_group_id( $booking_group_id, $context = '' ) {
-	return bookacti_get_refund_dialog_html_by_booking_type( $booking_group_id, 'group', $context );
-}
-
-
-/**
- * Get dialog refund text for a specific booking
- * @since 1.1.0
- * @version 1.7.14
- * @param int $booking_or_booking_group_id
  * @param string $booking_type Defined if the given id is a booking id or a booking group id. Accepted values are 'single' and 'group'.
+ * @param array $actions
  * @param string $context
  * @return string
  */
-function bookacti_get_refund_dialog_html_by_booking_type( $booking_or_booking_group_id, $booking_type = 'single', $context = '' ) {
-	$possible_actions = bookacti_get_refund_actions_by_booking_type( $booking_or_booking_group_id, $booking_type, $context );
-
-	$actions_list = '';
-	foreach( $possible_actions as $possible_action ){
-		$actions_list .= '<div class="bookacti-refund-option" >'
-							. '<div class="bookacti-refund-option-radio" >'
-								. '<input '
-									. ' type="radio" '
-									. ' name="refund-action" '
-									. ' value="' . esc_attr( $possible_action['id'] ) . '" '
-									. ' id="bookacti-refund-action-' . esc_attr( $possible_action['id'] ) . '" '
-									. ' class="bookacti-refund-action" '
-								. '/>'
-							. '</div>'
-							. '<div for="bookacti-refund-action-' . esc_attr( $possible_action['id'] ) . '" class="bookacti-refund-option-text" >'
-								. '<label class="bookacti-refund-option-label" >' . esc_html( $possible_action['label'] ). '</label> '
-								. '<span class="bookacti-refund-option-description" >' . esc_html( $possible_action['description'] ) . '</span>'
-							. '</div>'
-						. '</div>';
+function bookacti_get_booking_refund_options_html( $booking_id, $booking_type = 'single', $actions = array(), $context = '' ) {
+	if( ! $actions ) { $actions = bookacti_get_booking_refund_actions( $booking_id, $booking_type, $context ); }
+	if( ! $actions ) { return ''; }
+	
+	ob_start();
+	
+	foreach( $actions as $action ) {
+		$action_id = esc_attr( $action[ 'id' ] );
+		?>
+		<div class='bookacti-refund-option' >
+			<div class='bookacti-refund-option-radio'>
+				<input type='radio' name='refund-action' value='<?php echo $action_id; ?>' id='bookacti-refund-action-<?php echo $action_id; ?>' class='bookacti-refund-action'/>
+			</div>
+			<div class='bookacti-refund-option-text'>
+				<label class='bookacti-refund-option-label' for='bookacti-refund-action-<?php echo $action_id; ?>'><?php echo esc_html( $action[ 'label' ] ); ?></label>
+				<span class='bookacti-refund-option-description'><?php echo esc_html( $action[ 'description' ] ); ?></span>
+			</div>
+		</div>
+		<?php
 	}
+	
+	return apply_filters( 'bookacti_booking_refund_options_html', ob_get_clean(), $booking_id, $booking_type, $actions, $context );
+}
 
-	// Define title and add actions list
-	$html_to_return		= '';
-	if( empty( $possible_actions ) ) {
-		$html_to_return .= '<div id="bookacti-no-refund-option" >';
-		$html_to_return .= esc_html__( 'Sorry, no available refund option were found. Please contact the administrator.', 'booking-activities' );
-		$html_to_return .= '</div>';
-	} else {
 
-		$html_to_return .= apply_filters( 'bookacti_before_refund_actions', '', $booking_or_booking_group_id, $booking_type );
-
-		$html_to_return .= '<div id="bookacti-refund-option-title" >';
-		if( count( $possible_actions ) === 1 ) {
-			$html_to_return .= esc_html__( 'There is only one available refund option:', 'booking-activities' );
-		} else {
-			$html_to_return .= esc_html__( 'Pick a refund option:', 'booking-activities' );
-		}
-		$html_to_return .= '</div>';
-
-		$html_to_return .= '</div><form id="bookacti-refund-options" >';
-		$html_to_return .= wp_nonce_field( 'bookacti_refund_booking', 'nonce_refund_booking', true, false );
-		$html_to_return .= $actions_list;
-		$html_to_return .= '</form>';
-	}
-
-	return $html_to_return;
+/**
+ * Get the amount to be refunded for a booking
+ * @since 1.8.0
+ * @param int $booking_id
+ * @param string $booking_type
+ * @return string
+ */
+function bookacti_get_booking_refund_amount( $booking_id, $booking_type = 'single' ) {
+	return apply_filters( 'bookacti_booking_refund_amount', '', $booking_id, $booking_type );
 }
 
 

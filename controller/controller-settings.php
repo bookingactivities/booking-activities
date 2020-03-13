@@ -915,25 +915,23 @@ add_action( 'all_admin_notices', 'bookacti_5stars_rating_notice' );
 
 
 /**
- *  Remove Rate-us-5-stars notice
+ * Remove Rate-us-5-stars notice
+ * @version 1.8.0
  */
 function bookacti_dismiss_5stars_rating_notice() {
-	
 	// Check nonce, no need to check capabilities
 	$is_nonce_valid = check_ajax_referer( 'bookacti_dismiss_5stars_rating_notice', 'nonce', false );
-	$is_allowed		= current_user_can( 'bookacti_manage_booking_activities' );
-
-	if( $is_nonce_valid && $is_allowed ) {
+	if( ! $is_nonce_valid ) { bookacti_send_json_invalid_nonce( 'dismiss_5stars_rating_notice' ); }
 	
-		$updated = update_option( 'bookacti-5stars-rating-notice-dismissed', 1 );
-		if( $updated ) {
-			wp_send_json( array( 'status' => 'success' ) );
-		} else {
-			wp_send_json( array( 'status' => 'failed', 'error' => 'not_updated' ) );
-		}
-	} else {
-		wp_send_json( array( 'status' => 'failed', 'error' => 'not_allowed' ) );
+	$is_allowed = current_user_can( 'bookacti_manage_booking_activities' );
+	if( ! $is_allowed ) { bookacti_send_json_not_allowed( 'dismiss_5stars_rating_notice' ); }
+	
+	$updated = update_option( 'bookacti-5stars-rating-notice-dismissed', 1 );
+	if( ! $updated ) { 
+		bookacti_send_json( array( 'status' => 'failed', 'error' => 'not_updated' ), 'dismiss_5stars_rating_notice' );
 	}
+	
+	bookacti_send_json( array( 'status' => 'success' ), 'dismiss_5stars_rating_notice' );
 }
 add_action( 'wp_ajax_bookactiDismiss5StarsRatingNotice', 'bookacti_dismiss_5stars_rating_notice' );
 
