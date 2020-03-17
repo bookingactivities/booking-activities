@@ -24,14 +24,6 @@ $j( document ).ready( function() {
 	// Dismiss notices
 	$j( '#bookacti-dismiss-5stars-rating' ).on( 'click', function(){ bookacti_dismiss_5stars_rating_notice(); });
 	
-	// WP List Table pagination - go to page
-	$j( '.bookacti-list-table-go-to-page-form' ).on( 'submit', function( e ){
-		e.preventDefault();
-		var paged = $j( this ).find( '.current-page' ).val();
-		var url = $j( this ).attr( 'action' ).replace( 'paged=%d', 'paged=' + paged );
-		window.location.replace( url );
-	});
-	
 	
 	/**
 	 * Init select2

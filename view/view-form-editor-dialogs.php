@@ -974,10 +974,10 @@ foreach( $fields_data as $field_name => $field_data ) {
 </div>
 
 <!-- Export for events dialog -->
-<div id='bookacti-export-events-dialog' class='bookacti-backend-dialog bookacti-form-dialog' style='display:none;' title='<?php esc_html_e( 'Export events from this calendar', 'booking-activities' ); ?>' >
-	<form id='bookacti-export-events-form' >
+<div id='bookacti-export-events-dialog' class='bookacti-backend-dialog bookacti-form-dialog' style='display:none;' title='<?php esc_html_e( 'Export events from this calendar', 'booking-activities' ); ?>'>
+	<form id='bookacti-export-events-form'>
 		<?php wp_nonce_field( 'bookacti_reset_export_events_url', 'nonce_reset_export_events_url', false ); ?>
-		<input type='hidden' name='action' value='' />
+		<input type='hidden' name='action' value=''/>
 		<?php
 			$lang = bookacti_get_current_lang_code();
 			$secret_key = bookacti_get_metadata( 'form', $form_id, 'secret_key', true );
@@ -991,8 +991,8 @@ foreach( $fields_data as $field_name => $field_data ) {
 		<div>
 			<p><strong><?php esc_html_e( 'Secret address in iCal format', 'booking-activities' ); ?></strong></p>
 			<div class='bookacti_export_url'>
-				<div class='bookacti_export_url_field' ><input type='text' id='bookacti_export_events_url_secret' data-value='<?php echo $ical_url; ?>' value='<?php echo $ical_url; ?>' readonly onfocus='this.select();' /></div>
-				<div class='bookacti_export_button' ><input type='button' value='<?php esc_html( _ex( 'Export', 'action', 'booking-activities' ) ); ?>' /></div>
+				<div class='bookacti_export_url_field'><input type='text' id='bookacti_export_events_url_secret' data-value='<?php echo $ical_url; ?>' value='<?php echo $ical_url; ?>' readonly onfocus='this.select();'/></div>
+				<div class='bookacti_export_button'><input type='button' value='<?php esc_html( _ex( 'Export', 'action', 'booking-activities' ) ); ?>' class='button button-primary button-large'/></div>
 			</div>
 			<p>
 				<small>
@@ -1000,7 +1000,7 @@ foreach( $fields_data as $field_name => $field_data ) {
 				</small>
 			</p>
 			<p class='bookacti-warning'>
-				<span class='dashicons dashicons-warning' ></span>
+				<span class='dashicons dashicons-warning'></span>
 				<small>
 					<?php 
 						esc_html_e( 'This link provides real-time data. However, some apps may synchronize only every 24h, or more.', 'booking-activities' ); 
@@ -1014,7 +1014,7 @@ foreach( $fields_data as $field_name => $field_data ) {
 				</small>
 			</p>
 			<p class='bookacti-warning'>
-				<span class='dashicons dashicons-warning' ></span>
+				<span class='dashicons dashicons-warning'></span>
 				<small>
 					<?php 
 						esc_html_e( 'Only share this address with those you trust to see all your events details.', 'booking-activities' );

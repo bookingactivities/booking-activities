@@ -149,21 +149,16 @@ function bookacti_get_default_booking_filters() {
 /**
  * Format booking filters
  * @since 1.3.0
- * @version 1.7.6
+ * @version 1.8.0
  * @param array $filters 
  * @return array
  */
 function bookacti_format_booking_filters( $filters = array() ) {
-
-	$default_filters = bookacti_get_default_booking_filters();
-
 	$formatted_filters = array();
+	$default_filters = bookacti_get_default_booking_filters();
 	foreach( $default_filters as $filter => $default_value ) {
 		// If a filter isn't set, use the default value
-		if( ! isset( $filters[ $filter ] ) ) {
-			$formatted_filters[ $filter ] = $default_value;
-			continue;
-		}
+		if( ! isset( $filters[ $filter ] ) ) { $formatted_filters[ $filter ] = $default_value; continue; }
 
 		$current_value = $filters[ $filter ];
 
@@ -224,6 +219,7 @@ function bookacti_format_booking_filters( $filters = array() ) {
 				'id', 
 				'user_id', 
 				'event_id', 
+				'event_title', 
 				'event_start', 
 				'event_end', 
 				'state', 
@@ -325,7 +321,7 @@ function bookacti_format_bookings_calendar_settings( $raw_settings = array() ) {
 	if( empty( $raw_settings ) ) { $raw_settings = array(); }
 	
 	// Default settings
-	$default_settings = apply_filters( 'bookacti_bookings_calendar_default_settings', array_merge( array( 'show' => 1 ), bookacti_get_booking_system_default_display_data() ) );
+	$default_settings = apply_filters( 'bookacti_bookings_calendar_default_settings', array_merge( array( 'show' => 1, 'ajax' => 1 ), bookacti_get_booking_system_default_display_data() ) );
 	
 	$settings = array();
 		
@@ -337,6 +333,7 @@ function bookacti_format_bookings_calendar_settings( $raw_settings = array() ) {
 	
 	// Format non display data
 	$settings[ 'show' ] = in_array( $settings[ 'show' ], array( 1, '1', true, 'true' ), true ) ? 1 : 0;
+	$settings[ 'ajax' ] = in_array( $settings[ 'ajax' ], array( 1, '1', true, 'true' ), true ) ? 1 : 0;
 	
 	// Format display data
 	$display_data = bookacti_format_booking_system_display_data( $raw_settings );

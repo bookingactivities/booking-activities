@@ -26,112 +26,63 @@ $j( document ).ready( function() {
 // BOOKINGS PAGE
 
 /**
- * Init booking filter action
- * @version 1.8.0
+ * Filter the booking list with current filters values
+ * @since 1.8.0
  */
-function bookacti_init_booking_filters_actions() {
-	/**
-	 * Display or hide activities filter according to selected templates - on page load
-	 */
-	bookacti_update_template_related_filters();
+function bookacti_filter_booking_list( paged ) {
+	paged = paged ? paged : 1;
+	var booking_system = $j( '#bookacti-booking-system-bookings-page' );
 	
+	var data = $j( '#bookacti-booking-list-filters-form' ).serializeObject();
+	data.paged = paged;
+	data.action = 'bookactiGetBookingList';
 	
-	/**
-	 * Display or hide activities filter according to selected templates - on change
-	 */
-	$j( '#bookacti-booking-filter-templates, #bookacti-booking-filter-status, #bookacti-booking-filter-customer' ).on( 'change', function() {
-		// Show / Hide activities filter
-		bookacti_update_template_related_filters();
-		
-		// Reload events according to filters
-		if( $j( '#bookacti-booking-system-filter-container' ).is( ':visible' ) ) {
-			var booking_system = $j( '#bookacti-booking-system-bookings-page' );
-			bookacti_reload_booking_system_according_to_filters( booking_system );
-		}
-	});
+	booking_system.trigger( 'bookacti_filter_booking_list_data', [ data ] );
 	
+	// Loading feedback
+	bookacti_start_loading_booking_system( booking_system );
 	
-	/**
-	 * Display / Hide the calendar and reload it if the filters has been changed
-	 * @version 1.8.0
-	 */
-	$j( '#bookacti-pick-event-filter' ).on( 'click', function() {
-		var booking_system = $j( '#bookacti-booking-system-bookings-page' );
-		
-		// Reload events according to filters if they have changed
-		if( ! $j( '#bookacti-booking-system-filter-container' ).is( ':visible' ) ) {
-			var booking_system_id	= booking_system.attr( 'id' );
-			var selected_templates	= $j( '#bookacti-booking-filter-templates' ).val() ? $j( '#bookacti-booking-filter-templates' ).val() : [];
-			var selected_status		= $j( '#bookacti-booking-filter-status' ).val() ? $j( '#bookacti-booking-filter-status' ).val() : [];
-			var selected_user		= $j( '#bookacti-booking-filter-customer' ).val() ? $j( '#bookacti-booking-filter-customer' ).val() : 0;
-			
-			if( ! bookacti_compare_arrays( bookacti.booking_system[ booking_system_id ][ 'calendars' ], selected_templates )
-			||  ! bookacti_compare_arrays( bookacti.booking_system[ booking_system_id ][ 'status' ], selected_status )
-			||  bookacti.booking_system[ booking_system_id ][ 'user_id' ] !== selected_user ) {
-				bookacti_reload_booking_system_according_to_filters( booking_system );
+	var column_nb = $j( '#bookacti-booking-list thead .manage-column:not(.hidden)' ).length ? $j( '#bookacti-booking-list thead .manage-column:not(.hidden)' ).length : 1;
+	var loading_div = 
+	'<div class="bookacti-loading-alt">' 
+		+ '<img class="bookacti-loader" src="' + bookacti_localized.plugin_path + '/img/ajax-loader.gif" title="' + bookacti_localized.loading + '" />'
+		+ '<span class="bookacti-loading-alt-text" >' + bookacti_localized.loading + '</span>'
+	+ '</div>';
+	$j( '#bookacti-booking-list #the-list' ).html( '<tr class="no-items" ><td class="colspanchange" colspan="' + column_nb + '" >' + loading_div + '</td></tr>' );
+	
+	$j.ajax({
+		url: bookacti_localized.ajaxurl,
+		type: 'POST',
+		data: data,
+		dataType: 'json',
+		success: function( response ) {
+			if( response.status === 'success' ) {
+				// Update the booking list
+				$j( '#bookacti-booking-list' ).html( response.booking_list );
+				bookacti_refresh_list_table_hidden_columns();
+				
+				// Update the URL without refreshing the page
+				window.history.pushState( { path: response.new_url }, '', response.new_url );
+				
+				/**
+				 * Trigger after the booking list has been filtered
+				 */
+				$j( '#bookacti-booking-list' ).trigger( 'bookacti_booking_list_filtered', [ response, data ] );
+
+			} else if( response.status === 'failed' ) {
+				var error_message = typeof response.message !== 'undefined' ? response.message : bookacti_localized.error;
+				var no_bookings_entry = '<tr class="no-items" ><td class="colspanchange" colspan="' + column_nb + '" >' + error_message + '</td></tr>';
+				$j( '#bookacti-booking-list #the-list' ).append( no_bookings_entry );
 			}
-			
-			var button_label = $j( '#bookacti-pick-event-filter' ).data( 'label-hide' );
-			$j( '#bookacti-pick-event-filter' ).text( button_label ).attr( 'title', button_label );
-		} else {
-			var button_label = $j( '#bookacti-pick-event-filter' ).data( 'label-show' );
-			$j( '#bookacti-pick-event-filter' ).text( button_label ).attr( 'title', button_label );
+		},
+		error: function( e ) {
+			console.log( 'AJAX ' + bookacti_localized.error );
+			console.log( e );
+		},
+		complete: function() {
+			bookacti_stop_loading_booking_system( booking_system );
 		}
-		
-		// Show / Hide calendar
-		$j( '#bookacti-booking-system-filter-container' ).toggle( 200 );
 	});
-	
-	
-	/**
-	 * Unpick all events on bookings calendar
-	 * @version 1.8.0
-	 */
-	$j( '#bookacti-unpick-events-filter' ).on( 'click', function() {
-		var booking_system = $j( '#bookacti-booking-system-bookings-page' );
-		bookacti_unpick_all_events( booking_system );
-		bookacti_clear_booking_system_displayed_info( booking_system );
-		$j( '#bookacti-unpick-events-filter' ).hide( 200 );
-		$j( '#bookacti-picked-events-filter-submit' ).hide( 200 );
-	});
-	
-	
-	/**
-	 * Display the "unpick events" button
-	 * @version 1.8.0
-	 */
-	$j( '#bookacti-booking-system-bookings-page' ).on( 'bookacti_event_click', function( e, event, group_id, open_dialog ) { 
-		$j( '#bookacti-unpick-events-filter' ).show( 200 );
-		$j( '#bookacti-picked-events-filter-submit' ).show( 200 );
-	});
-	
-	
-	/**
-	 * Display / Hide activities on the bookings calendar
-	 */
-	$j( '#bookacti-booking-filter-activities' ).on( 'change', function() {
-		var booking_system	= $j( '#bookacti-booking-system-bookings-page' );
-		var calendar		= booking_system.find( '.bookacti-calendar' );
-		calendar.fullCalendar( 'rerenderEvents' );
-	});
-	
-	
-	/**
-	 *  Retrict calendars date according to date filter
-	 */
-	$j( '#bookacti-booking-filter-dates-from, #bookacti-booking-filter-dates-to' ).on( 'change', function() {
-		bookacti_refresh_calendar_according_to_date_filter();
-	});
-}
-
-
-// TO DO: AJAXify the booking list
-// Filter the booking list with current filters values
-function bookacti_filter_booking_list() {
-	// Update the URL without refreshing the page
-	var serialized = $j( '#bookacti-booking-list-filters-form' ).serialize();
-	var newurl = window.location.protocol + "//" + window.location.host + window.location.pathname + '?page=bookacti_bookings&' + serialized;
-	window.history.pushState({path:newurl},'',newurl);
 }
 
 
@@ -196,8 +147,24 @@ function bookacti_refresh_calendar_according_to_date_filter() {
 
 
 /**
+ * Unpick all events and reset the event filter
+ * @since 1.8.0
+ */
+function bookacti_unpick_all_events_filter() {
+	var booking_system = $j( '#bookacti-booking-system-bookings-page' );
+	bookacti_unpick_all_events( booking_system );
+	bookacti_clear_booking_system_displayed_info( booking_system );
+	$j( '#bookacti-unpick-events-filter' ).hide( 200 );
+	$j( '#bookacti-picked-events-filter-submit' ).hide( 200 );
+	if( $j( '#bookacti-booking-system-filter-container' ).is( ':visible' ) ) {
+		$j( '#bookacti-pick-event-filter-instruction' ).show( 200 );
+	}
+}
+
+
+/**
  * Reload bookings booking system according to filters
- * @version 1.7.17
+ * @version 1.8.0
  * @param {dom_element} booking_system
  */
 function bookacti_reload_booking_system_according_to_filters( booking_system ) {
@@ -209,11 +176,16 @@ function bookacti_reload_booking_system_according_to_filters( booking_system ) {
 	var selected_from		= $j( '#bookacti-booking-filter-dates-from' ).val();
 	var selected_end		= $j( '#bookacti-booking-filter-dates-end' ).val();
 	
-	bookacti.booking_system[ booking_system_id ][ 'calendars' ] = selected_templates ? selected_templates : [];
-	bookacti.booking_system[ booking_system_id ][ 'status' ]	= selected_status ? selected_status : [];
-	bookacti.booking_system[ booking_system_id ][ 'user_id' ]	= selected_user ? selected_user : 0;
-	bookacti.booking_system[ booking_system_id ][ 'start' ]		= selected_from;
-	bookacti.booking_system[ booking_system_id ][ 'end' ]		= selected_end;
+	bookacti.booking_system[ booking_system_id ][ 'calendars' ]			= selected_templates ? selected_templates : [];
+	bookacti.booking_system[ booking_system_id ][ 'activities' ]		= [];
+	bookacti.booking_system[ booking_system_id ][ 'group_categories' ]	= [];
+	bookacti.booking_system[ booking_system_id ][ 'status' ]			= selected_status ? selected_status : [];
+	bookacti.booking_system[ booking_system_id ][ 'user_id' ]			= selected_user ? selected_user : 0;
+	bookacti.booking_system[ booking_system_id ][ 'start' ]				= selected_from;
+	bookacti.booking_system[ booking_system_id ][ 'end' ]				= selected_end;
+	
+	// Unpick selected event
+	bookacti_unpick_all_events_filter();
 	
 	bookacti_reload_booking_system( booking_system );
 }
@@ -288,15 +260,19 @@ function bookacti_init_booking_actions() {
 /**
  * Init booking bulk actions
  * @since 1.6.0
- * @version 1.7.0
+ * @version 1.8.0
  */
 function bookacti_init_booking_bulk_actions() {
-	$j( '.bookacti-bookings-bulk-action' ).on( 'submit', function( e ) {
+	$j( 'body' ).on( 'submit', '.bookacti-bookings-bulk-action', function( e ) {
 		if( $j( this ).find( '[name="action"]' ).val() == -1 || $j( this ).find( '[name="action2"]' ).val() == -1 ) {
 			e.preventDefault();
 		}
-		else if( $j( this ).find( '[name="action"]' ).val() === 'export' || $j( this ).find( '[name="action2"]' ).val() === 'export' ) {
-			bookacti_dialog_export_bookings();
+		else if( $j( this ).find( '[name="action"]' ).val() === 'export_csv' || $j( this ).find( '[name="action2"]' ).val() === 'export_csv' ) {
+			bookacti_dialog_export_bookings_to_csv();
+			e.preventDefault();
+		}
+		else if( $j( this ).find( '[name="action"]' ).val() === 'export_ical' || $j( this ).find( '[name="action2"]' ).val() === 'export_ical' ) {
+			bookacti_dialog_export_bookings_to_ical();
 			e.preventDefault();
 		}
 	});
@@ -368,8 +344,9 @@ function bookacti_display_grouped_bookings( booking_group_id ) {
 				$j( '#bookacti-booking-list' ).trigger( 'bookacti_grouped_bookings_displayed' );
 
 			} else if( response.status === 'failed' ) {
+				var column_nb = $j( '#bookacti-booking-list thead .manage-column:not(.hidden)' ).length ? $j( '#bookacti-booking-list thead .manage-column:not(.hidden)' ).length : 1;
 				var error_message = typeof response.message !== 'undefined' ? response.message : bookacti_localized.error;
-				var no_bookings_entry = '<tr class="no-items" ><td class="colspanchange" colspan="' + $j( '#bookacti-booking-list table tr th' ).length + '" >' + error_message + '</td></tr>';
+				var no_bookings_entry = '<tr class="no-items" ><td class="colspanchange" colspan="' + column_nb + '" >' + error_message + '</td></tr>';
 				group_row.after( no_bookings_entry );
 			}
 		},

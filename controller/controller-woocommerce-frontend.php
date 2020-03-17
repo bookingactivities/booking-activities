@@ -1662,6 +1662,7 @@ add_filter( 'woocommerce_account_menu_items', 'bookacti_add_bookings_tab_to_my_a
 /**
  * Display the content of the "Bookings" tab in My Account
  * @since 1.7.16
+ * @version 1.8.0
  */
 function bookacti_display_my_account_bookings_tab_content() {
 	$page_id = intval( bookacti_get_setting_value( 'bookacti_account_settings', 'wc_my_account_bookings_page_id' ) );
@@ -1670,7 +1671,7 @@ function bookacti_display_my_account_bookings_tab_content() {
 	} else if( $page_id > 0 ) {
 		$page = get_page( $page_id );
 		if( $page && isset( $page->post_content ) ) {
-			echo apply_filters( 'the_content', $page->post_content );
+			echo apply_filters( 'the_content', apply_filters( 'bookacti_translate_text', $page->post_content ) );
 		}
 	}
 }

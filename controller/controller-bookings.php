@@ -3,15 +3,19 @@
 if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 // BOOKINGS CALENDAR
+
 /**
  * AJAX Controller - Update bookings page calendar settings
  * @since 1.8.0
  */
 function bookacti_controller_update_bookings_calendar_settings() {
-	// Check nonce and capabilities
-	$is_allowed = current_user_can( 'bookacti_manage_bookings' );
+	// Check nonce
 	$is_nonce_valid = check_ajax_referer( 'bookacti_update_bookings_calendar_settings', 'nonce_update_bookings_calendar_settings', false );
-	if( ! $is_nonce_valid || ! $is_allowed ) { bookacti_send_json_not_allowed( 'update_bookings_calendar_settings' ); }
+	if( ! $is_nonce_valid ) { bookacti_send_json_invalid_nonce( 'update_bookings_calendar_settings' ); }
+	
+	// Check capabilities
+	$is_allowed = current_user_can( 'bookacti_manage_bookings' );
+	if( ! $is_allowed ) { bookacti_send_json_not_allowed( 'update_bookings_calendar_settings' ); }
 	
 	$calendar_settings = bookacti_format_bookings_calendar_settings( $_POST );
 	if( ! $calendar_settings ) { bookacti_send_json( array( 'status' => 'failed', 'error' => 'no_fields' ), 'update_bookings_calendar_settings' ); }
@@ -32,9 +36,39 @@ add_action( 'wp_ajax_bookactiUpdateBookingsCalendarSettings', 'bookacti_controll
 
 
 
+// BOOKINGS LIST
+
+/**
+ * AJAX Controller - Update bookings page calendar settings
+ * @since 1.8.0
+ */
+function bookacti_controller_get_booking_list() {
+	// Check nonce
+	$is_nonce_valid = check_ajax_referer( 'bookacti_get_booking_list', 'nonce_get_booking_list', false );
+	if( ! $is_nonce_valid ) { bookacti_send_json_invalid_nonce( 'get_booking_list' ); }
+	
+	// Check capabilities
+	$is_allowed = current_user_can( 'bookacti_manage_bookings' );
+	if( ! $is_allowed ) { bookacti_send_json_not_allowed( 'get_booking_list' ); }
+	
+	$bookings_list_table = new Bookings_List_Table();
+	$bookings_list_table->prepare_items();
+	
+	ob_start();
+	$bookings_list_table->display();
+	$booking_list = ob_get_clean();
+	
+	bookacti_send_json( array( 'status' => 'success', 'booking_list' => $booking_list, 'new_url' => $bookings_list_table->url ), 'get_booking_list' );
+}
+add_action( 'wp_ajax_bookactiGetBookingList', 'bookacti_controller_get_booking_list' );
+
+
+
+
 // BOOKING ACTIONS
 
 // SINGLE BOOKING
+
 /**
  * AJAX Controller - Cancel a booking
  * @version 1.7.14
@@ -778,22 +812,17 @@ add_action( 'wp_ajax_bookactiDeleteBookingGroup', 'bookacti_controller_delete_bo
 
 
 // BULK ACTIONS
+
 /**
  * Generate the export bookings URL according to current filters and export settings
- * @since 1.6.0
- * @version 1.8.0
+ * @since 1.8.0 (was bookacti_controller_generate_export_bookings_url)
  */
-function bookacti_controller_generate_export_bookings_url() {
-
+function bookacti_controller_generate_bookings_export_csv_url() {
 	// Check nonce
-	if( ! check_ajax_referer( 'bookacti_export_bookings_url', 'nonce_export_bookings_url', false ) ) { 
-		bookacti_send_json_invalid_nonce( 'export_bookings_url' ); 
-	}
+	if( ! check_ajax_referer( 'bookacti_export_bookings_url', 'nonce_export_bookings_url', false ) ) { bookacti_send_json_invalid_nonce( 'export_bookings_url' ); }
 
 	// Check capabilities
-	if( ! current_user_can( 'bookacti_manage_bookings' ) ) { 
-		bookacti_send_json_not_allowed( 'export_bookings_url' ); 
-	}
+	if( ! current_user_can( 'bookacti_manage_bookings' ) ) { bookacti_send_json_not_allowed( 'export_bookings_url' ); }
 
 	$lang = bookacti_get_current_lang_code();
 	$message = esc_html__( 'The link has been correctly generated. Use the link above to export your bookings.', 'booking-activities' );
@@ -878,7 +907,7 @@ function bookacti_controller_generate_export_bookings_url() {
 
 	bookacti_send_json( array( 'status' => 'success', 'url' => esc_url_raw( $csv_url ), 'message' => $message ), 'export_bookings_url' ); 
 }
-add_action( 'wp_ajax_bookactiExportBookingsUrl', 'bookacti_controller_generate_export_bookings_url' );
+add_action( 'wp_ajax_bookactiBookingsExportCsvUrl', 'bookacti_controller_generate_bookings_export_csv_url' );
 
 
 /**

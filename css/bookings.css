@@ -12,7 +12,8 @@
 .bookacti-bookings-filter-content select[multiple] option	{ height: 22px; box-sizing: border-box; padding: 2px 4px; margin: 0; }
 
 #bookacti-event-filter-container		{ margin: 20px 0; }
-#bookacti-event-filter-container a		{ text-align: center; overflow: hidden; text-overflow: ellipsis; vertical-align: top; height: 30px; }
+#bookacti-event-filter-container a		{ text-align: center; overflow: hidden; text-overflow: ellipsis; vertical-align: middle; height: 30px; }
+#bookacti-pick-event-filter-instruction	{ vertical-align: middle; }
 #bookacti-pick-event-filter::before		{ font-family: 'dashicons'; content: "\f508"; margin-right: 4px; font-size: 1.2em; vertical-align: top; position: relative; top: -2px; }
 #bookacti-bookings-calendar-settings	{ margin-left: 3px; vertical-align: text-bottom; cursor: pointer; color: #565d61; }
 

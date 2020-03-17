@@ -158,10 +158,10 @@
 
 .bookacti-lang-switcher { margin-bottom: 10px; }
 
-.bookacti-backend-dialog .bookacti_export_url		{ display: table; width: 100%; }
-.bookacti-backend-dialog .bookacti_export_url_field	{ display: table-cell; width: 100%; }
-.bookacti-backend-dialog .bookacti_export_button	{ display: table-cell; vertical-align: middle; padding-left: 10px; }
-.bookacti-backend-dialog .bookacti_export_url_field input:not([type='submit']):not([type='checkbox']):not([type='file']):not([type='radio']):not([type='button']):not([type='time']):not([type='number']):not([type='color']):not(.button) { padding: 10px; max-width: none; width: 100%; }
+.bookacti-backend-dialog .bookacti_export_url				{ display: table; width: 100%; }
+.bookacti-backend-dialog .bookacti_export_url_field			{ display: table-cell; width: 100%; }
+.bookacti-backend-dialog .bookacti_export_button			{ display: table-cell; vertical-align: middle; padding-left: 10px; }
+.bookacti-backend-dialog .bookacti_export_url_field input	{ padding: 5px 10px; max-width: none !important; width: 100% !important; }
 
 .bookacti-backend-dialog div > label:not(.bookacti-onoffswitch-label):not(.bookacti-refund-option-label):not(.bookacti-fullwidth-label)	{ display: inline-block; width: 150px; font-weight: bold; }
 .bookacti-backend-dialog div > label.bookacti-fullwidth-label																			{ display: block; width: 100%; font-weight: bold; cursor: auto; }

@@ -324,7 +324,8 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 * Breaking change - Drop backward compatibility and support with Booking Activities < 1.5 (shortcodes and WC integration)
 * Breaking change - Drop backward compatibility and support with WooCommerce < 3.0
 * Feature - Add an option to make the calendar start on the first displayed event, and end on the last one (in Calendar fields settings)
-* Tweak - Allow to change the bookings page calendar settings
+* Tweak - Allow to change the bookings page calendar settings per user
+* Tweak - The bookings list on the bookings page is now AJAXified (per user option)
 * Tweak - Exported bookings columns are now saved per user
 * Fix - Redirect URL when booking on event click didn't work
 * Fix - Add compulsory hidden quantity field when booking on event click

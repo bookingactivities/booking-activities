@@ -37,8 +37,15 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 						'type'		=> 'checkbox',
 						'title'		=> esc_html__( 'Display the calendar by default', 'booking-activities' ),
 						'value'		=> $user_calendar_settings[ 'show' ], 
-						'tip'		=> esc_html__( 'Whether to display the calendar by default on the bookings page.', 'booking-activities' )
-					) 
+						'tip'		=> esc_html__( 'Display the calendar by default on the bookings page.', 'booking-activities' )
+					),
+					'ajax' => array( 
+						'name'		=> 'ajax',
+						'type'		=> 'checkbox',
+						'title'		=> esc_html__( 'AJAX filtering', 'booking-activities' ),
+						'value'		=> $user_calendar_settings[ 'ajax' ], 
+						'tip'		=> esc_html__( 'Automatically filter the booking list when you change a filter or select an event.', 'booking-activities' )
+					),
 				), $user_calendar_settings );
 				bookacti_display_fields( $display_fields );
 			?>
@@ -228,8 +235,8 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		<div id='bookacti-export-bookings-url-container' style='display:none;'>
 			<p><strong><?php esc_html_e( 'Secret address in CSV format', 'booking-activities' ); ?></strong></p>
 			<div class='bookacti_export_url'>
-				<div class='bookacti_export_url_field' ><input type='text' id='bookacti_export_bookings_url_secret' value='' readonly onfocus='this.select();' /></div>
-				<div class='bookacti_export_button' ><input type='button' value='<?php esc_html( _ex( 'Export', 'action', 'booking-activities' ) ); ?>' /></div>
+				<div class='bookacti_export_url_field'><input type='text' id='bookacti_export_bookings_url_secret' value='' readonly onfocus='this.select();'/></div>
+				<div class='bookacti_export_button'><input type='button' value='<?php esc_html( _ex( 'Export', 'action', 'booking-activities' ) ); ?>' class='button button-primary button-large'/></div>
 			</div>
 			<p>
 				<small>
@@ -237,7 +244,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 				</small>
 			</p>
 			<p class='bookacti-warning'>
-				<span class='dashicons dashicons-warning' ></span>
+				<span class='dashicons dashicons-warning'></span>
 				<small>
 					<?php 
 						esc_html_e( 'This link provides real-time data. However, some apps may synchronize only every 24h, or more.', 'booking-activities' ); 

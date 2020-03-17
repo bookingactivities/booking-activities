@@ -1,24 +1,32 @@
 $j( document ).ready( function() {
-	// Init the Dialogs
+	/**
+	 * Init the Dialogs
+	 */
 	bookacti_init_bookings_dialogs();
 	
-	// Init booking actions
-	if( $j( '.bookacti-booking-action' ).length || $j( '.bookacti-booking-group-action' ).length ) {	
-		bookacti_init_booking_actions();
-	}
-	
 	/**
-	 * Init booking bulk actions
-	 * @since 1.6.0
+	 * Init booking actions
 	 */
+	bookacti_init_booking_actions();
+	
+	
 	if( $j( '.bookacti-bookings-bulk-action' ).length ) {	
+		/**
+		 * Init booking bulk actions
+		 * @since 1.6.0
+		 * @version 1.8.0
+		 */
 		bookacti_init_booking_bulk_actions();
 		
+		
+		/**
+		 * Open export link in a new tab to generate and download the exported file
+		 * @since 1.6.0
+		 * @version 1.8.0
+		 */
 		$j( '.bookacti_export_button input[type="button"]' ).on( 'click', function() {
 			var url = $j( this ).closest( '.bookacti_export_url' ).find( '.bookacti_export_url_field input' ).val();
-			if( url ) {
-				window.open( url, '_blank' );
-			}
+			if( url ) { window.open( url, '_blank' ); }
 		});
 	}
 });
@@ -104,6 +112,9 @@ function bookacti_dialog_update_bookings_calendar_settings() {
 							// Reload the calendar
 							var booking_system = $j( '#bookacti-booking-system-bookings-page' );
 							bookacti_reload_booking_system( booking_system, true );
+							
+							// Change the AJAX value
+							$j( '#bookacti-submit-filter-container' ).attr( 'data-ajax', response.calendar_settings.ajax ).data( 'ajax', response.calendar_settings.ajax );
 							
 							// Close the modal dialog
 							$j( '#bookacti-bookings-calendar-settings-dialog' ).dialog( 'close' );
@@ -1085,10 +1096,9 @@ function bookacti_dialog_delete_booking( booking_id, booking_type ) {
 
 /**
  * Export bookings dialog
- * @since 1.6.0
+ * @since 1.8.0 (was bookacti_dialog_export_bookings)
  */
-function bookacti_dialog_export_bookings() {
-	
+function bookacti_dialog_export_bookings_to_csv() {
 	// Reset URL
 	$j( '#bookacti_export_bookings_url_secret' ).val( '' );
 	$j( '#bookacti-export-bookings-url-container' ).hide();
@@ -1102,19 +1112,17 @@ function bookacti_dialog_export_bookings() {
 		[{
 			'text': bookacti_localized.dialog_button_ok,			
 			'click': function() { 
-				bookacti_generate_export_bookings_url( false );
+				bookacti_generate_bookings_export_csv_url( false );
 			}
 		},
-		
 		// Reset the address
 		{
 			'text': bookacti_localized.dialog_button_reset,
 			'class': 'bookacti-dialog-delete-button bookacti-dialog-left-button',
 			'click': function() { 
-				bookacti_generate_export_bookings_url( true );
+				bookacti_generate_bookings_export_csv_url( true );
 			}
-		}
-		]
+		}]
     );
 	
 	// Open the modal dialog
@@ -1124,11 +1132,10 @@ function bookacti_dialog_export_bookings() {
 
 /**
  * Generate the URL to export bookings
- * @since 1.6.0
- * @version 1.8.0
+ * @since 1.8.0 (was bookacti_generate_export_bookings_url)
  * @param {string} reset_key
  */
-function bookacti_generate_export_bookings_url( reset_key ) {
+function bookacti_generate_bookings_export_csv_url( reset_key ) {
 	reset_key = reset_key || false;
 	
 	// Reset error notices
@@ -1146,7 +1153,7 @@ function bookacti_generate_export_bookings_url( reset_key ) {
 	
 	// Get current filters and export settings
 	var data = $j( '#bookacti-export-bookings-form' ).serializeObject();
-	data.action = 'bookactiExportBookingsUrl';
+	data.action = 'bookactiBookingsExportCsvUrl';
 	data.reset_key = reset_key ? 1 : 0;
 	data.booking_filters = $j( '#bookacti-booking-list-filters-form' ).serializeObject();
 	
@@ -1157,9 +1164,8 @@ function bookacti_generate_export_bookings_url( reset_key ) {
 		type: 'POST',
 		data: data,
 		dataType: 'json',
-		success: function( response ){
+		success: function( response ) {
 			if( response.status === 'success' ) {
-
 				$j( '#bookacti_export_bookings_url_secret' ).val( response.url );
 				$j( '#bookacti-export-bookings-dialog' ).append( '<div class="bookacti-notices"><ul class="bookacti-success-list"><li>' + response.message + '</li></ul></div>' ).show();
 				
@@ -1174,7 +1180,7 @@ function bookacti_generate_export_bookings_url( reset_key ) {
 				console.log( response );
 			}
 		},
-		error: function( e ){
+		error: function( e ) {
 			$j( '#bookacti-export-bookings-dialog' ).append( '<div class="bookacti-notices"><ul class="bookacti-error-list"><li>' + 'AJAX ' + bookacti_localized.error + '</li></ul></div>' ).show();
 			console.log( 'AJAX ' + bookacti_localized.error );
 			console.log( e );
