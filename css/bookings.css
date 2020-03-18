@@ -176,7 +176,11 @@ a.bookacti-booking-action					{ display: inline-block; word-spacing: 0; margin: 
 tr.bookacti-booking-list-selected-row								{ background-color: rgba( 65, 143, 182, 0.1 ); }
 .striped>tbody>:nth-child(odd).bookacti-booking-list-selected-row	{ background-color: rgba( 65, 143, 182, 0.12 ); }
 
-.bookacti-user-booking-list .bookacti_empty_row { display: none; }
+.bookacti-user-booking-list .bookacti-private-value::before	{ content: '<'; }
+.bookacti-user-booking-list .bookacti-private-value::after	{ content: '>'; }
+.bookacti-user-booking-list .bookacti-private-value { font-style: italic; font-size: small; }
+.bookacti-user-booking-list .bookacti-private-value { font-style: italic; font-size: small; }
+.bookacti-user-booking-list .bookacti-empty-row		{ display: none; }
 
 
 /** DIALOGS **/

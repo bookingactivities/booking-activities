@@ -327,6 +327,7 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 * Tweak - Allow to change the bookings page calendar settings per user
 * Tweak - The bookings list on the bookings page is now AJAXified (per user option)
 * Tweak - Exported bookings columns are now saved per user
+* Tweak - Add an option to allow to display columns with private data in frontend booking list
 * Fix - Redirect URL when booking on event click didn't work
 * Fix - Add compulsory hidden quantity field when booking on event click
 * Fix - All grouped bookings were displayed in each rows of the frontend booking list when group_by = none

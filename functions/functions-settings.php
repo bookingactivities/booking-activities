@@ -6,7 +6,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
  * Get default settings values
  * 
  * @since 1.3.0 (was bookacti_define_default_settings_constants)
- * @version 1.7.16
+ * @version 1.8.0
  */
 function bookacti_get_default_settings() {
 	$date = new DateTime(); 
@@ -21,6 +21,7 @@ function bookacti_get_default_settings() {
 		'default_payment_status'				=> 'none',
 		'timezone'								=> $tz,
 		'default_calendar_view_threshold'		=> 640,
+		'display_private_columns'				=> 0,
 		'delete_data_on_uninstall'				=> 0,
 		'allow_customers_to_cancel'				=> true,
 		'allow_customers_to_reschedule'			=> true,
@@ -344,6 +345,22 @@ function bookacti_settings_field_default_calendar_view_threshold_callback() {
 		'tip'		=> esc_html__( 'The day view will be displayed by default if the calendar width is under that threshold when it is loaded. Else, it will be the week view.', 'booking-activities' )
 					/* translators: %s is the add-on name */
 					. '<br/>' . sprintf( esc_html__( 'Get more views and granularity with %s add-on!' ), $addon_link )
+	);
+	bookacti_display_field( $args );
+}
+
+
+/**
+ * Display "Booking list private columns" setting
+ * @since 1.8.0
+ */
+function bookacti_settings_field_display_private_columns_callback() {
+	$args = array(
+		'type'	=> 'checkbox',
+		'name'	=> 'bookacti_general_settings[display_private_columns]',
+		'id'	=> 'display_private_columns',
+		'value'	=> bookacti_get_setting_value( 'bookacti_general_settings', 'display_private_columns' ),
+		'tip'	=> esc_html__( 'Allow to display private data in frontend booking lists (customers ids, names, emails, phones...) with the [bookingactivities_list columns="..."] shortcode.', 'booking-activities' )
 	);
 	bookacti_display_field( $args );
 }

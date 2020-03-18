@@ -4,10 +4,9 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 /**
  * Init Booking Activities settings
- * @version 1.7.16
+ * @version 1.8.0
  */
 function bookacti_init_settings() { 
-
 	/* General settings Section */
 	add_settings_section( 
 		'bookacti_settings_section_general',
@@ -76,6 +75,14 @@ function bookacti_init_settings() {
 		'default_payment_status', 
 		esc_html__( 'Default payment status', 'booking-activities' ), 
 		'bookacti_settings_field_default_payment_status_callback', 
+		'bookacti_general_settings', 
+		'bookacti_settings_section_general' 
+	);
+	
+	add_settings_field(  
+		'display_private_columns', 
+		esc_html__( 'Allow private columns in frontend booking lists', 'booking-activities' ), 
+		'bookacti_settings_field_display_private_columns_callback', 
 		'bookacti_general_settings', 
 		'bookacti_settings_section_general' 
 	);

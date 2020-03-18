@@ -76,7 +76,7 @@
 #bookacti-template-activities-container,
 #bookacti-template-groups-of-events-container	{ padding-right: 6px; }
 #bookacti-template-activity-list,
-#bookacti-group-categories						{ overflow-y: auto; resize: vertical; padding-right: 4px; }
+#bookacti-group-categories						{ overflow-y: auto; resize: vertical; padding: 0 4px 12px 0; }
 .bookacti-group-category-title,
 .bookacti-update-group-category,
 .bookacti-group-of-events-title,
