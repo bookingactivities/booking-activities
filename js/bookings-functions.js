@@ -267,15 +267,56 @@ function bookacti_init_booking_bulk_actions() {
 		if( $j( this ).find( '[name="action"]' ).val() == -1 || $j( this ).find( '[name="action2"]' ).val() == -1 ) {
 			e.preventDefault();
 		}
-		else if( $j( this ).find( '[name="action"]' ).val() === 'export_csv' || $j( this ).find( '[name="action2"]' ).val() === 'export_csv' ) {
-			bookacti_dialog_export_bookings_to_csv();
-			e.preventDefault();
-		}
-		else if( $j( this ).find( '[name="action"]' ).val() === 'export_ical' || $j( this ).find( '[name="action2"]' ).val() === 'export_ical' ) {
-			bookacti_dialog_export_bookings_to_ical();
+		else if( $j( this ).find( '[name="action"]' ).val() === 'export' || $j( this ).find( '[name="action2"]' ).val() === 'export' ) {
+			bookacti_dialog_export_bookings();
 			e.preventDefault();
 		}
 	});
+	
+	
+	/**
+	 * Change the export type according to the selected tab
+	 * @since 1.8.0
+	 */
+	$j( '#bookacti-export-bookings-dialog' ).on( 'tabsactivate', '.bookacti-tabs', function( e, ui ) {
+		bookacti_change_export_type_according_to_active_tab();
+	});
+	
+	
+	/**
+	 * Toggle the hidden fieldsets
+	 * @since 1.8.0
+	 */
+	$j( '.bookacti-fieldset-toggle' ).on( 'click', function() {
+		if( $j( this ).data( 'show' ) === $j( this ).html() ) {
+			$j( this ).html( $j( this ).data( 'hide' ) );
+			$j( this ).closest( 'fieldset' ).removeClass( 'bookacti-fieldset-no-css' );
+			$j( this ).closest( 'fieldset' ).find( '.bookacti-fieldset-toggled' ).show( 200 );
+		} else {
+			$j( this ).html( $j( this ).data( 'show' ) );
+			$j( this ).closest( 'fieldset' ).addClass( 'bookacti-fieldset-no-css' );
+			$j( this ).closest( 'fieldset' ).find( '.bookacti-fieldset-toggled' ).hide( 200 );
+		}
+	});
+}
+
+
+/**
+ * Change the export type according to the selected tab
+ * @since 1.8.0
+ */
+function bookacti_change_export_type_according_to_active_tab() {
+	var active_tab = $j( '#bookacti-export-bookings-dialog .bookacti-tabs li.ui-tabs-active' );
+	var export_type = active_tab.length ? ( active_tab.hasClass( 'bookacti-tab-ical' ) ? 'ical' : 'csv' ) : 'csv';
+	var export_link_type = $j( '#bookacti-export-bookings-url-container' ).data( 'export-type' );
+	$j( '#bookacti-export-type-field' ).val( export_type );
+	if( export_link_type === export_type ) {
+		$j( '#bookacti-export-bookings-url-container' ).show();
+		$j( '#bookacti-export-bookings-dialog .bookacti-notices' ).show();
+	} else {
+		$j( '#bookacti-export-bookings-url-container' ).hide();
+		$j( '#bookacti-export-bookings-dialog .bookacti-notices' ).hide();
+	}
 }
 
 

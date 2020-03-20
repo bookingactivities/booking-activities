@@ -1004,6 +1004,7 @@ function bookacti_get_booking_group_actions_html( $booking_group, $admin_or_fron
 /**
  * Booking data that can be exported
  * @since 1.6.0
+ * @version 1.8.0
  * @return array
  */
 function bookacti_get_bookings_export_columns() {
@@ -1018,8 +1019,8 @@ function bookacti_get_bookings_export_columns() {
 		'customer_display_name'	=> esc_html__( 'Customer display name', 'booking-activities' ),
 		'customer_first_name'	=> esc_html__( 'Customer first name', 'booking-activities' ),
 		'customer_last_name'	=> esc_html__( 'Customer last name', 'booking-activities' ),
-		'customer_email'		=> esc_html__( 'Customer Email', 'booking-activities' ),
-		'customer_phone'		=> esc_html__( 'Customer Phone', 'booking-activities' ),
+		'customer_email'		=> esc_html__( 'Customer email', 'booking-activities' ),
+		'customer_phone'		=> esc_html__( 'Customer phone', 'booking-activities' ),
 		'event_id'				=> esc_html__( 'Event ID', 'booking-activities' ),
 		'event_title'			=> esc_html__( 'Event title', 'booking-activities' ),
 		'start_date'			=> esc_html__( 'Start date', 'booking-activities' ),
@@ -1035,39 +1036,121 @@ function bookacti_get_bookings_export_columns() {
 
 
 /**
- * Default booking data to export
- * @since 1.6.0
- * @version 1.8.0
+ * Get bookings export default settings
+ * @since 1.8.0
  * @return array
  */
-function bookacti_get_bookings_export_default_columns() {
-	$default_columns = array(
-		10 => 'booking_id',
-		20 => 'booking_type',
-		30 => 'status',
-		40 => 'payment_status',
-		50 => 'quantity',
-		60 => 'creation_date',
-		70 => 'customer_display_name',
-		80 => 'customer_email',
-		90 => 'event_title',
-		100 => 'start_date',
-		110 => 'end_date'
+function bookacti_get_bookings_export_default_settings() {
+	$per_page = intval( get_user_meta( get_current_user_id(), 'bookacti_bookings_per_page', true ) );
+	$defaults = array(
+		'csv_columns' => array(
+			'booking_id',
+			'booking_type',
+			'status',
+			'payment_status',
+			'quantity',
+			'creation_date',
+			'customer_display_name',
+			'customer_email',
+			'event_title',
+			'start_date',
+			'end_date'
+		),
+		'ical_columns' => array(
+			'customer_display_name',
+			'customer_email',
+			'quantity'
+		),
+		'csv_export_groups'	=> 'groups',
+		'ical_export_groups'=> 'groups',
+		'vevent_summary'	=> '{event_title} ({event_booked_quantity}/{event_availability_total})',
+		'vevent_description'=> '{booking_list}',
+		'per_page'			=> $per_page ? $per_page : 10
 	);
+	return apply_filters( 'bookacti_bookings_export_default_settings', $defaults );
+}
 
-	// Get default export columns by user
-	$user_id = get_current_user_id();
-	if( $user_id ) {
-		$user_default_columns = get_user_meta( $user_id, 'bookacti_bookings_export_default_columns', true );
-		if( $user_default_columns && is_array( $user_default_columns ) ) {
-			$default_columns = $user_default_columns;
-		}
+
+/**
+ * Get bookings export settings per user
+ * @since 1.8.0
+ * @param int $user_id
+ * @return array
+ */
+function bookacti_get_bookings_export_settings( $user_id = 0 ) {
+	if( ! $user_id ) { $user_id = get_current_user_id(); }
+	
+	$default_settings	= bookacti_get_bookings_export_default_settings();
+	$user_settings		= $user_id ? get_user_meta( $user_id, 'bookacti_bookings_export_settings', true ) : array();
+	
+	$settings = array();
+	foreach( $default_settings as $key => $default ) {
+		$settings[ $key ] = isset( $user_settings[ $key ] ) ? $user_settings[ $key ] : $default;
 	}
+	
+	return apply_filters( 'bookacti_bookings_export_settings', $settings, $user_id );
+}
 
-	// Order columns
-	ksort( $default_columns );
 
-	return apply_filters( 'bookacti_bookings_export_default_columns', $default_columns );
+/**
+ * Sanitize bookings export settings
+ * @since 1.8.0
+ * @param array $raw_settings
+ * @return array
+ */
+function bookacti_sanitize_bookings_export_settings( $raw_settings ) {
+	$default_settings = bookacti_get_bookings_export_default_settings();
+	
+	$columns_settings = array( 'csv_columns', 'ical_columns' );
+	$keys_by_type = array( 
+		'str'		=> array( 'vevent_summary' ),
+		'str_id'	=> array( 'csv_export_groups', 'ical_export_groups' ),
+		'str_html'	=> array( 'vevent_description' ),
+		'int'		=> array( 'per_page' ),
+		'array'		=> array( 'csv_columns', 'ical_columns' )
+	);
+	$settings = bookacti_sanitize_values( $default_settings, $raw_settings, $keys_by_type );
+	
+	// Sanitize export groups value
+	if( ! in_array( $settings[ 'csv_export_groups' ], array( 'groups', 'bookings' ), true ) )	{ $settings[ 'csv_export_groups' ] = $default_settings[ 'csv_export_groups' ]; }
+	if( ! in_array( $settings[ 'ical_export_groups' ], array( 'groups', 'bookings' ), true ) )	{ $settings[ 'ical_export_groups' ] = $default_settings[ 'ical_export_groups' ]; }
+	
+	// Keep only allowed columns
+	$allowed_columns = bookacti_get_bookings_export_columns();
+	foreach( $columns_settings as $setting_name ) {
+		foreach( $settings[ $setting_name ] as $i => $column_name ) {
+			if( ! isset( $allowed_columns[ $column_name ] ) ) { unset( $settings[ $setting_name ][ $i ] ); }
+		}
+		$settings[ $setting_name ] = array_values( $settings[ $setting_name ] );
+	}
+	
+	return apply_filters( 'bookacti_sanitized_bookings_export_settings', $settings, $raw_settings, $default_settings );
+}
+
+
+/**
+ * Get bookings export event tags
+ * @since 1.8.0
+ * @return array
+ */
+function bookacti_get_bookings_export_event_tags() {
+	return apply_filters( 'bookacti_bookings_export_event_tags', array(
+		'{event_id}'				=> esc_html__( 'Event ID', 'booking-activities' ),
+		'{event_title}'				=> esc_html__( 'The event title', 'booking-activities' ),
+		'{event_start}'				=> esc_html__( 'Event start date and time (formatted)', 'booking-activities' ),
+		'{event_end}'				=> esc_html__( 'Event end date and time (formatted)', 'booking-activities' ),
+		'{event_start_raw}'			=> esc_html__( 'Event start date and time (ISO)', 'booking-activities' ),
+		'{event_end_raw}'			=> esc_html__( 'Event end date and time (ISO)', 'booking-activities' ),
+		'{event_booked_quantity}'	=> esc_html__( 'Number of active bookings', 'booking-activities' ),
+		'{event_availability}'		=> esc_html__( 'Number of remaining places', 'booking-activities' ),
+		'{event_availability_total}'=> esc_html__( 'Total number of places', 'booking-activities' ),
+		'{activity_id}'				=> esc_html__( 'Activity ID', 'booking-activities' ),
+		'{activity_title}'			=> esc_html__( 'Activity title', 'booking-activities' ),
+		'{calendar_id}'				=> esc_html__( 'Calendar ID', 'booking-activities' ),
+		'{calendar_title}'			=> esc_html__( 'Calendar title', 'booking-activities' ),
+		'{booking_list}'			=> esc_html__( 'Event booking list (table)', 'booking-activities' ),
+		'{booking_list_csv}'		=> esc_html__( 'Event booking list (csv)', 'booking-activities' )
+	));
 }
 
 
@@ -1080,6 +1163,46 @@ function bookacti_get_bookings_export_default_columns() {
  */
 function bookacti_convert_bookings_to_csv( $filters, $columns ) {
 
+	$headers = bookacti_get_bookings_export_columns();
+	$booking_list_items = bookacti_get_bookings_for_export( $filters, $columns );
+
+	ob_start();
+
+	// Display headers
+	$count = 0;
+	foreach( $columns as $i => $column_name ) {
+		// Remove unknown columns
+		if( ! isset( $headers[ $column_name ] ) ) { unset( $columns[ $i ] ); continue; }
+		// Display comma separated column headers
+		if( $count ) { echo ','; }
+		++$count;
+		echo str_replace( ',', '', strip_tags( $headers[ $column_name ] ) );
+	}
+
+	// Display rows
+	foreach( $booking_list_items as $item ) {
+		echo PHP_EOL;
+		$count = 0;
+		foreach( $columns as $column_name ) {
+			if( $count ) { echo ','; }
+			++$count;
+			if( ! isset( $item[ $column_name ] ) ) { continue; }
+			echo str_replace( ',', '', strip_tags( $item[ $column_name ] ) );
+		}
+	}
+
+	return ob_get_clean();
+}
+
+
+/**
+ * Convert bookings to iCal format
+ * @since 1.8.0
+ * @param array $filters
+ * @param array $columns
+ * @return string
+ */
+function bookacti_convert_bookings_to_ical( $filters, $columns ) {
 	$headers = bookacti_get_bookings_export_columns();
 	$booking_list_items = bookacti_get_bookings_for_export( $filters, $columns );
 

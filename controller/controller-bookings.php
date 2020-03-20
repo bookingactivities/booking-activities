@@ -815,18 +815,18 @@ add_action( 'wp_ajax_bookactiDeleteBookingGroup', 'bookacti_controller_delete_bo
 
 /**
  * Generate the export bookings URL according to current filters and export settings
- * @since 1.8.0 (was bookacti_controller_generate_export_bookings_url)
+ * @since 1.6.0
+ * @version 1.8.0
  */
-function bookacti_controller_generate_bookings_export_csv_url() {
+function bookacti_controller_generate_export_bookings_url() {
 	// Check nonce
 	if( ! check_ajax_referer( 'bookacti_export_bookings_url', 'nonce_export_bookings_url', false ) ) { bookacti_send_json_invalid_nonce( 'export_bookings_url' ); }
 
 	// Check capabilities
 	if( ! current_user_can( 'bookacti_manage_bookings' ) ) { bookacti_send_json_not_allowed( 'export_bookings_url' ); }
-
-	$lang = bookacti_get_current_lang_code();
+	
 	$message = esc_html__( 'The link has been correctly generated. Use the link above to export your bookings.', 'booking-activities' );
-
+	
 	// Get or generate current user export secret key
 	$current_user_id = get_current_user_id();
 	$secret_key = get_user_meta( $current_user_id, 'bookacti_secret_key', true );
@@ -851,16 +851,12 @@ function bookacti_controller_generate_bookings_export_csv_url() {
 		if( ! isset( $_POST[ 'booking_filters' ][ 'event_end' ] ) && isset( $_POST[ 'booking_filters' ][ 'bookacti_event_end' ] ) )		{ $_POST[ 'booking_filters' ][ 'event_end' ] = bookacti_sanitize_datetime( $_POST[ 'booking_filters' ][ 'bookacti_event_end' ] ); }
 	}
 
-	$default_fitlers = bookacti_format_booking_filters();
+	$default_fitlers = bookacti_get_default_booking_filters();
 	$booking_filters = bookacti_format_booking_filters( $_POST[ 'booking_filters' ] );
-
-	if( isset( $_POST[ 'export_groups' ] ) ) {
-		$booking_filters[ 'group_by' ] = $_POST[ 'export_groups' ] === 'groups' ? 'booking_group' : 'none';
-	}
-	if( isset( $_POST[ 'per_page' ] ) ) {
-		$booking_filters[ 'per_page' ] = is_numeric( $_POST[ 'per_page' ] ) ? intval( $_POST[ 'per_page' ] ) : ( empty( $_POST[ 'per_page' ] ) ? '' : 20 );
-	}
-
+	
+	$default_settings= bookacti_get_bookings_export_default_settings();
+	$export_settings = bookacti_sanitize_bookings_export_settings( $_POST );
+	
 	// Keep only the required data to keep the URL as short as possible
 	foreach( $booking_filters as $filter_name => $filter_value ) {
 		if( is_numeric( $filter_value ) && is_string( $filter_value ) ) { 
@@ -870,58 +866,69 @@ function bookacti_controller_generate_bookings_export_csv_url() {
 			unset( $booking_filters[ $filter_name ] );
 		}
 	}
-
-	// Format the columns
-	$columns = array();
-	if( isset( $_POST[ 'columns' ] ) ) {
-		if( ! is_array( $_POST[ 'columns' ] ) ) { $columns = bookacti_get_bookings_export_default_columns(); }
-		else {
-			$allowed_columns = bookacti_get_bookings_export_columns();
-			foreach( $_POST[ 'columns' ] as $i => $column_name ) {
-				if( isset( $allowed_columns[ $column_name ] ) ) { $columns[] = $column_name; }
-			}
+	
+	$export_type = sanitize_title_with_dashes( $_POST[ 'export_type' ] );
+	
+	// Additional URL attributes
+	$add_url_atts = array(
+		'action'		=> 'bookacti_export_bookings',
+		'export_type'	=> $export_type,
+		'filename'		=> 'booking-activities-bookings',
+		'key'			=> $secret_key,
+		'lang'			=> bookacti_get_current_lang_code(),
+		'per_page'		=> $export_settings[ 'per_page' ]
+	);
+	
+	// Add CSV specific args
+	if( $export_type === 'csv' ) {
+		$booking_filters[ 'group_by' ] = $export_settings[ 'csv_export_groups' ] === 'groups' ? 'booking_group' : 'none';
+		if( array_diff_assoc( array_values( $default_settings[ 'csv_columns' ] ), $export_settings[ 'csv_columns' ] ) ) {
+			$add_url_atts[ 'columns' ] = $export_settings[ 'csv_columns' ];
 		}
 	}
-
-	// Let third party plugins change the booking filters
-	$booking_atts = apply_filters( 'bookacti_export_bookings_url_attributes', $booking_filters );
-
-	// Define a filename
-	$filename = 'booking-activities-bookings';
-	if( ! empty( $booking_atts[ 'filename' ] ) ) {
-		$sanitized_filename = sanitize_title_with_dashes( $booking_atts[ 'filename' ] );
-		if( $sanitized_filename ) { 
-			$filename = $sanitized_filename;
+	
+	// Add iCal specific args
+	if( $export_type === 'ical' ) {
+		$add_url_atts[ 'vevent_summary' ] = urlencode( utf8_encode( $export_settings[ 'vevent_summary' ] ) );
+		$add_url_atts[ 'vevent_description' ] = urlencode( utf8_encode( nl2br( $export_settings[ 'vevent_description' ] ) ) );
+		$booking_filters[ 'group_by' ] = $export_settings[ 'ical_export_groups' ] === 'groups' ? 'booking_group' : 'none';
+		if( array_diff_assoc( array_values( $default_settings[ 'ical_columns' ] ), $export_settings[ 'ical_columns' ] ) ) {
+			$add_url_atts[ 'columns' ] = $export_settings[ 'ical_columns' ];
 		}
 	}
+	
+	// Let third party plugins change the URL attributes
+	$url_atts = apply_filters( 'bookacti_export_bookings_url_attributes', array_merge( $add_url_atts, $booking_filters ), $export_type, $export_settings, array_merge( $default_fitlers, $default_settings ) );
 
-	// Add the required settings to the URL
-	$csv_url = home_url( '?action=bookacti_export_bookings&filename=' . $filename . '&key=' . $secret_key . '&lang=' . $lang );
-	if( $booking_atts ) {
-		$csv_url = add_query_arg( $booking_atts, $csv_url );
-	}
-	if( $columns ) {
-		$csv_url = add_query_arg( array( 'columns' => $columns ), $csv_url );
-		update_user_meta( get_current_user_id(), 'bookacti_bookings_export_default_columns', $columns );
-	}
-
-	bookacti_send_json( array( 'status' => 'success', 'url' => esc_url_raw( $csv_url ), 'message' => $message ), 'export_bookings_url' ); 
+	// Add the URL attributes
+	$export_url = home_url();
+	if( $url_atts )	{ $export_url = add_query_arg( $url_atts, $export_url ); }
+	
+	// Update settings
+	update_user_meta( $current_user_id, 'bookacti_bookings_export_settings', $export_settings );
+	
+	bookacti_send_json( array( 'status' => 'success', 'url' => esc_url_raw( $export_url ), 'message' => $message ), 'export_bookings_url' ); 
 }
-add_action( 'wp_ajax_bookactiBookingsExportCsvUrl', 'bookacti_controller_generate_bookings_export_csv_url' );
+add_action( 'wp_ajax_bookactiExportBookingsUrl', 'bookacti_controller_generate_export_bookings_url' );
 
 
 /**
  * Export booking list according to filters as CSV
  * @since 1.6.0
- * @version 1.7.13
+ * @version 1.8.0
  */
 function bookacti_export_bookings_page() {
 	if( empty( $_REQUEST[ 'action' ] ) || $_REQUEST[ 'action' ] !== 'bookacti_export_bookings' ) { return; }
-
+	
+	// Check the export type
+	$export_type = sanitize_title_with_dashes( $_REQUEST[ 'export_type' ] );
+	if( ! in_array( $export_type, array( 'csv', 'ical' ), true ) ) { return; }
+	
 	// Check the filename
 	$filename = ! empty( $_REQUEST[ 'filename' ] ) ? sanitize_title_with_dashes( $_REQUEST[ 'filename' ] ) : 'booking-activities-bookings';
 	if( ! $filename ) { esc_html_e( 'Invalid filename.', 'booking-activities' ); exit; }
-	if( substr( $filename, -4 ) !== '.csv' ) { $filename .= '.csv'; }
+		 if( $export_type === 'csv' && substr( $filename, -4 ) !== '.csv' ) { $filename .= '.csv'; }
+	else if( $export_type === 'ical' && substr( $filename, -4 ) !== '.ics' ) { $filename .= '.ics'; }
 
 	// Check if the secret key exists
 	$key = ! empty( $_REQUEST[ 'key' ] ) ? $_REQUEST[ 'key' ] : '';
@@ -944,32 +951,40 @@ function bookacti_export_bookings_page() {
 	// Restrict to allowed templates
 	$allowed_templates = array_keys( bookacti_fetch_templates( array(), false, $user->ID ) );
 	$filters[ 'templates' ] = empty( $_REQUEST[ 'templates' ] ) ? $allowed_templates : array_intersect( $allowed_templates, $_REQUEST[ 'templates' ] );
-
-	// Let third party plugins change the booking filters
-	$filters = apply_filters( 'bookacti_export_bookings_attributes', $filters );
-
-	// Format the columns
-	$all_columns = bookacti_get_bookings_export_columns();
+	
+	// Let third party plugins change the booking filters and the file headers
+	$filters = apply_filters( 'bookacti_export_bookings_filters', $filters, $export_type );
+	$headers = apply_filters( 'bookacti_export_bookings_headers', array(
+		'Content-type' => $export_type === 'ical' ? 'text/calendar' : 'text/csv',
+		'charset' => 'utf-8',
+		'Content-Disposition' => 'attachment',
+		'filename' => $filename,
+		'Cache-Control' => 'no-cache, must-revalidate',  // HTTP/1.1
+		'Expires' => 'Sat, 26 Jul 1997 05:00:00 GMT'  // Expired date to force third-party apps to refresh soon
+	), $export_type );
+	
+	header( 'Content-type: ' . $headers[ 'Content-type' ] . '; charset=' . $headers[ 'charset' ] );
+	header( 'Content-Disposition: ' . $headers[ 'Content-Disposition' ] . '; filename=' . $headers[ 'filename' ] );
+	header( 'Cache-Control: ' . $headers[ 'Cache-Control' ] );
+	header( 'Expires: ' . $headers[ 'Expires' ] );
+	
+	// Format the booking list columns
 	$columns = array();
 	if( ! empty( $_REQUEST[ 'columns' ] ) && is_array( $_REQUEST[ 'columns' ] ) ) {
+		$all_columns = bookacti_get_bookings_export_columns();
 		foreach( $_REQUEST[ 'columns' ] as $column_name ) {
-			if( ! isset( $all_columns[ $column_name ] ) ) { continue; }
-			$columns[] = $column_name;
+			if( isset( $all_columns[ $column_name ] ) ) { $columns[] = $column_name;; }
 		}
 	}
-	if( ! $columns ) {
-		$columns = bookacti_get_bookings_export_default_columns();
+	if( ! $columns ) { 
+		$user_settings = bookacti_get_bookings_export_settings();
+		if( ! empty( $user_settings[ $export_type . '_columns' ] ) ) { $columns = $user_settings[ $export_type . '_columns' ]; }
 	}
-
-	$columns = apply_filters( 'bookacti_export_bookings_columns', $columns );
-
-	header( 'Content-type: text/csv; charset=utf-8' );
-	header( 'Content-Disposition: attachment; filename=' . $filename );
-	header( 'Cache-Control: no-cache, must-revalidate' ); // HTTP/1.1
-	header( 'Expires: Sat, 26 Jul 1997 05:00:00 GMT' ); // Expired date to force third-party apps to refresh soon
-
-	echo bookacti_convert_bookings_to_csv( $filters, $columns );
-
+	
+	// Generate export according to type
+	if( $export_type === 'csv' )	{ echo bookacti_convert_bookings_to_csv( $filters, $columns ); }
+	if( $export_type === 'ical' )	{ echo bookacti_convert_bookings_to_ical( $filters, $columns ); }
+	
 	exit;
 }
 add_action( 'init', 'bookacti_export_bookings_page', 10 );

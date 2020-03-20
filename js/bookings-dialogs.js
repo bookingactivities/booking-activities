@@ -1096,9 +1096,14 @@ function bookacti_dialog_delete_booking( booking_id, booking_type ) {
 
 /**
  * Export bookings dialog
- * @since 1.8.0 (was bookacti_dialog_export_bookings)
+ * @since 1.6.0
+ * @version 1.8.0
  */
-function bookacti_dialog_export_bookings_to_csv() {
+function bookacti_dialog_export_bookings() {
+	// Change the export type according to the selected tab
+	$j( '#bookacti-export-bookings-url-container' ).data( 'export-type', '' );
+	bookacti_change_export_type_according_to_active_tab();
+	
 	// Reset URL
 	$j( '#bookacti_export_bookings_url_secret' ).val( '' );
 	$j( '#bookacti-export-bookings-url-container' ).hide();
@@ -1110,9 +1115,9 @@ function bookacti_dialog_export_bookings_to_csv() {
 	$j( '#bookacti-export-bookings-dialog' ).dialog( 'option', 'buttons',
 		// OK button   
 		[{
-			'text': bookacti_localized.dialog_button_ok,			
+			'text': bookacti_localized.dialog_button_generate_link,			
 			'click': function() { 
-				bookacti_generate_bookings_export_csv_url( false );
+				bookacti_generate_export_bookings_url( false );
 			}
 		},
 		// Reset the address
@@ -1120,7 +1125,7 @@ function bookacti_dialog_export_bookings_to_csv() {
 			'text': bookacti_localized.dialog_button_reset,
 			'class': 'bookacti-dialog-delete-button bookacti-dialog-left-button',
 			'click': function() { 
-				bookacti_generate_bookings_export_csv_url( true );
+				bookacti_generate_export_bookings_url( true );
 			}
 		}]
     );
@@ -1132,10 +1137,11 @@ function bookacti_dialog_export_bookings_to_csv() {
 
 /**
  * Generate the URL to export bookings
- * @since 1.8.0 (was bookacti_generate_export_bookings_url)
+ * @since 1.6.0
+ * @version 1.8.0
  * @param {string} reset_key
  */
-function bookacti_generate_bookings_export_csv_url( reset_key ) {
+function bookacti_generate_export_bookings_url( reset_key ) {
 	reset_key = reset_key || false;
 	
 	// Reset error notices
@@ -1153,7 +1159,7 @@ function bookacti_generate_bookings_export_csv_url( reset_key ) {
 	
 	// Get current filters and export settings
 	var data = $j( '#bookacti-export-bookings-form' ).serializeObject();
-	data.action = 'bookactiBookingsExportCsvUrl';
+	data.action = 'bookactiExportBookingsUrl';
 	data.reset_key = reset_key ? 1 : 0;
 	data.booking_filters = $j( '#bookacti-booking-list-filters-form' ).serializeObject();
 	
@@ -1169,6 +1175,7 @@ function bookacti_generate_bookings_export_csv_url( reset_key ) {
 				$j( '#bookacti_export_bookings_url_secret' ).val( response.url );
 				$j( '#bookacti-export-bookings-dialog' ).append( '<div class="bookacti-notices"><ul class="bookacti-success-list"><li>' + response.message + '</li></ul></div>' ).show();
 				
+				$j( '#bookacti-export-bookings-url-container' ).data( 'export-type', data.export_type );
 				$j( '#bookacti-export-bookings-url-container' ).show();
 				
 				$j( '#bookacti-form-editor' ).trigger( 'bookacti_export_bookings_url', [ response ] );

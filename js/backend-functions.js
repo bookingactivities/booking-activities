@@ -1,28 +1,44 @@
 $j( document ).ready( function() { 
-	// Update multilangual fields with Qtranslate X
+	/**
+	 * Update multilangual fields with Qtranslate X - on keyup
+	 */
 	$j( '.qtranxs-translatable' ).on( 'keyup', function() {
 		bookacti_update_qtx_field( this );
 	});
 	
-	// Tabs
+	
+	/**
+	 * Init tabs
+	 */
 	$j( '.bookacti-tabs' ).tabs();
 	
-	// Show/hide Advanced options
+	
+	/**
+	 * Toggle Advanced options on click - on click
+	 */
 	$j( '.bookacti-show-hide-advanced-options' ).on( 'click', function( e ){
 		bookacti_show_hide_advanced_options( $j( this ) );
 	});
 	
-	// Switch selectbox to multiple
+	
+	/**
+	 * Switch selectbox to multiple - on change
+	 */
 	$j( 'body' ).on( 'change', '.bookacti-multiple-select-container .bookacti-multiple-select', function(){
 		bookacti_switch_select_to_multiple( this );
 	});
 	
 	
-	// Tooltip
+	/**
+	 * Init tooltip
+	 */
 	bookacti_init_tooltip();
 	
-	// Dismiss notices
-	$j( '#bookacti-dismiss-5stars-rating' ).on( 'click', function(){ bookacti_dismiss_5stars_rating_notice(); });
+	
+	/**
+	 * Dismiss notices - on click
+	 */
+	$j( '#bookacti-dismiss-5stars-rating' ).on( 'click', function() { bookacti_dismiss_5stars_rating_notice(); } );
 	
 	
 	/**
@@ -59,14 +75,35 @@ $j( document ).ready( function() {
 });
 
 
+/**
+ * Toggle advanced options
+ * @version 1.8.0
+ * @param {dom_element} button
+ */
 function bookacti_show_hide_advanced_options( button ) {
-	button.closest( 'form' ).find( '.bookacti-hidden-field' ).toggle();
+	// Find toggle elements
+	var toogled_id = button.attr( 'for' );
+	var toggled_elements = button.closest( 'form' ).find( '.bookacti-hidden-field' );
+	if( toogled_id && $j( '#' + toogled_id ).length ) { toggled_elements = $j( '#' + toogled_id ); }
+	
 	button.toggleClass( 'bookacti-show-advanced-options bookacti-hide-advanced-options' );
-	if( button.hasClass( 'bookacti-show-advanced-options' ) )		{ button.html( button.data( 'show-title' ) ); }
-	else if( button.hasClass( 'bookacti-hide-advanced-options' ) )	{ button.html( button.data( 'hide-title' ) ); }
+	if( button.hasClass( 'bookacti-show-advanced-options' ) ) { 
+		button.html( button.data( 'show-title' ) );
+		toggled_elements.hide( 200, function() {
+			if( button.closest( 'fieldset' ).length ) { button.closest( 'fieldset' ).addClass( 'bookacti-fieldset-no-css' ); }
+		});
+	}
+	else if( button.hasClass( 'bookacti-hide-advanced-options' ) ) { 
+		button.html( button.data( 'hide-title' ) );
+		if( button.closest( 'fieldset' ).length ) { button.closest( 'fieldset' ).removeClass( 'bookacti-fieldset-no-css' ); }
+		toggled_elements.show( 200 );
+	}
 }
 
-// Init Add / Remove items boxes
+
+/**
+ * Init Add / Remove items boxes
+ */
 function bookacti_init_add_and_remove_items() {
 	// Add a item to the items list
 	$j( '.bookacti-items-container' ).on( 'click', '.bookacti-add-items', function( e ){
@@ -375,7 +412,10 @@ function bookacti_show_hide_template_related_options( template_ids, options ) {
 }
 
 
-// Update multilangual fields with qtranslate X
+/**
+ * Update multilangual fields with qtranslate X
+ * @param {dom_element} field
+ */
 function bookacti_update_qtx_field( field ){
 	if( typeof qTranslateConfig !== 'undefined' ) {
 		var qtx = qTranslateConfig.js.get_qtx();
@@ -388,8 +428,12 @@ function bookacti_update_qtx_field( field ){
 	}
 }
 
-// Refresh multilingual field to make a correct display 
-//( '[:en]Hello[:fr]Bonjour[:]' become 'Hello' and 'Bonjour' each in its own switchable field (with the LSB) )
+
+/**
+ * Refresh multilingual field to make a correct display 
+ * E.g.: '[:en]Hello[:fr]Bonjour[:]' become 'Hello' and 'Bonjour' each in its own switchable field (with the LSB)
+ * @param {dom_element} field
+ */
 function bookacti_refresh_qtx_field( field ){
 	if( typeof qTranslateConfig !== 'undefined' ) {
 		var qtx = qTranslateConfig.js.get_qtx();

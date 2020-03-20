@@ -184,7 +184,8 @@ tr.bookacti-booking-list-selected-row								{ background-color: rgba( 65, 143, 
 
 
 /** DIALOGS **/
-.bookacti-dialog { font-family: "Open Sans",sans-serif !important; font-size: 1em !important; overflow: visible !important; }
+.bookacti-dialog,
+.bookacti-dialog .ui-dialog-content { overflow: visible !important; }
 .bookacti-dialog ~ .ui-widget-overlay { 
     position: fixed;
     top: 0; 

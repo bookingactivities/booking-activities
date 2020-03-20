@@ -411,6 +411,7 @@ function bookacti_get_js_variables() {
 			'is_qtranslate'						=> bookacti_get_translation_plugin() === 'qtranslate',
 			'create_new'						=> esc_html__( 'Create new', 'booking-activities' ),
 			'edit_id'							=> esc_html_x( 'id', 'An id is a unique identification number', 'booking-activities' ),
+			'dialog_button_generate_link'		=> esc_html__( 'Generate export link', 'booking-activities' ),
 			'dialog_button_reset'				=> esc_html__( 'Reset', 'booking-activities' ),
 			'dialog_button_delete'				=> esc_html__( 'Delete', 'booking-activities' ),
 			'error_time_format'			        => esc_html__( 'The time format should be HH:mm where "HH" represents hours and "mm" minutes.', 'booking-activities' ),
@@ -804,6 +805,7 @@ function bookacti_convert_wp_locale_to_fc_locale( $wp_locale = false ) {
 
 
 // FORMS
+
 /**
  * Display fields
  * @since 1.5.0
@@ -811,7 +813,6 @@ function bookacti_convert_wp_locale_to_fc_locale( $wp_locale = false ) {
  * @param array $args
  */
 function bookacti_display_fields( $fields, $args = array() ) {
-
 	if( empty( $fields ) || ! is_array( $fields ) )	{ return; }
 
 	// Format parameters
@@ -826,26 +827,31 @@ function bookacti_display_fields( $fields, $args = array() ) {
 		$field[ 'name' ]	= ! empty( $args[ 'prefix' ] ) ? $args[ 'prefix' ] . '[' . $field_name . ']' : $field[ 'name' ];
 		$field[ 'id' ]		= empty( $field[ 'id' ] ) ? 'bookacti-' . $field_name : $field[ 'id' ];
 		$field[ 'hidden' ]	= in_array( $field_name, $args[ 'hidden' ], true ) ? 1 : 0;
-
+		
+		$wrap_class = '';
+		if( ! empty( $field[ 'hidden' ] ) )			{ $wrap_class .= 'bookacti-hidden-field'; } 
+		if( $field[ 'type' ] === 'select_items' )	{ $wrap_class .= 'bookacti-items-container'; } 
+		
 		// If custom type, call another function to display this field
 		if( $field[ 'type' ] === 'custom' ) {
 			do_action( 'bookacti_display_custom_field', $field, $field_name );
 			continue;
 		}
+		
 		// Else, display standard field
-	?>
-		<div class='bookacti-field-container <?php if( ! empty( $field[ 'hidden' ] ) ) { echo 'bookacti-hidden-field'; } ?>' id='<?php echo $field[ 'id' ] . '-container'; ?>'>
-		<?php 
-		// Display field title
-		if( ! empty( $field[ 'title' ] ) ) { 
 		?>
-			<label for='<?php echo esc_attr( sanitize_title_with_dashes( $field[ 'id' ] ) ); ?>' class='<?php if( $field[ 'type' ] === 'checkboxes' ) { echo 'bookacti-fullwidth-label'; } ?>' >
-			<?php 
-				echo $field[ 'title' ];
-				if( $field[ 'type' ] === 'checkboxes' ) { bookacti_help_tip( $field[ 'tip' ] ); unset( $field[ 'tip' ] ); }
+		<div class='bookacti-field-container <?php echo $wrap_class; ?>' id='<?php echo $field[ 'id' ] . '-container'; ?>'>
+		<?php 
+			// Display field title
+			if( ! empty( $field[ 'title' ] ) ) { 
+				$fullwidth = ! empty( $field[ 'fullwidth' ] ) || in_array( $field[ 'type' ], array( 'checkboxes', 'select_items', 'editor' ), true );
 			?>
-			</label>
-		<?php } 
+				<label for='<?php echo esc_attr( sanitize_title_with_dashes( $field[ 'id' ] ) ); ?>' class='<?php if( $fullwidth ) { echo 'bookacti-fullwidth-label'; } ?>'>
+					<?php echo $field[ 'title' ]; if( $fullwidth ) { bookacti_help_tip( $field[ 'tip' ] ); unset( $field[ 'tip' ] ); } ?>
+				</label>
+			<?php
+			}
+			
 			// Display field
 			bookacti_display_field( $field ); 
 		?>
@@ -858,13 +864,11 @@ function bookacti_display_fields( $fields, $args = array() ) {
 /**
  * Display various fields
  * @since 1.2.0
- * @version 1.7.10
+ * @version 1.8.0
  * @param array $args ['type', 'name', 'label', 'id', 'class', 'placeholder', 'options', 'attr', 'value', 'tip', 'required']
  */
 function bookacti_display_field( $args ) {
-
 	$args = bookacti_format_field_args( $args );
-
 	if( ! $args ) { return; }
 
 	// Display field according to type
@@ -1044,6 +1048,34 @@ function bookacti_display_field( $args ) {
 	<?php
 		}
 	}
+	
+	// SELECT ITEMS
+	else if( $args[ 'type' ] === 'select_items' ) { ?>
+		<div class='bookacti-add-items-container'>
+			<select id='<?php echo $args[ 'id' ]; ?>-add-selectbox' class='bookacti-add-new-items-select-box' >
+			<?php 
+			$selected_values = array_flip( $args[ 'value' ] );
+			foreach( $args[ 'options' ] as $value => $label ) { 
+				$disabled = isset( $selected_values[ $value ] ) ? 'disabled style="display:none;"' : '';
+			?>
+				<option value='<?php echo esc_attr( $value ); ?>' <?php echo $disabled; ?>><?php echo esc_html( $label ); ?></option>
+			<?php } ?>
+			</select>
+			<button type='button' id='<?php echo $args[ 'id' ]; ?>-add-button' class='bookacti-add-items' ><?php esc_html_e( 'Add', 'booking-activities' ); ?></button>
+		</div>
+		<div class='bookacti-items-list-container' >
+			<select name='<?php echo $args[ 'name' ]; ?>' id='<?php echo $args[ 'id' ]; ?>-selectbox' class='bookacti-items-select-box' multiple>
+				<?php 
+				foreach( $args[ 'value' ] as $value ) {
+					$label = ! empty( $args[ 'options' ][ $value ] ) ? $args[ 'options' ][ $value ] : $value;
+				?>
+					<option value='<?php echo $value ?>' title='<?php echo htmlentities( esc_attr( $label ), ENT_QUOTES ); ?>'><?php echo esc_html( $label ); ?></option>
+				<?php } ?>
+			</select>
+			<button type='button' id='<?php echo $args[ 'id' ]; ?>-remove-button' class='bookacti-remove-items' ><?php esc_html_e( 'Remove selected', 'booking-activities' ); ?></button>
+		</div>
+	<?php
+	}
 
 	// TINYMCE editor
 	else if( $args[ 'type' ] === 'editor' ) {
@@ -1054,7 +1086,6 @@ function bookacti_display_field( $args ) {
 	else if( $args[ 'type' ] === 'user_id' ) {
 		bookacti_display_user_selectbox( $args[ 'options' ] );
 	}
-
 
 	// Display the tip
 	if( $args[ 'tip' ] ) {
@@ -1067,12 +1098,11 @@ function bookacti_display_field( $args ) {
  * Format arguments to diplay a proper field
  * 
  * @since 1.2.0
- * @version 1.5.4
+ * @version 1.8.0
  * @param array $args ['type', 'name', 'label', 'id', 'class', 'placeholder', 'options', 'attr', 'value', 'multiple', 'tip', 'required']
  * @return array|false
  */
 function bookacti_format_field_args( $args ) {
-
 	// If $args is not an array, return
 	if( ! is_array( $args ) ) { return false; }
 
@@ -1080,7 +1110,7 @@ function bookacti_format_field_args( $args ) {
 	if( ! isset( $args[ 'type' ] ) || ! isset( $args[ 'name' ] ) ) { return false; }
 
 	// If field type is not supported, return
-	if( ! in_array( $args[ 'type' ], array( 'text', 'hidden', 'email', 'tel', 'date', 'time', 'password', 'number', 'checkbox', 'checkboxes', 'select', 'radio', 'textarea', 'file', 'editor', 'user_id' ) ) ) { 
+	if( ! in_array( $args[ 'type' ], array( 'text', 'hidden', 'email', 'tel', 'date', 'time', 'password', 'number', 'checkbox', 'checkboxes', 'select', 'select_items', 'radio', 'textarea', 'file', 'editor', 'user_id' ) ) ) { 
 		return false; 
 	}
 
@@ -1124,19 +1154,16 @@ function bookacti_format_field_args( $args ) {
 	}
 
 	// If multiple, make sure name has brackets and value is an array
+	if( $args[ 'type' ] === 'select_items' ) { $args[ 'multiple' ] = 1; }
 	if( in_array( $args[ 'multiple' ], array( 'true', true, '1', 1 ), true ) ) {
-		if( strpos( '[]', $args[ 'name' ] ) === false ) {
-			$args[ 'name' ]	.= '[]';
-		}
+		if( strpos( '[]', $args[ 'name' ] ) === false ) { $args[ 'name' ] .= '[]'; }
 	} else if( $args[ 'multiple' ] && $args[ 'type' ] === 'select' ) {
 		$args[ 'multiple' ] = 'maybe';
 	}
 
 	// Make sure checkboxes have their value as an array
 	if( $args[ 'type' ] === 'checkboxes' || ( $args[ 'multiple' ] && $args[ 'type' ] !== 'file' ) ){
-		if( ! is_array( $args[ 'value' ] ) ) { 
-			$args[ 'value' ] = array( $args[ 'value' ] );
-		}
+		if( ! is_array( $args[ 'value' ] ) ) { $args[ 'value' ] = array( $args[ 'value' ] ); }
 	}
 
 	// Make sure 'number' has min and max
@@ -1151,6 +1178,7 @@ function bookacti_format_field_args( $args ) {
 		if( ! is_array( $args[ 'options' ] ) ) { $args[ 'options' ] = array(); }
 		$args[ 'options' ][ 'textarea_name' ]	= $args[ 'name' ];
 		$args[ 'options' ][ 'editor_class' ]	= $args[ 'class' ];
+		$args[ 'options' ][ 'editor_height' ]	= ! empty( $args[ 'height' ] ) ? intval( $args[ 'class' ] ) : 120;
 	}
 
 	return $args;

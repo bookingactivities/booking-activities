@@ -700,13 +700,12 @@ if( ! class_exists( 'Bookings_List_Table' ) ) {
 		 * Get an associative array ( option_name => option_title ) with the list
 		 * of bulk actions available on this table.
 		 * @since 1.6.0
-		 * @version 1.8.0
+		 * @version 1.7.0
 		 * @return array
 		 */
 		protected function get_bulk_actions() {
 			return apply_filters( 'bookacti_booking_list_bulk_actions', array(
-				'export_csv'	=> esc_html_x( 'Export .csv', 'action', 'booking-activities' ),
-				'export_ical'	=> esc_html_x( 'Export .ical', 'action', 'booking-activities' )
+				'export' => esc_html_x( 'Export', 'action', 'booking-activities' )
 			) );
 		}
 		

@@ -4,7 +4,9 @@ $j( document ).ready( function() {
 });
 
 
-// Detect if the device used is touch-sensitive
+/**
+ * Detect if the device used is touch-sensitive
+ */
 window.addEventListener( 'touchstart', function bookacti_detect_touch_device() {
     bookacti.is_touch_device = true;
     // Remove event listener once fired, otherwise it'll kill scrolling
@@ -66,23 +68,34 @@ function bookacti_scroll_to( element, speed, position ) {
 }
 
 
-// Add 0 before a number until it has *max* digits
+/**
+ * Add 0 before a number until it has *max* digits
+ * @param {String} str
+ * @param {int} max
+ * @returns {String}
+ */
 function bookacti_pad( str, max ) {
   str = str.toString();
-  return str.length < max ? bookacti_pad( "0" + str, max ) : str;
+  return str.length < max ? bookacti_pad( '0' + str, max ) : str;
 }
 
 
-// Compare two arrays and tell if they are the same
+/**
+ * Compare two arrays and tell if they are the same
+ * @version 1.8.0
+ * @param {array} array1
+ * @param {array} array2
+ * @returns {Boolean}
+ */
 function bookacti_compare_arrays( array1, array2 ) {
-	
-	var are_same = $j( array1 ).not( array2 ).length === 0 && $j( array2 ).not( array1 ).length === 0;
-	
-	return are_same;
+	return $j( array1 ).not( array2 ).length === 0 && $j( array2 ).not( array1 ).length === 0;
 }
 
 
-// Serialize a form into a single object (works with multidimentionnal inputs of any depth)
+/**
+ * Serialize a form into a single object (works with multidimentionnal inputs of any depth)
+ * @returns {object}
+ */
 $j.fn.serializeObject = function() {
 	var data = {};
 

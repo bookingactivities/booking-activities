@@ -419,6 +419,7 @@ function bookacti_fill_notification_settings_page( $notification_id ) {
 							'type'	=> 'editor',
 							'name'	=> 'bookacti_notification[email][message]',
 							'id'	=> 'bookacti_notification_' . $notification_id . '_email_message',
+							'height'=> 470,
 							'value'	=> $notification_settings[ 'email' ][ 'message' ] ? $notification_settings[ 'email' ][ 'message' ] : ''
 						);
 						bookacti_display_field( $args );

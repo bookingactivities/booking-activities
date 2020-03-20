@@ -1001,7 +1001,7 @@ foreach( $fields_data as $field_name => $field_data ) {
 			</p>
 			<p class='bookacti-warning'>
 				<span class='dashicons dashicons-warning'></span>
-				<small>
+				<span><small>
 					<?php 
 						esc_html_e( 'This link provides real-time data. However, some apps may synchronize only every 24h, or more.', 'booking-activities' ); 
 						echo ' ';
@@ -1011,17 +1011,17 @@ foreach( $fields_data as $field_name => $field_data ) {
 						esc_html_e( 'That\'s why your changes won\'t be applied in real time on your synched apps.', 'booking-activities' ); 
 					?>
 					</strong>
-				</small>
+				</small></span>
 			</p>
 			<p class='bookacti-warning'>
 				<span class='dashicons dashicons-warning'></span>
-				<small>
+				<span><small>
 					<?php 
 						esc_html_e( 'Only share this address with those you trust to see all your events details.', 'booking-activities' );
 						echo ' ';
 						esc_html_e( 'You can reset your secret key with the "Reset" button below. This will nullify the previously generated export links.', 'booking-activities' );
 					?>
-				</small>
+				</small></span>
 			</p>
 		</div>
 	</form>
