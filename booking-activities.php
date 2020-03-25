@@ -51,18 +51,22 @@ esc_html__( 'Booking system specialized in activities (sports, cultural, leisure
 // INCLUDE LANGUAGES FILES
 
 /**
- * Load or reload Booking Activities translations
- * @version 1.7.8
+ * Load or reload Booking Activities language files
+ * @version 1.8.0
  */
 function bookacti_load_textdomain() { 
-	$locale = is_admin() && function_exists( 'get_user_locale' ) ? get_user_locale() : get_locale();
+	$locale = function_exists( 'determine_locale' ) ? determine_locale() : ( is_admin() && function_exists( 'get_user_locale' ) ? get_user_locale() : get_locale() );
 	$locale = apply_filters( 'plugin_locale', $locale, 'booking-activities' );
 	
 	unload_textdomain( 'booking-activities' );
-	load_textdomain( 'booking-activities', WP_LANG_DIR . '/' . BOOKACTI_PLUGIN_NAME . '/' . BOOKACTI_PLUGIN_NAME . '-' . $locale . '.mo' );
+	// Load .mo from wp-content/languages/booking-activities/
+	load_textdomain( 'booking-activities', WP_LANG_DIR . '/booking-activities/booking-activities-' . $locale . '.mo' );
+	// Load .mo from wp-content/languages/plugins/
+	// Fallback on .mo from wp-content/plugins/booking-activities/languages
 	load_plugin_textdomain( 'booking-activities', false, plugin_basename( dirname( __FILE__ ) ) . '/languages/' ); 
 }
 add_action( 'plugins_loaded', 'bookacti_load_textdomain' );
+add_action( 'bookacti_locale_switched', 'bookacti_load_textdomain' );
 
 
 

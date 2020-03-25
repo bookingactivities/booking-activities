@@ -229,6 +229,15 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 					'value'		=> $args[ 'user_settings' ][ 'csv_columns' ],
 					'tip'		=> esc_html__( 'Add the columns you want to export in the order they will be displayed.', 'booking-activities' )
 				),
+				'csv_raw' => array(
+					'type'		=> 'checkbox',
+					'name'		=> 'csv_raw',
+					'title'		=> esc_html__( 'Raw data', 'booking-activities' ),
+					'id'		=> 'bookacti-csv-raw',
+					'options'	=> $args[ 'csv_raw' ],
+					'value'		=> $args[ 'user_settings' ][ 'csv_raw' ],
+					'tip'		=> esc_html__( 'Display raw data (easy to manipulate), as opposed to formatted data (user-friendly).', 'booking-activities' )
+				),
 				'csv_export_groups' => array(
 					'type'		=> 'select',
 					'name'		=> 'csv_export_groups',
@@ -266,7 +275,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 				<span class='dashicons dashicons-info'></span>
 				<span><?php echo '<strong>' . esc_html__( 'Types of use:', 'booking-activities' ) . '</strong> Google Calendar (' . implode( ', ', array( $gcal_import_ical, $gcal_sync_ical ) ) . '), Outlook.com (' . $outlook_com_ical . '), MS Outlook (' . $outlook_ms_ical . ')...'; ?></span>
 			</div>
-		
+			
 			<?php
 			$ical_fields = apply_filters( 'bookacti_export_bookings_ical_fields', array(
 				'vevent_summary' => array(
@@ -279,16 +288,21 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 					'tip'		=> esc_html__( 'The title of the exported events, use the tags to display event data.', 'booking-activities' )
 				),
 				'vevent_description' => array(
-					'type'	=> 'editor',
-					'name'	=> 'vevent_description',
-					'title'	=> esc_html__( 'Event description', 'booking-activities' ),
-					'id'	=> 'bookacti-vevent-description',
-					'value'	=> $args[ 'user_settings' ][ 'vevent_description' ],
-					'tip'	=> esc_html__( 'The description of the exported events, use the tags to display event data.', 'booking-activities' )
+					'type'		=> 'editor',
+					'name'		=> 'vevent_description',
+					'title'		=> esc_html__( 'Event description', 'booking-activities' ),
+					'fullwidth'	=> 1,
+					'id'		=> 'bookacti-vevent-description',
+					'value'		=> $args[ 'user_settings' ][ 'vevent_description' ],
+					'tip'		=> esc_html__( 'The description of the exported events, use the tags to display event data.', 'booking-activities' )
 				)
 			), $args );
 			bookacti_display_fields( $ical_fields );
 			?>
+			<div class='bookacti-warning'>
+				<span class='dashicons dashicons-warning'></span>
+				<span><?php esc_html_e( 'HTML may not be supported by your calendar app.', 'booking-activities' ); ?></span>
+			</div>
 			<fieldset id='booakcti-ical-tags-container' class='bookacti-fieldset-no-css'>
 				<legend class='bookacti-fullwidth-label'>
 					<?php 
@@ -315,7 +329,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			<fieldset id='booakcti-ical-booking-list-fields-container' class='bookacti-fieldset-no-css'>
 				<legend class='bookacti-fullwidth-label'>
 					<?php 
-						esc_html_e( '{booking_list} tag settings', 'booking-activities' ); 
+						esc_html_e( 'Booking list tags settings', 'booking-activities' ); 
 						bookacti_help_tip( esc_html__( 'Configure the booking list display on the exported events.', 'booking-activities' ) );
 					?>
 					<span class='bookacti-show-hide-advanced-options bookacti-show-advanced-options' for='booakcti-ical-booking-list-fields' data-show-title='<?php esc_html_e( 'show', 'booking-activities' ); ?>' data-hide-title='<?php esc_html_e( 'hide', 'booking-activities' ); ?>'><?php esc_html_e( 'show', 'booking-activities' ); ?></span>
@@ -323,7 +337,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 				<div id='booakcti-ical-booking-list-fields' class='bookacti-fieldset-toggled' style='display:none;'>
 					<div class='bookacti-info' style='margin-bottom:10px;'>
 						<span class='dashicons dashicons-info'></span>
-						<span><?php esc_html_e( 'These settings are used for the {booking_list} and {booking_list_csv} tags only.', '' ); ?></span>
+						<span><?php esc_html_e( 'These settings are used for the {booking_list} and {booking_list_raw} tags only.', 'booking-activities' ); ?></span>
 					</div>
 				<?php 
 					$ical_booking_list_fields = apply_filters( 'bookacti_export_bookings_ical_booking_list_fields', array(
@@ -334,19 +348,25 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 							'id'		=> 'bookacti-ical-booking-list-columns',
 							'options'	=> $args[ 'export_columns' ],
 							'value'		=> $args[ 'user_settings' ][ 'ical_columns' ],
-							'tip'		=> esc_html__( 'Add the columns in the order you want them to appear when using the {booking_list} or {booking_list_csv} tags.', 'booking-activities' )
+							'tip'		=> esc_html__( 'Add the columns in the order you want them to appear when using the {booking_list} or {booking_list_raw} tags.', 'booking-activities' )
 						),
-						'ical_export_groups' => array(
-							'type'		=> 'select',
-							'name'		=> 'ical_export_groups',
-							'title'		=> esc_html__( 'How to display the groups?', 'booking-activities' ),
-							'id'		=> 'bookacti-select-export-groups',
-							'options'	=> array(
-								'groups' => esc_html__( 'One single row per group', 'booking-activities' ),
-								'bookings' => esc_html__( 'One row for each booking of the group', 'booking-activities' )
-							),
-							'value'		=> $args[ 'user_settings' ][ 'ical_export_groups' ],
-							'tip'		=> esc_html__( 'Choose how to display the grouped bookings. Do you want to display all the bookings of the group, or only the group as a single row?', 'booking-activities' )
+						'ical_raw' => array(
+							'type'		=> 'checkbox',
+							'name'		=> 'ical_raw',
+							'title'		=> esc_html__( 'Raw data', 'booking-activities' ),
+							'id'		=> 'bookacti-ical-raw',
+							'options'	=> $args[ 'ical_raw' ],
+							'value'		=> $args[ 'user_settings' ][ 'ical_raw' ],
+							'tip'		=> esc_html__( 'Display raw data (easy to manipulate), as opposed to formatted data (user-friendly).', 'booking-activities' )
+						),
+						'ical_booking_list_header' => array(
+							'type'		=> 'checkbox',
+							'name'		=> 'ical_booking_list_header',
+							'title'		=> esc_html__( 'Show columns\' title', 'booking-activities' ),
+							'id'		=> 'bookacti-ical-booking-list-header',
+							'options'	=> $args[ 'ical_booking_list_header' ],
+							'value'		=> $args[ 'user_settings' ][ 'ical_booking_list_header' ],
+							'tip'		=> esc_html__( 'Display the columns\' title in the first row of the booking list.', 'booking-activities' )
 						)
 					), $args );
 					bookacti_display_fields( $ical_booking_list_fields );
@@ -358,7 +378,6 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		}
 		
 		// Display global export fields
-		$per_page = intval( get_user_meta( get_current_user_id(), 'bookacti_bookings_per_page', true ) );
 		$export_fields = apply_filters( 'bookacti_export_bookings_dialog_fields', array(
 			'per_page' => array(
 				'type'	=> 'number',

@@ -4,6 +4,7 @@ $j( document ).ready( function() {
 	 */
 	bookacti_init_bookings_dialogs();
 	
+	
 	/**
 	 * Init booking actions
 	 */
@@ -17,18 +18,37 @@ $j( document ).ready( function() {
 		 * @version 1.8.0
 		 */
 		bookacti_init_booking_bulk_actions();
-		
-		
-		/**
-		 * Open export link in a new tab to generate and download the exported file
-		 * @since 1.6.0
-		 * @version 1.8.0
-		 */
-		$j( '.bookacti_export_button input[type="button"]' ).on( 'click', function() {
-			var url = $j( this ).closest( '.bookacti_export_url' ).find( '.bookacti_export_url_field input' ).val();
-			if( url ) { window.open( url, '_blank' ); }
-		});
 	}
+	
+	
+	/**
+	 * Open export bookings dialog - on click
+	 * @since 1.6.0
+	 * @version 1.8.0
+	 */
+	$j( '.bookacti-export-bookings-button' ).on( 'click', function() {
+		bookacti_dialog_export_bookings();
+	});
+	
+	
+	/**
+	 * Open export link in a new tab to generate and download the exported file
+	 * @since 1.6.0
+	 * @version 1.8.0
+	 */
+	$j( '.bookacti_export_button input[type="button"]' ).on( 'click', function() {
+		var url = $j( this ).closest( '.bookacti_export_url' ).find( '.bookacti_export_url_field input' ).val();
+		if( url ) { window.open( url, '_blank' ); }
+	});
+	
+	
+	/**
+	 * Change the export type according to the selected tab
+	 * @since 1.8.0
+	 */
+	$j( '#bookacti-export-bookings-dialog' ).on( 'tabsactivate', '.bookacti-tabs', function( e, ui ) {
+		bookacti_change_export_type_according_to_active_tab();
+	});
 });
 
 
@@ -114,7 +134,7 @@ function bookacti_dialog_update_bookings_calendar_settings() {
 							bookacti_reload_booking_system( booking_system, true );
 							
 							// Change the AJAX value
-							$j( '#bookacti-submit-filter-container' ).attr( 'data-ajax', response.calendar_settings.ajax ).data( 'ajax', response.calendar_settings.ajax );
+							$j( '#bookacti-submit-filter-button' ).attr( 'data-ajax', response.calendar_settings.ajax ).data( 'ajax', response.calendar_settings.ajax );
 							
 							// Close the modal dialog
 							$j( '#bookacti-bookings-calendar-settings-dialog' ).dialog( 'close' );

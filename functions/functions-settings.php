@@ -58,31 +58,32 @@ function bookacti_delete_settings() {
 
 /**
  * Get setting value
- * @version 1.7.16
+ * @version 1.8.0
  * @param string $setting_group
  * @param string $setting_name
- * @param boolean $translate
+ * @param boolean $raw
  * @return mixed
  */
-function bookacti_get_setting_value( $setting_group, $setting_name, $translate = true ) {
-	$settings = get_option( $setting_group );
+function bookacti_get_setting_value( $setting_group, $setting_name, $raw = false ) {
+	$alloptions = wp_load_alloptions(); // get_option() calls wp_load_alloptions() itself, so there is no overhead at runtime 
+	$settings = isset( $alloptions[ $setting_group ] ) ? maybe_unserialize( $alloptions[ $setting_group ] ) : array();
 	
 	if( ! is_array( $settings ) ) { $settings = array(); }
 	
 	if( ! isset( $settings[ $setting_name ] ) ) {
 		$default = bookacti_get_default_settings();
 		if( isset( $default[ $setting_name ] ) ) {
-			$settings[ $setting_name ] = $default[ $setting_name ];
+			$settings[ $setting_name ] = maybe_unserialize( $default[ $setting_name ] );
 		} else {
 			$settings[ $setting_name ] = false;
 		}
 	}
 	
-	if( $translate && is_string( $settings[ $setting_name ] ) ) {
+	if( ! $raw && is_string( $settings[ $setting_name ] ) ) {
 		$settings[ $setting_name ] = apply_filters( 'bookacti_translate_text', $settings[ $setting_name ] );
 	}
 	
-	return apply_filters( 'bookacti_get_setting_value', $settings[ $setting_name ], $setting_group, $setting_name, $translate );
+	return apply_filters( 'bookacti_get_setting_value', $settings[ $setting_name ], $setting_group, $setting_name, $raw );
 }
 
 

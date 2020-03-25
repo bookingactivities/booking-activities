@@ -189,12 +189,13 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 					do_action( 'bookacti_after_booking_filters' );
 					$user_calendar_settings	= bookacti_format_bookings_calendar_settings( get_user_meta( get_current_user_id(), 'bookacti_bookings_calendar_settings', true ) );
 				?>
-				<div id='bookacti-submit-filter-container' class='bookacti-bookings-filter-container' data-ajax='<?php echo $user_calendar_settings[ 'ajax' ] ? 1 : 0; ?>'>
+				<div id='bookacti-actions-filter-container' class='bookacti-bookings-filter-container'>
 					<div class='bookacti-bookings-filter-title' >
-						<?php echo esc_html_x( 'Filter', 'verb', 'booking-activities' ); ?>
+						<?php esc_html_e( 'Actions', 'booking-activities' ); ?>
 					</div>
 					<div class='bookacti-bookings-filter-content' >
-						<input type='submit' class='button button-primary button-large' value='<?php esc_html_e( 'Apply filters', 'booking-activities' ); ?>' title='<?php esc_html_e( 'Apply filters', 'booking-activities' ); ?>' />
+						<input type='submit' class='button button-primary button-large' id='bookacti-submit-filter-button' value='<?php esc_html_e( 'Filter the list', 'booking-activities' ); ?>' title='<?php esc_html_e( 'Filter the list', 'booking-activities' ); ?>' data-ajax='<?php echo $user_calendar_settings[ 'ajax' ] ? 1 : 0; ?>'/>
+						<input type='button' class='button button-primary button-large bookacti-export-bookings-button' value='<?php esc_html_e( 'Export bookings', 'booking-activities' ); ?>' title='<?php esc_html_e( 'Export bookings', 'booking-activities' ); ?>'/>
 					</div>
 				</div>
 				<div id='bookacti-event-filter-container'>
@@ -240,7 +241,10 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 						<a class='button' id='bookacti-unpick-events-filter' title='<?php esc_html_e( 'Unpick events', 'booking-activities' ); ?>' <?php if( ! $has_event_picked ) { echo 'style="display:none;"'; } ?>>
 							<?php esc_html_e( 'Unpick events', 'booking-activities' ); ?>
 						</a>
-						<input type='submit' id='bookacti-picked-events-filter-submit' class='button button-primary button-large' value='<?php echo esc_html_x( 'Filter', 'verb', 'booking-activities' ); ?>' title='<?php echo esc_html_x( 'Filter', 'verb', 'booking-activities' ); ?>' <?php if( ! $has_event_picked ) { echo 'style="display:none;"'; } ?>/>
+						<span id='bookacti-picked-events-actions-container' <?php if( ! $has_event_picked ) { echo 'style="display:none;"'; } ?>>
+							<input type='submit' class='button button-primary button-large' value='<?php esc_html_e( 'Filter the list', 'booking-activities' ); ?>' title='<?php esc_html_e( 'Filter the list', 'booking-activities' ); ?>'/>
+							<input type='button' class='button button-primary button-large bookacti-export-bookings-button' value='<?php esc_html_e( 'Export bookings', 'booking-activities' ); ?>' title='<?php esc_html_e( 'Export bookings', 'booking-activities' ); ?>'/>
+						</span>
 					</div>
 				</div>
 				<div id='bookacti-booking-system-filter-container' <?php if( ! $has_event_picked && ! $user_calendar_settings[ 'show' ] ) { echo 'style="display:none;"'; } ?>>

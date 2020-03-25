@@ -8,25 +8,34 @@
 .bookacti-bookings-filter-container .button,
 .bookacti-bookings-filter-container textarea				{ width: 150px; }
 .bookacti-bookings-filter-title								{ font-weight: bold; line-height: 2.5em; }
-.bookacti-bookings-filter-content select[multiple]			{ height: 60px; box-sizing: border-box; padding: 0; margin: 0; }
+.bookacti-bookings-filter-content select[multiple]			{ height: 66px; box-sizing: border-box; padding: 0; margin: 0; }
 .bookacti-bookings-filter-content select[multiple] option	{ height: 22px; box-sizing: border-box; padding: 2px 4px; margin: 0; }
 
-#bookacti-event-filter-container		{ margin: 20px 0; }
-#bookacti-event-filter-container a		{ text-align: center; overflow: hidden; text-overflow: ellipsis; vertical-align: middle; height: 30px; }
-#bookacti-pick-event-filter-instruction	{ vertical-align: middle; }
-#bookacti-pick-event-filter::before		{ font-family: 'dashicons'; content: "\f508"; margin-right: 4px; font-size: 1.2em; vertical-align: top; position: relative; top: -2px; }
-#bookacti-bookings-calendar-settings	{ margin-left: 3px; vertical-align: text-bottom; cursor: pointer; color: #565d61; }
+#bookacti-event-filter-container			{ margin: 20px 0 0 0; }
+#bookacti-event-filter-container a			{ text-align: center; overflow: hidden; text-overflow: ellipsis; vertical-align: middle; height: 32px; line-height: 32px; }
+#bookacti-pick-event-filter-instruction		{ vertical-align: middle; }
+#bookacti-pick-event-filter::before			{ font-family: 'dashicons'; content: "\f508"; margin-right: 4px; font-size: 1.2em; vertical-align: top; position: relative; top: -1px; }
+#bookacti-bookings-calendar-settings		{ margin-left: 3px; vertical-align: text-bottom; cursor: pointer; color: #565d61; }
+#bookacti-picked-events-actions-container	{ vertical-align: middle; }
 
-#bookacti-submit-filter-container input	{ overflow: hidden; text-overflow: ellipsis; }
-.bookacti-submit-filter-centered		{ display: block; margin: 20px auto; }
-.bookacti-submit-filter-centered .bookacti-bookings-filter-title { display: none; }
+#bookacti-actions-filter-container input			{ display: block; margin-bottom: 2px; overflow: hidden; text-overflow: ellipsis; }
+#bookacti-actions-filter-container input:last-child	{ margin-bottom: 0; }
 
 label[for="bookacti-booking-filter-dates-from"],
 label[for="bookacti-booking-filter-dates-to"] { display: inline-block; width: 40px; max-width: 40px; }
-label[for="bookacti-booking-filter-dates-from"] + input#bookacti-booking-filter-dates-from,
-label[for="bookacti-booking-filter-dates-to"] + input#bookacti-booking-filter-dates-to { display: inline-block; width: 108px; max-width:108px; }
+#bookacti-booking-filter-dates-from, #bookacti-booking-filter-dates-to { min-height: 32px; }
+#bookacti-booking-filter-dates-from { margin-bottom: 2px; }
 
-.bookacti-booking-price-details-title { font-weight: 600; }
+/* IE */
+label[for="bookacti-booking-filter-dates-from"] + input#bookacti-booking-filter-dates-from,
+label[for="bookacti-booking-filter-dates-to"] + input#bookacti-booking-filter-dates-to { display: inline-block; width: 108px; max-width: 108px; }
+
+#bookacti-booking-filter-customer,
+#bookacti-booking-filter-customer + .select2 .select2-selection,
+#bookacti-booking-filter-customer + .select2 .select2-selection__rendered,
+#bookacti-booking-filter-customer + .select2 .select2-selection__arrow { min-height: 32px; line-height: 32px; }
+
+
 
 
 /** BOOKING SYSTEM **/
@@ -38,6 +47,9 @@ label[for="bookacti-booking-filter-dates-to"] + input#bookacti-booking-filter-da
 #bookacti-booking-system-bookings-page .bookacti-calendar .bookacti-available-places.bookacti-booked { background-color: rgba(255,128,0,0.4); }
 #bookacti-booking-system-reschedule-container,
 #bookacti-booking-system-reschedule-container .bookacti-booking-system-title { margin-bottom: 20px; }
+
+
+
 
 /** BOOKING LIST **/
 #bookacti-booking-list-container tr.hidden { display: none; }
@@ -160,6 +172,9 @@ a.bookacti-booking-action					{ display: inline-block; word-spacing: 0; margin: 
 .wp-core-ui .button.bookacti-booking-group-action,
 .wp-core-ui .button.bookacti-booking-action	{ margin: 5px 0; vertical-align: middle; }
 
+.bookacti-booking-price-details-title { font-weight: 600; }
+
+
 /* Shortcode Booking list */
 .bookacti-user-booking-list			{ width: 100%; margin-bottom: 20px; }
 .bookacti-user-booking-list table	{ width: 100%; background-color: rgba( 255,255,255,0.5 ); border: 1px solid rgba(0,0,0,.1); border-collapse: separate; border-radius: 5px; }
@@ -181,6 +196,8 @@ tr.bookacti-booking-list-selected-row								{ background-color: rgba( 65, 143, 
 .bookacti-user-booking-list .bookacti-private-value { font-style: italic; font-size: small; }
 .bookacti-user-booking-list .bookacti-private-value { font-style: italic; font-size: small; }
 .bookacti-user-booking-list .bookacti-empty-row		{ display: none; }
+
+
 
 
 /** DIALOGS **/

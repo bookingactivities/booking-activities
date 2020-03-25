@@ -595,20 +595,19 @@ add_filter( 'bookacti_booking_list_items', 'bookacti_add_wc_data_to_booking_list
 /**
  * Fill WC bookings export columns
  * @since 1.6.0
- * @version 1.7.4
+ * @version 1.8.0
  * @param array $booking_items
  * @param array $bookings
  * @param array $booking_groups
  * @param array $displayed_groups
  * @param array $users
- * @param array $filters
- * @param array $columns
+ * @param array $args
  * @return array
  */
-function bookacti_fill_wc_columns_in_bookings_export( $booking_items, $bookings, $booking_groups, $displayed_groups, $users, $filters, $columns ) {
+function bookacti_fill_wc_columns_in_bookings_export( $booking_items, $bookings, $booking_groups, $displayed_groups, $users, $args ) {
 	if( ! $booking_items ) { return $booking_items; }
 
-	if( array_intersect( $columns, array( 'customer_first_name', 'customer_last_name', 'customer_email', 'customer_phone', 'product_id', 'variation_id', 'order_item_title', 'order_item_price', 'order_item_tax' ) ) ) {
+	if( array_intersect( $args[ 'columns' ], array( 'customer_first_name', 'customer_last_name', 'customer_email', 'customer_phone', 'product_id', 'variation_id', 'order_item_title', 'order_item_price', 'order_item_tax' ) ) ) {
 		$booking_ids = array();
 		$booking_group_ids = array();
 		foreach( $booking_items as $booking_id => $booking_item ) {
@@ -629,7 +628,7 @@ function bookacti_fill_wc_columns_in_bookings_export( $booking_items, $bookings,
 		}
 	}
 
-	if( array_intersect( $columns, array( 'product_id', 'variation_id', 'order_item_title', 'order_item_price', 'order_item_tax' ) ) ) {
+	if( array_intersect( $args[ 'columns' ], array( 'product_id', 'variation_id', 'order_item_title', 'order_item_price', 'order_item_tax' ) ) ) {
 		// Order item data
 		$order_items_data = bookacti_get_order_items_data_by_bookings( $booking_ids, $booking_group_ids );
 		if( ! $order_items_data ) { return $booking_items; }
@@ -651,15 +650,15 @@ function bookacti_fill_wc_columns_in_bookings_export( $booking_items, $bookings,
 
 			$booking_items[ $booking_id ][ 'product_id' ]		= ! empty( $order_item_data->_product_id ) ? $order_item_data->_product_id : '';
 			$booking_items[ $booking_id ][ 'variation_id' ]		= ! empty( $order_item_data->_variation_id ) ? $order_item_data->_variation_id : '';
-			$booking_items[ $booking_id ][ 'order_item_title' ]	= ! empty( $order_item_data->order_item_name ) ? apply_filters( 'bookacti_translate_text', $order_item_data->order_item_name ) : '';
-			$booking_items[ $booking_id ][ 'order_item_price' ]	= isset( $order_item_data->_line_total ) ? $order_item_data->_line_total : '';
-			$booking_items[ $booking_id ][ 'order_item_tax' ]	= isset( $order_item_data->_line_tax ) ? $order_item_data->_line_tax : '';
+			$booking_items[ $booking_id ][ 'order_item_title' ]	= ! empty( $order_item_data->order_item_name ) ? apply_filters( 'bookacti_translate_text', $order_item_data->order_item_name, $args[ 'locale' ] ) : '';
+			$booking_items[ $booking_id ][ 'order_item_price' ]	= isset( $order_item_data->_line_total ) ? ( $args[ 'raw' ] ? $order_item_data->_line_total : wc_price( $order_item_data->_line_total ) ) : '';
+			$booking_items[ $booking_id ][ 'order_item_tax' ]	= isset( $order_item_data->_line_tax ) ? ( $args[ 'raw' ] ? $order_item_data->_line_tax : wc_price( $order_item_data->_line_tax ) ) : '';
 		}
 	}
 
 	return $booking_items;
 }
-add_filter( 'bookacti_booking_items_to_export', 'bookacti_fill_wc_columns_in_bookings_export', 10, 7 );
+add_filter( 'bookacti_booking_items_to_export', 'bookacti_fill_wc_columns_in_bookings_export', 10, 6 );
 
 
 /**

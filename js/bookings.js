@@ -26,7 +26,7 @@ $j( document ).ready( function() {
 		}
 		
 		// Filter the booking list according to filters
-		if( $j( '#bookacti-submit-filter-container' ).data( 'ajax' ) ) { bookacti_filter_booking_list(); }
+		if( $j( '#bookacti-submit-filter-button' ).data( 'ajax' ) ) { bookacti_filter_booking_list(); }
 	});
 	
 	
@@ -70,7 +70,7 @@ $j( document ).ready( function() {
 	 */
 	$j( '#bookacti-unpick-events-filter' ).on( 'click', function() {
 		bookacti_unpick_all_events_filter();
-		if( $j( '#bookacti-submit-filter-container' ).data( 'ajax' ) ) { bookacti_filter_booking_list(); }
+		if( $j( '#bookacti-submit-filter-button' ).data( 'ajax' ) ) { bookacti_filter_booking_list(); }
 	});
 	
 	
@@ -81,7 +81,7 @@ $j( document ).ready( function() {
 	$j( '#bookacti-booking-system-bookings-page' ).on( 'bookacti_event_click', function( e, event, group_id, open_dialog ) { 
 		$j( '#bookacti-pick-event-filter-instruction' ).hide( 200 );
 		$j( '#bookacti-unpick-events-filter' ).show( 200 );
-		$j( '#bookacti-picked-events-filter-submit' ).show( 200 );
+		$j( '#bookacti-picked-events-actions-container' ).show( 200 );
 	});
 	
 	
@@ -91,7 +91,7 @@ $j( document ).ready( function() {
 	 */
 	$j( '#bookacti-booking-system-bookings-page' ).on( 'bookacti_event_click', function( e, event, group_id, open_dialog ) {
 		if( group_id === 'single' || ! open_dialog ) {
-			if( $j( '#bookacti-submit-filter-container' ).data( 'ajax' ) ) { bookacti_filter_booking_list(); }
+			if( $j( '#bookacti-submit-filter-button' ).data( 'ajax' ) ) { bookacti_filter_booking_list(); }
 		}
 	});
 	
@@ -101,7 +101,7 @@ $j( document ).ready( function() {
 	 * @version 1.8.0
 	 */
 	$j( '#bookacti-booking-system-bookings-page' ).on( 'bookacti_group_of_events_chosen', function( e, group_id, event ) {
-		if( $j( '#bookacti-submit-filter-container' ).data( 'ajax' ) ) { bookacti_filter_booking_list(); }
+		if( $j( '#bookacti-submit-filter-button' ).data( 'ajax' ) ) { bookacti_filter_booking_list(); }
 	});
 	
 	
@@ -114,7 +114,7 @@ $j( document ).ready( function() {
 		var booking_system	= $j( '#bookacti-booking-system-bookings-page' );
 		var calendar		= booking_system.find( '.bookacti-calendar' );
 		calendar.fullCalendar( 'rerenderEvents' );
-		if( $j( '#bookacti-submit-filter-container' ).data( 'ajax' ) ) { bookacti_filter_booking_list(); }
+		if( $j( '#bookacti-submit-filter-button' ).data( 'ajax' ) ) { bookacti_filter_booking_list(); }
 	});
 	
 	
@@ -125,7 +125,7 @@ $j( document ).ready( function() {
 	$j( '#bookacti-booking-filter-dates-from, #bookacti-booking-filter-dates-to' ).on( 'change', function() {
 		bookacti_unpick_all_events_filter();
 		bookacti_refresh_calendar_according_to_date_filter();
-		if( $j( '#bookacti-submit-filter-container' ).data( 'ajax' ) ) { bookacti_filter_booking_list(); }
+		if( $j( '#bookacti-submit-filter-button' ).data( 'ajax' ) ) { bookacti_filter_booking_list(); }
 	});
 	
 	
@@ -157,8 +157,18 @@ $j( document ).ready( function() {
 	$j( '#bookacti-bookings-calendar-settings' ).on( 'click', function() {
 		bookacti_dialog_update_bookings_calendar_settings();
 	});
-
-
+	
+	
+	/**
+	 * Filter the booking list according to filters
+	 * @since 1.8.0
+	 */
+	$j( '#bookacti-booking-list-filters-form' ).on( 'submit', function( e ) {
+		if( $j( '#bookacti-submit-filter-button' ).data( 'ajax' ) ) { 
+			e.preventDefault();
+			bookacti_filter_booking_list();
+		}
+	});
 
 
 // BOOKING LIST
@@ -223,7 +233,7 @@ $j( document ).ready( function() {
 	 * @version 1.8.0
 	 */
 	$j( 'body' ).on( 'submit', '.bookacti-list-table-go-to-page-form', function( e ){
-		if( ! $j( '#bookacti-submit-filter-container' ).data( 'ajax' ) ) { return; }
+		if( ! $j( '#bookacti-submit-filter-button' ).data( 'ajax' ) ) { return; }
 		e.preventDefault();
 		var paged = $j( this ).find( '.current-page' ).val();
 		bookacti_filter_booking_list( paged );
@@ -235,7 +245,7 @@ $j( document ).ready( function() {
 	 * @version 1.8.0
 	 */
 	$j( 'body' ).on( 'click', '.first-page, .prev-page, .next-page, .last-page', function( e ){
-		if( ! $j( '#bookacti-submit-filter-container' ).data( 'ajax' ) ) { return; }
+		if( ! $j( '#bookacti-submit-filter-button' ).data( 'ajax' ) ) { return; }
 		e.preventDefault();
 		var href = $j( this ).attr( 'href' );
 		var paged_index = href.indexOf( 'paged=' );

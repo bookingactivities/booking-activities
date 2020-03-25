@@ -1041,8 +1041,8 @@ function bookacti_get_bookings_export_columns() {
  * @return array
  */
 function bookacti_get_bookings_export_default_settings() {
-	$per_page = intval( get_user_meta( get_current_user_id(), 'bookacti_bookings_per_page', true ) );
 	$defaults = array(
+		// CSV
 		'csv_columns' => array(
 			'booking_id',
 			'booking_type',
@@ -1056,16 +1056,22 @@ function bookacti_get_bookings_export_default_settings() {
 			'start_date',
 			'end_date'
 		),
+		'csv_raw' => 0,
+		'csv_export_groups'	=> 'groups',
+		
+		// iCal
 		'ical_columns' => array(
 			'customer_display_name',
 			'customer_email',
 			'quantity'
 		),
-		'csv_export_groups'	=> 'groups',
-		'ical_export_groups'=> 'groups',
-		'vevent_summary'	=> '{event_title} ({event_booked_quantity}/{event_availability_total})',
+		'ical_raw' => 0,
+		'ical_booking_list_header' => 1,
+		'vevent_summary'	=> '[{event_booked_quantity}/{event_availability_total}] {event_title}',
 		'vevent_description'=> '{booking_list}',
-		'per_page'			=> $per_page ? $per_page : 10
+		
+		// Global
+		'per_page'			=> 200
 	);
 	return apply_filters( 'bookacti_bookings_export_default_settings', $defaults );
 }
@@ -1104,16 +1110,16 @@ function bookacti_sanitize_bookings_export_settings( $raw_settings ) {
 	$columns_settings = array( 'csv_columns', 'ical_columns' );
 	$keys_by_type = array( 
 		'str'		=> array( 'vevent_summary' ),
-		'str_id'	=> array( 'csv_export_groups', 'ical_export_groups' ),
+		'str_id'	=> array( 'csv_export_groups' ),
 		'str_html'	=> array( 'vevent_description' ),
 		'int'		=> array( 'per_page' ),
+		'bool'		=> array( 'csv_raw', 'ical_raw', 'ical_booking_list_header' ),
 		'array'		=> array( 'csv_columns', 'ical_columns' )
 	);
 	$settings = bookacti_sanitize_values( $default_settings, $raw_settings, $keys_by_type );
 	
 	// Sanitize export groups value
 	if( ! in_array( $settings[ 'csv_export_groups' ], array( 'groups', 'bookings' ), true ) )	{ $settings[ 'csv_export_groups' ] = $default_settings[ 'csv_export_groups' ]; }
-	if( ! in_array( $settings[ 'ical_export_groups' ], array( 'groups', 'bookings' ), true ) )	{ $settings[ 'ical_export_groups' ] = $default_settings[ 'ical_export_groups' ]; }
 	
 	// Keep only allowed columns
 	$allowed_columns = bookacti_get_bookings_export_columns();
@@ -1149,7 +1155,7 @@ function bookacti_get_bookings_export_event_tags() {
 		'{calendar_id}'				=> esc_html__( 'Calendar ID', 'booking-activities' ),
 		'{calendar_title}'			=> esc_html__( 'Calendar title', 'booking-activities' ),
 		'{booking_list}'			=> esc_html__( 'Event booking list (table)', 'booking-activities' ),
-		'{booking_list_csv}'		=> esc_html__( 'Event booking list (csv)', 'booking-activities' )
+		'{booking_list_raw}'		=> esc_html__( 'Event booking list (csv)', 'booking-activities' )
 	));
 }
 
@@ -1157,41 +1163,39 @@ function bookacti_get_bookings_export_event_tags() {
 /**
  * Convert a list of bookings to CSV format
  * @since 1.6.0
+ * @version 1.8.0
  * @param array $filters
- * @param array $columns
+ * @param array $args_raw
  * @return string
  */
-function bookacti_convert_bookings_to_csv( $filters, $columns ) {
-
-	$headers = bookacti_get_bookings_export_columns();
-	$booking_list_items = bookacti_get_bookings_for_export( $filters, $columns );
-
-	ob_start();
-
-	// Display headers
-	$count = 0;
-	foreach( $columns as $i => $column_name ) {
-		// Remove unknown columns
-		if( ! isset( $headers[ $column_name ] ) ) { unset( $columns[ $i ] ); continue; }
-		// Display comma separated column headers
-		if( $count ) { echo ','; }
-		++$count;
-		echo str_replace( ',', '', strip_tags( $headers[ $column_name ] ) );
+function bookacti_convert_bookings_to_csv( $filters, $args_raw = array() ) {
+	$default_settings = bookacti_get_bookings_export_default_settings();
+	$args_default = array( 
+		'columns'	=> $default_settings[ 'csv_columns' ],
+		'raw'		=> $default_settings[ 'csv_raw' ],
+		'locale'	=> '',
+	);
+	$args = wp_parse_args( $args_raw, $args_default );
+	
+	// Remove unknown columns 
+	$headers = array();
+	$allowed_columns = bookacti_get_bookings_export_columns();
+	foreach( $args[ 'columns' ] as $i => $column_name ) {
+		if( ! isset( $allowed_columns[ $column_name ] ) ) { unset( $args[ 'columns' ][ $i ] ); continue; }
+		$headers[ $column_name ] = str_replace( ',', '', strip_tags( apply_filters( 'bookacti_translate_text', $allowed_columns[ $column_name ], $args[ 'locale' ] ) ) );
 	}
-
-	// Display rows
-	foreach( $booking_list_items as $item ) {
-		echo PHP_EOL;
-		$count = 0;
-		foreach( $columns as $column_name ) {
-			if( $count ) { echo ','; }
-			++$count;
-			if( ! isset( $item[ $column_name ] ) ) { continue; }
-			echo str_replace( ',', '', strip_tags( $item[ $column_name ] ) );
-		}
-	}
-
-	return ob_get_clean();
+	
+	// Get booking items
+	$export_args = array( 
+		'filters' => $filters, 
+		'columns' => $args[ 'columns' ], 
+		'raw' => $args[ 'raw' ], 
+		'type' => 'csv',
+		'locale' => $args[ 'locale' ]
+	);
+	$items = bookacti_get_bookings_for_export( $export_args );
+	
+	return bookacti_generate_csv( $items, $headers );
 }
 
 
@@ -1199,67 +1203,182 @@ function bookacti_convert_bookings_to_csv( $filters, $columns ) {
  * Convert bookings to iCal format
  * @since 1.8.0
  * @param array $filters
- * @param array $columns
+ * @param array $args_raw
+ * @param int $sequence
  * @return string
  */
-function bookacti_convert_bookings_to_ical( $filters, $columns ) {
-	$headers = bookacti_get_bookings_export_columns();
-	$booking_list_items = bookacti_get_bookings_for_export( $filters, $columns );
+function bookacti_convert_bookings_to_ical( $filters, $args_raw, $sequence = 0 ) {
+	// Sanitized args
+	$default_settings = bookacti_get_bookings_export_default_settings();
+	$args_default = array( 
+		'vevent_summary'		=> $default_settings[ 'vevent_summary' ],
+		'vevent_description'	=> $default_settings[ 'vevent_description' ],
+		'booking_list_columns'	=> $default_settings[ 'ical_columns' ],
+		'booking_list_header'	=> $default_settings[ 'ical_booking_list_header' ],
+		'raw'					=> $default_settings[ 'ical_raw' ],
+		'locale'				=> '',
+	);
+	$args = wp_parse_args( $args_raw, $args_default );
+	
+	// Get items and events
+	$filters[ 'group_by' ] = 'none';
+	$filters[ 'display_private_columns' ] = 1;
+	$export_args = array( 
+		'filters' => $filters, 
+		'columns' => $args[ 'booking_list_columns' ], 
+		'raw' => $args[ 'raw' ], 
+		'type' => 'ical',
+		'locale' => $args[ 'locale' ]
+	);
+	$booking_items = bookacti_get_bookings_for_export( $export_args );
+	$events_tags = bookacti_get_bookings_export_events_tags_values( $booking_items, $args );
+	
+	$vcalendar = apply_filters( 'bookacti_bookings_ical_vcalendar', array(
+		'X-WR-CALNAME' => esc_html__( 'My bookings', 'booking-activities' ),
+		'X-WR-CALDESC' => esc_html__( 'My bookings', 'booking-activities' ) . '.'
+	), $booking_items, $events_tags, $args_raw, $filters, $sequence );
+	
+	$timezone = bookacti_get_setting_value( 'bookacti_general_settings', 'timezone' );
+	$timezone_obj = new DateTimeZone( $timezone );
+	$occurence_counter = array();
+	$vevents = array();
+	
+	foreach( $booking_items as $item ) {
+		$index = $item[ 'start_date_raw' ] . '_' . $item[ 'event_id' ];
+		if( isset( $vevents[ $index ] ) ) { continue; }
+		
+		// Increase the occurence counter
+		if( ! isset( $occurence_counter[ $item[ 'event_id' ] ] ) ) { $occurence_counter[ $item[ 'event_id' ] ] = 0; }
+		++$occurence_counter[ $item[ 'event_id' ] ];
 
-	ob_start();
-
-	// Display headers
-	$count = 0;
-	foreach( $columns as $i => $column_name ) {
-		// Remove unknown columns
-		if( ! isset( $headers[ $column_name ] ) ) { unset( $columns[ $i ] ); continue; }
-		// Display comma separated column headers
-		if( $count ) { echo ','; }
-		++$count;
-		echo str_replace( ',', '', strip_tags( $headers[ $column_name ] ) );
+		$uid			= $item[ 'event_id' ] . '-' . $occurence_counter[ $item[ 'event_id' ] ];
+		$event_start	= new DateTime( $item[ 'start_date_raw' ], $timezone_obj );
+		$event_end		= new DateTime( $item[ 'end_date_raw' ], $timezone_obj );
+		
+		$events_tags[ $index ][ '{booking_list}' ] = $events_tags[ $index ][ '{booking_list}' ] ? '<table>' . $events_tags[ $index ][ '{booking_list}' ] . '</table>' : '';
+		
+		$summary	= $args[ 'vevent_summary' ] ? str_replace( array_keys( $events_tags[ $index ] ), array_values( $events_tags[ $index ] ), $args[ 'vevent_summary' ] ) : '';
+		$description= $args[ 'vevent_description' ] ? str_replace( array_keys( $events_tags[ $index ] ), array_values( $events_tags[ $index ] ), $args[ 'vevent_description' ] ) : '';
+		
+		$vevents[ $index ] = apply_filters( 'bookacti_bookings_ical_vevent', array(
+			'UID'			=> $uid,
+			'DTSTART'		=> $event_start->format( 'Ymd\THis' ),
+			'DTEND'			=> $event_end->format( 'Ymd\THis' ),
+			'SUMMARY'		=> bookacti_sanitize_ical_property( $summary, 'SUMMARY' ),
+			'DESCRIPTION'	=> bookacti_sanitize_ical_property( $description, 'DESCRIPTION' )
+		), $item, $events_tags[ $index ], $vcalendar, $args_raw, $filters, $sequence );
 	}
+	
+	$vevents = apply_filters( 'bookacti_bookings_ical_vevents', $vevents, $booking_items, $events_tags, $vcalendar, $args_raw, $filters, $sequence );
+	
+	return bookacti_generate_ical( $vevents, $vcalendar );
+}
 
-	// Display rows
-	foreach( $booking_list_items as $item ) {
-		echo PHP_EOL;
-		$count = 0;
-		foreach( $columns as $column_name ) {
-			if( $count ) { echo ','; }
-			++$count;
-			if( ! isset( $item[ $column_name ] ) ) { continue; }
-			echo str_replace( ',', '', strip_tags( $item[ $column_name ] ) );
+
+/**
+ * Get the events tags values
+ * @since 1.8.0
+ * @param array $booking_items
+ * @param array $args
+ * @return array
+ */
+function bookacti_get_bookings_export_events_tags_values( $booking_items, $args ) {
+	$has_booking_list = ! empty( $args[ 'booking_list_columns' ] ) && strpos( $args[ 'vevent_summary' ] . $args[ 'vevent_description' ], '{booking_list' ) !== false;
+	
+	// Remove unknown columns in the booking list
+	if( $has_booking_list ) {
+		$booking_list_headers = array();
+		$allowed_columns = bookacti_get_bookings_export_columns();
+		foreach( $args[ 'booking_list_columns' ] as $i => $column_name ) {
+			if( ! isset( $allowed_columns[ $column_name ] ) ) { unset( $args[ 'booking_list_columns' ][ $i ] ); continue; }
+			$booking_list_headers[ $column_name ] = apply_filters( 'bookacti_translate_text', $allowed_columns[ $column_name ], $args[ 'locale' ] );
+		}
+		if( empty( $args[ 'booking_list_columns' ] ) ) { $has_booking_list = false; }
+	}
+	
+	$date_format = bookacti_get_message( 'date_format_long' );
+	
+	// Order the items by event occurence and merge data into an event array
+	$qty_ack = array();
+	$events_tags = array();
+	foreach( $booking_items as $item ) {
+		$index = $item[ 'start_date_raw' ] . '_' . $item[ 'event_id' ];
+		
+		// Get the initial tags values
+		if( ! isset( $events_tags[ $index ] ) ) {
+			$events_tags[ $index ] = array(
+				'{event_id}'				=> $item[ 'event_id' ],
+				'{event_title}'				=> $item[ 'event_title' ],
+				'{event_start}'				=> bookacti_format_datetime( $item[ 'start_date_raw' ], $date_format ),
+				'{event_end}'				=> bookacti_format_datetime( $item[ 'end_date_raw' ], $date_format ),
+				'{event_start_raw}'			=> $item[ 'start_date_raw' ],
+				'{event_end_raw}'			=> $item[ 'end_date_raw' ],
+				'{event_booked_quantity}'	=> 0,
+				'{event_availability}'		=> intval( $item[ 'availability' ] ),
+				'{event_availability_total}'=> intval( $item[ 'availability' ] ),
+				'{activity_id}'				=> $item[ 'activity_id' ],
+				'{activity_title}'			=> $item[ 'activity_title' ],
+				'{calendar_id}'				=> $item[ 'template_id' ],
+				'{calendar_title}'			=> $item[ 'template_title' ],
+				'{booking_list}'			=> $has_booking_list && ! empty( $args[ 'booking_list_header' ] ) ? '<tr><th>' . implode( '</th><th>', $booking_list_headers ) . '</th></tr>' : '',
+				'{booking_list_raw}'		=> $has_booking_list && ! empty( $args[ 'booking_list_header' ] ) ? implode( ', ', str_replace( ',', '', array_map( 'strip_tags', $booking_list_headers ) ) ) : ''
+			);
+		}
+		
+		// Increment booking quantity
+		if( $item[ 'booking_active' ] && empty( $qty_ack[ $item[ 'booking_id' ] ] ) ) {
+			$events_tags[ $index ][ '{event_booked_quantity}' ] += intval( $item[ 'quantity' ] );
+			$events_tags[ $index ][ '{event_availability}' ] -= intval( $item[ 'quantity' ] );
+			$qty_ack[ $item[ 'booking_id' ] ] = true; // Make sure each booking is counted only once
+		}
+		
+		// Build the booking list tags (keep the columns order)
+		if( $has_booking_list ) {
+			$booking_list_values = array_replace( $booking_list_headers, array_intersect_key( $item, $booking_list_headers ) );
+			if( $booking_list_values ) {
+				$events_tags[ $index ][ '{booking_list}' ] .= '<tr><td>' . implode( '</td><td>', $booking_list_values ) . '</td></tr>';
+				$events_tags[ $index ][ '{booking_list_raw}' ] .= '\n' . implode( ', ', str_replace( ',', '', array_map( 'strip_tags', $booking_list_values ) ) );
+			}
 		}
 	}
-
-	return ob_get_clean();
+	
+	return apply_filters( 'bookacti_bookings_export_events_tags_values', $events_tags, $booking_items, $args );
 }
 
 
 /**
  * Get an array of bookings data formatted to be exported
  * @since 1.6.0
- * @version 1.7.9
- * @param array $filters
- * @param array $columns
+ * @version 1.8.0
+ * @param array $args_raw
  * @return array
  */
-function bookacti_get_bookings_for_export( $filters, $columns ) {
+function bookacti_get_bookings_for_export( $args_raw = array() ) {
+	// Format args
+	$default_args = array(
+		'filters' => array(),
+		'columns' => array(),
+		'raw' => true,
+		'type' => 'csv',
+	);
+	$args = wp_parse_args( $args_raw, $default_args );
+	
 	// Check if we will need user data
 	$has_user_data = false;
-	foreach( $columns as $column_name ) {
+	foreach( $args[ 'columns' ] as $column_name ) {
 		if( $column_name !== 'customer_id' && substr( $column_name, 0, 9 ) === 'customer_' ) { 
 			$has_user_data = true; break; 
 		}
 	}
-	$get_user_data = apply_filters( 'bookacti_bookings_export_get_users_data', $has_user_data, $filters, $columns );
-	if( $get_user_data ) { $filters[ 'fetch_meta' ] = true; }
+	$get_user_data = apply_filters( 'bookacti_bookings_export_get_users_data', $has_user_data, $args );
+	if( $get_user_data ) { $args[ 'filters' ][ 'fetch_meta' ] = true; }
 
-	$bookings = bookacti_get_bookings( $filters );
+	$bookings = bookacti_get_bookings( $args[ 'filters' ] );
 
 	// Check if the booking list can contain groups
 	$may_have_groups = false; 
-	$single_only = $filters[ 'group_by' ] === 'none';
-	if( ( ! $filters[ 'booking_group_id' ] || $filters[ 'group_by' ] === 'booking_group' ) && ! $filters[ 'booking_id' ] ) {
+	$single_only = $args[ 'filters' ][ 'group_by' ] === 'none';
+	if( ( ! $args[ 'filters' ][ 'booking_group_id' ] || $args[ 'filters' ][ 'group_by' ] === 'booking_group' ) && ! $args[ 'filters' ][ 'booking_id' ] ) {
 		$may_have_groups = true;
 	}
 
@@ -1282,7 +1401,7 @@ function bookacti_get_bookings_for_export( $filters, $columns ) {
 
 		// If the bookings are grouped by booking groups, 
 		// booking group meta will already be attached to the booking representing its group 
-		$group_filters[ 'fetch_meta' ] = $filters[ 'group_by' ] !== 'booking_group';
+		$group_filters[ 'fetch_meta' ] = $args[ 'filters' ][ 'group_by' ] !== 'booking_group';
 
 		$booking_groups = bookacti_get_booking_groups( $group_filters );
 	}
@@ -1293,11 +1412,15 @@ function bookacti_get_bookings_for_export( $filters, $columns ) {
 		$users = bookacti_get_users_data( array( 'include' => $user_ids ) );
 	}
 	$unknown_user_id = esc_attr( apply_filters( 'bookacti_unknown_user_id', 'unknown_user' ) );
-
+	
+	$date_format		= $args[ 'raw' ] ? 'Y-m-d' : get_option( 'date_format' );
+	$datetime_format	= $args[ 'raw' ] ? 'Y-m-d H:i:s' : apply_filters( 'bookacti_translate_text', bookacti_get_message( 'date_format_long', true ), $args[ 'locale' ] );
+	$booking_status		= $args[ 'raw' ] ? array() : bookacti_get_booking_state_labels();
+	$payment_status		= $args[ 'raw' ] ? array() : bookacti_get_payment_status_labels();
+	
 	// Build booking list
 	$booking_items = array();
 	foreach( $bookings as $booking ) {
-
 		$group = $booking->group_id && ! empty( $booking_groups[ $booking->group_id ] ) ? $booking_groups[ $booking->group_id ] : null;
 
 		// Display one single row for a booking group, instead of each bookings of the group
@@ -1316,10 +1439,12 @@ function bookacti_get_bookings_for_export( $filters, $columns ) {
 			$start			= $group->start;
 			$end			= $group->end;
 			$quantity		= $group->quantity;
+			$availability	= $booking->availability;
 			$form_id		= $group->form_id;
 			$order_id		= $group->order_id;
 			$activity_id	= $group->category_id;
 			$activity_title	= $group->category_title;
+			$active			= $group->active;
 
 			$displayed_groups[ $booking->group_id ] = $booking->id;
 
@@ -1335,23 +1460,32 @@ function bookacti_get_bookings_for_export( $filters, $columns ) {
 			$start			= $booking->event_start;
 			$end			= $booking->event_end;
 			$quantity		= $booking->quantity;
+			$availability	= $booking->availability;
 			$form_id		= $booking->form_id;
 			$order_id		= $booking->order_id;
 			$activity_id	= $booking->activity_id;
 			$activity_title	= $booking->activity_title;
+			$active			= $booking->active;
 		}
 
 		$booking_data = array( 
 			'booking_id'			=> $id,
 			'booking_type'			=> $booking_type,
-			'status'				=> $status,
-			'payment_status'		=> $paid,
+			'booking_active'		=> $active,
+			'status'				=> $args[ 'raw' ] ? $status : ( ! empty( $booking_status[ $status ][ 'label' ] ) ? $booking_status[ $status ][ 'label' ] : $status ),
+			'status_raw'			=> $status,
+			'payment_status'		=> $args[ 'raw' ] ? $paid : ( ! empty( $payment_status[ $paid ][ 'label' ] ) ? $payment_status[ $paid ][ 'label' ] : $paid ),
+			'payment_status_raw'	=> $paid,
 			'quantity'				=> $quantity,
-			'creation_date'			=> $booking->creation_date,
+			'availability'			=> $availability,
+			'creation_date'			=> $args[ 'raw' ] ? $booking->creation_date : bookacti_format_datetime( $booking->creation_date, $date_format ),
+			'creation_date_raw'		=> $booking->creation_date,
 			'event_id'				=> $event_id,
 			'event_title'			=> apply_filters( 'bookacti_translate_text', $title ),
-			'start_date'			=> $start,
-			'end_date'				=> $end,
+			'start_date'			=> $args[ 'raw' ] ? $start : bookacti_format_datetime( $start, $datetime_format ),
+			'end_date'				=> $args[ 'raw' ] ? $end : bookacti_format_datetime( $end, $datetime_format ),
+			'start_date_raw'		=> $start,
+			'end_date_raw'			=> $end,
 			'template_id'			=> $booking->template_id,
 			'template_title'		=> apply_filters( 'bookacti_translate_text', $booking->template_title ),
 			'activity_id'			=> $activity_id,
@@ -1377,7 +1511,7 @@ function bookacti_get_bookings_for_export( $filters, $columns ) {
 
 			// If the booking was made without account
 			} else if( $user_id === $unknown_user_id || is_email( $user_id ) ) {
-				$booking_meta = $group && $filters[ 'group_by' ] !== 'booking_group' ? $group : $booking;
+				$booking_meta = $group && $args[ 'filters' ][ 'group_by' ] !== 'booking_group' ? $group : $booking;
 				$booking_data = array_merge( $booking_data, array(
 					'customer_display_name'	=> '',
 					'customer_first_name'	=> ! empty( $booking_meta->user_first_name ) ? $booking_meta->user_first_name : '',
@@ -1395,7 +1529,7 @@ function bookacti_get_bookings_for_export( $filters, $columns ) {
 		 * Third parties can add or change columns content, but do your best to optimize your process
 		 * @since 1.6.0
 		 */
-		$booking_item = apply_filters( 'bookacti_booking_export_columns_content', $booking_data, $booking, $group, $user, $filters, $columns );
+		$booking_item = apply_filters( 'bookacti_booking_export_columns_content', $booking_data, $booking, $group, $user, $args );
 
 		$booking_items[ $booking->id ] = $booking_item;
 	}
@@ -1404,7 +1538,7 @@ function bookacti_get_bookings_for_export( $filters, $columns ) {
 	 * Third parties can add or change rows and columns, but do your best to optimize your process
 	 * @since 1.6.0
 	 */
-	return apply_filters( 'bookacti_booking_items_to_export', $booking_items, $bookings, $booking_groups, $displayed_groups, $users, $filters, $columns );
+	return apply_filters( 'bookacti_booking_items_to_export', $booking_items, $bookings, $booking_groups, $displayed_groups, $users, $args );
 }
 
 
@@ -1804,7 +1938,7 @@ function bookacti_get_user_booking_list_items( $filters, $columns = array() ) {
 	
 	// Remove private columns if not allowed
 	$current_user_id = get_current_user_id();
-	$display_private_columns = bookacti_get_setting_value( 'bookacti_general_settings', 'display_private_columns' );
+	$display_private_columns = bookacti_get_setting_value( 'bookacti_general_settings', 'display_private_columns' ) || ! empty( $filters[ 'display_private_columns' ] );
 	if( ! $display_private_columns ) {
 		$current_user_can_see_private_data = current_user_can( 'bookacti_manage_bookings' ) || current_user_can( 'bookacti_edit_bookings' ) || current_user_can( 'list_users' ) || current_user_can( 'edit_users' );
 		$is_current_user_list = $current_user_id && ( ( intval( $filters[ 'user_id' ] ) && intval( $filters[ 'user_id' ] ) === $current_user_id ) || ( count( $filters[ 'in__user_id' ] ) === 1 && intval( $filters[ 'in__user_id' ][ 0 ] ) && intval( $filters[ 'in__user_id' ][ 0 ] ) === $current_user_id ) );

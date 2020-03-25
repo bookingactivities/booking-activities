@@ -155,7 +155,7 @@ function bookacti_unpick_all_events_filter() {
 	bookacti_unpick_all_events( booking_system );
 	bookacti_clear_booking_system_displayed_info( booking_system );
 	$j( '#bookacti-unpick-events-filter' ).hide( 200 );
-	$j( '#bookacti-picked-events-filter-submit' ).hide( 200 );
+	$j( '#bookacti-picked-events-actions-container' ).hide( 200 );
 	if( $j( '#bookacti-booking-system-filter-container' ).is( ':visible' ) ) {
 		$j( '#bookacti-pick-event-filter-instruction' ).show( 200 );
 	}
@@ -266,36 +266,6 @@ function bookacti_init_booking_bulk_actions() {
 	$j( 'body' ).on( 'submit', '.bookacti-bookings-bulk-action', function( e ) {
 		if( $j( this ).find( '[name="action"]' ).val() == -1 || $j( this ).find( '[name="action2"]' ).val() == -1 ) {
 			e.preventDefault();
-		}
-		else if( $j( this ).find( '[name="action"]' ).val() === 'export' || $j( this ).find( '[name="action2"]' ).val() === 'export' ) {
-			bookacti_dialog_export_bookings();
-			e.preventDefault();
-		}
-	});
-	
-	
-	/**
-	 * Change the export type according to the selected tab
-	 * @since 1.8.0
-	 */
-	$j( '#bookacti-export-bookings-dialog' ).on( 'tabsactivate', '.bookacti-tabs', function( e, ui ) {
-		bookacti_change_export_type_according_to_active_tab();
-	});
-	
-	
-	/**
-	 * Toggle the hidden fieldsets
-	 * @since 1.8.0
-	 */
-	$j( '.bookacti-fieldset-toggle' ).on( 'click', function() {
-		if( $j( this ).data( 'show' ) === $j( this ).html() ) {
-			$j( this ).html( $j( this ).data( 'hide' ) );
-			$j( this ).closest( 'fieldset' ).removeClass( 'bookacti-fieldset-no-css' );
-			$j( this ).closest( 'fieldset' ).find( '.bookacti-fieldset-toggled' ).show( 200 );
-		} else {
-			$j( this ).html( $j( this ).data( 'show' ) );
-			$j( this ).closest( 'fieldset' ).addClass( 'bookacti-fieldset-no-css' );
-			$j( this ).closest( 'fieldset' ).find( '.bookacti-fieldset-toggled' ).hide( 200 );
 		}
 	});
 }

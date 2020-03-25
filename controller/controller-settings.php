@@ -1046,6 +1046,7 @@ add_filter( 'editable_extensions', 'bookacti_add_editable_extensions', 10, 2 );
 /**
  * Search users for AJAX selectbox
  * @since 1.7.19
+ * @version 1.8.0
  */
 function bookacti_controller_search_select2_users() {
 	// Check nonce
@@ -1065,6 +1066,7 @@ function bookacti_controller_search_select2_users() {
 		'allow_current' => 0,
 		'include' => array(), 'exclude' => array(),
 		'role' => array(), 'role__in' => array(), 'role__not_in' => array(),
+		'meta' => true, 'meta_single' => true,
 		'orderby' => 'display_name', 'order' => 'ASC'
 	);
 	$args = apply_filters( 'bookacti_ajax_select2_users_args', $defaults );

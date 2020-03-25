@@ -324,10 +324,15 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 * Breaking change - Drop backward compatibility and support with Booking Activities < 1.5 (shortcodes and WC integration)
 * Breaking change - Drop backward compatibility and support with WooCommerce < 3.0
 * Feature - Add an option to make the calendar start on the first displayed event, and end on the last one (in Calendar fields settings)
-* Tweak - Allow to change the bookings page calendar settings per user
-* Tweak - The bookings list on the bookings page is now AJAXified (per user option)
-* Tweak - Exported bookings columns are now saved per user
-* Tweak - Add an option to allow to display columns with private data in frontend booking list
+* Feature - iCal - Export / Sync bookings (just like CSV export)
+* Feature - iCal - Customize the events title and description with event data
+* Feature - iCal - Display the booking list in the events description
+* Feature - Allow to change the calendar settings in the backend Bookings page (saved per user)
+* Tweak - The backend booking list is now AJAXified (optional, saved per user)
+* Tweak - Bookings export settings are now saved per user
+* Tweak - Add an export option to choose between raw or formatted data (in bookings export settings)
+* Tweak - Make the array export format more user-friendly (line breaks + indents instead of brackets)
+* Tweak - Add an option to allow to display columns with private data in frontend booking lists (in general settings)
 * Fix - Redirect URL when booking on event click didn't work
 * Fix - Add compulsory hidden quantity field when booking on event click
 * Fix - All grouped bookings were displayed in each rows of the frontend booking list when group_by = none
@@ -339,6 +344,7 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 * Fix - Bad rounding of the WC coupon refund amounts
 * Fix - Don't change booking user_id when a WC order customer changes (at the same time as its status)
 * Optimization - JS variables passed via PHP are now loaded only once, have been significantly reduced, and are filtered for the frontend
+* Optimization - Retrieve all users meta with a single query with bookacti_get_users_data
 * Dev - Make sure that the repeated events' occurences and exceptions are included in the repeat period when updated
 
 = 1.7.20 - 2020/02/22 =
