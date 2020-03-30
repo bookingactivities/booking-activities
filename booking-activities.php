@@ -53,10 +53,13 @@ esc_html__( 'Booking system specialized in activities (sports, cultural, leisure
 /**
  * Load or reload Booking Activities language files
  * @version 1.8.0
+ * @param string $locale
  */
-function bookacti_load_textdomain() { 
-	$locale = function_exists( 'determine_locale' ) ? determine_locale() : ( is_admin() && function_exists( 'get_user_locale' ) ? get_user_locale() : get_locale() );
-	$locale = apply_filters( 'plugin_locale', $locale, 'booking-activities' );
+function bookacti_load_textdomain( $locale = '' ) { 
+	if( ! $locale ) {
+		$locale = function_exists( 'determine_locale' ) ? determine_locale() : ( is_admin() && function_exists( 'get_user_locale' ) ? get_user_locale() : get_locale() );
+		$locale = apply_filters( 'plugin_locale', $locale, 'booking-activities' );
+	}
 	
 	unload_textdomain( 'booking-activities' );
 	// Load .mo from wp-content/languages/booking-activities/

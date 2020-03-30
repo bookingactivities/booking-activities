@@ -31,7 +31,7 @@ function bookacti_controller_fetch_events() {
 	if( ! $is_allowed ) { bookacti_send_json_not_allowed( 'fetch_events' ); }
 
 	$events_interval= bookacti_sanitize_events_interval( $_POST[ 'interval' ] );
-	$events			= array( 'events' => array(), 'data' => array() );
+	$events = array( 'events' => array(), 'data' => array() );
 
 	if( $atts[ 'groups_only' ] ) {
 		$groups_data	= isset( $raw_atts[ 'groups_data' ] ) ? (array) $raw_atts[ 'groups_data' ] : array();
@@ -47,10 +47,22 @@ function bookacti_controller_fetch_events() {
 	
 	$events = apply_filters( 'bookacti_events_data_from_interval', $events, $events_interval, $atts );
 	
+	// Get the booking list for each events
+	$booking_lists = array();
+	if( $atts[ 'tooltip_booking_list' ] && $events[ 'events' ] && $events[ 'data' ] ) {
+		$booking_filters = array(
+			'from'			=> $events_interval[ 'start' ],
+			'to'			=> $events_interval[ 'end' ],
+			'in__event_id'	=> array_keys( $events[ 'data' ] ),
+		);
+		$booking_lists = bookacti_get_events_booking_lists( $booking_filters, $atts[ 'tooltip_booking_list_columns' ], $atts );
+	}
+	
 	bookacti_send_json( array( 
 		'status'		=> 'success', 
 		'events'		=> $events[ 'events' ] ? $events[ 'events' ] : array(), 
-		'events_data'	=> $events[ 'data' ] ? $events[ 'data' ] : array()
+		'events_data'	=> $events[ 'data' ] ? $events[ 'data' ] : array(),
+		'booking_lists'	=> $booking_lists
 	), 'fetch_events' );
 }
 add_action( 'wp_ajax_bookactiFetchEvents', 'bookacti_controller_fetch_events' );

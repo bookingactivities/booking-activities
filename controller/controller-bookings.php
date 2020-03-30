@@ -20,8 +20,7 @@ function bookacti_controller_update_bookings_calendar_settings() {
 	$calendar_settings = bookacti_format_bookings_calendar_settings( $_POST );
 	if( ! $calendar_settings ) { bookacti_send_json( array( 'status' => 'failed', 'error' => 'no_fields' ), 'update_bookings_calendar_settings' ); }
 	
-	$updated = update_user_meta( get_current_user_id(), 'bookacti_bookings_calendar_settings', $calendar_settings );
-	if( ! $updated ) { bookacti_send_json( array( 'status' => 'failed', 'error' => 'not_updated' ), 'update_bookings_calendar_settings' ); }
+	update_user_meta( get_current_user_id(), 'bookacti_bookings_calendar_settings', $calendar_settings );
 	
 	do_action( 'bookacti_bookings_calendar_settings_updated', $calendar_settings );
 	
@@ -949,6 +948,7 @@ function bookacti_export_bookings_page() {
 	$is_allowed = user_can( $user->ID, 'bookacti_manage_bookings' );
 	$is_own = intval( $filters[ 'user_id' ] ) === $user->ID || ( count( $filters[ 'in__user_id' ] ) === 1 && $filters[ 'in__user_id' ][ 0 ] === $user->ID );
 	if( ! $is_allowed && ! $is_own ) { esc_html_e( 'Not allowed.', 'booking-activities' ); exit; }
+	$filters[ 'display_private_columns' ] = 1;
 	
 	// If an event has been selected, do not retrieve groups of events containing this event
 	if( $filters[ 'event_id' ] && ! $filters[ 'booking_group_id' ] ) { $filters[ 'booking_group_id' ] = 'none'; }
@@ -996,7 +996,7 @@ function bookacti_export_bookings_page() {
 		$ical_args = array( 
 			'vevent_summary'		=> isset( $_REQUEST[ 'vevent_summary' ] ) ? utf8_decode( urldecode( $_REQUEST[ 'vevent_summary' ] ) ) : $user_settings[ 'vevent_summary' ],
 			'vevent_description'	=> isset( $_REQUEST[ 'vevent_description' ] ) ? utf8_decode( urldecode( str_replace( '%0A', '\n', $_REQUEST[ 'vevent_description' ] ) ) ) : $user_settings[ 'vevent_description' ],
-			'booking_list_columns'	=> $columns,
+			'tooltip_booking_list_columns'	=> $columns,
 			'booking_list_header'	=> ! empty( $_REQUEST[ 'booking_list_header' ] ) ? 1 : 0,
 			'raw'					=> ! empty( $_REQUEST[ 'raw' ] ) ? 1 : 0,
 			'locale'				=> $locale

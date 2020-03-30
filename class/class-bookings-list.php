@@ -222,13 +222,13 @@ if( ! class_exists( 'Bookings_List_Table' ) ) {
 		
 		/**
 		 * Get booking list items. Parameters can be passed in the URL.
-		 * @version 1.7.12
+		 * @version 1.8.0
 		 * @access public
 		 * @return array
 		 */
 		public function get_booking_list_items() {
 			// Request bookings corresponding to filters
-			if( $this->filters[ 'event_id' ] && ! $this->filters[ 'event_group_id' ] ) { $this->filters[ 'booking_group_id' ] = 'none'; }
+			if( $this->filters[ 'event_id' ] && ! $this->filters[ 'event_group_id' ] ) { $this->filters[ 'group_by' ] = 'none'; }
 			if( ! $this->filters[ 'booking_group_id' ] && $this->filters[ 'group_by' ] !== 'none' ) { $this->filters[ 'group_by' ] = 'booking_group'; }
 			
 			// Force to fetch meta
@@ -483,14 +483,13 @@ if( ! class_exists( 'Bookings_List_Table' ) ) {
 		
 		/**
 		 * Get the total amount of bookings according to filters
-		 * 
 		 * @since 1.3.0
-		 * @version 1.7.1
+		 * @version 1.8.0
 		 * @access public
 		 * @return int
 		 */
 		public function get_total_items_count() {
-			if( $this->filters[ 'event_id' ] && ! $this->filters[ 'event_group_id' ] ) { $this->filters[ 'booking_group_id' ] = 'none'; }
+			if( $this->filters[ 'event_id' ] && ! $this->filters[ 'event_group_id' ] ) { $this->filters[ 'group_by' ] = 'none'; }
 			if( ! $this->filters[ 'booking_group_id' ] && $this->filters[ 'group_by' ] !== 'none' ) { $this->filters[ 'group_by' ] = 'booking_group'; }
 			return bookacti_get_number_of_booking_rows( $this->filters );
 		}

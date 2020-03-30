@@ -277,6 +277,8 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 							'check_roles'			=> 0,
 							'auto_load'				=> 0, // Prevent to load on page load to save some performance
 							'picked_events'			=> $default_inputs,
+							'tooltip_booking_list'		=> $user_calendar_settings[ 'tooltip_booking_list' ],
+							'tooltip_booking_list_columns'	=> $user_calendar_settings[ 'tooltip_booking_list_columns' ],
 							'display_data'			=> $display_data
 						), $user_calendar_settings );
 
@@ -296,7 +298,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			<?php do_action( 'bookacti_before_booking_list' ); ?>
 			<div id='bookacti-booking-list'>
 			<?php
-				$filters = array( 'fetch_meta' => true, 'merge_url_parameters' => true, );
+				$filters = array( 'fetch_meta' => true, 'merge_url_parameters' => true );
 				$bookings_list_table = new Bookings_List_Table();
 				$bookings_list_table->prepare_items( $filters );
 				$bookings_list_table->display();

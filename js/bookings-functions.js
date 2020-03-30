@@ -2,8 +2,9 @@ $j( document ).ready( function() {
 	/**
 	 * Highlight the selected row in booking lists
 	 * @since 1.7.4
+	 * @version 1.8.0
 	 */
-	$j( '#bookacti-booking-list, .bookacti-user-booking-list' ).on( 'click', 'tbody tr', function() {
+	$j( '#bookacti-booking-list, .bookacti-user-booking-list-table' ).on( 'click', 'tbody tr', function() {
 		$j( '.bookacti-booking-list-selected-row' ).removeClass( 'bookacti-booking-list-selected-row' );
 		$j( this ).addClass( 'bookacti-booking-list-selected-row' );
 	});
@@ -12,8 +13,9 @@ $j( document ).ready( function() {
 	/**
 	 * Add data to booking actions
 	 * @since 1.7.6
+	 * @version 1.8.0
 	 */
-	$j( '#bookacti-booking-list, .bookacti-user-booking-list' ).on( 'bookacti_booking_action_data', 'tr.bookacti-single-booking, tr.bookacti-booking-group', function( e, data ) {
+	$j( '#bookacti-booking-list, .bookacti-user-booking-list-table' ).on( 'bookacti_booking_action_data', 'tr.bookacti-single-booking, tr.bookacti-booking-group', function( e, data ) {
 		if( data instanceof FormData ) { 
 			data.append( 'locale', bookacti_localized.current_locale );
 		} else {
@@ -199,7 +201,7 @@ function bookacti_reload_booking_system_according_to_filters( booking_system ) {
  * @version 1.8.0
  */
 function bookacti_init_booking_actions() {
-	$j( '.bookacti-user-booking-list, .woocommerce-table, #bookacti-booking-list' ).on( 'click', '.bookacti-booking-action, .bookacti-booking-group-action', function ( e ) {
+	$j( '.bookacti-user-booking-list-table, .woocommerce-table, #bookacti-booking-list' ).on( 'click', '.bookacti-booking-action, .bookacti-booking-group-action', function ( e ) {
 		e.preventDefault();
 		
 		// Single Bookings

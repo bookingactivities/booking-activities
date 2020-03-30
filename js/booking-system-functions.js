@@ -41,6 +41,13 @@ function bookacti_fetch_events( booking_system, interval ) {
 					$j.extend( bookacti.booking_system[ booking_system_id ][ 'events_data' ], response.events_data );
 				}
 				
+				// Extend or replace the booking lists array if it was empty
+				if( $j.isEmptyObject( bookacti.booking_system[ booking_system_id ][ 'booking_lists' ] ) ) {
+					bookacti.booking_system[ booking_system_id ][ 'booking_lists' ] = response.booking_lists;
+				} else {
+					$j.extend( true, bookacti.booking_system[ booking_system_id ][ 'booking_lists' ], response.booking_lists );
+				}
+				
 				// Display new events
 				if( response.events.length ) {
 					bookacti_booking_method_display_events( booking_system, response.events );
@@ -696,6 +703,50 @@ function bookacti_fill_picked_events_list( booking_system ) {
 
 
 /**
+ * Place the tooltip div below or above the element
+ * @since 1.8.0
+ * @param {dom_element} element
+ * @param {dom_element} tooltip_container
+ * @param {string} position "below" or "above"
+ */
+function bookacti_set_tooltip_position( element, tooltip_container, position ) {
+	position = $j.inArray( position, [ 'below', 'above' ] ) >= 0 ? position : 'below';
+	tooltip_container.css( 'position', 'absolute' );
+
+	// Resize if larger than the viewport
+	var viewport_width = $j( window ).width();
+	if( tooltip_container.outerWidth() > viewport_width ) { tooltip_container.outerWidth( viewport_width ); }
+
+	// Place the tooltip in the center of the event
+	var new_offset = element.offset();
+	var center = element.offset().left + ( element.outerWidth() / 2 );
+
+	new_offset.top += position === 'above' ? ( ( tooltip_container.outerHeight() + 15 ) * -1 ) : element.height() + 15;
+	new_offset.left = center - ( tooltip_container.outerWidth() / 2 );
+
+	// Add an offset if the tooltip is offscreen
+	// Offscreen from the left
+	if( new_offset.left < 0 ) { new_offset.left = 0; }
+
+	// Offscreen from the right
+	var tooltip_container_right = new_offset.left + tooltip_container.outerWidth();
+	if( tooltip_container_right > viewport_width ) { new_offset.left -= ( tooltip_container_right - viewport_width ); }
+	
+	tooltip_container.offset( new_offset );
+	
+	// Arrow position
+	var arrow_class = position === 'above' ? 'bookacti-tooltip-arrow-bottom' : 'bookacti-tooltip-arrow-top';
+	if( ! tooltip_container.find( '.bookacti-tooltip-arrow.' + arrow_class ).length ) { 
+		tooltip_container.find( '.bookacti-tooltip-arrow' ).remove();
+		tooltip_container.append( '<div class="bookacti-tooltip-arrow ' + arrow_class + '"></div>' );
+	}
+	var arrow_container = tooltip_container.find( '.bookacti-tooltip-arrow' );
+	var arrow_position = center - new_offset.left - ( arrow_container.outerWidth() / 2 );
+	arrow_container.css( 'left', arrow_position + 'px' );
+}
+
+
+/**
  * Set min and max quantity on the quantity field
  * @version 1.7.4
  * @param {dom_element} booking_system
@@ -779,7 +830,12 @@ function bookacti_set_min_and_max_quantity( booking_system, qty_field, event_sum
 }
 
 
-// Format an event
+/**
+ * Format an event duration
+ * @param {moment|string} start
+ * @param {moment|string} end
+ * @returns {String}
+ */
 function bookacti_format_event_duration( start, end ) {
 	
 	start	= start instanceof moment ? start.format( 'YYYY-MM-DD HH:mm:ss' ) : start;
@@ -1094,7 +1150,13 @@ function bookacti_is_event_available( booking_system, event ) {
 }
 
 
-// Get group available places
+/**
+ * Get group available places
+ * @param {dom_element} booking_system
+ * @param {object} event
+ * @param {array} event_groups
+ * @returns {Number}
+ */
 function bookacti_get_bookings_number_for_a_single_grouped_event( booking_system, event, event_groups ) {
 	
 	var booking_system_id = booking_system.attr( 'id' );
@@ -1121,7 +1183,12 @@ function bookacti_get_bookings_number_for_a_single_grouped_event( booking_system
 }
 
 
-// Get a div with event available places
+/**
+ * Get a div with event available places
+ * @param {dom_element} booking_system
+ * @param {object} event
+ * @returns {String}
+ */
 function bookacti_get_event_availability_div( booking_system, event ) {
 	
 	var booking_system_id = booking_system.attr( 'id' );
@@ -1171,7 +1238,12 @@ function bookacti_get_event_availability_div( booking_system, event ) {
 }
 
 
-// Get a div with event booking number
+/**
+ * Get a div with event booking number
+ * @param {dom_element} booking_system
+ * @param {object} event
+ * @returns {String}
+ */
 function bookacti_get_event_number_of_bookings_div( booking_system, event ) {
 	
 	var booking_system_id	= booking_system.attr( 'id' );
@@ -1193,7 +1265,14 @@ function bookacti_get_event_number_of_bookings_div( booking_system, event ) {
 }
 
 
-// Sort an array of events by dates
+/**
+ * Sort an array of events by dates
+ * @param {array} array
+ * @param {boolean} sort_by_end
+ * @param {boolean} desc
+ * @param {objct} labels
+ * @returns {array}
+ */
 function bookacti_sort_events_array_by_dates( array, sort_by_end, desc, labels ) {
 	
 	sort_by_end = sort_by_end || false;

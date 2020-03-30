@@ -105,6 +105,9 @@ function bookacti_dialog_update_bookings_calendar_settings() {
 				// Reset error notices
 				$j( '#bookacti-bookings-calendar-settings-dialog .bookacti-notices' ).remove();
 				
+				// Multiple select
+				$j( '#bookacti-bookings-calendar-settings-dialog select[multiple].bookacti-items-select-box option' ).prop( 'selected', true );
+				
 				var data = $j( '#bookacti-bookings-calendar-settings-form' ).serializeObject();
 				
 				$j( 'body' ).trigger( 'bookacti_bookings_calendar_settings_data', [ data ] );
@@ -125,7 +128,9 @@ function bookacti_dialog_update_bookings_calendar_settings() {
 						if( response.status === 'success' ) {
 							// Update booking system data
 							var booking_system_id = 'bookacti-booking-system-bookings-page';
-							bookacti.booking_system[ booking_system_id ][ 'display_data' ] = response.display_data;
+							bookacti.booking_system[ booking_system_id ][ 'display_data' ]			= response.display_data;
+							bookacti.booking_system[ booking_system_id ][ 'tooltip_booking_list' ]		= response.calendar_settings.tooltip_booking_list;
+							bookacti.booking_system[ booking_system_id ][ 'tooltip_booking_list_columns' ]	= response.calendar_settings.booking_list_columns;
 							
 							$j( 'body' ).trigger( 'bookacti_bookings_calendar_settings_updated', [ data, response ] );
 							

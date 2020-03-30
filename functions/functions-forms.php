@@ -274,35 +274,49 @@ function bookacti_display_form( $form_id, $instance_id = '', $context = 'display
 /**
  * Get form fields array
  * @since 1.5.4
- * @version 1.7.10
+ * @version 1.8.0
  * @param int $form_id
  * @param boolean $active_only Whether to fetch only active fields. Default "true".
  * @param boolean Whether to index by name. Else, indexed by field id.
  * @return array
  */
 function bookacti_get_form_fields_data( $form_id, $active_only = true, $index_by_name = false ) {
-	$fields = bookacti_get_form_fields( $form_id, $active_only );
+	// Retrieve inactive fields too, for a better cache efficiency
+	$fields = bookacti_get_form_fields( $form_id, false );
 	if( ! $fields ) { return array(); }
 	
-	// Get fields meta
-	$fields_meta = bookacti_get_metadata( 'form_field', array_keys( $fields ) );
+	$fields_data_by_id = wp_cache_get( 'form_fields_data_' . $form_id, 'bookacti' );
 	
-	// Add form field metadata and 
-	// Format form fields
-	$fields_data = array();
-	foreach( $fields as $field_id => $field ) {
-		// Add field-specific data
-		$field_metadata = isset( $fields_meta[ $field_id ] ) ? $fields_meta[ $field_id ] : array();
-		if( is_array( $field_metadata ) ) { 
-			$field = array_merge( $field, $field_metadata );
+	if( ! $fields_data_by_id ) {
+		// Get fields meta
+		$fields_meta = bookacti_get_metadata( 'form_field', array_keys( $fields ) );
+
+		// Add form field metadata and 
+		// Format form fields
+		$fields_data_by_id = array();
+		foreach( $fields as $field_id => $field ) {
+			// Add field-specific data
+			$field_metadata = isset( $fields_meta[ $field_id ] ) ? $fields_meta[ $field_id ] : array();
+			if( is_array( $field_metadata ) ) { 
+				$field = array_merge( $field, $field_metadata );
+			}
+
+			// Format data
+			$formatted_data = bookacti_format_form_field_data( $field );
+			if( $formatted_data ) {
+				$fields_data_by_id[ $field_id ] = $formatted_data;
+			}
 		}
 		
-		// Format data
-		$formatted_data = bookacti_format_form_field_data( $field );
-		if( $formatted_data ) {
-			$index = $index_by_name ? $field[ 'name' ] : $field_id;
-			$fields_data[ $index ] = $formatted_data;
-		}
+		wp_cache_set( 'form_fields_data_' . $form_id, $fields_data_by_id, 'bookacti' );
+	}
+	
+	$fields_data = $index_by_name ? array() : $fields_data_by_id;
+	foreach( $fields_data_by_id as $field_id => $field_data ) {
+		// Remove inactive fields
+		if( ! $index_by_name && $active_only && empty( $fields[ $field_id ][ 'active' ] ) ) { unset( $fields_data[ $field_id ] ); continue; }
+		// Index by name
+		if( $index_by_name ) { $fields_data[ $field_data[ 'name' ] ] = $field_data; }
 	}
 	
 	return apply_filters( 'bookacti_form_fields_data', $fields_data, $form_id, $active_only, $index_by_name );

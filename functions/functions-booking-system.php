@@ -6,7 +6,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 /**
  * Get a booking system based on given parameters
- * @version 1.7.15
+ * @version 1.8.0
  * @param array $atts (see bookacti_format_booking_system_attributes())
  * @param boolean $echo Wether to return or directly echo the booking system
  * @return string
@@ -67,6 +67,10 @@ function bookacti_get_booking_system( $atts, $echo = false ) {
 			<?php do_action( 'bookacti_booking_system_errors', $atts, $booking_system_data ); ?>
 		</div>
 		
+		<div class='bookacti-tooltips-container'>
+			<?php do_action( 'bookacti_tooltips_container', $atts, $booking_system_data ); ?>
+		</div>
+		
 		<?php do_action( 'bookacti_booking_system_container_after', $atts, $booking_system_data ); ?>
 	</div>
 	<div id='<?php echo $atts[ 'id' ] . '-dialogs'; ?>' class='bookacti-booking-system-dialogs' >
@@ -101,6 +105,7 @@ function bookacti_get_booking_system_data( $atts ) {
 		$categories_data	= array();
 		$groups_events		= array();
 		$events				= array( 'events' => array(), 'data' => array() );
+		$booking_lists		= array();
 
 		if( ! in_array( 'none', $atts[ 'group_categories' ], true ) ) {
 			$groups_data		= bookacti_get_groups_of_events( $atts[ 'calendars' ], $atts[ 'group_categories' ], $atts[ 'past_events_bookable' ] ? array() : $availability_period, true, false );
@@ -121,9 +126,9 @@ function bookacti_get_booking_system_data( $atts ) {
 		} else {
 			$events	= bookacti_fetch_events( array( 'templates' => $atts[ 'calendars' ], 'activities' => $atts[ 'activities' ], 'past_events' => $atts[ 'past_events' ], 'interval' => $events_interval ) );	
 		}
-		
+				
 		// Trim leading and trailing empty days
-		if( $atts[ 'trim' ] ) {
+		if( $atts[ 'trim' ] && $events[ 'events' ] ) {
 			// Get bounding events
 			$bounding_events = array();
 			if( $atts[ 'groups_only' ] ) {
@@ -150,10 +155,21 @@ function bookacti_get_booking_system_data( $atts ) {
 			}
 		}
 		
+		// Get the booking list for each events
+		if( $atts[ 'tooltip_booking_list' ] && $events[ 'events' ] && $events[ 'data' ] ) {
+			$booking_filters = array(
+				'from'			=> $events_interval[ 'start' ],
+				'to'			=> $events_interval[ 'end' ],
+				'in__event_id'	=> array_keys( $events[ 'data' ] ),
+			);
+			$booking_lists = bookacti_get_events_booking_lists( $booking_filters, $atts[ 'tooltip_booking_list_columns' ], $atts );
+		}
+		
 		$booking_system_data[ 'events' ]				= $events[ 'events' ] ? $events[ 'events' ] : array();
 		$booking_system_data[ 'events_data' ]			= $events[ 'data' ] ? $events[ 'data' ] : array();
 		$booking_system_data[ 'events_interval' ]		= $events_interval;
 		$booking_system_data[ 'bookings' ]				= bookacti_get_number_of_bookings_by_events( $atts[ 'calendars' ], array(), $user_ids );
+		$booking_system_data[ 'booking_lists' ]			= $booking_lists;
 		$booking_system_data[ 'activities_data' ]		= bookacti_get_activities_by_template( $atts[ 'calendars' ], true );
 		$booking_system_data[ 'groups_events' ]			= $groups_events;
 		$booking_system_data[ 'groups_data' ]			= $groups_data;
@@ -307,6 +323,8 @@ function bookacti_get_booking_system_default_attributes() {
 		'groups_only'					=> 0,
 		'groups_single_events'			=> 0,
 		'bookings_only'					=> 0,
+		'tooltip_booking_list'				=> 0,
+		'tooltip_booking_list_columns'			=> array(),
 		'status'						=> array(),
 		'user_id'						=> 0,
 		'method'						=> 'calendar',
@@ -350,7 +368,7 @@ function bookacti_format_booking_system_attributes( $raw_atts = array() ) {
 	$formatted_atts = array();
 	
 	// Sanitize booleans
-	$booleans_to_check = array( 'bookings_only', 'groups_only', 'groups_single_events', 'auto_load', 'trim', 'past_events', 'past_events_bookable', 'check_roles' );
+	$booleans_to_check = array( 'bookings_only', 'tooltip_booking_list', 'groups_only', 'groups_single_events', 'auto_load', 'trim', 'past_events', 'past_events_bookable', 'check_roles' );
 	foreach( $booleans_to_check as $key ) {
 		$formatted_atts[ $key ] = in_array( $atts[ $key ], array( 1, '1', true, 'true', 'yes', 'ok' ), true ) ? 1 : 0;
 	}
@@ -459,7 +477,10 @@ function bookacti_format_booking_system_attributes( $raw_atts = array() ) {
 	}
 	
 	// Check if desired status are registered
-	$formatted_atts[ 'status' ] = is_array( $status ) ? array_intersect( $status, array_keys( bookacti_get_booking_state_labels() ) ) : array();
+	$formatted_atts[ 'status' ] = is_array( $status ) && $status ? array_intersect( $status, array_keys( bookacti_get_booking_state_labels() ) ) : array();
+	
+	// Check if desired columns are registered
+	$formatted_atts[ 'tooltip_booking_list_columns' ] = is_array( $atts[ 'tooltip_booking_list_columns' ] ) && $atts[ 'tooltip_booking_list_columns' ] ? array_intersect( $atts[ 'tooltip_booking_list_columns' ], array_keys( bookacti_get_user_booking_list_columns_labels() ) ) : array();
 	
 	// Give a random id if not supplied
 	// Prefix the ID with bookacti-booking-system-

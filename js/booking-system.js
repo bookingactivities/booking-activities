@@ -147,7 +147,97 @@ $j( document ).ready( function() {
 			}
 		});		
 	}
+	
+	
+	
+	
+	// TOOLTIPS
+	
+	/**
+	 * Display the booking list tooltip when an event is hovered
+	 * @since 1.8.0
+	 */
+	$j( 'body' ).on( 'bookacti_event_mouse_over', '.bookacti-booking-system', function( e, event, element ) {
+		var booking_system		= $j( this );
+		var booking_system_id	= booking_system.attr( 'id' );
+		var attributes			= bookacti.booking_system[ booking_system_id ];
+		
+		// Check if the booking list should be displayed
+		if( ! attributes[ 'tooltip_booking_list' ] ) { return; }
+		
+		// Check if the booking list exists
+		var event_start = moment.utc( event.start ).format( 'YYYY-MM-DD HH:mm:ss' );
+		if( typeof attributes[ 'booking_lists' ][ event.id ] === 'undefined' ) { return; }
+		if( typeof attributes[ 'booking_lists' ][ event.id ][ event_start ] === 'undefined' ) { return; }
+		
+		var booking_list = attributes[ 'booking_lists' ][ event.id ][ event_start ];
+		if( ! booking_list ) { return; }
+		
+		var tooltip_mouseover_timeout = parseInt( bookacti_localized.bookings_tooltip_mouseover_timeout );
+		if( tooltip_mouseover_timeout < 0 ) { return; }
+		
+		bookacti_display_bookings_tooltip_monitor = setTimeout( function() {
+			// Remove old tooltip
+			booking_system.siblings( '.bookacti-tooltips-container' ).find( '.bookacti-booking-list-tooltip.bookacti-tooltip-mouseover' ).remove();
+			
+			// Display the tooltip
+			booking_system.siblings( '.bookacti-tooltips-container' ).append( '<div class="bookacti-tooltip-container bookacti-booking-list-tooltip bookacti-tooltip-mouseover"><div class="bookacti-tooltip-content bookacti-custom-scrollbar">' + booking_list + '</div></div>' );
 
-}); // end of document ready
+			// Display the tooltip above the event
+			var tooltip_container = booking_system.siblings( '.bookacti-tooltips-container' ).find( '.bookacti-booking-list-tooltip.bookacti-tooltip-mouseover' );
+			bookacti_set_tooltip_position( element, tooltip_container, 'above' );
+			
+			// Hook for plugins
+			$j( 'body' ).trigger( 'bookacti_event_booking_list_displayed', [ tooltip_container, booking_system, event, element ] );
+		}, tooltip_mouseover_timeout );
+	});
+	
+	
+	/**
+	 * Remove the tooltips on mouse out
+	 * @since 1.8.0
+	 */
+	$j( 'body' ).on( 'bookacti_event_mouse_out', '.bookacti-booking-system', function( e, event, element ) {
+		// Clear the timeout
+		if( typeof bookacti_display_bookings_tooltip_monitor !== 'undefined' ) { 
+			if( bookacti_display_bookings_tooltip_monitor ) { clearTimeout( bookacti_display_bookings_tooltip_monitor ); }
+		}
+		
+		// Remove mouseover tooltip
+		var tooltip = $j( this ).siblings( '.bookacti-tooltips-container' ).find( '.bookacti-tooltip-mouseover' );
+		if( tooltip.length ) {
+			var tooltip_mouseover_timeout = Math.min( Math.max( parseInt( bookacti_localized.bookings_tooltip_mouseover_timeout ), 0 ), 200 );
+			bookacti_remove_mouseover_tooltip_monitor = setTimeout( function() {
+				tooltip.remove();
+			}, tooltip_mouseover_timeout );
+		}
+	});
+	
+	
+	/**
+	 * Keep the tooltips displayed if the user mouseover it
+	 * @since 1.8.0
+	 */
+	$j( 'body' ).on( 'mouseover', '.bookacti-tooltip-mouseover', function() {
+		if( typeof bookacti_remove_mouseover_tooltip_monitor !== 'undefined' ) { 
+			if( bookacti_remove_mouseover_tooltip_monitor ) { clearTimeout( bookacti_remove_mouseover_tooltip_monitor ); }
+		}
+	});
+	
+	
+	/**
+	 * Remove the tooltips displayed on mouseover - on mouseout
+	 * @since 1.8.0
+	 */
+	$j( 'body' ).on( 'mouseout', '.bookacti-tooltip-mouseover', function() {
+		var tooltip = $j( this ).closest( '.bookacti-tooltips-container' ).find( '.bookacti-tooltip-mouseover' );
+		if( tooltip.length ) {
+			var tooltip_mouseover_timeout = Math.min( Math.max( parseInt( bookacti_localized.bookings_tooltip_mouseover_timeout ), 0 ), 200 );
+			bookacti_remove_mouseover_tooltip_monitor = setTimeout( function() {
+				tooltip.remove();
+			}, tooltip_mouseover_timeout );
+		}
+	});
+});
 
 

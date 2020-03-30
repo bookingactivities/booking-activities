@@ -51,6 +51,33 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			?>
 		</fieldset>
 		<fieldset>
+			<legend><?php esc_html_e( 'Tooltip', 'booking-activities' ); ?></legend>
+			<?php
+				$undesired_columns = array( 'events', 'event_id', 'event_title', 'start_date', 'end_date', 'actions' );
+				$event_booking_list_columns = array_diff_key( bookacti_get_user_booking_list_columns_labels(), array_flip( $undesired_columns ) );
+				
+				$tooltip_fields = apply_filters( 'bookacti_bookings_calendar_tooltip_fields', array( 
+					'tooltip_booking_list' => array( 
+						'name'		=> 'tooltip_booking_list',
+						'type'		=> 'checkbox',
+						'title'		=> esc_html__( 'Preview booking list', 'booking-activities' ),
+						'value'		=> $user_calendar_settings[ 'tooltip_booking_list' ], 
+						'tip'		=> esc_html__( 'Display the event booking list when you mouse over an event.', 'booking-activities' )
+					),
+					'tooltip_booking_list_columns' => array( 
+						'name'		=> 'tooltip_booking_list_columns',
+						'type'		=> 'select_items',
+						'title'		=> esc_html__( 'Booking list columns', 'booking-activities' ),
+						'id'		=> 'bookacti-event-booking-list-columns',
+						'options'	=> $event_booking_list_columns,
+						'value'		=> $user_calendar_settings[ 'tooltip_booking_list_columns' ],
+						'tip'		=> esc_html__( 'Add the columns in the order they will be displayed.', 'booking-activities' )
+					)
+				), $user_calendar_settings );
+				bookacti_display_fields( $tooltip_fields );
+			?>
+		</fieldset>
+		<fieldset>
 			<legend><?php esc_html_e( 'Working time', 'booking-activities' ); ?></legend>
 			<?php 
 				$agenda_fields = bookacti_get_calendar_fields_default_data( array( 'minTime', 'maxTime' ) );

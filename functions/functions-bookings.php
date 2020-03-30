@@ -103,7 +103,7 @@ function bookacti_get_activities_html_for_booking_page( $template_ids, $activity
 /**
  * Get Default booking filters
  * @since 1.6.0
- * @version 1.7.6
+ * @version 1.8.0
  * @return array
  */
 function bookacti_get_default_booking_filters() {
@@ -133,12 +133,14 @@ function bookacti_get_default_booking_filters() {
 		'in__booking_group_id'		=> array(),
 		'in__group_category_id'		=> array(),
 		'in__event_group_id'		=> array(),
+		'in__event_id'				=> array(),
 		'in__user_id'				=> array(),
 		'in__form_id'				=> array(),
 		'not_in__booking_id'		=> array(),
 		'not_in__booking_group_id'	=> array(),
 		'not_in__group_category_id'	=> array(),
 		'not_in__event_group_id'	=> array(),
+		'not_in__event_id'			=> array(),
 		'not_in__user_id'			=> array(),
 		'not_in__form_id'			=> array(),
 		'fetch_meta'				=> false
@@ -183,7 +185,7 @@ function bookacti_format_booking_filters( $filters = array() ) {
 			else { $current_value = $default_value; }
 			$current_value = array_values( $current_value );
 
-		} else if( in_array( $filter, array( 'activities', 'in__booking_id', 'in__booking_group_id', 'in__group_category_id', 'in__event_group_id', 'in__form_id', 'not_in__booking_id', 'not_in__booking_group_id', 'not_in__group_category_id', 'not_in__event_group_id', 'not_in__form_id' ), true ) ) {
+		} else if( in_array( $filter, array( 'activities', 'in__booking_id', 'in__booking_group_id', 'in__group_category_id', 'in__event_group_id', 'in__event_id', 'in__form_id', 'not_in__booking_id', 'not_in__booking_group_id', 'not_in__group_category_id', 'not_in__event_group_id', 'not_in__event_id', 'not_in__form_id' ), true ) ) {
 			if( is_numeric( $current_value ) )	{ $current_value = array( $current_value ); }
 			if( ! is_array( $current_value ) )	{ $current_value = $default_value; }
 			else if( ( $i = array_search( 'all', $current_value ) ) !== false ) { unset( $current_value[ $i ] ); }
@@ -264,14 +266,14 @@ function bookacti_format_booking_filters( $filters = array() ) {
 /**
  * Format booking filters manually input
  * @since 1.6.0
- * @version 1.7.6
+ * @version 1.8.0
  * @param array $filters
  * @return array
  */
 function bookacti_format_string_booking_filters( $filters = array() ) {
 	// Format arrays
 	$formatted_arrays = array();
-	$int_arrays = array( 'templates', 'activities', 'in__booking_id', 'in__booking_group_id', 'in__group_category_id', 'in__event_group_id', 'in__form_id', 'not_in__booking_id', 'not_in__booking_group_id', 'not_in__group_category_id', 'not_in__event_group_id', 'not_in__form_id' );
+	$int_arrays = array( 'templates', 'activities', 'in__booking_id', 'in__booking_group_id', 'in__group_category_id', 'in__event_group_id', 'in__event_id','in__form_id', 'not_in__booking_id', 'not_in__booking_group_id', 'not_in__group_category_id', 'not_in__event_group_id', 'not_in__event_id', 'not_in__form_id' );
 	$str_arrays = array( 'status', 'payment_status', 'order_by', 'columns' );
 	$user_id_arrays = array( 'in__user_id', 'not_in__user_id' );
 
@@ -328,7 +330,12 @@ function bookacti_format_bookings_calendar_settings( $raw_settings = array() ) {
 	if( empty( $raw_settings ) ) { $raw_settings = array(); }
 	
 	// Default settings
-	$default_settings = apply_filters( 'bookacti_bookings_calendar_default_settings', array_merge( array( 'show' => 1, 'ajax' => 1 ), bookacti_get_booking_system_default_display_data() ) );
+	$default_settings = apply_filters( 'bookacti_bookings_calendar_default_settings', array_merge( array( 
+		'show' => 1, 
+		'ajax' => 1,
+		'tooltip_booking_list' => 1,
+		'tooltip_booking_list_columns' => bookacti_get_event_booking_list_default_columns()
+	), bookacti_get_booking_system_default_display_data() ) );
 	
 	$settings = array();
 		
@@ -341,6 +348,10 @@ function bookacti_format_bookings_calendar_settings( $raw_settings = array() ) {
 	// Format non display data
 	$settings[ 'show' ] = in_array( $settings[ 'show' ], array( 1, '1', true, 'true' ), true ) ? 1 : 0;
 	$settings[ 'ajax' ] = in_array( $settings[ 'ajax' ], array( 1, '1', true, 'true' ), true ) ? 1 : 0;
+	$settings[ 'tooltip_booking_list' ] = in_array( $settings[ 'tooltip_booking_list' ], array( 1, '1', true, 'true' ), true ) ? 1 : 0;
+	
+	// Check if desired columns are registered
+	$formatted_atts[ 'tooltip_booking_list_columns' ] = is_array( $settings[ 'tooltip_booking_list_columns' ] ) && $settings[ 'tooltip_booking_list_columns' ] ? array_intersect( $settings[ 'tooltip_booking_list_columns' ], array_keys( bookacti_get_user_booking_list_columns_labels() ) ) : $default_settings[ 'tooltip_booking_list_columns' ];
 	
 	// Format display data
 	$display_data = bookacti_format_booking_system_display_data( $raw_settings );
@@ -1213,7 +1224,7 @@ function bookacti_convert_bookings_to_ical( $filters, $args_raw, $sequence = 0 )
 	$args_default = array( 
 		'vevent_summary'		=> $default_settings[ 'vevent_summary' ],
 		'vevent_description'	=> $default_settings[ 'vevent_description' ],
-		'booking_list_columns'	=> $default_settings[ 'ical_columns' ],
+		'tooltip_booking_list_columns'	=> $default_settings[ 'ical_columns' ],
 		'booking_list_header'	=> $default_settings[ 'ical_booking_list_header' ],
 		'raw'					=> $default_settings[ 'ical_raw' ],
 		'locale'				=> '',
@@ -1222,10 +1233,9 @@ function bookacti_convert_bookings_to_ical( $filters, $args_raw, $sequence = 0 )
 	
 	// Get items and events
 	$filters[ 'group_by' ] = 'none';
-	$filters[ 'display_private_columns' ] = 1;
 	$export_args = array( 
 		'filters' => $filters, 
-		'columns' => $args[ 'booking_list_columns' ], 
+		'columns' => $args[ 'tooltip_booking_list_columns' ], 
 		'raw' => $args[ 'raw' ], 
 		'type' => 'ical',
 		'locale' => $args[ 'locale' ]
@@ -1283,17 +1293,17 @@ function bookacti_convert_bookings_to_ical( $filters, $args_raw, $sequence = 0 )
  * @return array
  */
 function bookacti_get_bookings_export_events_tags_values( $booking_items, $args ) {
-	$has_booking_list = ! empty( $args[ 'booking_list_columns' ] ) && strpos( $args[ 'vevent_summary' ] . $args[ 'vevent_description' ], '{booking_list' ) !== false;
+	$has_booking_list = ! empty( $args[ 'tooltip_booking_list_columns' ] ) && strpos( $args[ 'vevent_summary' ] . $args[ 'vevent_description' ], '{booking_list' ) !== false;
 	
 	// Remove unknown columns in the booking list
 	if( $has_booking_list ) {
 		$booking_list_headers = array();
 		$allowed_columns = bookacti_get_bookings_export_columns();
-		foreach( $args[ 'booking_list_columns' ] as $i => $column_name ) {
-			if( ! isset( $allowed_columns[ $column_name ] ) ) { unset( $args[ 'booking_list_columns' ][ $i ] ); continue; }
+		foreach( $args[ 'tooltip_booking_list_columns' ] as $i => $column_name ) {
+			if( ! isset( $allowed_columns[ $column_name ] ) ) { unset( $args[ 'tooltip_booking_list_columns' ][ $i ] ); continue; }
 			$booking_list_headers[ $column_name ] = apply_filters( 'bookacti_translate_text', $allowed_columns[ $column_name ], $args[ 'locale' ] );
 		}
-		if( empty( $args[ 'booking_list_columns' ] ) ) { $has_booking_list = false; }
+		if( empty( $args[ 'tooltip_booking_list_columns' ] ) ) { $has_booking_list = false; }
 	}
 	
 	$date_format = bookacti_get_message( 'date_format_long' );
@@ -1786,9 +1796,8 @@ function bookacti_get_payment_status_labels() {
 
 
 /**
- * Give a the formatted and translated booking state
- * 
- * @version 1.3.0
+ * Get the formatted and translated booking state
+ * @version 1.8.0
  * @param string $state
  * @param boolean $icon_only
  * @return string
@@ -1801,10 +1810,10 @@ function bookacti_format_booking_state( $state, $icon_only = false ) {
 		if( $icon_only ) {
 			$formatted_value = '<span class="bookacti-booking-state bookacti-booking-state-' . esc_attr( $booking_states_labels[ $state ][ 'display_state' ] ) . ' bookacti-tip" data-booking-state="' . esc_attr( $state ) . '" data-tip="'. esc_html( $booking_states_labels[ $state ][ 'label' ] ) . '" ></span>';
 		} else {
-			$formatted_value = '<span class="bookacti-booking-state bookacti-booking-state-' . esc_attr( $booking_states_labels[ $state ][ 'display_state' ] ) . '" data-booking-state="' . esc_attr( $state ) . '" >' . esc_html( $booking_states_labels[ $state ][ 'label' ] ) . '</span>';
+			$formatted_value = '<span class="bookacti-booking-state bookacti-booking-state-' . esc_attr( $booking_states_labels[ $state ][ 'display_state' ] ) . '" data-booking-state="' . esc_attr( $state ) . '" title="' . esc_html( $booking_states_labels[ $state ][ 'label' ] ) . '" ><label>' . esc_html( $booking_states_labels[ $state ][ 'label' ] ) . '</label></span>';
 		}
 	} else if( $state ) {
-		$formatted_value = '<span class="bookacti-booking-state" data-booking-state="' . esc_attr( $state ) . '" >' . esc_html__( $state, 'booking-activities' ) . '</span>';
+		$formatted_value = '<span class="bookacti-booking-state" data-booking-state="' . esc_attr( $state ) . '" title="' . esc_html( $state ) . '"><label>' . esc_html( $state ) . '</label></span>';
 	}
 
 	return apply_filters( 'bookacti_booking_states_display', $formatted_value, $state, $icon_only );
@@ -1812,9 +1821,8 @@ function bookacti_format_booking_state( $state, $icon_only = false ) {
 
 
 /**
- * Give a the formatted and translated payment status
- * 
- * @since 1.3.0
+ * Get the formatted and translated payment status
+ * @since 1.8.0
  * @param string $status
  * @param boolean $icon_only
  * @return string
@@ -1827,10 +1835,10 @@ function bookacti_format_payment_status( $status, $icon_only = false ) {
 		if( $icon_only ) {
 			$formatted_value = '<span class="bookacti-payment-status bookacti-payment-status-' . esc_attr( $payment_status_labels[ $status ][ 'display_state' ] ) . ' bookacti-tip" data-payment-status="' . esc_attr( $status ) . '" data-tip="'. esc_html( $payment_status_labels[ $status ][ 'label' ] ) . '" ></span>';
 		} else {
-			$formatted_value = '<span class="bookacti-payment-status bookacti-payment-status-' . esc_attr( $payment_status_labels[ $status ][ 'display_state' ] ) . '" data-payment-status="' . esc_attr( $status ) . '" >' . esc_html( $payment_status_labels[ $status ][ 'label' ] ) . '</span>';
+			$formatted_value = '<span class="bookacti-payment-status bookacti-payment-status-' . esc_attr( $payment_status_labels[ $status ][ 'display_state' ] ) . '" data-payment-status="' . esc_attr( $status ) . '" title="' . esc_html( $payment_status_labels[ $status ][ 'label' ] ) . '"><label>' . esc_html( $payment_status_labels[ $status ][ 'label' ] ) . '</label></span>';
 		}
 	} else if( $status ) {
-		$formatted_value = '<span class="bookacti-payment-status" data-payment-status="' . esc_attr( $status ) . '" >' . esc_html__( $status, 'booking-activities' ) . '</span>';
+		$formatted_value = '<span class="bookacti-payment-status" data-payment-status="' . esc_attr( $status ) . '" title="' . esc_html( $status ) . '"><label>' . esc_html( $status ) . '</label></span>';
 	}
 
 	return apply_filters( 'bookacti_payment_status_display', $formatted_value, $status, $icon_only );
@@ -1887,7 +1895,7 @@ function bookacti_get_user_booking_list_columns_labels() {
 
 
 /**
- * Default booking list columns
+ * Default user booking list columns
  * @since 1.7.4
  * @return array
  */
@@ -1900,6 +1908,27 @@ function bookacti_get_user_booking_list_default_columns() {
 		100 => 'actions'
 	) );
 
+	// Order columns
+	ksort( $columns );
+
+	return $columns;
+}
+
+
+/**
+ * Default event booking list columns
+ * @since 1.8.0
+ * @return array
+ */
+function bookacti_get_event_booking_list_default_columns() {
+	$columns = apply_filters( 'bookacti_event_booking_list_default_columns', array(
+		10	=> 'booking_id',
+		20	=> 'status',
+		30	=> 'payment_status',
+		40	=> 'quantity',
+		50	=> 'customer_display_name'
+	) );
+	
 	// Order columns
 	ksort( $columns );
 
@@ -1939,13 +1968,15 @@ function bookacti_get_user_booking_list_items( $filters, $columns = array() ) {
 	// Remove private columns if not allowed
 	$current_user_id = get_current_user_id();
 	$display_private_columns = bookacti_get_setting_value( 'bookacti_general_settings', 'display_private_columns' ) || ! empty( $filters[ 'display_private_columns' ] );
+	$current_user_can_manage_bookings = current_user_can( 'bookacti_manage_bookings' ) || current_user_can( 'bookacti_edit_bookings' );
 	if( ! $display_private_columns ) {
-		$current_user_can_see_private_data = current_user_can( 'bookacti_manage_bookings' ) || current_user_can( 'bookacti_edit_bookings' ) || current_user_can( 'list_users' ) || current_user_can( 'edit_users' );
+		$current_user_can_see_users_data = current_user_can( 'list_users' ) || current_user_can( 'edit_users' );
 		$is_current_user_list = $current_user_id && ( ( intval( $filters[ 'user_id' ] ) && intval( $filters[ 'user_id' ] ) === $current_user_id ) || ( count( $filters[ 'in__user_id' ] ) === 1 && intval( $filters[ 'in__user_id' ][ 0 ] ) && intval( $filters[ 'in__user_id' ][ 0 ] ) === $current_user_id ) );
-		$display_private_columns = $current_user_can_see_private_data || $is_current_user_list;
+		$display_private_columns = $current_user_can_manage_bookings || $current_user_can_see_users_data || $is_current_user_list;
 	}
 	$private_columns = bookacti_get_user_booking_list_private_columns();
 	$is_customer_email_pivate = in_array( 'customer_email', $private_columns, true );
+	$is_customer_id_pivate = in_array( 'customer_id', $private_columns, true );
 	
 	// Check if we will need user data
 	$has_user_data = false;
@@ -2011,13 +2042,15 @@ function bookacti_get_user_booking_list_items( $filters, $columns = array() ) {
 			// If the group row has already been displayed, or if it is not found, continue
 			if( isset( $displayed_groups[ $booking->group_id ] ) 
 			||  empty( $booking_groups[ $booking->group_id ] ) ) { continue; }
-
+			
+			$group_id_link	= $current_user_can_manage_bookings ? '<a href="' . admin_url( 'admin.php?page=bookacti_bookings&booking_group_id=' . $group->id . '&group_by=booking_group' ) . '">' . $group->id . '</a>' : $group->id;
+			
 			$raw_id			= $group->id;
 			$tr_class		= 'bookacti-booking-group';
-			$id				= $group->id . '<span class="bookacti-booking-group-indicator">' . esc_html_x( 'Group', 'noun', 'booking-activities' ) . '</span>';
+			$id				= $group_id_link . '<span class="bookacti-booking-group-indicator">' . esc_html_x( 'Group', 'noun', 'booking-activities' ) . '</span>';
 			$user_id		= $group->user_id;
-			$status			= bookacti_format_booking_state( $group->state );
-			$paid			= bookacti_format_payment_status( $group->payment_status );
+			$status			= $group->state;
+			$paid			= $group->payment_status;
 			$event_id		= $group->event_group_id;
 			$title			= $group->group_title;
 			$start			= $group->start;
@@ -2034,12 +2067,15 @@ function bookacti_get_user_booking_list_items( $filters, $columns = array() ) {
 
 		// Single booking
 		} else {
+			$booking_id_link= $current_user_can_manage_bookings ? '<a href="' . admin_url( 'admin.php?page=bookacti_bookings&booking_id=' . $booking->id ) . '">' . $booking->id. '</a>' : $booking->id;
+			$group_id_link	= $current_user_can_manage_bookings ? '<a href="' . admin_url( 'admin.php?page=bookacti_bookings&booking_group_id=' . $booking->group_id . '&group_by=booking_group' ) . '">' . $booking->group_id . '</a>' : $booking->group_id;
+			
 			$raw_id			= $booking->id;
 			$tr_class		= $booking->group_id ? 'bookacti-single-booking bookacti-gouped-booking bookacti-booking-group-id-' . $booking->group_id : 'bookacti-single-booking';
-			$id				= $booking->group_id ? $booking->id . '<span class="bookacti-booking-group-id" >' . $booking->group_id . '</span>' : $booking->id;
+			$id				= $booking->group_id ? $booking_id_link . '<span class="bookacti-booking-group-id" >' . $group_id_link . '</span>' : $booking_id_link;
 			$user_id		= $booking->user_id;
-			$status			= bookacti_format_booking_state( $booking->state );
-			$paid			= bookacti_format_payment_status( $booking->payment_status );
+			$status			= $booking->state;
+			$paid			= $booking->payment_status;
 			$event_id		= $booking->event_id;
 			$title			= $booking->event_title;
 			$start			= $booking->event_start;
@@ -2096,8 +2132,8 @@ function bookacti_get_user_booking_list_items( $filters, $columns = array() ) {
 			'booking_id_raw'		=> $raw_id,
 			'booking_id'			=> $id,
 			'booking_type'			=> $booking_type,
-			'status'				=> $status,
-			'payment_status'		=> $paid,
+			'status'				=> bookacti_format_booking_state( $status ),
+			'payment_status'		=> bookacti_format_payment_status( $paid ),
 			'quantity'				=> $quantity,
 			/* translators: Datetime format. Must be adapted to each country. Use wp date_i18n documentation to find the appropriated combinaison https://wordpress.org/support/article/formatting-date-and-time/ */
 			'creation_date'			=> bookacti_format_datetime( $booking->creation_date, esc_html__( 'F d, Y', 'booking-activities' ) ),
@@ -2112,6 +2148,8 @@ function bookacti_get_user_booking_list_items( $filters, $columns = array() ) {
 			'event_title'			=> apply_filters( 'bookacti_translate_text', $title ),
 			'start_date'			=> bookacti_format_datetime( $start, $datetime_format ),
 			'end_date'				=> bookacti_format_datetime( $end, $datetime_format ),
+			'start_date_raw'		=> $start,
+			'end_date_raw'			=> $end,
 			'template_id'			=> $booking->template_id,
 			'template_title'		=> apply_filters( 'bookacti_translate_text', $booking->template_title ),
 			'activity_id'			=> $activity_id,
@@ -2148,7 +2186,12 @@ function bookacti_get_user_booking_list_items( $filters, $columns = array() ) {
 			// Replace private column value
 			// and make sure 'customer_id' and 'customer_display_name' columns don't display the customer email if not allowed
 			$private_column = false;
-			if( ! $display_private_columns && ! $current_user_row && $not_empty && ( in_array( $column, $private_columns, true ) || ( $is_customer_email_pivate && in_array( $column, array( 'customer_id', 'customer_display_name' ), true ) && is_email( $booking_list_item[ $column ] ) ) ) ) {
+			if( ! $display_private_columns && ! $current_user_row && $not_empty 
+				&& ( in_array( $column, $private_columns, true ) 
+					|| ( $is_customer_email_pivate && in_array( $column, array( 'customer_id', 'customer_display_name' ), true ) && is_email( $booking_list_item[ $column ] ) )
+					|| ( $is_customer_id_pivate && $column === 'customer_display_name' && is_numeric( $booking_list_item[ 'customer_id' ] ) ) && strpos( $booking_list_item[ $column ], $booking_list_item[ 'customer_id' ] ) !== false
+					) 
+			) {
 				$private_column = true;
 				$booking_list_items[ $booking_id ][ $column ] = '<span class="bookacti-private-value">' . esc_html__( 'Private data', 'booking-activities' ) . '</span>';
 			}
@@ -2174,7 +2217,7 @@ function bookacti_get_user_booking_list_items( $filters, $columns = array() ) {
 /**
  * Display a booking list
  * @since 1.7.6
- * @version 1.7.18
+ * @version 1.8.0
  * @param array $filters
  * @param array $columns
  * @param int $per_page
@@ -2197,35 +2240,15 @@ function bookacti_get_user_booking_list( $filters, $columns = array(), $per_page
 	$filters[ 'per_page' ]	= intval( $per_page );
 	$filters[ 'offset' ]	= ( $page_nb - 1 ) * $filters[ 'per_page' ];
 	
+	$booking_list_items = bookacti_get_user_booking_list_items( $filters, $columns );
+	
 	ob_start();
 	?>
 	<div id='bookacti-user-booking-list-<?php echo $bookacti_booking_list_count; ?>' class='bookacti-user-booking-list' data-user-id='<?php echo $filters[ 'user_id' ] ? $filters[ 'user_id' ] : ''; ?>' >
-		<table>
-			<thead>
-				<tr>
-				<?php
-					$columns_labels = bookacti_get_user_booking_list_columns_labels();
-					foreach( $columns as $column_id ) {
-					?>
-						<th class='bookacti-column-<?php echo sanitize_title_with_dashes( $column_id ); ?>' >
-							<div class='bookacti-column-title-<?php echo $column_id; ?>' >
-								<?php echo ! empty( $columns_labels[ $column_id ] ) ? esc_html( $columns_labels[ $column_id ] ) : $column_id; ?>
-							</div>
-						</th>
-					<?php
-					} 
-				?>
-				</tr>
-			</thead>
-			<tbody>
-			<?php
-				$booking_list_items = bookacti_get_user_booking_list_items( $filters, $columns );
-				echo bookacti_get_user_booking_list_rows( $booking_list_items, $columns );
-			?>
-			</tbody>
-		</table>
+		<?php
+			echo bookacti_get_user_booking_list_table_html( $booking_list_items, $columns );
 		
-		<?php if( $page_max > 1 ) { ?>
+		if( $page_max > 1 ) { ?>
 		<div class='bookacti-user-booking-list-pagination'>
 		<?php
 			if( $page_nb > 1 ) {
@@ -2263,7 +2286,46 @@ function bookacti_get_user_booking_list( $filters, $columns = array(), $per_page
 		include_once( WP_PLUGIN_DIR . '/' . BOOKACTI_PLUGIN_NAME . '/view/view-bookings-dialogs.php' );
 	}
 	
-	return apply_filters( 'bookacti_user_booking_list_html', ob_get_clean(), $booking_list_items, $columns, $filters, $per_page, $bookings_nb );
+	return apply_filters( 'bookacti_user_booking_list_html', ob_get_clean(), $booking_list_items, $columns, $filters, $per_page );
+}
+
+
+/**
+ * Get the booking list table HTML
+ * @since 1.8.0
+ * @param array $booking_items
+ * @param array $columns
+ * @return array
+ */
+function bookacti_get_user_booking_list_table_html( $booking_items, $columns = array() ) {
+	if( ! $columns ) { $columns = bookacti_get_user_booking_list_default_columns(); }
+	ob_start();
+	?>
+	<table class='bookacti-user-booking-list-table'>
+		<thead>
+			<tr>
+			<?php
+				$columns_labels = bookacti_get_user_booking_list_columns_labels();
+				foreach( $columns as $column_id ) {
+				?>
+					<th class='bookacti-column-<?php echo sanitize_title_with_dashes( $column_id ); ?>' >
+						<div class='bookacti-column-title-<?php echo $column_id; ?>' >
+							<?php echo ! empty( $columns_labels[ $column_id ] ) ? esc_html( $columns_labels[ $column_id ] ) : $column_id; ?>
+						</div>
+					</th>
+				<?php
+				} 
+			?>
+			</tr>
+		</thead>
+		<tbody>
+		<?php
+			echo bookacti_get_user_booking_list_rows( $booking_items, $columns );
+		?>
+		</tbody>
+	</table>
+	<?php
+	return ob_get_clean();
 }
 
 
@@ -2353,4 +2415,57 @@ function bookacti_get_booking_list_rows_according_to_context( $context = 'user_b
 	if( ! empty( $_REQUEST[ 'locale' ] ) ) { bookacti_restore_locale();	}
 	
 	return $rows;
+}
+
+
+/**
+ * Get booking lists by event
+ * @since 1.8.0
+ * @param array $filters_raw
+ * @param array $columns
+ * @param array $atts Booking system attributes
+ * @return array
+ */
+function bookacti_get_events_booking_lists( $filters_raw, $columns = array(), $atts = array() ) {
+	// Sanitize bookings filters
+	$default_filters = array(
+		'templates'		=> '',
+		'status'		=> array( 'pending', 'booked', 'delivered' ),
+		'order_by'		=> array( 'event_id', 'event_start' ), 
+		'order'			=> 'desc',
+		'group_by'		=> 'none',
+		'fetch_meta'	=> true
+	);
+	$sanitized_filters = bookacti_format_booking_filters( wp_parse_args( $filters_raw, $default_filters ) );
+	if( ! empty( $filters_raw[ 'display_private_columns' ] ) ) { $sanitized_filters[ 'display_private_columns' ] = 1; }
+	
+	// Allow plugins to change filters
+	$filters = apply_filters( 'bookacti_events_booking_lists_filters', $sanitized_filters, $filters_raw, $columns, $atts );
+	
+	// Set default columns
+	if( ! $columns ) { $columns = bookacti_get_event_booking_list_default_columns(); }
+	
+	// Get the bookings
+	$booking_items = bookacti_get_user_booking_list_items( $filters, $columns );
+
+	// Get the booking lists
+	$booking_lists = array();
+	if( $booking_items ) {
+		// Order the bookings per event
+		$ordered_items = array();
+		foreach( $booking_items as $booking_item ) {
+			$index = $booking_item[ 'event_id' ] . '_' . $booking_item[ 'start_date_raw' ];
+			if( ! isset( $ordered_items[ $index ] ) ) { $ordered_items[ $index ] = array(); }
+			$ordered_items[ $index ][] = $booking_item;
+		}
+		// Build the booking list for each event
+		foreach( $booking_items as $booking_item ) {
+			$index = $booking_item[ 'event_id' ] . '_' . $booking_item[ 'start_date_raw' ];
+			if( empty( $ordered_items[ $index ] ) ) { continue; }
+			if( ! isset( $booking_lists[ $booking_item[ 'event_id' ] ] ) ) { $booking_lists[ $booking_item[ 'event_id' ] ] = array(); }
+			$booking_lists[ $booking_item[ 'event_id' ] ][ $booking_item[ 'start_date_raw' ] ] = bookacti_get_user_booking_list_table_html( $ordered_items[ $index ], $columns );
+		}
+	}
+	
+	return apply_filters( 'bookacti_events_booking_lists', $booking_lists, $filters, $filters_raw, $columns, $atts );
 }

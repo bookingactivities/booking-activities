@@ -210,7 +210,7 @@ function bookacti_empty_all_dialog_forms( scope ) {
 
 /**
  * Fill custom settings fields in a form
- * @version 1.7.19
+ * @version 1.8.0
  * @param {array} fields
  * @param {string} field_prefix
  * @param {qtring} scope
@@ -221,7 +221,7 @@ function bookacti_fill_fields_from_array( fields, field_prefix, scope ) {
 	
 	$j.each( fields, function( key, value ) {
 		var field_name = field_prefix ? field_prefix + '[' + key + ']' : key;
-
+		
 		// If the value is also a plain object, fill its fields recursively
 		if( $j.isPlainObject( value ) ) {
 			bookacti_fill_fields_from_array( value, field_name, scope );
@@ -238,15 +238,12 @@ function bookacti_fill_fields_from_array( fields, field_prefix, scope ) {
 			}
 		}
 		// Switch simple select to multiple
-		if( $j( scope + 'select[name="' + field_name + '"]' ).length && $j.isArray( value ) && value.length > 1 ) {
-			if( value.length === 1 ) { value = value[0]; }
-			else {
-				var field_id = $j( scope + 'select[name="' + field_name + '"]' ).attr( 'id' );
-				if( $j( scope + 'input.bookacti-multiple-select[data-select-id="' + field_id + '"]' ).length ) {
-					$j( scope + 'input.bookacti-multiple-select[data-select-id="' + field_id + '"]' ).prop( 'checked', true );
-					bookacti_switch_select_to_multiple( scope + 'input.bookacti-multiple-select[data-select-id="' + field_id + '"]' );
-					$j( scope + 'select[name="' + field_name + '[]"] option' ).prop( 'selected', false );
-				}
+		if( $j( scope + 'select[name="' + field_name + '"]:not(.bookacti-items-select-box)' ).length && $j.isArray( value ) && value.length > 1 ) {
+			var field_id = $j( scope + 'select[name="' + field_name + '"]' ).attr( 'id' );
+			if( $j( scope + 'input.bookacti-multiple-select[data-select-id="' + field_id + '"]' ).length ) {
+				$j( scope + 'input.bookacti-multiple-select[data-select-id="' + field_id + '"]' ).prop( 'checked', true );
+				bookacti_switch_select_to_multiple( scope + 'input.bookacti-multiple-select[data-select-id="' + field_id + '"]' );
+				$j( scope + 'select[name="' + field_name + '[]"] option' ).prop( 'selected', false );
 			}
 		}
 		
@@ -269,6 +266,25 @@ function bookacti_fill_fields_from_array( fields, field_prefix, scope ) {
 		} else if( $j( scope + 'input[name="' + field_name + '"]' ).is( ':radio' ) ) {
 			$j( scope + 'input[name="' + field_name + '"][value="' + value + '"]' ).prop( 'checked', true );
 
+		// Select items
+		} else if( $j( scope + 'select[name="' + field_name + '[]"].bookacti-items-select-box' ).length ) {
+			if( ! $j.isArray( value ) ) { value = [ value ]; }
+			var selectbox = $j( scope + 'select[name="' + field_name + '[]"].bookacti-items-select-box' );
+			var add_selectbox = selectbox.closest( '.bookacti-items-container' ).find( '.bookacti-add-new-items-select-box' );
+			
+			// Reset selectboxes
+			add_selectbox.find( 'option' ).show().attr( 'disabled', false );
+			selectbox.find( 'option' ).remove();
+			
+			// Add items
+			$j.each( value, function( i, val ) {
+				add_selectbox.find( 'option[value="' + val + '"]' ).clone().appendTo( selectbox );
+				add_selectbox.find( 'option[value="' + val + '"]' ).hide().attr( 'disabled', true );
+				if( add_selectbox.val() == val || ! add_selectbox.val() ) {
+					add_selectbox.val( add_selectbox.find( 'option:enabled:first' ).val() );
+				}
+			});
+		
 		// Select
 		} else if( $j( scope + 'select[name="' + field_name + '"]' ).length ) {
 			$j( scope + 'select[name="' + field_name + '"] option[value="' + value + '"]' ).prop( 'selected', true );
