@@ -1,44 +1,61 @@
 $j( document ).ready( function() {
+	/**
+	 * Template form dynamic check
+	 */
+    $j( '#bookacti-template-data-dialog :input' ).on( 'keyup mouseup change', function() { bookacti_validate_template_form(); });
+    
 	
-    // Template form dynamic check
-    $j( '#bookacti-template-data-dialog input[type="text"]' ).off().on( 'keyup', function() {  bookacti_validate_template_form(); });
-    $j( '#bookacti-template-data-dialog input[type="date"]' ).off().on( 'change', function() { bookacti_validate_template_form(); });
-    $j( '#bookacti-template-data-dialog select'				).off().on( 'change blur', function() { bookacti_validate_template_form(); });
+	/**
+	 * Activity form dynamic check
+	 */
+    $j( '#bookacti-activity-data-dialog :input' ).on( 'keyup mouseup change', function() { bookacti_validate_activity_form(); });
     
-    // Activity form dynamic check
-    $j( '#bookacti-activity-data-dialog input[type="text"]'		).off().on( 'keyup', function() {  bookacti_validate_activity_form(); });
-    $j( '#bookacti-activity-data-dialog input[type="number"]'	).off().on( 'change', function() { bookacti_validate_activity_form(); });
-    $j( '#bookacti-activity-data-dialog input[type="color"]'	).off().on( 'change', function() { bookacti_validate_activity_form(); });
-    
-	// Event form dynamic check
-	/** EXCEPTIONS **/
-		// Add exception
-		$j( '#bookacti-event-add-exception-button' ).off().on( 'click', function() { 
-			var isFormValid = bookacti_validate_add_exception_form();
-			if( isFormValid ) {
-				var exception_date = moment( $j( '#bookacti-event-exception-date-picker' ).val() ).format( 'YYYY-MM-DD' );
-				$j( '#bookacti-event-exceptions-selectbox' ).append( "<option class='exception' value='" + exception_date + "' >" + exception_date + "</option>" );
-			}
-		});
+	
+	/**
+	 * Add exception - on click
+	 */
+	$j( '#bookacti-event-add-exception-button' ).on( 'click', function() { 
+		var isFormValid = bookacti_validate_add_exception_form();
+		if( isFormValid ) {
+			var exception_date = moment( $j( '#bookacti-event-exception-date-picker' ).val() ).format( 'YYYY-MM-DD' );
+			$j( '#bookacti-event-exceptions-selectbox' ).append( "<option class='exception' value='" + exception_date + "' >" + exception_date + "</option>" );
+		}
+	});
 
-		// Remove exception 
-		// on pressing 'Delete' key
-		$j( '#bookacti-event-exceptions-selectbox' ).off().on( 'keyup', function( key ) { 
-			if( key.which === 46 ) {
-				$j( this ).find( 'option:selected' ).remove();
-			}
-		});
 
-		// on click on the delete button
-		$j( '#bookacti-event-delete-exceptions-button' ).off().on( 'click', function() { 
-			$j( '#bookacti-event-exceptions-selectbox option:selected' ).remove();
-		});
-
-	// Validate the title and availability fields
-	$j( '#bookacti-event-title, #bookacti-event-availability' ).off().on( 'change', function() { 
-		bookacti_validate_event_general_data(); 
+	/**
+	 * Remove exception - on click
+	 */
+	$j( '#bookacti-event-delete-exceptions-button' ).on( 'click', function() { 
+		$j( '#bookacti-event-exceptions-selectbox option:selected' ).remove();
 	});
 	
+
+	/**
+	 * Remove exception - on pressing 'Delete' key
+	 */
+	$j( '#bookacti-event-exceptions-selectbox' ).on( 'keyup', function( key ) { 
+		if( key.which === 46 ) {
+			$j( this ).find( 'option:selected' ).remove();
+		}
+	});
+
+
+	/**
+	 * Validate the title and availability fields
+	 */
+	$j( '#bookacti-event-title, #bookacti-event-availability' ).on( 'keyup mouseup change', function() { 
+		bookacti_validate_event_general_data();
+	});
+
+
+	/**
+	 * Validate the repetition fields
+	 * @since 1.8.0 (was in bookacti_validate_event_repetition_data)
+	 */
+	$j( '#bookacti-event-repeat-freq, #bookacti-event-repeat-from, #bookacti-event-repeat-to' ).on( 'keyup mouseup change', function() { 
+		bookacti_validate_event_repetition_data();
+	});
 });
 
 
@@ -127,9 +144,12 @@ function bookacti_validate_template_form() {
 
 // ACTIVITIES
 
-// Check activity form
+/**
+ * Check activity form
+ * @version 1.8.0
+ * @returns {Boolean}
+ */
 function bookacti_validate_activity_form() {
-	
     // Get template params
     var title       = $j( '#bookacti-activity-title' ).val();
     var color       = $j( '#bookacti-activity-color' ).val();
@@ -137,7 +157,6 @@ function bookacti_validate_activity_form() {
     var days        = $j( '#bookacti-activity-duration-days' ).val();
     var hours       = $j( '#bookacti-activity-duration-hours' ).val();
     var minutes     = $j( '#bookacti-activity-duration-minutes' ).val();
-    var templates   = $j( '#bookacti-activity-templates-select-box option' ).length;
     
     // Init boolean test variables
 	var valid_form = {
@@ -195,29 +214,25 @@ function bookacti_validate_activity_form() {
         $j( '#bookacti-activity-color' ).addClass( 'bookacti-input-error' );
         $j( '#bookacti-activity-color' ).parent().append( "<div class='bookacti-form-error'>" + bookacti_localized.error_fill_field + "</div>" );
     }
-    if( ! valid_form.isAvail ) { 
+    if( ! valid_form.isAvail || ! valid_form.isAvailPositive ) { 
         $j( '#bookacti-activity-availability' ).addClass( 'bookacti-input-error' );
         $j( '#bookacti-activity-availability' ).parent().append( "<div class='bookacti-form-error'>" + bookacti_localized.error_fill_field + "</div>" );
     }
-    if( valid_form.isAvail && ! valid_form.isAvailPositive ) { 
-        $j( '#bookacti-activity-availability' ).addClass( 'bookacti-input-error' );
-        $j( '#bookacti-activity-availability' ).parent().append( "<div class='bookacti-form-error'>" + bookacti_localized.error_availability_inf_to_0 + "</div>" );
-    }
     if( valid_form.isDays && ! valid_form.isDaysInfTo365 ) { 
         $j( '#bookacti-activity-duration-days' ).addClass( 'bookacti-input-error' );
-        $j( '#bookacti-activity-duration-days' ).parent().append( "<div class='bookacti-form-error'>" + bookacti_localized.error_days_sup_to_365 + "</div>" );
+        $j( '#bookacti-activity-duration-container' ).append( "<div class='bookacti-form-error'>" + bookacti_localized.error_days_sup_to_365 + "</div>" );
     }
     if( valid_form.isHours && ! valid_form.isHoursInfTo23 ) { 
         $j( '#bookacti-activity-duration-hours' ).addClass( 'bookacti-input-error' );
-        $j( '#bookacti-activity-duration-hours' ).parent().append( "<div class='bookacti-form-error'>" + bookacti_localized.error_hours_sup_to_23 + "</div>" );
+        $j( '#bookacti-activity-duration-container' ).append( "<div class='bookacti-form-error'>" + bookacti_localized.error_hours_sup_to_23 + "</div>" );
     }
     if( valid_form.isMinutes && ! valid_form.isMinutesInfTo59 ) { 
         $j( '#bookacti-activity-duration-minutes' ).addClass( 'bookacti-input-error' );
-        $j( '#bookacti-activity-duration-minutes' ).parent().append( "<div class='bookacti-form-error'>" + bookacti_localized.error_minutes_sup_to_59 + "</div>" );
+        $j( '#bookacti-activity-duration-container' ).append( "<div class='bookacti-form-error'>" + bookacti_localized.error_minutes_sup_to_59 + "</div>" );
     }
     if( ! valid_form.isSupToZero ) { 
         $j( '#bookacti-activity-duration-days, #bookacti-activity-duration-hours, #bookacti-activity-duration-minutes' ).addClass( 'bookacti-input-error' );
-        $j( '#bookacti-activity-duration-days' ).parent().append( "<div class='bookacti-form-error'>" + bookacti_localized.error_activity_duration_is_null + "</div>" );
+        $j( '#bookacti-activity-duration-container' ).append( "<div class='bookacti-form-error'>" + bookacti_localized.error_activity_duration_is_null + "</div>" );
     }
     
     // WARNINGS
@@ -243,17 +258,20 @@ function bookacti_validate_activity_form() {
 
 // EVENTS
 
-// Check update events form
-function bookacti_validate_event_form( event ) {
-	
+/**
+ * Check event form
+ * @version 1.8.0
+ * @param {object} event
+ * @returns {Boolean}
+ */
+function bookacti_validate_event_form() {
 	var valid_form = {
-		'isRepetitionValid'	: bookacti_validate_event_repetition_data( event ),
+		'isRepetitionValid'	: bookacti_validate_event_repetition_data(),
 		'isGeneralValid'	: bookacti_validate_event_general_data(),
 		'send'				: false
 	};
     
-    if( valid_form.isRepetitionValid 
-	&&  valid_form.isGeneralValid ) { valid_form.send = true; }
+    if( valid_form.isRepetitionValid && valid_form.isGeneralValid ) { valid_form.send = true; }
     
 	// Allow third party to change results
 	$j( '#bookacti-event-data-dialog' ).trigger( 'bookacti_validate_event_form', [ valid_form ] );
@@ -262,9 +280,12 @@ function bookacti_validate_event_form( event ) {
 }
 
 
-// Check params from update events form
+/**
+ * Check event fields - Global tab
+ * @version 1.8.0
+ * @returns {Boolean}
+ */
 function bookacti_validate_event_general_data() {
-	
     // Get template params
     var title           = $j( '#bookacti-event-data-dialog #bookacti-event-title' ).val();
     var availability    = parseInt( $j( '#bookacti-event-data-dialog #bookacti-event-availability' ).val() );
@@ -302,7 +323,7 @@ function bookacti_validate_event_general_data() {
     }
     if( ! valid_form.isAvailPositive ){ 
         $j( '#bookacti-event-availability' ).addClass( 'bookacti-input-error' );
-        $j( '#bookacti-event-availability' ).parent().append( "<div class='bookacti-form-error'>" + bookacti_localized.error_availability_inf_to_0 + "</div>" );
+        $j( '#bookacti-event-availability' ).parent().append( "<div class='bookacti-form-error'>" + bookacti_localized.error_fill_field + "</div>" );
     }
     if( ! valid_form.isAvailSupToBookings ){ 
         $j( '#bookacti-event-availability' ).addClass( 'bookacti-input-error' );
@@ -314,20 +335,16 @@ function bookacti_validate_event_general_data() {
 
 
 /**
- * Check if the event repetition fields are properly filled
+ * Check event fields - Repetition tab
  * @version 1.8.0
- * @param {object} event
  * @returns {boolean}
  */
-function bookacti_validate_event_repetition_data( event ) {
+function bookacti_validate_event_repetition_data() {
+	if( typeof bookacti.booking_system[ 'bookacti-template-calendar' ][ 'picked_events' ][ 0 ] === 'undefined' ) { return; }
 	
-	// After calling it once, call it everytime a field change
-	$j( '#bookacti-event-repeat-freq, #bookacti-event-repeat-from, #bookacti-event-repeat-to' ).off().on( 'change', function() { 
-		bookacti_validate_event_repetition_data( event );
-	});
-	
-	var event_start = event.start.format( 'YYYY-MM-DD HH:mm:ss' )	|| bookacti.booking_system[ 'bookacti-template-calendar' ][ 'picked_events' ][ 0 ][ 'start' ];
-	var event_end	= event.end.format( 'YYYY-MM-DD HH:mm:ss' )		|| bookacti.booking_system[ 'bookacti-template-calendar' ][ 'picked_events' ][ 0 ][ 'end' ];
+	var event		= bookacti.booking_system[ 'bookacti-template-calendar' ][ 'picked_events' ][ 0 ];
+	var event_start = moment( event.start ).format( 'YYYY-MM-DD HH:mm:ss' );
+	var event_end	= moment( event.end ).format( 'YYYY-MM-DD HH:mm:ss' );
 
 	// Get params
 	var min_bookings    = parseInt( $j( '#bookacti-event-data-dialog #bookacti-event-availability' ).attr( 'min' ) );
@@ -394,7 +411,8 @@ function bookacti_validate_event_repetition_data( event ) {
 	$j( '#bookacti-event-data-dialog #bookacti-event-exception-date-picker' ).prop( 'disabled', true );
 	$j( '#bookacti-event-data-dialog #bookacti-event-add-exception-button' ).prop( 'disabled', true );
 	$j( '#bookacti-event-data-dialog #bookacti-event-exceptions-selectbox' ).prop( 'disabled', true );
-	$j( '#bookacti-event-data-dialog #bookacti-event-repeat-period-container' ).hide();
+	$j( '#bookacti-event-data-dialog #bookacti-event-repeat-from-container' ).hide();
+	$j( '#bookacti-event-data-dialog #bookacti-event-repeat-to-container' ).hide();
 	$j( '#bookacti-event-data-dialog #bookacti-event-exceptions-container' ).hide();
 	
 	var exceptions_disabled = false;
@@ -457,7 +475,8 @@ function bookacti_validate_event_repetition_data( event ) {
 		//Enable the repeat period fields
 		$j( '#bookacti-event-data-dialog #bookacti-event-repeat-from' ).prop( 'disabled', false );
 		$j( '#bookacti-event-data-dialog #bookacti-event-repeat-to' ).prop( 'disabled', false );
-		$j( '#bookacti-event-data-dialog #bookacti-event-repeat-period-container' ).show();
+		$j( '#bookacti-event-data-dialog #bookacti-event-repeat-from-container' ).show();
+		$j( '#bookacti-event-data-dialog #bookacti-event-repeat-to-container' ).show();
 
 		if( valid_form.isFromBeforeTo && valid_form.isEventBetweenFromAndTo ) {
 			// Enable the exception fields
@@ -469,9 +488,9 @@ function bookacti_validate_event_repetition_data( event ) {
 		} else {
 			$j( '#bookacti-event-repeat-from, #bookacti-event-repeat-to' ).addClass( 'bookacti-input-error' );
 			if( ! valid_form.isFromBeforeTo ) {
-				$j( '#bookacti-event-repeat-period-container' ).append( "<div class='bookacti-form-error'>" + bookacti_localized.error_repeat_end_before_begin + "</div>" );
+				$j( '#bookacti-event-repeat-to' ).after( "<div class='bookacti-form-error'>" + bookacti_localized.error_repeat_end_before_begin + "</div>" );
 			} else if( ! valid_form.isEventBetweenFromAndTo ) {
-				$j( '#bookacti-event-repeat-period-container' ).append( "<div class='bookacti-form-error'>" + bookacti_localized.error_event_not_btw_from_and_to + "</div>" );
+				$j( '#bookacti-event-repeat-to' ).after( "<div class='bookacti-form-error'>" + bookacti_localized.error_event_not_btw_from_and_to + "</div>" );
 			}
 		}
 	}
@@ -504,6 +523,10 @@ function bookacti_validate_event_repetition_data( event ) {
 }
 
 
+/**
+ * Check event date exceptions field
+ * @returns {boolean}
+ */
 function bookacti_validate_add_exception_form() {
     //Get params
     var event_id        = $j( '#bookacti-event-data-dialog' ).data( 'event-id' );
@@ -566,7 +589,10 @@ function bookacti_validate_add_exception_form() {
 
 
 // GROUP OF EVENTS
-
+/**
+ * Check group of events form fields
+ * @returns {Boolean}
+ */
 function bookacti_validate_group_of_events_form() {
 	// Get group params
 	var title		= $j( '#bookacti-group-of-events-title-field' ).val();
@@ -620,6 +646,10 @@ function bookacti_validate_group_of_events_form() {
 }
 
 
+/**
+ * Check group category form fields
+ * @returns {Boolean}
+ */
 function bookacti_validate_group_category_form() {
 	// Get group params
 	var title		= $j( '#bookacti-group-category-title-field' ).val();

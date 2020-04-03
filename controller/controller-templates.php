@@ -35,22 +35,17 @@ add_action( 'wp_ajax_bookactiFetchTemplateEvents', 'bookacti_controller_fetch_te
  * @version 1.8.0
  */
 function bookacti_controller_insert_event() {
-	$template_id = intval( $_POST['template_id'] );
-
 	// Check nonce and capabilities
 	$is_nonce_valid	= check_ajax_referer( 'bookacti_edit_template', 'nonce', false );
 	if( ! $is_nonce_valid ) { bookacti_send_json_invalid_nonce( 'insert_event' ); }
-
+	
+	$template_id = intval( $_POST[ 'template_id' ] );
 	$is_allowed = current_user_can( 'bookacti_edit_templates' ) && bookacti_user_can_manage_template( $template_id );
 	if( ! $is_allowed ) { bookacti_send_json_not_allowed( 'insert_event' ); }
 
-	$activity_id		= intval( $_POST['activity_id'] );
-	$event_title		= sanitize_text_field( stripslashes( $_POST['event_title'] ) );
-	$event_start		= bookacti_sanitize_datetime( $_POST['event_start'] );
-	$event_end			= bookacti_sanitize_datetime( $_POST['event_end'] );
-	$event_availability	= intval( $_POST['event_availability'] );
-
-	$event_id = bookacti_insert_event( $template_id, $activity_id, $event_title, $event_start, $event_end, $event_availability );
+	$sanitized_data = bookacti_sanitize_event_data( $_POST );
+	
+	$event_id = bookacti_insert_event( $sanitized_data );
 	if( ! $event_id ) { bookacti_send_json( array( 'status' => 'failed', 'error' => 'not_inserted' ), 'insert_event' ); }
 
 	$events = bookacti_fetch_events_for_calendar_editor( array( 'events' => array( $event_id ) ) );
@@ -151,87 +146,22 @@ function bookacti_controller_update_event() {
 	$is_nonce_valid = check_ajax_referer( 'bookacti_update_event_data', 'nonce_update_event_data', false );
 	if( ! $is_nonce_valid ) { bookacti_send_json_invalid_nonce( 'update_event' ); }
 
-	$event_id = intval( $_POST[ 'event-id' ] );
+	$event_id = intval( $_POST[ 'id' ] );
 	$old_event = bookacti_get_event_by_id( $event_id );
 	$is_allowed = current_user_can( 'bookacti_edit_templates' ) && $old_event && bookacti_user_can_manage_template( $old_event->template_id );
 	if( ! $is_allowed ) { bookacti_send_json_not_allowed( 'update_event' ); }
-
-	$event_start		= $old_event->start;
-	$event_end			= $old_event->end;
-	$event_title		= wp_kses_post( stripslashes( $_POST[ 'event-title' ] ) );
-	$event_availability	= intval( $_POST[ 'event-availability' ] );
-	$sanitized_freq		= sanitize_title_with_dashes( $_POST[ 'event-repeat-freq' ] );
-	$event_repeat_freq	= in_array( $sanitized_freq, array( 'none', 'daily', 'weekly', 'monthly' ), true ) ? $sanitized_freq : 'none';
-	$event_repeat_from	= isset( $_POST[ 'event-repeat-from' ] ) ? bookacti_sanitize_date( $_POST[ 'event-repeat-from' ] ) : '';
-	$event_repeat_to	= isset( $_POST[ 'event-repeat-to' ] ) ? bookacti_sanitize_date( $_POST[ 'event-repeat-to' ] ) : '';
-	$exceptions_dates	= isset( $_POST[ 'event-repeat-excep' ] ) ? bookacti_sanitize_date_array( $_POST[ 'event-repeat-excep' ] ) : array();
-
-	// Make the repetition period fit the events occurences
-	if( $event_repeat_freq !== 'none' && $event_repeat_from && $event_repeat_to ) {
-		$dummy_event = $old_event;
-		$dummy_event->repeat_freq = $event_repeat_freq;
-		$dummy_event->repeat_from = $event_repeat_from;
-		$dummy_event->repeat_to = $event_repeat_to;
-
-		$occurences = bookacti_get_occurences_of_repeated_event( $dummy_event, array( 'exceptions_dates' => $exceptions_dates, 'past_events' => true ) );
-		$bounding_events = bookacti_get_bounding_events_from_events_array( array( 'events' => $occurences ) );
-
-		// Compute bounding dates
-		if( ! empty( $bounding_events[ 'events' ] ) ) {
-			// Replace repeat period with events bounding dates
-			$bounding_dates = array( 
-				'start' => substr( $bounding_events[ 'events' ][ 0 ][ 'start' ], 0, 10 ), 
-				'end' => substr( $bounding_events[ 'events' ][ array_key_last( $bounding_events[ 'events' ] ) ][ 'end' ], 0, 10 )
-			);
-			if( strtotime( $bounding_dates[ 'start' ] ) > strtotime( $event_repeat_from ) )	{ $event_repeat_from = $bounding_dates[ 'start' ]; }
-			if( strtotime( $bounding_dates[ 'end' ] ) < strtotime( $event_repeat_to ) )		{ $event_repeat_to = $bounding_dates[ 'end' ]; }
-			$repeat_from_datetime = DateTime::createFromFormat( 'Y-m-d H:i:s', $event_repeat_from . ' 00:00:00' );
-			$repeat_to_datetime = DateTime::createFromFormat( 'Y-m-d H:i:s', $event_repeat_to . ' 23:59:59' );
-			if( $repeat_from_datetime > $repeat_to_datetime ) { $event_repeat_from = $event_repeat_to; $repeat_from_datetime = $repeat_to_datetime; }
-
-			// Remove exceptions out of the repeat period
-			if( $exceptions_dates ) {
-				foreach( $exceptions_dates as $i => $excep_date ) {
-					$excep_datetime = DateTime::createFromFormat( 'Y-m-d H:i:s', $excep_date . ' 00:00:00' );
-					if( $excep_datetime < $repeat_from_datetime || $excep_datetime > $repeat_to_datetime ) {
-						unset( $exceptions_dates[ $i ] );
-					}
-				}
-			}
-
-			// Make sure the event is included in the repeat period
-			$event_start_datetime = DateTime::createFromFormat( 'Y-m-d H:i:s', $event_start );
-			if( $event_start_datetime < $repeat_from_datetime ) { 
-				$event_start = $repeat_from_datetime->format( 'Y-m-d' ) . substr( $event_start, 10 );
-				$event_end = $repeat_from_datetime->format( 'Y-m-d' ) . substr( $event_end, 10 );
-			}
-			if( $event_start_datetime > $repeat_to_datetime ) {
-				$event_start = $repeat_to_datetime->format( 'Y-m-d' ) . substr( $event_start, 10 );
-				$event_end = $repeat_to_datetime->format( 'Y-m-d' ) . substr( $event_end, 10 );
-			}
-		}
-	}
-
+	
+	$sanitized_data = bookacti_sanitize_event_data( array_merge( $_POST, array( 'start' => $old_event->start, 'end' => $old_event->end ) ) );
+	
 	// Check if input data are complete and consistent 
-	$event_validation = bookacti_validate_event( $event_id, $event_availability, $event_repeat_freq, $event_repeat_from, $event_repeat_to );
-	if( $event_validation[ 'status' ] !== 'valid' ) { bookacti_send_json( array( 'status' => 'failed', 'error' => $event_validation[ 'errors' ] ), 'update_event' ); }
+	$event_validation = bookacti_validate_event_data( $sanitized_data );
+	if( $event_validation[ 'status' ] !== 'success' ) { bookacti_send_json( $event_validation, 'update_event' ); }
 
 	// Update event data
-	$updated_event = bookacti_update_event( $event_id, $event_title, $event_availability, $event_start, $event_end, $event_repeat_freq, $event_repeat_from, $event_repeat_to );
-
-	// Update event metadata
-	$settings = isset( $_POST[ 'eventOptions' ] ) && is_array( $_POST[ 'eventOptions' ] ) ? $_POST[ 'eventOptions' ] : array();
-	$formatted_settings = bookacti_format_event_settings( $settings );
-	$updated_event_meta = bookacti_update_metadata( 'event', $event_id, $formatted_settings );
-
-	// Update exceptions
-	$updated_excep = bookacti_update_exceptions( $event_id, $exceptions_dates );
+	$updated = bookacti_update_event( $sanitized_data );
 
 	// if one of the elements has been updated, consider as success
-	if(	( is_numeric( $updated_event )		&& $updated_event > 0 )
-	||  ( is_numeric( $updated_event_meta )	&& $updated_event_meta > 0 )
-	||  ( is_numeric( $updated_excep )		&& $updated_excep > 0 ) ){
-
+	if(	is_numeric( $updated ) && $updated > 0 ){
 		// Retrieve new events
 		$interval	= bookacti_sanitize_events_interval( $_POST[ 'interval' ] );
 		$events		= bookacti_fetch_events_for_calendar_editor( array( 'events' => array( $event_id ), 'interval' => $interval ) );
@@ -246,30 +176,18 @@ function bookacti_controller_update_event() {
 			'events'			=> $events[ 'events' ] ? $events[ 'events' ] : array(),
 			'events_data'		=> $events[ 'data' ] ? $events[ 'data' ] : array(),
 			'groups_events'		=> $groups_events,
-			'exceptions_dates'	=> $exceptions_dates,
-			'results'			=> array( 
-				'updated_event'		=> $updated_event, 
-				'updated_event_meta'=> $updated_event_meta, 
-				'updated_excep'		=> $updated_excep ) 
-			), 'update_event' ); 
+			'exceptions_dates'	=> $sanitized_data[ 'exceptions_dates' ],
+			'updated'			=> $updated
+		), 'update_event' ); 
 
-	} else if( $updated_event === 0 && $updated_event_meta === 0 && $updated_excep === 0 ) { 
+	} else if( $updated === 0 ) { 
 		bookacti_send_json( array( 'status' => 'nochanges' ), 'update_event' );
 
-	} else if( $updated_event === false || $updated_event_meta === false || $updated_excep === false ) { 
-		bookacti_send_json( array( 
-			'status'			=> 'failed', 
-			'updated_event'		=> $updated_event, 
-			'updated_event_meta'=> $updated_event_meta, 
-			'updated_excep'		=> $updated_excep ), 'update_event' ); 
+	} else if( $updated === false ) { 
+		bookacti_send_json( array( 'status' => 'failed', 'updated' => $updated ), 'update_event' ); 
 	}
 
-	bookacti_send_json( array( 
-		'status'			=> 'failed', 
-		'error'				=> 'unknown_error', 
-		'updated_event'		=> $updated_event, 
-		'updated_event_meta'=> $updated_event_meta, 
-		'updated_excep'		=> $updated_excep ), 'update_event' ); 
+	bookacti_send_json( array( 'status' => 'failed', 'error' => 'unknown_error', 'updated' => $updated ), 'update_event' ); 
 }
 add_action( 'wp_ajax_bookactiUpdateEvent', 'bookacti_controller_update_event' );
 
@@ -826,8 +744,8 @@ function bookacti_controller_insert_activity() {
 	$activity_title			= sanitize_text_field( stripslashes( $_POST[ 'activity-title' ] ) );
 	$activity_color			= function_exists( 'sanitize_hex_color' ) ? sanitize_hex_color( $_POST[ 'activity-color' ] ) : stripslashes( $_POST[ 'activity-color' ] );
 	$activity_availability	= intval( $_POST[ 'activity-availability' ] );
-	$sanitized_duration		= bookacti_sanitize_duration( $_POST[ 'activity-duration' ] );
-	$activity_duration		= $sanitized_duration ? $sanitized_duration : '000.01:00:00';
+	$sanitized_duration		= intval( $_POST[ 'activity-duration' ] );
+	$activity_duration		= $sanitized_duration ? bookacti_format_duration( $sanitized_duration, 'timespan' ) : '000.01:00:00';
 	$activity_resizable		= intval( $_POST[ 'activity-resizable' ] );
 	$managers_array			= isset( $_POST[ 'activity-managers' ] ) ? bookacti_ids_to_array( $_POST[ 'activity-managers' ] ) : array();
 	$options_array			= isset( $_POST[ 'activityOptions' ] ) && is_array( $_POST[ 'activityOptions' ] ) ? $_POST[ 'activityOptions' ] : array();
@@ -875,11 +793,10 @@ function bookacti_controller_update_activity() {
 	if( ! $is_allowed ) { bookacti_send_json_not_allowed( 'update_activity' ); }
 
 	$activity_title			= sanitize_text_field( stripslashes( $_POST['activity-title'] ) );
-	$activity_old_title		= sanitize_text_field( stripslashes( $_POST['activity-old-title'] ) );
 	$activity_color			= function_exists( 'sanitize_hex_color' ) ? sanitize_hex_color( $_POST['activity-color'] ) : stripslashes( $_POST['activity-color'] );
 	$activity_availability	= intval( $_POST['activity-availability'] );
-	$sanitized_duration		= bookacti_sanitize_duration( $_POST['activity-duration'] );
-	$activity_duration		= $sanitized_duration ? $sanitized_duration : '000.01:00:00';
+	$sanitized_duration		= intval( $_POST[ 'activity-duration' ] );
+	$activity_duration		= $sanitized_duration ? substr( bookacti_format_duration( $sanitized_duration, 'timespan' ), -12 ) : '000.01:00:00';
 	$activity_resizable		= intval( $_POST['activity-resizable'] );
 	$managers_array			= isset( $_POST['activity-managers'] ) ? bookacti_ids_to_array( $_POST['activity-managers'] ) : array();
 	$options_array			= isset( $_POST['activityOptions'] ) && is_array( $_POST['activityOptions'] ) ? $_POST['activityOptions'] : array();
@@ -888,13 +805,13 @@ function bookacti_controller_update_activity() {
 	$activity_managers	= bookacti_format_activity_managers( $managers_array );
 	$activity_settings	= bookacti_format_activity_settings( $options_array );
 
+	// Update the events title bound to this activity before updating the activty
+	$updated_events		= bookacti_update_events_title( $activity_id, $activity_title );
+	
 	// Update the activity and its metadata
 	$updated_activity	= bookacti_update_activity( $activity_id, $activity_title, $activity_color, $activity_availability, $activity_duration, $activity_resizable );
 	$updated_managers	= bookacti_update_managers( 'activity', $activity_id, $activity_managers );
 	$updated_metadata	= bookacti_update_metadata( 'activity', $activity_id, $activity_settings );
-
-	// Update the event title bound to this activity
-	$updated_events		= bookacti_update_events_title( $activity_id, $activity_old_title, $activity_title );
 
 	if( $updated_activity >= 0 || $updated_events >= 0 || intval( $updated_managers ) >= 0 || intval( $updated_metadata ) >= 0 ){
 		$activity_data	= bookacti_get_activity( $activity_id );

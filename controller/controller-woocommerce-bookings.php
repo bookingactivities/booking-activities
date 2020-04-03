@@ -104,15 +104,14 @@ add_filter( 'bookacti_booking_states_labels_array', 'bookacti_add_in_cart_state_
 /**
  * Deactivate expired bookings with cron
  * @since 1.0.6
- * @version 1.1.0
+ * @version 1.8.0
  */
 function bookacti_controller_deactivate_expired_bookings() {
-
 	$deactivated_ids = bookacti_deactivate_expired_bookings();
-
-	if( $deactivated_ids === false ) { 
+	if( ! is_array( $deactivated_ids ) ) { 
 		/* translators: 'cron' is a robot that execute scripts every X hours. Don't try to translate it. */
 		$log = esc_html__( 'The expired bookings were not correctly deactivated by cron.', 'booking-activities' );
+		if( is_string( $deactivated_ids ) ) { $log .= ' ' . $deactivated_ids; }
 		bookacti_log( $log, 'error' );
 	}
 }

@@ -335,6 +335,8 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 * Tweak - Make the array export format more user-friendly (line breaks + indents instead of brackets)
 * Tweak - Add an option to allow to display columns with private data in frontend booking lists (in general settings)
 * Tweak - Add a link to the booking admin page on the booking IDs of booking lists (for admin only)
+* Tweak - Add columns in user booking list: customer_roles
+* Tweak - The Booking changes delay option can now be set in days, hours and minutes
 * Fix - Redirect URL when booking on event click didn't work
 * Fix - Add compulsory hidden quantity field when booking on event click
 * Fix - All grouped bookings were displayed in each rows of the frontend booking list when group_by = none
@@ -346,6 +348,8 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 * Fix - Bad rounding of the WC coupon refund amounts
 * Fix - Don't change booking user_id when a WC order customer changes (at the same time as its status)
 * Fix - Show single grouped bookings when selected alone in the backend Bookings page
+* Fix - Product not listed in selectbox if it once have had variations and is now no longer variable
+* Fix - Possible JS error when loading a booking system with preselected events
 * Optimization - JS variables passed via PHP are now loaded only once, have been significantly reduced, and are filtered for the frontend
 * Optimization - Retrieve all users meta with a single query with bookacti_get_users_data
 * Dev - Make sure that the repeated events' occurences and exceptions are included in the repeat period when updated

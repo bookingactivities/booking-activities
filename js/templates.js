@@ -1,7 +1,7 @@
 $j( document ).ready( function() { 
 	// Check if the calendar exist before anything
 	if( ! $j( '#bookacti-template-container' ).length ) { return; }
-		
+	
 	// Init calendar editor specific globals
 	bookacti.selected_template	= parseInt( $j( '#bookacti-template-picker' ).val() ) || 0;
 	bookacti.hidden_activities	= [];
@@ -410,10 +410,10 @@ function bookacti_load_template_calendar( calendar ) {
 				'action': 'bookactiInsertEvent', 
 				'activity_id': activity_id, 
 				'template_id': bookacti.selected_template, 
-				'event_title': activity_data[ 'multilingual_title' ], 
-				'event_start': event.start.format( 'YYYY-MM-DD HH:mm:ss' ), 
-				'event_end': event.end.format( 'YYYY-MM-DD HH:mm:ss' ),
-				'event_availability': activity_data[ 'availability' ],
+				'title': activity_data[ 'multilingual_title' ], 
+				'start': event.start.format( 'YYYY-MM-DD HH:mm:ss' ), 
+				'end': event.end.format( 'YYYY-MM-DD HH:mm:ss' ),
+				'availability': activity_data[ 'availability' ],
 				'nonce': $j( '#nonce_edit_template' ).val()
 			};
 			

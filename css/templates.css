@@ -130,11 +130,6 @@
 
 /* Activity dialog */
 #bookacti-activity-import-dialog label { display: inline-block; width: 150px; font-weight: bold; }
-
-#bookacti-activity-duration-days,
-#bookacti-activity-duration-hours,
-#bookacti-activity-duration-minutes	{ width: 50px; }
-
 #bookacti-delete-activity-options	{ margin-top: 20px; }
 
 

@@ -132,32 +132,33 @@ function bookacti_fetch_events_for_calendar_editor( $raw_args = array() ) {
 
 /**
  * Insert an event
+ * @version 1.8.0
  * @global wpdb $wpdb
- * @param int $template_id
- * @param int $activity_id
- * @param string $event_title
- * @param string $event_start
- * @param string $event_end
- * @param int $availability
+ * @param array $data Data sanitized with bookacti_sanitize_event_data
  * @return int
  */
-function bookacti_insert_event( $template_id, $activity_id, $event_title, $event_start, $event_end, $availability = 0 ) {
+function bookacti_insert_event( $data ) {
 	global $wpdb;
-
+	
 	$wpdb->insert( 
 		BOOKACTI_TABLE_EVENTS, 
 		array( 
-			'template_id'   => $template_id,
-			'activity_id'   => $activity_id,
-			'title'         => $event_title,
-			'start'         => $event_start,
-			'end'           => $event_end,
-			'availability'	=> $availability
+			'template_id'   => $data[ 'template_id' ],
+			'activity_id'   => $data[ 'activity_id' ],
+			'title'         => $data[ 'title' ],
+			'start'         => $data[ 'start' ],
+			'end'           => $data[ 'end' ],
+			'availability'	=> $data[ 'availability' ]
 		),
 		array( '%d', '%d', '%s', '%s', '%s', '%d' )
 	);
+	
+	$event_id = $wpdb->insert_id;
+	
+	$meta = array_intersect_key( $data, bookacti_get_event_default_meta() );
+	if( $meta ) { bookacti_update_metadata( 'event', $event_id, $meta ); }
 
-	return $wpdb->insert_id;
+	return $event_id;
 }
 
 
@@ -240,61 +241,60 @@ function bookacti_move_or_resize_event( $event_id, $event_start, $event_end, $ac
 
 /**
  * Update event data
- * 
- * @version 1.2.2 (was bookacti_set_event_data)
+ * @since 1.2.2 (was bookacti_set_event_data)
+ * @version 1.8.0
  * @global wpdb $wpdb
- * @param int $event_id
- * @param string $event_title
- * @param int $event_availability
- * @param string $event_start
- * @param string $event_end
- * @param string $event_repeat_freq
- * @param string $event_repeat_from
- * @param string $event_repeat_to
+ * @param array $data Data sanitized with bookacti_sanitize_event_data
  * @return int|false
  */
-function bookacti_update_event( $event_id, $event_title, $event_availability, $event_start, $event_end, $event_repeat_freq, $event_repeat_from, $event_repeat_to ) {
+function bookacti_update_event( $data ) {
 	global $wpdb;
-
+	
 	// Get event
-	$query	= 'SELECT * ' 
-			. ' FROM ' . BOOKACTI_TABLE_EVENTS
-			. ' WHERE id = %d ';
-	$prep	= $wpdb->prepare( $query, $event_id );
-	$initial_event	= $wpdb->get_row( $prep );
-
-	if( $event_repeat_freq === 'none' ) {
-		$event_repeat_from = null;
-		$event_repeat_to = null;
-	}
+	$query = 'SELECT * FROM ' . BOOKACTI_TABLE_EVENTS . ' WHERE id = %d';
+	$query = $wpdb->prepare( $query, $data[ 'id' ] );
+	$initial_event = $wpdb->get_row( $query );
 
 	// Update the event
 	$updated_event = $wpdb->update( 
 		BOOKACTI_TABLE_EVENTS, 
 		array( 
-			'title'         => $event_title,
-			'availability'  => $event_availability,
-			'start'         => $event_start,
-			'end'           => $event_end,
-			'repeat_freq'   => $event_repeat_freq,
-			'repeat_from'   => $event_repeat_from,
-			'repeat_to'     => $event_repeat_to
+			'title'         => $data[ 'title' ],
+			'availability'  => $data[ 'availability' ],
+			'start'         => $data[ 'start' ],
+			'end'           => $data[ 'end' ],
+			'repeat_freq'   => $data[ 'repeat_freq' ],
+			'repeat_from'   => $data[ 'repeat_from' ],
+			'repeat_to'     => $data[ 'repeat_to' ]
 		),
-		array( 'id' => $event_id ),
+		array( 'id' => $data[ 'id' ] ),
 		array( '%s', '%d', '%s', '%s', '%s', '%s', '%s' ),
 		array( '%d' )
 	);
 
 	// If event repeat frequency has changed, we must remove this event from all groups
-	if( $event_repeat_freq !== $initial_event->repeat_freq ) {
-		bookacti_delete_event_from_groups( $event_id );
+	if( $data[ 'repeat_freq' ] !== $initial_event->repeat_freq ) {
+		bookacti_delete_event_from_groups( $data[ 'id' ] );
 	}
 
 	// If the repetition dates have changed, we must delete out of range grouped events
-	else if( $event_repeat_from !== $initial_event->repeat_from || $event_repeat_to !== $initial_event->repeat_to ) {
-		bookacti_delete_out_of_range_occurences_from_groups( $event_id );
+	else if( $data[ 'repeat_from' ] !== $initial_event->repeat_from || $data[ 'repeat_to' ] !== $initial_event->repeat_to ) {
+		bookacti_delete_out_of_range_occurences_from_groups( $data[ 'id' ] );
 	}
-
+	
+	// Update meta
+	$meta = array_intersect_key( $data, bookacti_get_event_default_meta() );
+	if( $meta ) { 
+		$updated_meta = bookacti_update_metadata( 'event', $data[ 'id' ], $meta );
+		if( is_numeric( $updated_event ) && is_numeric( $updated_meta ) ) { $updated_event += $updated_meta; }
+	}
+	
+	// Update exceptions
+	if( ! empty( $data[ 'exceptions_dates' ] ) ) {
+		$updated_excep = bookacti_update_exceptions( $data[ 'id' ], $data[ 'exceptions_dates' ] );
+		if( is_numeric( $updated_event ) && is_numeric( $updated_excep ) ) { $updated_event += $updated_excep; }
+	}
+	
 	return $updated_event;
 }
 
@@ -1893,26 +1893,24 @@ function bookacti_update_activity( $activity_id, $activity_title, $activity_colo
 
 /**
  * Update events title to match the activity title
- * 
+ * @version 1.8.0
  * @global wpdb $wpdb
  * @param int $activity_id
- * @param string $activity_old_title
- * @param string $activity_title
+ * @param string $new_title
  * @return int|false
  */
-function bookacti_update_events_title( $activity_id, $activity_old_title, $activity_title ) {
+function bookacti_update_events_title( $activity_id, $new_title ) {
 	global $wpdb;
 
-	$updated = $wpdb->update( 
-		BOOKACTI_TABLE_EVENTS, 
-		array( 
-			'title' => $activity_title
-		),
-		array( 'activity_id' => $activity_id, 'title' => $activity_old_title ),
-		array( '%s' ),
-		array( '%d', '%s' )
-	);
-
+	$query	= ' UPDATE ' . BOOKACTI_TABLE_EVENTS . ' as E '
+			. ' LEFT JOIN ' . BOOKACTI_TABLE_ACTIVITIES . ' as A ON E.activity_id = A.id '
+			. ' SET E.title = %s '
+			. ' WHERE E.activity_id = %d '
+			. ' AND A.title = E.title ';
+	
+	$query	= $wpdb->prepare( $query, $new_title, $activity_id );
+	$updated = $wpdb->query( $query );
+	
 	return $updated;
 }
 

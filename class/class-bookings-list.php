@@ -49,12 +49,11 @@ if( ! class_exists( 'Bookings_List_Table' ) ) {
 		
 		/**
 		 * Get booking list table columns
-		 * @version 1.7.10
+		 * @version 1.8.0
 		 * @access public
 		 * @return array
 		 */
 		public function get_columns() {
-			// SET THE COLUMNS
 			/**
 			 * Columns of the booking list
 			 * You must use 'bookacti_booking_list_columns_order' php filter to order your custom columns.
@@ -65,25 +64,25 @@ if( ! class_exists( 'Bookings_List_Table' ) ) {
 			 */
 			$columns = apply_filters( 'bookacti_booking_list_columns', array(
 				'cb'			=> '<input type="checkbox" />',
-				'id'			=> _x( 'id', 'An id is a unique identification number', 'booking-activities' ),
-				'customer'		=> __( 'Customer', 'booking-activities' ),
-				'email'			=> __( 'Email', 'booking-activities' ),
-				'phone'			=> __( 'Phone', 'booking-activities' ),
-				'state'			=> _x( 'Status', 'Booking status', 'booking-activities' ),
-				'payment_status'=> _x( 'Paid', 'Payment status column name', 'booking-activities' ),
-				'quantity'		=> _x( 'Qty', 'Short for "Quantity"', 'booking-activities' ),
-				'event_title'	=> __( 'Title', 'booking-activities' ),
-				'start_date'	=> __( 'Start', 'booking-activities' ),
-				'end_date'		=> __( 'End', 'booking-activities' ),
-				'template_title'=> __( 'Calendar', 'booking-activities' ),
-				'activity_title'=> __( 'Activity', 'booking-activities' ),
-				'creation_date'	=> __( 'Date', 'booking-activities' ),
-				'price_details'	=> __( 'Price details', 'booking-activities' ),
-				'actions'		=> __( 'Actions', 'booking-activities' )
+				'id'			=> esc_html_x( 'id', 'An id is a unique identification number', 'booking-activities' ),
+				'customer'		=> esc_html__( 'Customer', 'booking-activities' ),
+				'email'			=> esc_html__( 'Email', 'booking-activities' ),
+				'phone'			=> esc_html__( 'Phone', 'booking-activities' ),
+				'roles'			=> esc_html__( 'Roles', 'booking-activities' ),
+				'state'			=> esc_html_x( 'Status', 'Booking status', 'booking-activities' ),
+				'payment_status'=> esc_html_x( 'Paid', 'Payment status column name', 'booking-activities' ),
+				'quantity'		=> esc_html_x( 'Qty', 'Short for "Quantity"', 'booking-activities' ),
+				'event_title'	=> esc_html__( 'Title', 'booking-activities' ),
+				'start_date'	=> esc_html__( 'Start', 'booking-activities' ),
+				'end_date'		=> esc_html__( 'End', 'booking-activities' ),
+				'template_title'=> esc_html__( 'Calendar', 'booking-activities' ),
+				'activity_title'=> esc_html__( 'Activity', 'booking-activities' ),
+				'creation_date'	=> esc_html__( 'Date', 'booking-activities' ),
+				'price_details'	=> esc_html__( 'Price details', 'booking-activities' ),
+				'actions'		=> esc_html__( 'Actions', 'booking-activities' )
 			));
 
-
-			// SORT THE COLUMNS
+			
 			/**
 			 * Columns order of the booking list
 			 * Order the columns given by the filter 'bookacti_booking_list_columns'
@@ -96,8 +95,9 @@ if( ! class_exists( 'Bookings_List_Table' ) ) {
 				30 => 'state',
 				40 => 'payment_status',
 				50 => 'customer',
-				54 => 'email',
-				57 => 'phone',
+				52 => 'email',
+				54 => 'phone',
+				56 => 'roles',
 				60 => 'event_title',
 				70 => 'start_date',
 				80 => 'end_date',
@@ -123,7 +123,7 @@ if( ! class_exists( 'Bookings_List_Table' ) ) {
 		/**
 		 * Get default hidden columns
 		 * @since 1.3.0
-		 * @version 1.7.10
+		 * @version 1.8.0
 		 * @access public
 		 * @param array $hidden
 		 * @param WP_Screen $screen
@@ -134,6 +134,7 @@ if( ! class_exists( 'Bookings_List_Table' ) ) {
 				$hidden = apply_filters( 'bookacti_booking_list_default_hidden_columns', array(
 					'email',
 					'phone',
+					'roles',
 					'end_date',
 					'template_title',
 					'activity_title',
@@ -265,6 +266,7 @@ if( ! class_exists( 'Bookings_List_Table' ) ) {
 			
 			// Retrieve information about users and stock them into an array sorted by user id
 			$users = bookacti_get_users_data( array( 'include' => $this->user_ids ) );
+			$roles_names = bookacti_get_roles();
 			
 			// Get datetime format
 			$datetime_format	= bookacti_get_message( 'date_format_long' );
@@ -341,6 +343,7 @@ if( ! class_exists( 'Bookings_List_Table' ) ) {
 								. ' </a>';
 					$email		= ! empty( $user->user_email ) ? $user->user_email : '';
 					$phone		= ! empty( $user->phone ) ? $user->phone : '';
+					$roles		= ! empty( $user->roles ) ? implode( ', ', array_replace( array_combine( $user->roles, $user->roles ), array_intersect_key( $roles_names, array_flip( $user->roles ) ) ) ) : '';
 					
 				// If the booking was made without account
 				} else if( $user_id === $unknown_user_id || is_email( $user_id ) ) {
@@ -354,6 +357,7 @@ if( ! class_exists( 'Bookings_List_Table' ) ) {
 					}
 					$email		= ! empty( $booking_meta->user_email ) ? $booking_meta->user_email : '';
 					$phone		= ! empty( $booking_meta->user_phone ) ? $booking_meta->user_phone : '';
+					$roles		= '';
 					
 				// Any other cases
 				} else {
@@ -361,6 +365,7 @@ if( ! class_exists( 'Bookings_List_Table' ) ) {
 					$customer	= esc_html( __( 'Unknown user', 'booking-activities' ) . ' (' . $user_id . ')' );
 					$email		= '';
 					$phone		= '';
+					$roles		= '';
 				}
 				
 				// Add info on the primary column to make them directly visible in responsive view
@@ -391,6 +396,7 @@ if( ! class_exists( 'Bookings_List_Table' ) ) {
 					'customer'		=> $customer,
 					'email'			=> $email,
 					'phone'			=> $phone,
+					'roles'			=> $roles,
 					'state'			=> $state,
 					'payment_status'=> $paid,
 					'quantity'		=> $quantity,

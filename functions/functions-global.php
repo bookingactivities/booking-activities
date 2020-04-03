@@ -541,7 +541,7 @@ function bookacti_get_js_variables() {
 			'dialog_button_reset'				=> esc_html__( 'Reset', 'booking-activities' ),
 			'dialog_button_delete'				=> esc_html__( 'Delete', 'booking-activities' ),
 			'error_time_format'			        => esc_html__( 'The time format should be HH:mm where "HH" represents hours and "mm" minutes.', 'booking-activities' ),
-			'nonce_get_booking_rows'			=> wp_create_nonce( 'bookacti_get_booking_rows' ),
+			'nonce_get_booking_rows'			=> wp_create_nonce( 'bookacti_get_booking_rows' )
 		);
 
 		// Strings for calendar editor only
@@ -568,7 +568,6 @@ function bookacti_get_js_variables() {
 				'error_hours_sup_to_23'             => esc_html__( 'The number of hours should be between 0 and 23.', 'booking-activities' ),
 				'error_minutes_sup_to_59'           => esc_html__( 'The number of minutes should be between 0 and 59.', 'booking-activities' ),
 				'error_activity_duration_is_null'	=> esc_html__( 'The activity duration should not be null.', 'booking-activities' ),
-				'error_availability_inf_to_0'       => esc_html__( 'The number of available bookings should be higher than or equal to 0.', 'booking-activities' ),
 				'error_less_avail_than_bookings'    => esc_html__( "You can't set less available bookings than it has already on one of the occurrence of this event.", 'booking-activities' ),
 				'error_booked_events_out_of_period' => esc_html__( 'The repetition period must include all booked occurences.', 'booking-activities' ),
 				'error_event_not_btw_from_and_to'   => esc_html__( 'The selected event should be included in the period in which it will be repeated.', 'booking-activities' ),
@@ -1016,21 +1015,24 @@ function bookacti_display_field( $args ) {
 	// Display field according to type
 
 	// TEXT & NUMBER
-	if( in_array( $args[ 'type' ], array( 'text', 'hidden', 'number', 'date', 'time', 'email', 'tel', 'password', 'file' ), true ) ) {
+	if( in_array( $args[ 'type' ], array( 'text', 'hidden', 'number', 'date', 'time', 'email', 'tel', 'password', 'file', 'color' ), true ) ) {
 	?>
-		<input	type=		'<?php echo esc_attr( $args[ 'type' ] ); ?>' 
-				name=		'<?php echo esc_attr( $args[ 'name' ] ); ?>' 
-				value=		'<?php echo esc_attr( $args[ 'value' ] ); ?>' 
+		<input	type='<?php echo esc_attr( $args[ 'type' ] ); ?>' 
+				name='<?php echo esc_attr( $args[ 'name' ] ); ?>' 
+				value='<?php echo esc_attr( $args[ 'value' ] ); ?>' 
 				autocomplete='<?php echo $args[ 'autocomplete' ] ? esc_attr( $args[ 'autocomplete' ] ) : 'off'; ?>'
-				id=			'<?php echo esc_attr( $args[ 'id' ] ); ?>' 
-				class=		'bookacti-input <?php echo esc_attr( $args[ 'class' ] ); ?>' 
+				id='<?php echo esc_attr( $args[ 'id' ] ); ?>' 
+				class='bookacti-input <?php echo esc_attr( $args[ 'class' ] ); ?>' 
 			<?php if( ! in_array( $args[ 'type' ], array( 'hidden', 'file' ) ) ) { ?>
 				placeholder='<?php echo esc_attr( $args[ 'placeholder' ] ); ?>' 
 			<?php } 
 			if( in_array( $args[ 'type' ], array( 'number', 'date', 'time' ), true ) ) { ?>
-				min=		'<?php echo esc_attr( $args[ 'options' ][ 'min' ] ); ?>' 
-				max=		'<?php echo esc_attr( $args[ 'options' ][ 'max' ] ); ?>'
-				step=		'<?php echo esc_attr( $args[ 'options' ][ 'step' ] ); ?>'
+				min='<?php echo esc_attr( $args[ 'options' ][ 'min' ] ); ?>' 
+				max='<?php echo esc_attr( $args[ 'options' ][ 'max' ] ); ?>'
+				step='<?php echo esc_attr( $args[ 'options' ][ 'step' ] ); ?>'
+			<?php }
+			if( $args[ 'type' ] === 'number' && is_int( $args[ 'options' ][ 'step' ] ) ) { ?>
+				onkeypress='return event.charCode >= 48 && event.charCode <= 57'
 			<?php }
 			if( ! empty( $args[ 'attr' ] ) ) { echo $args[ 'attr' ]; }
 			if( $args[ 'type' ] === 'file' && $args[ 'multiple' ] ) { echo ' multiple'; }
@@ -1041,6 +1043,36 @@ function bookacti_display_field( $args ) {
 			<?php echo $args[ 'label' ]; ?>
 		</label>
 	<?php
+		}
+	}
+
+	// Duration
+	if( $args[ 'type' ] === 'duration' ) {
+		// Convert value from seconds
+		$duration = is_numeric( $args[ 'value' ] ) ? bookacti_format_duration( $args[ 'value' ], 'array' ) : array( 'days' => '', 'hours' => '', 'minutes' => '', 'seconds' => '' );
+		?>
+		<input type='hidden' name='<?php echo esc_attr( $args[ 'name' ] ); ?>' value='<?php echo esc_attr( $args[ 'value' ] ); ?>' id='<?php echo esc_attr( $args[ 'id' ] ); ?>' class='bookacti-input bookacti-duration-value <?php echo esc_attr( $args[ 'class' ] ); ?>'/>
+		<div class='bookacti-duration-field-container'>
+			<input type='number' value='<?php echo esc_attr( $duration[ 'days' ] ); ?>' 
+					id='<?php echo esc_attr( $args[ 'id' ] ) . '-days'; ?>' class='bookacti-input bookacti-duration-field'
+					placeholder='365' min='0' step='1' data-unit='day' onkeypress='return event.charCode >= 48 && event.charCode <= 57'/>
+			<label for='<?php echo esc_attr( $args[ 'id' ] ) . '-days'; ?>' class='bookacti-duration-field-label'><?php echo esc_html( _n( 'day', 'days', 2 ) ); ?></label>
+		</div>
+		<div class='bookacti-duration-field-container'>
+			<input type='number' value='<?php echo esc_attr( $duration[ 'hours' ] ); ?>' 
+					id='<?php echo esc_attr( $args[ 'id' ] ) . '-hours'; ?>' class='bookacti-input bookacti-duration-field'
+					placeholder='23' min='0' max='23' step='1' data-unit='hour' onkeypress='return event.charCode >= 48 && event.charCode <= 57'/>
+			<label for='<?php echo esc_attr( $args[ 'id' ] ) . '-hours'; ?>' class='bookacti-duration-field-label'><?php echo esc_html( _n( 'hour', 'hours', 2 ) ); ?></label>
+		</div>
+		<div class='bookacti-duration-field-container'>
+			<input type='number' value='<?php echo esc_attr( $duration[ 'minutes' ] ); ?>' 
+					id='<?php echo esc_attr( $args[ 'id' ] ) . '-minutes'; ?>' class='bookacti-input bookacti-duration-field'
+					placeholder='59' min='0' max='59' step='1' data-unit='minute' onkeypress='return event.charCode >= 48 && event.charCode <= 57'/>
+			<label for='<?php echo esc_attr( $args[ 'id' ] ) . '-minutes'; ?>' class='bookacti-duration-field-label'><?php echo esc_html( _n( 'minute', 'minutes', 2 ) ); ?></label>
+		</div>
+		<?php if( $args[ 'label' ] ) { ?>
+		<span><?php echo $args[ 'label' ]; ?></span>
+		<?php
 		}
 	}
 
@@ -1252,7 +1284,7 @@ function bookacti_format_field_args( $args ) {
 	if( ! isset( $args[ 'type' ] ) || ! isset( $args[ 'name' ] ) ) { return false; }
 
 	// If field type is not supported, return
-	if( ! in_array( $args[ 'type' ], array( 'text', 'hidden', 'email', 'tel', 'date', 'time', 'password', 'number', 'checkbox', 'checkboxes', 'select', 'select_items', 'radio', 'textarea', 'file', 'editor', 'user_id' ) ) ) { 
+	if( ! in_array( $args[ 'type' ], array( 'text', 'hidden', 'email', 'tel', 'date', 'time', 'password', 'number', 'duration', 'checkbox', 'checkboxes', 'select', 'select_items', 'radio', 'textarea', 'file', 'color', 'editor', 'user_id' ) ) ) { 
 		return false; 
 	}
 
@@ -1790,20 +1822,29 @@ function bookacti_sanitize_duration( $duration ) {
 
 
 /**
- * Convert an amount of days to add to an interval format
- * @since 1.5.8
- * @param int|float $days_to_add
- * @param int|float $hours_to_add
- * @param int $minutes_to_add
- * @return string
+ * Convert duration from seconds
+ * @since 1.8.0
+ * @param int $seconds
+ * @param string $format Either "iso8601", "timespan" or "array"
+ * @return string P%dDT%dH%dM%dS
  */
-function bookacti_convert_days_to_add_to_interval_format( $days_to_add = 0, $hours_to_add = 0, $minutes_to_add = 0 ) {
-	$days			= intval( abs( $days_to_add ) );
-	if( ! $hours_to_add )	{ $hours_to_add = abs( ( $days_to_add - $days ) * 24 ); }
-	$hours			= intval( $hours_to_add );
-	if( ! $minutes_to_add )	{ $minutes_to_add = abs( ( $hours_to_add - $hours ) * 60 ); }
-	$minutes		= intval( $minutes_to_add );
-	return 'P' . $days . 'DT' . $hours . 'H' . $minutes . 'M';
+function bookacti_format_duration( $seconds, $format = 'iso8601' ) {
+	$seconds = intval( $seconds );
+	$array = array();
+    
+	$array[ 'days' ] = floor( $seconds / 86400 );
+    $seconds = $seconds % 86400;
+
+    $array[ 'hours' ] = floor( $seconds / 3600 );
+    $seconds = $seconds % 3600;
+
+    $array[ 'minutes' ] = floor( $seconds / 60 );
+    $array[ 'seconds' ] = $seconds % 60;
+	
+	if( $format === 'array' )			{ return $array; }
+	else if( $format === 'timespan' )	{ return sprintf( '%s.%s:%s:%s', str_pad( $array[ 'days' ], 3, '0', STR_PAD_LEFT ), str_pad( $array[ 'hours' ], 2, '0', STR_PAD_LEFT ), str_pad( $array[ 'minutes' ], 2, '0', STR_PAD_LEFT ), str_pad( $array[ 'seconds' ], 2, '0', STR_PAD_LEFT ) ); }
+	
+    return sprintf( 'P%dDT%dH%dM%dS', $array[ 'days' ], $array[ 'hours' ], $array[ 'minutes' ], $array[ 'seconds' ] );
 }
 
 
@@ -1865,7 +1906,7 @@ function bookacti_maybe_decode_json( $string ) {
 /**
  * Sanitize the values of an array
  * @since 1.5.0
- * @version 1.7.10
+ * @version 1.8.0
  * @param array $default_data
  * @param array $raw_data
  * @param array $keys_by_type
@@ -1874,7 +1915,7 @@ function bookacti_maybe_decode_json( $string ) {
  */
 function bookacti_sanitize_values( $default_data, $raw_data, $keys_by_type, $sanitized_data = array() ) {
 	// Sanitize the keys-by-type array
-	$allowed_types = array( 'int', 'numeric', 'bool', 'str', 'str_id', 'str_html', 'array', 'datetime' );
+	$allowed_types = array( 'int', 'float', 'numeric', 'bool', 'str', 'str_id', 'str_html', 'array', 'datetime', 'date' );
 	foreach( $allowed_types as $allowed_type ) {
 		if( ! isset( $keys_by_type[ $allowed_type ] ) ) { $keys_by_type[ $allowed_type ] = array(); }
 	}
@@ -1901,6 +1942,11 @@ function bookacti_sanitize_values( $default_data, $raw_data, $keys_by_type, $san
 		// Sanitize integers
 		if( in_array( $key, $keys_by_type[ 'int' ], true ) ) { 
 			$sanitized_data[ $key ] = is_numeric( $raw_data[ $key ] ) ? intval( $raw_data[ $key ] ) : $default_value;
+		}
+
+		// Sanitize floats
+		if( in_array( $key, $keys_by_type[ 'float' ], true ) ) { 
+			$sanitized_data[ $key ] = is_numeric( $raw_data[ $key ] ) ? foatval( $raw_data[ $key ] ) : $default_value;
 		}
 
 		// Sanitize numeric
@@ -1936,6 +1982,12 @@ function bookacti_sanitize_values( $default_data, $raw_data, $keys_by_type, $san
 		// Sanitize datetime
 		else if( in_array( $key, $keys_by_type[ 'datetime' ], true ) ) { 
 			$sanitized_data[ $key ] = bookacti_sanitize_datetime( $raw_data[ $key ] );
+			if( ! $sanitized_data[ $key ] ) { $sanitized_data[ $key ] = $default_value; }
+		}
+
+		// Sanitize date
+		else if( in_array( $key, $keys_by_type[ 'date' ], true ) ) { 
+			$sanitized_data[ $key ] = bookacti_sanitize_date( $raw_data[ $key ] );
 			if( ! $sanitized_data[ $key ] ) { $sanitized_data[ $key ] = $default_value; }
 		}
 	}
@@ -2038,6 +2090,18 @@ function bookacti_get_users_data( $args = array() ) {
 	}
 		
 	return $sorted_users;
+}
+
+
+/**
+ * Get all available user roles
+ * @since 1.8.0
+ * @return array
+ */
+function bookacti_get_roles() {
+	$wp_roles = new WP_Roles();
+    $roles = array_map( 'translate_user_role', $wp_roles->get_names() );
+	return $roles;
 }
 
 

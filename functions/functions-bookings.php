@@ -7,36 +7,33 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 /**
  * Check if a booking is whithin the authorized delay as of now
  * @since 1.1.0
- * @version 1.7.12
+ * @version 1.8.0
  * @param object|int $booking
  * @param string $context
  * @return boolean
  */
 function bookacti_is_booking_in_delay( $booking, $context = '' ) {
-	if( is_numeric( $booking ) ) {
-		$booking = bookacti_get_booking_by_id( $booking );
-	}
-
+	if( is_numeric( $booking ) ) { $booking = bookacti_get_booking_by_id( $booking ); }
 	if( ! is_object( $booking ) ) { return false; }
 
 	$is_in_delay	= false;
-	$delay_global	= bookacti_get_setting_value( 'bookacti_cancellation_settings', 'cancellation_min_delay_before_event' );
+	$delay_global	= bookacti_get_setting_value( 'bookacti_cancellation_settings', 'booking_changes_deadline' );
 	$timezone		= bookacti_get_setting_value( 'bookacti_general_settings', 'timezone' );
-
+	
 	// Get the more specific per activity / group category delay
 	$delay_specific = false;
 	if( $booking->group_id ) {
 		$booking_group	= bookacti_get_booking_group_by_id( $booking->group_id );
 		$event_group	= bookacti_get_group_of_events( $booking_group->event_group_id );
 		$category_data	= bookacti_get_metadata( 'group_category', $event_group->category_id );
-		if( isset( $category_data[ 'booking_changes_deadline' ] ) && strlen( $category_data[ 'booking_changes_deadline' ] ) ) {
-			$delay_specific	= intval( $category_data[ 'booking_changes_deadline' ] );
+		if( isset( $category_data[ 'booking_changes_deadline' ] ) && is_numeric( $category_data[ 'booking_changes_deadline' ] ) ) {
+			$delay_specific	= floatval( $category_data[ 'booking_changes_deadline' ] );
 		}
 	} else {
 		$event			= bookacti_get_event_by_id( $booking->event_id );
 		$activity_data	= bookacti_get_metadata( 'activity', $event->activity_id );
-		if( isset( $activity_data[ 'booking_changes_deadline' ] ) && strlen( $activity_data[ 'booking_changes_deadline' ] ) ) {
-			$delay_specific	= intval( $activity_data[ 'booking_changes_deadline' ] );
+		if( isset( $activity_data[ 'booking_changes_deadline' ] ) && is_numeric( $activity_data[ 'booking_changes_deadline' ] ) ) {
+			$delay_specific	= floatval( $activity_data[ 'booking_changes_deadline' ] );
 		}
 	}
 
@@ -47,9 +44,12 @@ function bookacti_is_booking_in_delay( $booking, $context = '' ) {
 	// Choose the most specific defined value
 	$delay = $delay_specific !== false ? $delay_specific : $delay_global;
 
-	$date_interval		= apply_filters( 'bookacti_booking_changes_deadline_date_interval', 'P' . $delay . 'D', $booking, $delay, $context );
+	// Convert delay to a valid DateInterval constructor
+	$date_interval_constructor = bookacti_format_duration( floatval( $delay ), 'iso8601' );
+
+	$date_interval		= apply_filters( 'bookacti_booking_changes_deadline_date_interval', new DateInterval( $date_interval_constructor ), $booking, $delay, $context );
 	$delay_datetime		= DateTime::createFromFormat( 'Y-m-d H:i:s', $booking->event_start, new DateTimeZone( $timezone ) );
-	$delay_datetime->sub( new DateInterval( $date_interval ) );
+	$delay_datetime->sub( $date_interval );
 	$current_datetime	= new DateTime( 'now', new DateTimeZone( $timezone ) );
 
 	if( $current_datetime < $delay_datetime ) { $is_in_delay = true; }
@@ -1032,6 +1032,7 @@ function bookacti_get_bookings_export_columns() {
 		'customer_last_name'	=> esc_html__( 'Customer last name', 'booking-activities' ),
 		'customer_email'		=> esc_html__( 'Customer email', 'booking-activities' ),
 		'customer_phone'		=> esc_html__( 'Customer phone', 'booking-activities' ),
+		'customer_roles'		=> esc_html__( 'Customer roles', 'booking-activities' ),
 		'event_id'				=> esc_html__( 'Event ID', 'booking-activities' ),
 		'event_title'			=> esc_html__( 'Event title', 'booking-activities' ),
 		'start_date'			=> esc_html__( 'Start date', 'booking-activities' ),
@@ -1418,8 +1419,10 @@ function bookacti_get_bookings_for_export( $args_raw = array() ) {
 
 	// Retrieve information about users and stock them into an array sorted by user id
 	$users = array();
+	$roles_names = array();
 	if( $get_user_data ) {
 		$users = bookacti_get_users_data( array( 'include' => $user_ids ) );
+		$roles_names = bookacti_get_roles();
 	}
 	$unknown_user_id = esc_attr( apply_filters( 'bookacti_unknown_user_id', 'unknown_user' ) );
 	
@@ -1502,7 +1505,13 @@ function bookacti_get_bookings_for_export( $args_raw = array() ) {
 			'activity_title'		=> apply_filters( 'bookacti_translate_text', $activity_title ),
 			'form_id'				=> $form_id,
 			'order_id'				=> $order_id,
-			'customer_id'			=> $user_id
+			'customer_id'			=> $user_id,
+			'customer_display_name'	=> '',
+			'customer_first_name'	=> '',
+			'customer_last_name'	=> '',
+			'customer_email'		=> '',
+			'customer_phone'		=> '',
+			'customer_roles'		=> ''
 		);
 
 		// Format customer column
@@ -1516,14 +1525,14 @@ function bookacti_get_bookings_for_export( $args_raw = array() ) {
 					'customer_first_name'	=> ! empty( $user->first_name ) ? $user->first_name : '',
 					'customer_last_name'	=> ! empty( $user->last_name ) ? $user->last_name : '',
 					'customer_email'		=> ! empty( $user->user_email ) ? $user->user_email : '',
-					'customer_phone'		=> ! empty( $user->phone ) ? $user->phone : ''
+					'customer_phone'		=> ! empty( $user->phone ) ? $user->phone : '',
+					'customer_roles'		=> ! empty( $user->roles ) ? implode( ', ', array_replace( array_combine( $user->roles, $user->roles ), array_intersect_key( $roles_names, array_flip( $user->roles ) ) ) ) : ''
 				));
 
 			// If the booking was made without account
 			} else if( $user_id === $unknown_user_id || is_email( $user_id ) ) {
 				$booking_meta = $group && $args[ 'filters' ][ 'group_by' ] !== 'booking_group' ? $group : $booking;
 				$booking_data = array_merge( $booking_data, array(
-					'customer_display_name'	=> '',
 					'customer_first_name'	=> ! empty( $booking_meta->user_first_name ) ? $booking_meta->user_first_name : '',
 					'customer_last_name'	=> ! empty( $booking_meta->user_last_name ) ? $booking_meta->user_last_name : '',
 					'customer_email'		=> ! empty( $booking_meta->user_email ) ? $booking_meta->user_email : '',
@@ -1862,6 +1871,7 @@ function bookacti_get_active_booking_states() {
 /**
  * Booking list column labels
  * @since 1.7.4
+ * @version 1.8.0
  * @return array
  */
 function bookacti_get_user_booking_list_columns_labels() {
@@ -1878,6 +1888,7 @@ function bookacti_get_user_booking_list_columns_labels() {
 		'customer_last_name'	=> esc_html__( 'Last name', 'booking-activities' ),
 		'customer_email'		=> esc_html__( 'Email', 'booking-activities' ),
 		'customer_phone'		=> esc_html__( 'Phone', 'booking-activities' ),
+		'customer_roles'		=> esc_html__( 'Roles', 'booking-activities' ),
 		'events'				=> esc_html__( 'Events', 'booking-activities' ),
 		'event_id'				=> esc_html__( 'Event ID', 'booking-activities' ),
 		'event_title'			=> esc_html__( 'Title', 'booking-activities' ),
@@ -1948,7 +1959,8 @@ function bookacti_get_user_booking_list_private_columns() {
 		'customer_first_name',
 		'customer_last_name',
 		'customer_email',
-		'customer_phone'
+		'customer_phone',
+		'customer_roles'
 	));
 }
 
@@ -2022,8 +2034,10 @@ function bookacti_get_user_booking_list_items( $filters, $columns = array() ) {
 
 	// Retrieve information about users and stock them into an array sorted by user id
 	$users = array();
+	$roles_names = array();
 	if( $get_user_data ) {
 		$users = bookacti_get_users_data( array( 'include' => $user_ids ) );
+		$roles_names = bookacti_get_roles();
 	}
 	$unknown_user_id = esc_attr( apply_filters( 'bookacti_unknown_user_id', 'unknown_user' ) );
 	
@@ -2098,6 +2112,7 @@ function bookacti_get_user_booking_list_items( $filters, $columns = array() ) {
 			$last_name	= ! empty( $user->last_name ) ? $user->last_name : '';
 			$email		= ! empty( $user->user_email ) ? $user->user_email : '';
 			$phone		= ! empty( $user->phone ) ? $user->phone : '';
+			$roles		= ! empty( $user->roles ) ? implode( ', ', array_replace( array_combine( $user->roles, $user->roles ), array_intersect_key( $roles_names, array_flip( $user->roles ) ) ) ) : '';
 
 		// If the booking was made without account
 		} else if( $user_id === $unknown_user_id || is_email( $user_id ) ) {
@@ -2113,6 +2128,7 @@ function bookacti_get_user_booking_list_items( $filters, $columns = array() ) {
 			$last_name	= ! empty( $booking_meta->user_last_name ) ? $booking_meta->user_last_name : '';
 			$email		= ! empty( $booking_meta->user_email ) ? $booking_meta->user_email : '';
 			$phone		= ! empty( $booking_meta->user_phone ) ? $booking_meta->user_phone : '';
+			$roles		= '';
 
 		// Any other cases
 		} else {
@@ -2122,6 +2138,7 @@ function bookacti_get_user_booking_list_items( $filters, $columns = array() ) {
 			$last_name	= '';
 			$email		= '';
 			$phone		= '';
+			$roles		= '';
 		}
 		
 		/**
@@ -2143,6 +2160,7 @@ function bookacti_get_user_booking_list_items( $filters, $columns = array() ) {
 			'customer_last_name'	=> $last_name,
 			'customer_email'		=> $email,
 			'customer_phone'		=> $phone,
+			'customer_roles'		=> $roles,
 			'events'				=> in_array( 'events', $columns, true ) ? bookacti_get_formatted_booking_events_list( $grouped_bookings ) : '',
 			'event_id'				=> $event_id,
 			'event_title'			=> apply_filters( 'bookacti_translate_text', $title ),

@@ -4,7 +4,6 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 /**
  * Get default settings values
- * 
  * @since 1.3.0 (was bookacti_define_default_settings_constants)
  * @version 1.8.0
  */
@@ -25,7 +24,7 @@ function bookacti_get_default_settings() {
 		'delete_data_on_uninstall'				=> 0,
 		'allow_customers_to_cancel'				=> true,
 		'allow_customers_to_reschedule'			=> true,
-		'cancellation_min_delay_before_event'	=> 7,
+		'booking_changes_deadline'				=> 7*24,
 		'refund_actions_after_cancellation'		=> array(),
 		'notifications_from_name'				=> get_bloginfo( 'name' ),
 		'notifications_from_email'				=> get_bloginfo( 'admin_email' ),
@@ -428,19 +427,17 @@ function bookacti_settings_field_activate_reschedule_callback() {
 
 /**
  * Minimum delay before event a user can cancel or reschedule a booking
- * 
- * @version 1.2.0
+ * @version 1.8.0
  */
 function bookacti_settings_field_cancellation_delay_callback() {
 	$args = array(
-		'type'		=> 'number',
-		'name'		=> 'bookacti_cancellation_settings[cancellation_min_delay_before_event]',
-		'id'		=> 'cancellation_min_delay_before_event',
-		'options'	=> array( 'min' => 0 ),
-		'value'		=> bookacti_get_setting_value( 'bookacti_cancellation_settings', 'cancellation_min_delay_before_event' ),
-		'label'		=> ' ' . esc_html__( 'days before the event', 'booking-activities' ),
-		'tip'		=> __( 'Set the end of the allowed changes period (cancellation, rescheduling). E.g.: "7", your customers may change their reservations at least 7 days before the start of the event. After that, they won\'t be allowed to change them anymore.', 'booking-activities' )
-					. '<br/>' . __( 'This option has no effect for administrators.', 'booking-activities' )
+		'type'	=> 'duration',
+		'name'	=> 'bookacti_cancellation_settings[booking_changes_deadline]',
+		'id'	=> 'booking_changes_deadline',
+		'value'	=> floatval( bookacti_get_setting_value( 'bookacti_cancellation_settings', 'booking_changes_deadline' ) ),
+		'label'	=> esc_html__( 'before the event', 'booking-activities' ),
+		'tip'	=> esc_html__( 'Set the end of the allowed changes period (cancellation, rescheduling). E.g.: "1 day 5 hours 30 minutes", your customers may change their bookings at least 1 day 5 hours and 30 minutes before the start of the event. After that, they won\'t be allowed to change them anymore.', 'booking-activities' )
+				. '<br/>' . esc_html__( 'This option has no effect for administrators.', 'booking-activities' )
 	);
 	bookacti_display_field( $args );
 }

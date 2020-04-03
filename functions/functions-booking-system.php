@@ -859,9 +859,9 @@ function bookacti_get_booking_system_fields_default_data( $fields = array() ) {
 			'type'			=> 'number',
 			'name'			=> 'availability_period_start',
 			'options'		=> array( 'min' => 0, 'step' => 1 ),
-			/* translators: Followed by a field indicating a number of days before the event. E.g.: "Events will be bookable in 2 days from today". */
+			/* translators: Followed by a field indicating a number of days from today. E.g.: "Events will be bookable in 2 days from today". */
 			'title'			=> esc_html__( 'Events will be bookable in', 'booking-activities' ),
-			/* translators: Arrives after a field indicating a number of days before the event. E.g.: "Events will be bookable in 2 days from today". */
+			/* translators: Arrives after a field indicating a number of days from today. E.g.: "Events will be bookable in 2 days from today". */
 			'label'			=> esc_html__( 'days from today', 'booking-activities' ),
 			'tip'			=> esc_html__( 'Set the beginning of the availability period. E.g.: "2", your customers may book events starting in 2 days at the earliest. They are no longer allowed to book events starting earlier (like today or tomorrow).', 'booking-activities' )
 		);
@@ -873,7 +873,7 @@ function bookacti_get_booking_system_fields_default_data( $fields = array() ) {
 			'type'			=> 'number',
 			'name'			=> 'availability_period_end',
 			'options'		=> array( 'min' => 0, 'step' => 1 ),
-			/* translators: Followed by a field indicating a number of days before the event. E.g.: "Events are bookable for up to 30 days from today". */
+			/* translators: Followed by a field indicating a number of days from today. E.g.: "Events are bookable for up to 30 days from today". */
 			'title'			=>  esc_html__( 'Events are bookable for up to', 'booking-activities' ),
 			'label'			=> esc_html__( 'days from today', 'booking-activities' ),
 			'tip'			=> esc_html__( 'Set the end of the availability period. E.g.: "30", your customers may book events starting within 30 days at the latest. They are not allowed yet to book events starting later.', 'booking-activities' )
@@ -1711,7 +1711,7 @@ function bookacti_get_bounding_events_from_events_array( $events_array ) {
  * @return array
  */
 function bookacti_get_occurences_of_repeated_event( $event, $raw_args = array() ) {
-	if( ! $event || ( empty( $event->event_id ) && empty( $event->id ) ) ) { return array(); }
+	if( ! $event ) { return array(); }
 	
 	$default_args = array(
 		'interval' => array(),

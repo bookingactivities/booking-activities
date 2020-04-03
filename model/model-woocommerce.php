@@ -6,7 +6,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 /**
  * Get array of woocommerce products and product variations titles ordered by ids
  * @since 1.7.10
- * @version 1.7.19
+ * @version 1.8.0
  * @global wpdb $wpdb
  * @param string $product_search
  * @return array
@@ -33,21 +33,24 @@ function bookacti_get_products_titles( $search = '' ) {
 		}
 	}
 	
-	$query	= 'SELECT ID as id, post_title as title, post_excerpt as variations_title, post_type as type, post_parent as parent FROM ' . $wpdb->posts 
-			. ' WHERE ( post_type = "product" OR post_type = "product_variation" )'
-			. ' AND post_status = "publish"';
+	$query	= 'SELECT DISTINCT P.ID as id, P.post_title as title, P.post_excerpt as variations_title, P.post_type, T.name as product_type, P.post_parent as parent FROM ' . $wpdb->posts . ' as P '
+			. ' LEFT JOIN ' . $wpdb->term_relationships . ' as TR ON TR.object_id = P.ID '
+			. ' LEFT JOIN ' . $wpdb->term_taxonomy . ' as TT ON TT.term_taxonomy_id = TR.term_taxonomy_id AND TT.taxonomy = "product_type" '
+			. ' LEFT JOIN ' . $wpdb->terms . ' as T ON T.term_id = TT.term_id '
+			. ' WHERE ( ( P.post_type = "product" AND T.name IS NOT NULL ) OR P.post_type = "product_variation" )'
+			. ' AND P.post_status = "publish"';
 	
 	if( $search ) {
-		$search_conditions = $search_product_id ? 'ID = %d' : 'post_title LIKE %s OR ( post_type = "product_variation" AND post_excerpt LIKE %s )';
+		$search_conditions = $search_product_id ? 'ID = %d' : 'P.post_title LIKE %s OR ( P.post_type = "product_variation" AND P.post_excerpt LIKE %s )';
 		
 		// Include the variations' parents so the user knows to what product it belongs
-		$parent_ids_query = 'SELECT post_parent FROM ' . $wpdb->posts . ' WHERE post_type = "product_variation" AND post_status = "publish" AND ' . $search_conditions;
+		$parent_ids_query = 'SELECT P.post_parent FROM ' . $wpdb->posts . ' as P WHERE P.post_type = "product_variation" AND P.post_status = "publish" AND ' . $search_conditions;
 		
 		$query .= ' AND ( ' . $search_conditions . ' OR ID IN ( ' . $parent_ids_query . ' ) )';
 		
 		$sanitized_search = $search_product_id ? $search_product_id : '%' . $wpdb->esc_like( $search ) . '%';
 		$variables = $search_product_id ? array( $sanitized_search, $sanitized_search ) : array( $sanitized_search, $sanitized_search, $sanitized_search, $sanitized_search );
-		
+	
 		$query = $wpdb->prepare( $query, $variables );
 	}
 	
@@ -56,17 +59,14 @@ function bookacti_get_products_titles( $search = '' ) {
 	$products_array = array();
 	if( $products ) {
 		foreach( $products as $product ) {
-			if( $product->type === 'product' ){
-				if( ! isset( $products_array[ $product->id ] ) ) { 
-					$products_array[ $product->id ] = array();
-				}
+			if( $product->post_type !== 'product_variation' ){
+				if( ! isset( $products_array[ $product->id ] ) ) { $products_array[ $product->id ] = array(); }
 				$products_array[ $product->id ][ 'title' ] = $product->title;
+				$products_array[ $product->id ][ 'type' ] = $product->product_type;
 			}
-			else if( $product->type === 'product_variation' ) {
-				if( ! isset( $products_array[ $product->parent ][ 'variations' ] ) ) { 
-					$products_array[ $product->parent ][ 'variations' ] = array();
-				}
-				$products_array[ $product->parent ][ 'variations' ][ $product->id ][ 'title' ] = $product->variations_title;
+			else {
+				if( ! isset( $products_array[ $product->parent ][ 'variations' ] ) ) { $products_array[ $product->parent ][ 'variations' ] = array(); }
+				$products_array[ $product->parent ][ 'variations' ][ $product->id ][ 'title' ] = $product->variations_title ? $product->variations_title : $product->id;
 			}
 		}
 	}
@@ -433,8 +433,8 @@ function bookacti_cancel_order_pending_bookings( $order_id, $not_booking_ids = a
 
 /**
  * Deactivate expired bookings
- * @version	1.7.4
- * @global type $wpdb
+ * @version	1.8.0
+ * @global wpdb $wpdb
  * @return array|false
  */
 function bookacti_deactivate_expired_bookings() {
@@ -444,21 +444,26 @@ function bookacti_deactivate_expired_bookings() {
 	$query	= 'SELECT B.id, B.group_id '
 			. ' FROM ' . BOOKACTI_TABLE_BOOKINGS . ' as B '
 			. ' LEFT JOIN ' . $wpdb->prefix . 'woocommerce_sessions as S ON B.user_id = S.session_key '
-			. ' WHERE B.state = "in_cart" ';
-	// Expired with Booking Activities expiration system
-	$query	.= ' AND ( ( B.expiration_date <= UTC_TIMESTAMP() AND B.active = 1 )';
-	// Expired with WC session expiration system
-	$query	.= ' OR ( S.session_expiry IS NULL OR S.session_expiry <= UNIX_TIMESTAMP( UTC_TIMESTAMP() ) ) )';
+			. ' WHERE B.state = "in_cart" '
+			// Expired with Booking Activities expiration system
+			. ' AND ( ( B.expiration_date <= UTC_TIMESTAMP() AND B.active = 1 )'
+			// Expired with WC session expiration system
+			. ' OR ( S.session_expiry IS NULL OR S.session_expiry <= UNIX_TIMESTAMP( UTC_TIMESTAMP() ) ) )';
 	
 	$expired_bookings = $wpdb->get_results( $query );
+	
+	if( ! $expired_bookings && $wpdb->last_error )	{ return $wpdb->last_error; }
+	if( $expired_bookings === false )				{ return false; }
 	
 	// Check if expired bookings belong to groups
 	$expired_ids = array();
 	$expired_group_ids = array();
-	foreach( $expired_bookings as $expired_booking ) {
-		$expired_ids[] = $expired_booking->id;
-		if( $expired_booking->group_id && ! in_array( $expired_booking->group_id, $expired_group_ids, true ) ) {
-			$expired_group_ids[] = $expired_booking->group_id;
+	if( $expired_bookings ) {
+		foreach( $expired_bookings as $expired_booking ) {
+			$expired_ids[] = $expired_booking->id;
+			if( $expired_booking->group_id && ! in_array( $expired_booking->group_id, $expired_group_ids, true ) ) {
+				$expired_group_ids[] = $expired_booking->group_id;
+			}
 		}
 	}
 	

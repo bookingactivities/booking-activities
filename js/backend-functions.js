@@ -72,6 +72,26 @@ $j( document ).ready( function() {
 			return ! ( ( ! $j( event.target ).is( '.select2-input' ) ) || this._super( event ) );
 		}
 	});
+		
+	
+	/**
+	 * Convert duration from days/hours/minutes to seconds - on change
+	 * @since 1.8.0
+	 */
+	$j( 'body' ).on( 'keyup mouseup change', '.bookacti-duration-field', function() {
+		var field_value = $j( this ).closest( '.bookacti-duration-field-container' ).siblings( '.bookacti-duration-value' );
+		var days		= field_value.siblings( '.bookacti-duration-field-container' ).find( '.bookacti-duration-field[data-unit="day"]' ).val();
+		var hours		= field_value.siblings( '.bookacti-duration-field-container' ).find( '.bookacti-duration-field[data-unit="hour"]' ).val();
+		var minutes		= field_value.siblings( '.bookacti-duration-field-container' ).find( '.bookacti-duration-field[data-unit="minute"]' ).val();
+		var value		= '';
+		if( $j.isNumeric( days ) || $j.isNumeric( hours ) || $j.isNumeric( minutes ) ) {
+			value = 0;
+			if( $j.isNumeric( minutes ) )	{ value += parseInt( minutes ) * 60; }
+			if( $j.isNumeric( hours ) )		{ value += parseInt( hours ) * 3600; }
+			if( $j.isNumeric( days ) )		{ value += parseInt( days ) * 86400; }
+		}
+		field_value.val( value );
+	});
 });
 
 
@@ -292,7 +312,7 @@ function bookacti_fill_fields_from_array( fields, field_prefix, scope ) {
 
 		// Select multiple
 		} else if( $j( scope + 'select[name="' + field_name + '[]"]' ).length ) {
-			$j.each( value, function( i, option ){
+			$j.each( value, function( i, option ) {
 				$j( scope + 'select[name="' + field_name + '[]"] option[value="' + option + '"]' ).prop( 'selected', true );
 			});
 			$j( scope + 'select[name="' + field_name + '[]"]' ).trigger( 'change' );
@@ -307,6 +327,8 @@ function bookacti_fill_fields_from_array( fields, field_prefix, scope ) {
 			if( $j( scope + 'input[name="' + field_name + '"]' ).attr( 'type' ) === 'time' && value === '24:00' ) { value = '00:00'; }
 			$j( scope + 'input[name="' + field_name + '"]' ).val( value );
 			$j( scope + 'textarea[name="' + field_name + '"]' ).val( value );
+			
+			// Editor
 			if( typeof tinyMCE !== 'undefined' ) {
 				if( tinyMCE && $j( scope + 'textarea[name="' + field_name + '"]' ).hasClass( 'wp-editor-area' ) ) {
 					var tmce_id = $j( scope + 'textarea[name="' + field_name + '"]' ).attr( 'id' );
@@ -314,6 +336,22 @@ function bookacti_fill_fields_from_array( fields, field_prefix, scope ) {
 						tinyMCE.get( tmce_id ).setContent( value );
 					}
 				}
+			}
+			
+			// Duration
+			if( $j( scope + 'input[name="' + field_name + '"].bookacti-duration-value' ).length ) {
+				var days, hours, minutes = '';
+				if( $j.isNumeric( value ) ) {
+					var total = parseInt( value );
+					if( total >= 0 ) {
+						days = Math.floor( total / 86400 ); total = total % 86400;
+						hours = Math.floor( total / 3600 ); total = total % 3600;
+						minutes = Math.floor( total / 60 );
+					}
+				}
+				$j( scope + 'input[name="' + field_name + '"].bookacti-duration-value' ).siblings( '.bookacti-duration-field-container' ).find( '.bookacti-duration-field[data-unit="day"]' ).val( days );
+				$j( scope + 'input[name="' + field_name + '"].bookacti-duration-value' ).siblings( '.bookacti-duration-field-container' ).find( '.bookacti-duration-field[data-unit="hour"]' ).val( hours );
+				$j( scope + 'input[name="' + field_name + '"].bookacti-duration-value' ).siblings( '.bookacti-duration-field-container' ).find( '.bookacti-duration-field[data-unit="minute"]' ).val( minutes );
 			}
 		}
 	});
