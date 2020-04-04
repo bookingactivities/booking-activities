@@ -12,7 +12,7 @@ $j( document ).ready( function() {
 	
 	/**
 	 * Init actions to perfoms when the user picks an event
-	 * @version 1.7.19
+	 * @version 1.8.0
 	 */
 	$j( 'body' ).on( 'bookacti_events_picked', '.bookacti-booking-system', function( e, group_id, event ){
 		// Retrieve the info required to show the desired events
@@ -38,9 +38,9 @@ $j( document ).ready( function() {
 						bookacti_redirect_to_activity_url( booking_system, event );
 					} else if( attributes[ 'form_action' ] === 'default' ) {
 						if( ! booking_system.closest( 'form' ).length && booking_system.closest( '.bookacti-form-fields' ).length ) {
-							booking_system.closest( '.bookacti-form-fields' ).wrap( '<form id="bookacti-temporary-form"></form>' );
+							booking_system.closest( '.bookacti-form-fields' ).wrap( '<form class="bookacti-temporary-form"></form>' );
 						}
-						if( booking_system.closest( 'form' ).length ) {
+						if( booking_system.closest( 'form.bookacti-booking-form' ).length || booking_system.closest( 'form.bookacti-temporary-form' ).length ) {
 							bookacti_submit_booking_form( booking_system.closest( 'form' ) );
 							return;
 						}
@@ -55,7 +55,7 @@ $j( document ).ready( function() {
 	
 	/**
 	 * Init actions to perfoms when the user picks a group of events
-	 * @version 1.7.19
+	 * @version 1.8.0
 	 */
 	$j( 'body' ).on( 'bookacti_group_of_events_chosen', '.bookacti-booking-system', function( e, group_id, event ) {
 		// Retrieve the info required to show the desired events
@@ -74,9 +74,9 @@ $j( document ).ready( function() {
 					}
 				} else if( attributes[ 'form_action' ] === 'default' ) {
 					if( ! booking_system.closest( 'form' ).length && booking_system.closest( '.bookacti-form-fields' ).length ) {
-						booking_system.closest( '.bookacti-form-fields' ).wrap( '<form id="bookacti-temporary-form"></form>' );
+						booking_system.closest( '.bookacti-form-fields' ).wrap( '<form class="bookacti-temporary-form"></form>' );
 					}
-					if( booking_system.closest( 'form' ).length ) {
+					if( booking_system.closest( 'form.bookacti-booking-form' ).length || booking_system.closest( 'form.bookacti-temporary-form' ).length ) {
 						bookacti_submit_booking_form( booking_system.closest( 'form' ) );
 						return;
 					}
@@ -91,12 +91,13 @@ $j( document ).ready( function() {
 	/**
 	 * Remove temporary form after submit
 	 * @since 1.7.19
+	 * @version 1.8.0
 	 * @param {object} response
 	 * @param {object} form_data_object
 	 */
-	$j( 'body' ).on( 'bookacti_booking_form_submitted', 'form#bookacti-temporary-form', function( e, response, form_data_object ) {
+	$j( 'body' ).on( 'bookacti_booking_form_submitted', 'form.bookacti-temporary-form', function( e, response, form_data_object ) {
 		if( $j( this ).find( '.bookacti-form-fields' ).length ) {
-			$j( this ).find( '.bookacti-form-fields' ).unwrap( 'form#bookacti-temporary-form' );
+			$j( this ).find( '.bookacti-form-fields' ).unwrap( 'form.bookacti-temporary-form' );
 		}
 	});
 	

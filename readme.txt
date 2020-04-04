@@ -350,6 +350,7 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 * Fix - Show single grouped bookings when selected alone in the backend Bookings page
 * Fix - Product not listed in selectbox if it once have had variations and is now no longer variable
 * Fix - Possible JS error when loading a booking system with preselected events
+* Fix - Error when submitting WC add to cart form on event click
 * Optimization - JS variables passed via PHP are now loaded only once, have been significantly reduced, and are filtered for the frontend
 * Optimization - Retrieve all users meta with a single query with bookacti_get_users_data
 * Dev - Make sure that the repeated events' occurences and exceptions are included in the repeat period when updated

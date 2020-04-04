@@ -185,7 +185,7 @@ function bookacti_sanitize_form_data( $raw_form_data ) {
 
 /**
  * Display a booking form
- * @version 1.7.19
+ * @version 1.8.0
  * @param int $form_id
  * @param string $instance_id
  * @param string $context
@@ -193,11 +193,9 @@ function bookacti_sanitize_form_data( $raw_form_data ) {
  * @return void|string
  */
 function bookacti_display_form( $form_id, $instance_id = '', $context = 'display', $echo = true ) {
-	
 	if( ! $form_id ) { return ''; }
 	
 	$form = bookacti_get_form_data( $form_id );
-	
 	if( ! $form ) { return ''; }
 	
 	// Set the form unique CSS selector
@@ -222,7 +220,7 @@ function bookacti_display_form( $form_id, $instance_id = '', $context = 'display
 		'id'			=> empty( $form[ 'id' ] ) ? 'bookacti-' . $form_css_id : $form_css_id,
 		'class'			=> 'bookacti-booking-form-' . $form_id . ' ' . $form[ 'class' ],
 		'autocomplete'	=> 'off'
-	), $form_id, $displayed_form_fields );
+	), $form, $instance_id, $context, $displayed_form_fields );
 	
 	// Add compulsory class
 	$compulsory_class = $is_form ? 'bookacti-booking-form' : 'bookacti-form-fields';
@@ -240,18 +238,18 @@ function bookacti_display_form( $form_id, $instance_id = '', $context = 'display
 	<?php } else { ?>
 		<div <?php echo $form_attributes_str; ?>>
 	<?php } ?>
-			<input type='hidden' name='form_id' value='<?php echo $form_id; ?>' />
-			<input type='hidden' name='action' value='bookactiSubmitBookingForm' />
-			<input type='hidden' name='nonce_booking_form' value='<?php echo wp_create_nonce( 'bookacti_booking_form' ); ?>' />
+			<input type='hidden' name='form_id' value='<?php echo $form_id; ?>'/>
+			<input type='hidden' name='action' value='<?php echo apply_filters( 'bookacti_form_action_field_value', 'bookactiSubmitBookingForm', $form, $instance_id, $context, $displayed_form_fields ); ?>'/>
+			<input type='hidden' name='nonce_booking_form' value='<?php echo wp_create_nonce( 'bookacti_booking_form' ); ?>'/>
 		<?php
-			do_action( 'bookacti_form_before', $form, $instance_id, $context );
+			do_action( 'bookacti_form_before', $form, $instance_id, $context, $displayed_form_fields );
 
 			foreach( $displayed_form_fields as $field ) {
 				if( ! $field ) { continue; }
 				bookacti_display_form_field( $field, $instance_id, $context, true );
 			}
 
-			do_action( 'bookacti_form_after', $form, $instance_id, $context );
+			do_action( 'bookacti_form_after', $form, $instance_id, $context, $displayed_form_fields );
 		?>
 			<div class='bookacti-notices' style='display:none;'></div>
 	<?php
@@ -261,7 +259,7 @@ function bookacti_display_form( $form_id, $instance_id = '', $context = 'display
 		</form>
 	<?php }
 	
-	$html = apply_filters( 'bookacti_form_html', ob_get_clean(), $form, $instance_id, $context );
+	$html = apply_filters( 'bookacti_form_html', ob_get_clean(), $form, $instance_id, $context, $displayed_form_fields );
 	if( ! $echo ) { return $html; }
 	echo $html;
 }
