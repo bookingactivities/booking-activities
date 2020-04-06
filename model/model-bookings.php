@@ -4,9 +4,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 /**
  * Book an event
- * 
- * @version 1.5.9
- * 
+ * @version 1.8.0
  * @global wpdb $wpdb
  * @param int|string $user_id
  * @param int $event_id
@@ -24,8 +22,7 @@ function bookacti_insert_booking( $user_id, $event_id, $event_start, $event_end,
 	global $wpdb;
 	
 	$active = in_array( $state, bookacti_get_active_booking_states(), true ) ? 1 : 0;
-	
-	$creation_date = substr( date( 'c' ), 0, 19 );
+	$creation_date = date( 'Y-m-d\TH:i:s' );
 	
 	$query = 'INSERT INTO ' . BOOKACTI_TABLE_BOOKINGS 
 			. ' ( group_id, event_id, user_id, form_id, event_start, event_end, quantity, state, payment_status, creation_date, expiration_date, active ) ' 

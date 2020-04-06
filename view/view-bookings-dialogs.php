@@ -56,27 +56,13 @@ $messages = bookacti_get_messages();
 <div id='bookacti-reschedule-booking-dialog' class='bookacti-backend-dialog bookacti-bookings-dialog' title='<?php echo apply_filters( 'bookacti_translate_text', $messages[ 'reschedule_dialog_title' ][ 'value' ] ); ?>'>
 	<form class='bookacti-booking-form bookacti-reschedule-booking-form'>
 		<?php
-			wp_nonce_field( 'bookacti_get_booking_data', 'nonce_get_booking_data', false );
+			wp_nonce_field( 'bookacti_get_reschedule_booking_system_data', 'nonce_get_reschedule_booking_system_data', false );
 			wp_nonce_field( 'bookacti_reschedule_booking', 'nonce_reschedule_booking', false );
 		?>
 		<div>
-			<?php 
-				$reschedule_booking_method = apply_filters( 'bookacti_reschedule_booking_method', 'calendar' );
-				$atts = array( 
-					'method'					=> $reschedule_booking_method,
-					'id'						=> 'bookacti-booking-system-reschedule',
-					'class'						=> is_admin() ? 'admin-booking-system' : '',
-					'form_action'				=> 'default',
-					'when_perform_form_action'	=> 'on_submit',
-					'past_events'				=> is_admin() ? 1 : 0,
-					'past_events_bookable'		=> is_admin() ? 1 : 0,
-					'auto_load'					=> 0
-				);
-				
-				// Format booking system attributes
-				$atts = bookacti_format_booking_system_attributes( $atts );
-				
-				bookacti_get_booking_system( $atts, true );
+			<?php
+				$atts = bookacti_format_booking_system_attributes( array( 'id' => 'bookacti-booking-system-reschedule', 'auto_load' => 0 ) );
+				echo bookacti_get_booking_system( $atts );
 			?>
 			<input type='hidden' class='bookacti-quantity' value='1'/>
 		</div>
@@ -89,7 +75,7 @@ $messages = bookacti_get_messages();
 						'name'	=> 'send-notifications-on-reschedule',
 						'id'	=> 'bookacti-send-notifications-on-reschedule',
 						'value'	=> 0,
-						'tip'	=> __( 'Whether to notify the customer of the booking reschedule.', 'booking-activities' )
+						'tip'	=> esc_html__( 'Whether to notify the customer of the booking reschedule.', 'booking-activities' )
 					);
 					bookacti_display_field( $args );
 				}

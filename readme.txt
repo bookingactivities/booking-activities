@@ -351,6 +351,7 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 * Fix - Product not listed in selectbox if it once have had variations and is now no longer variable
 * Fix - Possible JS error when loading a booking system with preselected events
 * Fix - Error when submitting WC add to cart form on event click
+* Fix - WC cart items may not be removed on expiration depending on your server timezone
 * Optimization - JS variables passed via PHP are now loaded only once, have been significantly reduced, and are filtered for the frontend
 * Optimization - Retrieve all users meta with a single query with bookacti_get_users_data
 * Dev - Make sure that the repeated events' occurences and exceptions are included in the repeat period when updated

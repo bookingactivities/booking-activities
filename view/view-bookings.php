@@ -257,7 +257,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 						}
 
 						// Display the booking system
-						$atts = apply_filters( 'bookacti_bookings_calendar_data', array( 
+						$atts = apply_filters( 'bookacti_bookings_booking_system_attributes', array( 
 							'bookings_only'			=> 1,
 							'calendars'				=> $selected_templates,
 							'status'				=> $selected_status,
@@ -268,7 +268,6 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 							'groups_single_events'	=> 1,
 							'method'				=> 'calendar',
 							'id'					=> 'bookacti-booking-system-bookings-page',
-							'class'					=> 'admin-booking-system',
 							'start'					=> ! empty( $_REQUEST[ 'from' ] ) ? bookacti_sanitize_date( $_REQUEST[ 'from' ] ) : '',
 							'end'					=> ! empty( $_REQUEST[ 'to' ] ) ? bookacti_sanitize_date( $_REQUEST[ 'to' ] ) : '',
 							'trim'					=> 1,
@@ -277,7 +276,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 							'check_roles'			=> 0,
 							'auto_load'				=> 0, // Prevent to load on page load to save some performance
 							'picked_events'			=> $default_inputs,
-							'tooltip_booking_list'		=> $user_calendar_settings[ 'tooltip_booking_list' ],
+							'tooltip_booking_list'			=> $user_calendar_settings[ 'tooltip_booking_list' ],
 							'tooltip_booking_list_columns'	=> $user_calendar_settings[ 'tooltip_booking_list_columns' ],
 							'display_data'			=> $display_data
 						), $user_calendar_settings );
@@ -285,7 +284,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 						// Format booking system attributes
 						$atts = bookacti_format_booking_system_attributes( $atts );
 
-						bookacti_get_booking_system( $atts, true );
+						echo bookacti_get_booking_system( $atts );
 					?>
 					<script>
 						bookacti.booking_system[ 'bookacti-booking-system-bookings-page' ][ 'templates_per_activities' ] = <?php echo json_encode( $activities ); ?>;

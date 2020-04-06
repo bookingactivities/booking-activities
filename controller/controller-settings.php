@@ -115,7 +115,7 @@ function bookacti_init_settings() {
 	
 	add_settings_field(  
 		'allow_customers_to_reschedule',                      
-		__( 'Allow customers to reschedule their bookings', 'booking-activities' ),               
+		esc_html__( 'Allow customers to reschedule their bookings', 'booking-activities' ),               
 		'bookacti_settings_field_activate_reschedule_callback',   
 		'bookacti_cancellation_settings',                     
 		'bookacti_settings_section_cancellation' 

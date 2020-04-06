@@ -163,7 +163,7 @@ function bookacti_add_booking_group_to_cart( $product_id, $variation_id, $user_i
 
 /**
  * Update quantity, control the results and display feedback accordingly
- * @version 1.7.8
+ * @version 1.8.0
  * @global woocommerce $woocommerce
  * @param int $booking_id
  * @param int $new_quantity
@@ -187,7 +187,7 @@ function bookacti_controller_update_booking_quantity( $booking_id, $new_quantity
 
 		$new_expiration_date = NULL;
 		if( $is_expiration_active && ( $reset_timeout_on_change || $is_cart_empty_and_expired ) ) {
-			$new_expiration_date = date( 'c', strtotime( '+' . $timeout . ' minutes' ) );
+			$new_expiration_date = date( 'Y-m-d\TH:i:s', strtotime( '+' . $timeout . ' minutes' ) );
 		}
 	}
 
@@ -563,8 +563,8 @@ function bookacti_is_expired_booking_group( $booking_group_id ) {
 
 /**
  * Get new booking expiration date
- * 
  * @since 1.2.0
+ * @version 1.8.0
  * @param int $booking_id Booking (group) ID
  * @param string $booking_type 'single' or 'group'
  * @param int $quantity Quantity added to cart
@@ -578,7 +578,7 @@ function bookacti_get_new_booking_expiration_date( $booking_id, $booking_type, $
 	$timeout					= bookacti_get_setting_value( 'bookacti_cart_settings', 'cart_timeout' );
 
 	// Compute expiration datetime
-	$expiration_date = date( 'c', strtotime( '+' . $timeout . ' minutes' ) );
+	$expiration_date = date( 'Y-m-d\TH:i:s', strtotime( '+' . $timeout . ' minutes' ) );
 
 	// If all cart item expire at once, set cart expiration date
 	if( ! $is_per_product_expiration ) {

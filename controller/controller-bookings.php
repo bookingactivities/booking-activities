@@ -321,28 +321,63 @@ add_action( 'wp_ajax_bookactiChangeBookingQuantity', 'bookacti_controller_change
 
 
 /**
- * AJAX Controller - Get booking system data by booking ID
- * @version 1.7.18
+ * AJAX Controller - Get reschedule booking system data by booking ID
+ * @since 1.8.0 (was bookacti_controller_get_booking_data)
  */
-function bookacti_controller_get_booking_data() {
+function bookacti_controller_get_reschedule_booking_system_data() {
 	// Check nonce, no need to check capabilities
-	$is_nonce_valid = check_ajax_referer( 'bookacti_get_booking_data', 'nonce', false );
+	$is_nonce_valid = check_ajax_referer( 'bookacti_get_reschedule_booking_system_data', 'nonce', false );
 
-	if( ! $is_nonce_valid ) { bookacti_send_json_invalid_nonce( 'get_booking_data' ); }
+	if( ! $is_nonce_valid ) { bookacti_send_json_invalid_nonce( 'get_reschedule_booking_system_data' ); }
 
 	$booking_id	= intval( $_POST[ 'booking_id' ] );
 	$booking_data = bookacti_get_booking_data( $booking_id );
 
 	if( ! empty( $booking_data ) && is_array( $booking_data ) ) {
-		$calendar_field_data = ! empty( $booking_data[ 'form_id' ] ) ? bookacti_get_form_field_data_by_name( $booking_data[ 'form_id' ], 'calendar' ) : bookacti_get_default_form_fields_data( 'calendar' );
-
-		bookacti_send_json( array( 'status' => 'success', 'booking_data' => $booking_data, 'calendar_field_data' => $calendar_field_data ), 'get_booking_data' );
+		$calendar_field_data = ! empty( $booking_data[ 'form_id' ] ) ? bookacti_get_form_field_data_by_name( $booking_data[ 'form_id' ], 'calendar' ) : array();
+		$booking_system_init_data = bookacti_get_calendar_field_booking_system_attributes( $calendar_field_data );
+		$atts = $booking_system_init_data;
+		
+		// Set compulsory data
+		$atts[ 'id' ]						= 'bookacti-booking-system-reschedule';
+		$atts[ 'form_action' ]				= 'default';
+		$atts[ 'when_perform_form_action' ]	= 'on_submit';
+		$atts[ 'auto_load' ]				= 0;
+		
+		// Load only the events from the same activity as the booked event
+		$atts[ 'activities' ] = $booking_data[ 'activity_id' ] ? array( $booking_data[ 'activity_id' ] ) : array( 0 );
+		
+		// On the backend, display past events and grouped events, from all calendars, and make them all bookable
+		if( $_POST[ 'is_admin' ] ) {
+			$atts[ 'groups_single_events' ]	= 1;
+			$atts[ 'start' ]				= '';
+			$atts[ 'end' ]					= '';
+			$atts[ 'trim' ]					= 1;
+			$atts[ 'past_events' ]			= 1;
+			$atts[ 'past_events_bookable' ]	= 1;
+			
+			// Make sure display data doesn't prevent events from being displayed
+			if( $booking_data[ 'activity_id' ] ) {
+				$atts[ 'calendars' ] = bookacti_get_templates_by_activity( $atts[ 'activities' ], true );
+				if( count( $atts[ 'calendars' ] ) !== 1 ) {
+					$atts[ 'display_data' ][ 'minTime' ] = '00:00';
+					$atts[ 'display_data' ][ 'maxTime' ] = '00:00';
+				}
+			}
+		}
+		
+		// Add the rescheduled booking data to the booking system data
+		$atts[ 'rescheduled_booking_data' ] = $booking_data;
+		
+		$atts = apply_filters( 'bookacti_reschedule_booking_system_attributes', $atts, $booking_data, $booking_system_init_data );
+		
+		bookacti_send_json( array( 'status' => 'success', 'booking_system_data' => $atts, 'booking_data' => $booking_data ), 'get_reschedule_booking_system_data' );
 	} else {
-		bookacti_send_json( array( 'status' => 'failed', 'error' => 'empty_data' ), 'get_booking_data' );
+		bookacti_send_json( array( 'status' => 'failed', 'error' => 'empty_data' ), 'get_reschedule_booking_system_data' );
 	}
 }
-add_action( 'wp_ajax_bookactiGetBookingData', 'bookacti_controller_get_booking_data' );
-add_action( 'wp_ajax_nopriv_bookactiGetBookingData', 'bookacti_controller_get_booking_data' );
+add_action( 'wp_ajax_bookactiGetRescheduleBookingSystemData', 'bookacti_controller_get_reschedule_booking_system_data' );
+add_action( 'wp_ajax_nopriv_bookactiGetRescheduleBookingSystemData', 'bookacti_controller_get_reschedule_booking_system_data' );
 
 
 /**

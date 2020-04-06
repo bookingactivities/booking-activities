@@ -630,7 +630,7 @@ add_filter( 'woocommerce_add_cart_item', 'bookacti_merge_cart_items_with_same_bo
 
 /**
  * Set the timeout for a product added to cart
- * @version 1.5.2
+ * @version 1.8.0
  * @global WooCommerce $woocommerce
  * @param string $cart_item_key
  * @param int $product_id
@@ -640,29 +640,25 @@ add_filter( 'woocommerce_add_cart_item', 'bookacti_merge_cart_items_with_same_bo
  * @param array $cart_item_data
  */
 function bookacti_set_timeout_to_cart_item( $cart_item_key, $product_id, $quantity, $variation_id, $variation, $cart_item_data ) {
-
 	if( $variation_id !== 0 ) {
 		$is_activity = bookacti_product_is_activity( $variation_id );
 	} else {
 		$is_activity = bookacti_product_is_activity( $product_id );
 	}
-
 	if( ! $is_activity ) { return; }
 
 	$is_expiration_active = bookacti_get_setting_value( 'bookacti_cart_settings', 'is_cart_expiration_active' );
-
 	if( ! $is_expiration_active ) { return; }
 
 	// If all cart item expire at once, set cart expiration date
 	$is_per_product_expiration = bookacti_get_setting_value( 'bookacti_cart_settings', 'is_cart_expiration_per_product' );
-
 	if( $is_per_product_expiration ) { return; }
 
 	global $woocommerce;
 	$reset_timeout_on_change	= bookacti_get_setting_value( 'bookacti_cart_settings', 'reset_cart_timeout_on_change' );
 	$timeout					= bookacti_get_setting_value( 'bookacti_cart_settings', 'cart_timeout' );
 	$cart_expiration_date		= bookacti_get_cart_timeout();
-	$expiration_date			= date( 'c', strtotime( '+' . $timeout . ' minutes' ) );
+	$expiration_date			= date( 'Y-m-d\TH:i:s', strtotime( '+' . $timeout . ' minutes' ) );
 
 	// Reset cart timeout and its items timeout
 	if(	$reset_timeout_on_change 
@@ -772,80 +768,51 @@ add_filter( 'woocommerce_get_stock_html', 'bookacti_dont_display_instock_in_vari
 
 /**
  * Add the timeout to cart and checkout
- * 
- * @since 1.0.0
- * @version 1.1.0
- * 
+ * @version 1.8.0
  * @global WooCommerce $woocommerce
  */
 function bookacti_add_timeout_to_cart() { 
-
 	$is_expiration_active = bookacti_get_setting_value( 'bookacti_cart_settings', 'is_cart_expiration_active' );
+	if( ! $is_expiration_active ) { return; }
 
-	if( $is_expiration_active ) {
+	$is_per_product_expiration = bookacti_get_setting_value( 'bookacti_cart_settings', 'is_cart_expiration_per_product' );
+	if( $is_per_product_expiration ) { return; }
+	
+	global $woocommerce;
+	
+	// Check if cart contains at least one item with the 'in_cart' state
+	$is_in_cart = false;
+	$cart_contents = $woocommerce->cart->get_cart();
+	if( ! empty( $cart_contents ) ) {
+		$cart_keys = array_keys( $cart_contents );
+		foreach ( $cart_keys as $key ) {
+			// Single event
+			if( ! empty( $cart_contents[ $key ][ '_bookacti_options' ][ 'bookacti_booking_id' ] ) ) {
+				$booking_id = $cart_contents[ $key ][ '_bookacti_options' ][ 'bookacti_booking_id' ];
+				$is_in_cart = bookacti_get_booking_state( $booking_id ) === 'in_cart';
 
-		$is_per_product_expiration = bookacti_get_setting_value( 'bookacti_cart_settings', 'is_cart_expiration_per_product' );
-
-		if( ! $is_per_product_expiration ) {
-
-			//Check if cart contains at least one item with the 'in_cart' state
-			$cart_contains_expirables_items = false;
-
-			global $woocommerce;
-			$cart_contents = $woocommerce->cart->get_cart();
-			if( ! empty( $cart_contents ) ) {
-
-				$cart_keys = array_keys( $cart_contents );
-
-				foreach ( $cart_keys as $key ) {
-					// Single event
-					if( isset( $cart_contents[$key]['_bookacti_options'] ) && isset( $cart_contents[$key]['_bookacti_options']['bookacti_booking_id'] ) ) {
-						$booking_id = $cart_contents[$key]['_bookacti_options']['bookacti_booking_id'];
-						if( ! is_null( $booking_id ) ) {
-
-							$is_in_cart_state = bookacti_get_booking_state( $booking_id ) === 'in_cart';
-
-							if( $is_in_cart_state ) {
-								$cart_contains_expirables_items = true;
-								break;
-							}
-						}
-
-					// Group of events
-					} else if( isset( $cart_contents[$key]['_bookacti_options'] ) && isset( $cart_contents[$key]['_bookacti_options']['bookacti_booking_group_id'] ) ) {
-						$booking_group_id = $cart_contents[$key]['_bookacti_options']['bookacti_booking_group_id'];
-						if( ! is_null( $booking_group_id ) ) {
-
-							$is_in_cart_state = bookacti_get_booking_group_state( $booking_group_id ) === 'in_cart';
-
-							if( $is_in_cart_state ) {
-								$cart_contains_expirables_items = true;
-								break;
-							}
-						}
-					}
-				}
+			// Group of events
+			} else if( ! empty( $cart_contents[ $key ][ '_bookacti_options' ][ 'bookacti_booking_group_id' ] ) ) {
+				$booking_group_id = $cart_contents[ $key ][ '_bookacti_options' ][ 'bookacti_booking_group_id' ];
+				$is_in_cart = bookacti_get_booking_group_state( $booking_group_id ) === 'in_cart';
 			}
-
-			if( $cart_contains_expirables_items ) {
-
-				$expiration_date = bookacti_get_cart_timeout();
-
-				if( strtotime( $expiration_date ) > time() ) {
-
-					$timeout = '<div class="bookacti-cart-expiration-container woocommerce-info">' . bookacti_get_message( 'cart_countdown' ) . '</div>';
-					$timeout = str_replace( '{countdown}', '<span class="bookacti-countdown bookacti-cart-expiration" data-expiration-date="' . esc_attr( $expiration_date ) . '" ></span>', $timeout );
-
-					echo $timeout;
-				}
-			} else {
-				bookacti_set_cart_timeout( null );
-			}
+			if( $is_in_cart ) { break; }
 		}
+	}
+
+	if( $is_in_cart ) {
+		$expiration_date = bookacti_get_cart_timeout();
+		if( strtotime( $expiration_date ) > time() ) {
+			$timeout = '<div class="bookacti-cart-expiration-container woocommerce-info">' . bookacti_get_message( 'cart_countdown' ) . '</div>';
+			$timeout = str_replace( '{countdown}', '<span class="bookacti-countdown bookacti-cart-expiration" data-expiration-date="' . esc_attr( $expiration_date ) . '" ></span>', $timeout );
+			echo $timeout;
+		}
+	} else {
+		bookacti_set_cart_timeout( null );
 	}
 }
 add_action( 'woocommerce_before_cart', 'bookacti_add_timeout_to_cart', 10, 0 );
-add_action( 'woocommerce_checkout_before_order_review', 'bookacti_add_timeout_to_cart', 10, 0 );
+add_action( 'woocommerce_checkout_order_review', 'bookacti_add_timeout_to_cart', 5, 0 );
 
 
 /**

@@ -7,7 +7,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 /**
  * Display the form field 'calendar'
  * @since 1.5.0
- * @version 1.7.18
+ * @version 1.8.0
  * @param array $field
  * @param string $instance_id
  * @param string $context
@@ -26,7 +26,7 @@ function bookacti_display_form_field_calendar( $field, $instance_id, $context ) 
 	$booking_system_atts = bookacti_get_calendar_field_booking_system_attributes( $field );
 	
 	// Display the booking system
-	bookacti_get_booking_system( $booking_system_atts, true );
+	echo bookacti_get_booking_system( $booking_system_atts );
 }
 add_action( 'bookacti_display_form_field_calendar', 'bookacti_display_form_field_calendar', 10, 3 );
 

@@ -306,6 +306,8 @@ function bookacti_get_form_fields_data( $form_id, $active_only = true, $index_by
 			}
 		}
 		
+		$fields_data_by_id = apply_filters( 'bookacti_form_fields_data', $fields_data_by_id, $form_id, false, false ); // last two arguments Deprecated. Used for legacy.
+		
 		wp_cache_set( 'form_fields_data_' . $form_id, $fields_data_by_id, 'bookacti' );
 	}
 	
@@ -317,17 +319,20 @@ function bookacti_get_form_fields_data( $form_id, $active_only = true, $index_by
 		if( $index_by_name ) { $fields_data[ $field_data[ 'name' ] ] = $field_data; }
 	}
 	
-	return apply_filters( 'bookacti_form_fields_data', $fields_data, $form_id, $active_only, $index_by_name );
+	return $fields_data;
 }
 
 
 /**
  * Get the desired field data as an array
  * @since 1.5.0
+ * @version 1.8.0
  * @param int $field_id
  * @return array
  */
 function bookacti_get_form_field_data( $field_id ) {
+	$cache = wp_cache_get( 'form_field_data_' . $field_id, 'bookacti' );
+	if( $cache ) { return $cache; }
 	
 	$field = bookacti_get_form_field( $field_id );
 	if( ! $field ) { return array(); }
@@ -339,20 +344,25 @@ function bookacti_get_form_field_data( $field_id ) {
 	}
 	
 	// Format data
-	$field_data = bookacti_format_form_field_data( $field );
+	$field_data = apply_filters( 'bookacti_form_field', bookacti_format_form_field_data( $field ) );
 	
-	return apply_filters( 'bookacti_form_field', $field_data );
+	wp_cache_set( 'form_field_data_' . $field_id, $field_data, 'bookacti' );
+	
+	return $field_data;
 }
 
 
 /**
  * Get the desired field data as an array. The field name must be unique, only the first will be retrieved.
  * @since 1.5.0
+ * @version 1.8.0
  * @param int $form_id
  * @param string $field_name
  * @return array
  */
 function bookacti_get_form_field_data_by_name( $form_id, $field_name ) {
+	$cache = wp_cache_get( 'form_field_data_' . $field_name . '_' . $form_id, 'bookacti' );
+	if( $cache ) { return $cache; }
 	
 	$field = bookacti_get_form_field_by_name( $form_id, $field_name );
 	if( ! $field ) { return array(); }
@@ -364,9 +374,11 @@ function bookacti_get_form_field_data_by_name( $form_id, $field_name ) {
 	}
 	
 	// Format data
-	$field_data = bookacti_format_form_field_data( $field );
+	$field_data = apply_filters( 'bookacti_form_field', bookacti_format_form_field_data( $field ) );
 	
-	return apply_filters( 'bookacti_form_field', $field_data );
+	wp_cache_set( 'form_field_data_' . $field_name . '_' . $form_id, $field_data, 'bookacti' );
+	
+	return $field_data;
 }
 
 
