@@ -261,7 +261,6 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 					'name'		=> 'csv_raw',
 					'title'		=> esc_html__( 'Raw data', 'booking-activities' ),
 					'id'		=> 'bookacti-csv-raw',
-					'options'	=> $args[ 'csv_raw' ],
 					'value'		=> $args[ 'user_settings' ][ 'csv_raw' ],
 					'tip'		=> esc_html__( 'Display raw data (easy to manipulate), as opposed to formatted data (user-friendly).', 'booking-activities' )
 				),
@@ -382,7 +381,6 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 							'name'		=> 'ical_raw',
 							'title'		=> esc_html__( 'Raw data', 'booking-activities' ),
 							'id'		=> 'bookacti-ical-raw',
-							'options'	=> $args[ 'ical_raw' ],
 							'value'		=> $args[ 'user_settings' ][ 'ical_raw' ],
 							'tip'		=> esc_html__( 'Display raw data (easy to manipulate), as opposed to formatted data (user-friendly).', 'booking-activities' )
 						),
@@ -391,7 +389,6 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 							'name'		=> 'ical_booking_list_header',
 							'title'		=> esc_html__( 'Show columns\' title', 'booking-activities' ),
 							'id'		=> 'bookacti-ical-booking-list-header',
-							'options'	=> $args[ 'ical_booking_list_header' ],
 							'value'		=> $args[ 'user_settings' ][ 'ical_booking_list_header' ],
 							'tip'		=> esc_html__( 'Display the columns\' title in the first row of the booking list.', 'booking-activities' )
 						)

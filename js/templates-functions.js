@@ -123,7 +123,7 @@ function bookacti_switch_template( selected_template_id ) {
 
 				// VIEW
 					// Go to today's date
-					$j( '#bookacti-template-calendar' ).fullCalendar( 'gotoDate', moment() );
+					$j( '#bookacti-template-calendar' ).fullCalendar( 'gotoDate', moment.utc() );
 
 
 				// EVENTS
@@ -132,7 +132,7 @@ function bookacti_switch_template( selected_template_id ) {
 
 					// Load events on calendar
 					var view = $j( '#bookacti-template-calendar' ).fullCalendar( 'getView' );
-					var interval = { 'start': moment.utc( view.intervalStart ), 'end': moment.utc( view.intervalEnd ).subtract( 1, 'days' ) };
+					var interval = { 'start': moment.utc( view.intervalStart.format( 'YYYY-MM-DD' ) + ' 00:00:00' ), 'end': moment.utc( view.intervalEnd.subtract( 1, 'days' ).format( 'YYYY-MM-DD' ) + ' 23:59:59' ) };
 					bookacti_fetch_events_from_interval( $j( '#bookacti-template-calendar' ), interval );
 
 					// Re-enable events to load when view changes
@@ -426,8 +426,8 @@ function bookacti_select_event( raw_event ) {
 	var event = {
 		'id': raw_event.id,
 		'title': raw_event.title ? raw_event.title : activity_title,
-		'start': moment( raw_event.start ),
-		'end': moment( raw_event.end )
+		'start': moment.utc( raw_event.start ),
+		'end': moment.utc( raw_event.end )
 	};
 	
 	// Because of popover and long events (spreading on multiple days), 

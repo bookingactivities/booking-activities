@@ -171,7 +171,7 @@ function bookacti_get_bookings( $filters ) {
 	if( $filters[ 'to' ] ) {
 		$query .= ' 
 		AND (	UNIX_TIMESTAMP( CONVERT_TZ( B.event_start, %s, @@global.time_zone ) ) <= 
-				UNIX_TIMESTAMP( CONVERT_TZ( ( %s + INTERVAL 24 HOUR ), %s, @@global.time_zone ) ) 
+				UNIX_TIMESTAMP( CONVERT_TZ( %s, %s, @@global.time_zone ) ) 
 			)';
 
 		$variables[] = $user_timestamp_offset;
@@ -500,7 +500,7 @@ function bookacti_get_bookings( $filters ) {
 /**
  * Get the total amount of booking rows according to filters
  * @since 1.3.1
- * @version 1.7.6
+ * @version 1.8.0
  * @global wpdb $wpdb
  * @param array $filters Use bookacti_format_booking_filters() before
  * @return int
@@ -548,7 +548,7 @@ function bookacti_get_number_of_booking_rows( $filters ) {
 	if( $filters[ 'to' ] ) {
 		$query .= ' 
 		AND (	UNIX_TIMESTAMP( CONVERT_TZ( B.event_start, %s, @@global.time_zone ) ) <= 
-				UNIX_TIMESTAMP( CONVERT_TZ( ( %s + INTERVAL 24 HOUR ), %s, @@global.time_zone ) ) 
+				UNIX_TIMESTAMP( CONVERT_TZ( %s, %s, @@global.time_zone ) ) 
 			)';
 
 		$variables[] = $user_timestamp_offset;
@@ -827,7 +827,7 @@ function bookacti_get_number_of_booking_rows( $filters ) {
 
 /**
  * Get number of booking of a specific event or a specific occurrence
- * @version 1.7.9
+ * @version 1.8.0
  * @global wpdb $wpdb
  * @param array $filters Use bookacti_format_booking_filters() before
  * @return int
@@ -884,7 +884,7 @@ function bookacti_get_number_of_bookings( $filters ) {
 	if( $filters[ 'to' ] ) {
 		$query .= ' 
 		AND (	UNIX_TIMESTAMP( CONVERT_TZ( B.event_start, %s, @@global.time_zone ) ) <= 
-				UNIX_TIMESTAMP( CONVERT_TZ( ( %s + INTERVAL 24 HOUR ), %s, @@global.time_zone ) ) 
+				UNIX_TIMESTAMP( CONVERT_TZ( %s, %s, @@global.time_zone ) ) 
 			)';
 
 		$variables[] = $user_timestamp_offset;

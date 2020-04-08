@@ -119,7 +119,7 @@
 .bookacti-licenses-settings-description + .submit { display: none; }
 
 .bookacti-duration-field-container	{ display: inline-block; vertical-align: middle; margin-right: 4px; }
-.bookacti-duration-field			{ width: 65px; }
+.bookacti-duration-field			{ width: 60px; }
 .bookacti-duration-field-label		{ display: block; }
 
 

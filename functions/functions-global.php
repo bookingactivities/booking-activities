@@ -1758,13 +1758,13 @@ function bookacti_format_datetime( $datetime, $format = '' ) {
 
 /**
  * Check if a string is in a correct datetime format
- * @version 1.7.13
+ * @version 1.8.0
  * @param string $datetime Date format "Y-m-d H:i:s" is expected
  * @return string|false
  */
 function bookacti_sanitize_datetime( $datetime ) {
-	if( preg_match( '/\d{4}-[01]\d-[0-3]\dT[0-2]\d:[0-5]\d:[0-5]\d/', $datetime ) 
-	||  preg_match( '/\d{4}-[01]\d-[0-3]\d [0-2]\d:[0-5]\d:[0-5]\d/', $datetime ) ) {
+	if( preg_match( '/^\d{4}-[01]\d-[0-3]\dT[0-2]\d:[0-5]\d:[0-5]\d$/', $datetime ) 
+	||  preg_match( '/^\d{4}-[01]\d-[0-3]\d [0-2]\d:[0-5]\d:[0-5]\d$/', $datetime ) ) {
 		$datetime_object = new DateTime( $datetime );
 
 		// Do not allow to set a date after 2037 because of the year 2038 problem
@@ -1781,12 +1781,12 @@ function bookacti_sanitize_datetime( $datetime ) {
 
 /**
  * Check if a string is in a correct date format
- * @version 1.7.13
+ * @version 1.8.0
  * @param string $date Date format Y-m-d is expected
  * @return string 
  */
 function bookacti_sanitize_date( $date ) {
-	if( preg_match( '/\d{4}-[01]\d-[0-3]\d/', $date ) ) {
+	if( preg_match( '/^\d{4}-[01]\d-[0-3]\d$/', $date ) ) {
 		$datetime_object = new DateTime( $date );
 
 		// Do not allow to set a date after 2037 because of the year 2038 problem
@@ -1796,20 +1796,6 @@ function bookacti_sanitize_date( $date ) {
 		}
 
 		return $datetime_object->format( 'Y-m-d' );
-	}
-	return '';
-}
-
-
-/**
- * Check if a string is in a correct duration format
- * @version 1.7.17
- * @param string $duration Duration format "DDD.HH:mm:ss" is expected
- * @return string
- */
-function bookacti_sanitize_duration( $duration ) {
-	if( preg_match( '/\d{3}\.[0-2]\d:[0-5]\d:[0-5]\d/', $duration ) ) {
-		return $duration;
 	}
 	return '';
 }

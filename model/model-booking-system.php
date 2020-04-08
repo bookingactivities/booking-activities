@@ -10,7 +10,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
  * @param array $raw_args {
  *  @type array $templates Array of template IDs
  *  @type array $activities Array of activity IDs
- *  @type array $interval array('start' => string: start date, 'end' => string: end date)
+ *  @type array $interval array( 'start' => 'Y-m-d H:i:s', 'end' => 'Y-m-d H:i:s' )
  *  @type boolean $skip_exceptions Whether to retrieve occurence on exceptions
  *  @type boolean $past_events Whether to compute past events
  *  @type boolean $bounding_events_only Whether to retrieve the first and the last events only
@@ -86,7 +86,7 @@ function bookacti_fetch_events( $raw_args = array() ) {
 							UNIX_TIMESTAMP( CONVERT_TZ( %s, %s, @@global.time_zone ) ) 
 						AND
 							UNIX_TIMESTAMP( CONVERT_TZ( E.start, %s, @@global.time_zone ) ) <= 
-							UNIX_TIMESTAMP( CONVERT_TZ( ( %s + INTERVAL 24 HOUR ), %s, @@global.time_zone ) ) 
+							UNIX_TIMESTAMP( CONVERT_TZ( %s, %s, @@global.time_zone ) ) 
 						) 
 				) 
 				OR
@@ -196,7 +196,7 @@ function bookacti_fetch_events( $raw_args = array() ) {
  *  @type array $activities Array of activity IDs
  *  @type array groups Array of groups of events IDs
  *  @type array group_categories Array of group categories IDs
- *  @type array $interval array('start' => string: start date, 'end' => string: end date)
+ *  @type array $interval array( 'start' => 'Y-m-d H:i:s', 'end' => 'Y-m-d H:i:s' )
  *  @type boolean $past_events Whether to compute past events
  *  @type boolean $bounding_events_only Whether to retrieve the first and the last events only
  * }
@@ -299,7 +299,7 @@ function bookacti_fetch_grouped_events( $raw_args = array() ) {
 							UNIX_TIMESTAMP( CONVERT_TZ( %s, %s, @@global.time_zone ) ) 
 							AND 
 							UNIX_TIMESTAMP( CONVERT_TZ( GE.event_start, %s, @@global.time_zone ) ) <= 
-							UNIX_TIMESTAMP( CONVERT_TZ( ( %s + INTERVAL 24 HOUR ), %s, @@global.time_zone ) ) 
+							UNIX_TIMESTAMP( CONVERT_TZ( %s, %s, @@global.time_zone ) ) 
 						)';
 
 		$variables[] = $user_timestamp_offset;
@@ -312,7 +312,6 @@ function bookacti_fetch_grouped_events( $raw_args = array() ) {
 
 	// Whether to fetch past events
 	if( ! $args[ 'past_events' ] ) {
-
 		$started_events_bookable = bookacti_get_setting_value( 'bookacti_general_settings', 'started_events_bookable' );
 
 		$query .= ' AND ( UNIX_TIMESTAMP( CONVERT_TZ( GE.event_start, %s, @@global.time_zone ) ) >= %d ';
@@ -357,7 +356,7 @@ function bookacti_fetch_grouped_events( $raw_args = array() ) {
  *  @type array $templates Array of template IDs
  *  @type array $activities Array of activity IDs
  *  @type array $status Array of groups of events IDs
- *  @type array $interval array('start' => string: start date, 'end' => string: end date)
+ *  @type array $interval array( 'start' => 'Y-m-d H:i:s', 'end' => 'Y-m-d H:i:s' )
  *  @type int|string $users Array of user IDs
  *  @type boolean $past_events Whether to compute past events
  *  @type boolean $bounding_events_only Whether to retrieve the first and the last events only
@@ -439,7 +438,7 @@ function bookacti_fetch_booked_events( $raw_args = array() ) {
 							UNIX_TIMESTAMP( CONVERT_TZ( %s, %s, @@global.time_zone ) ) 
 							AND 
 							UNIX_TIMESTAMP( CONVERT_TZ( B.event_start, %s, @@global.time_zone ) ) <= 
-							UNIX_TIMESTAMP( CONVERT_TZ( ( %s + INTERVAL 24 HOUR ), %s, @@global.time_zone ) ) 
+							UNIX_TIMESTAMP( CONVERT_TZ( %s, %s, @@global.time_zone ) ) 
 						)';
 
 		$variables[] = $user_timestamp_offset;
@@ -729,19 +728,26 @@ function bookacti_get_group_of_events( $group_id, $return_type = OBJECT ) {
 /**
  * Get groups of events data by template ids
  * @since 1.4.0 (was bookacti_get_groups_of_events_by_template and bookacti_get_groups_of_events_by_category)
- * @version 1.7.17
+ * @version 1.8.0
  * @global wpdb $wpdb
- * @param array|int $template_ids
- * @param array|int $category_ids
- * @param array $availability_period array( 'start' => 'Y-m-d', 'end' => 'Y-m-d' )
- * @param boolean|"bookable_only" $fetch_started_groups
- * @param boolean $fetch_inactive_groups
+ * @param array $raw_args {
+ *  @param array|int $templates
+ *  @param array|int $group_categories
+ *  @param array $availability_period array( 'start' => 'Y-m-d H:i:s', 'end' => 'Y-m-d H:i:s' )
+ *  @param boolean|"bookable_only" $started
+ *  @param boolean $inactive
+ * }
  * @return array
  */
-function bookacti_get_groups_of_events( $template_ids = array(), $category_ids = array(), $availability_period = array(), $fetch_started_groups = 'bookable_only', $fetch_inactive_groups = false ) {
-	// Sanitize ids arrays
-	$template_ids = bookacti_ids_to_array( $template_ids );
-	$category_ids = bookacti_ids_to_array( $category_ids );
+function bookacti_get_groups_of_events( $raw_args ) {
+	$default_args = array(
+		'templates' => array(),
+		'group_categories' => array(),
+		'availability_period' => array(),
+		'started' => 'bookable_only',
+		'inactive' => false
+	);
+	$args = wp_parse_args( $raw_args, $default_args );
 
 	$started_groups_bookable	= bookacti_get_setting_value( 'bookacti_general_settings', 'started_groups_bookable' );
 	$timezone					= new DateTimeZone( bookacti_get_setting_value( 'bookacti_general_settings', 'timezone' ) );
@@ -780,28 +786,28 @@ function bookacti_get_groups_of_events( $template_ids = array(), $category_ids =
 			. ' AND GE.start IS NOT NULL '
 			. ' AND GE.end IS NOT NULL ';
 
-	if( $template_ids ) {
+	if( $args[ 'templates' ] ) {
 		$query .= ' AND C.template_id IN ( %d ';
-		$array_count = count( $template_ids );
+		$array_count = count( $args[ 'templates' ] );
 		if( $array_count >= 2 ) {
 			for( $i=1; $i<$array_count; ++$i ) {
 				$query .= ', %d ';
 			}
 		}
 		$query .= ') ';
-		$variables = array_merge( $variables, $template_ids );
+		$variables = array_merge( $variables, $args[ 'templates' ] );
 	}
 
-	if( $category_ids ) {
+	if( $args[ 'group_categories' ] ) {
 		$query .= ' AND G.category_id IN ( %d ';
-		$array_count = count( $category_ids );
+		$array_count = count( $args[ 'group_categories' ] );
 		if( $array_count >= 2 ) {
 			for( $i=1; $i<$array_count; ++$i ) {
 				$query .= ', %d ';
 			}
 		}
 		$query .= ') ';
-		$variables = array_merge( $variables, $category_ids );
+		$variables = array_merge( $variables, $args[ 'group_categories' ] );
 	}
 
 	// Make sure groups are in their template range
@@ -810,44 +816,44 @@ function bookacti_get_groups_of_events( $template_ids = array(), $category_ids =
 
 	// Make sure that the groups begin after availability period start and end before availability period end
 	// except if we want past groups or started groups (it also applies to future events out of the availability period)
-	if( $availability_period && is_array( $availability_period ) ) {
-		$start_after	= ' ( CAST( GE.start AS DATE ) >= %s ) ';
-		$end_before		= ' ( CAST( GE.end AS DATE ) <= %s ) ';
+	if( $args[ 'availability_period' ] && is_array( $args[ 'availability_period' ] ) ) {
+		$start_after	= ' ( GE.start >= %s ) ';
+		$end_before		= ' ( GE.end <= %s ) ';
 
 		// By default, get only groups of events fully included in the availability period
 		$availability_period_query	= $start_after . ' AND ' . $end_before;
 
-		$variables[] = $availability_period[ 'start' ];
-		$variables[] = $availability_period[ 'end' ];
+		$variables[] = $args[ 'availability_period' ][ 'start' ];
+		$variables[] = $args[ 'availability_period' ][ 'end' ];
 
-		// If $fetch_started_groups, get groups that have at least one event in the availability period
-		if( $fetch_started_groups ) {
-			$start_before	= ' ( CAST( GE.start AS DATE ) <= %s ) ';
-			$end_after		= ' ( CAST( GE.end AS DATE ) >= %s ) ';
+		// If $args[ 'started' ], get groups that have at least one event in the availability period
+		if( $args[ 'started' ] ) {
+			$start_before	= ' ( GE.start <= %s ) ';
+			$end_after		= ' ( GE.end >= %s ) ';
 
 			$is_partly_in_avail_period	=   ' ( ' . $start_before . ' AND ' . $end_after . ' ) '
 										. 'OR ( ' . $start_after . ' AND ' . $start_before . ' ) '
 										. 'OR ( ' . $end_after . ' AND ' . $end_before . ' ) ';
 
 			// We may only want started groups that are bookable
-			if( $fetch_started_groups === 'bookable_only' ) {
+			if( $args[ 'started' ] === 'bookable_only' ) {
 				$availability_period_query = ' ( ' . $availability_period_query . ' ) OR ( ( ' . $is_partly_in_avail_period . ' ) AND M.started_groups_bookable = 1 ) ';
 			} else {
 				$availability_period_query = ' ( ' . $availability_period_query . ' ) OR ' . $is_partly_in_avail_period;
 			}
 
-			$variables[] = $availability_period[ 'start' ];
-			$variables[] = $availability_period[ 'end' ];
-			$variables[] = $availability_period[ 'start' ];
-			$variables[] = $availability_period[ 'end' ];
-			$variables[] = $availability_period[ 'start' ];
-			$variables[] = $availability_period[ 'end' ];
+			$variables[] = $args[ 'availability_period' ][ 'start' ];
+			$variables[] = $args[ 'availability_period' ][ 'end' ];
+			$variables[] = $args[ 'availability_period' ][ 'start' ];
+			$variables[] = $args[ 'availability_period' ][ 'end' ];
+			$variables[] = $args[ 'availability_period' ][ 'start' ];
+			$variables[] = $args[ 'availability_period' ][ 'end' ];
 		}
 
 		$query .= ' AND ( ' . $availability_period_query . ' ) ';
 	}
 
-	if( ! $fetch_inactive_groups ) {
+	if( ! $args[ 'inactive' ] ) {
 		$query .= ' AND G.active = 1 ';
 	}
 
@@ -862,9 +868,7 @@ function bookacti_get_groups_of_events( $template_ids = array(), $category_ids =
 		}
 	}
 
-	if( $variables ) {
-		$query = $wpdb->prepare( $query, $variables );
-	}
+	$query = apply_filters( 'bookacti_get_groups_of_events_query', $wpdb->prepare( $query, $variables ), $args );
 
 	$groups	= $wpdb->get_results( $query, ARRAY_A );
 
@@ -900,7 +904,7 @@ function bookacti_get_groups_of_events( $template_ids = array(), $category_ids =
 		$groups_data[ $group_id ] = $group;
 	}
 
-	return $groups_data;
+	return apply_filters( 'bookacti_get_groups_of_events', $groups_data, $query, $args );
 }
 
 

@@ -1235,27 +1235,20 @@ add_filter( 'woocommerce_order_item_get_formatted_meta_data', 'bookacti_format_o
 
 /**
  * Add class to activity cart item to identify them
- * 
+ * @version 1.8.0
  * @param string $classes
  * @param array $cart_item
  * @param string $cart_item_key
  * @return string
  */
 function bookacti_add_class_to_activity_cart_item( $classes, $cart_item, $cart_item_key ) {
-
-	if( isset( $cart_item['_bookacti_options'] ) ) {
-		// Single booking
-		if ( isset( $cart_item['_bookacti_options']['bookacti_booking_id'] ) && ! empty( $cart_item['_bookacti_options']['bookacti_booking_id'] ) ) {
-
-			$classes .= ' bookacti-cart-item-activity bookacti-single-booking';
-
-		// Group of bookings
-		} else if( isset( $cart_item['_bookacti_options']['bookacti_booking_group_id'] ) && ! empty( $cart_item['_bookacti_options']['bookacti_booking_group_id'] ) ) {
-
-			$classes .= ' bookacti-cart-item-activity bookacti-booking-group';
-		}
+	// Single booking
+	if( ! empty( $cart_item[ '_bookacti_options' ][ 'bookacti_booking_id' ] ) ) {
+		$classes .= ' bookacti-cart-item-activity bookacti-single-booking';
+	// Group of bookings
+	} else if( ! empty( $cart_item[ '_bookacti_options' ][ 'bookacti_booking_group_id' ] ) ) {
+		$classes .= ' bookacti-cart-item-activity bookacti-booking-group';
 	}
-
 	return $classes;
 }
 add_filter( 'woocommerce_cart_item_class', 'bookacti_add_class_to_activity_cart_item', 10, 3 );
@@ -1332,22 +1325,18 @@ function bookacti_availability_check_before_checkout( $posted_data, $errors = nu
 		$validated = array( 'status' => 'success' );
 
 		// Single event
-		if( isset( $cart_item['_bookacti_options'] ) && isset( $cart_item['_bookacti_options']['bookacti_booking_id'] ) ) {
-			$booking_id = $cart_item['_bookacti_options']['bookacti_booking_id'];
-			if( ! is_null( $booking_id ) ) {
-				$event		= json_decode( $cart_item['_bookacti_options']['bookacti_booked_events'] );
-				$booking	= bookacti_get_booking_by_id( $booking_id );
-				$validated	= bookacti_validate_booking_form( 'single', $event[0]->event_id, $event[0]->event_start, $event[0]->event_end, $cart_item['quantity'], $booking->form_id );
-			}
+		if( ! empty( $cart_item[ '_bookacti_options' ][ 'bookacti_booking_id' ] ) ) {
+			$booking_id = $cart_item[ '_bookacti_options' ][ 'bookacti_booking_id' ];
+			$event		= json_decode( $cart_item['_bookacti_options']['bookacti_booked_events'] );
+			$booking	= bookacti_get_booking_by_id( $booking_id );
+			$validated	= bookacti_validate_booking_form( 'single', $event[0]->event_id, $event[0]->event_start, $event[0]->event_end, $cart_item['quantity'], $booking->form_id );
 
 		// Group of events
-		} else if( isset( $cart_item['_bookacti_options'] ) && isset( $cart_item['_bookacti_options']['bookacti_booking_group_id'] ) ) {
-			$booking_group_id = $cart_item['_bookacti_options']['bookacti_booking_group_id'];
-			if( ! is_null( $booking_group_id ) ) {
-				$event			= json_decode( $cart_item['_bookacti_options']['bookacti_booked_events'] );
-				$booking_group	= bookacti_get_booking_group_by_id( $booking_group_id );
-				$validated		= bookacti_validate_booking_form( $booking_group->event_group_id, $event[0]->event_id, $event[0]->event_start, $event[0]->event_end, $cart_item['quantity'], $booking_group->form_id );
-			}
+		} else if( ! empty( $cart_item[ '_bookacti_options' ][ 'bookacti_booking_group_id' ] ) ) {
+			$booking_group_id = $cart_item[ '_bookacti_options' ][ 'bookacti_booking_group_id' ];
+			$event			= json_decode( $cart_item['_bookacti_options']['bookacti_booked_events'] );
+			$booking_group	= bookacti_get_booking_group_by_id( $booking_group_id );
+			$validated		= bookacti_validate_booking_form( $booking_group->event_group_id, $event[0]->event_id, $event[0]->event_start, $event[0]->event_end, $cart_item['quantity'], $booking_group->form_id );
 		}
 
 		// Display the error and stop checkout processing

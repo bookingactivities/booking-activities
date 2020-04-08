@@ -16,7 +16,7 @@ function bookacti_get_editor_booking_system_data( $atts, $template_id ) {
 	$booking_system_data = $atts;
 	
 	$templates_data		= bookacti_get_templates_data( $template_id, true );
-	$availability_period= array( 'start' => $templates_data[ $template_id ][ 'start' ], 'end' => $templates_data[ $template_id ][ 'end' ] );
+	$availability_period= array( 'start' => $templates_data[ $template_id ][ 'start' ] . ' 00:00:00', 'end' => $templates_data[ $template_id ][ 'end' ] . ' 23:59:59' );
 	$events_interval	= bookacti_get_new_interval_of_events( $availability_period, array(), false, true );
 	$events_args		= array( 'templates' => array( $template_id ), 'interval' => $events_interval );
 	$events				= $events_interval ? bookacti_fetch_events_for_calendar_editor( $events_args ) : array();
@@ -24,12 +24,12 @@ function bookacti_get_editor_booking_system_data( $atts, $template_id ) {
 	$booking_system_data[ 'calendars' ]				= array( $template_id );
 	$booking_system_data[ 'events' ]				= $events[ 'events' ] ? $events[ 'events' ] : array();
 	$booking_system_data[ 'events_data' ]			= $events[ 'data' ] ? $events[ 'data' ] : array();
-	$booking_system_data[ 'events_interval' ]		= $events_interval;
+	$booking_system_data[ 'events_interval' ]		= array( 'start' => substr( $events_interval[ 'start' ], 0, 10 ), 'end' => substr( $events_interval[ 'end' ], 0, 10 ) );
 	$booking_system_data[ 'bookings' ]				= bookacti_get_number_of_bookings_by_events( $template_id );
 	$booking_system_data[ 'exceptions' ]			= bookacti_get_exceptions_by_event( array( 'templates' => array( $template_id ) ) );
 	$booking_system_data[ 'activities_data' ]		= bookacti_get_activities_by_template( $template_id, false, true );
 	$booking_system_data[ 'groups_events' ]			= bookacti_get_groups_events( $template_id );
-	$booking_system_data[ 'groups_data' ]			= bookacti_get_groups_of_events( $template_id, array() );
+	$booking_system_data[ 'groups_data' ]			= bookacti_get_groups_of_events( array( 'templates' => array( $template_id ) ) );
 	$booking_system_data[ 'group_categories_data' ]	= bookacti_get_group_categories( $template_id );
 	$booking_system_data[ 'start' ]					= $availability_period[ 'start' ];
 	$booking_system_data[ 'end' ]					= $availability_period[ 'end' ];
@@ -732,7 +732,7 @@ function bookacti_update_events_of_group( $new_events, $group_id ) {
 /**
  * Retrieve template groups of events list
  * @since 1.1.0
- * @version 1.7.17
+ * @version 1.8.0
  * @param int $template_id
  * @return string|boolean
  */
@@ -746,7 +746,7 @@ function bookacti_get_template_groups_of_events_list( $template_id ) {
 
 	// Retrieve groups by categories
 	$categories	= bookacti_get_group_categories( $template_id );
-	$groups		= bookacti_get_groups_of_events( $template_id, array() );
+	$groups		= bookacti_get_groups_of_events( array( 'templates' => array( $template_id ) ) );
 	foreach( $categories as $category ) {
 
 		$category_title			= $category[ 'title' ];

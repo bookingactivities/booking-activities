@@ -885,14 +885,14 @@ add_action( 'admin_footer-booking-activities_page_bookacti_forms', 'bookacti_pri
 /**
  * Create a booking form from REQUEST parameters
  * @since 1.5.0
- * @version 1.7.19
+ * @version 1.8.0
  */
 function bookacti_controller_create_form() {
 	if( empty( $_REQUEST[ 'action' ] ) || $_REQUEST[ 'action' ] !== 'new' ) { return; }
 	
 	// Exit if not allowed to create a form
 	$can_create_form = current_user_can( 'bookacti_create_forms' );
-	if( ! $can_create_form ) { esc_html_e( 'You are not allowed to do that.', 'booking-activities' ); exit; }
+	if( ! $can_create_form ) { esc_html_e( 'You are not allowed to create booking forms.', 'booking-activities' ); exit; }
 	
 	$title = ! empty( $_REQUEST[ 'title' ] ) ? sanitize_text_field( stripslashes( $_REQUEST[ 'title' ] ) ) : '';
 	

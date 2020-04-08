@@ -373,35 +373,6 @@ add_action( 'init', 'bookacti_check_version', 5 );
 
 
 /**
- * Update the refactored settings in 1.8.0
- * This function is temporary
- * @since 1.8.0
- * @global wpdb $wpdb
- * @param string $old_version
- */
-function bookacti_update_refactored_settings_in_1_8_0( $old_version ) {
-	// Do it only once, when Booking Activities is updated for the first time after 1.8.0
-	if( version_compare( $old_version, '1.8.0', '<' ) ) {
-		// Rename cancellation_min_delay_before_event option to booking_changes_deadline and 
-		// Convert its value to seconds
-		$cancellation_options = get_option( 'bookacti_cancellation_settings' );
-		if( isset( $cancellation_options[ 'cancellation_min_delay_before_event' ] ) ) {
-			$cancellation_options[ 'booking_changes_deadline' ] = intval( $cancellation_options[ 'cancellation_min_delay_before_event' ] ) * 86400;
-			unset( $cancellation_options[ 'cancellation_min_delay_before_event' ] );
-			update_option( 'bookacti_cancellation_settings', $cancellation_options );
-		}
-		
-		global $wpdb;
-		
-		// Convert the "booking_changes_deadline" options values to seconds
-		$query_booking_changes_deadline_value = 'UPDATE ' . BOOKACTI_TABLE_META . ' SET meta_value = IF( meta_value > 0, ( CAST( meta_value AS UNSIGNED ) * 86400 ), "" ) WHERE meta_key = "booking_changes_deadline"';
-		$wpdb->query( $query_booking_changes_deadline_value );
-	}
-}
-add_action( 'bookacti_updated', 'bookacti_update_refactored_settings_in_1_8_0' );
-
-
-/**
  * Update the form settings and the template settings that relies on global settings removed in 1.7.16
  * This function is temporary
  * @since 1.7.16
@@ -460,7 +431,7 @@ function bookacti_update_removed_global_settings_in_1_7_16( $old_version ) {
 		);
 	}
 }
-add_action( 'bookacti_updated', 'bookacti_update_removed_global_settings_in_1_7_16' );
+add_action( 'bookacti_updated', 'bookacti_update_removed_global_settings_in_1_7_16', 10 );
 
 
 /**
@@ -496,7 +467,44 @@ function bookacti_delete_removed_template_settings_in_1_7_17( $old_version ) {
 		);
 	}
 }
-add_action( 'bookacti_updated', 'bookacti_delete_removed_template_settings_in_1_7_17' );
+add_action( 'bookacti_updated', 'bookacti_delete_removed_template_settings_in_1_7_17', 20 );
+
+
+/**
+ * Update the refactored settings in 1.8.0
+ * This function is temporary
+ * @since 1.8.0
+ * @global wpdb $wpdb
+ * @param string $old_version
+ */
+function bookacti_update_refactored_settings_in_1_8_0( $old_version ) {
+	// Do it only once, when Booking Activities is updated for the first time after 1.8.0
+	if( version_compare( $old_version, '1.8.0', '<' ) ) {
+		// Rename cancellation_min_delay_before_event option to booking_changes_deadline and 
+		// Convert its value to seconds
+		$cancellation_options = get_option( 'bookacti_cancellation_settings' );
+		if( isset( $cancellation_options[ 'cancellation_min_delay_before_event' ] ) ) {
+			$cancellation_options[ 'booking_changes_deadline' ] = intval( $cancellation_options[ 'cancellation_min_delay_before_event' ] ) * 86400;
+			unset( $cancellation_options[ 'cancellation_min_delay_before_event' ] );
+			update_option( 'bookacti_cancellation_settings', $cancellation_options );
+		}
+		
+		global $wpdb;
+		
+		// Convert the "booking_changes_deadline" options values to seconds
+		$query_booking_changes_deadline_value = 'UPDATE ' . BOOKACTI_TABLE_META . ' SET meta_value = IF( meta_value > 0, ( CAST( meta_value AS UNSIGNED ) * 86400 ), "" ) WHERE meta_key = "booking_changes_deadline"';
+		$wpdb->query( $query_booking_changes_deadline_value );
+		
+		// Convert the "availability_period_start" options values to seconds
+		$query_availability_period_start_value = 'UPDATE ' . BOOKACTI_TABLE_META . ' SET meta_value = ( CAST( meta_value AS UNSIGNED ) * 86400 ) WHERE meta_key = "availability_period_start"';
+		$wpdb->query( $query_availability_period_start_value );
+		
+		// Convert the "availability_period_end" options values to seconds
+		$query_availability_period_end_value = 'UPDATE ' . BOOKACTI_TABLE_META . ' SET meta_value = ( CAST( meta_value AS UNSIGNED ) * 86400 ) WHERE meta_key = "availability_period_end"';
+		$wpdb->query( $query_availability_period_end_value );
+	}
+}
+add_action( 'bookacti_updated', 'bookacti_update_refactored_settings_in_1_8_0', 30 );
 
 
 

@@ -329,14 +329,16 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 * Feature - iCal - Export / Sync bookings (just like CSV export)
 * Feature - iCal - Customize the events title and description with event data
 * Feature - iCal - Display the booking list in the events description
+* Tweak - The Events will be bookable in / for up to options can now be set in days, hours and minutes
+* Tweak - The Booking changes delay option can now be set in days, hours and minutes
 * Tweak - The backend booking list is now AJAXified (optional, saved per user)
 * Tweak - Bookings export settings are now saved per user
 * Tweak - Add an export option to choose between raw or formatted data (in bookings export settings)
 * Tweak - Make the array export format more user-friendly (line breaks + indents instead of brackets)
 * Tweak - Add an option to allow to display columns with private data in frontend booking lists (in general settings)
-* Tweak - Add a link to the booking admin page on the booking IDs of booking lists (for admin only)
+* Tweak - Add a link to the booking admin page on the booking IDs of booking lists (for administrators only)
 * Tweak - Add columns in user booking list: customer_roles
-* Tweak - The Booking changes delay option can now be set in days, hours and minutes
+* Tweak - The reschedule booking system now uses all the possible initial booking form calendar field settings
 * Fix - Redirect URL when booking on event click didn't work
 * Fix - Add compulsory hidden quantity field when booking on event click
 * Fix - All grouped bookings were displayed in each rows of the frontend booking list when group_by = none
@@ -352,6 +354,8 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 * Fix - Possible JS error when loading a booking system with preselected events
 * Fix - Error when submitting WC add to cart form on event click
 * Fix - WC cart items may not be removed on expiration depending on your server timezone
+* Fix - PHP notices in booking form editor after creating a booking form
+* Fix - Cannot click on unavailable events on bookings page
 * Optimization - JS variables passed via PHP are now loaded only once, have been significantly reduced, and are filtered for the frontend
 * Optimization - Retrieve all users meta with a single query with bookacti_get_users_data
 * Dev - Make sure that the repeated events' occurences and exceptions are included in the repeat period when updated

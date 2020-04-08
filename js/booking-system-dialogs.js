@@ -54,13 +54,12 @@ function bookacti_init_booking_system_dialogs() {
 
 /**
  * Choose a group of events dialog
- * @version 1.7.3
+ * @version 1.8.0
  * @param {dom_element} booking_system
  * @param {array} group_ids
  * @param {object} event
  */
 function bookacti_dialog_choose_group_of_events( booking_system, group_ids, event ) {
-	
 	var booking_system_id		= booking_system.attr( 'id' );
 	var dialog					= $j( '#' + booking_system_id + '-choose-group-of-events-dialog' );
 	var groups_of_events_list	= $j( '#' + booking_system_id + '-groups-of-events-list' );
@@ -97,8 +96,8 @@ function bookacti_dialog_choose_group_of_events( booking_system, group_ids, even
 		
 		// Check if the event is past
 		if( past_events ) {
-			var event_start				= moment.utc( event.start ).clone();
-			var event_end				= moment.utc( event.end ).clone();
+			var event_start	= moment.utc( event.start ).clone();
+			var event_end	= moment.utc( event.end ).clone();
 			if( ! past_events_bookable && event_start.isBefore( current_time ) 
 			&& ! ( bookacti_localized.started_events_bookable && event_end.isAfter( current_time ) ) ) {
 				is_available = false;
@@ -304,8 +303,8 @@ function bookacti_dialog_choose_group_of_events( booking_system, group_ids, even
 				
 				var start_and_end_same_day = event.start.substr( 0, 10 ) === event.end.substr( 0, 10 );
 				
-				var event_start = moment( event.start ).locale( bookacti_localized.current_lang_code );
-				var event_end = moment( event.end ).locale( bookacti_localized.current_lang_code );
+				var event_start = moment.utc( event.start ).locale( bookacti_localized.current_lang_code );
+				var event_end = moment.utc( event.end ).locale( bookacti_localized.current_lang_code );
 				
 				var event_duration = event_start.formatPHP( bookacti_localized.date_format ) + bookacti_localized.dates_separator + event_end.formatPHP( bookacti_localized.date_format );
 				if( start_and_end_same_day ) {

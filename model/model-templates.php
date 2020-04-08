@@ -12,7 +12,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
  * @param array $raw_args {
  *  @type array $templates Array of template IDs
  *  @type array events Array of event IDs
- *  @type array $interval array('start' => string: start date, 'end' => string: end date)
+ *  @type array $interval array( 'start' => 'Y-m-d H:i:s', 'end' => 'Y-m-d H:i:s' )
  *  @type boolean $skip_exceptions Whether to retrieve occurence on exceptions
  *  @type boolean $past_events Whether to compute past events
  *  @type boolean $bounding_events_only Whether to retrieve the first and the last events only
@@ -74,7 +74,7 @@ function bookacti_fetch_events_for_calendar_editor( $raw_args = array() ) {
 							UNIX_TIMESTAMP( CONVERT_TZ( %s, %s, @@global.time_zone ) ) 
 						AND
 							UNIX_TIMESTAMP( CONVERT_TZ( E.start, %s, @@global.time_zone ) ) <= 
-							UNIX_TIMESTAMP( CONVERT_TZ( ( %s + INTERVAL 24 HOUR ), %s, @@global.time_zone ) ) 
+							UNIX_TIMESTAMP( CONVERT_TZ( %s, %s, @@global.time_zone ) ) 
 						) 
 				) 
 				OR

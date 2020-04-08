@@ -149,13 +149,14 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 					</div>
 					<div class='bookacti-bookings-filter-content' >
 						<?php
-						$from	= isset( $_REQUEST[ 'from' ] ) ? bookacti_sanitize_date( $_REQUEST[ 'from' ] ) : ''; 
-						$to		= isset( $_REQUEST[ 'to' ] ) ? bookacti_sanitize_date( $_REQUEST[ 'to' ] ) : '';
-
+						$from = isset( $_REQUEST[ 'from' ] ) ? bookacti_sanitize_date( $_REQUEST[ 'from' ] ) : '';
+						$to = isset( $_REQUEST[ 'to' ] ) ? bookacti_sanitize_date( $_REQUEST[ 'to' ] ) : '';
+						if( ! $from ) { $from = isset( $_REQUEST[ 'from' ] ) ? substr( bookacti_sanitize_datetime( $_REQUEST[ 'from' ] ), 0, 10 ) : ''; }
+						if( ! $to ) { $to = isset( $_REQUEST[ 'to' ] ) ? substr( bookacti_sanitize_datetime( $_REQUEST[ 'to' ] ), 0, 10 ) : ''; }
+						
 						// If Internet Explorer is used, do not change field type dynamically
 						$user_agent = ! empty( $_SERVER[ 'HTTP_USER_AGENT' ] ) ? $_SERVER[ 'HTTP_USER_AGENT' ] : '';
-						if( strpos( $user_agent, 'MSIE' ) || strpos( $user_agent, 'Trident/7' ) ) {
-						?>
+						if( strpos( $user_agent, 'MSIE' ) || strpos( $user_agent, 'Trident/7' ) ) { ?>
 							<div><label for='bookacti-booking-filter-dates-from'><?php echo esc_html__( 'From', 'booking-activities' ) . ' '; ?></label><input type='date' name='from' id='bookacti-booking-filter-dates-from' value='<?php echo $from; ?>' ></div>
 							<div><label for='bookacti-booking-filter-dates-to'><?php echo esc_html__( 'To', 'booking-activities' ) . ' '; ?></label><input type='date' name='to'  id='bookacti-booking-filter-dates-to' value='<?php echo $to; ?>' ></div>
 						<?php } else { ?>

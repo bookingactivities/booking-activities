@@ -17,9 +17,8 @@ function bookacti_controller_fetch_template_events() {
 
 	$event_id	= intval( $_POST[ 'event_id' ] );
 	$interval	= bookacti_sanitize_events_interval( $_POST[ 'interval' ] );
-	$interval[ 'past_events' ] = true;
 
-	$events_args = array( 'templates' => array( $template_id ), 'events' => $event_id ? array( $event_id ) : array(), 'interval' => $interval );
+	$events_args = array( 'templates' => array( $template_id ), 'events' => $event_id ? array( $event_id ) : array(), 'interval' => $interval, 'past_events' => true );
 	$events	= bookacti_fetch_events_for_calendar_editor( $events_args );
 	bookacti_send_json( array( 
 		'status' => 'success', 

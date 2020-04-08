@@ -125,26 +125,31 @@ function bookacti_update_template_related_filters() {
 
 /**
  * Refresh booking list calendar accoding to dates
- * @version 1.7.17
+ * @version 1.8.0
  */
 function bookacti_refresh_calendar_according_to_date_filter() {
 	if( ! $j( '#bookacti-booking-system-filter-container' ).is( ':visible' ) ) { return false; }
 
 	var booking_system		= $j( '#bookacti-booking-system-bookings-page' );
-	var booking_system_id	= $j( '#bookacti-booking-system-bookings-page' ).attr( 'id' );
+	var booking_system_id	= booking_system.attr( 'id' );
 	var calendar			= booking_system.find( '.bookacti-calendar' );
-	var from				= moment( $j( '#bookacti-booking-filter-dates-from' ).val() );
-	var to					= moment( $j( '#bookacti-booking-filter-dates-to' ).val() );
+	var from_date			= $j( '#bookacti-booking-filter-dates-from' ).val();
+	var to_date				= $j( '#bookacti-booking-filter-dates-to' ).val();
 	
 	var interval_filter = {
-		"start": from.isValid() ? from : moment( bookacti.booking_system[ booking_system_id ][ 'start' ] ),
-		"end": to.isValid() ? to.add( 1, 'days' ) : moment( bookacti.booking_system[ booking_system_id ][ 'end' ] ).add( 1, 'days' )
+		"start": from_date ? moment.utc( from_date + ' 00:00:00' ) : moment.utc( '1970-01-01 00:00:00' ),
+		"end": to_date ? moment.utc( to_date + ' 23:59:59' ) : moment.utc( '2037-12-31 23:59:59' )
 	};
 	
-	bookacti.booking_system[ booking_system_id ][ 'start' ] = interval_filter.start.format( 'YYYY-MM-DD' );
-	bookacti.booking_system[ booking_system_id ][ 'end' ] = interval_filter.end.format( 'YYYY-MM-DD' );
+	bookacti.booking_system[ booking_system_id ][ 'start' ] = interval_filter.start.format( 'YYYY-MM-DD HH:mm:ss' );
+	bookacti.booking_system[ booking_system_id ][ 'end' ] = interval_filter.end.format( 'YYYY-MM-DD HH:mm:ss' );
 	
-	calendar.fullCalendar( 'option', 'validRange', interval_filter );
+	var valid_range = {
+		"start": interval_filter.start.format( 'YYYY-MM-DD' ),
+		"end": interval_filter.end.add( 1, 'days' ).format( 'YYYY-MM-DD' )
+	}
+	
+	calendar.fullCalendar( 'option', 'validRange', valid_range );
 }
 
 
@@ -183,8 +188,8 @@ function bookacti_reload_booking_system_according_to_filters( booking_system ) {
 	bookacti.booking_system[ booking_system_id ][ 'group_categories' ]	= [];
 	bookacti.booking_system[ booking_system_id ][ 'status' ]			= selected_status ? selected_status : [];
 	bookacti.booking_system[ booking_system_id ][ 'user_id' ]			= selected_user ? selected_user : 0;
-	bookacti.booking_system[ booking_system_id ][ 'start' ]				= selected_from;
-	bookacti.booking_system[ booking_system_id ][ 'end' ]				= selected_end;
+	bookacti.booking_system[ booking_system_id ][ 'start' ]				= selected_from ? selected_from + ' 00:00:00' : '';
+	bookacti.booking_system[ booking_system_id ][ 'end' ]				= selected_end ? selected_end + ' 23:59:59' : '';
 	
 	// Unpick selected event
 	bookacti_unpick_all_events_filter();

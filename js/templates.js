@@ -11,7 +11,13 @@ $j( document ).ready( function() {
 	bookacti.is_hovering		= false;
 	bookacti.blocked_events		= false;
 	bookacti.load_events		= false;
-
+	
+	var template_start_date, template_end_date = '';
+	if( $j( '#bookacti-template-picker option[value="' + bookacti.selected_template + '"]' ).length ) {
+		template_start_date = $j( '#bookacti-template-picker option[value="' + bookacti.selected_template + '"]' ).data( 'template-start' );
+		template_end_date = $j( '#bookacti-template-picker option[value="' + bookacti.selected_template + '"]' ).data( 'template-end' );
+	}
+	
 	// Init globals
 	bookacti.booking_system[ 'bookacti-template-calendar' ]								= {};
 	bookacti.booking_system[ 'bookacti-template-calendar' ][ 'calendars' ]				= bookacti.selected_template ? [ bookacti.selected_template ] : [];
@@ -23,13 +29,13 @@ $j( document ).ready( function() {
 	bookacti.booking_system[ 'bookacti-template-calendar' ][ 'events_data' ]			= [];
 	bookacti.booking_system[ 'bookacti-template-calendar' ][ 'events_interval' ]		= [];
 	bookacti.booking_system[ 'bookacti-template-calendar' ][ 'group_categories_data' ]	= [];
-	bookacti.booking_system[ 'bookacti-template-calendar' ][ 'start' ]					= $j( '#bookacti-template-picker option[value="' + bookacti.selected_template + '"]' ).data( 'template-start' ) || false; 
-	bookacti.booking_system[ 'bookacti-template-calendar' ][ 'end' ]					= $j( '#bookacti-template-picker option[value="' + bookacti.selected_template + '"]' ).data( 'template-end' ) || false;
+	bookacti.booking_system[ 'bookacti-template-calendar' ][ 'start' ]					= template_start_date ? template_start_date + ' 00:00:00' : '';
+	bookacti.booking_system[ 'bookacti-template-calendar' ][ 'end' ]					= template_end_date ? template_end_date + ' 23:59:59' : '';
 	bookacti.booking_system[ 'bookacti-template-calendar' ][ 'display_data' ]			= [];
 	bookacti.booking_system[ 'bookacti-template-calendar' ][ 'template_data' ]			= [];
 	bookacti.booking_system[ 'bookacti-template-calendar' ][ 'template_data' ]			= { 
-		'start' : bookacti.booking_system[ 'bookacti-template-calendar' ][ 'start' ], 
-		'end' : bookacti.booking_system[ 'bookacti-template-calendar' ][ 'end' ] 
+		'start' : template_start_date,
+		'end' : template_end_date
 	};
 
 	bookacti.booking_system[ 'bookacti-template-calendar' ][ 'selected_events' ]		= [];
@@ -124,8 +130,8 @@ function bookacti_load_template_calendar( calendar ) {
 		aspectRatio:			'auto',
 		
 		validRange: {
-            start: availability_period.start ? moment( availability_period.start ) : moment( $j( '#bookacti-template-picker :selected' ).data( 'template-start' ) ),
-            end: availability_period.end ? moment( availability_period.end ).add( 1, 'days' ) : moment( $j( '#bookacti-template-picker :selected' ).data( 'template-end' ) ).add( 1, 'days' )
+            start: availability_period.start ? moment.utc( availability_period.start.substr( 0, 10 ) ) : moment.utc( $j( '#bookacti-template-picker :selected' ).data( 'template-start' ) ),
+            end: availability_period.end ? moment.utc( availability_period.end.substr( 0, 10 ) ).add( 1, 'days' ) : moment.utc( $j( '#bookacti-template-picker :selected' ).data( 'template-end' ) ).add( 1, 'days' )
         },
 		
 		nowIndicator:           0,
@@ -167,7 +173,7 @@ function bookacti_load_template_calendar( calendar ) {
 		viewRender: function( view ) {
 			// Maybe fetch the events on the view (if not already)
 			if( bookacti.load_events === true ) { 
-				var interval = { 'start': moment.utc( view.intervalStart ), 'end': moment.utc( view.intervalEnd ).subtract( 1, 'days' ) };
+				var interval = { 'start': moment.utc( view.intervalStart.format( 'YYYY-MM-DD' ) + ' 00:00:00' ), 'end': moment.utc( view.intervalEnd.subtract( 1, 'days' ).format( 'YYYY-MM-DD' ) + ' 23:59:59' ) };
 				bookacti_fetch_events_from_interval( $j( '#bookacti-template-calendar' ), interval );
 			}
 		},
@@ -523,7 +529,7 @@ function bookacti_load_template_calendar( calendar ) {
 						// Update selected events
 						$j.each( bookacti.booking_system[ 'bookacti-template-calendar' ][ 'selected_events' ], function( i, selected_event ){
 							if( selected_event.id == event.id ) {
-								var event_end	= moment( selected_event.end ).add( delta_days, 'days' ).format( 'YYYY-MM-DD' ) + ' ' + end_time;
+								var event_end	= moment.utc( selected_event.end ).add( delta_days, 'days' ).format( 'YYYY-MM-DD' ) + ' ' + end_time;
 								selected_event.end = event_end;
 							}
 						});
@@ -532,7 +538,7 @@ function bookacti_load_template_calendar( calendar ) {
 						$j.each( bookacti.booking_system[ 'bookacti-template-calendar' ][ 'groups_events' ], function( group_id, group_events ){
 							$j.each( group_events, function( i, group_event ){
 								if( group_event.id == event.id ) {
-									var event_end	= moment( group_event.end ).add( delta_days, 'days' ).format( 'YYYY-MM-DD' ) + ' ' + end_time;
+									var event_end	= moment.utc( group_event.end ).add( delta_days, 'days' ).format( 'YYYY-MM-DD' ) + ' ' + end_time;
 									group_event.end = event_end;
 								}
 							});
@@ -669,8 +675,8 @@ function bookacti_load_template_calendar( calendar ) {
 						// Update selected events
 						$j.each( bookacti.booking_system[ 'bookacti-template-calendar' ][ 'selected_events' ], function( i, selected_event ){
 							if( selected_event.id == event.id ) {
-								var event_start	= moment( selected_event.start ).add( delta_days, 'days' ).format( 'YYYY-MM-DD' ) + ' ' + start_time;
-								var event_end	= moment( selected_event.end ).add( delta_days, 'days' ).format( 'YYYY-MM-DD' ) + ' ' + end_time;
+								var event_start	= moment.utc( selected_event.start ).add( delta_days, 'days' ).format( 'YYYY-MM-DD' ) + ' ' + start_time;
+								var event_end	= moment.utc( selected_event.end ).add( delta_days, 'days' ).format( 'YYYY-MM-DD' ) + ' ' + end_time;
 								selected_event.start = event_start;
 								selected_event.end = event_end;
 							}
@@ -680,8 +686,8 @@ function bookacti_load_template_calendar( calendar ) {
 						$j.each( bookacti.booking_system[ 'bookacti-template-calendar' ][ 'groups_events' ], function( group_id, group_events ){
 							$j.each( group_events, function( i, group_event ){
 								if( group_event.id == event.id ) {
-									var event_start	= moment( group_event.start ).add( delta_days, 'days' ).format( 'YYYY-MM-DD' ) + ' ' + start_time;
-									var event_end	= moment( group_event.end ).add( delta_days, 'days' ).format( 'YYYY-MM-DD' ) + ' ' + end_time;
+									var event_start	= moment.utc( group_event.start ).add( delta_days, 'days' ).format( 'YYYY-MM-DD' ) + ' ' + start_time;
+									var event_end	= moment.utc( group_event.end ).add( delta_days, 'days' ).format( 'YYYY-MM-DD' ) + ' ' + end_time;
 			
 									group_event.start = event_start;
 									group_event.end = event_end;

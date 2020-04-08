@@ -209,9 +209,13 @@ $default_template = false;
 	<h3><?php esc_html_e( 'Integrate this calendar to your site', 'booking-activities' ); ?></h3>
 	<ol>
 		<li>
+		<?php if( current_user_can( 'bookacti_create_forms' ) ) { ?>
 			<a href='<?php echo $new_form_initial_url; ?>' target='_blank' id='bookacti-create-form-link' data-base-url='<?php echo $new_form_basic_url; ?>'>
 				<?php esc_html_e( 'Click here to create a booking form with this calendar', 'booking-activities' ); ?>
 			</a>
+		<?php } else { ?>
+			<em><?php esc_html_e( 'You are not allowed to create booking forms.', 'booking-activities' ); ?></em>
+		<?php } ?>
 		</li>
 		<li>
 			<?php echo apply_filters( 'bookacti_calendar_integration_tuto', esc_html__( 'Copy and paste the booking form shortcode into the desired page or post', 'booking-activities' ), $template_id ); ?>

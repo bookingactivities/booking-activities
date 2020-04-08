@@ -163,7 +163,16 @@ function bookacti_format_booking_filters( $filters = array() ) {
 		if( ! isset( $filters[ $filter ] ) ) { $formatted_filters[ $filter ] = $default_value; continue; }
 
 		$current_value = $filters[ $filter ];
-
+		
+		// Specific pre-format
+		if( in_array( $filter, array( 'from' ), true ) ) {
+			$date = bookacti_sanitize_date( $current_value );
+			if( $date ) { $current_value = $date . ' 00:00:00'; }
+		} else if( in_array( $filter, array( 'to' ), true ) ) {
+			$date = bookacti_sanitize_date( $current_value );
+			if( $date ) { $current_value = $date . ' 23:59:59'; }
+		}
+		
 		// Else, check if its value is correct, or use default
 		if( in_array( $filter, array( 'templates' ) ) ) {
 			if( is_numeric( $current_value ) ) { $current_value = array( $current_value ); }
@@ -205,11 +214,9 @@ function bookacti_format_booking_filters( $filters = array() ) {
 		} else if( in_array( $filter, array( 'booking_id', 'booking_group_id', 'group_category_id', 'event_group_id', 'event_id', 'offset', 'per_page' ), true ) ) {
 			if( ! is_numeric( $current_value ) ){ $current_value = $default_value; }
 
-		} else if( in_array( $filter, array( 'event_start', 'event_end' ), true ) ) {
-			if( ! bookacti_sanitize_datetime( $current_value ) ) { $current_value = $default_value; }
-
-		} else if( in_array( $filter, array( 'from', 'to' ), true ) ) {
-			if( ! bookacti_sanitize_date( $current_value ) ) { $current_value = $default_value; }
+		} else if( in_array( $filter, array( 'event_start', 'event_end', 'from', 'to' ), true ) ) {
+			$current_value = bookacti_sanitize_datetime( $current_value );
+			if( ! $current_value ) { $current_value = $default_value; }
 
 		} else if( in_array( $filter, array( 'active' ), true ) ) {
 				 if( in_array( $current_value, array( true, 'true', 1, '1' ), true ) )	{ $current_value = 1; }
@@ -308,11 +315,11 @@ function bookacti_format_string_booking_filters( $filters = array() ) {
 		$timezone = new DateTimeZone( bookacti_get_setting_value( 'bookacti_general_settings', 'timezone' ) );
 		if( ! empty( $filters[ 'from' ] ) && (bool)strtotime( $filters[ 'from' ] ) ) {
 			$from_datetime = new DateTime( $filters[ 'from' ], $timezone );
-			$from = $from_datetime->format( 'Y-m-d' );
+			$from = $from_datetime->format( 'Y-m-d H:i:s' );
 		}
 		if( ! empty( $filters[ 'to' ] ) && (bool)strtotime( $filters[ 'to' ] ) ) {
 			$to_datetime = new DateTime( $filters[ 'to' ], $timezone );
-			$to = $to_datetime->format( 'Y-m-d' );
+			$to = ! bookacti_sanitize_datetime( $filters[ 'to' ] ) && $to_datetime->format( 'H:i:s' ) === '00:00:00' ? $to_datetime->format( 'Y-m-d' ) . ' 23:59:59' : $to_datetime->format( 'Y-m-d H:i:s' );
 		}
 	}
 
