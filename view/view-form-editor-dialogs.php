@@ -241,7 +241,7 @@ foreach( $fields_data as $field_name => $field_data ) {
 				bookacti_display_field( $args );
 			?>
 		</div>
-		<div class='bookacti-activities-actions-options-table'>
+		<div class='bookacti-activities-actions-options-table bookacti-custom-scrollbar'>
 			<h4><?php esc_html_e( 'Activities', 'booking-activities' ); ?></h4>
 			<?php
 				$activities_url_rows = array();
@@ -263,7 +263,7 @@ foreach( $fields_data as $field_name => $field_data ) {
 				bookacti_display_table_from_array( $activities_url_array );
 			?>
 		</div>
-		<div class='bookacti-group-categories-actions-options-table'>
+		<div class='bookacti-group-categories-actions-options-table bookacti-custom-scrollbar'>
 			<h4><?php esc_html_e( 'Group categories', 'booking-activities' ); ?></h4>
 			<?php 
 				$group_categories_url_rows = array();

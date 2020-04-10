@@ -72,7 +72,7 @@ $j( document ).ready( function() {
 			return ! ( ( ! $j( event.target ).is( '.select2-input' ) ) || this._super( event ) );
 		}
 	});
-		
+	
 	
 	/**
 	 * Convert duration from days/hours/minutes to seconds - on change
@@ -90,7 +90,13 @@ $j( document ).ready( function() {
 			if( $j.isNumeric( hours ) )		{ value += parseInt( hours ) * 3600; }
 			if( $j.isNumeric( days ) )		{ value += parseInt( days ) * 86400; }
 		}
-		field_value.val( value );
+		field_value.val( value ).trigger( 'change' );
+		
+		// Display an hint below avilability period fields to help setting the appropriate value - on change
+		$j( this ).closest( '.bookacti-duration-field-container' ).siblings( '.bookacti-duration-hint' ).remove();
+		if( ! $j.isNumeric( value ) ) { value = 0; }
+		var hint = moment.utc().add( value + bookacti_localized.utc_offset, 's' ).formatPHP( bookacti_localized.date_format_long );
+		$j( this ).closest( '.bookacti-duration-field-container' ).parent().append( '<div class="bookacti-duration-hint">' + hint + '</div>' );
 	});
 });
 
@@ -197,6 +203,7 @@ function bookacti_empty_all_dialog_forms( scope ) {
 	$j( scope + '.exception' ).remove();
 	$j( scope + 'select.bookacti-add-new-items-select-box option' ).show().attr( 'disabled', false );
 	$j( scope + 'select.bookacti-items-select-box option' ).remove();
+	$j( scope + '.bookacti-duration-hint' ).remove();
 	
 	if( $j( scope + 'input[type="file"]' ).length ) {
 		$j( scope + 'input[type="file"]' ).each( function() {
@@ -274,17 +281,17 @@ function bookacti_fill_fields_from_array( fields, field_prefix, scope ) {
 			if( $j.isArray( value ) ){
 				$j( scope + 'input[type="checkbox"][name="' + field_name + '[]"]' ).prop( 'checked', false );
 				$j.each( value, function( i, checkbox_value ){
-					$j( scope + 'input[type="checkbox"][name="' + field_name + '[]"][value="' + checkbox_value + '"]' ).prop( 'checked', true );
+					$j( scope + 'input[type="checkbox"][name="' + field_name + '[]"][value="' + checkbox_value + '"]' ).prop( 'checked', true ).trigger( 'change' );
 				});
 			} else if( value == 1 ) {
-				$j( scope + 'input[type="checkbox"][name="' + field_name + '"]' ).prop( 'checked', true );
+				$j( scope + 'input[type="checkbox"][name="' + field_name + '"]' ).prop( 'checked', true ).trigger( 'change' );
 			} else {
-				$j( scope + 'input[type="checkbox"][name="' + field_name + '"]' ).prop( 'checked', false );
+				$j( scope + 'input[type="checkbox"][name="' + field_name + '"]' ).prop( 'checked', false ).trigger( 'change' );
 			}
 
 		// Radio
 		} else if( $j( scope + 'input[name="' + field_name + '"]' ).is( ':radio' ) ) {
-			$j( scope + 'input[name="' + field_name + '"][value="' + value + '"]' ).prop( 'checked', true );
+			$j( scope + 'input[name="' + field_name + '"][value="' + value + '"]' ).prop( 'checked', true ).trigger( 'change' );
 
 		// Select items
 		} else if( $j( scope + 'select[name="' + field_name + '[]"].bookacti-items-select-box' ).length ) {
@@ -304,6 +311,12 @@ function bookacti_fill_fields_from_array( fields, field_prefix, scope ) {
 					add_selectbox.val( add_selectbox.find( 'option:enabled:first' ).val() );
 				}
 			});
+			
+			// Select all
+			if( selectbox.find( 'option' ).length ) {
+				selectbox.find( 'option' ).prop( 'selected', true );
+				selectbox.trigger( 'change' );
+			}
 		
 		// Select
 		} else if( $j( scope + 'select[name="' + field_name + '"]' ).length ) {
@@ -325,8 +338,8 @@ function bookacti_fill_fields_from_array( fields, field_prefix, scope ) {
 			}
 			// If the time value is 24:00, reset it to 00:00
 			if( $j( scope + 'input[name="' + field_name + '"]' ).attr( 'type' ) === 'time' && value === '24:00' ) { value = '00:00'; }
-			$j( scope + 'input[name="' + field_name + '"]' ).val( value );
-			$j( scope + 'textarea[name="' + field_name + '"]' ).val( value );
+			$j( scope + 'input[name="' + field_name + '"]' ).val( value ).trigger( 'change' );;
+			$j( scope + 'textarea[name="' + field_name + '"]' ).val( value ).trigger( 'change' );;
 			
 			// Editor
 			if( typeof tinyMCE !== 'undefined' ) {
@@ -349,9 +362,9 @@ function bookacti_fill_fields_from_array( fields, field_prefix, scope ) {
 						minutes = Math.floor( total / 60 );
 					}
 				}
-				$j( scope + 'input[name="' + field_name + '"].bookacti-duration-value' ).siblings( '.bookacti-duration-field-container' ).find( '.bookacti-duration-field[data-unit="day"]' ).val( days );
-				$j( scope + 'input[name="' + field_name + '"].bookacti-duration-value' ).siblings( '.bookacti-duration-field-container' ).find( '.bookacti-duration-field[data-unit="hour"]' ).val( hours );
-				$j( scope + 'input[name="' + field_name + '"].bookacti-duration-value' ).siblings( '.bookacti-duration-field-container' ).find( '.bookacti-duration-field[data-unit="minute"]' ).val( minutes );
+				$j( scope + 'input[name="' + field_name + '"].bookacti-duration-value' ).siblings( '.bookacti-duration-field-container' ).find( '.bookacti-duration-field[data-unit="day"]' ).val( days ).trigger( 'change' );
+				$j( scope + 'input[name="' + field_name + '"].bookacti-duration-value' ).siblings( '.bookacti-duration-field-container' ).find( '.bookacti-duration-field[data-unit="hour"]' ).val( hours ).trigger( 'change' );
+				$j( scope + 'input[name="' + field_name + '"].bookacti-duration-value' ).siblings( '.bookacti-duration-field-container' ).find( '.bookacti-duration-field[data-unit="minute"]' ).val( minutes ).trigger( 'change' );
 			}
 		}
 	});

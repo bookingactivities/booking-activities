@@ -435,8 +435,7 @@ function bookacti_settings_field_cancellation_delay_callback() {
 		'name'	=> 'bookacti_cancellation_settings[booking_changes_deadline]',
 		'id'	=> 'booking_changes_deadline',
 		'value'	=> floatval( bookacti_get_setting_value( 'bookacti_cancellation_settings', 'booking_changes_deadline' ) ),
-		'label'	=> esc_html__( 'before the event', 'booking-activities' ),
-		'tip'	=> esc_html__( 'Set the end of the allowed changes period (cancellation, rescheduling). E.g.: "1 day 5 hours 30 minutes", your customers may change their bookings at least 1 day 5 hours and 30 minutes before the start of the event. After that, they won\'t be allowed to change them anymore.', 'booking-activities' )
+		'tip'	=> esc_html__( 'Define when a customer can change a booking (cancel, reschedule). E.g.: "2 days 5 hours 30 minutes", your customers will be able to change the bookings starting in 2 days, 5 hours and 30 minutes at least. They won\'t be allowed to cancel a booking starting tomorrow for example.', 'booking-activities' )
 				. '<br/>' . esc_html__( 'This option has no effect for administrators.', 'booking-activities' )
 	);
 	bookacti_display_field( $args );
@@ -523,7 +522,7 @@ function bookacti_settings_section_notifications_general_callback() {
 				'active'		=> '<span class="dashicons ' . $active_icon . '"></span>',
 				'title'			=> '<a href="' . esc_url( '?page=bookacti_settings&tab=notifications&notification_id=' . sanitize_title_with_dashes( $notification_id ) ) . '" >' . esc_html( $notification_settings[ 'title' ] ) . '</a>' . $description,
 				'recipients'	=> substr( $notification_id, 0, 8 ) === 'customer' ? esc_html__( 'Customer', 'booking-activities' ) : esc_html__( 'Administrator', 'booking-activities' ),
-				'actions'		=> '<a href="' . esc_url( '?page=bookacti_settings&tab=notifications&notification_id=' . sanitize_title_with_dashes( $notification_id ) ) . '" title="' . esc_attr__( 'Edit this notification', 'booking-activities' ) . '" ><span class="dashicons dashicons-admin-generic" ></span></a>'
+				'actions'		=> '<a href="' . esc_url( '?page=bookacti_settings&tab=notifications&notification_id=' . sanitize_title_with_dashes( $notification_id ) ) . '" title="' . esc_attr__( 'Edit this notification', 'booking-activities' ) . '" class="button button-secondary" >' . esc_html__( 'Settings', 'booking-activities' ) . '</a>'
 			), $notification_settings, $notification_id );
 
 			?>
@@ -728,6 +727,10 @@ function bookacti_get_default_messages() {
 		'selected_events' => array(
 			'value'			=> esc_html__( 'Selected events', 'booking-activities' ),
 			'description'	=> sprintf( esc_html__( 'Title displayed before the selected events list (%s).', 'booking-activities' ), esc_html__( 'plural', 'booking-activities' ) )
+		),
+		'no_events' => array(
+			'value'			=> esc_html__( 'No events available.', 'booking-activities' ),
+			'description'	=> esc_html__( 'Message displayed instead of the calendar when no events are available.', 'booking-activities' )
 		),
 		'avail' => array(
 			/* translators: This particle is used right after the quantity of available bookings. Put the singular here. E.g.: 1 avail. . */
@@ -1066,21 +1069,15 @@ function bookacti_display_database_archive_list() {
 							<div class='bookacti-archive-feedback'></div>
 						</td>
 						<td class='bookacti-archive-actions'>
-							<span class='bookacti-archive-action bookacti-archive-download'>
-								<a href='<?php echo esc_url( trailingslashit( $uploads_dir[ 'baseurl' ] ) . BOOKACTI_PLUGIN_NAME . '/archives/' . $filename . '?key=' . $secret_key ); ?>' target='_blank'>
-									<?php echo esc_html_x( 'Download', 'verb', 'booking-activities' ); ?>
-								</a>
-							</span>
-							<span class='bookacti-archive-action bookacti-archive-restore-data'>
-								<a href='#' data-filename='<?php echo $filename; ?>'>
-									<?php esc_html_e( 'Restore data', 'booking-activities' ); ?>
-								</a>
-							</span>
-							<span class='bookacti-archive-action bookacti-archive-delete-file'>
-								<a href='#' data-filename='<?php echo $filename; ?>'>
-									<?php esc_html_e( 'Delete file', 'booking-activities' ); ?>
-								</a>
-							</span>
+							<a href='<?php echo esc_url( trailingslashit( $uploads_dir[ 'baseurl' ] ) . BOOKACTI_PLUGIN_NAME . '/archives/' . $filename . '?key=' . $secret_key ); ?>' target='_blank' class='bookacti-archive-action bookacti-archive-download button button-secondary'>
+								<?php echo esc_html_x( 'Download', 'verb', 'booking-activities' ); ?>
+							</a>
+							<a href='#' data-filename='<?php echo $filename; ?>' class='bookacti-archive-action bookacti-archive-restore-data button button-secondary'>
+								<?php esc_html_e( 'Restore data', 'booking-activities' ); ?>
+							</a>
+							<a href='#' data-filename='<?php echo $filename; ?>' class='bookacti-archive-action bookacti-archive-delete-file button-link-delete'>
+								<?php esc_html_e( 'Delete file', 'booking-activities' ); ?>
+							</a>
 							<?php do_action( 'bookacti_archive_actions_after', $filename ) ?>
 						</td>
 					</tr>

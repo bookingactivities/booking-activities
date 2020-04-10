@@ -112,13 +112,11 @@ $j( document ).ready( function() {
 	
 	
 	// Check if booking systems exist before anything
-	if( $j( '.bookacti-booking-system' ).length ) { 
-		
+	if( $j( '.bookacti-booking-system' ).length ) {
 		// Init the Dialogs
 		bookacti_init_booking_system_dialogs();
 				
-		$j( '.bookacti-booking-system' ).each( function() { 
-			
+		$j( '.bookacti-booking-system' ).each( function() {
 			// Retrieve the info required to show the desired events
 			var booking_system		= $j( this );
 			var booking_system_id	= booking_system.attr( 'id' );
@@ -137,7 +135,7 @@ $j( document ).ready( function() {
 			
 			if( load.load ) {
 				if( load.auto_load ) {
-					bookacti_booking_method_set_up( booking_system, false );
+					bookacti_booking_method_set_up( booking_system );
 					
 					// Remove initial loading feedback
 					booking_system.find( '.bookacti-loading-alt' ).remove();

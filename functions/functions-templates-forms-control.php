@@ -290,14 +290,13 @@ function bookacti_sanitize_event_data( $raw_data ) {
 	if( $data[ 'repeat_freq' ] !== 'none' && $data[ 'repeat_from' ] && $data[ 'repeat_to' ] ) {
 		// Make the repetition period fit the events occurences
 		$dummy_event = (object) $data;
-		$occurences = bookacti_get_occurences_of_repeated_event( $dummy_event, array( 'exceptions_dates' => $data[ 'exceptions_dates' ], 'past_events' => true ) );
-		$bounding_events = bookacti_get_bounding_events_from_events_array( array( 'events' => $occurences ) );
-
+		$bounding_events = bookacti_get_occurences_of_repeated_event( $dummy_event, array( 'exceptions_dates' => $data[ 'exceptions_dates' ], 'past_events' => true, 'bounding_events_only' => true ) );
+		
 		// Compute bounding dates
-		if( ! empty( $bounding_events[ 'events' ] ) ) {
+		if( ! empty( $bounding_events ) ) {
 			$bounding_dates = array( 
-				'start' => substr( $bounding_events[ 'events' ][ 0 ][ 'start' ], 0, 10 ), 
-				'end' => substr( $bounding_events[ 'events' ][ array_key_last( $bounding_events[ 'events' ] ) ][ 'end' ], 0, 10 )
+				'start' => substr( $bounding_events[ 0 ][ 'start' ], 0, 10 ), 
+				'end' => substr( $bounding_events[ array_key_last( $bounding_events ) ][ 'end' ], 0, 10 )
 			);
 			
 			// Replace repeat period with events bounding dates

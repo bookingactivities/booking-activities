@@ -24,9 +24,9 @@ function bookacti_fetch_events_for_calendar_editor( $raw_args = array() ) {
 		'templates' => array(),
 		'events' => array(),
 		'interval' => array(),
-		'skip_exceptions' => false,
-		'past_events' => true,
-		'bounding_events_only' => false
+		'skip_exceptions' => 0,
+		'past_events' => 1,
+		'bounding_events_only' => 0
 	);
 	$args = wp_parse_args( $raw_args, $default_args );
 

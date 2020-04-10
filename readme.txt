@@ -339,6 +339,7 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 * Tweak - Add a link to the booking admin page on the booking IDs of booking lists (for administrators only)
 * Tweak - Add columns in user booking list: customer_roles
 * Tweak - The reschedule booking system now uses all the possible initial booking form calendar field settings
+* Tweak - A message is be displayed instead of the calendar if no events are available (only if the Trim option is on, in Calendar fields settings)
 * Fix - Redirect URL when booking on event click didn't work
 * Fix - Add compulsory hidden quantity field when booking on event click
 * Fix - All grouped bookings were displayed in each rows of the frontend booking list when group_by = none

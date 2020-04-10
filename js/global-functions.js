@@ -1,5 +1,11 @@
 $j( document ).ready( function() {
+	// Initialize select2
 	bookacti_select2_init();
+	
+	// Localize moment JS
+	moment.locale( bookacti_localized.fullcalendar_locale );
+	
+	// Add formatPHP function to moment JS
 	bookacti_init_moment_format_from_php_date_format();
 });
 

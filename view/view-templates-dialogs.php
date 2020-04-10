@@ -514,10 +514,9 @@ if ( ! empty( $users ) ) {
 						'type'	=> 'duration',
 						'name'	=> 'activityOptions[booking_changes_deadline]',
 						'id'	=> 'bookacti-activity-booking-changes-deadline',
-								/* translators: Followed by fields where the user can input the number of days, hours and minutes before the event. E.g.: "Changes permitted up to 1 day 2 hours 30 minutes before the event". */
-						'title'	=> esc_html__( 'Booking changes are permitted up to', 'booking-activities' ),
-						'label'	=> esc_html__( 'before the event', 'booking-activities' ),
-						'tip'	=> esc_html__( 'Set the end of the allowed changes period (cancellation, rescheduling). E.g.: "1 day 5 hours 30 minutes", your customers may change their bookings at least 1 day 5 hours and 30 minutes before the start of the event. After that, they won\'t be allowed to change them anymore.', 'booking-activities' )
+								/* translators: Followed by a field indicating a number of days, hours and minutes from now. E.g.: "Changes are allowed for bookings starting in at least 2 days, 12 hours, 25 minutes". */
+						'title'	=> esc_html__( 'Changes are allowed for bookings starting in at least', 'booking-activities' ),
+						'tip'	=> esc_html__( 'Define when a customer can change a booking (cancel, reschedule). E.g.: "2 days 5 hours 30 minutes", your customers will be able to change the bookings starting in 2 days, 5 hours and 30 minutes at least. They won\'t be allowed to cancel a booking starting tomorrow for example.', 'booking-activities' )
 								. '<br/>' . esc_html__( 'This parameter applies to the events of this activity only. A global parameter is available in global settings.', 'booking-activities' )
 								. ' ' . esc_html__( 'Leave it empty to use the global value.', 'booking-activities' )
 					)
@@ -913,10 +912,9 @@ if ( ! empty( $users ) ) {
 						'type'	=> 'duration',
 						'name'	=> 'groupCategoryOptions[booking_changes_deadline]',
 						'id'	=> 'bookacti-group-category-booking-changes-deadline',
-								/* translators: Followed by fields where the user can input the number of days, hours and minutes before the event. E.g.: "Changes permitted up to 1 day 2 hours 30 minutes before the event". */
-						'title'	=> esc_html__( 'Booking changes are permitted up to', 'booking-activities' ),
-						'label'	=> esc_html__( 'before the event', 'booking-activities' ),
-						'tip'	=> esc_html__( 'Set the end of the allowed changes period (cancellation, rescheduling). E.g.: "1 day 5 hours 30 minutes", your customers may change their bookings at least 1 day 5 hours and 30 minutes before the start of the event. After that, they won\'t be allowed to change them anymore.', 'booking-activities' )
+								/* translators: Followed by a field indicating a number of days, hours and minutes from now. E.g.: "Changes are allowed for bookings starting in at least 2 days, 12 hours, 25 minutes". */
+						'title'	=> esc_html__( 'Changes are allowed for bookings starting in at least', 'booking-activities' ),
+						'tip'	=> esc_html__( 'Define when a customer can change a booking (cancel, reschedule). E.g.: "2 days 5 hours 30 minutes", your customers will be able to change the bookings starting in 2 days, 5 hours and 30 minutes at least. They won\'t be allowed to cancel a booking starting tomorrow for example.', 'booking-activities' )
 								. '<br/>' . esc_html__( 'This parameter applies to the groups of events of this category only. A global parameter is available in global settings.', 'booking-activities' )
 								. ' ' . esc_html__( 'Leave it empty to use the global value.', 'booking-activities' )
 					),

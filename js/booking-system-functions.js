@@ -465,7 +465,12 @@ function bookacti_event_click( booking_system, event ) {
 }
 
 
-// Return groups ids of an event
+/**
+ * Get the groups ids of an event
+ * @param {dom_element} booking_system
+ * @param {object} event
+ * @returns {array|"single"|false}
+ */
 function bookacti_get_event_group_ids( booking_system, event ) {
 	// Check required data
 	if( typeof event !== 'object' ) {
@@ -503,7 +508,12 @@ function bookacti_get_event_group_ids( booking_system, event ) {
 }
 
 
-// Fill form fields
+/**
+ * Fill form fields
+ * @param {dom_element} booking_system
+ * @param {object} event
+ * @param {int} group_id
+ */
 function bookacti_fill_booking_system_fields( booking_system, event, group_id ) {
 	
 	group_id = $j.isArray( group_id ) && group_id.length === 1 ? group_id[ 0 ] : group_id;
@@ -557,9 +567,14 @@ function bookacti_pick_events_of_group( booking_system, group_id, event ) {
 }
 
 
-// Pick an event
+/**
+ * Pick an event
+ * @version 1.8.0
+ * @param {dom_element} booking_system
+ * @param {object} event
+ * @param {int} group_id
+ */
 function bookacti_pick_event( booking_system, event, group_id ) {
-	
 	group_id = group_id || false;
 	var booking_system_id = booking_system.attr( 'id' );
 	
@@ -571,11 +586,11 @@ function bookacti_pick_event( booking_system, event, group_id ) {
 	
 	// Format event object
 	var picked_event = {
-		"id":			event.id,
-		"title":		event.title,
-		"start":		event.start instanceof moment ? event.start.format( 'YYYY-MM-DD HH:mm:ss' ) : event.start,
-		"end":			event.end instanceof moment ? event.end.format( 'YYYY-MM-DD HH:mm:ss' ) : event.end,
-		"group_id":		group_id
+		"id": event.id,
+		"title": event.title,
+		"start": moment.utc( event.start ).format( 'YYYY-MM-DD HH:mm:ss' ),
+		"end": moment.utc( event.end ).format( 'YYYY-MM-DD HH:mm:ss' ),
+		"group_id": group_id
 	};
 	
 	// Keep picked events in memory 
@@ -585,9 +600,15 @@ function bookacti_pick_event( booking_system, event, group_id ) {
 }
 
 
-// Unpick an event
+/**
+ * Unpick an event
+ * @version 1.8.0
+ * @param {dom_element} booking_system
+ * @param {object|int} event
+ * @param {string|moment} start
+ * @param {boolean} all
+ */
 function bookacti_unpick_event( booking_system, event, start, all ) {
-	
 	var booking_system_id = booking_system.attr( 'id' );
 	
 	// Determine if all event should be unpicked
@@ -608,8 +629,8 @@ function bookacti_unpick_event( booking_system, event, start, all ) {
 	
 	// Format event object
 	var event_to_unpick = {
-		'id':	typeof event === 'object' ? event.id : event,
-		'start':start instanceof moment ? start.format( 'YYYY-MM-DD HH:mm:ss' ) : start
+		'id': typeof event === 'object' ? event.id : event,
+		'start': moment.utc( start ).format( 'YYYY-MM-DD HH:mm:ss' )
 	};
 	
 	// Remove picked event(s) from memory 
@@ -631,7 +652,10 @@ function bookacti_unpick_event( booking_system, event, start, all ) {
 }
 
 
-// Reset picked events
+/**
+ * Reset picked events
+ * @param {dom_element} booking_system
+ */
 function bookacti_unpick_all_events( booking_system ) {
 	var booking_system_id = booking_system.attr( 'id' );
 	
@@ -936,7 +960,12 @@ function bookacti_clear_booking_system_displayed_info( booking_system, keep_pick
 }
 
 
-// Get event booking numbers
+/**
+ * Get event booking numbers
+ * @param {dom_element} booking_system
+ * @param {object} event
+ * @returns {int}
+ */
 function bookacti_get_event_number_of_bookings( booking_system, event ) {
 	
 	var booking_system_id = booking_system.attr( 'id' );
@@ -964,7 +993,12 @@ function bookacti_get_event_number_of_bookings( booking_system, event ) {
 }
 
 
-// Get event available places
+/**
+ * Get event available places
+ * @param {dom_element} booking_system
+ * @param {object} event
+ * @returns {int}
+ */
 function bookacti_get_event_availability( booking_system, event ) {
 	var booking_system_id = booking_system.attr( 'id' );
 	
@@ -1296,15 +1330,16 @@ function bookacti_sort_events_array_by_dates( array, sort_by_end, desc, labels )
 
 /**
  * Load the booking system according to booking method
- * @version 1.7.0
+ * @version 1.8.0
  * @param {dom_element} booking_system
  * @param {boolean} reload_events
- * @param {string} booking_method
  */
-function bookacti_booking_method_set_up( booking_system, reload_events, booking_method ) {
+function bookacti_booking_method_set_up( booking_system, reload_events ) {
 	var booking_system_id = booking_system.attr( 'id' );
-	booking_method = booking_method || bookacti.booking_system[ booking_system_id ][ 'method' ];
+	booking_method = bookacti.booking_system[ booking_system_id ][ 'method' ];
 	reload_events = reload_events ? 1 : 0;
+	
+	if( bookacti.booking_system[ booking_system_id ][ 'no_events' ] ) { return; }
 	
 	if( booking_method === 'calendar' || $j.inArray( booking_method, bookacti_localized.available_booking_methods ) === -1 ) {
 		bookacti_set_calendar_up( booking_system, reload_events );
@@ -1320,10 +1355,15 @@ function bookacti_booking_method_set_up( booking_system, reload_events, booking_
 }
 
 
-// Fill the events in the booking method
-function bookacti_booking_method_display_events( booking_system, events, booking_method ) {
+/**
+ * Fill the events according to the booking method
+ * @version 1.8.0
+ * @param {dom_element} booking_system
+ * @param {object} events
+ */
+function bookacti_booking_method_display_events( booking_system, events ) {
 	var booking_system_id = booking_system.attr( 'id' );
-	booking_method = booking_method || bookacti.booking_system[ booking_system_id ][ 'method' ];
+	booking_method = bookacti.booking_system[ booking_system_id ][ 'method' ];
 	if( booking_method === 'calendar' || $j.inArray( booking_method, bookacti_localized.available_booking_methods ) === -1 ) {
 		bookacti_display_events_on_calendar( booking_system, events );
 	} else {
@@ -1332,10 +1372,14 @@ function bookacti_booking_method_display_events( booking_system, events, booking
 }
 
 
-// Refetch events according to booking method
-function bookacti_booking_method_refetch_events( booking_system, booking_method ) {
+/**
+ * Refetch events according to booking method
+ * @version 1.8.0
+ * @param {dom_element} booking_system
+ */
+function bookacti_booking_method_refetch_events( booking_system ) {
 	var booking_system_id = booking_system.attr( 'id' );
-	booking_method = booking_method || bookacti.booking_system[ booking_system_id ][ 'method' ];
+	booking_method = bookacti.booking_system[ booking_system_id ][ 'method' ];
 	if( booking_method === 'calendar' || $j.inArray( booking_method, bookacti_localized.available_booking_methods ) === -1 ) {
 		booking_system.find( '.bookacti-calendar' ).fullCalendar( 'removeEvents' );
 		bookacti_fetch_events( booking_system );
@@ -1345,10 +1389,14 @@ function bookacti_booking_method_refetch_events( booking_system, booking_method 
 }
 
 
-// Rerender events according to booking method
-function bookacti_booking_method_rerender_events( booking_system, booking_method ) {
+/**
+ * Rerender events according to booking method
+ * @version 1.8.0
+ * @param {dom_element} booking_system
+ */
+function bookacti_booking_method_rerender_events( booking_system ) {
 	var booking_system_id = booking_system.attr( 'id' );
-	booking_method = booking_method || bookacti.booking_system[ booking_system_id ][ 'method' ];
+	booking_method = bookacti.booking_system[ booking_system_id ][ 'method' ];
 	if( booking_method === 'calendar' || $j.inArray( booking_method, bookacti_localized.available_booking_methods ) === -1 ) {
 		booking_system.find( '.bookacti-calendar' ).fullCalendar( 'rerenderEvents' );
 	} else {
@@ -1357,10 +1405,15 @@ function bookacti_booking_method_rerender_events( booking_system, booking_method
 }
 
 
-// Clear events according to booking method
-function bookacti_booking_method_clear_events( booking_system, event, booking_method ) {
+/**
+ * Clear events according to booking method
+ * @version 1.8.0
+ * @param {dom_element} booking_system
+ * @param {object} event
+ */
+function bookacti_booking_method_clear_events( booking_system, event ) {
 	var booking_system_id = booking_system.attr( 'id' );
-	booking_method = booking_method || bookacti.booking_system[ booking_system_id ][ 'method' ];
+	booking_method = bookacti.booking_system[ booking_system_id ][ 'method' ];
 	event = event || null;
 	
 	// Reset global arrays
@@ -1383,7 +1436,10 @@ function bookacti_booking_method_clear_events( booking_system, event, booking_me
 
 // LOADING
 
-// Start a loading (or keep on loading if already loading)
+/**
+ * Start a loading (or keep on loading if already loading)
+ * @param {dom_element} booking_system
+ */
 function bookacti_start_loading_booking_system( booking_system ) {
 	
 	var booking_system_id	= booking_system.attr( 'id' );
@@ -1420,7 +1476,11 @@ function bookacti_start_loading_booking_system( booking_system ) {
 }
 
 
-// Stop a loading (but keep on loading if there are other loadings )
+/**
+ * Stop a loading (but keep on loading if there are other loadings)
+ * @param {dom_element} booking_system
+ * @param {boolean} force_exit 
+ */
 function bookacti_stop_loading_booking_system( booking_system, force_exit ) {
 	
 	force_exit = force_exit || false;

@@ -119,7 +119,7 @@ $j( document ).ready( function() {
 	 * @since 1.7.0
 	 * @version 1.8.0
 	 */
-	$j( '#bookacti-database-archives-table-container' ).on( 'click', '.bookacti-archive-restore-data a', function( e ) {
+	$j( '#bookacti-database-archives-table-container' ).on( 'click', 'a.bookacti-archive-restore-data', function( e ) {
 		e.preventDefault();
 		
 		var filename = $j( this ).data( 'filename' );
@@ -142,7 +142,7 @@ $j( document ).ready( function() {
 	 * @since 1.7.0
 	 * @version 1.8.0
 	 */
-	$j( '#bookacti-database-archives-table-container' ).on( 'click', '.bookacti-archive-delete-file a', function( e ) {
+	$j( '#bookacti-database-archives-table-container' ).on( 'click', 'a.bookacti-archive-delete-file', function( e ) {
 		e.preventDefault();
 		
 		var filename = $j( this ).data( 'filename' );

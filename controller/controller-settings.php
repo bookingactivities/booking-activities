@@ -123,8 +123,8 @@ function bookacti_init_settings() {
 	
 	add_settings_field(  
 		'booking_changes_deadline', 
-		/* translators: Followed by a field indicating a number of hours before the event. E.g.: "Changes permitted up to 2 hours before the event". */
-		esc_html__( 'Changes permitted up to', 'booking-activities' ),               
+		/* translators: Followed by a field indicating a number of days, hours and minutes from now. E.g.: "Changes are allowed for bookings starting in at least 2 days, 12 hours, 25 minutes". */
+		esc_html__( 'Changes are allowed for bookings starting in at least', 'booking-activities' ),               
 		'bookacti_settings_field_cancellation_delay_callback',   
 		'bookacti_cancellation_settings',                     
 		'bookacti_settings_section_cancellation' 

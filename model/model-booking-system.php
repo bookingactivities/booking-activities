@@ -22,9 +22,9 @@ function bookacti_fetch_events( $raw_args = array() ) {
 		'templates' => array(),
 		'activities' => array(),
 		'interval' => array(),
-		'skip_exceptions' => true,
-		'past_events' => false,
-		'bounding_events_only' => false
+		'skip_exceptions' => 1,
+		'past_events' => 0,
+		'bounding_events_only' => 0
 	);
 	$args = wp_parse_args( $raw_args, $default_args );
 
@@ -91,16 +91,16 @@ function bookacti_fetch_events( $raw_args = array() ) {
 				) 
 				OR
 				( 	E.repeat_freq IS NOT NULL
-					AND NOT (	UNIX_TIMESTAMP( CONVERT_TZ( E.repeat_from, %s, @@global.time_zone ) ) < 
+					AND NOT (	UNIX_TIMESTAMP( CONVERT_TZ( CONCAT( E.repeat_from, " 00:00:00" ), %s, @@global.time_zone ) ) < 
 								UNIX_TIMESTAMP( CONVERT_TZ( %s, %s, @@global.time_zone ) ) 
 							AND 
-								UNIX_TIMESTAMP( CONVERT_TZ( E.repeat_to, %s, @@global.time_zone ) ) < 
+								UNIX_TIMESTAMP( CONVERT_TZ( CONCAT( E.repeat_to, " 23:59:59" ), %s, @@global.time_zone ) ) < 
 								UNIX_TIMESTAMP( CONVERT_TZ( %s, %s, @@global.time_zone ) ) 
 							)
-					AND NOT (	UNIX_TIMESTAMP( CONVERT_TZ( E.repeat_from, %s, @@global.time_zone ) ) > 
+					AND NOT (	UNIX_TIMESTAMP( CONVERT_TZ( CONCAT( E.repeat_from, " 00:00:00" ), %s, @@global.time_zone ) ) > 
 								UNIX_TIMESTAMP( CONVERT_TZ( %s, %s, @@global.time_zone ) ) 
 							AND 
-								UNIX_TIMESTAMP( CONVERT_TZ( E.repeat_to, %s, @@global.time_zone ) ) > 
+								UNIX_TIMESTAMP( CONVERT_TZ( CONCAT( E.repeat_to, " 23:59:59" ), %s, @@global.time_zone ) ) > 
 								UNIX_TIMESTAMP( CONVERT_TZ( %s, %s, @@global.time_zone ) ) 
 							)
 				) 
@@ -209,8 +209,8 @@ function bookacti_fetch_grouped_events( $raw_args = array() ) {
 		'groups' => array(),
 		'group_categories' => array(),
 		'interval' => array(),
-		'past_events' => false,
-		'bounding_events_only' => false
+		'past_events' => 0,
+		'bounding_events_only' => 0
 	);
 	$args = wp_parse_args( $raw_args, $default_args );
 
@@ -370,8 +370,8 @@ function bookacti_fetch_booked_events( $raw_args = array() ) {
 		'status' => array(),
 		'users' => array(),
 		'interval' => array(),
-		'past_events' => false,
-		'bounding_events_only' => false
+		'past_events' => 0,
+		'bounding_events_only' => 0
 	);
 	$args = wp_parse_args( $raw_args, $default_args );
 
@@ -745,7 +745,7 @@ function bookacti_get_groups_of_events( $raw_args ) {
 		'group_categories' => array(),
 		'availability_period' => array(),
 		'started' => 'bookable_only',
-		'inactive' => false
+		'inactive' => 0
 	);
 	$args = wp_parse_args( $raw_args, $default_args );
 

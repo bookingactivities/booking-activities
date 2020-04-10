@@ -442,7 +442,9 @@ function bookacti_generate_ical( $vevents, $vcalendar = array(), $sequence = 0 )
  * @return array
  */
 function bookacti_get_js_variables() {
-	$current_datetime_object = new DateTime( 'now', new DateTimeZone( bookacti_get_setting_value( 'bookacti_general_settings', 'timezone' ) ) );
+	$timezone = new DateTimeZone( bookacti_get_setting_value( 'bookacti_general_settings', 'timezone' ) );
+	$current_datetime = new DateTime( 'now', $timezone );
+	$current_datetime_utc = new DateTime( 'now', new DateTimeZone( 'UTC' ) );
 	$can_edit_bookings = current_user_can( 'bookacti_edit_bookings' );
 	$messages = bookacti_get_messages();
 	
@@ -516,7 +518,7 @@ function bookacti_get_js_variables() {
 		'plugin_path'						=> plugins_url() . '/' . BOOKACTI_PLUGIN_NAME,
 		'is_admin'							=> is_admin(),
 		'current_user_id'					=> get_current_user_id(),
-		'current_time'						=> $current_datetime_object->format( 'Y-m-d H:i:s' ),
+		'current_time'						=> $current_datetime->format( 'Y-m-d H:i:s' ),
 
 		'calendar_localization'				=> bookacti_get_setting_value( 'bookacti_messages_settings', 'calendar_localization' ),
 		'wp_time_format'					=> get_option( 'time_format' ),
@@ -529,6 +531,7 @@ function bookacti_get_js_variables() {
 			'nonce_dismiss_5stars_rating_notice'=> wp_create_nonce( 'bookacti_dismiss_5stars_rating_notice' ),
 			'admin_url'							=> admin_url(),
 			'is_qtranslate'						=> bookacti_get_translation_plugin() === 'qtranslate',
+			'utc_offset'						=> intval( $timezone->getOffset( $current_datetime_utc ) ),
 			'create_new'						=> esc_html__( 'Create new', 'booking-activities' ),
 			'edit_id'							=> esc_html_x( 'id', 'An id is a unique identification number', 'booking-activities' ),
 			'dialog_button_generate_link'		=> esc_html__( 'Generate export link', 'booking-activities' ),
@@ -964,8 +967,8 @@ function bookacti_display_fields( $fields, $args = array() ) {
 		$field[ 'hidden' ]	= in_array( $field_name, $args[ 'hidden' ], true ) ? 1 : 0;
 		
 		$wrap_class = '';
-		if( ! empty( $field[ 'hidden' ] ) )			{ $wrap_class .= 'bookacti-hidden-field'; } 
-		if( $field[ 'type' ] === 'select_items' )	{ $wrap_class .= 'bookacti-items-container'; } 
+		if( ! empty( $field[ 'hidden' ] ) )			{ $wrap_class .= ' bookacti-hidden-field'; } 
+		if( $field[ 'type' ] === 'select_items' )	{ $wrap_class .= ' bookacti-items-container'; } 
 		
 		// If custom type, call another function to display this field
 		if( $field[ 'type' ] === 'custom' ) {
@@ -1049,7 +1052,7 @@ function bookacti_display_field( $args ) {
 		<div class='bookacti-duration-field-container'>
 			<input type='number' value='<?php echo esc_attr( $duration[ 'days' ] ); ?>' 
 					id='<?php echo esc_attr( $args[ 'id' ] ) . '-days'; ?>' class='bookacti-input bookacti-duration-field'
-					placeholder='365' min='0' step='1' data-unit='day' onkeypress='return event.charCode >= 48 && event.charCode <= 57'/>
+					placeholder='365' min='0' max='99999' step='1' data-unit='day' onkeypress='return event.charCode >= 48 && event.charCode <= 57'/>
 			<label for='<?php echo esc_attr( $args[ 'id' ] ) . '-days'; ?>' class='bookacti-duration-field-label'><?php echo esc_html( _n( 'day', 'days', 2 ) ); ?></label>
 		</div>
 		<div class='bookacti-duration-field-container'>

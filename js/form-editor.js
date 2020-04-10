@@ -213,7 +213,33 @@ $j( document ).ready( function() {
 	
 	
 	/**
-	 * Toggle the actions fields according to the currently selected form action
+	 * Calendar field settings: Toggle the groups options - on change
+	 * @since 1.8.0
+	 */
+	$j( '#bookacti-form-field-dialog-calendar' ).on( 'change', 'select#bookacti-group_categories', function( e ) {
+		if( $j( this ).val() === 'none' ) { 
+			$j( '#bookacti-groups_only-container, #bookacti-groups_single_events-container' ).hide();
+		} else {
+			$j( '#bookacti-groups_only-container, #bookacti-groups_single_events-container' ).show();
+		}
+	});
+	
+	
+	/**
+	 * Calendar field settings: Toggle the booked events options - on change
+	 * @since 1.8.0
+	 */
+	$j( '#bookacti-form-field-dialog-calendar' ).on( 'change', 'input#bookacti-bookings_only', function( e ) {
+		if( $j( this ).is( ':checked' ) ) { 
+			$j( '#bookacti-status-container, #bookacti-user_id-container' ).show();
+		} else {
+			$j( '#bookacti-status-container, #bookacti-user_id-container' ).hide();
+		}
+	});
+	
+	
+	/**
+	 * Calendar field settings: Toggle the actions fields - on change
 	 * @since 1.7.0
 	 * @version 1.7.10
 	 */
@@ -227,6 +253,48 @@ $j( document ).ready( function() {
 		}
 		// Always hide categories table if no categories are selected
 		if( $j( 'select#bookacti-group_categories' ).val() === 'none' ) { $j( '.bookacti-group-categories-actions-options-table' ).hide(); }
+	});
+	
+	
+	/**
+	 * Calendar field settings: Toggle the WC actions fields - on change
+	 * @since 1.7.0
+	 */
+	$j( '#bookacti-form-field-dialog-calendar' ).on( 'change', 'select#bookacti-form_action', function( e ){
+		// Show / hide the columns displayed in the "redirect URL" tables
+		$j( '.bookacti-activities-actions-options-table .bookacti-column-product, .bookacti-group-categories-actions-options-table .bookacti-column-product' ).hide();
+		if( $j( this ).val() === 'redirect_to_product_page' || $j( this ).val() === 'add_product_to_cart' ) {
+			$j( '.bookacti-activities-actions-options-table .bookacti-column-redirect_url, .bookacti-group-categories-actions-options-table .bookacti-column-redirect_url' ).hide();
+			$j( '.bookacti-activities-actions-options-table .bookacti-column-product, .bookacti-group-categories-actions-options-table .bookacti-column-product' ).show();
+		}
+		// Always hide categories table if no categories are selected
+		if( $j( 'select#bookacti-group_categories' ).val() === 'none' ) { $j( '.bookacti-group-categories-actions-options-table' ).hide(); }
+	});
+	
+	
+	/**
+	 * Calendar field settings: Toggle the availability period options - on change
+	 * @since 1.8.0
+	 */
+	$j( '#bookacti-form-field-dialog-calendar' ).on( 'change', '#bookacti-availability_period_start-container .bookacti-duration-value', function( e ) {
+		if( parseInt( $j( this ).val() ) === 0 || $j( this ).val() === '' ) { 
+			$j( '#bookacti-past_events-container, #bookacti-past_events_bookable-container' ).show();
+		} else {
+			$j( '#bookacti-past_events-container, #bookacti-past_events_bookable-container' ).hide();
+		}
+	});
+	
+	
+	/**
+	 * Calendar field settings: Toggle the past events options - on change
+	 * @since 1.8.0
+	 */
+	$j( '#bookacti-form-field-dialog-calendar' ).on( 'change', 'input#bookacti-past_events', function( e ) {
+		if( $j( this ).is( ':checked' ) ) { 
+			$j( '#bookacti-past_events_bookable-container' ).show();
+		} else {
+			$j( '#bookacti-past_events_bookable-container' ).hide();
+		}
 	});
 	
 	
@@ -254,22 +322,6 @@ $j( document ).ready( function() {
 			var login_field_container = $j( '#bookacti-form-editor .bookacti-form-field-container.bookacti-form-field-type-login' );
 			bookacti_show_hide_register_fields( login_field_container );
 		}
-	});
-	
-	
-	/**
-	 * Toggle the redirect URL tables according to the currently selected form action
-	 * @since 1.7.0
-	 */
-	$j( '#bookacti-form-field-dialog-calendar' ).on( 'change', 'select#bookacti-form_action', function( e ){
-		// Show / hide the columns displayed in the "redirect URL" tables
-		$j( '.bookacti-activities-actions-options-table .bookacti-column-product, .bookacti-group-categories-actions-options-table .bookacti-column-product' ).hide();
-		if( $j( this ).val() === 'redirect_to_product_page' || $j( this ).val() === 'add_product_to_cart' ) {
-			$j( '.bookacti-activities-actions-options-table .bookacti-column-redirect_url, .bookacti-group-categories-actions-options-table .bookacti-column-redirect_url' ).hide();
-			$j( '.bookacti-activities-actions-options-table .bookacti-column-product, .bookacti-group-categories-actions-options-table .bookacti-column-product' ).show();
-		}
-		// Always hide categories table if no categories are selected
-		if( $j( 'select#bookacti-group_categories' ).val() === 'none' ) { $j( '.bookacti-group-categories-actions-options-table' ).hide(); }
 	});
 	
 	

@@ -42,6 +42,7 @@
 						"bookacti_messages_settings_calendar_title":{},
 						"bookacti_messages_settings_selected_event":{},
 						"bookacti_messages_settings_selected_events":{},
+						"bookacti_messages_settings_no_events":{},
 						"bookacti_messages_settings_avail":{},
 						"bookacti_messages_settings_avails":{},
 						"bookacti_messages_settings_booking_success":{},

@@ -160,6 +160,19 @@ $j( document ).ready( function() {
 	
 	
 	/**
+	 * Bookings page calendar settings: Toggle tooltip options - on change
+	 * @since 1.8.0
+	 */
+	$j( '#bookacti-bookings-calendar-settings-dialog' ).on( 'change', '#bookacti-tooltip_booking_list', function() { 
+		if( $j( this ).is( ':checked' ) ) { 
+			$j( '#bookacti-event-booking-list-columns-container' ).show();
+		} else {
+			$j( '#bookacti-event-booking-list-columns-container' ).hide();
+		}
+	});
+	
+	
+	/**
 	 * Filter the booking list according to filters
 	 * @since 1.8.0
 	 */

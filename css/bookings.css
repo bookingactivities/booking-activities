@@ -215,6 +215,13 @@ a.bookacti-booking-action					{ display: inline-block; word-spacing: 0; margin: 
 .wp-core-ui .button.bookacti-booking-group-action,
 .wp-core-ui .button.bookacti-booking-action	{ margin: 5px 0; vertical-align: middle; }
 
+.wp-core-ui .button.bookacti-booking-action.bookacti-delete-booking,
+.wp-core-ui .button.bookacti-booking-group-action.bookacti-delete-booking-group			{ color: #a00; border-color: #a00; }
+.wp-core-ui .button.bookacti-booking-action.bookacti-delete-booking:hover,
+.wp-core-ui .button.bookacti-booking-group-action.bookacti-delete-booking-group:hover	{ color: #dc3232; border-color: #dc3232; }
+.wp-core-ui .button.bookacti-booking-action.bookacti-delete-booking:focus,
+.wp-core-ui .button.bookacti-booking-group-action.bookacti-delete-booking-group:focus	{ border-color: #dc3232; color: #dc3232; box-shadow: 0 0 0 1px #dc3232; }
+
 .bookacti-booking-price-details-title { font-weight: 600; }
 
 
@@ -268,25 +275,27 @@ tr.bookacti-booking-list-selected-row								{ background-color: rgba( 65, 143, 
 	.bookacti-dialog .ui-widget-header .ui-state-default.bookacti-dialog-delete-button,
 	.bookacti-dialog .ui-widget-content .ui-state-default.bookacti-dialog-delete-button,
 	.bookacti-dialog .ui-state-default.bookacti-dialog-delete-button {
-		border: 1px solid #fbacac;
-		color: #a10808;
-		background: #fef1f1; /* Old browsers */
-		background: -moz-linear-gradient(top,  #fef1f1 0%, #fef1f1 50%, #feecec 51%, #fff5f5 100%); /* FF3.6-15 */
-		background: -webkit-linear-gradient(top,  #fef1f1 0%,#fef1f1 50%,#feecec 51%,#fff5f5 100%); /* Chrome10-25,Safari5.1-6 */
-		background: linear-gradient(to bottom,  #fef1f1 0%,#fef1f1 50%,#feecec 51%,#fff5f5 100%); /* W3C, IE10+, FF16+, Chrome26+, Opera12+, Safari7+ */
-		filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#fef1f1', endColorstr='#fff5f5',GradientType=0 ); /* IE6-9 */
+		border: 1px solid #a00;
+		color: #a00;
+		background: #fcf1f1;
 	}
 	
 	.bookacti-dialog .ui-widget-header .ui-state-hover.bookacti-dialog-delete-button,
 	.bookacti-dialog .ui-widget-content .ui-state-hover.bookacti-dialog-delete-button,
 	.bookacti-dialog .ui-state-hover.bookacti-dialog-delete-button {
-		border: 1px solid #f63c3c;
-		color: #a10808;
-		background: #fcd9d9; /* Old browsers */
-		background: -moz-linear-gradient(top,  #fcd9d9 0%, #fcd9d9 50%, #fdd3d3 51%, #ffdbdb 100%); /* FF3.6-15 */
-		background: -webkit-linear-gradient(top,  #fcd9d9 0%,#fcd9d9 50%,#fdd3d3 51%,#ffdbdb 100%); /* Chrome10-25,Safari5.1-6 */
-		background: linear-gradient(to bottom,  #fcd9d9 0%,#fcd9d9 50%,#fdd3d3 51%,#ffdbdb 100%); /* W3C, IE10+, FF16+, Chrome26+, Opera12+, Safari7+ */
-		filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#fcd9d9', endColorstr='#ffdbdb',GradientType=0 ); /* IE6-9 */
+		border: 1px solid #dc3232;
+		color: #dc3232;
+		background: #fcf1f1;
+	}
+	
+	.bookacti-dialog .ui-widget-header .ui-state-focus.bookacti-dialog-delete-button,
+	.bookacti-dialog .ui-widget-content .ui-state-focus.bookacti-dialog-delete-button,
+	.bookacti-dialog .ui-state-focus.bookacti-dialog-delete-button { 
+		border-color: #dc3232; 
+		color: #dc3232; 
+		box-shadow: 0 0 0 1px #dc3232;
+		outline: 2px solid transparent;
+		outline-offset: 0;
 	}
 	
 	

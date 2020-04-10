@@ -64,18 +64,17 @@ body.booking-activities_page_bookacti_forms label[for='bookacti_form_publish-hid
 
 /* Dialogs */
 .bookacti-form-dialog form div > fieldset > label:not(.bookacti-onoffswitch-label):not(.bookacti-duration-field-label),
-.bookacti-form-dialog form div > label:not(.bookacti-onoffswitch-label):not(.bookacti-duration-field-label)				{ display: inline-block; width: 130px; max-width: 130px; font-family: Arial,Helvetica,sans-serif; font-weight: bold; }
-.bookacti-form-dialog form div > fieldset > label:not(.bookacti-onoffswitch-label):not(.bookacti-duration-field-label)	{ width: 130px; }
+.bookacti-form-dialog form div > label:not(.bookacti-onoffswitch-label):not(.bookacti-duration-field-label)	{ display: inline-block; width: 130px; max-width: 130px; font-family: Arial,Helvetica,sans-serif; font-weight: bold; }
 .bookacti-form-dialog form div > input[type='checkbox'] + label,
 .bookacti-form-dialog form div > fieldset > input[type='checkbox'] + label,
-.bookacti-form-dialog form div > label.bookacti-fullwidth-label						{ display: block; width: auto; max-width: none; }
+.bookacti-form-dialog form div > label.bookacti-fullwidth-label:not(.bookacti-onoffswitch-label):not(.bookacti-duration-field-label){ display: block; width: auto; max-width: none; }
 .bookacti-form-dialog form > div,
 .bookacti-form-dialog form fieldset > div			{ margin-bottom: 10px; }
 .bookacti-form-dialog form > div:last-child,
 .bookacti-form-dialog form fieldset > div:last-child{ margin-bottom: 0; }
 
 .bookacti-activities-actions-options-table,
-.bookacti-group-categories-actions-options-table		{ display: none; }
+.bookacti-group-categories-actions-options-table		{ display: none; max-height: 200px; overflow-y: auto; }
 .bookacti-activities-actions-options-table h4,
 .bookacti-group-categories-actions-options-table h4		{ text-decoration: underline; margin-bottom: 0.75em; }
 
@@ -133,6 +132,8 @@ body.booking-activities_page_bookacti_forms label[for='bookacti_form_publish-hid
 
 .bookacti-form-field-name-submit		{ text-align: center; }
 .bookacti-form-field-name-submit input	{ cursor: pointer; }
+
+.bookacti-no-events { width: fit-content;margin: auto; font-style: italic; }
 
 
 /***** BOOKING SYSTEM *****/
