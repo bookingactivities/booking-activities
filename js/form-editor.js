@@ -12,9 +12,13 @@ $j( document ).ready( function() {
 	// Init form editor actions
 	bookacti_init_form_editor_actions();
 	
-	// Minimize / Maximize field
+	/**
+	 * Expand / Collapse form editor field
+	 * @version 1.8.0
+	 * @param {Event} e
+	 */
 	$j( '#bookacti-form-editor' ).on( 'click', '.bookacti-form-editor-field-header', function( e ) {
-		if( $j( e.target ).hasClass( 'bookacti-form-editor-field-action' ) ) { return; }
+		if( $j( e.target ).closest( '.bookacti-form-editor-field-action' ).length ) { return; }
 	
 		var icon = $j( this ).find( '.bookacti-field-toggle' );
 		icon.toggleClass( 'dashicons-arrow-up dashicons-arrow-down' );
@@ -27,7 +31,10 @@ $j( document ).ready( function() {
 		}
     });
 	
-	// Sort form fields in editor
+	
+	/**
+	 * Sort form fields in editor by drag n' drop
+	 */
 	$j( '#bookacti-form-editor' ).sortable( { 
 		items: '.bookacti-form-editor-field:not(.ui-state-disabled):not(.bookacti-form-editor-promo-field)',
 		handle: '.bookacti-form-editor-field-title',
@@ -36,7 +43,11 @@ $j( document ).ready( function() {
 	});
 	$j( '#bookacti-form-editor' ).disableSelection();
 	
-	// Save a form (create or update)
+	
+	/**
+	 * Save a form (create or update) - on submit
+	 * @param {Event} e
+	 */
 	$j( 'form#bookacti-form-editor-page-form' ).on( 'submit', function( e ) {
 		if( ! $j( 'form#bookacti-form-editor-page-form' ).length ) { return; }
 		e.preventDefault();
@@ -60,7 +71,7 @@ $j( document ).ready( function() {
 	 * @since 1.7.0
 	 * @version 1.7.19
 	 */
-	$j( '#bookacti-form-field-dialog-calendar' ).on( 'change', 'select#bookacti-calendars, select#bookacti-activities', function( e ){
+	$j( '#bookacti-form-field-dialog-calendar' ).on( 'change', 'select#bookacti-calendars, select#bookacti-activities', function(){
 		var template_ids	= $j( '#bookacti-calendars' ).val();
 		var options			= $j( '[data-bookacti-show-if-templates]' );
 		bookacti_show_hide_template_related_options( template_ids, options ); 
@@ -135,7 +146,7 @@ $j( document ).ready( function() {
 	 * @since 1.7.0
 	 * @version 1.7.19
 	 */
-	$j( '#bookacti-form-field-dialog-calendar' ).on( 'change', 'select#bookacti-group_categories', function( e ){
+	$j( '#bookacti-form-field-dialog-calendar' ).on( 'change', 'select#bookacti-group_categories', function(){
 		var group_categories = $j( '#bookacti-group_categories' ).val();
 		
 		// If no group category is selected, hide the group categories actions table
@@ -216,7 +227,7 @@ $j( document ).ready( function() {
 	 * Calendar field settings: Toggle the groups options - on change
 	 * @since 1.8.0
 	 */
-	$j( '#bookacti-form-field-dialog-calendar' ).on( 'change', 'select#bookacti-group_categories', function( e ) {
+	$j( '#bookacti-form-field-dialog-calendar' ).on( 'change', 'select#bookacti-group_categories', function() {
 		if( $j( this ).val() === 'none' ) { 
 			$j( '#bookacti-groups_only-container, #bookacti-groups_single_events-container' ).hide();
 		} else {
@@ -229,7 +240,7 @@ $j( document ).ready( function() {
 	 * Calendar field settings: Toggle the booked events options - on change
 	 * @since 1.8.0
 	 */
-	$j( '#bookacti-form-field-dialog-calendar' ).on( 'change', 'input#bookacti-bookings_only', function( e ) {
+	$j( '#bookacti-form-field-dialog-calendar' ).on( 'change', 'input#bookacti-bookings_only', function() {
 		if( $j( this ).is( ':checked' ) ) { 
 			$j( '#bookacti-status-container, #bookacti-user_id-container' ).show();
 		} else {
@@ -243,7 +254,7 @@ $j( document ).ready( function() {
 	 * @since 1.7.0
 	 * @version 1.7.10
 	 */
-	$j( '#bookacti-form-field-dialog-calendar' ).on( 'change', 'select#bookacti-form_action', function( e ) {
+	$j( '#bookacti-form-field-dialog-calendar' ).on( 'change', 'select#bookacti-form_action', function() {
 		// Show / hide the columns displayed in the "redirect URL" tables
 		$j( '.bookacti-activities-actions-options-table, .bookacti-group-categories-actions-options-table' ).show();
 		if( $j( this ).val() === 'default' ) {
@@ -260,7 +271,7 @@ $j( document ).ready( function() {
 	 * Calendar field settings: Toggle the WC actions fields - on change
 	 * @since 1.7.0
 	 */
-	$j( '#bookacti-form-field-dialog-calendar' ).on( 'change', 'select#bookacti-form_action', function( e ){
+	$j( '#bookacti-form-field-dialog-calendar' ).on( 'change', 'select#bookacti-form_action', function() {
 		// Show / hide the columns displayed in the "redirect URL" tables
 		$j( '.bookacti-activities-actions-options-table .bookacti-column-product, .bookacti-group-categories-actions-options-table .bookacti-column-product' ).hide();
 		if( $j( this ).val() === 'redirect_to_product_page' || $j( this ).val() === 'add_product_to_cart' ) {
@@ -276,7 +287,7 @@ $j( document ).ready( function() {
 	 * Calendar field settings: Toggle the availability period options - on change
 	 * @since 1.8.0
 	 */
-	$j( '#bookacti-form-field-dialog-calendar' ).on( 'change', '#bookacti-availability_period_start-container .bookacti-duration-value', function( e ) {
+	$j( '#bookacti-form-field-dialog-calendar' ).on( 'change', '#bookacti-availability_period_start-container .bookacti-duration-value', function() {
 		if( parseInt( $j( this ).val() ) === 0 || $j( this ).val() === '' ) { 
 			$j( '#bookacti-past_events-container, #bookacti-past_events_bookable-container' ).show();
 		} else {
@@ -289,7 +300,7 @@ $j( document ).ready( function() {
 	 * Calendar field settings: Toggle the past events options - on change
 	 * @since 1.8.0
 	 */
-	$j( '#bookacti-form-field-dialog-calendar' ).on( 'change', 'input#bookacti-past_events', function( e ) {
+	$j( '#bookacti-form-field-dialog-calendar' ).on( 'change', 'input#bookacti-past_events', function() {
 		if( $j( this ).is( ':checked' ) ) { 
 			$j( '#bookacti-past_events_bookable-container' ).show();
 		} else {
@@ -302,6 +313,10 @@ $j( document ).ready( function() {
 	 * Rerender field HTML after settings update
 	 * @since 1.5.0
 	 * @version 1.7.17
+	 * @param {Event} e
+	 * @param {Int} field_id
+	 * @param {String} field_name
+	 * @param {Object} response
 	 */
 	$j( '#bookacti-form-editor' ).on( 'bookacti_field_updated bookacti_field_reset', function( e, field_id, field_name, response ){
 		if( field_name === 'calendar' ) {
@@ -327,6 +342,7 @@ $j( document ).ready( function() {
 	
 	/**
 	 * Confirm before leaving if the form isn't published
+	 * @param {Event} e
 	 */
 	$j( window ).on( 'beforeunload', function( e ){
 		if( $j( '#major-publishing-actions' ).data( 'popup' ) ) { return true; } // Confirm before redirect

@@ -198,8 +198,10 @@ function bookacti_display_form( $form_id, $instance_id = '', $context = 'display
 	$form = bookacti_get_form_data( $form_id );
 	if( ! $form ) { return ''; }
 	
+	$form_action = 'bookactiSubmitBookingForm';
+	
 	// Set the form unique CSS selector
-	$form_css_id = ! empty( $form[ 'id' ] ) ? esc_attr( $form[ 'id' ] ) : ( $instance_id ? esc_attr( $instance_id ) : esc_attr( 'form-' . $form[ 'form_id' ] . '-' . rand() ) );
+	$form_css_id = ! empty( $form[ 'id' ] ) ? esc_attr( $form[ 'id' ] ) : ( $instance_id ? esc_attr( $instance_id ) : esc_attr( ( $context === 'login_form' ? 'login-form-' : 'form-' ) . $form[ 'form_id' ] . '-' . rand() ) );
 	if( ! $instance_id ) { $instance_id = $form_css_id; }
 	
 	$fields = bookacti_get_form_fields_data( $form_id );
@@ -208,9 +210,31 @@ function bookacti_display_form( $form_id, $instance_id = '', $context = 'display
 	$displayed_form_fields = apply_filters( 'bookacti_displayed_form_fields', $ordered_form_fields, $form, $instance_id, $context );
 	
 	// Build array of field types
-	$fields_types = array();
-	foreach( $displayed_form_fields as $field ) { if( ! empty( $field[ 'type' ] ) ) { $fields_types[] = $field[ 'type' ]; } }
-	$is_form = in_array( 'submit', $fields_types, true ) ? 1 : 0;
+	$is_form = 0;
+	$login_field = array();
+	$calendar_field = array();
+	foreach( $displayed_form_fields as $field ) { 
+		if( empty( $field[ 'type' ] ) ) { continue; }
+			 if( $field[ 'type' ] === 'calendar' )	{ $calendar_field = $field; }
+		else if( $field[ 'type' ] === 'login' )		{ $login_field = $field; }
+		else if( $field[ 'type' ] === 'submit' )	{ $is_form = 1; }
+	}
+	
+	// Show only the login field if the user is not logged in
+	if( ! is_user_logged_in() && ( ! empty( $login_field[ 'login_first' ] ) || $context === 'login_form' ) ) {
+		// Force some values
+		$login_field[ 'login_first' ] = 1;
+		$login_field[ 'login_button' ] = 1;
+		$login_field[ 'displayed_fields' ][ 'no_account' ] = 0;
+		$displayed_form_fields = array( $login_field );
+		$form_action = 'bookactiSubmitLoginForm';
+		$is_form = 1;
+	}
+	
+	// Change the form action according to the form_action option of calendar field
+	else if( ! empty( $calendar_field[ 'form_action' ] ) ) {
+		if( $calendar_field[ 'form_action' ] === 'redirect_to_url' ) { $form_action = ''; }
+	}
 	
 	ob_start();
 	
@@ -239,7 +263,7 @@ function bookacti_display_form( $form_id, $instance_id = '', $context = 'display
 		<div <?php echo $form_attributes_str; ?>>
 	<?php } ?>
 			<input type='hidden' name='form_id' value='<?php echo $form_id; ?>'/>
-			<input type='hidden' name='action' value='<?php echo apply_filters( 'bookacti_form_action_field_value', 'bookactiSubmitBookingForm', $form, $instance_id, $context, $displayed_form_fields ); ?>'/>
+			<input type='hidden' name='action' value='<?php echo apply_filters( 'bookacti_form_action_field_value', $form_action, $form, $instance_id, $context, $displayed_form_fields ); ?>'/>
 			<input type='hidden' name='nonce_booking_form' value='<?php echo wp_create_nonce( 'bookacti_booking_form' ); ?>'/>
 		<?php
 			do_action( 'bookacti_form_before', $form, $instance_id, $context, $displayed_form_fields );
@@ -525,7 +549,7 @@ function bookacti_get_default_form_fields_meta( $field_name = '' ) {
 	$register_fields	= bookacti_get_register_fields_default_data();
 	$register_defaults	= array( 'displayed' => array(), 'required' => array() );
 	foreach( $register_fields as $register_field_name => $register_field ) {
-		$register_defaults[ 'displayed' ][ $register_field_name ]	= ! empty( $register_field[ 'displayed' ] )	? $register_field[ 'displayed' ] : 1;
+		$register_defaults[ 'displayed' ][ $register_field_name ]	= ! empty( $register_field[ 'displayed' ] )	? $register_field[ 'displayed' ] : 0;
 		$register_defaults[ 'required' ][ $register_field_name ]	= ! empty( $register_field[ 'required' ] )	? $register_field[ 'required' ] : 0;
 	}
 	
@@ -533,16 +557,16 @@ function bookacti_get_default_form_fields_meta( $field_name = '' ) {
 	$login_fields = bookacti_get_login_fields_default_data();
 	$login_defaults	= array( 'label' => array(), 'placeholder' => array(), 'tip' => array() );
 	foreach( $login_fields as $login_field_name => $login_field ) {
-		$login_defaults[ 'displayed' ][ $login_field_name ]	= ! empty( $login_field[ 'displayed' ] )? $login_field[ 'displayed' ] : '';
-		$login_defaults[ 'required' ][ $login_field_name ]	= ! empty( $login_field[ 'required' ] )	? $login_field[ 'required' ] : '';
+		$login_defaults[ 'displayed' ][ $login_field_name ]	= ! empty( $login_field[ 'displayed' ] )? $login_field[ 'displayed' ] : 0;
+		$login_defaults[ 'required' ][ $login_field_name ]	= ! empty( $login_field[ 'required' ] )	? $login_field[ 'required' ] : 0;
 	}
 	
 	// Add login type fields default
 	$login_types			= bookacti_get_login_type_field_default_options();
 	$login_type_defaults	= array( 'displayed' => array(), 'required' => array() );
 	foreach( $login_types as $login_type_name => $login_type ) {
-		$login_type_defaults[ 'displayed' ][ $login_type_name ]	= ! empty( $login_type[ 'displayed' ] )	? $login_type[ 'displayed' ] : '';
-		$login_type_defaults[ 'required' ][ $login_type_name ]	= ! empty( $login_type[ 'required' ] )	? $login_type[ 'required' ] : '';
+		$login_type_defaults[ 'displayed' ][ $login_type_name ]	= ! empty( $login_type[ 'displayed' ] )	? $login_type[ 'displayed' ] : 0;
+		$login_type_defaults[ 'required' ][ $login_type_name ]	= ! empty( $login_type[ 'required' ] )	? $login_type[ 'required' ] : 0;
 	}
 	
 	$fields_meta = apply_filters( 'bookacti_default_form_fields_meta', array(
@@ -574,6 +598,10 @@ function bookacti_get_default_form_fields_meta( $field_name = '' ) {
 		),
 		'login'		=> array(
 			'automatic_login'			=> 1,
+			'login_button'				=> 1,
+			'login_first'				=> 0,
+			'login_button_label'		=> esc_html__( 'Log in', 'booking-activities' ),
+			'register_button_label'		=> esc_html__( 'Register', 'booking-activities' ),
 			'min_password_strength'		=> 4,
 			'generate_password'			=> 0,
 			'send_new_account_email'	=> 1,
@@ -687,9 +715,10 @@ function bookacti_format_form_field_data( $raw_field_data ) {
 	} else if( $raw_field_data[ 'name' ] === 'login' ) {
 		// Format meta values
 		$keys_by_type = array( 
-			'bool'		=> array( 'automatic_login', 'generate_password', 'send_new_account_email' ),
+			'bool'		=> array( 'automatic_login', 'generate_password', 'send_new_account_email', 'login_first', 'login_button' ),
 			'int'		=> array( 'min_password_strength' ),
-			'str_id'	=> array( 'new_user_role' )
+			'str_id'	=> array( 'new_user_role' ),
+			'str'		=> array( 'login_button_label', 'register_button_label' )
 		);
 		$field_meta = bookacti_sanitize_values( $default_meta, $raw_field_data, $keys_by_type, $field_meta );
 		
@@ -835,9 +864,10 @@ function bookacti_sanitize_form_field_data( $raw_field_data ) {
 	} else if( $raw_field_data[ 'name' ] === 'login' ) {
 		// Sanitize meta values
 		$keys_by_type = array( 
-			'bool'		=> array( 'automatic_login', 'generate_password', 'send_new_account_email' ),
+			'bool'		=> array( 'automatic_login', 'generate_password', 'send_new_account_email', 'login_first', 'login_button' ),
 			'int'		=> array( 'min_password_strength' ),
-			'str_id'	=> array( 'new_user_role' )
+			'str_id'	=> array( 'new_user_role' ),
+			'str'		=> array( 'login_button_label', 'register_button_label' )
 		);
 		$field_meta = bookacti_sanitize_values( $default_meta, $raw_field_data, $keys_by_type, $field_meta );
 		
@@ -1098,13 +1128,12 @@ function bookacti_display_form_field_for_editor( $field, $echo = true ) {
 /**
  * Validate register fields
  * @since 1.5.0
- * @version 1.6.0
+ * @version 1.8.0
  * @param array $login_values
  * @param array $login_data
  * @return array
  */
 function bookacti_validate_registration( $login_values, $login_data ) {
-		
 	$return_array = array( 'messages' => array() );
 
 	// Check email
@@ -1126,7 +1155,7 @@ function bookacti_validate_registration( $login_values, $login_data ) {
 	foreach( $login_data[ 'required_fields' ] as $field_name => $is_required ) {
 		if( $is_required && empty( $login_values[ $field_name ] ) ) {
 			if( $field_name === 'password' && ! empty( $login_values[ 'login_type' ] ) && $login_values[ 'login_type' ] === 'new_account' && $login_data[ 'generate_password' ] ) { continue; }
-			$field_label = ! empty( $login_data[ 'label' ][ $field_name ] ) ? $login_data[ 'label' ][ $field_name ] : $field_name;
+			$field_label = ! empty( $login_data[ 'label' ][ $field_name ] ) ? apply_filters( 'bookacti_translate_text', $login_data[ 'label' ][ $field_name ] ) : $field_name;
 			/* translators: %s is the field name. */
 			$return_array[ 'messages' ][ 'missing_' . $field_name ] = sprintf( esc_html__( 'The field "%s" is required.', 'booking-activities' ), $field_label );
 		}
@@ -1716,6 +1745,32 @@ function bookacti_display_form_integration_tuto_meta_box( $form ) {
 	</div>
 <?php
 	do_action( 'bookacti_after_form_integration_tuto', $form );
+}
+
+
+/**
+ * Display the calendar field help content
+ * @since 1.8.0
+ * @return string
+ */
+function bookacti_display_calendar_field_help() {
+	ob_start();
+	esc_html_e( 'Click on the problem you are experiencing to try to fix it:', 'booking-activities' );
+	?>
+	<ul class='bookacti-help-list'>
+		<li><a href='https://booking-activities.fr/en/faq/events-do-not-appear-on-the-calendar/' target='_blank'><?php esc_html_e( 'The events do not appear on the calendar', 'booking-activities' ); ?></a><br/>
+		<li><a href='https://booking-activities.fr/en/faq/calendar-not-showing/' target='_blank'><?php esc_html_e( 'The calendar doesn\'t show up', 'booking-activities' ); ?></a><br/>
+		<li><a href='https://booking-activities.fr/en/faq/booking-activities-doesnt-work-as-it-should/' target='_blank'><?php esc_html_e( 'Booking Activities doesn\'t work as it should', 'booking-activities' ); ?></a>
+		<?php do_action( 'bookacti_calendar_field_help_after' ); ?>
+	</ul>
+	<?php esc_html_e( 'This documentation can help you too:', 'booking-activities' ); ?>
+	<ul class='bookacti-help-list'>
+		<li><a href='https://booking-activities.fr/en/documentation/faq/' target='_blank'><?php esc_html_e( 'See the FAQ', 'booking-activities' ); ?></a>
+		<li><a href='https://booking-activities.fr/en/documentation/user-documentation/' target='_blank'><?php esc_html_e( 'See the documentation', 'booking-activities' ); ?></a>
+		<?php do_action( 'bookacti_global_help_after' ); ?>
+	</ul>
+	<?php
+	return ob_get_clean();
 }
 
 

@@ -254,16 +254,24 @@ add_action( 'woocommerce_before_add_to_cart_button', 'bookacti_add_booking_syste
 /**
  * Remove booking form action for WC use
  * @since 1.8.0
- * @param string $action
+ * @param string $form_action
  * @param array $form
  * @param string $instance_id
  * @param string $context
  * @param array $displayed_form_fields
  * @return string
  */
-function bookacti_wc_form_action_field_value( $action, $form, $instance_id, $context, $displayed_form_fields ) {
-	if( $context === 'wc_product_init' || $context === 'wc_switch_variation' ) { $action = ''; }
-	return $action;
+function bookacti_wc_form_action_field_value( $form_action, $form, $instance_id, $context, $displayed_form_fields ) {
+	if( $context === 'wc_product_init' || $context === 'wc_switch_variation' ) { $form_action = ''; }
+	else {
+		$calendar_field = array();
+		foreach( $displayed_form_fields as $field ) { if( ! empty( $field[ 'type' ] ) && $field[ 'type' ] === 'calendar' ) { $calendar_field = $field; } }
+		if( ! empty( $calendar_field[ 'form_action' ] ) ) {
+			if( $calendar_field[ 'form_action' ] === 'redirect_to_product_page' ) { $form_action = ''; }
+			else if( $calendar_field[ 'form_action' ] === 'add_product_to_cart' ) { $form_action = 'bookactiAddBoundProductToCart'; }
+		}
+	}
+	return $form_action;
 }
 add_filter( 'bookacti_form_action_field_value', 'bookacti_wc_form_action_field_value', 10, 5 );
 

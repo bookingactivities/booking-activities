@@ -218,6 +218,8 @@ add_filter( 'bookacti_notifications_tags', 'bookacti_wc_notifications_tags', 15,
  * @return array
  */
 function bookacti_wc_notifications_tags_values( $tags, $booking, $booking_type, $notification_id, $locale ) {
+	if( ! $booking ) { return $tags; }
+	
 	$item = $booking_type === 'group' ? bookacti_get_order_item_by_booking_group_id( $booking ) : bookacti_get_order_item_by_booking_id( $booking );
 	
 	// Use WC user data if the booking was made with WC, or if we only have these data

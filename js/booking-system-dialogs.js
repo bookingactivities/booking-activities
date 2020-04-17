@@ -1,10 +1,16 @@
 $j( document ).ready( function() {
-	// Make dialogs close when the user click outside
+	/**
+	 * Close dialogs when the user clicks outside
+	 */
 	$j( 'body' ).on( 'click', '.ui-widget-overlay', function (){
 		$j( 'div:ui-dialog:visible' ).dialog( 'close' );
 	});
 	
-	// Press ENTER to bring focus on OK button
+	
+	/**
+	 * Press ENTER to bring focus on dialog OK button
+	 * @param {Event} e
+	 */
 	$j( 'body' ).on( 'keydown', '.bookacti-booking-system-dialog', function( e ) {
 		if( ! $j( 'textarea' ).is( ':focus' ) && e.keyCode == $j.ui.keyCode.ENTER ) {
 			$j( this ).parent().find( '.ui-dialog-buttonpane button:first' ).focus(); 
@@ -12,7 +18,13 @@ $j( document ).ready( function() {
 		}
 	});
 	
-	// Show / Hide group events list
+	
+	/**
+	 * Toggle group events list
+	 * @param {Event} e
+	 * @param {Int} group_id
+	 * @param {object} event
+	 */
 	$j( 'body' ).on( 'bookacti_group_of_events_preview', '.bookacti-booking-system', function( e, group_id, event ) {
 		var booking_system		= $j( this );
 		var booking_system_id	= $j( this ).attr( 'id' );
@@ -34,7 +46,10 @@ $j( document ).ready( function() {
 
 
 // INITIALIZATION
-// Initialize bookings dialogs
+
+/**
+ * Initialize bookings dialogs
+ */
 function bookacti_init_booking_system_dialogs() {
 	// Common param
 	$j( '.bookacti-booking-system-dialog' ).dialog({ 
@@ -55,7 +70,7 @@ function bookacti_init_booking_system_dialogs() {
 /**
  * Choose a group of events dialog
  * @version 1.8.0
- * @param {dom_element} booking_system
+ * @param {HTMLElement} booking_system
  * @param {array} group_ids
  * @param {object} event
  */
@@ -152,7 +167,7 @@ function bookacti_dialog_choose_group_of_events( booking_system, group_ids, even
 			'type': 'radio',
 			'name': 'group_of_events',
 			'value': group_id,
-			'disabled': ! bookings_only && ! is_available,
+			'disabled': ! bookings_only && ! is_available
 		});
 		
 		var single_label = {

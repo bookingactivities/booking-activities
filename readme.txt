@@ -86,7 +86,7 @@ Try this reservation tool live on the [demo website](http://demo.booking-activit
 
 **Translation ready**
 
-* **Multilingual support** with ★ QTranslateX (free plugin)
+* **Multilingual support** with ★ [QTranslate-XT](https://github.com/qtranslate/qtranslate-xt) (free plugin)
 * ★ Auto-detect and switch languages, date/time format, first day of the week...
 * Customize most frontend messages directly in the settings
 * Fully translated in English and French. You can also help us [translating Booking Activities](https://translate.wordpress.org/projects/wp-plugins/booking-activities) in your language.
@@ -321,7 +321,7 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 == Changelog ==
 
 = 1.8.0 =
-* Breaking change - Drop backward compatibility and support with Booking Activities < 1.5 (shortcodes and WC integration)
+* Breaking change - Drop backward compatibility and support with Booking Activities forms made before 1.5 (shortcodes and WC integration)
 * Breaking change - Drop backward compatibility and support with WooCommerce < 3.0
 * Feature - Display a preview of the bookings in a tooltip when you mouseover an event in the backend Bookings page
 * Feature - Allow to change the calendar settings in the backend Bookings page (saved per user)
@@ -329,6 +329,9 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 * Feature - iCal - Export / Sync bookings (just like CSV export)
 * Feature - iCal - Customize the events title and description with event data
 * Feature - iCal - Display the booking list in the events description
+* Feature - Allow to login / register before booking with a distinct button (in User data fields settings, Login tab)
+* Feature - Add the [bookingactivities_list login_form="desired_form_id"] login_form attribute to display a login form instead of the booking list if the user is not logged in
+* Feature - Add the [bookingactivities_login form="desired_form_id"] shortcode to display a login form if the user is not logged in
 * Tweak - The Events will be bookable in / for up to options can now be set in days, hours and minutes
 * Tweak - The Booking changes delay option can now be set in days, hours and minutes
 * Tweak - The backend booking list is now AJAXified (optional, saved per user)
@@ -339,7 +342,8 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 * Tweak - Add a link to the booking admin page on the booking IDs of booking lists (for administrators only)
 * Tweak - Add columns in user booking list: customer_roles
 * Tweak - The reschedule booking system now uses all the possible initial booking form calendar field settings
-* Tweak - A message is be displayed instead of the calendar if no events are available (only if the Trim option is on, in Calendar fields settings)
+* Tweak - A message is displayed instead of the calendar if no events are available (only if the Trim option is active, in Calendar fields settings)
+* Tweak - Add help sections in the form editor, and in the notifications settings
 * Fix - Redirect URL when booking on event click didn't work
 * Fix - Add compulsory hidden quantity field when booking on event click
 * Fix - All grouped bookings were displayed in each rows of the frontend booking list when group_by = none
@@ -355,6 +359,7 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 * Fix - Possible JS error when loading a booking system with preselected events
 * Fix - Error when submitting WC add to cart form on event click
 * Fix - WC cart items may not be removed on expiration depending on your server timezone
+* Fix - WC order status turned to completed / cancelled when one of its booking status changed, instead of all
 * Fix - PHP notices in booking form editor after creating a booking form
 * Fix - Cannot click on unavailable events on bookings page
 * Optimization - JS variables passed via PHP are now loaded only once, have been significantly reduced, and are filtered for the frontend

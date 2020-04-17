@@ -408,6 +408,7 @@ foreach( $fields_data as $field_name => $field_data ) {
 		/**
 		 * Display the content of the "Fields" tab of the "Login" dialog
 		 * @since 1.6.0
+		 * @version 1.8.0
 		 * @param array $params
 		 */
 		function bookacti_fill_login_dialog_fields_tab( $params ) {
@@ -492,7 +493,8 @@ foreach( $fields_data as $field_name => $field_data ) {
 				</div>
 			</fieldset>
 		<?php 
-			$register_fields = apply_filters( 'bookacti_login_dialog_register_fields', bookacti_get_register_fields_default_data(), $params );
+			$register_fields_defaults = bookacti_get_register_fields_default_data();
+			$register_fields = apply_filters( 'bookacti_login_dialog_register_fields', $register_fields_defaults, $params );
 			foreach( $register_fields as $register_field_name => $register_field ) {
 		?>		
 				<fieldset>
@@ -555,6 +557,7 @@ foreach( $fields_data as $field_name => $field_data ) {
 		/**
 		 * Get the login types edit fields HTML
 		 * @since 1.6.0
+		 * @version 1.8.0
 		 * @param array $keys
 		 * @return string
 		 */
@@ -586,7 +589,7 @@ foreach( $fields_data as $field_name => $field_data ) {
 						?>
 					</div>
 					<div>
-						<label for='bookacti-new_account-label'><?php esc_html_e( 'Label', 'booking-activities' ); ?></label>
+						<label for='bookacti-label-<?php echo $login_type_name; ?>'><?php esc_html_e( 'Label', 'booking-activities' ); ?></label>
 						<?php 
 							$args = array(
 								'type'	=> 'text',
@@ -598,7 +601,7 @@ foreach( $fields_data as $field_name => $field_data ) {
 						?>
 					</div>
 					<div class='bookacti-hidden-field' >
-						<label for='bookacti-new_account-tip'><?php esc_html_e( 'Tooltip', 'booking-activities' ); ?></label>
+						<label for='bookacti-tip-<?php echo $login_type_name; ?>'><?php esc_html_e( 'Tooltip', 'booking-activities' ); ?></label>
 						<?php 
 							$args = array(
 								'type'	=> 'text',
@@ -619,7 +622,7 @@ foreach( $fields_data as $field_name => $field_data ) {
 		/**
 		 * Display the content of the "Login" tab of the "Login" dialog
 		 * @since 1.5.0
-		 * @version 1.6.0
+		 * @version 1.8.0
 		 * @param array $params
 		 */
 		function bookacti_fill_login_dialog_login_tab( $params ) {
@@ -663,6 +666,57 @@ foreach( $fields_data as $field_name => $field_data ) {
 							'name'	=> 'tip[forgotten_password]',
 							'id'	=> 'bookacti-forgotten_password-tip',
 							'tip'	=> esc_html__( 'Text displayed in the tooltip next to the field.', 'booking-activities' )
+						);
+						bookacti_display_field( $args );
+					?>
+				</div>
+			</fieldset>
+			<fieldset>
+				<legend><?php esc_html_e( 'Submit button', 'booking-activities' ); ?></legend>
+				<div>
+					<label for='bookacti-login_button_displayed'><?php esc_html_e( 'Displayed', 'booking-activities' ); ?></label>
+					<?php 
+						$args = array(
+							'type'	=> 'checkbox',
+							'name'	=> 'login_button',
+							'id'	=> 'bookacti-login_button_displayed',
+							'tip'	=> esc_html__( 'If you display the login button, the users will be able to log in / register before they submit the booking form.', 'booking-activities' )
+						);
+						bookacti_display_field( $args );
+					?>
+				</div>
+				<div>
+					<label for='bookacti-login_button_label'><?php echo esc_html__( 'Label', 'booking-activities' ) . ' (' . esc_html__( 'Login', 'booking-activities' ) . ')'; ?></label>
+					<?php 
+						$args = array(
+							'type'	=> 'text',
+							'name'	=> 'login_button_label',
+							'id'	=> 'bookacti-login_button_label',
+							'tip'	=> esc_html__( 'Login button label.', 'booking-activities' )
+						);
+						bookacti_display_field( $args );
+					?>
+				</div>
+				<div>
+					<label for='bookacti-register_button_label'><?php echo esc_html__( 'Label', 'booking-activities' ) . ' (' . esc_html__( 'Registration', 'booking-activities' ) . ')'; ?></label>
+					<?php 
+						$args = array(
+							'type'	=> 'text',
+							'name'	=> 'register_button_label',
+							'id'	=> 'bookacti-register_button_label',
+							'tip'	=> esc_html__( 'Register button label.', 'booking-activities' )
+						);
+						bookacti_display_field( $args );
+					?>
+				</div>
+				<div>
+					<label for='bookacti-login_first'><?php esc_html_e( 'Users must log in first', 'booking-activities' ); ?></label>
+					<?php 
+						$args = array(
+							'type'	=> 'checkbox',
+							'name'	=> 'login_first',
+							'id'	=> 'bookacti-login_first',
+							'tip'	=> esc_html__( 'Only the login form will be displayed if the user is not logged in.', 'booking-activities' )
 						);
 						bookacti_display_field( $args );
 					?>
@@ -1025,6 +1079,10 @@ foreach( $fields_data as $field_name => $field_data ) {
 			</p>
 		</div>
 	</form>
+</div>
+
+<div id='bookacti-calendar-field-help-dialog' class='bookacti-backend-dialog bookacti-form-dialog' style='display:none;' title='<?php esc_attr_e( 'Need help?', 'booking-activities' ); ?>'>
+	<?php echo bookacti_display_calendar_field_help(); ?>
 </div>
 
 <?php

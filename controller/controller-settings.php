@@ -218,16 +218,15 @@ function bookacti_init_settings() {
 		'bookacti_licenses_settings'
 	);
 	
-	
-	do_action( 'bookacti_add_settings' );
-	
-	
 	register_setting( 'bookacti_general_settings',			'bookacti_general_settings' );
 	register_setting( 'bookacti_cancellation_settings',		'bookacti_cancellation_settings' );
 	register_setting( 'bookacti_notifications_settings',	'bookacti_notifications_settings' );
 	register_setting( 'bookacti_messages_settings',			'bookacti_messages_settings' );
 	register_setting( 'bookacti_system_settings',			'bookacti_system_settings' );
 	register_setting( 'bookacti_licenses_settings',			'bookacti_licenses_settings' );
+		
+	/* Allow plugins to add settings and sections */
+	do_action( 'bookacti_add_settings' );
 }
 add_action( 'admin_init', 'bookacti_init_settings' );
 

@@ -1,7 +1,7 @@
 /**
  * Retrieve the events to display on the booking system
  * @version 1.8.0
- * @param {dom_element} booking_system
+ * @param {HTMLElement} booking_system
  * @param {object} interval
  */
 function bookacti_fetch_events( booking_system, interval ) {
@@ -73,7 +73,7 @@ function bookacti_fetch_events( booking_system, interval ) {
 /**
  * Reload a booking system
  * @version 1.8.0
- * @param {dom_element} booking_system
+ * @param {HTMLElement} booking_system
  * @param {boolean} keep_picked_events
  */
 function bookacti_reload_booking_system( booking_system, keep_picked_events ) {
@@ -155,7 +155,7 @@ function bookacti_reload_booking_system( booking_system, keep_picked_events ) {
 /**
  * Display events of a specific interval
  * @version 1.8.0
- * @param {dom_element} booking_system
+ * @param {HTMLElement} booking_system
  * @param {object} desired_interval { 'start': moment.utc(), 'end': moment.utc() }
  */
 function bookacti_fetch_events_from_interval( booking_system, desired_interval ) {
@@ -262,7 +262,7 @@ function bookacti_fetch_events_from_interval( booking_system, desired_interval )
 /**
  * Get the first events interval
  * @version 1.8.0
- * @param {dom_element} booking_system
+ * @param {HTMLElement} booking_system
  * @param {object} min_interval
  * @param {int} interval_duration
  * @returns {object}
@@ -330,7 +330,7 @@ function bookacti_get_new_interval_of_events( booking_system, min_interval, inte
 /**
  * Get the updated events interval based on the old one and one that has been added
  * @version 1.8.0
- * @param {dom_element} booking_system
+ * @param {HTMLElement} booking_system
  * @param {object} interval
  * @returns {object}
  */
@@ -355,7 +355,7 @@ function bookacti_get_extended_events_interval( booking_system, interval ) {
 /**
  * Get availability period
  * @version 1.7.17
- * @param {dom_element} booking_system
+ * @param {HTMLElement} booking_system
  * @returns {object}
  */
 function bookacti_get_availability_period( booking_system ) {
@@ -368,7 +368,7 @@ function bookacti_get_availability_period( booking_system ) {
 /**
  * Refresh booking numbers
  * @version 1.8.0
- * @param {dom_element} booking_system
+ * @param {HTMLElement} booking_system
  * @param {array} event_ids
  */
 function bookacti_refresh_booking_numbers( booking_system, event_ids ) {
@@ -427,7 +427,7 @@ function bookacti_refresh_booking_numbers( booking_system, event_ids ) {
 /**
  * An event is clicked
  * @version 1.7.0
- * @param {dom_element} booking_system
+ * @param {HTMLElement} booking_system
  * @param {object} event
  */
 function bookacti_event_click( booking_system, event ) {
@@ -467,7 +467,7 @@ function bookacti_event_click( booking_system, event ) {
 
 /**
  * Get the groups ids of an event
- * @param {dom_element} booking_system
+ * @param {HTMLElement} booking_system
  * @param {object} event
  * @returns {array|"single"|false}
  */
@@ -510,7 +510,7 @@ function bookacti_get_event_group_ids( booking_system, event ) {
 
 /**
  * Fill form fields
- * @param {dom_element} booking_system
+ * @param {HTMLElement} booking_system
  * @param {object} event
  * @param {int} group_id
  */
@@ -535,7 +535,7 @@ function bookacti_fill_booking_system_fields( booking_system, event, group_id ) 
 /**
  * Pick all events of a group onto the calendar
  * @version 1.7.19
- * @param {dom_element} booking_system
+ * @param {HTMLElement} booking_system
  * @param {int|string} group_id
  * @param {object} event
  */
@@ -570,7 +570,7 @@ function bookacti_pick_events_of_group( booking_system, group_id, event ) {
 /**
  * Pick an event
  * @version 1.8.0
- * @param {dom_element} booking_system
+ * @param {HTMLElement} booking_system
  * @param {object} event
  * @param {int} group_id
  */
@@ -603,7 +603,7 @@ function bookacti_pick_event( booking_system, event, group_id ) {
 /**
  * Unpick an event
  * @version 1.8.0
- * @param {dom_element} booking_system
+ * @param {HTMLElement} booking_system
  * @param {object|int} event
  * @param {string|moment} start
  * @param {boolean} all
@@ -654,7 +654,7 @@ function bookacti_unpick_event( booking_system, event, start, all ) {
 
 /**
  * Reset picked events
- * @param {dom_element} booking_system
+ * @param {HTMLElement} booking_system
  */
 function bookacti_unpick_all_events( booking_system ) {
 	var booking_system_id = booking_system.attr( 'id' );
@@ -668,7 +668,7 @@ function bookacti_unpick_all_events( booking_system ) {
 /**
  * Display a list of picked events
  * @version 1.8.0
- * @param {dom_element} booking_system
+ * @param {HTMLElement} booking_system
  */
 function bookacti_fill_picked_events_list( booking_system ) {
 	var booking_system_id	= booking_system.attr( 'id' );
@@ -725,8 +725,8 @@ function bookacti_fill_picked_events_list( booking_system ) {
 /**
  * Place the tooltip div below or above the element
  * @since 1.8.0
- * @param {dom_element} element
- * @param {dom_element} tooltip_container
+ * @param {HTMLElement} element
+ * @param {HTMLElement} tooltip_container
  * @param {string} position "below" or "above"
  */
 function bookacti_set_tooltip_position( element, tooltip_container, position ) {
@@ -769,8 +769,8 @@ function bookacti_set_tooltip_position( element, tooltip_container, position ) {
 /**
  * Set min and max quantity on the quantity field
  * @version 1.8.0
- * @param {dom_element} booking_system
- * @param {dom_element} qty_field
+ * @param {HTMLElement} booking_system
+ * @param {HTMLElement} qty_field
  * @param {object} event_summary_data
  */
 function bookacti_set_min_and_max_quantity( booking_system, qty_field, event_summary_data ) {
@@ -896,7 +896,7 @@ function bookacti_format_event_duration( start, end ) {
 /**
  * Get activity unit value
  * @version 1.8.0
- * @param {html_element} booking_system
+ * @param {HTMLElement} booking_system
  * @param {int} activity_id
  * @param {int} qty
  * @returns {string}
@@ -937,7 +937,7 @@ function bookacti_get_activity_unit( booking_system, activity_id, qty ) {
 /**
  * Clear booking system displayed info
  * @version 1.7.0
- * @param {dom_element} booking_system
+ * @param {HTMLElement} booking_system
  * @param {boolean} keep_picked_events
  */
 function bookacti_clear_booking_system_displayed_info( booking_system, keep_picked_events ) {
@@ -962,7 +962,7 @@ function bookacti_clear_booking_system_displayed_info( booking_system, keep_pick
 
 /**
  * Get event booking numbers
- * @param {dom_element} booking_system
+ * @param {HTMLElement} booking_system
  * @param {object} event
  * @returns {int}
  */
@@ -995,7 +995,7 @@ function bookacti_get_event_number_of_bookings( booking_system, event ) {
 
 /**
  * Get event available places
- * @param {dom_element} booking_system
+ * @param {HTMLElement} booking_system
  * @param {object} event
  * @returns {int}
  */
@@ -1014,7 +1014,7 @@ function bookacti_get_event_availability( booking_system, event ) {
 /**
  * Check if an event is event available
  * @version 1.8.0
- * @param {dom_element} booking_system
+ * @param {HTMLElement} booking_system
  * @param {object} event
  * @returns {boolean}
  */
@@ -1180,7 +1180,7 @@ function bookacti_is_event_available( booking_system, event ) {
 
 /**
  * Get group available places
- * @param {dom_element} booking_system
+ * @param {HTMLElement} booking_system
  * @param {object} event
  * @param {array} event_groups
  * @returns {Number}
@@ -1213,7 +1213,7 @@ function bookacti_get_bookings_number_for_a_single_grouped_event( booking_system
 
 /**
  * Get a div with event available places
- * @param {dom_element} booking_system
+ * @param {HTMLElement} booking_system
  * @param {object} event
  * @returns {String}
  */
@@ -1268,7 +1268,7 @@ function bookacti_get_event_availability_div( booking_system, event ) {
 
 /**
  * Get a div with event booking number
- * @param {dom_element} booking_system
+ * @param {HTMLElement} booking_system
  * @param {object} event
  * @returns {String}
  */
@@ -1331,7 +1331,7 @@ function bookacti_sort_events_array_by_dates( array, sort_by_end, desc, labels )
 /**
  * Load the booking system according to booking method
  * @version 1.8.0
- * @param {dom_element} booking_system
+ * @param {HTMLElement} booking_system
  * @param {boolean} reload_events
  */
 function bookacti_booking_method_set_up( booking_system, reload_events ) {
@@ -1358,7 +1358,7 @@ function bookacti_booking_method_set_up( booking_system, reload_events ) {
 /**
  * Fill the events according to the booking method
  * @version 1.8.0
- * @param {dom_element} booking_system
+ * @param {HTMLElement} booking_system
  * @param {object} events
  */
 function bookacti_booking_method_display_events( booking_system, events ) {
@@ -1375,7 +1375,7 @@ function bookacti_booking_method_display_events( booking_system, events ) {
 /**
  * Refetch events according to booking method
  * @version 1.8.0
- * @param {dom_element} booking_system
+ * @param {HTMLElement} booking_system
  */
 function bookacti_booking_method_refetch_events( booking_system ) {
 	var booking_system_id = booking_system.attr( 'id' );
@@ -1392,7 +1392,7 @@ function bookacti_booking_method_refetch_events( booking_system ) {
 /**
  * Rerender events according to booking method
  * @version 1.8.0
- * @param {dom_element} booking_system
+ * @param {HTMLElement} booking_system
  */
 function bookacti_booking_method_rerender_events( booking_system ) {
 	var booking_system_id = booking_system.attr( 'id' );
@@ -1408,7 +1408,7 @@ function bookacti_booking_method_rerender_events( booking_system ) {
 /**
  * Clear events according to booking method
  * @version 1.8.0
- * @param {dom_element} booking_system
+ * @param {HTMLElement} booking_system
  * @param {object} event
  */
 function bookacti_booking_method_clear_events( booking_system, event ) {
@@ -1438,7 +1438,7 @@ function bookacti_booking_method_clear_events( booking_system, event ) {
 
 /**
  * Start a loading (or keep on loading if already loading)
- * @param {dom_element} booking_system
+ * @param {HTMLElement} booking_system
  */
 function bookacti_start_loading_booking_system( booking_system ) {
 	
@@ -1478,7 +1478,7 @@ function bookacti_start_loading_booking_system( booking_system ) {
 
 /**
  * Stop a loading (but keep on loading if there are other loadings)
- * @param {dom_element} booking_system
+ * @param {HTMLElement} booking_system
  * @param {boolean} force_exit 
  */
 function bookacti_stop_loading_booking_system( booking_system, force_exit ) {
@@ -1515,7 +1515,7 @@ function bookacti_stop_loading_booking_system( booking_system, force_exit ) {
 /**
  * Redirect to activity url
  * @since 1.7.0
- * @param {dom_element} booking_system
+ * @param {HTMLElement} booking_system
  * @param {object} event
  */
 function bookacti_redirect_to_activity_url( booking_system, event ) {
@@ -1536,7 +1536,7 @@ function bookacti_redirect_to_activity_url( booking_system, event ) {
 /**
  * Redirect to group category url
  * @since 1.7.0
- * @param {dom_element} booking_system
+ * @param {HTMLElement} booking_system
  * @param {int} group_id
  */
 function bookacti_redirect_to_group_category_url( booking_system, group_id ) {
@@ -1558,7 +1558,7 @@ function bookacti_redirect_to_group_category_url( booking_system, group_id ) {
  * Redirect to url with the booking form values as parameters
  * @since 1.7.10
  * @version 1.8.0
- * @param {dom_element} booking_system
+ * @param {HTMLElement} booking_system
  * @param {string} redirect_url
  */
 function bookacti_redirect_booking_system_to_url( booking_system, redirect_url ) {

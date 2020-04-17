@@ -572,10 +572,23 @@ function bookacti_settings_section_notifications_general_callback() {
 
 /**
  * Settings section callback - Notifications - Email settings (displayed before settings)
- * 
  * @since 1.2.1
+ * @version 1.8.0
  */
-function bookacti_settings_section_notifications_email_callback() {}
+function bookacti_settings_section_notifications_email_callback() {
+?>
+	<div class='bookacti-sos'>
+		<?php esc_html_e( 'Click on the problem you are experiencing to try to fix it:', 'booking-activities' ); ?>
+		<span class='dashicons dashicons-sos' data-label='<?php echo esc_html_x( 'Help', 'button label', 'booking-activities' ); ?>'></span>
+		<span>
+			<ul class='bookacti-help-list'>
+				<li><a href='https://booking-activities.fr/en/faq/i-do-not-receive-the-notifications/' target='_blank'><?php esc_html_e( 'I don\'t receive the notifications', 'booking-activities' ); ?></a>
+				<?php do_action( 'bookacti_email_notifications_help_after' ); ?>
+			</ul>
+		</span>
+	</div>
+<?php
+}
 
 
 /**

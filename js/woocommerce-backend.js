@@ -5,7 +5,7 @@ $j( document ).ready( function() {
 	 * Show the bind / unbind order item booking button on mouseover
 	 * @since 1.7.10
 	 */
-	$j( 'body' ).on( 'mouseover', '#woocommerce-order-items tr.item', function( e ) {
+	$j( 'body' ).on( 'mouseover', '#woocommerce-order-items tr.item', function() {
 		$j( this ).find( '.bookacti-order-item-action-buttons' ).show();
 	});
 	
@@ -14,7 +14,7 @@ $j( document ).ready( function() {
 	 * Hide the bind / unbind order item booking button on mouseout
 	 * @since 1.7.10
 	 */
-	$j( 'body' ).on( 'mouseout', '#woocommerce-order-items tr.item', function( e ) {
+	$j( 'body' ).on( 'mouseout', '#woocommerce-order-items tr.item', function() {
 		$j( this ).find( '.bookacti-order-item-action-buttons' ).hide();
 	});
 	
@@ -35,7 +35,7 @@ $j( document ).ready( function() {
 	/**
 	 * Change form link according to selected form
 	 */
-	$j( '#woocommerce-product-data' ).on( 'change', '#_bookacti_form, .bookacti_variable_form', function( e ){ 
+	$j( '#woocommerce-product-data' ).on( 'change', '#_bookacti_form, .bookacti_variable_form', function(){ 
 		var link = $j( '.bookacti-form-selectbox-link[data-form-selectbox-id="' + $j( this ).attr( 'id' ) + '"] a' );
 		if( ! link.length ) { return; }
 		if( $j( this ).val() == 0 ) {
@@ -72,6 +72,7 @@ $j( document ).ready( function() {
 	/**
 	 * Show / Hide WC field in delete booking dialog
 	 * @version 1.8.0
+	 * @param {Event} e
 	 */
 	$j( '.bookacti-user-booking-list-table, .woocommerce-table, #bookacti-booking-list' ).on( 'click', '.bookacti-booking-action, .bookacti-booking-group-action', function ( e ) {
 		e.preventDefault();
@@ -108,7 +109,7 @@ $j( document ).ready( function() {
 	 * Show or hide a notice if the price is empty when changing the product price
 	 * @since 1.7.14
 	 */
-	$j( '#woocommerce-product-data' ).on( 'keyup mouseup change', '#_regular_price', function( e ) {
+	$j( '#woocommerce-product-data' ).on( 'keyup mouseup change', '#_regular_price', function() {
 		bookacti_show_hide_empty_price_notice();
 	});
 	
@@ -117,7 +118,7 @@ $j( document ).ready( function() {
 	 * @since 1.7.14
 	 * @version 1.7.17
 	 */
-	$j( '#woocommerce-product-data' ).on( 'keyup mouseup change', '.woocommerce_variation .wc_input_price[name^="variable_regular_price["]', function( e ) {
+	$j( '#woocommerce-product-data' ).on( 'keyup mouseup change', '.woocommerce_variation .wc_input_price[name^="variable_regular_price["]', function() {
 		var variation_menu_order = $j( this ).closest( '.woocommerce_variation' ).find( '.variation_menu_order' ).length ? $j( this ).closest( '.woocommerce_variation' ).find( '.variation_menu_order' ).val() : 0;
 		bookacti_show_hide_empty_price_notice( variation_menu_order );
 	});
@@ -126,7 +127,7 @@ $j( document ).ready( function() {
 	 * Show or hide a notice if the price is empty when changing product type
 	 * @since 1.7.14
 	 */
-	$j( '#woocommerce-product-data' ).on( 'change', '#product-type', function( e ) {
+	$j( '#woocommerce-product-data' ).on( 'change', '#product-type', function() {
 		bookacti_show_hide_empty_price_notice();
 	});
 	
@@ -134,7 +135,7 @@ $j( document ).ready( function() {
 	 * Show or hide a notice if the price is empty when the product is flagged as "Activity"
 	 * @since 1.7.14
 	 */
-	$j( '#woocommerce-product-data' ).on( 'change', '#_bookacti_is_activity', function( e ) {
+	$j( '#woocommerce-product-data' ).on( 'change', '#_bookacti_is_activity', function() {
 		bookacti_show_hide_empty_price_notice();
 	});
 	
@@ -142,7 +143,7 @@ $j( document ).ready( function() {
 	 * Show or hide a notice if the price is empty when the variation is flagged as "Activity"
 	 * @since 1.7.14
 	 */
-	$j( '#woocommerce-product-data' ).on( 'change', '.woocommerce_variation .bookacti_variable_is_activity', function( e ) {
+	$j( '#woocommerce-product-data' ).on( 'change', '.woocommerce_variation .bookacti_variable_is_activity', function() {
 		var variation_menu_order = $j( this ).closest( '.woocommerce_variation' ).find( '.variation_menu_order' ).length ? $j( this ).closest( '.woocommerce_variation' ).find( '.variation_menu_order' ).val() : 0;
 		bookacti_show_hide_empty_price_notice( variation_menu_order );
 	});
@@ -191,7 +192,7 @@ function bookacti_show_hide_activity_tab() {
 /**
  * Show or hide activity fields on variation page in the backend
  * @version 1.7.18
- * @param {dom_element} checkbox
+ * @param {HTMLElement} checkbox
  */
 function bookacti_show_hide_activity_variation_fields( checkbox ) {
 	checkbox = checkbox || null;

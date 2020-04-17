@@ -39,7 +39,7 @@ body.booking-activities_page_bookacti_forms label[for='bookacti_form_publish-hid
 #bookacti-form-editor					{ padding: 1em; }
 .bookacti-form-editor-field				{ margin-bottom: 1em; border: 1px solid #e5e5e5; background: #fff; box-sizing: border-box; }
 .bookacti-form-editor-field-header		{ display: flex; justify-content: space-between; border-bottom: 1px solid #e5e5e5; transition: max-height 0.2s; }
-.bookacti-form-editor-field-title		{ cursor: move; margin: 1em; margin-right: 0; width: 100%; text-align: left; }
+.bookacti-form-editor-field-title		{ cursor: move; padding: 1em; padding-right: 0; width: 100%; text-align: left; }
 .bookacti-form-editor-field-header h3	{ display: inline-block; vertical-align: middle; margin: 0; padding: 0; }
 .bookacti-form-editor-field-actions		{ margin: 1em; white-space: nowrap; position: relative; }
 .bookacti-form-editor-field-body		{ padding: 1em; }
@@ -51,8 +51,9 @@ body.booking-activities_page_bookacti_forms label[for='bookacti_form_publish-hid
 #bookacti-form-editor-actions > .button-secondary,
 .bookacti-form-editor-field-actions > .button-secondary	{ color: #0071a1; }
 
+.bookacti-display-help.bookacti-sos span.dashicons					{ display: block; padding-right: 0; }
 .bookacti-form-editor-field-header .bookacti-wc-icon-not-supported	{ display: inline-block; vertical-align: middle; margin-right: 20px; font-weight: normal; }
-#bookacti-form-editor .bookacti-addon-promo			{ text-align: left; }
+#bookacti-form-editor .bookacti-addon-promo							{ text-align: left; }
 
 .bookacti-form-action-wc-notice			{ color: #f89b2f; }
 .bookacti-form-action-wc-notice:before	{ content: '\26A0  '; }
@@ -85,6 +86,7 @@ body.booking-activities_page_bookacti_forms label[for='bookacti_form_publish-hid
 .bookacti-options-table .bookacti-column-group_category { width: 130px; max-width: 130px; padding-right: 20px; overflow: hidden; }
 
 
+
 /* Metaboxes */
 #poststuff #bookacti_form_publish .inside	{ margin: 0; padding: 0; }
 #bookacti-form-wc-integration-tuto img		{ width: 100%; max-width: 720px; }
@@ -104,14 +106,16 @@ body.booking-activities_page_bookacti_forms label[for='bookacti_form_publish-hid
 .bookacti-form-field-name-calendar,
 .bookacti-form-field-name-calendar .bookacti-form-field-content	{ width: 100%; }
 
-.bookacti-form-field-login-field-container					{ display: block; margin-bottom: 10px; }
-.bookacti-form-field-login-field-container:last-child		{ margin-bottom: 0; }
+.bookacti-form-field-login-field-container				{ display: block; margin-bottom: 10px; }
+.bookacti-form-field-login-field-container:last-child	{ margin-bottom: 0; }
 
 .bookacti-login-types-hidden		{ display: none; }
 .bookacti-login-field-login-type	{ margin-bottom: 20px; }
 .bookacti-forgotten-password		{ font-style: italic; font-size: 0.8em; }
 .forgotten-password-email			{ display: block; margin-top: 10px; }
 .bookacti-forgotten-password-email	{ min-height: 30px; min-width: 300px; }
+.bookacti-login-field-submit-button	{ margin-top: 20px; }
+.bookacti-login-button				{ cursor: pointer; }
 
 .bookacti-password-strength					{ display: inline-block; }
 .bookacti-password-strength-meter			{ background-color: #eee; border: 1px solid #ddd; color: #23282d; margin: -2px 5px 5px 1px; padding: 3px 5px; text-align: center; box-sizing: border-box; opacity: 0; }

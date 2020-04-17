@@ -22,18 +22,24 @@
 .wp-admin select.bookacti-select[multiple] option:hover,
 .wp-admin select.bookacti-items-select-box[multiple] option:hover { color: #007cba; }
 
-.bookacti-error span, .bookacti-warning span, .bookacti-info span					{ display: table-cell; vertical-align: middle; }
-.bookacti-error .dashicons,.bookacti-warning .dashicons, .bookacti-info .dashicons	{ font-size: 1.5em; padding-right: 10px; }
-.bookacti-error a, .bookacti-warning a, .bookacti-info a					{ color: #0073aa; text-decoration: none; }
-.bookacti-error a:hover, .bookacti-warning a:hover, .bookacti-info a:hover	{ color: #00a0d2; }
+.bookacti-error span, .bookacti-warning span, .bookacti-info span, .bookacti-sos span						{ display: table-cell; vertical-align: middle; }
+.bookacti-error .dashicons,.bookacti-warning .dashicons, .bookacti-info .dashicons, .bookacti-sos .dashicons{ font-size: 1.5em; padding-right: 10px; }
+.bookacti-error a, .bookacti-warning a, .bookacti-info a, .bookacti-sos a									{ color: #0073aa; text-decoration: none; }
+.bookacti-error a:hover, .bookacti-warning a:hover, .bookacti-info a:hover, .bookacti-sos a:hover			{ color: #00a0d2; }
 .bookacti-error .dashicons		{ color: #b81c23; }
 .bookacti-warning .dashicons	{ color: #f89b2f; }
 .bookacti-info .dashicons		{ color: #00a0d2; }
+.bookacti-sos					{ width: auto; height: auto; }
+.bookacti-sos .dashicons		{ color: #ca4a1f; text-align: center; width: auto; max-width: 50px; }
+.bookacti-sos .dashicons:after	{ content: attr( data-label ); display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; text-transform: uppercase; font-size: 10px; font-weight: bold; font-family: -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Oxygen-Sans,Ubuntu,Cantarell,"Helvetica Neue",sans-serif; }
+
 
 .bookacti-addon-promo			{ border: 2px solid #52b7e9; border-radius: 3px; padding: 10px; text-align: center; }
 .bookacti-addon-promo .button	{ margin-top: 10px; }
 
 #bookacti-fatal-error			{ margin: 1em; }
+
+.bookacti-help-list				{ list-style-type: disc; padding-inline-start: 20px; }
 
 
 /***** CALENDAR *****/

@@ -128,7 +128,7 @@ function bookacti_wc_perform_form_action( booking_system ) {
 /**
  * Redirect to activity product page
  * @since 1.7.0
- * @param {dom_element} booking_system
+ * @param {HTMLElement} booking_system
  * @param {object} event
  */
 function bookacti_redirect_to_activity_product_page( booking_system, event ) {
@@ -154,7 +154,7 @@ function bookacti_redirect_to_activity_product_page( booking_system, event ) {
 /**
  * Redirect to group category product page
  * @since 1.7.0
- * @param {dom_element} booking_system
+ * @param {HTMLElement} booking_system
  * @param {int} group_id
  */
 function bookacti_redirect_to_group_category_product_page( booking_system, group_id ) {
@@ -184,7 +184,7 @@ function bookacti_redirect_to_group_category_product_page( booking_system, group
 /**
  * Add the product bound to the activity to cart from a booking form
  * @since 1.7.0
- * @param {dom_element} booking_system
+ * @param {HTMLElement} booking_system
  * @param {object} event
  */
 function bookacti_add_activity_product_to_cart( booking_system, event ) {
@@ -206,7 +206,7 @@ function bookacti_add_activity_product_to_cart( booking_system, event ) {
 /**
  * Add the product bound to the group category to cart from a booking form
  * @since 1.7.0
- * @param {dom_element} booking_system
+ * @param {HTMLElement} booking_system
  * @param {int} group_id
  */
 function bookacti_add_group_category_product_to_cart( booking_system, group_id ) {
@@ -229,7 +229,7 @@ function bookacti_add_group_category_product_to_cart( booking_system, group_id )
  * Add a product to cart from a booking form
  * @since 1.7.0
  * @version 1.8.0
- * @param {dom_element} booking_system
+ * @param {HTMLElement} booking_system
  * @param {int} product_id
  */
 function bookacti_add_product_to_cart_via_booking_system( booking_system, product_id ) {

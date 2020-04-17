@@ -16,7 +16,7 @@ $j( document ).ready( function() {
 	/**
 	 * Toggle Advanced options on click - on click
 	 */
-	$j( '.bookacti-show-hide-advanced-options' ).on( 'click', function( e ){
+	$j( '.bookacti-show-hide-advanced-options' ).on( 'click', function(){
 		bookacti_show_hide_advanced_options( $j( this ) );
 	});
 	
@@ -104,7 +104,7 @@ $j( document ).ready( function() {
 /**
  * Toggle advanced options
  * @version 1.8.0
- * @param {dom_element} button
+ * @param {HTMLElement} button
  */
 function bookacti_show_hide_advanced_options( button ) {
 	// Find toggle elements
@@ -374,7 +374,7 @@ function bookacti_fill_fields_from_array( fields, field_prefix, scope ) {
 /**
  * Switch a selectbox to multiple
  * @version 1.7.17
- * @param {dom_element} checkbox
+ * @param {HTMLElement} checkbox
  */
 function bookacti_switch_select_to_multiple( checkbox ) {
 	if( ! $j( checkbox ).length ) { return; }
@@ -428,7 +428,7 @@ function bookacti_switch_select_to_multiple( checkbox ) {
  * Show or hide activities depending on the selected template
  * @version 1.7.0
  * @param {array} template_ids
- * @param {dom_element} options
+ * @param {HTMLElement} options
  */
 function bookacti_show_hide_template_related_options( template_ids, options ) {
 	
@@ -481,7 +481,7 @@ function bookacti_show_hide_template_related_options( template_ids, options ) {
 
 /**
  * Update multilangual fields with qtranslate X
- * @param {dom_element} field
+ * @param {HTMLElement} field
  */
 function bookacti_update_qtx_field( field ){
 	if( typeof qTranslateConfig !== 'undefined' ) {
@@ -499,7 +499,7 @@ function bookacti_update_qtx_field( field ){
 /**
  * Refresh multilingual field to make a correct display 
  * E.g.: '[:en]Hello[:fr]Bonjour[:]' become 'Hello' and 'Bonjour' each in its own switchable field (with the LSB)
- * @param {dom_element} field
+ * @param {HTMLElement} field
  */
 function bookacti_refresh_qtx_field( field ){
 	if( typeof qTranslateConfig !== 'undefined' ) {

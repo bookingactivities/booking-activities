@@ -2,6 +2,7 @@ $j( document ).ready( function() {
 	/**
 	 * Intercept settings form submission
 	 * @version 1.8.0
+	 * @param {Event} e
 	 */
 	$j( 'form#bookacti-settings.bookacti_save_settings_with_ajax' ).on( 'submit', function( e ) {
 		// Prevent submission
@@ -118,6 +119,7 @@ $j( document ).ready( function() {
 	 * Restore bookings and events data from an archive
 	 * @since 1.7.0
 	 * @version 1.8.0
+	 * @param {Event} e
 	 */
 	$j( '#bookacti-database-archives-table-container' ).on( 'click', 'a.bookacti-archive-restore-data', function( e ) {
 		e.preventDefault();
@@ -141,6 +143,7 @@ $j( document ).ready( function() {
 	 * Delete a backup file
 	 * @since 1.7.0
 	 * @version 1.8.0
+	 * @param {Event} e
 	 */
 	$j( '#bookacti-database-archives-table-container' ).on( 'click', 'a.bookacti-archive-delete-file', function( e ) {
 		e.preventDefault();
@@ -176,7 +179,7 @@ $j( document ).ready( function() {
  * @since 1.7.0
  * @param {string} date
  * @param {string} nonce
- * @param {dom_element} feedback_div
+ * @param {HTMLElement} feedback_div
  * @param {callback} callback
  */
 function bookacti_archive_analyse( date, nonce, feedback_div, callback ) {
@@ -240,9 +243,10 @@ function bookacti_archive_analyse( date, nonce, feedback_div, callback ) {
 /**
  * Dump data prior to a date
  * @since 1.7.0
+ * @version 1.8.0
  * @param {string} date
  * @param {string} nonce
- * @param {dom_element} feedback_div
+ * @param {HTMLElement} feedback_div
  * @param {callback} callback
  */
 function bookacti_archive_dump( date, nonce, feedback_div, callback ) {
@@ -272,7 +276,7 @@ function bookacti_archive_dump( date, nonce, feedback_div, callback ) {
 			if( typeof response.results !== 'undefined' ) {
 				list = '<ul>';
 				$j.each( response.results, function( filename, error_code ){
-					list += '<li>' + filename + ': ' + error_code + '</li>'
+					list += '<li>' + filename + ': ' + error_code + '</li>';
 				});
 				list += '</ul>';
 			}
@@ -308,9 +312,10 @@ function bookacti_archive_dump( date, nonce, feedback_div, callback ) {
 /**
  * Delete data prior to a date
  * @since 1.7.0
+ * @version 1.8.0
  * @param {string} date
  * @param {string} nonce
- * @param {dom_element} feedback_div
+ * @param {HTMLElement} feedback_div
  * @param {callback} callback
  */
 function bookacti_archive_delete( date, nonce, feedback_div, callback ) {
@@ -338,7 +343,7 @@ function bookacti_archive_delete( date, nonce, feedback_div, callback ) {
 			if( response.status === 'success' ) {
 				var list = '<ul>';
 				$j.each( response.nb_per_type, function( type, nb ){
-					list += '<li>' + type + ': ' + nb + '</li>'
+					list += '<li>' + type + ': ' + nb + '</li>';
 				});
 				list += '</ul>';
 				feedback_div.append( '<div class="bookacti-archive-results">' + response.message + list + '</div>' );
@@ -369,9 +374,10 @@ function bookacti_archive_delete( date, nonce, feedback_div, callback ) {
 /**
  * Restore data from backup file
  * @since 1.7.0
+ * @version 1.8.0
  * @param {string} filename
  * @param {string} nonce
- * @param {dom_element} feedback_div
+ * @param {HTMLElement} feedback_div
  */
 function bookacti_archive_restore_data( filename, nonce, feedback_div ) {
 	// Remove previous feedback_div
@@ -399,7 +405,7 @@ function bookacti_archive_restore_data( filename, nonce, feedback_div ) {
 			if( typeof response.results !== 'undefined' ) {
 				list = '<ul>';
 				$j.each( response.results, function( filename, error_code ){
-					list += '<li>' + filename + ': ' + error_code + '</li>'
+					list += '<li>' + filename + ': ' + error_code + '</li>';
 				});
 				list += '</ul>';
 			}
@@ -431,7 +437,7 @@ function bookacti_archive_restore_data( filename, nonce, feedback_div ) {
  * @since 1.7.0
  * @param {string} filename
  * @param {string} nonce
- * @param {dom_element} feedback_div
+ * @param {HTMLElement} feedback_div
  */
 function bookacti_archive_delete_file( filename, nonce, feedback_div ) {
 	// Remove previous feedback_div
@@ -480,7 +486,8 @@ function bookacti_archive_delete_file( filename, nonce, feedback_div ) {
 /**
  * Display the archive data Step 2 after step 1
  * @since 1.7.0
- * @param {string} date
+ * @param {String} date
+ * @param {Boolean} file_already_exists
  */
 function bookacti_display_archive_step2( date, file_already_exists ) {
 	$j( '#bookacti-archive-feedbacks-step2-container' ).show();

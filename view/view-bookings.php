@@ -229,7 +229,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 								'event_end'		=> $event_end
 							);
 
-							$calendar_button_label_show = esc_html__( 'Filter by event', 'booking-activities' );
+							$calendar_button_label_show = esc_html__( 'Show calendar', 'booking-activities' );
 							$calendar_button_label_hide = esc_html__( 'Hide calendar', 'booking-activities' );
 							$calendar_button_label = $has_event_picked || $user_calendar_settings[ 'show' ] ? $calendar_button_label_hide : $calendar_button_label_show;
 						?>

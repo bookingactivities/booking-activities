@@ -4,9 +4,11 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 /**
  * Initialize Booking Activities shortcodes
+ * @version 1.8.0
  */
 add_shortcode( 'bookingactivities_form', 'bookacti_shortcode_booking_form' );
 add_shortcode( 'bookingactivities_list', 'bookacti_shortcode_booking_list' );
+add_shortcode( 'bookingactivities_login', 'bookacti_shortcode_booking_login' );
 
 
 /**
@@ -38,6 +40,34 @@ function bookacti_shortcode_booking_form( $raw_atts = array(), $content = null, 
 
 
 /**
+ * Display a login form via shortcode
+ * Eg: [bookingactivities_login form="Your form ID" id="Your form instance CSS ID"]
+ * @since 1.8.0
+ * @param array $raw_atts [form, id]
+ * @param string $content
+ * @param string $tag Should be "bookingactivities_login"
+ * @return string The login form corresponding to given parameters
+ */
+function bookacti_shortcode_booking_login( $raw_atts = array(), $content = null, $tag = '' ) {
+	$default_atts = array(
+		'form' => 0,
+		'id' => ''
+	);
+	$atts = shortcode_atts( $default_atts, array_change_key_case( (array) $raw_atts, CASE_LOWER ), $tag );
+	$output = '';
+	
+	// Retrieve the booking form
+	if( ! is_user_logged_in() && ! empty( $atts[ 'form' ] ) ) {
+		$form_id = intval( $atts[ 'form' ] );
+		$instance_id = sanitize_title_with_dashes( $atts[ 'id' ] );
+		$output = bookacti_display_form( $form_id, $instance_id, 'login_form', false );
+	}
+
+	return apply_filters( 'bookacti_shortcode_' . $tag . '_output', $output, $raw_atts, $content );
+}
+
+
+/**
  * Display a user related booking list via shortcode
  * @since 1.7.4 (was bookacti_shortcode_booking_list)
  * @version 1.8.0
@@ -49,6 +79,12 @@ function bookacti_shortcode_booking_form( $raw_atts = array(), $content = null, 
 function bookacti_shortcode_booking_list( $atts = array(), $content = null, $tag = '' ) {
 	// Normalize attribute keys, lowercase
     $atts = array_change_key_case( (array) $atts, CASE_LOWER );
+	
+	// If the user is not logged in, and if a login form is defined, show it instead of the booking list
+	if( ! is_user_logged_in() && ! empty( $atts[ 'login_form' ] ) ) {
+		$atts[ 'form' ] = $atts[ 'login_form' ];
+		return bookacti_shortcode_booking_login( $atts, $content, $tag );
+	}
 	
 	// Format 'user_id' attribute
 	if( isset( $atts[ 'user_id' ] ) ) {

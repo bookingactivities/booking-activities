@@ -49,9 +49,9 @@ function bookacti_init_tooltip() {
 /**
  * Scroll to element or to position
  * @version 1.7.19
- * @param {DOM_Element} or {number} element
- * @param {int} speed
- * @param {string} position Either "middle" or "top"
+ * @param {HTMLElement|Number} element
+ * @param {Int} speed
+ * @param {String} position Either "middle" or "top"
  */
 function bookacti_scroll_to( element, speed, position ) {
 	speed	= $j.isNumeric( speed ) ? parseInt( speed ) : 500;

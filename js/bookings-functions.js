@@ -14,6 +14,8 @@ $j( document ).ready( function() {
 	 * Add data to booking actions
 	 * @since 1.7.6
 	 * @version 1.8.0
+	 * @param {Event} e
+	 * @param {Object} data
 	 */
 	$j( '#bookacti-booking-list, .bookacti-user-booking-list-table' ).on( 'bookacti_booking_action_data', 'tr.bookacti-single-booking, tr.bookacti-booking-group', function( e, data ) {
 		if( data instanceof FormData ) { 
@@ -30,6 +32,7 @@ $j( document ).ready( function() {
 /**
  * Filter the booking list with current filters values
  * @since 1.8.0
+ * @param {Int} paged
  */
 function bookacti_filter_booking_list( paged ) {
 	paged = paged ? paged : 1;
@@ -147,7 +150,7 @@ function bookacti_refresh_calendar_according_to_date_filter() {
 	var valid_range = {
 		"start": interval_filter.start.format( 'YYYY-MM-DD' ),
 		"end": interval_filter.end.add( 1, 'days' ).format( 'YYYY-MM-DD' )
-	}
+	};
 	
 	calendar.fullCalendar( 'option', 'validRange', valid_range );
 }
@@ -172,7 +175,7 @@ function bookacti_unpick_all_events_filter() {
 /**
  * Reload bookings booking system according to filters
  * @version 1.8.0
- * @param {dom_element} booking_system
+ * @param {HTMLElement} booking_system
  */
 function bookacti_reload_booking_system_according_to_filters( booking_system ) {
 	var booking_system_id	= booking_system.attr( 'id' );
@@ -381,7 +384,7 @@ function bookacti_display_grouped_bookings( booking_group_id ) {
 
 /**
  * Start booking row loading
- * @param {dom_element} row
+ * @param {HTMLElement} row
  */
 function bookacti_booking_row_enter_loading_state( row ) {
 	var loading_div = 
@@ -396,7 +399,7 @@ function bookacti_booking_row_enter_loading_state( row ) {
 
 /**
  * Stop booking row loading
- * @param {dom_element} row
+ * @param {HTMLElement} row
  */
 function bookacti_booking_row_exit_loading_state( row ) {
 	row.find( '.bookacti-loading-alt' ).remove();
@@ -428,7 +431,7 @@ function bookacti_refresh_list_table_hidden_columns() {
 /**
  * Check if sent data correspond to displayed data
  * @version 1.8.0
- * @param {dom_element} booking_system
+ * @param {HTMLElement} booking_system
  * @param {int} quantity
  * @returns {boolean}
  */

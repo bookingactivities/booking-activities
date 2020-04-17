@@ -1,7 +1,7 @@
 /**
  * Initialize the calendar
  * @version 1.8.0
- * @param {dom_element} booking_system
+ * @param {HTMLElement} booking_system
  * @param {boolean} reload_events
  */
 function bookacti_set_calendar_up( booking_system, reload_events ) {
@@ -135,10 +135,9 @@ function bookacti_set_calendar_up( booking_system, reload_events ) {
 		eventClick: function( event, jsEvent, view ) {
 			var trigger = { 'click': true };
 			
-			// Don't pick the event if it is not available (except on bookings page)
-			if( booking_system_id !== 'bookacti-booking-system-bookings-page' ) {
-				var is_available = bookacti_is_event_available( booking_system, event );
-				if( ! is_available ) { trigger.click = false; }
+			// Don't pick the event if it is not available
+			if( $j( this ).hasClass( 'bookacti-event-unavailable' ) ) {
+				trigger.click = false;
 			}
 			
 			// Allow plugins to prevent the event click
@@ -321,7 +320,7 @@ function bookacti_refresh_picked_events_on_calendar( booking_system ) {
 /**
  * Add CSS classes to events accoding to their size
  * @version 1.5.9
- * @param {dom_element} element
+ * @param {HTMLElement} element
  */
 function bookacti_add_class_according_to_event_size( element ) {
 	

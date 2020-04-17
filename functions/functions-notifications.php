@@ -329,7 +329,7 @@ function bookacti_get_notifications_tags( $notification_id = '' ) {
 /**
  * Get notifications tags and values corresponding to given booking
  * @since 1.2.0
- * @version 1.7.13
+ * @version 1.8.0
  * @param int $booking_id
  * @param string $booking_type 'group' or 'single'
  * @param string $notification_id
@@ -342,8 +342,8 @@ function bookacti_get_notifications_tags_values( $booking_id, $booking_type, $no
 	
 	$booking_data = array();
 	
-	$filters = $booking_type === 'group' ? array( 'in__booking_group_id' => array( $booking_id ) ) : array( 'in__booking_id' => array( $booking_id ) );
-	$filters = bookacti_format_booking_filters( array_merge( array( 'templates' => '', 'fetch_meta' => true ), $filters ) );
+	$id_filters = $booking_type === 'group' ? array( 'in__booking_group_id' => array( $booking_id ) ) : array( 'in__booking_id' => array( $booking_id ) );
+	$filters = bookacti_format_booking_filters( array_merge( array( 'templates' => '', 'fetch_meta' => true ), $id_filters ) );
 	$booking_array = $booking_type === 'group' ? bookacti_get_booking_groups( $filters ) : bookacti_get_bookings( $filters );
 	$booking = ! empty( $booking_array[ $booking_id ] ) ? $booking_array[ $booking_id ] : null;
 	

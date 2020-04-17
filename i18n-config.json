@@ -122,7 +122,9 @@
 						"bookacti-tip-last_name":{},
 						"bookacti-label-phone":{},
 						"bookacti-placeholder-phone":{},
-						"bookacti-tip-phone":{}
+						"bookacti-tip-phone":{},
+						"bookacti-login_button_label":{},
+						"bookacti-register_button_label":{}
 					}
 				},
 				"bookacti-form-field-form-quantity":{

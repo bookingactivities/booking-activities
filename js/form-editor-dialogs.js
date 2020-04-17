@@ -1,8 +1,7 @@
-
 /**
  * Initialize form editor actions
  * @since 1.5.0
- * @version 1.6.0
+ * @version 1.8.0
  */
 function bookacti_init_form_editor_actions() {
 	// Open form dialog boxes
@@ -29,6 +28,9 @@ function bookacti_init_form_editor_actions() {
 		if( $j( this ).hasClass( 'bookacti-export-events' ) ){
 			var form_id	= $j( '#bookacti-form-id' ).val();
 			bookacti_dialog_export_events( form_id );
+		}
+		if( $j( this ).hasClass( 'bookacti-display-help' ) ){
+			bookacti_dialog_calendar_field_help();
 		}
 	});
 	
@@ -472,7 +474,7 @@ function bookacti_dialog_update_form_field( field_id, field_name ) {
  * Export events
  * @since 1.6.0
  * @version 1.8.0
- * @param {int} field_id
+ * @param {int} form_id
  */
 function bookacti_dialog_export_events( form_id ) {
 	// Reset error notices
@@ -553,4 +555,25 @@ function bookacti_dialog_export_events( form_id ) {
 	
 	// Open the modal dialog
     $j( '#bookacti-export-events-dialog' ).dialog( 'open' );
+}
+
+
+/**
+ * Display the calendar field help dialog
+ * @since 1.8.0
+ */
+function bookacti_dialog_calendar_field_help() {
+	// Add the buttons
+    $j( '#bookacti-calendar-field-help-dialog' ).dialog( 'option', 'buttons',
+		// OK button   
+		[{
+			text: bookacti_localized.dialog_button_ok,			
+			click: function() {
+				// Close the modal dialog
+				$j( this ).dialog( 'close' );
+			}
+		}]
+    );
+	// Open the modal dialog
+    $j( '#bookacti-calendar-field-help-dialog' ).dialog( 'open' );
 }

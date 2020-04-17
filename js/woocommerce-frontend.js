@@ -4,6 +4,11 @@ $j( document ).ready( function() {
 	/**
 	 * Add data to booking actions
 	 * @since 1.0.12
+	 * @param {Event} e
+	 * @param {Object} data
+	 * @param {Int} booking_id
+	 * @param {String} booking_type
+	 * @param {String} action
 	 */
 	$j( '.woocommerce-table' ).on( 'bookacti_booking_action_data', 'tr.order_item', function( e, data, booking_id, booking_type, action ) {
 		data.context = 'wc_order_items';
@@ -20,6 +25,9 @@ $j( document ).ready( function() {
 		 * Do not init booking system automatically if is supposed to be loaded while switching WC variations
 		 * @since 1.7.0
 		 * @version 1.7.4
+		 * @param {Event} e
+		 * @param {Object} load
+		 * @param {Object} attributes
 		 */
 		$j( '.woocommerce' ).on( 'bookacti_init_booking_sytem', 'form.cart.variations_form .bookacti-booking-system', function( e, load, attributes ) {
 			if( load.load === false ) { return; }
@@ -66,7 +74,7 @@ $j( document ).ready( function() {
 	 * Enable add-to-cart button
 	 * @version 1.7.4
 	 */
-	$j( '.woocommerce form.cart' ).on( 'bookacti_view_refreshed bookacti_displayed_info_cleared', '.bookacti-booking-system', function( e ) {
+	$j( '.woocommerce form.cart' ).on( 'bookacti_view_refreshed bookacti_displayed_info_cleared', '.bookacti-booking-system', function() {
 		$j( this ).parents( 'form' ).find( 'input[name="quantity"]' ).attr( 'disabled', false );
 		$j( this ).parents( 'form' ).find( 'button[type="submit"]' ).attr( 'disabled', false );
 	});
@@ -76,7 +84,7 @@ $j( document ).ready( function() {
 	 * Disable add-to-cart button
 	 * @version 1.7.4
 	 */
-	$j( '.woocommerce form.cart' ).on( 'bookacti_error_displayed', '.bookacti-booking-system', function( e ) {
+	$j( '.woocommerce form.cart' ).on( 'bookacti_error_displayed', '.bookacti-booking-system', function() {
 		$j( this ).parents( 'form' ).find( 'input[name="quantity"]' ).attr( 'disabled', true );
 		$j( this ).parents( 'form' ).find( 'button[type="submit"]' ).attr( 'disabled', true );
 	});
@@ -87,7 +95,7 @@ $j( document ).ready( function() {
 		 * Add to cart dynamic check
 		 * @version 1.7.4
 		 */
-		$j( '.woocommerce form.cart' ).on( 'submit', function( e ) { 
+		$j( '.woocommerce form.cart' ).on( 'submit', function() { 
 			var form = $j( this );
 
 			var proceed_to_validation = false;
@@ -135,6 +143,9 @@ $j( document ).ready( function() {
 	/**
 	 * Set quantity on eventClick
 	 * @version 1.7.4
+	 * @param {Event} e
+	 * @param {Object} event_summary_data
+	 * @param {Object} event
 	 */
 	$j( '.woocommerce form.cart' ).on( 'bookacti_picked_events_list_data', '.bookacti-booking-system', function( e, event_summary_data, event ) {
 		var booking_system = $j( this );
@@ -161,7 +172,7 @@ $j( document ).ready( function() {
 /**
  * Switch form according to variation
  * @version 1.8.0
- * @param {dom_element} form_container
+ * @param {HTMLElement} form_container
  * @param {object} variation
  */
 function bookacti_switch_product_variation_form( form_container, variation ) {
@@ -247,9 +258,9 @@ function bookacti_switch_product_variation_form( form_container, variation ) {
 
 /**
  * Replace a old variation form with a new one
- * @param {dom_element} form_container
+ * @param {HTMLElement} form_container
  * @param {object} variation
- * @param {dom_element} form_html
+ * @param {HTMLElement} form_html
  */
 function bookacti_fill_product_variation_form( form_container, variation, form_html ) {
 	// Remove current form
@@ -340,7 +351,7 @@ function bookacti_countdown() {
 /**
  * Refresh cart after expiration
  * @version 1.8.0
- * @param {dom_element} countdown
+ * @param {HTMLElement} countdown
  */
 function bookacti_refresh_cart_after_expiration( countdown ) {
 	var is_checkout = $j( countdown ).closest( '.checkout' ).length;
