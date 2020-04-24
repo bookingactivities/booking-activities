@@ -8,7 +8,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
  */
 add_shortcode( 'bookingactivities_form', 'bookacti_shortcode_booking_form' );
 add_shortcode( 'bookingactivities_list', 'bookacti_shortcode_booking_list' );
-add_shortcode( 'bookingactivities_login', 'bookacti_shortcode_booking_login' );
+add_shortcode( 'bookingactivities_login', 'bookacti_shortcode_login_form' );
 
 
 /**
@@ -48,7 +48,7 @@ function bookacti_shortcode_booking_form( $raw_atts = array(), $content = null, 
  * @param string $tag Should be "bookingactivities_login"
  * @return string The login form corresponding to given parameters
  */
-function bookacti_shortcode_booking_login( $raw_atts = array(), $content = null, $tag = '' ) {
+function bookacti_shortcode_login_form( $raw_atts = array(), $content = null, $tag = '' ) {
 	$default_atts = array(
 		'form' => 0,
 		'id' => ''
@@ -59,7 +59,8 @@ function bookacti_shortcode_booking_login( $raw_atts = array(), $content = null,
 	// Retrieve the booking form
 	if( ! is_user_logged_in() && ! empty( $atts[ 'form' ] ) ) {
 		$form_id = intval( $atts[ 'form' ] );
-		$instance_id = sanitize_title_with_dashes( $atts[ 'id' ] );
+		$form_css_id = sanitize_title_with_dashes( $atts[ 'id' ] );
+		$instance_id = $form_css_id ? esc_attr( $form_css_id ) : esc_attr( 'login-form-' . rand() );
 		$output = bookacti_display_form( $form_id, $instance_id, 'login_form', false );
 	}
 
@@ -83,7 +84,7 @@ function bookacti_shortcode_booking_list( $atts = array(), $content = null, $tag
 	// If the user is not logged in, and if a login form is defined, show it instead of the booking list
 	if( ! is_user_logged_in() && ! empty( $atts[ 'login_form' ] ) ) {
 		$atts[ 'form' ] = $atts[ 'login_form' ];
-		return bookacti_shortcode_booking_login( $atts, $content, $tag );
+		return bookacti_shortcode_login_form( $atts, $content, $tag );
 	}
 	
 	// Format 'user_id' attribute

@@ -612,8 +612,9 @@ function bookacti_get_active_add_ons() {
 /**
  * Get add-on data by prefix
  * @since 1.7.14
+ * @version 1.8.0
  * @param string $prefix
- * @return string|array
+ * @return array
  */
 function bookacti_get_add_ons_data( $prefix = '' ) {
 	$addons_data = array( 
@@ -621,49 +622,56 @@ function bookacti_get_add_ons_data( $prefix = '' ) {
 			'title'			=> 'Display Pack', 
 			'slug'			=> 'display-pack', 
 			'plugin_name'	=> 'ba-display-pack', 
+			'end_of_life'	=> '', 
 			'download_id'	=> 482
 		),
 		'banp'	=> array( 
 			'title'			=> 'Notification Pack', 
 			'slug'			=> 'notification-pack', 
 			'plugin_name'	=> 'ba-notification-pack', 
+			'end_of_life'	=> '', 
 			'download_id'	=> 1393
 		),
 		'bapap' => array( 
 			'title'			=> 'Prices and Credits', 
 			'slug'			=> 'prices-and-credits', 
 			'plugin_name'	=> 'ba-prices-and-credits', 
+			'end_of_life'	=> '', 
 			'download_id'	=> 438
 		),
 		'baaf' => array( 
 			'title'			=> 'Advanced Forms', 
 			'slug'			=> 'advanced-forms', 
 			'plugin_name'	=> 'ba-advanced-forms', 
+			'end_of_life'	=> '', 
 			'download_id'	=> 2705
 		),
 		'baofc'	=> array( 
 			'title'			=> 'Order for Customers', 
 			'slug'			=> 'order-for-customers', 
 			'plugin_name'	=> 'ba-order-for-customers', 
+			'end_of_life'	=> '', 
 			'download_id'	=> 436
 		),
 		'bapos' => array( 
 			'title'			=> 'Points of Sale', 
 			'slug'			=> 'points-of-sale', 
 			'plugin_name'	=> 'ba-points-of-sale', 
+			'end_of_life'	=> '2021-04-30 23:59:59', // This add-on has been discontinued
 			'download_id'	=> 416
 		),
-		'batest' => array( 
+		'batest' => array( // For testing purpose only
 			'title'			=> 'Test add-on', 
 			'slug'			=> 'test', 
 			'plugin_name'	=> 'ba-test', 
+			'end_of_life'	=> '', 
 			'download_id'	=> 3011
 		)
 	);
 
 	if( ! $prefix ) { return $addons_data; }
 
-	return isset( $addons_data[ $prefix ] ) ? $addons_data[ $prefix ] : '';
+	return isset( $addons_data[ $prefix ] ) ? $addons_data[ $prefix ] : array();
 }
 
 
@@ -672,17 +680,16 @@ function bookacti_get_add_ons_data( $prefix = '' ) {
 // LOCALE
 
 /**
- * Detect current language with Qtranslate X or WPML
- * @version 1.6.0
+ * Detect current language with Qtranslate-XT or WPML
+ * @version 1.8.0
  * @param boolean $with_locale
  * @return string 
  */
 function bookacti_get_current_lang_code( $with_locale = false ) {
-
 	$locale		= get_locale();
 	$lang_code	= $with_locale ? $locale : substr( $locale, 0, strpos( $locale, '_' ) );
 
-	if( bookacti_is_plugin_active( 'qtranslate-x/qtranslate.php' ) ) {
+	if( bookacti_is_plugin_active( 'qtranslate-x/qtranslate.php' ) || bookacti_is_plugin_active( 'qtranslate-xt/qtranslate.php' ) ) {
 		if( function_exists( 'qtranxf_getLanguage' ) ) {
 			$lang_code = qtranxf_getLanguage();
 			if( $with_locale ) {
@@ -708,21 +715,18 @@ function bookacti_get_current_lang_code( $with_locale = false ) {
 
 /**
  * Get current translation plugin identifier
- * 
+ * @version 1.8.0
  * @return string
  */
 function bookacti_get_translation_plugin() {
-
 	$translation_plugin = '';
-	$is_qtranslate	= bookacti_is_plugin_active( 'qtranslate-x/qtranslate.php' );
-	$is_wpml		= bookacti_is_plugin_active( 'wpml/wpml.php' );
-
-	if ( $is_qtranslate ) {
+	
+	if( bookacti_is_plugin_active( 'qtranslate-x/qtranslate.php' ) || bookacti_is_plugin_active( 'qtranslate-xt/qtranslate.php' ) ) {
 		$translation_plugin = 'qtranslate';
-	} else if ( $is_wpml ) {
+	} else if ( bookacti_is_plugin_active( 'wpml/wpml.php' ) ) {
 		$translation_plugin = 'wpml';
 	}
-
+	
 	return $translation_plugin;
 }
 
@@ -739,9 +743,8 @@ function bookacti_translate_text( $text, $lang = '' ) {
 }
 
 
-// Translate text with QTranslate
-$is_qtranslate	= bookacti_is_plugin_active( 'qtranslate-x/qtranslate.php' );
-if( $is_qtranslate ) {
+// Translate text with qTranslate-XT
+if( bookacti_is_plugin_active( 'qtranslate-x/qtranslate.php' ) || bookacti_is_plugin_active( 'qtranslate-xt/qtranslate.php' ) ) {
 	/**
 	 * Translate a string into the desired language (default to current site language)
 	 * 
@@ -1053,19 +1056,19 @@ function bookacti_display_field( $args ) {
 			<input type='number' value='<?php echo esc_attr( $duration[ 'days' ] ); ?>' 
 					id='<?php echo esc_attr( $args[ 'id' ] ) . '-days'; ?>' class='bookacti-input bookacti-duration-field'
 					placeholder='365' min='0' max='99999' step='1' data-unit='day' onkeypress='return event.charCode >= 48 && event.charCode <= 57'/>
-			<label for='<?php echo esc_attr( $args[ 'id' ] ) . '-days'; ?>' class='bookacti-duration-field-label'><?php echo esc_html( _n( 'day', 'days', 2 ) ); ?></label>
+			<label for='<?php echo esc_attr( $args[ 'id' ] ) . '-days'; ?>' class='bookacti-duration-field-label'><?php echo esc_html( _n( 'day', 'days', 2, 'bookiing-activities' ) ); ?></label>
 		</div>
 		<div class='bookacti-duration-field-container'>
 			<input type='number' value='<?php echo esc_attr( $duration[ 'hours' ] ); ?>' 
 					id='<?php echo esc_attr( $args[ 'id' ] ) . '-hours'; ?>' class='bookacti-input bookacti-duration-field'
 					placeholder='23' min='0' max='23' step='1' data-unit='hour' onkeypress='return event.charCode >= 48 && event.charCode <= 57'/>
-			<label for='<?php echo esc_attr( $args[ 'id' ] ) . '-hours'; ?>' class='bookacti-duration-field-label'><?php echo esc_html( _n( 'hour', 'hours', 2 ) ); ?></label>
+			<label for='<?php echo esc_attr( $args[ 'id' ] ) . '-hours'; ?>' class='bookacti-duration-field-label'><?php echo esc_html( _n( 'hour', 'hours', 2, 'bookiing-activities' ) ); ?></label>
 		</div>
 		<div class='bookacti-duration-field-container'>
 			<input type='number' value='<?php echo esc_attr( $duration[ 'minutes' ] ); ?>' 
 					id='<?php echo esc_attr( $args[ 'id' ] ) . '-minutes'; ?>' class='bookacti-input bookacti-duration-field'
 					placeholder='59' min='0' max='59' step='1' data-unit='minute' onkeypress='return event.charCode >= 48 && event.charCode <= 57'/>
-			<label for='<?php echo esc_attr( $args[ 'id' ] ) . '-minutes'; ?>' class='bookacti-duration-field-label'><?php echo esc_html( _n( 'minute', 'minutes', 2 ) ); ?></label>
+			<label for='<?php echo esc_attr( $args[ 'id' ] ) . '-minutes'; ?>' class='bookacti-duration-field-label'><?php echo esc_html( _n( 'minute', 'minutes', 2, 'bookiing-activities' ) ); ?></label>
 		</div>
 		<?php if( $args[ 'label' ] ) { ?>
 		<span><?php echo $args[ 'label' ]; ?></span>
@@ -1357,6 +1360,49 @@ function bookacti_format_field_args( $args ) {
 
 
 /**
+ * Display a toggled fieldset with tags list and description
+ * @since 1.8.0
+ * @param array $args_raw
+ */
+function bookacti_display_tags_fieldset( $args_raw = array() ) {
+	$defaults = array(
+		'title' => esc_html__( 'Available tags', 'booking-activities' ),
+		'tip' => '',
+		'tags' => array(),
+		'id' => 'bookacti-tags-' . rand()
+	);
+	$args = wp_parse_args( $args_raw, $defaults );
+?>
+	<fieldset id='<?php echo $args[ 'id' ]; ?>-container' class='bookacti-tags-fieldset bookacti-fieldset-no-css'>
+		<legend class='bookacti-fullwidth-label'>
+			<?php 
+				echo $args[ 'title' ];
+				if( $args[ 'tip' ] ) { bookacti_help_tip( $args[ 'tip' ] ); }
+			?>
+			<span class='bookacti-show-hide-advanced-options bookacti-show-advanced-options' for='<?php echo $args[ 'id' ]; ?>' data-show-title='<?php esc_html_e( 'show', 'booking-activities' ); ?>' data-hide-title='<?php esc_html_e( 'hide', 'booking-activities' ); ?>'><?php esc_html_e( 'show', 'booking-activities' ); ?></span>
+		</legend>
+		<div id='<?php echo $args[ 'id' ]; ?>' class='bookacti-fieldset-toggled' style='display:none;'>
+			<?php
+				if( $args[ 'tags' ] ) {
+					$i = 1;
+					$nb = count( $args[ 'tags' ] );
+					foreach( $args[ 'tags' ] as $tag => $label ) {
+						?>
+							<code title='<?php echo esc_attr( $label ); ?>'><?php echo $tag; ?></code>
+						<?php
+						bookacti_help_tip( $label );
+						if( $i < $nb ) { echo '<br/>'; }
+						++$i;
+					}
+				}
+			?>
+		</div>
+	</fieldset>
+<?php
+}
+
+
+/**
  * Sanitize text from HTML editor in form fields
  * @since 1.5.2
  * @param string $html
@@ -1513,54 +1559,52 @@ function bookacti_display_user_selectbox( $raw_args ) {
 
 /**
  * Display tabs and their content
- * 
+ * @version 1.8.0
  * @param array $tabs
  * @param string $id
  */
 function bookacti_display_tabs( $tabs, $id ) {
-
-	if( ! isset( $tabs ) || ! is_array( $tabs ) || empty( $tabs ) || ! $id || ! is_string( $id ) ) {
-		exit;
-	}
+	if( ! isset( $tabs ) || ! is_array( $tabs ) || empty( $tabs ) || ! $id || ! is_string( $id ) ) { return; }
 
 	// Sort tabs in the desired order
 	usort( $tabs, 'bookacti_sort_array_by_order' );
-
-	echo "<div class='bookacti-tabs' >";
-
-		//Display tabs
-		echo '<ul>';
-		$i = 1;
-		foreach( $tabs as $tab ) {
-			$tab_id	= isset( $tab[ 'id' ] ) ? sanitize_title_with_dashes( $tab[ 'id' ] ) : $i;
-			echo  "<li class='bookacti-tab-" . esc_attr(  $tab_id ) . "' >"
-				.	"<a href='#bookacti-tab-content-" . esc_attr(  $tab_id ) . "' >" . esc_html( $tab[ 'label' ] ) . "</a>"
-				. "</li>";
-			$i++;
-		}
-		echo '</ul>';
-
-
-	//Display tab content
-	$i = 1;
-	foreach( $tabs as $tab ) {
-		$tab_id	= isset( $tab[ 'id' ] ) ? sanitize_title_with_dashes( $tab[ 'id' ] ) : $i;
-
-		echo "<div id='bookacti-tab-content-" . esc_attr( $tab_id ) . "' class='bookacti-tab-content' >";
-
-		if( isset( $tab[ 'callback' ] ) && function_exists( $tab[ 'callback' ] ) ) {
-			if( isset( $tab[ 'parameters' ] ) ) {
-				call_user_func( $tab[ 'callback' ], $tab[ 'parameters' ] );
-			} else {
-				call_user_func( $tab[ 'callback' ] );
+	?>
+	
+	<div class='bookacti-tabs'>
+		<ul>
+		<?php
+			// Display tabs
+			foreach( $tabs as $i => $tab ) {
+				$tab_id	= isset( $tab[ 'id' ] ) ? sanitize_title_with_dashes( $tab[ 'id' ] ) : $i;
+				?>
+				<li class='bookacti-tab-<?php echo esc_attr(  $tab_id ); ?>'>
+					<a href='#bookacti-tab-content-<?php echo esc_attr(  $tab_id ); ?>' ><?php echo esc_html( $tab[ 'label' ] ); ?></a>
+				</li>
+				<?php
 			}
-		}
-
-		echo "</div>";
-		$i++;
-	}
-
-	echo '</div>';
+		?>
+		</ul>
+		<?php
+			// Display tabs content
+			foreach( $tabs as $i => $tab ) {
+				$tab_id	= isset( $tab[ 'id' ] ) ? sanitize_title_with_dashes( $tab[ 'id' ] ) : $i;
+				?>
+				<div id='bookacti-tab-content-<?php echo esc_attr( $tab_id ); ?>' class='bookacti-tab-content bookacti-custom-scrollbar'>
+				<?php
+					if( isset( $tab[ 'callback' ] ) && is_callable( $tab[ 'callback' ] ) ) {
+						if( isset( $tab[ 'parameters' ] ) ) {
+							call_user_func( $tab[ 'callback' ], $tab[ 'parameters' ] );
+						} else {
+							call_user_func( $tab[ 'callback' ] );
+						}
+					}
+				?>
+				</div>
+				<?php
+			}
+		?>
+	</div>
+	<?php
 }
 
 
@@ -1720,7 +1764,7 @@ function bookacti_format_array_for_export( $array, $display_keys = false, $type 
 			if( $i>0 || $level>1 )	{ $string .= $type === 'csv' ? PHP_EOL : '\n'; }	// Else, one line per value
 			if( $level > 1 )		{ $string .= str_repeat( '    ', ($level-1) ); }	// And indent it according to its level in the array (for multidimentional array)
 		} else {
-			if( $i > 0 )			{ $string .= $type === 'csv' ? '; ' : ', '; }		// Separate each value with a semicolon
+			if( $i > 0 )			{ $string .= $type === 'csv' ? '; ' : ', '; }		// Separate each value with the appropriate delimiter
 		}
 		if( $this_display_keys )	{ $string .= $key . ': '; }							// Display key before value
 		

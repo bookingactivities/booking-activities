@@ -194,18 +194,71 @@ function bookacti_set_calendar_up( booking_system, reload_events ) {
 		bookacti_fetch_events_from_interval( booking_system, interval );
 	}
 	
-	// Refresh the display of selected events when you click on the View More link
+	
+	/**
+	 * Refresh the display of selected events when you click on the View More link
+	 */
 	calendar.off( 'click', '.fc-more' ).on( 'click', '.fc-more', function(){
 		bookacti_refresh_picked_events_on_calendar( booking_system );
 	});
 	
-	// Init on pick events actions
+	
+	/**
+	 * Trigger an event when the user start touching an event
+	 * @since 1.8.0
+	 * @param {Event} e
+	 */
+	calendar.off( 'touchstart', '.fc-event, .fc-list-item' ).on( 'touchstart', '.fc-event, .fc-list-item', function( e ){
+		var element = $j( this );
+		var event = {
+			'id': parseInt( element.data( 'event-id' ) ),
+			'start': moment.utc( element.data( 'event-start' ) ),
+			'end': moment.utc( element.data( 'event-end' ) )
+		};
+		booking_system.trigger( 'bookacti_event_touch_start', [ event, element, e ] );
+	});
+	
+	
+	/**
+	 * Trigger an event when the user stop touching an event
+	 * @since 1.8.0
+	 * @param {Event} e
+	 */
+	calendar.off( 'touchend', '.fc-event, .fc-list-item' ).on( 'touchend', '.fc-event, .fc-list-item', function( e ){
+		var element = $j( this );
+		var event = {
+			'id': parseInt( element.data( 'event-id' ) ),
+			'start': moment.utc( element.data( 'event-start' ) ),
+			'end': moment.utc( element.data( 'event-end' ) )
+		};
+		booking_system.trigger( 'bookacti_event_touch_end', [ event, element, e ] );
+	});
+	
+	
+	/**
+	 * Visually pick an event on the calendar - on bookacti_pick_event
+	 * @param {Event} e
+	 * @param {Object} picked_event
+	 */
 	booking_system.off( 'bookacti_pick_event' ).on( 'bookacti_pick_event', function( e, picked_event ){
 		bookacti_pick_event_on_calendar( $j( this ), picked_event );
 	});
+	
+	
+	/**
+	 * Visually unpick an event on the calendar - on bookacti_unpick_event
+	 * @param {Event} e
+	 * @param {Object} event_to_unpick
+	 * @param {Booolean} all
+	 */
 	booking_system.off( 'bookacti_unpick_event' ).on( 'bookacti_unpick_event', function( e, event_to_unpick, all ){
 		bookacti_unpick_event_on_calendar( $j( this ), event_to_unpick, all );
 	});
+	
+	
+	/**
+	 * Visually unpick all events of the calendar - on bookacti_unpick_all_events
+	 */
 	booking_system.off( 'bookacti_unpick_all_events' ).on( 'bookacti_unpick_all_events', function(){
 		bookacti_unpick_all_events_on_calendar( $j( this ) );
 	});

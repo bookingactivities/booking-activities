@@ -179,7 +179,7 @@ function bookacti_fetch_events( $raw_args = array() ) {
 
 	// Get events complying with parameters
 	$events = $wpdb->get_results( $query, OBJECT );
-
+	
 	// Transform raw events from database to array of individual events
 	$events_array = bookacti_get_events_array_from_db_events( $events, $args );
 

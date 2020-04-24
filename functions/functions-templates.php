@@ -432,7 +432,7 @@ function bookacti_update_exceptions( $event_id, $new_exceptions, $delete_old = t
 
 /**
  * Display a promo area of Prices and Credits add-on
- * @version 1.7.10
+ * @version 1.8.0
  * @param string $type
  */
 function bookacti_promo_for_bapap_addon( $type = 'event' ) {
@@ -446,17 +446,16 @@ function bookacti_promo_for_bapap_addon( $type = 'event' ) {
 			<p>
 			<?php 
 				/* translators: %s = add-on name */
-				echo sprintf( __( 'Thank you for purchasing %s add-on!', 'booking-activities' ), 
-							 '<strong>Prices and Credits</strong>' ); 
+				echo sprintf( esc_html__( 'Thank you for purchasing %s add-on!', 'booking-activities' ), '<strong>Prices and Credits</strong>' ); 
 			?>
 			</p><p>
-				<?php esc_html_e( "It seems you didn't activate your license yet. Please follow these instructions to activate your license:", 'booking-activities' ); ?>
+				<?php esc_html_e( 'It seems you didn\'t activate your license yet. Please follow these instructions to activate your license:', 'booking-activities' ); ?>
 			</p><p>
 				<strong>
-					<a href='https://booking-activities.fr/en/docs/user-documentation/get-started-with-prices-and-credits-add-on/prerequisite-installation-license-activation-of-prices-and-credits-add-on/?utm_source=plugin&utm_medium=plugin&utm_content=encart-promo-<?php echo $type; ?>' target='_blank' >
+					<a href='https://booking-activities.fr/en/docs/user-documentation/get-started-with-prices-and-credits-add-on/prerequisite-installation-license-activation-of-prices-and-credits-add-on/?utm_source=plugin&utm_medium=plugin&utm_content=encart-promo-<?php echo esc_attr( $type ); ?>' target='_blank' >
 						<?php 
 						/* translators: %s = add-on name */
-							echo sprintf( __( 'How to activate %s license?', 'booking-activities' ), 'Prices and Credits' ); 
+							echo sprintf( esc_html__( 'How to activate %s license?', 'booking-activities' ), 'Prices and Credits' ); 
 						?>
 					</a>
 				</strong>
@@ -474,76 +473,76 @@ function bookacti_promo_for_bapap_addon( $type = 'event' ) {
 			$event_name = '';
 			if( $type === 'group-of-events' ) {
 				/* translators: %s is the placeholder for Prices and Credits add-on link */
-				$message = esc_html( __( 'Set a price or a promotion in cash or in credits on your groups of events with %s add-on !', 'booking-activities' ) );
-				$event_name = __( 'My grouped event', 'booking-activities' );
+				$message = esc_html__( 'Set a price or a promotion in cash or in credits on your groups of events with %s add-on !', 'booking-activities' );
+				$event_name = esc_html__( 'My grouped event', 'booking-activities' );
 			} else {
 				/* translators: %s is the placeholder for Prices and Credits add-on link */
-				$message = esc_html( __( 'Set a price or a promotion in cash or in credits on your events with %s add-on !', 'booking-activities' ) );
-				$event_name = __( 'My event', 'booking-activities' );
+				$message = esc_html__( 'Set a price or a promotion in cash or in credits on your events with %s add-on !', 'booking-activities' );
+				$event_name = esc_html__( 'My event', 'booking-activities' );
 			}
 			echo sprintf( $message, $addon_link );
 			$price_div_style = 'display: block; width: fit-content; white-space: nowrap; margin: 4px auto; padding: 5px; font-weight: bolder; font-size: 1.2em; border: 1px solid #fff; -webkit-border-radius: 3px;  border-radius: 3px;  background-color: rgba(0,0,0,0.3); color: #fff;';
 			?>
 			<div class='bookacti-promo-events-examples'>
-				<a class="fc-time-grid-event fc-v-event fc-event fc-start fc-end bookacti-event-has-price bookacti-narrow-event" >
-					<div class="fc-content">
-						<div class="fc-time" data-start="7:00" data-full="7:00 AM - 8:30 AM">
+				<a class='fc-time-grid-event fc-v-event fc-event fc-start fc-end bookacti-event-has-price bookacti-narrow-event' >
+					<div class='fc-content'>
+						<div class='fc-time' data-start='7:00' data-full='7:00 AM - 8:30 AM'>
 							<span>7:00 - 8:30</span>
 						</div>
-						<div class="fc-title"><?php echo $event_name; ?></div>
+						<div class='fc-title'><?php echo $event_name; ?></div>
 					</div>
-					<div class="fc-bg"></div>
-					<div class="bookacti-availability-container">
-						<span class="bookacti-available-places bookacti-not-booked ">
-							<span class="bookacti-available-places-number">50</span>
-							<span class="bookacti-available-places-unit-name"> </span>
-							<span class="bookacti-available-places-avail-particle"> <?php _ex( 'avail.', 'Short for availabilities [plural noun]', 'booking-activities' ); ?></span>
+					<div class='fc-bg'></div>
+					<div class='bookacti-availability-container'>
+						<span class='bookacti-available-places bookacti-not-booked '>
+							<span class='bookacti-available-places-number'>50</span>
+							<span class='bookacti-available-places-unit-name'> </span>
+							<span class='bookacti-available-places-avail-particle'> <?php esc_html( _ex( 'avail.', 'Short for availabilities [plural noun]', 'booking-activities' ) ); ?></span>
 						</span>
 					</div>
-					<div class="bookacti-price-container" style="<?php echo $price_div_style; ?>">
-						<span class="bookacti-price bookacti-promo">$30</span>
+					<div class='bookacti-price-container' style='<?php echo esc_attr( $price_div_style ); ?>'>
+						<span class='bookacti-price bookacti-promo'>$30</span>
 					</div>
 				</a>
-				<a class="fc-time-grid-event fc-v-event fc-event fc-start fc-end bookacti-event-has-price bookacti-narrow-event" >
-					<div class="fc-content">
-						<div class="fc-time" data-start="7:00" data-full="7:00 AM - 8:30 AM">
+				<a class='fc-time-grid-event fc-v-event fc-event fc-start fc-end bookacti-event-has-price bookacti-narrow-event' >
+					<div class='fc-content'>
+						<div class='fc-time' data-start='7:00' data-full='7:00 AM - 8:30 AM'>
 							<span>7:00 - 8:30</span>
 						</div>
-						<div class="fc-title"><?php echo $event_name; ?></div>
+						<div class='fc-title'><?php echo $event_name; ?></div>
 					</div>
-					<div class="fc-bg"></div>
-					<div class="bookacti-availability-container">
-						<span class="bookacti-available-places bookacti-not-booked ">
-							<span class="bookacti-available-places-number">50</span>
-							<span class="bookacti-available-places-unit-name"> </span>
-							<span class="bookacti-available-places-avail-particle"> <?php _ex( 'avail.', 'Short for availabilities [plural noun]', 'booking-activities' ); ?></span>
+					<div class='fc-bg'></div>
+					<div class='bookacti-availability-container'>
+						<span class='bookacti-available-places bookacti-not-booked '>
+							<span class='bookacti-available-places-number'>50</span>
+							<span class='bookacti-available-places-unit-name'> </span>
+							<span class='bookacti-available-places-avail-particle'> <?php _ex( 'avail.', 'Short for availabilities [plural noun]', 'booking-activities' ); ?></span>
 						</span>
 					</div>
-					<div class="bookacti-price-container" style="<?php echo $price_div_style; ?>">
-						<span class="bookacti-price bookacti-promo">- 20%</span>
+					<div class='bookacti-price-container' style='<?php echo esc_attr( $price_div_style ); ?>'>
+						<span class='bookacti-price bookacti-promo'>- 20%</span>
 					</div>
 				</a>
-				<a class="fc-time-grid-event fc-v-event fc-event fc-start fc-end bookacti-event-has-price bookacti-narrow-event" >
-					<div class="fc-content">
-						<div class="fc-time" data-start="7:00" data-full="7:00 AM - 8:30 AM">
+				<a class='fc-time-grid-event fc-v-event fc-event fc-start fc-end bookacti-event-has-price bookacti-narrow-event' >
+					<div class='fc-content'>
+						<div class='fc-time' data-start='7:00' data-full='7:00 AM - 8:30 AM'>
 							<span>7:00 - 8:30</span>
 						</div>
-						<div class="fc-title"><?php echo $event_name; ?></div>
+						<div class='fc-title'><?php echo $event_name; ?></div>
 					</div>
-					<div class="fc-bg"></div>
-					<div class="bookacti-availability-container">
-						<span class="bookacti-available-places bookacti-not-booked ">
-							<span class="bookacti-available-places-number">50</span>
-							<span class="bookacti-available-places-unit-name"> </span>
-							<span class="bookacti-available-places-avail-particle"> <?php _ex( 'avail.', 'Short for availabilities [plural noun]', 'booking-activities' ); ?></span>
+					<div class='fc-bg'></div>
+					<div class='bookacti-availability-container'>
+						<span class='bookacti-available-places bookacti-not-booked '>
+							<span class='bookacti-available-places-number'>50</span>
+							<span class='bookacti-available-places-unit-name'> </span>
+							<span class='bookacti-available-places-avail-particle'> <?php _ex( 'avail.', 'Short for availabilities [plural noun]', 'booking-activities' ); ?></span>
 						</span>
 					</div>
-					<div class="bookacti-price-container" style="<?php echo $price_div_style; ?>">
-						<span class="bookacti-price bookacti-promo">
+					<div class='bookacti-price-container' style='<?php echo esc_attr( $price_div_style ); ?>'>
+						<span class='bookacti-price bookacti-promo'>
 							<?php 
 							$amount = 12;
 							/* translators: %d is an integer (an amount of credits) */
-							echo sprintf( _n( '%d credit', '%d credits', $amount ), $amount ); 
+							echo sprintf( _n( '%d credit', '%d credits', $amount, 'booking-activities' ), $amount ); 
 							?>
 						</span>
 					</div>

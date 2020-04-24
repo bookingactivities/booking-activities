@@ -24,7 +24,7 @@ function bookacti_get_default_settings() {
 		'delete_data_on_uninstall'				=> 0,
 		'allow_customers_to_cancel'				=> true,
 		'allow_customers_to_reschedule'			=> true,
-		'booking_changes_deadline'				=> 7*24,
+		'booking_changes_deadline'				=> 604800, // 7 days
 		'refund_actions_after_cancellation'		=> array(),
 		'notifications_from_name'				=> get_bloginfo( 'name' ),
 		'notifications_from_email'				=> get_bloginfo( 'admin_email' ),
@@ -360,7 +360,7 @@ function bookacti_settings_field_display_private_columns_callback() {
 		'name'	=> 'bookacti_general_settings[display_private_columns]',
 		'id'	=> 'display_private_columns',
 		'value'	=> bookacti_get_setting_value( 'bookacti_general_settings', 'display_private_columns' ),
-		'tip'	=> esc_html__( 'Allow to display private data in frontend booking lists (customers ids, names, emails, phones...) with the [bookingactivities_list columns="..."] shortcode.', 'booking-activities' )
+		'tip'	=> esc_html__( 'Allow to display private data in frontend booking lists (customers ids, names, emails, phones, roles...).', 'booking-activities' )
 	);
 	bookacti_display_field( $args );
 }

@@ -45,6 +45,8 @@ $j( document ).ready( function() {
 	/**
 	 * Change the export type according to the selected tab
 	 * @since 1.8.0
+	 * @param {Event} e
+	 * @param {Object} ui
 	 */
 	$j( '#bookacti-export-bookings-dialog' ).on( 'tabsactivate', '.bookacti-tabs', function( e, ui ) {
 		bookacti_change_export_type_according_to_active_tab();
@@ -231,7 +233,7 @@ function bookacti_dialog_cancel_booking( booking_id, booking_type ) {
 					'booking_id': booking_id,
 					'context': bookacti_localized.is_admin ? 'admin_booking_list' : 'user_booking_list',
 					'columns': columns,
-					'nonce': bookacti_localized.nonce_cancel_booking
+					'nonce': $j( '#bookacti_nonce_cancel_booking' ).val()
 				};
 				row.first().trigger( 'bookacti_booking_action_data', [ data, booking_id, booking_type, 'cancel' ] );
 				
@@ -921,6 +923,7 @@ function bookacti_dialog_reschedule_booking( booking_id ) {
 
 				// Display a loader
 				bookacti_booking_row_enter_loading_state( row );
+				bookacti_start_loading_booking_system( booking_system );
 
 				$j.ajax({
 					url: bookacti_localized.ajaxurl,
@@ -954,6 +957,7 @@ function bookacti_dialog_reschedule_booking( booking_id ) {
 					},
 					complete: function() {
 						bookacti_booking_row_exit_loading_state( row );
+						bookacti_stop_loading_booking_system( booking_system );
 					}
 				});
 			}

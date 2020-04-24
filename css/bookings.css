@@ -18,7 +18,7 @@
 #bookacti-bookings-calendar-settings		{ margin-left: 3px; vertical-align: text-bottom; cursor: pointer; color: #565d61; }
 #bookacti-picked-events-actions-container	{ vertical-align: top; }
 
-#bookacti-actions-filter-container input			{ display: block; margin-bottom: 2px; overflow: hidden; text-overflow: ellipsis; }
+#bookacti-actions-filter-container input			{ display: block; margin: auto; margin-bottom: 2px; overflow: hidden; text-overflow: ellipsis; }
 #bookacti-actions-filter-container input:last-child	{ margin-bottom: 0; }
 
 label[for="bookacti-booking-filter-dates-from"],
@@ -55,6 +55,7 @@ label[for="bookacti-booking-filter-dates-to"] + input#bookacti-booking-filter-da
 .bookacti-tooltips-container { margin-top: 20px; }
 .bookacti-tooltip-mouseover { 
 	z-index: 20; 
+	min-width: 320px;
 	max-width: 480px;
 	max-height: 480px;
 	padding: 15px 10px 15px 20px; 
@@ -373,9 +374,12 @@ tr.bookacti-booking-list-selected-row								{ background-color: rgba( 65, 143, 
 	.bookacti-booking-list-tooltip .bookacti-column-payment_status label { display: inline; }
 }
 
-/* Tablet only */
-@media screen and ( min-width: 361px ) and ( max-width: 960px ) {
-	
+/* Smartphone only */
+@media screen and ( max-width: 460px ) {
+	#bookacti-event-filter-container a, 
+	#bookacti-event-filter-container input,
+	#bookacti-picked-events-actions-container	{ display: block; margin: auto; margin-bottom: 2px; width: 250px; }
+	#bookacti-picked-events-actions-container	{ margin-top: 8px; }
 }
 
 /* Smartphone only */

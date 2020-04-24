@@ -34,6 +34,7 @@ $j( document ).ready( function() {
 
 	/**
 	 * Remove exception - on pressing 'Delete' key
+	 * @param {Event} key
 	 */
 	$j( '#bookacti-event-exceptions-selectbox' ).on( 'keyup', function( key ) { 
 		if( key.which === 46 ) {
@@ -262,7 +263,6 @@ function bookacti_validate_activity_form() {
 /**
  * Check event form
  * @version 1.8.0
- * @param {object} event
  * @returns {Boolean}
  */
 function bookacti_validate_event_form() {

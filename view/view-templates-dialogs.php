@@ -340,7 +340,7 @@ if ( ! empty( $users ) ) {
 			
 			/**
 			 * Display the 'Permission' tab content of calendar settings
-			 * @version 1.7.18
+			 * @version 1.8.0
 			 * @param array $params
 			 */
 			function bookacti_fill_template_tab_permissions( $params = array() ) {
@@ -354,12 +354,10 @@ if ( ! empty( $users ) ) {
 						$tip  = esc_html__( 'Choose who is allowed to access this calendar.', 'booking-activities' );
 						/* translators: %s = capabilities name */
 						$tip .= ' ' . sprintf( esc_html__( 'All administrators already have this privilege. If the selectbox is empty, it means that no users have capabilities such as %s.', 'booking-activities' ), '"bookacti_edit_templates" / "bookacti_read_templates"' );
-						/* translators: %1$s = Order for Customers add-on link. %2$s = Points of sale add-on link. %3$s = User role editor plugin name. */
-						$tip .= '<br/>' . sprintf( esc_html__( 'Operators from %1$s add-on and Point of sale managers from %2$s add-on have these capabilities. If you want to grant a user these capabilities, use a plugin such as %3$s.', 'booking-activities' ), 
-									'<a href="https://booking-activities.fr/en/downloads/order-for-customers/?utm_source=plugin&utm_medium=plugin&utm_campaign=order-for-customers&utm_content=infobulle-permission" target="_blank" >Order for Customers</a>',
-									'<a href="https://booking-activities.fr/en/downloads/points-of-sale/?utm_source=plugin&utm_medium=plugin&utm_campaign=points-of-sale&utm_content=infobulle-permission" target="_blank" >Points of Sale</a>',
-									'<a href="https://wordpress.org/plugins/user-role-editor/" target="_blank" >User Role Editor</a>'
-								);
+						/* translators: %1$s = Order for Customers add-on link. */
+						$tip .= '<br/>' . sprintf( esc_html__( 'Operators from %1$s add-on have these capabilities.', 'booking-activities' ), '<a href="https://booking-activities.fr/en/downloads/order-for-customers/?utm_source=plugin&utm_medium=plugin&utm_campaign=order-for-customers&utm_content=infobulle-permission" target="_blank" >Order for Customers</a>' );
+						/* translators: %1$s = User Role Editor plugin link. */
+						$tip .= ' ' . sprintf( esc_html__( 'If you want to grant a user these capabilities, use a plugin such as %1$s.', 'booking-activities' ), '<a href="https://wordpress.org/plugins/user-role-editor/" target="_blank" >User Role Editor</a>' );
 						bookacti_help_tip( $tip );
 					?>
 					</label>
@@ -462,6 +460,7 @@ if ( ! empty( $users ) ) {
 						'type'	=> 'color',
 						'name'	=> 'activity-color',
 						'id'	=> 'bookacti-activity-color',
+						'value' => '#3a87ad',
 						'title'	=> esc_html__( 'Color', 'booking-activities' ),
 						'tip'	=> esc_html__( 'Choose a color for the events of this activity.', 'booking-activities' )
 					)
@@ -582,7 +581,7 @@ if ( ! empty( $users ) ) {
 			
 			/**
 			 * Display the fields in the "Permissions" tab of the Activity dialog
-			 * @version 1.7.18
+			 * @version 1.8.0
 			 * @param array $params
 			 */
 			function bookacti_fill_activity_tab_permissions( $params = array() ) {
@@ -609,20 +608,22 @@ if ( ! empty( $users ) ) {
 							<option value='all' ><?php esc_html_e( 'Everybody', 'booking-activities' ); ?></option>
 						</select>
 					</div>
+					<div class='bookacti-roles-notice bookacti-info'>
+						<span class='dashicons dashicons-info'></span>
+						<span><?php esc_html_e( 'Use CTRL+Click to pick or unpick a role. Don\'t pick any role to allow everybody.', 'booking-activities' ); ?></span>
+					</div>
 				</div>
 				<div id='bookacti-activity-managers-container' class='bookacti-items-container' data-type='users' >
 					<label id='bookacti-activity-managers-title' class='bookacti-fullwidth-label' >
-						<?php 
-						esc_html_e( 'Who can manage this activity?', 'booking-activities' );
-						
-						$tip  = esc_html__( 'Choose who is allowed to change this activity parameters.', 'booking-activities' );
+					<?php 
+						esc_html_e( 'Who can manage this calendar?', 'booking-activities' );
+						$tip  = esc_html__( 'Choose who is allowed to access this calendar.', 'booking-activities' );
 						/* translators: %s = capabilities name */
-						$tip .= ' ' . sprintf( esc_html__( 'All administrators already have this privilege. If the selectbox is empty, it means that no users have capabilities such as %s.', 'booking-activities' ), '"bookacti_edit_activities"' );
-						$tip .= '<br/>' . sprintf( esc_html__( 'Operators from %1$s add-on and Point of sale managers from %2$s add-on have these capabilities. If you want to grant a user these capabilities, use a plugin such as %3$s.', 'booking-activities' ), 
-									'<a href="https://booking-activities.fr/en/downloads/order-for-customers/?utm_source=plugin&utm_medium=plugin&utm_campaign=order-for-customers&utm_content=infobulle-permission" target="_blank" >Order for Customers</a>',
-									'<a href="https://booking-activities.fr/en/downloads/points-of-sale/?utm_source=plugin&utm_medium=plugin&utm_campaign=points-of-sale&utm_content=infobulle-permission" target="_blank" >Points of Sale</a>',
-									'<a href="https://wordpress.org/plugins/user-role-editor/" target="_blank" >User Role Editor</a>'
-								);
+						$tip .= ' ' . sprintf( esc_html__( 'All administrators already have this privilege. If the selectbox is empty, it means that no users have capabilities such as %s.', 'booking-activities' ), '"bookacti_edit_templates" / "bookacti_read_templates"' );
+						/* translators: %1$s = Order for Customers add-on link. */
+						$tip .= '<br/>' . sprintf( esc_html__( 'Operators from %1$s add-on have these capabilities.', 'booking-activities' ), '<a href="https://booking-activities.fr/en/downloads/order-for-customers/?utm_source=plugin&utm_medium=plugin&utm_campaign=order-for-customers&utm_content=infobulle-permission" target="_blank" >Order for Customers</a>' );
+						/* translators: %1$s = User Role Editor plugin link. */
+						$tip .= ' ' . sprintf( esc_html__( 'If you want to grant a user these capabilities, use a plugin such as %1$s.', 'booking-activities' ), '<a href="https://wordpress.org/plugins/user-role-editor/" target="_blank" >User Role Editor</a>' );
 						bookacti_help_tip( $tip );
 					?>
 					</label>
@@ -942,7 +943,7 @@ if ( ! empty( $users ) ) {
 			
 			/**
 			 * Display the fields in the "Permissions" tab of the Group Category dialog
-			 * @version 1.7.18
+			 * @version 1.8.0
 			 * @param array $params
 			 */
 			function bookacti_fill_group_category_tab_permissions( $params = array() ) {
@@ -968,6 +969,10 @@ if ( ! empty( $users ) ) {
 							?>
 							<option value='all' ><?php esc_html_e( 'Everybody', 'booking-activities' ); ?></option>
 						</select>
+					</div>
+					<div class='bookacti-roles-notice bookacti-info'>
+						<span class='dashicons dashicons-info'></span>
+						<span><?php esc_html_e( 'Use CTRL+Click to pick or unpick a role. Don\'t pick any role to allow everybody.', 'booking-activities' ); ?></span>
 					</div>
 				</div>
 			<?php

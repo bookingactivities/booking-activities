@@ -298,7 +298,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			<?php do_action( 'bookacti_before_booking_list' ); ?>
 			<div id='bookacti-booking-list'>
 			<?php
-				$filters = array( 'fetch_meta' => true, 'merge_url_parameters' => true );
+				$filters = array( 'status' => $selected_status, 'fetch_meta' => true, 'merge_url_parameters' => true );
 				$bookings_list_table = new Bookings_List_Table();
 				$bookings_list_table->prepare_items( $filters );
 				$bookings_list_table->display();

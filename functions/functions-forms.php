@@ -1435,6 +1435,7 @@ function bookacti_get_login_fields_default_data() {
 /**
  * Get user meta fields default data
  * @since 1.6.0
+ * @version 1.8.0
  * @param array $keys
  * @return array
  */
@@ -1443,7 +1444,7 @@ function bookacti_get_login_type_field_default_options( $keys = array() ) {
 		'my_account' => array( 
 			'value'			=> 'my_account', 
 			'title'			=> esc_html__( 'Log in', 'booking-activities' ), 
-			'label'			=> esc_html__( 'Book with my account', 'booking-activities' ), 
+			'label'			=> esc_html__( 'Log in', 'booking-activities' ), 
 			'placeholder'	=> '', 
 			'tip'			=> '', 
 			'displayed'		=> 1
@@ -1609,7 +1610,7 @@ function bookacti_format_form_filters( $filters = array() ) {
 /**
  * Display 'managers' metabox content for forms
  * @since 1.5.0
- * @version 1.7.19
+ * @version 1.8.0
  */
 function bookacti_display_form_managers_meta_box( $form ) {
 	// Get current form managers option list
@@ -1656,15 +1657,11 @@ function bookacti_display_form_managers_meta_box( $form ) {
 		<label id='bookacti-form-managers-title' class='bookacti-fullwidth-label' for='bookacti-add-new-form-managers-select-box' >
 		<?php 
 			esc_html_e( 'Who can manage this form?', 'booking-activities' );
-			$tip  = __( 'Choose who is allowed to access this form.', 'booking-activities' );
+			$tip  = esc_html__( 'Choose who is allowed to access this form.', 'booking-activities' );
 			/* translators: %s = capabilities name */
-			$tip .= ' ' . sprintf( __( 'All administrators already have this privilege. If the selectbox is empty, it means that no users have capabilities such as %s.', 'booking-activities' ), '"bookacti_edit_forms"' );
-			$tip .= '<br/>' 
-				/* translators: %1$s = Points of sale add-on link. %2$s = User role editor plugin name. */
-				 .  sprintf( __( 'Point of sale managers from %1$s add-on have these capabilities. If you want to grant a user these capabilities, use a plugin such as %2$s.', 'booking-activities' ), 
-						'<a href="https://booking-activities.fr/en/downloads/points-of-sale/?utm_source=plugin&utm_medium=plugin&utm_campaign=points-of-sale&utm_content=infobulle-permission" target="_blank" >Points of Sale</a>',
-						'<a href="https://wordpress.org/plugins/user-role-editor/" target="_blank" >User Role Editor</a>'
-					);
+			$tip .= ' ' . sprintf( esc_html__( 'All administrators already have this privilege. If the selectbox is empty, it means that no users have capabilities such as %s.', 'booking-activities' ), '"bookacti_edit_forms"' );
+			/* translators: %1$s = User Role Editor plugin link. */
+			$tip .= '<br/>' . sprintf( esc_html__( 'If you want to grant a user these capabilities, use a plugin such as %1$s.', 'booking-activities' ), '<a href="https://wordpress.org/plugins/user-role-editor/" target="_blank" >User Role Editor</a>' );
 			bookacti_help_tip( $tip );
 		?>
 		</label>

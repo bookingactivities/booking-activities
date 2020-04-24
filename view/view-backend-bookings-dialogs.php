@@ -25,70 +25,108 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		</div>
 		<?php
 			$user_calendar_settings	= bookacti_format_bookings_calendar_settings( get_user_meta( get_current_user_id(), 'bookacti_bookings_calendar_settings', true ) );
+			
+			// Fill the array of tabs with their label, callback for content and display order
+			$calendar_tabs = apply_filters( 'bookacti_bookings_calendar_dialog_tabs', array (
+				array(	'label'			=> esc_html__( 'Display', 'booking-activities' ),
+						'id'			=> 'display',
+						'callback'		=> 'bookacti_fill_bookings_calendar_dialog_display_tab',
+						'parameters'	=> array( 'calendar_data' => $user_calendar_settings ),
+						'order'			=> 10 ),
+				array(	'label'			=> esc_html__( 'Calendar', 'booking-activities' ),
+						'id'			=> 'calendar',
+						'callback'		=> 'bookacti_fill_bookings_calendar_dialog_calendar_tab',
+						'parameters'	=> array( 'calendar_data' => $user_calendar_settings ),
+						'order'			=> 20 )
+			) );
+
+			// Display tabs
+			bookacti_display_tabs( $calendar_tabs, 'calendar' );
+
+			/**
+			 * Display the content of the "Display" tab of the "Bookings Calendar" dialog
+			 * @since 1.8.0
+			 * @param array $params
+			 */
+			function bookacti_fill_bookings_calendar_dialog_display_tab( $params ) {
+				do_action( 'bookacti_bookings_calendar_dialog_display_tab_before', $params );
+			?>
+				<fieldset>
+					<legend><?php esc_html_e( 'Display', 'booking-activities' ); ?></legend>
+					<?php
+						$display_fields = apply_filters( 'bookacti_bookings_calendar_display_fields', array( 
+							'show' => array( 
+								'name'		=> 'show',
+								'type'		=> 'checkbox',
+								'title'		=> esc_html__( 'Display the calendar by default', 'booking-activities' ),
+								'value'		=> $params[ 'calendar_data' ][ 'show' ], 
+								'tip'		=> esc_html__( 'Display the calendar by default on the bookings page.', 'booking-activities' )
+							),
+							'ajax' => array( 
+								'name'		=> 'ajax',
+								'type'		=> 'checkbox',
+								'title'		=> esc_html__( 'AJAX filtering', 'booking-activities' ),
+								'value'		=> $params[ 'calendar_data' ][ 'ajax' ], 
+								'tip'		=> esc_html__( 'Automatically filter the booking list when you change a filter or select an event.', 'booking-activities' )
+							),
+						), $params[ 'calendar_data' ] );
+						bookacti_display_fields( $display_fields );
+					?>
+				</fieldset>
+				<fieldset>
+					<legend><?php esc_html_e( 'Tooltip', 'booking-activities' ); ?></legend>
+					<?php
+						$undesired_columns = array( 'events', 'event_id', 'event_title', 'start_date', 'end_date', 'actions' );
+						$event_booking_list_columns = array_diff_key( bookacti_get_user_booking_list_columns_labels(), array_flip( $undesired_columns ) );
+
+						$tooltip_fields = apply_filters( 'bookacti_bookings_calendar_tooltip_fields', array( 
+							'tooltip_booking_list' => array( 
+								'name'		=> 'tooltip_booking_list',
+								'type'		=> 'checkbox',
+								'title'		=> esc_html__( 'Preview booking list', 'booking-activities' ),
+								'value'		=> $params[ 'calendar_data' ][ 'tooltip_booking_list' ], 
+								'tip'		=> esc_html__( 'Display the event booking list when you mouse over an event.', 'booking-activities' )
+							),
+							'tooltip_booking_list_columns' => array( 
+								'name'		=> 'tooltip_booking_list_columns',
+								'type'		=> 'select_items',
+								'title'		=> esc_html__( 'Preview booking list columns', 'booking-activities' ),
+								'id'		=> 'bookacti-event-booking-list-columns',
+								'options'	=> $event_booking_list_columns,
+								'value'		=> $params[ 'calendar_data' ][ 'tooltip_booking_list_columns' ],
+								'tip'		=> esc_html__( 'Add the columns in the order they will be displayed.', 'booking-activities' )
+							)
+						), $params[ 'calendar_data' ] );
+						bookacti_display_fields( $tooltip_fields );
+					?>
+				</fieldset>
+			<?php
+				do_action( 'bookacti_bookings_calendar_dialog_display_tab_after', $params );
+			}
+			
+			
+			/**
+			 * Display the content of the "Calendar" tab of the "Bookings Calendar" dialog
+			 * @since 1.8.0
+			 * @param array $params
+			 */
+			function bookacti_fill_bookings_calendar_dialog_calendar_tab( $params ) {
+				do_action( 'bookacti_bookings_calendar_dialog_calendar_tab_before', $params );
+			?>
+				<fieldset>
+					<legend><?php esc_html_e( 'Working time', 'booking-activities' ); ?></legend>
+					<?php 
+						$agenda_fields = bookacti_get_calendar_fields_default_data( array( 'minTime', 'maxTime' ) );
+						$agenda_fields[ 'minTime' ][ 'value' ] = $params[ 'calendar_data' ][ 'minTime' ];
+						$agenda_fields[ 'maxTime' ][ 'value' ] = $params[ 'calendar_data' ][ 'maxTime' ] !== '24:00' ? $params[ 'calendar_data' ][ 'maxTime' ] : '00:00';
+						bookacti_display_fields( $agenda_fields );
+					?>
+				</fieldset>
+			<?php
+				do_action( 'bookacti_bookings_calendar_dialog_calendar_tab_after', $params );
+			}
+			?>
 		
-			do_action( 'bookacti_bookings_calendar_settings_dialog_before', $user_calendar_settings );
-		?>
-		<fieldset>
-			<legend><?php esc_html_e( 'Display', 'booking-activities' ); ?></legend>
-			<?php
-				$display_fields = apply_filters( 'bookacti_bookings_calendar_display_fields', array( 
-					'show' => array( 
-						'name'		=> 'show',
-						'type'		=> 'checkbox',
-						'title'		=> esc_html__( 'Display the calendar by default', 'booking-activities' ),
-						'value'		=> $user_calendar_settings[ 'show' ], 
-						'tip'		=> esc_html__( 'Display the calendar by default on the bookings page.', 'booking-activities' )
-					),
-					'ajax' => array( 
-						'name'		=> 'ajax',
-						'type'		=> 'checkbox',
-						'title'		=> esc_html__( 'AJAX filtering', 'booking-activities' ),
-						'value'		=> $user_calendar_settings[ 'ajax' ], 
-						'tip'		=> esc_html__( 'Automatically filter the booking list when you change a filter or select an event.', 'booking-activities' )
-					),
-				), $user_calendar_settings );
-				bookacti_display_fields( $display_fields );
-			?>
-		</fieldset>
-		<fieldset>
-			<legend><?php esc_html_e( 'Tooltip', 'booking-activities' ); ?></legend>
-			<?php
-				$undesired_columns = array( 'events', 'event_id', 'event_title', 'start_date', 'end_date', 'actions' );
-				$event_booking_list_columns = array_diff_key( bookacti_get_user_booking_list_columns_labels(), array_flip( $undesired_columns ) );
-				
-				$tooltip_fields = apply_filters( 'bookacti_bookings_calendar_tooltip_fields', array( 
-					'tooltip_booking_list' => array( 
-						'name'		=> 'tooltip_booking_list',
-						'type'		=> 'checkbox',
-						'title'		=> esc_html__( 'Preview booking list', 'booking-activities' ),
-						'value'		=> $user_calendar_settings[ 'tooltip_booking_list' ], 
-						'tip'		=> esc_html__( 'Display the event booking list when you mouse over an event.', 'booking-activities' )
-					),
-					'tooltip_booking_list_columns' => array( 
-						'name'		=> 'tooltip_booking_list_columns',
-						'type'		=> 'select_items',
-						'title'		=> esc_html__( 'Booking list columns', 'booking-activities' ),
-						'id'		=> 'bookacti-event-booking-list-columns',
-						'options'	=> $event_booking_list_columns,
-						'value'		=> $user_calendar_settings[ 'tooltip_booking_list_columns' ],
-						'tip'		=> esc_html__( 'Add the columns in the order they will be displayed.', 'booking-activities' )
-					)
-				), $user_calendar_settings );
-				bookacti_display_fields( $tooltip_fields );
-			?>
-		</fieldset>
-		<fieldset>
-			<legend><?php esc_html_e( 'Working time', 'booking-activities' ); ?></legend>
-			<?php 
-				$agenda_fields = bookacti_get_calendar_fields_default_data( array( 'minTime', 'maxTime' ) );
-				$agenda_fields[ 'minTime' ][ 'value' ] = $user_calendar_settings[ 'minTime' ];
-				$agenda_fields[ 'maxTime' ][ 'value' ] = $user_calendar_settings[ 'maxTime' ] !== '24:00' ? $user_calendar_settings[ 'maxTime' ] : '00:00';
-				bookacti_display_fields( $agenda_fields );
-			?>
-		</fieldset>
-		<?php
-			do_action( 'bookacti_bookings_calendar_settings_dialog_after', $user_calendar_settings );
-		?>
 		<div class='bookacti-hidden-field'>
 			<?php bookacti_display_badp_promo(); ?>
 		</div>
@@ -206,7 +244,8 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		<?php
 		// Display tabs
 		$user_settings = bookacti_get_bookings_export_settings();
-		$export_columns = bookacti_get_bookings_export_columns();
+		$export_columns_raw = bookacti_get_bookings_export_columns();
+		$export_columns = array_combine( array_keys( $export_columns_raw ), array_map( 'bookacti_translate_text', $export_columns_raw ) );
 		$export_tabs = apply_filters( 'bookacti_export_bookings_dialog_tabs', array(
 			array( 
 				'label'		=> esc_html__( 'CSV', 'booking-activities' ),
@@ -329,29 +368,15 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 				<span class='dashicons dashicons-warning'></span>
 				<span><?php esc_html_e( 'HTML may not be supported by your calendar app.', 'booking-activities' ); ?></span>
 			</div>
-			<fieldset id='booakcti-ical-tags-container' class='bookacti-fieldset-no-css'>
-				<legend class='bookacti-fullwidth-label'>
-					<?php 
-						esc_html_e( 'Available tags', 'booking-activities' ); 
-						bookacti_help_tip( esc_html__( 'Use these tags in the event title and description to display event specific data.', 'booking-activities' ) );
-					?>
-					<span class='bookacti-show-hide-advanced-options bookacti-show-advanced-options' for='booakcti-ical-tags' data-show-title='<?php esc_html_e( 'show', 'booking-activities' ); ?>' data-hide-title='<?php esc_html_e( 'hide', 'booking-activities' ); ?>'><?php esc_html_e( 'show', 'booking-activities' ); ?></span>
-				</legend>
-				<div id='booakcti-ical-tags' class='bookacti-fieldset-toggled' style='display:none;'>
-					<?php
-						$i=1;
-						$tags = bookacti_get_bookings_export_event_tags();
-						foreach( $tags as $tag => $label ) {
-						?>
-							<code title='<?php echo esc_attr( $label ); ?>'><?php echo $tag; ?></code>
-						<?php
-							bookacti_help_tip( $label );
-							if( $i < count( $tags ) ) { echo '<br/>'; }
-							++$i;
-						}
-					?>
-				</div>
-			</fieldset>
+			<?php
+				$tags_args = array( 
+					'title' => esc_html__( 'Available tags', 'booking-activities' ),
+					'tip' => esc_html__( 'Use these tags in the event title and description to display event specific data.', 'booking-activities' ),
+					'tags' => bookacti_get_bookings_export_event_tags(),
+					'id' => 'bookacti-tags-ical-bookings-export'
+				);
+				bookacti_display_tags_fieldset( $tags_args );
+			?>
 			<fieldset id='booakcti-ical-booking-list-fields-container' class='bookacti-fieldset-no-css'>
 				<legend class='bookacti-fullwidth-label'>
 					<?php 

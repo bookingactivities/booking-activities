@@ -24,6 +24,23 @@ $j( document ).ready( function() {
 			data.locale = bookacti_localized.current_locale;
 		}
 	});
+	
+	
+	/**
+	 * Toggle list table rows on small screens
+	 * (must be used with AJAXed bookings list)
+	 * @since 1.8.0
+	 */
+	$j( '#bookacti-booking-list' ).on( 'click', 'tbody .toggle-row', function() {
+		$j( this ).closest( 'tr' ).toggleClass( 'is-expanded' );
+	});
+	
+	
+	/**
+	 * Disable the default toggle for list table rows on small screens
+	 * @since 1.8.0
+	 */
+	$j( '#bookacti-booking-list tbody' ).off( 'click', '.toggle-row' );
 });
 
 

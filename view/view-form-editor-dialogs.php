@@ -329,7 +329,7 @@ foreach( $fields_data as $field_name => $field_data ) {
 			<legend><?php esc_html_e( 'Past events', 'booking-activities' ); ?></legend>
 			<?php 
 				$fields = bookacti_get_booking_system_fields_default_data( array( 'past_events', 'past_events_bookable' ) );
-				bookacti_display_fields( $fields, array( 'hidden' => array( 'past_events_bookable' ) ) );
+				bookacti_display_fields( $fields );
 			?>
 		</fieldset>
 		<?php 
@@ -1041,7 +1041,18 @@ foreach( $fields_data as $field_name => $field_data ) {
 			}
 			
 			$ical_url = esc_url( home_url( '?action=bookacti_export_form_events&filename=booking-activities-events-form-' . $form_id . '&form_id=' . $form_id . '&key=' . $secret_key . '&past_events=auto&lang=' . $lang ) );
+			
+			$gcal_import_ical	= '<a href="https://support.google.com/calendar/answer/37118" target="_blank">' . esc_html_x( 'import', 'verb', 'booking-activities' ) . '</a>';
+			$gcal_sync_ical		= '<a href="https://support.google.com/calendar/answer/37100" target="_blank">' . esc_html_x( 'sync', 'verb', 'booking-activities' ) . '</a>';
+			$outlook_com_ical	= '<a href="https://support.office.com/en-us/article/import-or-subscribe-to-a-calendar-in-outlook-com-cff1429c-5af6-41ec-a5b4-74f2c278e98c" target="_blank">' . esc_html_x( 'import', 'verb', 'booking-activities' ) . ' / ' . esc_html_x( 'sync', 'verb', 'booking-activities' ) . '</a>';
+			$outlook_ms_ical	= '<a href="https://support.office.com/en-us/article/video-import-calendars-8e8364e1-400e-4c0f-a573-fe76b5a2d379" target="_blank">' . esc_html_x( 'import', 'verb', 'booking-activities' ) . ' / ' . esc_html_x( 'sync', 'verb', 'booking-activities' ) . '</a>';
 		?>
+		
+		<div class='bookacti-info'>
+			<span class='dashicons dashicons-info'></span>
+			<span><?php echo '<strong>' . esc_html__( 'Types of use:', 'booking-activities' ) . '</strong> Google Calendar (' . implode( ', ', array( $gcal_import_ical, $gcal_sync_ical ) ) . '), Outlook.com (' . $outlook_com_ical . '), MS Outlook (' . $outlook_ms_ical . ')...'; ?></span>
+		</div>
+		
 		<div>
 			<p><strong><?php esc_html_e( 'Secret address in iCal format', 'booking-activities' ); ?></strong></p>
 			<div class='bookacti_export_url'>

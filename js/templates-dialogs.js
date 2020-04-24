@@ -2,7 +2,7 @@
 
 /**
  * Initialize calendar editor dialogs
- * @version 1.7.18
+ * @version 1.8.0
  */
 function bookacti_init_template_dialogs() {
 	// Common param
@@ -113,7 +113,11 @@ function bookacti_init_template_dialogs() {
 		}
 	});
 
-	// Init update group of events dialog
+
+	/**
+	 * Init update group of events dialog
+	 * @version 1.8.0
+	 */
 	$j( '#bookacti-template-groups-of-events-container' ).on( 'click', '.bookacti-update-group-of-events', function() {
 		var group_id	= $j( this ).parents( '.bookacti-group-of-events' ).data( 'group-id' );
 		var is_selected	= $j( this ).parents( '.bookacti-group-of-events' ).hasClass( 'bookacti-selected-group' );
@@ -121,7 +125,7 @@ function bookacti_init_template_dialogs() {
 		if( ! is_selected ) {
 			are_selected = bookacti_select_events_of_group( group_id );
 		}
-		if( are_selected ) { bookacti_dialog_update_group_of_events( group_id ) };
+		if( are_selected ) { bookacti_dialog_update_group_of_events( group_id ); };
 	});
 
 	// Init update group category dialog
@@ -761,7 +765,7 @@ function bookacti_dialog_delete_event( event ) {
 					'action': 'bookactiDeleteEvent', 
 					'event_id': event.id,
 					'nonce': $j( '#nonce_delete_event' ).val()
-				}
+				};
 
 				$j( '#bookacti-delete-event-dialog' ).trigger( 'bookacti_deactivate_event_before', [ event, data ] );
 
@@ -1121,6 +1125,7 @@ function bookacti_dialog_create_activity() {
 	// Set init value
 	$j( '#bookacti-activity-template-id' ).val( bookacti.selected_template );
 	$j( '#bookacti-activity-activity-id' ).val( '' );
+	$j( '#bookacti-activity-color' ).val( '#3a87ad' );
 	$j( '#bookacti-activity-action' ).val( 'bookactiInsertActivity' );
 	
 	// Add the 'OK' button
@@ -1198,6 +1203,7 @@ function bookacti_dialog_create_activity() {
 /**
  * Open a dialog to update an activity
  * @version 1.8.0
+ * @param {Int} activity_id
  */
 function bookacti_dialog_update_activity( activity_id ) {
 	if( ! bookacti.selected_template || ! activity_id ) { return; }

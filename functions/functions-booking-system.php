@@ -143,7 +143,7 @@ function bookacti_get_booking_system_data( $atts ) {
 			} else {
 				$bounding_events = bookacti_fetch_events( array( 'templates' => $atts[ 'calendars' ], 'activities' => $atts[ 'activities' ], 'past_events' => $atts[ 'past_events' ], 'interval' => $availability_period, 'bounding_events_only' => true ) );	
 			}
-
+			
 			// Compute bounding dates
 			if( ! empty( $bounding_events[ 'events' ] ) ) {
 				$bounding_events_keys = array_keys( $bounding_events[ 'events' ] );
@@ -159,7 +159,7 @@ function bookacti_get_booking_system_data( $atts ) {
 				if( strtotime( $bounding_dates[ 'start' ] ) > strtotime( $booking_system_data[ 'start' ] ) )	{ $booking_system_data[ 'start' ] = $bounding_dates[ 'start' ]; }
 				if( strtotime( $bounding_dates[ 'end' ] ) < strtotime( $booking_system_data[ 'end' ] ) )		{ $booking_system_data[ 'end' ] = $bounding_dates[ 'end' ]; }
 				if( strtotime( $booking_system_data[ 'start' ] ) > strtotime( $booking_system_data[ 'end' ] ) )	{ $booking_system_data[ 'start' ] = $booking_system_data[ 'end' ]; }
-
+				
 				// Trim the availability period
 				$availability_period = array( 'start' => $booking_system_data[ 'start' ], 'end' => $booking_system_data[ 'end' ] );
 				
@@ -938,7 +938,7 @@ function bookacti_get_booking_system_fields_default_data( $fields = array() ) {
 			'type'			=> 'checkbox',
 			'name'			=> 'trim',
 			'title'			=> esc_html__( 'Trim empty days', 'booking-activities' ),
-			'tip'			=> esc_html__( 'Make the calendar start at the first event displayed and end at the last.', 'booking-activities' )
+			'tip'			=> esc_html__( 'Make the calendar start at the first displayed event and end at the last one.', 'booking-activities' )
 		);
 	}
 	
@@ -1393,6 +1393,7 @@ function bookacti_is_event_available_on_form( $form_id, $event_id, $event_start,
 		// Check if the event is past
 		$timezone					= new DateTimeZone( bookacti_get_setting_value( 'bookacti_general_settings', 'timezone' ) );
 		$started_events_bookable	= bookacti_get_setting_value( 'bookacti_general_settings', 'started_events_bookable' );
+		$date_format				= bookacti_get_message( 'date_format_long' );
 		$event_start_obj			= new DateTime( $event_start, $timezone );
 		$event_end_obj				= new DateTime( $event_end, $timezone );
 		$current_time				= new DateTime( 'now', $timezone );
@@ -1410,15 +1411,15 @@ function bookacti_is_event_available_on_form( $form_id, $event_id, $event_start,
 			
 		if( $event_start_obj < $calendar_start ) {
 			$validated[ 'error' ] = 'event_starts_before_availability_period';
-			$datetime_formatted = bookacti_format_datetime( $calendar_start->format( 'Y-m-d H:i:s' ), esc_html__( 'F d, Y', 'booking-activities' ) );
-			/* translators: %s is a formatted date "F d, Y" (e.g.: "January 20, 2018") */
+			$datetime_formatted = bookacti_format_datetime( $calendar_start->format( 'Y-m-d H:i:s' ), $date_format );
+			/* translators: %s is a formatted date and hour (e.g.: "January 20, 2018 10:53 am") */
 			$validated[ 'message' ] = sprintf( esc_html__( 'You cannot book an event starting before %s.', 'booking-activities' ), $datetime_formatted );
 			return $validated;
 		}
 		if( $event_end_obj > $calendar_end ) {
 			$validated[ 'error' ] = 'event_ends_after_availability_period';
-			$datetime_formatted = bookacti_format_datetime( $calendar_end->format( 'Y-m-d H:i:s' ), esc_html__( 'F d, Y', 'booking-activities' ) );
-			/* translators: %s is a formatted date "F d, Y" (e.g.: "January 20, 2018") */
+			$datetime_formatted = bookacti_format_datetime( $calendar_end->format( 'Y-m-d H:i:s' ), $date_format );
+			/* translators: %s is a formatted date "F d, Y" (e.g.: "January 20, 2018 10:53 am") */
 			$validated[ 'message' ] = sprintf( esc_html__( 'You cannot book an event taking place after %s.', 'booking-activities' ), $datetime_formatted );
 			return $validated;
 		}
@@ -1440,7 +1441,7 @@ function bookacti_is_event_available_on_form( $form_id, $event_id, $event_start,
  */
 function bookacti_is_group_of_events_available_on_form( $form_id, $group_id ) {
 	$validated		= array( 'status' => 'failed' );
-	$calendar_data	= bookacti_get_form_field_data_by_name( $form_id, 'calendar' );;
+	$calendar_data	= bookacti_get_form_field_data_by_name( $form_id, 'calendar' );
 	
 	// Check if the form exists and if it has a calendar field (compulsory)
 	$form_exists = ! empty( $calendar_data );
@@ -1512,6 +1513,7 @@ function bookacti_is_group_of_events_available_on_form( $form_id, $group_id ) {
 		// Check if the event is past
 		$timezone					= new DateTimeZone( bookacti_get_setting_value( 'bookacti_general_settings', 'timezone' ) );
 		$started_groups_bookable	= isset( $category[ 'settings' ][ 'started_groups_bookable' ] ) && in_array( $category[ 'settings' ][ 'started_groups_bookable' ], array( 0, 1, '0', '1', true, false ), true ) ? intval( $category[ 'settings' ][ 'started_groups_bookable' ] ) : bookacti_get_setting_value( 'bookacti_general_settings', 'started_groups_bookable' );
+		$date_format				= bookacti_get_message( 'date_format_long' );
 		$group_start				= new DateTime( $group->start, $timezone );
 		$group_end					= new DateTime( $group->end, $timezone );
 		$current_time				= new DateTime( 'now', $timezone );
@@ -1529,15 +1531,15 @@ function bookacti_is_group_of_events_available_on_form( $form_id, $group_id ) {
 		
 		if( $group_start < $calendar_start ) {
 			$validated[ 'error' ] = 'group_of_events_starts_before_availability_period';
-			$datetime_formatted = bookacti_format_datetime( $calendar_start->format( 'Y-m-d H:i:s' ), esc_html__( 'F d, Y', 'booking-activities' ) );
-			/* translators: %s is a formatted date "F d, Y" (e.g.: "January 20, 2018") */
+			$datetime_formatted = bookacti_format_datetime( $calendar_start->format( 'Y-m-d H:i:s' ), $date_format );
+			/* translators: %s is a formatted date (e.g.: "January 20, 2018 10:53 am") */
 			$validated[ 'message' ] = sprintf( esc_html__( 'You cannot book a group if any of its events starts before %s.', 'booking-activities' ), $datetime_formatted );
 			return $validated;
 		}
 		if( $group_end > $calendar_end ) {
 			$validated[ 'error' ] = 'group_of_events_ends_after_availability_period';
-			$datetime_formatted = bookacti_format_datetime( $calendar_end->format( 'Y-m-d H:i:s' ), esc_html__( 'F d, Y', 'booking-activities' ) );
-			/* translators: %s is a formatted date "F d, Y" (e.g.: "January 20, 2018") */
+			$datetime_formatted = bookacti_format_datetime( $calendar_end->format( 'Y-m-d H:i:s' ), $date_format );
+			/* translators: %s is a formatted date (e.g.: "January 20, 2018 10:53 am") */
 			$validated[ 'message' ] = sprintf( esc_html__( 'You cannot book a group if any of its events takes place after %s.', 'booking-activities' ), $datetime_formatted );
 			return $validated;
 		}
@@ -1699,7 +1701,7 @@ function bookacti_get_bounding_events_from_db_events( $events, $raw_args = array
 			
 			// Add occurences as single events
 			foreach( $occurences as $occurence ) {
-				$occurence_object = $event;
+				$occurence_object = clone $event;
 				$occurence_object->start = $occurence[ 'start' ];
 				$occurence_object->end = $occurence[ 'end' ];
 				$occurence_object->repeat_freq = 'none';
@@ -1709,13 +1711,13 @@ function bookacti_get_bounding_events_from_db_events( $events, $raw_args = array
 			}
 		} 
 		// For single events, add it as is
-		else { $single_events[] = $event; }
+		else { $single_events[] = clone $event; }
 		
 		foreach( $single_events as $single_event ) {
 			$start_datetime = DateTime::createFromFormat( 'Y-m-d H:i:s', $single_event->start );
 			$end_datetime = DateTime::createFromFormat( 'Y-m-d H:i:s', $single_event->end );
-			if( empty( $bounding_dates[ 'start' ] ) || ( ! empty( $bounding_dates[ 'start' ] ) && $start_datetime < $bounding_dates[ 'start' ] ) )	{ $bounding_dates[ 'start' ] = $start_datetime; $min_event = $single_event; }
-			if( empty( $bounding_dates[ 'end' ] ) || ( ! empty( $bounding_dates[ 'end' ] ) && $end_datetime > $bounding_dates[ 'end' ] ) )			{ $bounding_dates[ 'end' ] = $end_datetime; $max_event = $single_event; }
+			if( empty( $bounding_dates[ 'start' ] ) || ( ! empty( $bounding_dates[ 'start' ] ) && $start_datetime < $bounding_dates[ 'start' ] ) )	{ $bounding_dates[ 'start' ] = $start_datetime; $min_event = clone $single_event; }
+			if( empty( $bounding_dates[ 'end' ] ) || ( ! empty( $bounding_dates[ 'end' ] ) && $end_datetime > $bounding_dates[ 'end' ] ) )			{ $bounding_dates[ 'end' ] = $end_datetime; $max_event = clone $single_event; }
 		}
 	}
 	

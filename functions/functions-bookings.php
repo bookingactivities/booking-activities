@@ -2064,7 +2064,7 @@ function bookacti_get_user_booking_list_items( $filters, $columns = array() ) {
 			if( isset( $displayed_groups[ $booking->group_id ] ) 
 			||  empty( $booking_groups[ $booking->group_id ] ) ) { continue; }
 			
-			$group_id_link	= $current_user_can_manage_bookings ? '<a href="' . admin_url( 'admin.php?page=bookacti_bookings&booking_group_id=' . $group->id . '&group_by=booking_group' ) . '">' . $group->id . '</a>' : $group->id;
+			$group_id_link	= $current_user_can_manage_bookings ? '<a href="' . admin_url( 'admin.php?page=bookacti_bookings&booking_group_id=' . $group->id . '&group_by=booking_group&event_group_id=' . $group->event_group_id ) . '">' . $group->id . '</a>' : $group->id;
 			
 			$raw_id			= $group->id;
 			$tr_class		= 'bookacti-booking-group';
@@ -2088,8 +2088,8 @@ function bookacti_get_user_booking_list_items( $filters, $columns = array() ) {
 
 		// Single booking
 		} else {
-			$booking_id_link= $current_user_can_manage_bookings ? '<a href="' . admin_url( 'admin.php?page=bookacti_bookings&booking_id=' . $booking->id ) . '">' . $booking->id. '</a>' : $booking->id;
-			$group_id_link	= $current_user_can_manage_bookings ? '<a href="' . admin_url( 'admin.php?page=bookacti_bookings&booking_group_id=' . $booking->group_id . '&group_by=booking_group' ) . '">' . $booking->group_id . '</a>' : $booking->group_id;
+			$booking_id_link= $current_user_can_manage_bookings ? '<a href="' . admin_url( 'admin.php?page=bookacti_bookings&booking_id=' . $booking->id . '&event_id=' . $booking->event_id . '&event_start=' . $booking->event_start . '&event_end=' . $booking->event_end ) . '">' . $booking->id. '</a>' : $booking->id;
+			$group_id_link	= $current_user_can_manage_bookings ? '<a href="' . admin_url( 'admin.php?page=bookacti_bookings&booking_group_id=' . $booking->group_id . '&group_by=booking_group&event_group_id=' . ( $group ? $group->event_group_id : '' ) ) . '">' . $booking->group_id . '</a>' : $booking->group_id;
 			
 			$raw_id			= $booking->id;
 			$tr_class		= $booking->group_id ? 'bookacti-single-booking bookacti-gouped-booking bookacti-booking-group-id-' . $booking->group_id : 'bookacti-single-booking';
@@ -2288,7 +2288,7 @@ function bookacti_get_user_booking_list( $filters, $columns = array(), $per_page
 			?>
 			<span class='bookacti-user-booking-list-current-page'>
 				<span class='bookacti-user-booking-list-page-counter'><strong><?php echo $page_nb; ?></strong><span> / </span><em><?php echo $page_max; ?></em></span>
-				<span class='bookacti-user-booking-list-total-bookings'><?php /* translators: %s is the number of bookings */ echo esc_html( sprintf( _n( '%s booking', '%s bookings', $bookings_nb ), $bookings_nb ) ); ?></span>
+				<span class='bookacti-user-booking-list-total-bookings'><?php /* translators: %s is the number of bookings */ echo esc_html( sprintf( _n( '%s booking', '%s bookings', $bookings_nb, 'booking_activities' ), $bookings_nb ) ); ?></span>
 			</span>
 			<?php
 			if( $page_nb < $page_max ) {
@@ -2350,7 +2350,7 @@ function bookacti_get_user_booking_list_table_html( $booking_items, $columns = a
 		</tbody>
 	</table>
 	<?php
-	return ob_get_clean();
+	return apply_filters( 'bookacti_user_booking_list_table_html', ob_get_clean(), $booking_items, $columns );
 }
 
 
@@ -2488,7 +2488,10 @@ function bookacti_get_events_booking_lists( $filters_raw, $columns = array(), $a
 			$index = $booking_item[ 'event_id' ] . '_' . $booking_item[ 'start_date_raw' ];
 			if( empty( $ordered_items[ $index ] ) ) { continue; }
 			if( ! isset( $booking_lists[ $booking_item[ 'event_id' ] ] ) ) { $booking_lists[ $booking_item[ 'event_id' ] ] = array(); }
-			$booking_lists[ $booking_item[ 'event_id' ] ][ $booking_item[ 'start_date_raw' ] ] = bookacti_get_user_booking_list_table_html( $ordered_items[ $index ], $columns );
+			
+			$event_booking_list = apply_filters( 'bookacti_event_booking_list_table_html', bookacti_get_user_booking_list_table_html( $ordered_items[ $index ], $columns ), $booking_item[ 'event_id' ], $booking_item[ 'start_date_raw' ], $filters, $filters_raw, $columns, $atts );
+			
+			$booking_lists[ $booking_item[ 'event_id' ] ][ $booking_item[ 'start_date_raw' ] ] = $event_booking_list;
 		}
 	}
 	

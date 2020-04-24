@@ -3,7 +3,7 @@
  * Plugin Name: Booking Activities
  * Plugin URI: https://booking-activities.fr/en/?utm_source=plugin&utm_medium=plugin&utm_content=header
  * Description: Booking system specialized in activities (sports, cultural, leisure, events...). Works great with WooCommerce.
- * Version: 1.7.20
+ * Version: 1.8.0
  * Author: Booking Activities Team
  * Author URI: https://booking-activities.fr/en/?utm_source=plugin&utm_medium=plugin&utm_content=header
  * Text Domain: booking-activities
@@ -40,7 +40,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 
 // GLOBALS AND CONSTANTS
-if( ! defined( 'BOOKACTI_VERSION' ) )		{ define( 'BOOKACTI_VERSION', '1.7.20' ); }
+if( ! defined( 'BOOKACTI_VERSION' ) )		{ define( 'BOOKACTI_VERSION', '1.8.0' ); }
 if( ! defined( 'BOOKACTI_PLUGIN_NAME' ) )	{ define( 'BOOKACTI_PLUGIN_NAME', 'booking-activities' ); }
 
 
@@ -288,9 +288,15 @@ add_action( 'wp_enqueue_scripts', 'bookacti_enqueue_frontend_scripts', 30 );
 
 /**
  * Activate Booking Activities
- * @version 1.7.1
+ * @version 1.8.0
  */
 function bookacti_activate() {
+	if( ! is_blog_installed() ) { return; }
+	
+	// Make sure not to run this function twice
+	if( get_transient( 'bookacti_installing' ) === 'yes' ) { return; }
+	set_transient( 'bookacti_installing', 'yes', MINUTE_IN_SECONDS * 10 );
+	
 	// Allow users to manage Bookings
 	bookacti_set_role_and_cap();
 
@@ -299,21 +305,18 @@ function bookacti_activate() {
 	
 	// Keep in memory the first installed date
 	$install_date = get_option( 'bookacti-install-date' );
-	if( ! $install_date ) {
-		update_option( 'bookacti-install-date', date( 'Y-m-d H:i:s' ) );
-	}
-	
-	// Check if the plugin is being updated
-	bookacti_check_version( true );
+	if( ! $install_date ) { update_option( 'bookacti-install-date', date( 'Y-m-d H:i:s' ) ); }
 	
 	// Update current version
 	delete_option( 'bookacti_version' );
 	add_option( 'bookacti_version', BOOKACTI_VERSION );
-		
-	do_action( 'bookacti_activate' );
+	
+	delete_transient( 'bookacti_installing' );
 	
 	// Flush rules after install
 	flush_rewrite_rules();
+	
+	do_action( 'bookacti_activate' );
 }
 register_activation_hook( __FILE__, 'bookacti_activate' );
 
@@ -367,12 +370,13 @@ register_uninstall_hook( __FILE__, 'bookacti_uninstall' );
 
 /**
  * Update Booking Activities
- * @version 1.4.3
+ * @version 1.8.0
  */
-function bookacti_check_version( $from_activate = false ) {
+function bookacti_check_version() {
+	if( defined( 'IFRAME_REQUEST' ) ) { return; }
 	$old_version = get_option( 'bookacti_version' );
 	if( $old_version !== BOOKACTI_VERSION ) {
-		if( ! $from_activate ) { bookacti_activate(); }
+		bookacti_activate();
 		do_action( 'bookacti_updated', $old_version );
 	}
 }

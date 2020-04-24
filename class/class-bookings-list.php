@@ -288,9 +288,11 @@ if( ! class_exists( 'Bookings_List_Table' ) ) {
 					if( isset( $displayed_groups[ $booking->group_id ] ) 
 					||  empty( $booking_groups[ $booking->group_id ] ) ) { continue; }
 					
+					$group_id_link	= '<a href="' . admin_url( 'admin.php?page=bookacti_bookings&booking_group_id=' . $group->id . '&group_by=booking_group&event_group_id=' . $group->event_group_id ) . '">' . $group->id . '</a>';
+					
 					$raw_id			= $group->id;
 					$tr_class		= 'bookacti-booking-group';
-					$id				= $group->id . '<span class="bookacti-booking-group-indicator">' . esc_html_x( 'Group', 'noun', 'booking-activities' ) . '</span>';
+					$id				= $group_id_link . '<span class="bookacti-booking-group-indicator">' . esc_html_x( 'Group', 'noun', 'booking-activities' ) . '</span>';
 					$user_id		= $group->user_id;
 					$state			= bookacti_format_booking_state( $group->state, true );
 					$paid			= bookacti_format_payment_status( $group->payment_status, true );
@@ -307,9 +309,12 @@ if( ! class_exists( 'Bookings_List_Table' ) ) {
 					
 				// Single booking
 				} else {
+					$booking_id_link= '<a href="' . admin_url( 'admin.php?page=bookacti_bookings&booking_id=' . $booking->id . '&event_id=' . $booking->event_id . '&event_start=' . $booking->event_start . '&event_end=' . $booking->event_end ) . '">' . $booking->id. '</a>';
+					$group_id_link	= '<a href="' . admin_url( 'admin.php?page=bookacti_bookings&booking_group_id=' . $booking->group_id . '&group_by=booking_group&event_group_id=' . ( $group ? $group->event_group_id : '' ) ) . '">' . $booking->group_id . '</a>';
+					
 					$raw_id			= $booking->id;
 					$tr_class		= $booking->group_id ? 'bookacti-single-booking bookacti-gouped-booking bookacti-booking-group-id-' . $booking->group_id : 'bookacti-single-booking';
-					$id				= $booking->group_id ? $booking->id . '<span class="bookacti-booking-group-id" >' . $booking->group_id . '</span>' : $booking->id;
+					$id				= $booking->group_id ? $booking_id_link . '<span class="bookacti-booking-group-id" >' . $group_id_link . '</span>' : $booking_id_link;
 					$user_id		= $booking->user_id;
 					$state			= bookacti_format_booking_state( $booking->state, true );
 					$paid			= bookacti_format_payment_status( $booking->payment_status, true );

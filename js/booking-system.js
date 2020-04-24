@@ -2,6 +2,9 @@ $j( document ).ready( function() {
 	/**
 	 * Remove error messages after pciking new events
 	 * @since 1.7.19
+	 * @param {Event} e
+	 * @param {Int|String} group_id
+	 * @param {Object} event
 	 */
 	$j( 'body' ).on( 'bookacti_events_picked', '.bookacti-booking-system', function( e, group_id, event ) {
 		if( $j( this ).siblings( '.bookacti-notices' ).length ) {
@@ -13,6 +16,9 @@ $j( document ).ready( function() {
 	/**
 	 * Init actions to perfoms when the user picks an event
 	 * @version 1.8.0
+	 * @param {Event} e
+	 * @param {Int|String} group_id
+	 * @param {Object} event
 	 */
 	$j( 'body' ).on( 'bookacti_events_picked', '.bookacti-booking-system', function( e, group_id, event ){
 		// Retrieve the info required to show the desired events
@@ -56,6 +62,9 @@ $j( document ).ready( function() {
 	/**
 	 * Init actions to perfoms when the user picks a group of events
 	 * @version 1.8.0
+	 * @param {Event} e
+	 * @param {Int|String} group_id
+	 * @param {Object} event
 	 */
 	$j( 'body' ).on( 'bookacti_group_of_events_chosen', '.bookacti-booking-system', function( e, group_id, event ) {
 		// Retrieve the info required to show the desired events
@@ -92,8 +101,9 @@ $j( document ).ready( function() {
 	 * Remove temporary form after submit
 	 * @since 1.7.19
 	 * @version 1.8.0
-	 * @param {object} response
-	 * @param {object} form_data_object
+	 * @param {Event} e
+	 * @param {Object} response
+	 * @param {Object} form_data_object
 	 */
 	$j( 'body' ).on( 'bookacti_booking_form_submitted', 'form.bookacti-temporary-form', function( e, response, form_data_object ) {
 		if( $j( this ).find( '.bookacti-form-fields' ).length ) {
@@ -105,6 +115,9 @@ $j( document ).ready( function() {
 	/**
 	 * Do not init reschedule booking system automatically
 	 * @since 1.7.0
+	 * @param {Event} e
+	 * @param {Object} load
+	 * @param {Object} attributes
 	 */
 	$j( 'body' ).on( 'bookacti_init_booking_sytem', '.bookacti-booking-system#bookacti-booking-system-reschedule', function( e, load, attributes ) {
 		load.load = false;
@@ -155,8 +168,11 @@ $j( document ).ready( function() {
 	/**
 	 * Display the booking list tooltip when an event is hovered
 	 * @since 1.8.0
+	 * @param {Event} e
+	 * @param {Object} event
+	 * @param {HTMLElement} element
 	 */
-	$j( 'body' ).on( 'bookacti_event_mouse_over', '.bookacti-booking-system', function( e, event, element ) {
+	$j( 'body' ).on( 'bookacti_event_mouse_over bookacti_event_touch_start', '.bookacti-booking-system', function( e, event, element ) {
 		var booking_system		= $j( this );
 		var booking_system_id	= booking_system.attr( 'id' );
 		var attributes			= bookacti.booking_system[ booking_system_id ];
@@ -195,6 +211,9 @@ $j( document ).ready( function() {
 	/**
 	 * Remove the tooltips on mouse out
 	 * @since 1.8.0
+	 * @param {Event} e
+	 * @param {Object} event
+	 * @param {HTMLElement} element
 	 */
 	$j( 'body' ).on( 'bookacti_event_mouse_out', '.bookacti-booking-system', function( e, event, element ) {
 		// Clear the timeout
@@ -209,6 +228,38 @@ $j( document ).ready( function() {
 			bookacti_remove_mouseover_tooltip_monitor = setTimeout( function() {
 				tooltip.remove();
 			}, tooltip_mouseover_timeout );
+		}
+	});
+	
+	
+	/**
+	 * Remove the tooltips on click anywhere else than the tooltip
+	 * @since 1.8.0
+	 * @param {Event} e
+	 */
+	$j( document ).on( 'click', function( e ) {
+		// Do nothing if the click hit the tooltip
+		if( $j( e.target ).closest( '.bookacti-booking-list-tooltip.bookacti-tooltip-mouseover' ).length ) { return; }
+		
+		// Clear the timeout
+		if( typeof bookacti_display_bookings_tooltip_monitor !== 'undefined' ) { 
+			if( bookacti_display_bookings_tooltip_monitor ) { clearTimeout( bookacti_display_bookings_tooltip_monitor ); }
+		}
+	});
+	
+	
+	/**
+	 * Remove the tooltips on click anywhere else than the tooltip
+	 * @since 1.8.0
+	 * @param {Event} e
+	 */
+	$j( document ).on( 'click', function( e ) {
+		// Do nothing if the click hit the tooltip
+		if( $j( e.target ).closest( '.bookacti-tooltip-mouseover' ).length ) { return; }
+		
+		// Remove mouseover tooltips
+		if( $j( '.bookacti-tooltip-mouseover' ).length ) {
+			$j( '.bookacti-tooltip-mouseover' ).remove();
 		}
 	});
 	

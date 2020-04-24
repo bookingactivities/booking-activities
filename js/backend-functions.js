@@ -1,6 +1,6 @@
 $j( document ).ready( function() { 
 	/**
-	 * Update multilangual fields with Qtranslate X - on keyup
+	 * Update multilangual fields with qTranslate-XT - on keyup
 	 */
 	$j( '.qtranxs-translatable' ).on( 'keyup', function() {
 		bookacti_update_qtx_field( this );
@@ -336,8 +336,15 @@ function bookacti_fill_fields_from_array( fields, field_prefix, scope ) {
 			if( $j( scope + 'input[name="' + field_name + '"]' ).attr( 'type' ) === 'file' ) { 
 				return true; // Jump to next field
 			}
+			
+			// Default color
+			if( $j( scope + 'input[name="' + field_name + '"]' ).attr( 'type' ) === 'color' && ! value ) { 
+				value = '#3a87ad';
+			}
+			
 			// If the time value is 24:00, reset it to 00:00
 			if( $j( scope + 'input[name="' + field_name + '"]' ).attr( 'type' ) === 'time' && value === '24:00' ) { value = '00:00'; }
+			
 			$j( scope + 'input[name="' + field_name + '"]' ).val( value ).trigger( 'change' );;
 			$j( scope + 'textarea[name="' + field_name + '"]' ).val( value ).trigger( 'change' );;
 			
@@ -480,7 +487,7 @@ function bookacti_show_hide_template_related_options( template_ids, options ) {
 
 
 /**
- * Update multilangual fields with qtranslate X
+ * Update multilangual fields with qTranslate-XT
  * @param {HTMLElement} field
  */
 function bookacti_update_qtx_field( field ){
@@ -508,7 +515,7 @@ function bookacti_refresh_qtx_field( field ){
 		var h = qtx.refreshContentHook( field );
 		$j( field ).addClass('qtranxs-translatable');
 		
-		// Refresh tinyMCE (from "qtranslate-x\admin\js\common.js" updateTinyMCE line 588)
+		// Refresh tinyMCE (from "qtranslate-xt\admin\js\common.js" updateTinyMCE line 588)
 		if( typeof tinyMCE !== 'undefined' ) {
 			if( tinyMCE && $j( '#' + field.id ).hasClass( 'wp-editor-area' ) ) {
 				if( tinyMCE.get( field.id ) ) {

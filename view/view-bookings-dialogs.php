@@ -13,6 +13,7 @@ $messages = bookacti_get_messages();
 <!-- Frontend and backend - Cancel booking -->
 <div id='bookacti-cancel-booking-dialog' class='bookacti-backend-dialog bookacti-bookings-dialog' style='display:none;' title='<?php echo apply_filters( 'bookacti_translate_text', $messages[ 'cancel_dialog_title' ][ 'value' ] ); ?>' >
 <?php
+	wp_nonce_field( 'bookacti_cancel_booking', 'bookacti_nonce_cancel_booking', false );
 	echo wp_kses_post( wpautop( bookacti_get_message( 'cancel_dialog_content' ) ) );
 ?>
 </div>

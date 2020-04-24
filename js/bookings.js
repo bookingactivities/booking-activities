@@ -187,16 +187,6 @@ $j( document ).ready( function() {
 // BOOKING LIST
 	
 	/**
-	 * Apply some filters after the booking list calendar has set up
-	 * @version 1.7.0
-	 */
-	booking_system.on( 'bookacti_after_calendar_set_up', function() { 
-		// Apply date filter
-		bookacti_refresh_calendar_according_to_date_filter();
-	});
-	
-	
-	/**
 	 * Load tooltip for booking actions retrieved via AJAX
 	 * @version 1.8.0
 	 */

@@ -404,6 +404,7 @@ function bookacti_select_events_of_group( group_id ) {
 /**
  * Select an event
  * @version 1.8.0
+ * @param {Object} raw_event
  */
 function bookacti_select_event( raw_event ) {
 	// Return false if we don't have both event id and event start
@@ -1095,6 +1096,7 @@ function bookacti_load_activities_bound_to_template( selected_template_id ) {
 
 /**
  * Show event actions
+ * @param {HTMLElement} element
  */
 function bookacti_show_event_actions( element ) {
 	element.addClass( 'bookacti-event-over' );
@@ -1104,6 +1106,9 @@ function bookacti_show_event_actions( element ) {
 
 /**
  * Hide event actions
+ * @version 1.8.0
+ * @param {HTMLElement} element
+ * @param {Object} event
  */
 function bookacti_hide_event_actions( element, event ) {
 	element.removeClass( 'bookacti-event-over' );
@@ -1111,7 +1116,7 @@ function bookacti_hide_event_actions( element, event ) {
 	element.find( '.bookacti-event-action[data-hide-on-mouseout="1"]' ).hide();
 
 	// Check if the event is selected
-	var is_selected = false
+	var is_selected = false;
 	$j.each( bookacti.booking_system[ 'bookacti-template-calendar' ][ 'selected_events' ], function( i, selected_event ){
 		if( selected_event.id == event.id 
 		&&  selected_event.start.substr( 0, 10 ) === event.start.format( 'YYYY-MM-DD' ) ) {

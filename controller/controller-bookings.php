@@ -70,17 +70,18 @@ add_action( 'wp_ajax_bookactiGetBookingList', 'bookacti_controller_get_booking_l
 
 /**
  * AJAX Controller - Cancel a booking
- * @version 1.7.14
+ * @version 1.8.0
  */
 function bookacti_controller_cancel_booking() {
 	$booking_id = intval( $_POST[ 'booking_id' ] );
 
 	// Check nonce, capabilities and other params
-	$is_nonce_valid	= check_ajax_referer( 'bookacti_cancel_booking', 'nonce', false );
-	$is_allowed		= bookacti_user_can_manage_booking( $booking_id );
-	if( ! $is_nonce_valid || ! $is_allowed ) {
-		bookacti_send_json_not_allowed( 'cancel_booking' );
-	}
+	$is_nonce_valid = check_ajax_referer( 'bookacti_cancel_booking', 'nonce', false );
+	if( ! $is_nonce_valid ) { bookacti_send_json_invalid_nonce( 'cancel_booking' ); }
+	
+	// Check capabilities
+	$is_allowed = bookacti_user_can_manage_booking( $booking_id );
+	if( ! $is_allowed ) { bookacti_send_json_not_allowed( 'cancel_booking' ); }
 
 	$booking = bookacti_get_booking_by_id( $booking_id );
 	if( $booking->state === 'cancelled' ) {
@@ -332,6 +333,7 @@ function bookacti_controller_get_reschedule_booking_system_data() {
 
 	$booking_id	= intval( $_POST[ 'booking_id' ] );
 	$booking_data = bookacti_get_booking_data( $booking_id );
+	$mixed_data = array();
 
 	if( ! empty( $booking_data ) && is_array( $booking_data ) ) {
 		$calendar_field_data = ! empty( $booking_data[ 'form_id' ] ) ? bookacti_get_form_field_data_by_name( $booking_data[ 'form_id' ], 'calendar' ) : array();
@@ -360,8 +362,9 @@ function bookacti_controller_get_reschedule_booking_system_data() {
 			if( $booking_data[ 'activity_id' ] ) {
 				$atts[ 'calendars' ] = bookacti_get_templates_by_activity( $atts[ 'activities' ], true );
 				if( count( $atts[ 'calendars' ] ) !== 1 ) {
-					$atts[ 'display_data' ][ 'minTime' ] = '00:00';
-					$atts[ 'display_data' ][ 'maxTime' ] = '00:00';
+					$mixed_data = bookacti_get_mixed_template_data( $atts[ 'calendars' ], $atts[ 'past_events' ] );
+					$atts[ 'display_data' ][ 'minTime' ] = ! empty( $mixed_data[ 'settings' ][ 'minTime' ] ) ? $mixed_data[ 'settings' ][ 'minTime' ] : '00:00';
+					$atts[ 'display_data' ][ 'maxTime' ] = ! empty( $mixed_data[ 'settings' ][ 'maxTime' ] ) ? $mixed_data[ 'settings' ][ 'maxTime' ] : '00:00';
 				}
 			}
 		}
@@ -369,7 +372,7 @@ function bookacti_controller_get_reschedule_booking_system_data() {
 		// Add the rescheduled booking data to the booking system data
 		$atts[ 'rescheduled_booking_data' ] = $booking_data;
 		
-		$atts = apply_filters( 'bookacti_reschedule_booking_system_attributes', $atts, $booking_data, $booking_system_init_data );
+		$atts = apply_filters( 'bookacti_reschedule_booking_system_attributes', $atts, $booking_data, $booking_system_init_data, $mixed_data );
 		
 		bookacti_send_json( array( 'status' => 'success', 'booking_system_data' => $atts, 'booking_data' => $booking_data ), 'get_reschedule_booking_system_data' );
 	} else {
@@ -501,7 +504,7 @@ function bookacti_controller_get_grouped_bookings_rows() {
 	$booking_group_id	= intval( $_POST[ 'booking_group_id' ] );
 	$context			= ! empty( $_POST[ 'context' ] ) ? sanitize_title_with_dashes( $_POST[ 'context' ] ) : '';
 	$columns			= ! empty( $_POST[ 'columns' ] ) && is_array( $_POST[ 'columns' ] ) ? array_map( 'sanitize_title_with_dashes', $_POST[ 'columns' ] ) : array();
-	$rows				= $booking_group_id ? bookacti_get_booking_list_rows_according_to_context( $context, array( 'booking_group_id' => $booking_group_id ), $columns ) : '';
+	$rows				= $booking_group_id ? bookacti_get_booking_list_rows_according_to_context( $context, array( 'booking_group_id' => $booking_group_id, 'group_by' => 'none' ), $columns ) : '';
 
 	if( ! $rows ) { bookacti_send_json( array( 'status' => 'failed', 'error' => 'no_rows', 'message' => esc_html__( 'No bookings.', 'booking-activities' ) ), 'get_grouped_bookings_rows' ); }
 

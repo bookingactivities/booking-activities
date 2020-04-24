@@ -14,8 +14,11 @@ $j( document ).ready( function() {
 	 * Init WC actions to perfoms when the user picks an event
 	 * @since 1.7.0
 	 * @version 1.7.19
+	 * @param {Event} e
+	 * @param {Int|String} group_id
+	 * @param {object} event
 	 */
-	$j( 'body' ).on( 'bookacti_events_picked_after', '.bookacti-booking-system', function( e, group_id, event ){
+	$j( 'body' ).on( 'bookacti_events_picked_after', '.bookacti-booking-system', function( e, group_id, event ) {
 		// Retrieve the info required to show the desired events
 		var booking_system		= $j( this );
 		var booking_system_id	= booking_system.attr( 'id' );
@@ -45,6 +48,9 @@ $j( document ).ready( function() {
 	 * Init WC actions to perfoms when the user picks a group of events
 	 * @since 1.7.0
 	 * @version 1.7.19
+	 * @param {Event} e
+	 * @param {Int|String} group_id
+	 * @param {object} event
 	 */
 	$j( 'body' ).on( 'bookacti_group_of_events_chosen_after', '.bookacti-booking-system', function( e, group_id, event ) {
 		// Retrieve the info required to show the desired events
@@ -68,14 +74,14 @@ $j( document ).ready( function() {
  * Perform WC form action
  * @since 1.7.19
  * @version 1.8.0
- * @param {string} form_action
+ * @param {HTMLElement} booking_system
  */
 function bookacti_wc_perform_form_action( booking_system ) {
 	var booking_system_id = booking_system.attr( 'id' );
 	if( typeof bookacti.booking_system[ booking_system_id ] === 'undefined' ) { return; }
 	
 	var attributes = bookacti.booking_system[ booking_system_id ];
-	if( typeof attributes[ 'form_action' ] !== 'undefined' ) { return; }
+	if( typeof attributes[ 'form_action' ] === 'undefined' ) { return; }
 	
 	var form_action = attributes[ 'form_action' ];
 	if( $j.inArray( form_action, [ 'default', 'redirect_to_product_page', 'add_product_to_cart' ] ) === -1 ) { return; }

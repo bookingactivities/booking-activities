@@ -749,11 +749,11 @@ function bookacti_controller_validate_booking_form() {
 	}
 	
 	if( is_user_logged_in() ) {
-		$user_id = get_current_user_id();
+		$return_array[ 'user_id' ] = get_current_user_id();
 	} else {
 		// Retrieve login data
-		$login_values	= bookacti_sanitize_form_field_values( $_POST, 'login' );
-		$login_field		= array();
+		$login_values = bookacti_sanitize_form_field_values( $_POST, 'login' );
+		$login_field = array();
 		foreach( $form_fields_data as $form_field_data ) {
 			if( $form_field_data[ 'type' ] === 'login' ) { 
 				$login_field = $form_field_data;
@@ -786,6 +786,7 @@ function bookacti_controller_validate_booking_form() {
 			
 			do_action( 'bookacti_booking_form_user_registered', $user, $login_values, $login_field, $form_id );
 			
+			$return_array[ 'user_id' ] = $user->ID;
 			$return_array[ 'has_registered' ] = true;
 			$return_array[ 'message' ][ 'registered' ] = esc_html__( 'Your account has been successfully created.', 'booking-activities' );
 			
@@ -798,10 +799,11 @@ function bookacti_controller_validate_booking_form() {
 				bookacti_send_json( $user, 'submit_booking_form' );
 			}
 			
+			$return_array[ 'user_id' ] = $user->ID;
+			
 		// Book without account
 		} else if( $login_values[ 'login_type' ] === 'no_account' ) {
-			$user = new stdClass();
-			$user->ID = ! empty( $login_values[ 'email' ] ) ? $login_values[ 'email' ] : esc_attr( apply_filters( 'bookacti_unknown_user_id', 'unknown_user' ) );
+			$return_array[ 'user_id' ] = ! empty( $login_values[ 'email' ] ) ? $login_values[ 'email' ] : esc_attr( apply_filters( 'bookacti_unknown_user_id', 'unknown_user' ) );
 			
 			// Check that required register fields are filled
 			$register_fields_errors = array();
@@ -820,9 +822,6 @@ function bookacti_controller_validate_booking_form() {
 				bookacti_send_json( $return_array, 'submit_booking_form' );
 			}
 		}
-		
-		$user_id = is_a( $user, 'WP_User' ) ? $user->ID : '';
-		$return_array[ 'user_id' ] = $user_id;
 		
 		// Log the user in programmatically
 		if( $login_field[ 'automatic_login' ] && is_a( $user, 'WP_User' ) ) {
@@ -843,7 +842,7 @@ function bookacti_controller_validate_booking_form() {
 	
 	// Gether the form variables
 	$booking_form_values = apply_filters( 'bookacti_booking_form_values', array(
-		'user_id'			=> $user_id,
+		'user_id'			=> $return_array[ 'user_id' ],
 		'group_id'			=> is_numeric( $_POST[ 'bookacti_group_id' ] ) ? intval( $_POST[ 'bookacti_group_id' ] ) : 'single',
 		'event_id'			=> intval( $_POST[ 'bookacti_event_id' ] ),
 		'event_start'		=> bookacti_sanitize_datetime( $_POST[ 'bookacti_event_start' ] ),
