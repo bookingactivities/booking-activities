@@ -135,6 +135,15 @@ label[for="bookacti-booking-filter-dates-to"] + input#bookacti-booking-filter-da
 #bookacti-booking-list-container .column-creation_date	{ width: 12%; }
 #bookacti-booking-list-container .column-actions		{ width: 210px; }
 
+@media screen and ( max-width: 1280px ) { 
+	#bookacti-booking-list-container .check-column,
+	#bookacti-booking-list-container .column-id,
+	#bookacti-booking-list-container .column-quantity,
+	#bookacti-booking-list-container .column-payment_status,
+	#bookacti-booking-list-container .column-state		{ width: 30px; }
+	#bookacti-booking-list-container .column-actions	{ width: 106px; }
+}
+
 #bookacti-booking-list-container .column-id									{ padding: 8px 0; }
 #bookacti-booking-list-container .column-id .bookacti-booking-group-id::before	{ content: '\0021AA  '; }
 #bookacti-booking-list-container .column-id .bookacti-booking-group-indicator,

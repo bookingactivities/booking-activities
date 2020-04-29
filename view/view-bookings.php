@@ -68,7 +68,14 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 					<div id='bookacti-templates-filter-content'  class='bookacti-bookings-filter-content'>
 					<?php
 						// Format templates from URL
-						$selected_templates	= isset( $_REQUEST[ 'templates' ] ) ? $_REQUEST[ 'templates' ] : array();
+						$available_template_ids = array_map( 'intval', array_keys( $templates ) );
+						$desired_templates	= isset( $_REQUEST[ 'templates' ] ) && is_array( $_REQUEST[ 'templates' ] ) ? array_filter( array_map( 'intval', $_REQUEST[ 'templates' ] ) ) : array();
+						
+						$had_templates = ! empty( $desired_templates );
+						$all_templates = $bypass_template_managers_check || is_super_admin();
+						$allowed_templates = ! $all_templates ? array_values( array_intersect( $desired_templates, $available_template_ids ) ) : $desired_templates;
+						$selected_templates = ! empty( $allowed_templates ) ? $allowed_templates : ( ! $had_templates && $available_template_ids ? $available_template_ids : array( 'none' ) );
+						
 						$templates_select_options = array();
 						foreach( $templates as $template_id => $template ) {
 							$templates_select_options[ $template_id ] = esc_html( $template[ 'title' ] );
@@ -78,7 +85,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 							'name'		=> 'templates',
 							'id'		=> 'bookacti-booking-filter-templates',
 							'options'	=> $templates_select_options,
-							'value'		=> array_map( 'intval', $selected_templates ),
+							'value'		=> $all_templates ? array() : $selected_templates,
 							'multiple'	=> true
 						);
 						bookacti_display_field( $args );
@@ -92,7 +99,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 					<div class='bookacti-bookings-filter-content'>
 					<?php
 						// Format activities from URL
-						$activities = bookacti_fetch_activities_with_templates_association( array_keys( $templates ) );
+						$activities = bookacti_fetch_activities_with_templates_association( $available_template_ids );
 						$activities_select_options = array();
 						foreach ( $activities as $activity_id => $activity ) {
 							$activities_select_options[ $activity_id ] = esc_html( apply_filters( 'bookacti_translate_text', $activity[ 'title' ] ) );
@@ -298,7 +305,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			<?php do_action( 'bookacti_before_booking_list' ); ?>
 			<div id='bookacti-booking-list'>
 			<?php
-				$filters = array( 'status' => $selected_status, 'fetch_meta' => true, 'merge_url_parameters' => true );
+				$filters = array( 'templates' => $selected_templates, 'status' => $selected_status, 'fetch_meta' => true, 'merge_url_parameters' => true );
 				$bookings_list_table = new Bookings_List_Table();
 				$bookings_list_table->prepare_items( $filters );
 				$bookings_list_table->display();

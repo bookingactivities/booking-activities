@@ -93,7 +93,10 @@ function bookacti_get_booking_system( $atts ) {
  * @return array
  */
 function bookacti_get_booking_system_data( $atts ) {
-	$now = date( 'Y-m-d H:i:s' );
+	$timezone	= bookacti_get_setting_value( 'bookacti_general_settings', 'timezone' );
+	$now_dt		= new DateTime( 'now', new DateTimeZone( $timezone ) );
+	$now		= $now_dt->format( 'Y-m-d H:i:s' );
+	
 	$booking_system_data = array_merge( array(
 		'events' => array(),
 		'events_data' => array(),
@@ -2414,11 +2417,12 @@ function bookacti_convert_events_to_ical( $events, $name = '', $description = ''
 			'UID'		=> $uid,
 			'DTSTART'	=> $event_start->format( 'Ymd\THis' ),
 			'DTEND'		=> $event_end->format( 'Ymd\THis' ),
-			'SUMMARY'	=> bookacti_sanitize_ical_property( $event[ 'title' ], 'SUMMARY' )
-		), $event, $events, $vcalendar, $sequence );
+			'SUMMARY'	=> bookacti_sanitize_ical_property( $event[ 'title' ], 'SUMMARY' ),
+			'SEQUENCE'	=> $sequence
+		), $event, $events, $vcalendar );
 	}
 	
-	return bookacti_generate_ical( $vevents, $vcalendar, $sequence );
+	return bookacti_generate_ical( $vevents, $vcalendar );
 }
 
 

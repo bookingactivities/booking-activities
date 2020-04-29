@@ -344,6 +344,7 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 * Tweak - The reschedule booking system now uses all the possible initial booking form calendar field settings
 * Tweak - A message is displayed instead of the calendar if no events are available (only if the Trim option is active, in Calendar fields settings)
 * Tweak - Add help sections in the form editor, and in the notifications settings
+* Tweak - Bookings cannot be seen or changed if the user cannot manage the related calendar (except for administrators)
 * Fix - Redirect URL when booking on event click didn't work
 * Fix - Add compulsory hidden quantity field when booking on event click
 * Fix - All grouped bookings were displayed in each rows of the frontend booking list when group_by = none

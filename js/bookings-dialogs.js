@@ -828,6 +828,7 @@ function bookacti_dialog_reschedule_booking( booking_id ) {
 	if( bookacti_localized.is_admin ) { $j( '#bookacti-send-notifications-on-reschedule' ).prop( 'checked', false ); }
 	
 	// Clear old booking system info
+	booking_system.empty();
 	bookacti_clear_booking_system_displayed_info( booking_system );
 	
 	// Display a loader
@@ -844,10 +845,6 @@ function bookacti_dialog_reschedule_booking( booking_id ) {
 		dataType: 'json',
 		success: function( response ) {
 			if( response.status === 'success' ) {
-				// Clear displayed info
-				bookacti_clear_booking_system_displayed_info( booking_system );
-				
-				// init var
 				var booking_system_id	= booking_system.attr( 'id' );
 				booking_quantity		= response.booking_data.quantity;
 				
@@ -860,15 +857,15 @@ function bookacti_dialog_reschedule_booking( booking_id ) {
 				// Load booking system with new data
 				bookacti_reload_booking_system( booking_system );
 				
-				// Open the modal dialog
-				$j( '#bookacti-reschedule-booking-dialog' ).dialog( 'open' );
-				
 			} else if( response.status === 'failed' ) {
 				var error_message = typeof response.message !== 'undefined' ? response.message : bookacti_localized.error;
+				booking_system.siblings( '.bookacti-notices' ).html( "<ul class='bookacti-error-list'><li>" + error_message + "</li></ul>").show();
 				console.log( error_message );
 				console.log( response );
 			}
-
+			
+			// Open the modal dialog
+			$j( '#bookacti-reschedule-booking-dialog' ).dialog( 'open' );
 		},
 		error: function( e ){
 			console.log( 'AJAX ' + bookacti_localized.error );

@@ -118,10 +118,15 @@ function bookacti_shortcode_booking_list( $atts = array(), $content = null, $tag
 	
 	if( $atts[ 'user_id' ] === 'all'
 	|| ! empty( $atts[ 'in__user_id' ] )
-	|| ! empty( $atts[ 'not_in__user_id' ] ) )	{ $atts[ 'user_id' ] = ''; }
-	if( empty( $atts[ 'columns' ] ) )			{ $atts[ 'columns' ] = $default_atts[ 'columns' ]; }
-	$templates = $atts[ 'templates' ];
-	$atts[ 'templates' ] = false;
+	|| ! empty( $atts[ 'not_in__user_id' ] ) ) { $atts[ 'user_id' ] = ''; }
+	
+	if( empty( $atts[ 'columns' ] ) ) { $atts[ 'columns' ] = $default_atts[ 'columns' ]; }
+	
+	$templates = array();
+	if( isset( $atts[ 'templates' ] ) ) { 
+		$templates = $atts[ 'templates' ];
+		unset( $atts[ 'templates' ] );
+	}
 	
 	// Format booking filters
 	$filters = bookacti_format_booking_filters( $atts );

@@ -21,7 +21,7 @@ function bookacti_fetch_events( booking_system, interval ) {
         data: { 
 			'action': 'bookactiFetchEvents', 
 			'attributes': JSON.stringify( attributes ),
-			'is_admin': bookacti_localized.is_admin, 
+			'is_admin': bookacti_localized.is_admin ? 1 : 0, 
 			'interval': interval
 		},
         dataType: 'json',
@@ -109,7 +109,7 @@ function bookacti_reload_booking_system( booking_system, keep_picked_events ) {
         data: {	
 			'action': 'bookactiReloadBookingSystem', 
 			'attributes': JSON.stringify( attributes ),
-			'is_admin': bookacti_localized.is_admin
+			'is_admin': bookacti_localized.is_admin ? 1 : 0
 		},
         dataType: 'json',
         success: function( response ) {

@@ -4,8 +4,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 /**
  * Create Booking Activities database tables
- * 
- * @version 1.6.0
+ * @version 1.8.0
  * @global wpdb $wpdb
  */
 function bookacti_create_tables() {
@@ -145,6 +144,17 @@ function bookacti_create_tables() {
 		meta_value LONGTEXT,
 		PRIMARY KEY ( id ) ) ' . $collate . ';';
 
+	$table_exports_query = 'CREATE TABLE ' . BOOKACTI_TABLE_EXPORTS . ' ( 
+		id MEDIUMINT(9) UNSIGNED NOT NULL AUTO_INCREMENT, 
+		user_id MEDIUMINT(9) UNSIGNED, 
+		type VARCHAR(128), 
+		args TEXT, 
+		creation_date DATETIME, 
+		expiration_date DATETIME, 
+		sequence MEDIUMINT(9) UNSIGNED DEFAULT 0, 
+		active TINYINT(1) UNSIGNED NOT NULL DEFAULT 1, 
+		PRIMARY KEY ( id ) ) ' . $collate . ';';
+
 	$table_permissions_query = 'CREATE TABLE ' . BOOKACTI_TABLE_PERMISSIONS . ' ( 
 		id MEDIUMINT(9) UNSIGNED NOT NULL AUTO_INCREMENT, 
 		object_type VARCHAR(128), 
@@ -170,13 +180,14 @@ function bookacti_create_tables() {
 			. $table_bookings_query
 			. $table_booking_groups_query
 			. $table_meta_query	
+			. $table_exports_query	
 			. $table_permissions_query );
 }
 
 
 /**
  * Remove Bookings activities tables from database
- * @version 1.5.0
+ * @version 1.8.0
  * @global wpdb $wpdb
  */
 function bookacti_drop_tables() {
@@ -195,6 +206,7 @@ function bookacti_drop_tables() {
 	$wpdb->query( 'DROP TABLE IF EXISTS ' . BOOKACTI_TABLE_BOOKINGS . '; ' );
 	$wpdb->query( 'DROP TABLE IF EXISTS ' . BOOKACTI_TABLE_BOOKING_GROUPS . '; ' );
 	$wpdb->query( 'DROP TABLE IF EXISTS ' . BOOKACTI_TABLE_META . '; ' );
+	$wpdb->query( 'DROP TABLE IF EXISTS ' . BOOKACTI_TABLE_EXPORTS . '; ' );
 	$wpdb->query( 'DROP TABLE IF EXISTS ' . BOOKACTI_TABLE_PERMISSIONS . '; ' );
 }
 

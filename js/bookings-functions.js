@@ -59,6 +59,14 @@ function bookacti_filter_booking_list( paged ) {
 	data.paged = paged;
 	data.action = 'bookactiGetBookingList';
 	
+	// Select only available templates
+	if( ! data.templates ) {
+		data.templates = [];
+		$j( '#bookacti-booking-filter-templates option' ).each( function() {
+			data.templates.push( $j( this ).val() );
+		});
+	}
+	
 	booking_system.trigger( 'bookacti_filter_booking_list_data', [ data ] );
 	
 	// Loading feedback
@@ -203,7 +211,15 @@ function bookacti_reload_booking_system_according_to_filters( booking_system ) {
 	var selected_from		= $j( '#bookacti-booking-filter-dates-from' ).val();
 	var selected_end		= $j( '#bookacti-booking-filter-dates-end' ).val();
 	
-	bookacti.booking_system[ booking_system_id ][ 'calendars' ]			= selected_templates ? selected_templates : [];
+	// Select only available templates
+	if( ! selected_templates ) {
+		selected_templates = [];
+		$j( '#bookacti-booking-filter-templates option' ).each( function() {
+			selected_templates.push( $j( this ).val() );
+		});
+	}
+	
+	bookacti.booking_system[ booking_system_id ][ 'calendars' ]			= selected_templates;
 	bookacti.booking_system[ booking_system_id ][ 'activities' ]		= [];
 	bookacti.booking_system[ booking_system_id ][ 'group_categories' ]	= [];
 	bookacti.booking_system[ booking_system_id ][ 'status' ]			= selected_status ? selected_status : [];
@@ -355,7 +371,7 @@ function bookacti_display_grouped_bookings( booking_group_id ) {
 	var data = { 
 		'action': 'bookactiGetGroupedBookingsRows',
 		'booking_group_id': booking_group_id,
-		'is_admin': bookacti_localized.is_admin,
+		'is_admin': bookacti_localized.is_admin ? 1 : 0,
 		'context': bookacti_localized.is_admin ? 'admin_booking_list' : 'user_booking_list',
 		'columns': columns,
 		'nonce': bookacti_localized.nonce_get_booking_rows

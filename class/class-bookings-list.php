@@ -260,7 +260,7 @@ if( ! class_exists( 'Bookings_List_Table' ) ) {
 			$displayed_groups	= array();
 			if( ( $may_have_groups || $single_only ) && $this->group_ids ) {
 				// Get only the groups that will be displayed
-				$group_filters = bookacti_format_booking_filters( array( 'in__booking_group_id' => $this->group_ids, 'templates' => '', 'fetch_meta' => true ) );
+				$group_filters = bookacti_format_booking_filters( array( 'in__booking_group_id' => $this->group_ids, 'fetch_meta' => true ) );
 				$booking_groups = bookacti_get_booking_groups( $group_filters );
 			}
 			
@@ -453,8 +453,8 @@ if( ! class_exists( 'Bookings_List_Table' ) ) {
 		 * Format filters passed as argument or retrieved via POST or GET
 		 * @version 1.8.0
 		 * @access public
-		 * @param array $filters
-		 * @param boolean $from_url Merge $filters_raw with URL parameters
+		 * @param array $filters_raw
+		 * @param boolean $merge_url_param Merge $filters_raw with URL parameters if not set
 		 * @return array
 		 */
 		public function format_filters( $filters_raw = array(), $merge_url_param = false ) {
@@ -472,7 +472,7 @@ if( ! class_exists( 'Bookings_List_Table' ) ) {
 				// Get the filters from URL
 				$default_filters = bookacti_get_default_booking_filters();
 				foreach( $default_filters as $filter_name => $default_value ) {
-					if( isset( $_REQUEST[ $filter_name ] ) ) { $filters_raw[ $filter_name ] = $_REQUEST[ $filter_name ]; }
+					if( isset( $_REQUEST[ $filter_name ] ) && ! isset( $filters_raw[ $filter_name ] ) ) { $filters_raw[ $filter_name ] = $_REQUEST[ $filter_name ]; }
 					else if( ! empty( $alt_filter_names[ $filter_name ] ) ) {
 						foreach( $alt_filter_names[ $filter_name ] as $alt_filter_name ) {
 							if( isset( $_REQUEST[ $alt_filter_name ] ) ) { $filters_raw[ $filter_name ] = $_REQUEST[ $alt_filter_name ]; }

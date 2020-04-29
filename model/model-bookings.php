@@ -477,7 +477,7 @@ function bookacti_get_bookings( $filters ) {
 		// Get the bookings meta and the booking groups meta
 		$bookings_meta			= $booking_ids ? bookacti_get_metadata( 'booking', $booking_ids ) : array();
 		$booking_groups_meta	= $booking_group_ids ? bookacti_get_metadata( 'booking_group', $booking_group_ids ) : array();
-		foreach( $bookings as $booking_id => $booking ) {
+		foreach( $bookings_array as $booking_id => $booking ) {
 			// Merge the booking group meta with the booking meta
 			$booking_meta = array();
 			if( ! empty( $bookings_meta[ $booking->id ] ) ) {
@@ -488,7 +488,7 @@ function bookacti_get_bookings( $filters ) {
 			}
 			// Add the booking meta to booking data
 			foreach( $booking_meta as $meta_key => $meta_value ) {
-				$bookings[ $booking_id ]->{$meta_key} = $meta_value;
+				$bookings_array[ $booking_id ]->{$meta_key} = $meta_value;
 			}
 		}
 	}
@@ -2391,11 +2391,11 @@ function bookacti_get_booking_groups( $filters ) {
 	if( $filters[ 'fetch_meta' ] ) {
 		// Get the booking groups meta
 		$booking_groups_meta = $booking_group_ids ? bookacti_get_metadata( 'booking_group', $booking_group_ids ) : array();
-		foreach( $booking_groups as $booking_group_id => $booking_group ) {
+		foreach( $booking_groups_array as $booking_group_id => $booking_group ) {
 			$booking_group_meta = ! empty( $booking_groups_meta[ $booking_group->id ] ) ? $booking_groups_meta[ $booking_group->id ] : array();
 			// Add the booking group meta to booking group data
 			foreach( $booking_group_meta as $meta_key => $meta_value ) {
-				$booking_groups[ $booking_group_id ]->{$meta_key} = $meta_value;
+				$booking_groups_array[ $booking_group_id ]->{$meta_key} = $meta_value;
 			}
 		}
 	}
@@ -2654,4 +2654,315 @@ function bookacti_delete_booking_group_bookings( $booking_group_id ) {
 	}
 
 	return $deleted;
+}
+
+
+
+
+/** EXPORT **/
+
+/**
+ * Retrieve exports from database
+ * @since 1.8.0
+ * @param array $raw_filters
+ * @return array
+ */
+function bookacti_get_exports( $raw_filters = array() ) {
+	$default_filters = array(
+		'export_ids' => array(),
+		'types' => array(),
+		'user_ids' => array(),
+		'expiration_delay' => 0,	// INT or FALSE (0 for non-expired, INT for expire in n days, FALSE for all)
+		'active_only' => 1			// 1 for active only, 0 for all
+	);
+	$filters = wp_parse_args( $raw_filters, $default_filters );
+	
+	global $wpdb;
+	
+	$query = 'SELECT * FROM ' . BOOKACTI_TABLE_EXPORTS . ' as XP WHERE TRUE ';
+	
+	$variables = array();
+	$exports = array();
+	
+	if( $filters[ 'export_ids' ] ) {
+		$query .= ' AND XP.id IN ( %d ';
+		$array_count = count( $filters[ 'export_ids' ] );
+		if( $array_count >= 2 ) {
+			for( $i=1; $i<$array_count; ++$i ) {
+				$query .= ', %d ';
+			}
+		}
+		$query .= ') ';
+		$variables = array_merge( $variables, $filters[ 'export_ids' ] );
+	}
+	
+	if( $filters[ 'types' ] ) {
+		$query .= ' AND XP.types IN ( %s ';
+		$array_count = count( $filters[ 'types' ] );
+		if( $array_count >= 2 ) {
+			for( $i=1; $i<$array_count; ++$i ) {
+				$query .= ', %s ';
+			}
+		}
+		$query .= ') ';
+		$variables = array_merge( $variables, $filters[ 'types' ] );
+	}
+	
+	if( $filters[ 'user_ids' ] ) {
+		$query .= ' AND XP.user_id IN ( %d ';
+		$array_count = count( $filters[ 'user_ids' ] );
+		if( $array_count >= 2 ) {
+			for( $i=1; $i<$array_count; ++$i ) {
+				$query .= ', %d ';
+			}
+		}
+		$query .= ') ';
+		$variables = array_merge( $variables, $filters[ 'user_ids' ] );
+	}
+	
+	if( is_numeric( $filters[ 'expiration_delay' ] ) ) {
+		$query .= ' AND XP.expiration_date >= DATE_SUB( UTC_TIMESTAMP(), INTERVAL %d DAY ) ';
+		$variables[] = $filters[ 'expiration_delay' ];
+	}
+	
+	if( $filters[ 'active_only' ] ) {
+		$query .= ' AND XP.active = 1 ';
+	}
+	
+	if( $variables ) {
+		$query = $wpdb->prepare( $query, $variables );
+	}
+	
+	$results = $wpdb->get_results( $query, ARRAY_A );
+	
+	if( ! $results ) { return $exports; }
+	
+	// Index by ID
+	foreach( $results as $result ) {
+		$exports[ $result[ 'id' ] ] = array();
+		foreach( $result as $key => $value ) {
+			$exports[ $result[ 'id' ] ][ $key ] = maybe_unserialize( $value );
+		}
+	}
+	
+	return $exports;
+}
+
+
+/**
+ * Get an export by ID
+ * @since 1.8.0
+ * @param int $export_id
+ * @param array $filters
+ * @return array|false
+ */
+function bookacti_get_export( $export_id, $filters = array() ) {
+	$filters[ 'export_ids' ] = array( $export_id );
+	$exports = bookacti_get_exports( $filters );
+	
+	if( ! $exports ) { return $exports; }
+	if( empty( $exports[ $export_id ] ) ) { return false; }
+	
+	return $exports[ $export_id ];
+}
+
+
+/**
+ * Insert a new export
+ * @since 1.8.0
+ * @global wpdb $wpdb
+ * @param array $raw_args
+ * @return int|false
+ */
+function bookacti_insert_export( $raw_args = array() ) {
+	$now_dt = new DateTime( 'now', new DateTimeZone( 'UTC' ) );
+	$expiration_delay = apply_filters( 'bookacti_export_expiry_delay', 31 );
+	$default_args = array(
+		'type' => '',
+		'user_id' => 0,
+		'creation_date' => date( 'Y-m-d H:i:s' ),
+		'expiration_date' => date( 'Y-m-d H:i:s', strtotime( '+' . $expiration_delay . ' days' ) ),
+		'sequence' => 0,
+		'args' => array(),
+		'active' => 1
+	);
+	$args = wp_parse_args( $raw_args, $default_args );
+	
+	global $wpdb;
+	
+	$query = 'INSERT INTO ' . BOOKACTI_TABLE_EXPORTS 
+			. ' ( user_id, type, args, creation_date, expiration_date, sequence, active ) ' 
+			. ' VALUES ( NULLIF( %d, 0 ), %s, %s, %s, NULLIF( %s, "" ), %d, %d )';
+	
+	$variables = array(
+		$args[ 'user_id' ],
+		$args[ 'type' ],
+		maybe_serialize( $args[ 'args' ] ),
+		$args[ 'creation_date' ],
+		$args[ 'expiration_date' ],
+		$args[ 'sequence' ],
+		$args[ 'active' ]
+	);
+	
+	$query = $wpdb->prepare( $query, $variables );
+	$inserted = $wpdb->query( $query );
+	
+	if( ! $inserted ) { return false; }
+	
+	$export_id = $wpdb->insert_id;
+	
+	return $export_id;
+}
+
+
+/**
+ * Update an export
+ * @since 1.8.0
+ * @param array $args
+ * @return int|false
+ */
+function bookacti_update_export( $export_id, $raw_args = array() ) {
+	$expiration_delay = apply_filters( 'bookacti_export_expiry_delay', 31 );
+	$default_args = array(
+		'type' => false,
+		'user_id' => false,
+		'creation_date' => false,
+		'expiration_date' => date( 'Y-m-d H:i:s', strtotime( '+' . $expiration_delay . ' days' ) ),
+		'sequence_inc' => 1,
+		'args' => false,
+		'active' => false
+	);
+	$args = wp_parse_args( $raw_args, $default_args );
+	
+	global $wpdb;
+	
+	$query = 'UPDATE ' . BOOKACTI_TABLE_EXPORTS . ' SET ';
+	
+	$variables = array();
+	
+	if( $args[ 'type' ] !== false )				{ $query .= ' type = %s, '; $variables[] = $args[ 'type' ]; }
+	if( $args[ 'user_id' ] !== false )			{ $query .= ' user_id = %d, '; $variables[] = $args[ 'user_id' ]; }
+	if( $args[ 'creation_date' ] !== false )	{ $query .= ' creation_date = %s, '; $variables[] = $args[ 'creation_date' ]; }
+	if( $args[ 'expiration_date' ] !== false )	{ $query .= ' expiration_date = %s, '; $variables[] = $args[ 'expiration_date' ]; }
+	if( $args[ 'sequence_inc' ] !== false )		{ $query .= ' sequence = sequence + %d, '; $variables[] = intval( $args[ 'sequence_inc' ] ); }
+	if( $args[ 'args' ] !== false )				{ $query .= ' args = %s, '; $variables[] = maybe_serialize( $args[ 'args' ] ); }
+	if( $args[ 'active' ] !== false )			{ $query .= ' active = %d, '; $variables[] = $args[ 'active' ]; }
+	
+	if( ! $variables ) { return 0; }
+	
+	// Remove trailing comma
+	$query = rtrim( $query, ', ' );
+	
+	$query .= ' WHERE id = %d ';
+	$variables[] = $export_id;
+
+	$query = $wpdb->prepare( $query, $variables );
+	$updated = $wpdb->query( $query );
+	
+	return $updated;
+}
+
+
+/**
+ * Delete expired exports
+ * @since 1.8.0
+ * @global wpdb $wpdb
+ * @param array $args_raw
+ * @return array|false
+ */
+function bookacti_delete_exports( $raw_filters = array() ) {
+	$default_filters = array(
+		'export_ids' => array(),
+		'types' => array(),
+		'user_ids' => array(),
+		'expiration_delay' => false,	// INT or FALSE (0 for expired, INT for expired since n days, FALSE for all)
+		'inactive_only' => 0			// 1 for inactive only, 0 for all
+	);
+	$filters = wp_parse_args( $raw_filters, $default_filters );
+	
+	global $wpdb;
+	
+	// Get expired booking and booking groups ids
+	$query	= 'SELECT id FROM ' . BOOKACTI_TABLE_EXPORTS . ' as XP WHERE TRUE ';
+	
+	$variables = array();
+	
+	if( $filters[ 'export_ids' ] ) {
+		$query .= ' AND XP.id IN ( %d ';
+		$array_count = count( $filters[ 'export_ids' ] );
+		if( $array_count >= 2 ) {
+			for( $i=1; $i<$array_count; ++$i ) {
+				$query .= ', %d ';
+			}
+		}
+		$query .= ') ';
+		$variables = array_merge( $variables, $filters[ 'export_ids' ] );
+	}
+	
+	if( $filters[ 'types' ] ) {
+		$query .= ' AND XP.types IN ( %s ';
+		$array_count = count( $filters[ 'types' ] );
+		if( $array_count >= 2 ) {
+			for( $i=1; $i<$array_count; ++$i ) {
+				$query .= ', %s ';
+			}
+		}
+		$query .= ') ';
+		$variables = array_merge( $variables, $filters[ 'types' ] );
+	}
+	
+	if( $filters[ 'user_ids' ] ) {
+		$query .= ' AND XP.user_id IN ( %d ';
+		$array_count = count( $filters[ 'user_ids' ] );
+		if( $array_count >= 2 ) {
+			for( $i=1; $i<$array_count; ++$i ) {
+				$query .= ', %d ';
+			}
+		}
+		$query .= ') ';
+		$variables = array_merge( $variables, $filters[ 'user_ids' ] );
+	}
+	
+	if( is_numeric( $filters[ 'expiration_delay' ] ) ) {
+		$query .= ' AND XP.expiration_date <= DATE_SUB( UTC_TIMESTAMP(), INTERVAL %d DAY ) ';
+		$variables[] = intval( $filters[ 'expiration_delay' ] );
+	}
+	
+	if( $filters[ 'inactive_only' ] ) {
+		$query .= ' AND XP.active = 0 ';
+	}
+	
+	$query = $wpdb->prepare( $query, $variables );
+
+	$expired_exports = $wpdb->get_results( $query );
+	
+	$expired_ids = array();
+	foreach( $expired_exports as $expired_export ) {
+		$expired_ids[] = $expired_export->id;
+	}
+	
+	$expired_ids = apply_filters( 'bookacti_expired_exports_to_delete', $expired_ids );
+	$return = $expired_ids;
+	
+	if( $expired_ids ) {
+		$count = count( $expired_ids );
+		$ids_placeholder_list = '%d';
+		for( $i=1; $i < $count; ++$i ) {
+			$ids_placeholder_list .= ', %d';
+		}
+		
+		// Delete expired bookings
+		$query= 'DELETE FROM ' . BOOKACTI_TABLE_EXPORTS . ' WHERE id IN( ' . $ids_placeholder_list . ' );';
+		$query = $wpdb->prepare( $query, $expired_ids );
+		$deleted = $wpdb->query( $query );
+		
+		if( $deleted === false ) { $return = false; }
+		
+		// Delete bookings meta
+		bookacti_delete_metadata( 'export', $expired_ids );
+
+		do_action( 'bookacti_expired_exports_deleted', $expired_ids );
+	}
+	
+	return $return;
 }

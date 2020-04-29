@@ -213,7 +213,7 @@ add_action( 'wp_ajax_nopriv_bookactiRefundBooking', 'bookacti_controller_refund_
 
 /**
  * AJAX Controller - Change booking state
- * @version 1.7.14
+ * @version 1.8.0
  */
 function bookacti_controller_change_booking_state() {
 	$booking_id			= intval( $_POST[ 'booking_id' ] );
@@ -226,13 +226,13 @@ function bookacti_controller_change_booking_state() {
 	$new_payment_status	= array_key_exists( $payment_status, bookacti_get_payment_status_labels() ) ? $payment_status : false;
 	$active_changed		= false;
 
-	// Check nonce, capabilities and other params
-	$is_nonce_valid			= check_ajax_referer( 'bookacti_change_booking_state', 'nonce', false );
-	$is_allowed				= current_user_can( 'bookacti_edit_bookings' );		
-
-	if( ! $is_nonce_valid || ! $is_allowed ) {
-		bookacti_send_json_not_allowed( 'change_booking_status' );
-	}
+	// Check nonce
+	$is_nonce_valid = check_ajax_referer( 'bookacti_change_booking_state', 'nonce', false );
+	if( ! $is_nonce_valid ) { bookacti_send_json_invalid_nonce( 'change_booking_status' ); }
+	
+	// Check capabilities
+	$is_allowed = current_user_can( 'bookacti_edit_bookings' ) && bookacti_user_can_manage_booking( $booking_id );
+	if( ! $is_allowed ) { bookacti_send_json_not_allowed( 'change_booking_status' ); }
 
 	$booking = bookacti_get_booking_by_id( $booking_id );
 
@@ -280,19 +280,20 @@ add_action( 'wp_ajax_bookactiChangeBookingState', 'bookacti_controller_change_bo
 /**
  * AJAX Controller - Change booking quantity
  * @since 1.7.10
+ * @version 1.8.0
  */
 function bookacti_controller_change_booking_quantity() {
 	$booking_id		= intval( $_POST[ 'booking_id' ] );
 	$new_quantity	= intval( $_POST[ 'new_quantity' ] );
 	$is_admin		= intval( $_POST[ 'is_admin' ] ) === 1 ? true : false;
 
-	// Check nonce and capabilities
-	$is_nonce_valid	= check_ajax_referer( 'bookacti_change_booking_quantity', 'nonce_change_booking_quantity', false );
-	$is_allowed		= current_user_can( 'bookacti_edit_bookings' );		
-
-	if( ! $is_nonce_valid || ! $is_allowed ) {
-		bookacti_send_json_not_allowed( 'change_booking_quantity' );
-	}
+	// Check nonce
+	$is_nonce_valid = check_ajax_referer( 'bookacti_change_booking_quantity', 'nonce_change_booking_quantity', false );
+	if( ! $is_nonce_valid ) { bookacti_send_json_invalid_nonce( 'change_booking_quantity' ); }
+	
+	// Check capabilities
+	$is_allowed = current_user_can( 'bookacti_edit_bookings' ) && bookacti_user_can_manage_booking( $booking_id );
+	if( ! $is_allowed ) { bookacti_send_json_not_allowed( 'change_booking_quantity' ); }
 
 	// Check if the quantity is valid
 	if( ! $new_quantity ) {
@@ -326,58 +327,62 @@ add_action( 'wp_ajax_bookactiChangeBookingQuantity', 'bookacti_controller_change
  * @since 1.8.0 (was bookacti_controller_get_booking_data)
  */
 function bookacti_controller_get_reschedule_booking_system_data() {
-	// Check nonce, no need to check capabilities
-	$is_nonce_valid = check_ajax_referer( 'bookacti_get_reschedule_booking_system_data', 'nonce', false );
-
-	if( ! $is_nonce_valid ) { bookacti_send_json_invalid_nonce( 'get_reschedule_booking_system_data' ); }
-
 	$booking_id	= intval( $_POST[ 'booking_id' ] );
+	
+	// Check nonce
+	$is_nonce_valid = check_ajax_referer( 'bookacti_get_reschedule_booking_system_data', 'nonce', false );
+	if( ! $is_nonce_valid ) { bookacti_send_json_invalid_nonce( 'get_reschedule_booking_system_data' ); }
+	
+	// Check capabilities
+	$is_allowed = bookacti_user_can_manage_booking( $booking_id );
+	if( ! $is_allowed ) { bookacti_send_json_not_allowed( 'change_booking_status' ); }
+	
 	$booking_data = bookacti_get_booking_data( $booking_id );
-	$mixed_data = array();
-
-	if( ! empty( $booking_data ) && is_array( $booking_data ) ) {
-		$calendar_field_data = ! empty( $booking_data[ 'form_id' ] ) ? bookacti_get_form_field_data_by_name( $booking_data[ 'form_id' ], 'calendar' ) : array();
-		$booking_system_init_data = bookacti_get_calendar_field_booking_system_attributes( $calendar_field_data );
-		$atts = $booking_system_init_data;
-		
-		// Set compulsory data
-		$atts[ 'id' ]						= 'bookacti-booking-system-reschedule';
-		$atts[ 'form_action' ]				= 'default';
-		$atts[ 'when_perform_form_action' ]	= 'on_submit';
-		$atts[ 'auto_load' ]				= 0;
-		
-		// Load only the events from the same activity as the booked event
-		$atts[ 'activities' ] = $booking_data[ 'activity_id' ] ? array( $booking_data[ 'activity_id' ] ) : array( 0 );
-		
-		// On the backend, display past events and grouped events, from all calendars, and make them all bookable
-		if( $_POST[ 'is_admin' ] ) {
-			$atts[ 'groups_single_events' ]	= 1;
-			$atts[ 'start' ]				= '';
-			$atts[ 'end' ]					= '';
-			$atts[ 'trim' ]					= 1;
-			$atts[ 'past_events' ]			= 1;
-			$atts[ 'past_events_bookable' ]	= 1;
-			
-			// Make sure display data doesn't prevent events from being displayed
-			if( $booking_data[ 'activity_id' ] ) {
-				$atts[ 'calendars' ] = bookacti_get_templates_by_activity( $atts[ 'activities' ], true );
-				if( count( $atts[ 'calendars' ] ) !== 1 ) {
-					$mixed_data = bookacti_get_mixed_template_data( $atts[ 'calendars' ], $atts[ 'past_events' ] );
-					$atts[ 'display_data' ][ 'minTime' ] = ! empty( $mixed_data[ 'settings' ][ 'minTime' ] ) ? $mixed_data[ 'settings' ][ 'minTime' ] : '00:00';
-					$atts[ 'display_data' ][ 'maxTime' ] = ! empty( $mixed_data[ 'settings' ][ 'maxTime' ] ) ? $mixed_data[ 'settings' ][ 'maxTime' ] : '00:00';
-				}
-			}
-		}
-		
-		// Add the rescheduled booking data to the booking system data
-		$atts[ 'rescheduled_booking_data' ] = $booking_data;
-		
-		$atts = apply_filters( 'bookacti_reschedule_booking_system_attributes', $atts, $booking_data, $booking_system_init_data, $mixed_data );
-		
-		bookacti_send_json( array( 'status' => 'success', 'booking_system_data' => $atts, 'booking_data' => $booking_data ), 'get_reschedule_booking_system_data' );
-	} else {
+	
+	if( empty( $booking_data ) || ! is_array( $booking_data ) ) {
 		bookacti_send_json( array( 'status' => 'failed', 'error' => 'empty_data' ), 'get_reschedule_booking_system_data' );
 	}
+	
+	$calendar_field_data = ! empty( $booking_data[ 'form_id' ] ) ? bookacti_get_form_field_data_by_name( $booking_data[ 'form_id' ], 'calendar' ) : array();
+	$booking_system_init_data = bookacti_get_calendar_field_booking_system_attributes( $calendar_field_data );
+	$atts = $booking_system_init_data;
+	$mixed_data = array();
+
+	// Set compulsory data
+	$atts[ 'id' ]						= 'bookacti-booking-system-reschedule';
+	$atts[ 'form_action' ]				= 'default';
+	$atts[ 'when_perform_form_action' ]	= 'on_submit';
+	$atts[ 'auto_load' ]				= 0;
+
+	// Load only the events from the same activity as the booked event
+	$atts[ 'activities' ] = $booking_data[ 'activity_id' ] ? array( $booking_data[ 'activity_id' ] ) : array( 0 );
+
+	// On the backend, display past events and grouped events, from all calendars, and make them all bookable
+	if( $_POST[ 'is_admin' ] ) {
+		$atts[ 'groups_single_events' ]	= 1;
+		$atts[ 'start' ]				= '';
+		$atts[ 'end' ]					= '';
+		$atts[ 'trim' ]					= 1;
+		$atts[ 'past_events' ]			= 1;
+		$atts[ 'past_events_bookable' ]	= 1;
+
+		// Make sure display data doesn't prevent events from being displayed
+		if( $booking_data[ 'activity_id' ] ) {
+			$atts[ 'calendars' ] = bookacti_get_templates_by_activity( $atts[ 'activities' ], true );
+			if( count( $atts[ 'calendars' ] ) !== 1 ) {
+				$mixed_data = bookacti_get_mixed_template_data( $atts[ 'calendars' ], $atts[ 'past_events' ] );
+				$atts[ 'display_data' ][ 'minTime' ] = ! empty( $mixed_data[ 'settings' ][ 'minTime' ] ) ? $mixed_data[ 'settings' ][ 'minTime' ] : '00:00';
+				$atts[ 'display_data' ][ 'maxTime' ] = ! empty( $mixed_data[ 'settings' ][ 'maxTime' ] ) ? $mixed_data[ 'settings' ][ 'maxTime' ] : '00:00';
+			}
+		}
+	}
+
+	// Add the rescheduled booking data to the booking system data
+	$atts[ 'rescheduled_booking_data' ] = $booking_data;
+
+	$atts = apply_filters( 'bookacti_reschedule_booking_system_attributes', $atts, $booking_data, $booking_system_init_data, $mixed_data );
+
+	bookacti_send_json( array( 'status' => 'success', 'booking_system_data' => $atts, 'booking_data' => $booking_data ), 'get_reschedule_booking_system_data' );
 }
 add_action( 'wp_ajax_bookactiGetRescheduleBookingSystemData', 'bookacti_controller_get_reschedule_booking_system_data' );
 add_action( 'wp_ajax_nopriv_bookactiGetRescheduleBookingSystemData', 'bookacti_controller_get_reschedule_booking_system_data' );
@@ -385,7 +390,7 @@ add_action( 'wp_ajax_nopriv_bookactiGetRescheduleBookingSystemData', 'bookacti_c
 
 /**
  * AJAX Controller - Reschedule a booking
- * @version 1.7.14
+ * @version 1.8.0
  */
 function bookacti_controller_reschedule_booking() {
 	$booking_id		= intval( $_POST[ 'booking_id' ] );
@@ -394,13 +399,13 @@ function bookacti_controller_reschedule_booking() {
 	$event_end		= bookacti_sanitize_datetime( $_POST[ 'event_end' ] );
 	$front_or_admin	= ! empty( $_POST[ 'is_admin' ] ) ? 'admin' : 'front';
 
-	// Check nonce, capabilities and other params
-	$is_nonce_valid	= check_ajax_referer( 'bookacti_reschedule_booking', 'nonce', false );
-	$is_allowed		= bookacti_user_can_manage_booking( $booking_id );
-
-	if( ! $is_nonce_valid || ! $is_allowed ) {
-		bookacti_send_json_not_allowed( 'reschedule_booking' );
-	}
+	// Check nonce
+	$is_nonce_valid = check_ajax_referer( 'bookacti_reschedule_booking', 'nonce', false );
+	if( ! $is_nonce_valid ) { bookacti_send_json_invalid_nonce( 'reschedule_booking' ); }
+	
+	// Check capabilities
+	$is_allowed = bookacti_user_can_manage_booking( $booking_id );
+	if( ! $is_allowed ) { bookacti_send_json_not_allowed( 'reschedule_booking' ); }
 
 	$booking = bookacti_get_booking_by_id( $booking_id );
 
@@ -455,14 +460,12 @@ function bookacti_controller_delete_booking() {
 	$booking_id = intval( $_POST[ 'booking_id' ] );
 
 	// Check nonce
-	if( ! check_ajax_referer( 'bookacti_delete_booking', 'nonce_delete_booking', false ) ) { 
-		bookacti_send_json_invalid_nonce( 'delete_booking' ); 
-	}
+	$is_nonce_valid = check_ajax_referer( 'bookacti_delete_booking', 'nonce_delete_booking', false );
+	if( ! $is_nonce_valid ) { bookacti_send_json_invalid_nonce( 'delete_booking' ); }
 
 	// Check capabilities
-	if( ! current_user_can( 'bookacti_delete_bookings' ) || ! bookacti_user_can_manage_booking( $booking_id ) ) { 
-		bookacti_send_json_not_allowed( 'delete_booking' ); 
-	}
+	$is_allowed = current_user_can( 'bookacti_delete_bookings' ) && bookacti_user_can_manage_booking( $booking_id );
+	if( ! $is_allowed ) { bookacti_send_json_not_allowed( 'delete_booking' ); }
 
 	do_action( 'bookacti_before_delete_booking', $booking_id );
 
@@ -534,17 +537,18 @@ add_action( 'bookacti_booking_group_state_changed', 'bookacti_trigger_booking_st
 /**
  * AJAX Controller - Cancel a booking group
  * @since 1.1.0
- * @version 1.7.14
+ * @version 1.8.0
  */
 function bookacti_controller_cancel_booking_group() {
 	$booking_group_id = intval( $_POST[ 'booking_id' ] );
 
-	// Check nonce, capabilities and other params
-	$is_nonce_valid	= check_ajax_referer( 'bookacti_cancel_booking', 'nonce', false );
-	$is_allowed		= bookacti_user_can_manage_booking_group( $booking_group_id );
-	if( ! $is_nonce_valid || ! $is_allowed ) {
-		bookacti_send_json_not_allowed( 'cancel_booking_group' );
-	}
+	// Check nonce
+	$is_nonce_valid = check_ajax_referer( 'bookacti_cancel_booking', 'nonce', false );
+	if( ! $is_nonce_valid ) { bookacti_send_json_invalid_nonce( 'cancel_booking_group' ); }
+	
+	// Check capabilities
+	$is_allowed = bookacti_user_can_manage_booking_group( $booking_group_id );
+	if( ! $is_allowed ) { bookacti_send_json_not_allowed( 'cancel_booking_group' ); }
 
 	$booking_group = bookacti_get_booking_group_by_id( $booking_group_id );
 	if( $booking_group->state === 'cancelled' ) {
@@ -684,7 +688,7 @@ add_action( 'wp_ajax_nopriv_bookactiRefundBookingGroup', 'bookacti_controller_re
 /**
  * AJAX Controller - Change booking group state
  * @since 1.1.0
- * @version 1.7.14
+ * @version 1.8.0
  */
 function bookacti_controller_change_booking_group_state() {
 	$booking_group_id		= intval( $_POST[ 'booking_id' ] );
@@ -698,12 +702,13 @@ function bookacti_controller_change_booking_group_state() {
 	$new_payment_status	= array_key_exists( $payment_status, bookacti_get_payment_status_labels() ) ? $payment_status : false;
 	$active_changed		= false;
 
-	// Check nonce, capabilities and other params
-	$is_nonce_valid	= check_ajax_referer( 'bookacti_change_booking_state', 'nonce', false );
-	$is_allowed		= current_user_can( 'bookacti_edit_bookings' );		
-	if( ! $is_nonce_valid || ! $is_allowed ) {
-		bookacti_send_json_not_allowed( 'change_booking_group_status' );
-	}
+	// Check nonce
+	$is_nonce_valid = check_ajax_referer( 'bookacti_change_booking_state', 'nonce', false );
+	if( ! $is_nonce_valid ) { bookacti_send_json_not_allowed( 'change_booking_group_status' ); }
+
+	// Check capabilities
+	$is_allowed = current_user_can( 'bookacti_edit_bookings' ) && bookacti_user_can_manage_booking_group( $booking_group_id );	
+	if( ! $is_allowed ) { bookacti_send_json_not_allowed( 'change_booking_group_status' ); }
 
 	// Change booking group states
 	$booking_group	= bookacti_get_booking_group_by_id( $booking_group_id );
@@ -753,20 +758,21 @@ add_action( 'wp_ajax_bookactiChangeBookingGroupState', 'bookacti_controller_chan
 /**
  * AJAX Controller - Change booking group quantity
  * @since 1.7.10
+ * @version 1.8.0
  */
 function bookacti_controller_change_booking_group_quantity() {
-	$booking_group_id		= intval( $_POST[ 'booking_id' ] );
-	$new_quantity	= intval( $_POST[ 'new_quantity' ] );
-	$is_admin		= intval( $_POST[ 'is_admin' ] ) === 1 ? true : false;
+	$booking_group_id	= intval( $_POST[ 'booking_id' ] );
+	$new_quantity		= intval( $_POST[ 'new_quantity' ] );
+	$is_admin			= intval( $_POST[ 'is_admin' ] ) === 1 ? true : false;
 	$reload_grouped_bookings = intval( $_POST[ 'reload_grouped_bookings' ] ) === 1 ? true : false;
 
-	// Check nonce and capabilities
-	$is_nonce_valid	= check_ajax_referer( 'bookacti_change_booking_quantity', 'nonce_change_booking_quantity', false );
-	$is_allowed		= current_user_can( 'bookacti_edit_bookings' );		
-
-	if( ! $is_nonce_valid || ! $is_allowed  ) {
-		bookacti_send_json_not_allowed( 'change_booking_group_quantity' );
-	}
+	// Check nonce
+	$is_nonce_valid = check_ajax_referer( 'bookacti_change_booking_quantity', 'nonce_change_booking_quantity', false );
+	if( ! $is_nonce_valid ) { bookacti_send_json_invalid_nonce( 'change_booking_group_quantity' ); }
+	
+	// Check capabilities
+	$is_allowed = current_user_can( 'bookacti_edit_bookings' ) && bookacti_user_can_manage_booking_group( $booking_group_id );
+	if( ! $is_allowed ) { bookacti_send_json_not_allowed( 'change_booking_group_quantity' ); }
 
 	// Check if the quantity is valid
 	if( ! $new_quantity ) {
@@ -806,14 +812,12 @@ function bookacti_controller_delete_booking_group() {
 	$booking_group_id = intval( $_POST[ 'booking_id' ] );
 
 	// Check nonce
-	if( ! check_ajax_referer( 'bookacti_delete_booking', 'nonce_delete_booking', false ) ) { 
-		bookacti_send_json_invalid_nonce( 'delete_booking_group' ); 
-	}
+	$is_nonce_valid = check_ajax_referer( 'bookacti_delete_booking', 'nonce_delete_booking', false );
+	if( ! $is_nonce_valid ) { bookacti_send_json_invalid_nonce( 'delete_booking_group' ); }
 
 	// Check capabilities
-	if( ! current_user_can( 'bookacti_delete_bookings' ) || ! bookacti_user_can_manage_booking_group( $booking_group_id ) ) { 
-		bookacti_send_json_not_allowed( 'delete_booking_group' ); 
-	}
+	$is_allowed = current_user_can( 'bookacti_delete_bookings' ) && bookacti_user_can_manage_booking_group( $booking_group_id );
+	if( ! $is_allowed ) { bookacti_send_json_not_allowed( 'delete_booking_group' ); }
 
 	do_action( 'bookacti_before_delete_booking_group', $booking_group_id );
 
@@ -851,6 +855,38 @@ add_action( 'wp_ajax_bookactiDeleteBookingGroup', 'bookacti_controller_delete_bo
 // EXPORT
 
 /**
+ * Register a daily cron event to clean expired exports
+ * @since 1.8.0
+ */
+function bookacti_register_cron_event_to_clean_expired_exports() {
+	if( ! wp_next_scheduled ( 'bookacti_clean_expired_exports' ) ) {
+		wp_schedule_event( time(), 'daily', 'bookacti_clean_expired_exports' );
+	}
+}
+add_action( 'bookacti_activate', 'bookacti_register_cron_event_to_clean_expired_exports' );
+
+
+/**
+ * Deregister the daily cron event to clean expired exports
+ * @since 1.8.0
+ */
+function bookacti_deregister_cron_event_to_clean_expired_exports() {
+	wp_clear_scheduled_hook( 'bookacti_clean_expired_exports' );
+}
+add_action( 'bookacti_deactivate', 'bookacti_deregister_cron_event_to_clean_expired_exports' );
+
+
+/**
+ * Clean expired exports
+ * @since 1.8.0
+ */
+function bookacti_clean_expired_exports() {
+	bookacti_delete_exports( array( 'expiration_delay' => 0 ) );
+}
+add_action( 'bookacti_clean_expired_exports', 'bookacti_clean_expired_exports' );
+
+
+/**
  * Generate the export bookings URL according to current filters and export settings
  * @since 1.6.0
  * @version 1.8.0
@@ -868,28 +904,34 @@ function bookacti_controller_generate_export_bookings_url() {
 	$current_user_id = get_current_user_id();
 	$secret_key = get_user_meta( $current_user_id, 'bookacti_secret_key', true );
 	if( ! $secret_key || ! empty( $_POST[ 'reset_key' ] ) ) {
+		// Update secret key
 		$secret_key = md5( microtime().rand() );
 		update_user_meta( $current_user_id, 'bookacti_secret_key', $secret_key );
+		
+		// Remove existing exports
+		bookacti_delete_exports( array( 'user_ids' => array( $current_user_id ) ) );
+		
+		// Feedback user
 		if( ! empty( $_POST[ 'reset_key' ] ) ) {
 			$message .= '<br/><em>' . esc_html__( 'Your secret key has been changed. The old links that you have generated won\'t work anymore.', 'booking-activities' ) . '</em>';
 		}
 	}
 
 	// Get formatted booking filters
-	if( isset( $_POST[ 'booking_filters' ][ 'templates' ] ) && $_POST[ 'booking_filters' ][ 'templates' ][ 0 ] === 'all' ) {
-		unset( $_POST[ 'booking_filters' ][ 'templates' ][ 0 ] );
-		if( empty( $_POST[ 'booking_filters' ][ 'templates' ] ) ) { $_POST[ 'booking_filters' ][ 'templates' ] = ''; }
+	$booking_filters_raw = ! empty( $_POST[ 'booking_filters' ] ) ? $_POST[ 'booking_filters' ] : array();
+	if( isset( $booking_filters_raw[ 'templates' ][ 0 ] ) && $booking_filters_raw[ 'templates' ][ 0 ] === 'all' ) {
+		unset( $booking_filters_raw[ 'templates' ] );
 	}
 	// Accepts two different parameter names for booking system related parameters
-	if( ! isset( $_POST[ 'booking_filters' ][ 'event_group_id' ] ) && isset( $_POST[ 'booking_filters' ][ 'bookacti_group_id' ] ) && $_POST[ 'booking_filters' ][ 'bookacti_group_id' ] !== 'single' )	{ $_POST[ 'booking_filters' ][ 'event_group_id' ] = intval( $_POST[ 'booking_filters' ][ 'bookacti_group_id' ] ); }
-	if( empty( $_POST[ 'booking_filters' ][ 'event_group_id' ] ) ) {
-		if( ! isset( $_POST[ 'booking_filters' ][ 'event_id' ] ) && isset( $_POST[ 'booking_filters' ][ 'bookacti_event_id' ] ) )		{ $_POST[ 'booking_filters' ][ 'event_id' ] = intval( $_POST[ 'booking_filters' ][ 'bookacti_event_id' ] ); }
-		if( ! isset( $_POST[ 'booking_filters' ][ 'event_start' ] ) && isset( $_POST[ 'booking_filters' ][ 'bookacti_event_start' ] ) )	{ $_POST[ 'booking_filters' ][ 'event_start' ] = bookacti_sanitize_datetime( $_POST[ 'booking_filters' ][ 'bookacti_event_start' ] ); }
-		if( ! isset( $_POST[ 'booking_filters' ][ 'event_end' ] ) && isset( $_POST[ 'booking_filters' ][ 'bookacti_event_end' ] ) )		{ $_POST[ 'booking_filters' ][ 'event_end' ] = bookacti_sanitize_datetime( $_POST[ 'booking_filters' ][ 'bookacti_event_end' ] ); }
+	if( ! isset( $booking_filters_raw[ 'event_group_id' ] ) && isset( $booking_filters_raw[ 'bookacti_group_id' ] ) && $booking_filters_raw[ 'bookacti_group_id' ] !== 'single' )	{ $booking_filters_raw[ 'event_group_id' ] = intval( $booking_filters_raw[ 'bookacti_group_id' ] ); }
+	if( empty( $booking_filters_raw[ 'event_group_id' ] ) ) {
+		if( ! isset( $booking_filters_raw[ 'event_id' ] ) && isset( $booking_filters_raw[ 'bookacti_event_id' ] ) )			{ $booking_filters_raw[ 'event_id' ] = intval( $booking_filters_raw[ 'bookacti_event_id' ] ); }
+		if( ! isset( $booking_filters_raw[ 'event_start' ] ) && isset( $booking_filters_raw[ 'bookacti_event_start' ] ) )	{ $booking_filters_raw[ 'event_start' ] = bookacti_sanitize_datetime( $booking_filters_raw[ 'bookacti_event_start' ] ); }
+		if( ! isset( $booking_filters_raw[ 'event_end' ] ) && isset( $booking_filters_raw[ 'bookacti_event_end' ] ) )		{ $booking_filters_raw[ 'event_end' ] = bookacti_sanitize_datetime( $booking_filters_raw[ 'bookacti_event_end' ] ); }
 	}
 
 	$default_fitlers = bookacti_get_default_booking_filters();
-	$booking_filters = bookacti_format_booking_filters( $_POST[ 'booking_filters' ] );
+	$booking_filters = bookacti_format_booking_filters( $booking_filters_raw );
 	
 	$default_settings= bookacti_get_bookings_export_default_settings();
 	$export_settings = bookacti_sanitize_bookings_export_settings( $_POST );
@@ -910,10 +952,11 @@ function bookacti_controller_generate_export_bookings_url() {
 	$add_url_atts = array(
 		'action'		=> 'bookacti_export_bookings',
 		'export_type'	=> $export_type,
-		'filename'		=> 'booking-activities-bookings',
+		'filename'		=> '',
 		'key'			=> $secret_key,
 		'lang'			=> bookacti_get_current_lang_code( true ),
-		'per_page'		=> $export_settings[ 'per_page' ]
+		'per_page'		=> $export_settings[ 'per_page' ],
+		'short_url'		=> 1
 	);
 	
 	// Add CSV specific args
@@ -938,10 +981,28 @@ function bookacti_controller_generate_export_bookings_url() {
 	
 	// Let third party plugins change the URL attributes
 	$url_atts = apply_filters( 'bookacti_export_bookings_url_attributes', array_merge( $add_url_atts, $booking_filters ), $export_type, $export_settings, array_merge( $default_fitlers, $default_settings ) );
-
+	
+	$export_url = '';
+	
 	// Add the URL attributes
-	$export_url = home_url();
-	if( $url_atts )	{ $export_url = add_query_arg( $url_atts, $export_url ); }
+	if( $url_atts )	{ 
+		$home_url = home_url();
+		// Short URL
+		if( ! empty( $url_atts[ 'short_url' ] ) ) {
+			$export_id = bookacti_insert_export( array( 'type' => 'booking_' . $export_type, 'user_id' => $current_user_id, 'args' => $url_atts ) );
+			$short_url_atts = array(
+				'action' => $url_atts[ 'action' ],
+				'key' => $url_atts[ 'key' ],
+				'export_id' => $export_id
+			);
+			$export_url = add_query_arg( $short_url_atts, $home_url );
+		} 
+		// Long URL
+		else {
+			if( isset( $url_atts[ 'short_url' ] ) ) { unset( $url_atts[ 'short_url' ] ); }
+			$export_url = add_query_arg( $url_atts, $home_url );
+		}
+	}
 	
 	// Update settings
 	update_user_meta( $current_user_id, 'bookacti_bookings_export_settings', $export_settings );
@@ -957,30 +1018,49 @@ add_action( 'wp_ajax_bookactiExportBookingsUrl', 'bookacti_controller_generate_e
  * @version 1.8.0
  */
 function bookacti_export_bookings_page() {
-	if( empty( $_REQUEST[ 'action' ] ) || $_REQUEST[ 'action' ] !== 'bookacti_export_bookings' ) { return; }
+	if( empty( $_REQUEST[ 'action' ] ) ) { return; }
+	if( $_REQUEST[ 'action' ] !== 'bookacti_export_bookings' ) { return; }
 	
-	// Check the export type
-	$export_type = sanitize_title_with_dashes( $_REQUEST[ 'export_type' ] );
-	if( ! in_array( $export_type, array( 'csv', 'ical' ), true ) ) { return; }
-	
-	// Check the filename
-	$filename = ! empty( $_REQUEST[ 'filename' ] ) ? sanitize_title_with_dashes( $_REQUEST[ 'filename' ] ) : 'booking-activities-bookings';
-	if( ! $filename ) { esc_html_e( 'Invalid filename.', 'booking-activities' ); exit; }
-		 if( $export_type === 'csv' && substr( $filename, -4 ) !== '.csv' ) { $filename .= '.csv'; }
-	else if( $export_type === 'ical' && substr( $filename, -4 ) !== '.ics' ) { $filename .= '.ics'; }
-
 	// Check if the secret key exists
 	$key = ! empty( $_REQUEST[ 'key' ] ) ? $_REQUEST[ 'key' ] : '';
 	if( ! $key ) { esc_html_e( 'Missing key.', 'booking-activities' ); exit; }
-
+	
 	// Check if the user exists
 	$users = get_users( array( 'meta_key' => 'bookacti_secret_key', 'meta_value' => $key ) );
 	if( ! $users ) { esc_html_e( 'Invalid key.', 'booking-activities' ); exit; }
 	$user = $users[ 0 ];
 	
+	// Check capabilities
+	if( ! user_can( $user, 'bookacti_manage_bookings' ) ) { esc_html_e( 'You are not allowed to do that.', 'booking-activities' ); exit; }
+	
+	// Check if the export URL has been shortened
+	$args = $_REQUEST;
+	if( ! empty( $_REQUEST[ 'export_id' ] ) ) {
+		$export_id = intval( $_REQUEST[ 'export_id' ] );
+		$export = bookacti_get_export( $export_id );
+		
+		if( ! $export ) { esc_html_e( 'Invalid or expired export ID.', 'booking-activities' ); exit; }
+		if( intval( $export[ 'user_id' ] ) !== intval( $user->ID ) ) { esc_html_e( 'Invalid key.', 'booking-activities' ); exit; }
+		
+		$args = array_merge( $export[ 'args' ], $_REQUEST );
+		$args[ 'sequence' ] = $export[ 'sequence' ];
+		if( empty( $args[ 'filename' ] ) ) { $args[ 'filename' ] = 'booking-activities-bookings-' . $export_id; }
+	}
+	
+	// Check the export type
+	$export_type = sanitize_title_with_dashes( $args[ 'export_type' ] );
+	if( ! in_array( $export_type, array( 'csv', 'ical' ), true ) ) { exit; }
+	
+	// Check the filename
+	$filename = ! empty( $args[ 'filename' ] ) ? sanitize_title_with_dashes( $args[ 'filename' ] ) : 'booking-activities-bookings';
+	if( ! $filename ) { esc_html_e( 'Invalid filename.', 'booking-activities' ); exit; }
+		 if( $export_type === 'csv' && substr( $filename, -4 ) !== '.csv' ) { $filename .= '.csv'; }
+	else if( $export_type === 'ical' && substr( $filename, -4 ) !== '.ics' ) { $filename .= '.ics'; }
+	
 	// Format the booking filters
-	if( empty( $_REQUEST[ 'templates' ] ) ) { $_REQUEST[ 'templates' ] = ''; }
-	$filters = bookacti_format_booking_filters( bookacti_format_string_booking_filters( $_REQUEST ) );
+	$formatted_args = bookacti_format_string_booking_filters( $args );
+	if( isset( $formatted_args[ 'templates' ] ) ) { unset( $formatted_args[ 'templates' ] ); } // Restrict to allowed templates later
+	$filters = bookacti_format_booking_filters( $formatted_args );
 	
 	// Check if the user can export bookings
 	$is_allowed = user_can( $user->ID, 'bookacti_manage_bookings' );
@@ -990,10 +1070,10 @@ function bookacti_export_bookings_page() {
 	
 	// If an event has been selected, do not retrieve groups of events containing this event
 	if( $filters[ 'event_id' ] && ! $filters[ 'booking_group_id' ] ) { $filters[ 'booking_group_id' ] = 'none'; }
-
+	
 	// Restrict to allowed templates
 	$allowed_templates = array_keys( bookacti_fetch_templates( array(), false, $user->ID ) );
-	$filters[ 'templates' ] = empty( $_REQUEST[ 'templates' ] ) ? $allowed_templates : array_intersect( $allowed_templates, $_REQUEST[ 'templates' ] );
+	$filters[ 'templates' ] = empty( $args[ 'templates' ] ) ? $allowed_templates : array_intersect( $allowed_templates, $args[ 'templates' ] );
 	
 	// Let third party plugins change the booking filters and the file headers
 	$filters = apply_filters( 'bookacti_export_bookings_filters', $filters, $export_type );
@@ -1015,28 +1095,29 @@ function bookacti_export_bookings_page() {
 	$user_settings = bookacti_get_bookings_export_settings( $user->ID );
 	
 	// Format the booking list columns
-	$columns = ! empty( $_REQUEST[ 'columns' ] ) && is_array( $_REQUEST[ 'columns' ] ) ? $_REQUEST[ 'columns' ] : ( ! empty( $user_settings[ $export_type . '_columns' ] ) ? $user_settings[ $export_type . '_columns' ] : array() );
+	$columns = ! empty( $args[ 'columns' ] ) && is_array( $args[ 'columns' ] ) ? $args[ 'columns' ] : ( ! empty( $user_settings[ $export_type . '_columns' ] ) ? $user_settings[ $export_type . '_columns' ] : array() );
 	
 	// Temporarily switch locale to the desired one or user default's
-	$locale = ! empty( $_REQUEST[ 'lang' ] ) ? $_REQUEST[ 'lang' ] : bookacti_get_user_locale( $user->ID, 'site' );
+	$locale = ! empty( $args[ 'lang' ] ) ? $args[ 'lang' ] : bookacti_get_user_locale( $user->ID, 'site' );
 	bookacti_switch_locale( $locale );
 	
 	// Generate export according to type
 	if( $export_type === 'csv' ) { 
 		$csv_args = array(
 			'columns'	=> $columns,
-			'raw'		=> ! empty( $_REQUEST[ 'raw' ] ) ? 1 : 0,
+			'raw'		=> ! empty( $args[ 'raw' ] ) ? 1 : 0,
 			'locale'	=> $locale
 		);
 		echo bookacti_convert_bookings_to_csv( $filters, $csv_args );
 	
 	} else if( $export_type === 'ical' ) { 
 		$ical_args = array( 
-			'vevent_summary'		=> isset( $_REQUEST[ 'vevent_summary' ] ) ? utf8_decode( urldecode( $_REQUEST[ 'vevent_summary' ] ) ) : $user_settings[ 'vevent_summary' ],
-			'vevent_description'	=> isset( $_REQUEST[ 'vevent_description' ] ) ? utf8_decode( urldecode( str_replace( '%0A', '\n', $_REQUEST[ 'vevent_description' ] ) ) ) : $user_settings[ 'vevent_description' ],
+			'vevent_summary'		=> isset( $args[ 'vevent_summary' ] ) ? utf8_decode( urldecode( $args[ 'vevent_summary' ] ) ) : $user_settings[ 'vevent_summary' ],
+			'vevent_description'	=> isset( $args[ 'vevent_description' ] ) ? utf8_decode( urldecode( str_replace( '%0A', '\n', $args[ 'vevent_description' ] ) ) ) : $user_settings[ 'vevent_description' ],
 			'tooltip_booking_list_columns'	=> $columns,
-			'booking_list_header'	=> ! empty( $_REQUEST[ 'booking_list_header' ] ) ? 1 : 0,
-			'raw'					=> ! empty( $_REQUEST[ 'raw' ] ) ? 1 : 0,
+			'booking_list_header'	=> ! empty( $args[ 'booking_list_header' ] ) ? 1 : 0,
+			'raw'					=> ! empty( $args[ 'raw' ] ) ? 1 : 0,
+			'sequence'				=> ! empty( $args[ 'sequence' ] ) ? $args[ 'sequence' ] : 0,
 			'locale'				=> $locale
 		);
 		echo bookacti_convert_bookings_to_ical( $filters, $ical_args );
@@ -1044,6 +1125,11 @@ function bookacti_export_bookings_page() {
 	
 	// Switch locale back to normal
 	bookacti_restore_locale();
+	
+	// Increment the expiry date and sequence
+	if( ! empty( $_REQUEST[ 'export_id' ] ) ) {
+		bookacti_update_export( $export_id );
+	}
 	
 	exit;
 }
@@ -1053,10 +1139,11 @@ add_action( 'init', 'bookacti_export_bookings_page', 10 );
 /**
  * Export booked events of a specific user as ICS
  * @since 1.6.0
- * @version 1.7.13
+ * @version 1.8.0
  */
 function bookacti_export_user_booked_events_page() {
-	if( empty( $_REQUEST[ 'action' ] ) || $_REQUEST[ 'action' ] !== 'bookacti_export_user_booked_events' ) { return; }
+	if( empty( $_REQUEST[ 'action' ] ) ) { return; }
+	if( $_REQUEST[ 'action' ] !== 'bookacti_export_user_booked_events' ) { return; }
 
 	// Check if the secret key exists
 	$key = ! empty( $_REQUEST[ 'key' ] ) ? $_REQUEST[ 'key' ] : '';
@@ -1065,7 +1152,6 @@ function bookacti_export_user_booked_events_page() {
 	// Check if the user exists
 	$users = get_users( array( 'meta_key' => 'bookacti_secret_key', 'meta_value' => $key ) );
 	if( ! $users ) { esc_html_e( 'Invalid key.', 'booking-activities' ); exit; }
-
 	$user = $users[ 0 ];
 
 	$atts = apply_filters( 'bookacti_export_events_attributes', array_merge( bookacti_format_booking_system_url_attributes(), array(
@@ -1101,7 +1187,8 @@ add_action( 'init', 'bookacti_export_user_booked_events_page', 10 );
  * @version 1.8.0
  */
 function bookacti_export_booked_events_page() {
-	if( empty( $_REQUEST[ 'action' ] ) || $_REQUEST[ 'action' ] !== 'bookacti_export_booked_events' ) { return; }
+	if( empty( $_REQUEST[ 'action' ] ) ) { return; }
+	if( $_REQUEST[ 'action' ] !== 'bookacti_export_booked_events' ) { return; }
 
 	// Check if a booking ID was given
 	if( empty( $_REQUEST[ 'booking_id' ] ) && empty( $_REQUEST[ 'booking_group_id' ] ) ) { esc_html_e( 'Invalid booking ID.', 'booking-activities' ); exit; }
@@ -1135,7 +1222,7 @@ function bookacti_export_booked_events_page() {
 
 		$events_args = array(
 			'past_events' => true,
-			'interval' => array( 'start' => substr( $booking->event_start, 0, 10 ), 'end' => substr( $booking->event_end, 0, 10 ) ),
+			'interval' => array( 'start' => $booking->event_start, 'end' => $booking->event_end ),
 		);
 		$events = bookacti_get_events_array_from_db_events( array( $event ), $events_args );
 

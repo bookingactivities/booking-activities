@@ -1600,6 +1600,7 @@ function bookacti_add_bookings_endpoint() {
 	add_rewrite_endpoint( 'bookings', EP_ROOT | EP_PAGES );
 }
 add_action( 'init', 'bookacti_add_bookings_endpoint', 10 );
+add_action( 'bookacti_activate', 'bookacti_add_bookings_endpoint', 10 );
 
 
 /**

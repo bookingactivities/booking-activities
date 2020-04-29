@@ -93,7 +93,7 @@ function bookacti_log( $message = '', $filename = 'debug' ) {
 
 	$file = WP_PLUGIN_DIR . '/' . BOOKACTI_PLUGIN_NAME . '/log/' . $filename . '.log'; 
 
-	$time = date( 'Y-m-d H:i:s', time() );
+	$time = date( 'Y-m-d H:i:s' );
 	$log = $time . ' - ' . $message . PHP_EOL;
 
 	$handle	= fopen( $file, 'a' );
@@ -352,10 +352,9 @@ function bookacti_generate_csv( $items, $headers = array() ) {
  * @since 1.8.0
  * @param array $vevents
  * @param array $vcalendar
- * @param int $sequence
  * @return string
  */
-function bookacti_generate_ical( $vevents, $vcalendar = array(), $sequence = 0 ) {
+function bookacti_generate_ical( $vevents, $vcalendar = array() ) {
 	if( ! $vevents ) { return ''; }
 	
 	// Set default vcalendar properties
@@ -390,7 +389,8 @@ function bookacti_generate_ical( $vevents, $vcalendar = array(), $sequence = 0 )
 		$vcalendar[ $property ] = isset( $vcalendar[ $property ] ) ? bookacti_sanitize_ical_property( $vcalendar[ $property ], $property ) : $value;
 	}
 	
-	$vevent_default = array( 'UID' => 0, 'DTSTART' => $now_formatted, 'DTSTAMP' => $now_formatted, 'SEQUENCE' => $sequence );
+	// Compulsory vevent properties
+	$vevent_default = array( 'UID' => 0, 'DTSTAMP' => $now_formatted, 'DTSTART' => $now_formatted );
 	
 	ob_start();
 	
@@ -401,10 +401,10 @@ function bookacti_generate_ical( $vevents, $vcalendar = array(), $sequence = 0 )
 			if( $value === '' ) { continue; }
 			echo $property . ':' . $value . PHP_EOL;
 		}
-		do_action( 'bookacti_ical_vcalendar_before', $vevents, $vcalendar, $sequence );
+		do_action( 'bookacti_ical_vcalendar_before', $vevents, $vcalendar );
 		
 		foreach( $vevents as $vevent ) {
-			// Add compulsory data
+			// Add compulsory properties
 			if( empty( $vevent[ 'UID' ] ) ) { ++$vevent_default[ 'UID' ]; }
 			$vevent = array_merge( $vevent_default, $vevent );
 			$vevent[ 'UID' ] = bookacti_sanitize_ical_property( $vevent[ 'UID' ] . '@' . $site_host, 'UID' );
@@ -415,13 +415,13 @@ function bookacti_generate_ical( $vevents, $vcalendar = array(), $sequence = 0 )
 					if( $value === '' ) { continue; }
 					echo $property . ':' . $value . PHP_EOL;
 				}
-				do_action( 'bookacti_ical_vevent_after', $vevent, $vevents, $vcalendar, $sequence );
+				do_action( 'bookacti_ical_vevent_after', $vevent, $vevents, $vcalendar );
 			?>
 			END:VEVENT
 		<?php
 		}
 
-		do_action( 'bookacti_ical_vcalendar_after', $vevents, $vcalendar, $sequence );
+		do_action( 'bookacti_ical_vcalendar_after', $vevents, $vcalendar );
 	
 	?>
 	END:VCALENDAR

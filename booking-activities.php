@@ -313,20 +313,21 @@ function bookacti_activate() {
 	
 	delete_transient( 'bookacti_installing' );
 	
-	// Flush rules after install
-	flush_rewrite_rules();
-	
 	do_action( 'bookacti_activate' );
+	
+	flush_rewrite_rules();
 }
 register_activation_hook( __FILE__, 'bookacti_activate' );
 
 
 /**
  * Deactivate Booking Activities
- * @version 1.7.1
+ * @version 1.8.0
  */
 function bookacti_deactivate() {
 	do_action( 'bookacti_deactivate' );
+	
+	flush_rewrite_rules();
 }
 register_deactivation_hook( __FILE__, 'bookacti_deactivate' );
 
