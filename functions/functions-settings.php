@@ -1259,56 +1259,60 @@ function bookacti_is_booking_activities_screen( $screen = '' ) {
 // ROLES AND CAPABILITIES
 /**
  * Add roles and capabilities
- * @version 1.7.12
+ * @version 1.8.0
  */
 function bookacti_set_role_and_cap() {
 	$administrator = get_role( 'administrator' );
-	$administrator->add_cap( 'bookacti_manage_booking_activities' );
-	$administrator->add_cap( 'bookacti_manage_bookings' );
-	$administrator->add_cap( 'bookacti_manage_templates' );
-	$administrator->add_cap( 'bookacti_manage_forms' );
-	$administrator->add_cap( 'bookacti_manage_booking_activities_settings' );
-	$administrator->add_cap( 'bookacti_read_templates' );
-	$administrator->add_cap( 'bookacti_create_templates' );
-	$administrator->add_cap( 'bookacti_edit_templates' );
-	$administrator->add_cap( 'bookacti_delete_templates' );
-	$administrator->add_cap( 'bookacti_create_activities' );
-	$administrator->add_cap( 'bookacti_edit_activities' );
-	$administrator->add_cap( 'bookacti_delete_activities' );
-	$administrator->add_cap( 'bookacti_edit_bookings' );
-	$administrator->add_cap( 'bookacti_delete_bookings' );
-	$administrator->add_cap( 'bookacti_create_forms' );
-	$administrator->add_cap( 'bookacti_edit_forms' );
-	$administrator->add_cap( 'bookacti_delete_forms' );
-
+	if( $administrator ) {
+		$administrator->add_cap( 'bookacti_manage_booking_activities' );
+		$administrator->add_cap( 'bookacti_manage_bookings' );
+		$administrator->add_cap( 'bookacti_manage_templates' );
+		$administrator->add_cap( 'bookacti_manage_forms' );
+		$administrator->add_cap( 'bookacti_manage_booking_activities_settings' );
+		$administrator->add_cap( 'bookacti_read_templates' );
+		$administrator->add_cap( 'bookacti_create_templates' );
+		$administrator->add_cap( 'bookacti_edit_templates' );
+		$administrator->add_cap( 'bookacti_delete_templates' );
+		$administrator->add_cap( 'bookacti_create_activities' );
+		$administrator->add_cap( 'bookacti_edit_activities' );
+		$administrator->add_cap( 'bookacti_delete_activities' );
+		$administrator->add_cap( 'bookacti_edit_bookings' );
+		$administrator->add_cap( 'bookacti_delete_bookings' );
+		$administrator->add_cap( 'bookacti_create_forms' );
+		$administrator->add_cap( 'bookacti_edit_forms' );
+		$administrator->add_cap( 'bookacti_delete_forms' );
+	}
+	
 	do_action( 'bookacti_set_capabilities' );
 }
 
 
 /**
  * Remove roles and capabilities
- * @version 1.7.12
+ * @version 1.8.0
  */
 function bookacti_unset_role_and_cap() {
 	$administrator	= get_role( 'administrator' );
-	$administrator->remove_cap( 'bookacti_manage_booking_activities' );
-	$administrator->remove_cap( 'bookacti_manage_bookings' );
-	$administrator->remove_cap( 'bookacti_manage_templates' );
-	$administrator->remove_cap( 'bookacti_manage_forms' );
-	$administrator->remove_cap( 'bookacti_manage_booking_activities_settings' );
-	$administrator->remove_cap( 'bookacti_read_templates' );
-	$administrator->remove_cap( 'bookacti_create_templates' );
-	$administrator->remove_cap( 'bookacti_edit_templates' );
-	$administrator->remove_cap( 'bookacti_delete_templates' );
-	$administrator->remove_cap( 'bookacti_create_activities' );
-	$administrator->remove_cap( 'bookacti_edit_activities' );
-	$administrator->remove_cap( 'bookacti_delete_activities' );
-	$administrator->remove_cap( 'bookacti_edit_bookings' );
-	$administrator->remove_cap( 'bookacti_delete_bookings' );
-	$administrator->remove_cap( 'bookacti_create_forms' );
-	$administrator->remove_cap( 'bookacti_edit_forms' );
-	$administrator->remove_cap( 'bookacti_delete_forms' );
-
+	if( $administrator ) {
+		$administrator->remove_cap( 'bookacti_manage_booking_activities' );
+		$administrator->remove_cap( 'bookacti_manage_bookings' );
+		$administrator->remove_cap( 'bookacti_manage_templates' );
+		$administrator->remove_cap( 'bookacti_manage_forms' );
+		$administrator->remove_cap( 'bookacti_manage_booking_activities_settings' );
+		$administrator->remove_cap( 'bookacti_read_templates' );
+		$administrator->remove_cap( 'bookacti_create_templates' );
+		$administrator->remove_cap( 'bookacti_edit_templates' );
+		$administrator->remove_cap( 'bookacti_delete_templates' );
+		$administrator->remove_cap( 'bookacti_create_activities' );
+		$administrator->remove_cap( 'bookacti_edit_activities' );
+		$administrator->remove_cap( 'bookacti_delete_activities' );
+		$administrator->remove_cap( 'bookacti_edit_bookings' );
+		$administrator->remove_cap( 'bookacti_delete_bookings' );
+		$administrator->remove_cap( 'bookacti_create_forms' );
+		$administrator->remove_cap( 'bookacti_edit_forms' );
+		$administrator->remove_cap( 'bookacti_delete_forms' );
+	}
+	
 	do_action( 'bookacti_unset_capabilities' );
 }
 

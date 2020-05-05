@@ -25,7 +25,7 @@ $users_options_for_activities	= '';
 $users_options_for_templates	= '';
 if ( ! empty( $users ) ) {
 	foreach( $users as $user ) {
-		if( $user->has_cap( 'bookacti_edit_activities' ) || $user->has_cap( 'bookacti_edit_templates' ) || $user->has_cap( 'bookacti_read_templates' ) ) {
+		if( $user->has_cap( 'bookacti_edit_activities' ) || $user->has_cap( 'bookacti_edit_bookings' ) || $user->has_cap( 'bookacti_edit_templates' ) || $user->has_cap( 'bookacti_read_templates' ) ) {
 			$user_info = get_userdata( $user->ID );
 			$default_display_name = $user_info->user_login;
 			if( $user_info->first_name && $user_info->last_name ){
@@ -37,7 +37,7 @@ if ( ! empty( $users ) ) {
 				$users_options_for_activities .= '<option value="' . esc_attr( $user->ID ) . '" >' . esc_html( $display_name ) . '</option>';
 			}
 
-			if( $user->has_cap( 'bookacti_edit_templates' ) || $user->has_cap( 'bookacti_read_templates' ) ) {
+			if( $user->has_cap( 'bookacti_edit_templates' ) || $user->has_cap( 'bookacti_read_templates' ) || $user->has_cap( 'bookacti_edit_bookings' ) ) {
 				$users_options_for_templates .= '<option value="' . esc_attr( $user->ID ) . '" >' . esc_html( $display_name ) . '</option>';
 			}
 		}
@@ -353,7 +353,7 @@ if ( ! empty( $users ) ) {
 						esc_html_e( 'Who can manage this calendar?', 'booking-activities' );
 						$tip  = esc_html__( 'Choose who is allowed to access this calendar.', 'booking-activities' );
 						/* translators: %s = capabilities name */
-						$tip .= ' ' . sprintf( esc_html__( 'All administrators already have this privilege. If the selectbox is empty, it means that no users have capabilities such as %s.', 'booking-activities' ), '"bookacti_edit_templates" / "bookacti_read_templates"' );
+						$tip .= ' ' . sprintf( esc_html__( 'All administrators already have this privilege. If the selectbox is empty, it means that no users have capabilities such as %s.', 'booking-activities' ), '"bookacti_edit_templates" / "bookacti_read_templates / bookacti_edit_bookings"' );
 						/* translators: %1$s = Order for Customers add-on link. */
 						$tip .= '<br/>' . sprintf( esc_html__( 'Operators from %1$s add-on have these capabilities.', 'booking-activities' ), '<a href="https://booking-activities.fr/en/downloads/order-for-customers/?utm_source=plugin&utm_medium=plugin&utm_campaign=order-for-customers&utm_content=infobulle-permission" target="_blank" >Order for Customers</a>' );
 						/* translators: %1$s = User Role Editor plugin link. */
@@ -619,7 +619,7 @@ if ( ! empty( $users ) ) {
 						esc_html_e( 'Who can manage this calendar?', 'booking-activities' );
 						$tip  = esc_html__( 'Choose who is allowed to access this calendar.', 'booking-activities' );
 						/* translators: %s = capabilities name */
-						$tip .= ' ' . sprintf( esc_html__( 'All administrators already have this privilege. If the selectbox is empty, it means that no users have capabilities such as %s.', 'booking-activities' ), '"bookacti_edit_templates" / "bookacti_read_templates"' );
+						$tip .= ' ' . sprintf( esc_html__( 'All administrators already have this privilege. If the selectbox is empty, it means that no users have capabilities such as %s.', 'booking-activities' ), '"bookacti_edit_activities"' );
 						/* translators: %1$s = Order for Customers add-on link. */
 						$tip .= '<br/>' . sprintf( esc_html__( 'Operators from %1$s add-on have these capabilities.', 'booking-activities' ), '<a href="https://booking-activities.fr/en/downloads/order-for-customers/?utm_source=plugin&utm_medium=plugin&utm_campaign=order-for-customers&utm_content=infobulle-permission" target="_blank" >Order for Customers</a>' );
 						/* translators: %1$s = User Role Editor plugin link. */

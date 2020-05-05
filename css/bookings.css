@@ -138,9 +138,9 @@ label[for="bookacti-booking-filter-dates-to"] + input#bookacti-booking-filter-da
 @media screen and ( max-width: 1280px ) { 
 	#bookacti-booking-list-container .check-column,
 	#bookacti-booking-list-container .column-id,
-	#bookacti-booking-list-container .column-quantity,
+	#bookacti-booking-list-container .column-quantity	{ width: 30px; }
 	#bookacti-booking-list-container .column-payment_status,
-	#bookacti-booking-list-container .column-state		{ width: 30px; }
+	#bookacti-booking-list-container .column-state		{ width: 40px; }
 	#bookacti-booking-list-container .column-actions	{ width: 106px; }
 }
 

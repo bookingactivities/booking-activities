@@ -1390,6 +1390,7 @@ function bookacti_get_bookings_for_export( $args_raw = array() ) {
 		'columns' => array(),
 		'raw' => true,
 		'type' => 'csv',
+		'locale' => ''
 	);
 	$args = wp_parse_args( $args_raw, $default_args );
 	
@@ -1513,15 +1514,15 @@ function bookacti_get_bookings_for_export( $args_raw = array() ) {
 			'creation_date'			=> $args[ 'raw' ] ? $booking->creation_date : bookacti_format_datetime( $booking->creation_date, $date_format ),
 			'creation_date_raw'		=> $booking->creation_date,
 			'event_id'				=> $event_id,
-			'event_title'			=> apply_filters( 'bookacti_translate_text', $title ),
+			'event_title'			=> apply_filters( 'bookacti_translate_text', $title, $args[ 'locale' ] ),
 			'start_date'			=> $args[ 'raw' ] ? $start : bookacti_format_datetime( $start, $datetime_format ),
 			'end_date'				=> $args[ 'raw' ] ? $end : bookacti_format_datetime( $end, $datetime_format ),
 			'start_date_raw'		=> $start,
 			'end_date_raw'			=> $end,
 			'template_id'			=> $booking->template_id,
-			'template_title'		=> apply_filters( 'bookacti_translate_text', $booking->template_title ),
+			'template_title'		=> apply_filters( 'bookacti_translate_text', $booking->template_title, $args[ 'locale' ] ),
 			'activity_id'			=> $activity_id,
-			'activity_title'		=> apply_filters( 'bookacti_translate_text', $activity_title ),
+			'activity_title'		=> apply_filters( 'bookacti_translate_text', $activity_title, $args[ 'locale' ] ),
 			'form_id'				=> $form_id,
 			'order_id'				=> $order_id,
 			'customer_id'			=> $user_id,

@@ -72,6 +72,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 						$desired_templates	= isset( $_REQUEST[ 'templates' ] ) && is_array( $_REQUEST[ 'templates' ] ) ? array_filter( array_map( 'intval', $_REQUEST[ 'templates' ] ) ) : array();
 						
 						$had_templates = ! empty( $desired_templates );
+						$bypass_template_managers_check = apply_filters( 'bookacti_bypass_template_managers_check', false );
 						$all_templates = $bypass_template_managers_check || is_super_admin();
 						$allowed_templates = ! $all_templates ? array_values( array_intersect( $desired_templates, $available_template_ids ) ) : $desired_templates;
 						$selected_templates = ! empty( $allowed_templates ) ? $allowed_templates : ( ! $had_templates && $available_template_ids ? $available_template_ids : array( 'none' ) );

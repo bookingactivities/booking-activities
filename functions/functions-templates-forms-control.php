@@ -38,12 +38,11 @@ function bookacti_validate_template_data( $template_title, $template_start, $tem
 
 /**
  * Format template managers
- * 
+ * @version 1.8.0
  * @param array $template_managers
  * @return array
  */
 function bookacti_format_template_managers( $template_managers = array() ) {
-	
 	$template_managers = bookacti_ids_to_array( $template_managers );
 	
 	// If user is not super admin, add him automatically in the template managers list if he isn't already
@@ -59,7 +58,8 @@ function bookacti_format_template_managers( $template_managers = array() ) {
 	foreach( $template_managers as  $i => $template_manager ) {
 		if( empty( $template_manager )
 		|| ( ! user_can( $template_manager, 'bookacti_read_templates' )
-		&&	 ! user_can( $template_manager, 'bookacti_edit_templates' ) ) ) {
+		&&	 ! user_can( $template_manager, 'bookacti_edit_templates' ) 
+		&&	 ! user_can( $template_manager, 'bookacti_edit_bookings' ) ) ) {
 			unset( $template_managers[ $i ] );
 		}
 	}

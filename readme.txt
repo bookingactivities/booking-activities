@@ -325,10 +325,10 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 * Breaking change - Drop backward compatibility and support with WooCommerce < 3.0
 * Feature - Display a preview of the bookings in a tooltip when you mouseover an event in the backend Bookings page (mouseover the event on desktop, long press the event on mobile)
 * Feature - Allow to change the calendar settings in the backend Bookings page (settings saved per user)
-* Feature - Add an option to make the calendar start on the first displayed event, and end on the last one (in Calendar fields settings)
 * Feature - iCal - Export / Sync bookings (just like CSV export)
 * Feature - iCal - Customize the events title and description with event data
 * Feature - iCal - Display the booking list in the events description
+* Feature - Add an option to make the calendar start on the first displayed event, and end on the last one (in Calendar fields settings)
 * Feature - Allow to login / register before booking with a distinct button (in User data fields settings, Login tab)
 * Feature - Add the [bookingactivities_list login_form="desired_form_id"] login_form attribute to display a login form instead of the booking list if the user is not logged in
 * Feature - Add the [bookingactivities_login form="desired_form_id"] shortcode to display a login form if the user is not logged in
@@ -344,7 +344,7 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 * Tweak - The reschedule booking system now uses all the possible initial booking form calendar field settings
 * Tweak - A message is displayed instead of the calendar if no events are available (only if the Trim option is active, in Calendar fields settings)
 * Tweak - Add help sections in the form editor, and in the notifications settings
-* Tweak - Bookings cannot be seen or changed if the user cannot manage the related calendar (except for administrators)
+* Fix - Make sure bookings cannot be seen or changed if the user cannot manage the related calendar (except for administrators)
 * Fix - Redirect URL when booking on event click didn't work
 * Fix - Add compulsory hidden quantity field when booking on event click
 * Fix - All grouped bookings were displayed in each rows of the frontend booking list when group_by = none
@@ -356,7 +356,7 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 * Fix - Bad rounding of the WC coupon refund amounts
 * Fix - Don't change booking user_id when a WC order customer changes (at the same time as its status)
 * Fix - Show single grouped bookings when selected alone in the backend Bookings page
-* Fix - Product not listed in selectbox if it once have had variations and is now no longer variable
+* Fix - Product not listed in selectbox if it once has had variations and is now no longer variable
 * Fix - Possible JS error when loading a booking system with preselected events
 * Fix - Error when submitting WC add to cart form on event click
 * Fix - WC cart items may not be removed on expiration depending on your server timezone

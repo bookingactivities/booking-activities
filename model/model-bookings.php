@@ -1161,7 +1161,7 @@ function bookacti_get_number_of_bookings( $filters ) {
 
 /**
  * Get number of bookings ordered by events
- * @version 1.7.15
+ * @version 1.8.0
  * @global wpdb $wpdb
  * @param array $template_ids
  * @param array $event_ids
@@ -1239,7 +1239,7 @@ function bookacti_get_number_of_bookings_by_events( $template_ids = array(), $ev
 	foreach( $events_booking_data as $event_booking_data ) {
 		$event_id = $event_booking_data[ 'event_id' ];
 		if( ! isset( $return_array[ $event_id ] ) ) { $return_array[ $event_id ] = array(); }
-		$return_array[ $event_id ][] = $event_booking_data;
+		$return_array[ $event_id ][ $event_booking_data[ 'event_start' ] ] = $event_booking_data;
 	}
 	
 	return apply_filters( 'bookacti_get_number_of_bookings_by_events', $return_array, $template_ids, $event_ids, $user_ids, $query );
