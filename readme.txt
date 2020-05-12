@@ -319,6 +319,9 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 
 == Changelog ==
 
+= 1.8.1 - 2020/05/12 =
+* Fix - JS error when trying to open event settings
+
 = 1.8.0 - 2020/05/12 =
 * **[See the user-friendly release note](https://booking-activities.fr/en/blog/booking-activities-1-8-bookings-preview-ical-export-login-beforehand-etc/?utm_source=wp-plugin-page&utm_medium=wordpress&utm_content=readme)**
 * Breaking change - You must use booking forms registered in Booking Activities > Booking forms (since 1.5) (Shortcode and WC integration) ([How to migrate](https://booking-activities.fr/en/blog/booking-activities-1-5-booking-forms/?utm_source=wp-plugin-page&utm_medium=wordpress&utm_content=readme#migrate-to-1-5))

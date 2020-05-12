@@ -541,8 +541,13 @@ function bookacti_dialog_update_event( event ) {
 
 	// Usefull var
 	var event_data		= bookacti.booking_system[ 'bookacti-template-calendar' ][ 'events_data' ][ event.id ];
-	var event_bookings	= bookacti.booking_system[ 'bookacti-template-calendar' ][ 'bookings' ][ event.id ];
-	event_bookings = $j.map( event_bookings, function( value, index ) { return [value]; } ); // Convert to array to be sorted by date
+	var event_bookings	= [];
+	if( typeof bookacti.booking_system[ 'bookacti-template-calendar' ][ 'bookings' ][ event.id ] !== 'undefined' ) {
+		// Convert to array to be sorted by date
+		if( $j.isPlainObject( bookacti.booking_system[ 'bookacti-template-calendar' ][ 'bookings' ][ event.id ] ) ) {
+			event_bookings = $j.map( bookacti.booking_system[ 'bookacti-template-calendar' ][ 'bookings' ][ event.id ], function( value, index ) { return [value]; } );
+		}
+	}
 	var event_exceptions= bookacti.booking_system[ 'bookacti-template-calendar' ][ 'exceptions' ][ event.id ];
 	var bookings_number	= bookacti_get_event_number_of_bookings( $j( '#bookacti-template-calendar' ), event );
 
@@ -582,10 +587,14 @@ function bookacti_dialog_update_event( event ) {
 	}
 	
 	// Set the min repeat period (must contain all booked occurences)
-	if( typeof event_bookings !== 'undefined' ) {
+	if( event_bookings.length ) {
 		event_bookings = bookacti_sort_events_array_by_dates( event_bookings, false, false, { 'start': 'event_start', 'end': 'event_end' } );
-		$j( '#bookacti-event-repeat-from' ).attr( 'max', event_bookings[ 0 ][ 'event_start' ].substr( 0, 10 ) );
-		$j( '#bookacti-event-repeat-to' ).attr( 'min', event_bookings[ event_bookings.length - 1 ][ 'event_start' ].substr( 0, 10 ) );
+		if( typeof event_bookings[ 0 ][ 'event_start' ] !== 'undefined' ) {
+			$j( '#bookacti-event-repeat-from' ).attr( 'max', event_bookings[ 0 ][ 'event_start' ].substr( 0, 10 ) );
+		}
+		if( typeof event_bookings[ event_bookings.length - 1 ][ 'event_start' ] !== 'undefined' ) {
+			$j( '#bookacti-event-repeat-to' ).attr( 'min', event_bookings[ event_bookings.length - 1 ][ 'event_start' ].substr( 0, 10 ) );
+		}
 	}
 
 	// Fill the exceptions field
