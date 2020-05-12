@@ -3,16 +3,19 @@
 if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 /**
- * Add settings tab
- * @version 1.7.16
+ * Add WooCommerce settings tab
+ * @since 1.8.0 (was bookacti_add_cart_settings_tab)
  * @param array $tabs
  * @return array
  */
-function bookacti_add_cart_settings_tab( $tabs ) {
-	$tabs[ 'woocommerce' ] = __( 'WooCommerce', 'booking-activities' );
+function bookacti_add_wc_settings_tab( $tabs ) {
+	$i = array_search( 'system', array_keys( $tabs ) );
+	if( ! $i ) { $i = count( $tabs ); }
+	$new_tab = array( 'woocommerce' => esc_html__( 'WooCommerce', 'booking-activities' ) );
+	$tabs = array_merge( array_slice( $tabs, 0, $i, true ), $new_tab, array_slice( $tabs, $i, null, true ) );
 	return $tabs;
 }
-add_filter( 'bookacti_settings_tabs', 'bookacti_add_cart_settings_tab', 5 ); 
+add_filter( 'bookacti_settings_tabs', 'bookacti_add_wc_settings_tab', 10, 1 ); 
 
 
 /**

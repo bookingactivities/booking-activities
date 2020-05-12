@@ -1,14 +1,21 @@
 $j( document ).ready( function() {
+	// Initialize select2
 	bookacti_select2_init();
+	
+	// Localize moment JS
+	moment.locale( bookacti_localized.fullcalendar_locale );
+	
+	// Add formatPHP function to moment JS
 	bookacti_init_moment_format_from_php_date_format();
 });
 
 
-// Detect if the device used is touch-sensitive
+/**
+ * Detect if the device used is touch-sensitive
+ */
 window.addEventListener( 'touchstart', function bookacti_detect_touch_device() {
     bookacti.is_touch_device = true;
-    // Remove event listener once fired, otherwise it'll kill scrolling
-    // performance
+    // Remove event listener once fired, otherwise it'll kill scrolling performance
     window.removeEventListener( 'touchstart', bookacti_detect_touch_device );
 }, false );
 
@@ -42,9 +49,9 @@ function bookacti_init_tooltip() {
 /**
  * Scroll to element or to position
  * @version 1.7.19
- * @param {DOM_Element} or {number} element
- * @param {int} speed
- * @param {string} position Either "middle" or "top"
+ * @param {HTMLElement|Number} element
+ * @param {Int} speed
+ * @param {String} position Either "middle" or "top"
  */
 function bookacti_scroll_to( element, speed, position ) {
 	speed	= $j.isNumeric( speed ) ? parseInt( speed ) : 500;
@@ -66,23 +73,34 @@ function bookacti_scroll_to( element, speed, position ) {
 }
 
 
-// Add 0 before a number until it has *max* digits
+/**
+ * Add 0 before a number until it has *max* digits
+ * @param {String} str
+ * @param {int} max
+ * @returns {String}
+ */
 function bookacti_pad( str, max ) {
   str = str.toString();
-  return str.length < max ? bookacti_pad( "0" + str, max ) : str;
+  return str.length < max ? bookacti_pad( '0' + str, max ) : str;
 }
 
 
-// Compare two arrays and tell if they are the same
+/**
+ * Compare two arrays and tell if they are the same
+ * @version 1.8.0
+ * @param {array} array1
+ * @param {array} array2
+ * @returns {Boolean}
+ */
 function bookacti_compare_arrays( array1, array2 ) {
-	
-	var are_same = $j( array1 ).not( array2 ).length === 0 && $j( array2 ).not( array1 ).length === 0;
-	
-	return are_same;
+	return $j( array1 ).not( array2 ).length === 0 && $j( array2 ).not( array1 ).length === 0;
 }
 
 
-// Serialize a form into a single object (works with multidimentionnal inputs of any depth)
+/**
+ * Serialize a form into a single object (works with multidimentionnal inputs of any depth)
+ * @returns {object}
+ */
 $j.fn.serializeObject = function() {
 	var data = {};
 

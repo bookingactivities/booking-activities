@@ -22,14 +22,24 @@
 .wp-admin select.bookacti-select[multiple] option:hover,
 .wp-admin select.bookacti-items-select-box[multiple] option:hover { color: #007cba; }
 
-.bookacti-irreversible-action span			{ display: table-cell; vertical-align: middle; }
-.bookacti-irreversible-action .dashicons	{ font-size: 1.5em; color: #b81c23; padding-right: 10px; }
-.bookacti-warning .dashicons				{ font-size: 1.5em; color: #f89b2f; padding-right: 10px; }
+.bookacti-error span, .bookacti-warning span, .bookacti-info span, .bookacti-sos span						{ display: table-cell; vertical-align: middle; }
+.bookacti-error .dashicons,.bookacti-warning .dashicons, .bookacti-info .dashicons, .bookacti-sos .dashicons{ font-size: 1.5em; padding-right: 10px; }
+.bookacti-error a, .bookacti-warning a, .bookacti-info a, .bookacti-sos a									{ color: #0073aa; text-decoration: none; }
+.bookacti-error a:hover, .bookacti-warning a:hover, .bookacti-info a:hover, .bookacti-sos a:hover			{ color: #00a0d2; }
+.bookacti-error .dashicons		{ color: #b81c23; }
+.bookacti-warning .dashicons	{ color: #f89b2f; }
+.bookacti-info .dashicons		{ color: #00a0d2; }
+.bookacti-sos					{ width: auto; height: auto; }
+.bookacti-sos .dashicons		{ color: #ca4a1f; text-align: center; width: auto; max-width: 50px; }
+.bookacti-sos .dashicons:after	{ content: attr( data-label ); display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; text-transform: uppercase; font-size: 10px; font-weight: bold; font-family: -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Oxygen-Sans,Ubuntu,Cantarell,"Helvetica Neue",sans-serif; }
+
 
 .bookacti-addon-promo			{ border: 2px solid #52b7e9; border-radius: 3px; padding: 10px; text-align: center; }
 .bookacti-addon-promo .button	{ margin-top: 10px; }
 
 #bookacti-fatal-error			{ margin: 1em; }
+
+.bookacti-help-list				{ list-style-type: disc; padding-inline-start: 20px; }
 
 
 /***** CALENDAR *****/
@@ -50,7 +60,7 @@
 
 
 /***** SETTINGS *****/
-#bookacti-settings input:not([type='submit']):not([type='checkbox']):not([type='radio']):not([type='button']):not(.button),
+#bookacti-settings input:not([type='submit']):not([type='checkbox']):not([type='radio']):not([type='button']):not(.button):not(.bookacti-duration-field),
 #bookacti-settings select	{ min-width: 300px; max-width: 300px; }
 #bookacti-settings textarea	{ min-width: 300px;  }
 
@@ -66,8 +76,8 @@
 .bookacti-settings-table th		{ text-align: left; padding: 10px; border-bottom: 1px solid #e1e1e1; }
 .bookacti-settings-table td		{ vertical-align: middle; padding: 5px 10px; }
 .bookacti-settings-table tbody tr:nth-child( 2n+1 )	{ background-color: #f9f9f9; }
-.bookacti-settings-table a		{ text-decoration: none; font-weight: bold; }
 .bookacti-settings-table img	{ max-height: 24px; max-width: 24px; }
+.bookacti-settings-table .bookacti-notifications-list-column-value-title a { text-decoration: none; font-weight: bold; }
 
 .bookacti-not-found-row			{ text-align: center; }
 #bookacti-archive-disclaimer	{ max-width: 600px; color: #a00; }
@@ -81,10 +91,8 @@
 .bookacti-archive-ids code	{ font-size: 0.8em; word-spacing: -2px; }
 .bookacti-archive-results ul				{ padding: 10px; margin: 5px 0; background: rgba( 255,255,255,0.4 ); border: 1px solid #aaa; }
 .bookacti-archive-results ul li:last-child	{ margin-bottom: 0; }
-.bookacti-archive-action + .bookacti-archive-action:before { content: ' | '; color: #ddd; }
-.bookacti-archive-action a				{ font-weight: normal; }
-.bookacti-archive-delete-file a			{ color: #a00; }
-.bookacti-archive-delete-file a:hover	{ color: #dc3232; }
+a.bookacti-archive-action.button,
+a.bookacti-archive-action.button-link-delete{ font-weight: normal; vertical-align: middle; margin-right: 4px; }
 
 .bookacti-settings-table .dashicons-yes:before	{ color: #3cb371; }
 .bookacti-settings-table .dashicons-no:before	{ color: #cd5c5c; }
@@ -114,6 +122,12 @@
 
 .bookacti-licenses-settings-description + .submit { display: none; }
 
+.bookacti-duration-field-container	{ display: inline-block; vertical-align: middle; margin-right: 4px; }
+.bookacti-duration-field			{ width: 60px; }
+.bookacti-duration-field-label		{ display: block; }
+.bookacti-duration-hint				{ font-size: smaller; font-style: italic; }
+.bookacti-field-container .bookacti-duration-hint { text-align: right; }
+
 
 /** DIALOGS **/
 .bookacti-input-warning		{ border-color: #d80 !important; }
@@ -122,46 +136,63 @@
 .bookacti-form-warning		{ color: orange; font-style: italic; }
 .bookacti-error-exception	{ color: orange; }
 
-.bookacti-backend-dialog { display: none; }
+.bookacti-backend-dialog	{ display: none; }
 
-.bookacti-backend-dialog fieldset          { border: 1px solid #bbb; -webkit-border-radius: 3px; border-radius: 3px; padding: 10px; margin-bottom: 10px; }
-.bookacti-backend-dialog fieldset legend   { margin: auto; font-weight: 600; }
+.bookacti-backend-dialog fieldset			{ border: 1px solid #bbb; -webkit-border-radius: 3px; border-radius: 3px; padding: 10px; margin-bottom: 10px; }
+.bookacti-backend-dialog fieldset legend	{ margin: auto; font-weight: 600; }
+fieldset.bookacti-fieldset-no-css			{ border: none; border-top: 1px solid #bbb; -webkit-border-radius: 0; border-radius: 0; padding: 0; }
+.bookacti-tags-fieldset code				{ line-height: 1.8em; }
+
+.bookacti-backend-dialog .bookacti-field-container,
+.bookacti-backend-dialog > div,
+.bookacti-backend-dialog form > div,
+.bookacti-backend-dialog form fieldset > div,
+.bookacti-tabs .bookacti-tab-content > div				{ margin-bottom: 10px; }
+.bookacti-backend-dialog .bookacti-field-container:last-child,
+.bookacti-backend-dialog > div:last-child,
+.bookacti-backend-dialog form > div:last-child,
+.bookacti-backend-dialog form fieldset > div:last-child,
+.bookacti-tabs .bookacti-tab-content > div:last-child	{ margin-bottom: 0; }
 
 .bookacti-backend-dialog input:not([type='submit']):not([type='checkbox']):not([type='file']):not([type='radio']):not([type='button']):not([type='number']):not([type='color']):not(.button),
-.bookacti-backend-dialog select					{ width: 150px; max-width: 150px; }
-.bookacti-backend-dialog select[multiple]		{ max-width: none; }
-.bookacti-backend-dialog input[type='number']	{ width: 80px; max-width: 80px; }
-.bookacti-backend-dialog textarea				{ width: 100%; height: 50px; text-align: left; }
+.bookacti-backend-dialog select												{ width: 150px; max-width: 150px; }
+.bookacti-backend-dialog .bookacti-fullwidth-label + input:not([type='submit']):not([type='checkbox']):not([type='file']):not([type='radio']):not([type='button']):not([type='number']):not([type='color']):not(.button),
+.bookacti-backend-dialog .bookacti-fullwidth-label + select					{ width: 100%; max-width: none; }
+.bookacti-backend-dialog select[multiple]									{ max-width: none; }
+.bookacti-backend-dialog textarea											{ width: 100%; height: 50px; text-align: left; }
+.bookacti-backend-dialog input[type='number']:not(.bookacti-duration-field)	{ width: 80px; max-width: 80px; }
 
 .bookacti-backend-dialog .bookacti-multiple-select-container		{ margin-left: 5px; }
 .bookacti-backend-dialog .bookacti-multiple-select-container label	{ display: inline-block; vertical-align: top; margin-top: 0.5em; color: #565d61; }
 
 .bookacti-hidden-field								{ display: none; }
-.bookacti-show-hide-advanced-options				{ margin: auto; text-align: center; color: #52B7E9; cursor: pointer; }
-.bookacti-show-hide-advanced-options:hover			{ color: #418fb6; text-decoration: underline; }
+.bookacti-show-hide-advanced-options				{ margin: auto; text-align: center; color: #0073aa; cursor: pointer; }
+.bookacti-show-hide-advanced-options:hover			{ color: #00a0d2; text-decoration: none; }
 .bookacti-show-hide-advanced-options::after			{ font-family: 'dashicons'; }
 .bookacti-show-hide-advanced-options.bookacti-show-advanced-options::after	{ content: '\f140'; }
 .bookacti-show-hide-advanced-options.bookacti-hide-advanced-options::after	{ content: '\f142'; }
+fieldset legend .bookacti-show-hide-advanced-options{ cursor: pointer; color: #0073aa; font-weight: normal; margin: 0 5px 0 10px; }
 
 .bookacti-lang-switcher { margin-bottom: 10px; }
 
-.bookacti-backend-dialog .bookacti_export_url		{ display: table; width: 100%; }
-.bookacti-backend-dialog .bookacti_export_url_field	{ display: table-cell; width: 100%; }
-.bookacti-backend-dialog .bookacti_export_button	{ display: table-cell; vertical-align: middle; padding-left: 10px; }
-.bookacti-backend-dialog .bookacti_export_url_field input:not([type='submit']):not([type='checkbox']):not([type='file']):not([type='radio']):not([type='button']):not([type='time']):not([type='number']):not([type='color']):not(.button) { padding: 10px; max-width: none; width: 100%; }
+.bookacti-backend-dialog .bookacti_export_url				{ display: table; width: 100%; }
+.bookacti-backend-dialog .bookacti_export_url_field			{ display: table-cell; width: 100%; }
+.bookacti-backend-dialog .bookacti_export_button			{ display: table-cell; vertical-align: middle; padding-left: 10px; }
+.bookacti-backend-dialog .bookacti_export_url_field input,
+.bookacti-backend-dialog #bookacti-login-form-shortcode		{ padding: 5px 10px; max-width: none !important; width: 100% !important; }
 
-.bookacti-backend-dialog div > label:not(.bookacti-onoffswitch-label):not(.bookacti-refund-option-label):not(.bookacti-fullwidth-label)	{ display: inline-block; width: 150px; font-weight: bold; }
-.bookacti-backend-dialog div > label.bookacti-fullwidth-label																			{ display: block; width: 100%; font-weight: bold; cursor: auto; }
-.bookacti-backend-dialog div > input:not([type="hidden"]) + label:not(.bookacti-onoffswitch-label):not(.bookacti-refund-option-label)	{ display: inline; width: auto; font-weight: normal; }
+.bookacti-backend-dialog div > label:not(.bookacti-onoffswitch-label):not(.bookacti-refund-option-label):not(.bookacti-fullwidth-label):not(.bookacti-duration-field-label)	{ display: inline-block; width: 150px; font-weight: bold; }
+.bookacti-backend-dialog div > label.bookacti-fullwidth-label																												{ display: block; width: 100%; font-weight: bold; cursor: auto; }
+.bookacti-backend-dialog div > input:not([type="hidden"]) + label:not(.bookacti-onoffswitch-label):not(.bookacti-refund-option-label):not(.bookacti-duration-field-label)	{ display: inline; width: auto; font-weight: normal; }
 
 /* Tabs */
-.bookacti-tabs .bookacti-tab-content > div { margin-bottom: 10px; }
-.bookacti-tabs .bookacti-tab-content > div:last-child { margin-bottom: 0; }
+.bookacti-tabs .bookacti-tab-content { max-height: 400px; overflow-y: auto; }
 .bookacti-tabs .bookacti-tab-content .bookacti-display-inline-block { display: inline-block; }
 
 
 
-/* On/off switch */
+
+/* ON/OFF Switch */
 .bookacti-onoffswitch {
 	display: inline-block;
 	vertical-align: middle;

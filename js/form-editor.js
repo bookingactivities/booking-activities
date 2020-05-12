@@ -12,9 +12,13 @@ $j( document ).ready( function() {
 	// Init form editor actions
 	bookacti_init_form_editor_actions();
 	
-	// Minimize / Maximize field
+	/**
+	 * Expand / Collapse form editor field
+	 * @version 1.8.0
+	 * @param {Event} e
+	 */
 	$j( '#bookacti-form-editor' ).on( 'click', '.bookacti-form-editor-field-header', function( e ) {
-		if( $j( e.target ).hasClass( 'bookacti-form-editor-field-action' ) ) { return; }
+		if( $j( e.target ).closest( '.bookacti-form-editor-field-action' ).length ) { return; }
 	
 		var icon = $j( this ).find( '.bookacti-field-toggle' );
 		icon.toggleClass( 'dashicons-arrow-up dashicons-arrow-down' );
@@ -27,7 +31,10 @@ $j( document ).ready( function() {
 		}
     });
 	
-	// Sort form fields in editor
+	
+	/**
+	 * Sort form fields in editor by drag n' drop
+	 */
 	$j( '#bookacti-form-editor' ).sortable( { 
 		items: '.bookacti-form-editor-field:not(.ui-state-disabled):not(.bookacti-form-editor-promo-field)',
 		handle: '.bookacti-form-editor-field-title',
@@ -36,7 +43,11 @@ $j( document ).ready( function() {
 	});
 	$j( '#bookacti-form-editor' ).disableSelection();
 	
-	// Save a form (create or update)
+	
+	/**
+	 * Save a form (create or update) - on submit
+	 * @param {Event} e
+	 */
 	$j( 'form#bookacti-form-editor-page-form' ).on( 'submit', function( e ) {
 		if( ! $j( 'form#bookacti-form-editor-page-form' ).length ) { return; }
 		e.preventDefault();
@@ -60,7 +71,7 @@ $j( document ).ready( function() {
 	 * @since 1.7.0
 	 * @version 1.7.19
 	 */
-	$j( '#bookacti-form-field-dialog-calendar' ).on( 'change', 'select#bookacti-calendars, select#bookacti-activities', function( e ){
+	$j( '#bookacti-form-field-dialog-calendar' ).on( 'change', 'select#bookacti-calendars, select#bookacti-activities', function(){
 		var template_ids	= $j( '#bookacti-calendars' ).val();
 		var options			= $j( '[data-bookacti-show-if-templates]' );
 		bookacti_show_hide_template_related_options( template_ids, options ); 
@@ -135,7 +146,7 @@ $j( document ).ready( function() {
 	 * @since 1.7.0
 	 * @version 1.7.19
 	 */
-	$j( '#bookacti-form-field-dialog-calendar' ).on( 'change', 'select#bookacti-group_categories', function( e ){
+	$j( '#bookacti-form-field-dialog-calendar' ).on( 'change', 'select#bookacti-group_categories', function(){
 		var group_categories = $j( '#bookacti-group_categories' ).val();
 		
 		// If no group category is selected, hide the group categories actions table
@@ -213,11 +224,37 @@ $j( document ).ready( function() {
 	
 	
 	/**
-	 * Toggle the actions fields according to the currently selected form action
+	 * Calendar field settings: Toggle the groups options - on change
+	 * @since 1.8.0
+	 */
+	$j( '#bookacti-form-field-dialog-calendar' ).on( 'change', 'select#bookacti-group_categories', function() {
+		if( $j( this ).val() === 'none' ) { 
+			$j( '#bookacti-groups_only-container, #bookacti-groups_single_events-container' ).hide();
+		} else {
+			$j( '#bookacti-groups_only-container, #bookacti-groups_single_events-container' ).show();
+		}
+	});
+	
+	
+	/**
+	 * Calendar field settings: Toggle the booked events options - on change
+	 * @since 1.8.0
+	 */
+	$j( '#bookacti-form-field-dialog-calendar' ).on( 'change', 'input#bookacti-bookings_only', function() {
+		if( $j( this ).is( ':checked' ) ) { 
+			$j( '#bookacti-status-container, #bookacti-user_id-container' ).show();
+		} else {
+			$j( '#bookacti-status-container, #bookacti-user_id-container' ).hide();
+		}
+	});
+	
+	
+	/**
+	 * Calendar field settings: Toggle the actions fields - on change
 	 * @since 1.7.0
 	 * @version 1.7.10
 	 */
-	$j( '#bookacti-form-field-dialog-calendar' ).on( 'change', 'select#bookacti-form_action', function( e ) {
+	$j( '#bookacti-form-field-dialog-calendar' ).on( 'change', 'select#bookacti-form_action', function() {
 		// Show / hide the columns displayed in the "redirect URL" tables
 		$j( '.bookacti-activities-actions-options-table, .bookacti-group-categories-actions-options-table' ).show();
 		if( $j( this ).val() === 'default' ) {
@@ -231,9 +268,55 @@ $j( document ).ready( function() {
 	
 	
 	/**
+	 * Calendar field settings: Toggle the WC actions fields - on change
+	 * @since 1.7.0
+	 */
+	$j( '#bookacti-form-field-dialog-calendar' ).on( 'change', 'select#bookacti-form_action', function() {
+		// Show / hide the columns displayed in the "redirect URL" tables
+		$j( '.bookacti-activities-actions-options-table .bookacti-column-product, .bookacti-group-categories-actions-options-table .bookacti-column-product' ).hide();
+		if( $j( this ).val() === 'redirect_to_product_page' || $j( this ).val() === 'add_product_to_cart' ) {
+			$j( '.bookacti-activities-actions-options-table .bookacti-column-redirect_url, .bookacti-group-categories-actions-options-table .bookacti-column-redirect_url' ).hide();
+			$j( '.bookacti-activities-actions-options-table .bookacti-column-product, .bookacti-group-categories-actions-options-table .bookacti-column-product' ).show();
+		}
+		// Always hide categories table if no categories are selected
+		if( $j( 'select#bookacti-group_categories' ).val() === 'none' ) { $j( '.bookacti-group-categories-actions-options-table' ).hide(); }
+	});
+	
+	
+	/**
+	 * Calendar field settings: Toggle the availability period options - on change
+	 * @since 1.8.0
+	 */
+	$j( '#bookacti-form-field-dialog-calendar' ).on( 'change', '#bookacti-availability_period_start-container .bookacti-duration-value', function() {
+		if( parseInt( $j( this ).val() ) === 0 || $j( this ).val() === '' ) { 
+			$j( '#bookacti-past_events-container, #bookacti-past_events_bookable-container' ).show();
+		} else {
+			$j( '#bookacti-past_events-container, #bookacti-past_events_bookable-container' ).hide();
+		}
+	});
+	
+	
+	/**
+	 * Calendar field settings: Toggle the past events options - on change
+	 * @since 1.8.0
+	 */
+	$j( '#bookacti-form-field-dialog-calendar' ).on( 'change', 'input#bookacti-past_events', function() {
+		if( $j( this ).is( ':checked' ) ) { 
+			$j( '#bookacti-past_events_bookable-container' ).show();
+		} else {
+			$j( '#bookacti-past_events_bookable-container' ).hide();
+		}
+	});
+	
+	
+	/**
 	 * Rerender field HTML after settings update
 	 * @since 1.5.0
 	 * @version 1.7.17
+	 * @param {Event} e
+	 * @param {Int} field_id
+	 * @param {String} field_name
+	 * @param {Object} response
 	 */
 	$j( '#bookacti-form-editor' ).on( 'bookacti_field_updated bookacti_field_reset', function( e, field_id, field_name, response ){
 		if( field_name === 'calendar' ) {
@@ -258,23 +341,8 @@ $j( document ).ready( function() {
 	
 	
 	/**
-	 * Toggle the redirect URL tables according to the currently selected form action
-	 * @since 1.7.0
-	 */
-	$j( '#bookacti-form-field-dialog-calendar' ).on( 'change', 'select#bookacti-form_action', function( e ){
-		// Show / hide the columns displayed in the "redirect URL" tables
-		$j( '.bookacti-activities-actions-options-table .bookacti-column-product, .bookacti-group-categories-actions-options-table .bookacti-column-product' ).hide();
-		if( $j( this ).val() === 'redirect_to_product_page' || $j( this ).val() === 'add_product_to_cart' ) {
-			$j( '.bookacti-activities-actions-options-table .bookacti-column-redirect_url, .bookacti-group-categories-actions-options-table .bookacti-column-redirect_url' ).hide();
-			$j( '.bookacti-activities-actions-options-table .bookacti-column-product, .bookacti-group-categories-actions-options-table .bookacti-column-product' ).show();
-		}
-		// Always hide categories table if no categories are selected
-		if( $j( 'select#bookacti-group_categories' ).val() === 'none' ) { $j( '.bookacti-group-categories-actions-options-table' ).hide(); }
-	});
-	
-	
-	/**
 	 * Confirm before leaving if the form isn't published
+	 * @param {Event} e
 	 */
 	$j( window ).on( 'beforeunload', function( e ){
 		if( $j( '#major-publishing-actions' ).data( 'popup' ) ) { return true; } // Confirm before redirect
@@ -307,6 +375,7 @@ $j( document ).ready( function() {
 /**
  * Save form data
  * @since 1.5.0
+ * @version 1.8.0
  */
 function bookacti_save_form() {
 	// Select all form managers
@@ -333,13 +402,11 @@ function bookacti_save_form() {
 		data: data, 
 		type: 'POST',
 		dataType: 'json',
-		success: function( response ){
-
+		success: function( response ) {
 			// Remove current notices about the form
 			$j( '.bookacti-form-notice' ).remove();
 
 			if( response.status === 'success' ) {
-				
 				$j( 'body' ).trigger( 'bookacti_form_updated' );
 				
 				// If the form was inactive, redirect
@@ -352,23 +419,16 @@ function bookacti_save_form() {
 				else { $j( '#bookacti-form-editor-page-container' ).before( '<div class="notice notice-success is-dismissible bookacti-form-notice" ><p>' + response.message + '</p></div>' ); }
 				
 			} else if( response.status === 'failed' ) {
-				var error_message = bookacti_localized.error_update_form;
-				if( response.error === 'not_allowed' ) {
-					error_message += '\n' + bookacti_localized.error_not_allowed;
-				}
-
-				// Display feedback
+				var error_message = typeof response.message !== 'undefined' ? response.message : bookacti_localized.error;
 				$j( '#bookacti-form-editor-page-container' ).before( '<div class="notice notice-error is-dismissible bookacti-form-notice" ><p>' + error_message + '</p></div>' );
-
+				console.log( error_message );
 				console.log( response );
 			}
 		},
 		error: function( e ){
-			var error_message = 'AJAX ' + bookacti_localized.error_update_form;
-
-			// Display feedback
+			var error_message = 'AJAX ' + bookacti_localized.error;
 			$j( '#bookacti-form-editor-page-container' ).before( '<div class="notice notice-error is-dismissible bookacti-form-notice" ><p>' + error_message + '</p></div>' );
-
+			console.log( error_message );
 			console.log( e );
 		},
 		complete: function() { 
@@ -383,6 +443,7 @@ function bookacti_save_form() {
 /**
  * Save field order
  * @since 1.5.0
+ * @version 1.8.0
  */
 function bookacti_save_form_field_order() {
 	var form_id = $j( '#bookacti-form-id' ).val();
@@ -399,11 +460,11 @@ function bookacti_save_form_field_order() {
 	
 	var nonce = $j( '#bookacti_nonce_form_field_order' ).val();
 	var data = {
-			'action': 'bookactiSaveFormFieldOrder',
-			'form_id': form_id,
-			'field_order': field_order,
-			'nonce': nonce
-		};
+		'action': 'bookactiSaveFormFieldOrder',
+		'form_id': form_id,
+		'field_order': field_order,
+		'nonce': nonce
+	};
 	
 	bookacti_form_editor_enter_loading_state();
 	
@@ -413,24 +474,20 @@ function bookacti_save_form_field_order() {
 		data: data, 
 		type: 'POST',
 		dataType: 'json',
-		success: function( response ){
-			
+		success: function( response ) {
 			if( response.status === 'success' ) {
 				bookacti.form_editor.form.field_order = response.field_order;
 				
 				$j( '#bookacti-form-editor' ).trigger( 'bookacti_form_field_order_updated' );
 				
 			} else if( response.status === 'failed' ) {
-				var error_message = bookacti_localized.error_order_form_fields;
-				if( response.error === 'not_allowed' ) {
-					error_message += '\n' + bookacti_localized.error_not_allowed;
-				}
+				var error_message = typeof response.message !== 'undefined' ? response.message : bookacti_localized.error;
 				console.log( error_message );
 				console.log( response );
 			}
 		},
 		error: function( e ){
-			var error_message = 'AJAX ' + bookacti_localized.error_order_form_fields;
+			var error_message = 'AJAX ' + bookacti_localized.error;
 
 			console.log( error_message );
 			console.log( e );
@@ -440,11 +497,17 @@ function bookacti_save_form_field_order() {
 }
 
 
+/**
+ * Disable the field actions when loading
+ */
 function bookacti_form_editor_enter_loading_state() {
 	$j( '.bookacti-form-editor-action, .bookacti-form-editor-field-action' ).addClass( 'bookacti-disabled' );
 }
 
 
+/**
+ * Allow the field actions after loading
+ */
 function bookacti_form_editor_exit_loading_state() {
 	$j( '.bookacti-form-editor-action, .bookacti-form-editor-field-action' ).removeClass( 'bookacti-disabled' );
 }

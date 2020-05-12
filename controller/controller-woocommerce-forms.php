@@ -168,7 +168,7 @@ add_filter( 'bookacti_formatted_booking_system_attributes', 'bookacti_format_wc_
 /**
  * Sanitize WC booking system attributes 
  * @since 1.7.17
- * @version 1.7.18
+ * @version 1.8.0
  * @param array $field_data
  * @param array $raw_field_data
  * @return array
@@ -176,8 +176,8 @@ add_filter( 'bookacti_formatted_booking_system_attributes', 'bookacti_format_wc_
 function bookacti_format_wc_field_data( $field_data, $raw_field_data ) {
 	if( $raw_field_data[ 'name' ] === 'calendar' ) {
 		$default_meta = bookacti_default_wc_calendar_form_field_meta( array() );
-		$field_data[ 'product_by_activity' ]		= isset( $raw_field_data[ 'product_by_activity' ] ) && is_array( $raw_field_data[ 'product_by_activity' ] ) ? array_filter( array_map( 'intval', $raw_field_data[ 'product_by_activity' ] ) ) : $default_meta[ 'product_by_activity' ];
-		$field_data[ 'product_by_group_category' ]	= isset( $raw_field_data[ 'product_by_group_category' ] ) && is_array( $raw_field_data[ 'product_by_group_category' ] ) ? array_filter( array_map( 'intval', $raw_field_data[ 'product_by_group_category' ] ) ) : $default_meta[ 'product_by_group_category' ];
+		$field_data[ 'product_by_activity' ]		= isset( $raw_field_data[ 'product_by_activity' ] ) && is_array( $raw_field_data[ 'product_by_activity' ] ) ? array_filter( array_map( 'intval', $raw_field_data[ 'product_by_activity' ] ) ) : $default_meta[ 'calendar' ][ 'product_by_activity' ];
+		$field_data[ 'product_by_group_category' ]	= isset( $raw_field_data[ 'product_by_group_category' ] ) && is_array( $raw_field_data[ 'product_by_group_category' ] ) ? array_filter( array_map( 'intval', $raw_field_data[ 'product_by_group_category' ] ) ) : $default_meta[ 'calendar' ][ 'product_by_group_category' ];
 	}
 	return $field_data;
 }
@@ -187,7 +187,7 @@ add_filter( 'bookacti_formatted_field_data', 'bookacti_format_wc_field_data', 10
 /**
  * Sanitize WC booking system attributes 
  * @since 1.7.0
- * @version 1.7.18
+ * @version 1.8.0
  * @param array $field_data
  * @param array $raw_field_data
  * @return array
@@ -195,8 +195,8 @@ add_filter( 'bookacti_formatted_field_data', 'bookacti_format_wc_field_data', 10
 function bookacti_sanitize_wc_field_data( $field_data, $raw_field_data ) {
 	if( $raw_field_data[ 'name' ] === 'calendar' ) {
 		$default_meta = bookacti_default_wc_calendar_form_field_meta( array() );
-		$field_data[ 'product_by_activity' ]		= isset( $raw_field_data[ 'product_by_activity' ] ) && is_array( $raw_field_data[ 'product_by_activity' ] ) ? array_filter( array_map( 'intval', $raw_field_data[ 'product_by_activity' ] ) ) : $default_meta[ 'product_by_activity' ];
-		$field_data[ 'product_by_group_category' ]	= isset( $raw_field_data[ 'product_by_group_category' ] ) && is_array( $raw_field_data[ 'product_by_group_category' ] ) ? array_filter( array_map( 'intval', $raw_field_data[ 'product_by_group_category' ] ) ) : $default_meta[ 'product_by_group_category' ];
+		$field_data[ 'product_by_activity' ]		= isset( $raw_field_data[ 'product_by_activity' ] ) && is_array( $raw_field_data[ 'product_by_activity' ] ) ? array_filter( array_map( 'intval', $raw_field_data[ 'product_by_activity' ] ) ) : $default_meta[ 'calendar' ][ 'product_by_activity' ];
+		$field_data[ 'product_by_group_category' ]	= isset( $raw_field_data[ 'product_by_group_category' ] ) && is_array( $raw_field_data[ 'product_by_group_category' ] ) ? array_filter( array_map( 'intval', $raw_field_data[ 'product_by_group_category' ] ) ) : $default_meta[ 'calendar' ][ 'product_by_group_category' ];
 	}
 	return $field_data;
 }
@@ -311,6 +311,7 @@ add_filter( 'bookacti_group_category_redirect_url_table', 'bookacti_add_wc_colum
 /**
  * Search products for AJAX selectbox
  * @since 1.7.19
+ * @version 1.8.0
  */
 function bookacti_controller_search_select2_products() {
 	// Check nonce
@@ -333,9 +334,7 @@ function bookacti_controller_search_select2_products() {
 	// Add products options
 	foreach( $products_titles as $product_id => $product ) {
 		$product_title = esc_html( apply_filters( 'bookacti_translate_text', $product[ 'title' ] ) );
-		if( empty( $product[ 'variations' ] ) ) {
-			$options[] = array( 'id' => $product_id, 'text' => $product_title );
-		} else {
+		if( $product[ 'type' ] === 'variable' && ! empty( $product[ 'variations' ] ) ) {
 			$children_options = array();
 			foreach( $product[ 'variations' ] as $variation_id => $variation ) {
 				$variation_title = esc_html( apply_filters( 'bookacti_translate_text', $variation[ 'title' ] ) );
@@ -343,6 +342,8 @@ function bookacti_controller_search_select2_products() {
 				$children_options[] = array( 'id' => $variation_id, 'text' => $formatted_variation_title );
 			}
 			$options[] = array( 'children' => $children_options, 'text' => $product_title );
+		} else {
+			$options[] = array( 'id' => $product_id, 'text' => $product_title );
 		}
 	}
 	

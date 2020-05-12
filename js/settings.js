@@ -1,11 +1,10 @@
 $j( document ).ready( function() {
-	
 	/**
 	 * Intercept settings form submission
-	 * @version 1.7.5
+	 * @version 1.8.0
+	 * @param {Event} e
 	 */
 	$j( 'form#bookacti-settings.bookacti_save_settings_with_ajax' ).on( 'submit', function( e ) {
-		
 		// Prevent submission
 		e.preventDefault();
 		
@@ -23,20 +22,19 @@ $j( document ).ready( function() {
 			data: form_data,
 			dataType: 'json',
 			success: function( response ){
-				
-				if( response.status !== 'success' ) {
-					console.log( bookacti_localized.error_update_settings );
-					console.log( response );
-				} else {
+				if( response.status === 'success' ) {
 					if( form.attr( 'action' ) ) {
 						window.location.replace( form.attr( 'action' ) );
 					} else {
 						window.location.reload( true ); 
 					}
+				} else {
+					console.log( bookacti_localized.error );
+					console.log( response );
 				}
 			},
 			error: function( e ){
-				console.log( 'AJAX ' + bookacti_localized.error_update_settings );
+				console.log( 'AJAX ' + bookacti_localized.error );
 				console.log( e );
 			},
 			complete: function() {}
@@ -48,12 +46,13 @@ $j( document ).ready( function() {
 	/**
 	 * Analyse bookings and events data that can be archived
 	 * @since 1.7.0
+	 * @version 1.8.0
 	 */
 	$j( '.bookacti-archive-options' ).on( 'click', '#bookacti-archive-button-analyse', function() {
 		var date = $j( '#bookacti-archive-date' ).val();
 		if( ! date ) { return; }
 
-		var r = confirm( bookacti_localized.advice_archive_data.replace( '{date}', date ).replace( /\\n/g, '\n' ));
+		var r = confirm( $j( '#booakcti-archive-alert-analyse' ).text().replace( '{date}', date ).replace( /\\n/g, '\n' ));
 		if( r != true ) { return; }
 		
 		// Reset feedbacks
@@ -70,13 +69,14 @@ $j( document ).ready( function() {
 	/**
 	 * Dump bookings and events data prior to date
 	 * @since 1.7.0
+	 * @version 1.8.0
 	 */
 	$j( '.bookacti-archive-options' ).on( 'click', '#bookacti-archive-button-dump', function() {
 		var file_already_exists = $j( '#bookacti-archive-button-dump' ).data( 'file-already-exists' );
 		var r = true;
 		if( typeof file_already_exists !== 'undefined' ) { 
 			if( file_already_exists ) {
-				r = confirm( bookacti_localized.advice_archive_data_override.replace( /\\n/g, '\n' ));
+				r = confirm( $j( '#booakcti-archive-alert-override' ).text().replace( /\\n/g, '\n' ));
 			}
 		}
 		
@@ -118,14 +118,16 @@ $j( document ).ready( function() {
 	/**
 	 * Restore bookings and events data from an archive
 	 * @since 1.7.0
+	 * @version 1.8.0
+	 * @param {Event} e
 	 */
-	$j( '#bookacti-database-archives-table-container' ).on( 'click', '.bookacti-archive-restore-data a', function( e ) {
+	$j( '#bookacti-database-archives-table-container' ).on( 'click', 'a.bookacti-archive-restore-data', function( e ) {
 		e.preventDefault();
 		
 		var filename = $j( this ).data( 'filename' );
 		if( ! filename ) { return; }
 		
-		var r = confirm( bookacti_localized.advice_archive_restore_data.replace( '{filename}', filename ).replace( /\\n/g, '\n' ));
+		var r = confirm( $j( '#booakcti-archive-alert-restore' ).text().replace( '{filename}', filename ).replace( /\\n/g, '\n' ));
 		if( r != true ) { return; }
 		
 		// Reset feedbacks
@@ -140,14 +142,16 @@ $j( document ).ready( function() {
 	/**
 	 * Delete a backup file
 	 * @since 1.7.0
+	 * @version 1.8.0
+	 * @param {Event} e
 	 */
-	$j( '#bookacti-database-archives-table-container' ).on( 'click', '.bookacti-archive-delete-file a', function( e ) {
+	$j( '#bookacti-database-archives-table-container' ).on( 'click', 'a.bookacti-archive-delete-file', function( e ) {
 		e.preventDefault();
 		
 		var filename = $j( this ).data( 'filename' );
 		if( ! filename ) { return; }
 		
-		var r = confirm( bookacti_localized.advice_archive_delete_file.replace( '{filename}', filename ).replace( /\\n/g, '\n' ));
+		var r = confirm( $j( '#booakcti-archive-alert-delete-file' ).text().replace( '{filename}', filename ).replace( /\\n/g, '\n' ));
 		if( r != true ) { return; }
 		
 		// Reset feedbacks
@@ -175,7 +179,7 @@ $j( document ).ready( function() {
  * @since 1.7.0
  * @param {string} date
  * @param {string} nonce
- * @param {dom_element} feedback_div
+ * @param {HTMLElement} feedback_div
  * @param {callback} callback
  */
 function bookacti_archive_analyse( date, nonce, feedback_div, callback ) {
@@ -239,9 +243,10 @@ function bookacti_archive_analyse( date, nonce, feedback_div, callback ) {
 /**
  * Dump data prior to a date
  * @since 1.7.0
+ * @version 1.8.0
  * @param {string} date
  * @param {string} nonce
- * @param {dom_element} feedback_div
+ * @param {HTMLElement} feedback_div
  * @param {callback} callback
  */
 function bookacti_archive_dump( date, nonce, feedback_div, callback ) {
@@ -271,7 +276,7 @@ function bookacti_archive_dump( date, nonce, feedback_div, callback ) {
 			if( typeof response.results !== 'undefined' ) {
 				list = '<ul>';
 				$j.each( response.results, function( filename, error_code ){
-					list += '<li>' + filename + ': ' + error_code + '</li>'
+					list += '<li>' + filename + ': ' + error_code + '</li>';
 				});
 				list += '</ul>';
 			}
@@ -307,9 +312,10 @@ function bookacti_archive_dump( date, nonce, feedback_div, callback ) {
 /**
  * Delete data prior to a date
  * @since 1.7.0
+ * @version 1.8.0
  * @param {string} date
  * @param {string} nonce
- * @param {dom_element} feedback_div
+ * @param {HTMLElement} feedback_div
  * @param {callback} callback
  */
 function bookacti_archive_delete( date, nonce, feedback_div, callback ) {
@@ -337,7 +343,7 @@ function bookacti_archive_delete( date, nonce, feedback_div, callback ) {
 			if( response.status === 'success' ) {
 				var list = '<ul>';
 				$j.each( response.nb_per_type, function( type, nb ){
-					list += '<li>' + type + ': ' + nb + '</li>'
+					list += '<li>' + type + ': ' + nb + '</li>';
 				});
 				list += '</ul>';
 				feedback_div.append( '<div class="bookacti-archive-results">' + response.message + list + '</div>' );
@@ -368,9 +374,10 @@ function bookacti_archive_delete( date, nonce, feedback_div, callback ) {
 /**
  * Restore data from backup file
  * @since 1.7.0
+ * @version 1.8.0
  * @param {string} filename
  * @param {string} nonce
- * @param {dom_element} feedback_div
+ * @param {HTMLElement} feedback_div
  */
 function bookacti_archive_restore_data( filename, nonce, feedback_div ) {
 	// Remove previous feedback_div
@@ -398,7 +405,7 @@ function bookacti_archive_restore_data( filename, nonce, feedback_div ) {
 			if( typeof response.results !== 'undefined' ) {
 				list = '<ul>';
 				$j.each( response.results, function( filename, error_code ){
-					list += '<li>' + filename + ': ' + error_code + '</li>'
+					list += '<li>' + filename + ': ' + error_code + '</li>';
 				});
 				list += '</ul>';
 			}
@@ -430,7 +437,7 @@ function bookacti_archive_restore_data( filename, nonce, feedback_div ) {
  * @since 1.7.0
  * @param {string} filename
  * @param {string} nonce
- * @param {dom_element} feedback_div
+ * @param {HTMLElement} feedback_div
  */
 function bookacti_archive_delete_file( filename, nonce, feedback_div ) {
 	// Remove previous feedback_div
@@ -479,7 +486,8 @@ function bookacti_archive_delete_file( filename, nonce, feedback_div ) {
 /**
  * Display the archive data Step 2 after step 1
  * @since 1.7.0
- * @param {string} date
+ * @param {String} date
+ * @param {Boolean} file_already_exists
  */
 function bookacti_display_archive_step2( date, file_already_exists ) {
 	$j( '#bookacti-archive-feedbacks-step2-container' ).show();

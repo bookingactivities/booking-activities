@@ -76,7 +76,7 @@
 #bookacti-template-activities-container,
 #bookacti-template-groups-of-events-container	{ padding-right: 6px; }
 #bookacti-template-activity-list,
-#bookacti-group-categories						{ overflow-y: auto; resize: vertical; padding-right: 4px; }
+#bookacti-group-categories						{ overflow-y: auto; resize: vertical; padding: 0 4px 12px 0; }
 .bookacti-group-category-title,
 .bookacti-update-group-category,
 .bookacti-group-of-events-title,
@@ -128,22 +128,12 @@
 .bookacti-tabs .bookacti-tab-content .bookacti-promo-events-examples div { margin-bottom: 0; }
 .bookacti-tabs .bookacti-tab-content .bookacti-promo-events-examples { margin: 10px 0 0 0; }
 
-/* Calendar dialog */
-.bookacti-editor-settings-only-notice			{ color: #f89b2f; }
-.bookacti-editor-settings-only-notice a			{ color: #d47408; }
-.bookacti-editor-settings-only-notice:before	{ content: '\26A0  '; }
 
 /* Activity dialog */
-#bookacti-activity-import-dialog label			{ display: inline-block; width: 150px; font-weight: bold; }
-#bookacti-activity-import-dialog div			{ margin-bottom: 10px; }
-#bookacti-activity-import-dialog div:last-child	{ margin-bottom: 0; }
-
-#bookacti-activity-duration-days,
-#bookacti-activity-duration-hours,
-#bookacti-activity-duration-minutes	{ width: 50px; }
-
+#bookacti-activity-import-dialog label { display: inline-block; width: 150px; font-weight: bold; }
 #bookacti-delete-activity-options	{ margin-top: 20px; }
-
+#bookacti-activity-duration-container .bookacti-duration-hint { display: none !important; }
+.bookacti-roles-notice { margin-top: 10px; margin-bottom: 20px; }
 
 /* Unbind dialog */
 #bookacti-unbind-booked-event-dialog ul { list-style: disc; padding: 0 40px; }

@@ -4,7 +4,7 @@
 
 /* Select2 */
 .bookacti-user-selectbox	{ width: 100%; }
-.select2-dropdown			{ z-index: 10001; }
+.select2-dropdown			{ z-index: 3999999 !important; }
 
 /* Radio box */
 .bookacti-custom-radio-button		{ display: inline-block; margin: 0 0.5em 0.5em 0; }
@@ -78,6 +78,24 @@
 .bookacti-group-of-events-list .bookacti-booking-event-duration	{ font-size: smaller; font-style: italic; }
 .bookacti-group-of-events-list .bookacti-booking-event-title	{ font-weight: 600; }
 
+@media screen and ( max-width: 540px ) {
+	.ui-dialog.ui-widget.bookacti-dialog { max-width: 460px; }
+}
+
+@media screen and ( max-width: 460px ) {
+	.ui-dialog.ui-widget.bookacti-dialog { max-width: 400px; }
+	.ui-dialog.bookacti-dialog .ui-dialog-content.ui-widget-content	{ padding: .5em; }
+	.ui-dialog.bookacti-dialog .ui-dialog-titlebar.ui-widget-header	{ padding: .4em; }
+	.ui-dialog.bookacti-dialog .ui-dialog-titlebar .ui-dialog-title	{ white-space: normal; }
+	.bookacti-group-of-events-list { margin: 5px 0px 10px 5px; }
+}
+
+@media screen and ( max-width: 400px ) {
+	.ui-dialog.ui-widget.bookacti-dialog { max-width: 360px; }
+}
+@media screen and ( max-width: 320px ) {
+	.ui-dialog.ui-widget.bookacti-dialog { max-width: 320px; }
+}
 
 
 
@@ -89,7 +107,10 @@
 /** CALENDAR **/
 .bookacti-calendar { width: 100%; }
 .bookacti-calendar .fc-unthemed td.fc-today	{ background: rgba( 220, 193, 6, 0.1 ); }
-.bookacti-calendar table { margin: 0; }
+.bookacti-calendar table, 
+.bookacti-calendar tr, 
+.bookacti-calendar th, 
+.bookacti-calendar td { margin: 0; padding: 0; overflow: visible; }
 .bookacti-calendar .fc-time { text-transform: lowercase; }
 
 /* Header */

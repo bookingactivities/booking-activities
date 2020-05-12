@@ -2,8 +2,9 @@ $j( document ).ready( function() {
 	/**
 	 * Highlight the selected row in booking lists
 	 * @since 1.7.4
+	 * @version 1.8.0
 	 */
-	$j( '#bookacti-booking-list, .bookacti-user-booking-list' ).on( 'click', 'tbody tr', function() {
+	$j( '#bookacti-booking-list, .bookacti-user-booking-list-table' ).on( 'click', 'tbody tr', function() {
 		$j( '.bookacti-booking-list-selected-row' ).removeClass( 'bookacti-booking-list-selected-row' );
 		$j( this ).addClass( 'bookacti-booking-list-selected-row' );
 	});
@@ -12,109 +13,114 @@ $j( document ).ready( function() {
 	/**
 	 * Add data to booking actions
 	 * @since 1.7.6
+	 * @version 1.8.0
+	 * @param {Event} e
+	 * @param {Object} data
 	 */
-	$j( '#bookacti-booking-list, .bookacti-user-booking-list' ).on( 'bookacti_booking_action_data', 'tr.bookacti-single-booking, tr.bookacti-booking-group', function( e, data ) {
+	$j( '#bookacti-booking-list, .bookacti-user-booking-list-table' ).on( 'bookacti_booking_action_data', 'tr.bookacti-single-booking, tr.bookacti-booking-group', function( e, data ) {
 		if( data instanceof FormData ) { 
 			data.append( 'locale', bookacti_localized.current_locale );
 		} else {
 			data.locale = bookacti_localized.current_locale;
 		}
 	});
+	
+	
+	/**
+	 * Toggle list table rows on small screens
+	 * (must be used with AJAXed bookings list)
+	 * @since 1.8.0
+	 */
+	$j( '#bookacti-booking-list' ).on( 'click', 'tbody .toggle-row', function() {
+		$j( this ).closest( 'tr' ).toggleClass( 'is-expanded' );
+	});
+	
+	
+	/**
+	 * Disable the default toggle for list table rows on small screens
+	 * @since 1.8.0
+	 */
+	$j( '#bookacti-booking-list tbody' ).off( 'click', '.toggle-row' );
 });
 
 
 // BOOKINGS PAGE
 
 /**
- * Init booking filter action
- * @version 1.7.19
+ * Filter the booking list with current filters values
+ * @since 1.8.0
+ * @param {Int} paged
  */
-function bookacti_init_booking_filters_actions() {
-	
-	// Display or hide activities filter according to selected templates
-	bookacti_update_template_related_filters();
-	$j( '#bookacti-booking-filter-templates, #bookacti-booking-filter-status, #bookacti-booking-filter-customer' ).on( 'change', function() {
-		// Show / Hide activities filter
-		bookacti_update_template_related_filters();
-		
-		// Reload events according to filters
-		if( $j( '#bookacti-booking-system-filter-container' ).is( ':visible' ) ) {
-			var booking_system = $j( '#bookacti-booking-system-bookings-page' );
-			bookacti_reload_booking_system_according_to_filters( booking_system );
-		}
-	});
-	
-	
-	/**
-	 * Display / Hide the calendar and reload it if the filters has been changed
-	 */
-	$j( '#bookacti-pick-event-filter' ).on( 'click', function() {
-		var booking_system = $j( '#bookacti-booking-system-bookings-page' );
-		
-		// Reload events according to filters if they have changed
-		if( ! $j( '#bookacti-booking-system-filter-container' ).is( ':visible' ) ) {
-			var booking_system_id	= booking_system.attr( 'id' );
-			var selected_templates	= $j( '#bookacti-booking-filter-templates' ).val() ? $j( '#bookacti-booking-filter-templates' ).val() : [];
-			var selected_status		= $j( '#bookacti-booking-filter-status' ).val() ? $j( '#bookacti-booking-filter-status' ).val() : [];
-			var selected_user		= $j( '#bookacti-booking-filter-customer' ).val() ? $j( '#bookacti-booking-filter-customer' ).val() : 0;
-			
-			if( ! bookacti_compare_arrays( bookacti.booking_system[ booking_system_id ][ 'calendars' ], selected_templates )
-			||  ! bookacti_compare_arrays( bookacti.booking_system[ booking_system_id ][ 'status' ], selected_status )
-			||  bookacti.booking_system[ booking_system_id ][ 'user_id' ] !== selected_user ) {
-				bookacti_reload_booking_system_according_to_filters( booking_system );
-			}
-			
-			$j( '#bookacti-pick-event-filter' ).text( bookacti_localized.hide_calendar ).attr( 'title', bookacti_localized.hide_calendar );
-		} else {
-			$j( '#bookacti-pick-event-filter' ).text( bookacti_localized.pick_an_event ).attr( 'title', bookacti_localized.pick_an_event );
-		}
-		
-		// Show / Hide calendar
-		$j( '#bookacti-booking-system-filter-container' ).toggle( 200 );
-	});
-	
-	// Unpick all events
-	$j( '#bookacti-unpick-events-filter' ).on( 'click', function() {
-		var booking_system = $j( '#bookacti-booking-system-bookings-page' );
-		bookacti_unpick_all_events( booking_system );
-		bookacti_clear_booking_system_displayed_info( booking_system );
-		$j( '#bookacti-unpick-events-filter' ).hide( 200 );
-	});
-	
-	// Display the "unpick events" button
+function bookacti_filter_booking_list( paged ) {
+	paged = paged ? paged : 1;
 	var booking_system = $j( '#bookacti-booking-system-bookings-page' );
-	booking_system.on( 'bookacti_event_click', function( e, event, group_id, open_dialog ) { 
-		$j( '#bookacti-unpick-events-filter' ).show( 200 );
-	});
 	
-	// Display / Hide activities on the calendar
-	$j( '#bookacti-booking-filter-activities' ).on( 'change', function() {
-		var booking_system	= $j( '#bookacti-booking-system-bookings-page' );
-		var calendar		= booking_system.find( '.bookacti-calendar' );
-		calendar.fullCalendar( 'rerenderEvents' );
-	});
+	var data = $j( '#bookacti-booking-list-filters-form' ).serializeObject();
+	data.paged = paged;
+	data.action = 'bookactiGetBookingList';
 	
+	// Select only available templates
+	if( ! data.templates ) {
+		data.templates = [];
+		$j( '#bookacti-booking-filter-templates option' ).each( function() {
+			data.templates.push( $j( this ).val() );
+		});
+	}
 	
-	// Retrict calendars date according to date filter
-	$j( '#bookacti-booking-filter-dates-from, #bookacti-booking-filter-dates-to' ).on( 'change', function() {
-		bookacti_refresh_calendar_according_to_date_filter();
+	booking_system.trigger( 'bookacti_filter_booking_list_data', [ data ] );
+	
+	// Loading feedback
+	bookacti_start_loading_booking_system( booking_system );
+	
+	var column_nb = $j( '#bookacti-booking-list thead .manage-column:not(.hidden)' ).length ? $j( '#bookacti-booking-list thead .manage-column:not(.hidden)' ).length : 1;
+	var loading_div = 
+	'<div class="bookacti-loading-alt">' 
+		+ '<img class="bookacti-loader" src="' + bookacti_localized.plugin_path + '/img/ajax-loader.gif" title="' + bookacti_localized.loading + '" />'
+		+ '<span class="bookacti-loading-alt-text" >' + bookacti_localized.loading + '</span>'
+	+ '</div>';
+	$j( '#bookacti-booking-list #the-list' ).html( '<tr class="no-items" ><td class="colspanchange" colspan="' + column_nb + '" >' + loading_div + '</td></tr>' );
+	
+	$j.ajax({
+		url: bookacti_localized.ajaxurl,
+		type: 'POST',
+		data: data,
+		dataType: 'json',
+		success: function( response ) {
+			if( response.status === 'success' ) {
+				// Update the booking list
+				$j( '#bookacti-booking-list' ).html( response.booking_list );
+				bookacti_refresh_list_table_hidden_columns();
+				
+				// Update the URL without refreshing the page
+				window.history.pushState( { path: response.new_url }, '', response.new_url );
+				
+				/**
+				 * Trigger after the booking list has been filtered
+				 */
+				$j( '#bookacti-booking-list' ).trigger( 'bookacti_booking_list_filtered', [ response, data ] );
+
+			} else if( response.status === 'failed' ) {
+				var error_message = typeof response.message !== 'undefined' ? response.message : bookacti_localized.error;
+				var no_bookings_entry = '<tr class="no-items" ><td class="colspanchange" colspan="' + column_nb + '" >' + error_message + '</td></tr>';
+				$j( '#bookacti-booking-list #the-list' ).append( no_bookings_entry );
+			}
+		},
+		error: function( e ) {
+			console.log( 'AJAX ' + bookacti_localized.error );
+			console.log( e );
+		},
+		complete: function() {
+			bookacti_stop_loading_booking_system( booking_system );
+		}
 	});
 }
 
 
-// TO DO: AJAXify the booking list
-// Filter the booking list with current filters values
-function bookacti_filter_booking_list() {
-	// Update the URL without refreshing the page
-	var serialized = $j( '#bookacti-booking-list-filters-form' ).serialize();
-	var newurl = window.location.protocol + "//" + window.location.host + window.location.pathname + '?page=bookacti_bookings&' + serialized;
-	window.history.pushState({path:newurl},'',newurl);
-}
-
-
-// Change template-related filters
+/**
+ * Change template-related filters
+ * @version 1.8.0
+ */
 function bookacti_update_template_related_filters() {
-	
 	// Update activities filter
 	var associations = bookacti.booking_system[ 'bookacti-booking-system-bookings-page' ][ 'templates_per_activities' ];
 	var selected_templates = $j( '#bookacti-booking-filter-templates' ).val();
@@ -124,15 +130,16 @@ function bookacti_update_template_related_filters() {
 		$j( '#bookacti-booking-filter-activities option' ).show();
 		return false;
 	}
+	if( typeof associations === 'undefined' )  { return false; }
 	
 	$j( '#bookacti-booking-filter-activities option' ).each( function( i, option ) {
 		var activity_id = parseInt( $j( option ).attr( 'value' ) );
 		var hide_activity = true;
 		$j.each( selected_templates, function( j, selected_template ){
-			if( $j.inArray( selected_template, associations[ activity_id ][ 'template_ids' ] ) >= 0 ) {
-				hide_activity = false;
-				return false; // Break
-			}
+			if( typeof associations[ activity_id ] === 'undefined' ) { return true; /* continue */ }
+			if( $j.inArray( selected_template, associations[ activity_id ][ 'template_ids' ] ) === -1 ) { return true; /* continue */ }
+			hide_activity = false;
+			return false; // Break
 		});
 		if( hide_activity ) {
 			if( $j( option ).is( ':selected' ) ) { $j( option ).prop( 'selected', false ); }
@@ -146,33 +153,54 @@ function bookacti_update_template_related_filters() {
 
 /**
  * Refresh booking list calendar accoding to dates
- * @version 1.7.17
+ * @version 1.8.0
  */
 function bookacti_refresh_calendar_according_to_date_filter() {
 	if( ! $j( '#bookacti-booking-system-filter-container' ).is( ':visible' ) ) { return false; }
 
 	var booking_system		= $j( '#bookacti-booking-system-bookings-page' );
-	var booking_system_id	= $j( '#bookacti-booking-system-bookings-page' ).attr( 'id' );
+	var booking_system_id	= booking_system.attr( 'id' );
 	var calendar			= booking_system.find( '.bookacti-calendar' );
-	var from				= moment( $j( '#bookacti-booking-filter-dates-from' ).val() );
-	var to					= moment( $j( '#bookacti-booking-filter-dates-to' ).val() );
+	var from_date			= $j( '#bookacti-booking-filter-dates-from' ).val();
+	var to_date				= $j( '#bookacti-booking-filter-dates-to' ).val();
 	
 	var interval_filter = {
-		"start": from.isValid() ? from : moment( bookacti.booking_system[ booking_system_id ][ 'start' ] ),
-		"end": to.isValid() ? to.add( 1, 'days' ) : moment( bookacti.booking_system[ booking_system_id ][ 'end' ] ).add( 1, 'days' )
+		"start": from_date ? moment.utc( from_date + ' 00:00:00' ) : moment.utc( '1970-01-01 00:00:00' ),
+		"end": to_date ? moment.utc( to_date + ' 23:59:59' ) : moment.utc( '2037-12-31 23:59:59' )
 	};
 	
-	bookacti.booking_system[ booking_system_id ][ 'start' ] = interval_filter.start.format( 'YYYY-MM-DD' );
-	bookacti.booking_system[ booking_system_id ][ 'end' ] = interval_filter.end.format( 'YYYY-MM-DD' );
+	bookacti.booking_system[ booking_system_id ][ 'start' ] = interval_filter.start.format( 'YYYY-MM-DD HH:mm:ss' );
+	bookacti.booking_system[ booking_system_id ][ 'end' ] = interval_filter.end.format( 'YYYY-MM-DD HH:mm:ss' );
 	
-	calendar.fullCalendar( 'option', 'validRange', interval_filter );
+	var valid_range = {
+		"start": interval_filter.start.format( 'YYYY-MM-DD' ),
+		"end": interval_filter.end.add( 1, 'days' ).format( 'YYYY-MM-DD' )
+	};
+	
+	calendar.fullCalendar( 'option', 'validRange', valid_range );
+}
+
+
+/**
+ * Unpick all events and reset the event filter
+ * @since 1.8.0
+ */
+function bookacti_unpick_all_events_filter() {
+	var booking_system = $j( '#bookacti-booking-system-bookings-page' );
+	bookacti_unpick_all_events( booking_system );
+	bookacti_clear_booking_system_displayed_info( booking_system );
+	$j( '#bookacti-unpick-events-filter' ).hide( 200 );
+	$j( '#bookacti-picked-events-actions-container' ).hide( 200 );
+	if( $j( '#bookacti-booking-system-filter-container' ).is( ':visible' ) ) {
+		$j( '#bookacti-pick-event-filter-instruction' ).show( 200 );
+	}
 }
 
 
 /**
  * Reload bookings booking system according to filters
- * @version 1.7.17
- * @param {dom_element} booking_system
+ * @version 1.8.0
+ * @param {HTMLElement} booking_system
  */
 function bookacti_reload_booking_system_according_to_filters( booking_system ) {
 	var booking_system_id	= booking_system.attr( 'id' );
@@ -183,11 +211,24 @@ function bookacti_reload_booking_system_according_to_filters( booking_system ) {
 	var selected_from		= $j( '#bookacti-booking-filter-dates-from' ).val();
 	var selected_end		= $j( '#bookacti-booking-filter-dates-end' ).val();
 	
-	bookacti.booking_system[ booking_system_id ][ 'calendars' ] = selected_templates ? selected_templates : [];
-	bookacti.booking_system[ booking_system_id ][ 'status' ]	= selected_status ? selected_status : [];
-	bookacti.booking_system[ booking_system_id ][ 'user_id' ]	= selected_user ? selected_user : 0;
-	bookacti.booking_system[ booking_system_id ][ 'start' ]		= selected_from;
-	bookacti.booking_system[ booking_system_id ][ 'end' ]		= selected_end;
+	// Select only available templates
+	if( ! selected_templates ) {
+		selected_templates = [];
+		$j( '#bookacti-booking-filter-templates option' ).each( function() {
+			selected_templates.push( $j( this ).val() );
+		});
+	}
+	
+	bookacti.booking_system[ booking_system_id ][ 'calendars' ]			= selected_templates;
+	bookacti.booking_system[ booking_system_id ][ 'activities' ]		= [];
+	bookacti.booking_system[ booking_system_id ][ 'group_categories' ]	= [];
+	bookacti.booking_system[ booking_system_id ][ 'status' ]			= selected_status ? selected_status : [];
+	bookacti.booking_system[ booking_system_id ][ 'user_id' ]			= selected_user ? selected_user : 0;
+	bookacti.booking_system[ booking_system_id ][ 'start' ]				= selected_from ? selected_from + ' 00:00:00' : '';
+	bookacti.booking_system[ booking_system_id ][ 'end' ]				= selected_end ? selected_end + ' 23:59:59' : '';
+	
+	// Unpick selected event
+	bookacti_unpick_all_events_filter();
 	
 	bookacti_reload_booking_system( booking_system );
 }
@@ -198,10 +239,10 @@ function bookacti_reload_booking_system_according_to_filters( booking_system ) {
 
 /**
  * Init booking actions
- * @version 1.7.10
+ * @version 1.8.0
  */
 function bookacti_init_booking_actions() {
-	$j( '.bookacti-user-booking-list, .woocommerce-table, #bookacti-booking-list' ).on( 'click', '.bookacti-booking-action, .bookacti-booking-group-action', function ( e ) {
+	$j( '.bookacti-user-booking-list-table, .woocommerce-table, #bookacti-booking-list' ).on( 'click', '.bookacti-booking-action, .bookacti-booking-group-action', function ( e ) {
 		e.preventDefault();
 		
 		// Single Bookings
@@ -224,7 +265,6 @@ function bookacti_init_booking_actions() {
 		
 		// Booking Groups
 		} else {
-			
 			var booking_group_id = $j( this ).data( 'booking-group-id' );
 			if( $j( this ).hasClass( 'bookacti-cancel-booking-group' ) ){
 				bookacti_dialog_cancel_booking( booking_group_id, 'group' );
@@ -235,7 +275,7 @@ function bookacti_init_booking_actions() {
 			} else if( $j( this ).hasClass( 'bookacti-change-booking-group-quantity' ) ){
 				bookacti_dialog_change_booking_quantity( booking_group_id, 'group' );
 			} else if( $j( this ).hasClass( 'bookacti-show-booking-group-bookings' ) ){
-				bookacti_display_grouped_bookings( $j( '#bookacti-booking-system-bookings-page' ), booking_group_id );
+				bookacti_display_grouped_bookings( booking_group_id );
 			} else if( $j( this ).hasClass( 'bookacti-delete-booking-group' ) ){
 				bookacti_dialog_delete_booking( booking_group_id, 'group' );
 			}
@@ -263,15 +303,11 @@ function bookacti_init_booking_actions() {
 /**
  * Init booking bulk actions
  * @since 1.6.0
- * @version 1.7.0
+ * @version 1.8.0
  */
 function bookacti_init_booking_bulk_actions() {
-	$j( '.bookacti-bookings-bulk-action' ).on( 'submit', function( e ) {
+	$j( 'body' ).on( 'submit', '.bookacti-bookings-bulk-action', function( e ) {
 		if( $j( this ).find( '[name="action"]' ).val() == -1 || $j( this ).find( '[name="action2"]' ).val() == -1 ) {
-			e.preventDefault();
-		}
-		else if( $j( this ).find( '[name="action"]' ).val() === 'export' || $j( this ).find( '[name="action2"]' ).val() === 'export' ) {
-			bookacti_dialog_export_bookings();
 			e.preventDefault();
 		}
 	});
@@ -279,16 +315,32 @@ function bookacti_init_booking_bulk_actions() {
 
 
 /**
+ * Change the export type according to the selected tab
+ * @since 1.8.0
+ */
+function bookacti_change_export_type_according_to_active_tab() {
+	var active_tab = $j( '#bookacti-export-bookings-dialog .bookacti-tabs li.ui-tabs-active' );
+	var export_type = active_tab.length ? ( active_tab.hasClass( 'bookacti-tab-ical' ) ? 'ical' : 'csv' ) : 'csv';
+	var export_link_type = $j( '#bookacti-export-bookings-url-container' ).data( 'export-type' );
+	$j( '#bookacti-export-type-field' ).val( export_type );
+	if( export_link_type === export_type ) {
+		$j( '#bookacti-export-bookings-url-container' ).show();
+		$j( '#bookacti-export-bookings-dialog .bookacti-notices' ).show();
+	} else {
+		$j( '#bookacti-export-bookings-url-container' ).hide();
+		$j( '#bookacti-export-bookings-dialog .bookacti-notices' ).hide();
+	}
+}
+
+
+/**
  * Show bookings of a group
- * @version 1.7.4
- * @param {dom_element} booking_system
+ * @version 1.8.0
  * @param {int} booking_group_id
  * @returns {false|null}
  */
-function bookacti_display_grouped_bookings( booking_system, booking_group_id ) {
-	
+function bookacti_display_grouped_bookings( booking_group_id ) {
 	booking_group_id = typeof booking_group_id !== 'undefined' && $j.isNumeric( booking_group_id ) ? booking_group_id : false;
-	
 	if( ! booking_group_id ) { return false; }
 	
 	var group_row = $j( '.bookacti-show-booking-group-bookings[data-booking-group-id="' + booking_group_id + '"]:focus' ).closest( 'tr' );
@@ -319,7 +371,7 @@ function bookacti_display_grouped_bookings( booking_system, booking_group_id ) {
 	var data = { 
 		'action': 'bookactiGetGroupedBookingsRows',
 		'booking_group_id': booking_group_id,
-		'is_admin': bookacti_localized.is_admin,
+		'is_admin': bookacti_localized.is_admin ? 1 : 0,
 		'context': bookacti_localized.is_admin ? 'admin_booking_list' : 'user_booking_list',
 		'columns': columns,
 		'nonce': bookacti_localized.nonce_get_booking_rows
@@ -346,17 +398,14 @@ function bookacti_display_grouped_bookings( booking_system, booking_group_id ) {
 				$j( '#bookacti-booking-list' ).trigger( 'bookacti_grouped_bookings_displayed' );
 
 			} else if( response.status === 'failed' ) {
-				var message_error = bookacti_localized.error_retrieve_bookings;
-				if( response.error === 'not_allowed' ) {
-					message_error += '\n' + bookacti_localized.error_not_allowed;
-				}
-				var no_bookings_entry = '<tr class="no-items" ><td class="colspanchange" colspan="' + $j( '#bookacti-booking-list table tr th' ).length + '" >' + message_error + '</td></tr>';
+				var column_nb = $j( '#bookacti-booking-list thead .manage-column:not(.hidden)' ).length ? $j( '#bookacti-booking-list thead .manage-column:not(.hidden)' ).length : 1;
+				var error_message = typeof response.message !== 'undefined' ? response.message : bookacti_localized.error;
+				var no_bookings_entry = '<tr class="no-items" ><td class="colspanchange" colspan="' + column_nb + '" >' + error_message + '</td></tr>';
 				group_row.after( no_bookings_entry );
-
 			}
 		},
-		error: function( e ){
-			console.log( 'AJAX ' + bookacti_localized.error_retrieve_bookings );
+		error: function( e ) {
+			console.log( 'AJAX ' + bookacti_localized.error );
 			console.log( e );
 		},
 		complete: function() {
@@ -366,7 +415,10 @@ function bookacti_display_grouped_bookings( booking_system, booking_group_id ) {
 }
 
 
-// Start booking row loading
+/**
+ * Start booking row loading
+ * @param {HTMLElement} row
+ */
 function bookacti_booking_row_enter_loading_state( row ) {
 	var loading_div = 
 	'<div class="bookacti-loading-alt">' 
@@ -378,7 +430,10 @@ function bookacti_booking_row_enter_loading_state( row ) {
 }
 
 
-// Stop booking row loading
+/**
+ * Stop booking row loading
+ * @param {HTMLElement} row
+ */
 function bookacti_booking_row_exit_loading_state( row ) {
 	row.find( '.bookacti-loading-alt' ).remove();
 	row.find( '.bookacti-booking-state' ).show();
@@ -386,7 +441,9 @@ function bookacti_booking_row_exit_loading_state( row ) {
 }
 
 
-// Refresh Shown / Hidden column
+/**
+ * Refresh Shown / Hidden column
+ */
 function bookacti_refresh_list_table_hidden_columns() {
 	// Show / Hide columns according to page options
 	$j( '.hide-column-tog' ).each( function(){ 
@@ -406,14 +463,13 @@ function bookacti_refresh_list_table_hidden_columns() {
 
 /**
  * Check if sent data correspond to displayed data
- * @version 1.7.0
- * @param {dom_element} booking_system
+ * @version 1.8.0
+ * @param {HTMLElement} booking_system
  * @param {int} quantity
  * @returns {boolean}
  */
 function bookacti_validate_picked_events( booking_system, quantity ) {
-	
-	//Get event params
+	// Get event params
 	booking_system	= booking_system || $j( '.bookacti-booking-system:first' );
 	quantity		= quantity || 0;
 	var booking_system_id	= booking_system.attr( 'id' );
@@ -515,7 +571,7 @@ function bookacti_validate_picked_events( booking_system, quantity ) {
 	if( ! valid_form.send ) {
 		var error_list = '';
 		if( ( ! valid_form.is_event || ! valid_form.is_event_in_selected ) && ! valid_form.is_corrupted ){ 
-			error_list += '<li>' + bookacti_localized.error_select_schedule + '</li>' ; 
+			error_list += '<li>' + bookacti_localized.error_select_event + '</li>' ; 
 		}
 		if( valid_form.is_qty_sup_to_avail ){ 
 			error_list += '<li>' + bookacti_localized.error_less_avail_than_quantity.replace( '%1$s', quantity ).replace( '%2$s', total_avail ) + '</li>'; 
@@ -524,7 +580,7 @@ function bookacti_validate_picked_events( booking_system, quantity ) {
 			error_list += '<li>' + bookacti_localized.error_quantity_inf_to_0 + '</li>'; 
 		}
 		if( valid_form.is_corrupted ){ 
-			error_list += '<li>' + bookacti_localized.error_corrupted_schedule + '</li>'; 
+			error_list += '<li>' + bookacti_localized.error_corrupted_event + '</li>'; 
 		}
 
 		// Display error list

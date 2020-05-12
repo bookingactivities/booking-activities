@@ -1,36 +1,44 @@
 $j( document ).ready( function() { 
-	// Update multilangual fields with Qtranslate X
+	/**
+	 * Update multilangual fields with qTranslate-XT - on keyup
+	 */
 	$j( '.qtranxs-translatable' ).on( 'keyup', function() {
 		bookacti_update_qtx_field( this );
 	});
 	
-	// Tabs
+	
+	/**
+	 * Init tabs
+	 */
 	$j( '.bookacti-tabs' ).tabs();
 	
-	// Show/hide Advanced options
-	$j( '.bookacti-show-hide-advanced-options' ).on( 'click', function( e ){
+	
+	/**
+	 * Toggle Advanced options on click - on click
+	 */
+	$j( '.bookacti-show-hide-advanced-options' ).on( 'click', function(){
 		bookacti_show_hide_advanced_options( $j( this ) );
 	});
 	
-	// Switch selectbox to multiple
+	
+	/**
+	 * Switch selectbox to multiple - on change
+	 */
 	$j( 'body' ).on( 'change', '.bookacti-multiple-select-container .bookacti-multiple-select', function(){
 		bookacti_switch_select_to_multiple( this );
 	});
 	
 	
-	// Tooltip
+	/**
+	 * Init tooltip
+	 */
 	bookacti_init_tooltip();
 	
-	// Dismiss notices
-	$j( '#bookacti-dismiss-5stars-rating' ).on( 'click', function(){ bookacti_dismiss_5stars_rating_notice(); });
 	
-	// WP List Table pagination - go to page
-	$j( '.bookacti-list-table-go-to-page-form' ).on( 'submit', function( e ){
-		e.preventDefault();
-		var paged = $j( this ).find( '.current-page' ).val();
-		var url = $j( this ).attr( 'action' ).replace( 'paged=%d', 'paged=' + paged );
-		window.location.replace( url );
-	});
+	/**
+	 * Dismiss notices - on click
+	 */
+	$j( '#bookacti-dismiss-5stars-rating' ).on( 'click', function() { bookacti_dismiss_5stars_rating_notice(); } );
 	
 	
 	/**
@@ -64,17 +72,64 @@ $j( document ).ready( function() {
 			return ! ( ( ! $j( event.target ).is( '.select2-input' ) ) || this._super( event ) );
 		}
 	});
+	
+	
+	/**
+	 * Convert duration from days/hours/minutes to seconds - on change
+	 * @since 1.8.0
+	 */
+	$j( 'body' ).on( 'keyup mouseup change', '.bookacti-duration-field', function() {
+		var field_value = $j( this ).closest( '.bookacti-duration-field-container' ).siblings( '.bookacti-duration-value' );
+		var days		= field_value.siblings( '.bookacti-duration-field-container' ).find( '.bookacti-duration-field[data-unit="day"]' ).val();
+		var hours		= field_value.siblings( '.bookacti-duration-field-container' ).find( '.bookacti-duration-field[data-unit="hour"]' ).val();
+		var minutes		= field_value.siblings( '.bookacti-duration-field-container' ).find( '.bookacti-duration-field[data-unit="minute"]' ).val();
+		var value		= '';
+		if( $j.isNumeric( days ) || $j.isNumeric( hours ) || $j.isNumeric( minutes ) ) {
+			value = 0;
+			if( $j.isNumeric( minutes ) )	{ value += parseInt( minutes ) * 60; }
+			if( $j.isNumeric( hours ) )		{ value += parseInt( hours ) * 3600; }
+			if( $j.isNumeric( days ) )		{ value += parseInt( days ) * 86400; }
+		}
+		field_value.val( value ).trigger( 'change' );
+		
+		// Display an hint below avilability period fields to help setting the appropriate value - on change
+		$j( this ).closest( '.bookacti-duration-field-container' ).siblings( '.bookacti-duration-hint' ).remove();
+		if( ! $j.isNumeric( value ) ) { value = 0; }
+		var hint = moment.utc().add( value + bookacti_localized.utc_offset, 's' ).formatPHP( bookacti_localized.date_format_long );
+		$j( this ).closest( '.bookacti-duration-field-container' ).parent().append( '<div class="bookacti-duration-hint">' + hint + '</div>' );
+	});
 });
 
 
+/**
+ * Toggle advanced options
+ * @version 1.8.0
+ * @param {HTMLElement} button
+ */
 function bookacti_show_hide_advanced_options( button ) {
-	button.closest( 'form' ).find( '.bookacti-hidden-field' ).toggle();
+	// Find toggle elements
+	var toogled_id = button.attr( 'for' );
+	var toggled_elements = button.closest( 'form' ).find( '.bookacti-hidden-field' );
+	if( toogled_id && $j( '#' + toogled_id ).length ) { toggled_elements = $j( '#' + toogled_id ); }
+	
 	button.toggleClass( 'bookacti-show-advanced-options bookacti-hide-advanced-options' );
-	if( button.hasClass( 'bookacti-show-advanced-options' ) )		{ button.html( button.data( 'show-title' ) ); }
-	else if( button.hasClass( 'bookacti-hide-advanced-options' ) )	{ button.html( button.data( 'hide-title' ) ); }
+	if( button.hasClass( 'bookacti-show-advanced-options' ) ) { 
+		button.html( button.data( 'show-title' ) );
+		toggled_elements.hide( 200, function() {
+			if( button.closest( 'fieldset' ).length ) { button.closest( 'fieldset' ).addClass( 'bookacti-fieldset-no-css' ); }
+		});
+	}
+	else if( button.hasClass( 'bookacti-hide-advanced-options' ) ) { 
+		button.html( button.data( 'hide-title' ) );
+		if( button.closest( 'fieldset' ).length ) { button.closest( 'fieldset' ).removeClass( 'bookacti-fieldset-no-css' ); }
+		toggled_elements.show( 200 );
+	}
 }
 
-// Init Add / Remove items boxes
+
+/**
+ * Init Add / Remove items boxes
+ */
 function bookacti_init_add_and_remove_items() {
 	// Add a item to the items list
 	$j( '.bookacti-items-container' ).on( 'click', '.bookacti-add-items', function( e ){
@@ -125,15 +180,15 @@ function bookacti_init_add_and_remove_items() {
 
 /**
  * Empty all dialog forms fields
- * @version 1.5.4
+ * @version 1.8.0
  * @param {string} scope
  */
 function bookacti_empty_all_dialog_forms( scope ) {
 	scope = typeof scope === 'undefined' || ! scope ? '.bookacti-backend-dialog ' : scope + ' ';
 
 	$j( scope + '.bookacti-form-error' ).remove();
-	$j( scope + 'input[type="hidden"]:not([name^="nonce"]):not([name="_wp_http_referer"]):not(.bookacti-onoffswitch-hidden-input)' ).val( '' );
-	$j( scope + 'input[type="text"]' ).val( '' );
+	$j( scope + 'input[type="hidden"]:not([name^="nonce"]):not([name="_wp_http_referer"]):not([name="qtranslate-edit-language"]):not(.bookacti-onoffswitch-hidden-input)' ).val( '' );
+	$j( scope + 'input[type="text"]:not([readonly])' ).val( '' );
 	$j( scope + 'input[type="email"]' ).val( '' );
 	$j( scope + 'input[type="password"]' ).val( '' );
 	$j( scope + 'input[type="tel"]' ).val( '' );
@@ -148,6 +203,7 @@ function bookacti_empty_all_dialog_forms( scope ) {
 	$j( scope + '.exception' ).remove();
 	$j( scope + 'select.bookacti-add-new-items-select-box option' ).show().attr( 'disabled', false );
 	$j( scope + 'select.bookacti-items-select-box option' ).remove();
+	$j( scope + '.bookacti-duration-hint' ).remove();
 	
 	if( $j( scope + 'input[type="file"]' ).length ) {
 		$j( scope + 'input[type="file"]' ).each( function() {
@@ -181,7 +237,7 @@ function bookacti_empty_all_dialog_forms( scope ) {
 
 /**
  * Fill custom settings fields in a form
- * @version 1.7.19
+ * @version 1.8.0
  * @param {array} fields
  * @param {string} field_prefix
  * @param {qtring} scope
@@ -192,7 +248,7 @@ function bookacti_fill_fields_from_array( fields, field_prefix, scope ) {
 	
 	$j.each( fields, function( key, value ) {
 		var field_name = field_prefix ? field_prefix + '[' + key + ']' : key;
-
+		
 		// If the value is also a plain object, fill its fields recursively
 		if( $j.isPlainObject( value ) ) {
 			bookacti_fill_fields_from_array( value, field_name, scope );
@@ -209,15 +265,12 @@ function bookacti_fill_fields_from_array( fields, field_prefix, scope ) {
 			}
 		}
 		// Switch simple select to multiple
-		if( $j( scope + 'select[name="' + field_name + '"]' ).length && $j.isArray( value ) && value.length > 1 ) {
-			if( value.length === 1 ) { value = value[0]; }
-			else {
-				var field_id = $j( scope + 'select[name="' + field_name + '"]' ).attr( 'id' );
-				if( $j( scope + 'input.bookacti-multiple-select[data-select-id="' + field_id + '"]' ).length ) {
-					$j( scope + 'input.bookacti-multiple-select[data-select-id="' + field_id + '"]' ).prop( 'checked', true );
-					bookacti_switch_select_to_multiple( scope + 'input.bookacti-multiple-select[data-select-id="' + field_id + '"]' );
-					$j( scope + 'select[name="' + field_name + '[]"] option' ).prop( 'selected', false );
-				}
+		if( $j( scope + 'select[name="' + field_name + '"]:not(.bookacti-items-select-box)' ).length && $j.isArray( value ) && value.length > 1 ) {
+			var field_id = $j( scope + 'select[name="' + field_name + '"]' ).attr( 'id' );
+			if( $j( scope + 'input.bookacti-multiple-select[data-select-id="' + field_id + '"]' ).length ) {
+				$j( scope + 'input.bookacti-multiple-select[data-select-id="' + field_id + '"]' ).prop( 'checked', true );
+				bookacti_switch_select_to_multiple( scope + 'input.bookacti-multiple-select[data-select-id="' + field_id + '"]' );
+				$j( scope + 'select[name="' + field_name + '[]"] option' ).prop( 'selected', false );
 			}
 		}
 		
@@ -228,18 +281,43 @@ function bookacti_fill_fields_from_array( fields, field_prefix, scope ) {
 			if( $j.isArray( value ) ){
 				$j( scope + 'input[type="checkbox"][name="' + field_name + '[]"]' ).prop( 'checked', false );
 				$j.each( value, function( i, checkbox_value ){
-					$j( scope + 'input[type="checkbox"][name="' + field_name + '[]"][value="' + checkbox_value + '"]' ).prop( 'checked', true );
+					$j( scope + 'input[type="checkbox"][name="' + field_name + '[]"][value="' + checkbox_value + '"]' ).prop( 'checked', true ).trigger( 'change' );
 				});
 			} else if( value == 1 ) {
-				$j( scope + 'input[type="checkbox"][name="' + field_name + '"]' ).prop( 'checked', true );
+				$j( scope + 'input[type="checkbox"][name="' + field_name + '"]' ).prop( 'checked', true ).trigger( 'change' );
 			} else {
-				$j( scope + 'input[type="checkbox"][name="' + field_name + '"]' ).prop( 'checked', false );
+				$j( scope + 'input[type="checkbox"][name="' + field_name + '"]' ).prop( 'checked', false ).trigger( 'change' );
 			}
 
 		// Radio
 		} else if( $j( scope + 'input[name="' + field_name + '"]' ).is( ':radio' ) ) {
-			$j( scope + 'input[name="' + field_name + '"][value="' + value + '"]' ).prop( 'checked', true );
+			$j( scope + 'input[name="' + field_name + '"][value="' + value + '"]' ).prop( 'checked', true ).trigger( 'change' );
 
+		// Select items
+		} else if( $j( scope + 'select[name="' + field_name + '[]"].bookacti-items-select-box' ).length ) {
+			if( ! $j.isArray( value ) ) { value = [ value ]; }
+			var selectbox = $j( scope + 'select[name="' + field_name + '[]"].bookacti-items-select-box' );
+			var add_selectbox = selectbox.closest( '.bookacti-items-container' ).find( '.bookacti-add-new-items-select-box' );
+			
+			// Reset selectboxes
+			add_selectbox.find( 'option' ).show().attr( 'disabled', false );
+			selectbox.find( 'option' ).remove();
+			
+			// Add items
+			$j.each( value, function( i, val ) {
+				add_selectbox.find( 'option[value="' + val + '"]' ).clone().appendTo( selectbox );
+				add_selectbox.find( 'option[value="' + val + '"]' ).hide().attr( 'disabled', true );
+				if( add_selectbox.val() == val || ! add_selectbox.val() ) {
+					add_selectbox.val( add_selectbox.find( 'option:enabled:first' ).val() );
+				}
+			});
+			
+			// Select all
+			if( selectbox.find( 'option' ).length ) {
+				selectbox.find( 'option' ).prop( 'selected', true );
+				selectbox.trigger( 'change' );
+			}
+		
 		// Select
 		} else if( $j( scope + 'select[name="' + field_name + '"]' ).length ) {
 			$j( scope + 'select[name="' + field_name + '"] option[value="' + value + '"]' ).prop( 'selected', true );
@@ -247,7 +325,7 @@ function bookacti_fill_fields_from_array( fields, field_prefix, scope ) {
 
 		// Select multiple
 		} else if( $j( scope + 'select[name="' + field_name + '[]"]' ).length ) {
-			$j.each( value, function( i, option ){
+			$j.each( value, function( i, option ) {
 				$j( scope + 'select[name="' + field_name + '[]"] option[value="' + option + '"]' ).prop( 'selected', true );
 			});
 			$j( scope + 'select[name="' + field_name + '[]"]' ).trigger( 'change' );
@@ -258,10 +336,19 @@ function bookacti_fill_fields_from_array( fields, field_prefix, scope ) {
 			if( $j( scope + 'input[name="' + field_name + '"]' ).attr( 'type' ) === 'file' ) { 
 				return true; // Jump to next field
 			}
+			
+			// Default color
+			if( $j( scope + 'input[name="' + field_name + '"]' ).attr( 'type' ) === 'color' && ! value ) { 
+				value = '#3a87ad';
+			}
+			
 			// If the time value is 24:00, reset it to 00:00
 			if( $j( scope + 'input[name="' + field_name + '"]' ).attr( 'type' ) === 'time' && value === '24:00' ) { value = '00:00'; }
-			$j( scope + 'input[name="' + field_name + '"]' ).val( value );
-			$j( scope + 'textarea[name="' + field_name + '"]' ).val( value );
+			
+			$j( scope + 'input[name="' + field_name + '"]' ).val( value ).trigger( 'change' );;
+			$j( scope + 'textarea[name="' + field_name + '"]' ).val( value ).trigger( 'change' );;
+			
+			// Editor
 			if( typeof tinyMCE !== 'undefined' ) {
 				if( tinyMCE && $j( scope + 'textarea[name="' + field_name + '"]' ).hasClass( 'wp-editor-area' ) ) {
 					var tmce_id = $j( scope + 'textarea[name="' + field_name + '"]' ).attr( 'id' );
@@ -269,6 +356,22 @@ function bookacti_fill_fields_from_array( fields, field_prefix, scope ) {
 						tinyMCE.get( tmce_id ).setContent( value );
 					}
 				}
+			}
+			
+			// Duration
+			if( $j( scope + 'input[name="' + field_name + '"].bookacti-duration-value' ).length ) {
+				var days, hours, minutes = '';
+				if( $j.isNumeric( value ) ) {
+					var total = parseInt( value );
+					if( total >= 0 ) {
+						days = Math.floor( total / 86400 ); total = total % 86400;
+						hours = Math.floor( total / 3600 ); total = total % 3600;
+						minutes = Math.floor( total / 60 );
+					}
+				}
+				$j( scope + 'input[name="' + field_name + '"].bookacti-duration-value' ).siblings( '.bookacti-duration-field-container' ).find( '.bookacti-duration-field[data-unit="day"]' ).val( days ).trigger( 'change' );
+				$j( scope + 'input[name="' + field_name + '"].bookacti-duration-value' ).siblings( '.bookacti-duration-field-container' ).find( '.bookacti-duration-field[data-unit="hour"]' ).val( hours ).trigger( 'change' );
+				$j( scope + 'input[name="' + field_name + '"].bookacti-duration-value' ).siblings( '.bookacti-duration-field-container' ).find( '.bookacti-duration-field[data-unit="minute"]' ).val( minutes ).trigger( 'change' );
 			}
 		}
 	});
@@ -278,7 +381,7 @@ function bookacti_fill_fields_from_array( fields, field_prefix, scope ) {
 /**
  * Switch a selectbox to multiple
  * @version 1.7.17
- * @param {dom_element} checkbox
+ * @param {HTMLElement} checkbox
  */
 function bookacti_switch_select_to_multiple( checkbox ) {
 	if( ! $j( checkbox ).length ) { return; }
@@ -332,7 +435,7 @@ function bookacti_switch_select_to_multiple( checkbox ) {
  * Show or hide activities depending on the selected template
  * @version 1.7.0
  * @param {array} template_ids
- * @param {dom_element} options
+ * @param {HTMLElement} options
  */
 function bookacti_show_hide_template_related_options( template_ids, options ) {
 	
@@ -383,7 +486,10 @@ function bookacti_show_hide_template_related_options( template_ids, options ) {
 }
 
 
-// Update multilangual fields with qtranslate X
+/**
+ * Update multilangual fields with qTranslate-XT
+ * @param {HTMLElement} field
+ */
 function bookacti_update_qtx_field( field ){
 	if( typeof qTranslateConfig !== 'undefined' ) {
 		var qtx = qTranslateConfig.js.get_qtx();
@@ -396,8 +502,12 @@ function bookacti_update_qtx_field( field ){
 	}
 }
 
-//Refresh multilingual field to make a correct display 
-//( '[:en]Hello[:fr]Bonjour[:]' become 'Hello' and 'Bonjour' each in its own switchable field (with the LSB) )
+
+/**
+ * Refresh multilingual field to make a correct display 
+ * E.g.: '[:en]Hello[:fr]Bonjour[:]' become 'Hello' and 'Bonjour' each in its own switchable field (with the LSB)
+ * @param {HTMLElement} field
+ */
 function bookacti_refresh_qtx_field( field ){
 	if( typeof qTranslateConfig !== 'undefined' ) {
 		var qtx = qTranslateConfig.js.get_qtx();
@@ -405,7 +515,7 @@ function bookacti_refresh_qtx_field( field ){
 		var h = qtx.refreshContentHook( field );
 		$j( field ).addClass('qtranxs-translatable');
 		
-		// Refresh tinyMCE (from "qtranslate-x\admin\js\common.js" updateTinyMCE line 588)
+		// Refresh tinyMCE (from "qtranslate-xt\admin\js\common.js" updateTinyMCE line 588)
 		if( typeof tinyMCE !== 'undefined' ) {
 			if( tinyMCE && $j( '#' + field.id ).hasClass( 'wp-editor-area' ) ) {
 				if( tinyMCE.get( field.id ) ) {
@@ -418,31 +528,32 @@ function bookacti_refresh_qtx_field( field ){
 }
 
 
-// Dismiss 5Stars rating notice
+/**
+ * Dismiss 5Stars rating notice
+ * @version 1.8.0
+ */
 function bookacti_dismiss_5stars_rating_notice() {
 	$j( '.bookacti-5stars-rating-notice' ).remove();
 	$j.ajax({
 		url: ajaxurl,
 		type: 'POST',
-		data: { 'action': 'bookactiDismiss5StarsRatingNotice',
-				'nonce': bookacti_localized.nonce_dismiss_5stars_rating_notice
-			},
+		data: { 
+			'action': 'bookactiDismiss5StarsRatingNotice',
+			'nonce': bookacti_localized.nonce_dismiss_5stars_rating_notice
+		},
 		dataType: 'json',
 		success: function( response ){
 			if( response.status === 'failed' ) {
-				var message_error = bookacti_localized.error_update_settings;
-				if( response.error === 'not_allowed' ) {
-					message_error += '\n' + bookacti_localized.error_not_allowed;
-				}
-				console.log( message_error );
+				var error_message = typeof response.message !== 'undefined' ? response.message : bookacti_localized.error;
+				console.log( error_message );
 				console.log( response );
 			}
 		},
-		error: function( e ){
+		error: function( e ) {
+			console.log( 'AJAX ' + bookacti_localized.error );
 			console.log( e );
 		},
-		complete: function() { 
-		}
+		complete: function() {}
 	});
 }
 

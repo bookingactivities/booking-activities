@@ -1,7 +1,7 @@
 <?php
 /**
  * Calendar editor page
- * @version 1.7.18
+ * @version 1.8.0
  */
 
 // Exit if accessed directly
@@ -32,9 +32,11 @@ $default_template = false;
 </div>
 
 <div id='bookacti-template-container'>
-    <?php
+<?php 
 	$templates = bookacti_fetch_templates();
-	?>
+	wp_nonce_field( 'bookacti_fetch_template_events', 'nonce_fetch_template_events', false );
+	wp_nonce_field( 'bookacti_edit_template', 'nonce_edit_template', false );
+?>
     <div id='bookacti-template-sidebar' class='<?php if( ! $templates ) { echo 'bookacti-no-template'; } ?>'>
         
         <div id='bookacti-template-templates-container' class='bookacti-templates-box' >
@@ -171,30 +173,17 @@ $default_template = false;
     </div>
 	
 	<div id='bookacti-template-content' >
-		<?php
-		if( $templates ) {
-		?>
-			<div id='bookacti-template-calendar' class='bookacti-calendar' ></div>
-		<?php
-		} else if( $current_user_can_create_template ) {
-			?>
-			<div id='bookacti-first-template-container'>
-				<h2>
-					<?php esc_html_e( "Welcome to Booking Activities! Let's start by creating your first calendar", 'booking-activities' ); ?>
-				</h2>
-				<div id='bookacti-add-first-template-button' class='dashicons dashicons-plus-alt' ></div>
-			</div>
-			<?php
-		} else {
-			?>
-			<div id='bookacti-no-template-container'>
-				<h2>
-					<?php esc_html_e( 'There is no calendar available, and you are not allowed to create one.', 'booking-activities' ); ?>
-				</h2>
-			</div>
-			<?php
-		}
-		?>
+		<?php if( $templates ) { ?>
+		<div id='bookacti-template-calendar' class='bookacti-calendar' ></div>
+		<?php } ?>
+		<div id='bookacti-first-template-container' <?php if( $templates ) { echo 'style="display:none;"'; } ?>>
+			<h2>
+				<?php echo $current_user_can_create_template ? esc_html__( 'Welcome to Booking Activities! Let\'s start by creating your first calendar', 'booking-activities' ) : esc_html__( 'There are no calendars available, and you are not allowed to create one.', 'booking-activities' ); ?>
+			</h2>
+			<?php if( $current_user_can_create_template ) { ?>
+			<div id='bookacti-add-first-template-button' class='dashicons dashicons-plus-alt' ></div>
+			<?php } ?>
+		</div>
 	</div>
 </div>
 <hr/>
@@ -220,9 +209,13 @@ $default_template = false;
 	<h3><?php esc_html_e( 'Integrate this calendar to your site', 'booking-activities' ); ?></h3>
 	<ol>
 		<li>
+		<?php if( current_user_can( 'bookacti_create_forms' ) ) { ?>
 			<a href='<?php echo $new_form_initial_url; ?>' target='_blank' id='bookacti-create-form-link' data-base-url='<?php echo $new_form_basic_url; ?>'>
 				<?php esc_html_e( 'Click here to create a booking form with this calendar', 'booking-activities' ); ?>
 			</a>
+		<?php } else { ?>
+			<em><?php esc_html_e( 'You are not allowed to create booking forms.', 'booking-activities' ); ?></em>
+		<?php } ?>
 		</li>
 		<li>
 			<?php echo apply_filters( 'bookacti_calendar_integration_tuto', esc_html__( 'Copy and paste the booking form shortcode into the desired page or post', 'booking-activities' ), $template_id ); ?>

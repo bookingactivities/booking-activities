@@ -4,10 +4,9 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 /**
  * Init Booking Activities settings
- * @version 1.7.16
+ * @version 1.8.0
  */
 function bookacti_init_settings() { 
-
 	/* General settings Section */
 	add_settings_section( 
 		'bookacti_settings_section_general',
@@ -81,6 +80,14 @@ function bookacti_init_settings() {
 	);
 	
 	add_settings_field(  
+		'display_private_columns', 
+		esc_html__( 'Allow private columns in frontend booking lists', 'booking-activities' ), 
+		'bookacti_settings_field_display_private_columns_callback', 
+		'bookacti_general_settings', 
+		'bookacti_settings_section_general' 
+	);
+	
+	add_settings_field(  
 		'delete_data_on_uninstall', 
 		esc_html__( 'Delete data on uninstall', 'booking-activities' ), 
 		'bookacti_settings_field_delete_data_on_uninstall_callback', 
@@ -108,16 +115,16 @@ function bookacti_init_settings() {
 	
 	add_settings_field(  
 		'allow_customers_to_reschedule',                      
-		__( 'Allow customers to reschedule their bookings', 'booking-activities' ),               
+		esc_html__( 'Allow customers to reschedule their bookings', 'booking-activities' ),               
 		'bookacti_settings_field_activate_reschedule_callback',   
 		'bookacti_cancellation_settings',                     
 		'bookacti_settings_section_cancellation' 
 	);
 	
 	add_settings_field(  
-		'cancellation_min_delay_before_event', 
-		/* translators: Followed by a field indicating a number of days before the event. E.g.: "Changes permitted up to 2 days before the event". */
-		esc_html__( 'Changes permitted up to', 'booking-activities' ),               
+		'booking_changes_deadline', 
+		/* translators: Followed by a field indicating a number of days, hours and minutes from now. E.g.: "Changes are allowed for bookings starting in at least 2 days, 12 hours, 25 minutes". */
+		esc_html__( 'Changes are allowed for bookings starting in at least', 'booking-activities' ),               
 		'bookacti_settings_field_cancellation_delay_callback',   
 		'bookacti_cancellation_settings',                     
 		'bookacti_settings_section_cancellation' 
@@ -211,16 +218,15 @@ function bookacti_init_settings() {
 		'bookacti_licenses_settings'
 	);
 	
-	
-	do_action( 'bookacti_add_settings' );
-	
-	
 	register_setting( 'bookacti_general_settings',			'bookacti_general_settings' );
 	register_setting( 'bookacti_cancellation_settings',		'bookacti_cancellation_settings' );
 	register_setting( 'bookacti_notifications_settings',	'bookacti_notifications_settings' );
 	register_setting( 'bookacti_messages_settings',			'bookacti_messages_settings' );
 	register_setting( 'bookacti_system_settings',			'bookacti_system_settings' );
 	register_setting( 'bookacti_licenses_settings',			'bookacti_licenses_settings' );
+		
+	/* Allow plugins to add settings and sections */
+	do_action( 'bookacti_add_settings' );
 }
 add_action( 'admin_init', 'bookacti_init_settings' );
 
@@ -412,6 +418,7 @@ function bookacti_fill_notification_settings_page( $notification_id ) {
 							'type'	=> 'editor',
 							'name'	=> 'bookacti_notification[email][message]',
 							'id'	=> 'bookacti_notification_' . $notification_id . '_email_message',
+							'height'=> 470,
 							'value'	=> $notification_settings[ 'email' ][ 'message' ] ? $notification_settings[ 'email' ][ 'message' ] : ''
 						);
 						bookacti_display_field( $args );
@@ -915,25 +922,23 @@ add_action( 'all_admin_notices', 'bookacti_5stars_rating_notice' );
 
 
 /**
- *  Remove Rate-us-5-stars notice
+ * Remove Rate-us-5-stars notice
+ * @version 1.8.0
  */
 function bookacti_dismiss_5stars_rating_notice() {
-	
 	// Check nonce, no need to check capabilities
 	$is_nonce_valid = check_ajax_referer( 'bookacti_dismiss_5stars_rating_notice', 'nonce', false );
-	$is_allowed		= current_user_can( 'bookacti_manage_booking_activities' );
-
-	if( $is_nonce_valid && $is_allowed ) {
+	if( ! $is_nonce_valid ) { bookacti_send_json_invalid_nonce( 'dismiss_5stars_rating_notice' ); }
 	
-		$updated = update_option( 'bookacti-5stars-rating-notice-dismissed', 1 );
-		if( $updated ) {
-			wp_send_json( array( 'status' => 'success' ) );
-		} else {
-			wp_send_json( array( 'status' => 'failed', 'error' => 'not_updated' ) );
-		}
-	} else {
-		wp_send_json( array( 'status' => 'failed', 'error' => 'not_allowed' ) );
+	$is_allowed = current_user_can( 'bookacti_manage_booking_activities' );
+	if( ! $is_allowed ) { bookacti_send_json_not_allowed( 'dismiss_5stars_rating_notice' ); }
+	
+	$updated = update_option( 'bookacti-5stars-rating-notice-dismissed', 1 );
+	if( ! $updated ) { 
+		bookacti_send_json( array( 'status' => 'failed', 'error' => 'not_updated' ), 'dismiss_5stars_rating_notice' );
 	}
+	
+	bookacti_send_json( array( 'status' => 'success' ), 'dismiss_5stars_rating_notice' );
 }
 add_action( 'wp_ajax_bookactiDismiss5StarsRatingNotice', 'bookacti_dismiss_5stars_rating_notice' );
 
@@ -1040,6 +1045,7 @@ add_filter( 'editable_extensions', 'bookacti_add_editable_extensions', 10, 2 );
 /**
  * Search users for AJAX selectbox
  * @since 1.7.19
+ * @version 1.8.0
  */
 function bookacti_controller_search_select2_users() {
 	// Check nonce
@@ -1059,6 +1065,7 @@ function bookacti_controller_search_select2_users() {
 		'allow_current' => 0,
 		'include' => array(), 'exclude' => array(),
 		'role' => array(), 'role__in' => array(), 'role__not_in' => array(),
+		'meta' => true, 'meta_single' => true,
 		'orderby' => 'display_name', 'order' => 'ASC'
 	);
 	$args = apply_filters( 'bookacti_ajax_select2_users_args', $defaults );

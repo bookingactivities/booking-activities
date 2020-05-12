@@ -1,7 +1,7 @@
 /**
  * Initialize the calendar
- * @version 1.7.18
- * @param {dom_element} booking_system
+ * @version 1.8.0
+ * @param {HTMLElement} booking_system
  * @param {boolean} reload_events
  */
 function bookacti_set_calendar_up( booking_system, reload_events ) {
@@ -43,8 +43,8 @@ function bookacti_set_calendar_up( booking_system, reload_events ) {
 		minTime:                min_time,
 		maxTime:                max_time,
 		validRange: {
-            start: availability_period.start ? moment( availability_period.start ) : '',
-            end: availability_period.end ? moment( availability_period.end ).add( 1, 'days' ) : ''
+            start: availability_period.start ? moment.utc( availability_period.start.substr( 0, 10 ) ) : '',
+            end: availability_period.end ? moment.utc( availability_period.end.substr( 0, 10 ) ).add( 1, 'days' ) : ''
         },
 		
 		events: function( start, end, timezone, callback ) {
@@ -53,7 +53,7 @@ function bookacti_set_calendar_up( booking_system, reload_events ) {
 
 		viewRender: function( view ){ 
 			if( bookacti.booking_system[ booking_system_id ][ 'load_events' ] === true ) {
-				var interval = { 'start': moment.utc( view.intervalStart ), 'end': moment.utc( view.intervalEnd ).subtract( 1, 'days' ) };
+				var interval = { 'start': moment.utc( view.intervalStart.format( 'YYYY-MM-DD' ) + ' 00:00:00' ), 'end': moment.utc( view.intervalEnd.subtract( 1, 'days' ).format( 'YYYY-MM-DD' ) + ' 23:59:59' ) };
 				bookacti_fetch_events_from_interval( booking_system, interval );
 			}
 		},
@@ -124,7 +124,7 @@ function bookacti_set_calendar_up( booking_system, reload_events ) {
 		},
 		
 		eventAfterAllRender: function( view ) {
-			//Display element as picked or selected if they actually are
+			// Display element as picked or selected if they actually are
 			$j.each( bookacti.booking_system[ booking_system_id ][ 'picked_events' ], function( i, picked_event ) {
 				calendar.find( '.fc-event[data-event-id="' + picked_event[ 'id' ] + '"][data-event-start="' + picked_event[ 'start' ] + '"]' ).addClass( 'bookacti-picked-event' );
 			});
@@ -133,11 +133,17 @@ function bookacti_set_calendar_up( booking_system, reload_events ) {
 		},
 		
 		eventClick: function( event, jsEvent, view ) {
+			var trigger = { 'click': true };
+			
 			// Don't pick the event if it is not available
-			var is_available = bookacti_is_event_available( booking_system, event );
-			if( is_available ) { 
-				bookacti_event_click( booking_system, event );
+			if( $j( this ).hasClass( 'bookacti-event-unavailable' ) ) {
+				trigger.click = false;
 			}
+			
+			// Allow plugins to prevent the event click
+			$j( 'body' ).trigger( 'bookacti_trigger_event_click', [ trigger, event, jsEvent, view ] );
+			
+			if( trigger.click ) { bookacti_event_click( booking_system, event ); }
 		},
 		
 		eventMouseover: function( event, jsEvent, view ) { 
@@ -163,9 +169,10 @@ function bookacti_set_calendar_up( booking_system, reload_events ) {
 	// Generate the calendar
 	calendar.fullCalendar( init_data ); 
 	
-	// Make sure the event interval fit the view
 	var view = calendar.fullCalendar( 'getView' );
-	var interval = { 'start': moment.utc( view.start ), 'end': moment.utc( view.end ).subtract( 1, 'days' ) };
+	var interval = { 'start': moment.utc( view.intervalStart.format( 'YYYY-MM-DD' ) + ' 00:00:00' ), 'end': moment.utc( view.intervalEnd.subtract( 1, 'days' ).format( 'YYYY-MM-DD' ) + ' 23:59:59' ) };
+	
+	// Make sure the event interval fit the view
 	var is_view_larger_than_interval = false;
 	if( typeof bookacti.booking_system[ booking_system_id ][ 'events_interval' ] !== 'undefined' ) {
 		var event_interval_start= moment.utc( bookacti.booking_system[ booking_system_id ][ 'events_interval' ][ 'start' ] );
@@ -187,18 +194,71 @@ function bookacti_set_calendar_up( booking_system, reload_events ) {
 		bookacti_fetch_events_from_interval( booking_system, interval );
 	}
 	
-	// Refresh the display of selected events when you click on the View More link
+	
+	/**
+	 * Refresh the display of selected events when you click on the View More link
+	 */
 	calendar.off( 'click', '.fc-more' ).on( 'click', '.fc-more', function(){
 		bookacti_refresh_picked_events_on_calendar( booking_system );
 	});
 	
-	// Init on pick events actions
+	
+	/**
+	 * Trigger an event when the user start touching an event
+	 * @since 1.8.0
+	 * @param {Event} e
+	 */
+	calendar.off( 'touchstart', '.fc-event, .fc-list-item' ).on( 'touchstart', '.fc-event, .fc-list-item', function( e ){
+		var element = $j( this );
+		var event = {
+			'id': parseInt( element.data( 'event-id' ) ),
+			'start': moment.utc( element.data( 'event-start' ) ),
+			'end': moment.utc( element.data( 'event-end' ) )
+		};
+		booking_system.trigger( 'bookacti_event_touch_start', [ event, element, e ] );
+	});
+	
+	
+	/**
+	 * Trigger an event when the user stop touching an event
+	 * @since 1.8.0
+	 * @param {Event} e
+	 */
+	calendar.off( 'touchend', '.fc-event, .fc-list-item' ).on( 'touchend', '.fc-event, .fc-list-item', function( e ){
+		var element = $j( this );
+		var event = {
+			'id': parseInt( element.data( 'event-id' ) ),
+			'start': moment.utc( element.data( 'event-start' ) ),
+			'end': moment.utc( element.data( 'event-end' ) )
+		};
+		booking_system.trigger( 'bookacti_event_touch_end', [ event, element, e ] );
+	});
+	
+	
+	/**
+	 * Visually pick an event on the calendar - on bookacti_pick_event
+	 * @param {Event} e
+	 * @param {Object} picked_event
+	 */
 	booking_system.off( 'bookacti_pick_event' ).on( 'bookacti_pick_event', function( e, picked_event ){
 		bookacti_pick_event_on_calendar( $j( this ), picked_event );
 	});
+	
+	
+	/**
+	 * Visually unpick an event on the calendar - on bookacti_unpick_event
+	 * @param {Event} e
+	 * @param {Object} event_to_unpick
+	 * @param {Booolean} all
+	 */
 	booking_system.off( 'bookacti_unpick_event' ).on( 'bookacti_unpick_event', function( e, event_to_unpick, all ){
 		bookacti_unpick_event_on_calendar( $j( this ), event_to_unpick, all );
 	});
+	
+	
+	/**
+	 * Visually unpick all events of the calendar - on bookacti_unpick_all_events
+	 */
 	booking_system.off( 'bookacti_unpick_all_events' ).on( 'bookacti_unpick_all_events', function(){
 		bookacti_unpick_all_events_on_calendar( $j( this ) );
 	});
@@ -208,7 +268,7 @@ function bookacti_set_calendar_up( booking_system, reload_events ) {
 	// Go to the first picked events
 	var picked_events = bookacti.booking_system[ booking_system_id ][ 'picked_events' ];
 	if( ! $j.isEmptyObject( bookacti.booking_system[ booking_system_id ][ 'picked_events' ] ) ) {
-		calendar.fullCalendar( 'gotoDate', moment( picked_events[ 0 ][ 'start' ] ) );
+		calendar.fullCalendar( 'gotoDate', moment.utc( picked_events[ 0 ][ 'start' ] ) );
 	}
 	
 	booking_system.trigger( 'bookacti_after_calendar_set_up' );
@@ -310,50 +370,10 @@ function bookacti_refresh_picked_events_on_calendar( booking_system ) {
 }
 
 
-// Get first and last events on calendar
-function bookacti_get_first_and_last_events_on_calendar( calendar ) {
-
-	var event_sources	= calendar.fullCalendar( 'getEventSources' );
-	var return_events	= { 'first': false, 'last': false };
-
-	if( ! event_sources.length ) { return return_events; }
-
-	$j.each( event_sources, function( i, event_source ) {
-		// If the source doesn't have any events, skip to the next one
-		if( typeof event_source.rawEventDefs === 'undefined' || event_source.rawEventDefs.length === 0 ) { return true; }
-		
-		var events_of_source = event_source.rawEventDefs;
-		
-		// Sort activity event sources by date (repeated event source are already ordered by date)
-		if( event_source.id.substr( 0, 8 ) === 'activity' ) {
-			events_of_source = bookacti_sort_events_array_by_dates( events_of_source );
-		}
-				
-		// Check if the first event is before the old one
-		if( ! return_events.first || ( return_events.first && moment( events_of_source[ 0 ].start ).isBefore( return_events.first.start ) ) ) {
-			return_events.first = events_of_source[ 0 ];
-		}
-		
-		// Sort activity event sources by end date because we need to get the event with the highest end date
-		// Indeed, the event with the highest start date has not necessarily the highest end date
-		if( event_source.id.substr( 0, 8 ) === 'activity' ) {
-			events_of_source = bookacti_sort_events_array_by_dates( events_of_source, true );
-		}
-		
-		// Check if the last event is after the old one
-		if( ! return_events.last || ( return_events.last && moment( events_of_source[ events_of_source.length - 1 ].end ).isAfter( return_events.last.end ) ) ) {
-			return_events.last = events_of_source[ events_of_source.length - 1 ];
-		}
-	});
-	
-	return return_events;
-}
-
-
 /**
  * Add CSS classes to events accoding to their size
  * @version 1.5.9
- * @param {dom_element} element
+ * @param {HTMLElement} element
  */
 function bookacti_add_class_according_to_event_size( element ) {
 	

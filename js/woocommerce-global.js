@@ -1,66 +1,4 @@
 $j( document ).ready( function() {
-	// Update booking row after coupon refund
-	$j( 'body' ).on( 'bookacti_booking_refunded', function( e, booking_id, booking_type, refund_action, refund_message, refund_data, response ){
-		if( refund_action === 'auto' ) {
-			// Set a message to feedback refunds
-			refund_data.message += bookacti_localized.advice_booking_refunded;
-		
-		} else if( refund_action === 'coupon' ) {
-			
-			// Set a message to feedback refunds
-			refund_data.message += bookacti_localized.advice_booking_refunded;
-			refund_data.message += '<br/>' + bookacti_localized.advice_coupon_created.replace( '%1$s', '<strong>' + response.coupon_amount + '</strong>' );
-			refund_data.message += '<br/>' + bookacti_localized.advice_coupon_code.replace( '%1$s', '<strong>' + response.coupon_code + '</strong>' );
-			
-			// Update booking row on frontend only
-			if( ! bookacti_localized.is_admin ) {
-				
-				if( booking_type === 'single' ) {
-					var row = $j( '.bookacti-booking-actions[data-booking-id="' + booking_id + '"]' ).parents( 'tr' );
-				} else {
-					var row = $j( '.bookacti-booking-group-actions[data-booking-group-id="' + booking_id + '"]' ).parents( 'tr' );
-				}
-				
-				// Add coupon code on order details
-				if( row.length && response.coupon_code ) {
-
-					var meta_list = row.find( 'ul.wc-item-meta' );
-					if( meta_list.length ) {
-						if( meta_list.find( '.wc-item-meta-value.wc-item-meta-bookacti_refund_coupon' ).length ) {
-							meta_list.find( '.wc-item-meta-value.wc-item-meta-bookacti_refund_coupon' ).html( response.coupon_code );
-						} else {
-							var coupon_code_meta = 
-								'<li>'
-							+		'<strong class="wc-item-meta-label wc-item-meta-bookacti_refund_coupon">' + bookacti_localized.coupon_code + ':</strong>'
-							+		'<span class="wc-item-meta-value wc-item-meta-bookacti_refund_coupon" >' + response.coupon_code + '</span>'
-							+	'</li>';
-							meta_list.append( coupon_code_meta );
-						}
-					}
-
-					// WOOCOMMERCE 3.0.0 backward compatibility
-					if( row.find( '.variation' ).length ) {
-						if( $j( 'dd.variation-bookacti_refund_coupon' ).length ) {
-							$j( 'dd.variation-bookacti_refund_coupon p' ).html( response.coupon_code );
-						} else {
-							var coupon_code_label = $j( '<dt />', {
-								'class': 'variation-bookacti_refund_coupon',
-								'text': bookacti_localized.coupon_code + ':'
-							});
-							var coupon_code_value = $j( '<dd />', {
-								'class': 'variation-bookacti_refund_coupon'
-							}).append( $j( '<p />', { 'text': response.coupon_code } ) );
-							row.find( '.variation' ).append( coupon_code_label );
-							row.find( '.variation' ).append( coupon_code_value );
-						}
-					}
-				}
-			}
-			
-		}
-	});
-	
-	
 	/**
 	 * Init WC actions to perfoms when the user submit booking form
 	 * @since 1.7.0
@@ -76,8 +14,11 @@ $j( document ).ready( function() {
 	 * Init WC actions to perfoms when the user picks an event
 	 * @since 1.7.0
 	 * @version 1.7.19
+	 * @param {Event} e
+	 * @param {Int|String} group_id
+	 * @param {object} event
 	 */
-	$j( 'body' ).on( 'bookacti_events_picked_after', '.bookacti-booking-system', function( e, group_id, event ){
+	$j( 'body' ).on( 'bookacti_events_picked_after', '.bookacti-booking-system', function( e, group_id, event ) {
 		// Retrieve the info required to show the desired events
 		var booking_system		= $j( this );
 		var booking_system_id	= booking_system.attr( 'id' );
@@ -107,6 +48,9 @@ $j( document ).ready( function() {
 	 * Init WC actions to perfoms when the user picks a group of events
 	 * @since 1.7.0
 	 * @version 1.7.19
+	 * @param {Event} e
+	 * @param {Int|String} group_id
+	 * @param {object} event
 	 */
 	$j( 'body' ).on( 'bookacti_group_of_events_chosen_after', '.bookacti-booking-system', function( e, group_id, event ) {
 		// Retrieve the info required to show the desired events
@@ -129,16 +73,18 @@ $j( document ).ready( function() {
 /**
  * Perform WC form action
  * @since 1.7.19
- * @param {string} form_action
+ * @version 1.8.0
+ * @param {HTMLElement} booking_system
  */
 function bookacti_wc_perform_form_action( booking_system ) {
 	var booking_system_id = booking_system.attr( 'id' );
 	if( typeof bookacti.booking_system[ booking_system_id ] === 'undefined' ) { return; }
 	
-	var attributes	= bookacti.booking_system[ booking_system_id ];
-	var form_action	= typeof attributes[ 'form_action' ] !== 'undefined';
-	if( form_action ) { if( attributes[ 'form_action' ] ) { form_action = attributes[ 'form_action' ]; } }
-	if( form_action !== 'redirect_to_product_page' && form_action !== 'add_product_to_cart' ) { return; }
+	var attributes = bookacti.booking_system[ booking_system_id ];
+	if( typeof attributes[ 'form_action' ] === 'undefined' ) { return; }
+	
+	var form_action = attributes[ 'form_action' ];
+	if( $j.inArray( form_action, [ 'default', 'redirect_to_product_page', 'add_product_to_cart' ] ) === -1 ) { return; }
 	
 	var group_id= booking_system.siblings( '.bookacti-booking-system-inputs' ).find( 'input[name="bookacti_group_id"]' ).val();
 	var event = {
@@ -147,24 +93,34 @@ function bookacti_wc_perform_form_action( booking_system ) {
 		'end': booking_system.siblings( '.bookacti-booking-system-inputs' ).find( 'input[name="bookacti_event_end"]' ).val()
 	};
 	
+	// Send the add to cart form
+	if( form_action === 'default' && booking_system.closest( 'form.cart' ).length ) {
+		if( booking_system.closest( 'form.cart' ).find( '.single_add_to_cart_button' ).length ) {
+			booking_system.closest( 'form.cart' ).find( '.single_add_to_cart_button' ).trigger( 'click' );
+		}
+		return;
+	}
+	
 	// A single event is selected
 	if( group_id === 'single' && event.id && event.start && event.end ) {
-		if( form_action === 'redirect_to_product_page' ) {
-			// Redirect to activity URL if a single event is selected
+		// Redirect to activity URL if a single event is selected
+		 if( form_action === 'redirect_to_product_page' ) {
 			bookacti_redirect_to_activity_product_page( booking_system, event );
-		} else if( form_action === 'add_product_to_cart' ) {
-			// Add the product bound to the activity to cart
+		} 
+		// Add the product bound to the activity to cart
+		else if( form_action === 'add_product_to_cart' ) {
 			bookacti_add_activity_product_to_cart( booking_system, event );
 		}
 	}
 
 	// A group of events is selected
 	else if( $j.isNumeric( group_id ) ) {
+		// Redirect to group category URL if a group of events is selected
 		if( form_action === 'redirect_to_product_page' ) {
-			// Redirect to group category URL if a group of events is selected
 			bookacti_redirect_to_group_category_product_page( booking_system, group_id );
-		} else if( form_action === 'add_product_to_cart' ) {
-			// Add the product bound to the group category to cart
+		} 
+		// Add the product bound to the group category to cart
+		else if( form_action === 'add_product_to_cart' ) {
 			bookacti_add_group_category_product_to_cart( booking_system, group_id );
 		}
 	}
@@ -178,7 +134,7 @@ function bookacti_wc_perform_form_action( booking_system ) {
 /**
  * Redirect to activity product page
  * @since 1.7.0
- * @param {dom_element} booking_system
+ * @param {HTMLElement} booking_system
  * @param {object} event
  */
 function bookacti_redirect_to_activity_product_page( booking_system, event ) {
@@ -204,7 +160,7 @@ function bookacti_redirect_to_activity_product_page( booking_system, event ) {
 /**
  * Redirect to group category product page
  * @since 1.7.0
- * @param {dom_element} booking_system
+ * @param {HTMLElement} booking_system
  * @param {int} group_id
  */
 function bookacti_redirect_to_group_category_product_page( booking_system, group_id ) {
@@ -234,7 +190,7 @@ function bookacti_redirect_to_group_category_product_page( booking_system, group
 /**
  * Add the product bound to the activity to cart from a booking form
  * @since 1.7.0
- * @param {dom_element} booking_system
+ * @param {HTMLElement} booking_system
  * @param {object} event
  */
 function bookacti_add_activity_product_to_cart( booking_system, event ) {
@@ -256,7 +212,7 @@ function bookacti_add_activity_product_to_cart( booking_system, event ) {
 /**
  * Add the product bound to the group category to cart from a booking form
  * @since 1.7.0
- * @param {dom_element} booking_system
+ * @param {HTMLElement} booking_system
  * @param {int} group_id
  */
 function bookacti_add_group_category_product_to_cart( booking_system, group_id ) {
@@ -278,8 +234,8 @@ function bookacti_add_group_category_product_to_cart( booking_system, group_id )
 /**
  * Add a product to cart from a booking form
  * @since 1.7.0
- * @version 1.7.19
- * @param {dom_element} booking_system
+ * @version 1.8.0
+ * @param {HTMLElement} booking_system
  * @param {int} product_id
  */
 function bookacti_add_product_to_cart_via_booking_system( booking_system, product_id ) {
@@ -297,9 +253,9 @@ function bookacti_add_product_to_cart_via_booking_system( booking_system, produc
 	// Add form parameters to the URL
 	var data = [];
 	if( ! booking_system.closest( 'form' ).length ) {
-		booking_system.closest( '.bookacti-form-fields' ).wrap( '<form id="bookacti-temporary-form"></form>' );
+		booking_system.closest( '.bookacti-form-fields' ).wrap( '<form class="bookacti-temporary-form"></form>' );
 		data = new FormData( booking_system.closest( 'form' ).get(0) );
-		booking_system.closest( '.bookacti-form-fields' ).unwrap( 'form#bookacti-temporary-form' );
+		booking_system.closest( '.bookacti-form-fields' ).unwrap( 'form.bookacti-temporary-form' );
 	} else {
 		data = new FormData( booking_system.closest( 'form' ).get(0) );
 	}
@@ -324,19 +280,20 @@ function bookacti_add_product_to_cart_via_booking_system( booking_system, produc
 		cache: false,
         contentType: false,
         processData: false,
-		success: function( response ){
+		success: function( response ) {
+			var redirect_url = typeof response.redirect_url !== 'undefined' ? response.redirect_url : '';
 			if( response.status === 'success' ) {
-				// Reload booking numbers if we are not redirected
-				if( ! response.redirect_url ) {
+				// Reload booking numbers if page is not reloaded
+				if( redirect_url.indexOf( '://' ) < 0 ) {
 					bookacti_refresh_booking_numbers( booking_system );
 				}
 				
 				booking_system.trigger( 'bookacti_product_added_to_cart', [ response, data, product_id ] );
 				
 				// Redirect to the desired page or to cart
-				if( response.redirect_url ) {
+				if( redirect_url ) {
 					bookacti_start_loading_booking_system( booking_system );
-					window.location.replace( response.redirect_url );
+					window.location.replace( redirect_url );
 					bookacti_stop_loading_booking_system( booking_system );
 				}
 				
@@ -351,7 +308,7 @@ function bookacti_add_product_to_cart_via_booking_system( booking_system, produc
 				// Fill error message
 				error_div.empty().append( message ).show();
 				// Scroll to error message
-				if( response.status !== 'success' || ! response.redirect_url ) {
+				if( ! redirect_url ) {
 					bookacti_scroll_to( error_div, 500, 'middle' );
 				}
 			}

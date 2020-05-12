@@ -19,6 +19,7 @@ if( ! defined( 'BOOKACTI_TABLE_FORM_FIELDS' ) )		{ define( 'BOOKACTI_TABLE_FORM_
 if( ! defined( 'BOOKACTI_TABLE_BOOKINGS' ) )		{ define( 'BOOKACTI_TABLE_BOOKINGS',		$db_prefix . 'bookacti_bookings' ); }
 if( ! defined( 'BOOKACTI_TABLE_BOOKING_GROUPS' ) )	{ define( 'BOOKACTI_TABLE_BOOKING_GROUPS',	$db_prefix . 'bookacti_booking_groups' ); }
 if( ! defined( 'BOOKACTI_TABLE_META' ) )			{ define( 'BOOKACTI_TABLE_META',			$db_prefix . 'bookacti_meta' ); }
+if( ! defined( 'BOOKACTI_TABLE_EXPORTS' ) )			{ define( 'BOOKACTI_TABLE_EXPORTS',			$db_prefix . 'bookacti_exports' ); }
 if( ! defined( 'BOOKACTI_TABLE_PERMISSIONS' ) )		{ define( 'BOOKACTI_TABLE_PERMISSIONS',		$db_prefix . 'bookacti_permissions' ); }
 
 

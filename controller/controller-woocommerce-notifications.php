@@ -5,7 +5,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 /**
  * Send one notification per booking to admin and customer when an order contining bookings is made or when its status changes
  * @since 1.2.2
- * @version 1.7.18
+ * @version 1.8.0
  * @param WC_Order $order
  * @param string $new_status
  * @param array $args
@@ -54,7 +54,7 @@ function bookacti_send_notification_when_order_status_changes( $order, $new_stat
 		
 		// If the state hasn't changed, do not send the notifications, unless it is a new order
 		$old_status = isset( $args[ 'old_status' ] ) && $args[ 'old_status' ] ? $args[ 'old_status' ] : wc_get_order_item_meta( $order_item_id, 'bookacti_state', true );
-		if( $old_status === $new_status && empty( $args[ 'is_new_order' ] ) ) { continue; }
+		if( $old_status === $new_status && empty( $args[ 'force_status_notification' ] ) ) { continue; }
 		
 		// Get booking ID and booking type ('single' or 'group')
 		$booking_id		= isset( $item[ 'bookacti_booking_id' ] ) ? $item[ 'bookacti_booking_id' ] : ( isset( $item[ 'bookacti_booking_group_id' ] ) ? $item[ 'bookacti_booking_group_id' ] : 0 );
@@ -157,12 +157,11 @@ add_filter( 'bookacti_notification_sanitized_settings', 'bookacti_sanitize_wc_no
  * Make sure that WC order data are up to date when a WC notification is sent
  * 
  * @since 1.2.2
- * @version 1.5.0
+ * @version 1.8.0
  * @param array $args
  * @return array
  */
 function bookacti_wc_email_order_item_args( $args ) {
-	
 	// Check if the order contains bookings
 	$has_bookings = false;
 	foreach( $args[ 'items' ] as $item ) {
@@ -174,15 +173,9 @@ function bookacti_wc_email_order_item_args( $args ) {
 	
 	// If the order has no bookings, change nothing
 	if( ! $has_bookings ) { return $args; }
-	
-	// WOOCOMMERCE 3.0.0 BW compability
-	if( version_compare( WC_VERSION, '3.0.0', '>=' ) ) {
-		$order_id = $args[ 'order' ]->get_id();
-	} else {
-		$order_id = $args[ 'order' ]->id;
-	}
-	
+		
 	// If the order has bookings, refresh the order instance to make sure data are up to date
+	$order_id = $args[ 'order' ]->get_id();
 	$fresh_order_instance = wc_get_order( $order_id );
 	
 	$args[ 'order' ] = $fresh_order_instance;
@@ -216,7 +209,7 @@ add_filter( 'bookacti_notifications_tags', 'bookacti_wc_notifications_tags', 15,
 /**
  * Set WC notifications tags values
  * @since 1.6.0
- * @version 1.7.4
+ * @version 1.8.0
  * @param array $tags
  * @param object $booking
  * @param string $booking_type
@@ -225,6 +218,7 @@ add_filter( 'bookacti_notifications_tags', 'bookacti_wc_notifications_tags', 15,
  * @return array
  */
 function bookacti_wc_notifications_tags_values( $tags, $booking, $booking_type, $notification_id, $locale ) {
+	if( ! $booking ) { return $tags; }
 	
 	$item = $booking_type === 'group' ? bookacti_get_order_item_by_booking_group_id( $booking ) : bookacti_get_order_item_by_booking_id( $booking );
 	
@@ -239,15 +233,8 @@ function bookacti_wc_notifications_tags_values( $tags, $booking, $booking_type, 
 	
 	if( ! $item ) { return $tags; }
 	
-	// WooCommerce Backward compatibility
-	if( version_compare( WC_VERSION, '3.0.0', '>=' ) ) {
-		$item_id = $item->get_id();
-		$price = $item->get_total();
-	} else {
-		$item_id = $item[ 'id' ];
-		$price = $item[ 'line_total' ];
-	}
-	
+	$item_id = $item->get_id();
+	$price = $item->get_total();
 	$currency = get_post_meta( $booking->order_id, '_order_currency', true );
 	$tags[ '{price}' ]	= $currency ? wc_price( $price, array( 'currency' => $currency ) ) : $price;
 	

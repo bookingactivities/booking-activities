@@ -520,32 +520,31 @@ function bookacti_get_form_field_by_name( $form_id, $field_name ) {
 /**
  * Get the fields of the desired form
  * @since 1.5.0
- * @version 1.5.3
+ * @version 1.8.0
  * @global wpdb $wpdb
  * @param int $form_id
  * @param boolean $active_only Whether to fetch only active fields. Default "true".
  * @return array|false
  */
 function bookacti_get_form_fields( $form_id, $active_only = true ) {
-	global $wpdb;
-	
-	$query	= 'SELECT id as field_id, form_id, name, type, title, label, options, value, placeholder, tip, required, active FROM ' . BOOKACTI_TABLE_FORM_FIELDS . ' as FF '
-			. ' WHERE FF.form_id = %d ';
-	
-	if( $active_only ) { $query .= ' AND FF.active = 1 '; }
-	
-	$query .= ' ORDER BY id ASC ';
-	
-	$variables = array( $form_id );
-	
-	if( $variables ) {
-		$query = $wpdb->prepare( $query, $variables );
+	$fields = wp_cache_get( 'form_fields_' . $form_id, 'bookacti' );	
+
+	if( ! $fields ) { 
+		global $wpdb;
+
+		$query	= 'SELECT id as field_id, form_id, name, type, title, label, options, value, placeholder, tip, required, active '
+				. ' FROM ' . BOOKACTI_TABLE_FORM_FIELDS . ' as FF '
+				. ' WHERE FF.form_id = %d '
+				. ' ORDER BY id ASC ';
+		$query = $wpdb->prepare( $query, $form_id );
+		$fields = $wpdb->get_results( $query, ARRAY_A );
+		
+		wp_cache_set( 'form_fields_' . $form_id, $fields, 'bookacti' );
 	}
-	
-	$fields = $wpdb->get_results( $query, ARRAY_A );
 	
 	$fields_by_id = array();
 	foreach( $fields as $i => $field ) {
+		if( $active_only && ! $field[ 'active' ] ) { continue; }
 		foreach( $field as $field_key => $field_value ) {
 			$fields_by_id[ $field[ 'field_id' ] ][ $field_key ] = maybe_unserialize( $field_value );
 		}

@@ -1,7 +1,7 @@
 <?php
 /**
  * Booking Activities landing page
- * @version 1.7.17
+ * @version 1.8.0
  */
 
 // Exit if accessed directly
@@ -92,19 +92,6 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 					'price' => '39.00€',
 					'promo' => $promo,
 					'promo_price' => $promo_price_29
-				),
-				'points-of-sale' => array( 
-					'prefix' => 'bapos',
-					'title' => 'Points of Sale',
-					'subtitle' => esc_html__( '(requires WooCommerce)', 'booking-activities' ),
-					'link' => 'https://booking-activities.fr/en/downloads/points-of-sale/?utm_source=plugin&utm_medium=plugin&utm_campaign=points-of-sale&utm_content=landing',
-					'screenshot' => true,
-					'light_color' => '#91f2a1',
-					'dark_color' => '#26402a',
-					'excerpt' => esc_html__( 'You have several points of sale and one website for all. Thanks to this plugin, your points of sale managers will be able to manage independently their own activities, calendars and bookings from this single website.', 'booking-activities' ),
-					'price' => '69.00€',
-					'promo' => $promo,
-					'promo_price' => $promo_price_59
 				)
 			);
 
