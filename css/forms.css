@@ -13,7 +13,7 @@
 #bookacti-form-list-container .column-status				{ width: 10%; }
 
 #bookacti-form-list-container .column-shortcode input,
-#bookacti-form-editor-page-container #bookacti-form-shortcode { background: inherit; color: inherit; font-size: 12px; border: none; box-shadow: none; padding: 4px 8px; margin: 0; }
+#bookacti-form-editor-page-container #bookacti-form-shortcode { background: inherit; color: inherit; font-size: 12px; border: none; box-shadow: none; padding: 4px 8px; margin: 0; width: 100%; max-width: none; }
 
 @media screen and ( max-width: 782px ) {
 	.bookacti-form-primary-data-container { display: inline-block; }
@@ -46,6 +46,8 @@ body.booking-activities_page_bookacti_forms label[for='bookacti_form_publish-hid
 .bookacti-form-editor-field-placeholder { display: block; min-height: 47px; width: 100%; border: 1px dashed #b4b9be; margin: 1em 0; }
 #bookacti-form-editor-actions > *,
 .bookacti-form-editor-field-actions > *				{ display: inline-block; vertical-align: middle; color: #565d61; cursor: pointer; }
+#bookacti-form-editor-actions svg,
+.bookacti-form-editor-field-actions svg				{ fill: currentColor; }
 #bookacti-form-editor-actions > .button,
 .bookacti-form-editor-field-actions > .button		{ vertical-align: middle; }
 #bookacti-form-editor-actions > .button-secondary,

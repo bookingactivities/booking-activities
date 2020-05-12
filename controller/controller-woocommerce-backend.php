@@ -757,6 +757,7 @@ function bookacti_set_role_and_cap_for_woocommerce() {
 		$shop_manager->add_cap( 'bookacti_manage_booking_activities' );
 		$shop_manager->add_cap( 'bookacti_manage_bookings' );
 		$shop_manager->add_cap( 'bookacti_manage_templates' );
+		$shop_manager->add_cap( 'bookacti_manage_forms' );
 		$shop_manager->add_cap( 'bookacti_manage_booking_activities_settings' );
 		$shop_manager->add_cap( 'bookacti_read_templates' );
 		$shop_manager->add_cap( 'bookacti_create_templates' );
@@ -767,6 +768,9 @@ function bookacti_set_role_and_cap_for_woocommerce() {
 		$shop_manager->add_cap( 'bookacti_delete_activities' );
 		$shop_manager->add_cap( 'bookacti_edit_bookings' );
 		$shop_manager->add_cap( 'bookacti_delete_bookings' );
+		$shop_manager->add_cap( 'bookacti_create_forms' );
+		$shop_manager->add_cap( 'bookacti_edit_forms' );
+		$shop_manager->add_cap( 'bookacti_delete_forms' );
 	}
 }
 add_action( 'bookacti_set_capabilities', 'bookacti_set_role_and_cap_for_woocommerce' );
@@ -794,6 +798,7 @@ function bookacti_unset_role_and_cap_for_woocommerce() {
 		$shop_manager->remove_cap( 'bookacti_manage_booking_activities' );
 		$shop_manager->remove_cap( 'bookacti_manage_bookings' );
 		$shop_manager->remove_cap( 'bookacti_manage_templates' );
+		$shop_manager->remove_cap( 'bookacti_manage_forms' );
 		$shop_manager->remove_cap( 'bookacti_manage_booking_activities_settings' );
 		$shop_manager->remove_cap( 'bookacti_read_templates' );
 		$shop_manager->remove_cap( 'bookacti_create_templates' );
@@ -804,6 +809,9 @@ function bookacti_unset_role_and_cap_for_woocommerce() {
 		$shop_manager->remove_cap( 'bookacti_delete_activities' );
 		$shop_manager->remove_cap( 'bookacti_edit_bookings' );
 		$shop_manager->remove_cap( 'bookacti_delete_bookings' );
+		$shop_manager->remove_cap( 'bookacti_create_forms' );
+		$shop_manager->remove_cap( 'bookacti_edit_forms' );
+		$shop_manager->remove_cap( 'bookacti_delete_forms' );
 	}
 }
 add_action( 'bookacti_unset_capabilities', 'bookacti_unset_role_and_cap_for_woocommerce' );

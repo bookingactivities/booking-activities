@@ -29,6 +29,9 @@ function bookacti_init_form_editor_actions() {
 			var form_id	= $j( '#bookacti-form-id' ).val();
 			bookacti_dialog_export_events( form_id );
 		}
+		if( $j( this ).hasClass( 'bookacti-login-form-shortcode' ) ){
+			bookacti_dialog_login_form_shortcode();
+		}
 		if( $j( this ).hasClass( 'bookacti-display-help' ) ){
 			bookacti_dialog_calendar_field_help();
 		}
@@ -576,4 +579,25 @@ function bookacti_dialog_calendar_field_help() {
     );
 	// Open the modal dialog
     $j( '#bookacti-calendar-field-help-dialog' ).dialog( 'open' );
+}
+
+
+/**
+ * Display the login form shortcode dialog
+ * @since 1.8.0
+ */
+function bookacti_dialog_login_form_shortcode() {
+	// Add the buttons
+    $j( '#bookacti-login-form-shortcode-dialog' ).dialog( 'option', 'buttons',
+		// OK button   
+		[{
+			text: bookacti_localized.dialog_button_ok,			
+			click: function() {
+				// Close the modal dialog
+				$j( this ).dialog( 'close' );
+			}
+		}]
+    );
+	// Open the modal dialog
+    $j( '#bookacti-login-form-shortcode-dialog' ).dialog( 'open' );
 }

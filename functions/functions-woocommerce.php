@@ -671,42 +671,36 @@ function bookacti_reset_cart_expiration_dates( $expiration_date ) {
 
 /**
  * Get expiration time
- * 
- * @global woocommerce $woocommerce
+ * @version 1.8.0
+ * @global WooCommerce $woocommerce
  * @param string $date_format
  * @return string
  */
-function bookacti_get_expiration_time( $date_format = 'c' ) {
-
+function bookacti_get_expiration_time( $date_format = 'Y-m-d H:i:s' ) {
+	$expiration_date = NULL;
+	
 	$is_expiration_active = bookacti_get_setting_value( 'bookacti_cart_settings', 'is_cart_expiration_active' );
+	if( ! $is_expiration_active ) { return $expiration_date; }
+		
+	$is_per_product_expiration = bookacti_get_setting_value( 'bookacti_cart_settings', 'is_cart_expiration_per_product' );
+	if( ! $is_per_product_expiration ) {
+		global $woocommerce;
+		
+		$expiration_date = bookacti_get_cart_timeout();
 
-	if( $is_expiration_active ) {
+		if( is_null ( $expiration_date ) 
+		|| strtotime( $expiration_date ) <= time() 
+		|| $woocommerce->cart->get_cart_contents_count() === 0 ) {
 
-		$is_per_product_expiration = bookacti_get_setting_value( 'bookacti_cart_settings', 'is_cart_expiration_per_product' );
-
-		if( ! $is_per_product_expiration ) {
-
-			global $woocommerce;
-
-			$expiration_date = bookacti_get_cart_timeout();
-
-			if( is_null ( $expiration_date ) 
-			|| strtotime( $expiration_date ) <= time() 
-			|| $woocommerce->cart->get_cart_contents_count() === 0 ) {
-
-				$timeout = bookacti_get_setting_value( 'bookacti_cart_settings', 'cart_timeout' );
-				$expiration_date = date( $date_format, strtotime( '+' . $timeout . ' minutes' ) );
-
-				bookacti_set_cart_timeout( $expiration_date );
-			}
-
-		} else {
 			$timeout = bookacti_get_setting_value( 'bookacti_cart_settings', 'cart_timeout' );
 			$expiration_date = date( $date_format, strtotime( '+' . $timeout . ' minutes' ) );
+
+			bookacti_set_cart_timeout( $expiration_date );
 		}
 
 	} else {
-		$expiration_date = NULL;
+		$timeout = bookacti_get_setting_value( 'bookacti_cart_settings', 'cart_timeout' );
+		$expiration_date = date( $date_format, strtotime( '+' . $timeout . ' minutes' ) );
 	}
 
 	return $expiration_date;

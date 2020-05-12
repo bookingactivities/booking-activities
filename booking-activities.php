@@ -9,7 +9,7 @@
  * Text Domain: booking-activities
  * Domain Path: /languages/
  * WC requires at least: 3.0
- * WC tested up to: 3.9
+ * WC tested up to: 4.1
  * License: GPL3
  * License URI: https://www.gnu.org/licenses/gpl-3.0.html
  * 

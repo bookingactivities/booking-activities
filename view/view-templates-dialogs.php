@@ -616,8 +616,8 @@ if ( ! empty( $users ) ) {
 				<div id='bookacti-activity-managers-container' class='bookacti-items-container' data-type='users' >
 					<label id='bookacti-activity-managers-title' class='bookacti-fullwidth-label' >
 					<?php 
-						esc_html_e( 'Who can manage this calendar?', 'booking-activities' );
-						$tip  = esc_html__( 'Choose who is allowed to access this calendar.', 'booking-activities' );
+						esc_html_e( 'Who can manage this activity?', 'booking-activities' );
+						$tip  = esc_html__( 'Choose who is allowed to access this activity.', 'booking-activities' );
 						/* translators: %s = capabilities name */
 						$tip .= ' ' . sprintf( esc_html__( 'All administrators already have this privilege. If the selectbox is empty, it means that no users have capabilities such as %s.', 'booking-activities' ), '"bookacti_edit_activities"' );
 						/* translators: %1$s = Order for Customers add-on link. */

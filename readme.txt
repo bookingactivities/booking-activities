@@ -39,16 +39,16 @@ Try this reservation tool live on the [demo website](http://demo.booking-activit
 * ★ **Group your events** to easily sell bundles, subscriptions, seminars, or events spreading on several days
 * Create **repeated events** (with desired frequency and exceptions dates)
 * Unlimited calendars, activities, events and bookings.
+* **Permission management system**: your managers manage only their own calendars and reservations. E.g.: You can [set up Booking Activities for a marketplace](https://booking-activities.fr/en/blog/set-up-a-booking-marketplace-with-booking-activities/?utm_source=wp-plugin-page&utm_medium=wordpress&utm_content=readme).
 
 **Booking forms**
 
 * **Fully customizable** forms in a WYSIWYG editor
 * **Shortcodes** to display reservation forms or simple calendars
 * ★ Display events from multiple schedules and activities at once
-* **Export** your events and your bookings as iCal feeds and **sync** them on calendar apps (e.g.: Google Calendar)
 * ★ **One-click booking**: just pick the desired event on the calendar and click on "Book"! 
 * Custom action when you submit the form or when you click an event: make a reservation, ★ **add a product to cart, redirect to a URL**
-* ★ **Seamless login / registration**: embedded in the form and processed with the reservation. You can also **book without account**.
+* ★ **Seamless login / registration**: embedded in the form and processed with the reservation. You can also **book without account**, or **display a login form only** with a shortcode.
 * 100% responsive: looks great on mobiles, tablets and computers.
 * ★ *Set any custom fields and any booking metadata thanks to [Advanced Forms](https://booking-activities.fr/en/downloads/advanced-forms/?utm_source=wp-plugin-page&utm_medium=wordpress&utm_campaign=advanced-forms&utm_content=readme) add-on*
 
@@ -67,8 +67,7 @@ Try this reservation tool live on the [demo website](http://demo.booking-activit
 * Booking actions: validate, cancel, reschedule, ★ refund...
 * ★ Display your customer's bookings calendar and their booking list with a shortcode
 * ★ Your customers can **cancel** or **reschedule** their bookings and **ask a refund** by themselves
-* **Export** your bookings as CSV feeds and **sync** them on spreadsheet apps (e.g.: Google Sheet)
-* Permission management system: your managers manage only their own calendars and reservations
+* **Export** your bookings as **CSV** and **iCal** feeds and **sync** them on spreadsheet and calendar apps (e.g.: Google Sheet, Google Calendar)
 
 **Availability options**
 
@@ -86,7 +85,7 @@ Try this reservation tool live on the [demo website](http://demo.booking-activit
 
 **Translation ready**
 
-* **Multilingual support** with ★ [QTranslate-XT](https://github.com/qtranslate/qtranslate-xt) (free plugin)
+* **Multilingual support** with ★ [qTranslate-XT](https://github.com/qtranslate/qtranslate-xt) (free plugin)
 * ★ Auto-detect and switch languages, date/time format, first day of the week...
 * Customize most frontend messages directly in the settings
 * Fully translated in English and French. You can also help us [translating Booking Activities](https://translate.wordpress.org/projects/wp-plugins/booking-activities) in your language.
@@ -309,18 +308,19 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 8. Easily bind a reservation form to a WooCommerce product. You can set a different event calendar to each variation.
 9. A reservation form appears automatically on desired WooCommerce product pages.
 10. WooCommerce cart expiration system: when time is up, bookings are cancelled and cart emptied. You can also disable it.
-11. Your bookings are displayed on a calendar and in a list that you can filter, sort and customize. Manage your bookings: change state (cancel, validate), reschedule, refund...
-12. Customers also have their booking list and calendar thanks to a shortcode. They can cancel, reschedule or ask a refund by their own (if you allow them).
-13. Your customers can manage their bookings from their WooCommerce orders as well.
-14. Orders status are bound to their bookings status. If bookings are cancelled / booked / refunded, so do the order (and vice-versa).
-15. Email notifications are automatically sent to the customer or the administrator when they need to be informed of a change.
-16. Make your emails look just like you want thanks to the HTML editor and special tags. You can also choose to deactivate a notification.
+11. Your bookings are displayed on a calendar, when you mouseover an event, and in a list that you can filter, sort and customize. Manage your bookings: change state (cancel, validate), reschedule, refund...
+12. Synchronize your bookings and display them in your Google Calendar events' description
+13. Customers also have their booking list and calendar thanks to a shortcode. They can cancel, reschedule or ask a refund by their own (if you allow them).
+14. Your customers can manage their bookings from their WooCommerce orders as well.
+15. Orders status are bound to their bookings status. If bookings are cancelled / booked / refunded, so do the order (and vice-versa).
+16. Email notifications are automatically sent to the customer or the administrator when they need to be informed of a change.
+17. Make your emails look just like you want thanks to the HTML editor and special tags. You can also choose to deactivate a notification.
 
 
 == Changelog ==
 
-= 1.8.0 =
-* **[See the user-friendly release note](https://booking-activities.fr/en/blog/booking-activities-1-8/?utm_source=wp-plugin-page&utm_medium=wordpress&utm_content=readme)**
+= 1.8.0 - 2020/05/12 =
+* **[See the user-friendly release note](https://booking-activities.fr/en/blog/booking-activities-1-8-bookings-preview-ical-export-login-beforehand-etc/?utm_source=wp-plugin-page&utm_medium=wordpress&utm_content=readme)**
 * Breaking change - You must use booking forms registered in Booking Activities > Booking forms (since 1.5) (Shortcode and WC integration) ([How to migrate](https://booking-activities.fr/en/blog/booking-activities-1-5-booking-forms/?utm_source=wp-plugin-page&utm_medium=wordpress&utm_content=readme#migrate-to-1-5))
 * Breaking change - Drop backward compatibility and support with WooCommerce < 3.0
 * Feature - Display a preview of the bookings in a tooltip when you mouseover an event in the backend Bookings page (mouseover the event on desktop, long press the event on mobile)
@@ -363,6 +363,7 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 * Fix - WC order status turned to completed / cancelled when one of its booking status changed, instead of all
 * Fix - PHP notices in booking form editor after creating a booking form
 * Fix - Cannot click on unavailable events on bookings page
+* Fix - Calendar field's Status option not saved if only one status was selected
 * Optimization - JS variables passed via PHP are now loaded only once, have been significantly reduced, and are filtered for the frontend
 * Optimization - Retrieve all users meta with a single query with bookacti_get_users_data
 * Dev - Make sure that the repeated events' occurences and exceptions are included in the repeat period when updated

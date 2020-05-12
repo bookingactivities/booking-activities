@@ -188,7 +188,7 @@ function bookacti_empty_all_dialog_forms( scope ) {
 
 	$j( scope + '.bookacti-form-error' ).remove();
 	$j( scope + 'input[type="hidden"]:not([name^="nonce"]):not([name="_wp_http_referer"]):not([name="qtranslate-edit-language"]):not(.bookacti-onoffswitch-hidden-input)' ).val( '' );
-	$j( scope + 'input[type="text"]' ).val( '' );
+	$j( scope + 'input[type="text"]:not([readonly])' ).val( '' );
 	$j( scope + 'input[type="email"]' ).val( '' );
 	$j( scope + 'input[type="password"]' ).val( '' );
 	$j( scope + 'input[type="tel"]' ).val( '' );

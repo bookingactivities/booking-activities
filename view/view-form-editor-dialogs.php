@@ -1096,5 +1096,14 @@ foreach( $fields_data as $field_name => $field_data ) {
 	<?php echo bookacti_display_calendar_field_help(); ?>
 </div>
 
+<div id='bookacti-login-form-shortcode-dialog' class='bookacti-backend-dialog bookacti-form-dialog' style='display:none;' title='<?php esc_attr_e( 'Login / registration form shortcode', 'booking-activities' ); ?>'>
+	<p><?php esc_html_e( 'You can display this login / registration form separately.', 'booking-activities' ) ?></p>
+	<h4><?php esc_html_e( 'Integrate in a post, page, or text widget', 'booking-activities' ) ?></h4>
+	<p><em><label for='bookacti-login-form-shortcode'><?php esc_html_e( 'Copy this shortcode and paste it into your post, page, or text widget content:', 'booking-activities' ); ?></label></em></p>
+	<p class='shortcode wp-ui-highlight'>
+		<input type='text' id='bookacti-login-form-shortcode' onfocus='this.select();' readonly='readonly' class='large-text code' value='<?php echo esc_attr( '[bookingactivities_login form="' . $form_id . '"]' ); ?>' />
+	</p>
+</div>
+
 <?php
 do_action( 'bookacti_form_editor_dialogs', $form, $form_fields );

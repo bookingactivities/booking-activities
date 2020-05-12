@@ -1605,6 +1605,20 @@ add_action( 'bookacti_form_editor_field_actions_after', 'bookacti_add_calendar_f
 
 
 /**
+ * Add actions buttons to the "Login" field in form editor
+ * @since 1.8.0
+ * @param array $field
+ */
+function bookacti_add_login_field_actions( $field ) {
+	if( $field[ 'name' ] !== 'login' ) { return; }
+?>
+	<div id='bookacti-login-form-shortcode-form-field-<?php echo esc_attr( $field[ 'field_id' ] ); ?>' class='bookacti-form-editor-field-action bookacti-login-form-shortcode dashicons dashicons-editor-code' title='<?php esc_attr_e( 'Login / registration form shortcode', 'booking-activities' ); ?>'></div>
+<?php
+}
+add_action( 'bookacti_form_editor_field_actions_after', 'bookacti_add_login_field_actions', 10, 1 );
+
+
+/**
  * AJAX Controller - Reset form export events URL
  * @since 1.6.0
  */
