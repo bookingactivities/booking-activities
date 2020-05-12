@@ -325,6 +325,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		/**
 		 * Display the content of the "iCal" tab of the "Export bookings" dialog
 		 * @since 1.8.0
+		 * @version 1.8.1
 		 * @param array $args
 		 */
 		function bookacti_fill_export_bookings_ical_tab( $args ) {
@@ -381,7 +382,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 				<legend class='bookacti-fullwidth-label'>
 					<?php 
 						esc_html_e( 'Booking list tags settings', 'booking-activities' ); 
-						bookacti_help_tip( esc_html__( 'Configure the booking list display on the exported events.', 'booking-activities' ) );
+						bookacti_help_tip( esc_html__( 'Configure the booking list displayed on the exported events.', 'booking-activities' ) );
 					?>
 					<span class='bookacti-show-hide-advanced-options bookacti-show-advanced-options' for='booakcti-ical-booking-list-fields' data-show-title='<?php esc_html_e( 'show', 'booking-activities' ); ?>' data-hide-title='<?php esc_html_e( 'hide', 'booking-activities' ); ?>'><?php esc_html_e( 'show', 'booking-activities' ); ?></span>
 				</legend>

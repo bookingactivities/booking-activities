@@ -69,7 +69,7 @@ function bookacti_init_booking_system_dialogs() {
 
 /**
  * Choose a group of events dialog
- * @version 1.8.0
+ * @version 1.8.1
  * @param {HTMLElement} booking_system
  * @param {array} group_ids
  * @param {object} event
@@ -131,25 +131,22 @@ function bookacti_dialog_choose_group_of_events( booking_system, group_ids, even
 			// Check the max quantity allowed AND
 			// Check the max number of different users allowed
 			var max_qty_ok = max_users_ok = true;
-			if( typeof bookacti.booking_system[ booking_system_id ][ 'bookings' ][ event.id ] !== 'undefined' ) {
-				var event_start		= event.start instanceof moment ? event.start.format( 'YYYY-MM-DD HH:mm:ss' ) : event.start;
-				var event_end		= event.end instanceof moment ? event.end.format( 'YYYY-MM-DD HH:mm:ss' ) : event.end;
-				var max_quantity	= typeof activity_data[ 'max_bookings_per_user' ] === 'undefined' ? 0 : ( activity_data[ 'max_bookings_per_user' ] ? parseInt( activity_data[ 'max_bookings_per_user' ] ) : 0 );
-				var max_users		= typeof activity_data[ 'max_users_per_event' ] === 'undefined' ? 0 : ( activity_data[ 'max_users_per_event' ] ? parseInt( activity_data[ 'max_users_per_event' ] ) : 0 );
+			var max_quantity	= typeof activity_data[ 'max_bookings_per_user' ] === 'undefined' ? 0 : ( activity_data[ 'max_bookings_per_user' ] ? parseInt( activity_data[ 'max_bookings_per_user' ] ) : 0 );
+			var max_users		= typeof activity_data[ 'max_users_per_event' ] === 'undefined' ? 0 : ( activity_data[ 'max_users_per_event' ] ? parseInt( activity_data[ 'max_users_per_event' ] ) : 0 );
 
-				if( max_quantity || max_users ) {
-					$j.each( bookacti.booking_system[ booking_system_id ][ 'bookings' ][ event.id ], function( i, occurence ){
-						if( event_start === occurence[ 'event_start' ] && event_end === occurence[ 'event_end' ] ) {
-							var qty_booked = parseInt( occurence[ 'current_user_bookings' ] );
-							if( max_users && qty_booked === 0 && occurence[ 'distinct_users' ] >= max_users ) {
-								max_users_ok = false;
-							}
-							if( max_quantity && qty_booked >= max_quantity ) {
-								max_qty_ok = false;
-							}
-							return false; // Break the loop
+			if( max_quantity || max_users ) {
+				var event_start_formatted = moment.utc( event.start ).format( 'YYYY-MM-DD HH:mm:ss' );
+				if( typeof bookacti.booking_system[ booking_system_id ][ 'bookings' ][ event.id ] !== 'undefined' ) {
+					if( typeof bookacti.booking_system[ booking_system_id ][ 'bookings' ][ event.id ][ event_start_formatted ] !== 'undefined' ) {
+						var occurence = bookacti.booking_system[ booking_system_id ][ 'bookings' ][ event.id ][ event_start_formatted ];
+						var qty_booked = parseInt( occurence[ 'current_user_bookings' ] );
+						if( max_users && qty_booked === 0 && parseInt( occurence[ 'distinct_users' ] ) >= max_users ) {
+							max_users_ok = false;
 						}
-					});
+						if( max_quantity && qty_booked >= max_quantity ) {
+							max_qty_ok = false;
+						}
+					}
 				}
 			}
 			
@@ -255,7 +252,7 @@ function bookacti_dialog_choose_group_of_events( booking_system, group_ids, even
 				var max_qty_ok = max_users_ok = true;
 				if( max_quantity || max_users ) {
 					var qty_booked = parseInt( group[ 'current_user_bookings' ] );
-					if( max_users && qty_booked === 0 && group[ 'distinct_users' ] >= max_users ) {
+					if( max_users && qty_booked === 0 && parseInt( group[ 'distinct_users' ] ) >= max_users ) {
 						max_users_ok = false;
 					}
 					if( max_quantity && qty_booked >= max_quantity ) {
@@ -314,22 +311,20 @@ function bookacti_dialog_choose_group_of_events( booking_system, group_ids, even
 			});
 			
 			// Add events of the group to the list
-			$j.each( bookacti.booking_system[ booking_system_id ][ 'groups_events' ][ group_id ], function( i, event ) {
+			$j.each( bookacti.booking_system[ booking_system_id ][ 'groups_events' ][ group_id ], function( i, grouped_event ) {
+				var start_and_end_same_day = grouped_event.start.substr( 0, 10 ) === grouped_event.end.substr( 0, 10 );
+				var grouped_event_start = moment.utc( grouped_event.start ).locale( bookacti_localized.current_lang_code );
+				var grouped_event_end = moment.utc( grouped_event.end ).locale( bookacti_localized.current_lang_code );
 				
-				var start_and_end_same_day = event.start.substr( 0, 10 ) === event.end.substr( 0, 10 );
-				
-				var event_start = moment.utc( event.start ).locale( bookacti_localized.current_lang_code );
-				var event_end = moment.utc( event.end ).locale( bookacti_localized.current_lang_code );
-				
-				var event_duration = event_start.formatPHP( bookacti_localized.date_format ) + bookacti_localized.dates_separator + event_end.formatPHP( bookacti_localized.date_format );
+				var grouped_event_duration = grouped_event_start.formatPHP( bookacti_localized.date_format ) + bookacti_localized.dates_separator + grouped_event_end.formatPHP( bookacti_localized.date_format );
 				if( start_and_end_same_day ) {
-					event_duration = event_start.formatPHP( bookacti_localized.date_format ) + bookacti_localized.date_time_separator + event_end.formatPHP( bookacti_localized.time_format );
+					grouped_event_duration = grouped_event_start.formatPHP( bookacti_localized.date_format ) + bookacti_localized.date_time_separator + grouped_event_end.formatPHP( bookacti_localized.time_format );
 				}
 				
 				var list_element = $j( '<li />', {
-					'html':	'<span class="bookacti-booking-event-duration" >'  + event_duration + '</span>' 
+					'html':	'<span class="bookacti-booking-event-duration" >'  + grouped_event_duration + '</span>' 
 							+ '<span class="bookacti-booking-event-title-separator" > - </span>'  
-							+ '<span class="bookacti-booking-event-title" >'  + event.title + '</span>'
+							+ '<span class="bookacti-booking-event-title" >'  + grouped_event.title + '</span>'
 				});
 				
 				event_list.append( list_element );
