@@ -234,6 +234,7 @@ function bookacti_get_event_repeat_periods() {
 /**
  * Sanitize event data
  * @since 1.8.0
+ * @version 1.8.2
  */
 function bookacti_sanitize_event_data( $raw_data ) {
 	$default_data = bookacti_get_event_default_data();
@@ -294,9 +295,12 @@ function bookacti_sanitize_event_data( $raw_data ) {
 		
 		// Compute bounding dates
 		if( ! empty( $bounding_events ) ) {
+			$bounding_events_keys = array_keys( $bounding_events );
+			$last_key = end( $bounding_events_keys );
+			$first_key = reset( $bounding_events_keys );
 			$bounding_dates = array( 
-				'start' => substr( $bounding_events[ 0 ][ 'start' ], 0, 10 ), 
-				'end' => substr( $bounding_events[ array_key_last( $bounding_events ) ][ 'end' ], 0, 10 )
+				'start' => substr( $bounding_events[ $first_key ][ 'start' ], 0, 10 ), 
+				'end' => substr( $bounding_events[ $last_key ][ 'end' ], 0, 10 )
 			);
 			
 			// Replace repeat period with events bounding dates

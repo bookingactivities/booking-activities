@@ -768,7 +768,7 @@ function bookacti_set_tooltip_position( element, tooltip_container, position ) {
 
 /**
  * Set min and max quantity on the quantity field
- * @version 1.8.0
+ * @version 1.8.2
  * @param {HTMLElement} booking_system
  * @param {HTMLElement} qty_field
  * @param {object} event_summary_data
@@ -821,7 +821,13 @@ function bookacti_set_min_and_max_quantity( booking_system, qty_field, event_sum
 							available_places	= bookacti_get_event_availability( booking_system, event );
 
 							if( min_quantity || max_quantity ) {
-								quantity_booked = bookacti_get_event_number_of_bookings( booking_system, event );
+								var event_start_formatted = moment.utc( event.start ).format( 'YYYY-MM-DD HH:mm:ss' );
+								if( typeof bookacti.booking_system[ booking_system_id ][ 'bookings' ][ event.id ] !== 'undefined' ) {
+									if( typeof bookacti.booking_system[ booking_system_id ][ 'bookings' ][ event.id ][ event_start_formatted ] !== 'undefined' ) {
+										var occurence = bookacti.booking_system[ booking_system_id ][ 'bookings' ][ event.id ][ event_start_formatted ];
+										quantity_booked = parseInt( occurence[ 'current_user_bookings' ] );
+									}
+								}
 							}
 						}
 					}
@@ -831,7 +837,7 @@ function bookacti_set_min_and_max_quantity( booking_system, qty_field, event_sum
 	}
 	
 	// Limit the max quantity
-	max_quantity = max_quantity && max_quantity != 0 && ( max_quantity - quantity_booked ) < available_places ? max_quantity - quantity_booked : available_places;
+	max_quantity = max_quantity && max_quantity != 0 && ( max_quantity - quantity_booked ) < available_places ? Math.max( ( max_quantity - quantity_booked ), 0 ) : available_places;
 	qty_field.attr( 'max', max_quantity );
 	if( quantity > max_quantity ) {
 		qty_field.val( max_quantity );
@@ -839,7 +845,7 @@ function bookacti_set_min_and_max_quantity( booking_system, qty_field, event_sum
 	}
 	
 	// Force a min quantity
-	min_quantity = min_quantity && min_quantity != 0 && min_quantity > 1 && quantity_booked < min_quantity ? min_quantity - quantity_booked : 1;
+	min_quantity = min_quantity && min_quantity != 0 && min_quantity > 1 && quantity_booked < min_quantity ? Math.max( ( min_quantity - quantity_booked ), 0 ) : 1;
 	qty_field.attr( 'min', min_quantity );
 	if( quantity < min_quantity ) {
 		// If min required bookings is higher than available places, 

@@ -652,7 +652,7 @@ function bookacti_get_available_form_action_triggers() {
 /**
  * Format field data according to its type
  * @since 1.5.0
- * @version 1.8.0
+ * @version 1.8.2
  * @param array|string $raw_field_data
  * @return array|false
  */
@@ -691,7 +691,7 @@ function bookacti_format_form_field_data( $raw_field_data ) {
 		
 		$status						= isset( $raw_field_data[ 'status' ] ) ? ( is_string( $raw_field_data[ 'status' ] ) ? array( $raw_field_data[ 'status' ] ) : $raw_field_data[ 'status' ] ) : $default_meta[ 'status' ];
 		$field_meta[ 'status' ]		= is_array( $status ) ? array_intersect( $status, array_keys( bookacti_get_booking_state_labels() ) ) : $default_meta[ 'status' ];
-		$field_meta[ 'user_id' ]	= isset( $raw_field_data[ 'user_id' ] ) && is_numeric( $raw_field_data[ 'user_id' ] ) ? intval( $raw_field_data[ 'user_id' ] ) : ( in_array( $raw_field_data[ 'user_id' ], array( 0, '0', 'current' ), true ) ? $raw_field_data[ 'user_id' ] : $default_meta[ 'user_id' ] );
+		$field_meta[ 'user_id' ]	= isset( $raw_field_data[ 'user_id' ] ) && is_numeric( $raw_field_data[ 'user_id' ] ) ? intval( $raw_field_data[ 'user_id' ] ) : ( isset( $raw_field_data[ 'user_id' ] ) && in_array( $raw_field_data[ 'user_id' ], array( 0, '0', 'current' ), true ) ? $raw_field_data[ 'user_id' ] : $default_meta[ 'user_id' ] );
 		
 		$field_meta[ 'method' ]	= isset( $raw_field_data[ 'method' ] ) && in_array( $raw_field_data[ 'method' ], array_keys( bookacti_get_available_booking_methods() ), true ) ? $raw_field_data[ 'method' ] : $default_meta[ 'method' ];
 		
