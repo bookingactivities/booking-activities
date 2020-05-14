@@ -5,7 +5,7 @@ Tags: booking, reservation, booking form, woocommerce booking, booking events
 Requires at least: 3.6
 Tested up to: 5.4
 Requires PHP: 5.3
-Stable tag: 1.8.0
+Stable tag: 1.8.2
 License: GPLv3 or later
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
 
@@ -318,6 +318,13 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 
 
 == Changelog ==
+
+= 1.8.2 - 2020/05/14 =
+* Tweak - "Booking form location on product pages" option is now applied only for WC product / variation flagged as activity
+* Fix - AJAX error after trying to update event settings if PHP < 7.3
+* Fix - AJAX error after trying to validate certain dialogs if opened for the second time
+* Fix - Min and Max bookings per user options not working properly
+* Fix - PHP warning after resetting calendar field settings
 
 = 1.8.1 - 2020/05/12 =
 * Fix - JS error when trying to open event settings
