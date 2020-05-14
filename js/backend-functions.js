@@ -180,14 +180,14 @@ function bookacti_init_add_and_remove_items() {
 
 /**
  * Empty all dialog forms fields
- * @version 1.8.0
+ * @version 1.8.2
  * @param {string} scope
  */
 function bookacti_empty_all_dialog_forms( scope ) {
 	scope = typeof scope === 'undefined' || ! scope ? '.bookacti-backend-dialog ' : scope + ' ';
 
 	$j( scope + '.bookacti-form-error' ).remove();
-	$j( scope + 'input[type="hidden"]:not([name^="nonce"]):not([name="_wp_http_referer"]):not([name="qtranslate-edit-language"]):not(.bookacti-onoffswitch-hidden-input)' ).val( '' );
+	$j( scope + 'input[type="hidden"]:not([name="action"]):not([name^="nonce"]):not([name="_wp_http_referer"]):not([name="qtranslate-edit-language"]):not(.bookacti-onoffswitch-hidden-input)' ).val( '' );
 	$j( scope + 'input[type="text"]:not([readonly])' ).val( '' );
 	$j( scope + 'input[type="email"]' ).val( '' );
 	$j( scope + 'input[type="password"]' ).val( '' );
