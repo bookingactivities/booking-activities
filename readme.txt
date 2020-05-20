@@ -324,6 +324,9 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 * Fix - {price} notification tag displayed price without tax
 * Fix - Send booking notification when an order item bound to bookings are manually refunded (if "Send when an order is refunded" option is active)
 * Fix - Check capabilities before listing / searching users in users selectboxes
+* Fix - Last occurence of repeated event of the interval may not be loaded
+* Fix - Products bound to group categories in calendar settings were not saved
+* Fix - "Unbind booked" feature didn't create exceptions on booked occurences of the new event
 * Lib - Update FullCalendar to 3.10.2 and Moment JS to 2.25.3
 
 = 1.8.2 - 2020/05/14 =

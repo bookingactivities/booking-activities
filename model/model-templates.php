@@ -392,7 +392,7 @@ function bookacti_unbind_selected_occurrence( $event_id, $event_start, $event_en
 
 /**
  * Unbind booked occurences of an event
- * @version 1.8.0
+ * @version 1.8.3
  * @global wpdb $wpdb
  * @param int $event_id
  * @return int
@@ -424,7 +424,7 @@ function bookacti_unbind_booked_occurrences( $event_id ) {
 		$last_booking = substr( $event_to_unbind->event_start, 0, 10 );
 
 		// Create an exception on the day of the occurence
-		$duplicated_exceptions[] = substr( $event_to_unbind->event_start, 0, 10 );
+		$duplicated_event_exceptions[] = substr( $event_to_unbind->event_start, 0, 10 );
 	}
 	bookacti_update_exceptions( $duplicated_event_id, $duplicated_event_exceptions, false );
 
