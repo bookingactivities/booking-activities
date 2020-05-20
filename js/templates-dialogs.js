@@ -299,7 +299,7 @@ function bookacti_dialog_add_new_template() {
 
 /**
  * Dialog Update Template
- * @version 1.8.0
+ * @version 1.8.3
  * @param {int} template_id
  */
 function bookacti_dialog_update_template( template_id ) {
@@ -322,15 +322,10 @@ function bookacti_dialog_update_template( template_id ) {
 	$j( '#bookacti-template-opening' ).val( template_data.start );
 	$j( '#bookacti-template-closing' ).val( template_data.end );
 
-	// Permission tab
+	// Permissions tab
 	if( template_data.admin.length ) {
-		$j.each( template_data.admin, function( i, manager_id ) {
-			$j( '#bookacti-add-new-template-managers-select-box option[value="' + manager_id + '"]' ).clone().appendTo( '#bookacti-template-managers-select-box' );
-			$j( '#bookacti-add-new-template-managers-select-box option[value="' + manager_id + '"]' ).hide().attr( 'disabled', true );
-			if( $j( '#bookacti-add-new-template-managers-select-box' ).val() == manager_id || ! $j( '#bookacti-add-new-template-managers-select-box' ).val() ) {
-				$j( '#bookacti-add-new-template-managers-select-box' ).val( $j( '#bookacti-add-new-template-managers-select-box option:enabled:first' ).val() );
-			}
-		});
+		var items_container = $j( '#bookacti-template-managers-container' );
+		bookacti_fill_items_selectbox( items_container, template_data.admin );
 	}
 
 	// Settings tabs
@@ -1212,7 +1207,7 @@ function bookacti_dialog_create_activity() {
 
 /**
  * Open a dialog to update an activity
- * @version 1.8.0
+ * @version 1.8.3
  * @param {Int} activity_id
  */
 function bookacti_dialog_update_activity( activity_id ) {
@@ -1244,16 +1239,11 @@ function bookacti_dialog_update_activity( activity_id ) {
 	
 	if( activity_data.is_resizable == 1 ) { $j( '#bookacti-activity-resizable' ).prop( 'checked', true ); }
 	else { $j( '#bookacti-activity-resizable' ).prop( 'checked', false ); }
-
-	// Permission tab
-	if( activity_data.admin ) {
-		$j.each( activity_data.admin, function( i, manager_id ) {
-			$j( '#bookacti-add-new-activity-managers-select-box option[value="' + manager_id + '"]' ).clone().appendTo( '#bookacti-activity-managers-select-box' );
-			$j( '#bookacti-add-new-activity-managers-select-box option[value="' + manager_id + '"]' ).hide().attr( 'disabled', true );
-			if( $j( '#bookacti-add-new-activity-managers-select-box' ).val() == manager_id || ! $j( '#bookacti-add-new-activity-managers-select-box' ).val() ) {
-				$j( '#bookacti-add-new-activity-managers-select-box' ).val( $j( '#bookacti-add-new-activity-managers-select-box option:enabled:first' ).val() );
-			}
-		});
+	
+	// Permissions tab
+	if( activity_data.admin.length ) {
+		var items_container = $j( '#bookacti-activity-managers-container' );
+		bookacti_fill_items_selectbox( items_container, activity_data.admin );
 	}
 
 	// Settings tabs
@@ -1450,7 +1440,7 @@ function bookacti_dialog_delete_activity( activity_id ) {
 
 /**
  * Create a group of events
- * @version 1.8.0
+ * @version 1.8.3
  * @param {int} category_id
  */
 function bookacti_dialog_create_group_of_events( category_id ) {
@@ -1484,7 +1474,7 @@ function bookacti_dialog_create_group_of_events( category_id ) {
 		if( event.start.substr( 0, 10 ) === event.end.substr( 0, 10 ) ) {
 			event_duration = event_start.formatPHP( bookacti_localized.date_format ) + bookacti_localized.date_time_separator + event_end.formatPHP( bookacti_localized.time_format );
 		}
-		var option = $j( '<option />', {
+		var option = $j( '<option></option>', {
 						'html': event_duration + ' - ' + event.title
 					} );
 		option.appendTo( '#bookacti-group-of-events-summary' );
@@ -1582,7 +1572,7 @@ function bookacti_dialog_create_group_of_events( category_id ) {
 
 /**
  * Update a group of events with selected events 
- * @version 1.8.0
+ * @version 1.8.3
  * @param {int} group_id
  */
 function bookacti_dialog_update_group_of_events( group_id ) {
@@ -1608,7 +1598,7 @@ function bookacti_dialog_update_group_of_events( group_id ) {
 		if( event.start.substr( 0, 10 ) === event.end.substr( 0, 10 ) ) {
 			event_duration = event_start.formatPHP( bookacti_localized.date_format ) + bookacti_localized.date_time_separator + event_end.formatPHP( bookacti_localized.time_format );
 		}
-		var option = $j( '<option />', {
+		var option = $j( '<option></option>', {
 						'html': event_duration + ' - ' + event.title
 					} );
 		option.appendTo( '#bookacti-group-of-events-summary' );

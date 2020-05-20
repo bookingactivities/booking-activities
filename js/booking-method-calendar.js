@@ -1,6 +1,6 @@
 /**
  * Initialize the calendar
- * @version 1.8.0
+ * @version 1.8.3
  * @param {HTMLElement} booking_system
  * @param {boolean} reload_events
  */
@@ -108,7 +108,7 @@ function bookacti_set_calendar_up( booking_system, reload_events ) {
 			
 			// Add background to basic views
 			if( view.hasOwnProperty( 'dayGrid' ) ) {
-				var bg_div = $j( '<div />', {
+				var bg_div = $j( '<div></div>', {
 					'class': 'fc-bg'
 				});
 				element.append( bg_div );

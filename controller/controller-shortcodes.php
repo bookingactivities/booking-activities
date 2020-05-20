@@ -43,6 +43,7 @@ function bookacti_shortcode_booking_form( $raw_atts = array(), $content = null, 
  * Display a login form via shortcode
  * Eg: [bookingactivities_login form="Your form ID" id="Your form instance CSS ID"]
  * @since 1.8.0
+ * @version 1.8.3
  * @param array $raw_atts [form, id]
  * @param string $content
  * @param string $tag Should be "bookingactivities_login"
@@ -51,6 +52,7 @@ function bookacti_shortcode_booking_form( $raw_atts = array(), $content = null, 
 function bookacti_shortcode_login_form( $raw_atts = array(), $content = null, $tag = '' ) {
 	$default_atts = array(
 		'form' => 0,
+		'redirect_url' => '',
 		'id' => ''
 	);
 	$atts = shortcode_atts( $default_atts, array_change_key_case( (array) $raw_atts, CASE_LOWER ), $tag );
@@ -61,6 +63,7 @@ function bookacti_shortcode_login_form( $raw_atts = array(), $content = null, $t
 		$form_id = intval( $atts[ 'form' ] );
 		$form_css_id = sanitize_title_with_dashes( $atts[ 'id' ] );
 		$instance_id = $form_css_id ? esc_attr( $form_css_id ) : esc_attr( 'login-form-' . rand() );
+		$GLOBALS[ 'bookacti_login_redirect_url' ] = esc_url_raw( $atts[ 'redirect_url' ] );
 		$output = bookacti_display_form( $form_id, $instance_id, 'login_form', false );
 	}
 

@@ -39,7 +39,7 @@ Try this reservation tool live on the [demo website](http://demo.booking-activit
 * ★ **Group your events** to easily sell bundles, subscriptions, seminars, or events spreading on several days
 * Create **repeated events** (with desired frequency and exceptions dates)
 * Unlimited calendars, activities, events and bookings.
-* **Permission management system**: your managers manage only their own calendars and reservations. E.g.: You can [set up Booking Activities for a marketplace](https://booking-activities.fr/en/blog/set-up-a-booking-marketplace-with-booking-activities/?utm_source=wp-plugin-page&utm_medium=wordpress&utm_content=readme).
+* **Permission management system**: your managers manage only their own calendars and reservations. E.g.: You can [set up Booking Activities for a marketplace](https://booking-activities.fr/en/blog/set-up-a-booking-marketplace-with-booking-activities/?utm_source=wp-plugin-page&utm_medium=wordpress&utm_content=readme) *(Booking Activities can only be managed from the backend)*.
 
 **Booking forms**
 
@@ -318,6 +318,13 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 
 
 == Changelog ==
+
+= 1.8.3 =
+* Tweak - Add the redirect_url parameter to the login shortcode to redirect to any page after login ([bookingactivities_login form="" redirect_url=""])
+* Fix - {price} notification tag displayed price without tax
+* Fix - Send booking notification when an order item bound to bookings are manually refunded (if "Send when an order is refunded" option is active)
+* Fix - Check capabilities before listing / searching users in users selectboxes
+* Lib - Update FullCalendar to 3.10.2 and Moment JS to 2.25.3
 
 = 1.8.2 - 2020/05/14 =
 * Tweak - "Booking form location on product pages" option is now applied only for WC product / variation flagged as activity

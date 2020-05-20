@@ -976,7 +976,7 @@ function bookacti_dialog_reschedule_booking( booking_id ) {
 /**
  * Delete a booking or a booking group
  * @since 1.5.0
- * @version 1.8.0
+ * @version 1.8.3
  * @param {int} booking_id
  * @param {string} booking_type
  */
@@ -1045,11 +1045,11 @@ function bookacti_dialog_delete_booking( booking_id, booking_type ) {
 							// Remove grouped bookings row
 							if( booking_type === 'group' && $j( '.bookacti-booking-group-id-' + booking_id ).length ) {
 								var group_rows = $j( '.bookacti-booking-group-id-' + booking_id );
-								group_rows.removeClass( 'bookacti-gouped-booking' ).animate( {'opacity': 0}, function() { group_rows.children('td, th').animate({ 'padding': 0 }).wrapInner('<div />').children().slideUp( function() { group_rows.remove(); } ); });
+								group_rows.removeClass( 'bookacti-gouped-booking' ).animate( {'opacity': 0}, function() { group_rows.children('td, th').animate({ 'padding': 0 }).wrapInner('<div></div>').children().slideUp( function() { group_rows.remove(); } ); });
 							}
 							
 							// Remove the booking row
-							row.animate( {'opacity': 0}, function() { row.children('td, th').animate({ 'padding': 0 }).wrapInner('<div />').children().slideUp(function() { row.remove(); }); });
+							row.animate( {'opacity': 0}, function() { row.children('td, th').animate({ 'padding': 0 }).wrapInner('<div></div>').children().slideUp(function() { row.remove(); }); });
 							
 						} else if( response.status === 'failed' ) {
 							var error_message = typeof response.message !== 'undefined' ? response.message : bookacti_localized.error;

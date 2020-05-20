@@ -357,6 +357,7 @@ function bookacti_check_password_strength( password_field, password_confirm_fiel
 /**
  * Submit login form
  * @since 1.8.0
+ * @version 1.8.3
  * @param {HTMLElement} submit_button
  */
 function bookacti_submit_login_form( submit_button ) {
@@ -374,6 +375,7 @@ function bookacti_submit_login_form( submit_button ) {
 		}
 	}
 	var form = submit_button.closest( 'form' );
+	var form_action = form.find( 'input[name="action"]' ).length ? form.find( 'input[name="action"]' ).val() : '';
 	
 	// Find the error div or create a temporary one
 	if( ! form.find( '> .bookacti-notices' ).length ) {
@@ -446,7 +448,8 @@ function bookacti_submit_login_form( submit_button ) {
 
 				// Redirect
 				var url_params = form.serialize();
-				var redirect_url = typeof response.redirect_url !== 'undefined' ? response.redirect_url : '';
+				var form_redirect_url = typeof form.attr( 'action' ) !== 'undefined' && form_action === 'bookactiSubmitLoginForm' ? form.attr( 'action' ) : '';
+				var redirect_url = response.redirect_url ? response.redirect_url : form_redirect_url;
 				redirect_url += redirect_url.indexOf( '?' ) >= 0 ? '&' + url_params : '?' + url_params;
 				window.location.replace( redirect_url );
 			}

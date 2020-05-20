@@ -1,5 +1,4 @@
 /***** GENERAL *****/
-
 .bookacti-nav-tab-wrapper { margin-bottom: 16px !important; }
 .bookacti-tip.dashicons-editor-help:before { color: #565d61; }
 #tiptip_content {
@@ -21,6 +20,8 @@
 .wp-admin select.bookacti-items-select-box[multiple]:hover { color: initial; }
 .wp-admin select.bookacti-select[multiple] option:hover,
 .wp-admin select.bookacti-items-select-box[multiple] option:hover { color: #007cba; }
+
+ul[id$='-select-box-results'] li[aria-disabled='true'] { display: none; }
 
 .bookacti-error span, .bookacti-warning span, .bookacti-info span, .bookacti-sos span						{ display: table-cell; vertical-align: middle; }
 .bookacti-error .dashicons,.bookacti-warning .dashicons, .bookacti-info .dashicons, .bookacti-sos .dashicons{ font-size: 1.5em; padding-right: 10px; }

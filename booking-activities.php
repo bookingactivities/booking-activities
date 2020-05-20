@@ -145,7 +145,7 @@ add_action( 'wp_enqueue_scripts',	'bookacti_enqueue_js_variables', 5 );
 
 /**
  * Enqueue high priority scripts
- * @version 1.8.0
+ * @version 1.8.3
  */
 function bookacti_enqueue_high_priority_global_scripts() {
 	// Include global var on WC products and orders screens
@@ -159,11 +159,11 @@ function bookacti_enqueue_high_priority_global_scripts() {
 	if( is_admin() && ! bookacti_is_booking_activities_screen() ) { return; }
 	
 	// INCLUDE LIBRARIES
-	$moment_version = '2.23.0';
+	$moment_version = '2.25.3';
 	if( ! wp_script_is( 'moment', 'registered' ) )	{ wp_register_script( 'moment', plugins_url( 'lib/fullcalendar/moment.min.js', __FILE__ ), array( 'jquery' ), $moment_version, true ); }
 	if( ! wp_script_is( 'moment', 'enqueued' ) )	{ wp_enqueue_script( 'moment' ); }
 	
-	$fullcalendar_version = '3.10.0';
+	$fullcalendar_version = '3.10.2';
 	if( ! wp_script_is( 'fullcalendar', 'enqueued' ) ) { wp_enqueue_script( 'fullcalendar', plugins_url( 'lib/fullcalendar/fullcalendar.min.js', __FILE__ ), array( 'jquery', 'moment' ), $fullcalendar_version, true ); }
 	wp_enqueue_script( 'bookacti-js-fullcalendar-locale-all', plugins_url( 'lib/fullcalendar/locale-all.js', __FILE__ ), array( 'jquery', 'fullcalendar' ), $fullcalendar_version, true );
 	

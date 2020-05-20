@@ -163,7 +163,7 @@ function bookacti_add_booking_group_to_cart( $product_id, $variation_id, $user_i
 
 /**
  * Update quantity, control the results and display feedback accordingly
- * @version 1.8.0
+ * @version 1.8.3
  * @global woocommerce $woocommerce
  * @param int $booking_id
  * @param int $new_quantity
@@ -174,6 +174,7 @@ function bookacti_controller_update_booking_quantity( $booking_id, $new_quantity
 	global $woocommerce;
 
 	$response = array( 'status' => '' );
+	$new_expiration_date = '';
 
 	// Get cart data and the expiration date
 	if( $context === 'frontend' ) {
@@ -185,7 +186,6 @@ function bookacti_controller_update_booking_quantity( $booking_id, $new_quantity
 		$is_expiration_active		= bookacti_get_setting_value( 'bookacti_cart_settings', 'is_cart_expiration_active' );
 		$timeout					= bookacti_get_setting_value( 'bookacti_cart_settings', 'cart_timeout' );
 
-		$new_expiration_date = NULL;
 		if( $is_expiration_active && ( $reset_timeout_on_change || $is_cart_empty_and_expired ) ) {
 			$new_expiration_date = date( 'Y-m-d\TH:i:s', strtotime( '+' . $timeout . ' minutes' ) );
 		}
@@ -1322,7 +1322,7 @@ function bookacti_change_order_state_based_on_its_bookings_state( $order_id ) {
  * Get woocommerce order item id by booking id
  * @version 1.6.0
  * @param int|object $booking_id
- * @return WC_Order_Item|array|false
+ * @return WC_Order_Item_Product|array|false
  */
 function bookacti_get_order_item_by_booking_id( $booking_id ) {
 
@@ -1379,7 +1379,7 @@ function bookacti_get_order_item_by_booking_id( $booking_id ) {
  * @since 1.1.0
  * @version 1.7.0
  * @param int|object $booking_group_id
- * @return WC_Order_Item|array|false
+ * @return WC_Order_Item_Product|array|false
  */
 function bookacti_get_order_item_by_booking_group_id( $booking_group_id ) {
 
@@ -1453,12 +1453,11 @@ function bookacti_wc_booking_actions_per_order_id( $booking_actions, $order_id )
 /**
  * Update order bookings if a partial refund is perfomed (refund of one or more items)
  * @since 1.2.0 (was part of bookacti_update_booking_when_order_item_is_refunded before)
- * @version 1.5.4
+ * @version 1.8.3
  * @param array $refunded_items
  * @param int $refund_id
  */
 function bookacti_update_order_bookings_on_items_refund( $refunded_items, $refund_id ) {
-
 	if( ! $refunded_items ) { return; }
 
 	// Add refunds of the same bookings to calculate the new quantity
@@ -1466,19 +1465,14 @@ function bookacti_update_order_bookings_on_items_refund( $refunded_items, $refun
 	$new_qty = array();
 	$booking_groups = array();
 	foreach( $refunded_items as $item_id => $refunded_item ) {
-
 		$refunded_qty = intval( $refunded_item[ 'qty' ] );
-
-		if( $refunded_qty <= 0 ) {
-			continue;
-		}
+		if( $refunded_qty <= 0 ) { continue; }
 
 		$booking_id			= wc_get_order_item_meta( $item_id, 'bookacti_booking_id', true );
 		$booking_group_id	= wc_get_order_item_meta( $item_id, 'bookacti_booking_group_id', true );
 
 		// Single booking
 		if( $booking_id ) {
-
 			$booking = bookacti_get_booking_by_id( $booking_id );
 			if( $booking ) {
 				$init_qty[ $booking->id ]= $booking->quantity;
@@ -1488,15 +1482,12 @@ function bookacti_update_order_bookings_on_items_refund( $refunded_items, $refun
 
 		// Booking group
 		} else if( $booking_group_id ) {
-
 			$bookings = bookacti_get_bookings_by_booking_group_id( $booking_group_id );
-
 			foreach( $bookings as $booking ) {
 				$init_qty[ $booking->id ]= $booking->quantity;
 				$new_qty[ $booking->id ][ 'new_qty' ]		= $init_qty[ $booking->id ] - $refunded_qty;
 				$new_qty[ $booking->id ][ 'booking_type' ]	= 'group';
 			}
-
 			$booking_groups[] = $booking_group_id;
 		}
 	}
@@ -1505,7 +1496,6 @@ function bookacti_update_order_bookings_on_items_refund( $refunded_items, $refun
 	// Set the new quantity or mark the booking as refunded
 	foreach( $new_qty as $booking_id => $refund ) {
 		if( $refund[ 'new_qty' ] > 0 ) {
-
 			// Update quantity by substracting the refunded quantity
 			$response = bookacti_controller_update_booking_quantity( $booking_id, $refund[ 'new_qty' ], 'admin' );
 
@@ -1515,11 +1505,10 @@ function bookacti_update_order_bookings_on_items_refund( $refunded_items, $refun
 			}
 
 		} else {
-
 			// Update state to refunded
 			$updated1 = bookacti_update_booking_state( $booking_id, 'refunded' );
 			if( $updated1 && $refund[ 'booking_type' ] === 'single' ) {
-				do_action( 'bookacti_booking_state_changed', $booking_id, 'refunded', array( 'is_admin' => true, 'refund_action' => 'manual', 'send_notifications' => false ) );
+				do_action( 'bookacti_booking_state_changed', $booking_id, 'refunded', array( 'is_admin' => true, 'refund_action' => 'manual' ) );
 			}
 
 			// Set the quantity back to the old value
@@ -1543,17 +1532,14 @@ function bookacti_update_order_bookings_on_items_refund( $refunded_items, $refun
 
 	// Update booking group state
 	foreach( $booking_groups as $booking_group_id ) {
-
 		$booking_group_old_qty = bookacti_get_booking_group_quantity( $booking_group_id );
 		$booking_group_new_qty = $booking_group_old_qty - $refunded_qty;
 
 		// If the group will be totally refunded
 		if( $booking_group_new_qty <= 0 ) {
-
 			$updated_group = bookacti_update_booking_group_state( $booking_group_id, 'refunded' );
-
 			if( $updated_group ) {
-				do_action( 'bookacti_booking_group_state_changed', $booking_group_id, 'refunded', array( 'is_admin' => true, 'refund_action' => 'manual', 'send_notifications' => false ) );
+				do_action( 'bookacti_booking_group_state_changed', $booking_group_id, 'refunded', array( 'is_admin' => true, 'refund_action' => 'manual' ) );
 			}
 		}
 
@@ -1568,19 +1554,17 @@ function bookacti_update_order_bookings_on_items_refund( $refunded_items, $refun
 
 /**
  * Update order bookings if a total refund is perfomed (refund of the whole order)
- * 
  * @since 1.2.0 (was part of bookacti_update_booking_when_order_item_is_refunded before)
+ * @version 1.8.3
  * @param int $order_id
  * @param int $refund_id
  */
 function bookacti_update_order_bookings_on_order_refund( $order_id, $refund_id ) {
 	// Double check that the refund is total
-
 	$order				= wc_get_order( $order_id );
 	$is_total_refund	= floatval( $order->get_total() ) == floatval( $order->get_total_refunded() );
-
 	if( ! $is_total_refund ) { return; }
-
+	
 	$items = $order->get_items();
 	foreach( $items as $item_id => $item ) {
 		$booking_id			= wc_get_order_item_meta( $item_id, 'bookacti_booking_id', true );
@@ -1588,7 +1572,6 @@ function bookacti_update_order_bookings_on_order_refund( $order_id, $refund_id )
 
 		// Single booking
 		if( $booking_id ) {
-
 			// Update booking state to 'refunded'
 			bookacti_update_booking_state( $booking_id, 'refunded' );
 
@@ -1601,11 +1584,10 @@ function bookacti_update_order_bookings_on_order_refund( $order_id, $refund_id )
 			// Add the refund method and yell the booking state change
 			wc_update_order_item_meta( $item_id, '_bookacti_refund_method', 'manual' );
 
-			do_action( 'bookacti_booking_state_changed', $booking_id, 'refunded', array( 'is_admin' => true, 'refund_action' => 'manual', 'send_notifications' => false ) );
+			do_action( 'bookacti_booking_state_changed', $booking_id, 'refunded', array( 'is_admin' => true, 'refund_action' => 'manual' ) );
 
 		// Booking group
 		} else if( $booking_group_id ) {
-
 			// Update bookings states to 'refunded'
 			bookacti_update_booking_group_state( $booking_group_id, 'refunded', 'auto', true );
 
@@ -1618,7 +1600,7 @@ function bookacti_update_order_bookings_on_order_refund( $order_id, $refund_id )
 			// Add the refund method and yell the booking state change
 			wc_update_order_item_meta( $item_id, '_bookacti_refund_method', 'manual' );
 
-			do_action( 'bookacti_booking_group_state_changed', $booking_group_id, 'refunded', array( 'is_admin' => true, 'refund_action' => 'manual', 'send_notifications' => false ) );
+			do_action( 'bookacti_booking_group_state_changed', $booking_group_id, 'refunded', array( 'is_admin' => true, 'refund_action' => 'manual' ) );
 		}
 	}
 }

@@ -113,7 +113,7 @@ $j( document ).ready( function() {
 
 /**
  * Initialize and display the template calendar
- * @version 1.8.0
+ * @version 1.8.3
  * @param {HTMLElement} calendar
  */
 function bookacti_load_template_calendar( calendar ) {
@@ -271,16 +271,16 @@ function bookacti_load_template_calendar( calendar ) {
 			
 			// Add event actions div
 			// Init var
-			var event_actions_div	= element.find( '.bookacti-event-actions' ).length > 0 ? element.find( '.bookacti-event-actions' ) : $j( '<div />', { 'class': 'bookacti-event-actions' } );
+			var event_actions_div	= element.find( '.bookacti-event-actions' ).length > 0 ? element.find( '.bookacti-event-actions' ) : $j( '<div></div>', { 'class': 'bookacti-event-actions' } );
 			var event_actions		= [];
 			
 			// EDIT ACTION
 			if( ! event_actions_div.find( '.bookacti-event-action-edit' ).length ) {
-				var edit_div	=	$j( '<div />', {
+				var edit_div	=	$j( '<div></div>', {
 										'class': 'bookacti-event-action bookacti-event-action-edit',
 										'data-hide-on-mouseout': '1'
 									} );
-				var edit_button =	$j( '<span />', {
+				var edit_button =	$j( '<span></span>', {
 										'type': 'checkbox',
 										'class': 'dashicons dashicons-admin-generic bookacti-event-action-edit-button',
 										'aria-hidden': 'true'
@@ -301,7 +301,7 @@ function bookacti_load_template_calendar( calendar ) {
 					}
 				});
 				
-				var select_div		=	$j( '<div />', {
+				var select_div		=	$j( '<div></div>', {
 											'class': 'bookacti-event-action bookacti-event-action-select',
 											'data-hide-on-mouseout': '0'
 										} );
@@ -328,7 +328,7 @@ function bookacti_load_template_calendar( calendar ) {
 			
 			// Add background to basic views
 			if( view.name === 'month' || view.name === 'basicWeek' || view.name === 'basicDay' ) {
-				var bg_div = $j( '<div />', {
+				var bg_div = $j( '<div></div>', {
 					'class': 'fc-bg'
 				});
 				element.append( bg_div );
