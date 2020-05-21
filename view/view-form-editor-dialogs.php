@@ -2,7 +2,7 @@
 /**
  * Form editor dialogs
  * @since 1.5.0
- * @version 1.8.0
+ * @version 1.8.3
  */
 
 // Exit if accessed directly
@@ -1101,7 +1101,7 @@ foreach( $fields_data as $field_name => $field_data ) {
 	<h4><?php esc_html_e( 'Integrate in a post, page, or text widget', 'booking-activities' ) ?></h4>
 	<p><em><label for='bookacti-login-form-shortcode'><?php esc_html_e( 'Copy this shortcode and paste it into your post, page, or text widget content:', 'booking-activities' ); ?></label></em></p>
 	<p class='shortcode wp-ui-highlight'>
-		<input type='text' id='bookacti-login-form-shortcode' onfocus='this.select();' readonly='readonly' class='large-text code' value='<?php echo esc_attr( '[bookingactivities_login form="' . $form_id . '"]' ); ?>' />
+		<input type='text' id='bookacti-login-form-shortcode' onfocus='this.select();' readonly='readonly' class='large-text code' value='<?php echo esc_attr( '[bookingactivities_login form="' . $form_id . '" redirect_url=""]' ); ?>' />
 	</p>
 </div>
 

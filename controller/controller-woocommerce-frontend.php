@@ -1492,7 +1492,7 @@ add_filter( 'bookacti_user_booking_list_default_columns', 'bookacti_reorder_wooc
 /**
  * Add WC data to the user booking list
  * @since 1.7.12 (was bookacti_fill_wc_price_column_in_booking_list)
- * @version 1.8.0
+ * @version 1.8.3
  * @param array $booking_list_items
  * @param array $bookings
  * @param array $booking_groups
@@ -1584,7 +1584,7 @@ function bookacti_add_wc_data_to_user_booking_list_items( $booking_list_items, $
 			$total		= isset( $order_item_data->_line_total ) ? $order_item_data->_line_total + $order_item_data->_line_tax : '';
 
 			if( $order->get_status() !== 'pending' && $is_paid && $total > 0 ) {
-				$booking_list_items[ $booking_id ][ 'refund_actions' ] = array_unique( array_merge( $booking_list_items[ $booking_id ][ 'refund_actions' ], $wc_refund_actions ) );
+				$booking_list_items[ $booking_id ][ 'refund_actions' ] = array_intersect_key( $booking_list_items[ $booking_id ][ 'refund_actions' ], array_flip( $wc_refund_actions ) );
 			}
 		}
 	}

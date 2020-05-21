@@ -1025,7 +1025,7 @@ add_filter( 'bookacti_refund_booking', 'bookacti_woocommerce_refund_booking', 10
 
 /**
  * Check if a booking can be refunded
- * @version 1.8.0
+ * @version 1.8.3
  * @param boolean $true
  * @param object $booking
  * @return boolean
@@ -1045,7 +1045,7 @@ function bookacti_woocommerce_booking_can_be_refunded( $true, $booking ) {
 	$item = bookacti_get_order_item_by_booking_id( $booking->id );
 	if( ! $item ) { return false; }
 
-	$total = $item->get_total();
+	$total = (float) $item->get_total() + (float) $item->get_total_tax();
 	if( $total <= 0 ) { return false; }
 
 	return apply_filters( 'bookacti_woocommerce_booking_can_be_refunded', $true, $booking, $order, $item );
@@ -1055,7 +1055,7 @@ add_filter( 'bookacti_booking_can_be_refunded', 'bookacti_woocommerce_booking_ca
 
 /**
  * Check if a booking group can be refunded
- * @version 1.8.0
+ * @version 1.8.3
  * @param boolean $true
  * @param object $booking_group
  * @return boolean
@@ -1073,7 +1073,7 @@ function bookacti_woocommerce_booking_group_can_be_refunded( $true, $booking_gro
 	$item = bookacti_get_order_item_by_booking_group_id( $booking_group );
 	if( ! $item ) { return false; }
 
-	$total = $item->get_total();
+	$total = (float) $item->get_total() + (float) $item->get_total_tax();
 	if( $total <= 0 ) { $true = false; }
 
 	return $true;

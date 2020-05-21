@@ -144,9 +144,9 @@ $j( document ).ready( function() {
 	/**
 	 * Add / remove group category row in the "redirect URL" table according to the currently selected group categories
 	 * @since 1.7.0
-	 * @version 1.7.19
+	 * @version 1.8.3
 	 */
-	$j( '#bookacti-form-field-dialog-calendar' ).on( 'change', 'select#bookacti-group_categories', function(){
+	$j( '#bookacti-form-field-dialog-calendar' ).on( 'change', 'select#bookacti-calendars, select#bookacti-group_categories', function(){
 		var group_categories = $j( '#bookacti-group_categories' ).val();
 		
 		// If no group category is selected, hide the group categories actions table

@@ -179,14 +179,12 @@ add_action( 'woocommerce_refund_processed', 'bookacti_set_order_item_refund_meth
 
 /**
  * Change booking quantity and status when a refund is deleted
- * @version 1.7.8
+ * @version 1.8.3
  * @param int $refund_id
  * @param int $order_id
  */
 function bookacti_update_booking_when_refund_is_deleted( $refund_id, $order_id ) {
-
 	$order = wc_get_order( $order_id );
-
 	if( empty( $order ) ) { return false; }
 
 	// Before anything, clear cache to make sure refunds are up to date 
@@ -197,14 +195,11 @@ function bookacti_update_booking_when_refund_is_deleted( $refund_id, $order_id )
 	$items = $order->get_items();
 
 	foreach( $items as $item_id => $item ) {
-
 		$booking_id			= wc_get_order_item_meta( $item_id, 'bookacti_booking_id', true );
 		$booking_group_id	= wc_get_order_item_meta( $item_id, 'bookacti_booking_group_id', true );
 
 		// Check if the order item is bound to a booking (group)
-		if( empty( $booking_id ) && empty( $booking_group_id ) ) {
-			continue;
-		}
+		if( empty( $booking_id ) && empty( $booking_group_id ) ) { continue; }
 
 		$booking_type = empty( $booking_group_id ) ? 'single' : 'group';
 
@@ -214,12 +209,10 @@ function bookacti_update_booking_when_refund_is_deleted( $refund_id, $order_id )
 		} else {
 			$refunds = bookacti_get_metadata( 'booking', $booking_id, 'refunds', true );
 		}
-
+		if( ! $refunds ) { continue; }
+		
 		$refund_id_index = array_search( $refund_id, $refunds );
-
-		if( empty( $refunds ) || $refund_id_index === false ) {
-			continue;
-		}
+		if( $refund_id_index === false ) { continue; }
 
 		// Compute new quantity 
 		// (we still need to substract $refunded_qty because it is possible to have multiple refunds, 
@@ -264,17 +257,27 @@ function bookacti_update_booking_when_refund_is_deleted( $refund_id, $order_id )
 			if( $response[ 'status' ] !== 'success' ) {
 
 				// Reduce item quantity to fit the booking (group)
-				$product = $order->get_product_from_item( $item );
-				$order->update_product( $item_id, $product, array( 'qty' => $old_qty ) );
-
+				$item_args = array( 'qty' => $old_qty );
+				$product = $item->get_product();
+				if( $product ) {
+					if( $product->backorders_require_notification() && $product->is_on_backorder( $old_qty ) ) {
+						$item->add_meta_data( apply_filters( 'woocommerce_backordered_item_meta_name', __( 'Backordered', 'woocommerce' ), $item ), $old_qty - max( 0, $product->get_stock_quantity() ), true );
+					}
+					$old_price = wc_get_price_excluding_tax( $product, array( 'qty' => $old_qty ) );
+					$item_args[ 'subtotal' ] = $old_price;
+					$item_args[ 'total' ] = $old_price;
+				}
+				$item->set_props( $item_args );
+				$item->save();
+				
 				// Prepare message
-				if( $response['error'] === 'qty_sup_to_avail' ) {
+				if( isset( $response[ 'error' ] ) && $response[ 'error' ] === 'qty_sup_to_avail' ) {
 					$message = /* translators: %1$s is a variable number of bookings. */
 							sprintf( _n( 'You want to add %1$s booking to your cart', 'You want to add %1$s bookings to your cart', $new_qty, 'booking-activities' ), $new_qty )
 					. ' ' . sprintf( _n( 'but only %1$s is available on this time slot.', 'but only %1$s are available on this time slot. ', $response[ 'availability' ], 'booking-activities' ), $response[ 'availability' ] )
 					. ' ' . __( 'Please choose another event or decrease the quantity.', 'booking-activities' );
 
-				} else if( $response['error'] === 'no_availability' ) {
+				} else if( isset( $response[ 'error' ] ) && $response[ 'error' ] === 'no_availability' ) {
 					$message = __( 'This event is no longer available. Please choose another event.', 'booking-activities' );
 
 				} else {

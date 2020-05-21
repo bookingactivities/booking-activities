@@ -1469,7 +1469,7 @@ function bookacti_onoffswitch( $name, $current_value, $id = NULL, $disabled = fa
 /**
  * Create a user selectbox
  * @since 1.3.0
- * @version 1.8.0
+ * @version 1.8.3
  * @param array $raw_args
  * @return string|void
  */
@@ -1485,11 +1485,12 @@ function bookacti_display_user_selectbox( $raw_args ) {
 	);
 
 	$args = apply_filters( 'bookacti_user_selectbox_args', wp_parse_args( $raw_args, $defaults ), $raw_args );
-
-	$users = ! $args[ 'ajax' ] ? bookacti_get_users_data( $args ) : array();
+	
+	$is_allowed = current_user_can( 'list_users' ) || current_user_can( 'edit_users' );
+	$users = ! $args[ 'ajax' ] && $is_allowed ? bookacti_get_users_data( $args ) : array();
 	$args[ 'class' ] = $args[ 'ajax' ] ? 'bookacti-select2-ajax ' . trim( $args[ 'class' ] ) : ( $args[ 'select2' ] ? 'bookacti-select2-no-ajax ' . trim( $args[ 'class' ] ) : trim( $args[ 'class' ] ) );
-
-	if( $args[ 'ajax' ] && $args[ 'selected' ] ) {
+	
+	if( $args[ 'ajax' ] && $args[ 'selected' ] && $is_allowed ) {
 		$user = get_user_by( 'id', $args[ 'selected' ] );
 		if( $user ) { $users[] = $user; }
 	}
@@ -1721,7 +1722,7 @@ function bookacti_sort_array_by_order( $a, $b ) {
 
 
 /**
- * Sanitize templates ids or activities ids to array
+ * Sanitize int ids to array
  * @version 1.7.17
  * @param array|int $ids
  * @return array 
@@ -1732,6 +1733,23 @@ function bookacti_ids_to_array( $ids ) {
 	} else if( ! empty( $ids ) ){
 		if( is_numeric( $ids ) ) {
 			return array( intval( $ids ) );
+		}
+	}
+	return array();
+}
+
+/**
+ * Sanitize str ids to array
+ * @since 1.8.3
+ * @param array|string $ids
+ * @return array 
+ */
+function bookacti_str_ids_to_array( $ids ) {
+	if( is_array( $ids ) ){
+		return array_filter( array_unique( array_map( 'sanitize_title_with_dashes', $ids ) ) );
+	} else if( ! empty( $ids ) ){
+		if( is_string( $ids ) ) {
+			return array( sanitize_title_with_dashes( $ids ) );
 		}
 	}
 	return array();
@@ -2123,12 +2141,40 @@ function bookacti_get_users_data( $args = array() ) {
 /**
  * Get all available user roles
  * @since 1.8.0
+ * @version 1.8.3
  * @return array
  */
 function bookacti_get_roles() {
-	$wp_roles = new WP_Roles();
+	global $wp_roles;
+	if( ! $wp_roles ) { $wp_roles = new WP_Roles(); }
     $roles = array_map( 'translate_user_role', $wp_roles->get_names() );
 	return $roles;
+}
+
+
+/**
+ * Get all user roles per capability
+ * @since 1.8.3
+ * @param array $capabilities
+ * @return array
+ */
+function bookacti_get_roles_by_capabilities( $capabilities = array() ) {
+	global $wp_roles;
+	if( ! $wp_roles ) { $wp_roles = new WP_Roles(); }
+	
+	$matching_roles = array();
+	
+	$roles = $wp_roles->roles;
+	if( $roles ) {
+		foreach( $roles as $role_id => $role ) {
+			$role_cap = array_keys( $role[ 'capabilities' ] );
+			if( array_intersect( $role_cap, $capabilities ) ) {
+				$matching_roles[] = $role_id;
+			}
+		}
+	}
+	
+	return $matching_roles;
 }
 
 

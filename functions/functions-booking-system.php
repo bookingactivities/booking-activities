@@ -191,7 +191,7 @@ function bookacti_get_booking_system_data( $atts ) {
 			} else {
 				$events	= bookacti_fetch_events( array( 'templates' => $atts[ 'calendars' ], 'activities' => $atts[ 'activities' ], 'past_events' => $atts[ 'past_events' ], 'interval' => $events_interval ) );	
 			}
-
+			
 			// Get the booking list for each events
 			if( $atts[ 'tooltip_booking_list' ] && $events[ 'events' ] && $events[ 'data' ] ) {
 				$booking_filters = array(
@@ -1735,7 +1735,7 @@ function bookacti_get_bounding_events_from_db_events( $events, $raw_args = array
 /**
  * Get occurences of repeated events
  * @since 1.2.2 (replace bookacti_create_repeated_events)
- * @version 1.8.0
+ * @version 1.8.3
  * @param object $event Event data 
  * @param array $raw_args {
  *  @type array $interval array( 'start' => 'Y-m-d H:i:s', 'end' => 'Y-m-d H:i:s' )
@@ -1780,7 +1780,9 @@ function bookacti_get_occurences_of_repeated_event( $event, $raw_args = array() 
 	// Compute occurences
 	$events		= array();
 	$start_loop	= clone $repeat[ 'from' ];
+	$start_loop->setTime( 00, 00, 00 );
 	$end_loop	= clone $repeat[ 'to' ];
+	$end_loop->setTime( 23, 59, 59 );
 	$loop		= clone $start_loop;
 	$iterate	= $loop < $end_loop;
 	$operation	= 'add';

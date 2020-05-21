@@ -69,7 +69,7 @@ function bookacti_init_booking_system_dialogs() {
 
 /**
  * Choose a group of events dialog
- * @version 1.8.1
+ * @version 1.8.3
  * @param {HTMLElement} booking_system
  * @param {array} group_ids
  * @param {object} event
@@ -153,8 +153,8 @@ function bookacti_dialog_choose_group_of_events( booking_system, group_ids, even
 			if( min_qty_ok && max_qty_ok && max_users_ok ) { is_available = true; }
 		}
 		
-		var container = $j( '<div />', {});
-		var option_container = $j( '<div />', {
+		var container = $j( '<div></div>', {});
+		var option_container = $j( '<div></div>', {
 			'class': 'bookacti-group-of-events-option',
 			'data-group-id': group_id,
 			'data-show-events': 0
@@ -174,9 +174,9 @@ function bookacti_dialog_choose_group_of_events( booking_system, group_ids, even
 		
 		// Allow third party to edit single label
 		booking_system.trigger( 'bookacti_choose_group_dialog_group_label', [ single_label, 'single', event ] );
-		var label = $j( '<label />', single_label );
+		var label = $j( '<label></label>', single_label );
 		
-		var event_list = $j( '<ul />', {
+		var event_list = $j( '<ul></ul>', {
 			'class': 'bookacti-group-of-events-list bookacti-custom-scrollbar',
 			'data-group-id': group_id
 		});
@@ -199,7 +199,7 @@ function bookacti_dialog_choose_group_of_events( booking_system, group_ids, even
 		
 		booking_system.trigger( 'bookacti_group_of_events_list_element_data', [ list_element_data, event ] );
 		
-		var list_element = $j( '<li />', list_element_data );
+		var list_element = $j( '<li></li>', list_element_data );
 		
 		option_container.append( radio );
 		option_container.append( label );
@@ -263,8 +263,8 @@ function bookacti_dialog_choose_group_of_events( booking_system, group_ids, even
 				if( min_qty_ok && max_qty_ok && max_users_ok ) { is_available = true; }
 			}
 			
-			var container = $j( '<div />', {} );
-			var option_container = $j( '<div />', {
+			var container = $j( '<div></div>', {} );
+			var option_container = $j( '<div></div>', {
 				'class': 'bookacti-group-of-events-option',
 				'data-group-id': group_id,
 				'data-show-events': 0
@@ -302,10 +302,10 @@ function bookacti_dialog_choose_group_of_events( booking_system, group_ids, even
 			
 			// Allow third party to edit group labels
 			booking_system.trigger( 'bookacti_choose_group_dialog_group_label', [ group_label, group_id, event ] );
-			var label = $j( '<label />', group_label );
+			var label = $j( '<label></label>', group_label );
 			
 			// Build the group events list
-			var event_list = $j( '<ul />', {
+			var event_list = $j( '<ul></ul>', {
 				'class': 'bookacti-group-of-events-list bookacti-custom-scrollbar',
 				'data-group-id': group_id
 			});
@@ -321,7 +321,7 @@ function bookacti_dialog_choose_group_of_events( booking_system, group_ids, even
 					grouped_event_duration = grouped_event_start.formatPHP( bookacti_localized.date_format ) + bookacti_localized.date_time_separator + grouped_event_end.formatPHP( bookacti_localized.time_format );
 				}
 				
-				var list_element = $j( '<li />', {
+				var list_element = $j( '<li></li>', {
 					'html':	'<span class="bookacti-booking-event-duration" >'  + grouped_event_duration + '</span>' 
 							+ '<span class="bookacti-booking-event-title-separator" > - </span>'  
 							+ '<span class="bookacti-booking-event-title" >'  + grouped_event.title + '</span>'

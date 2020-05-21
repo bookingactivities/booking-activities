@@ -667,7 +667,7 @@ function bookacti_unpick_all_events( booking_system ) {
 
 /**
  * Display a list of picked events
- * @version 1.8.0
+ * @version 1.8.3
  * @param {HTMLElement} booking_system
  */
 function bookacti_fill_picked_events_list( booking_system ) {
@@ -713,7 +713,7 @@ function bookacti_fill_picked_events_list( booking_system ) {
 
 		booking_system.trigger( 'bookacti_picked_events_list_element_data', [ list_element_data, event ] );
 
-		var list_element = $j( '<li />', list_element_data );
+		var list_element = $j( '<li></li>', list_element_data );
 		event_list.append( list_element );
 	});
 	booking_system.siblings( '.bookacti-picked-events' ).show();

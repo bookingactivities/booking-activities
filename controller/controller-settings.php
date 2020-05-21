@@ -1045,26 +1045,36 @@ add_filter( 'editable_extensions', 'bookacti_add_editable_extensions', 10, 2 );
 /**
  * Search users for AJAX selectbox
  * @since 1.7.19
- * @version 1.8.0
+ * @version 1.8.3
  */
 function bookacti_controller_search_select2_users() {
 	// Check nonce
 	$is_nonce_valid	= check_ajax_referer( 'bookacti_query_select2_options', 'nonce', false );
-	if( ! $is_nonce_valid ) { bookacti_send_json_not_allowed( 'search_select2_users' ); }
+	if( ! $is_nonce_valid ) { bookacti_send_json_invalid_nonce( 'search_select2_users' ); }
 	
-	// Check query
-	$term = isset( $_REQUEST[ 'term' ] ) ? sanitize_text_field( stripslashes( $_REQUEST[ 'term' ] ) ) : '';
-	if( ! $term ) { bookacti_send_json( array( 'status' => 'failed', 'error' => 'empty_query' ), 'search_select2_users' ); }
+	// Check permission
+	if( ! current_user_can( 'list_users' ) && ! current_user_can( 'edit_users' ) ) { bookacti_send_json_not_allowed( 'search_select2_users' ); }
+	
+	// Sanitize search
+	$term			= isset( $_REQUEST[ 'term' ] ) ? sanitize_text_field( stripslashes( $_REQUEST[ 'term' ] ) ) : '';
+	$id__in			= ! empty( $_REQUEST[ 'id__in' ] ) ? bookacti_ids_to_array( $_REQUEST[ 'id__in' ] ) : array();
+	$id__not_in		= ! empty( $_REQUEST[ 'id__not_in' ] ) ? bookacti_ids_to_array( $_REQUEST[ 'id__not_in' ] ) : array();
+	$role			= ! empty( $_REQUEST[ 'role' ] ) ? bookacti_str_ids_to_array( $_REQUEST[ 'role' ] ) : array();
+	$role__in		= ! empty( $_REQUEST[ 'role__in' ] ) ? bookacti_str_ids_to_array( $_REQUEST[ 'role__in' ] ) : array();
+	$role__not_in	= ! empty( $_REQUEST[ 'role__not_in' ] ) ? bookacti_str_ids_to_array( $_REQUEST[ 'role__not_in' ] ) : array();
+	
+	// Check if the search is not empty
+	if( ! $term && ! $id__in && ! $role && ! $role__in ) { bookacti_send_json( array( 'status' => 'failed', 'error' => 'empty_query' ), 'search_select2_users' ); }
 	
 	$defaults = array(
-		'name' => isset( $_REQUEST[ 'name' ] ) ? sanitize_title_with_dashes( stripslashes( $_REQUEST[ 'name' ] ) ) : '',
-		'id' => isset( $_REQUEST[ 'id' ] ) ? sanitize_title_with_dashes( stripslashes( $_REQUEST[ 'id' ] ) ) : '',
-		'search' => '*' . esc_attr( $term ) . '*',
+		'name' => isset( $_REQUEST[ 'name' ] ) ? sanitize_title_with_dashes( stripslashes( $_REQUEST[ 'name' ] ) ) : '', // Used for developers to identify the selectbox
+		'id' => isset( $_REQUEST[ 'id' ] ) ? sanitize_title_with_dashes( stripslashes( $_REQUEST[ 'id' ] ) ) : '',		 // Used for developers to identify the selectbox
+		'search' => $term !== '' ? '*' . esc_attr( $term ) . '*' : '',
 		'search_columns' => array( 'user_login', 'user_url', 'user_email', 'user_nicename', 'display_name' ),
 		'option_label' => array( 'first_name', ' ', 'last_name', ' (', 'user_login', ' / ', 'user_email', ')' ),
 		'allow_current' => 0,
-		'include' => array(), 'exclude' => array(),
-		'role' => array(), 'role__in' => array(), 'role__not_in' => array(),
+		'include' => $id__in, 'exclude' => $id__not_in,
+		'role' => $role, 'role__in' => $role__in, 'role__not_in' => $role__not_in,
 		'meta' => true, 'meta_single' => true,
 		'orderby' => 'display_name', 'order' => 'ASC'
 	);

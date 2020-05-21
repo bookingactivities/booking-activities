@@ -209,7 +209,7 @@ add_filter( 'bookacti_notifications_tags', 'bookacti_wc_notifications_tags', 15,
 /**
  * Set WC notifications tags values
  * @since 1.6.0
- * @version 1.8.0
+ * @version 1.8.3
  * @param array $tags
  * @param object $booking
  * @param string $booking_type
@@ -234,9 +234,9 @@ function bookacti_wc_notifications_tags_values( $tags, $booking, $booking_type, 
 	if( ! $item ) { return $tags; }
 	
 	$item_id = $item->get_id();
-	$price = $item->get_total();
+	$item_price = (float) $item->get_total() + (float) $item->get_total_tax();
 	$currency = get_post_meta( $booking->order_id, '_order_currency', true );
-	$tags[ '{price}' ]	= $currency ? wc_price( $price, array( 'currency' => $currency ) ) : $price;
+	$tags[ '{price}' ]	= $currency ? wc_price( $item_price, array( 'currency' => $currency ) ) : $item_price;
 	
 	if( strpos( $notification_id, 'refund' ) !== false ) {
 		$tags[ '{refund_coupon_code}' ]	= wc_get_order_item_meta( $item_id, 'bookacti_refund_coupon', true );
@@ -245,3 +245,25 @@ function bookacti_wc_notifications_tags_values( $tags, $booking, $booking_type, 
 	return $tags;
 }
 add_filter( 'bookacti_notifications_tags_values', 'bookacti_wc_notifications_tags_values', 15, 5 );
+
+
+/**
+ * Whether to send the BA refund notification when the order (item) is manually refunded
+ * @since 1.8.3
+ * @param string $recipients
+ * @param int $booking_id
+ * @param string $status
+ * @param array $args
+ * @return string
+ */
+function bookacti_wc_refund_notification_recipients( $recipients, $booking_id, $status, $args ) {
+	if( ! empty( $args[ 'refund_action' ] ) && $args[ 'refund_action' ] === 'manual' ) {
+		$recipients = 'none';
+		$customer_notification = bookacti_get_notification_settings( 'customer_' . $status . '_booking' );
+		if( ! empty( $customer_notification[ 'active_with_wc' ] ) ) {
+			$recipients = 'customer';
+		}
+	}
+	return $recipients;
+}
+add_filter( 'bookacti_booking_state_change_notification_recipient', 'bookacti_wc_refund_notification_recipients', 10, 4 );

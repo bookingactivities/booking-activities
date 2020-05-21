@@ -185,7 +185,7 @@ function bookacti_sanitize_form_data( $raw_form_data ) {
 
 /**
  * Display a booking form
- * @version 1.8.0
+ * @version 1.8.3
  * @param int $form_id
  * @param string $instance_id
  * @param string $context
@@ -236,11 +236,15 @@ function bookacti_display_form( $form_id, $instance_id = '', $context = 'display
 		if( $calendar_field[ 'form_action' ] === 'redirect_to_url' ) { $form_action = ''; }
 	}
 	
-	ob_start();
+	// Set form action
+	$form_redirect_url = ! empty( $form[ 'redirect_url' ] ) ? $form[ 'redirect_url' ] : '';
+	if( $context === 'login_form' ) {
+		$form_redirect_url = ! empty( $GLOBALS[ 'bookacti_login_redirect_url' ] ) ? $GLOBALS[ 'bookacti_login_redirect_url' ] : '';
+	}
 	
 	// Set form attributes
 	$form_attributes = apply_filters( 'bookacti_form_attributes', array(
-		'action'		=> ! empty( $form[ 'redirect_url' ] ) ? esc_url( apply_filters( 'bookacti_translate_text', $form[ 'redirect_url' ] ) ) : '',
+		'action'		=> $form_redirect_url ? esc_url( apply_filters( 'bookacti_translate_text', $form_redirect_url ) ) : '',
 		'id'			=> empty( $form[ 'id' ] ) ? 'bookacti-' . $form_css_id : $form_css_id,
 		'class'			=> 'bookacti-booking-form-' . $form_id . ' ' . $form[ 'class' ],
 		'autocomplete'	=> 'off'
@@ -255,6 +259,8 @@ function bookacti_display_form( $form_id, $instance_id = '', $context = 'display
 	foreach( $form_attributes as $form_attribute_key => $form_attribute_value ) {
 		if( $form_attribute_value !== '' ) { $form_attributes_str .= $form_attribute_key . '="' . $form_attribute_value . '" '; }
 	}
+	
+	ob_start();
 	
 	// Add form container only if there is a "submit" button
 	if( $is_form ) { ?>
@@ -1612,7 +1618,7 @@ function bookacti_format_form_filters( $filters = array() ) {
 /**
  * Display 'managers' metabox content for forms
  * @since 1.5.0
- * @version 1.8.0
+ * @version 1.8.3
  */
 function bookacti_display_form_managers_meta_box( $form ) {
 	// Get current form managers option list
@@ -1633,8 +1639,8 @@ function bookacti_display_form_managers_meta_box( $form ) {
 	}
 	
 	// Get available form managers option list
-	$in_roles		= apply_filters( 'bookacti_managers_roles', array() );
-	$not_in_roles	= apply_filters( 'bookacti_managers_roles_exceptions', array( 'administrator' ) );
+	$in_roles		= apply_filters( 'bookacti_managers_roles', array(), 'form' );
+	$not_in_roles	= apply_filters( 'bookacti_managers_roles_exceptions', array( 'administrator' ), 'form' );
 	$user_query		= new WP_User_Query( array( 'role__in' => $in_roles, 'role__not_in' => $not_in_roles ) );
 	$users			= $user_query->get_results();
 	$available_managers_options_list = '';

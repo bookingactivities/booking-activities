@@ -1,47 +1,17 @@
 <?php 
 /**
  * Calendar editor dialogs
- * @version 1.8.0
+ * @version 1.8.3
  */
 
 // Exit if accessed directly
 if ( ! defined( 'ABSPATH' ) ) { exit; }
 
-// INIT VARIABLES
 // Templates options list
 $templates = bookacti_fetch_templates();
 $templates_options = '';
 foreach( $templates as $template ) {
 	$templates_options .= '<option value="' . esc_attr( $template[ 'id' ] ) . '" >' . esc_html( $template[ 'title' ] ) . '</option>';
-}
-
-// Users options list
-$in_roles		= apply_filters( 'bookacti_managers_roles', array() );
-$not_in_roles	= apply_filters( 'bookacti_managers_roles_exceptions', array( 'administrator' ) );
-$user_query		= new WP_User_Query( array( 'role__in' => $in_roles, 'role__not_in' => $not_in_roles ) );
-$users			= $user_query->get_results();
-
-$users_options_for_activities	= '';
-$users_options_for_templates	= '';
-if ( ! empty( $users ) ) {
-	foreach( $users as $user ) {
-		if( $user->has_cap( 'bookacti_edit_activities' ) || $user->has_cap( 'bookacti_edit_bookings' ) || $user->has_cap( 'bookacti_edit_templates' ) || $user->has_cap( 'bookacti_read_templates' ) ) {
-			$user_info = get_userdata( $user->ID );
-			$default_display_name = $user_info->user_login;
-			if( $user_info->first_name && $user_info->last_name ){
-				$default_display_name = $user_info->first_name  . ' ' . $user_info->last_name . ' (' . $user_info->user_login . ')';
-			}
-			$display_name = apply_filters( 'bookacti_managers_name_display', $default_display_name, $user_info );
-
-			if( $user->has_cap( 'bookacti_edit_activities' ) ) {
-				$users_options_for_activities .= '<option value="' . esc_attr( $user->ID ) . '" >' . esc_html( $display_name ) . '</option>';
-			}
-
-			if( $user->has_cap( 'bookacti_edit_templates' ) || $user->has_cap( 'bookacti_read_templates' ) || $user->has_cap( 'bookacti_edit_bookings' ) ) {
-				$users_options_for_templates .= '<option value="' . esc_attr( $user->ID ) . '" >' . esc_html( $display_name ) . '</option>';
-			}
-		}
-	}
 }
 ?>
 
@@ -246,7 +216,7 @@ if ( ! empty( $users ) ) {
 						'order'			=> 40 ),
 				array(	'label'			=> esc_html__( 'Permissions', 'booking-activities' ),
 						'callback'		=> 'bookacti_fill_template_tab_permissions',
-						'parameters'	=> array( 'users_options_for_templates' => $users_options_for_templates ),
+						'parameters'	=> array(),
 						'order'			=> 100 )
 			) );
 			
@@ -340,11 +310,10 @@ if ( ! empty( $users ) ) {
 			
 			/**
 			 * Display the 'Permission' tab content of calendar settings
-			 * @version 1.8.0
+			 * @version 1.8.3
 			 * @param array $params
 			 */
 			function bookacti_fill_template_tab_permissions( $params = array() ) {
-				$users_options_for_templates = $params[ 'users_options_for_templates' ];
 				do_action( 'bookacti_template_tab_permissions_before', $params );
 			?>	
 				<div id='bookacti-template-managers-container' class='bookacti-items-container' data-type='users' >
@@ -362,9 +331,20 @@ if ( ! empty( $users ) ) {
 					?>
 					</label>
 					<div id='bookacti-add-template-managers-container' class='bookacti-add-items-container' >
-						<select id='bookacti-add-new-template-managers-select-box' class='bookacti-add-new-items-select-box' >
-							<?php echo $users_options_for_templates; ?>
-						</select>
+						<?php
+							$template_managers_cap = array( 'bookacti_edit_bookings', 'bookacti_edit_templates', 'bookacti_read_templates' );
+							$template_managers_args = array(
+								'option_label' => array( 'display_name', ' (', 'user_login', ')' ), 
+								'id' => 'bookacti-add-new-template-managers-select-box', 
+								'name' => '', 
+								'class' => 'bookacti-add-new-items-select-box bookacti-managers-selectbox',
+								'role__in' => apply_filters( 'bookacti_managers_roles', array_merge( bookacti_get_roles_by_capabilities( $template_managers_cap ), $template_managers_cap ), 'template' ),
+								'role__not_in' => apply_filters( 'bookacti_managers_roles_exceptions', array( 'administrator' ), 'template' ),
+								'meta' => false,
+								'ajax' => 0
+							);
+							bookacti_display_user_selectbox( $template_managers_args );
+						?>
 						<button type='button' id='bookacti-add-template-managers' class='bookacti-add-items' ><?php esc_html_e( 'Add manager', 'booking-activities' ); ?></button>
 					</div>
 					<div id='bookacti-template-managers-list-container' class='bookacti-items-list-container' >
@@ -407,8 +387,7 @@ if ( ! empty( $users ) ) {
 							'order'			=> 30 ),
 					array(	'label'			=> esc_html__( 'Permissions', 'booking-activities' ),
 							'callback'		=> 'bookacti_fill_activity_tab_permissions',
-							'parameters'	=> array(	'users_options_for_activities' => $users_options_for_activities,
-														'templates_options' => $templates_options ),
+							'parameters'	=> array( 'templates_options' => $templates_options ),
 							'order'			=> 100 )
 				) );
 				
@@ -581,7 +560,7 @@ if ( ! empty( $users ) ) {
 			
 			/**
 			 * Display the fields in the "Permissions" tab of the Activity dialog
-			 * @version 1.8.0
+			 * @version 1.8.3
 			 * @param array $params
 			 */
 			function bookacti_fill_activity_tab_permissions( $params = array() ) {
@@ -628,13 +607,24 @@ if ( ! empty( $users ) ) {
 					?>
 					</label>
 					<div id='bookacti-add-activity-managers-container' >
-						<select id='bookacti-add-new-activity-managers-select-box' class='bookacti-add-new-items-select-box' >
-							<?php echo $params[ 'users_options_for_activities' ]; ?>
-						</select>
+						<?php
+							$activity_managers_cap = array( 'bookacti_edit_bookings', 'bookacti_edit_templates', 'bookacti_read_templates' );
+							$activity_managers_args = array(
+								'option_label' => array( 'display_name', ' (', 'user_login', ')' ), 
+								'id' => 'bookacti-add-new-activity-managers-select-box', 
+								'name' => '', 
+								'class' => 'bookacti-add-new-items-select-box bookacti-managers-selectbox',
+								'role__in' => apply_filters( 'bookacti_managers_roles', array_merge( bookacti_get_roles_by_capabilities( $activity_managers_cap ), $activity_managers_cap ), 'activity' ),
+								'role__not_in' => apply_filters( 'bookacti_managers_roles_exceptions', array( 'administrator' ), 'activity' ),
+								'meta' => false,
+								'ajax' => 0
+							);
+							bookacti_display_user_selectbox( $activity_managers_args );
+						?>
 						<button type='button' id='bookacti-add-activity-managers' class='bookacti-add-items' ><?php esc_html_e( 'Add manager', 'booking-activities' ); ?></button>
 					</div>
 					<div id='bookacti-activity-managers-list-container' class='bookacti-items-list-container' >
-						<select name='activity-managers[]' id='bookacti-activity-managers-select-box' class='bookacti-items-select-box' multiple ></select>
+						<select name='activity-managers[]' id='bookacti-activity-managers-select-box' class='bookacti-items-select-box' multiple></select>
 						<button type='button' id='bookacti-remove-activity-managers' class='bookacti-remove-items' ><?php esc_html_e( 'Remove selected', 'booking-activities' ); ?></button>
 					</div>
 				</div>

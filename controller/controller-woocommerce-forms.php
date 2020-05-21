@@ -267,6 +267,7 @@ add_filter( 'bookacti_activity_redirect_url_table', 'bookacti_add_wc_columns_to_
 /**
  * Add columns to the group category redirect URL table
  * @since 1.7.19 (was bookacti_add_wc_columns_to_group_activity_redirect_url_table)
+ * @version 1.8.3
  * @param array $url_array
  * @param array $params
  * @return array
@@ -300,7 +301,7 @@ function bookacti_add_wc_columns_to_group_category_redirect_url_table( $url_arra
 	foreach( $url_array[ 'body' ] as $i => $row ) {
 		$group_category_id	= ! empty( $row[ 'group_category' ] ) ? $row[ 'group_category' ] : 0;
 		$selected			= ! empty( $product_by_group_category[ $group_category_id ] ) ? intval( $product_by_group_category[ $group_category_id ] ) : 0;
-		$url_array[ 'body' ][ $i ][ 'product' ] = ! empty( $product_by_group_category[ $group_category_id ] ) ? bookacti_display_product_selectbox( array_merge( $args, array( 'field_name' => 'product_by_group_category[' . $group_category_id . ']', 'selected' => $selected ) ) ) : $default_product_selectbox;
+		$url_array[ 'body' ][ $i ][ 'product' ] = $group_category_id ? bookacti_display_product_selectbox( array_merge( $args, array( 'field_name' => 'product_by_group_category[' . $group_category_id . ']', 'selected' => $selected ) ) ) : $default_product_selectbox;
 	}
 	
 	return $url_array;
