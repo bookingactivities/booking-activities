@@ -5,7 +5,7 @@ Tags: booking, reservation, booking form, woocommerce booking, booking events
 Requires at least: 3.6
 Tested up to: 5.4
 Requires PHP: 5.3
-Stable tag: 1.8.2
+Stable tag: 1.8.3
 License: GPLv3 or later
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
 
@@ -319,7 +319,7 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 
 == Changelog ==
 
-= 1.8.3 =
+= 1.8.3 - 2020/05/21 =
 * Tweak - Add the redirect_url parameter to the login shortcode to redirect to any page after login ([bookingactivities_login form="" redirect_url=""])
 * Fix - {price} notification tag displayed price without tax
 * Fix - Send booking notification when an order item bound to bookings are manually refunded (if "Send when an order is refunded" option is active)
