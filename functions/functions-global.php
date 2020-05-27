@@ -1869,6 +1869,7 @@ function bookacti_sanitize_date( $date ) {
 /**
  * Convert duration from seconds
  * @since 1.8.0
+ * @version 1.8.4
  * @param int $seconds
  * @param string $format Either "iso8601", "timespan" or "array"
  * @return string P%dDT%dH%dM%dS
@@ -1886,8 +1887,17 @@ function bookacti_format_duration( $seconds, $format = 'iso8601' ) {
     $array[ 'minutes' ] = floor( $seconds / 60 );
     $array[ 'seconds' ] = $seconds % 60;
 	
-	if( $format === 'array' )			{ return $array; }
-	else if( $format === 'timespan' )	{ return sprintf( '%s.%s:%s:%s', str_pad( $array[ 'days' ], 3, '0', STR_PAD_LEFT ), str_pad( $array[ 'hours' ], 2, '0', STR_PAD_LEFT ), str_pad( $array[ 'minutes' ], 2, '0', STR_PAD_LEFT ), str_pad( $array[ 'seconds' ], 2, '0', STR_PAD_LEFT ) ); }
+	if( $format === 'array' ) { return $array; }
+	
+	if( $format === 'timespan' ) { 
+		// The timespan format is limited to a INT64 number of seconds
+		if( $array[ 'days' ] > 10675198 ) { $array[ 'days' ] = 10675198; }
+		
+		return sprintf( '%s.%s:%s:%s', str_pad( $array[ 'days' ], 3, '0', STR_PAD_LEFT ), str_pad( $array[ 'hours' ], 2, '0', STR_PAD_LEFT ), str_pad( $array[ 'minutes' ], 2, '0', STR_PAD_LEFT ), str_pad( $array[ 'seconds' ], 2, '0', STR_PAD_LEFT ) );
+	}
+	
+	// The iso8601 format is limited to 12-digit numbers
+	if( $array[ 'days' ] > 999999999999 ) { $array[ 'days' ] = 999999999999; }
 	
     return sprintf( 'P%dDT%dH%dM%dS', $array[ 'days' ], $array[ 'hours' ], $array[ 'minutes' ], $array[ 'seconds' ] );
 }

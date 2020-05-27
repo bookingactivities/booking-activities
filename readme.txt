@@ -148,7 +148,7 @@ Then feel free to tell us if you miss a feature, if you find a bug or anything t
 * **WordPress**: 3.6 or later
 * **PHP**: 5.3 or later
 * **MySQL**: 5.6 or later
-* **WooCommerce**: 2.6 or later (deprecated, update to 3.x asap) 
+* **WooCommerce**: 3.x or later (deprecated, update to 4.x asap) 
 * *Booking Activities can be used without WooCommerce*
 
 
@@ -318,6 +318,11 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 
 
 == Changelog ==
+
+= 1.8.4 =
+* Tweak - Display availabilities on the left if events overlap on agenda views
+* Fix - Fix tiny and narrow events CSS
+* Fix - PHP error after booking if calendar availability period was too high
 
 = 1.8.3 - 2020/05/21 =
 * Tweak - Add the redirect_url parameter to the login shortcode to redirect to any page after login ([bookingactivities_login form="" redirect_url=""])

@@ -486,6 +486,7 @@ add_action( 'bookacti_updated', 'bookacti_delete_removed_template_settings_in_1_
  * Update the refactored settings in 1.8.0
  * This function is temporary
  * @since 1.8.0
+ * @version 1.8.4
  * @global wpdb $wpdb
  * @param string $old_version
  */
@@ -504,15 +505,15 @@ function bookacti_update_refactored_settings_in_1_8_0( $old_version ) {
 		global $wpdb;
 		
 		// Convert the "booking_changes_deadline" options values to seconds
-		$query_booking_changes_deadline_value = 'UPDATE ' . BOOKACTI_TABLE_META . ' SET meta_value = IF( meta_value > 0, ( CAST( meta_value AS UNSIGNED ) * 86400 ), "" ) WHERE meta_key = "booking_changes_deadline"';
+		$query_booking_changes_deadline_value = 'UPDATE ' . BOOKACTI_TABLE_META . ' SET meta_value = IF( ( meta_value > 0 AND meta_value < 86400 ), ( CAST( meta_value AS UNSIGNED ) * 86400 ), IF( meta_value < 0, "", meta_value ) ) WHERE meta_key = "booking_changes_deadline"';
 		$wpdb->query( $query_booking_changes_deadline_value );
 		
 		// Convert the "availability_period_start" options values to seconds
-		$query_availability_period_start_value = 'UPDATE ' . BOOKACTI_TABLE_META . ' SET meta_value = ( CAST( meta_value AS UNSIGNED ) * 86400 ) WHERE meta_key = "availability_period_start"';
+		$query_availability_period_start_value = 'UPDATE ' . BOOKACTI_TABLE_META . ' SET meta_value = IF( ( meta_value > 0 AND meta_value < 86400 ), ( CAST( meta_value AS UNSIGNED ) * 86400 ), meta_value ) WHERE meta_key = "availability_period_start"';
 		$wpdb->query( $query_availability_period_start_value );
 		
 		// Convert the "availability_period_end" options values to seconds
-		$query_availability_period_end_value = 'UPDATE ' . BOOKACTI_TABLE_META . ' SET meta_value = ( CAST( meta_value AS UNSIGNED ) * 86400 ) WHERE meta_key = "availability_period_end"';
+		$query_availability_period_end_value = 'UPDATE ' . BOOKACTI_TABLE_META . ' SET meta_value = IF( ( meta_value > 0 AND meta_value < 86400 ), ( CAST( meta_value AS UNSIGNED ) * 86400 ), meta_value ) WHERE meta_key = "availability_period_end"';
 		$wpdb->query( $query_availability_period_end_value );
 	}
 }

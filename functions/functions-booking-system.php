@@ -2080,7 +2080,7 @@ function bookacti_get_calendar_field_availability_period( $calendar_field ) {
 /**
  * Get availability period according to relative and absolute dates
  * @since 1.5.9
- * @version 1.8.0
+ * @version 1.8.4
  * @param array $absolute_period
  * @param array $relative_period
  * @param boolean $bypass_relative_period
@@ -2090,6 +2090,7 @@ function bookacti_get_availability_period( $absolute_period = array(), $relative
 	$timezone		= new DateTimeZone( bookacti_get_setting_value( 'bookacti_general_settings', 'timezone' ) );
 	$current_time	= new DateTime( 'now', $timezone );
 	
+	$max_dt					= new DateTime( '2037-12-31 23:59:59', new DateTimeZone( 'UTC' ) );
 	$calendar_start_date	= ! empty( $absolute_period[ 'start' ] ) ? $absolute_period[ 'start' ] : $current_time->format( 'Y-m-d H:i:s' );
 	$calendar_end_date		= ! empty( $absolute_period[ 'end' ] ) ? $absolute_period[ 'end' ] : '2037-12-31 23:59:59';
 	
@@ -2101,20 +2102,20 @@ function bookacti_get_availability_period( $absolute_period = array(), $relative
 		// Restrict template interval if a relative period is set
 		if( $relative_period_start > 0 ) {
 			$relative_period_start_iso8601 = bookacti_format_duration( $relative_period_start, 'iso8601' );
-			$relative_start_time = clone $current_time;
-			$relative_start_time->add( new DateInterval( $relative_period_start_iso8601 ) );
-			$relative_start_date = $relative_start_time->format( 'Y-m-d H:i:s' );
-			if( strtotime( $relative_start_date ) > strtotime( $calendar_start_date ) ) {
-				$calendar_start_date = $relative_start_date;
+			$relative_start_dt = clone $current_time;
+			$relative_start_dt->add( new DateInterval( $relative_period_start_iso8601 ) );
+			$calendar_start_dt = new DateTime( $calendar_start_date, $timezone );
+			if( $relative_start_dt > $calendar_start_dt ) {
+				$calendar_start_date = $relative_start_dt < $max_dt ? $relative_start_dt->format( 'Y-m-d H:i:s' ) : '2037-12-31 23:59:59';
 			}
 		}
 		if( $relative_period_end > 0 ) {
 			$relative_period_end_iso8601 = bookacti_format_duration( $relative_period_end, 'iso8601' );
-			$relative_end_time = clone $current_time;
-			$relative_end_time->add( new DateInterval( $relative_period_end_iso8601 ) );
-			$relative_end_date = $relative_end_time->format( 'Y-m-d H:i:s' );
-			if( strtotime( $relative_end_date ) < strtotime( $calendar_end_date ) ) {
-				$calendar_end_date = $relative_end_date;
+			$relative_end_dt = clone $current_time;
+			$relative_end_dt->add( new DateInterval( $relative_period_end_iso8601 ) );
+			$calendar_end_dt = new DateTime( $calendar_end_date, $timezone );
+			if( $relative_end_dt < $calendar_end_date ) {
+				$calendar_end_date = $relative_end_dt < $max_dt ? $relative_end_dt->format( 'Y-m-d H:i:s' ) : '2037-12-31 23:59:59';
 			}
 		}
 	}
