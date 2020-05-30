@@ -357,7 +357,7 @@ function bookacti_check_password_strength( password_field, password_confirm_fiel
 /**
  * Submit login form
  * @since 1.8.0
- * @version 1.8.3
+ * @version 1.8.4
  * @param {HTMLElement} submit_button
  */
 function bookacti_submit_login_form( submit_button ) {
@@ -375,7 +375,6 @@ function bookacti_submit_login_form( submit_button ) {
 		}
 	}
 	var form = submit_button.closest( 'form' );
-	var form_action = form.find( 'input[name="action"]' ).length ? form.find( 'input[name="action"]' ).val() : '';
 	
 	// Find the error div or create a temporary one
 	if( ! form.find( '> .bookacti-notices' ).length ) {
@@ -395,15 +394,23 @@ function bookacti_submit_login_form( submit_button ) {
 		return;
 	}
 	
+	// Change form action field value
+	var has_form_action = form.find( 'input[name="action"]' ).length;
+	var old_form_action = has_form_action ? form.find( 'input[name="action"]' ).val() : '';
+	if( has_form_action ) { form.find( 'input[name="action"]' ).val( 'bookactiSubmitLoginForm' ); } 
+	else { form.append( '<input type="hidden" name="action" value="bookactiSubmitLoginForm"/>' ); }
+	
+	// Get form field values
 	var data = new FormData( form.get(0) );
+	
+	// Restore form action field value
+	if( has_form_action ) { form.find( 'input[name="action"]' ).val( old_form_action ); } 
+	else { form.find( 'input[name="action"]' ).remove(); }
 	
 	// Trigger action before sending form
 	field_container.trigger( 'bookacti_before_submit_login_form', [ data ] );
 	
-	// Set the form action
-	if( data instanceof FormData ) {
-		data.set( 'action', 'bookactiSubmitLoginForm' );
-	} else { return; }
+	if( ! ( data instanceof FormData ) ) { return; }
 	
 	// Temporarily disable the submit button
 	submit_button.prop( 'disabled', true );
@@ -434,21 +441,14 @@ function bookacti_submit_login_form( submit_button ) {
 			
 			if( response.status === 'success' ) {
 				// Make form data readable
-				var form_data_object = {};
-				if( typeof data.forEach === 'function' ) { 
-					data.forEach( function( value, key ){
-						form_data_object[ key ] = value;
-					});
-				} else {
-					form_data_object = form.serializeObject();
-				}
+				var form_data_object = form.serializeObject();
 
 				// Trigger action after sending form
 				form.trigger( 'bookacti_login_form_submitted', [ response, form_data_object ] );
 
 				// Redirect
 				var url_params = form.serialize();
-				var form_redirect_url = typeof form.attr( 'action' ) !== 'undefined' && form_action === 'bookactiSubmitLoginForm' ? form.attr( 'action' ) : '';
+				var form_redirect_url = typeof form.attr( 'action' ) !== 'undefined' && old_form_action === 'bookactiSubmitLoginForm' ? form.attr( 'action' ) : '';
 				var redirect_url = response.redirect_url ? response.redirect_url : form_redirect_url;
 				redirect_url += redirect_url.indexOf( '?' ) >= 0 ? '&' + url_params : '?' + url_params;
 				window.location.replace( redirect_url );
@@ -481,7 +481,7 @@ function bookacti_submit_login_form( submit_button ) {
 /**
  * Submit booking form
  * @since 1.7.6 (was bookacti_sumbit_booking_form)
- * @version 1.8.0
+ * @version 1.8.4
  * @param {HTMLElement} form
  */
 function bookacti_submit_booking_form( form ) {
@@ -536,17 +536,23 @@ function bookacti_submit_booking_form( form ) {
 		return false; // End script
 	}
 
+	// Change form action field value
+	var has_form_action = form.find( 'input[name="action"]' ).length;
+	var old_form_action = has_form_action ? form.find( 'input[name="action"]' ).val() : '';
+	if( has_form_action ) { form.find( 'input[name="action"]' ).val( 'bookactiSubmitBookingForm' ); } 
+	else { form.append( '<input type="hidden" name="action" value="bookactiSubmitBookingForm"/>' ); }
+	
+	// Get form field values
 	var data = new FormData( form.get(0) );
+	
+	// Restore form action field value
+	if( has_form_action ) { form.find( 'input[name="action"]' ).val( old_form_action ); } 
+	else { form.find( 'input[name="action"]' ).remove(); }
 	
 	// Trigger action before sending form
 	form.trigger( 'bookacti_before_submit_booking_form', [ data ] );
 	
-	// Set the form action
-	if( data instanceof FormData ) {
-		data.set( 'action', 'bookactiSubmitBookingForm' );
-	} else {
-		return;
-	}
+	if( ! ( data instanceof FormData ) ) { return; }
 	
 	// Display a loader after the submit button too
 	if( submit_button ) { 
@@ -607,14 +613,7 @@ function bookacti_submit_booking_form( form ) {
 			}
 			
 			// Make form data readable
-			var form_data_object = {};
-			if( typeof data.forEach === 'function' ) { 
-				data.forEach( function( value, key ){
-					form_data_object[ key ] = value;
-				});
-			} else {
-				form_data_object = form.serializeObject();
-			}
+			var form_data_object = form.serializeObject();
 			
 			// Trigger action after sending form
 			form.trigger( 'bookacti_booking_form_submitted', [ response, form_data_object ] );

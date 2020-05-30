@@ -323,6 +323,8 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 * Tweak - Display availabilities on the left if events overlap on agenda views
 * Fix - Fix tiny and narrow events CSS
 * Fix - PHP error after booking if calendar availability period was too high
+* Fix - Do not verify all form fields if the user only log in / register
+* Fix - Internet Explorer 11: JS error when submitting forms
 
 = 1.8.3 - 2020/05/21 =
 * Tweak - Add the redirect_url parameter to the login shortcode to redirect to any page after login ([bookingactivities_login form="" redirect_url=""])

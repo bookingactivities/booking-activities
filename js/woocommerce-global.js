@@ -234,7 +234,7 @@ function bookacti_add_group_category_product_to_cart( booking_system, group_id )
 /**
  * Add a product to cart from a booking form
  * @since 1.7.0
- * @version 1.8.0
+ * @version 1.8.4
  * @param {HTMLElement} booking_system
  * @param {int} product_id
  */
@@ -250,25 +250,31 @@ function bookacti_add_product_to_cart_via_booking_system( booking_system, produc
 	// Remove the previous feedbacks
 	error_div.empty();
 	
-	// Add form parameters to the URL
-	var data = [];
-	if( ! booking_system.closest( 'form' ).length ) {
-		booking_system.closest( '.bookacti-form-fields' ).wrap( '<form class="bookacti-temporary-form"></form>' );
-		data = new FormData( booking_system.closest( 'form' ).get(0) );
-		booking_system.closest( '.bookacti-form-fields' ).unwrap( 'form.bookacti-temporary-form' );
-	} else {
-		data = new FormData( booking_system.closest( 'form' ).get(0) );
-	}
+	// Get form or create a temporary one
+	var has_form = booking_system.closest( 'form' ).length;
+	if( ! has_form ) { booking_system.closest( '.bookacti-form-fields' ).wrap( '<form class="bookacti-temporary-form"></form>' ); }
+	var form = booking_system.closest( 'form' );
+	
+	// Change form action field value
+	var has_form_action = form.find( 'input[name="action"]' ).length;
+	var old_form_action = has_form_action ? form.find( 'input[name="action"]' ).val() : '';
+	if( has_form_action ) { form.find( 'input[name="action"]' ).val( 'bookactiAddBoundProductToCart' ); } 
+	else { form.append( '<input type="hidden" name="action" value="bookactiAddBoundProductToCart"/>' ); }
+	
+	// Get form field values
+	var data = new FormData( form.get(0) );
+	
+	// Restore form action field value
+	if( has_form_action ) { form.find( 'input[name="action"]' ).val( old_form_action ); } 
+	else { form.find( 'input[name="action"]' ).remove(); }
 	
 	// Trigger action before sending form
 	booking_system.trigger( 'bookacti_before_add_product_to_cart', [ data ] );
 	
-	// Set the form action
-	if( data instanceof FormData ) {
-		data.set( 'action', 'bookactiAddBoundProductToCart' );
-	} else {
-		return;
-	}
+	// Remove temporary form
+	if( ! has_form ) { booking_system.closest( '.bookacti-form-fields' ).unwrap( 'form.bookacti-temporary-form' ); }
+	
+	if( ! ( data instanceof FormData ) ) { return; }
 	
 	bookacti_start_loading_booking_system( booking_system );
 	

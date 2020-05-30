@@ -564,6 +564,7 @@ add_action( 'wp_ajax_nopriv_bookactiForgottenPassword', 'bookacti_controller_for
 /**
  * Check if login form is correct and then register / log the user in
  * @since 1.8.0
+ * @version 1.8.4
  */
 function bookacti_controller_validate_login_form() {
 	// Check nonce
@@ -605,13 +606,6 @@ function bookacti_controller_validate_login_form() {
 		bookacti_send_json( $return_array, 'submit_login_form' );
 	}
 	
-	// Validate the login field
-	$form_fields_validated = bookacti_validate_form_fields( $form_id, array( $login_field ) );
-	if( $form_fields_validated[ 'status' ] !== 'success' ) {
-		$form_fields_validated[ 'message' ] = is_array( $form_fields_validated[ 'message' ] ) ? implode( '</li><li>', $form_fields_validated[ 'message' ] ) : $form_fields_validated[ 'message' ];
-		bookacti_send_json( $form_fields_validated, 'submit_login_form' );
-	}
-	
 	// Check if login / registration is allowed independantly
 	$calendar_field = ! empty( $fields_data[ 'calendar' ] ) ? $fields_data[ 'calendar' ] : array();
 	if( ! $calendar_field ) {
@@ -621,7 +615,7 @@ function bookacti_controller_validate_login_form() {
 	}
 	
 	// Let third party plugins validate their own part of the form
-	$return_array = apply_filters( 'bookacti_validate_login_form_submission', $return_array, $form_id, $login_field, $form_id );
+	$return_array = apply_filters( 'bookacti_validate_login_form_submission', $return_array, $form_id, $login_field );
 	if( $return_array[ 'status' ] ) {
 		$return_array[ 'message' ] = is_array( $return_array[ 'message' ] ) ? implode( '</li><li>', $return_array[ 'message' ] ) : $return_array[ 'message' ];
 		bookacti_send_json( $return_array, 'submit_login_form' );
