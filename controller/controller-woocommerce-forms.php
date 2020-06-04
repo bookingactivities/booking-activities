@@ -363,7 +363,7 @@ add_action( 'wp_ajax_bookactiSelect2Query_products', 'bookacti_controller_search
 /**
  * Add the product bound to the selected event to cart
  * @since 1.7.0
- * @version 1.7.19
+ * @version 1.8.4
  */
 function bookacti_controller_add_bound_product_to_cart() {
 	// Check nonce
@@ -494,7 +494,7 @@ function bookacti_controller_add_bound_product_to_cart() {
 		}
 		$response = array( 'status' => 'success', 'messages' => implode( '</li><li>', $messages_array ), 'redirect_url' => $redirect_url );
 	} else {
-		$response = array( 'status' => 'failed', 'error' => 'unknown_error', 'messages' => esc_html__( 'An error occured while trying to add the product to cart.', 'booking-activities' ) );
+		$response = array( 'status' => 'failed', 'error' => 'unknown_error', 'messages' => esc_html__( 'An error occurred while trying to add the product to cart.', 'booking-activities' ) );
 	}
 	
 	// If the user is not redirected, clear the notices to display them only once in the booking form

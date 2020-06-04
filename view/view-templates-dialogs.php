@@ -1,7 +1,7 @@
 <?php 
 /**
  * Calendar editor dialogs
- * @version 1.8.3
+ * @version 1.8.4
  */
 
 // Exit if accessed directly
@@ -149,7 +149,7 @@ foreach( $templates as $template ) {
 										'monthly' => esc_html__( 'Monthly', 'booking-activities' )
 									),
 					'value'		=> 'none',
-					'tip'		=> esc_html__( 'Set the repetition frequency. This will create an occurence of the event every day, week or month.', 'booking-activities' )
+					'tip'		=> esc_html__( 'Set the repetition frequency. This will create an occurrence of the event every day, week or month.', 'booking-activities' )
 				),
 				'repeat_from' => array(
 					'type'		=> 'date',
@@ -157,7 +157,7 @@ foreach( $templates as $template ) {
 					'id'		=> 'bookacti-event-repeat-from',
 					'title'		=> esc_html__( 'Repeat from', 'booking-activities' ),
 					'options'	=> array( 'max' => '2037-12-31' ),
-					'tip'		=> esc_html__( 'Set the starting date of the repetition. The occurences of the event will be added from this date.', 'booking-activities' )
+					'tip'		=> esc_html__( 'Set the starting date of the repetition. The occurrences of the event will be added from this date.', 'booking-activities' )
 				),
 				'repeat_to' => array(
 					'type'		=> 'date',
@@ -165,7 +165,7 @@ foreach( $templates as $template ) {
 					'id'		=> 'bookacti-event-repeat-to',
 					'title'		=> esc_html__( 'Repeat to', 'booking-activities' ),
 					'options'	=> array( 'max' => '2037-12-31' ),
-					'tip'		=> esc_html__( 'Set the ending date of the repetition. The occurences of the event will be added until this date.', 'booking-activities' )
+					'tip'		=> esc_html__( 'Set the ending date of the repetition. The occurrences of the event will be added until this date.', 'booking-activities' )
 				)
 			);
 			
@@ -175,7 +175,7 @@ foreach( $templates as $template ) {
 				<label class='bookacti-fullwidth-label'>
 				<?php 
 					esc_html_e( 'Exceptions', 'booking-activities' );
-					bookacti_help_tip( esc_html__( 'You can add exception dates to the repetition. No event occurences will be displayed on the exception dates.', 'booking-activities' ) );
+					bookacti_help_tip( esc_html__( 'You can add exception dates to the repetition. No event occurrences will be displayed on the exception dates.', 'booking-activities' ) );
 				?>
 				</label>
 				<div id='bookacti-event-add-exception-container' >
@@ -637,40 +637,40 @@ foreach( $templates as $template ) {
 
 <!-- Locked event error -->
 <div id='bookacti-unbind-booked-event-dialog' class='bookacti-backend-dialog bookacti-template-dialog' title='<?php esc_html_e( 'Locked event', 'booking-activities' ); ?>' style='display:none;' >
-	<?php wp_nonce_field( 'bookacti_unbind_occurences', 'nonce_unbind_occurences', false ); ?>
+	<?php wp_nonce_field( 'bookacti_unbind_occurrences', 'nonce_unbind_occurrences', false ); ?>
 	<div id='bookacti-unbind-booked-event-error-list-container' >
 		<?php 
 			/* translators: This is followed by "You can't:", and then a list of bans. */
-			esc_html_e( 'There are bookings on at least one of the occurence of this event.', 'booking-activities' ); 
-			/* translators: This is preceded by 'There are bookings on at least one of the occurence of this event.', and flollowed by a list of bans. */
+			esc_html_e( 'There are bookings on at least one of the occurrence of this event.', 'booking-activities' ); 
+			/* translators: This is preceded by 'There are bookings on at least one of the occurrence of this event.', and flollowed by a list of bans. */
 			echo '<br/><b>' . esc_html__( "You can't:", 'booking-activities' ) . '</b>'; 
 		?>
 		<ul>
-			<li id='bookacti-unbind-booked-event-error-move'><?php /* translators: In the context, it is one of the message following 'There are bookings on at least one of the occurence of this event. You can't: ' */
-				esc_html_e( 'Move this occurence because it will affect the complete event.', 'booking-activities' ); ?>
+			<li id='bookacti-unbind-booked-event-error-move'><?php /* translators: In the context, it is one of the message following 'There are bookings on at least one of the occurrence of this event. You can't: ' */
+				esc_html_e( 'Move this occurrence because it will affect the complete event.', 'booking-activities' ); ?>
 			</li>
-			<li id='bookacti-unbind-booked-event-error-resize'><?php /* translators: In the context, it is one of the message following 'There are bookings on at least one of the occurence of this event. You can't: ' */
-				esc_html_e( 'Resize this occurence because it will affect the complete event.', 'booking-activities' ); ?>
+			<li id='bookacti-unbind-booked-event-error-resize'><?php /* translators: In the context, it is one of the message following 'There are bookings on at least one of the occurrence of this event. You can't: ' */
+				esc_html_e( 'Resize this occurrence because it will affect the complete event.', 'booking-activities' ); ?>
 			</li>
 			<li id='bookacti-unbind-booked-event-error-delete'>
-				<?php /* translators: In the context, it is one of the message following 'There are bookings on at least one of the occurence of this event. You can't: ' */
-				esc_html_e( 'Delete this occurence because it will affect the complete event.', 'booking-activities' ); ?>
+				<?php /* translators: In the context, it is one of the message following 'There are bookings on at least one of the occurrence of this event. You can't: ' */
+				esc_html_e( 'Delete this occurrence because it will affect the complete event.', 'booking-activities' ); ?>
 			</li>
 		</ul>
 	</div>
 	<div>
 		<?php 
-			/* translators: This is preceded by 'There are bookings on at least one of the occurence of this event. You can't: <list of bans>' and followed by "You can:", and then a list of capabilities. */
-			esc_html_e( 'If you want to edit independantly the occurences of the event that are not booked:', 'booking-activities' );
-			/* translators: This is preceded by 'There are bookings on at least one of the occurence of this event.', and flollowed by a list of capabilities. */
+			/* translators: This is preceded by 'There are bookings on at least one of the occurrence of this event. You can't: <list of bans>' and followed by "You can:", and then a list of capabilities. */
+			esc_html_e( 'If you want to edit independantly the occurrences of the event that are not booked:', 'booking-activities' );
+			/* translators: This is preceded by 'There are bookings on at least one of the occurrence of this event.', and flollowed by a list of capabilities. */
 			echo '<br/><b>' . esc_html__( 'You can:', 'booking-activities' ) . '</b><br/>';
 		?>
 		<ul>
 			<?php 
-						/* translators: This is one of the capabilities following the text 'There are bookings on at least one of the occurence of this event. You can:'. */
-				echo  '<li>' . esc_html__( 'Unbind the selected occurence only.', 'booking-activities' ) . '</li>'
-						/* translators: This is one of the capabilities following the text 'There are bookings on at least one of the occurence of this event. You can:'. */
-					. '<li>' . esc_html__( 'Unbind all the booked occurences.', 'booking-activities' ) . '</li>';
+						/* translators: This is one of the capabilities following the text 'There are bookings on at least one of the occurrence of this event. You can:'. */
+				echo  '<li>' . esc_html__( 'Unbind the selected occurrence only.', 'booking-activities' ) . '</li>'
+						/* translators: This is one of the capabilities following the text 'There are bookings on at least one of the occurrence of this event. You can:'. */
+					. '<li>' . esc_html__( 'Unbind all the booked occurrences.', 'booking-activities' ) . '</li>';
 			?>
 		</ul>
 		<b><?php esc_html_e( 'Warning: These actions will be irreversibles after the first booking.', 'booking-activities' ); ?></b>

@@ -13,7 +13,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
  *  @type array $templates Array of template IDs
  *  @type array events Array of event IDs
  *  @type array $interval array( 'start' => 'Y-m-d H:i:s', 'end' => 'Y-m-d H:i:s' )
- *  @type boolean $skip_exceptions Whether to retrieve occurence on exceptions
+ *  @type boolean $skip_exceptions Whether to retrieve occurrence on exceptions
  *  @type boolean $past_events Whether to compute past events
  *  @type boolean $bounding_events_only Whether to retrieve the first and the last events only
  * }
@@ -242,7 +242,7 @@ function bookacti_move_or_resize_event( $event_id, $event_start, $event_end, $ac
 /**
  * Update event data
  * @since 1.2.2 (was bookacti_set_event_data)
- * @version 1.8.0
+ * @version 1.8.4
  * @global wpdb $wpdb
  * @param array $data Data sanitized with bookacti_sanitize_event_data
  * @return int|false
@@ -279,7 +279,7 @@ function bookacti_update_event( $data ) {
 
 	// If the repetition dates have changed, we must delete out of range grouped events
 	else if( $data[ 'repeat_from' ] !== $initial_event->repeat_from || $data[ 'repeat_to' ] !== $initial_event->repeat_to ) {
-		bookacti_delete_out_of_range_occurences_from_groups( $data[ 'id' ] );
+		bookacti_delete_out_of_range_occurrences_from_groups( $data[ 'id' ] );
 	}
 	
 	// Update meta
@@ -341,7 +341,7 @@ function bookacti_get_event_template_id( $event_id ) {
 
 
 /**
- * Unbind selected occurence of an event
+ * Unbind selected occurrence of an event
  * @version 1.8.0
  * @global wpdb $wpdb
  * @param int $event_id
@@ -367,7 +367,7 @@ function bookacti_unbind_selected_occurrence( $event_id, $event_start, $event_en
 	// If the event was part of a group, change its id to the new one
 	bookacti_update_grouped_event_id( $event_id, $event_start, $event_end, $unbound_event_id );
 
-	// Create an exception on the day of the occurence
+	// Create an exception on the day of the occurrence
 	$dates_excep_array = array ( substr( $event_start, 0, 10 ) );
 	$insert_excep = bookacti_update_exceptions( $event_id, $dates_excep_array, false );
 
@@ -391,7 +391,7 @@ function bookacti_unbind_selected_occurrence( $event_id, $event_start, $event_en
 
 
 /**
- * Unbind booked occurences of an event
+ * Unbind booked occurrences of an event
  * @version 1.8.3
  * @global wpdb $wpdb
  * @param int $event_id
@@ -403,7 +403,7 @@ function bookacti_unbind_booked_occurrences( $event_id ) {
 	// Duplicate the original event and its exceptions
 	$duplicated_event_id = bookacti_duplicate_event( $event_id );
 
-	// Get occurences to unbind
+	// Get occurrences to unbind
 	$booked_events_query = 'SELECT * FROM ' . BOOKACTI_TABLE_BOOKINGS . ' WHERE event_id = %d AND active = 1 ORDER BY event_start ASC ';
 	$booked_events_prep = $wpdb->prepare( $booked_events_query, $event_id );
 	$booked_events = $wpdb->get_results( $booked_events_prep, OBJECT );
@@ -411,19 +411,19 @@ function bookacti_unbind_booked_occurrences( $event_id ) {
 	// Replace all occurrences' event id in groups (we will turn it back to the original id for booked events)
 	bookacti_update_grouped_event_id( $event_id, false, false, $duplicated_event_id );
 
-	// For each occurence to unbind...
+	// For each occurrence to unbind...
 	$first_booking  = '';
 	$last_booking   = '';
 	$duplicated_event_exceptions = array();
 	foreach( $booked_events as $event_to_unbind ) {
-		// Give back its original event id to booked occurences
+		// Give back its original event id to booked occurrences
 		bookacti_update_grouped_event_id( $duplicated_event_id, $event_to_unbind->event_start, $event_to_unbind->event_end, $event_id );
 
 		// Get the smallest repeat period possible
 		if( $first_booking === '' ) { $first_booking = substr( $event_to_unbind->event_start, 0, 10 ); }
 		$last_booking = substr( $event_to_unbind->event_start, 0, 10 );
 
-		// Create an exception on the day of the occurence
+		// Create an exception on the day of the occurrence
 		$duplicated_event_exceptions[] = substr( $event_to_unbind->event_start, 0, 10 );
 	}
 	bookacti_update_exceptions( $duplicated_event_id, $duplicated_event_exceptions, false );
@@ -1139,9 +1139,9 @@ function bookacti_deactivate_activity_events_from_groups( $activity_id = 0, $tem
 
 
 /**
- * Delete event occurences that are beyond repeat dates from all groups
+ * Delete event occurrences that are beyond repeat dates from all groups
  * 
- * @since 1.1.0
+ * @since 1.8.4 (was bookacti_delete_out_of_range_occurences_from_groups)
  * 
  * @global wpdb $wpdb
  * @param int $event_id
@@ -1149,7 +1149,7 @@ function bookacti_deactivate_activity_events_from_groups( $activity_id = 0, $tem
  * @param string $event_end
  * @return int|boolean|null
  */
-function bookacti_delete_out_of_range_occurences_from_groups( $event_id ) {
+function bookacti_delete_out_of_range_occurrences_from_groups( $event_id ) {
 
 	global $wpdb;
 
@@ -1165,7 +1165,7 @@ function bookacti_delete_out_of_range_occurences_from_groups( $event_id ) {
 	$prep1	= $wpdb->prepare( $query1, $event_id );
 	$event	= $wpdb->get_row( $prep1 );
 
-	// Delete occurences that are before repeat from date, or after repeat to date
+	// Delete occurrences that are before repeat from date, or after repeat to date
 	$query	= 'DELETE FROM ' . BOOKACTI_TABLE_GROUPS_EVENTS 
 			. ' WHERE event_id = %d '
 			. ' AND ('

@@ -520,7 +520,7 @@ function bookacti_dialog_deactivate_template( template_id ) {
 
 /**
  * Dialog Update Event
- * @version 1.8.0
+ * @version 1.8.4
  * @param {object} event
  */
 function bookacti_dialog_update_event( event ) {
@@ -581,7 +581,7 @@ function bookacti_dialog_update_event( event ) {
 		$j( '#bookacti-event-exception-date-picker' ).attr( 'disabled', true );
 	}
 	
-	// Set the min repeat period (must contain all booked occurences)
+	// Set the min repeat period (must contain all booked occurrences)
 	if( event_bookings.length ) {
 		event_bookings = bookacti_sort_events_array_by_dates( event_bookings, false, false, { 'start': 'event_start', 'end': 'event_end' } );
 		if( typeof event_bookings[ 0 ][ 'event_start' ] !== 'undefined' ) {
@@ -664,7 +664,7 @@ function bookacti_dialog_update_event( event ) {
 					if( response.status === 'success' ) {
 						var event_id = event.id;
 
-						// Unselect the event or occurences of the event
+						// Unselect the event or occurrences of the event
 						bookacti_unselect_event( event, true );
 
 						// Update event data
@@ -738,7 +738,7 @@ function bookacti_dialog_update_event( event ) {
 
 			//On click on the OK Button, new values are send to a script that update the database
 			click: function() {
-				bookacti_dialog_unbind_occurences( event );
+				bookacti_dialog_unbind_occurrences( event );
 			}
 		};
 		buttons.push( unbind_button );
@@ -754,7 +754,7 @@ function bookacti_dialog_update_event( event ) {
 
 /**
  * Dialog Delete Event
- * @version 1.8.0
+ * @version 1.8.4
  * @param {object} event
  */
 function bookacti_dialog_delete_event( event ) {
@@ -795,7 +795,7 @@ function bookacti_dialog_delete_event( event ) {
 
 								// If the event is repeated, display unbind dialog
 								var repeat_freq = bookacti.booking_system[ 'bookacti-template-calendar' ][ 'events_data' ][ event.id ][ 'repeat_freq' ];
-								if( repeat_freq !== 'none' ) { bookacti_dialog_unbind_occurences( event, [ 'delete' ] ); } 
+								if( repeat_freq !== 'none' ) { bookacti_dialog_unbind_occurrences( event, [ 'delete' ] ); } 
 
 								// If the event is single, diplay confirmation box to 
 								else { bookacti_dialog_delete_booked_event( event ); }
@@ -902,12 +902,12 @@ function bookacti_dialog_delete_booked_event( event ) {
 
 
 /**
- * Dialog Unbind occurence of a locked repeating event
- * @version 1.8.0
+ * Dialog Unbind occurrence of a locked repeating event
+ * @since 1.8.4 (was bookacti_dialog_unbind_occurences)
  * @param {object} event
  * @param {array} errors
  */
-function bookacti_dialog_unbind_occurences( event, errors ) {
+function bookacti_dialog_unbind_occurrences( event, errors ) {
 	errors = errors || [];
 
 	// Open the modal dialog

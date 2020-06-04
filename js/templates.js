@@ -483,7 +483,7 @@ function bookacti_load_template_calendar( calendar ) {
 		
 		/**
 		 * eventResize : When an event is resized
-		 * @version 1.8.0
+		 * @version 1.8.4
 		 * @param {object} event
 		 * @param {object} delta
 		 * @param {callable} revertFunc
@@ -500,7 +500,7 @@ function bookacti_load_template_calendar( calendar ) {
 				revertFunc();
 				var is_repeated = bookacti.booking_system[ 'bookacti-template-calendar' ][ 'events_data' ][ event.id ][ 'repeat_freq' ] !== 'none';
 				if( is_repeated ) {
-					bookacti_dialog_unbind_occurences( event, [ 'resize' ] );
+					bookacti_dialog_unbind_occurrences( event, [ 'resize' ] );
 				} else {
 					alert( bookacti_localized.error_edit_locked_event );
 				}
@@ -564,7 +564,7 @@ function bookacti_load_template_calendar( calendar ) {
 							}
 							// If the event is repeated, display unbind dialog
 							if( bookacti.booking_system[ 'bookacti-template-calendar' ][ 'events_data' ][ event.id ][ 'repeat_freq' ] !== 'none' ) {
-								bookacti_dialog_unbind_occurences( event, [ 'resize' ] );
+								bookacti_dialog_unbind_occurrences( event, [ 'resize' ] );
 							} 
 						}
 						
@@ -588,7 +588,7 @@ function bookacti_load_template_calendar( calendar ) {
 		
 		/**
 		 * eventDrop : When an event is moved to an other day / hour
-		 * @version 1.8.0
+		 * @version 1.8.4
 		 * @param {object} event
 		 * @param {object} delta
 		 * @param {callable} revertFunc
@@ -613,7 +613,7 @@ function bookacti_load_template_calendar( calendar ) {
 					revertFunc();
 					var is_repeated = bookacti.booking_system[ 'bookacti-template-calendar' ][ 'events_data' ][ event.id ][ 'repeat_freq' ] !== 'none';
 					if( is_repeated ) {
-						bookacti_dialog_unbind_occurences( event, [ 'move' ] );
+						bookacti_dialog_unbind_occurrences( event, [ 'move' ] );
 					} else {
 						alert( bookacti_localized.error_edit_locked_event );
 					}
@@ -721,7 +721,7 @@ function bookacti_load_template_calendar( calendar ) {
 							}
 							// If the event is repeated, display unbind dialog
 							if( bookacti.booking_system[ 'bookacti-template-calendar' ][ 'events_data' ][ event.id ][ 'repeat_freq' ] !== 'none' ) {
-								bookacti_dialog_unbind_occurences( event, [ 'move' ] );
+								bookacti_dialog_unbind_occurrences( event, [ 'move' ] );
 							}
 						}
 						

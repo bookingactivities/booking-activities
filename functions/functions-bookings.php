@@ -1232,6 +1232,7 @@ function bookacti_convert_bookings_to_csv( $filters, $args_raw = array() ) {
 /**
  * Convert bookings to iCal format
  * @since 1.8.0
+ * @version 1.8.4
  * @param array $filters
  * @param array $args_raw
  * @return string
@@ -1269,18 +1270,18 @@ function bookacti_convert_bookings_to_ical( $filters = array(), $args_raw = arra
 	
 	$timezone = bookacti_get_setting_value( 'bookacti_general_settings', 'timezone' );
 	$timezone_obj = new DateTimeZone( $timezone );
-	$occurence_counter = array();
+	$occurrence_counter = array();
 	$vevents = array();
 	
 	foreach( $booking_items as $item ) {
 		$index = $item[ 'start_date_raw' ] . '_' . $item[ 'event_id' ];
 		if( isset( $vevents[ $index ] ) ) { continue; }
 		
-		// Increase the occurence counter
-		if( ! isset( $occurence_counter[ $item[ 'event_id' ] ] ) ) { $occurence_counter[ $item[ 'event_id' ] ] = 0; }
-		++$occurence_counter[ $item[ 'event_id' ] ];
+		// Increase the occurrence counter
+		if( ! isset( $occurrence_counter[ $item[ 'event_id' ] ] ) ) { $occurrence_counter[ $item[ 'event_id' ] ] = 0; }
+		++$occurrence_counter[ $item[ 'event_id' ] ];
 
-		$uid			= $item[ 'event_id' ] . '-' . $occurence_counter[ $item[ 'event_id' ] ];
+		$uid			= $item[ 'event_id' ] . '-' . $occurrence_counter[ $item[ 'event_id' ] ];
 		$event_start	= new DateTime( $item[ 'start_date_raw' ], $timezone_obj );
 		$event_end		= new DateTime( $item[ 'end_date_raw' ], $timezone_obj );
 		
@@ -1328,7 +1329,7 @@ function bookacti_get_bookings_export_events_tags_values( $booking_items, $args 
 	
 	$date_format = bookacti_get_message( 'date_format_long' );
 	
-	// Order the items by event occurence and merge data into an event array
+	// Order the items by event occurrence and merge data into an event array
 	$qty_ack = array();
 	$events_tags = array();
 	foreach( $booking_items as $item ) {

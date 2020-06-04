@@ -69,7 +69,7 @@ function bookacti_init_booking_system_dialogs() {
 
 /**
  * Choose a group of events dialog
- * @version 1.8.3
+ * @version 1.8.4
  * @param {HTMLElement} booking_system
  * @param {array} group_ids
  * @param {object} event
@@ -138,9 +138,9 @@ function bookacti_dialog_choose_group_of_events( booking_system, group_ids, even
 				var event_start_formatted = moment.utc( event.start ).format( 'YYYY-MM-DD HH:mm:ss' );
 				if( typeof bookacti.booking_system[ booking_system_id ][ 'bookings' ][ event.id ] !== 'undefined' ) {
 					if( typeof bookacti.booking_system[ booking_system_id ][ 'bookings' ][ event.id ][ event_start_formatted ] !== 'undefined' ) {
-						var occurence = bookacti.booking_system[ booking_system_id ][ 'bookings' ][ event.id ][ event_start_formatted ];
-						var qty_booked = parseInt( occurence[ 'current_user_bookings' ] );
-						if( max_users && qty_booked === 0 && parseInt( occurence[ 'distinct_users' ] ) >= max_users ) {
+						var occurrence = bookacti.booking_system[ booking_system_id ][ 'bookings' ][ event.id ][ event_start_formatted ];
+						var qty_booked = parseInt( occurrence[ 'current_user_bookings' ] );
+						if( max_users && qty_booked === 0 && parseInt( occurrence[ 'distinct_users' ] ) >= max_users ) {
 							max_users_ok = false;
 						}
 						if( max_quantity && qty_booked >= max_quantity ) {

@@ -177,13 +177,13 @@ $j( document ).ready( function() {
 /**
  * Analyse the data to archive prior to a date
  * @since 1.7.0
+ * @version 1.8.4
  * @param {string} date
  * @param {string} nonce
  * @param {HTMLElement} feedback_div
  * @param {callback} callback
  */
 function bookacti_archive_analyse( date, nonce, feedback_div, callback ) {
-	
 	// Remove previous feedback_div
 	feedback_div.find( '.bookacti-notices' ).remove();
 	feedback_div.find( '.bookacti-loading-alt' ).remove();
@@ -227,7 +227,7 @@ function bookacti_archive_analyse( date, nonce, feedback_div, callback ) {
 			}
 		},
 		error: function( e ){
-			var error_message = 'AJAX error occured while trying to analyse data to archive';
+			var error_message = 'AJAX error occurred while trying to analyse data to archive';
 			feedback_div.append( '<div class="bookacti-notices"><ul class="bookacti-error-list"><li>' + error_message + '</li></ul></div>' );
 			console.log( error_message );
 			console.log( e );
@@ -243,7 +243,7 @@ function bookacti_archive_analyse( date, nonce, feedback_div, callback ) {
 /**
  * Dump data prior to a date
  * @since 1.7.0
- * @version 1.8.0
+ * @version 1.8.4
  * @param {string} date
  * @param {string} nonce
  * @param {HTMLElement} feedback_div
@@ -296,7 +296,7 @@ function bookacti_archive_dump( date, nonce, feedback_div, callback ) {
 			}
 		},
 		error: function( e ){
-			var error_message = 'AJAX error occured while trying to archive data';
+			var error_message = 'AJAX error occurred while trying to archive data';
 			feedback_div.append( '<div class="bookacti-notices"><ul class="bookacti-error-list"><li>' + error_message + '</li></ul></div>' );
 			console.log( error_message );
 			console.log( e );
@@ -312,7 +312,7 @@ function bookacti_archive_dump( date, nonce, feedback_div, callback ) {
 /**
  * Delete data prior to a date
  * @since 1.7.0
- * @version 1.8.0
+ * @version 1.8.4
  * @param {string} date
  * @param {string} nonce
  * @param {HTMLElement} feedback_div
@@ -358,7 +358,7 @@ function bookacti_archive_delete( date, nonce, feedback_div, callback ) {
 			}
 		},
 		error: function( e ){
-			var error_message = 'AJAX error occured while trying to delete data';
+			var error_message = 'AJAX error occurred while trying to delete data';
 			feedback_div.append( '<div class="bookacti-notices"><ul class="bookacti-error-list"><li>' + error_message + '</li></ul></div>' );
 			console.log( error_message );
 			console.log( e );
@@ -374,7 +374,7 @@ function bookacti_archive_delete( date, nonce, feedback_div, callback ) {
 /**
  * Restore data from backup file
  * @since 1.7.0
- * @version 1.8.0
+ * @version 1.8.4
  * @param {string} filename
  * @param {string} nonce
  * @param {HTMLElement} feedback_div
@@ -419,7 +419,7 @@ function bookacti_archive_restore_data( filename, nonce, feedback_div ) {
 			}
 		},
 		error: function( e ){
-			var error_message = 'AJAX error occured while trying to restore backup data';
+			var error_message = 'AJAX error occurred while trying to restore backup data';
 			feedback_div.append( '<div class="bookacti-notices"><ul class="bookacti-error-list"><li>' + error_message + '</li></ul></div>' );
 			console.log( error_message );
 			console.log( e );
@@ -435,6 +435,7 @@ function bookacti_archive_restore_data( filename, nonce, feedback_div ) {
 /**
  * Delete backup file
  * @since 1.7.0
+ * @version 1.8.4
  * @param {string} filename
  * @param {string} nonce
  * @param {HTMLElement} feedback_div
@@ -470,7 +471,7 @@ function bookacti_archive_delete_file( filename, nonce, feedback_div ) {
 			}
 		},
 		error: function( e ){
-			var error_message = 'AJAX error occured while trying to delete the backup file';
+			var error_message = 'AJAX error occurred while trying to delete the backup file';
 			feedback_div.append( '<div class="bookacti-notices"><ul class="bookacti-error-list"><li>' + error_message + '</li></ul></div>' );
 			console.log( error_message );
 			console.log( e );

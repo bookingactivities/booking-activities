@@ -439,6 +439,7 @@ function bookacti_generate_ical( $vevents, $vcalendar = array() ) {
 /**
  * Get the variables used with javascript
  * @since 1.8.0
+ * @version 1.8.4
  * @return array
  */
 function bookacti_get_js_variables() {
@@ -566,12 +567,12 @@ function bookacti_get_js_variables() {
 				'error_minutes_sup_to_59'           => esc_html__( 'The number of minutes should be between 0 and 59.', 'booking-activities' ),
 				'error_activity_duration_is_null'	=> esc_html__( 'The activity duration should not be null.', 'booking-activities' ),
 				'error_less_avail_than_bookings'    => esc_html__( "You can't set less available bookings than it has already on one of the occurrence of this event.", 'booking-activities' ),
-				'error_booked_events_out_of_period' => esc_html__( 'The repetition period must include all booked occurences.', 'booking-activities' ),
+				'error_booked_events_out_of_period' => esc_html__( 'The repetition period must include all booked occurrences.', 'booking-activities' ),
 				'error_event_not_btw_from_and_to'   => esc_html__( 'The selected event should be included in the period in which it will be repeated.', 'booking-activities' ),
 				'error_freq_not_allowed'            => esc_html__( 'Error: The repetition frequency is not a valid value.', 'booking-activities' ),
 				'error_excep_not_btw_from_and_to'   => esc_html__( 'Exception dates should be included in the repetition period.', 'booking-activities' ),
 				'error_excep_duplicated'            => esc_html__( 'Exceptions should all have a different date.', 'booking-activities' ),
-				'error_set_excep_on_booked_occur'   => esc_html__( 'Warning: this occurence is booked.', 'booking-activities' ),
+				'error_set_excep_on_booked_occur'   => esc_html__( 'Warning: this occurrence is booked.', 'booking-activities' ),
 				'error_no_templates_for_activity'	=> esc_html__( 'The activity must be bound to at least one calendar.', 'booking-activities' ),
 				'error_select_at_least_two_events'	=> esc_html__( 'You must select at least two events.', 'booking-activities' ),
 				'error_edit_locked_event'           => esc_html__( 'This event is booked, you cannot move it nor change its duration.', 'booking-activities' ),
@@ -1005,7 +1006,7 @@ function bookacti_display_fields( $fields, $args = array() ) {
 /**
  * Display various fields
  * @since 1.2.0
- * @version 1.8.0
+ * @version 1.8.4
  * @param array $args ['type', 'name', 'label', 'id', 'class', 'placeholder', 'options', 'attr', 'value', 'tip', 'required']
  */
 function bookacti_display_field( $args ) {
@@ -1056,19 +1057,19 @@ function bookacti_display_field( $args ) {
 			<input type='number' value='<?php echo esc_attr( $duration[ 'days' ] ); ?>' 
 					id='<?php echo esc_attr( $args[ 'id' ] ) . '-days'; ?>' class='bookacti-input bookacti-duration-field'
 					placeholder='365' min='0' max='99999' step='1' data-unit='day' onkeypress='return event.charCode >= 48 && event.charCode <= 57'/>
-			<label for='<?php echo esc_attr( $args[ 'id' ] ) . '-days'; ?>' class='bookacti-duration-field-label'><?php echo esc_html( _n( 'day', 'days', 2, 'bookiing-activities' ) ); ?></label>
+			<label for='<?php echo esc_attr( $args[ 'id' ] ) . '-days'; ?>' class='bookacti-duration-field-label'><?php echo esc_html( _n( 'day', 'days', 2, 'booking-activities' ) ); ?></label>
 		</div>
 		<div class='bookacti-duration-field-container'>
 			<input type='number' value='<?php echo esc_attr( $duration[ 'hours' ] ); ?>' 
 					id='<?php echo esc_attr( $args[ 'id' ] ) . '-hours'; ?>' class='bookacti-input bookacti-duration-field'
 					placeholder='23' min='0' max='23' step='1' data-unit='hour' onkeypress='return event.charCode >= 48 && event.charCode <= 57'/>
-			<label for='<?php echo esc_attr( $args[ 'id' ] ) . '-hours'; ?>' class='bookacti-duration-field-label'><?php echo esc_html( _n( 'hour', 'hours', 2, 'bookiing-activities' ) ); ?></label>
+			<label for='<?php echo esc_attr( $args[ 'id' ] ) . '-hours'; ?>' class='bookacti-duration-field-label'><?php echo esc_html( _n( 'hour', 'hours', 2, 'booking-activities' ) ); ?></label>
 		</div>
 		<div class='bookacti-duration-field-container'>
 			<input type='number' value='<?php echo esc_attr( $duration[ 'minutes' ] ); ?>' 
 					id='<?php echo esc_attr( $args[ 'id' ] ) . '-minutes'; ?>' class='bookacti-input bookacti-duration-field'
 					placeholder='59' min='0' max='59' step='1' data-unit='minute' onkeypress='return event.charCode >= 48 && event.charCode <= 57'/>
-			<label for='<?php echo esc_attr( $args[ 'id' ] ) . '-minutes'; ?>' class='bookacti-duration-field-label'><?php echo esc_html( _n( 'minute', 'minutes', 2, 'bookiing-activities' ) ); ?></label>
+			<label for='<?php echo esc_attr( $args[ 'id' ] ) . '-minutes'; ?>' class='bookacti-duration-field-label'><?php echo esc_html( _n( 'minute', 'minutes', 2, 'booking-activities' ) ); ?></label>
 		</div>
 		<?php if( $args[ 'label' ] ) { ?>
 		<span><?php echo $args[ 'label' ]; ?></span>
@@ -1869,6 +1870,7 @@ function bookacti_sanitize_date( $date ) {
 /**
  * Convert duration from seconds
  * @since 1.8.0
+ * @version 1.8.4
  * @param int $seconds
  * @param string $format Either "iso8601", "timespan" or "array"
  * @return string P%dDT%dH%dM%dS
@@ -1886,8 +1888,17 @@ function bookacti_format_duration( $seconds, $format = 'iso8601' ) {
     $array[ 'minutes' ] = floor( $seconds / 60 );
     $array[ 'seconds' ] = $seconds % 60;
 	
-	if( $format === 'array' )			{ return $array; }
-	else if( $format === 'timespan' )	{ return sprintf( '%s.%s:%s:%s', str_pad( $array[ 'days' ], 3, '0', STR_PAD_LEFT ), str_pad( $array[ 'hours' ], 2, '0', STR_PAD_LEFT ), str_pad( $array[ 'minutes' ], 2, '0', STR_PAD_LEFT ), str_pad( $array[ 'seconds' ], 2, '0', STR_PAD_LEFT ) ); }
+	if( $format === 'array' ) { return $array; }
+	
+	if( $format === 'timespan' ) { 
+		// The timespan format is limited to a INT64 number of seconds
+		if( $array[ 'days' ] > 10675198 ) { $array[ 'days' ] = 10675198; }
+		
+		return sprintf( '%s.%s:%s:%s', str_pad( $array[ 'days' ], 3, '0', STR_PAD_LEFT ), str_pad( $array[ 'hours' ], 2, '0', STR_PAD_LEFT ), str_pad( $array[ 'minutes' ], 2, '0', STR_PAD_LEFT ), str_pad( $array[ 'seconds' ], 2, '0', STR_PAD_LEFT ) );
+	}
+	
+	// The iso8601 format is limited to 12-digit numbers
+	if( $array[ 'days' ] > 999999999999 ) { $array[ 'days' ] = 999999999999; }
 	
     return sprintf( 'P%dDT%dH%dM%dS', $array[ 'days' ], $array[ 'hours' ], $array[ 'minutes' ], $array[ 'seconds' ] );
 }

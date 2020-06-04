@@ -768,7 +768,7 @@ function bookacti_set_tooltip_position( element, tooltip_container, position ) {
 
 /**
  * Set min and max quantity on the quantity field
- * @version 1.8.2
+ * @version 1.8.4
  * @param {HTMLElement} booking_system
  * @param {HTMLElement} qty_field
  * @param {object} event_summary_data
@@ -824,8 +824,8 @@ function bookacti_set_min_and_max_quantity( booking_system, qty_field, event_sum
 								var event_start_formatted = moment.utc( event.start ).format( 'YYYY-MM-DD HH:mm:ss' );
 								if( typeof bookacti.booking_system[ booking_system_id ][ 'bookings' ][ event.id ] !== 'undefined' ) {
 									if( typeof bookacti.booking_system[ booking_system_id ][ 'bookings' ][ event.id ][ event_start_formatted ] !== 'undefined' ) {
-										var occurence = bookacti.booking_system[ booking_system_id ][ 'bookings' ][ event.id ][ event_start_formatted ];
-										quantity_booked = parseInt( occurence[ 'current_user_bookings' ] );
+										var occurrence = bookacti.booking_system[ booking_system_id ][ 'bookings' ][ event.id ][ event_start_formatted ];
+										quantity_booked = parseInt( occurrence[ 'current_user_bookings' ] );
 									}
 								}
 							}
@@ -996,7 +996,7 @@ function bookacti_get_event_availability( booking_system, event ) {
 
 /**
  * Check if an event is event available
- * @version 1.8.0
+ * @version 1.8.4
  * @param {HTMLElement} booking_system
  * @param {object} event
  * @returns {boolean}
@@ -1077,9 +1077,9 @@ function bookacti_is_event_available( booking_system, event ) {
 					var max_users		= typeof activity_data[ 'max_users_per_event' ] === 'undefined' ? 0 : ( activity_data[ 'max_users_per_event' ] ? parseInt( activity_data[ 'max_users_per_event' ] ) : 0 );
 
 					if( min_quantity || max_quantity || max_users ) {
-						var occurence = bookacti.booking_system[ booking_system_id ][ 'bookings' ][ event.id ][ event_start_formatted ];
-						var qty_booked = parseInt( occurence[ 'current_user_bookings' ] );
-						if( max_users && qty_booked === 0 && occurence[ 'distinct_users' ] >= max_users ) {
+						var occurrence = bookacti.booking_system[ booking_system_id ][ 'bookings' ][ event.id ][ event_start_formatted ];
+						var qty_booked = parseInt( occurrence[ 'current_user_bookings' ] );
+						if( max_users && qty_booked === 0 && occurrence[ 'distinct_users' ] >= max_users ) {
 							max_users_ok = false;
 						}
 						if( max_quantity && qty_booked >= max_quantity ) {

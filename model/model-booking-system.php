@@ -11,7 +11,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
  *  @type array $templates Array of template IDs
  *  @type array $activities Array of activity IDs
  *  @type array $interval array( 'start' => 'Y-m-d H:i:s', 'end' => 'Y-m-d H:i:s' )
- *  @type boolean $skip_exceptions Whether to retrieve occurence on exceptions
+ *  @type boolean $skip_exceptions Whether to retrieve occurrence on exceptions
  *  @type boolean $past_events Whether to compute past events
  *  @type boolean $bounding_events_only Whether to retrieve the first and the last events only
  * }

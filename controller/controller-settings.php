@@ -717,6 +717,7 @@ add_action( 'wp_ajax_bookactiArchiveDataDelete', 'bookacti_controller_archive_da
 /**
  * Restore bookings and events from backup files
  * @since 1.7.0
+ * @version 1.8.4
  */
 function bookacti_controller_archive_restore_data() {
 	$filename = sanitize_file_name( $_POST[ 'filename' ] );
@@ -734,7 +735,7 @@ function bookacti_controller_archive_restore_data() {
 	$imported		= bookacti_import_sql_files( $zip_file );
 	
 	if( $imported[ 'status' ] !== 'success' ) {
-		bookacti_send_json( array( 'status' => 'failed', 'error' => 'import_failed', 'results' => $imported[ 'results' ], 'message' => esc_html__( 'An error occured while trying to restore backup data.', 'booking-activities' ) ), 'archive_restore_data' );
+		bookacti_send_json( array( 'status' => 'failed', 'error' => 'import_failed', 'results' => $imported[ 'results' ], 'message' => esc_html__( 'An error occurred while trying to restore backup data.', 'booking-activities' ) ), 'archive_restore_data' );
 	}
 	
 	// Feedback message
@@ -748,6 +749,7 @@ add_action( 'wp_ajax_bookactiArchiveRestoreData', 'bookacti_controller_archive_r
 /**
  * Delete backup file
  * @since 1.7.0
+ * @version 1.8.4
  */
 function bookacti_controller_archive_delete_file() {
 	$filename = sanitize_file_name( $_POST[ 'filename' ] );
@@ -761,7 +763,7 @@ function bookacti_controller_archive_delete_file() {
 	$deleted		= unlink( $zip_file );
 	
 	if( ! $deleted ) {
-		bookacti_send_json( array( 'status' => 'failed', 'error' => 'unlink_failed', 'message' => esc_html__( 'An error occured while trying to delete the backup file.', 'booking-activities' ) ), 'archive_delete_file' );
+		bookacti_send_json( array( 'status' => 'failed', 'error' => 'unlink_failed', 'message' => esc_html__( 'An error occurred while trying to delete the backup file.', 'booking-activities' ) ), 'archive_delete_file' );
 	}
 	
 	// Get the archive list table

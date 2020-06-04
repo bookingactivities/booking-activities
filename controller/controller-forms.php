@@ -564,6 +564,7 @@ add_action( 'wp_ajax_nopriv_bookactiForgottenPassword', 'bookacti_controller_for
 /**
  * Check if login form is correct and then register / log the user in
  * @since 1.8.0
+ * @version 1.8.4
  */
 function bookacti_controller_validate_login_form() {
 	// Check nonce
@@ -605,13 +606,6 @@ function bookacti_controller_validate_login_form() {
 		bookacti_send_json( $return_array, 'submit_login_form' );
 	}
 	
-	// Validate the login field
-	$form_fields_validated = bookacti_validate_form_fields( $form_id, array( $login_field ) );
-	if( $form_fields_validated[ 'status' ] !== 'success' ) {
-		$form_fields_validated[ 'message' ] = is_array( $form_fields_validated[ 'message' ] ) ? implode( '</li><li>', $form_fields_validated[ 'message' ] ) : $form_fields_validated[ 'message' ];
-		bookacti_send_json( $form_fields_validated, 'submit_login_form' );
-	}
-	
 	// Check if login / registration is allowed independantly
 	$calendar_field = ! empty( $fields_data[ 'calendar' ] ) ? $fields_data[ 'calendar' ] : array();
 	if( ! $calendar_field ) {
@@ -621,7 +615,7 @@ function bookacti_controller_validate_login_form() {
 	}
 	
 	// Let third party plugins validate their own part of the form
-	$return_array = apply_filters( 'bookacti_validate_login_form_submission', $return_array, $form_id, $login_field, $form_id );
+	$return_array = apply_filters( 'bookacti_validate_login_form_submission', $return_array, $form_id, $login_field );
 	if( $return_array[ 'status' ] ) {
 		$return_array[ 'message' ] = is_array( $return_array[ 'message' ] ) ? implode( '</li><li>', $return_array[ 'message' ] ) : $return_array[ 'message' ];
 		bookacti_send_json( $return_array, 'submit_login_form' );
@@ -675,7 +669,7 @@ function bookacti_controller_validate_login_form() {
 	$is_logged_in = bookacti_log_user_in( $user->user_login );
 	if( ! $is_logged_in ) { 
 		$return_array[ 'error' ] = 'cannot_log_in';
-		$return_array[ 'message' ][ 'not_logged_in' ] = esc_html__( 'An error occured while trying to log you in.', 'booking-activities' );
+		$return_array[ 'message' ][ 'not_logged_in' ] = esc_html__( 'An error occurred while trying to log you in.', 'booking-activities' );
 		$return_array[ 'message' ] = implode( '</li><li>', $return_array[ 'message' ] );
 		bookacti_send_json( $return_array, 'submit_login_form' );
 	}
@@ -700,7 +694,7 @@ add_action( 'wp_ajax_nopriv_bookactiSubmitLoginForm', 'bookacti_controller_valid
 /**
  * Check if booking form is correct and then book the event, or send the error message
  * @since 1.5.0
- * @version 1.8.0
+ * @version 1.8.4
  */
 function bookacti_controller_validate_booking_form() {
 	// Check nonce
@@ -828,7 +822,7 @@ function bookacti_controller_validate_booking_form() {
 			$is_logged_in = bookacti_log_user_in( $user->user_login );
 			if( ! $is_logged_in ) { 
 				$return_array[ 'error' ] = 'cannot_log_in';
-				$return_array[ 'message' ][ 'not_logged_in' ] = esc_html__( 'An error occured while trying to log you in.', 'booking-activities' );
+				$return_array[ 'message' ][ 'not_logged_in' ] = esc_html__( 'An error occurred while trying to log you in.', 'booking-activities' );
 				$return_array[ 'message' ] = implode( '</li><li>', $return_array[ 'message' ] );
 				bookacti_send_json( $return_array, 'submit_booking_form' );
 			}
@@ -1103,6 +1097,7 @@ add_action( 'wp_ajax_bookactiUpdateForm', 'bookacti_controller_update_form' );
 /**
  * Duplicate a booking form
  * @since 1.7.18
+ * @version 1.8.4
  */
 function bookacti_controller_duplicate_form() {
 	if( empty( $_REQUEST[ 'form_id' ] ) || empty( $_REQUEST[ 'action' ] ) || empty( $_REQUEST[ 'page' ] ) 
@@ -1130,7 +1125,7 @@ function bookacti_controller_duplicate_form() {
 	// Gget original form data
 	$original_form_data = bookacti_get_form_data( $original_form_id );
 	if( ! $original_form_data ) {
-		$notice[ 'message' ] = esc_html__( 'An error occured while trying to duplicate a booking form.', 'booking-activities' );
+		$notice[ 'message' ] = esc_html__( 'An error occurred while trying to duplicate a booking form.', 'booking-activities' );
 		bookacti_display_admin_notice( $notice, 'duplicate_form' );
 		return;
 	}
@@ -1189,7 +1184,7 @@ add_action( 'all_admin_notices', 'bookacti_controller_duplicate_form', 10 );
 /**
  * Trash / Remove / Restore a booking form according to URL parameters and display an admin notice to feedback
  * @since 1.5.0
- * @version 1.7.18
+ * @version 1.8.4
  */
 function bookacti_controller_remove_form() {
 	if( empty( $_REQUEST[ 'form_id' ] ) || empty( $_REQUEST[ 'action' ] ) || empty( $_REQUEST[ 'page' ] ) 
@@ -1233,7 +1228,7 @@ function bookacti_controller_remove_form() {
 			$notice[ 'type' ] = 'success';
 			$notice[ 'message' ] = esc_html__( 'The booking form has been removed.', 'booking-activities' );
 		} else {
-			$notice[ 'message' ] = esc_html__( 'An error occured while trying to delete a booking form.', 'booking-activities' );
+			$notice[ 'message' ] = esc_html__( 'An error occurred while trying to delete a booking form.', 'booking-activities' );
 		}
 	}
 	
@@ -1256,7 +1251,7 @@ function bookacti_controller_remove_form() {
 			$notice[ 'message' ] = esc_html__( 'The booking form has been restored.', 'booking-activities' );
 		
 		} else {
-			$notice[ 'message' ] = esc_html__( 'An error occured while trying to restore a booking form.', 'booking-activities' );
+			$notice[ 'message' ] = esc_html__( 'An error occurred while trying to restore a booking form.', 'booking-activities' );
 		}
 	}
 	
@@ -1309,7 +1304,7 @@ add_action( 'wp_ajax_bookactiUpdateFormMeta', 'bookacti_controller_update_form_m
 /**
  * AJAX Controller - Insert a form field
  * @since 1.5.0
- * @version 1.5.3
+ * @version 1.8.4
  */
 function bookacti_controller_insert_form_field() {
 	
@@ -1362,7 +1357,7 @@ function bookacti_controller_insert_form_field() {
 		bookacti_send_json( array( 
 			'status' => 'failed', 
 			'error' => 'not_inserted', 
-			'message' => __( 'An error occured while trying to insert the form field.', 'booking-activities' ) ), 'insert_form_field' );
+			'message' => __( 'An error occurred while trying to insert the form field.', 'booking-activities' ) ), 'insert_form_field' );
 	}
 
 	$fields_data[ $field_name ][ 'field_id' ] = $field_id;

@@ -1,6 +1,6 @@
 /**
  * Initialize the calendar
- * @version 1.8.3
+ * @version 1.8.4
  * @param {HTMLElement} booking_system
  * @param {boolean} reload_events
  */
@@ -51,11 +51,19 @@ function bookacti_set_calendar_up( booking_system, reload_events ) {
 			callback( [] );
 		},
 
-		viewRender: function( view ){ 
+		viewRender: function( view, element ){ 
 			if( bookacti.booking_system[ booking_system_id ][ 'load_events' ] === true ) {
 				var interval = { 'start': moment.utc( view.intervalStart.format( 'YYYY-MM-DD' ) + ' 00:00:00' ), 'end': moment.utc( view.intervalEnd.subtract( 1, 'days' ).format( 'YYYY-MM-DD' ) + ' 23:59:59' ) };
 				bookacti_fetch_events_from_interval( booking_system, interval );
 			}
+			
+			// Add a class if the events are overlapping
+			if( view.name.indexOf( 'agenda' ) > -1 ){
+				var event_overlap = typeof display_data.slotEventOverlap !== 'undefined' ? display_data.slotEventOverlap : calendar.fullCalendar( 'option', 'slotEventOverlap' );
+				if( event_overlap ) { element.addClass( 'bookacti-events-overlap' ); }
+			}
+			
+			booking_system.trigger( 'bookacti_view_render', [ view, element ] );
 		},
 		
 		eventRender: function( event, element, view ) { 
@@ -121,6 +129,8 @@ function bookacti_set_calendar_up( booking_system, reload_events ) {
 		
 		eventAfterRender: function( event, element, view ) { 
 			bookacti_add_class_according_to_event_size( element );
+			
+			booking_system.trigger( 'bookacti_event_after_render', [ event, element, view ] );
 		},
 		
 		eventAfterAllRender: function( view ) {
@@ -130,6 +140,8 @@ function bookacti_set_calendar_up( booking_system, reload_events ) {
 			});
 			
 			bookacti_refresh_picked_events_on_calendar( booking_system );
+			
+			booking_system.trigger( 'bookacti_event_after_all_render', [ view ] );
 		},
 		
 		eventClick: function( event, jsEvent, view ) {
@@ -372,19 +384,25 @@ function bookacti_refresh_picked_events_on_calendar( booking_system ) {
 
 /**
  * Add CSS classes to events accoding to their size
- * @version 1.5.9
+ * @version 1.8.4
  * @param {HTMLElement} element
  */
 function bookacti_add_class_according_to_event_size( element ) {
-	
-	var custom_size = bookacti.event_sizes;
-	
+	element.removeClass( 'bookacti-tiny-event bookacti-small-event bookacti-narrow-event bookacti-wide-event' );
+
+	var custom_size = $j.extend( {}, bookacti.event_sizes );
 	$j( element ).trigger( 'bookacti_event_sizes', [ element, custom_size ] );
+
+	var add_classes = '';
+	var remove_classes = '';
 	
-	if( $j( element ).innerHeight() < custom_size.tiny_height )	{ element.addClass( 'bookacti-tiny-event' ).removeClass( 'bookacti-small-event' ); }
-	if( $j( element ).innerHeight() < custom_size.small_height ){ element.addClass( 'bookacti-small-event' ).removeClass( 'bookacti-tiny-event' ); }
-	if( $j( element ).innerWidth() < custom_size.narrow_width )	{ element.addClass( 'bookacti-narrow-event' ).removeClass( 'bookacti-wide-event' ); }
-	if( $j( element ).innerWidth() > custom_size.wide_width )	{ element.addClass( 'bookacti-wide-event' ).removeClass( 'bookacti-narrow-event' ); element.removeClass( 'fc-short' ); }
+	if( $j( element ).innerHeight() < custom_size.small_height ){ add_classes += ' bookacti-small-event'; }
+	if( $j( element ).innerHeight() < custom_size.tiny_height )	{ add_classes += ' bookacti-tiny-event'; remove_classes += ' bookacti-small-event'; }
+	if( $j( element ).innerWidth() < custom_size.narrow_width )	{ add_classes += ' bookacti-narrow-event'; }
+	if( $j( element ).innerWidth() > custom_size.wide_width )	{ add_classes += ' bookacti-wide-event'; remove_classes += ' bookacti-narrow-event fc-short'; }
+
+	if( add_classes )	{ element.addClass( add_classes ); }
+	if( remove_classes ){ element.removeClass( remove_classes ); }
 }
 
 

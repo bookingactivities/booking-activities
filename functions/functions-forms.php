@@ -434,7 +434,7 @@ function bookacti_get_default_form_field_common_data() {
 		'required' => 0,		// Whether the customer is forced to fill this field when it is displayed
 		'compulsory' => 0,		// Whether the field can be deleted
 		'default' => 0,			// Whether the field is part of the form by default (if compulsory, it is by default too)
-		'unique' => 1			// Whether the user can add multiple occurence of this field in the form
+		'unique' => 1			// Whether the user can add multiple occurrence of this field in the form
 	));
 }
 

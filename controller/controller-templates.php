@@ -258,19 +258,19 @@ add_action( 'wp_ajax_bookactiDeleteEventForced', 'bookacti_controller_delete_eve
 
 
 /**
- * AJAX Controller - Unbind occurences of an event
- * @version 1.8.0
+ * AJAX Controller - Unbind occurrences of an event
+ * @version 1.8.4
  */
 function bookacti_controller_unbind_occurrences() {
 	$event_id		= intval( $_POST[ 'event_id' ] );
 	$template_id	= bookacti_get_event_template_id( $event_id );
 
 	// Check nonce and capabilities
-	$is_nonce_valid = check_ajax_referer( 'bookacti_unbind_occurences', 'nonce', false );
-	if( ! $is_nonce_valid ) { bookacti_send_json_invalid_nonce( 'unbind_occurences' ); }
+	$is_nonce_valid = check_ajax_referer( 'bookacti_unbind_occurrences', 'nonce', false );
+	if( ! $is_nonce_valid ) { bookacti_send_json_invalid_nonce( 'unbind_occurrences' ); }
 
 	$is_allowed = current_user_can( 'bookacti_edit_templates' ) && bookacti_user_can_manage_template( $template_id );
-	if( ! $is_allowed ) { bookacti_send_json_not_allowed( 'unbind_occurences' ); }
+	if( ! $is_allowed ) { bookacti_send_json_not_allowed( 'unbind_occurrences' ); }
 
 	$interval			= bookacti_sanitize_events_interval( $_POST[ 'interval' ] );
 	$sanitized_unbind	= sanitize_title_with_dashes( $_POST[ 'unbind' ] );
@@ -291,7 +291,7 @@ function bookacti_controller_unbind_occurrences() {
 	$exceptions		= bookacti_get_exceptions_by_event( array( 'templates' => array( $template_id ) ) );
 	$groups_events	= bookacti_get_groups_events( $template_id );
 
-	do_action( 'bookacti_event_occurences_unbound', $event_id, $new_event_id, $events );
+	do_action( 'bookacti_event_occurrences_unbound', $event_id, $new_event_id, $events );
 
 	bookacti_send_json( array( 
 		'status'		=> 'success', 
@@ -300,7 +300,7 @@ function bookacti_controller_unbind_occurrences() {
 		'events_data'	=> $events[ 'data' ] ? $events[ 'data' ] : array(),
 		'groups_events' => $groups_events, 
 		'exceptions'	=> $exceptions 
-	), 'unbind_occurences' );
+	), 'unbind_occurrences' );
 }
 add_action( 'wp_ajax_bookactiUnbindOccurences', 'bookacti_controller_unbind_occurrences' );
 
