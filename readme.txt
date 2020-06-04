@@ -5,7 +5,7 @@ Tags: booking, reservation, booking form, woocommerce booking, booking events
 Requires at least: 3.6
 Tested up to: 5.4
 Requires PHP: 5.3
-Stable tag: 1.8.3
+Stable tag: 1.8.4
 License: GPLv3 or later
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
 
@@ -319,21 +319,23 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 
 == Changelog ==
 
-= 1.8.4 =
+= 1.8.4 - 2020/06/04 =
 * Tweak - Display availabilities on the left if events overlap on agenda views
+* Fix - Occurrence of repeated events may not appear if only one occurrence is to be displayed
 * Fix - Fix tiny and narrow events CSS
 * Fix - PHP error after booking if calendar availability period was too high
 * Fix - Do not verify all form fields if the user only log in / register
 * Fix - Internet Explorer 11: JS error when submitting forms
+* Fix - Misspelling of occurrence
 
 = 1.8.3 - 2020/05/21 =
 * Tweak - Add the redirect_url parameter to the login shortcode to redirect to any page after login ([bookingactivities_login form="" redirect_url=""])
 * Fix - {price} notification tag displayed price without tax
 * Fix - Send booking notification when an order item bound to bookings are manually refunded (if "Send when an order is refunded" option is active)
 * Fix - Check capabilities before listing / searching users in users selectboxes
-* Fix - Last occurence of repeated event of the interval may not be loaded
+* Fix - Last occurrence of repeated event of the interval may not be loaded
 * Fix - Products bound to group categories in calendar settings were not saved
-* Fix - "Unbind booked" feature didn't create exceptions on booked occurences of the new event
+* Fix - "Unbind booked" feature didn't create exceptions on booked occurrences of the new event
 * Lib - Update FullCalendar to 3.10.2 and Moment JS to 2.25.3
 
 = 1.8.2 - 2020/05/14 =
@@ -393,7 +395,7 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 * Fix - Calendar field's Status option not saved if only one status was selected
 * Optimization - JS variables passed via PHP are now loaded only once, have been significantly reduced, and are filtered for the frontend
 * Optimization - Retrieve all users meta with a single query with bookacti_get_users_data
-* Dev - Make sure that the repeated events' occurences and exceptions are included in the repeat period when updated
+* Dev - Make sure that the repeated events' occurrences and exceptions are included in the repeat period when updated
 
 = 1.7.20 - 2020/02/22 =
 * Fix - Error while booking whithout WooCommerce
@@ -568,7 +570,7 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 * Tweak - Add {user_phone} tag to display the user phone number in notifications
 * Tweak - Change the error message for non logged in users trying to book a restricted event
 * Fix - Events spreading over two loading intervals were not displayed (calendar editor, booked events, grouped events)
-* Fix - Unselecting an occurence of a repeated event in calendar editor was unselecting all occurences
+* Fix - Unselecting an occurrence of a repeated event in calendar editor was unselecting all occurrences
 * Fix - Don't display bookings made on events belonging to a deleted calendars
 * Fix - Incorrect custom actions buttons labels (cancel and refund) for booking groups
 * Fix - 0 should be plural
@@ -682,7 +684,7 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 = 1.5.8 - 2018/09/28 =
 * Fix - Hidden fields were shown after hitting "Make a new booking" button
 * Fix - "Generate Password" option prevented the form to be sent (password field not focusable)
-* Fix - PHP error when updating a recurring event if the new range doesn't include all booked occurences
+* Fix - PHP error when updating a recurring event if the new range doesn't include all booked occurrences
 * Fix - WC orders bookings status were not change with WooCommerce < 3.0.0
 * Fix - Remove corrupted cart items bookings when they are removed from cart
 * Fix - Update auto refund process to WC 3.0+ way (kept backward compatibility)
@@ -936,8 +938,8 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 
 = 1.1.4 - 2017/09/14 =
 * Tweak - You can force event deletion even if it is booked
-* Tweak - You can place a repetition exception on booked occurences (a warning will be displayed)
-* Tweak - You can unbind booked occurences in order to edit them independently
+* Tweak - You can place a repetition exception on booked occurrences (a warning will be displayed)
+* Tweak - You can unbind booked occurrences in order to edit them independently
 * Tweak - When you delete an activity, you can now also delete all its events
 * Fix - Cannot edit / move event after being added on calendar (needed page refresh) (bug introduced with 1.1.3)
 * Fix - Fixed possibility to unbind single event, causing unexpected behavior

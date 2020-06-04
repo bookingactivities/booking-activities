@@ -728,7 +728,7 @@ function bookacti_format_booking_system_url_attributes( $atts = array() ) {
 /**
  * Get booking system fields default data
  * @since 1.5.0
- * @version 1.8.0
+ * @version 1.8.4
  * @param array $fields
  * @return array
  */
@@ -877,7 +877,7 @@ function bookacti_get_booking_system_fields_default_data( $fields = array() ) {
 			'type'			=> 'text',
 			'name'			=> 'id',
 			'title'			=> esc_html__( 'ID', 'booking-activities' ),
-			'tip'			=> esc_html__( 'Set the booking system CSS id. Leave this empty if you display more than one occurence of this form on the same page.', 'booking-activities' )
+			'tip'			=> esc_html__( 'Set the booking system CSS id. Leave this empty if you display more than one occurrence of this form on the same page.', 'booking-activities' )
 		);
 	}
 	
@@ -1198,10 +1198,8 @@ function bookacti_validate_booking_form( $group_id, $event_id, $event_start, $ev
 
 
 /**
- * Check if an event or an occurence exists
- * 
- * @version 1.3.1
- * 
+ * Check if an event or an occurrence exists
+ * @version 1.8.4
  * @param object $event
  * @param string $event_start
  * @param string $event_end
@@ -1216,7 +1214,7 @@ function bookacti_is_existing_event( $event, $event_start = NULL, $event_end = N
 	$is_existing_event = false;
 	if( $event ) {
 		if( $event->repeat_freq && $event->repeat_freq !== 'none' ) {
-			$is_existing_event = bookacti_is_existing_occurence( $event, $event_start, $event_end );
+			$is_existing_event = bookacti_is_existing_occurrence( $event, $event_start, $event_end );
 		} else {
 			$is_existing_event = bookacti_is_existing_single_event( $event->event_id, $event_start, $event_end );
 		}
@@ -1227,16 +1225,14 @@ function bookacti_is_existing_event( $event, $event_start = NULL, $event_end = N
 
 
 /**
- * Check if the occurence exists
- * 
- * @version 1.2.2
- * 
+ * Check if the occurrence exists
+ * @since 1.8.4 (was bookacti_is_existing_occurence)
  * @param object|int $event
  * @param string $event_start
  * @param string $event_end
  * @return boolean
  */
-function bookacti_is_existing_occurence( $event, $event_start, $event_end = NULL ) {
+function bookacti_is_existing_occurrence( $event, $event_start, $event_end = NULL ) {
 	// Get the event
 	if( is_numeric( $event ) ) {
 		$event = bookacti_get_event_by_id( $event );
@@ -1257,27 +1253,27 @@ function bookacti_is_existing_occurence( $event, $event_start, $event_end = NULL
 	$repeat_from	= DateTime::createFromFormat( 'Y-m-d', substr( $event->repeat_from, 0, 10 ) );
 	$repeat_to		= DateTime::createFromFormat( 'Y-m-d', substr( $event->repeat_to, 0, 10 ) );
 	$event_datetime	= DateTime::createFromFormat( 'Y-m-d', substr( $event->start, 0, 10 ) );
-	$occurence		= DateTime::createFromFormat( 'Y-m-d', substr( $event_start, 0, 10 ) );
+	$occurrence		= DateTime::createFromFormat( 'Y-m-d', substr( $event_start, 0, 10 ) );
 	$repeat_from_timestamp	= intval( $repeat_from->format( 'U' ) );
 	$repeat_to_timestamp	= intval( $repeat_to->format( 'U' ) );
-	$occurence_timestamp	= intval( $occurence->format( 'U' ) );
+	$occurrence_timestamp	= intval( $occurrence->format( 'U' ) );
 	
-	// Check if occurence is between repeat_from and repeat_to
-	if( $occurence_timestamp < $repeat_from_timestamp || $occurence_timestamp > $repeat_to_timestamp ) { return false; }
+	// Check if occurrence is between repeat_from and repeat_to
+	if( $occurrence_timestamp < $repeat_from_timestamp || $occurrence_timestamp > $repeat_to_timestamp ) { return false; }
 	
 	// Check if the weekdays match
 	if( $event->repeat_freq === 'weekly' ) {
-		if( $occurence->format( 'w' ) !== $event_datetime->format( 'w' ) ) { return false; }
+		if( $occurrence->format( 'w' ) !== $event_datetime->format( 'w' ) ) { return false; }
 	}
 	
 	// Check if the monthdays match
 	if( $event->repeat_freq === 'monthly' ) {
 		$is_last_day_of_month = $event_datetime->format( 't' ) === $event_datetime->format( 'd' );
-		if( ! $is_last_day_of_month && $occurence->format( 'd' ) !== $event_datetime->format( 'd' ) ) { return false; }
-		else if ( $is_last_day_of_month && $occurence->format( 't' ) !== $occurence->format( 'd' ) ) { return false; }
+		if( ! $is_last_day_of_month && $occurrence->format( 'd' ) !== $event_datetime->format( 'd' ) ) { return false; }
+		else if ( $is_last_day_of_month && $occurrence->format( 't' ) !== $occurrence->format( 'd' ) ) { return false; }
 	}
 	
-	// Check if the occurence is on an exception date
+	// Check if the occurrence is on an exception date
 	if( bookacti_is_repeat_exception( $event->event_id, substr( $event_start, 0, 10 ) ) ) { return false; }
 	
 	return true;
@@ -1577,10 +1573,10 @@ function bookacti_seconds_to_explode_time( $seconds ) {
 /**
  * Get array of events from raw events from database
  * @since 1.2.2
- * @version 1.8.0
+ * @version 1.8.4
  * @param array $events Array of objects events from database
  * @param array $raw_args {
- *  @type boolean $skip_exceptions Whether to retrieve occurence on exceptions
+ *  @type boolean $skip_exceptions Whether to retrieve occurrence on exceptions
  *  @type boolean $past_events Whether to compute past events
  *  @type array $interval array( 'start' => 'Y-m-d H:i:s', 'end' => 'Y-m-d H:i:s' )
  *  @type boolean $bounding_events_only Whether to retrieve the first and the last events only
@@ -1647,8 +1643,8 @@ function bookacti_get_events_array_from_db_events( $events, $raw_args = array() 
 			$events_array[ 'events' ][] = $event_fc_data;
 		} else {
 			$args[ 'exceptions_dates' ]	= $args[ 'skip_exceptions' ] && ! empty( $exceptions[ $event->event_id ] ) ? $exceptions[ $event->event_id ] : array();
-			$new_occurences				= bookacti_get_occurences_of_repeated_event( $event, $args );
-			$events_array[ 'events' ]	= array_merge( $events_array[ 'events' ], $new_occurences );
+			$new_occurrences				= bookacti_get_occurrences_of_repeated_event( $event, $args );
+			$events_array[ 'events' ]	= array_merge( $events_array[ 'events' ], $new_occurrences );
 		}
 	}
 	
@@ -1659,11 +1655,12 @@ function bookacti_get_events_array_from_db_events( $events, $raw_args = array() 
 /**
  * Keep only the events having the min start, and the max end
  * @since 1.8.0
+ * @version 1.8.4
  * @param array $events
  * @param array $raw_args {
  *  @type array $interval array( 'start' => 'Y-m-d H:i:s', 'end' => 'Y-m-d H:i:s' )
  *  @type array $exceptions array( event_id => array( 'Y-m-d', ... ) )
- *  @type boolean $skip_exceptions Whether to retrieve occurence on exceptions
+ *  @type boolean $skip_exceptions Whether to retrieve occurrence on exceptions
  *  @type boolean $past_events Whether to include past events
  *  @type boolean $bounding_events_only Whether to retrieve the first and the last events only
  * }
@@ -1689,7 +1686,7 @@ function bookacti_get_bounding_events_from_db_events( $events, $raw_args = array
 	foreach( $events as $event ) {
 		$single_events = array();
 		
-		// For repeated events, generate the first and the last occurence of the interval
+		// For repeated events, generate the first and the last occurrence of the interval
 		if( ! empty( $event->repeat_freq ) && $event->repeat_freq !== 'none' && ! empty( $event->repeat_from ) && ! empty( $event->repeat_to ) ) { 
 			$from_datetime = DateTime::createFromFormat( 'Y-m-d H:i:s', $event->repeat_from . ' 00:00:00' );
 			$to_datetime = DateTime::createFromFormat( 'Y-m-d H:i:s', $event->repeat_to . ' 23:59:59' );
@@ -1698,19 +1695,19 @@ function bookacti_get_bounding_events_from_db_events( $events, $raw_args = array
 			if( ! empty( $bounding_dates[ 'start' ] ) && $from_datetime >= $bounding_dates[ 'start' ]
 			 && ! empty( $bounding_dates[ 'end' ] ) && $to_datetime <= $bounding_dates[ 'end' ] ) { continue; }
 			
-			// Get bounding occurences
+			// Get bounding occurrences
 			$args[ 'exceptions_dates' ] = $args[ 'skip_exceptions' ] && ! empty( $args[ 'exceptions' ][ $event->event_id ] ) ? $args[ 'exceptions' ][ $event->event_id ] : array();
-			$occurences = bookacti_get_occurences_of_repeated_event( $event, $args );
+			$occurrences = bookacti_get_occurrences_of_repeated_event( $event, $args );
 			
-			// Add occurences as single events
-			foreach( $occurences as $occurence ) {
-				$occurence_object = clone $event;
-				$occurence_object->start = $occurence[ 'start' ];
-				$occurence_object->end = $occurence[ 'end' ];
-				$occurence_object->repeat_freq = 'none';
-				$occurence_object->repeat_from = '';
-				$occurence_object->repeat_to = '';
-				$single_events[] = $occurence_object;
+			// Add occurrences as single events
+			foreach( $occurrences as $occurrence ) {
+				$occurrence_object = clone $event;
+				$occurrence_object->start = $occurrence[ 'start' ];
+				$occurrence_object->end = $occurrence[ 'end' ];
+				$occurrence_object->repeat_freq = 'none';
+				$occurrence_object->repeat_from = '';
+				$occurrence_object->repeat_to = '';
+				$single_events[] = $occurrence_object;
 			}
 		} 
 		// For single events, add it as is
@@ -1733,9 +1730,8 @@ function bookacti_get_bounding_events_from_db_events( $events, $raw_args = array
 
 
 /**
- * Get occurences of repeated events
- * @since 1.2.2 (replace bookacti_create_repeated_events)
- * @version 1.8.3
+ * Get occurrences of repeated events
+ * @since 1.8.4 (was bookacti_get_occurences_of_repeated_event)
  * @param object $event Event data 
  * @param array $raw_args {
  *  @type array $interval array( 'start' => 'Y-m-d H:i:s', 'end' => 'Y-m-d H:i:s' )
@@ -1745,7 +1741,7 @@ function bookacti_get_bounding_events_from_db_events( $events, $raw_args = array
  * }
  * @return array
  */
-function bookacti_get_occurences_of_repeated_event( $event, $raw_args = array() ) {
+function bookacti_get_occurrences_of_repeated_event( $event, $raw_args = array() ) {
 	if( ! $event ) { return array(); }
 	
 	$default_args = array(
@@ -1768,7 +1764,7 @@ function bookacti_get_occurences_of_repeated_event( $event, $raw_args = array() 
 		'durationEditable'	=> ! empty( $event->is_resizable ) ? true : false
 	);
 	
-	// Init variables to compute occurences
+	// Init variables to compute occurrences
 	$timezone			= new DateTimeZone( bookacti_get_setting_value( 'bookacti_general_settings', 'timezone' ) );
 	$interval_start		= ! empty( $args[ 'interval' ][ 'start' ] ) ? new DateTime( $args[ 'interval' ][ 'start' ], $timezone ) : '';
 	$interval_end		= ! empty( $args[ 'interval' ][ 'end' ] ) ? new DateTime( $args[ 'interval' ][ 'end' ], $timezone ) : '';
@@ -1777,7 +1773,7 @@ function bookacti_get_occurences_of_repeated_event( $event, $raw_args = array() 
 	$event_duration		= $event_start->diff( $event_end );
 	$event_start_time	= substr( $event->start, 11 );
 	
-	// Compute occurences
+	// Compute occurrences
 	$events		= array();
 	$start_loop	= clone $repeat[ 'from' ];
 	$start_loop->setTime( 00, 00, 00 );
@@ -1790,11 +1786,11 @@ function bookacti_get_occurences_of_repeated_event( $event, $raw_args = array() 
 	while( $iterate ) {
 		// Compute start and end dates
 		$current_loop = clone $loop;
-		$occurence_start = new DateTime( $current_loop->format( 'Y-m-d' ) . ' ' . $event_start_time, $timezone );
-		$occurence_end = clone $occurence_start;
-		$occurence_end->add( $event_duration );
+		$occurrence_start = new DateTime( $current_loop->format( 'Y-m-d' ) . ' ' . $event_start_time, $timezone );
+		$occurrence_end = clone $occurrence_start;
+		$occurrence_end->add( $event_duration );
 		
-		// Allow repeat interval to change between each occurence
+		// Allow repeat interval to change between each occurrence
 		$repeat_interval = is_callable( $repeat[ 'interval' ] ) ? call_user_func_array( $repeat[ 'interval' ], array( $event, $args, $current_loop, $operation ) ) : $repeat[ 'interval' ];
 		
 		// Increase loop for next iteration
@@ -1802,24 +1798,24 @@ function bookacti_get_occurences_of_repeated_event( $event, $raw_args = array() 
 		else { $loop->sub( $repeat_interval ); $iterate = $loop > $start_loop; }
 		
 		// Check if the occurrence is on an exception
-		if( in_array( $occurence_start->format( 'Y-m-d' ), $args[ 'exceptions_dates' ], true ) ) { continue; }
+		if( in_array( $occurrence_start->format( 'Y-m-d' ), $args[ 'exceptions_dates' ], true ) ) { continue; }
 		
 		// Check if the occurrence is in the interval to be rendered
 		if( $args[ 'interval' ] ) {
-			if( $interval_start && $interval_start > $occurence_start ) { continue; }
-			if( $interval_end && $interval_end < $occurence_start ) { continue; }
+			if( $interval_start && $interval_start > $occurrence_start ) { continue; }
+			if( $interval_end && $interval_end < $occurrence_start ) { continue; }
 		}
 		
 		// Format start and end dates
-		$event_occurence = apply_filters( 'bookacti_event_occurence', array(
-			'start'	=> $occurence_start->format( 'Y-m-d H:i:s' ),
-			'end'	=> $occurence_end->format( 'Y-m-d H:i:s' )
+		$event_occurrence = apply_filters( 'bookacti_event_occurrence', array(
+			'start'	=> $occurrence_start->format( 'Y-m-d H:i:s' ),
+			'end'	=> $occurrence_end->format( 'Y-m-d H:i:s' )
 		), $event, $args, $current_loop );
 		
 		
 		// Add this occurrence to events array
-		if( $event_occurence ) { 
-			$events[] = array_merge( $shared_properties, $event_occurence );
+		if( $event_occurrence ) { 
+			$events[] = array_merge( $shared_properties, $event_occurrence );
 			// For bounding events, now that we have the first event, start the loop backwards, get the last event, and exit the loop
 			if( $args[ 'bounding_events_only' ] ) {
 				if( $operation === 'add' ) { $operation = 'sub'; $loop = clone $end_loop; $iterate = $loop > $start_loop; }
@@ -1842,8 +1838,9 @@ function bookacti_get_occurences_of_repeated_event( $event, $raw_args = array() 
 /**
  * Get the event repeat from and to DateTime, and the repeat interval DateInterval (or callable)
  * @since 1.8.0
+ * @version 1.8.4
  * @param object $event
- * @param array $args See bookacti_get_occurences_of_repeated_event documentation
+ * @param array $args See bookacti_get_occurrences_of_repeated_event documentation
  * @return array {
  *  @type DateTime $from
  *  @type DateTime $to
@@ -1941,26 +1938,30 @@ function bookacti_get_event_repeat_data( $event, $args ) {
 			}
 			
 			// Callback in the loop
-			$repeat_interval = 'bookacti_get_interval_to_next_occurence';
+			$repeat_interval = 'bookacti_get_interval_to_next_occurrence';
 			break;
 		default:
 			break;
 	}
+	
+	// Repeat dates must be full days
+	$repeat_from->setTime( 00, 00, 00 );
+	$repeat_to->setTime( 23, 59, 59 );
 	
 	return apply_filters( 'bookacti_event_repeat_data', array( 'from' => $repeat_from, 'to' => $repeat_to, 'interval' => $repeat_interval ), $event, $args );
 }
 
 
 /**
- * Compute the interval to the next occurence
- * @since 1.8.0
+ * Compute the interval to the next occurrence
+ * @since 1.8.4 (was bookacti_get_interval_to_next_occurence)
  * @param object $event
- * @param array $args See bookacti_get_occurences_of_repeated_event documentation
+ * @param array $args See bookacti_get_occurrences_of_repeated_event documentation
  * @param DateTime $current_loop
  * @param string $operation Either "add" or "sub". Make sure it works in both directions.
  * @return DateInterval
  */
-function bookacti_get_interval_to_next_occurence( $event, $args, $current_loop, $operation ) {
+function bookacti_get_interval_to_next_occurrence( $event, $args, $current_loop, $operation ) {
 	$repeat_interval = new DateInterval( 'P1D' ); // Default to daily to avoid unexpected behavior such as infinite loop
 	if( $event->repeat_freq === 'monthly' ) {
 		$timezone			= new DateTimeZone( bookacti_get_setting_value( 'bookacti_general_settings', 'timezone' ) );
@@ -2114,7 +2115,7 @@ function bookacti_get_availability_period( $absolute_period = array(), $relative
 			$relative_end_dt = clone $current_time;
 			$relative_end_dt->add( new DateInterval( $relative_period_end_iso8601 ) );
 			$calendar_end_dt = new DateTime( $calendar_end_date, $timezone );
-			if( $relative_end_dt < $calendar_end_date ) {
+			if( $relative_end_dt < $calendar_end_dt ) {
 				$calendar_end_date = $relative_end_dt < $max_dt ? $relative_end_dt->format( 'Y-m-d H:i:s' ) : '2037-12-31 23:59:59';
 			}
 		}
@@ -2385,7 +2386,7 @@ function bookacti_get_formatted_booking_events_list_raw( $booking_events, $quant
 /**
  * Convert an array of events into ical format
  * @since 1.6.0
- * @version 1.8.0
+ * @version 1.8.4
  * @param array $events
  * @param string $name
  * @param string $description
@@ -2402,15 +2403,15 @@ function bookacti_convert_events_to_ical( $events, $name = '', $description = ''
 	
 	$timezone = bookacti_get_setting_value( 'bookacti_general_settings', 'timezone' );
 	$timezone_obj = new DateTimeZone( $timezone );
-	$occurence_counter = array();
+	$occurrence_counter = array();
 	$vevents = array();
 	
 	foreach( $events[ 'events' ] as $event ) {
-		// Increase the occurence counter
-		if( ! isset( $occurence_counter[ $event[ 'id' ] ] ) ) { $occurence_counter[ $event[ 'id' ] ] = 0; }
-		++$occurence_counter[ $event[ 'id' ] ];
+		// Increase the occurrence counter
+		if( ! isset( $occurrence_counter[ $event[ 'id' ] ] ) ) { $occurrence_counter[ $event[ 'id' ] ] = 0; }
+		++$occurrence_counter[ $event[ 'id' ] ];
 
-		$uid			= $event[ 'id' ] . '-' . $occurence_counter[ $event[ 'id' ] ];
+		$uid			= $event[ 'id' ] . '-' . $occurrence_counter[ $event[ 'id' ] ];
 		$event_start	= new DateTime( $event[ 'start' ], $timezone_obj );
 		$event_end		= new DateTime( $event[ 'end' ], $timezone_obj );
 		$current_time	= new DateTime( 'now', $timezone_obj );

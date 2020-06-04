@@ -2036,7 +2036,7 @@ function bookacti_refund_booking_with_coupon( $booking_id, $booking_type, $refun
 	$data = apply_filters( 'bookacti_refund_coupon_data', $data, $user, $item );
 
 	do {
-		// For the first occurence, try to use the code that may have been changed with 'bookacti_refund_coupon_data' hook
+		// For the first occurrence, try to use the code that may have been changed with 'bookacti_refund_coupon_data' hook
 		if( $i !== 1 ) { 
 			$data['coupon']['code'] = sprintf( $code_template, $user_id_int, $i ); 
 		}

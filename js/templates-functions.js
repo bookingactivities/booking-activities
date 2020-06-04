@@ -759,23 +759,23 @@ function bookacti_is_locked_event( event_id ) {
 
 
 /**
- * Unbind occurences of a booked event
- * @version 1.8.0
+ * Unbind occurrences of a booked event
+ * @version 1.8.4
  * @param {object} event
- * @param {string} occurences
+ * @param {string} occurrences
  */
-function bookacti_unbind_occurrences( event, occurences ) {
+function bookacti_unbind_occurrences( event, occurrences ) {
 	var data = { 
 		'action': 'bookactiUnbindOccurences', 
-		'unbind': occurences,
+		'unbind': occurrences,
 		'event_id': event.id,
 		'event_start': event.start.format( 'YYYY-MM-DD HH:mm:ss' ),
 		'event_end': event.end.format( 'YYYY-MM-DD HH:mm:ss' ),
 		'interval': bookacti.booking_system[ 'bookacti-template-calendar' ][ 'events_interval' ],
-		'nonce': $j( '#nonce_unbind_occurences' ).val()
+		'nonce': $j( '#nonce_unbind_occurrences' ).val()
 	};
 
-	$j( '#bookacti-template-container' ).trigger( 'bookacti_unbind_occurences_before', [ data, event, occurences ] );
+	$j( '#bookacti-template-container' ).trigger( 'bookacti_unbind_occurrences_before', [ data, event, occurrences ] );
 
 	bookacti_start_template_loading();
 
@@ -788,7 +788,7 @@ function bookacti_unbind_occurrences( event, occurences ) {
 			if( response.status === 'success' ) {
 				var new_event_id = response.new_event_id;
 
-				// Unselect the event or occurences of the event
+				// Unselect the event or occurrences of the event
 				bookacti_unselect_event( event, true );
 
 				// Update affected calendar data
@@ -799,8 +799,8 @@ function bookacti_unbind_occurrences( event, occurences ) {
 					bookacti.booking_system[ 'bookacti-template-calendar' ][ 'events_data' ][ event.id ]	= response.events_data[ event.id ];
 				}
 
-				// If we unbound all booked occurences, we need to replace the old events by the new ones
-				if( occurences === 'booked' ) {
+				// If we unbound all booked occurrences, we need to replace the old events by the new ones
+				if( occurrences === 'booked' ) {
 					$j( '#bookacti-template-calendar' ).fullCalendar( 'removeEvents', event.id );
 				}
 
@@ -809,7 +809,7 @@ function bookacti_unbind_occurrences( event, occurences ) {
 
 				// Calling addEventSource will rerender events and then new exceptions will be taken into account
 				
-				$j( '#bookacti-template-container' ).trigger( 'bookacti_occurences_unbound', [ response, data, event, occurences ] );
+				$j( '#bookacti-template-container' ).trigger( 'bookacti_occurrences_unbound', [ response, data, event, occurrences ] );
 				
 			} else {
 				var error_message = typeof response.message !== 'undefined' ? response.message : bookacti_localized.error;

@@ -234,7 +234,7 @@ function bookacti_get_event_repeat_periods() {
 /**
  * Sanitize event data
  * @since 1.8.0
- * @version 1.8.2
+ * @version 1.8.4
  */
 function bookacti_sanitize_event_data( $raw_data ) {
 	$default_data = bookacti_get_event_default_data();
@@ -289,9 +289,9 @@ function bookacti_sanitize_event_data( $raw_data ) {
 		$data[ 'repeat_to' ] = '';
 	}
 	if( $data[ 'repeat_freq' ] !== 'none' && $data[ 'repeat_from' ] && $data[ 'repeat_to' ] ) {
-		// Make the repetition period fit the events occurences
+		// Make the repetition period fit the events occurrences
 		$dummy_event = (object) $data;
-		$bounding_events = bookacti_get_occurences_of_repeated_event( $dummy_event, array( 'exceptions_dates' => $data[ 'exceptions_dates' ], 'past_events' => true, 'bounding_events_only' => true ) );
+		$bounding_events = bookacti_get_occurrences_of_repeated_event( $dummy_event, array( 'exceptions_dates' => $data[ 'exceptions_dates' ], 'past_events' => true, 'bounding_events_only' => true ) );
 		
 		// Compute bounding dates
 		if( ! empty( $bounding_events ) ) {
@@ -389,7 +389,7 @@ function bookacti_validate_event_data( $data ) {
 		$return_array[ 'errors' ][] = 'error_booked_events_out_of_period';
 		if( $return_array[ 'message' ] ) { $return_array[ 'message' ] .= '</li><li>'; }
 		/* translators: %1$s and %2$s are formatted dates */
-		$return_array[ 'message' ] .= sprintf( esc_html__( 'The repetition period must include all booked occurences (from %1$s to %2$s).', 'booking-activities' ), date_i18n( $date_format, $max_from ), date_i18n( $date_format, $min_to ) );
+		$return_array[ 'message' ] .= sprintf( esc_html__( 'The repetition period must include all booked occurrences (from %1$s to %2$s).', 'booking-activities' ), date_i18n( $date_format, $max_from ), date_i18n( $date_format, $min_to ) );
 	}
 
 	return apply_filters( 'bookacti_validate_event', $return_array, $data ) ;
