@@ -321,11 +321,11 @@ function bookacti_add_product_to_cart_via_booking_system( booking_system, produc
         },
         error: function( e ){
 			// Fill error message
-			var message = '<ul class="bookacti-error-list"><li>AJAX error occured while trying to add the product to cart</li></ul>';
+			var message = '<ul class="bookacti-error-list"><li>AJAX error occurred while trying to add the product to cart</li></ul>';
 			error_div.empty().append( message ).show();
 			// Scroll to error message
 			bookacti_scroll_to( error_div, 500, 'middle' );
-            console.log( 'AJAX error occured while trying to add the product to cart' );
+            console.log( 'AJAX error occurred while trying to add the product to cart' );
             console.log( e );
         },
         complete: function() { 

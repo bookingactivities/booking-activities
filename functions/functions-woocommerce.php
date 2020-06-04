@@ -309,7 +309,7 @@ function bookacti_controller_update_booking_quantity( $booking_id, $new_quantity
 				$message = __( 'This event is no longer available. Please choose another event.', 'booking-activities' );
 
 			} else if( $response[ 'error' ] === 'failed' ) {
-				// If an unknown error has occured during the database operation
+				// If an unknown error has occurred during the database operation
 				$message = __( 'An error occurs while trying to change a product quantity. Please try again later.', 'booking-activities' );
 			}
 
@@ -1129,7 +1129,7 @@ function bookacti_turn_order_bookings_to( $order, $state = 'booked', $payment_st
 	$response[ 'errors' ]	= array();
 	$response[ 'updated' ]	= $updated;
 
-	// Check if an error occured during booking state update
+	// Check if an error occurred during booking state update
 	if( $updated === false ) {
 		$response[ 'status' ] = 'failed';
 		$response[ 'errors' ][] = 'update_failed';

@@ -70,7 +70,7 @@ add_action( 'wp_ajax_bookactiGetBookingList', 'bookacti_controller_get_booking_l
 
 /**
  * AJAX Controller - Cancel a booking
- * @version 1.8.0
+ * @version 1.8.4
  */
 function bookacti_controller_cancel_booking() {
 	$booking_id = intval( $_POST[ 'booking_id' ] );
@@ -95,7 +95,7 @@ function bookacti_controller_cancel_booking() {
 
 	$cancelled = bookacti_cancel_booking( $booking_id );
 	if( ! $cancelled ) {
-		bookacti_send_json( array( 'status' => 'failed', 'error' => 'error_cancel_booking', 'message' => esc_html__( 'An error occured while trying to cancel the booking.', 'booking-activities' ) ), 'cancel_booking' );
+		bookacti_send_json( array( 'status' => 'failed', 'error' => 'error_cancel_booking', 'message' => esc_html__( 'An error occurred while trying to cancel the booking.', 'booking-activities' ) ), 'cancel_booking' );
 	}
 
 	do_action( 'bookacti_booking_state_changed', $booking_id, 'cancelled', array( 'is_admin' => false ) );
@@ -147,7 +147,7 @@ add_action( 'wp_ajax_nopriv_bookactiGetBookingRefundActionsHTML', 'bookacti_cont
 
 /**
  * AJAX Controller - Refund a booking
- * @version 1.8.0
+ * @version 1.8.4
  */
 function bookacti_controller_refund_booking() {
 	$booking_id			= intval( $_POST[ 'booking_id' ] );
@@ -176,7 +176,7 @@ function bookacti_controller_refund_booking() {
 		if( $refunded ) {
 			$refunded = array( 'status' => 'success', 'new_state' => 'refund_requested', 'message' => esc_html__( 'Your refund request has been sent. We will contact you soon.', 'booking-activities' ) );
 		} else {
-			$refunded = array( 'status'	=> 'failed', 'error' => 'cannot_send_email', 'message' => esc_html__( 'An error occured while trying to send the email.', 'booking-activities' ) );
+			$refunded = array( 'status'	=> 'failed', 'error' => 'cannot_send_email', 'message' => esc_html__( 'An error occurred while trying to send the email.', 'booking-activities' ) );
 		}
 	} else {
 		$refunded = apply_filters( 'bookacti_refund_booking', array( 'status' => 'failed' ), $booking_id, 'single', $refund_action, $refund_message, $front_or_admin );
@@ -213,7 +213,7 @@ add_action( 'wp_ajax_nopriv_bookactiRefundBooking', 'bookacti_controller_refund_
 
 /**
  * AJAX Controller - Change booking state
- * @version 1.8.0
+ * @version 1.8.4
  */
 function bookacti_controller_change_booking_state() {
 	$booking_id			= intval( $_POST[ 'booking_id' ] );
@@ -249,7 +249,7 @@ function bookacti_controller_change_booking_state() {
 
 		$updated = bookacti_update_booking_state( $booking_id, $new_booking_state, $active );
 		if( $updated === false ) { 
-			bookacti_send_json( array( 'status' => 'failed', 'error' => 'error_update_booking_status', 'message' => esc_html__( 'An error occured while trying to change the booking status.', 'booking-activities' ) ), 'change_booking_status' );
+			bookacti_send_json( array( 'status' => 'failed', 'error' => 'error_update_booking_status', 'message' => esc_html__( 'An error occurred while trying to change the booking status.', 'booking-activities' ) ), 'change_booking_status' );
 		}
 
 		do_action( 'bookacti_booking_state_changed', $booking_id, $new_booking_state, array( 'is_admin' => $is_admin, 'active' => $active, 'send_notifications' => $send_notifications ) );
@@ -259,7 +259,7 @@ function bookacti_controller_change_booking_state() {
 	if( $new_payment_status && $booking->payment_status !== $new_payment_status ) {
 		$updated = bookacti_update_booking_payment_status( $booking_id, $new_payment_status );
 		if( $updated === false ) { 
-			bookacti_send_json( array( 'status' => 'failed', 'error' => 'error_update_booking_payment_status', 'message' => esc_html__( 'An error occured while trying to change the booking payment status.', 'booking-activities' ) ), 'change_booking_status' );
+			bookacti_send_json( array( 'status' => 'failed', 'error' => 'error_update_booking_payment_status', 'message' => esc_html__( 'An error occurred while trying to change the booking payment status.', 'booking-activities' ) ), 'change_booking_status' );
 		}
 
 		do_action( 'bookacti_booking_payment_status_changed', $booking_id, $new_payment_status, array( 'is_admin' => $is_admin ) );
@@ -280,7 +280,7 @@ add_action( 'wp_ajax_bookactiChangeBookingState', 'bookacti_controller_change_bo
 /**
  * AJAX Controller - Change booking quantity
  * @since 1.7.10
- * @version 1.8.0
+ * @version 1.8.4
  */
 function bookacti_controller_change_booking_quantity() {
 	$booking_id		= intval( $_POST[ 'booking_id' ] );
@@ -305,7 +305,7 @@ function bookacti_controller_change_booking_quantity() {
 	// Update booking quantity
 	$updated = bookacti_force_update_booking_quantity( $booking_id, $new_quantity );
 	if( $updated === false ) { 
-		bookacti_send_json( array( 'status' => 'failed', 'error' => 'error_update_booking_quantity', 'message' => esc_html__( 'An error occured while trying to change the booking quantity.', 'booking-activities' ) ), 'change_booking_quantity' );
+		bookacti_send_json( array( 'status' => 'failed', 'error' => 'error_update_booking_quantity', 'message' => esc_html__( 'An error occurred while trying to change the booking quantity.', 'booking-activities' ) ), 'change_booking_quantity' );
 	}
 
 	do_action( 'bookacti_booking_quantity_updated', $booking_id, $new_quantity, $old_booking->quantity, array( 'is_admin' => $is_admin ) );
@@ -537,7 +537,7 @@ add_action( 'bookacti_booking_group_state_changed', 'bookacti_trigger_booking_st
 /**
  * AJAX Controller - Cancel a booking group
  * @since 1.1.0
- * @version 1.8.0
+ * @version 1.8.4
  */
 function bookacti_controller_cancel_booking_group() {
 	$booking_group_id = intval( $_POST[ 'booking_id' ] );
@@ -562,7 +562,7 @@ function bookacti_controller_cancel_booking_group() {
 
 	$cancelled = bookacti_update_booking_group_state( $booking_group_id, 'cancelled', 'auto', true );
 	if( ! $cancelled ) {
-		bookacti_send_json( array( 'status' => 'failed', 'error' => 'error_cancel_booking_group', 'message' => esc_html__( 'An error occured while trying to cancel the booking group.', 'booking-activities' ) ), 'cancel_booking_group' );
+		bookacti_send_json( array( 'status' => 'failed', 'error' => 'error_cancel_booking_group', 'message' => esc_html__( 'An error occurred while trying to cancel the booking group.', 'booking-activities' ) ), 'cancel_booking_group' );
 	}
 
 	do_action( 'bookacti_booking_group_state_changed', $booking_group_id, 'cancelled', array( 'is_admin' => false ) );
@@ -688,7 +688,7 @@ add_action( 'wp_ajax_nopriv_bookactiRefundBookingGroup', 'bookacti_controller_re
 /**
  * AJAX Controller - Change booking group state
  * @since 1.1.0
- * @version 1.8.0
+ * @version 1.8.4
  */
 function bookacti_controller_change_booking_group_state() {
 	$booking_group_id		= intval( $_POST[ 'booking_id' ] );
@@ -725,7 +725,7 @@ function bookacti_controller_change_booking_group_state() {
 
 		$updated = bookacti_update_booking_group_state( $booking_group_id, $new_booking_state, $active, true, true );
 		if( ! $updated ) { 
-			bookacti_send_json( array( 'status' => 'failed', 'error' => 'error_update_booking_group_status', 'message' => esc_html__( 'An error occured while trying to change the booking group status.', 'booking-activities' ) ), 'change_booking_group_status' );
+			bookacti_send_json( array( 'status' => 'failed', 'error' => 'error_update_booking_group_status', 'message' => esc_html__( 'An error occurred while trying to change the booking group status.', 'booking-activities' ) ), 'change_booking_group_status' );
 		}
 
 		do_action( 'bookacti_booking_group_state_changed', $booking_group_id, $new_booking_state, array( 'is_admin' => $is_admin, 'active' => $active, 'send_notifications' => $send_notifications ) );
@@ -735,7 +735,7 @@ function bookacti_controller_change_booking_group_state() {
 	if( $new_payment_status && $booking_group->payment_status !== $new_payment_status ) {
 		$updated = bookacti_update_booking_group_payment_status( $booking_group_id, $new_payment_status, true, true );
 		if( $updated === false ) { 
-			bookacti_send_json( array( 'status' => 'failed', 'error' => 'error_update_booking_group_payment_status', 'message' => esc_html__( 'An error occured while trying to change the booking group payment status.', 'booking-activities' ) ), 'change_booking_group_status' );
+			bookacti_send_json( array( 'status' => 'failed', 'error' => 'error_update_booking_group_payment_status', 'message' => esc_html__( 'An error occurred while trying to change the booking group payment status.', 'booking-activities' ) ), 'change_booking_group_status' );
 		}
 
 		do_action( 'bookacti_booking_group_payment_status_changed', $booking_group_id, $new_payment_status, array( 'is_admin' => $is_admin ) );
@@ -758,7 +758,7 @@ add_action( 'wp_ajax_bookactiChangeBookingGroupState', 'bookacti_controller_chan
 /**
  * AJAX Controller - Change booking group quantity
  * @since 1.7.10
- * @version 1.8.0
+ * @version 1.8.4
  */
 function bookacti_controller_change_booking_group_quantity() {
 	$booking_group_id	= intval( $_POST[ 'booking_id' ] );
@@ -784,7 +784,7 @@ function bookacti_controller_change_booking_group_quantity() {
 	// Update booking quantity
 	$updated = bookacti_force_update_booking_group_bookings_quantity( $booking_group_id, $new_quantity );
 	if( $updated === false ) { 
-		bookacti_send_json( array( 'status' => 'failed', 'error' => 'error_update_booking_group_quantity', 'message' => esc_html__( 'An error occured while trying to change the booking quantity.', 'booking-activities' ) ), 'change_booking_group_quantity' );
+		bookacti_send_json( array( 'status' => 'failed', 'error' => 'error_update_booking_group_quantity', 'message' => esc_html__( 'An error occurred while trying to change the booking quantity.', 'booking-activities' ) ), 'change_booking_group_quantity' );
 	}
 
 	do_action( 'bookacti_booking_group_quantity_updated', $booking_group_id, $new_quantity, $old_quantity, array( 'is_admin' => $is_admin ) );

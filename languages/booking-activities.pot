@@ -9,7 +9,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2020-06-04T13:49:09+00:00\n"
+"POT-Creation-Date: 2020-06-04T14:24:40+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.3.0\n"
 "X-Domain: booking-activities\n"
@@ -60,7 +60,7 @@ msgid "Bookings"
 msgstr ""
 
 #: booking-activities.php:542
-#: controller/controller-settings.php:856
+#: controller/controller-settings.php:858
 #: functions/functions-settings.php:525
 #: view/view-settings.php:12
 msgid "Settings"
@@ -95,7 +95,7 @@ msgid "Email"
 msgstr ""
 
 #: class/class-bookings-list.php:70
-#: controller/controller-settings.php:839
+#: controller/controller-settings.php:841
 #: functions/functions-bookings.php:1911
 #: functions/functions-settings.php:1489
 #: functions/functions-settings.php:1586
@@ -295,7 +295,7 @@ msgid "The booking cannot be cancelled."
 msgstr ""
 
 #: controller/controller-bookings.php:98
-msgid "An error occured while trying to cancel the booking."
+msgid "An error occurred while trying to cancel the booking."
 msgstr ""
 
 #: controller/controller-bookings.php:135
@@ -310,7 +310,7 @@ msgid "Your refund request has been sent. We will contact you soon."
 msgstr ""
 
 #: controller/controller-bookings.php:179
-msgid "An error occured while trying to send the email."
+msgid "An error occurred while trying to send the email."
 msgstr ""
 
 #: controller/controller-bookings.php:187
@@ -328,11 +328,11 @@ msgid "The booking status cannot be changed."
 msgstr ""
 
 #: controller/controller-bookings.php:252
-msgid "An error occured while trying to change the booking status."
+msgid "An error occurred while trying to change the booking status."
 msgstr ""
 
 #: controller/controller-bookings.php:262
-msgid "An error occured while trying to change the booking payment status."
+msgid "An error occurred while trying to change the booking payment status."
 msgstr ""
 
 #: controller/controller-bookings.php:300
@@ -342,7 +342,7 @@ msgstr ""
 
 #: controller/controller-bookings.php:308
 #: controller/controller-bookings.php:787
-msgid "An error occured while trying to change the booking quantity."
+msgid "An error occurred while trying to change the booking quantity."
 msgstr ""
 
 #: controller/controller-bookings.php:429
@@ -366,7 +366,7 @@ msgid "The booking group cannot be cancelled."
 msgstr ""
 
 #: controller/controller-bookings.php:565
-msgid "An error occured while trying to cancel the booking group."
+msgid "An error occurred while trying to cancel the booking group."
 msgstr ""
 
 #: controller/controller-bookings.php:719
@@ -374,11 +374,11 @@ msgid "The booking group status cannot be changed."
 msgstr ""
 
 #: controller/controller-bookings.php:728
-msgid "An error occured while trying to change the booking group status."
+msgid "An error occurred while trying to change the booking group status."
 msgstr ""
 
 #: controller/controller-bookings.php:738
-msgid "An error occured while trying to change the booking group payment status."
+msgid "An error occurred while trying to change the booking group payment status."
 msgstr ""
 
 #: controller/controller-bookings.php:830
@@ -399,22 +399,22 @@ msgstr ""
 
 #: controller/controller-bookings.php:1026
 #: controller/controller-bookings.php:1150
-#: controller/controller-forms.php:1668
+#: controller/controller-forms.php:1669
 msgid "Missing key."
 msgstr ""
 
 #: controller/controller-bookings.php:1030
 #: controller/controller-bookings.php:1043
 #: controller/controller-bookings.php:1154
-#: controller/controller-forms.php:1672
+#: controller/controller-forms.php:1673
 msgid "Invalid key."
 msgstr ""
 
 #: controller/controller-bookings.php:1034
 #: controller/controller-forms.php:633
-#: controller/controller-forms.php:1112
-#: controller/controller-forms.php:1119
-#: controller/controller-forms.php:1200
+#: controller/controller-forms.php:1113
+#: controller/controller-forms.php:1120
+#: controller/controller-forms.php:1201
 #: functions/functions-global.php:77
 #: functions/functions-global.php:466
 #: functions/functions-settings.php:921
@@ -430,7 +430,7 @@ msgstr ""
 #: controller/controller-bookings.php:1056
 #: controller/controller-bookings.php:1168
 #: controller/controller-bookings.php:1203
-#: controller/controller-forms.php:1684
+#: controller/controller-forms.php:1685
 msgid "Invalid filename."
 msgstr ""
 
@@ -527,7 +527,7 @@ msgstr ""
 #: controller/controller-forms.php:605
 #: controller/controller-forms.php:613
 #: controller/controller-forms.php:721
-#: controller/controller-forms.php:1664
+#: controller/controller-forms.php:1665
 #: functions/functions-forms.php:1295
 msgid "Invalid form ID."
 msgstr ""
@@ -544,7 +544,7 @@ msgstr ""
 
 #: controller/controller-forms.php:672
 #: controller/controller-forms.php:825
-msgid "An error occured while trying to log you in."
+msgid "An error occurred while trying to log you in."
 msgstr ""
 
 #: controller/controller-forms.php:682
@@ -587,7 +587,7 @@ msgid "You are not allowed to create booking forms."
 msgstr ""
 
 #: controller/controller-forms.php:1036
-#: controller/controller-forms.php:1137
+#: controller/controller-forms.php:1138
 msgid "Error occurs when trying to create the form."
 msgstr ""
 
@@ -601,98 +601,98 @@ msgstr ""
 msgid "The booking form has been updated."
 msgstr ""
 
-#: controller/controller-forms.php:1127
-msgid "An error occured while trying to duplicate a booking form."
+#: controller/controller-forms.php:1128
+msgid "An error occurred while trying to duplicate a booking form."
 msgstr ""
 
 #. translators: %s is the original title
-#: controller/controller-forms.php:1134
+#: controller/controller-forms.php:1135
 msgid "%s - Copy"
 msgstr ""
 
-#: controller/controller-forms.php:1177
+#: controller/controller-forms.php:1178
 msgid "The booking form has been duplicated."
 msgstr ""
 
-#: controller/controller-forms.php:1210
+#: controller/controller-forms.php:1211
 msgid "You are not allowed to remove a booking form."
 msgstr ""
 
-#: controller/controller-forms.php:1228
+#: controller/controller-forms.php:1229
 msgid "The booking form has been removed."
 msgstr ""
 
-#: controller/controller-forms.php:1230
-msgid "An error occured while trying to delete a booking form."
+#: controller/controller-forms.php:1231
+msgid "An error occurred while trying to delete a booking form."
 msgstr ""
 
-#: controller/controller-forms.php:1239
+#: controller/controller-forms.php:1240
 msgid "You are not allowed to restore a booking form."
 msgstr ""
 
-#: controller/controller-forms.php:1250
+#: controller/controller-forms.php:1251
 msgid "The booking form has been restored."
 msgstr ""
 
-#: controller/controller-forms.php:1253
-msgid "An error occured while trying to restore a booking form."
+#: controller/controller-forms.php:1254
+msgid "An error occurred while trying to restore a booking form."
 msgstr ""
 
-#: controller/controller-forms.php:1322
+#: controller/controller-forms.php:1323
 msgid "Invalid form ID"
 msgstr ""
 
-#: controller/controller-forms.php:1338
+#: controller/controller-forms.php:1339
 msgid "Unknown field"
 msgstr ""
 
-#: controller/controller-forms.php:1349
+#: controller/controller-forms.php:1350
 msgid "This field has already been added to the form"
 msgstr ""
 
-#: controller/controller-forms.php:1359
-msgid "An error occured while trying to insert the form field."
+#: controller/controller-forms.php:1360
+msgid "An error occurred while trying to insert the form field."
 msgstr ""
 
-#: controller/controller-forms.php:1484
+#: controller/controller-forms.php:1485
 msgid "An error occurs while trying to update the field."
 msgstr ""
 
-#: controller/controller-forms.php:1594
+#: controller/controller-forms.php:1595
 msgid "Export events"
 msgstr ""
 
-#: controller/controller-forms.php:1595
+#: controller/controller-forms.php:1596
 #: view/view-form-editor-dialogs.php:1095
 msgid "Need help?"
 msgstr ""
 
-#: controller/controller-forms.php:1595
+#: controller/controller-forms.php:1596
 #: functions/functions-settings.php:582
 msgctxt "button label"
 msgid "Help"
 msgstr ""
 
-#: controller/controller-forms.php:1609
+#: controller/controller-forms.php:1610
 #: view/view-form-editor-dialogs.php:1099
 msgid "Login / registration form shortcode"
 msgstr ""
 
-#: controller/controller-forms.php:1647
+#: controller/controller-forms.php:1648
 msgid "The secret key has been changed. The old link won't work anymore. Use the new link above to export your events."
 msgstr ""
 
-#: controller/controller-forms.php:1676
+#: controller/controller-forms.php:1677
 msgid "Cannot find the calendar field of the requested form."
 msgstr ""
 
 #. translators: %s is the form title
-#: controller/controller-forms.php:1692
+#: controller/controller-forms.php:1693
 msgid "Form \"%s\""
 msgstr ""
 
 #. translators: %d is the form id
-#: controller/controller-forms.php:1694
+#: controller/controller-forms.php:1695
 #: model/model-forms.php:213
 msgid "Form #%d"
 msgstr ""
@@ -976,92 +976,92 @@ msgstr ""
 msgid "Restore data"
 msgstr ""
 
-#: controller/controller-settings.php:737
-msgid "An error occured while trying to restore backup data."
+#: controller/controller-settings.php:738
+msgid "An error occurred while trying to restore backup data."
 msgstr ""
 
-#: controller/controller-settings.php:741
+#: controller/controller-settings.php:742
 msgid "Your data has been successfully restored."
 msgstr ""
 
-#: controller/controller-settings.php:764
-msgid "An error occured while trying to delete the backup file."
+#: controller/controller-settings.php:766
+msgid "An error occurred while trying to delete the backup file."
 msgstr ""
 
-#: controller/controller-settings.php:790
+#: controller/controller-settings.php:792
 msgid "Here you will be able to activate your add-ons license keys."
 msgstr ""
 
 #. translators: %s is a link to "Booking Activities add-ons" (link label) shop
-#: controller/controller-settings.php:794
+#: controller/controller-settings.php:796
 msgid "Purchase %s now!"
 msgstr ""
 
 #. translators: %s is a link to "Booking Activities add-ons" (link label) shop
-#: controller/controller-settings.php:794
+#: controller/controller-settings.php:796
 msgid "Booking Activities add-ons"
 msgstr ""
 
-#: controller/controller-settings.php:811
+#: controller/controller-settings.php:813
 msgid "The following add-ons are installed on your site:"
 msgstr ""
 
 #. translators: %s is a link to download "Licenses and Updates" (link label) add-on
-#: controller/controller-settings.php:817
+#: controller/controller-settings.php:819
 msgid "Please install the \"%s\" add-on in order to activate your license keys."
 msgstr ""
 
-#: controller/controller-settings.php:856
+#: controller/controller-settings.php:858
 msgid "Manage Booking Activities Settings"
 msgstr ""
 
-#: controller/controller-settings.php:871
+#: controller/controller-settings.php:873
 msgid "View Booking Activities Documentation"
 msgstr ""
 
-#: controller/controller-settings.php:871
+#: controller/controller-settings.php:873
 msgid "Docs"
 msgstr ""
 
-#: controller/controller-settings.php:872
+#: controller/controller-settings.php:874
 msgid "Report a bug or request a feature"
 msgstr ""
 
-#: controller/controller-settings.php:872
+#: controller/controller-settings.php:874
 msgid "Report & Request"
 msgstr ""
 
-#: controller/controller-settings.php:873
+#: controller/controller-settings.php:875
 msgid "Contact us directly"
 msgstr ""
 
-#: controller/controller-settings.php:873
+#: controller/controller-settings.php:875
 msgid "Contact us"
 msgstr ""
 
-#: controller/controller-settings.php:903
+#: controller/controller-settings.php:905
 msgid "<strong>Booking Activities</strong> has been helping you for two months now."
 msgstr ""
 
 #. translators: %s: five stars
-#: controller/controller-settings.php:906
+#: controller/controller-settings.php:908
 msgid "Would you help us back leaving a %s rating? We need you too."
 msgstr ""
 
-#: controller/controller-settings.php:911
+#: controller/controller-settings.php:913
 msgid "Ok, I'll rate you five stars!"
 msgstr ""
 
-#: controller/controller-settings.php:912
+#: controller/controller-settings.php:914
 msgid "I already rated you, hide this message"
 msgstr ""
 
 #. translators: %s: five stars
-#: controller/controller-settings.php:965
+#: controller/controller-settings.php:967
 msgid "Does <strong>Booking Activities</strong> help you? Help us back leaving a %s rating. We need you too."
 msgstr ""
 
-#: controller/controller-settings.php:1088
+#: controller/controller-settings.php:1090
 #: functions/functions-global.php:1513
 msgid "Current user"
 msgstr ""
@@ -1397,7 +1397,7 @@ msgid "The desired product cannot be found."
 msgstr ""
 
 #: controller/controller-woocommerce-forms.php:497
-msgid "An error occured while trying to add the product to cart."
+msgid "An error occurred while trying to add the product to cart."
 msgstr ""
 
 #: controller/controller-woocommerce-frontend.php:20
