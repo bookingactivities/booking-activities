@@ -109,8 +109,8 @@
 .bookacti-calendar .fc-unthemed td.fc-today	{ background: rgba( 220, 193, 6, 0.1 ); }
 .bookacti-calendar table, 
 .bookacti-calendar tr, 
-.bookacti-calendar th, 
-.bookacti-calendar td { margin: 0; padding: 0; overflow: visible; }
+.bookacti-calendar .fc-agenda-view th, .bookacti-calendar .fc-basic-view th, 
+.bookacti-calendar .fc-agenda-view td, .bookacti-calendar .fc-basic-view td { margin: 0 !important; padding: 0 !important; overflow: visible !important; }
 .bookacti-calendar .fc-time { text-transform: lowercase; }
 
 /* Header */

@@ -162,18 +162,16 @@ function bookacti_get_notification_default_settings( $notification_id ) {
 
 /**
  * Get notification settings
- * 
  * @since 1.2.1 (was bookacti_get_email_settings in 1.2.0)
+ * @version 1.8.5
  * @param string $notification_id
  * @param boolean $raw
  * @return false|array
  */
 function bookacti_get_notification_settings( $notification_id, $raw = true ) {
-
 	if( ! $notification_id ) { return false; }
 
 	$notifications = bookacti_get_notifications_default_settings();
-
 	if( ! isset( $notifications[ $notification_id ] ) ) { return false; }
 	
 	$notification_settings = array();
@@ -197,7 +195,16 @@ function bookacti_get_notification_settings( $notification_id, $raw = true ) {
 			$notification_settings[ $key ] = $value;
 		}
 	}
-
+	
+	// Make sure all values are set for emails
+	if( ! empty( $notifications[ $notification_id ][ 'email' ] ) ) {
+		foreach( $notifications[ $notification_id ][ 'email' ] as $key => $value ) {
+			if( ! isset( $notification_settings[ 'email' ][ $key ] ) ) {
+				$notification_settings[ 'email' ][ $key ] = $value;
+			}
+		}
+	}
+	
 	return apply_filters( 'bookacti_notification_settings', $notification_settings, $notification_id, $raw );
 }
 
@@ -329,7 +336,7 @@ function bookacti_get_notifications_tags( $notification_id = '' ) {
 /**
  * Get notifications tags and values corresponding to given booking
  * @since 1.2.0
- * @version 1.8.0
+ * @version 1.8.5
  * @param int $booking_id
  * @param string $booking_type 'group' or 'single'
  * @param string $notification_id
@@ -362,7 +369,7 @@ function bookacti_get_notifications_tags_values( $booking_id, $booking_type, $no
 			$booking_data[ '{booking_start_raw}' ]	= $booking->start;
 			$booking_data[ '{booking_end}' ]		= bookacti_format_datetime( $booking->end, $datetime_format );
 			$booking_data[ '{booking_end_raw}' ]	= $booking->end;
-			$booking_data[ '{booking_admin_url}' ]	= esc_url( admin_url( 'admin.php?page=bookacti_bookings' ) . '&event_group_id=' . $group_of_events->id );
+			$booking_data[ '{booking_admin_url}' ]	= esc_url( admin_url( 'admin.php?page=bookacti_bookings' ) . '&booking_group_id=' . $booking_id . '&event_group_id=' . $group_of_events->id . '&group_by=booking_group' );
 
 		} else {
 			$bookings	= array( $booking );
@@ -375,7 +382,7 @@ function bookacti_get_notifications_tags_values( $booking_id, $booking_type, $no
 			$booking_data[ '{booking_start_raw}' ]	= $booking->event_start;
 			$booking_data[ '{booking_end}' ]		= bookacti_format_datetime( $booking->event_end, $datetime_format );
 			$booking_data[ '{booking_end_raw}' ]	= $booking->event_end;
-			$booking_data[ '{booking_admin_url}' ]	= esc_url( admin_url( 'admin.php?page=bookacti_bookings' ) . '&event_id=' . $booking->event_id . '&event_start=' . $booking->event_start . '&event_end=' . $booking->event_end );
+			$booking_data[ '{booking_admin_url}' ]	= esc_url( admin_url( 'admin.php?page=bookacti_bookings' ) . '&booking_id=' . $booking_id . '&event_id=' . $booking->event_id . '&event_start=' . $booking->event_start . '&event_end=' . $booking->event_end );
 		}
 
 		$booking_data[ '{booking_id}' ]			= $booking_id;

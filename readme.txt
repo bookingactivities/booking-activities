@@ -319,6 +319,10 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 
 == Changelog ==
 
+= 1.8.5 =
+* Tweak - Add parameters to the {booking_admin_url} notification tag URL to display only the desired booking in the list
+* Fix - Force null padding and margin to agenda and basic calendar views cells to avoid invisible events
+
 = 1.8.4 - 2020/06/04 =
 * Tweak - Display availabilities on the left if events overlap on agenda views
 * Fix - Occurrence of repeated events may not appear if only one occurrence is to be displayed
