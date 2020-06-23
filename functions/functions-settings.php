@@ -477,12 +477,10 @@ function bookacti_settings_field_cancellation_refund_actions_callback() {
 
 /**
  * Settings section callback - Notifications - General settings (displayed before settings)
- * 
  * @since 1.2.1 (was bookacti_settings_section_notifications_callback in 1.2.0)
- * @version 1.5.0
+ * @version 1.8.5
  */
 function bookacti_settings_section_notifications_general_callback() { 
-
 	// Display a table of configurable notifications
 	// Set up booking list columns
 	$columns_titles = apply_filters( 'bookacti_notifications_list_columns_titles', array(
@@ -494,8 +492,7 @@ function bookacti_settings_section_notifications_general_callback() {
 
 	// Order columns
 	ksort( $columns_titles, SORT_NUMERIC );
-
-   ?>
+	?>
 	<table class='bookacti-settings-table' id='bookacti-notifications-list' >
 		<thead>
 			<tr>
@@ -508,15 +505,24 @@ function bookacti_settings_section_notifications_general_callback() {
 		</thead>
 		<tbody>
 	<?php
-		$notifications = array_keys( bookacti_get_notifications_default_settings() );
-		asort( $notifications, SORT_STRING );
+		$notifications_ids = array_keys( bookacti_get_notifications_default_settings() );
+		
+		// Sort notifications: admin's first, customer's next
+		$notifications_ids_admin = array();
+		$notifications_ids_customer = array();
+		foreach( $notifications_ids as $i => $notification_id ) {
+			$added = false;
+			if( substr( $notification_id, 0, 6 ) === 'customer_' ) { $notifications_ids_customer[] = $notification_id; $added = true; }
+			else if( substr( $notification_id, 0, 6 ) === 'admin_' ) { $notifications_ids_admin[] = $notification_id; $added = true; } 
+			if( $added ) { unset( $notifications_ids[ $i ] ); }
+		}
+		$notifications_ids_sorted = array_values( array_merge( $notifications_ids_admin, $notifications_ids_customer, $notifications_ids ) );
 
-		foreach( $notifications as $notification_id ) {
-
+		foreach( $notifications_ids_sorted as $notification_id ) {
+			
 			$notification_settings = bookacti_get_notification_settings( $notification_id, false );
-
-			$active_icon	= $notification_settings[ 'active' ] ? 'dashicons-yes' : 'dashicons-no';
-			$description	= $notification_settings[ 'description' ] ? bookacti_help_tip( $notification_settings[ 'description' ], false ) : '';
+			$active_icon = $notification_settings[ 'active' ] ? 'dashicons-yes' : 'dashicons-no';
+			$description = $notification_settings[ 'description' ] ? bookacti_help_tip( $notification_settings[ 'description' ], false ) : '';
 
 			$columns_values = apply_filters( 'bookacti_notifications_list_columns_values', array(
 				'active'		=> '<span class="dashicons ' . $active_icon . '"></span>',
@@ -560,13 +566,13 @@ function bookacti_settings_section_notifications_general_callback() {
 					}
 				?>
 				</td>
-			<?php }
-		}
-		?>
+			<?php } ?>
+			</tr>
+		<?php } ?>
 		</tbody>
 	</table>
-   <?php
-   bookacti_display_banp_promo();
+	<?php
+	bookacti_display_banp_promo();
 }
 
 
@@ -1372,14 +1378,15 @@ function bookacti_display_badp_promo() {
 /**
  * Display a promotional area for Notification Pack add-on
  * @since 1.2.0
- * @version 1.7.3
+ * @version 1.8.5
  */
 function bookacti_display_banp_promo() {
 	$is_plugin_active	= bookacti_is_plugin_active( 'ba-notification-pack/ba-notification-pack.php' );
 	$license_status		= get_option( 'banp_license_status' );
+	$is_license_valid	= $license_status === 'valid';
 
 	// If the plugin is activated but the license is not active yet
-	if( $is_plugin_active && ( ! $license_status || $license_status !== 'valid' ) ) {
+	if( $is_plugin_active && ! $is_license_valid ) {
 		?>
 		<div id='bookacti-banp-promo' class='bookacti-addon-promo' >
 			<p>
@@ -1402,8 +1409,9 @@ function bookacti_display_banp_promo() {
 		</div>
 		<?php
 	}
-
-	else if( ! $license_status || $license_status !== 'valid' ) {
+	
+	// If the license is not active yet
+	else if( ! $is_license_valid ) {
 		?>
 		<div id='bookacti-banp-promo' class='bookacti-addon-promo' >
 			<?php 

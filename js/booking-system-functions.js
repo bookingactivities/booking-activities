@@ -72,7 +72,7 @@ function bookacti_fetch_events( booking_system, interval ) {
 
 /**
  * Reload a booking system
- * @version 1.8.0
+ * @version 1.8.5
  * @param {HTMLElement} booking_system
  * @param {boolean} keep_picked_events
  */
@@ -128,6 +128,15 @@ function bookacti_reload_booking_system( booking_system, keep_picked_events ) {
 				
 				// Fill the booking method elements
 				booking_system.append( response.html_elements );
+				
+				// Update nonce
+				if( response.nonces ) {
+					$j.each( response.nonces, function( input_name, input_value ) {
+						if( $j( 'input[type="hidden"][name="' + input_name + '"]' ).length ) {
+							$j( 'input[type="hidden"][name="' + input_name + '"]' ).val( input_value );
+						}
+					});
+				}
 				
 				// Trigger action for plugins
 				booking_system.trigger( 'bookacti_booking_system_reloaded', original_attributes );

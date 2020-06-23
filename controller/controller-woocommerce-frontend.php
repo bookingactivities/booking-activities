@@ -1423,7 +1423,7 @@ add_action( 'woocommerce_before_pay_action', 'bookacti_availability_check_before
 /**
  * Change order bookings states after the customer validates checkout
  * @since 1.2.2 (was bookacti_delay_expiration_date_for_payment before)
- * @version 1.8.0
+ * @version 1.8.5
  * @param int $order_id
  * @param array $order_details
  * @param WC_Order $order
@@ -1439,11 +1439,11 @@ function bookacti_change_booking_state_after_checkout( $order_id, $order_details
 		$payment_status = 'owed';
 		$alert_admin = false; 
 	} else { 
-		$state = bookacti_get_setting_value( 'bookacti_general_settings', 'default_booking_state' ); 
-		$payment_status = bookacti_get_setting_value( 'bookacti_general_settings', 'default_payment_status' ); 
+		$state = 'booked'; 
+		$payment_status = 'paid'; 
 		$alert_admin = true;
 	}
-
+	
 	bookacti_turn_order_bookings_to( $order, $state, $payment_status, $alert_admin, array( 'force_status_notification' => true, 'change_user_id' => true ) );
 
 	// If the user has no account, bind the user data to the bookings
