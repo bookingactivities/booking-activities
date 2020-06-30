@@ -293,10 +293,8 @@ function bookacti_update_event( $data ) {
 	}
 	
 	// Update exceptions
-	if( ! empty( $data[ 'exceptions_dates' ] ) ) {
-		$updated_excep = bookacti_update_exceptions( $data[ 'id' ], $data[ 'exceptions_dates' ] );
-		if( is_numeric( $updated_event ) && is_numeric( $updated_excep ) ) { $updated_event += $updated_excep; }
-	}
+	$updated_excep = bookacti_update_exceptions( $data[ 'id' ], $data[ 'exceptions_dates' ] );
+	if( is_numeric( $updated_event ) && is_numeric( $updated_excep ) ) { $updated_event += $updated_excep; }
 	
 	return $updated_event;
 }

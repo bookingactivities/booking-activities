@@ -59,7 +59,7 @@ function bookacti_init_template_dialogs() {
 	/**
 	 * Fill template settings by default while duplicating a template (if current template is duplicated)
 	 * @since 1.7.18
-	 * @version 1.8.0
+	 * @version 1.8.5
 	 */
 	$j( '#bookacti-template-duplicated-template-id' ).on( 'change', function() {
 		var duplicated_template_id = parseInt( $j( this ).val() );
@@ -79,8 +79,8 @@ function bookacti_init_template_dialogs() {
 			bookacti_fill_fields_from_array( template_data.settings, 'templateOptions' );
 		} else {
 			// Set default values
-			$j( '#bookacti-template-opening' ).val( moment.utc().format( 'YYYY-MM-DD' ) );
-			$j( '#bookacti-template-closing' ).val( moment.utc().add( 7, 'days' ).format( 'YYYY-MM-DD' ) );
+			$j( '#bookacti-template-opening' ).val( moment.utc().locale( 'en' ).format( 'YYYY-MM-DD' ) );
+			$j( '#bookacti-template-closing' ).val( moment.utc().add( 7, 'days' ).locale( 'en' ).format( 'YYYY-MM-DD' ) );
 			$j( '#bookacti-mintime' ).val( '00:00' );
 			$j( '#bookacti-maxtime' ).val( '00:00' );
 			$j( '#bookacti-snapduration' ).val( '00:05' );
@@ -154,7 +154,7 @@ function bookacti_init_template_dialogs() {
 
 /**
  * Dialog Create Template
- * @version 1.8.0
+ * @version 1.8.5
  */
 function bookacti_dialog_add_new_template() {
 	// Set the dialog title
@@ -164,8 +164,8 @@ function bookacti_dialog_add_new_template() {
 	});
 
 	// Set default values
-	$j( '#bookacti-template-opening' ).val( moment.utc().format( 'YYYY-MM-DD' ) );
-	$j( '#bookacti-template-closing' ).val( moment.utc().add( 1, 'year' ).format( 'YYYY-MM-DD' ) );
+	$j( '#bookacti-template-opening' ).val( moment.utc().locale( 'en' ).format( 'YYYY-MM-DD' ) );
+	$j( '#bookacti-template-closing' ).val( moment.utc().add( 1, 'year' ).locale( 'en' ).format( 'YYYY-MM-DD' ) );
 	$j( '#bookacti-mintime' ).val( '00:00' );
 	$j( '#bookacti-maxtime' ).val( '00:00' );
 	$j( '#bookacti-snapduration' ).val( '00:05' );
@@ -201,8 +201,8 @@ function bookacti_dialog_add_new_template() {
 
 				// Get the data to save
 				var title	= $j( '#bookacti-template-title' ).val();
-				var start	= $j( '#bookacti-template-opening' ).val() ? moment.utc( $j( '#bookacti-template-opening' ).val(), [ 'MM-DD-YYYY', 'DD-MM-YYYY', 'YYYY-MM-DD' ] ).format( 'YYYY-MM-DD' ) : moment.utc().format( 'YYYY-MM-DD' );
-				var end		= $j( '#bookacti-template-closing' ).val() ? moment.utc( $j( '#bookacti-template-closing' ).val(), [ 'MM-DD-YYYY', 'DD-MM-YYYY', 'YYYY-MM-DD' ] ).format( 'YYYY-MM-DD' ) : '2037-12-31';
+				var start	= $j( '#bookacti-template-opening' ).val() ? moment.utc( $j( '#bookacti-template-opening' ).val(), [ 'MM-DD-YYYY', 'DD-MM-YYYY', 'YYYY-MM-DD' ] ).locale( 'en' ).format( 'YYYY-MM-DD' ) : moment.utc().locale( 'en' ).format( 'YYYY-MM-DD' );
+				var end		= $j( '#bookacti-template-closing' ).val() ? moment.utc( $j( '#bookacti-template-closing' ).val(), [ 'MM-DD-YYYY', 'DD-MM-YYYY', 'YYYY-MM-DD' ] ).locale( 'en' ).format( 'YYYY-MM-DD' ) : '2037-12-31';
 				
 				if( typeof tinyMCE !== 'undefined' ) { 
 					if( tinyMCE ) { tinyMCE.triggerSave(); }
@@ -520,7 +520,7 @@ function bookacti_dialog_deactivate_template( template_id ) {
 
 /**
  * Dialog Update Event
- * @version 1.8.4
+ * @version 1.8.5
  * @param {object} event
  */
 function bookacti_dialog_update_event( event ) {
@@ -549,8 +549,8 @@ function bookacti_dialog_update_event( event ) {
 	var template_start  = bookacti.booking_system[ 'bookacti-template-calendar' ][ 'template_data' ][ 'start' ];
 	var template_end    = bookacti.booking_system[ 'bookacti-template-calendar' ][ 'template_data' ][ 'end' ];
 
-	var event_day		= event.start;
-	var event_28_days	= moment.utc( event_day ).add( 28, 'd' );
+	var event_day		= moment.utc( event.start ).locale( 'en' );
+	var event_28_days	= moment.utc( event_day ).clone().add( 28, 'd' ).locale( 'en' );
 	var repeat_from     = event_day.format( 'YYYY-MM-DD' );
 	var repeat_to       = event_28_days.isBefore( moment.utc( template_end ) ) ? event_28_days.format( 'YYYY-MM-DD' ) : template_end;
 
@@ -558,8 +558,8 @@ function bookacti_dialog_update_event( event ) {
 	if( event_data.repeat_to   && event_data.repeat_to   !== '0000-00-00' )	{ repeat_to = event_data.repeat_to; };
 	
 	var exceptions_disabled = false;
-	var exceptions_min = moment.utc( repeat_from ).add( 1, 'd' );
-	var exceptions_max = moment.utc( repeat_to ).subtract( 1, 'd' );
+	var exceptions_min = moment.utc( repeat_from ).add( 1, 'd' ).locale( 'en' );
+	var exceptions_max = moment.utc( repeat_to ).subtract( 1, 'd' ).locale( 'en' );
 	if( exceptions_min.isAfter( exceptions_max ) ) { exceptions_disabled = true; };
 	
 	// Fill the form with database param
@@ -629,9 +629,11 @@ function bookacti_dialog_update_event( event ) {
 			$j( '#bookacti-event-data-dialog' ).find( '.bookacti-loading-alt,.bookacti-notices' ).remove();
 			
 			// Prepare fields
+			var event_start_formatted = moment.utc( event.start ).clone().locale( 'en' ).format( 'YYYY-MM-DD HH:mm:ss' );
+			var event_end_formatted = moment.utc( event.end ).clone().locale( 'en' ).format( 'YYYY-MM-DD HH:mm:ss' );
 			$j( '#bookacti-event-data-form-event-id' ).val( event.id );
-			$j( '#bookacti-event-data-form-event-start' ).val( event.start.format( 'YYYY-MM-DD HH:mm:ss' ) );
-			$j( '#bookacti-event-data-form-event-end' ).val( event.end.format( 'YYYY-MM-DD HH:mm:ss' ) );
+			$j( '#bookacti-event-data-form-event-start' ).val( event_start_formatted );
+			$j( '#bookacti-event-data-form-event-end' ).val( event_end_formatted );
 			$j( '#bookacti-event-data-form-action' ).val( 'bookactiUpdateEvent' );
 			$j( '#bookacti-event-data-form select[multiple]#bookacti-event-exceptions-selectbox option' ).prop( 'selected', true );
 

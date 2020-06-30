@@ -324,6 +324,9 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 * Fix - Force null padding and margin to agenda and basic calendar views cells to avoid invisible events
 * Fix - Remove or dynamicaly update frontend nonces possibly causing problems with cache
 * Fix - Fix possible errors while editing events
+* Fix - Cannot remove all repeat exceptions while updating events
+* Fix - Incorrect display of ON / OFF switches for RTL languages
+* Fix - Errors with locales using a non Western Arabic numeral system 
 * Dev - Add a hook for each individual booking when a booking group is deleted
 
 = 1.8.4 - 2020/06/04 =

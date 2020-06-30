@@ -1,6 +1,6 @@
 /**
  * Initialize the calendar
- * @version 1.8.4
+ * @version 1.8.5
  * @param {HTMLElement} booking_system
  * @param {boolean} reload_events
  */
@@ -53,7 +53,7 @@ function bookacti_set_calendar_up( booking_system, reload_events ) {
 
 		viewRender: function( view, element ){ 
 			if( bookacti.booking_system[ booking_system_id ][ 'load_events' ] === true ) {
-				var interval = { 'start': moment.utc( view.intervalStart.format( 'YYYY-MM-DD' ) + ' 00:00:00' ), 'end': moment.utc( view.intervalEnd.subtract( 1, 'days' ).format( 'YYYY-MM-DD' ) + ' 23:59:59' ) };
+				var interval = { 'start': moment.utc( moment.utc( view.intervalStart ).clone().locale( 'en' ).format( 'YYYY-MM-DD' ) + ' 00:00:00' ).locale( 'en' ), 'end': moment.utc( moment.utc( view.intervalEnd ).clone().subtract( 1, 'days' ).locale( 'en' ).format( 'YYYY-MM-DD' ) + ' 23:59:59' ).locale( 'en' ) };
 				bookacti_fetch_events_from_interval( booking_system, interval );
 			}
 			
@@ -70,13 +70,16 @@ function bookacti_set_calendar_up( booking_system, reload_events ) {
 			// Do not render the event if it has no start or no end or no duration
 			if( ! event.start || ! event.end || event.start === event.end ) { return false; }
 			
+			var event_start_formatted = moment.utc( event.start ).clone().locale( 'en' ).format( 'YYYY-MM-DD HH:mm:ss' );
+			var event_end_formatted = moment.utc( event.end ).clone().locale( 'en' ).format( 'YYYY-MM-DD HH:mm:ss' );
+			
 			// Add some info to the event
 			element.data( 'event-id',			event.id );
 			element.attr( 'data-event-id',		event.id );
-			element.data( 'event-start',		event.start.format( 'YYYY-MM-DD HH:mm:ss' ) );
-			element.attr( 'data-event-start',	event.start.format( 'YYYY-MM-DD HH:mm:ss' ) );
-			element.data( 'event-end',			event.end.format( 'YYYY-MM-DD HH:mm:ss' ) );
-			element.attr( 'data-event-end',		event.end.format( 'YYYY-MM-DD HH:mm:ss' ) );
+			element.data( 'event-start',		event_start_formatted );
+			element.attr( 'data-event-start',	event_start_formatted );
+			element.data( 'event-end',			event_end_formatted );
+			element.attr( 'data-event-end',		event_end_formatted );
 			element.data( 'activity-id',		bookacti.booking_system[ booking_system_id ][ 'events_data' ][ event.id ][ 'activity_id' ] );
 			element.attr( 'data-activity-id',	bookacti.booking_system[ booking_system_id ][ 'events_data' ][ event.id ][ 'activity_id' ] );
 			event.render = 1;
@@ -182,7 +185,7 @@ function bookacti_set_calendar_up( booking_system, reload_events ) {
 	calendar.fullCalendar( init_data ); 
 	
 	var view = calendar.fullCalendar( 'getView' );
-	var interval = { 'start': moment.utc( view.intervalStart.format( 'YYYY-MM-DD' ) + ' 00:00:00' ), 'end': moment.utc( view.intervalEnd.subtract( 1, 'days' ).format( 'YYYY-MM-DD' ) + ' 23:59:59' ) };
+	var interval = { 'start': moment.utc( moment.utc( view.intervalStart ).clone().locale( 'en' ).format( 'YYYY-MM-DD' ) + ' 00:00:00' ).locale( 'en' ), 'end': moment.utc( moment.utc( view.intervalEnd ).clone().subtract( 1, 'days' ).locale( 'en' ).format( 'YYYY-MM-DD' ) + ' 23:59:59' ).locale( 'en' ) };
 	
 	// Make sure the event interval fit the view
 	var is_view_larger_than_interval = false;
@@ -287,7 +290,11 @@ function bookacti_set_calendar_up( booking_system, reload_events ) {
 }
 
 
-// Fill calendar with events
+/**
+ * Fill calendar with events
+ * @param {HTMLElement} booking_system
+ * @param {Object} events
+ */
 function bookacti_display_events_on_calendar( booking_system, events ) {
 	
 	var booking_system_id = booking_system.attr( 'id' );
@@ -299,7 +306,12 @@ function bookacti_display_events_on_calendar( booking_system, events ) {
 }
 
 
-// Clear all events on the calendar
+/**
+ * Clear all events on the calendar
+ * @param {HTMLElement} booking_system
+ * @param {Object} event
+ * @returns {Int|null}
+ */
 function bookacti_clear_events_on_calendar( booking_system, event ) {
 	event = event || null;
 	var event_id = null;
@@ -321,17 +333,25 @@ function bookacti_clear_events_on_calendar( booking_system, event ) {
 }
 
 
-// Display an event source on the calendar
+/**
+ * Display an event source on the calendar
+ * @param {HTMLElement} booking_system
+ * @param {Object} event_source
+ */
 function bookacti_display_event_source_on_calendar( booking_system, event_source ) {
 	var calendar = booking_system.hasClass( 'fc' ) ? booking_system : booking_system.find( '.bookacti-calendar:first' );
 	calendar.fullCalendar( 'addEventSource', event_source );
 }
 
 
-// Pick event visually on calendar
+/**
+ * Add CSS class to a picked event on calendar
+ * @version 1.8.5
+ * @param {HTMLElement} booking_system
+ * @param {moment|Object} picked_event
+ */
 function bookacti_pick_event_on_calendar( booking_system, picked_event ) {
-	
-	var start = picked_event.start instanceof moment ? picked_event.start.format( 'YYYY-MM-DD HH:mm:ss' ) : picked_event.start;
+	var start = moment.utc( picked_event.start ).clone().locale( 'en' ).format( 'YYYY-MM-DD HH:mm:ss' );
 	
 	// Because of popover and long events (spreading on multiple days), 
 	// the same event can appears twice, so we need to apply changes on each
@@ -342,10 +362,15 @@ function bookacti_pick_event_on_calendar( booking_system, picked_event ) {
 }
 
 
-// Unpick event visually on calendar
+/**
+ * Remove CSS class from a picked event on calendar
+ * @version 1.8.5
+ * @param {HTMLElement} booking_system
+ * @param {Object} event_to_unpick
+ * @param {Boolean} all
+ */
 function bookacti_unpick_event_on_calendar( booking_system, event_to_unpick, all ) {
-	
-	var start = event_to_unpick.start instanceof moment ? event_to_unpick.start.format( 'YYYY-MM-DD HH:mm:ss' ) : event_to_unpick.start;
+	var start = moment.utc( event_to_unpick.start ).clone().locale( 'en' ).format( 'YYYY-MM-DD HH:mm:ss' );
 	
 	// Because of popover and long events (spreading on multiple days), 
 	// the same event can appears twice, so we need to apply changes on each
@@ -359,13 +384,19 @@ function bookacti_unpick_event_on_calendar( booking_system, event_to_unpick, all
 }
 
 
-// Unpick all events visually on calendar
+/**
+ * Remove CSS class from all picked events on calendar
+ * @param {HTMLElement} booking_system
+ */
 function bookacti_unpick_all_events_on_calendar( booking_system ) {
 	booking_system.find( '.bookacti-picked-event' ).removeClass( 'bookacti-picked-event' );
 }
 
 
-// Make sure picked events appears as picked and vice-versa
+/**
+ * Make sure picked events have the CSS class, and non-picked events haven't
+ * @param {HTMLElement} booking_system
+ */
 function bookacti_refresh_picked_events_on_calendar( booking_system ) {
 	
 	var booking_system_id = booking_system.attr( 'id' );
@@ -406,21 +437,30 @@ function bookacti_add_class_according_to_event_size( element ) {
 }
 
 
-//Enter loading state and prevent user from doing anything else
+/**
+ * Enter loading state and prevent user from doing anything else
+ * @param {HTMLElement} calendar
+ */
 function bookacti_enter_calendar_loading_state( calendar ) {
 	calendar.find( '.fc-toolbar button' ).addClass( 'fc-state-disabled' ).attr( 'disabled', true );
 	bookacti_append_loading_overlay( calendar.find( '.fc-view-container' ) );
 }
 
 
-//Exit loading state and allow user to keep editing templates
+/**
+ * Exit loading state and allow user to keep editing templates
+ * @param {HTMLElement} calendar
+ */
 function bookacti_exit_calendar_loading_state( calendar ) {
 	calendar.find( '.fc-toolbar button' ).removeClass( 'fc-state-disabled' ).attr( 'disabled', false );
 	bookacti_remove_loading_overlay( calendar.find( '.fc-view-container' ) );
 }
 
 
-// Append loading overlay
+/**
+ * Append loading overlay
+ * @param {HTMLElement} element
+ */
 function bookacti_append_loading_overlay( element ) {
 	element.append(
 		'<div class="bookacti-loading-overlay" >'
@@ -439,7 +479,10 @@ function bookacti_append_loading_overlay( element ) {
 }
 
 
-// Remove loading overlay
+/**
+ * Remove loading overlay
+ * @param {HTMLElement} element
+ */
 function bookacti_remove_loading_overlay( element ) {
 	element.find( '.bookacti-loading-overlay' ).remove().css( 'position', 'static' );
 }

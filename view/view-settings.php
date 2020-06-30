@@ -1,25 +1,25 @@
 <?php
 /**
  * Booking Activities settings page
- * @version 1.7.16
+ * @version 1.8.5
  */
 
 // Exit if accessed directly
 if ( ! defined( 'ABSPATH' ) ) { exit; }
-
-echo "<div class='wrap'>";
+?>
+<div class='wrap'>
+	<h1 class='wp-heading-inline'><?php esc_html_e( 'Settings', 'booking-activities' ); ?></h1>
 	
-	echo "<h1 class='wp-heading-inline'>" . esc_html__( 'Settings', 'booking-activities' ) . "</h1>";
-	do_action( 'bookacti_settings_page_header' );
-	echo "<hr class='wp-header-end'>";
+	<?php do_action( 'bookacti_settings_page_header' ); ?>
 	
+	<hr class='wp-header-end'>
+	
+	<?php 
+	// Display errors
 	settings_errors();
 	
-	$active_tab = 'general';
-	if( isset( $_GET[ 'tab' ] ) ) { 
-		$active_tab = sanitize_title_with_dashes( $_GET[ 'tab' ] ); 
-	}
-
+	$active_tab = isset( $_GET[ 'tab' ] ) ? sanitize_title_with_dashes( $_GET[ 'tab' ] ) : 'general';
+	
 	// Define the tabs here: 'tab slug' => 'tab title'
 	$tabs = apply_filters( 'bookacti_settings_tabs', array ( 
 		/* translators: Used for a category of parameters */
@@ -30,39 +30,42 @@ echo "<div class='wrap'>";
 		'system'		=> esc_html__( 'System', 'booking-activities' ),
 		'licenses'		=> esc_html__( 'Licenses', 'booking-activities' )
 	) );
-
-	// Display the tabs
-	echo '<h2 class="nav-tab-wrapper bookacti-nav-tab-wrapper">';
-	foreach ( $tabs as $tab_id => $tab_title ) {
-
-		$active_tab_class = '';
-		if( $tab_id === $active_tab ) { $active_tab_class = 'nav-tab-active'; }
-		echo "<a href='" . esc_url( "?page=bookacti_settings&tab=" . $tab_id ) . "' class='nav-tab " . esc_attr( $active_tab_class ) . "'>" . esc_html( $tab_title ) . "</a>";
-	}
-	echo '</h2>';
 	
+	// Display the tabs
+	?>
+	<h2 class='nav-tab-wrapper bookacti-nav-tab-wrapper'>
+		<?php
+		foreach ( $tabs as $tab_id => $tab_title ) {
+			$active_tab_class = $tab_id === $active_tab ? 'nav-tab-active' : '';
+			?>
+			<a href='<?php echo esc_url( "?page=bookacti_settings&tab=" . $tab_id ); ?>' class='nav-tab <?php echo esc_attr( $active_tab_class ); ?>'><?php echo esc_html( $tab_title ); ?></a>
+			<?php 
+		}
+		?>
+	</h2>
+	
+	<?php
 	$save_with_ajax	= isset( $_GET[ 'notification_id' ] ) ? 'bookacti_save_settings_with_ajax' : '';
 	$action			= $save_with_ajax ? '' : 'options.php';
-	
-	echo "<form method='post' action='" . $action . "' id='bookacti-settings' class='bookati-settings-tab-" . $active_tab . ' ' . $save_with_ajax . "' >";
-	
+	?>
+	<form method='post' action='<?php echo $action; ?>' id='bookacti-settings' class='bookati-settings-tab-<?php echo $active_tab . ' ' . $save_with_ajax; ?>' >
+		<?php
 		// Display the tabs content
-		if( $active_tab === 'general' ) {  
-			
+		// GENERAL
+		if( $active_tab === 'general' ) {
 			echo '<div id="bookacti-settings-lang-switcher" ></div>';
 			
 			settings_fields( 'bookacti_general_settings' );
 			do_settings_sections( 'bookacti_general_settings' ); 
-
+			
+		// CANCELLATION
 		} else if( $active_tab === 'cancellation' ) {
-
 			settings_fields( 'bookacti_cancellation_settings' );
 			do_settings_sections( 'bookacti_cancellation_settings' ); 
 
+		// NOTIFICATIONS
 		} else if( $active_tab === 'notifications' ) {
-			
 			if( isset( $_GET[ 'notification_id' ] ) ) {
-				
 				$notification_id = sanitize_title_with_dashes( $_GET[ 'notification_id' ] );
 				
 				echo '<input type="hidden" name="option_page" value="' . esc_attr( 'bookacti_notifications_settings_' . $notification_id ) . '" />';
@@ -73,28 +76,26 @@ echo "<div class='wrap'>";
 				do_action( 'bookacti_notification_settings_page', $notification_id );
 				
 			} else {
-				
 				settings_fields( 'bookacti_notifications_settings' );
 				do_settings_sections( 'bookacti_notifications_settings' );
-				
 			}
 
+		// MESSAGES
 		} else if( $active_tab === 'messages' ) {
-
 			settings_fields( 'bookacti_messages_settings' );
 			do_settings_sections( 'bookacti_messages_settings' ); 
 			
 			do_action( 'bookacti_messages_settings' );
-			
+		
+		// SYSTEM
 		} else if( $active_tab === 'system' ) {
-
 			settings_fields( 'bookacti_system_settings' );
 			do_settings_sections( 'bookacti_system_settings' ); 
 			
 			do_action( 'bookacti_system_settings' );
-
+		
+		// LICENSES
 		} else if( $active_tab === 'licenses' ) {
-			
 			settings_fields( 'bookacti_licenses_settings' );
 			do_settings_sections( 'bookacti_licenses_settings' ); 
 			
@@ -103,10 +104,9 @@ echo "<div class='wrap'>";
 		
 		do_action( 'bookacti_settings_tab_content', $active_tab );
 		
-		if( $active_tab !== 'system' ) {
-			submit_button(); 
-		}
-		
-	echo '</form>';
-			
-echo '</div>'; 
+		// Display the submit button
+		$display_submit = apply_filters( 'bookacti_settings_display_submit_button', $active_tab !== 'system', $active_tab );
+		if( $display_submit ) { submit_button(); }
+		?>
+	</form>	
+</div>

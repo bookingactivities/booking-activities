@@ -718,7 +718,7 @@ function bookacti_booking_group_state_can_be_changed_to( $booking_group, $new_st
 /**
  * Get booking actions array
  * @since 1.6.0 (replace bookacti_get_booking_actions_array)
- * @version 1.7.10
+ * @version 1.8.5
  * @param string $admin_or_front Can be "both", "admin", "front. Default "both".
  * @return array
  */
@@ -755,7 +755,7 @@ function bookacti_get_booking_actions( $admin_or_front = 'both' ) {
 			'link'			=> '',
 			'admin_or_front'=> 'both' ),
 		'delete' => array( 
-			'class'			=> 'bookacti-delete-booking',
+			'class'			=> 'bookacti-delete-booking bookacti-delete-button',
 			'label'			=> esc_html__( 'Delete', 'booking-activities' ),
 			'description'	=> esc_html__( 'Delete permanently the booking.', 'booking-activities' ),
 			'link'			=> '',
@@ -888,7 +888,7 @@ function bookacti_get_booking_price_details_html( $prices_array, $booking ) {
 /**
  * Get booking group actions array
  * @since 1.6.0 (replace bookacti_get_booking_group_actions_array)
- * @version 1.7.10
+ * @version 1.8.5
  * @param string $admin_or_front Can be "both", "admin", "front. Default "both".
  * @return array
  */
@@ -925,7 +925,7 @@ function bookacti_get_booking_group_actions( $admin_or_front = 'both' ) {
 			'link'			=> '',
 			'admin_or_front'=> 'both' ),
 		'delete' => array( 
-			'class'			=> 'bookacti-delete-booking-group',
+			'class'			=> 'bookacti-delete-booking-group bookacti-delete-button',
 			'label'			=> esc_html__( 'Delete', 'booking-activities' ),
 			'description'	=> esc_html__( 'Delete permanently the booking group.', 'booking-activities' ),
 			'link'			=> '',

@@ -34,6 +34,9 @@ ul[id$='-select-box-results'] li[aria-disabled='true'] { display: none; }
 .bookacti-sos .dashicons		{ color: #ca4a1f; text-align: center; width: auto; max-width: 50px; }
 .bookacti-sos .dashicons:after	{ content: attr( data-label ); display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; text-transform: uppercase; font-size: 10px; font-weight: bold; font-family: -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Oxygen-Sans,Ubuntu,Cantarell,"Helvetica Neue",sans-serif; }
 
+.wp-core-ui .button.bookacti-delete-button			{ color: #a00; border-color: #a00; }
+.wp-core-ui .button.bookacti-delete-button:hover	{ color: #dc3232; border-color: #dc3232; }
+.wp-core-ui .button.bookacti-delete-button:focus	{ border-color: #dc3232; color: #dc3232; box-shadow: 0 0 0 1px #dc3232; }
 
 .bookacti-addon-promo			{ border: 2px solid #52b7e9; border-radius: 3px; padding: 10px; text-align: center; }
 .bookacti-addon-promo .button	{ margin-top: 10px; }
@@ -79,6 +82,7 @@ ul[id$='-select-box-results'] li[aria-disabled='true'] { display: none; }
 .bookacti-settings-table tbody tr:nth-child( 2n+1 )	{ background-color: #f9f9f9; }
 .bookacti-settings-table img	{ max-height: 24px; max-width: 24px; }
 .bookacti-settings-table .bookacti-notifications-list-column-value-title a { text-decoration: none; font-weight: bold; }
+.bookacti-notifications-list-column-value-actions .button { vertical-align: middle; }
 
 .bookacti-not-found-row			{ text-align: center; }
 #bookacti-archive-disclaimer	{ max-width: 600px; color: #a00; }
@@ -208,12 +212,13 @@ fieldset legend .bookacti-show-hide-advanced-options{ cursor: pointer; color: #0
 	border: 2px solid #999999; border-radius: 12px;
 }
 .bookacti-onoffswitch-inner {
-	display: block; width: 200%; margin-left: -100%;
-	transition: margin 0.3s ease-in 0s;
+	display: block; position: relative; width: 200%; left: -100%;
+	transition: left 0.3s ease-in 0s;
 }
+.rtl .bookacti-onoffswitch-inner { left: 0; }
 .bookacti-onoffswitch-inner:before, .bookacti-onoffswitch-inner:after {
 	display: block; float: left; width: 50%; height: 20px; padding: 0; line-height: 20px;
-	font-size: 12px; color: white; font-family: Trebuchet, Arial, sans-serif; font-weight: bold;
+	text-align: left; font-size: 12px; color: white; font-family: Trebuchet, Arial, sans-serif; font-weight: bold;
 	box-sizing: border-box;
 }
 .bookacti-onoffswitch-inner:before {
@@ -235,12 +240,9 @@ fieldset legend .bookacti-show-hide-advanced-options{ cursor: pointer; color: #0
 	border: 2px solid #999999; border-radius: 12px;
 	transition: all 0.3s ease-in 0s; 
 }
-.bookacti-onoffswitch-checkbox:checked + .bookacti-onoffswitch-label .bookacti-onoffswitch-inner {
-	margin-left: 0;
-}
-.bookacti-onoffswitch-checkbox:checked + .bookacti-onoffswitch-label .bookacti-onoffswitch-switch {
-	right: 0px;
-}
+.bookacti-onoffswitch-checkbox:checked + .bookacti-onoffswitch-label .bookacti-onoffswitch-inner		{ left: 0; }
+.rtl .bookacti-onoffswitch-checkbox:checked + .bookacti-onoffswitch-label .bookacti-onoffswitch-inner	{ left: 100%; }
+.bookacti-onoffswitch-checkbox:checked + .bookacti-onoffswitch-label .bookacti-onoffswitch-switch		{ right: 0; }
 .bookacti-onoffswitch.bookacti-disabled .bookacti-onoffswitch-label		{ border: 2px solid #bbb; }
 .bookacti-onoffswitch.bookacti-disabled .bookacti-onoffswitch-switch	{ background: #bbb; }
 .bookacti-onoffswitch.bookacti-disabled .bookacti-onoffswitch-checkbox:checked + .bookacti-onoffswitch-label .bookacti-onoffswitch-switch { background-color: #a8cbd6; }

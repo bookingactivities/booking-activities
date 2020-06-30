@@ -5,15 +5,17 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 // EVENTS
 /**
  * AJAX Controller - Fetch events in order to display them
- * @version 1.8.0
+ * @version 1.8.5
  */
 function bookacti_controller_fetch_template_events() {
 	$template_id = intval( $_POST[ 'template_id' ] );
 
 	// Check nonce and capabilities
 	$is_nonce_valid	= check_ajax_referer( 'bookacti_fetch_template_events', 'nonce', false );
-	$is_allowed		= current_user_can( 'bookacti_read_templates' ) && bookacti_user_can_manage_template( $template_id );
-	if( ! $is_nonce_valid || ! $is_allowed || ! $template_id ) { bookacti_send_json_not_allowed( 'fetch_template_events' ); }
+	if( ! $is_nonce_valid ) { bookacti_send_json_invalid_nonce( 'fetch_template_events' ); }
+	
+	$is_allowed = current_user_can( 'bookacti_read_templates' ) && bookacti_user_can_manage_template( $template_id );
+	if( ! $is_allowed || ! $template_id ) { bookacti_send_json_not_allowed( 'fetch_template_events' ); }
 
 	$event_id	= intval( $_POST[ 'event_id' ] );
 	$interval	= bookacti_sanitize_events_interval( $_POST[ 'interval' ] );

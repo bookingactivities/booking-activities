@@ -113,7 +113,7 @@ $j( document ).ready( function() {
 
 /**
  * Initialize and display the template calendar
- * @version 1.8.3
+ * @version 1.8.5
  * @param {HTMLElement} calendar
  */
 function bookacti_load_template_calendar( calendar ) {
@@ -184,7 +184,7 @@ function bookacti_load_template_calendar( calendar ) {
 		viewRender: function( view ) {
 			// Maybe fetch the events on the view (if not already)
 			if( bookacti.load_events === true ) { 
-				var interval = { 'start': moment.utc( view.intervalStart.format( 'YYYY-MM-DD' ) + ' 00:00:00' ), 'end': moment.utc( view.intervalEnd.subtract( 1, 'days' ).format( 'YYYY-MM-DD' ) + ' 23:59:59' ) };
+				var interval = { 'start': moment.utc( moment.utc( view.intervalStart ).clone().locale( 'en' ).format( 'YYYY-MM-DD' ) + ' 00:00:00' ).locale( 'en' ), 'end': moment.utc( moment.utc( view.intervalEnd ).clone().locale( 'en' ).subtract( 1, 'days' ).format( 'YYYY-MM-DD' ) + ' 23:59:59' ).locale( 'en' ) };
 				bookacti_fetch_events_from_interval( $j( '#bookacti-template-calendar' ), interval );
 			}
 		},
@@ -192,7 +192,7 @@ function bookacti_load_template_calendar( calendar ) {
 		
 		/**
 		 * When an event is rendered
-		 * @version 1.8.0
+		 * @version 1.8.5
 		 * @param {object} event
 		 * @param {HTMLElement} element
 		 * @param {object} view
@@ -207,14 +207,16 @@ function bookacti_load_template_calendar( calendar ) {
 			
 			var event_data = bookacti.booking_system[ 'bookacti-template-calendar' ][ 'events_data' ][ event.id ];
 			var activity_id = 0;
+			var event_start_formatted = moment.utc( event.start ).clone().locale( 'en' ).format( 'YYYY-MM-DD HH:mm:ss' );
+			var event_end_formatted = moment.utc( event.end ).clone().locale( 'en' ).format( 'YYYY-MM-DD HH:mm:ss' );
 			
 			// Add some info to the event
 			element.data( 'event-id',			event.id );
 			element.attr( 'data-event-id',		event.id );
-			element.data( 'event-start',		event.start.format( 'YYYY-MM-DD HH:mm:ss' ) );
-			element.attr( 'data-event-start',	event.start.format( 'YYYY-MM-DD HH:mm:ss' ) );
-			element.data( 'event-end',			event.end.format( 'YYYY-MM-DD HH:mm:ss' ) );
-			element.attr( 'data-event-end',		event.end.format( 'YYYY-MM-DD HH:mm:ss' ) );
+			element.data( 'event-start',		event_start_formatted );
+			element.attr( 'data-event-start',	event_start_formatted );
+			element.data( 'event-end',			event_end_formatted );
+			element.attr( 'data-event-end',		event_end_formatted );
 			event.render = 1;
 			
 			if( typeof event_data !== 'undefined' && event_data.activity_id ) {
@@ -292,10 +294,11 @@ function bookacti_load_template_calendar( calendar ) {
 			if( ! event_actions_div.find( '.bookacti-event-action-select' ).length ) {
 				
 				// Check if the event is selected
+				var event_start_date = moment.utc( event.start ).clone().locale( 'en' ).format( 'YYYY-MM-DD' );
 				var is_selected = false;
 				$j.each( bookacti.booking_system[ 'bookacti-template-calendar' ][ 'selected_events' ], function( i, selected_event ){
 					if( selected_event.id == event.id 
-					&&  selected_event.start.substr( 0, 10 ) === event.start.format( 'YYYY-MM-DD' ) ) {
+					&&  selected_event.start.substr( 0, 10 ) === event_start_date ) {
 						is_selected = true;
 						return false; // break the loop
 					}
@@ -341,7 +344,7 @@ function bookacti_load_template_calendar( calendar ) {
 					if( bookacti.booking_system[ 'bookacti-template-calendar' ][ 'exceptions' ] !== undefined 
 					&&  bookacti.booking_system[ 'bookacti-template-calendar' ][ 'exceptions' ][ event.id ] !== undefined ) {
 						$j.each( bookacti.booking_system[ 'bookacti-template-calendar' ][ 'exceptions' ][ event.id ], function ( i, excep ) {
-							if( excep.exception_type === 'date' && excep.exception_value === event.start.format( 'YYYY-MM-DD' ) ) {
+							if( excep.exception_type === 'date' && excep.exception_value === event_start_date ) {
 								event.render = 0;
 							}
 						});
@@ -395,7 +398,7 @@ function bookacti_load_template_calendar( calendar ) {
 		
 		/**
 		 * When an extern draggable event is dropped on the calendar. "this" refer to the new created event on the calendar.
-		 * @version 1.8.0
+		 * @version 1.8.5
 		 * @param {object} event
 		 */
 		eventReceive: function( event ) {
@@ -420,13 +423,16 @@ function bookacti_load_template_calendar( calendar ) {
 			// Whether the event is resizable 
 			if( parseInt( activity_data[ 'is_resizable' ] ) === 1 ) { event.durationEditable = true; }
 			
+			var event_start_formatted = moment.utc( event.start ).clone().locale( 'en' ).format( 'YYYY-MM-DD HH:mm:ss' );
+			var event_end_formatted = moment.utc( event.end ).clone().locale( 'en' ).format( 'YYYY-MM-DD HH:mm:ss' );
+			
 			var data = { 
 				'action': 'bookactiInsertEvent', 
 				'activity_id': activity_id, 
 				'template_id': bookacti.selected_template, 
 				'title': activity_data[ 'multilingual_title' ], 
-				'start': event.start.format( 'YYYY-MM-DD HH:mm:ss' ), 
-				'end': event.end.format( 'YYYY-MM-DD HH:mm:ss' ),
+				'start': event_start_formatted, 
+				'end': event_end_formatted,
 				'availability': activity_data[ 'availability' ],
 				'nonce': $j( '#nonce_edit_template' ).val()
 			};
@@ -483,7 +489,7 @@ function bookacti_load_template_calendar( calendar ) {
 		
 		/**
 		 * eventResize : When an event is resized
-		 * @version 1.8.4
+		 * @version 1.8.5
 		 * @param {object} event
 		 * @param {object} delta
 		 * @param {callable} revertFunc
@@ -509,8 +515,8 @@ function bookacti_load_template_calendar( calendar ) {
 			
 			// Get event var to save in db
 			var id			= event.id;
-			var start		= event.start.format('YYYY-MM-DD HH:mm:ss');
-			var end			= event.end.format('YYYY-MM-DD HH:mm:ss');
+			var start		= moment.utc( event.start ).clone().locale( 'en' ).format( 'YYYY-MM-DD HH:mm:ss' );
+			var end			= moment.utc( event.end ).clone().locale( 'en' ).format( 'YYYY-MM-DD HH:mm:ss' );
 			var delta_days	= delta._days;
 			var data = { 
 				'action': 'bookactiResizeEvent', 
@@ -532,12 +538,12 @@ function bookacti_load_template_calendar( calendar ) {
 				dataType: 'json',
 				success: function( response ) {
 					if( response.status === 'success' ) { 
-						var end_time = event.end.format( 'HH:mm:ss' );
+						var end_time = moment.utc( event.end ).clone().locale( 'en' ).format( 'HH:mm:ss' );
 						
 						// Update selected events
 						$j.each( bookacti.booking_system[ 'bookacti-template-calendar' ][ 'selected_events' ], function( i, selected_event ){
 							if( selected_event.id == event.id ) {
-								var event_end	= moment.utc( selected_event.end ).add( delta_days, 'days' ).format( 'YYYY-MM-DD' ) + ' ' + end_time;
+								var event_end	= moment.utc( selected_event.end ).clone().locale( 'en' ).add( delta_days, 'days' ).format( 'YYYY-MM-DD' ) + ' ' + end_time;
 								selected_event.end = event_end;
 							}
 						});
@@ -546,7 +552,7 @@ function bookacti_load_template_calendar( calendar ) {
 						$j.each( bookacti.booking_system[ 'bookacti-template-calendar' ][ 'groups_events' ], function( group_id, group_events ){
 							$j.each( group_events, function( i, group_event ){
 								if( group_event.id == event.id ) {
-									var event_end	= moment.utc( group_event.end ).add( delta_days, 'days' ).format( 'YYYY-MM-DD' ) + ' ' + end_time;
+									var event_end	= moment.utc( group_event.end ).clone().locale( 'en' ).add( delta_days, 'days' ).format( 'YYYY-MM-DD' ) + ' ' + end_time;
 									group_event.end = event_end;
 								}
 							});
@@ -588,7 +594,7 @@ function bookacti_load_template_calendar( calendar ) {
 		
 		/**
 		 * eventDrop : When an event is moved to an other day / hour
-		 * @version 1.8.4
+		 * @version 1.8.5
 		 * @param {object} event
 		 * @param {object} delta
 		 * @param {callable} revertFunc
@@ -623,8 +629,8 @@ function bookacti_load_template_calendar( calendar ) {
 			
 			// Update the event changes in database
 			var id			= event.id;
-			var start		= event.start.format( 'YYYY-MM-DD HH:mm:ss' );
-			var end			= ( event.end === null ) ? start : event.end.format( 'YYYY-MM-DD HH:mm:ss' );
+			var start		= moment.utc( event.start ).clone().locale( 'en' ).format( 'YYYY-MM-DD HH:mm:ss' );
+			var end			= ! event.end ? start : moment.utc( event.end ).clone().locale( 'en' ).format( 'YYYY-MM-DD HH:mm:ss' );
 			var delta_days	= delta._days;
 			var interval	= bookacti.booking_system[ 'bookacti-template-calendar' ][ 'events_interval' ];
 			var data = { 
@@ -672,8 +678,8 @@ function bookacti_load_template_calendar( calendar ) {
 							return false; // Exit function
 						}
 						
-						var start_time	= event.start.format( 'HH:mm:ss' );
-						var end_time	= event.end.format( 'HH:mm:ss' );
+						var start_time	= moment.utc( event.start ).clone().locale( 'en' ).format( 'HH:mm:ss' );
+						var end_time	= moment.utc( event.end ).clone().locale( 'en' ).format( 'HH:mm:ss' );
 						
 						// Update event data
 						if( ! $j.isEmptyObject( response.event_data ) ) {
@@ -683,8 +689,8 @@ function bookacti_load_template_calendar( calendar ) {
 						// Update selected events
 						$j.each( bookacti.booking_system[ 'bookacti-template-calendar' ][ 'selected_events' ], function( i, selected_event ){
 							if( selected_event.id == event.id ) {
-								var event_start	= moment.utc( selected_event.start ).add( delta_days, 'days' ).format( 'YYYY-MM-DD' ) + ' ' + start_time;
-								var event_end	= moment.utc( selected_event.end ).add( delta_days, 'days' ).format( 'YYYY-MM-DD' ) + ' ' + end_time;
+								var event_start	= moment.utc( selected_event.start ).clone().locale( 'en' ).add( delta_days, 'days' ).format( 'YYYY-MM-DD' ) + ' ' + start_time;
+								var event_end	= moment.utc( selected_event.end ).clone().locale( 'en' ).add( delta_days, 'days' ).format( 'YYYY-MM-DD' ) + ' ' + end_time;
 								selected_event.start = event_start;
 								selected_event.end = event_end;
 							}
@@ -694,8 +700,8 @@ function bookacti_load_template_calendar( calendar ) {
 						$j.each( bookacti.booking_system[ 'bookacti-template-calendar' ][ 'groups_events' ], function( group_id, group_events ){
 							$j.each( group_events, function( i, group_event ){
 								if( group_event.id == event.id ) {
-									var event_start	= moment.utc( group_event.start ).add( delta_days, 'days' ).format( 'YYYY-MM-DD' ) + ' ' + start_time;
-									var event_end	= moment.utc( group_event.end ).add( delta_days, 'days' ).format( 'YYYY-MM-DD' ) + ' ' + end_time;
+									var event_start	= moment.utc( group_event.start ).clone().locale( 'en' ).add( delta_days, 'days' ).format( 'YYYY-MM-DD' ) + ' ' + start_time;
+									var event_end	= moment.utc( group_event.end ).clone().locale( 'en' ).add( delta_days, 'days' ).format( 'YYYY-MM-DD' ) + ' ' + end_time;
 			
 									group_event.start = event_start;
 									group_event.end = event_end;
@@ -788,12 +794,22 @@ function bookacti_load_template_calendar( calendar ) {
 		},
 
 
-		// eventClick : When an event is clicked
+		/**
+		 * When an event is clicked
+		 * @version 1.8.5
+		 * @param {object} event
+		 * @param {object} jsEvent
+		 * @param {object} view
+		 */
 		eventClick: function( event, jsEvent, view ) {
 			var element = $j( this );
+			
+			var event_start_formatted = moment.utc( event.start ).clone().locale( 'en' ).format( 'YYYY-MM-DD HH:mm:ss' );
+			var event_end_formatted = moment.utc( event.end ).clone().locale( 'en' ).format( 'YYYY-MM-DD HH:mm:ss' );
+			
 			// Because of popover and long events (spreading on multiple days), 
 			// the same event can appears twice, so we need to apply changes on each
-			var elements = $j( '.fc-event[data-event-id="' + event.id + '"][data-event-start="' + event.start.format( 'YYYY-MM-DD HH:mm:ss' ) + '"]' );
+			var elements = $j( '.fc-event[data-event-id="' + event.id + '"][data-event-start="' + event_start_formatted + '"]' );
 			
 			// Display event action on touch devices because they cannot be displayed on hover
 			if( bookacti.is_touch_device ) {
@@ -813,8 +829,8 @@ function bookacti_load_template_calendar( calendar ) {
 			bookacti.booking_system[ 'bookacti-template-calendar' ][ 'picked_events' ] = [];
 			bookacti.booking_system[ 'bookacti-template-calendar' ][ 'picked_events' ].push({ 
 				'id'			: event.id,
-				'start'			: event.start.format( 'YYYY-MM-DD HH:mm:ss' ), 
-				'end'			: event.end.format( 'YYYY-MM-DD HH:mm:ss' ) 
+				'start'			: event_start_formatted, 
+				'end'			: event_end_formatted
 			});
 			
 			// If the user click on an event action, execute it

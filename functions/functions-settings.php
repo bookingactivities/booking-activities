@@ -483,15 +483,10 @@ function bookacti_settings_field_cancellation_refund_actions_callback() {
 function bookacti_settings_section_notifications_general_callback() { 
 	// Display a table of configurable notifications
 	// Set up booking list columns
-	$columns_titles = apply_filters( 'bookacti_notifications_list_columns_titles', array(
-		10	=> array( 'id' => 'active',		'title' => esc_html_x( 'Active', 'is the notification active', 'booking-activities' ) ),
-		20	=> array( 'id' => 'title',		'title' => esc_html_x( 'Trigger', 'what triggers a notification', 'booking-activities' ) ),
-		30	=> array( 'id' => 'recipients',	'title' => esc_html_x( 'Send to', 'who the notification is sent to', 'booking-activities' ) ),
-		100 => array( 'id' => 'actions',	'title' => esc_html__( 'Actions', 'booking-activities' ) )
-	) );
-
-	// Order columns
-	ksort( $columns_titles, SORT_NUMERIC );
+	$columns_titles = bookacti_get_notifications_list_columns_titles();
+	
+	do_action( 'bookacti_before_notifications_table' );
+	
 	?>
 	<table class='bookacti-settings-table' id='bookacti-notifications-list' >
 		<thead>
@@ -573,6 +568,28 @@ function bookacti_settings_section_notifications_general_callback() {
 	</table>
 	<?php
 	bookacti_display_banp_promo();
+	
+	do_action( 'bookacti_after_notifications_table' );
+}
+
+
+/**
+ * Get notification list columns titles
+ * @since 1.8.5
+ * @return array
+ */
+function bookacti_get_notifications_list_columns_titles() {
+	$columns_titles = apply_filters( 'bookacti_notifications_list_columns_titles', array(
+		10	=> array( 'id' => 'active',		'title' => esc_html_x( 'Active', 'is the notification active', 'booking-activities' ) ),
+		20	=> array( 'id' => 'title',		'title' => esc_html_x( 'Trigger', 'what triggers a notification', 'booking-activities' ) ),
+		30	=> array( 'id' => 'recipients',	'title' => esc_html_x( 'Send to', 'who the notification is sent to', 'booking-activities' ) ),
+		100 => array( 'id' => 'actions',	'title' => esc_html__( 'Actions', 'booking-activities' ) )
+	) );
+
+	// Order columns
+	ksort( $columns_titles, SORT_NUMERIC );
+	
+	return $columns_titles;
 }
 
 

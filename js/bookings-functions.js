@@ -153,7 +153,7 @@ function bookacti_update_template_related_filters() {
 
 /**
  * Refresh booking list calendar accoding to dates
- * @version 1.8.0
+ * @version 1.8.5
  */
 function bookacti_refresh_calendar_according_to_date_filter() {
 	if( ! $j( '#bookacti-booking-system-filter-container' ).is( ':visible' ) ) { return false; }
@@ -165,8 +165,8 @@ function bookacti_refresh_calendar_according_to_date_filter() {
 	var to_date				= $j( '#bookacti-booking-filter-dates-to' ).val();
 	
 	var interval_filter = {
-		"start": from_date ? moment.utc( from_date + ' 00:00:00' ) : moment.utc( '1970-01-01 00:00:00' ),
-		"end": to_date ? moment.utc( to_date + ' 23:59:59' ) : moment.utc( '2037-12-31 23:59:59' )
+		"start": moment.utc( from_date ? from_date + ' 00:00:00' : '1970-01-01 00:00:00' ).locale( 'en' ),
+		"end": moment.utc( to_date ? to_date + ' 23:59:59' : '2037-12-31 23:59:59' ).locale( 'en' )
 	};
 	
 	bookacti.booking_system[ booking_system_id ][ 'start' ] = interval_filter.start.format( 'YYYY-MM-DD HH:mm:ss' );
