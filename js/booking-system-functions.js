@@ -72,7 +72,7 @@ function bookacti_fetch_events( booking_system, interval ) {
 
 /**
  * Reload a booking system
- * @version 1.8.0
+ * @version 1.8.5
  * @param {HTMLElement} booking_system
  * @param {boolean} keep_picked_events
  */
@@ -129,6 +129,15 @@ function bookacti_reload_booking_system( booking_system, keep_picked_events ) {
 				// Fill the booking method elements
 				booking_system.append( response.html_elements );
 				
+				// Update nonce
+				if( response.nonces ) {
+					$j.each( response.nonces, function( input_name, input_value ) {
+						if( $j( 'input[type="hidden"][name="' + input_name + '"]' ).length ) {
+							$j( 'input[type="hidden"][name="' + input_name + '"]' ).val( input_value );
+						}
+					});
+				}
+				
 				// Trigger action for plugins
 				booking_system.trigger( 'bookacti_booking_system_reloaded', original_attributes );
 				
@@ -154,7 +163,7 @@ function bookacti_reload_booking_system( booking_system, keep_picked_events ) {
 
 /**
  * Display events of a specific interval
- * @version 1.8.0
+ * @version 1.8.5
  * @param {HTMLElement} booking_system
  * @param {object} desired_interval { 'start': moment.utc(), 'end': moment.utc() }
  */
@@ -186,15 +195,15 @@ function bookacti_fetch_events_from_interval( booking_system, desired_interval )
 
 	// Else, check if the desired_interval contain unloaded days, and if so, load events for this new interval
 	else { 
-		var current_interval_start	= moment.utc( current_interval.start );
-		var current_interval_end	= moment.utc( current_interval.end );
+		var current_interval_start	= moment.utc( current_interval.start ).clone().locale( 'en' );
+		var current_interval_end	= moment.utc( current_interval.end ).clone().locale( 'en' );
 
 		if( desired_interval_start.isBefore( current_interval_start ) || desired_interval_end.isAfter( current_interval_end ) ) {
 			var new_interval_start	= current_interval_start.clone();
 			var new_interval_end	= current_interval_end.clone();
 			
-			var day_before_desired_interval_start	= moment.utc( desired_interval.start ).clone().subtract( 1, 'days' );
-			var day_after_desired_interval_end		= moment.utc( desired_interval.end ).clone().add( 1, 'days' );
+			var day_before_desired_interval_start	= moment.utc( desired_interval.start ).clone().subtract( 1, 'days' ).locale( 'en' );
+			var day_after_desired_interval_end		= moment.utc( desired_interval.end ).clone().add( 1, 'days' ).locale( 'en' );
 			
 			// If the current desired_interval include the old interval or if they are not connected at all,
 			// Remove the current events and fetch events of the new interval
@@ -223,7 +232,7 @@ function bookacti_fetch_events_from_interval( booking_system, desired_interval )
 					if( new_interval_start.isBefore( calendar_start ) ) { 
 						new_interval_start = calendar_start.clone();
 					}
-					new_interval_end = moment.utc( current_interval_start.clone().subtract( 1, 'days' ).format( 'YYYY-MM-DD' ) + ' 23:59:59' );
+					new_interval_end = moment.utc( current_interval_start.clone().subtract( 1, 'days' ).format( 'YYYY-MM-DD' ) + ' 23:59:59' ).locale( 'en' );
 				}
 
 				// If the desired interval ends after current interval of events, loads next bunch of events
@@ -237,7 +246,7 @@ function bookacti_fetch_events_from_interval( booking_system, desired_interval )
 					if( new_interval_end.isAfter( calendar_end ) ) { 
 						new_interval_end = calendar_end.clone();
 					}
-					new_interval_start = moment.utc( current_interval_end.clone().add( 1, 'days' ).format( 'YYYY-MM-DD' ) + ' 00:00:00' );
+					new_interval_start = moment.utc( current_interval_end.clone().add( 1, 'days' ).format( 'YYYY-MM-DD' ) + ' 00:00:00' ).locale( 'en' );
 				}
 
 				new_interval = {
@@ -261,7 +270,7 @@ function bookacti_fetch_events_from_interval( booking_system, desired_interval )
 
 /**
  * Get the first events interval
- * @version 1.8.0
+ * @version 1.8.5
  * @param {HTMLElement} booking_system
  * @param {object} min_interval
  * @param {int} interval_duration
@@ -274,11 +283,11 @@ function bookacti_get_new_interval_of_events( booking_system, min_interval, inte
 	if( typeof availability_period.start === 'undefined' || typeof availability_period.end === 'undefined' ) { return {}; }
 	
 	var past_events		= bookacti.booking_system[ booking_system_id ][ 'past_events' ];
-	var current_time	= moment.utc( bookacti_localized.current_time );
+	var current_time	= moment.utc( bookacti_localized.current_time ).locale( 'en' );
 	var current_date	= current_time.format( 'YYYY-MM-DD HH:mm:ss' );
 	
-	var calendar_start	= moment.utc( availability_period.start );
-	var calendar_end	= moment.utc( availability_period.end );
+	var calendar_start	= moment.utc( availability_period.start ).locale( 'en' );
+	var calendar_end	= moment.utc( availability_period.end ).locale( 'en' );
 	
 	if( ! past_events && calendar_end.isBefore( current_time ) ) { return []; }
 	
@@ -294,8 +303,8 @@ function bookacti_get_new_interval_of_events( booking_system, min_interval, inte
 	
 	interval_duration = parseInt( interval_duration ) || parseInt( bookacti_localized.event_load_interval );
 	
-	var interval_start	= moment.utc( moment.utc( min_interval.start ).format( 'YYYY-MM-DD' ) + ' 00:00:00' );
-	var interval_end	= moment.utc( moment.utc( min_interval.end ).format( 'YYYY-MM-DD' ) + ' 23:59:59' );
+	var interval_start	= moment.utc( moment.utc( min_interval.start ).clone().locale( 'en' ).format( 'YYYY-MM-DD' ) + ' 00:00:00' ).locale( 'en' );
+	var interval_end	= moment.utc( moment.utc( min_interval.end ).clone().locale( 'en' ).format( 'YYYY-MM-DD' ) + ' 23:59:59' ).locale( 'en' );
 	var min_interval_duration = parseInt( Math.abs( moment.utc( min_interval.end ).diff( min_interval.start, 'days' ) ) );
 	
 	if( min_interval_duration > interval_duration ) { interval_duration = min_interval_duration; }
@@ -467,6 +476,7 @@ function bookacti_event_click( booking_system, event ) {
 
 /**
  * Get the groups ids of an event
+ * @version 1.8.5
  * @param {HTMLElement} booking_system
  * @param {object} event
  * @returns {array|"single"|false}
@@ -483,8 +493,8 @@ function bookacti_get_event_group_ids( booking_system, event ) {
 	
 	// Format data
 	var event_id	= event.id;
-	var event_start = event.start instanceof moment ? event.start.format( 'YYYY-MM-DD HH:mm:ss' ) : event.start;
-	var event_end	= event.end instanceof moment ? event.end.format( 'YYYY-MM-DD HH:mm:ss' ) : event.end;
+	var event_start = moment.utc( event.start ).clone().locale( 'en' ).format( 'YYYY-MM-DD HH:mm:ss' );
+	var event_end	= moment.utc( event.end ).clone().locale( 'en' ).format( 'YYYY-MM-DD HH:mm:ss' );
 	
 	var group_ids = [];
 	
@@ -510,25 +520,25 @@ function bookacti_get_event_group_ids( booking_system, event ) {
 
 /**
  * Fill form fields
+ * @version 1.8.5
  * @param {HTMLElement} booking_system
  * @param {object} event
  * @param {int} group_id
  */
 function bookacti_fill_booking_system_fields( booking_system, event, group_id ) {
-	
 	group_id = $j.isArray( group_id ) && group_id.length === 1 ? group_id[ 0 ] : group_id;
 	group_id = $j.isNumeric( group_id ) || group_id === 'single' ? group_id : false;
 	
-	var start	= event.start instanceof moment ? event.start.format( 'YYYY-MM-DD HH:mm:ss' ) : event.start;
-	var end		= event.end instanceof moment ?  event.end.format( 'YYYY-MM-DD HH:mm:ss' ) : event.end;
+	var event_start = moment.utc( event.start ).clone().locale( 'en' ).format( 'YYYY-MM-DD HH:mm:ss' );
+	var event_end	= moment.utc( event.end ).clone().locale( 'en' ).format( 'YYYY-MM-DD HH:mm:ss' );
 	
 	// Fill the form fields
 	if( group_id !== false ) {
 		booking_system.siblings( '.bookacti-booking-system-inputs' ).find( 'input[name="bookacti_group_id"]' ).val( group_id );
 	}
 	booking_system.siblings( '.bookacti-booking-system-inputs' ).find( 'input[name="bookacti_event_id"]' ).val( event.id );
-	booking_system.siblings( '.bookacti-booking-system-inputs' ).find( 'input[name="bookacti_event_start"]' ).val( start );
-	booking_system.siblings( '.bookacti-booking-system-inputs' ).find( 'input[name="bookacti_event_end"]' ).val( end );
+	booking_system.siblings( '.bookacti-booking-system-inputs' ).find( 'input[name="bookacti_event_start"]' ).val( event_start );
+	booking_system.siblings( '.bookacti-booking-system-inputs' ).find( 'input[name="bookacti_event_end"]' ).val( event_end );
 }
 
 
@@ -569,7 +579,7 @@ function bookacti_pick_events_of_group( booking_system, group_id, event ) {
 
 /**
  * Pick an event
- * @version 1.8.0
+ * @version 1.8.5
  * @param {HTMLElement} booking_system
  * @param {object} event
  * @param {int} group_id
@@ -588,8 +598,8 @@ function bookacti_pick_event( booking_system, event, group_id ) {
 	var picked_event = {
 		"id": event.id,
 		"title": event.title,
-		"start": moment.utc( event.start ).format( 'YYYY-MM-DD HH:mm:ss' ),
-		"end": moment.utc( event.end ).format( 'YYYY-MM-DD HH:mm:ss' ),
+		"start": moment.utc( event.start ).clone().locale( 'en' ).format( 'YYYY-MM-DD HH:mm:ss' ),
+		"end": moment.utc( event.end ).clone().locale( 'en' ).format( 'YYYY-MM-DD HH:mm:ss' ),
 		"group_id": group_id
 	};
 	
@@ -602,7 +612,7 @@ function bookacti_pick_event( booking_system, event, group_id ) {
 
 /**
  * Unpick an event
- * @version 1.8.0
+ * @version 1.8.5
  * @param {HTMLElement} booking_system
  * @param {object|int} event
  * @param {string|moment} start
@@ -630,7 +640,7 @@ function bookacti_unpick_event( booking_system, event, start, all ) {
 	// Format event object
 	var event_to_unpick = {
 		'id': typeof event === 'object' ? event.id : event,
-		'start': moment.utc( start ).format( 'YYYY-MM-DD HH:mm:ss' )
+		'start': moment.utc( start ).clone().locale( 'en' ).format( 'YYYY-MM-DD HH:mm:ss' )
 	};
 	
 	// Remove picked event(s) from memory 
@@ -768,7 +778,7 @@ function bookacti_set_tooltip_position( element, tooltip_container, position ) {
 
 /**
  * Set min and max quantity on the quantity field
- * @version 1.8.4
+ * @version 1.8.5
  * @param {HTMLElement} booking_system
  * @param {HTMLElement} qty_field
  * @param {object} event_summary_data
@@ -821,7 +831,7 @@ function bookacti_set_min_and_max_quantity( booking_system, qty_field, event_sum
 							available_places	= bookacti_get_event_availability( booking_system, event );
 
 							if( min_quantity || max_quantity ) {
-								var event_start_formatted = moment.utc( event.start ).format( 'YYYY-MM-DD HH:mm:ss' );
+								var event_start_formatted = moment.utc( event.start ).clone().locale( 'en' ).format( 'YYYY-MM-DD HH:mm:ss' );
 								if( typeof bookacti.booking_system[ booking_system_id ][ 'bookings' ][ event.id ] !== 'undefined' ) {
 									if( typeof bookacti.booking_system[ booking_system_id ][ 'bookings' ][ event.id ][ event_start_formatted ] !== 'undefined' ) {
 										var occurrence = bookacti.booking_system[ booking_system_id ][ 'bookings' ][ event.id ][ event_start_formatted ];
@@ -863,17 +873,17 @@ function bookacti_set_min_and_max_quantity( booking_system, qty_field, event_sum
 
 /**
  * Format an event duration
- * @version 1.8.0
+ * @version 1.8.5
  * @param {moment|string} start
  * @param {moment|string} end
  * @returns {String}
  */
 function bookacti_format_event_duration( start, end ) {
-	start = start instanceof moment ? start.format( 'YYYY-MM-DD HH:mm:ss' ) : start;
-	end = end instanceof moment ? end.format( 'YYYY-MM-DD HH:mm:ss' ) : end;
+	start = moment.utc( start ).clone().locale( 'en' ).format( 'YYYY-MM-DD HH:mm:ss' );
+	end = moment.utc( end ).clone().locale( 'en' ).format( 'YYYY-MM-DD HH:mm:ss' );
 	
-	var event_start = moment.utc( start ).locale( bookacti_localized.current_lang_code );
-	var event_end = moment.utc( end ).locale( bookacti_localized.current_lang_code );
+	var event_start = moment.utc( start ).clone().locale( bookacti_localized.current_lang_code );
+	var event_end = moment.utc( end ).clone().locale( bookacti_localized.current_lang_code );
 	
 	var start_and_end_same_day	= start.substr( 0, 10 ) === end.substr( 0, 10 );
 	var class_same_day			= start_and_end_same_day ? 'bookacti-booking-event-end-same-day' : '';
@@ -957,14 +967,14 @@ function bookacti_clear_booking_system_displayed_info( booking_system, keep_pick
 
 /**
  * Get event booking numbers
- * @version 1.8.0
+ * @version 1.8.5
  * @param {HTMLElement} booking_system
  * @param {Object} event
  * @returns {Int}
  */
 function bookacti_get_event_number_of_bookings( booking_system, event ) {
 	var booking_system_id = booking_system.attr( 'id' );
-	var event_start	= moment.utc( event.start ).format( 'YYYY-MM-DD HH:mm:ss' );
+	var event_start	= moment.utc( event.start ).clone().locale( 'en' ).format( 'YYYY-MM-DD HH:mm:ss' );
 	
 	if( typeof bookacti.booking_system[ booking_system_id ][ 'bookings' ] === 'undefined' ) { return 0; }
 	if( typeof bookacti.booking_system[ booking_system_id ][ 'bookings' ][ event.id ] === 'undefined' ) { return 0; }
@@ -996,7 +1006,7 @@ function bookacti_get_event_availability( booking_system, event ) {
 
 /**
  * Check if an event is event available
- * @version 1.8.4
+ * @version 1.8.5
  * @param {HTMLElement} booking_system
  * @param {object} event
  * @returns {boolean}
@@ -1007,8 +1017,8 @@ function bookacti_is_event_available( booking_system, event ) {
 	var past_events_bookable= bookacti.booking_system[ booking_system_id ][ 'past_events_bookable' ];
 	
 	var current_time	= moment.utc( bookacti_localized.current_time );
-	var event_start		= moment.utc( event.start ).clone();
-	var event_end		= moment.utc( event.end ).clone();
+	var event_start		= moment.utc( event.start ).clone().locale( 'en' );
+	var event_end		= moment.utc( event.end ).clone().locale( 'en' );
 	
 	var availability		= bookacti_get_event_availability( booking_system, event );
 	var availability_period	= bookacti_get_availability_period( booking_system );
@@ -1160,18 +1170,18 @@ function bookacti_is_event_available( booking_system, event ) {
 
 /**
  * Get group available places
+ * @version 1.8.5
  * @param {HTMLElement} booking_system
  * @param {object} event
  * @param {array} event_groups
  * @returns {Number}
  */
 function bookacti_get_bookings_number_for_a_single_grouped_event( booking_system, event, event_groups ) {
-	
 	var booking_system_id = booking_system.attr( 'id' );
 	event_groups = event_groups || bookacti_get_event_group_ids( booking_system, event );
 	
-	var start	= event.start instanceof moment ? event.start.format( 'YYYY-MM-DD HH:mm:ss' ) : event.start;
-	var end		= event.end instanceof moment ?  event.end.format( 'YYYY-MM-DD HH:mm:ss' ) : event.end;
+	var event_start	= moment.utc( event.start ).clone().locale( 'en' ).format( 'YYYY-MM-DD HH:mm:ss' );
+	var event_end	= moment.utc( event.end ).clone().locale( 'en' ).format( 'YYYY-MM-DD HH:mm:ss' );
 
 	var event_bookings	= bookacti_get_event_number_of_bookings( booking_system, event );
 	var all_groups		= bookacti.booking_system[ booking_system_id ][ 'groups_events' ];
@@ -1180,8 +1190,8 @@ function bookacti_get_bookings_number_for_a_single_grouped_event( booking_system
 	$j.each( event_groups, function( i, group_id ){
 		$j.each( all_groups[ group_id ], function( i, grouped_event ){
 			if( event.id === grouped_event.id
-			&&  start === grouped_event.start 
-			&&  end === grouped_event.end ) {
+			&&  event_start === grouped_event.start 
+			&&  event_end === grouped_event.end ) {
 				group_bookings += parseInt( grouped_event.group_bookings );
 			}
 		});

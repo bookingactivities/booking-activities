@@ -406,6 +406,7 @@ function bookacti_bind_activities_to_template( $new_activities, $template_id ) {
 /**
  * Update event exceptions
  * @since 1.8.0
+ * @version 1.8.5
  * @param int $event_id
  * @param array $new_exceptions
  * @param array $delete_old Whether to delete the existing exceptions first
@@ -415,15 +416,15 @@ function bookacti_update_exceptions( $event_id, $new_exceptions, $delete_old = t
 	// Check if the exceptions already exist
 	$dates_to_insert = $new_exceptions;
 	$dates_to_delete = array();
-	if( $new_exceptions ) {
-		$old_exceptions = bookacti_get_exceptions( array( 'events' => array( $event_id ), 'types' => array( 'date' ) ) );
-		if( $old_exceptions ) {
-			$exceptions_dates = array();
-			foreach( $old_exceptions as $old_exception ) { $exceptions_dates[] = $old_exception[ 'exception_value' ]; }
-			$dates_to_insert = array_values( array_diff( $new_exceptions, $exceptions_dates ) );
-			$dates_to_delete = array_values( array_diff( $exceptions_dates, $new_exceptions ) );
-		}
+	
+	$old_exceptions = bookacti_get_exceptions( array( 'events' => array( $event_id ), 'types' => array( 'date' ) ) );
+	$exceptions_dates = array();
+	if( $old_exceptions ) {	
+		foreach( $old_exceptions as $old_exception ) { $exceptions_dates[] = $old_exception[ 'exception_value' ]; } 
 	}
+	$dates_to_insert = array_values( array_diff( $new_exceptions, $exceptions_dates ) );
+	$dates_to_delete = array_values( array_diff( $exceptions_dates, $new_exceptions ) );
+		
 	if( ! $dates_to_insert && ! $dates_to_delete ) { return 0; }
 	
 	$updated_nb = 0;

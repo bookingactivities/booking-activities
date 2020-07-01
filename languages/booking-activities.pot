@@ -2,14 +2,14 @@
 # This file is distributed under the same license as the Booking Activities plugin.
 msgid ""
 msgstr ""
-"Project-Id-Version: Booking Activities 1.8.4\n"
+"Project-Id-Version: Booking Activities 1.8.5\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/booking-activities\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2020-06-04T14:24:40+00:00\n"
+"POT-Creation-Date: 2020-07-01T14:04:04+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.3.0\n"
 "X-Domain: booking-activities\n"
@@ -54,15 +54,15 @@ msgstr ""
 #: controller/controller-woocommerce-frontend.php:1627
 #: controller/controller-woocommerce-frontend.php:1635
 #: controller/controller-woocommerce-frontend.php:1642
-#: functions/functions-settings.php:1639
+#: functions/functions-settings.php:1664
 #: view/view-bookings.php:11
 msgid "Bookings"
 msgstr ""
 
 #: booking-activities.php:542
 #: controller/controller-settings.php:858
-#: functions/functions-settings.php:525
-#: view/view-settings.php:12
+#: functions/functions-settings.php:526
+#: view/view-settings.php:11
 msgid "Settings"
 msgstr ""
 
@@ -79,8 +79,8 @@ msgstr ""
 #: class/class-bookings-list.php:68
 #: functions/functions-booking-system.php:869
 #: functions/functions-bookings.php:1907
-#: functions/functions-settings.php:524
-#: functions/functions-settings.php:549
+#: functions/functions-settings.php:525
+#: functions/functions-settings.php:550
 #: view/view-bookings.php:178
 msgid "Customer"
 msgstr ""
@@ -89,18 +89,18 @@ msgstr ""
 #: functions/functions-bookings.php:1597
 #: functions/functions-bookings.php:1910
 #: functions/functions-forms.php:1410
-#: functions/functions-settings.php:1583
-#: functions/functions-settings.php:1761
+#: functions/functions-settings.php:1608
+#: functions/functions-settings.php:1786
 msgid "Email"
 msgstr ""
 
 #: class/class-bookings-list.php:70
 #: controller/controller-settings.php:841
 #: functions/functions-bookings.php:1911
-#: functions/functions-settings.php:1489
-#: functions/functions-settings.php:1586
-#: functions/functions-settings.php:1676
-#: functions/functions-settings.php:1764
+#: functions/functions-settings.php:1514
+#: functions/functions-settings.php:1611
+#: functions/functions-settings.php:1701
+#: functions/functions-settings.php:1789
 msgid "Phone"
 msgstr ""
 
@@ -131,7 +131,7 @@ msgstr ""
 #: class/class-bookings-list.php:75
 #: class/class-forms-list.php:54
 #: functions/functions-bookings.php:1915
-#: functions/functions-settings.php:1578
+#: functions/functions-settings.php:1603
 #: view/view-form-editor-dialogs.php:962
 #: view/view-templates-dialogs.php:105
 #: view/view-templates-dialogs.php:237
@@ -142,14 +142,14 @@ msgstr ""
 #: class/class-bookings-list.php:76
 #: controller/controller-woocommerce-frontend.php:1164
 #: functions/functions-bookings.php:1916
-#: functions/functions-settings.php:1579
+#: functions/functions-settings.php:1604
 msgid "Start"
 msgstr ""
 
 #: class/class-bookings-list.php:77
 #: controller/controller-woocommerce-frontend.php:1165
 #: functions/functions-bookings.php:1917
-#: functions/functions-settings.php:1580
+#: functions/functions-settings.php:1605
 msgid "End"
 msgstr ""
 
@@ -178,7 +178,7 @@ msgstr ""
 #: class/class-bookings-list.php:80
 #: class/class-forms-list.php:56
 #: functions/functions-bookings.php:1905
-#: functions/functions-settings.php:1577
+#: functions/functions-settings.php:1602
 #: view/view-bookings.php:156
 msgid "Date"
 msgstr ""
@@ -189,8 +189,8 @@ msgstr ""
 
 #: class/class-bookings-list.php:82
 #: functions/functions-bookings.php:1924
-#: functions/functions-settings.php:492
-#: functions/functions-settings.php:1064
+#: functions/functions-settings.php:586
+#: functions/functions-settings.php:1087
 #: view/view-bookings.php:203
 #: view/view-form-editor-dialogs.php:143
 msgid "Actions"
@@ -300,8 +300,8 @@ msgstr ""
 
 #: controller/controller-bookings.php:135
 #: controller/controller-bookings.php:169
-#: controller/controller-bookings.php:603
-#: controller/controller-bookings.php:638
+#: controller/controller-bookings.php:601
+#: controller/controller-bookings.php:636
 msgid "This booking cannot be refunded."
 msgstr ""
 
@@ -314,12 +314,12 @@ msgid "An error occurred while trying to send the email."
 msgstr ""
 
 #: controller/controller-bookings.php:187
-#: controller/controller-bookings.php:656
+#: controller/controller-bookings.php:654
 msgid "Your booking has been successfully refunded."
 msgstr ""
 
 #: controller/controller-bookings.php:205
-#: controller/controller-bookings.php:679
+#: controller/controller-bookings.php:677
 msgid "Error occurs while trying to request a refund. Please contact the administrator."
 msgstr ""
 
@@ -336,127 +336,127 @@ msgid "An error occurred while trying to change the booking payment status."
 msgstr ""
 
 #: controller/controller-bookings.php:300
-#: controller/controller-bookings.php:779
+#: controller/controller-bookings.php:777
 msgid "The new quantity is not valid."
 msgstr ""
 
 #: controller/controller-bookings.php:308
-#: controller/controller-bookings.php:787
+#: controller/controller-bookings.php:785
 msgid "An error occurred while trying to change the booking quantity."
 msgstr ""
 
-#: controller/controller-bookings.php:429
+#: controller/controller-bookings.php:427
 msgid "You must select a different time slot than the current one."
 msgstr ""
 
-#: controller/controller-bookings.php:478
+#: controller/controller-bookings.php:476
 msgid "An error occurred while trying to delete the booking."
 msgstr ""
 
-#: controller/controller-bookings.php:512
+#: controller/controller-bookings.php:510
 msgid "No bookings."
 msgstr ""
 
-#: controller/controller-bookings.php:555
+#: controller/controller-bookings.php:553
 msgid "The booking group is already cancelled."
 msgstr ""
 
-#: controller/controller-bookings.php:560
+#: controller/controller-bookings.php:558
 msgid "The booking group cannot be cancelled."
 msgstr ""
 
-#: controller/controller-bookings.php:565
+#: controller/controller-bookings.php:563
 msgid "An error occurred while trying to cancel the booking group."
 msgstr ""
 
-#: controller/controller-bookings.php:719
+#: controller/controller-bookings.php:717
 msgid "The booking group status cannot be changed."
 msgstr ""
 
-#: controller/controller-bookings.php:728
+#: controller/controller-bookings.php:726
 msgid "An error occurred while trying to change the booking group status."
 msgstr ""
 
-#: controller/controller-bookings.php:738
+#: controller/controller-bookings.php:736
 msgid "An error occurred while trying to change the booking group payment status."
 msgstr ""
 
-#: controller/controller-bookings.php:830
+#: controller/controller-bookings.php:836
 msgid "An error occurred while trying to delete the bookings of the group."
 msgstr ""
 
-#: controller/controller-bookings.php:841
+#: controller/controller-bookings.php:853
 msgid "An error occurred while trying to delete the booking group."
 msgstr ""
 
-#: controller/controller-bookings.php:901
+#: controller/controller-bookings.php:913
 msgid "The link has been correctly generated. Use the link above to export your bookings."
 msgstr ""
 
-#: controller/controller-bookings.php:916
+#: controller/controller-bookings.php:928
 msgid "Your secret key has been changed. The old links that you have generated won't work anymore."
 msgstr ""
 
-#: controller/controller-bookings.php:1026
-#: controller/controller-bookings.php:1150
+#: controller/controller-bookings.php:1038
+#: controller/controller-bookings.php:1162
 #: controller/controller-forms.php:1669
 msgid "Missing key."
 msgstr ""
 
-#: controller/controller-bookings.php:1030
-#: controller/controller-bookings.php:1043
-#: controller/controller-bookings.php:1154
+#: controller/controller-bookings.php:1042
+#: controller/controller-bookings.php:1055
+#: controller/controller-bookings.php:1166
 #: controller/controller-forms.php:1673
 msgid "Invalid key."
 msgstr ""
 
-#: controller/controller-bookings.php:1034
+#: controller/controller-bookings.php:1046
 #: controller/controller-forms.php:633
 #: controller/controller-forms.php:1113
 #: controller/controller-forms.php:1120
 #: controller/controller-forms.php:1201
 #: functions/functions-global.php:77
 #: functions/functions-global.php:466
-#: functions/functions-settings.php:921
-#: functions/functions-settings.php:956
+#: functions/functions-settings.php:944
+#: functions/functions-settings.php:979
 #: view/view-form-editor.php:22
 msgid "You are not allowed to do that."
 msgstr ""
 
-#: controller/controller-bookings.php:1042
+#: controller/controller-bookings.php:1054
 msgid "Invalid or expired export ID."
 msgstr ""
 
-#: controller/controller-bookings.php:1056
-#: controller/controller-bookings.php:1168
-#: controller/controller-bookings.php:1203
+#: controller/controller-bookings.php:1068
+#: controller/controller-bookings.php:1180
+#: controller/controller-bookings.php:1215
 #: controller/controller-forms.php:1685
 msgid "Invalid filename."
 msgstr ""
 
-#: controller/controller-bookings.php:1068
+#: controller/controller-bookings.php:1080
 msgid "Not allowed."
 msgstr ""
 
-#: controller/controller-bookings.php:1172
-#: controller/controller-bookings.php:1257
+#: controller/controller-bookings.php:1184
+#: controller/controller-bookings.php:1269
 #: functions/functions-bookings.php:1267
 #: functions/functions-bookings.php:1268
 msgid "My bookings"
 msgstr ""
 
-#: controller/controller-bookings.php:1194
-#: controller/controller-bookings.php:1210
-#: controller/controller-bookings.php:1233
+#: controller/controller-bookings.php:1206
+#: controller/controller-bookings.php:1222
+#: controller/controller-bookings.php:1245
 msgid "Invalid booking ID."
 msgstr ""
 
-#: controller/controller-bookings.php:1211
-#: controller/controller-bookings.php:1220
+#: controller/controller-bookings.php:1223
+#: controller/controller-bookings.php:1232
 msgid "No events found."
 msgstr ""
 
-#: controller/controller-bookings.php:1255
+#: controller/controller-bookings.php:1267
 msgid "Events not found."
 msgstr ""
 
@@ -668,7 +668,7 @@ msgid "Need help?"
 msgstr ""
 
 #: controller/controller-forms.php:1596
-#: functions/functions-settings.php:582
+#: functions/functions-settings.php:605
 msgctxt "button label"
 msgid "Help"
 msgstr ""
@@ -792,7 +792,7 @@ msgid "Messages"
 msgstr ""
 
 #: controller/controller-settings.php:196
-#: functions/functions-settings.php:669
+#: functions/functions-settings.php:692
 msgid "Calendar localization"
 msgstr ""
 
@@ -930,7 +930,7 @@ msgstr ""
 #: controller/controller-settings.php:702
 #: controller/controller-settings.php:703
 #: controller/controller-settings.php:704
-#: functions/functions-settings.php:1195
+#: functions/functions-settings.php:1218
 msgid "Error"
 msgstr ""
 
@@ -948,7 +948,7 @@ msgid "An error occurred while trying to zip the files."
 msgstr ""
 
 #: controller/controller-settings.php:645
-#: functions/functions-settings.php:1086
+#: functions/functions-settings.php:1109
 msgctxt "verb"
 msgid "Download"
 msgstr ""
@@ -972,7 +972,7 @@ msgstr ""
 
 #. translators: %s is the label of the "Restore data" button
 #: controller/controller-settings.php:710
-#: functions/functions-settings.php:1089
+#: functions/functions-settings.php:1112
 msgid "Restore data"
 msgstr ""
 
@@ -1062,24 +1062,24 @@ msgid "Does <strong>Booking Activities</strong> help you? Help us back leaving a
 msgstr ""
 
 #: controller/controller-settings.php:1090
-#: functions/functions-global.php:1513
+#: functions/functions-global.php:1516
 msgid "Current user"
 msgstr ""
 
-#: controller/controller-templates.php:85
+#: controller/controller-templates.php:87
 #: functions/functions-global.php:578
 msgid "This event is booked, you cannot move it nor change its duration."
 msgstr ""
 
-#: controller/controller-templates.php:825
+#: controller/controller-templates.php:827
 msgid "Error occurs when trying to update events bound to the updated activity."
 msgstr ""
 
-#: controller/controller-templates.php:846
+#: controller/controller-templates.php:848
 msgid "Select at least one activity."
 msgstr ""
 
-#: controller/controller-templates.php:956
+#: controller/controller-templates.php:958
 msgid "No available activities found for this calendar."
 msgstr ""
 
@@ -1461,7 +1461,7 @@ msgid "Booked events"
 msgstr ""
 
 #: controller/controller-woocommerce-frontend.php:1158
-#: functions/functions-settings.php:1581
+#: functions/functions-settings.php:1606
 msgid "Status"
 msgstr ""
 
@@ -1690,7 +1690,7 @@ msgid "Retrieve events booked by the selected user only."
 msgstr ""
 
 #: functions/functions-booking-system.php:879
-#: functions/functions-settings.php:1575
+#: functions/functions-settings.php:1600
 #: view/view-form-editor-dialogs.php:75
 msgid "ID"
 msgstr ""
@@ -2237,15 +2237,15 @@ msgstr ""
 
 #: functions/functions-bookings.php:1908
 #: functions/functions-forms.php:1501
-#: functions/functions-settings.php:1584
-#: functions/functions-settings.php:1762
+#: functions/functions-settings.php:1609
+#: functions/functions-settings.php:1787
 msgid "First name"
 msgstr ""
 
 #: functions/functions-bookings.php:1909
 #: functions/functions-forms.php:1511
-#: functions/functions-settings.php:1585
-#: functions/functions-settings.php:1763
+#: functions/functions-settings.php:1610
+#: functions/functions-settings.php:1788
 msgid "Last name"
 msgstr ""
 
@@ -2295,7 +2295,7 @@ msgid "Submit button"
 msgstr ""
 
 #: functions/functions-forms.php:525
-#: functions/functions-settings.php:764
+#: functions/functions-settings.php:787
 msgid "Book"
 msgstr ""
 
@@ -2397,7 +2397,7 @@ msgid "Add manager"
 msgstr ""
 
 #: functions/functions-forms.php:1686
-#: functions/functions-global.php:1250
+#: functions/functions-global.php:1253
 #: view/view-templates-dialogs.php:353
 #: view/view-templates-dialogs.php:628
 msgid "Remove selected"
@@ -2429,7 +2429,7 @@ msgid "Copy this shortcode and paste it into your post, page, or text widget con
 msgstr ""
 
 #: functions/functions-forms.php:1763
-#: functions/functions-settings.php:581
+#: functions/functions-settings.php:604
 msgid "Click on the problem you are experiencing to try to fix it:"
 msgstr ""
 
@@ -2498,7 +2498,7 @@ msgid "bookings"
 msgstr ""
 
 #: functions/functions-global.php:513
-#: functions/functions-settings.php:1195
+#: functions/functions-settings.php:1218
 msgid "OK"
 msgstr ""
 
@@ -2630,54 +2630,54 @@ msgstr ""
 msgid "You must select a calendar first."
 msgstr ""
 
-#: functions/functions-global.php:1060
+#: functions/functions-global.php:1063
 msgid "day"
 msgid_plural "days"
 msgstr[0] ""
 msgstr[1] ""
 
-#: functions/functions-global.php:1066
+#: functions/functions-global.php:1069
 msgid "hour"
 msgid_plural "hours"
 msgstr[0] ""
 msgstr[1] ""
 
-#: functions/functions-global.php:1072
+#: functions/functions-global.php:1075
 msgid "minute"
 msgid_plural "minutes"
 msgstr[0] ""
 msgstr[1] ""
 
-#: functions/functions-global.php:1205
+#: functions/functions-global.php:1208
 msgid "Multiple selection"
 msgstr ""
 
 #. translators: %s is the "+" icon to click on.
-#: functions/functions-global.php:1216
+#: functions/functions-global.php:1219
 msgid "To select multiple values, click on %s and use CTRL+Click to pick or unpick a value."
 msgstr ""
 
-#: functions/functions-global.php:1239
+#: functions/functions-global.php:1242
 #: view/view-templates-dialogs.php:183
 msgid "Add"
 msgstr ""
 
-#: functions/functions-global.php:1370
+#: functions/functions-global.php:1373
 #: view/view-backend-bookings-dialogs.php:374
 msgid "Available tags"
 msgstr ""
 
-#: functions/functions-global.php:1383
+#: functions/functions-global.php:1386
 #: view/view-backend-bookings-dialogs.php:387
 msgid "show"
 msgstr ""
 
-#: functions/functions-global.php:1383
+#: functions/functions-global.php:1386
 #: view/view-backend-bookings-dialogs.php:387
 msgid "hide"
 msgstr ""
 
-#: functions/functions-global.php:1507
+#: functions/functions-global.php:1510
 msgid "Search for a customer"
 msgstr ""
 
@@ -2849,95 +2849,95 @@ msgid ""
 "\t\t\t\t\t\t\t\t\t\t<p>If you haven't rescheduled this reservation or if you think this is an error, please contact us.</p>"
 msgstr ""
 
-#: functions/functions-notifications.php:294
+#: functions/functions-notifications.php:301
 msgid "Booking unique ID (integer). Bookings and booking groups have different set of IDs."
 msgstr ""
 
-#: functions/functions-notifications.php:295
+#: functions/functions-notifications.php:302
 msgid "The event / group of events title."
 msgstr ""
 
-#: functions/functions-notifications.php:296
+#: functions/functions-notifications.php:303
 msgid "Booking quantity. If bookings of a same group happen to have different quantities, the higher is displayed."
 msgstr ""
 
-#: functions/functions-notifications.php:297
+#: functions/functions-notifications.php:304
 msgid "For booking groups, this is the bookings sum. For single bookings, this is the same as {booking_quantity}."
 msgstr ""
 
-#: functions/functions-notifications.php:298
+#: functions/functions-notifications.php:305
 msgid "Current booking status."
 msgstr ""
 
-#: functions/functions-notifications.php:299
+#: functions/functions-notifications.php:306
 msgid "Booking event ID. For booking groups, the group of events ID is used."
 msgstr ""
 
-#: functions/functions-notifications.php:300
+#: functions/functions-notifications.php:307
 msgid "Booking start date and time displayed in a user-friendly format. For booking groups, the first event start date and time is used."
 msgstr ""
 
-#: functions/functions-notifications.php:301
+#: functions/functions-notifications.php:308
 msgid "Booking start date and time displayed in the ISO format. For booking groups, the first event start date and time is used."
 msgstr ""
 
-#: functions/functions-notifications.php:302
+#: functions/functions-notifications.php:309
 msgid "Booking end date and time displayed in a user-friendly format. For booking groups, the last event end date and time is used."
 msgstr ""
 
-#: functions/functions-notifications.php:303
+#: functions/functions-notifications.php:310
 msgid "Booking end date and time displayed in the ISO format. For booking groups, the last event end date and time is used."
 msgstr ""
 
-#: functions/functions-notifications.php:304
+#: functions/functions-notifications.php:311
 msgid "Booking summary displayed as a booking list. You should use this tag once in every notification to know what booking (group) it is about."
 msgstr ""
 
-#: functions/functions-notifications.php:305
+#: functions/functions-notifications.php:312
 msgid "Booking summary displayed as a comma separated booking list, without HTML formatting."
 msgstr ""
 
-#: functions/functions-notifications.php:306
+#: functions/functions-notifications.php:313
 msgid "The user first name"
 msgstr ""
 
-#: functions/functions-notifications.php:307
+#: functions/functions-notifications.php:314
 msgid "The user last name"
 msgstr ""
 
-#: functions/functions-notifications.php:308
+#: functions/functions-notifications.php:315
 msgid "The user email address"
 msgstr ""
 
-#: functions/functions-notifications.php:309
+#: functions/functions-notifications.php:316
 msgid "The user phone number"
 msgstr ""
 
-#: functions/functions-notifications.php:310
+#: functions/functions-notifications.php:317
 msgid "The user ID. If the user has booked without account, this will display his email address."
 msgstr ""
 
-#: functions/functions-notifications.php:311
+#: functions/functions-notifications.php:318
 msgid "The user locale code. If the user has booked without account, the site locale will be used."
 msgstr ""
 
-#: functions/functions-notifications.php:312
+#: functions/functions-notifications.php:319
 msgid "URL to export the user list of bookings in ical format. You can append the \"start\" and \"end\" parameters with relative time format to this URL (e.g.: {user_ical_url}&start=today&end=next+year). If the user has booked without account, only the current booking is exported."
 msgstr ""
 
-#: functions/functions-notifications.php:313
+#: functions/functions-notifications.php:320
 msgid "Use any shortcode between these tags."
 msgstr ""
 
-#: functions/functions-notifications.php:317
+#: functions/functions-notifications.php:324
 msgid "URL to the booking admin panel. Use this tag only on notifications sent to administrators."
 msgstr ""
 
-#: functions/functions-notifications.php:321
+#: functions/functions-notifications.php:328
 msgid "Booking start date and time before reschedule. Displayed in a user-friendly format."
 msgstr ""
 
-#: functions/functions-notifications.php:322
+#: functions/functions-notifications.php:329
 msgid "Booking end date and time before reschedule. Displayed in a user-friendly format."
 msgstr ""
 
@@ -3041,529 +3041,529 @@ msgstr ""
 msgid "Define the actions a customer will be able to take to be refunded after he cancels a booking."
 msgstr ""
 
-#: functions/functions-settings.php:489
-msgctxt "is the notification active"
-msgid "Active"
-msgstr ""
-
-#: functions/functions-settings.php:490
-msgctxt "what triggers a notification"
-msgid "Trigger"
-msgstr ""
-
-#: functions/functions-settings.php:491
-msgctxt "who the notification is sent to"
-msgid "Send to"
-msgstr ""
-
-#: functions/functions-settings.php:524
+#: functions/functions-settings.php:525
 msgid "Administrator"
 msgstr ""
 
-#: functions/functions-settings.php:525
+#: functions/functions-settings.php:526
 msgid "Edit this notification"
 msgstr ""
 
-#: functions/functions-settings.php:546
+#: functions/functions-settings.php:547
 msgid "1 day before a booked event (reminder)"
 msgstr ""
 
 #. translators: %1$s is the placeholder for Notification Pack add-on link
-#: functions/functions-settings.php:548
+#: functions/functions-settings.php:549
 msgid "You can send automatic reminders with %1$s add-on some days before booked events (you set the amount of days). This add-on also allow you to send all notifications through SMS and Push."
 msgstr ""
 
-#: functions/functions-settings.php:550
-#: functions/functions-settings.php:1365
-#: functions/functions-settings.php:1414
-#: functions/functions-settings.php:1462
-#: functions/functions-templates.php:570
+#: functions/functions-settings.php:551
+#: functions/functions-settings.php:1388
+#: functions/functions-settings.php:1439
+#: functions/functions-settings.php:1487
+#: functions/functions-templates.php:571
 #: view/view-form-editor.php:384
 msgid "Learn more"
 msgstr ""
 
+#: functions/functions-settings.php:583
+msgctxt "is the notification active"
+msgid "Active"
+msgstr ""
+
+#: functions/functions-settings.php:584
+msgctxt "what triggers a notification"
+msgid "Trigger"
+msgstr ""
+
 #: functions/functions-settings.php:585
+msgctxt "who the notification is sent to"
+msgid "Send to"
+msgstr ""
+
+#: functions/functions-settings.php:608
 msgid "I don't receive the notifications"
 msgstr ""
 
-#: functions/functions-settings.php:605
+#: functions/functions-settings.php:628
 msgid "How the sender name appears in outgoing emails."
 msgstr ""
 
-#: functions/functions-settings.php:622
+#: functions/functions-settings.php:645
 msgid "How the sender email address appears in outgoing emails."
 msgstr ""
 
-#: functions/functions-settings.php:639
+#: functions/functions-settings.php:662
 msgid "Whether to send notifications asynchronously. If enabled, notifications will be sent the next time any page of this website is loaded. No one will have to wait any longer. Else, the loadings will last until notifications are sent."
 msgstr ""
 
-#: functions/functions-settings.php:655
+#: functions/functions-settings.php:678
 msgid "Edit messages used in the following situations."
 msgstr ""
 
 #. translators: %s is the path to WP general settings (with a link)
-#: functions/functions-settings.php:672
+#: functions/functions-settings.php:695
 msgid "The calendar is localized according to your Site Language, you can change it in %s."
 msgstr ""
 
 #. translators: %s is the path to WP general settings (with a link)
-#: functions/functions-settings.php:672
+#: functions/functions-settings.php:695
 msgid "WordPress Settings > General"
 msgstr ""
 
-#: functions/functions-settings.php:681
+#: functions/functions-settings.php:704
 msgid "Based on the Site Language only (default)"
 msgstr ""
 
 #. translators: %s is a comma separated list of option name
-#: functions/functions-settings.php:683
+#: functions/functions-settings.php:706
 msgid "Based on more WP settings (%s)"
 msgstr ""
 
-#: functions/functions-settings.php:686
+#: functions/functions-settings.php:709
 msgid "Many elements of the calendar are localized according to your Site Language: time format (12 or 24-hour), date format, first day of the week, text in buttons, names of the days and the months, and RTL display."
 msgstr ""
 
-#: functions/functions-settings.php:698
+#: functions/functions-settings.php:721
 msgid "Formatting Date and Time"
 msgstr ""
 
 #. translators: Datetime format. Must be adapted to each country. Use wp date_i18n documentation to find the appropriated combinaison https://wordpress.org/support/article/formatting-date-and-time
-#: functions/functions-settings.php:703
+#: functions/functions-settings.php:726
 msgid "l, F jS, Y g:i A"
 msgstr ""
 
 #. translators: %1$s si a link to wp date_i18n documentation
-#: functions/functions-settings.php:705
+#: functions/functions-settings.php:728
 msgid "Complete date format. See the tags here: %1$s."
 msgstr ""
 
 #. translators: Datetime format. Must be adapted to each country. Use wp date_i18n documentation to find the appropriated combinaison https://wordpress.org/support/article/formatting-date-and-time
-#: functions/functions-settings.php:709
+#: functions/functions-settings.php:732
 msgid "M, jS - g:i A"
 msgstr ""
 
 #. translators: %1$s si a link to wp date_i18n documentation
-#: functions/functions-settings.php:711
+#: functions/functions-settings.php:734
 msgid "Short date format. See the tags here: %1$s."
 msgstr ""
 
 #. translators: Time format. Must be adapted to each country. Use wp date_i18n documentation to find the appropriated combinaison https://wordpress.org/support/article/formatting-date-and-time
-#: functions/functions-settings.php:715
+#: functions/functions-settings.php:738
 msgid "g:i A"
 msgstr ""
 
 #. translators: %1$s si a link to wp date_i18n documentation
-#: functions/functions-settings.php:717
+#: functions/functions-settings.php:740
 msgid "Time format. It will be used when a time is displayed alone. See the tags here: %1$s."
 msgstr ""
 
-#: functions/functions-settings.php:721
+#: functions/functions-settings.php:744
 msgid "Separator between two dates. Write \"&amp;nbsp;\" to make a space."
 msgstr ""
 
-#: functions/functions-settings.php:725
+#: functions/functions-settings.php:748
 msgid "Separator between a date and a time. Write \"&amp;nbsp;\" to make a space."
 msgstr ""
 
-#: functions/functions-settings.php:729
+#: functions/functions-settings.php:752
 msgid "Separator between the event dates and its quantity. Write \"&amp;nbsp;\" to make a space."
 msgstr ""
 
-#: functions/functions-settings.php:732
+#: functions/functions-settings.php:755
 msgid "Pick an event on the calendar:"
 msgstr ""
 
-#: functions/functions-settings.php:733
+#: functions/functions-settings.php:756
 msgid "Instructions displayed before the calendar."
 msgstr ""
 
-#: functions/functions-settings.php:736
+#: functions/functions-settings.php:759
 msgid "Selected event"
 msgstr ""
 
 #. translators: %s can be either "singular" or "plural"
-#: functions/functions-settings.php:738
-#: functions/functions-settings.php:742
+#: functions/functions-settings.php:761
+#: functions/functions-settings.php:765
 msgid "Title displayed before the selected events list (%s)."
 msgstr ""
 
 #. translators: %s can be either "singular" or "plural"
-#: functions/functions-settings.php:738
-#: functions/functions-settings.php:752
+#: functions/functions-settings.php:761
+#: functions/functions-settings.php:775
 msgid "singular"
 msgstr ""
 
-#: functions/functions-settings.php:741
+#: functions/functions-settings.php:764
 msgid "Selected events"
 msgstr ""
 
-#: functions/functions-settings.php:742
-#: functions/functions-settings.php:757
+#: functions/functions-settings.php:765
+#: functions/functions-settings.php:780
 msgid "plural"
 msgstr ""
 
-#: functions/functions-settings.php:745
+#: functions/functions-settings.php:768
 msgid "No events available."
 msgstr ""
 
-#: functions/functions-settings.php:746
+#: functions/functions-settings.php:769
 msgid "Message displayed instead of the calendar when no events are available."
 msgstr ""
 
 #. translators: This particle is used right after the quantity of available bookings. Put the singular here. E.g.: 1 avail. .
-#: functions/functions-settings.php:750
+#: functions/functions-settings.php:773
 msgctxt "Short for availability [singular noun]"
 msgid "avail."
 msgstr ""
 
 #. translators: %s can be either "singular" or "plural"
-#: functions/functions-settings.php:752
-#: functions/functions-settings.php:757
+#: functions/functions-settings.php:775
+#: functions/functions-settings.php:780
 msgid "Particle displayed after the number of available places onto the events (%s)."
 msgstr ""
 
 #. translators: This particle is used right after the quantity of available bookings. Put the plural here. E.g.: 2 avail. .
-#: functions/functions-settings.php:756
-#: functions/functions-templates.php:518
-#: functions/functions-templates.php:537
-#: functions/functions-templates.php:556
+#: functions/functions-settings.php:779
+#: functions/functions-templates.php:519
+#: functions/functions-templates.php:538
+#: functions/functions-templates.php:557
 msgctxt "Short for availabilities [plural noun]"
 msgid "avail."
 msgstr ""
 
-#: functions/functions-settings.php:760
+#: functions/functions-settings.php:783
 msgid "Your reservation has been processed!"
 msgstr ""
 
-#: functions/functions-settings.php:761
+#: functions/functions-settings.php:784
 msgid "When a reservation has been successfully registered."
 msgstr ""
 
-#: functions/functions-settings.php:765
+#: functions/functions-settings.php:788
 msgid "Submit button label."
 msgstr ""
 
-#: functions/functions-settings.php:768
+#: functions/functions-settings.php:791
 msgid "Make a new booking"
 msgstr ""
 
-#: functions/functions-settings.php:769
+#: functions/functions-settings.php:792
 msgid "Button label to make a new booking after the booking form has been submitted."
 msgstr ""
 
-#: functions/functions-settings.php:772
+#: functions/functions-settings.php:795
 msgid "This event is available in several bundles"
 msgstr ""
 
-#: functions/functions-settings.php:773
+#: functions/functions-settings.php:796
 msgid "Choose a group of events dialog title. It appears when a user clicks on an event bundled in multiple groups."
 msgstr ""
 
-#: functions/functions-settings.php:776
+#: functions/functions-settings.php:799
 msgid "Which group of events do you want to pick?"
 msgstr ""
 
-#: functions/functions-settings.php:777
+#: functions/functions-settings.php:800
 msgid "Choose a group of events dialog content."
 msgstr ""
 
 #. translators: When the user is asked whether to pick the single event or the whole group it is part of
-#: functions/functions-settings.php:782
+#: functions/functions-settings.php:805
 msgid "Single event"
 msgstr ""
 
-#: functions/functions-settings.php:783
+#: functions/functions-settings.php:806
 msgid "Single event option label in the group of events selection dialog."
 msgstr ""
 
-#: functions/functions-settings.php:787
+#: functions/functions-settings.php:810
 msgid "Tell us why? (Details, reasons, comments...)"
 msgstr ""
 
-#: functions/functions-settings.php:788
+#: functions/functions-settings.php:811
 msgid "Refund request dialog's \"Customer feedback\" field label."
 msgstr ""
 
-#: functions/functions-settings.php:792
+#: functions/functions-settings.php:815
 msgctxt "Cancel any action button label. It closes dialogs."
 msgid "Cancel"
 msgstr ""
 
-#: functions/functions-settings.php:793
+#: functions/functions-settings.php:816
 msgid "Cancel any action button label. It closes dialogs."
 msgstr ""
 
-#: functions/functions-settings.php:796
+#: functions/functions-settings.php:819
 msgctxt "Cancel bookings button label. It opens the dialog."
 msgid "Cancel"
 msgstr ""
 
-#: functions/functions-settings.php:797
+#: functions/functions-settings.php:820
 msgid "Cancel bookings button label to open the cancel dialog."
 msgstr ""
 
-#: functions/functions-settings.php:800
+#: functions/functions-settings.php:823
 msgctxt "Button label to trigger the cancel action"
 msgid "Cancel booking"
 msgstr ""
 
-#: functions/functions-settings.php:801
+#: functions/functions-settings.php:824
 msgid "Cancel bookings button label to trigger the cancel action."
 msgstr ""
 
-#: functions/functions-settings.php:804
+#: functions/functions-settings.php:827
 msgctxt "Dialog title"
 msgid "Cancel the booking"
 msgstr ""
 
-#: functions/functions-settings.php:805
+#: functions/functions-settings.php:828
 msgid "Cancel bookings dialog title."
 msgstr ""
 
-#: functions/functions-settings.php:808
+#: functions/functions-settings.php:831
 msgid "Do you really want to cancel this booking?"
 msgstr ""
 
-#: functions/functions-settings.php:808
+#: functions/functions-settings.php:831
 msgid "If you have already paid, you will be able to request a refund."
 msgstr ""
 
-#: functions/functions-settings.php:809
+#: functions/functions-settings.php:832
 msgid "Cancel bookings dialog content."
 msgstr ""
 
-#: functions/functions-settings.php:813
+#: functions/functions-settings.php:836
 msgctxt "Button label to trigger the refund action"
 msgid "Reschedule"
 msgstr ""
 
-#: functions/functions-settings.php:814
+#: functions/functions-settings.php:837
 msgid "Reschedule booking button label."
 msgstr ""
 
-#: functions/functions-settings.php:817
+#: functions/functions-settings.php:840
 msgctxt "Dialog title"
 msgid "Reschedule the booking"
 msgstr ""
 
-#: functions/functions-settings.php:818
+#: functions/functions-settings.php:841
 msgid "Reschedule booking dialog title."
 msgstr ""
 
-#: functions/functions-settings.php:821
+#: functions/functions-settings.php:844
 msgctxt "Button label to trigger the refund action"
 msgid "Request a refund"
 msgstr ""
 
-#: functions/functions-settings.php:822
+#: functions/functions-settings.php:845
 msgid "Refund booking button label."
 msgstr ""
 
-#: functions/functions-settings.php:825
+#: functions/functions-settings.php:848
 msgctxt "Dialog title"
 msgid "Request a refund"
 msgstr ""
 
-#: functions/functions-settings.php:826
+#: functions/functions-settings.php:849
 msgid "Refund booking dialog title."
 msgstr ""
 
-#: functions/functions-settings.php:926
+#: functions/functions-settings.php:949
 msgid "Invalid date"
 msgstr ""
 
-#: functions/functions-settings.php:934
+#: functions/functions-settings.php:957
 msgid "The date must be earlier than today."
 msgstr ""
 
-#: functions/functions-settings.php:964
+#: functions/functions-settings.php:987
 msgid "The backup file was not found."
 msgstr ""
 
-#: functions/functions-settings.php:984
+#: functions/functions-settings.php:1007
 msgid "Archiving tool"
 msgstr ""
 
-#: functions/functions-settings.php:986
+#: functions/functions-settings.php:1009
 msgid "This archiving tool will delete old events and bookings from your database and store them as backup files. You should only use it if you experience slowdowns due to too many bookings and events."
 msgstr ""
 
-#: functions/functions-settings.php:989
+#: functions/functions-settings.php:1012
 msgid "Booking Activities is not responsible for any data loss due to the use of this archiving tool. It is your responsibility to backup and restore your data independently of this tool."
 msgstr ""
 
-#: functions/functions-settings.php:993
+#: functions/functions-settings.php:1016
 msgid "Read this documentation"
 msgstr ""
 
 #. translators: %s is a link "Read this documentation"
-#: functions/functions-settings.php:995
+#: functions/functions-settings.php:1018
 msgid "%s to reduce the risk of data loss."
 msgstr ""
 
-#: functions/functions-settings.php:998
+#: functions/functions-settings.php:1021
 msgid "Moreover, archived data may not be compatible with later versions of Booking Activities."
 msgstr ""
 
 #. translators: followed by a date input
-#: functions/functions-settings.php:1002
+#: functions/functions-settings.php:1025
 msgid "Archive data prior to"
 msgstr ""
 
-#: functions/functions-settings.php:1006
+#: functions/functions-settings.php:1029
 msgctxt "verb"
 msgid "Analyse"
 msgstr ""
 
-#: functions/functions-settings.php:1008
+#: functions/functions-settings.php:1031
 msgid "This will store events and bookings data prior to the selected date in a SQL file and definitively remove them from your database. Always backup your database before doing this."
 msgstr ""
 
-#: functions/functions-settings.php:1013
+#: functions/functions-settings.php:1036
 msgid "Step 1: Analyse data to archive"
 msgstr ""
 
-#: functions/functions-settings.php:1017
+#: functions/functions-settings.php:1040
 msgid "Step 2: Copy data to backup files"
 msgstr ""
 
-#: functions/functions-settings.php:1018
+#: functions/functions-settings.php:1041
 msgctxt "verb"
 msgid "Archive"
 msgstr ""
 
-#: functions/functions-settings.php:1022
+#: functions/functions-settings.php:1045
 msgid "Step 3: Delete data from database"
 msgstr ""
 
-#: functions/functions-settings.php:1023
+#: functions/functions-settings.php:1046
 msgctxt "verb"
 msgid "Clean"
 msgstr ""
 
-#: functions/functions-settings.php:1026
+#: functions/functions-settings.php:1049
 msgid "Data deletion is permanent. It can take several minutes."
 msgstr ""
 
-#: functions/functions-settings.php:1040
+#: functions/functions-settings.php:1063
 msgid "The bookings and events data prior to {date} will be saved to a SQL file and deleted from your database. You will be able to restore your data afterwards."
 msgstr ""
 
-#: functions/functions-settings.php:1040
+#: functions/functions-settings.php:1063
 msgid "We still strongly advise you to backup your database before proceeding."
 msgstr ""
 
-#: functions/functions-settings.php:1040
-#: functions/functions-settings.php:1041
+#: functions/functions-settings.php:1063
+#: functions/functions-settings.php:1064
 msgid "Do you want to archive your data now?"
 msgstr ""
 
-#: functions/functions-settings.php:1041
+#: functions/functions-settings.php:1064
 msgid "An archive already exists for this date. The existing backup files will be removed and replaced with the new ones."
 msgstr ""
 
-#: functions/functions-settings.php:1042
+#: functions/functions-settings.php:1065
 msgid "The data contained in {filename} will be added to your database. You should do this only once."
 msgstr ""
 
-#: functions/functions-settings.php:1042
+#: functions/functions-settings.php:1065
 msgid "Do you want to restore these data now?"
 msgstr ""
 
-#: functions/functions-settings.php:1043
+#: functions/functions-settings.php:1066
 msgid "The backup file {filename} will be permanently deleted. This action cannot be undone."
 msgstr ""
 
-#: functions/functions-settings.php:1043
+#: functions/functions-settings.php:1066
 msgid "Do you want to permanently delete this file?"
 msgstr ""
 
-#: functions/functions-settings.php:1063
+#: functions/functions-settings.php:1086
 msgid "Backup files"
 msgstr ""
 
-#: functions/functions-settings.php:1092
+#: functions/functions-settings.php:1115
 msgid "Delete file"
 msgstr ""
 
-#: functions/functions-settings.php:1102
+#: functions/functions-settings.php:1125
 msgid "No archive found"
 msgstr ""
 
 #. translators: %s = add-on name
-#: functions/functions-settings.php:1339
-#: functions/functions-settings.php:1388
-#: functions/functions-settings.php:1436
-#: functions/functions-templates.php:468
+#: functions/functions-settings.php:1362
+#: functions/functions-settings.php:1412
+#: functions/functions-settings.php:1461
+#: functions/functions-templates.php:469
 msgid "Thank you for purchasing %s add-on!"
 msgstr ""
 
-#: functions/functions-settings.php:1342
-#: functions/functions-settings.php:1391
-#: functions/functions-settings.php:1439
-#: functions/functions-templates.php:471
+#: functions/functions-settings.php:1365
+#: functions/functions-settings.php:1415
+#: functions/functions-settings.php:1464
+#: functions/functions-templates.php:472
 msgid "It seems you didn't activate your license yet. Please follow these instructions to activate your license:"
 msgstr ""
 
 #. translators: %s = add-on name
-#: functions/functions-settings.php:1348
-#: functions/functions-settings.php:1397
-#: functions/functions-settings.php:1445
-#: functions/functions-templates.php:477
+#: functions/functions-settings.php:1371
+#: functions/functions-settings.php:1421
+#: functions/functions-settings.php:1470
+#: functions/functions-templates.php:478
 msgid "How to activate %s license?"
 msgstr ""
 
 #. translators: %1$s is the placeholder for Display Pack add-on link
-#: functions/functions-settings.php:1363
+#: functions/functions-settings.php:1386
 msgid "Get other essential customization options with %1$s add-on!"
 msgstr ""
 
 #. translators: %1$s is the placeholder for Notification Pack add-on link
-#: functions/functions-settings.php:1412
+#: functions/functions-settings.php:1437
 msgid "You can send all these notifications and booking reminders via email, SMS and Push with %1$s add-on!"
 msgstr ""
 
 #. translators: %1$s is the placeholder for Advanced Forms add-on link
-#: functions/functions-settings.php:1460
+#: functions/functions-settings.php:1485
 msgid "Create any kind of custom fields to get any information from your customers (text, number, file, checkboxes, selectbox, etc.) with %1$s add-on!"
 msgstr ""
 
-#: functions/functions-settings.php:1576
+#: functions/functions-settings.php:1601
 msgid "Group ID"
 msgstr ""
 
-#: functions/functions-settings.php:1582
+#: functions/functions-settings.php:1607
 msgid "User ID"
 msgstr ""
 
 #. translators: %s is the name of the data
-#: functions/functions-settings.php:1686
+#: functions/functions-settings.php:1711
 msgid "This data couldn't be deleted: %s."
 msgstr ""
 
-#: functions/functions-settings.php:1693
+#: functions/functions-settings.php:1718
 msgid "Personal data attached to the account by Booking Activities have been successfully deleted."
 msgstr ""
 
-#: functions/functions-settings.php:1774
+#: functions/functions-settings.php:1799
 msgid "Some booking personal metadata may have not be deleted."
 msgstr ""
 
-#: functions/functions-settings.php:1783
+#: functions/functions-settings.php:1808
 msgid "Some booking group personal metadata may have not be deleted."
 msgstr ""
 
-#: functions/functions-settings.php:1789
+#: functions/functions-settings.php:1814
 msgid "Personal data attached to the bookings have been successfully deleted."
 msgstr ""
 
-#: functions/functions-settings.php:1804
+#: functions/functions-settings.php:1829
 msgid "The bookings made without account have been successfully anonymized."
 msgstr ""
 
-#: functions/functions-settings.php:1809
+#: functions/functions-settings.php:1834
 msgid "The bookings made without account may have not been anonymized."
 msgstr ""
 
@@ -3604,25 +3604,25 @@ msgid "The time interval at which a dragged event will snap to the agenda view t
 msgstr ""
 
 #. translators: %s is the placeholder for Prices and Credits add-on link
-#: functions/functions-templates.php:495
+#: functions/functions-templates.php:496
 msgid "Set a price or a promotion in cash or in credits on your groups of events with %s add-on !"
 msgstr ""
 
-#: functions/functions-templates.php:496
+#: functions/functions-templates.php:497
 msgid "My grouped event"
 msgstr ""
 
 #. translators: %s is the placeholder for Prices and Credits add-on link
-#: functions/functions-templates.php:499
+#: functions/functions-templates.php:500
 msgid "Set a price or a promotion in cash or in credits on your events with %s add-on !"
 msgstr ""
 
-#: functions/functions-templates.php:500
+#: functions/functions-templates.php:501
 msgid "My event"
 msgstr ""
 
 #. translators: %d is an integer (an amount of credits)
-#: functions/functions-templates.php:564
+#: functions/functions-templates.php:565
 msgid "%d credit"
 msgid_plural "%d credits"
 msgstr[0] ""
@@ -3913,7 +3913,7 @@ msgid "Booking state"
 msgstr ""
 
 #: view/view-backend-bookings-dialogs.php:161
-#: view/view-bookings-dialogs.php:72
+#: view/view-bookings-dialogs.php:71
 msgid "Send notifications"
 msgstr ""
 
@@ -4141,7 +4141,7 @@ msgstr ""
 msgid "Refund confirmation"
 msgstr ""
 
-#: view/view-bookings-dialogs.php:79
+#: view/view-bookings-dialogs.php:78
 msgid "Whether to notify the customer of the booking reschedule."
 msgstr ""
 

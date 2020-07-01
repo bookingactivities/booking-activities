@@ -817,7 +817,7 @@ function bookacti_dialog_change_booking_quantity( booking_id, booking_type ) {
 
 /**
  * Reschedule booking dialog
- * @version 1.8.0
+ * @version 1.8.5
  * @param {int} booking_id
  */
 function bookacti_dialog_reschedule_booking( booking_id ) {
@@ -839,8 +839,7 @@ function bookacti_dialog_reschedule_booking( booking_id ) {
 		type: 'POST',
 		data: { 'action': 'bookactiGetRescheduleBookingSystemData', 
 				'booking_id': booking_id,
-				'is_admin': bookacti_localized.is_admin ? 1 : 0,
-				'nonce': $j( '#bookacti-reschedule-booking-dialog #nonce_get_reschedule_booking_system_data' ).val()
+				'is_admin': bookacti_localized.is_admin ? 1 : 0
 			},
 		dataType: 'json',
 		success: function( response ) {

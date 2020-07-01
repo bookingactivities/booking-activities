@@ -132,7 +132,7 @@ function bookacti_fetch_events_for_calendar_editor( $raw_args = array() ) {
 
 /**
  * Insert an event
- * @version 1.8.0
+ * @version 1.8.5
  * @global wpdb $wpdb
  * @param array $data Data sanitized with bookacti_sanitize_event_data
  * @return int
@@ -156,7 +156,7 @@ function bookacti_insert_event( $data ) {
 	$event_id = $wpdb->insert_id;
 	
 	$meta = array_intersect_key( $data, bookacti_get_event_default_meta() );
-	if( $meta ) { bookacti_update_metadata( 'event', $event_id, $meta ); }
+	if( $meta && $event_id ) { bookacti_update_metadata( 'event', $event_id, $meta ); }
 
 	return $event_id;
 }
@@ -164,9 +164,8 @@ function bookacti_insert_event( $data ) {
 
 /**
  * Change event dates and time or duplicate these new values to another event
- * 
  * @since 1.2.2 (was bookacti_update_event)
- * 
+ * @version 1.8.5
  * @global wpdb $wpdb
  * @param int $event_id
  * @param string $event_start
@@ -182,7 +181,9 @@ function bookacti_move_or_resize_event( $event_id, $event_start, $event_end, $ac
 	$event_query = 'SELECT * FROM ' . BOOKACTI_TABLE_EVENTS . ' WHERE id = %d ';
 	$event_query_prep = $wpdb->prepare( $event_query, $event_id );
 	$event = $wpdb->get_row( $event_query_prep, OBJECT );
-
+	
+	if( ! $event ) { return false; }
+	
 	$values         = array( 'start' => $event_start, 'end' => $event_end, 'repeat_from' => $event->repeat_from, 'repeat_to' => $event->repeat_to );
 	$values_format  = array( '%s', '%s', '%s', '%s' );
 
@@ -206,7 +207,6 @@ function bookacti_move_or_resize_event( $event_id, $event_start, $event_end, $ac
 	}
 
 	if( $is_duplicated ) {
-
 		$query			= ' INSERT INTO ' . BOOKACTI_TABLE_EVENTS . ' ( template_id, activity_id, title, start, end, availability, repeat_freq, repeat_from, repeat_to ) '
 						. ' SELECT template_id, activity_id, title, %s, %s, availability, repeat_freq, NULLIF( %s, "" ), NULLIF( %s, "" ) '
 						. ' FROM ' . BOOKACTI_TABLE_EVENTS
@@ -214,7 +214,9 @@ function bookacti_move_or_resize_event( $event_id, $event_start, $event_end, $ac
 		$query_prep		= $wpdb->prepare( $query, $values['start'], $values['end'], $values['repeat_from'], $values['repeat_to'], $event_id );
 		$inserted		= $wpdb->query( $query_prep );
 		$new_event_id	= $wpdb->insert_id;
-
+		
+		if( ! $new_event_id ) { return $new_event_id; }
+		
 		// Duplicate exceptions
 		$exceptions = bookacti_duplicate_exceptions( $event_id, $new_event_id );
 
@@ -224,7 +226,6 @@ function bookacti_move_or_resize_event( $event_id, $event_start, $event_end, $ac
 		return $new_event_id;
 
 	} else {
-
 		// Update the event
 		$updated = $wpdb->update( 
 			BOOKACTI_TABLE_EVENTS, 
@@ -242,7 +243,7 @@ function bookacti_move_or_resize_event( $event_id, $event_start, $event_end, $ac
 /**
  * Update event data
  * @since 1.2.2 (was bookacti_set_event_data)
- * @version 1.8.4
+ * @version 1.8.5
  * @global wpdb $wpdb
  * @param array $data Data sanitized with bookacti_sanitize_event_data
  * @return int|false
@@ -254,7 +255,9 @@ function bookacti_update_event( $data ) {
 	$query = 'SELECT * FROM ' . BOOKACTI_TABLE_EVENTS . ' WHERE id = %d';
 	$query = $wpdb->prepare( $query, $data[ 'id' ] );
 	$initial_event = $wpdb->get_row( $query );
-
+	
+	if( ! $initial_event ) { return false; }
+	
 	// Update the event
 	$updated_event = $wpdb->update( 
 		BOOKACTI_TABLE_EVENTS, 
@@ -290,10 +293,8 @@ function bookacti_update_event( $data ) {
 	}
 	
 	// Update exceptions
-	if( ! empty( $data[ 'exceptions_dates' ] ) ) {
-		$updated_excep = bookacti_update_exceptions( $data[ 'id' ], $data[ 'exceptions_dates' ] );
-		if( is_numeric( $updated_event ) && is_numeric( $updated_excep ) ) { $updated_event += $updated_excep; }
-	}
+	$updated_excep = bookacti_update_exceptions( $data[ 'id' ], $data[ 'exceptions_dates' ] );
+	if( is_numeric( $updated_event ) && is_numeric( $updated_excep ) ) { $updated_event += $updated_excep; }
 	
 	return $updated_event;
 }
@@ -342,7 +343,7 @@ function bookacti_get_event_template_id( $event_id ) {
 
 /**
  * Unbind selected occurrence of an event
- * @version 1.8.0
+ * @version 1.8.5
  * @global wpdb $wpdb
  * @param int $event_id
  * @param string $event_start
@@ -360,7 +361,9 @@ function bookacti_unbind_selected_occurrence( $event_id, $event_start, $event_en
 	$prep_duplicate_event	= $wpdb->prepare( $query_duplicate_event, $event_start, $event_end, $event_id );
 	$insert_event			= $wpdb->query( $prep_duplicate_event );
 	$unbound_event_id		= $wpdb->insert_id;
-
+	
+	if( ! $unbound_event_id ) { return $unbound_event_id; }
+	
 	// Duplicate event metadata
 	$duplicated = bookacti_duplicate_metadata( 'event', $event_id, $unbound_event_id );
 
@@ -392,7 +395,7 @@ function bookacti_unbind_selected_occurrence( $event_id, $event_start, $event_en
 
 /**
  * Unbind booked occurrences of an event
- * @version 1.8.3
+ * @version 1.8.5
  * @global wpdb $wpdb
  * @param int $event_id
  * @return int
@@ -402,7 +405,9 @@ function bookacti_unbind_booked_occurrences( $event_id ) {
 
 	// Duplicate the original event and its exceptions
 	$duplicated_event_id = bookacti_duplicate_event( $event_id );
-
+	
+	if( ! $duplicated_event_id ) { return false; }
+	
 	// Get occurrences to unbind
 	$booked_events_query = 'SELECT * FROM ' . BOOKACTI_TABLE_BOOKINGS . ' WHERE event_id = %d AND active = 1 ORDER BY event_start ASC ';
 	$booked_events_prep = $wpdb->prepare( $booked_events_query, $event_id );
@@ -464,6 +469,7 @@ function bookacti_unbind_booked_occurrences( $event_id ) {
 
 /**
  * Duplicate an event and its exceptions and return its ID
+ * @version 1.8.5
  * @global wpdb $wpdb
  * @param int $event_id
  * @return int|false
@@ -480,35 +486,32 @@ function bookacti_duplicate_event( $event_id ) {
 	$duplicated_event       = $wpdb->query( $duplicate_event_prep, OBJECT);
 	$duplicated_event_id    = $wpdb->insert_id;
 
-	//Duplicate event metadata
+	if( ! $duplicated_event || ! $duplicated_event_id ) { return false; }
+	
+	// Duplicate event metadata
 	bookacti_duplicate_metadata( 'event', $event_id, $duplicated_event_id );
 
-	//Duplicate the exceptions and link them to the new created event
-	if( $duplicated_event && $duplicated_event_id ) {
-		//Get exceptions
-		$exceptions_query  = 'SELECT * FROM ' . BOOKACTI_TABLE_EXCEPTIONS . ' WHERE event_id = %d';
-		$exceptions_prep    = $wpdb->prepare( $exceptions_query, $event_id );
-		$exceptions         = $wpdb->get_results( $exceptions_prep, OBJECT);
+	// Duplicate the exceptions and link them to the new created event
+	// Get exceptions
+	$exceptions_query  = 'SELECT * FROM ' . BOOKACTI_TABLE_EXCEPTIONS . ' WHERE event_id = %d';
+	$exceptions_prep    = $wpdb->prepare( $exceptions_query, $event_id );
+	$exceptions         = $wpdb->get_results( $exceptions_prep, OBJECT);
 
-		$excep_inserted = true;
-		foreach ( $exceptions as $exception ) {
-			$inserted = $wpdb->insert( 
-				BOOKACTI_TABLE_EXCEPTIONS, 
-				array( 
-					'event_id' => $duplicated_event_id,
-					'exception_type'    => $exception->exception_type,
-					'exception_value'   => $exception->exception_value
-				),
-				array( '%d', '%s', '%s' )
-			);
-			if( ! $inserted ) { $excep_inserted = false; }
-		}
-
-		return $duplicated_event_id;
-
-	} else {
-		return false;
+	$excep_inserted = true;
+	foreach ( $exceptions as $exception ) {
+		$inserted = $wpdb->insert( 
+			BOOKACTI_TABLE_EXCEPTIONS, 
+			array( 
+				'event_id' => $duplicated_event_id,
+				'exception_type'    => $exception->exception_type,
+				'exception_value'   => $exception->exception_value
+			),
+			array( '%d', '%s', '%s' )
+		);
+		if( ! $inserted ) { $excep_inserted = false; }
 	}
+
+	return $duplicated_event_id;
 }
 
 
@@ -1140,9 +1143,8 @@ function bookacti_deactivate_activity_events_from_groups( $activity_id = 0, $tem
 
 /**
  * Delete event occurrences that are beyond repeat dates from all groups
- * 
  * @since 1.8.4 (was bookacti_delete_out_of_range_occurences_from_groups)
- * 
+ * @version 1.8.5
  * @global wpdb $wpdb
  * @param int $event_id
  * @param string $event_start
@@ -1150,13 +1152,10 @@ function bookacti_deactivate_activity_events_from_groups( $activity_id = 0, $tem
  * @return int|boolean|null
  */
 function bookacti_delete_out_of_range_occurrences_from_groups( $event_id ) {
-
 	global $wpdb;
 
 	$event_id = intval( $event_id );
-	if( empty( $event_id ) ) {
-		return false;
-	}
+	if( ! $event_id ) { return false; }
 
 	// Get event
 	$query1	= 'SELECT * ' 
@@ -1164,7 +1163,9 @@ function bookacti_delete_out_of_range_occurrences_from_groups( $event_id ) {
 			. ' WHERE id = %d ';
 	$prep1	= $wpdb->prepare( $query1, $event_id );
 	$event	= $wpdb->get_row( $prep1 );
-
+	
+	if( ! $event ) { return false; }
+	
 	// Delete occurrences that are before repeat from date, or after repeat to date
 	$query	= 'DELETE FROM ' . BOOKACTI_TABLE_GROUPS_EVENTS 
 			. ' WHERE event_id = %d '

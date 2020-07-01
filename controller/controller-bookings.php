@@ -325,14 +325,12 @@ add_action( 'wp_ajax_bookactiChangeBookingQuantity', 'bookacti_controller_change
 /**
  * AJAX Controller - Get reschedule booking system data by booking ID
  * @since 1.8.0 (was bookacti_controller_get_booking_data)
+ * @version 1.8.5
  */
 function bookacti_controller_get_reschedule_booking_system_data() {
 	$booking_id	= intval( $_POST[ 'booking_id' ] );
 	
-	// Check nonce
-	$is_nonce_valid = check_ajax_referer( 'bookacti_get_reschedule_booking_system_data', 'nonce', false );
-	if( ! $is_nonce_valid ) { bookacti_send_json_invalid_nonce( 'get_reschedule_booking_system_data' ); }
-	
+	// No need to check nonce
 	// Check capabilities
 	$is_allowed = bookacti_user_can_manage_booking( $booking_id );
 	if( ! $is_allowed ) { bookacti_send_json_not_allowed( 'change_booking_status' ); }
@@ -806,7 +804,7 @@ add_action( 'wp_ajax_bookactiChangeBookingGroupQuantity', 'bookacti_controller_c
 /**
  * AJAX Controller - Delete a booking group
  * @since 1.5.0
- * @version 1.8.0
+ * @version 1.8.5
  */
 function bookacti_controller_delete_booking_group() {
 	$booking_group_id = intval( $_POST[ 'booking_id' ] );
@@ -820,7 +818,15 @@ function bookacti_controller_delete_booking_group() {
 	if( ! $is_allowed ) { bookacti_send_json_not_allowed( 'delete_booking_group' ); }
 
 	do_action( 'bookacti_before_delete_booking_group', $booking_group_id );
-
+	
+	$booking_ids = bookacti_get_booking_group_bookings_ids( $booking_group_id );
+	
+	if( $booking_ids ) {
+		foreach( $booking_ids as $booking_id ) {
+			do_action( 'bookacti_before_delete_booking', $booking_id );
+		}
+	}
+	
 	$bookings_deleted = bookacti_delete_booking_group_bookings( $booking_group_id );
 
 	if( $bookings_deleted === false ) {
@@ -831,7 +837,13 @@ function bookacti_controller_delete_booking_group() {
 		);
 		bookacti_send_json( $return_array, 'delete_booking_group' );
 	}
-
+	
+	if( $bookings_deleted && $booking_ids ) {
+		foreach( $booking_ids as $booking_id ) {
+			do_action( 'bookacti_booking_deleted', $booking_id );
+		}
+	}
+	
 	$group_deleted = bookacti_delete_booking_group( $booking_group_id );
 
 	if( ! $group_deleted ) {

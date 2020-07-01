@@ -72,7 +72,7 @@ add_action( 'wp_ajax_nopriv_bookactiFetchEvents', 'bookacti_controller_fetch_eve
 /**
  * Reload booking system with new attributes via AJAX
  * @since 1.1.0
- * @version 1.7.15
+ * @version 1.8.5
  */
 function bookacti_controller_reload_booking_system() {
 	$is_admin = intval( $_POST[ 'is_admin' ] );
@@ -109,10 +109,16 @@ function bookacti_controller_reload_booking_system() {
 	// Let plugins define what data should be passed to JS
 	$public_booking_system_data = apply_filters( 'bookacti_public_booking_system_data', array_merge( $booking_system_data, array( 'user_id' => $public_user_id ) ), $atts );
 	
+	$nonces = apply_filters( 'bookacti_booking_system_nonces', array(
+		'nonce_booking_form'		=> wp_create_nonce( 'bookacti_booking_form' ),
+		'nonce_forgotten_password'	=> wp_create_nonce( 'bookacti_forgotten_password' ),
+	), $public_booking_system_data, $atts );
+	
 	bookacti_send_json( array( 
 		'status'				=> 'success', 
 		'html_elements'			=> $html_elements, 
-		'booking_system_data'	=> $public_booking_system_data
+		'booking_system_data'	=> $public_booking_system_data,
+		'nonces'				=> $nonces
 	), 'reload_booking_system' );
 }
 add_action( 'wp_ajax_bookactiReloadBookingSystem', 'bookacti_controller_reload_booking_system' );

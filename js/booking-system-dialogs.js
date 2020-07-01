@@ -69,7 +69,7 @@ function bookacti_init_booking_system_dialogs() {
 
 /**
  * Choose a group of events dialog
- * @version 1.8.4
+ * @version 1.8.5
  * @param {HTMLElement} booking_system
  * @param {array} group_ids
  * @param {object} event
@@ -135,7 +135,7 @@ function bookacti_dialog_choose_group_of_events( booking_system, group_ids, even
 			var max_users		= typeof activity_data[ 'max_users_per_event' ] === 'undefined' ? 0 : ( activity_data[ 'max_users_per_event' ] ? parseInt( activity_data[ 'max_users_per_event' ] ) : 0 );
 
 			if( max_quantity || max_users ) {
-				var event_start_formatted = moment.utc( event.start ).format( 'YYYY-MM-DD HH:mm:ss' );
+				var event_start_formatted = moment.utc( event.start ).clone().locale( 'en' ).format( 'YYYY-MM-DD HH:mm:ss' );
 				if( typeof bookacti.booking_system[ booking_system_id ][ 'bookings' ][ event.id ] !== 'undefined' ) {
 					if( typeof bookacti.booking_system[ booking_system_id ][ 'bookings' ][ event.id ][ event_start_formatted ] !== 'undefined' ) {
 						var occurrence = bookacti.booking_system[ booking_system_id ][ 'bookings' ][ event.id ][ event_start_formatted ];
@@ -281,10 +281,13 @@ function bookacti_dialog_choose_group_of_events( booking_system, group_ids, even
 			var avail_html = '';
 			if( bookings_only ) {
 				var bookings = 0;
-				$j.each( bookacti.booking_system[ booking_system_id ][ 'groups_events' ][ group_id ], function( i, grouped_event ){
+				$j.each( bookacti.booking_system[ booking_system_id ][ 'groups_events' ][ group_id ], function( i, grouped_event ) {
+					var event_start_formatted = moment.utc( event.start ).clone().locale( 'en' ).format( 'YYYY-MM-DD HH:mm:ss' );
+					var event_end_formatted = moment.utc( event.end ).clone().locale( 'en' ).format( 'YYYY-MM-DD HH:mm:ss' );
+					
 					if( event.id == grouped_event.id
-					&&  event.start.format( 'YYYY-MM-DD HH:mm:ss' ) === grouped_event.start 
-					&&  event.end.format( 'YYYY-MM-DD HH:mm:ss' ) === grouped_event.end ) {
+					&&  event_start_formatted === grouped_event.start 
+					&&  event_end_formatted === grouped_event.end ) {
 						bookings = grouped_event.group_bookings;
 					}
 				});

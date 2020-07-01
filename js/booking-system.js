@@ -168,6 +168,7 @@ $j( document ).ready( function() {
 	/**
 	 * Display the booking list tooltip when an event is hovered
 	 * @since 1.8.0
+	 * @version 1.8.5
 	 * @param {Event} e
 	 * @param {Object} event
 	 * @param {HTMLElement} element
@@ -181,7 +182,7 @@ $j( document ).ready( function() {
 		if( ! attributes[ 'tooltip_booking_list' ] ) { return; }
 		
 		// Check if the booking list exists
-		var event_start = moment.utc( event.start ).format( 'YYYY-MM-DD HH:mm:ss' );
+		var event_start = moment.utc( event.start ).clone().locale( 'en' ).format( 'YYYY-MM-DD HH:mm:ss' );
 		if( typeof attributes[ 'booking_lists' ][ event.id ] === 'undefined' ) { return; }
 		if( typeof attributes[ 'booking_lists' ][ event.id ][ event_start ] === 'undefined' ) { return; }
 		

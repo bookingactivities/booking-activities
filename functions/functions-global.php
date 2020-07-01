@@ -682,7 +682,7 @@ function bookacti_get_add_ons_data( $prefix = '' ) {
 
 /**
  * Detect current language with Qtranslate-XT or WPML
- * @version 1.8.0
+ * @version 1.8.5
  * @param boolean $with_locale
  * @return string 
  */
@@ -709,14 +709,18 @@ function bookacti_get_current_lang_code( $with_locale = false ) {
 			}
 		}
 	}
-
-	return $lang_code;
+	
+	if( ! $lang_code ) {
+		$lang_code = $with_locale ? 'en_US' : 'en';
+	}
+	
+	return apply_filters( 'bookacti_current_lang_code', $lang_code, $with_locale );
 }
 
 
 /**
  * Get current translation plugin identifier
- * @version 1.8.0
+ * @version 1.8.5
  * @return string
  */
 function bookacti_get_translation_plugin() {
@@ -728,7 +732,7 @@ function bookacti_get_translation_plugin() {
 		$translation_plugin = 'wpml';
 	}
 	
-	return $translation_plugin;
+	return apply_filters( 'bookacti_translation_plugin', $translation_plugin );
 }
 
 
@@ -766,15 +770,14 @@ if( bookacti_is_plugin_active( 'qtranslate-x/qtranslate.php' ) || bookacti_is_pl
 
 /* 
  * Get user locale, and default to site or current locale
- * 
  * @since 1.2.0
+ * @version 1.8.5
  * @param int|WP_User $user_id
  * @param string $default 'current' or 'site'
  * @param boolean $country_code Whether to return also country code
  * @return string
  */
 function bookacti_get_user_locale( $user_id, $default = 'current', $country_code = true ) {
-
 	if ( 0 === $user_id && function_exists( 'wp_get_current_user' ) ) {
 		$user = wp_get_current_user();
 	} elseif ( $user_id instanceof WP_User ) {
@@ -807,20 +810,19 @@ function bookacti_get_user_locale( $user_id, $default = 'current', $country_code
 		}
 	}
 
-	return $locale;
+	return apply_filters( 'bookacti_user_locale', $locale, $user_id, $default, $country_code );
 }
 
 
 /* 
  * Get site locale, and default to site or current locale
- * 
  * @since 1.2.0
+ * @version 1.8.5
  * @param string $default 'current' or 'site'
  * @param boolean $country_code Whether to return also country code
  * @return string
  */
 function bookacti_get_site_locale( $default = 'site', $country_code = true ) {
-
 	// Get raw site locale, or current locale by default
 	if( $default === 'site' ) {
 		$alloptions	= wp_load_alloptions();
@@ -837,7 +839,7 @@ function bookacti_get_site_locale( $default = 'site', $country_code = true ) {
 		}
 	}
 
-	return $locale;
+	return apply_filters( 'bookacti_site_locale', $locale, $default, $country_code );
 }
 
 
@@ -894,11 +896,12 @@ function bookacti_restore_locale() {
 /**
  * Get FullCalendar supported locale
  * @since 1.5.2
+ * @version 1.8.5
  * @return array
  */
 function bookacti_get_fullcalendar_supported_locales() {
 	return apply_filters( 'bookacti_fullcalendar_locales', array( 
-		'af', 'ar-dz', 'ar-kw', 'ar-ly', 'ar-ma', 'ar-sa', 'ar-tn', 'ar', 'bg', 'bs', 'ca', 'cs', 
+		'af', 'ar-dz', 'ar-kw', 'ar-ly', 'ar-ma', 'ar-sa', 'ar-tn', 'ar', 'be', 'bg', 'bs', 'ca', 'cs', 
 		'da', 'de-at', 'de-ch', 'de', 'el', 'en-au', 'en-ca', 'en-gb', 'en-ie', 'en-nz', 'es-do', 'es-us', 'es', 'et', 'eu', 'fa', 'fi', 'fr-ca', 'fr-ch', 'fr', 
 		'gl', 'he', 'hi', 'hr', 'hu', 'id', 'is', 'it', 
 		'ja', 'ka', 'kk', 'ko', 'lb', 'lt', 'lv', 
@@ -906,7 +909,7 @@ function bookacti_get_fullcalendar_supported_locales() {
 		'pl', 'pt-br', 'pt', 'ro', 'ru', 
 		'sk', 'sl', 'sq', 'sr-cyrl', 'sr', 'sv', 'th', 'tr', 'uk', 
 		'vi', 
-		'zh-cn', 'zh-tw' 
+		'zh-cn', 'zh-hk', 'zh-tw' 
 	));
 }
 

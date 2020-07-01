@@ -2,7 +2,7 @@
 
 /**
  * Change default template on change in the select box
- * @version 1.8.0
+ * @version 1.8.5
  * @param {int} selected_template_id
  */
 function bookacti_switch_template( selected_template_id ) {
@@ -132,7 +132,7 @@ function bookacti_switch_template( selected_template_id ) {
 
 					// Load events on calendar
 					var view = $j( '#bookacti-template-calendar' ).fullCalendar( 'getView' );
-					var interval = { 'start': moment.utc( view.intervalStart.format( 'YYYY-MM-DD' ) + ' 00:00:00' ), 'end': moment.utc( view.intervalEnd.subtract( 1, 'days' ).format( 'YYYY-MM-DD' ) + ' 23:59:59' ) };
+					var interval = { 'start': moment.utc( moment.utc( view.intervalStart ).clone().locale( 'en' ).format( 'YYYY-MM-DD' ) + ' 00:00:00' ).locale( 'en' ), 'end': moment.utc( moment.utc( view.intervalEnd ).clone().locale( 'en' ).subtract( 1, 'days' ).format( 'YYYY-MM-DD' ) + ' 23:59:59' ).locale( 'en' ) };
 					bookacti_fetch_events_from_interval( $j( '#bookacti-template-calendar' ), interval );
 
 					// Re-enable events to load when view changes
@@ -403,7 +403,7 @@ function bookacti_select_events_of_group( group_id ) {
 
 /**
  * Select an event
- * @version 1.8.0
+ * @version 1.8.5
  * @param {Object} raw_event
  */
 function bookacti_select_event( raw_event ) {
@@ -427,8 +427,8 @@ function bookacti_select_event( raw_event ) {
 	var event = {
 		'id': raw_event.id,
 		'title': raw_event.title ? raw_event.title : activity_title,
-		'start': moment.utc( raw_event.start ),
-		'end': moment.utc( raw_event.end )
+		'start': moment.utc( raw_event.start ).clone().locale( 'en' ),
+		'end': moment.utc( raw_event.end ).clone().locale( 'en' )
 	};
 	
 	// Because of popover and long events (spreading on multiple days), 
@@ -459,7 +459,7 @@ function bookacti_select_event( raw_event ) {
 
 /**
  * Unselect an event
- * @version 1.7.3
+ * @version 1.8.5
  * @param {object} event
  * @param {boolean} all
  * @returns {boolean}
@@ -483,7 +483,8 @@ function bookacti_unselect_event( event, all ) {
 	
 	// Because of popover and long events (spreading on multiple days), 
 	// the same event can appears twice, so we need to apply changes on each
-	var event_start = event.start instanceof moment ? event.start.format( 'YYYY-MM-DD HH:mm:ss' ) : event.start;
+	var event_start = moment.utc( event.start ).clone().locale( 'en' ).format( 'YYYY-MM-DD HH:mm:ss' );
+	var event_start_date = moment.utc( event.start ).clone().locale( 'en' ).format( 'YYYY-MM-DD' );
 	var elements = $j( '.fc-event[data-event-id="' + event.id + '"][data-event-start="' + event_start + '"]' );
 	
 	if( elements.length ) {
@@ -499,7 +500,7 @@ function bookacti_unselect_event( event, all ) {
 	var selected_events = $j.grep( bookacti.booking_system[ 'bookacti-template-calendar' ][ 'selected_events' ], function( selected_event ){
 		if( selected_event.id == event.id 
 		&&  (  all 
-			|| selected_event.start.substr( 0, 10 ) === event.start.format( 'YYYY-MM-DD' ) ) ) {
+			|| selected_event.start.substr( 0, 10 ) === event_start_date ) ) {
 			
 			// Unselect the event
 			return false;
@@ -760,7 +761,7 @@ function bookacti_is_locked_event( event_id ) {
 
 /**
  * Unbind occurrences of a booked event
- * @version 1.8.4
+ * @version 1.8.5
  * @param {object} event
  * @param {string} occurrences
  */
@@ -769,8 +770,8 @@ function bookacti_unbind_occurrences( event, occurrences ) {
 		'action': 'bookactiUnbindOccurences', 
 		'unbind': occurrences,
 		'event_id': event.id,
-		'event_start': event.start.format( 'YYYY-MM-DD HH:mm:ss' ),
-		'event_end': event.end.format( 'YYYY-MM-DD HH:mm:ss' ),
+		'event_start': moment.utc( event.start ).clone().locale( 'en' ).format( 'YYYY-MM-DD HH:mm:ss' ),
+		'event_end': moment.utc( event.end ).clone().locale( 'en' ).format( 'YYYY-MM-DD HH:mm:ss' ),
 		'interval': bookacti.booking_system[ 'bookacti-template-calendar' ][ 'events_interval' ],
 		'nonce': $j( '#nonce_unbind_occurrences' ).val()
 	};
@@ -1106,7 +1107,7 @@ function bookacti_show_event_actions( element ) {
 
 /**
  * Hide event actions
- * @version 1.8.0
+ * @version 1.8.5
  * @param {HTMLElement} element
  * @param {Object} event
  */
@@ -1116,10 +1117,11 @@ function bookacti_hide_event_actions( element, event ) {
 	element.find( '.bookacti-event-action[data-hide-on-mouseout="1"]' ).hide();
 
 	// Check if the event is selected
+	var event_start_date = moment.utc( event.start ).clone().locale( 'en' ).format( 'YYYY-MM-DD' );
 	var is_selected = false;
 	$j.each( bookacti.booking_system[ 'bookacti-template-calendar' ][ 'selected_events' ], function( i, selected_event ){
 		if( selected_event.id == event.id 
-		&&  selected_event.start.substr( 0, 10 ) === event.start.format( 'YYYY-MM-DD' ) ) {
+		&&  selected_event.start.substr( 0, 10 ) === event_start_date ) {
 			is_selected = true;
 			return false; // break the loop
 		}

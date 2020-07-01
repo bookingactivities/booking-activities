@@ -13,12 +13,12 @@ $j( document ).ready( function() {
 	
 	/**
 	 * Add exception - on click
-	 * @version 1.8.0
+	 * @version 1.8.5
 	 */
 	$j( '#bookacti-event-add-exception-button' ).on( 'click', function() { 
 		var isFormValid = bookacti_validate_add_exception_form();
 		if( isFormValid ) {
-			var exception_date = moment.utc( $j( '#bookacti-event-exception-date-picker' ).val() ).format( 'YYYY-MM-DD' );
+			var exception_date = moment.utc( $j( '#bookacti-event-exception-date-picker' ).val() ).locale( 'en' ).format( 'YYYY-MM-DD' );
 			$j( '#bookacti-event-exceptions-selectbox' ).append( "<option class='exception' value='" + exception_date + "' >" + exception_date + "</option>" );
 		}
 	});
@@ -337,26 +337,26 @@ function bookacti_validate_event_general_data() {
 
 /**
  * Check event fields - Repetition tab
- * @version 1.8.0
+ * @version 1.8.5
  * @returns {boolean}
  */
 function bookacti_validate_event_repetition_data() {
 	if( typeof bookacti.booking_system[ 'bookacti-template-calendar' ][ 'picked_events' ][ 0 ] === 'undefined' ) { return; }
 	
 	var event		= bookacti.booking_system[ 'bookacti-template-calendar' ][ 'picked_events' ][ 0 ];
-	var event_start = moment.utc( event.start ).format( 'YYYY-MM-DD HH:mm:ss' );
-	var event_end	= moment.utc( event.end ).format( 'YYYY-MM-DD HH:mm:ss' );
+	var event_start = moment.utc( event.start ).clone().locale( 'en' ).format( 'YYYY-MM-DD HH:mm:ss' );
+	var event_end	= moment.utc( event.end ).clone().locale( 'en' ).format( 'YYYY-MM-DD HH:mm:ss' );
 
 	// Get params
 	var min_bookings    = parseInt( $j( '#bookacti-event-data-dialog #bookacti-event-availability' ).attr( 'min' ) );
 	var repeat_freq     = $j( '#bookacti-event-data-dialog #bookacti-event-repeat-freq').val() || bookacti.booking_system[ 'bookacti-template-calendar' ][ 'events_data' ][ event.id ][ 'repeat_freq' ] + '';
 	var current_freq	= bookacti.booking_system[ 'bookacti-template-calendar' ][ 'events_data' ][ event.id ][ 'repeat_freq' ] + '';
-	var repeat_from     = moment.utc( $j( '#bookacti-event-data-dialog #bookacti-event-repeat-from' ).val() );
-	var repeat_from_max = moment.utc( $j( '#bookacti-event-data-dialog #bookacti-event-repeat-from' ).attr('max') ).format( 'YYYY-MM-DD' );
-	var repeat_to       = moment.utc( $j( '#bookacti-event-data-dialog #bookacti-event-repeat-to' ).val() );
-	var repeat_to_min   = moment.utc( $j( '#bookacti-event-data-dialog #bookacti-event-repeat-to' ).attr('min') ).format( 'YYYY-MM-DD' );
-	var template_start  = moment.utc( $j( '#bookacti-template-picker :selected' ).data( 'template-start' ) );
-	var template_end    = moment.utc( $j( '#bookacti-template-picker :selected' ).data( 'template-end' ) );
+	var repeat_from     = moment.utc( $j( '#bookacti-event-data-dialog #bookacti-event-repeat-from' ).val() ).locale( 'en' );
+	var repeat_from_max = moment.utc( $j( '#bookacti-event-data-dialog #bookacti-event-repeat-from' ).attr('max') ).locale( 'en' ).format( 'YYYY-MM-DD' );
+	var repeat_to       = moment.utc( $j( '#bookacti-event-data-dialog #bookacti-event-repeat-to' ).val() ).locale( 'en' );
+	var repeat_to_min   = moment.utc( $j( '#bookacti-event-data-dialog #bookacti-event-repeat-to' ).attr('min') ).locale( 'en' ).format( 'YYYY-MM-DD' );
+	var template_start  = moment.utc( $j( '#bookacti-template-picker :selected' ).data( 'template-start' ) ).locale( 'en' );
+	var template_end    = moment.utc( $j( '#bookacti-template-picker :selected' ).data( 'template-end' ) ).locale( 'en' );
 
 	// Init boolean test variables
 	var valid_form = {
@@ -382,8 +382,8 @@ function bookacti_validate_event_repetition_data() {
 	if( valid_form.isRepeatFrom && valid_form.isRepeatTo && ( repeat_from < repeat_to ) )					{ valid_form.isFromBeforeTo = true; }
 	if( valid_form.isRepeated ) {
 		if(( event_start.substr( 0, 10 ) >= repeat_from.format( 'YYYY-MM-DD' ) ) 
-		&& ( event_end.substr( 0, 10 )	<= repeat_to.format( 'YYYY-MM-DD' ) ) ){ 
-		valid_form.isEventBetweenFromAndTo = true; 
+		&& ( event_end.substr( 0, 10 )	<= repeat_to.format( 'YYYY-MM-DD' ) ) ) { 
+			valid_form.isEventBetweenFromAndTo = true; 
 		}
 	}
 
@@ -526,15 +526,15 @@ function bookacti_validate_event_repetition_data() {
 
 /**
  * Check event date exceptions field
- * @version 1.8.0
+ * @version 1.8.5
  * @returns {boolean}
  */
 function bookacti_validate_add_exception_form() {
     //Get params
     var event_id        = $j( '#bookacti-event-data-dialog' ).data( 'event-id' );
-    var exception_date  = moment.utc( $j( '#bookacti-event-data-dialog #bookacti-event-exception-date-picker' ).val() );
-    var repeat_from     = moment.utc( $j( '#bookacti-event-data-dialog #bookacti-event-repeat-from' ).val() );
-    var repeat_to       = moment.utc( $j( '#bookacti-event-data-dialog #bookacti-event-repeat-to' ).val() );
+    var exception_date  = moment.utc( $j( '#bookacti-event-data-dialog #bookacti-event-exception-date-picker' ).val() ).locale( 'en' );
+    var repeat_from     = moment.utc( $j( '#bookacti-event-data-dialog #bookacti-event-repeat-from' ).val() ).locale( 'en' );
+    var repeat_to       = moment.utc( $j( '#bookacti-event-data-dialog #bookacti-event-repeat-to' ).val() ).locale( 'en' );
     
     //Init boolean test variables
     var isNewExcep                  = false;
@@ -549,7 +549,7 @@ function bookacti_validate_add_exception_form() {
     
     //Detect duplicated exception
     $j( '#bookacti-event-data-dialog .exception' ).each( function() {
-        if( exception_date.format( 'YYYY-MM-DD' ) === moment.utc( $j( this ).val() ).format( 'YYYY-MM-DD' ) ) { 
+        if( exception_date.format( 'YYYY-MM-DD' ) === moment.utc( $j( this ).val() ).locale( 'en' ).format( 'YYYY-MM-DD' ) ) { 
             isNewExcepDifferent = false;
             $j( this ).effect( 'highlight', 'swing', { color: '#ffff99' }, 2000 );
         }

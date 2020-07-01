@@ -1,7 +1,7 @@
 <?php 
 /**
  * Frontend and Backend booking dialogs
- * @version 1.8.0
+ * @version 1.8.5
  */
 
 // Exit if accessed directly
@@ -57,7 +57,6 @@ $messages = bookacti_get_messages();
 <div id='bookacti-reschedule-booking-dialog' class='bookacti-backend-dialog bookacti-bookings-dialog' title='<?php echo apply_filters( 'bookacti_translate_text', $messages[ 'reschedule_dialog_title' ][ 'value' ] ); ?>'>
 	<form class='bookacti-booking-form bookacti-reschedule-booking-form'>
 		<?php
-			wp_nonce_field( 'bookacti_get_reschedule_booking_system_data', 'nonce_get_reschedule_booking_system_data', false );
 			wp_nonce_field( 'bookacti_reschedule_booking', 'nonce_reschedule_booking', false );
 		?>
 		<div>
