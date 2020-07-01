@@ -5,7 +5,7 @@ Tags: booking, reservation, booking form, woocommerce booking, booking events
 Requires at least: 3.6
 Tested up to: 5.4
 Requires PHP: 5.3
-Stable tag: 1.8.4
+Stable tag: 1.8.5
 License: GPLv3 or later
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
 
@@ -319,10 +319,10 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 
 == Changelog ==
 
-= 1.8.5 =
+= 1.8.5 - 2020/07/01 =
 * Tweak - The {booking_admin_url} notification tag URL now redirects to a page where only the desired booking is displayed in the list
 * Fix - Force null padding and margin to agenda and basic calendar views cells to avoid invisible events
-* Fix - Remove or dynamicaly update frontend nonces possibly causing problems with cache
+* Fix - Remove or dynamically update frontend nonces to avoid problems with cache
 * Fix - Fix possible errors while editing events
 * Fix - Cannot remove all repeat exceptions while updating events
 * Fix - Incorrect display of ON / OFF switches for RTL languages
