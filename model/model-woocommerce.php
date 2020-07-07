@@ -433,27 +433,48 @@ function bookacti_cancel_order_pending_bookings( $order_id, $not_booking_ids = a
 
 /**
  * Deactivate expired bookings
- * @version	1.8.0
+ * @version	1.8.6
  * @global wpdb $wpdb
- * @return array|false
+ * @return array|string|false
  */
 function bookacti_deactivate_expired_bookings() {
 	global $wpdb;
 	
-	// Get expired in cart bookings
-	$query	= 'SELECT B.id, B.group_id '
-			. ' FROM ' . BOOKACTI_TABLE_BOOKINGS . ' as B '
-			. ' LEFT JOIN ' . $wpdb->prefix . 'woocommerce_sessions as S ON B.user_id = S.session_key '
-			. ' WHERE B.state = "in_cart" '
-			// Expired with Booking Activities expiration system
-			. ' AND ( ( B.expiration_date <= UTC_TIMESTAMP() AND B.active = 1 )'
-			// Expired with WC session expiration system
-			. ' OR ( S.session_expiry IS NULL OR S.session_expiry <= UNIX_TIMESTAMP( UTC_TIMESTAMP() ) ) )';
+	$incompatible_collations = get_transient( 'bookacti_wc_incompatible_collations' );
+	$last_error = $incompatible_collations ? 'Illegal mix of collations' : false;
+	$expired_bookings = false;
 	
-	$expired_bookings = $wpdb->get_results( $query );
+	if( ! $last_error ) {
+		// Get expired in cart bookings
+		$query	= 'SELECT B.id, B.group_id '
+				. ' FROM ' . BOOKACTI_TABLE_BOOKINGS . ' as B '
+				. ' LEFT JOIN ' . $wpdb->prefix . 'woocommerce_sessions as S ON B.user_id = S.session_key '
+				. ' WHERE B.state = "in_cart" '
+				// Expired with Booking Activities expiration system
+				. ' AND ( ( B.expiration_date <= UTC_TIMESTAMP() AND B.active = 1 )'
+				// Expired with WC session expiration system
+				. ' OR ( S.session_expiry IS NULL OR S.session_expiry <= UNIX_TIMESTAMP( UTC_TIMESTAMP() ) ) )';
+
+		$expired_bookings = $wpdb->get_results( $query );
+		$last_error = $wpdb->last_error;
+	}
 	
-	if( ! $expired_bookings && $wpdb->last_error )	{ return $wpdb->last_error; }
-	if( $expired_bookings === false )				{ return false; }
+	// If WC's and BA's tables have incompatible collations, ignore WC session expiration
+	if( $last_error && substr( $last_error, 0, 25 ) === 'Illegal mix of collations' ) {
+		// Set a transient to avoid repeating the same error
+		set_transient( 'bookacti_wc_incompatible_collations', 1 );
+		
+		$query	= 'SELECT B.id, B.group_id '
+				. ' FROM ' . BOOKACTI_TABLE_BOOKINGS . ' as B '
+				. ' WHERE B.state = "in_cart" '
+				. ' AND B.expiration_date <= UTC_TIMESTAMP() '
+				. ' AND B.active = 1 ';
+		$expired_bookings = $wpdb->get_results( $query );
+		$last_error = $wpdb->last_error;
+	}
+	
+	if( ! $expired_bookings && $last_error ){ return $last_error; }
+	if( $expired_bookings === false )		{ return false; }
 	
 	// Check if expired bookings belong to groups
 	$expired_ids = array();

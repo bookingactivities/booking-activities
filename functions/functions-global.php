@@ -1908,6 +1908,42 @@ function bookacti_format_duration( $seconds, $format = 'iso8601' ) {
 
 
 /**
+ * Format a delay in seconds to a user friendly remaining time
+ * @since 1.8.6
+ * @param int $seconds
+ * @param int $precision 1 for days, 2 for hours, 3 for minutes, 4 for seconds
+ * @return string
+ */
+function bookacti_format_delay( $seconds, $precision = 3 ) {
+	$time = bookacti_format_duration( $seconds, 'array' );
+	$formatted_delay = '';
+	
+	if( intval( $time[ 'days' ] ) > 0 ) { 
+		/* translators: %d is a variable number of days */
+		$days_formated = sprintf( _n( '%d day', '%d days', $time[ 'days' ], 'booking-activities' ), $time[ 'days' ] );
+		$formatted_delay .= $days_formated;
+	}
+	if( intval( $time[ 'hours' ] ) > 0 && $precision >= 2 ) { 
+		/* translators: %d is a variable number of hours */
+		$hours_formated = sprintf( _n( '%d hour', '%d hours', $time[ 'hours' ], 'booking-activities' ), $time[ 'hours' ] );
+		$formatted_delay .= ' ' . $hours_formated;
+	}
+	if( intval( $time[ 'minutes' ] ) > 0 && $precision >= 3 ) { 
+		/* translators: %d is a variable number of minutes */
+		$minutes_formated = sprintf( _n( '%d minute', '%d minutes', $time[ 'minutes' ], 'booking-activities' ), $time[ 'minutes' ] );
+		$formatted_delay .= ' ' . $minutes_formated;
+	}
+	if( intval( $time[ 'seconds' ] ) > 0 && $precision >= 4 ) { 
+		/* translators: %d is a variable number of minutes */
+		$seconds_formated = sprintf( _n( '%d second', '%d seconds', $time[ 'seconds' ], 'booking-activities' ), $time[ 'seconds' ] );
+		$formatted_delay .= ' ' . $seconds_formated;
+	}
+
+	return apply_filters( 'bookacti_delay_formatted', $formatted_delay, $seconds, $precision );
+}
+
+
+/**
  * Sanitize array of dates
  * @since 1.2.0 (replace bookacti_sanitize_exceptions)
  * @version 1.7.13

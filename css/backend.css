@@ -76,7 +76,7 @@ ul[id$='-select-box-results'] li[aria-disabled='true'] { display: none; }
 
 #bookacti_refund_actions { display: inline-block; }
 
-.bookacti-settings-table		{ max-width: 800px; border-collapse: collapse; border: 1px solid #e5e5e5; background-color: #fff; -webkit-box-shadow: 0 1px 1px rgba(0,0,0,.04); box-shadow: 0 1px 1px rgba(0,0,0,.04); }
+.bookacti-settings-table		{ border-collapse: collapse; border: 1px solid #e5e5e5; background-color: #fff; -webkit-box-shadow: 0 1px 1px rgba(0,0,0,.04); box-shadow: 0 1px 1px rgba(0,0,0,.04); }
 .bookacti-settings-table th		{ text-align: left; padding: 10px; border-bottom: 1px solid #e1e1e1; }
 .bookacti-settings-table td		{ vertical-align: middle; padding: 5px 10px; }
 .bookacti-settings-table tbody tr:nth-child( 2n+1 )	{ background-color: #f9f9f9; }

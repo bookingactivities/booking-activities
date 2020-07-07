@@ -4,9 +4,8 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	
 /**
  * Array of configurable notifications
- * 
  * @since 1.2.1 (was bookacti_get_emails_default_settings in 1.2.0)
- * @version 1.7.0
+ * @version 1.8.6
  * @return array
  */
 function bookacti_get_notifications_default_settings() {
@@ -15,12 +14,12 @@ function bookacti_get_notifications_default_settings() {
 			array(
 				'id'		=> 'admin_new_booking',
 				'active'	=> 1,
-				'title'		=> __( 'Customer has made a booking', 'booking-activities' ),
-				'description'	=> __( 'This notification is sent to the administrator when a new booking is registered.', 'booking-activities' ),
+				'title'		=> esc_html__( 'Customer has made a booking', 'booking-activities' ),
+				'description'	=> esc_html__( 'This notification is sent to the administrator when a new booking is registered.', 'booking-activities' ),
 				'email'			=> array(
 					'active'	=> 1,
 					'to'		=> array( get_bloginfo( 'admin_email' ) ),
-					'subject'	=> __( 'New booking!', 'booking-activities' ),
+					'subject'	=> esc_html__( 'New booking!', 'booking-activities' ),
 					/* translators: Keep tags as is (this is a tag: {tag}), they will be replaced in code. This is the default email an administrator receive when a booking is made */
 					'message'	=> __( '<p>You have {booking_total_qty} new booking(s) from {user_firstname} {user_lastname} ({user_email})!</p>
 										<p>{booking_list}</p>
@@ -31,12 +30,12 @@ function bookacti_get_notifications_default_settings() {
 			array(
 				'id'		=> 'admin_cancelled_booking',
 				'active'	=> 1,
-				'title'		=> __( 'Customer has cancelled a booking', 'booking-activities' ),
-				'description'	=> __( 'This notification is sent to the administrator when a customer cancel a booking.', 'booking-activities' ),
+				'title'		=> esc_html__( 'Customer has cancelled a booking', 'booking-activities' ),
+				'description'	=> esc_html__( 'This notification is sent to the administrator when a customer cancels a booking.', 'booking-activities' ),
 				'email'			=> array(
 					'active'	=> 1,
 					'to'		=> array( get_bloginfo( 'admin_email' ) ),
-					'subject'	=> __( 'Booking cancelled', 'booking-activities' ),
+					'subject'	=> esc_html__( 'Booking cancelled', 'booking-activities' ),
 					/* translators: Keep tags as is (this is a tag: {tag}), they will be replaced in code. This is the default email an administrator receive when a booking is cancelled */
 					'message'	=> __( '<p>A customer has cancelled a booking.</p>
 										<p>{booking_list}</p>
@@ -47,12 +46,12 @@ function bookacti_get_notifications_default_settings() {
 			array(
 				'id'		=> 'admin_rescheduled_booking',
 				'active'	=> 1,
-				'title'		=> __( 'Customer has rescheduled a booking', 'booking-activities' ),
-				'description'	=> __( 'This notification is sent to the administrator when a customer reschedule a booking.', 'booking-activities' ),
+				'title'		=> esc_html__( 'Customer has rescheduled a booking', 'booking-activities' ),
+				'description'	=> esc_html__( 'This notification is sent to the administrator when a customer reschedules a booking.', 'booking-activities' ),
 				'email'			=> array(
 					'active'	=> 1,
 					'to'		=> array( get_bloginfo( 'admin_email' ) ),
-					'subject'		=> __( 'Booking rescheduled', 'booking-activities' ),
+					'subject'		=> esc_html__( 'Booking rescheduled', 'booking-activities' ),
 					/* translators: Keep tags as is (this is a tag: {tag}), they will be replaced in code. This is the default email an administrator receive when a booking is rescheduled */
 					'message'	=> __( '<p>A customer has rescheduled a booking.</p>
 										<p>Old booking: {booking_old_start} - {booking_old_end}</p>
@@ -65,11 +64,11 @@ function bookacti_get_notifications_default_settings() {
 			array(
 				'id'		=> 'customer_pending_booking',
 				'active'	=> 1,
-				'title'		=> __( 'Booking status turns to "Pending"', 'booking-activities' ),
-				'description'	=> __( 'This notification is sent to the customer when one of his bookings becomes "Pending". If you set the "Default booking state" option to "Pending", this notification will be sent right after the booking is made.', 'booking-activities' ),
+				'title'		=> esc_html__( 'Booking status turns to "Pending"', 'booking-activities' ),
+				'description'	=> esc_html__( 'This notification is sent to the customer when one of his bookings becomes "Pending". If you set the "Default booking state" option to "Pending", this notification will be sent right after the booking is made.', 'booking-activities' ),
 				'email'			=> array(
 					'active'	=> 1,
-					'subject'	=> __( 'Your booking is pending', 'booking-activities' ) . ' - ' . apply_filters( 'bookacti_translate_text', get_bloginfo( 'name' ) ),
+					'subject'	=> esc_html__( 'Your booking is pending', 'booking-activities' ) . ' - ' . apply_filters( 'bookacti_translate_text', get_bloginfo( 'name' ) ),
 					/* translators: Keep tags as is (this is a tag: {tag}), they will be replaced in code. This is the default email a customer receive when a booking is made, but is still Pending */
 					'message'	=> __( '<p>Thank you for your booking request {user_firstname}!</p>
 										<p>{booking_list}</p>
@@ -80,11 +79,11 @@ function bookacti_get_notifications_default_settings() {
 			array(
 				'id'			=> 'customer_booked_booking',
 				'active'		=> 1,
-				'title'			=> __( 'Booking status turns to "Booked"', 'booking-activities' ),
-				'description'	=> __( 'This notification is sent to the customer when one of his bookings becomes "Booked". If you set the "Default booking state" option to "Booked", this notification will be sent right after the booking is made.', 'booking-activities' ),
+				'title'			=> esc_html__( 'Booking status turns to "Booked"', 'booking-activities' ),
+				'description'	=> esc_html__( 'This notification is sent to the customer when one of his bookings becomes "Booked". If you set the "Default booking state" option to "Booked", this notification will be sent right after the booking is made.', 'booking-activities' ),
 				'email'			=> array(
 					'active'	=> 1,
-					'subject'	=> __( 'Your booking is complete! Thank you', 'booking-activities' ) . ' - ' . apply_filters( 'bookacti_translate_text', get_bloginfo( 'name' ) ),
+					'subject'	=> esc_html__( 'Your booking is complete! Thank you', 'booking-activities' ) . ' - ' . apply_filters( 'bookacti_translate_text', get_bloginfo( 'name' ) ),
 					/* translators: Keep tags as is (this is a tag: {tag}), they will be replaced in code. This is the default email a customer receive when a booking is made and Complete */
 					'message'	=> __( '<p>Thank you for your booking {user_firstname}!</p>
 										<p>{booking_list}</p>
@@ -94,11 +93,11 @@ function bookacti_get_notifications_default_settings() {
 			array(
 				'id'			=> 'customer_cancelled_booking',
 				'active'		=> 1,
-				'title'			=> __( 'Booking status turns to "Cancelled"', 'booking-activities' ),
-				'description'	=> __( 'This notification is sent to the customer when one of his bookings becomes "Cancelled".', 'booking-activities' ),
+				'title'			=> esc_html__( 'Booking status turns to "Cancelled"', 'booking-activities' ),
+				'description'	=> esc_html__( 'This notification is sent to the customer when one of his bookings becomes "Cancelled".', 'booking-activities' ),
 				'email'			=> array(
 					'active'	=> 1,
-					'subject'	=> __( 'Your booking has been cancelled', 'booking-activities' ) . ' - ' . apply_filters( 'bookacti_translate_text', get_bloginfo( 'name' ) ),
+					'subject'	=> esc_html__( 'Your booking has been cancelled', 'booking-activities' ) . ' - ' . apply_filters( 'bookacti_translate_text', get_bloginfo( 'name' ) ),
 					/* translators: Keep tags as is (this is a tag: {tag}), they will be replaced in code. This is the default email a customer receive when a booking is cancelled */
 					'message'	=> __( "<p>Hello {user_firstname},
 										<p>Your booking has been <strong>cancelled</strong>.</p>
@@ -109,11 +108,11 @@ function bookacti_get_notifications_default_settings() {
 			array(
 				'id'			=> 'customer_refunded_booking',
 				'active'		=> 1,
-				'title'			=> __( 'Booking status turns to "Refunded"', 'booking-activities' ),
-				'description'	=> __( 'This notification is sent to the customer when one of his bookings becomes "Refunded".', 'booking-activities' ),
+				'title'			=> esc_html__( 'Booking status turns to "Refunded"', 'booking-activities' ),
+				'description'	=> esc_html__( 'This notification is sent to the customer when one of his bookings becomes "Refunded".', 'booking-activities' ),
 				'email'			=> array(
 					'active'	=> 1,
-					'subject'	=> __( 'Your booking has been refunded', 'booking-activities' ) . ' - ' . apply_filters( 'bookacti_translate_text', get_bloginfo( 'name' ) ),
+					'subject'	=> esc_html__( 'Your booking has been refunded', 'booking-activities' ) . ' - ' . apply_filters( 'bookacti_translate_text', get_bloginfo( 'name' ) ),
 					/* translators: Keep tags as is (this is a tag: {tag}), they will be replaced in code. This is the default email a customer receive when he is reimbursed for a booking */
 					'message'	=> __( '<p>Hello {user_firstname},
 										<p>Your booking has been <strong>refunded</strong>.</p>
@@ -124,11 +123,11 @@ function bookacti_get_notifications_default_settings() {
 			array(
 				'id'			=> 'customer_rescheduled_booking',
 				'active'		=> 1,
-				'title'			=> __( 'Booking is rescheduled', 'booking-activities' ),
-				'description'	=> __( 'This notification is sent to the customer when one of his bookings is rescheduled.', 'booking-activities' ),
+				'title'			=> esc_html__( 'Booking is rescheduled', 'booking-activities' ),
+				'description'	=> esc_html__( 'This notification is sent to the customer when one of his bookings is rescheduled.', 'booking-activities' ),
 				'email'			=> array(
 					'active'	=> 1,
-					'subject'	=> __( 'Your booking has been rescheduled', 'booking-activities' ) . ' - ' . apply_filters( 'bookacti_translate_text', get_bloginfo( 'name' ) ),
+					'subject'	=> esc_html__( 'Your booking has been rescheduled', 'booking-activities' ) . ' - ' . apply_filters( 'bookacti_translate_text', get_bloginfo( 'name' ) ),
 					/* translators: Keep tags as is (this is a tag: {tag}), they will be replaced in code. This is the default email a customer receive when a booking is rescheduled */
 					'message'	=> __( "<p>Hello {user_firstname},
 										<p>Your booking has been <strong>rescheduled</strong> from {booking_old_start} to:</p>
@@ -143,63 +142,59 @@ function bookacti_get_notifications_default_settings() {
 
 /**
  * Get notification default settings
- * 
  * @since 1.2.1 (was bookacti_get_email_default_settings in 1.2.0)
+ * @version 1.8.6
  * @param string $notification_id
- * @return false|array
+ * @return array
  */
 function bookacti_get_notification_default_settings( $notification_id ) {
-
-	if( ! $notification_id ) { return false; }
-
 	$notifications = bookacti_get_notifications_default_settings();
-
-	if( ! isset( $notifications[ $notification_id ] ) ) { return false; }
-
-	return $notifications[ $notification_id ];
+	$default_settings = isset( $notifications[ $notification_id ] ) ? $notifications[ $notification_id ] : array();
+	return apply_filters( 'bookacti_notification_default_settings', $default_settings, $notification_id );
 }
 
 
 /**
  * Get notification settings
  * @since 1.2.1 (was bookacti_get_email_settings in 1.2.0)
- * @version 1.8.5
+ * @version 1.8.6
  * @param string $notification_id
  * @param boolean $raw
- * @return false|array
+ * @return array
  */
 function bookacti_get_notification_settings( $notification_id, $raw = true ) {
-	if( ! $notification_id ) { return false; }
-
-	$notifications = bookacti_get_notifications_default_settings();
-	if( ! isset( $notifications[ $notification_id ] ) ) { return false; }
+	if( ! $notification_id ) { return array(); }
 	
 	$notification_settings = array();
+	$default_settings = bookacti_get_notification_default_settings( $notification_id );
 	
 	// Get raw value from database
 	if( $raw ) {
 		$alloptions = wp_load_alloptions(); // get_option() calls wp_load_alloptions() itself, so there is no overhead at runtime 
 		if( isset( $alloptions[ 'bookacti_notifications_settings_' . $notification_id ] ) ) {
-			$notification_settings	= maybe_unserialize( $alloptions[ 'bookacti_notifications_settings_' . $notification_id ] );
+			$notification_settings = maybe_unserialize( $alloptions[ 'bookacti_notifications_settings_' . $notification_id ] );
 		}
 	} 
 	
 	// Else, get notification settings through a normal get_option
 	else {
-		$notification_settings = get_option( 'bookacti_notifications_settings_' . $notification_id );
+		$notification_settings = get_option( 'bookacti_notifications_settings_' . $notification_id, array() );
+		if( ! is_array( $notification_settings ) ) { $notification_settings = array(); }
 	}
 	
 	// Make sure all values are set
-	foreach( $notifications[ $notification_id ] as $key => $value ) {
-		if( ! isset( $notification_settings[ $key ] ) ) {
-			$notification_settings[ $key ] = $value;
+	if( ! empty( $default_settings ) ) {
+		foreach( $default_settings as $key => $value ) {
+			if( ! isset( $notification_settings[ $key ] ) ) {
+				$notification_settings[ $key ] = $value;
+			}
 		}
 	}
 	
 	// Make sure all values are set for emails
-	if( ! empty( $notifications[ $notification_id ][ 'email' ] ) ) {
-		foreach( $notifications[ $notification_id ][ 'email' ] as $key => $value ) {
-			if( ! isset( $notification_settings[ 'email' ][ $key ] ) ) {
+	if( ! empty( $default_settings[ 'email' ] ) ) {
+		foreach( $default_settings[ 'email' ] as $key => $value ) {
+			if( ! isset( $default_settings[ 'email' ][ $key ] ) ) {
 				$notification_settings[ 'email' ][ $key ] = $value;
 			}
 		}
@@ -211,8 +206,8 @@ function bookacti_get_notification_settings( $notification_id, $raw = true ) {
 
 /**
  * Sanitize notification settings
- * 
  * @since 1.2.1 (was bookacti_sanitize_email_settings in 1.2.0)
+ * @version 1.8.6
  * @param array $args
  * @param string $notification_id Optionnal notification id. If set, default value will be picked from the corresponding notification.
  * @return array
@@ -225,7 +220,6 @@ function bookacti_sanitize_notification_settings( $args, $notification_id = '' )
 		$defaults = array(
 			'id'		=> $notification_id,
 			'active'	=> 0,
-			'title'		=> '',
 			'email'		=> array(
 				'active'	=> 1,
 				'to'		=> array(),
@@ -233,34 +227,30 @@ function bookacti_sanitize_notification_settings( $args, $notification_id = '' )
 				'message'	=> '' )
 		);
 	}
-
+	
 	$notification = array();
 	foreach( $defaults as $key => $default_value ) {
-		
 		// Do not save constant data
-		if( $key === 'id' || $key === 'title' ) { continue; }
+		if( in_array( $key, array( 'id', 'title', 'description' ), true ) ) { continue; }
 		
 		$notification[ $key ] = isset( $args[ $key ] ) ? $args[ $key ] : $default_value;
 
 		if( $key === 'active' ) {
-
 			$notification[ $key ] = intval( $notification[ $key ] ) ? 1 : 0;
 
 		} else if( $key === 'email' ) {
 			foreach( $default_value as $email_key => $email_value ) {
-				
 				$notification[ 'email' ][ $email_key ] = isset( $args[ 'email' ][ $email_key ] ) ? $args[ 'email' ][ $email_key ] : $email_value;
 				
 				if( $email_key === 'active' ) {
-					
 					$notification[ 'email' ][ $email_key ] = intval( $notification[ 'email' ][ $email_key ] ) ? 1 : 0;
 					
 				} else if( $email_key === 'to' ) {
-
 					if( ! is_array( $notification[ 'email' ][ $email_key ] ) ) {
 						$notification[ 'email' ][ $email_key ] = strval( $notification[ 'email' ][ $email_key ] );
 						$notification[ 'email' ][ $email_key ] = strpos( $notification[ 'email' ][ $email_key ], ',' ) !== false ? explode( ',', $notification[ 'email' ][ $email_key ] ) : array( $notification[ 'email' ][ $email_key ] );
 					}
+					
 					foreach( $notification[ 'email' ][ $email_key ] as $to_key => $to_email_address ) {
 						$sanitized_email = sanitize_email( $to_email_address );
 						if( $sanitized_email ) {
@@ -271,14 +261,12 @@ function bookacti_sanitize_notification_settings( $args, $notification_id = '' )
 					}
 
 				} else if( $email_key === 'title' || $email_key === 'subject' ) {
-
 					$sanitized_field = sanitize_text_field( stripslashes( $notification[ 'email' ][ $email_key ] ) );
-					$notification[ 'email' ][ $email_key ] = $sanitized_field ? $sanitized_field : $default_value;
+					$notification[ 'email' ][ $email_key ] = $sanitized_field ? $sanitized_field : $email_value;
 
 				} else if( $email_key === 'message' ) {
-
 					$sanitized_textarea = wp_kses_post( stripslashes( $notification[ 'email' ][ $email_key ] ) );
-					$notification[ 'email' ][ $email_key ] = $sanitized_textarea ? $sanitized_textarea : $default_value;
+					$notification[ 'email' ][ $email_key ] = $sanitized_textarea ? $sanitized_textarea : $email_value;
 				}
 			}
 		}

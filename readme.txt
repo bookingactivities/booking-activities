@@ -319,6 +319,12 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 
 == Changelog ==
 
+= 1.8.6 =
+* Fix - Display availabilities on the left if events overlap on agenda views (regression)
+* Fix - In-cart bookings were not expired by cron if WooCommerce's and Booking Activities' tables have incompatible collations
+* Fix - Error involving a MariaDB limitation (cannot convert 1970-01-01 00:00:00 to timestamp)
+* Fix - Error if day begin is same as day end
+
 = 1.8.5 - 2020/07/01 =
 * Tweak - The {booking_admin_url} notification tag URL now redirects to a page where only the desired booking is displayed in the list
 * Fix - Force null padding and margin to agenda and basic calendar views cells to avoid invisible events

@@ -1,6 +1,6 @@
 /**
  * Initialize the calendar
- * @version 1.8.5
+ * @version 1.8.6
  * @param {HTMLElement} booking_system
  * @param {boolean} reload_events
  */
@@ -40,6 +40,7 @@ function bookacti_set_calendar_up( booking_system, reload_events ) {
 		dragRevertDuration:     0,
 		slotLabelFormat:		'LT',
 		slotDuration:           '00:30',
+		slotEventOverlap:		true,
 		minTime:                min_time,
 		maxTime:                max_time,
 		validRange: {
@@ -56,7 +57,7 @@ function bookacti_set_calendar_up( booking_system, reload_events ) {
 				var interval = { 'start': moment.utc( moment.utc( view.intervalStart ).clone().locale( 'en' ).format( 'YYYY-MM-DD' ) + ' 00:00:00' ).locale( 'en' ), 'end': moment.utc( moment.utc( view.intervalEnd ).clone().subtract( 1, 'days' ).locale( 'en' ).format( 'YYYY-MM-DD' ) + ' 23:59:59' ).locale( 'en' ) };
 				bookacti_fetch_events_from_interval( booking_system, interval );
 			}
-			
+						
 			// Add a class if the events are overlapping
 			if( view.name.indexOf( 'agenda' ) > -1 ){
 				var event_overlap = typeof display_data.slotEventOverlap !== 'undefined' ? display_data.slotEventOverlap : calendar.fullCalendar( 'option', 'slotEventOverlap' );

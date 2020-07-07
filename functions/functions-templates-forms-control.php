@@ -70,7 +70,7 @@ function bookacti_format_template_managers( $template_managers = array() ) {
 
 /**
  * Format template settings
- * @version 1.7.17
+ * @version 1.8.6
  * @param array $raw_settings
  * @return array
  */
@@ -98,6 +98,8 @@ function bookacti_format_template_settings( $raw_settings ) {
 	if( ! preg_match( '/^([0-1][0-9]|2[0-3]):([0-5][0-9])$/', $settings[ 'snapDuration' ] ) )	{ $settings[ 'snapDuration' ] = $default_settings[ 'snapDuration' ]; }
 	
 	// Make sure minTime is before maxTime
+	// If minTime = maxTime, set the default maxTime
+	if( $settings[ 'minTime' ] === $settings[ 'maxTime' ] ) { $settings[ 'maxTime' ] = $default_settings[ 'maxTime' ]; }
 	// If maxTime is 00:xx change it to 24:xx
 	if( $settings[ 'maxTime' ] === '00:00' ) { $settings[ 'maxTime' ] = '24:00'; }
 	// If minTime >= maxTime, permute values
