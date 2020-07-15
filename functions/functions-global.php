@@ -1009,7 +1009,7 @@ function bookacti_display_fields( $fields, $args = array() ) {
 /**
  * Display various fields
  * @since 1.2.0
- * @version 1.8.4
+ * @version 1.8.6
  * @param array $args ['type', 'name', 'label', 'id', 'class', 'placeholder', 'options', 'attr', 'value', 'tip', 'required']
  */
 function bookacti_display_field( $args ) {
@@ -1054,24 +1054,36 @@ function bookacti_display_field( $args ) {
 	if( $args[ 'type' ] === 'duration' ) {
 		// Convert value from seconds
 		$duration = is_numeric( $args[ 'value' ] ) ? bookacti_format_duration( $args[ 'value' ], 'array' ) : array( 'days' => '', 'hours' => '', 'minutes' => '', 'seconds' => '' );
+		$step = is_numeric( $args[ 'options' ][ 'step' ] ) ? bookacti_format_duration( $args[ 'options' ][ 'step' ], 'array' ) : array( 'days' => '', 'hours' => '', 'minutes' => '', 'seconds' => '' );
+		$min = is_numeric( $args[ 'options' ][ 'min' ] ) ? bookacti_format_duration( $args[ 'options' ][ 'min' ], 'array' ) : array( 'days' => '', 'hours' => '', 'minutes' => '', 'seconds' => '' );
+		$max = is_numeric( $args[ 'options' ][ 'max' ] ) ? bookacti_format_duration( $args[ 'options' ][ 'max' ], 'array' ) : array( 'days' => '', 'hours' => '', 'minutes' => '', 'seconds' => '' );
 		?>
 		<input type='hidden' name='<?php echo esc_attr( $args[ 'name' ] ); ?>' value='<?php echo esc_attr( $args[ 'value' ] ); ?>' id='<?php echo esc_attr( $args[ 'id' ] ); ?>' class='bookacti-input bookacti-duration-value <?php echo esc_attr( $args[ 'class' ] ); ?>'/>
 		<div class='bookacti-duration-field-container'>
 			<input type='number' value='<?php echo esc_attr( $duration[ 'days' ] ); ?>' 
 					id='<?php echo esc_attr( $args[ 'id' ] ) . '-days'; ?>' class='bookacti-input bookacti-duration-field'
-					placeholder='365' min='0' max='99999' step='1' data-unit='day' onkeypress='return event.charCode >= 48 && event.charCode <= 57'/>
+					min='<?php echo ! empty( $min[ 'days' ] ) ? max( 0, $min[ 'days' ] ) : 0; ?>' 
+					max='<?php echo ! empty( $max[ 'days' ] ) ? min( 99999, $max[ 'days' ] ) : 99999; ?>' 
+					step='<?php echo ! empty( $step[ 'days' ] ) ? max( 1, $step[ 'days' ] ) : 1; ?>'
+					placeholder='365' data-unit='day' onkeypress='return event.charCode >= 48 && event.charCode <= 57'/>
 			<label for='<?php echo esc_attr( $args[ 'id' ] ) . '-days'; ?>' class='bookacti-duration-field-label'><?php echo esc_html( _n( 'day', 'days', 2, 'booking-activities' ) ); ?></label>
 		</div>
 		<div class='bookacti-duration-field-container'>
 			<input type='number' value='<?php echo esc_attr( $duration[ 'hours' ] ); ?>' 
 					id='<?php echo esc_attr( $args[ 'id' ] ) . '-hours'; ?>' class='bookacti-input bookacti-duration-field'
-					placeholder='23' min='0' max='23' step='1' data-unit='hour' onkeypress='return event.charCode >= 48 && event.charCode <= 57'/>
+					min='<?php echo empty( $min[ 'days' ] ) && ! empty( $min[ 'hours' ] ) ? max( 0, $min[ 'hours' ] ) : 0; ?>' 
+					max='<?php echo empty( $max[ 'days' ] ) && ! empty( $max[ 'hours' ] ) ? min( 23, $max[ 'hours' ] ) : 23; ?>' 
+					step='<?php echo empty( $step[ 'days' ] ) && ! empty( $step[ 'hours' ] ) ? max( 1, $step[ 'hours' ] ) : 1; ?>'
+					placeholder='23' data-unit='hour' onkeypress='return event.charCode >= 48 && event.charCode <= 57'/>
 			<label for='<?php echo esc_attr( $args[ 'id' ] ) . '-hours'; ?>' class='bookacti-duration-field-label'><?php echo esc_html( _n( 'hour', 'hours', 2, 'booking-activities' ) ); ?></label>
 		</div>
 		<div class='bookacti-duration-field-container'>
 			<input type='number' value='<?php echo esc_attr( $duration[ 'minutes' ] ); ?>' 
 					id='<?php echo esc_attr( $args[ 'id' ] ) . '-minutes'; ?>' class='bookacti-input bookacti-duration-field'
-					placeholder='59' min='0' max='59' step='1' data-unit='minute' onkeypress='return event.charCode >= 48 && event.charCode <= 57'/>
+					min='<?php echo empty( $min[ 'days' ] ) && empty( $min[ 'hours' ] ) && ! empty( $min[ 'minutes' ] ) ? max( 0, $min[ 'minutes' ] ) : 0; ?>' 
+					max='<?php echo empty( $max[ 'days' ] ) && empty( $max[ 'hours' ] ) && ! empty( $max[ 'minutes' ] ) ? min( 59, $max[ 'minutes' ] ) : 59; ?>' 
+					step='<?php echo empty( $step[ 'days' ] ) && empty( $step[ 'hours' ] ) && ! empty( $step[ 'minutes' ] ) ? max( 1, $step[ 'minutes' ] ) : 1; ?>'
+					placeholder='59' data-unit='minute' onkeypress='return event.charCode >= 48 && event.charCode <= 57'/>
 			<label for='<?php echo esc_attr( $args[ 'id' ] ) . '-minutes'; ?>' class='bookacti-duration-field-label'><?php echo esc_html( _n( 'minute', 'minutes', 2, 'booking-activities' ) ); ?></label>
 		</div>
 		<?php if( $args[ 'label' ] ) { ?>
@@ -1276,7 +1288,7 @@ function bookacti_display_field( $args ) {
  * Format arguments to diplay a proper field
  * 
  * @since 1.2.0
- * @version 1.8.0
+ * @version 1.8.6
  * @param array $args ['type', 'name', 'label', 'id', 'class', 'placeholder', 'options', 'attr', 'value', 'multiple', 'tip', 'required']
  * @return array|false
  */
@@ -1345,7 +1357,7 @@ function bookacti_format_field_args( $args ) {
 	}
 
 	// Make sure 'number' has min and max
-	else if( in_array( $args[ 'type' ], array( 'number', 'date', 'time' ) ) ) {
+	else if( in_array( $args[ 'type' ], array( 'number', 'date', 'time', 'duration' ) ) ) {
 		$args[ 'options' ][ 'min' ] = isset( $args[ 'options' ][ 'min' ] ) ? $args[ 'options' ][ 'min' ] : '';
 		$args[ 'options' ][ 'max' ] = isset( $args[ 'options' ][ 'max' ] ) ? $args[ 'options' ][ 'max' ] : '';
 		$args[ 'options' ][ 'step' ] = isset( $args[ 'options' ][ 'step' ] ) ? $args[ 'options' ][ 'step' ] : '';
@@ -1939,7 +1951,7 @@ function bookacti_format_delay( $seconds, $precision = 3 ) {
 		$formatted_delay .= ' ' . $seconds_formated;
 	}
 
-	return apply_filters( 'bookacti_delay_formatted', $formatted_delay, $seconds, $precision );
+	return apply_filters( 'bookacti_formatted_delay', $formatted_delay, $seconds, $precision );
 }
 
 

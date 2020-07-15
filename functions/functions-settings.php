@@ -511,7 +511,7 @@ function bookacti_settings_section_notifications_general_callback() {
 			else if( substr( $notification_id, 0, 6 ) === 'admin_' ) { $notifications_ids_admin[] = $notification_id; $added = true; } 
 			if( $added ) { unset( $notifications_ids[ $i ] ); }
 		}
-		$notifications_ids_sorted = array_values( array_merge( $notifications_ids_admin, $notifications_ids_customer, $notifications_ids ) );
+		$notifications_ids_sorted = apply_filters( 'bookacti_notifications_list_order', array_values( array_merge( $notifications_ids_admin, $notifications_ids_customer, $notifications_ids ) ) );
 
 		foreach( $notifications_ids_sorted as $notification_id ) {
 			

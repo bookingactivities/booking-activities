@@ -295,6 +295,7 @@ add_filter( 'set-screen-option', 'bookacti_save_screen_options', 10, 3 );
  */
 function bookacti_fill_notification_settings_page( $notification_id ) {
 	if( ! $notification_id ) { return; }
+	$recipient = substr( $notification_id, 0, 6 ) === 'admin_' ? 'admin' : 'customer';
 	$notification_settings = bookacti_get_notification_settings( $notification_id );
 	?>
 		<h2><?php echo __( 'Notification', 'booking-activities' ) . ' - ' . $notification_settings[ 'title' ]; ?></h2>
@@ -361,7 +362,7 @@ function bookacti_fill_notification_settings_page( $notification_id ) {
 						$args = array(
 							'type'	=> 'text',
 							'name'	=> 'bookacti_notification[email][subject]',
-							'id'	=> 'bookacti_notification_email_subject',
+							'id'	=> 'bookacti_notification_email_subject' . ( $recipient === 'admin' ? '_admin' : '' ),
 							'value'	=> $notification_settings[ 'email' ][ 'subject' ] ? $notification_settings[ 'email' ][ 'subject' ] : '',
 							'tip'	=> esc_html__( 'The email subject.', 'booking-activities' )
 						);
@@ -412,7 +413,7 @@ function bookacti_fill_notification_settings_page( $notification_id ) {
 						$args = array(
 							'type'	=> 'editor',
 							'name'	=> 'bookacti_notification[email][message]',
-							'id'	=> 'bookacti_notification_email_message',
+							'id'	=> 'bookacti_notification_email_message' . ( $recipient === 'admin' ? '_admin' : '' ),
 							'height'=> 470,
 							'value'	=> $notification_settings[ 'email' ][ 'message' ] ? $notification_settings[ 'email' ][ 'message' ] : ''
 						);

@@ -194,7 +194,7 @@ function bookacti_get_notification_settings( $notification_id, $raw = true ) {
 	// Make sure all values are set for emails
 	if( ! empty( $default_settings[ 'email' ] ) ) {
 		foreach( $default_settings[ 'email' ] as $key => $value ) {
-			if( ! isset( $default_settings[ 'email' ][ $key ] ) ) {
+			if( ! isset( $notification_settings[ 'email' ][ $key ] ) ) {
 				$notification_settings[ 'email' ][ $key ] = $value;
 			}
 		}
@@ -428,7 +428,7 @@ function bookacti_get_notifications_tags_values( $booking_id, $booking_type, $no
  * Send a notification according to its settings
  * 
  * @since 1.2.1 (was bookacti_send_email in 1.2.0)
- * @version 1.7.0
+ * @version 1.8.6
  * @param string $notification_id Must exists in "bookacti_notifications_default_settings"
  * @param int $booking_id
  * @param string $booking_type "single" or "group"
@@ -469,19 +469,14 @@ function bookacti_send_notification( $notification_id, $booking_id, $booking_typ
 	// Change params according to recipients
 	$locale = '';
 	if( substr( $notification_id, 0, 8 ) === 'customer' ) {
-		
 		$user_id = $booking_type === 'group' ? bookacti_get_booking_group_owner( $booking_id ) : bookacti_get_booking_owner( $booking_id );
 		$user = is_numeric( $user_id ) ? get_user_by( 'id', $user_id ) : null;
 		
 		// If the user has an account
 		if( $user ) {
-			$user_data = get_user_by( 'id', $user_id );
-			if( $user_data ) {
-				$user_email = $user->user_email;
-
-				// Use the user locale to translate the email
-				$locale = bookacti_get_user_locale( $user );
-			}
+			$user_email = $user->user_email;
+			// Use the user locale to translate the email
+			$locale = bookacti_get_user_locale( $user, 'site' );
 		} else if( is_email( $user_id ) ) {
 			$user_email = $user_id;
 		} else {
@@ -492,7 +487,7 @@ function bookacti_send_notification( $notification_id, $booking_id, $booking_typ
 		
 		// Fill the recipients fields
 		$notification[ 'email' ][ 'to' ] = array( $user_email );
-	}
+	} 
 	
 	if( ! $locale ) { $locale = bookacti_get_site_locale();	}
 	
