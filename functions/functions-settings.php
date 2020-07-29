@@ -488,84 +488,86 @@ function bookacti_settings_section_notifications_general_callback() {
 	do_action( 'bookacti_before_notifications_table' );
 	
 	?>
-	<table class='bookacti-settings-table' id='bookacti-notifications-list' >
-		<thead>
-			<tr>
-			<?php foreach( $columns_titles as $column ) { ?>
-				<th id='bookacti-notifications-list-column-<?php echo sanitize_title_with_dashes( $column[ 'id' ] ); ?>' >
-					<?php echo esc_html( $column[ 'title' ] ); ?>
-				</th>
-			<?php } ?>
-			</tr>
-		</thead>
-		<tbody>
-	<?php
-		$notifications_ids = array_keys( bookacti_get_notifications_default_settings() );
-		
-		// Sort notifications: admin's first, customer's next
-		$notifications_ids_admin = array();
-		$notifications_ids_customer = array();
-		foreach( $notifications_ids as $i => $notification_id ) {
-			$added = false;
-			if( substr( $notification_id, 0, 6 ) === 'customer_' ) { $notifications_ids_customer[] = $notification_id; $added = true; }
-			else if( substr( $notification_id, 0, 6 ) === 'admin_' ) { $notifications_ids_admin[] = $notification_id; $added = true; } 
-			if( $added ) { unset( $notifications_ids[ $i ] ); }
-		}
-		$notifications_ids_sorted = apply_filters( 'bookacti_notifications_list_order', array_values( array_merge( $notifications_ids_admin, $notifications_ids_customer, $notifications_ids ) ) );
+	<div id='bookacti-notifications-list-container' class='bookacti-custom-scrollbar'>
+		<table class='bookacti-settings-table' id='bookacti-notifications-list' >
+			<thead>
+				<tr>
+				<?php foreach( $columns_titles as $column ) { ?>
+					<th id='bookacti-notifications-list-column-<?php echo sanitize_title_with_dashes( $column[ 'id' ] ); ?>' >
+						<?php echo esc_html( $column[ 'title' ] ); ?>
+					</th>
+				<?php } ?>
+				</tr>
+			</thead>
+			<tbody>
+		<?php
+			$notifications_ids = array_keys( bookacti_get_notifications_default_settings() );
 
-		foreach( $notifications_ids_sorted as $notification_id ) {
-			
-			$notification_settings = bookacti_get_notification_settings( $notification_id, false );
-			$active_icon = $notification_settings[ 'active' ] ? 'dashicons-yes' : 'dashicons-no';
-			$description = $notification_settings[ 'description' ] ? bookacti_help_tip( $notification_settings[ 'description' ], false ) : '';
+			// Sort notifications: admin's first, customer's next
+			$notifications_ids_admin = array();
+			$notifications_ids_customer = array();
+			foreach( $notifications_ids as $i => $notification_id ) {
+				$added = false;
+				if( substr( $notification_id, 0, 6 ) === 'customer_' ) { $notifications_ids_customer[] = $notification_id; $added = true; }
+				else if( substr( $notification_id, 0, 6 ) === 'admin_' ) { $notifications_ids_admin[] = $notification_id; $added = true; } 
+				if( $added ) { unset( $notifications_ids[ $i ] ); }
+			}
+			$notifications_ids_sorted = apply_filters( 'bookacti_notifications_list_order', array_values( array_merge( $notifications_ids_admin, $notifications_ids_customer, $notifications_ids ) ) );
 
-			$columns_values = apply_filters( 'bookacti_notifications_list_columns_values', array(
-				'active'		=> '<span class="dashicons ' . $active_icon . '"></span>',
-				'title'			=> '<a href="' . esc_url( '?page=bookacti_settings&tab=notifications&notification_id=' . sanitize_title_with_dashes( $notification_id ) ) . '" >' . esc_html( $notification_settings[ 'title' ] ) . '</a>' . $description,
-				'recipients'	=> substr( $notification_id, 0, 8 ) === 'customer' ? esc_html__( 'Customer', 'booking-activities' ) : esc_html__( 'Administrator', 'booking-activities' ),
-				'actions'		=> '<a href="' . esc_url( '?page=bookacti_settings&tab=notifications&notification_id=' . sanitize_title_with_dashes( $notification_id ) ) . '" title="' . esc_attr__( 'Edit this notification', 'booking-activities' ) . '" class="button button-secondary" >' . esc_html__( 'Settings', 'booking-activities' ) . '</a>'
-			), $notification_settings, $notification_id );
+			foreach( $notifications_ids_sorted as $notification_id ) {
 
-			?>
-			<tr id='bookacti-notification-row-<?php echo $notification_id; ?>' class='bookacti-notification-row'>
-			<?php foreach( $columns_titles as $column ) { ?>
-				<td class='bookacti-notifications-list-column-value-<?php echo sanitize_title_with_dashes( $column[ 'id' ] ); ?>' >
-				<?php
-					if( isset( $columns_values[ $column[ 'id' ] ] ) ) { 
-						echo $columns_values[ $column[ 'id' ] ];
-					}
+				$notification_settings = bookacti_get_notification_settings( $notification_id, false );
+				$active_icon = $notification_settings[ 'active' ] ? 'dashicons-yes' : 'dashicons-no';
+				$description = $notification_settings[ 'description' ] ? bookacti_help_tip( $notification_settings[ 'description' ], false ) : '';
+
+				$columns_values = apply_filters( 'bookacti_notifications_list_columns_values', array(
+					'active'		=> '<span class="dashicons ' . $active_icon . '"></span>',
+					'title'			=> '<a href="' . esc_url( '?page=bookacti_settings&tab=notifications&notification_id=' . sanitize_title_with_dashes( $notification_id ) ) . '" >' . esc_html( $notification_settings[ 'title' ] ) . '</a>' . $description,
+					'recipients'	=> substr( $notification_id, 0, 8 ) === 'customer' ? esc_html__( 'Customer', 'booking-activities' ) : esc_html__( 'Administrator', 'booking-activities' ),
+					'actions'		=> '<a href="' . esc_url( '?page=bookacti_settings&tab=notifications&notification_id=' . sanitize_title_with_dashes( $notification_id ) ) . '" title="' . esc_attr__( 'Edit this notification', 'booking-activities' ) . '" class="button button-secondary" >' . esc_html__( 'Settings', 'booking-activities' ) . '</a>'
+				), $notification_settings, $notification_id );
+
 				?>
-				</td>
-			<?php } ?>
-			</tr>
-		<?php } 
-		$is_plugin_active = bookacti_is_plugin_active( 'ba-notification-pack/ba-notification-pack.php' );
-		if( ! $is_plugin_active ) {
-			$addon_link = '<a href="https://booking-activities.fr/en/downloads/notification-pack/?utm_source=plugin&utm_medium=plugin&utm_campaign=notification-pack&utm_content=settings-notification-list" target="_blank" >Notification Pack</a>';
-			$columns_values = array(
-				'active'		=> '<span class="dashicons dashicons-no"></span>',
-				'title'			=> '<strong>' . esc_html__( '1 day before a booked event (reminder)', 'booking-activities' ) . '</strong>' 
-									/* translators: %1$s is the placeholder for Notification Pack add-on link */
-									. bookacti_help_tip( sprintf( esc_html__( 'You can send automatic reminders with %1$s add-on some days before booked events (you set the amount of days). This add-on also allow you to send all notifications through SMS and Push.', 'booking-activities' ), $addon_link ), false ),
-				'recipients'	=> esc_html__( 'Customer', 'booking-activities' ),
-				'actions'		=> "<a href='https://booking-activities.fr/en/downloads/notification-pack/?utm_source=plugin&utm_medium=plugin&utm_campaign=notification-pack&utm_content=settings-notification-list' class='button' target='_blank' >" . esc_html__( 'Learn more', 'booking-activities' ) . "</a>"
-			);
+				<tr id='bookacti-notification-row-<?php echo $notification_id; ?>' class='bookacti-notification-row'>
+				<?php foreach( $columns_titles as $column ) { ?>
+					<td class='bookacti-notifications-list-column-value-<?php echo sanitize_title_with_dashes( $column[ 'id' ] ); ?>' >
+					<?php
+						if( isset( $columns_values[ $column[ 'id' ] ] ) ) { 
+							echo $columns_values[ $column[ 'id' ] ];
+						}
+					?>
+					</td>
+				<?php } ?>
+				</tr>
+			<?php } 
+			$is_plugin_active = bookacti_is_plugin_active( 'ba-notification-pack/ba-notification-pack.php' );
+			if( ! $is_plugin_active ) {
+				$addon_link = '<a href="https://booking-activities.fr/en/downloads/notification-pack/?utm_source=plugin&utm_medium=plugin&utm_campaign=notification-pack&utm_content=settings-notification-list" target="_blank" >Notification Pack</a>';
+				$columns_values = array(
+					'active'		=> '<span class="dashicons dashicons-no"></span>',
+					'title'			=> '<strong>' . esc_html__( '1 day before a booked event (reminder)', 'booking-activities' ) . '</strong>' 
+										/* translators: %1$s is the placeholder for Notification Pack add-on link */
+										. bookacti_help_tip( sprintf( esc_html__( 'You can send automatic reminders with %1$s add-on some days before booked events (you set the amount of days). This add-on also allow you to send all notifications through SMS and Push.', 'booking-activities' ), $addon_link ), false ),
+					'recipients'	=> esc_html__( 'Customer', 'booking-activities' ),
+					'actions'		=> "<a href='https://booking-activities.fr/en/downloads/notification-pack/?utm_source=plugin&utm_medium=plugin&utm_campaign=notification-pack&utm_content=settings-notification-list' class='button' target='_blank' >" . esc_html__( 'Learn more', 'booking-activities' ) . "</a>"
+				);
 
-			?>
-			<tr id='bookacti-notification-row-customer_reminder' class='bookacti-notification-row'>
-			<?php foreach( $columns_titles as $column ) { ?>
-				<td class='bookacti-notifications-list-column-value-<?php echo sanitize_title_with_dashes( $column[ 'id' ] ); ?>' >
-				<?php
-					if( isset( $columns_values[ $column[ 'id' ] ] ) ) { 
-						echo $columns_values[ $column[ 'id' ] ];
-					}
 				?>
-				</td>
+				<tr id='bookacti-notification-row-customer_reminder' class='bookacti-notification-row'>
+				<?php foreach( $columns_titles as $column ) { ?>
+					<td class='bookacti-notifications-list-column-value-<?php echo sanitize_title_with_dashes( $column[ 'id' ] ); ?>' >
+					<?php
+						if( isset( $columns_values[ $column[ 'id' ] ] ) ) { 
+							echo $columns_values[ $column[ 'id' ] ];
+						}
+					?>
+					</td>
+				<?php } ?>
+				</tr>
 			<?php } ?>
-			</tr>
-		<?php } ?>
-		</tbody>
-	</table>
+			</tbody>
+		</table>
+	</div>
 	<?php
 	bookacti_display_banp_promo();
 	
@@ -715,7 +717,7 @@ function bookacti_settings_field_calendar_localization_callback() {
 /**
  * Get all default messages
  * @since 1.2.0
- * @version 1.8.0
+ * @version 1.8.6
  */
 function bookacti_get_default_messages() {
 	$wp_date_format_link = '<a href="https://wordpress.org/support/article/formatting-date-and-time/" target="_blank" >' .  esc_html__( 'Formatting Date and Time', 'booking-activities' ) . '</a>';

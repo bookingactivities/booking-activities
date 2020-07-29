@@ -121,7 +121,7 @@ function bookacti_update_booking_quantity( $booking_id, $new_quantity, $expirati
 
 /**
  * Get bookings according to filters
- * @version 1.8.0
+ * @version 1.8.6
  * @global wpdb $wpdb
  * @param array $filters Use bookacti_format_booking_filters() before
  * @return array
@@ -129,26 +129,28 @@ function bookacti_update_booking_quantity( $booking_id, $new_quantity, $expirati
 function bookacti_get_bookings( $filters ) {
 	global $wpdb;
 	
-	$query = ' SELECT DISTINCT B.*, E.title as event_title, A.id as activity_id, A.title as activity_title, T.id as template_id, T.title as template_title, IF( B.group_id IS NULL, B.id, CONCAT( "G", B.group_id ) ) as unique_group_id ';
+	$query_select = ' SELECT DISTINCT B.*, E.title as event_title, A.id as activity_id, A.title as activity_title, T.id as template_id, T.title as template_title, IF( B.group_id IS NULL, B.id, CONCAT( "G", B.group_id ) ) as unique_group_id ';
 	
 	// Get event / group of event total availability
-	$query .= $filters[ 'group_by' ] === 'booking_group' ? ', MIN( E.availability ) as availability ' : ', E.availability ';
+	$query_select .= $filters[ 'group_by' ] === 'booking_group' ? ', MIN( E.availability ) as availability ' : ', E.availability ';
 	
-	$query .= ' FROM ' . BOOKACTI_TABLE_BOOKINGS . ' as B ' 
-			. ' JOIN ' . BOOKACTI_TABLE_EVENTS . ' as E ON B.event_id = E.id ' 
-			. ' JOIN ' . BOOKACTI_TABLE_ACTIVITIES . ' as A ON E.activity_id = A.id ' 
-			. ' JOIN ' . BOOKACTI_TABLE_TEMPLATES . ' as T ON E.template_id = T.id ';
+	$query_join = ' FROM ' . BOOKACTI_TABLE_BOOKINGS . ' as B ' 
+				. ' JOIN ' . BOOKACTI_TABLE_EVENTS . ' as E ON B.event_id = E.id ' 
+				. ' JOIN ' . BOOKACTI_TABLE_ACTIVITIES . ' as A ON E.activity_id = A.id ' 
+				. ' JOIN ' . BOOKACTI_TABLE_TEMPLATES . ' as T ON E.template_id = T.id ';
 	
 	if( $filters[ 'event_group_id' ] || $filters[ 'in__event_group_id' ] || $filters[ 'not_in__event_group_id' ]
 	||  $filters[ 'group_category_id' ] || $filters[ 'in__group_category_id' ] || $filters[ 'not_in__group_category_id' ] ) {
-		$query .= ' LEFT JOIN ' . BOOKACTI_TABLE_BOOKING_GROUPS . ' as BG ON B.group_id = BG.id ';
+		$query_select .= ', BG.event_group_id ';
+		$query_join .= ' LEFT JOIN ' . BOOKACTI_TABLE_BOOKING_GROUPS . ' as BG ON B.group_id = BG.id ';
 	}
 	
 	if( $filters[ 'group_category_id' ] || $filters[ 'in__group_category_id' ] || $filters[ 'not_in__group_category_id' ] ) {
-		$query .= ' LEFT JOIN ' . BOOKACTI_TABLE_EVENT_GROUPS . ' as EG ON BG.event_group_id = EG.id ';
+		$query_select .= ', EG.category_id, EG.title as group_title ';
+		$query_join .= ' LEFT JOIN ' . BOOKACTI_TABLE_EVENT_GROUPS . ' as EG ON BG.event_group_id = EG.id ';
 	}
 			
-	$query	.= ' WHERE TRUE ';
+	$query = $query_select . $query_join . ' WHERE TRUE ';
 	
 	// Set current datetime
 	$timezone					= new DateTimeZone( bookacti_get_setting_value( 'bookacti_general_settings', 'timezone' ) );
@@ -2156,7 +2158,7 @@ function bookacti_cancel_booking_group_and_its_bookings( $booking_group_id ) {
  * @version 1.7.6
  * @global wpdb $wpdb
  * @param array $filters Use bookacti_format_booking_filters() before
- * @return object
+ * @return array
  */
 function bookacti_get_booking_groups( $filters ) {
 	global $wpdb;
@@ -2882,8 +2884,8 @@ function bookacti_delete_exports( $raw_filters = array() ) {
 	
 	global $wpdb;
 	
-	// Get expired booking and booking groups ids
-	$query	= 'SELECT id FROM ' . BOOKACTI_TABLE_EXPORTS . ' as XP WHERE TRUE ';
+	// Get exports matching the filters
+	$query = 'SELECT id FROM ' . BOOKACTI_TABLE_EXPORTS . ' as XP WHERE TRUE ';
 	
 	$variables = array();
 	
@@ -2951,7 +2953,7 @@ function bookacti_delete_exports( $raw_filters = array() ) {
 			$ids_placeholder_list .= ', %d';
 		}
 		
-		// Delete expired bookings
+		// Delete expired exports
 		$query= 'DELETE FROM ' . BOOKACTI_TABLE_EXPORTS . ' WHERE id IN( ' . $ids_placeholder_list . ' );';
 		$query = $wpdb->prepare( $query, $expired_ids );
 		$deleted = $wpdb->query( $query );

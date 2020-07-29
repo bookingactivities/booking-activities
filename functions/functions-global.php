@@ -1192,12 +1192,14 @@ function bookacti_display_field( $args ) {
 
 	// SELECT
 	else if( $args[ 'type' ] === 'select' ) {
+		$is_multiple = $args[ 'multiple' ] && ( $args[ 'multiple' ] !== 'maybe' || ( $args[ 'multiple' ] === 'maybe' && count( $args[ 'value' ] ) > 1 ) );
+		if( $is_multiple && strpos( '[]', $args[ 'name' ] ) === false ) { $args[ 'name' ] .= '[]'; }
 		?>
 		<select	name=	'<?php echo esc_attr( $args[ 'name' ] ); ?>' 
 				id=		'<?php echo esc_attr( $args[ 'id' ] ); ?>' 
 				class=	'bookacti-select <?php echo esc_attr( $args[ 'class' ] ); ?>' 
 				<?php if( ! empty( $args[ 'attr' ][ '<select>' ] ) ) { echo $args[ 'attr' ][ '<select>' ]; } ?>
-				<?php if( $args[ 'multiple' ] && $args[ 'multiple' ] !== 'maybe' ) { echo 'multiple'; } ?>
+				<?php if( $is_multiple ) { echo 'multiple'; } ?>
 				<?php if( $args[ 'required' ] ) { echo ' required'; } ?>
 		>
 		<?php foreach( $args[ 'options' ] as $option_id => $option_value ) { ?>
@@ -1217,12 +1219,12 @@ function bookacti_display_field( $args ) {
 	<?php 
 		if( $args[ 'multiple' ] === 'maybe' && count( $args[ 'options' ] ) > 1 ) { ?>
 			<span class='bookacti-multiple-select-container' >
-				<label for='bookacti-multiple-select-<?php echo esc_attr( $args[ 'id' ] ); ?>' ><span class='dashicons dashicons-plus' title='<?php esc_attr_e( 'Multiple selection', 'booking-activities' ); ?>'></span></label>
+				<label for='bookacti-multiple-select-<?php echo esc_attr( $args[ 'id' ] ); ?>' ><span class='dashicons dashicons-<?php echo $is_multiple ? 'minus' : 'plus';?>' title='<?php esc_attr_e( 'Multiple selection', 'booking-activities' ); ?>'></span></label>
 				<input type='checkbox' 
 					   class='bookacti-multiple-select' 
 					   id='bookacti-multiple-select-<?php echo esc_attr( $args[ 'id' ] ); ?>' 
 					   data-select-id='<?php echo esc_attr( $args[ 'id' ] ); ?>'
-					   style='display:none' />
+					   style='display:none' <?php checked( $is_multiple ) ?>/>
 			</span>
 	<?php 
 			// Add select multiple values instructions

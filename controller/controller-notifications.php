@@ -144,13 +144,12 @@ add_action( 'bookacti_booking_group_state_changed', 'bookacti_send_notification_
  * Send a notification to admin and customer when a booking is rescheduled
  * 
  * @since 1.2.1 (was bookacti_send_email_when_booking_is_rescheduled in 1.2.0)
- * @version 1.7.13
+ * @version 1.8.6
  * @param object $booking
  * @param object $old_booking
  * @param array $args
  */
 function bookacti_send_notification_when_booking_is_rescheduled( $booking, $old_booking, $args ) {
-	
 	// Do not send notification if explicitly said
 	if( isset( $args[ 'send_notifications' ] ) && ! $args[ 'send_notifications' ] ) { return; }
 	
@@ -168,8 +167,8 @@ function bookacti_send_notification_when_booking_is_rescheduled( $booking, $old_
 	if( $send_to === 'both' || $send_to === 'customer' ) {
 		$notification_id = 'customer_rescheduled_booking';
 		
-		// Temporarilly switch locale user default's
-		$locale	= apply_filters( 'bookacti_notification_locale', is_numeric( $booking->user_id ) ? bookacti_get_user_locale( $booking->user_id ) : bookacti_get_site_locale(), $notification_id, $booking->id, 'single', $notification_args );
+		// Temporarilly switch locale to the user's
+		$locale	= apply_filters( 'bookacti_notification_locale', is_numeric( $booking->user_id ) ? bookacti_get_user_locale( $booking->user_id ) : bookacti_get_site_locale(), $notification_id, $booking, 'single', $notification_args );
 		bookacti_switch_locale( $locale );
 
 		// Add reschedule specific tags
@@ -187,7 +186,7 @@ function bookacti_send_notification_when_booking_is_rescheduled( $booking, $old_
 		$notification_id = 'admin_rescheduled_booking';
 		
 		// Temporarilly switch locale user default's
-		$locale = apply_filters( 'bookacti_notification_locale', bookacti_get_site_locale(), $notification_id, $booking->id, 'single', $notification_args );
+		$locale = apply_filters( 'bookacti_notification_locale', bookacti_get_site_locale(), $notification_id, $booking, 'single', $notification_args );
 		bookacti_switch_locale( $locale );
 
 		// Add reschedule specific tags

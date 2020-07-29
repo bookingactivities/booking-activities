@@ -47,6 +47,7 @@
 .bookacti-tip-icon			{ display: inline-block; vertical-align: middle; margin: 0; }
 .bookacti-tip-icon			{ padding-left: 5px; }
 .bookacti-tip-icon:before	{ content:'\0043'; font-family: 'booking_activities_icons'; color: #565d61; font-weight: normal; font-size: 14px; cursor: help; vertical-align: middle; }
+.bookacti-tip-container ul  { list-style-type: disc; padding-inline-start: 20px; }
 
 /* Custom Scrollbar */
 .bookacti-custom-scrollbar::-webkit-scrollbar				{ width: 4px; height: 4px; }

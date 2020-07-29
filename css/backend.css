@@ -43,7 +43,8 @@ ul[id$='-select-box-results'] li[aria-disabled='true'] { display: none; }
 
 #bookacti-fatal-error			{ margin: 1em; }
 
-.bookacti-help-list				{ list-style-type: disc; padding-inline-start: 20px; }
+.bookacti-help-list		{ list-style-type: disc; padding-inline-start: 20px; }
+.bookacti-help-list ul	{ list-style-type: circle; padding-inline-start: 20px; margin-top: 3px; }
 
 
 /***** CALENDAR *****/

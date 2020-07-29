@@ -728,11 +728,12 @@ function bookacti_get_group_of_events( $group_id, $return_type = OBJECT ) {
 /**
  * Get groups of events data by template ids
  * @since 1.4.0 (was bookacti_get_groups_of_events_by_template and bookacti_get_groups_of_events_by_category)
- * @version 1.8.0
+ * @version 1.8.6
  * @global wpdb $wpdb
  * @param array $raw_args {
  *  @param array|int $templates
  *  @param array|int $group_categories
+ *  @param array|int event_groups
  *  @param array $availability_period array( 'start' => 'Y-m-d H:i:s', 'end' => 'Y-m-d H:i:s' )
  *  @param boolean|"bookable_only" $started
  *  @param boolean $inactive
@@ -743,6 +744,7 @@ function bookacti_get_groups_of_events( $raw_args ) {
 	$default_args = array(
 		'templates' => array(),
 		'group_categories' => array(),
+		'event_groups' => array(),
 		'availability_period' => array(),
 		'started' => 'bookable_only',
 		'inactive' => 0
@@ -808,6 +810,18 @@ function bookacti_get_groups_of_events( $raw_args ) {
 		}
 		$query .= ') ';
 		$variables = array_merge( $variables, $args[ 'group_categories' ] );
+	}
+
+	if( $args[ 'event_groups' ] ) {
+		$query .= ' AND G.id IN ( %d ';
+		$array_count = count( $args[ 'event_groups' ] );
+		if( $array_count >= 2 ) {
+			for( $i=1; $i<$array_count; ++$i ) {
+				$query .= ', %d ';
+			}
+		}
+		$query .= ') ';
+		$variables = array_merge( $variables, $args[ 'event_groups' ] );
 	}
 
 	// Make sure groups are in their template range
