@@ -1050,7 +1050,7 @@ function bookacti_display_field( $args ) {
 		}
 	}
 
-	// Duration
+	// DURATION
 	if( $args[ 'type' ] === 'duration' ) {
 		// Convert value from seconds
 		$duration = is_numeric( $args[ 'value' ] ) ? bookacti_format_duration( $args[ 'value' ], 'array' ) : array( 'days' => '', 'hours' => '', 'minutes' => '', 'seconds' => '' );
@@ -1194,6 +1194,7 @@ function bookacti_display_field( $args ) {
 	else if( $args[ 'type' ] === 'select' ) {
 		$is_multiple = $args[ 'multiple' ] && ( $args[ 'multiple' ] !== 'maybe' || ( $args[ 'multiple' ] === 'maybe' && count( $args[ 'value' ] ) > 1 ) );
 		if( $is_multiple && strpos( '[]', $args[ 'name' ] ) === false ) { $args[ 'name' ] .= '[]'; }
+		if( ! $is_multiple && is_array( $args[ 'value' ] ) ) { $args[ 'value' ] = reset( $args[ 'value' ] ); }
 		?>
 		<select	name=	'<?php echo esc_attr( $args[ 'name' ] ); ?>' 
 				id=		'<?php echo esc_attr( $args[ 'id' ] ); ?>' 
@@ -1209,7 +1210,7 @@ function bookacti_display_field( $args ) {
 					title='<?php echo esc_html( $option_value ); ?>' 
 					<?php } ?>
 					<?php if( ! empty( $args[ 'attr' ][ $option_id ] ) ) { echo $args[ 'attr' ][ $option_id ]; } ?>
-					<?php	if( $args[ 'multiple' ] ) { selected( true, in_array( $option_id, $args[ 'value' ], true ) ); }
+					<?php	if( $is_multiple ) { selected( true, in_array( $option_id, $args[ 'value' ], true ) ); }
 							else { selected( $args[ 'value' ], $option_id ); }?>
 			>
 					<?php echo esc_html( $option_value ); ?>
@@ -1819,7 +1820,7 @@ function bookacti_format_array_for_export( $array, $display_keys = false, $type 
 
 /**
  * Format datetime to be displayed in a human comprehensible way
- * @version 1.7.13
+ * @version 1.8.6
  * @param string $datetime Date format "Y-m-d H:i:s" is expected
  * @param string $format 
  * @return string
@@ -1830,7 +1831,12 @@ function bookacti_format_datetime( $datetime, $format = '' ) {
 		if( ! $format ) { $format = bookacti_get_message( 'date_format_long' ); }
 
 		// Force timezone to UTC to avoid offsets because datetimes should be displayed regarless of timezones
-		$datetime = date_i18n( $format, strtotime( $datetime . ' UTC' ) );
+		$dt = new DateTime( $datetime, new DateTimeZone( 'UTC' ) );
+		$timestamp = $dt->getTimestamp();
+		if( $timestamp === false ) { return $datetime; }
+		
+		// Do not use date_i18n() function to force the UTC timezone
+		$datetime = apply_filters( 'date_i18n', wp_date( $format, $timestamp, new DateTimeZone( 'UTC' ) ), $format, $timestamp, false );
 
 		// Encode to UTF8 to avoid any bad display of special chars
 		if( ! bookacti_is_utf8( $datetime ) ) { $datetime = utf8_encode( $datetime ); }

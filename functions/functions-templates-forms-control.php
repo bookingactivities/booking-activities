@@ -347,17 +347,20 @@ function bookacti_sanitize_event_data( $raw_data ) {
 /**
  * Validate event data
  * @since 1.8.0 (was bookacti_validate_event)
+ * @version 1.8.6
  * @param array $data
  * @return array
  */
 function bookacti_validate_event_data( $data ) {
 	// Get info required
-	$min_avail          = bookacti_get_min_availability( $data[ 'id' ] );
-	$min_period         = bookacti_get_min_period( NULL, $data[ 'id' ] );
-	$repeat_from_time   = $data[ 'repeat_from' ] ? strtotime( $data[ 'repeat_from' ] ) : '';
-	$repeat_to_time     = $data[ 'repeat_to' ] ? strtotime( $data[ 'repeat_to' ] ) : '';
-	$max_from           = $min_period ? strtotime( $min_period[ 'from' ] ) : '';
-	$min_to             = $min_period ? strtotime( $min_period[ 'to' ] ) : '';
+	$min_avail			= bookacti_get_min_availability( $data[ 'id' ] );
+	$min_period			= bookacti_get_min_period( NULL, $data[ 'id' ] );
+	
+	$utc_timezone		= new DateTimeZone( 'UTC' );
+	$repeat_from_dt		= $data[ 'repeat_from' ] ? new DateTime( $data[ 'repeat_from' ], $utc_timezone ) : '';
+	$repeat_to_dt		= $data[ 'repeat_to' ] ? new DateTime( $data[ 'repeat_to' ], $utc_timezone ) : '';
+	$max_from_dt		= $min_period ? new DateTime( $min_period[ 'from' ], $utc_timezone ) : '';
+	$min_to_dt			= $min_period ? new DateTime( $min_period[ 'to' ], $utc_timezone ) : '';
 	
 	// Init var to check with worst case
 	$isAvailSupToBookings			= $min_avail ? false : true;
@@ -367,8 +370,8 @@ function bookacti_validate_event_data( $data ) {
 	if( ! $isAvailSupToBookings ) {
 		if( intval( $data[ 'availability' ] ) >= intval( $min_avail ) ) { $isAvailSupToBookings = true; }
 	}
-	if( ! $isRepeatPeriodBoundingBookings && $repeat_from_time && $repeat_to_time && $max_from && $min_to ) {
-		if( $repeat_from_time <= $max_from && $repeat_to_time >= $min_to ) { $isRepeatPeriodBoundingBookings = true; }
+	if( ! $isRepeatPeriodBoundingBookings && $repeat_from_dt && $repeat_to_dt && $max_from_dt && $min_to_dt ) {
+		if( $repeat_from_dt <= $max_from_dt && $repeat_to_dt >= $min_to_dt ) { $isRepeatPeriodBoundingBookings = true; }
 	}
 	
 	// Return feedbacks
@@ -386,12 +389,14 @@ function bookacti_validate_event_data( $data ) {
 	if( ! $isRepeatPeriodBoundingBookings ){
 		$return_array[ 'status' ] = 'failed';
 		$date_format = get_option( 'date_format' );
-		$return_array[ 'from' ] = date( 'Y-m-d', $max_from );
-		$return_array[ 'to' ] = date( 'Y-m-d', $min_to );
+		$return_array[ 'from' ] = $max_from_dt ? $max_from_dt->format( 'Y-m-d' ) : '';
+		$return_array[ 'to' ] = $min_to_dt ? $min_to_dt->format( 'Y-m-d' ) : '';
+		$max_from_formatted = $max_from_dt ? apply_filters( 'date_i18n', wp_date( $date_format, $max_from_dt->getTimestamp(), $utc_timezone ), $date_format, $max_from_dt->getTimestamp(), false ) : '';
+		$min_to_formatted = $min_to_dt ? apply_filters( 'date_i18n', wp_date( $date_format, $min_to_dt->getTimestamp(), $utc_timezone ), $date_format, $min_to_dt->getTimestamp(), false ) : '';
 		$return_array[ 'errors' ][] = 'error_booked_events_out_of_period';
 		if( $return_array[ 'message' ] ) { $return_array[ 'message' ] .= '</li><li>'; }
 		/* translators: %1$s and %2$s are formatted dates */
-		$return_array[ 'message' ] .= sprintf( esc_html__( 'The repetition period must include all booked occurrences (from %1$s to %2$s).', 'booking-activities' ), date_i18n( $date_format, $max_from ), date_i18n( $date_format, $min_to ) );
+		$return_array[ 'message' ] .= sprintf( esc_html__( 'The repetition period must include all booked occurrences (from %1$s to %2$s).', 'booking-activities' ), $max_from_formatted, $min_to_formatted );
 	}
 
 	return apply_filters( 'bookacti_validate_event', $return_array, $data ) ;

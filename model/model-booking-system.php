@@ -760,10 +760,10 @@ function bookacti_get_groups_of_events( $raw_args ) {
 
 	$variables = array();
 
-	$query	= 'SELECT G.*, GE.start, GE.end '
+	$query	= 'SELECT G.*, GE.start, GE.end, C.template_id '
 			. ' FROM ' . BOOKACTI_TABLE_EVENT_GROUPS . ' as G ' 
-			. ' JOIN ' . BOOKACTI_TABLE_GROUP_CATEGORIES . ' as C '
-			. ' JOIN ' . BOOKACTI_TABLE_TEMPLATES . ' as T ';
+			. ' LEFT JOIN ' . BOOKACTI_TABLE_GROUP_CATEGORIES . ' as C ON C.id = G.category_id '
+			. ' LEFT JOIN ' . BOOKACTI_TABLE_TEMPLATES . ' as T ON T.id = C.template_id ';
 
 	// Join the meta table to filter groups already started
 	$query .= ' LEFT JOIN ( 
@@ -783,9 +783,7 @@ function bookacti_get_groups_of_events( $raw_args ) {
 					GROUP BY group_id
 				) as GE ON GE.group_id = G.id ';
 
-	$query .= ' WHERE C.id = G.category_id '
-			. ' AND C.template_id = T.id '
-			. ' AND GE.start IS NOT NULL '
+	$query .= ' WHERE GE.start IS NOT NULL '
 			. ' AND GE.end IS NOT NULL ';
 
 	if( $args[ 'templates' ] ) {

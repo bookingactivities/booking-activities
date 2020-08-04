@@ -296,9 +296,10 @@ add_filter( 'set-screen-option', 'bookacti_save_screen_options', 10, 3 );
 function bookacti_fill_notification_settings_page( $notification_id ) {
 	if( ! $notification_id ) { return; }
 	$recipient = substr( $notification_id, 0, 6 ) === 'admin_' ? 'admin' : 'customer';
+	$recipient_label = $recipient === 'admin' ? esc_html( 'Administrator', 'booking-activities' ) : esc_html( 'Customer', 'booking-activities' );
 	$notification_settings = bookacti_get_notification_settings( $notification_id );
 	?>
-		<h2><?php echo __( 'Notification', 'booking-activities' ) . ' - ' . $notification_settings[ 'title' ]; ?></h2>
+		<h2><?php echo esc_html__( 'Notification', 'booking-activities' ) . ' - ' . $recipient_label . ' - ' . $notification_settings[ 'title' ]; ?></h2>
 		
 		<p>
 			<a href='<?php echo esc_url( '?page=bookacti_settings&tab=notifications' ); ?>' >
@@ -311,7 +312,7 @@ function bookacti_fill_notification_settings_page( $notification_id ) {
 		<?php do_action( 'bookacti_notification_settings_page_before', $notification_settings, $notification_id ); ?>
 
 		<h3><?php esc_html_e( 'Global notifications settings', 'booking-activities' ); ?></h3>
-		<table class='form-table' id='bookacti-notification-global-settings' >
+		<table class='form-table' id='bookacti-notification-global-settings<?php echo $recipient === 'admin' ? '-admin' : ''; ?>' >
 			<tbody>
 				<tr>
 					<th scope='row' ><?php esc_html_e( 'Enable', 'booking-activities' ); ?></th>
@@ -333,7 +334,7 @@ function bookacti_fill_notification_settings_page( $notification_id ) {
 		</table>
 
 		<h3><?php esc_html_e( 'Email notifications settings', 'booking-activities' ); ?></h3>
-		<table class='form-table' id='bookacti-notification-email-settings' >
+		<table class='form-table' id='bookacti-notification-email-settings<?php echo $recipient === 'admin' ? '-admin' : ''; ?>' >
 			<tbody>
 				<?php 
 				do_action( 'bookacti_notification_settings_page_email_before', $notification_settings, $notification_id );

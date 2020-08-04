@@ -320,12 +320,17 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 == Changelog ==
 
 = 1.8.6 =
+* Tweak - Add a notification to the customer when a booking becomes Delivered
+* Tweak - Add a notification to the customer when he requests a refund
+* Tweak - The booking refund request notification sent to the administrator can be managed from the Notifications settings
+* Tweak - Add notification tags: calendar_id, activity_id, activity_title, event_booking_list, refund_message
 * Fix - Display availabilities on the left if events overlap on agenda views (regression)
 * Fix - In-cart bookings were not expired by cron if WooCommerce's and Booking Activities' tables have incompatible collations
 * Fix - Error involving a MariaDB limitation (cannot convert 1970-01-01 00:00:00 to timestamp)
 * Fix - Error if day begin is same as day end
 * Fix - Display switchable select multiple fields as multiple by default if the value array contains multiple values 
 * Fix - FullCalendar's titleRangeSeparator may display incorrect characters instead of a hyphen
+* Fix - Use wp_date instead of date_i18n to avoid incorrect date formatting due to timezone inconsistencies on certain server configuration
 * Dev - Duration fields accept min, max and step parameters, to the closest unit only (day, hour, minute)
 * Dev - Pass the booking instead of the booking ID in most of the notification hooks
 

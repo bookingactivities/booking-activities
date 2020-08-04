@@ -82,6 +82,8 @@ ul[id$='-select-box-results'] li[aria-disabled='true'] { display: none; }
 .bookacti-settings-table td		{ vertical-align: middle; padding: 5px 10px; }
 .bookacti-settings-table tbody tr:nth-child( 2n+1 )	{ background-color: #f9f9f9; }
 .bookacti-settings-table img	{ max-height: 24px; max-width: 24px; }
+
+#bookacti-notifications-list-column-title { width: 350px; }
 .bookacti-settings-table .bookacti-notifications-list-column-value-title a { text-decoration: none; font-weight: bold; }
 .bookacti-notifications-list-column-value-actions .button { vertical-align: middle; }
 
