@@ -440,9 +440,9 @@ function bookacti_get_notifications_tags( $notification_id = '' ) {
 		$booking_list_shortcode_docs = '<a href="https://booking-activities.fr/en/docs/user-documentation/get-started-with-booking-activities/display-customers-bookings-list-on-the-frontend/" target="_blank">' . esc_html__( '[bookingactivities_list] shortcode parameters', 'booking-activities' ) . '</a>';
 		$tags[ '{booking_admin_url}' ]	= esc_html__( 'URL to the booking admin panel.', 'booking-activities' ) . ' ' . esc_html__( 'View only the current booking.', 'booking-activities' );
 		$tags[ '{event_admin_url}' ]	= esc_html__( 'URL to the booking admin panel.', 'booking-activities' ) . ' ' . esc_html__( 'View all bookings for the current event.', 'booking-activities' );
-		$tags[ '{event_booking_list}{/event_booking_list}' ] = esc_html__( 'Event booking list (table)', 'booking-activities' ) . ' ' 
+		$tags[ '{event_booking_list}{/event_booking_list}' ] = esc_html__( 'Event booking list (table)', 'booking-activities' ) . '. ' 
 															/* translators: %s = "[bookingactivities_list] shortcode parameters" (link to the documentation) */
-															.  sprintf( esc_html__( '(use %s between the tags. E.g.:', 'booking-activities' ), $booking_list_shortcode_docs ) . ' <code>{event_booking_list}status="delivered, booked, pending" columns="booking_id, quantity, customer_display_name, customer_email"{/event_booking_list}</code>';
+															.  sprintf( esc_html__( 'Use %s between the tags. E.g.:', 'booking-activities' ), $booking_list_shortcode_docs ) . ' <code>{event_booking_list}status="delivered, booked, pending" columns="booking_id, quantity, customer_display_name, customer_email"{/event_booking_list}</code>';
 	}
 	
 	if( strpos( $notification_id, '_rescheduled' ) !== false ) {

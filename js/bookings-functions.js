@@ -457,6 +457,26 @@ function bookacti_refresh_list_table_hidden_columns() {
 }
 
 
+/**
+ * Add a frame around groups in booking list
+ * @since 1.8.6
+ */
+function bookacti_refresh_booking_group_frame() {
+	$j( '.bookacti-gouped-booking' ).removeClass( 'bookacti-gouped-booking-first bookacti-gouped-booking-last' );
+	
+	var group_id = 0;
+	$j( '.bookacti-gouped-booking' ).each( function() {
+		if( group_id === $j( this ).data( 'booking-group-id' ) ) { return true; } // skip
+		group_id = $j( this ).data( 'booking-group-id' );
+		console.log( 'group_id', group_id );
+		console.log( 'first length', $j( '.bookacti-gouped-booking[data-booking-group-id="' + group_id + '"]:not(.hidden):first' ).length );
+		console.log( 'last length', $j( '.bookacti-gouped-booking[data-booking-group-id="' + group_id + '"]:not(.hidden):last' ).length );
+		$j( '.bookacti-gouped-booking[data-booking-group-id="' + group_id + '"]:not(.hidden):first' ).addClass( 'bookacti-gouped-booking-first' );
+		$j( '.bookacti-gouped-booking[data-booking-group-id="' + group_id + '"]:not(.hidden):last' ).addClass( 'bookacti-gouped-booking-last' );
+	});
+}
+
+
 
 
 // BOOK AN EVENT

@@ -1,7 +1,7 @@
 <?php
 /**
  * Booking Activities landing page
- * @version 1.8.0
+ * @version 1.8.6
  */
 
 // Exit if accessed directly
@@ -75,7 +75,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 					'screenshot' => true,
 					'light_color' => '#91f2d2',
 					'dark_color' => '#264037',
-					'excerpt' => esc_html__( 'Send notifications and booking reminders via email, SMS and Push. Set specific messages for each event and use them in your notifications.', 'booking-activities' ),
+					'excerpt' => esc_html__( 'Set up automatic notifications to be sent before or after the bookings. All notifications can be configured per activity, and sent via email, SMS and Push.', 'booking-activities' ),
 					'price' => '49.00€',
 					'promo' => $promo,
 					'promo_price' => $promo_price_39

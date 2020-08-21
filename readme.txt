@@ -3,7 +3,7 @@ Contributors: bookingactivities, yoancutillas
 Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=7EKU434L7NEVC
 Tags: booking, reservation, booking form, woocommerce booking, booking events
 Requires at least: 3.6
-Tested up to: 5.4
+Tested up to: 5.5
 Requires PHP: 5.3
 Stable tag: 1.8.5
 License: GPLv3 or later
@@ -331,6 +331,8 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 * Fix - Display switchable select multiple fields as multiple by default if the value array contains multiple values 
 * Fix - FullCalendar's titleRangeSeparator may display incorrect characters instead of a hyphen
 * Fix - Use wp_date instead of date_i18n to avoid incorrect date formatting due to timezone inconsistencies on certain server configuration
+* Fix - Irrelevant blue frame around groups in booking list if multiple groups were displayed one after the other
+* Fix - The group_by parameter was not kept in the backend booking list pagination
 * Dev - Duration fields accept min, max and step parameters, to the closest unit only (day, hour, minute)
 * Dev - Pass the booking instead of the booking ID in most of the notification hooks
 

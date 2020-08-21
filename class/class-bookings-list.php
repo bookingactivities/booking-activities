@@ -223,7 +223,7 @@ if( ! class_exists( 'Bookings_List_Table' ) ) {
 		
 		/**
 		 * Get booking list items. Parameters can be passed in the URL.
-		 * @version 1.8.0
+		 * @version 1.8.6
 		 * @access public
 		 * @return array
 		 */
@@ -291,6 +291,7 @@ if( ! class_exists( 'Bookings_List_Table' ) ) {
 					$group_id_link	= '<a href="' . admin_url( 'admin.php?page=bookacti_bookings&booking_group_id=' . $group->id . '&group_by=booking_group&event_group_id=' . $group->event_group_id ) . '">' . $group->id . '</a>';
 					
 					$raw_id			= $group->id;
+					$raw_group_id	= $group->id;
 					$tr_class		= 'bookacti-booking-group';
 					$id				= $group_id_link . '<span class="bookacti-booking-group-indicator">' . esc_html_x( 'Group', 'noun', 'booking-activities' ) . '</span>';
 					$user_id		= $group->user_id;
@@ -313,6 +314,7 @@ if( ! class_exists( 'Bookings_List_Table' ) ) {
 					$group_id_link	= '<a href="' . admin_url( 'admin.php?page=bookacti_bookings&booking_group_id=' . $booking->group_id . '&group_by=booking_group&event_group_id=' . ( $group ? $group->event_group_id : '' ) ) . '">' . $booking->group_id . '</a>';
 					
 					$raw_id			= $booking->id;
+					$raw_group_id	= $booking->group_id ? $booking->group_id : 0;
 					$tr_class		= $booking->group_id ? 'bookacti-single-booking bookacti-gouped-booking bookacti-booking-group-id-' . $booking->group_id : 'bookacti-single-booking';
 					$id				= $booking->group_id ? $booking_id_link . '<span class="bookacti-booking-group-id" >' . $group_id_link . '</span>' : $booking_id_link;
 					$user_id		= $booking->user_id;
@@ -397,6 +399,7 @@ if( ! class_exists( 'Bookings_List_Table' ) ) {
 					'booking_type'	=> $booking_type,
 					'id'			=> $id,
 					'raw_id'		=> $raw_id,
+					'raw_group_id'	=> $raw_group_id,
 					'user_id'		=> $user_id,
 					'customer'		=> $customer,
 					'email'			=> $email,
@@ -536,14 +539,16 @@ if( ! class_exists( 'Bookings_List_Table' ) ) {
 		
 		/**
 		 * Returns content for a single row of the table
-		 * 
-		 * @version 1.3.0
+		 * @version 1.8.6
 		 * @access public
 		 * @param array $item The current item
 		 */
 		public function get_single_row( $item ) {
 			$class = $item[ 'tr_class' ] ? $item[ 'tr_class' ] : '';
-			$row  = '<tr class="' . $class . '">';
+			$tr_data = $item[ 'raw_id' ] ? ' data-booking-id="' . $item[ 'raw_id' ] . '"' : '';
+			$tr_data .= $item[ 'raw_group_id' ] ? ' data-booking-group-id="' . $item[ 'raw_group_id' ] . '"' : '';
+			
+			$row  = '<tr class="' . $class . '" ' . $tr_data . '>';
 			$row .= $this->get_single_row_columns( $item );
 			$row .= '</tr>';
 			
@@ -615,7 +620,10 @@ if( ! class_exists( 'Bookings_List_Table' ) ) {
 		 */
 		public function single_row( $item ) {
 			$class = $item[ 'tr_class' ] ? $item[ 'tr_class' ] : '';
-			echo '<tr class="' . $class . '">';
+			$tr_data = $item[ 'raw_id' ] ? ' data-booking-id="' . $item[ 'raw_id' ] . '"' : '';
+			$tr_data .= $item[ 'raw_group_id' ] ? ' data-booking-group-id="' . $item[ 'raw_group_id' ] . '"' : '';
+			
+			echo '<tr class="' . $class . '" ' . $tr_data . '>';
 			$this->single_row_columns( $item );
 			echo '</tr>';
 		}
