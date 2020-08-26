@@ -157,19 +157,15 @@ label[for="bookacti-booking-filter-dates-to"] + input#bookacti-booking-filter-da
 .wp-admin a.bookacti-show-booking-group-bookings.active:after								{ color: #fff; }
 #bookacti-booking-list-container .bookacti-gouped-booking:not(.hidden) .check-column		{ border-left: 2px solid #3689b1; }
 #bookacti-booking-list-container .bookacti-gouped-booking:not(.hidden) .column-actions		{ border-right: 2px solid #3689b1; }
-#bookacti-booking-list-container tbody#the-list > .bookacti-gouped-booking:last-child td,		
-#bookacti-booking-list-container tbody#the-list > .bookacti-gouped-booking:last-child th	{ border-bottom: 2px solid #3689b1 !important; }
-#bookacti-booking-list-container tbody#the-list > .bookacti-gouped-booking:first-child td,
-#bookacti-booking-list-container tbody#the-list > .bookacti-gouped-booking:first-child th,
+#bookacti-booking-list-container tbody#the-list > .bookacti-gouped-booking-last td,		
+#bookacti-booking-list-container tbody#the-list > .bookacti-gouped-booking-last th			{ border-bottom: 2px solid #3689b1 !important; }
+#bookacti-booking-list-container tbody#the-list > .bookacti-gouped-booking-first td,
+#bookacti-booking-list-container tbody#the-list > .bookacti-gouped-booking-first th,
 #bookacti-booking-list-container .bookacti-booking-group + tr.bookacti-gouped-booking:not(.hidden) td,
-#bookacti-booking-list-container .bookacti-booking-group + tr.bookacti-gouped-booking:not(.hidden) th,
-#bookacti-booking-list-container .bookacti-gouped-booking:not(.hidden) + tr.bookacti-booking-group td,
-#bookacti-booking-list-container .bookacti-gouped-booking:not(.hidden) + tr.bookacti-booking-group th,
-#bookacti-booking-list-container .bookacti-gouped-booking:not(.hidden) + tr.bookacti-single-booking:not(.bookacti-gouped-booking) td,
-#bookacti-booking-list-container .bookacti-gouped-booking:not(.hidden) + tr.bookacti-single-booking:not(.bookacti-gouped-booking) th { border-top: 2px solid #3689b1; }
-#bookacti-booking-list-container tbody#the-list > .bookacti-gouped-booking:first-child:not(.hidden) th.check-column,
+#bookacti-booking-list-container .bookacti-booking-group + tr.bookacti-gouped-booking:not(.hidden) th { border-top: 2px solid #3689b1; }
+#bookacti-booking-list-container tbody#the-list > .bookacti-gouped-booking-first th.check-column,
 #bookacti-booking-list-container .bookacti-booking-group + tr.bookacti-gouped-booking:not(.hidden) th.check-column			{ position: relative; }
-#bookacti-booking-list-container tbody#the-list > .bookacti-gouped-booking:first-child:not(.hidden) th.check-column:before,
+#bookacti-booking-list-container tbody#the-list > .bookacti-gouped-booking-first th.check-column:before,
 #bookacti-booking-list-container .bookacti-booking-group + tr.bookacti-gouped-booking:not(.hidden) th.check-column:before	{ content: 'group'; position: absolute; top: 0; left: 0; padding: 0 5px 2px 3px; font-size: 0.8em; font-style: italic; background-color: #3689b1; color: #fff; border-bottom-right-radius: 4px; }
 
 .bookacti-booking-primary-data-container	{ display: none; margin-left: 10px; }

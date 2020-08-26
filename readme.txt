@@ -3,9 +3,9 @@ Contributors: bookingactivities, yoancutillas
 Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=7EKU434L7NEVC
 Tags: booking, reservation, booking form, woocommerce booking, booking events
 Requires at least: 3.6
-Tested up to: 5.4
+Tested up to: 5.5
 Requires PHP: 5.3
-Stable tag: 1.8.5
+Stable tag: 1.8.6
 License: GPLv3 or later
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
 
@@ -81,7 +81,7 @@ Try this reservation tool live on the [demo website](http://demo.booking-activit
 * **Automatic emails** are sent to both administrator and customer when a booking is made, when its state changes, and when it is rescheduled
 * **Fully customize** and configure all your email notifications
 * In multilangual sites, emails are sent to your customers **in their own language**
-* *Send notifications and **reminders** via email, **SMS and ★ Push**, and set **★ event-specific messages** thanks to [Notification Pack](https://booking-activities.fr/en/downloads/notification-pack/?utm_source=wp-plugin-page&utm_medium=wordpress&utm_campaign=notification-pack&utm_content=readme) add-on*
+* *Send activity-specific notifications and **reminders** via email, **SMS and ★ Push** thanks to [Notification Pack](https://booking-activities.fr/en/downloads/notification-pack/?utm_source=wp-plugin-page&utm_medium=wordpress&utm_campaign=notification-pack&utm_content=readme) add-on*
 
 **Translation ready**
 
@@ -105,7 +105,7 @@ See the whole [features list here](https://booking-activities.fr/en/documentatio
 * **[Advanced Forms](https://booking-activities.fr/en/downloads/advanced-forms/?utm_source=wp-plugin-page&utm_medium=wordpress&utm_campaign=advanced-forms&utm_content=readme)**: Add any (paid) custom fields to your booking forms
 * **[Display Pack](https://booking-activities.fr/en/downloads/display-pack/?utm_source=wp-plugin-page&utm_medium=wordpress&utm_campaign=display-pack&utm_content=readme)**: Customize your calendars or set alternative display (datepicker)
 * **[Prices and Credits](https://booking-activities.fr/en/downloads/prices-and-credits/?utm_source=wp-plugin-page&utm_medium=wordpress&utm_campaign=prices-and-credits&utm_content=readme)**: Set per event prices, decreasing prices, price categories (adults, children, etc.), pay with credits
-* **[Notification Pack](https://booking-activities.fr/en/downloads/notification-pack/?utm_source=wp-plugin-page&utm_medium=wordpress&utm_campaign=notification-pack&utm_content=readme)**: Send notifications and booking reminders by email, SMS and Push
+* **[Notification Pack](https://booking-activities.fr/en/downloads/notification-pack/?utm_source=wp-plugin-page&utm_medium=wordpress&utm_campaign=notification-pack&utm_content=readme)**: Send activity-specific notifications and booking reminders by email, SMS and Push
 * **[Order for Customers](https://booking-activities.fr/en/downloads/order-for-customers/?utm_source=wp-plugin-page&utm_medium=wordpress&utm_campaign=order-for-customers&utm_content=readme)**: You can book / place an order in the name of your customers
 
 See the whole [add-ons list here](https://booking-activities.fr/en/add-ons/?utm_source=wp-plugin-page&utm_medium=wordpress&utm_content=readme)
@@ -318,6 +318,23 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 
 
 == Changelog ==
+
+= 1.8.6 - 2020/08/26 =
+* Tweak - Add a notification to the customer when a booking becomes Delivered
+* Tweak - Add a notification to the customer when he requests a refund
+* Tweak - The booking refund request notification sent to the administrator can be managed from the Notifications settings
+* Tweak - Add notification tags: calendar_id, activity_id, activity_title, event_admin_url, event_booking_list, refund_message
+* Fix - Display availabilities on the left if events overlap on agenda views (regression)
+* Fix - In-cart bookings were not expired by cron if WooCommerce's and Booking Activities' tables have incompatible collations
+* Fix - Error involving a MariaDB limitation (cannot convert 1970-01-01 00:00:00 to timestamp)
+* Fix - Error if day begin is same as day end
+* Fix - Display switchable select multiple fields as multiple by default if the value array contains multiple values 
+* Fix - FullCalendar's titleRangeSeparator may display incorrect characters instead of a hyphen
+* Fix - Use wp_date instead of date_i18n to avoid incorrect date formatting due to timezone inconsistencies on certain server configuration
+* Fix - Irrelevant blue frame around groups in booking list if multiple groups were displayed one after the other
+* Fix - The group_by parameter was not kept in the backend booking list pagination
+* Dev - Duration fields accept min, max and step parameters, to the closest unit only (day, hour, minute)
+* Dev - Pass the booking instead of the booking ID in most of the notification hooks
 
 = 1.8.5 - 2020/07/01 =
 * Tweak - The {booking_admin_url} notification tag URL now redirects to a page where only the desired booking is displayed in the list

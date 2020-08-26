@@ -74,21 +74,59 @@ function bookacti_shortcode_login_form( $raw_atts = array(), $content = null, $t
 /**
  * Display a user related booking list via shortcode
  * @since 1.7.4 (was bookacti_shortcode_booking_list)
- * @version 1.8.0
- * @param array $atts [user_id, per_page, status, and any booking filter such as 'from', 'to', 'activities'...]
+ * @version 1.8.6
+ * @param array $raw_atts [user_id, per_page, status, and any booking filter such as 'from', 'to', 'activities'...]
  * @param string $content
  * @param string $tag Should be "bookingactivities_list"
  * @return string The booking list corresponding to given parameters
  */
-function bookacti_shortcode_booking_list( $atts = array(), $content = null, $tag = '' ) {
+function bookacti_shortcode_booking_list( $raw_atts = array(), $content = null, $tag = '' ) {
 	// Normalize attribute keys, lowercase
-    $atts = array_change_key_case( (array) $atts, CASE_LOWER );
+    $raw_atts = array_change_key_case( (array) $raw_atts, CASE_LOWER );
 	
 	// If the user is not logged in, and if a login form is defined, show it instead of the booking list
-	if( ! is_user_logged_in() && ! empty( $atts[ 'login_form' ] ) ) {
-		$atts[ 'form' ] = $atts[ 'login_form' ];
-		return bookacti_shortcode_login_form( $atts, $content, $tag );
+	if( ! is_user_logged_in() && ! empty( $raw_atts[ 'login_form' ] ) ) {
+		$raw_atts[ 'form' ] = $raw_atts[ 'login_form' ];
+		return bookacti_shortcode_login_form( $raw_atts, $content, $tag );
 	}
+	
+	$booking_list = '';
+	
+	// Sanitize the attributes
+	$atts = bookacti_sanitize_booking_list_shortcode_attributes( $raw_atts );
+	
+	if( $atts !== false ) {
+		$templates = array();
+		if( isset( $atts[ 'templates' ] ) ) { 
+			$templates = $atts[ 'templates' ];
+			unset( $atts[ 'templates' ] );
+		}
+
+		// Format booking filters
+		$filters = bookacti_format_booking_filters( $atts );
+
+		// Allow to filter by any template
+		if( ! empty( $templates ) && is_array( $templates ) ) { $filters[ 'templates' ] = $templates; }
+
+		// Let third party change the filters
+		$filters = apply_filters( 'bookacti_user_booking_list_booking_filters', $filters, $atts, $content );
+
+		$booking_list = bookacti_get_user_booking_list( $filters, $atts[ 'columns' ], $atts[ 'per_page' ] );
+	}
+	
+	return apply_filters( 'bookacti_shortcode_' . $tag . '_output', $booking_list, $raw_atts, $content );
+}
+
+
+/**
+ * Sanitize booking list shorcode attributes
+ * @since 1.8.6
+ * @param array $atts
+ * @return array|false
+ */
+function bookacti_sanitize_booking_list_shortcode_attributes( $atts ) {
+	// Normalize attribute keys, lowercase
+    $atts = array_change_key_case( (array) $atts, CASE_LOWER );
 	
 	// Format 'user_id' attribute
 	if( isset( $atts[ 'user_id' ] ) ) {
@@ -108,7 +146,7 @@ function bookacti_shortcode_booking_list( $atts = array(), $content = null, $tag
 		'group_by'	=> 'booking_group',
 		'columns'	=> bookacti_get_user_booking_list_default_columns()
 	) );
-    $atts = shortcode_atts( $default_atts, $atts, $tag );
+    $atts = shortcode_atts( $default_atts, $atts, 'bookingactivities_list' );
 	
 	// Format values
 	$atts = bookacti_format_string_booking_filters( $atts );
@@ -116,7 +154,7 @@ function bookacti_shortcode_booking_list( $atts = array(), $content = null, $tag
 	
 	// If the user ID is not specified
 	if( ! is_user_logged_in() && empty( $atts[ 'user_id' ] ) && empty( $atts[ 'in__user_id' ] ) && empty( $atts[ 'not_in__user_id' ] ) ) {
-		return apply_filters( 'bookacti_shortcode_' . $tag . '_output', '', $atts, $content );
+		return false;
 	}
 	
 	if( $atts[ 'user_id' ] === 'all'
@@ -125,22 +163,5 @@ function bookacti_shortcode_booking_list( $atts = array(), $content = null, $tag
 	
 	if( empty( $atts[ 'columns' ] ) ) { $atts[ 'columns' ] = $default_atts[ 'columns' ]; }
 	
-	$templates = array();
-	if( isset( $atts[ 'templates' ] ) ) { 
-		$templates = $atts[ 'templates' ];
-		unset( $atts[ 'templates' ] );
-	}
-	
-	// Format booking filters
-	$filters = bookacti_format_booking_filters( $atts );
-	
-	// Allow to filter by any template
-	if( ! empty( $templates ) && is_array( $templates ) ) { $filters[ 'templates' ] = $templates; }
-	
-	// Let third party change the filters
-	$filters = apply_filters( 'bookacti_user_booking_list_booking_filters', $filters, $atts, $content );
-	
-	$booking_list = bookacti_get_user_booking_list( $filters, $atts[ 'columns' ], $atts[ 'per_page' ] );
-	
-	return apply_filters( 'bookacti_shortcode_' . $tag . '_output', $booking_list, $atts, $content );
+	return $atts;
 }

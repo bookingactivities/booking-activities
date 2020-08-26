@@ -2,7 +2,7 @@
 /**
  * Form editor page
  * @since 1.5.0
- * @version 1.7.18
+ * @version 1.8.6
  */
 
 // Exit if accessed directly
@@ -361,7 +361,7 @@ if( ! $form ) { exit; }
 																	<?php
 																		$args = array( 
 																			'type'		=> 'select',
-																			'name'		=> 'promo_select2',
+																			'name'		=> 'promo_select',
 																			'options'	=> array( 
 																				'value1' => esc_html__( 'Any value', 'booking-activities' ),
 																				'value2' => esc_html__( 'Fully customizable', 'booking-activities' ),

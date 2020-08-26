@@ -975,7 +975,7 @@ function bookacti_dialog_reschedule_booking( booking_id ) {
 /**
  * Delete a booking or a booking group
  * @since 1.5.0
- * @version 1.8.3
+ * @version 1.8.6
  * @param {int} booking_id
  * @param {string} booking_type
  */
@@ -1049,6 +1049,8 @@ function bookacti_dialog_delete_booking( booking_id, booking_type ) {
 							
 							// Remove the booking row
 							row.animate( {'opacity': 0}, function() { row.children('td, th').animate({ 'padding': 0 }).wrapInner('<div></div>').children().slideUp(function() { row.remove(); }); });
+							
+							$j( 'body' ).trigger( 'bookacti_booking_deleted', [ booking_id, booking_type, response ] );
 							
 						} else if( response.status === 'failed' ) {
 							var error_message = typeof response.message !== 'undefined' ? response.message : bookacti_localized.error;

@@ -113,7 +113,7 @@ $j( document ).ready( function() {
 
 /**
  * Initialize and display the template calendar
- * @version 1.8.5
+ * @version 1.8.6
  * @param {HTMLElement} calendar
  */
 function bookacti_load_template_calendar( calendar ) {
@@ -145,12 +145,12 @@ function bookacti_load_template_calendar( calendar ) {
             end: availability_period.end ? moment.utc( availability_period.end.substr( 0, 10 ) ).add( 1, 'days' ) : moment.utc( $j( '#bookacti-template-picker :selected' ).data( 'template-end' ) ).add( 1, 'days' )
         },
 		
-		nowIndicator:           0,
-		weekNumbers:	        0,
-		weekNumbersWithinDays:	1,
-		navLinks:		        1,
+		nowIndicator:           false,
+		weekNumbers:	        false,
+		weekNumbersWithinDays:	true,
+		navLinks:		        true,
 
-		slotEventOverlap:		0,
+		slotEventOverlap:		false,
 		eventLimit:				false,
 		eventLimitClick:		'popover',
 
@@ -180,13 +180,27 @@ function bookacti_load_template_calendar( calendar ) {
 			callback( [] );
 		},
 
-
-		viewRender: function( view ) {
+		
+		/**
+		 * When a view is rendered
+		 * @version 1.8.6
+		 * @param {object} view
+		 * @param {HTMLElement} element
+		 */
+		viewRender: function( view, element ) {
 			// Maybe fetch the events on the view (if not already)
 			if( bookacti.load_events === true ) { 
 				var interval = { 'start': moment.utc( moment.utc( view.intervalStart ).clone().locale( 'en' ).format( 'YYYY-MM-DD' ) + ' 00:00:00' ).locale( 'en' ), 'end': moment.utc( moment.utc( view.intervalEnd ).clone().locale( 'en' ).subtract( 1, 'days' ).format( 'YYYY-MM-DD' ) + ' 23:59:59' ).locale( 'en' ) };
 				bookacti_fetch_events_from_interval( $j( '#bookacti-template-calendar' ), interval );
 			}
+			
+			// Add a class if the events are overlapping
+			if( view.name.indexOf( 'agenda' ) > -1 ){
+				var event_overlap = typeof display_data.slotEventOverlap !== 'undefined' ? display_data.slotEventOverlap : calendar.fullCalendar( 'option', 'slotEventOverlap' );
+				if( event_overlap ) { element.addClass( 'bookacti-events-overlap' ); }
+			}
+			
+			calendar.trigger( 'bookacti_view_render', [ view, element ] );
 		},
 
 		

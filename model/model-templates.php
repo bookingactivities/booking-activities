@@ -1527,7 +1527,7 @@ function bookacti_get_group_category_template_id( $category_id ) {
 
 /**
  * Get templates
- * @version 1.7.3
+ * @version 1.8.6
  * @global wpdb $wpdb
  * @param array $template_ids
  * @param boolean $ignore_permissions

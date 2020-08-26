@@ -289,22 +289,21 @@ add_filter( 'set-screen-option', 'bookacti_save_screen_options', 10, 3 );
 
 /**
  * Create a settings page for each notification
- * 
- * @since 1.2.1 (was bookacti_fill_notifications_settings_section in 1.2.1)
+ * @since 1.2.1 (was bookacti_fill_notifications_settings_section)
+ * @version 1.8.6
  * @param string $notification_id
  */
 function bookacti_fill_notification_settings_page( $notification_id ) {
-	
 	if( ! $notification_id ) { return; }
-	
+	$recipient = substr( $notification_id, 0, 6 ) === 'admin_' ? 'admin' : 'customer';
+	$recipient_label = $recipient === 'admin' ? esc_html( 'Administrator', 'booking-activities' ) : esc_html( 'Customer', 'booking-activities' );
 	$notification_settings = bookacti_get_notification_settings( $notification_id );
 	?>
-
-		<h2><?php echo __( 'Notification', 'booking-activities' ) . ' - ' . $notification_settings[ 'title' ]; ?></h2>
-
+		<h2><?php echo esc_html__( 'Notification', 'booking-activities' ) . ' - ' . $recipient_label . ' - ' . $notification_settings[ 'title' ]; ?></h2>
+		
 		<p>
 			<a href='<?php echo esc_url( '?page=bookacti_settings&tab=notifications' ); ?>' >
-				<?php _e( 'Go back to notifications settings', 'booking-activities' ); ?>
+				<?php esc_html_e( 'Go back to notifications settings', 'booking-activities' ); ?>
 			</a>
 		</p>
 
@@ -312,19 +311,19 @@ function bookacti_fill_notification_settings_page( $notification_id ) {
 
 		<?php do_action( 'bookacti_notification_settings_page_before', $notification_settings, $notification_id ); ?>
 
-		<h3><?php _e( 'Global notifications settings', 'booking-activities' ); ?></h3>
-		<table class='form-table' id='bookacti-notification-global-settings' >
+		<h3><?php esc_html_e( 'Global notifications settings', 'booking-activities' ); ?></h3>
+		<table class='form-table' id='bookacti-notification-global-settings<?php echo $recipient === 'admin' ? '-admin' : ''; ?>' >
 			<tbody>
 				<tr>
-					<th scope='row' ><?php _e( 'Enable', 'booking-activities' ); ?></th>
+					<th scope='row' ><?php esc_html_e( 'Enable', 'booking-activities' ); ?></th>
 					<td>
 						<?php 
 						$args = array(
 							'type'	=> 'checkbox',
 							'name'	=> 'bookacti_notification[active]',
-							'id'	=> 'bookacti_notification_' . $notification_id . 'active',
+							'id'	=> 'bookacti_notification_active',
 							'value'	=> $notification_settings[ 'active' ] ? $notification_settings[ 'active' ] : 0,
-							'tip'	=> __( 'Enable or disable this automatic notification.', 'booking-activities' )
+							'tip'	=> esc_html__( 'Enable or disable this automatic notification.', 'booking-activities' )
 						);
 						bookacti_display_field( $args );
 						?>
@@ -334,11 +333,10 @@ function bookacti_fill_notification_settings_page( $notification_id ) {
 			</tbody>
 		</table>
 
-		<h3><?php _e( 'Email notifications settings', 'booking-activities' ); ?></h3>
-		<table class='form-table' id='bookacti-notification-email-settings' >
+		<h3><?php esc_html_e( 'Email notifications settings', 'booking-activities' ); ?></h3>
+		<table class='form-table' id='bookacti-notification-email-settings<?php echo $recipient === 'admin' ? '-admin' : ''; ?>' >
 			<tbody>
 				<?php 
-
 				do_action( 'bookacti_notification_settings_page_email_before', $notification_settings, $notification_id );
 
 				if( substr( $notification_id, 0, 8 ) !== 'customer' ) { ?>
@@ -349,9 +347,9 @@ function bookacti_fill_notification_settings_page( $notification_id ) {
 						$args = array(
 							'type'	=> 'text',
 							'name'	=> 'bookacti_notification[email][to]',
-							'id'	=> 'bookacti_notification_' . $notification_id . '_email_to',
+							'id'	=> 'bookacti_notification_email_to',
 							'value'	=> is_array( $notification_settings[ 'email' ][ 'to' ] ) ? implode( ',', $notification_settings[ 'email' ][ 'to' ] ) : strval( $notification_settings[ 'email' ][ 'to' ] ),
-							'tip'	=> __( 'Recipient(s) email address(es) (comma separated).', 'booking-activities' )
+							'tip'	=> esc_html__( 'Recipient(s) email address(es) (comma separated).', 'booking-activities' )
 						);
 						bookacti_display_field( $args );
 						?>
@@ -359,15 +357,15 @@ function bookacti_fill_notification_settings_page( $notification_id ) {
 				</tr>
 				<?php } ?>
 				<tr>
-					<th scope='row' ><?php _ex( 'Subject', 'email subject', 'booking-activities' ); ?></th>
+					<th scope='row' ><?php echo esc_html_x( 'Subject', 'email subject', 'booking-activities' ); ?></th>
 					<td>
 						<?php 
 						$args = array(
 							'type'	=> 'text',
 							'name'	=> 'bookacti_notification[email][subject]',
-							'id'	=> 'bookacti_notification_' . $notification_id . '_email_subject',
+							'id'	=> 'bookacti_notification_email_subject' . ( $recipient === 'admin' ? '_admin' : '' ),
 							'value'	=> $notification_settings[ 'email' ][ 'subject' ] ? $notification_settings[ 'email' ][ 'subject' ] : '',
-							'tip'	=> __( 'The email subject.', 'booking-activities' )
+							'tip'	=> esc_html__( 'The email subject.', 'booking-activities' )
 						);
 						bookacti_display_field( $args );
 						?>
@@ -376,20 +374,20 @@ function bookacti_fill_notification_settings_page( $notification_id ) {
 				<tr>
 					<th scope='row' >
 					<?php 
-						_ex( 'Email content', 'email message', 'booking-activities' ); 
+						echo esc_html_x( 'Email content', 'email message', 'booking-activities' ); 
 						$tags = bookacti_get_notifications_tags( $notification_id );
 						if( $tags ) {
 					?>
 						<div class='bookacti-notifications-tags-list' >
-							<p><?php _e( 'Use these tags:', 'booking-activities' ); ?></p>
+							<p><?php esc_html_e( 'Use these tags:', 'booking-activities' ); ?></p>
 					<?php
 							foreach( $tags as $tag => $tip ) {
-					?>
+								?>
 								<div class='bookacti-notifications-tag' >
 									<code><?php echo $tag; ?></code>
 									<?php bookacti_help_tip( $tip ); ?>
 								</div>
-					<?php
+								<?php
 							}
 							
 							// Notification Pack promo
@@ -405,7 +403,6 @@ function bookacti_fill_notification_settings_page( $notification_id ) {
 								</div>
 								<?php
 							}
-							
 					?>
 						</div>
 					<?php
@@ -417,7 +414,7 @@ function bookacti_fill_notification_settings_page( $notification_id ) {
 						$args = array(
 							'type'	=> 'editor',
 							'name'	=> 'bookacti_notification[email][message]',
-							'id'	=> 'bookacti_notification_' . $notification_id . '_email_message',
+							'id'	=> 'bookacti_notification_email_message' . ( $recipient === 'admin' ? '_admin' : '' ),
 							'height'=> 470,
 							'value'	=> $notification_settings[ 'email' ][ 'message' ] ? $notification_settings[ 'email' ][ 'message' ] : ''
 						);
@@ -436,37 +433,33 @@ add_action( 'bookacti_notification_settings_page', 'bookacti_fill_notification_s
 
 /**
  * Update notifications data
- * 
  * @since 1.2.0
- * @version 1.2.1
+ * @version 1.8.6
  */
 function bookacti_controller_update_notification() {
+	// Sanitize current option page ID
+	$option_page = ! empty( $_POST[ 'option_page' ] ) ? sanitize_title_with_dashes( $_POST[ 'option_page' ] ) : '';
 	
-	$option_page = sanitize_title_with_dashes( $_POST[ 'option_page' ] );
-	
-	// Check nonce and capabilities
+	// Check nonce
 	$is_nonce_valid	= check_ajax_referer( $option_page, '_wpnonce', false );
-	$is_allowed		= current_user_can( 'bookacti_manage_booking_activities_settings' );
-
-	if( $is_nonce_valid && $is_allowed ) {
-		
-		if( ! $_POST[ 'bookacti_notification' ] || ! $_POST[ 'notification_id' ] ) {
-			wp_send_json( array( 'status' => 'failed', 'error' => 'missing_data' ) );
-		}
-		
-		// Sanitize values
-		$notification_settings = bookacti_sanitize_notification_settings( $_POST[ 'bookacti_notification' ], $_POST[ 'notification_id' ] );
-		$updated = update_option( $option_page, $notification_settings );
-		
-		if( $updated ) {
-			wp_send_json( array( 'status' => 'success' ) );
-		} else {
-			wp_send_json( array( 'status' => 'failed', 'error' => 'not_updated' ) );
-		}
-		
-	}
+	if( ! $is_nonce_valid ) { bookacti_send_json_invalid_nonce( 'update_notification' ); }
 	
-	wp_send_json( array( 'status' => 'failed', 'error' => 'not_allowed' ) );
+	// Check capabilities
+	$is_allowed = current_user_can( 'bookacti_manage_booking_activities_settings' );
+	if( ! $is_allowed ) { bookacti_send_json_invalid_nonce( 'update_notification' ); }
+	
+	$values = ! empty( $_POST[ 'bookacti_notification' ] ) ? $_POST[ 'bookacti_notification' ] : array();
+	$notification_id = ! empty( $_POST[ 'notification_id' ] ) ? sanitize_title_with_dashes( $_POST[ 'notification_id' ] ) : '';
+	
+	if( ! $values || ! $notification_id ) { bookacti_send_json( array( 'status' => 'failed', 'error' => 'missing_data' ), 'update_notification' ); }
+
+	// Sanitize values
+	$notification_settings = bookacti_sanitize_notification_settings( $values, $notification_id );
+	$updated = update_option( $option_page, $notification_settings );
+
+	if( ! $updated ) { bookacti_send_json( array( 'status' => 'failed', 'error' => 'not_updated' ), 'update_notification' ); }
+	
+	bookacti_send_json( array( 'status' => 'success' ), 'update_notification' );
 }
 add_action( 'wp_ajax_bookactiUpdateNotification', 'bookacti_controller_update_notification' );
 

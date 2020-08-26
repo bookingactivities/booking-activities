@@ -153,7 +153,7 @@ function bookacti_update_template_related_filters() {
 
 /**
  * Refresh booking list calendar accoding to dates
- * @version 1.8.5
+ * @version 1.8.6
  */
 function bookacti_refresh_calendar_according_to_date_filter() {
 	if( ! $j( '#bookacti-booking-system-filter-container' ).is( ':visible' ) ) { return false; }
@@ -165,7 +165,7 @@ function bookacti_refresh_calendar_according_to_date_filter() {
 	var to_date				= $j( '#bookacti-booking-filter-dates-to' ).val();
 	
 	var interval_filter = {
-		"start": moment.utc( from_date ? from_date + ' 00:00:00' : '1970-01-01 00:00:00' ).locale( 'en' ),
+		"start": moment.utc( from_date ? from_date + ' 00:00:00' : '1970-02-01 00:00:00' ).locale( 'en' ),
 		"end": moment.utc( to_date ? to_date + ' 23:59:59' : '2037-12-31 23:59:59' ).locale( 'en' )
 	};
 	
@@ -453,6 +453,26 @@ function bookacti_refresh_list_table_hidden_columns() {
 		} else { 
 			$j( '.column-' + column ).addClass( 'hidden' ); 
 		}
+	});
+}
+
+
+/**
+ * Add a frame around groups in booking list
+ * @since 1.8.6
+ */
+function bookacti_refresh_booking_group_frame() {
+	$j( '.bookacti-gouped-booking' ).removeClass( 'bookacti-gouped-booking-first bookacti-gouped-booking-last' );
+	
+	var group_id = 0;
+	$j( '.bookacti-gouped-booking' ).each( function() {
+		if( group_id === $j( this ).data( 'booking-group-id' ) ) { return true; } // skip
+		group_id = $j( this ).data( 'booking-group-id' );
+		console.log( 'group_id', group_id );
+		console.log( 'first length', $j( '.bookacti-gouped-booking[data-booking-group-id="' + group_id + '"]:not(.hidden):first' ).length );
+		console.log( 'last length', $j( '.bookacti-gouped-booking[data-booking-group-id="' + group_id + '"]:not(.hidden):last' ).length );
+		$j( '.bookacti-gouped-booking[data-booking-group-id="' + group_id + '"]:not(.hidden):first' ).addClass( 'bookacti-gouped-booking-first' );
+		$j( '.bookacti-gouped-booking[data-booking-group-id="' + group_id + '"]:not(.hidden):last' ).addClass( 'bookacti-gouped-booking-last' );
 	});
 }
 

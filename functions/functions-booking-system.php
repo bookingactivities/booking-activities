@@ -381,7 +381,7 @@ function bookacti_get_booking_system_default_attributes() {
 
 /**
  * Check booking system attributes and format them to be correct
- * @version 1.8.0
+ * @version 1.8.6
  * @param array $raw_atts 
  * @return array
  */
@@ -484,7 +484,7 @@ function bookacti_format_booking_system_attributes( $raw_atts = array() ) {
 	if( $sanitized_start_date ) { $atts[ 'start' ] = $sanitized_start_date . ' 00:00:00'; }
 	if( $sanitized_end_date )	{ $atts[ 'end' ] = $sanitized_end_date . ' 23:59:59'; }
 	
-	$sanitized_start	= $atts[ 'past_events' ] && empty( $raw_atts[ 'start' ] ) ? '1970-01-01 00:00:00' : bookacti_sanitize_datetime( $atts[ 'start' ] );
+	$sanitized_start	= $atts[ 'past_events' ] && empty( $raw_atts[ 'start' ] ) ? '1970-02-01 00:00:00' : bookacti_sanitize_datetime( $atts[ 'start' ] );
 	$sanitized_end		= bookacti_sanitize_datetime( $atts[ 'end' ] );
 	$formatted_atts[ 'start' ]	= $sanitized_start ? $sanitized_start : $defaults[ 'start' ];
 	$formatted_atts[ 'end' ]	= $sanitized_end ? $sanitized_end : $defaults[ 'end' ];
@@ -619,6 +619,7 @@ function bookacti_get_booking_system_default_display_data() {
 /**
  * Format booking system display data
  * @since 1.7.17
+ * @version 1.8.6
  * @param array $raw_display_data
  * @return array
  */
@@ -638,6 +639,8 @@ function bookacti_format_booking_system_display_data( $raw_display_data ) {
 	if( ! preg_match( '/^([0-1][0-9]|2[0-3]):([0-5][0-9])$/', $display_data[ 'maxTime' ] ) ){ $display_data[ 'maxTime' ] = $default_data[ 'maxTime' ]; }
 	
 	// Make sure minTime is before maxTime
+	// If minTime = maxTime, set the default maxTime
+	if( $display_data[ 'minTime' ] === $display_data[ 'maxTime' ] ) { $display_data[ 'maxTime' ] = $default_data[ 'maxTime' ]; }
 	// If maxTime is 00:xx change it to 24:xx
 	if( $display_data[ 'maxTime' ] === '00:00' ) { $display_data[ 'maxTime' ] = '24:00'; }
 	// If minTime >= maxTime, permute values
@@ -1550,22 +1553,6 @@ function bookacti_is_group_of_events_available_on_form( $form_id, $group_id ) {
 }
 
 
-// Convert minutes to days, hours and minutes
-function bookacti_seconds_to_explode_time( $seconds ) {
-	
-    $dtF = new DateTime( "@0" );
-    $dtT = new DateTime( "@$seconds" );
-    
-	$time = array();
-	$time['days']		= $dtF->diff($dtT)->format('%a');
-	$time['hours']		= $dtF->diff($dtT)->format('%h');
-	$time['minutes']	= $dtF->diff($dtT)->format('%i');
-	$time['seconds']	= $dtF->diff($dtT)->format('%s');
-	
-	return $time;
-}
-
-
 
 
 /***** EVENTS *****/
@@ -2050,7 +2037,7 @@ function bookacti_get_new_interval_of_events( $availability_period, $min_interva
 /**
  * Get availability period from calendar field data
  * @since 1.7.17
- * @version 1.8.0
+ * @version 1.8.6
  * @param array|int $calendar_field
  * @return array
  */
@@ -2066,7 +2053,7 @@ function bookacti_get_calendar_field_availability_period( $calendar_field ) {
 	
 	// Compute availability period 
 	$absolute_period = array(
-		'start'	=> ! empty( $calendar_field[ 'start' ] ) ? bookacti_sanitize_datetime( $calendar_field[ 'start' ] ) : ( ! empty( $calendar_field[ 'past_events' ] ) ? '1970-01-01 00:00:00' : '' ),
+		'start'	=> ! empty( $calendar_field[ 'start' ] ) ? bookacti_sanitize_datetime( $calendar_field[ 'start' ] ) : ( ! empty( $calendar_field[ 'past_events' ] ) ? '1970-02-01 00:00:00' : '' ),
 		'end'	=> ! empty( $calendar_field[ 'end' ] ) ? bookacti_sanitize_datetime( $calendar_field[ 'end' ] ) : ''
 	);
 	$relative_period = array(

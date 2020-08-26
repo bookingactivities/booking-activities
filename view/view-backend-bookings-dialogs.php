@@ -1,7 +1,7 @@
 <?php 
 /**
  * Backend booking dialogs
- * @version 1.8.0
+ * @version 1.8.6
  */
 
 // Exit if accessed directly
@@ -165,7 +165,8 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 					'name'	=> 'send-notifications-on-state-change',
 					'id'	=> 'bookacti-send-notifications-on-state-change',
 					'value'	=> 0,
-					'tip'	=> __( 'Whether to notify the customer of the booking status change.', 'booking-activities' )
+					/* Translators: %s is a link to the "Notifications settings" */
+					'tip'	=> sprintf( esc_html__( 'Send the booking status change notifications configured in %s.', 'booking-activities' ), '<a href="' . admin_url( 'admin.php?page=bookacti_settings&tab=notifications' ) . '">' . esc_html__( 'Notifications settings', 'booking-activities' ) . '</a>' )
 				);
 				bookacti_display_field( $args );
 			?>

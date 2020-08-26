@@ -1689,106 +1689,6 @@ function bookacti_get_booking_refund_amount( $booking_id, $booking_type = 'singl
 }
 
 
-/**
- * Send a refund request by email for a specific booking
- * @version 1.7.0
- * @param int $booking_id
- * @param string $booking_type Defined if the given id is a booking id or a booking group id. Accepted values are 'single' and 'group'.
- * @param string $user_message
- * @return boolean
- */
-function bookacti_send_email_refund_request( $booking_id, $booking_type, $user_message = false ) {
-
-	$to = apply_filters( 'bookacti_refund_request_email_to', array( get_option( 'admin_email' ) ), $booking_id, $booking_type );
-
-	/* translators: %1$s is the booking id */
-	$subject	= $booking_type === 'group' ? esc_html__( 'Refund request for booking group %1$s', 'booking-activities' ) : esc_html__( 'Refund request for booking %1$s', 'booking-activities' );
-	$subject	= apply_filters( 'bookacti_refund_request_email_subject', sprintf( $subject, $booking_id ), $booking_id, $booking_type );
-
-	$data = array();
-
-	// Single booking
-	if( $booking_type === 'single' ) {
-
-		$booking = bookacti_get_booking_by_id( $booking_id );
-		if( $booking ) {
-			$data['booking']					= array();
-			$data['booking']['calendar_id']		= $booking->template_id;
-			$data['booking']['activity_name']	= apply_filters( 'bookacti_translate_text', $booking->title ) . ' (' . _x( 'id', 'An id is a unique identification number' ) . ': ' . $booking->activity_id . ')';
-			$data['booking']['event_start']		= bookacti_format_datetime( $booking->event_start );
-			$data['booking']['event_end']		= bookacti_format_datetime( $booking->event_end );
-			$data['booking']['quantity']		= $booking->quantity;
-			$data['booking']['status']			= $booking->state;
-		}
-
-	// Booking Group
-	} else if( $booking_type === 'group' ) {
-
-		$booking_group	= bookacti_get_booking_group_by_id( $booking_id );
-		$bookings		= bookacti_get_bookings_by_booking_group_id( $booking_id );
-		if( $booking_group || $bookings ) {
-			$data['booking_group'] = array();
-		}
-		if( $bookings ) {
-			$data['booking_group']['calendar_id']	= $bookings[0]->template_id;
-			$data['booking_group']['events']		= bookacti_get_formatted_booking_events_list( $bookings, 'show' );
-		}
-		if( $booking_group ) {
-			$data['booking_group']['status'] = $booking_group->state;
-		}
-	}
-
-	$user_id = ! empty( $booking_group ) ? $booking_group->user_id : ( ! empty( $booking ) ? $booking->user_id : '' );
-	if( $user_id ) {
-		$data['user'] = array();
-		$user = is_numeric( $user_id ) ? get_user_by( 'id', $user_id ) : null;
-
-		if( $user ) {
-			$data['user']['name']	= isset( $user->first_name ) && isset( $user->last_name ) ? $user->first_name . ' ' . $user->last_name : $user->user_login;
-			$data['user']['name']	= '<a href="' . esc_url( get_edit_user_link() ) . '">' . esc_html( $data['user']['name'] ) . '</a>';
-			$data['user']['email']	= '<a href="mailto:' . esc_attr( $user->user_email ) . '">' . esc_html( $user->user_email ) . '</a>';
-		} else {
-			$object_type	= $booking_type === 'group' ? 'booking_group' : 'booking';
-			$booking_meta	= bookacti_get_metadata( $object_type, $booking_id );
-			$user_email		= ! empty( $booking_meta[ 'user_email' ] ) ? $booking_meta[ 'user_email' ] : '';
-
-			$data['user']['name'] = '';
-			$data['user']['name'] .= ! empty( $booking_meta[ 'user_first_name' ] ) ? $booking_meta[ 'user_first_name' ] : '';
-			$data['user']['name'] .= empty( $booking_meta[ 'user_first_name' ] ) && ! empty( $booking_meta[ 'user_last_name' ] ) ? ' ' : '';
-			$data['user']['name'] .= ! empty( $booking_meta[ 'user_last_name' ] ) ? $booking_meta[ 'user_last_name' ] : '';
-			$data['user']['email']	= is_email( $user_email ) ? '<a href="mailto:' . esc_attr( $user_email ) . '">' . esc_html( $user_email ) . '</a>' : $user_email;
-		}
-	}
-
-
-	$data = apply_filters( 'bookacti_refund_request_email_data', $data, $booking_id, $booking_type );
-
-	/* translators: %1$s is a user name and %2$s is the booking ID. */
-	$message = '<h3>' . sprintf( esc_html__( '%1$s wants to be refunded for booking %2$s', 'booking-activities' ), $data['user']['name'], $booking_id ) . '</h3>';
-	foreach( $data as $category_name => $category_data ) {
-		$message .= '<h4>' . esc_html( ucfirst ( str_replace( '_', ' ', $category_name ) ) ) . '</h4>';
-		$message .= '<table style="border: none;" >';
-		foreach( $category_data as $name => $value ) {
-			$message .= '<tr><td style="border: none; width: 135px; padding-right: 15px;">' . esc_html( ucfirst ( str_replace( '_', ' ', $name ) ) ) . '</td><td>' . $value . '</td>';
-		}
-		$message .= '</table>';
-	}
-
-	/* translators: Message left by the user */
-	if( $user_message ) {
-		$message	.= '<h4>' . esc_html__( 'User message', 'booking-activities' ). '</h4>';
-		$message	.= '<em>' . esc_html( $user_message ) . '</em><br/>';
-	}
-
-	$message	= apply_filters( 'bookacti_refund_request_email_message', $message, $booking_id, $booking_type, $data, $user_message );
-	$headers	= apply_filters( 'bookacti_refund_request_email_headers', array( 'Content-Type: text/html; charset=UTF-8' ) );
-
-	$sent = bookacti_send_email( $to, $subject, $message, $headers );
-
-	return $sent;
-}
-
-
 
 
 // FORMATTING
@@ -1989,7 +1889,7 @@ function bookacti_get_user_booking_list_private_columns() {
 /**
  * Get booking list items
  * @since 1.7.4
- * @version 1.8.0
+ * @version 1.8.6
  * @param array $filters
  * @param array $columns
  * @return string
@@ -2000,8 +1900,8 @@ function bookacti_get_user_booking_list_items( $filters, $columns = array() ) {
 	
 	// Remove private columns if not allowed
 	$current_user_id = get_current_user_id();
-	$display_private_columns = bookacti_get_setting_value( 'bookacti_general_settings', 'display_private_columns' ) || ! empty( $filters[ 'display_private_columns' ] );
-	$current_user_can_manage_bookings = current_user_can( 'bookacti_manage_bookings' ) || current_user_can( 'bookacti_edit_bookings' );
+	$display_private_columns = apply_filters( 'bookacti_user_booking_list_display_private_columns', bookacti_get_setting_value( 'bookacti_general_settings', 'display_private_columns' ) || ! empty( $filters[ 'display_private_columns' ] ), $filters, $columns );
+	$current_user_can_manage_bookings = apply_filters( 'bookacti_user_booking_list_can_manage_bookings', current_user_can( 'bookacti_manage_bookings' ) || current_user_can( 'bookacti_edit_bookings' ), $filters, $columns );
 	if( ! $display_private_columns ) {
 		$current_user_can_see_users_data = current_user_can( 'list_users' ) || current_user_can( 'edit_users' );
 		$is_current_user_list = $current_user_id && ( ( intval( $filters[ 'user_id' ] ) && intval( $filters[ 'user_id' ] ) === $current_user_id ) || ( count( $filters[ 'in__user_id' ] ) === 1 && intval( $filters[ 'in__user_id' ][ 0 ] ) && intval( $filters[ 'in__user_id' ][ 0 ] ) === $current_user_id ) );

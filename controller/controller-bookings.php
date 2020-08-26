@@ -147,7 +147,7 @@ add_action( 'wp_ajax_nopriv_bookactiGetBookingRefundActionsHTML', 'bookacti_cont
 
 /**
  * AJAX Controller - Refund a booking
- * @version 1.8.4
+ * @version 1.8.6
  */
 function bookacti_controller_refund_booking() {
 	$booking_id			= intval( $_POST[ 'booking_id' ] );
@@ -170,19 +170,20 @@ function bookacti_controller_refund_booking() {
 	}
 
 	$refund_message	= sanitize_text_field( stripslashes( $_POST[ 'refund_message' ] ) );
-
+	
 	if( $refund_action === 'email' ) {
-		$refunded = bookacti_send_email_refund_request( $booking_id, 'single', $refund_message );
-		if( $refunded ) {
-			$refunded = array( 'status' => 'success', 'new_state' => 'refund_requested', 'message' => esc_html__( 'Your refund request has been sent. We will contact you soon.', 'booking-activities' ) );
-		} else {
-			$refunded = array( 'status'	=> 'failed', 'error' => 'cannot_send_email', 'message' => esc_html__( 'An error occurred while trying to send the email.', 'booking-activities' ) );
-		}
+		// The refund request notification is send by bookacti_send_notification_when_booking_state_changes() on the hook 'bookacti_booking_state_changed'
+		$refunded = array( 'status' => 'success', 'new_state' => 'refund_requested', 'message' => esc_html__( 'Your refund request has been sent. We will contact you soon.', 'booking-activities' ) );
 	} else {
 		$refunded = apply_filters( 'bookacti_refund_booking', array( 'status' => 'failed' ), $booking_id, 'single', $refund_action, $refund_message, $front_or_admin );
 	}
 
 	if( $refunded[ 'status' ] === 'success' ) {
+		// Save the refund message
+		if( $refund_message ) {
+			bookacti_update_metadata( 'booking', $booking_id, array( 'refund_message' => $refund_message ) );
+		}
+		
 		if( empty( $refunded[ 'new_state' ] ) )	{ $refunded[ 'new_state' ] = 'refunded'; }
 		if( empty( $refunded[ 'message' ] ) )	{ $refunded[ 'message' ] = esc_html__( 'Your booking has been successfully refunded.', 'booking-activities' ); }
 		
@@ -614,7 +615,7 @@ add_action( 'wp_ajax_nopriv_bookactiGetBookingGroupRefundActionsHTML', 'bookacti
 /**
  * AJAX Controller - Refund a booking group
  * @since 1.1.0
- * @version 1.8.0
+ * @version 1.8.6
  */
 function bookacti_controller_refund_booking_group() {
 	$booking_group_id	= intval( $_POST[ 'booking_id' ] );
@@ -639,17 +640,18 @@ function bookacti_controller_refund_booking_group() {
 	$refund_message	= sanitize_text_field( stripslashes( $_POST[ 'refund_message' ] ) );
 
 	if( $refund_action === 'email' ) {
-		$refunded = bookacti_send_email_refund_request( $booking_group_id, 'group', $refund_message );
-		if( $refunded ) {
-			$refunded = array( 'status' => 'success', 'new_state' => 'refund_requested' );
-		} else {
-			$refunded = array( 'status' => 'failed', 'error' => 'cannot_send_email' );
-		}
+		// The refund request notification is send by bookacti_send_notification_when_booking_group_state_changes() on the hook 'bookacti_booking_group_state_changed'
+		$refunded = array( 'status' => 'success', 'new_state' => 'refund_requested' );
 	} else {
 		$refunded = apply_filters( 'bookacti_refund_booking', array( 'status' => 'failed' ), $booking_group_id, 'group', $refund_action, $refund_message, $front_or_admin );
 	}
 
 	if( $refunded[ 'status' ] === 'success' ) {
+		// Save the refund message
+		if( $refund_message ) {
+			bookacti_update_metadata( 'booking_group', $booking_group_id, array( 'refund_message' => $refund_message ) );
+		}
+		
 		if( empty( $refunded[ 'new_state' ] ) )	{ $refunded[ 'new_state' ] = 'refunded'; }
 		if( empty( $refunded[ 'message' ] ) )	{ $refunded[ 'message' ] = esc_html__( 'Your booking has been successfully refunded.', 'booking-activities' ); }
 		

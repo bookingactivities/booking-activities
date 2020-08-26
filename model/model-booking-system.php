@@ -728,11 +728,12 @@ function bookacti_get_group_of_events( $group_id, $return_type = OBJECT ) {
 /**
  * Get groups of events data by template ids
  * @since 1.4.0 (was bookacti_get_groups_of_events_by_template and bookacti_get_groups_of_events_by_category)
- * @version 1.8.0
+ * @version 1.8.6
  * @global wpdb $wpdb
  * @param array $raw_args {
  *  @param array|int $templates
  *  @param array|int $group_categories
+ *  @param array|int event_groups
  *  @param array $availability_period array( 'start' => 'Y-m-d H:i:s', 'end' => 'Y-m-d H:i:s' )
  *  @param boolean|"bookable_only" $started
  *  @param boolean $inactive
@@ -743,6 +744,7 @@ function bookacti_get_groups_of_events( $raw_args ) {
 	$default_args = array(
 		'templates' => array(),
 		'group_categories' => array(),
+		'event_groups' => array(),
 		'availability_period' => array(),
 		'started' => 'bookable_only',
 		'inactive' => 0
@@ -758,10 +760,10 @@ function bookacti_get_groups_of_events( $raw_args ) {
 
 	$variables = array();
 
-	$query	= 'SELECT G.*, GE.start, GE.end '
+	$query	= 'SELECT G.*, GE.start, GE.end, C.template_id '
 			. ' FROM ' . BOOKACTI_TABLE_EVENT_GROUPS . ' as G ' 
-			. ' JOIN ' . BOOKACTI_TABLE_GROUP_CATEGORIES . ' as C '
-			. ' JOIN ' . BOOKACTI_TABLE_TEMPLATES . ' as T ';
+			. ' LEFT JOIN ' . BOOKACTI_TABLE_GROUP_CATEGORIES . ' as C ON C.id = G.category_id '
+			. ' LEFT JOIN ' . BOOKACTI_TABLE_TEMPLATES . ' as T ON T.id = C.template_id ';
 
 	// Join the meta table to filter groups already started
 	$query .= ' LEFT JOIN ( 
@@ -781,9 +783,7 @@ function bookacti_get_groups_of_events( $raw_args ) {
 					GROUP BY group_id
 				) as GE ON GE.group_id = G.id ';
 
-	$query .= ' WHERE C.id = G.category_id '
-			. ' AND C.template_id = T.id '
-			. ' AND GE.start IS NOT NULL '
+	$query .= ' WHERE GE.start IS NOT NULL '
 			. ' AND GE.end IS NOT NULL ';
 
 	if( $args[ 'templates' ] ) {
@@ -808,6 +808,18 @@ function bookacti_get_groups_of_events( $raw_args ) {
 		}
 		$query .= ') ';
 		$variables = array_merge( $variables, $args[ 'group_categories' ] );
+	}
+
+	if( $args[ 'event_groups' ] ) {
+		$query .= ' AND G.id IN ( %d ';
+		$array_count = count( $args[ 'event_groups' ] );
+		if( $array_count >= 2 ) {
+			for( $i=1; $i<$array_count; ++$i ) {
+				$query .= ', %d ';
+			}
+		}
+		$query .= ') ';
+		$variables = array_merge( $variables, $args[ 'event_groups' ] );
 	}
 
 	// Make sure groups are in their template range

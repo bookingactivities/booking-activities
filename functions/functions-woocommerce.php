@@ -807,31 +807,14 @@ function bookacti_set_cart_timeout( $expiration_date, $user_id = NULL ) {
 
 /**
  * Get formatted remaining time before expiration
- * 
  * @since 1.2.0
+ * @version 1.8.6
  * @param string $expiration_date 
  * @return string
  */
 function bookacti_get_formatted_time_before_expiration( $expiration_date ) {
-	$time = bookacti_seconds_to_explode_time( round( abs( strtotime( $expiration_date ) - time() ) ) );
-	$remaining_time = ''; $days_formated = ''; $hours_formated = ''; $minutes_formated = '';
-
-	if( intval( $time['days'] ) > 0 ) { 
-		/* translators: %d is a variable number of days */
-		$days_formated = sprintf( _n( '%d day', '%d days', $time['days'], 'booking-activities' ), $time['days'] );
-		$remaining_time .= $days_formated;
-	}
-	if( intval( $time['hours'] ) > 0 ) { 
-		/* translators: %d is a variable number of hours */
-		$hours_formated = sprintf( _n( '%d hour', '%d hours', $time['hours'], 'booking-activities' ), $time['hours'] );
-		$remaining_time .= ' ' . $hours_formated;
-	}
-	if( intval( $time['minutes'] ) > 0 ) { 
-		/* translators: %d is a variable number of minutes */
-		$minutes_formated = sprintf( _n( '%d minute', '%d minutes', $time['minutes'], 'booking-activities' ), $time['minutes'] );
-		$remaining_time .= ' ' . $minutes_formated;
-	}
-
+	$seconds = round( abs( strtotime( $expiration_date ) - time() ) );
+	$remaining_time = bookacti_format_delay( $seconds );
 	return apply_filters( 'bookacti_formatted_time_before_expiration', $remaining_time, $expiration_date );
 }
 

@@ -22,10 +22,11 @@ window.addEventListener( 'touchstart', function bookacti_detect_touch_device() {
 
 /**
  * Init tooltip
+ * @version 1.8.6
  */
 function bookacti_init_tooltip() {
 	$j( '.bookacti-tip' ).tooltip({
-		"items":	'[data-tip]',
+		"items": '[data-tip]',
 		"content": function () {
 			return $j( this ).data( 'tip' );
 		},
@@ -40,7 +41,8 @@ function bookacti_init_tooltip() {
 					$j( this ).remove();
 				});
 			});
-		}
+		},
+		"tooltipClass":'bookacti-tip-container bookacti-custom-scrollbar'
 	});
 	$j( '.bookacti-tip' ).tooltip( 'close' );
 }

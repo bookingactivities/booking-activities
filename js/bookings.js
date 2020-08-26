@@ -187,11 +187,27 @@ $j( document ).ready( function() {
 // BOOKING LIST
 	
 	/**
-	 * Load tooltip for booking actions retrieved via AJAX
-	 * @version 1.8.0
+	 * Refresh booking groups frames - On page load
+	 * @version 1.8.6
+	 */
+	bookacti_refresh_booking_group_frame();
+	
+	/**
+	 * Load tooltip for booking actions retrieved via AJAX and Refresh booking groups frames
+	 * @version 1.8.6
 	 */
 	$j( '#bookacti-booking-list' ).on( 'bookacti_booking_list_filtered bookacti_grouped_bookings_displayed', function(){
 		bookacti_init_tooltip();
+		bookacti_refresh_booking_group_frame();
+	});
+	
+	
+	/**
+	 * Refresh booking groups frames - On delete booking
+	 * @since 1.8.6
+	 */
+	$j( 'body' ).on( 'bookacti_booking_deleted', function() {
+		bookacti_refresh_booking_group_frame();
 	});
 	
 	

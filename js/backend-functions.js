@@ -506,24 +506,25 @@ function bookacti_fill_items_selectbox( items_container, item_ids, item_type ) {
 
 /**
  * Show or hide activities depending on the selected template
- * @version 1.7.0
+ * @version 1.8.6
  * @param {array} template_ids
  * @param {HTMLElement} options
  */
 function bookacti_show_hide_template_related_options( template_ids, options ) {
-	
 	// Init variables
 	var change_selected = [];
 	
 	if( $j.isNumeric( template_ids ) ) { template_ids = [ template_ids ]; }
+	if( ! $j.isArray( template_ids ) ) { template_ids = []; }
 	
 	// Show all
 	options.prop( 'disabled', false );
 	options.removeClass( 'bookacti-hide-fields' );
 	
+	if( $j.isEmptyObject( template_ids ) ) { return; }
+	
 	// Hide not allowed
 	options.each( function() {
-		
 		var option = $j( this );
 		
 		// Retrieve allowed templates array

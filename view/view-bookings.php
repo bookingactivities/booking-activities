@@ -1,7 +1,7 @@
 <?php
 /**
  * Booking list page
- * @version 1.8.0
+ * @version 1.8.6
  */
 
 // Exit if accessed directly
@@ -54,6 +54,9 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 					}
 					if( ! empty( $_GET[ 'order' ] ) ) {
 						echo '<input type="hidden" name="order" value="' . esc_attr( $_GET[ 'order' ] ) . '" />';
+					}
+					if( ! empty( $_GET[ 'group_by' ] ) ) {
+						echo '<input type="hidden" name="group_by" value="' . esc_attr( $_GET[ 'group_by' ] ) . '" />';
 					}
 
 					// Display nonce field
