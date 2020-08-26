@@ -501,8 +501,14 @@ function bookacti_settings_section_notifications_general_callback() {
 			</thead>
 			<tbody>
 		<?php
+			// Get notifications IDs and their settings
+			$notifications_ids = array();
+			$notifications_settings = array();
 			$notifications_ids = array_keys( bookacti_get_notifications_default_settings() );
-
+			foreach( $notifications_ids as $notification_id ) {
+				$notifications_settings[ $notification_id ] = bookacti_get_notification_settings( $notification_id, false );
+			}
+			
 			// Sort notifications: admin's first, customer's next
 			$notifications_ids_admin = array();
 			$notifications_ids_customer = array();
@@ -512,10 +518,10 @@ function bookacti_settings_section_notifications_general_callback() {
 				else if( substr( $notification_id, 0, 6 ) === 'admin_' ) { $notifications_ids_admin[] = $notification_id; $added = true; } 
 				if( $added ) { unset( $notifications_ids[ $i ] ); }
 			}
-			$notifications_ids_sorted = apply_filters( 'bookacti_notifications_list_order', array_values( array_merge( $notifications_ids_admin, $notifications_ids_customer, $notifications_ids ) ) );
+			$notifications_ids_sorted = apply_filters( 'bookacti_notifications_list_order', array_values( array_merge( $notifications_ids_admin, $notifications_ids_customer, $notifications_ids ) ), $notifications_settings );
 
 			foreach( $notifications_ids_sorted as $notification_id ) {
-				$notification_settings = bookacti_get_notification_settings( $notification_id, false );
+				$notification_settings = isset( $notifications_settings[ $notification_id ] ) ? $notifications_settings[ $notification_id ] : array();
 				$active_icon = $notification_settings[ 'active' ] ? 'dashicons-yes' : 'dashicons-no';
 				$description = $notification_settings[ 'description' ] ? bookacti_help_tip( $notification_settings[ 'description' ], false ) : '';
 
