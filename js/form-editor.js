@@ -297,6 +297,40 @@ $j( document ).ready( function() {
 	
 	
 	/**
+	 * Calendar field settings: Validate the availability period - on change
+	 * @since 1.8.7
+	 */
+	$j( '#bookacti-form-field-dialog-calendar' ).on( 'change', '#bookacti-availability_period_start-container .bookacti-duration-value, #bookacti-availability_period_end-container .bookacti-duration-value', function() { 
+		$j( '#bookacti-availability_period_start-container .bookacti-form-error, #bookacti-availability_period_end-container .bookacti-form-error' ).remove();
+		var availability_period_start = parseInt( $j( '#bookacti-availability_period_start-container .bookacti-duration-value' ).val() );
+		var availability_period_end = parseInt( $j( '#bookacti-availability_period_end-container .bookacti-duration-value' ).val() );
+		if( availability_period_start && availability_period_end ) {
+			if( availability_period_start > availability_period_end ) {
+				$j( this ).parent().append( "<div class='bookacti-form-error'>" + bookacti_localized.error_availability_period + "</div>" );
+			}
+		}
+	});
+	
+	
+	/**
+	 * Calendar field settings: Validate the availability period - on change
+	 * @since 1.8.7
+	 */
+	$j( '#bookacti-form-field-dialog-calendar' ).on( 'change', '#bookacti-start, #bookacti-end', function() { 
+		$j( '#bookacti-start-container .bookacti-form-error, #bookacti-end-container .bookacti-form-error' ).remove();
+		var opening = $j( '#bookacti-start' ).val();
+		var closing = $j( '#bookacti-end' ).val();
+		if( opening && closing ) {
+			opening = moment.utc( opening );
+			closing = moment.utc( closing );
+			if( opening.isAfter( closing ) ) {
+				$j( this ).parent().append( "<div class='bookacti-form-error'>" + bookacti_localized.error_closing_before_opening + "</div>" );
+			}
+		}
+	});
+	
+	
+	/**
 	 * Calendar field settings: Toggle the past events options - on change
 	 * @since 1.8.0
 	 */

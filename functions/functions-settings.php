@@ -89,11 +89,33 @@ function bookacti_get_setting_value( $setting_group, $setting_name, $raw = false
 
 
 // SECTION CALLBACKS
-function bookacti_settings_section_general_callback() { }
-function bookacti_settings_section_cancellation_callback() { }
-function bookacti_settings_section_template_callback() { }
-function bookacti_settings_section_bookings_callback() { }
-function bookacti_settings_section_licenses_callback() { }
+function bookacti_settings_section_general_callback() {}
+function bookacti_settings_section_template_callback() {}
+function bookacti_settings_section_bookings_callback() {}
+function bookacti_settings_section_licenses_callback() {}
+
+
+/**
+ * Settings section callback - Cancellation settings (displayed before settings)
+ * @version 1.8.7
+ */
+function bookacti_settings_section_cancellation_callback() { 
+?>
+	<div class='bookacti-sos'>
+		<?php esc_html_e( 'The customers will be able to cancel, reschedule or request a refund from their booking list.', 'booking-activities' ); ?>
+		<span class='dashicons dashicons-sos' data-label='<?php echo esc_html_x( 'Help', 'button label', 'booking-activities' ); ?>'></span>
+		<span>
+			<ul class='bookacti-help-list'>
+				<li><?php /* translators: %s = [bookingactivities_list] */ echo sprintf( esc_html__( 'The customers\' booking list can be displayed thanks to the %s shortcode', 'booking-activities' ), '<code>[bookingactivities_list]</code>' ); ?> (<a href='https://booking-activities.fr/en/docs/user-documentation/get-started-with-booking-activities/display-customers-bookings-list-on-the-frontend/' target='_blank'><?php esc_html_e( 'documentation', 'booking-activities' ); ?></a>)
+				<li><?php esc_html_e( 'The customers will need to be logged in to see their booking list, so it is recommended to display a login form on the same page', 'booking-activities' ); ?> (<a href='https://booking-activities.fr/en/docs/user-documentation/get-started-with-booking-activities/display-a-login-registration-form/' target='_blank'><?php esc_html_e( 'documentation', 'booking-activities' ); ?></a>)
+				<?php do_action( 'bookacti_email_cancellation_help_after' ); ?>
+			</ul>
+		</span>
+	</div>
+<?php
+}
+
+
 
 
 // BOOKINGS SETTINGS

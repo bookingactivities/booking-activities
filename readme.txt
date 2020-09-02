@@ -5,7 +5,7 @@ Tags: booking, reservation, booking form, woocommerce booking, booking events
 Requires at least: 3.6
 Tested up to: 5.5
 Requires PHP: 5.3
-Stable tag: 1.8.6
+Stable tag: 1.8.7
 License: GPLv3 or later
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
 
@@ -318,6 +318,14 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 
 
 == Changelog ==
+
+= 1.8.7 - 2020/09/02 =
+* Tweak - Disambiguation of availability period settings
+* Tweak - Add contextual help to promote the [bookingactivities_list] shortcode
+* Fix - Multiple selectboxes values may not be properly saved
+* Fix - Warning in calendar apps during ics import if vevent_description ended with a new line
+* Fix - Backward compatibility prior WP 5.3 restored
+* Fix - Some texts were not translated
 
 = 1.8.6 - 2020/08/26 =
 * Tweak - Add a notification to the customer when a booking becomes Delivered

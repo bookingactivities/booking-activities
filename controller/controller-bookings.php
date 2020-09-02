@@ -1029,7 +1029,7 @@ add_action( 'wp_ajax_bookactiExportBookingsUrl', 'bookacti_controller_generate_e
 /**
  * Export booking list according to filters
  * @since 1.6.0
- * @version 1.8.0
+ * @version 1.8.7
  */
 function bookacti_export_bookings_page() {
 	if( empty( $_REQUEST[ 'action' ] ) ) { return; }
@@ -1127,7 +1127,7 @@ function bookacti_export_bookings_page() {
 	} else if( $export_type === 'ical' ) { 
 		$ical_args = array( 
 			'vevent_summary'		=> isset( $args[ 'vevent_summary' ] ) ? utf8_decode( urldecode( $args[ 'vevent_summary' ] ) ) : $user_settings[ 'vevent_summary' ],
-			'vevent_description'	=> isset( $args[ 'vevent_description' ] ) ? utf8_decode( urldecode( str_replace( '%0A', '\n', $args[ 'vevent_description' ] ) ) ) : $user_settings[ 'vevent_description' ],
+			'vevent_description'	=> isset( $args[ 'vevent_description' ] ) ? utf8_decode( urldecode( str_replace( array( '%0A', '%250A' ), '\n', $args[ 'vevent_description' ] ) ) ) : $user_settings[ 'vevent_description' ],
 			'tooltip_booking_list_columns'	=> $columns,
 			'booking_list_header'	=> ! empty( $args[ 'booking_list_header' ] ) ? 1 : 0,
 			'raw'					=> ! empty( $args[ 'raw' ] ) ? 1 : 0,

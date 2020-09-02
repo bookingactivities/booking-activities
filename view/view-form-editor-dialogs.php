@@ -2,7 +2,7 @@
 /**
  * Form editor dialogs
  * @since 1.5.0
- * @version 1.8.3
+ * @version 1.8.7
  */
 
 // Exit if accessed directly
@@ -311,7 +311,7 @@ foreach( $fields_data as $field_name => $field_data ) {
 		/**
 		 * Display the content of the "Availability" tab of the "Calendar" dialog
 		 * @since 1.5.0
-		 * @version 1.8.0
+		 * @version 1.8.7
 		 * @param array $params
 		 */
 		function bookacti_fill_calendar_dialog_availability_tab( $params ) {
@@ -319,8 +319,20 @@ foreach( $fields_data as $field_name => $field_data ) {
 		?>
 		<fieldset>
 			<legend><?php esc_html_e( 'Availability period', 'booking-activities' ); ?></legend>
+			<div style='margin-bottom:10px;'><em><?php esc_html_e( 'The events will be bookable:', 'booking-activities' ); ?></em></div>
 			<?php 
-				$fields = bookacti_get_booking_system_fields_default_data( array( 'availability_period_start', 'availability_period_end', 'start', 'end', 'trim' ) );
+				$fields = bookacti_get_booking_system_fields_default_data( array( 'availability_period_end', 'availability_period_start' ) );
+				bookacti_display_fields( $fields );
+			?>
+			<hr/>
+			<div style='margin-bottom:10px;'><em><?php esc_html_e( 'Provided they start between these dates:', 'booking-activities' ); ?></em></div>
+			<?php 
+				$fields = bookacti_get_booking_system_fields_default_data( array( 'start', 'end' ) );
+				bookacti_display_fields( $fields );
+			?>
+			<hr/>
+			<?php 
+				$fields = bookacti_get_booking_system_fields_default_data( array( 'trim' ) );
 				bookacti_display_fields( $fields );
 			?>
 		</fieldset>

@@ -245,7 +245,7 @@ function bookacti_empty_all_dialog_forms( scope ) {
 
 /**
  * Fill custom settings fields in a form
- * @version 1.8.0
+ * @version 1.8.7
  * @param {array} fields
  * @param {string} field_prefix
  * @param {qtring} scope
@@ -353,8 +353,8 @@ function bookacti_fill_fields_from_array( fields, field_prefix, scope ) {
 			// If the time value is 24:00, reset it to 00:00
 			if( $j( scope + 'input[name="' + field_name + '"]' ).attr( 'type' ) === 'time' && value === '24:00' ) { value = '00:00'; }
 			
-			$j( scope + 'input[name="' + field_name + '"]' ).val( value ).trigger( 'change' );;
-			$j( scope + 'textarea[name="' + field_name + '"]' ).val( value ).trigger( 'change' );;
+			$j( scope + 'input[name="' + field_name + '"]' ).val( value ).trigger( 'change' );
+			$j( scope + 'textarea[name="' + field_name + '"]' ).val( value ).trigger( 'change' );
 			
 			// Editor
 			if( typeof tinyMCE !== 'undefined' ) {
@@ -388,14 +388,14 @@ function bookacti_fill_fields_from_array( fields, field_prefix, scope ) {
 
 /**
  * Switch a selectbox to multiple
- * @version 1.7.17
+ * @version 1.8.7
  * @param {HTMLElement} checkbox
  */
 function bookacti_switch_select_to_multiple( checkbox ) {
 	if( ! $j( checkbox ).length ) { return; }
 	
 	var select_id	= $j( checkbox ).data( 'select-id' );
-	var select_name	= $j( 'select#' + select_id ).attr( 'name' );;
+	var select_name	= $j( 'select#' + select_id ).attr( 'name' );
 	var is_checked	= $j( checkbox ).is( ':checked' );
 	
 	// Get the currently selected values

@@ -731,7 +731,7 @@ function bookacti_format_booking_system_url_attributes( $atts = array() ) {
 /**
  * Get booking system fields default data
  * @since 1.5.0
- * @version 1.8.4
+ * @version 1.8.7
  * @param array $fields
  * @return array
  */
@@ -894,27 +894,30 @@ function bookacti_get_booking_system_fields_default_data( $fields = array() ) {
 		);
 	}
 	
-	// Availability Period Start
-	if( ! $fields || in_array( 'availability_period_start', $fields, true ) ) {
-		$defaults[ 'availability_period_start' ] = array(
-			'type'			=> 'duration',
-			'name'			=> 'availability_period_start',
-			'options'		=> array( 'min' => 0, 'step' => 1 ),
-			/* translators: Followed by a field indicating a number of days from today. E.g.: "Events will be bookable in 2 days from today". */
-			'title'			=> esc_html__( 'Events will be bookable in', 'booking-activities' ),
-			'tip'			=> esc_html__( 'Set the beginning of the availability period. E.g.: "2 days, 6 hours, 30 minutes", your customers may book events starting in 2 days, 6 hours and 30 minutes at the earliest. They are no longer allowed to book events starting earlier (like today or tomorrow).', 'booking-activities' )
-		);
-	}
-	
 	// Availability Period End
 	if( ! $fields || in_array( 'availability_period_end', $fields, true ) ) {
 		$defaults[ 'availability_period_end' ] = array(
 			'type'			=> 'duration',
 			'name'			=> 'availability_period_end',
 			'options'		=> array( 'min' => 0, 'step' => 1 ),
-			/* translators: Followed by a field indicating a number of days from today. E.g.: "Events are bookable for up to 30 days from today". */
-			'title'			=>  esc_html__( 'Events are bookable for up to', 'booking-activities' ),
-			'tip'			=> esc_html__( 'Set the end of the availability period. E.g.: "30 days, 6 hours, 30 minutes", your customers may book events starting within 30 days, 6 hours and 30 minutes at the latest. They are not allowed yet to book events starting later.', 'booking-activities' )
+			/* translators: Followed by a field indicating a number of days from today. E.g.: "At the earliest 14 days before the event". */
+			'title'			=> esc_html__( 'At the earliest', 'booking-activities' ),
+			/* translators: Comes after a field indicating a number of days from today. E.g.: "At the earliest 14 days before the event". */
+			'label'			=> esc_html__( 'before the event', 'booking-activities' ),
+			'tip'			=> esc_html__( 'Set when an event can be booked at the earliest. E.g.: "14 days", you can book an event starting in 13 days and few hours, but you cannot book an event starting in 3 weeks.', 'booking-activities' )
+		);
+	}
+	
+	// Availability Period Start
+	if( ! $fields || in_array( 'availability_period_start', $fields, true ) ) {
+		$defaults[ 'availability_period_start' ] = array(
+			'type'			=> 'duration',
+			'name'			=> 'availability_period_start',
+			'options'		=> array( 'min' => 0, 'step' => 1 ),
+			/* translators: Followed by a field indicating a number of days from today. E.g.: "At the latest 1 hour before the event". */
+			'title'			=> esc_html__( 'At the latest', 'booking-activities' ),
+			'label'			=> esc_html__( 'before the event', 'booking-activities' ),
+			'tip'			=> esc_html__( 'Set when an event can be booked at the latest. E.g.: "1 hour 30 minutes", you can book an event starting in 2 hours, but you cannot book an event starting in 45 minutes.', 'booking-activities' )
 		);
 	}
 	
