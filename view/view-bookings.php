@@ -1,7 +1,7 @@
 <?php
 /**
  * Booking list page
- * @version 1.8.6
+ * @version 1.8.7
  */
 
 // Exit if accessed directly
@@ -316,6 +316,19 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			?>
 			</div>
 			<?php do_action( 'bookacti_after_booking_list' ); ?>
+		</div>
+		
+		<div class='bookacti-sos'>
+			<strong><?php /* translators: %s = [bookingactivities_list] */ echo sprintf( esc_html__( 'Your customers can see their booking list too thanks to the %s shortcode!', 'booking-activities' ), '<code>[bookingactivities_list]</code>' ); ?> (<a href='https://booking-activities.fr/en/docs/user-documentation/get-started-with-booking-activities/display-customers-bookings-list-on-the-frontend/' target='_blank'><?php esc_html_e( 'documentation', 'booking-activities' ); ?></a>)</strong>
+			<span class='dashicons dashicons-sos' data-label='<?php echo esc_html_x( 'Help', 'button label', 'booking-activities' ); ?>'></span>
+			<span>
+				<ul class='bookacti-help-list'>
+					<li><?php esc_html_e( 'The customers will need to be logged in to see their booking list, so it is recommended to display a login form on the same page', 'booking-activities' ); ?> (<a href='https://booking-activities.fr/en/docs/user-documentation/get-started-with-booking-activities/display-a-login-registration-form/' target='_blank'><?php esc_html_e( 'documentation', 'booking-activities' ); ?></a>)
+					<li><?php esc_html_e( 'The customers will be able to cancel, reschedule or request a refund from their booking list.', 'booking-activities' ); ?> (<a href='<?php echo esc_url( admin_url( 'admin.php?page=bookacti_settings&tab=cancellation' ) ); ?>'><?php esc_html_e( 'Settings', 'booking-activities' ); ?></a>)
+					<li><?php esc_html_e( 'You can display your customers\' calendar of bookings too: create a booking form, remove all fields, configure the "Calendar" field to display events booked by the current user only, and past events. Then display it thanks to the booking form shortcode.', 'booking-activities' ); ?>
+					<?php do_action( 'bookacti_admin_booking_list_help_after' ); ?>
+				</ul>
+			</span>
 		</div>
 	</div>
 </div><!-- end of wp wrap -->

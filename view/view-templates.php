@@ -1,7 +1,7 @@
 <?php
 /**
  * Calendar editor page
- * @version 1.8.0
+ * @version 1.8.7
  */
 
 // Exit if accessed directly
@@ -23,7 +23,7 @@ $default_template = false;
 		<li><strong>
 			<?php 
 				/* translators: %s is a link to the official FAQ. The label of this link is "FAQ". */
-				echo sprintf( esc_html__( 'A fatal error occurred. Please try to refresh the page. If the error persists, follow the process under "Booking Activities doesn’t work as it should" here: %s.', 'booking-activities' ), '<a href="https://booking-activities.fr/en/documentation/faq">' . esc_html( 'FAQ', 'booking-activities' ) . '</a>' );
+				echo sprintf( esc_html__( 'A fatal error occurred. Please try to refresh the page. If the error persists, follow the process under "Booking Activities doesn’t work as it should" here: %s.', 'booking-activities' ), '<a href="https://booking-activities.fr/en/documentation/faq">' . esc_html__( 'FAQ', 'booking-activities' ) . '</a>' );
 			?>
 			</strong>
 		<li><em><?php esc_html_e( 'Advanced users, you can stop loading and free the fields to try to solve your problem:', 'booking-activities' ); ?></em>

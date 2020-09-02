@@ -806,7 +806,7 @@ function bookacti_format_form_field_data( $raw_field_data ) {
 /**
  * Sanitize field data according to its type
  * @since 1.5.0
- * @version 1.8.0
+ * @version 1.8.7
  * @param array|string $raw_field_data
  * @return array|false
  */
@@ -855,6 +855,25 @@ function bookacti_sanitize_form_field_data( $raw_field_data ) {
 		$field_meta[ 'end' ]	= isset( $raw_field_data[ 'end' ] ) && bookacti_sanitize_date( $raw_field_data[ 'end' ] ) ? bookacti_sanitize_date( $raw_field_data[ 'end' ] ) : $default_meta[ 'end' ];
 		$field_meta[ 'availability_period_start' ]	= isset( $raw_field_data[ 'availability_period_start' ] ) && is_numeric( $raw_field_data[ 'availability_period_start' ] ) ? intval( $raw_field_data[ 'availability_period_start' ] ) : $default_meta[ 'availability_period_start' ];
 		$field_meta[ 'availability_period_end' ]	= isset( $raw_field_data[ 'availability_period_end' ] ) && is_numeric( $raw_field_data[ 'availability_period_end' ] ) ? intval( $raw_field_data[ 'availability_period_end' ] ) : $default_meta[ 'availability_period_end' ];
+		
+		// Switch start and end if start > end
+		if( $field_meta[ 'start' ] && $field_meta[ 'end' ] ) {
+			$start_dt = new DateTime( $field_meta[ 'start' ] );
+			$end_dt = new DateTime( $field_meta[ 'end' ] );
+			if( $start_dt > $end_dt ) {
+				$start = $field_meta[ 'start' ];
+				$field_meta[ 'start' ] = $field_meta[ 'end' ];
+				$field_meta[ 'end' ] = $start;
+			}
+		}
+		
+		// Switch availability_period_start and availability_period_end if availability_period_start > availability_period_end
+		if( $field_meta[ 'availability_period_start' ] && $field_meta[ 'availability_period_end' ] 
+		&&  $field_meta[ 'availability_period_start' ] > $field_meta[ 'availability_period_end' ] ) {
+			$availability_period_start = $field_meta[ 'availability_period_start' ];
+			$field_meta[ 'availability_period_start' ] = $field_meta[ 'availability_period_end' ];
+			$field_meta[ 'availability_period_end' ] = $availability_period_start;
+		}
 		
 		$field_meta[ 'form_action' ]					= isset( $raw_field_data[ 'form_action' ] ) && in_array( $raw_field_data[ 'form_action' ], array_keys( bookacti_get_available_form_actions() ), true ) ? $raw_field_data[ 'form_action' ] : $default_meta[ 'form_action' ];
 		$field_meta[ 'when_perform_form_action' ]		= isset( $raw_field_data[ 'when_perform_form_action' ] ) && in_array( $raw_field_data[ 'when_perform_form_action' ], array_keys( bookacti_get_available_form_action_triggers() ), true ) ? $raw_field_data[ 'when_perform_form_action' ] : $default_meta[ 'when_perform_form_action' ];

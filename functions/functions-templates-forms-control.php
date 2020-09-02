@@ -5,8 +5,8 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 /**
  * Validate template basic data
- *
  * @since	1.0.6
+ * @version	1.8.7
  * @param	string		$template_title
  * @param	string	$template_start Format 'YYYY-MM-DD'
  * @param	string	$template_end	Format 'YYYY-MM-DD'
@@ -29,7 +29,7 @@ function bookacti_validate_template_data( $template_title, $template_start, $tem
     $return_array['errors'] = array();
     if( ! $is_template_start_before_end ) {
         $return_array['status'] = 'not_valid';
-		$return_array['errors'][] = 'error_template_end_before_begin';
+		$return_array['errors'][] = 'error_closing_before_opening';
     }
     
     return apply_filters( 'bookacti_validate_template_data', $return_array, $template_title, $template_start, $template_end );

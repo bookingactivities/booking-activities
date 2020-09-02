@@ -66,7 +66,7 @@ $j( document ).ready( function() {
 
 /**
  * Check template form
- * @version 1.8.0
+ * @version 1.8.7
  * @returns {Boolean}
  */
 function bookacti_validate_template_form() {
@@ -123,7 +123,7 @@ function bookacti_validate_template_form() {
     }
     if( ! valid_form.isStartBeforeEnd && valid_form.isStart && valid_form.isEnd ) { 
         $j( '#bookacti-template-closing' ).addClass( 'bookacti-input-error' );
-        $j( '#bookacti-template-closing' ).parent().append( "<div class='bookacti-form-error'>" + bookacti_localized.error_template_end_before_begin + "</div>" );
+        $j( '#bookacti-template-closing' ).parent().append( "<div class='bookacti-form-error'>" + bookacti_localized.error_closing_before_opening + "</div>" );
     }
     if( ! valid_form.isDuplicateIdPositive ){ 
         $j( '#bookacti-template-duplicated-template-id' ).addClass( 'bookacti-input-error' );

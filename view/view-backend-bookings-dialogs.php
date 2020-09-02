@@ -1,7 +1,7 @@
 <?php 
 /**
  * Backend booking dialogs
- * @version 1.8.6
+ * @version 1.8.7
  */
 
 // Exit if accessed directly
@@ -143,45 +143,50 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		<?php
 			wp_nonce_field( 'bookacti_change_booking_state', 'nonce_change_booking_state', false );
 		?>
-		<p class='bookacti-dialog-intro' ><?php esc_html_e( 'Pick the desired booking state:', 'booking-activities' ); ?></p>
-		<div>
-			<label for='bookacti-select-booking-state' ><?php esc_html_e( 'Booking state', 'booking-activities' ); ?></label>
-			<select name='select-booking-state' id='bookacti-select-booking-state' >
-				<?php
-				$booking_state_labels = bookacti_get_booking_state_labels();
-				$allowed_booking_states = apply_filters( 'bookacti_booking_states_you_can_manually_change', array( 'delivered', 'booked', 'pending', 'cancelled', 'refund_requested', 'refunded' ) );
-				foreach( $allowed_booking_states as $state_key ) {
-					$state_label = ! empty( $booking_state_labels[ $state_key ][ 'label' ] ) ? $booking_state_labels[ $state_key ][ 'label' ] : $state_key;
-					echo '<option value="' . esc_attr( $state_key ) . '" >' . $state_label . '</option>';
-				}
+		<fieldset>
+			<legend><?php esc_html_e( 'Booking state', 'booking-activities' ); ?></legend>
+			<div>
+				<label for='bookacti-select-booking-state' ><?php esc_html_e( 'Booking state', 'booking-activities' ); ?></label>
+				<select name='select-booking-state' id='bookacti-select-booking-state' >
+					<?php
+					$booking_state_labels = bookacti_get_booking_state_labels();
+					$allowed_booking_states = apply_filters( 'bookacti_booking_states_you_can_manually_change', array( 'delivered', 'booked', 'pending', 'cancelled', 'refund_requested', 'refunded' ) );
+					foreach( $allowed_booking_states as $state_key ) {
+						$state_label = ! empty( $booking_state_labels[ $state_key ][ 'label' ] ) ? $booking_state_labels[ $state_key ][ 'label' ] : $state_key;
+						echo '<option value="' . esc_attr( $state_key ) . '" >' . $state_label . '</option>';
+					}
+					?>
+				</select>
+			</div>
+			<div>
+				<label for='bookacti-send-notifications-on-state-change' ><?php esc_html_e( 'Send notifications', 'booking-activities' ); ?></label>
+				<?php 
+					$args = array(
+						'type'	=> 'checkbox',
+						'name'	=> 'send-notifications-on-state-change',
+						'id'	=> 'bookacti-send-notifications-on-state-change',
+						'value'	=> 0,
+						/* Translators: %s is a link to the "Notifications settings" */
+						'tip'	=> sprintf( esc_html__( 'Send the booking status change notifications configured in %s.', 'booking-activities' ), '<a href="' . admin_url( 'admin.php?page=bookacti_settings&tab=notifications' ) . '">' . esc_html__( 'Notifications settings', 'booking-activities' ) . '</a>' )
+					);
+					bookacti_display_field( $args );
 				?>
-			</select>
-		</div>
-		<div>
-			<label for='bookacti-send-notifications-on-state-change' ><?php esc_html_e( 'Send notifications', 'booking-activities' ); ?></label>
-			<?php 
-				$args = array(
-					'type'	=> 'checkbox',
-					'name'	=> 'send-notifications-on-state-change',
-					'id'	=> 'bookacti-send-notifications-on-state-change',
-					'value'	=> 0,
-					/* Translators: %s is a link to the "Notifications settings" */
-					'tip'	=> sprintf( esc_html__( 'Send the booking status change notifications configured in %s.', 'booking-activities' ), '<a href="' . admin_url( 'admin.php?page=bookacti_settings&tab=notifications' ) . '">' . esc_html__( 'Notifications settings', 'booking-activities' ) . '</a>' )
-				);
-				bookacti_display_field( $args );
-			?>
-		</div>
-		<div>
-			<label for='bookacti-select-payment-status' ><?php esc_html_e( 'Payment status', 'booking-activities' ); ?></label>
-			<select name='select-payment-status' id='bookacti-select-payment-status' >
-				<?php
-				$payment_status = bookacti_get_payment_status_labels();
-				foreach( $payment_status as $payment_status_id => $payment_status_data ) {
-					echo '<option value="' . esc_attr( $payment_status_id ) . '" >' . esc_html( $payment_status_data[ 'label' ] ) . '</option>';
-				}
-				?>
-			</select>
-		</div>
+			</div>
+		</fieldset>
+		<fieldset>
+			<legend><?php esc_html_e( 'Payment status', 'booking-activities' ); ?></legend>
+			<div>
+				<label for='bookacti-select-payment-status' ><?php esc_html_e( 'Payment status', 'booking-activities' ); ?></label>
+				<select name='select-payment-status' id='bookacti-select-payment-status' >
+					<?php
+					$payment_status = bookacti_get_payment_status_labels();
+					foreach( $payment_status as $payment_status_id => $payment_status_data ) {
+						echo '<option value="' . esc_attr( $payment_status_id ) . '" >' . esc_html( $payment_status_data[ 'label' ] ) . '</option>';
+					}
+					?>
+				</select>
+			</div>
+		</fieldset>
 	</form>
 </div>
 

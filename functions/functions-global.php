@@ -439,7 +439,7 @@ function bookacti_generate_ical( $vevents, $vcalendar = array() ) {
 /**
  * Get the variables used with javascript
  * @since 1.8.0
- * @version 1.8.4
+ * @version 1.8.7
  * @return array
  */
 function bookacti_get_js_variables() {
@@ -538,7 +538,15 @@ function bookacti_get_js_variables() {
 			'dialog_button_generate_link'		=> esc_html__( 'Generate export link', 'booking-activities' ),
 			'dialog_button_reset'				=> esc_html__( 'Reset', 'booking-activities' ),
 			'dialog_button_delete'				=> esc_html__( 'Delete', 'booking-activities' ),
-			'error_time_format'			        => esc_html__( 'The time format should be HH:mm where "HH" represents hours and "mm" minutes.', 'booking-activities' ),
+			'error_time_format'					=> esc_html__( 'The time format should be HH:mm where "HH" represents hours and "mm" minutes.', 'booking-activities' ),
+												/* translators: %1$s = "At the latest". %2$s = "At the earliest". */
+			'error_availability_period'			=> sprintf( esc_html__( 'The "%1$s" delay must be higher than the "%2$s" delay.', 'booking-activities' ), 
+					esc_html__( 'At the earliest', 'booking-activities' ), 
+					esc_html__( 'At the latest', 'booking-activities' ) ),
+												/* translators: %1$s = "Opening". %2$s = "Closing". */
+			'error_closing_before_opening'		=> sprintf( esc_html__( 'The "%1$s" date must be prior to the "%2$s" date.', 'booking-activities' ), 
+					esc_html__( 'Opening', 'booking-activities' ), 
+					esc_html__( 'Closing', 'booking-activities' ) ),
 			'nonce_get_booking_rows'			=> wp_create_nonce( 'bookacti_get_booking_rows' )
 		);
 
@@ -556,7 +564,6 @@ function bookacti_get_js_variables() {
 
 				'error_fill_field'                  => esc_html__( 'Please fill this field.', 'booking-activities' ),
 				'error_invalid_value'               => esc_html__( 'Please select a valid value.', 'booking-activities' ),
-				'error_template_end_before_begin'   => esc_html__( 'The calendar period cannot end before it started.', 'booking-activities' ),
 				'error_day_end_before_begin'		=> esc_html__( 'Day end time must be after day start time.', 'booking-activities' ),
 				'error_repeat_period_not_set'		=> esc_html__( 'The repetition period is not set.', 'booking-activities' ),
 				'error_repeat_end_before_begin'     => esc_html__( 'The repetition period cannot end before it started.', 'booking-activities' ),
@@ -1009,7 +1016,7 @@ function bookacti_display_fields( $fields, $args = array() ) {
 /**
  * Display various fields
  * @since 1.2.0
- * @version 1.8.6
+ * @version 1.8.7
  * @param array $args ['type', 'name', 'label', 'id', 'class', 'placeholder', 'options', 'attr', 'value', 'tip', 'required']
  */
 function bookacti_display_field( $args ) {
@@ -1193,7 +1200,7 @@ function bookacti_display_field( $args ) {
 	// SELECT
 	else if( $args[ 'type' ] === 'select' ) {
 		$is_multiple = $args[ 'multiple' ] && ( $args[ 'multiple' ] !== 'maybe' || ( $args[ 'multiple' ] === 'maybe' && count( $args[ 'value' ] ) > 1 ) );
-		if( $is_multiple && strpos( '[]', $args[ 'name' ] ) === false ) { $args[ 'name' ] .= '[]'; }
+		if( $is_multiple && strpos( $args[ 'name' ], '[]' ) === false ) { $args[ 'name' ] .= '[]'; }
 		if( ! $is_multiple && is_array( $args[ 'value' ] ) ) { $args[ 'value' ] = reset( $args[ 'value' ] ); }
 		?>
 		<select	name=	'<?php echo esc_attr( $args[ 'name' ] ); ?>' 
@@ -1289,9 +1296,8 @@ function bookacti_display_field( $args ) {
 
 /**
  * Format arguments to diplay a proper field
- * 
  * @since 1.2.0
- * @version 1.8.6
+ * @version 1.8.7
  * @param array $args ['type', 'name', 'label', 'id', 'class', 'placeholder', 'options', 'attr', 'value', 'multiple', 'tip', 'required']
  * @return array|false
  */
@@ -1349,7 +1355,7 @@ function bookacti_format_field_args( $args ) {
 	// If multiple, make sure name has brackets and value is an array
 	if( $args[ 'type' ] === 'select_items' ) { $args[ 'multiple' ] = 1; }
 	if( in_array( $args[ 'multiple' ], array( 'true', true, '1', 1 ), true ) ) {
-		if( strpos( '[]', $args[ 'name' ] ) === false ) { $args[ 'name' ] .= '[]'; }
+		if( strpos( $args[ 'name' ], '[]' ) === false ) { $args[ 'name' ] .= '[]'; }
 	} else if( $args[ 'multiple' ] && $args[ 'type' ] === 'select' ) {
 		$args[ 'multiple' ] = 'maybe';
 	}
@@ -1488,7 +1494,7 @@ function bookacti_onoffswitch( $name, $current_value, $id = NULL, $disabled = fa
 /**
  * Create a user selectbox
  * @since 1.3.0
- * @version 1.8.3
+ * @version 1.8.7
  * @param array $raw_args
  * @return string|void
  */
@@ -1509,7 +1515,7 @@ function bookacti_display_user_selectbox( $raw_args ) {
 	$users = ! $args[ 'ajax' ] && $is_allowed ? bookacti_get_users_data( $args ) : array();
 	$args[ 'class' ] = $args[ 'ajax' ] ? 'bookacti-select2-ajax ' . trim( $args[ 'class' ] ) : ( $args[ 'select2' ] ? 'bookacti-select2-no-ajax ' . trim( $args[ 'class' ] ) : trim( $args[ 'class' ] ) );
 	
-	if( $args[ 'ajax' ] && $args[ 'selected' ] && $is_allowed ) {
+	if( $args[ 'ajax' ] && $args[ 'selected' ] && is_numeric( $args[ 'selected' ] ) && $is_allowed ) {
 		$user = get_user_by( 'id', $args[ 'selected' ] );
 		if( $user ) { $users[] = $user; }
 	}
@@ -1865,6 +1871,21 @@ function bookacti_sanitize_datetime( $datetime ) {
 		return $datetime_object->format( 'Y-m-d H:i:s' );
 	}
 	return '';
+}
+
+
+if( ! function_exists( 'wp_date' ) ) {
+	/**
+	 * Backward Compatibility - Retrieves the date, in localized format
+	 * @since 1.8.7
+	 * @param string $format
+	 * @param int $timestamp
+	 * @param DateTimeZone $timezone
+	 * @return string
+	 */
+	function wp_date( $format, $timestamp = false, $timezone = false ) {
+		return date_i18n( $format, $timestamp, false );
+	}
 }
 
 
