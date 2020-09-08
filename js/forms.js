@@ -7,17 +7,17 @@ $j( document ).ready( function() {
 	
 	/**
 	 * Check password strength
-	 * @version 1.7.16
+	 * @version 1.8.8
 	 */
 	$j( 'body' ).on( 'keyup mouseup change', '.bookacti-booking-form input[name=password], .bookacti-form-fields input[name=password]', function() {
 		var password_field			= $j( this );
 		var password_confirm_field	= null;
 		var password_strength_meter	= $j( this ).closest( '.bookacti-form-field-container' ).find( '.bookacti-password-strength-meter' );
-		var blacklisted_words		= [];
+		var forbidden_words			= [];
 		var login_type				= password_field.closest( '.bookacti-booking-form, .bookacti-form-fields' ).find( 'input[name="login_type"]:checked' ).val();
 		
 		if( password_strength_meter.length && login_type === 'new_account' ) {
-			var pwd_strength = bookacti_check_password_strength( password_field, password_confirm_field, password_strength_meter, blacklisted_words );
+			var pwd_strength = bookacti_check_password_strength( password_field, password_confirm_field, password_strength_meter, forbidden_words );
 			$j( this ).closest( '.bookacti-form-field-container' ).find( 'input[name=password_strength]' ).val( pwd_strength );
 		} else {
 			password_field.removeClass( 'short bad good strong' );
@@ -304,28 +304,28 @@ function bookacti_show_hide_register_fields( login_field_container ) {
 /**
  * Get password strength and display a password strength meter
  * @since 1.5.0
- * @since 1.7.16
+ * @version 1.8.8
  * @param {HTMLElement} password_field
  * @param {HTMLElement} password_confirm_field
  * @param {HTMLElement} password_strength_meter
- * @param {array} blacklisted_words
+ * @param {array} forbidden_words
  * @returns {int}
  */
-function bookacti_check_password_strength( password_field, password_confirm_field, password_strength_meter, blacklisted_words ) {
+function bookacti_check_password_strength( password_field, password_confirm_field, password_strength_meter, forbidden_words ) {
 	if( typeof window.zxcvbn === 'undefined' || typeof wp.passwordStrength === 'undefined' || typeof pwsL10n === 'undefined' ) { return 4; }
 	
 	var pwd = password_field.val();
 	var confirm_pwd = password_confirm_field != null ? password_confirm_field.val() : pwd;
 	
-	// extend the blacklisted words array with those from the site data
-	blacklisted_words = blacklisted_words.concat( wp.passwordStrength.userInputBlacklist() );
+	// extend the forbidden words array with those from the site data
+	forbidden_words = forbidden_words.concat( wp.passwordStrength.userInputBlacklist() );
 
 	// reset the strength meter status
 	password_field.removeClass( 'short bad good strong' );
 	password_strength_meter.removeClass( 'short bad good strong' );
 
 	// calculate the password strength
-	var pwd_strength = wp.passwordStrength.meter( pwd, blacklisted_words, confirm_pwd );
+	var pwd_strength = wp.passwordStrength.meter( pwd, forbidden_words, confirm_pwd );
 	
 	// check the password strength
 	switch( pwd_strength ) {

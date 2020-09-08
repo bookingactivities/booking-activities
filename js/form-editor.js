@@ -5,6 +5,20 @@ $j( document ).ready( function() {
 	// Add / remove form managers
 	bookacti_init_add_and_remove_items();
 	
+	/**
+	 * Refresh the form managers selectbox
+	 * @since 1.8.8
+	 */
+	$j( '#bookacti-form-managers-select-box option' ).prop( 'selected', true );
+	var form_managers = $j( '#bookacti-form-managers-select-box' ).val();
+	$j( '#bookacti-form-managers-select-box' ).empty();
+	if( form_managers ) {
+		if( form_managers.length ) {
+			var items_container = $j( '#bookacti-form-managers-container' );
+			bookacti_fill_items_selectbox( items_container, form_managers );
+		}
+	}
+	
 	// Specific dialogs
 	$j( '#bookacti-form-field-dialog-free_text' ).dialog( 'option', 'width', 540 );
 	$j( '#bookacti-form-field-dialog-terms' ).dialog( 'option', 'width', 540 );

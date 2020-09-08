@@ -319,6 +319,11 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 
 == Changelog ==
 
+= 1.8.8 =
+* Fix - Activity managers may not be saved
+* Dev - Display and format the Calendar managers, Activity managers and Form managers in a uniformized way
+* Dev - Export ical events in UTC for higher compatibility with calendar apps
+
 = 1.8.7 - 2020/09/02 =
 * Tweak - Disambiguation of availability period settings
 * Tweak - Add contextual help to promote the [bookingactivities_list] shortcode
