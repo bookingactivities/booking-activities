@@ -1637,47 +1637,25 @@ function bookacti_format_form_filters( $filters = array() ) {
 /**
  * Display 'managers' metabox content for forms
  * @since 1.5.0
- * @version 1.8.3
+ * @version 1.8.8
  */
 function bookacti_display_form_managers_meta_box( $form ) {
 	// Get current form managers option list
 	$managers_already_added = array();
 	$manager_ids = bookacti_get_form_managers( $form[ 'form_id' ] );
-	$current_managers_options_list = '';
-	if( ! empty( $manager_ids ) ) {
-		foreach( $manager_ids as $manager_id ) {
-			$userdata = get_userdata( $manager_id );
-			$display_name = $userdata->user_login;
-			if( ! empty( $userdata->first_name ) && ! empty( $userdata->last_name ) ){
-				$display_name = $userdata->first_name  . ' ' . $userdata->last_name . ' (' . $userdata->user_login . ')';
-			}
-			$display_name = apply_filters( 'bookacti_managers_name_display', $display_name, $userdata );
-			$current_managers_options_list .= '<option value="' . $manager_id . '" selected >' . $display_name . '</option>';
-			$managers_already_added[] = $manager_id;
-		}
-	}
 	
 	// Get available form managers option list
-	$in_roles		= apply_filters( 'bookacti_managers_roles', array(), 'form' );
-	$not_in_roles	= apply_filters( 'bookacti_managers_roles_exceptions', array( 'administrator' ), 'form' );
-	$user_query		= new WP_User_Query( array( 'role__in' => $in_roles, 'role__not_in' => $not_in_roles ) );
-	$users			= $user_query->get_results();
-	$available_managers_options_list = '';
-	if ( ! empty( $users ) ) {
-		foreach( $users as $user ) {
-			if( $user->has_cap( 'bookacti_edit_forms' ) ) {
-				$userdata = get_userdata( $user->ID );
-				$display_name = $userdata->user_login;
-				if( $userdata->first_name && $userdata->last_name ){
-					$display_name = $userdata->first_name  . ' ' . $userdata->last_name . ' (' . $userdata->user_login . ')';
-				}
-				$display_name = apply_filters( 'bookacti_managers_name_display', $display_name, $userdata );
-				$disabled = in_array( $user->ID, $managers_already_added, true ) ? 'disabled style="display:none;"' : '';
-				
-				$available_managers_options_list .= '<option value="' . esc_attr( $user->ID ) . '" ' . $disabled . ' >' . esc_html( $display_name ) . '</option>';
-			}
-		}
-	}
+	$form_managers_cap = array( 'bookacti_edit_forms' );
+	$form_managers_args = array(
+		'option_label' => array( 'display_name', ' (', 'user_login', ')' ), 
+		'id' => 'bapap-add-new-booking-pass-template-managers-select-box', 
+		'name' => '', 
+		'class' => 'bookacti-add-new-items-select-box bookacti-managers-selectbox',
+		'role__in' => apply_filters( 'bookacti_managers_roles', array_merge( bookacti_get_roles_by_capabilities( $form_managers_cap ), $form_managers_cap ), 'form' ),
+		'role__not_in' => apply_filters( 'bookacti_managers_roles_exceptions', array( 'administrator' ), 'form' ),
+		'meta' => false,
+		'ajax' => 0
+	);
 	
 	?>
 	<div id='bookacti-form-managers-container' class='bookacti-items-container' data-type='users' >
@@ -1685,22 +1663,26 @@ function bookacti_display_form_managers_meta_box( $form ) {
 		<?php 
 			esc_html_e( 'Who can manage this form?', 'booking-activities' );
 			$tip  = esc_html__( 'Choose who is allowed to access this form.', 'booking-activities' );
+			/* translators: %s = comma separated list of user roles */
+			$tip .= '<br/>' . sprintf( esc_html__( 'These roles already have this privilege: %s.', 'booking-activities' ), '<code>' . implode( '</code>, <code>', array_intersect_key( bookacti_get_roles(), array_flip( $form_managers_args[ 'role__not_in' ] ) ) ) . '</code>' );
 			/* translators: %s = capabilities name */
-			$tip .= ' ' . sprintf( esc_html__( 'All administrators already have this privilege. If the selectbox is empty, it means that no users have capabilities such as %s.', 'booking-activities' ), '"bookacti_edit_forms"' );
+			$tip .= '<br/>' . sprintf( esc_html__( 'If the selectbox is empty, it means that no other users have these capabilities: %s.', 'booking-activities' ), '<code>' . implode( '</code>, <code>', $form_managers_cap ) . '</code>' );
 			/* translators: %1$s = User Role Editor plugin link. */
-			$tip .= '<br/>' . sprintf( esc_html__( 'If you want to grant a user these capabilities, use a plugin such as %1$s.', 'booking-activities' ), '<a href="https://wordpress.org/plugins/user-role-editor/" target="_blank" >User Role Editor</a>' );
+			$tip .= '<br/>' . sprintf( esc_html__( 'If you want to grant a user these capabilities, use a plugin such as %1$s.', 'booking-activities' ), '<a href="https://wordpress.org/plugins/user-role-editor/" target="_blank">User Role Editor</a>' );
 			bookacti_help_tip( $tip );
 		?>
 		</label>
 		<div id='bookacti-add-form-managers-container' class='bookacti-add-items-container' >
-			<select id='bookacti-add-new-form-managers-select-box' class='bookacti-add-new-items-select-box' >
-			<?php echo $available_managers_options_list; ?>
-			</select>
+			<?php bookacti_display_user_selectbox( $form_managers_args ); ?>
 			<button type='button' id='bookacti-add-form-managers' class='bookacti-add-items' ><?php esc_html_e( 'Add manager', 'booking-activities' ); ?></button>
 		</div>
 		<div id='bookacti-form-managers-list-container' class='bookacti-items-list-container' >
 			<select name='form-managers[]' id='bookacti-form-managers-select-box' class='bookacti-items-select-box' multiple >
-			<?php echo $current_managers_options_list; ?>
+			<?php 
+				foreach( $manager_ids as $manager_id ) {
+					?><option value='<?php echo $manager_id; ?>'><?php echo $manager_id; ?></option><?php
+				}
+			?>
 			</select>
 			<button type='button' id='bookacti-remove-form-managers' class='bookacti-remove-items' ><?php esc_html_e( 'Remove selected', 'booking-activities' ); ?></button>
 		</div>
@@ -1840,11 +1822,11 @@ function bookacti_get_form_managers( $form_id ) {
 /**
  * Format form managers
  * @since 1.5.0
+ * @version 1.8.8
  * @param array $form_managers
  * @return array
  */
 function bookacti_format_form_managers( $form_managers = array() ) {
-	
 	$form_managers = bookacti_ids_to_array( $form_managers );
 	
 	// If user is not super admin, add him automatically in the form managers list if he isn't already
@@ -1857,11 +1839,16 @@ function bookacti_format_form_managers( $form_managers = array() ) {
 	}
 	
 	// Make sure all users have permission to manage forms
-	foreach( $form_managers as  $i => $form_manager ) {
-		if( empty( $form_manager )
-		|| ! user_can( $form_manager, 'bookacti_edit_forms' ) ) {
-			unset( $form_managers[ $i ] );
+	$form_managers_caps = array( 'bookacti_edit_forms' );
+	foreach( $form_managers as $i => $form_manager ) {
+		if( $form_manager ) {
+			$user_can = false;
+			foreach( $form_managers_caps as $form_managers_cap ) {
+				if( user_can( $form_manager, $form_managers_cap ) ) { $user_can = true; break; }
+			}
+			if( $user_can ) { continue; }
 		}
+		unset( $form_managers[ $i ] );
 	}
 	
 	return apply_filters( 'bookacti_form_managers', $form_managers );

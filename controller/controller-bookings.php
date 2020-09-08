@@ -903,7 +903,7 @@ add_action( 'bookacti_clean_expired_exports', 'bookacti_clean_expired_exports' )
 /**
  * Generate the export bookings URL according to current filters and export settings
  * @since 1.6.0
- * @version 1.8.0
+ * @version 1.8.8
  */
 function bookacti_controller_generate_export_bookings_url() {
 	// Check nonce
@@ -984,8 +984,8 @@ function bookacti_controller_generate_export_bookings_url() {
 	
 	// Add iCal specific args
 	if( $export_type === 'ical' ) {
-		$add_url_atts[ 'vevent_summary' ]		= urlencode( utf8_encode( $export_settings[ 'vevent_summary' ] ) );
-		$add_url_atts[ 'vevent_description' ]	= urlencode( utf8_encode( str_replace( array( PHP_EOL, '\n' ), '%0A', $export_settings[ 'vevent_description' ] ) ) );
+		$add_url_atts[ 'vevent_summary' ]		= urlencode( utf8_encode( trim( $export_settings[ 'vevent_summary' ] ) ) );
+		$add_url_atts[ 'vevent_description' ]	= urlencode( utf8_encode( str_replace( array( PHP_EOL, '\n' ), '%0A', trim( $export_settings[ 'vevent_description' ] ) ) ) );
 		$add_url_atts[ 'booking_list_header' ]	= $export_settings[ 'ical_booking_list_header' ];
 		$booking_filters[ 'raw' ]				= $export_settings[ 'ical_raw' ];
 		if( array_diff_assoc( array_values( $default_settings[ 'ical_columns' ] ), $export_settings[ 'ical_columns' ] ) ) {
@@ -1029,7 +1029,7 @@ add_action( 'wp_ajax_bookactiExportBookingsUrl', 'bookacti_controller_generate_e
 /**
  * Export booking list according to filters
  * @since 1.6.0
- * @version 1.8.7
+ * @version 1.8.8
  */
 function bookacti_export_bookings_page() {
 	if( empty( $_REQUEST[ 'action' ] ) ) { return; }
@@ -1126,8 +1126,8 @@ function bookacti_export_bookings_page() {
 	
 	} else if( $export_type === 'ical' ) { 
 		$ical_args = array( 
-			'vevent_summary'		=> isset( $args[ 'vevent_summary' ] ) ? utf8_decode( urldecode( $args[ 'vevent_summary' ] ) ) : $user_settings[ 'vevent_summary' ],
-			'vevent_description'	=> isset( $args[ 'vevent_description' ] ) ? utf8_decode( urldecode( str_replace( array( '%0A', '%250A' ), '\n', $args[ 'vevent_description' ] ) ) ) : $user_settings[ 'vevent_description' ],
+			'vevent_summary'		=> isset( $args[ 'vevent_summary' ] ) ? utf8_decode( urldecode( trim( $args[ 'vevent_summary' ] ) ) ) : $user_settings[ 'vevent_summary' ],
+			'vevent_description'	=> isset( $args[ 'vevent_description' ] ) ? utf8_decode( urldecode( str_replace( array( '%0A', '%250A' ), '\n', trim( $args[ 'vevent_description' ] ) ) ) ) : $user_settings[ 'vevent_description' ],
 			'tooltip_booking_list_columns'	=> $columns,
 			'booking_list_header'	=> ! empty( $args[ 'booking_list_header' ] ) ? 1 : 0,
 			'raw'					=> ! empty( $args[ 'raw' ] ) ? 1 : 0,

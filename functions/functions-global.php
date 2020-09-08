@@ -350,6 +350,7 @@ function bookacti_generate_csv( $items, $headers = array() ) {
 /**
  * Generate iCal file
  * @since 1.8.0
+ * @version 1.8.8
  * @param array $vevents
  * @param array $vcalendar
  * @return string
@@ -365,7 +366,8 @@ function bookacti_generate_ical( $vevents, $vcalendar = array() ) {
 	$timezone		= bookacti_get_setting_value( 'bookacti_general_settings', 'timezone' );
 	$timezone_obj	= new DateTimeZone( $timezone );
 	$current_time	= new DateTime( 'now', $timezone_obj );
-	$now_formatted	= $current_time->format( 'Ymd\THis' );
+	$current_time->setTimezone( new DateTimeZone( 'UTC' ) );
+	$now_formatted	= $current_time->format( 'Ymd\THis\Z' );
 	
 	$site_name		= get_bloginfo( 'name' );
 	$calname		= $site_name;
@@ -2135,7 +2137,7 @@ function bookacti_sanitize_values( $default_data, $raw_data, $keys_by_type, $san
 /**
  * Escape illegal caracters in ical properties
  * @since 1.6.0
- * @version 1.8.0
+ * @version 1.8.8
  * @param string $value
  * @param string $property_name
  * @return string
@@ -2162,7 +2164,7 @@ function bookacti_sanitize_ical_property( $value, $property_name = '' ) {
 			}
 			else {
 				$lines[] = $line;
-				$property_name_len = 0; // The leading space doesn't count
+				$property_name_len = 1; // The leading space doesn't count, but we still take it into account it for better compatibility
 				$value = bookacti_substr( $value, $mbcc );
 				break;
 			}

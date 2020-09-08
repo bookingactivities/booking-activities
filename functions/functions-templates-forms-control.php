@@ -38,7 +38,7 @@ function bookacti_validate_template_data( $template_title, $template_start, $tem
 
 /**
  * Format template managers
- * @version 1.8.0
+ * @version 1.8.8
  * @param array $template_managers
  * @return array
  */
@@ -55,13 +55,16 @@ function bookacti_format_template_managers( $template_managers = array() ) {
 	}
 	
 	// Make sure all users have permission to manage templates
-	foreach( $template_managers as  $i => $template_manager ) {
-		if( empty( $template_manager )
-		|| ( ! user_can( $template_manager, 'bookacti_read_templates' )
-		&&	 ! user_can( $template_manager, 'bookacti_edit_templates' ) 
-		&&	 ! user_can( $template_manager, 'bookacti_edit_bookings' ) ) ) {
-			unset( $template_managers[ $i ] );
+	$template_managers_caps = array( 'bookacti_edit_bookings', 'bookacti_edit_templates', 'bookacti_read_templates' );
+	foreach( $template_managers as $i => $template_manager ) {
+		if( $template_manager ) {
+			$user_can = false;
+			foreach( $template_managers_caps as $template_managers_cap ) {
+				if( user_can( $template_manager, $template_managers_cap ) ) { $user_can = true; break; }
+			}
+			if( $user_can ) { continue; }
 		}
+		unset( $template_managers[ $i ] );
 	}
 	
 	return apply_filters( 'bookacti_template_managers', $template_managers );
@@ -118,12 +121,11 @@ function bookacti_format_template_settings( $raw_settings ) {
 
 /**
  * Format activity managers
- * 
+ * @version 1.8.8
  * @param array $activity_managers
  * @return array
  */
 function bookacti_format_activity_managers( $activity_managers = array() ) {
-	
 	$activity_managers = bookacti_ids_to_array( $activity_managers );
 	
 	// If user is not super admin, add him automatically in the activity managers list if he isn't already
@@ -136,10 +138,16 @@ function bookacti_format_activity_managers( $activity_managers = array() ) {
 	}
 	
 	// Make sure all users have permission to manage activities
-	foreach( $activity_managers as  $i => $activity_manager ) {
-		if( empty( $activity_manager ) || ! user_can( $activity_manager, 'bookacti_edit_activities' ) ) {
-			unset( $activity_managers[ $i ] );
+	$activity_managers_caps = array( 'bookacti_edit_bookings', 'bookacti_edit_templates', 'bookacti_read_templates' );
+	foreach( $activity_managers as $i => $activity_manager ) {
+		if( $activity_manager ) {
+			$user_can = false;
+			foreach( $activity_managers_caps as $activity_managers_cap ) {
+				if( user_can( $activity_manager, $activity_managers_cap ) ) { $user_can = true; break; }
+			}
+			if( $user_can ) { continue; }
 		}
+		unset( $activity_managers[ $i ] );
 	}
 	
 	return apply_filters( 'bookacti_activity_managers', $activity_managers );

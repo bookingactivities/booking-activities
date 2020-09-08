@@ -1232,7 +1232,7 @@ function bookacti_convert_bookings_to_csv( $filters, $args_raw = array() ) {
 /**
  * Convert bookings to iCal format
  * @since 1.8.0
- * @version 1.8.4
+ * @version 1.8.8
  * @param array $filters
  * @param array $args_raw
  * @return string
@@ -1270,6 +1270,7 @@ function bookacti_convert_bookings_to_ical( $filters = array(), $args_raw = arra
 	
 	$timezone = bookacti_get_setting_value( 'bookacti_general_settings', 'timezone' );
 	$timezone_obj = new DateTimeZone( $timezone );
+	$utc_timezone_obj = new DateTimeZone( 'UTC' );
 	$occurrence_counter = array();
 	$vevents = array();
 	
@@ -1284,6 +1285,8 @@ function bookacti_convert_bookings_to_ical( $filters = array(), $args_raw = arra
 		$uid			= $item[ 'event_id' ] . '-' . $occurrence_counter[ $item[ 'event_id' ] ];
 		$event_start	= new DateTime( $item[ 'start_date_raw' ], $timezone_obj );
 		$event_end		= new DateTime( $item[ 'end_date_raw' ], $timezone_obj );
+		$event_start->setTimezone( $utc_timezone_obj );
+		$event_end->setTimezone( $utc_timezone_obj );
 		
 		$events_tags[ $index ][ '{booking_list}' ] = $events_tags[ $index ][ '{booking_list}' ] ? '<table>' . $events_tags[ $index ][ '{booking_list}' ] . '</table>' : '';
 		
@@ -1292,8 +1295,8 @@ function bookacti_convert_bookings_to_ical( $filters = array(), $args_raw = arra
 		
 		$vevents[ $index ] = apply_filters( 'bookacti_bookings_ical_vevent', array(
 			'UID'			=> $uid,
-			'DTSTART'		=> $event_start->format( 'Ymd\THis' ),
-			'DTEND'			=> $event_end->format( 'Ymd\THis' ),
+			'DTSTART'		=> $event_start->format( 'Ymd\THis\Z' ),
+			'DTEND'			=> $event_end->format( 'Ymd\THis\Z' ),
 			'SUMMARY'		=> bookacti_sanitize_ical_property( $summary, 'SUMMARY' ),
 			'DESCRIPTION'	=> bookacti_sanitize_ical_property( $description, 'DESCRIPTION' ),
 			'SEQUENCE'		=> $args[ 'sequence' ]

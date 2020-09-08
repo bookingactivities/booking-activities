@@ -1,7 +1,7 @@
 <?php 
 /**
  * Calendar editor dialogs
- * @version 1.8.7
+ * @version 1.8.8
  */
 
 // Exit if accessed directly
@@ -310,41 +310,42 @@ foreach( $templates as $template ) {
 			
 			/**
 			 * Display the 'Permission' tab content of calendar settings
-			 * @version 1.8.3
+			 * @version 1.8.8
 			 * @param array $params
 			 */
 			function bookacti_fill_template_tab_permissions( $params = array() ) {
 				do_action( 'bookacti_template_tab_permissions_before', $params );
+				
+				$template_managers_cap = array( 'bookacti_edit_bookings', 'bookacti_edit_templates', 'bookacti_read_templates' );
+				$template_managers_args = array(
+					'option_label' => array( 'display_name', ' (', 'user_login', ')' ), 
+					'id' => 'bookacti-add-new-template-managers-select-box', 
+					'name' => '', 
+					'class' => 'bookacti-add-new-items-select-box bookacti-managers-selectbox',
+					'role__in' => apply_filters( 'bookacti_managers_roles', array_merge( bookacti_get_roles_by_capabilities( $template_managers_cap ), $template_managers_cap ), 'template' ),
+					'role__not_in' => apply_filters( 'bookacti_managers_roles_exceptions', array( 'administrator' ), 'template' ),
+					'meta' => false,
+					'ajax' => 0
+				);
 			?>	
 				<div id='bookacti-template-managers-container' class='bookacti-items-container' data-type='users' >
 					<label id='bookacti-template-managers-title' class='bookacti-fullwidth-label' for='bookacti-add-new-template-managers-select-box' >
 					<?php 
 						esc_html_e( 'Who can manage this calendar?', 'booking-activities' );
 						$tip  = esc_html__( 'Choose who is allowed to access this calendar.', 'booking-activities' );
+						/* translators: %s = comma separated list of user roles */
+						$tip .= '<br/>' . sprintf( esc_html__( 'These roles already have this privilege: %s.', 'booking-activities' ), '<code>' . implode( '</code>, <code>', array_intersect_key( bookacti_get_roles(), array_flip( $template_managers_args[ 'role__not_in' ] ) ) ) . '</code>' );
 						/* translators: %s = capabilities name */
-						$tip .= ' ' . sprintf( esc_html__( 'All administrators already have this privilege. If the selectbox is empty, it means that no users have capabilities such as %s.', 'booking-activities' ), '"bookacti_edit_templates" / "bookacti_read_templates / bookacti_edit_bookings"' );
+						$tip .= '<br/>' . sprintf( esc_html__( 'If the selectbox is empty, it means that no other users have these capabilities: %s.', 'booking-activities' ), '<code>' . implode( '</code>, <code>', $template_managers_cap ) . '</code>' );
 						/* translators: %1$s = Order for Customers add-on link. */
 						$tip .= '<br/>' . sprintf( esc_html__( 'Operators from %1$s add-on have these capabilities.', 'booking-activities' ), '<a href="https://booking-activities.fr/en/downloads/order-for-customers/?utm_source=plugin&utm_medium=plugin&utm_campaign=order-for-customers&utm_content=infobulle-permission" target="_blank" >Order for Customers</a>' );
 						/* translators: %1$s = User Role Editor plugin link. */
-						$tip .= ' ' . sprintf( esc_html__( 'If you want to grant a user these capabilities, use a plugin such as %1$s.', 'booking-activities' ), '<a href="https://wordpress.org/plugins/user-role-editor/" target="_blank" >User Role Editor</a>' );
+						$tip .= ' ' . sprintf( esc_html__( 'If you want to grant a user these capabilities, use a plugin such as %1$s.', 'booking-activities' ), '<a href="https://wordpress.org/plugins/user-role-editor/" target="_blank">User Role Editor</a>' );
 						bookacti_help_tip( $tip );
 					?>
 					</label>
 					<div id='bookacti-add-template-managers-container' class='bookacti-add-items-container' >
-						<?php
-							$template_managers_cap = array( 'bookacti_edit_bookings', 'bookacti_edit_templates', 'bookacti_read_templates' );
-							$template_managers_args = array(
-								'option_label' => array( 'display_name', ' (', 'user_login', ')' ), 
-								'id' => 'bookacti-add-new-template-managers-select-box', 
-								'name' => '', 
-								'class' => 'bookacti-add-new-items-select-box bookacti-managers-selectbox',
-								'role__in' => apply_filters( 'bookacti_managers_roles', array_merge( bookacti_get_roles_by_capabilities( $template_managers_cap ), $template_managers_cap ), 'template' ),
-								'role__not_in' => apply_filters( 'bookacti_managers_roles_exceptions', array( 'administrator' ), 'template' ),
-								'meta' => false,
-								'ajax' => 0
-							);
-							bookacti_display_user_selectbox( $template_managers_args );
-						?>
+						<?php bookacti_display_user_selectbox( $template_managers_args ); ?>
 						<button type='button' id='bookacti-add-template-managers' class='bookacti-add-items' ><?php esc_html_e( 'Add manager', 'booking-activities' ); ?></button>
 					</div>
 					<div id='bookacti-template-managers-list-container' class='bookacti-items-list-container' >
@@ -563,11 +564,23 @@ foreach( $templates as $template ) {
 			
 			/**
 			 * Display the fields in the "Permissions" tab of the Activity dialog
-			 * @version 1.8.3
+			 * @version 1.8.8
 			 * @param array $params
 			 */
 			function bookacti_fill_activity_tab_permissions( $params = array() ) {
 				do_action( 'bookacti_activity_tab_permissions_before', $params );
+				
+				$activity_managers_cap = array( 'bookacti_edit_bookings', 'bookacti_edit_templates', 'bookacti_read_templates' );
+				$activity_managers_args = array(
+					'option_label' => array( 'display_name', ' (', 'user_login', ')' ), 
+					'id' => 'bookacti-add-new-activity-managers-select-box', 
+					'name' => '', 
+					'class' => 'bookacti-add-new-items-select-box bookacti-managers-selectbox',
+					'role__in' => apply_filters( 'bookacti_managers_roles', array_merge( bookacti_get_roles_by_capabilities( $activity_managers_cap ), $activity_managers_cap ), 'activity' ),
+					'role__not_in' => apply_filters( 'bookacti_managers_roles_exceptions', array( 'administrator' ), 'activity' ),
+					'meta' => false,
+					'ajax' => 0
+				);
 			?>
 				<div>
 					<label for='bookacti-activity-roles' class='bookacti-fullwidth-label' >
@@ -600,8 +613,10 @@ foreach( $templates as $template ) {
 					<?php 
 						esc_html_e( 'Who can manage this activity?', 'booking-activities' );
 						$tip  = esc_html__( 'Choose who is allowed to access this activity.', 'booking-activities' );
+						/* translators: %s = comma separated list of user roles */
+						$tip .= '<br/>' . sprintf( esc_html__( 'These roles already have this privilege: %s.', 'booking-activities' ), '<code>' . implode( '</code>, <code>', array_intersect_key( bookacti_get_roles(), array_flip( $activity_managers_args[ 'role__not_in' ] ) ) ) . '</code>' );
 						/* translators: %s = capabilities name */
-						$tip .= ' ' . sprintf( esc_html__( 'All administrators already have this privilege. If the selectbox is empty, it means that no users have capabilities such as %s.', 'booking-activities' ), '"bookacti_edit_activities"' );
+						$tip .= '<br/>' . sprintf( esc_html__( 'If the selectbox is empty, it means that no other users have these capabilities: %s.', 'booking-activities' ), '<code>' . implode( '</code>, <code>', $activity_managers_cap ) . '</code>' );
 						/* translators: %1$s = Order for Customers add-on link. */
 						$tip .= '<br/>' . sprintf( esc_html__( 'Operators from %1$s add-on have these capabilities.', 'booking-activities' ), '<a href="https://booking-activities.fr/en/downloads/order-for-customers/?utm_source=plugin&utm_medium=plugin&utm_campaign=order-for-customers&utm_content=infobulle-permission" target="_blank" >Order for Customers</a>' );
 						/* translators: %1$s = User Role Editor plugin link. */
@@ -610,20 +625,7 @@ foreach( $templates as $template ) {
 					?>
 					</label>
 					<div id='bookacti-add-activity-managers-container' >
-						<?php
-							$activity_managers_cap = array( 'bookacti_edit_bookings', 'bookacti_edit_templates', 'bookacti_read_templates' );
-							$activity_managers_args = array(
-								'option_label' => array( 'display_name', ' (', 'user_login', ')' ), 
-								'id' => 'bookacti-add-new-activity-managers-select-box', 
-								'name' => '', 
-								'class' => 'bookacti-add-new-items-select-box bookacti-managers-selectbox',
-								'role__in' => apply_filters( 'bookacti_managers_roles', array_merge( bookacti_get_roles_by_capabilities( $activity_managers_cap ), $activity_managers_cap ), 'activity' ),
-								'role__not_in' => apply_filters( 'bookacti_managers_roles_exceptions', array( 'administrator' ), 'activity' ),
-								'meta' => false,
-								'ajax' => 0
-							);
-							bookacti_display_user_selectbox( $activity_managers_args );
-						?>
+						<?php bookacti_display_user_selectbox( $activity_managers_args ); ?>
 						<button type='button' id='bookacti-add-activity-managers' class='bookacti-add-items' ><?php esc_html_e( 'Add manager', 'booking-activities' ); ?></button>
 					</div>
 					<div id='bookacti-activity-managers-list-container' class='bookacti-items-list-container' >

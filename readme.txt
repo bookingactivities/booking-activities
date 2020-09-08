@@ -5,7 +5,7 @@ Tags: booking, reservation, booking form, woocommerce booking, booking events
 Requires at least: 3.6
 Tested up to: 5.5
 Requires PHP: 5.3
-Stable tag: 1.8.7
+Stable tag: 1.8.8
 License: GPLv3 or later
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
 
@@ -318,6 +318,11 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 
 
 == Changelog ==
+
+= 1.8.8 - 2020/09/08 =
+* Fix - Activity managers may not be saved
+* Dev - Display and format the Calendar managers, Activity managers and Form managers in a uniformized way
+* Dev - Export ical events in UTC for higher compatibility with calendar apps
 
 = 1.8.7 - 2020/09/02 =
 * Tweak - Disambiguation of availability period settings
