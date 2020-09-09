@@ -319,6 +319,11 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 
 == Changelog ==
 
+= 1.8.9 =
+* Tweak - Use WP setting "New User Default Role" as default value for user registered with a booking form
+* Dev - Add a CSS class on events booked by current user
+* Dev - Do no pass useless data while fetching new events
+
 = 1.8.8 - 2020/09/08 =
 * Fix - Activity managers may not be saved
 * Dev - Display and format the Calendar managers, Activity managers and Form managers in a uniformized way

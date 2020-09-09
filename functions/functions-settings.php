@@ -745,7 +745,7 @@ function bookacti_settings_field_calendar_localization_callback() {
 /**
  * Get all default messages
  * @since 1.2.0
- * @version 1.8.6
+ * @version 1.8.9
  */
 function bookacti_get_default_messages() {
 	$wp_date_format_link = '<a href="https://wordpress.org/support/article/formatting-date-and-time/" target="_blank" >' .  esc_html__( 'Formatting Date and Time', 'booking-activities' ) . '</a>';
@@ -842,16 +842,16 @@ function bookacti_get_default_messages() {
 			'input_type'	=> 'textarea'
 		),
 		'cancel_dialog_button' => array(
-			'value'			=> esc_html_x( 'Cancel', 'Cancel any action button label. It closes dialogs.', 'booking-activities' ),
-			'description'	=> esc_html__( 'Cancel any action button label. It closes dialogs.', 'booking-activities' )
+			'value'			=> esc_html_x( 'Close', 'Button label to close a dialog.', 'booking-activities' ),
+			'description'	=> esc_html__( 'Button label to close a dialog.', 'booking-activities' )
 		),
 		'cancel_booking_open_dialog_button' => array(
-			'value'			=> esc_html_x( 'Cancel', 'Cancel bookings button label. It opens the dialog.', 'booking-activities' ),
-			'description'	=> esc_html__( 'Cancel bookings button label to open the cancel dialog.', 'booking-activities' )
+			'value'			=> esc_html_x( 'Cancel', 'Button label to open the dialog to cancel a booking.', 'booking-activities' ),
+			'description'	=> esc_html__( 'Button label to open the dialog to cancel a booking.', 'booking-activities' )
 		),
 		'cancel_booking_dialog_button' => array(
-			'value'			=> esc_html_x( 'Cancel booking', 'Button label to trigger the cancel action', 'booking-activities' ),
-			'description'	=> esc_html__( 'Cancel bookings button label to trigger the cancel action.', 'booking-activities' )
+			'value'			=> esc_html_x( 'Cancel booking', 'Button label to trigger the cancellation of a booking.', 'booking-activities' ),
+			'description'	=> esc_html__( 'Button label to trigger the cancellation of a booking.', 'booking-activities' )
 		),
 		'cancel_dialog_title' => array(
 			'value'			=> esc_html_x( 'Cancel the booking', 'Dialog title', 'booking-activities' ),
@@ -863,16 +863,16 @@ function bookacti_get_default_messages() {
 			'input_type'	=> 'textarea'
 		),
 		'reschedule_dialog_button' => array(
-			'value'			=> esc_html_x( 'Reschedule', 'Button label to trigger the refund action', 'booking-activities' ),
-			'description'	=> esc_html__( 'Reschedule booking button label.', 'booking-activities' )
+			'value'			=> esc_html_x( 'Reschedule', 'Button label to reschedule a booking.', 'booking-activities' ),
+			'description'	=> esc_html__( 'Button label to reschedule a booking.', 'booking-activities' )
 		),
 		'reschedule_dialog_title' => array(
 			'value'			=> esc_html_x( 'Reschedule the booking', 'Dialog title', 'booking-activities' ),
 			'description'	=> esc_html__( 'Reschedule booking dialog title.', 'booking-activities' )
 		),
 		'refund_dialog_button' => array(
-			'value'			=> esc_html_x( 'Request a refund', 'Button label to trigger the refund action', 'booking-activities' ),
-			'description'	=> esc_html__( 'Refund booking button label.', 'booking-activities' )
+			'value'			=> esc_html_x( 'Request a refund', 'Button label to refund a booking', 'booking-activities' ),
+			'description'	=> esc_html__( 'Button label to refund a booking.', 'booking-activities' )
 		),
 		'refund_dialog_title' => array(
 			'value'			=> esc_html_x( 'Request a refund', 'Dialog title', 'booking-activities' ),

@@ -261,9 +261,9 @@ $j( document ).ready( function() {
 	
 	/**
 	 * WP List Table pagination - go to prev, next, first or last page
-	 * @version 1.8.0
+	 * @version 1.8.9
 	 */
-	$j( 'body' ).on( 'click', '.first-page, .prev-page, .next-page, .last-page', function( e ){
+	$j( '#bookacti-bookings-container' ).on( 'click', '.first-page, .prev-page, .next-page, .last-page', function( e ){
 		if( ! $j( '#bookacti-submit-filter-button' ).data( 'ajax' ) ) { return; }
 		e.preventDefault();
 		var href = $j( this ).attr( 'href' );

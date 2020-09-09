@@ -1,12 +1,26 @@
 /**
  * Retrieve the events to display on the booking system
- * @version 1.8.0
+ * @version 1.8.9
  * @param {HTMLElement} booking_system
  * @param {object} interval
  */
 function bookacti_fetch_events( booking_system, interval ) {
 	var booking_system_id	= booking_system.attr( 'id' );
-	var attributes			= bookacti.booking_system[ booking_system_id ];
+	var attributes			= $j.extend( true, {}, bookacti.booking_system[ booking_system_id ] );
+	
+	// Do not send useless data
+	delete attributes[ 'events' ];
+	delete attributes[ 'events_data' ];
+	delete attributes[ 'events_interval' ];
+	delete attributes[ 'bookings' ];
+	delete attributes[ 'booking_lists' ];
+	delete attributes[ 'activities_data' ];
+	delete attributes[ 'groups_events' ];
+	delete attributes[ 'groups_data' ];
+	delete attributes[ 'group_categories_data' ];
+	delete attributes[ 'picked_events' ];
+	delete attributes[ 'rescheduled_booking_data' ];
+	delete attributes[ 'templates_per_activities' ];
 	
 	interval = interval || attributes[ 'events_interval' ];
 
@@ -72,7 +86,7 @@ function bookacti_fetch_events( booking_system, interval ) {
 
 /**
  * Reload a booking system
- * @version 1.8.5
+ * @version 1.8.9
  * @param {HTMLElement} booking_system
  * @param {boolean} keep_picked_events
  */
@@ -93,6 +107,7 @@ function bookacti_reload_booking_system( booking_system, keep_picked_events ) {
 	delete attributes[ 'events_data' ];
 	delete attributes[ 'events_interval' ];
 	delete attributes[ 'bookings' ];
+	delete attributes[ 'booking_lists' ];
 	delete attributes[ 'activities_data' ];
 	delete attributes[ 'groups_events' ];
 	delete attributes[ 'groups_data' ];

@@ -2,7 +2,7 @@
 /**
  * Form editor dialogs
  * @since 1.5.0
- * @version 1.8.7
+ * @version 1.8.9
  */
 
 // Exit if accessed directly
@@ -768,7 +768,7 @@ foreach( $fields_data as $field_name => $field_data ) {
 		/**
 		 * Display the content of the "Register" tab of the "Login" dialog
 		 * @since 1.5.0
-		 * @version 1.6.0
+		 * @version 1.8.9
 		 * @param array $params
 		 */
 		function bookacti_fill_login_dialog_register_tab( $params ) {
@@ -829,7 +829,7 @@ foreach( $fields_data as $field_name => $field_data ) {
 				<?php 
 					// Get roles options
 					$roles = get_editable_roles();
-					$roles_options = array();
+					$roles_options = array( 'default' => esc_html__( 'Default role', 'booking-activities' ) );
 					foreach( $roles as $role_id => $role ) { $roles_options[ $role_id ] = $role[ 'name' ]; }
 
 					$args = array(
@@ -837,8 +837,9 @@ foreach( $fields_data as $field_name => $field_data ) {
 						'name'		=> 'new_user_role',
 						'id'		=> 'bookacti-new-user-role',
 						'options'	=> $roles_options,
-						'value'		=> 'subscriber',
+						'value'		=> 'default',
 						'tip'		=> esc_html__( 'Choose a role to give to a user who has registered while booking an event with this form.', 'booking-activities' )
+									. ' ' . sprintf( esc_html__( 'Select "%1$s" to use the "%2$s" option in Wordpress General settings.', 'booking-activities' ), esc_html__( 'Default role', 'booking-activities' ), '<a href="' . admin_url( 'options-general.php' ) . '">' . esc_html__( 'New User Default Role' ) . '</a>' )
 					);
 					bookacti_display_field( $args );
 				?>

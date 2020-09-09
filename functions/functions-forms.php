@@ -546,7 +546,7 @@ function bookacti_get_default_form_fields_data( $field_name = '' ) {
  * Get fields metadata
  * @see bookacti_format_form_field_data to properly format your array
  * @since 1.5.0
- * @version 1.8.0
+ * @version 1.8.9
  * @param string $field_name
  * @return array
  */
@@ -611,7 +611,7 @@ function bookacti_get_default_form_fields_meta( $field_name = '' ) {
 			'min_password_strength'		=> 4,
 			'generate_password'			=> 0,
 			'send_new_account_email'	=> 1,
-			'new_user_role'				=> 'subscriber',
+			'new_user_role'				=> 'default',
 			'displayed_fields'			=> array_merge( $login_defaults[ 'displayed' ], $login_type_defaults[ 'displayed' ], $register_defaults[ 'displayed' ] ),
 			'required_fields'			=> array_merge( $login_defaults[ 'required' ], $login_type_defaults[ 'required' ], $register_defaults[ 'required' ] )
 		),
@@ -1195,7 +1195,7 @@ function bookacti_validate_registration( $login_values, $login_data ) {
 /**
  * Register a new user through a booking form
  * @since 1.5.0
- * @version 1.7.0
+ * @version 1.8.9
  * @param array $login_values
  * @param array $login_data
  * @return WP_User|array
@@ -1233,7 +1233,7 @@ function bookacti_register_a_new_user( $login_values, $login_data ) {
 		'user_email'	=> $login_values[ 'email' ],
 		'first_name'	=> ! empty( $login_values[ 'first_name' ] ) ? $login_values[ 'first_name' ] : '',
 		'last_name'		=> ! empty( $login_values[ 'last_name' ] ) ? $login_values[ 'last_name' ] : '',
-		'role'			=> $login_data[ 'new_user_role' ]
+		'role'			=> $login_data[ 'new_user_role' ] === 'default' ? get_option( 'default_role' ) : $login_data[ 'new_user_role' ]
 	), $login_values );
 
 	// Create the user
