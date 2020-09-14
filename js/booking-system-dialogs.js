@@ -17,31 +17,6 @@ $j( document ).ready( function() {
 			return false; 
 		}
 	});
-	
-	
-	/**
-	 * Toggle group events list
-	 * @param {Event} e
-	 * @param {Int} group_id
-	 * @param {object} event
-	 */
-	$j( 'body' ).on( 'bookacti_group_of_events_preview', '.bookacti-booking-system', function( e, group_id, event ) {
-		var booking_system		= $j( this );
-		var booking_system_id	= $j( this ).attr( 'id' );
-		var groups_list			= $j( '#' + booking_system_id + '-choose-group-of-events-dialog .bookacti-groups-of-events-list' );
-		
-		// Hide other events list
-		groups_list.find( '.bookacti-group-of-events-option[data-group-id!="' + group_id + '"]' ).data( 'show-events', 0 ).attr( 'data-show-events', 0 );
-		groups_list.find( '.bookacti-group-of-events-list[data-group-id!="' + group_id + '"]' ).hide( 200 );
-		
-		// Show group events list
-		groups_list.find( '.bookacti-group-of-events-option[data-group-id="' + group_id + '"]' ).data( 'show-events', 1 ).attr( 'data-show-events', 1 );
-		groups_list.find( '.bookacti-group-of-events-list[data-group-id="' + group_id + '"]' ).show( 200 );
-		
-		// Pick events and fill form inputs
-		bookacti_unpick_all_events( booking_system );
-		bookacti_pick_events_of_group( booking_system, group_id, event );
-	});
 });
 
 
@@ -343,9 +318,33 @@ function bookacti_dialog_choose_group_of_events( booking_system, group_ids, even
 	});
 	
 	// Trigger a preview of the selection on change
-	groups_of_events_list.find( 'input[name="group_of_events"]' ).on( 'change', function() { 
+	groups_of_events_list.find( 'input[name="group_of_events"]' ).on( 'change', function() {
 		var group_id = $j( this ).val();
-		booking_system.trigger( 'bookacti_group_of_events_preview', [ group_id, event ] ); 
+		
+		var groups_list = $j( '#' + booking_system_id + '-choose-group-of-events-dialog .bookacti-groups-of-events-list' );
+		
+		// Hide other events list
+		groups_list.find( '.bookacti-group-of-events-option[data-group-id!="' + group_id + '"]' ).data( 'show-events', 0 ).attr( 'data-show-events', 0 );
+		groups_list.find( '.bookacti-group-of-events-list[data-group-id!="' + group_id + '"]' ).hide( 200 );
+
+		// Show group events list
+		groups_list.find( '.bookacti-group-of-events-option[data-group-id="' + group_id + '"]' ).data( 'show-events', 1 ).attr( 'data-show-events', 1 );
+		groups_list.find( '.bookacti-group-of-events-list[data-group-id="' + group_id + '"]' ).show( 200 );
+		
+		// Don't preview the group of events if it is not available
+		var trigger = { 'click': true };
+		if( $j( this ).is( ':disabled' ) ) { trigger.click = false; }
+
+		// Allow plugins to prevent the group of event preview
+		booking_system.trigger( 'bookacti_trigger_group_of_events_preview', [ trigger, group_id, event ] );
+
+		if( trigger.click ) {
+			// Pick events and fill form inputs
+			bookacti_unpick_all_events( booking_system );
+			bookacti_pick_events_of_group( booking_system, group_id, event );
+			
+			booking_system.trigger( 'bookacti_group_of_events_preview', [ group_id, event ] ); 
+		}
 	});
 	
 	// Pick the first group by default and yell it
@@ -372,15 +371,23 @@ function bookacti_dialog_choose_group_of_events( booking_system, group_ids, even
             text: bookacti_localized.dialog_button_ok,
             
             click: function() {
-				
 				var group_id = groups_of_events_list.find( 'input[type="radio"]:checked' ).val();
 				
 				if( typeof group_id !== 'undefined' ) {
-					// Pick events and fill form inputs
-					bookacti_unpick_all_events( booking_system );
-					bookacti_pick_events_of_group( booking_system, group_id, event );
+					// Don't select the group of events if it is not available
+					var trigger = { 'click': true };
+					if( groups_of_events_list.find( 'input[type="radio"]:checked' ).is( ':disabled' ) ) { trigger.click = false; }
+					
+					// Allow plugins to prevent the group of events selection
+					booking_system.trigger( 'bookacti_trigger_group_of_events_click', [ trigger, group_id, event ] );
+					
+					if( trigger.click ) {
+						// Pick events and fill form inputs
+						bookacti_unpick_all_events( booking_system );
+						bookacti_pick_events_of_group( booking_system, group_id, event );
 
-					booking_system.trigger( 'bookacti_group_of_events_chosen', [ group_id, event ] );
+						booking_system.trigger( 'bookacti_group_of_events_chosen', [ group_id, event ] );
+					}
 				}
 				
 				// Close the modal dialog
