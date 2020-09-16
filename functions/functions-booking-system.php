@@ -1729,6 +1729,7 @@ function bookacti_get_bounding_events_from_db_events( $events, $raw_args = array
 /**
  * Get occurrences of repeated events
  * @since 1.8.4 (was bookacti_get_occurences_of_repeated_event)
+ * @version 1.8.10
  * @param object $event Event data 
  * @param array $raw_args {
  *  @type array $interval array( 'start' => 'Y-m-d H:i:s', 'end' => 'Y-m-d H:i:s' )
@@ -1751,6 +1752,7 @@ function bookacti_get_occurrences_of_repeated_event( $event, $raw_args = array()
 	
 	// Get the repeat from and to datetimes, and the repeat interval
 	$repeat = bookacti_get_event_repeat_data( $event, $args );
+	if( ! $repeat ) { return array(); }
 	if( $repeat[ 'from' ] > $repeat[ 'to' ] ) { return array(); }
 	
 	// Common properties
