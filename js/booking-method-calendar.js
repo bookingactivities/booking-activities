@@ -1,6 +1,6 @@
 /**
  * Initialize the calendar
- * @version 1.8.6
+ * @version 1.8.9
  * @param {HTMLElement} booking_system
  * @param {boolean} reload_events
  */
@@ -102,7 +102,6 @@ function bookacti_set_calendar_up( booking_system, reload_events ) {
 			
 			// Add availability div
 			if( bookacti_get_event_number_of_bookings( booking_system, event ) != null ) {
-
 				var bookings_only = bookacti.booking_system[ booking_system_id ][ 'bookings_only' ] == 1 ? true : false;
 				var avail_div = '';
 				
@@ -115,6 +114,14 @@ function bookacti_set_calendar_up( booking_system, reload_events ) {
 					avail_div = bookacti_get_event_availability_div( booking_system, event );
 				}
 				
+				// Add a class if the current user has booked this event
+				if( typeof bookacti.booking_system[ booking_system_id ][ 'bookings' ][ event.id ] !== 'undefined' ) {
+					if( typeof bookacti.booking_system[ booking_system_id ][ 'bookings' ][ event.id ][ event_start_formatted ] !== 'undefined' ) {
+						var current_user_bookings = parseInt( bookacti.booking_system[ booking_system_id ][ 'bookings' ][ event.id ][ event_start_formatted ][ 'current_user_bookings' ] );
+						if( current_user_bookings ) { element.addClass( 'bookacti-event-booked-by-current-user' ); }
+					}
+				}
+		
 				element.append( avail_div );
 			}
 			
@@ -152,12 +159,10 @@ function bookacti_set_calendar_up( booking_system, reload_events ) {
 			var trigger = { 'click': true };
 			
 			// Don't pick the event if it is not available
-			if( $j( this ).hasClass( 'bookacti-event-unavailable' ) ) {
-				trigger.click = false;
-			}
+			if( $j( this ).hasClass( 'bookacti-event-unavailable' ) ) { trigger.click = false; }
 			
 			// Allow plugins to prevent the event click
-			$j( 'body' ).trigger( 'bookacti_trigger_event_click', [ trigger, event, jsEvent, view ] );
+			booking_system.trigger( 'bookacti_trigger_event_click', [ trigger, event, jsEvent, view ] );
 			
 			if( trigger.click ) { bookacti_event_click( booking_system, event ); }
 		},
@@ -252,23 +257,13 @@ function bookacti_set_calendar_up( booking_system, reload_events ) {
 	
 	
 	/**
-	 * Visually pick an event on the calendar - on bookacti_pick_event
+	 * Refresh the picked events on the calendar - on bookacti_pick_event
+	 * @version 1.8.9
 	 * @param {Event} e
 	 * @param {Object} picked_event
 	 */
 	booking_system.off( 'bookacti_pick_event' ).on( 'bookacti_pick_event', function( e, picked_event ){
-		bookacti_pick_event_on_calendar( $j( this ), picked_event );
-	});
-	
-	
-	/**
-	 * Visually unpick an event on the calendar - on bookacti_unpick_event
-	 * @param {Event} e
-	 * @param {Object} event_to_unpick
-	 * @param {Booolean} all
-	 */
-	booking_system.off( 'bookacti_unpick_event' ).on( 'bookacti_unpick_event', function( e, event_to_unpick, all ){
-		bookacti_unpick_event_on_calendar( $j( this ), event_to_unpick, all );
+		bookacti_refresh_picked_events_on_calendar( $j( this ) );
 	});
 	
 	
@@ -346,42 +341,30 @@ function bookacti_display_event_source_on_calendar( booking_system, event_source
 
 
 /**
- * Add CSS class to a picked event on calendar
- * @version 1.8.5
+ * Add CSS class to the picked events on calendar, remove it from the others
+ * @since 1.8.9
  * @param {HTMLElement} booking_system
- * @param {moment|Object} picked_event
  */
-function bookacti_pick_event_on_calendar( booking_system, picked_event ) {
-	var start = moment.utc( picked_event.start ).clone().locale( 'en' ).format( 'YYYY-MM-DD HH:mm:ss' );
+function bookacti_refresh_picked_events_on_calendar( booking_system ) {
+	var booking_system_id = booking_system.attr( 'id' );
+	var picked_events = bookacti.booking_system[ booking_system_id ][ 'picked_events' ];
 	
-	// Because of popover and long events (spreading on multiple days), 
-	// the same event can appears twice, so we need to apply changes on each
-	var elements = booking_system.find( '.fc-event[data-event-id="' + picked_event.id + '"][data-event-start="' + start + '"]' );
+	// Unpick all event on the calendar
+	bookacti_unpick_all_events_on_calendar( booking_system );
 	
-	// Format the pciked event (because of popover, the same event can appears twice)
-	elements.addClass( 'bookacti-picked-event' );
-}
+	// Pick only the currently picked events
+	if( picked_events ) {
+		$j.each( picked_events, function( i, picked_event ) {
+			var picked_event_start = moment.utc( event.start ).clone().locale( 'en' ).format( 'YYYY-MM-DD HH:mm:ss' );
 
+			// Because of popover and long events (spreading on multiple days), 
+			// the same event can appears twice, so we need to apply changes on each
+			var elements = booking_system.find( '.fc-event[data-event-id="' + picked_event.id + '"][data-event-start="' + picked_event_start + '"]' );
 
-/**
- * Remove CSS class from a picked event on calendar
- * @version 1.8.5
- * @param {HTMLElement} booking_system
- * @param {Object} event_to_unpick
- * @param {Boolean} all
- */
-function bookacti_unpick_event_on_calendar( booking_system, event_to_unpick, all ) {
-	var start = moment.utc( event_to_unpick.start ).clone().locale( 'en' ).format( 'YYYY-MM-DD HH:mm:ss' );
-	
-	// Because of popover and long events (spreading on multiple days), 
-	// the same event can appears twice, so we need to apply changes on each
-	var elements = booking_system.find( '.fc-event[data-event-id="' + event_to_unpick.id + '"]' );
-	if( ! all && event_to_unpick.start ) {
-		elements = booking_system.find( '.fc-event[data-event-id="' + event_to_unpick.id + '"][data-event-start="' + start + '"]' );
+			// Format the pciked event (because of popover, the same event can appears twice)
+			elements.addClass( 'bookacti-picked-event' );
+		});
 	}
-	
-	// Format the picked event(s)
-	elements.removeClass( 'bookacti-picked-event' );
 }
 
 

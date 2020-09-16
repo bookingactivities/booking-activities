@@ -300,12 +300,13 @@ $j( document ).ready( function() {
 	/**
 	 * Calendar field settings: Toggle the availability period options - on change
 	 * @since 1.8.0
+	 * @version 1.8.9
 	 */
 	$j( '#bookacti-form-field-dialog-calendar' ).on( 'change', '#bookacti-availability_period_start-container .bookacti-duration-value', function() {
 		if( parseInt( $j( this ).val() ) === 0 || $j( this ).val() === '' ) { 
-			$j( '#bookacti-past_events-container, #bookacti-past_events_bookable-container' ).show();
+			$j( '#bookacti-past_events-container' ).closest( 'fieldset' ).show();
 		} else {
-			$j( '#bookacti-past_events-container, #bookacti-past_events_bookable-container' ).hide();
+			$j( '#bookacti-past_events-container' ).closest( 'fieldset' ).hide();
 		}
 	});
 	

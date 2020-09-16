@@ -5,7 +5,7 @@ Tags: booking, reservation, booking form, woocommerce booking, booking events
 Requires at least: 3.6
 Tested up to: 5.5
 Requires PHP: 5.3
-Stable tag: 1.8.8
+Stable tag: 1.8.9
 License: GPLv3 or later
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
 
@@ -318,6 +318,13 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 
 
 == Changelog ==
+
+= 1.8.9 - 2020/09/16 =
+* Tweak - Use WP setting "New User Default Role" as default value for user registered with a booking form
+* Tweak - Change the Bookings page title in WC account
+* Dev - Add a CSS class on events booked by current user
+* Dev - Do not send useless data to server via AJAX while fetching new events
+* Dev - Add passive detection for touchstart event listener for better scrolling performance
 
 = 1.8.8 - 2020/09/08 =
 * Fix - Activity managers may not be saved

@@ -340,14 +340,17 @@ function bookacti_get_calendar_html( $booking_system_data = array() ) {
 /**
  * Get default booking system attributes
  * @since 1.5.0
- * @version 1.8.0
+ * @version 1.8.9
  * @return array
  */
 function bookacti_get_booking_system_default_attributes() {
 	$timezone			= bookacti_get_setting_value( 'bookacti_general_settings', 'timezone' );
 	$current_datetime	= new DateTime( 'now', new DateTimeZone( $timezone ) );
 	
-	return apply_filters( 'bookacti_booking_system_default_attributes', array(
+	$cached_atts = wp_cache_get( 'booking_system_default_attributes', 'bookacti' );
+	if( $cached_atts ) { return $cached_atts; }
+	
+	$default_atts = apply_filters( 'bookacti_booking_system_default_attributes', array(
 		'id'							=> '',
 		'class'							=> '',
 		'calendars'						=> array(),
@@ -376,6 +379,10 @@ function bookacti_get_booking_system_default_attributes() {
 		'redirect_url_by_group_category'=> array(),
 		'display_data'					=> bookacti_get_booking_system_default_display_data()
 	));
+	
+	wp_cache_set( 'booking_system_default_attributes', $default_atts, 'bookacti' );
+	
+	return $default_atts;
 }
 
 

@@ -388,7 +388,7 @@ function bookacti_fill_fields_from_array( fields, field_prefix, scope ) {
 
 /**
  * Switch a selectbox to multiple
- * @version 1.8.7
+ * @version 1.8.9
  * @param {HTMLElement} checkbox
  */
 function bookacti_switch_select_to_multiple( checkbox ) {
@@ -435,6 +435,12 @@ function bookacti_switch_select_to_multiple( checkbox ) {
 			});
 		}
 		$j( 'select#' + select_id ).val( first_available_value ).trigger( 'change' );
+	}
+	
+	if( $j( 'select#' + select_id ).hasClass( 'select2-hidden-accessible' ) ) {
+		if( ! $j.fn.select2 ) { return; }
+		$j( 'select#' + select_id ).select2( 'destroy' );
+		bookacti_select2_init();
 	}
 }
 

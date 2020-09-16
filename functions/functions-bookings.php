@@ -64,7 +64,7 @@ function bookacti_is_booking_in_delay( $booking, $context = '' ) {
 
 /**
  * Return the HTML code to display activities by templates in the bookings page
- * @version 1.7.4
+ * @version 1.8.9
  * @param array $template_ids
  * @param array $activity_ids
  * @return string
@@ -85,7 +85,7 @@ function bookacti_get_activities_html_for_booking_page( $template_ids, $activity
 			.		"style='background-color: " . esc_attr( $activity[ 'color' ] ) . "; border-color: " . esc_attr( $activity[ 'color' ] ) . "' " 
 			.		esc_attr( $selected )
 			.	" >"
-			.		"<div class='bookacti-bookings-filter-content' >"
+			.		"<div class='bookacti-filter-content' >"
 			.			"<div class='bookacti-bookings-filter-activity-title' >"
 			.				"<strong>" . esc_html( $title ). "</strong>"
 			.			"</div>"

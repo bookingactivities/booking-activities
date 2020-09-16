@@ -447,7 +447,10 @@ function bookacti_submit_login_form( submit_button ) {
 				form.trigger( 'bookacti_login_form_submitted', [ response, form_data_object ] );
 
 				// Redirect
+				// Do not serialize user data
+				form.find( '.bookacti-form-field-name-login :input' ).prop( 'disabled', true );
 				var url_params = form.serialize();
+				form.find( '.bookacti-form-field-name-login :input' ).prop( 'disabled', false );
 				var form_redirect_url = typeof form.attr( 'action' ) !== 'undefined' && old_form_action === 'bookactiSubmitLoginForm' ? form.attr( 'action' ) : '';
 				var redirect_url = response.redirect_url ? response.redirect_url : form_redirect_url;
 				redirect_url += redirect_url.indexOf( '?' ) >= 0 ? '&' + url_params : '?' + url_params;

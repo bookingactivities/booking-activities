@@ -1,15 +1,15 @@
 /***** BOOKINGS PAGE *****/
 
 /** FILTERS **/
-.bookacti-bookings-filter-container							{ display: inline-block; vertical-align: top; margin-right: 10px; }
-.bookacti-bookings-filter-container input,
-.bookacti-bookings-filter-container select,
-.bookacti-bookings-filter-container button,
-.bookacti-bookings-filter-container .button,
-.bookacti-bookings-filter-container textarea				{ width: 150px; }
-.bookacti-bookings-filter-title								{ font-weight: bold; line-height: 2.5em; }
-.bookacti-bookings-filter-content select[multiple]			{ height: 66px; box-sizing: border-box; padding: 0; margin: 0; }
-.bookacti-bookings-filter-content select[multiple] option	{ height: 22px; box-sizing: border-box; padding: 2px 4px; margin: 0; }
+.bookacti-filter-container							{ display: inline-block; vertical-align: top; margin-right: 10px; }
+.bookacti-filter-container input,
+.bookacti-filter-container select,
+.bookacti-filter-container button,
+.bookacti-filter-container .button,
+.bookacti-filter-container textarea				{ width: 150px; }
+.bookacti-filter-title								{ font-weight: bold; line-height: 2.5em; }
+.bookacti-filter-content select[multiple]			{ height: 66px; box-sizing: border-box; padding: 0; margin: 0; }
+.bookacti-filter-content select[multiple] option	{ height: 22px; box-sizing: border-box; padding: 2px 4px; margin: 0; }
 
 #bookacti-event-filter-container			{ margin: 20px 0 0 0; }
 #bookacti-event-filter-container a			{ text-align: center; overflow: hidden; text-overflow: ellipsis; vertical-align: middle; height: 32px; line-height: 32px; }
@@ -325,8 +325,8 @@ tr.bookacti-booking-list-selected-row								{ background-color: rgba( 65, 143, 
 @media screen and ( max-width: 782px ) {
 	/* Backend booking list filters */
 	#bookacti-bookings-filters-container	{ width: 100%; text-align: center; }
-	.bookacti-bookings-filter-title			{ text-align: left; }
-	#wpbody .bookacti-bookings-filter-content select[multiple] { height: 75px; }
+	.bookacti-filter-title			{ text-align: left; }
+	#wpbody .bookacti-filter-content select[multiple] { height: 75px; }
 	
 	/* Backend booking list */
 	.bookacti-booking-primary-data-container			{ display: inline-block; }
@@ -382,9 +382,9 @@ tr.bookacti-booking-list-selected-row								{ background-color: rgba( 65, 143, 
 
 /* Smartphone only */
 @media screen and ( max-width: 360px ) {
-	.bookacti-bookings-filter-container { display: block; margin: auto; width: 80%; }
-	.bookacti-bookings-filter-content select, 
-	.bookacti-bookings-filter-content input, 
-	.bookacti-bookings-filter-content a { width: 100%; }
-	#wpbody .bookacti-bookings-filter-content select[multiple] { height: 60px; }
+	.bookacti-filter-container { display: block; margin: auto; width: 80%; }
+	.bookacti-filter-content select, 
+	.bookacti-filter-content input, 
+	.bookacti-filter-content a { width: 100%; }
+	#wpbody .bookacti-filter-content select[multiple] { height: 60px; }
 }

@@ -10,14 +10,24 @@ $j( document ).ready( function() {
 });
 
 
+// Test via a getter in the options object to see if the passive property is accessed
+var supportsPassive = false;
+try {
+	var opts = Object.defineProperty( {}, 'passive', { get: function() { supportsPassive = true; } } );
+	window.addEventListener( 'testPassive', null, opts );
+	window.removeEventListener( 'testPassive', null, opts );
+} catch ( e ) {}
+
+
 /**
  * Detect if the device used is touch-sensitive
+ * @version 1.8.9
  */
 window.addEventListener( 'touchstart', function bookacti_detect_touch_device() {
     bookacti.is_touch_device = true;
     // Remove event listener once fired, otherwise it'll kill scrolling performance
     window.removeEventListener( 'touchstart', bookacti_detect_touch_device );
-}, false );
+}, supportsPassive ? { passive: true } : false );
 
 
 /**
