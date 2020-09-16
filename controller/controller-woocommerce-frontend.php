@@ -1610,6 +1610,26 @@ add_action( 'bookacti_activate', 'bookacti_add_bookings_endpoint', 10 );
 
 
 /**
+ * Set the Bookings page title in WC account
+ * @since 1.8.9
+ * @global WP_Query $wp_query
+ * @param string $title
+ * @param int $post_id
+ * @return string
+ */
+function bookacti_wc_account_bookings_page_title( $title, $post_id ) {
+	global $wp_query;
+	$is_endpoint = isset( $wp_query->query_vars[ 'bookings' ] );
+	if( $is_endpoint && ! is_admin() && is_main_query() && in_the_loop() && is_account_page() ) {
+		$title = esc_html__( 'Bookings', 'booking-activities' );
+		remove_filter( 'the_title', 'bookacti_wc_account_menu_items_page_title', 10 );
+	}
+	return $title;
+}
+add_filter( 'the_title', 'bookacti_wc_account_bookings_page_title', 10, 2 );
+
+
+/**
  * Add the "Bookings" tab to the My Account menu
  * @since 1.7.16
  * @param array $tabs

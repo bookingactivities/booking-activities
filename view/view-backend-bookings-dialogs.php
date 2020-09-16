@@ -275,6 +275,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		 * Display the content of the "csv" tab of the "Export bookings" dialog
 		 * @param array $args
 		 * @since 1.8.0
+		 * @version 1.8.9
 		 */
 		function bookacti_fill_export_bookings_csv_tab( $args ) {
 			do_action( 'bookacti_fill_export_bookings_csv_tab_before', $args );
@@ -307,7 +308,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 					'title'		=> esc_html__( 'Raw data', 'booking-activities' ),
 					'id'		=> 'bookacti-csv-raw',
 					'value'		=> $args[ 'user_settings' ][ 'csv_raw' ],
-					'tip'		=> esc_html__( 'Display raw data (easy to manipulate), as opposed to formatted data (user-friendly).', 'booking-activities' )
+					'tip'		=> esc_html__( 'Display raw data (easy to manipulate), as opposed to formatted data (user-friendly). E.g.: A date will be displayed "1992-12-26 02:00:00" instead of "December 26th, 2020 2:00 AM".', 'booking-activities' )
 				),
 				'csv_export_groups' => array(
 					'type'		=> 'select',
@@ -331,7 +332,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 		/**
 		 * Display the content of the "iCal" tab of the "Export bookings" dialog
 		 * @since 1.8.0
-		 * @version 1.8.1
+		 * @version 1.8.9
 		 * @param array $args
 		 */
 		function bookacti_fill_export_bookings_ical_tab( $args ) {
@@ -414,7 +415,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 							'title'		=> esc_html__( 'Raw data', 'booking-activities' ),
 							'id'		=> 'bookacti-ical-raw',
 							'value'		=> $args[ 'user_settings' ][ 'ical_raw' ],
-							'tip'		=> esc_html__( 'Display raw data (easy to manipulate), as opposed to formatted data (user-friendly).', 'booking-activities' )
+							'tip'		=> esc_html__( 'Display raw data (easy to manipulate), as opposed to formatted data (user-friendly). E.g.: A date will be displayed "1992-12-26 02:00:00" instead of "December 26th, 2020 2:00 AM".', 'booking-activities' )
 						),
 						'ical_booking_list_header' => array(
 							'type'		=> 'checkbox',
