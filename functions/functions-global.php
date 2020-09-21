@@ -51,14 +51,15 @@ function bookacti_send_json( $array, $action = '' ) {
 /**
  * Send a filtered array via json to stop an ajax process running with an invalid nonce
  * @since 1.5.0
- * @version 1.5.3
+ * @version 1.8.10
  * @param string $action Name of the filter to allow third-party modifications
  */
 function bookacti_send_json_invalid_nonce( $action = '' ) {
 	$return_array = array( 
 		'status'	=> 'failed', 
-		'error'		=> 'invalid_nonce', 
-		'message'	=> esc_html__( 'Invalid nonce.', 'booking-activities' ) . ' ' . __( 'Please reload the page and try again.', 'booking-activities' )
+		'error'		=> 'invalid_nonce',
+		'action'	=> $action, 
+		'message'	=> esc_html__( 'Invalid nonce.', 'booking-activities' ) . ' ' . esc_html__( 'Please reload the page and try again.', 'booking-activities' )
 	);
 	bookacti_send_json( $return_array, $action );
 }
@@ -67,13 +68,14 @@ function bookacti_send_json_invalid_nonce( $action = '' ) {
 /**
  * Send a filtered array via json to stop a not allowed an ajax process
  * @since 1.5.0
- * @version 1.6.0
+ * @version 1.8.10
  * @param string $action Name of the filter to allow third-party modifications
  */
 function bookacti_send_json_not_allowed( $action = '' ) {
 	$return_array = array( 
 		'status'	=> 'failed', 
 		'error'		=> 'not_allowed', 
+		'action'	=> $action, 
 		'message'	=> esc_html__( 'You are not allowed to do that.', 'booking-activities' )
 	);
 	bookacti_send_json( $return_array, $action );
@@ -441,7 +443,7 @@ function bookacti_generate_ical( $vevents, $vcalendar = array() ) {
 /**
  * Get the variables used with javascript
  * @since 1.8.0
- * @version 1.8.7
+ * @version 1.8.10
  * @return array
  */
 function bookacti_get_js_variables() {
@@ -461,9 +463,9 @@ function bookacti_get_js_variables() {
 		// ERRORS
 		'error'								=> esc_html__( 'An error occurred.', 'booking-activities' ),
 		'error_select_event'				=> esc_html__( 'You haven\'t selected any event. Please select an event.', 'booking-activities' ),
-		'error_corrupted_event'				=> esc_html__( 'The event you selected is corrupted, please reselect an event and try again.', 'booking-activities' ),
+		'error_corrupted_event'				=> esc_html__( 'There is an inconsistency in the selected events data, please select an event and try again.', 'booking-activities' ),
 		/* translators: %1$s is the quantity the user want. %2$s is the available quantity. */
-		'error_less_avail_than_quantity'	=> esc_html__( 'You want to make %1$s bookings but only %2$s are available on this time slot. Please choose another event or decrease the quantity.', 'booking-activities' ),
+		'error_less_avail_than_quantity'	=> esc_html__( 'You want to make %1$s bookings but only %2$s are available for the selected events. Please choose another event or decrease the quantity.', 'booking-activities' ),
 		'error_quantity_inf_to_0'			=> esc_html__( 'The amount of desired bookings is less than or equal to 0. Please increase the quantity.', 'booking-activities' ),
 		'error_not_allowed'					=> esc_html__( 'You are not allowed to do that.', 'booking-activities' ),
 		'error_user_not_logged_in'			=> esc_html__( 'You are not logged in. Please create an account and log in first.', 'booking-activities' ),

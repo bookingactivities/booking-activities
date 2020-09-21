@@ -138,20 +138,35 @@ $j( document ).ready( function() {
 			bookacti_fill_picked_events_list( booking_system );
 		}
 	});
-
-
+	
+	
 	/**
-	 * Set quantity on eventClick
-	 * @version 1.7.4
+	 * Set picked events list quantity according to the product form quantity - on bookacti_picked_events_list_data
+	 * @version 1.8.10
 	 * @param {Event} e
-	 * @param {Object} event_summary_data
+	 * @param {Object} event_data
 	 * @param {Object} event
 	 */
-	$j( '.woocommerce form.cart' ).on( 'bookacti_picked_events_list_data', '.bookacti-booking-system', function( e, event_summary_data, event ) {
+	$j( '.woocommerce form.cart' ).on( 'bookacti_picked_events_list_data', '.bookacti-booking-system', function( e, event_data, event ) {
 		var booking_system = $j( this );
 		var qty_field = booking_system.parents( 'form' ).find( '.quantity .qty' );
 		if( qty_field.length ) {
-			bookacti_set_min_and_max_quantity( booking_system, qty_field, event_summary_data );
+			event_data.quantity = parseInt( qty_field.val() );
+		}
+	});
+	
+
+	/**
+	 * Set product form quantity field - on bookacti_update_quantity
+	 * @since 1.8.10
+	 * @param {Event} e
+	 * @param {Object} qty_data
+	 */
+	$j( '.woocommerce form.cart' ).on( 'bookacti_update_quantity', '.bookacti-booking-system', function( e, qty_data ) {
+		var booking_system = $j( this );
+		var qty_field = booking_system.parents( 'form' ).find( '.quantity .qty' );
+		if( qty_field.length ) {
+			qty_data.field = qty_field;
 		}
 	});
 

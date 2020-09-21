@@ -26,24 +26,6 @@ if( ! defined( 'BOOKACTI_TABLE_PERMISSIONS' ) )		{ define( 'BOOKACTI_TABLE_PERMI
 // USERS
 
 /**
- * Check if user id exists
- * 
- * @global wpdb $wpdb
- * @param int $user_id
- * @return boolean
- */
-function bookacti_user_id_exists( $user_id ) {
-	global $wpdb;
-
-	$query		= 'SELECT COUNT(*) FROM ' . $wpdb->users . ' WHERE ID = %d ';
-	$query_prep	= $wpdb->prepare( $query, $user_id );
-	$count		= $wpdb->get_var( $query_prep );
-
-	return $count === 1;
-}
-
-
-/**
  * Delete a user meta for all users
  * 
  * @since 1.3.0

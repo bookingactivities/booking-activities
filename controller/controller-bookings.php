@@ -326,7 +326,7 @@ add_action( 'wp_ajax_bookactiChangeBookingQuantity', 'bookacti_controller_change
 /**
  * AJAX Controller - Get reschedule booking system data by booking ID
  * @since 1.8.0 (was bookacti_controller_get_booking_data)
- * @version 1.8.5
+ * @version 1.8.10
  */
 function bookacti_controller_get_reschedule_booking_system_data() {
 	$booking_id	= intval( $_POST[ 'booking_id' ] );
@@ -334,7 +334,7 @@ function bookacti_controller_get_reschedule_booking_system_data() {
 	// No need to check nonce
 	// Check capabilities
 	$is_allowed = bookacti_user_can_manage_booking( $booking_id );
-	if( ! $is_allowed ) { bookacti_send_json_not_allowed( 'change_booking_status' ); }
+	if( ! $is_allowed ) { bookacti_send_json_not_allowed( 'get_reschedule_booking_system_data' ); }
 	
 	$booking_data = bookacti_get_booking_data( $booking_id );
 	

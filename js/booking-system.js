@@ -15,7 +15,7 @@ $j( document ).ready( function() {
 	
 	/**
 	 * Init actions to perfoms when the user picks an event
-	 * @version 1.8.0
+	 * @version 1.8.10
 	 * @param {Event} e
 	 * @param {Int|String} group_id
 	 * @param {Object} event
@@ -26,11 +26,12 @@ $j( document ).ready( function() {
 		var booking_system_id	= booking_system.attr( 'id' );
 		var attributes			= bookacti.booking_system[ booking_system_id ];
 		
-		bookacti_fill_booking_system_fields( booking_system, event, group_id );
+		bookacti_set_min_and_max_quantity( booking_system );
+		bookacti_fill_booking_system_fields( booking_system );
 		bookacti_fill_picked_events_list( booking_system );
 		
-		// Do not perform form actions on form editor
-		if( ! $j( this ).closest( '#bookacti-form-editor-page-form' ).length ) {
+		// Perform form action for single events only (for groups, see bookacti_group_of_events_chosen)
+		if( group_id === 'single' && attributes[ 'when_perform_form_action' ] === 'on_event_click' ) {
 			var group_ids = bookacti_get_event_group_ids( booking_system, event );
 			var open_dialog = false;
 			if( $j.isArray( group_ids )
@@ -39,19 +40,7 @@ $j( document ).ready( function() {
 				open_dialog = true;
 			}
 			if( ! open_dialog ) {
-				if( group_id === 'single' && attributes[ 'when_perform_form_action' ] === 'on_event_click' ) {
-					if( attributes[ 'form_action' ] === 'redirect_to_url' ) {
-						bookacti_redirect_to_activity_url( booking_system, event );
-					} else if( attributes[ 'form_action' ] === 'default' ) {
-						if( ! booking_system.closest( 'form' ).length && booking_system.closest( '.bookacti-form-fields' ).length ) {
-							booking_system.closest( '.bookacti-form-fields' ).wrap( '<form class="bookacti-temporary-form"></form>' );
-						}
-						if( booking_system.closest( 'form.bookacti-booking-form' ).length || booking_system.closest( 'form.bookacti-temporary-form' ).length ) {
-							bookacti_submit_booking_form( booking_system.closest( 'form' ) );
-							return;
-						}
-					}
-				}
+				bookacti_perform_form_action( booking_system );
 			}
 		}
 		
@@ -61,7 +50,7 @@ $j( document ).ready( function() {
 	
 	/**
 	 * Init actions to perfoms when the user picks a group of events
-	 * @version 1.8.0
+	 * @version 1.8.10
 	 * @param {Event} e
 	 * @param {Int|String} group_id
 	 * @param {Object} event
@@ -72,25 +61,9 @@ $j( document ).ready( function() {
 		var booking_system_id	= booking_system.attr( 'id' );
 		var attributes			= bookacti.booking_system[ booking_system_id ];
 		
-		// Do not perform form actions on form editor
-		if( ! $j( this ).closest( '#bookacti-form-editor-page-form' ).length ) {
-			if( attributes[ 'when_perform_form_action' ] === 'on_event_click' ) {
-				if( attributes[ 'form_action' ] === 'redirect_to_url' ) {
-					if( group_id === 'single' ) {
-						bookacti_redirect_to_activity_url( booking_system, event );
-					} else if( $j.isNumeric( group_id ) ) {
-						bookacti_redirect_to_group_category_url( booking_system, group_id );
-					}
-				} else if( attributes[ 'form_action' ] === 'default' ) {
-					if( ! booking_system.closest( 'form' ).length && booking_system.closest( '.bookacti-form-fields' ).length ) {
-						booking_system.closest( '.bookacti-form-fields' ).wrap( '<form class="bookacti-temporary-form"></form>' );
-					}
-					if( booking_system.closest( 'form.bookacti-booking-form' ).length || booking_system.closest( 'form.bookacti-temporary-form' ).length ) {
-						bookacti_submit_booking_form( booking_system.closest( 'form' ) );
-						return;
-					}
-				}
-			}
+		// Perform form action for groups only (for single events, see bookacti_events_picked)
+		if( attributes[ 'when_perform_form_action' ] === 'on_event_click' ) {
+			bookacti_perform_form_action( booking_system );
 		}
 		
 		booking_system.trigger( 'bookacti_group_of_events_chosen_after', [ group_id, event ] );

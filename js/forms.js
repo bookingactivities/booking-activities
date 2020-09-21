@@ -74,7 +74,7 @@ $j( document ).ready( function() {
 	
 	/**
 	 * Perform the desired action on form submission
-	 * @version 1.7.19
+	 * @version 1.8.10
 	 * @param {Event} e
 	 */
 	$j( 'body' ).on( 'submit', '.bookacti-booking-form', function( e ){
@@ -82,46 +82,10 @@ $j( document ).ready( function() {
 		e.preventDefault();
 		
 		// Retrieve the info required to show the desired events
-		var form				= $j( this );
-		var booking_system		= form.find( '.bookacti-form-field-type-calendar .bookacti-booking-system' );
-		var booking_system_id	= booking_system.attr( 'id' );
-		if( typeof bookacti.booking_system[ booking_system_id ] === 'undefined' ) { return; }
-		
-		// Retrieve form action
-		var attributes	= bookacti.booking_system[ booking_system_id ];
-		var form_action = typeof attributes[ 'form_action' ] !== 'undefined';
-		if( form_action ) { if( attributes[ 'form_action' ] ) { form_action = attributes[ 'form_action' ]; } }
-		var when_perform_form_action = typeof attributes[ 'when_perform_form_action' ] !== 'undefined';
-		if( when_perform_form_action ) { if( attributes[ 'when_perform_form_action' ] ) { when_perform_form_action = attributes[ 'when_perform_form_action' ]; } }
-		
-		if( ! form_action || form_action === 'default' 
-		||  ! when_perform_form_action || when_perform_form_action !== 'on_submit' ) {
-			bookacti_submit_booking_form( form );
-			return;
-		}
-		
-		// Redirect to activity / group category URL
-		if( form_action === 'redirect_to_url' ) {
-			var group_id	= booking_system.siblings( '.bookacti-booking-system-inputs' ).find( 'input[name="bookacti_group_id"]' ).val();
-			var event_id	= booking_system.siblings( '.bookacti-booking-system-inputs' ).find( 'input[name="bookacti_event_id"]' ).val();
-			var event_start	= booking_system.siblings( '.bookacti-booking-system-inputs' ).find( 'input[name="bookacti_event_start"]' ).val();
-			var event_end	= booking_system.siblings( '.bookacti-booking-system-inputs' ).find( 'input[name="bookacti_event_end"]' ).val();
-			
-			// Redirect to activity URL if a single event is selected
-			if( group_id === 'single' && event_id && event_start && event_end ) {
-				var event = {
-					'id': event_id,
-					'start': event_start,
-					'end': event_end
-				};
-				bookacti_redirect_to_activity_url( booking_system, event );
-			}
-			
-			// Redirect to activity URL if a single event is selected
-			else if( $j.isNumeric( group_id ) ) {
-				bookacti_redirect_to_group_category_url( booking_system, group_id );
-			}
-		}
+		var booking_system = $j( this ).find( '.bookacti-form-field-type-calendar .bookacti-booking-system' );
+
+		// Perform action defined in Calendar field settings
+		bookacti_perform_form_action( booking_system );
 		
 		$j( this ).trigger( 'bookacti_submit_booking_form' );
 	});
@@ -165,22 +129,6 @@ $j( document ).ready( function() {
 		var booking_system = $j( this ).closest( '.bookacti-booking-form, .bookacti-form-fields' ).find( '.bookacti-booking-system' );
 		if( booking_system.length ) {
 			bookacti_fill_picked_events_list( booking_system );
-		}
-	});
-	
-	
-	/**
-	 * Set quantity on eventClick
-	 * @version 1.7.6
-	 * @param {Event} e
-	 * @param {Object} event_summary_data
-	 * @param {Object} event
-	 */
-	$j( 'body' ).on( 'bookacti_picked_events_list_data', '.bookacti-booking-form .bookacti-booking-system, .bookacti-form-fields .bookacti-booking-system', function( e, event_summary_data, event ) {
-		var booking_system = $j( this );
-		var qty_field = booking_system.closest( '.bookacti-booking-form, .bookacti-form-fields' ).find( 'input.bookacti-quantity' );
-		if( qty_field.length ) {
-			bookacti_set_min_and_max_quantity( booking_system, qty_field, event_summary_data );
 		}
 	});
 	
@@ -647,6 +595,53 @@ function bookacti_submit_booking_form( form ) {
 			bookacti_stop_loading_booking_system( booking_system );
 		}
 	});	
+}
+
+
+/**
+ * Perform form action
+ * @since 1.8.10
+ * @param {HTMLElement} booking_system
+ */
+function bookacti_perform_form_action( booking_system ) {
+	var trigger = { trigger: true };
+	
+	// Do not perform form actions on form editor
+	if( booking_system.closest( '#bookacti-form-editor-page-form' ).length ) { trigger.trigger = false; }
+	
+	booking_system.trigger( 'bookacti_trigger_perform_form_action', [ trigger ] );
+	if( ! trigger.trigger ) { return; }
+	
+	var booking_system_id	= booking_system.attr( 'id' );
+	var attributes			= bookacti.booking_system[ booking_system_id ];
+	
+	if( typeof attributes[ 'form_action' ] === 'undefined' ) { return; }
+	
+	// Default: Send the booking form
+	if( attributes[ 'form_action' ] === 'default' ) {
+		if( ! booking_system.closest( 'form' ).length && booking_system.closest( '.bookacti-form-fields' ).length ) {
+			booking_system.closest( '.bookacti-form-fields' ).wrap( '<form class="bookacti-temporary-form"></form>' );
+		}
+		if( booking_system.closest( 'form.bookacti-booking-form' ).length || booking_system.closest( 'form.bookacti-temporary-form' ).length ) {
+			bookacti_submit_booking_form( booking_system.closest( 'form' ) );
+		}
+	}
+	
+	// Redirect to URL
+	else if( attributes[ 'form_action' ] === 'redirect_to_url' ) {
+		if( typeof attributes[ 'picked_events' ][ 0 ] !== 'undefined' ) {
+			var group_id = attributes[ 'picked_events' ][ 0 ][ 'group_id' ];
+			var event = attributes[ 'picked_events' ][ 0 ];
+
+			if( $j.isNumeric( group_id ) ) {
+				bookacti_redirect_to_group_category_url( booking_system, group_id );
+			} else {
+				bookacti_redirect_to_activity_url( booking_system, event );
+			}
+		}
+	}
+	
+	booking_system.trigger( 'bookacti_perform_form_action' );
 }
 
 

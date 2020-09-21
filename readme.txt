@@ -319,6 +319,11 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 
 == Changelog ==
 
+= 1.8.10 =
+* Fix - Single checkbox could not be checked by default
+* Fix - Recent bookings' owner changed if the WC customer logged in to a different account
+* Dev - Refactor the process to trigger form actions
+
 = 1.8.9 - 2020/09/16 =
 * Tweak - Use WP setting "New User Default Role" as default value for user registered with a booking form
 * Tweak - Change the Bookings page title in WC account
