@@ -173,9 +173,8 @@ function bookacti_display_forms_screen_options() {
 // GENERAL SETTINGS 
 /**
  * Display "When to load the events?" setting
- * 
  * @since 1.1.0
- * @version 1.7.3
+ * @version 1.8.10
  */
 function bookacti_settings_field_when_events_load_callback() {
 	$args = array(
@@ -187,9 +186,20 @@ function bookacti_settings_field_when_events_load_callback() {
 							'after_page_load' => esc_html__( 'After page load', 'booking-activities' )
 						),
 		'value'		=> bookacti_get_setting_value( 'bookacti_general_settings', 'when_events_load' ),
-		'tip'		=> apply_filters( 'bookacti_when_events_load_tip', esc_html__( 'Choose whether you want to load events when the page is loaded or after. You must choose "After page load" if you are using a caching plugin or a CDN.', 'booking-activities' ) )
+		'tip'		=> apply_filters( 'bookacti_when_events_load_tip', esc_html__( 'Choose whether you want to load events when the page is loaded or after.', 'booking-activities' ) )
 	);
 	bookacti_display_field( $args );
+?>
+	<div class='bookacti-backend-settings-only-notice bookacti-warning' style='margin-top: 10px;'>
+		<span class='dashicons dashicons-warning'></span>
+		<span>
+			<?php 
+				/* translators: %s = "After page load" (it's an option name) */
+				echo sprintf( esc_html__( 'You must choose "%s" if you are using a caching sytem (via a plugin, your webhost, a CDN...).', 'booking-activities' ), esc_html__( 'After page load', 'booking-activities' ) );
+			?>
+		</span>
+	</div>
+<?php
 }
 
 
@@ -466,8 +476,7 @@ function bookacti_settings_field_cancellation_delay_callback() {
 
 /**
  * Possible actions to take after cancellation needing refund
- * 
- * @version 1.5.0
+ * @version 1.8.10
  */
 function bookacti_settings_field_cancellation_refund_actions_callback() {
 
@@ -482,8 +491,8 @@ function bookacti_settings_field_cancellation_refund_actions_callback() {
 		'id'		=> 'refund_action_after_cancellation',
 		'options'	=> bookacti_get_refund_actions(),
 		'value'		=> $actions,
-		'tip'		=> __( 'Define the actions a customer will be able to take to be refunded after he cancels a booking.', 'booking-activities' )
-					. '<br/>' . __( 'This option has no effect for administrators.', 'booking-activities' )
+		'tip'		=> esc_html__( 'Define the actions a customer will be able to take to be refunded after he / she cancels a booking.', 'booking-activities' )
+					. '<br/>' . esc_html__( 'This option has no effect for administrators.', 'booking-activities' )
 	);
 
 	?>

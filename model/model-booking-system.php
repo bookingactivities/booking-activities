@@ -922,10 +922,9 @@ function bookacti_get_groups_of_events( $raw_args ) {
 
 /**
  * Get group of events availability (= the lowest availability among its events)
- * 
- * @global wpdb $wpdb
  * @since 1.1.0
  * @version 1.7.1
+ * @global wpdb $wpdb
  * @param int|array $group_of_events_ids
  * @return false|int|array
  */

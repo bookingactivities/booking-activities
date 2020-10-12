@@ -4,55 +4,110 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 /**
  * Book an event
- * @version 1.8.0
+ * @version 1.8.10
  * @global wpdb $wpdb
- * @param int|string $user_id
- * @param int $event_id
- * @param string $event_start
- * @param string $event_end
- * @param int $quantity
- * @param string $state
- * @param string $payment_status
- * @param string $expiration_date
- * @param int $booking_group_id
- * @param int $form_id
- * @return int|null
+ * @param array $booking_data Sanitized with bookacti_sanitize_booking_data
+ * @return int
  */
-function bookacti_insert_booking( $user_id, $event_id, $event_start, $event_end, $quantity, $state, $payment_status, $expiration_date = NULL, $booking_group_id = NULL, $form_id = NULL ) {
+function bookacti_insert_booking( $booking_data ) {
 	global $wpdb;
 	
-	$active = in_array( $state, bookacti_get_active_booking_states(), true ) ? 1 : 0;
-	$creation_date = date( 'Y-m-d\TH:i:s' );
-	
 	$query = 'INSERT INTO ' . BOOKACTI_TABLE_BOOKINGS 
-			. ' ( group_id, event_id, user_id, form_id, event_start, event_end, quantity, state, payment_status, creation_date, expiration_date, active ) ' 
-			. ' VALUES ( NULLIF( %d, 0), %d, %s, NULLIF( %d, 0), %s, %s, %d, %s, %s, %s, NULLIF( %s, ""), %d )';
+			. ' ( group_id, event_id, user_id, form_id, order_id, event_start, event_end, quantity, state, payment_status, creation_date, expiration_date, active ) ' 
+			. ' VALUES ( NULLIF( %d, 0 ), %d, %s, NULLIF( %d, 0 ), NULLIF( %d, 0 ), %s, %s, %d, %s, %s, %s, NULLIF( %s, "" ), %d )';
 	
 	$variables = array( 
-		is_numeric( $booking_group_id ) ? intval( $booking_group_id ) : 0,
-		$event_id,
-		$user_id,
-		$form_id,
-		$event_start,
-		$event_end,
-		$quantity,
-		$state,
-		$payment_status,
-		$creation_date,
-		$expiration_date,
-		$active
+		$booking_data[ 'group_id' ],
+		$booking_data[ 'event_id' ],
+		$booking_data[ 'user_id' ],
+		$booking_data[ 'form_id' ],
+		$booking_data[ 'order_id' ],
+		$booking_data[ 'event_start' ],
+		$booking_data[ 'event_end' ],
+		$booking_data[ 'quantity' ],
+		$booking_data[ 'status' ],
+		$booking_data[ 'payment_status' ],
+		date( 'Y-m-d H:i:s' ),
+		$booking_data[ 'expiration_date' ],
+		$booking_data[ 'active' ]
 	);
 	
 	$query = $wpdb->prepare( $query, $variables );
 	$wpdb->query( $query );
 	
-	$booking_id = $wpdb->insert_id;
+	$booking_id = ! empty( $wpdb->insert_id ) ? $wpdb->insert_id : 0;
 	
-	if( $booking_id !== false ) {
-		do_action( 'bookacti_booking_inserted', $booking_id, $variables );
+	if( $booking_id ) {
+		$booking_data[ 'id' ] = $booking_id;
+		do_action( 'bookacti_booking_inserted', $booking_data );
 	}
 	
 	return $booking_id;
+}
+
+
+/**
+ * Update a booking
+ * @since 1.8.10
+ * @global wpdb $wpdb
+ * @param array $booking_data Sanitized with bookacti_sanitize_booking_data
+ * @param array $where
+ * @return int|false
+ */
+function bookacti_update_booking( $booking_data, $where = array() ) {
+	global $wpdb;
+	
+	$query	= 'UPDATE ' . BOOKACTI_TABLE_BOOKINGS 
+			. ' SET '
+			. ' group_id = IFNULL( NULLIF( %d, 0 ), group_id ), '
+			. ' event_id = IFNULL( NULLIF( %d, 0 ), event_id ), '
+			. ' user_id = IFNULL( NULLIF( %d, 0 ), user_id ), '
+			. ' form_id = IFNULL( NULLIF( %d, 0 ), form_id ), '
+			. ' order_id = IFNULL( NULLIF( %d, 0 ), order_id ), '
+			. ' event_start = IFNULL( NULLIF( %s, "" ), event_start ), '
+			. ' event_end = IFNULL( NULLIF( %s, "" ), event_end ), '
+			. ' quantity = IFNULL( NULLIF( %d, 0 ), quantity ), '
+			. ' state = IFNULL( NULLIF( %s, "" ), state ), '
+			. ' payment_status = IFNULL( NULLIF( %s, "" ), payment_status ), '
+			. ' expiration_date = IFNULL( NULLIF( %s, "" ), expiration_date ) '
+			. ' active = IFNULL( NULLIF( %d, -1 ), active ) '
+			. ' WHERE id = %d ';
+	
+	$variables = array( 
+		$booking_data[ 'group_id' ],
+		$booking_data[ 'event_id' ],
+		$booking_data[ 'user_id' ],
+		$booking_data[ 'form_id' ],
+		$booking_data[ 'order_id' ],
+		$booking_data[ 'event_start' ],
+		$booking_data[ 'event_end' ],
+		$booking_data[ 'quantity' ],
+		$booking_data[ 'status' ],
+		$booking_data[ 'payment_status' ],
+		$booking_data[ 'expiration_date' ],
+		$booking_data[ 'active' ],
+		$booking_data[ 'id' ]
+	);
+	
+	if( ! empty( $where[ 'status__in' ] ) ) {
+		$query .= ' AND state IN ( %s ';
+		$array_count = count( $where[ 'status__in' ] );
+		if( $array_count >= 2 ) {
+			for( $i=1; $i<$array_count; ++$i ) {
+				$query .= ', %s ';
+			}
+		}
+		$query .= ') ';
+	}
+	
+	$query		= apply_filters( 'bookacti_update_booking_query', $wpdb->prepare( $query, $variables ), $booking_data, $where );
+	$updated	= $wpdb->query( $query );
+	
+	if( $updated ) {
+		do_action( 'bookacti_booking_updated', $booking_data, $where );
+	}
+	
+	return $updated;
 }
 
 
@@ -1744,45 +1799,93 @@ function bookacti_delete_booking( $booking_id ) {
 
 /**
  * Insert a booking group
- * 
  * @since 1.1.0
- * @version 1.5.9
+ * @version 1.8.10
  * @global wpdb $wpdb
- * @param int|string $user_id
- * @param int $event_group_id
- * @param string $state
- * @param string $payment_status
- * @param int $form_id
- * @return int|false
+ * @param array $booking_group_data Sanitized with bookacti_sanitize_booking_group_data
+ * @return int
  */
-function bookacti_insert_booking_group( $user_id, $event_group_id, $state, $payment_status, $form_id = NULL ) {
+function bookacti_insert_booking_group( $booking_group_data ) {
 	global $wpdb;
-
-	$active = in_array( $state, bookacti_get_active_booking_states(), true ) ? 1 : 0;
 
 	$query = 'INSERT INTO ' . BOOKACTI_TABLE_BOOKING_GROUPS 
 			. ' ( event_group_id, user_id, form_id, state, payment_status, active ) ' 
-			. ' VALUES ( %d, %s, NULLIF( %d, 0), %s, %s, %d )';
+			. ' VALUES ( NULLIF( %d, 0 ), %s, NULLIF( %d, 0 ), %s, %s, %d )';
 
 	$variables = array( 
-		$event_group_id,
-		$user_id,
-		$form_id,
-		$state,
-		$payment_status,
-		$active
+		$booking_group_data[ 'event_group_id' ],
+		$booking_group_data[ 'user_id' ],
+		$booking_group_data[ 'form_id' ],
+		$booking_group_data[ 'status' ],
+		$booking_group_data[ 'payment_status' ],
+		$booking_group_data[ 'active' ]
 	);
 
 	$query = $wpdb->prepare( $query, $variables );
 	$wpdb->query( $query );
 
-	$booking_group_id = $wpdb->insert_id;
+	$booking_group_id = ! empty( $wpdb->insert_id ) ? $wpdb->insert_id : 0;
 
-	if( $booking_group_id !== false ) {
-		do_action( 'bookacti_booking_group_inserted', $booking_group_id );
+	if( $booking_group_id ) {
+		do_action( 'bookacti_booking_group_inserted', $booking_group_id, $booking_group_data );
 	}
 
 	return $booking_group_id;
+}
+
+
+/**
+ * Update booking group
+ * @version 1.8.10
+ * @global wpdb $wpdb
+ * @param array $booking_group_data Sanitized with bookacti_sanitize_booking_group_data
+ * @param array $where
+ * @return int|false
+ */
+function bookacti_update_booking_group( $booking_group_data, $where = array() ) {
+	global $wpdb;
+	
+	$query	= 'UPDATE ' . BOOKACTI_TABLE_BOOKING_GROUPS
+			. ' SET '
+			. ' event_group_id = IFNULL( NULLIF( %d, 0 ), event_group_id ), '
+			. ' user_id = IFNULL( NULLIF( %d, 0 ), user_id ), '
+			. ' form_id = IFNULL( NULLIF( %d, 0 ), form_id ), '
+			. ' order_id = IFNULL( NULLIF( %d, 0 ), order_id ), '
+			. ' state = IFNULL( NULLIF( %s, "" ), state ), '
+			. ' payment_status = IFNULL( NULLIF( %s, "" ), payment_status ), '
+			. ' active = IFNULL( NULLIF( %d, -1 ), active ) '
+			. ' WHERE id = %d ';
+	
+	$variables = array( 
+		$booking_group_data[ 'event_group_id' ],
+		$booking_group_data[ 'user_id' ],
+		$booking_group_data[ 'form_id' ],
+		$booking_group_data[ 'order_id' ],
+		$booking_group_data[ 'status' ],
+		$booking_group_data[ 'payment_status' ],
+		$booking_group_data[ 'active' ],
+		$booking_group_data[ 'id' ]
+	);
+	
+	if( ! empty( $where[ 'status__in' ] ) ) {
+		$query .= ' AND state IN ( %s ';
+		$array_count = count( $where[ 'status__in' ] );
+		if( $array_count >= 2 ) {
+			for( $i=1; $i<$array_count; ++$i ) {
+				$query .= ', %s ';
+			}
+		}
+		$query .= ') ';
+	}
+	
+	$query		= apply_filters( 'bookacti_update_booking_group_query', $wpdb->prepare( $query, $variables ), $booking_group_data, $where );
+	$updated	= $wpdb->query( $query );
+	
+	if( $updated ) {
+		do_action( 'bookacti_booking_group_updated', $booking_group_data, $where );
+	}
+	
+	return $updated;
 }
 
 
@@ -1883,6 +1986,84 @@ function bookacti_update_booking_group_payment_status( $booking_group_id, $statu
 		}
 	}
 
+	return $updated;
+}
+
+/**
+ * Update booking group user id
+ * @since 1.8.10
+ * @global wpdb $wpdb
+ * @param int $booking_group_id
+ * @param int|string $user_id
+ * @return int|false
+ */
+function bookacti_update_booking_group_user_id( $booking_group_id, $user_id ) {
+	global $wpdb;
+	
+	$query		= 'UPDATE ' . BOOKACTI_TABLE_BOOKING_GROUPS . ' '
+				. ' SET user_id = %s '
+				. ' WHERE id = %d';
+	$query		= $wpdb->prepare( $query, $user_id, $booking_group_id );
+	$updated	= $wpdb->query( $query );
+	
+	return $updated;
+}
+
+
+/**
+ * Update booking group bookings
+ * @since 1.8.10
+ * @global wpdb $wpdb
+ * @param array $booking_group_data Sanitized with bookacti_sanitize_booking_group_data
+ * @param array $where
+ * @return int|false
+ */
+function bookacti_update_booking_group_bookings( $booking_group_data, $where = array() ) {
+	global $wpdb;
+	
+	$query	= 'UPDATE ' . BOOKACTI_TABLE_BOOKINGS 
+			. ' SET '
+			. ' user_id = IFNULL( NULLIF( %d, 0 ), user_id ), '
+			. ' form_id = IFNULL( NULLIF( %d, 0 ), form_id ), '
+			. ' order_id = IFNULL( NULLIF( %d, 0 ), order_id ), '
+			. ' state = IFNULL( NULLIF( %s, "" ), state ), '
+			. ' payment_status = IFNULL( NULLIF( %s, "" ), payment_status ), '
+			. ' expiration_date = IFNULL( NULLIF( %s, "" ), expiration_date ), '
+			. ' quantity = IFNULL( NULLIF( %d, 0 ), quantity ), '
+			. ' active = IFNULL( NULLIF( %d, -1 ), active ) '
+			. ' WHERE group_id = %d ';
+	
+	$variables = array( 
+		$booking_group_data[ 'event_group_id' ],
+		$booking_group_data[ 'user_id' ],
+		$booking_group_data[ 'form_id' ],
+		$booking_group_data[ 'order_id' ],
+		$booking_group_data[ 'status' ],
+		$booking_group_data[ 'payment_status' ],
+		$booking_group_data[ 'expiration_date' ],
+		$booking_group_data[ 'quantity' ],
+		$booking_group_data[ 'active' ],
+		$booking_group_data[ 'id' ]
+	);
+	
+	if( ! empty( $where[ 'status__in' ] ) ) {
+		$query .= ' AND state IN ( %s ';
+		$array_count = count( $where[ 'status__in' ] );
+		if( $array_count >= 2 ) {
+			for( $i=1; $i<$array_count; ++$i ) {
+				$query .= ', %s ';
+			}
+		}
+		$query .= ') ';
+	}
+	
+	$query		= apply_filters( 'bookacti_update_booking_group_bookings_query', $wpdb->prepare( $query, $variables ), $booking_group_data, $where );
+	$updated	= $wpdb->query( $query );
+	
+	if( $updated ) {
+		do_action( 'bookacti_booking_group_bookings_updated', $booking_group_data, $where );
+	}
+	
 	return $updated;
 }
 
@@ -2034,86 +2215,6 @@ function bookacti_force_update_booking_group_bookings_quantity( $booking_group_i
 	$query .= ' WHERE group_id = %d';
 
 	$prep		= $wpdb->prepare( $query, $quantity, $booking_group_id );
-	$updated	= $wpdb->query( $prep );
-
-	return $updated;
-}
-
-
-/**
- * Update booking group
- * 
- * @since 1.1.0
- * @version 1.5.6
- * @global wpdb $wpdb
- * @param int $booking_group_id
- * @param string $state
- * @param string $payment_status
- * @param int|string $user_id
- * @param int $order_id
- * @param int $event_group_id
- * @param 0|1|'auto' $active
- * @param array $states_in
- * @return int|false
- */
-function bookacti_update_booking_group( $booking_group_id, $state = NULL, $payment_status = NULL, $user_id = NULL, $order_id = NULL, $event_group_id = NULL, $active = 'auto', $states_in = array() ) {
-
-	global $wpdb;
-
-	$query = 'UPDATE ' . BOOKACTI_TABLE_BOOKING_GROUPS . ' SET ';
-
-	$variables_array = array();
-
-	if( $state ) {
-		$query .= 'state = %s, ';
-		$variables_array[] = $state;
-	}
-
-	if( $payment_status ) {
-		$query .= ' payment_status = CASE WHEN ( payment_status = "none" AND %s = "paid" ) THEN payment_status ELSE %s END, ';
-		$variables_array[] = $payment_status;
-		$variables_array[] = $payment_status;
-	}
-
-	if( $user_id ) {
-		$query .= ' user_id = %s, ';
-		$variables_array[] = $user_id;
-	}
-
-	if( $order_id ) {
-		$query .= ' order_id = %d, ';
-		$variables_array[] = $order_id;
-	}
-
-	if( $event_group_id ) {
-		$query .= ' event_group_id = %d, ';
-		$variables_array[] = $event_group_id;
-	}
-
-	if( $state && $active === 'auto' ) {
-		$active = in_array( $state, bookacti_get_active_booking_states(), true ) ? 1 : 0;
-	} else if( ! $state && $active !== 0 && $active !== 1 ) {
-		$active = -1;
-	}
-
-	$query .= ' active = IFNULL( NULLIF( %d, -1 ), active ) '
-			. ' WHERE id = %d ';
-
-	$variables_array[] = $active;
-	$variables_array[] = $booking_group_id;
-
-	if( $states_in && is_array( $states_in ) ) {
-		$query  .= ' AND state IN ( ';
-		$len = count($states_in);
-		for( $i=1; $i <= $len; ++$i ) {
-			$query  .= '%s';
-			if( $i < $len ) { $query  .= ', '; }
-		}
-		$query  .= ' ) ';
-		$variables_array = array_merge( $variables_array, $states_in );
-	}
-
-	$prep		= $wpdb->prepare( $query, $variables_array );
 	$updated	= $wpdb->query( $prep );
 
 	return $updated;

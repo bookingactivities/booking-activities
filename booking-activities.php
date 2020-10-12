@@ -145,7 +145,7 @@ add_action( 'wp_enqueue_scripts',	'bookacti_enqueue_js_variables', 5 );
 
 /**
  * Enqueue high priority scripts
- * @version 1.8.5
+ * @version 1.8.10
  */
 function bookacti_enqueue_high_priority_global_scripts() {
 	// Include global var on WC products and orders screens
@@ -163,8 +163,12 @@ function bookacti_enqueue_high_priority_global_scripts() {
 	if( ! wp_script_is( 'moment', 'registered' ) )	{ wp_register_script( 'moment', plugins_url( 'lib/fullcalendar/moment.min.js', __FILE__ ), array( 'jquery' ), $moment_version, true ); }
 	if( ! wp_script_is( 'moment', 'enqueued' ) )	{ wp_enqueue_script( 'moment' ); }
 	
-	$fullcalendar_version = '3.10.2';
-	if( ! wp_script_is( 'fullcalendar', 'enqueued' ) ) { wp_enqueue_script( 'fullcalendar', plugins_url( 'lib/fullcalendar/fullcalendar.min.js', __FILE__ ), array( 'jquery', 'moment' ), $fullcalendar_version, true ); }
+	// Fullcalendar: The max suported version is 3.10.2
+	$fullcalendar_version	= '3.10.2';
+	$registered_fc			= wp_scripts()->query( 'fullcalendar', 'registered' );
+	$registered_fc_version	= $registered_fc && ! empty( $registered_fc->ver ) ? $registered_fc->ver : '';
+	if( ! $registered_fc || ( $registered_fc_version && version_compare( $registered_fc_version, $fullcalendar_version, '>' ) ) ) { wp_register_script( 'fullcalendar', plugins_url( 'lib/fullcalendar/fullcalendar.min.js', __FILE__ ), array( 'jquery', 'moment' ), $fullcalendar_version, true ); }
+	if( ! wp_script_is( 'fullcalendar', 'enqueued' ) ) { wp_enqueue_script( 'fullcalendar' ); }
 	wp_enqueue_script( 'bookacti-js-fullcalendar-locale-all', plugins_url( 'lib/fullcalendar/locale-all.js', __FILE__ ), array( 'jquery', 'fullcalendar' ), $fullcalendar_version, true );
 	
 	// INCLUDE STYLESHEETS
@@ -220,7 +224,7 @@ add_action( 'wp_enqueue_scripts',	'bookacti_enqueue_global_scripts', 20 );
 
 /**
  * Enqueue high priority scripts in backend only
- * @version 1.8.0
+ * @version 1.8.10
  */
 function bookacti_enqueue_high_priority_backend_scripts() {
 	// On backend, only include these scripts on Booking Activities pages
@@ -228,7 +232,8 @@ function bookacti_enqueue_high_priority_backend_scripts() {
 	
 	// INCLUDE LIBRARIES
 	$select2_version = '4.0.13';
-	wp_enqueue_script( 'select2', plugins_url( 'lib/select2/select2.min.js', __FILE__ ), array( 'jquery' ), $select2_version, true );
+	if( ! wp_script_is( 'select2', 'registered' ) )	{ wp_register_script( 'select2', plugins_url( 'lib/select2/select2.min.js', __FILE__ ), array( 'jquery' ), $select2_version, true ); }
+	if( ! wp_script_is( 'select2', 'enqueued' ) )	{ wp_enqueue_script( 'select2' ); }
 	wp_enqueue_style( 'select2', plugins_url( 'lib/select2/select2.min.css', __FILE__ ), array(), $select2_version );
 	
 	// INCLUDE JAVASCRIPT FILES
@@ -518,6 +523,26 @@ function bookacti_update_refactored_settings_in_1_8_0( $old_version ) {
 	}
 }
 add_action( 'bookacti_updated', 'bookacti_update_refactored_settings_in_1_8_0', 30 );
+
+
+/**
+ * Update changes to 1.8.10
+ * This function is temporary
+ * @since 1.8.10
+ * @global wpdb $wpdb
+ * @param string $old_version
+ */
+function bookacti_update_to_1_8_10( $old_version ) {
+	// Do it only once, when Booking Activities is updated for the first time after 1.8.10
+	if( version_compare( $old_version, '1.8.10', '>=' ) ) { return; }
+	
+	// Clear all WC customer sessions to empty carts, since cart items data are formatted differently
+	if( bookacti_is_plugin_active( 'woocommerce/woocommerce.php' ) ) {
+		$results = WC_Admin_Status::execute_tool( 'clear_sessions' );
+		wc_add_notice( $results[ 'message' ], 'success' );
+	}
+}
+add_action( 'bookacti_updated', 'bookacti_update_to_1_8_10', 40 );
 
 
 

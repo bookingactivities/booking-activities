@@ -605,15 +605,18 @@ function bookacti_get_js_variables() {
 /**
  * Get the active Booking Activities add-ons
  * @since 1.7.14
+ * @version 1.8.10
+ * @param string $prefix
+ * @param array $exclude
  */
-function bookacti_get_active_add_ons() {
-	$add_ons_data = bookacti_get_add_ons_data();
+function bookacti_get_active_add_ons( $prefix = '', $exclude = array( 'balau' ) ) {
+	$add_ons_data = bookacti_get_add_ons_data( $prefix, $exclude );
 
 	$active_add_ons = array();
-	foreach( $add_ons_data as $prefix => $add_on_data ) {
+	foreach( $add_ons_data as $add_on_prefix => $add_on_data ) {
 		$add_on_path = $add_on_data[ 'plugin_name' ] . '/' . $add_on_data[ 'plugin_name' ] . '.php';
 		if( bookacti_is_plugin_active( $add_on_path ) ) {
-			$active_add_ons[ $prefix ] = $add_on_data;
+			$active_add_ons[ $add_on_prefix ] = $add_on_data;
 		}
 	}
 
@@ -624,63 +627,74 @@ function bookacti_get_active_add_ons() {
 /**
  * Get add-on data by prefix
  * @since 1.7.14
- * @version 1.8.0
+ * @version 1.8.10
  * @param string $prefix
+ * @param array $exclude
  * @return array
  */
-function bookacti_get_add_ons_data( $prefix = '' ) {
+function bookacti_get_add_ons_data( $prefix = '', $exclude = array( 'balau' ) ) {
 	$addons_data = array( 
 		'badp'	=> array( 
 			'title'			=> 'Display Pack', 
 			'slug'			=> 'display-pack', 
 			'plugin_name'	=> 'ba-display-pack', 
 			'end_of_life'	=> '', 
-			'download_id'	=> 482
+			'download_id'	=> 482,
+			'min_version'	=> '1.4.11'
 		),
 		'banp'	=> array( 
 			'title'			=> 'Notification Pack', 
 			'slug'			=> 'notification-pack', 
 			'plugin_name'	=> 'ba-notification-pack', 
 			'end_of_life'	=> '', 
-			'download_id'	=> 1393
+			'download_id'	=> 1393,
+			'min_version'	=> '1.2.4'
 		),
 		'bapap' => array( 
 			'title'			=> 'Prices and Credits', 
 			'slug'			=> 'prices-and-credits', 
 			'plugin_name'	=> 'ba-prices-and-credits', 
 			'end_of_life'	=> '', 
-			'download_id'	=> 438
+			'download_id'	=> 438,
+			'min_version'	=> '1.4.16'
 		),
 		'baaf' => array( 
 			'title'			=> 'Advanced Forms', 
 			'slug'			=> 'advanced-forms', 
 			'plugin_name'	=> 'ba-advanced-forms', 
 			'end_of_life'	=> '', 
-			'download_id'	=> 2705
+			'download_id'	=> 2705,
+			'min_version'	=> '1.2.13'
 		),
 		'baofc'	=> array( 
 			'title'			=> 'Order for Customers', 
 			'slug'			=> 'order-for-customers', 
 			'plugin_name'	=> 'ba-order-for-customers', 
 			'end_of_life'	=> '', 
-			'download_id'	=> 436
+			'download_id'	=> 436,
+			'min_version'	=> '1.2.14'
+		),
+		'balau' => array( 
+			'title'			=> 'Licenses & Updates', 
+			'slug'			=> 'licenses-and-updates', 
+			'plugin_name'	=> 'ba-licenses-and-updates', 
+			'end_of_life'	=> '',
+			'download_id'	=> 880,
+			'min_version'	=> '1.1.11'
 		),
 		'bapos' => array( 
 			'title'			=> 'Points of Sale', 
 			'slug'			=> 'points-of-sale', 
 			'plugin_name'	=> 'ba-points-of-sale', 
 			'end_of_life'	=> '2021-04-30 23:59:59', // This add-on has been discontinued
-			'download_id'	=> 416
-		),
-		'batest' => array( // For testing purpose only
-			'title'			=> 'Test add-on', 
-			'slug'			=> 'test', 
-			'plugin_name'	=> 'ba-test', 
-			'end_of_life'	=> '', 
-			'download_id'	=> 3011
+			'download_id'	=> 416,
+			'min_version'	=> '1.0.15'
 		)
 	);
-
+	
+	// Exclude undesired add-ons
+	if( $exclude ) { $addons_data = array_intersect_key( $addons_data, array_flip( $exclude ) ); }
+	
 	if( ! $prefix ) { return $addons_data; }
 
 	return isset( $addons_data[ $prefix ] ) ? $addons_data[ $prefix ] : array();

@@ -817,12 +817,14 @@ function bookacti_dialog_change_booking_quantity( booking_id, booking_type ) {
 
 /**
  * Reschedule booking dialog
- * @version 1.8.5
+ * @version 1.8.10
  * @param {int} booking_id
  */
 function bookacti_dialog_reschedule_booking( booking_id ) {
 	var row					= $j( '.bookacti-booking-action[data-booking-id="' + booking_id + '"]' ).parents( 'tr' );
 	var booking_system		= $j( '#bookacti-booking-system-reschedule.bookacti-booking-system' );
+	var booking_system_id	= booking_system.attr( 'id' );
+	var old_booking_data	= {};
 	var booking_quantity	= 0;
 	
 	if( bookacti_localized.is_admin ) { $j( '#bookacti-send-notifications-on-reschedule' ).prop( 'checked', false ); }
@@ -845,6 +847,7 @@ function bookacti_dialog_reschedule_booking( booking_id ) {
 		success: function( response ) {
 			if( response.status === 'success' ) {
 				var booking_system_id	= booking_system.attr( 'id' );
+				old_booking_data		= response.booking_data;
 				booking_quantity		= response.booking_data.quantity;
 				
 				booking_system.closest( 'form' ).find( 'input.bookacti-quantity' ).val( booking_quantity );
@@ -884,12 +887,12 @@ function bookacti_dialog_reschedule_booking( booking_id ) {
 			'class': 'bookacti-dialog-delete-button',
 			
 			click: function() { 
-				var event_id	= booking_system.parent().find( 'input[name="bookacti_event_id"]' ).val();
-				var event_start	= booking_system.parent().find( 'input[name="bookacti_event_start"]' ).val();
-				var event_end	= booking_system.parent().find( 'input[name="bookacti_event_end"]' ).val();
-				
 				var validated = bookacti_validate_picked_events( booking_system, booking_quantity );
 				if( ! validated ) { return; }
+				
+				// Groups cannot be rescheduled
+				var picked_events = bookacti.booking_system[ booking_system_id ][ 'picked_events' ];
+				if( parseInt( picked_events[ 0 ][ 'group_id' ] ) > 0 ) { return; }
 				
 				var send_notifications	= 1;
 				if( bookacti_localized.is_admin && $j( '#bookacti-send-notifications-on-reschedule' ).length ) {
@@ -906,9 +909,7 @@ function bookacti_dialog_reschedule_booking( booking_id ) {
 				var data = { 
 					'action': 'bookactiRescheduleBooking', 
 					'booking_id': booking_id,
-					'event_id': event_id,
-					'event_start': event_start,
-					'event_end': event_end,
+					'picked_events': picked_events,
 					'columns': columns,
 					'context': bookacti_localized.is_admin ? 'admin_booking_list' : 'user_booking_list',
 					'is_admin': bookacti_localized.is_admin ? 1 : 0,
@@ -938,7 +939,7 @@ function bookacti_dialog_reschedule_booking( booking_id ) {
 								bookacti_refresh_list_table_hidden_columns();
 							}
 
-							$j( 'body' ).trigger( 'bookacti_booking_rescheduled', [ booking_id, event_start, event_end, response ] );
+							$j( 'body' ).trigger( 'bookacti_booking_rescheduled', [ response ] );
 
 						} else {
 							var error_message = typeof response.message !== 'undefined' ? response.message : bookacti_localized.error;

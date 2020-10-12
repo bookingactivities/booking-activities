@@ -1298,6 +1298,7 @@ function bookacti_validate_login( $login_values, $require_authentication = true 
 /**
  * Validate form fields according to values received with $_POST
  * @since 1.7.0
+ * @version 1.8.10
  * @param int $form_id
  * @param array $fields_data
  * @return array
@@ -1308,26 +1309,29 @@ function bookacti_validate_form_fields( $form_id, $fields_data = array() ) {
 		$fields_data = bookacti_get_form_fields_data( $form_id );
 	}
 	
+	$validated = array( 
+		'status' => 'success',
+		'messages' => array()
+	);
+	
 	// Make sure that form data exist
 	if( ! $fields_data ) { 
 		$validated[ 'status' ]	= 'failed';
-		$validated[ 'message' ][ 'invalid_form_id' ]	= esc_html__( 'Invalid form ID.', 'booking-activities' );
-		return apply_filters( 'bookacti_validate_form_fields', $validated, $form_id, $fields_data );
-	}
-	
-	$validated = array( 'status' => 'success' );
-	
-	// Validate terms
-	$has_terms = false;
-	foreach( $fields_data as $field_data ) {
-		if( $field_data[ 'name' ] === 'terms' ) { 
-			$has_terms = true;
-			break;
+		$validated[ 'messages' ][ 'invalid_form_id' ] = esc_html__( 'Invalid form ID.', 'booking-activities' );
+		
+	} else {
+		// Validate terms
+		$has_terms = false;
+		foreach( $fields_data as $field_data ) {
+			if( $field_data[ 'name' ] === 'terms' ) { 
+				$has_terms = true;
+				break;
+			}
 		}
-	}
-	if( $has_terms && empty( $_POST[ 'terms' ] ) ) {
-		$validated[ 'status' ]	= 'failed';
-		$validated[ 'message' ][ 'terms_not_agreed' ]	= esc_html__( 'You must agree to the terms and conditions.', 'booking-activities' );
+		if( $has_terms && empty( $_POST[ 'terms' ] ) ) {
+			$validated[ 'status' ]	= 'failed';
+			$validated[ 'messages' ][ 'terms_not_agreed' ] = esc_html__( 'You must agree to the terms and conditions.', 'booking-activities' );
+		}
 	}
 	
 	return apply_filters( 'bookacti_validate_form_fields', $validated, $form_id, $fields_data );

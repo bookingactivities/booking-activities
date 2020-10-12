@@ -546,28 +546,21 @@ function bookacti_fill_booking_system_fields( booking_system ) {
 	inputs_container.find( 'input[name^="selected_events"]' ).remove();
 	
 	var i = 0;
-	var group_ids = [];
 	var booking_system_id = booking_system.attr( 'id' );
 	
 	// Add an hidden input for each selected events
 	$j.each( bookacti.booking_system[ booking_system_id ][ 'picked_events' ], function( j, event ) {
-		// BW compat
+		inputs_container.append( '<input type="hidden" name="selected_events[' + i + '][group_id]" value="' + event.group_id + '"/>' );
+		inputs_container.append( '<input type="hidden" name="selected_events[' + i + '][id]" value="' + event.id + '"/>' );
+		inputs_container.append( '<input type="hidden" name="selected_events[' + i + '][start]" value="' + event.start + '"/>' );
+		inputs_container.append( '<input type="hidden" name="selected_events[' + i + '][end]" value="' + event.end + '"/>' );
+		++i;
+		
+		// Backward compatibility
 		booking_system.siblings( '.bookacti-booking-system-inputs' ).find( 'input[name="bookacti_group_id"]' ).val( event.group_id ? event.group_id : 'single' );
 		booking_system.siblings( '.bookacti-booking-system-inputs' ).find( 'input[name="bookacti_event_id"]' ).val( event.id );
 		booking_system.siblings( '.bookacti-booking-system-inputs' ).find( 'input[name="bookacti_event_start"]' ).val( event.start );
 		booking_system.siblings( '.bookacti-booking-system-inputs' ).find( 'input[name="bookacti_event_end"]' ).val( event.end );
-		
-		if( $j.isNumeric( event.group_id ) ) { 
-			if( $j.inArray( event.group_id, group_ids ) > -1 ) { return true; } // Skip if the group was already added
-			group_ids.push( event.group_id );
-			inputs_container.append( '<input type="hidden" name="selected_events[' + i + '][group_id]" value="' + event.group_id + '"/>' );
-		} else {
-			inputs_container.append( '<input type="hidden" name="selected_events[' + i + '][group_id]" value="single"/>' );
-			inputs_container.append( '<input type="hidden" name="selected_events[' + i + '][id]" value="' + event.id + '"/>' );
-			inputs_container.append( '<input type="hidden" name="selected_events[' + i + '][start]" value="' + event.start + '"/>' );
-			inputs_container.append( '<input type="hidden" name="selected_events[' + i + '][end]" value="' + event.end + '"/>' );
-		}
-		++i;
 	});
 	
 	booking_system.trigger( 'bookacti_fill_booking_system_fields' );
@@ -631,7 +624,7 @@ function bookacti_pick_event( booking_system, event, group_id ) {
 		"title": event.title,
 		"start": moment.utc( event.start ).clone().locale( 'en' ).format( 'YYYY-MM-DD HH:mm:ss' ),
 		"end": moment.utc( event.end ).clone().locale( 'en' ).format( 'YYYY-MM-DD HH:mm:ss' ),
-		"group_id": group_id && $j.isNumeric( group_id ) ? parseInt( group_id ) : false
+		"group_id": $j.isNumeric( group_id ) ? parseInt( group_id ) : 0
 	};
 	
 	// Keep picked events in memory 
@@ -722,7 +715,7 @@ function bookacti_fill_picked_events_list( booking_system ) {
 		list_element.data( 'event-end', event_end_formatted ).attr( 'data-event-end', event_end_formatted );
 		
 		// Add grouped event to the list
-		if( event.group_id && event.group_id !== 'single' ) {
+		if( parseInt( event.group_id ) > 0 ) {
 			// Add the grouped events list
 			if( ! event_list.find( 'li[data-group-id="' + event.group_id + '"] ul' ).length ) {
 				// Get the group title
@@ -825,7 +818,7 @@ function bookacti_get_min_and_max_quantity( booking_system ) {
 		max_quantity		= false;
 		
 		// Groups of events
-		if( $j.isNumeric( event.group_id ) ) {
+		if( parseInt( event.group_id ) > 0 ) {
 			// Skip the group if it was already processed
 			if( $j.inArray( event.group_id, group_ids ) > -1 ) { return true; }
 			group_ids.push( event.group_id );

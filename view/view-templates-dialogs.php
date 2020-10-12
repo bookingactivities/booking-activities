@@ -1,7 +1,7 @@
 <?php 
 /**
  * Calendar editor dialogs
- * @version 1.8.8
+ * @version 1.8.10
  */
 
 // Exit if accessed directly
@@ -456,7 +456,7 @@ foreach( $templates as $template ) {
 			/**
 			 * Display the fields in the "Availability" tab of the Activity dialog
 			 * @since 1.4.0
-			 * @version 1.8.7
+			 * @version 1.8.10
 			 * @param array $params
 			 */
 			function bookacti_fill_activity_tab_availability( $params = array() ) {
@@ -478,7 +478,7 @@ foreach( $templates as $template ) {
 						'id'	=> 'bookacti-activity-max-bookings-per-user',
 						'title'	=> esc_html__( 'Max bookings per user', 'booking-activities' ),
 						'options'=> array( 'min' => 0, 'step' => 1 ),
-						'tip'	=> esc_html__( 'The maximum booking quantity a user can make on an event of this activity. E.g.: "1", the customer can only book one place of the desired event, and he won\'t be allowed to book it twice.', 'booking-activities' )
+						'tip'	=> esc_html__( 'The maximum booking quantity a user can make on an event of this activity. E.g.: "1", the customer can only book one place of the desired event, and he / she won\'t be allowed to book it twice.', 'booking-activities' )
 								. '<br/>' . esc_html__( 'Set it to "0" to ignore this parameter.', 'booking-activities' )
 					),
 					'activityOptions[max_users_per_event]' => array(
@@ -487,7 +487,7 @@ foreach( $templates as $template ) {
 						'id'	=> 'bookacti-activity-max-users-per-event',
 						'title'	=> esc_html__( 'Max users per event', 'booking-activities' ),
 						'options'=> array( 'min' => 0, 'step' => 1 ),
-						'tip'	=> esc_html__( 'Set how many different users can book the same event. E.g.: "1", only one user can book a specific event; once he has booked it, the event won\'t be available for anyone else anymore, even if it isn\'t full. Usefull for private events.', 'booking-activities' )
+						'tip'	=> esc_html__( 'Set how many different users can book the same event. E.g.: "1", only one user can book a specific event; once he / she has booked it, the event won\'t be available for anyone else anymore, even if it isn\'t full. Usefull for private events.', 'booking-activities' )
 								. '<br/>' . esc_html__( 'Set it to "0" to ignore this parameter.', 'booking-activities' )
 					),
 					'activityOptions[booking_changes_deadline]' => array(
@@ -564,7 +564,7 @@ foreach( $templates as $template ) {
 			
 			/**
 			 * Display the fields in the "Permissions" tab of the Activity dialog
-			 * @version 1.8.8
+			 * @version 1.8.10
 			 * @param array $params
 			 */
 			function bookacti_fill_activity_tab_permissions( $params = array() ) {
@@ -588,7 +588,7 @@ foreach( $templates as $template ) {
 						esc_html_e( 'Who can book this activity?', 'booking-activities' );
 						
 						$tip  = esc_html__( 'Choose who is allowed to book the events of this activity.', 'booking-activities' );
-						$tip  .= '<br/>' . esc_html__( 'Use CTRL+Click to pick or unpick a role. Don\'t pick any role to allow everybody.', 'booking-activities' );
+						$tip  .= '<br/>' . esc_html__( 'Use CTRL+Click to pick or unpick a role.', 'booking-activities' ) . ' ' . esc_html__( 'Don\'t pick any role to allow everybody.', 'booking-activities' );
 						bookacti_help_tip( $tip );
 					?>
 					</label>
@@ -603,9 +603,13 @@ foreach( $templates as $template ) {
 							<option value='all' ><?php esc_html_e( 'Everybody', 'booking-activities' ); ?></option>
 						</select>
 					</div>
+					<div class='bookacti-roles-notice bookacti-warning' style='margin-bottom:0;'>
+						<span class='dashicons dashicons-info'></span>
+						<span><?php esc_html_e( 'Don\'t pick any role to allow everybody.', 'booking-activities' ); ?></span>
+					</div>
 					<div class='bookacti-roles-notice bookacti-info'>
 						<span class='dashicons dashicons-info'></span>
-						<span><?php esc_html_e( 'Use CTRL+Click to pick or unpick a role. Don\'t pick any role to allow everybody.', 'booking-activities' ); ?></span>
+						<span><?php esc_html_e( 'Use CTRL+Click to pick or unpick a role.', 'booking-activities' ); ?></span>
 					</div>
 				</div>
 				<div id='bookacti-activity-managers-container' class='bookacti-items-container' data-type='users' >
@@ -870,7 +874,7 @@ foreach( $templates as $template ) {
 			/**
 			 * Display the fields in the "Availability" tab of the Group Category dialog
 			 * @since 1.4.0
-			 * @version 1.8.7
+			 * @version 1.8.10
 			 * @param array $params
 			 */
 			function bookacti_fill_group_category_tab_availability( $params = array() ) {
@@ -892,7 +896,7 @@ foreach( $templates as $template ) {
 						'id'	=> 'bookacti-group-category-max-bookings-per-user',
 						'title'	=> esc_html__( 'Max bookings per user', 'booking-activities' ),
 						'options'=> array( 'min' => 0, 'step' => 1 ),
-						'tip'	=> esc_html__( 'The maximum booking quantity a user can make on a group of events of this category. E.g.: "1", the customer can only book one place of the desired group of events, and he won\'t be allowed to book it twice.', 'booking-activities' )
+						'tip'	=> esc_html__( 'The maximum booking quantity a user can make on a group of events of this category. E.g.: "1", the customer can only book one place of the desired group of events, and he / she won\'t be allowed to book it twice.', 'booking-activities' )
 								. '<br/>' . esc_html__( 'Set it to "0" to ignore this parameter.', 'booking-activities' )
 					),
 					'groupCategoryOptions[max_users_per_event]' => array(
@@ -901,7 +905,7 @@ foreach( $templates as $template ) {
 						'id'	=> 'bookacti-group-category-max-users-per-event',
 						'title'	=> esc_html__( 'Max users per event', 'booking-activities' ),
 						'options'=> array( 'min' => 0, 'step' => 1 ),
-						'tip'	=> esc_html__( 'Set how many different users can book the same group of events. E.g.: "1", only one user can book a specific group of events; once he has booked it, the group of events won\'t be available for anyone else anymore, even if it isn\'t full. Usefull for private events.', 'booking-activities' )
+						'tip'	=> esc_html__( 'Set how many different users can book the same group of events. E.g.: "1", only one user can book a specific group of events; once he / she has booked it, the group of events won\'t be available for anyone else anymore, even if it isn\'t full. Usefull for private events.', 'booking-activities' )
 								. '<br/>' . esc_html__( 'Set it to "0" to ignore this parameter.', 'booking-activities' )
 					),
 					'groupCategoryOptions[booking_changes_deadline]' => array(
@@ -939,7 +943,7 @@ foreach( $templates as $template ) {
 			
 			/**
 			 * Display the fields in the "Permissions" tab of the Group Category dialog
-			 * @version 1.8.0
+			 * @version 1.8.10
 			 * @param array $params
 			 */
 			function bookacti_fill_group_category_tab_permissions( $params = array() ) {
@@ -951,7 +955,7 @@ foreach( $templates as $template ) {
 						esc_html_e( 'Who can book this category of groups?', 'booking-activities' );
 						
 						$tip  = esc_html__( 'Choose who is allowed to book the groups of this category.', 'booking-activities' );
-						$tip  .= '<br/>' . esc_html__( 'Use CTRL+Click to pick or unpick a role. Don\'t pick any role to allow everybody.', 'booking-activities' );
+						$tip  .= '<br/>' . esc_html__( 'Use CTRL+Click to pick or unpick a role.', 'booking-activities' ) . ' ' . esc_html__( 'Don\'t pick any role to allow everybody.', 'booking-activities' );
 						bookacti_help_tip( $tip );
 					?>
 					</label>
@@ -966,9 +970,13 @@ foreach( $templates as $template ) {
 							<option value='all' ><?php esc_html_e( 'Everybody', 'booking-activities' ); ?></option>
 						</select>
 					</div>
+					<div class='bookacti-roles-notice bookacti-warning' style='margin-bottom:0;'>
+						<span class='dashicons dashicons-info'></span>
+						<span><?php esc_html_e( 'Don\'t pick any role to allow everybody.', 'booking-activities' ); ?></span>
+					</div>
 					<div class='bookacti-roles-notice bookacti-info'>
 						<span class='dashicons dashicons-info'></span>
-						<span><?php esc_html_e( 'Use CTRL+Click to pick or unpick a role. Don\'t pick any role to allow everybody.', 'booking-activities' ); ?></span>
+						<span><?php esc_html_e( 'Use CTRL+Click to pick or unpick a role.', 'booking-activities' ); ?></span>
 					</div>
 				</div>
 			<?php

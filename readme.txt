@@ -210,7 +210,7 @@ Or read the full [features description](https://booking-activities.fr/en/documen
 
 
 = Display user's booking list = 
-*Make sure the user has bookings and he is logged in, otherwise it will not show anything* 
+*Make sure the user has bookings and he / she is logged in, otherwise it will not show anything* 
 
 1. Past this shortcode in any post or page you like: `[bookingactivities_list]`
 2. Go on this post / page frontend, the booking list appears!
@@ -259,7 +259,7 @@ We recommend to accept online payments since it's a great way to automate your b
 
 
 = Events are not "Booked" after booking form submission, they are "Pending", why? =
-Don't worry, the reservation is well registered. Now, it is up to you to turn it to "Booked" right away or when your customer comes, or when he gives you the money...
+Don't worry, the reservation is well registered. Now, it is up to you to turn it to "Booked" right away or when your customer comes, or when your customer gives you the money...
 But you can just turn the default booking status to "Booked" in Booking Activities settings.
 Note that if you use WooCommerce and online payments, booking states turn automatically to "Booked" if the payment is complete, or "Cancelled" if not.
 
@@ -320,9 +320,16 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 == Changelog ==
 
 = 1.8.10 =
+* Tweak - Hide the Calendar bookings filter if only one calendar is available
+* Tweak - Display an admin error notice if an add-on is outdated and will cause malfunction
+* Fix - Fields were not prefilled with URL attributes on WC variable product page
 * Fix - Single checkbox could not be checked by default
 * Fix - Recent bookings' owner changed if the WC customer logged in to a different account
+* Fix - Let the user mouseover an event booking list tooltip even if another event is hovered on the way
+* Fix - Check if select2 library is already registered and included before using our bundled version of it
 * Dev - Refactor the process to trigger form actions
+* Dev - Refactor the booking system picked_events attribute
+* Dev - Refactor the data bound to WC cart item / order item
 
 = 1.8.9 - 2020/09/16 =
 * Tweak - Use WP setting "New User Default Role" as default value for user registered with a booking form

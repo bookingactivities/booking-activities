@@ -141,7 +141,7 @@ $j( document ).ready( function() {
 	/**
 	 * Display the booking list tooltip when an event is hovered
 	 * @since 1.8.0
-	 * @version 1.8.5
+	 * @version 1.8.10
 	 * @param {Event} e
 	 * @param {Object} event
 	 * @param {HTMLElement} element
@@ -164,6 +164,11 @@ $j( document ).ready( function() {
 		
 		var tooltip_mouseover_timeout = parseInt( bookacti_localized.bookings_tooltip_mouseover_timeout );
 		if( tooltip_mouseover_timeout < 0 ) { return; }
+		
+		// Clear the timeout to remove the old pop up (it will be removed by bookacti_display_bookings_tooltip_monitor)
+		if( typeof bookacti_remove_mouseover_tooltip_monitor !== 'undefined' ) { 
+			if( bookacti_remove_mouseover_tooltip_monitor ) { clearTimeout( bookacti_remove_mouseover_tooltip_monitor ); }
+		}
 		
 		bookacti_display_bookings_tooltip_monitor = setTimeout( function() {
 			// Remove old tooltip

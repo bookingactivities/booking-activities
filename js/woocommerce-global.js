@@ -32,12 +32,12 @@ function bookacti_wc_perform_form_action( booking_system ) {
 	}
 	
 	if( typeof attributes[ 'picked_events' ][ 0 ] === 'undefined' ) { return; }
-	var group_id = attributes[ 'picked_events' ][ 0 ][ 'group_id' ];
+	var group_id = parseInt( attributes[ 'picked_events' ][ 0 ][ 'group_id' ] );
 	var event = attributes[ 'picked_events' ][ 0 ];
 	
 	// Redirect to activity / group category URL
 	if( form_action === 'redirect_to_product_page' ) {
-		if( $j.isNumeric( group_id ) ) {
+		if( group_id > 0 ) {
 			bookacti_redirect_to_group_category_product_page( booking_system, group_id );
 		} else {
 			bookacti_redirect_to_activity_product_page( booking_system, event );

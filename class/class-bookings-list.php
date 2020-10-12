@@ -10,7 +10,7 @@ if( ! class_exists( 'Bookings_List_Table' ) ) {
 	
 	/**
 	 * Bookings WP_List_Table
-	 * @version 1.8.0
+	 * @version 1.8.10
 	 */
 	class Bookings_List_Table extends WP_List_Table {
 		
@@ -454,43 +454,42 @@ if( ! class_exists( 'Bookings_List_Table' ) ) {
 		
 		/**
 		 * Format filters passed as argument or retrieved via POST or GET
-		 * @version 1.8.0
+		 * @version 1.8.10
 		 * @access public
 		 * @param array $filters_raw
 		 * @param boolean $merge_url_param Merge $filters_raw with URL parameters if not set
 		 * @return array
 		 */
 		public function format_filters( $filters_raw = array(), $merge_url_param = false ) {
+			$filters = $filters_raw;
+			
 			// Get filters from URL if no filter was directly passed
 			if( ! $filters_raw || $merge_url_param ) {
-				// Accept multiple names for certain filters
-				$alt_filter_names = array(
-					'event_group_id'=> array( 'bookacti_group_id' ),
-					'event_id'		=> array( 'bookacti_event_id' ),
-					'event_start'	=> array( 'bookacti_event_start' ),
-					'event_end'		=> array( 'bookacti_event_end' ),
-					'order_by'		=> array( 'orderby' )
-				);
-
 				// Get the filters from URL
 				$default_filters = bookacti_get_default_booking_filters();
 				foreach( $default_filters as $filter_name => $default_value ) {
-					if( isset( $_REQUEST[ $filter_name ] ) && ! isset( $filters_raw[ $filter_name ] ) ) { $filters_raw[ $filter_name ] = $_REQUEST[ $filter_name ]; }
-					else if( ! empty( $alt_filter_names[ $filter_name ] ) ) {
-						foreach( $alt_filter_names[ $filter_name ] as $alt_filter_name ) {
-							if( isset( $_REQUEST[ $alt_filter_name ] ) ) { $filters_raw[ $filter_name ] = $_REQUEST[ $alt_filter_name ]; }
-						}
-					}
+					if( isset( $_REQUEST[ $filter_name ] ) ) { $filters[ $filter_name ] = $_REQUEST[ $filter_name ]; }
 				}
+				
+				// Specific cases
+				$picked_events = ! empty( $_REQUEST[ 'selected_events' ] ) ? bookacti_format_picked_events( $_REQUEST[ 'selected_events' ] ) : array();
+				
+				if( ! empty( $picked_events[ 0 ][ 'group_id' ] ) )	{ $filters[ 'event_group_id' ] = $picked_events[ 0 ][ 'group_id' ]; }
+				else {
+					if( ! empty( $picked_events[ 0 ][ 'id' ] ) )	{ $filters[ 'event_id' ] = $picked_events[ 0 ][ 'id' ]; }
+					if( ! empty( $picked_events[ 0 ][ 'start' ] ) )	{ $filters[ 'event_start' ] = $picked_events[ 0 ][ 'start' ]; }
+					if( ! empty( $picked_events[ 0 ][ 'end' ] ) )	{ $filters[ 'event_end' ] = $picked_events[ 0 ][ 'end' ]; }
+				}
+				if( ! empty( $_REQUEST[ 'orderby' ] ) )				{ $filters[ 'order_by' ] = $_REQUEST[ 'orderby' ]; }
 			}
 			
 			// Format filters before making the request
-			$this->filters = bookacti_format_booking_filters( $filters_raw );
+			$this->filters = bookacti_format_booking_filters( $filters );
 			
 			// Define the URL with parameters corresponding to passed filters
 			$protocol = is_ssl() ? 'https' : 'http';
 			$base_url = defined( 'DOING_AJAX' ) && DOING_AJAX ? admin_url( 'admin.php?page=bookacti_bookings' ) : $protocol . '://' . $_SERVER[ 'HTTP_HOST' ] . $_SERVER[ 'REQUEST_URI' ];
-			$url_filters = array_intersect_key( $this->filters, $filters_raw );
+			$url_filters = array_intersect_key( $this->filters, $filters );
 			$this->url = esc_url_raw( add_query_arg( $url_filters, $base_url ) );
 		}
 		

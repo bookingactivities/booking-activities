@@ -874,11 +874,54 @@ add_filter( 'plugin_row_meta', 'bookacti_meta_links_in_plugins_table', 10, 2 );
 
 
 
-// ADMIN PROMO NOTICES
+// ADMIN NOTICES
+
+/**
+ * Display an admin error notice if an add-on is outdated and will cause malfunction
+ * @since 1.8.10
+ */
+function bookacti_add_ons_compatibility_error_notice() {
+	$add_ons = bookacti_get_active_add_ons( '', array() );
+	$outdated_add_ons = array();
+	foreach( $add_ons as $prefix => $add_on ) {
+		$constant_name = strtoupper( $prefix ) . '_VERSION';
+		if( ! defined( $constant_name ) ) { continue; }
+		if( version_compare( constant( $constant_name ), $add_on[ 'min_version' ], '<' ) ) {
+			$outdated_add_ons[ $prefix ] = $add_on;
+		}
+	}
+	if( ! $outdated_add_ons ) { return; }
+	
+	?>
+	<div class='notice notice-error bookacti-add-ons-compatibility-notice' >
+		<p>
+			<?php
+				$docs_link = 'https://booking-activities.fr/en/faq/the-add-ons-are-not-updated-automatically-or-an-error-occurs-during-the-updates/';
+				/* translators: %1$s = Plugin name. %2$s = Link to the "documentation". */
+				echo sprintf( esc_html__( '%1$s is experiencing malfunctions due to the obsolescence of the following add-ons. You need to update them now (%2$s).', 'booking-activities' ), '<strong>Booking Activities</strong>', '<a href="' . $docs_link . '" target="_blank">' . esc_html__( 'documentation', 'booking-activities' ) . '</a>' );
+			?>
+		</p>
+		<ul>
+			<?php 
+				foreach( $outdated_add_ons as $prefix => $outdated_add_on ) {
+					$add_on_version = constant( strtoupper( $prefix ) . '_VERSION' );
+					?>
+					<li><strong><?php echo $outdated_add_on[ 'title' ]; ?></strong> <em><?php echo $add_on_version; ?></em> &#8594; 
+					<?php 
+					/* translators: %s = a version number (e.g.: 1.2.6) */
+					echo sprintf( esc_html__( 'Requires version %s or later.', 'booking-activities' ), '<strong>' . $outdated_add_on[ 'min_version' ] . '</strong>' );
+				}
+			?>
+		</ul>
+	</div>
+	<?php
+}
+add_action( 'all_admin_notices', 'bookacti_add_ons_compatibility_error_notice' );
+
 
 /** 
  * Ask to rate the plugin 5 stars
- * @version 1.7.16
+ * @version 1.8.10
  */
 function bookacti_5stars_rating_notice() {
 	if( ! bookacti_is_booking_activities_screen() ) { return; }
@@ -895,11 +938,13 @@ function bookacti_5stars_rating_notice() {
 					<div class='notice notice-info bookacti-5stars-rating-notice is-dismissible' >
 						<p>
 							<?php 
-							_e( '<strong>Booking Activities</strong> has been helping you for two months now.', 'booking-activities' );
-							echo '<br/>' 
+								/* translators: %s: Plugin name */
+								echo sprintf( esc_html__( '%s has been helping you for two months now.', 'booking-activities' ), '<strong>Booking Activities</strong>' );
+							?>
+							<br/>
+							<?php
 								/* translators: %s: five stars */
-								. sprintf( esc_html__( 'Would you help us back leaving a %s rating? We need you too.', 'booking-activities' ), 
-								  '<a href="https://wordpress.org/support/plugin/booking-activities/reviews?rate=5#new-post" target="_blank" >&#9733;&#9733;&#9733;&#9733;&#9733;</a>' );
+								echo sprintf( esc_html__( 'Would you help us back leaving a %s rating? We need you too.', 'booking-activities' ), '<a href="https://wordpress.org/support/plugin/booking-activities/reviews?rate=5#new-post" target="_blank" >&#9733;&#9733;&#9733;&#9733;&#9733;</a>' );
 							?>
 						</p>
 						<p>

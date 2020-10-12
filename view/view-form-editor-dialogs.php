@@ -2,7 +2,7 @@
 /**
  * Form editor dialogs
  * @since 1.5.0
- * @version 1.8.9
+ * @version 1.8.10
  */
 
 // Exit if accessed directly
@@ -768,7 +768,7 @@ foreach( $fields_data as $field_name => $field_data ) {
 		/**
 		 * Display the content of the "Register" tab of the "Login" dialog
 		 * @since 1.5.0
-		 * @version 1.8.9
+		 * @version 1.8.10
 		 * @param array $params
 		 */
 		function bookacti_fill_login_dialog_register_tab( $params ) {
@@ -816,7 +816,7 @@ foreach( $fields_data as $field_name => $field_data ) {
 						'name'	=> 'send_new_account_email',
 						'id'	=> 'bookacti-send-new-account-email',
 						'value'	=> 0,
-						'tip'	=> esc_html__( 'Whether to automatically send an email to the user if he has created an account with the booking form.', 'booking-activities' )
+						'tip'	=> esc_html__( 'Whether to automatically send an email to the user if the user has created an account with the booking form.', 'booking-activities' )
 					);
 					bookacti_display_field( $args );
 				?>

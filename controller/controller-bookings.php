@@ -389,15 +389,12 @@ add_action( 'wp_ajax_nopriv_bookactiGetRescheduleBookingSystemData', 'bookacti_c
 
 /**
  * AJAX Controller - Reschedule a booking
- * @version 1.8.0
+ * @version 1.8.10
  */
 function bookacti_controller_reschedule_booking() {
 	$booking_id		= intval( $_POST[ 'booking_id' ] );
-	$event_id		= intval( $_POST[ 'event_id' ] );
-	$event_start	= bookacti_sanitize_datetime( $_POST[ 'event_start' ] );
-	$event_end		= bookacti_sanitize_datetime( $_POST[ 'event_end' ] );
 	$front_or_admin	= ! empty( $_POST[ 'is_admin' ] ) ? 'admin' : 'front';
-
+	
 	// Check nonce
 	$is_nonce_valid = check_ajax_referer( 'bookacti_reschedule_booking', 'nonce', false );
 	if( ! $is_nonce_valid ) { bookacti_send_json_invalid_nonce( 'reschedule_booking' ); }
@@ -405,24 +402,34 @@ function bookacti_controller_reschedule_booking() {
 	// Check capabilities
 	$is_allowed = bookacti_user_can_manage_booking( $booking_id );
 	if( ! $is_allowed ) { bookacti_send_json_not_allowed( 'reschedule_booking' ); }
-
+	
+	$picked_events = ! empty( $_POST[ 'picked_events' ] ) ? bookacti_format_picked_events( $_POST[ 'picked_events' ] ) : array();
+	if( ! $picked_events || ! empty( $picked_events[ 0 ][ 'group_id' ] ) || empty( $picked_events[ 0 ][ 'id' ] ) ) { 
+		bookacti_send_json( array( 'status' => 'failed', 'error' => 'no_event_selected', 'message' => esc_html__( 'You haven\'t picked any event. Please pick an event first.', 'booking-activities' ) ), 'reschedule_booking' );
+	}
+	
 	$booking = bookacti_get_booking_by_id( $booking_id );
 
 	// Check if the desired event is eligible according to the current booking
-	$can_be_rescheduled	= bookacti_booking_can_be_rescheduled_to( $booking, $event_id, $event_start, $event_end, $front_or_admin );
+	$can_be_rescheduled	= bookacti_booking_can_be_rescheduled_to( $booking, $picked_events[ 0 ][ 'id' ], $picked_events[ 0 ][ 'start' ], $picked_events[ 0 ][ 'end' ], $front_or_admin );
 	if( $can_be_rescheduled[ 'status' ] !== 'success' ) {
 		bookacti_send_json( $can_be_rescheduled, 'reschedule_booking' );
 	}
 
 	// Validate availability
 	$form_id	= ! empty( $booking->form_id ) && ! current_user_can( 'bookacti_edit_bookings' ) ? $booking->form_id : 0;
-	$validated	= bookacti_validate_booking_form( 'single', $event_id, $event_start, $event_end, $booking->quantity, $form_id );
+	$validated	= bookacti_validate_booking_form( $picked_events, $booking->quantity, $form_id );
 
 	if( $validated[ 'status' ] !== 'success' ) {
-		bookacti_send_json( array( 'status' => 'failed', 'error' => $validated['error'], 'message' => esc_html( $validated[ 'message' ] ) ), 'reschedule_booking' );
+		$messages = ! empty( $validated[ 'message' ] ) ? array( $validated[ 'message' ] ) : array();
+		foreach( $validated[ 'messages' ] as $error => $error_messages ) {
+			if( ! is_array( $error_messages ) ) { $error_messages = array( $error_messages ); }
+			$messages = array_merge( $messages, $error_messages );
+		}
+		bookacti_send_json( array( 'status' => 'failed', 'error' => $validated[ 'error' ], 'message' => implode( '</li><li>', $messages ) ), 'reschedule_booking' );
 	}
 
-	$rescheduled = bookacti_reschedule_booking( $booking_id, $event_id, $event_start, $event_end );
+	$rescheduled = bookacti_reschedule_booking( $booking_id, $picked_events[ 0 ][ 'id' ], $picked_events[ 0 ][ 'start' ], $picked_events[ 0 ][ 'end' ] );
 
 	if( $rescheduled === 0 ) {
 		$message = __( 'You must select a different time slot than the current one.', 'booking-activities' );
@@ -444,7 +451,7 @@ function bookacti_controller_reschedule_booking() {
 	$filters	= apply_filters( 'bookacti_booking_action_row_filters', array( 'booking_id' => $new_booking->id ), $new_booking, 'reschedule_booking', $context );
 	$row		= bookacti_get_booking_list_rows_according_to_context( $context, $filters, $columns );
 
-	bookacti_send_json( array( 'status' => 'success', 'row' => $row ), 'reschedule_booking' );
+	bookacti_send_json( array( 'status' => 'success', 'row' => $row, 'old_booking' => $booking, 'new_booking' => $new_booking ), 'reschedule_booking' );
 }
 add_action( 'wp_ajax_bookactiRescheduleBooking', 'bookacti_controller_reschedule_booking' );
 add_action( 'wp_ajax_nopriv_bookactiRescheduleBooking', 'bookacti_controller_reschedule_booking' );
@@ -903,7 +910,7 @@ add_action( 'bookacti_clean_expired_exports', 'bookacti_clean_expired_exports' )
 /**
  * Generate the export bookings URL according to current filters and export settings
  * @since 1.6.0
- * @version 1.8.8
+ * @version 1.8.10
  */
 function bookacti_controller_generate_export_bookings_url() {
 	// Check nonce
@@ -936,12 +943,14 @@ function bookacti_controller_generate_export_bookings_url() {
 	if( isset( $booking_filters_raw[ 'templates' ][ 0 ] ) && $booking_filters_raw[ 'templates' ][ 0 ] === 'all' ) {
 		unset( $booking_filters_raw[ 'templates' ] );
 	}
-	// Accepts two different parameter names for booking system related parameters
-	if( ! isset( $booking_filters_raw[ 'event_group_id' ] ) && isset( $booking_filters_raw[ 'bookacti_group_id' ] ) && $booking_filters_raw[ 'bookacti_group_id' ] !== 'single' )	{ $booking_filters_raw[ 'event_group_id' ] = intval( $booking_filters_raw[ 'bookacti_group_id' ] ); }
-	if( empty( $booking_filters_raw[ 'event_group_id' ] ) ) {
-		if( ! isset( $booking_filters_raw[ 'event_id' ] ) && isset( $booking_filters_raw[ 'bookacti_event_id' ] ) )			{ $booking_filters_raw[ 'event_id' ] = intval( $booking_filters_raw[ 'bookacti_event_id' ] ); }
-		if( ! isset( $booking_filters_raw[ 'event_start' ] ) && isset( $booking_filters_raw[ 'bookacti_event_start' ] ) )	{ $booking_filters_raw[ 'event_start' ] = bookacti_sanitize_datetime( $booking_filters_raw[ 'bookacti_event_start' ] ); }
-		if( ! isset( $booking_filters_raw[ 'event_end' ] ) && isset( $booking_filters_raw[ 'bookacti_event_end' ] ) )		{ $booking_filters_raw[ 'event_end' ] = bookacti_sanitize_datetime( $booking_filters_raw[ 'bookacti_event_end' ] ); }
+	
+	// Picked events
+	$picked_events = ! empty( $_POST[ 'booking_filters' ][ 'selected_events' ] ) ? bookacti_format_picked_events( $_POST[ 'booking_filters' ][ 'selected_events' ] ) : array();
+	if( ! empty( $picked_events[ 0 ][ 'group_id' ] ) )	{ $booking_filters_raw[ 'event_group_id' ] = $picked_events[ 0 ][ 'group_id' ]; }
+	else {
+		if( ! empty( $picked_events[ 0 ][ 'id' ] ) )	{ $booking_filters_raw[ 'event_id' ] = $picked_events[ 0 ][ 'id' ]; }
+		if( ! empty( $picked_events[ 0 ][ 'start' ] ) )	{ $booking_filters_raw[ 'event_start' ] = $picked_events[ 0 ][ 'start' ]; }
+		if( ! empty( $picked_events[ 0 ][ 'end' ] ) )	{ $booking_filters_raw[ 'event_end' ] = $picked_events[ 0 ][ 'end' ]; }
 	}
 
 	$default_fitlers = bookacti_get_default_booking_filters();

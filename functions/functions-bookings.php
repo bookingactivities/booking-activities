@@ -2,6 +2,134 @@
 // Exit if accessed directly
 if ( ! defined( 'ABSPATH' ) ) { exit; }
 
+// SANITIZING AND FORMATING
+
+/**
+ * Sanitize booking data
+ * @since 1.8.10
+ * @param array $data_raw
+ * @return array
+ */
+function bookacti_sanitize_booking_data( $data_raw ) {
+	$default_status = bookacti_get_setting_value( 'bookacti_general_settings', 'default_booking_state' );
+	$default_payment_status = bookacti_get_setting_value( 'bookacti_general_settings', 'default_payment_status' );
+	$active_status = bookacti_get_active_booking_states();
+	$default = array( 
+		'id'				=> 0,
+		'user_id'			=> 0,
+		'form_id'			=> 0,
+		'order_id'			=> 0,
+		'group_id'			=> 0,
+		'event_id'			=> 0,
+		'event_start'		=> '',
+		'event_end'			=> '',
+		'quantity'			=> 1,
+		'status'			=> '', 
+		'payment_status'	=> '',
+		'expiration_date'	=> '',
+		'creation_date'		=> '',
+		'active'			=> -1
+	);
+	
+	$sanitized = array();
+	foreach( $default as $key => $value ) {
+		if( ! isset( $data_raw[ $key ] ) ) {
+			$sanitized[ $key ] = $value;
+			continue;
+		}
+		
+		if( in_array( $key, array( 'user_id' ), true ) ) {
+			$sanitized[ $key ] = is_numeric( $data_raw[ $key ] ) ? intval( $data_raw[ $key ] ) : ( is_email( $data_raw[ $key ] ) ? $data_raw[ $key ] : ( is_string( $data_raw[ $key ] ) && $data_raw[ $key ] ? sanitize_title_with_dashes( $data_raw[ $key ] ) : $value ) );
+		}
+		else if( in_array( $key, array( 'id', 'form_id', 'order_id', 'group_id', 'event_id', 'quantity' ), true ) ) {
+			$sanitized[ $key ] = is_numeric( $data_raw[ $key ] ) && intval( $data_raw[ $key ] ) >= 0 ? intval( $data_raw[ $key ] ) : $value;
+		}
+		else if( in_array( $key, array( 'event_start', 'event_end', 'expiration_date', 'creation_date' ), true ) ) {
+			$datetime = is_string( $data_raw[ $key ] ) ? bookacti_sanitize_datetime( $data_raw[ $key ] ) : '';
+			$sanitized[ $key ] = $datetime ? $datetime : $value;
+		}
+		else if( $key === 'status' ) {
+			$sanitized[ $key ] = in_array( $data_raw[ $key ], array_keys( bookacti_get_booking_state_labels() ), true ) ? $data_raw[ $key ] : $value;
+		}
+		else if( $key === 'payment_status' ) {
+			$sanitized[ $key ] = in_array( $data_raw[ $key ], array_keys( bookacti_get_payment_status_labels() ), true ) ? $data_raw[ $key ] : $value;
+		}
+		else if( $key === 'active' ) {
+			$sanitized[ $key ] = in_array( $data_raw[ $key ], array( -1, 0, 1, '-1', '0', '1', true, false ), true ) ? intval( $data_raw[ $key ] ) : ( in_array( $sanitized[ 'status' ], $active_status, true ) ? 1 : 0 );
+		}
+	}
+	
+	return apply_filters( 'bookacti_booking_data_sanitized', $sanitized, $data_raw );
+}
+
+
+/**
+ * Sanitize booking group data
+ * @since 1.8.10
+ * @param array $data_raw
+ * @return array
+ */
+function bookacti_sanitize_booking_group_data( $data_raw ) {
+	$default_status = bookacti_get_setting_value( 'bookacti_general_settings', 'default_booking_state' );
+	$default_payment_status = bookacti_get_setting_value( 'bookacti_general_settings', 'default_payment_status' );
+	$active_status = bookacti_get_active_booking_states();
+	$default = array( 
+		'id'				=> 0,
+		'user_id'			=> 0,
+		'form_id'			=> 0,
+		'order_id'			=> 0,
+		'event_group_id'	=> 0,
+		'grouped_events'	=> array(),
+		'quantity'			=> 0,
+		'status'			=> '', 
+		'payment_status'	=> '',
+		'expiration_date'	=> '',
+		'creation_date'		=> '',
+		'active'			=> -1
+	);
+	
+	$sanitized = array();
+	foreach( $default as $key => $value ) {
+		if( ! isset( $data_raw[ $key ] ) ) {
+			$sanitized[ $key ] = $value;
+			continue;
+		}
+		
+		if( in_array( $key, array( 'user_id' ), true ) ) {
+			$sanitized[ $key ] = is_numeric( $data_raw[ $key ] ) && $data_raw[ $key ] ? intval( $data_raw[ $key ] ) : ( is_email( $data_raw[ $key ] ) ? $data_raw[ $key ] : ( is_string( $data_raw[ $key ] ) && $data_raw[ $key ] ? sanitize_title_with_dashes( $data_raw[ $key ] ) : $value ) );
+		}
+		else if( in_array( $key, array( 'id', 'form_id', 'order_id', 'event_group_id', 'quantity' ), true ) ) {
+			$sanitized[ $key ] = is_numeric( $data_raw[ $key ] ) && intval( $data_raw[ $key ] ) > 0 ? intval( $data_raw[ $key ] ) : $value;
+		}
+		else if( in_array( $key, array( 'expiration_date', 'creation_date' ), true ) ) {
+			$datetime = is_string( $data_raw[ $key ] ) ? bookacti_sanitize_datetime( $data_raw[ $key ] ) : '';
+			$sanitized[ $key ] = $datetime ? $datetime : $value;
+		}
+		else if( $key === 'grouped_events' ) {
+			if( is_array( $data_raw[ $key ] ) ) {
+				foreach( $data_raw[ $key ] as $grouped_event ) {
+					$grouped_event = bookacti_format_picked_event( $grouped_event );
+					if( $grouped_event ) { $sanitized[ $key ][] = $grouped_event; }
+				}
+			}
+		}
+		else if( $key === 'status' ) {
+			$sanitized[ $key ] = in_array( $data_raw[ $key ], array_keys( bookacti_get_booking_state_labels() ), true ) ? $data_raw[ $key ] : $value;
+		}
+		else if( $key === 'payment_status' ) {
+			$sanitized[ $key ] = in_array( $data_raw[ $key ], array_keys( bookacti_get_payment_status_labels() ), true ) ? $data_raw[ $key ] : $value;
+		}
+		else if( $key === 'active' ) {
+			$sanitized[ $key ] = in_array( $data_raw[ $key ], array( -1, 0, 1, '-1', '0', '1', true, false ), true ) ? intval( $data_raw[ $key ] ) : ( in_array( $sanitized[ 'status' ], $active_status, true ) ? 1 : 0 );
+		}
+	}
+	
+	return apply_filters( 'bookacti_booking_group_data_sanitized', $sanitized, $data_raw );
+}
+
+
+
+
 // BOOKINGS
 
 /**

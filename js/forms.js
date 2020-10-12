@@ -630,10 +630,10 @@ function bookacti_perform_form_action( booking_system ) {
 	// Redirect to URL
 	else if( attributes[ 'form_action' ] === 'redirect_to_url' ) {
 		if( typeof attributes[ 'picked_events' ][ 0 ] !== 'undefined' ) {
-			var group_id = attributes[ 'picked_events' ][ 0 ][ 'group_id' ];
+			var group_id = parseInt( attributes[ 'picked_events' ][ 0 ][ 'group_id' ] );
 			var event = attributes[ 'picked_events' ][ 0 ];
 
-			if( $j.isNumeric( group_id ) ) {
+			if( group_id > 0 ) {
 				bookacti_redirect_to_group_category_url( booking_system, group_id );
 			} else {
 				bookacti_redirect_to_activity_url( booking_system, event );

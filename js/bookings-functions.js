@@ -521,18 +521,12 @@ function bookacti_validate_picked_events( booking_system, quantity ) {
 	// Check if the picked events inputs match the picked events object
 	if( valid_form.events_selected ) {
 		var i = 0;
-		var group_ids = [];
-		
 		$j.each( picked_events, function( j, event ) {
 			// Break the loop if a problem has been detected
 			if( ! valid_form.consistent_inputs ) { return false; }
 
 			// Groups of events
-			if( $j.isNumeric( event.group_id ) ) {
-				// Skip the group if it was already processed
-				if( $j.inArray( event.group_id, group_ids ) > -1 ) { return true; }
-				group_ids.push( event.group_id );
-
+			if( parseInt( event.group_id ) > 0 ) {
 				if( form_values[ 'selected_events' ][ i ][ 'group_id' ] != event.group_id ) {
 					valid_form.consistent_inputs = false;
 				}
@@ -549,11 +543,13 @@ function bookacti_validate_picked_events( booking_system, quantity ) {
 		});
 		
 		// Count the number of selected_events inputs
-		var count = 0; var j;
-		for( j in form_values[ 'selected_events' ] ) { if( form_values[ 'selected_events' ].hasOwnProperty( j ) ) { ++count; } }
+		var count_form_values = 0; var k;
+		for( k in form_values[ 'selected_events' ] ) { if( form_values[ 'selected_events' ].hasOwnProperty( k ) ) { ++count_form_values; } }
+		var count_picked_events = 0; var l;
+		for( l in picked_events ) { if( picked_events.hasOwnProperty( l ) ) { ++count_picked_events; } }
 		
 		// The number of selected_events inputs must match the number of picked events objects
-		if( count !== i ) { valid_form.consistent_inputs = false; }
+		if( count_form_values !== count_picked_events ) { valid_form.consistent_inputs = false; }
 	}
 
 	// Check quantity
