@@ -320,6 +320,7 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 == Changelog ==
 
 = 1.8.10 =
+* Breaking change - WooCommerce carts will be emptied after the update
 * Tweak - Hide the Calendar bookings filter if only one calendar is available
 * Tweak - Display an admin error notice if an add-on is outdated and will cause malfunction
 * Fix - Fields were not prefilled with URL attributes on WC variable product page
@@ -327,6 +328,10 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 * Fix - Recent bookings' owner changed if the WC customer logged in to a different account
 * Fix - Let the user mouseover an event booking list tooltip even if another event is hovered on the way
 * Fix - Check if select2 library is already registered and included before using our bundled version of it
+* Fix - Add compatibility for bootstrap tooltip (if loaded after jquery ui)
+* Fix - Booking refunded email was sent twice
+* Fix - Events were not correctly sorted by date on Safari iOS / MacOS
+* Fix - Cannot switch templates in editor if too many events were loaded
 * Dev - Refactor the process to trigger form actions
 * Dev - Refactor the booking system picked_events attribute
 * Dev - Refactor the data bound to WC cart item / order item

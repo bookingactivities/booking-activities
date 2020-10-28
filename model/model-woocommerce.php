@@ -82,6 +82,49 @@ function bookacti_get_products_titles( $search = '' ) {
 // BOOKINGS
 
 /**
+ * Get the query to get the number of bookings per user by events, including the in_cart bookings for the current user too
+ * @since 1.8.10
+ * @global wpdb $wpdb
+ * @param array $events
+ * @param int $active
+ * @return string
+ */
+function bookacti_wc_get_number_of_bookings_per_user_by_events_query( $events, $active = 1 ) {
+	global $wpdb;
+	
+	$current_user_id = apply_filters( 'bookacti_current_user_id', get_current_user_id() );
+	
+	$query	= 'SELECT B2.user_id, MAX( B2.quantity_per_event_per_user ) as max_quantity '
+			. ' FROM ( ' 
+				. ' SELECT B1.user_id, SUM( B1.quantity ) as quantity_per_event_per_user,'
+				. ' CONCAT( B1.user_id, "_", B1.event_id, "_", B1.event_start, "_", B1.event_end ) as event_per_user '
+				. ' FROM ' . BOOKACTI_TABLE_BOOKINGS .' as B1 '
+				. ' WHERE ';
+	
+	$variables = array();
+	$i = 0;
+	foreach( $events as $event ) {
+		if( $i !== 0 ) { $query .= ' OR '; }
+		$query .= ' ('
+				. ' B1.event_id = %d'
+				. ' AND B1.event_start = %s'
+				. ' AND B1.event_end = %s'
+				. ' AND ( B1.active = IFNULL( NULLIF( %d, -1 ), B1.active )'
+					.   ' OR IF( B1.user_id = %s, B1.state = "in_cart", FALSE ) )'
+				. ' ) ';
+		$variables = array_merge( $variables, array( $event[ 'id' ], $event[ 'start' ], $event[ 'end' ], $active, $current_user_id ) );
+		++$i;
+	}
+	
+	$query .=	  ' GROUP BY event_per_user '
+			. ' ) as B2 '
+			. ' GROUP BY B2.user_id ';
+	
+	return $wpdb->prepare( $query, $variables );
+}
+
+
+/**
  * Get booking event data to store in order item meta
  * @since 1.1.0
  * @global wpdb $wpdb
@@ -294,7 +337,6 @@ function bookacti_change_order_bookings_state( $user_id = NULL, $order_id = NULL
  * @return array|0|false|null
  */
 function bookacti_cancel_order_pending_bookings( $order_id, $not_booking_ids = array(), $not_booking_group_ids = array() ) {
-	
 	global $wpdb;
 	
 	// Get affected booking ids

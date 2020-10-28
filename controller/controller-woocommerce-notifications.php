@@ -4,17 +4,18 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 /**
  * Send one notification per booking to admin and customer when an order contining bookings is made or when its status changes
- * @since 1.2.2
- * @version 1.8.6
+ * @since 1.8.10 (was bookacti_send_notification_when_order_status_changes)
+ * @param array $order_item_booking
+ * @param array $sanitized_data
  * @param WC_Order $order
- * @param string $new_status
- * @param array $args
+ * @param array $new_data
+ * @param array $where
  */
-function bookacti_send_notification_when_order_status_changes( $order, $new_status, $args = array() ) {
-	if( is_numeric( $order ) ) { $order = wc_get_order( $order ); }
-	if( ! $order ) { return; }
+function bookacti_send_notification_when_order_item_booking_status_changes( $order_item_booking, $sanitized_data, $order, $new_data, $where ) {
+	if( empty( $sanitized_data[ 'status' ] ) ) { return; }
 	
 	$action = isset( $_REQUEST[ 'action' ] ) ? sanitize_title_with_dashes( $_REQUEST[ 'action' ] ) : '';
+	$new_status = $sanitized_data[ 'status' ];
 	
 	// Check if the administrator must be notified
 	// If the booking status is pending or booked, notify administrator, unless if the administrator made this change
@@ -38,43 +39,23 @@ function bookacti_send_notification_when_order_status_changes( $order, $new_stat
 	if( ( $order_status === 'pending' && $new_status === 'pending' )
 	||  ( $order_status === 'failed' && $new_status === 'cancelled' ) ) { return; }
 	
-	$order_items = $order->get_items();
-	if( ! $order_items ) { return; }
+	// If the state hasn't changed, do not send the notifications, unless it is a new order
+	$old_status = $order_item_booking[ 'bookings' ][ 0 ]->state;
+	if( $old_status === $new_status && empty( $where[ 'force_status_notification' ] ) ) { return; }
 	
-	$in__booking_id			= ! empty( $args[ 'booking_ids' ] ) ? $args[ 'booking_ids' ] : array();
-	$in__booking_group_id	= ! empty( $args[ 'booking_group_ids' ] ) ? $args[ 'booking_group_ids' ] : array();
-	
-	foreach( $order_items as $order_item_id => $item ) {
-		// Check if the order item is a booking, or skip it
-		if( ! $item || ( ! isset( $item[ 'bookacti_booking_id' ] ) && ! isset( $item[ 'bookacti_booking_group_id' ] ) ) ) { continue; }
-		
-		// Make sure the booking is part of those updated
-		if( isset( $item[ 'bookacti_booking_id' ] ) && ( $in__booking_id || $in__booking_group_id ) && ! in_array( $item[ 'bookacti_booking_id' ], $in__booking_id ) ) { continue; }
-		if( isset( $item[ 'bookacti_booking_group_id' ] ) && ( $in__booking_id || $in__booking_group_id ) && ! in_array( $item[ 'bookacti_booking_group_id' ], $in__booking_group_id ) ) { continue; }
-		
-		// If the state hasn't changed, do not send the notifications, unless it is a new order
-		$old_status = isset( $args[ 'old_status' ] ) && $args[ 'old_status' ] ? $args[ 'old_status' ] : wc_get_order_item_meta( $order_item_id, 'bookacti_state', true );
-		if( $old_status === $new_status && empty( $args[ 'force_status_notification' ] ) ) { continue; }
-		
-		// Get booking ID and booking type ('single' or 'group')
-		$booking_id		= isset( $item[ 'bookacti_booking_id' ] ) ? $item[ 'bookacti_booking_id' ] : ( isset( $item[ 'bookacti_booking_group_id' ] ) ? $item[ 'bookacti_booking_group_id' ] : 0 );
-		$booking_type	= isset( $item[ 'bookacti_booking_id' ] ) ? 'single' : ( isset( $item[ 'bookacti_booking_group_id' ] ) ? 'group' : '' );
-		if( ! $booking_id || ! $booking_type ) { continue; }
-		
-		// Send a booking confirmation to the customer
-		if( $notify_customer ) {
-			bookacti_send_notification( 'customer_' . $new_status . '_booking', $booking_id, $booking_type );
-		}
-		
-		// Notify administrators that a new booking has been made
-		if( $notify_admin ) {
-			bookacti_send_notification( 'admin_new_booking', $booking_id, $booking_type );
-		}
-		
-		do_action( 'bookacti_send_order_bookings_status_notifications', $booking_id, $booking_type, $item, $order, $new_status, $args );
+	// Send a booking confirmation to the customer
+	if( $notify_customer ) {
+		bookacti_send_notification( 'customer_' . $new_status . '_booking', $order_item_booking[ 'id' ], $order_item_booking[ 'type' ] );
 	}
+
+	// Notify administrators that a new booking has been made
+	if( $notify_admin ) {
+		bookacti_send_notification( 'admin_new_booking', $order_item_booking[ 'id' ], $order_item_booking[ 'type' ] );
+	}
+
+	do_action( 'bookacti_send_order_bookings_status_notifications', $order_item_booking, $sanitized_data, $order, $new_data, $where );
 }
-add_action( 'bookacti_order_bookings_state_changed', 'bookacti_send_notification_when_order_status_changes', 10, 3 );
+add_action( 'bookacti_order_item_booking_updated', 'bookacti_send_notification_when_order_item_booking_status_changes', 10, 5 );
 
 
 /**

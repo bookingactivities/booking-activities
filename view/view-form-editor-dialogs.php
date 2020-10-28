@@ -839,6 +839,7 @@ foreach( $fields_data as $field_name => $field_data ) {
 						'options'	=> $roles_options,
 						'value'		=> 'default',
 						'tip'		=> esc_html__( 'Choose a role to give to a user who has registered while booking an event with this form.', 'booking-activities' )
+									/* translators: %1$s = "Default role". %2$s = link to "New User Default Role". */
 									. ' ' . sprintf( esc_html__( 'Select "%1$s" to use the "%2$s" option in Wordpress General settings.', 'booking-activities' ), esc_html__( 'Default role', 'booking-activities' ), '<a href="' . admin_url( 'options-general.php' ) . '">' . esc_html__( 'New User Default Role' ) . '</a>' )
 					);
 					bookacti_display_field( $args );

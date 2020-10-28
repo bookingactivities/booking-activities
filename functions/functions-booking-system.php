@@ -636,7 +636,7 @@ function bookacti_diff_picked_events( $picked_events1, $picked_events2, $one_ent
 	foreach( $picked_events1 as $picked_event1 ) {
 		$is_in_picked_events2 = false;
 		foreach( $picked_events2 as $j => $picked_event2 ) {
-			if( ! bookacti_is_same_picked_event( $picked_event1, $picked_event2 ) ) {
+			if( bookacti_is_same_picked_event( $picked_event1, $picked_event2 ) ) {
 				$is_in_picked_events2 = true;
 				unset( $picked_events2[ $j ] );
 				break;
@@ -1158,7 +1158,7 @@ function bookacti_validate_booking_form( $picked_events, $quantity, $form_id = 0
 				$group = bookacti_get_group_of_events( $group_id );
 				if( $group ) {
 					$exists = bookacti_is_existing_group_of_events( $group );
-					$title = $group->title;
+					$title = apply_filters( 'bookacti_translate_text', $group->title );
 				}
 			}
 			if( ! $exists ) {
@@ -1203,29 +1203,21 @@ function bookacti_validate_booking_form( $picked_events, $quantity, $form_id = 0
 			if( $group_id <= 0 ) {
 				$activity_data	= bookacti_get_metadata( 'activity', $event->activity_id );
 
-				$availability	= bookacti_get_event_availability( $event_id, $event_start, $event_end );
 				$min_quantity	= isset( $activity_data[ 'min_bookings_per_user' ] ) ? intval( $activity_data[ 'min_bookings_per_user' ] ) : 0;
 				$max_quantity	= isset( $activity_data[ 'max_bookings_per_user' ] ) ? intval( $activity_data[ 'max_bookings_per_user' ] ) : 0;
 				$max_users		= isset( $activity_data[ 'max_users_per_event' ] ) ? intval( $activity_data[ 'max_users_per_event' ] ) : 0;
 
 				// Check if the user has already booked this event
-				if( ( $min_quantity || $max_quantity || $max_users ) && $user_id ) {
-					$filters = bookacti_format_booking_filters( array(
-						'event_id'		=> $event_id,
-						'event_start'	=> $event_start,
-						'event_end'		=> $event_end,
-						'user_id'		=> $user_id,
-						'active'		=> 1
-					) );
-					$quantity_already_booked = bookacti_get_number_of_bookings( $filters );
+				$bookings_nb_per_user = bookacti_get_number_of_bookings_per_user_by_events( array( $picked_event ) );
+				$number_of_users = count( $bookings_nb_per_user );
+				if( ! empty( $bookings_nb_per_user[ $user_id ] ) ) { 
+					$quantity_already_booked = intval( $bookings_nb_per_user[ $user_id ] );
 				}
-
-				// Check if the event has already been booked by other users
-				if( $max_users ) {
-					$bookings_made_by_other_users = bookacti_get_number_of_bookings_per_user_by_event( $event_id, $event_start, $event_end );
-					$number_of_users = count( $bookings_made_by_other_users );
-				}
-
+				
+				// Get the remaining availability
+				$availability = bookacti_get_min_availability_by_events( array( $picked_event ) );
+				foreach( $bookings_nb_per_user as $user_id => $qty_booked ) { $availability -= $qty_booked; }
+				
 				// Check allowed roles
 				if( isset( $activity_data[ 'allowed_roles' ] ) && $activity_data[ 'allowed_roles' ] ) {
 					$allowed_roles = $activity_data[ 'allowed_roles' ];
@@ -1235,28 +1227,21 @@ function bookacti_validate_booking_form( $picked_events, $quantity, $form_id = 0
 			} else {
 				$category_data	= bookacti_get_metadata( 'group_category', $group->category_id );
 
-				$availability	= bookacti_get_group_of_events_availability( $group_id );
 				$min_quantity	= isset( $category_data[ 'min_bookings_per_user' ] ) ? intval( $category_data[ 'min_bookings_per_user' ] ) : 0;
 				$max_quantity	= isset( $category_data[ 'max_bookings_per_user' ] ) ? intval( $category_data[ 'max_bookings_per_user' ] ) : 0;
 				$max_users		= isset( $category_data[ 'max_users_per_event' ] ) ? intval( $category_data[ 'max_users_per_event' ] ) : 0;
-
+				
 				// Check if the user has already booked this group of events
-				if( ( $min_quantity || $max_quantity || $max_users ) && $user_id ) {
-					$filters = bookacti_format_booking_filters( array(
-						'event_group_id'		=> $group_id,
-						'user_id'				=> $user_id,
-						'active'				=> 1,
-						'group_by'				=> 'booking_group'
-					) );
-					$quantity_already_booked = bookacti_get_number_of_bookings( $filters );
+				$bookings_nb_per_user = bookacti_get_number_of_bookings_per_user_by_events( $picked_event[ 'events' ] );
+				$number_of_users = count( $bookings_nb_per_user );
+				if( ! empty( $bookings_nb_per_user[ $user_id ] ) ) { 
+					$quantity_already_booked = intval( $bookings_nb_per_user[ $user_id ] );
 				}
-
-				// Check if the event has already been booked by other users
-				if( $max_users ) {
-					$bookings_made_by_other_users = bookacti_get_number_of_bookings_per_user_by_group_of_events( $group_id );
-					$number_of_users = count( $bookings_made_by_other_users );
-				}
-
+				
+				// Get the remaining availability
+				$availability = bookacti_get_min_availability_by_events( $picked_event[ 'events' ] );
+				foreach( $bookings_nb_per_user as $user_id => $qty_booked ) { $availability -= $qty_booked; }
+				
 				// Check allowed roles
 				if( isset( $category_data[ 'allowed_roles' ] ) && $category_data[ 'allowed_roles' ] ) {
 					$allowed_roles = $category_data[ 'allowed_roles' ];
@@ -2685,17 +2670,8 @@ function bookacti_book_group_of_events( $booking_group_data ) {
 	$events = array();
 	
 	if( $booking_group_id ) {
-		$quantity	= $booking_group_data[ 'quantity' ];
-		$events		= $booking_group_data[ 'grouped_events' ];
-		
 		// If the group of events exists, get the events to be booked from the database
-		if( $booking_group_data[ 'event_group_id' ] ) {
-			$events = bookacti_get_group_events( $booking_group_data[ 'event_group_id' ] );
-			
-			// Make sure quantity isn't over group availability
-			$max_quantity = bookacti_get_group_of_events_availability( $booking_group_data[ 'event_group_id' ] );
-			if( $booking_group_data[ 'quantity' ] > $max_quantity ) { $quantity = $max_quantity; }
-		}
+		$events = $booking_group_data[ 'event_group_id' ] ? bookacti_get_group_events( $booking_group_data[ 'event_group_id' ] ) : $booking_group_data[ 'grouped_events' ];
 		
 		if( $events ) {
 			// Insert bookings
@@ -2704,12 +2680,14 @@ function bookacti_book_group_of_events( $booking_group_data ) {
 					'group_id'			=> $booking_group_id,
 					'user_id'			=> $booking_group_data[ 'user_id' ],
 					'form_id'			=> $booking_group_data[ 'form_id' ],
+					'order_id'			=> $booking_group_data[ 'order_id' ],
 					'event_id'			=> $event[ 'id' ],
 					'event_start'		=> $event[ 'start' ],
 					'event_end'			=> $event[ 'end' ],
-					'quantity'			=> $quantity,
+					'quantity'			=> $booking_group_data[ 'quantity' ],
 					'status'			=> $booking_group_data[ 'status' ],
 					'payment_status'	=> $booking_group_data[ 'payment_status' ],
+					'expiration_date'	=> $booking_group_data[ 'expiration_date' ],
 					'active'			=> $booking_group_data[ 'active' ]
 				) );
 				$booking_id = bookacti_insert_booking( $booking_data );

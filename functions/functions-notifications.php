@@ -588,7 +588,7 @@ function bookacti_get_notifications_tags_values( $booking, $booking_type, $notif
  * Send a notification according to its settings
  * 
  * @since 1.2.1 (was bookacti_send_email in 1.2.0)
- * @version 1.8.6
+ * @version 1.8.10
  * @param string $notification_id Must exists in "bookacti_notifications_default_settings"
  * @param int $booking_id
  * @param string $booking_type "single" or "group"
@@ -604,7 +604,7 @@ function bookacti_send_notification( $notification_id, $booking_id, $booking_typ
 	if( $allow_async && $async ) {
 		// Delay with few seconds to try to avoid scheduling problems
 		wp_schedule_single_event( time() + 3, 'bookacti_send_async_notification', array( $notification_id, $booking_id, $booking_type, $args, 0 ) );
-		return;
+		return array();
 	}
 	
 	// Make sure not to run the same cron task multiple times
@@ -612,7 +612,7 @@ function bookacti_send_notification( $notification_id, $booking_id, $booking_typ
 		// If this notification was already sent in the past few minutes, do not send it again
 		$notification_unique_key = md5( json_encode( array( $notification_id, $booking_id, $booking_type, $args ) ) );
 		$already_sent = get_transient( 'bookacti_notif_' . $notification_unique_key );
-		if( $already_sent ) { return; }
+		if( $already_sent ) { return array(); }
 		set_transient( 'bookacti_notif_' . $notification_unique_key, 1, 3*60 );
 	}
 	
@@ -624,7 +624,7 @@ function bookacti_send_notification( $notification_id, $booking_id, $booking_typ
 		$notification = array_merge( $notification, $args[ 'notification' ] );
 	}
 	
-	if( ! $notification || empty( $notification[ 'active' ] ) ) { return false; }
+	if( ! $notification || empty( $notification[ 'active' ] ) ) { return array(); }
 	
 	// Get the booking (group data)
 	$id_filters = $booking_type === 'group' ? array( 'in__booking_group_id' => array( $booking_id ) ) : array( 'in__booking_id' => array( $booking_id ) );
@@ -632,7 +632,7 @@ function bookacti_send_notification( $notification_id, $booking_id, $booking_typ
 	$booking_array = $booking_type === 'group' ? bookacti_get_booking_groups( $filters ) : bookacti_get_bookings( $filters );
 	$booking = ! empty( $booking_array[ $booking_id ] ) ? $booking_array[ $booking_id ] : null;
 	
-	if( ! $booking ) { return false; }
+	if( ! $booking ) { return array(); }
 	
 	// Change params according to recipients
 	$locale = '';

@@ -2,7 +2,7 @@
 
 /**
  * Change default template on change in the select box
- * @version 1.8.5
+ * @version 1.8.10
  * @param {int} selected_template_id
  */
 function bookacti_switch_template( selected_template_id ) {
@@ -34,8 +34,23 @@ function bookacti_switch_template( selected_template_id ) {
 
 	// Prevent events to be loaded while templates are switched
 	bookacti.load_events = false;
-	var attributes = bookacti.booking_system[ 'bookacti-template-calendar' ];
-
+	var attributes = $j.extend( {}, bookacti.booking_system[ 'bookacti-template-calendar' ] );
+	
+	// Do not send useless data
+	delete attributes[ 'events' ];
+	delete attributes[ 'events_data' ];
+	delete attributes[ 'events_interval' ];
+	delete attributes[ 'bookings' ];
+	delete attributes[ 'exceptions' ];
+	delete attributes[ 'activities_data' ];
+	delete attributes[ 'groups_events' ];
+	delete attributes[ 'groups_data' ];
+	delete attributes[ 'group_categories_data' ];
+	delete attributes[ 'display_data' ];
+	delete attributes[ 'template_data' ];
+	delete attributes[ 'selected_events' ];
+	delete attributes[ 'picked_events' ];
+	
 	bookacti_start_template_loading();
 
 	// Change the default template in the database to the selected one

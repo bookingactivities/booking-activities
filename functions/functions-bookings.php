@@ -23,7 +23,7 @@ function bookacti_sanitize_booking_data( $data_raw ) {
 		'event_id'			=> 0,
 		'event_start'		=> '',
 		'event_end'			=> '',
-		'quantity'			=> 1,
+		'quantity'			=> 0,
 		'status'			=> '', 
 		'payment_status'	=> '',
 		'expiration_date'	=> '',
@@ -231,7 +231,7 @@ function bookacti_get_activities_html_for_booking_page( $template_ids, $activity
 /**
  * Get Default booking filters
  * @since 1.6.0
- * @version 1.8.0
+ * @version 1.8.10
  * @return array
  */
 function bookacti_get_default_booking_filters() {
@@ -240,6 +240,7 @@ function bookacti_get_default_booking_filters() {
 		'activities'				=> array(), 
 		'booking_id'				=> 0, 
 		'booking_group_id'			=> 0,
+		'booking_group_id_operator'	=> 'AND',
 		'group_category_id'			=> 0, 
 		'event_group_id'			=> 0, 
 		'event_id'					=> 0, 
@@ -279,7 +280,7 @@ function bookacti_get_default_booking_filters() {
 /**
  * Format booking filters
  * @since 1.3.0
- * @version 1.8.0
+ * @version 1.8.10
  * @param array $filters 
  * @return array
  */
@@ -388,7 +389,9 @@ function bookacti_format_booking_filters( $filters = array() ) {
 			if( ! in_array( $current_value, array( 'none', 'booking_group' ), true ) ) { $current_value = $default_value; }
 
 		} else if( $filter === 'user_id' ) {
-			if( ! is_numeric( $filter ) && ! is_string( $filter ) ) { $current_value = $default_value; }
+			if( ! is_numeric( $current_value ) && ! is_string( $current_value ) ) { $current_value = $default_value; }
+		} else if( $filter === 'booking_group_id_operator' ) {
+			if( ! in_array( $current_value, array( 'AND', 'OR', 'XOR' ), true ) ) { $current_value = $default_value; }
 		}
 
 		$formatted_filters[ $filter ] = $current_value;
@@ -709,6 +712,105 @@ function bookacti_booking_state_can_be_changed_to( $booking, $new_state, $contex
 }
 
 
+/**
+ * Check if a booking quantity can be changed
+ * @since 1.8.10
+ * @param object|int $booking
+ * @param int $new_quantity
+ * @param string $context
+ * @return boolean
+ */
+function bookacti_booking_quantity_can_be_changed( $booking, $new_quantity ) {
+	$response = array( 'status' => 'failed', 'messages' => array() );
+	
+	if( is_numeric( $booking ) ) { 
+		$booking_id = intval( $booking );
+		$filters = bookacti_format_booking_filters( array( 'in__booking_id' => $booking_id ) );
+		$bookings = bookacti_get_bookings( $filters );
+		$booking = ! empty( $bookings[ $booking_id ] ) ? $bookings[ $booking_id ] : null;
+	}
+	if( ! $booking ) { return $response; }
+	
+	$title = apply_filters( 'bookacti_translate_text', $booking->event_title );
+	$dates = bookacti_get_formatted_event_dates( $booking->event_start, $booking->event_end, false );
+	
+	$activity_data	= bookacti_get_metadata( 'activity', $booking->activity_id );
+	
+	$is_active		= apply_filters( 'bookacti_booking_quantity_check_is_active', $booking->active, $booking, $new_quantity );
+	
+	$delta_quantity	= $is_active ? $new_quantity - $booking->quantity : $new_quantity;
+	$min_quantity	= isset( $activity_data[ 'min_bookings_per_user' ] ) ? intval( $activity_data[ 'min_bookings_per_user' ] ) : 0;
+	$max_quantity	= isset( $activity_data[ 'max_bookings_per_user' ] ) ? intval( $activity_data[ 'max_bookings_per_user' ] ) : 0;
+	$max_users		= isset( $activity_data[ 'max_users_per_event' ] ) ? intval( $activity_data[ 'max_users_per_event' ] ) : 0;
+	
+	$events = array( array( 'id' => $booking->event_id, 'start' => $booking->event_start, 'end' => $booking->event_end ) );
+	$bookings_nb_per_user = bookacti_get_number_of_bookings_per_user_by_events( $events );
+	
+	$user_has_booked = ! empty( $bookings_nb_per_user[ $booking->user_id ] );
+	$quantity_already_booked = $user_has_booked ? intval( $bookings_nb_per_user[ $booking->user_id ] ) : $booking->quantity;
+	$qty_already_booked_with_other_bookings = $is_active ? $quantity_already_booked - $booking->quantity : $quantity_already_booked;
+	$number_of_users = count( $bookings_nb_per_user );
+	
+	// Get the remaining availability
+	$availability = $booking->availability;
+	foreach( $bookings_nb_per_user as $user_id => $qty_booked ) { $availability -= $qty_booked; }
+	
+	// Init boolean test variables
+	$is_qty_inf_to_avail	= false;
+	$is_qty_sup_to_min		= false;
+	$is_qty_inf_to_max		= false;
+	$is_users_inf_to_max	= false;
+	
+	// Make the tests and change the booleans
+	if( $delta_quantity <= $availability )															{ $is_qty_inf_to_avail = true; }
+	if( $min_quantity === 0 || ( $quantity_already_booked + $delta_quantity ) >= $min_quantity )	{ $is_qty_sup_to_min = true; }
+	if( $max_quantity === 0 || ( $quantity_already_booked + $delta_quantity ) <= $max_quantity )	{ $is_qty_inf_to_max = true; }
+	if( $max_users === 0 || $user_has_booked || $number_of_users < $max_users )						{ $is_users_inf_to_max = true; }
+	
+	// Feedback the error code and message
+	if( ! $is_qty_inf_to_avail ) {
+		$response[ 'messages' ][ 'qty_sup_to_avail' ] = sprintf( esc_html( _n( 'You want to make %1$s booking of "%2$s"', 'You want to make %1$s bookings of "%2$s"', $new_quantity, 'booking-activities' ) ), $new_quantity, $title . ' (' . $dates . ')' )
+			. ' ' . sprintf( esc_html( _n( 'but only %1$s is available on this time slot.', 'but only %1$s are available on this time slot. ', $booking->active ? $availability : $availability + $booking->quantity, 'booking-activities' ) ), $booking->active ? $availability : $availability + $booking->quantity )
+			. ' ' . esc_html__( 'Please choose another event or decrease the quantity.', 'booking-activities' );
+		$response[ 'availability' ] = $availability;
+	}
+	if( ! $is_qty_sup_to_min ) {
+		/* translators: %1$s is a variable number of bookings, %2$s is the event title. */
+		$response[ 'messages' ][ 'qty_inf_to_min' ] = sprintf( esc_html( _n( 'You want to make %1$s booking of "%2$s"', 'You want to make %1$s bookings of "%2$s"', $new_quantity, 'booking-activities' ) ), $new_quantity, $title . ' (' . $dates . ')' );
+		if( $qty_already_booked_with_other_bookings ) {
+			/* translators: %1$s and %2$s are variable numbers of bookings, always >= 1. This sentence is preceded by : 'You want to make %1$s booking of "%2$s"' and followed by 'Please choose another event or increase the quantity.' */
+			$response[ 'messages' ][ 'qty_inf_to_min' ] .= ' ' . sprintf( esc_html( _n( 'and you have already booked %1$s place, but the minimum number of reservations required per user is %2$s.', 'and you have already booked %1$s places, but the minimum number of reservations required per user is %2$s.', $qty_already_booked_with_other_bookings, 'booking-activities' ) ), $qty_already_booked_with_other_bookings, $min_quantity );
+		} else {
+			/* translators: %1$s is a variable number of bookings. This sentence is preceded by : 'You want to make %1$s booking of "%2$s"' and followed by 'Please choose another event or increase the quantity.' */
+			$response[ 'messages' ][ 'qty_inf_to_min' ] .= ' ' . sprintf( esc_html__( 'but the minimum number of reservations required per user is %1$s.', 'booking-activities' ), $min_quantity );
+		}	
+		/* translators: %1$s is a variable quantity. */
+		$response[ 'messages' ][ 'qty_inf_to_min' ] .= $min_quantity - $qty_already_booked_with_other_bookings > 0 ? ' ' . sprintf( esc_html__( 'Please choose another event or increase the quantity to %1$s.', 'booking-activities' ), $min_quantity - $qty_already_booked_with_other_bookings ) : ' ' . esc_html__( 'Please choose another event', 'booking-activities' );
+	}
+	if( ! $is_qty_inf_to_max ) {
+		$response[ 'messages' ][ 'qty_sup_to_max' ] = sprintf( esc_html( _n( 'You want to make %1$s booking of "%2$s"', 'You want to make %1$s bookings of "%2$s"', $new_quantity, 'booking-activities' ) ), $new_quantity, $title . ' (' . $dates . ')' );
+		if( $qty_already_booked_with_other_bookings ) {
+			/* translators: %1$s and %2$s are variable numbers of bookings, always >= 1. This sentence is preceded by : 'You want to make %1$s booking of "%2$s"' and followed by 'Please choose another event or decrease the quantity.' */
+			$response[ 'messages' ][ 'qty_sup_to_max' ] .= ' ' . sprintf( esc_html( _n( 'but you have already booked %1$s place and the maximum number of reservations allowed per user is %2$s.', 'but you have already booked %1$s places and the maximum number of reservations allowed per user is %2$s.', $qty_already_booked_with_other_bookings, 'booking-activities' ) ), $qty_already_booked_with_other_bookings, $max_quantity );
+		} else {
+			/* translators: %1$s is a variable number of bookings. This sentence is preceded by : 'You want to make %1$s booking of "%2$s"' and followed by 'Please choose another event or decrease the quantity.' */
+			$response[ 'messages' ][ 'qty_sup_to_max' ] .= ' ' . sprintf( esc_html__( 'but the maximum number of reservations allowed per user is %1$s.', 'booking-activities' ), $max_quantity );
+		}
+		/* translators: %1$s is a variable quantity. */
+		$response[ 'messages' ][ 'qty_sup_to_max' ] .= $max_quantity - $qty_already_booked_with_other_bookings > 0  ? ' ' . sprintf( esc_html__( 'Please choose another event or decrease the quantity to %1$s.', 'booking-activities' ), $max_quantity - $qty_already_booked_with_other_bookings ) : ' ' . esc_html__( 'Please choose another event', 'booking-activities' );
+	}
+	if( ! $is_users_inf_to_max ) {
+		/* translators: %s = The event title and dates. E.g.: The event "Basketball (Sep, 22nd - 3:00 PM to 6:00 PM)" has reached the maximum number of users allowed. */
+		$response[ 'messages' ][ 'users_sup_to_max' ] = sprintf( esc_html__( 'The event "%s" has reached the maximum number of users allowed. Bookings from other users are no longer accepted. Please choose another event.', 'booking-activities' ), $title . ' (' . $dates . ')' );
+	}
+	if( empty( $response[ 'messages' ] ) ) { $response[ 'status' ] = 'success'; }
+	
+	return apply_filters( 'bookacti_booking_quantity_can_be_changed', $response, $booking, $new_quantity );
+}
+
+
+
+
 // BOOKING GROUPS
 
 /**
@@ -835,6 +937,120 @@ function bookacti_booking_group_state_can_be_changed_to( $booking_group, $new_st
 			break;
 	}
 	return apply_filters( 'bookacti_booking_group_state_can_be_changed', $true, $booking_group, $new_state, $context );
+}
+
+
+/**
+ * Check if a booking group quantity can be changed
+ * @since 1.8.10
+ * @param array|int $bookings
+ * @param int $new_quantity
+ * @param string $context
+ * @return boolean
+ */
+function bookacti_booking_group_quantity_can_be_changed( $bookings, $new_quantity ) {
+	$response = array( 'status' => 'failed', 'messages' => array() );
+	
+	if( is_numeric( $bookings ) ) { 
+		$booking_group_id = intval( $bookings );
+		$filters = bookacti_format_booking_filters( array( 'in__booking_group_id' => $booking_group_id ) );
+		$bookings = bookacti_get_bookings( $filters );
+	}
+	if( ! $bookings ) { return $response; }
+	
+	// Get booking group data from its bookings
+	$title = ''; $group_start = ''; $group_end = ''; $quantity = 0; $availability = 0; $category_id = 0; $user_id = 0; $is_active_raw = 0; $is_active = 0; $events = array();
+	foreach( $bookings as $booking ) {
+		$group_start_dt = new DateTime( $group_start );
+		$group_end_dt = new DateTime( $group_end );
+		$event_start_dt = new DateTime( $booking->event_start );
+		$event_end_dt = new DateTime( $booking->event_end );
+		$events[] = array( 'id' => $booking->event_id, 'start' => $booking->event_start, 'end' => $booking->event_end );
+		if( ! $title ) { 
+			if( ! empty( $booking->group_title ) ) {
+				$title = apply_filters( 'bookacti_translate_text', $booking->group_title );
+			} else if( ! empty( $booking->event_title ) ) {
+				$title = apply_filters( 'bookacti_translate_text', $booking->event_title );
+			}
+		}
+		if( ! $category_id && ! empty( $booking->category_id ) )		{ $category_id = $booking->category_id; }
+		if( ! $user_id && ! empty( $booking->user_id ) )				{ $user_id = $booking->user_id; }
+		if( ! $group_start || $event_start_dt < $group_start_dt )		{ $group_start = $booking->event_start; }
+		if( ! $group_end || $event_end_dt < $group_end_dt )				{ $group_end = $booking->event_end; }
+		if( ! $availability || $booking->availability < $availability )	{ $availability = $booking->availability; }
+		if( ! $quantity || $booking->quantity > $quantity )				{ $quantity = $booking->quantity; }
+		if( ! $is_active_raw )											{ $is_active_raw = $booking->active; }
+		if( ! $is_active )												{ $is_active = apply_filters( 'bookacti_booking_quantity_check_is_active', $booking->active, $booking, $new_quantity ); }
+	}
+	
+	$dates = bookacti_get_formatted_event_dates( $group_start, $group_end, false );
+	$category_data	= bookacti_get_metadata( 'group_category', $category_id );
+
+	$delta_quantity	= $is_active ? $new_quantity - $quantity : $new_quantity;
+	$min_quantity	= isset( $category_data[ 'min_bookings_per_user' ] ) ? intval( $category_data[ 'min_bookings_per_user' ] ) : 0;
+	$max_quantity	= isset( $category_data[ 'max_bookings_per_user' ] ) ? intval( $category_data[ 'max_bookings_per_user' ] ) : 0;
+	$max_users		= isset( $category_data[ 'max_users_per_event' ] ) ? intval( $category_data[ 'max_users_per_event' ] ) : 0;
+	
+	$bookings_nb_per_user = bookacti_get_number_of_bookings_per_user_by_events( $events );
+	$user_has_booked = ! empty( $bookings_nb_per_user[ $user_id ] );
+	$quantity_already_booked = $user_has_booked ? intval( $bookings_nb_per_user[ $user_id ] ) : $quantity;
+	$qty_already_booked_with_other_bookings = $is_active ? $quantity_already_booked - $quantity : $quantity_already_booked;
+	$number_of_users = count( $bookings_nb_per_user );
+	
+	// Get the remaining availability
+	foreach( $bookings_nb_per_user as $user_id => $qty_booked ) { $availability -= $qty_booked; }
+	
+	// Init boolean test variables
+	$is_qty_inf_to_avail	= false;
+	$is_qty_sup_to_min		= false;
+	$is_qty_inf_to_max		= false;
+	$is_users_inf_to_max	= false;
+
+	// Make the tests and change the booleans
+	if( $delta_quantity <= $availability )															{ $is_qty_inf_to_avail = true; }
+	if( $min_quantity === 0 || ( $quantity_already_booked + $delta_quantity ) >= $min_quantity )	{ $is_qty_sup_to_min = true; }
+	if( $max_quantity === 0 || ( $quantity_already_booked + $delta_quantity ) <= $max_quantity )	{ $is_qty_inf_to_max = true; }
+	if( $max_users === 0 || $user_has_booked || $number_of_users < $max_users )						{ $is_users_inf_to_max = true; }
+
+	// Feedback the error code and message
+	if( ! $is_qty_inf_to_avail ) {
+		$response[ 'messages' ][ 'qty_sup_to_avail' ] = sprintf( esc_html( _n( 'You want to make %1$s booking of "%2$s"', 'You want to make %1$s bookings of "%2$s"', $new_quantity, 'booking-activities' ) ), $new_quantity, $title . ' (' . $dates . ')' )
+			. ' ' . sprintf( esc_html( _n( 'but only %1$s is available on this time slot.', 'but only %1$s are available on this time slot. ', $is_active_raw ? $availability : $availability + $quantity, 'booking-activities' ) ), $is_active_raw ? $availability : $availability + $quantity )
+			. ' ' . esc_html__( 'Please choose another event or decrease the quantity.', 'booking-activities' );
+		$response[ 'availability' ] = $availability;
+	}
+	if( ! $is_qty_sup_to_min ) {
+		/* translators: %1$s is a variable number of bookings, %2$s is the event title. */
+		$response[ 'messages' ][ 'qty_inf_to_min' ] = sprintf( esc_html( _n( 'You want to make %1$s booking of "%2$s"', 'You want to make %1$s bookings of "%2$s"', $new_quantity, 'booking-activities' ) ), $new_quantity, $title . ' (' . $dates . ')' );
+		if( $qty_already_booked_with_other_bookings ) {
+			/* translators: %1$s and %2$s are variable numbers of bookings, always >= 1. This sentence is preceded by : 'You want to make %1$s booking of "%2$s"' and followed by 'Please choose another event or increase the quantity.' */
+			$response[ 'messages' ][ 'qty_inf_to_min' ] .= ' ' . sprintf( esc_html( _n( 'and you have already booked %1$s place, but the minimum number of reservations required per user is %2$s.', 'and you have already booked %1$s places, but the minimum number of reservations required per user is %2$s.', $qty_already_booked_with_other_bookings, 'booking-activities' ) ), $qty_already_booked_with_other_bookings, $min_quantity );
+		} else {
+			/* translators: %1$s is a variable number of bookings. This sentence is preceded by : 'You want to make %1$s booking of "%2$s"' and followed by 'Please choose another event or increase the quantity.' */
+			$response[ 'messages' ][ 'qty_inf_to_min' ] .= ' ' . sprintf( esc_html__( 'but the minimum number of reservations required per user is %1$s.', 'booking-activities' ), $min_quantity );
+		}	
+		/* translators: %1$s is a variable quantity. */
+		$response[ 'messages' ][ 'qty_inf_to_min' ] .= $min_quantity - $qty_already_booked_with_other_bookings > 0 ? ' ' . sprintf( esc_html__( 'Please choose another event or increase the quantity to %1$s.', 'booking-activities' ), $min_quantity - $qty_already_booked_with_other_bookings ) : ' ' . esc_html__( 'Please choose another event', 'booking-activities' );
+	}
+	if( ! $is_qty_inf_to_max ) {
+		$response[ 'messages' ][ 'qty_sup_to_max' ] = sprintf( esc_html( _n( 'You want to make %1$s booking of "%2$s"', 'You want to make %1$s bookings of "%2$s"', $new_quantity, 'booking-activities' ) ), $new_quantity, $title . ' (' . $dates . ')' );
+		if( $qty_already_booked_with_other_bookings ) {
+			/* translators: %1$s and %2$s are variable numbers of bookings, always >= 1. This sentence is preceded by : 'You want to make %1$s booking of "%2$s"' and followed by 'Please choose another event or decrease the quantity.' */
+			$response[ 'messages' ][ 'qty_sup_to_max' ] .= ' ' . sprintf( esc_html( _n( 'but you have already booked %1$s place and the maximum number of reservations allowed per user is %2$s.', 'but you have already booked %1$s places and the maximum number of reservations allowed per user is %2$s.', $qty_already_booked_with_other_bookings, 'booking-activities' ) ), $qty_already_booked_with_other_bookings, $max_quantity );
+		} else {
+			/* translators: %1$s is a variable number of bookings. This sentence is preceded by : 'You want to make %1$s booking of "%2$s"' and followed by 'Please choose another event or decrease the quantity.' */
+			$response[ 'messages' ][ 'qty_sup_to_max' ] .= ' ' . sprintf( esc_html__( 'but the maximum number of reservations allowed per user is %1$s.', 'booking-activities' ), $max_quantity );
+		}
+		/* translators: %1$s is a variable quantity. */
+		$response[ 'messages' ][ 'qty_sup_to_max' ] .= $max_quantity - $qty_already_booked_with_other_bookings > 0  ? ' ' . sprintf( esc_html__( 'Please choose another event or decrease the quantity to %1$s.', 'booking-activities' ), $max_quantity - $qty_already_booked_with_other_bookings ) : ' ' . esc_html__( 'Please choose another event', 'booking-activities' );
+	}
+	if( ! $is_users_inf_to_max ) {
+		/* translators: %s = The event title and dates. E.g.: The event "Basketball (Sep, 22nd - 3:00 PM to 6:00 PM)" has reached the maximum number of users allowed. */
+		$response[ 'messages' ][ 'users_sup_to_max' ] = sprintf( esc_html__( 'The event "%s" has reached the maximum number of users allowed. Bookings from other users are no longer accepted. Please choose another event.', 'booking-activities' ), $title . ' (' . $dates . ')' );
+	}
+	if( empty( $response[ 'messages' ] ) ) { $response[ 'status' ] = 'success'; }
+	
+	return apply_filters( 'bookacti_booking_group_quantity_can_be_changed', $response, $bookings, $new_quantity );
 }
 
 

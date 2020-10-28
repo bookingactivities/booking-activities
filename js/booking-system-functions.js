@@ -1369,6 +1369,7 @@ function bookacti_get_event_number_of_bookings_div( booking_system, event ) {
 
 /**
  * Sort an array of events by dates
+ * @version 1.8.10
  * @param {array} array
  * @param {boolean} sort_by_end
  * @param {boolean} desc
@@ -1376,22 +1377,26 @@ function bookacti_get_event_number_of_bookings_div( booking_system, event ) {
  * @returns {array}
  */
 function bookacti_sort_events_array_by_dates( array, sort_by_end, desc, labels ) {
-	
 	sort_by_end = sort_by_end || false;
 	desc = desc || false;
 	labels = labels || { 'start': 'start', 'end': 'end' };
 	
 	array.sort( function( a, b ) {
-		
-		// Sort by start date ASC
-		var sort = sort_by_end ? 0 : new Date( a[ labels.start ] ) - new Date( b[ labels.start ] );
-		
 		// If start date is the same, then sort by end date ASC
-		if( sort === 0 ) {
-			sort = new Date( a[ labels.end ] ) - new Date( b[ labels.end ] );
+		if( sort_by_end || a[ labels.start ] === b[ labels.start ] ) {
+			var a_date = moment.utc( a[ labels.end ] );
+			var b_date = moment.utc( b[ labels.end ] );
+		} 
+		// Sort by start date ASC by default
+		else {
+			var a_date = moment.utc( a[ labels.start ] );
+			var b_date = moment.utc( b[ labels.start ] );
 		}
 		
-		if( desc === true ) { sort = ! sort; }
+		var sort = 0;
+		if( a_date.isAfter( b_date ) )	{ sort = 1; }
+		if( a_date.isBefore( b_date ) )	{ sort = -1; }
+		if( desc === true )				{ sort = sort * -1; }
 		
 		return sort;
 	});

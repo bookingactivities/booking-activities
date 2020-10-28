@@ -568,6 +568,42 @@ function bookacti_get_event_availability( $event_id, $event_start, $event_end ) 
 }
 
 
+/**
+ * Get the min availability from a collection of events
+ * @since 1.8.10
+ * @global wpdb $wpdb
+ * @param array $events
+ * @param int $active -1|0|1
+ * @return array
+ */
+function bookacti_get_min_availability_by_events( $events, $active = 1 ) {
+	global $wpdb;
+	
+	$query	= ' SELECT MIN( E.availability ) as min_availability '
+			. ' FROM ' . BOOKACTI_TABLE_EVENTS .' as E '
+			. ' WHERE ';
+	
+	$variables = array();
+	$i = 0;
+	foreach( $events as $event ) {
+		if( $i !== 0 ) { $query .= ' OR '; }
+		$query .= ' ('
+				. ' E.id = %d'
+				. ' AND E.active = IFNULL( NULLIF( %d, -1 ), E.active )'
+				. ' ) ';
+		$variables = array_merge( $variables, array( $event[ 'id' ], $active ) );
+		++$i;
+	}
+	
+	$query	= apply_filters( 'bookacti_availability_by_events_query', $wpdb->prepare( $query, $variables ), $events, $active );
+	$result	= $wpdb->get_row( $query, OBJECT );
+	
+	$min_availability = $result ? intval( $result->min_availability ) : 0;
+	
+	return apply_filters( 'bookacti_availability_by_events', $min_availability, $events, $active, $query );
+}
+
+
 
 
 // EXCEPTIONS

@@ -7,6 +7,52 @@ $j( document ).ready( function() {
 	
 	// Add formatPHP function to moment JS
 	bookacti_init_moment_format_from_php_date_format();
+	
+	// Init Bootstrap tooltip global functions
+	var is_bootstrap = typeof $j.fn.modal !== 'undefined';
+	if( is_bootstrap ) {
+		/**
+		 * Remove the Bootstrap tooltips on click anywhere else than the tooltip
+		 * @since 1.8.10
+		 * @param {Event} e
+		 */
+		$j( document ).on( 'click', function( e ) {
+			// Do nothing if the click hit the tooltip
+			if( $j( e.target ).closest( '.bookacti-bs-tooltip' ).length ) { return; }
+
+			// Remove the tooltip
+			$j( '.bookacti-tip' ).tooltip( 'hide' );
+
+			// Clear the timeout
+			if( typeof bookacti_bs_display_bookings_tooltip_monitor !== 'undefined' ) { 
+				if( bookacti_bs_display_bookings_tooltip_monitor ) { clearTimeout( bookacti_bs_display_bookings_tooltip_monitor ); }
+			}
+		});
+
+
+		/**
+		 * Keep the Bootstrap tooltips displayed if the user mouseover it
+		 * @since 1.8.10
+		 */
+	   $j( 'body' ).on( 'mouseover', '.bookacti-bs-tooltip', function() {
+		   if( typeof bookacti_bs_remove_mouseover_tooltip_monitor !== 'undefined' ) { 
+			   if( bookacti_bs_remove_mouseover_tooltip_monitor ) { clearTimeout( bookacti_bs_remove_mouseover_tooltip_monitor ); }
+		   }
+	   });
+
+
+	   /**
+		* Remove the Bootstrap tooltips - on mouseout
+		* @since 1.8.10
+		*/
+	   $j( 'body' ).on( 'mouseout', '.bookacti-bs-tooltip', function() {
+			var tooltip_mouseover_timeout = Math.min( Math.max( parseInt( bookacti_localized.bookings_tooltip_mouseover_timeout ), 0 ), 200 );
+			var _this = this;
+			bookacti_bs_remove_mouseover_tooltip_monitor = setTimeout( function() {
+				$j( _this ).tooltip( 'hide' );
+			}, tooltip_mouseover_timeout );
+	   });
+	} 
 });
 
 
@@ -32,29 +78,74 @@ window.addEventListener( 'touchstart', function bookacti_detect_touch_device() {
 
 /**
  * Init tooltip
- * @version 1.8.6
+ * @version 1.8.10
  */
 function bookacti_init_tooltip() {
-	$j( '.bookacti-tip' ).tooltip({
-		"items": '[data-tip]',
-		"content": function () {
-			return $j( this ).data( 'tip' );
-		},
-		"show":	{ effect: 'fadeIn', duration: 200 },
-		"hide":	{ effect: 'fadeOut', duration: 200 },
-		"close": function(event, ui) {
-			ui.tooltip.hover( function() {
-				$j( this ).stop( true ).fadeTo( 200, 1 ); 
-			},
-			function() {
-				$j( this ).fadeOut( '200', function() {
-					$j( this ).remove();
-				});
+	// Bootstrap (for compatibility only)
+	var is_bootstrap = typeof $j.fn.modal !== 'undefined';
+	if( is_bootstrap ) {
+		var bootstrap_options = {
+			"title": function () { return $j( this ).data( 'tip' ); },
+			"trigger": 'manual',
+			"animation": true,
+			"html": true,
+			"template": '<div class="tooltip bookacti-bs-tooltip bookacti-tip-container" role="tooltip"><div class="arrow"></div><div class="tooltip-inner bookacti-custom-scrollbar"></div></div>'
+		};
+		
+		$j( '.bookacti-tip' ).tooltip( bootstrap_options )
+			.on( 'mouseover touchstart', function() {
+				var tooltip_mouseover_timeout = parseInt( bookacti_localized.bookings_tooltip_mouseover_timeout );
+				if( tooltip_mouseover_timeout < 0 ) { return; }
+
+				// Clear the timeout to remove the old pop up (it will be removed by bookacti_display_bookings_tooltip_monitor)
+				if( typeof bookacti_bs_remove_mouseover_tooltip_monitor !== 'undefined' ) { 
+					if( bookacti_bs_remove_mouseover_tooltip_monitor ) { clearTimeout( bookacti_bs_remove_mouseover_tooltip_monitor ); }
+				}
+				
+				var _this = this;
+				bookacti_bs_display_bookings_tooltip_monitor = setTimeout( function() {
+					$j( _this ).tooltip( 'show' );
+				}, tooltip_mouseover_timeout );
+			})
+			.on( 'mouseout', function() {
+				// Clear the timeout
+				if( typeof bookacti_bs_display_bookings_tooltip_monitor !== 'undefined' ) { 
+					if( bookacti_bs_display_bookings_tooltip_monitor ) { clearTimeout( bookacti_bs_display_bookings_tooltip_monitor ); }
+				}
+				
+				var tooltip_mouseover_timeout = Math.min( Math.max( parseInt( bookacti_localized.bookings_tooltip_mouseover_timeout ), 0 ), 200 );
+				var _this = this;
+				bookacti_bs_remove_mouseover_tooltip_monitor = setTimeout( function() {
+					$j( _this ).tooltip( 'hide' );
+				}, tooltip_mouseover_timeout );
 			});
-		},
-		"tooltipClass":'bookacti-tip-container bookacti-custom-scrollbar'
-	});
-	$j( '.bookacti-tip' ).tooltip( 'close' );
+		
+		$j( '.bookacti-tip' ).tooltip( 'hide' );
+	} 
+	
+	// jQuery UI
+	else {
+		var jquery_ui_options = {
+			"items": '[data-tip]',
+			"content": function () { return $j( this ).data( 'tip' ); },
+			"show":	{ effect: 'fadeIn', duration: 200 },
+			"hide":	{ effect: 'fadeOut', duration: 200 },
+			"close": function( event, ui ) {
+				ui.tooltip.hover( function() {
+					$j( this ).stop( true ).fadeTo( 200, 1 ); 
+				},
+				function() {
+					$j( this ).fadeOut( '200', function() {
+						$j( this ).remove();
+					});
+				});
+			},
+			"tooltipClass":'bookacti-tip-container bookacti-custom-scrollbar'
+		};
+
+		$j( '.bookacti-tip' ).tooltip( jquery_ui_options );
+		$j( '.bookacti-tip' ).tooltip( 'close' );
+	}
 }
 
 
