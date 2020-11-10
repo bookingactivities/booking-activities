@@ -321,6 +321,7 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 
 = 1.8.10 =
 * Breaking change - WooCommerce carts will be emptied after the update
+* Breaking change - You need to update your add-ons and probably adapt your custom code. No support will be provided for your custom code.
 * Tweak - Hide the Calendar bookings filter if only one calendar is available
 * Tweak - Display an admin error notice if an add-on is outdated and will cause malfunction
 * Fix - Fields were not prefilled with URL attributes on WC variable product page
@@ -332,6 +333,7 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 * Fix - Booking refunded email was sent twice
 * Fix - Events were not correctly sorted by date on Safari iOS / MacOS
 * Fix - Cannot switch templates in editor if too many events were loaded
+* Fix - Users having the bookacti_manage_booking_activities capability can now access the admin panel with WC even without manage_woocommerce or edit_posts
 * Dev - Refactor the process to trigger form actions
 * Dev - Refactor the booking system picked_events attribute
 * Dev - Refactor the data bound to WC cart item / order item
@@ -1116,6 +1118,11 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 
 
 == Upgrade Notice ==
+
+= 1.8.10 =
+Major changes in code:
+* If you have purchased add-ons, you need to update them too.
+* If you have custom code, you probably need to adapt it. No support will be provided for your custom code.
 
 = 1.1.0 =
 Major update with breaking changes. To be safe, make a backup of your database. 

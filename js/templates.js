@@ -810,7 +810,7 @@ function bookacti_load_template_calendar( calendar ) {
 
 		/**
 		 * When an event is clicked
-		 * @version 1.8.5
+		 * @version 1.8.10
 		 * @param {object} event
 		 * @param {object} jsEvent
 		 * @param {object} view
@@ -848,11 +848,11 @@ function bookacti_load_template_calendar( calendar ) {
 			});
 			
 			// If the user click on an event action, execute it
-			if( $j( jsEvent.target ).parents( '.bookacti-event-actions' ).length ) {
+			if( $j( jsEvent.target ).closest( '.bookacti-event-actions' ).length ) {
 				
 				// EDIT ACTION
 				if( $j( jsEvent.target ).is( '.bookacti-event-action-edit' ) 
-				||  $j( jsEvent.target ).parents( '.bookacti-event-action-edit' ).length ) {
+				||  $j( jsEvent.target ).closest( '.bookacti-event-action-edit' ).length ) {
 					// Display the dialog to modify the event
 					if( event.editable !== false ){
 						bookacti_dialog_update_event( event );
@@ -860,7 +860,7 @@ function bookacti_load_template_calendar( calendar ) {
 					
 				// SELECT ACTION
 				} else if( $j( jsEvent.target ).is( '.bookacti-event-action-select' )
-						|| $j( jsEvent.target ).parents( '.bookacti-event-action-select' ).length ) {
+						|| $j( jsEvent.target ).closest( '.bookacti-event-action-select' ).length ) {
 					
 					// Format selected events and keep them / remove them from memory
 					if( element.find( '.bookacti-event-action-select-checkbox' ).is( ':checked' ) ) {

@@ -147,7 +147,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 							'multiple'	=> true
 						);
 						bookacti_display_field( $args );
-
+						
 						// Update user default status filter
 						if( $selected_status != $default_status && empty( $_REQUEST[ 'keep_default_status' ] ) ) {
 							update_user_meta( get_current_user_id(), 'bookacti_status_filter', $selected_status );

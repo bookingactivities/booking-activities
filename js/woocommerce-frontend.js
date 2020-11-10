@@ -72,21 +72,21 @@ $j( document ).ready( function() {
 
 	/**
 	 * Enable add-to-cart button
-	 * @version 1.7.4
+	 * @version 1.8.10
 	 */
 	$j( '.woocommerce form.cart' ).on( 'bookacti_view_refreshed bookacti_displayed_info_cleared', '.bookacti-booking-system', function() {
-		$j( this ).parents( 'form' ).find( 'input[name="quantity"]' ).attr( 'disabled', false );
-		$j( this ).parents( 'form' ).find( 'button[type="submit"]' ).attr( 'disabled', false );
+		$j( this ).closest( 'form' ).find( 'input[name="quantity"]' ).attr( 'disabled', false );
+		$j( this ).closest( 'form' ).find( 'button[type="submit"]' ).attr( 'disabled', false );
 	});
 
 
 	/**
 	 * Disable add-to-cart button
-	 * @version 1.7.4
+	 * @version 1.8.10
 	 */
 	$j( '.woocommerce form.cart' ).on( 'bookacti_error_displayed', '.bookacti-booking-system', function() {
-		$j( this ).parents( 'form' ).find( 'input[name="quantity"]' ).attr( 'disabled', true );
-		$j( this ).parents( 'form' ).find( 'button[type="submit"]' ).attr( 'disabled', true );
+		$j( this ).closest( 'form' ).find( 'input[name="quantity"]' ).attr( 'disabled', true );
+		$j( this ).closest( 'form' ).find( 'button[type="submit"]' ).attr( 'disabled', true );
 	});
 
 
@@ -130,10 +130,10 @@ $j( document ).ready( function() {
 
 	/**
 	 * Change activity summary on qty change
-	 * @version 1.7.4
+	 * @version 1.8.10
 	 */
 	$j( '.woocommerce form.cart' ).on( 'keyup mouseup change', 'input.qty', function() {
-		var booking_system = $j( this ).parents( 'form.cart' ).find( '.bookacti-booking-system' );
+		var booking_system = $j( this ).closest( 'form.cart' ).find( '.bookacti-booking-system' );
 		if( booking_system.length ) {
 			bookacti_fill_picked_events_list( booking_system );
 		}
@@ -149,7 +149,7 @@ $j( document ).ready( function() {
 	 */
 	$j( '.woocommerce form.cart' ).on( 'bookacti_picked_events_list_data', '.bookacti-booking-system', function( e, event_data, event ) {
 		var booking_system = $j( this );
-		var qty_field = booking_system.parents( 'form' ).find( '.quantity .qty' );
+		var qty_field = booking_system.closest( 'form' ).find( '.quantity .qty' );
 		if( qty_field.length ) {
 			event_data.quantity = parseInt( qty_field.val() );
 		}
@@ -164,7 +164,7 @@ $j( document ).ready( function() {
 	 */
 	$j( '.woocommerce form.cart' ).on( 'bookacti_update_quantity', '.bookacti-booking-system', function( e, qty_data ) {
 		var booking_system = $j( this );
-		var qty_field = booking_system.parents( 'form' ).find( '.quantity .qty' );
+		var qty_field = booking_system.closest( 'form' ).find( '.quantity .qty' );
 		if( qty_field.length ) {
 			qty_data.field = qty_field;
 		}

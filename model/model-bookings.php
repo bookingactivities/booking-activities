@@ -197,7 +197,12 @@ function bookacti_get_bookings( $filters ) {
 	if( is_numeric( $filters[ 'form_id' ] ) && $filters[ 'form_id' ] )						{ $filters[ 'in__form_id' ][] = $filters[ 'form_id' ]; }
 	if( is_numeric( $filters[ 'user_id' ] ) && $filters[ 'user_id' ] )						{ $filters[ 'in__user_id' ][] = $filters[ 'user_id' ]; }
 	
-	$query_select = ' SELECT DISTINCT B.*, E.title as event_title, A.id as activity_id, A.title as activity_title, T.id as template_id, T.title as template_title, IF( B.group_id IS NULL, B.id, CONCAT( "G", B.group_id ) ) as unique_group_id, BG.event_group_id , EG.category_id, EG.title as group_title  ';
+	$query_select	= ' SELECT DISTINCT B.*, IF( B.group_id IS NULL, B.id, CONCAT( "G", B.group_id ) ) as unique_group_id,'
+					. ' E.title as event_title,'
+					. ' A.id as activity_id, A.title as activity_title,'
+					. ' T.id as template_id, T.title as template_title,'
+					. ' BG.event_group_id, BG.state as group_state, BG.payment_status as group_payment_status, BG.user_id as group_user_id, BG.order_id as group_order_id, BG.form_id as group_form_id, BG.active as group_active,'
+					. ' EG.category_id, EG.title as group_title ';
 	
 	// Get event / group of event total availability
 	$query_select .= $filters[ 'group_by' ] === 'booking_group' ? ', MIN( E.availability ) as availability ' : ', E.availability ';

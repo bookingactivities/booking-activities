@@ -3,19 +3,15 @@
 if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 /**
- * Send one notification per booking to admin and customer when an order contining bookings is made or when its status changes
- * @since 1.8.10 (was bookacti_send_notification_when_order_status_changes)
+ * Send a new status notification for a booking attached to an order item
+ * @since 1.8.10
  * @param array $order_item_booking
- * @param array $sanitized_data
+ * @param string $new_status
  * @param WC_Order $order
- * @param array $new_data
- * @param array $where
+ * @param boolean $forced
  */
-function bookacti_send_notification_when_order_item_booking_status_changes( $order_item_booking, $sanitized_data, $order, $new_data, $where ) {
-	if( empty( $sanitized_data[ 'status' ] ) ) { return; }
-	
+function bookacti_wc_send_order_item_booking_status_notification( $order_item_booking, $new_status, $order, $forced = false ) {
 	$action = isset( $_REQUEST[ 'action' ] ) ? sanitize_title_with_dashes( $_REQUEST[ 'action' ] ) : '';
-	$new_status = $sanitized_data[ 'status' ];
 	
 	// Check if the administrator must be notified
 	// If the booking status is pending or booked, notify administrator, unless if the administrator made this change
@@ -35,13 +31,14 @@ function bookacti_send_notification_when_order_item_booking_status_changes( $ord
 	
 	// Do not send notifications at all for transitionnal order status, 
 	// because the booking is still considered as temporary
-	$order_status = $order->get_status();
-	if( ( $order_status === 'pending' && $new_status === 'pending' )
-	||  ( $order_status === 'failed' && $new_status === 'cancelled' ) ) { return; }
+	if( is_numeric( $order ) ) { $order = wc_get_order( $order ); }
+	$order_status = $order ? $order->get_status() : '';
+	if( in_array( $order_status, array( 'pending', 'failed' ), true ) 
+	&&  in_array( $new_status, array( 'pending', 'cancelled' ), true ) ) { return; }
 	
 	// If the state hasn't changed, do not send the notifications, unless it is a new order
-	$old_status = $order_item_booking[ 'bookings' ][ 0 ]->state;
-	if( $old_status === $new_status && empty( $where[ 'force_status_notification' ] ) ) { return; }
+	$old_status = $order_item_booking[ 'type' ] === 'group' ? $order_item_booking[ 'bookings' ][ 0 ]->group_state : $order_item_booking[ 'bookings' ][ 0 ]->state;
+	if( $old_status === $new_status && ! $forced ) { return; }
 	
 	// Send a booking confirmation to the customer
 	if( $notify_customer ) {
@@ -52,8 +49,24 @@ function bookacti_send_notification_when_order_item_booking_status_changes( $ord
 	if( $notify_admin ) {
 		bookacti_send_notification( 'admin_new_booking', $order_item_booking[ 'id' ], $order_item_booking[ 'type' ] );
 	}
+	
+	do_action( 'bookacti_wc_send_order_item_booking_status_notification', $order_item_booking, $new_status, $order, $forced );
+}
 
-	do_action( 'bookacti_send_order_bookings_status_notifications', $order_item_booking, $sanitized_data, $order, $new_data, $where );
+
+/**
+ * Send one notification per booking to admin and customer when an order contining bookings is made or when its status changes
+ * @since 1.8.10 (was bookacti_send_notification_when_order_status_changes)
+ * @param array $order_item_booking
+ * @param array $sanitized_data
+ * @param WC_Order $order
+ * @param array $new_data
+ * @param array $where
+ */
+function bookacti_send_notification_when_order_item_booking_status_changes( $order_item_booking, $sanitized_data, $order, $new_data, $where ) {
+	if( empty( $sanitized_data[ 'status' ] ) ) { return; }
+	$new_status = $sanitized_data[ 'status' ];
+	bookacti_wc_send_order_item_booking_status_notification( $order_item_booking, $new_status, $order );
 }
 add_action( 'bookacti_order_item_booking_updated', 'bookacti_send_notification_when_order_item_booking_status_changes', 10, 5 );
 

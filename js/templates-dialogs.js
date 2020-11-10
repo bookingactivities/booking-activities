@@ -116,11 +116,11 @@ function bookacti_init_template_dialogs() {
 
 	/**
 	 * Init update group of events dialog
-	 * @version 1.8.0
+	 * @version 1.8.10
 	 */
 	$j( '#bookacti-template-groups-of-events-container' ).on( 'click', '.bookacti-update-group-of-events', function() {
-		var group_id	= $j( this ).parents( '.bookacti-group-of-events' ).data( 'group-id' );
-		var is_selected	= $j( this ).parents( '.bookacti-group-of-events' ).hasClass( 'bookacti-selected-group' );
+		var group_id	= $j( this ).closest( '.bookacti-group-of-events' ).data( 'group-id' );
+		var is_selected	= $j( this ).closest( '.bookacti-group-of-events' ).hasClass( 'bookacti-selected-group' );
 		var are_selected = is_selected;
 		if( ! is_selected ) {
 			are_selected = bookacti_select_events_of_group( group_id );
@@ -128,9 +128,13 @@ function bookacti_init_template_dialogs() {
 		if( are_selected ) { bookacti_dialog_update_group_of_events( group_id ); };
 	});
 
-	// Init update group category dialog
+	
+	/**
+	 * Init update group category dialog
+	 * @version 1.8.10
+	 */
 	$j( '#bookacti-group-categories' ).on( 'click', '.bookacti-update-group-category', function() {
-		var category_id = $j( this ).parents( '.bookacti-group-category' ).data( 'group-category-id' );
+		var category_id = $j( this ).closest( '.bookacti-group-category' ).data( 'group-category-id' );
 		bookacti_dialog_update_group_category( category_id ); 
 	});
 
@@ -1347,7 +1351,7 @@ function bookacti_dialog_update_activity( activity_id ) {
 
 /**
  * Dialog Delete Activity
- * @version 1.8.0
+ * @version 1.8.10
  * @param {int} activity_id
  */
 function bookacti_dialog_delete_activity( activity_id ) {
@@ -1391,7 +1395,7 @@ function bookacti_dialog_delete_activity( activity_id ) {
 							// Update activities data array
 							delete bookacti.booking_system[ 'bookacti-template-calendar' ][ 'activities_data' ][ activity_id ];
 
-							$j( '.fc-event[data-activity-id="' + activity_id + '"]' ).parents( '.activity-row' ).remove();
+							$j( '.fc-event[data-activity-id="' + activity_id + '"]' ).closest( '.activity-row' ).remove();
 
 							// refresh events if user chose to deleted them
 							if( delete_events ) {
@@ -1574,7 +1578,7 @@ function bookacti_dialog_create_group_of_events( category_id ) {
 
 /**
  * Update a group of events with selected events 
- * @version 1.8.3
+ * @version 1.8.10
  * @param {int} group_id
  */
 function bookacti_dialog_update_group_of_events( group_id ) {
@@ -1585,7 +1589,7 @@ function bookacti_dialog_update_group_of_events( group_id ) {
 	});
 	
 	// Select the group category
-	var category_id = $j( '.bookacti-group-of-events[data-group-id="' + group_id + '"]' ).parents( '.bookacti-group-category' ).data( 'group-category-id' );
+	var category_id = $j( '.bookacti-group-of-events[data-group-id="' + group_id + '"]' ).closest( '.bookacti-group-category' ).data( 'group-category-id' );
 	var initial_category_id = category_id ? category_id : 'new';
 	$j( '#bookacti-group-of-events-category-selectbox' ).val( category_id ).trigger( 'change' );
 

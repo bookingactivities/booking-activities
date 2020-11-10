@@ -240,166 +240,90 @@ function bookacti_get_cart_expiration_date_per_user( $user_id ) {
 
 
 /**
- * Change bookings state and fill user and order id
- * 
- * @version 1.5.6
- * @global wpdb $wpdb
- * @param int|string $user_id
- * @param int $order_id
- * @param array $booking_id_array
- * @param string $state
- * @param string $payment_status
- * @param array $states_in
- * @return string
- */
-function bookacti_change_order_bookings_state( $user_id = NULL, $order_id = NULL, $booking_id_array = array(), $state = 'booked', $payment_status = NULL, $states_in = array() ) {
-
-	global $wpdb;
-
-	$response = array(); 
-	
-	if( empty( $booking_id_array ) || ! is_array( $booking_id_array ) ) { return false;	}
-	
-	//Init variables
-	$response[ 'status' ]	= 'success';
-	$response[ 'errors' ]	= array();
-	
-	if( $states_in === 'active' )	{ $states_in	= bookacti_get_active_booking_states(); }
-	if( ! is_int( $user_id ) )		{ $user_id		= NULL; }
-	if( ! is_int( $order_id ) )		{ $order_id		= NULL; }
-	$active = in_array( $state, bookacti_get_active_booking_states(), true ) ? 1 : 0;
-
-	$query = 'UPDATE ' . BOOKACTI_TABLE_BOOKINGS . ' SET state = %s, active = %d, ';
-
-	$array_of_variables = array( 'state' => $state, 'active' => $active );
-
-	// Update payment status
-	if( $payment_status ){
-		$query .= ' payment_status = CASE WHEN ( payment_status = "none" AND %s = "paid" ) THEN payment_status ELSE %s END ';
-		if( $user_id || $order_id ) { $query .= ', '; }
-		$array_of_variables[] = $payment_status;
-		$array_of_variables[] = $payment_status;
-	}
-
-	// Update user id
-	if( $user_id ){
-		$query .= ' user_id = %s ';
-		if( $order_id ) { $query .= ', '; }
-		$array_of_variables[] = $user_id;
-	}
-
-	// Update order id
-	if( $order_id ){
-		$query .= ' order_id = %d ';
-		$array_of_variables[] = $order_id;
-	}
-
-	// Complete the query with all the booking ids
-	$query  .= ' WHERE id IN ( %d ';
-	if( count( $booking_id_array ) >= 2 )  {
-		for( $i = 0; $i < count( $booking_id_array ) - 1; $i++ ) {
-			$query  .= ', %d ';
-		}
-	}
-	$query  .= ') ';
-
-	$array_of_variables = array_merge( $array_of_variables, $booking_id_array );
-
-	if( $states_in && is_array( $states_in ) ) {
-		$query  .= ' AND state IN ( ';
-		$len = count( $states_in );
-		for( $i=1; $i <= $len; ++$i ) {
-			$query  .= '%s';
-			if( $i < $len ) { $query  .= ', '; }
-		}
-		$query  .= ' ) ';
-		$array_of_variables = array_merge( $array_of_variables, $states_in );
-	}
-
-	// Prepare and execute the query
-
-	$query_prep = $wpdb->prepare( $query, $array_of_variables );
-	$updated	= $wpdb->query( $query_prep );
-
-	return $updated;
-}
-
-
-/**
  * Turn 'pending' bookings of an order to 'cancelled'
- * 
- * @version 1.3.0
- * 
+ * @since 1.8.10 (was bookacti_cancel_order_pending_bookings)
  * @global wpdb $wpdb
  * @param int $order_id
  * @param array $not_booking_ids
  * @param array $not_booking_group_ids
- * @return array|0|false|null
+ * @return int|false
  */
-function bookacti_cancel_order_pending_bookings( $order_id, $not_booking_ids = array(), $not_booking_group_ids = array() ) {
+function bookacti_cancel_order_remaining_bookings( $order_id, $not_booking_ids = array(), $not_booking_group_ids = array() ) {
+	// Do not cancel bookings attached to the order
+	$order = wc_get_order( $order_id );
+	if( $order ) { 
+		$items = $order->get_items();
+		if( $items ) {
+			foreach( $items as $item_id => $item ) {
+				$order_item_bookings_ids = bookacti_wc_format_order_item_bookings_ids( $item );
+				if( ! $order_item_bookings_ids ) { continue; }
+				foreach( $order_item_bookings_ids as $order_item_booking_id ) {
+					if( $order_item_booking_id[ 'type' ] === 'single' ) { $not_booking_ids[] = $order_item_booking_id[ 'id' ]; }
+					else if( $order_item_booking_id[ 'type' ] === 'group' ) { $not_booking_group_ids[] = $order_item_booking_id[ 'id' ]; }
+				}
+			}
+		}
+	}
+	
 	global $wpdb;
 	
-	// Get affected booking ids
-	$query_updated_ids	= 'SELECT id FROM ' . BOOKACTI_TABLE_BOOKINGS . ' WHERE order_id = %d AND state = "pending"';
-	$prep_updated_ids	= $wpdb->prepare( $query_updated_ids, $order_id );
-	$cancelled_bookings	= $wpdb->get_results( $prep_updated_ids, OBJECT );
-	
 	// Turn bookings state to 'cancelled'
-	$query		= 'UPDATE ' . BOOKACTI_TABLE_BOOKINGS 
-				. ' SET state = "cancelled", active = 0 '
-				. ' WHERE order_id = %d '
-				. ' AND state = "pending" ';
+	$query	= 'UPDATE ' . BOOKACTI_TABLE_BOOKINGS 
+			. ' SET order_id = NULL, state = "cancelled", active = 0 '
+			. ' WHERE order_id = %d ';
 	
 	$variables = array( $order_id );
 	
 	if( $not_booking_ids ) {
-		$query .= ' AND id NOT IN ( %s ';
+		$query .= ' AND id NOT IN ( %d ';
 		$array_count = count( $not_booking_ids );
 		if( $array_count >= 2 ) {
 			for( $i=1; $i<$array_count; ++$i ) {
-				$query  .= ', %s ';
+				$query  .= ', %d ';
 			}
 		}
 		$query  .= ') ';
 		$variables = array_merge( $variables, $not_booking_ids );
 	}
 	
-	$query_prep	= $wpdb->prepare( $query, $variables );
-	$cancelled	= $wpdb->query( $query_prep );
-	
-	
-	// Turn booking groups state to 'cancelled'
-	$query_cancel_groups	= 'UPDATE ' . BOOKACTI_TABLE_BOOKING_GROUPS . ' '
-							. ' SET state = "cancelled", active = 0 '
-							. ' WHERE order_id = %d '
-							. ' AND state = "pending" ';
-	
-	$variables_group = array( $order_id );
-	
 	if( $not_booking_group_ids ) {
-		$query_cancel_groups .= ' AND id NOT IN ( %s ';
+		$query .= ' AND group_id NOT IN ( %d ';
 		$array_count = count( $not_booking_group_ids );
 		if( $array_count >= 2 ) {
 			for( $i=1; $i<$array_count; ++$i ) {
-				$query_cancel_groups  .= ', %s ';
+				$query  .= ', %d ';
 			}
 		}
-		$query_cancel_groups  .= ') ';
-		$variables_group = array_merge( $variables_group, $not_booking_group_ids );
+		$query  .= ') ';
+		$variables = array_merge( $variables, $not_booking_group_ids );
 	}
 	
-	$prep_cancel_groups	= $wpdb->prepare( $query_cancel_groups, $variables_group );
-	$wpdb->query( $prep_cancel_groups );
+	$query = $wpdb->prepare( $query, $variables );
+	$nb_cancelled = $wpdb->query( $query );
 	
-	$return = $cancelled;
-	if( $cancelled ){
-		$return = array();
-		foreach( $cancelled_bookings as $cancelled_booking ) {
-			$return[] = $cancelled_booking->id;
+	// Turn booking groups state to 'cancelled'
+	$query	= 'UPDATE ' . BOOKACTI_TABLE_BOOKING_GROUPS
+			. ' SET order_id = NULL, state = "cancelled", active = 0 '
+			. ' WHERE order_id = %d ';
+	
+	$variables = array( $order_id );
+	
+	if( $not_booking_group_ids ) {
+		$query .= ' AND id NOT IN ( %d ';
+		$array_count = count( $not_booking_group_ids );
+		if( $array_count >= 2 ) {
+			for( $i=1; $i<$array_count; ++$i ) {
+				$query  .= ', %d ';
+			}
 		}
+		$query  .= ') ';
+		$variables = array_merge( $variables, $not_booking_group_ids );
 	}
 	
-	return apply_filters( 'bookacti_order_pending_bookings_cancelled', $return );
+	$query = $wpdb->prepare( $query, $variables );
+	$wpdb->query( $query );
+	
+	return $nb_cancelled;
 }
 
 
@@ -692,6 +616,7 @@ function bookacti_get_order_items_data_by_bookings( $booking_ids = array(), $boo
 	$order_items_data = $wpdb->get_results( $query );
 	if( ! $order_items_data ) { return false; }
 	
+	// Transform $object = {"meta_key": mykey, "meta_value": myvalue}; to $object->mykey = myvalue;
 	$order_items_array = array();
 	foreach( $order_items_data as $order_item_data ) {
 		if( ! isset( $order_items_array[ $order_item_data->order_item_id ] ) ) {
@@ -709,6 +634,7 @@ function bookacti_get_order_items_data_by_bookings( $booking_ids = array(), $boo
 /**
  * Get the order item ids corresponding to a booking or a booking group
  * @since 1.7.1
+ * @version 1.8.10
  * @global wpdb $wpdb
  * @param array $booking_ids
  * @param array $booking_groups_ids
@@ -733,26 +659,51 @@ function bookacti_get_order_items_ids_by_bookings( $booking_ids = array(), $book
 	$booking_groups_ids_query = '';
 	
 	if( $booking_ids ) {
-		$booking_ids_query = '( IM.meta_key = "bookacti_booking_id" AND IM.meta_value IN ( %d';
+		$booking_ids_query = '( IM.meta_key = "bookacti_bookings" AND ( ';
+		$i = 0;
+		foreach( $booking_ids as $booking_id ) {
+			if( $i > 0 ) { $booking_ids_query .= 'OR '; }
+			$booking_ids_query .= 'IM.meta_value LIKE %s ';
+			$variables[] = '%' . $wpdb->esc_like( '{"id":' . $booking_id . ',"type":"single"}' ) . '%';
+			++$i;
+		}
+		$booking_ids_query .= ') )';
+		
+		// Backward compatibility
+		$booking_ids_backward_compat_query = '( IM.meta_key = "bookacti_booking_id" AND IM.meta_value IN ( %d';
 		$array_count = count( $booking_ids );
 		if( $array_count >= 2 ) {
 			for( $i=1; $i<$array_count; ++$i ) {
-				$booking_ids_query .= ', %d';
+				$booking_ids_backward_compat_query .= ', %d';
 			}
 		}
-		$booking_ids_query .= ' ) )';
+		$booking_ids_backward_compat_query .= ' ) )';
 		$variables = array_merge( $variables, $booking_ids );
+		$booking_ids_query = '( ' . $booking_ids_query . ' OR ' . $booking_ids_backward_compat_query . ' )';
 	}
+	
 	if( $booking_groups_ids ) {
-		$booking_groups_ids_query = '( IM.meta_key = "bookacti_booking_group_id" AND IM.meta_value IN ( %d';
+		$booking_groups_ids_query = '( IM.meta_key = "bookacti_bookings" AND ( ';
+		$i = 0;
+		foreach( $booking_groups_ids as $booking_group_id ) {
+			if( $i > 0 ) { $booking_groups_ids_query .= 'OR '; }
+			$booking_groups_ids_query .= 'IM.meta_value LIKE %s ';
+			$variables[] = '%' . $wpdb->esc_like( '{"id":' . $booking_group_id . ',"type":"group"}' ) . '%';
+			++$i;
+		}
+		$booking_groups_ids_query .= ') )';
+		
+		// Backward compatibility
+		$booking_groups_ids_backward_compat_query = '( IM.meta_key = "bookacti_booking_group_id" AND IM.meta_value IN ( %d';
 		$array_count = count( $booking_groups_ids );
 		if( $array_count >= 2 ) {
 			for( $i=1; $i<$array_count; ++$i ) {
-				$booking_groups_ids_query .= ', %d';
+				$booking_groups_ids_backward_compat_query .= ', %d';
 			}
 		}
-		$booking_groups_ids_query .= ' ) )';
+		$booking_groups_ids_backward_compat_query .= ' ) )';
 		$variables = array_merge( $variables, $booking_groups_ids );
+		$booking_groups_ids_query = '( ' . $booking_groups_ids_query . ' OR ' . $booking_groups_ids_backward_compat_query . ' )';
 	}
 	
 	if( $booking_ids && $booking_groups_ids ) {

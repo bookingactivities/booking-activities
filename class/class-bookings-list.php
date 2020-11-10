@@ -223,7 +223,7 @@ if( ! class_exists( 'Bookings_List_Table' ) ) {
 		
 		/**
 		 * Get booking list items. Parameters can be passed in the URL.
-		 * @version 1.8.6
+		 * @version 1.8.10
 		 * @access public
 		 * @return array
 		 */
@@ -258,10 +258,16 @@ if( ! class_exists( 'Bookings_List_Table' ) ) {
 			// Retrieve the required groups data only
 			$booking_groups		= array();
 			$displayed_groups	= array();
+			$bookings_per_group	= array();
 			if( ( $may_have_groups || $single_only ) && $this->group_ids ) {
 				// Get only the groups that will be displayed
 				$group_filters = bookacti_format_booking_filters( array( 'in__booking_group_id' => $this->group_ids, 'fetch_meta' => true ) );
 				$booking_groups = bookacti_get_booking_groups( $group_filters );
+				$groups_bookings = bookacti_get_bookings( $group_filters );
+				foreach( $groups_bookings as $booking ) {
+					if( ! isset( $bookings_per_group[ $booking->group_id ] ) ) { $bookings_per_group[ $booking->group_id ] = array(); }
+					$bookings_per_group[ $booking->group_id ][] = $booking;
+				}
 			}
 			
 			// Retrieve information about users and stock them into an array sorted by user id
@@ -279,9 +285,9 @@ if( ! class_exists( 'Bookings_List_Table' ) ) {
 			// Build booking list
 			$booking_list_items = array();
 			foreach( $bookings as $booking ) {
-				
 				$group = $booking->group_id && ! empty( $booking_groups[ $booking->group_id ] ) ? $booking_groups[ $booking->group_id ] : null;
-				
+				$grouped_bookings = $booking->group_id && ! empty( $bookings_per_group[ $booking->group_id ] ) && ! $single_only ? $bookings_per_group[ $booking->group_id ] : array( $booking );
+		
 				// Display one single row for a booking group, instead of each bookings of the group
 				if( $booking->group_id && $may_have_groups && ! $single_only ) {
 					// If the group row has already been displayed, or if it is not found, continue
@@ -421,7 +427,7 @@ if( ! class_exists( 'Bookings_List_Table' ) ) {
 					'order_id'		=> $order_id,
 					'primary_data'	=> $primary_data,
 					'primary_data_html'	=> $primary_data_html
-				), $booking, $group, $user, $this );
+				), $booking, $group, $grouped_bookings, $user, $this );
 				
 				$booking_list_items[ $booking->id ] = $booking_item;
 			}
@@ -442,7 +448,7 @@ if( ! class_exists( 'Bookings_List_Table' ) ) {
 				if( empty( $booking_list_item[ 'refund_actions' ] ) && isset( $booking_list_item[ 'actions' ][ 'refund' ] ) ) { unset( $booking_list_item[ 'actions' ][ 'refund' ] ); }
 				if( empty( $booking_list_item[ 'actions' ] ) ) { continue; }
 				if( $booking_list_item[ 'booking_type' ] === 'group' ) {
-					$booking_list_items[ $booking_id ][ 'actions' ] = bookacti_get_booking_group_actions_html( $booking, 'admin', $booking_list_item[ 'actions' ] );
+					$booking_list_items[ $booking_id ][ 'actions' ] = bookacti_get_booking_group_actions_html( $bookings_per_group[ $booking_list_item[ 'raw_id' ] ], 'admin', $booking_list_item[ 'actions' ] );
 				} else if( $booking_list_item[ 'booking_type' ] === 'single' ) {
 					$booking_list_items[ $booking_id ][ 'actions' ] = bookacti_get_booking_actions_html( $booking, 'admin', $booking_list_item[ 'actions' ] );
 				}

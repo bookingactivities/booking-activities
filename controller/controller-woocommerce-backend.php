@@ -818,3 +818,18 @@ function bookacti_unset_role_and_cap_for_woocommerce() {
 	}
 }
 add_action( 'bookacti_unset_capabilities', 'bookacti_unset_role_and_cap_for_woocommerce' );
+
+
+/**
+ * Allow Users having the bookacti_manage_booking_activities capability to access the backend
+ * @since 1.8.10
+ * @param bool $prevent_access
+ * @return bool
+ */
+function bookacti_wc_prevent_admin_access( $prevent_access ) {
+	if( $prevent_access ) { 
+		if ( current_user_can( 'bookacti_manage_booking_activities' ) ) { $prevent_access = false; }
+	}
+	return $prevent_access;
+}
+add_filter( 'woocommerce_prevent_admin_access', 'bookacti_wc_prevent_admin_access', 10, 1 );

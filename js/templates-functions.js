@@ -281,7 +281,7 @@ function bookacti_refresh_show_hide_activities_icons() {
 
 /**
  * Init groups of events
- * @version 1.7.6
+ * @version 1.8.10
  */
 function bookacti_init_groups_of_events() {
 	// Refresh the display of selected events when you click on the View More link
@@ -310,9 +310,9 @@ function bookacti_init_groups_of_events() {
 	
 	// Select / Unselect events of a group
 	$j( 'body' ).on( 'click', '#bookacti-group-categories .bookacti-group-of-events-title', function(){
-		var is_selected	= $j( this ).parents( '.bookacti-group-of-events' ).hasClass( 'bookacti-selected-group' );
+		var is_selected	= $j( this ).closest( '.bookacti-group-of-events' ).hasClass( 'bookacti-selected-group' );
 		if( ! is_selected ) {
-			var group_id = $j( this ).parents( '.bookacti-group-of-events' ).data( 'group-id' );
+			var group_id = $j( this ).closest( '.bookacti-group-of-events' ).data( 'group-id' );
 			bookacti_select_events_of_group( group_id );
 		} else {
 			bookacti_unselect_all_events();

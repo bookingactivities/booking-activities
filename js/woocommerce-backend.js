@@ -71,7 +71,7 @@ $j( document ).ready( function() {
 	
 	/**
 	 * Show / Hide WC field in delete booking dialog
-	 * @version 1.8.0
+	 * @version 1.8.10
 	 * @param {Event} e
 	 */
 	$j( '.bookacti-user-booking-list-table, .woocommerce-table, #bookacti-booking-list' ).on( 'click', '.bookacti-booking-action, .bookacti-booking-group-action', function ( e ) {
@@ -86,7 +86,7 @@ $j( document ).ready( function() {
 		if( $j( this ).hasClass( 'bookacti-delete-booking' ) ) {
 			var booking_id = $j( this ).data( 'booking-id' );
 			if( $j( '.bookacti-view-booking-order[data-booking-id="' + booking_id + '"]' ).length 
-			&&  ! $j( '.bookacti-view-booking-order[data-booking-id="' + booking_id + '"]' ).parents( '.bookacti-gouped-booking' ).length ) { 
+			&&  ! $j( '.bookacti-view-booking-order[data-booking-id="' + booking_id + '"]' ).closest( '.bookacti-gouped-booking' ).length ) { 
 				has_wc_order = true; 
 			}
 			
