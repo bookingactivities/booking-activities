@@ -842,19 +842,14 @@ function bookacti_get_user_locale( $user_id, $default = 'current', $country_code
 /* 
  * Get site locale, and default to site or current locale
  * @since 1.2.0
- * @version 1.8.5
+ * @version 1.8.10
  * @param string $default 'current' or 'site'
  * @param boolean $country_code Whether to return also country code
  * @return string
  */
 function bookacti_get_site_locale( $default = 'site', $country_code = true ) {
 	// Get raw site locale, or current locale by default
-	if( $default === 'site' ) {
-		$alloptions	= wp_load_alloptions();
-		$locale		= $alloptions[ 'WPLANG' ] ? strval( $alloptions[ 'WPLANG' ] ) : get_locale();
-	} else {
-		$locale = get_locale();
-	}
+	$locale = get_locale();
 
 	// Remove country code from locale string
 	if( ! $country_code ) {

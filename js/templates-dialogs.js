@@ -1213,7 +1213,7 @@ function bookacti_dialog_create_activity() {
 
 /**
  * Open a dialog to update an activity
- * @version 1.8.3
+ * @version 1.8.10
  * @param {Int} activity_id
  */
 function bookacti_dialog_update_activity( activity_id ) {
@@ -1255,6 +1255,8 @@ function bookacti_dialog_update_activity( activity_id ) {
 	// Settings tabs
 	if( activity_data.settings ) {
 		bookacti_fill_fields_from_array( activity_data.settings, 'activityOptions' );
+		$j( '#bookacti-activity-unit-name-singular' ).val( activity_data.settings.multilingual_unit_name_singular ); 
+		$j( '#bookacti-activity-unit-name-plural' ).val( activity_data.settings.multilingual_unit_name_plural ); 
 	}
 	
 	$j( '#bookacti-activity-data-dialog' ).trigger( 'bookacti_activity_update_dialog', [ activity_id ] );

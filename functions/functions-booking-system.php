@@ -1778,7 +1778,7 @@ function bookacti_get_events_array_from_db_events( $events, $raw_args = array() 
 			$events_array[ 'events' ][] = $event_fc_data;
 		} else {
 			$args[ 'exceptions_dates' ]	= $args[ 'skip_exceptions' ] && ! empty( $exceptions[ $event->event_id ] ) ? $exceptions[ $event->event_id ] : array();
-			$new_occurrences				= bookacti_get_occurrences_of_repeated_event( $event, $args );
+			$new_occurrences			= bookacti_get_occurrences_of_repeated_event( $event, $args );
 			$events_array[ 'events' ]	= array_merge( $events_array[ 'events' ], $new_occurrences );
 		}
 	}
@@ -1905,10 +1905,19 @@ function bookacti_get_occurrences_of_repeated_event( $event, $raw_args = array()
 	$timezone			= new DateTimeZone( bookacti_get_setting_value( 'bookacti_general_settings', 'timezone' ) );
 	$interval_start		= ! empty( $args[ 'interval' ][ 'start' ] ) ? new DateTime( $args[ 'interval' ][ 'start' ], $timezone ) : '';
 	$interval_end		= ! empty( $args[ 'interval' ][ 'end' ] ) ? new DateTime( $args[ 'interval' ][ 'end' ], $timezone ) : '';
+	$template_start		= ! empty( $event->template_start ) ? new DateTime( $event->template_start . ' 00:00:00', $timezone ) : '';
+	$template_end		= ! empty( $event->template_end ) ? new DateTime( $event->template_end . ' 23:59:59', $timezone ) : '';
 	$event_start		= new DateTime( $event->start, $timezone );
 	$event_end			= new DateTime( $event->end, $timezone );
 	$event_duration		= $event_start->diff( $event_end );
 	$event_start_time	= substr( $event->start, 11 );
+	
+	// Restrict interval to template start and end
+	if( ! $interval_start || ( $template_start && $interval_start && $template_start > $interval_start ) )	{ $interval_start = $template_start ? clone $template_start : ''; }
+	if( ! $interval_end || ( $template_end && $interval_end && $template_end < $interval_end ) )			{ $interval_end = $template_end ? clone $template_end : ''; }
+	
+	// Permute start and end if start > end
+	if( $interval_start && $interval_end && $interval_start > $interval_end ) { $temp_interval_start = clone $interval_start; $interval_start = clone $interval_end; $interval_end = $temp_interval_start; }
 	
 	// Compute occurrences
 	$events		= array();
@@ -2414,8 +2423,8 @@ function bookacti_get_formatted_booking_events_list( $booking_events, $quantity 
 /**
  * Get the formatted event start to event end dates
  * @since 1.8.10
- * @param string $start Format: Y-m-d h:i:s
- * @param string $end Format: Y-m-d h:i:s
+ * @param string $start Format: Y-m-d H:i:s
+ * @param string $end Format: Y-m-d H:i:s
  * @param boolean $html
  * @param string $locale
  * @return string

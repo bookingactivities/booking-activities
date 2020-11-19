@@ -60,6 +60,21 @@ function bookacti_delete_user_meta( $meta_key, $user_id = 0, $meta_value = '' ) 
 }
 
 
+/**
+ * Get the user id corresponding to a secret key
+ * @since 1.8.10
+ * @param string $secret_key
+ * @return int User ID or 0 if not found
+ */
+function bookacti_get_user_id_by_secret_key( $secret_key ) {
+	global $wpdb;
+	$query = 'SELECT user_id FROM ' . $wpdb->prefix . 'usermeta WHERE meta_key = "bookacti_secret_key" AND meta_value = %s;';
+	$query = $wpdb->prepare( $query, $secret_key );
+	$user_id = $wpdb->get_var( $query );
+	return $user_id ? intval( $user_id ) : 0;
+}
+
+
 
 
 // METADATA

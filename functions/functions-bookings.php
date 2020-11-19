@@ -663,7 +663,7 @@ function bookacti_booking_can_be_refunded( $booking, $refund_action = false, $co
 	if( ! $booking ) { $true = false; }
 	else {
 		$refund_actions = bookacti_get_booking_refund_actions( array( $booking ), 'single', $context );
-
+		
 		// Disallow refund in those cases:
 		// -> If the booking is already marked as refunded, 
 		if( $booking->state === 'refunded' 
@@ -2180,7 +2180,7 @@ function bookacti_get_booking_refund_options_html( $bookings, $booking_type = 's
 
 
 /**
- * Get the amount to be refunded for a booking
+ * Get the formatted amount to be refunded for a booking
  * @since 1.8.0
  * @version 1.8.10
  * @param array $bookings

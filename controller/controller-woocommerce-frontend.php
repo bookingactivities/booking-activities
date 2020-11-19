@@ -1216,6 +1216,82 @@ add_action( 'woocommerce_after_checkout_validation', 'bookacti_availability_chec
 
 
 /**
+ * Create one order item per booking (group)
+ * @since 1.8.10
+ * @param WC_Order $order
+ * @param array $data Data posted during checkout
+ */
+function bookacti_wc_checkout_create_one_order_item_per_booking( $order, $data ) {
+	$items = $order->get_items();
+	if( ! $items ) { return; }
+	
+	$items_bookings = bookacti_wc_get_order_items_bookings( $items );
+	if( ! $items_bookings ) { return; }
+	
+	foreach( $items as $item_id => $item ) {
+		if( empty( $items_bookings[ $item_id ] ) ) { continue; }
+		
+		$nb_bookings = count( $items_bookings[ $item_id ] );
+		if( $nb_bookings === 1 ) { continue; }
+		
+		// Get the default prices
+		$price_decimals			= wc_get_price_decimals();
+		$default_subtotal		= round( $item->get_subtotal() / $nb_bookings, $price_decimals );
+		$default_total			= round( $item->get_total() / $nb_bookings, $price_decimals );
+		$default_subtotal_tax	= wc_round_tax_total( $item->get_subtotal_tax() / $nb_bookings, $price_decimals );
+		$default_total_tax		= wc_round_tax_total( $item->get_total_tax() / $nb_bookings, $price_decimals );
+		$item_taxes				= maybe_unserialize( $item->get_taxes() );
+		
+		$default_taxes = array();
+		foreach( $item_taxes as $i => $taxes ) {
+			$default_taxes[ $i ] = array();
+			foreach( $taxes as $tax_id => $amount ) {
+				$default_taxes[ $i ][ $tax_id ] = wc_round_tax_total( floatval( $amount ) / $nb_bookings, $price_decimals );
+			}
+		}
+		
+		// Add the rests in the first item totals
+		$default_taxes_total_rest	= ! empty( $item_taxes[ 'total' ] ) && ! empty( $default_taxes[ 'total' ] ) ? wc_round_tax_total( array_sum( $item_taxes[ 'total' ] ) - ( array_sum( $default_taxes[ 'total' ] ) * $nb_bookings ), $price_decimals ) : 0;
+		$default_taxes_subtotal_rest= ! empty( $item_taxes[ 'subtotal' ] ) && ! empty( $default_taxes[ 'subtotal' ] ) ? wc_round_tax_total( array_sum( $item_taxes[ 'subtotal' ] ) - ( array_sum( $default_taxes[ 'subtotal' ] ) * $nb_bookings ), $price_decimals ) : 0;
+		$first_item_taxes = $default_taxes;
+		foreach( $first_item_taxes as $i => $taxes ) {
+			foreach( $taxes as $tax_id => $amount ) {
+				if( $i === 'total' )	{ $first_item_taxes[ $i ][ $tax_id ] += $default_taxes_total_rest; break; }
+				if( $i === 'subtotal' ) { $first_item_taxes[ $i ][ $tax_id ] += $default_taxes_subtotal_rest; break; }
+			}
+		}
+		
+		$default_subtotal_rest		= $item->get_subtotal() - ( $default_subtotal * $nb_bookings );
+		$default_total_rest			= $item->get_total() - ( $default_total * $nb_bookings );
+		$default_subtotal_tax_rest	= $item->get_subtotal_tax() - ( $default_subtotal_tax * $nb_bookings );
+		$default_total_tax_rest		= $item->get_total_tax() - ( $default_total_tax * $nb_bookings );
+		
+		$item_clone = clone $item;
+		$i=0;
+		foreach( $items_bookings[ $item_id ] as $item_booking ) {
+			$item_bookings_ids = json_encode( array( array( 'id' => intval( $item_booking[ 'id' ] ), 'type' => $item_booking[ 'type' ] ) ) );
+			
+			// For the first booking, use the current item
+			$the_item = $i === 0 ? $item : clone $item_clone;
+			
+			// Update the item totals and bookings meta
+			$the_item->update_meta_data( 'bookacti_bookings', $item_bookings_ids );
+			$the_item->set_subtotal( $default_subtotal + $default_subtotal_rest );
+			$the_item->set_total( $default_total + $default_total_rest );
+			$the_item->set_taxes( maybe_serialize( $i === 0 ? $first_item_taxes : $default_taxes ) );
+			$the_item->set_subtotal_tax( $default_subtotal_tax + $default_subtotal_tax_rest );
+			$the_item->set_total_tax( $default_total_tax + $default_total_tax_rest );
+			
+			// Add item to order and save
+			if( $i === 0 ) { $i++; $default_subtotal_rest = 0; $default_total_rest = 0; $default_subtotal_tax_rest = 0; $default_total_tax_rest = 0; }
+			else { $order->add_item( $the_item ); }
+		}
+	}
+}
+add_action( 'woocommerce_checkout_create_order', 'bookacti_wc_checkout_create_one_order_item_per_booking', 100, 2 );
+
+
+/**
  * Check availability before paying for a failed order
  * @since 1.7.13
  * @version 1.8.10
@@ -1223,7 +1299,7 @@ add_action( 'woocommerce_after_checkout_validation', 'bookacti_availability_chec
  */
 function bookacti_availability_check_before_pay_action( $order ) {
 	$error_occured = false;
-	$order_items_bookings = bookacti_wc_get_order_items_bookings( $order->get_id() );
+	$order_items_bookings = bookacti_wc_get_order_items_bookings( $order );
 	
 	foreach( $order_items_bookings as $order_item_key => $order_item_bookings ) {
 		// Check if the order item bookings quantity can be "changed" to its own quantity
@@ -1266,7 +1342,7 @@ function bookacti_change_booking_state_after_checkout( $order_id, $order_details
 	if( ! $order ) { return; }
 	
 	// Get bookings before change
-	$order_items_bookings = bookacti_wc_get_order_items_bookings( $order_id );
+	$order_items_bookings = bookacti_wc_get_order_items_bookings( $order );
 	
 	$needs_payment = WC()->cart->needs_payment();
 	$new_data = array(
@@ -1281,7 +1357,7 @@ function bookacti_change_booking_state_after_checkout( $order_id, $order_details
 	// Send new status notifications even if the booking status has not changed
 	// The new status notifications is automatically sent if the booking status has changed (on the bookacti_order_item_booking_updated hook)
 	foreach( $order_items_bookings as $item_id => $order_item_bookings ) {
-		foreach( $order_items_bookings as $order_item_booking ) {
+		foreach( $order_item_bookings as $order_item_booking ) {
 			$old_status = $order_item_booking[ 'type' ] === 'group' ? $order_item_booking[ 'bookings' ][ 0 ]->group_state : $order_item_booking[ 'bookings' ][ 0 ]->state;
 			if( $old_status !== $new_data[ 'status' ] ) { continue; }
 			if( $order_item_booking[ 'type' ] === 'single' && in_array( $order_item_booking[ 'id' ], $updated[ 'booking_ids' ], true ) ) { continue; }

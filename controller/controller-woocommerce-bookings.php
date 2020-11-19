@@ -315,7 +315,7 @@ function bookacti_turn_paid_order_item_bookings_to_permanent( $order_id, $order 
 	// If the order hasn't been paid, the bookings are "pending" (virtual or not), we need to send the "pending" notification here
 	if( ! $order->get_date_paid( 'edit' ) ) { 
 		foreach( $order_items_bookings as $item_id => $order_item_bookings ) {
-			foreach( $order_items_bookings as $order_item_booking ) {
+			foreach( $order_item_bookings as $order_item_booking ) {
 				bookacti_wc_send_order_item_booking_status_notification( $order_item_booking, 'pending', $order, true );
 			}
 		}
@@ -393,7 +393,7 @@ function bookacti_turn_paid_order_item_bookings_to_permanent( $order_id, $order 
 		// Send new status notifications for non-virtual products now even if the booking status has not changed
 		// The new status notifications is automatically sent if the booking status has changed (on the bookacti_order_item_booking_updated hook)
 		foreach( $order_items_bookings as $item_id => $order_item_bookings ) {
-			foreach( $order_items_bookings as $order_item_booking ) {
+			foreach( $order_item_bookings as $order_item_booking ) {
 				$old_status = $order_item_booking[ 'type' ] === 'group' ? $order_item_booking[ 'bookings' ][ 0 ]->group_state : $order_item_booking[ 'bookings' ][ 0 ]->state;
 				if( $old_status !== $new_data[ 'status' ] ) { continue; }
 				if( $order_item_booking[ 'type' ] === 'single' && in_array( $order_item_booking[ 'id' ], $updated[ 'booking_ids' ], true ) ) { continue; }
@@ -890,17 +890,35 @@ add_filter( 'bookacti_refund_actions_by_booking_group', 'bookacti_filter_refund_
  * @return string
  */
 function bookacti_display_price_to_be_refunded( $refund_amount, $bookings, $booking_type ) {
-	if( $booking_type === 'single' ) {
-		$item = bookacti_get_order_item_by_booking_id( $bookings[ 0 ] );
-	} else if( $booking_type === 'group' ) {
-		$item = bookacti_get_order_item_by_booking_group_id( $bookings[ 0 ] );
-	}
-	if( $item ) {
-		$item_price	= (float) $item->get_total() + (float) $item->get_total_tax();
-		if( $item_price ) {
-			$refund_amount = wc_price( $item_price );
+	if( $refund_amount || ! $bookings ) { return $refund_amount; }
+	
+	$order_id = $booking_type === 'group' && ! empty( $bookings[ 0 ]->group_order_id ) ? $bookings[ 0 ]->group_order_id : $bookings[ 0 ]->order_id;
+	
+	$order = wc_get_order( $order_id );
+	if( ! $order ) { return $refund_amount; }
+	
+	$order_items = $order->get_items();
+	if( ! $order_items ) { return $refund_amount; }
+	
+	$booking_id = $booking_type === 'group' ? ( ! empty( $bookings[ 0 ]->group_id ) ? intval( $bookings[ 0 ]->group_id ) : 0 ) : intval( $bookings[ 0 ]->id );
+	
+	// Get the order item
+	$item = false;
+	foreach( $order_items as $order_item ) {
+		$order_item_bookings_ids = bookacti_wc_format_order_item_bookings_ids( $order_item );
+		foreach( $order_item_bookings_ids as $order_item_booking_id ) {
+			if( $order_item_booking_id[ 'id' ] === $booking_id && $order_item_booking_id[ 'type' ] === $booking_type ) { $item = $order_item; break; }
 		}
+		if( $item ) { break; }
 	}
+	if( ! $item ) { return $refund_amount; }
+	
+	// Booking Activities assumes that 1 order item can have only 1 booking (group). So the item price is the booking (group) price.
+	$item_price	= (float) $item->get_total() + (float) $item->get_total_tax();
+	if( $item_price ) {
+		$refund_amount = wc_price( $item_price );
+	}
+	
 	return $refund_amount;
 }
 add_filter( 'bookacti_booking_refund_amount', 'bookacti_display_price_to_be_refunded', 20, 3 );
@@ -917,58 +935,6 @@ function bookacti_wc_add_refund_actions( $possible_actions_array ) {
 	return array_merge( $possible_actions_array, $wc_refund_actions );
 }
 add_filter( 'bookacti_refund_actions', 'bookacti_wc_add_refund_actions', 10, 1 );
-
-
-/**
- * Turn order item booking status meta to new status according to given booking id
- * @since 1.2.0 (was bookacti_woocommerce_turn_booking_meta_state_to_new_state before)
- * @version 1.5.4
- * @param int $booking_id
- * @param string $new_state
- * @param array $args
- */
-function bookacti_update_order_item_booking_status_by_booking_id( $booking_id, $new_state, $args = array() ) {
-	if( ! $booking_id ) { return; }
-
-	$order_id = bookacti_get_booking_order_id( $booking_id );
-	if( ! $order_id ) { return; }
-
-	$order = wc_get_order( $order_id );
-	if( ! $order ) { return; }
-
-	$item = bookacti_get_order_item_by_booking_id( $booking_id );
-	if( ! $item || empty( $item[ 'bookacti_booking_id' ] ) ) { return; }
-
-	bookacti_update_order_item_booking_status( $item, $new_state, $order, $args );
-}
-add_action( 'bookacti_booking_state_changed', 'bookacti_update_order_item_booking_status_by_booking_id', 10 , 3 );
-
-
-/**
- * Turn order item booking status meta to new status according to given booking group id
- *
- * @since 1.2.0 (was named bookacti_woocommerce_turn_booking_group_meta_state_to_new_state before)
- * 
- * @param int $booking_group_id
- * @param string $new_state
- * @param array $args
- * @return void
- */
-function bookacti_update_order_item_booking_group_status_by_booking_group_id( $booking_group_id, $new_state, $args = array() ) {
-	if( ! $booking_group_id ) { return; }
-
-	$order_id = bookacti_get_booking_group_order_id( $booking_group_id );
-	if( ! $order_id ) {	return;	}
-
-	$order = wc_get_order( $order_id );
-	if( ! $order ) { return; }
-
-	$item = bookacti_get_order_item_by_booking_group_id( $booking_group_id );
-	if( ! $item || empty( $item[ 'bookacti_booking_group_id' ] ) ) { return; }
-
-	bookacti_update_order_item_booking_status( $item, $new_state, $order, $args );
-}
-add_action( 'bookacti_booking_group_state_changed', 'bookacti_update_order_item_booking_group_status_by_booking_group_id', 10 , 3 );
 
 
 /**
@@ -1006,14 +972,14 @@ add_filter( 'bookacti_refund_booking', 'bookacti_woocommerce_refund_booking', 10
 
 /**
  * Check if a booking can be refunded
- * @version 1.8.3
+ * @version 1.8.10
  * @param boolean $true
  * @param object $booking
  * @return boolean
  */
 function bookacti_woocommerce_booking_can_be_refunded( $true, $booking ) {
 	if( ! $true ) { return $true; }
-
+	
 	// Init var
 	$order = wc_get_order( $booking->order_id );
 
@@ -1023,12 +989,14 @@ function bookacti_woocommerce_booking_can_be_refunded( $true, $booking ) {
 	$is_paid = $order->get_date_paid( 'edit' );
 	if( ! $is_paid ) { return false; }
 
-	$item = bookacti_get_order_item_by_booking_id( $booking->id );
+	$item = bookacti_get_order_item_by_booking_id( $booking );
 	if( ! $item ) { return false; }
 
 	$total = (float) $item->get_total() + (float) $item->get_total_tax();
 	if( $total <= 0 ) { return false; }
-
+	
+	
+	
 	return apply_filters( 'bookacti_woocommerce_booking_can_be_refunded', $true, $booking, $order, $item );
 }
 add_filter( 'bookacti_booking_can_be_refunded', 'bookacti_woocommerce_booking_can_be_refunded', 10, 2 );

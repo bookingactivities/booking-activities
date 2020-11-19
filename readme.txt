@@ -334,6 +334,8 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 * Fix - Events were not correctly sorted by date on Safari iOS / MacOS
 * Fix - Cannot switch templates in editor if too many events were loaded
 * Fix - Users having the bookacti_manage_booking_activities capability can now access the admin panel with WC even without manage_woocommerce or edit_posts
+* Fix - Repeated events out of their template range were displayed
+* Fix - Allow to escape characters in date and time formats with a backslash
 * Dev - Refactor the process to trigger form actions
 * Dev - Refactor the booking system picked_events attribute
 * Dev - Refactor the data bound to WC cart item / order item

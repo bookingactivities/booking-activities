@@ -7,7 +7,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 /**
  * Fetch events to display on calendar editor
  * @since 1.1.0 (replace bookacti_fetch_events from 1.0.0)
- * @version 1.8.0
+ * @version 1.8.10
  * @global wpdb $wpdb
  * @param array $raw_args {
  *  @type array $templates Array of template IDs
@@ -38,9 +38,10 @@ function bookacti_fetch_events_for_calendar_editor( $raw_args = array() ) {
 	$user_timestamp_offset		= $current_datetime_object->format( 'P' );
 
 	// Select events
-	$query  = 'SELECT E.id as event_id, E.template_id, E.title, E.start, E.end, E.repeat_freq, E.repeat_from, E.repeat_to, E.availability, A.color, A.is_resizable, A.id as activity_id ' 
-			. ' FROM ' . BOOKACTI_TABLE_EVENTS . ' as E, ' . BOOKACTI_TABLE_ACTIVITIES . ' as A '
+	$query  = 'SELECT E.id as event_id, E.template_id, E.title, E.start, E.end, E.repeat_freq, E.repeat_from, E.repeat_to, E.availability, A.color, A.is_resizable, A.id as activity_id, T.start_date as template_start,  T.end_date as template_end ' 
+			. ' FROM ' . BOOKACTI_TABLE_EVENTS . ' as E, ' . BOOKACTI_TABLE_ACTIVITIES . ' as A, ' . BOOKACTI_TABLE_TEMPLATES . ' as T'
 			. ' WHERE E.activity_id = A.id '
+			. ' AND E.template_id = T.id '
 			. ' AND E.active = 1 ';
 
 	$variables = array();
@@ -1793,14 +1794,12 @@ function bookacti_update_template( $template_id, $template_title, $template_star
 
 /**
  * Get activity data
- * 
- * @version 1.2.2
+ * @version 1.8.10
  * @global wpdb $wpdb
  * @param int $activity_id
  * @return object
  */
 function bookacti_get_activity( $activity_id ) {
-
 	global $wpdb;
 
 	$query		= 'SELECT * FROM ' . BOOKACTI_TABLE_ACTIVITIES . ' WHERE id = %d';
@@ -1816,7 +1815,9 @@ function bookacti_get_activity( $activity_id ) {
 
 	$unit_name_singular	= isset( $activity->settings[ 'unit_name_singular' ] )	? $activity->settings[ 'unit_name_singular' ]	: '';
 	$unit_name_plural	= isset( $activity->settings[ 'unit_name_plural' ] )	? $activity->settings[ 'unit_name_plural' ]		: '';
-
+	
+	$activity->settings[ 'multilingual_unit_name_singular' ] = $unit_name_singular;
+	$activity->settings[ 'multilingual_unit_name_plural' ]	= $unit_name_plural;
 	$activity->settings[ 'unit_name_singular' ] = apply_filters( 'bookacti_translate_text', $unit_name_singular );
 	$activity->settings[ 'unit_name_plural' ]	= apply_filters( 'bookacti_translate_text', $unit_name_plural );
 
@@ -2052,7 +2053,7 @@ function bookacti_delete_templates_x_activities( $template_ids, $activity_ids ) 
 
 /**
  * Get activities by template
- * @version 1.7.15
+ * @version 1.8.10
  * @global wpdb $wpdb
  * @param array $template_ids
  * @param boolean $based_on_events Whether to retrieve activities bound to templates or activities bound to events of templates
@@ -2129,6 +2130,8 @@ function bookacti_get_activities_by_template( $template_ids = array(), $based_on
 		$unit_name_singular	= isset( $activity[ 'settings' ][ 'unit_name_singular' ] )	? $activity[ 'settings' ][ 'unit_name_singular' ] : '';
 		$unit_name_plural	= isset( $activity[ 'settings' ][ 'unit_name_plural' ] )	? $activity[ 'settings' ][ 'unit_name_plural' ] : '';
 
+		$activity[ 'settings' ][ 'multilingual_unit_name_singular' ] = $unit_name_singular;
+		$activity[ 'settings' ][ 'multilingual_unit_name_plural' ]	= $unit_name_plural;
 		$activity[ 'settings' ][ 'unit_name_singular' ] = apply_filters( 'bookacti_translate_text', $unit_name_singular );
 		$activity[ 'settings' ][ 'unit_name_plural' ]	= apply_filters( 'bookacti_translate_text', $unit_name_plural );
 
