@@ -4,12 +4,12 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 /**
  * AJAX Controller - Fetch events in order to display them
- * @version	1.8.0
+ * @version	1.8.10
  */
 function bookacti_controller_fetch_events() {
 	// Check nonce
 	$is_admin	= intval( $_POST[ 'is_admin' ] );
-	$raw_atts	= json_decode( stripslashes( $_POST[ 'attributes' ] ), true );
+	$raw_atts	= bookacti_maybe_decode_json( stripslashes( $_POST[ 'attributes' ] ), true );
 	$atts		= bookacti_format_booking_system_attributes( $raw_atts );
 	
 	// On admin side only, check capabilities
@@ -72,11 +72,11 @@ add_action( 'wp_ajax_nopriv_bookactiFetchEvents', 'bookacti_controller_fetch_eve
 /**
  * Reload booking system with new attributes via AJAX
  * @since 1.1.0
- * @version 1.8.5
+ * @version 1.8.10
  */
 function bookacti_controller_reload_booking_system() {
 	$is_admin = intval( $_POST[ 'is_admin' ] );
-	$atts = bookacti_format_booking_system_attributes( json_decode( stripslashes( $_POST[ 'attributes' ] ), true ) );
+	$atts = bookacti_format_booking_system_attributes( bookacti_maybe_decode_json( stripslashes( $_POST[ 'attributes' ] ), true ) );
 	
 	// On admin side only, check capabilities
 	$is_allowed = true;

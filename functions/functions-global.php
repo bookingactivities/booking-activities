@@ -2042,11 +2042,12 @@ function bookacti_is_json( $string ) {
  * Decode JSON if it is valid else return self
  * @since 1.6.0
  * @param string $string
+ * @param boolean $assoc
  * @return array|$string
  */
-function bookacti_maybe_decode_json( $string ) {
+function bookacti_maybe_decode_json( $string, $assoc = false ) {
 	if( ! is_string( $string ) ) { return $string; }
-	$decoded = json_decode( $string );
+	$decoded = json_decode( $string, $assoc );
 	if( json_last_error() == JSON_ERROR_NONE ) { return $decoded; }
 	return $string;
 }

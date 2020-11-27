@@ -221,14 +221,14 @@ function bookacti_controller_refund_booking() {
 		bookacti_update_metadata( 'booking', $booking_id, array( 'refund_message' => $refund_message ) );
 	}
 
-	if( empty( $refunded[ 'new_state' ] ) )	{ $refunded[ 'new_state' ] = 'refunded'; }
-	if( empty( $refunded[ 'message' ] ) )	{ $refunded[ 'message' ] = esc_html__( 'Your booking has been successfully refunded.', 'booking-activities' ); }
+	if( empty( $refunded[ 'do_not_update_status' ] ) ) {
+		if( empty( $refunded[ 'new_state' ] ) )	{ $refunded[ 'new_state' ] = 'refunded'; }
+		$updated = bookacti_update_booking_state( $booking_id, $refunded[ 'new_state' ] );
 
-	$updated = bookacti_update_booking_state( $booking_id, $refunded[ 'new_state' ] );
-
-	// Hook status changes
-	if( $updated ) {
-		do_action( 'bookacti_booking_state_changed', $booking_id, $refunded[ 'new_state' ], array( 'is_admin' => $is_admin, 'refund_action' => $refund_action ) );
+		// Hook status changes
+		if( $updated ) {
+			do_action( 'bookacti_booking_state_changed', $booking_id, $refunded[ 'new_state' ], array( 'is_admin' => $is_admin, 'refund_action' => $refund_action ) );
+		}
 	}
 	
 	$filters[ 'fetch_meta' ] = false;
@@ -241,6 +241,8 @@ function bookacti_controller_refund_booking() {
 
 	$refunded[ 'row' ] = $row;
 
+	if( empty( $refunded[ 'message' ] ) ) { $refunded[ 'message' ] = esc_html__( 'Your booking has been successfully refunded.', 'booking-activities' ); }
+	
 	bookacti_send_json( $refunded, 'refund_booking' );
 }
 add_action( 'wp_ajax_bookactiRefundBooking', 'bookacti_controller_refund_booking' );
@@ -735,14 +737,14 @@ function bookacti_controller_refund_booking_group() {
 		bookacti_update_metadata( 'booking_group', $booking_group_id, array( 'refund_message' => $refund_message ) );
 	}
 
-	if( empty( $refunded[ 'new_state' ] ) )	{ $refunded[ 'new_state' ] = 'refunded'; }
-	if( empty( $refunded[ 'message' ] ) )	{ $refunded[ 'message' ] = esc_html__( 'Your booking has been successfully refunded.', 'booking-activities' ); }
+	if( empty( $refunded[ 'do_not_update_status' ] ) ) {
+		if( empty( $refunded[ 'new_state' ] ) )	{ $refunded[ 'new_state' ] = 'refunded'; }
+		$updated = bookacti_update_booking_group_state( $booking_group_id, $refunded[ 'new_state' ], 'auto', true );
 
-	$updated = bookacti_update_booking_group_state( $booking_group_id, $refunded[ 'new_state' ], 'auto', true );
-
-	// Hook status changes
-	if( $updated ) {
-		do_action( 'bookacti_booking_group_state_changed', $booking_group_id, $refunded[ 'new_state' ], array( 'is_admin' => $is_admin, 'refund_action' => $refund_action ) );
+		// Hook status changes
+		if( $updated ) {
+			do_action( 'bookacti_booking_group_state_changed', $booking_group_id, $refunded[ 'new_state' ], array( 'is_admin' => $is_admin, 'refund_action' => $refund_action ) );
+		}
 	}
 	
 	$filters[ 'fetch_meta' ] = false;
@@ -760,7 +762,9 @@ function bookacti_controller_refund_booking_group() {
 	$rows = $reload_grouped_bookings ? bookacti_get_booking_list_rows_according_to_context( $context, array( 'booking_group_id' => $booking_group_id ), $columns ) : '';
 
 	$refunded[ 'grouped_booking_rows' ] = $rows;
-
+	
+	if( empty( $refunded[ 'message' ] ) ) { $refunded[ 'message' ] = esc_html__( 'Your booking has been successfully refunded.', 'booking-activities' ); }
+	
 	bookacti_send_json( $refunded, 'refund_booking_group' );
 }
 add_action( 'wp_ajax_bookactiRefundBookingGroup', 'bookacti_controller_refund_booking_group' );

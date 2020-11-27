@@ -205,7 +205,7 @@ add_filter( 'bookacti_notifications_tags', 'bookacti_wc_notifications_tags', 15,
 /**
  * Set WC notifications tags values
  * @since 1.6.0
- * @version 1.8.6
+ * @version 1.8.10
  * @param array $tags
  * @param object $booking
  * @param string $booking_type
@@ -235,7 +235,19 @@ function bookacti_wc_notifications_tags_values( $tags, $booking, $booking_type, 
 	$tags[ '{price}' ]	= $currency ? wc_price( $item_price, array( 'currency' => $currency ) ) : $item_price;
 	
 	if( strpos( $notification[ 'id' ], 'refund' ) !== false ) {
-		$tags[ '{refund_coupon_code}' ]	= wc_get_order_item_meta( $item_id, 'bookacti_refund_coupon', true );
+		$coupon_code = '';
+		$refunds = ! empty( $booking->refunds ) ? maybe_unserialize( $booking->refunds ) : array();
+		$refunds = is_array( $refunds ) ? bookacti_format_booking_refunds( $refunds, $booking->id, $booking_type ) : array();
+		foreach( $refunds as $refund ) {
+			if( isset( $refund[ 'coupon' ] ) ) { $coupon_code = $refund[ 'coupon' ]; break; }
+		}
+		
+		// Backward compatibility
+		if( ! $coupon_code ) {
+			$coupon_code = wc_get_order_item_meta( $item_id, 'bookacti_refund_coupon', true );
+		}
+		
+		$tags[ '{refund_coupon_code}' ]	= $coupon_code;
 	}
 	
 	return $tags;

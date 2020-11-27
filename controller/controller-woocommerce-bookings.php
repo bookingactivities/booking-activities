@@ -593,13 +593,24 @@ function bookacti_add_wc_data_to_booking_list_items( $booking_list_items, $booki
 				'value' => $total_price,
 				'display_value' => wc_price( $total_price )
 			);
-
+			
+			// Try to find a coupon code
+			$coupon_code = '';
+			$meta = $order_item_booking_id[ 'type' ] === 'group' && isset( $booking_groups[ $order_item_booking_id[ 'id' ] ] ) ? $booking_groups[ $order_item_booking_id[ 'id' ] ] : $bookings[ $booking_id ];
+			$refunds = ! empty( $meta->refunds ) ? maybe_unserialize( $meta->refunds ) : array();
+			$refunds = is_array( $refunds ) ? bookacti_format_booking_refunds( $refunds, $order_item_booking_id[ 'id' ], $order_item_booking_id[ 'type' ] ) : array();
+			foreach( $refunds as $refund ) {
+				if( isset( $refund[ 'coupon' ] ) ) { $coupon_code = $refund[ 'coupon' ]; break; }
+			}
+			
+			// Backward compatibility
+			if( ! $coupon_code && ! empty( $order_item[ 'bookacti_refund_coupon' ] ) ) { $coupon_code = $order_item[ 'bookacti_refund_coupon' ]; }
+			
 			// Specify refund method in status column
-			if( $bookings[ $booking_id ]->state === 'refunded' && ! empty( $order_item[ 'bookacti_refund_coupon' ] ) ) {
-				$coupon_code = $order_item[ 'bookacti_refund_coupon' ];
+			if( $bookings[ $booking_id ]->state === 'refunded' && $coupon_code ) {
 				/* translators: %s is the coupon code used for the refund */
-				$coupon_label = sprintf( esc_html__( 'Refunded with coupon %s', 'booking-activities' ), $coupon_code );
-				$booking_list_items[ $booking_id ][ 'state' ] = '<span class="bookacti-booking-state bookacti-booking-state-bad bookacti-booking-state-refunded bookacti-converted-to-coupon bookacti-tip" data-booking-state="refunded" data-tip="' . $coupon_label . '" ></span><span class="bookacti-refund-coupon-code bookacti-custom-scrollbar">' . $coupon_code . '</span>';
+				$coupon_label = sprintf( esc_html__( 'Refunded with coupon %s', 'booking-activities' ), strtoupper( $coupon_code ) );
+				$booking_list_items[ $booking_id ][ 'state' ] = '<span class="bookacti-booking-state bookacti-booking-state-bad bookacti-booking-state-refunded bookacti-converted-to-coupon bookacti-tip" data-booking-state="refunded" data-tip="' . $coupon_label . '" ></span><span class="bookacti-refund-coupon-code bookacti-custom-scrollbar">' . strtoupper( $coupon_code ) . '</span>';
 			}
 
 			// Filter refund actions
@@ -770,7 +781,7 @@ function bookacti_controller_get_order_items_rows( $rows, $context, $filters, $c
 	
 	if( ! empty( $filters[ 'booking_id' ] ) )			{ $booking_ids[] = $filters[ 'booking_id' ]; }
 	if( ! empty( $filters[ 'in__booking_id' ] ) )		{ $booking_ids = array_merge( $booking_ids, $filters[ 'in__booking_id' ] ); }
-	if( ! empty( $filters[ 'booking_group_id' ] ) )		{ $booking_ids[] = $filters[ 'booking_id' ]; }
+	if( ! empty( $filters[ 'booking_group_id' ] ) )		{ $booking_group_ids[] = $filters[ 'booking_group_id' ]; }
 	if( ! empty( $filters[ 'in__booking_group_id' ] ) )	{ $booking_group_ids = array_merge( $booking_group_ids, $filters[ 'in__booking_group_id' ] ); }
 	
 	$order_items = bookacti_wc_get_order_items_by_bookings( $booking_ids, $booking_group_ids );
@@ -892,34 +903,19 @@ add_filter( 'bookacti_refund_actions_by_booking_group', 'bookacti_filter_refund_
 function bookacti_display_price_to_be_refunded( $refund_amount, $bookings, $booking_type ) {
 	if( $refund_amount || ! $bookings ) { return $refund_amount; }
 	
-	$order_id = $booking_type === 'group' && ! empty( $bookings[ 0 ]->group_order_id ) ? $bookings[ 0 ]->group_order_id : $bookings[ 0 ]->order_id;
-	
-	$order = wc_get_order( $order_id );
-	if( ! $order ) { return $refund_amount; }
-	
-	$order_items = $order->get_items();
-	if( ! $order_items ) { return $refund_amount; }
-	
-	$booking_id = $booking_type === 'group' ? ( ! empty( $bookings[ 0 ]->group_id ) ? intval( $bookings[ 0 ]->group_id ) : 0 ) : intval( $bookings[ 0 ]->id );
-	
-	// Get the order item
-	$item = false;
-	foreach( $order_items as $order_item ) {
-		$order_item_bookings_ids = bookacti_wc_format_order_item_bookings_ids( $order_item );
-		foreach( $order_item_bookings_ids as $order_item_booking_id ) {
-			if( $order_item_booking_id[ 'id' ] === $booking_id && $order_item_booking_id[ 'type' ] === $booking_type ) { $item = $order_item; break; }
-		}
-		if( $item ) { break; }
+	if( $booking_type === 'single' ) {
+		$order_id = $bookings[ 0 ]->order_id;
+		$item = bookacti_get_order_item_by_booking_id( $bookings[ 0 ] );
+	} else if( $booking_type === 'group' ) {
+		$order_id	= ! empty( $bookings[ 0 ]->group_order_id ) ? $bookings[ 0 ]->group_order_id : $bookings[ 0 ]->order_id;
+		$item = bookacti_get_order_item_by_booking_group_id( $bookings[ 0 ] );
 	}
 	if( ! $item ) { return $refund_amount; }
 	
 	// Booking Activities assumes that 1 order item can have only 1 booking (group). So the item price is the booking (group) price.
-	$item_price	= (float) $item->get_total() + (float) $item->get_total_tax();
-	if( $item_price ) {
-		$refund_amount = wc_price( $item_price );
-	}
+	$refund_amount = bookacti_wc_get_item_remaining_refund_amount( $item );
 	
-	return $refund_amount;
+	return wc_price( $refund_amount );
 }
 add_filter( 'bookacti_booking_refund_amount', 'bookacti_display_price_to_be_refunded', 20, 3 );
 
@@ -950,7 +946,7 @@ add_filter( 'bookacti_refund_actions', 'bookacti_wc_add_refund_actions', 10, 1 )
 function bookacti_woocommerce_refund_booking( $return_array, $bookings, $booking_type, $refund_action, $refund_message, $context = '' ) {
 	$order_id = $booking_type === 'group' && isset( $bookings[ 0 ]->group_order_id ) ? $bookings[ 0 ]->group_order_id : ( isset( $bookings[ 0 ]->order_id ) ? $bookings[ 0 ]->order_id : 0 );
 	$possibles_actions = array_keys( bookacti_get_booking_refund_actions( $bookings, $booking_type, $context ) );
-
+	
 	if( in_array( $refund_action, $possibles_actions, true ) ) {
 		if( $refund_action === 'coupon' ) {
 			$return_array = bookacti_refund_booking_with_coupon( $bookings, $booking_type, $refund_message );
@@ -964,10 +960,35 @@ function bookacti_woocommerce_refund_booking( $return_array, $bookings, $booking
 			$return_array = bookacti_auto_refund_booking( $bookings, $booking_type, $refund_message );
 		}
 	}
-
+	
 	return $return_array;
 }
 add_filter( 'bookacti_refund_booking', 'bookacti_woocommerce_refund_booking', 10, 6 );
+
+
+/**
+ * Update the bookings attached to the refunded order items
+ * Update quantity when a partial refund in done, 
+ * Update booking state when a total refund is done
+ * @since 1.2.0 (was named bookacti_update_booking_when_order_item_is_refunded before)
+ * @version 1.8.10
+ * @param int $refund_id
+ * @param array $args
+ */
+function bookacti_update_order_bookings_on_refund( $refund_id, $args ) {
+	$refund = wc_get_order( $refund_id );
+	if( ! $refund ) { return; }
+	
+	// Partial refund: the refund has been perform on one or several items
+	if( ! empty( $args[ 'line_items' ] ) ) {
+		bookacti_update_order_bookings_on_items_refund( $refund );
+
+	// Total refund: the order state has changed to 'Refunded'
+	} else {
+		bookacti_update_order_bookings_on_order_refund( $refund );
+	}
+}
+add_action( 'woocommerce_refund_created', 'bookacti_update_order_bookings_on_refund', 10, 2 );
 
 
 /**
@@ -995,9 +1016,7 @@ function bookacti_woocommerce_booking_can_be_refunded( $true, $booking ) {
 	$total = (float) $item->get_total() + (float) $item->get_total_tax();
 	if( $total <= 0 ) { return false; }
 	
-	
-	
-	return apply_filters( 'bookacti_woocommerce_booking_can_be_refunded', $true, $booking, $order, $item );
+	return $true;
 }
 add_filter( 'bookacti_booking_can_be_refunded', 'bookacti_woocommerce_booking_can_be_refunded', 10, 2 );
 
@@ -1012,12 +1031,15 @@ add_filter( 'bookacti_booking_can_be_refunded', 'bookacti_woocommerce_booking_ca
  * @return boolean
  */
 function bookacti_woocommerce_booking_group_can_be_refunded( $true, $bookings, $refund_action, $context ) {
-	if( ! $true || current_user_can( 'bookacti_edit_bookings' ) ) { return $true; }
+	if( ! $true ) { return $true; }
 	
 	$booking_keys = array_keys( $bookings );
 	$first_key = reset( $booking_keys );
-	$order = wc_get_order( $bookings[ $first_key ]->group_order_id );
+	$order_id = ! empty( $bookings[ $first_key ]->group_order_id ) ? $bookings[ $first_key ]->group_order_id : $bookings[ $first_key ]->order_id;
+	
+	$order = wc_get_order( $order_id );
 	if( ! $order ) { return $true; }
+	
 	if( $order->get_status() === 'pending' ) { $true = false; }
 
 	$is_paid = $order->get_date_paid( 'edit' );
@@ -1035,9 +1057,93 @@ add_filter( 'bookacti_booking_group_can_be_refunded', 'bookacti_woocommerce_book
 
 
 /**
+ * Convert old booking refunds array
+ * @since 1.8.10
+ * @param array $refunds Use bookacti_format_booking_refunds() to format it
+ * @param int $booking_id
+ * @param string $booking_type
+ * @return array
+ */
+function bookacti_wc_format_booking_refunds( $refunds, $booking_id = 0, $booking_type = 'single' ) {
+	$utc_timezone_obj = new DateTimeZone( 'UTC' );
+	
+	foreach( $refunds as $i => $refund ) {
+		if( is_numeric( $refund ) ) {
+			$refund_id	= intval( $refund );
+			$refund		= array();
+			$wc_refund	= wc_get_order( $refund_id );
+			
+			if( $wc_refund ) {
+				$refund_items = $wc_refund->get_items( array( 'line_item' ) );
+				$refund_item = array();
+				if( ! $booking_id ) {
+					$refund_item = reset( $refund_items );
+				} else {
+					foreach( $refund_items as $possible_refund_item ) {
+						$refund_item_bookings_ids = bookacti_wc_format_order_item_bookings_ids( $possible_refund_item );
+						foreach( $refund_item_bookings_ids as $refund_item_booking_id ) {
+							if( $refund_item_booking_id [ 'id' ] === intval( $booking_id ) && $refund_item_booking_id [ 'type' ] === $booking_type ) {
+								$refund_item = $possible_refund_item; break;
+							}
+						}
+						if( $refund_item ) { break; }
+					}
+				}
+				
+				$date_created = $wc_refund->get_date_created() ? $wc_refund->get_date_created() : '';
+				if( is_a( $date_created, 'DateTime' ) ) {
+					$date_created->setTimezone( $utc_timezone_obj );
+					$date_created = $date_created->format( 'Y-m-d H:i:s' );
+				}
+				
+				$refund_id				= $wc_refund->get_id();
+				$refund[ 'date' ]		= $date_created;
+				$refund[ 'quantity' ]	= $refund_item ? abs( $refund_item->get_quantity() ) : 0;
+				$refund[ 'amount' ]		= $refund_item ? wc_format_decimal( abs( $refund_item->get_total() + $refund_item->get_total_tax() ) ) : wc_format_decimal( abs( $wc_refund->get_total() + $wc_refund->get_total_tax() ) );
+				$refund[ 'method' ]		= $wc_refund->get_refunded_payment() ? 'auto' : 'manual';
+			}
+			
+			// Remove the old value and add the new one
+			unset( $refunds[ $i ] );
+			$refunds[ $refund_id ] = $refund;
+		}
+	}
+	
+	return $refunds;
+}
+add_filter( 'bookacti_booking_refunds_formatted', 'bookacti_wc_format_booking_refunds', 10, 3 );
+
+
+/**
+ * Display additional booking refund data
+ * @since 1.8.10
+ * @param array $data
+ * @param array $refund
+ * @param int|string $refund_id
+ * @return array
+ */
+function bookacti_wc_booking_refund_displayed_data( $data, $refund, $refund_id ) {
+	if( isset( $refund[ 'coupon' ] ) )	{ 
+		$data[ 'coupon' ] = array(
+			'label' => esc_html__( 'Coupon code', 'booking-activities' ),
+			'value' => strtoupper( $refund[ 'coupon' ] )
+		);
+	}
+	if( isset( $refund[ 'amount' ] ) )	{ 
+		$data[ 'amount' ] = array(
+			'label' => esc_html__( 'Amount', 'booking-activities' ),
+			'value' => wc_price( $refund[ 'amount' ] )
+		);
+	}
+	return $data;
+}
+add_filter( 'bookacti_booking_refund_displayed_data', 'bookacti_wc_booking_refund_displayed_data', 10, 3 );
+
+
+/**
  * Add WC fields to delete booking form
  * @since 1.5.0
- * @version 1.8.0
+ * @version 1.8.10
  */
 function bookacti_add_wc_fields_to_delete_booking_form() {
 ?>
@@ -1056,13 +1162,13 @@ function bookacti_add_wc_fields_to_delete_booking_form() {
 				'value' => 'none',
 				'options' => array(
 					'none' => esc_html__( 'Do nothing', 'booking-activities' ),
-					'delete_meta' => esc_html__( 'Delete the booking metadata', 'booking-activities' ),
+					'unbind_booking' => esc_html__( 'Unbind the booking from the item', 'booking-activities' ),
 					'delete_item' => esc_html__( 'Delete the whole item', 'booking-activities' )
 				),
 				/* translators: %s is the option name corresponding to this description */
 				'tip' => sprintf( esc_html__( '%s: The WooCommerce order item will be kept as is.', 'booking-activities' ), '<strong>' . esc_html__( 'Do nothing', 'booking-activities' ) . '</strong>' )
 				/* translators: %s is the option name corresponding to this description */
-				. '<br/>' . sprintf( esc_html__( '%s: The order item will be kept as a normal product. All its metadata concerning the booking will be removed.', 'booking-activities' ), '<strong>' . esc_html__( 'Delete the booking metadata', 'booking-activities' ) . '</strong>' )
+				. '<br/>' . sprintf( esc_html__( '%s: The order item will be kept as a normal product. All its metadata concerning the booking will be removed.', 'booking-activities' ), '<strong>' . esc_html__( 'Unbind the booking from the item', 'booking-activities' ) . '</strong>' )
 				/* translators: %s is the option name corresponding to this description */
 				. '<br/>' . sprintf( esc_html__( '%s: The item will be totally removed from the order.', 'booking-activities' ), '<strong>' . esc_html__( 'Delete the whole item', 'booking-activities' ) . '</strong>' )
 			);
@@ -1077,11 +1183,12 @@ add_action( 'bookacti_delete_booking_form_after', 'bookacti_add_wc_fields_to_del
 /**
  * AJAX Controller - Delete an order item (or only its metadata)
  * @since 1.5.0
- * @version 1.8.0
+ * @version 1.8.10
  * @param WC_Order_Item_Product $item
- * @param string $action "delete_meta" to delete only Booking Activities data from the item. "delete_item" to delete the whole item.
+ * @param string $action "unbind_booking" to remove only the booking metadata from the item. "delete_item" to delete the whole item.
+ * @param array $item_bookings_ids_to_delete Leave it empty to unbind all bookings from the item
  */
-function bookacti_controller_delete_order_item( $item, $action ) {
+function bookacti_controller_delete_order_item( $item, $action, $item_bookings_ids_to_delete = array() ) {
 	if( ! $action ) { 
 		$array = array(
 			'status'	=> 'failed',
@@ -1096,13 +1203,12 @@ function bookacti_controller_delete_order_item( $item, $action ) {
 	// Get item id and order id
 	$item_id	= $item->get_id();
 	$order_id	= $item->get_order_id();
-
-	$order = wc_get_order( $order_id );
+	$order		= wc_get_order( $order_id );
 
 	// Remove all metadata related to Booking Activities from the order item
-	if( $action === 'delete_meta' ) {
-		$deleted = bookacti_delete_order_item_booking_meta( $item_id );
-
+	if( $action === 'unbind_booking' ) {
+		$deleted = bookacti_wc_remove_order_item_bookings( $item_id, $item_bookings_ids_to_delete );
+		
 		if( $deleted === false ) {
 			$array = array(
 				'status'	=> 'failed',
@@ -1145,16 +1251,17 @@ function bookacti_controller_delete_order_item( $item, $action ) {
 /**
  * AJAX Controller - Delete an order item (or only its metadata) bound to a specific booking group
  * @since 1.5.0
+ * @version 1.8.10
  * @param int $booking_group_id
  */
 function bookacti_controller_delete_order_item_bound_to_booking_group( $booking_group_id ) {
-	$action = ! empty( $_POST[ 'order-item-action' ] ) ? $_POST[ 'order-item-action' ] : 'none';
+	$action = ! empty( $_POST[ 'order-item-action' ] ) ? sanitize_title_with_dashes( $_POST[ 'order-item-action' ] ) : 'none';
 
 	$item = bookacti_get_order_item_by_booking_group_id( $booking_group_id );
-
 	if( ! $item ) { return; }
-
-	bookacti_controller_delete_order_item( $item, $action );
+	
+	$item_bookings_ids_to_delete = array( array( 'id' => intval( $booking_group_id ), 'type' => 'group' ) );
+	bookacti_controller_delete_order_item( $item, $action, $item_bookings_ids_to_delete );
 }
 add_action( 'bookacti_before_delete_booking_group', 'bookacti_controller_delete_order_item_bound_to_booking_group', 10, 1 );
 
@@ -1162,69 +1269,16 @@ add_action( 'bookacti_before_delete_booking_group', 'bookacti_controller_delete_
 /**
  * AJAX Controller - Delete an order item (or only its metadata) bound to a specific booking
  * @since 1.5.0
+ * @version 1.8.10
  * @param int $booking_id
  */
 function bookacti_controller_delete_order_item_bound_to_booking( $booking_id ) {
-	$action = ! empty( $_POST[ 'order-item-action' ] ) ? $_POST[ 'order-item-action' ] : 'none';
+	$action = ! empty( $_POST[ 'order-item-action' ] ) ? sanitize_title_with_dashes( $_POST[ 'order-item-action' ] ) : 'none';
 
 	$item = bookacti_get_order_item_by_booking_id( $booking_id );
-
-	if( $item ) { 
-		bookacti_controller_delete_order_item( $item, $action );
-		return;
-	}
+	if( ! $item ) { return; }
+	
+	$item_bookings_ids_to_delete = array( array( 'id' => intval( $booking_id ), 'type' => 'single' ) );
+	bookacti_controller_delete_order_item( $item, $action, $item_bookings_ids_to_delete );
 }
 add_action( 'bookacti_before_delete_booking', 'bookacti_controller_delete_order_item_bound_to_booking', 10, 1 );
-
-
-/**
- * Remove a grouped booking from order item metadata
- * @since 1.5.0
- * @version 1.8.0
- * @param int $booking_id
- */
-function bookacti_remove_grouped_booking_from_order_item( $booking_id ) {
-	// If the booking is part of a group...
-	$booking = bookacti_get_booking_by_id( $booking_id );
-	if( ! $booking || ! $booking->group_id ) { return; }
-
-	// ...And if this group is bound to a WC order item
-	$item = bookacti_get_order_item_by_booking_group_id( $booking->group_id );
-	if( ! $item ) { return; }
-
-	// Get item id
-	$item_id	= $item->get_id();
-	$order_id	= $item->get_order_id();
-
-	// Get the booking list
-	$grouped_bookings_raw = wc_get_order_item_meta( $item_id, 'bookacti_booked_events', true );
-	if( ! bookacti_is_json( $grouped_bookings_raw ) ) { return; }
-
-	// Format booking list as an array of objects
-	$grouped_bookings = json_decode( $grouped_bookings_raw );
-	if( ! $grouped_bookings ) { return; }
-
-	// Remove the desired booking from the list
-	$grouped_bookings_nb = count( $grouped_bookings );
-	foreach( $grouped_bookings as $i => $grouped_booking ) {
-		if( $grouped_booking->event_id === $booking->event_id 
-		&&  $grouped_booking->event_start === $booking->event_start 
-		&&  $grouped_booking->event_end === $booking->event_end ) {
-			unset( $grouped_bookings[ $i ] );
-			break;
-		}
-	}
-
-	// If the booking has been deleted, update the order item list of bookings
-	if( $grouped_bookings_nb !== count( $grouped_bookings ) ) {
-		wc_update_order_item_meta( $item_id, 'bookacti_booked_events', json_encode( array_values( $grouped_bookings ) ) );
-
-		$order = wc_get_order( $order_id );
-		if( $order ) { 
-			/* translators: %s is the item id. */
-			$message = sprintf( esc_html__( 'The order item %s booking metadata have been updated after one of its booking was deleted.', 'booking-activities' ), $item_id );
-			$order->add_order_note( $message, 0, 0 );
-		}
-	}
-}
-add_action( 'bookacti_before_delete_booking', 'bookacti_remove_grouped_booking_from_order_item', 20, 1 );

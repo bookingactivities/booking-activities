@@ -438,11 +438,14 @@ function bookacti_dialog_refund_booking( booking_id, booking_type ) {
 										
 										$j( 'body' ).trigger( 'bookacti_booking_refunded', [ booking_id, booking_type, refund_action, refund_message, response ] );
 										
+										// Close the modal dialog
+										$j( '#bookacti-refund-booking-dialog' ).dialog( 'close' );
+										
 										// Notify user that his booking has been refunded
 										if( response.message ) {
 											bookacti_dialog_refund_confirmation( response.message );
 										}
-									
+										
 									} else if( response.status === 'failed' ) {
 										var error_message = typeof response.message !== 'undefined' ? response.message : bookacti_localized.error;
 										$j( '#bookacti-refund-booking-dialog' ).append( '<div class="bookacti-notices"><ul class="bookacti-error-list"><li>' + error_message + '</li></ul></div>' );
@@ -460,9 +463,6 @@ function bookacti_dialog_refund_booking( booking_id, booking_type ) {
 									loading_container.find( '.bookacti-booking-state' ).show();
 								}
 							});
-
-							// Close the modal dialog
-							$j( this ).dialog( 'close' );
 						}
 					});
 				} else {

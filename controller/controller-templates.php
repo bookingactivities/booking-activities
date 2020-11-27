@@ -314,7 +314,7 @@ add_action( 'wp_ajax_bookactiUnbindOccurences', 'bookacti_controller_unbind_occu
 /**
  * Create a group of events with AJAX
  * @since 1.1.0
- * @version 1.8.0
+ * @version 1.8.10
  */
 function bookacti_controller_insert_group_of_events() {
 	$template_id	= intval( $_POST[ 'template_id' ] );
@@ -329,7 +329,7 @@ function bookacti_controller_insert_group_of_events() {
 	$category_id	= intval( $_POST[ 'group-of-events-category' ] );
 	$category_title	= sanitize_text_field( stripslashes( $_POST[ 'group-of-events-category-title' ] ) );
 	$group_title	= sanitize_text_field( stripslashes( $_POST[ 'group-of-events-title' ] ) );
-	$events			= json_decode( stripslashes( $_POST['events'] ) );
+	$events			= bookacti_maybe_decode_json( stripslashes( $_POST[ 'events' ] ) );
 
 	// Validate input data
 	$is_group_of_events_valid = bookacti_validate_group_of_events_data( $group_title, $category_id, $category_title, $events );
@@ -341,7 +341,7 @@ function bookacti_controller_insert_group_of_events() {
 	$is_category = bookacti_group_category_exists( $category_id, $template_id );
 
 	if( ! $is_category ) {
-		$cat_options_array	= isset( $_POST['groupCategoryOptions'] ) && is_array( $_POST['groupCategoryOptions'] ) ? $_POST['groupCategoryOptions'] : array();
+		$cat_options_array	= isset( $_POST[ 'groupCategoryOptions' ] ) && is_array( $_POST[ 'groupCategoryOptions' ] ) ? $_POST[ 'groupCategoryOptions' ] : array();
 		$category_settings	= bookacti_format_group_category_settings( $cat_options_array );
 		$category_id		= bookacti_insert_group_category( $category_title, $template_id, $category_settings );
 	}
@@ -349,7 +349,7 @@ function bookacti_controller_insert_group_of_events() {
 	if( ! $category_id ) { bookacti_send_json( array( 'status' => 'failed', 'error' => 'invalid_category', 'category_id' => $category_id ), 'insert_group_of_events' ); }
 
 	// Insert the new group of event
-	$group_options_array	= isset( $_POST['groupOfEventsOptions'] ) && is_array( $_POST['groupOfEventsOptions'] ) ? $_POST['groupOfEventsOptions'] : array();
+	$group_options_array	= isset( $_POST[ 'groupOfEventsOptions' ] ) && is_array( $_POST[ 'groupOfEventsOptions' ] ) ? $_POST[ 'groupOfEventsOptions' ] : array();
 	$group_settings			= bookacti_format_group_of_events_settings( $group_options_array );
 	$group_id				= bookacti_create_group_of_events( $events, $category_id, $group_title, $group_settings );
 
@@ -377,7 +377,7 @@ add_action( 'wp_ajax_bookactiInsertGroupOfEvents', 'bookacti_controller_insert_g
 /**
  * Update group of events data with AJAX
  * @since 1.1.0
- * @version 1.8.0
+ * @version 1.8.10
  */
 function bookacti_controller_update_group_of_events() {
 	$group_id		= intval( $_POST[ 'group_id' ] );
@@ -393,7 +393,7 @@ function bookacti_controller_update_group_of_events() {
 	$category_id	= intval( $_POST[ 'group-of-events-category' ] );
 	$category_title	= sanitize_text_field( stripslashes( $_POST[ 'group-of-events-category-title' ] ) );
 	$group_title	= wp_kses_post( stripslashes( $_POST[ 'group-of-events-title' ] ) );
-	$events			= json_decode( stripslashes( $_POST['events'] ) );
+	$events			= bookacti_maybe_decode_json( stripslashes( $_POST[ 'events' ] ) );
 
 	// Validate input data
 	$is_group_of_events_valid = bookacti_validate_group_of_events_data( $group_title, $category_id, $category_title, $events );
@@ -405,7 +405,7 @@ function bookacti_controller_update_group_of_events() {
 	$is_category = bookacti_group_category_exists( $category_id, $template_id );
 
 	if( ! $is_category ) {
-		$cat_options_array	= isset( $_POST['groupCategoryOptions'] ) && is_array( $_POST['groupCategoryOptions'] ) ? $_POST['groupCategoryOptions'] : array();
+		$cat_options_array	= isset( $_POST[ 'groupCategoryOptions' ] ) && is_array( $_POST[ 'groupCategoryOptions' ] ) ? $_POST[ 'groupCategoryOptions' ] : array();
 		$category_settings	= bookacti_format_group_category_settings( $cat_options_array );
 		$category_id		= bookacti_insert_group_category( $category_title, $template_id, $category_settings );
 	}
@@ -413,7 +413,7 @@ function bookacti_controller_update_group_of_events() {
 	if( ! $category_id ) { bookacti_send_json( array( 'status' => 'failed', 'error' => 'invalid_category', 'category_id' => $category_id ), 'update_group_of_events' ); }
 
 	// Insert the new group of event
-	$group_options_array	= isset( $_POST['groupOfEventsOptions'] ) && is_array( $_POST['groupOfEventsOptions'] ) ? $_POST['groupOfEventsOptions'] : array();
+	$group_options_array	= isset( $_POST[ 'groupOfEventsOptions' ] ) && is_array( $_POST[ 'groupOfEventsOptions' ] ) ? $_POST[ 'groupOfEventsOptions' ] : array();
 	$group_settings			= bookacti_format_group_of_events_settings( $group_options_array );
 	$updated				= bookacti_edit_group_of_events( $group_id, $category_id, $group_title, $events, $group_settings );
 
@@ -696,7 +696,7 @@ add_action( 'wp_ajax_bookactiDeactivateTemplate', 'bookacti_controller_deactivat
 
 /**
  * AJAX Controller - Change default template
- * @version	1.8.0
+ * @version	1.8.10
  */
 function bookacti_controller_switch_template() {
 	$template_id = intval( $_POST[ 'template_id' ] );
@@ -712,7 +712,7 @@ function bookacti_controller_switch_template() {
 	$activities_list= bookacti_get_template_activities_list( $template_id );
 	$groups_list	= bookacti_get_template_groups_of_events_list( $template_id );
 
-	$atts = json_decode( stripslashes( $_POST[ 'attributes' ] ), true );
+	$atts = bookacti_maybe_decode_json( stripslashes( $_POST[ 'attributes' ] ), true );
 	$booking_system_data = bookacti_get_editor_booking_system_data( $atts, $template_id );
 
 	bookacti_send_json( array(

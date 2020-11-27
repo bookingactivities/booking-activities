@@ -424,17 +424,15 @@ add_filter( 'woocommerce_quantity_input_args', 'bookacti_set_wc_quantity_via_url
  * @param boolean $true
  * @param int $product_id
  * @param int $quantity
+ * @param int $variation_id
  * @return boolean
  */
-function bookacti_validate_add_to_cart_and_book_temporarily( $true, $product_id, $quantity ) {
+function bookacti_validate_add_to_cart_and_book_temporarily( $true, $product_id, $quantity, $variation_id = 0 ) {
 	if( ! $true ) { return $true; }
-
-	if( isset( $_POST[ 'variation_id' ] ) ) {
-		$is_activity = bookacti_product_is_activity( intval( $_POST[ 'variation_id' ] ) );
-	} else {
-		$is_activity = bookacti_product_is_activity( $product_id );
-	}
-
+	
+	$variation_id = $variation_id ? $variation_id : ( isset( $_POST[ 'variation_id' ] ) ? intval( $_POST[ 'variation_id' ] ) : 0 );
+	
+	$is_activity = $variation_id ? bookacti_product_is_activity( $variation_id ) : bookacti_product_is_activity( $product_id );
 	if( ! $is_activity ) { return $true; }
 	
 	$picked_events = ! empty( $_POST[ 'selected_events' ] ) ? bookacti_format_picked_events( $_POST[ 'selected_events' ] ) : array();
@@ -446,26 +444,16 @@ function bookacti_validate_add_to_cart_and_book_temporarily( $true, $product_id,
 	}
 
 	global $woocommerce;
-	$user_id = $woocommerce->session->get_customer_id();
-
-	if( is_user_logged_in() ) { $user_id = get_current_user_id(); }
+	$user_id = is_user_logged_in() ? get_current_user_id() : $woocommerce->session->get_customer_id();
 
 	// Get product form ID
-	$variation_id = isset( $_POST[ 'variation_id' ] ) ? intval( $_POST[ 'variation_id' ] ) : 0;
-	if( $variation_id ) {
-		$form_id = bookacti_get_product_form_id( $variation_id, true );
-	} else {
-		$form_id = bookacti_get_product_form_id( $product_id, false );
-	}
-
+	$form_id = $variation_id ? bookacti_get_product_form_id( $variation_id, true ) : bookacti_get_product_form_id( $product_id, false );
+	
 	// Sanitize the variables
-	$form_id = is_numeric( $form_id ) ? intval( $form_id ) : 0;
-	if( $form_id ) {
-		$form_fields_validated = bookacti_validate_form_fields( $form_id );
-		if( $form_fields_validated[ 'status' ] !== 'success' ) {
-			wc_add_notice( implode( '</li><li>', $form_fields_validated[ 'messages' ] ), 'error' );
-			return false;
-		}
+	$form_fields_validated = bookacti_validate_form_fields( $form_id );
+	if( $form_fields_validated[ 'status' ] !== 'success' ) {
+		wc_add_notice( implode( '</li><li>', $form_fields_validated[ 'messages' ] ), 'error' );
+		return false;
 	}
 	
 	// Gether the product booking form variables
@@ -501,14 +489,20 @@ function bookacti_validate_add_to_cart_and_book_temporarily( $true, $product_id,
 	// Let third party plugins do their stuff before booking
 	do_action( 'bookacti_wc_product_booking_form_before_add_to_cart', $product_id, $variation_id, $form_id, $product_bookings_data );
 	
+	// Reset global
 	global $global_bookacti_wc;
+	$global_bookacti_wc = array();
 	
 	// Book temporarily
 	$response = bookacti_wc_add_bookings_to_cart( $product_bookings_data );
+	
 	// If the event is booked, add the booking ID to the corresponding hidden field
 	if( $response[ 'status' ] === 'success' ) {
 		$global_bookacti_wc[ 'bookings' ] = $response[ 'bookings' ];
 		$global_bookacti_wc[ 'merged_cart_item_key' ] = ! empty( $response[ 'merged_cart_item_key' ] ) ? $response[ 'merged_cart_item_key' ] : '';
+		
+		do_action( 'bookacti_wc_add_to_cart_validated', $response, $product_id, $variation_id, $form_id, $product_bookings_data );
+		
 		return true;
 	}
 
@@ -518,7 +512,37 @@ function bookacti_validate_add_to_cart_and_book_temporarily( $true, $product_id,
 	// Return false at this point
 	return false;
 }
-add_filter( 'woocommerce_add_to_cart_validation', 'bookacti_validate_add_to_cart_and_book_temporarily', 1000, 3 );
+add_filter( 'woocommerce_add_to_cart_validation', 'bookacti_validate_add_to_cart_and_book_temporarily', 1000, 4 );
+
+
+/**
+ * Add a cart item for each booking (group) inserted while adding a product to cart (in case of multiple bookings)
+ * @since 1.8.10
+ * @global WooCommerce $woocommerce
+ * @global array $global_bookacti_wc
+ * @param array $response
+ * @param int $product_id
+ * @param int $variation_id
+ * @param int $form_id
+ * @param array $product_bookings_data
+ */
+function bookacti_wc_add_one_cart_item_per_booking( $response, $product_id, $variation_id, $form_id, $product_bookings_data ) {
+	global $woocommerce;
+	global $global_bookacti_wc;
+	if( count( $product_bookings_data[ 'picked_events' ] ) <= 1 ) { return; }
+	
+	$last_cart_item_booking_id = end( $response[ 'bookings' ] );
+	
+	foreach( $response[ 'bookings' ] as $cart_item_booking_id ) {
+		if( $last_cart_item_booking_id == $cart_item_booking_id ) { continue; } // Do not add the last cart item here
+		$global_bookacti_wc[ 'bookings' ] = array( $cart_item_booking_id );
+		$woocommerce->cart->add_to_cart( $product_bookings_data[ 'product_id' ], $product_bookings_data[ 'quantity' ], $product_bookings_data[ 'variation_id' ] );
+	}
+	
+	// The last cart item will be added by another process
+	$global_bookacti_wc[ 'bookings' ] = array( $last_cart_item_booking_id );
+}
+add_action( 'bookacti_wc_add_to_cart_validated', 'bookacti_wc_add_one_cart_item_per_booking', 10, 5 );
 
 
 /**
@@ -543,7 +567,7 @@ function bookacti_add_item_data( $cart_item_data, $product_id, $variation_id ) {
 	if( ! empty( $global_bookacti_wc[ 'merged_cart_item_key' ] ) ) {
 		$cart_item_data[ '_bookacti_options' ][ 'merged_cart_item_key' ] = sanitize_title_with_dashes( $global_bookacti_wc[ 'merged_cart_item_key' ] );
 	}
-
+	
 	return $cart_item_data;
 }
 add_filter( 'woocommerce_add_cart_item_data', 'bookacti_add_item_data', 10, 3 );
@@ -715,7 +739,10 @@ function bookacti_add_to_cart_message_html( $message, $products ) {
 	$remaining_time		= bookacti_get_formatted_time_before_expiration( $expiration_date );
 
 	$message .= '<br/>' . str_replace( '{time}', $remaining_time, $temporary_book_message );
-
+	
+	// Reset global
+	$global_bookacti_wc = array();
+	
 	return $message;
 }
 add_filter( 'wc_add_to_cart_message_html', 'bookacti_add_to_cart_message_html', 10, 2 );
@@ -1091,7 +1118,7 @@ add_filter( 'woocommerce_cart_item_class', 'bookacti_add_class_to_activity_cart_
 function bookacti_define_label_of_item_data( $label, $name ) {
 	if( $label === 'bookings' || $label === 'bookacti_bookings' ) { $label = esc_html__( 'Bookings', 'booking-activities' ); }
 	
-	// Deprecated data
+	// Backward compatibility
 	if( $label === '_bookacti_booking_id' 
 	||  $label === 'bookacti_booking_id' )			{ $label = esc_html__( 'Booking', 'booking-activities' ); }
 	if( $label === '_bookacti_booking_group_id' 
@@ -1228,6 +1255,8 @@ function bookacti_wc_checkout_create_one_order_item_per_booking( $order, $data )
 	$items_bookings = bookacti_wc_get_order_items_bookings( $items );
 	if( ! $items_bookings ) { return; }
 	
+	$price_decimals = wc_get_price_decimals();
+	
 	foreach( $items as $item_id => $item ) {
 		if( empty( $items_bookings[ $item_id ] ) ) { continue; }
 		
@@ -1235,7 +1264,6 @@ function bookacti_wc_checkout_create_one_order_item_per_booking( $order, $data )
 		if( $nb_bookings === 1 ) { continue; }
 		
 		// Get the default prices
-		$price_decimals			= wc_get_price_decimals();
 		$default_subtotal		= round( $item->get_subtotal() / $nb_bookings, $price_decimals );
 		$default_total			= round( $item->get_total() / $nb_bookings, $price_decimals );
 		$default_subtotal_tax	= wc_round_tax_total( $item->get_subtotal_tax() / $nb_bookings, $price_decimals );
@@ -1391,7 +1419,7 @@ add_action( 'woocommerce_checkout_order_processed', 'bookacti_change_booking_sta
 function bookacti_format_order_item_meta( $formatted_meta, $item ) {
 	foreach( $formatted_meta as $meta_id => $meta ) {
 		// Backward compatibility
-		if( $meta->key === '_bookacti_refund_method' ) { $meta->display_value = bookacti_format_refund_label( $meta->value ); continue; }
+		if( $meta->key === '_bookacti_refund_method' ) { $meta->display_value = bookacti_get_refund_label( $meta->value ); continue; }
 		if( in_array( $meta->key, array( 'bookacti_refund_coupon' ), true ) ) { continue; }
 		
 		if( substr( $meta->key, 0, 9 ) !== 'bookacti_' ) { continue; }
@@ -1400,7 +1428,7 @@ function bookacti_format_order_item_meta( $formatted_meta, $item ) {
 		if( $meta->key === 'bookacti_bookings' || $meta->key === 'bookacti_booking_id' || $meta->key === 'bookacti_booking_group_id' ) {
 			$item_id = $item->get_id();
 			$order_items_bookings = bookacti_wc_get_order_items_bookings( array( $item ), array( 'fetch_meta' => true ) );
-			$order_item_bookings = ! empty( $order_items_bookings[ $item_id ] ) ? $order_items_bookings[ $item_id ] : array();
+			$order_item_bookings = ! empty( $order_items_bookings[ $item_id ] ) ? $order_items_bookings[ $item_id ] : bookacti_wc_format_order_item_bookings_ids( $item );
 			$meta->display_key = esc_html( _n( 'Booking', 'Bookings', count( $order_item_bookings ), 'booking-activities' ) );
 			$meta->display_value = bookacti_wc_get_item_bookings_attributes_html( $order_item_bookings );
 		}
@@ -1564,12 +1592,30 @@ function bookacti_add_wc_data_to_user_booking_list_items( $booking_list_items, $
 
 			// Fill price column
 			$booking_list_items[ $booking_id ][ 'price' ] = apply_filters( 'bookacti_user_booking_list_order_item_price', wc_price( $order_item_data->_line_total + $order_item_data->_line_tax ), $order_item_data, $booking_list_items[ $booking_id ], $booking_meta, $filters );
-
+			
+			
+			// Try to find a coupon code
+			if( ! empty( $filters[ 'fetch_meta' ] ) ) {
+				$meta = $order_item_booking_id[ 'type' ] === 'group' && isset( $booking_groups[ $order_item_booking_id[ 'id' ] ] ) ? $booking_groups[ $order_item_booking_id[ 'id' ] ] : $bookings[ $booking_id ];
+				$refunds = ! empty( $meta->refunds ) ? maybe_unserialize( $meta->refunds ) : array();
+			} else {
+				$object_type = $order_item_booking_id[ 'type' ] === 'group' ? 'booking_group' : 'booking';
+				$refunds = bookacti_get_metadata( $object_type, $order_item_booking_id[ 'id' ], 'refunds', true );
+			}
+			
+			$coupon_code = '';
+			$refunds = is_array( $refunds ) ? bookacti_format_booking_refunds( $refunds, $order_item_booking_id[ 'id' ], $order_item_booking_id[ 'type' ] ) : array();
+			foreach( $refunds as $refund ) {
+				if( isset( $refund[ 'coupon' ] ) ) { $coupon_code = $refund[ 'coupon' ]; break; }
+			}
+			
+			// Backward compatibility
+			if( ! $coupon_code && ! empty( $order_item_data->bookacti_refund_coupon ) ) { $coupon_code = $order_item_data->bookacti_refund_coupon; }
+			
 			// Specify refund method in status column
-			if( $bookings[ $booking_id ]->state === 'refunded' && ! empty( $order_item_data->bookacti_refund_coupon ) && in_array( 'status', $columns, true ) ) {
-				$coupon_code = $order_item_data->bookacti_refund_coupon;
+			if( $bookings[ $booking_id ]->state === 'refunded' && $coupon_code && in_array( 'status', $columns, true ) ) {
 				/* translators: %s is the coupon code used for the refund */
-				$coupon_label = sprintf( esc_html__( 'Refunded with coupon %s', 'booking-activities' ), $coupon_code );
+				$coupon_label = sprintf( esc_html__( 'Refunded with coupon %s', 'booking-activities' ), strtoupper( $coupon_code ) );
 				$booking_list_items[ $booking_id ][ 'status' ] = '<span class="bookacti-booking-state bookacti-booking-state-bad bookacti-booking-state-refunded bookacti-converted-to-coupon bookacti-tip" data-booking-state="refunded" data-tip="' . $coupon_label . '" >' . $coupon_label . '</span>';
 			}
 

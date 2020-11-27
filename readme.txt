@@ -336,6 +336,8 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 * Fix - Users having the bookacti_manage_booking_activities capability can now access the admin panel with WC even without manage_woocommerce or edit_posts
 * Fix - Repeated events out of their template range were displayed
 * Fix - Allow to escape characters in date and time formats with a backslash
+* Fix - WC auto refund method was available in cases it shouldn't
+* Fix - Keep the refund dialog opened in case of error to allow the user to read the error message
 * Dev - Refactor the process to trigger form actions
 * Dev - Refactor the booking system picked_events attribute
 * Dev - Refactor the data bound to WC cart item / order item

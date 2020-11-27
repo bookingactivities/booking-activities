@@ -86,7 +86,7 @@ function bookacti_update_booking( $booking_data, $where = array() ) {
 		$booking_data[ 'payment_status' ],
 		$booking_data[ 'expiration_date' ],
 		$booking_data[ 'active' ],
-		$booking_data[ 'id' ]
+		! empty( $where[ 'id' ] ) ? $where[ 'id' ] : $booking_data[ 'id' ]
 	);
 	
 	if( ! empty( $where[ 'status__in' ] ) ) {
@@ -1852,7 +1852,7 @@ function bookacti_update_booking_group( $booking_group_data, $where = array() ) 
 		$booking_group_data[ 'status' ],
 		$booking_group_data[ 'payment_status' ],
 		$booking_group_data[ 'active' ],
-		$booking_group_data[ 'id' ]
+		! empty( $where[ 'id' ] ) ? $where[ 'id' ] : $booking_group_data[ 'id' ]
 	);
 	
 	if( ! empty( $where[ 'status__in' ] ) ) {
@@ -2030,7 +2030,7 @@ function bookacti_update_booking_group_bookings( $booking_group_data, $where = a
 		$booking_group_data[ 'expiration_date' ],
 		$booking_group_data[ 'quantity' ],
 		$booking_group_data[ 'active' ],
-		$booking_group_data[ 'id' ]
+		! empty( $where[ 'id' ] ) ? $where[ 'id' ] : $booking_group_data[ 'id' ]
 	);
 	
 	if( ! empty( $where[ 'status__in' ] ) ) {
