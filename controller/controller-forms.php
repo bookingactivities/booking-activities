@@ -872,8 +872,7 @@ function bookacti_controller_validate_booking_form() {
 	$response = bookacti_validate_booking_form( $booking_form_values[ 'picked_events' ], $booking_form_values[ 'quantity' ], $booking_form_values[ 'form_id' ] );
 	if( $response[ 'status' ] !== 'success' ) {
 		$messages = ! empty( $response[ 'message' ] ) ? array( $response[ 'message' ] ) : array();
-		$return_array[ 'error' ]	= $response[ 'error' ];
-		$return_array[ 'messages' ]	= array_merge( $return_array[ 'messages' ], $response[ 'messages' ], $messages );
+		$return_array[ 'error' ] = $response[ 'error' ];
 		foreach( $response[ 'messages' ] as $error => $error_messages ) {
 			if( ! is_array( $error_messages ) ) { $error_messages = array( $error_messages ); }
 			$messages = array_merge( $messages, $error_messages );

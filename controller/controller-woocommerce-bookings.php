@@ -1207,7 +1207,7 @@ function bookacti_controller_delete_order_item( $item, $action, $item_bookings_i
 
 	// Remove all metadata related to Booking Activities from the order item
 	if( $action === 'unbind_booking' ) {
-		$deleted = bookacti_wc_remove_order_item_bookings( $item_id, $item_bookings_ids_to_delete );
+		$deleted = bookacti_wc_remove_order_item_bookings( $item, $item_bookings_ids_to_delete );
 		
 		if( $deleted === false ) {
 			$array = array(

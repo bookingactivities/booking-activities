@@ -41,11 +41,14 @@ function bookacti_sanitize_booking_data( $data_raw ) {
 		if( in_array( $key, array( 'user_id' ), true ) ) {
 			$sanitized[ $key ] = is_numeric( $data_raw[ $key ] ) ? intval( $data_raw[ $key ] ) : ( is_email( $data_raw[ $key ] ) ? $data_raw[ $key ] : ( is_string( $data_raw[ $key ] ) && $data_raw[ $key ] ? sanitize_title_with_dashes( $data_raw[ $key ] ) : $value ) );
 		}
-		else if( in_array( $key, array( 'id', 'form_id', 'order_id', 'group_id', 'event_id', 'quantity' ), true ) ) {
+		else if( in_array( $key, array( 'id', 'event_id', 'quantity' ), true ) ) {
 			$sanitized[ $key ] = is_numeric( $data_raw[ $key ] ) && intval( $data_raw[ $key ] ) >= 0 ? intval( $data_raw[ $key ] ) : $value;
 		}
-		else if( in_array( $key, array( 'event_start', 'event_end', 'expiration_date', 'creation_date' ), true ) ) {
-			$datetime = is_string( $data_raw[ $key ] ) ? bookacti_sanitize_datetime( $data_raw[ $key ] ) : '';
+		else if( in_array( $key, array( 'form_id', 'order_id', 'group_id' ), true ) ) {
+			$sanitized[ $key ] = is_numeric( $data_raw[ $key ] ) && intval( $data_raw[ $key ] ) >= -1 ? intval( $data_raw[ $key ] ) : $value;
+		}
+		else if( in_array( $key, array( 'event_start', 'event_end', 'creation_date', 'expiration_date' ), true ) ) {
+			$datetime = is_string( $data_raw[ $key ] ) ? bookacti_sanitize_datetime( $data_raw[ $key ] ) : $value;
 			$sanitized[ $key ] = $datetime ? $datetime : $value;
 		}
 		else if( $key === 'status' ) {
@@ -101,11 +104,14 @@ function bookacti_sanitize_booking_group_data( $data_raw ) {
 		if( in_array( $key, array( 'user_id' ), true ) ) {
 			$sanitized[ $key ] = is_numeric( $data_raw[ $key ] ) && $data_raw[ $key ] ? intval( $data_raw[ $key ] ) : ( is_email( $data_raw[ $key ] ) ? $data_raw[ $key ] : ( is_string( $data_raw[ $key ] ) && $data_raw[ $key ] ? sanitize_title_with_dashes( $data_raw[ $key ] ) : $value ) );
 		}
-		else if( in_array( $key, array( 'id', 'form_id', 'order_id', 'event_group_id', 'quantity' ), true ) ) {
-			$sanitized[ $key ] = is_numeric( $data_raw[ $key ] ) && intval( $data_raw[ $key ] ) > 0 ? intval( $data_raw[ $key ] ) : $value;
+		else if( in_array( $key, array( 'id', 'quantity' ), true ) ) {
+			$sanitized[ $key ] = is_numeric( $data_raw[ $key ] ) && intval( $data_raw[ $key ] ) >= 0 ? intval( $data_raw[ $key ] ) : $value;
 		}
-		else if( in_array( $key, array( 'expiration_date', 'creation_date' ), true ) ) {
-			$datetime = is_string( $data_raw[ $key ] ) ? bookacti_sanitize_datetime( $data_raw[ $key ] ) : '';
+		else if( in_array( $key, array( 'form_id', 'order_id', 'event_group_id' ), true ) ) {
+			$sanitized[ $key ] = is_numeric( $data_raw[ $key ] ) && intval( $data_raw[ $key ] ) >= -1 ? intval( $data_raw[ $key ] ) : $value;
+		}
+		else if( in_array( $key, array( 'creation_date', 'expiration_date' ), true ) ) {
+			$datetime = is_string( $data_raw[ $key ] ) ? bookacti_sanitize_datetime( $data_raw[ $key ] ) : $value;
 			$sanitized[ $key ] = $datetime ? $datetime : $value;
 		}
 		else if( $key === 'grouped_events' ) {

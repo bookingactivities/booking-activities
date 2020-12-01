@@ -46,12 +46,7 @@ function bookacti_wc_perform_form_action( booking_system ) {
 	
 	// Add the product bound to the activity / group category to cart
 	else if( form_action === 'add_product_to_cart' ) {
-		if( $j.isNumeric( group_id ) ) {
-			bookacti_add_group_category_product_to_cart( booking_system, group_id );
-		} else {
-			console.log( 'add_product_to_cart', event );
-			bookacti_add_activity_product_to_cart( booking_system, event );
-		}
+		bookacti_add_product_to_cart_via_booking_system( booking_system );
 	}
 }
 
@@ -117,57 +112,12 @@ function bookacti_redirect_to_group_category_product_page( booking_system, group
 // ADD TO CART
 
 /**
- * Add the product bound to the activity to cart from a booking form
- * @since 1.7.0
- * @param {HTMLElement} booking_system
- * @param {object} event
- */
-function bookacti_add_activity_product_to_cart( booking_system, event ) {
-	var booking_system_id	= booking_system.attr( 'id' );
-	var attributes			= bookacti.booking_system[ booking_system_id ];
-	
-	if( typeof attributes[ 'events_data' ][ event.id ] === 'undefined' ) { return; }
-	
-	var activity_id = attributes[ 'events_data' ][ event.id ][ 'activity_id' ];
-	if( typeof attributes[ 'product_by_activity' ] === 'undefined' ) { return; }
-	if( typeof attributes[ 'product_by_activity' ][ activity_id ] === 'undefined' ) { return; }
-
-	var product_id = attributes[ 'product_by_activity' ][ activity_id ];
-	
-	bookacti_add_product_to_cart_via_booking_system( booking_system, product_id );
-}
-
-
-/**
- * Add the product bound to the group category to cart from a booking form
- * @since 1.7.0
- * @param {HTMLElement} booking_system
- * @param {int} group_id
- */
-function bookacti_add_group_category_product_to_cart( booking_system, group_id ) {
-	var booking_system_id	= booking_system.attr( 'id' );
-	var attributes			= bookacti.booking_system[ booking_system_id ];
-	
-	if( typeof attributes[ 'groups_data' ][ group_id ] === 'undefined' ) { return; }
-	
-	var category_id = attributes[ 'groups_data' ][ group_id ][ 'category_id' ];
-	if( typeof attributes[ 'product_by_group_category' ] === 'undefined' ) { return; }
-	if( typeof attributes[ 'product_by_group_category' ][ category_id ] === 'undefined' ) { return; }
-	
-	var product_id = attributes[ 'product_by_group_category' ][ category_id ];
-	
-	bookacti_add_product_to_cart_via_booking_system( booking_system, product_id );
-}
-
-
-/**
  * Add a product to cart from a booking form
  * @since 1.7.0
- * @version 1.8.4
+ * @version 1.8.10
  * @param {HTMLElement} booking_system
- * @param {int} product_id
  */
-function bookacti_add_product_to_cart_via_booking_system( booking_system, product_id ) {
+function bookacti_add_product_to_cart_via_booking_system( booking_system ) {
 	// Use the error div of the booking system by default, or if possible, the error div of the form
 	var error_div = booking_system.siblings( '.bookacti-notices' );
 	if( booking_system.closest( 'form' ).length ) {
@@ -223,7 +173,7 @@ function bookacti_add_product_to_cart_via_booking_system( booking_system, produc
 					bookacti_refresh_booking_numbers( booking_system );
 				}
 				
-				booking_system.trigger( 'bookacti_product_added_to_cart', [ response, data, product_id ] );
+				booking_system.trigger( 'bookacti_product_added_to_cart', [ response, data ] );
 				
 				// Redirect to the desired page or to cart
 				if( redirect_url ) {

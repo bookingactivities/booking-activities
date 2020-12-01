@@ -1866,7 +1866,7 @@ function bookacti_format_datetime( $datetime, $format = '' ) {
 
 /**
  * Check if a string is in a correct datetime format
- * @version 1.8.0
+ * @version 1.8.10
  * @param string $datetime Date format "Y-m-d H:i:s" is expected
  * @return string|false
  */
@@ -1881,7 +1881,7 @@ function bookacti_sanitize_datetime( $datetime ) {
 			return '2037-12-31 ' . $datetime_object->format( 'H:i:s' );
 		}
 
-		return $datetime_object->format( 'Y-m-d H:i:s' );
+		return $datetime;
 	}
 	return '';
 }

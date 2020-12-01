@@ -361,9 +361,9 @@ add_action( 'wp_ajax_bookactiSelect2Query_products', 'bookacti_controller_search
 
 
 /**
- * Add the product bound to the selected event to cart
+ * Add products bound to the selected events to cart
  * @since 1.7.0
- * @version 1.8.4
+ * @version 1.8.10
  */
 function bookacti_controller_add_bound_product_to_cart() {
 	// Check nonce
@@ -372,139 +372,194 @@ function bookacti_controller_add_bound_product_to_cart() {
 	}
 	
 	$form_id		= intval( $_POST[ 'form_id' ] );
-	$group_id		= $_POST[ 'bookacti_group_id' ] === 'single' ? 'single' : intval( $_POST[ 'bookacti_group_id' ] );
-	$event_id		= intval( $_POST[ 'bookacti_event_id' ] );
-	$event_start	= ! empty( $_POST[ 'bookacti_event_start' ] ) ? bookacti_sanitize_datetime( $_POST[ 'bookacti_event_start' ] ) : '';
-	$event_end		= ! empty( $_POST[ 'bookacti_event_end' ] ) ? bookacti_sanitize_datetime( $_POST[ 'bookacti_event_end' ] ) : '';
-	$product_id		= 0;
-	
-	$unknown_event_response = array( 'status' => 'failed', 'error' => 'unknown_event', 'messages' => esc_html__( 'The selected event couldn\'t be found.', 'booking-activities' ) );
+	$quantity		= empty( $_REQUEST[ 'quantity' ] ) ? 1 : wc_stock_amount( wp_unslash( $_REQUEST[ 'quantity' ] ) ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+	$picked_events	= ! empty( $_POST[ 'selected_events' ] ) ? bookacti_format_picked_events( $_POST[ 'selected_events' ] ) : array();
+	$return_array	= array( 'status' => 'failed', 'error' => '', 'messages' => array(), 'products' => array() );
 	
 	// Get the form; field data
 	$field = bookacti_get_form_field_data_by_name( $form_id, 'calendar' );
-	if( ! $field ) { 
-		$no_field_response = array( 'status' => 'failed', 'error' => 'unknown_field', 'messages' => esc_html__( 'The calendar field data couldn\'t be retrieved.', 'booking-activities' ) );
-		bookacti_send_json( $no_field_response, 'add_bound_product_to_cart' );
+	if( ! $field ) {
+		$return_array[ 'error' ] = 'unknown_field'; 
+		$return_array[ 'messages' ] = esc_html__( 'The calendar field data couldn\'t be retrieved.', 'booking-activities' );
+		bookacti_send_json( $return_array, 'add_bound_product_to_cart' );
 	}
 	
 	// Check if the form action is "add_product_to_cart"
-	if( $field[ 'form_action' ] !== 'add_product_to_cart' ) { 
-		$incorrect_form_action_response = array( 'status' => 'failed', 'error' => 'incorrect_form_action', 'messages' => esc_html__( 'You cannot add a product to cart with this form.', 'booking-activities' ) );
-		bookacti_send_json( $incorrect_form_action_response, 'add_bound_product_to_cart' );
+	if( $field[ 'form_action' ] !== 'add_product_to_cart' ) {
+		$return_array[ 'error' ] = 'incorrect_form_action'; 
+		$return_array[ 'messages' ] = esc_html__( 'You cannot add a product to cart with this form.', 'booking-activities' );
+		bookacti_send_json( $return_array, 'add_bound_product_to_cart' );
 	}
 	
-	// A single event was selected
-	if( $group_id === 'single' && $event_id && $event_start && $event_end ) {
-		// Check if the event is available on this form
-		$is_avail_on_form = bookacti_is_event_available_on_form( $form_id, $event_id, $event_start, $event_end );
-		if( $is_avail_on_form[ 'status' ] !== 'success' ) { 
-			$is_avail_on_form[ 'messages' ] = ! empty( $is_avail_on_form[ 'message' ] ) ? $is_avail_on_form[ 'message' ] : '';
-			bookacti_send_json( $is_avail_on_form, 'add_bound_product_to_cart' );
+	// Check if the booking form is valid
+	$response = bookacti_validate_booking_form( $picked_events, $quantity, $form_id );
+	if( $response[ 'status' ] !== 'success' ) {
+		$messages = ! empty( $response[ 'message' ] ) ? array( $response[ 'message' ] ) : array();
+		$return_array[ 'error' ] = $response[ 'error' ];
+		foreach( $response[ 'messages' ] as $error => $error_messages ) {
+			if( ! is_array( $error_messages ) ) { $error_messages = array( $error_messages ); }
+			$messages = array_merge( $messages, $error_messages );
 		}
-		
-		// Get the event
-		$event = bookacti_get_event_by_id( $event_id );
-		if( ! $event ) { bookacti_send_json( $unknown_event_response, 'add_bound_product_to_cart' ); }
-		
-		// Find the product bound to the activity
-		$product_id = ! empty( $field[ 'product_by_activity' ][ $event->activity_id ] ) ? intval( $field[ 'product_by_activity' ][ $event->activity_id ] ) : 0;
-		
+		$return_array[ 'messages' ]	= implode( '</li><li>', array_merge( $return_array[ 'messages' ], $messages ) );
+		bookacti_send_json( $return_array, 'add_bound_product_to_cart' );
 	}
 	
-	// A group of event was selected
-	else if ( is_numeric( $group_id ) ) {
-		// Check if the group of events is available on this form
-		$is_avail_on_form = bookacti_is_group_of_events_available_on_form( $form_id, $group_id );
-		if( $is_avail_on_form[ 'status' ] !== 'success' ) { 
-			$is_avail_on_form[ 'messages' ] = ! empty( $is_avail_on_form[ 'message' ] ) ? $is_avail_on_form[ 'message' ] : '';
-			bookacti_send_json( $is_avail_on_form, 'add_bound_product_to_cart' );
-		}
-		
-		// Get the event
-		$group = bookacti_get_group_of_events( $group_id );
-		if( ! $group ) { bookacti_send_json( $unknown_event_response, 'add_bound_product_to_cart' ); }
-		
-		// Find the product bound to the group category
-		$product_id = ! empty( $field[ 'product_by_group_category' ][ $group->category_id ] ) ? intval( $field[ 'product_by_group_category' ][ $group->category_id ] ) : 0;
-		
-	}
+	$wc_notices_all = array();
+	$init_post = $_POST;
+	$init_request = $_REQUEST;
+	unset( $_POST[ 'selected_events' ] );
 	
-	// Cannot recognize the selected event
-	else {
-		bookacti_send_json( $unknown_event_response, 'add_bound_product_to_cart' );
-	}
+	// Keep one entry per group
+	$picked_events = bookacti_format_picked_events( $picked_events, true );
 	
-	// Check if the event is bound to a product
-	if( ! $product_id ) {
-		$no_product_bound_response = array( 'status' => 'failed', 'error' => 'no_product_bound', 'messages' => esc_html__( 'No product is bound to this event.', 'booking-activities' ) );
-		bookacti_send_json( $no_product_bound_response, 'add_bound_product_to_cart' );
-	}
+	// Check if the products can be added to cart
+	foreach( $picked_events as $i => $picked_event ) {
+		$grouped_events_keys = isset( $picked_event[ 'events' ] ) ? array_keys( $picked_event[ 'events' ] ) : array();
+		$last_key = end( $grouped_events_keys );
 
-	// Check if the product still exists
-	$product = wc_get_product( $product_id );
-	if( ! $product ) {
-		$product_unavailable_response = array( 'status' => 'failed', 'error' => 'product_not_found', 'messages' => esc_html__( 'The desired product cannot be found.', 'booking-activities' ) );
-		bookacti_send_json( $product_unavailable_response, 'add_bound_product_to_cart' );
+		$group_id = $picked_event[ 'group_id' ];
+		$event_id = isset( $picked_event[ 'id' ] ) ? $picked_event[ 'id' ] : ( isset( $picked_event[ 'events' ][ 0 ][ 'id' ] ) ? $picked_event[ 'events' ][ 0 ][ 'id' ] : 0 );
+		$event_start = isset( $picked_event[ 'start' ] ) ? $picked_event[ 'start' ] : ( isset( $picked_event[ 'events' ][ 0 ][ 'start' ] ) ? $picked_event[ 'events' ][ 0 ][ 'start' ] : 0 );
+		$event_end = isset( $picked_event[ 'end' ] ) ? $picked_event[ 'end' ] : ( isset( $picked_event[ 'events' ][ $last_key ][ 'end' ] ) ? $picked_event[ 'events' ][ $last_key ][ 'end' ] : 0 );
+
+		$title = '';
+		$dates = bookacti_get_formatted_event_dates( $event_start, $event_end, false );
+		
+		// Single Booking
+		if( ! $picked_event[ 'group_id' ] ) {
+			// Get the event
+			$event = bookacti_get_event_by_id( $picked_event[ 'id' ] );
+			if( ! $event ) { 
+				$return_array[ 'error' ] = 'unknown_event'; 
+				$return_array[ 'messages' ][] = sprintf( esc_html__( 'The event "%s" doesn\'t exist, please pick an event and try again.', 'booking-activities' ), $dates );
+				continue;
+			}
+			
+			$title = apply_filters( 'bookacti_translate_text', $event->title );
+			
+			// Find the product bound to the activity
+			$product_id = ! empty( $field[ 'product_by_activity' ][ $event->activity_id ] ) ? intval( $field[ 'product_by_activity' ][ $event->activity_id ] ) : 0;
+			
+		// Booking group
+		} else {
+			// Get the event
+			$group = bookacti_get_group_of_events( $picked_event[ 'group_id' ] );
+			if( ! $group ) { 
+				$return_array[ 'error' ] = 'unknown_event'; 
+				$return_array[ 'messages' ][] = sprintf( esc_html__( 'The group of events "%s" doesn\'t exist, please pick an event and try again.', 'booking-activities' ), $dates );
+				continue;
+			}
+			
+			$title = apply_filters( 'bookacti_translate_text', $group->title );
+			
+			// Find the product bound to the group category
+			$product_id = ! empty( $field[ 'product_by_group_category' ][ $group->category_id ] ) ? intval( $field[ 'product_by_group_category' ][ $group->category_id ] ) : 0;
+		}
+		
+		// Check if the event is bound to a product
+		if( ! $product_id ) {
+			$return_array[ 'error' ] = 'no_product_bound'; 
+			/* translators: %s = The event title and dates. E.g.: No product is bound to "Basketball (Sep, 22nd - 3:00 PM to 6:00 PM)". */
+			$return_array[ 'messages' ][] = sprintf( esc_html__( 'No product is bound to "%s".', 'booking-activities' ), $title ? $title . ' (' . $dates . ')' : $dates );
+			continue;
+		}
+		
+		// Check if the product still exists
+		$product = wc_get_product( $product_id );
+		if( ! $product ) {
+			$return_array[ 'error' ] = 'product_not_found'; 
+			/* translators: %d = The product ID. %s = The event title and dates. E.g.: The product (#56) bound to "Basketball (Sep, 22nd - 3:00 PM to 6:00 PM)" cannot be found. */
+			$return_array[ 'messages' ][] = sprintf( esc_html__( 'The product (#%d) bound to "%s" cannot be found.', 'booking-activities' ), $product_id, $title ? $title . ' (' . $dates . ')' : $dates );
+			continue;
+		}
+		
+		// Reset posted data
+		$_POST = $init_post;
+		$_REQUEST = $init_request;
+		$_POST[ 'selected_events' ]		= ! empty( $picked_event[ 'events' ] ) ? $picked_event[ 'events' ] : array( $picked_event );
+		$_REQUEST[ 'selected_events' ]	= ! empty( $picked_event[ 'events' ] ) ? $picked_event[ 'events' ] : array( $picked_event );
+		
+		// If the product is a variation, add the corresponding attributes to $_REQUEST
+		if( $product->get_type() === 'variation' ) {
+			$variation_data = wc_get_product_variation_attributes( $product_id );
+			$_POST		= array_merge( $_POST, $variation_data );
+			$_REQUEST	= array_merge( $_REQUEST, $variation_data );
+			$_POST[ 'variation_id' ]	= $product_id;
+			$_REQUEST[ 'variation_id' ] = $product_id;
+		}
+
+		// Make sure there is no remaining notices
+		wc_clear_notices();
+
+		// Add a dummy error notice to prevent the form handler to redirect to cart
+		wc_add_notice( 'block_redirect', 'error' );
+
+		// Add the product to cart
+		$_REQUEST[ 'add-to-cart' ] = $product_id;
+		WC_Form_Handler::add_to_cart_action();
+
+		// Get the results
+		$wc_notices = wc_get_notices();
+
+		// Remove the dummy error notice
+		unset( $wc_notices[ 'error' ][ 0 ] );
+		
+		// Store the new notices in the array containing all the notices
+		if( ! empty( $wc_notices[ 'error' ] ) ) { $wc_notices[ 'error' ] = array_values( $wc_notices[ 'error' ] ); }
+		$wc_notices_all = array_merge_recursive( $wc_notices_all, $wc_notices );
+		
+		$messages_array = array();
+		if( ! empty( $wc_notices[ 'error' ] ) ) {
+			$return_array[ 'error' ] = 'wc_add_to_cart_handler_error';
+			if( version_compare( WC_VERSION, '3.9.0', '>=' ) ) {
+				foreach( $wc_notices[ 'error' ] as $wc_notice ) { $return_array[ 'messages' ][] = $wc_notice[ 'notice' ]; }
+			} else {
+				$return_array[ 'messages' ] = array_merge( $return_array[ 'messages' ], $wc_notices[ 'error' ] );
+			}
+		} else if( ! empty( $wc_notices[ 'success' ] ) ) {
+			$return_array[ 'products' ][] = array( 'id' => $product_id, 'picked_event' => $picked_event );
+			if( version_compare( WC_VERSION, '3.9.0', '>=' ) ) {
+				foreach( $wc_notices[ 'success' ] as $wc_notice ) { $return_array[ 'messages' ][] = $wc_notice[ 'notice' ]; }
+			} else {
+				$return_array[ 'messages' ] = array_merge( $return_array[ 'messages' ], $wc_notices[ 'success' ] );
+			}
+		} else {
+			$return_array[ 'error' ] = 'unknown_error'; 
+			/* translators: %d = The product ID. %s = The event title and dates. E.g.: An error occurred while trying to add the product (#56) bound to "Basketball (Sep, 22nd - 3:00 PM to 6:00 PM)" to cart. */
+			$return_array[ 'messages' ][] = sprintf( esc_html__( 'An error occurred while trying to add the product (#%d) bound to "%s" to cart.', 'booking-activities' ), $product_id, $title ? $title . ' (' . $dates . ')' : $dates );
+		}
 	}
 	
-	// If the product is a variation, add the corresponding attributes to $_REQUEST
-	if( $product->get_type() === 'variation' ) {
-		$variation_data = wc_get_product_variation_attributes( $product_id );
-		$_POST		= array_merge( $_POST, $variation_data );
-		$_REQUEST	= array_merge( $_REQUEST, $variation_data );
-		$_POST[ 'variation_id' ]	= $product_id;
-		$_REQUEST[ 'variation_id' ] = $product_id;
-	}
+	// Reset posted data
+	$_POST = $init_post;
+	$_REQUEST = $init_request;
 	
-	// Make sure there is no remaining notices
+	// Reset notices
 	wc_clear_notices();
+	wc_set_notices( $wc_notices_all );
 	
-	// Add a dummy error notice to prevent the form handler to redirect to cart
-	wc_add_notice( 'block_redirect', 'error' );
+	$return_array[ 'messages' ]	= implode( '</li><li>', $return_array[ 'messages' ] );
 	
-	// Add the product to cart
-	$_REQUEST[ 'add-to-cart' ] = $product_id;
-	WC_Form_Handler::add_to_cart_action();
-	
-	// Get the results
-	$wc_notices = wc_get_notices();
-	
-	// Remove the dummy error notice
-	unset( $wc_notices[ 'error' ][ 0 ] );
-	wc_set_notices( $wc_notices );
+	// Feedback errors
+	if( $return_array[ 'error' ] ) {
+		bookacti_send_json( $return_array, 'add_bound_product_to_cart' );
+	}
 	
 	// Get redirect URL
 	$cart_url = get_option( 'woocommerce_cart_redirect_after_add' ) === 'yes' ? esc_url( wc_get_page_permalink( 'cart' ) ) : '';
 	$form_url = bookacti_get_metadata( 'form', $form_id, 'redirect_url', true );
 	$redirect_url = $form_url ? esc_url( apply_filters( 'bookacti_translate_text', $form_url ) ) : $cart_url;
 	
-	$messages_array = array();
-	if( ! empty( $wc_notices[ 'error' ] ) ) {
-		if( version_compare( WC_VERSION, '3.9.0', '>=' ) ) {
-			foreach( $wc_notices[ 'error' ] as $wc_notice ) { $messages_array[] = $wc_notice[ 'notice' ]; }
-		} else {
-			$messages_array = $wc_notices[ 'error' ];
-		}
-		$response = array( 'status' => 'failed', 'messages' => implode( '</li><li>', $messages_array ) );
-	} else if( ! empty( $wc_notices[ 'success' ] ) ) {
-		if( version_compare( WC_VERSION, '3.9.0', '>=' ) ) {
-			foreach( $wc_notices[ 'success' ] as $wc_notice ) { $messages_array[] = $wc_notice[ 'notice' ]; }
-		} else {
-			$messages_array = $wc_notices[ 'success' ];
-		}
-		$response = array( 'status' => 'success', 'messages' => implode( '</li><li>', $messages_array ), 'redirect_url' => $redirect_url );
-	} else {
-		$response = array( 'status' => 'failed', 'error' => 'unknown_error', 'messages' => esc_html__( 'An error occurred while trying to add the product to cart.', 'booking-activities' ) );
-	}
-	
 	// If the user is not redirected, clear the notices to display them only once in the booking form
 	if( ! $redirect_url ) { wc_clear_notices(); }
 	
 	// Return the results
-	bookacti_send_json( $response, 'add_bound_product_to_cart' );
+	$return_array[ 'status' ] = 'success';
+	$return_array[ 'redirect_url' ]	= $redirect_url;
+	bookacti_send_json( $return_array, 'add_bound_product_to_cart' );
 }
-add_action( 'wp_ajax_bookactiAddBoundProductToCart', 'bookacti_controller_add_bound_product_to_cart' );
-add_action( 'wp_ajax_nopriv_bookactiAddBoundProductToCart', 'bookacti_controller_add_bound_product_to_cart' );
+add_action( 'wp_ajax_bookactiAddBoundProductToCart', 'bookacti_controller_add_bound_product_to_cart', 20 );
+add_action( 'wp_ajax_nopriv_bookactiAddBoundProductToCart', 'bookacti_controller_add_bound_product_to_cart', 20 );
 
 
 /**

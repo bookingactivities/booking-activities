@@ -59,32 +59,32 @@ function bookacti_update_booking( $booking_data, $where = array() ) {
 	
 	$query	= 'UPDATE ' . BOOKACTI_TABLE_BOOKINGS 
 			. ' SET '
-			. ' group_id = IFNULL( NULLIF( %d, 0 ), group_id ), '
+			. ' group_id = NULLIF( IFNULL( NULLIF( %d, 0 ), group_id ), -1 ), '
+			. ' user_id = IFNULL( NULLIF( %s, "0" ), user_id ), '
+			. ' form_id = NULLIF( IFNULL( NULLIF( %d, 0 ), form_id ), -1 ), '
+			. ' order_id = NULLIF( IFNULL( NULLIF( %d, 0 ), order_id ), -1 ), '
 			. ' event_id = IFNULL( NULLIF( %d, 0 ), event_id ), '
-			. ' user_id = IFNULL( NULLIF( %d, 0 ), user_id ), '
-			. ' form_id = IFNULL( NULLIF( %d, 0 ), form_id ), '
-			. ' order_id = IFNULL( NULLIF( %d, 0 ), order_id ), '
 			. ' event_start = IFNULL( NULLIF( %s, "" ), event_start ), '
 			. ' event_end = IFNULL( NULLIF( %s, "" ), event_end ), '
 			. ' quantity = IFNULL( NULLIF( %d, 0 ), quantity ), '
 			. ' state = IFNULL( NULLIF( %s, "" ), state ), '
 			. ' payment_status = IFNULL( NULLIF( %s, "" ), payment_status ), '
-			. ' expiration_date = IFNULL( NULLIF( %s, "" ), expiration_date ), '
+			. ' expiration_date = NULLIF( IFNULL( NULLIF( %s, "" ), expiration_date ), "0000-00-00 00:00:00" ), '
 			. ' active = IFNULL( NULLIF( %d, -1 ), active ) '
 			. ' WHERE id = %d ';
 	
 	$variables = array( 
-		$booking_data[ 'group_id' ],
-		$booking_data[ 'event_id' ],
+		! is_null( $booking_data[ 'group_id' ] ) ? $booking_data[ 'group_id' ] : -1,
 		$booking_data[ 'user_id' ],
-		$booking_data[ 'form_id' ],
-		$booking_data[ 'order_id' ],
+		! is_null( $booking_data[ 'form_id' ] ) ? $booking_data[ 'form_id' ] : -1,
+		! is_null( $booking_data[ 'order_id' ] ) ? $booking_data[ 'order_id' ] : -1,
+		$booking_data[ 'event_id' ],
 		$booking_data[ 'event_start' ],
 		$booking_data[ 'event_end' ],
 		$booking_data[ 'quantity' ],
 		$booking_data[ 'status' ],
 		$booking_data[ 'payment_status' ],
-		$booking_data[ 'expiration_date' ],
+		! is_null( $booking_data[ 'expiration_date' ] ) ? $booking_data[ 'expiration_date' ] : '0000-00-00 00:00:00',
 		$booking_data[ 'active' ],
 		! empty( $where[ 'id' ] ) ? $where[ 'id' ] : $booking_data[ 'id' ]
 	);
@@ -1797,13 +1797,14 @@ function bookacti_insert_booking_group( $booking_group_data ) {
 	global $wpdb;
 
 	$query = 'INSERT INTO ' . BOOKACTI_TABLE_BOOKING_GROUPS 
-			. ' ( event_group_id, user_id, form_id, state, payment_status, active ) ' 
-			. ' VALUES ( NULLIF( %d, 0 ), %s, NULLIF( %d, 0 ), %s, %s, %d )';
+			. ' ( event_group_id, user_id, form_id, order_id, state, payment_status, active ) ' 
+			. ' VALUES ( NULLIF( %d, 0 ), %s, NULLIF( %d, 0 ), NULLIF( %d, 0 ), %s, %s, %d )';
 
 	$variables = array( 
 		$booking_group_data[ 'event_group_id' ],
 		$booking_group_data[ 'user_id' ],
 		$booking_group_data[ 'form_id' ],
+		$booking_group_data[ 'order_id' ],
 		$booking_group_data[ 'status' ],
 		$booking_group_data[ 'payment_status' ],
 		$booking_group_data[ 'active' ]
@@ -1811,7 +1812,7 @@ function bookacti_insert_booking_group( $booking_group_data ) {
 
 	$query = $wpdb->prepare( $query, $variables );
 	$wpdb->query( $query );
-
+	
 	$booking_group_id = ! empty( $wpdb->insert_id ) ? $wpdb->insert_id : 0;
 
 	if( $booking_group_id ) {
@@ -1835,20 +1836,20 @@ function bookacti_update_booking_group( $booking_group_data, $where = array() ) 
 	
 	$query	= 'UPDATE ' . BOOKACTI_TABLE_BOOKING_GROUPS
 			. ' SET '
-			. ' event_group_id = IFNULL( NULLIF( %d, 0 ), event_group_id ), '
-			. ' user_id = IFNULL( NULLIF( %d, 0 ), user_id ), '
-			. ' form_id = IFNULL( NULLIF( %d, 0 ), form_id ), '
-			. ' order_id = IFNULL( NULLIF( %d, 0 ), order_id ), '
+			. ' event_group_id = NULLIF( IFNULL( NULLIF( %d, 0 ), event_group_id ), -1 ), '
+			. ' user_id = IFNULL( NULLIF( %s, "0" ), user_id ), '
+			. ' form_id = NULLIF( IFNULL( NULLIF( %d, 0 ), form_id ), -1 ), '
+			. ' order_id = NULLIF( IFNULL( NULLIF( %d, 0 ), order_id ), -1 ), '
 			. ' state = IFNULL( NULLIF( %s, "" ), state ), '
 			. ' payment_status = IFNULL( NULLIF( %s, "" ), payment_status ), '
 			. ' active = IFNULL( NULLIF( %d, -1 ), active ) '
 			. ' WHERE id = %d ';
 	
 	$variables = array( 
-		$booking_group_data[ 'event_group_id' ],
+		! is_null( $booking_group_data[ 'event_group_id' ] ) ? $booking_group_data[ 'event_group_id' ] : -1,
 		$booking_group_data[ 'user_id' ],
-		$booking_group_data[ 'form_id' ],
-		$booking_group_data[ 'order_id' ],
+		! is_null( $booking_group_data[ 'form_id' ] ) ? $booking_group_data[ 'form_id' ] : -1,
+		! is_null( $booking_group_data[ 'order_id' ] ) ? $booking_group_data[ 'order_id' ] : -1,
 		$booking_group_data[ 'status' ],
 		$booking_group_data[ 'payment_status' ],
 		$booking_group_data[ 'active' ],
@@ -2011,23 +2012,23 @@ function bookacti_update_booking_group_bookings( $booking_group_data, $where = a
 	
 	$query	= 'UPDATE ' . BOOKACTI_TABLE_BOOKINGS 
 			. ' SET '
-			. ' user_id = IFNULL( NULLIF( %d, 0 ), user_id ), '
-			. ' form_id = IFNULL( NULLIF( %d, 0 ), form_id ), '
-			. ' order_id = IFNULL( NULLIF( %d, 0 ), order_id ), '
+			. ' user_id = IFNULL( NULLIF( %s, "0" ), user_id ), '
+			. ' form_id = NULLIF( IFNULL( NULLIF( %d, 0 ), form_id ), -1 ), '
+			. ' order_id = NULLIF( IFNULL( NULLIF( %d, 0 ), order_id ), -1 ), '
 			. ' state = IFNULL( NULLIF( %s, "" ), state ), '
 			. ' payment_status = IFNULL( NULLIF( %s, "" ), payment_status ), '
-			. ' expiration_date = IFNULL( NULLIF( %s, "" ), expiration_date ), '
+			. ' expiration_date = NULLIF( IFNULL( NULLIF( %s, "" ), expiration_date ), "0000-00-00 00:00:00" ), '
 			. ' quantity = IFNULL( NULLIF( %d, 0 ), quantity ), '
 			. ' active = IFNULL( NULLIF( %d, -1 ), active ) '
 			. ' WHERE group_id = %d ';
 	
 	$variables = array( 
 		$booking_group_data[ 'user_id' ],
-		$booking_group_data[ 'form_id' ],
-		$booking_group_data[ 'order_id' ],
+		! is_null( $booking_group_data[ 'form_id' ] ) ? $booking_group_data[ 'form_id' ] : -1,
+		! is_null( $booking_group_data[ 'order_id' ] ) ? $booking_group_data[ 'order_id' ] : -1,
 		$booking_group_data[ 'status' ],
 		$booking_group_data[ 'payment_status' ],
-		$booking_group_data[ 'expiration_date' ],
+		! is_null( $booking_group_data[ 'expiration_date' ] ) ? $booking_group_data[ 'expiration_date' ] : '0000-00-00 00:00:00',
 		$booking_group_data[ 'quantity' ],
 		$booking_group_data[ 'active' ],
 		! empty( $where[ 'id' ] ) ? $where[ 'id' ] : $booking_group_data[ 'id' ]
@@ -2244,13 +2245,21 @@ function bookacti_cancel_booking_group_and_its_bookings( $booking_group_id ) {
  * Get booking groups according to filters
  * 
  * @since 1.3.0 (was bookacti_get_booking_groups_by_group_of_events)
- * @version 1.7.6
+ * @version 1.8.10
  * @global wpdb $wpdb
  * @param array $filters Use bookacti_format_booking_filters() before
  * @return array
  */
 function bookacti_get_booking_groups( $filters ) {
 	global $wpdb;
+
+	// Merge single id to multiple ids array
+	if( is_numeric( $filters[ 'booking_id' ] ) && $filters[ 'booking_id' ] )				{ $filters[ 'in__booking_id' ][] = $filters[ 'booking_id' ]; }
+	if( is_numeric( $filters[ 'booking_group_id' ] ) && $filters[ 'booking_group_id' ] )	{ $filters[ 'in__booking_group_id' ][] = $filters[ 'booking_group_id' ]; }
+	if( is_numeric( $filters[ 'event_group_id' ] ) && $filters[ 'event_group_id' ] )		{ $filters[ 'in__event_group_id' ][] = $filters[ 'event_group_id' ]; }
+	if( is_numeric( $filters[ 'group_category_id' ] ) && $filters[ 'group_category_id' ] )	{ $filters[ 'in__group_category_id' ][] = $filters[ 'group_category_id' ]; }
+	if( is_numeric( $filters[ 'form_id' ] ) && $filters[ 'form_id' ] )						{ $filters[ 'in__form_id' ][] = $filters[ 'form_id' ]; }
+	if( is_numeric( $filters[ 'user_id' ] ) && $filters[ 'user_id' ] )						{ $filters[ 'in__user_id' ][] = $filters[ 'user_id' ]; }
 
 	$query	= 'SELECT BG.*, EG.title as group_title, EG.category_id, C.title as category_title, C.template_id, GE.start, GE.end, B.quantity ';
 
@@ -2310,11 +2319,6 @@ function bookacti_get_booking_groups( $filters ) {
 		$variables = array_merge( $variables, $filters[ 'templates' ] );
 	}
 
-	if( is_numeric( $filters[ 'booking_group_id' ] ) && $filters[ 'booking_group_id' ] != 0 ) {
-		$query .= ' AND BG.id = %d ';
-		$variables[] = intval( $filters[ 'booking_group_id' ] );
-	}
-
 	if( $filters[ 'in__booking_group_id' ] ) {
 		$query .= ' AND BG.id IN ( %d ';
 		$array_count = count( $filters[ 'in__booking_group_id' ] );
@@ -2337,11 +2341,6 @@ function bookacti_get_booking_groups( $filters ) {
 		}
 		$query .= ') ';
 		$variables = array_merge( $variables, $filters[ 'not_in__booking_group_id' ] );
-	}
-
-	if( $filters[ 'event_group_id' ] ) {
-		$query .= ' AND BG.event_group_id = %d ';
-		$variables[] = $filters[ 'event_group_id' ];
 	}
 
 	if( $filters[ 'in__event_group_id' ] ) {
@@ -2368,11 +2367,6 @@ function bookacti_get_booking_groups( $filters ) {
 		$variables = array_merge( $variables, $filters[ 'not_in__event_group_id' ] );
 	}
 
-	if( $filters[ 'group_category_id' ] ) {
-		$query .= ' AND EG.category_id = %d ';
-		$variables[] = $filters[ 'group_category_id' ];
-	}
-
 	if( $filters[ 'in__group_category_id' ] ) {
 		$query .= ' AND EG.category_id IN ( %d ';
 		$array_count = count( $filters[ 'in__group_category_id' ] );
@@ -2397,11 +2391,6 @@ function bookacti_get_booking_groups( $filters ) {
 		$variables = array_merge( $variables, $filters[ 'not_in__group_category_id' ] );
 	}
 
-	if( $filters[ 'form_id' ] ) {
-		$query .= ' AND BG.form_id = %d ';
-		$variables[] = $filters[ 'form_id' ];
-	}
-
 	if( $filters[ 'in__form_id' ] ) {
 		$query .= ' AND BG.form_id IN ( %d ';
 		$array_count = count( $filters[ 'in__form_id' ] );
@@ -2424,11 +2413,6 @@ function bookacti_get_booking_groups( $filters ) {
 		}
 		$query .= ') ) ';
 		$variables = array_merge( $variables, $filters[ 'not_in__form_id' ] );
-	}
-
-	if( $filters[ 'user_id' ] ) {
-		$query .= ' AND BG.user_id = %s ';
-		$variables[] = $filters[ 'user_id' ];
 	}
 
 	if( $filters[ 'in__user_id' ] ) {

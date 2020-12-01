@@ -1463,11 +1463,8 @@ add_filter( 'safe_style_css', 'bookacti_wc_add_safe_style_css', 1000, 1 );
  * @return string
  */
 function bookacti_add_class_to_activity_order_item( $classes, $item, $order ) {
-	$deprecated_booking_id = wc_get_order_item_meta( $item->get_id(), 'bookacti_booking_id', true );
-	$order_item_bookings_ids = wc_get_order_item_meta( $item->get_id(), 'bookacti_bookings', true );
-	if( $deprecated_booking_id || $order_item_bookings_ids ) {
-		$classes .= ' bookacti-order-item-activity';
-	}
+	$item_bookings_ids = bookacti_wc_format_order_item_bookings_ids( $item );
+	if( $item_bookings_ids ) { $classes .= ' bookacti-order-item-activity'; }
 	return $classes;
 }
 add_filter( 'woocommerce_order_item_class', 'bookacti_add_class_to_activity_order_item', 10, 3 );

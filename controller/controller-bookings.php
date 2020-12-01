@@ -810,7 +810,7 @@ function bookacti_controller_change_booking_group_state() {
 			bookacti_send_json( array( 'status' => 'failed', 'error' => 'not_allowed_to_update_booking_group_status', 'message' => esc_html__( 'The booking group status cannot be changed.', 'booking-activities' ) ), 'change_booking_group_status' );
 		}
 
-		$was_active	= $bookings->group_active ? 1 : 0;
+		$was_active	= $bookings[ 0 ]->group_active ? 1 : 0;
 		$active		= in_array( $new_booking_state, bookacti_get_active_booking_states(), true ) ? 1 : 0;
 		if( $active !== $was_active ) { $active_changed = true; }
 

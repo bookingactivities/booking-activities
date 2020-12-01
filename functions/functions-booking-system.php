@@ -1104,8 +1104,7 @@ function bookacti_validate_booking_form( $picked_events, $quantity, $form_id = 0
 	$validated = array( 
 		'status' => 'failed', 
 		'error' => 'invalid_event',
-		'messages' => array(), 
-		'events_summary' => array()
+		'messages' => array()
 	);
 	
 	// Get calendar data

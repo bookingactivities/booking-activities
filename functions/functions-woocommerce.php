@@ -1072,7 +1072,7 @@ function bookacti_wc_get_item_bookings_attributes( $item_bookings ) {
 		if( empty( $dummy_booking ) ) {
 			$booking_attributes[ 'events' ] = array( 
 				'label' => esc_html( _n( 'Event', 'Events', count( $item_booking[ 'bookings' ] ), 'booking-activities' ) ), 
-				'value' => bookacti_wc_get_item_bookings_events_list_html( array( $item_booking ), true ),
+				'value' => bookacti_wc_get_item_bookings_events_list_html( array( $item_booking ), false ),
 				'fullwidth' => 1
 			);
 		}
@@ -1090,9 +1090,19 @@ function bookacti_wc_get_item_bookings_attributes( $item_bookings ) {
 			}
 		}
 		
+		// Display admin actions
+		$is_order_edit_page = ( ! empty( $_REQUEST[ 'action' ] ) && in_array( $_REQUEST[ 'action' ], array( 'edit', 'woocommerce_refund_line_items', 'woocommerce_load_order_items' ), true ) );
+		if( $is_order_edit_page ) {
+			$booking_attributes[ 'actions' ] = array( 
+				'label' => '', 
+				'value' => bookacti_wc_get_item_booking_actions_html( $item_booking ),
+				'fullwidth' => 1
+			);
+		}
+		
 		// Don't display booking actions in emails, on the backend, and on payment page
 		global $bookacti_is_email;
-		if( ! empty( $bookacti_is_email ) || ( ! empty( $_REQUEST[ 'action' ] ) && in_array( $_REQUEST[ 'action' ], array( 'edit', 'woocommerce_refund_line_items', 'woocommerce_load_order_items' ), true ) ) || ! empty( $_REQUEST[ 'pay_for_order' ] ) ) { $bookings_attributes[] = $booking_attributes; continue; }
+		if( ! empty( $bookacti_is_email ) || $is_order_edit_page || ! empty( $_REQUEST[ 'pay_for_order' ] ) ) { $bookings_attributes[] = $booking_attributes; continue; }
 		
 		// Booking actions
 		$booking_attributes[ 'actions' ] = array( 
@@ -1161,6 +1171,84 @@ function bookacti_wc_get_item_bookings_attributes_html( $item_bookings, $locale 
 	if( $switched ) { bookacti_restore_locale(); }
 	
 	return $html;
+}
+
+
+/**
+ * Get item booking array of possible actions
+ * @since 1.8.10
+ * @param array $item_booking
+ * @return array
+ */
+function bookacti_wc_get_item_booking_actions( $item_booking ) {
+	if( ! isset( $item_booking[ 'id' ] ) || ! isset( $item_booking[ 'type' ] ) ) { return array(); }
+	
+	// Handle item_booking_id arrays too
+	if( ! isset( $item_booking[ 'bookings' ] ) ) {
+		$dummy_booking = $item_booking[ 'type' ] === 'group' ? array( 'group_id' => $item_booking[ 'id' ] ) : array( 'id' => $item_booking[ 'id' ] );
+		$dummy_booking_obj = (object) bookacti_sanitize_booking_data( $dummy_booking );
+		$item_booking[ 'bookings' ] = array( $dummy_booking_obj );
+		$item_bookings[ $i ][ 'bookings' ] = $item_booking[ 'bookings' ];
+	}
+	
+	// Get the link to the booking edit page
+	$link_to_booking = admin_url( 'admin.php?page=bookacti_bookings&status%5B0%5D=all&keep_default_status=1' );
+	if( $item_booking[ 'type' ] === 'group' ) {
+		$link_to_booking .= '&booking_group_id=' . $item_booking[ 'id' ] . '&group_by=booking_group';
+	} else if( $item_booking[ 'type' ] === 'single' ) {
+		$link_to_booking .= '&booking_id=' . $item_booking[ 'id' ];
+	}
+	
+	// Build the array of possible actions
+	$actions = array(
+		'edit_booking' => array(
+			'class'			=> 'bookacti-wc-order-item-edit-booking-button',
+			'label'			=> esc_html__( 'Edit the booking', 'booking-activities' ),
+			'description'	=> esc_html__( 'Go to the edit page.', 'booking-activities' ),
+			'link'			=> $link_to_booking,
+		)
+	);
+	
+	return apply_filters( 'bookacti_wc_item_booking_actions', $actions, $item_booking );
+}
+
+
+/**
+ * Get item booking possible actions as HTML buttons
+ * @since 1.8.10
+ * @param array $item_booking
+ * @param boolean $return_array Whether to return an array of buttons, or the concatenated buttons HTML
+ * @return string
+ */
+function bookacti_wc_get_item_booking_actions_html( $item_booking, $return_array = false ) {
+	// Get the array of possible actions
+	$actions = bookacti_wc_get_item_booking_actions( $item_booking );
+	
+	$actions_html = '';
+	$actions_html_array	= array();
+	$booking_action_class = $item_booking[ 'type' ] === 'group' ? ' bookacti-booking-group-action' : ' bookacti-booking-action';
+	
+	foreach( $actions as $action_id => $action ) {
+			$action_html = '<a '
+							. 'href="' . esc_url( $action[ 'link' ] ) . '" '
+							. 'id="bookacti-booking-action-' . esc_attr( $action_id ) . '-' . $item_booking[ 'id' ] . '" '
+							. 'class="button ' . $action_id . ' ' . esc_attr( $action[ 'class' ] ) . $booking_action_class . ' tips" '
+							. 'data-tip="' . esc_attr( $action[ 'description' ] ) . '" '
+							. 'data-booking-type="' . $item_booking[ 'type' ] . '" '
+							. 'data-booking-id="' . $item_booking[ 'id' ] . '" >'
+							.	esc_html( $action[ 'label' ] )
+						. '</a>';
+			$actions_html_array[ $action_id ] = $action_html;
+	}
+
+	// Return the array of html actions
+	if( $return_array ) {
+		return apply_filters( 'bookacti_wc_item_booking_actions_html_array', $actions_html_array, $actions, $item_booking );
+	}
+
+	$actions_html = implode( ' | ', $actions_html_array );
+	
+	return apply_filters( 'bookacti_wc_item_booking_actions_html', $actions_html, $actions, $item_booking );
 }
 
 
@@ -1368,17 +1456,17 @@ function bookacti_wc_update_order_items_bookings( $order_id, $new_data, $where =
 /**
  * Remove booking ids from order item meta to unbind a booking from an item
  * @since 1.8.10
- * @param int $item_id
+ * @param WC_Order_Item_Product $item
  * @param array $item_bookings_ids_to_delete Leave it empty to unbind all bookings from the item
  * @return int|false Returns the number of bookings unbound. Returns false in case of error. Be careful, returns 0 if no bookings were bound to the item in the first place.
  */
-function bookacti_wc_remove_order_item_bookings( $item_id, $item_bookings_ids_to_delete = array() ) {
+function bookacti_wc_remove_order_item_bookings( $item, $item_bookings_ids_to_delete = array() ) {
 	$removed = 0;
-	$item_bookings_ids = bookacti_maybe_decode_json( wc_get_order_item_meta( $item_id, 'bookacti_bookings', true ), true );
+	$item_bookings_ids = bookacti_wc_format_order_item_bookings_ids( $item );
 	
 	if( ! $item_bookings_ids ) { 
 		// Backward compatibility for bookings made before 1.8.10
-		$removed = bookacti_delete_order_item_booking_meta( $item_id );
+		$removed = bookacti_delete_order_item_booking_meta( $item->get_id() );
 		return $removed;
 	}
 	
@@ -1403,7 +1491,7 @@ function bookacti_wc_remove_order_item_bookings( $item_id, $item_bookings_ids_to
 	
 	// Update the bookings meta
 	if( $removed ) {
-		$updated = $item_bookings_ids ? wc_update_order_item_meta( $item_id, 'bookacti_bookings', array_values( $item_bookings_ids ) ) : wc_delete_order_item_meta( $item_id, 'bookacti_bookings' );
+		$updated = $item_bookings_ids ? wc_update_order_item_meta( $item->get_id(), 'bookacti_bookings', json_encode( array_values( $item_bookings_ids ) ) ) : wc_delete_order_item_meta( $item->get_id(), 'bookacti_bookings' );
 		if( ! $updated ) { return false; }
 	}
 	

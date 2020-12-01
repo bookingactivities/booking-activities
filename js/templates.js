@@ -113,7 +113,7 @@ $j( document ).ready( function() {
 
 /**
  * Initialize and display the template calendar
- * @version 1.8.6
+ * @version 1.8.10
  * @param {HTMLElement} calendar
  */
 function bookacti_load_template_calendar( calendar ) {
@@ -158,7 +158,7 @@ function bookacti_load_template_calendar( calendar ) {
 		allDayDefault:          false,
 
 		fixedWeekCount:         false,
-		showNonCurrentDates:	false,
+		showNonCurrentDates:	true,
 
 		editable:               true,
 		droppable:              true,
