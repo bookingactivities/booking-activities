@@ -28,7 +28,7 @@ function bookacti_wc_add_bookings_to_cart( $product_bookings_data ) {
 		if( ! $cart_item_events ) { continue; }
 		if( bookacti_diff_picked_events( $product_bookings_data[ 'picked_events' ], $cart_item_events ) ) { continue; }
 		// Same Third-party data
-		if( ! apply_filters( 'bookacti_merge_cart_item', true, $cart_item, $product_bookings_data[ 'product_id' ], $product_bookings_data[ 'variation_id' ], $product_bookings_data[ 'quantity' ] ) ) { continue; }
+		if( ! apply_filters( 'bookacti_merge_cart_item', true, $cart_item, $product_bookings_data ) ) { continue; }
 		
 		// If a cart item is identical, we just need to increase its quantity and its bookings quantities
 		$new_quantity = $cart_item[ 'quantity' ] + $product_bookings_data[ 'quantity' ];
@@ -125,10 +125,10 @@ function bookacti_wc_get_cart_items_bookings( $filters = array() ) {
 		foreach( $cart_contents as $cart_item_key => $cart_item ) {
 			if( empty( $cart_item[ '_bookacti_options' ][ 'bookings' ] ) ) { continue; }
 			if( $in__cart_item_key && ! in_array( $cart_item_key, $in__cart_item_key, true ) ) { continue; }
-			$cart_item_bookings = bookacti_maybe_decode_json( $cart_item[ '_bookacti_options' ][ 'bookings' ], true );
-			foreach( $cart_item_bookings as $cart_item_booking ) {
-				if( $cart_item_booking[ 'type' ] === 'single' )		{ $cart_item_keys_by_booking_id[ $cart_item_booking[ 'id' ] ] = $cart_item_key; }
-				else if( $cart_item_booking[ 'type' ] === 'group' ) { $cart_item_keys_by_booking_group_id[ $cart_item_booking[ 'id' ] ] = $cart_item_key; }
+			$cart_item_bookings_ids = bookacti_maybe_decode_json( $cart_item[ '_bookacti_options' ][ 'bookings' ], true );
+			foreach( $cart_item_bookings_ids as $cart_item_booking_id ) {
+				if( $cart_item_booking_id[ 'type' ] === 'single' )		{ $cart_item_keys_by_booking_id[ $cart_item_booking_id[ 'id' ] ] = $cart_item_key; }
+				else if( $cart_item_booking_id[ 'type' ] === 'group' )	{ $cart_item_keys_by_booking_group_id[ $cart_item_booking_id[ 'id' ] ] = $cart_item_key; }
 			}
 		}
 	}
@@ -275,7 +275,7 @@ function bookacti_wc_validate_cart_item_bookings_new_user( $cart_item_bookings, 
 
 
 /**
- * Update the bookings quantity bound to a cart item
+ * Update the bookings bound to a cart item
  * @since 1.8.10
  * @global woocommerce $woocommerce
  * @param string|array $cart_item_key Cart item key or Cart item itself
@@ -323,7 +323,7 @@ function bookacti_wc_update_cart_item_bookings( $cart_item_key, $new_data ) {
 	&&  $is_expiration_active 
 	&&  ( $reset_timeout_on_change || $is_cart_expired ) 
 	&&  ! $is_per_product_expiration ) {
-		bookacti_reset_cart_expiration_dates( $new_expiration_date );
+		bookacti_wc_reset_cart_expiration_date( $new_expiration_date );
 	}
 	
 	return $updated;
@@ -365,377 +365,9 @@ function bookacti_wc_update_cart_item_bookings_status( $cart_item_key, $new_stat
 }
 
 
-/**
- * Update quantity, control the results and display feedback accordingly
- * @version 1.8.10
- * @global woocommerce $woocommerce
- * @param int $booking_id
- * @param int $new_quantity
- * @param string $context
- * @return array
- */
-function bookacti_controller_update_booking_quantity( $booking_id, $new_quantity, $context = 'frontend' ) {
-	global $woocommerce;
-
-	$response = array( 'status' => '' );
-	$new_expiration_date = '';
-
-	// Get cart data and the expiration date
-	if( $context === 'frontend' ) {
-		$cart_expiration_date		= bookacti_wc_get_cart_expiration_date();
-		$is_cart_empty_and_expired	= ( $woocommerce->cart->get_cart_contents_count() === $new_quantity && strtotime( $cart_expiration_date ) <= time() );
-		$is_per_product_expiration	= bookacti_get_setting_value( 'bookacti_cart_settings', 'is_cart_expiration_per_product' );
-		$reset_timeout_on_change	= bookacti_get_setting_value( 'bookacti_cart_settings', 'reset_cart_timeout_on_change' );
-		$is_expiration_active		= bookacti_get_setting_value( 'bookacti_cart_settings', 'is_cart_expiration_active' );
-		$timeout					= bookacti_get_setting_value( 'bookacti_cart_settings', 'cart_timeout' );
-
-		if( $is_expiration_active && ( $reset_timeout_on_change || $is_cart_empty_and_expired ) ) {
-			$new_expiration_date = date( 'Y-m-d\TH:i:s', strtotime( '+' . $timeout . ' minutes' ) );
-		}
-	}
-
-	// Check booking availability before updating quantity
-	$booking		= bookacti_get_booking_by_id( $booking_id );
-	$old_quantity	= intval( $booking->quantity );
-	$availability	= intval( bookacti_get_event_availability( $booking->event_id, $booking->event_start, $booking->event_end ) );
-
-	// If the updated booking is active, you must count the quantity already booked by this user in the total quantity available for him
-	if( $booking->active ) {
-		$new_availability = $availability + $old_quantity - $new_quantity;
-		$availability += $old_quantity;
-	} else {
-		$new_availability = $availability - $new_quantity;
-	}
-
-	if( intval( $new_availability ) < 0 ) {
-		$response[ 'status' ] = 'failed';
-		if( $availability > 0 ) { $response[ 'error' ] = 'qty_sup_to_avail'; } 
-		else { $response[ 'error' ] = 'no_availability'; }
-	}
-
-	// Check if the booking number is superior or equal to min quantity
-	// Check only single events (group of events are checked in bookacti_controller_update_booking_group_quantity)
-	if( $response[ 'status' ] !== 'failed' && $context === 'frontend' && $new_quantity !== 0 && ! intval( $booking->group_id ) ) {
-
-		$event			= bookacti_get_event_by_id( $booking->event_id );
-		$title			= apply_filters( 'bookacti_translate_text', $event->title );
-		$activity_data	= bookacti_get_metadata( 'activity', $event->activity_id );
-		$min_quantity	= isset( $activity_data[ 'min_bookings_per_user' ] ) ? intval( $activity_data[ 'min_bookings_per_user' ] ) : 0;
-		$max_quantity	= isset( $activity_data[ 'max_bookings_per_user' ] ) ? intval( $activity_data[ 'max_bookings_per_user' ] ) : 0;
-		$max_users		= isset( $activity_data[ 'max_users_per_event' ] ) ? intval( $activity_data[ 'max_users_per_event' ] ) : 0;
-
-		$quantity_already_booked	= 0;
-		$number_of_users			= 0;
-		$current_quantity			= 0;
-
-		if( $min_quantity || $max_quantity || $max_users ) {
-			// Check if the user has already booked this event
-			$filters = bookacti_format_booking_filters( array(
-				'event_id'				=> $booking->event_id,
-				'event_start'			=> $booking->event_start,
-				'event_end'				=> $booking->event_end,
-				'user_id'				=> $booking->user_id,
-				'active'				=> 1,
-				'not_in__booking_id'	=> array( $booking->id )
-			) );
-			$quantity_already_booked = bookacti_get_number_of_bookings( $filters );
-
-			// Check if the event has already been booked by other users
-			$bookings_made_by_other_users = bookacti_get_number_of_bookings_per_user_by_event( $booking->event_id, $booking->event_start, $booking->event_end );
-			$number_of_users	= count( $bookings_made_by_other_users );
-			$current_quantity	= isset( $bookings_made_by_other_users[ $booking->user_id ] ) ? $bookings_made_by_other_users[ $booking->user_id ] : 0;
-		}
-
-		if( $min_quantity !== 0 && ( $new_quantity + $quantity_already_booked ) < $min_quantity ) { 
-			$response[ 'status' ] = 'failed';
-			$response[ 'error' ] = 'qty_inf_to_min';
-		}
-		if( $max_quantity !== 0 && $new_quantity > ( $max_quantity - $quantity_already_booked ) ) { 
-			$response[ 'status' ] = 'failed';
-			$response[ 'error' ] = 'qty_sup_to_max';
-		}
-		if( $max_users !== 0 && $current_quantity === 0 && $number_of_users >= $max_users ) { 
-			$response[ 'status' ] = 'failed';
-			$response[ 'error' ] = 'users_sup_to_max';
-		}
-	}
-
-	// Update booking quantity
-	if( $response[ 'status' ] !== 'failed' ) {
-		$response = bookacti_update_booking_quantity( $booking_id, $new_quantity, $new_expiration_date, $context );
-	}
-
-	// Add the availability to the returned result
-	$response[ 'availability' ] = $availability;
-
-	// Update cart expiration date if needed
-	if( $context === 'frontend' ) {
-		if( $response[ 'status' ] === 'success'
-		&&  $is_expiration_active 
-		&&  ( $reset_timeout_on_change || $is_cart_empty_and_expired ) 
-		&&  ! $is_per_product_expiration ) {
-
-			bookacti_reset_cart_expiration_dates( $new_expiration_date );
-
-		} else if( $response[ 'status' ] === 'failed' ) {
-			$message = '';
-			if( $response[ 'error' ] === 'qty_sup_to_avail' ) {
-				$message =  sprintf( _n( 'You want to add %1$s booking to your cart', 'You want to add %1$s bookings to your cart', $new_quantity, 'booking-activities' ), $new_quantity )
-					. ' ' . sprintf( _n( 'but only %1$s is available on this time slot.', 'but only %1$s are available on this time slot. ', $response[ 'availability' ], 'booking-activities' ), $response[ 'availability' ] )
-					. ' ' . __( 'Please choose another event or decrease the quantity.', 'booking-activities' );
-
-			} else if( $response[ 'error' ] === 'qty_inf_to_min' ) {
-				$message = sprintf( _n( 'You want to make %1$s booking of "%2$s"', 'You want to make %1$s bookings of "%2$s"', $new_quantity, 'booking-activities' ), $new_quantity, $title );
-				if( $quantity_already_booked ) {
-					$message .= ' ' . sprintf( _n( 'and you have already booked %1$s place, but the minimum number of reservations required per user is %2$s.', 'and you have already booked %1$s places, but the minimum number of reservations required per user is %2$s.', $quantity_already_booked, 'booking-activities' ), $quantity_already_booked, $min_quantity );
-				} else {
-					$message .= ' ' . sprintf( __( 'but the minimum number of reservations required per user is %1$s.', 'booking-activities' ), $min_quantity );
-				}
-				$message .=	$min_quantity - $current_quantity > 0  ? ' ' . sprintf( __( 'Please choose another event or increase the quantity to %1$s.', 'booking-activities' ), $min_quantity - $current_quantity ) : ' ' . __( 'Please choose another event', 'booking-activities' );
-
-			} else if( $response[ 'error' ] === 'qty_sup_to_max' ) {
-				$message = sprintf( _n( 'You want to make %1$s booking of "%2$s"', 'You want to make %1$s bookings of "%2$s"', $new_quantity, 'booking-activities' ), $new_quantity, $title );
-				if( $quantity_already_booked ) {
-					$message .= ' ' . sprintf( _n( 'but you have already booked %1$s place and the maximum number of reservations allowed per user is %2$s.', 'but you have already booked %1$s places and the maximum number of reservations allowed per user is %2$s.', $quantity_already_booked, 'booking-activities' ), $quantity_already_booked, $max_quantity );
-				} else {
-					$message .= ' ' . sprintf( __( 'but the maximum number of reservations allowed per user is %1$s.', 'booking-activities' ), $max_quantity );
-				}
-				if( empty( $_POST[ 'update_cart' ] ) ) {
-					$message .= $max_quantity - $current_quantity > 0 ? ' ' . sprintf( __( 'Please choose another event or decrease the quantity to %1$s.', 'booking-activities' ), $max_quantity - $current_quantity ) : ' ' . __( 'Please choose another event', 'booking-activities' );
-				}
-
-			} else if( $response[ 'error' ] === 'users_sup_to_max' ) {
-				$message = __( 'This event has reached the maximum number of users allowed. Bookings from other users are no longer accepted. Please choose another event.', 'booking-activities' );
-
-			} else if( $response[ 'error' ] === 'no_availability' ) {
-				// If the event is no longer available, notify the user
-				$message = __( 'This event is no longer available. Please choose another event.', 'booking-activities' );
-
-			} else if( $response[ 'error' ] === 'failed' ) {
-				// If an unknown error has occurred during the database operation
-				$message = __( 'An error occurs while trying to change a product quantity. Please try again later.', 'booking-activities' );
-			}
-
-			if( $message && ! wc_has_notice( $message, 'error' ) ) { wc_add_notice( $message, 'error' ); }
-		}
-	}
-
-	return $response;
-}
 
 
-/**
- * Update booking group quantity, control the results and display feedback accordingly
- * @since 1.1.0
- * @version 1.7.8
- * @param int $booking_group_id
- * @param int $quantity
- * @param boolean $add_quantity
- * @param string $context
- * @return boolean
- */
-function bookacti_controller_update_booking_group_quantity( $booking_group_id, $quantity, $add_quantity = false, $context = 'frontend' ) {
-	// Sanitize
-	$quantity		= intval( $quantity );
-	$add_quantity	= $add_quantity ? true : false;
-
-	$response	= array( 'status' => 'success' );
-	$message	= '';
-
-	// Get bookings of the group
-	$bookings			= bookacti_get_bookings_by_booking_group_id( $booking_group_id );
-
-	// Get group availability
-	$group				= bookacti_get_booking_group_by_id( $booking_group_id );
-	$group_availability	= bookacti_get_group_of_events_availability( $group->event_group_id );
-
-	// Make sure all events have enough places available
-	// Look for the most booked event of the booking group
-	$max_booked = 0;
-	foreach( $bookings as $booking ) {
-		if( ( $booking->active || $booking->state === 'in_cart' ) && $booking->quantity > $max_booked ) {
-			$max_booked = intval( $booking->quantity );
-		}
-	}
-
-	$booking_max_new_quantity = $add_quantity ? $quantity + $max_booked : $quantity;
-
-	// If quantity is superior to availablity, return the error
-	if( $booking_max_new_quantity > ( $group_availability + $max_booked ) ) {
-
-		$response[ 'status' ]		= 'failed';
-		$response[ 'error' ]		= 'qty_sup_to_avail';
-		$response[ 'availability' ]	= $add_quantity ? $group_availability : $group_availability + $max_booked;
-
-		if( $context === 'frontend' ) {
-			if( $response[ 'availability' ] > 0 ) {
-				$message =	sprintf( _n( 'You want to add %1$s booking to your cart', 'You want to add %1$s bookings to your cart', $quantity, 'booking-activities' ), $quantity )
-					. ' ' . sprintf( _n( 'but only %1$s is available on this time slot.', 'but only %1$s are available on this time slot. ', $response[ 'availability' ], 'booking-activities' ), $response[ 'availability' ] )
-					. ' ' . __( 'Please choose another event or decrease the quantity.', 'booking-activities' );
-			} else {
-				$message = __( 'This event is no longer available. Please choose another event.', 'booking-activities' );
-			}
-			if( $message && ! wc_has_notice( $message, 'error' ) ) { wc_add_notice( $message, 'error' ); }
-		}
-	}
-
-	// Check if min quantity <= booking number <= max quantity
-	if( $context === 'frontend' && $booking_max_new_quantity !== 0 ) {
-		$event_group	= bookacti_get_group_of_events( $group->event_group_id );
-		$title			= apply_filters( 'bookacti_translate_text', $event_group->title );
-		$category_data	= bookacti_get_metadata( 'group_category', $event_group->category_id );
-		$min_quantity	= isset( $category_data[ 'min_bookings_per_user' ] ) ? intval( $category_data[ 'min_bookings_per_user' ] ) : 0;
-		$max_quantity	= isset( $category_data[ 'max_bookings_per_user' ] ) ? intval( $category_data[ 'max_bookings_per_user' ] ) : 0;
-		$max_users		= isset( $category_data[ 'max_users_per_event' ] ) ? intval( $category_data[ 'max_users_per_event' ] ) : 0;
-
-		$quantity_already_booked	= 0;
-		$number_of_users			= 0;
-		$current_quantity			= 0;
-
-		if( $min_quantity || $max_quantity || $max_users ) {
-			// Check if the user has already booked this event
-			$filters = bookacti_format_booking_filters( array(
-				'event_group_id'			=> $group->event_group_id,
-				'user_id'					=> $group->user_id,
-				'active'					=> 1,
-				'not_in__booking_group_id'	=> array( $group->id ),
-				'group_by'					=> 'booking_group'
-			) );
-			$quantity_already_booked = bookacti_get_number_of_bookings( $filters );
-
-			// Check if the event has already been booked by other users
-			$bookings_made_by_other_users = bookacti_get_number_of_bookings_per_user_by_group_of_events( $group->event_group_id );
-			$number_of_users	= count( $bookings_made_by_other_users );
-			$current_quantity	= isset( $bookings_made_by_other_users[ $booking->user_id ] ) ? $bookings_made_by_other_users[ $booking->user_id ] : 0;
-		}
-
-		if( $min_quantity !== 0 && ( $booking_max_new_quantity + $quantity_already_booked ) < $min_quantity ) {
-			$response[ 'status' ] = 'failed';
-			$response[ 'error' ] = 'qty_inf_to_min';
-			$message = sprintf( _n( 'You want to make %1$s booking of "%2$s"', 'You want to make %1$s bookings of "%2$s"', $booking_max_new_quantity, 'booking-activities' ), $booking_max_new_quantity, $title );
-			if( $quantity_already_booked ) {
-				$message .= ' ' . sprintf( _n( 'and you have already booked %1$s place, but the minimum number of reservations required per user is %2$s.', 'and you have already booked %1$s places, but the minimum number of reservations required per user is %2$s.', $quantity_already_booked, 'booking-activities' ), $quantity_already_booked, $min_quantity );
-			} else {
-				$message .= ' ' . sprintf( __( 'but the minimum number of reservations required per user is %1$s.', 'booking-activities' ), $min_quantity );
-			}
-			$message .= $min_quantity - $quantity_already_booked > 0 ? ' ' . sprintf( __( 'Please choose another event or increase the quantity to %1$s.', 'booking-activities' ), $min_quantity - $quantity_already_booked ) : ' ' . __( 'Please choose another event', 'booking-activities' );
-		}
-
-		if( $max_quantity !== 0 && $booking_max_new_quantity > ( $max_quantity - $quantity_already_booked ) ) {
-			$response[ 'status' ] = 'failed';
-			$response[ 'error' ] = 'qty_sup_to_max';
-			$message = sprintf( _n( 'You want to make %1$s booking of "%2$s"', 'You want to make %1$s bookings of "%2$s"', $booking_max_new_quantity, 'booking-activities' ), $booking_max_new_quantity, $title );
-			if( $quantity_already_booked ) {
-				$message .= ' ' . sprintf( _n( 'but you have already booked %1$s place and the maximum number of reservations allowed per user is %2$s.', 'but you have already booked %1$s places and the maximum number of reservations allowed per user is %2$s.', $quantity_already_booked, 'booking-activities' ), $quantity_already_booked, $max_quantity );
-			} else {
-				$message .= ' ' . sprintf( __( 'but the maximum number of reservations allowed per user is %1$s.', 'booking-activities' ), $max_quantity );
-			}
-			if( empty( $_POST[ 'update_cart' ] ) ) {
-				$message .= $max_quantity - $quantity_already_booked > 0 ? ' ' . sprintf( __( 'Please choose another event or decrease the quantity to %1$s.', 'booking-activities' ), $max_quantity - $quantity_already_booked ) : ' ' . __( 'Please choose another event', 'booking-activities' );
-			}
-		}
-
-		if( $max_users !== 0 && $current_quantity === 0 && $number_of_users >= $max_users ) { 
-			$response[ 'status' ] = 'failed';
-			$response[ 'error' ] = 'users_sup_to_max';
-			$message = __( 'This event has reached the maximum number of users allowed. Bookings from other users are no longer accepted. Please choose another event.', 'booking-activities' );
-		}
-
-		if( $message && ! wc_has_notice( $message, 'error' ) ) { wc_add_notice( $message, 'error' ); }
-	}
-
-	if( $response[ 'status' ] === 'success' ) {
-		$response = bookacti_update_booking_group_quantity( $booking_group_id, $quantity, $add_quantity, $context );
-	}
-
-	return $response;
-}
-
-
-/**
- * Update booking group and its bookings quantity
- * @since 1.5.8
- * @param int $booking_group_id
- * @param int $quantity
- * @param boolean $add_quantity
- * @param string $context
- * @return array
- */
-function bookacti_update_booking_group_quantity( $booking_group_id, $quantity, $add_quantity = false, $context = 'frontend' ) {
-	$response = array( 'status' => 'success' );
-
-	// Get bookings of the group
-	$bookings = bookacti_get_bookings_by_booking_group_id( $booking_group_id );
-
-	// Get group availability
-	$group				= bookacti_get_booking_group_by_id( $booking_group_id );
-	$group_availability	= bookacti_get_group_of_events_availability( $group->event_group_id );
-
-	// Update each booking quantity
-	$no_changes = 0;
-	foreach( $bookings as $booking ) {
-
-		$booking_qty	= $booking->active || $booking->state === 'in_cart' ? intval( $booking->quantity ) : 0;
-
-		// Make sure new quantity isn't over group availability
-		$new_quantity = $add_quantity ? $quantity + $booking_qty : $quantity;
-		if( $new_quantity > ( $group_availability + $booking_qty ) ){
-			$new_quantity = $add_quantity ? $group_availability : $group_availability + $booking_qty;
-		}
-
-		// Update quantity
-		if( $new_quantity !== 0 ) {
-			$updated1 = bookacti_controller_update_booking_quantity( $booking->id, $new_quantity, $context );
-		} else {
-			$updated1 = bookacti_update_booking_quantity( $booking->id, $new_quantity, '', $context );
-		}
-
-		// If one fails, set the whole group update status to failed
-		if( ! isset( $updated1[ 'status' ] ) || $updated1[ 'status' ] === 'failed' ) {
-			$response[ 'status' ]	= 'failed';
-			$response[ 'error' ]	= $updated1[ 'error' ];
-		} 
-
-		// Count how many booking doesn't change
-		else if( $updated1[ 'status' ] === 'no_change' ) {
-			$no_changes++;
-		}
-	}
-
-	// If no bookings were updated
-	if( $no_changes >= count( $bookings ) ) {
-		$response[ 'status' ]	= 'no_change';
-	}
-
-	// Change booking group state
-	if( $response[ 'status' ] === 'success' ) {
-
-		$is_admin = $context === 'admin' ? true : false;
-
-		// Change booking group state to remove if quantity = 0
-		if( ! $add_quantity && $quantity === 0 ) {
-			$new_state	= $context === 'frontend' ? 'removed' : 'cancelled';
-			$updated2	= bookacti_update_booking_group_state( $booking_group_id, $new_state );
-			do_action( 'bookacti_booking_group_state_changed', $booking_group_id, $new_state, array( 'is_admin' => $is_admin ) );
-		}
-
-		// If the group used to be removed (quantity = 0), turn its state to in_cart
-		else if( $group->state === 'removed' && $quantity > 0 ) {
-			$new_state = $context === 'frontend' ? 'in_cart' : 'pending';
-			$updated2 = bookacti_update_booking_group_state( $booking_group_id, $new_state );
-			do_action( 'bookacti_booking_group_state_changed', $booking_group_id, $new_state, array( 'is_admin' => $is_admin ) );
-		}
-
-		if( isset( $updated2 ) && ! $updated2 ) {
-			$response[ 'status' ]	= 'failed';
-			$response[ 'error' ]	= 'update_booking_group_state';
-			$response[ 'message' ]	= __( 'An error occurs while trying to update booking group state. Please try again later.', 'booking-activities' );
-		}
-	}
-
-	return apply_filters( 'bookacti_update_booking_group_quantity', $response, $booking_group_id, $quantity, $add_quantity, $context );
-}
-
+// CART EXPIRATION
 
 /**
  * Check if the booking has expired
@@ -763,76 +395,43 @@ function bookacti_is_expired_booking( $booking ) {
 
 
 /**
- * Check if the booking group has expired
- * @since 1.1.0
- * @version 1.8.10
- * @param int|object $booking_group_id
- * @return boolean
- */
-function bookacti_is_expired_booking_group( $booking_group_id ) {
-	$bookings = bookacti_get_bookings_by_booking_group_id( $booking_group_id );
-	if( ! $bookings ) { return true; }
-	
-	// If one booking is expired, inactive or has no expiration date, we consider that the whole group is expired
-	$expired = false;
-	foreach( $bookings as $booking ) {
-		$expired = bookacti_is_expired_booking( $booking );
-		if( $expired ) { break; }
-	}
-	
-	return $expired;
-}
-
-
-/**
  * Reset expiration dates of all cart items
- * @version 1.8.10
+ * @since 1.8.10 (was bookacti_reset_cart_expiration_dates)
  * @global woocommerce $woocommerce
  * @param string $expiration_date
  * @return int|false
  */
-function bookacti_reset_cart_expiration_dates( $expiration_date ) {
+function bookacti_wc_reset_cart_expiration_date( $expiration_date ) {
 	global $woocommerce;
 
+	$updated = 0;
 	$cart_contents = $woocommerce->cart->get_cart();
-	$updated = null;
-	if( ! empty( $cart_contents ) ) {
+	if( ! $cart_contents ) { bookacti_wc_set_cart_expiration_date( null ); return $updated; }
 
-		bookacti_set_cart_timeout( $expiration_date );
-
-		$cart_keys = array_keys( $cart_contents );
-
-		$booking_id_array = array();
-		foreach ( $cart_keys as $key ) {
-			// Single event
-			if( isset( $cart_contents[$key]['_bookacti_options']['bookacti_booking_id'] ) && ! empty( $cart_contents[$key]['_bookacti_options']['bookacti_booking_id'] ) ) {
-				array_push( $booking_id_array, $cart_contents[$key]['_bookacti_options']['bookacti_booking_id'] );
-
-			// Group of events
-			} else if( isset( $cart_contents[$key]['_bookacti_options']['bookacti_booking_group_id'] ) && ! empty( $cart_contents[$key]['_bookacti_options']['bookacti_booking_group_id'] ) ) {
-				// Add the group booking ids to the bookings array to change state
-				$booking_group_id	= $cart_contents[$key]['_bookacti_options']['bookacti_booking_group_id'];
-				$booking_ids		= bookacti_get_booking_group_bookings_ids( $booking_group_id );
-				$booking_id_array	= array_merge( $booking_id_array, $booking_ids );
+	bookacti_wc_set_cart_expiration_date( $expiration_date );
+	
+	$cart_items_bookings = bookacti_wc_get_cart_items_bookings();
+	$booking_id_array = array();
+	
+	foreach( $cart_items_bookings as $cart_item_key => $cart_item_bookings ) {
+		foreach( $cart_item_bookings as $cart_item_booking ) {
+			foreach( $cart_item_booking[ 'bookings' ] as $booking ) {
+				$booking_id_array[] = $booking->id;
 			}
 		}
-
-		$user_id = $woocommerce->session->get_customer_id();
-		if( is_user_logged_in() ) { $user_id = get_current_user_id(); }
-
-		$updated = bookacti_update_in_cart_bookings_expiration_date( $user_id, $booking_id_array, $expiration_date );
-
-	} else {
-
-		bookacti_set_cart_timeout( null );
 	}
+
+	$user_id = $woocommerce->session->get_customer_id();
+	if( is_user_logged_in() ) { $user_id = get_current_user_id(); }
+
+	$updated = bookacti_update_in_cart_bookings_expiration_date( $user_id, $booking_id_array, $expiration_date );
 
 	return $updated;
 }
 
 
 /**
- * Get expiration time
+ * Get the expiration time for a newly created cart item
  * @since 1.8.10 (was bookacti_get_expiration_time)
  * @global WooCommerce $woocommerce
  * @param string $date_format
@@ -856,7 +455,7 @@ function bookacti_wc_get_new_cart_item_expiration_date() {
 		if( ! $cart_expiration_date
 		|| strtotime( $cart_expiration_date ) <= time() 
 		|| $woocommerce->cart->get_cart_contents_count() === 0 ) {
-			bookacti_set_cart_timeout( $expiration_date );
+			bookacti_wc_set_cart_expiration_date( $expiration_date );
 		} else {
 			$expiration_date = $cart_expiration_date;
 		}
@@ -887,12 +486,12 @@ function bookacti_wc_get_cart_expiration_date( $user_id = 0 ) {
 
 /**
  * Set cart timeout
- * @version 1.8.10
+ * @since 1.8.10 (was bookacti_set_cart_timeout)
  * @global woocommerce $woocommerce
- * @param string $expiration_date
+ * @param string|null $expiration_date
  * @param int $user_id
  */
-function bookacti_set_cart_timeout( $expiration_date, $user_id = 0 ) {
+function bookacti_wc_set_cart_expiration_date( $expiration_date, $user_id = 0 ) {
 	if( is_user_logged_in() || $user_id ) {
 		if( ! $user_id ) { $user_id = get_current_user_id(); }
 		update_user_meta( $user_id, 'bookacti_expiration_cart', $expiration_date );
@@ -968,11 +567,11 @@ function bookacti_get_formatted_time_before_expiration( $expiration_date ) {
  * Build a user-friendly events list based on item bookings
  * @since 1.8.10
  * @param array $item_bookings
- * @param boolean $hide_quantity
+ * @param boolean $show_quantity
  * @param string $locale Optional. Default to site locale.
  * @return string
  */
-function bookacti_wc_get_item_bookings_events_list_html( $item_bookings, $hide_quantity = true, $locale = 'site' ) {
+function bookacti_wc_get_item_bookings_events_list_html( $item_bookings, $show_quantity = false, $locale = 'site' ) {
 	if( ! $item_bookings ) { return ''; }
 	
 	// Set default locale to site's locale
@@ -1012,7 +611,7 @@ function bookacti_wc_get_item_bookings_events_list_html( $item_bookings, $hide_q
 				$list .= $dates;
 			}
 
-			if( ! $hide_quantity ) {
+			if( $show_quantity ) {
 				$list .= '<span class="bookacti-booking-event-quantity-separator" >' . $quantity_separator . '</span>';
 				$list .= '<span class="bookacti-booking-event-quantity" >' . $booking->quantity . '</span>';
 			}
@@ -1028,7 +627,7 @@ function bookacti_wc_get_item_bookings_events_list_html( $item_bookings, $hide_q
 		$list = '<ul class="bookacti-booking-events-list bookacti-custom-scrollbar" style="clear:both;" >' . $list . '</ul>';
 	}
 	
-	return apply_filters( 'bookacti_wc_item_bookings_events_list_html', $list, $item_bookings, $hide_quantity, $locale );
+	return apply_filters( 'bookacti_wc_item_bookings_events_list_html', $list, $item_bookings, $show_quantity, $locale );
 }
 
 
@@ -1072,7 +671,7 @@ function bookacti_wc_get_item_bookings_attributes( $item_bookings ) {
 		if( empty( $dummy_booking ) ) {
 			$booking_attributes[ 'events' ] = array( 
 				'label' => esc_html( _n( 'Event', 'Events', count( $item_booking[ 'bookings' ] ), 'booking-activities' ) ), 
-				'value' => bookacti_wc_get_item_bookings_events_list_html( array( $item_booking ), false ),
+				'value' => bookacti_wc_get_item_bookings_events_list_html( array( $item_booking ), true ),
 				'fullwidth' => 1
 			);
 		}
@@ -1576,11 +1175,10 @@ function bookacti_wc_get_order_items_by_bookings( $booking_ids = array(), $booki
 
 /**
  * Save the order user data as booking meta
- * @since 1.6.0
- * @version 1.8.10
+ * @since 1.8.10 (was bookacti_save_order_data_as_booking_meta)
  * @param WC_Order $order
  */
-function bookacti_save_order_data_as_booking_meta( $order ) {
+function bookacti_wc_save_no_account_user_data_as_booking_meta( $order ) {
 	// Get user data to save
 	$user_data = apply_filters( 'bookacti_wc_no_account_user_data_to_save_as_booking_meta', array(
 		'email'		=> $order->get_billing_email( 'edit' ),
@@ -1596,6 +1194,9 @@ function bookacti_save_order_data_as_booking_meta( $order ) {
 	// Prefix array keys with 'user_'
 	$user_data = array_combine( array_map( function( $key ) { return 'user_' . $key; }, array_keys( $user_data ) ), $user_data );
 	
+	$user_email	= $order->get_billing_email( 'edit' );
+	$user_id	= $user_email ? $user_email : apply_filters( 'bookacti_unknown_user_id', 'unknown_user' );
+	
 	$items = $order->get_items();
 	if( $items ) {
 		foreach( $items as $key => $item ) {
@@ -1609,15 +1210,12 @@ function bookacti_save_order_data_as_booking_meta( $order ) {
 				if( ! $booking_id || ! $object_type ) { continue; }
 
 				// Change the user id to the user email
-				$user_id = ! empty( $user_data[ 'user_email' ] ) ? $user_data[ 'user_email' ] : esc_attr( apply_filters( 'bookacti_unknown_user_id', 'unknown_user' ) );
-				if( $user_id ) {
-					if( $object_type === 'booking' ) {
-						bookacti_update_booking_user_id( $booking_id, $user_id );
+				if( $object_type === 'booking' ) {
+					bookacti_update_booking_user_id( $booking_id, $user_id );
 
-					} else if( $object_type === 'booking_group' ) {
-						bookacti_update_booking_group_user_id( $booking_id, $user_id );
-						bookacti_update_booking_group_bookings_user_id( $booking_id, $user_id );
-					}
+				} else if( $object_type === 'booking_group' ) {
+					bookacti_update_booking_group_user_id( $booking_id, $user_id );
+					bookacti_update_booking_group_bookings_user_id( $booking_id, $user_id );
 				}
 
 				// Add user data to the booking meta
@@ -1767,218 +1365,26 @@ function bookacti_wc_booking_actions_per_order_id( $booking_actions, $order_id )
 
 
 /**
- * Update order bookings if a partial refund is perfomed (refund of one or more items)
- * @since 1.2.0 (was part of bookacti_update_booking_when_order_item_is_refunded before)
- * @version 1.8.10
- * @param WC_Order_Refund $refund
- */
-function bookacti_update_order_bookings_on_items_refund( $refund ) {
-	$refund_items = $refund->get_items();
-	if( ! $refund_items ) { return; }
-	
-	$utc_timezone_obj = new DateTimeZone( 'UTC' );
-	$price_decimals = wc_get_price_decimals();
-	
-	$refund_id		= $refund->get_id();
-	$refund_action	= $refund->get_refunded_payment() ? 'auto' : 'manual';
-	$refund_date	= $refund->get_date_created() ? $refund->get_date_created() : new DateTime();
-	if( is_a( $refund_date, 'DateTime' ) ) {
-		$refund_date->setTimezone( $utc_timezone_obj );
-		$refund_date = $refund_date->format( 'Y-m-d H:i:s' );
-	}
-	
-	$order_id		= $refund->get_parent_id();
-	$order			= wc_get_order( $refund->get_parent_id() );
-	$order_items	= $order->get_items();
-	
-	// Get the bookings attached to refunded items
-	$refunded_items = array();
-	$items_refunded_qty = array();
-	$items_refunded_amount = array();
-	foreach( $refund_items as $refund_item ) {
-		$item_id = intval( $refund_item->get_meta( '_refunded_item_id', true ) );
-		if( ! isset( $order_items[ $item_id ] ) ) { continue; }
-		
-		$refunded_qty = abs( intval( $refund_item->get_quantity() ) );
-		$refunded_amount = abs( round( $refund_item->get_total() + $refund_item->get_total_tax(), $price_decimals ) );
-		if( ! $refunded_qty || ! $refunded_amount ) { continue; }
-		
-		$refunded_items[ $item_id ] = $order_items[ $item_id ];
-		$items_refunded_qty[ $item_id ]	= $refunded_qty;
-		$items_refunded_amount[ $item_id ] = $refunded_amount;
-	}
-	
-	$items_bookings = bookacti_wc_get_order_items_bookings( $refunded_items );
-	
-	// Update each booking qty or status
-	foreach( $items_bookings as $item_id => $item_bookings ) {
-		foreach( $item_bookings as $item_booking ) {
-			// Prepare the refund record
-			$refund_record = apply_filters( 'bookacti_wc_booking_refund_data', array( 'date' => $refund_date, 'quantity' => isset( $items_refunded_qty[ $item_id ] ) ? $items_refunded_qty[ $item_id ] : 0, 'amount' => isset( $items_refunded_amount[ $item_id ] ) ? wc_format_decimal( $items_refunded_amount[ $item_id ] ) : 0, 'method' => $refund_action ), $refund, $item_booking );
-			
-			$group_quantity = 0;
-			$new_group_quantity = 0;
-			foreach( $item_booking[ 'bookings' ] as $booking ) {
-				$quantity = intval( $booking->quantity );
-				$new_quantity = $quantity - $items_refunded_qty[ $item_id ];
-				if( $item_booking[ 'type' ] === 'group' && $quantity > $group_quantity ){ $group_quantity = $quantity; }
-				if( $item_booking[ 'type' ] === 'group' && $new_quantity > $new_group_quantity ){ $new_group_quantity = $new_quantity; }
-				
-				$new_data = $new_quantity > 0 ? array( 'id' => $booking->id, 'quantity' => $new_quantity ) : array( 'id' => $booking->id, 'status' => 'refunded', 'active' => 0 );
-				
-				$booking_data = bookacti_sanitize_booking_data( $new_data );
-				$updated = bookacti_update_booking( $booking_data );
-				
-				if( $updated && $item_booking[ 'type' ] === 'single' ) {
-					// Update refunds records array bound to the booking
-					$refunds = bookacti_get_metadata( 'booking', $booking->id, 'refunds', true );
-					$refunds = is_array( $refunds ) ? bookacti_format_booking_refunds( $refunds, $booking->id ) : array();
-					$refunds[ $refund_id ] = $refund_record;
-					bookacti_update_metadata( 'booking', $booking->id, array( 'refunds' => $refunds ) );
-					
-					// Trigger booking status change
-					if( $booking->state !== $booking_data[ 'status' ] ) {
-						do_action( 'bookacti_booking_state_changed', $booking->id, $booking_data[ 'status' ], array( 'refund_action' => $refund_action ) );
-					}
-				}
-			}
-			
-			if( $item_booking[ 'type' ] === 'group' ) {
-				// Update refunds records array bound to the booking group
-				$refunds = bookacti_get_metadata( 'booking_group', $item_booking[ 'id' ], 'refunds', true );
-				$refunds = is_array( $refunds ) ? bookacti_format_booking_refunds( $refunds, $item_booking[ 'id' ], 'group' ) : array();
-				$refunds[ $refund_id ] = $refund_record;
-				bookacti_update_metadata( 'booking_group', $item_booking[ 'id' ], array( 'refunds' => $refunds ) );
-				
-				if( $new_group_quantity <= 0 ) {
-					$booking_group_data = bookacti_sanitize_booking_group_data( array( 'id' => $item_booking[ 'id' ], 'status' => 'refunded', 'active' => 0 ) );
-					$updated = bookacti_update_booking_group( $booking_group_data );
-
-					// Trigger booking group status change
-					$group_status = isset( $item_booking[ 'bookings' ][ 0 ]->group_state ) ? $item_booking[ 'bookings' ][ 0 ]->group_state : $item_booking[ 'bookings' ][ 0 ]->state;
-					if( $updated && $group_status !== $booking_group_data[ 'status' ] ) {
-						do_action( 'bookacti_booking_group_state_changed', $item_booking[ 'id' ], $booking_group_data[ 'status' ], array( 'refund_action' => $refund_action ) );
-					}
-				}
-			}
-		}
-	}
-}
-
-
-/**
- * Update order bookings if a total refund is perfomed (refund of the whole order)
- * @since 1.2.0 (was part of bookacti_update_booking_when_order_item_is_refunded before)
- * @version 1.8.10
- * @param WC_Order_Refund $refund
- */
-function bookacti_update_order_bookings_on_order_refund( $refund ) {
-	// Double check that the refund is total
-	$order_id			= $refund->get_parent_id();
-	$order				= wc_get_order( $order_id );
-	$is_total_refund	= floatval( $order->get_total() ) == floatval( $order->get_total_refunded() );
-	if( ! $is_total_refund ) { return; }
-	
-	$utc_timezone_obj = new DateTimeZone( 'UTC' );
-	
-	$refund_id		= $refund->get_id();
-	$refund_action	= $refund->get_refunded_payment() ? 'auto' : 'manual';
-	$refund_date	= $refund->get_date_created() ? $refund->get_date_created() : new DateTime();
-	if( is_a( $refund_date, 'DateTime' ) ) {
-		$refund_date->setTimezone( $utc_timezone_obj );
-		$refund_date = $refund_date->format( 'Y-m-d H:i:s' );
-	}
-	
-	$items = $order->get_items();
-	foreach( $items as $item_id => $item ) {
-		$item_id = $item->get_id();
-		$items_bookings = bookacti_wc_get_order_items_bookings( array( $item ) );
-		if( empty( $items_bookings[ $item_id ] ) ) { continue; }
-		
-		// Get refunded qty and amount for each item
-		$refunded_qty = abs( $item->get_quantity() ) - abs( $order->get_qty_refunded_for_item( $item_id ) );
-		$refunded_amount = bookacti_wc_get_item_remaining_refund_amount( $item );
-		
-		foreach( $items_bookings[ $item_id ] as $item_booking ) {
-			// Do not treat bookings already marked as refunded
-			$status = $item_booking[ 'type' ] === 'group' && ! empty( $item_booking[ 'bookings' ][ 0 ]->group_state ) ? $item_booking[ 'bookings' ][ 0 ]->group_state : $item_booking[ 'bookings' ][ 0 ]->state;
-			if( $status === 'refunded' ) { continue; }
-			
-			// Prepare the refund record
-			$refund_record = apply_filters( 'bookacti_wc_booking_refund_data', array( 'date' => $refund_date, 'quantity' => $refunded_qty, 'amount' => wc_format_decimal( $refunded_amount ), 'method' => $refund_action ), $refund, $item_booking );
-			
-			// Single booking
-			if( $item_booking[ 'type' ] === 'single' ) {
-				// Update booking state to 'refunded'
-				$booking_data = bookacti_sanitize_booking_data( array( 'id' => $item_booking[ 'id' ], 'status' => 'refunded', 'active' => 0 ) );
-				$updated = bookacti_update_booking( $booking_data );
-				
-				// Update refunds records array bound to the booking
-				$refunds = bookacti_get_metadata( 'booking', $item_booking[ 'id' ], 'refunds', true );
-				$refunds = is_array( $refunds ) ? bookacti_format_booking_refunds( $refunds, $item_booking[ 'id' ] ) : array();
-				$refunds[ $refund_id ] = $refund_record;
-				bookacti_update_metadata( 'booking', $item_booking[ 'id' ], array( 'refunds' => $refunds ) );
-
-				if( $updated && $status !== $booking_data[ 'status' ] ) {
-					do_action( 'bookacti_booking_state_changed', $item_booking[ 'id' ], 'refunded', array( 'refund_action' => $refund_action ) );
-				}
-
-			// Booking group
-			} else if( $item_booking[ 'type' ] === 'group' ) {
-				// Update bookings states to 'refunded'
-				$booking_group_data = bookacti_sanitize_booking_group_data( array( 'id' => $item_booking[ 'id' ], 'status' => 'refunded', 'active' => 0 ) );
-				$updated = bookacti_update_booking_group( $booking_group_data );
-				bookacti_update_booking_group_bookings( $booking_group_data );
-				
-				// Update refunds records array bound to the booking
-				$refunds = bookacti_get_metadata( 'booking_group', $item_booking[ 'id' ], 'refunds', true );
-				$refunds = is_array( $refunds ) ? bookacti_format_booking_refunds( $refunds, $item_booking[ 'id' ], 'group' ) : array();
-				$refunds[ $refund_id ] = $refund_record;
-				bookacti_update_metadata( 'booking_group', $item_booking[ 'id' ], array( 'refunds' => $refunds ) );
-
-				if( $updated && $status !== $booking_group_data[ 'status' ] ) {
-					do_action( 'bookacti_booking_group_state_changed', $item_booking[ 'id' ], 'refunded', array( 'refund_action' => $refund_action ) );
-				}
-			}
-		}
-	}
-}
-
-
-/**
  * Get WC order items rows
  * @since 1.7.4
+ * @version 1.8.10
  * @param WC_Order_Item_Product[] $order_items
  * @return string
  */
 function bookacti_get_order_items_rows( $order_items = array() ) {
 	ob_start();
 	foreach( $order_items as $item ) {
-		$item_id	= $item->get_id();
-		$order		= $item->get_order();
-		$product	= $item->get_product();
-		?>
-			<tr class="<?php echo esc_attr( apply_filters( 'woocommerce_order_item_class', 'woocommerce-table__line-item order_item', $item, $order ) ); ?>">
-				<td class="woocommerce-table__product-name product-name">
-					<?php
-						$is_visible        = $product && $product->is_visible();
-						$product_permalink = apply_filters( 'woocommerce_order_item_permalink', $is_visible ? $product->get_permalink( $item ) : '', $item, $order );
-
-						echo apply_filters( 'woocommerce_order_item_name', $product_permalink ? sprintf( '<a href="%s">%s</a>', $product_permalink, $item->get_name() ) : $item->get_name(), $item, $is_visible );
-						echo apply_filters( 'woocommerce_order_item_quantity_html', ' <strong class="product-quantity">' . sprintf( '&times; %s', $item->get_quantity() ) . '</strong>', $item );
-
-						do_action( 'woocommerce_order_item_meta_start', $item_id, $item, $order, false );
-
-						wc_display_item_meta( $item );
-
-						do_action( 'woocommerce_order_item_meta_end', $item_id, $item, $order, false );
-					?>
-				</td>
-				<td class="woocommerce-table__product-total product-total">
-					<?php echo $order->get_formatted_line_subtotal( $item ); ?>
-				</td>
-			</tr>
-		<?php
+		wc_get_template(
+			'order/order-details-item.php',
+			array(
+				'order'              => $item->get_order(),
+				'item_id'            => $item->get_id(),
+				'item'               => $item,
+				'show_purchase_note' => false,
+				'purchase_note'      => '',
+				'product'            => $item->get_product(),
+			)
+		);
 	}
 	return ob_get_clean();
 }
@@ -2257,6 +1663,185 @@ function bookacti_does_order_support_auto_refund( $order ) {
 
 
 /**
+ * Update order bookings if a partial refund is perfomed (refund of one or more items)
+ * @since 1.2.0 (was part of bookacti_update_booking_when_order_item_is_refunded before)
+ * @version 1.8.10
+ * @param WC_Order_Refund $refund
+ */
+function bookacti_update_order_bookings_on_items_refund( $refund ) {
+	$refund_items = $refund->get_items();
+	if( ! $refund_items ) { return; }
+	
+	$utc_timezone_obj = new DateTimeZone( 'UTC' );
+	$price_decimals = wc_get_price_decimals();
+	
+	$refund_id		= $refund->get_id();
+	$refund_action	= $refund->get_refunded_payment() ? 'auto' : 'manual';
+	$refund_date	= $refund->get_date_created() ? $refund->get_date_created() : new DateTime();
+	if( is_a( $refund_date, 'DateTime' ) ) {
+		$refund_date->setTimezone( $utc_timezone_obj );
+		$refund_date = $refund_date->format( 'Y-m-d H:i:s' );
+	}
+	
+	$order_id		= $refund->get_parent_id();
+	$order			= wc_get_order( $refund->get_parent_id() );
+	$order_items	= $order->get_items();
+	
+	// Get the bookings attached to refunded items
+	$refunded_items = array();
+	$items_refunded_qty = array();
+	$items_refunded_amount = array();
+	foreach( $refund_items as $refund_item ) {
+		$item_id = intval( $refund_item->get_meta( '_refunded_item_id', true ) );
+		if( ! isset( $order_items[ $item_id ] ) ) { continue; }
+		
+		$refunded_qty = abs( intval( $refund_item->get_quantity() ) );
+		$refunded_amount = abs( round( $refund_item->get_total() + $refund_item->get_total_tax(), $price_decimals ) );
+		if( ! $refunded_qty || ! $refunded_amount ) { continue; }
+		
+		$refunded_items[ $item_id ] = $order_items[ $item_id ];
+		$items_refunded_qty[ $item_id ]	= $refunded_qty;
+		$items_refunded_amount[ $item_id ] = $refunded_amount;
+	}
+	
+	$items_bookings = bookacti_wc_get_order_items_bookings( $refunded_items );
+	
+	// Update each booking qty or status
+	foreach( $items_bookings as $item_id => $item_bookings ) {
+		foreach( $item_bookings as $item_booking ) {
+			// Prepare the refund record
+			$refund_record = apply_filters( 'bookacti_wc_booking_refund_data', array( 'date' => $refund_date, 'quantity' => isset( $items_refunded_qty[ $item_id ] ) ? $items_refunded_qty[ $item_id ] : 0, 'amount' => isset( $items_refunded_amount[ $item_id ] ) ? wc_format_decimal( $items_refunded_amount[ $item_id ] ) : 0, 'method' => $refund_action ), $refund, $item_booking );
+			
+			$group_quantity = 0;
+			$new_group_quantity = 0;
+			foreach( $item_booking[ 'bookings' ] as $booking ) {
+				$quantity = intval( $booking->quantity );
+				$new_quantity = $quantity - $items_refunded_qty[ $item_id ];
+				if( $item_booking[ 'type' ] === 'group' && $quantity > $group_quantity ){ $group_quantity = $quantity; }
+				if( $item_booking[ 'type' ] === 'group' && $new_quantity > $new_group_quantity ){ $new_group_quantity = $new_quantity; }
+				
+				$new_data = $new_quantity > 0 ? array( 'id' => $booking->id, 'quantity' => $new_quantity ) : array( 'id' => $booking->id, 'status' => 'refunded', 'active' => 0 );
+				
+				$booking_data = bookacti_sanitize_booking_data( $new_data );
+				$updated = bookacti_update_booking( $booking_data );
+				
+				if( $updated && $item_booking[ 'type' ] === 'single' ) {
+					// Update refunds records array bound to the booking
+					$refunds = bookacti_get_metadata( 'booking', $booking->id, 'refunds', true );
+					$refunds = is_array( $refunds ) ? bookacti_format_booking_refunds( $refunds, $booking->id ) : array();
+					$refunds[ $refund_id ] = $refund_record;
+					bookacti_update_metadata( 'booking', $booking->id, array( 'refunds' => $refunds ) );
+					
+					// Trigger booking status change
+					if( $booking->state !== $booking_data[ 'status' ] ) {
+						do_action( 'bookacti_booking_state_changed', $booking->id, $booking_data[ 'status' ], array( 'refund_action' => $refund_action ) );
+					}
+				}
+			}
+			
+			if( $item_booking[ 'type' ] === 'group' ) {
+				// Update refunds records array bound to the booking group
+				$refunds = bookacti_get_metadata( 'booking_group', $item_booking[ 'id' ], 'refunds', true );
+				$refunds = is_array( $refunds ) ? bookacti_format_booking_refunds( $refunds, $item_booking[ 'id' ], 'group' ) : array();
+				$refunds[ $refund_id ] = $refund_record;
+				bookacti_update_metadata( 'booking_group', $item_booking[ 'id' ], array( 'refunds' => $refunds ) );
+				
+				if( $new_group_quantity <= 0 ) {
+					$booking_group_data = bookacti_sanitize_booking_group_data( array( 'id' => $item_booking[ 'id' ], 'status' => 'refunded', 'active' => 0 ) );
+					$updated = bookacti_update_booking_group( $booking_group_data );
+
+					// Trigger booking group status change
+					$group_status = isset( $item_booking[ 'bookings' ][ 0 ]->group_state ) ? $item_booking[ 'bookings' ][ 0 ]->group_state : $item_booking[ 'bookings' ][ 0 ]->state;
+					if( $updated && $group_status !== $booking_group_data[ 'status' ] ) {
+						do_action( 'bookacti_booking_group_state_changed', $item_booking[ 'id' ], $booking_group_data[ 'status' ], array( 'refund_action' => $refund_action ) );
+					}
+				}
+			}
+		}
+	}
+}
+
+
+/**
+ * Update order bookings if a total refund is perfomed (refund of the whole order)
+ * @since 1.2.0 (was part of bookacti_update_booking_when_order_item_is_refunded before)
+ * @version 1.8.10
+ * @param WC_Order_Refund $refund
+ */
+function bookacti_update_order_bookings_on_order_refund( $refund ) {
+	// Double check that the refund is total
+	$order_id			= $refund->get_parent_id();
+	$order				= wc_get_order( $order_id );
+	$is_total_refund	= floatval( $order->get_total() ) == floatval( $order->get_total_refunded() );
+	if( ! $is_total_refund ) { return; }
+	
+	$utc_timezone_obj = new DateTimeZone( 'UTC' );
+	
+	$refund_id		= $refund->get_id();
+	$refund_action	= $refund->get_refunded_payment() ? 'auto' : 'manual';
+	$refund_date	= $refund->get_date_created() ? $refund->get_date_created() : new DateTime();
+	if( is_a( $refund_date, 'DateTime' ) ) {
+		$refund_date->setTimezone( $utc_timezone_obj );
+		$refund_date = $refund_date->format( 'Y-m-d H:i:s' );
+	}
+	
+	$items = $order->get_items();
+	foreach( $items as $item_id => $item ) {
+		$item_id = $item->get_id();
+		$items_bookings = bookacti_wc_get_order_items_bookings( array( $item ) );
+		if( empty( $items_bookings[ $item_id ] ) ) { continue; }
+		
+		// Get refunded qty and amount for each item
+		$refunded_qty = abs( $item->get_quantity() ) - abs( $order->get_qty_refunded_for_item( $item_id ) );
+		$refunded_amount = bookacti_wc_get_item_remaining_refund_amount( $item );
+		
+		foreach( $items_bookings[ $item_id ] as $item_booking ) {
+			// Do not treat bookings already marked as refunded
+			$status = $item_booking[ 'type' ] === 'group' && ! empty( $item_booking[ 'bookings' ][ 0 ]->group_state ) ? $item_booking[ 'bookings' ][ 0 ]->group_state : $item_booking[ 'bookings' ][ 0 ]->state;
+			if( $status === 'refunded' ) { continue; }
+			
+			// Prepare the refund record
+			$refund_record = apply_filters( 'bookacti_wc_booking_refund_data', array( 'date' => $refund_date, 'quantity' => $refunded_qty, 'amount' => wc_format_decimal( $refunded_amount ), 'method' => $refund_action ), $refund, $item_booking );
+			
+			// Single booking
+			if( $item_booking[ 'type' ] === 'single' ) {
+				// Update booking state to 'refunded'
+				$booking_data = bookacti_sanitize_booking_data( array( 'id' => $item_booking[ 'id' ], 'status' => 'refunded', 'active' => 0 ) );
+				$updated = bookacti_update_booking( $booking_data );
+				
+				// Update refunds records array bound to the booking
+				$refunds = bookacti_get_metadata( 'booking', $item_booking[ 'id' ], 'refunds', true );
+				$refunds = is_array( $refunds ) ? bookacti_format_booking_refunds( $refunds, $item_booking[ 'id' ] ) : array();
+				$refunds[ $refund_id ] = $refund_record;
+				bookacti_update_metadata( 'booking', $item_booking[ 'id' ], array( 'refunds' => $refunds ) );
+
+				if( $updated && $status !== $booking_data[ 'status' ] ) {
+					do_action( 'bookacti_booking_state_changed', $item_booking[ 'id' ], 'refunded', array( 'refund_action' => $refund_action ) );
+				}
+
+			// Booking group
+			} else if( $item_booking[ 'type' ] === 'group' ) {
+				// Update bookings states to 'refunded'
+				$booking_group_data = bookacti_sanitize_booking_group_data( array( 'id' => $item_booking[ 'id' ], 'status' => 'refunded', 'active' => 0 ) );
+				$updated = bookacti_update_booking_group( $booking_group_data );
+				bookacti_update_booking_group_bookings( $booking_group_data );
+				
+				// Update refunds records array bound to the booking
+				$refunds = bookacti_get_metadata( 'booking_group', $item_booking[ 'id' ], 'refunds', true );
+				$refunds = is_array( $refunds ) ? bookacti_format_booking_refunds( $refunds, $item_booking[ 'id' ], 'group' ) : array();
+				$refunds[ $refund_id ] = $refund_record;
+				bookacti_update_metadata( 'booking_group', $item_booking[ 'id' ], array( 'refunds' => $refunds ) );
+
+				if( $updated && $status !== $booking_group_data[ 'status' ] ) {
+					do_action( 'bookacti_booking_group_state_changed', $item_booking[ 'id' ], 'refunded', array( 'refund_action' => $refund_action ) );
+				}
+			}
+		}
+	}
+}
+
+
+/**
  * Create a coupon to refund a booking
  * @version 1.8.10
  * @param array $bookings
@@ -2507,38 +2092,6 @@ function bookacti_auto_refund_booking( $bookings, $booking_type, $refund_message
 	}
 
 	return array( 'status' => 'success', 'do_not_update_status' => 1, 'refund' => $refund );
-}
-
-
-/**
- * Delete a refund and die
- * @version 1.8.10
- * @param WC_Order_Refund $refund
- * @param array $messages
- */
-function bookacti_delete_refund_and_die( $refund, $messages = array() ) {
-	// Delete the refund
-	if( $refund->get_type() === 'shop_order_refund' ) {
-		$refund_id = $refund->get_id();
-		$order_id = $refund->get_parent_id();
-		$refund->delete( true );
-		
-		do_action( 'woocommerce_refund_deleted', $refund_id, $order_id );
-	}
-
-	// Stop the script execution
-	$error_message	= '<div class="notice notice-error bookacti-wc-refund-error" >'
-					.	'<p>' . esc_html__( 'Error occurs while trying to refund a booking.', 'booking-activities' ) . '</p>';
-	if( $messages ) {
-		$error_message .= '<ul>';
-		foreach( $messages as $message ) {
-			$error_message .= '<li>' . $message;
-		}
-		$error_message .= '</ul>';
-	}
-	$error_message .= '</div>';
-	
-	wp_die( $error_message );
 }
 
 

@@ -686,11 +686,11 @@ function bookacti_set_timeout_to_cart_item( $cart_item_key, $product_id, $quanti
 	||  $woocommerce->cart->get_cart_contents_count() === $quantity ) {
 
 		// Reset global cart timeout
-		bookacti_set_cart_timeout( $expiration_date );
+		bookacti_wc_set_cart_expiration_date( $expiration_date );
 
 		// If there are others items in cart, we need to change their expiration dates
 		if( $reset_timeout_on_change ) {
-			bookacti_reset_cart_expiration_dates( $expiration_date );
+			bookacti_wc_reset_cart_expiration_date( $expiration_date );
 		}
 	}
 }
@@ -812,7 +812,7 @@ function bookacti_add_timeout_to_cart() {
 			}
 		}
 	} else {
-		bookacti_set_cart_timeout( null );
+		bookacti_wc_set_cart_expiration_date( null );
 	}
 }
 add_action( 'woocommerce_before_cart', 'bookacti_add_timeout_to_cart', 10 );
@@ -1397,7 +1397,7 @@ function bookacti_change_booking_state_after_checkout( $order_id, $order_details
 	// If the user has no account, bind the user data to the bookings
 	if( $new_data[ 'user_id' ] && is_int( $new_data[ 'user_id' ] ) ) { return; }
 
-	bookacti_save_order_data_as_booking_meta( $order );
+	bookacti_wc_save_no_account_user_data_as_booking_meta( $order );
 }
 add_action( 'woocommerce_checkout_order_processed', 'bookacti_change_booking_state_after_checkout', 10, 3 );
 
@@ -1425,7 +1425,8 @@ function bookacti_format_order_item_meta( $formatted_meta, $item ) {
 		if( substr( $meta->key, 0, 9 ) !== 'bookacti_' ) { continue; }
 		
 		// Format bookings data to be displayed
-		if( $meta->key === 'bookacti_bookings' || $meta->key === 'bookacti_booking_id' || $meta->key === 'bookacti_booking_group_id' ) {
+		if( $meta->key === 'bookacti_bookings' 
+		||  $meta->key === 'bookacti_booking_id' || $meta->key === 'bookacti_booking_group_id' ) { // Backward compatibility
 			$item_id = $item->get_id();
 			$order_items_bookings = bookacti_wc_get_order_items_bookings( array( $item ), array( 'fetch_meta' => true ) );
 			$order_item_bookings = ! empty( $order_items_bookings[ $item_id ] ) ? $order_items_bookings[ $item_id ] : bookacti_wc_format_order_item_bookings_ids( $item );
@@ -1544,8 +1545,8 @@ function bookacti_add_wc_data_to_user_booking_list_items( $booking_list_items, $
 	}
 
 	// Get order item data
-	$order_items_data = bookacti_get_order_items_data_by_bookings( $booking_ids, $booking_group_ids );
-	if( ! $order_items_data ) { return $booking_list_items; }
+	$order_items = bookacti_wc_get_order_items_by_bookings( $booking_ids, $booking_group_ids );
+	if( ! $order_items ) { return $booking_list_items; }
 
 	// Get WC orders by order item id
 	$orders = array();
@@ -1559,8 +1560,8 @@ function bookacti_add_wc_data_to_user_booking_list_items( $booking_list_items, $
 	$wc_refund_actions = array_keys( bookacti_wc_get_refund_actions() );
 
 	// Add order item data to the booking list
-	foreach( $order_items_data as $order_item_data ) {
-		$order_item_bookings_ids = bookacti_wc_format_order_item_bookings_ids( (array) $order_item_data );
+	foreach( $order_items as $order_item_id => $order_item ) {
+		$order_item_bookings_ids = bookacti_wc_format_order_item_bookings_ids( $order_item );
 		if( ! $order_item_bookings_ids ) { continue; }
 		
 		foreach( $order_item_bookings_ids as $order_item_booking_id ) {
@@ -1584,11 +1585,14 @@ function bookacti_add_wc_data_to_user_booking_list_items( $booking_list_items, $
 			if( ! isset( $booking_list_items[ $booking_id ] ) ) { continue; }
 
 			// Fill product column
-			$booking_list_items[ $booking_id ][ 'product_id' ]		= ! empty( $order_item_data->_product_id ) ? intval( $order_item_data->_product_id ) : '';
-			$booking_list_items[ $booking_id ][ 'product_title' ]	= ! empty( $order_item_data->order_item_name ) ? apply_filters( 'bookacti_translate_text', $order_item_data->order_item_name ) : '';
+			$product_id = intval( $order_item->get_product_id() );
+			$product_title = $order_item->get_name();
+			$booking_list_items[ $booking_id ][ 'product_id' ]		= $product_id ? $product_id : '';
+			$booking_list_items[ $booking_id ][ 'product_title' ]	= $product_title ? apply_filters( 'bookacti_translate_text', $product_title ) : '';
 
 			// Fill price column
-			$booking_list_items[ $booking_id ][ 'price' ] = apply_filters( 'bookacti_user_booking_list_order_item_price', wc_price( $order_item_data->_line_total + $order_item_data->_line_tax ), $order_item_data, $booking_list_items[ $booking_id ], $booking_meta, $filters );
+			$order_item_total = $order_item->get_total() + $order_item->get_total_tax();
+			$booking_list_items[ $booking_id ][ 'price' ] = apply_filters( 'bookacti_user_booking_list_order_item_price', wc_price( $order_item_total ), $order_item, $booking_list_items[ $booking_id ], $booking_meta, $filters );
 			
 			
 			// Try to find a coupon code
@@ -1607,7 +1611,7 @@ function bookacti_add_wc_data_to_user_booking_list_items( $booking_list_items, $
 			}
 			
 			// Backward compatibility
-			if( ! $coupon_code && ! empty( $order_item_data->bookacti_refund_coupon ) ) { $coupon_code = $order_item_data->bookacti_refund_coupon; }
+			if( ! $coupon_code && ! empty( $order_item[ 'bookacti_refund_coupon' ] ) ) { $coupon_code = $order_item[ 'bookacti_refund_coupon' ]; }
 			
 			// Specify refund method in status column
 			if( $bookings[ $booking_id ]->state === 'refunded' && $coupon_code && in_array( 'status', $columns, true ) ) {
@@ -1617,19 +1621,19 @@ function bookacti_add_wc_data_to_user_booking_list_items( $booking_list_items, $
 			}
 
 			// Filter refund actions
-			if( ! empty( $booking_list_items[ $booking_id ][ 'actions' ][ 'refund' ] ) && ! empty( $orders[ $order_item_data->order_id ] ) ) {
-				$order		= $orders[ $order_item_data->order_id ];
+			$order_id = $order_item->get_order_id();
+			if( ! empty( $booking_list_items[ $booking_id ][ 'actions' ][ 'refund' ] ) && ! empty( $orders[ $order_id ] ) ) {
+				$order		= $orders[ $order_id ];
 				$is_paid	= $order->get_date_paid( 'edit' );
-				$total		= isset( $order_item_data->_line_total ) ? $order_item_data->_line_total + $order_item_data->_line_tax : '';
 
-				if( $order->get_status() !== 'pending' && $is_paid && $total > 0 ) {
+				if( $order->get_status() !== 'pending' && $is_paid && $order_item_total > 0 ) {
 					$booking_list_items[ $booking_id ][ 'refund_actions' ] = array_intersect_key( $booking_list_items[ $booking_id ][ 'refund_actions' ], array_flip( $wc_refund_actions ) );
 				}
 			}
 		}
 	}
 
-	return apply_filters( 'bookacti_user_booking_list_items_with_wc_data', $booking_list_items, $bookings, $booking_groups, $displayed_groups, $users, $filters, $columns, $orders, $order_items_data );
+	return apply_filters( 'bookacti_user_booking_list_items_with_wc_data', $booking_list_items, $bookings, $booking_groups, $displayed_groups, $users, $filters, $columns, $orders, $order_items );
 }
 add_filter( 'bookacti_user_booking_list_items', 'bookacti_add_wc_data_to_user_booking_list_items', 10, 8 );
 

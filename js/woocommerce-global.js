@@ -40,7 +40,7 @@ function bookacti_wc_perform_form_action( booking_system ) {
 		if( group_id > 0 ) {
 			bookacti_redirect_to_group_category_product_page( booking_system, group_id );
 		} else {
-			bookacti_redirect_to_activity_product_page( booking_system, event );
+			bookacti_redirect_to_activity_product_page( booking_system, event.id );
 		}
 	}
 	
@@ -58,16 +58,17 @@ function bookacti_wc_perform_form_action( booking_system ) {
 /**
  * Redirect to activity product page
  * @since 1.7.0
+ * @version 1.8.10
  * @param {HTMLElement} booking_system
- * @param {object} event
+ * @param {int} event_id
  */
-function bookacti_redirect_to_activity_product_page( booking_system, event ) {
+function bookacti_redirect_to_activity_product_page( booking_system, event_id ) {
 	var booking_system_id	= booking_system.attr( 'id' );
 	var attributes			= bookacti.booking_system[ booking_system_id ];
 	
-	if( typeof attributes[ 'events_data' ][ event.id ] === 'undefined' ) { return; }
+	if( typeof attributes[ 'events_data' ][ event_id ] === 'undefined' ) { return; }
 	
-	var activity_id = attributes[ 'events_data' ][ event.id ][ 'activity_id' ];
+	var activity_id = attributes[ 'events_data' ][ event_id ][ 'activity_id' ];
 	if( typeof attributes[ 'product_by_activity' ] === 'undefined' ) { return; }
 	if( typeof attributes[ 'product_by_activity' ][ activity_id ] === 'undefined' ) { return; }
 	

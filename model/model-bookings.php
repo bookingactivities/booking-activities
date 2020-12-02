@@ -1629,7 +1629,7 @@ function bookacti_update_booking_user_id( $booking_id, $user_id ) {
  * We can't go further because customer ids are generated randomly, regardless of existing ones in database
  * Limiting to 31 days make it very improbable that two customers with the same id create an account or log in
  * 
- * @version 1.7.0
+ * @version 1.8.10
  * @global wpdb $wpdb
  * @param int|string $user_id
  * @param int|string $old_user_id
@@ -1648,7 +1648,7 @@ function bookacti_update_bookings_user_id( $user_id, $old_user_id, $expiration_d
 	
 	// Whether to check expiration date
 	if( is_numeric( $expiration_date_delay ) ) {
-		$query .= ' AND expiration_date >= DATE_SUB( UTC_TIMESTAMP(), INTERVAL %d DAY ) ';
+		$query .= ' AND IF( expiration_date IS NOT NULL, expiration_date >= DATE_SUB( UTC_TIMESTAMP(), INTERVAL %d DAY ), TRUE ) ';
 		$variables[] = intval( $expiration_date_delay );
 	}
 	
