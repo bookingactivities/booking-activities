@@ -115,7 +115,7 @@ function bookacti_controller_cancel_booking() {
 		bookacti_send_json( array( 'status' => 'failed', 'error' => 'error_cancel_booking', 'message' => esc_html__( 'An error occurred while trying to cancel the booking.', 'booking-activities' ) ), 'cancel_booking' );
 	}
 
-	do_action( 'bookacti_booking_state_changed', $booking_id, 'cancelled', array( 'is_admin' => false ) );
+	do_action( 'bookacti_booking_state_changed', $booking, 'cancelled', array( 'is_admin' => false ) );
 
 	$new_bookings = array_values( bookacti_get_bookings( $filters ) );
 	$allow_refund = bookacti_booking_can_be_refunded( $new_bookings[ 0 ], false, 'front' );
@@ -227,7 +227,7 @@ function bookacti_controller_refund_booking() {
 
 		// Hook status changes
 		if( $updated ) {
-			do_action( 'bookacti_booking_state_changed', $booking_id, $refunded[ 'new_state' ], array( 'is_admin' => $is_admin, 'refund_action' => $refund_action ) );
+			do_action( 'bookacti_booking_state_changed', $bookings[ 0 ], $refunded[ 'new_state' ], array( 'is_admin' => $is_admin, 'refund_action' => $refund_action ) );
 		}
 	}
 	
@@ -294,7 +294,7 @@ function bookacti_controller_change_booking_state() {
 			bookacti_send_json( array( 'status' => 'failed', 'error' => 'error_update_booking_status', 'message' => esc_html__( 'An error occurred while trying to change the booking status.', 'booking-activities' ) ), 'change_booking_status' );
 		}
 
-		do_action( 'bookacti_booking_state_changed', $booking_id, $new_booking_state, array( 'is_admin' => $is_admin, 'active' => $active, 'send_notifications' => $send_notifications ) );
+		do_action( 'bookacti_booking_state_changed', $bookings[ 0 ], $new_booking_state, array( 'is_admin' => $is_admin, 'active' => $active, 'send_notifications' => $send_notifications ) );
 	}
 
 	// Change payment status
@@ -579,18 +579,20 @@ add_action( 'wp_ajax_bookactiGetGroupedBookingsRows', 'bookacti_controller_get_g
 /**
  * Trigger bookacti_booking_state_changed for each bookings of the group when bookacti_booking_group_state_changed is called
  * @since 1.2.0
+ * @version 1.8.10
  * @param int $booking_group_id
+ * @param array $bookings
  * @param string $status
  * @param array $args
  */
-function bookacti_trigger_booking_state_change_for_each_booking_of_a_group( $booking_group_id, $status, $args ) {
-	$bookings = bookacti_get_bookings_by_booking_group_id( $booking_group_id );
+function bookacti_trigger_booking_state_change_for_each_booking_of_a_group( $booking_group_id, $bookings, $status, $args ) {
+	if( ! $bookings ) { $bookings = bookacti_get_bookings_by_booking_group_id( $booking_group_id ); }
 	$args[ 'booking_group_state_changed' ] = true;
 	foreach( $bookings as $booking ) {
-		do_action( 'bookacti_booking_state_changed', $booking->id, $status, $args );
+		do_action( 'bookacti_booking_state_changed', $booking, $status, $args );
 	}
 }
-add_action( 'bookacti_booking_group_state_changed', 'bookacti_trigger_booking_state_change_for_each_booking_of_a_group', 10, 3 );
+add_action( 'bookacti_booking_group_state_changed', 'bookacti_trigger_booking_state_change_for_each_booking_of_a_group', 10, 4 );
 
 
 /**
@@ -629,7 +631,7 @@ function bookacti_controller_cancel_booking_group() {
 		bookacti_send_json( array( 'status' => 'failed', 'error' => 'error_cancel_booking_group', 'message' => esc_html__( 'An error occurred while trying to cancel the booking group.', 'booking-activities' ) ), 'cancel_booking_group' );
 	}
 
-	do_action( 'bookacti_booking_group_state_changed', $booking_group_id, 'cancelled', array( 'is_admin' => false ) );
+	do_action( 'bookacti_booking_group_state_changed', $booking_group_id, $bookings, 'cancelled', array( 'is_admin' => false ) );
 	
 	$new_bookings = array_values( bookacti_get_bookings( $filters ) );
 	$allow_refund = bookacti_booking_group_can_be_refunded( $new_bookings, false, 'front' );
@@ -743,7 +745,7 @@ function bookacti_controller_refund_booking_group() {
 
 		// Hook status changes
 		if( $updated ) {
-			do_action( 'bookacti_booking_group_state_changed', $booking_group_id, $refunded[ 'new_state' ], array( 'is_admin' => $is_admin, 'refund_action' => $refund_action ) );
+			do_action( 'bookacti_booking_group_state_changed', $booking_group_id, $bookings, $refunded[ 'new_state' ], array( 'is_admin' => $is_admin, 'refund_action' => $refund_action ) );
 		}
 	}
 	
@@ -819,7 +821,7 @@ function bookacti_controller_change_booking_group_state() {
 			bookacti_send_json( array( 'status' => 'failed', 'error' => 'error_update_booking_group_status', 'message' => esc_html__( 'An error occurred while trying to change the booking group status.', 'booking-activities' ) ), 'change_booking_group_status' );
 		}
 
-		do_action( 'bookacti_booking_group_state_changed', $booking_group_id, $new_booking_state, array( 'is_admin' => $is_admin, 'active' => $active, 'send_notifications' => $send_notifications ) );
+		do_action( 'bookacti_booking_group_state_changed', $booking_group_id, $bookings, $new_booking_state, array( 'is_admin' => $is_admin, 'active' => $active, 'send_notifications' => $send_notifications ) );
 	}
 
 	// Change payment status

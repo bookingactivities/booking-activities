@@ -8,7 +8,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
  * @param array $order_item_booking
  * @param string $new_status
  * @param WC_Order $order
- * @param boolean $forced
+ * @param boolean $forced True to ignore the checks and send the notifications in any cases
  */
 function bookacti_wc_send_order_item_booking_status_notification( $order_item_booking, $new_status, $order, $forced = false ) {
 	$action = isset( $_REQUEST[ 'action' ] ) ? sanitize_title_with_dashes( $_REQUEST[ 'action' ] ) : '';
@@ -29,12 +29,20 @@ function bookacti_wc_send_order_item_booking_status_notification( $order_item_bo
 	// If nobody needs to be notified, do nothing
 	if( ! $notify_admin && ! $notify_customer ) { return; }
 	
-	// Do not send notifications at all for transitionnal order status, 
-	// because the booking is still considered as temporary
+	// Get order current status
 	if( is_numeric( $order ) ) { $order = wc_get_order( $order ); }
 	$order_status = $order ? $order->get_status() : '';
-	if( in_array( $order_status, array( 'pending', 'failed' ), true ) 
-	&&  in_array( $new_status, array( 'pending', 'cancelled' ), true ) ) { return; }
+	
+	// Do not send notifications at all for transitionnal order status, because the booking is still considered as temporary
+	if( ! $forced ) {
+		$transitionnal_status_from = array( 'pending', 'failed' );
+		$transitionnal_status_to = array( 'pending', 'failed', 'cancelled' );
+		foreach( $transitionnal_status_from as $status_from ) {
+			foreach( $transitionnal_status_to as $status_to ) {
+				if( ( $order_status === $status_from && $new_status === $status_to ) || did_action( 'wc-' . $status_from . '_to_wc-' . $status_to ) ) { return; }
+			}
+		}
+	}
 	
 	// If the state hasn't changed, do not send the notifications, unless it is a new order
 	$old_status = $order_item_booking[ 'type' ] === 'group' ? $order_item_booking[ 'bookings' ][ 0 ]->group_state : $order_item_booking[ 'bookings' ][ 0 ]->state;
@@ -63,12 +71,12 @@ function bookacti_wc_send_order_item_booking_status_notification( $order_item_bo
  * @param array $new_data
  * @param array $where
  */
-function bookacti_send_notification_when_order_item_booking_status_changes( $order_item_booking, $sanitized_data, $order, $new_data, $where ) {
+function bookacti_wc_send_notification_when_order_item_booking_status_changes( $order_item_booking, $sanitized_data, $order, $new_data, $where ) {
 	if( empty( $sanitized_data[ 'status' ] ) ) { return; }
 	$new_status = $sanitized_data[ 'status' ];
 	bookacti_wc_send_order_item_booking_status_notification( $order_item_booking, $new_status, $order );
 }
-add_action( 'bookacti_order_item_booking_updated', 'bookacti_send_notification_when_order_item_booking_status_changes', 10, 5 );
+add_action( 'bookacti_wc_order_item_booking_updated', 'bookacti_wc_send_notification_when_order_item_booking_status_changes', 10, 5 );
 
 
 /**

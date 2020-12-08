@@ -189,7 +189,7 @@ function bookacti_update_booking_when_refund_is_deleted( $refund_id, $order_id )
 				// Trigger booking status change
 				if( $updated && $item_booking[ 'type' ] === 'single' ) {
 					if( $booking->state !== $booking_data[ 'status' ] ) {
-						do_action( 'bookacti_booking_state_changed', $booking->id, $booking_data[ 'status' ], array( 'is_admin' => true, 'send_notifications' => false ) );
+						do_action( 'bookacti_booking_state_changed', $booking, $booking_data[ 'status' ], array( 'is_admin' => true, 'send_notifications' => false ) );
 					}
 				}
 			}
@@ -213,7 +213,7 @@ function bookacti_update_booking_when_refund_is_deleted( $refund_id, $order_id )
 
 					// Trigger booking group status change
 					if( $updated && $booking_group_data[ 'status' ] !== $status ) {
-						do_action( 'bookacti_booking_group_state_changed', $item_booking[ 'id' ], $booking_group_data[ 'status' ], array( 'is_admin' => true, 'send_notifications' => false ) );
+						do_action( 'bookacti_booking_group_state_changed', $item_booking[ 'id' ], $item_booking[ 'bookings' ], $item_booking[ 'bookings' ], $booking_group_data[ 'status' ], array( 'is_admin' => true, 'send_notifications' => false ) );
 					}
 				}
 			}

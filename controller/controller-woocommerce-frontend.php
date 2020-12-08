@@ -630,12 +630,12 @@ function bookacti_merge_cart_items_with_same_booking_data( $cart_item_data, $car
 	$cart_item_expiration_date = bookacti_wc_get_new_cart_item_expiration_date();
 	bookacti_wc_update_cart_item_bookings_status( $cart_item_data, 'in_cart', $cart_item_expiration_date );
 	
-	do_action( 'bookacti_cart_item_merged', $cart_item_data, $old_cart_item );
-	
 	// Remove the merged key
 	unset( $cart_item_data[ '_bookacti_options' ][ 'merged_cart_item_key' ] );
 	$cart_item_data[ 'quantity' ] = $new_quantity;
 	$cart_item_data = apply_filters( 'bookacti_merged_cart_item_data', $cart_item_data, $old_cart_item );
+	
+	do_action( 'bookacti_cart_item_merged', $cart_item_data, $old_cart_item );
 	
 	return $cart_item_data;
 }
@@ -1078,14 +1078,24 @@ add_action( 'woocommerce_cart_item_restored', 'bookacti_restore_bookings_of_remo
 function bookacti_get_item_data( $item_data, $cart_item ) {
 	if( empty( $cart_item[ '_bookacti_options' ][ 'bookings' ] ) ) { return $item_data; }
 
-	$cart_item_bookings = bookacti_wc_get_cart_item_bookings( $cart_item[ 'key' ] );
-	$list = bookacti_wc_get_item_bookings_events_list_html( $cart_item_bookings );
-
-	$item_data[] = array( 
-		'key'	=> esc_html( _n( 'Booked event', 'Booked events', count( $cart_item_bookings ), 'booking-activities' ) ), 
-		'value'	=> $list
-	);
-		
+	$cart_item_bookings = bookacti_wc_get_cart_item_bookings( $cart_item[ 'key' ], array( 'fetch_meta' => true ) );
+	if( ! $cart_item_bookings ) { return $item_data; }
+	
+	$cart_item_bookings_attributes = bookacti_wc_get_item_bookings_attributes( $cart_item_bookings );
+	if( ! $cart_item_bookings_attributes ) { return $item_data; }
+	
+	$hidden_cart_item_bookings_attributes = bookacti_wc_get_hidden_cart_item_bookings_attributes();
+	
+	foreach( $cart_item_bookings_attributes as $cart_item_bookings_attribute ) {
+		foreach( $cart_item_bookings_attribute as $cart_item_booking_attribute_name => $cart_item_booking_attribute ) {
+			if( in_array( $cart_item_booking_attribute_name, $hidden_cart_item_bookings_attributes, true ) ) { continue; }
+			$item_data[] = array(
+				'key' => $cart_item_booking_attribute[ 'label' ] ? $cart_item_booking_attribute[ 'label' ] : $cart_item_booking_attribute_name,
+				'value' => $cart_item_booking_attribute[ 'value' ]
+			);
+		}
+	}
+	
 	return $item_data;
 }
 add_filter( 'woocommerce_get_item_data', 'bookacti_get_item_data', 10, 2 );
@@ -1359,7 +1369,7 @@ add_action( 'woocommerce_before_pay_action', 'bookacti_availability_check_before
 
 /**
  * Change order bookings states after the customer validates checkout
- * @since 1.2.2 (was bookacti_delay_expiration_date_for_payment before)
+ * @since 1.2.2
  * @version 1.8.10
  * @param int $order_id
  * @param array $order_details
@@ -1380,10 +1390,17 @@ function bookacti_change_booking_state_after_checkout( $order_id, $order_details
 		'payment_status' => $needs_payment ? 'owed' : 'paid',
 		'active' => 'auto'
 	);
+	
+	// If the user has no account, bind the user data to the bookings
+	if( ! is_numeric( $new_data[ 'user_id' ] ) ) {
+		bookacti_wc_save_no_account_user_data_as_booking_meta( $order );
+	}
+	
+	// Update the booking
 	$updated = bookacti_wc_update_order_items_bookings( $order, $new_data );
 	
 	// Send new status notifications even if the booking status has not changed
-	// The new status notifications is automatically sent if the booking status has changed (on the bookacti_order_item_booking_updated hook)
+	// The new status notifications is automatically sent if the booking status has changed (on the bookacti_wc_order_item_booking_updated hook)
 	foreach( $order_items_bookings as $item_id => $order_item_bookings ) {
 		foreach( $order_item_bookings as $order_item_booking ) {
 			$old_status = $order_item_booking[ 'type' ] === 'group' ? $order_item_booking[ 'bookings' ][ 0 ]->group_state : $order_item_booking[ 'bookings' ][ 0 ]->state;
@@ -1393,11 +1410,6 @@ function bookacti_change_booking_state_after_checkout( $order_id, $order_details
 			bookacti_wc_send_order_item_booking_status_notification( $order_item_booking, $new_data[ 'status' ], $order, true );
 		}
 	}
-	
-	// If the user has no account, bind the user data to the bookings
-	if( $new_data[ 'user_id' ] && is_int( $new_data[ 'user_id' ] ) ) { return; }
-
-	bookacti_wc_save_no_account_user_data_as_booking_meta( $order );
 }
 add_action( 'woocommerce_checkout_order_processed', 'bookacti_change_booking_state_after_checkout', 10, 3 );
 

@@ -112,69 +112,6 @@ function bookacti_update_booking( $booking_data, $where = array() ) {
 
 
 /**
- * Update booking quantity
- * @version 1.7.10
- * @global wpdb $wpdb
- * @param int $booking_id
- * @param int $new_quantity
- * @param string $expiration_date
- * @param string $context
- * @return array
- */
-function bookacti_update_booking_quantity( $booking_id, $new_quantity, $expiration_date = '', $context = 'frontend' ) {
-	global $wpdb;
-	
-	$booking		= bookacti_get_booking_by_id( $booking_id );
-	$old_state		= $booking->state;
-	$old_quantity	= intval( $booking->quantity );
-	$new_quantity	= intval( $new_quantity );
-	$return_array	= array( 'status' => '' );
-	$is_admin		= $context === 'admin' ? true : false;
-
-	// Prepare variables
-	$data = apply_filters( 'bookacti_update_booking_quantity_data', array( 
-		'quantity' => $new_quantity,
-		'state' => '', // Empty string to keep current value
-		'active' => -1, // -1 to keep current value
-		'expiration_date' => $expiration_date, // Empty string to keep current value
-		'context' => $context
-	), $booking );
-
-	$query	= 'UPDATE ' . BOOKACTI_TABLE_BOOKINGS 
-			. ' SET quantity = %d, '
-			. ' state = IFNULL( NULLIF( %s, "" ), state ), '
-			. ' active = IFNULL( NULLIF( %d, -1 ), active ), '
-			. ' expiration_date = IFNULL( NULLIF( %s, "" ), expiration_date ) '
-			. ' WHERE id = %d ';
-
-	$prep_query	= $wpdb->prepare( $query, $data[ 'quantity' ], $data[ 'state' ], $data[ 'active' ], $data[ 'expiration_date' ], $booking_id );
-	$updated	= $wpdb->query( $prep_query );
-
-	if( $updated > 0 ){
-
-		// If state has changed
-		if( ! $booking->group_id && $data[ 'state' ] && is_string( $data[ 'state' ] ) && $old_state !== $data[ 'state' ] ) {
-			do_action( 'bookacti_booking_state_changed', $booking_id, $data[ 'state' ], array( 'is_admin' => $is_admin ) );
-		}
-
-		// If quantity has changed
-		if( intval( $data[ 'quantity' ] ) > 0 && intval( $data[ 'quantity' ] ) !== $old_quantity ) {
-			do_action( 'bookacti_booking_quantity_updated', $booking_id, intval( $data[ 'quantity' ] ), $old_quantity, array( 'is_admin' => $is_admin ) );
-		}
-
-		$return_array['status'] = 'success';
-	} else if( $updated === 0 ) {
-		$return_array['status'] = 'no_change';
-	} else {
-		$return_array['status'] = 'failed';
-		$return_array['error'] = 'failed';
-	}
-
-	return $return_array;
-}
-
-
-/**
  * Get bookings according to filters
  * @version 1.8.10
  * @global wpdb $wpdb

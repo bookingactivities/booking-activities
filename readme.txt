@@ -330,7 +330,8 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 * Fix - Let the user mouseover an event booking list tooltip even if another event is hovered on the way
 * Fix - Check if select2 library is already registered and included before using our bundled version of it
 * Fix - Add compatibility for bootstrap tooltip (if loaded after jquery ui)
-* Fix - Booking refunded email was sent twice
+* Fix - Booking refunded notification was sent twice
+* Fix - Booking cancelled notification was sent when the customer cancelled the payment
 * Fix - Events were not correctly sorted by date on Safari iOS / MacOS
 * Fix - Cannot switch templates in editor if too many events were loaded
 * Fix - Users having the bookacti_manage_booking_activities capability can now access the admin panel with WC even without manage_woocommerce or edit_posts
