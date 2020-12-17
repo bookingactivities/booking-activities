@@ -161,9 +161,8 @@ add_filter( 'bookacti_notification_sanitized_settings', 'bookacti_sanitize_wc_no
 
 /**
  * Make sure that WC order data are up to date when a WC notification is sent
- * 
  * @since 1.2.2
- * @version 1.8.0
+ * @version 1.8.10
  * @param array $args
  * @return array
  */
@@ -171,7 +170,8 @@ function bookacti_wc_email_order_item_args( $args ) {
 	// Check if the order contains bookings
 	$has_bookings = false;
 	foreach( $args[ 'items' ] as $item ) {
-		if( isset( $item[ 'bookacti_booking_id' ] ) || isset( $item[ 'bookacti_booking_group_id' ] ) ) {
+		$order_item_bookings_ids = bookacti_wc_format_order_item_bookings_ids( $item );
+		if( $order_item_bookings_ids ) {
 			$has_bookings = true;
 			break;
 		}

@@ -332,6 +332,7 @@ function bookacti_get_booking_system_default_attributes() {
 		'group_categories'				=> array( 'none' ),
 		'groups_only'					=> 0,
 		'groups_single_events'			=> 0,
+		'multiple_bookings'				=> 0,
 		'bookings_only'					=> 0,
 		'tooltip_booking_list'			=> 0,
 		'tooltip_booking_list_columns'	=> array(),
@@ -379,7 +380,7 @@ function bookacti_format_booking_system_attributes( $raw_atts = array() ) {
 	$formatted_atts = array();
 	
 	// Sanitize booleans
-	$booleans_to_check = array( 'bookings_only', 'tooltip_booking_list', 'groups_only', 'groups_single_events', 'auto_load', 'trim', 'past_events', 'past_events_bookable', 'check_roles' );
+	$booleans_to_check = array( 'multiple_bookings', 'bookings_only', 'tooltip_booking_list', 'groups_only', 'groups_single_events', 'auto_load', 'trim', 'past_events', 'past_events_bookable', 'check_roles' );
 	foreach( $booleans_to_check as $key ) {
 		$formatted_atts[ $key ] = in_array( $atts[ $key ], array( 1, '1', true, 'true', 'yes', 'ok' ), true ) ? 1 : 0;
 	}
@@ -941,6 +942,17 @@ function bookacti_get_booking_system_fields_default_data( $fields = array() ) {
 		);
 	}
 	
+	// Select multiple events
+	if( ! $fields || in_array( 'multiple_bookings', $fields, true ) ) {
+		$defaults[ 'multiple_bookings' ] = array(
+			'type'		=> 'checkbox',
+			'name'		=> 'multiple_bookings',
+			'value'		=> 0,
+			'title'		=> esc_html__( 'Select multiple events', 'ba-multiple-bookings' ),
+			'tip'		=> esc_html__( 'The user will be able to select multiple events and book them at the same time.', 'ba-multiple-bookings' )
+		);
+	}
+	
 	// Bookings only
 	if( ! $fields || in_array( 'bookings_only', $fields, true ) ) {
 		$defaults[ 'bookings_only' ] = array(
@@ -1107,11 +1119,16 @@ function bookacti_validate_booking_form( $picked_events, $quantity, $form_id = 0
 		'messages' => array()
 	);
 	
-	// Get calendar data
-	$allow_multiple_bookings = apply_filters( 'bookacti_allow_multiple_bookings', false, $form_id, $picked_events, $quantity );
-	
 	// Keep one entry per group
 	$picked_events = bookacti_format_picked_events( $picked_events, true );
+	
+	// Check if multiple bookings is allowed
+	$allow_multiple_bookings = false;
+	if( $form_id && count( $picked_events ) > 1 ) {
+		$calendar_data = bookacti_get_form_field_data_by_name( $form_id, 'calendar' );
+		$allow_multiple_bookings = ! empty( $calendar_data[ 'multiple_bookings' ] );
+	}
+	$allow_multiple_bookings = apply_filters( 'bookacti_allow_multiple_bookings', $allow_multiple_bookings, $picked_events, $quantity, $form_id );
 	
 	// If no events are picked
 	if( ! $picked_events ) {
@@ -1119,7 +1136,7 @@ function bookacti_validate_booking_form( $picked_events, $quantity, $form_id = 0
 		$validated[ 'messages' ][ 'no_event_selected' ] = array( esc_html__( 'You haven\'t picked any event. Please pick an event first.', 'booking-activities' ) );
 	} 
 	
-	// If no events are picked
+	// If multiple events are picked, but it is not allowed
 	else if( count( $picked_events ) > 1 && ! $allow_multiple_bookings ) {
 		$validated[ 'error' ] = 'multiple_events_selected';
 		$validated[ 'messages' ][ 'multiple_events_selected' ] = array( esc_html__( 'You cannot book multiple events or group of events at the same time. Please book them one at a time.', 'booking-activities' ) );

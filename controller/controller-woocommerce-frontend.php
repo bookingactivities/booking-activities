@@ -547,14 +547,14 @@ add_action( 'bookacti_wc_add_to_cart_validated', 'bookacti_wc_add_one_cart_item_
 
 /**
  * Add cart item data (all sent in one array)
- * @version 1.8.10
+ * @since 1.8.10 (was bookacti_add_item_data)
  * @global array $global_bookacti_wc
  * @param array $cart_item_data
  * @param int $product_id
  * @param int $variation_id
  * @return array
  */
-function bookacti_add_item_data( $cart_item_data, $product_id, $variation_id ) {
+function bookacti_wc_add_cart_item_data( $cart_item_data, $product_id, $variation_id ) {
 	global $global_bookacti_wc;
 	if( empty( $global_bookacti_wc[ 'bookings' ] ) ) { return $cart_item_data; }
 
@@ -570,7 +570,7 @@ function bookacti_add_item_data( $cart_item_data, $product_id, $variation_id ) {
 	
 	return $cart_item_data;
 }
-add_filter( 'woocommerce_add_cart_item_data', 'bookacti_add_item_data', 10, 3 );
+add_filter( 'woocommerce_add_cart_item_data', 'bookacti_wc_add_cart_item_data', 10, 3 );
 
 
 /**
@@ -950,7 +950,7 @@ function bookacti_update_quantity_in_cart( $new_quantity, $cart_item_key ) {
 		}
 	}
 
-	// If the product is not "in_cart", it means that the order in already in process (maybe waiting for payment)
+	// If the product is not "in_cart", it means that the order is already in process (maybe waiting for payment)
 	else {
 		$restore_qty = true;
 		wc_add_notice( esc_html__( 'You can\'t update quantity since this product is temporarily booked on an order pending payment. Please, first cancel the order or remove this product from cart.', 'booking-activities' ), 'error' );
@@ -1432,13 +1432,13 @@ function bookacti_format_order_item_meta( $formatted_meta, $item ) {
 	foreach( $formatted_meta as $meta_id => $meta ) {
 		// Backward compatibility
 		if( $meta->key === '_bookacti_refund_method' ) { $meta->display_value = bookacti_get_refund_label( $meta->value ); continue; }
-		if( in_array( $meta->key, array( 'bookacti_refund_coupon' ), true ) ) { continue; }
+		if( $meta->key === 'bookacti_refund_coupon' ) { continue; }
 		
 		if( substr( $meta->key, 0, 9 ) !== 'bookacti_' ) { continue; }
 		
 		// Format bookings data to be displayed
-		if( $meta->key === 'bookacti_bookings' 
-		||  $meta->key === 'bookacti_booking_id' || $meta->key === 'bookacti_booking_group_id' ) { // Backward compatibility
+		// Add 'bookacti_booking_id', 'bookacti_booking_group_id' for Backward compatibility with orders made before BA 1.8.10
+		if( in_array( $meta->key, array( 'bookacti_bookings', 'bookacti_booking_id', 'bookacti_booking_group_id' ), true ) ) {
 			$item_id = $item->get_id();
 			$order_items_bookings = bookacti_wc_get_order_items_bookings( array( $item ), array( 'fetch_meta' => true ) );
 			$order_item_bookings = ! empty( $order_items_bookings[ $item_id ] ) ? $order_items_bookings[ $item_id ] : bookacti_wc_format_order_item_bookings_ids( $item );
@@ -1578,20 +1578,20 @@ function bookacti_add_wc_data_to_user_booking_list_items( $booking_list_items, $
 		
 		foreach( $order_item_bookings_ids as $order_item_booking_id ) {
 			$booking_id = 0;
-			$booking_meta = array();
+			$booking_object = new stdClass();
 			
 			// Booking group
 			if( $order_item_booking_id[ 'type' ] === 'group' ) {
 				$booking_group_id = $order_item_booking_id[ 'id' ];
 				if( ! isset( $displayed_groups[ $booking_group_id ] ) ) { continue; }
 				$booking_id = $displayed_groups[ $booking_group_id ];
-				if( ! empty( $booking_groups[ $booking_group_id ] ) ) { $booking_meta = (array) $booking_groups[ $booking_group_id ]; }
+				if( ! empty( $booking_groups[ $booking_group_id ] ) ) { $booking_object = $booking_groups[ $booking_group_id ]; }
 			}
 
 			// Single booking
 			else if( $order_item_booking_id[ 'type' ] === 'single' ) {
 				$booking_id = $order_item_booking_id[ 'id' ];
-				if( ! empty( $bookings[ $booking_id ] ) ) { $booking_meta = (array) $bookings[ $booking_id ]; }
+				if( ! empty( $bookings[ $booking_id ] ) ) { $booking_object = $bookings[ $booking_id ]; }
 			}
 
 			if( ! isset( $booking_list_items[ $booking_id ] ) ) { continue; }
@@ -1604,7 +1604,7 @@ function bookacti_add_wc_data_to_user_booking_list_items( $booking_list_items, $
 
 			// Fill price column
 			$order_item_total = $order_item->get_total() + $order_item->get_total_tax();
-			$booking_list_items[ $booking_id ][ 'price' ] = apply_filters( 'bookacti_user_booking_list_order_item_price', wc_price( $order_item_total ), $order_item, $booking_list_items[ $booking_id ], $booking_meta, $filters );
+			$booking_list_items[ $booking_id ][ 'price' ] = apply_filters( 'bookacti_user_booking_list_order_item_price', wc_price( $order_item_total ), $order_item, $booking_list_items[ $booking_id ], $booking_object, $order_item_booking_id[ 'type' ], $filters );
 			
 			
 			// Try to find a coupon code

@@ -3,7 +3,7 @@ Contributors: bookingactivities, yoancutillas
 Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=7EKU434L7NEVC
 Tags: booking, reservation, booking form, woocommerce booking, booking events
 Requires at least: 3.6
-Tested up to: 5.5
+Tested up to: 5.6
 Requires PHP: 5.3
 Stable tag: 1.8.9
 License: GPLv3 or later
@@ -46,8 +46,9 @@ Try this reservation tool live on the [demo website](http://demo.booking-activit
 * **Fully customizable** forms in a WYSIWYG editor
 * **Shortcodes** to display reservation forms or simple calendars
 * ★ Display events from multiple schedules and activities at once
-* ★ **One-click booking**: just pick the desired event on the calendar and click on "Book"! 
+* ★ **One-click booking**: just pick the desired event(s) on the calendar and click on "Book"! 
 * Custom action when you submit the form or when you click an event: make a reservation, ★ **add a product to cart, redirect to a URL**
+* Pick multiple events and book them all at once / ★ **add them all to cart at once**
 * ★ **Seamless login / registration**: embedded in the form and processed with the reservation. You can also **book without account**, or **display a login form only** with a shortcode.
 * 100% responsive: looks great on mobiles, tablets and computers.
 * ★ *Set any custom fields and any booking metadata thanks to [Advanced Forms](https://booking-activities.fr/en/downloads/advanced-forms/?utm_source=wp-plugin-page&utm_medium=wordpress&utm_campaign=advanced-forms&utm_content=readme) add-on*
@@ -321,7 +322,9 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 
 = 1.8.10 =
 * Breaking change - WooCommerce carts will be emptied after the update
-* Breaking change - You need to update your add-ons and probably adapt your custom code. No support will be provided for your custom code.
+* Breaking change - You need to update your add-ons and probably adapt your custom code. No support can be provided for your custom code.
+* Feature - Pick multiple events on the calendar and book them all at once (find the option in your booking form editor, in the calendar settings)
+* Feature - Pick multiple events on the calendar and add them all to the shopping cart at once (with WooCommerce)
 * Tweak - Hide the Calendar bookings filter if only one calendar is available
 * Tweak - Display an admin error notice if an add-on is outdated and will cause malfunction
 * Fix - Fields were not prefilled with URL attributes on WC variable product page
@@ -339,6 +342,7 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 * Fix - Allow to escape characters in date and time formats with a backslash
 * Fix - WC auto refund method was available in cases it shouldn't
 * Fix - Keep the refund dialog opened in case of error to allow the user to read the error message
+* Dev - Compatibility with jquery-ui 1.12.1
 * Dev - Refactor the process to trigger form actions
 * Dev - Refactor the booking system picked_events attribute
 * Dev - Refactor the data bound to WC cart item / order item

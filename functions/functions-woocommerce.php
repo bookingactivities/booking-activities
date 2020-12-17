@@ -707,6 +707,9 @@ function bookacti_wc_get_item_bookings_attributes( $item_bookings ) {
 			}
 		}
 		
+		// Allow plugins to add more item booking attributes to be displayed (before the booking actions)
+		$booking_attributes = apply_filters( 'bookacti_wc_item_booking_attributes', $booking_attributes, $item_booking );
+		
 		// Booking actions
 		// Don't display booking actions in emails, on the backend, and on payment page
 		global $bookacti_is_email;

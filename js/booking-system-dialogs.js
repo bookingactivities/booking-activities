@@ -340,8 +340,20 @@ function bookacti_dialog_choose_group_of_events( booking_system, group_ids, even
 		booking_system.trigger( 'bookacti_trigger_group_of_events_preview', [ trigger, group_id, event ] );
 
 		if( trigger.click ) {
+			var multiple_bookings = bookacti.booking_system[ booking_system_id ][ 'multiple_bookings' ];
+	
+			// If the event is picked, just unpick it (or its group)
+			if( multiple_bookings ) {
+				var picked_event = bookacti_is_event_picked( booking_system, event );
+				if( picked_event ) {
+					var picked_group_id = picked_event.group_id ? picked_event.group_id : 'single';
+					bookacti_unpick_events_of_group( booking_system, picked_group_id, event );
+				}
+			}
+			
 			// Pick events and fill form inputs
-			bookacti_unpick_all_events( booking_system );
+			if( multiple_bookings ) { bookacti_unpick_events_of_group( booking_system, group_id ); }
+			else { bookacti_unpick_all_events( booking_system ); }
 			bookacti_pick_events_of_group( booking_system, group_id, event );
 			
 			booking_system.trigger( 'bookacti_group_of_events_preview', [ group_id, event ] ); 
@@ -383,8 +395,20 @@ function bookacti_dialog_choose_group_of_events( booking_system, group_ids, even
 					booking_system.trigger( 'bookacti_trigger_group_of_events_click', [ trigger, group_id, event ] );
 					
 					if( trigger.click ) {
+						var multiple_bookings = bookacti.booking_system[ booking_system_id ][ 'multiple_bookings' ];
+	
+						// If the event is picked, just unpick it (or its group)
+						if( multiple_bookings ) {
+							var picked_event = bookacti_is_event_picked( booking_system, event );
+							if( picked_event ) {
+								var picked_group_id = picked_event.group_id ? picked_event.group_id : 'single';
+								bookacti_unpick_events_of_group( booking_system, picked_group_id, event );
+							}
+						}
+
 						// Pick events and fill form inputs
-						bookacti_unpick_all_events( booking_system );
+						if( multiple_bookings ) { bookacti_unpick_events_of_group( booking_system, group_id ); }
+						else { bookacti_unpick_all_events( booking_system ); }
 						bookacti_pick_events_of_group( booking_system, group_id, event );
 
 						booking_system.trigger( 'bookacti_group_of_events_chosen', [ group_id, event ] );

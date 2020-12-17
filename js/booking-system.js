@@ -71,6 +71,50 @@ $j( document ).ready( function() {
 	
 	
 	/**
+	 * Unpick an event from the picked events list - on click on their trash icon
+	 * @since 1.8.10
+	 * @param {Event} e
+	 */
+	$j( 'body' ).on( 'click', '.bookacti-unpick-event-icon', function( e ) {
+		var booking_system = $j( this ).closest( '.bookacti-picked-events' ).siblings( '.bookacti-booking-system' );
+		
+		// Groups
+		var group_id = $j( this ).closest( 'li' ).data( 'group-id' );
+		if( group_id ) { bookacti_unpick_events_of_group( booking_system, group_id ); return; }
+		
+		// Single events
+		var event_row = $j( this ).closest( 'li' );
+		event = {
+			'id': event_row.data( 'event-id' ),
+			'start': event_row.data( 'event-start' ),
+			'end': event_row.data( 'event-end' )
+		};
+		bookacti_unpick_events_of_group( booking_system, 'single', event );
+	});
+	
+	
+	/**
+	 * Refresh the picked events list and display on calendar - on bookacti_unpick_event
+	 * @since 1.8.10
+	 * @param {Event} e
+	 * @param {Object} event
+	 */
+	$j( 'body' ).on( 'bookacti_unpick_event', '.bookacti-booking-system', function( e, event ) {
+		var booking_system		= $j( this );
+		var booking_system_id	= booking_system.attr( 'id' );
+		var booking_method		= bookacti.booking_system[ booking_system_id ][ 'method' ];
+		
+		bookacti_set_min_and_max_quantity( booking_system );
+		bookacti_fill_booking_system_fields( booking_system );
+		bookacti_fill_picked_events_list( booking_system );
+		
+		if( booking_method === 'calendar' ) {
+			bookacti_refresh_picked_events_on_calendar( $j( this ) );
+		}
+	});
+	
+	
+	/**
 	 * Remove temporary form after submit
 	 * @since 1.7.19
 	 * @version 1.8.0

@@ -118,15 +118,15 @@ function bookacti_filter_booking_list( paged ) {
 
 /**
  * Change template-related filters
- * @version 1.8.0
+ * @version 1.8.10
  */
 function bookacti_update_template_related_filters() {
 	// Update activities filter
 	var associations = bookacti.booking_system[ 'bookacti-booking-system-bookings-page' ][ 'templates_per_activities' ];
 	var selected_templates = $j( '#bookacti-booking-filter-templates' ).val();
-	
+
 	// If no template are selected, show all activities
-	if( ! selected_templates ) {
+	if( $j.isEmptyObject( selected_templates ) ) {
 		$j( '#bookacti-booking-filter-activities option' ).show();
 		return false;
 	}

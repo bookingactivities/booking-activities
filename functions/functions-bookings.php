@@ -147,14 +147,20 @@ function bookacti_sanitize_booking_group_data( $data_raw ) {
 /**
  * Check if a booking is whithin the authorized delay as of now
  * @since 1.1.0
- * @version 1.8.0
+ * @version 1.8.10
  * @param object|int $booking
  * @param string $context
  * @return boolean
  */
 function bookacti_is_booking_in_delay( $booking, $context = '' ) {
-	if( is_numeric( $booking ) ) { $booking = bookacti_get_booking_by_id( $booking ); }
-	if( ! is_object( $booking ) ) { return false; }
+	// Get booking
+	if( is_numeric( $booking ) ) { 
+		$booking_id = intval( $booking );
+		$filters = bookacti_format_booking_filters( array( 'in__booking_id' => array( $booking_id ), 'fetch_meta' => true ) );
+		$bookings = bookacti_get_bookings( $filters );
+		$booking = ! empty( $bookings[ $booking_id ] ) ? $bookings[ $booking_id ] : null;
+	}
+	if( ! $booking ) { return false; }
 
 	$is_in_delay	= false;
 	$delay_global	= bookacti_get_setting_value( 'bookacti_cancellation_settings', 'booking_changes_deadline' );
@@ -518,12 +524,12 @@ function bookacti_format_bookings_calendar_settings( $raw_settings = array() ) {
 
 /**
  * Check if user is allowed to manage a booking
- * @version 1.8.0
- * @param int $booking_id
+ * @version 1.8.10
+ * @param object|int $booking
  * @param int|string $user_id
  * @return boolean
  */
-function bookacti_user_can_manage_booking( $booking_id, $user_id = false ) {
+function bookacti_user_can_manage_booking( $booking, $user_id = false ) {
 	$user_can_manage_booking = false;
 	
 	$user = false;
@@ -531,7 +537,14 @@ function bookacti_user_can_manage_booking( $booking_id, $user_id = false ) {
 	else if( $user_id && function_exists( 'get_user_by' ) ) { $user = get_user_by( 'id', $user_id ); }
 	
 	if( $user ) {
-		$booking = bookacti_get_booking_by_id( $booking_id );
+		// Get booking
+		if( is_numeric( $booking ) ) { 
+			$booking_id = intval( $booking );
+			$filters = bookacti_format_booking_filters( array( 'in__booking_id' => array( $booking_id ), 'fetch_meta' => true ) );
+			$bookings = bookacti_get_bookings( $filters );
+			$booking = ! empty( $bookings[ $booking_id ] ) ? $bookings[ $booking_id ] : null;
+		}
+	
 		if( $booking ) {
 			if( ( user_can( $user, 'bookacti_edit_bookings' ) && bookacti_user_can_manage_template( $booking->template_id, $user->ID ) ) 
 			 || ( $booking->user_id && $booking->user_id == $user->ID ) 
@@ -545,13 +558,13 @@ function bookacti_user_can_manage_booking( $booking_id, $user_id = false ) {
 		}
 	}
 	
-	return apply_filters( 'bookacti_user_can_manage_booking', $user_can_manage_booking, $booking_id, $user_id );
+	return apply_filters( 'bookacti_user_can_manage_booking', $user_can_manage_booking, $booking, $user_id );
 }
 
 
 /**
  * Check if a booking can be cancelled
- * @version 1.7.14
+ * @version 1.8.10
  * @param object|int $booking
  * @param boolean $bypass_group_check
  * @param string $context
@@ -561,7 +574,13 @@ function bookacti_booking_can_be_cancelled( $booking, $bypass_group_check = fals
 	$is_allowed	= true;
 
 	// Get booking
-	if( is_numeric( $booking ) ) { $booking = bookacti_get_booking_by_id( $booking ); }
+	if( is_numeric( $booking ) ) { 
+		$booking_id = intval( $booking );
+		$filters = bookacti_format_booking_filters( array( 'in__booking_id' => array( $booking_id ), 'fetch_meta' => true ) );
+		$bookings = bookacti_get_bookings( $filters );
+		$booking = ! empty( $bookings[ $booking_id ] ) ? $bookings[ $booking_id ] : null;
+	}
+	
 	if( ! $booking ) { $is_allowed = false; }
 	else {
 		if( ! current_user_can( 'bookacti_edit_bookings' ) || $context === 'front' ) {
@@ -581,7 +600,7 @@ function bookacti_booking_can_be_cancelled( $booking, $bypass_group_check = fals
 
 /**
  * Check if a booking is allowed to be rescheduled
- * @version 1.8.0
+ * @version 1.8.10
  * @param object|int $booking
  * @param string $context
  * @return boolean
@@ -590,7 +609,13 @@ function bookacti_booking_can_be_rescheduled( $booking, $context = '' ) {
 	$is_allowed	= true;
 
 	// Get booking
-	if( is_numeric( $booking ) ) { $booking = bookacti_get_booking_by_id( $booking ); }
+	if( is_numeric( $booking ) ) { 
+		$booking_id = intval( $booking );
+		$filters = bookacti_format_booking_filters( array( 'in__booking_id' => array( $booking_id ), 'fetch_meta' => true ) );
+		$bookings = bookacti_get_bookings( $filters );
+		$booking = ! empty( $bookings[ $booking_id ] ) ? $bookings[ $booking_id ] : null;
+	}
+	
 	if( ! $booking ) { $is_allowed = false; }
 	else {
 		if( ! current_user_can( 'bookacti_edit_bookings' ) || $context === 'front' ) {
@@ -618,7 +643,7 @@ function bookacti_booking_can_be_rescheduled( $booking, $context = '' ) {
 /**
  * Check if a booking can be rescheduled to another event
  * @since 1.1.0
- * @version 1.7.14
+ * @version 1.8.10
  * @param object|int $booking
  * @param int $event_id
  * @param string $event_start
@@ -628,7 +653,13 @@ function bookacti_booking_can_be_rescheduled( $booking, $context = '' ) {
  */
 function bookacti_booking_can_be_rescheduled_to( $booking, $event_id, $event_start, $event_end, $context = '' ) {
 	// Get booking
-	if( is_numeric( $booking ) ) { $booking = bookacti_get_booking_by_id( $booking ); }
+	if( is_numeric( $booking ) ) { 
+		$booking_id = intval( $booking );
+		$filters = bookacti_format_booking_filters( array( 'in__booking_id' => array( $booking_id ), 'fetch_meta' => true ) );
+		$bookings = bookacti_get_bookings( $filters );
+		$booking = ! empty( $bookings[ $booking_id ] ) ? $bookings[ $booking_id ] : null;
+	}
+	
 	if( ! $booking ) { 
 		$return_array[ 'status' ] = 'failed';
 		$return_array[ 'error' ] = 'booking_not_found';
@@ -662,7 +693,7 @@ function bookacti_booking_can_be_rescheduled_to( $booking, $event_id, $event_sta
 /**
  * Check if a booking can be refunded
  * @version 1.8.10
- * @param object $booking
+ * @param object|int $booking
  * @param string $refund_action
  * @param string $context
  * @return boolean
@@ -671,7 +702,13 @@ function bookacti_booking_can_be_refunded( $booking, $refund_action = false, $co
 	$true = true;
 
 	// Get booking
-	if( is_numeric( $booking ) ) { $booking = bookacti_get_booking_by_id( $booking ); }
+	if( is_numeric( $booking ) ) { 
+		$booking_id = intval( $booking );
+		$filters = bookacti_format_booking_filters( array( 'in__booking_id' => array( $booking_id ), 'fetch_meta' => true ) );
+		$bookings = bookacti_get_bookings( $filters );
+		$booking = ! empty( $bookings[ $booking_id ] ) ? $bookings[ $booking_id ] : null;
+	}
+	
 	if( ! $booking ) { $true = false; }
 	else {
 		$refund_actions = bookacti_get_booking_refund_actions( array( $booking ), 'single', $context );
@@ -734,9 +771,10 @@ function bookacti_booking_state_can_be_changed_to( $booking, $new_state, $contex
 function bookacti_booking_quantity_can_be_changed( $booking, $new_quantity ) {
 	$response = array( 'status' => 'failed', 'messages' => array() );
 	
+	// Get booking
 	if( is_numeric( $booking ) ) { 
 		$booking_id = intval( $booking );
-		$filters = bookacti_format_booking_filters( array( 'in__booking_id' => $booking_id ) );
+		$filters = bookacti_format_booking_filters( array( 'in__booking_id' => array( $booking_id ), 'fetch_meta' => true ) );
 		$bookings = bookacti_get_bookings( $filters );
 		$booking = ! empty( $bookings[ $booking_id ] ) ? $bookings[ $booking_id ] : null;
 	}
@@ -832,9 +870,10 @@ function bookacti_booking_quantity_can_be_changed( $booking, $new_quantity ) {
 function bookacti_booking_user_can_be_changed( $booking, $new_user_id = '' ) {
 	$response = array( 'status' => 'failed', 'messages' => array() );
 	
+	// Get booking
 	if( is_numeric( $booking ) ) { 
 		$booking_id = intval( $booking );
-		$filters = bookacti_format_booking_filters( array( 'in__booking_id' => $booking_id ) );
+		$filters = bookacti_format_booking_filters( array( 'in__booking_id' => array( $booking_id ), 'fetch_meta' => true ) );
 		$bookings = bookacti_get_bookings( $filters );
 		$booking = ! empty( $bookings[ $booking_id ] ) ? $bookings[ $booking_id ] : null;
 	}
@@ -888,27 +927,27 @@ function bookacti_booking_user_can_be_changed( $booking, $new_user_id = '' ) {
 
 /**
  * Check if user is allowed to manage a booking group
- * 
  * @since 1.1.0
- * 
+ * @version 1.8.10
  * @param int $booking_group_id
  * @param int|string $user_id
  * @return boolean
  */
 function bookacti_user_can_manage_booking_group( $booking_group_id, $user_id = false ) {
-
-	$booking_ids = bookacti_get_booking_group_bookings_ids( $booking_group_id );
-
+	// Get grouped bookings
+	$filters = bookacti_format_booking_filters( array( 'in__booking_group_id' => array( $booking_group_id ), 'fetch_meta' => true ) );
+	$bookings = bookacti_get_bookings( $filters );
+	
 	$user_can_manage_booking_group = true;
-	foreach( $booking_ids as $booking_id ) {
-		$is_allowed = bookacti_user_can_manage_booking( $booking_id, $user_id );
+	foreach( $bookings as $booking ) {
+		$is_allowed = bookacti_user_can_manage_booking( $booking, $user_id );
 		if( ! $is_allowed ) {
 			$user_can_manage_booking_group = false;
 			break; // If one of the booking of the group is not allowed, return false immediatly
 		}
 	}
 
-	return apply_filters( 'bookacti_user_can_manage_booking_group', $user_can_manage_booking_group, $booking_id, $user_id );
+	return apply_filters( 'bookacti_user_can_manage_booking_group', $user_can_manage_booking_group, $booking, $user_id );
 }
 
 
@@ -916,12 +955,18 @@ function bookacti_user_can_manage_booking_group( $booking_group_id, $user_id = f
  * Check if a booking group can be cancelled
  * @since 1.1.0
  * @version 1.8.10
- * @param array $bookings
+ * @param array|int $bookings
  * @param string $context
  * @return boolean
  */
 function bookacti_booking_group_can_be_cancelled( $bookings, $context = '' ) {
 	$true = true;
+	
+	// Get grouped bookings
+	if( is_numeric( $bookings ) ) {
+		$filters = bookacti_format_booking_filters( array( 'in__booking_group_id' => array( $bookings ), 'fetch_meta' => true ) );
+		$bookings = array_values( bookacti_get_bookings( $filters ) );
+	}
 	if( ! $bookings ) { $true = false; }
 	
 	// Get booking group
@@ -948,13 +993,19 @@ function bookacti_booking_group_can_be_cancelled( $bookings, $context = '' ) {
  * Check if a booking group can be refunded
  * @since 1.1.0
  * @version 1.8.10
- * @param array $bookings
+ * @param array|int $bookings
  * @param string $refund_action
  * @param string $context
  * @return boolean
  */
 function bookacti_booking_group_can_be_refunded( $bookings, $refund_action = '', $context = '' ) {
 	$true = true;
+	
+	// Get grouped bookings
+	if( is_numeric( $bookings ) ) {
+		$filters = bookacti_format_booking_filters( array( 'in__booking_group_id' => array( $bookings ), 'fetch_meta' => true ) );
+		$bookings = array_values( bookacti_get_bookings( $filters ) );
+	}
 	if( ! $bookings ) { $true = false; }
 	
 	// Get booking group
@@ -986,13 +1037,21 @@ function bookacti_booking_group_can_be_refunded( $bookings, $refund_action = '',
  * Check if a booking group state can be changed to another
  * @since 1.1.0
  * @version 1.8.10
- * @param array $bookings
+ * @param array|int $bookings
  * @param string $new_state
  * @param string $context
  * @return boolean
  */
 function bookacti_booking_group_state_can_be_changed_to( $bookings, $new_state, $context = 'admin' ) {
 	$true = true;
+	
+	// Get grouped bookings
+	if( is_numeric( $bookings ) ) {
+		$filters = bookacti_format_booking_filters( array( 'in__booking_group_id' => array( $bookings ), 'fetch_meta' => true ) );
+		$bookings = array_values( bookacti_get_bookings( $filters ) );
+	}
+	if( ! $bookings ) { $true = false; }
+	
 	$can_edit_bookings = current_user_can( 'bookacti_edit_bookings' );
 	switch ( $new_state ) {
 		case 'delivered':
@@ -1010,6 +1069,7 @@ function bookacti_booking_group_state_can_be_changed_to( $bookings, $new_state, 
 			$true = bookacti_booking_group_can_be_refunded( $bookings, false, $context );
 			break;
 	}
+	
 	return apply_filters( 'bookacti_booking_group_state_can_be_changed', $true, $bookings, $new_state, $context );
 }
 
@@ -1025,9 +1085,9 @@ function bookacti_booking_group_state_can_be_changed_to( $bookings, $new_state, 
 function bookacti_booking_group_quantity_can_be_changed( $bookings, $new_quantity ) {
 	$response = array( 'status' => 'failed', 'messages' => array() );
 	
-	if( is_numeric( $bookings ) ) { 
-		$booking_group_id = intval( $bookings );
-		$filters = bookacti_format_booking_filters( array( 'in__booking_group_id' => $booking_group_id ) );
+	// Get grouped bookings
+	if( is_numeric( $bookings ) ) {
+		$filters = bookacti_format_booking_filters( array( 'in__booking_group_id' => array( $bookings ), 'fetch_meta' => true ) );
 		$bookings = array_values( bookacti_get_bookings( $filters ) );
 	}
 	if( ! $bookings ) { return $response; }
@@ -1135,9 +1195,9 @@ function bookacti_booking_group_quantity_can_be_changed( $bookings, $new_quantit
 function bookacti_booking_group_user_can_be_changed( $bookings, $new_user_id = '' ) {
 	$response = array( 'status' => 'failed', 'messages' => array() );
 	
-	if( is_numeric( $bookings ) ) { 
-		$booking_group_id = intval( $bookings );
-		$filters = bookacti_format_booking_filters( array( 'in__booking_group_id' => $booking_group_id ) );
+	// Get grouped bookings
+	if( is_numeric( $bookings ) ) {
+		$filters = bookacti_format_booking_filters( array( 'in__booking_group_id' => array( $bookings ), 'fetch_meta' => true ) );
 		$bookings = array_values( bookacti_get_bookings( $filters ) );
 	}
 	if( ! $bookings ) { return $response; }
@@ -1267,14 +1327,20 @@ function bookacti_get_booking_actions( $admin_or_front = 'both' ) {
 /**
  * Get booking actions according to booking id
  * @since 1.6.0 (replace bookacti_get_booking_actions_array)
- * @version 1.7.14
+ * @version 1.8.10
  * @param object|int $booking
  * @param string $admin_or_front Can be "both", "admin", "front. Default "both".
  * @return array
  */
 function bookacti_get_booking_actions_by_booking( $booking, $admin_or_front = 'both' ) {
 	// Get booking
-	if( ! is_object( $booking ) ) { $booking = bookacti_get_booking_by_id( $booking ); }
+	if( is_numeric( $booking ) ) { 
+		$booking_id = intval( $booking );
+		$filters = bookacti_format_booking_filters( array( 'in__booking_id' => array( $booking_id ), 'fetch_meta' => true ) );
+		$bookings = bookacti_get_bookings( $filters );
+		$booking = ! empty( $bookings[ $booking_id ] ) ? $bookings[ $booking_id ] : null;
+	}
+	if( ! $booking ) { return array(); }
 
 	$actions = bookacti_get_booking_actions( $admin_or_front );
 	if( ! current_user_can( 'bookacti_edit_bookings' ) ) {
@@ -1293,13 +1359,14 @@ function bookacti_get_booking_actions_by_booking( $booking, $admin_or_front = 'b
 	if( isset( $actions[ 'delete' ] ) && ! current_user_can( 'bookacti_delete_bookings' ) ) {
 		unset( $actions[ 'delete' ] );
 	}
+	
 	return apply_filters( 'bookacti_booking_actions_by_booking', $actions, $booking, $admin_or_front );
 }
 
 
 /**
  * Get booking actions html
- * @version 1.6.0
+ * @version 1.8.10
  * @param object|int $booking
  * @param string $admin_or_front Can be "both", "admin", "front. Default "both".
  * @param array $actions
@@ -1309,7 +1376,12 @@ function bookacti_get_booking_actions_by_booking( $booking, $admin_or_front = 'b
  */
 function bookacti_get_booking_actions_html( $booking, $admin_or_front = 'both', $actions = array(), $return_array = false, $with_container = false ) {
 	// Get booking
-	if( ! is_object( $booking ) ) { $booking = bookacti_get_booking_by_id( $booking ); }
+	if( is_numeric( $booking ) ) { 
+		$booking_id = intval( $booking );
+		$filters = bookacti_format_booking_filters( array( 'in__booking_id' => array( $booking_id ), 'fetch_meta' => true ) );
+		$bookings = bookacti_get_bookings( $filters );
+		$booking = ! empty( $bookings[ $booking_id ] ) ? $bookings[ $booking_id ] : null;
+	}
 
 	// Get booking actions
 	if( ! $actions ) { $actions = bookacti_get_booking_actions_by_booking( $booking, $admin_or_front ); }
@@ -1438,11 +1510,16 @@ function bookacti_get_booking_group_actions( $admin_or_front = 'both' ) {
  * Get booking actions according to booking id
  * @since 1.6.0 (replace bookacti_get_booking_actions_array)
  * @version 1.8.10
- * @param array $bookings
+ * @param array|int $bookings
  * @param string $admin_or_front Can be "both", "admin", "front. Default "both".
  * @return array
  */
 function bookacti_get_booking_group_actions_by_booking_group( $bookings, $admin_or_front = 'both' ) {
+	// Get grouped bookings
+	if( is_numeric( $bookings ) ) {
+		$filters = bookacti_format_booking_filters( array( 'in__booking_group_id' => array( $bookings ), 'fetch_meta' => true ) );
+		$bookings = array_values( bookacti_get_bookings( $filters ) );
+	}
 	if( ! $bookings ) { return array(); }
 
 	$actions = bookacti_get_booking_group_actions( $admin_or_front );
@@ -1460,6 +1537,7 @@ function bookacti_get_booking_group_actions_by_booking_group( $bookings, $admin_
 	if( isset( $actions[ 'delete' ] ) && ! current_user_can( 'bookacti_delete_bookings' ) ) {
 		unset( $actions[ 'delete' ] );
 	}
+	
 	return apply_filters( 'bookacti_booking_group_actions_by_booking_group', $actions, $bookings, $admin_or_front );
 }
 
@@ -1467,7 +1545,7 @@ function bookacti_get_booking_group_actions_by_booking_group( $bookings, $admin_
 /**
  * Get booking group actions html
  * @version 1.8.10
- * @param array $bookings
+ * @param array|int $bookings
  * @param string $admin_or_front Can be "both", "admin", "front. Default "both".
  * @param array $actions
  * @param boolean $return_array
@@ -1475,6 +1553,11 @@ function bookacti_get_booking_group_actions_by_booking_group( $bookings, $admin_
  * @return string
  */
 function bookacti_get_booking_group_actions_html( $bookings, $admin_or_front = 'both', $actions = array(), $return_array = false, $with_container = false ) {
+	// Get grouped bookings
+	if( is_numeric( $bookings ) ) {
+		$filters = bookacti_format_booking_filters( array( 'in__booking_group_id' => array( $bookings ), 'fetch_meta' => true ) );
+		$bookings = array_values( bookacti_get_bookings( $filters ) );
+	}
 	if( ! $bookings ) { return $return_array ? array() : ''; }
 	
 	$booking_keys = array_keys( $bookings );

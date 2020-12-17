@@ -829,7 +829,6 @@ function bookacti_dialog_reschedule_booking( booking_id ) {
 	var loading_container	= $j( '.bookacti-reschedule-booking[data-booking-id="' + booking_id + '"]' ).closest( 'tr, .bookacti-booking-row' );
 	var booking_system		= $j( '#bookacti-booking-system-reschedule.bookacti-booking-system' );
 	var booking_system_id	= booking_system.attr( 'id' );
-	var old_booking_data	= {};
 	var booking_quantity	= 0;
 	
 	if( bookacti_localized.is_admin ) { $j( '#bookacti-send-notifications-on-reschedule' ).prop( 'checked', false ); }
@@ -852,8 +851,7 @@ function bookacti_dialog_reschedule_booking( booking_id ) {
 		success: function( response ) {
 			if( response.status === 'success' ) {
 				var booking_system_id	= booking_system.attr( 'id' );
-				old_booking_data		= response.booking_data;
-				booking_quantity		= response.booking_data.quantity;
+				booking_quantity		= response.booking_system_data.rescheduled_booking_data.quantity;
 				
 				booking_system.closest( 'form' ).find( 'input.bookacti-quantity' ).val( booking_quantity );
 				

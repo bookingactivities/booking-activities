@@ -9,7 +9,7 @@
  * Text Domain: booking-activities
  * Domain Path: /languages/
  * WC requires at least: 3.0
- * WC tested up to: 4.5
+ * WC tested up to: 4.8
  * License: GPL3
  * License URI: https://www.gnu.org/licenses/gpl-3.0.html
  * 
@@ -186,7 +186,7 @@ add_action( 'wp_enqueue_scripts',	'bookacti_enqueue_high_priority_global_scripts
 
 /**
  * Enqueue normal priority scripts
- * @version 1.8.0
+ * @version 1.8.10
  */
 function bookacti_enqueue_global_scripts() {
 	// Include WooCommerce style and scripts
@@ -203,12 +203,15 @@ function bookacti_enqueue_global_scripts() {
 	// On backend, only include these scripts on Booking Activities pages
 	if( is_admin() && ! bookacti_is_booking_activities_screen() ) { return; }
 	
+	global $wp_version;
+	$jquery_ui_css_filename = version_compare( $wp_version, '5.6', '<' ) ? 'jquery-ui-1.11.4.min' : 'jquery-ui.min.css';
+	
 	// INCLUDE STYLESHEETS
 	wp_enqueue_style( 'bookacti-css-global',		plugins_url( 'css/global.min.css', __FILE__ ), array(), BOOKACTI_VERSION );
 	wp_enqueue_style( 'bookacti-css-fonts',			plugins_url( 'css/fonts.min.css', __FILE__ ), array(), BOOKACTI_VERSION );
 	wp_enqueue_style( 'bookacti-css-bookings',		plugins_url( 'css/bookings.min.css', __FILE__ ), array(), BOOKACTI_VERSION );
 	wp_enqueue_style( 'bookacti-css-forms',			plugins_url( 'css/forms.min.css', __FILE__ ), array(), BOOKACTI_VERSION );
-	wp_enqueue_style( 'jquery-ui-bookacti-theme',	plugins_url( 'lib/jquery-ui/themes/booking-activities/jquery-ui.min.css', __FILE__ ), array(), BOOKACTI_VERSION );
+	wp_enqueue_style( 'jquery-ui-bookacti-theme',	plugins_url( 'lib/jquery-ui/themes/booking-activities/' . $jquery_ui_css_filename, __FILE__ ), array(), BOOKACTI_VERSION );
 	
 	// INCLUDE JAVASCRIPT FILES
 	wp_enqueue_script( 'bookacti-js-booking-system',			plugins_url( 'js/booking-system.min.js', __FILE__ ),			array( 'jquery', 'fullcalendar', 'bookacti-js-global-var', 'bookacti-js-global-functions' ), BOOKACTI_VERSION, true );

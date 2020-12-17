@@ -842,6 +842,7 @@ add_filter( 'bookacti_booking_group_actions', 'bookacti_wc_booking_actions', 10,
 /**
  * Get booking actions according to the order bound to the booking
  * @since 1.6.0 (replace bookacti_display_actions_buttons_on_booking_items)
+ * @version 1.8.10
  * @param array $actions
  * @param object $booking
  * @param string $admin_or_front Can be "both", "admin", "front. Default "both".

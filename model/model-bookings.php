@@ -1415,32 +1415,6 @@ function bookacti_get_booking_by_id( $booking_id ) {
 
 
 /**
- * Get booking data
- * @version 1.7.18
- * @global wpdb $wpdb
- * @param int $booking_id
- * @return array
- */
-function bookacti_get_booking_data( $booking_id ) {
-	global $wpdb;
-	
-	$query	= 'SELECT B.*, E.template_id, E.activity_id '
-			. ' FROM ' . BOOKACTI_TABLE_BOOKINGS . ' as B, ' . BOOKACTI_TABLE_EVENTS . ' as E '
-			. ' WHERE B.event_id = E.id '
-			. ' AND B.id = %d ';
-	$prep	= $wpdb->prepare( $query, $booking_id );
-	$booking_data = $wpdb->get_row( $prep, ARRAY_A );
-	
-	if( empty( $booking_data[ 'template_id' ] ) ) { $booking_data[ 'template_id' ] = 0; }
-	if( empty( $booking_data[ 'activity_id' ] ) ) { $booking_data[ 'activity_id' ] = 0; }
-	
-	$booking_data[ 'booking_settings' ] = bookacti_get_metadata( 'booking', $booking_id );
-	
-	return apply_filters( 'bookacti_booking_data', $booking_data, $booking_id );
-}
-
-
-/**
  * Get all user's bookings
  * 
  * @global wpdb $wpdb
