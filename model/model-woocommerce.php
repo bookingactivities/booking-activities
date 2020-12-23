@@ -84,8 +84,86 @@ function bookacti_get_products_titles( $search = '' ) {
 // BOOKINGS
 
 /**
+ * Update all in cart bookings to "removed"
+ * @since 1.9.0
+ * @global wpdb $wpdb
+ * @return int
+ */
+function bookacti_wc_update_in_cart_bookings_to_removed() {
+	global $wpdb;
+	
+	$query_bookings	= 'UPDATE ' . BOOKACTI_TABLE_BOOKINGS 
+					. ' SET state = "removed", active = 0 '
+					. ' WHERE state = "in_cart" ';
+	$updated_bookings = $wpdb->query( $query_bookings );
+	
+	$query_booking_groups	= 'UPDATE ' . BOOKACTI_TABLE_BOOKING_GROUPS
+							. ' SET state = "removed", active = 0 '
+							. ' WHERE state = "in_cart" ';
+	$updated_booking_groups = $wpdb->query( $query_booking_groups );
+	
+	return intval( $updated_bookings ) + intval( $updated_booking_groups );
+}
+
+
+/**
+ * Update in cart bookings to "removed" for a certain event
+ * @since 1.9.0
+ * @global wpdb $wpdb
+ * @param int $event_id
+ * @return int|false
+ */
+function bookacti_wc_update_event_in_cart_bookings_to_removed( $event_id ) {
+	global $wpdb;
+
+	$query	= 'UPDATE ' . BOOKACTI_TABLE_BOOKINGS . ' as B '
+			. ' SET B.state = "removed", B.active = 0 '
+			. ' WHERE B.event_id = %d '
+			. ' AND B.state = "in_cart" ';
+	
+	$query		= $wpdb->prepare( $query, $event_id );
+	$removed	= $wpdb->query( $query );
+
+	return $removed;
+}
+
+
+/** 
+ * Update in cart bookings to "removed" for a certain group of events (both booking groups and their bookings)
+ * @since 1.9.0
+ * @global wpdb $wpdb
+ * @param int $event_group_id
+ * @return int
+ */
+function bookacti_wc_update_group_of_events_in_cart_bookings_to_removed( $event_group_id ) {
+	global $wpdb;
+
+	// Single Bookings
+	$query	= 'UPDATE ' . BOOKACTI_TABLE_BOOKINGS . ' as B '
+			. ' LEFT JOIN ' . BOOKACTI_TABLE_BOOKING_GROUPS . ' as G ON B.group_id = G.id '
+			. ' SET B.state = "removed", B.active = 0 '
+			. ' WHERE B.state = "in_cart" '
+			. ' AND G.event_group_id = %d ';
+
+	$query		= $wpdb->prepare( $query, $event_group_id );
+	$removed1	= $wpdb->query( $query );
+	
+	// Booking Groups
+	$query	= 'UPDATE ' . BOOKACTI_TABLE_BOOKING_GROUPS . ' as B '
+			. ' SET B.state = "removed", B.active = 0 '
+			. ' WHERE B.state = "in_cart" '
+			. ' AND B.event_group_id = %d ';
+
+	$query		= $wpdb->prepare( $query, $event_group_id );
+	$removed2	= $wpdb->query( $query );
+	
+	return intval( $removed1 ) + intval( $removed2 );
+}
+
+
+/**
  * Get the query to get the number of bookings per user by events, including the in_cart bookings for the current user too
- * @since 1.8.10
+ * @since 1.9.0
  * @global wpdb $wpdb
  * @param array $events
  * @param int $active
@@ -204,7 +282,7 @@ function bookacti_get_cart_expiration_date_per_user( $user_id ) {
 
 /**
  * Turn 'pending' bookings of an order to 'cancelled'
- * @since 1.8.10 (was bookacti_cancel_order_pending_bookings)
+ * @since 1.9.0 (was bookacti_cancel_order_pending_bookings)
  * @global wpdb $wpdb
  * @param int $order_id
  * @param array $not_booking_ids
@@ -505,7 +583,7 @@ function bookacti_get_booking_group_order_id( $booking_group_id ) {
 /**
  * Delete all booking meta from a WC order item
  * @since 1.7.6
- * @version 1.8.10
+ * @version 1.9.0
  * @global wpdb $wpdb
  * @param int $item_id
  * @return int|false

@@ -1,7 +1,7 @@
 $j( document ).ready( function() {
 	/**
 	 * Perform WC action defined in Calendar field settings
-	 * @since 1.8.10
+	 * @since 1.9.0
 	 */
 	$j( 'body' ).on( 'bookacti_perform_form_action', '.bookacti-booking-system', function() {
 		var booking_system = $j( this );
@@ -13,7 +13,7 @@ $j( document ).ready( function() {
 /**
  * Perform WC form action
  * @since 1.7.19
- * @version 1.8.10
+ * @version 1.9.0
  * @param {HTMLElement} booking_system
  */
 function bookacti_wc_perform_form_action( booking_system ) {
@@ -58,7 +58,7 @@ function bookacti_wc_perform_form_action( booking_system ) {
 /**
  * Redirect to activity product page
  * @since 1.7.0
- * @version 1.8.10
+ * @version 1.9.0
  * @param {HTMLElement} booking_system
  * @param {int} event_id
  */
@@ -115,7 +115,7 @@ function bookacti_redirect_to_group_category_product_page( booking_system, group
 /**
  * Add a product to cart from a booking form
  * @since 1.7.0
- * @version 1.8.10
+ * @version 1.9.0
  * @param {HTMLElement} booking_system
  */
 function bookacti_add_product_to_cart_via_booking_system( booking_system ) {

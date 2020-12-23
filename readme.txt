@@ -320,11 +320,12 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 
 == Changelog ==
 
-= 1.8.10 =
+= 1.9.0 =
 * Breaking change - WooCommerce carts will be emptied after the update
 * Breaking change - You need to update your add-ons and probably adapt your custom code. No support can be provided for your custom code.
 * Feature - Pick multiple events on the calendar and book them all at once (find the option in your booking form editor, in the calendar settings)
 * Feature - Pick multiple events on the calendar and add them all to the shopping cart at once (with WooCommerce)
+* Feature - Cancel all bookings of an event / groups of events at once (find the option in the calendar editor, in the event settings, Delete button)
 * Tweak - Hide the Calendar bookings filter if only one calendar is available
 * Tweak - Display an admin error notice if an add-on is outdated and will cause malfunction
 * Fix - Fields were not prefilled with URL attributes on WC variable product page
@@ -1128,10 +1129,10 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 
 == Upgrade Notice ==
 
-= 1.8.10 =
+= 1.9.0 =
 Major changes in code:
 * If you have purchased add-ons, you need to update them too.
-* If you have custom code, you probably need to adapt it. No support will be provided for your custom code.
+* If you have custom code, you probably need to adapt it. No support can be provided for your custom code.
 
 = 1.1.0 =
 Major update with breaking changes. To be safe, make a backup of your database. 

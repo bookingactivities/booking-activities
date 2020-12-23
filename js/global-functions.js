@@ -13,7 +13,7 @@ $j( document ).ready( function() {
 	if( is_bootstrap ) {
 		/**
 		 * Remove the Bootstrap tooltips on click anywhere else than the tooltip
-		 * @since 1.8.10
+		 * @since 1.9.0
 		 * @param {Event} e
 		 */
 		$j( document ).on( 'click', function( e ) {
@@ -32,7 +32,7 @@ $j( document ).ready( function() {
 
 		/**
 		 * Keep the Bootstrap tooltips displayed if the user mouseover it
-		 * @since 1.8.10
+		 * @since 1.9.0
 		 */
 	   $j( 'body' ).on( 'mouseover', '.bookacti-bs-tooltip', function() {
 		   if( typeof bookacti_bs_remove_mouseover_tooltip_monitor !== 'undefined' ) { 
@@ -43,7 +43,7 @@ $j( document ).ready( function() {
 
 	   /**
 		* Remove the Bootstrap tooltips - on mouseout
-		* @since 1.8.10
+		* @since 1.9.0
 		*/
 	   $j( 'body' ).on( 'mouseout', '.bookacti-bs-tooltip', function() {
 			var tooltip_mouseover_timeout = Math.min( Math.max( parseInt( bookacti_localized.bookings_tooltip_mouseover_timeout ), 0 ), 200 );
@@ -78,7 +78,7 @@ window.addEventListener( 'touchstart', function bookacti_detect_touch_device() {
 
 /**
  * Init tooltip
- * @version 1.8.10
+ * @version 1.9.0
  */
 function bookacti_init_tooltip() {
 	// Bootstrap (for compatibility only)
@@ -336,7 +336,7 @@ function bookacti_select2_init() {
  * Convert a php date format into a moment.js format
  * http://www.php.net/manual/en/function.date.php
  * http://momentjs.com/docs/#/displaying/format/
- * @version 1.8.10
+ * @version 1.9.0
  */
 function bookacti_init_moment_format_from_php_date_format() {
 	(function( m ) {

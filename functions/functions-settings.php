@@ -174,7 +174,7 @@ function bookacti_display_forms_screen_options() {
 /**
  * Display "When to load the events?" setting
  * @since 1.1.0
- * @version 1.8.10
+ * @version 1.9.0
  */
 function bookacti_settings_field_when_events_load_callback() {
 	$args = array(
@@ -476,7 +476,7 @@ function bookacti_settings_field_cancellation_delay_callback() {
 
 /**
  * Possible actions to take after cancellation needing refund
- * @version 1.8.10
+ * @version 1.9.0
  */
 function bookacti_settings_field_cancellation_refund_actions_callback() {
 

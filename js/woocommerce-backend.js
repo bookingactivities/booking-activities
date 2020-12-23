@@ -53,7 +53,7 @@ $j( document ).ready( function() {
 	
 	/**
 	 * Show / Hide WC field in delete booking dialog
-	 * @version 1.8.10
+	 * @version 1.9.0
 	 * @param {Event} e
 	 */
 	$j( '.bookacti-user-booking-list-table, .woocommerce-table, #bookacti-booking-list' ).on( 'click', '.bookacti-booking-action, .bookacti-booking-group-action', function ( e ) {

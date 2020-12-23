@@ -6,7 +6,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 /**
  * Fetch events by templates and / or activities
- * @version 1.8.10
+ * @version 1.9.0
  * @param array $raw_args {
  *  @type array $templates Array of template IDs
  *  @type array $activities Array of activity IDs
@@ -189,7 +189,7 @@ function bookacti_fetch_events( $raw_args = array() ) {
 
 /**
  * Fetch events by groups and / or group categories
- * @version 1.8.10
+ * @version 1.9.0
  * @global wpdb $wpdb
  * @param array $raw_args {
  *  @type array $templates Array of template IDs
@@ -477,7 +477,7 @@ function bookacti_fetch_booked_events( $raw_args = array() ) {
 
 /**
  * Get event by id
- * @version 1.8.10
+ * @version 1.9.0
  * @global wpdb $wpdb
  * @param int $event_id
  * @return object
@@ -485,7 +485,7 @@ function bookacti_fetch_booked_events( $raw_args = array() ) {
 function bookacti_get_event_by_id( $event_id ) {
 	global $wpdb;
 
-	$query_event = 'SELECT E.id as event_id, E.template_id, E.title, E.start, E.end, E.repeat_freq, E.repeat_from, E.repeat_to, E.availability, A.color, A.is_resizable, A.id as activity_id, T.start_date as template_start,  T.end_date as template_end ' 
+	$query_event = 'SELECT E.id as event_id, E.template_id, E.title, E.start, E.end, E.repeat_freq, E.repeat_from, E.repeat_to, E.availability, E.active as event_active, A.color, A.is_resizable, A.id as activity_id, A.active as activity_active, T.start_date as template_start, T.end_date as template_end, T.active as template_active ' 
 					. ' FROM ' . BOOKACTI_TABLE_EVENTS . ' as E, ' . BOOKACTI_TABLE_ACTIVITIES . ' as A, ' . BOOKACTI_TABLE_TEMPLATES . ' as T'
 					. ' WHERE E.activity_id = A.id '
 					. ' AND E.template_id = T.id '
@@ -570,7 +570,7 @@ function bookacti_get_event_availability( $event_id, $event_start, $event_end ) 
 
 /**
  * Get the min availability from a collection of events
- * @since 1.8.10
+ * @since 1.9.0
  * @global wpdb $wpdb
  * @param array $events
  * @param int $active -1|0|1

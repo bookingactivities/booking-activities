@@ -44,7 +44,7 @@ function bookacti_init_booking_system_dialogs() {
 
 /**
  * Choose a group of events dialog
- * @version 1.8.10
+ * @version 1.9.0
  * @param {HTMLElement} booking_system
  * @param {array} group_ids
  * @param {object} event
@@ -55,6 +55,7 @@ function bookacti_dialog_choose_group_of_events( booking_system, group_ids, even
 	var groups_of_events_list	= $j( '#' + booking_system_id + '-groups-of-events-list' );
 	
 	var attributes			= bookacti.booking_system[ booking_system_id ];
+	var multiple_bookings	= attributes[ 'multiple_bookings' ];
 	var bookings_only		= attributes[ 'bookings_only' ];
 	var past_events			= attributes[ 'past_events' ];
 	var past_events_bookable= attributes[ 'past_events_bookable' ];
@@ -340,8 +341,6 @@ function bookacti_dialog_choose_group_of_events( booking_system, group_ids, even
 		booking_system.trigger( 'bookacti_trigger_group_of_events_preview', [ trigger, group_id, event ] );
 
 		if( trigger.click ) {
-			var multiple_bookings = bookacti.booking_system[ booking_system_id ][ 'multiple_bookings' ];
-	
 			// If the event is picked, just unpick it (or its group)
 			if( multiple_bookings ) {
 				var picked_event = bookacti_is_event_picked( booking_system, event );
@@ -370,9 +369,9 @@ function bookacti_dialog_choose_group_of_events( booking_system, group_ids, even
 	// Make sure picked_events is emptied on close if no option has been selected
     dialog.dialog({
 		close: function() {
-			var selected_group = groups_of_events_list.find( 'input[type="radio"]:checked').val();
+			var selected_group = groups_of_events_list.find( 'input[type="radio"]:checked' ).val();
 			// Empty the picked events if no group was choosen
-			if( typeof selected_group === 'undefined' ) {
+			if( typeof selected_group === 'undefined' && ! multiple_bookings ) {
 				bookacti_unpick_all_events( booking_system );
 			}
 		}
@@ -395,8 +394,6 @@ function bookacti_dialog_choose_group_of_events( booking_system, group_ids, even
 					booking_system.trigger( 'bookacti_trigger_group_of_events_click', [ trigger, group_id, event ] );
 					
 					if( trigger.click ) {
-						var multiple_bookings = bookacti.booking_system[ booking_system_id ][ 'multiple_bookings' ];
-	
 						// If the event is picked, just unpick it (or its group)
 						if( multiple_bookings ) {
 							var picked_event = bookacti_is_event_picked( booking_system, event );

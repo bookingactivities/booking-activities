@@ -353,7 +353,7 @@ add_action( 'bookacti_display_form_field_quantity', 'bookacti_display_form_field
 /**
  * Display the form field 'checkbox'
  * @since 1.5.2
- * @version 1.8.10
+ * @version 1.9.0
  * @param string $html
  * @param array $field
  * @param string $instance_id
@@ -564,7 +564,7 @@ add_action( 'wp_ajax_nopriv_bookactiForgottenPassword', 'bookacti_controller_for
 /**
  * Check if login form is correct and then register / log the user in
  * @since 1.8.0
- * @version 1.8.10
+ * @version 1.9.0
  */
 function bookacti_controller_validate_login_form() {
 	// Check nonce
@@ -704,7 +704,7 @@ add_action( 'wp_ajax_nopriv_bookactiSubmitLoginForm', 'bookacti_controller_valid
 /**
  * Check if booking form is correct and then book the event, or send the error message
  * @since 1.5.0
- * @version 1.8.10
+ * @version 1.9.0
  */
 function bookacti_controller_validate_booking_form() {
 	// Check nonce
@@ -959,7 +959,7 @@ add_action( 'wp_ajax_nopriv_bookactiSubmitBookingForm', 'bookacti_controller_val
 /**
  * Save the user data when the customer do not want to create an account, and attach them to the booking
  * @since 1.6.0
- * @version 1.8.10
+ * @version 1.9.0
  * @param array $return_array
  * @param array $booking_form_values
  * @param int $form_id

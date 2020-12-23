@@ -58,7 +58,7 @@ add_action( 'bookacti_clean_latest_notifications', 'bookacti_clean_latest_emails
 /**
  * Send a notification to admin and customer when a new booking is made
  * @since 1.2.2 (was bookacti_send_notification_admin_new_booking in 1.2.1)
- * @version 1.8.10
+ * @version 1.9.0
  * @param array $return_array
  * @param array $booking_form_values
  * @param int $form_id
@@ -78,7 +78,7 @@ add_action( 'bookacti_booking_form_validated', 'bookacti_send_notification_when_
 /**
  * Send a notification to admin and customer when a single booking status changes
  * @since 1.2.1 (was bookacti_send_email_when_booking_state_changes in 1.2.0)
- * @version 1.8.10
+ * @version 1.9.0
  * @param object $booking
  * @param string $status
  * @param array $args
@@ -109,7 +109,7 @@ add_action( 'bookacti_booking_state_changed', 'bookacti_send_notification_when_b
 /**
  * Send a notification to admin and customer when a booking group status changes
  * @since 1.2.1 (was bookacti_send_email_when_booking_group_state_changes in 1.2.0)
- * @version 1.8.10
+ * @version 1.9.0
  * @param int $booking_group_id
  * @param array $bookings
  * @param string $status

@@ -7,7 +7,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 /**
  * Fetch events to display on calendar editor
  * @since 1.1.0 (replace bookacti_fetch_events from 1.0.0)
- * @version 1.8.10
+ * @version 1.9.0
  * @global wpdb $wpdb
  * @param array $raw_args {
  *  @type array $templates Array of template IDs
@@ -1794,7 +1794,7 @@ function bookacti_update_template( $template_id, $template_title, $template_star
 
 /**
  * Get activity data
- * @version 1.8.10
+ * @version 1.9.0
  * @global wpdb $wpdb
  * @param int $activity_id
  * @return object
@@ -2053,7 +2053,7 @@ function bookacti_delete_templates_x_activities( $template_ids, $activity_ids ) 
 
 /**
  * Get activities by template
- * @version 1.8.10
+ * @version 1.9.0
  * @global wpdb $wpdb
  * @param array $template_ids
  * @param boolean $based_on_events Whether to retrieve activities bound to templates or activities bound to events of templates

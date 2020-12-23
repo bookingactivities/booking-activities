@@ -74,7 +74,7 @@ $j( document ).ready( function() {
 	
 	/**
 	 * Perform the desired action on form submission
-	 * @version 1.8.10
+	 * @version 1.9.0
 	 * @param {Event} e
 	 */
 	$j( 'body' ).on( 'submit', '.bookacti-booking-form', function( e ){
@@ -600,7 +600,7 @@ function bookacti_submit_booking_form( form ) {
 
 /**
  * Perform form action
- * @since 1.8.10
+ * @since 1.9.0
  * @param {HTMLElement} booking_system
  */
 function bookacti_perform_form_action( booking_system ) {

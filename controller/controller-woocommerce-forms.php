@@ -60,12 +60,14 @@ add_action( 'bookacti_form_editor_description_after', 'bookacti_form_editor_wc_d
 /**
  * Display a WC notice in the form editor, Calendar field settings, "Actions" tab
  * @since 1.7.15
+ * @version 1.9.0
  * @param array $params
  */
 function bookacti_form_action_wc_notice( $params ) {
 	?>
-	<div class='bookacti-form-action-wc-notice'>
-		<?php esc_html_e( 'The form action is not taken into account on WooCommerce product pages.', 'booking-activities' ); ?>
+	<div class='bookacti-info'>
+		<span class='dashicons dashicons-info'></span>
+		<span><?php esc_html_e( 'The form action is not taken into account on WooCommerce product pages.', 'booking-activities' ); ?></span>
 	</div>
 	<?php
 }
@@ -363,7 +365,7 @@ add_action( 'wp_ajax_bookactiSelect2Query_products', 'bookacti_controller_search
 /**
  * Add products bound to the selected events to cart
  * @since 1.7.0
- * @version 1.8.10
+ * @version 1.9.0
  */
 function bookacti_controller_add_bound_product_to_cart() {
 	// Check nonce

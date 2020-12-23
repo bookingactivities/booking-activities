@@ -6,7 +6,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 /**
  * Add bookings to cart item or merge the bookings to an existing cart item
- * @since 1.8.10
+ * @since 1.9.0
  * @global woocommerce $woocommerce
  * @param array $product_bookings_data
  * @return array
@@ -110,7 +110,7 @@ function bookacti_wc_add_bookings_to_cart( $product_bookings_data ) {
 
 /**
  * Get in cart bookings per cart item
- * @since 1.8.10
+ * @since 1.9.0
  * @global woocommerce $woocommerce
  * @param array $cart_items
  * @param array $filters
@@ -184,7 +184,7 @@ function bookacti_wc_get_cart_items_bookings( $cart_items = array(), $filters = 
 
 /**
  * Get in cart bookings per cart item
- * @since 1.8.10
+ * @since 1.9.0
  * @global woocommerce $woocommerce
  * @param string $cart_item_key
  * @param array $filters
@@ -200,7 +200,7 @@ function bookacti_wc_get_cart_item_bookings( $cart_item_key, $filters = array() 
 
 /**
  * Format cart item booked events like a picked events array
- * @since 1.8.10
+ * @since 1.9.0
  * @global woocommerce $woocommerce
  * @param string $cart_item_key
  * @param boolean $one_entry_per_group
@@ -233,7 +233,7 @@ function bookacti_wc_get_cart_item_picked_events( $cart_item_key, $one_entry_per
 
 /**
  * Check if we can update the quantity of a cart item bookings
- * @since 1.8.10
+ * @since 1.9.0
  * @param array $cart_item_bookings
  * @param int $new_quantity
  * @return array
@@ -255,7 +255,7 @@ function bookacti_wc_validate_cart_item_bookings_new_quantity( $cart_item_bookin
 
 /**
  * Check if we can update the user of a cart item bookings
- * @since 1.8.10
+ * @since 1.9.0
  * @param array $cart_item_bookings
  * @param string|int $new_user_id
  * @return array
@@ -277,7 +277,7 @@ function bookacti_wc_validate_cart_item_bookings_new_user( $cart_item_bookings, 
 
 /**
  * Update the bookings bound to a cart item
- * @since 1.8.10
+ * @since 1.9.0
  * @global woocommerce $woocommerce
  * @param string|array $cart_item_key Cart item key or Cart item itself
  * @param array $new_data
@@ -333,7 +333,7 @@ function bookacti_wc_update_cart_item_bookings( $cart_item_key, $new_data ) {
 
 /**
  * Update the bookings quantity bound to a cart item
- * @since 1.8.10
+ * @since 1.9.0
  * @global woocommerce $woocommerce
  * @param string|array $cart_item_key Cart item key or Cart item itself
  * @param int $new_quantity
@@ -348,7 +348,7 @@ function bookacti_wc_update_cart_item_bookings_quantity( $cart_item_key, $new_qu
 
 /**
  * Update the bookings quantity bound to a cart item
- * @since 1.8.10
+ * @since 1.9.0
  * @global woocommerce $woocommerce
  * @param string|array $cart_item_key Cart item key or Cart item itself
  * @param string $new_status
@@ -372,7 +372,7 @@ function bookacti_wc_update_cart_item_bookings_status( $cart_item_key, $new_stat
 
 /**
  * Check if the booking has expired
- * @version 1.8.10
+ * @version 1.9.0
  * @param int|object $booking
  * @return boolean
  */
@@ -397,7 +397,7 @@ function bookacti_is_expired_booking( $booking ) {
 
 /**
  * Reset expiration dates of all cart items
- * @since 1.8.10 (was bookacti_reset_cart_expiration_dates)
+ * @since 1.9.0 (was bookacti_reset_cart_expiration_dates)
  * @global woocommerce $woocommerce
  * @param string $expiration_date
  * @return int|false
@@ -433,7 +433,7 @@ function bookacti_wc_reset_cart_expiration_date( $expiration_date ) {
 
 /**
  * Get the expiration time for a newly created cart item
- * @since 1.8.10 (was bookacti_get_expiration_time)
+ * @since 1.9.0 (was bookacti_get_expiration_time)
  * @global WooCommerce $woocommerce
  * @param string $date_format
  * @return string
@@ -468,7 +468,7 @@ function bookacti_wc_get_new_cart_item_expiration_date() {
 
 /**
  * Get cart timeout
- * @since 1.8.10 (was bookacti_get_cart_timeout)
+ * @since 1.9.0 (was bookacti_get_cart_timeout)
  * @global woocommerce $woocommerce
  * @param int $user_id
  * @return string
@@ -487,7 +487,7 @@ function bookacti_wc_get_cart_expiration_date( $user_id = 0 ) {
 
 /**
  * Set cart timeout
- * @since 1.8.10 (was bookacti_set_cart_timeout)
+ * @since 1.9.0 (was bookacti_set_cart_timeout)
  * @global woocommerce $woocommerce
  * @param string|null $expiration_date
  * @param int $user_id
@@ -505,7 +505,7 @@ function bookacti_wc_set_cart_expiration_date( $expiration_date, $user_id = 0 ) 
 
 /**
  * Get timeout for a cart item
- * @since 1.8.10 (was bookacti_get_cart_item_timeout)
+ * @since 1.9.0 (was bookacti_get_cart_item_timeout)
  * @global woocommerce $woocommerce
  * @param string $cart_item_key
  * @return string
@@ -548,14 +548,50 @@ function bookacti_wc_get_cart_item_countdown_html( $cart_item_key ) {
 /**
  * Get formatted remaining time before expiration
  * @since 1.2.0
- * @version 1.8.6
+ * @version 1.9.0
  * @param string $expiration_date 
+ * @param int $precision 
  * @return string
  */
-function bookacti_get_formatted_time_before_expiration( $expiration_date ) {
+function bookacti_get_formatted_time_before_expiration( $expiration_date, $precision = 3 ) {
 	$seconds = round( abs( strtotime( $expiration_date ) - time() ) );
-	$remaining_time = bookacti_format_delay( $seconds );
-	return apply_filters( 'bookacti_formatted_time_before_expiration', $remaining_time, $expiration_date );
+	$remaining_time = bookacti_format_delay( $seconds, $precision );
+	return apply_filters( 'bookacti_formatted_time_before_expiration', $remaining_time, $expiration_date, $precision );
+}
+
+
+/**
+ * Get product price as is it should be displayed in cart (with or without tax according to settings)
+ * @since 1.9.0
+ * @global woocommerce $woocommerce
+ * @param WC_Product $product
+ * @param float $price
+ * @param int $qty
+ * @return string
+ */
+function bookacti_wc_get_displayed_product_price( $product, $price = '', $qty = 1 ) {
+	global $woocommerce;
+	
+	if( $product->is_taxable() ) {
+		if( $woocommerce->cart->display_prices_including_tax() ) {
+			$price_inc_tax		= wc_get_price_including_tax( $product, array( 'price' => $price, 'qty' => $qty ) );
+			$formatted_price	= wc_price( $price_inc_tax );
+			if( ! wc_prices_include_tax() && $woocommerce->cart->get_subtotal_tax() > 0 ) {
+				$formatted_price .= ' <small class="tax_label">' . $woocommerce->countries->inc_tax_or_vat() . '</small>';
+			}
+		} else {
+			$price_exc_tax		= wc_get_price_excluding_tax( $product, array( 'price' => $price, 'qty' => $qty ) );
+			$formatted_price	= wc_price( $price_exc_tax );
+			if( wc_prices_include_tax() && $woocommerce->cart->get_subtotal_tax() > 0 ) {
+				$formatted_price .= ' <small class="tax_label">' . $woocommerce->countries->ex_tax_or_vat() . '</small>';
+			}
+		}
+	} else {
+		$price = $price !== '' ? max( 0.0, (float) $price ) : $product->get_price();
+		$formatted_price = wc_price( $price * $qty );
+	}
+	
+	return $formatted_price;
 }
 
 
@@ -563,10 +599,9 @@ function bookacti_get_formatted_time_before_expiration( $expiration_date ) {
 
 // CART AND ORDER
 
-
 /**
  * Build a user-friendly events list based on item bookings
- * @since 1.8.10
+ * @since 1.9.0
  * @param array $item_bookings
  * @param boolean $show_quantity
  * @param string $locale Optional. Default to site locale.
@@ -634,7 +669,7 @@ function bookacti_wc_get_item_bookings_events_list_html( $item_bookings, $show_q
 
 /**
  * Get array of displayed attributes per booking
- * @since 1.8.10
+ * @since 1.9.0
  * @global boolean $bookacti_is_email
  * @param array $item_bookings
  * @param string $locale Optional. Default to site locale.
@@ -694,6 +729,9 @@ function bookacti_wc_get_item_bookings_attributes( $item_bookings ) {
 			}
 		}
 		
+		// Allow plugins to add more item booking attributes to be displayed (before the booking actions)
+		$booking_attributes = apply_filters( 'bookacti_wc_item_booking_attributes', $booking_attributes, $item_booking );
+		
 		// Display admin actions
 		$is_order_edit_page = ( ! empty( $_REQUEST[ 'action' ] ) && in_array( $_REQUEST[ 'action' ], array( 'edit', 'woocommerce_refund_line_items', 'woocommerce_load_order_items' ), true ) );
 		if( $is_order_edit_page ) {
@@ -706,9 +744,6 @@ function bookacti_wc_get_item_bookings_attributes( $item_bookings ) {
 				);
 			}
 		}
-		
-		// Allow plugins to add more item booking attributes to be displayed (before the booking actions)
-		$booking_attributes = apply_filters( 'bookacti_wc_item_booking_attributes', $booking_attributes, $item_booking );
 		
 		// Booking actions
 		// Don't display booking actions in emails, on the backend, and on payment page
@@ -736,7 +771,7 @@ function bookacti_wc_get_item_bookings_attributes( $item_bookings ) {
 
 /**
  * Get array of displayed attributes per item per booking
- * @since 1.8.10
+ * @since 1.9.0
  * @param array $item_bookings
  * @param string $locale Optional. Default to site locale.
  * @return array
@@ -792,7 +827,7 @@ function bookacti_wc_get_item_bookings_attributes_html( $item_bookings, $locale 
 
 /**
  * Get item booking array of possible actions
- * @since 1.8.10
+ * @since 1.9.0
  * @param array $item_booking
  * @return array
  */
@@ -831,7 +866,7 @@ function bookacti_wc_get_item_booking_actions( $item_booking ) {
 
 /**
  * Get item booking possible actions as HTML buttons
- * @since 1.8.10
+ * @since 1.9.0
  * @param array $item_booking
  * @param boolean $return_array Whether to return an array of buttons, or the concatenated buttons HTML
  * @return string
@@ -870,13 +905,11 @@ function bookacti_wc_get_item_booking_actions_html( $item_booking, $return_array
 
 /**
  * Get item bookings attributes IDs that shoud not be displayed on cart items
- * @since 1.8.10
+ * @since 1.9.0
  * @return array
  */
 function bookacti_wc_get_hidden_cart_item_bookings_attributes() {
-	return apply_filters( 'bookacti_wc_hidden_cart_item_bookings_attributes', array(
-		'id', 'status', 'actions'
-	));
+	return apply_filters( 'bookacti_wc_hidden_cart_item_bookings_attributes', array( 'id', 'status', 'actions' ) );
 }
 
 
@@ -886,7 +919,7 @@ function bookacti_wc_get_hidden_cart_item_bookings_attributes() {
 
 /**
  * Format order item bookings ids array
- * @since 1.8.10
+ * @since 1.9.0
  * @param array|WC_Order_Item_Product $order_item
  * @return array
  */
@@ -916,7 +949,7 @@ function bookacti_wc_format_order_item_bookings_ids( $order_item ) {
 
 /**
  * Get in order bookings per order item
- * @since 1.8.10
+ * @since 1.9.0
  * @global woocommerce $woocommerce
  * @param int|WC_Order|WC_Order_Item_Product[] $order_id
  * @param array $filters
@@ -1001,7 +1034,7 @@ function bookacti_wc_get_order_items_bookings( $order_id, $filters = array() ) {
 
 /**
  * Check if we can update the quantity of an order item bookings
- * @since 1.8.10
+ * @since 1.9.0
  * @param array $order_item_bookings
  * @param int $new_quantity
  * @return array
@@ -1023,7 +1056,7 @@ function bookacti_wc_validate_order_item_bookings_new_quantity( $order_item_book
 
 /**
  * Update bookings attached to all order items
- * @since 1.8.10
+ * @since 1.9.0
  * @param int|WC_Order $order_id
  * @param array $new_data
  * @param array $where
@@ -1083,7 +1116,7 @@ function bookacti_wc_update_order_items_bookings( $order_id, $new_data, $where =
 
 /**
  * Update the order status according to the bookings status bound to its items
- * @since 1.8.10 (was bookacti_change_order_state_based_on_its_bookings_state)
+ * @since 1.9.0 (was bookacti_change_order_state_based_on_its_bookings_state)
  * @param int $order_id
  */
 function bookacti_wc_update_order_status_according_to_its_bookings( $order_id ) {
@@ -1154,7 +1187,7 @@ function bookacti_wc_update_order_status_according_to_its_bookings( $order_id ) 
 
 /**
  * Remove booking ids from order item meta to unbind a booking from an item
- * @since 1.8.10
+ * @since 1.9.0
  * @param WC_Order_Item_Product $item
  * @param array $item_bookings_ids_to_delete Leave it empty to unbind all bookings from the item
  * @return int|false Returns the number of bookings unbound. Returns false in case of error. Be careful, returns 0 if no bookings were bound to the item in the first place.
@@ -1162,7 +1195,7 @@ function bookacti_wc_update_order_status_according_to_its_bookings( $order_id ) 
 function bookacti_wc_remove_order_item_bookings( $item, $item_bookings_ids_to_delete = array() ) {
 	$removed = 0;
 	
-	// Backward compatibility for bookings made before 1.8.10
+	// Backward compatibility for bookings made before 1.9.0
 	$removed = bookacti_delete_order_item_booking_meta( $item->get_id() );
 	if( $removed ) { return $removed; }
 	
@@ -1199,7 +1232,7 @@ function bookacti_wc_remove_order_item_bookings( $item, $item_bookings_ids_to_de
 
 /**
  * Get order items holding one of the desired booking or booking group ID
- * @since 1.8.10
+ * @since 1.9.0
  * @param array $booking_ids
  * @param array $booking_group_ids
  * @param WC_Order[] $orders
@@ -1274,7 +1307,7 @@ function bookacti_wc_get_order_items_by_bookings( $booking_ids = array(), $booki
 
 /**
  * Save the order user data as booking meta
- * @since 1.8.10 (was bookacti_save_order_data_as_booking_meta)
+ * @since 1.9.0 (was bookacti_save_order_data_as_booking_meta)
  * @param WC_Order $order
  */
 function bookacti_wc_save_no_account_user_data_as_booking_meta( $order ) {
@@ -1327,7 +1360,7 @@ function bookacti_wc_save_no_account_user_data_as_booking_meta( $order ) {
 
 /**
  * Get woocommerce order item id by booking id
- * @version 1.8.10
+ * @version 1.9.0
  * @param int|object $booking_id
  * @return WC_Order_Item_Product|array Empty array if not found
  */
@@ -1383,7 +1416,7 @@ function bookacti_get_order_item_by_booking_id( $booking_id ) {
 /**
  * Get woocommerce order item id by booking group id
  * @since 1.1.0
- * @version 1.8.10
+ * @version 1.9.0
  * @param int|object $booking_group_id
  * @return WC_Order_Item_Product|array|false
  */
@@ -1466,7 +1499,7 @@ function bookacti_wc_booking_actions_per_order_id( $booking_actions, $order_id )
 /**
  * Get WC order items rows
  * @since 1.7.4
- * @version 1.8.10
+ * @version 1.9.0
  * @param WC_Order_Item_Product[] $order_items
  * @return string
  */
@@ -1670,7 +1703,7 @@ function bookacti_get_product_default_attributes( $product ) {
 
 /**
  * Get the form ID bound to a product / variation
- * @since 1.8.10
+ * @since 1.9.0
  * @param int $product_id
  * @param boolean $is_variation
  * @return int
@@ -1697,7 +1730,7 @@ function bookacti_get_product_form_id( $product_id, $is_variation = 'check' ) {
 
 /**
  * Get WC additional refund actions
- * @since 1.8.10
+ * @since 1.9.0
  * @return array
  */
 function bookacti_wc_get_refund_actions() {
@@ -1720,7 +1753,7 @@ function bookacti_wc_get_refund_actions() {
 /**
  * Filter refund actions by order id
  * @since 1.1.0
- * @version 1.8.10
+ * @version 1.9.0
  * @param array $possible_actions
  * @param int $order_id
  * @return type
@@ -1748,7 +1781,7 @@ function bookacti_filter_refund_actions_by_order( $possible_actions, $order_id )
 
 /**
  * Check if an order supports auto refund
- * @version 1.8.10
+ * @version 1.9.0
  * @param WC_Order|int $order
  * @return boolean
  */
@@ -1764,7 +1797,7 @@ function bookacti_does_order_support_auto_refund( $order ) {
 /**
  * Update order bookings if a partial refund is perfomed (refund of one or more items)
  * @since 1.2.0 (was part of bookacti_update_booking_when_order_item_is_refunded before)
- * @version 1.8.10
+ * @version 1.9.0
  * @param WC_Order_Refund $refund
  */
 function bookacti_update_order_bookings_on_items_refund( $refund ) {
@@ -1864,7 +1897,7 @@ function bookacti_update_order_bookings_on_items_refund( $refund ) {
 /**
  * Update order bookings if a total refund is perfomed (refund of the whole order)
  * @since 1.2.0 (was part of bookacti_update_booking_when_order_item_is_refunded before)
- * @version 1.8.10
+ * @version 1.9.0
  * @param WC_Order_Refund $refund
  */
 function bookacti_update_order_bookings_on_order_refund( $refund ) {
@@ -1942,7 +1975,7 @@ function bookacti_update_order_bookings_on_order_refund( $refund ) {
 
 /**
  * Create a coupon to refund a booking
- * @version 1.8.10
+ * @version 1.9.0
  * @param array $bookings
  * @param string $booking_type Determine if the given id is a booking id or a booking group. Accepted values are 'single' or 'group'.
  * @param string $refund_message
@@ -2123,7 +2156,7 @@ function bookacti_refund_booking_with_coupon( $bookings, $booking_type, $refund_
 
 /**
  * Auto refund (for supported gateway)
- * @version 1.8.10
+ * @version 1.9.0
  * @param array $bookings
  * @param string $booking_type Determine if the given id is a booking id or a booking group id. Accepted values are 'single' or 'group'.
  * @param string $refund_message
@@ -2196,7 +2229,7 @@ function bookacti_auto_refund_booking( $bookings, $booking_type, $refund_message
 
 /**
  * Get refunded amounts total and tax for an order item
- * @since 1.8.10
+ * @since 1.9.0
  * @param WC_Order_Item_Product $item
  * @param boolean $return_array
  * @return float|array
@@ -2226,7 +2259,7 @@ function bookacti_wc_get_item_total_refunded( $item, $return_array = false ) {
 
 /**
  * Get the remaining amount to refund for an item
- * @since 1.8.10
+ * @since 1.9.0
  * @param WC_Order_Item_Product $item
  * @param boolean $return_array
  * @return float|array

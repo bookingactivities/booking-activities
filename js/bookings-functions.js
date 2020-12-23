@@ -118,7 +118,7 @@ function bookacti_filter_booking_list( paged ) {
 
 /**
  * Change template-related filters
- * @version 1.8.10
+ * @version 1.9.0
  */
 function bookacti_update_template_related_filters() {
 	// Update activities filter
@@ -184,10 +184,10 @@ function bookacti_refresh_calendar_according_to_date_filter() {
 /**
  * Unpick all events and reset the event filter
  * @since 1.8.0
+ * @version 1.9.0
  */
 function bookacti_unpick_all_events_filter() {
 	var booking_system = $j( '#bookacti-booking-system-bookings-page' );
-	bookacti_unpick_all_events( booking_system );
 	bookacti_clear_booking_system_displayed_info( booking_system );
 	$j( '#bookacti-unpick-events-filter' ).hide( 200 );
 	$j( '#bookacti-picked-events-actions-container' ).hide( 200 );
@@ -480,7 +480,7 @@ function bookacti_refresh_booking_group_frame() {
 
 /**
  * Check if sent data correspond to displayed data
- * @version 1.8.10
+ * @version 1.9.0
  * @param {HTMLElement} booking_system
  * @param {int} quantity
  * @returns {boolean}
@@ -533,9 +533,9 @@ function bookacti_validate_picked_events( booking_system, quantity ) {
 
 			// Single events
 			} else {
-				if( form_values[ 'selected_events' ][ i ][ 'id' ]		!= event.id 
-				||  form_values[ 'selected_events' ][ i ][ 'start' ]	!== event.start 
-				||  form_values[ 'selected_events' ][ i ][ 'end' ]		!== event.end ) {
+				if( form_values[ 'selected_events' ][ i ][ 'id' ] != event.id 
+				||  form_values[ 'selected_events' ][ i ][ 'start' ] !== event.start 
+				||  form_values[ 'selected_events' ][ i ][ 'end' ] !== event.end ) {
 					valid_form.consistent_inputs = false;
 				}
 			}

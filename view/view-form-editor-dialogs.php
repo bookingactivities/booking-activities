@@ -2,7 +2,7 @@
 /**
  * Form editor dialogs
  * @since 1.5.0
- * @version 1.8.10
+ * @version 1.9.0
  */
 
 // Exit if accessed directly
@@ -168,7 +168,7 @@ foreach( $fields_data as $field_name => $field_data ) {
 		/**
 		 * Display the content of the "Filters" tab of the "Calendar" dialog
 		 * @since 1.5.0
-		 * @version 1.8.10
+		 * @version 1.9.0
 		 * @param array $params
 		 */
 		function bookacti_fill_calendar_dialog_filters_tab( $params ) {
@@ -777,7 +777,7 @@ foreach( $fields_data as $field_name => $field_data ) {
 		/**
 		 * Display the content of the "Register" tab of the "Login" dialog
 		 * @since 1.5.0
-		 * @version 1.8.10
+		 * @version 1.9.0
 		 * @param array $params
 		 */
 		function bookacti_fill_login_dialog_register_tab( $params ) {

@@ -4,7 +4,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 /**
  * Send a new status notification for a booking attached to an order item
- * @since 1.8.10
+ * @since 1.9.0
  * @param array $order_item_booking
  * @param string $new_status
  * @param WC_Order $order
@@ -64,7 +64,7 @@ function bookacti_wc_send_order_item_booking_status_notification( $order_item_bo
 
 /**
  * Send one notification per booking to admin and customer when an order contining bookings is made or when its status changes
- * @since 1.8.10 (was bookacti_send_notification_when_order_status_changes)
+ * @since 1.9.0 (was bookacti_send_notification_when_order_status_changes)
  * @param array $order_item_booking
  * @param array $sanitized_data
  * @param WC_Order $order
@@ -162,7 +162,7 @@ add_filter( 'bookacti_notification_sanitized_settings', 'bookacti_sanitize_wc_no
 /**
  * Make sure that WC order data are up to date when a WC notification is sent
  * @since 1.2.2
- * @version 1.8.10
+ * @version 1.9.0
  * @param array $args
  * @return array
  */
@@ -213,7 +213,7 @@ add_filter( 'bookacti_notifications_tags', 'bookacti_wc_notifications_tags', 15,
 /**
  * Set WC notifications tags values
  * @since 1.6.0
- * @version 1.8.10
+ * @version 1.9.0
  * @param array $tags
  * @param object $booking
  * @param string $booking_type

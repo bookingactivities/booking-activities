@@ -588,7 +588,7 @@ function bookacti_get_notifications_tags_values( $booking, $booking_type, $notif
  * Send a notification according to its settings
  * 
  * @since 1.2.1 (was bookacti_send_email in 1.2.0)
- * @version 1.8.10
+ * @version 1.9.0
  * @param string $notification_id Must exists in "bookacti_notifications_default_settings"
  * @param int $booking_id
  * @param string $booking_type "single" or "group"
@@ -701,7 +701,7 @@ add_action( 'bookacti_send_async_notification', 'bookacti_send_notification', 10
 /**
  * Send an email notification
  * @since 1.2.0
- * @version 1.8.10
+ * @version 1.9.0
  * @param array $notification
  * @param array $tags
  * @param string $locale
@@ -792,7 +792,7 @@ add_action( 'bookacti_send_async_new_user_notification', 'bookacti_send_new_user
  * Send an email.
  * Make sure not to send more emails than allowed in a specific timeframe
  * @since 1.7.0
- * @version 1.8.10
+ * @version 1.9.0
  * @param array $to
  * @param string $subject
  * @param string $message

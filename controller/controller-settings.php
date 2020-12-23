@@ -878,7 +878,7 @@ add_filter( 'plugin_row_meta', 'bookacti_meta_links_in_plugins_table', 10, 2 );
 
 /**
  * Display an admin error notice if an add-on is outdated and will cause malfunction
- * @since 1.8.10
+ * @since 1.9.0
  */
 function bookacti_add_ons_compatibility_error_notice() {
 	$add_ons = bookacti_get_active_add_ons( '', array() );
@@ -921,7 +921,7 @@ add_action( 'all_admin_notices', 'bookacti_add_ons_compatibility_error_notice' )
 
 /** 
  * Ask to rate the plugin 5 stars
- * @version 1.8.10
+ * @version 1.9.0
  */
 function bookacti_5stars_rating_notice() {
 	if( ! bookacti_is_booking_activities_screen() ) { return; }

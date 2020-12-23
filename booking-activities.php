@@ -9,7 +9,7 @@
  * Text Domain: booking-activities
  * Domain Path: /languages/
  * WC requires at least: 3.0
- * WC tested up to: 4.8
+ * WC tested up to: 4.9
  * License: GPL3
  * License URI: https://www.gnu.org/licenses/gpl-3.0.html
  * 
@@ -145,7 +145,7 @@ add_action( 'wp_enqueue_scripts',	'bookacti_enqueue_js_variables', 5 );
 
 /**
  * Enqueue high priority scripts
- * @version 1.8.10
+ * @version 1.9.0
  */
 function bookacti_enqueue_high_priority_global_scripts() {
 	// Include global var on WC products and orders screens
@@ -186,7 +186,7 @@ add_action( 'wp_enqueue_scripts',	'bookacti_enqueue_high_priority_global_scripts
 
 /**
  * Enqueue normal priority scripts
- * @version 1.8.10
+ * @version 1.9.0
  */
 function bookacti_enqueue_global_scripts() {
 	// Include WooCommerce style and scripts
@@ -227,7 +227,7 @@ add_action( 'wp_enqueue_scripts',	'bookacti_enqueue_global_scripts', 20 );
 
 /**
  * Enqueue high priority scripts in backend only
- * @version 1.8.10
+ * @version 1.9.0
  */
 function bookacti_enqueue_high_priority_backend_scripts() {
 	// On backend, only include these scripts on Booking Activities pages
@@ -529,23 +529,35 @@ add_action( 'bookacti_updated', 'bookacti_update_refactored_settings_in_1_8_0', 
 
 
 /**
- * Update changes to 1.8.10
+ * Update changes to 1.9.0
  * This function is temporary
- * @since 1.8.10
+ * @since 1.9.0
  * @global wpdb $wpdb
  * @param string $old_version
  */
-function bookacti_update_to_1_8_10( $old_version ) {
-	// Do it only once, when Booking Activities is updated for the first time after 1.8.10
-	if( version_compare( $old_version, '1.8.10', '>=' ) ) { return; }
+function bookacti_clear_sessions_when_updating_to_1_9_0( $old_version ) {
+	// Do it only once, when Booking Activities is updated for the first time after 1.9.0
+	if( version_compare( $old_version, '1.9.0', '>=' ) ) { return; }
 	
 	// Clear all WC customer sessions to empty carts, since cart items data are formatted differently
 	if( bookacti_is_plugin_active( 'woocommerce/woocommerce.php' ) ) {
-		$results = WC_Admin_Status::execute_tool( 'clear_sessions' );
-		wc_add_notice( $results[ 'message' ], 'success' );
+		$action = 'clear_sessions';
+		$tools_controller = new WC_REST_System_Status_Tools_Controller();
+		$tools = $tools_controller->get_tools();
+		$response = $tools_controller->execute_tool( $action );
+		$tool = array_merge( array(
+			'id'          => $action,
+			'name'        => $tools[ $action ]['name'],
+			'action'      => $tools[ $action ]['button'],
+			'description' => $tools[ $action ]['desc'],
+		), $response );
+		
+		do_action( 'woocommerce_system_status_tool_executed', $tool );
+		
+		wc_add_notice( $tool[ 'message' ], 'success' );
 	}
 }
-add_action( 'bookacti_updated', 'bookacti_update_to_1_8_10', 40 );
+add_action( 'bookacti_updated', 'bookacti_clear_sessions_when_updating_to_1_9_0', 40 );
 
 
 

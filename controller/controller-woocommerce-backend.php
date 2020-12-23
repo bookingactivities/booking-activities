@@ -6,7 +6,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 /**
  * Change booking quantity when admin changes order item quantity
- * @version 1.8.10
+ * @version 1.9.0
  * @param boolean $check
  * @param int $item_id
  * @param string $meta_key
@@ -54,7 +54,7 @@ add_filter( 'update_order_item_metadata', 'bookacti_update_booking_qty_with_orde
 /**
  * Cancel bookings when admin changes the associated order item quantity to 0
  * @since 1.1.0
- * @version 1.8.10
+ * @version 1.9.0
  * @param int $order_id
  * @param array $items
  */
@@ -100,7 +100,7 @@ add_action( 'woocommerce_before_save_order_items', 'bookacti_cancel_bookings_if_
 /**
  * Cancel bookings when admin removes the associated order item
  * @since 1.1.0
- * @version 1.8.10
+ * @version 1.9.0
  * @param int $item_id
  */
 function bookacti_cancel_bookings_when_order_item_is_deleted( $item_id ) {
@@ -137,7 +137,7 @@ add_action( 'woocommerce_before_delete_order_item', 'bookacti_cancel_bookings_wh
 
 /**
  * Change booking quantity and status when a refund is deleted
- * @version 1.8.10
+ * @version 1.9.0
  * @param int $refund_id
  * @param int $order_id
  */
@@ -608,7 +608,7 @@ add_action( 'bookacti_unset_capabilities', 'bookacti_unset_role_and_cap_for_wooc
 
 /**
  * Allow Users having the bookacti_manage_booking_activities capability to access the backend
- * @since 1.8.10
+ * @since 1.9.0
  * @param bool $prevent_access
  * @return bool
  */

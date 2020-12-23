@@ -51,7 +51,7 @@ function bookacti_send_json( $array, $action = '' ) {
 /**
  * Send a filtered array via json to stop an ajax process running with an invalid nonce
  * @since 1.5.0
- * @version 1.8.10
+ * @version 1.9.0
  * @param string $action Name of the filter to allow third-party modifications
  */
 function bookacti_send_json_invalid_nonce( $action = '' ) {
@@ -68,7 +68,7 @@ function bookacti_send_json_invalid_nonce( $action = '' ) {
 /**
  * Send a filtered array via json to stop a not allowed an ajax process
  * @since 1.5.0
- * @version 1.8.10
+ * @version 1.9.0
  * @param string $action Name of the filter to allow third-party modifications
  */
 function bookacti_send_json_not_allowed( $action = '' ) {
@@ -443,7 +443,7 @@ function bookacti_generate_ical( $vevents, $vcalendar = array() ) {
 /**
  * Get the variables used with javascript
  * @since 1.8.0
- * @version 1.8.10
+ * @version 1.9.0
  * @return array
  */
 function bookacti_get_js_variables() {
@@ -605,13 +605,13 @@ function bookacti_get_js_variables() {
 /**
  * Get the active Booking Activities add-ons
  * @since 1.7.14
- * @version 1.8.10
+ * @version 1.9.0
  * @param string $prefix
  * @param array $exclude
  */
 function bookacti_get_active_add_ons( $prefix = '', $exclude = array( 'balau' ) ) {
 	$add_ons_data = bookacti_get_add_ons_data( $prefix, $exclude );
-
+	
 	$active_add_ons = array();
 	foreach( $add_ons_data as $add_on_prefix => $add_on_data ) {
 		$add_on_path = $add_on_data[ 'plugin_name' ] . '/' . $add_on_data[ 'plugin_name' ] . '.php';
@@ -627,7 +627,7 @@ function bookacti_get_active_add_ons( $prefix = '', $exclude = array( 'balau' ) 
 /**
  * Get add-on data by prefix
  * @since 1.7.14
- * @version 1.8.10
+ * @version 1.9.0
  * @param string $prefix
  * @param array $exclude
  * @return array
@@ -693,7 +693,7 @@ function bookacti_get_add_ons_data( $prefix = '', $exclude = array( 'balau' ) ) 
 	);
 	
 	// Exclude undesired add-ons
-	if( $exclude ) { $addons_data = array_intersect_key( $addons_data, array_flip( $exclude ) ); }
+	if( $exclude ) { $addons_data = array_diff_key( $addons_data, array_flip( $exclude ) ); }
 	
 	if( ! $prefix ) { return $addons_data; }
 
@@ -842,7 +842,7 @@ function bookacti_get_user_locale( $user_id, $default = 'current', $country_code
 /* 
  * Get site locale, and default to site or current locale
  * @since 1.2.0
- * @version 1.8.10
+ * @version 1.9.0
  * @param string $default 'current' or 'site'
  * @param boolean $country_code Whether to return also country code
  * @return string
@@ -1866,7 +1866,7 @@ function bookacti_format_datetime( $datetime, $format = '' ) {
 
 /**
  * Check if a string is in a correct datetime format
- * @version 1.8.10
+ * @version 1.9.0
  * @param string $datetime Date format "Y-m-d H:i:s" is expected
  * @return string|false
  */

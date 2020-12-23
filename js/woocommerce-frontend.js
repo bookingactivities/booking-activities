@@ -72,7 +72,7 @@ $j( document ).ready( function() {
 
 	/**
 	 * Enable add-to-cart button
-	 * @version 1.8.10
+	 * @version 1.9.0
 	 */
 	$j( '.woocommerce form.cart' ).on( 'bookacti_view_refreshed bookacti_displayed_info_cleared', '.bookacti-booking-system', function() {
 		$j( this ).closest( 'form' ).find( 'input[name="quantity"]' ).attr( 'disabled', false );
@@ -82,7 +82,7 @@ $j( document ).ready( function() {
 
 	/**
 	 * Disable add-to-cart button
-	 * @version 1.8.10
+	 * @version 1.9.0
 	 */
 	$j( '.woocommerce form.cart' ).on( 'bookacti_error_displayed', '.bookacti-booking-system', function() {
 		$j( this ).closest( 'form' ).find( 'input[name="quantity"]' ).attr( 'disabled', true );
@@ -130,7 +130,7 @@ $j( document ).ready( function() {
 
 	/**
 	 * Change activity summary on qty change
-	 * @version 1.8.10
+	 * @version 1.9.0
 	 */
 	$j( '.woocommerce form.cart' ).on( 'keyup mouseup change', 'input.qty', function() {
 		var booking_system = $j( this ).closest( 'form.cart' ).find( '.bookacti-booking-system' );
@@ -142,7 +142,7 @@ $j( document ).ready( function() {
 	
 	/**
 	 * Set picked events list quantity according to the product form quantity - on bookacti_picked_events_list_data
-	 * @version 1.8.10
+	 * @version 1.9.0
 	 * @param {Event} e
 	 * @param {Object} event_data
 	 * @param {Object} event
@@ -158,7 +158,7 @@ $j( document ).ready( function() {
 
 	/**
 	 * Set product form quantity field - on bookacti_update_quantity
-	 * @since 1.8.10
+	 * @since 1.9.0
 	 * @param {Event} e
 	 * @param {Object} qty_data
 	 */
@@ -186,7 +186,7 @@ $j( document ).ready( function() {
 
 /**
  * Switch form according to variation
- * @version 1.8.10
+ * @version 1.9.0
  * @param {HTMLElement} form_container
  * @param {object} variation
  */

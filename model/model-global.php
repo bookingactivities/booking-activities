@@ -62,7 +62,7 @@ function bookacti_delete_user_meta( $meta_key, $user_id = 0, $meta_value = '' ) 
 
 /**
  * Get the user id corresponding to a secret key
- * @since 1.8.10
+ * @since 1.9.0
  * @param string $secret_key
  * @return int User ID or 0 if not found
  */

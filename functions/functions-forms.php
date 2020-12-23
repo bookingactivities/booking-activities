@@ -546,7 +546,7 @@ function bookacti_get_default_form_fields_data( $field_name = '' ) {
  * Get fields metadata
  * @see bookacti_format_form_field_data to properly format your array
  * @since 1.5.0
- * @version 1.8.10
+ * @version 1.9.0
  * @param string $field_name
  * @return array
  */
@@ -659,7 +659,7 @@ function bookacti_get_available_form_action_triggers() {
 /**
  * Format field data according to its type
  * @since 1.5.0
- * @version 1.8.10
+ * @version 1.9.0
  * @param array|string $raw_field_data
  * @return array|false
  */
@@ -807,7 +807,7 @@ function bookacti_format_form_field_data( $raw_field_data ) {
 /**
  * Sanitize field data according to its type
  * @since 1.5.0
- * @version 1.8.10
+ * @version 1.9.0
  * @param array|string $raw_field_data
  * @return array|false
  */
@@ -1299,7 +1299,7 @@ function bookacti_validate_login( $login_values, $require_authentication = true 
 /**
  * Validate form fields according to values received with $_POST
  * @since 1.7.0
- * @version 1.8.10
+ * @version 1.9.0
  * @param int $form_id
  * @param array $fields_data
  * @return array

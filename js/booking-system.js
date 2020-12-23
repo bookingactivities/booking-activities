@@ -15,7 +15,7 @@ $j( document ).ready( function() {
 	
 	/**
 	 * Init actions to perfoms when the user picks an event
-	 * @version 1.8.10
+	 * @version 1.9.0
 	 * @param {Event} e
 	 * @param {Int|String} group_id
 	 * @param {Object} event
@@ -50,7 +50,7 @@ $j( document ).ready( function() {
 	
 	/**
 	 * Init actions to perfoms when the user picks a group of events
-	 * @version 1.8.10
+	 * @version 1.9.0
 	 * @param {Event} e
 	 * @param {Int|String} group_id
 	 * @param {Object} event
@@ -72,7 +72,7 @@ $j( document ).ready( function() {
 	
 	/**
 	 * Unpick an event from the picked events list - on click on their trash icon
-	 * @since 1.8.10
+	 * @since 1.9.0
 	 * @param {Event} e
 	 */
 	$j( 'body' ).on( 'click', '.bookacti-unpick-event-icon', function( e ) {
@@ -95,7 +95,7 @@ $j( document ).ready( function() {
 	
 	/**
 	 * Refresh the picked events list and display on calendar - on bookacti_unpick_event
-	 * @since 1.8.10
+	 * @since 1.9.0
 	 * @param {Event} e
 	 * @param {Object} event
 	 */
@@ -185,7 +185,7 @@ $j( document ).ready( function() {
 	/**
 	 * Display the booking list tooltip when an event is hovered
 	 * @since 1.8.0
-	 * @version 1.8.10
+	 * @version 1.9.0
 	 * @param {Event} e
 	 * @param {Object} event
 	 * @param {HTMLElement} element

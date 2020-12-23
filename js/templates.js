@@ -113,7 +113,7 @@ $j( document ).ready( function() {
 
 /**
  * Initialize and display the template calendar
- * @version 1.8.10
+ * @version 1.9.0
  * @param {HTMLElement} calendar
  */
 function bookacti_load_template_calendar( calendar ) {
@@ -384,7 +384,12 @@ function bookacti_load_template_calendar( calendar ) {
 			bookacti_add_class_according_to_event_size( element );
 		},
 
-
+		
+		/**
+		 * After all events are rendered in the view
+		 * @version 1.9.0
+		 * @param {object} view
+		 */
 		eventAfterAllRender: function( view ) {
 			// Block the event if no other operation on it is allowed until the running ones are finished
 			if( bookacti.blocked_events === true ) { 
@@ -403,7 +408,8 @@ function bookacti_load_template_calendar( calendar ) {
 			
 			// Display element as picked or selected if they actually are
 			$j.each( bookacti.booking_system[ 'bookacti-template-calendar' ][ 'picked_events' ], function( i, picked_event ) {
-				calendar.find( '.fc-event[data-event-id="' + picked_event[ 'id' ] + '"][data-event-start="' + picked_event[ 'start' ] + '"]' ).addClass( 'bookacti-picked-event' );
+				var picked_event_start = moment.utc( picked_event.start ).clone().locale( 'en' ).format( 'YYYY-MM-DD HH:mm:ss' );
+				calendar.find( '.fc-event[data-event-id="' + picked_event[ 'id' ] + '"][data-event-start="' + picked_event_start + '"]' ).addClass( 'bookacti-picked-event' );
 			});
 			
 			bookacti_refresh_selected_events_display();
@@ -810,7 +816,7 @@ function bookacti_load_template_calendar( calendar ) {
 
 		/**
 		 * When an event is clicked
-		 * @version 1.8.10
+		 * @version 1.9.0
 		 * @param {object} event
 		 * @param {object} jsEvent
 		 * @param {object} view

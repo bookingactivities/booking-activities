@@ -6,7 +6,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 /**
  * Get a booking system based on given parameters
- * @version 1.8.10
+ * @version 1.9.0
  * @param array $atts (see bookacti_format_booking_system_attributes())
  * @return string
  */
@@ -101,7 +101,7 @@ function bookacti_get_booking_system( $atts ) {
 /**
  * Get booking system data
  * @since 1.7.4
- * @version 1.8.10
+ * @version 1.9.0
  * @param array $atts (see bookacti_format_booking_system_attributes())
  * @return array
  */
@@ -232,6 +232,17 @@ function bookacti_get_booking_system_data( $atts ) {
 		$booking_system_data[ 'end' ] = $now;
 	}
 	
+	// Fill picked events titles
+	if( $booking_system_data[ 'picked_events' ] ) {
+		foreach( $booking_system_data[ 'picked_events' ] as $i => $picked_event ) {
+			if( $picked_event[ 'group_id' ] ) {
+				$booking_system_data[ 'picked_events' ][ $i ][ 'title' ] = isset( $booking_system_data[ 'groups_data' ][ $picked_event[ 'group_id' ] ] ) ? $booking_system_data[ 'groups_data' ][ $picked_event[ 'group_id' ] ][ 'title' ] : esc_html__( 'Group of events', 'booking-activities' );
+			} else if( $picked_event[ 'id' ] ) {
+				$booking_system_data[ 'picked_events' ][ $i ][ 'title' ] = isset( $booking_system_data[ 'events_data' ][ $picked_event[ 'id' ] ] ) ? $booking_system_data[ 'events_data' ][ $picked_event[ 'id' ] ][ 'title' ] : esc_html__( 'Event', 'booking-activities' );
+			}
+		}
+	}
+	
 	return apply_filters( 'bookacti_booking_system_data', $booking_system_data, $atts );
 }
 
@@ -314,7 +325,7 @@ function bookacti_get_calendar_html( $booking_system_data = array() ) {
 /**
  * Get default booking system attributes
  * @since 1.5.0
- * @version 1.8.10
+ * @version 1.9.0
  * @return array
  */
 function bookacti_get_booking_system_default_attributes() {
@@ -363,7 +374,7 @@ function bookacti_get_booking_system_default_attributes() {
 
 /**
  * Check booking system attributes and format them to be correct
- * @version 1.8.10
+ * @version 1.9.0
  * @param array $raw_atts 
  * @return array
  */
@@ -542,7 +553,7 @@ function bookacti_format_booking_system_attributes( $raw_atts = array() ) {
 
 /**
  * Format picked events array
- * @since 1.8.10
+ * @since 1.9.0
  * @param array $picked_events_raw
  * @param boolean $one_entry_per_group
  * @return array
@@ -593,7 +604,7 @@ function bookacti_format_picked_events( $picked_events_raw = array(), $one_entry
 
 /**
  * Format picked event array
- * @since 1.8.10
+ * @since 1.9.0
  * @param array $picked_event_raw
  * @return array
  */
@@ -625,7 +636,7 @@ function bookacti_format_picked_event( $picked_event_raw = array() ) {
 
 /**
  * Get the difference between two picked events arrays
- * @since 1.8.10
+ * @since 1.9.0
  * @param array $picked_events1
  * @param array $picked_events2
  * @param array $one_entry_per_group
@@ -652,7 +663,7 @@ function bookacti_diff_picked_events( $picked_events1, $picked_events2, $one_ent
 
 /**
  * Check if two picked events are the same
- * @since 1.8.10
+ * @since 1.9.0
  * @param array $picked_event1
  * @param array $picked_event2
  * @return boolean
@@ -693,7 +704,7 @@ function bookacti_is_same_picked_event( $picked_event1, $picked_event2 ) {
 /**
  * Get booking system attributes from calendar field data
  * @since 1.7.17
- * @version 1.8.10
+ * @version 1.9.0
  * @param array|int $calendar_field
  * @return array
  */
@@ -846,7 +857,7 @@ function bookacti_format_booking_system_url_attributes( $atts = array() ) {
 /**
  * Get booking system fields default data
  * @since 1.5.0
- * @version 1.8.10
+ * @version 1.9.0
  * @param array $fields
  * @return array
  */
@@ -1105,7 +1116,7 @@ function bookacti_get_booking_system_fields_default_data( $fields = array() ) {
 
 /**
  * Check the selected event / group of events data before booking
- * @version 1.8.10
+ * @version 1.9.0
  * @param array $picked_events formatted with bookacti_format_picked_events
  * @param int $quantity Desired number of bookings
  * @param int $form_id Set your form id to validate the event against its form parameters. Default is 0: ignore form validation.
@@ -1150,7 +1161,7 @@ function bookacti_validate_booking_form( $picked_events, $quantity, $form_id = 0
 	
 	// Check each picked event
 	else {
-		foreach( $picked_events as $picked_event ) {
+		foreach( $picked_events as $i => $picked_event ) {
 			$grouped_events_keys = isset( $picked_event[ 'events' ] ) ? array_keys( $picked_event[ 'events' ] ) : array();
 			$last_key = end( $grouped_events_keys );
 			
@@ -1351,6 +1362,18 @@ function bookacti_validate_booking_form( $picked_events, $quantity, $form_id = 0
 				if( ! isset( $validated[ 'messages' ][ $error ] ) ) { $validated[ 'messages' ][ $error ] = array(); }
 				$validated[ 'messages' ][ $error ][] = $message;
 			}
+			
+			// Allow plugins to validate each picked event too
+			$picked_events[ $i ][ 'args' ] = array(
+				'title' => $title,
+				'start' => $event_start,
+				'end' => $event_end,
+				'quantity' => $quantity,
+				'availability' => $availability,
+				'event' => $group_id <= 0 ? $event : $group,
+				'activity_meta' => $group_id <= 0 ? $activity_data : $category_data
+			);
+			$validated = apply_filters( 'bookacti_validate_booking_form_picked_event', $validated, $picked_events[ $i ], $quantity, $form_id );
 		}
 	}
 	
@@ -1470,7 +1493,7 @@ function bookacti_is_existing_group_of_events( $group ) {
 /**
  * Check if an event can be book with the given form
  * @since 1.5.0
- * @version 1.8.10
+ * @version 1.9.0
  * @param int $form_id
  * @param int|object $event_id
  * @param string $event_start
@@ -1600,7 +1623,7 @@ function bookacti_is_event_available_on_form( $form_id, $event_id, $event_start,
 /**
  * Check if a group of events can be book with the given form
  * @since 1.5.0
- * @version 1.8.10
+ * @version 1.9.0
  * @param int $form_id
  * @param int|object $group_id
  * @return array
@@ -1883,7 +1906,7 @@ function bookacti_get_bounding_events_from_db_events( $events, $raw_args = array
 /**
  * Get occurrences of repeated events
  * @since 1.8.4 (was bookacti_get_occurences_of_repeated_event)
- * @version 1.8.10
+ * @version 1.9.0
  * @param object $event Event data 
  * @param array $raw_args {
  *  @type array $interval array( 'start' => 'Y-m-d H:i:s', 'end' => 'Y-m-d H:i:s' )
@@ -2355,7 +2378,7 @@ function bookacti_get_exceptions_by_event( $raw_args = array() ) {
 /**
  * Build a user-friendly events list
  * @since 1.1.0
- * @version 1.8.10
+ * @version 1.9.0
  * @param array $booking_events
  * @param int|string $quantity
  * @param string $locale Optional. Default to site locale.
@@ -2438,7 +2461,7 @@ function bookacti_get_formatted_booking_events_list( $booking_events, $quantity 
 
 /**
  * Get the formatted event start to event end dates
- * @since 1.8.10
+ * @since 1.9.0
  * @param string $start Format: Y-m-d H:i:s
  * @param string $end Format: Y-m-d H:i:s
  * @param boolean $html
@@ -2685,7 +2708,7 @@ function bookacti_export_events_page( $atts, $calname = '', $caldesc = '', $sequ
 
 /**
  * Book all events of a group
- * @version 1.8.10
+ * @version 1.9.0
  * @param array $booking_group_data Sanitized with bookacti_sanitize_booking_group_data
  * @return int|boolean
  */
@@ -2750,7 +2773,7 @@ function bookacti_get_event_group_category_ids( $id, $start, $end, $active_only 
 
 /**
  * Get events of a group
- * @version 1.8.10
+ * @version 1.9.0
  * @global wpdb $wpdb
  * @param int $group_id
  * @param boolean $fetch_inactive_events

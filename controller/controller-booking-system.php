@@ -4,7 +4,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 /**
  * AJAX Controller - Fetch events in order to display them
- * @version	1.8.10
+ * @version	1.9.0
  */
 function bookacti_controller_fetch_events() {
 	// Check nonce
@@ -30,29 +30,29 @@ function bookacti_controller_fetch_events() {
 	
 	if( ! $is_allowed ) { bookacti_send_json_not_allowed( 'fetch_events' ); }
 
-	$events_interval= bookacti_sanitize_events_interval( $_POST[ 'interval' ] );
+	$interval = ! empty( $_POST[ 'interval' ] ) ? bookacti_sanitize_events_interval( $_POST[ 'interval' ] ) : array();
 	$events = array( 'events' => array(), 'data' => array() );
 
 	if( $atts[ 'groups_only' ] ) {
 		$groups_data	= isset( $raw_atts[ 'groups_data' ] ) ? (array) $raw_atts[ 'groups_data' ] : array();
 		$groups_ids		= $groups_data ? array_keys( $groups_data ) : array();
 		if( $groups_ids && ! in_array( 'none', $atts[ 'group_categories' ], true ) ) {
-			$events	= bookacti_fetch_grouped_events( array( 'templates' => $atts[ 'calendars' ], 'activities' => $atts[ 'activities' ], 'groups' => $groups_ids, 'group_categories' => $atts[ 'group_categories' ], 'past_events' => $atts[ 'past_events' ], 'interval' => $events_interval ) );
+			$events	= bookacti_fetch_grouped_events( array( 'templates' => $atts[ 'calendars' ], 'activities' => $atts[ 'activities' ], 'groups' => $groups_ids, 'group_categories' => $atts[ 'group_categories' ], 'past_events' => $atts[ 'past_events' ], 'interval' => $interval ) );
 		}
 	} else if( $atts[ 'bookings_only' ] ) {
-		$events = bookacti_fetch_booked_events( array( 'templates' => $atts[ 'calendars' ], 'activities' => $atts[ 'activities' ], 'status' => $atts[ 'status' ], 'users' => $atts[ 'user_id' ] ? array( $atts[ 'user_id' ] ) : array(), 'past_events' => $atts[ 'past_events' ], 'interval' => $events_interval ) );
+		$events = bookacti_fetch_booked_events( array( 'templates' => $atts[ 'calendars' ], 'activities' => $atts[ 'activities' ], 'status' => $atts[ 'status' ], 'users' => $atts[ 'user_id' ] ? array( $atts[ 'user_id' ] ) : array(), 'past_events' => $atts[ 'past_events' ], 'interval' => $interval ) );
 	} else {
-		$events	= bookacti_fetch_events( array( 'templates' => $atts[ 'calendars' ], 'activities' => $atts[ 'activities' ], 'past_events' => $atts[ 'past_events' ], 'interval' => $events_interval ) );	
+		$events	= bookacti_fetch_events( array( 'templates' => $atts[ 'calendars' ], 'activities' => $atts[ 'activities' ], 'past_events' => $atts[ 'past_events' ], 'interval' => $interval ) );	
 	}
 	
-	$events = apply_filters( 'bookacti_events_data_from_interval', $events, $events_interval, $atts );
+	$events = apply_filters( 'bookacti_events_data_from_interval', $events, $interval, $atts );
 	
 	// Get the booking list for each events
 	$booking_lists = array();
 	if( $atts[ 'tooltip_booking_list' ] && $events[ 'events' ] && $events[ 'data' ] ) {
 		$booking_filters = array(
-			'from'			=> $events_interval[ 'start' ],
-			'to'			=> $events_interval[ 'end' ],
+			'from'			=> ! empty( $interval[ 'start' ] ) ? $interval[ 'start' ] : '',
+			'to'			=> ! empty( $interval[ 'end' ] ) ? $interval[ 'end' ] : '',
 			'in__event_id'	=> array_keys( $events[ 'data' ] ),
 		);
 		$booking_lists = bookacti_get_events_booking_lists( $booking_filters, $atts[ 'tooltip_booking_list_columns' ], $atts );
@@ -72,7 +72,7 @@ add_action( 'wp_ajax_nopriv_bookactiFetchEvents', 'bookacti_controller_fetch_eve
 /**
  * Reload booking system with new attributes via AJAX
  * @since 1.1.0
- * @version 1.8.10
+ * @version 1.9.0
  */
 function bookacti_controller_reload_booking_system() {
 	$is_admin = intval( $_POST[ 'is_admin' ] );
@@ -127,12 +127,12 @@ add_action( 'wp_ajax_nopriv_bookactiReloadBookingSystem', 'bookacti_controller_r
 
 /**
  * AJAX Controller - Get booking numbers for a given template and / or event
- * @version 1.8.0
+ * @version 1.9.0
  */
 function bookacti_controller_get_booking_numbers() {
-	$template_ids	= isset( $_POST[ 'template_ids' ] ) ? intval( $_POST[ 'template_ids' ] ) : array();
-	$event_ids		= isset( $_POST[ 'event_ids' ] ) ? intval( $_POST[ 'event_ids' ] ) : array();
-
+	$template_ids	= isset( $_POST[ 'template_ids' ] ) ? bookacti_ids_to_array( $_POST[ 'template_ids' ] ) : array();
+	$event_ids		= isset( $_POST[ 'event_ids' ] ) ? bookacti_ids_to_array( $_POST[ 'event_ids' ] ) : array();
+	
 	$booking_numbers = bookacti_get_number_of_bookings_by_events( $template_ids, $event_ids );
 	if( ! $booking_numbers ) { bookacti_send_json( array( 'status' => 'no_bookings' ), 'get_booking_numbers' ); }
 	

@@ -6,7 +6,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 /**
  * Sanitize booking data
- * @since 1.8.10
+ * @since 1.9.0
  * @param array $data_raw
  * @return array
  */
@@ -71,7 +71,7 @@ function bookacti_sanitize_booking_data( $data_raw ) {
 
 /**
  * Sanitize booking group data
- * @since 1.8.10
+ * @since 1.9.0
  * @param array $data_raw
  * @return array
  */
@@ -147,7 +147,7 @@ function bookacti_sanitize_booking_group_data( $data_raw ) {
 /**
  * Check if a booking is whithin the authorized delay as of now
  * @since 1.1.0
- * @version 1.8.10
+ * @version 1.9.0
  * @param object|int $booking
  * @param string $context
  * @return boolean
@@ -249,7 +249,7 @@ function bookacti_get_activities_html_for_booking_page( $template_ids, $activity
 /**
  * Get Default booking filters
  * @since 1.6.0
- * @version 1.8.10
+ * @version 1.9.0
  * @return array
  */
 function bookacti_get_default_booking_filters() {
@@ -298,7 +298,7 @@ function bookacti_get_default_booking_filters() {
 /**
  * Format booking filters
  * @since 1.3.0
- * @version 1.8.10
+ * @version 1.9.0
  * @param array $filters 
  * @return array
  */
@@ -524,7 +524,7 @@ function bookacti_format_bookings_calendar_settings( $raw_settings = array() ) {
 
 /**
  * Check if user is allowed to manage a booking
- * @version 1.8.10
+ * @version 1.9.0
  * @param object|int $booking
  * @param int|string $user_id
  * @return boolean
@@ -564,7 +564,7 @@ function bookacti_user_can_manage_booking( $booking, $user_id = false ) {
 
 /**
  * Check if a booking can be cancelled
- * @version 1.8.10
+ * @version 1.9.0
  * @param object|int $booking
  * @param boolean $bypass_group_check
  * @param string $context
@@ -591,7 +591,7 @@ function bookacti_booking_can_be_cancelled( $booking, $bypass_group_check = fals
 			// Final check and return the actions array without invalid entries
 			if( ! $is_cancel_allowed || $is_grouped || ! $is_in_delay ) { $is_allowed = false; }
 		}
-		if( empty( $booking->active ) ) { $is_allowed = false; }
+		if( empty( $booking->active ) && $context !== 'admin' ) { $is_allowed = false; }
 	}
 
 	return apply_filters( 'bookacti_booking_can_be_cancelled', $is_allowed, $booking, $bypass_group_check, $context );
@@ -600,7 +600,7 @@ function bookacti_booking_can_be_cancelled( $booking, $bypass_group_check = fals
 
 /**
  * Check if a booking is allowed to be rescheduled
- * @version 1.8.10
+ * @version 1.9.0
  * @param object|int $booking
  * @param string $context
  * @return boolean
@@ -643,7 +643,7 @@ function bookacti_booking_can_be_rescheduled( $booking, $context = '' ) {
 /**
  * Check if a booking can be rescheduled to another event
  * @since 1.1.0
- * @version 1.8.10
+ * @version 1.9.0
  * @param object|int $booking
  * @param int $event_id
  * @param string $event_start
@@ -692,7 +692,7 @@ function bookacti_booking_can_be_rescheduled_to( $booking, $event_id, $event_sta
 
 /**
  * Check if a booking can be refunded
- * @version 1.8.10
+ * @version 1.9.0
  * @param object|int $booking
  * @param string $refund_action
  * @param string $context
@@ -763,7 +763,7 @@ function bookacti_booking_state_can_be_changed_to( $booking, $new_state, $contex
 
 /**
  * Check if a booking quantity can be changed
- * @since 1.8.10
+ * @since 1.9.0
  * @param object|int $booking
  * @param int $new_quantity
  * @return boolean
@@ -862,7 +862,7 @@ function bookacti_booking_quantity_can_be_changed( $booking, $new_quantity ) {
 
 /**
  * Check if a booking user can be changed
- * @since 1.8.10
+ * @since 1.9.0
  * @param object|int $booking
  * @param string $new_user_id Default to current user
  * @return array
@@ -928,7 +928,7 @@ function bookacti_booking_user_can_be_changed( $booking, $new_user_id = '' ) {
 /**
  * Check if user is allowed to manage a booking group
  * @since 1.1.0
- * @version 1.8.10
+ * @version 1.9.0
  * @param int $booking_group_id
  * @param int|string $user_id
  * @return boolean
@@ -954,7 +954,7 @@ function bookacti_user_can_manage_booking_group( $booking_group_id, $user_id = f
 /**
  * Check if a booking group can be cancelled
  * @since 1.1.0
- * @version 1.8.10
+ * @version 1.9.0
  * @param array|int $bookings
  * @param string $context
  * @return boolean
@@ -982,7 +982,7 @@ function bookacti_booking_group_can_be_cancelled( $bookings, $context = '' ) {
 		}
 		$booking_keys = array_keys( $bookings );
 		$first_key = reset( $booking_keys );
-		if( empty( $bookings[ $first_key ]->group_active ) ) { $true = false; }
+		if( empty( $bookings[ $first_key ]->group_active ) && $context !== 'admin' ) { $true = false; }
 	}
 
 	return apply_filters( 'bookacti_booking_group_can_be_cancelled', $true, $bookings, $context );
@@ -992,7 +992,7 @@ function bookacti_booking_group_can_be_cancelled( $bookings, $context = '' ) {
 /**
  * Check if a booking group can be refunded
  * @since 1.1.0
- * @version 1.8.10
+ * @version 1.9.0
  * @param array|int $bookings
  * @param string $refund_action
  * @param string $context
@@ -1036,7 +1036,7 @@ function bookacti_booking_group_can_be_refunded( $bookings, $refund_action = '',
 /**
  * Check if a booking group state can be changed to another
  * @since 1.1.0
- * @version 1.8.10
+ * @version 1.9.0
  * @param array|int $bookings
  * @param string $new_state
  * @param string $context
@@ -1076,7 +1076,7 @@ function bookacti_booking_group_state_can_be_changed_to( $bookings, $new_state, 
 
 /**
  * Check if a booking group quantity can be changed
- * @since 1.8.10
+ * @since 1.9.0
  * @param array|int $bookings
  * @param int $new_quantity
  * @param string $context
@@ -1187,7 +1187,7 @@ function bookacti_booking_group_quantity_can_be_changed( $bookings, $new_quantit
 
 /**
  * Check if a booking group user can be changed
- * @since 1.8.10
+ * @since 1.9.0
  * @param array|int $bookings
  * @param string $new_user_id Default to current user
  * @return array
@@ -1327,7 +1327,7 @@ function bookacti_get_booking_actions( $admin_or_front = 'both' ) {
 /**
  * Get booking actions according to booking id
  * @since 1.6.0 (replace bookacti_get_booking_actions_array)
- * @version 1.8.10
+ * @version 1.9.0
  * @param object|int $booking
  * @param string $admin_or_front Can be "both", "admin", "front. Default "both".
  * @return array
@@ -1366,7 +1366,7 @@ function bookacti_get_booking_actions_by_booking( $booking, $admin_or_front = 'b
 
 /**
  * Get booking actions html
- * @version 1.8.10
+ * @version 1.9.0
  * @param object|int $booking
  * @param string $admin_or_front Can be "both", "admin", "front. Default "both".
  * @param array $actions
@@ -1509,7 +1509,7 @@ function bookacti_get_booking_group_actions( $admin_or_front = 'both' ) {
 /**
  * Get booking actions according to booking id
  * @since 1.6.0 (replace bookacti_get_booking_actions_array)
- * @version 1.8.10
+ * @version 1.9.0
  * @param array|int $bookings
  * @param string $admin_or_front Can be "both", "admin", "front. Default "both".
  * @return array
@@ -1544,7 +1544,7 @@ function bookacti_get_booking_group_actions_by_booking_group( $bookings, $admin_
 
 /**
  * Get booking group actions html
- * @version 1.8.10
+ * @version 1.9.0
  * @param array|int $bookings
  * @param string $admin_or_front Can be "both", "admin", "front. Default "both".
  * @param array $actions
@@ -2168,7 +2168,7 @@ function bookacti_get_bookings_for_export( $args_raw = array() ) {
 
 /**
  * Get available actions user can take to be refunded 
- * @version 1.8.10
+ * @version 1.9.0
  * @return array
  */
 function bookacti_get_refund_actions() {
@@ -2185,7 +2185,7 @@ function bookacti_get_refund_actions() {
 
 /**
  * Get formatted refund method label
- * @since 1.8.10
+ * @since 1.9.0
  * @param string $refund_method
  * @return string
  */
@@ -2201,7 +2201,7 @@ function bookacti_get_refund_label( $refund_method ) {
 
 /**
  * Get refund actions for a specific booking or booking group
- * @since 1.8.10 (was bookacti_get_refund_actions_by_booking_type)
+ * @since 1.9.0 (was bookacti_get_refund_actions_by_booking_type)
  * @param array $bookings 
  * @param string $booking_type
  * @param string $context
@@ -2242,7 +2242,7 @@ function bookacti_get_booking_refund_actions( $bookings, $booking_type = 'single
 
 /**
  * Get dialog refund text for a specific booking
- * @since 1.8.10 (was bookacti_get_refund_dialog_html_by_booking_type)
+ * @since 1.9.0 (was bookacti_get_refund_dialog_html_by_booking_type)
  * @param array $bookings
  * @param string $booking_type
  * @param array $actions
@@ -2277,7 +2277,7 @@ function bookacti_get_booking_refund_options_html( $bookings, $booking_type = 's
 /**
  * Get the formatted amount to be refunded for a booking
  * @since 1.8.0
- * @version 1.8.10
+ * @version 1.9.0
  * @param array $bookings
  * @param string $booking_type
  * @return string
@@ -2289,7 +2289,7 @@ function bookacti_get_booking_refund_amount( $bookings, $booking_type = 'single'
 
 /**
  * Get formatted booking refunds
- * @since 1.8.10
+ * @since 1.9.0
  * @param array $refunds
  * @param int $booking_id
  * @param string $booking_type
@@ -2302,7 +2302,7 @@ function bookacti_format_booking_refunds( $refunds, $booking_id = 0, $booking_ty
 
 /**
  * Get formatted booking refunds
- * @since 1.8.10
+ * @since 1.9.0
  * @param array $refunds
  * @return string
  */
@@ -2562,7 +2562,7 @@ function bookacti_get_user_booking_list_private_columns() {
 /**
  * Get booking list items
  * @since 1.7.4
- * @version 1.8.10
+ * @version 1.9.0
  * @param array $filters
  * @param array $columns
  * @return string

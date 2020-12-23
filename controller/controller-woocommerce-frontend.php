@@ -35,7 +35,7 @@ add_filter( 'bookacti_translation_array', 'bookacti_woocommerce_translation_arra
 
 /**
  * Change 'user_id' of bookings from customer id to user id when he logs in
- * @version 1.8.10
+ * @version 1.9.0
  * @global WooCommerce $woocommerce
  * @param string $user_login
  * @param WP_User $user
@@ -418,7 +418,7 @@ add_filter( 'woocommerce_quantity_input_args', 'bookacti_set_wc_quantity_via_url
 
 /**
  * Validate add to cart form and temporarily book the event
- * @version 1.8.10
+ * @version 1.9.0
  * @global WooCommerce $woocommerce
  * @global array $global_bookacti_wc
  * @param boolean $true
@@ -455,7 +455,7 @@ function bookacti_validate_add_to_cart_and_book_temporarily( $true, $product_id,
 		wc_add_notice( implode( '</li><li>', $form_fields_validated[ 'messages' ] ), 'error' );
 		return false;
 	}
-	
+		
 	// Gether the product booking form variables
 	$product_bookings_data = apply_filters( 'bookacti_wc_product_booking_form_values', array(
 		'product_id'		=> $product_id,
@@ -489,65 +489,54 @@ function bookacti_validate_add_to_cart_and_book_temporarily( $true, $product_id,
 	// Let third party plugins do their stuff before booking
 	do_action( 'bookacti_wc_product_booking_form_before_add_to_cart', $product_id, $variation_id, $form_id, $product_bookings_data );
 	
-	// Reset global
 	global $global_bookacti_wc;
-	$global_bookacti_wc = array();
 	
-	// Book temporarily
-	$response = bookacti_wc_add_bookings_to_cart( $product_bookings_data );
+	// Keep one entry per group
+	$picked_events = bookacti_format_picked_events( $product_bookings_data[ 'picked_events' ], true );
 	
-	// If the event is booked, add the booking ID to the corresponding hidden field
-	if( $response[ 'status' ] === 'success' ) {
-		$global_bookacti_wc[ 'bookings' ] = $response[ 'bookings' ];
-		$global_bookacti_wc[ 'merged_cart_item_key' ] = ! empty( $response[ 'merged_cart_item_key' ] ) ? $response[ 'merged_cart_item_key' ] : '';
+	// Add a cart item for each picked events (in case of multiple bookings)
+	$validated = false;
+	$i = 0;
+	$last_i = count( $picked_events ) - 1;
+	foreach( $picked_events as $picked_event ) {
+		// Reset global
+		$global_bookacti_wc = array();
 		
-		do_action( 'bookacti_wc_add_to_cart_validated', $response, $product_id, $variation_id, $form_id, $product_bookings_data );
+		// Book picked events one by one
+		$product_bookings_data[ 'picked_events' ] = ! $picked_event[ 'group_id' ] ? array( $picked_event ) : $picked_event[ 'events' ];
 		
-		return true;
-	}
+		// Book temporarily
+		$response = bookacti_wc_add_bookings_to_cart( $product_bookings_data );
 
-	// Display error message
-	if( ! empty( $response[ 'message' ] ) ) { wc_add_notice( $response[ 'message' ], 'error' ); }
+		// If the event is booked, add the booking ID to the corresponding hidden field
+		if( $response[ 'status' ] === 'success' ) {
+			$validated = true;
+			$global_bookacti_wc[ 'bookings' ] = $response[ 'bookings' ];
+			$global_bookacti_wc[ 'merged_cart_item_key' ] = ! empty( $response[ 'merged_cart_item_key' ] ) ? $response[ 'merged_cart_item_key' ] : '';
+
+			do_action( 'bookacti_wc_add_to_cart_validated', $response, $product_id, $variation_id, $form_id, $product_bookings_data );
+			
+			// Add a cart item for each picked events except the last one
+			// Because the last cart item will be added by another process right after this function
+			if( $i !== $last_i ) {
+				$woocommerce->cart->add_to_cart( $product_bookings_data[ 'product_id' ], $product_bookings_data[ 'quantity' ], $product_bookings_data[ 'variation_id' ] );
+			}
+		}
+		
+		// Display error message
+		else if( ! empty( $response[ 'message' ] ) ) { wc_add_notice( $response[ 'message' ], 'error' ); }
+		
+		++$i;
+	}
 	
-	// Return false at this point
-	return false;
+	return $validated;
 }
 add_filter( 'woocommerce_add_to_cart_validation', 'bookacti_validate_add_to_cart_and_book_temporarily', 1000, 4 );
 
 
 /**
- * Add a cart item for each booking (group) inserted while adding a product to cart (in case of multiple bookings)
- * @since 1.8.10
- * @global WooCommerce $woocommerce
- * @global array $global_bookacti_wc
- * @param array $response
- * @param int $product_id
- * @param int $variation_id
- * @param int $form_id
- * @param array $product_bookings_data
- */
-function bookacti_wc_add_one_cart_item_per_booking( $response, $product_id, $variation_id, $form_id, $product_bookings_data ) {
-	global $woocommerce;
-	global $global_bookacti_wc;
-	if( count( $product_bookings_data[ 'picked_events' ] ) <= 1 ) { return; }
-	
-	$last_cart_item_booking_id = end( $response[ 'bookings' ] );
-	
-	foreach( $response[ 'bookings' ] as $cart_item_booking_id ) {
-		if( $last_cart_item_booking_id == $cart_item_booking_id ) { continue; } // Do not add the last cart item here
-		$global_bookacti_wc[ 'bookings' ] = array( $cart_item_booking_id );
-		$woocommerce->cart->add_to_cart( $product_bookings_data[ 'product_id' ], $product_bookings_data[ 'quantity' ], $product_bookings_data[ 'variation_id' ] );
-	}
-	
-	// The last cart item will be added by another process
-	$global_bookacti_wc[ 'bookings' ] = array( $last_cart_item_booking_id );
-}
-add_action( 'bookacti_wc_add_to_cart_validated', 'bookacti_wc_add_one_cart_item_per_booking', 10, 5 );
-
-
-/**
  * Add cart item data (all sent in one array)
- * @since 1.8.10 (was bookacti_add_item_data)
+ * @since 1.9.0 (was bookacti_add_item_data)
  * @global array $global_bookacti_wc
  * @param array $cart_item_data
  * @param int $product_id
@@ -593,7 +582,7 @@ add_filter( 'woocommerce_get_cart_item_from_session', 'bookacti_get_cart_items_f
  * If an activity is added to cart with the same booking data (same product, same variation, same booking) as an existing cart item
  * Merge the old cart items to the new one
  * @since 1.5.4
- * @version 1.8.10
+ * @version 1.9.0
  * @global WooCommerce $woocommerce
  * @param array $cart_item_data
  * @param string $cart_item_key
@@ -644,7 +633,7 @@ add_filter( 'woocommerce_add_cart_item', 'bookacti_merge_cart_items_with_same_bo
 
 /**
  * Set the timeout for a product added to cart
- * @version 1.8.10
+ * @version 1.9.0
  * @global array $global_bookacti_wc
  * @global WooCommerce $woocommerce
  * @param string $cart_item_key
@@ -700,7 +689,7 @@ add_action( 'woocommerce_add_to_cart', 'bookacti_set_timeout_to_cart_item', 30, 
 /**
  * Notice the user that his activity has been reserved and will expire, along with the add to cart confirmation
  * @since 1.0.4
- * @version 1.8.10
+ * @version 1.9.0
  * @global array $global_bookacti_wc
  * @param string $message
  * @param array $products
@@ -774,7 +763,7 @@ add_filter( 'woocommerce_get_stock_html', 'bookacti_dont_display_instock_in_vari
 
 /**
  * Add the timeout to cart and checkout
- * @version 1.8.10
+ * @version 1.9.0
  * @global WooCommerce $woocommerce
  */
 function bookacti_add_timeout_to_cart() { 
@@ -821,7 +810,7 @@ add_action( 'woocommerce_checkout_order_review', 'bookacti_add_timeout_to_cart',
 
 /**
  * Add the timeout to each cart item
- * @ersion 1.8.10
+ * @ersion 1.9.0
  * @param string $remove_link
  * @param string $cart_item_key
  * @return string
@@ -840,7 +829,7 @@ add_filter( 'woocommerce_cart_item_remove_link', 'bookacti_add_timeout_to_cart_i
 
 /**
  * Delete cart items if they are expired
- * @version 1.8.10
+ * @version 1.9.0
  * @global WooCommerce $woocommerce
  */
 function bookacti_remove_expired_product_from_cart() {
@@ -900,7 +889,7 @@ add_action( 'wp_loaded', 'bookacti_remove_expired_product_from_cart', 100, 0 );
 
 /**
  * If quantity changes in cart, temporarily book the extra quantity if possible
- * @version 1.8.10
+ * @version 1.9.0
  * @param int $new_quantity
  * @param string $cart_item_key
  */
@@ -958,12 +947,12 @@ function bookacti_update_quantity_in_cart( $new_quantity, $cart_item_key ) {
 
 	return $restore_qty ? $old_quantity : $new_quantity;
 }
-add_filter( 'woocommerce_stock_amount_cart_item', 'bookacti_update_quantity_in_cart', 20, 2 ); 
+add_filter( 'woocommerce_stock_amount_cart_item', 'bookacti_update_quantity_in_cart', 40, 2 ); 
 
 
 /**
  * Remove in_cart bookings when cart items are removed from cart
- * @version 1.8.10
+ * @version 1.9.0
  * @global WooCommerce $woocommerce
  * @param string $cart_item_key
  * @param WC_Cart $cart
@@ -977,7 +966,7 @@ add_action( 'woocommerce_remove_cart_item', 'bookacti_remove_bookings_of_removed
 /**
  * Remove corrupted cart items bookings when they are removed from cart
  * @since 1.5.8
- * @version 1.8.10
+ * @version 1.9.0
  * @param string $cart_item_key
  * @param array $item
  */
@@ -990,7 +979,7 @@ add_action( 'woocommerce_remove_cart_item_from_session', 'bookacti_remove_bookin
 /**
  * Remove cart item bookings
  * @since 1.5.8
- * @version 1.8.10
+ * @version 1.9.0
  * @global WooCommerce $woocommerce
  * @param string $cart_item_key
  */
@@ -1006,7 +995,7 @@ function bookacti_remove_cart_item_bookings( $cart_item_key ) {
 
 /**
  * Restore the booking if user change his mind after deleting one
- * @version 1.8.10
+ * @version 1.9.0
  * @global WooCommerce $woocommerce
  * @param string $cart_item_key
  */
@@ -1062,6 +1051,7 @@ function bookacti_restore_bookings_of_removed_cart_item( $cart_item_key ) {
 		}
 	} else {
 		if( $quantity !== $init_quantity ) { $woocommerce->cart->set_quantity( $cart_item_key, $quantity, true ); }
+		$item[ 'quantity' ] = $quantity;
 		do_action( 'bookacti_cart_item_restored', $item, $quantity );
 	}
 }
@@ -1070,12 +1060,12 @@ add_action( 'woocommerce_cart_item_restored', 'bookacti_restore_bookings_of_remo
 
 /**
  * Display the custom metadata in cart and checkout
- * @version 1.8.10
+ * @since 1.9.0 (was bookacti_get_item_data)
  * @param array $item_data
  * @param array $cart_item
  * @return array
  */
-function bookacti_get_item_data( $item_data, $cart_item ) {
+function bookacti_wc_cart_item_meta_formatted( $item_data, $cart_item ) {
 	if( empty( $cart_item[ '_bookacti_options' ][ 'bookings' ] ) ) { return $item_data; }
 
 	$cart_item_bookings = bookacti_wc_get_cart_item_bookings( $cart_item[ 'key' ], array( 'fetch_meta' => true ) );
@@ -1098,12 +1088,12 @@ function bookacti_get_item_data( $item_data, $cart_item ) {
 	
 	return $item_data;
 }
-add_filter( 'woocommerce_get_item_data', 'bookacti_get_item_data', 10, 2 );
+add_filter( 'woocommerce_get_item_data', 'bookacti_wc_cart_item_meta_formatted', 10, 2 );
 
 
 /**
  * Add class to activity cart item to identify them
- * @version 1.8.10
+ * @version 1.9.0
  * @param string $classes
  * @param array $cart_item
  * @param string $cart_item_key
@@ -1120,7 +1110,7 @@ add_filter( 'woocommerce_cart_item_class', 'bookacti_add_class_to_activity_cart_
 
 /**
  * Format label of custom metadata in cart and checkout
- * @version 1.8.10
+ * @version 1.9.0
  * @param string $label
  * @param string $name
  * @return string
@@ -1143,7 +1133,7 @@ add_filter( 'woocommerce_attribute_label', 'bookacti_define_label_of_item_data',
 
 /**
  * Change the query to get the number of bookings per user by events to get in_cart bookings for the current user too
- * @since 1.8.10
+ * @since 1.9.0
  * @param string $query
  * @param array $events
  * @param int $active
@@ -1158,7 +1148,7 @@ add_filter( 'bookacti_number_of_bookings_per_user_by_events_query', 'bookacti_wc
 
 /**
  * Consider the booking as active if it is in current user's cart while trying to change quantity
- * @since 1.8.10
+ * @since 1.9.0
  * @param int $is_active
  * @param object $booking
  * @param int $new_quantity
@@ -1184,7 +1174,7 @@ add_filter( 'bookacti_booking_quantity_check_is_active', 'bookacti_wc_booking_qu
  * (to hide any meta data from the customer just start it with an underscore)
  * To be used since WC 3.0 on woocommerce_checkout_create_order_line_item hook
  * @since 1.1.0
- * @version 1.8.10
+ * @version 1.9.0
  * @param WC_Order_Item_Product $item
  * @param string $cart_item_key
  * @param array $values
@@ -1200,7 +1190,7 @@ add_action( 'woocommerce_checkout_create_order_line_item', 'bookacti_save_order_
 
 /**
  * Add the timeout to each cart item in the checkout review
- * @version 1.8.10
+ * @version 1.9.0
  * @param string $cart_item_name
  * @param array $values
  * @param string $cart_item_key
@@ -1223,7 +1213,8 @@ add_filter( 'woocommerce_cart_item_name', 'bookacti_add_timeout_to_cart_item_in_
 /**
  * Check bookings availability before validating checkout in case that "in_cart" state is not active
  * @since 1.3.0
- * @version 1.8.10
+ * @version 1.9.0
+ * @global WooCommerce $woocommerce
  * @param array $posted_data An array of posted data.
  * @param WP_Error $errors
  */
@@ -1234,11 +1225,21 @@ function bookacti_availability_check_before_checkout( $posted_data, $errors = nu
 	$cart_items_bookings = bookacti_wc_get_cart_items_bookings();
 	if( ! $cart_items_bookings ) { return; }
 	
+	global $woocommerce;
+	$valid_status = array_merge( array( 'in_cart' ), bookacti_get_active_booking_states() );
+	$nb_deleted_cart_item = 0;
+	
 	foreach( $cart_items_bookings as $cart_item_key => $cart_item_bookings ) {
 		// Check if the cart item bookings quantity can be "changed" to its own quantity
 		// is the same as checking if an inactive cart item can be turned to active
 		$quantity = $cart_item_bookings[ 0 ][ 'bookings' ][ 0 ]->quantity;
 		$response = bookacti_wc_validate_cart_item_bookings_new_quantity( $cart_item_bookings, $quantity );
+		
+		// Check booking status, they must be in_cart or any active status, else, remove cart item
+		if( ! in_array( $cart_item_bookings[ 0 ][ 'bookings' ][ 0 ]->state, $valid_status, true ) ) { 
+			$woocommerce->cart->remove_cart_item( $cart_item_key );
+			++$nb_deleted_cart_item;
+		}
 		
 		// Display the error and stop checkout processing
 		if( $response[ 'status' ] !== 'success' ) {
@@ -1247,14 +1248,21 @@ function bookacti_availability_check_before_checkout( $posted_data, $errors = nu
 			}
 		}
 	}
-//	$errors->add( 'test', 'Stop checkout for testing purposes' );
+	
+	// Prevent checkout if a booking has been removed from cart
+	if( $nb_deleted_cart_item ) {
+		$expired_message = sprintf( esc_html( _n(	'%d product has expired and has been automatically removed from cart.', 
+													'%d products have expired and have been automatically removed from cart.', 
+													$nb_deleted_cart_item, 'booking-activities' ) ), $nb_deleted_cart_item );
+		$errors->add( 'expired_booking', $expired_message );
+	}
 }
 add_action( 'woocommerce_after_checkout_validation', 'bookacti_availability_check_before_checkout', 10, 2 );
 
 
 /**
  * Create one order item per booking (group)
- * @since 1.8.10
+ * @since 1.9.0
  * @param WC_Order $order
  * @param array $data Data posted during checkout
  */
@@ -1332,7 +1340,7 @@ add_action( 'woocommerce_checkout_create_order', 'bookacti_wc_checkout_create_on
 /**
  * Check availability before paying for a failed order
  * @since 1.7.13
- * @version 1.8.10
+ * @version 1.9.0
  * @param WC_Order $order
  */
 function bookacti_availability_check_before_pay_action( $order ) {
@@ -1370,7 +1378,7 @@ add_action( 'woocommerce_before_pay_action', 'bookacti_availability_check_before
 /**
  * Change order bookings states after the customer validates checkout
  * @since 1.2.2
- * @version 1.8.10
+ * @version 1.9.0
  * @param int $order_id
  * @param array $order_details
  * @param WC_Order $order
@@ -1419,16 +1427,15 @@ add_action( 'woocommerce_checkout_order_processed', 'bookacti_change_booking_sta
 // ORDER
 
 /**
- * Format order item mata values in order received page
- * Must be used since WC 3.0.0
- * @since 1.0.4
- * @version 1.8.10
+ * Format the order item meta values to display
+ * @since 1.0.4 (was bookacti_format_order_item_meta)
+ * @version 1.9.0
  * @param string $html
  * @param WC_Order_Item $item
  * @param array $args
  * @return string
  */
-function bookacti_format_order_item_meta( $formatted_meta, $item ) {
+function bookacti_wc_order_item_meta_formatted( $formatted_meta, $item ) {
 	foreach( $formatted_meta as $meta_id => $meta ) {
 		// Backward compatibility
 		if( $meta->key === '_bookacti_refund_method' ) { $meta->display_value = bookacti_get_refund_label( $meta->value ); continue; }
@@ -1437,7 +1444,7 @@ function bookacti_format_order_item_meta( $formatted_meta, $item ) {
 		if( substr( $meta->key, 0, 9 ) !== 'bookacti_' ) { continue; }
 		
 		// Format bookings data to be displayed
-		// Add 'bookacti_booking_id', 'bookacti_booking_group_id' for Backward compatibility with orders made before BA 1.8.10
+		// Add 'bookacti_booking_id', 'bookacti_booking_group_id' for Backward compatibility with orders made before BA 1.9.0
 		if( in_array( $meta->key, array( 'bookacti_bookings', 'bookacti_booking_id', 'bookacti_booking_group_id' ), true ) ) {
 			$item_id = $item->get_id();
 			$order_items_bookings = bookacti_wc_get_order_items_bookings( array( $item ), array( 'fetch_meta' => true ) );
@@ -1450,12 +1457,12 @@ function bookacti_format_order_item_meta( $formatted_meta, $item ) {
 	}
 	return $formatted_meta;
 }
-add_filter( 'woocommerce_order_item_get_formatted_meta_data', 'bookacti_format_order_item_meta', 10, 2 );
+add_filter( 'woocommerce_order_item_get_formatted_meta_data', 'bookacti_wc_order_item_meta_formatted', 10, 2 );
 
 
 /**
  * Allow additional inline CSS properties
- * @since 1.8.10
+ * @since 1.9.0
  * @param array $array
  * @return array
  */
@@ -1469,7 +1476,7 @@ add_filter( 'safe_style_css', 'bookacti_wc_add_safe_style_css', 1000, 1 );
 /**
  * Add class to activity order item to identify them on order received page
  * @since 1.1.0
- * @version 1.8.10
+ * @version 1.9.0
  * @param string $classes
  * @param WC_Order_Item $item
  * @param WC_Order $order
@@ -1520,7 +1527,7 @@ add_filter( 'bookacti_user_booking_list_default_columns', 'bookacti_reorder_wooc
 /**
  * Add WC data to the user booking list
  * @since 1.7.12 (was bookacti_fill_wc_price_column_in_booking_list)
- * @version 1.8.10
+ * @version 1.9.0
  * @param array $booking_list_items
  * @param array $bookings
  * @param array $booking_groups
@@ -1668,7 +1675,7 @@ add_action( 'bookacti_activate', 'bookacti_add_bookings_endpoint', 10 );
 /**
  * Set the Bookings page title in WC account
  * @since 1.8.9
- * @version 1.8.10
+ * @version 1.9.0
  * @global WP_Query $wp_query
  * @param string $title
  * @param int $post_id

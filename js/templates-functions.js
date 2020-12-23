@@ -2,7 +2,7 @@
 
 /**
  * Change default template on change in the select box
- * @version 1.8.10
+ * @version 1.9.0
  * @param {int} selected_template_id
  */
 function bookacti_switch_template( selected_template_id ) {
@@ -281,7 +281,7 @@ function bookacti_refresh_show_hide_activities_icons() {
 
 /**
  * Init groups of events
- * @version 1.8.10
+ * @version 1.9.0
  */
 function bookacti_init_groups_of_events() {
 	// Refresh the display of selected events when you click on the View More link

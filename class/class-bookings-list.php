@@ -10,7 +10,7 @@ if( ! class_exists( 'Bookings_List_Table' ) ) {
 	
 	/**
 	 * Bookings WP_List_Table
-	 * @version 1.8.10
+	 * @version 1.9.0
 	 */
 	class Bookings_List_Table extends WP_List_Table {
 		
@@ -223,7 +223,7 @@ if( ! class_exists( 'Bookings_List_Table' ) ) {
 		
 		/**
 		 * Get booking list items. Parameters can be passed in the URL.
-		 * @version 1.8.10
+		 * @version 1.9.0
 		 * @access public
 		 * @return array
 		 */
@@ -460,7 +460,7 @@ if( ! class_exists( 'Bookings_List_Table' ) ) {
 		
 		/**
 		 * Format filters passed as argument or retrieved via POST or GET
-		 * @version 1.8.10
+		 * @version 1.9.0
 		 * @access public
 		 * @param array $filters_raw
 		 * @param boolean $merge_url_param Merge $filters_raw with URL parameters if not set

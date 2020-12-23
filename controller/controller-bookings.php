@@ -40,7 +40,7 @@ add_action( 'wp_ajax_bookactiUpdateBookingsCalendarSettings', 'bookacti_controll
 /**
  * AJAX Controller - Update bookings page calendar settings
  * @since 1.8.0
- * @version 1.8.10
+ * @version 1.9.0
  */
 function bookacti_controller_get_booking_list() {
 	// Check nonce
@@ -80,7 +80,7 @@ add_action( 'wp_ajax_bookactiGetBookingList', 'bookacti_controller_get_booking_l
 
 /**
  * AJAX Controller - Cancel a booking
- * @version 1.8.10
+ * @version 1.9.0
  */
 function bookacti_controller_cancel_booking() {
 	$booking_id = intval( $_POST[ 'booking_id' ] );
@@ -133,7 +133,7 @@ add_action( 'wp_ajax_nopriv_bookactiCancelBooking', 'bookacti_controller_cancel_
 
 /**
  * AJAX Controller - Get possible actions to refund a booking
- * @version 1.8.10
+ * @version 1.9.0
  */
 function bookacti_controller_get_refund_actions_html() {
 	$booking_id = intval( $_POST[ 'booking_id' ] );
@@ -170,7 +170,7 @@ add_action( 'wp_ajax_nopriv_bookactiGetBookingRefundActionsHTML', 'bookacti_cont
 
 /**
  * AJAX Controller - Refund a booking
- * @version 1.8.10
+ * @version 1.9.0
  */
 function bookacti_controller_refund_booking() {
 	$booking_id			= intval( $_POST[ 'booking_id' ] );
@@ -251,7 +251,7 @@ add_action( 'wp_ajax_nopriv_bookactiRefundBooking', 'bookacti_controller_refund_
 
 /**
  * AJAX Controller - Change booking state
- * @version 1.8.10
+ * @version 1.9.0
  */
 function bookacti_controller_change_booking_state() {
 	$booking_id			= intval( $_POST[ 'booking_id' ] );
@@ -324,7 +324,7 @@ add_action( 'wp_ajax_bookactiChangeBookingState', 'bookacti_controller_change_bo
 /**
  * AJAX Controller - Change booking quantity
  * @since 1.7.10
- * @version 1.8.10
+ * @version 1.9.0
  */
 function bookacti_controller_change_booking_quantity() {
 	$booking_id		= intval( $_POST[ 'booking_id' ] );
@@ -375,7 +375,7 @@ add_action( 'wp_ajax_bookactiChangeBookingQuantity', 'bookacti_controller_change
 /**
  * AJAX Controller - Get reschedule booking system data by booking ID
  * @since 1.8.0 (was bookacti_controller_get_booking_data)
- * @version 1.8.10
+ * @version 1.9.0
  */
 function bookacti_controller_get_reschedule_booking_system_data() {
 	$booking_id	= intval( $_POST[ 'booking_id' ] );
@@ -440,7 +440,7 @@ add_action( 'wp_ajax_nopriv_bookactiGetRescheduleBookingSystemData', 'bookacti_c
 
 /**
  * AJAX Controller - Reschedule a booking
- * @version 1.8.10
+ * @version 1.9.0
  */
 function bookacti_controller_reschedule_booking() {
 	$booking_id		= intval( $_POST[ 'booking_id' ] );
@@ -583,7 +583,7 @@ add_action( 'wp_ajax_bookactiGetGroupedBookingsRows', 'bookacti_controller_get_g
 /**
  * Trigger bookacti_booking_state_changed for each bookings of the group when bookacti_booking_group_state_changed is called
  * @since 1.2.0
- * @version 1.8.10
+ * @version 1.9.0
  * @param int $booking_group_id
  * @param array $bookings
  * @param string $status
@@ -602,7 +602,7 @@ add_action( 'bookacti_booking_group_state_changed', 'bookacti_trigger_booking_st
 /**
  * AJAX Controller - Cancel a booking group
  * @since 1.1.0
- * @version 1.8.10
+ * @version 1.9.0
  */
 function bookacti_controller_cancel_booking_group() {
 	$booking_group_id = intval( $_POST[ 'booking_id' ] );
@@ -654,7 +654,7 @@ add_action( 'wp_ajax_nopriv_bookactiCancelBookingGroup', 'bookacti_controller_ca
 /**
  * AJAX Controller - Get possible actions to refund a booking group
  * @since 1.1.0
- * @version 1.8.10
+ * @version 1.9.0
  */
 function bookacti_controller_get_booking_group_refund_actions_html() {
 	$booking_group_id = intval( $_POST[ 'booking_id' ] );
@@ -692,7 +692,7 @@ add_action( 'wp_ajax_nopriv_bookactiGetBookingGroupRefundActionsHTML', 'bookacti
 /**
  * AJAX Controller - Refund a booking group
  * @since 1.1.0
- * @version 1.8.10
+ * @version 1.9.0
  */
 function bookacti_controller_refund_booking_group() {
 	$booking_group_id	= intval( $_POST[ 'booking_id' ] );
@@ -780,7 +780,7 @@ add_action( 'wp_ajax_nopriv_bookactiRefundBookingGroup', 'bookacti_controller_re
 /**
  * AJAX Controller - Change booking group state
  * @since 1.1.0
- * @version 1.8.10
+ * @version 1.9.0
  */
 function bookacti_controller_change_booking_group_state() {
 	$booking_group_id		= intval( $_POST[ 'booking_id' ] );
@@ -1001,7 +1001,7 @@ add_action( 'bookacti_clean_expired_exports', 'bookacti_clean_expired_exports' )
 /**
  * Generate the export bookings URL according to current filters and export settings
  * @since 1.6.0
- * @version 1.8.10
+ * @version 1.9.0
  */
 function bookacti_controller_generate_export_bookings_url() {
 	// Check nonce
@@ -1129,7 +1129,7 @@ add_action( 'wp_ajax_bookactiExportBookingsUrl', 'bookacti_controller_generate_e
 /**
  * Export booking list according to filters
  * @since 1.6.0
- * @version 1.8.10
+ * @version 1.9.0
  */
 function bookacti_export_bookings_page() {
 	if( empty( $_REQUEST[ 'action' ] ) ) { return; }
@@ -1252,7 +1252,7 @@ add_action( 'init', 'bookacti_export_bookings_page', 10 );
 /**
  * Export booked events of a specific user as ICS
  * @since 1.6.0
- * @version 1.8.10
+ * @version 1.9.0
  */
 function bookacti_export_user_booked_events_page() {
 	if( empty( $_REQUEST[ 'action' ] ) ) { return; }

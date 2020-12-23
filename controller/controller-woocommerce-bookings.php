@@ -135,13 +135,25 @@ function bookacti_controller_delete_expired_bookings() {
 add_action( 'bookacti_delete_expired_bookings', 'bookacti_controller_delete_expired_bookings' );
 
 
+/**
+ * Delete the in cart bookings when the sessions is cleared
+ * @since 1.9.0
+ * @param array $tool
+ */
+function bookacti_wc_controller_remove_in_cart_bookings( $tool ) {
+	if( $tool[ 'id' ] !== 'clear_sessions' || ! $tool[ 'success' ] ) { return; }
+	$deleted = bookacti_wc_update_in_cart_bookings_to_removed();
+}
+add_action( 'woocommerce_system_status_tool_executed', 'bookacti_wc_controller_remove_in_cart_bookings', 10, 1 );
+
+
 
 
 // ORDER AND BOOKING STATUS
 
 /**
  * Update the bookings of an order to "Booked" when it turns "Completed"
- * @since 1.8.10 (was bookacti_turn_temporary_booking_to_permanent)
+ * @since 1.9.0 (was bookacti_turn_temporary_booking_to_permanent)
  * @param int $order_id
  * @param WC_Order $order
  * @param string $booking_status
@@ -171,7 +183,7 @@ add_action( 'woocommerce_order_status_completed', 'bookacti_wc_update_completed_
 
 /**
  * Update the bookings of a failed order to "Booked" or "Pending" when it turns to an active status
- * @since 1.8.10 (was bookacti_turn_failed_order_bookings_status_to_complete)
+ * @since 1.9.0 (was bookacti_turn_failed_order_bookings_status_to_complete)
  * @param int $order_id
  * @param string $old_status
  * @param string $new_status
@@ -203,7 +215,7 @@ add_action( 'woocommerce_order_status_changed', 'bookacti_wc_update_failed_order
 
 /**
  * Update the bookings of an order to "Cancelled" when it turns "Cancelled" or "Failed"
- * @since 1.8.10 (was bookacti_cancelled_order)
+ * @since 1.9.0 (was bookacti_cancelled_order)
  * @param int $order_id
  * @param WC_Order $order
  */
@@ -232,7 +244,7 @@ add_action( 'woocommerce_order_status_failed', 'bookacti_wc_update_cancelled_ord
  * - "Complete" if the order has only virtual activities,
  * - "Processing" if the order has only activities but not virtual
  * And update the bookings of the order to "Pending" if there are at least one activity in the middle of other products
- * @since 1.8.10 (was bookacti_set_order_status_to_completed_after_payment)
+ * @since 1.9.0 (was bookacti_set_order_status_to_completed_after_payment)
  * @param string $order_status
  * @param int $order_id
  * @return string
@@ -303,7 +315,7 @@ add_filter( 'woocommerce_payment_complete_order_status', 'bookacti_wc_payment_co
 /**
  * Update the bookings of a "Pending" order to "Booked" when it turns "Processing" or "On Hold" if the order has been Paid
  * If the order was not paid, send the "Pending" bookings notifications
- * @since 1.8.10 (was bookacti_turn_paid_order_item_bookings_to_permanent)
+ * @since 1.9.0 (was bookacti_turn_paid_order_item_bookings_to_permanent)
  * @param int $order_id
  * @param WC_Order $order
  */
@@ -434,7 +446,7 @@ add_action( 'woocommerce_order_status_pending_to_on-hold', 'bookacti_wc_update_p
 
 /**
  * Update order status according to the bookings status bound to its items
- * @since 1.8.10
+ * @since 1.9.0
  * @param object $booking
  * @param string $new_state
  * @param array $args
@@ -507,7 +519,7 @@ add_filter( 'woocommerce_email_order_items_table', 'bookacti_order_items_unset_e
 /**
  * Add WC data to the booking list
  * @since 1.6.0 (was bookacti_woocommerce_fill_booking_list_custom_columns before)
- * @version 1.8.10
+ * @version 1.9.0
  * @param array $booking_list_items
  * @param array $bookings
  * @param array $booking_groups
@@ -655,7 +667,7 @@ add_filter( 'bookacti_booking_list_items', 'bookacti_add_wc_data_to_booking_list
 /**
  * Fill WC bookings export columns
  * @since 1.6.0
- * @version 1.8.10
+ * @version 1.9.0
  * @param array $booking_items
  * @param array $bookings
  * @param array $booking_groups
@@ -747,7 +759,7 @@ add_filter( 'bookacti_bookings_export_columns_labels', 'bookacti_wc_bookings_exp
 
 /**
  * Add columns to booking list
- * @version 1.8.10
+ * @version 1.9.0
  * @param array $columns
  * @return array
  */
@@ -787,7 +799,7 @@ add_filter( 'bookacti_booking_list_default_hidden_columns', 'bookacti_woocommerc
 /**
  * Controller - Get WC order items rows
  * @since 1.7.4
- * @version 1.8.10
+ * @version 1.9.0
  * @param string $rows
  * @param string $context
  * @param array $filters
@@ -842,7 +854,7 @@ add_filter( 'bookacti_booking_group_actions', 'bookacti_wc_booking_actions', 10,
 /**
  * Get booking actions according to the order bound to the booking
  * @since 1.6.0 (replace bookacti_display_actions_buttons_on_booking_items)
- * @version 1.8.10
+ * @version 1.9.0
  * @param array $actions
  * @param object $booking
  * @param string $admin_or_front Can be "both", "admin", "front. Default "both".
@@ -858,7 +870,7 @@ add_filter( 'bookacti_booking_actions_by_booking', 'bookacti_wc_booking_actions_
 /**
  * Get booking group actions according to the order bound to the booking group
  * @since 1.6.0 (replace bookacti_display_actions_buttons_on_booking_group_items)
- * @version 1.8.10
+ * @version 1.9.0
  * @param array $actions
  * @param array $bookings
  * @param string $admin_or_front Can be "both", "admin", "front. Default "both".
@@ -873,7 +885,7 @@ add_filter( 'bookacti_booking_group_actions_by_booking_group', 'bookacti_wc_book
 
 /**
  * Filter refund actions by booking
- * @version 1.8.10
+ * @version 1.9.0
  * @param array $possible_actions
  * @param array $bookings
  * @param string $context
@@ -895,7 +907,7 @@ add_filter( 'bookacti_refund_actions_by_booking', 'bookacti_filter_refund_action
 /**
  * Filter refund actions by booking group
  * @since 1.1.0
- * @version 1.8.10
+ * @version 1.9.0
  * @param array $possible_actions
  * @param array $bookings
  * @param string $context
@@ -915,8 +927,8 @@ add_filter( 'bookacti_refund_actions_by_booking_group', 'bookacti_filter_refund_
 
 
 /**
- * Add price to be refunded in refund dialog
- * @version 1.8.10
+ * Refund amount to display in refund dialog
+ * @version 1.9.0
  * @param string $refund_amount
  * @param array $bookings
  * @param string $booking_type
@@ -944,7 +956,7 @@ add_filter( 'bookacti_booking_refund_amount', 'bookacti_display_price_to_be_refu
 
 /**
  * Add WooCommerce related refund actions
- * @since 1.8.10 (was bookacti_add_woocommerce_refund_actions)
+ * @since 1.9.0 (was bookacti_add_woocommerce_refund_actions)
  * @param array $possible_actions_array
  * @return array
  */
@@ -957,7 +969,7 @@ add_filter( 'bookacti_refund_actions', 'bookacti_wc_add_refund_actions', 10, 1 )
 
 /**
  * Trigger WooCommerce refund process according to the refund action
- * @version 1.8.10
+ * @version 1.9.0
  * @param array $return_array
  * @param array $bookings
  * @param string $refund_action
@@ -993,7 +1005,7 @@ add_filter( 'bookacti_refund_booking', 'bookacti_woocommerce_refund_booking', 10
  * Update quantity when a partial refund in done, 
  * Update booking state when a total refund is done
  * @since 1.2.0 (was named bookacti_update_booking_when_order_item_is_refunded before)
- * @version 1.8.10
+ * @version 1.9.0
  * @param int $refund_id
  * @param array $args
  */
@@ -1015,12 +1027,12 @@ add_action( 'woocommerce_refund_created', 'bookacti_update_order_bookings_on_ref
 
 /**
  * Check if a booking can be refunded
- * @version 1.8.10
+ * @version 1.9.0
  * @param boolean $true
  * @param object $booking
  * @return boolean
  */
-function bookacti_woocommerce_booking_can_be_refunded( $true, $booking ) {
+function bookacti_woocommerce_booking_can_be_refunded( $true, $booking, $context = '' ) {
 	if( ! $true ) { return $true; }
 	
 	// Init var
@@ -1040,19 +1052,19 @@ function bookacti_woocommerce_booking_can_be_refunded( $true, $booking ) {
 	
 	return $true;
 }
-add_filter( 'bookacti_booking_can_be_refunded', 'bookacti_woocommerce_booking_can_be_refunded', 10, 2 );
+add_filter( 'bookacti_booking_can_be_refunded', 'bookacti_woocommerce_booking_can_be_refunded', 10, 3 );
 
 
 /**
  * Check if a booking group can be refunded
- * @version 1.8.10
+ * @version 1.9.0
  * @param boolean $true
  * @param array $bookings
  * @param string|false $refund_action
  * @param string $context
  * @return boolean
  */
-function bookacti_woocommerce_booking_group_can_be_refunded( $true, $bookings, $refund_action, $context ) {
+function bookacti_woocommerce_booking_group_can_be_refunded( $true, $bookings, $refund_action, $context = '' ) {
 	if( ! $true ) { return $true; }
 	
 	$booking_keys = array_keys( $bookings );
@@ -1080,7 +1092,7 @@ add_filter( 'bookacti_booking_group_can_be_refunded', 'bookacti_woocommerce_book
 
 /**
  * Convert old booking refunds array
- * @since 1.8.10
+ * @since 1.9.0
  * @param array $refunds Use bookacti_format_booking_refunds() to format it
  * @param int $booking_id
  * @param string $booking_type
@@ -1138,7 +1150,7 @@ add_filter( 'bookacti_booking_refunds_formatted', 'bookacti_wc_format_booking_re
 
 /**
  * Display additional booking refund data
- * @since 1.8.10
+ * @since 1.9.0
  * @param array $data
  * @param array $refund
  * @param int|string $refund_id
@@ -1165,7 +1177,7 @@ add_filter( 'bookacti_booking_refund_displayed_data', 'bookacti_wc_booking_refun
 /**
  * Add WC fields to delete booking form
  * @since 1.5.0
- * @version 1.8.10
+ * @version 1.9.0
  */
 function bookacti_add_wc_fields_to_delete_booking_form() {
 ?>
@@ -1205,7 +1217,7 @@ add_action( 'bookacti_delete_booking_form_after', 'bookacti_add_wc_fields_to_del
 /**
  * AJAX Controller - Delete an order item (or only its metadata)
  * @since 1.5.0
- * @version 1.8.10
+ * @version 1.9.0
  * @param WC_Order_Item_Product $item
  * @param string $action "unbind_booking" to remove only the booking metadata from the item. "delete_item" to delete the whole item.
  * @param array $item_bookings_ids_to_delete Leave it empty to unbind all bookings from the item
@@ -1273,7 +1285,7 @@ function bookacti_controller_delete_order_item( $item, $action, $item_bookings_i
 /**
  * AJAX Controller - Delete an order item (or only its metadata) bound to a specific booking group
  * @since 1.5.0
- * @version 1.8.10
+ * @version 1.9.0
  * @param int $booking_group_id
  */
 function bookacti_controller_delete_order_item_bound_to_booking_group( $booking_group_id ) {
@@ -1291,7 +1303,7 @@ add_action( 'bookacti_before_delete_booking_group', 'bookacti_controller_delete_
 /**
  * AJAX Controller - Delete an order item (or only its metadata) bound to a specific booking
  * @since 1.5.0
- * @version 1.8.10
+ * @version 1.9.0
  * @param int $booking_id
  */
 function bookacti_controller_delete_order_item_bound_to_booking( $booking_id ) {
@@ -1304,3 +1316,29 @@ function bookacti_controller_delete_order_item_bound_to_booking( $booking_id ) {
 	bookacti_controller_delete_order_item( $item, $action, $item_bookings_ids_to_delete );
 }
 add_action( 'bookacti_before_delete_booking', 'bookacti_controller_delete_order_item_bound_to_booking', 10, 1 );
+
+
+/**
+ * Update in cart bookings of a deactivated event
+ * @since 1.9.0
+ * @param object $event
+ * @param boolean $cancel_bookings
+ */
+function bookacti_wc_remove_in_cart_bookings_of_deactivated_event( $event, $cancel_bookings ) {
+	if( ! $cancel_bookings ) { return; }
+	bookacti_wc_update_event_in_cart_bookings_to_removed( $event->event_id );
+}
+add_action( 'bookacti_deactivate_event_before', 'bookacti_wc_remove_in_cart_bookings_of_deactivated_event', 10, 2 );
+
+
+/**
+ * Update in cart bookings of a deactivated group of events
+ * @since 1.9.0
+ * @param int $event_group_id
+ * @param boolean $cancel_bookings
+ */
+function bookacti_wc_remove_in_cart_bookings_of_deactivated_group_of_events( $event_group_id, $cancel_bookings ) {
+	if( ! $cancel_bookings ) { return; }
+	bookacti_wc_update_group_of_events_in_cart_bookings_to_removed( $event_group_id );
+}
+add_action( 'bookacti_deactivate_group_of_events_before', 'bookacti_wc_remove_in_cart_bookings_of_deactivated_group_of_events', 10, 2 );
