@@ -93,13 +93,12 @@ function bookacti_user_can_manage_activity( $activity_ids, $user_id = false, $ad
 
 /**
  * Get template managers
- * @version 1.8.0
+ * @version 1.9.0
  * @param int|array $template_ids
  * @return array
  */
 function bookacti_get_template_managers( $template_ids ) {
 	$managers = bookacti_get_managers( 'template', $template_ids );
-	if( ! is_array( $template_ids ) ) { return $managers; }
 	
 	$merged_managers = array();
 	foreach( $managers as $user_ids ) {
@@ -112,13 +111,12 @@ function bookacti_get_template_managers( $template_ids ) {
 
 /**
  * Get activity managers
- * @version 1.8.0
+ * @version 1.9.0
  * @param int|array $activity_ids
  * @return array
  */
 function bookacti_get_activity_managers( $activity_ids ) {	
 	$managers = bookacti_get_managers( 'activity', $activity_ids );
-	if( ! is_array( $activity_ids ) ) { return $managers; }
 	
 	$merged_managers = array();
 	foreach( $managers as $user_ids ) {

@@ -12,6 +12,15 @@ $j( document ).ready( function() {
     
 	
 	/**
+	 * Validate exception - on select
+	 * @since 1.9.0
+	 */
+	$j( '#bookacti-event-exception-date-picker' ).on( 'change', function() { 
+		bookacti_validate_add_exception_form();
+	});
+	
+	
+	/**
 	 * Add exception - on click
 	 * @version 1.8.5
 	 */
@@ -337,7 +346,7 @@ function bookacti_validate_event_general_data() {
 
 /**
  * Check event fields - Repetition tab
- * @version 1.8.5
+ * @version 1.9.0
  * @returns {boolean}
  */
 function bookacti_validate_event_repetition_data() {
@@ -467,6 +476,8 @@ function bookacti_validate_event_repetition_data() {
 	// Clean the feedbacks before displaying new feedbacks
 	$j( '#bookacti-tab-content-repetition .bookacti-form-error' ).remove();
 	$j( '#bookacti-tab-content-repetition *' ).removeClass( 'bookacti-input-error bookacti-input-warning' );
+    $j( '#bookacti-event-add-exception-container .bookacti-form-error, #bookacti-event-add-exception-container .bookacti-form-warning' ).remove();
+    $j( '#bookacti-event-add-exception-container input' ).removeClass( 'bookacti-input-error bookacti-input-warning' );
 
 	// Allow third party to change results
 	$j( '#bookacti-event-data-dialog' ).trigger( 'bookacti_validate_event_repetition_data', [ valid_form ] );

@@ -362,7 +362,7 @@ function bookacti_settings_field_timezone_callback() {
 /**
  * Display "Calendar default view: width threshold" setting
  * @since 1.5.0
- * @version 1.7.8
+ * @version 1.9.0
  */
 function bookacti_settings_field_default_calendar_view_threshold_callback() {
 	$addon_link = '<a href="https://booking-activities.fr/en/downloads/display-pack/?utm_source=plugin&utm_medium=plugin&utm_campaign=display-pack&utm_content=settings" target="_blank" >Display Pack</a>';
@@ -376,7 +376,7 @@ function bookacti_settings_field_default_calendar_view_threshold_callback() {
 		'label'		=> esc_html_x( 'px', 'pixel short', 'booking-activities' ),
 		'tip'		=> esc_html__( 'The day view will be displayed by default if the calendar width is under that threshold when it is loaded. Else, it will be the week view.', 'booking-activities' )
 					/* translators: %s is the add-on name */
-					. '<br/>' . sprintf( esc_html__( 'Get more views and granularity with %s add-on!' ), $addon_link )
+					. '<br/>' . sprintf( esc_html__( 'Get more views and granularity with the %s add-on!', 'booking-activities' ), $addon_link )
 	);
 	bookacti_display_field( $args );
 }

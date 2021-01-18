@@ -471,7 +471,7 @@ function bookacti_controller_add_bound_product_to_cart() {
 		if( ! $product ) {
 			$return_array[ 'error' ] = 'product_not_found'; 
 			/* translators: %d = The product ID. %s = The event title and dates. E.g.: The product (#56) bound to "Basketball (Sep, 22nd - 3:00 PM to 6:00 PM)" cannot be found. */
-			$return_array[ 'messages' ][] = sprintf( esc_html__( 'The product (#%d) bound to "%s" cannot be found.', 'booking-activities' ), $product_id, $title ? $title . ' (' . $dates . ')' : $dates );
+			$return_array[ 'messages' ][] = sprintf( esc_html__( 'The product (#%1$s) bound to "%2$s" cannot be found.', 'booking-activities' ), $product_id, $title ? $title . ' (' . $dates . ')' : $dates );
 			continue;
 		}
 		
@@ -528,7 +528,7 @@ function bookacti_controller_add_bound_product_to_cart() {
 		} else {
 			$return_array[ 'error' ] = 'unknown_error'; 
 			/* translators: %d = The product ID. %s = The event title and dates. E.g.: An error occurred while trying to add the product (#56) bound to "Basketball (Sep, 22nd - 3:00 PM to 6:00 PM)" to cart. */
-			$return_array[ 'messages' ][] = sprintf( esc_html__( 'An error occurred while trying to add the product (#%d) bound to "%s" to cart.', 'booking-activities' ), $product_id, $title ? $title . ' (' . $dates . ')' : $dates );
+			$return_array[ 'messages' ][] = sprintf( esc_html__( 'An error occurred while trying to add the product (#%1$s) bound to "%2$s" to cart.', 'booking-activities' ), $product_id, $title ? $title . ' (' . $dates . ')' : $dates );
 		}
 	}
 	

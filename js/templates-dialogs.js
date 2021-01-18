@@ -303,7 +303,7 @@ function bookacti_dialog_add_new_template() {
 
 /**
  * Dialog Update Template
- * @version 1.8.3
+ * @version 1.9.0
  * @param {int} template_id
  */
 function bookacti_dialog_update_template( template_id ) {
@@ -320,6 +320,7 @@ function bookacti_dialog_update_template( template_id ) {
 	$j( '#bookacti-template-duplicated-template-id' ).attr( 'disabled', true );
 
 	var template_data = bookacti.booking_system[ 'bookacti-template-calendar' ][ 'template_data' ];
+	var events = $j( '#bookacti-template-calendar' ).fullCalendar( 'clientEvents' );
 
 	// General tab
 	$j( '#bookacti-template-title' ).val( template_data.title );
@@ -385,7 +386,6 @@ function bookacti_dialog_update_template( template_id ) {
 							$j( '#bookacti-template-picker option[value=' + template_id + ']' ).attr( 'data-template-end', response.template_data.end );
 
 							// Dynamically update template settings
-							var events = $j( '#bookacti-template-calendar' ).fullCalendar( 'clientEvents' );
 							$j( '#bookacti-template-calendar' ).replaceWith( '<div id="bookacti-template-calendar" class="bookacti-calendar"></div>' );
 							bookacti_load_template_calendar( $j( '#bookacti-template-calendar' ) );
 							$j( '#bookacti-template-calendar' ).fullCalendar( 'addEventSource', events );

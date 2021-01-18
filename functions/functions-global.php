@@ -2041,6 +2041,7 @@ function bookacti_is_json( $string ) {
 /**
  * Decode JSON if it is valid else return self
  * @since 1.6.0
+ * @version 1.9.0
  * @param string $string
  * @param boolean $assoc
  * @return array|$string

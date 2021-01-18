@@ -255,7 +255,7 @@ function bookacti_wc_notifications_tags_values( $tags, $booking, $booking_type, 
 			$coupon_code = wc_get_order_item_meta( $item_id, 'bookacti_refund_coupon', true );
 		}
 		
-		$tags[ '{refund_coupon_code}' ]	= $coupon_code;
+		$tags[ '{refund_coupon_code}' ]	= strtoupper( $coupon_code );
 	}
 	
 	return $tags;

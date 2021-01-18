@@ -443,7 +443,7 @@ foreach( $templates as $template ) {
 						'id'	=> 'bookacti-activity-max-users-per-event',
 						'title'	=> esc_html__( 'Max users per event', 'booking-activities' ),
 						'options'=> array( 'min' => 0, 'step' => 1 ),
-						'tip'	=> esc_html__( 'Set how many different users can book the same event. E.g.: "1", only one user can book a specific event; once he / she has booked it, the event won\'t be available for anyone else anymore, even if it isn\'t full. Usefull for private events.', 'booking-activities' )
+						'tip'	=> esc_html__( 'Set how many different users can book the same event. E.g.: "1", only one user can book a specific event; once he / she has booked it, the event won\'t be available for anyone else anymore, even if it isn\'t full. Useful for private events.', 'booking-activities' )
 								. '<br/>' . esc_html__( 'Set it to "0" to ignore this parameter.', 'booking-activities' )
 					),
 					'activityOptions[booking_changes_deadline]' => array(
@@ -819,7 +819,7 @@ foreach( $templates as $template ) {
 						'id'	=> 'bookacti-group-category-max-users-per-event',
 						'title'	=> esc_html__( 'Max users per event', 'booking-activities' ),
 						'options'=> array( 'min' => 0, 'step' => 1 ),
-						'tip'	=> esc_html__( 'Set how many different users can book the same group of events. E.g.: "1", only one user can book a specific group of events; once he / she has booked it, the group of events won\'t be available for anyone else anymore, even if it isn\'t full. Usefull for private events.', 'booking-activities' )
+						'tip'	=> esc_html__( 'Set how many different users can book the same group of events. E.g.: "1", only one user can book a specific group of events; once he / she has booked it, the group of events won\'t be available for anyone else anymore, even if it isn\'t full. Useful for private events.', 'booking-activities' )
 								. '<br/>' . esc_html__( 'Set it to "0" to ignore this parameter.', 'booking-activities' )
 					),
 					'groupCategoryOptions[booking_changes_deadline]' => array(

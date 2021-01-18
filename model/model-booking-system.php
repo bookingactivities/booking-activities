@@ -1439,9 +1439,10 @@ function bookacti_get_mixed_template_range( $template_ids = array() ) {
 
 
 // PERMISSIONS
+
 /**
  * Get managers
- * @version 1.7.1
+ * @version 1.9.0
  * @global wpdb $wpdb
  * @param string $object_type
  * @param int|array $object_id
@@ -1450,9 +1451,7 @@ function bookacti_get_mixed_template_range( $template_ids = array() ) {
 function bookacti_get_managers( $object_type, $object_id ) {
 	global $wpdb;
 
-	if( ! $object_type || ( ! is_numeric( $object_id ) && ! is_array( $object_id ) ) ) {
-		return false;
-	}
+	if( ! $object_type || ( ! is_numeric( $object_id ) && ! is_array( $object_id ) ) ) { return array(); }
 
 	if( is_numeric( $object_id ) ) {
 		$object_id = absint( $object_id );
@@ -1460,7 +1459,7 @@ function bookacti_get_managers( $object_type, $object_id ) {
 		$object_id = array_filter( array_map( 'absint', array_unique( $object_id ) ) );
 	}
 
-	if( ! $object_id ) { return false; }
+	if( ! $object_id ) { return array(); }
 
 	$query	= 'SELECT object_id, user_id FROM ' . BOOKACTI_TABLE_PERMISSIONS
 			. ' WHERE object_type = %s';
@@ -1486,7 +1485,7 @@ function bookacti_get_managers( $object_type, $object_id ) {
 	$query		= $wpdb->prepare( $query, $variables );
 	$managers	= $wpdb->get_results( $query, OBJECT );
 
-	if( is_null( $managers ) ) { return false; }
+	if( is_null( $managers ) ) { return array(); }
 
 	$managers_array = array();
 	foreach( $managers as $manager ) {

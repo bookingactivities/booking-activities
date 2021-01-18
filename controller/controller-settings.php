@@ -776,6 +776,7 @@ add_action( 'wp_ajax_bookactiArchiveDeleteFile', 'bookacti_controller_archive_de
 /**
  * Display a description in the Licenses settings tab
  * @since 1.7.14
+ * @version 1.9.0
  */
 function bookacti_display_licenses_settings_description() {
 	$active_add_ons = bookacti_get_active_add_ons();
@@ -786,7 +787,7 @@ function bookacti_display_licenses_settings_description() {
 			<h3>
 				<?php 
 				/* translators: %s is a link to "Booking Activities add-ons" (link label) shop */
-				echo sprintf( esc_html__( 'Purchase %s now!', 'booking-activities' ), ' <a href="https://booking-activities.fr/en/add-ons/" target="_blank">' . esc_html__( 'Booking Activities add-ons', 'booking-activities' ) . '</a>' );
+				echo sprintf( esc_html__( 'Look at %s.', 'booking-activities' ), ' <a href="https://booking-activities.fr/en/add-ons/" target="_blank">' . esc_html__( 'Booking Activities add-ons', 'booking-activities' ) . '</a>' );
 				?>
 			</h3>
 		</div>
@@ -897,8 +898,9 @@ function bookacti_add_ons_compatibility_error_notice() {
 		<p>
 			<?php
 				$docs_link = 'https://booking-activities.fr/en/faq/the-add-ons-are-not-updated-automatically-or-an-error-occurs-during-the-updates/';
+				$docs_link_html = '<a href="' . $docs_link . '" target="_blank">' . esc_html__( 'documentation', 'booking-activities' ) . '</a>';
 				/* translators: %1$s = Plugin name. %2$s = Link to the "documentation". */
-				echo sprintf( esc_html__( '%1$s is experiencing malfunctions due to the obsolescence of the following add-ons. You need to update them now (%2$s).', 'booking-activities' ), '<strong>Booking Activities</strong>', '<a href="' . $docs_link . '" target="_blank">' . esc_html__( 'documentation', 'booking-activities' ) . '</a>' );
+				echo sprintf( esc_html__( '%1$s is experiencing malfunctions due to the obsolescence of the following add-ons. You need to update them now (%2$s).', 'booking-activities' ), '<strong>Booking Activities</strong>', $docs_link_html );
 			?>
 		</p>
 		<ul>

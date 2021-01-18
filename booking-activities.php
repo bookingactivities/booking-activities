@@ -3,7 +3,7 @@
  * Plugin Name: Booking Activities
  * Plugin URI: https://booking-activities.fr/en/?utm_source=plugin&utm_medium=plugin&utm_content=header
  * Description: Booking system specialized in activities (sports, cultural, leisure, events...). Works great with WooCommerce.
- * Version: 1.9.0
+ * Version: 1.8.9
  * Author: Booking Activities Team
  * Author URI: https://booking-activities.fr/en/?utm_source=plugin&utm_medium=plugin&utm_content=header
  * Text Domain: booking-activities
@@ -40,7 +40,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 
 // GLOBALS AND CONSTANTS
-if( ! defined( 'BOOKACTI_VERSION' ) )		{ define( 'BOOKACTI_VERSION', '1.9.0' ); }
+if( ! defined( 'BOOKACTI_VERSION' ) )		{ define( 'BOOKACTI_VERSION', '1.8.9' ); }
 if( ! defined( 'BOOKACTI_PLUGIN_NAME' ) )	{ define( 'BOOKACTI_PLUGIN_NAME', 'booking-activities' ); }
 
 
@@ -199,19 +199,21 @@ function bookacti_enqueue_global_scripts() {
 		}
 		wp_enqueue_script( 'bookacti-js-woocommerce-global', plugins_url( 'js/woocommerce-global.min.js', __FILE__ ), array( 'jquery', 'moment', 'jquery-ui-dialog', 'bookacti-js-global-var', 'bookacti-js-global-functions' ), BOOKACTI_VERSION, true );
 	}
-		
+	
+	// Register Booking Activities' jquery-ui theme, so it is ready to be enqueued / dequeued if needed
+	global $wp_version;
+	$jquery_ui_css_filename = version_compare( $wp_version, '5.6', '<' ) ? 'jquery-ui-1.11.4.min' : 'jquery-ui.min.css';
+	wp_register_style( 'bookacti-css-jquery-ui', plugins_url( 'lib/jquery-ui/themes/booking-activities/' . $jquery_ui_css_filename, __FILE__ ), array(), BOOKACTI_VERSION );
+	
 	// On backend, only include these scripts on Booking Activities pages
 	if( is_admin() && ! bookacti_is_booking_activities_screen() ) { return; }
 	
-	global $wp_version;
-	$jquery_ui_css_filename = version_compare( $wp_version, '5.6', '<' ) ? 'jquery-ui-1.11.4.min' : 'jquery-ui.min.css';
-	
 	// INCLUDE STYLESHEETS
-	wp_enqueue_style( 'bookacti-css-global',		plugins_url( 'css/global.min.css', __FILE__ ), array(), BOOKACTI_VERSION );
-	wp_enqueue_style( 'bookacti-css-fonts',			plugins_url( 'css/fonts.min.css', __FILE__ ), array(), BOOKACTI_VERSION );
-	wp_enqueue_style( 'bookacti-css-bookings',		plugins_url( 'css/bookings.min.css', __FILE__ ), array(), BOOKACTI_VERSION );
-	wp_enqueue_style( 'bookacti-css-forms',			plugins_url( 'css/forms.min.css', __FILE__ ), array(), BOOKACTI_VERSION );
-	wp_enqueue_style( 'jquery-ui-bookacti-theme',	plugins_url( 'lib/jquery-ui/themes/booking-activities/' . $jquery_ui_css_filename, __FILE__ ), array(), BOOKACTI_VERSION );
+	wp_enqueue_style( 'bookacti-css-global',	plugins_url( 'css/global.min.css', __FILE__ ), array(), BOOKACTI_VERSION );
+	wp_enqueue_style( 'bookacti-css-fonts',		plugins_url( 'css/fonts.min.css', __FILE__ ), array(), BOOKACTI_VERSION );
+	wp_enqueue_style( 'bookacti-css-bookings',	plugins_url( 'css/bookings.min.css', __FILE__ ), array(), BOOKACTI_VERSION );
+	wp_enqueue_style( 'bookacti-css-forms',		plugins_url( 'css/forms.min.css', __FILE__ ), array(), BOOKACTI_VERSION );
+	wp_enqueue_style( 'bookacti-css-jquery-ui' );
 	
 	// INCLUDE JAVASCRIPT FILES
 	wp_enqueue_script( 'bookacti-js-booking-system',			plugins_url( 'js/booking-system.min.js', __FILE__ ),			array( 'jquery', 'fullcalendar', 'bookacti-js-global-var', 'bookacti-js-global-functions' ), BOOKACTI_VERSION, true );
@@ -547,14 +549,12 @@ function bookacti_clear_sessions_when_updating_to_1_9_0( $old_version ) {
 		$response = $tools_controller->execute_tool( $action );
 		$tool = array_merge( array(
 			'id'          => $action,
-			'name'        => $tools[ $action ]['name'],
-			'action'      => $tools[ $action ]['button'],
-			'description' => $tools[ $action ]['desc'],
+			'name'        => $tools[ $action ][ 'name' ],
+			'action'      => $tools[ $action ][ 'button' ],
+			'description' => $tools[ $action ][ 'desc' ],
 		), $response );
 		
 		do_action( 'woocommerce_system_status_tool_executed', $tool );
-		
-		wc_add_notice( $tool[ 'message' ], 'success' );
 	}
 }
 add_action( 'bookacti_updated', 'bookacti_clear_sessions_when_updating_to_1_9_0', 40 );

@@ -988,7 +988,7 @@ function bookacti_woocommerce_refund_booking( $return_array, $bookings, $booking
 				/* translators: %s is the amount of the coupon. E.g.: $10. */
 				$return_array[ 'message' ] = sprintf( esc_html__( 'A %s coupon has been created. You can use it once for any order at any time.', 'booking-activities' ), $return_array[ 'coupon_amount' ] );
 				/* translators: %s is the coupon code. E.g.: AAB12. */
-				$return_array[ 'message' ] .= '<br/>' . sprintf(  esc_html__( 'The coupon code is %s. Use it on your next cart!', 'booking-activities' ), $return_array[ 'coupon_code' ] );
+				$return_array[ 'message' ] .= '<br/>' . sprintf(  esc_html__( 'The coupon code is %s. Use it on your next cart!', 'booking-activities' ), '<strong>' . strtoupper( $return_array[ 'coupon_code' ] ) . '</strong>' );
 			}
 		} else if( $refund_action === 'auto' && bookacti_does_order_support_auto_refund( $order_id ) ) {
 			$return_array = bookacti_auto_refund_booking( $bookings, $booking_type, $refund_message );

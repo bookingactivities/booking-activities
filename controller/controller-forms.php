@@ -983,7 +983,7 @@ function bookacti_save_no_account_user_data( $return_array, $booking_form_values
 	$user_data = array_combine( array_map( function( $key ) { return 'user_' . $key; }, array_keys( $user_data ) ), $user_data );
 	
 	// Insert the metadata
-	foreach( $return_array[ 'booking' ] as $booking ) {
+	foreach( $return_array[ 'bookings' ] as $booking ) {
 		$object_type = $booking[ 'type' ] === 'group' ? 'booking_group' : 'booking';
 		bookacti_update_metadata( $object_type, $booking[ 'id' ], $user_data );
 	}

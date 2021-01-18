@@ -176,7 +176,7 @@ label[for="bookacti-booking-filter-dates-to"] + input#bookacti-booking-filter-da
 .bookacti-booking-state.bookacti-tip	{ padding: 0; }
 .bookacti-payment-status,
 .bookacti-booking-state					{ font-weight: bold; }
-.bookacti-booking-state	label			{ display: inline-block; vertical-align: middle; margin: 0; font-weight: initial; }
+.bookacti-booking-state label			{ display: inline; vertical-align: middle; margin: 0; font-weight: initial; }
 .bookacti-payment-status-good,
 .bookacti-booking-state-good			{ color: #82c818; }
 .bookacti-payment-status-warning,

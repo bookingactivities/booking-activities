@@ -16,7 +16,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	<div id='bookacti-add-ons'>	
 		<div id='bookacti-add-ons-intro' >
 			<h3><?php esc_html_e( 'Make the most of Booking Activities', 'booking-activities' ); ?></h3>
-			<p><?php esc_html_e( 'You can extend Booking Activities functionnalities with the following great add-ons. Pick the one you are interested in and just give it a try, you have a 30-day money back guarantee. ', 'booking-activities' ); ?></p>
+			<p><?php esc_html_e( 'You can extend Booking Activities functionnalities with the following official add-ons. Pick the ones you are interested in and just give them a try, you have a 30-day money back guarantee. ', 'booking-activities' ); ?></p>
 		</div>
 		
 		<div id='bookacti-add-ons-container' >

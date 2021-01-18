@@ -105,7 +105,7 @@ function bookacti_controller_cancel_booking() {
 		bookacti_send_json( array( 'status' => 'failed', 'error' => 'booking_already_cancelled', 'message' => esc_html__( 'The booking is already cancelled.', 'booking-activities' ) ), 'cancel_booking' );
 	}
 
-	$can_be_cancelled = bookacti_booking_can_be_cancelled( $booking, false, 'front' );
+	$can_be_cancelled = bookacti_booking_can_be_cancelled( $booking, 'front' );
 	if( ! $can_be_cancelled ) {
 		bookacti_send_json( array( 'status' => 'failed', 'error' => 'not_allowed_to_cancel_booking', 'message' => esc_html__( 'The booking cannot be cancelled.', 'booking-activities' ) ), 'cancel_booking' );
 	}
@@ -118,7 +118,7 @@ function bookacti_controller_cancel_booking() {
 	do_action( 'bookacti_booking_state_changed', $booking, 'cancelled', array( 'is_admin' => false ) );
 
 	$new_bookings = array_values( bookacti_get_bookings( $filters ) );
-	$allow_refund = bookacti_booking_can_be_refunded( $new_bookings[ 0 ], false, 'front' );
+	$allow_refund = bookacti_booking_can_be_refunded( $new_bookings[ 0 ], 'front' );
 
 	$context	= ! empty( $_POST[ 'context' ] ) ? sanitize_title_with_dashes( $_POST[ 'context' ] ) : '';
 	$columns	= ! empty( $_POST[ 'columns' ] ) && is_array( $_POST[ 'columns' ] ) ? array_map( 'sanitize_title_with_dashes', $_POST[ 'columns' ] ) : array();
@@ -154,7 +154,7 @@ function bookacti_controller_get_refund_actions_html() {
 	}
 	
 	$front_or_admin = ! empty( $_POST[ 'is_admin' ] ) ? 'admin' : 'front';
-	if( ! bookacti_booking_can_be_refunded( $bookings[ 0 ], false, $front_or_admin ) ) {
+	if( ! bookacti_booking_can_be_refunded( $bookings[ 0 ], $front_or_admin ) ) {
 		bookacti_send_json( array( 'status' => 'failed', 'error' => 'cannot_be_refunded', 'message' => esc_html__( 'This booking cannot be refunded.', 'booking-activities' ) ), 'get_refund_actions_html' );
 	}
 
@@ -196,7 +196,7 @@ function bookacti_controller_refund_booking() {
 	$refund_actions	= bookacti_get_booking_refund_actions( $bookings, 'single', $front_or_admin );
 	$refund_action	= array_key_exists( $sanitized_action, $refund_actions ) ? $sanitized_action : 'email';
 
-	if( ! bookacti_booking_can_be_refunded( $bookings[ 0 ], $refund_action, $front_or_admin ) ) {
+	if( ! bookacti_booking_can_be_refunded( $bookings[ 0 ], $front_or_admin, $refund_action ) ) {
 		bookacti_send_json( array( 'error' => 'cannot_be_refunded', 'message' => esc_html__( 'This booking cannot be refunded.', 'booking-activities' ) ), 'refund_booking' );
 	}
 

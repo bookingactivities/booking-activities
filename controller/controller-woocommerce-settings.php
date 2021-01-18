@@ -35,6 +35,7 @@ add_action( 'bookacti_settings_tab_content', 'bookacti_add_cart_tab_content' );
 /**
  * Add WC settings section
  * @since 1.7.16
+ * @version 1.9.0
  */
 function bookacti_add_woocommerce_settings_section() {
 	/* WC products settings Section */
@@ -45,20 +46,21 @@ function bookacti_add_woocommerce_settings_section() {
 		'bookacti_woocommerce_settings'
 	);
 	
-	/* WC My Account settings Section */
-	add_settings_section( 
-		'bookacti_settings_section_wc_account',
-		esc_html__( 'Account settings', 'booking-activities' ),
-		'bookacti_settings_section_wc_account_callback',
-		'bookacti_woocommerce_settings'
-	);
-	
 	add_settings_field( 
 		'wc_product_pages_booking_form_location',
 		esc_html__( 'Booking form location on product pages', 'booking-activities' ),
 		'bookacti_settings_wc_product_pages_booking_form_location_callback',
 		'bookacti_woocommerce_settings',
 		'bookacti_settings_section_wc_products'
+	);
+		
+	
+	/* WC My Account settings Section */
+	add_settings_section( 
+		'bookacti_settings_section_wc_account',
+		esc_html__( 'Account settings', 'booking-activities' ),
+		'bookacti_settings_section_wc_account_callback',
+		'bookacti_woocommerce_settings'
 	);
 	
 	add_settings_field( 
@@ -69,28 +71,18 @@ function bookacti_add_woocommerce_settings_section() {
 		'bookacti_settings_section_wc_account'
 	);
 	
-	register_setting( 'bookacti_woocommerce_settings', 'bookacti_products_settings' );
-	register_setting( 'bookacti_woocommerce_settings', 'bookacti_account_settings' );
-}
-add_action( 'bookacti_add_settings', 'bookacti_add_woocommerce_settings_section' );
-
-
-/**
- * Add Cart settings section
- * @version 1.7.16
- */
-function bookacti_add_woocommerce_cart_settings_section() {
+	
 	/* Cart settings Section */
 	add_settings_section( 
 		'bookacti_settings_section_cart',
-		__( 'Cart settings', 'booking-activities' ),
+		esc_html__( 'Cart settings', 'booking-activities' ),
 		'bookacti_settings_section_cart_callback',
 		'bookacti_woocommerce_settings'
 	);
 	
 	add_settings_field( 
 		'is_cart_expiration_active',
-		__( 'Activate cart expiration', 'booking-activities' ),
+		esc_html__( 'Activate cart expiration', 'booking-activities' ),
 		'bookacti_settings_field_activate_cart_expiration_callback',
 		'bookacti_woocommerce_settings',
 		'bookacti_settings_section_cart'
@@ -99,7 +91,7 @@ function bookacti_add_woocommerce_cart_settings_section() {
 	add_settings_field( 
 		'cart_timeout', 
 		/* translators: 'Timeout' stands for the amount of time a user has to proceed to checkout before his cart gets empty. */
-		__( 'Timeout (minutes)', 'booking-activities' ),
+		esc_html__( 'Timeout (minutes)', 'booking-activities' ),
 		'bookacti_settings_field_cart_timeout_callback',
 		'bookacti_woocommerce_settings',
 		'bookacti_settings_section_cart'
@@ -108,7 +100,7 @@ function bookacti_add_woocommerce_cart_settings_section() {
 	add_settings_field( 
 		'is_cart_expiration_per_product',
 		/* translators: It is an option meaning that each product in cart has its own expiration date, and they expire one after the other, not all the cart content at once */
-		__( 'Per product expiration', 'booking-activities' ),
+		esc_html__( 'Per product expiration', 'booking-activities' ),
 		'bookacti_settings_field_per_product_expiration_callback',
 		'bookacti_woocommerce_settings',
 		'bookacti_settings_section_cart'
@@ -116,15 +108,17 @@ function bookacti_add_woocommerce_cart_settings_section() {
 	
 	add_settings_field( 
 		'reset_cart_timeout_on_change',
-		__( 'Reset countdown when cart changes', 'booking-activities' ),
+		esc_html__( 'Reset countdown when cart changes', 'booking-activities' ),
 		'bookacti_settings_field_reset_cart_timeout_on_change_callback',
 		'bookacti_woocommerce_settings',
 		'bookacti_settings_section_cart'
 	);
 	
+	register_setting( 'bookacti_woocommerce_settings', 'bookacti_products_settings' );
+	register_setting( 'bookacti_woocommerce_settings', 'bookacti_account_settings' );
 	register_setting( 'bookacti_woocommerce_settings', 'bookacti_cart_settings' );
 }
-add_action( 'bookacti_add_settings', 'bookacti_add_woocommerce_cart_settings_section' );
+add_action( 'bookacti_add_settings', 'bookacti_add_woocommerce_settings_section' );
 
 
 /**
