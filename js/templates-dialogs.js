@@ -158,7 +158,7 @@ function bookacti_init_template_dialogs() {
 
 /**
  * Dialog Create Template
- * @version 1.8.5
+ * @version 1.9.0
  */
 function bookacti_dialog_add_new_template() {
 	// Set the dialog title
@@ -235,7 +235,7 @@ function bookacti_dialog_add_new_template() {
 							//If success
 							if( response.status === 'success' ) {
 								// If it is the first template, change the bookacti-first-template-container div to bookacti-template-calendar div
-								if( $j( '#bookacti-first-template-container' ).length ) {
+								if( $j( '#bookacti-first-template-container' ).is( ':visible' ) ) {
 									$j( '#bookacti-first-template-container' ).before( $j( '<div id="bookacti-template-calendar" ></div>' ) );
 									$j( '#bookacti-first-template-container' ).hide();
 									$j( '.bookacti-no-template' ).removeClass( 'bookacti-no-template' );

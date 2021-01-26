@@ -931,7 +931,7 @@ function bookacti_update_quantity_in_cart( $new_quantity, $cart_item_key ) {
 		
 		// Update the cart item bookings quantity
 		else {
-			$updated = bookacti_wc_update_cart_item_bookings_quantity( $cart_item_key, $new_quantity );
+			$updated = $new_quantity ? bookacti_wc_update_cart_item_bookings_quantity( $cart_item_key, $new_quantity ) : bookacti_wc_update_cart_item_bookings_status( $cart_item_key, 'removed' );
 			if( ! $updated ) {
 				$restore_qty = true;
 				wc_add_notice( esc_html__( 'An error occured while trying to change the quantity of the bookings attached to the item.', 'booking-activities' ), 'error' );

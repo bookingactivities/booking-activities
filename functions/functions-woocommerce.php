@@ -313,7 +313,7 @@ function bookacti_wc_update_cart_item_bookings( $cart_item_key, $new_data ) {
 				bookacti_update_booking_group( $sanitized_data );
 			}
 			if( $is_updated ) { 
-				do_action( 'bookacti_cart_item_booking_updated', $cart_item_booking, $sanitized_data, $item, $new_data );
+				do_action( 'bookacti_wc_cart_item_booking_updated', $cart_item_booking, $sanitized_data, $item, $new_data );
 				++$updated;
 			}
 		}

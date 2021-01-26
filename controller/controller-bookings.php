@@ -408,7 +408,8 @@ function bookacti_controller_get_reschedule_booking_system_data() {
 	$atts[ 'activities' ] = $booking->activity_id ? array( $booking->activity_id ) : array( 0 );
 
 	// On the backend, display past events and grouped events, from all calendars, and make them all bookable
-	if( $_POST[ 'is_admin' ] ) {
+	$is_admin = intval( $_POST[ 'is_admin' ] );
+	if( $is_admin ) {
 		$atts[ 'groups_single_events' ]	= 1;
 		$atts[ 'start' ]				= '';
 		$atts[ 'end' ]					= '';
@@ -428,7 +429,7 @@ function bookacti_controller_get_reschedule_booking_system_data() {
 	}
 
 	// Add the rescheduled booking data to the booking system data
-	$atts[ 'rescheduled_booking_data' ] = (array) $booking;
+	$atts[ 'rescheduled_booking_data' ] = (array) apply_filters( 'bookacti_rescheduled_booking_data', $booking, $is_admin ? 'admin' : 'front' );
 
 	$atts = apply_filters( 'bookacti_reschedule_booking_system_attributes', $atts, $booking, $init_atts, $mixed_data );
 

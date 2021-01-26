@@ -5,7 +5,7 @@ Tags: booking, reservation, booking form, woocommerce booking, booking events
 Requires at least: 3.6
 Tested up to: 5.6
 Requires PHP: 5.3
-Stable tag: 1.8.9
+Stable tag: 1.9.0
 License: GPLv3 or later
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
 
@@ -149,7 +149,7 @@ Then feel free to tell us if you miss a feature, if you find a bug or anything t
 * **WordPress**: 3.6 or later
 * **PHP**: 5.3 or later
 * **MySQL**: 5.6 or later
-* **WooCommerce**: 3.x or later (deprecated, update to 4.x asap) 
+* **WooCommerce**: 3.x or later
 * *Booking Activities can be used without WooCommerce*
 
 
@@ -266,14 +266,14 @@ Note that if you use WooCommerce and online payments, booking states turn automa
 
 
 = Cart expires but events are still booked = 
-A bot clean expired bookings hourly. So just wait up to 1 hour.
+A bot cleans expired bookings hourly. So just wait up to 1 hour.
 Usually, users are still on your website when their bookings expire, if so, they are immediatly removed.
 Else, they will be cancelled later, with the others in that case.
 
 
 = My events appear to be booked, but no bookings appear in the list =
 Temporary bookings (such as In cart events) take active slots but may not appear in the booking list.
-Go to the "Bookings" page, under the "States" filter select "Booked", "Pending" and "In cart" (use CTRL+Click to select multiple row).
+Go to the "Bookings" page, under the "States" filter select "Delivered", "Booked", "Pending" and "In cart" (use CTRL+Click to select multiple row).
 Then, just click on "Apply Filters". Now you can see all kind of active bookings.
 
 
@@ -283,7 +283,7 @@ Click on "Apply Filters" and then you will be able to see inactive bookings (can
 
 
 = Email notifications are not sent =
-If you enabled "Asynchronous email" option in Booking Activities settings ("Notifications" tab), emails will be sent the next time someone (anyone) load any page of your website.
+If you enabled "Asynchronous email" option in Booking Activities settings ("Notifications" tab), emails will be sent the next time someone (anyone) loads any page of your website.
 Then, you only need to refresh or visit any page of your website and then check your inbox.
 If you disable "Asynchronous email" option, then the loading will last until the email is actually sent.
 
@@ -306,21 +306,23 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 5. Create and customize your booking form. You can combine events and settings of multiple schedules. You can make each form unique.
 6. Use a shortcode to display a booking form (or a calendar alone). Your customers can log in or register as they book, they can also book without account.
 7. When a customer clicks on a grouped event, the whole group is selected. If the event is part of several groups, the customer has to choose one from a dialog.
-8. Easily bind a reservation form to a WooCommerce product. You can set a different event calendar to each variation.
-9. A reservation form appears automatically on desired WooCommerce product pages.
-10. WooCommerce cart expiration system: when time is up, bookings are cancelled and cart emptied. You can also disable it.
-11. Your bookings are displayed on a calendar, when you mouseover an event, and in a list that you can filter, sort and customize. Manage your bookings: change state (cancel, validate), reschedule, refund...
-12. Synchronize your bookings and display them in your Google Calendar events' description
-13. Customers also have their booking list and calendar thanks to a shortcode. They can cancel, reschedule or ask a refund by their own (if you allow them).
-14. Your customers can manage their bookings from their WooCommerce orders as well.
-15. Orders status are bound to their bookings status. If bookings are cancelled / booked / refunded, so do the order (and vice-versa).
-16. Email notifications are automatically sent to the customer or the administrator when they need to be informed of a change.
-17. Make your emails look just like you want thanks to the HTML editor and special tags. You can also choose to deactivate a notification.
+8. There is also an option to allow your customers to pick multiple events of their choice at once.
+9. Easily bind a reservation form to a WooCommerce product. You can set a different event calendar to each variation.
+10. A reservation form appears automatically on desired WooCommerce product pages.
+11. WooCommerce cart expiration system: when time is up, bookings are cancelled and cart emptied. You can also disable it.
+12. Your bookings are displayed on a calendar, when you mouseover an event, and in a list that you can filter, sort and customize. Manage your bookings: change state (cancel, validate), reschedule, refund...
+13. Synchronize your bookings and display them in your Google Calendar events' description
+14. Customers also have their booking list and calendar thanks to a shortcode. They can cancel, reschedule or ask a refund by their own (if you allow them).
+15. Your customers can manage their bookings from their WooCommerce orders as well.
+16. Orders status are bound to their bookings status. If bookings are cancelled / booked / refunded, so do the order (and vice-versa).
+17. Email notifications are automatically sent to the customer or the administrator when they need to be informed of a change.
+18. Make your emails look just like you want thanks to the HTML editor and special tags. You can also choose to deactivate a notification.
 
 
 == Changelog ==
 
-= 1.9.0 =
+= 1.9.0 - 2021/01/27 =
+* **[See the user-friendly release note](https://booking-activities.fr/en/blog/booking-activities-1-9-multiple-bookings-cancel-an-event/?utm_source=wp-plugin-page&utm_medium=wordpress&utm_content=readme)**
 * Breaking change - WooCommerce carts will be emptied after the update
 * Breaking change - You need to update your add-ons and probably adapt your custom code. No support can be provided for your custom code.
 * Feature - Pick multiple events on the calendar and book them all at once (find the option in your booking form editor, in the calendar settings)

@@ -355,7 +355,7 @@ foreach( $templates as $template ) {
 			<?php
 			/**
 			 * Display the 'General' tab content of activity settings
-			 * @version 1.8.7
+			 * @version 1.9.0
 			 * @param array $params
 			 */
 			function bookacti_fill_activity_tab_general( $params = array() ) {
@@ -383,7 +383,8 @@ foreach( $templates as $template ) {
 						'type'	=> 'duration',
 						'name'	=> 'activity-duration',
 						'id'	=> 'bookacti-activity-duration',
-						'title'	=> esc_html__( 'Duration', 'booking-activities' ),
+						'title'	=> esc_html__( 'Default duration', 'booking-activities' ),
+						'label'	=> '<small><em>' . esc_html__( 'Used when an event is created only', 'booking-activities' ) . '</em></small>',
 						'tip'	=> esc_html__( 'The default duration of an event when you drop this activity onto the calendar. For a better readability, try not to go over your working hours. Best practice for events of several days is to create one event per day and then group them.', 'booking-activities' )
 					),
 					'activity-resizable' => array(

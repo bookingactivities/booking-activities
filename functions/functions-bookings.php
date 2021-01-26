@@ -614,6 +614,8 @@ function bookacti_booking_can_be_rescheduled( $booking, $context = '' ) {
 		$booking = ! empty( $bookings[ $booking_id ] ) ? $bookings[ $booking_id ] : null;
 	}
 	
+	$booking = apply_filters( 'bookacti_rescheduled_booking_data', $booking, $context );
+	
 	if( ! $booking ) { $is_allowed = false; }
 	else {
 		if( ! current_user_can( 'bookacti_edit_bookings' ) || $context === 'front' ) {
@@ -659,13 +661,14 @@ function bookacti_booking_can_be_rescheduled_to( $booking, $event_id, $event_sta
 	} else {
 		$return_array = array( 'status' => 'success' );
 		$is_allowed = bookacti_booking_can_be_rescheduled( $booking, $context );
-
+		
 		if( ! $is_allowed ) {
 			$return_array[ 'status' ] = 'failed';
 			$return_array[ 'error' ] = 'reschedule_not_allowed';
 			$return_array[ 'message' ] = esc_html__( 'You are not allowed to reschedule this event.', 'booking-activities' );
 
 		} else {
+			$booking	= apply_filters( 'bookacti_rescheduled_booking_data', $booking, $context );
 			$from_event	= bookacti_get_event_by_id( $booking->event_id );
 			$to_event	= bookacti_get_event_by_id( $event_id );
 
@@ -1321,7 +1324,7 @@ function bookacti_get_booking_actions( $admin_or_front = 'both' ) {
  * @since 1.6.0 (replace bookacti_get_booking_actions_array)
  * @version 1.9.0
  * @param object|int $booking
- * @param string $admin_or_front Can be "both", "admin", "front. Default "both".
+ * @param string $admin_or_front Can be "both", "admin", "front". Default "both".
  * @return array
  */
 function bookacti_get_booking_actions_by_booking( $booking, $admin_or_front = 'both' ) {
