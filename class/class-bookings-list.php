@@ -10,7 +10,7 @@ if( ! class_exists( 'Bookings_List_Table' ) ) {
 	
 	/**
 	 * Bookings WP_List_Table
-	 * @version 1.8.0
+	 * @version 1.9.0
 	 */
 	class Bookings_List_Table extends WP_List_Table {
 		
@@ -223,7 +223,7 @@ if( ! class_exists( 'Bookings_List_Table' ) ) {
 		
 		/**
 		 * Get booking list items. Parameters can be passed in the URL.
-		 * @version 1.8.6
+		 * @version 1.9.0
 		 * @access public
 		 * @return array
 		 */
@@ -258,10 +258,16 @@ if( ! class_exists( 'Bookings_List_Table' ) ) {
 			// Retrieve the required groups data only
 			$booking_groups		= array();
 			$displayed_groups	= array();
+			$bookings_per_group	= array();
 			if( ( $may_have_groups || $single_only ) && $this->group_ids ) {
 				// Get only the groups that will be displayed
 				$group_filters = bookacti_format_booking_filters( array( 'in__booking_group_id' => $this->group_ids, 'fetch_meta' => true ) );
 				$booking_groups = bookacti_get_booking_groups( $group_filters );
+				$groups_bookings = bookacti_get_bookings( $group_filters );
+				foreach( $groups_bookings as $booking ) {
+					if( ! isset( $bookings_per_group[ $booking->group_id ] ) ) { $bookings_per_group[ $booking->group_id ] = array(); }
+					$bookings_per_group[ $booking->group_id ][] = $booking;
+				}
 			}
 			
 			// Retrieve information about users and stock them into an array sorted by user id
@@ -279,9 +285,9 @@ if( ! class_exists( 'Bookings_List_Table' ) ) {
 			// Build booking list
 			$booking_list_items = array();
 			foreach( $bookings as $booking ) {
-				
 				$group = $booking->group_id && ! empty( $booking_groups[ $booking->group_id ] ) ? $booking_groups[ $booking->group_id ] : null;
-				
+				$grouped_bookings = $booking->group_id && ! empty( $bookings_per_group[ $booking->group_id ] ) && ! $single_only ? $bookings_per_group[ $booking->group_id ] : array( $booking );
+		
 				// Display one single row for a booking group, instead of each bookings of the group
 				if( $booking->group_id && $may_have_groups && ! $single_only ) {
 					// If the group row has already been displayed, or if it is not found, continue
@@ -421,7 +427,7 @@ if( ! class_exists( 'Bookings_List_Table' ) ) {
 					'order_id'		=> $order_id,
 					'primary_data'	=> $primary_data,
 					'primary_data_html'	=> $primary_data_html
-				), $booking, $group, $user, $this );
+				), $booking, $group, $grouped_bookings, $user, $this );
 				
 				$booking_list_items[ $booking->id ] = $booking_item;
 			}
@@ -442,7 +448,7 @@ if( ! class_exists( 'Bookings_List_Table' ) ) {
 				if( empty( $booking_list_item[ 'refund_actions' ] ) && isset( $booking_list_item[ 'actions' ][ 'refund' ] ) ) { unset( $booking_list_item[ 'actions' ][ 'refund' ] ); }
 				if( empty( $booking_list_item[ 'actions' ] ) ) { continue; }
 				if( $booking_list_item[ 'booking_type' ] === 'group' ) {
-					$booking_list_items[ $booking_id ][ 'actions' ] = bookacti_get_booking_group_actions_html( $booking, 'admin', $booking_list_item[ 'actions' ] );
+					$booking_list_items[ $booking_id ][ 'actions' ] = bookacti_get_booking_group_actions_html( $bookings_per_group[ $booking_list_item[ 'raw_id' ] ], 'admin', $booking_list_item[ 'actions' ] );
 				} else if( $booking_list_item[ 'booking_type' ] === 'single' ) {
 					$booking_list_items[ $booking_id ][ 'actions' ] = bookacti_get_booking_actions_html( $booking, 'admin', $booking_list_item[ 'actions' ] );
 				}
@@ -454,43 +460,42 @@ if( ! class_exists( 'Bookings_List_Table' ) ) {
 		
 		/**
 		 * Format filters passed as argument or retrieved via POST or GET
-		 * @version 1.8.0
+		 * @version 1.9.0
 		 * @access public
 		 * @param array $filters_raw
 		 * @param boolean $merge_url_param Merge $filters_raw with URL parameters if not set
 		 * @return array
 		 */
 		public function format_filters( $filters_raw = array(), $merge_url_param = false ) {
+			$filters = $filters_raw;
+			
 			// Get filters from URL if no filter was directly passed
 			if( ! $filters_raw || $merge_url_param ) {
-				// Accept multiple names for certain filters
-				$alt_filter_names = array(
-					'event_group_id'=> array( 'bookacti_group_id' ),
-					'event_id'		=> array( 'bookacti_event_id' ),
-					'event_start'	=> array( 'bookacti_event_start' ),
-					'event_end'		=> array( 'bookacti_event_end' ),
-					'order_by'		=> array( 'orderby' )
-				);
-
 				// Get the filters from URL
 				$default_filters = bookacti_get_default_booking_filters();
 				foreach( $default_filters as $filter_name => $default_value ) {
-					if( isset( $_REQUEST[ $filter_name ] ) && ! isset( $filters_raw[ $filter_name ] ) ) { $filters_raw[ $filter_name ] = $_REQUEST[ $filter_name ]; }
-					else if( ! empty( $alt_filter_names[ $filter_name ] ) ) {
-						foreach( $alt_filter_names[ $filter_name ] as $alt_filter_name ) {
-							if( isset( $_REQUEST[ $alt_filter_name ] ) ) { $filters_raw[ $filter_name ] = $_REQUEST[ $alt_filter_name ]; }
-						}
-					}
+					if( isset( $_REQUEST[ $filter_name ] ) ) { $filters[ $filter_name ] = $_REQUEST[ $filter_name ]; }
 				}
+				
+				// Specific cases
+				$picked_events = ! empty( $_REQUEST[ 'selected_events' ] ) ? bookacti_format_picked_events( $_REQUEST[ 'selected_events' ] ) : array();
+				
+				if( ! empty( $picked_events[ 0 ][ 'group_id' ] ) )	{ $filters[ 'event_group_id' ] = $picked_events[ 0 ][ 'group_id' ]; }
+				else {
+					if( ! empty( $picked_events[ 0 ][ 'id' ] ) )	{ $filters[ 'event_id' ] = $picked_events[ 0 ][ 'id' ]; }
+					if( ! empty( $picked_events[ 0 ][ 'start' ] ) )	{ $filters[ 'event_start' ] = $picked_events[ 0 ][ 'start' ]; }
+					if( ! empty( $picked_events[ 0 ][ 'end' ] ) )	{ $filters[ 'event_end' ] = $picked_events[ 0 ][ 'end' ]; }
+				}
+				if( ! empty( $_REQUEST[ 'orderby' ] ) )				{ $filters[ 'order_by' ] = $_REQUEST[ 'orderby' ]; }
 			}
 			
 			// Format filters before making the request
-			$this->filters = bookacti_format_booking_filters( $filters_raw );
+			$this->filters = bookacti_format_booking_filters( $filters );
 			
 			// Define the URL with parameters corresponding to passed filters
 			$protocol = is_ssl() ? 'https' : 'http';
 			$base_url = defined( 'DOING_AJAX' ) && DOING_AJAX ? admin_url( 'admin.php?page=bookacti_bookings' ) : $protocol . '://' . $_SERVER[ 'HTTP_HOST' ] . $_SERVER[ 'REQUEST_URI' ];
-			$url_filters = array_intersect_key( $this->filters, $filters_raw );
+			$url_filters = array_intersect_key( $this->filters, $filters );
 			$this->url = esc_url_raw( add_query_arg( $url_filters, $base_url ) );
 		}
 		

@@ -26,24 +26,6 @@ if( ! defined( 'BOOKACTI_TABLE_PERMISSIONS' ) )		{ define( 'BOOKACTI_TABLE_PERMI
 // USERS
 
 /**
- * Check if user id exists
- * 
- * @global wpdb $wpdb
- * @param int $user_id
- * @return boolean
- */
-function bookacti_user_id_exists( $user_id ) {
-	global $wpdb;
-
-	$query		= 'SELECT COUNT(*) FROM ' . $wpdb->users . ' WHERE ID = %d ';
-	$query_prep	= $wpdb->prepare( $query, $user_id );
-	$count		= $wpdb->get_var( $query_prep );
-
-	return $count === 1;
-}
-
-
-/**
  * Delete a user meta for all users
  * 
  * @since 1.3.0
@@ -75,6 +57,21 @@ function bookacti_delete_user_meta( $meta_key, $user_id = 0, $meta_value = '' ) 
 	$deleted = $wpdb->query( $query );
 	
 	return $deleted;
+}
+
+
+/**
+ * Get the user id corresponding to a secret key
+ * @since 1.9.0
+ * @param string $secret_key
+ * @return int User ID or 0 if not found
+ */
+function bookacti_get_user_id_by_secret_key( $secret_key ) {
+	global $wpdb;
+	$query = 'SELECT user_id FROM ' . $wpdb->prefix . 'usermeta WHERE meta_key = "bookacti_secret_key" AND meta_value = %s;';
+	$query = $wpdb->prepare( $query, $secret_key );
+	$user_id = $wpdb->get_var( $query );
+	return $user_id ? intval( $user_id ) : 0;
 }
 
 

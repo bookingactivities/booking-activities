@@ -176,6 +176,7 @@ label[for="bookacti-booking-filter-dates-to"] + input#bookacti-booking-filter-da
 .bookacti-booking-state.bookacti-tip	{ padding: 0; }
 .bookacti-payment-status,
 .bookacti-booking-state					{ font-weight: bold; }
+.bookacti-booking-state label			{ display: inline; vertical-align: middle; margin: 0; font-weight: initial; }
 .bookacti-payment-status-good,
 .bookacti-booking-state-good			{ color: #82c818; }
 .bookacti-payment-status-warning,
@@ -184,7 +185,7 @@ label[for="bookacti-booking-filter-dates-to"] + input#bookacti-booking-filter-da
 .bookacti-booking-state-bad				{ color: #b81c23; }
 .bookacti-payment-status-disabled		{ color: #555; }
 .bookacti-payment-status:before,
-.bookacti-booking-state:before			{ font-size: 1.5em; font-weight: bold; white-space: nowrap; vertical-align: middle; }
+.bookacti-booking-state:before			{ font-size: 1.5em; font-weight: bold; white-space: nowrap; vertical-align: middle; vertical-align: middle; margin: 0; }
 .bookacti-payment-status-good:before,
 .bookacti-booking-state-good:before		{ content: '\2714  '; }
 .bookacti-payment-status-warning:before,
@@ -250,7 +251,7 @@ tr.bookacti-booking-list-selected-row								{ background-color: rgba( 65, 143, 
 
 /** DIALOGS **/
 .bookacti-dialog,
-.bookacti-dialog .ui-dialog-content { overflow: visible !important; }
+.bookacti-dialog .ui-dialog-content { overflow: visible; }
 .bookacti-dialog ~ .ui-widget-overlay { 
     position: fixed;
     top: 0; 
@@ -266,14 +267,14 @@ tr.bookacti-booking-list-selected-row								{ background-color: rgba( 65, 143, 
 	.bookacti-dialog .ui-dialog-buttonpane { padding: .3em 1em .5em 1em !important; }
 	.bookacti-dialog .ui-dialog-buttonpane .ui-dialog-buttonset { float: none !important; text-align: right; }
 	
-	.bookacti-dialog .ui-widget-header .ui-state-default.bookacti-dialog-left-button,
-	.bookacti-dialog .ui-widget-content .ui-state-default.bookacti-dialog-left-button,
-	.bookacti-dialog .ui-state-default.bookacti-dialog-left-button { float: left; }
+	.bookacti-dialog .ui-widget-header .ui-button.bookacti-dialog-left-button,
+	.bookacti-dialog .ui-widget-content .ui-button.bookacti-dialog-left-button,
+	.bookacti-dialog .ui-button.bookacti-dialog-left-button { float: left; }
 	
 	/* Delete button */
-	.bookacti-dialog .ui-widget-header .ui-state-default.bookacti-dialog-delete-button,
-	.bookacti-dialog .ui-widget-content .ui-state-default.bookacti-dialog-delete-button,
-	.bookacti-dialog .ui-state-default.bookacti-dialog-delete-button {
+	.bookacti-dialog .ui-widget-header .ui-button.bookacti-dialog-delete-button,
+	.bookacti-dialog .ui-widget-content .ui-button.bookacti-dialog-delete-button,
+	.bookacti-dialog .ui-button.bookacti-dialog-delete-button {
 		border: 1px solid #a00;
 		color: #a00;
 		background: #fcf1f1;

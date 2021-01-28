@@ -546,7 +546,7 @@ function bookacti_get_default_form_fields_data( $field_name = '' ) {
  * Get fields metadata
  * @see bookacti_format_form_field_data to properly format your array
  * @since 1.5.0
- * @version 1.8.9
+ * @version 1.9.0
  * @param string $field_name
  * @return array
  */
@@ -584,6 +584,7 @@ function bookacti_get_default_form_fields_meta( $field_name = '' ) {
 			'group_categories'				=> array( 'none' ),
 			'groups_only'					=> 0,
 			'groups_single_events'			=> 0,
+			'multiple_bookings'				=> 0,
 			'bookings_only'					=> 0,
 			'status'						=> array(),
 			'user_id'						=> 0,
@@ -658,7 +659,7 @@ function bookacti_get_available_form_action_triggers() {
 /**
  * Format field data according to its type
  * @since 1.5.0
- * @version 1.8.2
+ * @version 1.9.0
  * @param array|string $raw_field_data
  * @return array|false
  */
@@ -676,7 +677,7 @@ function bookacti_format_form_field_data( $raw_field_data ) {
 	
 	// Format field-specific data and metadata
 	if( $raw_field_data[ 'name' ] === 'calendar' ) {
-		$booleans_to_check = array( 'groups_only', 'groups_single_events', 'bookings_only', 'trim', 'past_events', 'past_events_bookable' );
+		$booleans_to_check = array( 'groups_only', 'groups_single_events', 'multiple_bookings', 'bookings_only', 'trim', 'past_events', 'past_events_bookable' );
 		foreach( $booleans_to_check as $key ) {
 			if( ! isset( $raw_field_data[ $key ] ) ) { continue; }
 			$field_meta[ $key ] = in_array( $raw_field_data[ $key ], array( 1, '1', true, 'true', 'yes', 'ok' ), true ) ? 1 : 0;
@@ -806,7 +807,7 @@ function bookacti_format_form_field_data( $raw_field_data ) {
 /**
  * Sanitize field data according to its type
  * @since 1.5.0
- * @version 1.8.7
+ * @version 1.9.0
  * @param array|string $raw_field_data
  * @return array|false
  */
@@ -824,7 +825,7 @@ function bookacti_sanitize_form_field_data( $raw_field_data ) {
 	
 	// Sanitize field-specific data and metadata
 	if( $raw_field_data[ 'name' ] === 'calendar' ) {
-		$booleans_to_check = array( 'groups_only', 'groups_single_events', 'bookings_only', 'trim', 'past_events', 'past_events_bookable' );
+		$booleans_to_check = array( 'groups_only', 'groups_single_events', 'multiple_bookings', 'bookings_only', 'trim', 'past_events', 'past_events_bookable' );
 		foreach( $booleans_to_check as $key ) {
 			if( ! isset( $raw_field_data[ $key ] ) ) { $field_meta[ $key ] = $default_meta[ $key ]; continue; }
 			$field_meta[ $key ] = in_array( $raw_field_data[ $key ], array( 1, '1', true, 'true', 'yes', 'ok' ), true ) ? 1 : 0;
@@ -1298,6 +1299,7 @@ function bookacti_validate_login( $login_values, $require_authentication = true 
 /**
  * Validate form fields according to values received with $_POST
  * @since 1.7.0
+ * @version 1.9.0
  * @param int $form_id
  * @param array $fields_data
  * @return array
@@ -1308,26 +1310,29 @@ function bookacti_validate_form_fields( $form_id, $fields_data = array() ) {
 		$fields_data = bookacti_get_form_fields_data( $form_id );
 	}
 	
+	$validated = array( 
+		'status' => 'success',
+		'messages' => array()
+	);
+	
 	// Make sure that form data exist
 	if( ! $fields_data ) { 
 		$validated[ 'status' ]	= 'failed';
-		$validated[ 'message' ][ 'invalid_form_id' ]	= esc_html__( 'Invalid form ID.', 'booking-activities' );
-		return apply_filters( 'bookacti_validate_form_fields', $validated, $form_id, $fields_data );
-	}
-	
-	$validated = array( 'status' => 'success' );
-	
-	// Validate terms
-	$has_terms = false;
-	foreach( $fields_data as $field_data ) {
-		if( $field_data[ 'name' ] === 'terms' ) { 
-			$has_terms = true;
-			break;
+		$validated[ 'messages' ][ 'invalid_form_id' ] = esc_html__( 'Invalid form ID.', 'booking-activities' );
+		
+	} else {
+		// Validate terms
+		$has_terms = false;
+		foreach( $fields_data as $field_data ) {
+			if( $field_data[ 'name' ] === 'terms' ) { 
+				$has_terms = true;
+				break;
+			}
 		}
-	}
-	if( $has_terms && empty( $_POST[ 'terms' ] ) ) {
-		$validated[ 'status' ]	= 'failed';
-		$validated[ 'message' ][ 'terms_not_agreed' ]	= esc_html__( 'You must agree to the terms and conditions.', 'booking-activities' );
+		if( $has_terms && empty( $_POST[ 'terms' ] ) ) {
+			$validated[ 'status' ]	= 'failed';
+			$validated[ 'messages' ][ 'terms_not_agreed' ] = esc_html__( 'You must agree to the terms and conditions.', 'booking-activities' );
+		}
 	}
 	
 	return apply_filters( 'bookacti_validate_form_fields', $validated, $form_id, $fields_data );

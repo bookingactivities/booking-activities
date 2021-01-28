@@ -2,7 +2,7 @@
 /**
  * Form editor dialogs
  * @since 1.5.0
- * @version 1.8.9
+ * @version 1.9.0
  */
 
 // Exit if accessed directly
@@ -140,19 +140,19 @@ foreach( $fields_data as $field_name => $field_data ) {
 					'callback'		=> 'bookacti_fill_calendar_dialog_filters_tab',
 					'parameters'	=> array( 'form' => $form, 'calendar_data' => $form_fields[ $calendar_field_id ], 'fields_data' => $fields_data ),
 					'order'			=> 10 ),
+			array(	'label'			=> esc_html__( 'Availability', 'booking-activities' ),
+					'id'			=> 'availability',
+					'callback'		=> 'bookacti_fill_calendar_dialog_availability_tab',
+					'parameters'	=> array( 'form' => $form, 'calendar_data' => $form_fields[ $calendar_field_id ], 'fields_data' => $fields_data ),
+					'order'			=> 20 ),
 			array(	'label'			=> esc_html__( 'Actions', 'booking-activities' ),
 					'id'			=> 'actions',
 					'callback'		=> 'bookacti_fill_calendar_dialog_actions_tab',
 					'parameters'	=> array( 'form' => $form, 'calendar_data' => $form_fields[ $calendar_field_id ], 'fields_data' => $fields_data ),
-					'order'			=> 20 ),
+					'order'			=> 30 ),
 			array(	'label'			=> esc_html__( 'Display', 'booking-activities' ),
 					'id'			=> 'display',
 					'callback'		=> 'bookacti_fill_calendar_dialog_display_tab',
-					'parameters'	=> array( 'form' => $form, 'calendar_data' => $form_fields[ $calendar_field_id ], 'fields_data' => $fields_data ),
-					'order'			=> 30 ),
-			array(	'label'			=> esc_html__( 'Availability', 'booking-activities' ),
-					'id'			=> 'availability',
-					'callback'		=> 'bookacti_fill_calendar_dialog_availability_tab',
 					'parameters'	=> array( 'form' => $form, 'calendar_data' => $form_fields[ $calendar_field_id ], 'fields_data' => $fields_data ),
 					'order'			=> 40 ),
 			array(	'label'			=> esc_html__( 'Calendar', 'booking-activities' ),
@@ -168,6 +168,7 @@ foreach( $fields_data as $field_name => $field_data ) {
 		/**
 		 * Display the content of the "Filters" tab of the "Calendar" dialog
 		 * @since 1.5.0
+		 * @version 1.9.0
 		 * @param array $params
 		 */
 		function bookacti_fill_calendar_dialog_filters_tab( $params ) {
@@ -185,6 +186,14 @@ foreach( $fields_data as $field_name => $field_data ) {
 			<legend><?php esc_html_e( 'Groups of events', 'booking-activities' ); ?></legend>
 			<?php 
 				$fields = bookacti_get_booking_system_fields_default_data( array( 'group_categories', 'groups_only', 'groups_single_events' ) );
+				bookacti_display_fields( $fields );
+			?>
+		</fieldset>
+		
+		<fieldset>
+			<legend><?php esc_html_e( 'Multiple bookings', 'ba-multiple-bookings' ); ?></legend>
+			<?php 
+				$fields = bookacti_get_booking_system_fields_default_data( array( 'multiple_bookings' ) );
 				bookacti_display_fields( $fields );
 			?>
 		</fieldset>
@@ -768,7 +777,7 @@ foreach( $fields_data as $field_name => $field_data ) {
 		/**
 		 * Display the content of the "Register" tab of the "Login" dialog
 		 * @since 1.5.0
-		 * @version 1.8.9
+		 * @version 1.9.0
 		 * @param array $params
 		 */
 		function bookacti_fill_login_dialog_register_tab( $params ) {
@@ -816,7 +825,7 @@ foreach( $fields_data as $field_name => $field_data ) {
 						'name'	=> 'send_new_account_email',
 						'id'	=> 'bookacti-send-new-account-email',
 						'value'	=> 0,
-						'tip'	=> esc_html__( 'Whether to automatically send an email to the user if he has created an account with the booking form.', 'booking-activities' )
+						'tip'	=> esc_html__( 'Whether to automatically send an email to the user if the user has created an account with the booking form.', 'booking-activities' )
 					);
 					bookacti_display_field( $args );
 				?>
@@ -839,6 +848,7 @@ foreach( $fields_data as $field_name => $field_data ) {
 						'options'	=> $roles_options,
 						'value'		=> 'default',
 						'tip'		=> esc_html__( 'Choose a role to give to a user who has registered while booking an event with this form.', 'booking-activities' )
+									/* translators: %1$s = "Default role". %2$s = link to "New User Default Role". */
 									. ' ' . sprintf( esc_html__( 'Select "%1$s" to use the "%2$s" option in Wordpress General settings.', 'booking-activities' ), esc_html__( 'Default role', 'booking-activities' ), '<a href="' . admin_url( 'options-general.php' ) . '">' . esc_html__( 'New User Default Role' ) . '</a>' )
 					);
 					bookacti_display_field( $args );

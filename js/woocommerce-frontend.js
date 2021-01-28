@@ -72,21 +72,21 @@ $j( document ).ready( function() {
 
 	/**
 	 * Enable add-to-cart button
-	 * @version 1.7.4
+	 * @version 1.9.0
 	 */
 	$j( '.woocommerce form.cart' ).on( 'bookacti_view_refreshed bookacti_displayed_info_cleared', '.bookacti-booking-system', function() {
-		$j( this ).parents( 'form' ).find( 'input[name="quantity"]' ).attr( 'disabled', false );
-		$j( this ).parents( 'form' ).find( 'button[type="submit"]' ).attr( 'disabled', false );
+		$j( this ).closest( 'form' ).find( 'input[name="quantity"]' ).attr( 'disabled', false );
+		$j( this ).closest( 'form' ).find( 'button[type="submit"]' ).attr( 'disabled', false );
 	});
 
 
 	/**
 	 * Disable add-to-cart button
-	 * @version 1.7.4
+	 * @version 1.9.0
 	 */
 	$j( '.woocommerce form.cart' ).on( 'bookacti_error_displayed', '.bookacti-booking-system', function() {
-		$j( this ).parents( 'form' ).find( 'input[name="quantity"]' ).attr( 'disabled', true );
-		$j( this ).parents( 'form' ).find( 'button[type="submit"]' ).attr( 'disabled', true );
+		$j( this ).closest( 'form' ).find( 'input[name="quantity"]' ).attr( 'disabled', true );
+		$j( this ).closest( 'form' ).find( 'button[type="submit"]' ).attr( 'disabled', true );
 	});
 
 
@@ -130,28 +130,43 @@ $j( document ).ready( function() {
 
 	/**
 	 * Change activity summary on qty change
-	 * @version 1.7.4
+	 * @version 1.9.0
 	 */
 	$j( '.woocommerce form.cart' ).on( 'keyup mouseup change', 'input.qty', function() {
-		var booking_system = $j( this ).parents( 'form.cart' ).find( '.bookacti-booking-system' );
+		var booking_system = $j( this ).closest( 'form.cart' ).find( '.bookacti-booking-system' );
 		if( booking_system.length ) {
 			bookacti_fill_picked_events_list( booking_system );
 		}
 	});
-
-
+	
+	
 	/**
-	 * Set quantity on eventClick
-	 * @version 1.7.4
+	 * Set picked events list quantity according to the product form quantity - on bookacti_picked_events_list_data
+	 * @version 1.9.0
 	 * @param {Event} e
-	 * @param {Object} event_summary_data
+	 * @param {Object} event_data
 	 * @param {Object} event
 	 */
-	$j( '.woocommerce form.cart' ).on( 'bookacti_picked_events_list_data', '.bookacti-booking-system', function( e, event_summary_data, event ) {
+	$j( '.woocommerce form.cart' ).on( 'bookacti_picked_events_list_data', '.bookacti-booking-system', function( e, event_data, event ) {
 		var booking_system = $j( this );
-		var qty_field = booking_system.parents( 'form' ).find( '.quantity .qty' );
+		var qty_field = booking_system.closest( 'form' ).find( '.quantity .qty' );
 		if( qty_field.length ) {
-			bookacti_set_min_and_max_quantity( booking_system, qty_field, event_summary_data );
+			event_data.quantity = parseInt( qty_field.val() );
+		}
+	});
+	
+
+	/**
+	 * Set product form quantity field - on bookacti_update_quantity
+	 * @since 1.9.0
+	 * @param {Event} e
+	 * @param {Object} qty_data
+	 */
+	$j( '.woocommerce form.cart' ).on( 'bookacti_update_quantity', '.bookacti-booking-system', function( e, qty_data ) {
+		var booking_system = $j( this );
+		var qty_field = booking_system.closest( 'form' ).find( '.quantity .qty' );
+		if( qty_field.length ) {
+			qty_data.field = qty_field;
 		}
 	});
 
@@ -171,7 +186,7 @@ $j( document ).ready( function() {
 
 /**
  * Switch form according to variation
- * @version 1.8.0
+ * @version 1.9.0
  * @param {HTMLElement} form_container
  * @param {object} variation
  */
@@ -211,23 +226,19 @@ function bookacti_switch_product_variation_form( form_container, variation ) {
 	};
 	
 	// Get selected event from URL parameters if the variation attributes match the URL attributes
-	var is_same_var = true;
+	var is_requested_in_url = true;
 	$j.each( variation.attributes, function( attr_name, attr_value ) {
 		if( attr_value !== bookacti_get_url_parameter( attr_name ) ) {
-			is_same_var = false; 
+			is_requested_in_url = false; 
 			return false; // Break
 		}
 	});
 	
-	if( is_same_var ) {
-		data.group_id = bookacti_get_url_parameter( 'bookacti_group_id' );
-		if( data.group_id === null ) { data.group_id = bookacti_get_url_parameter( 'event_group_id' ); }
-		data.event_id = bookacti_get_url_parameter( 'bookacti_event_id' );
-		if( data.event_id === null ) { data.event_id = bookacti_get_url_parameter( 'event_id' ); }
-		data.event_start = bookacti_get_url_parameter( 'bookacti_event_start' );
-		if( data.event_start === null ) { data.event_start = bookacti_get_url_parameter( 'event_start' ); }
-		data.event_end = bookacti_get_url_parameter( 'bookacti_event_end' );
-		if( data.event_end === null ) { data.event_end = bookacti_get_url_parameter( 'event_end' ); }
+	// If the variation is requested via the URL, pass the URL data to prefill the fields
+	if( is_requested_in_url ) {
+		var serialized_data = $j.param( data );
+		var url_serialized_parameters = window.location.search.substring( 1 );
+		data = url_serialized_parameters + '&' + serialized_data;
 	}
 	
 	// Load new form fields

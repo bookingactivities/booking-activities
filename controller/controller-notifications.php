@@ -57,36 +57,33 @@ add_action( 'bookacti_clean_latest_notifications', 'bookacti_clean_latest_emails
 
 /**
  * Send a notification to admin and customer when a new booking is made
- * 
  * @since 1.2.2 (was bookacti_send_notification_admin_new_booking in 1.2.1)
- * @version 1.5.0
- * @param int $booking_id
+ * @version 1.9.0
+ * @param array $return_array
  * @param array $booking_form_values
- * @param string $booking_type
  * @param int $form_id
  */
-function bookacti_send_notification_when_booking_is_made( $booking_id, $booking_form_values, $booking_type, $form_id = 0 ) {
-	// Send a booking confirmation to the customer
-	$status = $booking_type === 'group' ? bookacti_get_booking_group_state( $booking_id ) : bookacti_get_booking_state( $booking_id );
-	bookacti_send_notification( 'customer_' . $status . '_booking', $booking_id, $booking_type );
-
-	// Alert administrators that a new booking has been made
-	bookacti_send_notification( 'admin_new_booking', $booking_id, $booking_type );
+function bookacti_send_notification_when_booking_is_made( $return_array, $booking_form_values, $form_id ) {
+	foreach( $return_array[ 'bookings' ] as $booking ) {
+		// Send a booking confirmation to the customer
+		bookacti_send_notification( 'customer_' . $booking_form_values[ 'status' ] . '_booking', $booking[ 'id' ], $booking[ 'type' ] );
+		// Alert administrators that a new booking has been made
+		bookacti_send_notification( 'admin_new_booking', $booking[ 'id' ], $booking[ 'type' ] );
+	}
 }
-add_action( 'bookacti_booking_form_validated', 'bookacti_send_notification_when_booking_is_made', 100, 4 );
+add_action( 'bookacti_booking_form_validated', 'bookacti_send_notification_when_booking_is_made', 100, 3 );
 
 
 
 /**
  * Send a notification to admin and customer when a single booking status changes
- * 
  * @since 1.2.1 (was bookacti_send_email_when_booking_state_changes in 1.2.0)
- * @version 1.8.6
- * @param int $booking_id
+ * @version 1.9.0
+ * @param object $booking
  * @param string $status
  * @param array $args
  */
-function bookacti_send_notification_when_booking_state_changes( $booking_id, $status, $args ) {
+function bookacti_send_notification_when_booking_state_changes( $booking, $status, $args ) {
 	// Do not send notification if explicitly said
 	if( isset( $args[ 'send_notifications' ] ) && ! $args[ 'send_notifications' ] ) { return; }
 	
@@ -94,16 +91,16 @@ function bookacti_send_notification_when_booking_state_changes( $booking_id, $st
 	if( isset( $args[ 'booking_group_state_changed' ] ) && $args[ 'booking_group_state_changed' ] ) { return; }
 	
 	// If we cannot know if the action was made by customer or admin, send to both
-	$send_to = apply_filters( 'bookacti_booking_state_change_notification_recipient', 'both', $booking_id, $status, $args );
+	$send_to = apply_filters( 'bookacti_booking_state_change_notification_recipient', 'both', $booking->id, $status, $args );
 	
 	// If $args[ 'is_admin' ] is true, the customer need to be notified
 	if( $send_to === 'customer' || $send_to === 'both' ) {
-		bookacti_send_notification( 'customer_' . $status . '_booking', $booking_id, 'single' );
+		bookacti_send_notification( 'customer_' . $status . '_booking', $booking->id, 'single' );
 	}
 	
 	// If $args[ 'is_admin' ] is false, the administrator need to be notified
 	if( $send_to === 'admin' || $send_to === 'both' ) {
-		bookacti_send_notification( 'admin_' . $status . '_booking', $booking_id, 'single' );
+		bookacti_send_notification( 'admin_' . $status . '_booking', $booking->id, 'single' );
 	}
 }
 add_action( 'bookacti_booking_state_changed', 'bookacti_send_notification_when_booking_state_changes', 10, 3 );
@@ -112,12 +109,13 @@ add_action( 'bookacti_booking_state_changed', 'bookacti_send_notification_when_b
 /**
  * Send a notification to admin and customer when a booking group status changes
  * @since 1.2.1 (was bookacti_send_email_when_booking_group_state_changes in 1.2.0)
- * @version 1.8.6
+ * @version 1.9.0
  * @param int $booking_group_id
+ * @param array $bookings
  * @param string $status
  * @param array $args
  */
-function bookacti_send_notification_when_booking_group_state_changes( $booking_group_id, $status, $args ) {
+function bookacti_send_notification_when_booking_group_state_changes( $booking_group_id, $bookings, $status, $args ) {
 	// Do not send notification if explicitly said
 	if( isset( $args[ 'send_notifications' ] ) && ! $args[ 'send_notifications' ] ) { return; }
 	
@@ -134,7 +132,7 @@ function bookacti_send_notification_when_booking_group_state_changes( $booking_g
 		bookacti_send_notification( 'admin_' . $status . '_booking', $booking_group_id, 'group' );
 	}
 }
-add_action( 'bookacti_booking_group_state_changed', 'bookacti_send_notification_when_booking_group_state_changes', 10, 3 );
+add_action( 'bookacti_booking_group_state_changed', 'bookacti_send_notification_when_booking_group_state_changes', 10, 4 );
 
 
 /**

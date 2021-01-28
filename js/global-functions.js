@@ -7,6 +7,52 @@ $j( document ).ready( function() {
 	
 	// Add formatPHP function to moment JS
 	bookacti_init_moment_format_from_php_date_format();
+	
+	// Init Bootstrap tooltip global functions
+	var is_bootstrap = typeof $j.fn.modal !== 'undefined';
+	if( is_bootstrap ) {
+		/**
+		 * Remove the Bootstrap tooltips on click anywhere else than the tooltip
+		 * @since 1.9.0
+		 * @param {Event} e
+		 */
+		$j( document ).on( 'click', function( e ) {
+			// Do nothing if the click hit the tooltip
+			if( $j( e.target ).closest( '.bookacti-bs-tooltip' ).length ) { return; }
+
+			// Remove the tooltip
+			$j( '.bookacti-tip' ).tooltip( 'hide' );
+
+			// Clear the timeout
+			if( typeof bookacti_bs_display_bookings_tooltip_monitor !== 'undefined' ) { 
+				if( bookacti_bs_display_bookings_tooltip_monitor ) { clearTimeout( bookacti_bs_display_bookings_tooltip_monitor ); }
+			}
+		});
+
+
+		/**
+		 * Keep the Bootstrap tooltips displayed if the user mouseover it
+		 * @since 1.9.0
+		 */
+	   $j( 'body' ).on( 'mouseover', '.bookacti-bs-tooltip', function() {
+		   if( typeof bookacti_bs_remove_mouseover_tooltip_monitor !== 'undefined' ) { 
+			   if( bookacti_bs_remove_mouseover_tooltip_monitor ) { clearTimeout( bookacti_bs_remove_mouseover_tooltip_monitor ); }
+		   }
+	   });
+
+
+	   /**
+		* Remove the Bootstrap tooltips - on mouseout
+		* @since 1.9.0
+		*/
+	   $j( 'body' ).on( 'mouseout', '.bookacti-bs-tooltip', function() {
+			var tooltip_mouseover_timeout = Math.min( Math.max( parseInt( bookacti_localized.bookings_tooltip_mouseover_timeout ), 0 ), 200 );
+			var _this = this;
+			bookacti_bs_remove_mouseover_tooltip_monitor = setTimeout( function() {
+				$j( _this ).tooltip( 'hide' );
+			}, tooltip_mouseover_timeout );
+	   });
+	} 
 });
 
 
@@ -32,29 +78,74 @@ window.addEventListener( 'touchstart', function bookacti_detect_touch_device() {
 
 /**
  * Init tooltip
- * @version 1.8.6
+ * @version 1.9.0
  */
 function bookacti_init_tooltip() {
-	$j( '.bookacti-tip' ).tooltip({
-		"items": '[data-tip]',
-		"content": function () {
-			return $j( this ).data( 'tip' );
-		},
-		"show":	{ effect: 'fadeIn', duration: 200 },
-		"hide":	{ effect: 'fadeOut', duration: 200 },
-		"close": function(event, ui) {
-			ui.tooltip.hover( function() {
-				$j( this ).stop( true ).fadeTo( 200, 1 ); 
-			},
-			function() {
-				$j( this ).fadeOut( '200', function() {
-					$j( this ).remove();
-				});
+	// Bootstrap (for compatibility only)
+	var is_bootstrap = typeof $j.fn.modal !== 'undefined';
+	if( is_bootstrap ) {
+		var bootstrap_options = {
+			"title": function () { return $j( this ).data( 'tip' ); },
+			"trigger": 'manual',
+			"animation": true,
+			"html": true,
+			"template": '<div class="tooltip bookacti-bs-tooltip bookacti-tip-container" role="tooltip"><div class="arrow"></div><div class="tooltip-inner bookacti-custom-scrollbar"></div></div>'
+		};
+		
+		$j( '.bookacti-tip' ).tooltip( bootstrap_options )
+			.on( 'mouseover touchstart', function() {
+				var tooltip_mouseover_timeout = parseInt( bookacti_localized.bookings_tooltip_mouseover_timeout );
+				if( tooltip_mouseover_timeout < 0 ) { return; }
+
+				// Clear the timeout to remove the old pop up (it will be removed by bookacti_display_bookings_tooltip_monitor)
+				if( typeof bookacti_bs_remove_mouseover_tooltip_monitor !== 'undefined' ) { 
+					if( bookacti_bs_remove_mouseover_tooltip_monitor ) { clearTimeout( bookacti_bs_remove_mouseover_tooltip_monitor ); }
+				}
+				
+				var _this = this;
+				bookacti_bs_display_bookings_tooltip_monitor = setTimeout( function() {
+					$j( _this ).tooltip( 'show' );
+				}, tooltip_mouseover_timeout );
+			})
+			.on( 'mouseout', function() {
+				// Clear the timeout
+				if( typeof bookacti_bs_display_bookings_tooltip_monitor !== 'undefined' ) { 
+					if( bookacti_bs_display_bookings_tooltip_monitor ) { clearTimeout( bookacti_bs_display_bookings_tooltip_monitor ); }
+				}
+				
+				var tooltip_mouseover_timeout = Math.min( Math.max( parseInt( bookacti_localized.bookings_tooltip_mouseover_timeout ), 0 ), 200 );
+				var _this = this;
+				bookacti_bs_remove_mouseover_tooltip_monitor = setTimeout( function() {
+					$j( _this ).tooltip( 'hide' );
+				}, tooltip_mouseover_timeout );
 			});
-		},
-		"tooltipClass":'bookacti-tip-container bookacti-custom-scrollbar'
-	});
-	$j( '.bookacti-tip' ).tooltip( 'close' );
+		
+		$j( '.bookacti-tip' ).tooltip( 'hide' );
+	} 
+	
+	// jQuery UI
+	else {
+		var jquery_ui_options = {
+			"items": '[data-tip]',
+			"content": function () { return $j( this ).data( 'tip' ); },
+			"show":	{ effect: 'fadeIn', duration: 200 },
+			"hide":	{ effect: 'fadeOut', duration: 200 },
+			"close": function( event, ui ) {
+				ui.tooltip.hover( function() {
+					$j( this ).stop( true ).fadeTo( 200, 1 ); 
+				},
+				function() {
+					$j( this ).fadeOut( '200', function() {
+						$j( this ).remove();
+					});
+				});
+			},
+			"tooltipClass":'bookacti-tip-container bookacti-custom-scrollbar'
+		};
+
+		$j( '.bookacti-tip' ).tooltip( jquery_ui_options );
+		$j( '.bookacti-tip' ).tooltip( 'close' );
+	}
 }
 
 
@@ -241,82 +332,82 @@ function bookacti_select2_init() {
 
 
 /**
- * Init a new moment function: Format format moment with PHP date format
+ * Init a new moment function: moment.formatPHP 
+ * Convert a php date format into a moment.js format
+ * http://www.php.net/manual/en/function.date.php
+ * http://momentjs.com/docs/#/displaying/format/
+ * @version 1.9.0
  */
 function bookacti_init_moment_format_from_php_date_format() {
-	(function (m) {
-		/*
-		 * PHP => moment.js
-		 * Will take a php date format and convert it into a JS format for moment
-		 * http://www.php.net/manual/en/function.date.php
-		 * http://momentjs.com/docs/#/displaying/format/
-		 */
+	(function( m ) {
 		var formatMap = {
-				d: 'DD',
-				D: 'ddd',
-				j: 'D',
-				l: 'dddd',
-				N: 'E',
-				S: function () {
-					return '[' + this.format('Do').replace(/\d*/g, '') + ']';
-				},
-				w: 'd',
-				z: function () {
-					return this.format('DDD') - 1;
-				},
-				W: 'W',
-				F: 'MMMM',
-				m: 'MM',
-				M: 'MMM',
-				n: 'M',
-				t: function () {
-					return this.daysInMonth();
-				},
-				L: function () {
-					return this.isLeapYear() ? 1 : 0;
-				},
-				o: 'GGGG',
-				Y: 'YYYY',
-				y: 'YY',
-				a: 'a',
-				A: 'A',
-				B: function () {
-					var thisUTC = this.clone().utc(),
-					// Shamelessly stolen from http://javascript.about.com/library/blswatch.htm
-						swatch = ((thisUTC.hours() + 1) % 24) + (thisUTC.minutes() / 60) + (thisUTC.seconds() / 3600);
-					return Math.floor(swatch * 1000 / 24);
-				},
-				g: 'h',
-				G: 'H',
-				h: 'hh',
-				H: 'HH',
-				i: 'mm',
-				s: 'ss',
-				u: '[u]', // not sure if moment has this
-				e: '[e]', // moment does not have this
-				I: function () {
-					return this.isDST() ? 1 : 0;
-				},
-				O: 'ZZ',
-				P: 'Z',
-				T: '[T]', // deprecated in moment
-				Z: function () {
-					return parseInt(this.format('ZZ'), 10) * 36;
-				},
-				c: 'YYYY-MM-DD[T]HH:mm:ssZ',
-				r: 'ddd, DD MMM YYYY HH:mm:ss ZZ',
-				U: 'X'
+			d: 'DD',
+			D: 'ddd',
+			j: 'D',
+			l: 'dddd',
+			N: 'E',
+			S: function() {
+				return '[' + this.format( 'Do' ).replace( /\d*/g, '' ) + ']';
 			},
-			formatEx = /[dDjlNSwzWFmMntLoYyaABgGhHisueIOPTZcrU]/g;
-
-		moment.fn.formatPHP = function (format) {
+			w: 'd',
+			z: function() {
+				return this.format( 'DDD' ) - 1;
+			},
+			W: 'W',
+			F: 'MMMM',
+			m: 'MM',
+			M: 'MMM',
+			n: 'M',
+			t: function() {
+				return this.daysInMonth();
+			},
+			L: function() {
+				return this.isLeapYear() ? 1 : 0;
+			},
+			o: 'GGGG',
+			Y: 'YYYY',
+			y: 'YY',
+			a: 'a',
+			A: 'A',
+			B: function() {
+				var thisUTC = this.clone().utc();
+				var swatch = ( ( thisUTC.hours() + 1 ) % 24 ) + ( thisUTC.minutes() / 60 ) + ( thisUTC.seconds() / 3600 );
+				return Math.floor( swatch * 1000 / 24 );
+			},
+			g: 'h',
+			G: 'H',
+			h: 'hh',
+			H: 'HH',
+			i: 'mm',
+			s: 'ss',
+			u: '[u]', // moment doesn't support microseconds
+			e: '[e]', // moment doesn't support timezone litteral format
+			I: function() {
+				return this.isDST() ? 1 : 0;
+			},
+			O: 'ZZ',
+			P: 'Z',
+			T: '[T]', // moment doesn't support timezone litteral format
+			Z: function() {
+				return parseInt( this.format( 'ZZ' ), 10 ) * 36;
+			},
+			c: 'YYYY-MM-DD[T]HH:mm:ssZ',
+			r: 'ddd, DD MMM YYYY HH:mm:ss ZZ',
+			U: 'X'
+		};
+		
+		moment.fn.formatPHP = function( format ) {
 			var that = this;
+			escape = false;
 
-			return this.format(format.replace(formatEx, function (phpStr) {
-				return typeof formatMap[phpStr] === 'function' ? formatMap[phpStr].call(that) : formatMap[phpStr];
+			return this.format( format.replace( /./g, function( phpStr ) {
+				if( escape ) { escape = false; return '[' + phpStr + ']'; } // Display escaped chars
+				if( phpStr === '\\' ) { escape = true; return ''; } // The next char will be escaped
+				if( typeof formatMap[ phpStr ] === 'undefined' ) { return '[' + phpStr + ']'; } // Display non-used char as is
+				return typeof formatMap[ phpStr ] === 'function' ? formatMap[ phpStr ].call(that) : formatMap[ phpStr ];
 			}));
 		};
-	}(moment));
+	}( moment ));
 }
 
 

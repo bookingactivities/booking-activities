@@ -3,17 +3,14 @@
 if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 /**
- * Send one notification per booking to admin and customer when an order contining bookings is made or when its status changes
- * @since 1.2.2
- * @version 1.8.6
- * @param WC_Order $order
+ * Send a new status notification for a booking attached to an order item
+ * @since 1.9.0
+ * @param array $order_item_booking
  * @param string $new_status
- * @param array $args
+ * @param WC_Order $order
+ * @param boolean $forced True to ignore the checks and send the notifications in any cases
  */
-function bookacti_send_notification_when_order_status_changes( $order, $new_status, $args = array() ) {
-	if( is_numeric( $order ) ) { $order = wc_get_order( $order ); }
-	if( ! $order ) { return; }
-	
+function bookacti_wc_send_order_item_booking_status_notification( $order_item_booking, $new_status, $order, $forced = false ) {
 	$action = isset( $_REQUEST[ 'action' ] ) ? sanitize_title_with_dashes( $_REQUEST[ 'action' ] ) : '';
 	
 	// Check if the administrator must be notified
@@ -32,49 +29,54 @@ function bookacti_send_notification_when_order_status_changes( $order, $new_stat
 	// If nobody needs to be notified, do nothing
 	if( ! $notify_admin && ! $notify_customer ) { return; }
 	
-	// Do not send notifications at all for transitionnal order status, 
-	// because the booking is still considered as temporary
-	$order_status = $order->get_status();
-	if( ( $order_status === 'pending' && $new_status === 'pending' )
-	||  ( $order_status === 'failed' && $new_status === 'cancelled' ) ) { return; }
+	// Get order current status
+	if( is_numeric( $order ) ) { $order = wc_get_order( $order ); }
+	$order_status = $order ? $order->get_status() : '';
 	
-	$order_items = $order->get_items();
-	if( ! $order_items ) { return; }
-	
-	$in__booking_id			= ! empty( $args[ 'booking_ids' ] ) ? $args[ 'booking_ids' ] : array();
-	$in__booking_group_id	= ! empty( $args[ 'booking_group_ids' ] ) ? $args[ 'booking_group_ids' ] : array();
-	
-	foreach( $order_items as $order_item_id => $item ) {
-		// Check if the order item is a booking, or skip it
-		if( ! $item || ( ! isset( $item[ 'bookacti_booking_id' ] ) && ! isset( $item[ 'bookacti_booking_group_id' ] ) ) ) { continue; }
-		
-		// Make sure the booking is part of those updated
-		if( isset( $item[ 'bookacti_booking_id' ] ) && ( $in__booking_id || $in__booking_group_id ) && ! in_array( $item[ 'bookacti_booking_id' ], $in__booking_id ) ) { continue; }
-		if( isset( $item[ 'bookacti_booking_group_id' ] ) && ( $in__booking_id || $in__booking_group_id ) && ! in_array( $item[ 'bookacti_booking_group_id' ], $in__booking_group_id ) ) { continue; }
-		
-		// If the state hasn't changed, do not send the notifications, unless it is a new order
-		$old_status = isset( $args[ 'old_status' ] ) && $args[ 'old_status' ] ? $args[ 'old_status' ] : wc_get_order_item_meta( $order_item_id, 'bookacti_state', true );
-		if( $old_status === $new_status && empty( $args[ 'force_status_notification' ] ) ) { continue; }
-		
-		// Get booking ID and booking type ('single' or 'group')
-		$booking_id		= isset( $item[ 'bookacti_booking_id' ] ) ? $item[ 'bookacti_booking_id' ] : ( isset( $item[ 'bookacti_booking_group_id' ] ) ? $item[ 'bookacti_booking_group_id' ] : 0 );
-		$booking_type	= isset( $item[ 'bookacti_booking_id' ] ) ? 'single' : ( isset( $item[ 'bookacti_booking_group_id' ] ) ? 'group' : '' );
-		if( ! $booking_id || ! $booking_type ) { continue; }
-		
-		// Send a booking confirmation to the customer
-		if( $notify_customer ) {
-			bookacti_send_notification( 'customer_' . $new_status . '_booking', $booking_id, $booking_type );
+	// Do not send notifications at all for transitionnal order status, because the booking is still considered as temporary
+	if( ! $forced ) {
+		$transitionnal_status_from = array( 'pending', 'failed' );
+		$transitionnal_status_to = array( 'pending', 'failed', 'cancelled' );
+		foreach( $transitionnal_status_from as $status_from ) {
+			foreach( $transitionnal_status_to as $status_to ) {
+				if( ( $order_status === $status_from && $new_status === $status_to ) || did_action( 'wc-' . $status_from . '_to_wc-' . $status_to ) ) { return; }
+			}
 		}
-		
-		// Notify administrators that a new booking has been made
-		if( $notify_admin ) {
-			bookacti_send_notification( 'admin_new_booking', $booking_id, $booking_type );
-		}
-		
-		do_action( 'bookacti_send_order_bookings_status_notifications', $booking_id, $booking_type, $item, $order, $new_status, $args );
 	}
+	
+	// If the state hasn't changed, do not send the notifications, unless it is a new order
+	$old_status = $order_item_booking[ 'type' ] === 'group' ? $order_item_booking[ 'bookings' ][ 0 ]->group_state : $order_item_booking[ 'bookings' ][ 0 ]->state;
+	if( $old_status === $new_status && ! $forced ) { return; }
+	
+	// Send a booking confirmation to the customer
+	if( $notify_customer ) {
+		bookacti_send_notification( 'customer_' . $new_status . '_booking', $order_item_booking[ 'id' ], $order_item_booking[ 'type' ] );
+	}
+
+	// Notify administrators that a new booking has been made
+	if( $notify_admin ) {
+		bookacti_send_notification( 'admin_new_booking', $order_item_booking[ 'id' ], $order_item_booking[ 'type' ] );
+	}
+	
+	do_action( 'bookacti_wc_send_order_item_booking_status_notification', $order_item_booking, $new_status, $order, $forced );
 }
-add_action( 'bookacti_order_bookings_state_changed', 'bookacti_send_notification_when_order_status_changes', 10, 3 );
+
+
+/**
+ * Send one notification per booking to admin and customer when an order contining bookings is made or when its status changes
+ * @since 1.9.0 (was bookacti_send_notification_when_order_status_changes)
+ * @param array $order_item_booking
+ * @param array $sanitized_data
+ * @param WC_Order $order
+ * @param array $new_data
+ * @param array $where
+ */
+function bookacti_wc_send_notification_when_order_item_booking_status_changes( $order_item_booking, $sanitized_data, $order, $new_data, $where ) {
+	if( empty( $sanitized_data[ 'status' ] ) ) { return; }
+	$new_status = $sanitized_data[ 'status' ];
+	bookacti_wc_send_order_item_booking_status_notification( $order_item_booking, $new_status, $order );
+}
+add_action( 'bookacti_wc_order_item_booking_updated', 'bookacti_wc_send_notification_when_order_item_booking_status_changes', 10, 5 );
 
 
 /**
@@ -159,9 +161,8 @@ add_filter( 'bookacti_notification_sanitized_settings', 'bookacti_sanitize_wc_no
 
 /**
  * Make sure that WC order data are up to date when a WC notification is sent
- * 
  * @since 1.2.2
- * @version 1.8.0
+ * @version 1.9.0
  * @param array $args
  * @return array
  */
@@ -169,7 +170,8 @@ function bookacti_wc_email_order_item_args( $args ) {
 	// Check if the order contains bookings
 	$has_bookings = false;
 	foreach( $args[ 'items' ] as $item ) {
-		if( isset( $item[ 'bookacti_booking_id' ] ) || isset( $item[ 'bookacti_booking_group_id' ] ) ) {
+		$order_item_bookings_ids = bookacti_wc_format_order_item_bookings_ids( $item );
+		if( $order_item_bookings_ids ) {
 			$has_bookings = true;
 			break;
 		}
@@ -211,7 +213,7 @@ add_filter( 'bookacti_notifications_tags', 'bookacti_wc_notifications_tags', 15,
 /**
  * Set WC notifications tags values
  * @since 1.6.0
- * @version 1.8.6
+ * @version 1.9.0
  * @param array $tags
  * @param object $booking
  * @param string $booking_type
@@ -241,7 +243,19 @@ function bookacti_wc_notifications_tags_values( $tags, $booking, $booking_type, 
 	$tags[ '{price}' ]	= $currency ? wc_price( $item_price, array( 'currency' => $currency ) ) : $item_price;
 	
 	if( strpos( $notification[ 'id' ], 'refund' ) !== false ) {
-		$tags[ '{refund_coupon_code}' ]	= wc_get_order_item_meta( $item_id, 'bookacti_refund_coupon', true );
+		$coupon_code = '';
+		$refunds = ! empty( $booking->refunds ) ? maybe_unserialize( $booking->refunds ) : array();
+		$refunds = is_array( $refunds ) ? bookacti_format_booking_refunds( $refunds, $booking->id, $booking_type ) : array();
+		foreach( $refunds as $refund ) {
+			if( isset( $refund[ 'coupon' ] ) ) { $coupon_code = $refund[ 'coupon' ]; break; }
+		}
+		
+		// Backward compatibility
+		if( ! $coupon_code ) {
+			$coupon_code = wc_get_order_item_meta( $item_id, 'bookacti_refund_coupon', true );
+		}
+		
+		$tags[ '{refund_coupon_code}' ]	= strtoupper( $coupon_code );
 	}
 	
 	return $tags;

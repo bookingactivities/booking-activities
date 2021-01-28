@@ -49,3 +49,9 @@ table.woocommerce_order_items ul.bookacti-booking-events-list { margin: 0; }
 /* My Account */
 .woocommerce a.button.bookacti-booking-group-action,
 .woocommerce a.button.bookacti-booking-action { margin: 5px; }
+
+.bookacti-booking-refunds-meta > li strong:first-child:after { content: ':'; }
+
+
+/* Orders */
+.bookacti-wc-order-item-booking-attribute[data-attribute="actions"] .bookacti-wc-order-item-booking-attribute-label { display: none; }

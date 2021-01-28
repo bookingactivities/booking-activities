@@ -15,7 +15,7 @@ $j( document ).ready( function() {
 	
 	/**
 	 * Init actions to perfoms when the user picks an event
-	 * @version 1.8.0
+	 * @version 1.9.0
 	 * @param {Event} e
 	 * @param {Int|String} group_id
 	 * @param {Object} event
@@ -26,11 +26,12 @@ $j( document ).ready( function() {
 		var booking_system_id	= booking_system.attr( 'id' );
 		var attributes			= bookacti.booking_system[ booking_system_id ];
 		
-		bookacti_fill_booking_system_fields( booking_system, event, group_id );
+		bookacti_set_min_and_max_quantity( booking_system );
+		bookacti_fill_booking_system_fields( booking_system );
 		bookacti_fill_picked_events_list( booking_system );
 		
-		// Do not perform form actions on form editor
-		if( ! $j( this ).closest( '#bookacti-form-editor-page-form' ).length ) {
+		// Perform form action for single events only (for groups, see bookacti_group_of_events_chosen)
+		if( group_id === 'single' && attributes[ 'when_perform_form_action' ] === 'on_event_click' ) {
 			var group_ids = bookacti_get_event_group_ids( booking_system, event );
 			var open_dialog = false;
 			if( $j.isArray( group_ids )
@@ -39,19 +40,7 @@ $j( document ).ready( function() {
 				open_dialog = true;
 			}
 			if( ! open_dialog ) {
-				if( group_id === 'single' && attributes[ 'when_perform_form_action' ] === 'on_event_click' ) {
-					if( attributes[ 'form_action' ] === 'redirect_to_url' ) {
-						bookacti_redirect_to_activity_url( booking_system, event );
-					} else if( attributes[ 'form_action' ] === 'default' ) {
-						if( ! booking_system.closest( 'form' ).length && booking_system.closest( '.bookacti-form-fields' ).length ) {
-							booking_system.closest( '.bookacti-form-fields' ).wrap( '<form class="bookacti-temporary-form"></form>' );
-						}
-						if( booking_system.closest( 'form.bookacti-booking-form' ).length || booking_system.closest( 'form.bookacti-temporary-form' ).length ) {
-							bookacti_submit_booking_form( booking_system.closest( 'form' ) );
-							return;
-						}
-					}
-				}
+				bookacti_perform_form_action( booking_system );
 			}
 		}
 		
@@ -61,7 +50,7 @@ $j( document ).ready( function() {
 	
 	/**
 	 * Init actions to perfoms when the user picks a group of events
-	 * @version 1.8.0
+	 * @version 1.9.0
 	 * @param {Event} e
 	 * @param {Int|String} group_id
 	 * @param {Object} event
@@ -72,28 +61,56 @@ $j( document ).ready( function() {
 		var booking_system_id	= booking_system.attr( 'id' );
 		var attributes			= bookacti.booking_system[ booking_system_id ];
 		
-		// Do not perform form actions on form editor
-		if( ! $j( this ).closest( '#bookacti-form-editor-page-form' ).length ) {
-			if( attributes[ 'when_perform_form_action' ] === 'on_event_click' ) {
-				if( attributes[ 'form_action' ] === 'redirect_to_url' ) {
-					if( group_id === 'single' ) {
-						bookacti_redirect_to_activity_url( booking_system, event );
-					} else if( $j.isNumeric( group_id ) ) {
-						bookacti_redirect_to_group_category_url( booking_system, group_id );
-					}
-				} else if( attributes[ 'form_action' ] === 'default' ) {
-					if( ! booking_system.closest( 'form' ).length && booking_system.closest( '.bookacti-form-fields' ).length ) {
-						booking_system.closest( '.bookacti-form-fields' ).wrap( '<form class="bookacti-temporary-form"></form>' );
-					}
-					if( booking_system.closest( 'form.bookacti-booking-form' ).length || booking_system.closest( 'form.bookacti-temporary-form' ).length ) {
-						bookacti_submit_booking_form( booking_system.closest( 'form' ) );
-						return;
-					}
-				}
-			}
+		// Perform form action for groups only (for single events, see bookacti_events_picked)
+		if( attributes[ 'when_perform_form_action' ] === 'on_event_click' ) {
+			bookacti_perform_form_action( booking_system );
 		}
 		
 		booking_system.trigger( 'bookacti_group_of_events_chosen_after', [ group_id, event ] );
+	});
+	
+	
+	/**
+	 * Unpick an event from the picked events list - on click on their trash icon
+	 * @since 1.9.0
+	 * @param {Event} e
+	 */
+	$j( 'body' ).on( 'click', '.bookacti-unpick-event-icon', function( e ) {
+		var booking_system = $j( this ).closest( '.bookacti-picked-events' ).siblings( '.bookacti-booking-system' );
+		
+		// Groups
+		var group_id = $j( this ).closest( 'li' ).data( 'group-id' );
+		if( group_id ) { bookacti_unpick_events_of_group( booking_system, group_id ); return; }
+		
+		// Single events
+		var event_row = $j( this ).closest( 'li' );
+		event = {
+			'id': event_row.data( 'event-id' ),
+			'start': event_row.data( 'event-start' ),
+			'end': event_row.data( 'event-end' )
+		};
+		bookacti_unpick_events_of_group( booking_system, 'single', event );
+	});
+	
+	
+	/**
+	 * Refresh the picked events list and display on calendar - on bookacti_unpick_event
+	 * @since 1.9.0
+	 * @param {Event} e
+	 * @param {Object} event
+	 */
+	$j( 'body' ).on( 'bookacti_unpick_event', '.bookacti-booking-system', function( e, event ) {
+		var booking_system		= $j( this );
+		var booking_system_id	= booking_system.attr( 'id' );
+		var booking_method		= bookacti.booking_system[ booking_system_id ][ 'method' ];
+		
+		bookacti_set_min_and_max_quantity( booking_system );
+		bookacti_fill_booking_system_fields( booking_system );
+		bookacti_fill_picked_events_list( booking_system );
+		
+		if( booking_method === 'calendar' ) {
+			bookacti_refresh_picked_events_on_calendar( $j( this ) );
+		}
 	});
 	
 	
@@ -168,7 +185,7 @@ $j( document ).ready( function() {
 	/**
 	 * Display the booking list tooltip when an event is hovered
 	 * @since 1.8.0
-	 * @version 1.8.5
+	 * @version 1.9.0
 	 * @param {Event} e
 	 * @param {Object} event
 	 * @param {HTMLElement} element
@@ -191,6 +208,11 @@ $j( document ).ready( function() {
 		
 		var tooltip_mouseover_timeout = parseInt( bookacti_localized.bookings_tooltip_mouseover_timeout );
 		if( tooltip_mouseover_timeout < 0 ) { return; }
+		
+		// Clear the timeout to remove the old pop up (it will be removed by bookacti_display_bookings_tooltip_monitor)
+		if( typeof bookacti_remove_mouseover_tooltip_monitor !== 'undefined' ) { 
+			if( bookacti_remove_mouseover_tooltip_monitor ) { clearTimeout( bookacti_remove_mouseover_tooltip_monitor ); }
+		}
 		
 		bookacti_display_bookings_tooltip_monitor = setTimeout( function() {
 			// Remove old tooltip

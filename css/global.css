@@ -5,6 +5,8 @@
 /* Select2 */
 .bookacti-user-selectbox	{ width: 100%; }
 .select2-dropdown			{ z-index: 3999999 !important; }
+.bookacti-user-selectbox + .select2-container .select2-selection--single { margin: 0; }
+.bookacti-wc-products-selectbox + .select2-container .select2-selection--single { margin: 0; }
 
 /* Radio box */
 .bookacti-custom-radio-button		{ display: inline-block; margin: 0 0.5em 0.5em 0; }
@@ -48,6 +50,8 @@
 .bookacti-tip-icon			{ padding-left: 5px; }
 .bookacti-tip-icon:before	{ content:'\0043'; font-family: 'booking_activities_icons'; color: #565d61; font-weight: normal; font-size: 14px; cursor: help; vertical-align: middle; }
 .bookacti-tip-container ul  { list-style-type: disc; padding-inline-start: 20px; }
+.bookacti-tip-container:not(.bookacti-bs-tooltip)	{ max-height: 300px; overflow-y: auto; }
+.bookacti-bs-tooltip .tooltip-inner					{ max-height: 300px; overflow-y: auto; }
 
 /* Custom Scrollbar */
 .bookacti-custom-scrollbar::-webkit-scrollbar				{ width: 4px; height: 4px; }
@@ -69,8 +73,9 @@
 .bookacti-picked-events-list.bookacti-custom-scrollbar,
 .bookacti-booking-events-list.bookacti-custom-scrollbar { max-height: 200px; overflow: auto; }
 
-.bookacti-picked-group-of-events-list	{ list-style-type: none; border-left: 1px solid rgba(0,0,0,0.2); padding-left: 10px; margin: 5px 2px 10px 1px; white-space: nowrap; overflow: auto; }
+.bookacti-picked-group-of-events-list { list-style-type: none; border-left: 1px solid rgba(0,0,0,0.2); padding-left: 10px; margin: 5px 2px 10px 1px; white-space: nowrap; overflow: auto; }
 
+.bookacti-unpick-event-icon:before { content: '\2716'; color: red; padding-right: 5px; cursor: pointer; }
 
 /* Choose group dialog */
 .bookacti-group-of-events-list			{ display: none; list-style-type: none; border-left: 1px solid rgba(0,0,0,0.2); padding-left: 10px; margin: 5px 2px 10px 25px; max-height: 200px; white-space: nowrap; overflow: auto; font-size: small; }

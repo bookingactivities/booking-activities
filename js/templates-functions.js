@@ -2,7 +2,7 @@
 
 /**
  * Change default template on change in the select box
- * @version 1.8.5
+ * @version 1.9.0
  * @param {int} selected_template_id
  */
 function bookacti_switch_template( selected_template_id ) {
@@ -34,8 +34,23 @@ function bookacti_switch_template( selected_template_id ) {
 
 	// Prevent events to be loaded while templates are switched
 	bookacti.load_events = false;
-	var attributes = bookacti.booking_system[ 'bookacti-template-calendar' ];
-
+	var attributes = $j.extend( {}, bookacti.booking_system[ 'bookacti-template-calendar' ] );
+	
+	// Do not send useless data
+	delete attributes[ 'events' ];
+	delete attributes[ 'events_data' ];
+	delete attributes[ 'events_interval' ];
+	delete attributes[ 'bookings' ];
+	delete attributes[ 'exceptions' ];
+	delete attributes[ 'activities_data' ];
+	delete attributes[ 'groups_events' ];
+	delete attributes[ 'groups_data' ];
+	delete attributes[ 'group_categories_data' ];
+	delete attributes[ 'display_data' ];
+	delete attributes[ 'template_data' ];
+	delete attributes[ 'selected_events' ];
+	delete attributes[ 'picked_events' ];
+	
 	bookacti_start_template_loading();
 
 	// Change the default template in the database to the selected one
@@ -266,7 +281,7 @@ function bookacti_refresh_show_hide_activities_icons() {
 
 /**
  * Init groups of events
- * @version 1.7.6
+ * @version 1.9.0
  */
 function bookacti_init_groups_of_events() {
 	// Refresh the display of selected events when you click on the View More link
@@ -295,9 +310,9 @@ function bookacti_init_groups_of_events() {
 	
 	// Select / Unselect events of a group
 	$j( 'body' ).on( 'click', '#bookacti-group-categories .bookacti-group-of-events-title', function(){
-		var is_selected	= $j( this ).parents( '.bookacti-group-of-events' ).hasClass( 'bookacti-selected-group' );
+		var is_selected	= $j( this ).closest( '.bookacti-group-of-events' ).hasClass( 'bookacti-selected-group' );
 		if( ! is_selected ) {
-			var group_id = $j( this ).parents( '.bookacti-group-of-events' ).data( 'group-id' );
+			var group_id = $j( this ).closest( '.bookacti-group-of-events' ).data( 'group-id' );
 			bookacti_select_events_of_group( group_id );
 		} else {
 			bookacti_unselect_all_events();

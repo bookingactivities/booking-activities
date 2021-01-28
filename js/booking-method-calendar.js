@@ -1,6 +1,6 @@
 /**
  * Initialize the calendar
- * @version 1.8.9
+ * @version 1.9.0
  * @param {HTMLElement} booking_system
  * @param {boolean} reload_events
  */
@@ -147,7 +147,8 @@ function bookacti_set_calendar_up( booking_system, reload_events ) {
 		eventAfterAllRender: function( view ) {
 			// Display element as picked or selected if they actually are
 			$j.each( bookacti.booking_system[ booking_system_id ][ 'picked_events' ], function( i, picked_event ) {
-				calendar.find( '.fc-event[data-event-id="' + picked_event[ 'id' ] + '"][data-event-start="' + picked_event[ 'start' ] + '"]' ).addClass( 'bookacti-picked-event' );
+				var picked_event_start = moment.utc( picked_event.start ).clone().locale( 'en' ).format( 'YYYY-MM-DD HH:mm:ss' );
+				calendar.find( '.fc-event[data-event-id="' + picked_event[ 'id' ] + '"][data-event-start="' + picked_event_start + '"]' ).addClass( 'bookacti-picked-event' );
 			});
 			
 			bookacti_refresh_picked_events_on_calendar( booking_system );
@@ -343,6 +344,7 @@ function bookacti_display_event_source_on_calendar( booking_system, event_source
 /**
  * Add CSS class to the picked events on calendar, remove it from the others
  * @since 1.8.9
+ * @version 1.9.0
  * @param {HTMLElement} booking_system
  */
 function bookacti_refresh_picked_events_on_calendar( booking_system ) {
@@ -355,16 +357,18 @@ function bookacti_refresh_picked_events_on_calendar( booking_system ) {
 	// Pick only the currently picked events
 	if( picked_events ) {
 		$j.each( picked_events, function( i, picked_event ) {
-			var picked_event_start = moment.utc( event.start ).clone().locale( 'en' ).format( 'YYYY-MM-DD HH:mm:ss' );
+			var picked_event_start = moment.utc( picked_event.start ).clone().locale( 'en' ).format( 'YYYY-MM-DD HH:mm:ss' );
 
 			// Because of popover and long events (spreading on multiple days), 
 			// the same event can appears twice, so we need to apply changes on each
 			var elements = booking_system.find( '.fc-event[data-event-id="' + picked_event.id + '"][data-event-start="' + picked_event_start + '"]' );
-
+			
 			// Format the pciked event (because of popover, the same event can appears twice)
 			elements.addClass( 'bookacti-picked-event' );
 		});
 	}
+	
+	booking_system.trigger( 'bookacti_refresh_picked_events_on_calendar' );
 }
 
 
@@ -374,26 +378,6 @@ function bookacti_refresh_picked_events_on_calendar( booking_system ) {
  */
 function bookacti_unpick_all_events_on_calendar( booking_system ) {
 	booking_system.find( '.bookacti-picked-event' ).removeClass( 'bookacti-picked-event' );
-}
-
-
-/**
- * Make sure picked events have the CSS class, and non-picked events haven't
- * @param {HTMLElement} booking_system
- */
-function bookacti_refresh_picked_events_on_calendar( booking_system ) {
-	
-	var booking_system_id = booking_system.attr( 'id' );
-	
-	bookacti_unpick_all_events_on_calendar( booking_system );
-
-	$j.each( bookacti.booking_system[ booking_system_id ][ 'picked_events' ], function( i, picked_event ) {
-		var element = booking_system.find( '.fc-event[data-event-id="' + picked_event.id + '"][data-event-start="' + picked_event.start + '"]' );
-		// Format picked events
-		element.addClass( 'bookacti-picked-event' );
-	});
-	
-	booking_system.trigger( 'bookacti_refresh_picked_events_on_calendar' );
 }
 
 

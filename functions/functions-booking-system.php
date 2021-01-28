@@ -6,7 +6,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 /**
  * Get a booking system based on given parameters
- * @version 1.8.0
+ * @version 1.9.0
  * @param array $atts (see bookacti_format_booking_system_attributes())
  * @return string
  */
@@ -34,11 +34,24 @@ function bookacti_get_booking_system( $atts ) {
 		</script>
 				
 		<div class='bookacti-booking-system-inputs'>
-			<input type='hidden' name='bookacti_group_id' value='<?php echo $atts[ 'picked_events' ][ 'group_id' ]; ?>' />
+			<!-- Backward compatibility -->
+			<input type='hidden' name='bookacti_group_id' value='<?php echo $booking_system_data[ 'picked_events' ] ? $booking_system_data[ 'picked_events' ][ 0 ][ 'group_id' ] : 'single'; ?>' />
 			<input type='hidden' name='bookacti_event_id' value='<?php echo $booking_system_data[ 'picked_events' ] ? $booking_system_data[ 'picked_events' ][ 0 ][ 'id' ] : ''; ?>' />
 			<input type='hidden' name='bookacti_event_start' value='<?php echo $booking_system_data[ 'picked_events' ] ? $booking_system_data[ 'picked_events' ][ 0 ][ 'start' ] : ''; ?>' />
 			<input type='hidden' name='bookacti_event_end' value='<?php echo $booking_system_data[ 'picked_events' ] ? $booking_system_data[ 'picked_events' ][ 0 ][ 'end' ] : ''; ?>' />
-			<?php do_action( 'bookacti_booking_system_inputs', $atts, $booking_system_data ); ?>
+			<?php 
+				$i = 0;
+				foreach( $booking_system_data[ 'picked_events' ] as $picked_event ) {
+				?>
+					<input type='hidden' name='selected_events[<?php echo $i; ?>][group_id]' value='<?php echo esc_attr( $picked_event[ 'group_id' ] ); ?>' />
+					<input type='hidden' name='selected_events[<?php echo $i; ?>][id]' value='<?php echo esc_attr( $picked_event[ 'id' ] ); ?>' />
+					<input type='hidden' name='selected_events[<?php echo $i; ?>][start]' value='<?php echo esc_attr( $picked_event[ 'start' ] ); ?>' />
+					<input type='hidden' name='selected_events[<?php echo $i; ?>][end]' value='<?php echo esc_attr( $picked_event[ 'end' ] ); ?>' />
+				<?php
+					++$i;
+				}
+				do_action( 'bookacti_booking_system_inputs', $atts, $booking_system_data );
+			?>
 		</div>
 		
 		<?php do_action( 'bookacti_booking_system_container_before', $atts, $booking_system_data ); ?>
@@ -88,7 +101,7 @@ function bookacti_get_booking_system( $atts ) {
 /**
  * Get booking system data
  * @since 1.7.4
- * @version 1.8.0
+ * @version 1.9.0
  * @param array $atts (see bookacti_format_booking_system_attributes())
  * @return array
  */
@@ -214,49 +227,21 @@ function bookacti_get_booking_system_data( $atts ) {
 		}
 	}
 	
-	// Events picked by default
-	$picked_events = array();
-	if( ! $booking_system_data[ 'no_events' ] ) {
-		if( $atts[ 'picked_events' ][ 'group_id' ] === 'single' && $atts[ 'picked_events' ][ 'event_id' ] ) {
-			$event_id = $atts[ 'picked_events' ][ 'event_id' ];
-			$event = ! empty( $events[ 'data' ][ $event_id ] ) ? $events[ 'data' ][ $event_id ] : (array) bookacti_get_event_by_id( $event_id );
-
-			if( $event 
-			&& ( ! $atts[ 'auto_load' ] 
-			|| ( ( in_array( intval( $event[ 'template_id' ] ), $atts[ 'calendars' ], true ) || ( empty( $atts[ 'calendars' ] ) && is_super_admin() ) )
-				&&  ! empty( $booking_system_data[ 'activities_data' ][ $event[ 'activity_id' ] ] ) ) ) ) { 
-				$picked_events[] = array(
-					'id'	=> $event_id,
-					'start'	=> $atts[ 'picked_events' ][ 'event_start' ],
-					'end'	=> $atts[ 'picked_events' ][ 'event_end' ],
-					'title'	=> apply_filters( 'bookacti_translate_text', $event[ 'title' ] )
-				);
-			}
-		} else if( is_numeric( $atts[ 'picked_events' ][ 'group_id' ] ) ) {
-			if( isset( $groups_events[ $atts[ 'picked_events' ][ 'group_id' ] ] ) ) {
-				$picked_events = $groups_events[ $atts[ 'picked_events' ][ 'group_id' ] ];
-			} else {
-				$group_events = bookacti_get_group_events( $atts[ 'picked_events' ][ 'group_id' ] );
-				$category_id  = ! empty( $group_events[ 0 ][ 'category_id' ] ) ? intval( $group_events[ 0 ][ 'category_id' ] ) : 0;
-				if( $category_id 
-				&& ( ! $atts[ 'auto_load' ] 
-				|| ! empty( $booking_system_data[ 'group_categories_data' ][ $category_id ] ) ) ) {
-					foreach( $group_events as $grouped_event ) {
-						$picked_events[] = array(
-							'id'	=> $grouped_event[ 'id' ],
-							'start'	=> $grouped_event[ 'start' ],
-							'end'	=> $grouped_event[ 'end' ],
-							'title'	=> $grouped_event[ 'title' ]
-						);
-					}
-				}
-			}
-		}
-	} else {
+	if( $booking_system_data[ 'no_events' ] ) {
 		$booking_system_data[ 'start' ] = $now;
 		$booking_system_data[ 'end' ] = $now;
 	}
-	$booking_system_data[ 'picked_events' ] = $picked_events;
+	
+	// Fill picked events titles
+	if( $booking_system_data[ 'picked_events' ] ) {
+		foreach( $booking_system_data[ 'picked_events' ] as $i => $picked_event ) {
+			if( $picked_event[ 'group_id' ] ) {
+				$booking_system_data[ 'picked_events' ][ $i ][ 'title' ] = isset( $booking_system_data[ 'groups_data' ][ $picked_event[ 'group_id' ] ] ) ? $booking_system_data[ 'groups_data' ][ $picked_event[ 'group_id' ] ][ 'title' ] : esc_html__( 'Group of events', 'booking-activities' );
+			} else if( $picked_event[ 'id' ] ) {
+				$booking_system_data[ 'picked_events' ][ $i ][ 'title' ] = isset( $booking_system_data[ 'events_data' ][ $picked_event[ 'id' ] ] ) ? $booking_system_data[ 'events_data' ][ $picked_event[ 'id' ] ][ 'title' ] : esc_html__( 'Event', 'booking-activities' );
+			}
+		}
+	}
 	
 	return apply_filters( 'bookacti_booking_system_data', $booking_system_data, $atts );
 }
@@ -340,7 +325,7 @@ function bookacti_get_calendar_html( $booking_system_data = array() ) {
 /**
  * Get default booking system attributes
  * @since 1.5.0
- * @version 1.8.9
+ * @version 1.9.0
  * @return array
  */
 function bookacti_get_booking_system_default_attributes() {
@@ -358,6 +343,7 @@ function bookacti_get_booking_system_default_attributes() {
 		'group_categories'				=> array( 'none' ),
 		'groups_only'					=> 0,
 		'groups_single_events'			=> 0,
+		'multiple_bookings'				=> 0,
 		'bookings_only'					=> 0,
 		'tooltip_booking_list'			=> 0,
 		'tooltip_booking_list_columns'	=> array(),
@@ -371,7 +357,7 @@ function bookacti_get_booking_system_default_attributes() {
 		'past_events'					=> 0,
 		'past_events_bookable'			=> 0,
 		'check_roles'					=> 1,
-		'picked_events'					=> array( 'group_id' => '', 'event_id' => '', 'event_start' => '', 'event_end' => '' ),
+		'picked_events'					=> array(),
 		'form_id'						=> 0,
 		'form_action'					=> 'default',
 		'when_perform_form_action'		=> 'on_submit',
@@ -388,7 +374,7 @@ function bookacti_get_booking_system_default_attributes() {
 
 /**
  * Check booking system attributes and format them to be correct
- * @version 1.8.6
+ * @version 1.9.0
  * @param array $raw_atts 
  * @return array
  */
@@ -401,14 +387,11 @@ function bookacti_format_booking_system_attributes( $raw_atts = array() ) {
 	foreach( $defaults as $name => $default ) {
 		$atts[ $name ] = isset( $raw_atts[ $name ] ) ? $raw_atts[ $name ] : $default;
 	}
-	foreach( $defaults[ 'picked_events' ] as $name => $default ) {
-		$atts[ 'picked_events' ][ $name ] = isset( $raw_atts[ 'picked_events' ][ $name ] ) ? $raw_atts[ 'picked_events' ][ $name ] : $default;
-	}
 	
 	$formatted_atts = array();
 	
 	// Sanitize booleans
-	$booleans_to_check = array( 'bookings_only', 'tooltip_booking_list', 'groups_only', 'groups_single_events', 'auto_load', 'trim', 'past_events', 'past_events_bookable', 'check_roles' );
+	$booleans_to_check = array( 'multiple_bookings', 'bookings_only', 'tooltip_booking_list', 'groups_only', 'groups_single_events', 'auto_load', 'trim', 'past_events', 'past_events_bookable', 'check_roles' );
 	foreach( $booleans_to_check as $key ) {
 		$formatted_atts[ $key ] = in_array( $atts[ $key ], array( 1, '1', true, 'true', 'yes', 'ok' ), true ) ? 1 : 0;
 	}
@@ -535,12 +518,7 @@ function bookacti_format_booking_system_attributes( $raw_atts = array() ) {
 	$formatted_atts[ 'class' ] = is_string( $atts[ 'class' ] ) ? esc_attr( $atts[ 'class' ] ) : $defaults[ 'class' ];
 	
 	// Format picked events
-	$formatted_atts[ 'picked_events' ] = array(
-		'event_id'		=> $atts[ 'picked_events' ][ 'event_id' ] && is_numeric( $atts[ 'picked_events' ][ 'event_id' ] ) ? intval( $atts[ 'picked_events' ][ 'event_id' ] ) : '',
-		'event_start'	=> bookacti_sanitize_datetime( $atts[ 'picked_events' ][ 'event_start' ] ) ? bookacti_sanitize_datetime( $atts[ 'picked_events' ][ 'event_start' ] ) : $defaults[ 'picked_events' ][ 'event_start' ],
-		'event_end'		=> bookacti_sanitize_datetime( $atts[ 'picked_events' ][ 'event_end' ] ) ? bookacti_sanitize_datetime( $atts[ 'picked_events' ][ 'event_end' ] ) : $defaults[ 'picked_events' ][ 'event_end' ],
-		'group_id'		=> $atts[ 'picked_events' ][ 'group_id' ] && is_numeric( $atts[ 'picked_events' ][ 'group_id' ] ) ? intval( $atts[ 'picked_events' ][ 'group_id' ] ) : ( is_numeric( $atts[ 'picked_events' ][ 'event_id' ] ) ? 'single' : '' )
-	);
+	$formatted_atts[ 'picked_events' ] = bookacti_format_picked_events( $atts[ 'picked_events' ] );
 	
 	// Sanitize form id
 	$formatted_atts[ 'form_id' ] = is_numeric( $atts[ 'form_id' ] ) ? intval( $atts[ 'form_id' ] ) : 0;	
@@ -574,9 +552,159 @@ function bookacti_format_booking_system_attributes( $raw_atts = array() ) {
 
 
 /**
+ * Format picked events array
+ * @since 1.9.0
+ * @param array $picked_events_raw
+ * @param boolean $one_entry_per_group
+ * @return array
+ */
+function bookacti_format_picked_events( $picked_events_raw = array(), $one_entry_per_group = false ) {
+	$picked_events = array();
+	
+	if( is_array( $picked_events_raw ) ) {
+		$i = 0;
+		$picked_group_ids = array();
+		foreach( $picked_events_raw as $picked_event_raw ) {
+			$picked_event = bookacti_format_picked_event( $picked_event_raw );
+			$group_id = $picked_event[ 'group_id' ];
+			
+			// For groups of events
+			if( $group_id && $one_entry_per_group ) {
+				// If the group of events is already in the array, add the picked event to the corresponding group and skip
+				$array_i = array_search( $group_id, $picked_group_ids );
+				if( $array_i !== false ) { 
+					if( $picked_event ) { $picked_events[ $array_i ][ 'events' ][] = $picked_event; }
+					continue;
+				}
+				$picked_group_ids[ $i ] = $group_id;
+				
+				// Add the group to the array and start listing its picked events
+				$picked_events[ $i ] = array(
+					'group_id' => $group_id,
+					'events' => $picked_event ? array( $picked_event ) : array()
+				);
+			} 
+			
+			// For single event, add the event to the array
+			else if( $picked_event ) {
+				$picked_events[ $i ] = $picked_event;
+			} 
+			
+			// If the picked event could not be identified as an event or a group, skip it
+			else { continue; }
+			
+			// Increment 1 per group or event
+			++$i;
+		}
+	}
+	
+	return apply_filters( 'bookacti_picked_events_formatted', $picked_events, $picked_events_raw );
+}
+
+
+/**
+ * Format picked event array
+ * @since 1.9.0
+ * @param array $picked_event_raw
+ * @return array
+ */
+function bookacti_format_picked_event( $picked_event_raw = array() ) {
+	$picked_event = array();
+	
+	// Make sure all values are filled
+	if( is_array( $picked_event_raw )
+	&& ( isset( $picked_event_raw[ 'group_id' ] )
+		|| (   isset( $picked_event_raw[ 'id' ] )
+			&& isset( $picked_event_raw[ 'start' ] )
+			&& isset( $picked_event_raw[ 'end' ] ) ) ) ) {
+		// Sanitize the values
+		$picked_event = array(
+			'group_id'	=> isset( $picked_event_raw[ 'group_id' ] ) ? intval( $picked_event_raw[ 'group_id' ] ) : 0,
+			'id'		=> isset( $picked_event_raw[ 'id' ] ) ? intval( $picked_event_raw[ 'id' ] ) : 0,
+			'start'		=> isset( $picked_event_raw[ 'start' ] ) ? bookacti_sanitize_datetime( $picked_event_raw[ 'start' ] ) : '',
+			'end'		=> isset( $picked_event_raw[ 'end' ] ) ? bookacti_sanitize_datetime( $picked_event_raw[ 'end' ] ) : '',
+		);
+		// If the event is not a group and one of its value is empty, return an empty array
+		foreach( $picked_event as $key => $value ) {
+			if( ! $value && $key !== 'group_id' && ! $picked_event[ 'group_id' ] ) { $picked_event = array(); break; }
+		}
+	}
+	
+	return apply_filters( 'bookacti_picked_event_formatted', $picked_event, $picked_event_raw );
+}
+
+
+/**
+ * Get the difference between two picked events arrays
+ * @since 1.9.0
+ * @param array $picked_events1
+ * @param array $picked_events2
+ * @param array $one_entry_per_group
+ * @return array
+ */
+function bookacti_diff_picked_events( $picked_events1, $picked_events2, $one_entry_per_group = false ) {
+	$diff = array();
+	
+	foreach( $picked_events1 as $picked_event1 ) {
+		$is_in_picked_events2 = false;
+		foreach( $picked_events2 as $j => $picked_event2 ) {
+			if( bookacti_is_same_picked_event( $picked_event1, $picked_event2 ) ) {
+				$is_in_picked_events2 = true;
+				unset( $picked_events2[ $j ] );
+				break;
+			}
+		}
+		if( ! $is_in_picked_events2 ) { $diff[] = $picked_event1; }
+	}
+	
+	return array_merge( $diff, $picked_events2 );
+}
+
+
+/**
+ * Check if two picked events are the same
+ * @since 1.9.0
+ * @param array $picked_event1
+ * @param array $picked_event2
+ * @return boolean
+ */
+function bookacti_is_same_picked_event( $picked_event1, $picked_event2 ) {
+	if( ! empty( $picked_event1[ 'events' ] ) && ! empty( $picked_event2[ 'events' ] ) ) {
+		$nb_events_total = count( $picked_event1[ 'events' ] );
+		if( count( $picked_event2[ 'events' ] ) !== $nb_events_total ) { return false; }
+		$nb_same_events = 0;
+		foreach( $picked_event1[ 'events' ] as $i => $event1 ) {
+			foreach( $picked_event2[ 'events' ] as $event2 ) {
+				if( $event1[ 'group_id' ] === $event2[ 'group_id' ]
+				&&  $event1[ 'id' ] === $event2[ 'id' ]
+				&&  $event1[ 'start' ] === $event2[ 'start' ]
+				&&  $event1[ 'end' ] === $event2[ 'end' ] ) {
+					++$nb_same_events;
+					break;
+				}
+			}
+		}
+		if( $nb_same_events !== $nb_events_total ) { return false; }
+		
+	} else if( empty( $picked_event1[ 'events' ] ) && empty( $picked_event2[ 'events' ] ) ) {
+		if( $picked_event1[ 'group_id' ] !== $picked_event2[ 'group_id' ]
+		||  $picked_event1[ 'id' ] !== $picked_event2[ 'id' ]
+		||  $picked_event1[ 'start' ] !== $picked_event2[ 'start' ]
+		||  $picked_event1[ 'end' ] !== $picked_event2[ 'end' ] ) {
+			return false;
+		}
+	} else {
+		return false;
+	}
+	
+	return true;
+}
+
+
+/**
  * Get booking system attributes from calendar field data
  * @since 1.7.17
- * @version 1.7.18
+ * @version 1.9.0
  * @param array|int $calendar_field
  * @return array
  */
@@ -585,16 +713,7 @@ function bookacti_get_calendar_field_booking_system_attributes( $calendar_field 
 	if( ! is_array( $calendar_field ) ) { $calendar_field = array(); }
 	
 	// Check if an event / group of events is picked by default
-	$picked_events = array( 'group_id' => '', 'event_id' => '', 'event_start' => '', 'event_end' => '' );
-	if( isset( $_REQUEST[ 'bookacti_event_id' ] ) )		{ $picked_events[ 'event_id' ]		= is_numeric( $_REQUEST[ 'bookacti_event_id' ] ) ? intval( $_REQUEST[ 'bookacti_event_id' ] ) : ''; }
-	if( isset( $_REQUEST[ 'event_id' ] ) )				{ $picked_events[ 'event_id' ]		= is_numeric( $_REQUEST[ 'event_id' ] ) ? intval( $_REQUEST[ 'event_id' ] ) : ''; }
-	if( isset( $_REQUEST[ 'bookacti_event_start' ] ) )	{ $picked_events[ 'event_start' ]	= bookacti_sanitize_datetime( $_REQUEST[ 'bookacti_event_start' ] ); }
-	if( isset( $_REQUEST[ 'event_start' ] ) )			{ $picked_events[ 'event_start' ]	= bookacti_sanitize_datetime( $_REQUEST[ 'event_start' ] ); }
-	if( isset( $_REQUEST[ 'bookacti_event_end' ] ) )	{ $picked_events[ 'event_end' ]		= bookacti_sanitize_datetime( $_REQUEST[ 'bookacti_event_end' ] ); }
-	if( isset( $_REQUEST[ 'event_end' ] ) )				{ $picked_events[ 'event_end' ]		= bookacti_sanitize_datetime( $_REQUEST[ 'event_end' ] ); }
-	if( isset( $_REQUEST[ 'bookacti_group_id' ] ) )  	{ $picked_events[ 'group_id' ]		= is_numeric( $_REQUEST[ 'bookacti_group_id' ] ) ? intval( $_REQUEST[ 'bookacti_group_id' ] ) : ''; }
-	if( isset( $_REQUEST[ 'event_group_id' ] ) )		{ $picked_events[ 'group_id' ]		= is_numeric( $_REQUEST[ 'event_group_id' ] ) ? intval( $_REQUEST[ 'event_group_id' ] ) : ''; }
-	if( is_numeric( $picked_events[ 'event_id' ] ) && ! is_numeric( $picked_events[ 'group_id' ] ) ) { $picked_events[ 'group_id' ] = 'single'; }
+	$picked_events = ! empty( $_REQUEST[ 'selected_events' ] ) ? $_REQUEST[ 'selected_events' ] : array();
 	
 	// Compute availability period 
 	$availability_period = bookacti_get_calendar_field_availability_period( $calendar_field );
@@ -738,7 +857,7 @@ function bookacti_format_booking_system_url_attributes( $atts = array() ) {
 /**
  * Get booking system fields default data
  * @since 1.5.0
- * @version 1.8.7
+ * @version 1.9.0
  * @param array $fields
  * @return array
  */
@@ -830,7 +949,18 @@ function bookacti_get_booking_system_fields_default_data( $fields = array() ) {
 			'name'			=> 'groups_single_events',
 			'value'			=> 0,
 			'title'			=> esc_html__( 'Book grouped events alone', 'booking-activities' ),
-			'tip'			=> esc_html__( 'When a customer picks an event belonging to a group, let him choose between the group or the event alone.', 'booking-activities' )
+			'tip'			=> esc_html__( 'When a customer picks an event belonging to a group, let the customer choose between the group or the event alone.', 'booking-activities' )
+		);
+	}
+	
+	// Select multiple events
+	if( ! $fields || in_array( 'multiple_bookings', $fields, true ) ) {
+		$defaults[ 'multiple_bookings' ] = array(
+			'type'		=> 'checkbox',
+			'name'		=> 'multiple_bookings',
+			'value'		=> 0,
+			'title'		=> esc_html__( 'Select multiple events', 'ba-multiple-bookings' ),
+			'tip'		=> esc_html__( 'The user will be able to select multiple events and book them at the same time.', 'ba-multiple-bookings' )
 		);
 	}
 	
@@ -986,227 +1116,274 @@ function bookacti_get_booking_system_fields_default_data( $fields = array() ) {
 
 /**
  * Check the selected event / group of events data before booking
- * @version 1.7.14
- * @param int $group_id
- * @param int $event_id
- * @param string $event_start Start datetime of the event to check (format 2017-12-31T23:59:59)
- * @param string $event_end End datetime of the event to check (format 2017-12-31T23:59:59)
+ * @version 1.9.0
+ * @param array $picked_events formatted with bookacti_format_picked_events
  * @param int $quantity Desired number of bookings
  * @param int $form_id Set your form id to validate the event against its form parameters. Default is 0: ignore form validation.
  * @return array
  */
-function bookacti_validate_booking_form( $group_id, $event_id, $event_start, $event_end, $quantity, $form_id = 0 ) {
+function bookacti_validate_booking_form( $picked_events, $quantity, $form_id = 0 ) {
+	$date_format = bookacti_get_message( 'date_format_short' );
+	$validated = array( 
+		'status' => 'failed', 
+		'error' => 'invalid_event',
+		'messages' => array()
+	);
 	
-	$validated = array( 'status' => 'failed' );
+	// Keep one entry per group
+	$picked_events = bookacti_format_picked_events( $picked_events, true );
 	
-	// Check if the event / group exists before everything
-	$exists = false;
-	if( $group_id === 'single' ) {
-		$event	= bookacti_get_event_by_id( $event_id );
-		$exists	= bookacti_is_existing_event( $event, $event_start, $event_end );
-	} else if( is_numeric( $group_id ) ) {
-		$group	= bookacti_get_group_of_events( $group_id );
-		$exists	= bookacti_is_existing_group_of_events( $group );
+	// Check if multiple bookings is allowed
+	$allow_multiple_bookings = false;
+	if( $form_id && count( $picked_events ) > 1 ) {
+		$calendar_data = bookacti_get_form_field_data_by_name( $form_id, 'calendar' );
+		$allow_multiple_bookings = ! empty( $calendar_data[ 'multiple_bookings' ] );
 	}
-	if( ! $exists ) {
-		$validated['error'] = 'do_not_exist';
-		$validated['message'] = $group_id === 'single' ? __( "The event doesn't exist, please pick an event and try again.", 'booking-activities' ) : __( "The group of events doesn't exist, please pick an event and try again.", 'booking-activities' );
-		return apply_filters( 'bookacti_validate_booking_form', $validated, $group_id, $event_id, $event_start, $event_end, $quantity, $form_id );
-	}
+	$allow_multiple_bookings = apply_filters( 'bookacti_allow_multiple_bookings', $allow_multiple_bookings, $picked_events, $quantity, $form_id );
 	
+	// If no events are picked
+	if( ! $picked_events ) {
+		$validated[ 'error' ] = 'no_event_selected';
+		$validated[ 'messages' ][ 'no_event_selected' ] = array( esc_html__( 'You haven\'t picked any event. Please pick an event first.', 'booking-activities' ) );
+	} 
 	
-	// Form checks
-	if( $form_id ) { 
-		// Check if the event can be booked on the given form
-		if( $group_id === 'single' ) {
-			$form_validated = bookacti_is_event_available_on_form( $form_id, $event_id, $event_start, $event_end );
-		} else if( is_numeric( $group_id ) ) {
-			$form_validated = bookacti_is_group_of_events_available_on_form( $form_id, $group_id );
-		}
-		
-		// If the event doesn't match the form parameters, stop the validation here and return the error
-		if( $form_validated[ 'status' ] !== 'success' ) {
-			return apply_filters( 'bookacti_validate_booking_form', $form_validated, $group_id, $event_id, $event_start, $event_end, $quantity, $form_id );
-		}
-	}
+	// If multiple events are picked, but it is not allowed
+	else if( count( $picked_events ) > 1 && ! $allow_multiple_bookings ) {
+		$validated[ 'error' ] = 'multiple_events_selected';
+		$validated[ 'messages' ][ 'multiple_events_selected' ] = array( esc_html__( 'You cannot book multiple events or group of events at the same time. Please book them one at a time.', 'booking-activities' ) );
+	} 
 	
-	// Availability checks
-	if( ! empty( $_POST[ 'login_type' ] ) && $_POST[ 'login_type' ] === 'no_account' 
-	&&  ! empty( $_POST[ 'email' ] ) && is_email( $_POST[ 'email' ] ) ) { 
-		$user_id = $_POST[ 'email' ]; 
-	}
-	$user_id = apply_filters( 'bookacti_current_user_id', ! empty( $user_id ) ? $user_id : get_current_user_id() );
-	$quantity_already_booked = 0;
-	$number_of_users = 0;
-	$allowed_roles = array();
-	
-	// Validate single booking
-	if( $group_id === 'single' ) {
-		$title			= apply_filters( 'bookacti_translate_text', $event->title );
-		$activity_data	= bookacti_get_metadata( 'activity', $event->activity_id );
-		
-		$availability	= bookacti_get_event_availability( $event_id, $event_start, $event_end );
-		$min_quantity	= isset( $activity_data[ 'min_bookings_per_user' ] ) ? intval( $activity_data[ 'min_bookings_per_user' ] ) : 0;
-		$max_quantity	= isset( $activity_data[ 'max_bookings_per_user' ] ) ? intval( $activity_data[ 'max_bookings_per_user' ] ) : 0;
-		$max_users		= isset( $activity_data[ 'max_users_per_event' ] ) ? intval( $activity_data[ 'max_users_per_event' ] ) : 0;
-		
-		// Check if the user has already booked this event
-		if( ( $min_quantity || $max_quantity || $max_users ) && $user_id ) {
-			$filters = bookacti_format_booking_filters( array(
-				'event_id'		=> $event_id,
-				'event_start'	=> $event_start,
-				'event_end'		=> $event_end,
-				'user_id'		=> $user_id,
-				'active'		=> 1
-			) );
-			$quantity_already_booked = bookacti_get_number_of_bookings( $filters );
-		}
-		
-		// Check if the event has already been booked by other users
-		if( $max_users ) {
-			$bookings_made_by_other_users = bookacti_get_number_of_bookings_per_user_by_event( $event_id, $event_start, $event_end );
-			$number_of_users = count( $bookings_made_by_other_users );
-		}
-		
-		// Check allowed roles
-		if( isset( $activity_data[ 'allowed_roles' ] ) && $activity_data[ 'allowed_roles' ] ) {
-			$allowed_roles = $activity_data[ 'allowed_roles' ];
-		}
-	
-	// Validate group booking
-	} else if( is_numeric( $group_id ) ) {
-		$title			= apply_filters( 'bookacti_translate_text', $group->title );
-		$category_data	= bookacti_get_metadata( 'group_category', $group->category_id );
-		
-		$availability	= bookacti_get_group_of_events_availability( $group_id );
-		$min_quantity	= isset( $category_data[ 'min_bookings_per_user' ] ) ? intval( $category_data[ 'min_bookings_per_user' ] ) : 0;
-		$max_quantity	= isset( $category_data[ 'max_bookings_per_user' ] ) ? intval( $category_data[ 'max_bookings_per_user' ] ) : 0;
-		$max_users		= isset( $category_data[ 'max_users_per_event' ] ) ? intval( $category_data[ 'max_users_per_event' ] ) : 0;
-		
-		// Check if the user has already booked this group of events
-		if( ( $min_quantity || $max_quantity || $max_users ) && $user_id ) {
-			$filters = bookacti_format_booking_filters( array(
-				'event_group_id'		=> $group_id,
-				'user_id'				=> $user_id,
-				'active'				=> 1,
-				'group_by'				=> 'booking_group'
-			) );
-			$quantity_already_booked = bookacti_get_number_of_bookings( $filters );
-		}
-		
-		// Check if the event has already been booked by other users
-		if( $max_users ) {
-			$bookings_made_by_other_users = bookacti_get_number_of_bookings_per_user_by_group_of_events( $group_id );
-			$number_of_users = count( $bookings_made_by_other_users );
-		}
-		
-		// Check allowed roles
-		if( isset( $category_data[ 'allowed_roles' ] ) && $category_data[ 'allowed_roles' ] ) {
-			$allowed_roles = $category_data[ 'allowed_roles' ];
-		}
+	// If the quantity is not > 0
+	else if( $quantity <= 0 ) {
+		$validated[ 'error' ] = 'qty_inf_to_0';
+		$validated[ 'messages' ][ 'qty_inf_to_0' ] = array( esc_html__( 'The amount of desired bookings is less than or equal to 0. Please increase the quantity.', 'booking-activities' ) );
 	}
 	
-	// Init boolean test variables
-	$is_event				= false;
-	$is_qty_inf_to_avail	= false;
-	$is_qty_sup_to_0		= false;
-	$is_qty_sup_to_min		= false;
-	$is_qty_inf_to_max		= false;
-	$is_users_inf_to_max	= false;
-	$has_allowed_roles		= false;
-	$can_book				= false;
-	
-	// Sanitize
-	$quantity		= intval( $quantity );
-	$availability	= intval( $availability );
-	
-	// Make the tests and change the booleans
-	if( $group_id !== '' && $event_id !== '' && $event_start !== '' && $event_end !== '' )	{ $is_event = true; }
-	if( $quantity > 0 )																		{ $is_qty_sup_to_0 = true; }
-	if( $quantity <= $availability )														{ $is_qty_inf_to_avail = true; }
-	if( $min_quantity === 0 || ( $quantity + $quantity_already_booked ) >= $min_quantity )	{ $is_qty_sup_to_min = true; }
-	if( $max_quantity === 0 || $quantity <= ( $max_quantity - $quantity_already_booked ) )	{ $is_qty_inf_to_max = true; }
-	if( $max_users === 0 || $quantity_already_booked || $number_of_users < $max_users )		{ $is_users_inf_to_max = true; }
-	if( ! $allowed_roles 
-		|| in_array( 'all', $allowed_roles, true ) 
-		|| apply_filters( 'bookacti_bypass_roles_check', false ) )							{ $has_allowed_roles = true; }
-	else { 
-		$is_allowed		= false;
-		$current_user	= wp_get_current_user();
-		
-		if( $current_user && ! empty( $current_user->roles ) ) {
-			$is_allowed = array_intersect( $current_user->roles, $allowed_roles );
-		}
-		
-		if( $is_allowed ) { $has_allowed_roles = true; }
-	}
-	
-	if( $is_event && $exists && $is_qty_sup_to_0 && $is_qty_sup_to_min && $is_qty_inf_to_max && $is_users_inf_to_max && $is_qty_inf_to_avail && $has_allowed_roles ) { $can_book = true; }
+	// Check each picked event
+	else {
+		foreach( $picked_events as $i => $picked_event ) {
+			$grouped_events_keys = isset( $picked_event[ 'events' ] ) ? array_keys( $picked_event[ 'events' ] ) : array();
+			$last_key = end( $grouped_events_keys );
+			
+			$group_id = $picked_event[ 'group_id' ];
+			$event_id = isset( $picked_event[ 'id' ] ) ? $picked_event[ 'id' ] : ( isset( $picked_event[ 'events' ][ 0 ][ 'id' ] ) ? $picked_event[ 'events' ][ 0 ][ 'id' ] : 0 );
+			$event_start = isset( $picked_event[ 'start' ] ) ? $picked_event[ 'start' ] : ( isset( $picked_event[ 'events' ][ 0 ][ 'start' ] ) ? $picked_event[ 'events' ][ 0 ][ 'start' ] : 0 );
+			$event_end = isset( $picked_event[ 'end' ] ) ? $picked_event[ 'end' ] : ( isset( $picked_event[ 'events' ][ $last_key ][ 'end' ] ) ? $picked_event[ 'events' ][ $last_key ][ 'end' ] : 0 );
+			
+			$title = '';
+			$dates = bookacti_get_formatted_event_dates( $event_start, $event_end, false );
 
-	if( $can_book ) {
-		$validated['status'] = 'success';
-	} else {
-		$validated['status'] = 'failed';
-		if( ! $is_event ) {
-			$validated['error'] = 'no_event_selected';
-			$validated['message'] = esc_html__( 'You haven\'t picked any event. Please pick an event first.', 'booking-activities' );
-		} else if( ! $is_qty_sup_to_0 ) {
-			$validated['error'] = 'qty_inf_to_0';
-			$validated['message'] = esc_html__( 'The amount of desired bookings is less than or equal to 0. Please increase the quantity.', 'booking-activities' );
-		} else if( ! $is_qty_sup_to_min ) {
-			$validated['error'] = 'qty_inf_to_min';
-			/* translators: %1$s is a variable number of bookings, %2$s is the event title. */
-			$validated['message'] = sprintf( esc_html( _n( 'You want to make %1$s booking of "%2$s"', 'You want to make %1$s bookings of "%2$s"', $quantity, 'booking-activities' ) ), $quantity, $title );
-			if( $quantity_already_booked ) {
-				/* translators: %1$s and %2$s are variable numbers of bookings, always >= 1. This sentence is preceded by : 'You want to make %1$s booking of "%2$s"' and followed by 'Please choose another event or increase the quantity.' */
-				$validated['message'] .= ' ' . sprintf( esc_html( _n( 'and you have already booked %1$s place, but the minimum number of reservations required per user is %2$s.', 'and you have already booked %1$s places, but the minimum number of reservations required per user is %2$s.', $quantity_already_booked, 'booking-activities' ) ), $quantity_already_booked, $min_quantity );
+			// Check if the event / group exists before everything
+			$exists = false;
+			if( $group_id <= 0 ) {
+				$event = bookacti_get_event_by_id( $event_id );
+				if( $event ) {
+					$exists = bookacti_is_existing_event( $event, $event_start, $event_end );
+					$title = apply_filters( 'bookacti_translate_text', $event->title );
+				}
 			} else {
-				/* translators: %1$s is a variable number of bookings. This sentence is preceded by : 'You want to make %1$s booking of "%2$s"' and followed by 'Please choose another event or increase the quantity.' */
-				$validated['message'] .= ' ' . sprintf( esc_html__( 'but the minimum number of reservations required per user is %1$s.', 'booking-activities' ), $min_quantity );
-			}	
-			/* translators: %1$s is a variable quantity. */
-			$validated['message'] .= $min_quantity - $quantity_already_booked > 0 ? ' ' . sprintf( esc_html__( 'Please choose another event or increase the quantity to %1$s.', 'booking-activities' ), $min_quantity - $quantity_already_booked ) : ' ' . esc_html__( 'Please choose another event', 'booking-activities' );
-		} else if( ! $is_qty_inf_to_max ) {
-			$validated['error'] = 'qty_sup_to_max';
-			$validated['message'] = sprintf( esc_html( _n( 'You want to make %1$s booking of "%2$s"', 'You want to make %1$s bookings of "%2$s"', $quantity, 'booking-activities' ) ), $quantity, $title );
-			if( $quantity_already_booked ) {
-				/* translators: %1$s and %2$s are variable numbers of bookings, always >= 1. This sentence is preceded by : 'You want to make %1$s booking of "%2$s"' and followed by 'Please choose another event or decrease the quantity.' */
-				$validated['message'] .= ' ' . sprintf( esc_html( _n( 'but you have already booked %1$s place and the maximum number of reservations allowed per user is %2$s.', 'but you have already booked %1$s places and the maximum number of reservations allowed per user is %2$s.', $quantity_already_booked, 'booking-activities' ) ), $quantity_already_booked, $max_quantity );
-			} else {
-				/* translators: %1$s is a variable number of bookings. This sentence is preceded by : 'You want to make %1$s booking of "%2$s"' and followed by 'Please choose another event or decrease the quantity.' */
-				$validated['message'] .= ' ' . sprintf( esc_html__( 'but the maximum number of reservations allowed per user is %1$s.', 'booking-activities' ), $max_quantity );
+				$group = bookacti_get_group_of_events( $group_id );
+				if( $group ) {
+					$exists = bookacti_is_existing_group_of_events( $group );
+					$title = apply_filters( 'bookacti_translate_text', $group->title );
+				}
 			}
-			/* translators: %1$s is a variable quantity. */
-			$validated['message'] .= $max_quantity - $quantity_already_booked > 0  ? ' ' . sprintf( esc_html__( 'Please choose another event or decrease the quantity to %1$s.', 'booking-activities' ), $max_quantity - $quantity_already_booked ) : ' ' . esc_html__( 'Please choose another event', 'booking-activities' );
-		} else if( ! $is_users_inf_to_max ) {
-			$validated['error'] = 'users_sup_to_max';
-			$validated['message'] = esc_html__( 'This event has reached the maximum number of users allowed. Bookings from other users are no longer accepted. Please choose another event.', 'booking-activities' );
-		} else if( $availability === 0 ) {
-			$validated['error'] = 'no_availability';
-			$validated['availability'] = $availability;
-			/* translators: %1$s is the event title. */
-			$validated['message'] = sprintf( esc_html__( 'The event "%1$s" is no longer available on this time slot. Please choose another event.', 'booking-activities' ), $title );
-		} else if( ! $is_qty_inf_to_avail ) {
-			$validated['error'] = 'qty_sup_to_avail';
-			$validated['availability'] = $availability;
-			$validated['message'] = sprintf( esc_html( _n( 'You want to make %1$s booking of "%2$s"', 'You want to make %1$s bookings of "%2$s"', $quantity, 'booking-activities' ) ), $quantity, $title )
-							. ' ' . sprintf( esc_html( _n( 'but only %1$s is available on this time slot.', 'but only %1$s are available on this time slot. ', $availability, 'booking-activities' ) ), $availability )
-							. ' ' . esc_html__( 'Please choose another event or decrease the quantity.', 'booking-activities' );
-		} else if( ! $has_allowed_roles ) {
-			$validated['error'] = 'role_not_allowed';
-			if( is_user_logged_in() ) {
-				$validated['message'] = esc_html__( 'This event is not available in your user category. Please choose another event.', 'booking-activities' );
-			} else {
-				$validated['message'] = esc_html__( 'This event is restricted to certain categories of users. Please log in first.', 'booking-activities' );
+			if( ! $exists ) {
+				if( $group_id <= 0 ) {
+					/* translators: %s = The event title and dates. E.g.: The event "Basketball (Sep, 22nd - 3:00 PM to 6:00 PM)" doesn't exist. */
+					$validated[ 'messages' ][ 'do_not_exist' ] = sprintf( esc_html__( 'The event "%s" doesn\'t exist, please pick an event and try again.', 'booking-activities' ), $title ? $title . ' (' . $dates . ')' : $dates );
+				} else {
+					/* translators: %s = The group of events title and dates. E.g.: The group of events "Basketball (Sep, 22nd - 3:00 PM to Sep, 29nd - 6:00 PM)" doesn't exist. */
+					$validated[ 'messages' ][ 'do_not_exist' ] = sprintf( esc_html__( 'The group of events "%s" doesn\'t exist, please pick an event and try again.', 'booking-activities' ), $title ? $title . ' (' . $dates . ')' : $dates );
+				}
+				continue;
 			}
+
+
+			// Form checks
+			if( $form_id ) { 
+				// Check if the event can be booked on the given form
+				if( $group_id <= 0 ) {
+					$form_validated = bookacti_is_event_available_on_form( $form_id, $event_id, $event_start, $event_end );
+				} else if( is_numeric( $group_id ) ) {
+					$form_validated = bookacti_is_group_of_events_available_on_form( $form_id, $group_id );
+				}
+
+				// If the event doesn't match the form parameters, stop the validation here and return the error
+				if( $form_validated[ 'status' ] !== 'success' ) {
+					$validated[ 'messages' ][ $form_validated[ 'error' ] ] = $form_validated[ 'message' ];
+					continue;
+				}
+			}
+
+			// Availability checks
+			if( ! empty( $_POST[ 'login_type' ] ) && $_POST[ 'login_type' ] === 'no_account' 
+			&&  ! empty( $_POST[ 'email' ] ) && is_email( $_POST[ 'email' ] ) ) { 
+				$user_id = $_POST[ 'email' ]; 
+			}
+			$user_id = apply_filters( 'bookacti_current_user_id', ! empty( $user_id ) ? $user_id : get_current_user_id() );
+			$quantity_already_booked = 0;
+			$number_of_users = 0;
+			$allowed_roles = array();
+
+			// Validate single booking
+			if( $group_id <= 0 ) {
+				$activity_data	= bookacti_get_metadata( 'activity', $event->activity_id );
+
+				$min_quantity	= isset( $activity_data[ 'min_bookings_per_user' ] ) ? intval( $activity_data[ 'min_bookings_per_user' ] ) : 0;
+				$max_quantity	= isset( $activity_data[ 'max_bookings_per_user' ] ) ? intval( $activity_data[ 'max_bookings_per_user' ] ) : 0;
+				$max_users		= isset( $activity_data[ 'max_users_per_event' ] ) ? intval( $activity_data[ 'max_users_per_event' ] ) : 0;
+
+				// Check if the user has already booked this event
+				$bookings_nb_per_user = bookacti_get_number_of_bookings_per_user_by_events( array( $picked_event ) );
+				$number_of_users = count( $bookings_nb_per_user );
+				if( ! empty( $bookings_nb_per_user[ $user_id ] ) ) { 
+					$quantity_already_booked = intval( $bookings_nb_per_user[ $user_id ] );
+				}
 				
-		} else {
-			$validated['error'] = 'failed';
-			$validated['message'] = esc_html__( 'An error occurred, please try again.', 'booking-activities' );
+				// Get the remaining availability
+				$availability = bookacti_get_min_availability_by_events( array( $picked_event ) );
+				foreach( $bookings_nb_per_user as $user_id => $qty_booked ) { $availability -= $qty_booked; }
+				
+				// Check allowed roles
+				if( isset( $activity_data[ 'allowed_roles' ] ) && $activity_data[ 'allowed_roles' ] ) {
+					$allowed_roles = $activity_data[ 'allowed_roles' ];
+				}
+
+			// Validate group booking
+			} else {
+				$category_data	= bookacti_get_metadata( 'group_category', $group->category_id );
+
+				$min_quantity	= isset( $category_data[ 'min_bookings_per_user' ] ) ? intval( $category_data[ 'min_bookings_per_user' ] ) : 0;
+				$max_quantity	= isset( $category_data[ 'max_bookings_per_user' ] ) ? intval( $category_data[ 'max_bookings_per_user' ] ) : 0;
+				$max_users		= isset( $category_data[ 'max_users_per_event' ] ) ? intval( $category_data[ 'max_users_per_event' ] ) : 0;
+				
+				// Check if the user has already booked this group of events
+				$bookings_nb_per_user = bookacti_get_number_of_bookings_per_user_by_events( $picked_event[ 'events' ] );
+				$number_of_users = count( $bookings_nb_per_user );
+				if( ! empty( $bookings_nb_per_user[ $user_id ] ) ) { 
+					$quantity_already_booked = intval( $bookings_nb_per_user[ $user_id ] );
+				}
+				
+				// Get the remaining availability
+				$availability = bookacti_get_min_availability_by_events( $picked_event[ 'events' ] );
+				foreach( $bookings_nb_per_user as $user_id => $qty_booked ) { $availability -= $qty_booked; }
+				
+				// Check allowed roles
+				if( isset( $category_data[ 'allowed_roles' ] ) && $category_data[ 'allowed_roles' ] ) {
+					$allowed_roles = $category_data[ 'allowed_roles' ];
+				}
+			}
+
+			// Init boolean test variables
+			$is_qty_inf_to_avail	= false;
+			$is_qty_sup_to_min		= false;
+			$is_qty_inf_to_max		= false;
+			$is_users_inf_to_max	= false;
+			$has_allowed_roles		= false;
+
+			// Sanitize
+			$quantity		= intval( $quantity );
+			$availability	= intval( $availability );
+
+			// Make the tests and change the booleans
+			if( $quantity <= $availability )														{ $is_qty_inf_to_avail = true; }
+			if( $min_quantity === 0 || ( $quantity + $quantity_already_booked ) >= $min_quantity )	{ $is_qty_sup_to_min = true; }
+			if( $max_quantity === 0 || $quantity <= ( $max_quantity - $quantity_already_booked ) )	{ $is_qty_inf_to_max = true; }
+			if( $max_users === 0 || $quantity_already_booked || $number_of_users < $max_users )		{ $is_users_inf_to_max = true; }
+			
+			// Check roles
+			if( ! $allowed_roles 
+				|| in_array( 'all', $allowed_roles, true ) 
+				|| apply_filters( 'bookacti_bypass_roles_check', false ) )							{ $has_allowed_roles = true; }
+			else { 
+				$is_allowed = false;
+				$current_user = wp_get_current_user();
+				if( $current_user && ! empty( $current_user->roles ) ) {
+					$is_allowed = array_intersect( $current_user->roles, $allowed_roles );
+				}
+				if( $is_allowed ) { $has_allowed_roles = true; }
+			}
+			
+			// Set the error code and message
+			$error = '';
+			$message = '';
+			
+			if( ! $is_qty_sup_to_min ) {
+				$error = 'qty_inf_to_min';
+				/* translators: %1$s is a variable number of bookings, %2$s is the event title. */
+				$message = sprintf( esc_html( _n( 'You want to make %1$s booking of "%2$s"', 'You want to make %1$s bookings of "%2$s"', $quantity, 'booking-activities' ) ), $quantity, $title . ' (' . $dates . ')' );
+				if( $quantity_already_booked ) {
+					/* translators: %1$s and %2$s are variable numbers of bookings, always >= 1. This sentence is preceded by : 'You want to make %1$s booking of "%2$s"' and followed by 'Please choose another event or increase the quantity.' */
+					$message .= ' ' . sprintf( esc_html( _n( 'and you have already booked %1$s place, but the minimum number of reservations required per user is %2$s.', 'and you have already booked %1$s places, but the minimum number of reservations required per user is %2$s.', $quantity_already_booked, 'booking-activities' ) ), $quantity_already_booked, $min_quantity );
+				} else {
+					/* translators: %1$s is a variable number of bookings. This sentence is preceded by : 'You want to make %1$s booking of "%2$s"' and followed by 'Please choose another event or increase the quantity.' */
+					$message .= ' ' . sprintf( esc_html__( 'but the minimum number of reservations required per user is %1$s.', 'booking-activities' ), $min_quantity );
+				}	
+				/* translators: %1$s is a variable quantity. */
+				$message .= $min_quantity - $quantity_already_booked > 0 ? ' ' . sprintf( esc_html__( 'Please choose another event or increase the quantity to %1$s.', 'booking-activities' ), $min_quantity - $quantity_already_booked ) : ' ' . esc_html__( 'Please choose another event', 'booking-activities' );
+			} else if( ! $is_qty_inf_to_max ) {
+				$error = 'qty_sup_to_max';
+				$message = sprintf( esc_html( _n( 'You want to make %1$s booking of "%2$s"', 'You want to make %1$s bookings of "%2$s"', $quantity, 'booking-activities' ) ), $quantity, $title . ' (' . $dates . ')' );
+				if( $quantity_already_booked ) {
+					/* translators: %1$s and %2$s are variable numbers of bookings, always >= 1. This sentence is preceded by : 'You want to make %1$s booking of "%2$s"' and followed by 'Please choose another event or decrease the quantity.' */
+					$message .= ' ' . sprintf( esc_html( _n( 'but you have already booked %1$s place and the maximum number of reservations allowed per user is %2$s.', 'but you have already booked %1$s places and the maximum number of reservations allowed per user is %2$s.', $quantity_already_booked, 'booking-activities' ) ), $quantity_already_booked, $max_quantity );
+				} else {
+					/* translators: %1$s is a variable number of bookings. This sentence is preceded by : 'You want to make %1$s booking of "%2$s"' and followed by 'Please choose another event or decrease the quantity.' */
+					$message .= ' ' . sprintf( esc_html__( 'but the maximum number of reservations allowed per user is %1$s.', 'booking-activities' ), $max_quantity );
+				}
+				/* translators: %1$s is a variable quantity. */
+				$message .= $max_quantity - $quantity_already_booked > 0  ? ' ' . sprintf( esc_html__( 'Please choose another event or decrease the quantity to %1$s.', 'booking-activities' ), $max_quantity - $quantity_already_booked ) : ' ' . esc_html__( 'Please choose another event', 'booking-activities' );
+			} else if( ! $is_users_inf_to_max ) {
+				$error = 'users_sup_to_max';
+				/* translators: %s = The event title and dates. E.g.: The event "Basketball (Sep, 22nd - 3:00 PM to 6:00 PM)" has reached the maximum number of users allowed. */
+				$message = sprintf( esc_html__( 'The event "%s" has reached the maximum number of users allowed. Bookings from other users are no longer accepted. Please choose another event.', 'booking-activities' ), $title . ' (' . $dates . ')' );
+			} else if( $availability === 0 ) {
+				$error = 'no_availability';
+				/* translators: %s = The event title and dates. E.g.: The event "Basketball (Sep, 22nd - 3:00 PM to 6:00 PM)" is no longer available. */
+				$message = sprintf( esc_html__( 'The event "%s" is no longer available. Please choose another event.', 'booking-activities' ), $title . ' (' . $dates . ')' );
+			} else if( ! $is_qty_inf_to_avail ) {
+				$error = 'qty_sup_to_avail';
+				$message = sprintf( esc_html( _n( 'You want to make %1$s booking of "%2$s"', 'You want to make %1$s bookings of "%2$s"', $quantity, 'booking-activities' ) ), $quantity, $title . ' (' . $dates . ')' )
+						. ' ' . sprintf( esc_html( _n( 'but only %1$s is available on this time slot.', 'but only %1$s are available on this time slot. ', $availability, 'booking-activities' ) ), $availability )
+						. ' ' . esc_html__( 'Please choose another event or decrease the quantity.', 'booking-activities' );
+			} else if( ! $has_allowed_roles ) {
+				$error = 'role_not_allowed';
+				if( is_user_logged_in() ) {
+					/* translators: %s = The event title and dates. E.g.: The event "Basketball (Sep, 22nd - 3:00 PM to 6:00 PM)" is not available in your user category. */
+					$message = sprintf( esc_html__( 'The event "%s" is not available in your user category. Please choose another event.', 'booking-activities' ), $title . ' (' . $dates . ')' );
+				} else {
+					/* translators: %s = The event title and dates. E.g.: The event "Basketball (Sep, 22nd - 3:00 PM to 6:00 PM)" is restricted to certain categories of users. */
+					$message = sprintf( esc_html__( 'The event "%s" is restricted to certain categories of users. Please log in first.', 'booking-activities' ), $title . ' (' . $dates . ')' );
+				}
+			}
+			
+			if( $error ) {
+				if( ! isset( $validated[ 'messages' ][ $error ] ) ) { $validated[ 'messages' ][ $error ] = array(); }
+				$validated[ 'messages' ][ $error ][] = $message;
+			}
+			
+			// Allow plugins to validate each picked event too
+			$picked_events[ $i ][ 'args' ] = array(
+				'title' => $title,
+				'start' => $event_start,
+				'end' => $event_end,
+				'quantity' => $quantity,
+				'availability' => $availability,
+				'event' => $group_id <= 0 ? $event : $group,
+				'activity_meta' => $group_id <= 0 ? $activity_data : $category_data
+			);
+			$validated = apply_filters( 'bookacti_validate_booking_form_picked_event', $validated, $picked_events[ $i ], $quantity, $form_id );
 		}
 	}
 	
-	return apply_filters( 'bookacti_validate_booking_form', $validated, $group_id, $event_id, $event_start, $event_end, $quantity, $form_id );
+	// If no errors were found, return success
+	if( ! $validated[ 'messages' ] ) { 
+		$validated[ 'status' ] = 'success';
+		$validated[ 'error' ] = '';
+	}
+	
+	return apply_filters( 'bookacti_validate_booking_form', $validated, $picked_events, $quantity, $form_id );
 }
 
 
@@ -1316,9 +1493,9 @@ function bookacti_is_existing_group_of_events( $group ) {
 /**
  * Check if an event can be book with the given form
  * @since 1.5.0
- * @version 1.8.0
+ * @version 1.9.0
  * @param int $form_id
- * @param int $event_id
+ * @param int|object $event_id
  * @param string $event_start
  * @param string $event_end
  * @return array
@@ -1338,7 +1515,7 @@ function bookacti_is_event_available_on_form( $form_id, $event_id, $event_start,
 	
 	// Check if the event is displayed on the form
 	$belongs_to_form = true;
-	$event = bookacti_get_event_by_id( $event_id );
+	$event = is_object( $event_id ) ? $event_id : bookacti_get_event_by_id( $event_id );
 
 	// If the form calendar doesn't have the event template or the event activity
 	if( ( $calendar_data[ 'calendars' ] && ! in_array( $event->template_id, $calendar_data[ 'calendars' ] ) )
@@ -1446,9 +1623,9 @@ function bookacti_is_event_available_on_form( $form_id, $event_id, $event_start,
 /**
  * Check if a group of events can be book with the given form
  * @since 1.5.0
- * @version 1.8.0
+ * @version 1.9.0
  * @param int $form_id
- * @param int $group_id
+ * @param int|object $group_id
  * @return array
  */
 function bookacti_is_group_of_events_available_on_form( $form_id, $group_id ) {
@@ -1466,7 +1643,7 @@ function bookacti_is_group_of_events_available_on_form( $form_id, $group_id ) {
 	
 	// Check if the group of events is displayed on the form
 	$belongs_to_form	= true;
-	$group				= bookacti_get_group_of_events( $group_id );
+	$group				= is_object( $group_id ) ? $group_id : bookacti_get_group_of_events( $group_id );
 	$category			= bookacti_get_group_category( $group->category_id, ARRAY_A );
 	
 	// If the form calendar doesn't have the group of events' template
@@ -1640,7 +1817,7 @@ function bookacti_get_events_array_from_db_events( $events, $raw_args = array() 
 			$events_array[ 'events' ][] = $event_fc_data;
 		} else {
 			$args[ 'exceptions_dates' ]	= $args[ 'skip_exceptions' ] && ! empty( $exceptions[ $event->event_id ] ) ? $exceptions[ $event->event_id ] : array();
-			$new_occurrences				= bookacti_get_occurrences_of_repeated_event( $event, $args );
+			$new_occurrences			= bookacti_get_occurrences_of_repeated_event( $event, $args );
 			$events_array[ 'events' ]	= array_merge( $events_array[ 'events' ], $new_occurrences );
 		}
 	}
@@ -1729,6 +1906,7 @@ function bookacti_get_bounding_events_from_db_events( $events, $raw_args = array
 /**
  * Get occurrences of repeated events
  * @since 1.8.4 (was bookacti_get_occurences_of_repeated_event)
+ * @version 1.9.0
  * @param object $event Event data 
  * @param array $raw_args {
  *  @type array $interval array( 'start' => 'Y-m-d H:i:s', 'end' => 'Y-m-d H:i:s' )
@@ -1751,6 +1929,7 @@ function bookacti_get_occurrences_of_repeated_event( $event, $raw_args = array()
 	
 	// Get the repeat from and to datetimes, and the repeat interval
 	$repeat = bookacti_get_event_repeat_data( $event, $args );
+	if( ! $repeat ) { return array(); }
 	if( $repeat[ 'from' ] > $repeat[ 'to' ] ) { return array(); }
 	
 	// Common properties
@@ -1765,10 +1944,19 @@ function bookacti_get_occurrences_of_repeated_event( $event, $raw_args = array()
 	$timezone			= new DateTimeZone( bookacti_get_setting_value( 'bookacti_general_settings', 'timezone' ) );
 	$interval_start		= ! empty( $args[ 'interval' ][ 'start' ] ) ? new DateTime( $args[ 'interval' ][ 'start' ], $timezone ) : '';
 	$interval_end		= ! empty( $args[ 'interval' ][ 'end' ] ) ? new DateTime( $args[ 'interval' ][ 'end' ], $timezone ) : '';
+	$template_start		= ! empty( $event->template_start ) ? new DateTime( $event->template_start . ' 00:00:00', $timezone ) : '';
+	$template_end		= ! empty( $event->template_end ) ? new DateTime( $event->template_end . ' 23:59:59', $timezone ) : '';
 	$event_start		= new DateTime( $event->start, $timezone );
 	$event_end			= new DateTime( $event->end, $timezone );
 	$event_duration		= $event_start->diff( $event_end );
 	$event_start_time	= substr( $event->start, 11 );
+	
+	// Restrict interval to template start and end
+	if( ! $interval_start || ( $template_start && $interval_start && $template_start > $interval_start ) )	{ $interval_start = $template_start ? clone $template_start : ''; }
+	if( ! $interval_end || ( $template_end && $interval_end && $template_end < $interval_end ) )			{ $interval_end = $template_end ? clone $template_end : ''; }
+	
+	// Permute start and end if start > end
+	if( $interval_start && $interval_end && $interval_start > $interval_end ) { $temp_interval_start = clone $interval_start; $interval_start = clone $interval_end; $interval_end = $temp_interval_start; }
 	
 	// Compute occurrences
 	$events		= array();
@@ -2190,7 +2378,7 @@ function bookacti_get_exceptions_by_event( $raw_args = array() ) {
 /**
  * Build a user-friendly events list
  * @since 1.1.0
- * @version 1.7.0
+ * @version 1.9.0
  * @param array $booking_events
  * @param int|string $quantity
  * @param string $locale Optional. Default to site locale.
@@ -2233,24 +2421,7 @@ function bookacti_get_formatted_booking_events_list( $booking_events, $quantity 
 		// Format the event duration
 		$event[ 'duration' ] = '';
 		if( $event[ 'start' ] && $event[ 'end' ] ) {
-			
-			$event_start = bookacti_format_datetime( $event[ 'start' ], $datetime_format );
-			
-			// Format differently if the event start and end on the same day
-			$start_and_end_same_day	= substr( $event[ 'start' ], 0, 10 ) === substr( $event[ 'end' ], 0, 10 );
-			if( $start_and_end_same_day ) {
-				$event_end = bookacti_format_datetime( $event[ 'end' ], $time_format );
-			} else {
-				$event_end = bookacti_format_datetime( $event[ 'end' ], $datetime_format );
-			}
-			
-			$class		= $start_and_end_same_day ? 'bookacti-booking-event-end-same-day' : '';
-			$separator	= $start_and_end_same_day ? $date_time_separator : $dates_separator;
-			
-			// Place an arrow between start and end
-			$event[ 'duration' ] = '<span class="bookacti-booking-event-start" >' . $event_start . '</span>'
-								. '<span class="bookacti-booking-event-date-separator ' . $class . '" >' . $separator . '</span>'
-								. '<span class="bookacti-booking-event-end ' . $class . '" >' . $event_end . '</span>';
+			$event[ 'duration' ] = bookacti_get_formatted_event_dates( $event[ 'start' ], $event[ 'end' ], true, $locale );
 		}
 		
 		$event = apply_filters( 'bookacti_formatted_booking_events_list_event_data', $event, $locale );
@@ -2285,6 +2456,49 @@ function bookacti_get_formatted_booking_events_list( $booking_events, $quantity 
 	}
 	
 	return apply_filters( 'bookacti_formatted_booking_events_list', $events_list, $booking_events, $quantity, $locale );
+}
+
+
+/**
+ * Get the formatted event start to event end dates
+ * @since 1.9.0
+ * @param string $start Format: Y-m-d H:i:s
+ * @param string $end Format: Y-m-d H:i:s
+ * @param boolean $html
+ * @param string $locale
+ * @return string
+ */
+function bookacti_get_formatted_event_dates( $start, $end, $html = true, $locale = 'site' ) {
+	// Set default locale to site's locale
+	if( $locale === 'site' ) { $locale = bookacti_get_site_locale(); }
+	
+	$messages = bookacti_get_messages( true );
+	$datetime_format = isset( $messages[ 'date_format_long' ][ 'value' ] ) ? apply_filters( 'bookacti_translate_text', $messages[ 'date_format_long' ][ 'value' ], $locale ) : '';
+	$event_start = bookacti_format_datetime( $start, $datetime_format );
+	
+	// Format differently if the event start and end on the same day
+	$start_and_end_same_day	= substr( $start, 0, 10 ) === substr( $end, 0, 10 );
+	if( $start_and_end_same_day ) {
+		$time_format = isset( $messages[ 'time_format' ][ 'value' ] ) ? apply_filters( 'bookacti_translate_text', $messages[ 'time_format' ][ 'value' ], $locale ) : '';
+		$event_end = bookacti_format_datetime( $end, $time_format );
+		$separator = isset( $messages[ 'date_time_separator' ][ 'value' ] ) ? apply_filters( 'bookacti_translate_text', $messages[ 'date_time_separator' ][ 'value' ], $locale ) : '';
+	} else {
+		$event_end = bookacti_format_datetime( $end, $datetime_format );
+		$separator = isset( $messages[ 'dates_separator' ][ 'value' ] ) ? apply_filters( 'bookacti_translate_text', $messages[ 'dates_separator' ][ 'value' ], $locale ) : '';
+	}
+	
+	// Format without HTML
+	$dates = $event_start . $separator . $event_end;
+	
+	// Format with HTML
+	if( $html ) {
+		$class	= $start_and_end_same_day ? 'bookacti-booking-event-end-same-day' : '';
+		$dates	= '<span class="bookacti-booking-event-start" >' . $event_start . '</span>'
+				. '<span class="bookacti-booking-event-date-separator ' . $class . '" >' . $separator . '</span>'
+				. '<span class="bookacti-booking-event-end ' . $class . '" >' . $event_end . '</span>';
+	}
+	
+	return $dates;	
 }
 
 
@@ -2494,39 +2708,43 @@ function bookacti_export_events_page( $atts, $calname = '', $caldesc = '', $sequ
 
 /**
  * Book all events of a group
- * 
- * @version 1.5.4
- * @param int|string $user_id
- * @param int $event_group_id
- * @param int $quantity
- * @param string $state
- * @param string $payment_status
- * @param string $expiration_date
- * @param int $form_id
+ * @version 1.9.0
+ * @param array $booking_group_data Sanitized with bookacti_sanitize_booking_group_data
  * @return int|boolean
  */
-function bookacti_book_group_of_events( $user_id, $event_group_id, $quantity, $state = 'booked', $payment_status = 'none', $expiration_date = NULL, $form_id = NULL ) {
-
+function bookacti_book_group_of_events( $booking_group_data ) {
 	// Insert the booking group
-	$booking_group_id = bookacti_insert_booking_group( $user_id, $event_group_id, $state, $payment_status, $form_id );
-
-	if( empty( $booking_group_id ) ) {
-		return false;
+	$booking_group_id = bookacti_insert_booking_group( $booking_group_data );
+	$events = array();
+	
+	if( $booking_group_id ) {
+		// If the group of events exists, get the events to be booked from the database
+		$events = $booking_group_data[ 'event_group_id' ] ? bookacti_get_group_events( $booking_group_data[ 'event_group_id' ] ) : $booking_group_data[ 'grouped_events' ];
+		
+		if( $events ) {
+			// Insert bookings
+			foreach( $events as $i => $event ) {
+				$booking_data = bookacti_sanitize_booking_data( array( 
+					'group_id'			=> $booking_group_id,
+					'user_id'			=> $booking_group_data[ 'user_id' ],
+					'form_id'			=> $booking_group_data[ 'form_id' ],
+					'order_id'			=> $booking_group_data[ 'order_id' ],
+					'event_id'			=> $event[ 'id' ],
+					'event_start'		=> $event[ 'start' ],
+					'event_end'			=> $event[ 'end' ],
+					'quantity'			=> $booking_group_data[ 'quantity' ],
+					'status'			=> $booking_group_data[ 'status' ],
+					'payment_status'	=> $booking_group_data[ 'payment_status' ],
+					'expiration_date'	=> $booking_group_data[ 'expiration_date' ],
+					'active'			=> $booking_group_data[ 'active' ]
+				) );
+				$booking_id = bookacti_insert_booking( $booking_data );
+				$events[ $i ][ 'booking_id' ] = $booking_id;
+			}
+		}
 	}
 
-	// Make sure quantity isn't over group availability
-	$max_quantity	= bookacti_get_group_of_events_availability( $event_group_id );
-	if( $quantity > $max_quantity ) {
-		$quantity = $max_quantity;
-	}
-
-	// Insert bookings
-	$events = bookacti_get_group_events( $event_group_id );
-	foreach( $events as $event ) {
-		bookacti_insert_booking( $user_id, $event[ 'id' ], $event[ 'start' ], $event[ 'end' ], $quantity, $state, $payment_status, $expiration_date, $booking_group_id, $form_id );
-	}
-
-	return $booking_group_id;
+	return apply_filters( 'bookacti_group_of_events_booked', $booking_group_id, $booking_group_data, $events );
 }
 
 
@@ -2555,29 +2773,19 @@ function bookacti_get_event_group_category_ids( $id, $start, $end, $active_only 
 
 /**
  * Get events of a group
- * 
+ * @version 1.9.0
  * @global wpdb $wpdb
  * @param int $group_id
  * @param boolean $fetch_inactive_events
  * @return array|false
  */
 function bookacti_get_group_events( $group_id, $fetch_inactive_events = false ) {
-
-	if( empty( $group_id ) ) {
-		return false;
-	}
-
-	if( is_array( $group_id ) ) {
-		$group_id = $group_id[ 0 ];
-	}
-
-	if( ! is_numeric( $group_id ) ) {
-		return false;
-	}
+	if( ! $group_id ) { return array(); }
+	if( is_array( $group_id ) ) { $group_id = $group_id[ 0 ]; }
+	if( ! is_numeric( $group_id ) ) { return array(); }
 
 	$group_id = intval( $group_id );
-
 	$groups_events = bookacti_get_groups_events( array(), array(), $group_id, $fetch_inactive_events );
 
-	return $groups_events[ $group_id ];
+	return isset( $groups_events[ $group_id ] ) ? $groups_events[ $group_id ] : array();
 }

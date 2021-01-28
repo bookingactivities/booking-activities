@@ -6,7 +6,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 /**
  * Fetch events by templates and / or activities
- * @version 1.8.0
+ * @version 1.9.0
  * @param array $raw_args {
  *  @type array $templates Array of template IDs
  *  @type array $activities Array of activity IDs
@@ -38,7 +38,7 @@ function bookacti_fetch_events( $raw_args = array() ) {
 	$variables					= array();
 
 	// Prepare the query
-	$query  = 'SELECT DISTINCT E.id as event_id, E.template_id, E.title, E.start, E.end, E.repeat_freq, E.repeat_from, E.repeat_to, E.availability, A.color, A.id as activity_id, 0 as is_resizable '
+	$query  = 'SELECT DISTINCT E.id as event_id, E.template_id, E.title, E.start, E.end, E.repeat_freq, E.repeat_from, E.repeat_to, E.availability, A.color, A.id as activity_id, 0 as is_resizable, T.start_date as template_start,  T.end_date as template_end '
 			. ' FROM ' . BOOKACTI_TABLE_ACTIVITIES . ' as A, ' . BOOKACTI_TABLE_TEMPLATES . ' as T, ' . BOOKACTI_TABLE_EVENTS . ' as E '
 			. ' WHERE E.activity_id = A.id '
 			. ' AND E.template_id = T.id '
@@ -189,7 +189,7 @@ function bookacti_fetch_events( $raw_args = array() ) {
 
 /**
  * Fetch events by groups and / or group categories
- * @version 1.8.0
+ * @version 1.9.0
  * @global wpdb $wpdb
  * @param array $raw_args {
  *  @type array $templates Array of template IDs
@@ -224,7 +224,7 @@ function bookacti_fetch_grouped_events( $raw_args = array() ) {
 	$variables					= array();
 
 	// Prepare the query
-	$query  = 'SELECT DISTINCT GE.event_id, E.template_id, E.title, GE.event_start as start, GE.event_end as end, "none" as repeat_freq, E.repeat_from, E.repeat_to, E.availability, A.color, A.id as activity_id, 0 as is_resizable '
+	$query  = 'SELECT DISTINCT GE.event_id, E.template_id, E.title, GE.event_start as start, GE.event_end as end, "none" as repeat_freq, E.repeat_from, E.repeat_to, E.availability, A.color, A.id as activity_id, 0 as is_resizable, T.start_date as template_start,  T.end_date as template_end '
 			. ' FROM ' . BOOKACTI_TABLE_GROUPS_EVENTS . ' as GE, ' . BOOKACTI_TABLE_EVENT_GROUPS . ' as G, ' . BOOKACTI_TABLE_GROUP_CATEGORIES . ' as C, ' . BOOKACTI_TABLE_ACTIVITIES . ' as A, ' . BOOKACTI_TABLE_TEMPLATES . ' as T, ' . BOOKACTI_TABLE_EVENTS . ' as E '
 			. ' WHERE GE.event_id = E.id '
 			. ' AND E.activity_id = A.id '
@@ -477,8 +477,7 @@ function bookacti_fetch_booked_events( $raw_args = array() ) {
 
 /**
  * Get event by id
- * 
- * @version 1.2.2 
+ * @version 1.9.0
  * @global wpdb $wpdb
  * @param int $event_id
  * @return object
@@ -486,9 +485,10 @@ function bookacti_fetch_booked_events( $raw_args = array() ) {
 function bookacti_get_event_by_id( $event_id ) {
 	global $wpdb;
 
-	$query_event = 'SELECT E.id as event_id, E.template_id, E.title, E.start, E.end, E.repeat_freq, E.repeat_from, E.repeat_to, E.availability, A.color, A.is_resizable, A.id as activity_id ' 
-					. ' FROM ' . BOOKACTI_TABLE_EVENTS . ' as E, ' . BOOKACTI_TABLE_ACTIVITIES . ' as A '
+	$query_event = 'SELECT E.id as event_id, E.template_id, E.title, E.start, E.end, E.repeat_freq, E.repeat_from, E.repeat_to, E.availability, E.active as event_active, A.color, A.is_resizable, A.id as activity_id, A.active as activity_active, T.start_date as template_start, T.end_date as template_end, T.active as template_active ' 
+					. ' FROM ' . BOOKACTI_TABLE_EVENTS . ' as E, ' . BOOKACTI_TABLE_ACTIVITIES . ' as A, ' . BOOKACTI_TABLE_TEMPLATES . ' as T'
 					. ' WHERE E.activity_id = A.id '
+					. ' AND E.template_id = T.id '
 					. ' AND E.id = %d';
 	$prep_query_event = $wpdb->prepare( $query_event, $event_id );
 	$event = $wpdb->get_row( $prep_query_event, OBJECT );
@@ -565,6 +565,42 @@ function bookacti_get_event_availability( $event_id, $event_start, $event_end ) 
 	$availability = $wpdb->get_var( $query );
 
 	return $availability;
+}
+
+
+/**
+ * Get the min availability from a collection of events
+ * @since 1.9.0
+ * @global wpdb $wpdb
+ * @param array $events
+ * @param int $active -1|0|1
+ * @return array
+ */
+function bookacti_get_min_availability_by_events( $events, $active = 1 ) {
+	global $wpdb;
+	
+	$query	= ' SELECT MIN( E.availability ) as min_availability '
+			. ' FROM ' . BOOKACTI_TABLE_EVENTS .' as E '
+			. ' WHERE ';
+	
+	$variables = array();
+	$i = 0;
+	foreach( $events as $event ) {
+		if( $i !== 0 ) { $query .= ' OR '; }
+		$query .= ' ('
+				. ' E.id = %d'
+				. ' AND E.active = IFNULL( NULLIF( %d, -1 ), E.active )'
+				. ' ) ';
+		$variables = array_merge( $variables, array( $event[ 'id' ], $active ) );
+		++$i;
+	}
+	
+	$query	= apply_filters( 'bookacti_availability_by_events_query', $wpdb->prepare( $query, $variables ), $events, $active );
+	$result	= $wpdb->get_row( $query, OBJECT );
+	
+	$min_availability = $result ? intval( $result->min_availability ) : 0;
+	
+	return apply_filters( 'bookacti_availability_by_events', $min_availability, $events, $active, $query );
 }
 
 
@@ -922,10 +958,9 @@ function bookacti_get_groups_of_events( $raw_args ) {
 
 /**
  * Get group of events availability (= the lowest availability among its events)
- * 
- * @global wpdb $wpdb
  * @since 1.1.0
  * @version 1.7.1
+ * @global wpdb $wpdb
  * @param int|array $group_of_events_ids
  * @return false|int|array
  */
@@ -1404,9 +1439,10 @@ function bookacti_get_mixed_template_range( $template_ids = array() ) {
 
 
 // PERMISSIONS
+
 /**
  * Get managers
- * @version 1.7.1
+ * @version 1.9.0
  * @global wpdb $wpdb
  * @param string $object_type
  * @param int|array $object_id
@@ -1415,9 +1451,7 @@ function bookacti_get_mixed_template_range( $template_ids = array() ) {
 function bookacti_get_managers( $object_type, $object_id ) {
 	global $wpdb;
 
-	if( ! $object_type || ( ! is_numeric( $object_id ) && ! is_array( $object_id ) ) ) {
-		return false;
-	}
+	if( ! $object_type || ( ! is_numeric( $object_id ) && ! is_array( $object_id ) ) ) { return array(); }
 
 	if( is_numeric( $object_id ) ) {
 		$object_id = absint( $object_id );
@@ -1425,7 +1459,7 @@ function bookacti_get_managers( $object_type, $object_id ) {
 		$object_id = array_filter( array_map( 'absint', array_unique( $object_id ) ) );
 	}
 
-	if( ! $object_id ) { return false; }
+	if( ! $object_id ) { return array(); }
 
 	$query	= 'SELECT object_id, user_id FROM ' . BOOKACTI_TABLE_PERMISSIONS
 			. ' WHERE object_type = %s';
@@ -1451,7 +1485,7 @@ function bookacti_get_managers( $object_type, $object_id ) {
 	$query		= $wpdb->prepare( $query, $variables );
 	$managers	= $wpdb->get_results( $query, OBJECT );
 
-	if( is_null( $managers ) ) { return false; }
+	if( is_null( $managers ) ) { return array(); }
 
 	$managers_array = array();
 	foreach( $managers as $manager ) {

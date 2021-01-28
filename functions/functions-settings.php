@@ -92,7 +92,50 @@ function bookacti_get_setting_value( $setting_group, $setting_name, $raw = false
 function bookacti_settings_section_general_callback() {}
 function bookacti_settings_section_template_callback() {}
 function bookacti_settings_section_bookings_callback() {}
-function bookacti_settings_section_licenses_callback() {}
+
+
+/**
+ * Display a description in the Licenses settings tab
+ * @version 1.9.0 (was bookacti_display_licenses_settings_description)
+ */
+function bookacti_settings_section_licenses_callback() {
+	$active_add_ons = bookacti_get_active_add_ons();
+	if( ! $active_add_ons ) { 
+		?>
+		<div class='bookacti-licenses-settings-description'>
+			<p><?php esc_html_e( 'Here you will be able to activate your add-ons license keys.', 'booking-activities' ); ?></p>
+			<strong>
+				<?php 
+				/* translators: %s is a link to "Booking Activities add-ons" (link label) shop */
+				echo sprintf( esc_html__( 'Look at %s.', 'booking-activities' ), ' <a href="https://booking-activities.fr/en/add-ons/" target="_blank">' . esc_html__( 'Booking Activities add-ons', 'booking-activities' ) . '</a>' );
+				?>
+			</strong>
+		</div>
+		<?php 
+	}
+	
+	if( bookacti_is_plugin_active( 'ba-licenses-and-updates/ba-licenses-and-updates.php' ) ) { return; }
+	
+	if( $active_add_ons ) {
+		$active_add_ons_titles = array();
+		foreach( $active_add_ons as $prefix => $add_on_data ) {
+			$active_add_ons_titles[] = $add_on_data[ 'title' ];
+		}
+		?>
+		<div class='bookacti-licenses-settings-description'>
+			<p>
+				<em><?php esc_html_e( 'The following add-ons are installed on your site:', 'booking-activities' ); ?></em>
+				<strong><?php echo implode( '</strong>, <strong>', $active_add_ons_titles ); ?></strong>
+			</p>
+			<h3>
+				<?php 
+				/* translators: %s is a link to download "Licenses and Updates" (link label) add-on */
+				echo sprintf( esc_html__( 'Please install the "%s" add-on in order to activate your license keys.', 'booking-activities' ), '<a href="https://booking-activities.fr/wp-content/uploads/downloads/public/ba-licenses-and-updates.zip">Licenses and Updates</a>' ); ?>
+			</h3>
+		</div>
+		<?php
+	}
+}
 
 
 /**
@@ -173,9 +216,8 @@ function bookacti_display_forms_screen_options() {
 // GENERAL SETTINGS 
 /**
  * Display "When to load the events?" setting
- * 
  * @since 1.1.0
- * @version 1.7.3
+ * @version 1.9.0
  */
 function bookacti_settings_field_when_events_load_callback() {
 	$args = array(
@@ -187,9 +229,20 @@ function bookacti_settings_field_when_events_load_callback() {
 							'after_page_load' => esc_html__( 'After page load', 'booking-activities' )
 						),
 		'value'		=> bookacti_get_setting_value( 'bookacti_general_settings', 'when_events_load' ),
-		'tip'		=> apply_filters( 'bookacti_when_events_load_tip', esc_html__( 'Choose whether you want to load events when the page is loaded or after. You must choose "After page load" if you are using a caching plugin or a CDN.', 'booking-activities' ) )
+		'tip'		=> apply_filters( 'bookacti_when_events_load_tip', esc_html__( 'Choose whether you want to load events when the page is loaded or after.', 'booking-activities' ) )
 	);
 	bookacti_display_field( $args );
+?>
+	<div class='bookacti-backend-settings-only-notice bookacti-warning' style='margin-top: 10px;'>
+		<span class='dashicons dashicons-warning'></span>
+		<span>
+			<?php 
+				/* translators: %s = "After page load" (it's an option name) */
+				echo sprintf( esc_html__( 'You must choose "%s" if you are using a caching sytem (via a plugin, your webhost, a CDN...).', 'booking-activities' ), esc_html__( 'After page load', 'booking-activities' ) );
+			?>
+		</span>
+	</div>
+<?php
 }
 
 
@@ -352,7 +405,7 @@ function bookacti_settings_field_timezone_callback() {
 /**
  * Display "Calendar default view: width threshold" setting
  * @since 1.5.0
- * @version 1.7.8
+ * @version 1.9.0
  */
 function bookacti_settings_field_default_calendar_view_threshold_callback() {
 	$addon_link = '<a href="https://booking-activities.fr/en/downloads/display-pack/?utm_source=plugin&utm_medium=plugin&utm_campaign=display-pack&utm_content=settings" target="_blank" >Display Pack</a>';
@@ -366,7 +419,7 @@ function bookacti_settings_field_default_calendar_view_threshold_callback() {
 		'label'		=> esc_html_x( 'px', 'pixel short', 'booking-activities' ),
 		'tip'		=> esc_html__( 'The day view will be displayed by default if the calendar width is under that threshold when it is loaded. Else, it will be the week view.', 'booking-activities' )
 					/* translators: %s is the add-on name */
-					. '<br/>' . sprintf( esc_html__( 'Get more views and granularity with %s add-on!' ), $addon_link )
+					. '<br/>' . sprintf( esc_html__( 'Get more views and granularity with the %s add-on!', 'booking-activities' ), $addon_link )
 	);
 	bookacti_display_field( $args );
 }
@@ -466,8 +519,7 @@ function bookacti_settings_field_cancellation_delay_callback() {
 
 /**
  * Possible actions to take after cancellation needing refund
- * 
- * @version 1.5.0
+ * @version 1.9.0
  */
 function bookacti_settings_field_cancellation_refund_actions_callback() {
 
@@ -482,8 +534,8 @@ function bookacti_settings_field_cancellation_refund_actions_callback() {
 		'id'		=> 'refund_action_after_cancellation',
 		'options'	=> bookacti_get_refund_actions(),
 		'value'		=> $actions,
-		'tip'		=> __( 'Define the actions a customer will be able to take to be refunded after he cancels a booking.', 'booking-activities' )
-					. '<br/>' . __( 'This option has no effect for administrators.', 'booking-activities' )
+		'tip'		=> esc_html__( 'Define the actions a customer will be able to take to be refunded after he / she cancels a booking.', 'booking-activities' )
+					. '<br/>' . esc_html__( 'This option has no effect for administrators.', 'booking-activities' )
 	);
 
 	?>

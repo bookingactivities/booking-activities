@@ -588,7 +588,7 @@ function bookacti_get_notifications_tags_values( $booking, $booking_type, $notif
  * Send a notification according to its settings
  * 
  * @since 1.2.1 (was bookacti_send_email in 1.2.0)
- * @version 1.8.6
+ * @version 1.9.0
  * @param string $notification_id Must exists in "bookacti_notifications_default_settings"
  * @param int $booking_id
  * @param string $booking_type "single" or "group"
@@ -604,7 +604,7 @@ function bookacti_send_notification( $notification_id, $booking_id, $booking_typ
 	if( $allow_async && $async ) {
 		// Delay with few seconds to try to avoid scheduling problems
 		wp_schedule_single_event( time() + 3, 'bookacti_send_async_notification', array( $notification_id, $booking_id, $booking_type, $args, 0 ) );
-		return;
+		return array();
 	}
 	
 	// Make sure not to run the same cron task multiple times
@@ -612,7 +612,7 @@ function bookacti_send_notification( $notification_id, $booking_id, $booking_typ
 		// If this notification was already sent in the past few minutes, do not send it again
 		$notification_unique_key = md5( json_encode( array( $notification_id, $booking_id, $booking_type, $args ) ) );
 		$already_sent = get_transient( 'bookacti_notif_' . $notification_unique_key );
-		if( $already_sent ) { return; }
+		if( $already_sent ) { return array(); }
 		set_transient( 'bookacti_notif_' . $notification_unique_key, 1, 3*60 );
 	}
 	
@@ -624,7 +624,7 @@ function bookacti_send_notification( $notification_id, $booking_id, $booking_typ
 		$notification = array_merge( $notification, $args[ 'notification' ] );
 	}
 	
-	if( ! $notification || empty( $notification[ 'active' ] ) ) { return false; }
+	if( ! $notification || empty( $notification[ 'active' ] ) ) { return array(); }
 	
 	// Get the booking (group data)
 	$id_filters = $booking_type === 'group' ? array( 'in__booking_group_id' => array( $booking_id ) ) : array( 'in__booking_id' => array( $booking_id ) );
@@ -632,7 +632,7 @@ function bookacti_send_notification( $notification_id, $booking_id, $booking_typ
 	$booking_array = $booking_type === 'group' ? bookacti_get_booking_groups( $filters ) : bookacti_get_bookings( $filters );
 	$booking = ! empty( $booking_array[ $booking_id ] ) ? $booking_array[ $booking_id ] : null;
 	
-	if( ! $booking ) { return false; }
+	if( ! $booking ) { return array(); }
 	
 	// Change params according to recipients
 	$locale = '';
@@ -701,7 +701,7 @@ add_action( 'bookacti_send_async_notification', 'bookacti_send_notification', 10
 /**
  * Send an email notification
  * @since 1.2.0
- * @version 1.8.7
+ * @version 1.9.0
  * @param array $notification
  * @param array $tags
  * @param string $locale
@@ -730,13 +730,14 @@ function bookacti_send_email_notification( $notification, $tags = array(), $loca
 	$headers	= array( 'Content-Type: text/html; charset=UTF-8;', 'From:' . $from_name . ' <' . $from_email . '>' );
 	
 	$email_data = apply_filters( 'bookacti_email_notification_data', array(
-		'headers'	=> $headers,
-		'to'		=> $to,
-		'subject'	=> $subject,
-		'message'	=> $message
+		'to'			=> $to,
+		'subject'		=> $subject,
+		'message'		=> $message,
+		'headers'		=> $headers,
+		'attachments'	=> array()
 	), $notification, $tags, $locale );
 	
-	$sent = bookacti_send_email( $email_data[ 'to' ], $email_data[ 'subject' ], $email_data[ 'message' ], $email_data[ 'headers' ] );
+	$sent = bookacti_send_email( $email_data[ 'to' ], $email_data[ 'subject' ], $email_data[ 'message' ], $email_data[ 'headers' ], $email_data[ 'attachments' ] );
 	
 	do_action( 'bookacti_email_notification_sent', $sent, $email_data, $notification, $tags, $locale );
 	
@@ -791,14 +792,15 @@ add_action( 'bookacti_send_async_new_user_notification', 'bookacti_send_new_user
  * Send an email.
  * Make sure not to send more emails than allowed in a specific timeframe
  * @since 1.7.0
+ * @version 1.9.0
  * @param array $to
  * @param string $subject
  * @param string $message
  * @param array $headers
+ * @param array $attachments
  * @return bool
  */
-function bookacti_send_email( $to, $subject, $message, $headers ) {
-	
+function bookacti_send_email( $to, $subject, $message, $headers, $attachments = array() ) {
 	$recipients				= is_array( $to ) ? $to : explode( ',', $to );
 	$latest_emails_sent		= get_option( 'bookacti_latest_emails_sent' );
 	if( ! $latest_emails_sent ) { $latest_emails_sent = array(); }
@@ -855,11 +857,11 @@ function bookacti_send_email( $to, $subject, $message, $headers ) {
 		}
 	}
 	
-	$actual_recipients = apply_filters( 'bookacti_send_email_recipients', $recipients, $to, $subject, $message, $headers );
+	$actual_recipients = apply_filters( 'bookacti_send_email_recipients', $recipients, $to, $subject, $message, $headers, $attachments );
 	
 	if( ! $actual_recipients ) { return false; }
 	
-	$sent = wp_mail( $actual_recipients, $subject, $message, $headers );
+	$sent = wp_mail( $actual_recipients, $subject, $message, $headers, $attachments );
 	
 	if( $sent ) {
 		foreach( $actual_recipients as $i => $recipient ) {

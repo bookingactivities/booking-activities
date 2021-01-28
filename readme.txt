@@ -3,9 +3,9 @@ Contributors: bookingactivities, yoancutillas
 Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=7EKU434L7NEVC
 Tags: booking, reservation, booking form, woocommerce booking, booking events
 Requires at least: 3.6
-Tested up to: 5.5
+Tested up to: 5.6
 Requires PHP: 5.3
-Stable tag: 1.8.9
+Stable tag: 1.9.0
 License: GPLv3 or later
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
 
@@ -46,8 +46,9 @@ Try this reservation tool live on the [demo website](http://demo.booking-activit
 * **Fully customizable** forms in a WYSIWYG editor
 * **Shortcodes** to display reservation forms or simple calendars
 * ★ Display events from multiple schedules and activities at once
-* ★ **One-click booking**: just pick the desired event on the calendar and click on "Book"! 
+* ★ **One-click booking**: just pick the desired event(s) on the calendar and click on "Book"! 
 * Custom action when you submit the form or when you click an event: make a reservation, ★ **add a product to cart, redirect to a URL**
+* Pick multiple events and book them all at once / ★ **add them all to cart at once**
 * ★ **Seamless login / registration**: embedded in the form and processed with the reservation. You can also **book without account**, or **display a login form only** with a shortcode.
 * 100% responsive: looks great on mobiles, tablets and computers.
 * ★ *Set any custom fields and any booking metadata thanks to [Advanced Forms](https://booking-activities.fr/en/downloads/advanced-forms/?utm_source=wp-plugin-page&utm_medium=wordpress&utm_campaign=advanced-forms&utm_content=readme) add-on*
@@ -148,7 +149,7 @@ Then feel free to tell us if you miss a feature, if you find a bug or anything t
 * **WordPress**: 3.6 or later
 * **PHP**: 5.3 or later
 * **MySQL**: 5.6 or later
-* **WooCommerce**: 3.x or later (deprecated, update to 4.x asap) 
+* **WooCommerce**: 3.x or later
 * *Booking Activities can be used without WooCommerce*
 
 
@@ -210,7 +211,7 @@ Or read the full [features description](https://booking-activities.fr/en/documen
 
 
 = Display user's booking list = 
-*Make sure the user has bookings and he is logged in, otherwise it will not show anything* 
+*Make sure the user has bookings and he / she is logged in, otherwise it will not show anything* 
 
 1. Past this shortcode in any post or page you like: `[bookingactivities_list]`
 2. Go on this post / page frontend, the booking list appears!
@@ -259,20 +260,20 @@ We recommend to accept online payments since it's a great way to automate your b
 
 
 = Events are not "Booked" after booking form submission, they are "Pending", why? =
-Don't worry, the reservation is well registered. Now, it is up to you to turn it to "Booked" right away or when your customer comes, or when he gives you the money...
+Don't worry, the reservation is well registered. Now, it is up to you to turn it to "Booked" right away or when your customer comes, or when your customer gives you the money...
 But you can just turn the default booking status to "Booked" in Booking Activities settings.
 Note that if you use WooCommerce and online payments, booking states turn automatically to "Booked" if the payment is complete, or "Cancelled" if not.
 
 
 = Cart expires but events are still booked = 
-A bot clean expired bookings hourly. So just wait up to 1 hour.
+A bot cleans expired bookings hourly. So just wait up to 1 hour.
 Usually, users are still on your website when their bookings expire, if so, they are immediatly removed.
 Else, they will be cancelled later, with the others in that case.
 
 
 = My events appear to be booked, but no bookings appear in the list =
 Temporary bookings (such as In cart events) take active slots but may not appear in the booking list.
-Go to the "Bookings" page, under the "States" filter select "Booked", "Pending" and "In cart" (use CTRL+Click to select multiple row).
+Go to the "Bookings" page, under the "States" filter select "Delivered", "Booked", "Pending" and "In cart" (use CTRL+Click to select multiple row).
 Then, just click on "Apply Filters". Now you can see all kind of active bookings.
 
 
@@ -282,7 +283,7 @@ Click on "Apply Filters" and then you will be able to see inactive bookings (can
 
 
 = Email notifications are not sent =
-If you enabled "Asynchronous email" option in Booking Activities settings ("Notifications" tab), emails will be sent the next time someone (anyone) load any page of your website.
+If you enabled "Asynchronous email" option in Booking Activities settings ("Notifications" tab), emails will be sent the next time someone (anyone) loads any page of your website.
 Then, you only need to refresh or visit any page of your website and then check your inbox.
 If you disable "Asynchronous email" option, then the loading will last until the email is actually sent.
 
@@ -305,19 +306,49 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 5. Create and customize your booking form. You can combine events and settings of multiple schedules. You can make each form unique.
 6. Use a shortcode to display a booking form (or a calendar alone). Your customers can log in or register as they book, they can also book without account.
 7. When a customer clicks on a grouped event, the whole group is selected. If the event is part of several groups, the customer has to choose one from a dialog.
-8. Easily bind a reservation form to a WooCommerce product. You can set a different event calendar to each variation.
-9. A reservation form appears automatically on desired WooCommerce product pages.
-10. WooCommerce cart expiration system: when time is up, bookings are cancelled and cart emptied. You can also disable it.
-11. Your bookings are displayed on a calendar, when you mouseover an event, and in a list that you can filter, sort and customize. Manage your bookings: change state (cancel, validate), reschedule, refund...
-12. Synchronize your bookings and display them in your Google Calendar events' description
-13. Customers also have their booking list and calendar thanks to a shortcode. They can cancel, reschedule or ask a refund by their own (if you allow them).
-14. Your customers can manage their bookings from their WooCommerce orders as well.
-15. Orders status are bound to their bookings status. If bookings are cancelled / booked / refunded, so do the order (and vice-versa).
-16. Email notifications are automatically sent to the customer or the administrator when they need to be informed of a change.
-17. Make your emails look just like you want thanks to the HTML editor and special tags. You can also choose to deactivate a notification.
+8. There is also an option to allow your customers to pick multiple events of their choice at once.
+9. Easily bind a reservation form to a WooCommerce product. You can set a different event calendar to each variation.
+10. A reservation form appears automatically on desired WooCommerce product pages.
+11. WooCommerce cart expiration system: when time is up, bookings are cancelled and cart emptied. You can also disable it.
+12. Your bookings are displayed on a calendar, when you mouseover an event, and in a list that you can filter, sort and customize. Manage your bookings: change state (cancel, validate), reschedule, refund...
+13. Synchronize your bookings and display them in your Google Calendar events' description
+14. Customers also have their booking list and calendar thanks to a shortcode. They can cancel, reschedule or ask a refund by their own (if you allow them).
+15. Your customers can manage their bookings from their WooCommerce orders as well.
+16. Orders status are bound to their bookings status. If bookings are cancelled / booked / refunded, so do the order (and vice-versa).
+17. Email notifications are automatically sent to the customer or the administrator when they need to be informed of a change.
+18. Make your emails look just like you want thanks to the HTML editor and special tags. You can also choose to deactivate a notification.
 
 
 == Changelog ==
+
+= 1.9.0 - 2021/01/27 =
+* **[See the user-friendly release note](https://booking-activities.fr/en/blog/booking-activities-1-9-multiple-bookings-cancel-an-event/?utm_source=wp-plugin-page&utm_medium=wordpress&utm_content=readme)**
+* Breaking change - WooCommerce carts will be emptied after the update
+* Breaking change - You need to update your add-ons and probably adapt your custom code. No support can be provided for your custom code.
+* Feature - Pick multiple events on the calendar and book them all at once (find the option in your booking form editor, in the calendar settings)
+* Feature - Pick multiple events on the calendar and add them all to the shopping cart at once (with WooCommerce)
+* Feature - Cancel all bookings of an event / groups of events at once (find the option in the calendar editor, in the event settings, Delete button)
+* Tweak - Hide the Calendar bookings filter if only one calendar is available
+* Tweak - Display an admin error notice if an add-on is outdated and will cause malfunction
+* Fix - Fields were not prefilled with URL attributes on WC variable product page
+* Fix - Single checkbox could not be checked by default
+* Fix - Recent bookings' owner changed if the WC customer logged in to a different account
+* Fix - Let the user mouseover an event booking list tooltip even if another event is hovered on the way
+* Fix - Check if select2 library is already registered and included before using our bundled version of it
+* Fix - Add compatibility for bootstrap tooltip (if loaded after jquery ui)
+* Fix - Booking refunded notification was sent twice
+* Fix - Booking cancelled notification was sent when the customer cancelled the payment
+* Fix - Events were not correctly sorted by date on Safari iOS / MacOS
+* Fix - Cannot switch templates in editor if too many events were loaded
+* Fix - Users having the bookacti_manage_booking_activities capability can now access the admin panel with WC even without manage_woocommerce or edit_posts
+* Fix - Repeated events out of their template range were displayed
+* Fix - Allow to escape characters in date and time formats with a backslash
+* Fix - WC auto refund method was available in cases it shouldn't
+* Fix - Keep the refund dialog opened in case of error to allow the user to read the error message
+* Dev - Compatibility with jquery-ui 1.12.1
+* Dev - Refactor the process to trigger form actions
+* Dev - Refactor the booking system picked_events attribute
+* Dev - Refactor the data bound to WC cart item / order item
 
 = 1.8.9 - 2020/09/16 =
 * Tweak - Use WP setting "New User Default Role" as default value for user registered with a booking form
@@ -1099,6 +1130,11 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 
 
 == Upgrade Notice ==
+
+= 1.9.0 =
+Major changes in code:
+* If you have purchased add-ons, you need to update them too.
+* If you have custom code, you probably need to adapt it. No support can be provided for your custom code.
 
 = 1.1.0 =
 Major update with breaking changes. To be safe, make a backup of your database. 

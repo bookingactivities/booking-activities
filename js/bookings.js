@@ -77,6 +77,10 @@ $j( document ).ready( function() {
 	/**
 	 * Display the "unpick events" button
 	 * @version 1.8.0
+	 * @param {Event} e
+	 * @param {Object} event
+	 * @param {Int|String} group_id
+	 * @param {Boolean} open_dialog
 	 */
 	$j( '#bookacti-booking-system-bookings-page' ).on( 'bookacti_event_click', function( e, event, group_id, open_dialog ) { 
 		$j( '#bookacti-pick-event-filter-instruction' ).hide( 200 );
@@ -88,6 +92,10 @@ $j( document ).ready( function() {
 	/**
 	 * Filter the booking list when an event is picked
 	 * @version 1.8.0
+	 * @param {Event} e
+	 * @param {Object} event
+	 * @param {Int|String} group_id
+	 * @param {Boolean} open_dialog
 	 */
 	$j( '#bookacti-booking-system-bookings-page' ).on( 'bookacti_event_click', function( e, event, group_id, open_dialog ) {
 		if( group_id === 'single' || ! open_dialog ) {
@@ -99,6 +107,9 @@ $j( document ).ready( function() {
 	/**
 	 * Filter the booking list when a group of events is picked
 	 * @version 1.8.0
+	 * @param {Event} e
+	 * @param {Object} event
+	 * @param {Int|String} group_id
 	 */
 	$j( '#bookacti-booking-system-bookings-page' ).on( 'bookacti_group_of_events_chosen', function( e, group_id, event ) {
 		if( $j( '#bookacti-submit-filter-button' ).data( 'ajax' ) ) { bookacti_filter_booking_list(); }
@@ -131,6 +142,10 @@ $j( document ).ready( function() {
 	
 	/**
 	 * Hide filtered events
+	 * @param {Event} e
+	 * @param {Object} event
+	 * @param {HTMLElement} element
+	 * @param {object} view
 	 */
 	booking_system.on( 'bookacti_event_render', function( e, event, element, view ) { 
 		element = element || undefined;
@@ -175,6 +190,7 @@ $j( document ).ready( function() {
 	/**
 	 * Filter the booking list according to filters
 	 * @since 1.8.0
+	 * @param {Event} e
 	 */
 	$j( '#bookacti-booking-list-filters-form' ).on( 'submit', function( e ) {
 		if( $j( '#bookacti-submit-filter-button' ).data( 'ajax' ) ) { 
@@ -225,6 +241,13 @@ $j( document ).ready( function() {
 	/**
 	 * Refresh bookings number when a booking state or payment status has changed
 	 * @version 1.7.10
+	 * @param {Event} e
+	 * @param {Int} booking_id
+	 * @param {String} booking_type
+	 * @param {String} new_state
+	 * @param {String} old_state
+	 * @param {Boolean} is_bookings_page
+	 * @param {Boolean} active_changed
 	 */
 	$j( 'body' ).on( 'bookacti_booking_state_changed bookacti_payment_status_changed', function( e, booking_id, booking_type, new_state, old_state, is_bookings_page, active_changed ){
 		bookacti_init_tooltip();
@@ -250,6 +273,7 @@ $j( document ).ready( function() {
 	/**
 	 * WP List Table pagination - go to a specific page
 	 * @version 1.8.0
+	 * @param {Event} e
 	 */
 	$j( 'body' ).on( 'submit', '.bookacti-list-table-go-to-page-form', function( e ){
 		if( ! $j( '#bookacti-submit-filter-button' ).data( 'ajax' ) ) { return; }
@@ -262,6 +286,7 @@ $j( document ).ready( function() {
 	/**
 	 * WP List Table pagination - go to prev, next, first or last page
 	 * @version 1.8.9
+	 * @param {Event} e
 	 */
 	$j( '#bookacti-bookings-container' ).on( 'click', '.first-page, .prev-page, .next-page, .last-page', function( e ){
 		if( ! $j( '#bookacti-submit-filter-button' ).data( 'ajax' ) ) { return; }

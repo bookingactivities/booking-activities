@@ -46,6 +46,8 @@ ul[id$='-select-box-results'] li[aria-disabled='true'] { display: none; }
 .bookacti-help-list		{ list-style-type: disc; padding-inline-start: 20px; }
 .bookacti-help-list ul	{ list-style-type: circle; padding-inline-start: 20px; margin-top: 3px; }
 
+.bookacti-add-ons-compatibility-notice li { list-style-type: disc; margin-left: 30px;  }
+
 
 /***** CALENDAR *****/
 /** EVENTS **/
@@ -66,7 +68,7 @@ ul[id$='-select-box-results'] li[aria-disabled='true'] { display: none; }
 
 /***** SETTINGS *****/
 #bookacti-settings input:not([type='submit']):not([type='checkbox']):not([type='radio']):not([type='button']):not(.button):not(.bookacti-duration-field),
-#bookacti-settings select	{ min-width: 300px; max-width: 300px; }
+#bookacti-settings select	{ min-width: 300px; max-width: 300px; display: inline-block; }
 #bookacti-settings textarea	{ min-width: 300px;  }
 
 #bookacti-settings textarea { min-height: 100px; }
@@ -128,7 +130,9 @@ a.bookacti-archive-action.button-link-delete{ font-weight: normal; vertical-alig
 .bookacti_checkbox	{ display: inline-block; margin-right: 20px; padding: 1px; min-width: 100px; max-width: 100px; box-sizing: border-box; overflow: hidden; white-space: nowrap; }
 #bookacti_refund_actions .bookacti_checkbox { max-width: none; overflow: visible; }
 
-.bookacti-licenses-settings-description + .submit { display: none; }
+.bookacti-licenses-settings-description				{ margin-bottom: 40px; }
+.bookacti-licenses-settings-description strong		{ font-size: 14px; }
+.bookacti-licenses-settings-description + .submit	{ display: none; }
 
 .bookacti-duration-field-container	{ display: inline-block; vertical-align: middle; margin-right: 4px; }
 .bookacti-duration-field			{ width: 60px; }

@@ -51,14 +51,15 @@ function bookacti_send_json( $array, $action = '' ) {
 /**
  * Send a filtered array via json to stop an ajax process running with an invalid nonce
  * @since 1.5.0
- * @version 1.5.3
+ * @version 1.9.0
  * @param string $action Name of the filter to allow third-party modifications
  */
 function bookacti_send_json_invalid_nonce( $action = '' ) {
 	$return_array = array( 
 		'status'	=> 'failed', 
-		'error'		=> 'invalid_nonce', 
-		'message'	=> esc_html__( 'Invalid nonce.', 'booking-activities' ) . ' ' . __( 'Please reload the page and try again.', 'booking-activities' )
+		'error'		=> 'invalid_nonce',
+		'action'	=> $action, 
+		'message'	=> esc_html__( 'Invalid nonce.', 'booking-activities' ) . ' ' . esc_html__( 'Please reload the page and try again.', 'booking-activities' )
 	);
 	bookacti_send_json( $return_array, $action );
 }
@@ -67,13 +68,14 @@ function bookacti_send_json_invalid_nonce( $action = '' ) {
 /**
  * Send a filtered array via json to stop a not allowed an ajax process
  * @since 1.5.0
- * @version 1.6.0
+ * @version 1.9.0
  * @param string $action Name of the filter to allow third-party modifications
  */
 function bookacti_send_json_not_allowed( $action = '' ) {
 	$return_array = array( 
 		'status'	=> 'failed', 
 		'error'		=> 'not_allowed', 
+		'action'	=> $action, 
 		'message'	=> esc_html__( 'You are not allowed to do that.', 'booking-activities' )
 	);
 	bookacti_send_json( $return_array, $action );
@@ -441,7 +443,7 @@ function bookacti_generate_ical( $vevents, $vcalendar = array() ) {
 /**
  * Get the variables used with javascript
  * @since 1.8.0
- * @version 1.8.7
+ * @version 1.9.0
  * @return array
  */
 function bookacti_get_js_variables() {
@@ -461,9 +463,9 @@ function bookacti_get_js_variables() {
 		// ERRORS
 		'error'								=> esc_html__( 'An error occurred.', 'booking-activities' ),
 		'error_select_event'				=> esc_html__( 'You haven\'t selected any event. Please select an event.', 'booking-activities' ),
-		'error_corrupted_event'				=> esc_html__( 'The event you selected is corrupted, please reselect an event and try again.', 'booking-activities' ),
+		'error_corrupted_event'				=> esc_html__( 'There is an inconsistency in the selected events data, please select an event and try again.', 'booking-activities' ),
 		/* translators: %1$s is the quantity the user want. %2$s is the available quantity. */
-		'error_less_avail_than_quantity'	=> esc_html__( 'You want to make %1$s bookings but only %2$s are available on this time slot. Please choose another event or decrease the quantity.', 'booking-activities' ),
+		'error_less_avail_than_quantity'	=> esc_html__( 'You want to make %1$s bookings but only %2$s are available for the selected events. Please choose another event or decrease the quantity.', 'booking-activities' ),
 		'error_quantity_inf_to_0'			=> esc_html__( 'The amount of desired bookings is less than or equal to 0. Please increase the quantity.', 'booking-activities' ),
 		'error_not_allowed'					=> esc_html__( 'You are not allowed to do that.', 'booking-activities' ),
 		'error_user_not_logged_in'			=> esc_html__( 'You are not logged in. Please create an account and log in first.', 'booking-activities' ),
@@ -603,15 +605,18 @@ function bookacti_get_js_variables() {
 /**
  * Get the active Booking Activities add-ons
  * @since 1.7.14
+ * @version 1.9.0
+ * @param string $prefix
+ * @param array $exclude
  */
-function bookacti_get_active_add_ons() {
-	$add_ons_data = bookacti_get_add_ons_data();
-
+function bookacti_get_active_add_ons( $prefix = '', $exclude = array( 'balau' ) ) {
+	$add_ons_data = bookacti_get_add_ons_data( $prefix, $exclude );
+	
 	$active_add_ons = array();
-	foreach( $add_ons_data as $prefix => $add_on_data ) {
+	foreach( $add_ons_data as $add_on_prefix => $add_on_data ) {
 		$add_on_path = $add_on_data[ 'plugin_name' ] . '/' . $add_on_data[ 'plugin_name' ] . '.php';
 		if( bookacti_is_plugin_active( $add_on_path ) ) {
-			$active_add_ons[ $prefix ] = $add_on_data;
+			$active_add_ons[ $add_on_prefix ] = $add_on_data;
 		}
 	}
 
@@ -622,63 +627,74 @@ function bookacti_get_active_add_ons() {
 /**
  * Get add-on data by prefix
  * @since 1.7.14
- * @version 1.8.0
+ * @version 1.9.0
  * @param string $prefix
+ * @param array $exclude
  * @return array
  */
-function bookacti_get_add_ons_data( $prefix = '' ) {
+function bookacti_get_add_ons_data( $prefix = '', $exclude = array( 'balau' ) ) {
 	$addons_data = array( 
 		'badp'	=> array( 
 			'title'			=> 'Display Pack', 
 			'slug'			=> 'display-pack', 
 			'plugin_name'	=> 'ba-display-pack', 
 			'end_of_life'	=> '', 
-			'download_id'	=> 482
+			'download_id'	=> 482,
+			'min_version'	=> '1.4.11'
 		),
 		'banp'	=> array( 
 			'title'			=> 'Notification Pack', 
 			'slug'			=> 'notification-pack', 
 			'plugin_name'	=> 'ba-notification-pack', 
 			'end_of_life'	=> '', 
-			'download_id'	=> 1393
+			'download_id'	=> 1393,
+			'min_version'	=> '1.2.4'
 		),
 		'bapap' => array( 
 			'title'			=> 'Prices and Credits', 
 			'slug'			=> 'prices-and-credits', 
 			'plugin_name'	=> 'ba-prices-and-credits', 
 			'end_of_life'	=> '', 
-			'download_id'	=> 438
+			'download_id'	=> 438,
+			'min_version'	=> '1.4.16'
 		),
 		'baaf' => array( 
 			'title'			=> 'Advanced Forms', 
 			'slug'			=> 'advanced-forms', 
 			'plugin_name'	=> 'ba-advanced-forms', 
 			'end_of_life'	=> '', 
-			'download_id'	=> 2705
+			'download_id'	=> 2705,
+			'min_version'	=> '1.2.13'
 		),
 		'baofc'	=> array( 
 			'title'			=> 'Order for Customers', 
 			'slug'			=> 'order-for-customers', 
 			'plugin_name'	=> 'ba-order-for-customers', 
 			'end_of_life'	=> '', 
-			'download_id'	=> 436
+			'download_id'	=> 436,
+			'min_version'	=> '1.2.14'
+		),
+		'balau' => array( 
+			'title'			=> 'Licenses & Updates', 
+			'slug'			=> 'licenses-and-updates', 
+			'plugin_name'	=> 'ba-licenses-and-updates', 
+			'end_of_life'	=> '',
+			'download_id'	=> 880,
+			'min_version'	=> '1.1.11'
 		),
 		'bapos' => array( 
 			'title'			=> 'Points of Sale', 
 			'slug'			=> 'points-of-sale', 
 			'plugin_name'	=> 'ba-points-of-sale', 
 			'end_of_life'	=> '2021-04-30 23:59:59', // This add-on has been discontinued
-			'download_id'	=> 416
-		),
-		'batest' => array( // For testing purpose only
-			'title'			=> 'Test add-on', 
-			'slug'			=> 'test', 
-			'plugin_name'	=> 'ba-test', 
-			'end_of_life'	=> '', 
-			'download_id'	=> 3011
+			'download_id'	=> 416,
+			'min_version'	=> '1.0.15'
 		)
 	);
-
+	
+	// Exclude undesired add-ons
+	if( $exclude ) { $addons_data = array_diff_key( $addons_data, array_flip( $exclude ) ); }
+	
 	if( ! $prefix ) { return $addons_data; }
 
 	return isset( $addons_data[ $prefix ] ) ? $addons_data[ $prefix ] : array();
@@ -826,19 +842,14 @@ function bookacti_get_user_locale( $user_id, $default = 'current', $country_code
 /* 
  * Get site locale, and default to site or current locale
  * @since 1.2.0
- * @version 1.8.5
+ * @version 1.9.0
  * @param string $default 'current' or 'site'
  * @param boolean $country_code Whether to return also country code
  * @return string
  */
 function bookacti_get_site_locale( $default = 'site', $country_code = true ) {
 	// Get raw site locale, or current locale by default
-	if( $default === 'site' ) {
-		$alloptions	= wp_load_alloptions();
-		$locale		= $alloptions[ 'WPLANG' ] ? strval( $alloptions[ 'WPLANG' ] ) : get_locale();
-	} else {
-		$locale = get_locale();
-	}
+	$locale = get_locale();
 
 	// Remove country code from locale string
 	if( ! $country_code ) {
@@ -1855,7 +1866,7 @@ function bookacti_format_datetime( $datetime, $format = '' ) {
 
 /**
  * Check if a string is in a correct datetime format
- * @version 1.8.0
+ * @version 1.9.0
  * @param string $datetime Date format "Y-m-d H:i:s" is expected
  * @return string|false
  */
@@ -1870,7 +1881,7 @@ function bookacti_sanitize_datetime( $datetime ) {
 			return '2037-12-31 ' . $datetime_object->format( 'H:i:s' );
 		}
 
-		return $datetime_object->format( 'Y-m-d H:i:s' );
+		return $datetime;
 	}
 	return '';
 }
@@ -2030,12 +2041,14 @@ function bookacti_is_json( $string ) {
 /**
  * Decode JSON if it is valid else return self
  * @since 1.6.0
+ * @version 1.9.0
  * @param string $string
+ * @param boolean $assoc
  * @return array|$string
  */
-function bookacti_maybe_decode_json( $string ) {
+function bookacti_maybe_decode_json( $string, $assoc = false ) {
 	if( ! is_string( $string ) ) { return $string; }
-	$decoded = json_decode( $string );
+	$decoded = json_decode( $string, $assoc );
 	if( json_last_error() == JSON_ERROR_NONE ) { return $decoded; }
 	return $string;
 }
