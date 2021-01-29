@@ -168,7 +168,7 @@ foreach( $fields_data as $field_name => $field_data ) {
 		/**
 		 * Display the content of the "Filters" tab of the "Calendar" dialog
 		 * @since 1.5.0
-		 * @version 1.9.0
+		 * @version 1.9.1
 		 * @param array $params
 		 */
 		function bookacti_fill_calendar_dialog_filters_tab( $params ) {
@@ -191,7 +191,7 @@ foreach( $fields_data as $field_name => $field_data ) {
 		</fieldset>
 		
 		<fieldset>
-			<legend><?php esc_html_e( 'Multiple bookings', 'ba-multiple-bookings' ); ?></legend>
+			<legend><?php esc_html_e( 'Multiple bookings', 'booking-activities' ); ?></legend>
 			<?php 
 				$fields = bookacti_get_booking_system_fields_default_data( array( 'multiple_bookings' ) );
 				bookacti_display_fields( $fields );

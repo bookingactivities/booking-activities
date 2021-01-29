@@ -857,7 +857,7 @@ function bookacti_format_booking_system_url_attributes( $atts = array() ) {
 /**
  * Get booking system fields default data
  * @since 1.5.0
- * @version 1.9.0
+ * @version 1.9.1
  * @param array $fields
  * @return array
  */
@@ -959,8 +959,8 @@ function bookacti_get_booking_system_fields_default_data( $fields = array() ) {
 			'type'		=> 'checkbox',
 			'name'		=> 'multiple_bookings',
 			'value'		=> 0,
-			'title'		=> esc_html__( 'Select multiple events', 'ba-multiple-bookings' ),
-			'tip'		=> esc_html__( 'The user will be able to select multiple events and book them at the same time.', 'ba-multiple-bookings' )
+			'title'		=> esc_html__( 'Select multiple events', 'booking-activities' ),
+			'tip'		=> esc_html__( 'The user will be able to select multiple events and book them at the same time.', 'booking-activities' )
 		);
 	}
 	

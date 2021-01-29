@@ -1308,6 +1308,7 @@ function bookacti_wc_get_order_items_by_bookings( $booking_ids = array(), $booki
 /**
  * Save the order user data as booking meta
  * @since 1.9.0 (was bookacti_save_order_data_as_booking_meta)
+ * @version 1.9.1
  * @param WC_Order $order
  */
 function bookacti_wc_save_no_account_user_data_as_booking_meta( $order ) {
@@ -1326,9 +1327,6 @@ function bookacti_wc_save_no_account_user_data_as_booking_meta( $order ) {
 	// Prefix array keys with 'user_'
 	$user_data = array_combine( array_map( function( $key ) { return 'user_' . $key; }, array_keys( $user_data ) ), $user_data );
 	
-	$user_email	= $order->get_billing_email( 'edit' );
-	$user_id	= $user_email ? $user_email : apply_filters( 'bookacti_unknown_user_id', 'unknown_user' );
-	
 	$items = $order->get_items();
 	if( $items ) {
 		foreach( $items as $key => $item ) {
@@ -1340,15 +1338,6 @@ function bookacti_wc_save_no_account_user_data_as_booking_meta( $order ) {
 				$booking_id = $order_item_booking_id[ 'id' ];
 				$object_type = $order_item_booking_id[ 'type' ] === 'single' ? 'booking' : ( $order_item_booking_id[ 'type' ] === 'group' ? 'booking_group' : '' );
 				if( ! $booking_id || ! $object_type ) { continue; }
-
-				// Change the user id to the user email
-				if( $object_type === 'booking' ) {
-					bookacti_update_booking_user_id( $booking_id, $user_id );
-
-				} else if( $object_type === 'booking_group' ) {
-					bookacti_update_booking_group_user_id( $booking_id, $user_id );
-					bookacti_update_booking_group_bookings_user_id( $booking_id, $user_id );
-				}
 
 				// Add user data to the booking meta
 				bookacti_update_metadata( $object_type, $booking_id, $user_data );
