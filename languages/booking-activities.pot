@@ -2,14 +2,14 @@
 # This file is distributed under the same license as the Booking Activities plugin.
 msgid ""
 msgstr ""
-"Project-Id-Version: Booking Activities 1.9.0\n"
+"Project-Id-Version: Booking Activities 1.9.1\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/booking-activities\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2021-01-26T14:24:43+00:00\n"
+"POT-Creation-Date: 2021-01-29T11:17:27+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.3.0\n"
 "X-Domain: booking-activities\n"
@@ -52,10 +52,10 @@ msgstr ""
 #: controller/controller-settings.php:602
 #: controller/controller-settings.php:695
 #: controller/controller-woocommerce-frontend.php:1119
-#: controller/controller-woocommerce-frontend.php:1688
-#: controller/controller-woocommerce-frontend.php:1711
-#: controller/controller-woocommerce-frontend.php:1719
-#: controller/controller-woocommerce-frontend.php:1726
+#: controller/controller-woocommerce-frontend.php:1692
+#: controller/controller-woocommerce-frontend.php:1715
+#: controller/controller-woocommerce-frontend.php:1723
+#: controller/controller-woocommerce-frontend.php:1730
 #: functions/functions-settings.php:1746
 #: view/view-bookings.php:11
 msgid "Bookings"
@@ -1176,7 +1176,7 @@ msgstr ""
 
 #. translators: %s is the coupon code used for the refund
 #: controller/controller-woocommerce-bookings.php:645
-#: controller/controller-woocommerce-frontend.php:1638
+#: controller/controller-woocommerce-frontend.php:1642
 msgid "Refunded with coupon %s"
 msgstr ""
 
@@ -1423,7 +1423,7 @@ msgid "You can't update quantity since this product is temporarily booked on an 
 msgstr ""
 
 #: controller/controller-woocommerce-frontend.php:1123
-#: controller/controller-woocommerce-frontend.php:1452
+#: controller/controller-woocommerce-frontend.php:1456
 msgid "Booking"
 msgid_plural "Bookings"
 msgstr[0] ""
@@ -1437,7 +1437,7 @@ msgstr ""
 msgid "Refund method"
 msgstr ""
 
-#: controller/controller-woocommerce-frontend.php:1506
+#: controller/controller-woocommerce-frontend.php:1510
 msgid "Price"
 msgstr ""
 
@@ -1630,6 +1630,14 @@ msgstr ""
 
 #: functions/functions-booking-system.php:952
 msgid "When a customer picks an event belonging to a group, let the customer choose between the group or the event alone."
+msgstr ""
+
+#: functions/functions-booking-system.php:962
+msgid "Select multiple events"
+msgstr ""
+
+#: functions/functions-booking-system.php:963
+msgid "The user will be able to select multiple events and book them at the same time."
 msgstr ""
 
 #: functions/functions-booking-system.php:973
@@ -3903,103 +3911,103 @@ msgstr ""
 msgid "Go to the edit page."
 msgstr ""
 
-#: functions/functions-woocommerce.php:1560
+#: functions/functions-woocommerce.php:1549
 msgid "Search for a product"
 msgstr ""
 
-#: functions/functions-woocommerce.php:1740
+#: functions/functions-woocommerce.php:1729
 msgid "Coupon"
 msgstr ""
 
-#: functions/functions-woocommerce.php:1741
+#: functions/functions-woocommerce.php:1730
 msgid "Create a coupon worth the price paid. The coupon can be used once for any orders at any time. "
 msgstr ""
 
-#: functions/functions-woocommerce.php:1745
+#: functions/functions-woocommerce.php:1734
 msgid "Auto refund"
 msgstr ""
 
-#: functions/functions-woocommerce.php:1746
+#: functions/functions-woocommerce.php:1735
 msgid "Refund automatically via the gateway used for payment."
 msgstr ""
 
-#: functions/functions-woocommerce.php:2008
-#: functions/functions-woocommerce.php:2181
+#: functions/functions-woocommerce.php:1997
+#: functions/functions-woocommerce.php:2170
 msgid "The order item bound to the booking was not found."
 msgstr ""
 
-#: functions/functions-woocommerce.php:2016
+#: functions/functions-woocommerce.php:2005
 msgid "Coupon created as a refund for:"
 msgstr ""
 
-#: functions/functions-woocommerce.php:2018
+#: functions/functions-woocommerce.php:2007
 msgid "User"
 msgstr ""
 
-#: functions/functions-woocommerce.php:2020
+#: functions/functions-woocommerce.php:2009
 msgid "Order"
 msgstr ""
 
-#: functions/functions-woocommerce.php:2023
+#: functions/functions-woocommerce.php:2012
 msgid "Booking number"
 msgstr ""
 
-#: functions/functions-woocommerce.php:2025
+#: functions/functions-woocommerce.php:2014
 msgid "Booking group number"
 msgstr ""
 
-#: functions/functions-woocommerce.php:2031
-#: functions/functions-woocommerce.php:2191
+#: functions/functions-woocommerce.php:2020
+#: functions/functions-woocommerce.php:2180
 msgid "User message:"
 msgstr ""
 
-#: functions/functions-woocommerce.php:2189
+#: functions/functions-woocommerce.php:2178
 msgid "Auto refund proceeded by user."
 msgstr ""
 
 #. translators: %s is the name of the described option: "Inline (original layout)"
-#: functions/functions-woocommerce.php:2317
-#: functions/functions-woocommerce.php:2322
+#: functions/functions-woocommerce.php:2306
+#: functions/functions-woocommerce.php:2311
 msgid "Inline (original layout)"
 msgstr ""
 
 #. translators: %s is the name of the described option: "Full width (default)"
-#: functions/functions-woocommerce.php:2318
-#: functions/functions-woocommerce.php:2325
+#: functions/functions-woocommerce.php:2307
+#: functions/functions-woocommerce.php:2314
 msgid "Full width"
 msgstr ""
 
 #. translators: %s is the name of the described option: "Inline (original layout)"
-#: functions/functions-woocommerce.php:2322
+#: functions/functions-woocommerce.php:2311
 msgid "%s: display the booking form before the add to cart button, without changing your theme layout."
 msgstr ""
 
 #. translators: %s is the name of the described option: "Full width (default)"
-#: functions/functions-woocommerce.php:2325
+#: functions/functions-woocommerce.php:2314
 msgid "%s: move the add to cart form below the product summary. This option may not work properly with certain themes."
 msgstr ""
 
-#: functions/functions-woocommerce.php:2350
+#: functions/functions-woocommerce.php:2339
 msgid "Default booking list"
 msgstr ""
 
-#: functions/functions-woocommerce.php:2364
+#: functions/functions-woocommerce.php:2353
 msgid "Select the page to display in the \"Bookings\" tab of the \"My account\" area. You can also display the default booking list, or completely disable this tab."
 msgstr ""
 
-#: functions/functions-woocommerce.php:2389
+#: functions/functions-woocommerce.php:2378
 msgid "If cart expiration is off, the booking is made at the end of the checkout process. It means that an event available at the moment you add it to cart can be no longer available at the moment you wish to complete the order. With cart expiration on, the booking is made when it is added to cart and remains temporary until the end of the checkout process."
 msgstr ""
 
-#: functions/functions-woocommerce.php:2405
+#: functions/functions-woocommerce.php:2394
 msgid "The expiration time will be set for each product independantly, each with their own countdown before being removed from cart."
 msgstr ""
 
-#: functions/functions-woocommerce.php:2422
+#: functions/functions-woocommerce.php:2411
 msgid "Define the amount of time a user has before his cart gets empty."
 msgstr ""
 
-#: functions/functions-woocommerce.php:2438
+#: functions/functions-woocommerce.php:2427
 msgid "The countdown will be reset each time a product is added, or when a product quantity is changed."
 msgstr ""
 
@@ -4472,6 +4480,10 @@ msgstr ""
 
 #: view/view-form-editor-dialogs.php:178
 msgid "Event sources"
+msgstr ""
+
+#: view/view-form-editor-dialogs.php:194
+msgid "Multiple bookings"
 msgstr ""
 
 #: view/view-form-editor-dialogs.php:202
