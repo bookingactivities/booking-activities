@@ -1378,7 +1378,7 @@ add_action( 'woocommerce_before_pay_action', 'bookacti_availability_check_before
 /**
  * Change order bookings states after the customer validates checkout
  * @since 1.2.2
- * @version 1.9.0
+ * @version 1.9.1
  * @param int $order_id
  * @param array $order_details
  * @param WC_Order $order
@@ -1391,21 +1391,25 @@ function bookacti_change_booking_state_after_checkout( $order_id, $order_details
 	$order_items_bookings = bookacti_wc_get_order_items_bookings( $order );
 	
 	$needs_payment = WC()->cart->needs_payment();
+	$customer_id= $order->get_user_id( 'edit' );
+	$user_email	= $order->get_billing_email( 'edit' );
+	$user_id	= is_numeric( $customer_id ) && $customer_id ? intval( $customer_id ) : ( $user_email ? $user_email : apply_filters( 'bookacti_unknown_user_id', 'unknown_user' ) );
+	
 	$new_data = array(
-		'user_id' => $order->get_user_id( 'edit' ),
+		'user_id' => $user_id,
 		'order_id' => $order_id,
 		'status' => $needs_payment ? 'pending' : 'booked',
 		'payment_status' => $needs_payment ? 'owed' : 'paid',
 		'active' => 'auto'
 	);
 	
-	// If the user has no account, bind the user data to the bookings
-	if( ! is_numeric( $new_data[ 'user_id' ] ) ) {
-		bookacti_wc_save_no_account_user_data_as_booking_meta( $order );
-	}
-	
 	// Update the booking
 	$updated = bookacti_wc_update_order_items_bookings( $order, $new_data );
+	
+	// If the user has no account, bind the user data to the bookings
+	if( ! $new_data[ 'user_id' ] || ! is_numeric( $new_data[ 'user_id' ] ) ) {
+		bookacti_wc_save_no_account_user_data_as_booking_meta( $order );
+	}
 	
 	// Send new status notifications even if the booking status has not changed
 	// The new status notifications is automatically sent if the booking status has changed (on the bookacti_wc_order_item_booking_updated hook)

@@ -704,7 +704,7 @@ add_action( 'wp_ajax_nopriv_bookactiSubmitLoginForm', 'bookacti_controller_valid
 /**
  * Check if booking form is correct and then book the event, or send the error message
  * @since 1.5.0
- * @version 1.9.0
+ * @version 1.9.1
  */
 function bookacti_controller_validate_booking_form() {
 	// Check nonce
@@ -842,7 +842,7 @@ function bookacti_controller_validate_booking_form() {
 		}
 		
 		// Log the user in programmatically
-		if( $login_field[ 'automatic_login' ] && is_a( $user, 'WP_User' ) ) {
+		if( $login_field[ 'automatic_login' ] && isset( $user ) && is_a( $user, 'WP_User' ) ) {
 			$is_logged_in = bookacti_log_user_in( $user->user_login );
 			if( ! $is_logged_in ) { 
 				$return_array[ 'error' ] = 'cannot_log_in';
