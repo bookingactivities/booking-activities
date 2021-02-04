@@ -7,7 +7,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 /**
  * Get booking system data
  * @since 1.7.4
- * @version 1.8.0
+ * @version 1.9.2
  * @param array $atts (see bookacti_format_booking_system_attributes())
  * @param int $template_id
  * @return array
@@ -25,7 +25,7 @@ function bookacti_get_editor_booking_system_data( $atts, $template_id ) {
 	$booking_system_data[ 'events' ]				= $events[ 'events' ] ? $events[ 'events' ] : array();
 	$booking_system_data[ 'events_data' ]			= $events[ 'data' ] ? $events[ 'data' ] : array();
 	$booking_system_data[ 'events_interval' ]		= array( 'start' => substr( $events_interval[ 'start' ], 0, 10 ), 'end' => substr( $events_interval[ 'end' ], 0, 10 ) );
-	$booking_system_data[ 'bookings' ]				= bookacti_get_number_of_bookings_by_events( $template_id );
+	$booking_system_data[ 'bookings' ]				= bookacti_get_number_of_bookings_for_booking_system( $template_id );
 	$booking_system_data[ 'exceptions' ]			= bookacti_get_exceptions_by_event( array( 'templates' => array( $template_id ) ) );
 	$booking_system_data[ 'activities_data' ]		= bookacti_get_activities_by_template( $template_id, false, true );
 	$booking_system_data[ 'groups_events' ]			= bookacti_get_groups_events( $template_id );
@@ -93,7 +93,7 @@ function bookacti_user_can_manage_activity( $activity_ids, $user_id = false, $ad
 
 /**
  * Get template managers
- * @version 1.9.0
+ * @version 1.9.2
  * @param int|array $template_ids
  * @return array
  */
@@ -102,7 +102,7 @@ function bookacti_get_template_managers( $template_ids ) {
 	
 	$merged_managers = array();
 	foreach( $managers as $user_ids ) {
-		$merged_managers = array_merge( $merged_managers, $user_ids );
+		$merged_managers = array_merge( $merged_managers, bookacti_ids_to_array( $user_ids ) );
 	}
 	
 	return array_unique( $merged_managers );
@@ -111,7 +111,7 @@ function bookacti_get_template_managers( $template_ids ) {
 
 /**
  * Get activity managers
- * @version 1.9.0
+ * @version 1.9.2
  * @param int|array $activity_ids
  * @return array
  */
@@ -120,7 +120,7 @@ function bookacti_get_activity_managers( $activity_ids ) {
 	
 	$merged_managers = array();
 	foreach( $managers as $user_ids ) {
-		$merged_managers = array_merge( $merged_managers, $user_ids );
+		$merged_managers = array_merge( $merged_managers, bookacti_ids_to_array( $user_ids ) );
 	}
 	
 	return array_unique( $merged_managers );

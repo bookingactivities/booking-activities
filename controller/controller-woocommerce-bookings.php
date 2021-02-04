@@ -50,11 +50,10 @@ add_action( 'bookacti_uninstall', 'bookacti_clear_cron_event_to_clean_expired_bo
 
 /**
  * Get customer id for non-logged in users
- * 
  * @since 1.4.0
  * @global woocommerce $woocommerce
  * @param int $current_user_id
- * @return string|0
+ * @return int|string
  */
 function bookacti_get_customer_id_for_non_logged_in_users( $current_user_id ) {
 	if( $current_user_id ) { return $current_user_id; }
