@@ -4,7 +4,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 /**
  * Create Booking Activities database tables
- * @version 1.8.0
+ * @version 1.9.2
  * @global wpdb $wpdb
  */
 function bookacti_create_tables() {
@@ -16,7 +16,7 @@ function bookacti_create_tables() {
 	}
 	
 	$table_templates_query = 'CREATE TABLE ' . BOOKACTI_TABLE_TEMPLATES . ' ( 
-		id MEDIUMINT(9) UNSIGNED NOT NULL AUTO_INCREMENT, 
+		id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT, 
 		title TEXT, 
 		start_date DATE, 
 		end_date DATE,  
@@ -24,7 +24,7 @@ function bookacti_create_tables() {
 		PRIMARY KEY ( id ) ) ' . $collate . ';';
 
 	$table_activities_query = 'CREATE TABLE ' . BOOKACTI_TABLE_ACTIVITIES . ' ( 
-		id MEDIUMINT(9) UNSIGNED NOT NULL AUTO_INCREMENT, 
+		id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT, 
 		title TEXT, 
 		duration VARCHAR(12) NOT NULL DEFAULT "000.01:00:00", 
 		is_resizable TINYINT(1) UNSIGNED NOT NULL DEFAULT 0, 
@@ -34,15 +34,15 @@ function bookacti_create_tables() {
 		PRIMARY KEY ( id ) ) ' . $collate . ';';
 
 	$table_templates_activities_query = 'CREATE TABLE ' . BOOKACTI_TABLE_TEMP_ACTI . ' ( 
-		id MEDIUMINT(9) UNSIGNED NOT NULL AUTO_INCREMENT, 
-		template_id MEDIUMINT(9) UNSIGNED, 
-		activity_id MEDIUMINT(9) UNSIGNED,
+		id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT, 
+		template_id BIGINT UNSIGNED, 
+		activity_id BIGINT UNSIGNED,
 		PRIMARY KEY ( id ) ) ' . $collate . ';';
 	
 	$table_events_query = 'CREATE TABLE ' . BOOKACTI_TABLE_EVENTS . ' ( 
-		id MEDIUMINT(9) UNSIGNED NOT NULL AUTO_INCREMENT, 
-		template_id MEDIUMINT(9) UNSIGNED NOT NULL, 
-		activity_id MEDIUMINT(9) UNSIGNED NOT NULL, 
+		id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT, 
+		template_id BIGINT UNSIGNED NOT NULL, 
+		activity_id BIGINT UNSIGNED NOT NULL, 
 		title TEXT, 
 		start DATETIME, 
 		end DATETIME, 
@@ -54,47 +54,47 @@ function bookacti_create_tables() {
 		PRIMARY KEY ( id ) ) ' . $collate . ';';
 	
 	$table_exceptions_query = 'CREATE TABLE ' . BOOKACTI_TABLE_EXCEPTIONS . ' ( 
-		id MEDIUMINT(9) UNSIGNED NOT NULL AUTO_INCREMENT, 
-		event_id MEDIUMINT(9) UNSIGNED NOT NULL, 
+		id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT, 
+		event_id BIGINT UNSIGNED NOT NULL, 
 		exception_type VARCHAR(10) NOT NULL DEFAULT "date",
 		exception_value VARCHAR(10),
 		PRIMARY KEY ( id ) ) ' . $collate . ';';
 	
 	$table_event_groups_query = 'CREATE TABLE ' . BOOKACTI_TABLE_EVENT_GROUPS . ' ( 
-		id MEDIUMINT(9) UNSIGNED NOT NULL AUTO_INCREMENT, 
-		category_id MEDIUMINT(9) UNSIGNED NOT NULL, 
+		id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT, 
+		category_id BIGINT UNSIGNED NOT NULL, 
 		title TEXT, 
 		active TINYINT(1) NOT NULL DEFAULT 1,
 		PRIMARY KEY ( id ) ) ' . $collate . ';';
 
 	$table_groups_events_query = 'CREATE TABLE ' . BOOKACTI_TABLE_GROUPS_EVENTS . ' ( 
-		id MEDIUMINT(9) UNSIGNED NOT NULL AUTO_INCREMENT, 
-		group_id MEDIUMINT(9) UNSIGNED NOT NULL, 
-		event_id MEDIUMINT(9) UNSIGNED NOT NULL, 
+		id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT, 
+		group_id BIGINT UNSIGNED NOT NULL, 
+		event_id BIGINT UNSIGNED NOT NULL, 
 		event_start DATETIME, 
 		event_end DATETIME, 
 		active TINYINT(1) NOT NULL DEFAULT 1,
 		PRIMARY KEY ( id ) ) ' . $collate . ';';
 
 	$table_group_categories_query = 'CREATE TABLE ' . BOOKACTI_TABLE_GROUP_CATEGORIES . ' ( 
-		id MEDIUMINT(9) UNSIGNED NOT NULL AUTO_INCREMENT, 
-		template_id MEDIUMINT(9) UNSIGNED NOT NULL, 
+		id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT, 
+		template_id BIGINT UNSIGNED NOT NULL, 
 		title TEXT, 
 		active TINYINT(1) NOT NULL DEFAULT 1,
 		PRIMARY KEY ( id ) ) ' . $collate . ';';
 
 	$table_forms_query = 'CREATE TABLE ' . BOOKACTI_TABLE_FORMS . ' ( 
-		id MEDIUMINT(9) UNSIGNED NOT NULL AUTO_INCREMENT, 
+		id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT, 
 		title TEXT,
-		user_id MEDIUMINT(9),
+		user_id BIGINT UNSIGNED,
 		creation_date DATETIME,
 		status VARCHAR(32) NOT NULL DEFAULT "publish",
 		active TINYINT(1) NOT NULL DEFAULT 1,
 		PRIMARY KEY ( id ) ) ' . $collate . ';';
 	
 	$table_form_fields_query = 'CREATE TABLE ' . BOOKACTI_TABLE_FORM_FIELDS . ' ( 
-		id MEDIUMINT(9) UNSIGNED NOT NULL AUTO_INCREMENT, 
-		form_id MEDIUMINT(9) UNSIGNED NOT NULL, 
+		id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT, 
+		form_id BIGINT UNSIGNED NOT NULL, 
 		name VARCHAR(128), 
 		type VARCHAR(128), 
 		title TEXT, 
@@ -109,12 +109,12 @@ function bookacti_create_tables() {
 	
 	// user_id can accept hashes of 32 chars and email addresses, that is why it is a VARCHAR(64)
 	$table_bookings_query = 'CREATE TABLE ' . BOOKACTI_TABLE_BOOKINGS . ' ( 
-		id MEDIUMINT(9) UNSIGNED NOT NULL AUTO_INCREMENT, 
+		id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT, 
 		user_id VARCHAR(64), 
-		order_id MEDIUMINT(9) UNSIGNED, 
-		form_id MEDIUMINT(9) UNSIGNED, 
-		group_id MEDIUMINT(9) UNSIGNED, 
-		event_id MEDIUMINT(9) UNSIGNED NOT NULL, 
+		order_id BIGINT UNSIGNED, 
+		form_id BIGINT UNSIGNED, 
+		group_id BIGINT UNSIGNED, 
+		event_id BIGINT UNSIGNED NOT NULL, 
 		event_start DATETIME, 
 		event_end DATETIME, 
 		state VARCHAR(32) NOT NULL DEFAULT "booked", 
@@ -126,40 +126,40 @@ function bookacti_create_tables() {
 		PRIMARY KEY ( id ) ) ' . $collate . ';';
 
 	$table_booking_groups_query = 'CREATE TABLE ' . BOOKACTI_TABLE_BOOKING_GROUPS . ' ( 
-		id MEDIUMINT(9) UNSIGNED NOT NULL AUTO_INCREMENT, 
-		event_group_id MEDIUMINT(9) UNSIGNED, 
+		id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT, 
+		event_group_id BIGINT UNSIGNED, 
 		user_id VARCHAR(64), 
-		order_id MEDIUMINT(9) UNSIGNED, 
-		form_id MEDIUMINT(9) UNSIGNED, 
+		order_id BIGINT UNSIGNED, 
+		form_id BIGINT UNSIGNED, 
 		state VARCHAR(32) NOT NULL DEFAULT "booked",
 		payment_status VARCHAR(32) NOT NULL DEFAULT "none", 
 		active TINYINT(1) UNSIGNED NOT NULL DEFAULT 1,
 		PRIMARY KEY ( id ) ) ' . $collate . ';';
 
 	$table_meta_query = 'CREATE TABLE ' . BOOKACTI_TABLE_META . ' ( 
-		id MEDIUMINT(9) UNSIGNED NOT NULL AUTO_INCREMENT, 
+		id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT, 
 		object_type VARCHAR(128), 
-		object_id MEDIUMINT(9) UNSIGNED, 
+		object_id BIGINT UNSIGNED, 
 		meta_key VARCHAR(255), 
 		meta_value LONGTEXT,
 		PRIMARY KEY ( id ) ) ' . $collate . ';';
 
 	$table_exports_query = 'CREATE TABLE ' . BOOKACTI_TABLE_EXPORTS . ' ( 
-		id MEDIUMINT(9) UNSIGNED NOT NULL AUTO_INCREMENT, 
-		user_id MEDIUMINT(9) UNSIGNED, 
+		id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT, 
+		user_id BIGINT UNSIGNED, 
 		type VARCHAR(128), 
 		args TEXT, 
 		creation_date DATETIME, 
 		expiration_date DATETIME, 
-		sequence MEDIUMINT(9) UNSIGNED DEFAULT 0, 
+		sequence BIGINT UNSIGNED DEFAULT 0, 
 		active TINYINT(1) UNSIGNED NOT NULL DEFAULT 1, 
 		PRIMARY KEY ( id ) ) ' . $collate . ';';
 
 	$table_permissions_query = 'CREATE TABLE ' . BOOKACTI_TABLE_PERMISSIONS . ' ( 
-		id MEDIUMINT(9) UNSIGNED NOT NULL AUTO_INCREMENT, 
+		id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT, 
 		object_type VARCHAR(128), 
-		object_id MEDIUMINT(9) UNSIGNED, 
-		user_id MEDIUMINT(9) UNSIGNED,
+		object_id BIGINT UNSIGNED, 
+		user_id BIGINT UNSIGNED,
 		PRIMARY KEY ( id ) ) ' . $collate . ';';
 	
 	// Execute the queries

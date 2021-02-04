@@ -1599,6 +1599,7 @@ function bookacti_fetch_templates( $template_ids = array(), $ignore_permissions 
 
 /**
  * Get template data, metadata and managers
+ * @version 1.9.2
  * @global wpdb $wpdb
  * @param int $template_id
  * @param OBJECT|ARRAY_A $return_type
@@ -1616,10 +1617,10 @@ function bookacti_get_template( $template_id, $return_type = OBJECT ) {
 
 	// Get template settings and managers
 	if( $return_type === ARRAY_A ) {
-		$template[ 'admin' ]	= bookacti_get_managers( 'template', $template_id );
+		$template[ 'admin' ]	= bookacti_get_template_managers( $template_id );
 		$template[ 'settings' ] = bookacti_get_metadata( 'template', $template_id );
 	} else {
-		$template->admin		= bookacti_get_managers( 'template', $template_id );
+		$template->admin		= bookacti_get_template_managers( $template_id );
 		$template->settings		= bookacti_get_metadata( 'template', $template_id );
 	}
 
@@ -1794,7 +1795,7 @@ function bookacti_update_template( $template_id, $template_title, $template_star
 
 /**
  * Get activity data
- * @version 1.9.0
+ * @version 1.9.2
  * @global wpdb $wpdb
  * @param int $activity_id
  * @return object
@@ -1807,7 +1808,7 @@ function bookacti_get_activity( $activity_id ) {
 	$activity	= $wpdb->get_row( $prep, OBJECT );
 
 	// Get activity settings and managers
-	$activity->admin	= bookacti_get_managers( 'activity', $activity_id );
+	$activity->admin	= bookacti_get_activity_managers( $activity_id );
 	$activity->settings	= bookacti_get_metadata( 'activity', $activity_id );
 
 	$activity->multilingual_title = $activity->title;
@@ -2053,7 +2054,7 @@ function bookacti_delete_templates_x_activities( $template_ids, $activity_ids ) 
 
 /**
  * Get activities by template
- * @version 1.9.0
+ * @version 1.9.2
  * @global wpdb $wpdb
  * @param array $template_ids
  * @param boolean $based_on_events Whether to retrieve activities bound to templates or activities bound to events of templates
@@ -2115,11 +2116,8 @@ function bookacti_get_activities_by_template( $template_ids = array(), $based_on
 		$activity_ids[] = $activity[ 'id' ];
 	}
 
-	$activities_meta = bookacti_get_metadata( 'activity', $activity_ids );
-
-	if( $retrieve_managers ) {
-		$activities_managers = bookacti_get_managers( 'activity', $activity_ids );
-	}
+	$activities_meta		= bookacti_get_metadata( 'activity', $activity_ids );
+	$activities_managers	= $retrieve_managers ? bookacti_get_managers( 'activity', $activity_ids ) : array();
 
 	$activities_array = array();
 	foreach( $activities as $activity ) {

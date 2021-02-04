@@ -101,7 +101,7 @@ function bookacti_get_booking_system( $atts ) {
 /**
  * Get booking system data
  * @since 1.7.4
- * @version 1.9.0
+ * @version 1.9.2
  * @param array $atts (see bookacti_format_booking_system_attributes())
  * @return array
  */
@@ -218,7 +218,7 @@ function bookacti_get_booking_system_data( $atts ) {
 			$booking_system_data[ 'events' ]				= $events[ 'events' ] ? $events[ 'events' ] : array();
 			$booking_system_data[ 'events_data' ]			= $events[ 'data' ] ? $events[ 'data' ] : array();
 			$booking_system_data[ 'events_interval' ]		= $events_interval;
-			$booking_system_data[ 'bookings' ]				= bookacti_get_number_of_bookings_by_events( $atts[ 'calendars' ], array(), $user_ids );
+			$booking_system_data[ 'bookings' ]				= bookacti_get_number_of_bookings_for_booking_system( $atts[ 'calendars' ], array(), $user_ids );
 			$booking_system_data[ 'booking_lists' ]			= $booking_lists;
 			$booking_system_data[ 'activities_data' ]		= bookacti_get_activities_by_template( $atts[ 'calendars' ], true );
 			$booking_system_data[ 'groups_events' ]			= $groups_events;
@@ -631,6 +631,30 @@ function bookacti_format_picked_event( $picked_event_raw = array() ) {
 	}
 	
 	return apply_filters( 'bookacti_picked_event_formatted', $picked_event, $picked_event_raw );
+}
+
+
+/**
+ * Reconstruct picked events array with one entry per event. 
+ * This is the opposite action as bookacti_format_picked_events with the $one_entry_per_group parameter set to true
+ * @since 1.9.2
+ * @param array $grouped_picked_events formatted with bookacti_format_picked_events with $one_entry_per_group = true
+ * @return array
+ */
+function bookacti_reconstruct_picked_events_array( $grouped_picked_events ) {
+	$picked_events = array();
+	
+	foreach( $grouped_picked_events as $grouped_picked_event ) {
+		if( ! empty( $grouped_picked_event[ 'events' ] ) ) {
+			foreach( $grouped_picked_event[ 'events' ] as $picked_event ) {
+				$picked_events[] = bookacti_format_picked_event( $picked_event );
+			}
+		} else {
+			$picked_events[] = bookacti_format_picked_event( $grouped_picked_event );
+		}
+	}
+	
+	return $picked_events;
 }
 
 
@@ -1116,8 +1140,8 @@ function bookacti_get_booking_system_fields_default_data( $fields = array() ) {
 
 /**
  * Check the selected event / group of events data before booking
- * @version 1.9.0
- * @param array $picked_events formatted with bookacti_format_picked_events
+ * @version 1.9.2
+ * @param array $picked_events formatted with bookacti_format_picked_events with $one_entry_per_group = false
  * @param int $quantity Desired number of bookings
  * @param int $form_id Set your form id to validate the event against its form parameters. Default is 0: ignore form validation.
  * @return array
@@ -1132,6 +1156,7 @@ function bookacti_validate_booking_form( $picked_events, $quantity, $form_id = 0
 	
 	// Keep one entry per group
 	$picked_events = bookacti_format_picked_events( $picked_events, true );
+	$quantity = intval( $quantity );
 	
 	// Check if multiple bookings is allowed
 	$allow_multiple_bookings = false;
@@ -1161,6 +1186,16 @@ function bookacti_validate_booking_form( $picked_events, $quantity, $form_id = 0
 	
 	// Check each picked event
 	else {
+		// Get user ID
+		if( ! empty( $_POST[ 'login_type' ] ) && $_POST[ 'login_type' ] === 'no_account' 
+		&&  ! empty( $_POST[ 'email' ] ) && is_email( $_POST[ 'email' ] ) ) { 
+			$user_id = $_POST[ 'email' ]; 
+		}
+		$user_id = apply_filters( 'bookacti_current_user_id', ! empty( $user_id ) ? $user_id : get_current_user_id() );
+		
+		// Add availability data to the picked events
+		$picked_events = bookacti_get_picked_events_availability( $picked_events );
+		
 		foreach( $picked_events as $i => $picked_event ) {
 			$grouped_events_keys = isset( $picked_event[ 'events' ] ) ? array_keys( $picked_event[ 'events' ] ) : array();
 			$last_key = end( $grouped_events_keys );
@@ -1217,63 +1252,16 @@ function bookacti_validate_booking_form( $picked_events, $quantity, $form_id = 0
 			}
 
 			// Availability checks
-			if( ! empty( $_POST[ 'login_type' ] ) && $_POST[ 'login_type' ] === 'no_account' 
-			&&  ! empty( $_POST[ 'email' ] ) && is_email( $_POST[ 'email' ] ) ) { 
-				$user_id = $_POST[ 'email' ]; 
-			}
-			$user_id = apply_filters( 'bookacti_current_user_id', ! empty( $user_id ) ? $user_id : get_current_user_id() );
-			$quantity_already_booked = 0;
-			$number_of_users = 0;
-			$allowed_roles = array();
-
-			// Validate single booking
-			if( $group_id <= 0 ) {
-				$activity_data	= bookacti_get_metadata( 'activity', $event->activity_id );
-
-				$min_quantity	= isset( $activity_data[ 'min_bookings_per_user' ] ) ? intval( $activity_data[ 'min_bookings_per_user' ] ) : 0;
-				$max_quantity	= isset( $activity_data[ 'max_bookings_per_user' ] ) ? intval( $activity_data[ 'max_bookings_per_user' ] ) : 0;
-				$max_users		= isset( $activity_data[ 'max_users_per_event' ] ) ? intval( $activity_data[ 'max_users_per_event' ] ) : 0;
-
-				// Check if the user has already booked this event
-				$bookings_nb_per_user = bookacti_get_number_of_bookings_per_user_by_events( array( $picked_event ) );
-				$number_of_users = count( $bookings_nb_per_user );
-				if( ! empty( $bookings_nb_per_user[ $user_id ] ) ) { 
-					$quantity_already_booked = intval( $bookings_nb_per_user[ $user_id ] );
-				}
-				
-				// Get the remaining availability
-				$availability = bookacti_get_min_availability_by_events( array( $picked_event ) );
-				foreach( $bookings_nb_per_user as $user_id => $qty_booked ) { $availability -= $qty_booked; }
-				
-				// Check allowed roles
-				if( isset( $activity_data[ 'allowed_roles' ] ) && $activity_data[ 'allowed_roles' ] ) {
-					$allowed_roles = $activity_data[ 'allowed_roles' ];
-				}
-
-			// Validate group booking
-			} else {
-				$category_data	= bookacti_get_metadata( 'group_category', $group->category_id );
-
-				$min_quantity	= isset( $category_data[ 'min_bookings_per_user' ] ) ? intval( $category_data[ 'min_bookings_per_user' ] ) : 0;
-				$max_quantity	= isset( $category_data[ 'max_bookings_per_user' ] ) ? intval( $category_data[ 'max_bookings_per_user' ] ) : 0;
-				$max_users		= isset( $category_data[ 'max_users_per_event' ] ) ? intval( $category_data[ 'max_users_per_event' ] ) : 0;
-				
-				// Check if the user has already booked this group of events
-				$bookings_nb_per_user = bookacti_get_number_of_bookings_per_user_by_events( $picked_event[ 'events' ] );
-				$number_of_users = count( $bookings_nb_per_user );
-				if( ! empty( $bookings_nb_per_user[ $user_id ] ) ) { 
-					$quantity_already_booked = intval( $bookings_nb_per_user[ $user_id ] );
-				}
-				
-				// Get the remaining availability
-				$availability = bookacti_get_min_availability_by_events( $picked_event[ 'events' ] );
-				foreach( $bookings_nb_per_user as $user_id => $qty_booked ) { $availability -= $qty_booked; }
-				
-				// Check allowed roles
-				if( isset( $category_data[ 'allowed_roles' ] ) && $category_data[ 'allowed_roles' ] ) {
-					$allowed_roles = $category_data[ 'allowed_roles' ];
-				}
-			}
+			$availability = $picked_event[ 'args' ][ 'availability' ];
+			$quantity_already_booked = isset( $picked_event[ 'args' ][ 'bookings_nb_per_user' ][ $user_id ] ) ? $picked_event[ 'args' ][ 'bookings_nb_per_user' ][ $user_id ] : 0;
+			$number_of_users = count( $picked_event[ 'args' ][ 'bookings_nb_per_user' ] );
+			
+			// Get Activity / Category meta
+			$activity_meta	= $group_id <= 0 ? bookacti_get_metadata( 'activity', $event->activity_id ) : bookacti_get_metadata( 'group_category', $group->category_id );
+			$min_quantity	= isset( $activity_meta[ 'min_bookings_per_user' ] ) ? intval( $activity_meta[ 'min_bookings_per_user' ] ) : 0;
+			$max_quantity	= isset( $activity_meta[ 'max_bookings_per_user' ] ) ? intval( $activity_meta[ 'max_bookings_per_user' ] ) : 0;
+			$max_users		= isset( $activity_meta[ 'max_users_per_event' ] ) ? intval( $activity_meta[ 'max_users_per_event' ] ) : 0;
+			$allowed_roles	= isset( $activity_meta[ 'allowed_roles' ] ) && $activity_meta[ 'allowed_roles' ] ? $activity_meta[ 'allowed_roles' ] : array();
 
 			// Init boolean test variables
 			$is_qty_inf_to_avail	= false;
@@ -1281,11 +1269,7 @@ function bookacti_validate_booking_form( $picked_events, $quantity, $form_id = 0
 			$is_qty_inf_to_max		= false;
 			$is_users_inf_to_max	= false;
 			$has_allowed_roles		= false;
-
-			// Sanitize
-			$quantity		= intval( $quantity );
-			$availability	= intval( $availability );
-
+			
 			// Make the tests and change the booleans
 			if( $quantity <= $availability )														{ $is_qty_inf_to_avail = true; }
 			if( $min_quantity === 0 || ( $quantity + $quantity_already_booked ) >= $min_quantity )	{ $is_qty_sup_to_min = true; }
@@ -1293,9 +1277,7 @@ function bookacti_validate_booking_form( $picked_events, $quantity, $form_id = 0
 			if( $max_users === 0 || $quantity_already_booked || $number_of_users < $max_users )		{ $is_users_inf_to_max = true; }
 			
 			// Check roles
-			if( ! $allowed_roles 
-				|| in_array( 'all', $allowed_roles, true ) 
-				|| apply_filters( 'bookacti_bypass_roles_check', false ) )							{ $has_allowed_roles = true; }
+			if( ! $allowed_roles || in_array( 'all', $allowed_roles, true ) || apply_filters( 'bookacti_bypass_roles_check', false ) ) { $has_allowed_roles = true; }
 			else { 
 				$is_allowed = false;
 				$current_user = wp_get_current_user();
@@ -1321,7 +1303,7 @@ function bookacti_validate_booking_form( $picked_events, $quantity, $form_id = 0
 					$message .= ' ' . sprintf( esc_html__( 'but the minimum number of reservations required per user is %1$s.', 'booking-activities' ), $min_quantity );
 				}	
 				/* translators: %1$s is a variable quantity. */
-				$message .= $min_quantity - $quantity_already_booked > 0 ? ' ' . sprintf( esc_html__( 'Please choose another event or increase the quantity to %1$s.', 'booking-activities' ), $min_quantity - $quantity_already_booked ) : ' ' . esc_html__( 'Please choose another event', 'booking-activities' );
+				$message .= $min_quantity - $quantity_already_booked > 0 ? ' ' . sprintf( esc_html__( 'Please choose another event or increase the quantity to %1$s.', 'booking-activities' ), $min_quantity - $quantity_already_booked ) : ' ' . esc_html__( 'Please choose another event.', 'booking-activities' );
 			} else if( ! $is_qty_inf_to_max ) {
 				$error = 'qty_sup_to_max';
 				$message = sprintf( esc_html( _n( 'You want to make %1$s booking of "%2$s"', 'You want to make %1$s bookings of "%2$s"', $quantity, 'booking-activities' ) ), $quantity, $title . ' (' . $dates . ')' );
@@ -1333,7 +1315,7 @@ function bookacti_validate_booking_form( $picked_events, $quantity, $form_id = 0
 					$message .= ' ' . sprintf( esc_html__( 'but the maximum number of reservations allowed per user is %1$s.', 'booking-activities' ), $max_quantity );
 				}
 				/* translators: %1$s is a variable quantity. */
-				$message .= $max_quantity - $quantity_already_booked > 0  ? ' ' . sprintf( esc_html__( 'Please choose another event or decrease the quantity to %1$s.', 'booking-activities' ), $max_quantity - $quantity_already_booked ) : ' ' . esc_html__( 'Please choose another event', 'booking-activities' );
+				$message .= $max_quantity - $quantity_already_booked > 0  ? ' ' . sprintf( esc_html__( 'Please choose another event or decrease the quantity to %1$s.', 'booking-activities' ), $max_quantity - $quantity_already_booked ) : ' ' . esc_html__( 'Please choose another event.', 'booking-activities' );
 			} else if( ! $is_users_inf_to_max ) {
 				$error = 'users_sup_to_max';
 				/* translators: %s = The event title and dates. E.g.: The event "Basketball (Sep, 22nd - 3:00 PM to 6:00 PM)" has reached the maximum number of users allowed. */
@@ -1364,15 +1346,14 @@ function bookacti_validate_booking_form( $picked_events, $quantity, $form_id = 0
 			}
 			
 			// Allow plugins to validate each picked event too
-			$picked_events[ $i ][ 'args' ] = array(
+			$picked_events[ $i ][ 'args' ] = array_merge( $picked_events[ $i ][ 'args' ], array(
 				'title' => $title,
 				'start' => $event_start,
 				'end' => $event_end,
 				'quantity' => $quantity,
-				'availability' => $availability,
 				'event' => $group_id <= 0 ? $event : $group,
-				'activity_meta' => $group_id <= 0 ? $activity_data : $category_data
-			);
+				'activity_meta' => $activity_meta
+			) );
 			$validated = apply_filters( 'bookacti_validate_booking_form_picked_event', $validated, $picked_events[ $i ], $quantity, $form_id );
 		}
 	}
@@ -1384,6 +1365,86 @@ function bookacti_validate_booking_form( $picked_events, $quantity, $form_id = 0
 	}
 	
 	return apply_filters( 'bookacti_validate_booking_form', $validated, $picked_events, $quantity, $form_id );
+}
+
+
+/**
+ * Add availability data to picked events, in the (new) 'args' entry of each picked events
+ * such as the total availability, the remaining availability, and the number of booking per user
+ * @since 1.9.2
+ * @param array $picked_events
+ * @return array
+ */
+function bookacti_get_picked_events_availability( $picked_events ) {
+	// Keep one entry per event
+	$single_picked_events = bookacti_reconstruct_picked_events_array( $picked_events );
+	
+	// Get the number of bookings per event per user and add these data to $single_picked_events
+	$single_picked_events = bookacti_get_number_of_bookings_per_event_per_user( $single_picked_events );
+	
+	// Compute availability (once per group)
+	$picked_events_availability_data = array();
+	foreach( $single_picked_events as $i => $single_picked_event ) {
+		$index = $single_picked_event[ 'group_id' ] <= 0 ? 'E' . $single_picked_event[ 'id' ] . $single_picked_event[ 'start' ] . $single_picked_event[ 'end' ] : 'G' . $single_picked_event[ 'group_id' ];
+		
+		if( ! isset( $picked_events_availability_data[ $index ] ) ) {
+			$picked_events_availability_data[ $index ] = array(
+				'total_availability' => $single_picked_event[ 'total_availability' ],
+				'bookings_nb_per_user' => $single_picked_event[ 'bookings_nb_per_user' ],
+				'availability' => false // this is a temporary value
+			);
+		}
+		
+		// Single event
+		if( $single_picked_event[ 'group_id' ] <= 0 ) {
+			// Sum the quantities booked by each users to get the total number of bookings made for this event
+			$event_bookings_nb = 0;
+			foreach( $single_picked_event[ 'bookings_nb_per_user' ] as $user_id => $bookings_nb ) {
+				$event_bookings_nb += $bookings_nb;
+			}
+
+			$picked_events_availability_data[ $index ][ 'availability' ] = $single_picked_event[ 'total_availability' ] - $event_bookings_nb;
+		}
+
+		// Groups of events
+		else {
+			// Sum the quantities booked by each users to get the total number of bookings made for this event
+			$grouped_event_bookings_nb = 0;
+			foreach( $single_picked_event[ 'bookings_nb_per_user' ] as $user_id => $bookings_nb ) {
+				$grouped_event_bookings_nb += $bookings_nb;
+				
+				// Keep the max number of bookings for each user, regardless of the event
+				if( ! isset( $picked_events_availability_data[ $index ][ 'bookings_nb_per_user' ][ $user_id ] )
+				||  ( isset( $picked_events_availability_data[ $index ][ 'bookings_nb_per_user' ][ $user_id ] ) && $picked_events_availability_data[ $index ][ 'bookings_nb_per_user' ][ $user_id ] < $bookings_nb ) ) {
+					$picked_events_availability_data[ $index ][ 'bookings_nb_per_user' ][ $user_id ] = $bookings_nb;
+				}
+			}
+			
+			// Keep the lowest total availability among the grouped events
+			if( $picked_events_availability_data[ $index ][ 'total_availability' ] > $single_picked_event[ 'total_availability' ] ) {
+				$picked_events_availability_data[ $index ][ 'total_availability' ] = $single_picked_event[ 'total_availability' ];
+			}
+			
+			// Keep the lowest remaing number of places among the grouped events
+			$grouped_event_availability = $single_picked_event[ 'total_availability' ] - $grouped_event_bookings_nb;
+			if(  $picked_events_availability_data[ $index ][ 'availability' ] === false 
+			|| ( $picked_events_availability_data[ $index ][ 'availability' ] !== false && $picked_events_availability_data[ $index ][ 'availability' ] > $grouped_event_availability ) ) {
+				$picked_events_availability_data[ $index ][ 'availability' ] = $grouped_event_availability;
+			}
+		}
+	}
+	
+	// Fill each picked events with the corresponding availaibilities values 
+	foreach( $picked_events as $i => $picked_event ) {
+		$index = $picked_event[ 'group_id' ] <= 0 ? 'E' . $picked_event[ 'id' ] . $picked_event[ 'start' ] . $picked_event[ 'end' ] : 'G' . $picked_event[ 'group_id' ];
+		
+		if( ! isset( $picked_events[ $i ][ 'args' ] ) ) { $picked_events[ $i ][ 'args' ] = array(); }
+		$picked_events[ $i ][ 'args' ][ 'total_availability' ]	= isset( $picked_events_availability_data[ $index ] ) ? $picked_events_availability_data[ $index ][ 'total_availability' ] : 0;
+		$picked_events[ $i ][ 'args' ][ 'availability' ]		= isset( $picked_events_availability_data[ $index ] ) ? intval( $picked_events_availability_data[ $index ][ 'availability' ] ) : 0;
+		$picked_events[ $i ][ 'args' ][ 'bookings_nb_per_user' ]= isset( $picked_events_availability_data[ $index ] ) ? $picked_events_availability_data[ $index ][ 'bookings_nb_per_user' ] : array();
+	}
+	
+	return $picked_events;
 }
 
 

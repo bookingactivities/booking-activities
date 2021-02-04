@@ -22,13 +22,11 @@
 #bookacti-actions-filter-container input:last-child	{ margin-bottom: 0; }
 
 label[for="bookacti-booking-filter-dates-from"],
-label[for="bookacti-booking-filter-dates-to"] { display: inline-block; width: 40px; max-width: 40px; }
+label[for="bookacti-booking-filter-dates-to"] { display: inline-block; vertical-align: middle; width: 40px; max-width: 40px; }
 #bookacti-booking-filter-dates-from, #bookacti-booking-filter-dates-to { min-height: 32px; }
 #bookacti-booking-filter-dates-from { margin-bottom: 2px; }
-
-/* IE */
 label[for="bookacti-booking-filter-dates-from"] + input#bookacti-booking-filter-dates-from,
-label[for="bookacti-booking-filter-dates-to"] + input#bookacti-booking-filter-dates-to { display: inline-block; width: 108px; max-width: 108px; }
+label[for="bookacti-booking-filter-dates-to"] + input#bookacti-booking-filter-dates-to { display: inline-block; vertical-align: middle; width: 148px; max-width: 148px; }
 
 #bookacti-booking-filter-customer,
 #bookacti-booking-filter-customer + .select2 .select2-selection,

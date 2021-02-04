@@ -1092,22 +1092,22 @@ function bookacti_get_number_of_bookings( $filters ) {
 
 /**
  * Get number of bookings ordered by events
- * @version 1.8.0
+ * @since 1.9.2 (was bookacti_get_number_of_bookings_by_events)
  * @global wpdb $wpdb
  * @param array $template_ids
  * @param array $event_ids
  * @param array $user_ids
  * @return array
  */
-function bookacti_get_number_of_bookings_by_events( $template_ids = array(), $event_ids = array(), $user_ids = array() ) {
+function bookacti_get_number_of_bookings_for_booking_system( $template_ids = array(), $event_ids = array(), $user_ids = array() ) {
 	global $wpdb;
-
+	
 	// Convert ids to array
 	$template_ids	= bookacti_ids_to_array( $template_ids );
 	$event_ids		= bookacti_ids_to_array( $event_ids );
 	$user_ids		= bookacti_ids_to_array( $user_ids );
 
-	$query	= 'SELECT B.event_id, B.event_start, B.event_end, SUM( B.quantity ) as quantity, COUNT( DISTINCT B.user_id ) as distinct_users, SUM( IF( B.user_id = %s, B.quantity, 0 ) ) as current_user_bookings '
+	$query	= 'SELECT B.event_id, B.event_start, B.event_end, E.availability as total_availability, SUM( B.quantity ) as quantity, COUNT( DISTINCT B.user_id ) as distinct_users, SUM( IF( B.user_id = %s, B.quantity, 0 ) ) as current_user_bookings '
 			. ' FROM ' . BOOKACTI_TABLE_BOOKINGS . ' as B, ' . BOOKACTI_TABLE_EVENTS . ' as E '
 			. ' WHERE B.active = 1 '
 			. ' AND B.event_id = E.id ';
@@ -1161,107 +1161,100 @@ function bookacti_get_number_of_bookings_by_events( $template_ids = array(), $ev
 		$query = $wpdb->prepare( $query, $variables );
 	}
 	
-	$query = apply_filters( 'bookacti_get_number_of_bookings_by_events_query', $query, $template_ids, $event_ids, $user_ids );
+	$query = apply_filters( 'bookacti_number_of_bookings_for_booking_system_query', $query, $template_ids, $event_ids, $user_ids );
 	
-	$events_booking_data = $wpdb->get_results( $query, ARRAY_A );
+	$events_booking_data = $wpdb->get_results( $query );
 	
 	// Order the array by event id
 	$return_array = array();
 	foreach( $events_booking_data as $event_booking_data ) {
-		$event_id = $event_booking_data[ 'event_id' ];
+		$event_id = $event_booking_data->event_id;
 		if( ! isset( $return_array[ $event_id ] ) ) { $return_array[ $event_id ] = array(); }
-		$return_array[ $event_id ][ $event_booking_data[ 'event_start' ] ] = $event_booking_data;
+		$return_array[ $event_id ][ $event_booking_data->event_start ] = array(
+			'quantity' => intval( $event_booking_data->quantity ),
+			'availability' => intval( $event_booking_data->total_availability ) - intval( $event_booking_data->quantity ),
+			'distinct_users' => intval( $event_booking_data->distinct_users ),
+			'current_user_bookings' => intval( $event_booking_data->current_user_bookings )
+		);
 	}
 	
-	return apply_filters( 'bookacti_get_number_of_bookings_by_events', $return_array, $template_ids, $event_ids, $user_ids, $query );
+	return apply_filters( 'bookacti_number_of_bookings_for_booking_system', $return_array, $template_ids, $event_ids, $user_ids, $query );
 }
 
 
 /**
- * Get every distinct users who booked a specific event
- * 
- * @since 1.4.0
+ * Get number of bookings for the desired events, per event and per user, with the total availability
+ * @since 1.9.2
  * @global wpdb $wpdb
- * @param int $event_id
- * @param string $event_start
- * @param string $event_end
- * @param int $active 0|1
- * @return false|array of user ids
- */
-function bookacti_get_number_of_bookings_per_user_by_event( $event_id, $event_start, $event_end, $active = 1 ) {
-	global $wpdb;
-	
-	$query	= 'SELECT B.user_id, SUM( B.quantity ) as quantity FROM ' . BOOKACTI_TABLE_BOOKINGS . ' as B '
-			. ' WHERE B.event_id = %d '
-			. ' AND B.event_start = %s '
-			. ' AND B.event_end = %s '
-			. ' AND B.active = %d '
-			. ' GROUP BY B.user_id ';
-	
-	$variables = array( $event_id, $event_start, $event_end, $active );
-	
-	$query		= $wpdb->prepare( $query, $variables );
-	$results	= $wpdb->get_results( $query, OBJECT );
-	
-	if( $results === false ) { return false; }
-	
-	$quantity_per_user = array();
-	foreach( $results as $result ) {
-		$quantity_per_user[ $result->user_id ] = $result->quantity;
-	}
-	
-	return $quantity_per_user;
-}
-
-
-/**
- * Get the number of bookings per distinct users who booked specific events
- * @since 1.9.0
- * @global wpdb $wpdb
- * @param array $events
- * @param int $active -1|0|1
+ * @param array $events [ [ 'id' => int, 'start' => 'Y-m-d H:i:s', 'end' => 'Y-m-d H:i:s' ], ... ]
  * @return array
  */
-function bookacti_get_number_of_bookings_per_user_by_events( $events, $active = 1 ) {
+function bookacti_get_number_of_bookings_per_event_per_user( $events ) {
+	if( ! $events ) { return array(); }
+	
 	global $wpdb;
 	
-	$query	= 'SELECT B2.user_id, MAX( B2.quantity_per_event_per_user ) as max_quantity '
-			. ' FROM ( ' 
-				. ' SELECT B1.user_id, SUM( B1.quantity ) as quantity_per_event_per_user,'
-				. ' CONCAT( B1.user_id, "_", B1.event_id, "_", B1.event_start, "_", B1.event_end ) as event_per_user '
-				. ' FROM ' . BOOKACTI_TABLE_BOOKINGS .' as B1 '
-				. ' WHERE ';
-	
 	$variables = array();
+	
+	// Prepare the SQL query conditions to filter for the desired events
+	$event_ids = array();
+	$event_ids_placeholders = array();
+	$events_query = '';
 	$i = 0;
 	foreach( $events as $event ) {
-		if( $i !== 0 ) { $query .= ' OR '; }
-		$query .= ' ('
-				. ' B1.event_id = %d'
-				. ' AND B1.event_start = %s'
-				. ' AND B1.event_end = %s'
-				. ' AND B1.active = IFNULL( NULLIF( %d, -1 ), B1.active )'
-				. ' ) ';
-		$variables = array_merge( $variables, array( $event[ 'id' ], $event[ 'start' ], $event[ 'end' ], $active ) );
+		if( $i !== 0 ) { $events_query .= ' OR '; }
+		$events_query .= '( B.event_id = %d AND B.event_start = %s AND B.event_end = %s )';
+		$variables = array_merge( $variables, array( $event[ 'id' ], $event[ 'start' ], $event[ 'end' ] ) );
+		if( ! in_array( $event[ 'id' ], $event_ids, true ) ) {
+			$event_ids_placeholders[] = '%d';
+			$event_ids[] = $event[ 'id' ];
+		}
 		++$i;
 	}
+	$variables = array_merge( $variables, $event_ids );
 	
-	$query .=	  ' GROUP BY event_per_user '
-			. ' ) as B2 '
-			. ' GROUP BY B2.user_id ';
+	// Retrieve the quantity booked per event, per user
+	$query = 'SELECT E.id as event_id, B.event_start, B.event_end, B.user_id, E.availability as total_availability, SUM( B.quantity ) as quantity '
+			. ' FROM ' . BOOKACTI_TABLE_EVENTS . ' as E '
+			. ' LEFT JOIN ' . BOOKACTI_TABLE_BOOKINGS . ' as B ON B.event_id = E.id AND B.active = 1 AND ( ' . $events_query . ' ) '
+			. ' WHERE E.id IN ( ' . implode( ', ', $event_ids_placeholders ) . ' ) '
+			. ' GROUP BY E.id, B.event_start, B.event_end, B.user_id  '
+			. ' ORDER BY E.id, B.event_start, B.event_end, B.user_id  ';
 	
-	$query		= apply_filters( 'bookacti_number_of_bookings_per_user_by_events_query', $wpdb->prepare( $query, $variables ), $events, $active );
-	$results	= $wpdb->get_results( $query, OBJECT );
-	
-	$quantity_per_user = array();
-	if( $results ) {
-		foreach( $results as $result ) {
-			$user_id = ! empty( $result->user_id ) ? $result->user_id : 0;
-			$quantity_per_user[ $user_id ] = $result->max_quantity;
-		}
+	if( $variables ) {
+		$query = $wpdb->prepare( $query, $variables );
 	}
 	
-	return apply_filters( 'bookacti_number_of_bookings_per_user_by_events', $quantity_per_user, $events, $active, $query );
+	$query = apply_filters( 'bookacti_number_of_bookings_per_event_per_user_query', $query, $events );
+	$events_booking_data = $wpdb->get_results( $query );
+	
+	// Order the array by event id
+	foreach( $events as $i => $event ) {
+		// Default values
+		$return_event = $event;
+		$return_event[ 'bookings_nb_per_user' ] = array();
+		$return_event[ 'total_availability' ] = 0;
+		
+		// Fill values
+		foreach( $events_booking_data as $event_booking_data ) {
+			if( intval( $event_booking_data->event_id ) === intval( $event[ 'id' ] ) && ! $return_event[ 'total_availability' ] ) {
+				$return_event[ 'total_availability' ] = $event_booking_data->total_availability;
+			}
+			
+			if( intval( $event_booking_data->event_id ) === intval( $event[ 'id' ] )
+			&&  $event_booking_data->event_start === $event[ 'start' ]
+			&&  $event_booking_data->event_end === $event[ 'end' ] ) {
+				if( ! isset( $return_event[ 'bookings_nb_per_user' ][ $event_booking_data->user_id ] ) ) {
+					$return_event[ 'bookings_nb_per_user' ][ $event_booking_data->user_id ] = 0;
+				}
+				$return_event[ 'bookings_nb_per_user' ][ $event_booking_data->user_id ] += $event_booking_data->quantity;
+			}
+		}
+		
+		$return_array[ $i ] = $return_event;
+	}
+	
+	return apply_filters( 'bookacti_number_of_bookings_per_event_per_user', $return_array, $events );
 }
 
 

@@ -127,13 +127,13 @@ add_action( 'wp_ajax_nopriv_bookactiReloadBookingSystem', 'bookacti_controller_r
 
 /**
  * AJAX Controller - Get booking numbers for a given template and / or event
- * @version 1.9.0
+ * @version 1.9.2
  */
 function bookacti_controller_get_booking_numbers() {
 	$template_ids	= isset( $_POST[ 'template_ids' ] ) ? bookacti_ids_to_array( $_POST[ 'template_ids' ] ) : array();
 	$event_ids		= isset( $_POST[ 'event_ids' ] ) ? bookacti_ids_to_array( $_POST[ 'event_ids' ] ) : array();
 	
-	$booking_numbers = bookacti_get_number_of_bookings_by_events( $template_ids, $event_ids );
+	$booking_numbers = bookacti_get_number_of_bookings_for_booking_system( $template_ids, $event_ids );
 	if( ! $booking_numbers ) { bookacti_send_json( array( 'status' => 'no_bookings' ), 'get_booking_numbers' ); }
 	
 	bookacti_send_json( array( 'status' => 'success', 'bookings' => $booking_numbers ), 'get_booking_numbers' );

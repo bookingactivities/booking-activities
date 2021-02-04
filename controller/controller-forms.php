@@ -1131,7 +1131,7 @@ add_action( 'wp_ajax_bookactiUpdateForm', 'bookacti_controller_update_form' );
 /**
  * Duplicate a booking form
  * @since 1.7.18
- * @version 1.8.4
+ * @version 1.9.2
  */
 function bookacti_controller_duplicate_form() {
 	if( empty( $_REQUEST[ 'form_id' ] ) || empty( $_REQUEST[ 'action' ] ) || empty( $_REQUEST[ 'page' ] ) 
@@ -1175,7 +1175,7 @@ function bookacti_controller_duplicate_form() {
 	}
 	
 	// Update form managers
-	$original_form_managers = bookacti_get_managers( 'form', $original_form_id );
+	$original_form_managers = bookacti_get_form_managers( $original_form_id );
 	bookacti_update_managers( 'form', $form_id, $original_form_managers );
 	
 	// Duplicate the fields
@@ -1338,10 +1338,9 @@ add_action( 'wp_ajax_bookactiUpdateFormMeta', 'bookacti_controller_update_form_m
 /**
  * AJAX Controller - Insert a form field
  * @since 1.5.0
- * @version 1.8.4
+ * @version 1.9.2
  */
 function bookacti_controller_insert_form_field() {
-	
 	// Check nonce
 	if( ! check_ajax_referer( 'bookacti_insert_form_field', 'nonce', false ) ) {
 		bookacti_send_json_invalid_nonce( 'insert_form_field' );
@@ -1354,7 +1353,7 @@ function bookacti_controller_insert_form_field() {
 		bookacti_send_json( array( 
 			'status' => 'failed', 
 			'error' => 'invalid_form_id', 
-			'message' => __( 'Invalid form ID', 'booking-activities' ) ), 'insert_form_field' );
+			'message' => esc_html__( 'Invalid form ID', 'booking-activities' ) ), 'insert_form_field' );
 	}
 	
 	// Check capabilities
@@ -1365,23 +1364,23 @@ function bookacti_controller_insert_form_field() {
 	$field_name = $_POST[ 'field_name' ];
 
 	// Check if the field is known
-	$fields_data = bookacti_get_default_form_fields_data();
-	if( ! in_array( $field_name, array_keys( $fields_data ), true ) ) {
+	$default_field_data = bookacti_get_default_form_fields_data( $field_name );
+	if( ! $default_field_data ) {
 		bookacti_send_json( array( 
 			'status' => 'failed', 
 			'error' => 'unknown_field_name', 
-			'message' => __( 'Unknown field', 'booking-activities' ) ), 'insert_form_field' );
+			'message' => esc_html__( 'Unknown field', 'booking-activities' ) ), 'insert_form_field' );
 	}
 
 	// Check if the field already exists
 	$form_fields = bookacti_get_form_fields_data( $form_id );
 	$field_already_added = array();
 	foreach( $form_fields as $form_field ) { $field_already_added[] = $form_field[ 'name' ]; }
-	if( in_array( $field_name, $field_already_added, true ) && $fields_data[ $field_name ][ 'unique' ] ) {
+	if( in_array( $field_name, $field_already_added, true ) && $default_field_data[ 'unique' ] ) {
 		bookacti_send_json( array( 
 			'status' => 'failed', 
 			'error' => 'field_already_added', 
-			'message' => __( 'This field has already been added to the form', 'booking-activities' ) ), 'insert_form_field' );
+			'message' => esc_html__( 'This field has already been added to the form', 'booking-activities' ) ), 'insert_form_field' );
 	}
 
 	// Insert form field
@@ -1391,10 +1390,8 @@ function bookacti_controller_insert_form_field() {
 		bookacti_send_json( array( 
 			'status' => 'failed', 
 			'error' => 'not_inserted', 
-			'message' => __( 'An error occurred while trying to insert the form field.', 'booking-activities' ) ), 'insert_form_field' );
+			'message' => esc_html__( 'An error occurred while trying to insert the form field.', 'booking-activities' ) ), 'insert_form_field' );
 	}
-
-	$fields_data[ $field_name ][ 'field_id' ] = $field_id;
 
 	// Update field order
 	$field_order	= bookacti_get_metadata( 'form', $form_id, 'field_order', true );

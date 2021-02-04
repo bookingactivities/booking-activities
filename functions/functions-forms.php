@@ -1816,11 +1816,19 @@ function bookacti_user_can_manage_form( $form_id, $user_id = false ) {
 /**
  * Get form managers
  * @since 1.5.0
- * @param int $form_id
+ * @version 1.9.2
+ * @param int|array $form_ids
  * @return array
  */
-function bookacti_get_form_managers( $form_id ) {
-	return bookacti_get_managers( 'form', $form_id );
+function bookacti_get_form_managers( $form_ids ) {
+	$managers = bookacti_get_managers( 'form', $form_ids );
+	
+	$merged_managers = array();
+	foreach( $managers as $user_ids ) {
+		$merged_managers = array_merge( $merged_managers, bookacti_ids_to_array( $user_ids ) );
+	}
+	
+	return array_unique( $merged_managers );
 }
 
 

@@ -5,7 +5,7 @@ Tags: booking, reservation, booking form, woocommerce booking, booking events
 Requires at least: 3.6
 Tested up to: 5.6
 Requires PHP: 5.3
-Stable tag: 1.9.1
+Stable tag: 1.9.2
 License: GPLv3 or later
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
 
@@ -320,6 +320,13 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 
 
 == Changelog ==
+
+= 1.9.2 - 2021/02/04 =
+* Fix - Group of events may return no_availability error although there are available places, if the grouped events had not always been booked together only
+* Fix - Min / max bookings per user and Max users per event checks were incorrect in case of multiple bookings if the events were booked by multiple users
+* Fix - Managers could not edit calendar although they had permission
+* Fix - Dates filters on backend bookings page did not work with some browsers
+* Fix - Database tables using mediumint for their ids now uses bigint to push back the limitations
 
 = 1.9.1 - 2021/01/29 =
 * Fix - User data were not saved in booking metadata when processing WooCommerce checkout without account
