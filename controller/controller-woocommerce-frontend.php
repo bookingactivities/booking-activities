@@ -1340,7 +1340,7 @@ add_action( 'woocommerce_checkout_create_order', 'bookacti_wc_checkout_create_on
 /**
  * Check availability before paying for a failed order
  * @since 1.7.13
- * @version 1.9.0
+ * @version 1.9.3
  * @param WC_Order $order
  */
 function bookacti_availability_check_before_pay_action( $order ) {
@@ -1361,8 +1361,6 @@ function bookacti_availability_check_before_pay_action( $order ) {
 			}
 		}
 	}
-	
-	$error_occured = true; // FOR TESTING PURPOSE
 	
 	// If the events are no longer available, prevent submission and feedback user
 	if( $error_occured ) {

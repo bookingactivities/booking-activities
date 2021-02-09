@@ -321,6 +321,11 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 
 == Changelog ==
 
+= 1.9.3 =
+* Feature - Option to hide events availability, set the threshold in Booking Activities > Booking forms > your form > Calendar settings > Display Tab
+* Tweak - Calendar editor: Change the group settings icon when the selected events have changed
+* Fix - Existing orders cannot be paid for
+
 = 1.9.2 - 2021/02/04 =
 * Fix - Group of events may return no_availability error although there are available places, if the grouped events had not always been booked together only
 * Fix - Min / max bookings per user and Max users per event checks were incorrect in case of multiple bookings if the events were booked by multiple users

@@ -443,7 +443,7 @@ function bookacti_generate_ical( $vevents, $vcalendar = array() ) {
 /**
  * Get the variables used with javascript
  * @since 1.8.0
- * @version 1.9.0
+ * @version 1.9.3
  * @return array
  */
 function bookacti_get_js_variables() {
@@ -513,6 +513,7 @@ function bookacti_get_js_variables() {
 		'selected_events'					=> apply_filters( 'bookacti_translate_text', $messages[ 'selected_events' ][ 'value' ] ),
 		'avail'								=> apply_filters( 'bookacti_translate_text', $messages[ 'avail' ][ 'value' ] ),
 		'avails'							=> apply_filters( 'bookacti_translate_text', $messages[ 'avails' ][ 'value' ] ),
+		'hide_availability_fixed'			=> apply_filters( 'bookacti_hide_availability_fixed', 0 ), // Threshold above which availability is masked. 0 to always show availability.
 
 		'dialog_button_ok'                  => esc_html__( 'OK', 'booking-activities' ),
 		'dialog_button_cancel'				=> apply_filters( 'bookacti_translate_text', $messages[ 'cancel_dialog_button' ][ 'value' ] ),

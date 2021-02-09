@@ -168,13 +168,13 @@ foreach( $fields_data as $field_name => $field_data ) {
 		/**
 		 * Display the content of the "Filters" tab of the "Calendar" dialog
 		 * @since 1.5.0
-		 * @version 1.9.1
+		 * @version 1.9.3
 		 * @param array $params
 		 */
 		function bookacti_fill_calendar_dialog_filters_tab( $params ) {
 			do_action( 'bookacti_calendar_dialog_filters_tab_before', $params );
 		?>
-		<fieldset>
+		<fieldset id='bookacti-events-sources-fieldset'>
 			<legend><?php esc_html_e( 'Event sources', 'booking-activities' ); ?></legend>
 		<?php 
 			$fields = bookacti_get_booking_system_fields_default_data( array( 'calendars', 'activities' ) );
@@ -182,7 +182,7 @@ foreach( $fields_data as $field_name => $field_data ) {
 		?>
 		</fieldset>
 		
-		<fieldset>
+		<fieldset id='bookacti-groups-of-events-fieldset'>
 			<legend><?php esc_html_e( 'Groups of events', 'booking-activities' ); ?></legend>
 			<?php 
 				$fields = bookacti_get_booking_system_fields_default_data( array( 'group_categories', 'groups_only', 'groups_single_events' ) );
@@ -190,7 +190,7 @@ foreach( $fields_data as $field_name => $field_data ) {
 			?>
 		</fieldset>
 		
-		<fieldset>
+		<fieldset id='bookacti-multiple-bookings-fieldset'>
 			<legend><?php esc_html_e( 'Multiple bookings', 'booking-activities' ); ?></legend>
 			<?php 
 				$fields = bookacti_get_booking_system_fields_default_data( array( 'multiple_bookings' ) );
@@ -198,7 +198,7 @@ foreach( $fields_data as $field_name => $field_data ) {
 			?>
 		</fieldset>
 		
-		<fieldset class='bookacti-hidden-field'>
+		<fieldset id='bookacti-booked-events-fieldset' class='bookacti-hidden-field'>
 			<legend><?php esc_html_e( 'Booked events', 'booking-activities' ); ?></legend>
 			<?php 
 				$fields = bookacti_get_booking_system_fields_default_data( array( 'bookings_only', 'status', 'user_id' ) );
@@ -301,12 +301,17 @@ foreach( $fields_data as $field_name => $field_data ) {
 		/**
 		 * Display the content of the "Display" tab of the "Calendar" dialog
 		 * @since 1.5.0
+		 * @version 1.9.3
 		 * @param array $params
 		 */
 		function bookacti_fill_calendar_dialog_display_tab( $params ) {
 			do_action( 'bookacti_calendar_dialog_display_tab_before', $params );
-		?>
-			<fieldset>
+			
+			$fields = bookacti_get_booking_system_fields_default_data( array( 'hide_availability' ) );
+			bookacti_display_fields( $fields );
+			
+			?>
+			<fieldset id='bookacti-css-selectors-fieldset'>
 				<legend><?php esc_html_e( 'CSS selectors', 'booking-activities' ); ?></legend>
 				<?php 
 					$fields = bookacti_get_booking_system_fields_default_data( array( 'id', 'class' ) );
@@ -320,13 +325,13 @@ foreach( $fields_data as $field_name => $field_data ) {
 		/**
 		 * Display the content of the "Availability" tab of the "Calendar" dialog
 		 * @since 1.5.0
-		 * @version 1.8.9
+		 * @version 1.9.3
 		 * @param array $params
 		 */
 		function bookacti_fill_calendar_dialog_availability_tab( $params ) {
 			do_action( 'bookacti_calendar_dialog_availability_tab_before', $params );
 		?>
-		<fieldset>
+		<fieldset id='bookacti-availability-period-fieldset'>
 			<legend><?php esc_html_e( 'Availability period', 'booking-activities' ); ?></legend>
 			<div style='margin-bottom:10px;'><em><?php /* translators: This is followed by 3 fields "d days, h hours and m minutes  before the event" (E.g.: The events will be bookable at the latest 2 hours 30 minutes before the event and at the earliest 14 days before the event. */ esc_html_e( 'The events will be bookable:', 'booking-activities' ); ?></em></div>
 			<?php 
@@ -346,7 +351,7 @@ foreach( $fields_data as $field_name => $field_data ) {
 			?>
 		</fieldset>
 		
-		<fieldset>
+		<fieldset id='bookacti-past-events-fieldset'>
 			<legend><?php esc_html_e( 'Past events', 'booking-activities' ); ?></legend>
 			<?php 
 				$fields = bookacti_get_booking_system_fields_default_data( array( 'past_events', 'past_events_bookable' ) );
@@ -360,12 +365,13 @@ foreach( $fields_data as $field_name => $field_data ) {
 		/**
 		 * Display the content of the "Calendar" tab of the "Calendar" dialog
 		 * @since 1.5.0
+		 * @version 1.9.3
 		 * @param array $params
 		 */
 		function bookacti_fill_calendar_dialog_calendar_tab( $params ) {
 			do_action( 'bookacti_calendar_dialog_calendar_tab_before', $params );
 		?>
-		<fieldset>
+		<fieldset id='bookacti-working-time-fieldset'>
 			<legend><?php esc_html_e( 'Working time', 'booking-activities' ); ?></legend>
 			<?php 
 				$fields = bookacti_get_calendar_fields_default_data( array( 'minTime', 'maxTime' ) );

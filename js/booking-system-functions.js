@@ -1418,22 +1418,19 @@ function bookacti_get_bookings_number_for_a_single_grouped_event( booking_system
 
 /**
  * Get a div with event available places
+ * @version 1.9.3
  * @param {HTMLElement} booking_system
  * @param {object} event
  * @returns {String}
  */
 function bookacti_get_event_availability_div( booking_system, event ) {
-	
 	var booking_system_id = booking_system.attr( 'id' );
-	
 	var available_places = bookacti_get_event_availability( booking_system, event );
 	
 	var unit_name = '';
 	var activity_id = bookacti.booking_system[ booking_system_id ][ 'events_data' ][ event.id ][ 'activity_id' ];
 	if( activity_id ) {
-		
 		var activity_data = bookacti.booking_system[ booking_system_id ][ 'activities_data' ][ activity_id ];
-		
 		if( activity_data !== undefined ) {
 			if( activity_data[ 'settings' ] !== undefined ) {
 				if( activity_data[ 'settings' ][ 'unit_name_plural' ] !== undefined
@@ -1453,13 +1450,28 @@ function bookacti_get_event_availability_div( booking_system, event ) {
 	
 	var avail = available_places > 1 ? bookacti_localized.avails : bookacti_localized.avail;
 	
-	//Detect if the event is available or full, and if it is booked or not
-	var availability = bookacti.booking_system[ booking_system_id ][ 'events_data' ][ event.id ][ 'availability' ];
-	var class_booked = available_places < availability ? 'bookacti-booked' : 'bookacti-not-booked';
+	// Detect if the event is available or full, and if it is booked or not
+	var total_availability = bookacti.booking_system[ booking_system_id ][ 'events_data' ][ event.id ][ 'availability' ];
+	var class_booked = available_places < total_availability ? 'bookacti-booked' : 'bookacti-not-booked';
 	var class_full = available_places <= 0 ? 'bookacti-full' : '';
 	
-	//Build a div with availability
-	var div = '<div class="bookacti-availability-container" >' 
+	// Maybe hide event availability
+	var hide_availability_class	= '';
+	var bookings_only		= bookacti.booking_system[ booking_system_id ][ 'bookings_only' ] == 1 ? true : false;
+	var percent_remaining	= parseInt( ( available_places / total_availability ) * 100 );
+	var percent_threshold	= parseInt( bookacti.booking_system[ booking_system_id ][ 'hide_availability' ] );
+	var fixed_threshold		= parseInt( bookacti_localized.hide_availability_fixed );
+	var hide_percent		= percent_threshold < 100 && percent_remaining > percent_threshold;
+	var hide_fixed			= fixed_threshold > 0 && available_places > fixed_threshold;
+	
+	if( ! bookings_only 
+	&& ( ( fixed_threshold <= 0 && hide_percent ) || ( percent_threshold >= 100 && hide_fixed ) || ( hide_percent && hide_fixed ) ) ) {
+		available_places = '';
+		hide_availability_class	= 'bookacti-hide-availability';
+	}
+	
+	// Build a div with availability
+	var div = '<div class="bookacti-availability-container ' + hide_availability_class + '" >' 
 				+ '<span class="bookacti-available-places ' + class_booked + ' ' + class_full + '" >'
 					+ '<span class="bookacti-available-places-number">' + available_places + '</span>' 
 					+ '<span class="bookacti-available-places-unit-name"> ' + unit_name + '</span>' 
@@ -1473,18 +1485,18 @@ function bookacti_get_event_availability_div( booking_system, event ) {
 
 /**
  * Get a div with event booking number
+ * @version 1.9.3
  * @param {HTMLElement} booking_system
  * @param {object} event
  * @returns {String}
  */
 function bookacti_get_event_number_of_bookings_div( booking_system, event ) {
-	
 	var booking_system_id	= booking_system.attr( 'id' );
-	var availability		= parseInt( bookacti.booking_system[ booking_system_id ][ 'events_data' ][ event.id ][ 'availability' ] );
+	var total_availability	= parseInt( bookacti.booking_system[ booking_system_id ][ 'events_data' ][ event.id ][ 'availability' ] );
 	var bookings_number		= bookacti_get_event_number_of_bookings( booking_system, event );
 	var available_places	= bookacti_get_event_availability( booking_system, event );
 	
-	var class_no_availability	= availability === 0 ? 'bookacti-no-availability' : '';
+	var class_no_availability	= total_availability === 0 ? 'bookacti-no-availability' : '';
 	var class_booked			= bookings_number > 0 ? 'bookacti-booked' : 'bookacti-not-booked';
 	var class_full				= available_places <= 0 ? 'bookacti-full' : '';
 	

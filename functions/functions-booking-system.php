@@ -325,7 +325,7 @@ function bookacti_get_calendar_html( $booking_system_data = array() ) {
 /**
  * Get default booking system attributes
  * @since 1.5.0
- * @version 1.9.0
+ * @version 1.9.3
  * @return array
  */
 function bookacti_get_booking_system_default_attributes() {
@@ -338,6 +338,7 @@ function bookacti_get_booking_system_default_attributes() {
 	$default_atts = apply_filters( 'bookacti_booking_system_default_attributes', array(
 		'id'							=> '',
 		'class'							=> '',
+		'hide_availability'				=> 100,
 		'calendars'						=> array(),
 		'activities'					=> array(),
 		'group_categories'				=> array( 'none' ),
@@ -374,7 +375,7 @@ function bookacti_get_booking_system_default_attributes() {
 
 /**
  * Check booking system attributes and format them to be correct
- * @version 1.9.0
+ * @version 1.9.3
  * @param array $raw_atts 
  * @return array
  */
@@ -516,6 +517,9 @@ function bookacti_format_booking_system_attributes( $raw_atts = array() ) {
 	
 	// Format classes
 	$formatted_atts[ 'class' ] = is_string( $atts[ 'class' ] ) ? esc_attr( $atts[ 'class' ] ) : $defaults[ 'class' ];
+	
+	// Format the threshold to hide events availability
+	$formatted_atts[ 'hide_availability' ] = is_numeric( $atts[ 'hide_availability' ] ) ? max( min( intval( $atts[ 'hide_availability' ] ), 100 ), 0 ) : $defaults[ 'hide_availability' ];
 	
 	// Format picked events
 	$formatted_atts[ 'picked_events' ] = bookacti_format_picked_events( $atts[ 'picked_events' ] );
@@ -881,7 +885,7 @@ function bookacti_format_booking_system_url_attributes( $atts = array() ) {
 /**
  * Get booking system fields default data
  * @since 1.5.0
- * @version 1.9.1
+ * @version 1.9.3
  * @param array $fields
  * @return array
  */
@@ -1052,6 +1056,20 @@ function bookacti_get_booking_system_fields_default_data( $fields = array() ) {
 			'name'			=> 'class',
 			'title'			=> esc_html__( 'Class', 'booking-activities' ),
 			'tip'			=> esc_html__( 'Set the booking system CSS classes. Leave an empty space between each class.', 'booking-activities' )
+		);
+	}
+	
+	// Hide events availability threshold
+	if( ! $fields || in_array( 'hide_availability', $fields, true ) ) {
+		$defaults[ 'hide_availability' ] = array(
+			'type'			=> 'number',
+			'name'			=> 'hide_availability',
+			'options'		=> array( 'min' => 0, 'max' => 100, 'step' => 1 ),
+			/* translators: followed by a percentage. E.g.: Hide availability if greater than 30%. */
+			'title'			=> esc_html__( 'Hide availability if greater than', 'booking-activities' ),
+			'label'			=> '%',
+			/* translators: %1$s = "Booked only" option */
+			'tip'			=> sprintf( esc_html__( 'Hide the events availability if the number of remaining places is superior to that threshold. E.g.: "30%%": if the event has a total of 50 places, the availability will be hidden until there are only 15 places left. Set it to 100 to always display the availability, or 0 to never show it. This option has no effect if the "%1$s" option is active.', 'booking-activities' ), esc_html__( 'Booked only', 'booking-activities' ) )
 		);
 	}
 	
