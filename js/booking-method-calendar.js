@@ -1,6 +1,6 @@
 /**
  * Initialize the calendar
- * @version 1.9.0
+ * @version 1.9.3
  * @param {HTMLElement} booking_system
  * @param {boolean} reload_events
  */
@@ -14,7 +14,7 @@ function bookacti_set_calendar_up( booking_system, reload_events ) {
 	var availability_period	= bookacti_get_availability_period( booking_system );
 	var display_data		= typeof bookacti.booking_system[ booking_system_id ][ 'display_data' ] !== 'undefined' ? bookacti.booking_system[ booking_system_id ][ 'display_data' ] : {};
 	var min_time			= typeof display_data.minTime !== 'undefined' ? display_data.minTime : '00:00';
-	var max_time			= typeof display_data.maxTime !== 'undefined' ? ( display_data.maxTime === '00:00' ? '24:00' : display_data.maxTime ) : '24:00';
+	var max_time			= typeof display_data.maxTime !== 'undefined' ? display_data.maxTime : '24:00';
 	
 	// See https://fullcalendar.io/docs/
 	var init_data = {

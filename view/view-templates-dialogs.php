@@ -1,7 +1,7 @@
 <?php 
 /**
  * Calendar editor dialogs
- * @version 1.9.0
+ * @version 1.9.3
  */
 
 // Exit if accessed directly
@@ -355,7 +355,7 @@ foreach( $templates as $template ) {
 			<?php
 			/**
 			 * Display the 'General' tab content of activity settings
-			 * @version 1.9.0
+			 * @version 1.9.3
 			 * @param array $params
 			 */
 			function bookacti_fill_activity_tab_general( $params = array() ) {
@@ -375,17 +375,17 @@ foreach( $templates as $template ) {
 						'name'	=> 'activity-availability',
 						'id'	=> 'bookacti-activity-availability',
 						'title'	=> esc_html__( 'Default availability', 'booking-activities' ),
-						'label'	=> '<small><em>' . esc_html__( 'Used when an event is created only', 'booking-activities' ) . '</em></small>',
-						'options'=> array( 'min' => 0, 'step' => 1 ),
-						'tip'	=> esc_html__( 'The default amount of bookings that can be made on each event of this activity. This can be overriden on each event independantly.', 'booking-activities' )
+						'label'	=> bookacti_help_tip( esc_html__( 'The default amount of bookings that can be made on each event of this activity. This can be overriden on each event independantly.', 'booking-activities' ), false ) 
+								. '<br/><small><em>' . esc_html__( 'Used when an event is created only', 'booking-activities' ) . '</em></small>',
+						'options'=> array( 'min' => 0, 'step' => 1 )
 					),
 					'activity-duration' => array(
 						'type'	=> 'duration',
 						'name'	=> 'activity-duration',
 						'id'	=> 'bookacti-activity-duration',
 						'title'	=> esc_html__( 'Default duration', 'booking-activities' ),
-						'label'	=> '<small><em>' . esc_html__( 'Used when an event is created only', 'booking-activities' ) . '</em></small>',
-						'tip'	=> esc_html__( 'The default duration of an event when you drop this activity onto the calendar. For a better readability, try not to go over your working hours. Best practice for events of several days is to create one event per day and then group them.', 'booking-activities' )
+						'label'	=> bookacti_help_tip( esc_html__( 'The default duration of an event when you drop this activity onto the calendar. For a better readability, try not to go over your working hours. Best practice for events of several days is to create one event per day and then group them.', 'booking-activities' ), false )
+								. '<br/><small><em>' . esc_html__( 'Used when an event is created only', 'booking-activities' ) . '</em></small>'
 					),
 					'activity-resizable' => array(
 						'type'	=> 'checkbox',
@@ -413,7 +413,7 @@ foreach( $templates as $template ) {
 			/**
 			 * Display the fields in the "Availability" tab of the Activity dialog
 			 * @since 1.4.0
-			 * @version 1.9.0
+			 * @version 1.9.3
 			 * @param array $params
 			 */
 			function bookacti_fill_activity_tab_availability( $params = array() ) {
@@ -453,11 +453,11 @@ foreach( $templates as $template ) {
 						'id'	=> 'bookacti-activity-booking-changes-deadline',
 								/* translators: Followed by a field indicating a number of days, hours and minutes from now. E.g.: "Changes are allowed for bookings starting in at least 2 days, 12 hours, 25 minutes". */
 						'title'	=> esc_html__( 'Changes are allowed for bookings starting in at least', 'booking-activities' ),
-								/* translators: %s = [bookingactivities_list] */
-						'label'	=> '<br/><small><em>' . sprintf( esc_html__( 'Bookings can be changed from the booking list only (%s)', 'booking-activities' ), '<a href="https://booking-activities.fr/en/docs/user-documentation/get-started-with-booking-activities/display-customers-bookings-list-on-the-frontend/" target="_blank"><code style="font-size: inherit;">[bookingactivities_list]</code></a>' ) . '</em></small>',
-						'tip'	=> esc_html__( 'Define when a customer can change a booking (cancel, reschedule). E.g.: "2 days 5 hours 30 minutes", your customers will be able to change the bookings starting in 2 days, 5 hours and 30 minutes at least. They won\'t be allowed to cancel a booking starting tomorrow for example.', 'booking-activities' )
+						'label'	=> bookacti_help_tip( esc_html__( 'Define when a customer can change a booking (cancel, reschedule). E.g.: "2 days 5 hours 30 minutes", your customers will be able to change the bookings starting in 2 days, 5 hours and 30 minutes at least. They won\'t be allowed to cancel a booking starting tomorrow for example.', 'booking-activities' )
 								. '<br/>' . esc_html__( 'This parameter applies to the events of this activity only. A global parameter is available in global settings.', 'booking-activities' )
-								. ' ' . esc_html__( 'Leave it empty to use the global value.', 'booking-activities' )
+								. ' ' . esc_html__( 'Leave it empty to use the global value.', 'booking-activities' ), false )
+								/* translators: %s = [bookingactivities_list] */
+								.  '<br/><small><em>' . sprintf( esc_html__( 'Bookings can be changed from the booking list only (%s)', 'booking-activities' ), '<a href="https://booking-activities.fr/en/docs/user-documentation/get-started-with-booking-activities/display-customers-bookings-list-on-the-frontend/" target="_blank"><code style="font-size: inherit;">[bookingactivities_list]</code></a>' ) . '</em></small>'
 					)
 				);
 				
@@ -789,7 +789,7 @@ foreach( $templates as $template ) {
 			/**
 			 * Display the fields in the "Availability" tab of the Group Category dialog
 			 * @since 1.4.0
-			 * @version 1.9.0
+			 * @version 1.9.3
 			 * @param array $params
 			 */
 			function bookacti_fill_group_category_tab_availability( $params = array() ) {
@@ -829,10 +829,10 @@ foreach( $templates as $template ) {
 						'id'	=> 'bookacti-group-category-booking-changes-deadline',
 								/* translators: Followed by a field indicating a number of days, hours and minutes from now. E.g.: "Changes are allowed for bookings starting in at least 2 days, 12 hours, 25 minutes". */
 						'title'	=> esc_html__( 'Changes are allowed for bookings starting in at least', 'booking-activities' ),
-						'label'	=> '<br/><small><em>' . sprintf( esc_html__( 'Bookings can be changed from the booking list only (%s)', 'booking-activities' ), '<a href="https://booking-activities.fr/en/docs/user-documentation/get-started-with-booking-activities/display-customers-bookings-list-on-the-frontend/" target="_blank"><code style="font-size: inherit;">[bookingactivities_list]</code></a>' ) . '</em></small>',
-						'tip'	=> esc_html__( 'Define when a customer can change a booking (cancel, reschedule). E.g.: "2 days 5 hours 30 minutes", your customers will be able to change the bookings starting in 2 days, 5 hours and 30 minutes at least. They won\'t be allowed to cancel a booking starting tomorrow for example.', 'booking-activities' )
+						'label'	=> bookacti_help_tip( esc_html__( 'Define when a customer can change a booking (cancel, reschedule). E.g.: "2 days 5 hours 30 minutes", your customers will be able to change the bookings starting in 2 days, 5 hours and 30 minutes at least. They won\'t be allowed to cancel a booking starting tomorrow for example.', 'booking-activities' )
 								. '<br/>' . esc_html__( 'This parameter applies to the groups of events of this category only. A global parameter is available in global settings.', 'booking-activities' )
-								. ' ' . esc_html__( 'Leave it empty to use the global value.', 'booking-activities' )
+								. ' ' . esc_html__( 'Leave it empty to use the global value.', 'booking-activities' ), false )
+								. '<br/><small><em>' . sprintf( esc_html__( 'Bookings can be changed from the booking list only (%s)', 'booking-activities' ), '<a href="https://booking-activities.fr/en/docs/user-documentation/get-started-with-booking-activities/display-customers-bookings-list-on-the-frontend/" target="_blank"><code style="font-size: inherit;">[bookingactivities_list]</code></a>' ) . '</em></small>'
 					),
 					'groupCategoryOptions[started_groups_bookable]' => array(
 						'type'	=> 'select',

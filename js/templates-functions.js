@@ -946,27 +946,33 @@ function bookacti_display_activity_tuto_if_no_activity_available() {
 
 /**
  * Display tuto if there is there is at least two events selected and no group categories yet
+ * @version 1.9.3
  */
 function bookacti_maybe_display_add_group_of_events_button() {
-	if( $j( '#bookacti-template-add-first-group-of-events-container' ).length ) {
-		
-		// If there are at least 2 selected events...
-		if( bookacti.booking_system[ 'bookacti-template-calendar' ][ 'selected_events' ].length >= 2 ) {
-			$j( '#bookacti-insert-group-of-events' ).css( 'visibility', 'visible' );
-			// And there are no groups of events yet
-			if( ! $j( '.bookacti-group-category' ).length ) {
-				$j( '#bookacti-template-add-group-of-events-tuto-select-events' ).hide();
-				$j( '#bookacti-template-add-first-group-of-events-container' ).show();
-			}
-			
-		// Else, hide the add group category button
-		} else {
-			$j( '#bookacti-template-add-first-group-of-events-container' ).hide();
-			$j( '#bookacti-insert-group-of-events' ).css( 'visibility', 'hidden' );
-			if( ! $j( '.bookacti-group-category' ).length ) {
-				$j( '#bookacti-template-add-group-of-events-tuto-select-events' ).show();
-			}
+	if( ! $j( '#bookacti-template-add-first-group-of-events-container' ).length ) { return; }
+	
+	// If there are at least 2 selected events...
+	if( bookacti.booking_system[ 'bookacti-template-calendar' ][ 'selected_events' ].length >= 2 ) {
+		$j( '#bookacti-insert-group-of-events' ).css( 'visibility', 'visible' );
+		// And there are no groups of events yet
+		if( ! $j( '.bookacti-group-category' ).length ) {
+			$j( '#bookacti-template-add-group-of-events-tuto-select-events' ).hide();
+			$j( '#bookacti-template-add-first-group-of-events-container' ).show();
 		}
+
+	// Else, hide the add group category button
+	} else {
+		$j( '#bookacti-template-add-first-group-of-events-container' ).hide();
+		$j( '#bookacti-insert-group-of-events' ).css( 'visibility', 'hidden' );
+		if( ! $j( '.bookacti-group-category' ).length ) {
+			$j( '#bookacti-template-add-group-of-events-tuto-select-events' ).show();
+		}
+	}
+	
+	// If a group is already selected, change its settings icon as a feedback that it is possible to update the grouped events
+	$j( '.bookacti-group-of-events .bookacti-update-group-of-events' ).removeClass( 'dashicons-insert' ).addClass( 'dashicons-admin-generic' );
+	if( $j( '.bookacti-group-of-events.bookacti-selected-group' ).length ) {
+		$j( '.bookacti-group-of-events.bookacti-selected-group .bookacti-update-group-of-events' ).removeClass( 'dashicons-admin-generic' ).addClass( 'dashicons-insert' );
 	}
 }
 

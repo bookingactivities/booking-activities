@@ -579,7 +579,7 @@ add_action( 'wp_ajax_bookactiDeleteGroupCategory', 'bookacti_controller_delete_g
 
 /**
  * AJAX Controller - Create a new template
- * @version	1.8.0
+ * @version	1.9.3
  */
 function bookacti_controller_insert_template() {
 	// Check nonce and capabilities
@@ -602,7 +602,7 @@ function bookacti_controller_insert_template() {
 	$options_array			= isset( $_POST[ 'templateOptions' ] ) && is_array( $_POST[ 'templateOptions' ] ) ? $_POST[ 'templateOptions' ] : array();
 
 	$template_managers	= bookacti_format_template_managers( $managers_array );
-	$template_settings	= bookacti_format_template_settings( $options_array );
+	$template_settings	= bookacti_sanitize_template_settings( $options_array );
 
 	$lastid = bookacti_insert_template( $template_title, $template_start, $template_end, $template_managers, $template_settings, $duplicated_template_id );
 	if( ! $lastid ) { bookacti_send_json( array( 'status' => 'failed', 'error' => 'not_inserted' ), 'insert_template' ); }
@@ -616,10 +616,10 @@ add_action( 'wp_ajax_bookactiInsertTemplate', 'bookacti_controller_insert_templa
 
 /**
  * AJAX Controller - Update template
- * @version	1.8.0
+ * @version	1.9.3
  */
 function bookacti_controller_update_template() {
-	$template_id	= intval( $_POST['template-id'] );
+	$template_id = intval( $_POST[ 'template-id' ] );
 
 	// Check nonce and capabilities
 	$is_nonce_valid = check_ajax_referer( 'bookacti_insert_or_update_template', 'nonce_insert_or_update_template', false );
@@ -642,7 +642,7 @@ function bookacti_controller_update_template() {
 
 	$updated_metadata = 0;
 	if( isset( $_POST[ 'templateOptions' ] ) ) {
-		$template_settings	= bookacti_format_template_settings( $_POST[ 'templateOptions' ] );
+		$template_settings	= bookacti_sanitize_template_settings( $_POST[ 'templateOptions' ] );
 		$updated_metadata	= bookacti_update_metadata( 'template', $template_id, $template_settings );
 	}
 

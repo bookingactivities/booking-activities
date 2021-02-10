@@ -90,6 +90,7 @@ body.booking-activities_page_bookacti_forms label[for='bookacti_form_publish-hid
 .bookacti-options-table .bookacti-column-activity,
 .bookacti-options-table .bookacti-column-group_category { width: 130px; max-width: 130px; padding-right: 20px; overflow: hidden; }
 
+#bookacti-form-field-dialog-calendar { overflow: hidden; }
 
 
 /* Metaboxes */

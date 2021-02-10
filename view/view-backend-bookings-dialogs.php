@@ -108,6 +108,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			/**
 			 * Display the content of the "Calendar" tab of the "Bookings Calendar" dialog
 			 * @since 1.8.0
+			 * @version 1.9.3
 			 * @param array $params
 			 */
 			function bookacti_fill_bookings_calendar_dialog_calendar_tab( $params ) {
@@ -118,7 +119,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 					<?php 
 						$agenda_fields = bookacti_get_calendar_fields_default_data( array( 'minTime', 'maxTime' ) );
 						$agenda_fields[ 'minTime' ][ 'value' ] = $params[ 'calendar_data' ][ 'minTime' ];
-						$agenda_fields[ 'maxTime' ][ 'value' ] = $params[ 'calendar_data' ][ 'maxTime' ] !== '24:00' ? $params[ 'calendar_data' ][ 'maxTime' ] : '00:00';
+						$agenda_fields[ 'maxTime' ][ 'value' ] = $params[ 'calendar_data' ][ 'maxTime' ];
 						bookacti_display_fields( $agenda_fields );
 					?>
 				</fieldset>

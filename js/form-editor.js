@@ -253,12 +253,15 @@ $j( document ).ready( function() {
 	/**
 	 * Calendar field settings: Toggle the booked events options - on change
 	 * @since 1.8.0
+	 * @version 1.9.3
 	 */
 	$j( '#bookacti-form-field-dialog-calendar' ).on( 'change', 'input#bookacti-bookings_only', function() {
 		if( $j( this ).is( ':checked' ) ) { 
-			$j( '#bookacti-status-container, #bookacti-user_id-container' ).show();
+			$j( '#bookacti-status-container, #bookacti-user_id-container, #bookacti-booked-events-fieldset' ).show();
+			$j( '#bookacti-hide_availability-container' ).hide();
 		} else {
 			$j( '#bookacti-status-container, #bookacti-user_id-container' ).hide();
+			$j( '#bookacti-hide_availability-container' ).show();
 		}
 	});
 	

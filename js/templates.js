@@ -113,7 +113,7 @@ $j( document ).ready( function() {
 
 /**
  * Initialize and display the template calendar
- * @version 1.9.0
+ * @version 1.9.3
  * @param {HTMLElement} calendar
  */
 function bookacti_load_template_calendar( calendar ) {
@@ -123,7 +123,7 @@ function bookacti_load_template_calendar( calendar ) {
 	var availability_period	= bookacti_get_availability_period( calendar );
 	var display_data		= typeof bookacti.booking_system[ 'bookacti-template-calendar' ][ 'display_data' ] !== 'undefined' ? bookacti.booking_system[ 'bookacti-template-calendar' ][ 'display_data' ] : {};
 	var min_time			= typeof display_data.minTime !== 'undefined' ? display_data.minTime : '00:00';
-	var max_time			= typeof display_data.maxTime !== 'undefined' ? ( display_data.maxTime === '00:00' ? '24:00' : display_data.maxTime ) : '24:00';
+	var max_time			= typeof display_data.maxTime !== 'undefined' ? display_data.maxTime : '24:00';
 	var snap_duration		= typeof display_data.snapDuration !== 'undefined' ? display_data.snapDuration : '00:05';
 	
 	// See https://fullcalendar.io/docs/
