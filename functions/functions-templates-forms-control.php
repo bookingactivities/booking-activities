@@ -72,12 +72,12 @@ function bookacti_format_template_managers( $template_managers = array() ) {
 
 
 /**
- * Format template settings
- * @version 1.8.6
+ * Sanitize template settings
+ * @since 1.9.3 (was bookacti_format_template_settings)
  * @param array $raw_settings
  * @return array
  */
-function bookacti_format_template_settings( $raw_settings ) {
+function bookacti_sanitize_template_settings( $raw_settings ) {
 	if( empty( $raw_settings ) ) { $raw_settings = array(); }
 	
 	// Default settings
@@ -100,16 +100,9 @@ function bookacti_format_template_settings( $raw_settings ) {
 	if( ! preg_match( '/^([0-1][0-9]|2[0-3]):([0-5][0-9])$/', $settings[ 'maxTime' ] ) )		{ $settings[ 'maxTime' ] = $default_settings[ 'maxTime' ]; }
 	if( ! preg_match( '/^([0-1][0-9]|2[0-3]):([0-5][0-9])$/', $settings[ 'snapDuration' ] ) )	{ $settings[ 'snapDuration' ] = $default_settings[ 'snapDuration' ]; }
 	
-	// Make sure minTime is before maxTime
-	// If minTime = maxTime, set the default maxTime
-	if( $settings[ 'minTime' ] === $settings[ 'maxTime' ] ) { $settings[ 'maxTime' ] = $default_settings[ 'maxTime' ]; }
-	// If maxTime is 00:xx change it to 24:xx
-	if( $settings[ 'maxTime' ] === '00:00' ) { $settings[ 'maxTime' ] = '24:00'; }
-	// If minTime >= maxTime, permute values
-	if( intval( substr( $settings[ 'minTime' ], 0, 2 ) ) >= substr( $settings[ 'maxTime' ], 0, 2 ) ) { 
-		$temp_max = $settings[ 'maxTime' ];
-		$settings[ 'maxTime' ] = $settings[ 'minTime' ]; 
-		$settings[ 'minTime' ] = $temp_max;
+	// If minTime >= maxTime, add one day to maxTime
+	if( intval( str_replace( ':', '', $settings[ 'minTime' ] ) ) >= intval( str_replace( ':', '', $settings[ 'maxTime' ] ) ) ) { 
+		$settings[ 'maxTime' ] = str_pad( 24 + ( intval( substr( $settings[ 'maxTime' ], 0, 2 ) ) % 24 ), 2, '0', STR_PAD_LEFT ) . substr( $settings[ 'maxTime' ], 2 );
 	}
 	
 	// Make sure snapDuration is not null

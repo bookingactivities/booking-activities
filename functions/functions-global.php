@@ -569,7 +569,6 @@ function bookacti_get_js_variables() {
 
 				'error_fill_field'                  => esc_html__( 'Please fill this field.', 'booking-activities' ),
 				'error_invalid_value'               => esc_html__( 'Please select a valid value.', 'booking-activities' ),
-				'error_day_end_before_begin'		=> esc_html__( 'Day end time must be after day start time.', 'booking-activities' ),
 				'error_repeat_period_not_set'		=> esc_html__( 'The repetition period is not set.', 'booking-activities' ),
 				'error_repeat_end_before_begin'     => esc_html__( 'The repetition period cannot end before it started.', 'booking-activities' ),
 				'error_repeat_start_before_template'=> esc_html__( 'The repetition period should not start before the beginning date of the calendar.', 'booking-activities' ),

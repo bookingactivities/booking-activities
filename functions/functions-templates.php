@@ -259,7 +259,7 @@ function bookacti_get_calendar_fields_default_data( $fields = array() ) {
 /**
  * Get a unique template setting made from a combination of multiple template settings
  * @since	1.2.2 (was bookacti_get_mixed_template_settings)
- * @version 1.7.17
+ * @version 1.9.3
  * @param	array|int $template_ids Array of template ids or single template id
  * @param	boolean $past_events Whether to allow past events
  * @return	array
@@ -290,7 +290,7 @@ function bookacti_get_mixed_template_data( $template_ids, $past_events = false )
 		if( isset( $settings[ 'minTime' ] ) ) {
 			// Keep the lower value
 			if(  ! isset( $mixed_settings[ 'minTime' ] ) 
-				|| isset( $mixed_settings[ 'minTime' ] ) && strtotime( $settings[ 'minTime' ] ) < strtotime( $mixed_settings[ 'minTime' ] ) ) {
+				|| isset( $mixed_settings[ 'minTime' ] ) && intval( str_replace( ':', '', $settings[ 'minTime' ] ) ) < intval( str_replace( ':', '', $mixed_settings[ 'minTime' ] ) ) ) {
 
 				$mixed_settings[ 'minTime' ] = $settings[ 'minTime' ];
 			} 
@@ -298,7 +298,7 @@ function bookacti_get_mixed_template_data( $template_ids, $past_events = false )
 		if( isset( $settings[ 'maxTime' ] ) ) {
 			// Keep the higher value
 			if(  ! isset( $mixed_settings[ 'maxTime' ] ) 
-				|| isset( $mixed_settings[ 'maxTime' ] ) && strtotime( $settings[ 'maxTime' ] ) > strtotime( $mixed_settings[ 'maxTime' ] ) ) {
+				|| isset( $mixed_settings[ 'maxTime' ] ) && intval( str_replace( ':', '', $settings[ 'maxTime' ] ) ) > intval( str_replace( ':', '', $mixed_settings[ 'maxTime' ] ) ) ) {
 
 				$mixed_settings[ 'maxTime' ] = $settings[ 'maxTime' ];
 			} 

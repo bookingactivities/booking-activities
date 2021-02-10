@@ -3,7 +3,7 @@
  * Plugin Name: Booking Activities
  * Plugin URI: https://booking-activities.fr/en/?utm_source=plugin&utm_medium=plugin&utm_content=header
  * Description: Booking system specialized in activities (sports, cultural, leisure, events...). Works great with WooCommerce.
- * Version: 1.9.2
+ * Version: 1.9.3
  * Author: Booking Activities Team
  * Author URI: https://booking-activities.fr/en/?utm_source=plugin&utm_medium=plugin&utm_content=header
  * Text Domain: booking-activities
@@ -40,7 +40,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 
 // GLOBALS AND CONSTANTS
-if( ! defined( 'BOOKACTI_VERSION' ) )		{ define( 'BOOKACTI_VERSION', '1.9.2' ); }
+if( ! defined( 'BOOKACTI_VERSION' ) )		{ define( 'BOOKACTI_VERSION', '1.9.3' ); }
 if( ! defined( 'BOOKACTI_PLUGIN_NAME' ) )	{ define( 'BOOKACTI_PLUGIN_NAME', 'booking-activities' ); }
 
 
@@ -186,7 +186,7 @@ add_action( 'wp_enqueue_scripts',	'bookacti_enqueue_high_priority_global_scripts
 
 /**
  * Enqueue normal priority scripts
- * @version 1.9.0
+ * @version 1.9.3
  */
 function bookacti_enqueue_global_scripts() {
 	// Include WooCommerce style and scripts
@@ -202,7 +202,7 @@ function bookacti_enqueue_global_scripts() {
 	
 	// Register Booking Activities' jquery-ui theme, so it is ready to be enqueued / dequeued if needed
 	global $wp_version;
-	$jquery_ui_css_filename = version_compare( $wp_version, '5.6', '<' ) ? 'jquery-ui-1.11.4.min' : 'jquery-ui.min.css';
+	$jquery_ui_css_filename = version_compare( $wp_version, '5.6', '<' ) ? 'jquery-ui-1.11.4.min.css' : 'jquery-ui.min.css';
 	wp_register_style( 'bookacti-css-jquery-ui', plugins_url( 'lib/jquery-ui/themes/booking-activities/' . $jquery_ui_css_filename, __FILE__ ), array(), BOOKACTI_VERSION );
 	
 	// On backend, only include these scripts on Booking Activities pages

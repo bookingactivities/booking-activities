@@ -453,10 +453,10 @@ foreach( $templates as $template ) {
 						'id'	=> 'bookacti-activity-booking-changes-deadline',
 								/* translators: Followed by a field indicating a number of days, hours and minutes from now. E.g.: "Changes are allowed for bookings starting in at least 2 days, 12 hours, 25 minutes". */
 						'title'	=> esc_html__( 'Changes are allowed for bookings starting in at least', 'booking-activities' ),
-								/* translators: %s = [bookingactivities_list] */
 						'label'	=> bookacti_help_tip( esc_html__( 'Define when a customer can change a booking (cancel, reschedule). E.g.: "2 days 5 hours 30 minutes", your customers will be able to change the bookings starting in 2 days, 5 hours and 30 minutes at least. They won\'t be allowed to cancel a booking starting tomorrow for example.', 'booking-activities' )
 								. '<br/>' . esc_html__( 'This parameter applies to the events of this activity only. A global parameter is available in global settings.', 'booking-activities' )
 								. ' ' . esc_html__( 'Leave it empty to use the global value.', 'booking-activities' ), false )
+								/* translators: %s = [bookingactivities_list] */
 								.  '<br/><small><em>' . sprintf( esc_html__( 'Bookings can be changed from the booking list only (%s)', 'booking-activities' ), '<a href="https://booking-activities.fr/en/docs/user-documentation/get-started-with-booking-activities/display-customers-bookings-list-on-the-frontend/" target="_blank"><code style="font-size: inherit;">[bookingactivities_list]</code></a>' ) . '</em></small>'
 					)
 				);

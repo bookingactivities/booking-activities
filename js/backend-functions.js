@@ -245,7 +245,7 @@ function bookacti_empty_all_dialog_forms( scope ) {
 
 /**
  * Fill custom settings fields in a form
- * @version 1.8.7
+ * @version 1.9.3
  * @param {array} fields
  * @param {string} field_prefix
  * @param {qtring} scope
@@ -350,8 +350,8 @@ function bookacti_fill_fields_from_array( fields, field_prefix, scope ) {
 				value = '#3a87ad';
 			}
 			
-			// If the time value is 24:00, reset it to 00:00
-			if( $j( scope + 'input[name="' + field_name + '"]' ).attr( 'type' ) === 'time' && value === '24:00' ) { value = '00:00'; }
+			// If the time value is greater than 24:00, reset it to 00:00
+			if( $j( scope + 'input[name="' + field_name + '"]' ).attr( 'type' ) === 'time' && parseInt( value.substr( 0, 2 ) ) >= 24 ) { value = bookacti_pad( parseInt( value.substr( 0, 2 ) ) % 24, 2 ) + value.substr( 2 ); }
 			
 			$j( scope + 'input[name="' + field_name + '"]' ).val( value ).trigger( 'change' );
 			$j( scope + 'textarea[name="' + field_name + '"]' ).val( value ).trigger( 'change' );

@@ -75,80 +75,69 @@ $j( document ).ready( function() {
 
 /**
  * Check template form
- * @version 1.8.7
+ * @version 1.9.3
  * @returns {Boolean}
  */
 function bookacti_validate_template_form() {
-    // Get template params
-    var title       = $j( '#bookacti-template-title' ).val();
-    var start       = moment.utc( $j( '#bookacti-template-opening' ).val() );
-    var end         = moment.utc( $j( '#bookacti-template-closing' ).val() );
-    var duplicate_id= $j( '#bookacti-template-duplicated-template-id' ).val();
-    var day_start	= moment.utc( '1970-01-01T' + $j( '#bookacti-mintime' ).val() + ':00' );
-	var day_end		= $j( '#bookacti-maxtime' ).val().substr( 0, 2 ) === '00' ? moment.utc( '1970-01-02T' + $j( '#bookacti-maxtime' ).val() + ':00' ) : moment.utc( '1970-01-01T' + $j( '#bookacti-maxtime' ).val() + ':00' );
+	// Get template params
+	var title       = $j( '#bookacti-template-title' ).val();
+	var start       = moment.utc( $j( '#bookacti-template-opening' ).val() );
+	var end         = moment.utc( $j( '#bookacti-template-closing' ).val() );
+	var duplicate_id= $j( '#bookacti-template-duplicated-template-id' ).val();
 	var snap_freq	= $j( '#bookacti-snapduration' ).val();
-	
-    // Init boolean test variables
+
+	// Init boolean test variables
 	var valid_form = {
 		'isTitle'				: false,
 		'isStart'				: false,
 		'isEnd'					: false,
 		'isStartBeforeEnd'		: false,
-		'isDayStartBeforeEnd'	: false,
 		'isSnapFreqFormatted'	: false,
 		'isDuplicateIdPositive'	: false,
 		'send'					: false
 	};
-    
 
-    // Make the tests and change the booleans
-    if( title !== '' )																			{ valid_form.isTitle = true; }
-    if( ! isNaN(start)  && start !== '' && start !== null)										{ valid_form.isStart = true; }
-    if( ! isNaN(end)    && end   !== '' && end   !== null)										{ valid_form.isEnd = true; }
-    if( valid_form.isStart && valid_form.isEnd && ( start < end ) )								{ valid_form.isStartBeforeEnd = true; }
+	// Make the tests and change the booleans
+	if( title !== '' )																			{ valid_form.isTitle = true; }
+	if( ! isNaN(start)  && start !== '' && start !== null)										{ valid_form.isStart = true; }
+	if( ! isNaN(end)    && end   !== '' && end   !== null)										{ valid_form.isEnd = true; }
+	if( valid_form.isStart && valid_form.isEnd && ( start < end ) )								{ valid_form.isStartBeforeEnd = true; }
 	if( duplicate_id !== '' && $j.isNumeric( duplicate_id ) && parseInt( duplicate_id ) >= 0 )	{ valid_form.isDuplicateIdPositive = true; }
-	if( day_start.isBefore( day_end ) )															{ valid_form.isDayStartBeforeEnd = true; }
 	if( /^([0-1][0-9]|2[0-3]):([0-5][0-9])$/.test( snap_freq ) )								{ valid_form.isSnapFreqFormatted = true; }
-	
+
 	if( valid_form.isTitle 
 	&&  valid_form.isDuplicateIdPositive 
 	&&  ( ! valid_form.isStart || ! valid_form.isEnd || valid_form.isStartBeforeEnd )
-	&&  valid_form.isDayStartBeforeEnd
 	&&  valid_form.isSnapFreqFormatted )	{ valid_form.send = true; }
-    
-    // Clean the feedbacks before displaying new feedbacks
-    $j( '#bookacti-template-data-dialog .bookacti-form-error' ).remove();
-    $j( '#bookacti-template-data-dialog input, #bookacti-template-data-dialog select' ).removeClass( 'bookacti-input-error' );
 
-	
+	// Clean the feedbacks before displaying new feedbacks
+	$j( '#bookacti-template-data-dialog .bookacti-form-error' ).remove();
+	$j( '#bookacti-template-data-dialog input, #bookacti-template-data-dialog select' ).removeClass( 'bookacti-input-error' );
+
+
 	// Allow third-party to change the results
 	$j( '#bookacti-template-data-dialog' ).trigger( 'bookacti_validate_template_form', [ valid_form ] );
-	
-	
-    // Check the results and show feedbacks
-    if( ! valid_form.isTitle ){ 
-        $j( '#bookacti-template-title' ).addClass( 'bookacti-input-error' ); 
-        $j( '#bookacti-template-title' ).parent().append( "<div class='bookacti-form-error'>" + bookacti_localized.error_fill_field + "</div>" ); 
-    }
-    if( ! valid_form.isStartBeforeEnd && valid_form.isStart && valid_form.isEnd ) { 
-        $j( '#bookacti-template-closing' ).addClass( 'bookacti-input-error' );
-        $j( '#bookacti-template-closing' ).parent().append( "<div class='bookacti-form-error'>" + bookacti_localized.error_closing_before_opening + "</div>" );
-    }
-    if( ! valid_form.isDuplicateIdPositive ){ 
-        $j( '#bookacti-template-duplicated-template-id' ).addClass( 'bookacti-input-error' );
-        $j( '#bookacti-template-duplicated-template-id' ).parent().append( "<div class='bookacti-form-error'>" + bookacti_localized.error_invalid_value + "</div>" );
-    }
-	if( ! valid_form.isDayStartBeforeEnd ){ 
-		$j( '#bookacti-mintime' ).addClass( 'bookacti-input-error' );
-		$j( '#bookacti-maxtime' ).addClass( 'bookacti-input-error' );
-		$j( '#bookacti-maxtime' ).parent().append( "<div class='bookacti-form-error'>" + bookacti_localized.error_day_end_before_begin + "</div>" );
+
+
+	// Check the results and show feedbacks
+	if( ! valid_form.isTitle ){ 
+		$j( '#bookacti-template-title' ).addClass( 'bookacti-input-error' ); 
+		$j( '#bookacti-template-title' ).parent().append( "<div class='bookacti-form-error'>" + bookacti_localized.error_fill_field + "</div>" ); 
+	}
+	if( ! valid_form.isStartBeforeEnd && valid_form.isStart && valid_form.isEnd ) { 
+		$j( '#bookacti-template-closing' ).addClass( 'bookacti-input-error' );
+		$j( '#bookacti-template-closing' ).parent().append( "<div class='bookacti-form-error'>" + bookacti_localized.error_closing_before_opening + "</div>" );
+	}
+	if( ! valid_form.isDuplicateIdPositive ){ 
+		$j( '#bookacti-template-duplicated-template-id' ).addClass( 'bookacti-input-error' );
+		$j( '#bookacti-template-duplicated-template-id' ).parent().append( "<div class='bookacti-form-error'>" + bookacti_localized.error_invalid_value + "</div>" );
 	}
 	if( ! valid_form.isSnapFreqFormatted ){ 
 		$j( '#bookacti-snapduration' ).addClass( 'bookacti-input-error' );
 		$j( '#bookacti-snapduration' ).parent().append( "<div class='bookacti-form-error'>" + bookacti_localized.error_time_format + "</div>" );
 	}
-	
-    return valid_form.send;
+
+	return valid_form.send;
 }
 
 

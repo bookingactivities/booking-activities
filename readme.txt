@@ -5,7 +5,7 @@ Tags: booking, reservation, booking form, woocommerce booking, booking events
 Requires at least: 3.6
 Tested up to: 5.6
 Requires PHP: 5.3
-Stable tag: 1.9.2
+Stable tag: 1.9.3
 License: GPLv3 or later
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
 
@@ -321,9 +321,11 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 
 == Changelog ==
 
-= 1.9.3 =
+= 1.9.3 - 2021/02/10 =
 * Feature - Option to hide events availability, set the threshold in Booking Activities > Booking forms > your form > Calendar settings > Display Tab
+* Tweak - Calendars days no longer necessarily stop at midnight. Set the Day start option later than the Day end to display the next day in the same column.
 * Tweak - Calendar editor: Change the group settings icon when the selected events have changed
+* Fix - jquery-ui elements were not displayed correctly if WP version was below 5.6
 * Fix - Existing orders cannot be paid for
 
 = 1.9.2 - 2021/02/04 =
