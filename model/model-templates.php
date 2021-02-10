@@ -7,7 +7,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 /**
  * Fetch events to display on calendar editor
  * @since 1.1.0 (replace bookacti_fetch_events from 1.0.0)
- * @version 1.9.0
+ * @version 1.9.4
  * @global wpdb $wpdb
  * @param array $raw_args {
  *  @type array $templates Array of template IDs
@@ -38,7 +38,7 @@ function bookacti_fetch_events_for_calendar_editor( $raw_args = array() ) {
 	$user_timestamp_offset		= $current_datetime_object->format( 'P' );
 
 	// Select events
-	$query  = 'SELECT E.id as event_id, E.template_id, E.title, E.start, E.end, E.repeat_freq, E.repeat_from, E.repeat_to, E.availability, A.color, A.is_resizable, A.id as activity_id, T.start_date as template_start,  T.end_date as template_end ' 
+	$query  = 'SELECT E.id as event_id, E.template_id, E.title, E.start, E.end, E.repeat_freq, E.repeat_from, E.repeat_to, E.availability, A.color, A.id as activity_id, T.start_date as template_start,  T.end_date as template_end ' 
 			. ' FROM ' . BOOKACTI_TABLE_EVENTS . ' as E, ' . BOOKACTI_TABLE_ACTIVITIES . ' as A, ' . BOOKACTI_TABLE_TEMPLATES . ' as T'
 			. ' WHERE E.activity_id = A.id '
 			. ' AND E.template_id = T.id '
@@ -1828,17 +1828,15 @@ function bookacti_get_activity( $activity_id ) {
 
 /**
  * Insert an activity
- * 
- * @version 1.2.2
+ * @version 1.9.4
  * @global wpdb $wpdb
  * @param string $activity_title
  * @param string $activity_color
  * @param int $activity_availability
  * @param string $activity_duration
- * @param int $activity_resizable
  * @return int|false
  */
-function bookacti_insert_activity( $activity_title, $activity_color, $activity_availability, $activity_duration, $activity_resizable ) {
+function bookacti_insert_activity( $activity_title, $activity_color, $activity_availability, $activity_duration ) {
 	global $wpdb;
 
 	$wpdb->insert( 
@@ -1848,10 +1846,9 @@ function bookacti_insert_activity( $activity_title, $activity_color, $activity_a
 			'color'         => $activity_color,
 			'availability'	=> $activity_availability,
 			'duration'      => $activity_duration,
-			'is_resizable'  => $activity_resizable,
 			'active'        => 1
 		),
-		array( '%s', '%s', '%d', '%s', '%d', '%d' )
+		array( '%s', '%s', '%d', '%s', '%d' )
 	);
 
 	$activity_id = $wpdb->insert_id;
@@ -1862,18 +1859,16 @@ function bookacti_insert_activity( $activity_title, $activity_color, $activity_a
 
 /**
  * Update an activity
- * 
- * @version 1.2.2
+ * @version 1.9.4
  * @global wpdb $wpdb
  * @param int $activity_id
  * @param string $activity_title
  * @param string $activity_color
  * @param int $activity_availability
  * @param string $activity_duration
- * @param int $activity_resizable
  * @return int|false
  */
-function bookacti_update_activity( $activity_id, $activity_title, $activity_color, $activity_availability, $activity_duration, $activity_resizable ) {
+function bookacti_update_activity( $activity_id, $activity_title, $activity_color, $activity_availability, $activity_duration ) {
 	global $wpdb;
 
 	$updated = $wpdb->update( 
@@ -1882,11 +1877,10 @@ function bookacti_update_activity( $activity_id, $activity_title, $activity_colo
 			'title'         => $activity_title,
 			'color'         => $activity_color,
 			'availability'  => $activity_availability,
-			'duration'      => $activity_duration,
-			'is_resizable'  => $activity_resizable
+			'duration'      => $activity_duration
 		),
 		array( 'id' => $activity_id ),
-		array( '%s', '%s', '%d', '%s', '%d' ),
+		array( '%s', '%s', '%d', '%s' ),
 		array( '%d' )
 	);
 
@@ -2312,11 +2306,10 @@ function bookacti_get_templates_by_activity( $activity_ids, $id_only = true ) {
 
 /**
  * Fetch activities with the list of associated templated
- * 
  * @version 1.7.0
  * @global wpdb $wpdb
  * @param array $template_ids
- * @return array [ activity_id ][id, title, color, duration, availability, is_resizable, active, template_ids] where template_ids = [id, id, id, ...]
+ * @return array [ activity_id ][id, title, color, duration, availability, active, template_ids] where template_ids = [id, id, id, ...]
  */
 function bookacti_fetch_activities_with_templates_association( $template_ids = array() ) {
 	global $wpdb;

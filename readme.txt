@@ -321,6 +321,9 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 
 == Changelog ==
 
+= 1.9.4 =
+* Tweak - Events can now always be resized in the calendar editor. The option to allow resizing per activity has been removed from the activities settings.
+
 = 1.9.3 - 2021/02/10 =
 * Feature - Option to hide events availability, set the threshold in Booking Activities > Booking forms > your form > Calendar settings > Display Tab
 * Tweak - Calendars days no longer necessarily stop at midnight. Set the Day start option later than the Day end to display the next day in the same column.

@@ -1158,7 +1158,7 @@ function bookacti_dialog_create_activity() {
 
 /**
  * Open a dialog to update an activity
- * @version 1.9.0
+ * @version 1.9.4
  * @param {Int} activity_id
  */
 function bookacti_dialog_update_activity( activity_id ) {
@@ -1187,9 +1187,6 @@ function bookacti_dialog_update_activity( activity_id ) {
 	$j( '#bookacti-activity-duration-days' ).val( activity_duration.substr( 0, 3 ) ).trigger( 'change' );
 	$j( '#bookacti-activity-duration-hours' ).val( activity_duration.substr( 4, 2 ) ).trigger( 'change' );
 	$j( '#bookacti-activity-duration-minutes' ).val( activity_duration.substr( 7, 2 ) ).trigger( 'change' );
-	
-	if( activity_data.is_resizable == 1 ) { $j( '#bookacti-activity-resizable' ).prop( 'checked', true ); }
-	else { $j( '#bookacti-activity-resizable' ).prop( 'checked', false ); }
 	
 	// Permissions tab
 	if( activity_data.admin.length ) {

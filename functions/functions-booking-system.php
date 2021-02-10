@@ -1826,7 +1826,7 @@ function bookacti_is_group_of_events_available_on_form( $form_id, $group_id ) {
 /**
  * Get array of events from raw events from database
  * @since 1.2.2
- * @version 1.8.4
+ * @version 1.9.4
  * @param array $events Array of objects events from database
  * @param array $raw_args {
  *  @type boolean $skip_exceptions Whether to retrieve occurrence on exceptions
@@ -1873,8 +1873,7 @@ function bookacti_get_events_array_from_db_events( $events, $raw_args = array() 
 			'title'				=> apply_filters( 'bookacti_translate_text', $event->title ),
 			'start'				=> $event->start,
 			'end'				=> $event->end,
-			'color'				=> $event->color,
-			'durationEditable'	=> $event->is_resizable === '1' ? true : false
+			'color'				=> $event->color
 		);
 
 		$event_bookacti_data = array(
@@ -1985,7 +1984,7 @@ function bookacti_get_bounding_events_from_db_events( $events, $raw_args = array
 /**
  * Get occurrences of repeated events
  * @since 1.8.4 (was bookacti_get_occurences_of_repeated_event)
- * @version 1.9.0
+ * @version 1.9.4
  * @param object $event Event data 
  * @param array $raw_args {
  *  @type array $interval array( 'start' => 'Y-m-d H:i:s', 'end' => 'Y-m-d H:i:s' )
@@ -2015,8 +2014,7 @@ function bookacti_get_occurrences_of_repeated_event( $event, $raw_args = array()
 	$shared_properties = array(
 		'id'				=> ! empty( $event->event_id ) ? $event->event_id : ( ! empty( $event->id ) ? $event->id : 0 ),
 		'title'				=> ! empty( $event->title ) ? apply_filters( 'bookacti_translate_text', $event->title ) : '',
-		'color'				=> ! empty( $event->color ) ? $event->color : '',
-		'durationEditable'	=> ! empty( $event->is_resizable ) ? true : false
+		'color'				=> ! empty( $event->color ) ? $event->color : ''
 	);
 	
 	// Init variables to compute occurrences

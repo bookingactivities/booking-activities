@@ -724,7 +724,7 @@ add_action( 'wp_ajax_bookactiSwitchTemplate', 'bookacti_controller_switch_templa
 
 /**
  * AJAX Controller - Create a new activity
- * @version 1.8.0
+ * @version 1.9.4
  */
 function bookacti_controller_insert_activity() {
 	// Check nonce and capabilities
@@ -740,7 +740,6 @@ function bookacti_controller_insert_activity() {
 	$activity_availability	= intval( $_POST[ 'activity-availability' ] );
 	$sanitized_duration		= intval( $_POST[ 'activity-duration' ] );
 	$activity_duration		= $sanitized_duration ? bookacti_format_duration( $sanitized_duration, 'timespan' ) : '000.01:00:00';
-	$activity_resizable		= intval( $_POST[ 'activity-resizable' ] );
 	$managers_array			= isset( $_POST[ 'activity-managers' ] ) ? bookacti_ids_to_array( $_POST[ 'activity-managers' ] ) : array();
 	$options_array			= isset( $_POST[ 'activityOptions' ] ) && is_array( $_POST[ 'activityOptions' ] ) ? $_POST[ 'activityOptions' ] : array();
 
@@ -749,7 +748,7 @@ function bookacti_controller_insert_activity() {
 	$activity_settings	= bookacti_format_activity_settings( $options_array );
 
 	// Insert the activity and its metadata
-	$activity_id = bookacti_insert_activity( $activity_title, $activity_color, $activity_availability, $activity_duration, $activity_resizable );
+	$activity_id = bookacti_insert_activity( $activity_title, $activity_color, $activity_availability, $activity_duration );
 
 	if( ! $activity_id ) { bookacti_send_json( array( 'status' => 'failed', 'error' => 'not_inserted' ), 'insert_activity' ); }
 
@@ -773,7 +772,7 @@ add_action( 'wp_ajax_bookactiInsertActivity', 'bookacti_controller_insert_activi
 
 /**
  * AJAX Controller - Update an activity
- * @version 1.8.0
+ * @version 1.9.4
  */
 function bookacti_controller_update_activity() {
 	$activity_id	= intval( $_POST['activity-id'] );
@@ -791,7 +790,6 @@ function bookacti_controller_update_activity() {
 	$activity_availability	= intval( $_POST['activity-availability'] );
 	$sanitized_duration		= intval( $_POST[ 'activity-duration' ] );
 	$activity_duration		= $sanitized_duration ? substr( bookacti_format_duration( $sanitized_duration, 'timespan' ), -12 ) : '000.01:00:00';
-	$activity_resizable		= intval( $_POST['activity-resizable'] );
 	$managers_array			= isset( $_POST['activity-managers'] ) ? bookacti_ids_to_array( $_POST['activity-managers'] ) : array();
 	$options_array			= isset( $_POST['activityOptions'] ) && is_array( $_POST['activityOptions'] ) ? $_POST['activityOptions'] : array();
 
@@ -803,7 +801,7 @@ function bookacti_controller_update_activity() {
 	$updated_events		= bookacti_update_events_title( $activity_id, $activity_title );
 	
 	// Update the activity and its metadata
-	$updated_activity	= bookacti_update_activity( $activity_id, $activity_title, $activity_color, $activity_availability, $activity_duration, $activity_resizable );
+	$updated_activity	= bookacti_update_activity( $activity_id, $activity_title, $activity_color, $activity_availability, $activity_duration );
 	$updated_managers	= bookacti_update_managers( 'activity', $activity_id, $activity_managers );
 	$updated_metadata	= bookacti_update_metadata( 'activity', $activity_id, $activity_settings );
 

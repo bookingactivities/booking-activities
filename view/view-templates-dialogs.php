@@ -355,7 +355,7 @@ foreach( $templates as $template ) {
 			<?php
 			/**
 			 * Display the 'General' tab content of activity settings
-			 * @version 1.9.3
+			 * @version 1.9.4
 			 * @param array $params
 			 */
 			function bookacti_fill_activity_tab_general( $params = array() ) {
@@ -386,13 +386,6 @@ foreach( $templates as $template ) {
 						'title'	=> esc_html__( 'Default duration', 'booking-activities' ),
 						'label'	=> bookacti_help_tip( esc_html__( 'The default duration of an event when you drop this activity onto the calendar. For a better readability, try not to go over your working hours. Best practice for events of several days is to create one event per day and then group them.', 'booking-activities' ), false )
 								. '<br/><small><em>' . esc_html__( 'Used when an event is created only', 'booking-activities' ) . '</em></small>'
-					),
-					'activity-resizable' => array(
-						'type'	=> 'checkbox',
-						'name'	=> 'activity-resizable',
-						'id'	=> 'bookacti-activity-resizable',
-						'title'	=> esc_html__( 'Change duration on calendar', 'booking-activities' ),
-						'tip'	=> esc_html__( 'Allow to resize an event directly on calendar. Mouseover the event to see the handle at the bottom of the event.', 'booking-activities' )
 					),
 					'activity-color' => array(
 						'type'	=> 'color',

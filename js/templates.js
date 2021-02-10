@@ -113,7 +113,7 @@ $j( document ).ready( function() {
 
 /**
  * Initialize and display the template calendar
- * @version 1.9.3
+ * @version 1.9.4
  * @param {HTMLElement} calendar
  */
 function bookacti_load_template_calendar( calendar ) {
@@ -163,7 +163,7 @@ function bookacti_load_template_calendar( calendar ) {
 		editable:               true,
 		droppable:              true,
 		dropAccept:             '.fc-event',
-		eventDurationEditable:  false,
+		eventDurationEditable:  true,
 		dragRevertDuration:     0,
 		
 		
@@ -418,7 +418,7 @@ function bookacti_load_template_calendar( calendar ) {
 		
 		/**
 		 * When an extern draggable event is dropped on the calendar. "this" refer to the new created event on the calendar.
-		 * @version 1.8.5
+		 * @version 1.9.4
 		 * @param {object} event
 		 */
 		eventReceive: function( event ) {
@@ -439,9 +439,6 @@ function bookacti_load_template_calendar( calendar ) {
 			var activity_duration = activity_data.duration ? activity_data.duration : '000.01:00:00';
 			event.end = event.start.clone();
 			event.end.add( moment.duration( activity_duration ) );
-			
-			// Whether the event is resizable 
-			if( parseInt( activity_data[ 'is_resizable' ] ) === 1 ) { event.durationEditable = true; }
 			
 			var event_start_formatted = moment.utc( event.start ).clone().locale( 'en' ).format( 'YYYY-MM-DD HH:mm:ss' );
 			var event_end_formatted = moment.utc( event.end ).clone().locale( 'en' ).format( 'YYYY-MM-DD HH:mm:ss' );
