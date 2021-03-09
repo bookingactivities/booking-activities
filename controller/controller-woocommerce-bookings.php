@@ -1333,11 +1333,12 @@ add_action( 'bookacti_deactivate_event_before', 'bookacti_wc_remove_in_cart_book
 /**
  * Update in cart bookings of a deactivated group of events
  * @since 1.9.0
- * @param int $event_group_id
+ * @version 1.10.0
+ * @param array $group_of_events
  * @param boolean $cancel_bookings
  */
-function bookacti_wc_remove_in_cart_bookings_of_deactivated_group_of_events( $event_group_id, $cancel_bookings ) {
+function bookacti_wc_remove_in_cart_bookings_of_deactivated_group_of_events( $group_of_events, $cancel_bookings ) {
 	if( ! $cancel_bookings ) { return; }
-	bookacti_wc_update_group_of_events_in_cart_bookings_to_removed( $event_group_id );
+	bookacti_wc_update_group_of_events_in_cart_bookings_to_removed( $group_of_events[ 'id' ] );
 }
 add_action( 'bookacti_deactivate_group_of_events_before', 'bookacti_wc_remove_in_cart_bookings_of_deactivated_group_of_events', 10, 2 );

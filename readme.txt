@@ -3,9 +3,9 @@ Contributors: bookingactivities, yoancutillas
 Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=7EKU434L7NEVC
 Tags: booking, reservation, booking form, woocommerce booking, booking events
 Requires at least: 3.6
-Tested up to: 5.6
+Tested up to: 5.7
 Requires PHP: 5.3
-Stable tag: 1.9.3
+Stable tag: 1.10.0
 License: GPLv3 or later
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
 
@@ -321,8 +321,21 @@ If you don't receive a reply within 48h by email, a technical problem has probab
 
 == Changelog ==
 
-= 1.9.4 =
-* Tweak - Events can now always be resized in the calendar editor. The option to allow resizing per activity has been removed from the activities settings.
+= 1.10.0 =
+* Feature - Automatically reschedule the bookings when you move a booked event in the calendar editor
+* Feature - Send a notification to your customers when you move a booked event in the calendar editor
+* Feature - Send a notification to your customers when you delete a booked event (or group of events) from the calendar editor
+* Feature - Add an option to unbind occurences of repeated events: Unbind the next occurrences (including the selected one)
+* Feature - Add an option to unbind occurences of repeated events: Unbind each occurrence
+* Tweak - Only future bookings are cancelled when a group of events or a repeated event is deleted from the calendar editor
+* Tweak - Events can now always be resized in the calendar editor. The option to allow resizing per activity has been removed from the activities settings
+* Tweak - Add reschedule notifications tags {booking_old_start_raw} and {booking_old_end_raw}
+* Fix - Dialogs were disappearing after resizing or when multiple dialogs were opened
+* Fix - Bookings count was incorrect after unbinding a repeated event until the page was refreshed
+* Dev - Move and resize actions are now merged into a single action: UpdateEventDates. Duplicate action has now its own separate action: bookactiDuplicateEvent.
+* Dev - Remove some unused functions
+* Dev - Start removing dependencies between bookings and events (group)
+* Dev - Allow full datetime in "from" and "to" bookings filters code instead of date only
 
 = 1.9.3 - 2021/02/10 =
 * Feature - Option to hide events availability, set the threshold in Booking Activities > Booking forms > your form > Calendar settings > Display Tab

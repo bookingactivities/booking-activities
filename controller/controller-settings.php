@@ -498,15 +498,16 @@ add_action( 'bookacti_messages_settings', 'bookacti_display_messages_fields' );
 /**
  * Analyse what data can be archive prior to specific date
  * @since 1.7.0
+ * @version 1.10.0
  */
 function bookacti_controller_archive_data_analyse() {
 	$date = bookacti_sanitize_date( $_POST[ 'date' ] );
 	$user_can_archive = bookacti_user_can_archive_data( $date );
 	if( $user_can_archive !== true ) { bookacti_send_json( $user_can_archive, 'archive_analyse_data' );	}
 	
-	// If there are a lot of data, this operation can be long
+	// If there are a lot of data, this operation can take a while
 	// We need to increase the max_execution_time and the memory_limit
-	bookacti_increase_max_execution_time( 600, '512M' );
+	bookacti_increase_max_execution_time( 'archive_data_analyse' );
 	
 	// Get the data prior to the desired date
 	// Get events IDs
@@ -564,15 +565,16 @@ add_action( 'wp_ajax_bookactiArchiveDataAnalyse', 'bookacti_controller_archive_d
 /**
  * Dump bookings and events prior to specific date
  * @since 1.7.0
+ * @version 1.10.0
  */
 function bookacti_controller_archive_data_dump() {
 	$date = bookacti_sanitize_date( $_POST[ 'date' ] );
 	$user_can_archive = bookacti_user_can_archive_data( $date );
 	if( $user_can_archive !== true ) { bookacti_send_json( $user_can_archive, 'archive_dump_data' ); }
 	
-	// If there are a lot of data, this operation can be long
+	// If there are a lot of data, this operation can take a while
 	// We need to increase the max_execution_time and the memory_limit
-	bookacti_increase_max_execution_time( 600, '512M' );
+	bookacti_increase_max_execution_time( 'archive_data_dump' );
 	
 	// Dump the data prior to the desired date
 	// Events
@@ -655,16 +657,16 @@ add_action( 'wp_ajax_bookactiArchiveDataDump', 'bookacti_controller_archive_data
 /**
  * Delete bookings and events prior to specific date
  * @since 1.7.0
- * @version 1.7.8
+ * @version 1.10.0
  */
 function bookacti_controller_archive_data_delete() {
 	$date = bookacti_sanitize_date( $_POST[ 'date' ] );
 	$user_can_archive = bookacti_user_can_archive_data( $date );
 	if( $user_can_archive !== true ) { bookacti_send_json( $user_can_archive, 'archive_delete_data' );	}
 	
-	// If there are a lot of data, this operation can be long
+	// If there are a lot of data, this operation can take a while
 	// We need to increase the max_execution_time and the memory_limit
-	bookacti_increase_max_execution_time( 600, '512M' );
+	bookacti_increase_max_execution_time( 'archive_data_delete' );
 	
 	// Delete the data prior to the desired date
 	// Delete metadata first
@@ -710,16 +712,16 @@ add_action( 'wp_ajax_bookactiArchiveDataDelete', 'bookacti_controller_archive_da
 /**
  * Restore bookings and events from backup files
  * @since 1.7.0
- * @version 1.8.4
+ * @version 1.10.0
  */
 function bookacti_controller_archive_restore_data() {
 	$filename = sanitize_file_name( $_POST[ 'filename' ] );
 	$user_can_archive = bookacti_user_can_manage_archive_file( $filename );
 	if( $user_can_archive !== true ) { bookacti_send_json( $user_can_archive, 'archive_restore_data' );	}
 	
-	// If there are a lot of data, this operation can be long
+	// If there are a lot of data, this operation can take a while
 	// We need to increase the max_execution_time and the memory_limit
-	bookacti_increase_max_execution_time( 600, '512M' );
+	bookacti_increase_max_execution_time( 'archive_data_restore' );
 	
 	// Import SQL files
 	$uploads_dir	= wp_upload_dir();

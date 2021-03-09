@@ -394,7 +394,7 @@ function bookacti_get_availability_period( booking_system ) {
 
 /**
  * Refresh booking numbers
- * @version 1.9.0
+ * @version 1.10.0
  * @param {HTMLElement} booking_system
  * @param {array} event_ids
  */
@@ -423,11 +423,18 @@ function bookacti_refresh_booking_numbers( booking_system, event_ids ) {
         success: function( response ) {
 			if( event_ids ) {
 				$j.each( event_ids, function( i, event_id ) {
-					bookacti.booking_system[ booking_system_id ][ 'bookings' ][ event_id ] = 0;
+					var event_bookings = {};
 					if( typeof response[ 'bookings' ] !== 'undefined' ) {
 						if( typeof response[ 'bookings' ][ event_id ] !== 'undefined' ) {
-							bookacti.booking_system[ booking_system_id ][ 'bookings' ][ event_id ] = response[ 'bookings' ][ event_id ];
+							event_bookings = response[ 'bookings' ][ event_id ];
 						}
+					}
+					if( $j.isEmptyObject( event_bookings ) ) {
+						if( typeof bookacti.booking_system[ 'bookacti-template-calendar' ][ 'bookings' ][ event_id ] !== 'undefined' ) {
+							delete bookacti.booking_system[ 'bookacti-template-calendar' ][ 'bookings' ][ event_id ];
+						}
+					} else {
+						bookacti.booking_system[ booking_system_id ][ 'bookings' ][ event_id ] = event_bookings;
 					}
 				});
 			} else {

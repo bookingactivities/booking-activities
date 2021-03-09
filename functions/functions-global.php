@@ -111,15 +111,17 @@ function bookacti_log( $message = '', $filename = 'debug' ) {
 
 
 /**
- * Increase the max_execution_time and the memory_limit, and remove the maximum execution time limit
+ * Increase the max_execution_time and the memory_limit
  * @since 1.7.0
- * @param int $time
- * @param string $memory
+ * @version 1.10.0
+ * @param string $context
  */
-function bookacti_increase_max_execution_time( $time = 600, $memory = '512M' ) {
-	ini_set( 'max_execution_time', $time );
-	ini_set( 'memory_limit', $memory );
-	set_time_limit( 0 );
+function bookacti_increase_max_execution_time( $context = '' ) {
+	$max_execution_time = apply_filters( 'bookacti_increased_max_execution_time', 600, $context ); // Default to 10mn
+	$memory_limit = apply_filters( 'bookacti_increased_memory_limit', '512M', $context ); // Default to 512MB
+	ini_set( 'max_execution_time', $max_execution_time );
+	ini_set( 'memory_limit', $memory_limit );
+	do_action( 'bookacti_increase_max_execution_time', $context );
 }
 
 
@@ -443,7 +445,7 @@ function bookacti_generate_ical( $vevents, $vcalendar = array() ) {
 /**
  * Get the variables used with javascript
  * @since 1.8.0
- * @version 1.9.3
+ * @version 1.10.0
  * @return array
  */
 function bookacti_get_js_variables() {
@@ -560,11 +562,7 @@ function bookacti_get_js_variables() {
 			$calendar_editor_strings = array(
 				'dialog_button_create_activity'		=> esc_html__( 'Create Activity', 'booking-activities' ),
 				'dialog_button_import_activity'		=> esc_html__( 'Import Activity', 'booking-activities' ),
-				/* translators: 'unbind' is the process to isolate one (or several) event from a repeating event in order to edit it independently. 'Unbind selected' is a button that isolate the event the user clicked on. */
-				'dialog_button_unbind_selected'		=> esc_html__( 'Unbind Selected', 'booking-activities' ),
-				/* translators: 'unbind' is the process to isolate one (or several) event from a repeating event  in order to edit it independently. 'Unbind booked' is a button that split the repeating event in two : one repeating event holding all the booked events (restricted edition), and the other holding the events without bookings (fully editable). */
-				'dialog_button_unbind_all_booked'	=> esc_html__( 'Unbind Booked', 'booking-activities' ),
-				/* translators: 'unbind' is the process to isolate one (or several) event from a repeating event  in order to edit it independently. 'Unbind' is a button that open a dialog where the user can choose wether to unbind the selected event, all events or booked events. */
+				/* translators: 'unbind' is the process to isolate one (or several) occurrence(s) of a repeated event in order to edit it independently. */
 				'dialog_button_unbind'				=> esc_html__( 'Unbind', 'booking-activities' ),
 
 				'error_fill_field'                  => esc_html__( 'Please fill this field.', 'booking-activities' ),
@@ -627,7 +625,7 @@ function bookacti_get_active_add_ons( $prefix = '', $exclude = array( 'balau' ) 
 /**
  * Get add-on data by prefix
  * @since 1.7.14
- * @version 1.9.0
+ * @version 1.10.0
  * @param string $prefix
  * @param array $exclude
  * @return array
@@ -648,7 +646,7 @@ function bookacti_get_add_ons_data( $prefix = '', $exclude = array( 'balau' ) ) 
 			'plugin_name'	=> 'ba-notification-pack', 
 			'end_of_life'	=> '', 
 			'download_id'	=> 1393,
-			'min_version'	=> '1.2.4'
+			'min_version'	=> '1.2.5'
 		),
 		'bapap' => array( 
 			'title'			=> 'Prices and Credits', 
@@ -1308,7 +1306,7 @@ function bookacti_display_field( $args ) {
 
 
 /**
- * Format arguments to diplay a proper field
+ * Format arguments to display a proper field
  * @since 1.2.0
  * @version 1.8.7
  * @param array $args ['type', 'name', 'label', 'id', 'class', 'placeholder', 'options', 'attr', 'value', 'multiple', 'tip', 'required']
@@ -1868,7 +1866,7 @@ function bookacti_format_datetime( $datetime, $format = '' ) {
  * Check if a string is in a correct datetime format
  * @version 1.9.0
  * @param string $datetime Date format "Y-m-d H:i:s" is expected
- * @return string|false
+ * @return string
  */
 function bookacti_sanitize_datetime( $datetime ) {
 	if( preg_match( '/^\d{4}-[01]\d-[0-3]\dT[0-2]\d:[0-5]\d:[0-5]\d$/', $datetime ) 

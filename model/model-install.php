@@ -4,7 +4,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 /**
  * Create Booking Activities database tables
- * @version 1.9.4
+ * @version 1.10.0
  * @global wpdb $wpdb
  */
 function bookacti_create_tables() {

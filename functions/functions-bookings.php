@@ -298,7 +298,7 @@ function bookacti_get_default_booking_filters() {
 /**
  * Format booking filters
  * @since 1.3.0
- * @version 1.9.0
+ * @version 1.10.0
  * @param array $filters 
  * @return array
  */
@@ -313,11 +313,13 @@ function bookacti_format_booking_filters( $filters = array() ) {
 		
 		// Specific pre-format
 		if( in_array( $filter, array( 'from' ), true ) ) {
-			$date = bookacti_sanitize_date( $current_value );
-			if( $date ) { $current_value = $date . ' 00:00:00'; }
+			if( bookacti_sanitize_date( $current_value ) ) { $current_value = bookacti_sanitize_date( $current_value ) . ' 00:00:00'; }
+			else if( bookacti_sanitize_datetime( $current_value ) ) { $current_value = bookacti_sanitize_datetime( $current_value ); }
+			else { $current_value = $default_value; }
 		} else if( in_array( $filter, array( 'to' ), true ) ) {
-			$date = bookacti_sanitize_date( $current_value );
-			if( $date ) { $current_value = $date . ' 23:59:59'; }
+			if( bookacti_sanitize_date( $current_value ) ) { $current_value = bookacti_sanitize_date( $current_value ) . ' 23:59:59'; }
+			else if( bookacti_sanitize_datetime( $current_value ) ) { $current_value = bookacti_sanitize_datetime( $current_value ); }
+			else { $current_value = $default_value; }
 		}
 		
 		// Else, check if its value is correct, or use default
@@ -513,6 +515,43 @@ function bookacti_format_bookings_calendar_settings( $raw_settings = array() ) {
 	$display_data = bookacti_format_booking_system_display_data( $raw_settings );
 	
 	return apply_filters( 'bookacti_bookings_calendar_settings_formatted', array_merge( $settings, $display_data ), $raw_settings, $default_settings );
+}
+
+
+/**
+ * Get the bookings to be removed when an whole event is deleted / cancelled
+ * @since 1.10.0
+ * @param object $event
+ * @return array
+ */
+function bookacti_get_removed_event_bookings_to_cancel( $event ) {
+	// For repeated event, cancel only future bookings
+	$timezone = bookacti_get_setting_value( 'bookacti_general_settings', 'timezone' );
+	$now_dt = new DateTime( 'now', new DateTimeZone( $timezone ) );
+	$from = $event->repeat_freq && $event->repeat_freq !== 'none' ? $now_dt->format( 'Y-m-d H:i:s' ) : '';
+
+	// Get the event future occurences
+	$events_exceptions = bookacti_get_exceptions_by_event( array( 'events' => array( $event->event_id ), 'types'	=> array( 'date' ), 'only_values' => 1 ) );
+	$event_exceptions = isset( $events_exceptions[ $event->event_id ] ) ? $events_exceptions[ $event->event_id ] : array();
+	$occurrences = bookacti_get_occurrences_of_repeated_event( $event, array( 'exceptions_dates' => $event_exceptions, 'past_events' => $from ? 0 : 1 ) );
+
+	// Get bookings to cancel before cancelling them
+	$filters = bookacti_format_booking_filters( array( 'event_id' => $event->event_id, 'from' => $from, 'active' => 1 ) );
+	$old_bookings = bookacti_get_bookings( $filters );
+
+	// Keep only the booking made on one of the occurences
+	foreach( $old_bookings as $booking_id => $old_booking ) {
+		$is_on_occurrence = false;
+		foreach( $occurrences as $occurrence ) {
+			if( intval( $old_booking->event_id ) === intval( $occurrence[ 'id' ] ) && $old_booking->event_start === $occurrence[ 'start' ] && $old_booking->event_end === $occurrence[ 'end' ] ) {
+				$is_on_occurrence = true;
+				break;
+			}
+		}
+		if( ! $is_on_occurrence ) { unset( $old_bookings[ $booking_id ] ); }
+	}
+	
+	return $old_bookings;
 }
 
 

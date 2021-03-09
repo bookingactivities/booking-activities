@@ -6,7 +6,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 /**
  * Fetch events by templates and / or activities
- * @version 1.9.4
+ * @version 1.10.0
  * @param array $raw_args {
  *  @type array $templates Array of template IDs
  *  @type array $activities Array of activity IDs
@@ -189,7 +189,7 @@ function bookacti_fetch_events( $raw_args = array() ) {
 
 /**
  * Fetch events by groups and / or group categories
- * @version 1.9.4
+ * @version 1.10.0
  * @global wpdb $wpdb
  * @param array $raw_args {
  *  @type array $templates Array of template IDs
@@ -350,15 +350,18 @@ function bookacti_fetch_grouped_events( $raw_args = array() ) {
 /**
  * Fetch booked events only
  * @since 1.2.2
- * @version 1.9.4
+ * @version 1.10.0
  * @global wpdb $wpdb
  * @param array $raw_args {
  *  @type array $templates Array of template IDs
  *  @type array $activities Array of activity IDs
+ *  @type array events Array of event IDs
  *  @type array $status Array of groups of events IDs
+ *  @type int|false $active 0 or 1. False to ignore.
  *  @type array $interval array( 'start' => 'Y-m-d H:i:s', 'end' => 'Y-m-d H:i:s' )
  *  @type int|string $users Array of user IDs
  *  @type boolean $past_events Whether to compute past events
+ *  @type boolean $skip_exceptions Whether to retrieve occurrence on exceptions
  *  @type boolean $bounding_events_only Whether to retrieve the first and the last events only
  * }
  * @return array
@@ -367,10 +370,13 @@ function bookacti_fetch_booked_events( $raw_args = array() ) {
 	$default_args = array(
 		'templates' => array(),
 		'activities' => array(),
+		'events' => array(),
 		'status' => array(),
+		'active' => false,
 		'users' => array(),
 		'interval' => array(),
 		'past_events' => 0,
+		'skip_exceptions' => 0,
 		'bounding_events_only' => 0
 	);
 	$args = wp_parse_args( $raw_args, $default_args );
@@ -412,6 +418,16 @@ function bookacti_fetch_booked_events( $raw_args = array() ) {
 		$variables = array_merge( $variables, $args[ 'activities' ] );
 	}
 
+	// Get events (occurrences) from desired events only
+	if( $args[ 'events' ] ) {
+		$query  .= ' AND B.event_id IN ( %d';
+		for( $i=1,$len=count( $args[ 'events' ] ); $i < $len; ++$i ) {
+			$query  .= ', %d';
+		}
+		$query  .= ' ) ';
+		$variables = array_merge( $variables, $args[ 'events' ] );
+	}
+
 	// Fetch events from desired booking status only
 	if( $args[ 'status' ] ) {
 		$query .= ' AND B.state IN ( %s';
@@ -420,6 +436,12 @@ function bookacti_fetch_booked_events( $raw_args = array() ) {
 		}
 		$query .= ' ) ';
 		$variables = array_merge( $variables, $args[ 'status' ] );
+	}
+	
+	// Filter bookings by active
+	if( $args[ 'active' ] !== false ) {
+		$query .= ' AND B.active = %d ';
+		$variables[] = $args[ 'active' ];
 	}
 
 	// Filter bookings by user
@@ -477,7 +499,7 @@ function bookacti_fetch_booked_events( $raw_args = array() ) {
 
 /**
  * Get event by id
- * @version 1.9.4
+ * @version 1.10.0
  * @global wpdb $wpdb
  * @param int $event_id
  * @return object

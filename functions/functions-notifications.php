@@ -5,7 +5,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 /**
  * Array of configurable notifications
  * @since 1.2.1 (was bookacti_get_emails_default_settings in 1.2.0)
- * @version 1.8.6
+ * @version 1.10.0
  * @return array
  */
 function bookacti_get_notifications_default_settings() {
@@ -201,7 +201,7 @@ function bookacti_get_notifications_default_settings() {
 					'subject'	=> esc_html__( 'Your booking has been cancelled', 'booking-activities' ) . ' - ' . $blog_name,
 					'message'	=> trim( preg_replace( '/\t+/', '', 
 										/* translators: Keep tags as is (this is a tag: {tag}), they will be replaced in code. This is the default email a customer receives when a booking is cancelled */
-										__( "<p>Hello {user_firstname},
+										__( "<p>Hello {user_firstname},</p>
 										<p>Your booking has been <strong>cancelled</strong>.</p>
 										<p>{booking_list}</p>
 										<p>If you haven't cancelled this reservation or if you think this is an error, please contact us.</p>", 'booking-activities' ) ) )
@@ -218,7 +218,7 @@ function bookacti_get_notifications_default_settings() {
 					'subject'	=> esc_html__( 'A refund has been requested for your booking', 'booking-activities' ) . ' - ' . $blog_name,
 					'message'	=> trim( preg_replace( '/\t+/', '', 
 										/* translators: Keep tags as is (this is a tag: {tag}), they will be replaced in code. This is the default email a customer receives when he is reimbursed for a booking */
-										__( '<p>Hello {user_firstname},
+										__( '<p>Hello {user_firstname},</p>
 										<p>We have received your <strong>refund request</strong> for your booking.</p>
 										<p>{booking_list}</p>
 										<blockquote><strong>Your message:</strong> <q>{refund_message}</q></blockquote>
@@ -237,7 +237,7 @@ function bookacti_get_notifications_default_settings() {
 					'subject'	=> esc_html__( 'Your booking has been refunded', 'booking-activities' ) . ' - ' . $blog_name,
 					'message'	=> trim( preg_replace( '/\t+/', '', 
 										/* translators: Keep tags as is (this is a tag: {tag}), they will be replaced in code. This is the default email a customer receives when he is reimbursed for a booking */
-										__( '<p>Hello {user_firstname},
+										__( '<p>Hello {user_firstname},</p>
 										<p>Your booking has been <strong>refunded</strong>.</p>
 										<p>{booking_list}</p>
 										<p>We are sorry for the inconvenience and hope to see you soon.</p>', 'booking-activities' ) ) )
@@ -254,7 +254,7 @@ function bookacti_get_notifications_default_settings() {
 					'subject'	=> esc_html__( 'Your booking has been rescheduled', 'booking-activities' ) . ' - ' . $blog_name,
 					'message'	=> trim( preg_replace( '/\t+/', '', 
 										/* translators: Keep tags as is (this is a tag: {tag}), they will be replaced in code. This is the default email a customer receives when a booking is rescheduled */
-										__( "<p>Hello {user_firstname},
+										__( "<p>Hello {user_firstname},</p>
 										<p>Your booking has been <strong>rescheduled</strong> from {booking_old_start} to:</p>
 										<p>{booking_list}</p>
 										<p>If you haven't rescheduled this reservation or if you think this is an error, please contact us.</p>", 'booking-activities' ) ) )
@@ -405,7 +405,7 @@ function bookacti_sanitize_notification_settings( $args, $notification_id = '' )
 /**
  * Get notifications tags
  * @since 1.2.0
- * @version 1.8.6
+ * @version 1.10.0
  * @param string $notification_id Optional.
  * @return array
  */
@@ -446,8 +446,10 @@ function bookacti_get_notifications_tags( $notification_id = '' ) {
 	}
 	
 	if( strpos( $notification_id, '_rescheduled' ) !== false ) {
-		$tags[ '{booking_old_start}' ]	= esc_html__( 'Booking start date and time before reschedule. Displayed in a user-friendly format.', 'booking-activities' );
-		$tags[ '{booking_old_end}' ]	= esc_html__( 'Booking end date and time before reschedule. Displayed in a user-friendly format.', 'booking-activities' );
+		$tags[ '{booking_old_start_raw}' ]	= esc_html__( 'Booking start date and time before reschedule. Displayed in the ISO format.', 'booking-activities' );
+		$tags[ '{booking_old_end_raw}' ]	= esc_html__( 'Booking end date and time before reschedule. Displayed in the ISO format.', 'booking-activities' );
+		$tags[ '{booking_old_start}' ]		= esc_html__( 'Booking start date and time before reschedule. Displayed in a user-friendly format.', 'booking-activities' );
+		$tags[ '{booking_old_end}' ]		= esc_html__( 'Booking end date and time before reschedule. Displayed in a user-friendly format.', 'booking-activities' );
 	}
 	
 	if( strpos( $notification_id, '_refunded' ) !== false || strpos( $notification_id, '_refund_requested' ) !== false ) {
@@ -461,7 +463,7 @@ function bookacti_get_notifications_tags( $notification_id = '' ) {
 /**
  * Get notifications tags and values corresponding to given booking
  * @since 1.2.0
- * @version 1.8.6
+ * @version 1.10.0
  * @param object $booking
  * @param string $booking_type 'group' or 'single'
  * @param array $notification
@@ -541,7 +543,7 @@ function bookacti_get_notifications_tags_values( $booking, $booking_type, $notif
 			if( $user ) { 
 				$booking_data[ '{user_firstname}' ]	= ! empty( $user->first_name ) ? $user->first_name : '';
 				$booking_data[ '{user_lastname}' ]	= ! empty( $user->last_name ) ? $user->last_name : ''; 
-				$booking_data[ '{user_email}' ]		= ! empty( $user->user_email ) ? $user->user_email : '';
+				$booking_data[ '{user_email}' ]		= ! empty( $user->user_email ) ? $user->user_email : ( is_email( $booking->user_id ) ? $booking->user_id : '' );
 				$booking_data[ '{user_phone}' ]		= ! empty( $user->phone ) ? $user->phone : '';
 				
 				$user_meta = get_user_meta( $booking->user_id );
@@ -555,7 +557,7 @@ function bookacti_get_notifications_tags_values( $booking, $booking_type, $notif
 			} else {
 				$booking_data[ '{user_firstname}' ]	= ! empty( $booking->user_first_name ) ? $booking->user_first_name : '';
 				$booking_data[ '{user_lastname}' ]	= ! empty( $booking->user_last_name ) ? $booking->user_last_name : '';
-				$booking_data[ '{user_email}' ]		= ! empty( $booking->user_email ) ? $booking->user_email : '';
+				$booking_data[ '{user_email}' ]		= ! empty( $booking->user_email ) ? $booking->user_email : ( is_email( $booking->user_id ) ? $booking->user_id : '' );
 				$booking_data[ '{user_phone}' ]		= ! empty( $booking->user_phone ) ? $booking->user_phone : '';
 			}
 		}
@@ -873,4 +875,149 @@ function bookacti_send_email( $to, $subject, $message, $headers, $attachments = 
 	}
 	
 	return $sent;
+}
+
+
+/**
+ * Send a notification when an event dates change to the customers who booked it, once per event per user, for future bookings only
+ * @since 1.10.0
+ * @param object $old_event
+ * @param array $old_bookings
+ * @param int $delta_seconds
+ */
+function bookacti_send_event_rescheduled_notifications( $old_event, $old_bookings = array(), $delta_seconds = 0 ) {
+	$timezone = bookacti_get_setting_value( 'bookacti_general_settings', 'timezone' );
+	$now_dt = new DateTime( 'now', new DateTimeZone( $timezone ) );
+	$from = $old_event->repeat_freq && $old_event->repeat_freq !== 'none' ? $now_dt->format( 'Y-m-d H:i:s' ) : '';
+	
+	// If $old_bookings is set, retrieve only the given bookings, if they were not already cancelled
+	// else retrieve all cancelled bookings of the given event
+	$bookings_filters = array( 'event_id' => $old_event->event_id, 'from' => $from, 'active' => 1 );
+	if( $old_bookings ) {
+		$bookings_filters = array( 'in__booking_id' => array_keys( $old_bookings ), 'from' => $from, 'active' => 1 );
+	}
+	
+	// Get bookings
+	$bookings_filters = bookacti_format_booking_filters( $bookings_filters );
+	$bookings = bookacti_get_bookings( $bookings_filters );
+	if( ! $bookings ) { return; }
+	
+	// If there are a lot of scheduled notifications to send, this operation can take a while
+	// So we need to increase the max_execution_time and the memory_limit
+	bookacti_increase_max_execution_time( 'send_event_rescheduled_notifications' );
+	
+	foreach( $bookings as $booking_id => $booking ) {
+		$old_booking = isset( $old_bookings[ $booking_id ] ) ? $old_bookings[ $booking_id ] : $booking;
+		
+		// Compute old booking start and end
+		if( ! isset( $old_bookings[ $booking_id ] ) ) {
+			$old_booking_start_dt = DateTime::createFromFormat( 'Y-m-d H:i:s', $old_booking->event_start, new DateTimeZone( $timezone ) );
+			$old_booking_end_dt = DateTime::createFromFormat( 'Y-m-d H:i:s', $old_booking->event_end, new DateTimeZone( $timezone ) );
+			$delta_seconds_di = new DateInterval( 'PT' . abs( $delta_seconds ). 'S' );
+			$delta_seconds_di->invert = $delta_seconds > 0 ? 1 : 0;
+			$old_booking_start_dt->add( $delta_seconds_di );
+			$old_booking_end_dt->add( $delta_seconds_di );
+			$old_booking->event_start = $old_booking_start_dt->format( 'Y-m-d' ) . ' ' . substr( $old_event->start, 11, 8 );
+			$old_booking->event_end = $old_booking_end_dt->format( 'Y-m-d' ) . ' ' . substr( $old_event->end, 11, 8 );
+		}
+		
+		$send = apply_filters( 'bookacti_send_event_rescheduled_notification', true, $booking, $old_event, $delta_seconds, $old_booking );
+		if( ! $send ) { continue; }
+		
+		$notification_args = array( 'tags' => array(
+			'{booking_old_start_raw}' => $old_booking->event_start,
+			'{booking_old_end_raw}' => $old_booking->event_end
+		));
+
+		bookacti_send_notification( 'customer_rescheduled_booking', $booking->id, 'single', $notification_args );
+
+		do_action( 'bookacti_event_rescheduled_notification_sent', $booking, $old_event, $delta_seconds, $old_booking );
+	}
+}
+
+
+/**
+ * Send a notification when an event is deleted to the customers who booked it
+ * @since 1.10.0
+ * @param object $event
+ * @param array $old_bookings
+ */
+function bookacti_send_event_cancelled_notifications( $event, $old_bookings = array() ) {
+	// If the event is repeated, send notifications only for future events
+	$timezone = bookacti_get_setting_value( 'bookacti_general_settings', 'timezone' );
+	$now_dt = new DateTime( 'now', new DateTimeZone( $timezone ) );
+	$from = $event->repeat_freq && $event->repeat_freq !== 'none' ? $now_dt->format( 'Y-m-d H:i:s' ) : '';
+
+	// If $old_bookings is set, retrieve only the given bookings, if they were not already cancelled
+	// else retrieve all cancelled bookings of the given event
+	$booking_ids = array();
+	$bookings_filters = array( 'event_id' => $event->event_id, 'from' => $from, 'status' => array( 'cancelled' ) );
+	if( $old_bookings ) {
+		foreach( $old_bookings as $booking_id => $old_booking ) {
+			if( $old_booking->active ) { $booking_ids[] = $booking_id; }
+		}
+		if( ! $booking_ids ) { return; }
+		$bookings_filters = array( 'in__booking_id' => $booking_ids, 'status' => array( 'cancelled' ) );
+	}
+	
+	// Get bookings
+	$bookings_filters = bookacti_format_booking_filters( $bookings_filters );
+	$bookings = bookacti_get_bookings( $bookings_filters );
+	if( ! $bookings ) { return; }
+	
+	// If there are a lot of scheduled notifications to send, this operation can take a while
+	// So we need to increase the max_execution_time and the memory_limit
+	bookacti_increase_max_execution_time( 'send_event_cancelled_notifications' );
+
+	foreach( $bookings as $booking ) {
+		$old_booking = ! empty( $old_bookings[ $booking->id ] ) ? $old_bookings[ $booking->id ] : $booking;
+
+		$send = apply_filters( 'bookacti_send_event_cancelled_notification', true, $booking, $event, $old_booking );
+		if( ! $send ) { continue; }
+		
+		bookacti_send_notification( 'customer_cancelled_booking', $booking->id, 'single' );
+
+		do_action( 'bookacti_event_cancelled_notification_sent', $event, $booking, $old_booking );
+	}
+}
+
+
+/**
+ * Send a notification when an event is deleted to the customers who booked it
+ * @since 1.10.0
+ * @param array $group_of_events
+ * @param array $old_booking_groups
+ */
+function bookacti_send_group_of_events_cancelled_notifications( $group_of_events, $old_booking_groups = array() ) {
+	// If $old_booking_groups is set, retrieve only the given booking groups, if they were not already cancelled
+	// else retrieve all cancelled booking groups of the given event group
+	$booking_group_ids = array();
+	$booking_groups_filters = array( 'event_group_id' => $group_of_events[ 'id' ], 'status' => array( 'cancelled' ) );
+	if( $old_booking_groups ) {
+		foreach( $old_booking_groups as $booking_group_id => $old_booking_group ) {
+			if( $old_booking_group->active ) { $booking_group_ids[] = $booking_group_id; }
+		}
+		if( ! $booking_group_ids ) { return; }
+		$booking_groups_filters = array( 'in__booking_group_id' => $booking_group_ids, 'status' => array( 'cancelled' ) );
+	}
+	
+	// Get booking groups
+	$booking_groups_filters = bookacti_format_booking_filters( $booking_groups_filters );
+	$booking_groups = bookacti_get_booking_groups( $booking_groups_filters );
+	if( ! $booking_groups ) { return; }
+	
+	// If there are a lot of scheduled notifications to send, this operation can take a while
+	// So we need to increase the max_execution_time and the memory_limit
+	bookacti_increase_max_execution_time( 'send_group_of_events_cancelled_notifications' );
+	
+	foreach( $booking_groups as $booking_group ) {
+		$old_booking_group = ! empty( $old_booking_groups[ $booking_group->id ] ) ? $old_booking_groups[ $booking_group->id ] : $booking_group;
+		
+		$send = apply_filters( 'bookacti_send_group_of_events_cancelled_notification', true, $booking_group, $group_of_events, $old_booking_group );
+		if( ! $send ) { continue; }
+		
+		bookacti_send_notification( 'customer_cancelled_booking', $booking_group->id, 'group' );
+
+		do_action( 'bookacti_group_of_events_cancelled_notification_sent', $group_of_events, $booking_group, $old_booking_group );
+	}
 }

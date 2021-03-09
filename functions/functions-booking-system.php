@@ -1826,7 +1826,7 @@ function bookacti_is_group_of_events_available_on_form( $form_id, $group_id ) {
 /**
  * Get array of events from raw events from database
  * @since 1.2.2
- * @version 1.9.4
+ * @version 1.10.0
  * @param array $events Array of objects events from database
  * @param array $raw_args {
  *  @type boolean $skip_exceptions Whether to retrieve occurrence on exceptions
@@ -1853,7 +1853,7 @@ function bookacti_get_events_array_from_db_events( $events, $raw_args = array() 
 	foreach( $events as $event ) { $event_ids[] = $event->event_id; }
 	
 	// Get event exceptions
-	$args[ 'exceptions' ] = array();
+	$exceptions = array();
 	if( $args[ 'skip_exceptions' ] ) {
 		$exceptions = bookacti_get_exceptions_by_event( array( 'events' => $event_ids, 'types'	=> array( 'date' ), 'only_values' => true ) );
 	}
@@ -1984,7 +1984,7 @@ function bookacti_get_bounding_events_from_db_events( $events, $raw_args = array
 /**
  * Get occurrences of repeated events
  * @since 1.8.4 (was bookacti_get_occurences_of_repeated_event)
- * @version 1.9.4
+ * @version 1.10.0
  * @param object $event Event data 
  * @param array $raw_args {
  *  @type array $interval array( 'start' => 'Y-m-d H:i:s', 'end' => 'Y-m-d H:i:s' )
@@ -2012,7 +2012,7 @@ function bookacti_get_occurrences_of_repeated_event( $event, $raw_args = array()
 	
 	// Common properties
 	$shared_properties = array(
-		'id'				=> ! empty( $event->event_id ) ? $event->event_id : ( ! empty( $event->id ) ? $event->id : 0 ),
+		'id'				=> ! empty( $event->event_id ) ? intval( $event->event_id ) : ( ! empty( $event->id ) ? intval( $event->id ) : 0 ),
 		'title'				=> ! empty( $event->title ) ? apply_filters( 'bookacti_translate_text', $event->title ) : '',
 		'color'				=> ! empty( $event->color ) ? $event->color : ''
 	);
@@ -2100,7 +2100,7 @@ function bookacti_get_occurrences_of_repeated_event( $event, $raw_args = array()
 /**
  * Get the event repeat from and to DateTime, and the repeat interval DateInterval (or callable)
  * @since 1.8.0
- * @version 1.8.4
+ * @version 1.10.0
  * @param object $event
  * @param array $args See bookacti_get_occurrences_of_repeated_event documentation
  * @return array {
@@ -2120,8 +2120,10 @@ function bookacti_get_event_repeat_data( $event, $args ) {
 	$event_duration		= $event_start->diff( $event_end );
 	$event_start_time	= substr( $event->start, 11 );
 	$event_monthday		= $event_start->format( 'd' );
-	$repeat_from		= new DateTime( $event->repeat_from . ' 00:00:00', $timezone );
-	$repeat_to			= new DateTime( $event->repeat_to . ' 23:59:59', $timezone );
+	$repeat_from_date	= $event->repeat_from && $event->repeat_freq && $event->repeat_freq !== 'none' ? $event->repeat_from : substr( $event->start, 0, 10 );
+	$repeat_to_date		= $event->repeat_to && $event->repeat_freq && $event->repeat_freq !== 'none' ? $event->repeat_to : substr( $event->start, 0, 10 );
+	$repeat_from		= new DateTime( $repeat_from_date . ' 00:00:00', $timezone );
+	$repeat_to			= new DateTime( $repeat_to_date . ' 23:59:59', $timezone );
 	
 	// Check if the repetition period is in the interval to be rendered
 	if( $args[ 'interval' ] ) {
@@ -2203,6 +2205,7 @@ function bookacti_get_event_repeat_data( $event, $args ) {
 			$repeat_interval = 'bookacti_get_interval_to_next_occurrence';
 			break;
 		default:
+			$repeat_interval = new DateInterval( 'P1D' );
 			break;
 	}
 	
@@ -2414,7 +2417,7 @@ function bookacti_sanitize_events_interval( $interval_raw ) {
 /**
  * Get exceptions dates by event
  * @since 1.7.0
- * @version 1.8.0
+ * @version 1.10.0
  * @param array $raw_args {
  *  @type array $templates
  *  @type array $events
@@ -2433,8 +2436,6 @@ function bookacti_get_exceptions_by_event( $raw_args = array() ) {
 	$args = wp_parse_args( $raw_args, $default_args );
 	
 	$exceptions = bookacti_get_exceptions( $raw_args );
-	
-	if( ! $exceptions ) { return array(); }
 	
 	// Order exceptions by event id
 	$exceptions_by_event = array();
