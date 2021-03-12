@@ -140,6 +140,7 @@ function bookacti_init_template_dialogs() {
 
 	/**
 	 * Prevent sending form
+	 * @param {event} e
 	 */
 	$j( '.bookacti-template-dialog form' ).on( 'submit', function( e ){
 		e.preventDefault();
@@ -170,6 +171,20 @@ function bookacti_init_template_dialogs() {
 	 */
 	$j( '#bookacti-delete-group-of-events-cancel_bookings' ).on( 'change', function() { 
 		$j( '#bookacti-delete-group-of-events-send_notifications-container' ).toggle( $j( '#bookacti-delete-group-of-events-cancel_bookings' ).is( ':checked' ) );
+	});
+	
+	/**
+	 * Toggle the BANP promo for the admin message according to the "Cancel bookings" and "Send notifications" options values
+	 * @since 1.10.0
+	 */
+	$j( '#bookacti-delete-event-cancel_bookings, #bookacti-delete-event-send_notifications' ).on( 'change', function() { 
+		$j( '#bookacti-delete-event-dialog .bookacti-banp-promo-admin-message' ).toggle( $j( '#bookacti-delete-event-cancel_bookings' ).is( ':checked' ) && $j( '#bookacti-delete-event-send_notifications' ).is( ':checked' ) );
+	});
+	$j( '#bookacti-delete-group-of-events-cancel_bookings, #bookacti-delete-group-of-events-send_notifications' ).on( 'change', function() { 
+		$j( '#bookacti-delete-group-of-events-dialog .bookacti-banp-promo-admin-message' ).toggle( $j( '#bookacti-delete-group-of-events-cancel_bookings' ).is( ':checked' ) && $j( '#bookacti-delete-group-of-events-send_notifications' ).is( ':checked' ) );
+	});
+	$j( '#bookacti-update-booked-event-dates-send_notifications' ).on( 'change', function() { 
+		$j( '#bookacti-update-booked-event-dates-dialog .bookacti-banp-promo-admin-message' ).toggle( $j( '#bookacti-update-booked-event-dates-send_notifications' ).is( ':checked' ) );
 	});
 }
 
@@ -552,7 +567,7 @@ function bookacti_dialog_deactivate_template( template_id ) {
 function bookacti_dialog_update_booked_event_dates( event, delta, revertFunc ) {
 	// Sanitize params
 	delta = typeof delta !== 'undefined' ? delta : { '_days': 0, '_milliseconds': 0 };
-	revertFunc = typeof revertFunc !== 'undefined' ? revertFunc : false;
+	revertFunc = typeof revertFunc !== 'undefined' && revertFunc !== false ? revertFunc : false;
 	
 	// Reset the dialog
 	$j( '#bookacti-update-booked-event-dates-dialog .bookacti-bookings-nb' ).remove();
@@ -568,7 +583,7 @@ function bookacti_dialog_update_booked_event_dates( event, delta, revertFunc ) {
 		[{
 			text: bookacti_localized.dialog_button_ok,
 			click: function() {
-				bookacti_update_event_dates( event, delta, revertFunc, true );
+				bookacti_update_event_dates( event, delta, revertFunc, 'booked' );
 			}
 		},
 		{
@@ -889,20 +904,123 @@ function bookacti_dialog_update_event( event ) {
 		unbind_button =	{
 			text: bookacti_localized.dialog_button_unbind,
 			'class': 'bookacti-dialog-unbind-button bookacti-dialog-left-button',
-
-			//On click on the OK Button, new values are send to a script that update the database
 			click: function() {
+				// Close current dialog
+				$j( '#bookacti-event-data-dialog' ).dialog( 'close' );
+				// Open the dialog to unbind events
 				bookacti_dialog_unbind_occurrences( event );
 			}
 		};
 		buttons.push( unbind_button );
 	}
+	
+	// MOVE button
+	var move_button = {
+		text: bookacti_localized.dialog_button_move,
+		'class': 'bookacti-dialog-move-button bookacti-dialog-left-button',
+		click: function() {
+			// Close current dialog
+			$j( '#bookacti-event-data-dialog' ).dialog( 'close' );
+			// Open the dialog to move the event
+			bookacti_dialog_update_event_dates( event );
+		}
+	};
+	buttons.push( move_button );
 
 	// Add dialog buttons
 	$j( '#bookacti-event-data-dialog' ).dialog( 'option', 'buttons', buttons );
 
 	// Open the modal dialog
 	$j( '#bookacti-event-data-dialog' ).dialog( 'open' );
+}
+
+
+/**
+ * Dialog Move Event
+ * @since 1.10.0
+ * @param {object} event
+ */
+function bookacti_dialog_update_event_dates( event ) {
+	// Reset the dialog
+	$j( '#bookacti-update-event-dates-dialog .bookacti-selected-event-start, #bookacti-update-event-dates-dialog .bookacti-selected-event-end' ).empty();
+	$j( '.bookacti-update-repeated-event-dates-warning' ).hide();
+	$j( '#bookacti-update-event-dates-dialog .bookacti-notices' ).remove();
+	
+	// Fill the information about the selected event
+	$j( '#bookacti-update-event-dates-dialog .bookacti-selected-event-start' ).html( event.start.format( 'LLLL' ) );
+	$j( '#bookacti-update-event-dates-dialog .bookacti-selected-event-end' ).html( event.end.format( 'LLLL' ) );
+
+	// Fill the fields
+	$j( '#bookacti-update-event-dates-start_date' ).val( moment.utc( event.start ).clone().locale( 'en' ).format( 'YYYY-MM-DD' ) );
+	$j( '#bookacti-update-event-dates-start_time' ).val( moment.utc( event.start ).clone().locale( 'en' ).format( 'HH:mm' ) );
+	$j( '#bookacti-update-event-dates-end_date' ).val( moment.utc( event.end ).clone().locale( 'en' ).format( 'YYYY-MM-DD' ) );
+	$j( '#bookacti-update-event-dates-end_time' ).val( moment.utc( event.end ).clone().locale( 'en' ).format( 'HH:mm' ) );
+	
+	
+	var buttons = [
+		{
+			text: bookacti_localized.dialog_button_ok,
+			click: function() {
+				// Remove old feedbacks
+				$j( '#bookacti-update-event-dates-dialog .bookacti-notices' ).remove();
+				
+				// Compute the delta
+				var old_event_start	= moment.utc( moment.utc( event.start ).clone().locale( 'en' ).format( 'YYYY-MM-DD HH:mm:ss' ) );
+				var old_event_end	= moment.utc( moment.utc( event.end ).clone().locale( 'en' ).format( 'YYYY-MM-DD HH:mm:ss' ) );
+				var new_event_start	= moment.utc( $j( '#bookacti-update-event-dates-start_date' ).val() + ' ' + $j( '#bookacti-update-event-dates-start_time' ).val() );
+				var new_event_end	= moment.utc( $j( '#bookacti-update-event-dates-end_date' ).val() + ' ' + $j( '#bookacti-update-event-dates-end_time' ).val() );
+				var delta = moment.duration( new_event_start.diff( old_event_start ) );
+				delta._days = moment.utc( moment.utc( new_event_start ).clone().locale( 'en' ).format( 'YYYY-MM-DD' ) ).diff( moment.utc( moment.utc( old_event_start ).clone().locale( 'en' ).format( 'YYYY-MM-DD' ) ), 'days' );
+				
+				// Set the new event
+				var new_event = $j.extend( {}, event );
+				new_event.start = new_event_start;
+				new_event.end = new_event_end;
+				
+				// Check if event start is after event end
+				var error_message = '';
+				if( new_event_end.isSameOrBefore( new_event_start ) )	{ error_message = bookacti_localized.error_end_before_start; }
+				if( old_event_start.isSame( new_event_start ) 
+				&&  old_event_end.isSame( new_event_end ) )				{ error_message = bookacti_localized.error_fill_field; }
+				
+				// Display the error messages
+				if( error_message ) {
+					$j( '#bookacti-update-event-dates-dialog' ).append( '<div class="bookacti-notices"><ul class="bookacti-error-list"><li>' + error_message + '</li></ul></div>' );
+					$j( '#bookacti-update-event-dates-dialog .bookacti-notices' ).show();
+					return;
+				}
+				
+				// Update event dates
+				bookacti_update_event_dates( new_event, delta, false, 'normal' );
+			}
+		},
+		{
+			text: bookacti_localized.dialog_button_cancel,
+			click: function() {
+				$j( this ).dialog( 'close' );
+			}
+		}];
+	
+	// Add the Unbind button if the event is repeated
+	var is_repeated = bookacti.booking_system[ 'bookacti-template-calendar' ][ 'events_data' ][ event.id ][ 'repeat_freq' ] !== 'none';
+	if( is_repeated ) {
+		$j( '.bookacti-update-repeated-event-dates-warning' ).show();
+		buttons.push({
+			text: bookacti_localized.dialog_button_unbind,
+			'class': 'bookacti-dialog-left-button',
+			click: function() { 
+				// Open the unbind dialog
+				$j( this ).dialog( 'close' ); 
+				bookacti_dialog_unbind_occurrences( event );
+			}
+		});
+	}
+	
+	// Add the buttons
+	$j( '#bookacti-update-event-dates-dialog' ).dialog( 'option', 'buttons', buttons );
+	
+	// Open the modal dialog
+	$j( '#bookacti-update-event-dates-dialog' ).dialog( 'open' );
 }
 
 
@@ -927,8 +1045,6 @@ function bookacti_dialog_delete_event( event ) {
 		{
 			text: bookacti_localized.dialog_button_delete,
 			'class': 'bookacti-dialog-delete-button',
-
-			// On click on the OK Button, new values are send to a script that update the database
 			click: function() {
 				// Remove old feedbacks
 				$j( '#bookacti-delete-event-dialog .bookacti-notices' ).remove();
@@ -1020,6 +1136,10 @@ function bookacti_dialog_unbind_occurrences( event ) {
 	$j( '#bookacti-unbind-booked-event-dialog .bookacti-notices' ).remove();
 	$j( '#bookacti-unbind-booked-event-dialog .bookacti-form-error' ).remove();
 	$j( '#bookacti-unbind-booked-event-dialog .bookacti-input-warning' ).removeClass( 'bookacti-input-warning' );
+	
+	// Fill the information about the selected event
+	$j( '#bookacti-unbind-booked-event-dialog .bookacti-selected-event-start' ).html( event.start.format( 'LLLL' ) );
+	$j( '#bookacti-unbind-booked-event-dialog .bookacti-selected-event-end' ).html( event.end.format( 'LLLL' ) );
 	
 	// Toggle the description when an option is selected
 	$j( 'input[type="radio"][name="unbind_action"]' ).on( 'change', function() {
@@ -1124,8 +1244,6 @@ function bookacti_dialog_unbind_occurrences( event ) {
 						bookacti_stop_template_loading();
 					}
 				});
-
-				$j( '#bookacti-event-data-dialog' ).dialog( 'close' );
 			}
 		},
 		{

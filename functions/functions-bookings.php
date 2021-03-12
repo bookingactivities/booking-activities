@@ -530,7 +530,7 @@ function bookacti_get_removed_event_bookings_to_cancel( $event ) {
 	$now_dt = new DateTime( 'now', new DateTimeZone( $timezone ) );
 	$from = $event->repeat_freq && $event->repeat_freq !== 'none' ? $now_dt->format( 'Y-m-d H:i:s' ) : '';
 
-	// Get the event future occurences
+	// Get the event future occurrences
 	$events_exceptions = bookacti_get_exceptions_by_event( array( 'events' => array( $event->event_id ), 'types'	=> array( 'date' ), 'only_values' => 1 ) );
 	$event_exceptions = isset( $events_exceptions[ $event->event_id ] ) ? $events_exceptions[ $event->event_id ] : array();
 	$occurrences = bookacti_get_occurrences_of_repeated_event( $event, array( 'exceptions_dates' => $event_exceptions, 'past_events' => $from ? 0 : 1 ) );
@@ -539,7 +539,7 @@ function bookacti_get_removed_event_bookings_to_cancel( $event ) {
 	$filters = bookacti_format_booking_filters( array( 'event_id' => $event->event_id, 'from' => $from, 'active' => 1 ) );
 	$old_bookings = bookacti_get_bookings( $filters );
 
-	// Keep only the booking made on one of the occurences
+	// Keep only the booking made on one of the occurrences
 	foreach( $old_bookings as $booking_id => $old_booking ) {
 		$is_on_occurrence = false;
 		foreach( $occurrences as $occurrence ) {

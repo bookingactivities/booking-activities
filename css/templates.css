@@ -135,6 +135,13 @@
 #bookacti-activity-duration-container .bookacti-duration-hint { display: none !important; }
 .bookacti-roles-notice { margin-top: 10px; margin-bottom: 20px; }
 
+/* Move an event dialog */
+.bookacti-selected-event-dates						{ margin: 25px 0; }
+.bookacti-update-repeated-event-dates-warning		{ margin-top: 25px; }
+.bookacti-selected-event-start, 
+.bookacti-selected-event-end						{ margin: 0 2px; }
+#bookacti-update-event-dates-start-container label,
+#bookacti-update-event-dates-end-container label	{ width: 80px; }
 
 /* Move a booked event dialog */
 .bookacti-bookings-nb::before, .bookacti-notifications-nb::before	{ content: ' ('; }
@@ -145,6 +152,7 @@
 
 
 /* Unbind dialog */
+#bookacti-unbind-booked-event-dialog .bookacti-selected-event-dates	{ margin-top: 10px; }
 #bookacti-unbind-booked-event-dialog #bookacti-unbind-actions		{ padding: 0 3em 1em 3em; }
 #bookacti-unbind-booked-event-dialog .bookacti-unbind-action label	{ line-height: 3em; }
 #bookacti-unbind-booked-event-dialog .bookacti-unbind-action small	{ display: inline-block; margin-left: 2em; }

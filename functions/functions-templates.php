@@ -455,7 +455,7 @@ function bookacti_unbind_selected_occurrence( $event, $event_start, $event_end )
 function bookacti_unbind_booked_occurrences( $event ) {
 	$event_id = $event->event_id;
 	
-	// Get the booked occurrences (the original event will keep the booked occurences only)
+	// Get the booked occurrences (the original event will keep the booked occurrences only)
 	$booked_events = bookacti_fetch_booked_events( array( 'events' => array( $event_id ), 'active' => 1, 'past_events' => 1 ) );
 	if( empty( $booked_events[ 'events' ] ) ) { return 0; }
 	
@@ -600,7 +600,7 @@ function bookacti_unbind_all_occurrences( $event ) {
 	$event_array = (array) $event;
 	$occurrences_ids = array();
 	foreach( $occurrences as $occurrence ) {
-		// Get the occurence data, without metadata
+		// Get the occurrence data, without metadata
 		$occurrence_data = array_intersect_key( bookacti_sanitize_event_data( array_merge( $event_array, $occurrence ) ), $default_event );
 		
 		// Create one event per occurrence

@@ -516,7 +516,7 @@ function bookacti_event_click( booking_system, event ) {
 
 /**
  * Get the groups ids of an event
- * @version 1.8.5
+ * @version 1.10.0
  * @param {HTMLElement} booking_system
  * @param {object} event
  * @returns {array|"single"|false}
@@ -532,7 +532,6 @@ function bookacti_get_event_group_ids( booking_system, event ) {
 	var booking_system_id = booking_system.attr( 'id' );
 	
 	// Format data
-	var event_id	= event.id;
 	var event_start = moment.utc( event.start ).clone().locale( 'en' ).format( 'YYYY-MM-DD HH:mm:ss' );
 	var event_end	= moment.utc( event.end ).clone().locale( 'en' ).format( 'YYYY-MM-DD HH:mm:ss' );
 	
@@ -540,7 +539,7 @@ function bookacti_get_event_group_ids( booking_system, event ) {
 	
 	$j.each( bookacti.booking_system[ booking_system_id ][ 'groups_events' ], function( group_id, group_events ){
 		$j.each( group_events, function( i, group_event ){
-			if( group_event[ 'id' ] == event_id
+			if( group_event[ 'id' ] == event.id
 			&&  group_event[ 'start' ] === event_start
 			&&  group_event[ 'end' ] === event_end ) {
 				group_ids.push( group_id );

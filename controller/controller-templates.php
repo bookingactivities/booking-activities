@@ -102,7 +102,7 @@ function bookacti_controller_update_event_dates() {
 	$new_event_start_dt->setTime( substr( $new_event_start, 11, 2 ), substr( $new_event_start, 14, 2 ), substr( $new_event_start, 17, 2 ) );
 	$delta_seconds = $new_event_start_dt->format( 'U' ) - $old_event_start_dt->format( 'U' );
 	
-	// Get the event's occurences
+	// Get the event's occurrences
 	$events_exceptions = bookacti_get_exceptions_by_event( array( 'events' => array( $event_id ), 'types'	=> array( 'date' ), 'only_values' => 1 ) );
 	$event_exceptions = isset( $events_exceptions[ $event_id ] ) ? $events_exceptions[ $event_id ] : array();
 	$occurrences = bookacti_get_occurrences_of_repeated_event( $old_event, array( 'exceptions_dates' => $event_exceptions, 'past_events' => 1 ) );
@@ -115,20 +115,20 @@ function bookacti_controller_update_event_dates() {
 	$bookings_to_reschedule = array();
 	
 	foreach( $old_bookings as $booking_id => $old_booking ) {
-		// Check if the booking was made on one of the occurences
-		$is_on_occurence = false;
+		// Check if the booking was made on one of the occurrences
+		$is_on_occurrence = false;
 		foreach( $occurrences as $occurrence ) {
 			if( intval( $old_booking->event_id ) === intval( $occurrence[ 'id' ] ) && $old_booking->event_start === $occurrence[ 'start' ] && $old_booking->event_end === $occurrence[ 'end' ] ) {
-				$is_on_occurence = true;
+				$is_on_occurrence = true;
 				$bookings_to_reschedule[ $booking_id ] = $old_booking;
 				break;
 			}
 		}
 
-		if( ! $is_on_occurence || ! $old_booking->active ) { continue; }
+		if( ! $is_on_occurrence || ! $old_booking->active ) { continue; }
 		++$active_bookings_nb;
 
-		// If the event is repeated, send notifications for future occurences only
+		// If the event is repeated, send notifications for future occurrences only
 		$send = true;
 		if( $old_event->repeat_freq && $old_event->repeat_freq !== 'none' ) {
 			// Compute new booking start

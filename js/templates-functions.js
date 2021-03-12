@@ -734,29 +734,36 @@ function bookacti_delete_event( event ) {
  * @param {object} event
  * @param {object} delta
  * @param {callable} revertFunc
- * @param {boolean} is_dialog
+ * @param {string} is_dialog 'normal' or 'booked'
  */
 function bookacti_update_event_dates( event, delta, revertFunc, is_dialog ) {
 	// Sanitize params
-	delta = typeof delta !== 'undefined' ? delta : { '_days': 0, '_milliseconds': 0 };
-	revertFunc = typeof revertFunc !== 'undefined' ? revertFunc : false;
-	is_dialog = typeof is_dialog !== 'undefined' ? is_dialog : false;
+	delta = typeof delta !== 'undefined' ? delta : { '_days': 0 };
+	revertFunc = typeof revertFunc !== 'undefined' && revertFunc !== false ? revertFunc : false;
+	is_dialog = typeof is_dialog !== 'undefined' ? is_dialog : '';
 	
-	// If the dialog is open, get the form data
+	// If the booked event dialog is open, get the form data
+	var dialog_id = '';
 	var form_data = {};
-	if( is_dialog ) { 
+	form_data.forced_update = 0;
+	
+	if( is_dialog === 'normal' ) { dialog_id = 'bookacti-update-event-dates-dialog'; }
+	if( is_dialog === 'booked' ) { 
+		dialog_id = 'bookacti-update-booked-event-dates-dialog';
 		form_data = $j( '#bookacti-update-booked-event-dates-form' ).serializeObject();
 		form_data.forced_update = 1;
-		
+	}
+	
+	if( dialog_id ) {
 		// Remove old feedbacks
-		$j( '#bookacti-update-booked-event-dates-dialog .bookacti-notices' ).remove();
+		$j( '#' + dialog_id + ' .bookacti-notices' ).remove();
 
 		// Display a loading feedback
 		var loading_div = '<div class="bookacti-loading-alt">' 
 							+ '<img class="bookacti-loader" src="' + bookacti_localized.plugin_path + '/img/ajax-loader.gif" title="' + bookacti_localized.loading + '" />'
 							+ '<span class="bookacti-loading-alt-text" >' + bookacti_localized.loading + '</span>'
 						+ '</div>';
-		$j( '#bookacti-update-booked-event-dates-dialog' ).append( loading_div );
+		$j( '#' + dialog_id ).append( loading_div );
 	}
 	
 	// Update the event changes in database
@@ -839,9 +846,9 @@ function bookacti_update_event_dates( event, delta, revertFunc, is_dialog ) {
 				}
 				
 				// Close the dialog if it was opened
-				if( is_dialog ) { 
-					$j( '#bookacti-update-booked-event-dates-dialog' ).off( 'dialogbeforeclose' ); // Do not trigger revertFunc() in that case
-					$j( '#bookacti-update-booked-event-dates-dialog' ).dialog( 'close' );
+				if( dialog_id ) { 
+					$j( '#' + dialog_id ).off( 'dialogbeforeclose' ); // Do not trigger revertFunc() in that case
+					$j( '#' + dialog_id ).dialog( 'close' );
 				}
 
 				$j( '#bookacti-template-calendar' ).trigger( 'bookacti_event_dates_updated', [ event, response, data ] );
@@ -849,7 +856,11 @@ function bookacti_update_event_dates( event, delta, revertFunc, is_dialog ) {
 
 			else if( response.status === 'failed' ) { 
 				// If the event is booked, display a dialog to confirm
-				if( response.error === 'has_bookings' && ! is_dialog ) {
+				if( response.error === 'has_bookings' && ! form_data.forced_update ) {
+					// Close the dialog if it was opened
+					if( dialog_id ) { $j( '#' + dialog_id ).dialog( 'close' ); }
+					
+					// Open the booked event dialog
 					bookacti_dialog_update_booked_event_dates( event, delta, revertFunc );
 					
 					// Display the number of bookings to be rescheduled and the number of users to be notified
@@ -859,9 +870,9 @@ function bookacti_update_event_dates( event, delta, revertFunc, is_dialog ) {
 				} else {
 					if( revertFunc !== false ) { revertFunc(); }
 					var error_message = typeof response.message !== 'undefined' ? response.message : bookacti_localized.error;
-					if( is_dialog ) { 
-						$j( '#bookacti-update-booked-event-dates-dialog' ).append( '<div class="bookacti-notices"><ul class="bookacti-error-list"><li>' + error_message + '</li></ul></div>' ); 
-						$j( '#bookacti-update-booked-event-dates-dialog .bookacti-notices' ).show();
+					if( dialog_id ) { 
+						$j( '#' + dialog_id ).append( '<div class="bookacti-notices"><ul class="bookacti-error-list"><li>' + error_message + '</li></ul></div>' ); 
+						$j( '#' + dialog_id + ' .bookacti-notices' ).show();
 					} else { alert( error_message ); }
 					console.log( response );
 				}
@@ -873,7 +884,7 @@ function bookacti_update_event_dates( event, delta, revertFunc, is_dialog ) {
 			console.log( e );
 		},
 		complete: function() { 
-			if( is_dialog ) { $j( '#bookacti-update-booked-event-dates-dialog .bookacti-loading-alt' ).remove(); }
+			if( dialog_id ) { $j( '#' + dialog_id + ' .bookacti-loading-alt' ).remove(); }
 			bookacti_stop_template_loading();
 		}
 	});
@@ -887,7 +898,7 @@ function bookacti_update_event_dates( event, delta, revertFunc, is_dialog ) {
  * @param {object} delta
  */
 function bookacti_duplicate_event( event, delta ) {
-	delta = typeof delta !== 'undefined' ? delta : { '_days': 0, '_milliseconds': 0 };
+	delta = typeof delta !== 'undefined' ? delta : { '_days': 0 };
 	
 	var id			= event.id;
 	var start		= moment.utc( event.start ).clone().locale( 'en' ).format( 'YYYY-MM-DD HH:mm:ss' );

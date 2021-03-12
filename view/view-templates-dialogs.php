@@ -948,7 +948,13 @@ foreach( $templates as $template ) {
 		<input type='hidden' name='action' id='bookacti-unbind-booked-event-form-action' value='bookactiUnbindOccurrences'/>
 		<input type='hidden' name='unbind_action' value='selected'/>
 		
+		<p class='bookacti-selected-event-dates'>
+			<strong><?php esc_html_e( 'Selected event:', 'booking-activities' ); ?></strong>
+			<span class='bookacti-selected-event-start'></span> - <span class='bookacti-selected-event-end'></span>
+		</p>
+		
 		<p><?php esc_html_e( 'In order to edit the occurrences of the event independently, you can:', 'booking-activities' ); ?></p>
+				
 		<div id='bookacti-unbind-actions'>
 			<div id='bookacti-unbind-action-selected-container' class='bookacti-unbind-action'>
 				<input type='radio' name='unbind_action' value='selected' id='bookacti-unbind-action-selected' checked='checked'/>
@@ -980,6 +986,54 @@ foreach( $templates as $template ) {
 </div>
 
 
+<!-- Dialog to move / resize an event -->
+<div id='bookacti-update-event-dates-dialog' class='bookacti-backend-dialog bookacti-template-dialog' title='<?php esc_html_e( 'Change the event\'s dates', 'booking-activities' ); ?>' style='display:none;'>
+	<form id='bookacti-update-event-dates-form'>
+		<div class='bookacti-info'>
+			<span class='dashicons dashicons-info'></span>
+			<span>
+				<?php esc_html_e( 'You can also drag and drop the event on the calendar to move it, and drag the handle at the bottom of the event to resize it.', 'booking-activities' ); ?>
+			</span>
+		</div>
+		<p class='bookacti-selected-event-dates'>
+			<strong><?php esc_html_e( 'Selected event:', 'booking-activities' ); ?></strong>
+			<span class='bookacti-selected-event-start'></span> - <span class='bookacti-selected-event-end'></span>
+		</p>
+		<div class='bookacti-field-container' id='bookacti-update-event-dates-start-container'>
+			<label for='bookacti-update-event-dates-start_date'>
+				<?php esc_html_e( 'Start', 'booking-activities' ); ?>
+			</label>
+			<?php 
+				$start_date = array( 'type' => 'date', 'name' => 'start_date', 'id' => 'bookacti-update-event-dates-start_date' );
+				bookacti_display_field( $start_date );
+				$start_time = array( 'type' => 'time', 'name' => 'start_time', 'id' => 'bookacti-update-event-dates-start_time' );
+				bookacti_display_field( $start_time );
+				bookacti_help_tip( esc_html__( 'Set the new event start date and time. The event will be moved accordingly.', 'booking-activities' ) );
+			?>
+		</div>
+		<div class='bookacti-field-container' id='bookacti-update-event-dates-end-container'>
+			<label for='bookacti-update-event-dates-end_date'>
+				<?php esc_html_e( 'End', 'booking-activities' ); ?>
+			</label>
+			<?php 
+				$end_date = array( 'type' => 'date', 'name' => 'end_date', 'id' => 'bookacti-update-event-dates-end_date' );
+				bookacti_display_field( $end_date );
+				$end_time = array( 'type' => 'time', 'name' => 'end_time', 'id' => 'bookacti-update-event-dates-end_time' );
+				bookacti_display_field( $end_time );
+				bookacti_help_tip( esc_html__( 'Set the new event end date and time. The event will be resized accordingly.', 'booking-activities' ) );
+			?>
+		</div>
+		<?php do_action( 'bookacti_update_event_dates_options_after' ); ?>
+		<div class='bookacti-error bookacti-update-repeated-event-dates-warning'>
+			<span class='dashicons dashicons-warning'></span>
+			<span>
+				<?php esc_html_e( 'This is a repeated event, all the occurrences will be affected. If you want to apply these changes to only one occurrence, you need to unbind it first.', 'booking-activities' ); ?>
+			</span>
+		</div>
+	</form>
+</div>
+
+
 <!-- Warning before moving / resizing a booked event -->
 <div id='bookacti-update-booked-event-dates-dialog' class='bookacti-backend-dialog bookacti-template-dialog' title='<?php esc_html_e( 'Move a booked event', 'booking-activities' ); ?>' style='display:none;'>
 	<form id='bookacti-update-booked-event-dates-form'>
@@ -997,6 +1051,8 @@ foreach( $templates as $template ) {
 				)
 			);
 			bookacti_display_fields( $fields );
+			
+			bookacti_display_banp_promo_admin_message();
 			
 			do_action( 'bookacti_update_booked_event_dates_options_after' );
 		?>
@@ -1054,6 +1110,8 @@ foreach( $templates as $template ) {
 				);
 				bookacti_display_fields( $fields );
 				
+				bookacti_display_banp_promo_admin_message();
+				
 				do_action( 'bookacti_delete_booked_event_options_after' );
 			?>
 		</div>
@@ -1101,6 +1159,8 @@ foreach( $templates as $template ) {
 					)
 				);
 				bookacti_display_fields( $fields );
+				
+				bookacti_display_banp_promo_admin_message();
 				
 				do_action( 'bookacti_delete_booked_group_of_events_options_after' );
 			?>

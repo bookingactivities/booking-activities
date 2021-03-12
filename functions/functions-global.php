@@ -550,7 +550,7 @@ function bookacti_get_js_variables() {
 			'error_availability_period'			=> sprintf( esc_html__( 'The "%1$s" delay must be higher than the "%2$s" delay.', 'booking-activities' ), 
 					esc_html__( 'At the earliest', 'booking-activities' ), 
 					esc_html__( 'At the latest', 'booking-activities' ) ),
-												/* translators: %1$s = "Opening". %2$s = "Closing". */
+												/* translators: %1$s = "Opening" or "Start". %2$s = "Closing" or "End". */
 			'error_closing_before_opening'		=> sprintf( esc_html__( 'The "%1$s" date must be prior to the "%2$s" date.', 'booking-activities' ), 
 					esc_html__( 'Opening', 'booking-activities' ), 
 					esc_html__( 'Closing', 'booking-activities' ) ),
@@ -564,7 +564,12 @@ function bookacti_get_js_variables() {
 				'dialog_button_import_activity'		=> esc_html__( 'Import Activity', 'booking-activities' ),
 				/* translators: 'unbind' is the process to isolate one (or several) occurrence(s) of a repeated event in order to edit it independently. */
 				'dialog_button_unbind'				=> esc_html__( 'Unbind', 'booking-activities' ),
-
+				/* translators: 'Move' is the button label to move an event to another date. */
+				'dialog_button_move'				=> esc_html__( 'Move', 'booking-activities' ),
+				
+				'error_end_before_start'			=> sprintf( esc_html__( 'The "%1$s" date must be prior to the "%2$s" date.', 'booking-activities' ), 
+						esc_html__( 'Start', 'booking-activities' ), 
+						esc_html__( 'End', 'booking-activities' ) ),
 				'error_fill_field'                  => esc_html__( 'Please fill this field.', 'booking-activities' ),
 				'error_invalid_value'               => esc_html__( 'Please select a valid value.', 'booking-activities' ),
 				'error_repeat_period_not_set'		=> esc_html__( 'The repetition period is not set.', 'booking-activities' ),
